@@ -16,11 +16,7 @@ import {featureDataErrorMessage} from '../feature-data-state.v2';
 const norm=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
 const THEME_RELATION_TYPE='theme_song';
 function canonicalWorkIdentity(row){
-  const raw=String(row?.work_id||row?.media_link||'').replace(/^work:/,'').trim();
-  if(!raw)return {workId:'',title:''};
-  const workId=raw.replace(/:ch\d+$/i,'');
-  const title=String(row?.title||'').replace(/\s*第\d+章\s*$/,'').trim()||String(row?.title||'').trim();
-  return {workId,title};
+  return {workId:'',title:String(row?.title||'').trim()};
 }
 function appendStyleTag(value,tag){
   const tags=String(value||'').split(',').map(item=>item.trim()).filter(Boolean);
@@ -64,7 +60,7 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map(),relati
   const isLiteratureTarget=work.workId.startsWith('lo3rwang-literature:');
   const isScopeCard=Boolean(row.scope_card);
   const href=isScopeCard?scopeHrefV2(scope):(row.url||row.href||row.suno_url||(row.scope_id?scopeHrefV2(row.scope_id,'statics'):''));
-  return {key:identity?source+'-'+identity:source+'-'+title+'-'+String(body).slice(0,40),source,title:String(title),date:row.date||row.created_date||row.created_at||row.updated_at||'',snippet:snippet(body,q),bodyText:String(body),styleTags:String(row.style_tags||''),scopeId:scope,resourceType,resourceId,settingsKey,settings,editableTable,editableIdColumn,editableField,relationWorkId:work.workId,relationTitle:work.title||String(title),relatedRelations,isThemeSource,isLiteratureTarget,isScopeCard,href,destinations:isScopeCard?[]:featureNavigationLinks(navigation)};
+  return {key:identity?source+'-'+identity:source+'-'+title+'-'+String(body).slice(0,40),source,title:String(title),date:row.date||row.created_date||row.create_time||row.created_at||row.update_time||row.updated_at||'',snippet:snippet(body,q),bodyText:String(body),styleTags:String(row.style_tags||row.meta_tags||''),display:String(row.display||'summary'),scopeId:scope,resourceType,resourceId,settingsKey,settings,editableTable,editableIdColumn,editableField,relationWorkId:work.workId,relationTitle:work.title||String(title),relatedRelations,isThemeSource,isLiteratureTarget,isScopeCard,href,destinations:isScopeCard?[]:featureNavigationLinks(navigation)};
 }
 
 export default function SearchV2(){
@@ -142,6 +138,7 @@ export default function SearchV2(){
       for(const {row,source} of consumed){
         const result=toResult(row,source,q,collection.id,scopeId,visibilityMap,relationMap);
         if(!result||seen.has(result.key))continue;
+        if(result.display==='hidden'&&!canManageScopeFromGrants(result.scopeId,account.grants))continue;
         if(result.settings&&result.settings.visibility!=='public'&&!canManageScopeFromGrants(result.scopeId,account.grants))continue;
         seen.add(result.key);converted.push(result);
       }
@@ -172,6 +169,7 @@ export default function SearchV2(){
         for(const {row,source} of consumed){
           const result=toResult(row,source,q,collection.id,scopeId,visibilityRef.current,relationsRef.current);
           if(!result||seen.has(result.key))continue;
+          if(result.display==='hidden'&&!canManageScopeFromGrants(result.scopeId,account.grants))continue;
           if(result.settings&&result.settings.visibility!=='public'&&!canManageScopeFromGrants(result.scopeId,account.grants))continue;
           seen.add(result.key);appended.push(result);
         }

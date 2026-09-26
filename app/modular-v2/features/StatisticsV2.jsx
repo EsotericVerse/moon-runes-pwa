@@ -17,7 +17,7 @@ import FeaturePageV2 from '../FeaturePageV2';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const CHART_TYPES=[['bar','長條圖'],['line','折線圖'],['pie','圓餅圖']];
-const TEXT_TYPES=[['text_type','文字小分類'],['text_category','文字分組'],['text_source','文字來源']];
+const TEXT_TYPES=[['text_source','文字來源']];
 const MEDIA_TYPES=[['meta_style','Meta Tag'],['meta_type','多媒體小分類'],['meta_source','媒體來源']];
 const RUNE_TYPES=[['group','群組'],['keyword','關鍵詞']];
 const MEDIA_TERM_LABELS={song:'曲目',reel:'Reels',video:'影片',image:'圖像',audio:'音訊'};
@@ -94,7 +94,7 @@ function useRanking(scopeId,type,navigation,limit=100){
 }
 
 function OverviewFace({scopeId,navigation,go}){
-  const textQuery=useRanking(scopeId,'text_type',navigation,30);
+  const textQuery=useRanking(scopeId,'text_source',navigation,30);
   const mediaTypeQuery=useRanking(scopeId,'meta_type',navigation,30);
   const mediaTagQuery=useRanking(scopeId,'meta_style',navigation,30);
   const textRows=textQuery.data||[];
@@ -125,7 +125,7 @@ function OverviewFace({scopeId,navigation,go}){
 }
 
 function StatisticsFace({scopeId,navigation,go}){
-  const [textType,setTextType]=useState('text_type');
+  const [textType,setTextType]=useState('text_source');
   const [mediaType,setMediaType]=useState('meta_style');
   const [textChart,setTextChart]=useState('bar');
   const [mediaChart,setMediaChart]=useState('bar');

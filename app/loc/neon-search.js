@@ -10,7 +10,7 @@ const TABLES=Object.freeze({
     ['silver.lrunes_style_context','符文關鍵詞與關係',['context_id','context_type','rune_number','related_rune_number','keyword_group','keyword','relation_type','title','rule_text','note'],'lunarunes'],
     ['silver.lrunes_style_time','符文時期',['entry_key','entry_type','title','summary','period','entry_name','start_date','end_date','note'],'lunarunes'],
     ['silver.lrunes_galaxy','符文文字',['scope_id','category','content_type','source_role','title','content','meta_tags','created_at','source_ref','work_id'],'lunarunes'],
-    ['api.lo3rwang_galaxy','作者正文',['scope_id','category','content_type','source_role','title','content','meta_tags','created_at','source_ref','in_reply_to_username','source_place','work_id'],'lo3rwang'],
+    ['api.lo3rwang_galaxy','作者正文',['scope_id','title','content','source','source_id','target_id','ref_id','url','search','statics','display','create_time','update_time'],'lo3rwang'],
     ['silver.faq_entries','FAQ',['faq_id','category','intent','question','answer','status','source_path'],'loc'],
     ['silver.lo3rwang_galaxy_media','音樂與多媒體',['media_id','scope_id','media_link','source_platform','source_native_id','media_type','title','url','meta_tags','style_tags','created_at','created_date','playlist','publication_status','play_count','like_count','view_count','is_representative'],'lo3rwang']
   ]),
@@ -21,7 +21,7 @@ const TABLES=Object.freeze({
     ['silver.lrunes_galaxy','符文文字',['scope_id','category','content_type','source_role','title','content','meta_tags','created_at','source_ref','work_id'],'lunarunes']
   ]),
   lo3rwang:Object.freeze([
-    ['api.lo3rwang_galaxy','作者正文',['scope_id','category','content_type','source_role','title','content','created_at','source_ref','in_reply_to_username','source_place','work_id'],'lo3rwang'],
+    ['api.lo3rwang_galaxy','作者正文',['scope_id','title','content','source','source_id','target_id','ref_id','url','search','statics','display','create_time','update_time'],'lo3rwang'],
     ['silver.lo3rwang_galaxy_media','音樂與多媒體',['media_id','scope_id','media_link','source_platform','source_native_id','media_type','title','url','meta_tags','style_tags','created_at','created_date','playlist','publication_status','play_count','like_count','view_count','is_representative'],'lo3rwang']
   ]),
   治理:Object.freeze([
