@@ -57,11 +57,11 @@ async function authorSources(period){
   const range=await resolvePeriod('lo3rwang',period);
   const filters=dateFilters(range);
   const [texts,media]=await Promise.all([
-    selectAllRows('silver.lo3rwang_galaxy',{columns:'source_platform,created_at',filters}),
-    selectAllRows('silver.lo3rwang_galaxy_media',{columns:'source_platform,created_at',filters})
+    selectAllRows('silver.lo3rwang_galaxy',{columns:'source_name,created_at',filters}),
+    selectAllRows('silver.lo3rwang_galaxy_media',{columns:'source_name,created_at',filters})
   ]);
   const map=new Map();
-  for(const row of [...texts,...media])increment(map,'source',row.source_platform,{source:'lo3rwang',period:period||'all'});
+  for(const row of [...texts,...media])increment(map,'source',row.source_name,{source:'lo3rwang',period:period||'all'});
   return [...map.values()];
 }
 
@@ -84,9 +84,9 @@ async function runeSources(period){
     {column:'record_type',operator:'in',value:['galaxy','galaxy_media']},
     ...dateFilters(range)
   ];
-  const rows=await selectAllRows('silver.lrunes',{columns:'source_platform,created_at,record_type',filters});
+  const rows=await selectAllRows('silver.lrunes',{columns:'source_name,created_at,record_type',filters});
   const map=new Map();
-  for(const row of rows)increment(map,'source',row.source_platform,{source:'lrunes',period:period||'all'});
+  for(const row of rows)increment(map,'source',row.source_name,{source:'lrunes',period:period||'all'});
   return [...map.values()];
 }
 
