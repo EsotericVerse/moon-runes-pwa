@@ -8,7 +8,7 @@ export function languageItem(raw={},fallbackKind='text',index=0){
     id,kind,
     label:String(raw.label||raw.title||raw.display_label||raw.term||id),
     date:String(raw.date||raw.start_date||raw.created_at||raw.created_date||''),
-    source:String(raw.source||raw.source_platform||raw.group_label||''),
+    source:String(raw.source||raw.source_name||raw.group_label||''),
     text:String(raw.text||raw.content||raw.description||raw.summary||raw.media_metadata_text||raw.meta_tags||''),
     tags:String(raw.tags||raw.style_tags||raw.meta_tags||raw.term||''),
     href:String(raw.href||raw.url||raw.source_ref||''),
@@ -62,7 +62,7 @@ export function filterLanguageItems(items=[],{query='',start='',end='',kinds=[]}
 export function neonSearchItems(rows=[]){
   return (rows||[]).map((entry,index)=>{
     const row=entry?.row||entry||{};
-    const source=entry?.source||row.source||row.source_platform||'';
+    const source=entry?.source||row.source||row.source_name||'';
     const kind=row.media_id?'media':'text';
     const text=Object.values(row).filter(value=>typeof value==='string').join(' ');
     return languageItem({
