@@ -56,22 +56,22 @@ requireText('app/modular-v2/ScopeFooterV2.jsx',[
   'useScopeRuntimeV2','ThemeSelectV2'
 ]);
 
-if(existsSync(resolve(root,'app/runes/page.jsx')))failures.push('app/runes/page.jsx must remain retired; app/runes is source-only');
+if(existsSync(resolve(root,'app/lrunes/page.jsx')))failures.push('app/lrunes/page.jsx must remain retired; app/runes is source-only');
 for(const path of [
-  'app/runes/RuneDrawClient.jsx',
-  'app/runes/RunesClient.jsx',
-  'app/runes/RuneListPage.jsx',
-  'app/runes/RuneHistoryPage.jsx',
-  'app/runes/history/HistoryClient.jsx'
+  'app/lrunes/RuneDrawClient.jsx',
+  'app/lrunes/RunesClient.jsx',
+  'app/lrunes/RuneListPage.jsx',
+  'app/lrunes/RuneHistoryPage.jsx',
+  'app/lrunes/history/HistoryClient.jsx'
 ])requireFile(path);
 
-requireText('app/runes/RuneDrawClient.jsx',[
+requireText('app/lrunes/RuneDrawClient.jsx',[
   "scopeHrefV2('runes','duel/one')",
   "scopeHrefV2('runes','duel/daily')",
   "key: 'ow3gs'",
   '第 7–11 張為核心判定'
 ]);
-forbidText('app/runes/RuneDrawClient.jsx',["'/duel/one'","'/duel/daily'"]);
+forbidText('app/lrunes/RuneDrawClient.jsx',["'/duel/one'","'/duel/daily'"]);
 
 requireText('app/modular-v2/scope-registry.v2.js',[
   "scopeIdPattern:'^[A-Za-z]+$'",

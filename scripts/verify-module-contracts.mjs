@@ -28,7 +28,7 @@ walk(resolve(root,'app'),path=>{
 });
 
 for(const path of [
-  'app/runes/RunesClient.jsx',
+  'app/lrunes/RunesClient.jsx',
   'app/loc/data.js',
   'app/loc/data-paths.mjs',
   'app/loc/neon-context-client.js',
@@ -40,7 +40,7 @@ for(const path of [
   'pics/LOC-structure.png'
 ]) if(!existsSync(resolve(root,path)))failures.push(`missing module contract file: ${path}`);
 
-const runesClient=readFileSync(resolve(root,'app/runes/RunesClient.jsx'),'utf8');
+const runesClient=readFileSync(resolve(root,'app/lrunes/RunesClient.jsx'),'utf8');
 for(const token of ['LOC_DATA.RUNES','data-draw-action="execute"','function executeDraw','function finishDraw'])if(!runesClient.includes(token))failures.push(`RunesClient: missing draw contract ${token}`);
 
 const dataLoader=readFileSync(resolve(root,'app/loc/data.js'),'utf8');

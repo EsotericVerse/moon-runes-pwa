@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const source = readFileSync(resolve(process.cwd(), 'app/runes/RuneDrawClient.jsx'), 'utf8');
+const source = readFileSync(resolve(process.cwd(), 'app/lrunes/RuneDrawClient.jsx'), 'utf8');
 const governance = readFileSync(resolve(process.cwd(), 'docs/LUNARUNES_DRAW_GOVERNANCE.md'), 'utf8');
 
 const required = [

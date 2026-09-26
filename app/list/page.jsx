@@ -1,4 +1,4 @@
-import {RuneDirectoryRoot} from '../lunarunes/RuneDirectoryPages';
+import {RuneDirectoryRoot} from '../lrunes/RuneDirectoryPages';
 
 export const metadata={
   title:'符文圖鑑｜月之符文｜LOC',

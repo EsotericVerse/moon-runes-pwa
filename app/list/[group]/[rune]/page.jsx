@@ -1,5 +1,5 @@
-import {RuneDetailPage} from '../../../lunarunes/RuneDirectoryPages';
-import {runeParams} from '../../../lunarunes/rune-directory.mjs';
+import {RuneDetailPage} from '../../../lrunes/RuneDirectoryPages';
+import {runeParams} from '../../../lrunes/rune-directory.mjs';
 
 export function generateStaticParams(){return runeParams();}
 
