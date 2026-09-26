@@ -8,9 +8,9 @@ const RANKING_VIEWS=Object.freeze({
 });
 
 const RANKING_TYPES=Object.freeze({
-  loc:Object.freeze(['group','keyword','period_source','media_style']),
+  loc:Object.freeze(['group','keyword','text_source','text_category','text_type','meta_source','meta_type','meta_style']),
   runes:Object.freeze(['group','keyword']),
-  lo3rwang:Object.freeze(['period_source','media_style'])
+  lo3rwang:Object.freeze(['text_source','text_category','text_type','meta_source','meta_type','meta_style'])
 });
 
 const RANKING_COLUMNS=Object.freeze({
@@ -30,7 +30,11 @@ function navigationFilters(scopeId,navigation={}){
   const filters=[];
   if(scopeId==='loc'||scopeId==='runes')containsFilter(filters,'source',navigation.source);
   if(scopeId==='lo3rwang')containsFilter(filters,'term',navigation.source);
-  if(scopeId==='loc'||scopeId==='lo3rwang')containsFilter(filters,'period',navigation.period);
+  if(scopeId==='lo3rwang'){
+    filters.push({column:'period',operator:'eq',value:String(navigation.period||'all')});
+  }else if(scopeId==='loc'){
+    containsFilter(filters,'period',navigation.period);
+  }
   return filters;
 }
 
