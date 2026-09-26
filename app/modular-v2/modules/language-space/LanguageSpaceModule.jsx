@@ -15,7 +15,7 @@ function rankingPlan(id){
   return [['text_type','text'],['text_category','text'],['meta_type','media'],['meta_style','media']];
 }
 
-export default function LanguageSpaceModule({initialQuery='',management=null,initialMode='view',title='立體語言空間'}){
+export default function LanguageSpaceModule({initialQuery='',management=null,initialFace='space',title='立體語言空間'}){
   const {scopeId,scope}=useScopeRuntimeV2();
   const [searchText,setSearchText]=useState(initialQuery);
   const [submitted,setSubmitted]=useState(initialQuery);
@@ -67,7 +67,7 @@ export default function LanguageSpaceModule({initialQuery='',management=null,ini
       onSearch={value=>setSubmitted(String(value||'').trim())}
       searching={search.isFetching}
       management={management}
-      initialMode={initialMode}
+      initialFace={initialFace}
     />
   </div>;
 }
