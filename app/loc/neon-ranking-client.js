@@ -8,9 +8,9 @@ const RANKING_VIEWS=Object.freeze({
 });
 
 const RANKING_TYPES=Object.freeze({
-  loc:Object.freeze(['group','keyword','period_source']),
+  loc:Object.freeze(['group','keyword','period_source','media_style']),
   runes:Object.freeze(['group','keyword']),
-  lo3rwang:Object.freeze(['period_source'])
+  lo3rwang:Object.freeze(['period_source','media_style'])
 });
 
 const RANKING_COLUMNS=Object.freeze({
