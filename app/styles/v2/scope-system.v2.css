@@ -105,12 +105,9 @@
 
 .scope-overview-network-wrap{display:grid;gap:1rem;min-width:0}
 .scope-overview-network{width:100%;height:min(65vh,600px);min-height:360px;border:var(--scope-v2-border);border-radius:16px;background:var(--loc-panel);overflow:hidden}
-.scope-overview-network .vis-network,.loc-keyword-graph3d-canvas .vis-graph3d{outline:none}
+.scope-overview-network .vis-network{outline:none}
 .scope-overview-network-detail{padding:1rem;border:var(--scope-v2-border);border-radius:14px;background:var(--loc-panel-2)}
 .scope-overview-network-detail h3{margin:.15rem 0 .5rem}
-.loc-keyword-graph3d{display:grid;gap:.6rem;margin:1rem 0;padding:1rem;border:var(--scope-v2-border);border-radius:var(--scope-v2-radius);background:var(--loc-panel)}
-.loc-keyword-graph3d h3,.loc-keyword-graph3d p{margin:.15rem 0}
-.loc-keyword-graph3d-canvas{width:100%;height:480px;min-height:360px;overflow:hidden}
 
 .loc-keyword-graph2d{display:grid;gap:.6rem;margin:1rem 0;padding:1rem;border:var(--scope-v2-border);border-radius:var(--scope-v2-radius);background:var(--loc-panel)}
 .loc-keyword-graph2d h3,.loc-keyword-graph2d p{margin:.15rem 0}
@@ -187,45 +184,8 @@
 .scope-v2-culture-source-pages span{min-width:7rem;color:var(--scope-v2-muted);text-align:center}
 
 .scope-v2-culture-view-toggle{margin:.8rem 0}
-.scope-v2-culture-3d{display:grid;gap:.75rem;margin:1rem 0}
-.scope-v2-culture-3d-heading{display:flex;justify-content:space-between;align-items:center;gap:1rem}
-.scope-v2-culture-3d-heading h3{margin:0}
-.scope-v2-culture-3d-heading p{margin:.35rem 0 0;color:var(--scope-v2-muted)}
-.scope-v2-culture-3d-heading>span{padding:.3rem .6rem;border:var(--scope-v2-border);border-radius:999px;color:var(--scope-v2-muted)}
-.scope-v2-culture-3d-canvas{width:100%;height:540px;min-height:420px;overflow:hidden;border:var(--scope-v2-border);border-radius:14px;background:var(--loc-panel)}
-.scope-v2-culture-3d-canvas .graph3d{width:100%;height:100%}
-.scope-v2-culture-3d-tools{padding:.3rem 0}
-.scope-v2-culture-3d-anchor-rail{display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;padding:.7rem;border:var(--scope-v2-border);border-radius:12px;background:var(--loc-surface-soft)}
-.scope-v2-culture-3d-anchor-rail strong{margin-right:.4rem}
-.scope-v2-culture-3d-anchor-rail button{padding:.4rem .65rem;border:var(--scope-v2-border);border-radius:999px;background:var(--loc-panel);color:var(--scope-v2-text);cursor:grab}
-.scope-v2-culture-3d-anchor-rail button:active{cursor:grabbing}
-.scope-v2-culture-3d-canvas .vis-tooltip{position:absolute;z-index:20;padding:.45rem .65rem;border:var(--scope-v2-border);border-radius:8px;background:var(--loc-panel);color:var(--scope-v2-text);font-size:.82rem;pointer-events:none;box-shadow:0 4px 18px #0002}
 
-.scope-v2-culture-3d-categories{display:grid;gap:.55rem}
-.scope-v2-culture-3d-categories h4{margin:.1rem 0}
-.scope-v2-culture-3d-category-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:.6rem}
-.scope-v2-culture-3d-category-list button{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.7rem .85rem;border:var(--scope-v2-border);border-radius:14px;background:var(--loc-panel-2);color:var(--scope-v2-text);text-align:left;cursor:pointer}
-.scope-v2-culture-3d-category-list button:hover,.scope-v2-culture-3d-category-list button[aria-pressed="true"]{border-color:var(--loc-accent-border);background:var(--loc-gold-surface)}
-.scope-v2-culture-3d-category-list button span,.scope-v2-culture-3d-drilldown-heading span{color:var(--scope-v2-muted);white-space:nowrap}
-.scope-v2-culture-3d-drilldown{display:grid;gap:.7rem}
-.scope-v2-culture-3d-drilldown-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
-.scope-v2-culture-3d-drilldown-heading>div{display:flex;gap:.65rem;align-items:baseline}
-.scope-v2-culture-3d-works-canvas{height:420px;min-height:320px}
-.scope-v2-culture-3d-work-river{display:flex;gap:.85rem;max-height:310px;overflow:auto;overscroll-behavior:contain;padding:1rem .4rem .55rem;position:relative;scroll-snap-type:x proximity}
-.scope-v2-culture-3d-work-river::before{content:'';position:absolute;top:1.45rem;left:.5rem;right:.5rem;border-top:3px solid var(--loc-accent-border);opacity:.72}
-.scope-v2-culture-3d-work{position:relative;display:grid;align-content:start;gap:.45rem;flex:0 0 min(78vw,290px);min-height:205px;padding:1.15rem .85rem .8rem;border:var(--scope-v2-border);border-radius:14px;background:var(--loc-panel);color:var(--scope-v2-text);scroll-snap-align:start}
-.scope-v2-culture-3d-work::before{content:'';position:absolute;top:.08rem;left:1rem;width:.65rem;height:.65rem;border:3px solid var(--loc-accent);border-radius:50%;background:var(--loc-panel)}
-.scope-v2-culture-3d-work time{color:var(--scope-v2-muted);font-size:.82rem}
-.scope-v2-culture-3d-work strong{line-height:1.35}
-.scope-v2-culture-3d-work p{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:5;margin:0;line-height:1.5}
-.scope-v2-culture-3d-work span{color:var(--scope-v2-muted);font-size:.82rem}
-.scope-v2-culture-3d-pages{display:flex;align-items:center;justify-content:center;gap:.8rem}
-.scope-v2-culture-3d-pages button{padding:.45rem .8rem;border:var(--scope-v2-border);border-radius:999px;background:var(--loc-panel);color:var(--scope-v2-text);cursor:pointer}
-.scope-v2-culture-3d-pages button:disabled{opacity:.45;cursor:not-allowed}
-.scope-v2-culture-3d-pages span{min-width:7rem;color:var(--scope-v2-muted);text-align:center}
 @media(max-width:720px){
-  .scope-v2-culture-3d-work-river{max-height:260px}
-  .scope-v2-culture-3d-works-canvas{height:360px;min-height:300px}
 }
 .scope-v2-culture-work-meta-description{margin:.1rem 0;color:var(--scope-v2-muted);white-space:pre-wrap;overflow-wrap:anywhere}
 
@@ -246,7 +206,7 @@
 @media(max-width:600px){.scope-graph-canvas{min-height:440px}.scope-graph-form{grid-template-columns:1fr}}
 
 
-/* Statistics: three functional surfaces. No CSS pseudo-3D workspace. */
+/* Statistics: three functional surfaces. */
 .scope-v2-stat-domain-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:.85rem}
 .scope-v2-stat-domain-heading>div{min-width:0;flex:1 1 28rem}
 .scope-v2-stat-domain-heading h2{margin:.15rem 0 .4rem}
