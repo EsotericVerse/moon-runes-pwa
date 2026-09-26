@@ -5,19 +5,19 @@ LOC（月典／Luna Codex）是一套**模型化語言框架（Modelized Languag
 LunaRunes（月之符文）是 LOC 的第一套 **Symbolic Language／符號式語言**實作；lo3rwang 則是作者個人資料與創作 Scope。
 
 - **現行 Canon：1.0**
-- **Web Build：1.0-RC6**
-- **RC6 基線日期：2026-09-23**
+- **Web Build：1.0-RC7**
+- **RC7 基線日期：2026-09-27**
 - **公開網站：<https://loc.lo3rwang.cc/>**
 - **LunaRunes：<https://lrunes.lo3rwang.cc/>**
 - **作者：Lucas Oscar Wang 政德 / lo3rwang**
 
-完整 RC6 工程基線見 [`docs/RC6.md`](docs/RC6.md)。
+完整 RC7 工程基線見 [`docs/RC7.md`](docs/RC7.md)。
 
 ---
 
 ## Current Architecture
 
-RC6 固定四個主要公開功能：
+RC7 固定四個主要公開功能：
 
 | 功能 | Current 責任 |
 |---|---|
@@ -66,7 +66,7 @@ Current runtime 以 **Neon Postgres** 為 Single Source of Truth。
 
 ## Culture｜Time River
 
-Culture 只顯示 **Time River**。RC6 採用「錨點所見即所得」：
+Culture 只顯示 **Time River**。RC7 延續明確錨點與 Current 時期規則：
 
 - 主要錨點由使用者明確設定。
 - RC 區可作為細部版本／轉折區域。
@@ -168,11 +168,11 @@ UI / Search / Graph / Statistics
 
 ---
 
-## RC6
+## RC7
 
-RC6 是 Current 架構基線，不是單純功能版本。它固定 Scope 邊界、Neon SSOT、Context＝Graph、Culture＝Time River、Statistics＝Charts only、Search＝Scope-aware retrieval、Period 明確錨點／RC 區，以及 metric snapshots。
+RC7 是目前的 Current 架構基線。它延續 Scope 邊界與 Neon SSOT，並固定目前的 2D 視覺層：Context 關係圖、Culture Time River、Statistics 圖表，以及 Scope-aware Search；同時明確區分資料載入中與真正沒有資料。
 
-完整內容見 [`docs/RC6.md`](docs/RC6.md)。
+完整內容見 [`docs/RC7.md`](docs/RC7.md)。RC6 歷史基線仍保留於 [`docs/RC6.md`](docs/RC6.md)。
 
 ---
 
