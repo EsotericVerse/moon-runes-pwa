@@ -57,9 +57,9 @@ export default function ScopeManagementV2(){
     if(!account.user||account.permissionLoading){setPermissionChecked(!account.permissionLoading);return()=>{live=false};}
     account.canManageGlobal().then(value=>{if(live){setIsAdmin(Boolean(value));setPermissionChecked(true)}}).catch(()=>{if(live)setPermissionChecked(true)});
     return()=>{live=false};
-  },[account.user?.id,account.permissionLoading,account.canManageGlobal]);
+  },[account.user?.email,account.permissionLoading,account.canManageGlobal]);
 
-  const queryKey=['scope-admin-graph',account.user?.id];
+  const queryKey=['scope-admin-graph',account.user?.email];
   const dataQuery=useQuery({
     queryKey,
     queryFn:async()=>({nodes:await selectManagedNodes()}),
