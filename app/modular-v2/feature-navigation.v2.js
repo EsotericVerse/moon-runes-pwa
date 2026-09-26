@@ -6,7 +6,7 @@ const NAVIGATION_FIELDS=Object.freeze([
 ]);
 
 const NavigationValue=z.string().trim().min(1).max(240);
-const StatisticsTab=z.enum(['ranking','keywords','charts']);
+const StatisticsTab=z.enum(['ranking','keywords','sources','styles','charts']);
 const StatisticsDomain=z.enum(['text','media']);
 const StatisticsFace=z.enum(['overview','statistics','keywords','textKeywords','mediaKeywords']);
 
