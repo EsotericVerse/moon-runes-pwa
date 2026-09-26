@@ -6,16 +6,35 @@ import {selectNeonRows} from './neon-repository';
 import {createScopeAuthorizer} from './scope-authorization';
 
 async function readManagementPermissions(user){
-  if(!user?.id)return [];
-  const {rows}=await selectNeonRows('silver.manage',{
-    columns:'user_id,email,privileges',
-    filters:[
-      {column:'record_type',operator:'eq',value:'permission'},
-      {column:'user_id',operator:'eq',value:String(user.id)}
-    ],
-    limit:1
-  });
-  return rows;
+  const email=String(user?.email||'').trim();
+  const id=String(user?.id||'').trim();
+  if(!email&&!id)return [];
+
+  if(email){
+    const {rows}=await selectNeonRows('silver.manage',{
+      columns:'user_id,email,privileges',
+      filters:[
+        {column:'record_type',operator:'eq',value:'permission'},
+        {column:'email',operator:'eq',value:email}
+      ],
+      limit:1
+    });
+    if(rows.length)return rows;
+  }
+
+  if(id){
+    const {rows}=await selectNeonRows('silver.manage',{
+      columns:'user_id,email,privileges',
+      filters:[
+        {column:'record_type',operator:'eq',value:'permission'},
+        {column:'user_id',operator:'eq',value:id}
+      ],
+      limit:1
+    });
+    return rows;
+  }
+
+  return [];
 }
 
 const emptyState={loading:true,user:null,grants:[],privileges:[],authorizer:null,canManage:false,permissionLoading:true,error:''};
