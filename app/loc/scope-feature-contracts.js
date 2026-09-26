@@ -29,7 +29,7 @@ export const ScopeContextResponseSchema=z.object({
 }).passthrough();
 
 export const ScopeCultureResponseSchema=z.object({
-  scopeId:z.enum(['loc','runes','lo3rwang']),
+  scopeId:z.enum(['loc','lunarunes','lo3rwang']),
   eras:z.object({eras:z.array(OpenRowSchema).default([])}).default({eras:[]}),
   authorEras:z.object({eras:z.array(OpenRowSchema).default([])}).optional(),
   runeEras:z.object({eras:z.array(OpenRowSchema).default([])}).default({eras:[]}),

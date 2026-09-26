@@ -27,7 +27,7 @@ const VIEWS={
   culture:CultureView,search:SearchView,governance:GovernanceView
 };
 
-const HOME_VIEWS={loc:AboutView,runes:RunesHomeView,lo3rwang:AuthorHomeView,admin:AdminHomeView};
+const HOME_VIEWS={loc:AboutView,lunarunes:RunesHomeView,lo3rwang:AuthorHomeView,admin:AdminHomeView};
 
 function routeState(){
   if(typeof window==='undefined')return {scope:'loc',view:'home'};
@@ -38,7 +38,7 @@ function routeState(){
     if(host==='loc.lo3rwang.cc')return {scope:'loc',view:'admin-redirect'};
     if(host!=='admin.lo3rwang.cc')return {scope,view:'blocked'};
   }
-  if(scope==='runes'&&/^\/lo3rwang(?:\/|$)/.test(pathname))return {scope,view:'blocked'};
+  if(scope==='lunarunes'&&/^\/lo3rwang(?:\/|$)/.test(pathname))return {scope,view:'blocked'};
   const route=pathname.split('/').filter(Boolean).at(-1)||'home';
   return {scope,view:VIEWS[route]?route:'home'};
 }

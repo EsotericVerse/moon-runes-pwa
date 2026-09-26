@@ -66,12 +66,12 @@ export function featureNavigationHref(scopeId,featureId,navigation={}){
 
 export function resolveSearchScope(collectionId,source,row,currentScopeId='loc'){
   const explicit=valueOf(row?.scope_id,row?.scope);
-  if(explicit==='runes'||explicit==='lunarunes')return 'runes';
+  if(explicit==='lunarunes')return 'lunarunes';
   if(explicit==='lo3rwang'||explicit==='author'||explicit==='personal')return 'lo3rwang';
-  if(collectionId==='月之符文')return 'runes';
+  if(collectionId==='月之符文')return 'lunarunes';
   if(collectionId==='lo3rwang')return 'lo3rwang';
   const label=String(source||'')+' '+String(row?.context_type||'')+' '+String(row?.work_type||'');
-  if(/符文|rune|lunarunes/i.test(label))return 'runes';
+  if(/符文|rune|lunarunes/i.test(label))return 'lunarunes';
   if(/作者|歌曲|作品|時期|全文|文化|author|song|work/i.test(label))return 'lo3rwang';
   return currentScopeId;
 }

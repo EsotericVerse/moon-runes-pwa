@@ -107,7 +107,7 @@ function rowForForm(scopeId,draft,anchors){
 export default function CultureTimelineEditor({scopeId='loc',selectedEntryId='',riverCommand=null,onCapabilityChange=null}){
   const account=useNeonAccount();
   const queryClient=useQueryClient();
-  const candidateScopes=scopeId==='loc'?['lo3rwang','runes']:[scopeId];
+  const candidateScopes=scopeId==='loc'?['lo3rwang','lunarunes']:[scopeId];
   const [allowedScopes,setAllowedScopes]=useState([]);
   const [fullScopes,setFullScopes]=useState([]);
   const [dataScope,setDataScope]=useState(candidateScopes[0]||'');

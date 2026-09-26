@@ -20,7 +20,7 @@ function labelOf(item,index){
 }
 function rowsOf(data){
   const authorRows=Array.isArray(data?.authorEras?.eras)?data.authorEras.eras.map(item=>({...item,scope_id:item?.scope_id||'lo3rwang'})):[];
-  const runeRows=Array.isArray(data?.runeEras?.eras)?data.runeEras.eras.map(item=>({...item,scope_id:item?.scope_id||'runes'})):[];
+  const runeRows=Array.isArray(data?.runeEras?.eras)?data.runeEras.eras.map(item=>({...item,scope_id:item?.scope_id||'lunarunes'})):[];
   const rows=authorRows.length&&runeRows.length?[...authorRows,...runeRows]:
     (authorRows.length?authorRows:(runeRows.length?runeRows:(data?.eras?.eras||[])));
   return rows.sort((a,b)=>{
@@ -85,7 +85,7 @@ export default function CultureV2(){
   const [riverCommand,setRiverCommand]=useState(null);
 
   const currentRows=useMemo(()=>{
-    const scopes=scopeId==='loc'?['lo3rwang','runes']:[scopeId].filter(Boolean);
+    const scopes=scopeId==='loc'?['lo3rwang','lunarunes']:[scopeId].filter(Boolean);
     return scopes
       .map(id=>rows.find(item=>String(item?.scope_id||'')===id&&isCurrent(item)))
       .filter(Boolean);

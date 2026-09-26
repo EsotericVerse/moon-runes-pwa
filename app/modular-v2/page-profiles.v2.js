@@ -14,7 +14,7 @@ const SCOPE_FEATURE_SUBTITLES=Object.freeze({
     governance:'宣示原則性與法律規定。管理也在此。',
     search:'從關鍵詞、作品、來源或日期開始，找到時間點，再查看附近的脈絡與作品。'
   }),
-  runes:Object.freeze({
+  lunarunes:Object.freeze({
     context:'人事物的分析關聯表達',
     statics:'排行榜、關鍵詞設定與各項統計圖集中於此。',
     culture:'透過以時間作為分類標準，來找尋各項時期的變化趨勢。',

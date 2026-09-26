@@ -92,7 +92,7 @@ export default function SearchV2(){
   const [relationRows,setRelationRows]=useState([]);
   const [relationBusy,setRelationBusy]=useState(false);
   const [relationError,setRelationError]=useState('');
-  const pageSize=scopeId==='runes'?8:10;
+  const pageSize=scopeId==='lunarunes'?8:10;
   const collection=useMemo(()=>getSearchCollection(scope.searchCollection),[scope.searchCollection]);
 
   async function executeSearch(rawQuery){

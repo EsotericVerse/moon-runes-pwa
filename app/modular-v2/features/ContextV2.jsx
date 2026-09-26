@@ -18,7 +18,7 @@ export default function ContextV2(){
   const {scopeId}=useScopeRuntimeV2();
   const searchParams=useSearchParams();
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
-  const isRuneScope=scopeId==='runes';
+  const isRuneScope=scopeId==='lunarunes';
   const query=useQuery({
     queryKey:isRuneScope?['rune-context-catalog']:['context-graph',scopeId],
     queryFn:()=>isRuneScope?selectRuneContextCatalog():selectScopeContextData(scopeId),

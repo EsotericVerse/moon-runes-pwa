@@ -38,14 +38,13 @@ export const SCOPES_V2=Object.freeze({
     rankingTitle:'總排行榜',
   }),
 
-  runes:Object.freeze({
-    id:'runes',
+  lunarunes:Object.freeze({
+    id:'lunarunes',
     scopeType:'domain',
     domain:'lrunes.lo3rwang.cc',
     aliasName:null,
     label:'月之符文',
     localRoutes:Object.freeze([
-      'algorithm',
       'game',
       'list',
       'duel/one',
@@ -73,8 +72,8 @@ export const SCOPES_V2=Object.freeze({
   lo3rwang:Object.freeze({
     id:'lo3rwang',
     scopeType:'directory',
-    domain:'dlwang.lo3rwang.cc',
-    aliasName:'dlwang',
+    domain:null,
+    aliasName:null,
     label:'作者簡介',
     localRoutes:Object.freeze(['old','work','other']),
     routePatterns:Object.freeze([]),
@@ -127,7 +126,9 @@ function cleanPath(pathname='/'){
 
 const SCOPE_BY_DOMAIN_V2=Object.freeze(
   Object.fromEntries(
-    Object.entries(SCOPES_V2).map(([id,scope])=>[scope.domain,id])
+    Object.entries(SCOPES_V2)
+      .filter(([,scope])=>Boolean(scope.domain))
+      .map(([id,scope])=>[scope.domain,id])
   )
 );
 
@@ -159,7 +160,9 @@ export function getScopeV2(id){
 }
 
 export function scopeOriginV2(scopeId){
-  return `https://${getScopeV2(scopeId).domain}`;
+  const scope=getScopeV2(scopeId);
+  const host=scope.domain||scope.mount?.host;
+  return host?`https://${host}`:'';
 }
 
 export function scopeBaseHrefV2(scopeId){

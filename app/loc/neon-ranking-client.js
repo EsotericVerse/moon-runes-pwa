@@ -28,7 +28,7 @@ function containsFilter(filters,column,value){
 
 function navigationFilters(scopeId,navigation={}){
   const filters=[];
-  if(scopeId==='loc'||scopeId==='runes')containsFilter(filters,'source',navigation.source);
+  if(scopeId==='loc'||scopeId==='lunarunes')containsFilter(filters,'source',navigation.source);
   if(scopeId==='lo3rwang')containsFilter(filters,'term',navigation.source);
   if(scopeId==='lo3rwang'){
     filters.push({column:'period',operator:'eq',value:String(navigation.period||'all')});

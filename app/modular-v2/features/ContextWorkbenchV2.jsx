@@ -13,12 +13,12 @@ const ROOT_NODES=Object.freeze([
     href:''
   },
   {
-    id:'runes',
+    id:'lunarunes',
     title:'月之符文（LunaRunes）',
     position:'符號式語言，籤詩系統。',
     description:'當你迷惘時，給你建議方向。',
     angle:30,
-    href:scopeHrefV2('runes')
+    href:scopeHrefV2('lunarunes')
   },
   {
     id:'lo3rwang',
@@ -88,7 +88,7 @@ export default function ContextWorkbenchV2({scopeId='loc',rows=[]}){
       };
     }
 
-    if(scopeId==='runes'){
+    if(scopeId==='lunarunes'){
       return {
         nodes:[
           {id:'runes-66',label:'符文 66',...circlePoint(-90,0)},

@@ -224,7 +224,7 @@ function SpatialStatistics({scopeId,scope,navigation}){
 }
 
 function SimpleStatistics({scopeId,scope,navigation}){
-  const types=scopeId==='runes'?RUNE_TYPES:TEXT_TYPES;
+  const types=scopeId==='lunarunes'?RUNE_TYPES:TEXT_TYPES;
   const [rankingType,setRankingType]=useState(types[0][0]);
   const [chartType,setChartType]=useState('bar');
   const query=useRanking(scopeId,rankingType,navigation,100);
@@ -236,7 +236,7 @@ function SimpleStatistics({scopeId,scope,navigation}){
     </div>
     {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
     <RankingList rows={query.data||[]}/><RankingChart type={chartType} rows={query.data||[]} height={380}/>
-    {scopeId==='runes'?<KeywordSettingsV2 scopeId={scopeId} databaseScopeId={scope.databaseScopeId||scopeId}/>:null}
+    {scopeId==='lunarunes'?<KeywordSettingsV2 scopeId={scopeId} databaseScopeId={scope.databaseScopeId||scopeId}/>:null}
   </section>;
 }
 

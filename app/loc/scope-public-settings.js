@@ -14,7 +14,7 @@ export async function getScopeContact(scope){
 const SCOPE_REGISTRY_TABLE='silver.loc_scope';
 
 export function databaseScopeId(scope){
-  return scope==='moon-runes'?'runes':scope;
+  return scope==='moon-runes'||scope==='lrunes'?'lunarunes':scope;
 }
 
 export async function getScopeThemeDefault(scope){
