@@ -33,7 +33,6 @@ export const SCOPES_V2=Object.freeze({
     role:Object.freeze({label:'作者介紹',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     homes:Object.freeze([{label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}]),
     searchCollection:'all',
-    dataViews:Object.freeze({context:'api.loc_context_entries',rankings:'api.loc_rankings'}),
     rankingTitle:'總排行榜',
   }),
 
@@ -64,7 +63,6 @@ export const SCOPES_V2=Object.freeze({
       {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
     ]),
     searchCollection:'月之符文',
-    dataViews:Object.freeze({context:'api.runes_context_entries',rankings:'api.runes_rankings'}),
     rankingTitle:'月之符文排行榜',
   }),
 
@@ -84,7 +82,6 @@ export const SCOPES_V2=Object.freeze({
       {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
     ]),
     searchCollection:'lo3rwang',
-    dataViews:Object.freeze({context:'api.lo3rwang_context_entries',rankings:'api.lo3rwang_rankings'}),
     rankingTitle:'作者排行榜'
   }),
 
@@ -104,7 +101,6 @@ export const SCOPES_V2=Object.freeze({
       {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
     ]),
     searchCollection:'治理',
-    dataViews:Object.freeze({context:null,rankings:null}),
     rankingTitle:'排行榜',
   })
 });
@@ -197,8 +193,8 @@ export function featureIdForPathV2(pathname='/'){
   return FEATURES_V2.find(item=>item.path===segment)?.id||null;
 }
 
-export function scopeDataViewV2(scopeId,key){
-  return getScopeV2(scopeId).dataViews?.[key]||null;
+export function scopeDataViewV2(){
+  return null;
 }
 
 export function scopeRoutePathsV2(scopeId){
