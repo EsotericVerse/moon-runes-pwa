@@ -163,7 +163,7 @@ export default function ScopeManagementV2(){
           <form onSubmit={async event=>{event.preventDefault();await run({kind:'grant',payload:{...grantDraft,scopeId:draft.scope_id}},'權限已分配')}} className="scope-graph-grant-form">
             <label>Neon 使用者 ID<input required value={grantDraft.userId} onChange={event=>setGrantDraft(row=>({...row,userId:event.target.value}))}/></label>
             <label>權限<select value={grantDraft.accessLevel} onChange={event=>setGrantDraft(row=>({...row,accessLevel:event.target.value}))}><option value="page_manager">頁面管理</option><option value="scope_manager">Scope 管理</option><option value="privacy_dispute_handler">隱私爭議處理</option></select></label>
-            <label>頁面／功能<input required list="scope-page-features" value={grantDraft.caseId} onChange={event=>setGrantDraft(row=>({...row,caseId:event.target.value}))}/><datalist id="scope-page-features">{MANAGER_FEATURES.map(row=><option key={row.id} value={row.id}>{row.label}</option>)}</datalist></label>
+            <label>管理分工<select required value={grantDraft.caseId} onChange={event=>setGrantDraft(row=>({...row,caseId:event.target.value}))}>{MANAGER_FEATURES.map(row=><option key={row.id} value={row.id}>{row.label}</option>)}</select></label>
             <button type="submit" disabled={mutate.isPending}>分配權限</button>
           </form>
           {currentGrants.length?<ul>{currentGrants.map(row=><li key={row.record_id}>{row.user_id} · {row.access_level} · {row.case_id} <button type="button" disabled={mutate.isPending} onClick={()=>run({kind:'revoke',payload:{userId:row.user_id,scopeId:row.scope_id,accessLevel:row.access_level,caseId:row.case_id}},'權限已撤銷')}>撤銷</button></li>)}</ul>:<p>此 Scope 尚未分配頁面權限。</p>}
