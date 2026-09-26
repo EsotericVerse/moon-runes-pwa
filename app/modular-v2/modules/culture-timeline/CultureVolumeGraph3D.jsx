@@ -22,7 +22,6 @@ export default function CultureVolumeGraph3D({
   const containerRef=useRef(null);
   const pointActionsRef=useRef(new Map());
   const [graphError,setGraphError]=useState('');
-  const [dimension,setDimension]=useState('categories');
   const [tool,setTool]=useState('view');
   const [anchorPair,setAnchorPair]=useState([]);
   const [message,setMessage]=useState('');
@@ -37,41 +36,26 @@ export default function CultureVolumeGraph3D({
   const graphPoints=useMemo(()=>{
     const data=[];
     const actions=new Map();
-    if(dimension==='works'){
-      works.forEach((work,index)=>{
-        const time=Date.parse(work.created_at||work.start_date||'');
-        if(!Number.isFinite(time))return;
-        const id='listed-work:'+String(work.media_id||work.galaxy_id||work.work_id||work.source_id||index);
-        const itemLabel=work.entry_type==='media_metadata'?'多媒體項目':(work.title||work.work_id||'未命名作品');
-        data.push({
-          id,x:time,y:0,z:index+1,style:16,
-          title:escapeHtml(displayDate(work.created_at||work.start_date)+' · '+itemLabel+' · 第 '+(index+1)+' 項')
-        });
-        actions.set(id,{kind:'work-item',work});
-      });
-      pointActionsRef.current=actions;
-      return data;
-    }
-
     for(const periodEntry of periods){
       const period=periodEntry.period;
       if(!period?.start_date)continue;
       const time=Date.parse(period.start_date);
+      if(!Number.isFinite(time))continue;
       for(const source of periodEntry.sources||[]){
         const categoryLabel=source.display_label||source.source_platform;
         const categoryKey=source.category_key||source.source_platform;
         const sourceIndex=sourceNames.indexOf(categoryLabel);
         const id='work:'+String(period.period||period.start_date)+':'+categoryKey;
+        const count=Number(source.item_count)||0;
         const countLabel=source.category_type==='media'?'筆多媒體':'項作品';
         data.push({
-          id,x:time,y:sourceIndex+1,z:Math.max(1,source.item_count),
-          style:Math.max(1,source.item_count),
-          title:escapeHtml((period.display_label||period.title||period.period||'時期')+' · '+categoryLabel+' · '+source.item_count.toLocaleString()+' '+countLabel)
+          id,x:time,y:sourceIndex+1,z:count,style:Math.max(1,count),
+          title:escapeHtml((period.display_label||period.title||period.period||'時期')+' · '+categoryLabel+' · '+count.toLocaleString()+' '+countLabel)
         });
-        actions.set(id,{kind:'work',period,category_key:categoryKey,category_type:source.category_type,source_platform:source.source_platform,item_count:source.item_count});
+        actions.set(id,{kind:'work',period,category_key:categoryKey,category_type:source.category_type,source_platform:source.source_platform,item_count:count});
       }
       const periodId='period:'+String(period.entry_key||period.period||time);
-      data.push({id:periodId,x:time,y:0,z:0.5,style:18,title:escapeHtml((period.display_label||period.title||period.period||'時期')+' · 時期起點')});
+      data.push({id:periodId,x:time,y:0,z:0,style:18,title:escapeHtml((period.display_label||period.title||period.period||'時期')+' · 時期起點')});
       actions.set(periodId,{kind:'period',period});
     }
 
@@ -84,7 +68,7 @@ export default function CultureVolumeGraph3D({
       const lane=row.entry_type==='anchor'?-0.18:row.entry_type==='event'?-0.38:-0.58;
       const id='entry:'+String(row.entry_id||row.id||row.entry_key||x);
       data.push({
-        id,x,y:lane,z:0.7,style:row.entry_type==='anchor'?20:14,
+        id,x,y:lane,z:0,style:row.entry_type==='anchor'?20:14,
         title:escapeHtml((row.entry_type==='anchor'?'定錨點':row.entry_type==='event'?'事件':'風格')+' · '+(row.display_label||row.title||'')+' · '+displayDate(row.start_date||row.date))
       });
       actions.set(id,{kind:'entry',row});
@@ -99,41 +83,37 @@ export default function CultureVolumeGraph3D({
       const last=Math.ceil(max/day)*day;
       for(let time=first;time<=last;time+=stepDays*day){
         const id='date-slot:'+time;
-        data.push({id,x:time,y:-0.02,z:0.08,style:1,title:escapeHtml('定錨日期 · '+displayDate(time))});
+        data.push({id,x:time,y:-0.02,z:0,style:1,title:escapeHtml('定錨日期 · '+displayDate(time))});
         actions.set(id,{kind:'date-slot',date:dateInput(time)});
       }
     }
     pointActionsRef.current=actions;
     return data;
-  },[dimension,works,periods,timelineItems,sourceNames,canEdit,tool]);
+  },[periods,timelineItems,sourceNames,canEdit,tool]);
 
   useEffect(()=>{
     let cancelled=false;
     let graph=null;
     let resizeObserver=null;
     setGraphError('');
-    if(loading||workLoading||!containerRef.current)return()=>{cancelled=true};
-    if(!graphPoints.length){setGraphError(dimension==='works'?'這一頁沒有可放上作品河道的日期。':'目前沒有可呈現的時期或作品來源資料。');return()=>{cancelled=true};}
+    if(loading||!containerRef.current)return()=>{cancelled=true};
+    if(!graphPoints.length){setGraphError('目前沒有可呈現的時期或作品來源資料。');return()=>{cancelled=true};}
     import('vis-graph3d/standalone').then(({Graph3d})=>{
       if(cancelled||!containerRef.current)return;
       const xMin=Math.min(...graphPoints.map(point=>point.x));
       const xMax=Math.max(...graphPoints.map(point=>point.x));
       graph=new Graph3d(containerRef.current,graphPoints,{
-        width:'100%',height:dimension==='works'?'420px':'540px',style:'dot-size',showLegend:false,
+        width:'100%',height:'540px',style:'dot-size',showLegend:false,
         showPerspective:true,showGrid:true,keepAspectRatio:true,
-        xLabel:dimension==='works'?'作品日期':'時期時間',
-        yLabel:dimension==='works'?'作品河道':'來源／時間標記',
-        zLabel:dimension==='works'?'頁內順序':'作品量',
+        xLabel:'時間',yLabel:'來源',zLabel:'作品量',
         xMin,xMax:xMax===xMin?xMax+86400000:xMax,
-        yMin:dimension==='works'?-1:-1,
-        yMax:dimension==='works'?1:Math.max(3,...graphPoints.map(point=>point.y)),
+        yMin:-1,yMax:Math.max(3,...graphPoints.map(point=>point.y)),
         zMin:0,tooltip:true,verticalRatio:0.8,
         xValueLabel:value=>displayDate(value),
-        yValueLabel:value=>dimension==='works'?(selectedCategoryType==='media'?'多媒體項目':'作品'):value===0?'時期／定錨點':value<0?'事件／風格':(sourceNames[Math.round(value)-1]||''),
-        zValueLabel:value=>dimension==='works'?'第 '+Number(value).toLocaleString()+' 項':Number(value).toLocaleString()
+        yValueLabel:value=>value===0?'時期／定錨點':value<0?'事件／風格':(sourceNames[Math.round(value)-1]||''),
+        zValueLabel:value=>Number(value).toLocaleString()
       });
       graph.on('click',point=>{
-        if(dimension==='works')return;
         const action=point?.id?pointActionsRef.current.get(String(point.id)):null;
         if(canEdit&&tool==='anchor'){
           const x=Number(point?.x);
@@ -168,7 +148,6 @@ export default function CultureVolumeGraph3D({
         if(action.kind==='work'){
           onSelectWorkPoint(action);
           onSelectCategory(action.category_key||action.source_platform);
-          setDimension('works');
         }else if(action.kind==='entry')onSelectTimelineEntry(action.row);
         else if(action.kind==='period')onSelectTimelineEntry(action.period);
       });
@@ -178,13 +157,10 @@ export default function CultureVolumeGraph3D({
     return()=>{
       cancelled=true;
       resizeObserver?.disconnect();
-      if(graph){
-        graph.off?.('click');
-        graph.destroy?.();
-      }
+      if(graph){graph.off?.('click');graph.destroy?.();}
       if(containerRef.current)containerRef.current.innerHTML='';
     };
-  },[graphPoints,loading,workLoading,dimension,canEdit,tool,anchorPair,onCommand,onSelectWorkPoint,onSelectCategory,onSelectTimelineEntry,sourceNames,selectedCategoryType]);
+  },[graphPoints,loading,canEdit,tool,anchorPair,onCommand,onSelectWorkPoint,onSelectCategory,onSelectTimelineEntry,sourceNames]);
 
   const startDrag=(event,anchor)=>event.dataTransfer.setData('text/plain',anchor.anchor_id);
   const dropEvent=(event,target)=>{
@@ -211,89 +187,72 @@ export default function CultureVolumeGraph3D({
       setMessage(type==='style'?'已選風格起點，請再選終點。':'已選時期起點，請再選終點。');
     }
   };
-  const returnToCategories=()=>{
-    setDimension('categories');
-    setTool('view');
-    setAnchorPair([]);
-    setMessage('');
-    onSelectCategory('');
-  };
 
   return <section className='scope-v2-card scope-v2-culture-3d'>
     <header className='scope-v2-culture-3d-heading'>
-      <div><h3>{dimension==='works'?(selectedCategoryType==='media'?'多媒體時間河道':'作品時間河道'):'時期 × 來源 × 項目量'}</h3><p>{dimension==='works'?(selectedCategoryType==='media'?'依日期逐筆顯示多媒體 metadata；每筆紀錄各自保留。':'依日期顯示目前分類的分頁作品。'):'拖曳旋轉，滾輪縮放；先選作品或多媒體分類，或在時期河道選取定錨點、事件、時期與風格。'}</p></div>
+      <div><h3>時期 × 來源 × 作品量</h3><p>X＝時間、Y＝來源、Z＝作品量。選取來源只展開同一時間座標下的標題＋日期列表，不再切換成頁內順序的假 3D。</p></div>
       <span>3D</span>
     </header>
-    {dimension==='categories'?<>
-      <section className='scope-v2-culture-3d-categories' aria-label='作品與多媒體分類'>
-        <h4>作品與多媒體分類</h4>
-        {categoryLoading?<p className='scope-v2-status'>載入作品與多媒體分類…</p>:null}
-        {categoryError?<p className='scope-v2-status scope-v2-error'>{categoryError}</p>:null}
-        {!categoryLoading&&!categoryError&&!categories.length?<p className='scope-v2-status'>目前沒有作品或多媒體項目。</p>:null}
-        {categories.length?<div className='scope-v2-culture-3d-category-list'>
-          {categories.map(category=>{
-            const categoryKey=category.category_key||category.source_platform;
-            const isMedia=category.category_type==='media';
-            return <button key={categoryKey} type='button'
-              aria-pressed={selectedCategory===categoryKey}
-              onClick={()=>{onSelectCategory(categoryKey);setDimension('works');setTool('view');setMessage('')}}>
-              <strong>{category.display_label||category.source_platform}</strong><span>{Number(category.item_count||0).toLocaleString()} {isMedia?'筆多媒體':'項作品'}</span>
-            </button>;
-          })}
-        </div>:null}
-      </section>
-      {canEdit?<div className='scope-v2-tabs scope-v2-culture-3d-tools' aria-label='時期河道編輯工具'>
-        <button type='button' aria-pressed={tool==='view'} onClick={()=>{setTool('view');setAnchorPair([]);setMessage('')}}>瀏覽／旋轉</button>
-        <button type='button' aria-pressed={tool==='anchor'} onClick={()=>{setTool('anchor');setAnchorPair([]);setMessage('直接點擊時間長河上的日期位置，建立該日期的定錨點草稿。')}}>在時期河道新增定錨點</button>
-        <button type='button' aria-pressed={tool==='event'} onClick={()=>{setTool('event');setAnchorPair([]);setMessage('點兩個定錨點，或將下方一個定錨點拖到另一個。')}}>建立事件</button>
-        <button type='button' aria-pressed={tool==='period'} onClick={()=>{setTool('period');setAnchorPair([]);setMessage('依序點選時期河道上的前後定錨點。')}}>設定時期前後</button>
-        <button type='button' aria-pressed={tool==='style'} onClick={()=>{setTool('style');setAnchorPair([]);setMessage('依序點選時期河道上的風格起點與終點。')}}>設定風格區間</button>
+    <section className='scope-v2-culture-3d-categories' aria-label='作品與多媒體分類'>
+      <h4>作品與多媒體分類</h4>
+      {categoryLoading?<p className='scope-v2-status'>載入作品與多媒體分類…</p>:null}
+      {categoryError?<p className='scope-v2-status scope-v2-error'>{categoryError}</p>:null}
+      {!categoryLoading&&!categoryError&&!categories.length?<p className='scope-v2-status'>目前沒有作品或多媒體項目。</p>:null}
+      {categories.length?<div className='scope-v2-culture-3d-category-list'>
+        {categories.map(category=>{
+          const categoryKey=category.category_key||category.source_platform;
+          const isMedia=category.category_type==='media';
+          return <button key={categoryKey} type='button'
+            aria-pressed={selectedCategory===categoryKey}
+            onClick={()=>{onSelectCategory(selectedCategory===categoryKey?'':categoryKey);setTool('view');setMessage('')}}>
+            <strong>{category.display_label||category.source_platform}</strong><span>{Number(category.item_count||0).toLocaleString()} {isMedia?'筆多媒體':'項作品'}</span>
+          </button>;
+        })}
       </div>:null}
-      {loading?<p className='scope-v2-status'>載入時期與來源作品量…</p>:null}
-      {error?<p className='scope-v2-status scope-v2-error'>{error}</p>:null}
-      {graphError?<p className='scope-v2-status'>{graphError}</p>:null}
-      <div ref={containerRef} className='scope-v2-culture-3d-canvas' role='img' aria-label='可旋轉的時期、來源與作品量 3D 河道'/>
-      {canEdit&&authorAnchors.length?<div className='scope-v2-culture-3d-anchor-rail' aria-label='時期河道定錨點；拖曳兩點可建立事件'>
-        <strong>時期河道定錨點（拖曳建立事件）</strong>
-        {authorAnchors.map(anchor=><button key={anchor.anchor_id} type='button' draggable
-          onDragStart={event=>startDrag(event,anchor)}
-          onDragOver={event=>event.preventDefault()}
-          onDrop={event=>dropEvent(event,anchor)}
-          onClick={()=>{if(tool==='period'||tool==='style')chooseRange(anchor,tool);}}>
-          {displayDate(anchor.start_date)} · {anchor.title||anchor.anchor_id}
-        </button>)}
-      </div>:null}
-      {message?<p className='scope-v2-status' role='status'>{message}</p>:null}
-    </>:<>
-      <div className='scope-v2-culture-3d-drilldown'>
-        <div className='scope-v2-culture-3d-drilldown-heading'>
-          <div><strong>{selectedCategoryLabel||'作品或多媒體分類'}</strong><span>{(Number(selectedCategoryInfo?.item_count)||0).toLocaleString()} {selectedCategoryType==='media'?'筆多媒體':'項作品'}</span></div>
-          <button type='button' className='scope-v2-pagination-button' onClick={returnToCategories}>返回分類</button>
-        </div>
-        {workLoading?<p className='scope-v2-status'>載入{selectedCategoryType==='media'?'多媒體':'作品'}第 {workPage+1} 頁…</p>:null}
-        {workError?<p className='scope-v2-status scope-v2-error'>{workError}</p>:null}
-        {graphError?<p className='scope-v2-status'>{graphError}</p>:null}
-        <div ref={containerRef} className='scope-v2-culture-3d-canvas scope-v2-culture-3d-works-canvas' role='img' aria-label={selectedCategoryLabel+(selectedCategoryType==='media'?'多媒體':'作品')+'日期河道'}/>
-        <div className='scope-v2-culture-3d-work-river' aria-label={selectedCategoryLabel+(selectedCategoryType==='media'?'多媒體':'作品')+'列表時間河道'}>
-          {works.map((work,index)=>{
-            const isMedia=work.entry_type==='media_metadata';
-            return <article className='scope-v2-culture-3d-work' key={work.media_id||work.galaxy_id||work.work_id||work.source_id||String(work.created_at)+'-'+index}>
-              <time>{work.display_date||displayDate(work.created_at)}</time>
-              <strong>{isMedia?'多媒體項目':work.title||work.work_id||'未命名作品'}</strong>
-              {work.description?<p>{work.description}</p>:null}
-              {isMedia?<p className='scope-v2-culture-work-meta-description'><strong>metadata：</strong>{work.media_metadata_text}</p>:null}
-              {!isMedia&&work.meta_tags?<span>{work.meta_tags}</span>:null}
-              {!isMedia&&(work.url||work.source_ref)?<a href={work.url||work.source_ref} target='_blank' rel='noreferrer'>查看來源</a>:null}
-            </article>;
-          })}
-        </div>
-        {!workLoading&&!workError&&!works.length?<p className='scope-v2-status'>{selectedCategoryType==='media'?'這個時期目前沒有多媒體項目。':'這個分類目前沒有作品。'}</p>:null}
-        <nav className='scope-v2-culture-3d-pages' aria-label={selectedCategoryType==='media'?'多媒體分頁':'作品河道分頁'}>
-          <button type='button' disabled={workPage<=0||workLoading} onClick={()=>onPageChange(Math.max(0,workPage-1))}>上一頁</button>
-          <span>第 {workPage+1} / {Math.max(1,workPageCount)} 頁</span>
-          <button type='button' disabled={workPage+1>=workPageCount||workLoading} onClick={()=>onPageChange(Math.min(workPageCount-1,workPage+1))}>下一頁</button>
-        </nav>
+    </section>
+    {canEdit?<div className='scope-v2-tabs scope-v2-culture-3d-tools' aria-label='時期河道編輯工具'>
+      <button type='button' aria-pressed={tool==='view'} onClick={()=>{setTool('view');setAnchorPair([]);setMessage('')}}>瀏覽／旋轉</button>
+      <button type='button' aria-pressed={tool==='anchor'} onClick={()=>{setTool('anchor');setAnchorPair([]);setMessage('直接點擊時間長河上的日期位置，建立該日期的定錨點草稿。')}}>在時期河道新增定錨點</button>
+      <button type='button' aria-pressed={tool==='event'} onClick={()=>{setTool('event');setAnchorPair([]);setMessage('點兩個定錨點，或將下方一個定錨點拖到另一個。')}}>建立事件</button>
+      <button type='button' aria-pressed={tool==='period'} onClick={()=>{setTool('period');setAnchorPair([]);setMessage('依序點選時期河道上的前後定錨點。')}}>設定時期前後</button>
+      <button type='button' aria-pressed={tool==='style'} onClick={()=>{setTool('style');setAnchorPair([]);setMessage('依序點選時期河道上的風格起點與終點。')}}>設定風格區間</button>
+    </div>:null}
+    {loading?<p className='scope-v2-status'>載入時期與來源作品量…</p>:null}
+    {error?<p className='scope-v2-status scope-v2-error'>{error}</p>:null}
+    {graphError?<p className='scope-v2-status'>{graphError}</p>:null}
+    <div ref={containerRef} className='scope-v2-culture-3d-canvas' role='img' aria-label='X 軸時間、Y 軸來源、Z 軸作品量的 3D 河道'/>
+    {canEdit&&authorAnchors.length?<div className='scope-v2-culture-3d-anchor-rail' aria-label='時期河道定錨點；拖曳兩點可建立事件'>
+      <strong>時期河道定錨點（拖曳建立事件）</strong>
+      {authorAnchors.map(anchor=><button key={anchor.anchor_id} type='button' draggable
+        onDragStart={event=>startDrag(event,anchor)}
+        onDragOver={event=>event.preventDefault()}
+        onDrop={event=>dropEvent(event,anchor)}
+        onClick={()=>{if(tool==='period'||tool==='style')chooseRange(anchor,tool);}}>
+        {displayDate(anchor.start_date)} · {anchor.title||anchor.anchor_id}
+      </button>)}
+    </div>:null}
+    {message?<p className='scope-v2-status' role='status'>{message}</p>:null}
+
+    {selectedCategory?<div className='scope-v2-culture-3d-drilldown'>
+      <div className='scope-v2-culture-3d-drilldown-heading'>
+        <div><strong>{selectedCategoryLabel||'作品或多媒體分類'}</strong><span>{(Number(selectedCategoryInfo?.item_count)||0).toLocaleString()} {selectedCategoryType==='media'?'筆多媒體':'項作品'}</span></div>
+        <button type='button' className='scope-v2-pagination-button' onClick={()=>onSelectCategory('')}>收合列表</button>
       </div>
-    </>}
+      {workLoading?<p className='scope-v2-status'>載入{selectedCategoryType==='media'?'多媒體':'作品'}第 {workPage+1} 頁…</p>:null}
+      {workError?<p className='scope-v2-status scope-v2-error'>{workError}</p>:null}
+      <div className='scope-v2-culture-3d-work-river' aria-label={selectedCategoryLabel+'標題與日期列表'}>
+        {works.map((work,index)=><article className='scope-v2-culture-3d-work' key={work.media_id||work.galaxy_id||work.work_id||work.source_id||String(work.created_at)+'-'+index}>
+          <time>{work.display_date||displayDate(work.created_at)}</time>
+          <strong>{work.title||work.work_id||'未命名作品'}</strong>
+          {(work.url||work.media_link||work.source_ref)?<a href={work.url||work.media_link||work.source_ref} target='_blank' rel='noreferrer'>查看來源</a>:null}
+        </article>)}
+      </div>
+      {!workLoading&&!workError&&!works.length?<p className='scope-v2-status'>{selectedCategoryType==='media'?'這個時期目前沒有多媒體項目。':'這個分類目前沒有作品。'}</p>:null}
+      <nav className='scope-v2-culture-3d-pages' aria-label={selectedCategoryType==='media'?'多媒體分頁':'作品分頁'}>
+        <button type='button' disabled={workPage<=0||workLoading} onClick={()=>onPageChange(Math.max(0,workPage-1))}>上一頁</button>
+        <span>第 {workPage+1} / {Math.max(1,workPageCount)} 頁</span>
+        <button type='button' disabled={workPage+1>=workPageCount||workLoading} onClick={()=>onPageChange(Math.min(workPageCount-1,workPage+1))}>下一頁</button>
+      </nav>
+    </div>:null}
   </section>;
 }
