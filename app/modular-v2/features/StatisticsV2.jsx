@@ -194,20 +194,42 @@ function AuthorStatistics({scopeId,scope,navigation}){
   </section>;
 }
 
-function SimpleStatistics({scopeId,scope,navigation}){
-  const types=scopeId==='lunarunes'?RUNE_TYPES:TEXT_TYPES;
-  const [rankingType,setRankingType]=useState(types[0][0]);
+function RuneStatistics({scopeId,scope,navigation}){
+  const active=STAT_TABS.some(([value])=>value===navigation.statTab)?navigation.statTab:'ranking';
+  const [chartType,setChartType]=useState('bar');
+  const rankingQuery=useRanking(scopeId,'keyword',navigation,10);
+  const chartQuery=useAllRanking(scopeId,'keyword',navigation);
+  return <section className="loc-card scope-v2-feature-card">
+    <StatTabs scopeId={scopeId} navigation={navigation} active={active}/>
+    {active==='ranking'?<section className="scope-v2-stat-section">
+      <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Top 10</p><h2>排行榜</h2><p>目前只顯示關鍵詞暫存統計。</p></div></header>
+      {rankingQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(rankingQuery.error)}</p>:null}
+      <RankingList rows={rankingQuery.data||[]} limit={10}/>
+    </section>:null}
+    {active==='keywords'?<KeywordPanel scopeId={scopeId} scope={scope}/>:null}
+    {active==='charts'?<section className="scope-v2-stat-section">
+      <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Distribution</p><h2>統計圖</h2><p>目前只顯示關鍵詞完整分布；NOR／AND 規則另行測試。</p></div></header>
+      <div className="scope-v2-stat-controls">
+        <label><span>圖形</span><select className="scope-v2-select" value={chartType} onChange={event=>setChartType(event.target.value)}>{CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+      </div>
+      {chartQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(chartQuery.error)}</p>:null}
+      <RankingChart type={chartType} rows={chartQuery.data||[]} height={380}/>
+    </section>:null}
+  </section>;
+}
+
+function SimpleStatistics({scopeId,navigation}){
+  const [rankingType,setRankingType]=useState(TEXT_TYPES[0][0]);
   const [chartType,setChartType]=useState('bar');
   const query=useAllRanking(scopeId,rankingType,navigation);
   return <section className="loc-card scope-v2-feature-card">
-    <p className="loc-eyebrow">Statistics</p><h2>{scopeId==='lunarunes'?'關鍵詞統計':'統計功能'}</h2>
+    <p className="loc-eyebrow">Statistics</p><h2>統計功能</h2>
     <div className="scope-v2-stat-controls">
-      <label><span>分類</span><select className="scope-v2-select" value={rankingType} onChange={event=>setRankingType(event.target.value)}>{types.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+      <label><span>分類</span><select className="scope-v2-select" value={rankingType} onChange={event=>setRankingType(event.target.value)}>{TEXT_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
       <label><span>圖形</span><select className="scope-v2-select" value={chartType} onChange={event=>setChartType(event.target.value)}>{CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
     </div>
     {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
     <RankingList rows={query.data||[]} limit={10}/><RankingChart type={chartType} rows={query.data||[]} height={380}/>
-    {scopeId==='lunarunes'?<KeywordSettingsV2 scopeId={scopeId} databaseScopeId={scope.databaseScopeId||scopeId}/>:null}
   </section>;
 }
 
@@ -218,6 +240,8 @@ export default function StatisticsV2(){
   return <FeaturePageV2 featureId="statics">
     {scopeId==='lo3rwang'
       ?<AuthorStatistics scopeId={scopeId} scope={scope} navigation={navigation}/>
-      :<SimpleStatistics scopeId={scopeId} scope={scope} navigation={navigation}/>}
+      :scopeId==='lunarunes'
+        ?<RuneStatistics scopeId={scopeId} scope={scope} navigation={navigation}/>
+        :<SimpleStatistics scopeId={scopeId} navigation={navigation}/>}
   </FeaturePageV2>;
 }
