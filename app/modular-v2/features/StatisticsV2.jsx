@@ -24,6 +24,10 @@ const STAT_TABS=[['ranking','排行榜'],['keywords','關鍵詞設定'],['charts
 const MEDIA_TERM_LABELS={song:'曲目',reel:'Reels',video:'影片',image:'圖像',audio:'音訊'};
 const TEXT_TERM_LABELS={post:'貼文',reply:'回覆',article:'文章',lyrics:'歌詞',work:'文學作品',outline:'大綱',other:'其他'};
 const TEXT_CATEGORY_LABELS={text:'一般文字',music:'音樂文字',literature:'文學'};
+const SOURCE_TERM_LABELS={
+  threads:'Threads',facebook:'Facebook',suno:'Suno',pixnet:'Pixnet',ptt:'PTT',
+  kkcity:'KKCity',wretch:'Wretch',vocus:'Vocus',instagram:'Instagram',youtube:'YouTube'
+};
 
 function displayTerm(row){
   const type=String(row?.ranking_type||'');
@@ -31,6 +35,7 @@ function displayTerm(row){
   if(type==='meta_type')return MEDIA_TERM_LABELS[term.toLowerCase()]||term;
   if(type==='text_type')return TEXT_TERM_LABELS[term.toLowerCase()]||term;
   if(type==='text_category')return TEXT_CATEGORY_LABELS[term.toLowerCase()]||term;
+  if(type==='text_source'||type==='meta_source')return SOURCE_TERM_LABELS[term.toLowerCase()]||term;
   return term;
 }
 
