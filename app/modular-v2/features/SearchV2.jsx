@@ -29,12 +29,12 @@ function hasPrivilege(privileges,scopeId){
 function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
   const text=rowText(row);
   if(!norm(text).includes(norm(q)))return null;
-  const title=row.title||row.name||row.display_title||row.label||row.rune_name||row.context_name||row.work_id||row.song_id||row.id||source;
+  const title=row.title||row.name||row.display_title||row.label||row.rune_name||row.context_name||row.song_id||row.galaxy_id||row.id||source;
   const bodyField=['summary','display_text','content','style_tags','meta_tags','description','interpretation','ai_summary','retrieval_text','text'].find(field=>typeof row[field]==='string'&&row[field].trim())||'';
   const body=bodyField?row[bodyField]:text;
   const navigation=buildSearchNavigation(collectionId,source,row,q,scopeId);
   if(row.scope_id)navigation.targetScope=row.scope_id;
-  const identity=row.media_id||row.galaxy_id||row.work_id||row.song_id||row.rune_id||row.id;
+  const identity=row.media_id||row.galaxy_id||row.song_id||row.rune_id||row.id;
   const scope=row.scope_id||scopeId;
   const resourceType=row.galaxy_id?'galaxy':row.media_id?'galaxy_media':'';
   const resourceId=row.galaxy_id||row.media_id||'';
@@ -100,11 +100,6 @@ export default function SearchV2(){
       const visibilityMap=new Map();
       for(const item of visibilityRows){
         visibilityMap.set(resultKey(item.scope,item.resource_type,item.resource_id),item);
-        if(item.resource_type==='work'){
-          const legacyId=String(item.resource_id||'');
-          const galaxyId=legacyId.startsWith('work:')?legacyId:'work:'+legacyId;
-          visibilityMap.set(resultKey(item.scope,'galaxy',galaxyId),item);
-        }
       }
       visibilityRef.current=visibilityMap;
       const consumed=matchedRowsRef.current.slice(0,pageSize);
