@@ -14,8 +14,6 @@ import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import KeywordSettingsV2 from './KeywordSettingsV2';
 import MediaMetaSettingsV2 from './MediaMetaSettingsV2';
 import FeaturePageV2 from '../FeaturePageV2';
-import LanguageSpaceWorkspace from '../modules/language-space/LanguageSpaceWorkspace';
-import {mergeLanguageItems,rankingItems} from '../modules/language-space/language-space-model';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const CHART_TYPES=[['bar','長條圖'],['line','折線圖'],['pie','圓餅圖']];
@@ -197,22 +195,12 @@ function MediaKeywordFace({scope,go}){
 
 function SpatialStatistics({scopeId,scope,navigation}){
   const router=useRouter();
-  const textSpaceQuery=useRanking(scopeId,'text_type',navigation,100);
-  const mediaSpaceQuery=useRanking(scopeId,'meta_style',navigation,100);
-  const languageSpaceItems=useMemo(()=>mergeLanguageItems(
-    rankingItems(textSpaceQuery.data||[],'text'),
-    rankingItems(mediaSpaceQuery.data||[],'media')
-  ),[textSpaceQuery.data,mediaSpaceQuery.data]);
   const legacyFace=navigation.statTab==='charts'?'statistics':navigation.statTab==='keywords'?'keywords':'overview';
   const face=navigation.statFace||legacyFace;
   function go(nextFace){
     router.push(featureNavigationHref(scopeId,'statics',{...navigation,statFace:nextFace}));
   }
-  return <>
-    <section className="loc-card scope-v2-feature-card scope-v2-feature-card-wide">
-      <LanguageSpaceWorkspace items={languageSpaceItems} title="文字與多媒體的立體語言空間"/>
-    </section>
-    <section className="loc-card scope-v2-feature-card">
+  return <section className="loc-card scope-v2-feature-card">
     <div className="scope-v2-stat-space" data-face={face}>
       <div className="scope-v2-stat-cube" data-face={face}>
         <section className="scope-v2-stat-cube-face scope-v2-stat-cube-front" aria-hidden={face!=='overview'}>
@@ -232,8 +220,7 @@ function SpatialStatistics({scopeId,scope,navigation}){
         </section>
       </div>
     </div>
-  </section>
-  </>;
+  </section>;
 }
 
 function SimpleStatistics({scopeId,scope,navigation}){
