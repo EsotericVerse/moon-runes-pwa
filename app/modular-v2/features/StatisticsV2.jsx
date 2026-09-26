@@ -37,9 +37,15 @@ const STATISTICS_TABS=Object.freeze([
 const TEXT_TYPES=Object.freeze(['text_type','text_category','text_source']);
 const MEDIA_TYPES=Object.freeze(['meta_style','meta_type','meta_source']);
 const MEDIA_TERM_LABELS=Object.freeze({song:'曲目',reel:'Reels',video:'影片',image:'圖像',audio:'音訊'});
+const TEXT_TERM_LABELS=Object.freeze({post:'貼文',reply:'回覆',article:'文章',lyrics:'歌詞',work:'文學作品',outline:'大綱',other:'其他'});
+const TEXT_CATEGORY_LABELS=Object.freeze({text:'一般文字',music:'音樂文字',literature:'文學'});
 function displayTerm(row){
-  if(row?.ranking_type==='meta_type')return MEDIA_TERM_LABELS[String(row.term||'').toLowerCase()]||row.term;
-  return row?.term;
+  const type=String(row?.ranking_type||'');
+  const term=String(row?.term||'');
+  if(type==='meta_type')return MEDIA_TERM_LABELS[term.toLowerCase()]||term;
+  if(type==='text_type')return TEXT_TERM_LABELS[term.toLowerCase()]||term;
+  if(type==='text_category')return TEXT_CATEGORY_LABELS[term.toLowerCase()]||term;
+  return term;
 }
 
 function RankingChart({type,rows}){
@@ -149,13 +155,13 @@ export default function StatisticsV2(){
       <p className="loc-eyebrow">Statistics</p>
       <div className="scope-v2-stat-domain-heading">
         <div>
-          <h2>{statDomain==='media'?'Meta Tag 統計':'文字統計'}</h2>
+          <h2>{statDomain==='media'?'多媒體 Meta Tag 統計':'文字統計'}</h2>
           <p>{statDomain==='media'
-            ?'多媒體獨立統計：分組為多媒體，小分類包含曲目、Reels、影片、圖像等；Meta Tag 直接來自媒體資料。'
+            ?'分組：多媒體。小分類包含曲目、Reels、影片、圖像等；Meta Tag 直接來自媒體資料，與文字關鍵詞完全分開。'
             :'文字獨立統計：只讀 Galaxy 文字資料；歌詞、章節、貼文、文章等文字內容在此統計。'}</p>
         </div>
         {supportsMediaDomain?<button type="button" className="scope-v2-stat-flip-button" onClick={()=>switchDomain(statDomain==='media'?'text':'media')}>
-          ↻ 轉到{statDomain==='media'?'文字統計':'Meta Tag 統計'}
+          ↻ 轉到{statDomain==='media'?'文字統計':'多媒體 Meta Tag 統計'}
         </button>:null}
       </div>
       <nav className="scope-v2-tabs scope-v2-stat-tabs" aria-label="統計功能">
