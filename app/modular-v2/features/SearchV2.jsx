@@ -99,7 +99,15 @@ export default function SearchV2(){
         const visibility=await selectNeonRows('silver.resource_visibility',{columns:'scope,resource_type,resource_id,visibility,projection_level,statistics_included,show_link,show_source',limit:5000});
         visibilityRows=visibility.rows;
       }catch{}
-      const visibilityMap=new Map(visibilityRows.map(item=>[resultKey(item.scope,item.resource_type,item.resource_id),item]));
+      const visibilityMap=new Map();
+      for(const item of visibilityRows){
+        visibilityMap.set(resultKey(item.scope,item.resource_type,item.resource_id),item);
+        if(item.resource_type==='work'){
+          const legacyId=String(item.resource_id||'');
+          const galaxyId=legacyId.startsWith('work:')?legacyId:'work:'+legacyId;
+          visibilityMap.set(resultKey(item.scope,'galaxy',galaxyId),item);
+        }
+      }
       visibilityRef.current=visibilityMap;
       const consumed=matchedRowsRef.current.slice(0,pageSize);
       offsetRef.current=consumed.length;
