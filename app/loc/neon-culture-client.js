@@ -55,14 +55,14 @@ function timelineItems(rows){
     `${row.scope_id}:${row.anchor_id}`,
     row
   ]));
-  return all.filter(row=>['anchor','event','period','period_legacy','style'].includes(row.entry_type)).map(row=>{
+  return all.filter(row=>['anchor','event','period','period_style'].includes(row.entry_type)).map(row=>{
     const before=anchors.get(`${row.scope_id}:${row.before_id}`);
     const after=anchors.get(`${row.scope_id}:${row.after_id}`);
     const startAnchor=anchors.get(`${row.scope_id}:${row.start_anchor_id}`);
     const endAnchor=anchors.get(`${row.scope_id}:${row.end_anchor_id}`);
     const start=row.start_date||startAnchor?.start_date||before?.start_date||after?.start_date||null;
     const end=row.end_date||endAnchor?.start_date||null;
-    const kindLabel={anchor:'定錨點',event:'事件',period:'時期',period_legacy:'歷史時期',style:'風格'}[row.entry_type];
+    const kindLabel={anchor:'定錨點',event:'事件',period:'時期',period_style:'時期風格'}[row.entry_type];
     return {
       ...row,
       id:`${row.scope_id}:${row.entry_key}`,
@@ -70,7 +70,7 @@ function timelineItems(rows){
       start_date:start,
       end_date:end,
       date:start,
-      display_label:row.entry_type==='style'?(row.entry_name||row.title):row.title,
+      display_label:row.entry_type==='period_style'?(row.entry_name||row.title):row.title,
       group_label:`${row.scope_id} · ${kindLabel}`
     };
   }).filter(row=>row.start_date).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date)));
@@ -84,7 +84,7 @@ export async function selectScopeCultureData(scopeId){
     columns:TIMELINE_COLUMNS,
     filters:[
       {column:'scope_id',operator:'in',value:scopes},
-      {column:'entry_type',operator:'in',value:['period','period_legacy','event','anchor','style']}
+      {column:'entry_type',operator:'in',value:['period','event','anchor','period_style']}
     ],
     orders:[{column:'start_date',ascending:true}],
     limit:5000
