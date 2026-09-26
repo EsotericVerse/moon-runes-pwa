@@ -31,7 +31,7 @@ function canonicalWorkIdentity(row){
   return {workId,title};
 }
 function appendStyleTag(value,tag){
-  const tags=String(value||'').split(',').map(item=>item.trim()).filter(Boolean).filter(item=>item!=='風格未知');
+  const tags=String(value||'').split(',').map(item=>item.trim()).filter(Boolean);
   if(!tags.includes(tag))tags.push(tag);
   return tags.join(', ')||tag;
 }
