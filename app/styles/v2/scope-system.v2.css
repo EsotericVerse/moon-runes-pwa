@@ -112,6 +112,12 @@
 .loc-keyword-graph3d h3,.loc-keyword-graph3d p{margin:.15rem 0}
 .loc-keyword-graph3d-canvas{width:100%;height:480px;min-height:360px;overflow:hidden}
 
+.loc-keyword-graph2d{display:grid;gap:.6rem;margin:1rem 0;padding:1rem;border:var(--scope-v2-border);border-radius:var(--scope-v2-radius);background:var(--loc-panel)}
+.loc-keyword-graph2d h3,.loc-keyword-graph2d p{margin:.15rem 0}
+.loc-keyword-graph2d-canvas{width:100%;height:min(72vh,680px);min-height:460px;overflow:hidden;border:var(--scope-v2-border);border-radius:14px;background:var(--loc-panel)}
+.loc-keyword-graph2d-canvas .vis-network{outline:none}
+@media(max-width:720px){.loc-keyword-graph2d-canvas{height:560px;min-height:420px}}
+
 
 /* Shared feature heading contract: eyebrow, title + right-side subtitle, description below. */
 .scope-v2-hero>.home-title-row{
