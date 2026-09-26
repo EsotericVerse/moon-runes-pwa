@@ -1,6 +1,6 @@
 import {z} from 'zod';
 
-const PrivilegeSchema=z.string().trim().min(1).regex(/^[A-Za-z][A-Za-z0-9_.-]*$/,'Invalid privilege');
+const PrivilegeSchema=z.string().trim().min(1).regex(/^(admin|scope:[A-Za-z][A-Za-z0-9_.-]{0,62})$/,'Invalid privilege');
 
 const PermissionRowSchema=z.object({
   user_id:z.string().trim().min(1).optional(),
@@ -8,12 +8,6 @@ const PermissionRowSchema=z.object({
   privileges:z.array(PrivilegeSchema).min(1)
 }).passthrough();
 
-const PAGE_PERMISSION_GROUP=Object.freeze({
-  context:'statics',search:'statics',statics:'statics',
-  period:'culture',event:'culture',anchor:'culture',culture:'culture',
-  media:'media'
-});
-const permissionGroup=value=>PAGE_PERMISSION_GROUP[String(value||'').trim()]||String(value||'').trim();
 const normalizeScopeId=value=>String(value||'').trim();
 
 function normalizePrivileges(rawRows){
@@ -41,13 +35,7 @@ export async function createScopeAuthorizer(rawRows){
     canManageGlobal:async()=>hasAdmin(),
     canManageScope:async scopeId=>{
       const scope=normalizeScopeId(scopeId);
-      return hasAdmin()||Boolean(scope&&privileges.includes(scope));
-    },
-    canManagePage:async(scopeId,pageId)=>{
-      const scope=normalizeScopeId(scopeId);
-      const page=permissionGroup(pageId);
-      if(!scope||!page)return false;
-      return hasAdmin()||privileges.includes(scope)||privileges.includes(`${scope}_${page}`);
+      return hasAdmin()||Boolean(scope&&privileges.includes(`scope:${scope}`));
     }
   });
 }
