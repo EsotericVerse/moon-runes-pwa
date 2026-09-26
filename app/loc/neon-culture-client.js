@@ -5,6 +5,14 @@ import {callNeonRpc,selectNeonRows} from './neon-repository';
 import {decodeCultureText,formatCultureDateTime} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
 
 const MEDIA_METADATA_CATEGORY_KEY='media_metadata';
+const SOURCE_LABELS={
+  threads:'Threads',facebook:'Facebook',suno:'Suno',pixnet:'Pixnet',ptt:'PTT',
+  kkcity:'KKCity',wretch:'Wretch',vocus:'Vocus',instagram:'Instagram',youtube:'YouTube'
+};
+function sourceLabel(value){
+  const source=String(value||'').trim();
+  return SOURCE_LABELS[source.toLowerCase()]||source;
+}
 
 const TIMELINE_COLUMNS='scope_id,entry_key,entry_type,title,summary,start_date,end_date,era_id,period,entry_name,order_no,status,anchor_id,start_anchor_id,end_anchor_id,before_id,after_id,date_status,entry_scope,visibility,event_id,year_value,rune_count,source_id,source,note';
 
@@ -161,7 +169,7 @@ export async function selectAuthorPeriodWorkSources({startDate,endDate=null}={})
       category_key:`source:${source}`,
       category_type:'work',
       source_platform:source,
-      display_label:source,
+      display_label:sourceLabel(source),
       item_count:Number(row.item_count)||0
     };
   });
@@ -244,7 +252,7 @@ export async function selectAuthorPeriodWorks({
         entry_id:row.galaxy_id,
         title:decodeCultureText(row.title||'').trim()||content.trim().slice(0,72)||row.source_platform||row.galaxy_id,
         description:content.trim().slice(0,400),
-        group_label:row.source_platform||'未標示來源',
+        group_label:sourceLabel(row.source_platform)||'未標示來源',
         scope_id:'lo3rwang'
       };
     }),
