@@ -1,4 +1,5 @@
 import ModelArchitectureExplorer from './ModelArchitectureExplorer';
+import ScopeArchitecture3D from './ScopeArchitecture3D';
 import {featureHrefV2,scopeHrefV2} from '../../modular-v2/scope-registry.v2';
 
 const RUNES_LINKS=Object.freeze({
@@ -122,8 +123,13 @@ export default function AboutView(){
     </section>
 
     <section className="loc-card home-framework" id="framework-map">
-      <div className="home-section-heading"><p className="loc-eyebrow">LOC Model Architecture</p><h2>LOC模型架構</h2><p className="loc-subtitle">LOC八個功能架構依資料、處理與組合關係協作。</p></div>
-      <div className="home-framework-stage" aria-label="LOC 八個功能模組架構"><ModelArchitectureExplorer modules={MODEL_MODULES} /><div className="model-relationship" aria-label="架構關係"><span>語彙與表達資料</span><b aria-hidden="true">→</b><span>脈絡與方法處理</span><b aria-hidden="true">↔</b><span>演算法與模組組合</span><b aria-hidden="true">→</b><span>文化時間演變</span></div></div>
+      <div className="home-section-heading"><p className="loc-eyebrow">LOC 3D Architecture</p><h2>LOC 語言建築</h2><p className="loc-subtitle">一個 Scope 是一個立方體；Scope 累積成建築，由 Admin 統合。進入 Scope 後，以「時」與「空」兩個展示層觀看與管理。</p></div>
+      <ScopeArchitecture3D />
+      <details className="home-framework-stage" style={{marginTop:'1rem'}}>
+        <summary>查看原模型模組關係</summary>
+        <ModelArchitectureExplorer modules={MODEL_MODULES} />
+        <div className="model-relationship" aria-label="架構關係"><span>語彙與表達資料</span><b aria-hidden="true">→</b><span>脈絡與方法處理</span><b aria-hidden="true">↔</b><span>演算法與模組組合</span><b aria-hidden="true">→</b><span>文化時間演變</span></div>
+      </details>
     </section>
 
     <section className="loc-card home-copy-block home-skills" id="skills">
