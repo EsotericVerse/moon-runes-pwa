@@ -15,12 +15,12 @@ export default function HistoryClient({defaultKind='all'}){
   const [status,setStatus]=useState('');
 
   async function reload(){
-    if(!account.user||!account.canManage){setRecords([]);return;}
+    if(!account.user||!account.canManageScopeSync('lrunes')){setRecords([]);return;}
     const rows=await listNeonRecords('rune-draw');
     setRecords(rows.sort(newest));
   }
 
-  useEffect(()=>{reload().catch(error=>setStatus(String(error?.message||error)))},[account.user?.email,account.canManage]);
+  useEffect(()=>{reload().catch(error=>setStatus(String(error?.message||error)))},[account.user?.email,account.canManageScopeSync('lrunes')]);
   useEffect(()=>setPage(1),[kind]);
 
   const filtered=useMemo(()=>kind==='all'?records:records.filter(row=>row.record_kind===kind),[records,kind]);
@@ -40,7 +40,7 @@ export default function HistoryClient({defaultKind='all'}){
       <p>每日抽籤紀錄。藉由此來查趨勢。</p>
     </header>
     <section className="loc-card">
-      {account.canManage&&<div className="loc-result-meta"><span>{account.user?.email||account.user?.name}</span></div>}
+      {account.canManageScopeSync('lrunes')&&<div className="loc-result-meta"><span>{account.user?.email||account.user?.name}</span></div>}
       <div className="loc-filter-row">
         <select value={kind} onChange={e=>setKind(e.target.value)}>
           <option value="all">全部</option>
@@ -52,8 +52,8 @@ export default function HistoryClient({defaultKind='all'}){
       {status&&<p className="loc-status">{status}</p>}
     </section>
     <div className="loc-context-list">
-      {!account.canManage&&<section className="loc-card"><p className="loc-status">管理模式未開啟。</p></section>}
-      {account.canManage&&!shown.length&&<section className="loc-card"><p className="loc-status">目前沒有抽牌紀錄。</p></section>}
+      {!account.canManageScopeSync('lrunes')&&<section className="loc-card"><p className="loc-status">管理模式未開啟。</p></section>}
+      {account.canManageScopeSync('lrunes')&&!shown.length&&<section className="loc-card"><p className="loc-status">目前沒有抽牌紀錄。</p></section>}
       {shown.map(record=><article className="loc-card" key={record.id}>
         <div className="loc-result-meta"><span>{record.mode_label||record.mode||record.record_kind}</span><span>{String(record.created_at||'').replace('T',' ').slice(0,16)}</span></div>
         <h2>{(record.cards||[]).map(card=>`${card.position}・${card.name}・${card.direction}`).join(' ｜ ')}</h2>
