@@ -19,7 +19,7 @@ import FeaturePageV2 from '../FeaturePageV2';
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const CHART_TYPES=[['bar','長條圖'],['line','折線圖'],['pie','圓餅圖']];
 const STAT_TABS=[['ranking','排行榜'],['keywords','關鍵詞設定'],['sources','作品來源設定'],['styles','風格設定'],['charts','統計圖']];
-const STAT_TYPE_LABELS=Object.freeze({keyword:'關鍵詞',source:'作品來源'});
+const STAT_TYPE_LABELS=Object.freeze({keyword:'關鍵詞',source:'作品來源',style:'風格標籤',style_group:'風格大群組'});
 function displayTerm(row){
   return String(row?.term||'');
 }
