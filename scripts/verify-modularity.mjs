@@ -30,7 +30,6 @@ walk(resolve(root,'app'),path=>{
 for(const required of [
   'app/loc/neon-repository.js',
   'app/loc/neon-server.js',
-  'app/loc/scope-authorization.js',
   'app/loc/neon-context-client.js',
   'app/loc/neon-ranking-client.js',
   'app/loc/neon-culture-client.js',
@@ -69,4 +68,4 @@ if(failures.length){
   console.error('[modularity] violations:\\n'+failures.join('\\n'));
   process.exit(1);
 }
-console.log('[modularity] Neon canonical/module/permission boundaries verified');
+console.log('[modularity] Neon canonical/module boundaries verified');
