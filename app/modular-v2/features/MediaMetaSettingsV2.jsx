@@ -5,7 +5,7 @@ import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {selectScopeRankingPage} from '../../loc/neon-ranking-client';
 import {selectNeonRows,updateNeonRows} from '../../loc/neon-repository';
 import {useNeonAccount} from '../../loc/use-neon-account';
-import {featureDataErrorMessage} from '../feature-data-state.v2';
+import {FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 
 const MEDIA_TYPE_LABELS={song:'曲目',reel:'Reels',video:'影片',image:'圖像',audio:'音訊'};
 
@@ -77,7 +77,7 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
     <section className="scope-v2-inline-card">
       <h4>多媒體 Meta Tag</h4>
       <p className="scope-v2-culture-period-description">直接使用 galaxy_media.style_tags；不共用文字關鍵詞詞庫。</p>
-      {tagQuery.isPending?<p className="scope-v2-status">讀取 Meta Tag…</p>:null}
+      {tagQuery.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
       {tagQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(tagQuery.error)}</p>:null}
       <div className="scope-v2-media-tag-cloud">
         {tags.map(row=><button type="button" key={row.ranking_key} aria-pressed={selectedTag===row.term} onClick={()=>setSelectedTag(String(row.term))}>
@@ -88,7 +88,7 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
 
     {selectedTag?<section className="scope-v2-inline-card">
       <h4>{selectedTag}</h4>
-      {mediaQuery.isPending?<p className="scope-v2-status">讀取媒體…</p>:null}
+      {mediaQuery.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
       {mediaQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(mediaQuery.error)}</p>:null}
       <div className="scope-v2-media-meta-list">
         {(mediaQuery.data||[]).map(row=><article key={row.media_id}>
