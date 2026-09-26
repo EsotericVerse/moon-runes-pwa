@@ -119,9 +119,9 @@ function GovernanceHome(){
     featureId="governance"
     subtitle="基本理念與法律。"
   >
-    <ManagementLogin/>
     <PrinciplesPanel/>
     <LawPanel/>
+    <ManagementLogin/>
   </FeaturePageV2>;
 }
 
