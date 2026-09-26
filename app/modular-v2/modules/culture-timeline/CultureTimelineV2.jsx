@@ -55,7 +55,7 @@ function riverPath(startX,endX,yAt,steps=48){
   return points.join(' ');
 }
 
-function CurrentCultureRivers({rows}){
+function CurrentCultureRivers({rows,canAddAnchor=false,onAddAnchor=null}){
   const personal=[...rows].filter(row=>row.scopeId==='lo3rwang').sort((a,b)=>Date.parse(a.start)-Date.parse(b.start)||(a.entryType==='period'?-1:0));
   const runes=[...rows].filter(row=>row.scopeId==='runes').sort((a,b)=>Date.parse(a.start)-Date.parse(b.start));
   const personalStart=personal.find(row=>row.entryType==='period'&&row.status.trim().toLowerCase()==='current')||personal.find(row=>row.status.trim().toLowerCase()==='current');
@@ -99,6 +99,16 @@ function CurrentCultureRivers({rows}){
   const lastDate=dateLabel(Math.max(...validTimes));
   const personalTitle=personalStart.content||'Current 個人時期';
   const runeTitle=runeStart.content||'符文66';
+  const chooseDate=event=>{
+    if(!canAddAnchor||!onAddAnchor)return;
+    const svg=event.currentTarget.ownerSVGElement;
+    if(!svg)return;
+    const rect=svg.getBoundingClientRect();
+    const x=(event.clientX-rect.left)*1200/Math.max(1,rect.width);
+    const clamped=Math.max(left,Math.min(right,x));
+    const time=domainStart+(clamped-left)/(right-left)*(domainEnd-domainStart);
+    onAddAnchor(new Date(time).toISOString().slice(0,10));
+  };
 
   return <section className='scope-v2-current-rivers'>
     <div className='scope-v2-current-rivers-canvas' style={{overflowX:'auto',margin:'1rem 0 1.25rem'}}>
@@ -113,6 +123,7 @@ function CurrentCultureRivers({rows}){
         <path d={authorPath} fill='none' stroke={authorColor} strokeWidth='13' strokeLinecap='round' strokeLinejoin='round'/>
         <path d={runePath} fill='none' stroke={runeColor} strokeWidth='13' strokeLinecap='round' strokeLinejoin='round'/>
         <path d={authorPath} fill='none' stroke='var(--loc-panel,#fff)' strokeWidth='2' strokeLinecap='round' opacity='.7'/>
+        {canAddAnchor?<path d={authorPath} fill='none' stroke='transparent' strokeWidth='38' strokeLinecap='round' pointerEvents='stroke' style={{cursor:'crosshair'}} onClick={chooseDate}><title>點擊日期新增定錨點</title></path>:null}
         <path d={runePath} fill='none' stroke='var(--loc-panel,#fff)' strokeWidth='2' strokeLinecap='round' opacity='.7'/>
         <circle cx={personalX} cy={centerY} r='21' fill='none' stroke='var(--loc-text,#111)' strokeWidth='3'/>
         <circle cx={personalX} cy={centerY} r='5' fill='var(--loc-accent,#2878c9)'/>
@@ -142,9 +153,10 @@ function CurrentCultureRivers({rows}){
   </section>;
 }
 
-export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),focus={},mode='period',onSelect=null}){
+export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),focus={},mode='period',onSelect=null,canAddAnchor=false,onAddAnchor=null}){
   const containerRef=useRef(null);
   const onSelectRef=useRef(onSelect);
+  const onAddAnchorRef=useRef(onAddAnchor);
   const [ready,setReady]=useState(false);
   const [chartError,setChartError]=useState(false);
   const rows=useMemo(()=>timelineRows(items,labelOf,focus),[items,labelOf,focus]);
@@ -153,6 +165,7 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
   const timelineHeight=mode==='overview'?Math.max(640,Math.min(1400,440+rows.length*18)):640;
 
   useEffect(()=>{onSelectRef.current=onSelect},[onSelect]);
+  useEffect(()=>{onAddAnchorRef.current=onAddAnchor},[onAddAnchor]);
 
   useEffect(()=>{
     let cancelled=false;
@@ -182,13 +195,17 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
         const selectedId=selectedItems[0];
         onSelectRef.current?.(rows.find(row=>row.id===selectedId)||null);
       });
+      instance.on('click',properties=>{
+        if(!canAddAnchor||!properties?.time||!['background','axis'].includes(String(properties.what||'')))return;
+        onAddAnchorRef.current?.(new Date(properties.time).toISOString().slice(0,10));
+      });
       instance.fit({animation:{duration:180,easingFunction:'easeInOutQuad'}});
       setReady(true);
     }).catch(()=>{if(!cancelled){setReady(false);setChartError(true)}});
     return()=>{cancelled=true;if(instance)instance.destroy();};
-  },[rows,timelineHeight]);
+  },[rows,timelineHeight,canAddAnchor]);
 
-  if(currentConfluence)return <CurrentCultureRivers rows={rows}/>;
+  if(currentConfluence)return <CurrentCultureRivers rows={rows} canAddAnchor={canAddAnchor} onAddAnchor={onAddAnchor}/>;
   if(!rows.length)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><div className='scope-period-timeline scope-period-timeline-empty-line' role='region' aria-label='時間長河'/><p>{mode==='overview'?'尚未設定時期，目前以「所有」總覽顯示。':'目前時期尚無可顯示的時間資料。'}</p></div>;
 
   return <div className='scope-period-timeline-wrap'>
