@@ -16,7 +16,7 @@ const PAGE_PERMISSION_GROUP=Object.freeze({
 const permissionGroup=value=>PAGE_PERMISSION_GROUP[String(value||'').trim()]||String(value||'').trim();
 const normalizeScopeId=value=>{
   const scope=String(value||'').trim();
-  return scope==='lunarunes'?'lrunes':scope;
+  return scope==='lrunes'?'lrunes':scope;
 };
 
 function normalizePrivileges(rawRows){
