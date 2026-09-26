@@ -4,7 +4,7 @@ import {deleteNeonRows,insertNeonRows,selectNeonRows,updateNeonRows} from './neo
 
 export const MANAGE_TABLE='silver.manage';
 const ID_PATTERN=/^[A-Za-z][A-Za-z0-9_.-]{0,62}$/;
-const PRIVILEGE_PATTERN=/^(admin|scope:[A-Za-z][A-Za-z0-9_.-]{0,62}|page:[A-Za-z][A-Za-z0-9_.-]{0,62}:(culture|statics|media))$/;
+const PRIVILEGE_PATTERN=/^(admin|blacklist|scope:[A-Za-z][A-Za-z0-9_.-]{0,62}|page:[A-Za-z][A-Za-z0-9_.-]{0,62}:(culture|statics|media))$/;
 
 function safeId(value,label='ID'){
   const id=String(value||'').trim();
