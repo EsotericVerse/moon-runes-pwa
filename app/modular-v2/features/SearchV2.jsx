@@ -40,7 +40,7 @@ function snippet(text,q){
   return `${start?'…':''}${raw.slice(start,start+220)}${raw.length>start+220?'…':''}`;
 }
 function resultKey(scope,type,id){return String(scope)+':'+String(type)+':'+String(id)}
-function canManageScopeFromGrants(scopeId,grants=[]){return grants.some(grant=>grant.access_level==='scope_manager'&&(grant.scope_id===scopeId||grant.scope_id==='admin'))}
+function canManageScopeFromGrants(scopeId,grants=[]){return grants.some(row=>Array.isArray(row.privileges)&&(row.privileges.includes('admin')||row.privileges.includes('scope:'+scopeId)))}
 function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map(),relationsMap=new Map()){
   const text=rowText(row);
   if(!norm(text).includes(norm(q)))return null;
