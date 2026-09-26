@@ -101,6 +101,8 @@ function periodRows(rows){
       name:row.entry_name||row.title||key,
       title:row.title||row.entry_name||key,
       description:row.summary||'',
+      start_date:row.start_date||null,
+      end_date:row.end_date||null,
       order:Number(row.order_no)||0,
       status:row.status||''
     };
@@ -144,17 +146,7 @@ async function fetchCanonical(path){
       })).rows;
     }
     if(normalized==='culture/lrunes-periods'){
-      const {rows}=await selectNeonRows('silver.lrunes',{
-        columns:'record_id,title,start_date,rune_count,status,updated_at',
-        filters:[{column:'record_type',operator:'eq',value:'evolution'}],
-        orders:[{column:'start_date',ascending:true}],
-        limit:100
-      });
-      return {eras:rows.map(row=>({
-        era_id:row.record_id,period:row.title,name:row.title,title:row.title,
-        description:'',start_date:row.start_date,end_date:null,
-        order:0,status:row.status||'',rune_count:row.rune_count
-      }))};
+      return {eras:periodRows((await selectScopeTimeRows('lrunes')).filter(row=>row.entry_type==='period'))};
     }
     if(normalized==='culture/lo3rwang-periods'){
       return {eras:periodRows((await selectScopeTimeRows('lo3rwang')).filter(row=>row.entry_type==='period'))};
