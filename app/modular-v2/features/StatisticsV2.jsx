@@ -19,7 +19,7 @@ const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#
 const CHART_TYPES=[['bar','長條圖'],['line','折線圖'],['pie','圓餅圖']];
 const TEXT_TYPES=[['text_type','文字小分類'],['text_category','文字分組'],['text_source','文字來源']];
 const MEDIA_TYPES=[['meta_style','Meta Tag'],['meta_type','多媒體小分類'],['meta_source','媒體來源']];
-const RUNE_TYPES=[['group','群組'],['keyword','關鍵詞']];
+const RUNE_TYPES=[['keyword','關鍵詞']];
 const STAT_TABS=[['ranking','排行榜'],['keywords','關鍵詞設定'],['charts','統計圖']];
 const MEDIA_TERM_LABELS={song:'曲目',reel:'Reels',video:'影片',image:'圖像',audio:'音訊'};
 const TEXT_TERM_LABELS={post:'貼文',reply:'回覆',article:'文章',lyrics:'歌詞',work:'文學作品',outline:'大綱',other:'其他'};
@@ -200,7 +200,7 @@ function SimpleStatistics({scopeId,scope,navigation}){
   const [chartType,setChartType]=useState('bar');
   const query=useAllRanking(scopeId,rankingType,navigation);
   return <section className="loc-card scope-v2-feature-card">
-    <p className="loc-eyebrow">Statistics</p><h2>統計功能</h2>
+    <p className="loc-eyebrow">Statistics</p><h2>{scopeId==='lunarunes'?'關鍵詞統計':'統計功能'}</h2>
     <div className="scope-v2-stat-controls">
       <label><span>分類</span><select className="scope-v2-select" value={rankingType} onChange={event=>setRankingType(event.target.value)}>{types.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
       <label><span>圖形</span><select className="scope-v2-select" value={chartType} onChange={event=>setChartType(event.target.value)}>{CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
