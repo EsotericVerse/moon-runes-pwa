@@ -31,7 +31,7 @@ export default function ContextStyleManager({scopeId='lo3rwang'}){
   useEffect(()=>{
     let active=true;setCanEdit(false);
     if(account.permissionLoading||!account.user||scopeId!=='lo3rwang')return()=>{active=false};
-    Promise.all([account.canManageGlobal(),account.canManageScope(scopeId),account.canManagePage(scopeId,'context')])
+    Promise.all([account.canManageGlobal(),account.canManageScope(scopeId),account.canManagePage(scopeId,'culture')])
       .then(values=>{if(active)setCanEdit(values.some(Boolean))})
       .catch(()=>{if(active)setCanEdit(false)});
     return()=>{active=false};
