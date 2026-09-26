@@ -8,22 +8,22 @@ const LRUNES_SOURCES=Object.freeze([
   ['silver.lrunes','符文關鍵詞',['record_id','rune_number','keyword_group','keyword'],'lrunes',[{column:'record_type',operator:'eq',value:'keyword'},{column:'active',operator:'eq',value:true}]],
   ['silver.lrunes','符文規則',['record_id','title','rule_text','before_text','after_text','note'],'lrunes',[{column:'record_type',operator:'eq',value:'rule'},{column:'active',operator:'eq',value:true}]],
   ['silver.manage','符文時期',['record_id','record_type','scope_id','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility'],'lrunes',[{column:'scope_id',operator:'eq',value:'lrunes'},{column:'record_type',operator:'in',value:['anchor','period','event']}]],
-  ['silver.lrunes','符文文字',['record_id','galaxy_id','scope_id','category','content_type','source_platform','source_role','title','content','meta_tags','created_at','source_ref','source_id','target_id','ref_id','url','searchable','updated_at'],'lrunes',[{column:'record_type',operator:'eq',value:'galaxy'}]],
-  ['silver.lrunes','符文多媒體',['record_id','media_id','scope_id','media_link','source_platform','source_native_id','media_type','title','url','meta_tags','style_tags','created_at','created_date','playlist','publication_status','play_count','like_count','view_count','is_representative'],'lrunes',[{column:'record_type',operator:'eq',value:'galaxy_media'}]]
+  ['silver.lrunes','符文文字',['record_id','galaxy_id','scope_id','category','content_type','source_name','source_role','title','content','meta_tags','created_at','source_ref','source_id','target_id','ref_id','url','searchable','updated_at'],'lrunes',[{column:'record_type',operator:'eq',value:'galaxy'}]],
+  ['silver.lrunes','符文多媒體',['record_id','media_id','scope_id','media_link','source_name','source_native_id','media_type','title','url','meta_tags','style_tags','created_at','created_date','playlist','publication_status','play_count','like_count','view_count','is_representative'],'lrunes',[{column:'record_type',operator:'eq',value:'galaxy_media'}]]
 ]);
 
 const TABLES=Object.freeze({
   all:Object.freeze([
     ['silver.manage','作者脈絡',['record_id','record_type','scope_id','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility'],'lo3rwang',[{column:'scope_id',operator:'eq',value:'lo3rwang'},{column:'record_type',operator:'in',value:['anchor','period','event']}]],
     ...LRUNES_SOURCES,
-    ['silver.lo3rwang_galaxy','作者正文',['galaxy_id','scope_id','title','content','source_platform','source_id','target_id','ref_id','url','searchable','created_at','updated_at'],'lo3rwang',[]],
+    ['silver.lo3rwang_galaxy','作者正文',['galaxy_id','scope_id','title','content','source_name','source_id','target_id','ref_id','url','searchable','created_at','updated_at'],'lo3rwang',[]],
     ['silver.faq_entries','FAQ',['faq_id','category','intent','question','answer','status','source_path'],'loc',[]],
-    ['silver.lo3rwang_galaxy_media','音樂與多媒體',['media_id','scope_id','media_link','source_platform','source_native_id','media_type','title','url','meta_tags','style_tags','created_at','created_date','playlist','publication_status','play_count','like_count','view_count','is_representative'],'lo3rwang',[]]
+    ['silver.lo3rwang_galaxy_media','音樂與多媒體',['media_id','scope_id','media_link','source_name','source_native_id','media_type','title','url','meta_tags','style_tags','created_at','created_date','playlist','publication_status','play_count','like_count','view_count','is_representative'],'lo3rwang',[]]
   ]),
   '月之符文':LRUNES_SOURCES,
   lo3rwang:Object.freeze([
-    ['silver.lo3rwang_galaxy','作者正文',['galaxy_id','scope_id','title','content','source_platform','source_id','target_id','ref_id','url','searchable','created_at','updated_at'],'lo3rwang',[]],
-    ['silver.lo3rwang_galaxy_media','音樂與多媒體',['media_id','scope_id','media_link','source_platform','source_native_id','media_type','title','url','meta_tags','style_tags','created_at','created_date','playlist','publication_status','play_count','like_count','view_count','is_representative'],'lo3rwang',[]]
+    ['silver.lo3rwang_galaxy','作者正文',['galaxy_id','scope_id','title','content','source_name','source_id','target_id','ref_id','url','searchable','created_at','updated_at'],'lo3rwang',[]],
+    ['silver.lo3rwang_galaxy_media','音樂與多媒體',['media_id','scope_id','media_link','source_name','source_native_id','media_type','title','url','meta_tags','style_tags','created_at','created_date','playlist','publication_status','play_count','like_count','view_count','is_representative'],'lo3rwang',[]]
   ]),
   治理:Object.freeze([
     ['silver.manage','治理脈絡',['record_id','record_type','scope_id','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility'],'lo3rwang',[{column:'scope_id',operator:'eq',value:'lo3rwang'},{column:'record_type',operator:'in',value:['anchor','period','event']}]],
