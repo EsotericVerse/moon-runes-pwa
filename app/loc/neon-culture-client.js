@@ -20,13 +20,13 @@ function periodRows(rows){
   })).sort((a,b)=>a.order-b.order||String(a.period).localeCompare(String(b.period)));
 }
 function runeTimelineRows(rows){
-  const anchors=(rows||[]).map(row=>({
-    id:row.entry_key,entry_id:row.entry_key,era_id:row.entry_key,period:row.title||row.entry_key,name:row.title||row.entry_key,title:row.title||row.entry_key,
-    description:row.summary||'',date:row.start_date||null,start_date:row.start_date||null,end_date:null,scope_id:'lunarunes',
-    status:row.status||'',rune_count:Number(row.rune_count||0)
-  })).filter(row=>row.start_date).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date)));
-  const current=anchors.find(row=>String(row.status).trim().toLowerCase()==='current');
-  return {eras:current?[{...current,period:'符文66',name:'符文66',title:'符文66',status:'current'}]:[],history:anchors.filter(row=>row!==current).map(row=>({...row,status:'history'}))};
+  const periods=periodRows((rows||[]).filter(row=>row.entry_type==='period'))
+    .map(row=>({...row,scope_id:'lunarunes'}));
+  const current=periods.find(row=>String(row.status).trim().toLowerCase()==='current');
+  return {
+    eras:current?[current]:[],
+    history:periods.filter(row=>row!==current).map(row=>({...row,status:'history'}))
+  };
 }
 function timelineItems(rows){
   const all=Array.isArray(rows)?rows:[];
@@ -41,19 +41,6 @@ function timelineItems(rows){
     return {...row,scope_id:scopeId,id:`${scopeId}:${row.entry_key}`,entry_id:`${scopeId}:${row.entry_key}`,start_date:start,end_date:end,date:start,
       display_label:row.title,group_label:`${row.scope_id} · ${kindLabel}`};
   }).filter(row=>row.start_date).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date)));
-}
-async function readRuneEvolution(){
-  const {rows}=await selectNeonRows('silver.lrunes',{
-    columns:'record_id,title,start_date,status,rune_count',
-    filters:[{column:'record_type',operator:'eq',value:'evolution'}],
-    orders:[{column:'start_date',ascending:true}],
-    limit:100
-  });
-  return rows.map(row=>({
-    entry_key:row.record_id,entry_type:'anchor',title:row.title,summary:'',
-    start_date:row.start_date,end_date:null,status:row.status||'',
-    rune_count:row.rune_count,scope_id:'lrunes'
-  }));
 }
 function dateFilters(startDate,endDate){
   const filters=[{column:'created_at',operator:'gte',value:`${String(startDate).slice(0,10)}T00:00:00+08:00`}];
@@ -77,12 +64,11 @@ export async function selectScopeCultureData(scopeId){
   if(!['loc','lrunes','lo3rwang'].includes(dataId))throw new Error('Scope 無效');
   const [authorContext,runeContext]=await Promise.all([
     dataId==='loc'||dataId==='lo3rwang'?selectScopeTimeRows('lo3rwang').then(rows=>rows.map(row=>({...row,scope_id:'lo3rwang'}))):Promise.resolve([]),
-    dataId==='loc'||dataId==='lrunes'?readRuneEvolution():Promise.resolve([])
+    dataId==='loc'||dataId==='lrunes'?selectScopeTimeRows('lrunes').then(rows=>rows.map(row=>({...row,scope_id:'lrunes'}))):Promise.resolve([])
   ]);
   const scopeContext=[...authorContext,...runeContext];
-  const runeAnchors=runeContext.filter(row=>row.entry_type==='anchor');
   const eraSource=authorContext.filter(row=>row.entry_type==='period');
-  const runeTimeline=runeTimelineRows(runeAnchors);
+  const runeTimeline=runeTimelineRows(runeContext);
   const eras=periodRows(eraSource);
   const contextEvents=dataId==='lo3rwang'?authorContext.filter(row=>row.entry_type==='event').map(row=>({
     entry_id:row.event_id||row.entry_key,event_id:row.event_id||row.entry_key,title:row.title,description:row.summary||'',date:row.start_date||null,
