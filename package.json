@@ -29,6 +29,7 @@
   "dependencies": {
     "@neondatabase/neon-js": "0.7.0-beta",
     "@neondatabase/serverless": "1.1.0",
+    "@react-three/fiber": "9.8.1",
     "@tanstack/react-query": "5.103.1",
     "casbin": "5.51.1",
     "flexsearch": "^0.8.212",
@@ -37,6 +38,7 @@
     "react-arborist": "3.16.0",
     "react-dom": "19.3.0",
     "recharts": "3.10.1",
+    "three": "0.186.1",
     "vis-data": "^8.0.5",
     "vis-graph3d": "7.0.3",
     "vis-network": "10.1.0",
