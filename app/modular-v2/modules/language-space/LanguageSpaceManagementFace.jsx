@@ -9,7 +9,7 @@ import MediaMetaSettingsV2 from '../../features/MediaMetaSettingsV2';
 import ThemeAdmin from '../../../loc/ThemeAdmin';
 
 const TOOLS=Object.freeze([
-  ['time','時間'],
+  ['time','時期設定'],
   ['text','文字關鍵詞'],
   ['media','多媒體'],
   ['appearance','顯示設定']
