@@ -4,7 +4,7 @@ import {useEffect,useMemo,useState} from 'react';
 import {useMutation,useQueryClient} from '@tanstack/react-query';
 import {GROUPS} from '../../lrunes/rune-directory.mjs';
 import {updateRuneKeywords} from '../../loc/neon-context-client';
-import {parseRuneKeywordRules,serializeRuneKeywordRules,splitRuneKeywordEntries} from '../../loc/model/rune-keyword-rules';
+import {parseRuneKeywordRules,splitRuneKeywordEntries} from '../../loc/model/rune-keyword-rules';
 import KeywordGraph3DV2 from '../modules/keyword-graph/KeywordGraph3DV2';
 
 function keywordList(value){
@@ -65,7 +65,7 @@ export default function RuneContextV2({runes=[],readOnly=false}){
   };
   const save=useMutation({
     mutationFn:updateRuneKeywords,
-    onSuccess:async()=>{await queryClient.invalidateQueries({queryKey:['rune-context-catalog']});setEditing(false);}
+    onSuccess:async()=>{await queryClient.invalidateQueries({queryKey:['rune-keyword-catalog']});setEditing(false);}
   });
 
   useEffect(()=>{

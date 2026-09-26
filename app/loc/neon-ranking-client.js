@@ -63,7 +63,7 @@ async function authorRankings(period){
   return [...map.values()];
 }
 async function runeRankings(){
-  const [runes,context]=await Promise.all([
+  const [runes,keywords]=await Promise.all([
     selectAllRows('silver.lrunes',{
       columns:'rune_number,group_name',
       filters:[{column:'record_type',operator:'eq',value:'rune'}]
@@ -78,7 +78,7 @@ async function runeRankings(){
   ]);
   const map=new Map();
   for(const row of runes)increment(map,'group',row.group_name,{source:'lrunes'});
-  for(const row of context)increment(map,'keyword',row.keyword,{source:'lrunes'});
+  for(const row of keywords)increment(map,'keyword',row.keyword,{source:'lrunes'});
   return [...map.values()];
 }
 function matchesNavigation(row,navigation={}){

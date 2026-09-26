@@ -45,8 +45,8 @@ function keywordMap(rows){
   return map;
 }
 
-function runeRows(rows,contextRows=[]){
-  const keywords=keywordMap(contextRows);
+function runeRows(rows,keywordRows=[]){
+  const keywords=keywordMap(keywordRows);
   return (rows||[]).map(row=>{
     const bucket=keywords.get(Number(row.rune_number))||{positive:[],negative:[]};
     const payload={
@@ -108,7 +108,7 @@ function periodRows(rows){
 }
 
 async function loadCanonicalRunes(){
-  const [runes,context]=await Promise.all([
+  const [runes,keywords]=await Promise.all([
     selectNeonRows('silver.lrunes',{
       columns:'rune_number,rune_name,group_name,english_name,lots_positive,lots_negative,lots_half_positive,lots_half_negative,myth_story,rune_evolution_history,personality_archetype,card_attribute,totem,moon_phase,positive_meaning,reverse_meaning,half_positive_meaning,half_reverse_meaning,rune_description,character_action,extra_notes,extra_rules,soul_question,practice_challenge,ritual_advice,harmony_advice,source_ref,updated_at',
       filters:[{column:'record_type',operator:'eq',value:'rune'}],
@@ -125,7 +125,7 @@ async function loadCanonicalRunes(){
       limit:5000
     })
   ]);
-  return runeRows(runes.rows,context.rows);
+  return runeRows(runes.rows,keywords.rows);
 }
 
 async function fetchCanonical(path){
