@@ -3,8 +3,10 @@
 import {selectScopeTimeRows} from './scope-time';
 
 export async function selectScopeCulturePeriods(scopeId){
-  if(scopeId!=='lo3rwang')return {eras:[]};
-  const rows=await selectScopeTimeRows('lo3rwang');
+  const runtimeId=String(scopeId||'');
+  const dataScope=runtimeId==='lunarunes'?'lrunes':runtimeId;
+  if(!['lo3rwang','lrunes'].includes(dataScope))return {eras:[]};
+  const rows=await selectScopeTimeRows(dataScope);
   const eras=rows.filter(row=>row.entry_type==='period').map(row=>({
     era_id:row.era_id||row.entry_key,
     period:row.period||row.entry_key,
