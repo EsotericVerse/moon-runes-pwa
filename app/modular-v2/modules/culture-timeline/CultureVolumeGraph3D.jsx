@@ -8,6 +8,10 @@ function displayDate(value){
   const date=new Date(value);
   return Number.isNaN(date.getTime())?String(value).slice(0,10):new Intl.DateTimeFormat('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit'}).format(date);
 }
+function externalSourceHref(work){
+  const value=String(work?.url||work?.media_link||work?.source_ref||'').trim();
+  return /^https?:\/\//i.test(value)?value:'';
+}
 function dateInput(value){
   const date=new Date(value);
   if(Number.isNaN(date.getTime()))return '';
@@ -244,7 +248,7 @@ export default function CultureVolumeGraph3D({
         {works.map((work,index)=><article className='scope-v2-culture-3d-work' key={work.media_id||work.galaxy_id||work.work_id||work.source_id||String(work.created_at)+'-'+index}>
           <time>{work.display_date||displayDate(work.created_at)}</time>
           <strong>{work.title||work.work_id||'未命名作品'}</strong>
-          {(work.url||work.media_link||work.source_ref)?<a href={work.url||work.media_link||work.source_ref} target='_blank' rel='noreferrer'>查看來源</a>:null}
+          {externalSourceHref(work)?<a href={externalSourceHref(work)} target='_blank' rel='noreferrer'>查看來源</a>:null}
         </article>)}
       </div>
       {!workLoading&&!workError&&!works.length?<p className='scope-v2-status'>{selectedCategoryType==='media'?'這個時期目前沒有多媒體項目。':'這個分類目前沒有作品。'}</p>:null}
