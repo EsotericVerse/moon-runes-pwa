@@ -89,9 +89,23 @@ export default function CultureVolumeGraph3D({
       });
       actions.set(id,{kind:'entry',row});
     }
+    if(canEdit&&tool==='anchor'&&data.length){
+      const times=data.map(point=>Number(point.x)).filter(Number.isFinite);
+      const min=Math.min(...times),max=Math.max(...times);
+      const day=86400000;
+      const span=Math.max(day,max-min);
+      const stepDays=Math.max(1,Math.ceil(span/day/1800));
+      const first=Math.floor(min/day)*day;
+      const last=Math.ceil(max/day)*day;
+      for(let time=first;time<=last;time+=stepDays*day){
+        const id='date-slot:'+time;
+        data.push({id,x:time,y:-0.02,z:0.08,style:1,title:escapeHtml('定錨日期 · '+displayDate(time))});
+        actions.set(id,{kind:'date-slot',date:dateInput(time)});
+      }
+    }
     pointActionsRef.current=actions;
     return data;
-  },[dimension,works,periods,timelineItems,sourceNames]);
+  },[dimension,works,periods,timelineItems,sourceNames,canEdit,tool]);
 
   useEffect(()=>{
     let cancelled=false;
@@ -123,7 +137,7 @@ export default function CultureVolumeGraph3D({
         const action=point?.id?pointActionsRef.current.get(String(point.id)):null;
         if(canEdit&&tool==='anchor'){
           const x=Number(point?.x);
-          const date=action?.kind==='period'?action.period.start_date:(Number.isFinite(x)?dateInput(x):'');
+          const date=action?.kind==='date-slot'?action.date:action?.kind==='period'?action.period.start_date:(Number.isFinite(x)?dateInput(x):'');
           if(!date)return;
           onCommand({scopeId:'lo3rwang',type:'anchor',values:{start_date:date}});
           setMessage('已在時間長河所選日期新增定錨點草稿。');
