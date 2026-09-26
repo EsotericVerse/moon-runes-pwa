@@ -2,7 +2,7 @@ import {z} from 'zod';
 import {featureHrefV2} from './scope-registry.v2';
 
 const NAVIGATION_FIELDS=Object.freeze([
-  'q','identity','source','period','anchor','from','to','rankingType','keywordGroup','statTab','statDomain','statFace'
+  'q','identity','source','period','anchor','from','to','rankingType','statTab','statDomain','statFace'
 ]);
 
 const NavigationValue=z.string().trim().min(1).max(240);
@@ -19,7 +19,6 @@ export const FeatureNavigationSchema=z.object({
   from:NavigationValue.optional(),
   to:NavigationValue.optional(),
   rankingType:NavigationValue.optional(),
-  keywordGroup:NavigationValue.optional(),
   statTab:StatisticsTab.optional(),
   statDomain:StatisticsDomain.optional(),
   statFace:StatisticsFace.optional()
