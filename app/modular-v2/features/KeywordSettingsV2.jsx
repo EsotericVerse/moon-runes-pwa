@@ -128,7 +128,7 @@ export default function KeywordSettingsV2({scopeId='loc',databaseScopeId=scopeId
       <h4>符文關鍵詞詞庫（3D）</h4>
       {runeQuery.isPending?<p className="scope-v2-status">載入符文關鍵詞…</p>:null}
       {runeQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(runeQuery.error)}</p>:null}
-      {!runeQuery.isPending&&!runeQuery.error?<RuneContextV2 runes={runeQuery.data?.runes||[]} readOnly={scopeId!=='runes'}/>:null}
+      {!runeQuery.isPending&&!runeQuery.error?<RuneContextV2 runes={runeQuery.data?.runes||[]} readOnly={scopeId!=='lunarunes'}/>:null}
     </section>
 
     <section className="scope-v2-inline-card">

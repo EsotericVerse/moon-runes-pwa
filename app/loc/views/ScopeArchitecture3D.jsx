@@ -5,7 +5,7 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {SCOPES_V2,featureHrefV2,scopeHrefV2} from '../../modular-v2/scope-registry.v2';
 
-const BUILDING_SCOPES=Object.freeze(['loc','runes','lo3rwang']);
+const BUILDING_SCOPES=Object.freeze(['loc','lunarunes','lo3rwang']);
 const DIMENSIONS=Object.freeze([
   {id:'river',label:'時間長河',feature:'culture',position:[-2.6,0,0],scale:[1.35,2.4,.18]},
   {id:'keywords',label:'關鍵詞分布',feature:'statics',position:[0,0,0],scale:[1.35,2.4,.18]},

@@ -18,7 +18,7 @@ export default function LanguageSpaceManagementPage(){
   });
   const text=useQuery({
     queryKey:['language-space-manage-text',scopeId],
-    queryFn:async()=>scopeId==='admin'?[]:(await selectScopeRankingPage(scopeId,{rankingType:scopeId==='runes'?'keyword':'text_type',limit:100,navigation:{}})).rows,
+    queryFn:async()=>scopeId==='admin'?[]:(await selectScopeRankingPage(scopeId,{rankingType:scopeId==='lunarunes'?'keyword':'text_type',limit:100,navigation:{}})).rows,
     staleTime:30000
   });
   const media=useQuery({

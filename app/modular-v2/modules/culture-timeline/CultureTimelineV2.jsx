@@ -37,9 +37,9 @@ function timelineRows(items,labelOf,focus){
 
 function groupLabel(id){
   if(id==='lo3rwang')return '個人時期';
-  if(id==='runes')return 'LunaRunes 沿革';
+  if(id==='lunarunes')return 'LunaRunes 沿革';
   if(String(id).startsWith('lo3rwang ·'))return String(id).replace('lo3rwang ·','個人時期 ·');
-  if(String(id).startsWith('runes ·'))return String(id).replace('runes ·','LunaRunes ·');
+  if(String(id).startsWith('lunarunes ·'))return String(id).replace('lunarunes ·','LunaRunes ·');
   return id;
 }
 function dateLabel(value){
@@ -57,7 +57,7 @@ function riverPath(startX,endX,yAt,steps=48){
 
 function CurrentCultureRivers({rows,canAddAnchor=false,onAddAnchor=null}){
   const personal=[...rows].filter(row=>row.scopeId==='lo3rwang').sort((a,b)=>Date.parse(a.start)-Date.parse(b.start)||(a.entryType==='period'?-1:0));
-  const runes=[...rows].filter(row=>row.scopeId==='runes').sort((a,b)=>Date.parse(a.start)-Date.parse(b.start));
+  const runes=[...rows].filter(row=>row.scopeId==='lunarunes').sort((a,b)=>Date.parse(a.start)-Date.parse(b.start));
   const personalStart=personal.find(row=>row.entryType==='period'&&row.status.trim().toLowerCase()==='current')||personal.find(row=>row.status.trim().toLowerCase()==='current');
   const runeStart=runes.find(row=>row.status.trim().toLowerCase()==='current');
   if(!personalStart||!runeStart)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><p>目前缺少個人時期或符文 Current 定錨資料。</p></div>;
@@ -161,7 +161,7 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
   const [chartError,setChartError]=useState(false);
   const rows=useMemo(()=>timelineRows(items,labelOf,focus),[items,labelOf,focus]);
   const fallbackRows=useMemo(()=>[...rows].sort((a,b)=>String(b.start).localeCompare(String(a.start))),[rows]);
-  const currentConfluence=mode==='current'&&rows.some(row=>row.scopeId==='lo3rwang'&&row.status.trim().toLowerCase()==='current')&&rows.some(row=>row.scopeId==='runes'&&row.status.trim().toLowerCase()==='current');
+  const currentConfluence=mode==='current'&&rows.some(row=>row.scopeId==='lo3rwang'&&row.status.trim().toLowerCase()==='current')&&rows.some(row=>row.scopeId==='lunarunes'&&row.status.trim().toLowerCase()==='current');
   const timelineHeight=mode==='overview'?Math.max(640,Math.min(1400,440+rows.length*18)):640;
 
   useEffect(()=>{onSelectRef.current=onSelect},[onSelect]);

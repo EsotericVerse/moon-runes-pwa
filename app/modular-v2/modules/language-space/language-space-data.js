@@ -6,7 +6,7 @@ import {selectScopeRankingPage} from '../../../loc/neon-ranking-client';
 import {mergeLanguageItems,neonSearchItems,rankingItems,timelineItems} from './language-space-model';
 
 function rankingPlan(scopeId){
-  if(scopeId==='runes')return [['group','keyword'],['keyword','keyword']];
+  if(scopeId==='lunarunes')return [['group','keyword'],['keyword','keyword']];
   if(scopeId==='loc')return [['group','keyword'],['keyword','keyword'],['text_type','text'],['text_category','text'],['meta_type','media'],['meta_style','media'],['meta_source','media']];
   return [['text_type','text'],['text_category','text'],['text_source','text'],['meta_type','media'],['meta_style','media'],['meta_source','media']];
 }

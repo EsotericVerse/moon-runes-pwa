@@ -8,7 +8,7 @@ import {
 } from '../app/modular-v2/scope-registry.v2.js';
 
 const failures=[];
-const requiredCoreScopes=['loc','runes','lo3rwang','admin'];
+const requiredCoreScopes=['loc','lunarunes','lo3rwang','admin'];
 const requiredFeatures=['context','statics','culture','governance','search'];
 const expectedScopeViews={
   loc:{context:'api.loc_context_entries',rankings:'api.loc_rankings'},
@@ -129,16 +129,16 @@ for(const [id,scope] of Object.entries(SCOPES_V2)){
   }
 }
 
-if(SCOPES_V2.runes?.scopeType!=='domain'){
+if(SCOPES_V2.lunarunes?.scopeType!=='domain'){
   failures.push('LunaRunes must remain a domain Scope');
 }
-if(SCOPES_V2.runes?.domain!=='lrunes.lo3rwang.cc'){
+if(SCOPES_V2.lunarunes?.domain!=='lrunes.lo3rwang.cc'){
   failures.push('LunaRunes canonical domain drifted');
 }
-if(SCOPES_V2.runes?.aliasName!==null){
+if(SCOPES_V2.lunarunes?.aliasName!==null){
   failures.push('LunaRunes must not declare aliasName');
 }
-if(SCOPES_V2.runes?.mount?.host!=='loc.lo3rwang.cc'||SCOPES_V2.runes?.mount?.path!=='/lrunes'){
+if(SCOPES_V2.lunarunes?.mount?.host!=='loc.lo3rwang.cc'||SCOPES_V2.lunarunes?.mount?.path!=='/lrunes'){
   failures.push('LunaRunes alternate mount drifted');
 }
 
