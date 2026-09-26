@@ -211,7 +211,7 @@ export default function ScopeManagementV2(){
           <label>user_id<input required value={permissionDraft.userId} onChange={event=>setPermissionDraft(row=>({...row,userId:event.target.value}))}/></label>
           <label>email<input required type="email" value={permissionDraft.email} onChange={event=>setPermissionDraft(row=>({...row,email:event.target.value}))}/></label>
           <label>privileges（每行一項）<textarea rows={5} required value={permissionDraft.privileges} onChange={event=>setPermissionDraft(row=>({...row,privileges:event.target.value}))}/></label>
-          <p className="scope-v2-meta">可用：admin、scope:&lt;scope&gt;、page:&lt;scope&gt;:culture、page:&lt;scope&gt;:statics、page:&lt;scope&gt;:media</p>
+          <p className="scope-v2-meta">可用：admin、blacklist、scope:&lt;scope&gt;、page:&lt;scope&gt;:culture、page:&lt;scope&gt;:statics、page:&lt;scope&gt;:media；blacklist 優先拒絕其他管理權限</p>
           <button type="submit" disabled={mutate.isPending}>儲存權限</button>
         </form>
         {data.permissions.length?<ul>{data.permissions.map(row=><li key={row.record_id}>
