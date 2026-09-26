@@ -10,7 +10,7 @@ function safe(value){const id=String(value||'').trim();if(!/^[A-Za-z][A-Za-z0-9_
 function limit(value,fallback,max){const n=Number(value);return Number.isFinite(n)?Math.max(1,Math.min(max,Math.floor(n))):fallback;}
 
 export async function selectScopes({limit:maximum=1000}={}){
-  return (await selectNeonRows(SCOPE_GOVERNANCE_TABLE,{columns:'*',filters:[recordFilter('scope'),{column:'scope_id',operator:'neq',value:'admin'}],orders:[{column:'display_order',ascending:true}],limit:limit(maximum,1000,5000)})).rows;
+  return (await selectNeonRows(SCOPE_GOVERNANCE_TABLE,{columns:'*',filters:[recordFilter('scope')],orders:[{column:'display_order',ascending:true}],limit:limit(maximum,1000,5000)})).rows;
 }
 export async function createScope(values){
   const scope_id=safe(values.scope_id);
@@ -43,10 +43,10 @@ export async function selectScopePermissions({scopeId=null,limit:maximum=500}={}
   return (await selectNeonRows(SCOPE_GOVERNANCE_TABLE,{columns:'record_id,user_id,scope_id,access_level,case_id,created_at,granted_by,granted_at',filters:[recordFilter('access_grant'),...(scopeId?[scopeFilter(safe(scopeId))]:[])],orders:[{column:'created_at',ascending:false}],limit:limit(maximum,500,1000)})).rows;
 }
 export async function upsertScopeAccessGrant({userId,scopeId,accessLevel,caseId}){
-  return callNeonRpc('grant_scope_access',{p_user_id:String(userId||'').trim(),p_scope_id:safe(scopeId),p_access_level:String(accessLevel||'').trim(),p_case_id:String(caseId||'').trim()||null});
+  return callNeonRpc('grant_scope_access',{p_user_id:String(userId||'').trim(),p_scope_id:safe(scopeId),p_access_level:String(accessLevel||'').trim(),p_case_id:String(caseId||'').trim()});
 }
 export async function revokeScopeAccessGrant({userId,scopeId,accessLevel,caseId}){
-  return callNeonRpc('revoke_scope_access',{p_user_id:String(userId||'').trim(),p_scope_id:safe(scopeId),p_access_level:String(accessLevel||'').trim(),p_case_id:String(caseId||'').trim()||null});
+  return callNeonRpc('revoke_scope_access',{p_user_id:String(userId||'').trim(),p_scope_id:safe(scopeId),p_access_level:String(accessLevel||'').trim(),p_case_id:String(caseId||'').trim()});
 }
 export async function requestScopeRelation(input,{rows=[]}={}){
   const validation=validateScopeTreeMove(rows,input);
