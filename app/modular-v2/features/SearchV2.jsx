@@ -172,7 +172,7 @@ export default function SearchV2(){
     setEditDraft({title:result.title,body:result.bodyText,styleTags:result.styleTags||'',includeStatistics:result.settings?.statistics_included??true,fullText:result.settings?.projection_level==='full',hidden:result.settings?.visibility==='private',showLink:result.settings?.show_link??true,showSource:result.settings?.show_source??true});
     setEditAudit([]);
     try{
-      const {rows}=await selectNeonRows('silver.manage',{columns:'actor_id,actor_name,actor_email,changed_at,field_name,old_value,new_value',filters:[{column:'record_type',operator:'eq',value:'content_audit'},{column:'scope_id',operator:'eq',value:result.scopeId},{column:'resource_type',operator:'eq',value:result.resourceType},{column:'resource_id',operator:'eq',value:result.resourceId}],orders:[{column:'changed_at',ascending:false}],limit:10});
+      const {rows}=await selectNeonRows('silver.manage',{columns:'actor_name,actor_email,changed_at,field_name,old_value,new_value',filters:[{column:'record_type',operator:'eq',value:'content_audit'},{column:'scope_id',operator:'eq',value:result.scopeId},{column:'resource_type',operator:'eq',value:result.resourceType},{column:'resource_id',operator:'eq',value:result.resourceId}],orders:[{column:'changed_at',ascending:false}],limit:10});
       setEditAudit(rows);
     }catch{}
   }
@@ -239,7 +239,7 @@ export default function SearchV2(){
               <label><input type="checkbox" checked={draft.showSource} onChange={event=>setEditDraft(current=>({...current,showSource:event.target.checked}))}/>顯示來源</label>
             </div>:null}
             {editAudit.length?<details><summary>近期修改紀錄</summary><ol>{editAudit.map((entry,index)=><li key={String(entry.changed_at)+entry.field_name+index}>
-              <p>{entry.field_name}｜操作者 {entry.actor_name||entry.actor_email||entry.actor_id}（{entry.actor_id}）｜{new Date(entry.changed_at).toLocaleString('zh-TW')}</p>
+              <p>{entry.field_name}｜操作者 {entry.actor_name||entry.actor_email}（{entry.actor_email}）｜{new Date(entry.changed_at).toLocaleString('zh-TW')}</p>
               <details><summary>查看前後內容</summary><p>修改前：{entry.old_value??'（空）'}</p><p>修改後：{entry.new_value??'（空）'}</p></details>
             </li>)}</ol></details>:null}
             {editError?<p role="alert" className="scope-v2-error">{editError}</p>:null}
