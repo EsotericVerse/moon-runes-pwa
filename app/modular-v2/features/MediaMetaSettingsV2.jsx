@@ -42,7 +42,7 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
     enabled:Boolean(selectedTag),
     queryFn:async()=>{
       const {rows}=await selectNeonRows('silver.lo3rwang_galaxy_media',{
-        columns:'media_id,title,media_type,source_platform,style_tags,created_date',
+        columns:'media_id,title,media_type,source_name,style_tags,created_date',
         filters:[
           {column:'scope_id',operator:'eq',value:databaseScopeId},
           {column:'style_tags',operator:'ilike',value:'%'+selectedTag+'%'}
@@ -92,7 +92,7 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
       {mediaQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(mediaQuery.error)}</p>:null}
       <div className="scope-v2-media-meta-list">
         {(mediaQuery.data||[]).map(row=><article key={row.media_id}>
-          <div><strong>{row.title||'未命名媒體'}</strong><span>{MEDIA_TYPE_LABELS[String(row.media_type||'').toLowerCase()]||row.media_type||'媒體'} · {row.source_platform||'未標示來源'}</span></div>
+          <div><strong>{row.title||'未命名媒體'}</strong><span>{MEDIA_TYPE_LABELS[String(row.media_type||'').toLowerCase()]||row.media_type||'媒體'} · {row.source_name||''}</span></div>
           {editingId===row.media_id?<div className="scope-v2-media-meta-editor">
             <input className="scope-v2-search-input" value={draft} onChange={event=>setDraft(event.target.value)}/>
             <button type="button" onClick={()=>save(row)}>儲存</button>
