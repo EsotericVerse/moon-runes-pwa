@@ -5,24 +5,28 @@ import {selectNeonRows} from './neon-repository';
 
 const TABLES=Object.freeze({
   all:Object.freeze([
-    ['silver.lo3rwang_context_entries','作者脈絡',['context_key','context_type','title','summary'],'lo3rwang'],
-    ['silver.runes_context_entries','符文脈絡',['context_key','context_type','title','summary'],'lunarunes'],
+    ['api.lo3rwang_context_entries','作者脈絡',['context_key','context_type','title','summary'],'lo3rwang'],
+    ['silver.lrunes','月之符文',['rune_number','rune_name','group_name','english_name','lots_positive','lots_negative','lots_half_positive','lots_half_negative','myth_story','rune_evolution_history','rune_description'],'lunarunes'],
+    ['silver.lrunes_style_context','符文關鍵詞與關係',['context_id','context_type','rune_number','related_rune_number','keyword_group','keyword','relation_type','title','rule_text','note'],'lunarunes'],
+    ['silver.lrunes_style_time','符文時期',['entry_key','entry_type','title','summary','period','entry_name','start_date','end_date','note'],'lunarunes'],
+    ['silver.lrunes_galaxy','符文文字',['scope_id','category','content_type','source_role','title','content','meta_tags','created_at','source_ref','work_id'],'lunarunes'],
     ['api.lo3rwang_galaxy','作者正文',['scope_id','category','content_type','source_role','title','content','meta_tags','created_at','source_ref','in_reply_to_username','source_place','work_id'],'lo3rwang'],
-    ['silver.lrunes_runes','月之符文',['rune_number','rune_name','group_name','english_name','lots_positive','lots_negative','lots_half_positive','lots_half_negative','myth_story','rune_evolution_history'],'lunarunes'],
     ['silver.faq_entries','FAQ',['faq_id','category','intent','question','answer','status','source_path'],'loc'],
     ['silver.lo3rwang_galaxy_media','音樂與多媒體',['media_id','scope_id','media_link','source_platform','source_native_id','media_type','title','url','meta_tags','style_tags','created_at','created_date','playlist','publication_status','play_count','like_count','view_count','is_representative'],'lo3rwang']
   ]),
   '月之符文':Object.freeze([
-    ['silver.runes_context_entries','月之符文脈絡',['context_key','context_type','title','summary'],'lunarunes'],
-    ['silver.lrunes_runes','月之符文',['rune_number','rune_name','group_name','english_name','lots_positive','lots_negative','lots_half_positive','lots_half_negative','myth_story','rune_evolution_history'],'lunarunes']
+    ['silver.lrunes','月之符文',['rune_number','rune_name','group_name','english_name','lots_positive','lots_negative','lots_half_positive','lots_half_negative','myth_story','rune_evolution_history','rune_description'],'lunarunes'],
+    ['silver.lrunes_style_context','符文關鍵詞與關係',['context_id','context_type','rune_number','related_rune_number','keyword_group','keyword','relation_type','title','rule_text','note'],'lunarunes'],
+    ['silver.lrunes_style_time','符文時期',['entry_key','entry_type','title','summary','period','entry_name','start_date','end_date','note'],'lunarunes'],
+    ['silver.lrunes_galaxy','符文文字',['scope_id','category','content_type','source_role','title','content','meta_tags','created_at','source_ref','work_id'],'lunarunes']
   ]),
   lo3rwang:Object.freeze([
     ['api.lo3rwang_galaxy','作者正文',['scope_id','category','content_type','source_role','title','content','created_at','source_ref','in_reply_to_username','source_place','work_id'],'lo3rwang'],
     ['silver.lo3rwang_galaxy_media','音樂與多媒體',['media_id','scope_id','media_link','source_platform','source_native_id','media_type','title','url','meta_tags','style_tags','created_at','created_date','playlist','publication_status','play_count','like_count','view_count','is_representative'],'lo3rwang']
   ]),
   治理:Object.freeze([
-    ['silver.lo3rwang_context_entries','治理脈絡',['context_key','context_type','title','summary']],
-    ['silver.faq_entries','FAQ',['faq_id','category','intent','question','answer','status','source_path']]
+    ['api.lo3rwang_context_entries','治理脈絡',['context_key','context_type','title','summary'],'lo3rwang'],
+    ['silver.faq_entries','FAQ',['faq_id','category','intent','question','answer','status','source_path'],'loc']
   ])
 });
 
