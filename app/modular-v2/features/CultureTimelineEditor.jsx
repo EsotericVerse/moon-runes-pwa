@@ -42,8 +42,9 @@ function rowSortDate(row,anchors){
 export default function CultureTimelineEditor({scopeId='lo3rwang'}){
   const account=useNeonAccount();
   const queryClient=useQueryClient();
-  const dataScope=scopeId==='loc'?'lo3rwang':scopeId;
-  const supported=dataScope==='lo3rwang';
+  const runtimeScope=String(scopeId||'');
+  const dataScope=runtimeScope==='loc'?'lo3rwang':(runtimeScope==='lunarunes'?'lrunes':runtimeScope);
+  const supported=['lo3rwang','lrunes'].includes(dataScope);
   const [draft,setDraft]=useState({...BLANK});
   const [selectedId,setSelectedId]=useState('');
   const [busy,setBusy]=useState(false);
