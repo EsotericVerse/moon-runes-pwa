@@ -62,10 +62,10 @@ export default function AboutView(){
   return <section className="loc-view loc-home">
     <header className="loc-hero scope-home-hero-with-visual">
       <div className="scope-home-hero-copy">
-        <p className="loc-eyebrow">LOC (Modelized Language Framework)</p>
+        <p className="loc-eyebrow">LOC (Language Architecture Framework)</p>
         <div className="home-title-row">
           <h1>LOC月典</h1>
-          <p className="loc-subtitle">把語言整理成可理解、可搜尋、可推演的模組結構。</p>
+          <p className="loc-subtitle">以 3D 語言空間與時間維度，整理、搜尋並呈現語言建築。</p>
         </div>
         <div className="loc-hero-copy">
           <p>以微月光為鑑，即為月典(LOC,Luna Codex)，</p>
