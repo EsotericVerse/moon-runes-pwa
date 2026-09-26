@@ -12,6 +12,7 @@ const FACES=Object.freeze([
   ['manage','管理']
 ]);
 const TYPE_LABELS={text:'文字',media:'多媒體',time:'時間',keyword:'關鍵詞'};
+const STATE_KEY='loc:language-space:shared-state';
 
 function Controls(){
   const {camera,gl}=useThree();
@@ -125,13 +126,21 @@ export default function LanguageSpaceWorkspace({
   onSearchQueryChange=()=>{},onSearch=()=>{},searching=false,
   management=null,initialFace='space',onSelect=()=>{}
 }){
-  const [face,setFace]=useState(initialFace);
-  const [query,setQuery]=useState(searchQuery||initialQuery);
-  const [start,setStart]=useState('');
-  const [end,setEnd]=useState('');
-  const [selected,setSelected]=useState('');
+  const restored=useMemo(()=>{
+    if(typeof window==='undefined')return null;
+    try{return JSON.parse(sessionStorage.getItem(STATE_KEY)||'null')}catch{return null}
+  },[]);
+  const [face,setFace]=useState(initialFace||restored?.face||'space');
+  const [query,setQuery]=useState(searchQuery||initialQuery||restored?.query||'');
+  const [start,setStart]=useState(restored?.start||'');
+  const [end,setEnd]=useState(restored?.end||'');
+  const [selected,setSelected]=useState(restored?.selected||'');
 
-  useEffect(()=>{setQuery(searchQuery||initialQuery)},[searchQuery,initialQuery]);
+  useEffect(()=>{if(searchQuery||initialQuery)setQuery(searchQuery||initialQuery)},[searchQuery,initialQuery]);
+  useEffect(()=>{
+    if(typeof window==='undefined')return;
+    try{sessionStorage.setItem(STATE_KEY,JSON.stringify({face,query,start,end,selected}))}catch{}
+  },[face,query,start,end,selected]);
   useEffect(()=>{if(face==='manage'&&!management)setFace('space')},[face,management]);
 
   const faceKinds=face==='extension'?['media']:face==='time'?['time','text','media']:['text','keyword','media'];
