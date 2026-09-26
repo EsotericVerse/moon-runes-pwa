@@ -5,8 +5,8 @@ import {getNeonSession,signInNeonWithGoogle,signOutNeon} from './neon-client';
 import {createScopeAuthorizer} from './scope-authorization';
 
 const emptyState={
-  loading:true,user:null,email:'',role:'',privileges:[],authorizer:null,
-  canManage:false,permissionLoading:true,error:''
+  loading:true,user:null,email:'',role:'',authorizer:null,
+  permissionLoading:true,error:''
 };
 
 export function useNeonAccount(){
@@ -22,15 +22,12 @@ export function useNeonAccount(){
       }
 
       const authorizer=createScopeAuthorizer(user);
-      const canManage=Boolean(authorizer.role);
       setState({
         loading:false,
         user,
         email:authorizer.email,
         role:authorizer.role,
-        privileges:authorizer.privileges,
         authorizer,
-        canManage,
         permissionLoading:false,
         error:''
       });
