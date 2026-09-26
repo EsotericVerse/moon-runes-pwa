@@ -5,15 +5,20 @@ import {getNeonSession,signInNeonWithGoogle,signOutNeon} from './neon-client';
 import {selectNeonRows} from './neon-repository';
 import {createScopeAuthorizer} from './scope-authorization';
 
-export const NEON_SCOPE_MANAGER_LEVELS=Object.freeze(['scope_manager']);
-
-async function readManagementGrants(user){
+async function readManagementPermissions(user){
   if(!user?.id)return [];
-  const {rows}=await selectNeonRows('silver.loc_scope',{columns:'scope_id,access_level,case_id',filters:[{column:'record_type',operator:'eq',value:'access_grant'},{column:'user_id',operator:'eq',value:String(user.id)}],limit:100});
+  const {rows}=await selectNeonRows('silver.manage',{
+    columns:'user_id,email,privileges',
+    filters:[
+      {column:'record_type',operator:'eq',value:'permission'},
+      {column:'user_id',operator:'eq',value:String(user.id)}
+    ],
+    limit:1
+  });
   return rows;
 }
 
-const emptyState={loading:true,user:null,grants:[],authorizer:null,canManage:false,permissionLoading:true,error:''};
+const emptyState={loading:true,user:null,grants:[],privileges:[],authorizer:null,canManage:false,permissionLoading:true,error:''};
 
 export function useNeonAccount(){
   const [state,setState]=useState(emptyState);
@@ -26,13 +31,16 @@ export function useNeonAccount(){
         return null;
       }
       setState(current=>({...current,loading:false,user,permissionLoading:true,error:''}));
-      const grants=await readManagementGrants(user);
-      const authorizer=await createScopeAuthorizer(user.id,grants);
-      const canManage=grants.some(grant=>NEON_SCOPE_MANAGER_LEVELS.includes(grant.access_level));
-      setState({loading:false,user,grants,authorizer,canManage,permissionLoading:false,error:''});
+      const permissions=await readManagementPermissions(user);
+      const authorizer=await createScopeAuthorizer(user.id,permissions);
+      const privileges=authorizer.privileges||[];
+      setState({
+        loading:false,user,grants:permissions,privileges,authorizer,
+        canManage:privileges.length>0,permissionLoading:false,error:''
+      });
       return user;
     }catch(error){
-      setState(current=>({...current,loading:false,grants:[],authorizer:null,canManage:false,permissionLoading:false,error:String(error?.message||error)}));
+      setState(current=>({...current,loading:false,grants:[],privileges:[],authorizer:null,canManage:false,permissionLoading:false,error:String(error?.message||error)}));
       return null;
     }
   },[]);
