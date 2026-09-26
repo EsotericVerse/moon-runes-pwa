@@ -55,7 +55,7 @@ function RecommendedStyleKeywordCatalog({scopeId,databaseScopeId}){
     let active=true;
     setCanEdit(false);
     if(account.permissionLoading||!account.user||scopeId==='admin')return()=>{active=false};
-    Promise.all([account.canManageGlobal(),account.canManageScope(databaseScopeId),account.canManagePage(databaseScopeId,'culture')])
+    Promise.all([account.canManageGlobal(),account.canManageScope(databaseScopeId),account.canManagePage(databaseScopeId,'statics')])
       .then(values=>{if(active)setCanEdit(values.some(Boolean))})
       .catch(()=>{if(active)setCanEdit(false)});
     return()=>{active=false};
