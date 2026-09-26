@@ -26,6 +26,7 @@ function timelineRows(items,labelOf,focus){
       entryType:String(item?.entry_type||''),
       period:String(item?.period||''),
       runeCount:Number(item?.rune_count||0),
+      workCount:Number(item?.work_count||0),
       status:String(item?.status||''),
       ...(group?{group:String(group)}:{}),
       ...(validEnd?{end:validEnd,type:'range'}:{type:'point'}),
@@ -81,6 +82,8 @@ function CurrentCultureRivers({rows,canAddAnchor=false,onAddAnchor=null}){
   const runePath=riverPath(runeX,right,runeY,56);
   const authorColor='var(--loc-personal-river,#2878c9)';
   const runeColor='var(--loc-rune-river,#9855bd)';
+  const authorDensity=densityStyleForCount(personalStart.workCount);
+  const authorRiverFilter=authorDensity?'brightness('+authorDensity.brightness+') drop-shadow(0 0 '+authorDensity.blur+' color-mix(in srgb,var(--loc-accent) '+Math.round(authorDensity.glow*100)+'%,transparent))':'none';
   const marker=(row,index,channel)=>{
     const x=xFor(Date.parse(row.start));
     const baseY=channel==='personal'?authorY(x):runeY(x);
@@ -117,10 +120,10 @@ function CurrentCultureRivers({rows,canAddAnchor=false,onAddAnchor=null}){
         <rect x='20' y='20' width='1160' height='600' rx='24' fill='var(--loc-panel,#fff)' stroke='var(--loc-border,#999)' strokeWidth='1'/>
         <text x='64' y='72' fill='var(--loc-text,#111)' fontSize='23' fontWeight='700'>兩條 Current 河道</text>
         <text x={runeX} y='148' fill='var(--loc-text,#111)' fontSize='16' fontWeight='700'>{runeTitle+' · '+dateLabel(runeStart.start)}</text>
-        <text x={personalX} y='112' fill='var(--loc-text,#111)' fontSize='16' fontWeight='700'>{personalTitle+' · '+dateLabel(personalStart.start)}</text>
+        <text x={personalX} y='112' fill='var(--loc-text,#111)' fontSize='16' fontWeight='700'>{personalTitle+' · '+dateLabel(personalStart.start)+(personalStart.workCount?' · '+personalStart.workCount.toLocaleString()+' 項':'')}</text>
         <path d={authorPath} fill='none' stroke={authorColor} strokeWidth='30' strokeLinecap='round' opacity='.18'/>
         <path d={runePath} fill='none' stroke={runeColor} strokeWidth='30' strokeLinecap='round' opacity='.18'/>
-        <path d={authorPath} fill='none' stroke={authorColor} strokeWidth='13' strokeLinecap='round' strokeLinejoin='round'/>
+        <path d={authorPath} fill='none' stroke={authorColor} strokeWidth='13' strokeLinecap='round' strokeLinejoin='round' style={{filter:authorRiverFilter}}/>
         <path d={runePath} fill='none' stroke={runeColor} strokeWidth='13' strokeLinecap='round' strokeLinejoin='round'/>
         <path d={authorPath} fill='none' stroke='var(--loc-panel,#fff)' strokeWidth='2' strokeLinecap='round' opacity='.7'/>
         {canAddAnchor?<path d={authorPath} fill='none' stroke='transparent' strokeWidth='38' strokeLinecap='round' pointerEvents='stroke' style={{cursor:'crosshair'}} onClick={chooseDate}><title>點擊日期新增定錨點</title></path>:null}
