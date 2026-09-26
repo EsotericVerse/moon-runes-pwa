@@ -5,14 +5,14 @@ import {neonClient} from './neon-client';
 
 const TableSchema=z.enum([
   'silver.manage','silver.resource_visibility',
-  'silver.lo3rwang','silver.lo3rwang_style','silver.lo3rwang_style_keywords','silver.lo3rwang_style_time',
+  'silver.lo3rwang','silver.lo3rwang_style','silver.lo3rwang_style_keywords',
   'silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media',
   'silver.lrunes',
   'silver.faq_entries',
 ]);
 const WritableTableSchema=z.enum([
   'silver.manage','silver.resource_visibility',
-  'silver.lo3rwang','silver.lo3rwang_style','silver.lo3rwang_style_keywords','silver.lo3rwang_style_time',
+  'silver.lo3rwang','silver.lo3rwang_style','silver.lo3rwang_style_keywords',
   'silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media',
   'silver.lrunes'
 ]);
