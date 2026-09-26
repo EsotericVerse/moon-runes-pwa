@@ -4,7 +4,7 @@ import {useEffect,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {selectRuneKeywordCatalog} from '../../loc/neon-context-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
-import {featureDataErrorMessage} from '../feature-data-state.v2';
+import {FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import RuneContextV2 from './RuneContextV2';
 
 export default function KeywordSettingsV2({scopeId='loc'}){
@@ -32,7 +32,7 @@ export default function KeywordSettingsV2({scopeId='loc'}){
   return <div className="scope-v2-keyword-settings">
     {scopeId==='loc'||scopeId==='lunarunes'?<section className="scope-v2-inline-card">
       <h4>符文關鍵詞詞庫（2D 圓形圖）</h4>
-      {runeQuery.isPending?<p className="scope-v2-status">載入符文關鍵詞…</p>:null}
+      {runeQuery.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
       {runeQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(runeQuery.error)}</p>:null}
       {!runeQuery.isPending&&!runeQuery.error?<RuneContextV2 runes={runeQuery.data?.runes||[]} readOnly={scopeId!=='lunarunes'||!canEditRunes}/>:null}
     </section>:null}
