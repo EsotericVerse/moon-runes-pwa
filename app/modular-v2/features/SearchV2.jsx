@@ -3,7 +3,7 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {searchNeonRows} from '../../loc/neon-search';
-import {deleteNeonRows,insertNeonRows,selectNeonRows,upsertNeonRows,updateNeonRows} from '../../loc/neon-repository';
+import {selectNeonRows,upsertNeonRows,updateNeonRows} from '../../loc/neon-repository';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {getSearchCollection} from '../../loc/search-collections';
 import FeaturePageV2 from '../FeaturePageV2';
@@ -14,20 +14,6 @@ import {buildSearchNavigation,featureNavigationLinks} from '../feature-navigatio
 import {featureDataErrorMessage} from '../feature-data-state.v2';
 
 const norm=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
-const THEME_RELATION_TYPE='theme_song';
-function canonicalWorkIdentity(row){
-  return {workId:'',title:String(row?.title||'').trim()};
-}
-function appendStyleTag(value,tag){
-  const tags=String(value||'').split(',').map(item=>item.trim()).filter(Boolean);
-  if(!tags.includes(tag))tags.push(tag);
-  return tags.join(', ')||tag;
-}
-function removeStyleTag(value,tag){
-  const tags=String(value||'').split(',').map(item=>item.trim()).filter(Boolean).filter(item=>item!==tag);
-  return tags.join(', ')||'風格未知';
-}
-function literatureHref(workId){return '/lo3rwang/literature?work='+encodeURIComponent(String(workId||''))}
 function rowText(row){return Object.values(row||{}).filter(value=>typeof value==='string').join(' ')}
 function snippet(text,q){
   const raw=String(text||'').replace(/\s+/g,' ').trim();
@@ -42,7 +28,7 @@ function hasPrivilege(privileges,scopeId,pageId=''){
   if(values.includes('admin')||values.includes('scope:'+scopeId))return true;
   return Boolean(pageId&&values.includes('page:'+scopeId+':'+pageId));
 }
-function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map(),relationsMap=new Map()){
+function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
   const text=rowText(row);
   if(!norm(text).includes(norm(q)))return null;
   const title=row.title||row.name||row.display_title||row.label||row.rune_name||row.context_name||row.work_id||row.song_id||row.id||source;
@@ -59,13 +45,9 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map(),relati
   const editableTable=resourceType==='galaxy'?'silver.lo3rwang_galaxy':resourceType==='galaxy_media'?'silver.lo3rwang_galaxy_media':'';
   const editableIdColumn=resourceType==='galaxy'?'galaxy_id':resourceType==='galaxy_media'?'media_id':'';
   const editableField=resourceType==='galaxy'?'content':resourceType==='galaxy_media'?'meta_tags':'';
-  const work=canonicalWorkIdentity(row);
-  const relatedRelations=work.workId?(relationsMap.get(work.workId)||[]):[];
-  const isThemeSource=row.media_type==='song'||row.content_type==='lyrics'||row.category==='music';
-  const isLiteratureTarget=work.workId.startsWith('lo3rwang-literature:');
   const isScopeCard=Boolean(row.scope_card);
   const href=isScopeCard?scopeHrefV2(scope):(row.url||row.href||row.suno_url||(row.scope_id?scopeHrefV2(row.scope_id,'statics'):''));
-  return {key:identity?source+'-'+identity:source+'-'+title+'-'+String(body).slice(0,40),source,title:String(title),date:row.date||row.created_date||row.create_time||row.created_at||row.update_time||row.updated_at||'',snippet:snippet(body,q),bodyText:String(body),styleTags:String(row.style_tags||row.meta_tags||''),display:String(row.display||'summary'),scopeId:scope,resourceType,resourceId,settingsKey,settings,editableTable,editableIdColumn,editableField,relationWorkId:work.workId,relationTitle:work.title||String(title),relatedRelations,isThemeSource,isLiteratureTarget,isScopeCard,href,destinations:isScopeCard?[]:featureNavigationLinks(navigation)};
+  return {key:identity?source+'-'+identity:source+'-'+title+'-'+String(body).slice(0,40),source,title:String(title),date:row.date||row.created_date||row.create_time||row.created_at||row.update_time||row.updated_at||'',snippet:snippet(body,q),bodyText:String(body),styleTags:String(row.style_tags||row.meta_tags||''),display:String(row.display||'summary'),scopeId:scope,resourceType,resourceId,settingsKey,settings,editableTable,editableIdColumn,editableField,isScopeCard,href,destinations:isScopeCard?[]:featureNavigationLinks(navigation)};
 }
 
 export default function SearchV2(){
@@ -90,11 +72,6 @@ export default function SearchV2(){
   const sentinelRef=useRef(null);
   const loadingRef=useRef(false);
   const visibilityRef=useRef(new Map());
-  const relationsRef=useRef(new Map());
-  const [relationSource,setRelationSource]=useState(null);
-  const [relationRows,setRelationRows]=useState([]);
-  const [relationBusy,setRelationBusy]=useState(false);
-  const [relationError,setRelationError]=useState('');
   const pageSize=scopeId==='lunarunes'?8:10;
   const collection=useMemo(()=>getSearchCollection(scope.searchCollection),[scope.searchCollection]);
 
@@ -124,24 +101,11 @@ export default function SearchV2(){
       }catch{}
       const visibilityMap=new Map(visibilityRows.map(item=>[resultKey(item.scope,item.resource_type,item.resource_id),item]));
       visibilityRef.current=visibilityMap;
-      let publicRelations=[];
-      try{
-        const relationResult=await selectNeonRows('api.lo3rwang_work_relations_public',{columns:'relation_id,from_work_id,to_work_id,relation_type,display_label,created_at',limit:5000});
-        publicRelations=relationResult.rows;
-      }catch{}
-      const relationMap=new Map();
-      for(const relation of publicRelations){
-        const key=String(relation.from_work_id||'');
-        if(!key)continue;
-        const list=relationMap.get(key)||[];
-        list.push(relation);relationMap.set(key,list);
-      }
-      relationsRef.current=relationMap;
       const consumed=matchedRowsRef.current.slice(0,pageSize);
       offsetRef.current=consumed.length;
       const converted=[];const seen=new Set();
       for(const {row,source} of consumed){
-        const result=toResult(row,source,q,collection.id,scopeId,visibilityMap,relationMap);
+        const result=toResult(row,source,q,collection.id,scopeId,visibilityMap);
         if(!result||seen.has(result.key))continue;
         if(result.display==='hidden'&&!hasPrivilege(account.privileges,result.scopeId,'statics'))continue;
         if(result.settings&&result.settings.visibility!=='public'&&!hasPrivilege(account.privileges,result.scopeId,'statics'))continue;
@@ -172,7 +136,7 @@ export default function SearchV2(){
         const seen=new Set(current.map(item=>item.key));
         const appended=[];
         for(const {row,source} of consumed){
-          const result=toResult(row,source,q,collection.id,scopeId,visibilityRef.current,relationsRef.current);
+          const result=toResult(row,source,q,collection.id,scopeId,visibilityRef.current);
           if(!result||seen.has(result.key))continue;
           if(result.display==='hidden'&&!hasPrivilege(account.privileges,result.scopeId,'statics'))continue;
           if(result.settings&&result.settings.visibility!=='public'&&!hasPrivilege(account.privileges,result.scopeId,'statics'))continue;
@@ -237,81 +201,6 @@ export default function SearchV2(){
     finally{setEditBusy(false)}
   }
 
-  async function refreshRelations(source=relationSource){
-    if(!source?.relationWorkId){setRelationRows([]);return}
-    try{
-      const {rows}=await selectNeonRows('silver.lo3rwang_work_relations',{
-        columns:'relation_id,from_work_id,to_work_id,relation_type,display_label,note,created_at,created_by',
-        filters:[{column:'scope_id',operator:'eq',value:source.scopeId},{column:'from_work_id',operator:'eq',value:source.relationWorkId}],
-        orders:[{column:'created_at',ascending:false}],limit:100
-      });
-      setRelationRows(rows);
-    }catch(exception){setRelationError(String(exception?.message||exception||'讀取關聯失敗。'))}
-  }
-  async function chooseRelationSource(result){
-    setRelationSource(result);setRelationError('');
-    await refreshRelations(result);
-  }
-  async function syncThemeTag(workId,add){
-    const {rows}=await selectNeonRows('silver.lo3rwang_galaxy_media',{
-      columns:'media_id,style_tags',
-      filters:[{column:'scope_id',operator:'eq',value:'lo3rwang'},{column:'media_link',operator:'eq',value:'work:'+workId}],
-      limit:100
-    });
-    for(const media of rows){
-      const next=add?appendStyleTag(media.style_tags,'主題曲'):removeStyleTag(media.style_tags,'主題曲');
-      await updateNeonRows('silver.lo3rwang_galaxy_media',{style_tags:next},{filters:[{column:'media_id',operator:'eq',value:media.media_id},{column:'scope_id',operator:'eq',value:'lo3rwang'}]});
-    }
-  }
-  async function createRelation(target){
-    if(!relationSource?.relationWorkId||!target?.relationWorkId||relationSource.relationWorkId===target.relationWorkId)return;
-    setRelationBusy(true);setRelationError('');
-    try{
-      const relation={
-        relation_id:'relation:'+crypto.randomUUID(),
-        scope_id:'lo3rwang',
-        from_work_id:relationSource.relationWorkId,
-        to_work_id:target.relationWorkId,
-        relation_type:THEME_RELATION_TYPE,
-        from_source_table:relationSource.editableTable||'search',
-        from_source_id:relationSource.resourceId||relationSource.relationWorkId,
-        to_source_table:'work',
-        to_source_id:target.relationWorkId,
-        confirmation_state:'confirmed',
-        display_label:target.relationTitle,
-        note:null,
-        created_by:String(account.user?.id||'')
-      };
-      await insertNeonRows('silver.lo3rwang_work_relations',relation);
-      await syncThemeTag(relationSource.relationWorkId,true);
-      const publicRelation={relation_id:relation.relation_id,from_work_id:relation.from_work_id,to_work_id:relation.to_work_id,relation_type:THEME_RELATION_TYPE,display_label:relation.display_label,created_at:new Date().toISOString()};
-      const nextMap=new Map(relationsRef.current);
-      const list=[...(nextMap.get(relation.from_work_id)||[]),publicRelation];
-      nextMap.set(relation.from_work_id,list);relationsRef.current=nextMap;
-      setResults(current=>current.map(item=>item.relationWorkId===relation.from_work_id?{...item,relatedRelations:list}:item));
-      await refreshRelations(relationSource);
-    }catch(exception){setRelationError(String(exception?.message||exception||'建立關聯失敗。'))}
-    finally{setRelationBusy(false)}
-  }
-  async function removeRelation(relation){
-    if(!relationSource?.relationWorkId)return;
-    setRelationBusy(true);setRelationError('');
-    try{
-      await deleteNeonRows('silver.lo3rwang_work_relations',{filters:[{column:'relation_id',operator:'eq',value:relation.relation_id},{column:'scope_id',operator:'eq',value:'lo3rwang'}]});
-      const nextPublic=(relationsRef.current.get(relationSource.relationWorkId)||[]).filter(item=>item.relation_id!==relation.relation_id);
-      const nextMap=new Map(relationsRef.current);nextMap.set(relationSource.relationWorkId,nextPublic);relationsRef.current=nextMap;
-      setResults(current=>current.map(item=>item.relationWorkId===relationSource.relationWorkId?{...item,relatedRelations:nextPublic}:item));
-      const {rows}=await selectNeonRows('silver.lo3rwang_work_relations',{
-        columns:'relation_id,relation_type',
-        filters:[{column:'scope_id',operator:'eq',value:'lo3rwang'},{column:'from_work_id',operator:'eq',value:relationSource.relationWorkId},{column:'relation_type',operator:'eq',value:THEME_RELATION_TYPE}],
-        limit:100
-      });
-      if(!rows.length)await syncThemeTag(relationSource.relationWorkId,false);
-      await refreshRelations(relationSource);
-    }catch(exception){setRelationError(String(exception?.message||exception||'刪除關聯失敗。'))}
-    finally{setRelationBusy(false)}
-  }
-
   async function runSearch(event){event.preventDefault();await executeSearch(query)}
 
 
@@ -325,16 +214,6 @@ export default function SearchV2(){
       <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder="輸入關鍵字、作品名稱或文字" aria-label="你想找什麼？"/>
       <button type="submit">搜尋</button>
     </form>
-    {relationSource?<section className="scope-v2-card scope-v2-relation-editor" aria-label="主題曲關聯編輯">
-      <p><strong>主題曲：</strong>{relationSource.title}</p>
-      <p className="scope-v2-meta">請從搜尋結果選擇要連結的整部小說作品。</p>
-      {relationRows.length?<div className="scope-v2-list">{relationRows.map(item=><p key={item.relation_id}>
-        主題曲｜<a href={literatureHref(item.to_work_id)}>《{item.display_label||'作品'}》</a>
-        <button type="button" disabled={relationBusy} onClick={()=>removeRelation(item)}>刪除關聯</button>
-      </p>)}</div>:null}
-      {relationError?<p role="alert" className="scope-v2-error">{relationError}</p>:null}
-      <button type="button" onClick={()=>{setRelationSource(null);setRelationRows([]);setRelationError('')}}>結束主題曲設定</button>
-    </section>:null}
     <p className="scope-v2-status">{status}</p>
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
     <div className="scope-v2-list">
@@ -342,7 +221,6 @@ export default function SearchV2(){
         const contentPage=row.resourceType==='galaxy_media'?'media':'statics';
         const editable=Boolean(row.editableTable&&row.editableField&&hasPrivilege(account.privileges,row.scopeId,contentPage));
         const canSearchSettings=hasPrivilege(account.privileges,row.scopeId,'statics');
-        const canManageMedia=hasPrivilege(account.privileges,row.scopeId,'media');
         const settings=row.settings||{};
         const draft=editingKey===row.key?editDraft:null;
         return <ScopeCardV2 key={row.key} eyebrow={settings.show_source===false?'':row.source} title={row.title}>
@@ -351,11 +229,8 @@ export default function SearchV2(){
           <p>{settings.projection_level==='full'?row.bodyText:row.snippet}</p>
           {settings.show_link!==false&&row.href?<p><a href={row.href} target={row.isScopeCard?undefined:(/^https?:/.test(row.href)?'_blank':undefined)} rel={row.isScopeCard?undefined:(/^https?:/.test(row.href)?'noreferrer':undefined)}>{row.isScopeCard?'進入 Scope':'查看連結'}</a></p>:null}
           {row.destinations?.length?<p className="scope-v2-result-links">{row.destinations.map(destination=><a key={destination.id} href={destination.href}>{destination.label}</a>)}</p>:null}
-          {row.relatedRelations?.length?<p className="scope-v2-result-links">{row.relatedRelations.map(relation=><a key={relation.relation_id} href={literatureHref(relation.to_work_id)}>主題曲｜《{relation.display_label||'作品'}》</a>)}</p>:null}
-          {editable||canManageMedia?<p>
+          {editable?<p>
             {editable?<button type="button" onClick={()=>startEditing(row)}>{editingKey===row.key?'編輯中':'編輯'}</button>:null}
-            {canManageMedia&&row.relationWorkId&&row.isThemeSource?<button type="button" onClick={()=>chooseRelationSource(row)}>設定主題曲</button>:null}
-            {canManageMedia&&relationSource?.relationWorkId&&row.isLiteratureTarget&&relationSource.relationWorkId!==row.relationWorkId?<button type="button" disabled={relationBusy} onClick={()=>createRelation(row)}>設為《{row.relationTitle}》主題曲</button>:null}
           </p>:null}
           {draft?<div className="scope-v2-editor" aria-label="搜尋結果編輯器">
             <label>標題<input value={draft.title} onChange={event=>setEditDraft(current=>({...current,title:event.target.value}))}/></label>
