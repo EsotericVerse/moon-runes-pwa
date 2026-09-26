@@ -36,7 +36,7 @@ export default function GovernanceManagement(){
   useEffect(()=>{
     if(!account.loading&&!account.permissionLoading&&account.user&&account.canManage)loadShared();
     else setShared({loading:false,eras:[],daily:[],events:[],relations:[],error:''});
-  },[account.loading,account.permissionLoading,account.user?.id,account.canManage,scopeId]);
+  },[account.loading,account.permissionLoading,account.user?.email,account.canManage,scopeId]);
 
   return <section className="loc-card" id="management">
     <p className="loc-eyebrow">Governance Management</p>
