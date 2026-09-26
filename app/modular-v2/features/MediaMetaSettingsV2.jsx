@@ -31,11 +31,11 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
   useEffect(()=>{
     let active=true;
     if(account.permissionLoading||!account.user){setCanEdit(false);return()=>{active=false};}
-    Promise.all([account.canManageGlobal(),account.canManageScope(databaseScopeId),account.canManagePage(databaseScopeId,'media')])
+    Promise.all([account.canManageGlobal(),account.canManageScope(databaseScopeId)])
       .then(values=>{if(active)setCanEdit(values.some(Boolean))})
       .catch(()=>{if(active)setCanEdit(false)});
     return()=>{active=false};
-  },[account.email,account.permissionLoading,account.user,account.canManageGlobal,account.canManageScope,account.canManagePage,databaseScopeId]);
+  },[account.email,account.permissionLoading,account.user,account.canManageGlobal,account.canManageScope,databaseScopeId]);
 
   const mediaQuery=useQuery({
     queryKey:['media-meta-tag-items',databaseScopeId,selectedTag],
