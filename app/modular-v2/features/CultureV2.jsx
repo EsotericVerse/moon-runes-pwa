@@ -12,7 +12,7 @@ import {
   selectScopeStyleWorks
 } from '../../loc/neon-culture-client';
 import {readFeatureNavigation} from '../feature-navigation.v2';
-import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
+import {FEATURE_EMPTY_MESSAGE,FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
 import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
@@ -230,7 +230,7 @@ export default function CultureV2(){
     <section className='loc-card scope-v2-feature-card scope-v2-feature-card-wide'>
       <p className='loc-eyebrow'>Time River</p>
       <h2>時間長河</h2>
-      {query.isPending?<p className='scope-v2-status'>載入時間長河…</p>:null}
+      {query.isPending?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
       {query.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(query.error)}</p>:null}
       {!query.isPending&&!query.error&&!timelineItems.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
       {!query.isPending&&!query.error&&timelineItems.length?<>
@@ -254,7 +254,7 @@ export default function CultureV2(){
                 <button type='button' aria-pressed={styleLevel==='label'} onClick={()=>setStyleLevel('label')}>風格標籤</button>
                 <button type='button' aria-pressed={styleLevel==='group'} onClick={()=>setStyleLevel('group')}>風格大群組</button>
               </div>:null}
-              {classificationBucketsQuery.isPending?<p className='scope-v2-status'>載入分類河道…</p>:null}
+              {classificationBucketsQuery.isPending?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
               {classificationBucketsQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(classificationBucketsQuery.error)}</p>:null}
               {!classificationBucketsQuery.isPending&&!classificationBucketsQuery.error&&!classificationBuckets.length
                 ?<p className='scope-v2-status'>{classificationMode==='source'&&classificationScope==='lunarunes'?'此 Scope 沒有作品來源分類。':'目前沒有此分類資料。'}</p>:null}
@@ -272,7 +272,7 @@ export default function CultureV2(){
               <p>{classificationMode==='source'
                 ?'來源名稱是匯入時自訂的字串；相同名稱會直接視為同一來源。'
                 :(styleLevel==='label'?'風格標籤是小群組名稱。':'風格大群組彙整多個風格標籤。')}</p>
-              {categoryQuery.isPending?<p className='scope-v2-status'>載入分類統計…</p>:null}
+              {categoryQuery.isPending?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
               {categoryQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(categoryQuery.error)}</p>:null}
               {!categoryQuery.isPending&&!categoryQuery.error&&!categoryGroups.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
               {categoryGroups.length?<div className='scope-v2-culture-source-groups' aria-label='作品分類'>
