@@ -5,11 +5,11 @@ import {getNeonSession,signInNeonWithGoogle,signOutNeon} from './neon-client';
 import {selectNeonRows} from './neon-repository';
 import {createScopeAuthorizer} from './scope-authorization';
 
-export const NEON_SCOPE_MANAGER_LEVELS=Object.freeze(['scope_manager']);
+export const NEON_MANAGEMENT_LEVELS=Object.freeze(['scope_manager','culture_manager','statics_manager','media_manager']);
 
 async function readManagementGrants(user){
   if(!user?.id)return [];
-  const {rows}=await selectNeonRows('silver.loc_scope',{columns:'scope_id,access_level,case_id',filters:[{column:'record_type',operator:'eq',value:'access_grant'},{column:'user_id',operator:'eq',value:String(user.id)}],limit:100});
+  const {rows}=await selectNeonRows('silver.loc_scope',{columns:'record_type,scope_id,access_level,case_id',filters:[{column:'record_type',operator:'in',value:['admin','access_grant']},{column:'user_id',operator:'eq',value:String(user.id)}],limit:100});
   return rows;
 }
 
@@ -28,7 +28,7 @@ export function useNeonAccount(){
       setState(current=>({...current,loading:false,user,permissionLoading:true,error:''}));
       const grants=await readManagementGrants(user);
       const authorizer=await createScopeAuthorizer(user.id,grants);
-      const canManage=grants.some(grant=>NEON_SCOPE_MANAGER_LEVELS.includes(grant.access_level));
+      const canManage=grants.some(grant=>grant.record_type==='admin'||NEON_MANAGEMENT_LEVELS.includes(grant.access_level));
       setState({loading:false,user,grants,authorizer,canManage,permissionLoading:false,error:''});
       return user;
     }catch(error){
