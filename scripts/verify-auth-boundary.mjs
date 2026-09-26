@@ -3,7 +3,8 @@ import fs from 'node:fs';
 const data=fs.readFileSync('app/loc/data.js','utf8');
 const client=fs.readFileSync('app/loc/neon-client.js','utf8');
 const userStorage=fs.readFileSync('app/loc/neon-user-storage.js','utf8');
-const migration=fs.readFileSync('app/loc/neon-legacy-migration.js','utf8');
+const scopeManagement=fs.readFileSync('app/modular-v2/ScopeManagementV2.jsx','utf8');
+const scopeRepository=fs.readFileSync('app/loc/neon-scope-governance.js','utf8');
 const failures=[];
 
 const requireMatch=(text,re,label)=>{if(!re.test(text))failures.push(label);};
@@ -15,9 +16,12 @@ requireMatch(client,/signInWithOAuth/,'Neon Google OAuth sign-in is required');
 requireMatch(client,/getSession/,'Neon session lookup is required');
 requireMatch(userStorage,/user_records/,'Neon user record persistence is required');
 requireMatch(userStorage,/user_settings/,'Neon user settings persistence is required');
-requireMatch(migration,/loc-local-records/,'legacy browser migration must remain explicit until migration is complete');
+requireMatch(scopeManagement,/account\.canManageGlobal\(\)/,'Scope create, edit and delete must be gated by admin');
+requireMatch(scopeRepository,/SCOPE_GOVERNANCE_TABLE='silver\.loc_scope'/,'Scope governance must use the consolidated table');
+requireMatch(scopeRepository,/callNeonRpc\('grant_scope_access'/,'page grants must go through the authorized RPC');
 
 for(const retired of [
+  'app/loc/neon-legacy-migration.js',
   'app/loc/auth-client.js',
   'app/loc/local-db.js',
   'app/loc/google-drive.js',
