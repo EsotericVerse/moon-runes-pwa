@@ -46,7 +46,6 @@ export function useNeonAccount(){
     setState({...emptyState,loading:false,permissionLoading:false});
   },[]);
   const canManageScope=useCallback(async()=>state.canManage,[state.canManage]);
-  const canManagePage=useCallback(async()=>state.canManage,[state.canManage]);
   const canManageGlobal=useCallback(async()=>state.canManage,[state.canManage]);
-  return {...state,refresh,signIn,signOut,canManageScope,canManagePage,canManageGlobal};
+  return {...state,refresh,signIn,signOut,canManageScope,canManageGlobal};
 }
