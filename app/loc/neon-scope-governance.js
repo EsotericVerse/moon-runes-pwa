@@ -42,6 +42,7 @@ export async function createManagedNode(values){
     scope_id:type==='scope'?nodeId:null,
     parent_group_id:parent?safeId(parent,'上層 Group ID'):null,
     active:values.active!==false,
+    default_theme_id:'theme-7',
     display_order:Number.isFinite(Number(values.display_order))?Number(values.display_order):null
   };
   if(type==='scope'&&!payload.parent_group_id)throw new Error('Scope 必須掛在 Group 之下');
