@@ -10,7 +10,6 @@ import {
 
 const EMPTY_NODE={record_type:'scope',node_id:'',parent_group_id:'',active:true,display_order:10};
 const EMPTY_PERMISSION={userId:'',email:'',privileges:''};
-const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,character=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
 const privilegeLines=value=>[...new Set(String(value||'').split(/[\n,]+/).map(item=>item.trim()).filter(Boolean))];
 
 function nodeDraft(row){
@@ -23,25 +22,28 @@ function nodeDraft(row){
     display_order:row.display_order??10
   };
 }
-function depthOf(row,nodes,seen=new Set()){
-  const id=managedNodeId(row);
-  if(!row?.parent_group_id||seen.has(id))return 0;
-  seen.add(id);
-  const parent=nodes.find(item=>item.record_type==='group'&&item.group_id===row.parent_group_id);
-  return parent?1+depthOf(parent,nodes,seen):1;
-}
-function pointsFor(nodes){
-  return nodes.map((row,index)=>{
-    const id=managedNodeId(row);
-    const depth=depthOf(row,nodes);
+function graphFor(nodes){
+  const graphNodes=nodes.map(row=>{
+    const nodeId=managedNodeId(row);
     return {
-      id:`${row.record_type}:${id}`,
-      kind:row.record_type,nodeId:id,
-      x:depth+1,y:Number(row.display_order)||index+1,z:row.record_type==='group'?0.35:0,
-      label:id,
-      detail:`${row.record_type==='group'?'Group':'Scope'} · 上層 ${row.parent_group_id||'無'}${row.active?'':' · 已停用'}`
+      id:`${row.record_type}:${nodeId}`,
+      kind:row.record_type,
+      nodeId,
+      label:nodeId,
+      title:`${row.record_type==='group'?'Group':'Scope'} · 上層 ${row.parent_group_id||'無'}${row.active?'':' · 已停用'}`,
+      shape:'box',
+      level:row.parent_group_id?undefined:0
     };
   });
+  const ids=new Set(graphNodes.map(node=>node.id));
+  const edges=nodes.flatMap(row=>{
+    if(!row.parent_group_id)return [];
+    const from=`group:${row.parent_group_id}`;
+    const to=`${row.record_type}:${managedNodeId(row)}`;
+    if(!ids.has(from)||!ids.has(to))return [];
+    return [{id:`${from}->${to}`,from,to,arrows:{to:{enabled:true,scaleFactor:0.55}}}];
+  });
+  return {nodes:graphNodes,edges};
 }
 
 export default function ScopeManagementV2(){
@@ -72,7 +74,8 @@ export default function ScopeManagementV2(){
   });
   const data=dataQuery.data||{nodes:[],permissions:[]};
   const groups=data.nodes.filter(row=>row.record_type==='group');
-  const points=useMemo(()=>pointsFor(data.nodes),[data.nodes]);
+  const graphData=useMemo(()=>graphFor(data.nodes),[data.nodes]);
+  const points=graphData.nodes;
   const refresh=()=>client.invalidateQueries({queryKey});
 
   const mutate=useMutation({
@@ -99,21 +102,31 @@ export default function ScopeManagementV2(){
   clickRef.current=selectPoint;
 
   useEffect(()=>{
-    if(!isAdmin||!canvasRef.current||!points.length)return;
-    let cancelled=false,graph=null;
-    import('vis-graph3d/standalone').then(({Graph3d})=>{
+    if(!isAdmin||!canvasRef.current||!graphData.nodes.length)return;
+    let cancelled=false,network=null;
+    import('vis-network/standalone').then(({Network})=>{
       if(cancelled||!canvasRef.current)return;
-      const plot=points.map(({id,x,y,z,label,detail})=>({id,x,y,z,title:escapeHtml(label)+' · '+escapeHtml(detail)}));
-      graph=new Graph3d(canvasRef.current,plot,{
-        width:'100%',height:'520px',style:'dot',showPerspective:true,showGrid:true,keepAspectRatio:true,
-        xLabel:'層級',yLabel:'排序',zLabel:'Group / Scope',tooltip:true,verticalRatio:0.7,
-        dataColor:{fill:'#7b9ac2',stroke:'#385b86',strokeWidth:2}
+      network=new Network(canvasRef.current,{nodes:graphData.nodes,edges:graphData.edges},{
+        autoResize:true,
+        layout:{improvedLayout:true,hierarchical:{
+          enabled:true,direction:'UD',sortMethod:'directed',levelSeparation:150,nodeSpacing:190,treeSpacing:240,
+          blockShifting:true,edgeMinimization:true,parentCentralization:true
+        }},
+        interaction:{hover:true,navigationButtons:true,keyboard:true,dragNodes:true,dragView:true,zoomView:true},
+        nodes:{shape:'box',borderWidth:2,margin:{top:10,right:14,bottom:10,left:14},font:{size:14,align:'center'}},
+        edges:{width:1.5,smooth:{type:'cubicBezier',forceDirection:'vertical',roundness:0.35}},
+        physics:{enabled:false}
       });
-      graph.on('click',item=>{const point=points.find(row=>row.id===String(item?.id));if(point)clickRef.current?.(point)});
+      network.on('selectNode',event=>{
+        const id=String(event.nodes?.[0]||'');
+        const point=graphData.nodes.find(row=>row.id===id);
+        if(point)clickRef.current?.(point);
+      });
+      network.fit({animation:{duration:250,easingFunction:'easeInOutQuad'}});
       setGraphError('');
     }).catch(reason=>{if(!cancelled)setGraphError(String(reason?.message||reason))});
-    return()=>{cancelled=true;graph?.destroy()};
-  },[isAdmin,points]);
+    return()=>{cancelled=true;network?.destroy()};
+  },[isAdmin,graphData]);
 
   async function run(action,success){
     setError('');setMessage('');
@@ -178,8 +191,8 @@ export default function ScopeManagementV2(){
 
       {dataQuery.isPending?<p className="scope-v2-status">正在載入…</p>:null}
       {dataQuery.error?<p role="alert" className="scope-v2-error">{dataQuery.error.message}</p>:null}
-      {graphError?<p role="alert" className="scope-v2-error">3D 圖無法顯示：{graphError}</p>:null}
-      <div ref={canvasRef} className="scope-graph-canvas" role="img" aria-label={`Group / Scope 3D 圖，共 ${points.length} 個節點`}/>
+      {graphError?<p role="alert" className="scope-v2-error">關係圖無法顯示：{graphError}</p>:null}
+      <div ref={canvasRef} className="scope-graph-canvas" role="img" aria-label={`Group / Scope 關係圖，共 ${points.length} 個節點`}/>
 
       {message?<p role="status" className="scope-v2-status">{message}</p>:null}
       {error?<p role="alert" className="scope-v2-status scope-v2-error">{error}</p>:null}
