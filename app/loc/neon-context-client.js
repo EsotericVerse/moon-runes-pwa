@@ -1,5 +1,6 @@
 import {ScopeContextResponseSchema} from './scope-feature-contracts';
 import {callNeonRpc,selectNeonRows} from './neon-repository';
+import {rune as canonicalRuneArray} from '../../js/runes.js';
 
 const CONTEXT_TABLES=Object.freeze({
   loc:'api.loc_context_entries',
@@ -178,20 +179,22 @@ export async function selectScopeContextRows(scopeId){
 }
 
 export async function selectRuneContextCatalog(){
-  const [runeResult,contextResult]=await Promise.all([
-    selectNeonRows('silver.lrunes',{
-      columns:'rune_number,rune_name,group_name,english_name,rune_description',
-      filters:[{column:'rune_number',operator:'gte',value:0},{column:'rune_number',operator:'lte',value:66}],
-      orders:[{column:'rune_number',ascending:true}],limit:67
-    }),
-    selectNeonRows('silver.lrunes_style_context',{
-      columns:'context_id,context_type,rune_number,keyword_group,keyword,relation_type,rule_text,order_no,active',
-      filters:[{column:'active',operator:'eq',value:true}],
-      orders:[{column:'rune_number',ascending:true},{column:'order_no',ascending:true}],limit:5000
-    })
-  ]);
+  const runeRows=canonicalRuneArray.filter(Boolean)
+    .filter(row=>Number(row?.編號)>=0&&Number(row?.編號)<=66)
+    .map(row=>({
+      rune_number:Number(row.編號),
+      rune_name:row.符文名稱,
+      group_name:row.所屬分組,
+      english_name:row.英文,
+      rune_description:row.符文說明
+    }));
+  const {rows:contextRows}=await selectNeonRows('silver.lrunes_style_context',{
+    columns:'context_id,context_type,rune_number,keyword_group,keyword,relation_type,rule_text,order_no,active',
+    filters:[{column:'active',operator:'eq',value:true}],
+    orders:[{column:'rune_number',ascending:true},{column:'order_no',ascending:true}],limit:5000
+  });
   const contextByRune=new Map();
-  for(const row of contextResult.rows){
+  for(const row of contextRows){
     const number=Number(row.rune_number);
     if(!Number.isInteger(number))continue;
     if(!contextByRune.has(number))contextByRune.set(number,{positive:[],negative:[],and:[],nor:[]});
@@ -201,7 +204,7 @@ export async function selectRuneContextCatalog(){
     if(row.context_type==='rule'&&row.relation_type==='AND'&&row.keyword)bucket.and.push('AND'+row.keyword);
     if(row.context_type==='rule'&&row.relation_type==='NOR'&&row.keyword)bucket.nor.push('NOR'+row.keyword);
   }
-  return {runes:runeResult.rows.map(row=>{
+  return {runes:runeRows.map(row=>{
     const context=contextByRune.get(Number(row.rune_number))||{positive:[],negative:[],and:[],nor:[]};
     return {
       ...row,
