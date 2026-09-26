@@ -4,6 +4,7 @@ import {useEffect,useMemo,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {deleteNeonRows,insertNeonRows,selectNeonRows,updateNeonRows} from '../../loc/neon-repository';
+import KeywordGraph3DV2 from '../modules/keyword-graph/KeywordGraph3DV2';
 
 const KEYWORD_GROUPS=Object.freeze([['macro','大風格關鍵詞'],['style','風格關鍵詞']]);
 
@@ -190,6 +191,13 @@ export default function ContextStyleManager({scopeId='lo3rwang'}){
     {stylesQuery.error?<p className="scope-v2-status scope-v2-error">{stylesQuery.error.message}</p>:null}
     {rankingQuery.error?<p className="scope-v2-status scope-v2-error">關鍵詞排行讀取失敗：{rankingQuery.error.message}</p>:null}
     {!stylesQuery.isPending&&!stylesQuery.error&&!groups.length?<p className="scope-v2-status">目前沒有個人風格分類。</p>:null}
+    {!stylesQuery.isPending&&!stylesQuery.error&&groups.length?<KeywordGraph3DV2
+      groups={groups}
+      keywordGroups={KEYWORD_GROUPS}
+      entityLabel="風格"
+      title="個人風格關鍵詞 3D 圖"
+      description="X 軸是八種代表風格，Y 軸是關鍵詞層級，Z 軸是組內序位。拖曳旋轉，點選節點查看對應風格與關鍵詞。"
+    />:null}
     {groups.map(group=><article className="scope-v2-inline-card" key={group.style_no}>
       <p className="loc-eyebrow">風格編號 {group.style_no}</p>
       <h3>{group.representative_name||('自訂符文 '+group.style_no)}</h3>
