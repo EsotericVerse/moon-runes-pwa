@@ -1,44 +1,29 @@
 'use client';
 
-import {useEffect,useMemo,useState} from 'react';
-import {useSearchParams} from 'next/navigation';
+import {useMemo,useState} from 'react';
+import {useRouter,useSearchParams} from 'next/navigation';
+import {useQuery} from '@tanstack/react-query';
 import {
-  Area,AreaChart,Bar,BarChart,CartesianGrid,Cell,Line,LineChart,
-  Pie,PieChart,PolarAngleAxis,PolarGrid,PolarRadiusAxis,Radar,RadarChart,
+  Bar,BarChart,CartesianGrid,Cell,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
 import {selectScopeRankingPage} from '../../loc/neon-ranking-client';
-import {useOffsetPagination} from '../use-offset-pagination.v2';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import KeywordSettingsV2 from './KeywordSettingsV2';
+import MediaMetaSettingsV2 from './MediaMetaSettingsV2';
 import FeaturePageV2 from '../FeaturePageV2';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
-const CHART_TYPES=Object.freeze([
-  ['bar','長條圖'],
-  ['line','折線圖'],
-  ['area','面積圖'],
-  ['pie','圓餅圖'],
-  ['radar','雷達圖']
-]);
-const RANKING_PAGE_SIZE=20;
-const RANKING_TYPE_LABELS=Object.freeze({
-  group:'群組',keyword:'關鍵詞',
-  text_source:'文字來源',text_category:'文字分組',text_type:'文字小分類',
-  meta_source:'媒體來源',meta_type:'多媒體小分類',meta_style:'Meta Tag'
-});
-const STATISTICS_TABS=Object.freeze([
-  ['ranking','排行榜'],
-  ['keywords','關鍵詞設定'],
-  ['charts','統計圖']
-]);
-const TEXT_TYPES=Object.freeze(['text_type','text_category','text_source']);
-const MEDIA_TYPES=Object.freeze(['meta_style','meta_type','meta_source']);
-const MEDIA_TERM_LABELS=Object.freeze({song:'曲目',reel:'Reels',video:'影片',image:'圖像',audio:'音訊'});
-const TEXT_TERM_LABELS=Object.freeze({post:'貼文',reply:'回覆',article:'文章',lyrics:'歌詞',work:'文學作品',outline:'大綱',other:'其他'});
-const TEXT_CATEGORY_LABELS=Object.freeze({text:'一般文字',music:'音樂文字',literature:'文學'});
+const CHART_TYPES=[['bar','長條圖'],['line','折線圖'],['pie','圓餅圖']];
+const TEXT_TYPES=[['text_type','文字小分類'],['text_category','文字分組'],['text_source','文字來源']];
+const MEDIA_TYPES=[['meta_style','Meta Tag'],['meta_type','多媒體小分類'],['meta_source','媒體來源']];
+const RUNE_TYPES=[['group','群組'],['keyword','關鍵詞']];
+const MEDIA_TERM_LABELS={song:'曲目',reel:'Reels',video:'影片',image:'圖像',audio:'音訊'};
+const TEXT_TERM_LABELS={post:'貼文',reply:'回覆',article:'文章',lyrics:'歌詞',work:'文學作品',outline:'大綱',other:'其他'};
+const TEXT_CATEGORY_LABELS={text:'一般文字',music:'音樂文字',literature:'文學'};
+
 function displayTerm(row){
   const type=String(row?.ranking_type||'');
   const term=String(row?.term||'');
@@ -48,199 +33,220 @@ function displayTerm(row){
   return term;
 }
 
-function RankingChart({type,rows}){
-  if(type==='line')return <ResponsiveContainer width="100%" height={360}>
-    <LineChart data={rows} margin={{top:8,right:20,bottom:36,left:8}}>
+function chartRows(rows){
+  return (rows||[]).slice(0,12).map(row=>({
+    ...row,
+    term:displayTerm(row),
+    value:Number(row.rank_value??row.item_count??0)||0
+  }));
+}
+
+function RankingChart({type='bar',rows,height=320}){
+  const data=chartRows(rows);
+  if(type==='line')return <ResponsiveContainer width="100%" height={height}>
+    <LineChart data={data} margin={{top:8,right:18,bottom:42,left:4}}>
       <CartesianGrid strokeDasharray="3 3"/>
-      <XAxis dataKey="term" angle={-30} textAnchor="end" interval={0} height={72}/>
-      <YAxis/>
-      <Tooltip/>
+      <XAxis dataKey="term" angle={-28} textAnchor="end" interval={0} height={70}/>
+      <YAxis/><Tooltip/>
       <Line type="monotone" dataKey="value" stroke="#7562cf" strokeWidth={2}/>
     </LineChart>
   </ResponsiveContainer>;
-
-  if(type==='area')return <ResponsiveContainer width="100%" height={360}>
-    <AreaChart data={rows} margin={{top:8,right:20,bottom:36,left:8}}>
-      <CartesianGrid strokeDasharray="3 3"/>
-      <XAxis dataKey="term" angle={-30} textAnchor="end" interval={0} height={72}/>
-      <YAxis/>
-      <Tooltip/>
-      <Area type="monotone" dataKey="value" stroke="#7562cf" fill="#7562cf" fillOpacity={0.24}/>
-    </AreaChart>
+  if(type==='pie')return <ResponsiveContainer width="100%" height={height}>
+    <PieChart><Tooltip/><Pie data={data} dataKey="value" nameKey="term" cx="50%" cy="50%" outerRadius={Math.min(120,height/2-26)}>
+      {data.map((row,index)=><Cell key={row.ranking_key||row.term||index} fill={PIE_COLORS[index%PIE_COLORS.length]}/>)}
+    </Pie></PieChart>
   </ResponsiveContainer>;
-
-  if(type==='pie')return <ResponsiveContainer width="100%" height={360}>
-    <PieChart>
-      <Tooltip/>
-      <Pie data={rows} dataKey="value" nameKey="term" cx="50%" cy="50%" outerRadius={130}>
-        {rows.map((row,index)=><Cell key={row.ranking_key||row.term||index} fill={PIE_COLORS[index%PIE_COLORS.length]}/>)}
-      </Pie>
-    </PieChart>
-  </ResponsiveContainer>;
-
-  if(type==='radar')return <ResponsiveContainer width="100%" height={400}>
-    <RadarChart data={rows} outerRadius="72%">
-      <PolarGrid/>
-      <PolarAngleAxis dataKey="term"/>
-      <PolarRadiusAxis/>
-      <Tooltip/>
-      <Radar dataKey="value" stroke="#7562cf" fill="#7562cf" fillOpacity={0.28}/>
-    </RadarChart>
-  </ResponsiveContainer>;
-
-  return <ResponsiveContainer width="100%" height={Math.max(320,rows.length*36)}>
-    <BarChart data={rows} layout="vertical" margin={{top:8,right:20,bottom:8,left:8}}>
+  return <ResponsiveContainer width="100%" height={height}>
+    <BarChart data={data} layout="vertical" margin={{top:8,right:18,bottom:8,left:8}}>
       <CartesianGrid strokeDasharray="3 3" horizontal={false}/>
-      <XAxis type="number"/>
-      <YAxis type="category" dataKey="term" width={128}/>
-      <Tooltip/>
+      <XAxis type="number"/><YAxis type="category" dataKey="term" width={118}/><Tooltip/>
       <Bar dataKey="value" fill="#7562cf" radius={[0,4,4,0]}/>
     </BarChart>
   </ResponsiveContainer>;
+}
+
+function RankingList({rows,limit=10}){
+  if(!rows?.length)return <p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>;
+  return <div className="scope-v2-ranking">
+    {rows.slice(0,limit).map((row,index)=><div key={row.ranking_key||row.term||index}>
+      <strong>{index+1}. {displayTerm(row)}</strong>
+      <span>{Number(row.item_count||0).toLocaleString()}</span>
+    </div>)}
+  </div>;
+}
+
+function FaceNav({go,face}){
+  return <nav className="scope-v2-stat-space-nav" aria-label="3D 統計空間">
+    <button type="button" onClick={()=>go('keywords')} aria-current={face==='keywords'?'page':undefined}>↑ 關鍵詞</button>
+    <button type="button" onClick={()=>go('textKeywords')} aria-current={face==='textKeywords'?'page':undefined}>← 文字設定</button>
+    <button type="button" onClick={()=>go('overview')} aria-current={face==='overview'?'page':undefined}>● 首頁</button>
+    <button type="button" onClick={()=>go('mediaKeywords')} aria-current={face==='mediaKeywords'?'page':undefined}>多媒體設定 →</button>
+    <button type="button" onClick={()=>go('statistics')} aria-current={face==='statistics'?'page':undefined}>↓ 統計</button>
+  </nav>;
+}
+
+function useRanking(scopeId,type,navigation,limit=100){
+  return useQuery({
+    queryKey:['statistics-ranking',scopeId,type,navigation.period||'all'],
+    queryFn:async()=>(await selectScopeRankingPage(scopeId,{rankingType:type,limit,navigation})).rows,
+    staleTime:30000
+  });
+}
+
+function OverviewFace({scopeId,navigation,go}){
+  const textQuery=useRanking(scopeId,'text_type',navigation,30);
+  const mediaTypeQuery=useRanking(scopeId,'meta_type',navigation,30);
+  const mediaTagQuery=useRanking(scopeId,'meta_style',navigation,30);
+  const textRows=textQuery.data||[];
+  const mediaRows=mediaTagQuery.data||[];
+  const textTotal=textRows.reduce((sum,row)=>sum+Number(row.item_count||0),0);
+  const mediaTotal=(mediaTypeQuery.data||[]).reduce((sum,row)=>sum+Number(row.item_count||0),0);
+  const error=textQuery.error||mediaTypeQuery.error||mediaTagQuery.error;
+
+  return <div className="scope-v2-stat-face-content">
+    <header className="scope-v2-stat-face-heading">
+      <div><p className="loc-eyebrow">Statistics · Overview</p><h2>統計首頁</h2><p>文字與多媒體同時可見，但資料源與分類完全分開。</p></div>
+    </header>
+    {error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(error)}</p>:null}
+    <div className="scope-v2-stat-overview-grid">
+      <section className="scope-v2-inline-card">
+        <div className="scope-v2-stat-card-heading"><div><h3>文字排行榜</h3><span>{textTotal.toLocaleString()} 筆文字</span></div><button type="button" onClick={()=>go('textKeywords')}>文字關鍵詞設定</button></div>
+        <RankingList rows={textRows}/>
+        <RankingChart rows={textRows} height={260}/>
+      </section>
+      <section className="scope-v2-inline-card">
+        <div className="scope-v2-stat-card-heading"><div><h3>多媒體排行榜</h3><span>{mediaTotal.toLocaleString()} 筆媒體</span></div><button type="button" onClick={()=>go('mediaKeywords')}>多媒體 Meta Tag 設定</button></div>
+        <RankingList rows={mediaRows}/>
+        <RankingChart rows={mediaRows} height={260}/>
+      </section>
+    </div>
+    <FaceNav go={go} face="overview"/>
+  </div>;
+}
+
+function StatisticsFace({scopeId,navigation,go}){
+  const [textType,setTextType]=useState('text_type');
+  const [mediaType,setMediaType]=useState('meta_style');
+  const [textChart,setTextChart]=useState('bar');
+  const [mediaChart,setMediaChart]=useState('bar');
+  const textQuery=useRanking(scopeId,textType,navigation,100);
+  const mediaQuery=useRanking(scopeId,mediaType,navigation,100);
+  return <div className="scope-v2-stat-face-content">
+    <header className="scope-v2-stat-face-heading"><div><p className="loc-eyebrow">Statistics · Down</p><h2>文字統計 × 多媒體統計</h2><p>同一層呈現，互不混算。</p></div></header>
+    <div className="scope-v2-stat-overview-grid">
+      <section className="scope-v2-inline-card">
+        <h3>文字統計</h3>
+        <div className="scope-v2-stat-controls">
+          <label><span>分類</span><select className="scope-v2-select" value={textType} onChange={event=>setTextType(event.target.value)}>{TEXT_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+          <label><span>圖形</span><select className="scope-v2-select" value={textChart} onChange={event=>setTextChart(event.target.value)}>{CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+        </div>
+        {textQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(textQuery.error)}</p>:null}
+        <RankingChart type={textChart} rows={textQuery.data||[]} height={380}/>
+      </section>
+      <section className="scope-v2-inline-card">
+        <h3>多媒體統計</h3>
+        <div className="scope-v2-stat-controls">
+          <label><span>分類</span><select className="scope-v2-select" value={mediaType} onChange={event=>setMediaType(event.target.value)}>{MEDIA_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+          <label><span>圖形</span><select className="scope-v2-select" value={mediaChart} onChange={event=>setMediaChart(event.target.value)}>{CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+        </div>
+        {mediaQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(mediaQuery.error)}</p>:null}
+        <RankingChart type={mediaChart} rows={mediaQuery.data||[]} height={380}/>
+      </section>
+    </div>
+    <FaceNav go={go} face="statistics"/>
+  </div>;
+}
+
+function KeywordOverviewFace({scopeId,navigation,go}){
+  const mediaTags=useRanking(scopeId,'meta_style',navigation,100);
+  return <div className="scope-v2-stat-face-content">
+    <header className="scope-v2-stat-face-heading"><div><p className="loc-eyebrow">Statistics · Up</p><h2>關鍵詞設定</h2><p>文字關鍵詞與多媒體 Meta Tag 各自治理，不共用詞庫。</p></div></header>
+    <div className="scope-v2-stat-overview-grid">
+      <section className="scope-v2-inline-card">
+        <h3>文字關鍵詞</h3>
+        <p>用於文字內容、文字風格與既有關鍵詞規則。</p>
+        <button type="button" onClick={()=>go('textKeywords')}>← 進入文字關鍵詞細節</button>
+      </section>
+      <section className="scope-v2-inline-card">
+        <h3>多媒體關鍵詞／Meta Tag</h3>
+        <p>直接來自多媒體自身的 <code>style_tags</code>，目前已有 {(mediaTags.data||[]).length.toLocaleString()} 種可統計標籤。</p>
+        <button type="button" onClick={()=>go('mediaKeywords')}>進入多媒體設定細節 →</button>
+      </section>
+    </div>
+    <FaceNav go={go} face="keywords"/>
+  </div>;
+}
+
+function TextKeywordFace({scopeId,scope,go}){
+  return <div className="scope-v2-stat-face-content">
+    <header className="scope-v2-stat-face-heading"><div><p className="loc-eyebrow">Statistics · Left</p><h2>文字關鍵詞設定細節</h2></div></header>
+    <KeywordSettingsV2 scopeId={scopeId} databaseScopeId={scope.databaseScopeId||scopeId}/>
+    <FaceNav go={go} face="textKeywords"/>
+  </div>;
+}
+
+function MediaKeywordFace({scope,go}){
+  return <div className="scope-v2-stat-face-content">
+    <header className="scope-v2-stat-face-heading"><div><p className="loc-eyebrow">Statistics · Right</p><h2>多媒體 Meta Tag 設定細節</h2><p>直接編輯媒體的分類文字；不建立另一套文字關鍵詞資料。</p></div></header>
+    <MediaMetaSettingsV2 databaseScopeId={scope.databaseScopeId||'lo3rwang'}/>
+    <FaceNav go={go} face="mediaKeywords"/>
+  </div>;
+}
+
+function SpatialStatistics({scopeId,scope,navigation}){
+  const router=useRouter();
+  const legacyFace=navigation.statTab==='charts'?'statistics':navigation.statTab==='keywords'?'keywords':'overview';
+  const face=navigation.statFace||legacyFace;
+  function go(nextFace){
+    router.push(featureNavigationHref(scopeId,'statics',{...navigation,statFace:nextFace}));
+  }
+  return <section className="loc-card scope-v2-feature-card">
+    <div className="scope-v2-stat-space" data-face={face}>
+      <div className="scope-v2-stat-cube" data-face={face}>
+        <section className="scope-v2-stat-cube-face scope-v2-stat-cube-front" aria-hidden={face!=='overview'}>
+          <OverviewFace scopeId={scopeId} navigation={navigation} go={go}/>
+        </section>
+        <section className="scope-v2-stat-cube-face scope-v2-stat-cube-bottom" aria-hidden={face!=='statistics'}>
+          <StatisticsFace scopeId={scopeId} navigation={navigation} go={go}/>
+        </section>
+        <section className="scope-v2-stat-cube-face scope-v2-stat-cube-top" aria-hidden={face!=='keywords'}>
+          <KeywordOverviewFace scopeId={scopeId} navigation={navigation} go={go}/>
+        </section>
+        <section className="scope-v2-stat-cube-face scope-v2-stat-cube-left" aria-hidden={face!=='textKeywords'}>
+          {face==='textKeywords'?<TextKeywordFace scopeId={scopeId} scope={scope} go={go}/>:null}
+        </section>
+        <section className="scope-v2-stat-cube-face scope-v2-stat-cube-right" aria-hidden={face!=='mediaKeywords'}>
+          {face==='mediaKeywords'?<MediaKeywordFace scope={scope} go={go}/>:null}
+        </section>
+      </div>
+    </div>
+  </section>;
+}
+
+function SimpleStatistics({scopeId,scope,navigation}){
+  const types=scopeId==='runes'?RUNE_TYPES:TEXT_TYPES;
+  const [rankingType,setRankingType]=useState(types[0][0]);
+  const [chartType,setChartType]=useState('bar');
+  const query=useRanking(scopeId,rankingType,navigation,100);
+  return <section className="loc-card scope-v2-feature-card">
+    <p className="loc-eyebrow">Statistics</p><h2>統計功能</h2>
+    <div className="scope-v2-stat-controls">
+      <label><span>分類</span><select className="scope-v2-select" value={rankingType} onChange={event=>setRankingType(event.target.value)}>{types.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+      <label><span>圖形</span><select className="scope-v2-select" value={chartType} onChange={event=>setChartType(event.target.value)}>{CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+    </div>
+    {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
+    <RankingList rows={query.data||[]}/><RankingChart type={chartType} rows={query.data||[]} height={380}/>
+    {scopeId==='runes'?<KeywordSettingsV2 scopeId={scopeId} databaseScopeId={scope.databaseScopeId||scopeId}/>:null}
+  </section>;
 }
 
 export default function StatisticsV2(){
   const {scopeId,scope}=useScopeRuntimeV2();
   const searchParams=useSearchParams();
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
-  const supportsMediaDomain=scopeId==='lo3rwang'||scopeId==='loc';
-  const [statDomain,setStatDomain]=useState(supportsMediaDomain?(navigation.statDomain||'text'):'text');
-  const rawTab=navigation.statTab||'ranking';
-  const statTab=statDomain==='media'&&rawTab==='keywords'?'ranking':rawTab;
-  const availableTypes=scopeId==='runes'
-    ?['group','keyword']
-    :statDomain==='media'?MEDIA_TYPES:TEXT_TYPES;
-  const defaultRankingType=availableTypes[0]||'';
-  const requestedRankingType=navigation.rankingType;
-  const [rankingType,setRankingType]=useState(availableTypes.includes(requestedRankingType)?requestedRankingType:defaultRankingType);
-  const [chartType,setChartType]=useState('bar');
-  useEffect(()=>{
-    const nextTypes=scopeId==='runes'?['group','keyword']:statDomain==='media'?MEDIA_TYPES:TEXT_TYPES;
-    setRankingType(nextTypes.includes(navigation.rankingType)?navigation.rankingType:(nextTypes[0]||''));
-  },[navigation.rankingType,scopeId,statDomain]);
-  function switchDomain(nextDomain){
-    if(!supportsMediaDomain||nextDomain===statDomain)return;
-    const nextTypes=nextDomain==='media'?MEDIA_TYPES:TEXT_TYPES;
-    const nextRanking=nextTypes[0]||'';
-    setStatDomain(nextDomain);
-    setRankingType(nextRanking);
-    if(typeof window!=='undefined'){
-      const nextNavigation={...navigation,statDomain:nextDomain,rankingType:nextRanking,statTab:rawTab==='keywords'&&nextDomain==='media'?'ranking':rawTab};
-      window.history.pushState({},'',featureNavigationHref(scopeId,'statics',nextNavigation));
-    }
-  }
-  const paginationKey=[scopeId,statDomain,rankingType,navigation.q,navigation.identity,navigation.source,navigation.period,navigation.anchor,navigation.from,navigation.to].join('|');
-  const page=useOffsetPagination({
-    key:paginationKey,
-    pageSize:RANKING_PAGE_SIZE,
-    enabled:statTab!=='keywords',
-    loadPage:(offset,limit)=>selectScopeRankingPage(scopeId,{offset,limit,rankingType,navigation})
-  });
-  const {rows,loading,error,hasMore}=page;
-  const types=availableTypes;
-  const chartSource=rows.slice(0,10);
-  const chartRows=useMemo(
-    ()=>chartSource.map((row,index)=>({
-      ...row,
-      term:displayTerm(row),
-      order:index+1,
-      value:Number(row.rank_value??row.item_count??0)||0,
-      count:Number(row.item_count??0)||0
-    })),
-    [chartSource]
-  );
-
   return <FeaturePageV2 featureId="statics">
-    <section className="loc-card scope-v2-feature-card">
-      <p className="loc-eyebrow">Statistics</p>
-      <div className="scope-v2-stat-domain-heading">
-        <div>
-          <h2>{statDomain==='media'?'多媒體 Meta Tag 統計':'文字統計'}</h2>
-          <p>{statDomain==='media'
-            ?'分組：多媒體。小分類包含曲目、Reels、影片、圖像等；Meta Tag 直接來自媒體資料，與文字關鍵詞完全分開。'
-            :'文字獨立統計：只讀 Galaxy 文字資料；歌詞、章節、貼文、文章等文字內容在此統計。'}</p>
-        </div>
-        {supportsMediaDomain?<button type="button" className="scope-v2-stat-flip-button" onClick={()=>switchDomain(statDomain==='media'?'text':'media')}>
-          ↻ 轉到{statDomain==='media'?'文字統計':'多媒體 Meta Tag 統計'}
-        </button>:null}
-      </div>
-      <nav className="scope-v2-tabs scope-v2-stat-tabs" aria-label="統計功能">
-        {STATISTICS_TABS.filter(([key])=>statDomain!=='media'||key!=='keywords').map(([key,label])=><a
-          key={key}
-          href={featureNavigationHref(scopeId,'statics',{...navigation,statDomain,statTab:key,rankingType})}
-          aria-current={statTab===key?'page':undefined}
-        >{label}</a>)}
-      </nav>
-
-      <div className={'scope-v2-stat-flip '+(statDomain==='media'?'is-media':'is-text')} data-stat-domain={statDomain}>
-      <div className="scope-v2-stat-face">
-      {statTab==='ranking'?<section aria-labelledby="statistics-ranking-title">
-        <h3 id="statistics-ranking-title">{statDomain==='media'?'Meta Tag 排行榜':'文字排行榜'}</h3>
-        <div className="scope-v2-stat-controls">
-          {types.length>1?<label>
-            <span>{statDomain==='media'?'Meta Tag 分類':'文字分類'}</span>
-            <select
-              className="scope-v2-select"
-              value={rankingType}
-              onChange={event=>setRankingType(event.target.value)}
-              aria-label="排行榜類型"
-            >
-              {types.map(type=><option key={type} value={type}>{RANKING_TYPE_LABELS[type]||type}</option>)}
-            </select>
-          </label>:null}
-        </div>
-        {error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(error)}</p>:null}
-        {!loading&&!error&&!rows.length?<p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>:null}
-        {rows.length?<div className="scope-v2-ranking" aria-label="排行榜">
-          {rows.map((row,index)=><div key={row.ranking_key||row.term||index}>
-            <strong>{index+1}. {displayTerm(row)}</strong>
-            <span>{Number(row.item_count||0).toLocaleString()}</span>
-          </div>)}
-        </div>:null}
-        {hasMore?<div className="scope-v2-load-sentinel" aria-live="polite">
-          &lt; {loading?'載入中…':'…'} &gt;
-        </div>:null}
-      </section>:null}
-
-      {statTab==='keywords'&&statDomain==='text'?<section aria-labelledby="statistics-keywords-title">
-        <h3 id="statistics-keywords-title">文字關鍵詞設定</h3>
-        <KeywordSettingsV2 scopeId={scopeId} databaseScopeId={scope.databaseScopeId||scopeId}/>
-      </section>:null}
-
-      {statTab==='charts'?<section aria-labelledby="statistics-charts-title">
-        <h3 id="statistics-charts-title">{statDomain==='media'?'Meta Tag 統計圖':'文字統計圖'}</h3>
-        <div className="scope-v2-stat-controls">
-          {types.length>1?<label>
-            <span>{statDomain==='media'?'Meta Tag 分類':'文字分類'}</span>
-            <select
-              className="scope-v2-select"
-              value={rankingType}
-              onChange={event=>setRankingType(event.target.value)}
-              aria-label="統計類型"
-            >
-              {types.map(type=><option key={type} value={type}>{RANKING_TYPE_LABELS[type]||type}</option>)}
-            </select>
-          </label>:null}
-          <label>
-            <span>圖形</span>
-            <select
-              className="scope-v2-select"
-              value={chartType}
-              onChange={event=>setChartType(event.target.value)}
-              aria-label="圖形類型"
-            >
-              {CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}
-            </select>
-          </label>
-        </div>
-        {error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(error)}</p>:null}
-        {!loading&&!error&&!chartRows.length?<p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>:null}
-        {chartRows.length?<div className="scope-v2-ranking-chart" aria-label={CHART_TYPES.find(([value])=>value===chartType)?.[1]||'統計圖'}>
-          <RankingChart type={chartType} rows={chartRows}/>
-        </div>:null}
-      </section>:null}
-      </div>
-      </div>
-    </section>
+    {scopeId==='lo3rwang'
+      ?<SpatialStatistics scopeId={scopeId} scope={scope} navigation={navigation}/>
+      :<SimpleStatistics scopeId={scopeId} scope={scope} navigation={navigation}/>}
   </FeaturePageV2>;
 }
