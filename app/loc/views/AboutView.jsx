@@ -85,7 +85,7 @@ export default function AboutView(){
       </div>
       <div className="home-rune-layout">
         <div className="home-author-copy">
-		<p>月典，是一套用來分析的模型化語言框架。始於月之符文。</p>
+		<p>月典，是一套用來分析的語言建構框架。始於月之符文。</p>
 		<p>月之符文(LunaRunes)是個具有獨特方式的符號型語言。與月典相輔相成。</p>
 		<br/>
           <p>太複雜了！當然可以不用管月之符文是什麼，<a href={RUNES_LINKS.single}>抽了就知道！</a></p>
@@ -123,7 +123,8 @@ export default function AboutView(){
     </section>
 
     <section className="loc-card home-framework" id="framework-map">
-      <div className="home-section-heading"><p className="loc-eyebrow">LOC 3D Architecture</p><h2>LOC 語言建築</h2><p className="loc-subtitle">一個 Scope 是一個立方體；Scope 累積成建築，由 Admin 統合。進入 Scope 後，以「時」與「空」兩個展示層觀看與管理。</p></div>
+      <div className="home-section-heading"><p className="loc-eyebrow">LOC 3D Architecture</p><h2>LOC 語言建築</h2>
+	  <p className="loc-subtitle">個體是一個立方體；個體夠多，就可以累積成建築。以「時」與「空」兩個展示層觀看與管理。</p></div>
       <ScopeArchitecture3D />
       <details className="home-framework-stage" style={{marginTop:'1rem'}}>
         <summary>查看原模型模組關係</summary>
