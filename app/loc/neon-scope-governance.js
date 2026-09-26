@@ -4,7 +4,6 @@ import {deleteNeonRows,insertNeonRows,selectNeonRows,updateNeonRows} from './neo
 
 export const MANAGE_TABLE='silver.manage';
 const ID_PATTERN=/^[A-Za-z][A-Za-z0-9_.-]{0,62}$/;
-const PRIVILEGE_PATTERN=/^[A-Za-z][A-Za-z0-9_.-]*$/;
 
 function safeId(value,label='ID'){
   const id=String(value||'').trim();
@@ -15,11 +14,6 @@ function safeType(value){
   const type=String(value||'').trim();
   if(!['group','scope'].includes(type))throw new Error('節點類型只能是 group 或 scope');
   return type;
-}
-function safePrivileges(value){
-  const rows=[...new Set((Array.isArray(value)?value:[]).map(item=>String(item||'').trim()).filter(Boolean))];
-  if(rows.some(item=>!PRIVILEGE_PATTERN.test(item)))throw new Error('privileges 格式無效');
-  return rows;
 }
 function limit(value,fallback,max){
   const n=Number(value);
@@ -96,51 +90,6 @@ export async function deleteManagedNode(row){
     {column:idColumn,operator:'eq',value:nodeId}
   ]});
   return rows[0]||null;
-}
-
-export async function selectPermissions({limit:maximum=500}={}){
-  return (await selectNeonRows(MANAGE_TABLE,{
-    columns:'record_id,user_id,email,privileges,created_at,updated_at',
-    filters:[{column:'record_type',operator:'eq',value:'permission'}],
-    orders:[{column:'updated_at',ascending:false}],
-    limit:limit(maximum,500,1000)
-  })).rows;
-}
-
-export async function upsertPermission({userId,email,privileges}){
-  const user_id=String(userId||'').trim();
-  const cleanEmail=String(email||'').trim();
-  if(!user_id)throw new Error('user_id 不可空白');
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail))throw new Error('email 格式無效');
-  const cleanPrivileges=safePrivileges(privileges);
-  const {rows}=await selectNeonRows(MANAGE_TABLE,{
-    columns:'record_id',
-    filters:[
-      {column:'record_type',operator:'eq',value:'permission'},
-      {column:'user_id',operator:'eq',value:user_id}
-    ],
-    limit:1
-  });
-  if(rows.length){
-    const updated=await updateNeonRows(MANAGE_TABLE,{email:cleanEmail,privileges:cleanPrivileges,updated_at:new Date().toISOString()},{filters:[
-      {column:'record_type',operator:'eq',value:'permission'},
-      {column:'user_id',operator:'eq',value:user_id}
-    ]});
-    return updated[0];
-  }
-  const inserted=await insertNeonRows(MANAGE_TABLE,[{
-    record_type:'permission',user_id,email:cleanEmail,privileges:cleanPrivileges
-  }]);
-  return inserted[0];
-}
-
-export async function deletePermission(userId){
-  const user_id=String(userId||'').trim();
-  if(!user_id)throw new Error('user_id 不可空白');
-  return (await deleteNeonRows(MANAGE_TABLE,{filters:[
-    {column:'record_type',operator:'eq',value:'permission'},
-    {column:'user_id',operator:'eq',value:user_id}
-  ]}))[0]||null;
 }
 
 export function managedNodeId(row){return idOf(row)}
