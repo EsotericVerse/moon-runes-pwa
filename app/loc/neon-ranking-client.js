@@ -3,19 +3,19 @@ import {selectNeonRows} from './neon-repository';
 
 const RANKING_VIEWS=Object.freeze({
   loc:'api.loc_rankings',
-  runes:'api.runes_rankings',
+  lunarunes:'api.runes_rankings',
   lo3rwang:'api.lo3rwang_rankings'
 });
 
 const RANKING_TYPES=Object.freeze({
   loc:Object.freeze(['group','keyword','text_source','text_category','text_type','meta_source','meta_type','meta_style']),
-  runes:Object.freeze(['group','keyword']),
+  lunarunes:Object.freeze(['group','keyword']),
   lo3rwang:Object.freeze(['text_source','text_category','text_type','meta_source','meta_type','meta_style'])
 });
 
 const RANKING_COLUMNS=Object.freeze({
   loc:'scope_id,ranking_key,ranking_type,term,rank_value,item_count,period,source',
-  runes:'ranking_key,ranking_type,term,rank_value,item_count,source',
+  lunarunes:'ranking_key,ranking_type,term,rank_value,item_count,source',
   lo3rwang:'ranking_key,ranking_type,term,rank_value,item_count,period'
 });
 
