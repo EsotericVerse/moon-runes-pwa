@@ -131,7 +131,7 @@ export default function CultureTimelineEditor({scopeId='loc',selectedEntryId='',
     if(account.permissionLoading||!account.user)return()=>{active=false};
     Promise.all(candidateScopes.map(async candidate=>{
       const [global,scope,page]=await Promise.all([
-        account.canManageGlobal(),account.canManageScope(candidate),account.canManagePage(candidate,'culture')
+        account.canManageGlobal(),account.canManageScope(candidate)
       ]);
       return global||scope||page?candidate:null;
     })).then(values=>{
@@ -141,7 +141,7 @@ export default function CultureTimelineEditor({scopeId='loc',selectedEntryId='',
       if(allowed.length&&!allowed.includes(dataScope))setDataScope(allowed[0]);
     }).catch(()=>{if(active)setAllowedScopes([])});
     return()=>{active=false};
-  },[account.user?.id,account.permissionLoading,account.canManageGlobal,account.canManageScope,account.canManagePage,scopeId]);
+  },[account.user?.id,account.permissionLoading,account.canManageGlobal,account.canManageScope,scopeId]);
 
   const query=useQuery({
     queryKey:['culture-edit-data',dataScope],
