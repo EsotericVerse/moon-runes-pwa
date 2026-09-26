@@ -117,13 +117,8 @@ export default function AboutView(){
     </section>
 
     <section className="loc-card home-framework" id="framework-map">
-      <div className="home-section-heading"><p className="loc-eyebrow">LOC 3D Architecture</p><h2>LOC 語言建築</h2>
-	  <p className="loc-subtitle">個體是一個立方體；個體夠多，就可以累積成建築。以「時」與「空」兩個展示層觀看與管理。</p></div>
-      <div className="home-framework-stage" aria-label="LOC 平面結構圖">
-        <ModelArchitectureExplorer modules={MODEL_MODULES} />
-        <div className="model-relationship" aria-label="架構關係"><span>語彙與表達資料</span><b aria-hidden="true">→</b><span>脈絡與方法處理</span>
-		<b aria-hidden="true">↔</b><span>演算法與模組組合</span><b aria-hidden="true">→</b><span>文化時間演變</span></div>
-      </div>
+      <div className="home-section-heading"><p className="loc-eyebrow">LOC Model Architecture</p><h2>LOC模型架構</h2><p className="loc-subtitle">LOC八個功能架構依資料、處理與組合關係協作。</p></div>
+      <div className="home-framework-stage" aria-label="LOC 八個功能模組架構"><ModelArchitectureExplorer modules={MODEL_MODULES} /><div className="model-relationship" aria-label="架構關係"><span>語彙與表達資料</span><b aria-hidden="true">→</b><span>脈絡與方法處理</span><b aria-hidden="true">↔</b><span>演算法與模組組合</span><b aria-hidden="true">→</b><span>文化時間演變</span></div></div>
     </section>
 
     <section className="loc-card home-copy-block home-skills" id="skills">
