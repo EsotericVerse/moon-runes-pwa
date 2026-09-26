@@ -9,7 +9,7 @@ import {
 } from 'recharts';
 import {selectScopeRankingPage,selectScopeRankingTypes} from '../../loc/neon-ranking-client';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation.v2';
-import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
+import {FEATURE_EMPTY_MESSAGE,FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import KeywordSettingsV2 from './KeywordSettingsV2';
 import SourceSettingsV2 from './SourceSettingsV2';
@@ -122,8 +122,9 @@ function RankingPanel({scopeId,navigation,types}){
   return <section className="scope-v2-stat-section">
     <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Top 10</p><h2>排行榜</h2><p>排行榜顯示所選統計項目的前 10 名。</p></div></header>
     <div className="scope-v2-stat-controls"><StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/></div>
+    {query.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
     {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
-    <RankingList rows={query.data||[]} limit={10}/>
+    {!query.isPending&&!query.error?<RankingList rows={query.data||[]} limit={10}/>:null}
   </section>;
 }
 
@@ -138,8 +139,9 @@ function ChartsPanel({scopeId,navigation,types}){
       <StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/>
       <label><span>圖形</span><select className="scope-v2-select" value={chartType} onChange={event=>setChartType(event.target.value)}>{CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
     </div>
+    {query.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
     {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
-    <RankingChart type={chartType} rows={query.data||[]} height={380}/>
+    {!query.isPending&&!query.error?<RankingChart type={chartType} rows={query.data||[]} height={380}/>:null}
   </section>;
 }
 
@@ -174,12 +176,13 @@ function StatisticsShell({scopeId,navigation}){
   const types=typesQuery.data||['keyword','source'];
   return <section className="loc-card scope-v2-feature-card">
     <StatTabs scopeId={scopeId} navigation={navigation} active={active}/>
+    {typesQuery.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
     {typesQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(typesQuery.error)}</p>:null}
-    {active==='ranking'?<RankingPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
+    {!typesQuery.isPending&&active==='ranking'?<RankingPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
     {active==='keywords'?<KeywordPanel scopeId={scopeId}/>:null}
     {active==='sources'?<SourcePanel scopeId={scopeId}/>:null}
     {active==='styles'?<StylePanel scopeId={scopeId}/>:null}
-    {active==='charts'?<ChartsPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
+    {!typesQuery.isPending&&active==='charts'?<ChartsPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
   </section>;
 }
 
