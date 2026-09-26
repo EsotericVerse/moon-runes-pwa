@@ -3,7 +3,7 @@
 import {useMemo} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
-import {selectRuneContextCatalog,selectScopeContextData} from '../../loc/neon-context-client';
+import {selectRuneKeywordCatalog,selectScopeContextData} from '../../loc/neon-context-client';
 import {readFeatureNavigation} from '../feature-navigation.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import {scopeFeatureSubtitleV2} from '../page-profiles.v2';
@@ -19,8 +19,8 @@ export default function ContextV2(){
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
   const isRuneScope=scopeId==='lunarunes';
   const query=useQuery({
-    queryKey:isRuneScope?['rune-context-catalog']:['context-graph',scopeId],
-    queryFn:()=>isRuneScope?selectRuneContextCatalog():selectScopeContextData(scopeId),
+    queryKey:isRuneScope?['rune-keyword-catalog']:['context-graph',scopeId],
+    queryFn:()=>isRuneScope?selectRuneKeywordCatalog():selectScopeContextData(scopeId),
     staleTime:5*60_000
   });
   const graph=query.data||{nodes:[],edges:[]};

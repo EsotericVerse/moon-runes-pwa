@@ -10,8 +10,7 @@ const EDITABLE_TYPES=Object.freeze([
 ]);
 const TYPE_LABEL=Object.freeze(Object.fromEntries(EDITABLE_TYPES));
 const TIME_TABLES=Object.freeze({
-  lo3rwang:'silver.lo3rwang_style_time',
-  lunarunes:'silver.lrunes_style_time'
+  lo3rwang:'silver.lo3rwang_style_time'
 });
 const BLANK=Object.freeze({
   entry_key:'',entry_type:'anchor',title:'',summary:'',start_date:'',end_date:'',
@@ -112,7 +111,7 @@ function rowForForm(draft,anchors){
 export default function CultureTimelineEditor({scopeId='loc',selectedEntryId='',riverCommand=null,onCapabilityChange=null}){
   const account=useNeonAccount();
   const queryClient=useQueryClient();
-  const candidateScopes=scopeId==='loc'?['lo3rwang','lunarunes']:[scopeId];
+  const candidateScopes=scopeId==='loc'?[]:(TIME_TABLES[scopeId]?[scopeId]:[]);
   const [allowedScopes,setAllowedScopes]=useState([]);
   const [dataScope,setDataScope]=useState(candidateScopes[0]||'');
   const [draft,setDraft]=useState({...BLANK});

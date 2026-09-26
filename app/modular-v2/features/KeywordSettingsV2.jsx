@@ -2,7 +2,7 @@
 
 import {useEffect,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
-import {selectRuneContextCatalog} from '../../loc/neon-context-client';
+import {selectRuneKeywordCatalog} from '../../loc/neon-context-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {featureDataErrorMessage} from '../feature-data-state.v2';
 import RuneContextV2 from './RuneContextV2';
@@ -12,8 +12,8 @@ export default function KeywordSettingsV2({scopeId='loc'}){
   const account=useNeonAccount();
   const [canEditRunes,setCanEditRunes]=useState(false);
   const runeQuery=useQuery({
-    queryKey:['rune-context-catalog'],
-    queryFn:selectRuneContextCatalog,
+    queryKey:['rune-keyword-catalog'],
+    queryFn:selectRuneKeywordCatalog,
     enabled:scopeId==='loc'||scopeId==='lunarunes',
     staleTime:5*60_000
   });

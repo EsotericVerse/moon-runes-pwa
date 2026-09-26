@@ -3,30 +3,30 @@
 import {Index} from 'flexsearch';
 import {selectNeonRows} from './neon-repository';
 
+const LRUNES_SOURCES=Object.freeze([
+  ['silver.lrunes','月之符文',['record_id','rune_number','rune_name','group_name','english_name','lots_positive','lots_negative','lots_half_positive','lots_half_negative','myth_story','rune_evolution_history','rune_description'],'lrunes',[{column:'record_type',operator:'eq',value:'rune'}]],
+  ['silver.lrunes','符文關鍵詞',['record_id','rune_number','keyword_group','keyword'],'lrunes',[{column:'record_type',operator:'eq',value:'keyword'},{column:'active',operator:'eq',value:true}]],
+  ['silver.lrunes','符文規則',['record_id','title','rule_text','before_text','after_text','note'],'lrunes',[{column:'record_type',operator:'eq',value:'rule'},{column:'active',operator:'eq',value:true}]],
+  ['silver.lrunes','符文演化',['record_id','title','start_date','rune_count','status'],'lrunes',[{column:'record_type',operator:'eq',value:'evolution'}]],
+  ['silver.lrunes','符文文字',['record_id','galaxy_id','scope_id','category','content_type','source_role','title','content','meta_tags','created_at','source_ref','source_id'],'lrunes',[{column:'record_type',operator:'eq',value:'galaxy'}]]
+]);
+
 const TABLES=Object.freeze({
   all:Object.freeze([
-    ['silver.lo3rwang_style_time','作者脈絡',['entry_key','entry_type','title','summary'],'lo3rwang'],
-    ['silver.lrunes','月之符文',['rune_number','rune_name','group_name','english_name','lots_positive','lots_negative','lots_half_positive','lots_half_negative','myth_story','rune_evolution_history','rune_description'],'lrunes'],
-    ['silver.lrunes_style_context','符文關鍵詞與關係',['context_id','context_type','rune_number','related_rune_number','keyword_group','keyword','relation_type','title','rule_text','note'],'lrunes'],
-    ['silver.lrunes_style_time','符文時期',['entry_key','entry_type','title','summary','period','entry_name','start_date','end_date','note'],'lrunes'],
-    ['silver.lrunes_galaxy','符文文字',['galaxy_id','scope_id','category','content_type','source_role','title','content','meta_tags','created_at','source_ref','source_id'],'lrunes'],
-    ['silver.lo3rwang_galaxy','作者正文',['galaxy_id','scope_id','title','content','source_platform','source_id','target_id','ref_id','url','searchable','created_at','updated_at'],'lo3rwang'],
-    ['silver.faq_entries','FAQ',['faq_id','category','intent','question','answer','status','source_path'],'loc'],
-    ['silver.lo3rwang_galaxy_media','音樂與多媒體',['media_id','scope_id','media_link','source_platform','source_native_id','media_type','title','url','meta_tags','style_tags','created_at','created_date','playlist','publication_status','play_count','like_count','view_count','is_representative'],'lo3rwang']
+    ['silver.lo3rwang_style_time','作者脈絡',['entry_key','entry_type','title','summary'],'lo3rwang',[]],
+    ...LRUNES_SOURCES,
+    ['silver.lo3rwang_galaxy','作者正文',['galaxy_id','scope_id','title','content','source_platform','source_id','target_id','ref_id','url','searchable','created_at','updated_at'],'lo3rwang',[]],
+    ['silver.faq_entries','FAQ',['faq_id','category','intent','question','answer','status','source_path'],'loc',[]],
+    ['silver.lo3rwang_galaxy_media','音樂與多媒體',['media_id','scope_id','media_link','source_platform','source_native_id','media_type','title','url','meta_tags','style_tags','created_at','created_date','playlist','publication_status','play_count','like_count','view_count','is_representative'],'lo3rwang',[]]
   ]),
-  '月之符文':Object.freeze([
-    ['silver.lrunes','月之符文',['rune_number','rune_name','group_name','english_name','lots_positive','lots_negative','lots_half_positive','lots_half_negative','myth_story','rune_evolution_history','rune_description'],'lrunes'],
-    ['silver.lrunes_style_context','符文關鍵詞與關係',['context_id','context_type','rune_number','related_rune_number','keyword_group','keyword','relation_type','title','rule_text','note'],'lrunes'],
-    ['silver.lrunes_style_time','符文時期',['entry_key','entry_type','title','summary','period','entry_name','start_date','end_date','note'],'lrunes'],
-    ['silver.lrunes_galaxy','符文文字',['galaxy_id','scope_id','category','content_type','source_role','title','content','meta_tags','created_at','source_ref','source_id'],'lrunes']
-  ]),
+  '月之符文':LRUNES_SOURCES,
   lo3rwang:Object.freeze([
-    ['silver.lo3rwang_galaxy','作者正文',['galaxy_id','scope_id','title','content','source_platform','source_id','target_id','ref_id','url','searchable','created_at','updated_at'],'lo3rwang'],
-    ['silver.lo3rwang_galaxy_media','音樂與多媒體',['media_id','scope_id','media_link','source_platform','source_native_id','media_type','title','url','meta_tags','style_tags','created_at','created_date','playlist','publication_status','play_count','like_count','view_count','is_representative'],'lo3rwang']
+    ['silver.lo3rwang_galaxy','作者正文',['galaxy_id','scope_id','title','content','source_platform','source_id','target_id','ref_id','url','searchable','created_at','updated_at'],'lo3rwang',[]],
+    ['silver.lo3rwang_galaxy_media','音樂與多媒體',['media_id','scope_id','media_link','source_platform','source_native_id','media_type','title','url','meta_tags','style_tags','created_at','created_date','playlist','publication_status','play_count','like_count','view_count','is_representative'],'lo3rwang',[]]
   ]),
   治理:Object.freeze([
-    ['silver.lo3rwang_style_time','治理脈絡',['entry_key','entry_type','title','summary'],'lo3rwang'],
-    ['silver.faq_entries','FAQ',['faq_id','category','intent','question','answer','status','source_path'],'loc']
+    ['silver.lo3rwang_style_time','治理脈絡',['entry_key','entry_type','title','summary'],'lo3rwang',[]],
+    ['silver.faq_entries','FAQ',['faq_id','category','intent','question','answer','status','source_path'],'loc',[]]
   ])
 });
 
@@ -44,17 +44,17 @@ const SCOPE_SEARCH_TITLES=Object.freeze({
 });
 
 function normalizeSearchText(value){
-  return String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\\s\\u3000]+/g,'');
+  return String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
 }
 
 function rowSearchText(row){
   return normalizeSearchText(Object.values(row||{}).filter(value=>typeof value==='string').join(' '));
 }
 
-async function selectAllNeonRows(table,source,columns,scopeId=''){
+async function selectAllNeonRows(table,source,columns,scopeId='',filters=[]){
   const rows=[];let offset=0;let total=null;
   while(total===null||offset<total){
-    const result=await selectNeonRows(table,{columns:columns.join(','),count:'exact',range:[offset,offset+SEARCH_PAGE_SIZE-1]});
+    const result=await selectNeonRows(table,{columns:columns.join(','),filters,count:'exact',range:[offset,offset+SEARCH_PAGE_SIZE-1]});
     rows.push(...result.rows.map(row=>({row:{...row,scope_id:row.scope_id||scopeId},source})));
     total=Number.isFinite(Number(result.count))?Number(result.count):offset+result.rows.length;
     if(result.rows.length<SEARCH_PAGE_SIZE)break;
@@ -65,9 +65,9 @@ async function selectAllNeonRows(table,source,columns,scopeId=''){
 
 export async function selectNeonSearchRows(collectionId){
   const tables=TABLES[collectionId]||TABLES.all;
-  const settled=await Promise.all(tables.map(async([table,source,columns,scopeId])=>{
+  const settled=await Promise.all(tables.map(async([table,source,columns,scopeId,filters])=>{
     try{
-      return {table,rows:await selectAllNeonRows(table,source,columns,scopeId),error:null};
+      return {table,rows:await selectAllNeonRows(table,source,columns,scopeId,filters),error:null};
     }catch(error){
       return {table,rows:[],error:new Error(`Neon Search SELECT ${table}: ${error?.message||'query failed'}`)};
     }

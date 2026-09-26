@@ -48,6 +48,19 @@ async function readTimeline(table,scopeId){
   const {rows}=await selectNeonRows(table,{columns:TIMELINE_COLUMNS,filters:[{column:'entry_type',operator:'in',value:['period','event','anchor','period_style']}],orders:[{column:'start_date',ascending:true}],limit:5000});
   return rows.map(row=>({...row,scope_id:scopeId}));
 }
+async function readRuneEvolution(){
+  const {rows}=await selectNeonRows('silver.lrunes',{
+    columns:'record_id,title,start_date,status,rune_count',
+    filters:[{column:'record_type',operator:'eq',value:'evolution'}],
+    orders:[{column:'start_date',ascending:true}],
+    limit:100
+  });
+  return rows.map(row=>({
+    entry_key:row.record_id,entry_type:'anchor',title:row.title,summary:'',
+    start_date:row.start_date,end_date:null,status:row.status||'',
+    rune_count:row.rune_count,scope_id:'lrunes'
+  }));
+}
 function dateFilters(startDate,endDate){
   const filters=[{column:'created_at',operator:'gte',value:`${String(startDate).slice(0,10)}T00:00:00+08:00`}];
   if(endDate)filters.push({column:'created_at',operator:'lte',value:String(endDate).slice(0,10)+'T23:59:59.999+08:00'});
@@ -70,7 +83,7 @@ export async function selectScopeCultureData(scopeId){
   if(!['loc','lrunes','lo3rwang'].includes(dataId))throw new Error('Scope 無效');
   const [authorContext,runeContext]=await Promise.all([
     dataId==='loc'||dataId==='lo3rwang'?readTimeline('silver.lo3rwang_style_time','lo3rwang'):Promise.resolve([]),
-    dataId==='loc'||dataId==='lrunes'?readTimeline('silver.lrunes_style_time','lrunes'):Promise.resolve([])
+    dataId==='loc'||dataId==='lrunes'?readRuneEvolution():Promise.resolve([])
   ]);
   const scopeContext=[...authorContext,...runeContext];
   const runeAnchors=runeContext.filter(row=>row.entry_type==='anchor');

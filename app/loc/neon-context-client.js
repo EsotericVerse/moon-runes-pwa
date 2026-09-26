@@ -27,9 +27,11 @@ function normalizeAuthorGraph(rows,styleRows=[]){
       const targetId=String(anchor?.entry_key||'');
       if(!targetId)continue;
       nodeRows.set(targetId,anchor);
-      edges.push({edge_id:sourceId+':'+suffix,source_node_id:sourceId,target_node_id:targetId,
+      edges.push({
+        edge_id:sourceId+':'+suffix,source_node_id:sourceId,target_node_id:targetId,
         relation_type:'temporal_anchor',relation_label:label,
-        description:String(row.title||sourceId)+' '+label+' '+String(anchor.title||targetId)});
+        description:String(row.title||sourceId)+' '+label+' '+String(anchor.title||targetId)
+      });
     }
   }
 
@@ -66,7 +68,7 @@ function normalizeAuthorGraph(rows,styleRows=[]){
   return {nodes,edges};
 }
 
-function normalizeRuneGraph(runes,contextRows){
+function normalizeRuneGraph(runes,keywordRows){
   const nodes=(runes||[]).map(row=>({
     node_id:'rune:'+row.rune_number,
     label:row.rune_name||String(row.rune_number),
@@ -75,24 +77,22 @@ function normalizeRuneGraph(runes,contextRows){
     description:row.rune_description||''
   }));
   const edges=[];
-  for(const row of contextRows||[]){
-    const runeId='rune:'+row.rune_number;
-    if(row.related_rune_number!==null&&row.related_rune_number!==undefined){
-      edges.push({
-        edge_id:String(row.context_id),
-        source_node_id:runeId,
-        target_node_id:'rune:'+row.related_rune_number,
-        relation_type:row.relation_type||row.context_type||'related',
-        relation_label:row.title||row.relation_type||'關聯',
-        description:row.note||row.rule_text||''
-      });
-      continue;
-    }
+  for(const row of keywordRows||[]){
     const keyword=String(row.keyword||'').trim();
-    if(!keyword)continue;
-    const nodeId=runeId+':'+String(row.context_type||'keyword')+':'+encodeURIComponent(keyword);
-    nodes.push({node_id:nodeId,label:keyword,node_type:row.context_type||'keyword',scope_id:'lunarunes',description:row.rule_text||row.note||row.keyword_group||''});
-    edges.push({edge_id:String(row.context_id)+':rune',source_node_id:runeId,target_node_id:nodeId,relation_type:row.relation_type||row.context_type||'keyword',relation_label:row.keyword_group||row.relation_type||'關鍵詞',description:row.rule_text||''});
+    const number=Number(row.rune_number);
+    if(!keyword||!Number.isInteger(number))continue;
+    const runeId='rune:'+number;
+    const keywordId=runeId+':keyword:'+encodeURIComponent(keyword);
+    nodes.push({
+      node_id:keywordId,label:keyword,node_type:'keyword',scope_id:'lunarunes',
+      description:row.keyword_group||''
+    });
+    edges.push({
+      edge_id:String(row.record_id)+':rune',
+      source_node_id:runeId,target_node_id:keywordId,
+      relation_type:'keyword',relation_label:row.keyword_group||'關鍵詞',
+      description:''
+    });
   }
   return {nodes,edges};
 }
@@ -103,13 +103,26 @@ async function readAuthorRows(){
   });
   return rows;
 }
+
 async function readRuneRows(){
-  const [runes,context]=await Promise.all([
-    selectNeonRows('silver.lrunes',{columns:'rune_number,rune_name,group_name,english_name,rune_description',orders:[{column:'rune_number',ascending:true}],limit:100}),
-    selectNeonRows('silver.lrunes_style_context',{columns:'context_id,context_type,rune_number,related_rune_number,keyword_group,keyword,relation_type,title,rule_text,note,order_no,active',filters:[{column:'active',operator:'eq',value:true}],orders:[{column:'rune_number',ascending:true},{column:'order_no',ascending:true}],limit:5000})
+  const [runes,keywords]=await Promise.all([
+    selectNeonRows('silver.lrunes',{
+      columns:'rune_number,rune_name,group_name,english_name,rune_description',
+      filters:[{column:'record_type',operator:'eq',value:'rune'}],
+      orders:[{column:'rune_number',ascending:true}],limit:100
+    }),
+    selectNeonRows('silver.lrunes',{
+      columns:'record_id,rune_number,keyword_group,keyword,order_no,active',
+      filters:[
+        {column:'record_type',operator:'eq',value:'keyword'},
+        {column:'active',operator:'eq',value:true}
+      ],
+      orders:[{column:'rune_number',ascending:true},{column:'order_no',ascending:true}],limit:5000
+    })
   ]);
-  return {runes:runes.rows,context:context.rows};
+  return {runes:runes.rows,keywords:keywords.rows};
 }
+
 async function readAuthorStyles(){
   const [styleResult,keywordResult]=await Promise.all([
     selectNeonRows('silver.lo3rwang_style',{columns:'style_no,node_type,representative_name,basic_principle,order_no',filters:[{column:'node_type',operator:'eq',value:'style'}],orders:[{column:'style_no',ascending:true}],limit:5000}),
@@ -127,11 +140,11 @@ export async function selectScopeContextData(scopeId){
   const [authorRows,styleRows,runeData]=await Promise.all([
     needAuthor?readAuthorRows():Promise.resolve([]),
     needAuthor?readAuthorStyles():Promise.resolve([]),
-    needRunes?readRuneRows():Promise.resolve({runes:[],context:[]})
+    needRunes?readRuneRows():Promise.resolve({runes:[],keywords:[]})
   ]);
   const author=needAuthor?normalizeAuthorGraph(authorRows,styleRows):{nodes:[],edges:[]};
-  const runes=needRunes?normalizeRuneGraph(runeData.runes,runeData.context):{nodes:[],edges:[]};
-  const rows=id==='lo3rwang'?authorRows:(id==='lunarunes'?runeData.context:[...authorRows,...runeData.context]);
+  const runes=needRunes?normalizeRuneGraph(runeData.runes,runeData.keywords):{nodes:[],edges:[]};
+  const rows=id==='lo3rwang'?authorRows:(id==='lunarunes'?runeData.keywords:[...authorRows,...runeData.keywords]);
   return ScopeContextResponseSchema.parse({rows,nodes:[...author.nodes,...runes.nodes],edges:[...author.edges,...runes.edges],trends:[]});
 }
 
@@ -139,46 +152,50 @@ export async function selectScopeContextRows(scopeId){
   return (await selectScopeContextData(scopeId)).rows;
 }
 
-export async function selectRuneContextCatalog(){
-  const {runes,context:contextRows}=await readRuneRows();
-  const contextByRune=new Map();
-  for(const row of contextRows){
+export async function selectRuneKeywordCatalog(){
+  const {runes,keywords}=await readRuneRows();
+  const byRune=new Map();
+  for(const row of keywords){
     const number=Number(row.rune_number);
     if(!Number.isInteger(number))continue;
-    if(!contextByRune.has(number))contextByRune.set(number,{positive:[],negative:[],and:[],nor:[]});
-    const bucket=contextByRune.get(number);
-    if(row.context_type==='keyword'&&row.keyword_group==='positive'&&row.keyword)bucket.positive.push(row.keyword);
-    if(row.context_type==='keyword'&&row.keyword_group==='negative'&&row.keyword)bucket.negative.push(row.keyword);
-    if(row.context_type==='rule'&&row.relation_type==='AND'&&row.keyword)bucket.and.push('AND'+row.keyword);
-    if(row.context_type==='rule'&&row.relation_type==='NOR'&&row.keyword)bucket.nor.push('NOR'+row.keyword);
+    if(!byRune.has(number))byRune.set(number,{positive:[],negative:[]});
+    const bucket=byRune.get(number);
+    if(row.keyword_group==='positive'&&row.keyword)bucket.positive.push(row.keyword);
+    if(row.keyword_group==='negative'&&row.keyword)bucket.negative.push(row.keyword);
   }
   return {runes:runes.map(row=>{
-    const context=contextByRune.get(Number(row.rune_number))||{positive:[],negative:[],and:[],nor:[]};
-    return {...row,positive_keywords:[...context.positive,...context.and].join('、'),negative_keywords:[...context.negative,...context.nor].join('、')};
+    const values=byRune.get(Number(row.rune_number))||{positive:[],negative:[]};
+    return {...row,positive_keywords:values.positive.join('、'),negative_keywords:values.negative.join('、')};
   })};
 }
 
 function splitKeywords(value){
   return String(value||'').split(/[、,，\n]+/).map(item=>item.trim()).filter(Boolean);
 }
+
 export async function updateRuneKeywords({runeNumber,positiveKeywords,negativeKeywords}){
   const number=Number(runeNumber);
   if(!Number.isInteger(number)||number<0||number>66)throw new TypeError('符文編號無效');
   for(const group of ['positive','negative']){
-    await deleteNeonRows('silver.lrunes_style_context',{filters:[
+    await deleteNeonRows('silver.lrunes',{filters:[
+      {column:'record_type',operator:'eq',value:'keyword'},
       {column:'rune_number',operator:'eq',value:number},
-      {column:'context_type',operator:'eq',value:'keyword'},
       {column:'keyword_group',operator:'eq',value:group}
     ],returning:null});
   }
   const rows=[];
   for(const [group,value] of [['positive',positiveKeywords],['negative',negativeKeywords]]){
     splitKeywords(value).forEach((keyword,index)=>rows.push({
-      context_id:'rune:'+number+':keyword:'+group+':'+(index+1),
-      context_type:'keyword',rune_number:number,keyword_group:group,keyword,
-      order_no:index+1,active:true,updated_at:new Date().toISOString()
+      record_id:'keyword:'+number+':'+group+':'+keyword,
+      record_type:'keyword',
+      rune_number:number,
+      keyword_group:group,
+      keyword,
+      order_no:index+1,
+      active:true,
+      updated_at:new Date().toISOString()
     }));
   }
-  if(rows.length)await insertNeonRows('silver.lrunes_style_context',rows,{returning:'context_id'});
+  if(rows.length)await insertNeonRows('silver.lrunes',rows,{returning:'record_id'});
   return {rune_number:number};
 }
