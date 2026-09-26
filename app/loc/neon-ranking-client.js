@@ -77,16 +77,8 @@ async function runeKeywords(){
   return [...map.values()];
 }
 
-async function runeSources(period){
-  const range=await resolvePeriod('lunarunes',period);
-  const filters=[
-    {column:'record_type',operator:'in',value:['galaxy','galaxy_media']},
-    ...dateFilters(range)
-  ];
-  const rows=await selectAllRows('silver.lrunes',{columns:'source_name,created_at,record_type',filters});
-  const map=new Map();
-  for(const row of rows)increment(map,'source',row.source_name,{source:'lrunes',period:period||'all'});
-  return [...map.values()];
+async function runeSources(){
+  return [];
 }
 
 async function authorStyles(period,type){
