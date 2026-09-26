@@ -1,41 +1,49 @@
 import {z} from 'zod';
 
-const PrivilegeSchema=z.string().trim().min(1).regex(/^(admin|scope:[A-Za-z][A-Za-z0-9_.-]{0,62})$/,'Invalid privilege');
+const EmailSchema=z.string().trim().toLowerCase().email();
+const RoleSchema=z.string().trim().regex(/^(admin|scope:[A-Za-z][A-Za-z0-9_.-]{0,62})$/,'Invalid Neon Auth role');
 
-const PermissionRowSchema=z.object({
-  user_id:z.string().trim().min(1).optional(),
-  email:z.string().trim().email(),
-  privileges:z.array(PrivilegeSchema).min(1)
-}).passthrough();
-
-const normalizeScopeId=value=>String(value||'').trim();
-
-function normalizePrivileges(rawRows){
-  const rows=Array.isArray(rawRows)?rawRows:[];
-  const privileges=[];
-  for(const raw of rows){
-    const parsed=PermissionRowSchema.safeParse(raw);
-    if(parsed.success)privileges.push(...parsed.data.privileges);
-  }
-  return [...new Set(privileges.map(value=>PrivilegeSchema.parse(value)))];
+export function normalizeScopeId(value){
+  const id=String(value||'').trim();
+  if(id==='lunarunes'||id==='runes')return 'lrunes';
+  return id;
 }
 
-export function validateScopeGrants(value){
-  return normalizePrivileges(value);
+export function normalizeAuthEmail(value){
+  const parsed=EmailSchema.safeParse(String(value||'').trim().toLowerCase());
+  return parsed.success?parsed.data:'';
 }
 
-export async function createScopeAuthorizer(rawRows){
-  const rows=Array.isArray(rawRows)?rawRows:[];
-  const privileges=normalizePrivileges(rows);
-  const hasAdmin=()=>privileges.includes('admin');
+export function normalizeAuthRole(value){
+  const raw=Array.isArray(value)?value:String(value||'').split(',');
+  const roles=[...new Set(raw.map(item=>String(item||'').trim()).filter(Boolean))];
+  if(roles.length!==1)return '';
+  const parsed=RoleSchema.safeParse(roles[0]);
+  return parsed.success?parsed.data:'';
+}
+
+export function canRoleManageGlobal(role){
+  return normalizeAuthRole(role)==='admin';
+}
+
+export function canRoleManageScope(role,scopeId){
+  const normalizedRole=normalizeAuthRole(role);
+  const scope=normalizeScopeId(scopeId);
+  return normalizedRole==='admin'||Boolean(scope&&normalizedRole===`scope:${scope}`);
+}
+
+export function createScopeAuthorizer(user){
+  const email=normalizeAuthEmail(user?.email);
+  const role=email?normalizeAuthRole(user?.role):'';
+  const privileges=role?[role]:[];
 
   return Object.freeze({
-    grants:Object.freeze(rows),
+    email,
+    role,
     privileges:Object.freeze(privileges),
-    canManageGlobal:async()=>hasAdmin(),
-    canManageScope:async scopeId=>{
-      const scope=normalizeScopeId(scopeId);
-      return hasAdmin()||Boolean(scope&&privileges.includes(`scope:${scope}`));
-    }
+    canManageGlobal:async()=>canRoleManageGlobal(role),
+    canManageScope:async scopeId=>canRoleManageScope(role,scopeId),
+    canManageGlobalSync:()=>canRoleManageGlobal(role),
+    canManageScopeSync:scopeId=>canRoleManageScope(role,scopeId)
   });
 }
