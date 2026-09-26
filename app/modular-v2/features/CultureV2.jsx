@@ -14,7 +14,6 @@ import {
 import {readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
-import CultureVolumeGraph3D from '../modules/culture-timeline/CultureVolumeGraph3D';
 import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import FeaturePageV2 from '../FeaturePageV2';
@@ -95,7 +94,6 @@ export default function CultureV2(){
   });
 
   const rows=useMemo(()=>rowsOf(query.data),[query.data]);
-  const [cultureView,setCultureView]=useState('river');
   const [classificationMode,setClassificationMode]=useState(scopeId==='lunarunes'?'style':'source');
   const [styleLevel,setStyleLevel]=useState('label');
   const [selectedCategory,setSelectedCategory]=useState('');
@@ -236,34 +234,8 @@ export default function CultureV2(){
       {query.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(query.error)}</p>:null}
       {!query.isPending&&!query.error&&!timelineItems.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
       {!query.isPending&&!query.error&&timelineItems.length?<>
-        {(scopeId==='lo3rwang'||scopeId==='loc')?<div className='scope-v2-tabs scope-v2-culture-view-toggle' role='group' aria-label='時間長河顯示方式'>
-          <button type='button' aria-pressed={cultureView==='river'} onClick={()=>setCultureView('river')}>時間長河</button>
-          <button type='button' aria-pressed={cultureView==='volume3d'} onClick={()=>{setCultureView('volume3d');setClassificationMode('source');}}>3D 時期與作品量</button>
-        </div>:null}
 
-        {cultureView==='volume3d'&&(scopeId==='lo3rwang'||scopeId==='loc')
-          ?<CultureVolumeGraph3D
-            periods={periodVolumesQuery.data||[]}
-            timelineItems={timelineItems}
-            categories={sourceGroupsQuery.data||[]}
-            selectedCategory={classificationMode==='source'?selectedCategory:''}
-            selectedCategoryType={classificationMode==='source'?selectedGroup?.category_type||'':''}
-            categoryLoading={sourceGroupsQuery.isFetching}
-            categoryError={sourceGroupsQuery.error?featureDataErrorMessage(sourceGroupsQuery.error):''}
-            works={classificationMode==='source'?(periodWorksQuery.data?.rows||[]):[]}
-            workPage={workPage}
-            workPageCount={workPageCount}
-            workLoading={periodWorksQuery.isFetching}
-            workError={periodWorksQuery.error?featureDataErrorMessage(periodWorksQuery.error):''}
-            loading={periodVolumesQuery.isFetching}
-            error={periodVolumesQuery.error?featureDataErrorMessage(periodVolumesQuery.error):''}
-            onSelectCategory={value=>{setSelectedCategory(value);setWorkPage(0);}}
-            onPageChange={setWorkPage}
-            onSelectWorkPoint={point=>{
-              if(point?.period){setActiveWorkPeriod(point.period);setSelectedCategory(point.category_key||'');setWorkPage(0);}
-            }}
-          />
-          :<>
+
             <CultureTimelineV2
               items={timelineItems}
               labelOf={item=>item.display_label||item.title}
@@ -337,7 +309,6 @@ export default function CultureV2(){
                 </nav>
               </section>:null}
             </section>:null}
-          </>}
       </>:null}
     </section>
   </FeaturePageV2>;
