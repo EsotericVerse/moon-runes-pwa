@@ -3,8 +3,8 @@ import {selectNeonRows} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
 
 const RANKING_TYPES=Object.freeze({
-  loc:Object.freeze(['group','keyword','text_source','text_category','text_type','meta_source','meta_type','meta_style']),
-  lunarunes:Object.freeze(['group','keyword']),
+  loc:Object.freeze(['keyword','text_source','text_category','text_type','meta_source','meta_type','meta_style']),
+  lunarunes:Object.freeze(['keyword']),
   lo3rwang:Object.freeze(['text_source','text_category','text_type','meta_source','meta_type','meta_style'])
 });
 
@@ -63,21 +63,14 @@ async function authorRankings(period){
   return [...map.values()];
 }
 async function runeRankings(){
-  const [runes,keywords]=await Promise.all([
-    selectAllRows('silver.lrunes',{
-      columns:'rune_number,group_name',
-      filters:[{column:'record_type',operator:'eq',value:'rune'}]
-    }),
-    selectAllRows('silver.lrunes',{
-      columns:'keyword,active',
-      filters:[
-        {column:'record_type',operator:'eq',value:'keyword'},
-        {column:'active',operator:'eq',value:true}
-      ]
-    })
-  ]);
+  const keywords=await selectAllRows('silver.lrunes',{
+    columns:'keyword,active',
+    filters:[
+      {column:'record_type',operator:'eq',value:'keyword'},
+      {column:'active',operator:'eq',value:true}
+    ]
+  });
   const map=new Map();
-  for(const row of runes)increment(map,'group',row.group_name,{source:'lrunes'});
   for(const row of keywords)increment(map,'keyword',row.keyword,{source:'lrunes'});
   return [...map.values()];
 }
