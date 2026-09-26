@@ -81,6 +81,7 @@ export default function CultureV2(){
   const [activeWorkPeriod,setActiveWorkPeriod]=useState(null);
   const [cultureView,setCultureView]=useState('river');
   const [canEditRiver,setCanEditRiver]=useState(false);
+  const [anchorPickMode,setAnchorPickMode]=useState(false);
   const [riverCommand,setRiverCommand]=useState(null);
 
   const currentRows=useMemo(()=>{
@@ -160,8 +161,9 @@ export default function CultureV2(){
       {!query.isPending&&!query.error&&!timelineItems.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
       {!query.isPending&&!query.error&&timelineItems.length?<>
         {(scopeId==='lo3rwang'||scopeId==='loc')?<div className='scope-v2-tabs scope-v2-culture-view-toggle' role='group' aria-label='時間長河顯示方式'>
-          <button type='button' aria-pressed={cultureView==='river'} onClick={()=>setCultureView('river')}>時間長河</button>
-          <button type='button' aria-pressed={cultureView==='volume3d'} onClick={()=>setCultureView('volume3d')}>3D 時期與作品量</button>
+          <button type='button' aria-pressed={cultureView==='river'} onClick={()=>{setCultureView('river');setAnchorPickMode(false)}}>時間長河</button>
+          <button type='button' aria-pressed={cultureView==='volume3d'} onClick={()=>{setCultureView('volume3d');setAnchorPickMode(false)}}>3D 時期與作品量</button>
+          {canEditRiver&&cultureView==='river'?<button type='button' aria-pressed={anchorPickMode} onClick={()=>setAnchorPickMode(value=>!value)}>{anchorPickMode?'取消新增定錨點':'新增定錨點'}</button>:null}
         </div>:null}
         {cultureView==='volume3d'&&(scopeId==='lo3rwang'||scopeId==='loc')
           ?<CultureVolumeGraph3D
@@ -194,6 +196,11 @@ export default function CultureV2(){
             focus={navigation}
             mode={currentRows.length?'current':'overview'}
             onSelect={item=>setSelectedEntryId(item?.entry_id||'')}
+            canAddAnchor={anchorPickMode}
+            onAddAnchor={date=>{
+              setRiverCommand({scopeId:'lo3rwang',type:'anchor',values:{start_date:date},nonce:Date.now()});
+              setAnchorPickMode(false);
+            }}
           />}
         <CultureTimelineEditor scopeId={scopeId} selectedEntryId={selectedEntryId} riverCommand={riverCommand} onCapabilityChange={setCanEditRiver}/>
 
