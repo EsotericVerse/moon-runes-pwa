@@ -7,22 +7,18 @@ import {
   Bar,BarChart,CartesianGrid,Cell,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectScopeRankingPage} from '../../loc/neon-ranking-client';
+import {selectScopeRankingPage,selectScopeRankingTypes} from '../../loc/neon-ranking-client';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import KeywordSettingsV2 from './KeywordSettingsV2';
-import MediaMetaSettingsV2 from './MediaMetaSettingsV2';
+import SourceSettingsV2 from './SourceSettingsV2';
 import FeaturePageV2 from '../FeaturePageV2';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const CHART_TYPES=[['bar','長條圖'],['line','折線圖'],['pie','圓餅圖']];
-const TEXT_TYPES=[['text_type','文字小分類'],['text_category','文字分組'],['text_source','文字來源']];
-const MEDIA_TYPES=[['meta_style','Meta Tag'],['meta_type','多媒體小分類'],['meta_source','媒體來源']];
-const STAT_TABS=[['ranking','排行榜'],['keywords','關鍵詞設定'],['charts','統計圖']];
-const MEDIA_TERM_LABELS={song:'曲目',reel:'Reels',video:'影片',image:'圖像',audio:'音訊'};
-const TEXT_TERM_LABELS={post:'貼文',reply:'回覆',article:'文章',lyrics:'歌詞',work:'文學作品',outline:'大綱',other:'其他'};
-const TEXT_CATEGORY_LABELS={text:'一般文字',music:'音樂文字',literature:'文學'};
+const STAT_TABS=[['ranking','排行榜'],['keywords','關鍵詞設定'],['sources','作品來源設定'],['charts','統計圖']];
+const STAT_TYPE_LABELS=Object.freeze({keyword:'關鍵詞',source:'作品來源'});
 const SOURCE_TERM_LABELS={
   threads:'Threads',facebook:'Facebook',suno:'Suno',pixnet:'Pixnet',ptt:'PTT',
   kkcity:'KKCity',wretch:'Wretch',vocus:'Vocus',instagram:'Instagram',youtube:'YouTube'
@@ -31,19 +27,12 @@ const SOURCE_TERM_LABELS={
 function displayTerm(row){
   const type=String(row?.ranking_type||'');
   const term=String(row?.term||'');
-  if(type==='meta_type')return MEDIA_TERM_LABELS[term.toLowerCase()]||term;
-  if(type==='text_type')return TEXT_TERM_LABELS[term.toLowerCase()]||term;
-  if(type==='text_category')return TEXT_CATEGORY_LABELS[term.toLowerCase()]||term;
-  if(type==='text_source'||type==='meta_source')return SOURCE_TERM_LABELS[term.toLowerCase()]||term;
+  if(type==='source')return SOURCE_TERM_LABELS[term.toLowerCase()]||term;
   return term;
 }
 
 function chartRows(rows){
-  return (rows||[]).map(row=>({
-    ...row,
-    term:displayTerm(row),
-    value:Number(row.rank_value??row.item_count??0)||0
-  }));
+  return (rows||[]).map(row=>({...row,term:displayTerm(row),value:Number(row.rank_value??row.item_count??0)||0}));
 }
 
 function RankingChart({type='bar',rows,height=380}){
@@ -85,6 +74,7 @@ function useRanking(scopeId,type,navigation,limit=10){
   return useQuery({
     queryKey:['statistics-ranking',scopeId,type,navigation.period||'all',limit],
     queryFn:async()=>(await selectScopeRankingPage(scopeId,{rankingType:type,limit,navigation})).rows,
+    enabled:Boolean(type),
     staleTime:30000
   });
 }
@@ -92,9 +82,9 @@ function useRanking(scopeId,type,navigation,limit=10){
 function useAllRanking(scopeId,type,navigation){
   return useQuery({
     queryKey:['statistics-ranking-all',scopeId,type,navigation.period||'all'],
+    enabled:Boolean(type),
     queryFn:async()=>{
-      const rows=[];
-      let offset=0;
+      const rows=[];let offset=0;
       for(let page=0;page<100;page++){
         const result=await selectScopeRankingPage(scopeId,{rankingType:type,offset,limit:100,navigation});
         rows.push(...result.rows);
@@ -119,85 +109,40 @@ function StatTabs({scopeId,navigation,active}){
   </nav>;
 }
 
-function RankingPanel({scopeId,navigation}){
-  const [textType,setTextType]=useState('text_type');
-  const [mediaType,setMediaType]=useState('meta_style');
-  const textQuery=useRanking(scopeId,textType,navigation,10);
-  const mediaQuery=useRanking(scopeId,mediaType,navigation,10);
-  return <section className="scope-v2-stat-section">
-    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Top 10</p><h2>排行榜</h2><p>排行榜只顯示前 10 名；完整分布請切到「統計圖」。</p></div></header>
-    <div className="scope-v2-stat-overview-grid">
-      <section className="scope-v2-inline-card">
-        <h3>文字排行榜</h3>
-        <div className="scope-v2-stat-controls"><label><span>分類</span><select className="scope-v2-select" value={textType} onChange={event=>setTextType(event.target.value)}>{TEXT_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label></div>
-        {textQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(textQuery.error)}</p>:null}
-        <RankingList rows={textQuery.data||[]} limit={10}/>
-      </section>
-      <section className="scope-v2-inline-card">
-        <h3>多媒體排行榜</h3>
-        <div className="scope-v2-stat-controls"><label><span>分類</span><select className="scope-v2-select" value={mediaType} onChange={event=>setMediaType(event.target.value)}>{MEDIA_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label></div>
-        {mediaQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(mediaQuery.error)}</p>:null}
-        <RankingList rows={mediaQuery.data||[]} limit={10}/>
-      </section>
-    </div>
-  </section>;
+function StatisticTypeSelect({scopeId,navigation,types}){
+  const router=useRouter();
+  const requested=String(navigation.rankingType||'');
+  const active=types.includes(requested)?requested:(types[0]||'');
+  if(!types.length)return null;
+  return <label>
+    <span>統計項目</span>
+    <select className="scope-v2-select" value={active} onChange={event=>router.push(featureNavigationHref(scopeId,'statics',{...navigation,rankingType:event.target.value}))}>
+      {types.map(value=><option key={value} value={value}>{STAT_TYPE_LABELS[value]||value}</option>)}
+    </select>
+  </label>;
 }
 
-function ChartsPanel({scopeId,navigation}){
-  const [textType,setTextType]=useState('text_type');
-  const [mediaType,setMediaType]=useState('meta_style');
-  const [textChart,setTextChart]=useState('bar');
-  const [mediaChart,setMediaChart]=useState('bar');
-  const textQuery=useAllRanking(scopeId,textType,navigation);
-  const mediaQuery=useAllRanking(scopeId,mediaType,navigation);
+function RankingPanel({scopeId,navigation,types}){
+  const requested=String(navigation.rankingType||'');
+  const rankingType=types.includes(requested)?requested:(types[0]||'');
+  const query=useRanking(scopeId,rankingType,navigation,10);
   return <section className="scope-v2-stat-section">
-    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Distribution</p><h2>統計圖</h2><p>顯示所選分類的完整分布，不套用 Top 10 截斷。</p></div></header>
-    <div className="scope-v2-stat-overview-grid">
-      <section className="scope-v2-inline-card">
-        <h3>文字完整分布</h3>
-        <div className="scope-v2-stat-controls">
-          <label><span>分類</span><select className="scope-v2-select" value={textType} onChange={event=>setTextType(event.target.value)}>{TEXT_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
-          <label><span>圖形</span><select className="scope-v2-select" value={textChart} onChange={event=>setTextChart(event.target.value)}>{CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
-        </div>
-        {textQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(textQuery.error)}</p>:null}
-        <RankingChart type={textChart} rows={textQuery.data||[]}/>
-      </section>
-      <section className="scope-v2-inline-card">
-        <h3>多媒體完整分布</h3>
-        <div className="scope-v2-stat-controls">
-          <label><span>分類</span><select className="scope-v2-select" value={mediaType} onChange={event=>setMediaType(event.target.value)}>{MEDIA_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
-          <label><span>圖形</span><select className="scope-v2-select" value={mediaChart} onChange={event=>setMediaChart(event.target.value)}>{CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
-        </div>
-        {mediaQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(mediaQuery.error)}</p>:null}
-        <RankingChart type={mediaChart} rows={mediaQuery.data||[]}/>
-      </section>
-    </div>
-  </section>;
-}
-
-function KeywordPanel({scopeId,scope}){
-  return <section className="scope-v2-stat-section">
-    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Keywords</p><h2>關鍵詞設定</h2><p>正式 3D 關鍵詞圖與可編輯詞庫都在這一頁，不再用 CSS 立方體模擬 3D。</p></div></header>
-    <KeywordSettingsV2 scopeId={scopeId} databaseScopeId={scope.databaseScopeId||scopeId}/>
-    {scopeId==='lo3rwang'?<MediaMetaSettingsV2 databaseScopeId={scope.databaseScopeId||'lo3rwang'}/>:null}
-  </section>;
-}
-
-function RuneRankingPanel({scopeId,navigation}){
-  const query=useRanking(scopeId,'keyword',navigation,10);
-  return <section className="scope-v2-stat-section">
-    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Top 10</p><h2>排行榜</h2><p>目前只顯示關鍵詞暫存統計。</p></div></header>
+    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Top 10</p><h2>排行榜</h2><p>排行榜顯示所選統計項目的前 10 名。</p></div></header>
+    <div className="scope-v2-stat-controls"><StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/></div>
     {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
     <RankingList rows={query.data||[]} limit={10}/>
   </section>;
 }
 
-function RuneChartsPanel({scopeId,navigation}){
+function ChartsPanel({scopeId,navigation,types}){
+  const requested=String(navigation.rankingType||'');
+  const rankingType=types.includes(requested)?requested:(types[0]||'');
   const [chartType,setChartType]=useState('bar');
-  const query=useAllRanking(scopeId,'keyword',navigation);
+  const query=useAllRanking(scopeId,rankingType,navigation);
   return <section className="scope-v2-stat-section">
-    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Distribution</p><h2>統計圖</h2><p>目前只顯示關鍵詞完整分布；NOR／AND 規則另行測試。</p></div></header>
+    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Distribution</p><h2>統計圖</h2><p>統計圖顯示所選統計項目的完整分布。</p></div></header>
     <div className="scope-v2-stat-controls">
+      <StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/>
       <label><span>圖形</span><select className="scope-v2-select" value={chartType} onChange={event=>setChartType(event.target.value)}>{CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
     </div>
     {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
@@ -205,26 +150,43 @@ function RuneChartsPanel({scopeId,navigation}){
   </section>;
 }
 
-function StatisticsShell({scopeId,scope,navigation}){
+function KeywordPanel({scopeId}){
+  return <section className="scope-v2-stat-section">
+    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Keywords</p><h2>關鍵詞設定</h2><p>關鍵詞設定是資料設定；關鍵詞統計則由排行榜與統計圖呈現。</p></div></header>
+    <KeywordSettingsV2 scopeId={scopeId}/>
+  </section>;
+}
+
+function SourcePanel({scopeId}){
+  return <section className="scope-v2-stat-section">
+    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Sources</p><h2>作品來源設定</h2><p>作品來源設定統一管理 Galaxy 與 Galaxy Media 的來源名稱。</p></div></header>
+    <SourceSettingsV2 scopeId={scopeId}/>
+  </section>;
+}
+
+function StatisticsShell({scopeId,navigation}){
   const active=STAT_TABS.some(([value])=>value===navigation.statTab)?navigation.statTab:'ranking';
-  const runeScope=scopeId==='lunarunes';
+  const typesQuery=useQuery({
+    queryKey:['statistics-types',scopeId],
+    queryFn:()=>selectScopeRankingTypes(scopeId),
+    staleTime:5*60_000
+  });
+  const types=typesQuery.data||['keyword','source'];
   return <section className="loc-card scope-v2-feature-card">
     <StatTabs scopeId={scopeId} navigation={navigation} active={active}/>
-    {active==='ranking'?(runeScope
-      ?<RuneRankingPanel scopeId={scopeId} navigation={navigation}/>
-      :<RankingPanel scopeId={scopeId} navigation={navigation}/>):null}
-    {active==='keywords'?<KeywordPanel scopeId={scopeId} scope={scope}/>:null}
-    {active==='charts'?(runeScope
-      ?<RuneChartsPanel scopeId={scopeId} navigation={navigation}/>
-      :<ChartsPanel scopeId={scopeId} navigation={navigation}/>):null}
+    {typesQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(typesQuery.error)}</p>:null}
+    {active==='ranking'?<RankingPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
+    {active==='keywords'?<KeywordPanel scopeId={scopeId}/>:null}
+    {active==='sources'?<SourcePanel scopeId={scopeId}/>:null}
+    {active==='charts'?<ChartsPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
   </section>;
 }
 
 export default function StatisticsV2(){
-  const {scopeId,scope}=useScopeRuntimeV2();
+  const {scopeId}=useScopeRuntimeV2();
   const searchParams=useSearchParams();
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
   return <FeaturePageV2 featureId="statics">
-    <StatisticsShell scopeId={scopeId} scope={scope} navigation={navigation}/>
+    <StatisticsShell scopeId={scopeId} navigation={navigation}/>
   </FeaturePageV2>;
 }
