@@ -12,6 +12,8 @@ import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import {scopeHrefV2} from '../scope-registry.v2';
 import {buildSearchNavigation,featureNavigationLinks} from '../feature-navigation.v2';
 import {featureDataErrorMessage} from '../feature-data-state.v2';
+import LanguageSpaceWorkspace from '../modules/language-space/LanguageSpaceWorkspace';
+import {searchResultItems} from '../modules/language-space/language-space-model';
 
 const norm=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
 const THEME_RELATION_TYPE='theme_song';
@@ -327,6 +329,9 @@ export default function SearchV2(){
     </section>:null}
     <p className="scope-v2-status">{status}</p>
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
+    {results.length?<section className="loc-card scope-v2-feature-card scope-v2-feature-card-wide">
+      <LanguageSpaceWorkspace items={searchResultItems(results)} title="搜尋結果的立體語言空間" initialQuery={query}/>
+    </section>:null}
     <div className="scope-v2-list">
       {results.map(row=>{
         const editable=Boolean(row.editableTable&&row.editableField&&canManageScopeFromGrants(row.scopeId,account.grants));
