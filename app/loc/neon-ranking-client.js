@@ -26,14 +26,14 @@ function containsFilter(filters,column,value){
   filters.push({column,operator:'ilike',value:`%${escaped}%`});
 }
 
-function navigationFilters(scopeId,navigation={}){
+const PERIODIZED_RANKINGS=new Set(['text_source','text_category','text_type','meta_source','meta_type','meta_style']);
+
+function navigationFilters(scopeId,navigation={},rankingType=''){
   const filters=[];
   if(scopeId==='loc'||scopeId==='lunarunes')containsFilter(filters,'source',navigation.source);
   if(scopeId==='lo3rwang')containsFilter(filters,'term',navigation.source);
-  if(scopeId==='lo3rwang'){
+  if(scopeId==='lo3rwang'||(scopeId==='loc'&&PERIODIZED_RANKINGS.has(String(rankingType||'')))){
     filters.push({column:'period',operator:'eq',value:String(navigation.period||'all')});
-  }else if(scopeId==='loc'){
-    containsFilter(filters,'period',navigation.period);
   }
   return filters;
 }
@@ -55,7 +55,7 @@ export async function selectScopeRankingPage(scopeId,{offset=0,limit=20,rankingT
   const columns=RANKING_COLUMNS[id];
   if(!table||!columns)throw new Error('Scope 無效');
 
-  const filters=navigationFilters(id,navigation);
+  const filters=navigationFilters(id,navigation,rankingType);
   const size=Math.max(1,Math.min(100,Math.floor(Number(limit)||20)));
   const start=Math.max(0,Math.floor(Number(offset)||0));
   const pageFilters=rankingType
