@@ -75,25 +75,25 @@ export async function selectNeonSearchRows(collectionId){
   let scopeRows=[];
   if(collectionId==='all'){
     try{
-      const {rows}=await selectNeonRows('silver.loc_scope',{
-        columns:'scope_id,scope_name,scope_type,label,display_text,legacy_scope_id,active,include_in_global_search',
+      const {rows}=await selectNeonRows('silver.manage',{
+        columns:'record_type,group_id,scope_id,active,display_order',
         filters:[
-          {column:'record_type',operator:'eq',value:'scope'},
-          {column:'active',operator:'eq',value:true},
-          {column:'include_in_global_search',operator:'eq',value:true}
+          {column:'record_type',operator:'in',value:['group','scope']},
+          {column:'active',operator:'eq',value:true}
         ],
         orders:[{column:'display_order',ascending:true}],
         limit:100
       });
       scopeRows=rows
+        .map(row=>({...row,scope_id:row.scope_id||row.group_id||''}))
         .filter(row=>['loc','lunarunes','lo3rwang'].includes(String(row.scope_id||'')))
         .map(row=>({
           row:{
             ...row,
             scope_card:true,
-            title:SCOPE_SEARCH_TITLES[row.scope_id]||row.label||row.scope_name||row.scope_id,
-            search_terms:[row.scope_id,row.scope_name,row.label,row.display_text,row.legacy_scope_id,SCOPE_SEARCH_ALIASES[row.scope_id]].filter(Boolean).join(' '),
-            summary:row.display_text||''
+            title:SCOPE_SEARCH_TITLES[row.scope_id]||row.scope_id,
+            search_terms:[row.scope_id,SCOPE_SEARCH_ALIASES[row.scope_id]].filter(Boolean).join(' '),
+            summary:''
           },
           source:'Scope'
         }));
