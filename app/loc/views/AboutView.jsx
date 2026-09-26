@@ -134,7 +134,34 @@ export default function AboutView(){
 
     <section className="loc-card home-author-words" id="author-words">
       <div className="home-section-heading"><p className="loc-eyebrow">About me</p><h2>作者的話</h2><p className="loc-subtitle">整理治理過去的已知，是為了把時間還給現在，對未知的未來做好準備。</p></div>
-      <div className="home-about-layout"><div className="home-author-copy"><p>月之符文本身是占卜指示籤詩的分析建議，重在符文本身的語彙交叉分析；巧妙的是，即使轉換語系也能通用，採取的是不帶神秘學預設的中立態度，重在文字本身而不論道德。</p><p>月典從月之符文開始，後來逐步演變成與月之符文相輔相成的模型化語言框架；而月之符文，也在這個過程中演變成可被分析、治理與推演的符號式語言。</p><p>整合出月典，並不是為了把人生固定成某種發展模式，也不是為了賺錢，而是把散落、原本只能靠直覺掌握的語言與經驗，整理成可回看、可搜尋、可解析的結構，才能進一步面對未來的各種可能。</p></div><figure className="home-about-figure"><img src="/pics/aboutme.png?v=20260914" alt="作者 Lucas Oscar Wang 政德" loading="eager" decoding="async" /></figure></div>
+      <div className="home-about-layout"><div className="home-author-copy"><p>
+	  文字資料經過基本解析以後，分析出關鍵詞。</p><p><br/>
+將關鍵詞整理分類以後，並配合時間線的可能風格變化，進一步解析成為該區間內的風格。</p><p><br/>
+
+人總會因為各種狀況導致風格突變，例如當兵，例如車禍意外等等。</p><p>
+但每個人總是世界上獨一無二的人，這些風格都應該被紀錄。</p><p>
+而也都是很正常的變化，並非空穴來風或是天外飛來一筆的改變。</p><p><br/>
+
+改變總是循序漸進，從文字可見一斑。</p><p><br/>
+
+LOC為4D語言解析框架，將文字語言除了以語彙、關鍵詞、時間進行解析統合風格，</p><p>
+並納入沒有文字紀錄的多媒體延伸。</p><p><br/>
+
+語言本質是用於紀錄時間跟傳達文字所不能表述的各項訊息，例如情緒，例如讚嘆。</p><p>
+就算文字紀錄再多，也不能忘記人類本質。</p><p>
+除了舊有的文化，更應該將新興的多媒體納入紀錄的範圍。</p><p><br/>
+
+其實做整套架構，本來只是用於自己總數三百多萬中文字作品的展示整理，</p><p>
+不自覺的整理出了兩項東西，一套是歸納的系統架構論LOC，</p><p>
+一套是有點偏神秘學的符文。</p><p><br/>
+
+我的原則：</p><p>
+敬畏未知，尊重異者，專業為先。</p><p><br/>
+
+立於無限減一的謙遜，但要有無限減一的專業。</p><p>
+保有探索未知的好奇，尊重無限未知的領域，進而才能學習到更多的知識。</p><p><br/>
+</p><p> 2026.09.26.</P>
+	  </div><figure className="home-about-figure"><img src="/pics/aboutme.png?v=20260914" alt="作者 Lucas Oscar Wang 政德" loading="eager" decoding="async" /></figure></div>
     </section>
   </section>;
 }
