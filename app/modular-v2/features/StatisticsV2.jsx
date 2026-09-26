@@ -13,22 +13,15 @@ import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-sta
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import KeywordSettingsV2 from './KeywordSettingsV2';
 import SourceSettingsV2 from './SourceSettingsV2';
+import ContextStyleManager from './ContextStyleManager';
 import FeaturePageV2 from '../FeaturePageV2';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const CHART_TYPES=[['bar','長條圖'],['line','折線圖'],['pie','圓餅圖']];
-const STAT_TABS=[['ranking','排行榜'],['keywords','關鍵詞設定'],['sources','作品來源設定'],['charts','統計圖']];
+const STAT_TABS=[['ranking','排行榜'],['keywords','關鍵詞設定'],['sources','作品來源設定'],['styles','風格設定'],['charts','統計圖']];
 const STAT_TYPE_LABELS=Object.freeze({keyword:'關鍵詞',source:'作品來源'});
-const SOURCE_TERM_LABELS={
-  threads:'Threads',facebook:'Facebook',suno:'Suno',pixnet:'Pixnet',ptt:'PTT',
-  kkcity:'KKCity',wretch:'Wretch',vocus:'Vocus',instagram:'Instagram',youtube:'YouTube'
-};
-
 function displayTerm(row){
-  const type=String(row?.ranking_type||'');
-  const term=String(row?.term||'');
-  if(type==='source')return SOURCE_TERM_LABELS[term.toLowerCase()]||term;
-  return term;
+  return String(row?.term||'');
 }
 
 function chartRows(rows){
@@ -159,8 +152,15 @@ function KeywordPanel({scopeId}){
 
 function SourcePanel({scopeId}){
   return <section className="scope-v2-stat-section">
-    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Sources</p><h2>作品來源設定</h2><p>作品來源設定統一管理 Galaxy 與 Galaxy Media 的來源名稱。</p></div></header>
+    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Sources</p><h2>作品來源設定</h2><p>來源名稱是匯入時自訂的唯一字串；需要合併時直接批次改名，統計與 Time River 會自然依相同名稱分組。</p></div></header>
     <SourceSettingsV2 scopeId={scopeId}/>
+  </section>;
+}
+
+function StylePanel({scopeId}){
+  return <section className="scope-v2-stat-section">
+    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Styles</p><h2>風格設定</h2><p>風格採兩層群組：小群組名稱就是風格標籤，多個風格標籤歸入同一個大群組。關鍵詞規則沿用同一分類結構，規則本身另外設定。</p></div></header>
+    {scopeId==='lo3rwang'?<ContextStyleManager scopeId="lo3rwang"/>:<p className="scope-v2-status">此 Scope 使用既有符文／群組風格結構。</p>}
   </section>;
 }
 
@@ -178,6 +178,7 @@ function StatisticsShell({scopeId,navigation}){
     {active==='ranking'?<RankingPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
     {active==='keywords'?<KeywordPanel scopeId={scopeId}/>:null}
     {active==='sources'?<SourcePanel scopeId={scopeId}/>:null}
+    {active==='styles'?<StylePanel scopeId={scopeId}/>:null}
     {active==='charts'?<ChartsPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
   </section>;
 }
