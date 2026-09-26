@@ -37,7 +37,6 @@ export default function ThemeSelectV2(){
     <select value={themeId} onChange={change} disabled={!canEdit} aria-label="Scope 預設主題">
       {THEME_SLOTS_V2.map(item=><option value={item.id} key={item.id}>{styles.find(row=>'theme-'+row.rotation_order===item.id)?.name_zh||item.label}</option>)}
     </select>
-    {!canEdit&&<small>僅 admin 可變更預設主題</small>}
     {status&&<small role="status">{status}</small>}
   </label>;
 }
