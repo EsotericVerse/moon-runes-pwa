@@ -37,21 +37,21 @@ function runeRows(rows){return (rows||[]).map(row=>({
   神話故事:row.myth_story,符文演化歷史:row.rune_evolution_history,
   source_ref:row.source_ref,updated_at:row.updated_at
 }));}
-function periodRows(rows){return (rows||[]).map(row=>({era_id:row.context_key,period:row.context_key||'',name:row.title||row.context_key,title:row.title||row.context_key,description:row.summary||'',order:0,status:''}));}
+function periodRows(rows){return (rows||[]).map(row=>{const key=row.entry_key||row.context_key||row.period||'';return {era_id:key,period:row.period||key,name:row.entry_name||row.title||key,title:row.title||row.entry_name||key,description:row.summary||'',order:Number(row.order_no)||0,status:row.status||''};});}
 
 async function fetchCanonical(path){
   const normalized=sourcePath(path);
   await acquireSlot();
   try{
     if(normalized==='canonical/runes'||normalized==='canonical/lots'||normalized==='canonical/rune-interpretations'){
-      const {rows}=await selectNeonRows('silver.lrunes_runes',{columns:'rune_number,rune_name,group_name,english_name,lots_positive,lots_negative,lots_half_positive,lots_half_negative,myth_story,rune_evolution_history,source_ref,updated_at',orders:[{column:'rune_number',ascending:true}],limit:100});
+      const {rows}=await selectNeonRows('silver.lrunes',{columns:'rune_number,rune_name,group_name,english_name,lots_positive,lots_negative,lots_half_positive,lots_half_negative,myth_story,rune_evolution_history,source_ref,updated_at',orders:[{column:'rune_number',ascending:true}],limit:100});
       return runeRows(rows);
     }
     if(normalized==='canonical/rune-grammar')return (await selectNeonRows('silver.lrunes_algorithm',{columns:'algorithm_id,name,definition,source_ref,lifecycle,updated_at',limit:5000})).rows;
     if(normalized==='canonical/harmony')return (await selectNeonRows('silver.lrunes_harmony',{columns:'rune_number,rune_name,soul_question,practice_challenge,ritual_advice,harmony_advice,updated_at',limit:5000})).rows;
-    if(normalized==='culture/lrunes-periods')return {eras:periodRows((await selectNeonRows('silver.runes_context_entries',{columns:'context_key,context_type,title,summary,updated_at',filters:[{column:'context_type',operator:'in',value:['period','era']}],limit:5000})).rows)};
-    if(normalized==='culture/lo3rwang-periods')return {eras:periodRows((await selectNeonRows('silver.lo3rwang_period_context_entries',{columns:'context_key,context_type,title,summary,updated_at',filters:[{column:'context_type',operator:'eq',value:'period'}],limit:5000})).rows)};
-    if(normalized==='context/content-relations')return (await selectNeonRows('silver.content_relations',{columns:'relation_id,from_kind,from_id,relation_type,to_kind,to_id,source_ref',limit:5000})).rows;
+    if(normalized==='culture/lrunes-periods')return {eras:periodRows((await selectNeonRows('silver.lrunes_style_time',{columns:'entry_key,entry_type,title,summary,period,entry_name,order_no,status,updated_at',filters:[{column:'entry_type',operator:'eq',value:'period'}],orders:[{column:'start_date',ascending:true}],limit:5000})).rows)};
+    if(normalized==='culture/lo3rwang-periods')return {eras:periodRows((await selectNeonRows('silver.lo3rwang_style_time',{columns:'entry_key,entry_type,title,summary,period,entry_name,order_no,status,updated_at',filters:[{column:'entry_type',operator:'eq',value:'period'}],orders:[{column:'start_date',ascending:true}],limit:5000})).rows)};
+    if(normalized==='context/content-relations')return (await selectNeonRows('silver.lrunes_style_context',{columns:'context_id,context_type,rune_number,related_rune_number,relation_type,title,rule_text,note,order_no',filters:[{column:'context_type',operator:'eq',value:'relation'},{column:'active',operator:'eq',value:true}],orders:[{column:'order_no',ascending:true}],limit:5000})).rows;
     throw new Error(`Neon canonical data path is not mapped: ${normalized}`);
   }finally{releaseSlot();}
 }
