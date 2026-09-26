@@ -1,15 +1,11 @@
 import {selectNeonRows} from './neon-repository';
+import {rune as canonicalRuneArray} from '../../js/runes.js';
 
 export const DAILY_RUNE_PAGE_SIZE=10;
-let runeNamesPromise;
+const RUNE_NAMES=new Map(canonicalRuneArray.filter(Boolean).map(row=>[Number(row.編號),row.符文名稱]));
 
 async function loadRuneNames(){
-  if(!runeNamesPromise){
-    runeNamesPromise=selectNeonRows('silver.lrunes',{columns:'rune_number,rune_name',limit:66})
-      .then(result=>new Map(result.rows.map(row=>[Number(row.rune_number),row.rune_name])))
-      .catch(error=>{runeNamesPromise=null;throw error;});
-  }
-  return runeNamesPromise;
+  return RUNE_NAMES;
 }
 
 async function attachRuneNames(rows){
