@@ -37,7 +37,7 @@ function routeState(){
     if(host==='loc.lo3rwang.cc')return {scope:'loc',view:'admin-redirect'};
     if(host!=='admin.lo3rwang.cc')return {scope,view:'blocked'};
   }
-  if(scope==='lunarunes'&&/^\/lo3rwang(?:\/|$)/.test(pathname))return {scope,view:'blocked'};
+  if(scope==='lrunes'&&/^\/lo3rwang(?:\/|$)/.test(pathname))return {scope,view:'blocked'};
   const route=pathname.split('/').filter(Boolean).at(-1)||'home';
   return {scope,view:VIEWS[route]?route:'home'};
 }
