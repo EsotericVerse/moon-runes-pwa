@@ -22,11 +22,9 @@ function snippet(text,q){
   return `${start?'…':''}${raw.slice(start,start+220)}${raw.length>start+220?'…':''}`;
 }
 function resultKey(scope,type,id){return String(scope)+':'+String(type)+':'+String(id)}
-function hasPrivilege(privileges,scopeId,pageId=''){
+function hasPrivilege(privileges,scopeId){
   const values=Array.isArray(privileges)?privileges:[];
-  if(values.includes('blacklist'))return false;
-  if(values.includes('admin')||values.includes('scope:'+scopeId))return true;
-  return Boolean(pageId&&values.includes('page:'+scopeId+':'+pageId));
+  return values.includes('admin')||values.includes('scope:'+scopeId);
 }
 function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
   const text=rowText(row);
@@ -115,8 +113,8 @@ export default function SearchV2(){
       for(const {row,source} of consumed){
         const result=toResult(row,source,q,collection.id,scopeId,visibilityMap);
         if(!result||seen.has(result.key))continue;
-        if(result.display==='hidden'&&!hasPrivilege(account.privileges,result.scopeId,'statics'))continue;
-        if(result.settings&&result.settings.visibility!=='public'&&!hasPrivilege(account.privileges,result.scopeId,'statics'))continue;
+        if(result.display==='hidden'&&!hasPrivilege(account.privileges,result.scopeId))continue;
+        if(result.settings&&result.settings.visibility!=='public'&&!hasPrivilege(account.privileges,result.scopeId))continue;
         seen.add(result.key);converted.push(result);
       }
       setResults(converted);
@@ -146,8 +144,8 @@ export default function SearchV2(){
         for(const {row,source} of consumed){
           const result=toResult(row,source,q,collection.id,scopeId,visibilityRef.current);
           if(!result||seen.has(result.key))continue;
-          if(result.display==='hidden'&&!hasPrivilege(account.privileges,result.scopeId,'statics'))continue;
-          if(result.settings&&result.settings.visibility!=='public'&&!hasPrivilege(account.privileges,result.scopeId,'statics'))continue;
+          if(result.display==='hidden'&&!hasPrivilege(account.privileges,result.scopeId))continue;
+          if(result.settings&&result.settings.visibility!=='public'&&!hasPrivilege(account.privileges,result.scopeId))continue;
           seen.add(result.key);appended.push(result);
         }
         return [...current,...appended];
@@ -191,13 +189,12 @@ export default function SearchV2(){
     if(!editDraft||!result.editableTable||!result.editableField)return;
     setEditBusy(true);setEditError('');
     try{
-      const contentPage=result.resourceType==='galaxy_media'?'media':'statics';
-      if(!hasPrivilege(account.privileges,result.scopeId,contentPage))throw new Error('沒有修改此內容的權限。');
+      if(!hasPrivilege(account.privileges,result.scopeId))throw new Error('沒有修改此內容的權限。');
       const contentPatch={title:editDraft.title,[result.editableField]:editDraft.body};
       if(result.resourceType==='galaxy_media')contentPatch.style_tags=String(editDraft.styleTags||'').trim()||'風格未知';
       await updateNeonRows(result.editableTable,contentPatch,{filters:[{column:result.editableIdColumn,operator:'eq',value:result.resourceId},{column:'scope_id',operator:'eq',value:result.scopeId}]});
       let settings=result.settings||null;
-      if(hasPrivilege(account.privileges,result.scopeId,'statics')){
+      if(hasPrivilege(account.privileges,result.scopeId)){
         const record={scope:result.scopeId,resource_type:result.resourceType,resource_id:result.resourceId,visibility:editDraft.hidden?'private':'public',projection_level:editDraft.fullText?'full':'summary',statistics_included:editDraft.includeStatistics,show_link:editDraft.showLink,show_source:editDraft.showSource};
         await upsertNeonRows('silver.resource_visibility',record,{conflict:'scope,resource_type,resource_id'});
         visibilityRef.current.set(result.settingsKey,record);
@@ -226,9 +223,8 @@ export default function SearchV2(){
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
     <div className="scope-v2-list">
       {results.map(row=>{
-        const contentPage=row.resourceType==='galaxy_media'?'media':'statics';
-        const editable=Boolean(row.editableTable&&row.editableField&&hasPrivilege(account.privileges,row.scopeId,contentPage));
-        const canSearchSettings=hasPrivilege(account.privileges,row.scopeId,'statics');
+        const editable=Boolean(row.editableTable&&row.editableField&&hasPrivilege(account.privileges,row.scopeId));
+        const canSearchSettings=hasPrivilege(account.privileges,row.scopeId);
         const settings=row.settings||{};
         const draft=editingKey===row.key?editDraft:null;
         return <ScopeCardV2 key={row.key} eyebrow={settings.show_source===false?'':row.source} title={row.title}>
