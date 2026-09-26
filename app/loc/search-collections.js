@@ -14,7 +14,7 @@ export const SEARCH_COLLECTIONS = Object.freeze({
     id: '月之符文',
     label: '月之符文',
     description: '搜尋 LunaRunes 核心資料、抽牌語法與相關文字。',
-    scopeProfile:Object.freeze({id:'lunarunes',fields:Object.freeze(['source','corpus','language','culture'])}),
+    scopeProfile:Object.freeze({id:'lrunes',fields:Object.freeze(['source','corpus','language','culture'])}),
   }),
   lo3rwang: Object.freeze({
     id:'lo3rwang',
