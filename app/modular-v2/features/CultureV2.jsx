@@ -111,7 +111,7 @@ export default function CultureV2(){
       sources:await selectAuthorPeriodWorkSources({startDate:period.start_date,endDate:period.end_date}),
       periodIndex:index
     }))),
-    enabled:(scopeId==='lo3rwang'||scopeId==='loc')&&cultureView==='volume3d'&&visibleAuthorPeriods.length>0,
+    enabled:(scopeId==='lo3rwang'||scopeId==='loc')&&visibleAuthorPeriods.length>0,
     staleTime:5*60_000
   });
 
@@ -147,10 +147,20 @@ export default function CultureV2(){
     setActiveWorkPeriod(null);
   },[scopeId,currentAuthorPeriod?.period,currentAuthorPeriod?.start_date,currentAuthorPeriod?.end_date]);
 
+  const periodVolumeByStart=useMemo(()=>new Map((periodVolumesQuery.data||[]).map(group=>[
+    String(group.period?.start_date||'').slice(0,10),
+    (group.sources||[]).reduce((sum,row)=>sum+(Number(row.item_count)||0),0)
+  ])),[periodVolumesQuery.data]);
+
   const timelineItems=useMemo(()=>{
     const items=(query.data?.timelineItems||[]).filter(item=>scopeId==='loc'||item.scope_id===scopeId);
-    return currentRows.length?timelineFromCurrent(items,currentByScope):items;
-  },[query.data,currentRows,currentByScope,scopeId]);
+    const visible=currentRows.length?timelineFromCurrent(items,currentByScope):items;
+    return visible.map(item=>{
+      if(item.scope_id!=='lo3rwang'||item.entry_type!=='period')return item;
+      const workCount=periodVolumeByStart.get(String(item.start_date||'').slice(0,10));
+      return workCount===undefined?item:{...item,work_count:workCount};
+    });
+  },[query.data,currentRows,currentByScope,scopeId,periodVolumeByStart]);
 
   return <FeaturePageV2 featureId="culture">
     <section className='loc-card scope-v2-feature-card scope-v2-feature-card-wide'>
@@ -226,16 +236,10 @@ export default function CultureV2(){
             {periodWorksQuery.isPending?<p className='scope-v2-status'>載入{selectedWorkGroup?.category_type==='media'?'多媒體':'作品'}第 {workPage+1} 頁…</p>:null}
             {periodWorksQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksQuery.error)}</p>:null}
             <div className='scope-v2-culture-source-work-scroll'>
-              {(periodWorksQuery.data?.rows||[]).map((work,index)=>{
-                const isMedia=work.entry_type==='media_metadata';
-                return <article className='scope-v2-inline-card' key={work.media_id||work.galaxy_id||work.work_id||work.source_id||String(work.created_at)+'-'+index}>
-                  <div className='scope-v2-culture-work-heading'><strong>{isMedia?'多媒體項目':work.title||work.work_id||'未命名作品'}</strong><time>{work.display_date||formatCultureDateTime(work.created_at)}</time></div>
-                  {work.description?<p>{work.description}</p>:null}
-                  {isMedia?<p className='scope-v2-culture-work-meta-description'><strong>metadata：</strong>{work.media_metadata_text}</p>:null}
-                  {!isMedia&&work.meta_tags?<span className='scope-v2-meta'>{work.meta_tags}</span>:null}
-                  {!isMedia&&(work.url||work.source_ref)?<a href={work.url||work.source_ref} target='_blank' rel='noreferrer'>查看來源</a>:null}
-                </article>;
-              })}
+              {(periodWorksQuery.data?.rows||[]).map((work,index)=><article className='scope-v2-inline-card' key={work.media_id||work.galaxy_id||work.work_id||work.source_id||String(work.created_at)+'-'+index}>
+                <div className='scope-v2-culture-work-heading'><strong>{work.title||work.work_id||'未命名作品'}</strong><time>{work.display_date||formatCultureDateTime(work.created_at)}</time></div>
+                {(work.url||work.media_link||work.source_ref)?<a href={work.url||work.media_link||work.source_ref} target='_blank' rel='noreferrer'>查看來源</a>:null}
+              </article>)}
             </div>
             {!periodWorksQuery.isPending&&!periodWorksQuery.error&&!(periodWorksQuery.data?.rows||[]).length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
             <nav className='scope-v2-culture-source-pages' aria-label={selectedWorkGroup.category_type==='media'?'多媒體分頁':'作品分頁'}>
