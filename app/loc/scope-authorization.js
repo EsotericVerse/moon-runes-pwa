@@ -3,7 +3,7 @@ import {z} from 'zod';
 const PrivilegeSchema=z.string().trim().min(1).regex(/^[A-Za-z][A-Za-z0-9_.-]*$/,'Invalid privilege');
 
 const PermissionRowSchema=z.object({
-  user_id:z.string().trim().min(1),
+  user_id:z.string().trim().min(1).optional(),
   email:z.string().trim().email(),
   privileges:z.array(PrivilegeSchema).min(1)
 }).passthrough();
@@ -14,10 +14,7 @@ const PAGE_PERMISSION_GROUP=Object.freeze({
   media:'media'
 });
 const permissionGroup=value=>PAGE_PERMISSION_GROUP[String(value||'').trim()]||String(value||'').trim();
-const normalizeScopeId=value=>{
-  const scope=String(value||'').trim();
-  return scope==='lrunes'?'lrunes':scope;
-};
+const normalizeScopeId=value=>String(value||'').trim();
 
 function normalizePrivileges(rawRows){
   const rows=Array.isArray(rawRows)?rawRows:[];
@@ -33,18 +30,13 @@ export function validateScopeGrants(value){
   return normalizePrivileges(value);
 }
 
-export async function createScopeAuthorizer(userId,rawRows){
-  const subject=String(userId||'').trim();
-  if(!subject)return Object.freeze({
-    grants:Object.freeze([]),privileges:Object.freeze([]),
-    canManageGlobal:async()=>false,canManageScope:async()=>false,canManagePage:async()=>false
-  });
-
-  const privileges=normalizePrivileges(rawRows);
+export async function createScopeAuthorizer(rawRows){
+  const rows=Array.isArray(rawRows)?rawRows:[];
+  const privileges=normalizePrivileges(rows);
   const hasAdmin=()=>privileges.includes('admin');
 
   return Object.freeze({
-    grants:Object.freeze(rawRows||[]),
+    grants:Object.freeze(rows),
     privileges:Object.freeze(privileges),
     canManageGlobal:async()=>hasAdmin(),
     canManageScope:async scopeId=>{
