@@ -3,7 +3,7 @@
 import {useState} from 'react';
 import {selectNeonRows} from '../../loc/neon-repository';
 import GovernanceManagement from '../../loc/GovernanceManagement';
-import ScopeManagementV2 from '../ScopeManagementV2';
+import LanguageSpaceManagementPage from '../modules/language-space/LanguageSpaceManagementPage';
 import {useOffsetPagination} from '../use-offset-pagination.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 
@@ -106,10 +106,7 @@ function LawPanel(){
 }
 
 function ManagementPanel(){
-  return <div className="loc-grid">
-    <GovernanceManagement/>
-    <ScopeManagementV2/>
-  </div>;
+  return <LanguageSpaceManagementPage/>;
 }
 
 function GovernanceHome(){
