@@ -9,6 +9,9 @@ const ScopeGrantSchema=z.object({
   case_id:z.string().trim().min(1)
 });
 
+const PAGE_PERMISSION_GROUP=Object.freeze({context:'statics',search:'statics',statics:'statics',period:'culture',event:'culture',anchor:'culture',style:'culture',culture:'culture',governance:'governance'});
+const permissionGroup=value=>PAGE_PERMISSION_GROUP[String(value||'').trim()]||String(value||'').trim();
+
 const MODEL=`[request_definition]
 r = sub, scope, obj, act
 [policy_definition]
@@ -31,13 +34,13 @@ export async function createScopeAuthorizer(userId,rawGrants){
     if(grant.access_level==='scope_manager'){
       await enforcer.addPolicy(subject,grant.scope_id,'*','manage');
     }else if(grant.access_level==='page_manager'){
-      await enforcer.addPolicy(subject,grant.scope_id,`case:${grant.case_id}`,'manage');
+      await enforcer.addPolicy(subject,grant.scope_id,`case:${permissionGroup(grant.case_id)}`,'manage');
     }
   }
   return Object.freeze({
     grants:Object.freeze(grants),
     canManageGlobal:()=>enforcer.enforce(subject,'admin','*','manage'),
     canManageScope:(scopeId)=>enforcer.enforce(subject,String(scopeId||''),'*','manage'),
-    canManagePage:(scopeId,pageId)=>enforcer.enforce(subject,String(scopeId||''),`case:${String(pageId||'')}`,'manage')
+    canManagePage:(scopeId,pageId)=>enforcer.enforce(subject,String(scopeId||''),`case:${permissionGroup(pageId)}`,'manage')
   });
 }
