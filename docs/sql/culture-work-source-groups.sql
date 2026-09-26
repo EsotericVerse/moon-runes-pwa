@@ -55,7 +55,7 @@ CREATE OR REPLACE FUNCTION api.lo3rwang_period_media_metadata_page(
   p_limit integer DEFAULT 20,
   p_offset integer DEFAULT 0
 )
-RETURNS TABLE(media_id uuid, media_date date, media_type text, source_platform text, title text, meta_tags text)
+RETURNS TABLE(media_id uuid, media_date date, media_type text, source_platform text, title text, meta_tags text, style_tags text)
 LANGUAGE sql
 STABLE
 SECURITY INVOKER
@@ -66,7 +66,8 @@ AS $function$
          m.media_type,
          m.source_platform,
          m.title,
-         m.meta_tags
+         m.meta_tags,
+         m.style_tags
   FROM silver.lo3rwang_galaxy_media AS m
   WHERE p_start_date IS NOT NULL
     AND m.scope_id = 'lo3rwang'
