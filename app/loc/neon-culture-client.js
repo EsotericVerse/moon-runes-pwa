@@ -171,6 +171,7 @@ function mediaMetadataDescription(row){
     ['標題',row.title],
     ['類型',row.media_type],
     ['平台',row.source_platform],
+    ['曲風分類',row.style_tags],
     ['補充描述',row.meta_tags]
   ];
   return fields.map(([label,value])=>{
