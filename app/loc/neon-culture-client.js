@@ -38,7 +38,7 @@ function runeTimelineRows(rows){
     date:row.start_date||row.context_date||null,
     start_date:row.start_date||row.context_date||null,
     end_date:null,
-    scope_id:'lunarunes',
+    scope_id:'lrunes',
     status:row.status||'',
     rune_count:Number(row.rune_count||0)
   })).filter(row=>row.start_date).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date)));
@@ -78,8 +78,8 @@ function timelineItems(rows){
 
 export async function selectScopeCultureData(scopeId){
   const id=String(scopeId||'');
-  if(!['loc','lunarunes','lo3rwang'].includes(id))throw new Error('Scope 無效');
-  const scopes=id==='loc'?['lo3rwang','lunarunes']:[id];
+  if(!['loc','lrunes','lo3rwang'].includes(id))throw new Error('Scope 無效');
+  const scopes=id==='loc'?['lo3rwang','lrunes']:[id];
   const {rows}=await selectNeonRows('api.loc_timeline_entries',{
     columns:TIMELINE_COLUMNS,
     filters:[
@@ -91,7 +91,7 @@ export async function selectScopeCultureData(scopeId){
   });
   const scopeContext=rows||[];
   const authorContext=scopeContext.filter(row=>row.scope_id==='lo3rwang');
-  const runeContext=scopeContext.filter(row=>row.scope_id==='lunarunes'&&row.entry_type==='anchor');
+  const runeContext=scopeContext.filter(row=>row.scope_id==='lrunes'&&row.entry_type==='anchor');
   const eraSource=authorContext.filter(row=>row.entry_type==='period');
   const runeTimeline=runeTimelineRows(runeContext);
   const eras=periodRows(eraSource);
@@ -120,7 +120,7 @@ export async function selectScopeCultureData(scopeId){
   const authorPeriods=periodRows(eraSource).map(row=>({...row,scope_id:'lo3rwang',group_label:'lo3rwang 時期'}));
   return ScopeCultureResponseSchema.parse({
     scopeId:id,
-    eras:{eras:id==='lunarunes'?runeTimeline.eras:(id==='loc'?authorPeriods:eras)},
+    eras:{eras:id==='lrunes'?runeTimeline.eras:(id==='loc'?authorPeriods:eras)},
     authorEras:id==='lo3rwang'||id==='loc'?{eras:id==='loc'?authorPeriods:eras}:undefined,
     runeEras:{eras:runeTimeline.eras},
     runeHistory:{records:runeTimeline.history},
