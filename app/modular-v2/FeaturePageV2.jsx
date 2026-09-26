@@ -4,7 +4,6 @@ import PageShellV2 from './PageShellV2';
 import {pageProfileV2} from './page-profiles.v2';
 import {scopeDataViewV2} from './scope-registry.v2';
 import {useScopeRuntimeV2} from './use-scope-runtime.v2';
-import SpatialViewerHost from './modules/spatial-3d/SpatialViewerHost';
 
 export default function FeaturePageV2({featureId,children,subtitle=null,description=null,expandedPath=null}){
   const {scopeId,scope}=useScopeRuntimeV2();
@@ -33,5 +32,5 @@ export default function FeaturePageV2({featureId,children,subtitle=null,descript
     featureId={featureId}
     scopeId={scopeId}
     expandedPath={expandedPath}
-  >{pageContent}<SpatialViewerHost/></PageShellV2>;
+  >{pageContent}</PageShellV2>;
 }
