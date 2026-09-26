@@ -1,5 +1,6 @@
 import {ScopeRankingResponseSchema} from './scope-feature-contracts';
 import {selectNeonRows} from './neon-repository';
+import {selectScopeTimeRows} from './scope-time';
 
 const RANKING_TYPES=Object.freeze({
   loc:Object.freeze(['group','keyword','text_source','text_category','text_type','meta_source','meta_type','meta_style']),
@@ -38,12 +39,8 @@ function dateFilters(range){
 async function resolvePeriod(period){
   const value=String(period||'').trim();
   if(!value||value==='all')return null;
-  const {rows}=await selectNeonRows('silver.lo3rwang_style_time',{
-    columns:'entry_key,period,start_date,end_date',
-    filters:[{column:'entry_type',operator:'eq',value:'period'}],
-    orders:[{column:'order_no',ascending:true}],limit:1000
-  });
-  return rows.find(row=>String(row.period||'')===value||String(row.entry_key||'')===value)||null;
+  const rows=await selectScopeTimeRows('lo3rwang');
+  return rows.find(row=>row.entry_type==='period'&&(String(row.period||'')===value||String(row.entry_key||'')===value))||null;
 }
 async function authorRankings(period){
   const range=await resolvePeriod(period);
