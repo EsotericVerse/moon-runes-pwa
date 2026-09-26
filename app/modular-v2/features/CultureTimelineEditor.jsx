@@ -4,13 +4,14 @@ import {useEffect,useMemo,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {
-  deleteNeonRows,insertNeonRows,selectNeonRows,updateNeonRows,upsertNeonRows
+  deleteNeonRows,insertNeonRows,selectNeonRows,updateNeonRows
 } from '../../loc/neon-repository';
 
-const EDITABLE_TYPES=Object.freeze([
-  ['anchor','定錨點'],['event','事件'],['period','時期'],['style','風格']
+const TIME_EDITABLE_TYPES=Object.freeze([
+  ['anchor','定錨點'],['event','事件'],['period','時期']
 ]);
-const TYPE_LABEL=Object.freeze(Object.fromEntries(EDITABLE_TYPES));
+const ALL_EDITABLE_TYPES=Object.freeze([...TIME_EDITABLE_TYPES,['style','風格']]);
+const TYPE_LABEL=Object.freeze(Object.fromEntries(ALL_EDITABLE_TYPES));
 const BLANK=Object.freeze({
   entry_key:'',entry_type:'anchor',title:'',summary:'',start_date:'',end_date:'',
   anchor_id:'',before_id:'',after_id:'',start_anchor_id:'',end_anchor_id:'',
@@ -19,7 +20,6 @@ const BLANK=Object.freeze({
 
 function dateText(value){return value?String(value).slice(0,10):''}
 function idFor(scopeId,key){return `${scopeId}:${key}`}
-function uniqueWords(value){return [...new Set(String(value||'').split(/[\n,，]/).map(word=>word.trim()).filter(Boolean))]}
 function addDays(value,amount){
   if(!value)return null;
   const date=new Date(`${dateText(value)}T00:00:00Z`);
@@ -109,13 +109,12 @@ export default function CultureTimelineEditor({scopeId='loc',selectedEntryId='',
   const queryClient=useQueryClient();
   const candidateScopes=scopeId==='loc'?['lo3rwang','runes']:[scopeId];
   const [allowedScopes,setAllowedScopes]=useState([]);
+  const [fullScopes,setFullScopes]=useState([]);
   const [dataScope,setDataScope]=useState(candidateScopes[0]||'');
   const [draft,setDraft]=useState({...BLANK});
   const [selectedKey,setSelectedKey]=useState('');
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
-  const [styleName,setStyleName]=useState('');
-  const [styleWords,setStyleWords]=useState('');
   const [editing,setEditing]=useState(false);
 
   useEffect(()=>{
@@ -125,18 +124,21 @@ export default function CultureTimelineEditor({scopeId='loc',selectedEntryId='',
   useEffect(()=>{
     let active=true;
     setAllowedScopes([]);
+    setFullScopes([]);
     if(account.permissionLoading||!account.user)return()=>{active=false};
     Promise.all(candidateScopes.map(async candidate=>{
-      const [global,scope,page]=await Promise.all([
+      const [global,scope,culture]=await Promise.all([
         account.canManageGlobal(),account.canManageScope(candidate),account.canManagePage(candidate,'culture')
       ]);
-      return global||scope||page?candidate:null;
+      return {candidate,full:Boolean(global||scope),allowed:Boolean(global||scope||culture)};
     })).then(values=>{
       if(!active)return;
-      const allowed=values.filter(Boolean);
+      const allowed=values.filter(item=>item.allowed).map(item=>item.candidate);
+      const full=values.filter(item=>item.full).map(item=>item.candidate);
       setAllowedScopes(allowed);
+      setFullScopes(full);
       if(allowed.length&&!allowed.includes(dataScope))setDataScope(allowed[0]);
-    }).catch(()=>{if(active)setAllowedScopes([])});
+    }).catch(()=>{if(active){setAllowedScopes([]);setFullScopes([])}});
     return()=>{active=false};
   },[account.user?.id,account.permissionLoading,account.canManageGlobal,account.canManageScope,account.canManagePage,scopeId]);
 
@@ -144,7 +146,7 @@ export default function CultureTimelineEditor({scopeId='loc',selectedEntryId='',
     queryKey:['culture-edit-data',dataScope],
     enabled:allowedScopes.includes(dataScope),
     queryFn:async()=>{
-      const [{rows},keywordResult]=await Promise.all([
+      const [{rows},styleResult]=await Promise.all([
         selectNeonRows('api.loc_timeline_entries',{
           columns:'scope_id,entry_key,entry_type,title,summary,start_date,end_date,period,entry_name,order_no,status,anchor_id,start_anchor_id,end_anchor_id,before_id,after_id,date_status,visibility,event_id,note',
           filters:[{column:'scope_id',operator:'eq',value:dataScope},{column:'entry_type',operator:'in',value:['anchor','event','period','style']}],
@@ -152,32 +154,34 @@ export default function CultureTimelineEditor({scopeId='loc',selectedEntryId='',
         }),
         dataScope==='lo3rwang'
           ?selectNeonRows('silver.lo3rwang_style',{
-            columns:'style_no,node_type,representative_name,keyword_group,keyword,order_no',
-            orders:[{column:'style_no',ascending:true},{column:'order_no',ascending:true}],limit:2000
+            columns:'style_no,node_type,representative_name,order_no',
+            filters:[{column:'node_type',operator:'eq',value:'style'}],
+            orders:[{column:'style_no',ascending:true},{column:'order_no',ascending:true}],limit:100
           })
           :selectNeonRows('silver.loc_style_tag_keywords',{
-            columns:'scope_id,style_tag,keyword,order_no',
+            columns:'scope_id,style_tag',
             filters:[{column:'scope_id',operator:'eq',value:dataScope}],
-            orders:[{column:'order_no',ascending:true},{column:'keyword',ascending:true}],limit:2000
+            orders:[{column:'style_tag',ascending:true}],limit:2000
           })
       ]);
-      const keywords=dataScope==='lo3rwang'
-        ?keywordResult.rows.filter(row=>row.node_type==='style'&&String(row.representative_name||'').trim())
-          .map(row=>({style_tag:row.representative_name,keyword:'',order_no:row.order_no}))
-        :keywordResult.rows;
-      return {rows,keywords};
+      const styleTags=dataScope==='lo3rwang'
+        ?styleResult.rows.map(row=>row.representative_name).filter(Boolean)
+        :styleResult.rows.map(row=>row.style_tag).filter(Boolean);
+      return {rows,styleTags:[...new Set(styleTags)]};
     },
     staleTime:20_000
   });
   const rows=query.data?.rows||[];
   const anchors=useMemo(()=>new Map(rows.filter(row=>row.entry_type==='anchor'&&row.anchor_id).map(row=>[row.anchor_id,row])),[rows]);
   const anchorOptions=useMemo(()=>[...anchors.values()].sort((a,b)=>dateText(a.start_date).localeCompare(dateText(b.start_date))),[anchors]);
-  const styleKeywords=query.data?.keywords||[];
-  const styleTags=useMemo(()=>[...new Set(styleKeywords.map(row=>row.style_tag).filter(Boolean))],[styleKeywords]);
+  const styleTags=query.data?.styleTags||[];
+  const canEditStyle=fullScopes.includes(dataScope);
+  const editableTypes=canEditStyle?ALL_EDITABLE_TYPES:TIME_EDITABLE_TYPES;
   const periodRows=useMemo(()=>rows.filter(row=>row.entry_type==='period'),[rows]);
   const openRow=key=>{
     const row=rows.find(item=>item.entry_key===key);
     if(!row)return;
+    if(row.entry_type==='style'&&!fullScopes.includes(dataScope)){setMessage('風格由 Scope manager 管理。');return;}
     setSelectedKey(key);
     const current=draftFrom(row);
     if(row.entry_type==='event'){
@@ -198,6 +202,7 @@ export default function CultureTimelineEditor({scopeId='loc',selectedEntryId='',
   },[selectedEntryId,dataScope,allowedScopes,rows]);
 
   const beginAdd=type=>{
+    if(type==='style'&&!canEditStyle){setMessage('風格由 Scope manager 管理。');return;}
     setSelectedKey('');
     setDraft({...BLANK,entry_type:type});
     setMessage('');
@@ -206,6 +211,7 @@ export default function CultureTimelineEditor({scopeId='loc',selectedEntryId='',
   useEffect(()=>{
     const commandScope=riverCommand?.scopeId||dataScope;
     if(!riverCommand?.nonce||!allowedScopes.includes(commandScope))return;
+    if(riverCommand.type==='style'&&!fullScopes.includes(commandScope))return;
     setEditing(true);
     setDataScope(commandScope);
     setSelectedKey('');
@@ -218,6 +224,7 @@ export default function CultureTimelineEditor({scopeId='loc',selectedEntryId='',
     event.preventDefault();
     setBusy(true);setMessage('');
     try{
+      if(draft.entry_type==='style'&&!canEditStyle)throw new Error('風格由 Scope manager 管理。');
       const key=draft.entry_key||`${draft.entry_type}:${globalThis.crypto.randomUUID()}`;
       const values=rowForForm(dataScope,{...draft,entry_key:key,anchor_id:draft.anchor_id||key},anchors);
       if(values.entry_type==='period'){
@@ -258,33 +265,7 @@ export default function CultureTimelineEditor({scopeId='loc',selectedEntryId='',
     finally{setBusy(false)}
   };
 
-  const loadStyleWords=tag=>{
-    setStyleName(tag);
-    setStyleWords(styleKeywords.filter(row=>row.style_tag===tag).sort((a,b)=>a.order_no-b.order_no).map(row=>row.keyword).join('\n'));
-  };
-  const saveStyleWords=async event=>{
-    event.preventDefault();
-    const tag=String(styleName||'').trim();
-    if(!tag){setMessage('請填寫風格標籤。');return;}
-    setBusy(true);setMessage('');
-    try{
-      const wanted=uniqueWords(styleWords);
-      const old=styleKeywords.filter(row=>row.style_tag===tag);
-      if(wanted.length)await upsertNeonRows('silver.loc_style_tag_keywords',wanted.map((keyword,order_no)=>({
-        scope_id:dataScope,style_tag:tag,keyword,order_no
-      })),{conflict:'scope_id,style_tag,keyword'});
-      for(const row of old.filter(item=>!wanted.includes(item.keyword))){
-        await deleteNeonRows('silver.loc_style_tag_keywords',{filters:[
-          {column:'scope_id',operator:'eq',value:dataScope},
-          {column:'style_tag',operator:'eq',value:tag},
-          {column:'keyword',operator:'eq',value:row.keyword}
-        ],returning:null});
-      }
-      await queryClient.invalidateQueries({queryKey:['culture-edit-data',dataScope]});
-      setMessage('風格關鍵字已儲存。');
-    }catch(error){setMessage(error?.message||'儲存風格關鍵字失敗。')}
-    finally{setBusy(false)}
-  };
+
 
   if(!allowedScopes.length)return null;
 
@@ -301,11 +282,11 @@ export default function CultureTimelineEditor({scopeId='loc',selectedEntryId='',
     {query.error?<p className="scope-v2-status scope-v2-error">{query.error.message}</p>:null}
     {query.isPending?<p className="scope-v2-status">讀取中…</p>:null}
     <div className="scope-v2-tabs">
-      {EDITABLE_TYPES.map(([type,label])=><button key={type} type="button" onClick={()=>beginAdd(type)}>新增{label}</button>)}
+      {editableTypes.map(([type,label])=><button key={type} type="button" onClick={()=>beginAdd(type)}>新增{label}</button>)}
     </div>
     <div className="scope-v2-timeline">
       {rows.filter(row=>row.entry_type!=='period_legacy').map(row=><article key={row.entry_key}>
-        <button type="button" onClick={()=>openRow(row.entry_key)} aria-pressed={selectedKey===row.entry_key}>
+        <button type="button" disabled={row.entry_type==='style'&&!canEditStyle} onClick={()=>openRow(row.entry_key)} aria-pressed={selectedKey===row.entry_key}>
           {TYPE_LABEL[row.entry_type]||row.entry_type}｜{row.title||row.entry_name||row.entry_key}
         </button>
         <small>{dateText(row.start_date)}{row.end_date?` 至 ${dateText(row.end_date)}`:''}</small>
@@ -313,7 +294,7 @@ export default function CultureTimelineEditor({scopeId='loc',selectedEntryId='',
     </div>
     <form onSubmit={save}>
       <label><span>類型</span><select className="scope-v2-select" value={draft.entry_type} disabled={Boolean(selectedKey)} onChange={event=>change('entry_type',event.target.value)}>
-        {EDITABLE_TYPES.map(([type,label])=><option key={type} value={type}>{label}</option>)}
+        {editableTypes.map(([type,label])=><option key={type} value={type}>{label}</option>)}
       </select></label>
       <label><span>名稱</span><input className="scope-v2-search-input" value={draft.title||''} onChange={event=>change('title',event.target.value)} required/></label>
       <label><span>說明</span><textarea className="scope-v2-search-input" value={draft.summary||''} onChange={event=>change('summary',event.target.value)}/></label>
@@ -343,14 +324,6 @@ export default function CultureTimelineEditor({scopeId='loc',selectedEntryId='',
       {message?<p className="scope-v2-status" role="status">{message}</p>:null}
       <div className="scope-v2-tabs"><button type="submit" disabled={busy}>{busy?'儲存中…':'儲存'}</button>{selectedKey&&draft.entry_type==='anchor'?<button type="button" disabled={busy} onClick={removeAnchor}>刪除定錨點</button>:null}</div>
     </form>
-    {dataScope!=='lo3rwang'?    <details>
-      <summary>風格關鍵字</summary>
-      <form onSubmit={saveStyleWords}>
-        <label><span>風格標籤</span><input className="scope-v2-search-input" value={styleName} onChange={event=>setStyleName(event.target.value)} list={`style-tags-${dataScope}`}/></label>
-        <datalist id={`style-tags-${dataScope}`}>{styleTags.map(tag=><option key={tag} value={tag}/>)}</datalist>
-        <label><span>關鍵字（每行一個）</span><textarea className="scope-v2-search-input" rows={6} value={styleWords} onChange={event=>setStyleWords(event.target.value)}/></label>
-        <div className="scope-v2-tabs"><button type="submit" disabled={busy}>{busy?'儲存中…':'儲存風格關鍵字'}</button></div>
-      </form>
-    </details>:null}
+
   </section>;
 }
