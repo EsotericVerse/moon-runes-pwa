@@ -5,7 +5,7 @@ let runeNamesPromise;
 
 async function loadRuneNames(){
   if(!runeNamesPromise){
-    runeNamesPromise=selectNeonRows('silver.lrunes_runes',{columns:'rune_number,rune_name',limit:66})
+    runeNamesPromise=selectNeonRows('silver.lrunes',{columns:'rune_number,rune_name',limit:66})
       .then(result=>new Map(result.rows.map(row=>[Number(row.rune_number),row.rune_name])))
       .catch(error=>{runeNamesPromise=null;throw error;});
   }
