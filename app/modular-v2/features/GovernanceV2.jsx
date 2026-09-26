@@ -1,19 +1,10 @@
 'use client';
 
-import {useState} from 'react';
 import {selectNeonRows} from '../../loc/neon-repository';
-import GovernanceManagement from '../../loc/GovernanceManagement';
-import LanguageSpaceManagementPage from '../modules/language-space/LanguageSpaceManagementPage';
 import {useOffsetPagination} from '../use-offset-pagination.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 
 const FAQ_PAGE_SIZE=10;
-const GOVERNANCE_PANELS=Object.freeze([
-  ['principles','基本理念'],
-  ['law','法律'],
-  ['management','管理功能']
-]);
-
 function faqQuestion(row,index){
   return row?.question||row?.title||row?.prompt||row?.faq_question||`問題 ${index+1}`;
 }
@@ -105,27 +96,13 @@ function LawPanel(){
   </div>;
 }
 
-function ManagementPanel(){
-  return <LanguageSpaceManagementPage/>;
-}
-
 function GovernanceHome(){
-  const [panel,setPanel]=useState('principles');
   return <FeaturePageV2
     featureId="governance"
-    subtitle="基本理念、法律與管理功能。"
+    subtitle="基本理念與法律。"
   >
-    <section className="loc-card scope-v2-feature-card">
-      <label>
-        <span>治理項目</span>
-        <select className="scope-v2-select" value={panel} onChange={event=>setPanel(event.target.value)}>
-          {GOVERNANCE_PANELS.map(([value,label])=><option key={value} value={value}>{label}</option>)}
-        </select>
-      </label>
-    </section>
-    {panel==='principles'?<PrinciplesPanel/>:null}
-    {panel==='law'?<LawPanel/>:null}
-    {panel==='management'?<ManagementPanel/>:null}
+    <PrinciplesPanel/>
+    <LawPanel/>
   </FeaturePageV2>;
 }
 
