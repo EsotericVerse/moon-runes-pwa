@@ -82,7 +82,7 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
     String(a.label||'').localeCompare(String(b.label||''))
   ),[rawRows,anchors]);
 
-  if(!supported||account.loading||account.permissionLoading||!account.canManage)return null;
+  if(!supported||account.loading||account.permissionLoading||!account.canManageScopeSync(dataScope))return null;
 
   const selectRow=row=>{
     setSelectedId(String(row.record_id));
