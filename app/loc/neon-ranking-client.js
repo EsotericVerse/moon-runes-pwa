@@ -44,10 +44,12 @@ async function resolvePeriod(scopeId,period){
   return rows.find(row=>row.entry_type==='period'&&(String(row.period||'')===value||String(row.entry_key||'')===value))||null;
 }
 
-async function authorKeywords(){
-  const rows=await selectAllRows('silver.lo3rwang_style_keywords',{columns:'keyword'});
+async function authorKeywords(keywordGroup=''){
+  const group=String(keywordGroup||'').trim();
+  const filters=group?[{column:'keyword_group',operator:'eq',value:group}]:[];
+  const rows=await selectAllRows('silver.lo3rwang_style_keywords',{columns:'keyword,keyword_group',filters});
   const map=new Map();
-  for(const row of rows)increment(map,'keyword',row.keyword,{source:'lo3rwang'});
+  for(const row of rows)increment(map,'keyword',row.keyword,{source:'lo3rwang',keyword_group:row.keyword_group||''});
   return [...map.values()];
 }
 
@@ -63,16 +65,16 @@ async function authorSources(period){
   return [...map.values()];
 }
 
-async function runeKeywords(){
-  const rows=await selectAllRows('silver.lrunes',{
-    columns:'keyword,active',
-    filters:[
-      {column:'record_type',operator:'eq',value:'keyword'},
-      {column:'active',operator:'eq',value:true}
-    ]
-  });
+async function runeKeywords(keywordGroup=''){
+  const group=String(keywordGroup||'').trim();
+  const filters=[
+    {column:'record_type',operator:'eq',value:'keyword'},
+    {column:'active',operator:'eq',value:true}
+  ];
+  if(group)filters.push({column:'keyword_group',operator:'eq',value:group});
+  const rows=await selectAllRows('silver.lrunes',{columns:'keyword,keyword_group,active',filters});
   const map=new Map();
-  for(const row of rows)increment(map,'keyword',row.keyword,{source:'lrunes'});
+  for(const row of rows)increment(map,'keyword',row.keyword,{source:'lrunes',keyword_group:row.keyword_group||''});
   return [...map.values()];
 }
 
@@ -111,13 +113,14 @@ export async function selectScopeRankingPage(scopeId,{offset=0,limit=20,rankingT
   if(!RANKING_TYPES[id])throw new Error('Scope 無效');
   const type=RANKING_TYPES[id].includes(rankingType)?rankingType:RANKING_TYPES[id][0];
   const period=String(navigation.period||'all');
+  const keywordGroup=type==='keyword'?String(navigation.keywordGroup||'').trim():'';
 
   const rows=[];
   if(id==='loc'||id==='lo3rwang'){
-    rows.push(...(type==='keyword'?await authorKeywords():await authorSources(period)));
+    rows.push(...(type==='keyword'?await authorKeywords(keywordGroup):await authorSources(period)));
   }
   if(id==='loc'||id==='lunarunes'){
-    rows.push(...(type==='keyword'?await runeKeywords():await runeSources(period)));
+    rows.push(...(type==='keyword'?await runeKeywords(keywordGroup):await runeSources(period)));
   }
 
   let merged=mergeRows(rows)
@@ -135,4 +138,32 @@ export async function selectScopeRankingTypes(scopeId){
   const types=RANKING_TYPES[String(scopeId||'')];
   if(!types)throw new Error('Scope 無效');
   return [...types];
+}
+
+
+export async function selectScopeKeywordGroups(scopeId){
+  const id=String(scopeId||'');
+  if(!RANKING_TYPES[id])throw new Error('Scope 無效');
+  const groups=new Set();
+  if(id==='loc'||id==='lo3rwang'){
+    const rows=await selectAllRows('silver.lo3rwang_style_keywords',{columns:'keyword_group'});
+    for(const row of rows){
+      const value=String(row.keyword_group||'').trim();
+      if(value)groups.add(value);
+    }
+  }
+  if(id==='loc'||id==='lunarunes'){
+    const rows=await selectAllRows('silver.lrunes',{
+      columns:'keyword_group',
+      filters:[
+        {column:'record_type',operator:'eq',value:'keyword'},
+        {column:'active',operator:'eq',value:true}
+      ]
+    });
+    for(const row of rows){
+      const value=String(row.keyword_group||'').trim();
+      if(value)groups.add(value);
+    }
+  }
+  return [...groups].sort((a,b)=>a.localeCompare(b));
 }
