@@ -16,6 +16,8 @@ const textFields=[
 const arrayFields=[['local_routes','頁面路徑'],['route_patterns','動態路徑'],['compatibility_routes','相容路徑'],['home_link_labels','首頁連結文字'],['home_link_hrefs','首頁連結網址']];
 const flagFields=[['active','啟用'],['graph_enabled','顯示資料圖'],['include_in_admin_graph','顯示於管理圖'],['include_in_global_search','列入全域搜尋'],['include_in_global_stats','列入全域統計']];
 const formFields=[...textFields.map(([key])=>key),...arrayFields.map(([key])=>key),...flagFields.map(([key])=>key),'parent_scope_id','display_order','default_theme_id'];
+const MANAGER_FEATURES=Object.freeze([{id:'statics',label:'統計／關鍵詞／搜尋評論'},{id:'culture',label:'文化／時期／事件／定錨／風格'},{id:'governance',label:'治理／法律'}]);
+
 const emptyScope={scope_id:'',scope_name:'',scope_kind:'custom_scope',scope_type:'directory',parent_scope_id:'',display_order:10,default_theme_id:'theme-7',active:true,graph_enabled:false,include_in_admin_graph:true,include_in_global_search:true,include_in_global_stats:true,local_routes:[],route_patterns:[],compatibility_routes:[],home_link_labels:[],home_link_hrefs:[]};
 const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,character=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
 const lines=value=>String(value||'').split('\n').map(part=>part.trim()).filter(Boolean);
@@ -61,7 +63,7 @@ export default function ScopeManagementV2(){
   const client=useQueryClient();
   const canvasRef=useRef(null),clickRef=useRef(null);
   const [isAdmin,setIsAdmin]=useState(false),[permissionChecked,setPermissionChecked]=useState(false);
-  const [selected,setSelected]=useState(null),[draft,setDraft]=useState(null),[grantDraft,setGrantDraft]=useState({userId:'',accessLevel:'page_manager',caseId:FEATURES_V2[0].id});
+  const [selected,setSelected]=useState(null),[draft,setDraft]=useState(null),[grantDraft,setGrantDraft]=useState({userId:'',accessLevel:'page_manager',caseId:'statics'});
   const [error,setError]=useState(''),[message,setMessage]=useState(''),[graphError,setGraphError]=useState('');
   useEffect(()=>{
     let live=true;setIsAdmin(false);setPermissionChecked(false);
@@ -162,7 +164,7 @@ export default function ScopeManagementV2(){
           <form onSubmit={async event=>{event.preventDefault();await run({kind:'grant',payload:{...grantDraft,scopeId:draft.scope_id}},'權限已分配')}} className="scope-graph-grant-form">
             <label>Neon 使用者 ID<input required value={grantDraft.userId} onChange={event=>setGrantDraft(row=>({...row,userId:event.target.value}))}/></label>
             <label>權限<select value={grantDraft.accessLevel} onChange={event=>setGrantDraft(row=>({...row,accessLevel:event.target.value}))}><option value="page_manager">頁面管理</option><option value="scope_manager">Scope 管理</option><option value="privacy_dispute_handler">隱私爭議處理</option></select></label>
-            <label>頁面／功能<input required list="scope-page-features" value={grantDraft.caseId} onChange={event=>setGrantDraft(row=>({...row,caseId:event.target.value}))}/><datalist id="scope-page-features">{FEATURES_V2.map(row=><option key={row.id} value={row.id}/>)}</datalist></label>
+            <label>頁面／功能<input required list="scope-page-features" value={grantDraft.caseId} onChange={event=>setGrantDraft(row=>({...row,caseId:event.target.value}))}/><datalist id="scope-page-features">{MANAGER_FEATURES.map(row=><option key={row.id} value={row.id}>{row.label}</option>)}</datalist></label>
             <button type="submit" disabled={mutate.isPending}>分配權限</button>
           </form>
           {currentGrants.length?<ul>{currentGrants.map(row=><li key={row.record_id}>{row.user_id} · {row.access_level} · {row.case_id} <button type="button" disabled={mutate.isPending} onClick={()=>run({kind:'revoke',payload:{userId:row.user_id,scopeId:row.scope_id,accessLevel:row.access_level,caseId:row.case_id}},'權限已撤銷')}>撤銷</button></li>)}</ul>:<p>此 Scope 尚未分配頁面權限。</p>}
