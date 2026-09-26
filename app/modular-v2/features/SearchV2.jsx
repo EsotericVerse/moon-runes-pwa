@@ -45,7 +45,7 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map(),relati
   const text=rowText(row);
   if(!norm(text).includes(norm(q)))return null;
   const title=row.title||row.name||row.display_title||row.label||row.rune_name||row.context_name||row.work_id||row.song_id||row.id||source;
-  const bodyField=['summary','content','style_tags','meta_tags','description','interpretation','ai_summary','retrieval_text','text'].find(field=>typeof row[field]==='string'&&row[field].trim())||'';
+  const bodyField=['summary','display_text','content','style_tags','meta_tags','description','interpretation','ai_summary','retrieval_text','text'].find(field=>typeof row[field]==='string'&&row[field].trim())||'';
   const body=bodyField?row[bodyField]:text;
   const navigation=buildSearchNavigation(collectionId,source,row,q,scopeId);
   if(row.scope_id)navigation.targetScope=row.scope_id;
@@ -62,7 +62,9 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map(),relati
   const relatedRelations=work.workId?(relationsMap.get(work.workId)||[]):[];
   const isThemeSource=row.media_type==='song'||row.content_type==='lyrics'||row.category==='music';
   const isLiteratureTarget=work.workId.startsWith('lo3rwang-literature:');
-  return {key:identity?source+'-'+identity:source+'-'+title+'-'+String(body).slice(0,40),source,title:String(title),date:row.date||row.created_date||row.created_at||row.updated_at||'',snippet:snippet(body,q),bodyText:String(body),styleTags:String(row.style_tags||''),scopeId:scope,resourceType,resourceId,settingsKey,settings,editableTable,editableIdColumn,editableField,relationWorkId:work.workId,relationTitle:work.title||String(title),relatedRelations,isThemeSource,isLiteratureTarget,href:row.url||row.href||row.suno_url||(row.scope_id?scopeHrefV2(row.scope_id,'context'):''),destinations:featureNavigationLinks(navigation)};
+  const isScopeCard=Boolean(row.scope_card);
+  const href=isScopeCard?scopeHrefV2(scope):(row.url||row.href||row.suno_url||(row.scope_id?scopeHrefV2(row.scope_id,'statics'):''));
+  return {key:identity?source+'-'+identity:source+'-'+title+'-'+String(body).slice(0,40),source,title:String(title),date:row.date||row.created_date||row.created_at||row.updated_at||'',snippet:snippet(body,q),bodyText:String(body),styleTags:String(row.style_tags||''),scopeId:scope,resourceType,resourceId,settingsKey,settings,editableTable,editableIdColumn,editableField,relationWorkId:work.workId,relationTitle:work.title||String(title),relatedRelations,isThemeSource,isLiteratureTarget,isScopeCard,href,destinations:isScopeCard?[]:featureNavigationLinks(navigation)};
 }
 
 export default function SearchV2(){
@@ -336,7 +338,7 @@ export default function SearchV2(){
           {row.date?<p className="scope-v2-meta">{row.date}</p>:null}
           {settings.visibility&&settings.visibility!=='public'?<p className="scope-v2-status">此項目目前隱藏（僅管理者可見）</p>:null}
           <p>{settings.projection_level==='full'?row.bodyText:row.snippet}</p>
-          {settings.show_link!==false&&row.href?<p><a href={row.href} target={/^https?:/.test(row.href)?'_blank':undefined} rel={/^https?:/.test(row.href)?'noreferrer':undefined}>查看連結</a></p>:null}
+          {settings.show_link!==false&&row.href?<p><a href={row.href} target={row.isScopeCard?undefined:(/^https?:/.test(row.href)?'_blank':undefined)} rel={row.isScopeCard?undefined:(/^https?:/.test(row.href)?'noreferrer':undefined)}>{row.isScopeCard?'進入 Scope':'查看連結'}</a></p>:null}
           {row.destinations?.length?<p className="scope-v2-result-links">{row.destinations.map(destination=><a key={destination.id} href={destination.href}>{destination.label}</a>)}</p>:null}
           {row.relatedRelations?.length?<p className="scope-v2-result-links">{row.relatedRelations.map(relation=><a key={relation.relation_id} href={literatureHref(relation.to_work_id)}>主題曲｜《{relation.display_label||'作品'}》</a>)}</p>:null}
           {editable?<p>
