@@ -8,7 +8,7 @@ let activeRequests=0;
 const waiters=[];
 
 function sourcePath(path){
-  const normalized=String(path||'').trim().replace(/^\\/+/, '');
+  const normalized=String(path||'').trim().replace(/^\/+/, '');
   if(!normalized)throw new Error('LOC Neon data path is required');
   return normalized;
 }
@@ -35,7 +35,7 @@ function keywordMap(rows){
   const map=new Map();
   for(const row of rows||[]){
     const number=Number(row?.rune_number);
-    if(!Number.isInteger(number)||row?.context_type!=='keyword'||!row?.keyword)continue;
+    if(!Number.isInteger(number)||!row?.keyword)continue;
     if(!map.has(number))map.set(number,{positive:[],negative:[]});
     const bucket=map.get(number);
     if(row.keyword_group==='positive')bucket.positive.push(row.keyword);
@@ -115,10 +115,9 @@ async function loadCanonicalRunes(){
       limit:100
     }),
     selectNeonRows('silver.lrunes',{
-      columns:'rune_number,context_type,keyword_group,keyword',
+      columns:'rune_number,keyword_group,keyword',
       filters:[
-        {column:'record_type',operator:'eq',value:'context'},
-        {column:'context_type',operator:'eq',value:'keyword'},
+        {column:'record_type',operator:'eq',value:'keyword'},
         {column:'active',operator:'eq',value:true}
       ],
       orders:[{column:'rune_number',ascending:true},{column:'order_no',ascending:true}],
@@ -144,15 +143,17 @@ async function fetchCanonical(path){
       })).rows;
     }
     if(normalized==='culture/lrunes-periods'){
-      return {eras:periodRows((await selectNeonRows('silver.lrunes',{
-        columns:'entry_key,entry_type,title,summary,period,entry_name,order_no,status,updated_at',
-        filters:[
-          {column:'record_type',operator:'eq',value:'time'},
-          {column:'entry_type',operator:'eq',value:'period'}
-        ],
+      const {rows}=await selectNeonRows('silver.lrunes',{
+        columns:'record_id,title,start_date,rune_count,status,updated_at',
+        filters:[{column:'record_type',operator:'eq',value:'evolution'}],
         orders:[{column:'start_date',ascending:true}],
-        limit:5000
-      })).rows)};
+        limit:100
+      });
+      return {eras:rows.map(row=>({
+        era_id:row.record_id,period:row.title,name:row.title,title:row.title,
+        description:'',start_date:row.start_date,end_date:null,
+        order:0,status:row.status||'',rune_count:row.rune_count
+      }))};
     }
     if(normalized==='culture/lo3rwang-periods'){
       return {eras:periodRows((await selectNeonRows('silver.lo3rwang_style_time',{
@@ -161,18 +162,6 @@ async function fetchCanonical(path){
         orders:[{column:'start_date',ascending:true}],
         limit:5000
       })).rows)};
-    }
-    if(normalized==='context/content-relations'){
-      return (await selectNeonRows('silver.lrunes',{
-        columns:'context_id,context_type,rune_number,related_rune_number,relation_type,title,rule_text,note,order_no',
-        filters:[
-          {column:'record_type',operator:'eq',value:'context'},
-          {column:'context_type',operator:'eq',value:'relation'},
-          {column:'active',operator:'eq',value:true}
-        ],
-        orders:[{column:'order_no',ascending:true}],
-        limit:5000
-      })).rows;
     }
     throw new Error(`Neon canonical data path is not mapped: ${normalized}`);
   }finally{releaseSlot();}

@@ -1,9 +1,10 @@
 import { mountQuickSelector } from './quick-selector.js';
-import { rune as runtimeRunes, groups as runtimeGroups } from './runes.js';
+import { rune as runtimeRunes, groups as runtimeGroups, loadCanonicalRunes } from './runes-core.js';
 
 async function initRunePage() {
   const file = location.pathname.split("/").pop() || "";
   if (file !== "runes.html") return;
+  await loadCanonicalRunes();
 
   const grid = document.querySelector("#rune-grid");
   const count = document.querySelector("#rune-count");
@@ -167,7 +168,8 @@ else initRunePage();
   function governElement(node){if(node.matches?.('.rune-result-card'))governDrawCard(node);if(node.matches?.('.rune-tile,.special-rune-card'))governLibraryTile(node);if(node.matches?.('article.card'))governSearchOracle(node);}
   function govern(root=document){if(root?.nodeType===Node.ELEMENT_NODE)governElement(root);root.querySelectorAll?.('.rune-result-card').forEach(governDrawCard);root.querySelectorAll?.('.rune-tile,.special-rune-card').forEach(governLibraryTile);root.querySelectorAll?.('article.card').forEach(governSearchOracle);}
 
-  function start(){
+  async function start(){
+    await loadCanonicalRunes();
     const rows=runtimeRunes.filter(Boolean);
     runeMap=new Map(rows.map(row=>[clean(row.符文名稱||row.名稱||row.name),row]).filter(([name])=>name));
     groupByRuneId=new Map();

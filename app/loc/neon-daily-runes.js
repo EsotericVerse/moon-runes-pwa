@@ -1,11 +1,15 @@
 import {selectNeonRows} from './neon-repository';
-import {rune as canonicalRuneArray} from '../../js/runes.js';
 
 export const DAILY_RUNE_PAGE_SIZE=10;
-const RUNE_NAMES=new Map(canonicalRuneArray.filter(Boolean).map(row=>[Number(row.編號),row.符文名稱]));
 
 async function loadRuneNames(){
-  return RUNE_NAMES;
+  const {rows}=await selectNeonRows('silver.lrunes',{
+    columns:'rune_number,rune_name',
+    filters:[{column:'record_type',operator:'eq',value:'rune'}],
+    orders:[{column:'rune_number',ascending:true}],
+    limit:100
+  });
+  return new Map(rows.map(row=>[Number(row.rune_number),row.rune_name]));
 }
 
 async function attachRuneNames(rows){
@@ -13,10 +17,15 @@ async function attachRuneNames(rows){
   return rows.map(row=>({...row,rune_name:names.get(Number(row.rune_number))||String(row.rune_number)}));
 }
 
+function drawFilters(extra=[]){
+  return [{column:'record_type',operator:'eq',value:'daily_draw'},...extra];
+}
+
 export async function selectRecentDailyRuneDraws({limit=28}={}){
   const safeLimit=Math.max(1,Math.min(28,Math.floor(Number(limit)||28)));
-  const result=await selectNeonRows('silver.lrunes_daily_draws',{
+  const result=await selectNeonRows('silver.lrunes',{
     columns:'record_date,draw_kind,rune_number,direction',
+    filters:drawFilters(),
     orders:[{column:'record_date',ascending:false},{column:'draw_kind',ascending:true}],
     range:[0,safeLimit-1],
     count:'exact'
@@ -27,8 +36,9 @@ export async function selectRecentDailyRuneDraws({limit=28}={}){
 export async function selectDailyRuneDraws({offset=0,limit=DAILY_RUNE_PAGE_SIZE}={}){
   const safeOffset=Math.max(0,Math.floor(Number(offset)||0));
   const safeLimit=Math.max(1,Math.min(DAILY_RUNE_PAGE_SIZE,Math.floor(Number(limit)||DAILY_RUNE_PAGE_SIZE)));
-  const draws=await selectNeonRows('silver.lrunes_daily_draws',{
+  const draws=await selectNeonRows('silver.lrunes',{
     columns:'record_date,draw_kind,rune_number,direction',
+    filters:drawFilters(),
     orders:[{column:'record_date',ascending:false},{column:'draw_kind',ascending:true}],
     range:[safeOffset,safeOffset+safeLimit-1]
   });
@@ -41,12 +51,12 @@ export async function selectDailyRuneMonth({year,month}={}){
   const start=`${safeYear}-${String(safeMonth).padStart(2,'0')}-01`;
   const nextDate=new Date(Date.UTC(safeYear,safeMonth,1));
   const end=`${nextDate.getUTCFullYear()}-${String(nextDate.getUTCMonth()+1).padStart(2,'0')}-01`;
-  const draws=await selectNeonRows('silver.lrunes_daily_draws',{
+  const draws=await selectNeonRows('silver.lrunes',{
     columns:'record_date,draw_kind,rune_number,direction',
-    filters:[
+    filters:drawFilters([
       {column:'record_date',operator:'gte',value:start},
       {column:'record_date',operator:'lt',value:end}
-    ],
+    ]),
     orders:[{column:'record_date',ascending:true},{column:'draw_kind',ascending:true}],
     limit:62
   });

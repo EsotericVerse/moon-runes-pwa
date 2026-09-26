@@ -72,16 +72,16 @@ async function runeRankings(){
       filters:[{column:'record_type',operator:'eq',value:'rune'}]
     }),
     selectAllRows('silver.lrunes',{
-      columns:'context_type,keyword,active',
+      columns:'keyword,active',
       filters:[
-        {column:'record_type',operator:'eq',value:'context'},
+        {column:'record_type',operator:'eq',value:'keyword'},
         {column:'active',operator:'eq',value:true}
       ]
     })
   ]);
   const map=new Map();
   for(const row of runes)increment(map,'group',row.group_name,{source:'lrunes'});
-  for(const row of context)if(row.context_type==='keyword')increment(map,'keyword',row.keyword,{source:'lrunes'});
+  for(const row of context)increment(map,'keyword',row.keyword,{source:'lrunes'});
   return [...map.values()];
 }
 function matchesNavigation(row,navigation={}){
