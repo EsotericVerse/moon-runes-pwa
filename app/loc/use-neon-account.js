@@ -2,17 +2,16 @@
 
 import {useCallback,useEffect,useState} from 'react';
 import {getNeonSession,signInNeonWithGoogle,signOutNeon} from './neon-client';
+import {createScopeAuthorizer} from './scope-authorization';
 
-const OWNER_EMAIL='sopa2306@gmail.com';
-
-function isOwner(user){
-  return String(user?.email||'').trim().toLowerCase()===OWNER_EMAIL;
-}
-
-const emptyState={loading:true,user:null,grants:[],privileges:[],authorizer:null,canManage:false,permissionLoading:true,error:''};
+const emptyState={
+  loading:true,user:null,email:'',role:'',privileges:[],authorizer:null,
+  canManage:false,permissionLoading:true,error:''
+};
 
 export function useNeonAccount(){
   const [state,setState]=useState(emptyState);
+
   const refresh=useCallback(async()=>{
     try{
       const session=await getNeonSession();
@@ -21,14 +20,16 @@ export function useNeonAccount(){
         setState({...emptyState,loading:false,permissionLoading:false});
         return null;
       }
-      const canManage=isOwner(user);
-      const email=String(user?.email||'').trim().toLowerCase();
+
+      const authorizer=createScopeAuthorizer(user);
+      const canManage=Boolean(authorizer.role);
       setState({
         loading:false,
         user,
-        grants:canManage?[{user_id:String(user?.id||''),email,privileges:['admin']}]:[],
-        privileges:canManage?['admin']:[],
-        authorizer:null,
+        email:authorizer.email,
+        role:authorizer.role,
+        privileges:authorizer.privileges,
+        authorizer,
         canManage,
         permissionLoading:false,
         error:''
@@ -39,13 +40,34 @@ export function useNeonAccount(){
       return null;
     }
   },[]);
+
   useEffect(()=>{refresh()},[refresh]);
+
   const signIn=useCallback(()=>signInNeonWithGoogle(typeof window!=='undefined'?window.location.href:'/'),[]);
   const signOut=useCallback(async()=>{
     await signOutNeon();
     setState({...emptyState,loading:false,permissionLoading:false});
   },[]);
-  const canManageScope=useCallback(async()=>state.canManage,[state.canManage]);
-  const canManageGlobal=useCallback(async()=>state.canManage,[state.canManage]);
-  return {...state,refresh,signIn,signOut,canManageScope,canManageGlobal};
+
+  const canManageScope=useCallback(
+    async scopeId=>Boolean(state.authorizer?.canManageScopeSync(scopeId)),
+    [state.authorizer]
+  );
+  const canManageGlobal=useCallback(
+    async()=>Boolean(state.authorizer?.canManageGlobalSync()),
+    [state.authorizer]
+  );
+  const canManageScopeSync=useCallback(
+    scopeId=>Boolean(state.authorizer?.canManageScopeSync(scopeId)),
+    [state.authorizer]
+  );
+  const canManageGlobalSync=useCallback(
+    ()=>Boolean(state.authorizer?.canManageGlobalSync()),
+    [state.authorizer]
+  );
+
+  return {
+    ...state,refresh,signIn,signOut,
+    canManageScope,canManageGlobal,canManageScopeSync,canManageGlobalSync
+  };
 }
