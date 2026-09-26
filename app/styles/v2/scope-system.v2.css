@@ -364,3 +364,11 @@
   .scope-v2-media-meta-editor{grid-template-columns:1fr}
 }
 @media(prefers-reduced-motion:reduce){.scope-v2-stat-cube{transition:none}}
+
+
+.scope-v2-literature-work{display:grid;gap:1rem}
+.scope-v2-literature-chapters{display:grid;gap:1.25rem}
+.scope-v2-literature-chapters article{padding-top:.25rem;border-top:var(--scope-v2-border)}
+.scope-v2-literature-chapters article:first-child{border-top:0}
+.scope-v2-literature-chapters h2{margin:.15rem 0 .75rem}
+.scope-v2-literature-body{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.8}
