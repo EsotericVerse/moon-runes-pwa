@@ -159,4 +159,131 @@ USING (
   OR (record_type IN ('anchor','period','event') AND silver.can_manage_scope(scope_id))
 );
 
+
+CREATE OR REPLACE FUNCTION silver.log_scope_content_update()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'silver','neon_auth','public'
+AS $
+DECLARE
+  old_row jsonb:=coalesce(to_jsonb(OLD),'{}'::jsonb);
+  new_row jsonb:=coalesce(to_jsonb(NEW),'{}'::jsonb);
+  item record;
+  v_target_scope text;
+  v_log_scope text;
+  v_type text;
+  v_id text;
+  v_actor text;
+  v_actor_name text;
+  v_actor_email text;
+BEGIN
+  v_actor_email:=silver.current_auth_email();
+  v_actor:=v_actor_email;
+
+  SELECT u.name INTO v_actor_name
+    FROM neon_auth."user" u
+   WHERE lower(u.email)=v_actor_email
+   LIMIT 1;
+
+  IF TG_TABLE_NAME='resource_visibility' THEN
+    v_target_scope:=coalesce(old_row->>'scope',new_row->>'scope');
+    v_type:=coalesce(old_row->>'resource_type',new_row->>'resource_type');
+    v_id:=coalesce(old_row->>'resource_id',new_row->>'resource_id');
+  ELSE
+    v_target_scope:=coalesce(old_row->>'scope_id',new_row->>'scope_id');
+    v_type:=CASE TG_TABLE_NAME
+      WHEN 'lo3rwang_galaxy' THEN 'galaxy'
+      WHEN 'lo3rwang_galaxy_media' THEN 'galaxy_media'
+      ELSE TG_TABLE_NAME
+    END;
+    v_id:=CASE TG_TABLE_NAME
+      WHEN 'lo3rwang_galaxy' THEN coalesce(old_row->>'galaxy_id',new_row->>'galaxy_id')
+      WHEN 'lo3rwang_galaxy_media' THEN coalesce(old_row->>'media_id',new_row->>'media_id')
+      ELSE NULL
+    END;
+  END IF;
+
+  v_log_scope:=CASE WHEN silver.can_manage_global() THEN 'admin' ELSE v_target_scope END;
+
+  FOR item IN SELECT key,value FROM jsonb_each(old_row)
+  LOOP
+    IF item.value IS DISTINCT FROM new_row->item.key THEN
+      INSERT INTO silver.manage(
+        record_type,scope_id,target_scope_id,resource_type,resource_id,
+        actor_id,actor_name,actor_email,field_name,old_value,new_value
+      ) VALUES (
+        'content_audit',v_log_scope,v_target_scope,v_type,v_id,
+        v_actor,v_actor_name,v_actor_email,item.key,
+        item.value #>> '{}',new_row->item.key #>> '{}'
+      );
+    END IF;
+  END LOOP;
+
+  IF TG_OP='INSERT' THEN
+    FOR item IN SELECT key,value FROM jsonb_each(new_row)
+    LOOP
+      INSERT INTO silver.manage(
+        record_type,scope_id,target_scope_id,resource_type,resource_id,
+        actor_id,actor_name,actor_email,field_name,old_value,new_value
+      ) VALUES (
+        'content_audit',v_log_scope,v_target_scope,v_type,v_id,
+        v_actor,v_actor_name,v_actor_email,item.key,NULL,item.value #>> '{}'
+      );
+    END LOOP;
+  END IF;
+
+  RETURN NEW;
+END
+$;
+
+DROP POLICY IF EXISTS lo3rwang_galaxy_public_read ON silver.lo3rwang_galaxy;
+DROP POLICY IF EXISTS lo3rwang_galaxy_scope_update ON silver.lo3rwang_galaxy;
+CREATE POLICY lo3rwang_galaxy_public_read ON silver.lo3rwang_galaxy FOR SELECT TO anonymous,authenticated USING (true);
+CREATE POLICY lo3rwang_galaxy_scope_update ON silver.lo3rwang_galaxy FOR UPDATE TO authenticated
+USING (silver.can_manage_scope(scope_id))
+WITH CHECK (silver.can_manage_scope(scope_id));
+
+DROP POLICY IF EXISTS lo3rwang_galaxy_media_public_read ON silver.lo3rwang_galaxy_media;
+DROP POLICY IF EXISTS lo3rwang_galaxy_media_scope_update ON silver.lo3rwang_galaxy_media;
+CREATE POLICY lo3rwang_galaxy_media_public_read ON silver.lo3rwang_galaxy_media FOR SELECT TO anonymous,authenticated USING (true);
+CREATE POLICY lo3rwang_galaxy_media_scope_update ON silver.lo3rwang_galaxy_media FOR UPDATE TO authenticated
+USING (silver.can_manage_scope(scope_id))
+WITH CHECK (silver.can_manage_scope(scope_id));
+
+DROP POLICY IF EXISTS lo3rwang_style_scope_insert ON silver.lo3rwang_style;
+DROP POLICY IF EXISTS lo3rwang_style_scope_update ON silver.lo3rwang_style;
+DROP POLICY IF EXISTS lo3rwang_style_scope_delete ON silver.lo3rwang_style;
+CREATE POLICY lo3rwang_style_scope_insert ON silver.lo3rwang_style FOR INSERT TO authenticated
+WITH CHECK (silver.can_manage_scope('lo3rwang'));
+CREATE POLICY lo3rwang_style_scope_update ON silver.lo3rwang_style FOR UPDATE TO authenticated
+USING (silver.can_manage_scope('lo3rwang'))
+WITH CHECK (silver.can_manage_scope('lo3rwang'));
+CREATE POLICY lo3rwang_style_scope_delete ON silver.lo3rwang_style FOR DELETE TO authenticated
+USING (silver.can_manage_scope('lo3rwang'));
+
+ALTER TABLE silver.lo3rwang_style_keywords ENABLE ROW LEVEL SECURITY;
+GRANT SELECT ON silver.lo3rwang_style_keywords TO anonymous,authenticated;
+GRANT INSERT,UPDATE,DELETE ON silver.lo3rwang_style_keywords TO authenticated;
+DROP POLICY IF EXISTS lo3rwang_style_keywords_public_read ON silver.lo3rwang_style_keywords;
+DROP POLICY IF EXISTS lo3rwang_style_keywords_scope_insert ON silver.lo3rwang_style_keywords;
+DROP POLICY IF EXISTS lo3rwang_style_keywords_scope_update ON silver.lo3rwang_style_keywords;
+DROP POLICY IF EXISTS lo3rwang_style_keywords_scope_delete ON silver.lo3rwang_style_keywords;
+CREATE POLICY lo3rwang_style_keywords_public_read ON silver.lo3rwang_style_keywords FOR SELECT TO anonymous,authenticated USING (true);
+CREATE POLICY lo3rwang_style_keywords_scope_insert ON silver.lo3rwang_style_keywords FOR INSERT TO authenticated
+WITH CHECK (silver.can_manage_scope('lo3rwang'));
+CREATE POLICY lo3rwang_style_keywords_scope_update ON silver.lo3rwang_style_keywords FOR UPDATE TO authenticated
+USING (silver.can_manage_scope('lo3rwang'))
+WITH CHECK (silver.can_manage_scope('lo3rwang'));
+CREATE POLICY lo3rwang_style_keywords_scope_delete ON silver.lo3rwang_style_keywords FOR DELETE TO authenticated
+USING (silver.can_manage_scope('lo3rwang'));
+
+DROP POLICY IF EXISTS resource_visibility_scope_insert ON silver.resource_visibility;
+DROP POLICY IF EXISTS resource_visibility_scope_update ON silver.resource_visibility;
+CREATE POLICY resource_visibility_scope_insert ON silver.resource_visibility FOR INSERT TO authenticated
+WITH CHECK (silver.can_manage_scope(scope));
+CREATE POLICY resource_visibility_scope_update ON silver.resource_visibility FOR UPDATE TO authenticated
+USING (silver.can_manage_scope(scope))
+WITH CHECK (silver.can_manage_scope(scope));
+
 COMMIT;
