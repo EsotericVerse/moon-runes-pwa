@@ -245,9 +245,9 @@ export default function CultureVolumeGraph3D({
       {workLoading?<p className='scope-v2-status'>載入{selectedCategoryType==='media'?'多媒體':'作品'}第 {workPage+1} 頁…</p>:null}
       {workError?<p className='scope-v2-status scope-v2-error'>{workError}</p>:null}
       <div className='scope-v2-culture-3d-work-river' aria-label={selectedCategoryLabel+'標題與日期列表'}>
-        {works.map((work,index)=><article className='scope-v2-culture-3d-work' key={work.media_id||work.galaxy_id||work.work_id||work.source_id||String(work.created_at)+'-'+index}>
+        {works.map((work,index)=><article className='scope-v2-culture-3d-work' key={work.media_id||work.galaxy_id||work.source_id||String(work.created_at)+'-'+index}>
           <time>{work.display_date||displayDate(work.created_at)}</time>
-          <strong>{work.title||work.work_id||'未命名作品'}</strong>
+          <strong>{work.title||work.galaxy_id||work.media_id||'未命名作品'}</strong>
           {externalSourceHref(work)?<a href={externalSourceHref(work)} target='_blank' rel='noreferrer'>查看來源</a>:null}
         </article>)}
       </div>
