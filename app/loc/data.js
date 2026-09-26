@@ -1,6 +1,7 @@
 export { LOC_DATA } from './data-paths.mjs';
 import { LOC_DATA } from './data-paths.mjs';
 import {selectNeonRows} from './neon-repository';
+import {rune as canonicalRuneArray} from '../../js/runes.js';
 
 const DEFAULT_GLOBAL_CONCURRENCY=2;
 const DEFAULT_MAX_BATCH_ITEMS=24;
@@ -43,7 +44,10 @@ async function fetchCanonical(path){
   const normalized=sourcePath(path);
   await acquireSlot();
   try{
-    if(normalized==='canonical/runes'||normalized==='canonical/lots'||normalized==='canonical/rune-interpretations'){
+    if(normalized==='canonical/runes'){
+      return canonicalRuneArray.filter(Boolean).map(row=>({...row}));
+    }
+    if(normalized==='canonical/lots'||normalized==='canonical/rune-interpretations'){
       const {rows}=await selectNeonRows('silver.lrunes',{columns:'rune_number,rune_name,group_name,english_name,lots_positive,lots_negative,lots_half_positive,lots_half_negative,myth_story,rune_evolution_history,source_ref,updated_at',orders:[{column:'rune_number',ascending:true}],limit:100});
       return runeRows(rows);
     }
