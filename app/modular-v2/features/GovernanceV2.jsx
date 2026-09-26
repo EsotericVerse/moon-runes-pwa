@@ -1,6 +1,7 @@
 'use client';
 
 import {selectNeonRows} from '../../loc/neon-repository';
+import {useNeonAccount} from '../../loc/use-neon-account';
 import {useOffsetPagination} from '../use-offset-pagination.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 
@@ -96,11 +97,26 @@ function LawPanel(){
   </div>;
 }
 
+function ManagementLogin(){
+  const account=useNeonAccount();
+  if(account.loading||account.permissionLoading)return <p className="scope-v2-status">確認登入狀態…</p>;
+  if(!account.user)return <p><button type="button" onClick={account.signIn}>登入</button></p>;
+  if(!account.canManage)return <div className="scope-v2-status">
+    <p>此帳號沒有管理權限。</p>
+    <button type="button" onClick={account.signOut}>登出</button>
+  </div>;
+  return <div className="scope-v2-status">
+    <p>管理模式已開啟。</p>
+    <button type="button" onClick={account.signOut}>登出</button>
+  </div>;
+}
+
 function GovernanceHome(){
   return <FeaturePageV2
     featureId="governance"
     subtitle="基本理念與法律。"
   >
+    <ManagementLogin/>
     <PrinciplesPanel/>
     <LawPanel/>
   </FeaturePageV2>;
