@@ -38,17 +38,16 @@ export default function ContextStyleManager({scopeId='lo3rwang'}){
     if(account.permissionLoading||!account.user||scopeId!=='lo3rwang')return()=>{active=false};
     Promise.all([
       account.canManageGlobal(),
-      account.canManageScope(scopeId),
-      account.canManagePage(scopeId,'statics')
-    ]).then(([global,scope,statics])=>{
+      account.canManageScope(scopeId)
+    ]).then(([global,scope])=>{
       if(!active)return;
       setCanEditStyle(global||scope);
-      setCanEditKeywords(global||scope||statics);
+      setCanEditKeywords(global||scope);
     }).catch(()=>{
       if(active){setCanEditStyle(false);setCanEditKeywords(false);}
     });
     return()=>{active=false};
-  },[account.user?.id,account.permissionLoading,account.canManageGlobal,account.canManageScope,account.canManagePage,scopeId]);
+  },[account.user?.id,account.permissionLoading,account.canManageGlobal,account.canManageScope,scopeId]);
 
   const stylesQuery=useQuery({
     queryKey:['lo3rwang-custom-runes',scopeId],
