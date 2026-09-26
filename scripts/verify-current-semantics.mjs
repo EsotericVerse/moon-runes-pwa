@@ -21,7 +21,7 @@ for(const token of ["defaultScopeId:'loc'","dataViews:Object.freeze({context:'ap
 const guidance=read(files.guidance);
 for(const token of ['DIRECTION_FACTOR','SPREAD_WEIGHTS','finalGuidance'])if(!guidance.includes(token))failures.push(`semantic guidance: missing ${token}`);
 const loader=read(files.canonicalLoader);
-for(const token of ['selectNeonRows','silver.lrunes_runes'])if(!loader.includes(token))failures.push(`canonical Neon loader: missing ${token}`);
+for(const token of ['selectNeonRows','silver.lrunes'])if(!loader.includes(token))failures.push(`canonical Neon loader: missing ${token}`);
 for(const path of Object.values(files))if(/data\/json|runtime_json_documents/.test(read(path)))failures.push(`${path}: retired JSON identifier remains`);
 
 const search=read(files.search);
