@@ -129,7 +129,8 @@ export default function AboutView(){
       <details className="home-framework-stage" style={{marginTop:'1rem'}}>
         <summary>查看原模型模組關係</summary>
         <ModelArchitectureExplorer modules={MODEL_MODULES} />
-        <div className="model-relationship" aria-label="架構關係"><span>語彙與表達資料</span><b aria-hidden="true">→</b><span>脈絡與方法處理</span><b aria-hidden="true">↔</b><span>演算法與模組組合</span><b aria-hidden="true">→</b><span>文化時間演變</span></div>
+        <div className="model-relationship" aria-label="架構關係"><span>語彙與表達資料</span><b aria-hidden="true">→</b><span>脈絡與方法處理</span>
+		<b aria-hidden="true">↔</b><span>演算法與模組組合</span><b aria-hidden="true">→</b><span>文化時間演變</span></div>
       </details>
     </section>
 
