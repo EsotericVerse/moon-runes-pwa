@@ -4,13 +4,11 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {useMutation,useQuery,useQueryClient} from '@tanstack/react-query';
 import {useNeonAccount} from '../loc/use-neon-account';
 import {
-  createManagedNode,deleteManagedNode,deletePermission,managedNodeId,
-  selectManagedNodes,selectPermissions,updateManagedNode,upsertPermission
+  createManagedNode,deleteManagedNode,managedNodeId,
+  selectManagedNodes,updateManagedNode
 } from '../loc/neon-scope-governance';
 
 const EMPTY_NODE={record_type:'scope',node_id:'',parent_group_id:'',active:true,display_order:10};
-const EMPTY_PERMISSION={userId:'',email:'',privileges:''};
-const privilegeLines=value=>[...new Set(String(value||'').split(/[\n,]+/).map(item=>item.trim()).filter(Boolean))];
 
 function nodeDraft(row){
   if(!row)return {...EMPTY_NODE};
@@ -52,7 +50,6 @@ export default function ScopeManagementV2(){
   const canvasRef=useRef(null),clickRef=useRef(null);
   const [isAdmin,setIsAdmin]=useState(false),[permissionChecked,setPermissionChecked]=useState(false);
   const [selected,setSelected]=useState(null),[draft,setDraft]=useState(null);
-  const [permissionDraft,setPermissionDraft]=useState({...EMPTY_PERMISSION});
   const [error,setError]=useState(''),[message,setMessage]=useState(''),[graphError,setGraphError]=useState('');
 
   useEffect(()=>{
@@ -65,14 +62,11 @@ export default function ScopeManagementV2(){
   const queryKey=['scope-admin-graph',account.user?.id];
   const dataQuery=useQuery({
     queryKey,
-    queryFn:async()=>{
-      const [nodes,permissions]=await Promise.all([selectManagedNodes(),selectPermissions()]);
-      return {nodes,permissions};
-    },
+    queryFn:async()=>({nodes:await selectManagedNodes()}),
     enabled:permissionChecked&&isAdmin,
     staleTime:20_000
   });
-  const data=dataQuery.data||{nodes:[],permissions:[]};
+  const data=dataQuery.data||{nodes:[]};
   const groups=data.nodes.filter(row=>row.record_type==='group');
   const graphData=useMemo(()=>graphFor(data.nodes),[data.nodes]);
   const points=graphData.nodes;
@@ -84,8 +78,6 @@ export default function ScopeManagementV2(){
       if(action.kind==='create')return createManagedNode(action.payload);
       if(action.kind==='update')return updateManagedNode(action.row,action.payload);
       if(action.kind==='delete')return deleteManagedNode(action.row);
-      if(action.kind==='permission-save')return upsertPermission(action.payload);
-      if(action.kind==='permission-delete')return deletePermission(action.userId);
       throw new Error('未知操作');
     },
     onSuccess:refresh
@@ -159,14 +151,6 @@ export default function ScopeManagementV2(){
     if(await run({kind:'delete',row},'節點已刪除')){setSelected(null);setDraft(null)}
   }
 
-  async function savePermission(event){
-    event.preventDefault();
-    const privileges=privilegeLines(permissionDraft.privileges);
-    if(await run({kind:'permission-save',payload:{
-      userId:permissionDraft.userId,email:permissionDraft.email,privileges
-    }},'權限已儲存'))setPermissionDraft({...EMPTY_PERMISSION});
-  }
-
   return <section className="scope-v2-page scope-graph-admin">
     <header className="scope-v2-hero">
       <p className="scope-v2-eyebrow">Management</p>
@@ -216,22 +200,6 @@ export default function ScopeManagementV2(){
           </div>
         </form>
       </div>:null}
-
-      <div className="scope-graph-inspector">
-        <h2>網站權限</h2>
-        <form onSubmit={savePermission} className="scope-graph-form">
-          <label>user_id<input required value={permissionDraft.userId} onChange={event=>setPermissionDraft(row=>({...row,userId:event.target.value}))}/></label>
-          <label>email<input required type="email" value={permissionDraft.email} onChange={event=>setPermissionDraft(row=>({...row,email:event.target.value}))}/></label>
-          <label>privileges（每行一項）<textarea rows={5} required value={permissionDraft.privileges} onChange={event=>setPermissionDraft(row=>({...row,privileges:event.target.value}))}/></label>
-          <p className="scope-v2-meta">可用：admin、&lt;scope_id&gt;、&lt;scope_id&gt;_&lt;page&gt;。權限向下相容：admin 不需再列 Scope；已有 Scope 權限時，不需再列該 Scope 的頁面。</p>
-          <button type="submit" disabled={mutate.isPending}>儲存權限</button>
-        </form>
-        {data.permissions.length?<ul>{data.permissions.map(row=><li key={row.record_id}>
-          {row.email||row.user_id} · {(row.privileges||[]).join('、')||'無權限'}
-          <button type="button" disabled={mutate.isPending} onClick={()=>setPermissionDraft({userId:row.user_id,email:row.email||'',privileges:(row.privileges||[]).join('\n')})}>編輯</button>
-          <button type="button" disabled={mutate.isPending} onClick={()=>run({kind:'permission-delete',userId:row.user_id},'權限已刪除')}>刪除</button>
-        </li>)}</ul>:<p>目前沒有網站權限紀錄。</p>}
-      </div>
 
     </section>:null}
   </section>;
