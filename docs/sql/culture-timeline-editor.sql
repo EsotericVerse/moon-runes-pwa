@@ -20,8 +20,9 @@ as $$
       or api.has_scope_access(p_scope_id,array['scope_manager']::text[])
       or exists (
         select 1
-        from api.scope_access_grants grant_row
-        where grant_row.user_id=api.current_scope_user_id()
+        from silver.loc_scope grant_row
+        where grant_row.record_type='access_grant'
+          and grant_row.user_id=api.current_scope_user_id()
           and grant_row.scope_id=p_scope_id
           and grant_row.access_level='page_manager'
           and grant_row.case_id='culture'

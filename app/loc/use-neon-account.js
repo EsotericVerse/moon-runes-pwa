@@ -9,7 +9,7 @@ export const NEON_SCOPE_MANAGER_LEVELS=Object.freeze(['scope_manager']);
 
 async function readManagementGrants(user){
   if(!user?.id)return [];
-  const {rows}=await selectNeonRows('api.scope_access_grants',{columns:'scope_id,access_level,case_id',filters:[{column:'user_id',operator:'eq',value:String(user.id)}],limit:100});
+  const {rows}=await selectNeonRows('silver.loc_scope',{columns:'scope_id,access_level,case_id',filters:[{column:'record_type',operator:'eq',value:'access_grant'},{column:'user_id',operator:'eq',value:String(user.id)}],limit:100});
   return rows;
 }
 

@@ -1,6 +1,6 @@
 'use client';
 import {useEffect,useMemo,useState} from 'react';
-import {databaseScopeId,getScopeThemeDefault,updateScopeThemeDefault} from '../loc/scope-public-settings';
+import {getScopeThemeDefault,updateScopeThemeDefault} from '../loc/scope-public-settings';
 import {fetchThemeStylesV2} from '../migration-bridges/theme-admin-neon.v2';
 import {useNeonAccount} from '../loc/use-neon-account';
 import {useScopeRuntimeV2} from './use-scope-runtime.v2';
@@ -8,7 +8,6 @@ import {applyThemeV2,getThemeSlotV2,THEME_SLOTS_V2} from './theme-registry.v2';
 export default function ThemeSelectV2(){
   const {scopeId}=useScopeRuntimeV2(),account=useNeonAccount();
   const [themeId,setThemeId]=useState('theme-7'),[styles,setStyles]=useState([]),[canEdit,setCanEdit]=useState(false),[status,setStatus]=useState('');
-  const databaseId=databaseScopeId(scopeId);
   useEffect(()=>{
     let live=true;
     Promise.all([getScopeThemeDefault(scopeId),fetchThemeStylesV2()]).then(([value,rows])=>{
@@ -21,9 +20,9 @@ export default function ThemeSelectV2(){
   useEffect(()=>{
     let live=true;
     if(!account.user||account.permissionLoading){setCanEdit(false);return()=>{live=false};}
-    account.canManageScope(databaseId).then(value=>{if(live)setCanEdit(Boolean(value))}).catch(()=>{if(live)setCanEdit(false)});
+    account.canManageGlobal().then(value=>{if(live)setCanEdit(Boolean(value))}).catch(()=>{if(live)setCanEdit(false)});
     return()=>{live=false};
-  },[account.user?.id,account.permissionLoading,databaseId,account.canManageScope]);
+  },[account.user?.id,account.permissionLoading,account.canManageGlobal]);
   const slot=useMemo(()=>getThemeSlotV2(themeId,styles),[themeId,styles]);
   useEffect(()=>{applyThemeV2(slot)},[slot]);
   const change=async event=>{
@@ -38,7 +37,7 @@ export default function ThemeSelectV2(){
     <select value={themeId} onChange={change} disabled={!canEdit} aria-label="Scope 預設主題">
       {THEME_SLOTS_V2.map(item=><option value={item.id} key={item.id}>{styles.find(row=>'theme-'+row.rotation_order===item.id)?.name_zh||item.label}</option>)}
     </select>
-    {!canEdit&&<small>需具備此 Scope 的管理權限才能變更預設主題</small>}
+    {!canEdit&&<small>僅 admin 可變更預設主題</small>}
     {status&&<small role="status">{status}</small>}
   </label>;
 }

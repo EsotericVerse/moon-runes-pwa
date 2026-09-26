@@ -66,7 +66,7 @@ export default function GovernanceManagement(){
     {account.error&&<p role="alert">{account.error}</p>}
     <hr/>
     <h3>Scope 預設治理</h3>
-    <p>目前先由 Current Registry 提供預設值；之後可由管理頁面改成可編輯設定。</p>
+    <p>Scope 設定由 silver.loc_scope 管理；admin 可在 3D Scope 圖新增、修改與停用。</p>
     <ul>
       <li>Scope ID 規則：<code>{SCOPE_POLICY_V2.scopeIdPattern}</code></li>
       <li>Scope ID 例外：{SCOPE_POLICY_V2.scopeIdExceptions.map(item=><code key={item}>{item}</code>)}</li>

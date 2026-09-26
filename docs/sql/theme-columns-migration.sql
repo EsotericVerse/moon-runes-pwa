@@ -1,3 +1,5 @@
+-- Historical prerequisite: apply before silver-loc-scope-consolidation.sql.
+-- After consolidation, default_theme_id lives on silver.loc_scope.
 -- Theme settings use scalar columns only.
 -- Apply through the Neon prepared-migration workflow.
 ALTER TABLE api.site_theme_styles

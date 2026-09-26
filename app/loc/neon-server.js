@@ -17,8 +17,8 @@ export async function readScopeAuthorizer(db,userId){
   if(!userId)return createScopeAuthorizer('',[]);
   const grants=await db`
     select scope_id,access_level,case_id
-      from api.scope_access_grants
-     where user_id=${userId}
+      from silver.loc_scope
+     where record_type='access_grant' and user_id=${userId}
   `;
   return createScopeAuthorizer(userId,grants);
 }

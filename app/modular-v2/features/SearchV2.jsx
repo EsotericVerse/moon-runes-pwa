@@ -167,7 +167,7 @@ export default function SearchV2(){
     setEditAudit([]);
     const logScope=canManageScopeFromGrants('admin',account.grants)?'admin':result.scopeId;
     try{
-      const {rows}=await selectNeonRows('silver.scope_content_audit',{columns:'actor_id,actor_name,actor_email,changed_at,field_name,old_value,new_value',filters:[{column:'scope_id',operator:'eq',value:logScope},{column:'resource_type',operator:'eq',value:result.resourceType},{column:'resource_id',operator:'eq',value:result.resourceId}],orders:[{column:'changed_at',ascending:false}],limit:10});
+      const {rows}=await selectNeonRows('silver.loc_scope',{columns:'actor_id,actor_name,actor_email,changed_at,field_name,old_value,new_value',filters:[{column:'record_type',operator:'eq',value:'content_audit'},{column:'scope_id',operator:'eq',value:logScope},{column:'resource_type',operator:'eq',value:result.resourceType},{column:'resource_id',operator:'eq',value:result.resourceId}],orders:[{column:'changed_at',ascending:false}],limit:10});
       setEditAudit(rows);
     }catch{}
   }
