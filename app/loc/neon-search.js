@@ -8,7 +8,8 @@ const LRUNES_SOURCES=Object.freeze([
   ['silver.lrunes','符文關鍵詞',['record_id','rune_number','keyword_group','keyword'],'lrunes',[{column:'record_type',operator:'eq',value:'keyword'},{column:'active',operator:'eq',value:true}]],
   ['silver.lrunes','符文規則',['record_id','title','rule_text','before_text','after_text','note'],'lrunes',[{column:'record_type',operator:'eq',value:'rule'},{column:'active',operator:'eq',value:true}]],
   ['silver.manage','符文時期',['record_id','record_type','scope_id','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility'],'lrunes',[{column:'scope_id',operator:'eq',value:'lrunes'},{column:'record_type',operator:'in',value:['anchor','period','event']}]],
-  ['silver.lrunes','符文文字',['record_id','galaxy_id','scope_id','category','content_type','source_role','title','content','meta_tags','created_at','source_ref','source_id'],'lrunes',[{column:'record_type',operator:'eq',value:'galaxy'}]]
+  ['silver.lrunes','符文文字',['record_id','galaxy_id','scope_id','category','content_type','source_platform','source_role','title','content','meta_tags','created_at','source_ref','source_id','target_id','ref_id','url','searchable','updated_at'],'lrunes',[{column:'record_type',operator:'eq',value:'galaxy'}]],
+  ['silver.lrunes','符文多媒體',['record_id','media_id','scope_id','media_link','source_platform','source_native_id','media_type','title','url','meta_tags','style_tags','created_at','created_date','playlist','publication_status','play_count','like_count','view_count','is_representative'],'lrunes',[{column:'record_type',operator:'eq',value:'galaxy_media'}]]
 ]);
 
 const TABLES=Object.freeze({
