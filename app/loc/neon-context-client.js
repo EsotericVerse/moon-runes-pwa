@@ -1,7 +1,7 @@
 import {ScopeContextResponseSchema} from './scope-feature-contracts';
 import {deleteNeonRows,insertNeonRows,selectNeonRows} from './neon-repository';
+import {selectScopeTimeRows} from './scope-time';
 
-const TIME_COLUMNS='entry_key,entry_type,title,summary,start_date,end_date,era_id,period,entry_name,order_no,status,anchor_id,start_anchor_id,end_anchor_id,before_id,after_id,date_status,visibility,event_id,year_value,rune_count,source_id,source,note';
 
 function temporalNodeDescription(row){
   const summary=String(row?.summary||'').trim();
@@ -18,7 +18,7 @@ function normalizeAuthorGraph(rows,styleRows=[]){
   const nodeRows=new Map();
   const edges=[];
   for(const row of entries){
-    if(!['period','event','period_style'].includes(String(row.entry_type||'')))continue;
+    if(!['period','event'].includes(String(row.entry_type||'')))continue;
     const sourceId=String(row.entry_key||'');
     if(!sourceId)continue;
     nodeRows.set(sourceId,row);
@@ -98,10 +98,7 @@ function normalizeRuneGraph(runes,keywordRows){
 }
 
 async function readAuthorRows(){
-  const {rows}=await selectNeonRows('silver.lo3rwang_style_time',{
-    columns:TIME_COLUMNS,orders:[{column:'order_no',ascending:true},{column:'entry_key',ascending:true}],limit:5000
-  });
-  return rows;
+  return selectScopeTimeRows('lo3rwang');
 }
 
 async function readRuneRows(){
