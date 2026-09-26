@@ -21,7 +21,7 @@ export function searchResultItems(results=[]){
   return results.map((row,index)=>languageItem({
     id:row.key,label:row.title,date:row.date,source:row.source,text:row.bodyText,
     tags:row.styleTags,href:row.href,
-    relations:(row.relatedRelations||[]).map(item=>item.to_work_id).filter(Boolean)
+    relations:(row.relatedRelations||[]).map(item=>item.target_id||item.ref_id||item.source_id||item.galaxy_id).filter(Boolean)
   },row.resourceType==='galaxy_media'?'media':'text',index));
 }
 
@@ -66,8 +66,8 @@ export function neonSearchItems(rows=[]){
     const kind=row.media_id?'media':'text';
     const text=Object.values(row).filter(value=>typeof value==='string').join(' ');
     return languageItem({
-      id:row.media_id||row.galaxy_id||row.work_id||row.song_id||row.rune_id||row.id||row.entry_key||kind+':search:'+index,
-      label:row.title||row.name||row.display_title||row.label||row.rune_name||row.work_id||row.song_id||source||('搜尋結果 '+(index+1)),
+      id:row.media_id||row.galaxy_id||row.song_id||row.rune_id||row.id||row.entry_key||kind+':search:'+index,
+      label:row.title||row.name||row.display_title||row.label||row.rune_name||row.song_id||source||('搜尋結果 '+(index+1)),
       date:row.date||row.created_date||row.created_at||row.updated_at||row.start_date||'',
       source,text,
       tags:[row.style_tags,row.meta_tags,row.category,row.content_type].filter(Boolean).join(' '),
