@@ -28,7 +28,7 @@ export default function KeywordSettingsV2({scopeId='loc'}){
     ]).then(values=>{if(active)setCanEditRunes(values.some(Boolean))})
       .catch(()=>{if(active)setCanEditRunes(false)});
     return()=>{active=false};
-  },[scopeId,account.user?.id,account.permissionLoading,account.canManageGlobal,account.canManageScope]);
+  },[scopeId,account.user?.email,account.permissionLoading,account.canManageGlobal,account.canManageScope]);
 
   return <div className="scope-v2-keyword-settings">
     {scopeId==='loc'||scopeId==='lunarunes'?<section className="scope-v2-inline-card">
