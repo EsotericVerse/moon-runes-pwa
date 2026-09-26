@@ -67,8 +67,17 @@ async function authorRankings(period){
 }
 async function runeRankings(){
   const [runes,context]=await Promise.all([
-    selectAllRows('silver.lrunes',{columns:'rune_number,group_name'}),
-    selectAllRows('silver.lrunes_style_context',{columns:'context_type,keyword,active',filters:[{column:'active',operator:'eq',value:true}]})
+    selectAllRows('silver.lrunes',{
+      columns:'rune_number,group_name',
+      filters:[{column:'record_type',operator:'eq',value:'rune'}]
+    }),
+    selectAllRows('silver.lrunes',{
+      columns:'context_type,keyword,active',
+      filters:[
+        {column:'record_type',operator:'eq',value:'context'},
+        {column:'active',operator:'eq',value:true}
+      ]
+    })
   ]);
   const map=new Map();
   for(const row of runes)increment(map,'group',row.group_name,{source:'lrunes'});
