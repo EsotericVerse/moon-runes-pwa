@@ -13,7 +13,7 @@ const LRUNES_SOURCES=Object.freeze([
 
 const TABLES=Object.freeze({
   all:Object.freeze([
-    ['silver.lo3rwang_style_time','作者脈絡',['entry_key','entry_type','title','summary'],'lo3rwang',[]],
+    ['silver.manage','作者脈絡',['record_id','record_type','scope_id','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility'],'lo3rwang',[{column:'scope_id',operator:'eq',value:'lo3rwang'},{column:'record_type',operator:'in',value:['anchor','period','event']}]],
     ...LRUNES_SOURCES,
     ['silver.lo3rwang_galaxy','作者正文',['galaxy_id','scope_id','title','content','source_platform','source_id','target_id','ref_id','url','searchable','created_at','updated_at'],'lo3rwang',[]],
     ['silver.faq_entries','FAQ',['faq_id','category','intent','question','answer','status','source_path'],'loc',[]],
@@ -25,7 +25,7 @@ const TABLES=Object.freeze({
     ['silver.lo3rwang_galaxy_media','音樂與多媒體',['media_id','scope_id','media_link','source_platform','source_native_id','media_type','title','url','meta_tags','style_tags','created_at','created_date','playlist','publication_status','play_count','like_count','view_count','is_representative'],'lo3rwang',[]]
   ]),
   治理:Object.freeze([
-    ['silver.lo3rwang_style_time','治理脈絡',['entry_key','entry_type','title','summary'],'lo3rwang',[]],
+    ['silver.manage','治理脈絡',['record_id','record_type','scope_id','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility'],'lo3rwang',[{column:'scope_id',operator:'eq',value:'lo3rwang'},{column:'record_type',operator:'in',value:['anchor','period','event']}]],
     ['silver.faq_entries','FAQ',['faq_id','category','intent','question','answer','status','source_path'],'loc',[]]
   ])
 });
