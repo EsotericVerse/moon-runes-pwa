@@ -24,6 +24,7 @@ const CHART_TYPES=Object.freeze([
   ['radar','雷達圖']
 ]);
 const RANKING_PAGE_SIZE=20;
+const RANKING_TYPE_LABELS=Object.freeze({group:'群組',keyword:'關鍵詞',period_source:'時期來源',media_style:'媒體曲風'});
 const STATISTICS_TABS=Object.freeze([
   ['ranking','排行榜'],
   ['keywords','關鍵詞設定'],
@@ -97,7 +98,7 @@ export default function StatisticsV2(){
     loadPage:(offset,limit)=>selectScopeRankingPage(scopeId,{offset,limit,rankingType,navigation})
   });
   const {rows,loading,error,hasMore}=page;
-  const types=scopeId==='loc'?['group','keyword','period_source']:scopeId==='runes'?['group','keyword']:['period_source'];
+  const types=scopeId==='loc'?['group','keyword','period_source','media_style']:scopeId==='runes'?['group','keyword']:['period_source','media_style'];
   const chartSource=rows.slice(0,10);
   const chartRows=useMemo(
     ()=>chartSource.map((row,index)=>({
@@ -133,7 +134,7 @@ export default function StatisticsV2(){
               aria-label="排行榜類型"
             >
               <option value="">全部</option>
-              {types.map(type=><option key={type} value={type}>{type}</option>)}
+              {types.map(type=><option key={type} value={type}>{RANKING_TYPE_LABELS[type]||type}</option>)}
             </select>
           </label>:null}
         </div>
@@ -167,7 +168,7 @@ export default function StatisticsV2(){
               aria-label="統計類型"
             >
               <option value="">全部</option>
-              {types.map(type=><option key={type} value={type}>{type}</option>)}
+              {types.map(type=><option key={type} value={type}>{RANKING_TYPE_LABELS[type]||type}</option>)}
             </select>
           </label>:null}
           <label>
