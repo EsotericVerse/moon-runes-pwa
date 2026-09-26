@@ -6,7 +6,6 @@ import {selectRuneKeywordCatalog} from '../../loc/neon-context-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {featureDataErrorMessage} from '../feature-data-state.v2';
 import RuneContextV2 from './RuneContextV2';
-import ContextStyleManager from './ContextStyleManager';
 
 export default function KeywordSettingsV2({scopeId='loc'}){
   const account=useNeonAccount();
@@ -38,6 +37,5 @@ export default function KeywordSettingsV2({scopeId='loc'}){
       {!runeQuery.isPending&&!runeQuery.error?<RuneContextV2 runes={runeQuery.data?.runes||[]} readOnly={scopeId!=='lunarunes'||!canEditRunes}/>:null}
     </section>:null}
 
-    {scopeId==='lo3rwang'?<ContextStyleManager scopeId="lo3rwang"/>:null}
   </div>;
 }
