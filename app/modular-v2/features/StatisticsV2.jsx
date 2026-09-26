@@ -19,7 +19,6 @@ const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#
 const CHART_TYPES=[['bar','長條圖'],['line','折線圖'],['pie','圓餅圖']];
 const TEXT_TYPES=[['text_type','文字小分類'],['text_category','文字分組'],['text_source','文字來源']];
 const MEDIA_TYPES=[['meta_style','Meta Tag'],['meta_type','多媒體小分類'],['meta_source','媒體來源']];
-const RUNE_TYPES=[['keyword','關鍵詞']];
 const STAT_TABS=[['ranking','排行榜'],['keywords','關鍵詞設定'],['charts','統計圖']];
 const MEDIA_TERM_LABELS={song:'曲目',reel:'Reels',video:'影片',image:'圖像',audio:'音訊'};
 const TEXT_TERM_LABELS={post:'貼文',reply:'回覆',article:'文章',lyrics:'歌詞',work:'文學作品',outline:'大綱',other:'其他'};
@@ -184,52 +183,40 @@ function KeywordPanel({scopeId,scope}){
   </section>;
 }
 
-function AuthorStatistics({scopeId,scope,navigation}){
-  const active=STAT_TABS.some(([value])=>value===navigation.statTab)?navigation.statTab:'ranking';
-  return <section className="loc-card scope-v2-feature-card">
-    <StatTabs scopeId={scopeId} navigation={navigation} active={active}/>
-    {active==='ranking'?<RankingPanel scopeId={scopeId} navigation={navigation}/>:null}
-    {active==='keywords'?<KeywordPanel scopeId={scopeId} scope={scope}/>:null}
-    {active==='charts'?<ChartsPanel scopeId={scopeId} navigation={navigation}/>:null}
+function RuneRankingPanel({scopeId,navigation}){
+  const query=useRanking(scopeId,'keyword',navigation,10);
+  return <section className="scope-v2-stat-section">
+    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Top 10</p><h2>排行榜</h2><p>目前只顯示關鍵詞暫存統計。</p></div></header>
+    {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
+    <RankingList rows={query.data||[]} limit={10}/>
   </section>;
 }
 
-function RuneStatistics({scopeId,scope,navigation}){
-  const active=STAT_TABS.some(([value])=>value===navigation.statTab)?navigation.statTab:'ranking';
+function RuneChartsPanel({scopeId,navigation}){
   const [chartType,setChartType]=useState('bar');
-  const rankingQuery=useRanking(scopeId,'keyword',navigation,10);
-  const chartQuery=useAllRanking(scopeId,'keyword',navigation);
-  return <section className="loc-card scope-v2-feature-card">
-    <StatTabs scopeId={scopeId} navigation={navigation} active={active}/>
-    {active==='ranking'?<section className="scope-v2-stat-section">
-      <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Top 10</p><h2>排行榜</h2><p>目前只顯示關鍵詞暫存統計。</p></div></header>
-      {rankingQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(rankingQuery.error)}</p>:null}
-      <RankingList rows={rankingQuery.data||[]} limit={10}/>
-    </section>:null}
-    {active==='keywords'?<KeywordPanel scopeId={scopeId} scope={scope}/>:null}
-    {active==='charts'?<section className="scope-v2-stat-section">
-      <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Distribution</p><h2>統計圖</h2><p>目前只顯示關鍵詞完整分布；NOR／AND 規則另行測試。</p></div></header>
-      <div className="scope-v2-stat-controls">
-        <label><span>圖形</span><select className="scope-v2-select" value={chartType} onChange={event=>setChartType(event.target.value)}>{CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
-      </div>
-      {chartQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(chartQuery.error)}</p>:null}
-      <RankingChart type={chartType} rows={chartQuery.data||[]} height={380}/>
-    </section>:null}
-  </section>;
-}
-
-function SimpleStatistics({scopeId,navigation}){
-  const [rankingType,setRankingType]=useState(TEXT_TYPES[0][0]);
-  const [chartType,setChartType]=useState('bar');
-  const query=useAllRanking(scopeId,rankingType,navigation);
-  return <section className="loc-card scope-v2-feature-card">
-    <p className="loc-eyebrow">Statistics</p><h2>統計功能</h2>
+  const query=useAllRanking(scopeId,'keyword',navigation);
+  return <section className="scope-v2-stat-section">
+    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Distribution</p><h2>統計圖</h2><p>目前只顯示關鍵詞完整分布；NOR／AND 規則另行測試。</p></div></header>
     <div className="scope-v2-stat-controls">
-      <label><span>分類</span><select className="scope-v2-select" value={rankingType} onChange={event=>setRankingType(event.target.value)}>{TEXT_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
       <label><span>圖形</span><select className="scope-v2-select" value={chartType} onChange={event=>setChartType(event.target.value)}>{CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
     </div>
     {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
-    <RankingList rows={query.data||[]} limit={10}/><RankingChart type={chartType} rows={query.data||[]} height={380}/>
+    <RankingChart type={chartType} rows={query.data||[]} height={380}/>
+  </section>;
+}
+
+function StatisticsShell({scopeId,scope,navigation}){
+  const active=STAT_TABS.some(([value])=>value===navigation.statTab)?navigation.statTab:'ranking';
+  const runeScope=scopeId==='lunarunes';
+  return <section className="loc-card scope-v2-feature-card">
+    <StatTabs scopeId={scopeId} navigation={navigation} active={active}/>
+    {active==='ranking'?(runeScope
+      ?<RuneRankingPanel scopeId={scopeId} navigation={navigation}/>
+      :<RankingPanel scopeId={scopeId} navigation={navigation}/>):null}
+    {active==='keywords'?<KeywordPanel scopeId={scopeId} scope={scope}/>:null}
+    {active==='charts'?(runeScope
+      ?<RuneChartsPanel scopeId={scopeId} navigation={navigation}/>
+      :<ChartsPanel scopeId={scopeId} navigation={navigation}/>):null}
   </section>;
 }
 
@@ -238,10 +225,6 @@ export default function StatisticsV2(){
   const searchParams=useSearchParams();
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
   return <FeaturePageV2 featureId="statics">
-    {scopeId==='lo3rwang'
-      ?<AuthorStatistics scopeId={scopeId} scope={scope} navigation={navigation}/>
-      :scopeId==='lunarunes'
-        ?<RuneStatistics scopeId={scopeId} scope={scope} navigation={navigation}/>
-        :<SimpleStatistics scopeId={scopeId} navigation={navigation}/>}
+    <StatisticsShell scopeId={scopeId} scope={scope} navigation={navigation}/>
   </FeaturePageV2>;
 }
