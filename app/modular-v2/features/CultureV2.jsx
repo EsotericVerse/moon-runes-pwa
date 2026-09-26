@@ -131,7 +131,7 @@ export default function CultureV2(){
     queryFn:()=>selectAuthorPeriodWorks({
       startDate:selectedWorkPeriod?.start_date,
       endDate:selectedWorkPeriod?.end_date,
-      sourcePlatform:selectedWorkGroup?.source_platform,
+      sourceName:selectedWorkGroup?.source_name,
       categoryType:selectedWorkGroup?.category_type,
       limit:CULTURE_WORK_PAGE_SIZE,
       pageOffset:workPage*CULTURE_WORK_PAGE_SIZE
