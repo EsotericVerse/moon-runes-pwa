@@ -1,73 +1,146 @@
 'use client';
 
-import {selectNeonRows,insertNeonRows,updateNeonRows,deleteNeonRows,callNeonRpc} from './neon-repository';
-import {buildScopeTreeIndex,validateScopeTreeMove} from '../modular-v2/modules/scope-tree/scope-tree-contract';
+import {deleteNeonRows,insertNeonRows,selectNeonRows,updateNeonRows} from './neon-repository';
 
-export const SCOPE_GOVERNANCE_TABLE='silver.loc_scope';
-const recordFilter=record_type=>({column:'record_type',operator:'eq',value:record_type});
-const scopeFilter=scope_id=>({column:'scope_id',operator:'eq',value:scope_id});
-function safe(value){const id=String(value||'').trim();if(!/^[A-Za-z][A-Za-z0-9_.-]{0,62}$/.test(id))throw new Error('無效的 Scope ID');return id;}
-function limit(value,fallback,max){const n=Number(value);return Number.isFinite(n)?Math.max(1,Math.min(max,Math.floor(n))):fallback;}
+export const MANAGE_TABLE='silver.manage';
+const ID_PATTERN=/^[A-Za-z][A-Za-z0-9_.-]{0,62}$/;
+const PRIVILEGE_PATTERN=/^(admin|scope:[A-Za-z][A-Za-z0-9_.-]{0,62}|page:[A-Za-z][A-Za-z0-9_.-]{0,62}:(culture|statics|media))$/;
 
-export async function selectScopes({limit:maximum=1000}={}){
-  return (await selectNeonRows(SCOPE_GOVERNANCE_TABLE,{columns:'*',filters:[recordFilter('scope')],orders:[{column:'display_order',ascending:true}],limit:limit(maximum,1000,5000)})).rows;
+function safeId(value,label='ID'){
+  const id=String(value||'').trim();
+  if(!ID_PATTERN.test(id))throw new Error(`無效的 ${label}`);
+  return id;
 }
-export async function createScope(values){
-  const scope_id=safe(values.scope_id);
-  const rows=await insertNeonRows(SCOPE_GOVERNANCE_TABLE,[{...values,scope_id,record_type:'scope'}]);
+function safeType(value){
+  const type=String(value||'').trim();
+  if(!['group','scope'].includes(type))throw new Error('節點類型只能是 group 或 scope');
+  return type;
+}
+function safePrivileges(value){
+  const rows=[...new Set((Array.isArray(value)?value:[]).map(item=>String(item||'').trim()).filter(Boolean))];
+  if(rows.some(item=>!PRIVILEGE_PATTERN.test(item)))throw new Error('privileges 格式無效');
+  return rows;
+}
+function limit(value,fallback,max){
+  const n=Number(value);
+  return Number.isFinite(n)?Math.max(1,Math.min(max,Math.floor(n))):fallback;
+}
+function idOf(row){
+  return row?.record_type==='group'?String(row.group_id||''):String(row.scope_id||'');
+}
+
+export async function selectManagedNodes({limit:maximum=1000}={}){
+  return (await selectNeonRows(MANAGE_TABLE,{
+    columns:'record_id,record_type,group_id,scope_id,parent_group_id,active,display_order,created_at,updated_at',
+    filters:[{column:'record_type',operator:'in',value:['group','scope']}],
+    orders:[{column:'display_order',ascending:true}],
+    limit:limit(maximum,1000,5000)
+  })).rows;
+}
+
+export async function createManagedNode(values){
+  const type=safeType(values.record_type);
+  const nodeId=safeId(values.node_id,type==='group'?'Group ID':'Scope ID');
+  const parent=String(values.parent_group_id||'').trim();
+  const payload={
+    record_type:type,
+    group_id:type==='group'?nodeId:null,
+    scope_id:type==='scope'?nodeId:null,
+    parent_group_id:parent?safeId(parent,'上層 Group ID'):null,
+    active:values.active!==false,
+    display_order:Number.isFinite(Number(values.display_order))?Number(values.display_order):null
+  };
+  if(type==='scope'&&!payload.parent_group_id)throw new Error('Scope 必須掛在 Group 之下');
+  const rows=await insertNeonRows(MANAGE_TABLE,[payload]);
   return rows[0];
 }
-export async function updateScope(scopeId,values){
-  const {record_id,record_type,scope_id,legacy_scope_id,...patch}=values;
-  const rows=await updateNeonRows(SCOPE_GOVERNANCE_TABLE,patch,{filters:[recordFilter('scope'),scopeFilter(safe(scopeId))]});
-  if(!rows.length)throw new Error('Scope 不存在或沒有 admin 權限');
+
+export async function updateManagedNode(row,values){
+  const type=safeType(row?.record_type);
+  const nodeId=safeId(idOf(row),type==='group'?'Group ID':'Scope ID');
+  const parent=String(values.parent_group_id||'').trim();
+  if(type==='scope'&&!parent)throw new Error('Scope 必須掛在 Group 之下');
+  if(type==='group'&&parent===nodeId)throw new Error('Group 不能掛在自己底下');
+  const patch={
+    parent_group_id:parent?safeId(parent,'上層 Group ID'):null,
+    active:values.active!==false,
+    display_order:Number.isFinite(Number(values.display_order))?Number(values.display_order):null,
+    updated_at:new Date().toISOString()
+  };
+  const idColumn=type==='group'?'group_id':'scope_id';
+  const rows=await updateNeonRows(MANAGE_TABLE,patch,{filters:[
+    {column:'record_type',operator:'eq',value:type},
+    {column:idColumn,operator:'eq',value:nodeId}
+  ]});
+  if(!rows.length)throw new Error('管理節點不存在');
   return rows[0];
 }
-export async function deleteScope(scopeId){
-  const rows=await deleteNeonRows(SCOPE_GOVERNANCE_TABLE,{filters:[recordFilter('scope'),scopeFilter(safe(scopeId))]});
-  if(!rows.length)throw new Error('Scope 不存在或仍被其他資料使用');
-  return rows[0];
-}
-export async function selectScopeRelations({scopeId=null,limit:maximum=1000}={}){
-  const common={columns:'record_id,parent_scope_id,child_scope_id,relation_type,created_by,created_at',orders:[{column:'created_at',ascending:true}],limit:limit(maximum,1000,5000)};
-  if(!scopeId)return (await selectNeonRows(SCOPE_GOVERNANCE_TABLE,{...common,filters:[recordFilter('relation')]})).rows.map(row=>({...row,id:row.record_id}));
-  const id=safe(scopeId);
-  const [parents,children]=await Promise.all(['parent_scope_id','child_scope_id'].map(column=>selectNeonRows(SCOPE_GOVERNANCE_TABLE,{...common,filters:[recordFilter('relation'),{column,operator:'eq',value:id}]})));
-  return [...new Map([...parents.rows,...children.rows].map(row=>[row.record_id,{...row,id:row.record_id}])).values()];
-}
-export async function selectScopeRelationRequests({status=null,limit:maximum=200}={}){
-  const {rows}=await selectNeonRows(SCOPE_GOVERNANCE_TABLE,{columns:'record_id,parent_scope_id,child_scope_id,relation_type,status,reason,review_note,requested_by,reviewed_by,created_at,reviewed_at',filters:[recordFilter('relation_request'),...(status?[{column:'status',operator:'eq',value:status}]:[])],orders:[{column:'created_at',ascending:false}],limit:limit(maximum,200,1000)});
-  return rows.map(row=>({...row,id:row.record_id}));
-}
-export async function selectScopePermissions({scopeId=null,limit:maximum=500}={}){
-  return (await selectNeonRows(SCOPE_GOVERNANCE_TABLE,{columns:'record_id,user_id,scope_id,access_level,case_id,created_at,granted_by,granted_at',filters:[recordFilter('access_grant'),...(scopeId?[scopeFilter(safe(scopeId))]:[])],orders:[{column:'created_at',ascending:false}],limit:limit(maximum,500,1000)})).rows;
-}
-export async function upsertScopeAccessGrant({userId,scopeId,accessLevel,caseId}){
-  return callNeonRpc('grant_scope_access',{p_user_id:String(userId||'').trim(),p_scope_id:safe(scopeId),p_access_level:String(accessLevel||'').trim(),p_case_id:String(caseId||'').trim()});
-}
-export async function revokeScopeAccessGrant({userId,scopeId,accessLevel,caseId}){
-  return callNeonRpc('revoke_scope_access',{p_user_id:String(userId||'').trim(),p_scope_id:safe(scopeId),p_access_level:String(accessLevel||'').trim(),p_case_id:String(caseId||'').trim()});
-}
-export async function requestScopeRelation(input,{rows=[]}={}){
-  const validation=validateScopeTreeMove(rows,input);
-  if(!validation.ok){const error=new Error(`Scope relation rejected: ${validation.reason}`);error.code=validation.reason;throw error;}
-  return callNeonRpc('request_scope_relation',{p_parent_scope_id:safe(input.parent||input.parent_id),p_child_scope_id:safe(input.child||input.child_id||input.scope_id),p_relation_type:String(input.relation_type||'parent_child'),p_reason:input.reason||null});
-}
-export async function decideScopeRelationRequest(requestId,status,reviewNote=''){
-  if(!['approved','rejected','revoked'].includes(status))throw new Error('Invalid Scope relation decision');
-  return callNeonRpc('decide_scope_relation_request',{p_request_id:String(requestId||''),p_status:status,p_review_note:reviewNote||null,p_reviewed_by:null});
-}
-export function scopeRelationsToNodes(rows=[]){
-  const nodes=new Map();
-  for(const row of Array.isArray(rows)?rows:[]){
-    const parent=String(row.parent_scope_id||row.parent_id||'').trim();const child=String(row.child_scope_id||row.child_id||'').trim();
-    for(const id of [parent,child])if(id&&!nodes.has(id))nodes.set(id,{id,label:id});
-    if(child&&parent){const node=nodes.get(child);if(!node.parent_id)node.parent_id=parent;}
+
+export async function deleteManagedNode(row){
+  const type=safeType(row?.record_type);
+  const nodeId=safeId(idOf(row),type==='group'?'Group ID':'Scope ID');
+  if(type==='group'){
+    const {rows:children}=await selectNeonRows(MANAGE_TABLE,{
+      columns:'record_id',
+      filters:[
+        {column:'record_type',operator:'in',value:['group','scope']},
+        {column:'parent_group_id',operator:'eq',value:nodeId}
+      ],
+      limit:1
+    });
+    if(children.length)throw new Error('此 Group 仍有下層節點，請先移動下層節點');
   }
-  return [...nodes.values()];
+  const idColumn=type==='group'?'group_id':'scope_id';
+  const rows=await deleteNeonRows(MANAGE_TABLE,{filters:[
+    {column:'record_type',operator:'eq',value:type},
+    {column:idColumn,operator:'eq',value:nodeId}
+  ]});
+  return rows[0]||null;
 }
-export function scopeRowsToTree(rows=[]){
-  const {nodes,children}=buildScopeTreeIndex(scopeRelationsToNodes(rows));const roots=[];
-  for(const [id,node] of nodes){if(!node.parent_id&&!node.parent_scope_id)roots.push(node);node.children=(children.get(id)||[]).map(childId=>nodes.get(childId)).filter(Boolean);}
-  return roots;
+
+export async function selectPermissions({limit:maximum=500}={}){
+  return (await selectNeonRows(MANAGE_TABLE,{
+    columns:'record_id,user_id,email,privileges,created_at,updated_at',
+    filters:[{column:'record_type',operator:'eq',value:'permission'}],
+    orders:[{column:'updated_at',ascending:false}],
+    limit:limit(maximum,500,1000)
+  })).rows;
 }
+
+export async function upsertPermission({userId,email,privileges}){
+  const user_id=String(userId||'').trim();
+  const cleanEmail=String(email||'').trim();
+  if(!user_id)throw new Error('user_id 不可空白');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail))throw new Error('email 格式無效');
+  const cleanPrivileges=safePrivileges(privileges);
+  const {rows}=await selectNeonRows(MANAGE_TABLE,{
+    columns:'record_id',
+    filters:[
+      {column:'record_type',operator:'eq',value:'permission'},
+      {column:'user_id',operator:'eq',value:user_id}
+    ],
+    limit:1
+  });
+  if(rows.length){
+    const updated=await updateNeonRows(MANAGE_TABLE,{email:cleanEmail,privileges:cleanPrivileges,updated_at:new Date().toISOString()},{filters:[
+      {column:'record_type',operator:'eq',value:'permission'},
+      {column:'user_id',operator:'eq',value:user_id}
+    ]});
+    return updated[0];
+  }
+  const inserted=await insertNeonRows(MANAGE_TABLE,[{
+    record_type:'permission',user_id,email:cleanEmail,privileges:cleanPrivileges
+  }]);
+  return inserted[0];
+}
+
+export async function deletePermission(userId){
+  const user_id=String(userId||'').trim();
+  if(!user_id)throw new Error('user_id 不可空白');
+  return (await deleteNeonRows(MANAGE_TABLE,{filters:[
+    {column:'record_type',operator:'eq',value:'permission'},
+    {column:'user_id',operator:'eq',value:user_id}
+  ]}))[0]||null;
+}
+
+export function managedNodeId(row){return idOf(row)}
