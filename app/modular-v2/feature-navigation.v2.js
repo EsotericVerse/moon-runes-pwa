@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {featureHrefV2,scopeDataViewV2} from './scope-registry.v2';
+import {featureHrefV2} from './scope-registry.v2';
 
 const NAVIGATION_FIELDS=Object.freeze([
   'q','identity','source','period','anchor','from','to','rankingType','statTab','statDomain','statFace'
@@ -84,9 +84,9 @@ export function buildSearchNavigation(collectionId,source,row,query,currentScope
     state:{
       q:valueOf(query),
       identity:valueOf(
-        row?.work_id,row?.song_id,
+        row?.galaxy_id,row?.media_id,row?.song_id,
         row?.rune_number!==undefined?'rune:'+row.rune_number:undefined,
-        row?.context_key,row?.entry_key,row?.workId,row?.id,
+        row?.context_key,row?.entry_key,row?.id,
         payload.id,payload.identity
       ),
       source:valueOf(row?.source,row?.source_name,source),
@@ -114,7 +114,7 @@ export function featureNavigationLinks({targetScope,state}){
   if(hasTemporalCondition(state)){
     links.push({id:'culture',label:'文化 Time River',href:featureNavigationHref(targetScope,'culture',state)});
   }
-  if(scopeDataViewV2(targetScope,'rankings')){
+  if(['loc','lunarunes','lo3rwang'].includes(targetScope)){
     links.push({id:'statics-ranking',label:'統計排行榜',href:featureNavigationHref(targetScope,'statics',{...state,statTab:'ranking'})});
   }
   links.push({id:'statics-charts',label:'統計圖',href:featureNavigationHref(targetScope,'statics',{...state,statTab:'charts'})});
