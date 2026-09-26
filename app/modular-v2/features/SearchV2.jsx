@@ -12,6 +12,7 @@ import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import {scopeHrefV2} from '../scope-registry.v2';
 import {buildSearchNavigation,featureNavigationLinks} from '../feature-navigation.v2';
 import {featureDataErrorMessage} from '../feature-data-state.v2';
+import {openSpatialView} from '../modules/spatial-3d/spatial-bridge';
 
 const norm=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
 const THEME_RELATION_TYPE='theme_song';
@@ -304,6 +305,14 @@ export default function SearchV2(){
 
   async function runSearch(event){event.preventDefault();await executeSearch(query)}
 
+  function viewResultsIn3D(){
+    const items=results.map(row=>({
+      id:row.key,label:row.title,kind:row.resourceType||row.source,date:row.date,href:row.href,group:row.source,
+      relations:(row.relatedRelations||[]).map(relation=>String(relation.to_work_id||''))
+    }));
+    openSpatialView(items,{title:query.trim()?`「${query.trim()}」的立體檢視`:'搜尋結果'});
+  }
+
   return <FeaturePageV2
     featureId="search"
     subtitle="跨文字、音樂、多媒體、符文、脈絡與知識搜尋。"
@@ -325,6 +334,7 @@ export default function SearchV2(){
       <button type="button" onClick={()=>{setRelationSource(null);setRelationRows([]);setRelationError('')}}>結束主題曲設定</button>
     </section>:null}
     <p className="scope-v2-status">{status}</p>
+    {results.length?<p><button type="button" onClick={viewResultsIn3D}>立體檢視搜尋結果</button></p>:null}
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
     <div className="scope-v2-list">
       {results.map(row=>{
