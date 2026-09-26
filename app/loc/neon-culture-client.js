@@ -2,11 +2,11 @@
 
 import {ScopeCultureResponseSchema} from './scope-feature-contracts';
 import {selectNeonRows} from './neon-repository';
+import {selectScopeTimeRows} from './scope-time';
 import {decodeCultureText,formatCultureDateTime} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
 
 const MEDIA_METADATA_CATEGORY_KEY='media_metadata';
 const SOURCE_LABELS={threads:'Threads',facebook:'Facebook',suno:'Suno',pixnet:'Pixnet',ptt:'PTT',kkcity:'KKCity',wretch:'Wretch',vocus:'Vocus',instagram:'Instagram',youtube:'YouTube'};
-const TIMELINE_COLUMNS='entry_key,entry_type,title,summary,start_date,end_date,era_id,period,entry_name,order_no,status,anchor_id,start_anchor_id,end_anchor_id,before_id,after_id,date_status,visibility,event_id,year_value,rune_count,source_id,source,note';
 
 function sourceLabel(value){const source=String(value||'').trim();return SOURCE_LABELS[source.toLowerCase()]||source;}
 function runtimeScopeId(scopeId){return String(scopeId||'')==='lrunes'?'lunarunes':String(scopeId||'');}
@@ -31,22 +31,16 @@ function runeTimelineRows(rows){
 function timelineItems(rows){
   const all=Array.isArray(rows)?rows:[];
   const anchors=new Map(all.filter(row=>row.entry_type==='anchor').map(row=>[`${row.scope_id}:${row.anchor_id}`,row]));
-  return all.filter(row=>['anchor','event','period','period_style'].includes(row.entry_type)).map(row=>{
-    const before=anchors.get(`${row.scope_id}:${row.before_id}`);
-    const after=anchors.get(`${row.scope_id}:${row.after_id}`);
+  return all.filter(row=>['anchor','event','period'].includes(row.entry_type)).map(row=>{
     const startAnchor=anchors.get(`${row.scope_id}:${row.start_anchor_id}`);
     const endAnchor=anchors.get(`${row.scope_id}:${row.end_anchor_id}`);
-    const start=row.start_date||startAnchor?.start_date||before?.start_date||after?.start_date||null;
+    const start=row.start_date||startAnchor?.start_date||null;
     const end=row.end_date||endAnchor?.start_date||null;
-    const kindLabel={anchor:'定錨點',event:'事件',period:'時期',period_style:'時期風格'}[row.entry_type];
+    const kindLabel={anchor:'定錨點',event:'事件',period:'時期'}[row.entry_type];
     const scopeId=runtimeScopeId(row.scope_id);
     return {...row,scope_id:scopeId,id:`${scopeId}:${row.entry_key}`,entry_id:`${scopeId}:${row.entry_key}`,start_date:start,end_date:end,date:start,
-      display_label:row.entry_type==='period_style'?(row.entry_name||row.title):row.title,group_label:`${row.scope_id} · ${kindLabel}`};
+      display_label:row.title,group_label:`${row.scope_id} · ${kindLabel}`};
   }).filter(row=>row.start_date).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date)));
-}
-async function readTimeline(table,scopeId){
-  const {rows}=await selectNeonRows(table,{columns:TIMELINE_COLUMNS,filters:[{column:'entry_type',operator:'in',value:['period','event','anchor','period_style']}],orders:[{column:'start_date',ascending:true}],limit:5000});
-  return rows.map(row=>({...row,scope_id:scopeId}));
 }
 async function readRuneEvolution(){
   const {rows}=await selectNeonRows('silver.lrunes',{
@@ -82,7 +76,7 @@ export async function selectScopeCultureData(scopeId){
   const dataId=dataScopeId(scopeId);
   if(!['loc','lrunes','lo3rwang'].includes(dataId))throw new Error('Scope 無效');
   const [authorContext,runeContext]=await Promise.all([
-    dataId==='loc'||dataId==='lo3rwang'?readTimeline('silver.lo3rwang_style_time','lo3rwang'):Promise.resolve([]),
+    dataId==='loc'||dataId==='lo3rwang'?selectScopeTimeRows('lo3rwang').then(rows=>rows.map(row=>({...row,scope_id:'lo3rwang'}))):Promise.resolve([]),
     dataId==='loc'||dataId==='lrunes'?readRuneEvolution():Promise.resolve([])
   ]);
   const scopeContext=[...authorContext,...runeContext];
