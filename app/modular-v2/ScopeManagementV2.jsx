@@ -15,7 +15,13 @@ const textFields=[
 const arrayFields=[['local_routes','頁面路徑'],['route_patterns','動態路徑'],['compatibility_routes','相容路徑'],['home_link_labels','首頁連結文字'],['home_link_hrefs','首頁連結網址']];
 const flagFields=[['active','啟用'],['graph_enabled','顯示資料圖'],['include_in_admin_graph','顯示於管理圖'],['include_in_global_search','列入全域搜尋'],['include_in_global_stats','列入全域統計']];
 const formFields=[...textFields.map(([key])=>key),...arrayFields.map(([key])=>key),...flagFields.map(([key])=>key),'parent_scope_id','display_order','default_theme_id'];
-const MANAGER_FEATURES=Object.freeze([{id:'statics',label:'統計／關鍵詞／搜尋評論'},{id:'culture',label:'文化／時期／事件／定錨／風格'},{id:'governance',label:'治理／法律'}]);
+const MANAGER_ROLES=Object.freeze([
+  {id:'scope_manager',label:'Scope 管理',caseId:'scope'},
+  {id:'culture_manager',label:'Culture｜時期／事件／定錨點',caseId:'culture'},
+  {id:'statics_manager',label:'Statics｜關鍵詞／搜尋',caseId:'statics'},
+  {id:'media_manager',label:'Media｜Meta Tag／多媒體連結',caseId:'media'}
+]);
+const roleCaseId=role=>MANAGER_ROLES.find(item=>item.id===role)?.caseId||'scope';
 
 const emptyScope={scope_id:'',scope_name:'',scope_kind:'custom_scope',scope_type:'directory',parent_scope_id:'',display_order:10,default_theme_id:'theme-7',active:true,graph_enabled:false,include_in_admin_graph:true,include_in_global_search:true,include_in_global_stats:true,local_routes:[],route_patterns:[],compatibility_routes:[],home_link_labels:[],home_link_hrefs:[]};
 const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,character=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
@@ -52,7 +58,7 @@ function pointsFor(scopes,relations,requests,grants){
   }
   for(const [index,row] of grants.entries()){
     const scope=scopes.find(item=>item.scope_id===row.scope_id);
-    out.push({id:'grant:'+row.record_id,kind:'grant',scopeId:row.scope_id,x:depthOf(scope)+1,y:Number(scope?.display_order)||index+1,z:1+index*0.14,label:`${row.case_id} · ${row.access_level}`,detail:`${row.scope_id} · ${row.user_id}`});
+    out.push({id:'grant:'+row.record_id,kind:'grant',scopeId:row.scope_id,x:depthOf(scope)+1,y:Number(scope?.display_order)||index+1,z:1+index*0.14,label:`${row.access_level}`,detail:`${row.scope_id} · ${row.user_id}`});
   }
   return out;
 }
@@ -62,7 +68,7 @@ export default function ScopeManagementV2(){
   const client=useQueryClient();
   const canvasRef=useRef(null),clickRef=useRef(null);
   const [isAdmin,setIsAdmin]=useState(false),[permissionChecked,setPermissionChecked]=useState(false);
-  const [selected,setSelected]=useState(null),[draft,setDraft]=useState(null),[grantDraft,setGrantDraft]=useState({userId:'',accessLevel:'page_manager',caseId:'statics'});
+  const [selected,setSelected]=useState(null),[draft,setDraft]=useState(null),[grantDraft,setGrantDraft]=useState({userId:'',accessLevel:'culture_manager'});
   const [error,setError]=useState(''),[message,setMessage]=useState(''),[graphError,setGraphError]=useState('');
   useEffect(()=>{
     let live=true;setIsAdmin(false);setPermissionChecked(false);
@@ -133,7 +139,7 @@ export default function ScopeManagementV2(){
   const currentGrants=data.grants.filter(row=>row.scope_id===draft?.scope_id);
   const selectedRequest=data.requests.find(row=>row.id===selected?.requestId);
   return <section className="scope-v2-page scope-graph-admin">
-    <header className="scope-v2-hero"><p className="scope-v2-eyebrow">Scope Administration</p><h1>Scope 3D 管理圖</h1><p>點選 3D 圖中的 Scope、關係、權限或申請，直接在圖的編輯區管理。只有 admin 可新增、修改、刪除 Scope 與分配頁面權限。</p></header>
+    <header className="scope-v2-hero"><p className="scope-v2-eyebrow">Scope Administration</p><h1>Scope 3D 管理圖</h1><p>點選 3D 圖中的 Scope、關係、權限或申請，直接在圖的編輯區管理。唯一 Admin 管理 Scope 結構與 Scope manager；Scope 以下再分 Culture、Statics、Media 三種專職管理。</p></header>
     {account.loading||account.permissionLoading||!permissionChecked?<p className="scope-v2-status">正在確認 Neon 管理權限…</p>:null}
     {!account.loading&&!account.user?<section className="scope-v2-card"><h2>需要登入</h2><button type="button" onClick={account.signIn}>使用 Google 登入 Neon</button></section>:null}
     {account.user&&permissionChecked&&!isAdmin?<section className="scope-v2-card"><h2>需要 admin 權限</h2><p>此頁的 Scope 管理需由 admin 授權。</p></section>:null}
@@ -144,7 +150,7 @@ export default function ScopeManagementV2(){
       {dataQuery.error?<p role="alert" className="scope-v2-error">{dataQuery.error.message}</p>:null}
       {graphError?<p role="alert" className="scope-v2-error">3D 圖無法顯示：{graphError}</p>:null}
       <div ref={canvasRef} className="scope-graph-canvas" role="img" aria-label={`Scope 3D 圖，${points.length} 個節點；可用上方選單選取節點`}/>
-      <p className="scope-v2-meta">橫軸為層級，縱軸為排序，深度顯示 Scope、父子關係與頁面權限。拖曳旋轉，點選節點編輯。</p>
+      <p className="scope-v2-meta">橫軸為層級，縱軸為排序，深度顯示 Scope、父子關係與管理權限。拖曳旋轉，點選節點編輯。</p>
       {message?<p role="status" className="scope-v2-status">{message}</p>:null}
       {error?<p role="alert" className="scope-v2-status scope-v2-error">{error}</p>:null}
       {draft?<div className="scope-graph-inspector" aria-label="3D 圖節點編輯器">
@@ -159,14 +165,13 @@ export default function ScopeManagementV2(){
           {flagFields.map(([key,label])=><label key={key} className="scope-graph-check"><input type="checkbox" checked={Boolean(draft[key])} onChange={event=>setDraft(row=>({...row,[key]:event.target.checked}))}/>{label}</label>)}
           <div className="scope-graph-actions"><button type="submit" disabled={mutate.isPending}>{mutate.isPending?'儲存中…':'儲存 Scope'}</button>{selected?.kind!=='new'?<button type="button" disabled={mutate.isPending} onClick={remove}>刪除 Scope</button>:null}<button type="button" onClick={()=>{setDraft(null);setSelected(null)}}>關閉編輯</button></div>
         </form>
-        {selected?.kind!=='new'?<div className="scope-graph-grants"><h3>{draft.scope_id} 的頁面權限</h3>
-          <form onSubmit={async event=>{event.preventDefault();await run({kind:'grant',payload:{...grantDraft,scopeId:draft.scope_id}},'權限已分配')}} className="scope-graph-grant-form">
+        {selected?.kind!=='new'?<div className="scope-graph-grants"><h3>{draft.scope_id} 的管理權限</h3>
+          <form onSubmit={async event=>{event.preventDefault();await run({kind:'grant',payload:{...grantDraft,scopeId:draft.scope_id,caseId:roleCaseId(grantDraft.accessLevel)}},'權限已分配')}} className="scope-graph-grant-form">
             <label>Neon 使用者 ID<input required value={grantDraft.userId} onChange={event=>setGrantDraft(row=>({...row,userId:event.target.value}))}/></label>
-            <label>權限<select value={grantDraft.accessLevel} onChange={event=>setGrantDraft(row=>({...row,accessLevel:event.target.value}))}><option value="page_manager">頁面管理</option><option value="scope_manager">Scope 管理</option><option value="privacy_dispute_handler">隱私爭議處理</option></select></label>
-            <label>管理分工<select required value={grantDraft.caseId} onChange={event=>setGrantDraft(row=>({...row,caseId:event.target.value}))}>{MANAGER_FEATURES.map(row=><option key={row.id} value={row.id}>{row.label}</option>)}</select></label>
+            <label>管理角色<select value={grantDraft.accessLevel} onChange={event=>setGrantDraft(row=>({...row,accessLevel:event.target.value}))}>{MANAGER_ROLES.map(role=><option key={role.id} value={role.id}>{role.label}</option>)}</select></label>
             <button type="submit" disabled={mutate.isPending}>分配權限</button>
           </form>
-          {currentGrants.length?<ul>{currentGrants.map(row=><li key={row.record_id}>{row.user_id} · {row.access_level} · {row.case_id} <button type="button" disabled={mutate.isPending} onClick={()=>run({kind:'revoke',payload:{userId:row.user_id,scopeId:row.scope_id,accessLevel:row.access_level,caseId:row.case_id}},'權限已撤銷')}>撤銷</button></li>)}</ul>:<p>此 Scope 尚未分配頁面權限。</p>}
+          {currentGrants.length?<ul>{currentGrants.map(row=><li key={row.record_id}>{row.user_id} · {row.access_level} <button type="button" disabled={mutate.isPending} onClick={()=>run({kind:'revoke',payload:{userId:row.user_id,scopeId:row.scope_id,accessLevel:row.access_level,caseId:row.case_id}},'權限已撤銷')}>撤銷</button></li>)}</ul>:<p>此 Scope 尚未分配管理權限。</p>}
         </div>:null}
       </div>:null}
       {selectedRequest?<div className="scope-graph-inspector"><h2>父子關係申請</h2><p>{selectedRequest.parent_scope_id} → {selectedRequest.child_scope_id}：{selectedRequest.reason||'未填理由'}</p><button type="button" disabled={mutate.isPending} onClick={()=>run({kind:'decide',id:selectedRequest.id,status:'approved'},'關係已核准')}>核准</button> <button type="button" disabled={mutate.isPending} onClick={()=>run({kind:'decide',id:selectedRequest.id,status:'rejected'},'申請已拒絕')}>拒絕</button></div>:null}
