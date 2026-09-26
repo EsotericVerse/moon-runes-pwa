@@ -1,2 +1,0 @@
--- Scope governance is consolidated into silver.loc_scope.
--- Apply silver-loc-scope-consolidation.sql for the table, policies and RPCs.
