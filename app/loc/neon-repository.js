@@ -7,17 +7,19 @@ const TableSchema=z.enum([
   'api.user_records','api.user_settings','api.site_theme_styles',
   'api.loc_context_entries','api.loc_rankings','api.loc_timeline_entries','api.lo3rwang_work_relations_public',
   'api.runes_context_entries','api.runes_rankings','api.lo3rwang_context_entries','api.lo3rwang_rankings','api.lo3rwang_galaxy','api.lo3rwang_style_rankings',
-  'silver.content_relations','silver.resource_visibility','silver.loc_scope','silver.lo3rwang_work_relations',
-  'silver.runes_context_entries','silver.lo3rwang_context_entries',
-  'silver.lrunes_daily_draws',
-  'silver.loc_timeline_entries','silver.loc_style_tag_keywords','silver.lo3rwang_style',
-  'silver.lo3rwang_period_context_entries','silver.lrunes_runes','silver.lrunes_harmony','silver.lrunes_algorithm',
-  'silver.faq_entries','silver.lo3rwang_galaxy_media',
-  'silver.lrunes_style',
+  'silver.loc_scope','silver.resource_visibility','silver.lo3rwang_work_relations',
+  'silver.lo3rwang','silver.lo3rwang_style','silver.lo3rwang_style_keywords','silver.lo3rwang_style_time',
+  'silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media',
+  'silver.lrunes','silver.lrunes_style_context','silver.lrunes_style_time','silver.lrunes_galaxy',
+  'silver.lrunes_daily_draws','silver.lrunes_harmony','silver.lrunes_algorithm',
+  'silver.faq_entries',
 ]);
 const WritableTableSchema=z.enum([
   'api.user_records','api.user_settings','api.site_theme_styles',
-  'silver.loc_timeline_entries','silver.loc_style_tag_keywords','silver.lo3rwang_style','silver.loc_scope','silver.resource_visibility','silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media','silver.lo3rwang_work_relations'
+  'silver.loc_scope','silver.resource_visibility','silver.lo3rwang_work_relations',
+  'silver.lo3rwang','silver.lo3rwang_style','silver.lo3rwang_style_keywords','silver.lo3rwang_style_time',
+  'silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media',
+  'silver.lrunes_style_context','silver.lrunes_style_time','silver.lrunes_galaxy'
 ]);
 const RowSchema=z.record(z.string(),z.unknown());
 const FilterSchema=z.object({
