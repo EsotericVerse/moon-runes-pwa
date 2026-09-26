@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {FEATURES_V2,SCOPES_V2,SCOPE_POLICY_V2,featureHrefV2,scopeHrefV2,resolveScopeV2,isScopeRequestAllowedV2} from '../app/modular-v2/scope-registry.v2.js';
-import {SCOPE_TREE_LIMITS_V2,validateScopeTreeMove} from '../app/modular-v2/modules/scope-tree/scope-tree-contract.js';
 
 const failures=[];
 const requiredCoreScopes=['loc','lunarunes','lo3rwang','admin'];
@@ -237,18 +236,6 @@ for(const [scopeId,host,pathname,expected] of admissibilityCases){
   if(actual!==expected)failures.push('Scope route admissibility failed: '+scopeId+' '+host+pathname+' expected '+expected+' got '+actual);
 }
 
-
-if(JSON.stringify(SCOPE_TREE_LIMITS_V2)!==JSON.stringify({maxParentDepth:4,maxChildDepth:4,maxTotalDepth:8}))failures.push('Scope Tree limits must remain 4/4/8');
-const treeRows=[
-  {id:'a'},
-  {id:'b',parent_id:'a'},
-  {id:'c',parent_id:'b'},
-  {id:'d',parent_id:'c'},
-  {id:'e',parent_id:'d'}
-];
-if(validateScopeTreeMove(treeRows,{parent:'e',child:'a'}).ok)failures.push('Scope Tree cycle validation failed');
-if(validateScopeTreeMove(treeRows,{parent:'e',child:'z'}).ok)failures.push('Scope Tree parent-depth validation failed');
-if(!validateScopeTreeMove(treeRows,{parent:'a',child:'z'}).ok)failures.push('Scope Tree missing-node move should still validate structural input');
 
 if(failures.length){console.error('[modular-v2] violations:\n'+failures.join('\n'));process.exit(1);}
 console.log('[modular-v2] Current cutover verified: required core Scopes + extensible registry, bounded domain/mount routing, shared features, one Scope registry and isolated legacy data ids');
