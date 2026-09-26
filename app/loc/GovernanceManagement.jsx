@@ -43,7 +43,6 @@ export default function GovernanceManagement(){
     <h2>治理管理</h2>
     <p className="loc-subtitle">目前 Scope：{scope.label}（{scopeId}）。管理 session 與資料讀寫都必須遵守 Scope 邊界；公開 Current canonical data 維持唯讀。</p>
     {(account.loading||account.permissionLoading)&&<p>正在確認 Neon session 與管理權限…</p>}
-    {!account.loading&&!account.user&&<button type="button" onClick={account.signIn}>使用 Google 登入 Neon</button>}
     {!account.loading&&!account.permissionLoading&&account.user&&!account.canManage&&<p>此 Neon 身份沒有管理權限。</p>}
     {!account.loading&&!account.permissionLoading&&account.user&&account.canManage&&<>
       <p><strong>Neon session 有效。</strong> {account.user.email||account.user.name||''}</p>
@@ -60,8 +59,6 @@ export default function GovernanceManagement(){
         <button type="button" onClick={loadShared}>重新讀取 Neon</button>
       </>}
       {shared.error&&<p role="alert">Neon 讀取失敗：{shared.error}</p>}
-      <hr/>
-      <button type="button" onClick={account.signOut}>登出 Neon</button>
     </>}
     {account.error&&<p role="alert">{account.error}</p>}
     <hr/>
