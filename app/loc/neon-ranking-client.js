@@ -1,11 +1,12 @@
 import {ScopeRankingResponseSchema} from './scope-feature-contracts';
 import {selectNeonRows} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
+import {classifyStyleRows} from './style-classifier';
 
 const RANKING_TYPES=Object.freeze({
-  loc:Object.freeze(['keyword','source']),
-  lunarunes:Object.freeze(['keyword','source']),
-  lo3rwang:Object.freeze(['keyword','source'])
+  loc:Object.freeze(['keyword','source','style','style_group']),
+  lunarunes:Object.freeze(['keyword','source','style','style_group']),
+  lo3rwang:Object.freeze(['keyword','source','style','style_group'])
 });
 
 async function selectAllRows(table,{columns,filters=[]}){
@@ -44,12 +45,10 @@ async function resolvePeriod(scopeId,period){
   return rows.find(row=>row.entry_type==='period'&&(String(row.period||'')===value||String(row.entry_key||'')===value))||null;
 }
 
-async function authorKeywords(keywordGroup=''){
-  const group=String(keywordGroup||'').trim();
-  const filters=group?[{column:'keyword_group',operator:'eq',value:group}]:[];
-  const rows=await selectAllRows('silver.lo3rwang_style_keywords',{columns:'keyword,keyword_group',filters});
+async function authorKeywords(){
+  const rows=await selectAllRows('silver.lo3rwang_style_keywords',{columns:'keyword,keyword_group'});
   const map=new Map();
-  for(const row of rows)increment(map,'keyword',row.keyword,{source:'lo3rwang',keyword_group:row.keyword_group||''});
+  for(const row of rows)increment(map,'keyword',row.keyword,{source:'lo3rwang'});
   return [...map.values()];
 }
 
@@ -65,16 +64,16 @@ async function authorSources(period){
   return [...map.values()];
 }
 
-async function runeKeywords(keywordGroup=''){
-  const group=String(keywordGroup||'').trim();
-  const filters=[
-    {column:'record_type',operator:'eq',value:'keyword'},
-    {column:'active',operator:'eq',value:true}
-  ];
-  if(group)filters.push({column:'keyword_group',operator:'eq',value:group});
-  const rows=await selectAllRows('silver.lrunes',{columns:'keyword,keyword_group,active',filters});
+async function runeKeywords(){
+  const rows=await selectAllRows('silver.lrunes',{
+    columns:'keyword,active',
+    filters:[
+      {column:'record_type',operator:'eq',value:'keyword'},
+      {column:'active',operator:'eq',value:true}
+    ]
+  });
   const map=new Map();
-  for(const row of rows)increment(map,'keyword',row.keyword,{source:'lrunes',keyword_group:row.keyword_group||''});
+  for(const row of rows)increment(map,'keyword',row.keyword,{source:'lrunes'});
   return [...map.values()];
 }
 
@@ -87,6 +86,41 @@ async function runeSources(period){
   const rows=await selectAllRows('silver.lrunes',{columns:'source_name,created_at,record_type',filters});
   const map=new Map();
   for(const row of rows)increment(map,'source',row.source_name,{source:'lrunes',period:period||'all'});
+  return [...map.values()];
+}
+
+async function authorStyles(period,type){
+  const range=await resolvePeriod('lo3rwang',period);
+  const filters=dateFilters(range);
+  const [texts,media]=await Promise.all([
+    selectAllRows('silver.lo3rwang_galaxy',{columns:'galaxy_id,title,content,meta_tags,created_at',filters}),
+    selectAllRows('silver.lo3rwang_galaxy_media',{columns:'media_id,title,meta_tags,style_tags,created_at',filters})
+  ]);
+  const classified=await classifyStyleRows([...texts,...media]);
+  const map=new Map();
+  for(const row of classified){
+    const term=type==='style_group'?row.style_group:row.style_label;
+    increment(map,type,term,{source:'lo3rwang',period:period||'all'});
+  }
+  return [...map.values()];
+}
+
+async function runeStyles(period,type){
+  const range=await resolvePeriod('lunarunes',period);
+  const filters=[
+    {column:'record_type',operator:'in',value:['galaxy','galaxy_media']},
+    ...dateFilters(range)
+  ];
+  const rows=await selectAllRows('silver.lrunes',{
+    columns:'record_id,record_type,title,content,meta_tags,style_tags,created_at',
+    filters
+  });
+  const classified=await classifyStyleRows(rows);
+  const map=new Map();
+  for(const row of classified){
+    const term=type==='style_group'?row.style_group:row.style_label;
+    increment(map,type,term,{source:'lrunes',period:period||'all'});
+  }
   return [...map.values()];
 }
 
@@ -113,14 +147,17 @@ export async function selectScopeRankingPage(scopeId,{offset=0,limit=20,rankingT
   if(!RANKING_TYPES[id])throw new Error('Scope 無效');
   const type=RANKING_TYPES[id].includes(rankingType)?rankingType:RANKING_TYPES[id][0];
   const period=String(navigation.period||'all');
-  const keywordGroup=type==='keyword'?String(navigation.keywordGroup||'').trim():'';
 
   const rows=[];
   if(id==='loc'||id==='lo3rwang'){
-    rows.push(...(type==='keyword'?await authorKeywords(keywordGroup):await authorSources(period)));
+    if(type==='keyword')rows.push(...await authorKeywords());
+    else if(type==='source')rows.push(...await authorSources(period));
+    else rows.push(...await authorStyles(period,type));
   }
   if(id==='loc'||id==='lunarunes'){
-    rows.push(...(type==='keyword'?await runeKeywords(keywordGroup):await runeSources(period)));
+    if(type==='keyword')rows.push(...await runeKeywords());
+    else if(type==='source')rows.push(...await runeSources(period));
+    else rows.push(...await runeStyles(period,type));
   }
 
   let merged=mergeRows(rows)
@@ -140,30 +177,3 @@ export async function selectScopeRankingTypes(scopeId){
   return [...types];
 }
 
-
-export async function selectScopeKeywordGroups(scopeId){
-  const id=String(scopeId||'');
-  if(!RANKING_TYPES[id])throw new Error('Scope 無效');
-  const groups=new Set();
-  if(id==='loc'||id==='lo3rwang'){
-    const rows=await selectAllRows('silver.lo3rwang_style_keywords',{columns:'keyword_group'});
-    for(const row of rows){
-      const value=String(row.keyword_group||'').trim();
-      if(value)groups.add(value);
-    }
-  }
-  if(id==='loc'||id==='lunarunes'){
-    const rows=await selectAllRows('silver.lrunes',{
-      columns:'keyword_group',
-      filters:[
-        {column:'record_type',operator:'eq',value:'keyword'},
-        {column:'active',operator:'eq',value:true}
-      ]
-    });
-    for(const row of rows){
-      const value=String(row.keyword_group||'').trim();
-      if(value)groups.add(value);
-    }
-  }
-  return [...groups].sort((a,b)=>a.localeCompare(b));
-}
