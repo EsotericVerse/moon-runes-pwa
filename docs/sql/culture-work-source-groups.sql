@@ -10,10 +10,11 @@ STABLE
 SECURITY INVOKER
 SET search_path = pg_catalog
 AS $function$
-  SELECT COALESCE(NULLIF(BTRIM(g.source_platform), ''), '未標示來源') AS source_platform,
+  SELECT BTRIM(g.source_platform) AS source_platform,
          COUNT(*)::bigint AS item_count
   FROM api.lo3rwang_galaxy AS g
   WHERE p_start_date IS NOT NULL
+    AND NULLIF(BTRIM(g.source_platform), '') IS NOT NULL
     AND g.created_at >= (p_start_date::timestamp AT TIME ZONE 'Asia/Taipei')
     AND (p_end_date IS NULL OR
          g.created_at < ((p_end_date + 1)::timestamp AT TIME ZONE 'Asia/Taipei'))
