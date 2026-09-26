@@ -122,7 +122,7 @@ export default function ContextStyleManager({scopeId='lo3rwang'}){
     <section className="scope-v2-inline-card">
       <h3>風格群組</h3>
       <p>風格標籤就是小群組名稱；多個風格標籤可以歸入同一個大群組。這裡只管理分類名稱，不處理關鍵詞規則。</p>
-      {stylesQuery.isPending?<p className="scope-v2-status">讀取風格設定…</p>:null}
+      {stylesQuery.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
       {stylesQuery.error?<p className="scope-v2-status scope-v2-error">{stylesQuery.error.message}</p>:null}
       {!stylesQuery.isPending&&!stylesQuery.error&&!rows.length?<p className="scope-v2-status">目前沒有風格設定。</p>:null}
       {groups.map(group=><article className="scope-v2-inline-card" key={group.key}>
