@@ -194,7 +194,6 @@
 .scope-graph-toolbar label,.scope-graph-form label,.scope-graph-grant-form label{display:grid;gap:.35rem;min-width:12rem}
 .scope-graph-toolbar select,.scope-graph-form input,.scope-graph-form select,.scope-graph-form textarea,.scope-graph-grant-form input,.scope-graph-grant-form select{width:100%;min-width:0;padding:.55rem;border:1px solid var(--loc-border,#789);border-radius:.5rem;background:var(--loc-panel,#fff);color:var(--loc-text,#172333)}
 .scope-graph-canvas{width:100%;min-height:540px;border:1px solid var(--loc-border,#789);border-radius:.75rem;overflow:hidden}
-.scope-graph-canvas .vis-graph3d{outline:none}
 .scope-graph-inspector{padding:1rem;border:1px solid var(--loc-border,#789);border-radius:.75rem}
 .scope-graph-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.85rem;align-items:end}
 .scope-graph-form .scope-graph-check{display:flex;align-items:center;min-width:0;gap:.4rem}
