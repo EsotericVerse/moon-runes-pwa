@@ -15,12 +15,12 @@ export function neonServerRequest(request){
 
 export async function readScopeAuthorizer(db,userId){
   if(!userId)return createScopeAuthorizer('',[]);
-  const grants=await db`
-    select scope_id,access_level,case_id
-      from silver.loc_scope
-     where record_type='access_grant' and user_id=${userId}
+  const rows=await db`
+    select user_id,email,privileges
+      from silver.manage
+     where record_type='permission' and user_id=${userId}
   `;
-  return createScopeAuthorizer(userId,grants);
+  return createScopeAuthorizer(userId,rows);
 }
 
 export async function readNeonUserId(db){
