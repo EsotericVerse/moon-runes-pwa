@@ -1,5 +1,4 @@
 import ModelArchitectureExplorer from './ModelArchitectureExplorer';
-import ScopeArchitecture3D from './ScopeArchitecture3D';
 import {featureHrefV2,scopeHrefV2} from '../../modular-v2/scope-registry.v2';
 
 const RUNES_LINKS=Object.freeze({
@@ -120,13 +119,11 @@ export default function AboutView(){
     <section className="loc-card home-framework" id="framework-map">
       <div className="home-section-heading"><p className="loc-eyebrow">LOC 3D Architecture</p><h2>LOC 語言建築</h2>
 	  <p className="loc-subtitle">個體是一個立方體；個體夠多，就可以累積成建築。以「時」與「空」兩個展示層觀看與管理。</p></div>
-      <ScopeArchitecture3D />
-      <details className="home-framework-stage" style={{marginTop:'1rem'}}>
-        <summary>查看原模型模組關係</summary>
+      <div className="home-framework-stage" aria-label="LOC 平面結構圖">
         <ModelArchitectureExplorer modules={MODEL_MODULES} />
         <div className="model-relationship" aria-label="架構關係"><span>語彙與表達資料</span><b aria-hidden="true">→</b><span>脈絡與方法處理</span>
 		<b aria-hidden="true">↔</b><span>演算法與模組組合</span><b aria-hidden="true">→</b><span>文化時間演變</span></div>
-      </details>
+      </div>
     </section>
 
     <section className="loc-card home-copy-block home-skills" id="skills">
