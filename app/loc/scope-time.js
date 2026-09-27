@@ -1,8 +1,9 @@
 'use client';
 
 import {selectNeonAllRows} from './neon-repository';
+import {scopeDataTable} from './scope-list';
 
-export const SCOPE_TIME_COLUMNS='record_id,record_type,scope_id,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility';
+export const SCOPE_TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility,style_tags';
 
 function dateText(value){return value?String(value).slice(0,10):null;}
 function addDays(value,amount){
@@ -22,7 +23,7 @@ export function splitAnchorPair(value){
   const [before='0',after='0']=String(value||'0,0').split(',',2).map(item=>String(item||'0').trim()||'0');
   return {before,after};
 }
-export function normalizeScopeTimeRows(rows){
+export function normalizeScopeTimeRows(rows,scopeId=''){
   const source=Array.isArray(rows)?rows:[];
   const anchors=new Map(source
     .filter(row=>row.record_type==='anchor'&&row.resource_id)
@@ -42,6 +43,7 @@ export function normalizeScopeTimeRows(rows){
     const endDate=type==='period'&&endBoundary?addDays(endBoundary,-1):endBoundary;
     return [{
       ...row,
+      scope_id:scopeId||row.scope_id||'',
       entry_key:type+':'+id,
       entry_type:type,
       title:row.label||id,
@@ -70,12 +72,10 @@ export function normalizeScopeTimeRows(rows){
 export async function selectScopeTimeRows(scopeId){
   const id=String(scopeId||'').trim();
   if(!id)return [];
-  const {rows}=await selectNeonAllRows('silver.manage',{
+  const table=scopeDataTable(id,'time');
+  const {rows}=await selectNeonAllRows(table,{
     columns:SCOPE_TIME_COLUMNS,
-    filters:[
-      {column:'scope_id',operator:'eq',value:id},
-      {column:'record_type',operator:'in',value:['anchor','period','event']}
-    ]
+    filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}]
   });
-  return normalizeScopeTimeRows(rows);
+  return normalizeScopeTimeRows(rows,id);
 }
