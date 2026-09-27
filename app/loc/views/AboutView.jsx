@@ -148,11 +148,12 @@ export default function AboutView(){
 <p>其實做整套架構，本來只是用於自己總數三百多萬中文字作品的展示整理，不自覺的整理出了兩項東西，一套是歸納的系統架構論LOC，一套是有點偏神秘學的月之符文。</p>
 <p>整合出月典，並不是為了把現有人生，固定成某種發展模式，也不是完全為了賺錢，</p>
 <p>而是把散落、原本只能靠直覺掌握的語言與經驗，整理成可回看、可搜尋、可解析的方式，才能進一步面對未來的各種可能。</p>
-<p>我的原則：敬畏未知，尊重異者，專業為先。</p><p>
+<p>我的原則：敬畏未知，尊重異者，專業為先。</p>
 <p>立於無限減一的謙遜，但要有無限減一的專業。保有探索未知的好奇，尊重無限未知的領域，進而才能學習到更多的知識。</p>
 <p> 2026.09.26.</p>
 <p>想要了解作者請點右上方的作者網頁。</p>
-	  </div><figure className="home-about-figure"><img src="/pics/aboutme.png?v=20260914" alt="作者 Lucas Oscar Wang 政德" loading="eager" decoding="async" /></figure></div>
+	  </div><figure className="home-about-figure"><img src="/pics/aboutme.png?v=20260914" alt="作者 Lucas Oscar Wang 政德" loading="eager" decoding="async" />
+	  </figure></div>
     </section>
   </section>;
 }
