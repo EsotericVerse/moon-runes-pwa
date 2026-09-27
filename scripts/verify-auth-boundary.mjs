@@ -15,8 +15,7 @@ const requireMatch=(text,re,label)=>{if(!re.test(text))failures.push(label);};
 requireMatch(data,/selectNeonRows/,'shared runtime data must use direct Neon table reads');
 if(/memoryCache|DEFAULT_MEMORY_CACHE_ENTRIES/.test(data))failures.push('shared runtime data must not retain a process-memory data cache');
 
-requireMatch(client,/@neondatabase\/postgrest-js/,'Public Neon Data API client dependency is required');
-requireMatch(client,/neonPublicClient=new NeonPostgrestClient/,'public canonical reads must use a no-auth PostgREST client');
+requireMatch(client,/neonPublicReadUrl/,'public canonical reads must use the Neon Function endpoint');
 requireMatch(client,/neonAuthClient=neonAuthConfigured\(\)\?createClient/,'management Auth client must remain optional and separate');
 requireMatch(client,/signInWithOAuth/,'Neon Google OAuth sign-in is required for management when configured');
 requireMatch(client,/getSession/,'Neon session lookup is required for management when configured');
