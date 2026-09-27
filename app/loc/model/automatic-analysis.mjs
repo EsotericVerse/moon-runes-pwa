@@ -14,63 +14,103 @@ function median(values=[]){
   return nums.length%2?nums[mid]:(nums[mid-1]+nums[mid])/2;
 }
 
+function temporalCategory(row){
+  return String(
+    row?.category||row?.group_label||row?.display_label||
+    row?.style_label||row?.style_group||row?.media_type||row?.source_place||''
+  ).trim();
+}
+
+function partitionDates(dates=[]){
+  if(dates.length<4)return [];
+  const segmentCount=Math.min(4,Math.max(2,Math.floor(dates.length/2)));
+  const base=Math.floor(dates.length/segmentCount);
+  const extra=dates.length%segmentCount;
+  const segments=[];
+  let cursor=0;
+  for(let index=0;index<segmentCount;index++){
+    const size=base+(index<extra?1:0);
+    const values=dates.slice(cursor,cursor+size);
+    cursor+=size;
+    if(values.length)segments.push(values);
+  }
+  return segments;
+}
+
 export function analyzeTemporalDensity(rows=[],{
   valueField='work_count',
   label='作品',
   minimumCount=3,
-  highRatio=1.75,
+  minimumShareDelta=0.1,
+  minimumRatio=1.5,
   maxSuggestions=6
 }={}){
-  const byDate=new Map();
-  for(const row of rows||[]){
-    const date=dateKey(row);
-    if(!date)continue;
-    byDate.set(date,(byDate.get(date)||0)+finiteNumber(row?.[valueField]??row?.item_count??row?.value));
-  }
-  const points=[...byDate.entries()].map(([date,count])=>({date,count})).sort((a,b)=>a.date.localeCompare(b.date));
-  if(points.length<2)return {points,suggestions:[],baseline:points[0]?.count||0};
+  const normalized=(rows||[]).map(row=>({
+    date:dateKey(row),
+    category:temporalCategory(row),
+    count:finiteNumber(row?.[valueField]??row?.item_count??row?.value)
+  })).filter(row=>row.date&&row.category&&row.count>0);
 
-  const baseline=median(points.map(point=>point.count));
-  const suggestions=[];
-  for(let index=0;index<points.length;index++){
-    const point=points[index];
-    const neighbors=points.slice(Math.max(0,index-2),index).concat(points.slice(index+1,index+3));
-    const localBaseline=median(neighbors.map(item=>item.count))||baseline;
-    const ratio=localBaseline>0?point.count/localBaseline:(point.count>0?Infinity:1);
-    const previous=points[index-1]||null;
-    const previousRatio=previous?.count>0?point.count/previous.count:null;
+  const dates=[...new Set(normalized.map(row=>row.date))].sort();
+  const dateSegments=partitionDates(dates);
+  if(dateSegments.length<2)return {segments:[],suggestions:[]};
 
-    if(point.count>=minimumCount&&ratio>=highRatio){
-      suggestions.push({
-        type:'density_high',
-        date:point.date,
-        count:point.count,
-        baseline:localBaseline,
-        ratio:Number.isFinite(ratio)?ratio:null,
-        text:`${point.date} 附近的${label}數量明顯高於前後區間（${point.count} 項；鄰近基準約 ${Math.round(localBaseline)} 項），可能值得回看是否有想標記的事情。`
-      });
-      continue;
+  const segments=dateSegments.map(segmentDates=>{
+    const included=new Set(segmentDates);
+    const counts=new Map();
+    let total=0;
+    for(const row of normalized){
+      if(!included.has(row.date))continue;
+      total+=row.count;
+      counts.set(row.category,(counts.get(row.category)||0)+row.count);
     }
-
-    if(previous&&previous.count>=minimumCount&&point.count<=Math.max(1,previous.count*.45)){
-      suggestions.push({
-        type:'density_drop',
-        date:point.date,
-        count:point.count,
-        previous_count:previous.count,
-        ratio:previousRatio,
-        text:`${point.date} 附近的${label}數量比前一區間明顯下降（${previous.count} → ${point.count}），可回看前後是否有值得標記的變化。`
-      });
-    }
-  }
-
-  suggestions.sort((a,b)=>{
-    const ar=a.type==='density_high'?(a.ratio??99):(a.previous_count?1-a.count/a.previous_count:0);
-    const br=b.type==='density_high'?(b.ratio??99):(b.previous_count?1-b.count/b.previous_count:0);
-    return br-ar||a.date.localeCompare(b.date);
+    return {
+      start_date:segmentDates[0],
+      end_date:segmentDates.at(-1),
+      total,
+      counts
+    };
   });
 
-  return {points,suggestions:suggestions.slice(0,maxSuggestions),baseline};
+  const suggestions=[];
+  for(let index=1;index<segments.length;index++){
+    const previous=segments[index-1];
+    const current=segments[index];
+    if(previous.total<minimumCount||current.total<minimumCount)continue;
+    const categories=[...new Set([...previous.counts.keys(),...current.counts.keys()])];
+    for(const category of categories){
+      const beforeCount=previous.counts.get(category)||0;
+      const currentCount=current.counts.get(category)||0;
+      if(Math.max(beforeCount,currentCount)<minimumCount)continue;
+      const beforeShare=beforeCount/previous.total;
+      const currentShare=currentCount/current.total;
+      const delta=currentShare-beforeShare;
+      const ratio=beforeShare>0?currentShare/beforeShare:(currentShare>0?Infinity:1);
+      const meaningfulRise=delta>=minimumShareDelta&&(ratio>=minimumRatio||beforeShare===0);
+      const meaningfulFall=delta<=-minimumShareDelta&&(ratio<=1/minimumRatio||currentShare===0);
+      if(!meaningfulRise&&!meaningfulFall)continue;
+
+      const percentagePoints=Math.abs(delta)*100;
+      const from=previous.start_date;
+      const to=current.end_date;
+      suggestions.push({
+        type:meaningfulRise?'share_rise':'share_fall',
+        category,
+        date:current.start_date,
+        from,
+        to,
+        previous_share:beforeShare,
+        current_share:currentShare,
+        share_delta:delta,
+        ratio:Number.isFinite(ratio)?ratio:null,
+        score:Math.abs(delta),
+        text:`「${category}」在前後連續區間的${label}占比由 ${(beforeShare*100).toFixed(1)}% 變為 ${(currentShare*100).toFixed(1)}%（${meaningfulRise?'+':'-'}${percentagePoints.toFixed(1)} 個百分點），可回看 ${from} 至 ${to} 的分布變化。`
+      });
+    }
+  }
+
+  suggestions.sort((a,b)=>Number(b.score||0)-Number(a.score||0)||a.date.localeCompare(b.date)||a.category.localeCompare(b.category,'zh-Hant'));
+  return {segments,suggestions:suggestions.slice(0,maxSuggestions)};
 }
 
 export function analyzeDistribution(rows=[],{
