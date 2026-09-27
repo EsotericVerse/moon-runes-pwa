@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
   analyzeDistribution,
   analyzeDistributionChange,
+  analyzeKeywordDiagnostics,
   analyzeKeywordGovernance,
   analyzeTemporalDensity
 } from '../app/loc/model/automatic-analysis.mjs';
@@ -52,4 +53,23 @@ assert.ok(governance.suggestions.some(item=>item.governance==='reduce_candidate'
 assert.ok(governance.suggestions.some(item=>item.governance==='add_candidate'&&item.term==='新候選'));
 assert.ok(governance.suggestions.every(item=>!item.text.includes('${')));
 
-console.log('LOC automatic density, distribution, weak-signal and keyword-governance analysis verified.');
+const diagnostics=analyzeKeywordDiagnostics({
+  totalRecords:10,
+  keywords:[
+    {term:'廣泛詞',item_count:7,coverage:0.7,top_source:'A',top_source_share:0.5},
+    {term:'集中詞',item_count:4,coverage:0.4,top_source:'B',top_source_share:0.8},
+    {term:'新興詞',item_count:3,coverage:0.3,top_source:'C',top_source_share:0.9}
+  ],
+  pairs:[
+    {term_a:'集中詞',term_b:'新興詞',item_count:3,share:0.75}
+  ]
+},{
+  changeSuggestions:[{type:'rising',term:'新興詞'}],
+  minimumCount:3
+});
+assert.ok(diagnostics.suggestions.some(item=>item.type==='low_discrimination'&&item.term==='廣泛詞'));
+assert.ok(diagnostics.suggestions.some(item=>item.type==='source_concentration'&&item.term==='集中詞'));
+assert.ok(diagnostics.suggestions.some(item=>item.type==='emerging_high_discrimination'&&item.term==='新興詞'));
+assert.ok(diagnostics.suggestions.some(item=>item.type==='cooccurrence'&&item.term.includes('集中詞')));
+
+console.log('LOC automatic density, distribution, weak-signal, keyword-governance and diagnostics analysis verified.');
