@@ -3,7 +3,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import {useMutation,useQueryClient} from '@tanstack/react-query';
 import {GROUPS} from '../../lrunes/rune-directory.mjs';
-import {updateRuneKeywords} from '../../loc/neon-context-client';
+import {updateRuneKeywords} from '../../loc/rune-repository';
 import {parseRuneKeywordRules,splitRuneKeywordEntries} from '../../loc/model/rune-keyword-rules.mjs';
 import KeywordGraph2DV2 from '../modules/keyword-graph/KeywordGraph2DV2';
 

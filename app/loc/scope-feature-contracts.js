@@ -1,32 +1,8 @@
 import {z} from 'zod';
 
-// Stable feature contracts. Database table names and split layout stay behind
-// the Neon client modules, so a Neon table migration does not require UI rewrites.
+// Stable Current feature contracts. Database table names and split layout stay behind
+// domain clients, so a Neon table migration does not require UI rewrites.
 const OpenRowSchema=z.object({}).passthrough();
-const ContextNodeSchema=z.object({
-  node_id:z.string().trim().min(1),
-  label:z.string().trim().min(1).optional(),
-  node_type:z.string().optional(),
-  scope_id:z.string().optional(),
-  description:z.string().optional()
-}).passthrough();
-const ContextEdgeSchema=z.object({
-  edge_id:z.string().trim().min(1),
-  source_node_id:z.string().trim().min(1),
-  target_node_id:z.string().trim().min(1),
-  relation_type:z.string().trim().min(1),
-  relation_label:z.string().optional(),
-  description:z.string().optional(),
-  evidence:z.string().optional(),
-  date:z.string().optional()
-}).passthrough();
-
-export const ScopeContextResponseSchema=z.object({
-  rows:z.array(OpenRowSchema).default([]),
-  nodes:z.array(ContextNodeSchema).default([]),
-  edges:z.array(ContextEdgeSchema).default([]),
-  trends:z.array(OpenRowSchema).default([])
-}).passthrough();
 
 export const ScopeCultureResponseSchema=z.object({
   scopeId:z.enum(['loc','lunarunes','lo3rwang']),

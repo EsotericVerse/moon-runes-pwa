@@ -17,9 +17,9 @@ function requireText(path,patterns,description){
 // Public canonical reads use an isolated anonymous-token provider; management keeps its own authenticated client.
 requireText('app/loc/neon-client.js',[/createClient/ ,/getNeonPublicToken/ ,/resetNeonPublicToken/ ,/getToken:getNeonPublicToken/ ,/neonAuthClient=createClient/],'Neon isolated public-token/auth client boundary');
 requireText('app/loc/neon-repository.js',[/from ['"]zod['"]/ ,/neonPublicClient/ ,/neonAuthClient/ ,/export async function selectNeonRows/],'Neon repository/Zod boundary');
-// TanStack Query is used by data-heavy features; statistics uses direct offset pagination.
-requireText('app/modular-v2/features/ContextV2.jsx',[/from ['"]@tanstack\/react-query['"]/ ,/selectScopeContextData/],'Context Query/Neon interop');
-requireText('app/modular-v2/features/StatisticsV2.jsx',[/useOffsetPagination/ ,/selectScopeRankingPage/ ,/from ['"]recharts['"]/],'Statistics offset/Neon/Recharts interop');
+// TanStack Query is used by data-heavy Current features.
+requireText('app/modular-v2/features/KeywordSettingsV2.jsx',[/from ['"]@tanstack\/react-query['"]/ ,/selectRuneKeywordCatalog/],'Keyword settings Query/rune repository interop');
+requireText('app/modular-v2/features/StatisticsV2.jsx',[/from ['"]@tanstack\/react-query['"]/ ,/selectScopeRankingPage/ ,/from ['"]recharts['"]/],'Statistics Query/Neon/Recharts interop');
 requireText('app/modular-v2/features/CultureV2.jsx',[/from ['"]@tanstack\/react-query['"]/ ,/selectScopeCultureData/ ,/CultureTimelineV2/],'Culture Query/Neon/Timeline interop');
 requireText('app/modular-v2/ScopeManagementV2.jsx',[/from ['"]@tanstack\/react-query['"]/ ,/useNeonAccount/ ,/neon-scope-governance/],'Admin Query/Neon Auth boundary');
 // FlexSearch is the shared text engine. Neon remains SSOT and adaptive IO supplies index batches.
@@ -27,7 +27,7 @@ requireText('app/loc/text-engine.mjs',[/from ['"]flexsearch['"]/ ,/new Index/ ,/
 requireText('app/loc/search-providers.js',[/getRuntimeTextIndex/ ,/searchTextIndex/ ,/processNeonHeavyRows/],'Search/FlexSearch adaptive IO boundary');
 requireText('app/loc/style-classifier.js',[/createTextIndex/ ,/searchTextIndex/ ,/splitRuneKeywordEntries/],'Culture/Statistics FlexSearch classifier boundary');
 // Graph and timeline packages are loaded only by their corresponding Neon feature modules.
-requireText('app/modular-v2/modules/context-graph/ContextGraphV2.jsx',[/vis-network\/standalone/ ,/new Network/],'Neon context graph package boundary');
+requireText('app/modular-v2/modules/keyword-graph/KeywordGraph2DV2.jsx',[/vis-network\/standalone/ ,/new Network/],'Keyword graph vis-network package boundary');
 requireText('app/modular-v2/modules/culture-timeline/CultureTimelineV2.jsx',[/vis-timeline\/standalone/ ,/new Timeline/],'Neon culture timeline package boundary');
 
 if(failures.length){

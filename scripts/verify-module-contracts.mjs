@@ -32,7 +32,6 @@ for(const path of [
   'app/lrunes/RunesClient.jsx',
   'app/loc/rune-repository.js',
   'app/loc/model/rune-graph-core.js',
-  'app/loc/neon-context-client.js',
   'app/loc/neon-culture-client.js',
   'app/loc/neon-ranking-client.js',
   'app/loc/neon-repository.js',
@@ -46,13 +45,12 @@ const runesClient=readFileSync(resolve(root,'app/lrunes/RunesClient.jsx'),'utf8'
 for(const token of ['selectRuneCatalog','data-draw-action="execute"','function executeDraw','function finishDraw'])if(!runesClient.includes(token))failures.push(`RunesClient: missing draw contract ${token}`);
 
 const runeRepository=readFileSync(resolve(root,'app/loc/rune-repository.js'),'utf8');
-for(const token of ['selectNeonCatalog','silver.lrunes','selectRuneCatalog'])if(!runeRepository.includes(token))failures.push(`Rune repository: missing canonical contract ${token}`);
-for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs'])if(existsSync(resolve(root,retired)))failures.push(`retired path-loader returned: ${retired}`);
+for(const token of ['selectNeonCatalog','silver.lrunes','selectRuneCatalog','selectRuneKeywordCatalog','updateRuneKeywords'])if(!runeRepository.includes(token))failures.push(`Rune repository: missing canonical contract ${token}`);
+for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs','app/loc/neon-context-client.js','app/modular-v2/features/ContextV2.jsx','app/modular-v2/features/ContextWorkbenchV2.jsx','app/modular-v2/modules/context-graph/ContextGraphV2.jsx'])if(existsSync(resolve(root,retired)))failures.push(`retired path-loader returned: ${retired}`);
 if(['LOC_DATA','canonical/runes','fetchNeonData','runtime_json_documents','fetchLocJson','fetchLocDataSegments'].some(token=>runeRepository.includes(token)))failures.push('Rune repository: legacy path/JSON loader semantics returned');
 
 if(!/z\.enum/.test(readFileSync(resolve(root,'app/loc/neon-repository.js'),'utf8')))failures.push('Neon repository: Zod allowlist missing');
 for(const [client,contract] of [
-  ['app/loc/neon-context-client.js','ScopeContextResponseSchema'],
   ['app/loc/neon-culture-client.js','ScopeCultureResponseSchema'],
   ['app/loc/neon-ranking-client.js','ScopeRankingResponseSchema']
 ])if(!readFileSync(resolve(root,client),'utf8').includes(`${contract}.parse`))failures.push(`${client}: shared Zod feature contract not enforced`);

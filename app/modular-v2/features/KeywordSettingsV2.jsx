@@ -5,7 +5,7 @@ import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {
   deleteNeonRows,insertNeonRows,selectNeonAllRows,updateNeonRows
 } from '../../loc/neon-repository';
-import {selectRuneKeywordCatalog} from '../../loc/neon-context-client';
+import {selectRuneKeywordCatalog} from '../../loc/rune-repository';
 import {clearStyleCatalogCache} from '../../loc/style-classifier';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
