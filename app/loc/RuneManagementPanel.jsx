@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import {fetchNeonData,LOC_DATA} from './data';
-import {evaluateSpread} from './model/semantic-guidance';
+import {cardSemanticState,resolveSpreadState} from './model/semantic-state.mjs';
 import {realMoonPhase} from './model/moon-phase';
 import {drawRuneSession,makeRuneDrawId,RUNE_DIRECTIONS} from '../lrunes/rune-draw-engine';
 import {listNeonRecords,listRuneDrawSlots,putDailyRuneRecord,putNeonRecord,putRuneDrawSlot} from './neon-user-storage';
@@ -21,14 +21,16 @@ function todayKey(){
 }
 function makeRecord(mode,session){
   const config=MODES.find(item=>item.key===mode)||MODES[0];
-  const evaluation=evaluateSpread(session.cards,session.directions);
+  const reading=resolveSpreadState(session.cards,session.directions,mode);
   return {
     id:makeRuneDrawId(mode),created_at:new Date().toISOString(),mode,mode_label:config.label,
-    moon_phase:realMoonPhase(),score:evaluation.score,trend:evaluation.range.label,
+    moon_phase:realMoonPhase(),trend:reading.trend,result:reading.result,guidance:reading.guidance,
     cards:session.cards.map((card,index)=>({
       number:Number(card.編號),name:card.符文名稱,
       position:config.positions[index]||`第 ${index+1} 張`,
       direction:session.directions[index],
+      card_attribute:card.卡片屬性||'未知',
+      state:cardSemanticState(card,session.directions[index]),
       positive_keywords:card.正向關鍵詞||'',negative_keywords:card.反向關鍵詞||''
     }))
   };
@@ -38,7 +40,8 @@ function dailyRecord(session,role){
   return {
     id:makeRuneDrawId('daily'),created_at:new Date().toISOString(),mode:'daily',mode_label:'每日',
     moon_phase:realMoonPhase(),daily_role:role,
-    cards:[{number:Number(card.編號),name:card.符文名稱,position:role==='supplement'?'副符':'主符',direction:session.directions[0],positive_keywords:card.正向關鍵詞||'',negative_keywords:card.反向關鍵詞||''}]
+    trend:'未知',result:cardSemanticState(card,session.directions[0]),guidance:`結果${cardSemanticState(card,session.directions[0])}。`,
+    cards:[{number:Number(card.編號),name:card.符文名稱,position:role==='supplement'?'副符':'主符',direction:session.directions[0],card_attribute:card.卡片屬性||'未知',state:cardSemanticState(card,session.directions[0]),positive_keywords:card.正向關鍵詞||'',negative_keywords:card.反向關鍵詞||''}]
   };
 }
 function cardLine(record){
@@ -111,10 +114,13 @@ export default function RuneManagementPanel(){
     const nextCard={...current};
     if(field==='number'){
       const rune=runes.find(item=>Number(item.編號)===Number(value));
-      nextCard.number=Number(value);nextCard.name=rune?.符文名稱||String(value);
+      nextCard.number=Number(value);nextCard.name=rune?.符文名稱||String(value);nextCard.card_attribute=rune?.卡片屬性||'未知';
     }else nextCard.direction=value;
+    const rune=runes.find(item=>Number(item.編號)===Number(nextCard.number));
+    nextCard.card_attribute=nextCard.card_attribute||rune?.卡片屬性||'未知';
+    nextCard.state=cardSemanticState({卡片屬性:nextCard.card_attribute},nextCard.direction);
     try{
-      await putNeonRecord({...row,cards:[nextCard]});
+      await putNeonRecord({...row,result:nextCard.state,guidance:`結果${nextCard.state}。`,cards:[nextCard]});
       await reloadRecords();setStatus('每日符文紀錄已更新。');
     }catch(error){setStatus(error?.message||'更新失敗。');}
   }
@@ -129,7 +135,7 @@ export default function RuneManagementPanel(){
       {MODES.map(item=><button type="button" key={item.key} aria-pressed={mode===item.key} onClick={()=>setMode(item.key)}>{item.label}</button>)}
       <button type="button" onClick={drawGroup}>抽牌</button>
     </div>
-    {draw?<article className="loc-card"><strong>{draw.mode_label}</strong><p>{cardLine(draw)}</p>
+    {draw?<article className="loc-card"><strong>{draw.mode_label}</strong><p>{cardLine(draw)}</p><p>{draw.guidance}</p>
       <div className="scope-v2-stat-controls">
         <label>儲存到<select value={slot} onChange={e=>setSlot(Number(e.target.value))}>{Array.from({length:8},(_,i)=><option key={i+1} value={i+1}>第 {i+1} 組</option>)}</select></label>
         <button type="button" onClick={saveSlot}>覆蓋／儲存這一組</button>
