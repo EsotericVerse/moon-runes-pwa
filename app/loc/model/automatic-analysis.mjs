@@ -120,3 +120,127 @@ export function analyzeDistribution(rows=[],{
 
   return {total,rows:data,suggestions:suggestions.slice(0,maxSuggestions)};
 }
+
+
+function distributionMap(rows=[]){
+  const map=new Map();
+  for(const row of rows||[]){
+    const term=String(row?.term||row?.display_label||row?.style_name||row?.keyword||'').trim();
+    if(!term)continue;
+    const count=finiteNumber(row?.item_count??row?.rank_value??row?.value);
+    map.set(term,(map.get(term)||0)+count);
+  }
+  return map;
+}
+
+export function analyzeDistributionChange(currentRows=[],previousRows=[],{
+  label='項目',
+  minimumCount=2,
+  riseRatio=1.6,
+  fallRatio=0.6,
+  maxSuggestions=8
+}={}){
+  const current=distributionMap(currentRows);
+  const previous=distributionMap(previousRows);
+  const terms=[...new Set([...current.keys(),...previous.keys()])];
+  const changes=[];
+  const suggestions=[];
+
+  for(const term of terms){
+    const now=finiteNumber(current.get(term));
+    const before=finiteNumber(previous.get(term));
+    const delta=now-before;
+    const ratio=before>0?now/before:(now>0?Infinity:1);
+    const row={term,current:now,previous:before,delta,ratio:Number.isFinite(ratio)?ratio:null};
+    changes.push(row);
+
+    if(before===0&&now>=minimumCount){
+      suggestions.push({
+        type:'emerging',
+        term,current:now,previous:0,score:now,
+        governance:'raise_candidate',
+        text:\`「\${term}」在目前區間出現 \${now} 次，前一等長區間沒有出現；這是新出現的\${label}訊號，可回看相關內容確認是否值得持續追蹤。\`
+      });
+      continue;
+    }
+    if(now===0&&before>=minimumCount){
+      suggestions.push({
+        type:'disappeared',
+        term,current:0,previous:before,score:before,
+        governance:'reduce_candidate',
+        text:\`「\${term}」前一區間出現 \${before} 次，目前區間沒有出現；可回看是否只是暫時沉寂，或分類權重需要降低。\`
+      });
+      continue;
+    }
+    if(now>=minimumCount&&before>=minimumCount&&ratio>=riseRatio){
+      suggestions.push({
+        type:'rising',
+        term,current:now,previous:before,score:ratio,
+        governance:'raise_candidate',
+        text:\`「\${term}」由 \${before} 次增加到 \${now} 次，出現頻率明顯提高；先視為分布變化，建議回看前後內容確認脈絡。\`
+      });
+      continue;
+    }
+    if(before>=minimumCount&&now>=0&&ratio<=fallRatio){
+      suggestions.push({
+        type:'falling',
+        term,current:now,previous:before,score:before/(now||0.5),
+        governance:'reduce_candidate',
+        text:\`「\${term}」由 \${before} 次下降到 \${now} 次，出現頻率明顯降低；可保留觀察，不直接判定其意義。\`
+      });
+      continue;
+    }
+    if(now>=minimumCount&&before>=minimumCount){
+      suggestions.push({
+        type:'persistent',
+        term,current:now,previous:before,score:Math.min(now,before),
+        governance:'keep_candidate',
+        text:\`「\${term}」在前後兩個區間都持續出現（\${before} → \${now}），可視為目前較穩定的\${label}候選。\`
+      });
+    }
+  }
+
+  const priority={emerging:5,rising:4,disappeared:3,falling:2,persistent:1};
+  suggestions.sort((a,b)=>(priority[b.type]||0)-(priority[a.type]||0)||Number(b.score||0)-Number(a.score||0)||a.term.localeCompare(b.term,'zh-Hant'));
+  changes.sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta)||a.term.localeCompare(b.term,'zh-Hant'));
+
+  return {changes,suggestions:suggestions.slice(0,maxSuggestions)};
+}
+
+export function analyzeKeywordGovernance(currentRows=[],previousRows=[],{
+  candidateRows=[],
+  minimumCount=2,
+  maxSuggestions=10
+}={}){
+  const change=analyzeDistributionChange(currentRows,previousRows,{
+    label:'關鍵詞',
+    minimumCount,
+    maxSuggestions:Math.max(maxSuggestions,20)
+  });
+  const catalog=new Set([
+    ...(currentRows||[]).map(row=>String(row?.term||'').trim()),
+    ...(previousRows||[]).map(row=>String(row?.term||'').trim())
+  ].filter(Boolean));
+  const suggestions=change.suggestions.map(item=>({
+    ...item,
+    action:item.governance==='raise_candidate'?'提高觀察權重':
+      item.governance==='reduce_candidate'?'降低／淘汰候選':'保留觀察'
+  }));
+
+  for(const row of candidateRows||[]){
+    const term=String(row?.term||'').trim();
+    const count=finiteNumber(row?.item_count??row?.rank_value??row?.value);
+    if(!term||catalog.has(term)||count<minimumCount)continue;
+    suggestions.push({
+      type:'new_candidate',
+      term,current:count,previous:0,score:count,
+      governance:'add_candidate',
+      action:'新增候選',
+      text:\`「\${term}」尚未在目前關鍵詞統計中，但在 metadata 候選來源重複出現 \${count} 次；可人工確認是否值得加入詞庫。\`
+    });
+  }
+
+  const priority={new_candidate:6,emerging:5,rising:4,disappeared:3,falling:2,persistent:1};
+  suggestions.sort((a,b)=>(priority[b.type]||0)-(priority[a.type]||0)||Number(b.score||0)-Number(a.score||0)||a.term.localeCompare(b.term,'zh-Hant'));
+  return {changes:change.changes,suggestions:suggestions.slice(0,maxSuggestions)};
+}
