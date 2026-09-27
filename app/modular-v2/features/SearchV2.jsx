@@ -104,12 +104,11 @@ export default function SearchV2(){
   const [editError,setEditError]=useState('');
   const searchId=useRef(0);
   const offsetRef=useRef(0);
-  const matchedRowsRef=useRef([]);
   const matchedQueryRef=useRef('');
   const sentinelRef=useRef(null);
   const loadingRef=useRef(false);
   const visibilityRef=useRef(new Map());
-  const pageSize=scopeId==='lunarunes'?8:10;
+  const pageSize=20;
   const collection=useMemo(()=>getSearchCollection(scope.searchCollection),[scope.searchCollection]);
 
   async function executeSearch(rawQuery){
@@ -118,7 +117,6 @@ export default function SearchV2(){
     const id=++searchId.current;
     loadingRef.current=true;
     offsetRef.current=0;
-    matchedRowsRef.current=[];
     matchedQueryRef.current='';
     setError('');
     setHasMore(false);
@@ -126,10 +124,9 @@ export default function SearchV2(){
     setResults([]);
     setStatus(`搜尋「${collection.label}」資料…`);
     try{
-      const search=await searchNeonRows(collection.id,q,{limit:5000,offset:0});
+      const search=await searchNeonRows(collection.id,q,{limit:pageSize,offset:0});
       if(id!==searchId.current)return;
 
-      matchedRowsRef.current=search.rows;
       matchedQueryRef.current=q;
       let visibilityRows=[];
       try{visibilityRows=await listResourceVisibility();}catch{}
@@ -138,10 +135,9 @@ export default function SearchV2(){
         visibilityMap.set(resultKey(item.scope,item.resource_type,item.resource_id),item);
       }
       visibilityRef.current=visibilityMap;
-      const consumed=matchedRowsRef.current.slice(0,pageSize);
-      offsetRef.current=consumed.length;
+      offsetRef.current=search.rows.length;
       const converted=[];const seen=new Set();
-      for(const {row,source} of consumed){
+      for(const {row,source} of search.rows){
         const result=toResult(row,source,q,collection.id,scopeId,visibilityMap);
         if(!result||seen.has(result.key))continue;
         if(result.display==='hidden'&&!account.canManageScopeSync(result.scopeId))continue;
@@ -149,7 +145,7 @@ export default function SearchV2(){
         seen.add(result.key);converted.push(result);
       }
       setResults(mergeSummaryResults(converted));
-      setHasMore(matchedRowsRef.current.length>pageSize);
+      setHasMore(search.rows.length===pageSize);
       const partial=search.failures?.length?`（${search.failures.length} 張非必要資料表暫時無法查詢）`:'';
       setStatus(`「${collection.label}」搜尋「${q}」。${partial}`);
     }catch(exception){
@@ -161,18 +157,18 @@ export default function SearchV2(){
     }
   }
 
-  function loadMore(){
+  async function loadMore(){
     const q=matchedQueryRef.current;
     if(!q||!hasMore||loadingRef.current)return;
     loadingRef.current=true;
     setLoadingMore(true);
     try{
-      const consumed=matchedRowsRef.current.slice(offsetRef.current,offsetRef.current+pageSize);
-      offsetRef.current+=consumed.length;
+      const search=await searchNeonRows(collection.id,q,{limit:pageSize,offset:offsetRef.current});
+      offsetRef.current+=search.rows.length;
       setResults(current=>{
         const seen=new Set(current.map(item=>item.key));
         const appended=[];
-        for(const {row,source} of consumed){
+        for(const {row,source} of search.rows){
           const result=toResult(row,source,q,collection.id,scopeId,visibilityRef.current);
           if(!result||seen.has(result.key))continue;
           if(result.display==='hidden'&&!account.canManageScopeSync(result.scopeId))continue;
@@ -181,7 +177,7 @@ export default function SearchV2(){
         }
         return mergeSummaryResults([...current,...appended]);
       });
-      setHasMore(matchedRowsRef.current.length>offsetRef.current);
+      setHasMore(search.rows.length===pageSize);
     }catch(exception){
       setError(String(exception?.message||exception||'載入下一批搜尋結果失敗。'));
       setHasMore(false);
