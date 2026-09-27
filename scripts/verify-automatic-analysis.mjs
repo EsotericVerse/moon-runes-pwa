@@ -15,12 +15,14 @@ const change=analyzeDistributionChange(
   [
     {term:'上升',item_count:8},
     {term:'新出現',item_count:3},
-    {term:'持續',item_count:4}
+    {term:'持續',item_count:4},
+    {term:'其他',item_count:5}
   ],
   [
     {term:'上升',item_count:3},
     {term:'消失',item_count:4},
-    {term:'持續',item_count:4}
+    {term:'持續',item_count:4},
+    {term:'其他',item_count:9}
   ],
   {minimumCount:2}
 );
