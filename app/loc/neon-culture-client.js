@@ -1,7 +1,7 @@
 'use client';
 
 import {ScopeCultureResponseSchema} from './scope-feature-contracts';
-import {selectNeonAllRows} from './neon-repository';
+import {processNeonHeavyRows,selectNeonAllRows} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
 import {selectManagedScopeIds} from './scope-list';
 import {decodeCultureText,formatCultureDateTime,groupWorksByWeek} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
@@ -176,6 +176,12 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
     columns:'uid,category,content_type,source_name,title,createtime,url,source_id,target_id,ref_id,media_link',
     filters:[{column:'uid',operator:'in',value:uids}]
   });
+  const bodyById=new Map();
+  await processNeonHeavyRows('silver.lo3rwang_galaxy',{
+    columns:'uid,content',
+    filters:[{column:'uid',operator:'in',value:uids}],
+    onRow:row=>{bodyById.set(String(row.uid),decodeCultureText(row.content||'').trim());}
+  });
   const mediaIds=[...new Set(textResult.rows.flatMap(row=>Array.isArray(row.media_link)?row.media_link:[]).map(String).filter(Boolean))];
   const [linkedMediaResult,forwardMediaResult]=await Promise.all([
     selectNeonAllRows('silver.lo3rwang_galaxy_media',{
@@ -217,13 +223,19 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
     linkedMedia.forEach((media,index)=>{
       if(media.url&&/^https?:\/\//i.test(String(media.url)))links.push({id:'media:'+media.media_id,href:media.url,label:`媒體連結 ${index+1}`});
     });
-    const title=decodeCultureText(item.title||row.title||'').trim();
+    const rawTitle=decodeCultureText(item.title||row.title||'').trim();
+    const sourceName=sourceLabel(row.source_name);
+    const validTitle=rawTitle&&rawTitle.toLowerCase()!==sourceName.toLowerCase()?rawTitle:'';
+    const bodyText=bodyById.get(String(row.uid))||'';
+    const bodyPreview=bodyText.replace(/\s+/g,' ').trim().slice(0,180);
+    const displayTitle=validTitle||bodyPreview.slice(0,60)||row.uid;
+    const mediaDescription=linkedMedia.map(mediaMetadataDescription).filter(Boolean).join(' ｜ ');
     return {
       key:'galaxy:'+row.uid,
       uid:row.uid,
       source_name:row.source_name,
-      title:title||row.source_name||row.uid,
-      description:linkedMedia.map(mediaMetadataDescription).filter(Boolean).join(' ｜ '),
+      title:displayTitle,
+      description:[bodyPreview,mediaDescription].filter(Boolean).join(' ｜ '),
       createtime:row.createtime,
       start_date:row.createtime,
       date:row.createtime,
