@@ -60,13 +60,30 @@ function throwQuery(error,operation){
   if(error)throw new Error(`Neon ${operation}：${error.message||'query failed'}`);
 }
 
-export async function listNeonRecords(type=''){
+export async function listNeonRecords(type='',{
+  recordKind='',
+  recordDate='',
+  offset=0,
+  limit=20,
+  count=false
+}={}){
   await requireUser();
-  let query=recordsRelation().select('id,record_type,record_kind,source,record_date,payload,created_at,updated_at,scope_id').order('updated_at',{ascending:false});
+  const safeOffset=Math.max(0,Math.floor(Number(offset)||0));
+  const safeLimit=Math.max(1,Math.min(50,Math.floor(Number(limit)||20)));
+  let query=recordsRelation()
+    .select(
+      'id,record_type,record_kind,source,record_date,payload,created_at,updated_at,scope_id',
+      count?{count:'exact'}:undefined
+    )
+    .order('updated_at',{ascending:false})
+    .range(safeOffset,safeOffset+safeLimit-1);
   if(type)query=query.eq('record_type',type);
-  const {data,error}=await query;
+  if(recordKind)query=query.eq('record_kind',recordKind);
+  if(recordDate)query=query.eq('record_date',recordDate);
+  const {data,error,count:totalCount}=await query;
   throwQuery(error,'讀取個人紀錄失敗');
-  return (data||[]).map(dbRecord);
+  const rows=(data||[]).map(dbRecord);
+  return count?{rows,totalCount:Number(totalCount||0)}:rows;
 }
 
 export async function getNeonRecord(id){
@@ -107,9 +124,14 @@ export async function clearNeonRecords(type=''){
   let query=recordsRelation().delete();
   if(type)query=query.eq('record_type',type);
   else{
-    const rows=await listNeonRecords();
-    if(!rows.length)return;
-    query=query.in('id',rows.map(row=>row.id));
+    const ids=[];
+    for(let offset=0;;offset+=50){
+      const rows=await listNeonRecords('',{offset,limit:50});
+      ids.push(...rows.map(row=>row.id));
+      if(rows.length<50)break;
+    }
+    if(!ids.length)return;
+    query=query.in('id',ids);
   }
   const {error}=await query;
   throwQuery(error,'清除個人紀錄失敗');
@@ -145,7 +167,7 @@ export async function deleteNeonSetting(key){
 }
 
 export async function listRuneDrawSlots(){
-  const rows=await listNeonRecords('rune-draw-slot');
+  const rows=await listNeonRecords('rune-draw-slot',{limit:8});
   const slots=Array.from({length:8},(_,index)=>({slot:index+1,record:null}));
   for(const row of rows){
     const match=String(row.record_kind||'').match(/^slot-([1-8])$/);
@@ -158,8 +180,8 @@ export async function putRuneDrawSlot(slot,record){
   const number=Number(slot);
   if(!Number.isInteger(number)||number<1||number>8)throw new Error('抽牌儲存槽只能是 1–8。');
   const kind=`slot-${number}`;
-  const rows=await listNeonRecords('rune-draw-slot');
-  const current=rows.find(row=>row.record_kind===kind);
+  const rows=await listNeonRecords('rune-draw-slot',{recordKind:kind,limit:1});
+  const current=rows[0]||null;
   return putNeonRecord({
     ...record,
     id:current?.id||randomRecordId('rune-draw-slot'),
@@ -173,9 +195,7 @@ export async function putRuneDrawSlot(slot,record){
 export async function putDailyRuneRecord(record){
   const today=dateKey(record?.created_at||new Date());
   if(!today)throw new Error('每日符文紀錄日期無效。');
-  const rows=(await listNeonRecords('rune-draw')).filter(row=>
-    row.record_kind==='daily'&&String(row.record_date||dateKey(row.created_at))===today
-  );
+  const rows=await listNeonRecords('rune-draw',{recordKind:'daily',recordDate:today,limit:2});
   const roles=new Set(rows.map(row=>String(row.daily_role||'').toLowerCase()).filter(Boolean));
   const role=!roles.has('main')?'main':!roles.has('supplement')?'supplement':'';
   if(!role)throw new Error('今天的主符與副符都已儲存；如需調整請到管理頁編輯。');
