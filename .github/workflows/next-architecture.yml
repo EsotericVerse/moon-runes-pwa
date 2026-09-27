@@ -26,5 +26,7 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Verify shared FlexSearch engine
         run: npm run verify:text-engine && npm run verify:semantic-state && npm run verify:rune-keyword-rules && npm run verify:rune-draw
+      - name: Verify public Neon Data API
+        run: npm run verify:neon-public
       - name: Verify modularity and build Next server
         run: npm run build
