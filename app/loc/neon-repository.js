@@ -1,8 +1,14 @@
 'use client';
 
+import pMap,{pMapIterable} from 'p-map';
 import {z} from 'zod';
 import {neonClient} from './neon-client';
-import {UI_PAGE_SIZE,MAX_ROW_PAGE,assertSafeSelect,assertCatalogSelect,safePageSize,safeRange,safeReturning,chunkWriteRows} from './query-policy';
+import {
+  UI_PAGE_SIZE,MAX_ROW_PAGE,DATA_QUERY_CONCURRENCY,DATA_QUERY_BACKPRESSURE,
+  HEAVY_INITIAL_BATCH,HEAVY_MIN_BATCH,HEAVY_MAX_BATCH,HEAVY_TARGET_BYTES,HEAVY_TARGET_MS,
+  assertSafeSelect,assertHeavyBatchSelect,assertCatalogSelect,adaptiveHeavyBatchSize,
+  safePageSize,safeRange,safeReturning,chunkWriteRows
+} from './query-policy';
 
 const TableSchema=z.enum([
   'api.user_records','api.user_settings',
@@ -78,10 +84,18 @@ function throwQueryError(error,table,operation){
   });
 }
 
-export async function selectNeonRows(table,{
+function nowMs(){
+  return globalThis.performance?.now?.()??Date.now();
+}
+
+function estimatePayloadBytes(rows){
+  return new TextEncoder().encode(JSON.stringify(rows||[])).byteLength;
+}
+
+async function executeSelect(table,{
   columns='*',filters=[],orFilter='',orders=[],limit=UI_PAGE_SIZE,offset=0,range=null,count=null
-}={}){
-  assertSafeSelect({table,columns,filters,limit,range});
+}={},allowHeavyBatch=false){
+  if(!allowHeavyBatch)assertSafeSelect({table,columns,filters,limit,range});
   let query=relation(table).select(columns,count?{count}:undefined);
   query=applyFilters(query,filters);
   if(orFilter){
@@ -105,25 +119,77 @@ export async function selectNeonRows(table,{
   return {rows:parseRows(result.data,table),count:result.count??null};
 }
 
+export async function selectNeonRows(table,options={}){
+  return executeSelect(table,options,false);
+}
+
+export async function selectNeonAllRows(table,{
+  columns,filters=[],orFilter='',orders=[],batchSize=MAX_ROW_PAGE,concurrency=DATA_QUERY_CONCURRENCY
+}={}){
+  assertSafeSelect({table,columns,filters,limit:1});
+  const size=safePageSize(batchSize,MAX_ROW_PAGE)||MAX_ROW_PAGE;
+  const first=await selectNeonRows(table,{
+    columns,filters,orFilter,orders,limit:size,offset:0,count:'exact'
+  });
+  const total=Math.max(0,Number(first.count??first.rows.length)||0);
+  if(total<=first.rows.length)return {rows:first.rows,count:total};
+  const offsets=[];
+  for(let offset=size;offset<total;offset+=size)offsets.push(offset);
+  const pages=await pMap(offsets,async offset=>{
+    const page=await selectNeonRows(table,{columns,filters,orFilter,orders,limit:size,offset});
+    return page.rows;
+  },{concurrency:Math.max(1,Math.min(Number(concurrency)||DATA_QUERY_CONCURRENCY,DATA_QUERY_CONCURRENCY))});
+  return {rows:[...first.rows,...pages.flat()],count:total};
+}
+
+export async function processNeonHeavyRows(table,{
+  columns,filters=[],orFilter='',orders=[],
+  initialBatch=HEAVY_INITIAL_BATCH,minBatch=HEAVY_MIN_BATCH,maxBatch=HEAVY_MAX_BATCH,
+  targetBytes=HEAVY_TARGET_BYTES,targetMs=HEAVY_TARGET_MS,
+  processorConcurrency=DATA_QUERY_CONCURRENCY,
+  onRow
+}={}){
+  assertHeavyBatchSelect({table,columns});
+  if(typeof onRow!=='function')throw new TypeError('Adaptive heavy processing requires onRow');
+  let batchSize=Math.max(minBatch,Math.min(maxBatch,Math.floor(Number(initialBatch)||HEAVY_INITIAL_BATCH)));
+  let offset=0;
+  let processed=0;
+  let stopped=false;
+  while(!stopped){
+    const requestStarted=nowMs();
+    const page=await executeSelect(table,{columns,filters,orFilter,orders,limit:batchSize,offset},true);
+    const requestMs=nowMs()-requestStarted;
+    if(!page.rows.length)break;
+    const bytes=estimatePayloadBytes(page.rows);
+    const consumeStarted=nowMs();
+    const workerCount=Math.max(1,Math.min(Number(processorConcurrency)||1,DATA_QUERY_CONCURRENCY));
+    const iterable=pMapIterable(page.rows,async row=>onRow(row),{
+      concurrency:workerCount,
+      backpressure:Math.max(DATA_QUERY_BACKPRESSURE,workerCount)
+    });
+    for await(const outcome of iterable){
+      processed+=1;
+      if(outcome&&typeof outcome==='object'&&outcome.stop===true){
+        stopped=true;
+        break;
+      }
+    }
+    const consumerMs=nowMs()-consumeStarted;
+    offset+=page.rows.length;
+    if(page.rows.length<batchSize||stopped)break;
+    batchSize=adaptiveHeavyBatchSize({
+      current:batchSize,payloadBytes:bytes,requestMs,consumerMs,
+      min:minBatch,max:maxBatch,targetBytes,targetMs
+    });
+  }
+  return {processed,stopped,nextOffset:offset};
+}
 
 export async function selectNeonCatalog(table,{
   columns,filters=[],orFilter='',orders=[]
 }={}){
   assertCatalogSelect({table,columns,filters});
-  const first=await selectNeonRows(table,{
-    columns,filters,orFilter,orders,limit:MAX_ROW_PAGE,offset:0,count:'exact'
-  });
-  const total=Math.max(0,Number(first.count??first.rows.length)||0);
-  if(total<=first.rows.length)return {rows:first.rows,count:total};
-  const rows=[...first.rows];
-  for(let offset=MAX_ROW_PAGE;offset<total;offset+=MAX_ROW_PAGE){
-    const page=await selectNeonRows(table,{
-      columns,filters,orFilter,orders,limit:MAX_ROW_PAGE,offset
-    });
-    rows.push(...page.rows);
-    if(!page.rows.length)break;
-  }
-  return {rows,count:total};
+  return selectNeonAllRows(table,{columns,filters,orFilter,orders,batchSize:MAX_ROW_PAGE});
 }
 
 export async function selectNeonRowById(table,{
@@ -188,4 +254,3 @@ export async function deleteNeonRows(table,{filters,returning='*'}={}){
   throwQueryError(result.error,table,'DELETE');
   return parseRows(result.data,table);
 }
-
