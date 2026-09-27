@@ -16,6 +16,7 @@ import {clearRuntimeTextIndexes} from './text-engine.mjs';
 const TableSchema=z.enum([
   'api.user_records','api.user_settings',
   'silver.manage','silver.resource_visibility',
+  'silver.lo3rwang_time','silver.lrunes_time',
   'silver.lo3rwang','silver.lo3rwang_style','silver.lo3rwang_style_keywords',
   'silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media',
   'silver.lrunes',
@@ -24,6 +25,7 @@ const TableSchema=z.enum([
 const WritableTableSchema=z.enum([
   'api.user_records','api.user_settings',
   'silver.manage','silver.resource_visibility',
+  'silver.lo3rwang_time','silver.lrunes_time',
   'silver.lo3rwang','silver.lo3rwang_style','silver.lo3rwang_style_keywords',
   'silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media',
   'silver.lrunes'
@@ -92,7 +94,9 @@ const READ_KEYS={
   'silver.lo3rwang_galaxy':['uid'],
   'silver.lo3rwang_galaxy_media':['media_id'],
   'silver.lrunes':['record_id'],
-  'silver.manage':['record_id']
+  'silver.lo3rwang_time':['record_id'],
+  'silver.lrunes_time':['record_id'],
+  'silver.manage':['id']
 };
 
 function parseRows(rows,table){
