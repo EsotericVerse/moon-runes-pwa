@@ -17,7 +17,6 @@
     "verify:semantics": "node scripts/verify-current-semantics.mjs",
     "verify": "npm run verify:text-engine && npm run verify:semantic-state && npm run verify:automatic-analysis && npm run verify:rune-keyword-rules && npm run verify:modules && npm run verify:semantics && npm run verify:modularity && npm run verify:modular-v2 && npm run verify:directories",
     "build": "next build",
-    "start": "next start",
     "verify:ui": "node scripts/current-ui-contract.mjs",
     "verify:theme": "node scripts/verify-theme-contract.mjs",
     "verify:scope-registry": "node scripts/verify-scope-registry.mjs",
