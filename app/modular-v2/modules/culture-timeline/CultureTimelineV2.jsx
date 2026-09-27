@@ -80,74 +80,62 @@ function riverPath(startX,endX,yAt,steps=48){
 }
 
 function CurrentCultureRivers({rows}){
-  const personal=[...rows].filter(row=>row.scopeId==='lo3rwang').sort((a,b)=>Date.parse(a.start)-Date.parse(b.start)||(a.entryType==='period'?-1:0));
-  const runes=[...rows].filter(row=>row.scopeId==='lunarunes').sort((a,b)=>Date.parse(a.start)-Date.parse(b.start));
-  const personalStart=personal.find(row=>row.entryType==='period'&&row.status.trim().toLowerCase()==='current')||personal.find(row=>row.status.trim().toLowerCase()==='current');
-  const runeStart=runes.find(row=>row.status.trim().toLowerCase()==='current');
-  if(!personalStart||!runeStart)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><p>目前缺少個人時期或符文 Current 定錨資料。</p></div>;
+  const personal=[...rows].filter(row=>row.scopeId==='lo3rwang');
+  const runes=[...rows].filter(row=>row.scopeId==='lunarunes');
+  const personalCurrent=personal.find(row=>row.entryType==='period'&&row.status.trim().toLowerCase()==='current')
+    ||personal.find(row=>row.status.trim().toLowerCase()==='current');
+  const runeCurrent=runes.find(row=>row.status.trim().toLowerCase()==='current');
+  if(!personalCurrent||!runeCurrent)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><p>目前缺少個人時期或符文 Current 定錨資料。</p></div>;
 
-  const personalStartTime=Date.parse(personalStart.start);
-  const runeStartTime=Date.parse(runeStart.start);
-  const validTimes=rows.map(row=>Date.parse(row.start)).filter(Number.isFinite);
-  const domainStart=Math.min(runeStartTime,personalStartTime,...validTimes);
-  let domainEnd=Math.max(personalStartTime+86400000,...validTimes);
-  if(domainEnd<=domainStart)domainEnd=domainStart+30*86400000;
+  const personalStartTime=Date.parse(personalCurrent.start);
+  const runeStartTime=Date.parse(runeCurrent.start);
+  const intersectionStart=Math.max(personalStartTime,runeStartTime);
+  const today=Date.parse(new Date().toISOString().slice(0,10));
+  const personalEnd=Date.parse(personalCurrent.end||'');
+  const runeEnd=Date.parse(runeCurrent.end||'');
+  const boundedEnds=[personalEnd,runeEnd].filter(Number.isFinite);
+  const intersectionEnd=boundedEnds.length?Math.min(...boundedEnds,today):today;
+  const domainStart=intersectionStart;
+  const domainEnd=Math.max(domainStart+30*86400000,intersectionEnd);
+
   const left=120;
   const right=1080;
   const xFor=time=>left+(time-domainStart)/(domainEnd-domainStart)*(right-left);
-  const runeX=xFor(runeStartTime);
-  const personalX=xFor(personalStartTime);
   const centerY=330;
-  const authorEntryX=Math.max(left,personalX-72);
-  const authorY=x=>x<personalX?centerY-(personalX-x)*.78:centerY+(x-personalX)*.1;
-  const runeY=x=>centerY+(personalX-x)*.14;
-  const authorPath=riverPath(authorEntryX,right,authorY,40);
-  const runePath=riverPath(runeX,right,runeY,56);
+  const personalY=292;
+  const runeY=368;
+  const personalPath=riverPath(left,right,()=>personalY,24);
+  const runePath=riverPath(left,right,()=>runeY,24);
   const authorColor='var(--loc-personal-river,#2878c9)';
   const runeColor='var(--loc-rune-river,#9855bd)';
-  const authorDensity=densityStyleForCount(personalStart.workCount);
-  const authorRiverFilter=authorDensity?'brightness('+authorDensity.brightness+') drop-shadow(0 0 '+authorDensity.blur+' color-mix(in srgb,var(--loc-accent) '+Math.round(authorDensity.glow*100)+'%,transparent))':'none';
-  const marker=(row,index,channel)=>{
-    const x=xFor(Date.parse(row.start));
-    const baseY=channel==='personal'?authorY(x):runeY(x);
-    const isCurrent=row.status.trim().toLowerCase()==='current';
-    const isKeyMarker=row.entryType==='period'||row.runeCount===66;
-    const offset=isCurrent?(channel==='personal'?-16:16):(isKeyMarker?0:(index%2===0?-12:12));
-    const y=baseY+offset;
-    const color=channel==='personal'?authorColor:runeColor;
-    return <g key={row.id}>
-      {offset?<line x1={x} y1={baseY} x2={x} y2={y} stroke={color} strokeWidth='2' strokeDasharray='3 3' opacity='.8'/>:null}
-      <circle cx={x} cy={y} r={isCurrent||isKeyMarker?12:8} fill={color} stroke='var(--loc-panel,#fff)' strokeWidth='4'>
-        <title>{row.content+' · '+dateLabel(row.start)}</title>
-      </circle>
-    </g>;
-  };
-  const lastDate=dateLabel(Math.max(...validTimes));
-  const personalTitle=personalStart.content||'Current 個人時期';
-  const runeTitle=runeStart.content||'符文66';
+  const personalTitle=personalCurrent.content||'Current 個人時期';
+  const runeTitle=runeCurrent.content||'Current LunaRunes';
+  const endLabel=dateLabel(domainEnd);
+
   return <section className='scope-v2-current-rivers'>
     <div className='scope-v2-current-rivers-canvas' style={{overflowX:'auto',margin:'1rem 0 1.25rem'}}>
-      <svg viewBox='0 0 1200 640' role='img' aria-label='Current 個人時期與符文66交會時間河道' style={{display:'block',width:'100%',minWidth:'900px',height:'640px'}}>
-        <title>Current 個人時期與符文66的交會時間河道</title>
+      <svg viewBox='0 0 1200 640' role='img' aria-label='Current 個人時期與 LunaRunes Current 的交會時間河道' style={{display:'block',width:'100%',minWidth:'900px',height:'640px'}}>
+        <title>兩個 Scope Current 時期的交會時間河道</title>
         <rect x='20' y='20' width='1160' height='600' rx='24' fill='var(--loc-panel,#fff)' stroke='var(--loc-border,#999)' strokeWidth='1'/>
-        <text x='64' y='72' fill='var(--loc-text,#111)' fontSize='23' fontWeight='700'>兩條 Current 河道</text>
-        <text x={runeX} y='148' fill='var(--loc-text,#111)' fontSize='16' fontWeight='700'>{runeTitle+' · '+dateLabel(runeStart.start)}</text>
-        <text x={personalX} y='112' fill='var(--loc-text,#111)' fontSize='16' fontWeight='700'>{personalTitle+' · '+dateLabel(personalStart.start)+(personalStart.workCount?' · '+personalStart.workCount.toLocaleString()+' 項':'')}</text>
-        <path d={authorPath} fill='none' stroke={authorColor} strokeWidth='30' strokeLinecap='round' opacity='.18'/>
+        <text x='64' y='72' fill='var(--loc-text,#111)' fontSize='23' fontWeight='700'>Current 交會河道</text>
+        <text x='64' y='104' fill='var(--loc-muted,#666)' fontSize='14'>只顯示兩個 Scope Current 同時成立的時間區間</text>
+
+        <path d={personalPath} fill='none' stroke={authorColor} strokeWidth='30' strokeLinecap='round' opacity='.18'/>
         <path d={runePath} fill='none' stroke={runeColor} strokeWidth='30' strokeLinecap='round' opacity='.18'/>
-        <path d={authorPath} fill='none' stroke={authorColor} strokeWidth='13' strokeLinecap='round' strokeLinejoin='round' style={{filter:authorRiverFilter}}/>
-        <path d={runePath} fill='none' stroke={runeColor} strokeWidth='13' strokeLinecap='round' strokeLinejoin='round'/>
-        <path d={authorPath} fill='none' stroke='var(--loc-panel,#fff)' strokeWidth='2' strokeLinecap='round' opacity='.7'/>
-        <path d={runePath} fill='none' stroke='var(--loc-panel,#fff)' strokeWidth='2' strokeLinecap='round' opacity='.7'/>
-        <circle cx={personalX} cy={centerY} r='21' fill='none' stroke='var(--loc-text,#111)' strokeWidth='3'/>
-        <circle cx={personalX} cy={centerY} r='5' fill='var(--loc-accent,#2878c9)'/>
-        {personal.map((row,index)=>marker(row,index,'personal'))}
-        {runes.map((row,index)=>marker(row,index,'runes'))}
-        <rect x={personalX-142} y='190' width='284' height='42' rx='21' fill='var(--loc-panel,#fff)' stroke='var(--loc-text,#111)' strokeWidth='1.5'/>
-        <text x={personalX} y='217' textAnchor='middle' fill='var(--loc-text,#111)' fontSize='16' fontWeight='700'>{personalStart.content+' × '+runeTitle+' · Current 交會'}</text>
+        <path d={personalPath} fill='none' stroke={authorColor} strokeWidth='13' strokeLinecap='round'/>
+        <path d={runePath} fill='none' stroke={runeColor} strokeWidth='13' strokeLinecap='round'/>
+
+        <circle cx={left} cy={personalY} r='11' fill={authorColor} stroke='var(--loc-panel,#fff)' strokeWidth='4'/>
+        <circle cx={left} cy={runeY} r='11' fill={runeColor} stroke='var(--loc-panel,#fff)' strokeWidth='4'/>
+        <text x='64' y={personalY-26} fill='var(--loc-text,#111)' fontSize='16' fontWeight='700'>{personalTitle}</text>
+        <text x='64' y={runeY+44} fill='var(--loc-text,#111)' fontSize='16' fontWeight='700'>{runeTitle}</text>
+
+        <rect x='458' y='188' width='284' height='44' rx='22' fill='var(--loc-panel,#fff)' stroke='var(--loc-text,#111)' strokeWidth='1.5'/>
+        <text x='600' y='216' textAnchor='middle' fill='var(--loc-text,#111)' fontSize='16' fontWeight='700'>Current × Current 交會集合</text>
+
         <line x1='120' y1='552' x2='1080' y2='552' stroke='var(--loc-text,#111)' strokeWidth='1' opacity='.3'/>
         <text x='120' y='580' fill='var(--loc-text,#111)' fontSize='14'>{dateLabel(domainStart)+' 起'}</text>
-        <text x='1080' y='580' textAnchor='end' fill='var(--loc-text,#111)' fontSize='14'>{'目前資料至 '+lastDate}</text>
+        <text x='1080' y='580' textAnchor='end' fill='var(--loc-text,#111)' fontSize='14'>{'目前至 '+endLabel}</text>
       </svg>
     </div>
   </section>;
