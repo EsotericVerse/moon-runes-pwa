@@ -1,18 +1,13 @@
 # Services
 
-Deployable machine/edge services belong here.
+Deployable machine/edge services belong here only when they are part of the Current architecture.
 
-Current layout:
+RC8 currently has no application-owned API service under `services/api/`. The website runtime is the Next.js static export deployed through GitHub Pages, with canonical data handled by the Current Neon/domain modules.
 
-~~~text
-services/
-  api/
-    loc8/
-  cloudflare/
-~~~
+Retired service paths must not return:
 
-The website runtime is the Next.js static export deployed through GitHub Pages. The former OpenNext/Worker and card API paths were retired because they depended on server-side or local JSON delivery.
+- `services/api/loc8/` — former LOC8 Google Apps Script service
+- former card API / local-JSON delivery services
+- legacy top-level `card_api/` or `loc8_api/`
 
-Repository/build/migration helpers belong under `scripts/`. API documentation belongs under `docs/api/`.
-
-Legacy top-level `card_api/` and `loc8_api/` have been migrated; do not recreate feature-specific API directories at repository root.
+Repository/build/migration helpers belong under `scripts/`; historical API documentation may remain under `docs/api/` only when it is clearly marked retired.

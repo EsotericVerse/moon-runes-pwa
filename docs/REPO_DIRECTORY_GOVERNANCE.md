@@ -72,16 +72,9 @@ This exception is retained because the lunar-day → LOC moon-phase calculation 
 
 ### Services
 
-Current canonical structure:
+`services/` is reserved for deployable services that are actually part of Current. RC8 has no application-owned API runtime under `services/api/`; the former LOC8 Apps Script and card/local-JSON service paths are retired.
 
-```text
-services/
-  api/
-    loc8/
-  cloudflare/
-```
-
-Repository-facing build and migration entrypoints belong under `scripts/`; API documentation belongs under `docs/api/`.
+Repository-facing build and migration entrypoints belong under `scripts/`; historical API documentation belongs under `docs/api/` and must be explicitly marked retired.
 
 ### Assets
 
@@ -101,7 +94,7 @@ Asset migration is not complete until every consumer is updated and visual/funct
 | `pics/` | active/frozen | retain approved source diagrams; do not delete by migration rule |
 | `icons/` | migrated/audit | verify all consumers before retirement is considered complete |
 | `card_api/` | migrated | runtime → `services/api/card/`; repository entrypoints → `scripts/card-api/`; docs → `docs/api/` |
-| `loc8_api/` | migrated | `services/api/loc8/`; docs → `docs/api/` |
+| `loc8_api/` | retired | executable service removed in RC8; historical documentation may remain under `docs/api/` |
 | `engine/` | audit | retain until consumers and parity are verified |
 | root `LunaRune66.xlsx` | frozen canonical source | must remain in place unless explicitly approved otherwise |
 | `data/lunarunes/source/LunaRune66.xlsx` | governed copy | does not supersede/delete the frozen root workbook |

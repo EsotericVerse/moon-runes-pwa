@@ -1,5 +1,7 @@
 # LOC8 Google Sheet API (Apps Script)
 
+> **Status: Retired historical reference.** The LOC8 Apps Script runtime and repository service code were removed from Current in RC8. Do not deploy or reconnect this API as a fallback. Current canonical data flows through the Neon/domain-module architecture. URLs and deployment instructions below are preserved only as historical implementation evidence.
+
 ## 目前部署資訊
 
 - Deployment ID: `AKfycby_-G_G5EqwvIRguRw9DtAt-_v9953N7z9dav5UuHoRajv1IDbas0y4HqOcXXYOa2ei`

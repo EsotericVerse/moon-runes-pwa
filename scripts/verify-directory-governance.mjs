@@ -39,6 +39,16 @@ for (const name of ['galaxy.js','quick-selector.js','rune-draw.js','rune-graph-c
   if (existsSync(resolve(root, 'js', name))) failures.push('retired root JS runtime returned: js/' + name);
 }
 
+for (const path of [
+  'scripts/build_loc4_runtime_index.py',
+  'scripts/build_threads_search_index.py',
+  'scripts/partition-catalog.mjs',
+  'services/api/loc8/Code.gs',
+  'services/api/loc8/appsscript.json'
+]) {
+  if (existsSync(resolve(root, path))) failures.push('retired executable architecture returned: ' + path);
+}
+
 // Remaining static-runtime roots are still migration debt until Next promotion is complete.
 for (const name of ['engine', 'css']) {
   if (existsSync(resolve(root, name))) warnings.push(`${name}/ -> legacy migration debt`);
