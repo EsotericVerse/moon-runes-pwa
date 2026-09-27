@@ -4,6 +4,8 @@ import {useMemo,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {deleteNeonRows,insertNeonRows,selectNeonAllRows,updateNeonRows} from '../../loc/neon-repository';
+import {SCOPE_TIME_COLUMNS} from '../../loc/scope-time';
+import {scopeDataTable} from '../../loc/scope-list';
 import {FEATURE_LOADING_MESSAGE} from '../feature-data-state.v2';
 
 const EDITABLE_TYPES=Object.freeze([
@@ -12,7 +14,7 @@ const EDITABLE_TYPES=Object.freeze([
 const TYPE_LABEL=Object.freeze(Object.fromEntries(EDITABLE_TYPES));
 const BLANK=Object.freeze({
   record_id:'',record_type:'anchor',label:'',resource_id:'',note:'',time_date:'',
-  before_id:'0',after_id:'0',status:'',display_order:'',date_status:'exact',year_value:'',visibility:''
+  before_id:'0',after_id:'0',status:'',display_order:'',date_status:'exact',year_value:'',visibility:'',style_tags:''
 });
 
 function dateText(value){return value?String(value).slice(0,10):'';}
@@ -44,8 +46,9 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
   const account=useNeonAccount();
   const queryClient=useQueryClient();
   const runtimeScope=String(scopeId||'');
-  const dataScope=runtimeScope==='loc'?'lo3rwang':(runtimeScope==='lunarunes'?'lrunes':runtimeScope);
+  const dataScope=runtimeScope==='lunarunes'?'lrunes':runtimeScope;
   const supported=['lo3rwang','lrunes'].includes(dataScope);
+  const timeTable=supported?scopeDataTable(dataScope,'time'):'';
   const [draft,setDraft]=useState({...BLANK});
   const [selectedId,setSelectedId]=useState('');
   const [busy,setBusy]=useState(false);
@@ -55,12 +58,9 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
     queryKey:['culture-period-settings',dataScope],
     enabled:supported&&Boolean(account.user),
     queryFn:async()=>{
-      const {rows}=await selectNeonAllRows('silver.manage',{
-        columns:'record_id,record_type,scope_id,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility',
-        filters:[
-          {column:'scope_id',operator:'eq',value:dataScope},
-          {column:'record_type',operator:'in',value:['anchor','period','event']}
-        ]
+      const {rows}=await selectNeonAllRows(timeTable,{
+        columns:SCOPE_TIME_COLUMNS,
+        filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}]
       });
       return rows;
     },
@@ -106,7 +106,6 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
       const resourceId=String(draft.resource_id||'').trim()||newResourceId(type);
       const payload={
         record_type:type,
-        scope_id:dataScope,
         label,
         resource_id:resourceId,
         note:String(draft.note||'').trim()||null,
@@ -117,6 +116,7 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
         anchor_pair:null,
         date_status:null,
         year_value:null,
+        style_tags:type==='period'?String(draft.style_tags||'').trim()||null:null,
         updated_at:new Date().toISOString()
       };
       if(type==='anchor'){
@@ -140,13 +140,12 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
         payload.anchor_pair=before+','+after;
       }
       if(selectedId){
-        const {record_type,scope_id,...patch}=payload;
-        await updateNeonRows('silver.manage',patch,{filters:[
-          {column:'record_id',operator:'eq',value:selectedId},
-          {column:'scope_id',operator:'eq',value:dataScope}
+        const {record_type,...patch}=payload;
+        await updateNeonRows(timeTable,patch,{filters:[
+          {column:'record_id',operator:'eq',value:selectedId}
         ]});
       }else{
-        await insertNeonRows('silver.manage',[payload]);
+        await insertNeonRows(timeTable,[payload]);
       }
       await queryClient.invalidateQueries({queryKey:['culture-period-settings',dataScope]});
       await queryClient.invalidateQueries({queryKey:['culture-timeline',scopeId]});
@@ -167,9 +166,8 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
     }
     setBusy(true);setMessage('');
     try{
-      await deleteNeonRows('silver.manage',{filters:[
-        {column:'record_id',operator:'eq',value:selectedId},
-        {column:'scope_id',operator:'eq',value:dataScope}
+      await deleteNeonRows(timeTable,{filters:[
+        {column:'record_id',operator:'eq',value:selectedId}
       ]});
       await queryClient.invalidateQueries({queryKey:['culture-period-settings',dataScope]});
       await queryClient.invalidateQueries({queryKey:['culture-timeline',scopeId]});
@@ -209,6 +207,7 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
       <label><span>名稱</span><input className="scope-v2-search-input" value={draft.label||''} onChange={event=>change('label',event.target.value)} required/></label>
       <label><span>識別</span><input className="scope-v2-search-input" value={draft.resource_id||''} disabled={Boolean(selectedId)} onChange={event=>change('resource_id',event.target.value)} placeholder="留空自動產生"/></label>
       <label><span>說明</span><textarea className="scope-v2-search-input" value={draft.note||''} onChange={event=>change('note',event.target.value)}/></label>
+      {draft.record_type==='period'?<label><span>風格標籤</span><input className="scope-v2-search-input" value={draft.style_tags||''} onChange={event=>change('style_tags',event.target.value)} placeholder="時期風格標籤"/></label>:null}
 
       {draft.record_type==='anchor'?<div className="scope-v2-stat-controls">
         <label><span>日期</span><input className="scope-v2-select" type="date" value={dateText(draft.time_date)} onChange={event=>change('time_date',event.target.value)}/></label>
