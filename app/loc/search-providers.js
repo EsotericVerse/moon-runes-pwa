@@ -1,7 +1,7 @@
 'use client';
 
 import {processNeonHeavyRows,selectNeonAllRows} from './neon-repository';
-import {getRuntimeTextIndex,searchTextIndex} from './text-engine';
+import {getRuntimeTextIndex,searchTextIndex} from './text-engine.mjs';
 
 function unique(values=[]){
   return [...new Set(values.map(value=>String(value||'').trim()).filter(Boolean))];
