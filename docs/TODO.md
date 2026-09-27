@@ -24,7 +24,8 @@ The next engineering pass is a module-usage audit rather than feature completion
 
 - Review installed modules and use them where they replace hand-built infrastructure cleanly.
 - Remove direct dependencies that Current code does not use directly.
-- Select mature media-management / metadata modules for image, audio, and video ingestion instead of building media parsing logic inside LOC.
-- Keep LOC responsible for normalization, relationships, time/place metadata, governance, Search/Culture/Statistics integration, and Neon persistence.
+- Select mature reference/metadata management modules for media URLs, cloud links, filenames, source IDs, and text metadata instead of building file-processing logic inside LOC.
+- Media Current stores references only: URL/cloud link, filename or title, source ID, time/place metadata, Meta Tags, and Galaxy relationships. LOC does not upload, cache, transcode, thumbnail, parse, or persist image/audio/video binary files.
+- Keep LOC responsible for normalization, relationships, time/place metadata, governance, Search/Culture/Statistics integration, and Neon reference persistence.
 
 Long-range family-scale corpus work, locale expansion, semantic-display experiments, and Game UI evolution are future product directions. They are not unfinished RC8 migration work and must not reintroduce retired JSON/cache architecture.
