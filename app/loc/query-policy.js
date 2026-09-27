@@ -1,13 +1,13 @@
 'use client';
 
 export const UI_PAGE_SIZE=20;
-export const MAX_ROW_PAGE=64;
 export const WRITE_BATCH_SIZE=64;
 export const DATA_QUERY_CONCURRENCY=2;
 export const DATA_QUERY_BACKPRESSURE=2;
+export const IO_INITIAL_BATCH=128;
+export const IO_TARGET_BYTES=768*1024;
+export const IO_TARGET_MS=500;
 export const HEAVY_INITIAL_BATCH=4;
-export const HEAVY_MIN_BATCH=1;
-export const HEAVY_MAX_BATCH=24;
 export const HEAVY_TARGET_BYTES=256*1024;
 export const HEAVY_TARGET_MS=450;
 
@@ -58,29 +58,27 @@ export function safePageSize(value,fallback=UI_PAGE_SIZE){
   const parsed=Number.isFinite(numeric)
     ?Math.floor(numeric)
     :Math.floor(Number.isFinite(fallbackNumeric)?fallbackNumeric:UI_PAGE_SIZE);
-  return Math.max(0,Math.min(MAX_ROW_PAGE,parsed));
+  return Math.max(0,parsed);
 }
 
 export function safeRange(range){
   if(!Array.isArray(range)||range.length!==2)return null;
   const start=Math.max(0,Math.floor(Number(range[0])||0));
   const requestedEnd=Math.max(start,Math.floor(Number(range[1])||start));
-  return [start,Math.min(requestedEnd,start+MAX_ROW_PAGE-1)];
+  return [start,requestedEnd];
 }
 
 export function assertSafeSelect({table,columns,filters=[],limit=UI_PAGE_SIZE,range=null}){
   const heavy=HEAVY_COLUMNS[table];
   if(!heavy)return;
   const selected=columnList(columns);
-  if(selected.includes('*')){
-    throw new Error(`SELECT * blocked for large-content table ${table}`);
-  }
+  if(selected.includes('*'))throw new Error(`SELECT * blocked for large-content table ${table}`);
   if(!selected.some(column=>heavy.has(column)))return;
   const rowCount=Array.isArray(range)
     ?Math.max(0,Number(range[1])-Number(range[0])+1)
     :Number(limit);
   if(rowCount!==1||!hasExactIdFilter(table,filters)){
-    throw new Error(`Bulk heavy-column SELECT blocked for ${table}; use adaptive heavy-content processing or exact ID`);
+    throw new Error(`Bulk heavy-column SELECT blocked for ${table}; use adaptive IO processing or exact ID`);
   }
 }
 
@@ -92,23 +90,20 @@ export function assertHeavyBatchSelect({table,columns}){
   }
 }
 
-export function adaptiveHeavyBatchSize({
-  current=HEAVY_INITIAL_BATCH,
+export function adaptiveBatchSize({
+  current=IO_INITIAL_BATCH,
   payloadBytes=0,
   requestMs=0,
   consumerMs=0,
-  min=HEAVY_MIN_BATCH,
-  max=HEAVY_MAX_BATCH,
-  targetBytes=HEAVY_TARGET_BYTES,
-  targetMs=HEAVY_TARGET_MS
+  targetBytes=IO_TARGET_BYTES,
+  targetMs=IO_TARGET_MS
 }={}){
-  const safeCurrent=Math.max(min,Math.min(max,Math.floor(Number(current)||HEAVY_INITIAL_BATCH)));
-  const byteRatio=payloadBytes>0?targetBytes/payloadBytes:1.5;
+  const safeCurrent=Math.max(1,Math.floor(Number(current)||IO_INITIAL_BATCH));
+  const byteRatio=payloadBytes>0?targetBytes/payloadBytes:2;
   const elapsed=Math.max(Number(requestMs)||0,Number(consumerMs)||0,1);
   const timeRatio=targetMs/elapsed;
-  const factor=Math.max(0.5,Math.min(1.75,byteRatio,timeRatio));
-  const next=Math.round(safeCurrent*factor);
-  return Math.max(min,Math.min(max,next||min));
+  const factor=Math.max(0.35,Math.min(4,byteRatio,timeRatio));
+  return Math.max(1,Math.round(safeCurrent*factor));
 }
 
 const SAFE_RETURNING=Object.freeze({
