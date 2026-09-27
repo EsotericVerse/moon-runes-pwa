@@ -3,7 +3,7 @@ import fs from 'node:fs';
 const files={
   identity:'app/loc/views/AboutView.jsx',
   registry:'app/modular-v2/scope-registry.v2.js',
-  guidance:'app/loc/model/semantic-guidance.js',
+  guidance:'app/loc/model/semantic-state.mjs',
   canonicalLoader:'app/loc/data.js',
   search:'app/loc/neon-search.js',
   searchView:'app/modular-v2/features/SearchV2.jsx'
@@ -19,7 +19,8 @@ for(const token of ['模型化語言框架','Modelized Language Framework','符�
 const registry=read(files.registry);
 for(const token of ["defaultScopeId:'loc'","dataViews:Object.freeze({context:'api.loc_context_entries',rankings:'api.loc_rankings'})","domain:'lrunes.lo3rwang.cc'"])if(!registry.includes(token))failures.push(`scope registry: missing ${token}`);
 const guidance=read(files.guidance);
-for(const token of ['DIRECTION_FACTOR','SPREAD_WEIGHTS','finalGuidance'])if(!guidance.includes(token))failures.push(`semantic guidance: missing ${token}`);
+for(const token of ['RUNE_SEMANTIC_STATES','resolveStatePair','resolveSpreadState','buildDailyStateIndex'])if(!guidance.includes(token))failures.push(`semantic state: missing ${token}`);
+for(const token of ['SPREAD_WEIGHTS','DIRECTION_FACTOR','POLARITY_SCORE','weighted','GUIDANCE_RANGES'])if(guidance.includes(token))failures.push(`semantic state: forbidden weighted-score token ${token}`);
 const loader=read(files.canonicalLoader);
 for(const token of ['selectNeonRows','silver.lrunes'])if(!loader.includes(token))failures.push(`canonical Neon loader: missing ${token}`);
 for(const path of Object.values(files))if(/data\/json|runtime_json_documents/.test(read(path)))failures.push(`${path}: retired JSON identifier remains`);
