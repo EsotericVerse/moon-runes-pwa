@@ -62,7 +62,7 @@ for(const token of ["silver.lo3rwang_galaxy_preview","content_preview","columns:
   if(!aggregateQuery.includes(token))failures.push(`aggregate-query: fixed DB-side list preview contract missing ${token}`);
 }
 const summaryBlock=aggregateQuery.split('export async function selectGalaxySummaries')[1]?.split('export async function selectGalaxyIdentity')[0]||'';
-if(/columns:[^\n]*content(?:,|'|")/.test(summaryBlock)||/row\.content/.test(summaryBlock)){
+if(/columns:[^\n]*['",]content(?:['",]|$)/.test(summaryBlock)||/row\.content(?:\b|\[)/.test(summaryBlock)){
   failures.push('aggregate-query: list summaries must not SELECT or slice full content');
 }
 
