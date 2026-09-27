@@ -127,13 +127,12 @@ export async function classifyStyleRows(rows=[]){
 }
 
 export async function processStyleTableRows(table,{
-  columns,filters=[],orFilter='',orders=[],onClassified,
-  initialBatch,minBatch,maxBatch,targetBytes,targetMs
+  columns,filters=[],orFilter='',orders=[],onClassified
 }={}){
   if(typeof onClassified!=='function')throw new TypeError('Style processing requires onClassified');
   const catalog=await selectCanonicalStyleCatalog();
   return processNeonHeavyRows(table,{
-    columns,filters,orFilter,orders,initialBatch,minBatch,maxBatch,targetBytes,targetMs,
+    columns,filters,orFilter,orders,
     onRow:row=>onClassified({
       ...row,
       ...classifyStyleText(styleTextOf(row),catalog)
