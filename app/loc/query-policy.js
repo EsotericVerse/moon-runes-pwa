@@ -53,7 +53,11 @@ export function selectedHeavyColumns(table,columns){
 }
 
 export function safePageSize(value,fallback=UI_PAGE_SIZE){
-  const parsed=Math.floor(Number(value)||fallback);
+  const numeric=Number(value);
+  const fallbackNumeric=Number(fallback);
+  const parsed=Number.isFinite(numeric)
+    ?Math.floor(numeric)
+    :Math.floor(Number.isFinite(fallbackNumeric)?fallbackNumeric:UI_PAGE_SIZE);
   return Math.max(0,Math.min(MAX_ROW_PAGE,parsed));
 }
 
