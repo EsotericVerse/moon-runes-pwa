@@ -44,7 +44,7 @@ function registryNodeType(record={}){
 }
 function registryNodeId(record={}){
   const type=registryNodeType(record);
-  const key=record.title||record.canonical_key||record.work_id||record.work_ref||record.media_id||record.id;
+  const key=record.title||record.canonical_key||record.work_ref||record.media_id||record.id;
   return key?nodeId(publicType(type),String(key)):'';
 }
 function registryRelationType(value){
@@ -81,7 +81,7 @@ function addRegistryGraph(nodes,edges,registries={}){
       const tid=registryNodeId(target);if(!tid)continue;
       const targetType=registryNodeType(target);
       addNode(nodes,{id:tid,label:target.title||target.work_ref,type:publicType(targetType),internal_type:targetType,definition:target.relation_label||'',source_type:'registry'});
-      addRegistryEdge(edges,{source:sid,target:tid,type:registryRelationType(relation.relation_type),source_ref:relation.relationship_id,evidence:relation.relation_summary||target.relation_label||''},'LOC_CROSS_RELATIONSHIP_REGISTRY',relation.evidence_status||'recorded','explicit_registry_relation');
+      addRegistryEdge(edges,{source:sid,target:tid,type:registryRelationType(relation.relation_type),relation_id:relation.relationship_id,evidence:relation.relation_summary||target.relation_label||''},'LOC_CROSS_RELATIONSHIP_REGISTRY',relation.evidence_status||'recorded','explicit_registry_relation');
     }
   }
 }

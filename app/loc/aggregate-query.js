@@ -84,17 +84,73 @@ export async function selectGalaxyPage({sourceName='',startDate='',endDate='',li
   return {rows,totalCount:Number(count??rows.length)||0};
 }
 
-export async function selectGalaxySummaries(uids=[]){
+function mediaIdsOf(value){
+  return [...new Set((Array.isArray(value)?value:[]).map(item=>String(item||'').trim()).filter(Boolean))];
+}
+
+async function mediaRowsFor(scopeId,mediaIds=[]){
+  const ids=[...new Set(mediaIds.map(String).filter(Boolean))];
+  if(!ids.length)return [];
+  const lunarunes=String(scopeId||'')==='lunarunes'||String(scopeId||'')==='lrunes';
+  if(lunarunes){
+    return (await selectNeonAllRows('silver.lrunes',{
+      columns:'record_id,media_id,title,url,media_type',
+      filters:[
+        {column:'record_type',operator:'eq',value:'galaxy_media'},
+        {column:'media_id',operator:'in',value:ids}
+      ]
+    })).rows;
+  }
+  return (await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
+    columns:'media_id,title,url,media_type',
+    filters:[{column:'media_id',operator:'in',value:ids}]
+  })).rows;
+}
+
+function resolvedLinks(row,mediaById){
+  const links=[];
+  if(row?.url&&/^https?:\/\//i.test(String(row.url)))links.push({id:'url:'+row.uid,href:row.url,label:'外部連結'});
+  for(const id of mediaIdsOf(row?.media_link)){
+    const media=mediaById.get(id);
+    if(media?.url&&/^https?:\/\//i.test(String(media.url))){
+      links.push({id:'media:'+id,href:media.url,label:media.title||media.media_type||'媒體連結'});
+    }
+  }
+  return links;
+}
+
+export async function selectGalaxySummaries(scopeId,uids=[]){
   const ids=[...new Set((uids||[]).map(value=>String(value||'').trim()).filter(Boolean))];
   if(!ids.length)return [];
-  const rows=await Promise.all(ids.map(id=>selectNeonRowById('silver.lo3rwang_galaxy',{
+  const lunarunes=String(scopeId||'')==='lunarunes'||String(scopeId||'')==='lrunes';
+  const rows=(await Promise.all(ids.map(id=>selectNeonRowById(lunarunes?'silver.lrunes':'silver.lo3rwang_galaxy',{
     idColumn:'uid',
     id,
-    columns:'uid,title,content'
-  })));
-  return rows.filter(Boolean).map(row=>({
+    columns:lunarunes?'record_id,record_type,uid,title,content,url,media_link':'uid,title,content,url,media_link'
+  })))).filter(row=>row&&(!lunarunes||row.record_type==='galaxy'));
+  const mediaRows=await mediaRowsFor(lunarunes?'lunarunes':'lo3rwang',rows.flatMap(row=>mediaIdsOf(row.media_link)));
+  const mediaById=new Map(mediaRows.map(row=>[String(row.media_id),row]));
+  return rows.map(row=>({
     uid:row.uid,
     title:row.title||'',
-    excerpt:String(row.content||'').replace(/\s+/g,' ').trim().slice(0,600)
+    excerpt:String(row.content||'').replace(/\s+/g,' ').trim().slice(0,600),
+    links:resolvedLinks(row,mediaById)
   }));
+}
+
+export async function selectGalaxyIdentity(scopeId,uid){
+  const id=String(uid||'').trim();
+  if(!id)return null;
+  const lunarunes=String(scopeId||'')==='lunarunes'||String(scopeId||'')==='lrunes';
+  const row=await selectNeonRowById(lunarunes?'silver.lrunes':'silver.lo3rwang_galaxy',{
+    idColumn:'uid',
+    id,
+    columns:lunarunes
+      ?'record_id,uid,title,content,source_name,createtime,url,source_id,target_id,ref_id,media_link,record_type'
+      :'uid,title,content,source_name,createtime,url,source_id,target_id,ref_id,media_link'
+  });
+  if(!row||lunarunes&&row.record_type!=='galaxy')return null;
+  const mediaRows=await mediaRowsFor(lunarunes?'lunarunes':'lo3rwang',mediaIdsOf(row.media_link));
+  const mediaById=new Map(mediaRows.map(item=>[String(item.media_id),item]));
+  return {...row,links:resolvedLinks(row,mediaById)};
 }

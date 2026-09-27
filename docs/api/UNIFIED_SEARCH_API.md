@@ -38,7 +38,8 @@ summary
 score
 era_id
 period
-source_refs
+source_name
+source_native_id
 payload
 ```
 

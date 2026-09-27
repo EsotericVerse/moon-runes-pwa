@@ -34,7 +34,6 @@ def main() -> None:
             CREATE TABLE authored_documents (
                 ordinal INTEGER PRIMARY KEY,
                 id TEXT NOT NULL,
-                work_id TEXT,
                 title TEXT,
                 section TEXT,
                 segment INTEGER,
@@ -48,7 +47,6 @@ def main() -> None:
                 text TEXT NOT NULL,
                 retrieval_text TEXT NOT NULL
             );
-            CREATE INDEX idx_authored_work ON authored_documents(work_id);
             CREATE INDEX idx_authored_date ON authored_documents(date);
 
             CREATE TABLE offline_documents (
@@ -59,15 +57,13 @@ def main() -> None:
                 author_id TEXT,
                 platform TEXT,
                 source_type TEXT,
-                source_role TEXT,
                 content_type TEXT,
                 primary_loc TEXT,
                 related_locs_json TEXT NOT NULL DEFAULT '[]',
                 display_policy TEXT,
                 searchable INTEGER NOT NULL DEFAULT 1,
                 classification_json TEXT NOT NULL DEFAULT '[]',
-                text TEXT NOT NULL,
-                char_count INTEGER NOT NULL DEFAULT 0
+                text TEXT NOT NULL
             );
             CREATE INDEX idx_offline_date ON offline_documents(date);
             CREATE INDEX idx_offline_platform ON offline_documents(platform);
@@ -88,15 +84,14 @@ def main() -> None:
                 connection.execute(
                     """
                     INSERT INTO authored_documents (
-                        ordinal, id, work_id, title, section, segment, date,
+                        ordinal, id, title, section, segment, date,
                         source_file, source_type, content_type, primary_loc,
                         related_locs_json, display_policy, text, retrieval_text
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         authored_count,
                         str(doc.get("id") or f"LOC4-DOC-{authored_count}"),
-                        str(doc.get("work_id") or ""),
                         str(doc.get("title") or ""),
                         str(doc.get("section") or ""),
                         int(doc.get("segment") or 0),
@@ -127,10 +122,10 @@ def main() -> None:
                     """
                     INSERT INTO offline_documents (
                         ordinal, id, title, date, author_id, platform,
-                        source_type, source_role, content_type, primary_loc,
+                        source_type, content_type, primary_loc,
                         related_locs_json, display_policy, searchable,
-                        classification_json, text, char_count
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        classification_json, text
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         history_count,
@@ -140,7 +135,6 @@ def main() -> None:
                         str(doc.get("author_id") or ""),
                         str(doc.get("platform") or ""),
                         str(doc.get("source_type") or "offline_archive"),
-                        str(doc.get("source_role") or "author_post"),
                         str(doc.get("content_type") or "text_record"),
                         str(doc.get("primary_loc") or "LOC4"),
                         json.dumps(doc.get("related_locs") or [], ensure_ascii=False, separators=(",", ":")),
@@ -148,7 +142,6 @@ def main() -> None:
                         0 if doc.get("searchable") is False else 1,
                         json.dumps(doc.get("classification") or [], ensure_ascii=False, separators=(",", ":")),
                         str(doc.get("text") or ""),
-                        int(doc.get("char_count") or len(str(doc.get("text") or ""))),
                     ),
                 )
             del payload

@@ -190,7 +190,7 @@ export async function updateRuneKeywords({runeNumber,positiveKeywords,negativeKe
       keyword,
       order_no:index+1,
       active:true,
-      updated_at:new Date().toISOString()
+      UpdateTime:new Date().toISOString()
     }));
   }
   if(rows.length)await insertNeonRows('silver.lrunes',rows,{returning:'record_id'});

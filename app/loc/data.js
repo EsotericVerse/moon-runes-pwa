@@ -63,8 +63,7 @@ function runeRows(rows,keywordRows=[]){
       practice_challenge:row.practice_challenge,
       ritual_advice:row.ritual_advice,
       harmony_advice:row.harmony_advice,
-      source_ref:row.source_ref,
-      updated_at:row.updated_at,
+      UpdateTime:row.UpdateTime,
       __neonPayload:payload
     };
   });
@@ -90,7 +89,7 @@ function periodRows(rows){
 async function loadCanonicalRunes(){
   const [runes,keywords]=await Promise.all([
     selectNeonCatalog('silver.lrunes',{
-      columns:'rune_number,rune_name,group_name,english_name,lots_positive,lots_negative,lots_half_positive,lots_half_negative,myth_story,rune_evolution_history,personality_archetype,card_attribute,totem,moon_phase,positive_meaning,reverse_meaning,half_positive_meaning,half_reverse_meaning,rune_description,character_action,extra_notes,extra_rules,soul_question,practice_challenge,ritual_advice,harmony_advice,source_ref,updated_at',
+      columns:'rune_number,rune_name,group_name,english_name,lots_positive,lots_negative,lots_half_positive,lots_half_negative,myth_story,rune_evolution_history,personality_archetype,card_attribute,totem,moon_phase,positive_meaning,reverse_meaning,half_positive_meaning,half_reverse_meaning,rune_description,character_action,extra_notes,extra_rules,soul_question,practice_challenge,ritual_advice,harmony_advice,UpdateTime',
       filters:[{column:'record_type',operator:'eq',value:'rune'}],
       orders:[{column:'rune_number',ascending:true}]
     }),
@@ -113,7 +112,7 @@ async function fetchCanonical(path){
   }
   if(normalized==='canonical/harmony'){
     return (await selectNeonCatalog('silver.lrunes',{
-      columns:'rune_number,rune_name,soul_question,practice_challenge,ritual_advice,harmony_advice,updated_at',
+      columns:'rune_number,rune_name,soul_question,practice_challenge,ritual_advice,harmony_advice,UpdateTime',
       filters:[{column:'record_type',operator:'eq',value:'rune'}],
       orders:[{column:'rune_number',ascending:true}]
     })).rows;

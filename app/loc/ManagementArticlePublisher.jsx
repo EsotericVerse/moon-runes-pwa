@@ -30,16 +30,16 @@ export default function ManagementArticlePublisher({scopeId}){
       const uid=createUid8();
 
       await insertNeonRows('silver.lo3rwang_galaxy',[{
-        uid,category:'article',content_type:'article',source_role:'article',
+        uid,category:'article',content_type:'article',
         title:draft.title.trim()||null,content:draft.body.trim()||null,
         source_id:draft.source_id.trim()||null,target_id:draft.target_id.trim()||null,ref_id:draft.ref_id.trim()||null,
         url:draft.url.trim()||null,searchable:!draft.hidden,
         createtime:draft.createtime?new Date(draft.createtime).toISOString():now,
-        source_name:draft.source.trim(),source_type:'content'
+        source_name:draft.source.trim()
       }]);
 
       await saveResourceVisibility({
-        scope:'lo3rwang',resourceType:'galaxy',resourceId:uid,draft,sourceRef:draft.source.trim()
+        scope:'lo3rwang',resourceType:'galaxy',resourceId:uid,draft
       });
 
       setDraft(blank());setStatus('文章已發表到 Galaxy。');

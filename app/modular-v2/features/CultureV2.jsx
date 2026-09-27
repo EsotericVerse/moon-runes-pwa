@@ -10,7 +10,7 @@ import {
   selectScopeStyleSnapshot,
   selectScopeStyleWorks
 } from '../../loc/neon-culture-client';
-import {readFeatureNavigation} from '../feature-navigation.v2';
+import {galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
 import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
@@ -296,9 +296,7 @@ export default function CultureV2(){
                     source={work.source_name||work.group_label||''}
                     date={work.display_date||formatCultureDateTime(work.createtime||work.created_at)}
                     body={work.description||work.media_metadata_text||''}
-                    sourceId={work.source_id||''}
-                    targetId={work.target_id||''}
-                    refId={work.ref_id||''}
+                    relationLinks={galaxyRelationLinks(classificationScope,work)}
                     links={work.links||[]}
                   >
                     {classificationMode==='style'?<p>{work.style_label?('風格標籤：'+work.style_label):''}{work.style_group?(' · 大群組：'+work.style_group):''}</p>:null}

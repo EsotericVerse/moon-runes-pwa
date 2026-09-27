@@ -133,7 +133,7 @@ async function authorStyles(period,type){
   const filters=dateFilters(range,'createtime');
   const map=new Map();
   await processStyleTableRows('silver.lo3rwang_galaxy',{
-    columns:'uid,title,content,meta_tags,createtime',
+    columns:'uid,title,content,createtime',
     filters,
     orders:[{column:'createtime',ascending:true}],
     onClassified:row=>{

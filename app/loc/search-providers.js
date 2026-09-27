@@ -81,7 +81,7 @@ const authorText=makeProvider({
   source:'作者正文',
   scopeId:'lo3rwang',
   idColumn:'uid',
-  columns:['uid','title','source_name','source_id','target_id','ref_id','url','createtime'],
+  columns:['uid','title','source_name','source_id','target_id','ref_id','url','media_link','createtime'],
   searchFields:['title','content','source_name'],
   dateColumn:'createtime',
   filters:[{column:'searchable',operator:'eq',value:true}]
@@ -173,8 +173,8 @@ const runeText=makeProvider({
   source:'符文文字',
   scopeId:'lrunes',
   idColumn:'record_id',
-  columns:['record_id','uid','category','content_type','source_name','source_role','title','meta_tags','createtime','source_ref','source_id','target_id','ref_id','url','media_link'],
-  searchFields:['title','content','meta_tags','source_name'],
+  columns:['record_id','uid','category','content_type','source_name','title','createtime','source_id','target_id','ref_id','url','media_link'],
+  searchFields:['title','content','source_name'],
   dateColumn:'createtime',
   filters:[
     {column:'record_type',operator:'eq',value:'galaxy'},

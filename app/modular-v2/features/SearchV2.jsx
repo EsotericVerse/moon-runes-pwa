@@ -11,8 +11,10 @@ import FeaturePageV2 from '../FeaturePageV2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import {scopeHrefV2} from '../scope-registry.v2';
+import {galaxyRelationLinks} from '../feature-navigation.v2';
 import {featureDataErrorMessage} from '../feature-data-state.v2';
 import ContentEditorV2 from '../ContentEditorV2';
+import {selectGalaxyIdentity,selectGalaxySummaries} from '../../loc/aggregate-query';
 import {decodeCultureText} from '../modules/culture-timeline/culture-timeline-model.mjs';
 
 const norm=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
@@ -52,17 +54,15 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
   return {
     key:identity?source+'-'+identity:source+'-'+title+'-'+String(body).slice(0,40),
     source,title:String(title),
-    date:row.date||row.createtime||row.time_date||row.record_date||row.updated_at||'',
+    date:row.date||row.createtime||row.time_date||row.record_date||row.UpdateTime||row.updated_at||'',
     snippet:explicitTitle?snippet(body,q):'',bodyText:explicitTitle?String(body):'',
     display:String(row.display||'summary'),scopeId:scope,resourceType,resourceId,settingsKey,settings,
     editableTable,editableIdColumn,editResourceId,editableField,isScopeCard,href,
-    sourceId:row.source_id||row.galaxy_link||'',
-    targetId:row.target_id||'',
-    refId:row.ref_id||'',
+    relationLinks:resourceType==='galaxy'?galaxyRelationLinks(scope,row):[],
     groupKey:resourceType==='galaxy'&&resourceId
       ?'galaxy:'+resourceId
       :(resourceType==='galaxy_media'&&row.galaxy_link?'galaxy:'+row.galaxy_link:'result:'+(identity||title)),
-    links:href?[{id:resourceType||'primary',href,label:resourceType==='galaxy_media'?'媒體連結':'查看連結'}]:[],
+    links:[...(href?[{id:resourceType||'primary',href,label:resourceType==='galaxy_media'?'媒體連結':'外部連結'}]:[]),...(Array.isArray(row.resolved_links)?row.resolved_links:[])],
     destinations:[]
   };
 }
@@ -85,9 +85,7 @@ function mergeSummaryResults(rows=[]){
       ...preferRow,
       links:uniqueLinks,
       destinations:[...(current.destinations||[]),...(row.destinations||[])].filter((item,index,all)=>all.findIndex(other=>other.href===item.href&&other.label===item.label)===index),
-      sourceId:preferRow.sourceId||current.sourceId||row.sourceId||'',
-      targetId:preferRow.targetId||current.targetId||row.targetId||'',
-      refId:preferRow.refId||current.refId||row.refId||''
+      relationLinks:[...(current.relationLinks||[]),...(row.relationLinks||[])].filter((item,index,all)=>all.findIndex(other=>other.href===item.href&&other.label===item.label)===index)
     });
   }
   return [...groups.values()];
@@ -132,7 +130,27 @@ export default function SearchV2(){
       const search=await searchNeonRows(collection.id,q,{limit:pageSize,offset});
       if(id!==searchId.current)return;
 
-      const searchRows=search.rows;
+      const authorIds=search.rows
+        .map(({row})=>row?.scope_id==='lo3rwang'&&row?.uid?String(row.uid):'')
+        .filter(Boolean);
+      const runeIds=search.rows
+        .map(({row})=>(row?.scope_id==='lrunes'||row?.scope_id==='lunarunes')&&row?.uid?String(row.uid):'')
+        .filter(Boolean);
+      let authorSummaries=[];let runeSummaries=[];
+      try{[authorSummaries,runeSummaries]=await Promise.all([
+        selectGalaxySummaries('lo3rwang',authorIds),
+        selectGalaxySummaries('lunarunes',runeIds)
+      ]);}catch{}
+      const summaryMap=new Map([
+        ...authorSummaries.map(item=>['lo3rwang:'+String(item.uid),item]),
+        ...runeSummaries.map(item=>['lunarunes:'+String(item.uid),item])
+      ]);
+      const searchRows=search.rows.map(item=>{
+        const row=item.row||{};
+        const scopeKey=(row.scope_id==='lrunes'?'lunarunes':row.scope_id)||scopeId;
+        const summary=row.uid?summaryMap.get(scopeKey+':'+String(row.uid)):null;
+        return summary?{...item,row:{...row,title:row.title||summary.title||'',excerpt:summary.excerpt||'',resolved_links:summary.links||[]}}:item;
+      });
 
       matchedQueryRef.current=q;
       const pageResources=searchRows.map(({row})=>{
@@ -174,11 +192,46 @@ export default function SearchV2(){
     await executeSearch(q,Math.max(0,offset));
   }
 
+  async function executeIdentity(rawIdentity){
+    const identity=String(rawIdentity||'').trim();
+    if(!identity)return;
+    const id=++searchId.current;
+    matchedQueryRef.current='';
+    setError('');setHasMore(false);setTotalCount(0);setPageOffset(0);
+    setStatus('載入關聯文字…');
+    try{
+      let detail=await selectGalaxyIdentity(scopeId,identity);
+      let detailScope=scopeId;
+      if(!detail&&scopeId==='loc'){
+        detail=await selectGalaxyIdentity('lo3rwang',identity);
+        detailScope='lo3rwang';
+        if(!detail){detail=await selectGalaxyIdentity('lunarunes',identity);detailScope='lunarunes';}
+      }
+      if(id!==searchId.current)return;
+      if(!detail)throw new Error('找不到這筆文字。');
+      const visibilityRows=await listResourceVisibilityFor([{scope:detailScope,resourceType:'galaxy',resourceId:detail.uid}]).catch(()=>[]);
+      const settings=visibilityRows[0]||null;
+      if(settings&&settings.visibility!=='public'&&!account.canManageScopeSync(detailScope))throw new Error('這筆文字目前不公開。');
+      const settingsMap=new Map(settings?[[resultKey(detailScope,'galaxy',detail.uid),settings]]:[]);
+      const result=toResult({...detail,resolved_links:detail.links||[]},detail.source_name||'文字展示','',collection.id,detailScope,settingsMap);
+      setResults([result]);
+      setFullTextKey(result.key);
+      setFullText(String(detail.content||''));
+      setTotalCount(1);
+      setStatus('已載入關聯文字。');
+    }catch(exception){
+      if(id!==searchId.current)return;
+      setResults([]);setError(featureDataErrorMessage(exception));setStatus('文字載入失敗。');
+    }
+  }
+
   useEffect(()=>{
+    const identity=String(searchParams?.get('identity')||'').trim();
     const value=String(searchParams?.get('q')||'').trim();
+    if(identity){setQuery('');executeIdentity(identity);return;}
     if(value){setQuery(value);executeSearch(value);}
-  },[searchParams]);
-  useEffect(()=>{if(query.trim())executeSearch(query);},[scopeId]);
+  },[searchParams,scopeId]);
+  useEffect(()=>{if(query.trim()&&!searchParams?.get('identity'))executeSearch(query);},[scopeId]);
 
 
 
@@ -290,9 +343,7 @@ export default function SearchV2(){
           date={row.date}
           body={row.snippet}
           hidden={Boolean(settings.visibility&&settings.visibility!=='public')}
-          sourceId={row.sourceId}
-          targetId={row.targetId}
-          refId={row.refId}
+          relationLinks={row.relationLinks||[]}
           links={settings.show_link!==false?(row.links||[]):[]}
           destinations={row.destinations}
           showSource={settings.show_source!==false}

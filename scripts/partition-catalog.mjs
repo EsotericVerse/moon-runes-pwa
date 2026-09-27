@@ -89,7 +89,7 @@ export async function buildSegmentCatalog(root, {
       scope,
       routing_keys: routingKeys(
         documents,
-        ['title', 'section', 'work_id', 'source_type', 'content_type'],
+        ['title', 'section', 'source_type', 'content_type'],
         ['retrieval_text', 'text']
       )
     };

@@ -33,14 +33,11 @@ def main() -> None:
                 source_id TEXT,
                 date TEXT,
                 era TEXT,
-                source_role TEXT,
                 text TEXT NOT NULL,
-                char_count INTEGER NOT NULL DEFAULT 0,
                 matched_terms_json TEXT NOT NULL DEFAULT '[]'
             );
             CREATE INDEX idx_threads_date ON documents(date);
             CREATE INDEX idx_threads_era ON documents(era);
-            CREATE INDEX idx_threads_role ON documents(source_role);
             """
         )
 
@@ -58,9 +55,9 @@ def main() -> None:
                 connection.execute(
                     """
                     INSERT INTO documents (
-                        ordinal, id, source_id, date, era, source_role,
-                        text, char_count, matched_terms_json
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ordinal, id, source_id, date, era,
+                        text, matched_terms_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         ordinal,
@@ -68,9 +65,7 @@ def main() -> None:
                         str(doc.get("source_id") or ""),
                         str(doc.get("date") or ""),
                         str(doc.get("era") or ""),
-                        str(doc.get("source_role") or ""),
                         str(doc.get("text") or ""),
-                        int(doc.get("char_count") or len(str(doc.get("text") or ""))),
                         json.dumps(doc.get("matched_terms") or [], ensure_ascii=False, separators=(",", ":")),
                     ),
                 )

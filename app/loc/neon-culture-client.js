@@ -166,18 +166,24 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
   if(!page.rows.length)return {rows:[],hasMore:false,nextOffset:null,totalCount:page.totalCount};
 
   const uids=page.rows.map(row=>String(row.uid));
-  const [textResult,linkedMediaResult]=await Promise.all([
-    selectNeonAllRows('silver.lo3rwang_galaxy',{
-      columns:'uid,category,content_type,source_name,source_role,title,meta_tags,content_hash,createtime,source_ref,url,source_id,target_id,ref_id',
-      filters:[{column:'uid',operator:'in',value:uids}]
-    }),
+  const textResult=await selectNeonAllRows('silver.lo3rwang_galaxy',{
+    columns:'uid,category,content_type,source_name,title,createtime,url,source_id,target_id,ref_id,media_link',
+    filters:[{column:'uid',operator:'in',value:uids}]
+  });
+  const mediaIds=[...new Set(textResult.rows.flatMap(row=>Array.isArray(row.media_link)?row.media_link:[]).map(String).filter(Boolean))];
+  const [linkedMediaResult,forwardMediaResult]=await Promise.all([
     selectNeonAllRows('silver.lo3rwang_galaxy_media',{
       columns:'media_id,galaxy_link,source_native_id,media_type,title,url,meta_tags,createtime',
       filters:[{column:'galaxy_link',operator:'in',value:uids}]
-    })
+    }),
+    mediaIds.length?selectNeonAllRows('silver.lo3rwang_galaxy_media',{
+      columns:'media_id,galaxy_link,source_native_id,media_type,title,url,meta_tags,createtime',
+      filters:[{column:'media_id',operator:'in',value:mediaIds}]
+    }):Promise.resolve({rows:[]})
   ]);
 
   const textById=new Map(textResult.rows.map(row=>[String(row.uid),row]));
+  const mediaById=new Map([...linkedMediaResult.rows,...forwardMediaResult.rows].map(media=>[String(media.media_id),media]));
   const linkedMediaByGalaxy=new Map();
   for(const media of linkedMediaResult.rows){
     const key=String(media.galaxy_link||'');
@@ -185,12 +191,23 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
     if(!linkedMediaByGalaxy.has(key))linkedMediaByGalaxy.set(key,[]);
     linkedMediaByGalaxy.get(key).push(media);
   }
+  for(const row of textResult.rows){
+    const key=String(row.uid);
+    if(!linkedMediaByGalaxy.has(key))linkedMediaByGalaxy.set(key,[]);
+    const list=linkedMediaByGalaxy.get(key);
+    const seen=new Set(list.map(media=>String(media.media_id)));
+    for(const mediaId of Array.isArray(row.media_link)?row.media_link:[]){
+      const media=mediaById.get(String(mediaId));
+      if(media&&!seen.has(String(media.media_id))){list.push(media);seen.add(String(media.media_id));}
+    }
+  }
+
   const rows=page.rows.map(item=>{
     const row=textById.get(String(item.uid));
     if(!row)return null;
     const linkedMedia=linkedMediaByGalaxy.get(String(row.uid))||[];
     const links=[];
-    if(row.url&&/^https?:\/\//i.test(String(row.url)))links.push({id:'text:'+row.uid,href:row.url,label:'查看來源'});
+    if(row.url&&/^https?:\/\//i.test(String(row.url)))links.push({id:'text:'+row.uid,href:row.url,label:'外部連結'});
     linkedMedia.forEach((media,index)=>{
       if(media.url&&/^https?:\/\//i.test(String(media.url)))links.push({id:'media:'+media.media_id,href:media.url,label:`媒體連結 ${index+1}`});
     });
@@ -199,7 +216,6 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
       key:'galaxy:'+row.uid,
       uid:row.uid,
       source_name:row.source_name,
-      source_role:row.source_role,
       title:title||row.source_name||row.uid,
       description:linkedMedia.map(mediaMetadataDescription).filter(Boolean).join(' ｜ '),
       createtime:row.createtime,
@@ -211,7 +227,7 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
       source_id:row.source_id||null,
       target_id:row.target_id||null,
       ref_id:row.ref_id||null,
-      source_ref:row.source_ref||null,
+      media_link:Array.isArray(row.media_link)?row.media_link:[],
       url:row.url||null,
       links,
       group_label:sourceLabel(row.source_name),
@@ -223,14 +239,13 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
   const hasMore=offset+pageSize<totalCount;
   return {rows,hasMore,nextOffset:hasMore?offset+pageSize:null,totalCount};
 }
-
 async function selectScopePeriodMetadataRows(scopeId,{startDate,endDate}={}){
   if(!startDate)return [];
   const runtimeId=runtimeScopeId(scopeId);
   const filters=dateFilters(startDate,endDate);
   if(runtimeId==='lunarunes'){
     const result=await selectNeonAllRows('silver.lrunes',{
-      columns:'record_id,record_type,uid,media_id,galaxy_link,title,meta_tags,media_type,source_name,source_type,createtime,url,source_ref',
+      columns:'record_id,record_type,uid,media_id,galaxy_link,title,meta_tags,media_type,source_name,createtime,url',
       filters:[
         {column:'record_type',operator:'in',value:['galaxy','galaxy_media']},
         ...filters
@@ -240,7 +255,7 @@ async function selectScopePeriodMetadataRows(scopeId,{startDate,endDate}={}){
   }
   const [textsResult,mediaResult]=await Promise.all([
     selectNeonAllRows('silver.lo3rwang_galaxy',{
-      columns:'uid,title,meta_tags,source_name,source_type,createtime,url,source_ref,content_hash',
+      columns:'uid,title,source_name,createtime,url',
       filters
     }),
     selectNeonAllRows('silver.lo3rwang_galaxy_media',{
@@ -261,7 +276,7 @@ async function selectScopeStyleRows(scopeId,{startDate,endDate}={}){
   const output=[];
   if(runtimeId==='lunarunes'){
     await processStyleTableRows('silver.lrunes',{
-      columns:'record_id,record_type,uid,media_id,galaxy_link,title,content,meta_tags,media_type,source_name,source_type,createtime,url,source_ref',
+      columns:'record_id,record_type,uid,media_id,galaxy_link,title,content,meta_tags,media_type,source_name,createtime,url',
       filters:[
         {column:'record_type',operator:'in',value:['galaxy','galaxy_media']},
         ...filters
@@ -272,7 +287,7 @@ async function selectScopeStyleRows(scopeId,{startDate,endDate}={}){
     return output;
   }
   await processStyleTableRows('silver.lo3rwang_galaxy',{
-    columns:'uid,title,content,meta_tags,source_name,source_type,createtime,url,source_ref,content_hash',
+    columns:'uid,title,content,source_name,createtime,url',
     filters,
     orders:[{column:'createtime',ascending:true}],
     onClassified:row=>{output.push({...withoutContent(row),record_type:'galaxy'});}

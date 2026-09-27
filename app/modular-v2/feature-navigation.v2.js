@@ -64,6 +64,29 @@ export function featureNavigationHref(scopeId,featureId,navigation={}){
   return query?base+'?'+query:base;
 }
 
+function relationIds(value){
+  return [...new Set(String(value||'').split(/[,，]/).map(item=>item.trim()).filter(Boolean))];
+}
+
+export function galaxyIdentityHref(scopeId,uid){
+  const id=valueOf(uid);
+  if(!id)return '';
+  const targetScope=String(scopeId||'')==='lrunes'?'lunarunes':String(scopeId||'');
+  return featureNavigationHref(targetScope,'search',{identity:id});
+}
+
+export function galaxyRelationLinks(scopeId,row={}){
+  const links=[];
+  const source=valueOf(row.source_id);
+  if(source)links.push({id:'source:'+source,label:'來源文字',href:galaxyIdentityHref(scopeId,source)});
+  relationIds(row.target_id).forEach((target,index)=>{
+    links.push({id:'target:'+target,label:`目標文字 ${index+1}`,href:galaxyIdentityHref(scopeId,target)});
+  });
+  const ref=valueOf(row.ref_id);
+  if(ref)links.push({id:'ref:'+ref,label:'參照文字',href:galaxyIdentityHref(scopeId,ref)});
+  return links.filter(link=>link.href);
+}
+
 export function resolveSearchScope(collectionId,source,row,currentScopeId='loc'){
   const explicit=valueOf(row?.scope_id,row?.scope);
   if(explicit==='lunarunes')return 'lunarunes';
