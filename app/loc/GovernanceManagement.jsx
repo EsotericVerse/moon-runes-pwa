@@ -58,9 +58,15 @@ function Workspace({scopeId}){
 function Structure({scopeId}){
   return <div className="scope-v2-list">
     {scopeId!=='loc'?<CultureTimelineEditor scopeId={scopeId}/>:null}
-    {scopeId==='lo3rwang'?<ContextStyleManager scopeId="lo3rwang"/>:null}
-    {scopeId!=='loc'?<KeywordSettingsV2 scopeId={scopeId}/>:null}
     <SourceSettingsV2 scopeId={scopeId}/>
+  </div>;
+}
+
+function KeywordStructure({scopeId}){
+  if(scopeId==='loc')return null;
+  return <div className="scope-v2-list">
+    {scopeId==='lo3rwang'?<ContextStyleManager scopeId="lo3rwang"/>:null}
+    <KeywordSettingsV2 scopeId={scopeId}/>
   </div>;
 }
 
@@ -81,7 +87,8 @@ export default function GovernanceManagement(){
 
   const sections=[
     ['workspace','工作區'],
-    ['structure',scopeId==='loc'?'來源':'時期、關鍵詞與來源'],
+    ['structure',scopeId==='loc'?'來源':'時期與來源'],
+    ...(scopeId!=='loc'?[['keywords','關鍵詞設定']]:[]),
     ...(scopeId==='lunarunes'?[['daily','每日符文']]:[]),
   ];
 
@@ -98,6 +105,7 @@ export default function GovernanceManagement(){
 
     {section==='workspace'?<Workspace scopeId={scopeId}/>:null}
     {section==='structure'?<Structure scopeId={scopeId}/>:null}
+    {section==='keywords'?<KeywordStructure scopeId={scopeId}/>:null}
     {section==='daily'&&scopeId==='lunarunes'?<RuneManagementPanel/>:null}
   </section>;
 }
