@@ -88,9 +88,13 @@ export async function selectNeonRows(table,{
     const item=OrderSchema.parse(order);
     query=query.order(item.column,{ascending:item.ascending??true,nullsFirst:item.nullsFirst});
   }
-  if(Array.isArray(range)&&range.length===2)query=query.range(range[0],range[1]);
-  else if(Number.isFinite(limit)){
-    const size=Math.max(0,Math.min(50,Math.floor(limit)));
+  if(Array.isArray(range)&&range.length===2){
+    const start=Math.max(0,Math.floor(Number(range[0])||0));
+    const requestedEnd=Math.max(start,Math.floor(Number(range[1])||start));
+    const end=Math.min(requestedEnd,start+999);
+    query=query.range(start,end);
+  }else if(Number.isFinite(limit)){
+    const size=Math.max(0,Math.min(1000,Math.floor(limit)));
     const start=Math.max(0,Math.floor(Number(offset)||0));
     query=size?query.range(start,start+size-1):query.limit(0);
   }
