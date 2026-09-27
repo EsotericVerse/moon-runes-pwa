@@ -32,7 +32,8 @@ for(const required of [
   'app/loc/neon-context-client.js',
   'app/loc/neon-ranking-client.js',
   'app/loc/neon-culture-client.js',
-  'app/loc/neon-search.js'
+  'app/loc/neon-search.js',
+  'app/loc/text-engine.mjs'
 ]){
   if(!existsSync(resolve(root,required)))failures.push(`${required}: required Neon/module boundary missing`);
 }
@@ -51,9 +52,15 @@ const cultureView=readFileSync(resolve(root,'app/modular-v2/features/CultureV2.j
 if(!/selectScopeCultureData\(scopeId\)/.test(cultureView))failures.push('CultureV2: shared Neon culture client missing');
 
 const searchClient=readFileSync(resolve(root,'app/loc/neon-search.js'),'utf8');
+const searchProviders=readFileSync(resolve(root,'app/loc/search-providers.js'),'utf8');
+const textEngine=readFileSync(resolve(root,'app/loc/text-engine.mjs'),'utf8');
+const styleClassifier=readFileSync(resolve(root,'app/loc/style-classifier.js'),'utf8');
 const searchView=readFileSync(resolve(root,'app/modular-v2/features/SearchV2.jsx'),'utf8');
-if(!/getSearchProviders/.test(searchClient)||!/searchNeonRows\(/.test(searchClient))failures.push('Search: direct Neon provider search boundary is missing');
-if(!/searchNeonRows\(/.test(searchView))failures.push('SearchV2: Neon search client missing');
+if(!/from ['"]flexsearch['"]/.test(textEngine)||!/new Resolver/.test(textEngine))failures.push('Text engine: FlexSearch Resolver boundary is missing');
+if(!/getRuntimeTextIndex/.test(searchProviders)||!/searchTextIndex/.test(searchProviders))failures.push('Search: shared FlexSearch provider boundary is missing');
+if(/\.ilike\(|operator:\s*['"]ilike['"]/.test(searchProviders))failures.push('Search: direct ILIKE search must not replace the shared text engine');
+if(!/searchTextIndex/.test(styleClassifier))failures.push('Style classifier: Culture/Statistics must use the shared FlexSearch engine');
+if(!/searchNeonRows\(/.test(searchView))failures.push('SearchV2: shared search client missing');
 
 const scopeManagement=readFileSync(resolve(root,'app/modular-v2/ScopeManagementV2.jsx'),'utf8');
 if(!/useNeonAccount/.test(scopeManagement)||!/account\.canManage/.test(scopeManagement))failures.push('Scope management: manager role gate missing');
