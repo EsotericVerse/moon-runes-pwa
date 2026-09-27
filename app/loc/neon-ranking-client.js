@@ -1,7 +1,7 @@
 import {ScopeRankingResponseSchema} from './scope-feature-contracts';
 import {selectNeonAllRows,selectNeonCatalog} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
-import {classifyStyleRows,processStyleTableRows} from './style-classifier';
+import {classifyStyleRows,processKeywordTableRows,processStyleTableRows,countStyleKeywordHits} from './style-classifier';
 import {selectSourceCatalog,selectSourceWeekly} from './aggregate-query';
 import {selectManagedScopeIds} from './scope-list';
 
@@ -170,6 +170,7 @@ async function authorStyles(period,type){
   const filters=dateFilters(range,'createtime');
   const map=new Map();
   await processStyleTableRows('silver.lo3rwang_galaxy',{
+    scopeId:'lo3rwang',
     columns:'uid,title,content,createtime',
     filters,
     orders:[{column:'createtime',ascending:true}],
@@ -182,7 +183,7 @@ async function authorStyles(period,type){
     columns:'media_id,title,meta_tags,createtime',
     filters:dateFilters(range,'createtime')
   });
-  const mediaClassified=await classifyStyleRows(mediaResult.rows);
+  const mediaClassified=await classifyStyleRows(mediaResult.rows,'lo3rwang');
   for(const row of mediaClassified){
     const term=type==='style_group'?row.style_group:row.style_label;
     increment(map,type,term,{source:'lo3rwang',period:period||'all'});
@@ -195,6 +196,7 @@ async function runeStyles(period,type){
   const dateRange=dateFilters(range);
   const map=new Map();
   await processStyleTableRows('silver.lrunes',{
+    scopeId:'lunarunes',
     columns:'record_id,record_type,title,content,createtime',
     filters:[
       {column:'record_type',operator:'eq',value:'galaxy'},
@@ -214,7 +216,7 @@ async function runeStyles(period,type){
     ],
     orders:[{column:'createtime',ascending:true}]
   });
-  const mediaClassified=await classifyStyleRows(mediaResult.rows);
+  const mediaClassified=await classifyStyleRows(mediaResult.rows,'lunarunes');
   for(const row of mediaClassified){
     const term=type==='style_group'?row.style_group:row.style_label;
     increment(map,type,term,{source:'lrunes',period:period||'all'});
