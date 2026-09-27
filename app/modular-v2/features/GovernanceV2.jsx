@@ -4,8 +4,12 @@ import {selectNeonRows} from '../../loc/neon-repository';
 import {useOffsetPagination} from '../use-offset-pagination.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
+import LocGovernance,{LocGovernanceLaw,LOC_GOVERNANCE_SUBTITLE} from '../governance/LocGovernance';
+import LunaRunesGovernance,{LUNARUNES_GOVERNANCE_SUBTITLE} from '../governance/LunaRunesGovernance';
+import PersonalGovernance,{PERSONAL_GOVERNANCE_SUBTITLE} from '../governance/PersonalGovernance';
 
 const FAQ_PAGE_SIZE=10;
+
 function faqQuestion(row,index){
   return row?.question||row?.title||row?.prompt||row?.faq_question||`問題 ${index+1}`;
 }
@@ -31,7 +35,6 @@ function FaqView(){
     }
   });
   const {rows,loading,error,hasMore}=page;
-
   return <section className="loc-view">
     <header className="loc-hero">
       <p className="loc-eyebrow">FAQ</p>
@@ -47,124 +50,27 @@ function FaqView(){
         <p>{faqAnswer(row)}</p>
       </article>)}
     </div>
-    {hasMore?<div className="scope-v2-load-sentinel" aria-live="polite">
-      &lt; {loading?'載入中…':'…'} &gt;
-    </div>:null}
+    {hasMore?<div className="scope-v2-load-sentinel" aria-live="polite">&lt; {loading?'載入中…':'…'} &gt;</div>:null}
   </section>;
 }
 
-function LocGovernance(){
-  return <>
-    <div className="loc-grid two">
-      <section className="loc-card" id="principles">
-        <p className="loc-eyebrow">LOC Principles</p>
-        <h2>原則</h2>
-        <p className="loc-core-line">尊重 · 和平 · 包容 · 友善</p>
-        <p><strong>LOC 本身保持客觀與中立。</strong>它整理語言、資料、脈絡與時間，但不替使用者決定立場、身份或人生選擇。</p>
-        <p>LOC 可以被使用、比較、延伸，也可以完全不用；系統提供的是架構與方法，不是唯一答案。</p>
-        <p><strong>歷史保留，解釋可校準。</strong>事件、來源與版本保留；定義、方法與解釋可依證據、脈絡與需求重新檢視。</p>
-      </section>
-      <section className="loc-card" id="scope-boundary">
-        <p className="loc-eyebrow">Scope Governance</p>
-        <h2>治理邊界</h2>
-        <p>每個 Scope 擁有自己的資料與治理權。跨 Scope 可以引用、連結與比較，但不因此取得對方治理權。</p>
-        <p>LOC 的授權條件只適用於 LOC 自己有權授權的內容，不會因為 LunaRunes 或 lo3rwang 被 LOC 索引、展示或分析，就把 LOC 的授權自動套到它們身上。</p>
-      </section>
-    </div>
-    <LocLawPanel/>
-  </>;
-}
-
-function LocLawPanel(){
-  return <div className="loc-grid two">
-    <section className="loc-card" id="copyright">
-      <p className="loc-eyebrow">Copyleft · GNU GPL</p>
-      <h2>LOC 授權</h2>
-      <p>LOC 採 <strong>Copyleft</strong> 原則；LOC 的原創程式碼採 <strong>GNU GPL</strong> 授權。GPL 的正式版本與完整條款以 Repository 的 LICENSE 文件為準。</p>
-      <p>LOC 的方法、架構與可授權內容可以被研究、使用與延伸，但應保留來源、作者、修改歷史與必要的衍生標示。</p>
-      <p>這個授權邊界只屬於 LOC，不自動涵蓋 LunaRunes、lo3rwang 個人作品、第三方內容、私人資料或另有權利條件的資產。</p>
-    </section>
-    <section className="loc-card" id="documents">
-      <p className="loc-eyebrow">Documents</p>
-      <h2>文件</h2>
-      <p><a href="https://github.com/EsotericVerse/moon-runes-pwa">Repository 文件入口</a>：README、Copyleft 與 GPL 授權文件由 Repository 統一管理。</p>
-      <p><a href="/docs/LOC_Canon.docx">LOC Canon</a>：LOC 現行架構、定義與治理基準。</p>
-    </section>
-  </div>;
-}
-
-function LunaRunesGovernance(){
-  return <>
-    <div className="loc-grid two">
-      <section className="loc-card" id="principles">
-        <p className="loc-eyebrow">LunaRunes Governance</p>
-        <h2>符號式語言治理</h2>
-        <p>LunaRunes（月之符文）是 <strong>Symbolic Language／符號式語言</strong>，因此使用自己的符號、Canon、引用與衍生治理方式。</p>
-        <p>Current 定義使用現行正式符文名稱與規則；歷史版本保留演變，但不反向污染 Current Canon。</p>
-      </section>
-      <section className="loc-card" id="neutrality">
-        <p className="loc-eyebrow">Oracle Neutrality</p>
-        <h2>籤詩系統中立宣言</h2>
-        <p>抽牌、籤詩與解牌內容只供參考，不是命令，也不是唯一答案。系統協助看見當下的符號、文字與可能脈絡，但不替使用者決定身份、價值判斷或下一步行動。</p>
-        <p>使用者保留自己的判斷與決定；任何符文結果都不應被視為對現實事件的強制裁決。</p>
-      </section>
-    </div>
-    <section className="loc-card" id="rights">
-      <p className="loc-eyebrow">Copyright · LunaRunes</p>
-      <h2>符文與籤詩系統著作權</h2>
-      <p>LunaRunes 的符號式語言、符文設計、名稱、文字、籤詩系統、解牌結構與相關原創內容受 <strong>Copyright／著作權</strong> 保護。</p>
-      <p>LunaRunes <strong>不採 LOC 的 Copyleft，也不採 LOC 的 GNU GPL</strong>。引用、改作、衍生、再利用與商業使用，依 LunaRunes 自己的治理規則與作者明示授權處理。</p>
-      <p>被 LOC 收錄、搜尋、統計或分析，不會改變 LunaRunes 本身的權利狀態。</p>
-    </section>
-  </>;
-}
-
-function AuthorGovernance(){
-  return <>
-    <div className="loc-grid two">
-      <section className="loc-card" id="principles">
-        <p className="loc-eyebrow">Personal Governance</p>
-        <h2>個人治理</h2>
-        <p>lo3rwang Scope 處理 Lucas Oscar Wang 政德的個人資料、作品、公開文字與創作軌跡。</p>
-        <p>LOC 可以整理、搜尋與呈現這些資料，但不因資料進入 LOC，就改變原作品的作者權利或個別授權條件。</p>
-      </section>
-      <section className="loc-card" id="rights">
-        <p className="loc-eyebrow">Copyright · Personal Works</p>
-        <h2>基本著作權保護</h2>
-        <p>lo3rwang 的文字、歌曲、小說、多媒體與其他原創作品採一般 <strong>Copyright／著作權</strong> 保護。</p>
-        <p>這些個人作品與資料 <strong>不採 LOC 的 Copyleft，也不採 LOC 的 GNU GPL</strong>；除非作品另有明示授權，否則仍依原作者權利與個別作品條件處理。</p>
-      </section>
-    </div>
-  </>;
-}
-
-function GovernanceBody({scopeId}){
-  if(scopeId==='loc')return <LocGovernance/>;
-  if(scopeId==='lunarunes')return <LunaRunesGovernance/>;
-  return <AuthorGovernance/>;
+function governanceFor(scopeId){
+  if(scopeId==='loc')return {View:LocGovernance,subtitle:LOC_GOVERNANCE_SUBTITLE};
+  if(scopeId==='lunarunes')return {View:LunaRunesGovernance,subtitle:LUNARUNES_GOVERNANCE_SUBTITLE};
+  return {View:PersonalGovernance,subtitle:PERSONAL_GOVERNANCE_SUBTITLE};
 }
 
 function GovernanceHome(){
   const {scopeId}=useScopeRuntimeV2();
-  const subtitle=scopeId==='lunarunes'
-    ?'符號式語言的治理、Canon 與權利邊界。管理也在此。'
-    :scopeId==='lo3rwang'
-      ?'個人治理、作品與作者權利。管理也在此。'
-      :'LOC 原則、Copyleft 與 GNU GPL。管理也在此。';
-  return <FeaturePageV2 featureId="governance" subtitle={subtitle}>
-    <GovernanceBody scopeId={scopeId}/>
-  </FeaturePageV2>;
+  const {View,subtitle}=governanceFor(scopeId);
+  return <FeaturePageV2 featureId="governance" subtitle={subtitle}><View/></FeaturePageV2>;
 }
 
 function GovernanceLaw(){
   const {scopeId}=useScopeRuntimeV2();
-  return <FeaturePageV2 featureId="governance" subtitle="權利與授權">
-    {scopeId==='lunarunes'
-      ?<LunaRunesGovernance/>
-      :scopeId==='lo3rwang'
-        ?<AuthorGovernance/>
-        :<LocLawPanel/>}
-  </FeaturePageV2>;
+  if(scopeId==='loc')return <FeaturePageV2 featureId="governance" subtitle="權利與授權"><LocGovernanceLaw/></FeaturePageV2>;
+  const {View}=governanceFor(scopeId);
+  return <FeaturePageV2 featureId="governance" subtitle="權利與授權"><View/></FeaturePageV2>;
 }
 
 export default function GovernanceV2({section=null}){
