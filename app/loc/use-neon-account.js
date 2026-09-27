@@ -25,7 +25,7 @@ export function useNeonAccount(){
       const email=normalizeAuthEmail(user?.email);
       const {rows:permissions}=email?await selectNeonAllRows('silver.manage',{
         columns:'id,email,role',
-        filters:[{column:'email',operator:'ilike',value:email}],
+        filters:[{column:'email',operator:'eq',value:email}],
         authenticated:true
       }):{rows:[]};
       const authorizer=createScopeAuthorizer(user,permissions);
