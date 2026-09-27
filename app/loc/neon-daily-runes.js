@@ -1,4 +1,4 @@
-import {selectNeonCatalog,selectNeonRows} from './neon-repository';
+import {selectNeonAllRows,selectNeonCatalog,selectNeonRows} from './neon-repository';
 
 export const DAILY_RUNE_PAGE_SIZE=10;
 
@@ -48,6 +48,23 @@ export async function selectDailyRuneDraws({offset=0,limit=DAILY_RUNE_PAGE_SIZE}
     range:[safeOffset,safeOffset+safeLimit-1]
   });
   return attachRuneMeta(draws.rows);
+}
+
+export async function selectDailyRuneRange({startDate,endDate}={}){
+  const start=String(startDate||'').slice(0,10);
+  const end=String(endDate||'').slice(0,10);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(start)||!/^\d{4}-\d{2}-\d{2}$/.test(end))return [];
+  const low=start<=end?start:end;
+  const high=start<=end?end:start;
+  const result=await selectNeonAllRows('silver.lrunes',{
+    columns:'record_date,draw_kind,rune_number,direction',
+    filters:drawFilters([
+      {column:'record_date',operator:'gte',value:low},
+      {column:'record_date',operator:'lte',value:high}
+    ]),
+    orders:[{column:'record_date',ascending:true},{column:'draw_kind',ascending:true}]
+  });
+  return attachRuneMeta(result.rows);
 }
 
 export async function selectDailyRuneMonth({year,month}={}){
