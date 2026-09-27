@@ -7,7 +7,7 @@ import {
   Bar,BarChart,CartesianGrid,Cell,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectScopeKeywordDiagnostics,selectScopeRankingAll,selectScopeRankingComparison,selectScopeRankingPage,selectScopeRankingTypes} from '../../loc/neon-ranking-client';
+import {selectScopeKeywordDiagnostics,selectScopeRankingAll,selectScopeRankingComparison,selectScopeRankingTypes} from '../../loc/neon-ranking-client';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
@@ -16,11 +16,12 @@ import KeywordSettingsV2 from './KeywordSettingsV2';
 import ContextStyleManager from './ContextStyleManager';
 import MediaMetaSettingsV2 from './MediaMetaSettingsV2';
 import FeaturePageV2 from '../FeaturePageV2';
+import PagedResultV2 from '../PagedResultV2';
 import {analyzeDistribution,analyzeDistributionChange,analyzeKeywordDiagnostics,analyzeKeywordGovernance} from '../../loc/model/automatic-analysis.mjs';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const CHART_TYPES=[['bar','長條圖'],['line','折線圖'],['pie','圓餅圖']];
-const STAT_TABS=[['ranking','排行榜'],['keywords','關鍵詞設定'],['styles','風格設定'],['media','多媒體設定'],['charts','統計圖']];
+const STAT_TABS=[['ranking','統計'],['keywords','關鍵詞設定'],['styles','風格設定'],['media','多媒體設定']];
 const STAT_TYPE_LABELS=Object.freeze({
   keyword:'關鍵詞',
   source:'作品來源',
@@ -63,23 +64,14 @@ function RankingChart({type='bar',rows,height=380}){
   </ResponsiveContainer>;
 }
 
-function RankingList({rows,limit=10}){
+function RankingList({rows,offset=0}){
   if(!rows?.length)return <p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>;
   return <div className="scope-v2-ranking">
-    {rows.slice(0,limit).map((row,index)=><div key={row.ranking_key||row.term||index}>
-      <strong>{index+1}. {displayTerm(row)}</strong>
+    {rows.map((row,index)=><div key={row.ranking_key||row.term||index}>
+      <strong>{offset+index+1}. {displayTerm(row)}</strong>
       <span>{Number(row.item_count||0).toLocaleString()}</span>
     </div>)}
   </div>;
-}
-
-function useRanking(scopeId,type,navigation,limit=10){
-  return useQuery({
-    queryKey:['statistics-ranking',scopeId,type,navigation.period||'all',limit],
-    queryFn:async()=>(await selectScopeRankingPage(scopeId,{rankingType:type,limit,navigation})).rows,
-    enabled:Boolean(type),
-    staleTime:30000
-  });
 }
 
 function useAllRanking(scopeId,type,navigation){
@@ -139,23 +131,11 @@ function StatisticTypeSelect({scopeId,navigation,types}){
   </label>;
 }
 
-function RankingPanel({scopeId,navigation,types}){
-  const requested=String(navigation.rankingType||'');
-  const rankingType=types.includes(requested)?requested:(types[0]||'');
-  const query=useRanking(scopeId,rankingType,navigation,10);
-  return <section className="scope-v2-stat-section">
-    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Top 10</p><h2>排行榜</h2><p>排行榜顯示所選統計項目的前 10 名。</p></div></header>
-    <div className="scope-v2-stat-controls"><StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/></div>
-    {query.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
-    {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
-    {!query.isPending&&!query.error?<RankingList rows={query.data||[]} limit={10}/>:null}
-  </section>;
-}
-
-function ChartsPanel({scopeId,navigation,types}){
+function StatisticsPanel({scopeId,navigation,types}){
   const requested=String(navigation.rankingType||'');
   const rankingType=types.includes(requested)?requested:(types[0]||'');
   const [chartType,setChartType]=useState('bar');
+  const [rankingPage,setRankingPage]=useState(0);
   const query=useAllRanking(scopeId,rankingType,navigation);
   const comparisonQuery=useRankingComparison(scopeId,rankingType,navigation);
   const diagnosticsQuery=useKeywordDiagnostics(scopeId,rankingType,navigation);
@@ -178,15 +158,33 @@ function ChartsPanel({scopeId,navigation,types}){
       changeSuggestions:changeAnalysis.suggestions||[]
     });
   },[rankingType,diagnosticsQuery.data,changeAnalysis.suggestions]);
+  const allRows=query.data||[];
+  const pageSize=10;
+  const pageCount=Math.max(1,Math.ceil(allRows.length/pageSize));
+  const safePage=Math.min(rankingPage,pageCount-1);
+  const pageOffset=safePage*pageSize;
+  const pageRows=allRows.slice(pageOffset,pageOffset+pageSize);
   return <section className="scope-v2-stat-section">
-    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Distribution</p><h2>統計圖</h2><p>統計圖顯示所選統計項目的完整分布，包含文字來源、風格、關鍵詞與多媒體 metadata。</p><p><strong>靈魂擺盪論：</strong>以大風格、風格與關鍵詞的增減、延續、消退、回返與擺盪觀察語言分布；系統描述變化，不替使用者下定義。</p></div></header>
+    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Statistics</p><h2>統計</h2><p>排名列表與統計圖使用同一份排序結果；列表每頁 10 筆，圖表顯示完整分布。</p></div></header>
     <div className="scope-v2-stat-controls">
       <StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/>
       <label><span>圖形</span><select className="scope-v2-select" value={chartType} onChange={event=>setChartType(event.target.value)}>{CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
     </div>
     {query.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
     {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
-    {!query.isPending&&!query.error?<RankingChart type={chartType} rows={query.data||[]} height={380}/>:null}
+    {!query.isPending&&!query.error?<>
+      <RankingList rows={pageRows} offset={pageOffset}/>
+      <PagedResultV2
+        label="排名"
+        totalCount={allRows.length}
+        offset={pageOffset}
+        pageSize={pageSize}
+        hasMore={safePage+1<pageCount}
+        onPrevious={()=>setRankingPage(page=>Math.max(0,page-1))}
+        onNext={()=>setRankingPage(page=>Math.min(pageCount-1,page+1))}
+      />
+      <RankingChart type={chartType} rows={allRows} height={380}/>
+    </>:null}
     {!query.isPending&&!query.error&&automaticAnalysis.suggestions.length?<section className="scope-v2-card">
       <p className="loc-eyebrow">Automatic Analysis</p>
       <h3>自動分布分析</h3>
@@ -240,7 +238,7 @@ function ChartsPanel({scopeId,navigation,types}){
 
 function KeywordPanel({scopeId}){
   return <section className="scope-v2-stat-section">
-    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Keywords</p><h2>關鍵詞設定</h2><p>關鍵詞設定是資料設定；關鍵詞統計則由排行榜與統計圖呈現。</p></div></header>
+    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Keywords</p><h2>關鍵詞設定</h2><p>關鍵詞設定是資料設定；關鍵詞統計由同一份統計結果以排名列表與圖表呈現。</p></div></header>
     <KeywordSettingsV2 scopeId={scopeId}/>
   </section>;
 }
@@ -263,7 +261,7 @@ function StatisticsShell({scopeId,navigation}){
   const account=useNeonAccount();
   const canManage=Boolean(account.user&&(account.canManageGlobalSync()||account.canManageScopeSync(scopeId)));
   const visibleTabs=scopeId==='loc'
-    ?STAT_TABS.filter(([value])=>value==='ranking'||value==='charts')
+    ?STAT_TABS.filter(([value])=>value==='ranking')
     :(scopeId==='lo3rwang'?STAT_TABS:STAT_TABS.filter(([value])=>value!=='media'));
   const requested=visibleTabs.some(([value])=>value===navigation.statTab)?navigation.statTab:'ranking';
   const active=requested;
@@ -277,11 +275,10 @@ function StatisticsShell({scopeId,navigation}){
     <StatTabs scopeId={scopeId} navigation={navigation} active={active} tabs={visibleTabs}/>
     {typesQuery.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
     {typesQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(typesQuery.error)}</p>:null}
-    {!typesQuery.isPending&&active==='ranking'?<RankingPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
+    {!typesQuery.isPending&&active==='ranking'?<StatisticsPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
     {active==='keywords'?<KeywordPanel scopeId={scopeId}/>:null}
     {active==='styles'?<StylePanel scopeId={scopeId}/>:null}
     {active==='media'?<MediaPanel scopeId={scopeId}/>:null}
-    {!typesQuery.isPending&&active==='charts'?<ChartsPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
   </section>;
 }
 
