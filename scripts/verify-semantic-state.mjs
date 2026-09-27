@@ -41,7 +41,7 @@ const three=resolveSpreadState(
 assert.equal(three.layers.length,2);
 assert.equal(three.trend,'半逆位');
 assert.equal(three.result,'半正位');
-assert.equal(three.guidance,'中途出現明顯偏弱的狀態的轉折；原有優勢仍在，但後續力道稍有收斂。');
+assert.equal(three.guidance,'中途轉為明顯偏弱的狀態；原有優勢仍在，但後續力道稍有收斂。');
 
 const five=resolveSpreadState(
   [positive,positive,positive,positive,positive],
