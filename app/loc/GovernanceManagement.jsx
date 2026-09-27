@@ -10,7 +10,6 @@ import ManagementImportPanel from './ManagementImportPanel';
 import RuneManagementPanel from './RuneManagementPanel';
 import CultureTimelineEditor from '../modular-v2/features/CultureTimelineEditor';
 import SourceSettingsV2 from '../modular-v2/features/SourceSettingsV2';
-import ThemeAdmin from './ThemeAdmin';
 
 const LOGIN_COPY={
   loc:{
@@ -80,7 +79,6 @@ export default function GovernanceManagement(){
     ['workspace','工作區'],
     ['structure','時期與來源'],
     ...(scopeId==='lunarunes'?[['daily','每日符文']]:[]),
-    ...(account.canManageGlobalSync()?[['theme-admin','Theme 定義']]:[])
   ];
 
   return <section className="loc-view">
@@ -97,6 +95,5 @@ export default function GovernanceManagement(){
     {section==='workspace'?<Workspace scopeId={scopeId}/>:null}
     {section==='structure'?<Structure scopeId={scopeId}/>:null}
     {section==='daily'&&scopeId==='lunarunes'?<RuneManagementPanel/>:null}
-    {section==='theme-admin'&&account.canManageGlobalSync()?<section className="loc-card"><h2>Theme 定義</h2><ThemeAdmin/></section>:null}
   </section>;
 }

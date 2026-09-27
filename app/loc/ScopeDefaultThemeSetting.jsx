@@ -1,23 +1,20 @@
 'use client';
 
 import {useEffect,useState} from 'react';
-import {fetchThemeStylesV2} from '../migration-bridges/theme-admin-neon.v2';
 import {getScopeThemeDefault,updateScopeThemeDefault} from './scope-public-settings';
 import {THEME_SLOTS_V2} from '../modular-v2/theme-registry.v2';
 
 export default function ScopeDefaultThemeSetting({scopeId}){
   const [themeId,setThemeId]=useState('theme-7');
-  const [styles,setStyles]=useState([]);
   const [status,setStatus]=useState('');
   const [loading,setLoading]=useState(true);
 
   useEffect(()=>{
     let live=true;
-    Promise.all([getScopeThemeDefault(scopeId),fetchThemeStylesV2()])
-      .then(([row,rows])=>{
+    getScopeThemeDefault(scopeId)
+      .then(row=>{
         if(!live)return;
         setThemeId(/^theme-[1-8]$/.test(String(row?.default_theme_id||''))?row.default_theme_id:'theme-7');
-        setStyles(Array.isArray(rows)?rows:[]);
       })
       .catch(error=>{if(live)setStatus(String(error?.message||error||'讀取主題失敗。'));})
       .finally(()=>{if(live)setLoading(false);});
@@ -42,7 +39,7 @@ export default function ScopeDefaultThemeSetting({scopeId}){
     {loading?<p className="scope-v2-status">正在讀取主題設定…</p>:<label>
       <span>預設 Theme</span>
       <select className="scope-v2-select" value={themeId} onChange={change}>
-        {THEME_SLOTS_V2.map(item=><option key={item.id} value={item.id}>{styles.find(row=>'theme-'+row.rotation_order===item.id)?.name_zh||item.label}</option>)}
+        {THEME_SLOTS_V2.map(item=><option key={item.id} value={item.id}>{item.label}</option>)}
       </select>
     </label>}
     {status?<p className="scope-v2-status">{status}</p>:null}

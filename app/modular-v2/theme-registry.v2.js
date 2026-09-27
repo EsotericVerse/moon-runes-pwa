@@ -29,11 +29,9 @@ export const THEME_SLOTS_V2=Object.freeze(slots.map((slot,index)=>Object.freeze(
   tokens:Object.freeze(slot.tokens)
 })));
 
-export function getThemeSlotV2(id,styleRows=[]){
+export function getThemeSlotV2(id){
   const slot=THEME_SLOTS_V2.find(item=>item.id===id)||THEME_SLOTS_V2.find(item=>item.id==='theme-7');
-  const row=(Array.isArray(styleRows)?styleRows:[]).find(item=>'theme-'+item.rotation_order===slot.id);
-  if(!row)return slot;
-  return {...slot,label:row.name_zh||slot.label,group:row.name_zh||slot.group,tokens:{...slot.tokens,'--loc-bg':row.background_color||slot.tokens['--loc-bg'],'--loc-panel':row.panel_background_color||slot.tokens['--loc-panel'],'--loc-text':row.text_color||slot.tokens['--loc-text']}};
+  return slot;
 }
 
 export function applyThemeV2(slot){
