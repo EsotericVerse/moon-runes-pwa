@@ -19,6 +19,8 @@ GRANT SELECT ON TABLE
   silver.resource_visibility,
   silver.lo3rwang_style,
   silver.lo3rwang_style_keywords,
+  silver.lo3rwang_time,
+  silver.lrunes_time,
   silver.lo3rwang_galaxy,
   silver.lo3rwang_galaxy_media,
   silver.lrunes
