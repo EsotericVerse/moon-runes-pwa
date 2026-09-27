@@ -59,10 +59,16 @@ export async function selectScopeCultureData(scopeId){
   if(!['loc','lrunes','lo3rwang'].includes(dataId))throw new Error('Scope 無效');
 
   const scopeIds=dataId==='loc'?(await selectManagedScopeIds()).filter(scope=>scope!=='loc'):[dataId];
-  const contextEntries=[];
-  for(const scope of scopeIds){
-    const rows=await selectScopeTimeRows(scope);
-    contextEntries.push([scope,rows.map(row=>({...row,scope_id:scope}))]);
+  let contextEntries=[];
+  if(dataId==='loc'){
+    const settled=await Promise.allSettled(scopeIds.map(async scope=>{
+      const rows=await selectScopeTimeRows(scope);
+      return [scope,rows.map(row=>({...row,scope_id:scope}))];
+    }));
+    contextEntries=settled.filter(item=>item.status==='fulfilled').map(item=>item.value);
+  }else{
+    const rows=await selectScopeTimeRows(dataId);
+    contextEntries=[[dataId,rows.map(row=>({...row,scope_id:dataId}))]];
   }
   const contextByScope=new Map(contextEntries);
   const scopeContext=contextEntries.flatMap(([,rows])=>rows);
