@@ -1,7 +1,7 @@
 import {ScopeRankingResponseSchema} from './scope-feature-contracts';
 import {selectNeonAllRows,selectNeonCatalog} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
-import {classifyStyleRows,processKeywordTableRows,processStyleTableRows,countStyleKeywordHits} from './style-classifier';
+import {classifyStyleRows,processKeywordTableRows,processStyleTableRows,countStyleKeywordHits,selectStyleCatalog} from './style-classifier';
 import {selectSourceCatalog,selectSourceWeekly} from './aggregate-query';
 import {selectManagedScopeIds} from './scope-list';
 
@@ -387,10 +387,17 @@ export async function selectScopeRankingComparison(scopeId,{rankingType='',navig
   const period=String(navigation.period||'all');
   const ranges=await resolveComparisonRanges(id,period);
   if(!ranges)return null;
-  const [currentRows,previousRows,candidateRows]=await Promise.all([
+  const [currentRows,previousRows,candidateRows,catalogRows]=await Promise.all([
     rowsForType(id,type,period,ranges.current),
     rowsForType(id,type,period,ranges.previous),
-    type==='keyword'?rowsForType(id,'media_tag',period,ranges.current):Promise.resolve([])
+    type==='keyword'?rowsForType(id,'media_tag',period,ranges.current):Promise.resolve([]),
+    type==='keyword'
+      ?selectStyleCatalog(id).then(rows=>rows
+        .filter(row=>!/^\s*(AND|NOR)\b/i.test(String(row.keyword||'')))
+        .map(row=>({term:String(row.keyword||'').trim(),style_label:row.style_label,style_group:row.style_group}))
+        .filter(row=>row.term)
+      )
+      :Promise.resolve([])
   ]);
   return {
     type,
@@ -400,7 +407,8 @@ export async function selectScopeRankingComparison(scopeId,{rankingType='',navig
     previousRange:ranges.previous,
     currentRows:mergeRows(currentRows),
     previousRows:mergeRows(previousRows),
-    candidateRows:mergeRows(candidateRows)
+    candidateRows:mergeRows(candidateRows),
+    catalogRows
   };
 }
 
