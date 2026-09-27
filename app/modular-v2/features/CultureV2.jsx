@@ -261,7 +261,7 @@ export default function CultureV2(){
               {classificationBuckets.length?<CultureTimelineV2
                 items={classificationBuckets}
                 labelOf={item=>classificationMode==='source'
-                  ?`${Number(item.work_count||0).toLocaleString()} 項`
+                  ?''
                   :(item.display_label||item.group_label)}
                 focus={{}}
                 mode={classificationMode==='source'?'source':'overview'}
