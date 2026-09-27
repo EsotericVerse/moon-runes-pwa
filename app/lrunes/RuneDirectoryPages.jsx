@@ -7,6 +7,17 @@ import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
 
 const listHref=(path='')=>scopeHrefV2('lunarunes',`list${path?'/'+String(path).replace(/^\/+/, ''):''}`);
 
+function decodeRuneText(value){
+  return String(value??'')
+    .replace(/&#x([0-9a-f]+);/gi,(_,hex)=>String.fromCodePoint(parseInt(hex,16)))
+    .replace(/&#([0-9]+);/g,(_,decimal)=>String.fromCodePoint(parseInt(decimal,10)))
+    .replace(/&amp;/g,'&')
+    .replace(/&lt;/g,'<')
+    .replace(/&gt;/g,'>')
+    .replace(/&quot;/g,'"')
+    .replace(/&#39;|&apos;/g,"'");
+}
+
 function useNeonRunes(){
   const [runes,setRunes]=useState([]);
   const [error,setError]=useState('');
@@ -31,29 +42,23 @@ function rowsForGroup(runes,groupId){
 
 function RuneDetails({card}){
   if(!card)return null;
-  return <article className="loc-card">
-    <div className="runes-library-card">
+  return <article className="loc-card runes-rune-profile-card">
+    <div className="runes-rune-profile">
       <img className="loc-rune-card-image" src={runeImage(card)} alt={`${runeName(card)}之符文卡`}/>
-      <div className="runes-library-card-copy">
-        <h2>{String(Number(card.編號)).padStart(2,'0')} · {runeName(card)}之符文 · {card.英文}</h2>
-        <p>{card.符文說明}</p>
-        <p>{card.人格原型}</p>
+      <div className="runes-rune-profile-copy">
+        <h2>{String(Number(card.編號)).padStart(2,'0')} · {runeName(card)}之符文 · {decodeRuneText(card.英文)}</h2>
+        {card.符文說明?<p>{decodeRuneText(card.符文說明)}</p>:null}
+        {card.人格原型?<p>{decodeRuneText(card.人格原型)}</p>:null}
       </div>
     </div>
     <div className="runes-rune-detail-grid">
-      <span><strong>所屬分組</strong>{card.所屬分組||'—'}</span>
-      <span><strong>月相</strong>{card.月相||'—'}</span>
-      <span><strong>卡片屬性</strong>{card.卡片屬性||'—'}</span>
-      <span><strong>正向關鍵詞</strong>{card.正向關鍵詞||'—'}</span>
-      <span><strong>反向關鍵詞</strong>{card.反向關鍵詞||'—'}</span>
-      {card.額外規則?<span><strong>額外規則</strong>{card.額外規則}</span>:null}
-      {card.額外留意?<span><strong>額外留意</strong>{card.額外留意}</span>:null}
-    </div>
-    <div className="runes-rune-directions">
-      <p><strong>正位：</strong>{card.正向表示||'—'}</p>
-      <p><strong>半正位：</strong>{card.半正向表示||'—'}</p>
-      <p><strong>半逆位：</strong>{card.半逆向表示||'—'}</p>
-      <p><strong>逆位：</strong>{card.逆向表示||'—'}</p>
+      <span><strong>所屬分組</strong>{decodeRuneText(card.所屬分組||'—')}</span>
+      <span><strong>月相</strong>{decodeRuneText(card.月相||'—')}</span>
+      <span><strong>卡片屬性</strong>{decodeRuneText(card.卡片屬性||'—')}</span>
+      <span><strong>正向關鍵詞</strong>{decodeRuneText(card.正向關鍵詞||'—')}</span>
+      <span><strong>反向關鍵詞</strong>{decodeRuneText(card.反向關鍵詞||'—')}</span>
+      {card.額外規則?<span><strong>額外規則</strong>{decodeRuneText(card.額外規則)}</span>:null}
+      {card.額外留意?<span><strong>額外留意</strong>{decodeRuneText(card.額外留意)}</span>:null}
     </div>
   </article>;
 }
