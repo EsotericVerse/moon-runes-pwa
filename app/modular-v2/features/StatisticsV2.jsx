@@ -15,6 +15,7 @@ import {useNeonAccount} from '../../loc/use-neon-account';
 import KeywordSettingsV2 from './KeywordSettingsV2';
 import ContextStyleManager from './ContextStyleManager';
 import FeaturePageV2 from '../FeaturePageV2';
+import {analyzeDistribution} from '../../loc/model/automatic-analysis.mjs';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const CHART_TYPES=[['bar','長條圖'],['line','折線圖'],['pie','圓餅圖']];
@@ -124,6 +125,9 @@ function ChartsPanel({scopeId,navigation,types}){
   const rankingType=types.includes(requested)?requested:(types[0]||'');
   const [chartType,setChartType]=useState('bar');
   const query=useAllRanking(scopeId,rankingType,navigation);
+  const automaticAnalysis=useMemo(()=>analyzeDistribution(query.data||[],{
+    label:STAT_TYPE_LABELS[rankingType]||'統計項目'
+  }),[query.data,rankingType]);
   return <section className="scope-v2-stat-section">
     <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Distribution</p><h2>統計圖</h2><p>統計圖顯示所選統計項目的完整分布。</p><p><strong>靈魂擺盪論：</strong>以大風格、風格與關鍵詞的增減、延續、消退、回返與擺盪觀察語言分布；系統描述變化，不替使用者下定義。</p></div></header>
     <div className="scope-v2-stat-controls">
@@ -133,6 +137,18 @@ function ChartsPanel({scopeId,navigation,types}){
     {query.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
     {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
     {!query.isPending&&!query.error?<RankingChart type={chartType} rows={query.data||[]} height={380}/>:null}
+    {!query.isPending&&!query.error&&automaticAnalysis.suggestions.length?<section className="scope-v2-card">
+      <p className="loc-eyebrow">Automatic Analysis</p>
+      <h3>自動分布分析</h3>
+      <p>依目前統計分布做機械式判斷，只描述集中、低頻尾端與重複候選，不替使用者定義文化意義。</p>
+      <div className="scope-v2-list">
+        {automaticAnalysis.suggestions.map((item,index)=><article className="scope-v2-inline-card" key={item.type+'-'+index}>
+          <strong>{item.type==='concentration'?'分布集中':item.type==='long_tail'?'低頻尾端':'重複候選'}</strong>
+          <span>{item.text}</span>
+        </article>)}
+      </div>
+      {rankingType==='keyword'?<p>關鍵詞治理：這些結果可作為新增、提高、降低或淘汰候選的依據；實際詞庫變更仍需由規則與時間比較確認。</p>:null}
+    </section>:null}
   </section>;
 }
 
