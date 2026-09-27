@@ -15,9 +15,12 @@ const requireMatch=(text,re,label)=>{if(!re.test(text))failures.push(label);};
 requireMatch(data,/selectNeonRows/,'shared runtime data must use direct Neon table reads');
 if(/memoryCache|DEFAULT_MEMORY_CACHE_ENTRIES/.test(data))failures.push('shared runtime data must not retain a process-memory data cache');
 
-requireMatch(client,/@neondatabase\/neon-js/,'Neon Auth client dependency is required');
-requireMatch(client,/signInWithOAuth/,'Neon Google OAuth sign-in is required');
-requireMatch(client,/getSession/,'Neon session lookup is required');
+requireMatch(client,/@neondatabase\/postgrest-js/,'Public Neon Data API client dependency is required');
+requireMatch(client,/neonPublicClient=new NeonPostgrestClient/,'public canonical reads must use a no-auth PostgREST client');
+requireMatch(client,/neonAuthClient=neonAuthConfigured\(\)\?createClient/,'management Auth client must remain optional and separate');
+requireMatch(client,/signInWithOAuth/,'Neon Google OAuth sign-in is required for management when configured');
+requireMatch(client,/getSession/,'Neon session lookup is required for management when configured');
+if(/allowAnonymous\s*:\s*true/.test(client))failures.push('public reads must not depend on anonymous Auth tokens');
 
 requireMatch(account,/createScopeAuthorizer\(user\)/,'account authorization must come from the shared Neon Auth authorizer');
 requireMatch(account,/email:authorizer\.email/,'email must be the account identity key');
@@ -33,8 +36,8 @@ if(/page_manager|scope_manager|scope_owner|privacy_dispute_handler|case_id/.test
   failures.push('authorization module must remain strictly two-level: admin + scope');
 }
 
-requireMatch(userStorage,/schema\('api'\)\.from\('user_records'\)/,'authenticated user records must use api.user_records');
-requireMatch(userStorage,/schema\('api'\)\.from\('user_settings'\)/,'authenticated user settings must use api.user_settings');
+requireMatch(userStorage,/api\.user_records/,'authenticated user records must use api.user_records');
+requireMatch(userStorage,/api\.user_settings/,'authenticated user settings must use api.user_settings');
 if(/localStorage|IndexedDB|readStore\(|writeStore\(/.test(userStorage))failures.push('authenticated durable user state must not use browser storage');
 
 requireMatch(scopeManagement,/account\.canManageGlobal\(\)/,'Scope create, edit and delete must be admin-only');
