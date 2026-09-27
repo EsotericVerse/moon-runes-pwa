@@ -3,7 +3,7 @@
 import {selectNeonAllRows} from './neon-repository';
 import {scopeDataTable} from './scope-list';
 
-export const SCOPE_TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility,include_in_time,style_tags';
+export const SCOPE_TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility,style_tags';
 
 function dateText(value){return value?String(value).slice(0,10):null;}
 function addDays(value,amount){
@@ -77,8 +77,7 @@ export async function selectScopeTimeRows(scopeId){
   const {rows}=await selectNeonAllRows(table,{
     columns:SCOPE_TIME_COLUMNS,
     filters:[
-      {column:'record_type',operator:'in',value:['anchor','period','event']},
-      {column:'include_in_time',operator:'eq',value:true}
+      {column:'record_type',operator:'in',value:['anchor','period','event']}
     ]
   });
   return normalizeScopeTimeRows(rows,id);
