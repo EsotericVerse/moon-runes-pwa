@@ -269,7 +269,6 @@ export default function CultureV2(){
     <section className='loc-card scope-v2-feature-card scope-v2-feature-card-wide'>
       <p className='loc-eyebrow'>Time River</p>
       <h2>時間長河</h2>
-      <p><strong>時空定錨論：</strong>先從作品時間、密度與前後分布找出值得回看的位置。系統只指出可觀察的軌跡變化；是否定錨、如何標記與如何理解，仍由使用者決定。</p>
       {query.isPending?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
       {query.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(query.error)}</p>:null}
       {!query.isPending&&!query.error&&!timelineItems.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
@@ -315,13 +314,13 @@ export default function CultureV2(){
               {automaticAnalysis.suggestions.length?<section className='scope-v2-card'>
                 <p className='loc-eyebrow'>Automatic Guidance</p>
                 <h4>自動軌跡建議</h4>
-                <p>只依時間密度與前後分布提出回看位置，不判斷事件好壞，也不自動建立定錨點。</p>
+                <p>只比較前後區間的分布比例變化，不以單日或單筆數量判斷，也不自動建立定錨點。</p>
                 <div className='scope-v2-list'>
                   {automaticAnalysis.suggestions.map((suggestion,index)=><article className='scope-v2-inline-card' key={suggestion.type+'-'+suggestion.date+'-'+index}>
                     <strong>{suggestion.date}</strong>
                     <span>{suggestion.text}</span>
                     <span>
-                      <a href={'/search/?from='+encodeURIComponent(suggestion.date)+'&to='+encodeURIComponent(suggestion.date)}>搜尋這一天</a>
+                      <a href={'/search/?from='+encodeURIComponent(suggestion.from||suggestion.date)+'&to='+encodeURIComponent(suggestion.to||suggestion.date)}>搜尋這段</a>
                       {scopeId==='lo3rwang'?<> · <a href={'/governance/manage/?anchorDate='+encodeURIComponent(suggestion.date)}>帶入定錨設定</a></>:null}
                     </span>
                   </article>)}
