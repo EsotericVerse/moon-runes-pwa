@@ -11,9 +11,11 @@ import FeaturePageV2 from '../FeaturePageV2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import {scopeHrefV2} from '../scope-registry.v2';
-import {buildSearchNavigation,featureNavigationLinks} from '../feature-navigation.v2';
+import {buildSearchNavigation} from '../feature-navigation.v2';
 import {featureDataErrorMessage} from '../feature-data-state.v2';
 import ContentEditorV2 from '../ContentEditorV2';
+import {selectCanonicalWorkSummaries} from '../../loc/aggregate-query';
+import {decodeCultureText} from '../modules/culture-timeline/culture-timeline-model.mjs';
 
 const norm=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
 function rowText(row){return Object.values(row||{}).filter(value=>typeof value==='string').join(' ')}
@@ -26,10 +28,11 @@ function snippet(text,q){
 function resultKey(scope,type,id){return String(scope)+':'+String(type)+':'+String(id)}
 function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
   const text=rowText(row);
-  if(!norm(text).includes(norm(q)))return null;
-  const title=row.title||row.name||row.display_title||row.label||row.rune_name||row.context_name||row.song_id||row.galaxy_id||row.id||source;
-  const bodyField=['summary','display_text','content','style_tags','meta_tags','description','interpretation','ai_summary','retrieval_text','text'].find(field=>typeof row[field]==='string'&&row[field].trim())||'';
-  const body=bodyField?row[bodyField]:text;
+  const excerpt=decodeCultureText(row.excerpt||'').trim();
+  const explicitTitle=row.title||row.name||row.display_title||row.label||row.rune_name||row.context_name||row.song_id||row.id||'';
+  const title=explicitTitle||snippet(excerpt||row.source_name||source,q)||source;
+  const bodyField=['summary','display_text','excerpt','content','style_tags','meta_tags','description','interpretation','ai_summary','retrieval_text','text'].find(field=>typeof row[field]==='string'&&row[field].trim())||'';
+  const body=bodyField?decodeCultureText(row[bodyField]):text;
   const navigation=buildSearchNavigation(collectionId,source,row,q,scopeId);
   if(row.scope_id)navigation.targetScope=row.scope_id;
   const identity=row.media_id||row.galaxy_id||row.song_id||row.rune_id||row.id;
@@ -48,12 +51,12 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
   const editResourceId=runeScope?String(row.record_id||''):resourceId;
   const editableField=resourceType==='galaxy'?'content':resourceType==='galaxy_media'?'meta_tags':'';
   const isScopeCard=Boolean(row.scope_card);
-  const href=isScopeCard?scopeHrefV2(scope):(row.url||row.href||row.suno_url||(row.scope_id?scopeHrefV2(row.scope_id,'statics'):''));
+  const href=isScopeCard?scopeHrefV2(scope):(row.url||row.href||row.suno_url||'');
   return {
     key:identity?source+'-'+identity:source+'-'+title+'-'+String(body).slice(0,40),
     source,title:String(title),
     date:row.date||row.created_date||row.create_time||row.created_at||row.update_time||row.updated_at||'',
-    snippet:snippet(body,q),bodyText:String(body),styleTags:String(row.style_tags||row.meta_tags||''),
+    snippet:explicitTitle?snippet(body,q):'',bodyText:explicitTitle?String(body):'',styleTags:String(row.style_tags||row.meta_tags||''),
     display:String(row.display||'summary'),scopeId:scope,resourceType,resourceId,settingsKey,settings,
     editableTable,editableIdColumn,editResourceId,editableField,isScopeCard,href,
     sourceId:row.source_id||row.media_link||'',
@@ -63,7 +66,7 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
       ?'galaxy:'+resourceId
       :(resourceType==='galaxy_media'&&row.media_link?'galaxy:'+row.media_link:'result:'+(identity||title)),
     links:href?[{id:resourceType||'primary',href,label:resourceType==='galaxy_media'?'媒體連結':'查看連結'}]:[],
-    destinations:isScopeCard?[]:featureNavigationLinks(navigation)
+    destinations:[]
   };
 }
 
@@ -129,8 +132,20 @@ export default function SearchV2(){
       const search=await searchNeonRows(collection.id,q,{limit:pageSize,offset});
       if(id!==searchId.current)return;
 
+      const authorIds=search.rows
+        .map(({row})=>row?.scope_id==='lo3rwang'&&row?.galaxy_id?String(row.galaxy_id):'')
+        .filter(Boolean);
+      let summaries=[];
+      try{summaries=await selectCanonicalWorkSummaries(authorIds);}catch{}
+      const summaryMap=new Map(summaries.map(item=>[String(item.work_id),item]));
+      const searchRows=search.rows.map(item=>{
+        const row=item.row||{};
+        const summary=row.galaxy_id?summaryMap.get(String(row.galaxy_id)):null;
+        return summary?{...item,row:{...row,title:row.title||summary.title||'',excerpt:summary.excerpt||''}}:item;
+      });
+
       matchedQueryRef.current=q;
-      const pageResources=search.rows.map(({row})=>{
+      const pageResources=searchRows.map(({row})=>{
         const resourceType=row.galaxy_id?'galaxy':row.media_id?'galaxy_media':'';
         const resourceId=row.galaxy_id||row.media_id||'';
         return {scope:row.scope_id||scopeId,resourceType,resourceId};
@@ -143,7 +158,7 @@ export default function SearchV2(){
       }
       visibilityRef.current=visibilityMap;
       const converted=[];const seen=new Set();
-      for(const {row,source} of search.rows){
+      for(const {row,source} of searchRows){
         const result=toResult(row,source,q,collection.id,scopeId,visibilityMap);
         if(!result||seen.has(result.key))continue;
         if(result.display==='hidden'&&!account.canManageScopeSync(result.scopeId))continue;
