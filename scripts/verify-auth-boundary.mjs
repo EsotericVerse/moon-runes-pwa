@@ -21,18 +21,19 @@ requireMatch(client,/neonAuthClient=neonClient/,'management sign-in must upgrade
 requireMatch(client,/signInWithOAuth/,'Neon Google OAuth sign-in is required for management');
 requireMatch(client,/getSession/,'Neon session lookup is required for management');
 
-requireMatch(account,/createScopeAuthorizer\(user\)/,'account authorization must come from the shared Neon Auth authorizer');
+requireMatch(account,/selectNeonAllRows\('silver\.manage'/,'account authorization must resolve website permissions from silver.manage');
+requireMatch(account,/columns:'id,email,role'/,'account permission lookup must use the Current manage contract');
 requireMatch(account,/email:authorizer\.email/,'email must be the account identity key');
-requireMatch(account,/role:authorizer\.role/,'Neon Auth role must drive authorization');
-if(/OWNER_EMAIL|isOwner\(|user\?\.id|user\.id|canManagePage/.test(account)){
-  failures.push('account authorization must not use owner-email special cases, user.id identity, or page-level permissions');
+requireMatch(account,/role:authorizer\.role/,'resolved manage role must be exposed by the account state');
+if(/OWNER_EMAIL|isOwner\(|user\?\.id|user\.id|canManagePage|user\?\.role|user\.role/.test(account)){
+  failures.push('website authorization must not use owner-email special cases, user.id, Neon Auth user.role, or page-level permissions');
 }
 
-requireMatch(authorization,/\^\(admin\|scope:/,'authorization must allow only admin or scope:<scope_id> roles');
-requireMatch(authorization,/canRoleManageGlobal/,'shared admin authorization helper missing');
-requireMatch(authorization,/canRoleManageScope/,'shared scope authorization helper missing');
-if(/page_manager|scope_manager|scope_owner|privacy_dispute_handler|case_id/.test(authorization)){
-  failures.push('authorization module must remain strictly two-level: admin + scope');
+requireMatch(authorization,/z\.enum\(\['admin','scope'\]\)/,'authorization must accept only Current manage roles admin/scope');
+requireMatch(authorization,/permissionRows/,'shared authorizer must consume silver.manage permission rows');
+requireMatch(authorization,/scopes\.has\(normalizeScopeId\(scopeId\)\)/,'scope authorization must be derived from manage row ids');
+if(/scope_manager|scope_owner|page_manager|privacy_dispute_handler|case_id|scope:<|normalizeAuthRole/.test(authorization)){
+  failures.push('authorization module must remain strictly manage-table admin + scope');
 }
 
 requireMatch(userStorage,/api\.user_records/,'authenticated user records must use api.user_records');
