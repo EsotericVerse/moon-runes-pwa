@@ -61,7 +61,7 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
           {column:'scope_id',operator:'eq',value:dataScope},
           {column:'record_type',operator:'in',value:['anchor','period','event']}
         ],
-        limit:5000
+        limit:50
       });
       return rows;
     },
