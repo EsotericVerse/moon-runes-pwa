@@ -1,4 +1,5 @@
 import {createTextIndex,searchTextIndex} from '../text-engine.mjs';
+import {buildSpreadGuidance} from './spread-guidance.mjs';
 
 export const RUNE_SEMANTIC_STATES=Object.freeze([
   '正位','半正位','中立','半逆位','逆位','未知'
@@ -266,7 +267,13 @@ export function resolveSpreadState(cards=[],directions=[],mode=''){
     trend:overall.trend,
     result:overall.result
   };
-  return {...reading,guidance:formatSpreadGuidance(reading)};
+  const spread=buildSpreadGuidance(source,directions,resolvedMode);
+  return {
+    ...reading,
+    guidance:spread.sentence,
+    advice:spread.advice,
+    unknown:spread.unknown
+  };
 }
 
 // Daily trend lookup uses the same FlexSearch runtime engine as LOC Search/Culture/Statistics.
