@@ -1,30 +1,12 @@
-import {NeonPostgrestClient} from '@neondatabase/postgrest-js';
+import {createClient,SupabaseAuthAdapter} from '@neondatabase/neon-js';
 
 const DATA_API='https://ep-rapid-queen-b3oyboy6.apirest.c-4.ap-southeast-1.aws.neon.tech/neondb/rest/v1';
-
-async function rawProbe(){
-  const url=DATA_API+'/lrunes?select=rune_number,rune_name&record_type=eq.rune&limit=1';
-  const response=await fetch(url,{
-    headers:{
-      'Accept-Profile':'silver',
-      'Origin':'https://loc.lo3rwang.cc'
-    }
-  });
-  const body=await response.text();
-  console.log(JSON.stringify({
-    probe:'raw',
-    status:response.status,
-    allowOrigin:response.headers.get('access-control-allow-origin'),
-    allowHeaders:response.headers.get('access-control-allow-headers'),
-    body:body.slice(0,500)
-  }));
-  if(!response.ok)throw new Error('Raw public Data API probe failed: '+response.status+' '+body);
-}
+const AUTH_API='https://ep-rapid-queen-b3oyboy6.neonauth.c-4.ap-southeast-1.aws.neon.tech/neondb/auth';
 
 async function clientProbe(){
-  const client=new NeonPostgrestClient({
-    dataApiUrl:DATA_API,
-    options:{db:{schema:'silver'}}
+  const client=createClient({
+    auth:{url:AUTH_API,adapter:SupabaseAuthAdapter(),allowAnonymous:true},
+    dataApi:{url:DATA_API,options:{db:{schema:'silver'}}}
   });
   for(const [table,columns] of [
     ['lrunes','rune_number,rune_name,record_type'],
@@ -37,6 +19,5 @@ async function clientProbe(){
   }
 }
 
-await rawProbe();
 await clientProbe();
 console.log('Public Neon Data API probe passed.');

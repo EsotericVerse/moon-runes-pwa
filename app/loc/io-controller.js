@@ -1,15 +1,18 @@
 'use client';
 
 import pMap,{pMapIterable} from 'p-map';
+import {MAX_SELECT_ROWS} from './query-policy';
 
 export const IO_PROFILE=Object.freeze({
   metadata:Object.freeze({
     initialBatch:128,
+    maxBatch:MAX_SELECT_ROWS,
     targetBytes:768*1024,
     targetMs:500
   }),
   heavy:Object.freeze({
     initialBatch:4,
+    maxBatch:MAX_SELECT_ROWS,
     targetBytes:256*1024,
     targetMs:450
   }),
@@ -157,7 +160,8 @@ export function nextAdaptiveBatchSize({
   const elapsed=Math.max(Number(requestMs)||0,Number(consumerMs)||0,1);
   const timeRatio=config.targetMs/elapsed;
   const factor=Math.max(0.35,Math.min(4,byteRatio,timeRatio));
-  return Math.max(1,Math.round(base*factor));
+  const maxBatch=Math.max(1,Math.floor(Number(config.maxBatch)||MAX_SELECT_ROWS));
+  return Math.min(maxBatch,Math.max(1,Math.round(base*factor)));
 }
 
 export function initialBatchSize(profile='metadata'){

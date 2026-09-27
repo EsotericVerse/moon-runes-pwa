@@ -1,6 +1,7 @@
 'use client';
 
 export const UI_PAGE_SIZE=20;
+export const MAX_SELECT_ROWS=1000;
 
 const HEAVY_COLUMNS=Object.freeze({
   'silver.lo3rwang_galaxy':Object.freeze(new Set(['content'])),
@@ -49,14 +50,14 @@ export function safePageSize(value,fallback=UI_PAGE_SIZE){
   const parsed=Number.isFinite(numeric)
     ?Math.floor(numeric)
     :Math.floor(Number.isFinite(fallbackNumeric)?fallbackNumeric:UI_PAGE_SIZE);
-  return Math.max(0,parsed);
+  return Math.max(0,Math.min(MAX_SELECT_ROWS,parsed));
 }
 
 export function safeRange(range){
   if(!Array.isArray(range)||range.length!==2)return null;
   const start=Math.max(0,Math.floor(Number(range[0])||0));
   const requestedEnd=Math.max(start,Math.floor(Number(range[1])||start));
-  return [start,requestedEnd];
+  return [start,Math.min(requestedEnd,start+MAX_SELECT_ROWS-1)];
 }
 
 export function assertSafeSelect({table,columns,filters=[],limit=UI_PAGE_SIZE,range=null}){

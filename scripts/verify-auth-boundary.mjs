@@ -15,12 +15,11 @@ const requireMatch=(text,re,label)=>{if(!re.test(text))failures.push(label);};
 requireMatch(data,/selectNeonRows/,'shared runtime data must use direct Neon table reads');
 if(/memoryCache|DEFAULT_MEMORY_CACHE_ENTRIES/.test(data))failures.push('shared runtime data must not retain a process-memory data cache');
 
-requireMatch(client,/@neondatabase\/postgrest-js/,'Public Neon Data API client dependency is required');
-requireMatch(client,/neonPublicClient=new NeonPostgrestClient/,'public canonical reads must use a no-auth PostgREST client');
-requireMatch(client,/neonAuthClient=neonAuthConfigured\(\)\?createClient/,'management Auth client must remain optional and separate');
+requireMatch(client,/allowAnonymous\s*:\s*true/,'public canonical reads must use Neon managed anonymous JWTs');
+requireMatch(client,/neonPublicClient=neonClient/,'public reads must share the managed anonymous client');
+requireMatch(client,/neonAuthClient=neonClient/,'management sign-in must upgrade the shared Neon client session');
 requireMatch(client,/signInWithOAuth/,'Neon Google OAuth sign-in is required for management when configured');
 requireMatch(client,/getSession/,'Neon session lookup is required for management when configured');
-if(/allowAnonymous\s*:\s*true/.test(client))failures.push('public reads must not depend on anonymous Auth tokens');
 
 requireMatch(account,/createScopeAuthorizer\(user\)/,'account authorization must come from the shared Neon Auth authorizer');
 requireMatch(account,/email:authorizer\.email/,'email must be the account identity key');
