@@ -71,13 +71,8 @@ function JsonImport({scopeId}){
         create_time:iso(firstValue(row,['create_time','created_at','created_time','date','published_at'])),
         update_time:new Date().toISOString()
       })).filter(row=>row.title||row.content||row.url);
-      let inserted=0;
-      for(let i=0;i<payload.length;i+=200){
-        const batch=payload.slice(i,i+200);
-        await insertNeonRows('silver.lo3rwang_galaxy',batch);
-        inserted+=batch.length;
-      }
-      setStatus(`已匯入 ${inserted.toLocaleString()} 筆到來源「${selected}」。`);
+      await insertNeonRows('silver.lo3rwang_galaxy',payload);
+      setStatus(`已匯入 ${payload.length.toLocaleString()} 筆到來源「${selected}」。`);
       setRows([]);setFileName('');
     }catch(error){setStatus(error?.message||'匯入失敗。');}
     finally{setBusy(false);}
