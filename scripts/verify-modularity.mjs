@@ -44,7 +44,9 @@ if(['LOC_DATA','fetchNeonData','canonical/runes','fetchStaticJson','runtime_json
 for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs','app/loc/neon-context-client.js','app/modular-v2/features/ContextV2.jsx','app/modular-v2/features/ContextWorkbenchV2.jsx','app/modular-v2/modules/context-graph/ContextGraphV2.jsx'])if(existsSync(resolve(root,retired)))failures.push(`${retired}: retired path-loader must remain removed`);
 
 const statisticsView=readFileSync(resolve(root,'app/modular-v2/features/StatisticsV2.jsx'),'utf8');
-if(!/selectScopeRankingPage\(scopeId/.test(statisticsView))failures.push('StatisticsV2: shared Neon SQL pagination missing');
+if(!/selectScopeRankingAll\(scopeId/.test(statisticsView))failures.push('StatisticsV2: shared canonical ranking query missing');
+if(!/PagedResultV2/.test(statisticsView))failures.push('StatisticsV2: UI pagination missing');
+if(/selectScopeRankingPage\(/.test(statisticsView))failures.push('StatisticsV2: retired duplicate SQL ranking pagination returned');
 
 const cultureView=readFileSync(resolve(root,'app/modular-v2/features/CultureV2.jsx'),'utf8');
 if(!/selectScopeCultureData\(scopeId\)/.test(cultureView))failures.push('CultureV2: shared Neon culture client missing');
