@@ -83,7 +83,8 @@ const authorText=makeProvider({
   idColumn:'uid',
   columns:['uid','title','source_name','source_id','target_id','ref_id','url','createtime'],
   searchFields:['title','content','source_name'],
-  dateColumn:'createtime'
+  dateColumn:'createtime',
+  filters:[{column:'searchable',operator:'eq',value:true}]
 });
 
 const authorMedia=makeProvider({
@@ -175,7 +176,10 @@ const runeText=makeProvider({
   columns:['record_id','uid','category','content_type','source_name','source_role','title','meta_tags','createtime','source_ref','source_id','target_id','ref_id','url','media_link'],
   searchFields:['title','content','meta_tags','source_name'],
   dateColumn:'createtime',
-  filters:[{column:'record_type',operator:'eq',value:'galaxy'}]
+  filters:[
+    {column:'record_type',operator:'eq',value:'galaxy'},
+    {column:'searchable',operator:'eq',value:true}
+  ]
 });
 
 const runeMedia=makeProvider({
