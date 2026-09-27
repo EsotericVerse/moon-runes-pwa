@@ -1,7 +1,7 @@
 'use client';
 
 import {z} from 'zod';
-import {neonAuthClient,neonPublicClient} from './neon-client';
+import {neonAuthClient,neonPublicClient,resetNeonPublicToken} from './neon-client';
 import {
   UI_PAGE_SIZE,
   assertSafeSelect,assertHeavyBatchSelect,assertCatalogSelect,
@@ -171,6 +171,7 @@ async function executeSelectOnce(table,{
 
 async function executeSelect(table,options={},allowHeavyBatch=false){
   let size=safePageSize(options.limit??UI_PAGE_SIZE);
+  let authRetried=false;
   for(let attempt=0;;attempt++){
     try{return await executeSelectOnce(table,{...options,limit:size},allowHeavyBatch);}
     catch(error){
@@ -178,6 +179,13 @@ async function executeSelect(table,options={},allowHeavyBatch=false){
       const message=String(cause.message||'');
       const oversized=cause.status===413||cause.code==='54000'||cause.code==='53200'||cause.code==='57014'||/response.*(too large|size.*limit)|payload too large|statement timeout/i.test(message);
       const transient=[502,503,504].includes(cause.status)||/failed to fetch|fetch failed|network error/i.test(message);
+      const authFailure=[401,403].includes(cause.status)||/jwk not found|jwt|authentication|authorization|bearer token/i.test(message);
+      const publicRead=!String(table||'').startsWith('api.user_');
+      if(authFailure&&publicRead&&!authRetried){
+        authRetried=true;
+        resetNeonPublicToken();
+        continue;
+      }
       if(oversized&&size>1){size=Math.max(1,Math.floor(size/2));continue;}
       if(transient&&attempt<3){reportNeonIoError(cause);continue;}
       throw error;
