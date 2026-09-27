@@ -26,7 +26,8 @@
     "verify:route-ownership": "node scripts/verify-route-ownership.mjs",
     "postbuild": "node scripts/copy-static-assets.mjs",
     "verify:text-engine": "node scripts/verify-text-engine.mjs",
-    "verify:semantic-state": "node scripts/verify-semantic-state.mjs"
+    "verify:semantic-state": "node scripts/verify-semantic-state.mjs",
+    "verify:neon-public": "node scripts/verify-neon-public-read.mjs"
   },
   "dependencies": {
     "@neondatabase/neon-js": "0.7.0-beta",
