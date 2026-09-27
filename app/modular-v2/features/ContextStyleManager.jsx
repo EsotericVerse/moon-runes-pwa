@@ -53,7 +53,7 @@ export default function ContextStyleManager({scopeId='lo3rwang'}){
         columns:'style_no,node_type,representative_name,parent_group_name,basic_principle,order_no',
         filters:[{column:'node_type',operator:'eq',value:'style'}],
         orders:[{column:'order_no',ascending:true},{column:'style_no',ascending:true}],
-        limit:5000
+        limit:50
       });
       return normalizeStyleRows(result.rows);
     },
