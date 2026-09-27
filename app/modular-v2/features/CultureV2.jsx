@@ -280,7 +280,7 @@ export default function CultureV2(){
                     <span>{suggestion.text}</span>
                     <span>
                       <a href={'/search/?from='+encodeURIComponent(suggestion.date)+'&to='+encodeURIComponent(suggestion.date)}>搜尋這一天</a>
-                      {classificationScope==='lo3rwang'?<> · <a href={'/governance/manage/?anchorDate='+encodeURIComponent(suggestion.date)}>帶入定錨設定</a></>:null}
+                      {scopeId==='lo3rwang'?<> · <a href={'/governance/manage/?anchorDate='+encodeURIComponent(suggestion.date)}>帶入定錨設定</a></>:null}
                     </span>
                   </article>)}
                 </div>
