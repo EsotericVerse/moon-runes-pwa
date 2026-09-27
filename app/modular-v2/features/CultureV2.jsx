@@ -297,7 +297,7 @@ export default function CultureV2(){
                     source={work.source_name||work.group_label||''}
                     date={work.display_date||formatCultureDateTime(work.created_at)}
                     body={work.description||work.media_metadata_text||''}
-                    sourceId={work.source_id||work.galaxy_id||''}
+                    sourceId={work.source_id||''}
                     targetId={work.target_id||''}
                     refId={work.ref_id||''}
                     links={work.links||[]}
