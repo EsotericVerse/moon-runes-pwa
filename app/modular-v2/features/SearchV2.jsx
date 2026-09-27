@@ -96,35 +96,31 @@ export default function SearchV2(){
   const [status,setStatus]=useState('輸入關鍵字開始搜尋。');
   const [error,setError]=useState('');
   const [hasMore,setHasMore]=useState(false);
-  const [loadingMore,setLoadingMore]=useState(false);
+  const [totalCount,setTotalCount]=useState(0);
+  const [pageOffset,setPageOffset]=useState(0);
   const [editingKey,setEditingKey]=useState('');
   const [editDraft,setEditDraft]=useState(null);
   const [editAudit,setEditAudit]=useState([]);
   const [editBusy,setEditBusy]=useState(false);
   const [editError,setEditError]=useState('');
   const searchId=useRef(0);
-  const offsetRef=useRef(0);
   const matchedQueryRef=useRef('');
-  const sentinelRef=useRef(null);
-  const loadingRef=useRef(false);
   const visibilityRef=useRef(new Map());
   const pageSize=20;
   const collection=useMemo(()=>getSearchCollection(scope.searchCollection),[scope.searchCollection]);
 
-  async function executeSearch(rawQuery){
+  async function executeSearch(rawQuery,offset=0){
     const q=String(rawQuery||'').trim();
     if(!q)return;
     const id=++searchId.current;
-    loadingRef.current=true;
-    offsetRef.current=0;
+    setPageOffset(offset);
     matchedQueryRef.current='';
     setError('');
     setHasMore(false);
-    setLoadingMore(false);
     setResults([]);
     setStatus(`搜尋「${collection.label}」資料…`);
     try{
-      const search=await searchNeonRows(collection.id,q,{limit:pageSize,offset:0});
+      const search=await searchNeonRows(collection.id,q,{limit:pageSize,offset});
       if(id!==searchId.current)return;
 
       matchedQueryRef.current=q;
@@ -140,7 +136,6 @@ export default function SearchV2(){
         visibilityMap.set(resultKey(item.scope,item.resource_type,item.resource_id),item);
       }
       visibilityRef.current=visibilityMap;
-      offsetRef.current=search.nextOffset??0;
       const converted=[];const seen=new Set();
       for(const {row,source} of search.rows){
         const result=toResult(row,source,q,collection.id,scopeId,visibilityMap);
@@ -150,6 +145,7 @@ export default function SearchV2(){
         seen.add(result.key);converted.push(result);
       }
       setResults(mergeSummaryResults(converted));
+      setTotalCount(Number(search.totalCount||0));
       setHasMore(Boolean(search.hasMore));
       const partial=search.failures?.length?`（${search.failures.length} 張非必要資料表暫時無法查詢）`:'';
       setStatus(`「${collection.label}」搜尋「${q}」，共 ${Number(search.totalCount||0).toLocaleString()} 筆。${partial}`);
@@ -158,38 +154,13 @@ export default function SearchV2(){
       setError(featureDataErrorMessage(exception));
       setStatus('搜尋失敗。');
     }finally{
-      if(id===searchId.current)loadingRef.current=false;
     }
   }
 
-  async function loadMore(){
-    const q=matchedQueryRef.current;
-    if(!q||!hasMore||loadingRef.current)return;
-    loadingRef.current=true;
-    setLoadingMore(true);
-    try{
-      const search=await searchNeonRows(collection.id,q,{limit:pageSize,offset:offsetRef.current});
-      offsetRef.current=search.nextOffset??offsetRef.current;
-      setResults(current=>{
-        const seen=new Set(current.map(item=>item.key));
-        const appended=[];
-        for(const {row,source} of search.rows){
-          const result=toResult(row,source,q,collection.id,scopeId,visibilityRef.current);
-          if(!result||seen.has(result.key))continue;
-          if(result.display==='hidden'&&!account.canManageScopeSync(result.scopeId))continue;
-          if(result.settings&&result.settings.visibility!=='public'&&!account.canManageScopeSync(result.scopeId))continue;
-          seen.add(result.key);appended.push(result);
-        }
-        return mergeSummaryResults([...current,...appended]);
-      });
-      setHasMore(Boolean(search.hasMore));
-    }catch(exception){
-      setError(String(exception?.message||exception||'載入下一批搜尋結果失敗。'));
-      setHasMore(false);
-    }finally{
-      loadingRef.current=false;
-      setLoadingMore(false);
-    }
+  async function goToPage(offset){
+    const q=matchedQueryRef.current||query.trim();
+    if(!q)return;
+    await executeSearch(q,Math.max(0,offset));
   }
 
   useEffect(()=>{
@@ -198,15 +169,7 @@ export default function SearchV2(){
   },[searchParams]);
   useEffect(()=>{if(query.trim())executeSearch(query);},[scopeId]);
 
-  useEffect(()=>{
-    const node=sentinelRef.current;
-    if(!node||!hasMore)return;
-    const observer=new IntersectionObserver(entries=>{
-      if(entries.some(entry=>entry.isIntersecting))loadMore();
-    },{root:null,rootMargin:'160px 0px',threshold:0.01});
-    observer.observe(node);
-    return ()=>observer.disconnect();
-  },[hasMore,query,scopeId,pageSize,results.length]);
+
 
   async function startEditing(result){
     setEditingKey(result.key);setEditError('');
@@ -293,8 +256,10 @@ export default function SearchV2(){
         </WorkSummaryCardV2>;
       })}
     </div>
-    {hasMore?<div ref={sentinelRef} className="scope-v2-load-sentinel" aria-live="polite">
-      &lt; {loadingMore?'載入中…':'…'} &gt;
-    </div>:null}
+    {totalCount>pageSize?<nav className="scope-v2-pagination" aria-label="搜尋結果分頁">
+      <button type="button" disabled={pageOffset<=0} onClick={()=>goToPage(pageOffset-pageSize)}>上一頁</button>
+      <span>{Math.floor(pageOffset/pageSize)+1} / {Math.max(1,Math.ceil(totalCount/pageSize))}</span>
+      <button type="button" disabled={!hasMore} onClick={()=>goToPage(pageOffset+pageSize)}>下一頁</button>
+    </nav>:null}
   </FeaturePageV2>;
 }
