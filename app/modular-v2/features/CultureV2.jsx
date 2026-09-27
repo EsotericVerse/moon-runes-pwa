@@ -141,11 +141,14 @@ export default function CultureV2(){
 
   const periodVolumesQuery=useQuery({
     queryKey:['culture-period-source-volumes',scopeId,visibleAuthorPeriods.map(item=>[item.period,item.start_date,item.end_date])],
-    queryFn:async()=>Promise.all(visibleAuthorPeriods.map(async(period,index)=>({
-      period:{...period,scope_id:'lo3rwang'},
-      snapshot:await selectAuthorPeriodSourceSnapshot({startDate:period.start_date,endDate:period.end_date}),
-      periodIndex:index
-    }))),
+    queryFn:async()=>{
+      const settled=await Promise.allSettled(visibleAuthorPeriods.map(async(period,index)=>({
+        period:{...period,scope_id:'lo3rwang'},
+        snapshot:await selectAuthorPeriodSourceSnapshot({startDate:period.start_date,endDate:period.end_date}),
+        periodIndex:index
+      })));
+      return settled.filter(item=>item.status==='fulfilled').map(item=>item.value);
+    },
     enabled:(scopeId==='lo3rwang'||scopeId==='loc')&&visibleAuthorPeriods.length>0&&!selectedPeriodCoversVisible,
     staleTime:5*60_000
   });
