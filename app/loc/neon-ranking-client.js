@@ -20,7 +20,7 @@ function increment(map,type,term,extra={}){
   map.set(key,row);
 }
 
-function dateFilters(range,column='created_at'){
+function dateFilters(range,column='createtime'){
   if(!range?.start_date)return [];
   const filters=[{column,operator:'gte',value:String(range.start_date).slice(0,10)+'T00:00:00+08:00'}];
   if(range.end_date)filters.push({column,operator:'lte',value:String(range.end_date).slice(0,10)+'T23:59:59.999+08:00'});
@@ -132,9 +132,9 @@ async function runeStyles(period,type){
   ];
   const map=new Map();
   await processStyleTableRows('silver.lrunes',{
-    columns:'record_id,record_type,title,content,meta_tags,style_tags,created_at',
+    columns:'record_id,record_type,title,content,meta_tags,createtime',
     filters,
-    orders:[{column:'created_at',ascending:true}],
+    orders:[{column:'createtime',ascending:true}],
     onClassified:row=>{
       const term=type==='style_group'?row.style_group:row.style_label;
       increment(map,type,term,{source:'lrunes',period:period||'all'});

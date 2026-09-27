@@ -42,7 +42,7 @@ function timelineItems(rows){
   }).filter(row=>row.start_date||(row.open_start&&row.end_date))
     .sort((a,b)=>String(a.start_date||a.end_date).localeCompare(String(b.start_date||b.end_date)));
 }
-function dateFilters(startDate,endDate,column='created_at'){
+function dateFilters(startDate,endDate,column='createtime'){
   const filters=[{column,operator:'gte',value:`${String(startDate).slice(0,10)}T00:00:00+08:00`}];
   if(endDate)filters.push({column,operator:'lte',value:String(endDate).slice(0,10)+'T23:59:59.999+08:00'});
   return filters;
@@ -222,7 +222,7 @@ async function selectScopePeriodMetadataRows(scopeId,{startDate,endDate}={}){
   const filters=dateFilters(startDate,endDate);
   if(runtimeId==='lunarunes'){
     const result=await selectNeonAllRows('silver.lrunes',{
-      columns:'record_id,record_type,galaxy_id,media_id,title,meta_tags,style_tags,source_name,source_type,created_at,url,source_ref',
+      columns:'record_id,record_type,galaxy_id,media_id,galaxy_link,title,meta_tags,media_type,source_name,source_type,createtime,url,source_ref',
       filters:[
         {column:'record_type',operator:'in',value:['galaxy','galaxy_media']},
         ...filters
@@ -253,7 +253,7 @@ async function selectScopeStyleRows(scopeId,{startDate,endDate}={}){
   const output=[];
   if(runtimeId==='lunarunes'){
     await processStyleTableRows('silver.lrunes',{
-      columns:'record_id,record_type,galaxy_id,media_id,title,content,meta_tags,style_tags,source_name,source_type,created_at,url,source_ref',
+      columns:'record_id,record_type,galaxy_id,media_id,galaxy_link,title,content,meta_tags,media_type,source_name,source_type,createtime,url,source_ref',
       filters:[
         {column:'record_type',operator:'in',value:['galaxy','galaxy_media']},
         ...filters
@@ -285,7 +285,7 @@ function canonicalSourceWorks(rows=[]){
     if(!source)continue;
     const isMedia=String(row?.record_type||'')==='galaxy_media'||Boolean(row?.media_id);
     const key=isMedia
-      ?String(row?.galaxy_link||row?.media_link||row?.media_id||'')
+      ?String(row?.galaxy_link||row?.media_id||'')
       :String(row?.galaxy_id||row?.record_id||'');
     if(!key)continue;
     const existing=groups.get(key);
@@ -350,16 +350,16 @@ export async function selectScopeStyleWorks(scopeId,{startDate,endDate,styleName
   for(const row of rows){
     if(String(row[field]||'')===String(styleName))matches.push(row);
   }
-  matches.sort((a,b)=>String(b.createtime||b.created_at||'').localeCompare(String(a.createtime||a.created_at||'')));
+  matches.sort((a,b)=>String(b.createtime||'').localeCompare(String(a.createtime||'')));
   const page=matches.slice(offset,offset+pageSize).map(row=>{
     const isMedia=String(row.record_type||'')==='galaxy_media'||Boolean(row.media_id);
     return {
       ...row,
       entry_id:row.galaxy_id||row.media_id||row.record_id,
       entry_type:isMedia?'media_metadata':'work',
-      start_date:row.createtime||row.created_at,
-      date:row.createtime||row.created_at,
-      display_date:formatCultureDateTime(row.createtime||row.created_at),
+      start_date:row.createtime,
+      date:row.createtime,
+      display_date:formatCultureDateTime(row.createtime),
       title:decodeCultureText(row.title||'').trim()||row.style_label||row.style_group||'作品',
       description:'',
       media_metadata_text:isMedia?mediaMetadataDescription(row):'',

@@ -172,9 +172,9 @@ const runeText=makeProvider({
   source:'符文文字',
   scopeId:'lrunes',
   idColumn:'record_id',
-  columns:['record_id','galaxy_id','scope_id','category','content_type','source_name','source_role','title','meta_tags','created_at','source_ref','source_id','target_id','ref_id','url'],
+  columns:['record_id','galaxy_id','scope_id','category','content_type','source_name','source_role','title','meta_tags','createtime','source_ref','source_id','target_id','ref_id','url','media_link'],
   searchFields:['title','content','meta_tags','source_name'],
-  dateColumn:'created_at',
+  dateColumn:'createtime',
   filters:[{column:'record_type',operator:'eq',value:'galaxy'}]
 });
 
@@ -184,9 +184,9 @@ const runeMedia=makeProvider({
   source:'符文多媒體',
   scopeId:'lrunes',
   idColumn:'record_id',
-  columns:['record_id','media_id','scope_id','media_link','source_name','source_native_id','media_type','title','url','meta_tags','style_tags','created_at'],
-  searchFields:['title','meta_tags','style_tags','source_name'],
-  dateColumn:'created_at',
+  columns:['record_id','media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','createtime'],
+  searchFields:['title','meta_tags','media_type'],
+  dateColumn:'createtime',
   filters:[{column:'record_type',operator:'eq',value:'galaxy_media'}]
 });
 

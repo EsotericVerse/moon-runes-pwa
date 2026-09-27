@@ -30,7 +30,7 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
   const excerpt=decodeCultureText(row.excerpt||'').trim();
   const explicitTitle=row.title||row.name||row.display_title||row.label||row.rune_name||row.context_name||row.song_id||row.id||'';
   const title=explicitTitle||snippet(excerpt||source,q)||source;
-  const bodyField=['summary','display_text','excerpt','content','style_tags','meta_tags','description','interpretation','ai_summary','retrieval_text','text'].find(field=>typeof row[field]==='string'&&row[field].trim())||'';
+  const bodyField=['summary','display_text','excerpt','content','meta_tags','description','interpretation','ai_summary','retrieval_text','text'].find(field=>typeof row[field]==='string'&&row[field].trim())||'';
   const body=bodyField?decodeCultureText(row[bodyField]):text;
   const identity=row.media_id||row.galaxy_id||row.song_id||row.rune_id||row.id;
   const scope=row.scope_id||scopeId;
@@ -53,15 +53,15 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
     key:identity?source+'-'+identity:source+'-'+title+'-'+String(body).slice(0,40),
     source,title:String(title),
     date:row.date||row.createtime||row.created_date||row.create_time||row.created_at||row.update_time||row.updated_at||'',
-    snippet:explicitTitle?snippet(body,q):'',bodyText:explicitTitle?String(body):'',styleTags:String(row.style_tags||row.meta_tags||''),
+    snippet:explicitTitle?snippet(body,q):'',bodyText:explicitTitle?String(body):'',
     display:String(row.display||'summary'),scopeId:scope,resourceType,resourceId,settingsKey,settings,
     editableTable,editableIdColumn,editResourceId,editableField,isScopeCard,href,
-    sourceId:row.source_id||row.galaxy_link||row.media_link||'',
+    sourceId:row.source_id||row.galaxy_link||'',
     targetId:row.target_id||'',
     refId:row.ref_id||'',
     groupKey:resourceType==='galaxy'&&resourceId
       ?'galaxy:'+resourceId
-      :(resourceType==='galaxy_media'&&(row.galaxy_link||row.media_link)?'galaxy:'+(row.galaxy_link||row.media_link):'result:'+(identity||title)),
+      :(resourceType==='galaxy_media'&&row.galaxy_link?'galaxy:'+row.galaxy_link:'result:'+(identity||title)),
     links:href?[{id:resourceType||'primary',href,label:resourceType==='galaxy_media'?'媒體連結':'查看連結'}]:[],
     destinations:[]
   };
@@ -196,7 +196,7 @@ export default function SearchV2(){
       const runeScope=result.scopeId==='lrunes'||result.scopeId==='lunarunes';
       const contentColumns=result.resourceType==='galaxy'
         ?(runeScope?'record_id,scope_id,title,content':'galaxy_id,scope_id,title,content')
-        :(runeScope?'record_id,scope_id,title,meta_tags,style_tags':'media_id,title,meta_tags');
+        :(runeScope?'record_id,title,meta_tags':'media_id,title,meta_tags');
       const [fullRow,auditResult]=await Promise.all([
         selectNeonRowById(result.editableTable,{
           idColumn:result.editableIdColumn,
@@ -220,7 +220,6 @@ export default function SearchV2(){
       setEditDraft({
         title:String(fullRow.title??result.title??''),
         body:String(fullRow[result.editableField]??''),
-        styleTags:String(fullRow.style_tags??result.styleTags??''),
         ...visibilityDraft(result.settings||{})
       });
       setEditAudit(auditResult.rows);
@@ -236,9 +235,8 @@ export default function SearchV2(){
       if(!account.canManageScopeSync(result.scopeId))throw new Error('沒有修改此內容的權限。');
       const runeScope=result.scopeId==='lrunes'||result.scopeId==='lunarunes';
       const contentPatch={title:editDraft.title,[result.editableField]:editDraft.body};
-      if(result.resourceType==='galaxy_media'&&runeScope)contentPatch.style_tags=String(editDraft.styleTags||'').trim()||null;
       const contentFilters=[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId}];
-      if(!(result.resourceType==='galaxy_media'&&!runeScope))contentFilters.push({column:'scope_id',operator:'eq',value:result.scopeId});
+      if(result.resourceType==='galaxy')contentFilters.push({column:'scope_id',operator:'eq',value:result.scopeId});
       await updateNeonRows(result.editableTable,contentPatch,{filters:contentFilters});
       let settings=result.settings||null;
       if(account.canManageScopeSync(result.scopeId)){
@@ -248,7 +246,7 @@ export default function SearchV2(){
         visibilityRef.current.set(result.settingsKey,record);
         settings=record;
       }
-      setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:editDraft.title,bodyText:editDraft.body,styleTags:result.resourceType==='galaxy_media'?String(runeScope?editDraft.styleTags:editDraft.body).trim():item.styleTags,snippet:snippet(editDraft.body,matchedQueryRef.current),settings}));
+      setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:editDraft.title,bodyText:editDraft.body,snippet:snippet(editDraft.body,matchedQueryRef.current),settings}));
       setEditingKey('');setEditDraft(null);
     }catch(exception){setEditError(String(exception?.message||exception||'儲存失敗。'))}
     finally{setEditBusy(false)}
@@ -297,7 +295,6 @@ export default function SearchV2(){
             busy={editBusy}
             error={editError}
             showVisibility={canSearchSettings}
-            extraFields={row.resourceType==='galaxy_media'&&(row.scopeId==='lrunes'||row.scopeId==='lunarunes')?<label>媒體標籤<input value={draft.styleTags||''} onChange={event=>setEditDraft(current=>({...current,styleTags:event.target.value}))}/></label>:null}
             onSave={()=>saveEditing(row)}
             onCancel={()=>{setEditingKey('');setEditDraft(null);setEditError('')}}
           />:null}
