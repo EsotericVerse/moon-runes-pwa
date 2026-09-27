@@ -3,6 +3,7 @@
 import {ScopeCultureResponseSchema} from './scope-feature-contracts';
 import {selectNeonAllRows} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
+import {selectManagedScopeIds} from './scope-list';
 import {decodeCultureText,formatCultureDateTime,groupWorksByWeek} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
 import {classifyStyleRows,processStyleTableRows} from './style-classifier';
 import {selectGalaxyPage,selectSourceWeekly} from './aggregate-query';
@@ -56,11 +57,17 @@ export async function selectScopeCultureData(scopeId){
   const id=runtimeScopeId(scopeId);
   const dataId=dataScopeId(scopeId);
   if(!['loc','lrunes','lo3rwang'].includes(dataId))throw new Error('Scope 無效');
-  const [authorContext,runeContext]=await Promise.all([
-    dataId==='loc'||dataId==='lo3rwang'?selectScopeTimeRows('lo3rwang').then(rows=>rows.map(row=>({...row,scope_id:'lo3rwang'}))):Promise.resolve([]),
-    dataId==='loc'||dataId==='lrunes'?selectScopeTimeRows('lrunes').then(rows=>rows.map(row=>({...row,scope_id:'lrunes'}))):Promise.resolve([])
-  ]);
-  const scopeContext=[...authorContext,...runeContext];
+
+  const scopeIds=dataId==='loc'?await selectManagedScopeIds():[dataId];
+  const contextEntries=await Promise.all(scopeIds.map(async scope=>{
+    const rows=await selectScopeTimeRows(scope);
+    return [scope,rows.map(row=>({...row,scope_id:scope}))];
+  }));
+  const contextByScope=new Map(contextEntries);
+  const scopeContext=contextEntries.flatMap(([,rows])=>rows);
+  const authorContext=contextByScope.get('lo3rwang')||[];
+  const runeContext=contextByScope.get('lrunes')||[];
+
   const eraSource=authorContext.filter(row=>row.entry_type==='period');
   const runeTimeline=runeTimelineRows(runeContext);
   const eras=periodRows(eraSource);
