@@ -3,7 +3,7 @@ import {readFileSync} from 'node:fs';
 const failures=[];
 const packageJson=JSON.parse(readFileSync('package.json','utf8'));
 const deps=packageJson.dependencies||{};
-const requiredPackages=['@neondatabase/neon-js','@tanstack/react-query','flexsearch','recharts','vis-network','vis-timeline','zod','p-map'];
+const requiredPackages=['@neondatabase/neon-js','@neondatabase/postgrest-js','@tanstack/react-query','flexsearch','recharts','vis-network','vis-timeline','zod','p-map'];
 for(const name of requiredPackages)if(!deps[name])failures.push(`package.json: missing ${name}`);
 
 function read(path){return readFileSync(path,'utf8');}
@@ -14,9 +14,9 @@ function requireText(path,patterns,description){
   }
 }
 
-// Public canonical reads use a Neon Function; management/user writes use the separate Auth client.
-requireText('app/loc/neon-client.js',[/neonPublicReadUrl/ ,/neonAuthClient/],'Neon Function public/auth client split');
-requireText('app/loc/neon-repository.js',[/from ['"]zod['"]/ ,/neonPublicReadUrl/ ,/neonAuthClient/ ,/export async function selectNeonRows/],'Neon repository/Zod boundary');
+// Public canonical reads use unauthenticated PostgREST; management/user writes use the separate Auth client.
+requireText('app/loc/neon-client.js',[/NeonPostgrestClient/ ,/neonPublicClient/ ,/neonAuthClient/],'Neon public/auth client split');
+requireText('app/loc/neon-repository.js',[/from ['"]zod['"]/ ,/neonPublicClient/ ,/neonAuthClient/ ,/export async function selectNeonRows/],'Neon repository/Zod boundary');
 // TanStack Query is used by data-heavy features; statistics uses direct offset pagination.
 requireText('app/modular-v2/features/ContextV2.jsx',[/from ['"]@tanstack\/react-query['"]/ ,/selectScopeContextData/],'Context Query/Neon interop');
 requireText('app/modular-v2/features/StatisticsV2.jsx',[/useOffsetPagination/ ,/selectScopeRankingPage/ ,/from ['"]recharts['"]/],'Statistics offset/Neon/Recharts interop');
