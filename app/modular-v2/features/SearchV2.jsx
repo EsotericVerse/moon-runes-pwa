@@ -12,6 +12,7 @@ import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import {scopeHrefV2} from '../scope-registry.v2';
 import {buildSearchNavigation,featureNavigationLinks} from '../feature-navigation.v2';
 import {featureDataErrorMessage} from '../feature-data-state.v2';
+import ContentEditorV2 from '../ContentEditorV2';
 
 const norm=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
 function rowText(row){return Object.values(row||{}).filter(value=>typeof value==='string').join(' ')}
@@ -227,25 +228,20 @@ export default function SearchV2(){
           {editable?<p>
             {editable?<button type="button" onClick={()=>startEditing(row)}>{editingKey===row.key?'編輯中':'編輯'}</button>:null}
           </p>:null}
-          {draft?<div className="scope-v2-editor" aria-label="搜尋結果編輯器">
-            <label>標題<input value={draft.title} onChange={event=>setEditDraft(current=>({...current,title:event.target.value}))}/></label>
-            <label>全文<textarea rows={10} value={draft.body} onChange={event=>setEditDraft(current=>({...current,body:event.target.value}))}/></label>
-            {row.resourceType==='galaxy_media'?<label>媒體曲風分類<input value={draft.styleTags||''} onChange={event=>setEditDraft(current=>({...current,styleTags:event.target.value}))} placeholder="例如 Mandopop, 男聲, 希望向, 主題曲"/></label>:null}
-            {canSearchSettings?<div className="scope-v2-editor-options">
-              <label><input type="checkbox" checked={draft.includeStatistics} onChange={event=>setEditDraft(current=>({...current,includeStatistics:event.target.checked}))}/>列入統計</label>
-              <label><input type="checkbox" checked={draft.fullText} onChange={event=>setEditDraft(current=>({...current,fullText:event.target.checked}))}/>全文顯示（未勾選時顯示節錄）</label>
-              <label><input type="checkbox" checked={draft.hidden} onChange={event=>setEditDraft(current=>({...current,hidden:event.target.checked}))}/>隱藏搜尋結果</label>
-              <label><input type="checkbox" checked={draft.showLink} onChange={event=>setEditDraft(current=>({...current,showLink:event.target.checked}))}/>顯示連結</label>
-              <label><input type="checkbox" checked={draft.showSource} onChange={event=>setEditDraft(current=>({...current,showSource:event.target.checked}))}/>顯示來源</label>
-            </div>:null}
-            {editAudit.length?<details><summary>近期修改紀錄</summary><ol>{editAudit.map((entry,index)=><li key={String(entry.changed_at)+entry.field_name+index}>
-              <p>{entry.field_name}｜操作者 {entry.actor_name||entry.actor_email}（{entry.actor_email}）｜{new Date(entry.changed_at).toLocaleString('zh-TW')}</p>
-              <details><summary>查看前後內容</summary><p>修改前：{entry.old_value??'（空）'}</p><p>修改後：{entry.new_value??'（空）'}</p></details>
-            </li>)}</ol></details>:null}
-            {editError?<p role="alert" className="scope-v2-error">{editError}</p>:null}
-            <button type="button" disabled={editBusy} onClick={()=>saveEditing(row)}>{editBusy?'儲存中…':'儲存'}</button>
-            <button type="button" disabled={editBusy} onClick={()=>{setEditingKey('');setEditDraft(null);setEditError('')}}>取消</button>
-          </div>:null}
+          {draft?<ContentEditorV2
+            draft={draft}
+            setDraft={setEditDraft}
+            busy={editBusy}
+            error={editError}
+            showVisibility={canSearchSettings}
+            extraFields={row.resourceType==='galaxy_media'?<label>媒體曲風分類<input value={draft.styleTags||''} onChange={event=>setEditDraft(current=>({...current,styleTags:event.target.value}))} placeholder="例如 Mandopop, 男聲, 希望向, 主題曲"/></label>:null}
+            onSave={()=>saveEditing(row)}
+            onCancel={()=>{setEditingKey('');setEditDraft(null);setEditError('')}}
+          />:null}
+          {draft&&editAudit.length?<details><summary>近期修改紀錄</summary><ol>{editAudit.map((entry,index)=><li key={String(entry.changed_at)+entry.field_name+index}>
+            <p>{entry.field_name}｜操作者 {entry.actor_name||entry.actor_email}（{entry.actor_email}）｜{new Date(entry.changed_at).toLocaleString('zh-TW')}</p>
+            <details><summary>查看前後內容</summary><p>修改前：{entry.old_value??'（空）'}</p><p>修改後：{entry.new_value??'（空）'}</p></details>
+          </li>)}</ol></details>:null}
         </ScopeCardV2>;
       })}
     </div>
