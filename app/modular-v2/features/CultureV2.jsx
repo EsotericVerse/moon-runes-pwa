@@ -8,7 +8,7 @@ import {
   selectAuthorPeriodWorks,
   selectScopeClassificationBuckets,
   selectScopeCultureData,
-  selectScopeStyleGroups,
+  selectScopeStyleSnapshot,
   selectScopeStyleWorks
 } from '../../loc/neon-culture-client';
 import {readFeatureNavigation} from '../feature-navigation.v2';
@@ -147,9 +147,9 @@ export default function CultureV2(){
     staleTime:5*60_000
   });
 
-  const styleGroupsQuery=useQuery({
-    queryKey:['culture-period-style-groups',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,styleLevel],
-    queryFn:()=>selectScopeStyleGroups(classificationScope,{
+  const styleSnapshotQuery=useQuery({
+    queryKey:['culture-period-style-snapshot',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,styleLevel],
+    queryFn:()=>selectScopeStyleSnapshot(classificationScope,{
       startDate:selectedWorkPeriod?.start_date,
       endDate:selectedWorkPeriod?.end_date,
       styleLevel
@@ -158,21 +158,9 @@ export default function CultureV2(){
     staleTime:5*60_000
   });
 
-  const styleBucketsQuery=useQuery({
-    queryKey:['culture-classification-buckets',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,'style',styleLevel],
-    queryFn:()=>selectScopeClassificationBuckets(classificationScope,{
-      startDate:selectedWorkPeriod?.start_date,
-      endDate:selectedWorkPeriod?.end_date,
-      dimension:'style',
-      styleLevel
-    }),
-    enabled:classificationMode==='style'&&Boolean(selectedWorkPeriod?.start_date),
-    staleTime:5*60_000
-  });
-
-  const classificationBucketsQuery=classificationMode==='source'?sourceSnapshotQuery:styleBucketsQuery;
-  const categoryGroups=classificationMode==='source'?(sourceSnapshotQuery.data?.groups||[]):(styleGroupsQuery.data||[]);
-  const categoryQuery=classificationMode==='source'?sourceSnapshotQuery:styleGroupsQuery;
+  const classificationBucketsQuery=classificationMode==='source'?sourceSnapshotQuery:styleSnapshotQuery;
+  const categoryGroups=classificationMode==='source'?(sourceSnapshotQuery.data?.groups||[]):(styleSnapshotQuery.data?.groups||[]);
+  const categoryQuery=classificationMode==='source'?sourceSnapshotQuery:styleSnapshotQuery;
   const selectedGroup=categoryGroups.find(item=>item.category_key===selectedCategory)||null;
   const selectedCount=Number(selectedGroup?.item_count)||0;
   const periodWorksQuery=useQuery({
@@ -233,7 +221,7 @@ export default function CultureV2(){
     });
   },[query.data,currentRows,currentByScope,scopeId,periodVolumeByStart]);
 
-  const classificationBuckets=classificationMode==='source'?(sourceSnapshotQuery.data?.buckets||[]):(styleBucketsQuery.data||[]);
+  const classificationBuckets=classificationMode==='source'?(sourceSnapshotQuery.data?.buckets||[]):(styleSnapshotQuery.data?.buckets||[]);
 
   return <FeaturePageV2 featureId="culture">
     <section className='loc-card scope-v2-feature-card scope-v2-feature-card-wide'>
