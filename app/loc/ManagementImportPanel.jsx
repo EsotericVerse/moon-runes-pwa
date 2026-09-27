@@ -90,6 +90,58 @@ function JsonImport({scopeId}){
   </div>;
 }
 
+function MediaJsonImport({scopeId}){
+  const account=useNeonAccount();
+  const [fileName,setFileName]=useState('');
+  const [rows,setRows]=useState([]);
+  const [status,setStatus]=useState('');
+  const [busy,setBusy]=useState(false);
+  if(scopeId!=='lo3rwang')return null;
+  if(!account.canManageScopeSync(scopeId))return null;
+
+  async function chooseFile(event){
+    const file=event.target.files?.[0];if(!file)return;
+    setFileName(file.name);setStatus('');
+    try{
+      const parsed=JSON.parse(await file.text());
+      const list=asRows(parsed);
+      setRows(list);
+      setStatus(`已讀取 ${list.length.toLocaleString()} 筆多媒體資料；URL 可留空。`);
+    }catch(error){setRows([]);setStatus('JSON 解析失敗：'+(error?.message||error));}
+  }
+
+  async function run(){
+    if(!rows.length)return;
+    setBusy(true);setStatus('');
+    try{
+      const payload=rows.map(row=>({
+        galaxy_link:String(firstValue(row,['galaxy_link','galaxy_uid','uid_link'])||'').trim()||null,
+        source_native_id:String(firstValue(row,['source_native_id','native_id','post_id','media_native_id'])||'').trim()||null,
+        source_place:String(firstValue(row,['source_place','place','location','checkin'])||'').trim()||null,
+        media_type:String(firstValue(row,['media_type','type'])||'media').trim()||'media',
+        title:String(firstValue(row,['title','name','caption'])||'').trim()||null,
+        url:String(firstValue(row,['url','link','permalink'])||'').trim()||null,
+        meta_tags:String(firstValue(row,['meta_tags','tags','keywords','description'])||'').trim()||null,
+        createtime:iso(firstValue(row,['createtime','created_at','create_time','created_time','date','published_at']))
+      })).filter(row=>row.media_type&&(row.title||row.meta_tags||row.source_native_id||row.source_place||row.url));
+      await insertNeonRows('silver.lo3rwang_galaxy_media',payload);
+      setStatus(`已匯入 ${payload.length.toLocaleString()} 筆多媒體；沒有 URL 的圖片仍會保留。`);
+      setRows([]);setFileName('');
+    }catch(error){setStatus(error?.message||'多媒體匯入失敗。');}
+    finally{setBusy(false);}
+  }
+
+  return <div className="scope-v2-inline-card">
+    <h4>多媒體 JSON 匯入</h4>
+    <p>圖片、影音、音樂與單純 URL 都可匯入；URL 可留空。galaxy_link 有值就掛回文字，沒有就保留為獨立 Media。</p>
+    <label>本次檔案<input type="file" accept=".json,application/json" onChange={chooseFile}/></label>
+    {fileName?<p>檔案：<strong>{fileName}</strong></p>:null}
+    {rows.length?<details><summary>預覽前 3 筆</summary><pre style={{whiteSpace:'pre-wrap'}}>{JSON.stringify(rows.slice(0,3),null,2)}</pre></details>:null}
+    <button type="button" disabled={busy||!rows.length} onClick={run}>{busy?'匯入中…':'匯入多媒體'}</button>
+    {status?<p className="scope-v2-status">{status}</p>:null}
+  </div>;
+}
+
 function SunoImport({scopeId}){
   const account=useNeonAccount();
   const [draft,setDraft]=useState({title:'',lyrics:'',url:'',nativeId:'',createdDate:'',stylePrompt:'',metaTags:'',source_id:'',target_id:'',ref_id:''});
@@ -163,6 +215,7 @@ export default function ManagementImportPanel({scopeId}){
   return <section className="scope-v2-inline-card">
     <h3>匯入</h3>
     <JsonImport scopeId={scopeId}/>
+    <MediaJsonImport scopeId={scopeId}/>
     <SunoImport scopeId={scopeId}/>
   </section>;
 }
