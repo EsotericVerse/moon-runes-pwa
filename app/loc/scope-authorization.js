@@ -1,7 +1,7 @@
 import {z} from 'zod';
 
 const EmailSchema=z.string().trim().toLowerCase().email();
-const RoleSchema=z.string().trim().regex(/^(admin|scope:[A-Za-z][A-Za-z0-9_.-]{0,62})$/,'Invalid Neon Auth role');
+const ManageRoleSchema=z.enum(['admin','scope']);
 
 export function normalizeScopeId(value){
   const id=String(value||'').trim();
@@ -14,33 +14,33 @@ export function normalizeAuthEmail(value){
   return parsed.success?parsed.data:'';
 }
 
-export function normalizeAuthRole(value){
-  const raw=Array.isArray(value)?value:String(value||'').split(',');
-  const roles=[...new Set(raw.map(item=>String(item||'').trim()).filter(Boolean))];
-  if(roles.length!==1)return '';
-  const parsed=RoleSchema.safeParse(roles[0]);
+export function normalizeManageRole(value){
+  const parsed=ManageRoleSchema.safeParse(String(value||'').trim());
   return parsed.success?parsed.data:'';
 }
 
-export function canRoleManageGlobal(role){
-  return normalizeAuthRole(role)==='admin';
+function normalizePermissionRows(email,rows=[]){
+  return (Array.isArray(rows)?rows:[]).flatMap(row=>{
+    const rowEmail=normalizeAuthEmail(row?.email);
+    const role=normalizeManageRole(row?.role);
+    const id=normalizeScopeId(row?.id);
+    if(!email||rowEmail!==email||!role||!id)return [];
+    return [{id,email:rowEmail,role}];
+  });
 }
 
-export function canRoleManageScope(role,scopeId){
-  const normalizedRole=normalizeAuthRole(role);
-  const scope=normalizeScopeId(scopeId);
-  return normalizedRole==='admin'||Boolean(scope&&normalizedRole===`scope:${scope}`);
-}
-
-export function createScopeAuthorizer(user){
+export function createScopeAuthorizer(user,permissionRows=[]){
   const email=normalizeAuthEmail(user?.email);
-  const role=email?normalizeAuthRole(user?.role):'';
+  const permissions=normalizePermissionRows(email,permissionRows);
+  const admin=permissions.some(row=>row.role==='admin');
+  const scopes=new Set(permissions.filter(row=>row.role==='scope').map(row=>row.id));
   return Object.freeze({
     email,
-    role,
-    canManageGlobal:async()=>canRoleManageGlobal(role),
-    canManageScope:async scopeId=>canRoleManageScope(role,scopeId),
-    canManageGlobalSync:()=>canRoleManageGlobal(role),
-    canManageScopeSync:scopeId=>canRoleManageScope(role,scopeId)
+    role:admin?'admin':(scopes.size?'scope':''),
+    scopeIds:Object.freeze([...scopes].sort()),
+    canManageGlobal:async()=>admin,
+    canManageScope:async scopeId=>admin||scopes.has(normalizeScopeId(scopeId)),
+    canManageGlobalSync:()=>admin,
+    canManageScopeSync:scopeId=>admin||scopes.has(normalizeScopeId(scopeId))
   });
 }
