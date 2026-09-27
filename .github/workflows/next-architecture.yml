@@ -4,9 +4,7 @@ on:
   pull_request:
     paths:
       - "app/**"
-      - "lib/**"
-      - "js/**"
-      - "*.html"
+      - "js/locMoonPhase.js"
       - "scripts/**"
       - "package.json"
       - "next.config.mjs"
@@ -28,5 +26,5 @@ jobs:
         run: npm run verify:text-engine && npm run verify:semantic-state && npm run verify:rune-keyword-rules && npm run verify:rune-draw
       - name: Verify public Neon Data API
         run: npm run verify:neon-public
-      - name: Verify modularity and build Next server
+      - name: Verify modularity and build Current static export
         run: npm run build
