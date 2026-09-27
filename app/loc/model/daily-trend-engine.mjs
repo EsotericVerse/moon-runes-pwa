@@ -99,8 +99,9 @@ function summarizeRepeats(rows){
 }
 
 function summarizeWindow(rows,days,span){
-  const source=(days||[]).slice(-Math.max(1,span));
-  if(!source.length)return {
+  const allDays=Array.isArray(days)?days:[];
+  const latest=allDays.at(-1)||null;
+  if(!latest)return {
     span,
     start_date:'',
     end_date:'',
@@ -111,12 +112,18 @@ function summarizeWindow(rows,days,span){
     repeats:[],
     direction_changes:[]
   };
-  const startDate=source[0].date;
-  const endDate=source.at(-1).date;
+  const latestMs=dateMs(latest.date);
+  const startMs=latestMs-(Math.max(1,span)-1)*86400000;
+  const source=allDays.filter(day=>{
+    const value=dateMs(day.date);
+    return Number.isFinite(value)&&value>=startMs&&value<=latestMs;
+  });
+  const startDate=new Date(startMs).toISOString().slice(0,10);
+  const endDate=latest.date;
   const periodRows=rowsInWindow(rows,endDate,span);
   const relation=source.length>1
     ?resolveStatePair(source[0].result,source.at(-1).result)
-    :{from:source[0].result,result:source[0].result,trend:'未知'};
+    :{from:source[0]?.result||'未知',result:source.at(-1)?.result||'未知',trend:'未知'};
   const repeated=summarizeRepeats(periodRows);
   return {
     span,
