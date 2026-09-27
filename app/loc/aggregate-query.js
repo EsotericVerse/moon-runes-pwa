@@ -46,3 +46,15 @@ export async function selectCanonicalWorksPage({scopeId='lo3rwang',sourceName=''
   });
   return {rows,totalCount:Number(count??rows.length)||0};
 }
+
+
+export async function selectCanonicalWorkSummaries(workIds=[]){
+  const ids=[...new Set((workIds||[]).map(value=>String(value||'').trim()).filter(Boolean))];
+  if(!ids.length)return [];
+  const {rows}=await selectNeonRows('silver.v_lo3rwang_canonical_works',{
+    columns:'work_id,title,excerpt',
+    filters:[{column:'work_id',operator:'in',value:ids}],
+    limit:ids.length
+  });
+  return rows;
+}
