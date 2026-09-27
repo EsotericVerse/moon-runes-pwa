@@ -1,12 +1,10 @@
 'use client';
 
 import {processNeonHeavyRows,selectNeonCatalog} from './neon-repository';
+import {createTextIndex,searchTextIndex} from './text-engine';
+import {splitRuneKeywordEntries} from './model/rune-keyword-rules';
 
 let canonicalCatalogPromise=null;
-
-function normalize(value){
-  return String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant');
-}
 
 function compareRank(a,b){
   return Number(b.count||0)-Number(a.count||0)
@@ -23,32 +21,31 @@ export async function selectCanonicalStyleCatalog(){
         filters:[{column:'record_type',operator:'eq',value:'rune'}]
       }),
       selectNeonCatalog('silver.lrunes',{
-        columns:'rune_number,keyword,active,record_type',
+        columns:'rune_number,keyword_group,keyword,active,record_type',
         filters:[
           {column:'record_type',operator:'eq',value:'keyword'},
           {column:'active',operator:'eq',value:true}
         ]
       })
     ]);
-    const runes=runesResult.rows||[];
-    const keywords=keywordsResult.rows||[];
-    const runeMap=new Map(runes.map(row=>[Number(row.rune_number),{
+    const runeMap=new Map((runesResult.rows||[]).map(row=>[Number(row.rune_number),{
       rune_number:Number(row.rune_number),
       style_label:String(row.rune_name||'').trim(),
       style_group:String(row.group_name||'').trim()
     }]));
-    return keywords.map((row,index)=>{
+    return (keywordsResult.rows||[]).map((row,index)=>{
       const rune=runeMap.get(Number(row.rune_number));
-      const keyword=normalize(row.keyword).trim();
+      const keyword=String(row.keyword||'').trim();
       if(!rune||!keyword)return null;
       return {
         keyword,
+        keyword_group:String(row.keyword_group||'').trim(),
         rune_number:rune.rune_number,
         style_label:rune.style_label,
         style_group:rune.style_group,
         order:index
       };
-    }).filter(Boolean).sort((a,b)=>b.keyword.length-a.keyword.length||a.order-b.order);
+    }).filter(Boolean);
   })().catch(error=>{
     canonicalCatalogPromise=null;
     throw error;
@@ -62,68 +59,122 @@ export function styleTextOf(row={}){
   ].filter(Boolean).join(' ');
 }
 
-export function classifyStyleText(value,catalog=[]){
-  const text=normalize(value);
-  if(!text||!catalog.length)return {
-    style_label:'',style_group:'',hit_count:0,rune_counts:[],group_counts:[]
-  };
-
-  const claimed=new Uint8Array(text.length);
-  const runeCounts=new Map();
-  const groupCounts=new Map();
-  let hitCount=0;
-
-  for(const item of catalog){
-    const keyword=item.keyword;
-    if(!keyword)continue;
-    let from=0;
-    while(from<text.length){
-      const at=text.indexOf(keyword,from);
-      if(at<0)break;
-      const end=at+keyword.length;
-      let overlaps=false;
-      for(let i=at;i<end;i++){
-        if(claimed[i]){overlaps=true;break;}
+function compileCatalog(catalog=[]){
+  const runes=new Map();
+  for(const item of Array.isArray(catalog)?catalog:[]){
+    const runeNumber=Number(item.rune_number);
+    if(!Number.isInteger(runeNumber))continue;
+    const rune=runes.get(runeNumber)||{
+      rune_number:runeNumber,
+      style_label:String(item.style_label||'').trim(),
+      style_group:String(item.style_group||'').trim(),
+      order:Number(item.order)||runeNumber,
+      globalRules:[],
+      groups:new Map()
+    };
+    const keywordGroup=String(item.keyword_group||'').trim()||'default';
+    const parsed=splitRuneKeywordEntries([item.keyword]);
+    if(parsed.rules.length){
+      if(keywordGroup==='rules')rune.globalRules.push(...parsed.rules);
+      else{
+        const group=rune.groups.get(keywordGroup)||{keywords:[],rules:[]};
+        group.rules.push(...parsed.rules);
+        rune.groups.set(keywordGroup,group);
       }
-      if(!overlaps){
-        for(let i=at;i<end;i++)claimed[i]=1;
-        hitCount+=1;
-        const runeKey=String(item.rune_number);
-        const rune=runeCounts.get(runeKey)||{
-          key:runeKey,label:item.style_label,group:item.style_group,
-          order:Number(item.rune_number)||0,count:0
-        };
-        rune.count+=1;
-        runeCounts.set(runeKey,rune);
-        if(item.style_group){
-          const group=groupCounts.get(item.style_group)||{
-            key:item.style_group,label:item.style_group,order:0,count:0
+    }else{
+      const group=rune.groups.get(keywordGroup)||{keywords:[],rules:[]};
+      group.keywords.push(...parsed.keywords);
+      rune.groups.set(keywordGroup,group);
+    }
+    runes.set(runeNumber,rune);
+  }
+  return [...runes.values()].sort((a,b)=>a.order-b.order||a.rune_number-b.rune_number);
+}
+
+function emptyClassification(){
+  return {style_label:'',style_group:'',hit_count:0,rune_counts:[],group_counts:[]};
+}
+
+export function classifyStyleRowsWithCatalog(rows=[],catalog=[]){
+  const source=Array.isArray(rows)?rows:[];
+  if(!source.length)return [];
+  const compiled=compileCatalog(catalog);
+  if(!compiled.length)return source.map(row=>({...row,...emptyClassification()}));
+
+  const engine=createTextIndex();
+  source.forEach((row,index)=>engine.add(String(index),styleTextOf(row)));
+
+  const stats=source.map(()=>({
+    hitCount:0,
+    runeCounts:new Map(),
+    groupCounts:new Map()
+  }));
+
+  for(const rune of compiled){
+    for(const [keywordGroup,group] of rune.groups){
+      if(!group.keywords.length)continue;
+      const rules=[...rune.globalRules,...group.rules];
+      const and=rules.filter(rule=>rule.operator==='AND').map(rule=>rule.keyword);
+      const nor=rules.filter(rule=>rule.operator==='NOR').map(rule=>rule.keyword);
+      const seenKeywords=new Set();
+      for(const rawKeyword of group.keywords){
+        const keyword=String(rawKeyword||'').trim();
+        if(!keyword||seenKeywords.has(keyword))continue;
+        seenKeywords.add(keyword);
+        const match=searchTextIndex(engine,keyword,{and,nor,limit:engine.size,offset:0});
+        for(const id of match.ids){
+          const index=Number(id);
+          const state=stats[index];
+          if(!state)continue;
+          state.hitCount+=1;
+          const runeKey=String(rune.rune_number);
+          const runeCount=state.runeCounts.get(runeKey)||{
+            key:runeKey,
+            label:rune.style_label,
+            group:rune.style_group,
+            keyword_group:keywordGroup,
+            order:rune.rune_number,
+            count:0
           };
-          group.count+=1;
-          groupCounts.set(item.style_group,group);
+          runeCount.count+=1;
+          state.runeCounts.set(runeKey,runeCount);
+          if(rune.style_group){
+            const groupCount=state.groupCounts.get(rune.style_group)||{
+              key:rune.style_group,
+              label:rune.style_group,
+              order:0,
+              count:0
+            };
+            groupCount.count+=1;
+            state.groupCounts.set(rune.style_group,groupCount);
+          }
         }
       }
-      from=at+Math.max(1,keyword.length);
     }
   }
 
-  const rankedRunes=[...runeCounts.values()].sort(compareRank);
-  const rankedGroups=[...groupCounts.values()].sort(compareRank);
-  return {
-    style_label:rankedRunes[0]?.label||'',
-    style_group:rankedGroups[0]?.label||'',
-    hit_count:hitCount,
-    rune_counts:rankedRunes,
-    group_counts:rankedGroups
-  };
+  return source.map((row,index)=>{
+    const state=stats[index];
+    const rankedRunes=[...state.runeCounts.values()].sort(compareRank);
+    const rankedGroups=[...state.groupCounts.values()].sort(compareRank);
+    return {
+      ...row,
+      style_label:rankedRunes[0]?.label||'',
+      style_group:rankedGroups[0]?.label||'',
+      hit_count:state.hitCount,
+      rune_counts:rankedRunes,
+      group_counts:rankedGroups
+    };
+  });
+}
+
+export function classifyStyleText(value,catalog=[]){
+  return classifyStyleRowsWithCatalog([{content:value}],catalog)[0]||emptyClassification();
 }
 
 export async function classifyStyleRows(rows=[]){
   const catalog=await selectCanonicalStyleCatalog();
-  return (Array.isArray(rows)?rows:[]).map(row=>({
-    ...row,
-    ...classifyStyleText(styleTextOf(row),catalog)
-  }));
+  return classifyStyleRowsWithCatalog(rows,catalog);
 }
 
 export async function processStyleTableRows(table,{
@@ -133,9 +184,9 @@ export async function processStyleTableRows(table,{
   const catalog=await selectCanonicalStyleCatalog();
   return processNeonHeavyRows(table,{
     columns,filters,orFilter,orders,
-    onRow:row=>onClassified({
-      ...row,
-      ...classifyStyleText(styleTextOf(row),catalog)
-    })
+    onBatch:async rows=>{
+      const classified=classifyStyleRowsWithCatalog(rows,catalog);
+      for(const row of classified)await onClassified(row);
+    }
   });
 }
