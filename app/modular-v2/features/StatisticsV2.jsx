@@ -156,7 +156,10 @@ function ChartsPanel({scopeId,navigation,types}){
     const data=comparisonQuery.data;
     if(!data)return {changes:[],suggestions:[]};
     return rankingType==='keyword'
-      ?analyzeKeywordGovernance(data.currentRows||[],data.previousRows||[],{candidateRows:data.candidateRows||[]})
+      ?analyzeKeywordGovernance(data.currentRows||[],data.previousRows||[],{
+        candidateRows:data.candidateRows||[],
+        catalogRows:data.catalogRows||[]
+      })
       :analyzeDistributionChange(data.currentRows||[],data.previousRows||[],{label:STAT_TYPE_LABELS[rankingType]||'統計項目'});
   },[comparisonQuery.data,rankingType]);
   return <section className="scope-v2-stat-section">
