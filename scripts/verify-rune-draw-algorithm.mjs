@@ -5,6 +5,7 @@ const engine = readFileSync(resolve(process.cwd(), 'app/lrunes/rune-draw-engine.
 const publicDraw = readFileSync(resolve(process.cwd(), 'app/lrunes/RuneDrawClient.jsx'), 'utf8');
 const homeDraw = readFileSync(resolve(process.cwd(), 'app/lrunes/RunesClient.jsx'), 'utf8');
 const governance = readFileSync(resolve(process.cwd(), 'docs/LUNARUNES_DRAW_GOVERNANCE.md'), 'utf8');
+const semantics = readFileSync(resolve(process.cwd(), 'app/loc/model/semantic-state.mjs'), 'utf8');
 
 const engineRequired = [
   'RUNE_DRAW_ALGORITHM_INVARIANT',
@@ -51,7 +52,11 @@ const governanceRequired = [
   'OW3gs 綜合模組原則',
   '源2 + 轉2 + 合2 + 五卡建議 = 11',
   'Daily 抽牌次數不限',
-  '不同 Draw Session 彼此沒有排除關係'
+  '不同 Draw Session 彼此沒有排除關係',
+  '四向語意判讀原則',
+  '趨勢',
+  '結果',
+  '不使用數值權重'
 ];
 
 for (const fragment of governanceRequired) {
@@ -60,4 +65,11 @@ for (const fragment of governanceRequired) {
   }
 }
 
-console.log('Rune draw algorithm verified: per-session N cards = N sequential selections without replacement; special-mode KM invariants are present.');
+for(const forbiddenToken of ['SPREAD_WEIGHTS','DIRECTION_FACTOR','POLARITY_SCORE','GUIDANCE_RANGES']){
+  if(semantics.includes(forbiddenToken))throw new Error(`Rune semantic engine forbids weighted-score token: ${forbiddenToken}`);
+}
+for(const requiredToken of ['resolveStatePair','resolveSpreadState','正位','半正位','半逆位','逆位','中立','未知']){
+  if(!semantics.includes(requiredToken))throw new Error(`Rune semantic engine missing discrete-state contract: ${requiredToken}`);
+}
+
+console.log('Rune draw algorithm verified: sequential draws, fixed spread grammar, and discrete four-direction semantics are present.');
