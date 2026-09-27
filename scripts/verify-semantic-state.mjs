@@ -4,7 +4,7 @@ import {
   resolveSpreadState,
   resolveStatePair
 } from '../app/loc/model/semantic-state.mjs';
-import {summarizeDailyDraws,summarizeDailyWindows} from '../app/loc/model/daily-trend-engine.mjs';
+import {dailyPresetRange,summarizeDailyDraws,summarizeDailyRange,summarizeDailyWindows} from '../app/loc/model/daily-trend-engine.mjs';
 import {buildSpreadGuidance,knownPairStateKeys} from '../app/loc/model/spread-guidance.mjs';
 
 const positive={card_attribute:'正面'};
@@ -117,31 +117,45 @@ assert.match(
 );
 
 const daily=summarizeDailyDraws([
-  {record_date:'2026-09-26',draw_kind:'main',rune_number:1,direction:'正位',card_attribute:'正面'},
-  {record_date:'2026-09-26',draw_kind:'supplement',rune_number:2,direction:'正位',card_attribute:'正面'},
-  {record_date:'2026-09-27',draw_kind:'main',rune_number:3,direction:'正位',card_attribute:'正面'},
-  {record_date:'2026-09-27',draw_kind:'supplement',rune_number:4,direction:'半正位',card_attribute:'正面'}
+  {record_date:'2026-09-26',draw_kind:'main',rune_number:1,rune_name:'靈',direction:'正位'},
+  {record_date:'2026-09-26',draw_kind:'supplement',rune_number:2,rune_name:'魂',direction:'正位'},
+  {record_date:'2026-09-27',draw_kind:'main',rune_number:1,rune_name:'靈',direction:'半正位'},
+  {record_date:'2026-09-27',draw_kind:'supplement',rune_number:4,rune_name:'彩',direction:'半正位'}
 ]);
 assert.equal(daily.length,2);
-assert.equal(daily[0].result,'正位');
-assert.equal(daily[1].result,'半正位');
-assert.equal(daily[1].daily_trend,'半逆位');
-assert.equal(daily[1].daily_result,'半正位');
-assert.equal(daily[1].guidance,'趨勢半逆位，結果半正位。');
+assert.equal(daily[0].rows.length,2);
+assert.equal(daily[1].rows.length,2);
+
+assert.deepEqual(dailyPresetRange('2026-09-27','today-tomorrow'),{
+  startDate:'2026-09-27',endDate:'2026-09-28'
+});
+assert.deepEqual(dailyPresetRange('2026-09-27','yesterday-today-tomorrow'),{
+  startDate:'2026-09-26',endDate:'2026-09-28'
+});
+assert.deepEqual(dailyPresetRange('2026-09-27','seven-days'),{
+  startDate:'2026-09-21',endDate:'2026-09-27'
+});
 
 const dailyWindowRows=[
-  {record_date:'2026-09-21',draw_kind:'main',rune_number:1,rune_name:'靈',direction:'正位',card_attribute:'正面'},
-  {record_date:'2026-09-22',draw_kind:'main',rune_number:2,rune_name:'魂',direction:'正位',card_attribute:'中平'},
-  {record_date:'2026-09-23',draw_kind:'main',rune_number:1,rune_name:'靈',direction:'半逆位',card_attribute:'正面'},
-  {record_date:'2026-09-25',draw_kind:'main',rune_number:9,rune_name:'向',direction:'半正位',card_attribute:'中平'},
-  {record_date:'2026-09-27',draw_kind:'main',rune_number:1,rune_name:'靈',direction:'逆位',card_attribute:'正面'}
+  {record_date:'2026-09-21',draw_kind:'main',rune_number:1,rune_name:'靈',direction:'正位'},
+  {record_date:'2026-09-22',draw_kind:'main',rune_number:2,rune_name:'魂',direction:'正位'},
+  {record_date:'2026-09-23',draw_kind:'main',rune_number:1,rune_name:'靈',direction:'半逆位'},
+  {record_date:'2026-09-25',draw_kind:'supplement',rune_number:9,rune_name:'向',direction:'半正位'},
+  {record_date:'2026-09-27',draw_kind:'main',rune_number:1,rune_name:'靈',direction:'逆位'}
 ];
-const dailyWindowDays=summarizeDailyDraws(dailyWindowRows);
-const windows=summarizeDailyWindows(dailyWindowRows,dailyWindowDays);
-assert.equal(windows.adjacent.previous_date,'2026-09-25');
-assert.equal(windows.adjacent.current_date,'2026-09-27');
-assert.ok(windows.three_days.repeats.every(item=>item.count>1));
-assert.ok(windows.seven_days.repeats.some(item=>item.name==='靈'&&item.count===3));
-assert.ok(windows.seven_days.direction_changes.some(item=>item.name==='靈'&&item.from==='半逆位'&&item.to==='逆位'));
+const seven=summarizeDailyRange(dailyWindowRows,{
+  startDate:'2026-09-21',endDate:'2026-09-27',label:'近七天'
+});
+assert.equal(seven.total_days,7);
+assert.equal(seven.total_draws,5);
+assert.ok(seven.repeats.some(item=>item.name==='靈'&&item.count===3&&item.days_count===3));
+assert.ok(seven.direction_changes.some(item=>item.name==='靈'&&item.from==='正位'&&item.to==='逆位'));
+assert.ok(seven.suggestions.some(item=>item.type==='frequency'&&item.rune==='靈'));
+assert.ok(seven.suggestions.some(item=>item.type==='direction'&&item.rune==='靈'));
 
-console.log('LunaRunes discrete semantics, natural multi-card guidance, and FlexSearch daily trend verified.');
+const windows=summarizeDailyWindows(dailyWindowRows,'2026-09-27');
+assert.equal(windows.seven_days.start_date,'2026-09-21');
+assert.equal(windows.today_tomorrow.start_date,'2026-09-27');
+assert.equal(windows.yesterday_today_tomorrow.start_date,'2026-09-26');
+
+console.log('LunaRunes discrete semantics, natural multi-card guidance, and calendar-based daily range analysis verified.');
