@@ -17,13 +17,14 @@ const StaticsView=dynamic(()=>import('../modular-v2/features/StatisticsV2'),{loa
 const CultureView=dynamic(()=>import('../modular-v2/features/CultureV2'),{loading});
 const SearchView=dynamic(()=>import('../modular-v2/features/SearchV2'),{loading});
 const GovernanceView=dynamic(()=>import('../modular-v2/features/GovernanceV2'),{loading});
+const ManagementView=dynamic(()=>import('./GovernanceManagement'),{loading});
 
 function BlockedScopeRoute(){return <section className="loc-view"><h1>此頁面不屬於目前 Scope</h1><p>管理功能只在 admin Scope 提供。</p></section>;}
 function AdminRedirect(){useEffect(()=>{window.location.replace('https://admin.lo3rwang.cc/');},[]);return <section className="loc-view"><h1>前往系統掌控者頁面</h1><p>正在轉往 admin.lo3rwang.cc…</p></section>;}
 
 const VIEWS={
   game:GameView,statics:StaticsView,
-  culture:CultureView,search:SearchView,governance:GovernanceView
+  culture:CultureView,search:SearchView,governance:GovernanceView,manage:ManagementView
 };
 
 const HOME_VIEWS={loc:AboutView,lunarunes:RunesHomeView,lo3rwang:AuthorHomeView,admin:AdminHomeView};
