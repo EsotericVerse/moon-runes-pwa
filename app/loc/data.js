@@ -124,7 +124,7 @@ async function loadCanonicalRunes(){
         {column:'active',operator:'eq',value:true}
       ],
       orders:[{column:'rune_number',ascending:true},{column:'order_no',ascending:true}],
-      limit:5000
+      limit:50
     })
   ]);
   return runeRows(runes.rows,keywords.rows);
