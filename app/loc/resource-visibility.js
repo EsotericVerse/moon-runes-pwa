@@ -1,6 +1,6 @@
 'use client';
 
-import {selectNeonRows,upsertNeonRows} from './neon-repository';
+import {selectNeonAllRows,upsertNeonRows} from './neon-repository';
 
 export function visibilityDraft(settings={}){
   return {
@@ -36,9 +36,8 @@ export async function saveResourceVisibility(args){
 }
 
 export async function listResourceVisibility(){
-  const {rows}=await selectNeonRows('silver.resource_visibility',{
-    columns:'scope,resource_type,resource_id,visibility,projection_level,search_indexed,statistics_included,semantic_scan_included,source_ref,show_link,show_source,updated_at',
-    limit:50
+  const {rows}=await selectNeonAllRows('silver.resource_visibility',{
+    columns:'scope,resource_type,resource_id,visibility,projection_level,search_indexed,statistics_included,semantic_scan_included,source_ref,show_link,show_source,updated_at'
   });
   return rows;
 }
@@ -49,8 +48,7 @@ export async function listResourceVisibilityFor(resources=[]){
   if(!ids.length)return [];
   const {rows}=await selectNeonRows('silver.resource_visibility',{
     columns:'scope,resource_type,resource_id,visibility,projection_level,search_indexed,statistics_included,semantic_scan_included,source_ref,show_link,show_source,updated_at',
-    filters:[{column:'resource_id',operator:'in',value:ids}],
-    limit:Math.min(100,ids.length*3)
+    filters:[{column:'resource_id',operator:'in',value:ids}]
   });
   const wanted=new Set((resources||[]).map(item=>[
     String(item?.scope||''),
