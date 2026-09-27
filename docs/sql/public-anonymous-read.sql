@@ -14,7 +14,6 @@ GRANT USAGE ON SCHEMA silver TO anonymous;
 
 GRANT SELECT ON TABLE
   silver.faq_entries,
-  silver.manage,
   silver.resource_visibility,
   silver.lo3rwang_style,
   silver.lo3rwang_time,
@@ -23,5 +22,10 @@ GRANT SELECT ON TABLE
   silver.lo3rwang_galaxy_media,
   silver.lrunes
 TO anonymous;
+
+-- silver.manage contains permission mapping data. Public scope discovery may read
+-- only the non-personal id/role columns; email must not be exposed anonymously.
+REVOKE SELECT ON TABLE silver.manage FROM anonymous;
+GRANT SELECT (id, role) ON silver.manage TO anonymous;
 
 COMMIT;
