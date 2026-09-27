@@ -1,13 +1,12 @@
-import {selectNeonRows} from './neon-repository';
+import {selectNeonCatalog,selectNeonRows} from './neon-repository';
 
 export const DAILY_RUNE_PAGE_SIZE=10;
 
 async function loadRuneNames(){
-  const {rows}=await selectNeonRows('silver.lrunes',{
+  const {rows}=await selectNeonCatalog('silver.lrunes',{
     columns:'rune_number,rune_name',
     filters:[{column:'record_type',operator:'eq',value:'rune'}],
-    orders:[{column:'rune_number',ascending:true}],
-    limit:100
+    orders:[{column:'rune_number',ascending:true}]
   });
   return new Map(rows.map(row=>[Number(row.rune_number),row.rune_name]));
 }
