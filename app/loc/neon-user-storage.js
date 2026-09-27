@@ -1,26 +1,16 @@
 'use client';
 
-import {getNeonSession} from './neon-client';
+import {getNeonSession,neonClient} from './neon-client';
 
-const RECORDS_KEY='loc:user-records';
-const SETTINGS_KEY='loc:user-settings';
+function recordsRelation(){return neonClient.schema('api').from('user_records');}
+function settingsRelation(){return neonClient.schema('api').from('user_settings');}
 
-async function requireUserEmail(){
+async function requireUser(){
   const session=await getNeonSession();
-  const email=String(session?.user?.email||'').trim().toLowerCase();
-  if(!email)throw new Error('請先登入 Neon 帳號');
-  return email;
+  if(!session?.user)throw new Error('請先登入 Neon 帳號');
+  return session.user;
 }
 
-function readStore(key,email){
-  if(typeof window==='undefined')return {};
-  try{return JSON.parse(window.localStorage.getItem(key+':'+email)||'{}')||{}}
-  catch{return {}}
-}
-function writeStore(key,email,value){
-  if(typeof window==='undefined')return;
-  window.localStorage.setItem(key+':'+email,JSON.stringify(value||{}));
-}
 function normalizeRecord(record={}){
   return {
     ...record,
@@ -31,84 +21,172 @@ function normalizeRecord(record={}){
   };
 }
 
-export async function listNeonRecords(type=''){
-  const email=await requireUserEmail();
-  return Object.values(readStore(RECORDS_KEY,email))
-    .filter(row=>!type||row.type===type)
-    .sort((a,b)=>String(b.updated_at||'').localeCompare(String(a.updated_at||'')));
-}
-export async function getNeonRecord(id){
-  const email=await requireUserEmail();
-  return readStore(RECORDS_KEY,email)[String(id)]||null;
+function dbRecord(row={}){
+  const payload=row.payload&&typeof row.payload==='object'?row.payload:{};
+  return {
+    ...payload,
+    id:row.id,
+    type:row.record_type,
+    record_kind:row.record_kind??payload.record_kind,
+    source:row.source??payload.source,
+    record_date:row.record_date??payload.record_date,
+    scope_id:row.scope_id??payload.scope_id,
+    created_at:row.created_at??payload.created_at,
+    updated_at:row.updated_at??payload.updated_at
+  };
 }
 
-function localDateKey(value){
+function recordPayload(row){
+  const {
+    id,type,record_type,record_kind,source,record_date,scope_id,
+    created_at,updated_at,...payload
+  }=row;
+  return payload;
+}
+
+function dateKey(value){
   const date=value?new Date(value):new Date();
   if(Number.isNaN(date.getTime()))return '';
-  const year=date.getFullYear();
-  const month=String(date.getMonth()+1).padStart(2,'0');
-  const day=String(date.getDate()).padStart(2,'0');
-  return `${year}-${month}-${day}`;
+  const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),d=String(date.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
 }
 
-export async function putDailyRuneRecord(record){
-  const email=await requireUserEmail();
-  const row=normalizeRecord({...record,type:'rune-draw',record_kind:'daily'});
-  const date=localDateKey(row.created_at);
-  if(!date)throw new Error('每日符文紀錄日期無效');
-  const store=readStore(RECORDS_KEY,email);
-  const dailyRows=Object.values(store)
-    .filter(item=>item?.type==='rune-draw'&&item?.record_kind==='daily'&&localDateKey(item.created_at)===date)
-    .sort((a,b)=>String(a.created_at||'').localeCompare(String(b.created_at||'')));
-  const roles=new Set(dailyRows.map(item=>String(item.daily_role||'').toLowerCase()).filter(Boolean));
-  let role='';
-  if(!roles.has('main'))role='main';
-  else if(!roles.has('supplement'))role='supplement';
-  else throw new Error('今天的主符與副符都已儲存；如需調整請到管理頁編輯。');
+function randomRecordId(prefix='record'){
+  const suffix=globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return `${prefix}:${suffix}`;
+}
 
-  const id=`daily-rune:${date}:${role}`;
-  const next={...row,id,daily_role:role,updated_at:new Date().toISOString()};
-  store[id]=next;
-  writeStore(RECORDS_KEY,email,store);
-  return next;
+function throwQuery(error,operation){
+  if(error)throw new Error(`Neon ${operation}：${error.message||'query failed'}`);
+}
+
+export async function listNeonRecords(type=''){
+  await requireUser();
+  let query=recordsRelation().select('id,record_type,record_kind,source,record_date,payload,created_at,updated_at,scope_id').order('updated_at',{ascending:false});
+  if(type)query=query.eq('record_type',type);
+  const {data,error}=await query;
+  throwQuery(error,'讀取個人紀錄失敗');
+  return (data||[]).map(dbRecord);
+}
+
+export async function getNeonRecord(id){
+  await requireUser();
+  const {data,error}=await recordsRelation().select('id,record_type,record_kind,source,record_date,payload,created_at,updated_at,scope_id').eq('id',String(id)).limit(1);
+  throwQuery(error,'讀取個人紀錄失敗');
+  return data?.[0]?dbRecord(data[0]):null;
 }
 
 export async function putNeonRecord(record){
-  const email=await requireUserEmail();
+  await requireUser();
   const row=normalizeRecord(record);
   if(!row.id)throw new Error('record.id is required');
-  const store=readStore(RECORDS_KEY,email);
-  store[row.id]=row;
-  writeStore(RECORDS_KEY,email,store);
-  return row;
+  const dbRow={
+    id:row.id,
+    record_type:row.type,
+    record_kind:row.record_kind||null,
+    source:row.source||null,
+    record_date:row.record_date||null,
+    scope_id:row.scope_id||null,
+    payload:recordPayload(row),
+    created_at:row.created_at,
+    updated_at:row.updated_at
+  };
+  const {data,error}=await recordsRelation().upsert(dbRow,{onConflict:'id'}).select('id,record_type,record_kind,source,record_date,payload,created_at,updated_at,scope_id');
+  throwQuery(error,'儲存個人紀錄失敗');
+  return dbRecord(data?.[0]||dbRow);
 }
+
 export async function deleteNeonRecord(id){
-  const email=await requireUserEmail();
-  const store=readStore(RECORDS_KEY,email);
-  delete store[String(id)];
-  writeStore(RECORDS_KEY,email,store);
+  await requireUser();
+  const {error}=await recordsRelation().delete().eq('id',String(id));
+  throwQuery(error,'刪除個人紀錄失敗');
 }
+
 export async function clearNeonRecords(type=''){
-  const email=await requireUserEmail();
-  if(!type){writeStore(RECORDS_KEY,email,{});return;}
-  const store=readStore(RECORDS_KEY,email);
-  for(const [id,row] of Object.entries(store))if(row?.type===type)delete store[id];
-  writeStore(RECORDS_KEY,email,store);
+  await requireUser();
+  let query=recordsRelation().delete();
+  if(type)query=query.eq('record_type',type);
+  else{
+    const rows=await listNeonRecords();
+    if(!rows.length)return;
+    query=query.in('id',rows.map(row=>row.id));
+  }
+  const {error}=await query;
+  throwQuery(error,'清除個人紀錄失敗');
 }
+
 export async function getNeonSetting(key){
-  const email=await requireUserEmail();
-  return readStore(SETTINGS_KEY,email)[String(key)]??null;
+  await requireUser();
+  const {data,error}=await settingsRelation().select('setting_key,payload,updated_at').eq('setting_key',String(key)).limit(1);
+  throwQuery(error,'讀取個人設定失敗');
+  return data?.[0]?.payload??null;
 }
+
 export async function putNeonSetting(key,payload){
-  const email=await requireUserEmail();
-  const store=readStore(SETTINGS_KEY,email);
-  store[String(key)]=payload;
-  writeStore(SETTINGS_KEY,email,store);
-  return payload;
+  await requireUser();
+  const settingKey=String(key||'').trim();
+  if(!settingKey)throw new Error('setting key is required');
+  const current=await settingsRelation().select('setting_key').eq('setting_key',settingKey).limit(1);
+  throwQuery(current.error,'讀取個人設定失敗');
+  if(current.data?.length){
+    const result=await settingsRelation().update({payload,updated_at:new Date().toISOString()}).eq('setting_key',settingKey).select('payload');
+    throwQuery(result.error,'更新個人設定失敗');
+    return result.data?.[0]?.payload??payload;
+  }
+  const result=await settingsRelation().insert({setting_key:settingKey,payload}).select('payload');
+  throwQuery(result.error,'建立個人設定失敗');
+  return result.data?.[0]?.payload??payload;
 }
+
 export async function deleteNeonSetting(key){
-  const email=await requireUserEmail();
-  const store=readStore(SETTINGS_KEY,email);
-  delete store[String(key)];
-  writeStore(SETTINGS_KEY,email,store);
+  await requireUser();
+  const {error}=await settingsRelation().delete().eq('setting_key',String(key));
+  throwQuery(error,'刪除個人設定失敗');
+}
+
+export async function listRuneDrawSlots(){
+  const rows=await listNeonRecords('rune-draw-slot');
+  const slots=Array.from({length:8},(_,index)=>({slot:index+1,record:null}));
+  for(const row of rows){
+    const match=String(row.record_kind||'').match(/^slot-([1-8])$/);
+    if(match)slots[Number(match[1])-1].record=row;
+  }
+  return slots;
+}
+
+export async function putRuneDrawSlot(slot,record){
+  const number=Number(slot);
+  if(!Number.isInteger(number)||number<1||number>8)throw new Error('抽牌儲存槽只能是 1–8。');
+  const kind=`slot-${number}`;
+  const rows=await listNeonRecords('rune-draw-slot');
+  const current=rows.find(row=>row.record_kind===kind);
+  return putNeonRecord({
+    ...record,
+    id:current?.id||randomRecordId('rune-draw-slot'),
+    type:'rune-draw-slot',
+    record_kind:kind,
+    scope_id:'lunarunes',
+    source:'lunarunes-management'
+  });
+}
+
+export async function putDailyRuneRecord(record){
+  const today=dateKey(record?.created_at||new Date());
+  if(!today)throw new Error('每日符文紀錄日期無效。');
+  const rows=(await listNeonRecords('rune-draw')).filter(row=>
+    row.record_kind==='daily'&&String(row.record_date||dateKey(row.created_at))===today
+  );
+  const roles=new Set(rows.map(row=>String(row.daily_role||'').toLowerCase()).filter(Boolean));
+  const role=!roles.has('main')?'main':!roles.has('supplement')?'supplement':'';
+  if(!role)throw new Error('今天的主符與副符都已儲存；如需調整請到管理頁編輯。');
+  return putNeonRecord({
+    ...record,
+    id:randomRecordId('daily-rune'),
+    type:'rune-draw',
+    record_kind:'daily',
+    record_date:today,
+    daily_role:role,
+    scope_id:'lunarunes',
+    source:'lunarunes-management'
+  });
 }
