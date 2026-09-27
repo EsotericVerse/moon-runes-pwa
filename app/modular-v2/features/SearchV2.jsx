@@ -194,7 +194,7 @@ export default function SearchV2(){
     try{
       const runeScope=result.scopeId==='lrunes'||result.scopeId==='lunarunes';
       const contentColumns=result.resourceType==='galaxy'
-        ?(runeScope?'record_id,scope_id,title,content':'uid,title,content')
+        ?(runeScope?'record_id,title,content':'uid,title,content')
         :(runeScope?'record_id,title,meta_tags':'media_id,title,meta_tags');
       const fullRow=await selectNeonRowById(result.editableTable,{
         idColumn:result.editableIdColumn,
@@ -202,7 +202,6 @@ export default function SearchV2(){
         columns:contentColumns
       });
       if(!fullRow)throw new Error('找不到要編輯的資料。');
-      if(runeScope&&fullRow.scope_id&&String(fullRow.scope_id)!==String(result.scopeId))throw new Error('Scope 與資料不一致。');
       setEditDraft({
         title:String(fullRow.title??result.title??''),
         body:String(fullRow[result.editableField]??''),
@@ -221,7 +220,6 @@ export default function SearchV2(){
       const runeScope=result.scopeId==='lrunes'||result.scopeId==='lunarunes';
       const contentPatch={title:editDraft.title,[result.editableField]:editDraft.body};
       const contentFilters=[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId}];
-      if(runeScope&&result.resourceType==='galaxy')contentFilters.push({column:'scope_id',operator:'eq',value:result.scopeId});
       await updateNeonRows(result.editableTable,contentPatch,{filters:contentFilters});
       let settings=result.settings||null;
       if(account.canManageScopeSync(result.scopeId)){
