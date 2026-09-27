@@ -59,7 +59,7 @@ export function formatSpreadGuidance(reading){
 
   if(reading.mode==='3card'){
     const middle=STATE_PHRASE[states[1]]||STATE_PHRASE.未知;
-    return `中途出現${middle}的轉折；${overall}`;
+    return `中途轉為${middle}；${overall}`;
   }
 
   if(reading.mode==='5card'){
