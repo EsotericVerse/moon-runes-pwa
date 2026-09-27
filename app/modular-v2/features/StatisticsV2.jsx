@@ -153,7 +153,7 @@ function StylePanel({scopeId}){
 function StatisticsShell({scopeId,navigation}){
   const account=useNeonAccount();
   const canManage=Boolean(account.user&&(account.canManageGlobalSync()||account.canManageScopeSync(scopeId)));
-  const visibleTabs=STAT_TABS.filter(([value])=>!['keywords','styles'].includes(value)||canManage);
+  const visibleTabs=STAT_TABS;
   const requested=visibleTabs.some(([value])=>value===navigation.statTab)?navigation.statTab:'ranking';
   const active=requested;
   const typesQuery=useQuery({
@@ -167,8 +167,8 @@ function StatisticsShell({scopeId,navigation}){
     {typesQuery.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
     {typesQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(typesQuery.error)}</p>:null}
     {!typesQuery.isPending&&active==='ranking'?<RankingPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
-    {canManage&&active==='keywords'?<KeywordPanel scopeId={scopeId}/>:null}
-    {canManage&&active==='styles'?<StylePanel scopeId={scopeId}/>:null}
+    {active==='keywords'?<KeywordPanel scopeId={scopeId}/>:null}
+    {active==='styles'?<StylePanel scopeId={scopeId}/>:null}
     {!typesQuery.isPending&&active==='charts'?<ChartsPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
   </section>;
 }
