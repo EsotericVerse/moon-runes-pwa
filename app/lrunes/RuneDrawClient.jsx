@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchNeonData, fetchRuneRows, LOC_DATA } from '../loc/data';
 import { useLocalStore } from '../loc/local-store';
-import { evaluateSpread, finalGuidance, splitDomainGuidance } from '../loc/model/semantic-guidance';
+import {resolveSpreadState} from '../loc/model/semantic-state.mjs';
 import { realMoonPhase } from '../loc/model/moon-phase';
 import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
 import {drawRuneSession} from './rune-draw-engine';
@@ -52,25 +52,6 @@ function directionText(card, direction) {
   const field = ({ '正位': '正向表示', '半正位': '半正向表示', '半逆位': '半逆向表示', '逆位': '逆向表示' })[direction];
   return card?.__neonPayload?.[field] || card?.符文說明 || '';
 }
-
-function guidancePrompt(line) {
-  const text=String(line||'').trim();
-  if(!text) return '';
-  const match=text.match(/^(愛情|事業|關係|健康)：\s*(.+)$/);
-  const soften=body => {
-    const value=String(body||'').trim().replace(/[。！？]+$/,'');
-    if(!value) return '';
-    if(/^(可能|也許|或許|有機會|有可能|恐|恐怕)/.test(value)) return value;
-    if(/(必然|一定|必定|絕對|注定|終將|肯定|確定|定局|落定|終結|結束|消失|取消|死亡|失去|解除|恢復|重啟|成功|失敗|好轉|惡化)/.test(value)) {
-      return `可能${value}`;
-    }
-    return value;
-  };
-  if(!match) return soften(text);
-  const [,domain,body]=match;
-  return `${domain}：${soften(body)}。`;
-}
-
 
 function phaseAdvice(interpretations, card, direction, phase) {
   const row = (interpretations || []).find(item => item?.符文名稱 === card?.符文名稱);
@@ -150,7 +131,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
         if (!live) return;
         const canonicalRunes = (runes || []).filter(row => Number(row?.編號) >= 1 && Number(row?.編號) <= 66);
         if (canonicalRunes.length < 66) throw new Error(`核心符文資料只有 ${canonicalRunes.length} 枚，無法安全抽牌。`);
-        setData({ runes: canonicalRunes, lots: [] });
+        setData({ runes: canonicalRunes });
         setError('');
 
       })
@@ -165,7 +146,6 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
   const selectedMode = useMemo(() => DRAW_TYPES.find(item => item.key === drawKey) || DRAW_TYPES[0], [drawKey]);
   const instantDraw = uiSettings?.draw_response === 'instant';
   const moonPhase = useMemo(() => realMoonPhase(), []);
-  const liveGuidance = draw ? draw.guidance || '' : '';
   const ritualMessages = RITUAL_MESSAGES[drawKey] || RITUAL_MESSAGES.single;
 
   function enrichDraw(cards, directions) {
@@ -184,17 +164,6 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
       })
       .catch(() => {});
 
-    if(drawKey !== 'daily'){
-      fetchNeonData(LOC_DATA.LOTS,{memory:true})
-        .then(lots => {
-          const rows=Array.isArray(lots)?lots:[];
-          setData(current => current ? { ...current, lots: rows } : current);
-          const guidance=finalGuidance(rows, cards.at(-1), directions.at(-1));
-          setDraw(current => current ? { ...current, guidance } : current);
-        })
-        .catch(() => {});
-    }
-
     if(drawKey === 'daily'){
       setDailyAnalysisStatus('載入每日分析…');
       fetchNeonData(LOC_DATA.RUNE_INTERPRETATIONS,{memory:true})
@@ -212,10 +181,9 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
       if (!data?.runes?.length) throw new Error('符文資料尚未載入完成。');
       if (data.runes.length < selectedMode.count) throw new Error(`可抽取符文不足 ${selectedMode.count} 張。`);
       const {cards,directionIndexes,directions}=drawRuneSession(data.runes,selectedMode.count);
-      const evaluation = evaluateSpread(cards, directions);
+      const reading = resolveSpreadState(cards, directions, drawKey);
       const createdAt = new Date().toISOString();
-      const guidance = finalGuidance(data.lots, cards.at(-1), directions.at(-1));
-      setDraw({ id: `rune-draw:${drawKey}:${Date.now()}`, createdAt, cards, directionIndexes, directions, evaluation, guidance });
+      setDraw({ id: `rune-draw:${drawKey}:${Date.now()}`, createdAt, cards, directionIndexes, directions, reading, guidance: reading.guidance });
       enrichDraw(cards, directions);
       setError('');
     } catch (err) {
@@ -252,7 +220,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
       <header className="loc-hero" id="intro">
         <p className="loc-eyebrow">LunaRunes · 月之符文</p>
         <h1>月之符文</h1>
-        <p>月之符文以固定 66 枚核心符文提供抽牌與語意指引。抽牌、加權與籤詩指引在瀏覽器完成；紀錄與管理功能統一由 Governance Management 處理。</p>
+        <p>月之符文以固定 66 枚核心符文提供抽牌與語意指引。抽牌、四向判讀與籤詩指引在瀏覽器完成；紀錄與管理功能統一由 Governance Management 處理。</p>
       </header>
 
       <section className="loc-card" id="draw" data-draw-keyword="lunarunes-draw" data-draw-mode={drawKey}>
@@ -307,11 +275,10 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
           <p>月相交互最後才套用，只作低權重時間修飾；重點是模型關聯，不是增加抽牌維度的複雜化。</p>
         </section>}
 
-        {drawKey !== 'daily' && <section className="loc-card" data-draw-stage="lots">
+        <section className="loc-card" data-draw-stage="lots">
           <p className="loc-eyebrow">Lots · 籤詩</p><h2>籤詩指引</h2>
-          <p>籤詩描述可能的發展，不代表必然結果。</p>
-          <div className="loc-context-list">{liveGuidance ? splitDomainGuidance(liveGuidance).map((line, index) => <div className="loc-context-item" key={`${line}-${index}`}>{guidancePrompt(line)}</div>) : null}</div>
-        </section>}
+          <p>{draw.reading?.guidance||'結果未知。'}</p>
+        </section>
       </>}
     </section>
   </div>;
