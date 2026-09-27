@@ -77,6 +77,7 @@ LOC5 第一階段責任：
 
 - 多媒體只保存**參照與文字 metadata**，不保存媒體檔案本體。
 - 可保存 URL、雲端連結、檔名／標題、來源原生 ID、時間、地點、Meta Tag 與作品關聯。
+- Media record 建立時必須已有 Meta Tag；Meta Tag 由資料來源、作者或管理者提供，LOC 只保存與使用，不自動生成、不猜測、不替人分類。
 - 圖片、音訊、影片的 binary 檔案不進 LOC／Neon；LOC 不提供媒體上傳、檔案暫存、轉碼、縮圖或影音儲存空間。
 - 外部媒體失效或 URL 缺失時，只要仍有檔名、來源 ID、時間、地點或文字 metadata，文化與搜尋痕跡仍可保留。
 - 保存媒體類型與作品連結。
@@ -181,7 +182,7 @@ LOC5 第一階段責任：
 - LOC3 曲風沿用原生 Meta Tag。
 - Reel 是現行歌曲代表版本的最高展示訊號；無 Reel 才看播放總次數。
 - 已人工整理的 Reels links 直接使用，不從 Threads 回推既有關聯。
-- LOC5 先完成 Lyrics ↔ Song ↔ Media 基本交互，不過度擴張。
+- LOC5 先完成 Lyrics ↔ Song ↔ Media 基本交互，不過度擴張；Media Meta Tag 在建立時由資料提供者給定，LOC 不自動分類。
 - 聚合搜尋顯示作品簡介，不用正文／歌詞節錄代替。
 - Search／主要實體頁採 Progressive Context：Current → 代表特徵 → 代表作品 → 深入分析 → 完整資料。
 - `政德` 搜尋是 Author Culture 聚合入口；Current 代表時期優先，沿革另行連結。
