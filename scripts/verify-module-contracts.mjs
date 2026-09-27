@@ -44,6 +44,15 @@ for(const path of [
 const runesClient=readFileSync(resolve(root,'app/lrunes/RunesClient.jsx'),'utf8');
 for(const token of ['selectRuneCatalog','data-draw-action="execute"','function executeDraw','function finishDraw'])if(!runesClient.includes(token))failures.push(`RunesClient: missing draw contract ${token}`);
 
+const aggregateQuery=readFileSync(resolve(root,'app/loc/aggregate-query.js'),'utf8');
+for(const token of ["silver.lo3rwang_galaxy_preview","content_preview","columns:'uid,title,url,media_link'"]){
+  if(!aggregateQuery.includes(token))failures.push(`aggregate-query: fixed DB-side list preview contract missing ${token}`);
+}
+const summaryBlock=aggregateQuery.split('export async function selectGalaxySummaries')[1]?.split('export async function selectGalaxyIdentity')[0]||'';
+if(/columns:[^\n]*content(?:,|'|")/.test(summaryBlock)||/row\.content/.test(summaryBlock)){
+  failures.push('aggregate-query: list summaries must not SELECT or slice full content');
+}
+
 const runeRepository=readFileSync(resolve(root,'app/loc/rune-repository.js'),'utf8');
 for(const token of ['selectNeonCatalog','silver.lrunes','selectRuneCatalog','selectRuneKeywordCatalog','updateRuneKeywords'])if(!runeRepository.includes(token))failures.push(`Rune repository: missing canonical contract ${token}`);
 for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs','app/loc/neon-context-client.js','app/modular-v2/features/ContextV2.jsx','app/modular-v2/features/ContextWorkbenchV2.jsx','app/modular-v2/modules/context-graph/ContextGraphV2.jsx'])if(existsSync(resolve(root,retired)))failures.push(`retired path-loader returned: ${retired}`);
