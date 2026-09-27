@@ -5,7 +5,7 @@ import { fetchNeonData, fetchNeonDataBatch, LOC_DATA } from '../loc/data';
 import { useLocalStore } from '../loc/local-store';
 import {resolveSpreadState} from '../loc/model/semantic-state.mjs';
 import { realMoonPhase } from '../loc/model/moon-phase';
-import { buildRuneGraph, searchRuneGraph } from '../../js/rune-graph-core.js';
+import { buildRuneGraph, searchRuneGraph } from '../loc/model/rune-graph-core.js';
 import RuneAtlas from './RuneAtlas';
 import {scopeHrefV2,scopeOriginV2} from '../modular-v2/scope-registry.v2';
 import {drawRuneSession,makeRuneDrawId} from './rune-draw-engine';

@@ -10,7 +10,6 @@ Directory cleanup must never delete or relocate a still-used source merely becau
 
 ```text
 app/        Next.js routes and UI
-js/         JavaScript runtime modules and shared browser/runtime logic
 assets/     governed domain/site assets
 pics/       frozen approved source diagrams still used by the site
 data/       frozen source workbooks, records and non-runtime provenance
@@ -21,7 +20,7 @@ skills/     GPT/agent skills
 .github/    CI and repository automation
 ```
 
-`lib/` is retired. JavaScript belongs in `js/`; do not recreate a parallel JavaScript root.
+`lib/` and the former shared root `js/` runtime are retired. Current application modules belong under `app/`. The only governed root-JS exception is `js/locMoonPhase.js`, retained as a small standalone moon-phase utility.
 
 ## Frozen root sources
 
@@ -61,17 +60,15 @@ Do not collapse distinct large-card, small-card/overview, printable-card, or ref
 
 ### JavaScript
 
-All repository JavaScript modules live under `js/` unless they are route-local code under `app/`, service code under `services/`, or build tooling under `scripts/`.
+Current application JavaScript lives with its owning module under `app/`. Shared browser/runtime logic must not recreate a generic root `js/` layer.
 
-Examples:
+The only governed root-JS exception is:
 
 ```text
-js/runes-core.js
-js/galaxy.js
-js/writing.js
+js/locMoonPhase.js
 ```
 
-Do not recreate `lib/` for shared runtime modules.
+This exception is retained because the lunar-day → LOC moon-phase calculation is a small standalone utility with no data authority, cache, registry or compatibility responsibility. It must not become a new shared-runtime root.
 
 ### Services
 
@@ -98,8 +95,8 @@ Asset migration is not complete until every consumer is updated and visual/funct
 
 | Historical/current location | Status | Rule |
 |---|---|---|
-| `lib/` | retired | JavaScript belongs in `js/` |
-| `js/` | canonical | shared/runtime JavaScript root |
+| `lib/` | retired | do not recreate a parallel shared-runtime root |
+| `js/` | exception-only | only `locMoonPhase.js` may remain; Current modules belong under `app/` |
 | `64images/` | retired pending parity audit | card assets must exist under governed LunaRunes paths before retirement is considered valid |
 | `pics/` | active/frozen | retain approved source diagrams; do not delete by migration rule |
 | `icons/` | migrated/audit | verify all consumers before retirement is considered complete |

@@ -21,7 +21,9 @@ for(const path of [
   'pics/LOC-structure.png','pics/LunaRunes.jpg','pics/aboutme.png'
 ])requireFile(path);
 
-if(existsSync(resolve(root,'lib')))failures.push('lib/ must not be recreated; shared JavaScript belongs in js/');
+if(existsSync(resolve(root,'lib')))failures.push('lib/ must not be recreated; Current application modules belong under app/');
+if(!existsSync(resolve(root,'js/locMoonPhase.js')))failures.push('governed moon-phase JS exception missing');
+for(const retired of ['js/galaxy.js','js/quick-selector.js','js/rune-draw.js','js/rune-graph-core.js','js/rune.js','js/runes-core.js','js/runes-pwa-ia.js'])if(existsSync(resolve(root,retired)))failures.push('retired root JS runtime returned: '+retired);
 
 requireText('app/loc/views/AboutView.jsx',[
   'LOC月典',

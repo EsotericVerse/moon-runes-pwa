@@ -5,13 +5,13 @@ const root = process.cwd();
 const failures = [];
 const warnings = [];
 
-const requiredRoots = ['app', 'assets', 'data', 'docs', 'js', 'scripts', 'services', 'skills', 'pics'];
+const requiredRoots = ['app', 'assets', 'data', 'docs', 'scripts', 'services', 'skills', 'pics'];
 for (const name of requiredRoots) {
   if (!existsSync(resolve(root, name))) failures.push(`missing canonical root: ${name}/`);
 }
 
-// Ambiguous or retired roots must not be recreated. `pics/` is intentionally retained
-// for approved source diagrams; JavaScript belongs in `js/`, never `lib/`.
+// Ambiguous or retired roots must not be recreated. `pics/` is intentionally retained.
+// Current application JavaScript belongs under `app/`; root `js/` is only the governed moon-phase exception.
 for (const name of [
   'images', 'image', 'pic', 'cloudflare', 'api', 'apps', 'loc8-api',
   '64images', 'icons', 'card_api', 'loc8_api', 'lib'
@@ -32,6 +32,12 @@ for (const path of [
 
 // all.xlsx remains governed under data/source rather than repository root.
 if (existsSync(resolve(root, 'all.xlsx'))) failures.push('forbidden root data file: all.xlsx');
+
+const allowedRootJs = ['locMoonPhase.js'];
+if (!existsSync(resolve(root, 'js/locMoonPhase.js'))) failures.push('missing governed moon-phase JS exception: js/locMoonPhase.js');
+for (const name of ['galaxy.js','quick-selector.js','rune-draw.js','rune-graph-core.js','rune.js','runes-core.js','runes-pwa-ia.js']) {
+  if (existsSync(resolve(root, 'js', name))) failures.push('retired root JS runtime returned: js/' + name);
+}
 
 // Remaining static-runtime roots are still migration debt until Next promotion is complete.
 for (const name of ['engine', 'css']) {
