@@ -26,8 +26,10 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm install --no-audit --no-fund
-      - name: Verify shared FlexSearch engine
-        run: npm run verify:text-engine && npm run verify:semantic-state && npm run verify:automatic-analysis && npm run verify:rune-keyword-rules && npm run verify:rune-draw
+      - name: Verify RC contracts
+        run: npm run verify && npm run verify:rune-draw
+      - name: Verify public Neon Data API
+        run: npm run verify:neon-public
       - name: Verify Neon batching contract
         run: node --experimental-vm-modules scripts/verify-neon-batching.mjs
       - name: Build verified Next static export
