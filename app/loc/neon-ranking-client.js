@@ -155,20 +155,33 @@ async function authorStyles(period,type){
 
 async function runeStyles(period,type){
   const range=await resolvePeriod('lunarunes',period);
-  const filters=[
-    {column:'record_type',operator:'in',value:['galaxy','galaxy_media']},
-    ...dateFilters(range)
-  ];
+  const dateRange=dateFilters(range);
   const map=new Map();
   await processStyleTableRows('silver.lrunes',{
-    columns:'record_id,record_type,title,content,meta_tags,createtime',
-    filters,
+    columns:'record_id,record_type,title,content,createtime',
+    filters:[
+      {column:'record_type',operator:'eq',value:'galaxy'},
+      ...dateRange
+    ],
     orders:[{column:'createtime',ascending:true}],
     onClassified:row=>{
       const term=type==='style_group'?row.style_group:row.style_label;
       increment(map,type,term,{source:'lrunes',period:period||'all'});
     }
   });
+  const mediaResult=await selectNeonAllRows('silver.lrunes',{
+    columns:'record_id,record_type,title,meta_tags,createtime',
+    filters:[
+      {column:'record_type',operator:'eq',value:'galaxy_media'},
+      ...dateRange
+    ],
+    orders:[{column:'createtime',ascending:true}]
+  });
+  const mediaClassified=await classifyStyleRows(mediaResult.rows);
+  for(const row of mediaClassified){
+    const term=type==='style_group'?row.style_group:row.style_label;
+    increment(map,type,term,{source:'lrunes',period:period||'all'});
+  }
   return [...map.values()];
 }
 
