@@ -7,8 +7,8 @@ import {selectManagedScopeIds} from './scope-list';
 
 const RANKING_TYPES=Object.freeze({
   loc:Object.freeze(['source']),
-  lunarunes:Object.freeze(['keyword','source','style','style_group']),
-  lo3rwang:Object.freeze(['keyword','source','style','style_group'])
+  lunarunes:Object.freeze(['keyword','source','style','style_group','media_type','media_place','media_tag']),
+  lo3rwang:Object.freeze(['keyword','source','style','style_group','media_type','media_place','media_tag'])
 });
 
 function increment(map,type,term,extra={}){
@@ -122,6 +122,43 @@ async function runeSources(period){
   return [...map.values()];
 }
 
+function splitMediaTags(value){
+  return String(value||'').split(/[,，]/).map(tag=>tag.trim()).filter(Boolean);
+}
+
+async function authorMedia(period,type){
+  const range=await resolvePeriod('lo3rwang',period);
+  const {rows}=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
+    columns:'media_id,media_type,source_place,meta_tags,createtime',
+    filters:dateFilters(range,'createtime')
+  });
+  const map=new Map();
+  for(const row of rows){
+    if(type==='media_type')increment(map,type,row.media_type,{source:'lo3rwang',period:period||'all'});
+    else if(type==='media_place')increment(map,type,row.source_place,{source:'lo3rwang',period:period||'all'});
+    else for(const tag of splitMediaTags(row.meta_tags))increment(map,type,tag,{source:'lo3rwang',period:period||'all'});
+  }
+  return [...map.values()];
+}
+
+async function runeMedia(period,type){
+  const range=await resolvePeriod('lunarunes',period);
+  const {rows}=await selectNeonAllRows('silver.lrunes',{
+    columns:'record_id,record_type,media_type,source_place,meta_tags,createtime',
+    filters:[
+      {column:'record_type',operator:'eq',value:'galaxy_media'},
+      ...dateFilters(range,'createtime')
+    ]
+  });
+  const map=new Map();
+  for(const row of rows){
+    if(type==='media_type')increment(map,type,row.media_type,{source:'lrunes',period:period||'all'});
+    else if(type==='media_place')increment(map,type,row.source_place,{source:'lrunes',period:period||'all'});
+    else for(const tag of splitMediaTags(row.meta_tags))increment(map,type,tag,{source:'lrunes',period:period||'all'});
+  }
+  return [...map.values()];
+}
+
 async function sourceRowsForScope(scopeId,period){
   if(scopeId==='lo3rwang')return authorSources(period);
   if(scopeId==='lrunes')return runeSources(period);
@@ -217,10 +254,12 @@ async function selectScopeRankingRows(scopeId,{rankingType='',navigation={}}={})
   }else if(id==='lo3rwang'){
     if(type==='keyword')rows.push(...await authorKeywords());
     else if(type==='source')rows.push(...await authorSources(period));
+    else if(type.startsWith('media_'))rows.push(...await authorMedia(period,type));
     else rows.push(...await authorStyles(period,type));
   }else if(id==='lunarunes'){
     if(type==='keyword')rows.push(...await runeKeywords());
     else if(type==='source')rows.push(...await runeSources(period));
+    else if(type.startsWith('media_'))rows.push(...await runeMedia(period,type));
     else rows.push(...await runeStyles(period,type));
   }
 
