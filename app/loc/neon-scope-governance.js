@@ -1,6 +1,6 @@
 'use client';
 
-import {deleteNeonRows,insertNeonRows,selectNeonRows,updateNeonRows} from './neon-repository';
+import {deleteNeonRows,insertNeonRows,selectNeonCatalog,selectNeonRows,updateNeonRows} from './neon-repository';
 
 export const MANAGE_TABLE='silver.manage';
 const ID_PATTERN=/^[A-Za-z][A-Za-z0-9_.-]{0,62}$/;
@@ -23,12 +23,11 @@ function idOf(row){
   return row?.record_type==='group'?String(row.group_id||''):String(row.scope_id||'');
 }
 
-export async function selectManagedNodes({limit:maximum=1000}={}){
-  return (await selectNeonRows(MANAGE_TABLE,{
+export async function selectManagedNodes(){
+  return (await selectNeonCatalog(MANAGE_TABLE,{
     columns:'record_id,record_type,group_id,scope_id,parent_group_id,active,display_order,created_at,updated_at',
     filters:[{column:'record_type',operator:'in',value:['group','scope']}],
-    orders:[{column:'display_order',ascending:true}],
-    limit:limit(maximum,1000,5000)
+    orders:[{column:'display_order',ascending:true}]
   })).rows;
 }
 
