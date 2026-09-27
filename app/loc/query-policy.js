@@ -2,6 +2,7 @@
 
 export const UI_PAGE_SIZE=20;
 export const MAX_ROW_PAGE=64;
+export const WRITE_BATCH_SIZE=64;
 
 const HEAVY_COLUMNS=Object.freeze({
   'silver.lo3rwang_galaxy':Object.freeze(new Set(['content'])),
@@ -55,4 +56,28 @@ export function assertSafeSelect({table,columns,filters=[],limit=UI_PAGE_SIZE,ra
   if(rowCount!==1||!hasExactIdFilter(table,filters)){
     throw new Error(`Bulk heavy-column SELECT blocked for ${table}; heavy content requires exact ID and one row`);
   }
+}
+
+
+const SAFE_RETURNING=Object.freeze({
+  'silver.lo3rwang_galaxy':'galaxy_id',
+  'silver.lo3rwang_galaxy_media':'media_id',
+  'silver.lrunes':'record_id'
+});
+
+export function safeReturning(table,requested='*'){
+  if(requested===null||requested===false)return null;
+  const safe=SAFE_RETURNING[table];
+  if(!safe)return requested;
+  if(!requested||requested==='*')return safe;
+  const cols=columnList(requested);
+  if(cols.includes('content'))throw new Error(`Returning heavy content is blocked for ${table}`);
+  return requested;
+}
+
+export function chunkWriteRows(rows){
+  const source=Array.isArray(rows)?rows:[rows];
+  const chunks=[];
+  for(let i=0;i<source.length;i+=WRITE_BATCH_SIZE)chunks.push(source.slice(i,i+WRITE_BATCH_SIZE));
+  return chunks;
 }
