@@ -1,5 +1,5 @@
 import {ScopeContextResponseSchema} from './scope-feature-contracts';
-import {deleteNeonRows,insertNeonRows,selectNeonRows} from './neon-repository';
+import {deleteNeonRows,insertNeonRows,selectNeonCatalog} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
 
 
@@ -103,18 +103,18 @@ async function readAuthorRows(){
 
 async function readRuneRows(){
   const [runes,keywords]=await Promise.all([
-    selectNeonRows('silver.lrunes',{
+    selectNeonCatalog('silver.lrunes',{
       columns:'rune_number,rune_name,group_name,english_name,rune_description',
       filters:[{column:'record_type',operator:'eq',value:'rune'}],
-      orders:[{column:'rune_number',ascending:true}],limit:100
+      orders:[{column:'rune_number',ascending:true}]
     }),
-    selectNeonRows('silver.lrunes',{
+    selectNeonCatalog('silver.lrunes',{
       columns:'record_id,rune_number,keyword_group,keyword,order_no,active',
       filters:[
         {column:'record_type',operator:'eq',value:'keyword'},
         {column:'active',operator:'eq',value:true}
       ],
-      orders:[{column:'rune_number',ascending:true},{column:'order_no',ascending:true}],limit:1000
+      orders:[{column:'rune_number',ascending:true},{column:'order_no',ascending:true}]
     })
   ]);
   return {runes:runes.rows,keywords:keywords.rows};
@@ -122,8 +122,8 @@ async function readRuneRows(){
 
 async function readAuthorStyles(){
   const [styleResult,keywordResult]=await Promise.all([
-    selectNeonRows('silver.lo3rwang_style',{columns:'style_no,node_type,representative_name,basic_principle,order_no',filters:[{column:'node_type',operator:'eq',value:'style'}],orders:[{column:'style_no',ascending:true}],limit:50}),
-    selectNeonRows('silver.lo3rwang_style_keywords',{columns:'style_no,keyword_group,keyword,order_no',orders:[{column:'style_no',ascending:true},{column:'order_no',ascending:true}],limit:50})
+    selectNeonCatalog('silver.lo3rwang_style',{columns:'style_no,node_type,representative_name,basic_principle,order_no',filters:[{column:'node_type',operator:'eq',value:'style'}],orders:[{column:'style_no',ascending:true}]}),
+    selectNeonCatalog('silver.lo3rwang_style_keywords',{columns:'style_no,keyword_group,keyword,order_no',orders:[{column:'style_no',ascending:true},{column:'order_no',ascending:true}]})
   ]);
   const names=new Map(styleResult.rows.map(row=>[Number(row.style_no),row.representative_name||null]));
   return [...styleResult.rows,...keywordResult.rows.map(row=>({...row,node_type:'keyword',representative_name:names.get(Number(row.style_no))||null,basic_principle:null}))];
