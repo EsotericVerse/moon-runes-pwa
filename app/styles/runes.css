@@ -72,6 +72,15 @@
 .runes-group-section{display:grid;gap:.8rem;padding:1rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-surface-soft)}
 .runes-group-title h3{margin:0 0 .35rem;font-size:1.15rem;color:var(--loc-gold)}
 .runes-group-title p{margin:0;color:var(--loc-muted);line-height:1.65}
+.runes-rune-profile-card{display:grid;gap:1rem}
+.runes-rune-profile{display:grid;grid-template-columns:minmax(180px,280px) minmax(0,1fr);gap:1.25rem;align-items:start}
+.runes-rune-profile .loc-rune-card-image{width:min(100%,260px);margin:0 auto}
+.runes-rune-profile-copy{display:grid;gap:.6rem;align-content:start}
+.runes-rune-profile-copy h2{margin:0}
+.runes-rune-profile-copy p{margin:0;line-height:1.75;color:var(--loc-text)}
+.runes-rune-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.65rem}
+.runes-rune-detail-grid>span{display:grid;gap:.2rem;padding:.75rem .8rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-surface-soft);color:var(--loc-text);line-height:1.55}
+.runes-rune-detail-grid>span strong{color:var(--loc-gold);font-size:.78rem}
 .runes-library-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.7rem}
 .runes-library-card{display:grid;gap:.4rem;min-width:0;padding:.75rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel-2)}
 .runes-library-card strong{font-size:1rem;line-height:1.4;color:var(--loc-text)}
@@ -96,6 +105,8 @@
 @media(max-width:1100px){.runes-group-picker{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:980px){.runes-library-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.runes-graph-controls{grid-template-columns:minmax(0,1fr) 1fr 1fr}}
 @media(max-width:700px){
+  .runes-rune-profile{grid-template-columns:1fr}
+  .runes-rune-detail-grid{grid-template-columns:1fr}
   .loc-draw-grid{grid-template-columns:1fr}
   .loc-rune-card-image{width:min(100%,300px)}
   .runes-ritual,.runes-advice-grid,.runes-graph-columns,.runes-reference-grid,.runes-print-card{grid-template-columns:1fr}
