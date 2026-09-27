@@ -9,9 +9,15 @@ export async function selectManagedScopes(){
     columns:'id,role',
     orders:[{column:'id',ascending:true}]
   });
-  return rows
-    .map(row=>({id:String(row.id||'').trim(),role:String(row.role||'').trim()}))
-    .filter(row=>SCOPE_ID_PATTERN.test(row.id));
+  const scopes=new Map();
+  for(const row of rows){
+    const id=String(row.id||'').trim();
+    const role=String(row.role||'').trim();
+    if(!SCOPE_ID_PATTERN.test(id))continue;
+    const current=scopes.get(id);
+    scopes.set(id,{id,role:current?.role==='admin'||role==='admin'?'admin':role});
+  }
+  return [...scopes.values()].sort((a,b)=>a.id.localeCompare(b.id));
 }
 
 export async function selectManagedScopeIds(){
