@@ -226,6 +226,7 @@ export default function CultureV2(){
     <section className='loc-card scope-v2-feature-card scope-v2-feature-card-wide'>
       <p className='loc-eyebrow'>Time River</p>
       <h2>時間長河</h2>
+      <p><strong>時空定錨論：</strong>先從作品時間、密度與前後分布找出值得回看的位置。系統只指出可觀察的軌跡變化；是否定錨、如何標記與如何理解，仍由使用者決定。</p>
       {query.isPending?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
       {query.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(query.error)}</p>:null}
       {!query.isPending&&!query.error&&!timelineItems.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
