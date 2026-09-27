@@ -253,6 +253,50 @@ export function countKeywordHitsWithCatalog(rows=[],catalog=[]){
   return output;
 }
 
+export function observeKeywordHitsWithCatalog(rows=[],catalog=[]){
+  const source=Array.isArray(rows)?rows:[];
+  const compiled=compileCatalog(catalog);
+  if(!source.length)return [];
+  if(!compiled.length)return source.map(row=>({...row,keyword_hits:[],keyword_hit_count:0}));
+  const engine=buildEngine(source);
+  const states=source.map(()=>new Map());
+
+  for(const rune of compiled){
+    for(const [keywordGroup,group] of rune.groups){
+      if(!group.keywords.length)continue;
+      const rules=[...rune.globalRules,...group.rules];
+      const and=rules.filter(rule=>rule.operator==='AND').map(rule=>rule.keyword);
+      const nor=rules.filter(rule=>rule.operator==='NOR').map(rule=>rule.keyword);
+      const seenKeywords=new Set();
+      for(const rawKeyword of group.keywords){
+        const keyword=String(rawKeyword||'').trim();
+        if(!keyword||seenKeywords.has(keyword))continue;
+        seenKeywords.add(keyword);
+        const match=searchTextIndex(engine,keyword,{and,nor,limit:engine.size,offset:0});
+        for(const id of match.ids){
+          const index=Number(id);
+          const state=states[index];
+          if(!state)continue;
+          const key=[rune.rune_number,keywordGroup,keyword].join('\u0000');
+          state.set(key,{
+            keyword,
+            keyword_group:keywordGroup,
+            rune_number:rune.rune_number,
+            style_label:rune.style_label,
+            style_group:rune.style_group
+          });
+        }
+      }
+    }
+  }
+
+  return source.map((row,index)=>({
+    ...row,
+    keyword_hits:[...states[index].values()],
+    keyword_hit_count:states[index].size
+  }));
+}
+
 export function classifyStyleText(value,catalog=[]){
   return classifyStyleRowsWithCatalog([{content:value}],catalog)[0]||emptyClassification();
 }
@@ -289,6 +333,22 @@ export async function processKeywordTableRows(table,{
   return processNeonHeavyRows(table,{
     columns,filters,orFilter,orders,
     onBatch:async rows=>onCounts(countKeywordHitsWithCatalog(rows,catalog))
+  });
+}
+
+export async function observeStyleKeywordHits(rows=[],scopeId='lunarunes'){
+  const catalog=await selectStyleCatalog(scopeId);
+  return observeKeywordHitsWithCatalog(rows,catalog);
+}
+
+export async function processKeywordObservationRows(table,{
+  columns,filters=[],orFilter='',orders=[],scopeId='lunarunes',onObserved
+}={}){
+  if(typeof onObserved!=='function')throw new TypeError('Keyword observation processing requires onObserved');
+  const catalog=await selectStyleCatalog(scopeId);
+  return processNeonHeavyRows(table,{
+    columns,filters,orFilter,orders,
+    onBatch:async rows=>onObserved(observeKeywordHitsWithCatalog(rows,catalog))
   });
 }
 
