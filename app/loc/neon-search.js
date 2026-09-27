@@ -57,27 +57,10 @@ export async function searchNeonRows(collectionId,query,{
   const cards=scopeCards(q,collectionId);
   const failures=[];
 
-  const countSettled=await Promise.all(providers.map(async provider=>{
-    try{
-      const count=await provider.count(q,{startDate,endDate});
-      return {provider,count,error:null};
-    }catch(error){
-      return {provider,count:0,error};
-    }
-  }));
-
-  for(const item of countSettled){
-    if(item.error)failures.push(new Error(`${item.provider.id}: ${item.error?.message||'count failed'}`));
-  }
-
-  const totalCount=cards.length+countSettled.reduce((sum,item)=>sum+item.count,0);
-  if(countSettled.length&&!countSettled.some(item=>!item.error)){
-    throw new AggregateError(failures,'Neon 搜尋 Provider 全部無法查詢');
-  }
-
   let skip=safeOffset;
   let remaining=safeLimit;
   const rows=[];
+  let totalCount=cards.length;
 
   if(skip<cards.length){
     const take=Math.min(remaining,cards.length-skip);
@@ -88,29 +71,34 @@ export async function searchNeonRows(collectionId,query,{
     skip-=cards.length;
   }
 
-  for(const item of countSettled){
-    if(remaining<=0)break;
-    if(item.error||item.count<=0)continue;
-    if(skip>=item.count){
-      skip-=item.count;
-      continue;
-    }
-
-    const localOffset=skip;
-    skip=0;
-    const take=Math.min(remaining,item.count-localOffset);
+  let successfulProviders=0;
+  for(const provider of providers){
     try{
-      const page=await item.provider.search(q,{
-        limit:take,
-        offset:localOffset,
+      const requestedLimit=remaining>0?safeLimit:0;
+      const result=await provider.search(q,{
+        limit:requestedLimit,
+        offset:skip,
         startDate,
         endDate
       });
-      rows.push(...page);
-      remaining-=page.length;
+      successfulProviders+=1;
+      totalCount+=result.count;
+      if(skip>=result.count){
+        skip-=result.count;
+        continue;
+      }
+      skip=0;
+      if(remaining<=0)continue;
+      const take=result.rows.slice(0,remaining);
+      rows.push(...take);
+      remaining-=take.length;
     }catch(error){
-      failures.push(new Error(`${item.provider.id}: ${error?.message||'search failed'}`));
+      failures.push(new Error(`${provider.id}: ${error?.message||'search failed'}`));
     }
+  }
+
+  if(providers.length&&!successfulProviders){
+    throw new AggregateError(failures,'Neon 搜尋 Provider 全部無法查詢');
   }
 
   const nextOffset=safeOffset+rows.length;
