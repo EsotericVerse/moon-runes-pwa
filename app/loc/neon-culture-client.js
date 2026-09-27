@@ -202,14 +202,16 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
           id:'media:'+media.media_id,href:media.url,label:`媒體連結 ${index+1}`
         });
       });
+      const canonicalTitle=decodeCultureText(item.title||row.title||'').trim();
+      const excerpt=decodeCultureText(item.excerpt||'').trim();
       return {
         key:'galaxy:'+row.galaxy_id,
         galaxy_id:row.galaxy_id,
         source_name:row.source_name,
         source_type:row.source_type,
         source_role:row.source_role,
-        title:decodeCultureText(row.title||'').trim()||row.source_name||row.galaxy_id,
-        description:linkedMedia.map(mediaMetadataDescription).filter(Boolean).join(' ｜ '),
+        title:canonicalTitle||excerpt||row.source_name||row.galaxy_id,
+        description:canonicalTitle?excerpt:linkedMedia.map(mediaMetadataDescription).filter(Boolean).join(' ｜ '),
         created_at:row.created_at,
         start_date:row.created_at,
         date:row.created_at,
