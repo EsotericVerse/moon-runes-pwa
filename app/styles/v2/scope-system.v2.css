@@ -108,6 +108,7 @@
 .scope-overview-network .vis-network{outline:none}
 .scope-overview-network-detail{padding:1rem;border:var(--scope-v2-border);border-radius:14px;background:var(--loc-panel-2)}
 .scope-overview-network-detail h3{margin:.15rem 0 .5rem}
+.scope-overview-network-detail p{white-space:pre-line}
 
 .loc-keyword-graph2d{display:grid;gap:.6rem;margin:1rem 0;padding:1rem;border:var(--scope-v2-border);border-radius:var(--scope-v2-radius);background:var(--loc-panel)}
 .loc-keyword-graph2d h3,.loc-keyword-graph2d p{margin:.15rem 0}
