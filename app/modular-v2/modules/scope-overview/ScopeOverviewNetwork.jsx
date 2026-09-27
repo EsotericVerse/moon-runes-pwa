@@ -23,8 +23,12 @@ export default function ScopeOverviewNetwork({centerTitle='',centerSummary='',no
     const line=computed.getPropertyValue('--loc-line').trim()||'#aab';
     const graphNodes=[
       {id:centerId,label:centerTitle||'作者',title:centerSummary||'',shape:'box',color:{background:panel2,border:accent},font:{size:20,bold:true}},
-      ...safeNodes.map(node=>({id:String(node.id),label:String(node.title||node.id),title:String(node.summary||''),
-        shape:'box',margin:16,widthConstraint:{maximum:250},color:{background:panel,border:line},font:{size:16,multi:'html'}}))
+      ...safeNodes.map(node=>({
+        id:String(node.id),
+        label:String(node.title||node.id).split('｜').join('\n'),
+        title:String(node.summary||''),
+        shape:'box',margin:16,widthConstraint:{maximum:250},color:{background:panel,border:line},font:{size:16,multi:'html'}
+      }))
     ];
     const graphEdges=safeNodes.map(node=>({from:centerId,to:String(node.id),color:{color:line,highlight:accent},width:2,smooth:false}));
     import('vis-network/standalone').then(({Network})=>{
