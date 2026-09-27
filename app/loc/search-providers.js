@@ -227,7 +227,7 @@ const faq=makeProvider({
   source:'FAQ',
   scopeId:'loc',
   idColumn:'faq_id',
-  columns:['faq_id','category','intent','question','answer','status','source_path'],
+  columns:['faq_id','category','intent','question','answer','status'],
   searchFields:['category','intent','question','answer','status']
 });
 
