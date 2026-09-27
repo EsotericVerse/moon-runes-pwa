@@ -4,7 +4,7 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {searchNeonRows} from '../../loc/neon-search';
 import {selectNeonRows,updateNeonRows} from '../../loc/neon-repository';
-import {listResourceVisibility,saveResourceVisibility,visibilityDraft} from '../../loc/resource-visibility';
+import {listResourceVisibilityFor,saveResourceVisibility,visibilityDraft} from '../../loc/resource-visibility';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {getSearchCollection} from '../../loc/search-collections';
 import FeaturePageV2 from '../FeaturePageV2';
@@ -128,14 +128,19 @@ export default function SearchV2(){
       if(id!==searchId.current)return;
 
       matchedQueryRef.current=q;
+      const pageResources=search.rows.map(({row})=>{
+        const resourceType=row.galaxy_id?'galaxy':row.media_id?'galaxy_media':'';
+        const resourceId=row.galaxy_id||row.media_id||'';
+        return {scope:row.scope_id||scopeId,resourceType,resourceId};
+      }).filter(item=>item.resourceType&&item.resourceId);
       let visibilityRows=[];
-      try{visibilityRows=await listResourceVisibility();}catch{}
+      try{visibilityRows=await listResourceVisibilityFor(pageResources);}catch{}
       const visibilityMap=new Map();
       for(const item of visibilityRows){
         visibilityMap.set(resultKey(item.scope,item.resource_type,item.resource_id),item);
       }
       visibilityRef.current=visibilityMap;
-      offsetRef.current=search.rows.length;
+      offsetRef.current=search.nextOffset??0;
       const converted=[];const seen=new Set();
       for(const {row,source} of search.rows){
         const result=toResult(row,source,q,collection.id,scopeId,visibilityMap);
@@ -145,9 +150,9 @@ export default function SearchV2(){
         seen.add(result.key);converted.push(result);
       }
       setResults(mergeSummaryResults(converted));
-      setHasMore(search.rows.length===pageSize);
+      setHasMore(Boolean(search.hasMore));
       const partial=search.failures?.length?`（${search.failures.length} 張非必要資料表暫時無法查詢）`:'';
-      setStatus(`「${collection.label}」搜尋「${q}」。${partial}`);
+      setStatus(`「${collection.label}」搜尋「${q}」，共 ${Number(search.totalCount||0).toLocaleString()} 筆。${partial}`);
     }catch(exception){
       if(id!==searchId.current)return;
       setError(featureDataErrorMessage(exception));
@@ -164,7 +169,7 @@ export default function SearchV2(){
     setLoadingMore(true);
     try{
       const search=await searchNeonRows(collection.id,q,{limit:pageSize,offset:offsetRef.current});
-      offsetRef.current+=search.rows.length;
+      offsetRef.current=search.nextOffset??offsetRef.current;
       setResults(current=>{
         const seen=new Set(current.map(item=>item.key));
         const appended=[];
@@ -177,7 +182,7 @@ export default function SearchV2(){
         }
         return mergeSummaryResults([...current,...appended]);
       });
-      setHasMore(search.rows.length===pageSize);
+      setHasMore(Boolean(search.hasMore));
     }catch(exception){
       setError(String(exception?.message||exception||'載入下一批搜尋結果失敗。'));
       setHasMore(false);
