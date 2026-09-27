@@ -95,14 +95,18 @@ export async function selectAuthorStyleCatalog(){
   return authorCatalogPromise;
 }
 
+export function isConfiguredStyleCatalog(rows=[]){
+  const source=Array.isArray(rows)?rows:[];
+  return source.length>0&&source.every(row=>
+    String(row?.style_label||'').trim()&&String(row?.style_group||'').trim()
+  );
+}
+
 export async function selectStyleCatalog(scopeId='lunarunes'){
   const id=String(scopeId||'').trim();
   if(id!=='lo3rwang')return selectCanonicalStyleCatalog();
   const author=await selectAuthorStyleCatalog();
-  const configured=author.length>0&&author.every(row=>
-    String(row.style_label||'').trim()&&String(row.style_group||'').trim()
-  );
-  return configured?author:selectCanonicalStyleCatalog();
+  return isConfiguredStyleCatalog(author)?author:selectCanonicalStyleCatalog();
 }
 
 export function styleTextOf(row={}){
