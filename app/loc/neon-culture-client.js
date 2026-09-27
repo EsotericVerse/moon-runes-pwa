@@ -244,14 +244,23 @@ async function selectScopePeriodMetadataRows(scopeId,{startDate,endDate}={}){
   const runtimeId=runtimeScopeId(scopeId);
   const filters=dateFilters(startDate,endDate);
   if(runtimeId==='lunarunes'){
-    const result=await selectNeonAllRows('silver.lrunes',{
-      columns:'record_id,record_type,uid,media_id,galaxy_link,title,meta_tags,media_type,source_name,createtime,url',
-      filters:[
-        {column:'record_type',operator:'in',value:['galaxy','galaxy_media']},
-        ...filters
-      ]
-    });
-    return result.rows;
+    const [textResult,mediaResult]=await Promise.all([
+      selectNeonAllRows('silver.lrunes',{
+        columns:'record_id,record_type,uid,title,source_name,createtime,url',
+        filters:[
+          {column:'record_type',operator:'eq',value:'galaxy'},
+          ...filters
+        ]
+      }),
+      selectNeonAllRows('silver.lrunes',{
+        columns:'record_id,record_type,media_id,galaxy_link,title,meta_tags,media_type,source_name,createtime,url',
+        filters:[
+          {column:'record_type',operator:'eq',value:'galaxy_media'},
+          ...filters
+        ]
+      })
+    ]);
+    return [...textResult.rows,...mediaResult.rows];
   }
   const [textsResult,mediaResult]=await Promise.all([
     selectNeonAllRows('silver.lo3rwang_galaxy',{
@@ -276,14 +285,24 @@ async function selectScopeStyleRows(scopeId,{startDate,endDate}={}){
   const output=[];
   if(runtimeId==='lunarunes'){
     await processStyleTableRows('silver.lrunes',{
-      columns:'record_id,record_type,uid,media_id,galaxy_link,title,content,meta_tags,media_type,source_name,createtime,url',
+      columns:'record_id,record_type,uid,title,content,source_name,createtime,url',
       filters:[
-        {column:'record_type',operator:'in',value:['galaxy','galaxy_media']},
+        {column:'record_type',operator:'eq',value:'galaxy'},
         ...filters
       ],
       orders:[{column:'createtime',ascending:true}],
       onClassified:row=>{output.push(withoutContent(row));}
     });
+    const mediaResult=await selectNeonAllRows('silver.lrunes',{
+      columns:'record_id,record_type,media_id,galaxy_link,title,meta_tags,media_type,source_name,createtime,url',
+      filters:[
+        {column:'record_type',operator:'eq',value:'galaxy_media'},
+        ...filters
+      ],
+      orders:[{column:'createtime',ascending:true}]
+    });
+    const mediaClassified=await classifyStyleRows(mediaResult.rows);
+    output.push(...mediaClassified.map(row=>withoutContent(row)));
     return output;
   }
   await processStyleTableRows('silver.lo3rwang_galaxy',{
