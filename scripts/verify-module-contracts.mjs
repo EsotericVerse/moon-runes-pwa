@@ -35,6 +35,7 @@ for(const path of [
   'app/loc/neon-culture-client.js',
   'app/loc/neon-ranking-client.js',
   'app/loc/neon-repository.js',
+  'app/loc/text-engine.mjs',
   'assets/lunarunes/cards/65_玄.png',
   'assets/lunarunes/cards/66_命.png',
   'pics/LOC-structure.png'
@@ -55,9 +56,13 @@ for(const [client,contract] of [
   ['app/loc/neon-ranking-client.js','ScopeRankingResponseSchema']
 ])if(!readFileSync(resolve(root,client),'utf8').includes(`${contract}.parse`))failures.push(`${client}: shared Zod feature contract not enforced`);
 
-const searchClient=readFileSync(resolve(root,'app/loc/neon-search.js'),'utf8');
-if(!/getSearchProviders/.test(searchClient)||!/searchNeonRows\(/.test(searchClient))failures.push('Search client: direct Neon provider search contract missing');
-if(!/searchNeonRows\(/.test(readFileSync(resolve(root,'app/modular-v2/features/SearchV2.jsx'),'utf8')))failures.push('Search view: Neon-backed search contract missing');
+const textEngine=readFileSync(resolve(root,'app/loc/text-engine.mjs'),'utf8');
+const searchProviders=readFileSync(resolve(root,'app/loc/search-providers.js'),'utf8');
+const styleClassifier=readFileSync(resolve(root,'app/loc/style-classifier.js'),'utf8');
+if(!/from ['"]flexsearch['"]/.test(textEngine)||!/Charset\.CJK/.test(textEngine)||!/new Resolver/.test(textEngine))failures.push('Text engine: FlexSearch CJK/Resolver contract missing');
+if(!/getRuntimeTextIndex/.test(searchProviders)||!/searchTextIndex/.test(searchProviders))failures.push('Search client: shared FlexSearch contract missing');
+if(!/searchTextIndex/.test(styleClassifier))failures.push('Culture/Statistics style classifier: shared FlexSearch contract missing');
+if(!/searchNeonRows\(/.test(readFileSync(resolve(root,'app/modular-v2/features/SearchV2.jsx'),'utf8')))failures.push('Search view: shared text search contract missing');
 
 const coreBatch=/fetchNeonDataBatch\(\[LOC_DATA\.RUNES,LOC_DATA\.LOTS,LOC_DATA\.RUNE_INTERPRETATIONS\]/.test(runesClient);
 const directRunes=runesClient.includes('fetchNeonData(LOC_DATA.RUNES)');
