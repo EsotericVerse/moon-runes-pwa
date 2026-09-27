@@ -126,8 +126,10 @@ Current 命名治理如下：
 
 每筆治理變更至少記錄治理對象、Scope、操作者角色、動作、前後值、理由、證據、時間、審核狀態與替代紀錄。
 
-## 11. Copyleft
+## 11. Copyleft 與 Scope 授權邊界
 
-LOC 的基本方法論依 Copyleft 原則開放使用與研究，使用及衍生時須保留必要來源、作者、歷史與修改標示。衍生商業使用須取得同意；解析介面、推演層及其他受管理服務可以收費。
+LOC 的基本方法論依 Copyleft 原則開放使用與研究；LOC 原創程式碼採 GNU GPL 模型。正式 GPL 版本與完整條款以 Repository 的 `LICENSE` 文件為準，在 LICENSE 尚未明定前不自行推定特定 GPL 版本。
 
-此段是 Current 治理意圖，不自動等同或改寫為 GPL、AGPL、CC BY-SA 或其他既有 license。第三方內容、私人資料及另有權利限制的資產不因本原則自動重新授權。
+Copyleft／GPL 是 LOC 對 LOC 自身的治理選擇，不是使用 LOC 的 Scope 必須共同採用的法律原則。LunaRunes、個人作品、第三方內容、私人資料與其他 Scope 均維持自己的 Copyright、Canon、授權與治理邊界，不因被 LOC 儲存、索引、分析或展示而自動重新授權。
+
+新增 Scope 可以由既有治理範本建立初始副本；建立後治理內容歸該 Scope，由其授權管理者自行修改。
