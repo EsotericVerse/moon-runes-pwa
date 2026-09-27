@@ -50,7 +50,10 @@ function timelineRows(items,labelOf,focus){
       ...(group?{group:String(group)}:{}),
       ...(end?{end,type:'range'}:{type:'point'}),
       ...(focused?{className:'scope-period-timeline-focus'}:{}),
-      ...(density?{style:'background-color:var(--loc-panel);border-color:var(--loc-accent);color:var(--loc-text);filter:brightness('+density.brightness+');box-shadow:0 0 '+density.blur+' color-mix(in srgb,var(--loc-accent) '+Math.round(density.glow*100)+'%,transparent);'}:{})
+      ...(density?{
+        className:[focused?'scope-period-timeline-focus':'','scope-period-density'].filter(Boolean).join(' '),
+        style:'--culture-density:'+Math.max(.12,Math.min(1,Number(item?.density_ratio)||Math.min(1,Number(item?.work_count||0)/100)))+';background:color-mix(in srgb,var(--loc-accent) '+Math.round((.16+density.glow*.68)*100)+'%,var(--loc-panel));border-color:color-mix(in srgb,var(--loc-accent) '+Math.round((.42+density.glow*.5)*100)+'%,var(--loc-line));color:var(--loc-text);filter:brightness('+density.brightness+');box-shadow:0 0 '+density.blur+' color-mix(in srgb,var(--loc-accent) '+Math.round(density.glow*100)+'%,transparent);'
+      }:{})
     }];
   });
 }
@@ -171,7 +174,10 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
   const rows=useMemo(()=>timelineRows(items,labelOf,focus),[items,labelOf,focus]);
   const fallbackRows=useMemo(()=>[...rows].sort((a,b)=>String(b.start).localeCompare(String(a.start))),[rows]);
   const currentConfluence=mode==='current'&&rows.some(row=>row.scopeId==='lo3rwang'&&row.status.trim().toLowerCase()==='current')&&rows.some(row=>row.scopeId==='lunarunes'&&row.status.trim().toLowerCase()==='current');
-  const timelineHeight=mode==='overview'?Math.max(640,Math.min(1400,440+rows.length*18)):640;
+  const groupCount=new Set(rows.map(row=>row.group).filter(Boolean)).size;
+  const timelineHeight=mode==='source'
+    ?Math.max(220,Math.min(560,96+Math.max(1,groupCount)*46))
+    :(mode==='overview'?Math.max(640,Math.min(1400,440+rows.length*18)):640);
 
   useEffect(()=>{onSelectRef.current=onSelect},[onSelect]);
 
@@ -197,7 +203,9 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
         moveable:true,
         showCurrentTime:false,
         stack:true,
-        margin:{item:{horizontal:8,vertical:12}}
+        margin:mode==='source'
+          ?{axis:10,item:{horizontal:3,vertical:5}}
+          :{item:{horizontal:8,vertical:12}}
       });
       instance.on('select',({items:selectedItems=[]})=>{
         const selectedId=selectedItems[0];
