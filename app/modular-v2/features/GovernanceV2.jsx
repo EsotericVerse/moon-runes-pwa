@@ -5,6 +5,7 @@ import {useOffsetPagination} from '../use-offset-pagination.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import {scopeHrefV2} from '../scope-registry.v2';
+import GovernanceInlineEditor from '../../loc/GovernanceInlineEditor';
 import LocGovernance,{LocGovernanceLaw,LOC_GOVERNANCE_SUBTITLE} from '../governance/LocGovernance';
 import LunaRunesGovernance,{LUNARUNES_GOVERNANCE_SUBTITLE} from '../governance/LunaRunesGovernance';
 import PersonalGovernance,{PERSONAL_GOVERNANCE_SUBTITLE} from '../governance/PersonalGovernance';
@@ -64,7 +65,10 @@ function governanceFor(scopeId){
 function GovernanceHome(){
   const {scopeId}=useScopeRuntimeV2();
   const {View,subtitle}=governanceFor(scopeId);
-  return <FeaturePageV2 featureId="governance" subtitle={subtitle}><View/><section className="loc-card"><p className="loc-eyebrow">Management</p><h2>管理</h2><p>管理功能使用獨立登入與工作頁，不混入公開治理正文。</p><a className="loc-button primary" href={scopeHrefV2(scopeId,'governance/manage')}>進入管理</a></section></FeaturePageV2>;
+  return <FeaturePageV2 featureId="governance" subtitle={subtitle}>
+    <GovernanceInlineEditor scopeId={scopeId}><View/></GovernanceInlineEditor>
+    <section className="loc-card"><p className="loc-eyebrow">Management</p><h2>管理</h2><p>管理功能使用獨立登入與工作頁，不混入公開治理正文。</p><a className="loc-button primary" href={scopeHrefV2(scopeId,'governance/manage')}>進入管理</a></section>
+  </FeaturePageV2>;
 }
 
 function GovernanceLaw(){
