@@ -73,8 +73,8 @@ for(const fromAttribute of pairAttributes){
       for(const toDirection of pairDirections){
         const reading=buildSpreadGuidance(
           [
-            {符文名稱:'靈',卡片屬性:fromAttribute},
-            {符文名稱:'向',卡片屬性:toAttribute}
+            {rune_name:'靈',card_attribute:fromAttribute},
+            {rune_name:'向',card_attribute:toAttribute}
           ],
           [fromDirection,toDirection],
           '2card'
@@ -89,7 +89,7 @@ assert.equal(pairSentences.size,144);
 
 assert.match(
   buildSpreadGuidance(
-    [{符文名稱:'玄',卡片屬性:'未知'},{符文名稱:'向',卡片屬性:'中平'}],
+    [{rune_name:'玄',card_attribute:'未知'},{rune_name:'向',card_attribute:'中平'}],
     ['正位','正位'],
     '2card'
   ).sentence,
@@ -97,7 +97,7 @@ assert.match(
 );
 assert.match(
   buildSpreadGuidance(
-    [{符文名稱:'靈',卡片屬性:'正面'},{符文名稱:'命',卡片屬性:'未知'}],
+    [{rune_name:'靈',card_attribute:'正面'},{rune_name:'命',card_attribute:'未知'}],
     ['正位','正位'],
     '2card'
   ).sentence,
@@ -106,9 +106,9 @@ assert.match(
 assert.match(
   buildSpreadGuidance(
     [
-      {符文名稱:'靈',卡片屬性:'正面'},
-      {符文名稱:'玄',卡片屬性:'未知'},
-      {符文名稱:'向',卡片屬性:'中平'}
+      {rune_name:'靈',card_attribute:'正面'},
+      {rune_name:'玄',card_attribute:'未知'},
+      {rune_name:'向',card_attribute:'中平'}
     ],
     ['正位','正位','正位'],
     '3card'
