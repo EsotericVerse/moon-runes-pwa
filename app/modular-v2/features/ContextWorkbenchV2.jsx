@@ -7,7 +7,7 @@ const ROOT_NODES=Object.freeze([
   {
     id:'loc',
     title:'月典（LOC／LunaCodex）',
-    position:'模型化語言框架。',
+    position:'Language Architecture Framework｜語言架構框架。',
     description:'以月為鑑，照亮你的文字。',
     angle:-90,
     href:''
@@ -23,7 +23,7 @@ const ROOT_NODES=Object.freeze([
   {
     id:'lo3rwang',
     title:'Lucas Oscar Wang 政德（lo3rwang）',
-    position:'語言治理架構者。',
+    position:'Language Architect｜語言建築師。',
     description:'架構這一切的建築師。',
     angle:150,
     href:scopeHrefV2('lo3rwang')
