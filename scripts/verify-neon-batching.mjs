@@ -35,7 +35,7 @@ await io.evaluate();
 const repository=new SourceTextModule(readFileSync('app/loc/neon-repository.js','utf8'));
 await repository.link(spec=>{
   if(spec==='zod')return synthetic({z});
-  if(spec==='./neon-client')return synthetic({neonPublicClient:client,neonAuthClient:client});
+  if(spec==='./neon-client')return synthetic({neonPublicClient:client,neonAuthClient:client,resetNeonPublicToken:()=>{}});
   if(spec==='./query-policy')return policy;
   if(spec==='./io-controller')return synthetic({...Object.fromEntries(Object.keys(io.namespace).map(k=>[k,io.namespace[k]])),runNeonIo:task=>task(),reportNeonIoError:()=>{}});
   if(spec==='./text-engine.mjs')return synthetic({clearRuntimeTextIndexes:()=>{}});
