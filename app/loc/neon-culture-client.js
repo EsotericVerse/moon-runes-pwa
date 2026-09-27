@@ -58,7 +58,7 @@ export async function selectScopeCultureData(scopeId){
   const dataId=dataScopeId(scopeId);
   if(!['loc','lrunes','lo3rwang'].includes(dataId))throw new Error('Scope 無效');
 
-  const scopeIds=dataId==='loc'?await selectManagedScopeIds():[dataId];
+  const scopeIds=dataId==='loc'?(await selectManagedScopeIds()).filter(scope=>scope!=='loc'):[dataId];
   const contextEntries=[];
   for(const scope of scopeIds){
     const rows=await selectScopeTimeRows(scope);
