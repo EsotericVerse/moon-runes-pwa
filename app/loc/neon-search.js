@@ -31,8 +31,8 @@ const TABLES=Object.freeze({
   ])
 });
 
-const SEARCH_PAGE_SIZE=500;
-const MAX_INDEX_RESULTS=500;
+const SEARCH_PAGE_SIZE=20;
+const MAX_INDEX_RESULTS=20;
 const SCOPE_SEARCH_ALIASES=Object.freeze({
   loc:'loc lunacodex luna codex 月典',
   lunarunes:'lunarunes lrunes 月之符文 符文',
@@ -101,36 +101,55 @@ export async function selectNeonSearchRows(collectionId,query,{limit=SEARCH_PAGE
   const tables=TABLES[collectionId]||TABLES.all;
   const safeLimit=Math.max(1,Math.min(SEARCH_PAGE_SIZE,Number(limit)||SEARCH_PAGE_SIZE));
   const safeOffset=Math.max(0,Number(offset)||0);
-  const perTable=Math.max(20,Math.ceil(safeLimit/Math.max(1,tables.length)));
+
+  // Query each source with SQL-side ILIKE + LIMIT/OFFSET.
+  // The browser never downloads the full corpus.
+  const perTableLimit=Math.max(1,Math.ceil(safeLimit/Math.max(1,tables.length)));
+  const perTableOffset=Math.floor(safeOffset/Math.max(1,tables.length));
+
   const settled=await Promise.all(tables.map(async([table,source,columns,scopeId,filters])=>{
     try{
-      return {table,rows:await searchTableRows(table,source,columns,scopeId,filters,query,{limit:perTable,offset:safeOffset}),error:null};
+      const rows=await searchTableRows(
+        table,source,columns,scopeId,filters,query,
+        {limit:perTableLimit,offset:perTableOffset}
+      );
+      return {table,rows,error:null};
     }catch(error){
       return {table,rows:[],error:new Error(`Neon Search SELECT ${table}: ${error?.message||'query failed'}`)};
     }
   }));
-  const scopeRows=collectionId==='all'?await searchScopeCards(query):[];
-  const rows=[...scopeRows,...settled.flatMap(item=>item.rows)];
+
+  const scopeRows=collectionId==='all'&&safeOffset===0?await searchScopeCards(query):[];
+  const merged=[...scopeRows,...settled.flatMap(item=>item.rows)].slice(0,safeLimit);
   const failures=settled.filter(item=>item.error).map(item=>item.error);
-  const successfulTables=settled.length-failures.length;
-  if(!successfulTables)throw new AggregateError(failures,'Neon 搜尋資料表全部無法查詢');
-  return {rows,failures};
+
+  if(settled.length&&!settled.some(item=>!item.error)){
+    throw new AggregateError(failures,'Neon 搜尋資料表全部無法查詢');
+  }
+
+  return {rows:merged,failures};
 }
 
 export async function searchNeonRows(collectionId,query,{limit=SEARCH_PAGE_SIZE,offset=0}={}){
-  const normalized=normalizeSearchText(query);
-  if(!normalized)return {rows:[],failures:[]};
+  const q=String(query||'').trim();
+  if(!q)return {rows:[],failures:[]};
+
   const safeLimit=Math.max(1,Math.min(SEARCH_PAGE_SIZE,Number(limit)||SEARCH_PAGE_SIZE));
   const safeOffset=Math.max(0,Number(offset)||0);
-  const source=await selectNeonSearchRows(collectionId,query,{limit:safeLimit,offset:safeOffset});
-  const filtered=source.rows.filter(({row})=>row?.scope_card||rowSearchText(row).includes(normalized));
+  const source=await selectNeonSearchRows(collectionId,q,{limit:safeLimit,offset:safeOffset});
+
+  // Only rank the current DB page. No full-corpus index is built.
+  const normalized=normalizeSearchText(q);
+  const rows=source.rows.filter(({row})=>row?.scope_card||rowSearchText(row).includes(normalized));
   const index=new Index({tokenize:'full'});
-  filtered.forEach(({row},id)=>index.add(id,rowSearchText(row)));
+  rows.forEach(({row},id)=>index.add(id,rowSearchText(row)));
+
   const ids=index.search(normalized,{limit:safeLimit});
-  const matched=ids.map(id=>filtered[Number(id)]).filter(Boolean);
+  const matched=ids.map(id=>rows[Number(id)]).filter(Boolean);
   const scopeHits=matched.filter(item=>item.row?.scope_card);
   const matchedScopeIds=new Set(scopeHits.map(item=>String(item.row?.scope_id||'')));
   const scopedContent=matched.filter(item=>!item.row?.scope_card&&matchedScopeIds.has(String(item.row?.scope_id||'')));
   const otherContent=matched.filter(item=>!item.row?.scope_card&&!matchedScopeIds.has(String(item.row?.scope_id||'')));
-  return {...source,rows:[...scopeHits,...scopedContent,...otherContent]};
+
+  return {...source,rows:[...scopeHits,...scopedContent,...otherContent].slice(0,safeLimit)};
 }
