@@ -515,16 +515,6 @@ async function selectScopeRankingRows(scopeId,{rankingType='',navigation={}}={})
   return {id,type,rows:merged};
 }
 
-export async function selectScopeRankingPage(scopeId,{offset=0,limit=20,rankingType='',navigation={}}={}){
-  const result=await selectScopeRankingRows(scopeId,{rankingType,navigation});
-  const size=Math.max(1,Math.floor(Number(limit)||20));
-  const start=Math.max(0,Math.floor(Number(offset)||0));
-  const page=result.rows.slice(start,start+size);
-  return ScopeRankingResponseSchema.parse({
-    rows:page,offset:start,limit:size,hasMore:start+size<result.rows.length,types:RANKING_TYPES[result.id]
-  });
-}
-
 export async function selectScopeRankingAll(scopeId,{rankingType='',navigation={}}={}){
   return (await selectScopeRankingRows(scopeId,{rankingType,navigation})).rows;
 }
