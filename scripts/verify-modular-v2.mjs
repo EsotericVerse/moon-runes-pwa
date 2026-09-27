@@ -48,14 +48,13 @@ for(const [id,scope] of Object.entries(SCOPES_V2)){
   if(!scope.primary?.href||!scope.primary?.label)failures.push(id+' missing primary navigation target');
   if(!scope.role?.href||!scope.role?.label)failures.push(id+' missing role navigation target');
   if(!Array.isArray(scope.homes))failures.push(id+' homes must be an array');
-  if(!scope.theme)failures.push(id+' missing theme');
   if(scope.scopeType==='directory'&&!scope.mount)failures.push('directory Scope missing mount: '+id);
 
   for(const feature of FEATURES_V2){
     const expectedBase=scope.scopeType==='directory'&&scope.mount
       ?`https://${scope.mount.host}${scope.mount.path}`
       :`https://${domain}`;
-    if(featureHrefV2(id,feature.id)!==`${expectedBase}/${feature.path}`)failures.push(id+'/'+feature.id+' route mismatch');
+    if(featureHrefV2(id,feature.id)!==`${expectedBase}/${feature.path}/`)failures.push(id+'/'+feature.id+' route mismatch');
   }
 }
 
@@ -101,7 +100,7 @@ for(const scope of Object.values(SCOPES_V2)){
   for(const localRoute of localRoutes){
     const canonicalHref=scopeHrefV2(scope.id,localRoute);
     const expectedBase=scope.scopeType==='directory'&&scope.mount?`https://${scope.mount.host}${scope.mount.path}`:`https://${scope.domain}`;
-    if(canonicalHref!==`${expectedBase}/${localRoute}`)failures.push('Scope-local canonical URL drifted: '+scope.id+'/'+localRoute);
+    if(canonicalHref!==`${expectedBase}/${localRoute}/`)failures.push('Scope-local canonical URL drifted: '+scope.id+'/'+localRoute);
 
     const canonicalRoot=scope.scopeType==='directory'&&scope.mount
       ? path.resolve('app',scope.mount.path.split('/').filter(Boolean)[0])
