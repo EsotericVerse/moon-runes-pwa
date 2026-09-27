@@ -1,6 +1,6 @@
 export { LOC_DATA } from './data-paths.mjs';
 import { LOC_DATA } from './data-paths.mjs';
-import {selectNeonRows} from './neon-repository';
+import {selectNeonCatalog} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
 
 const DEFAULT_GLOBAL_CONCURRENCY=2;
@@ -111,20 +111,18 @@ function periodRows(rows){
 
 async function loadCanonicalRunes(){
   const [runes,keywords]=await Promise.all([
-    selectNeonRows('silver.lrunes',{
+    selectNeonCatalog('silver.lrunes',{
       columns:'rune_number,rune_name,group_name,english_name,lots_positive,lots_negative,lots_half_positive,lots_half_negative,myth_story,rune_evolution_history,personality_archetype,card_attribute,totem,moon_phase,positive_meaning,reverse_meaning,half_positive_meaning,half_reverse_meaning,rune_description,character_action,extra_notes,extra_rules,soul_question,practice_challenge,ritual_advice,harmony_advice,source_ref,updated_at',
       filters:[{column:'record_type',operator:'eq',value:'rune'}],
-      orders:[{column:'rune_number',ascending:true}],
-      limit:100
+      orders:[{column:'rune_number',ascending:true}]
     }),
-    selectNeonRows('silver.lrunes',{
+    selectNeonCatalog('silver.lrunes',{
       columns:'rune_number,keyword_group,keyword',
       filters:[
         {column:'record_type',operator:'eq',value:'keyword'},
         {column:'active',operator:'eq',value:true}
       ],
-      orders:[{column:'rune_number',ascending:true},{column:'order_no',ascending:true}],
-      limit:1000
+      orders:[{column:'rune_number',ascending:true},{column:'order_no',ascending:true}]
     })
   ]);
   return runeRows(runes.rows,keywords.rows);
@@ -138,11 +136,10 @@ async function fetchCanonical(path){
       return loadCanonicalRunes();
     }
     if(normalized==='canonical/harmony'){
-      return (await selectNeonRows('silver.lrunes',{
+      return (await selectNeonCatalog('silver.lrunes',{
         columns:'rune_number,rune_name,soul_question,practice_challenge,ritual_advice,harmony_advice,updated_at',
         filters:[{column:'record_type',operator:'eq',value:'rune'}],
-        orders:[{column:'rune_number',ascending:true}],
-        limit:100
+        orders:[{column:'rune_number',ascending:true}]
       })).rows;
     }
     if(normalized==='culture/lrunes-periods'){
