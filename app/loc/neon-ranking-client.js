@@ -46,7 +46,7 @@ async function authorSources(period){
   const range=await resolvePeriod('lo3rwang',period);
   const map=new Map();
   if(!range){
-    const result=await selectSourceCatalog({scopeId:'lo3rwang',limit:1000});
+    const result=await selectSourceCatalog({scopeId:'lo3rwang'});
     for(const row of result.rows){
       const value=String(row.source_name||'').trim();
       if(!value)continue;
@@ -65,8 +65,7 @@ async function authorSources(period){
   const result=await selectSourceWeekly({
     scopeId:'lo3rwang',
     startDate:range.start_date||'',
-    endDate:range.end_date||'',
-    limit:10000
+    endDate:range.end_date||''
   });
   for(const row of result.rows){
     const value=String(row.source_name||'').trim();
