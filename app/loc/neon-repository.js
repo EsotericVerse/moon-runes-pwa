@@ -1,15 +1,16 @@
 'use client';
 
-import {pMapIterable} from 'p-map';
 import {z} from 'zod';
 import {neonClient} from './neon-client';
 import {
-  UI_PAGE_SIZE,DATA_QUERY_CONCURRENCY,DATA_QUERY_BACKPRESSURE,
-  IO_INITIAL_BATCH,IO_TARGET_BYTES,IO_TARGET_MS,
-  HEAVY_INITIAL_BATCH,HEAVY_TARGET_BYTES,HEAVY_TARGET_MS,
-  assertSafeSelect,assertHeavyBatchSelect,assertCatalogSelect,adaptiveBatchSize,
-  safePageSize,safeRange,safeReturning,chunkWriteRows
+  UI_PAGE_SIZE,
+  assertSafeSelect,assertHeavyBatchSelect,assertCatalogSelect,
+  safePageSize,safeRange,safeReturning
 } from './query-policy';
+import {
+  chunkRowsByPayload,estimatePayloadBytes,initialBatchSize,mapIoIterable,
+  nextAdaptiveBatchSize,runNeonIo
+} from './io-controller';
 
 const TableSchema=z.enum([
   'api.user_records','api.user_settings',
@@ -85,14 +86,6 @@ function throwQueryError(error,table,operation){
   });
 }
 
-function nowMs(){
-  return globalThis.performance?.now?.()??Date.now();
-}
-
-function estimatePayloadBytes(rows){
-  return new TextEncoder().encode(JSON.stringify(rows||[])).byteLength;
-}
-
 async function executeSelect(table,{
   columns='*',filters=[],orFilter='',orders=[],limit=UI_PAGE_SIZE,offset=0,range=null,count=null
 }={},allowHeavyBatch=false){
@@ -115,7 +108,7 @@ async function executeSelect(table,{
     const start=Math.max(0,Math.floor(Number(offset)||0));
     query=size?query.range(start,start+size-1):query.limit(0);
   }
-  const result=await query;
+  const result=await runNeonIo(()=>query);
   throwQueryError(result.error,table,'SELECT');
   return {rows:parseRows(result.data,table),count:result.count??null};
 }
@@ -126,8 +119,7 @@ export async function selectNeonRows(table,options={}){
 
 export async function selectNeonWindow(table,{
   columns='*',filters=[],orFilter='',orders=[],
-  limit=UI_PAGE_SIZE,offset=0,count=null,
-  initialBatch=IO_INITIAL_BATCH,targetBytes=IO_TARGET_BYTES,targetMs=IO_TARGET_MS
+  limit=UI_PAGE_SIZE,offset=0,count=null
 }={}){
   const requested=Math.max(0,Math.floor(Number(limit)||0));
   const start=Math.max(0,Math.floor(Number(offset)||0));
@@ -135,83 +127,74 @@ export async function selectNeonWindow(table,{
   assertSafeSelect({table,columns,filters,limit:1});
   const rows=[];
   let cursor=start;
-  let batchSize=Math.max(1,Math.min(requested,Math.floor(Number(initialBatch)||IO_INITIAL_BATCH)));
+  let batchSize=Math.min(requested,initialBatchSize('metadata'));
   let resultCount=null;
   while(rows.length<requested){
     const size=Math.max(1,Math.min(batchSize,requested-rows.length));
-    const started=nowMs();
+    const started=globalThis.performance?.now?.()??Date.now();
     const page=await executeSelect(table,{
       columns,filters,orFilter,orders,limit:size,offset:cursor,count:resultCount===null?count:null
     },false);
-    const elapsed=nowMs()-started;
+    const elapsed=(globalThis.performance?.now?.()??Date.now())-started;
     if(resultCount===null)resultCount=page.count??null;
     if(!page.rows.length)break;
     rows.push(...page.rows);
     cursor+=page.rows.length;
-    batchSize=adaptiveBatchSize({
+    batchSize=nextAdaptiveBatchSize({
       current:size,
       payloadBytes:estimatePayloadBytes(page.rows),
       requestMs:elapsed,
-      targetBytes,targetMs
+      profile:'metadata'
     });
   }
   return {rows:rows.slice(0,requested),count:resultCount};
 }
 
 export async function selectNeonAllRows(table,{
-  columns,filters=[],orFilter='',orders=[],
-  initialBatch=IO_INITIAL_BATCH,targetBytes=IO_TARGET_BYTES,targetMs=IO_TARGET_MS
+  columns,filters=[],orFilter='',orders=[]
 }={}){
   assertSafeSelect({table,columns,filters,limit:1});
   const rows=[];
   let cursor=0;
-  let batchSize=Math.max(1,Math.floor(Number(initialBatch)||IO_INITIAL_BATCH));
+  let batchSize=initialBatchSize('metadata');
   let total=null;
   while(total===null||rows.length<total){
-    const started=nowMs();
+    const started=globalThis.performance?.now?.()??Date.now();
     const page=await executeSelect(table,{
       columns,filters,orFilter,orders,limit:batchSize,offset:cursor,count:total===null?'exact':null
     },false);
-    const elapsed=nowMs()-started;
+    const elapsed=(globalThis.performance?.now?.()??Date.now())-started;
     if(total===null)total=Math.max(0,Number(page.count??0)||0);
     if(!page.rows.length)break;
     rows.push(...page.rows);
     cursor+=page.rows.length;
-    batchSize=adaptiveBatchSize({
+    batchSize=nextAdaptiveBatchSize({
       current:batchSize,
       payloadBytes:estimatePayloadBytes(page.rows),
       requestMs:elapsed,
-      targetBytes,targetMs
+      profile:'metadata'
     });
   }
   return {rows,count:total??rows.length};
 }
 
 export async function processNeonHeavyRows(table,{
-  columns,filters=[],orFilter='',orders=[],
-  initialBatch=HEAVY_INITIAL_BATCH,
-  targetBytes=HEAVY_TARGET_BYTES,targetMs=HEAVY_TARGET_MS,
-  processorConcurrency=DATA_QUERY_CONCURRENCY,
-  onRow
+  columns,filters=[],orFilter='',orders=[],onRow
 }={}){
   assertHeavyBatchSelect({table,columns});
   if(typeof onRow!=='function')throw new TypeError('Adaptive heavy processing requires onRow');
-  let batchSize=Math.max(1,Math.floor(Number(initialBatch)||HEAVY_INITIAL_BATCH));
+  let batchSize=initialBatchSize('heavy');
   let offset=0;
   let processed=0;
   let stopped=false;
   while(!stopped){
-    const requestStarted=nowMs();
+    const requestStarted=globalThis.performance?.now?.()??Date.now();
     const page=await executeSelect(table,{columns,filters,orFilter,orders,limit:batchSize,offset},true);
-    const requestMs=nowMs()-requestStarted;
+    const requestMs=(globalThis.performance?.now?.()??Date.now())-requestStarted;
     if(!page.rows.length)break;
     const bytes=estimatePayloadBytes(page.rows);
-    const consumeStarted=nowMs();
-    const workerCount=Math.max(1,Math.floor(Number(processorConcurrency)||DATA_QUERY_CONCURRENCY));
-    const iterable=pMapIterable(page.rows,async row=>onRow(row),{
-      concurrency:workerCount,
-      backpressure:Math.max(DATA_QUERY_BACKPRESSURE,workerCount)
-    });
+    const consumeStarted=globalThis.performance?.now?.()??Date.now();
+    const iterable=mapIoIterable(page.rows,async row=>onRow(row));
     for await(const outcome of iterable){
       processed+=1;
       if(outcome&&typeof outcome==='object'&&outcome.stop===true){
@@ -219,11 +202,11 @@ export async function processNeonHeavyRows(table,{
         break;
       }
     }
-    const consumerMs=nowMs()-consumeStarted;
+    const consumerMs=(globalThis.performance?.now?.()??Date.now())-consumeStarted;
     offset+=page.rows.length;
     if(stopped)break;
-    batchSize=adaptiveBatchSize({
-      current:batchSize,payloadBytes:bytes,requestMs,consumerMs,targetBytes,targetMs
+    batchSize=nextAdaptiveBatchSize({
+      current:batchSize,payloadBytes:bytes,requestMs,consumerMs,profile:'heavy'
     });
   }
   return {processed,stopped,nextOffset:offset};
@@ -253,10 +236,10 @@ export async function insertNeonRows(table,records,{returning='*'}={}){
   const rows=z.array(RowSchema).min(1).parse(Array.isArray(records)?records:[records]);
   const output=[];
   const selectColumns=safeReturning(table,returning);
-  for(const batch of chunkWriteRows(rows)){
+  for(const batch of chunkRowsByPayload(rows)){
     let query=writableRelation(table).insert(batch);
     if(selectColumns)query=query.select(selectColumns);
-    const result=await query;
+    const result=await runNeonIo(()=>query);
     throwQueryError(result.error,table,'INSERT');
     if(selectColumns)output.push(...parseRows(result.data,table));
   }
@@ -268,10 +251,10 @@ export async function upsertNeonRows(table,records,{conflict,returning='*'}={}){
   const options=conflict?{onConflict:z.string().min(1).parse(conflict)}:undefined;
   const output=[];
   const selectColumns=safeReturning(table,returning);
-  for(const batch of chunkWriteRows(rows)){
+  for(const batch of chunkRowsByPayload(rows)){
     let query=writableRelation(table).upsert(batch,options);
     if(selectColumns)query=query.select(selectColumns);
-    const result=await query;
+    const result=await runNeonIo(()=>query);
     throwQueryError(result.error,table,'UPSERT');
     if(selectColumns)output.push(...parseRows(result.data,table));
   }
@@ -284,7 +267,7 @@ export async function updateNeonRows(table,values,{filters,returning='*'}={}){
   let query=applyFilters(writableRelation(table).update(patch),filters);
   const selectColumns=safeReturning(table,returning);
   if(selectColumns)query=query.select(selectColumns);
-  const result=await query;
+  const result=await runNeonIo(()=>query);
   throwQueryError(result.error,table,'UPDATE');
   return parseRows(result.data,table);
 }
@@ -294,7 +277,7 @@ export async function deleteNeonRows(table,{filters,returning='*'}={}){
   let query=applyFilters(writableRelation(table).delete(),filters);
   const selectColumns=safeReturning(table,returning);
   if(selectColumns)query=query.select(selectColumns);
-  const result=await query;
+  const result=await runNeonIo(()=>query);
   throwQueryError(result.error,table,'DELETE');
   return parseRows(result.data,table);
 }
