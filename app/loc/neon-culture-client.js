@@ -236,7 +236,7 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
       uid:row.uid,
       source_name:row.source_name,
       title:displayTitle,
-      description:[bodyPreview,mediaDescription].filter(Boolean).join(' ｜ '),
+      description:[validTitle?bodyPreview:'',mediaDescription].filter(Boolean).join(' ｜ '),
       createtime:row.createtime,
       start_date:row.createtime,
       date:row.createtime,
