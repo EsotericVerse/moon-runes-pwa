@@ -4,7 +4,7 @@ export const DAILY_RUNE_PAGE_SIZE=10;
 
 async function loadRuneMeta(){
   const {rows}=await selectNeonCatalog('silver.lrunes',{
-    columns:'rune_number,rune_name,card_attribute',
+    columns:'rune_number,rune_name,card_attribute,rune_description,positive_meaning,half_positive_meaning,half_reverse_meaning,reverse_meaning,lots_positive,lots_half_positive,lots_half_negative,lots_negative',
     filters:[{column:'record_type',operator:'eq',value:'rune'}],
     orders:[{column:'rune_number',ascending:true}]
   });
@@ -18,7 +18,16 @@ async function attachRuneMeta(rows){
     return {
       ...row,
       rune_name:rune.rune_name||String(row.rune_number),
-      card_attribute:rune.card_attribute||'未知'
+      card_attribute:rune.card_attribute||'未知',
+      rune_description:rune.rune_description||'',
+      positive_meaning:rune.positive_meaning||'',
+      half_positive_meaning:rune.half_positive_meaning||'',
+      half_reverse_meaning:rune.half_reverse_meaning||'',
+      reverse_meaning:rune.reverse_meaning||'',
+      lots_positive:rune.lots_positive||'',
+      lots_half_positive:rune.lots_half_positive||'',
+      lots_half_negative:rune.lots_half_negative||'',
+      lots_negative:rune.lots_negative||''
     };
   });
 }
