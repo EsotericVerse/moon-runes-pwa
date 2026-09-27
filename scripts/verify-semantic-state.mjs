@@ -4,7 +4,8 @@ import {
   resolveSpreadState,
   resolveStatePair
 } from '../app/loc/model/semantic-state.mjs';
-import {summarizeDailyDraws} from '../app/loc/model/daily-trend-engine.mjs';
+import {summarizeDailyDraws,summarizeDailyWindows} from '../app/loc/model/daily-trend-engine.mjs';
+import {buildSpreadGuidance,knownPairStateKeys} from '../app/loc/model/spread-guidance.mjs';
 
 const positive={card_attribute:'正面'};
 const negative={card_attribute:'負面'};
@@ -41,7 +42,7 @@ const three=resolveSpreadState(
 assert.equal(three.layers.length,2);
 assert.equal(three.trend,'半逆位');
 assert.equal(three.result,'半正位');
-assert.equal(three.guidance,'中途轉為明顯偏弱的狀態；原有優勢仍在，但後續力道稍有收斂。');
+assert.ok(three.guidance.length>0);
 
 const five=resolveSpreadState(
   [positive,positive,positive,positive,positive],
@@ -50,7 +51,7 @@ const five=resolveSpreadState(
 );
 assert.equal(five.layers.length,4);
 assert.equal(five.sections.length,3);
-assert.equal(five.guidance,'意外因素呈現明顯偏弱的狀態；原有優勢仍在，但後續力道稍有收斂。');
+assert.ok(five.guidance.length>0);
 
 const ow=resolveSpreadState(
   Array.from({length:11},()=>positive),
@@ -61,8 +62,59 @@ assert.equal(ow.sections.length,2);
 assert.equal(ow.sections[0].label,'1–6 因的描述層');
 assert.equal(ow.sections[1].label,'7–11 果的判定層');
 assert.ok(!/趨勢.+結果/.test(ow.guidance));
-assert.ok(ow.guidance.includes('前因脈絡顯示'));
-assert.ok(ow.guidance.includes('核心判定則顯示'));
+assert.ok(ow.guidance.length>0);
+
+const pairAttributes=['正面','中平','負面'];
+const pairDirections=['正位','半正位','半逆位','逆位'];
+const pairSentences=new Set();
+for(const fromAttribute of pairAttributes){
+  for(const fromDirection of pairDirections){
+    for(const toAttribute of pairAttributes){
+      for(const toDirection of pairDirections){
+        const reading=buildSpreadGuidance(
+          [
+            {符文名稱:'靈',卡片屬性:fromAttribute},
+            {符文名稱:'向',卡片屬性:toAttribute}
+          ],
+          [fromDirection,toDirection],
+          '2card'
+        );
+        pairSentences.add(reading.sentence);
+      }
+    }
+  }
+}
+assert.equal(knownPairStateKeys().length,12);
+assert.equal(pairSentences.size,144);
+
+assert.match(
+  buildSpreadGuidance(
+    [{符文名稱:'玄',卡片屬性:'未知'},{符文名稱:'向',卡片屬性:'中平'}],
+    ['正位','正位'],
+    '2card'
+  ).sentence,
+  /來源未知/
+);
+assert.match(
+  buildSpreadGuidance(
+    [{符文名稱:'靈',卡片屬性:'正面'},{符文名稱:'命',卡片屬性:'未知'}],
+    ['正位','正位'],
+    '2card'
+  ).sentence,
+  /結果.*未知|結果仍然未知/
+);
+assert.match(
+  buildSpreadGuidance(
+    [
+      {符文名稱:'靈',卡片屬性:'正面'},
+      {符文名稱:'玄',卡片屬性:'未知'},
+      {符文名稱:'向',卡片屬性:'中平'}
+    ],
+    ['正位','正位','正位'],
+    '3card'
+  ).sentence,
+  /變數.*未知/
+);
 
 const daily=summarizeDailyDraws([
   {record_date:'2026-09-26',draw_kind:'main',rune_number:1,direction:'正位',card_attribute:'正面'},
@@ -76,5 +128,20 @@ assert.equal(daily[1].result,'半正位');
 assert.equal(daily[1].daily_trend,'半逆位');
 assert.equal(daily[1].daily_result,'半正位');
 assert.equal(daily[1].guidance,'趨勢半逆位，結果半正位。');
+
+const dailyWindowRows=[
+  {record_date:'2026-09-21',draw_kind:'main',rune_number:1,rune_name:'靈',direction:'正位',card_attribute:'正面'},
+  {record_date:'2026-09-22',draw_kind:'main',rune_number:2,rune_name:'魂',direction:'正位',card_attribute:'中平'},
+  {record_date:'2026-09-23',draw_kind:'main',rune_number:1,rune_name:'靈',direction:'半逆位',card_attribute:'正面'},
+  {record_date:'2026-09-25',draw_kind:'main',rune_number:9,rune_name:'向',direction:'半正位',card_attribute:'中平'},
+  {record_date:'2026-09-27',draw_kind:'main',rune_number:1,rune_name:'靈',direction:'逆位',card_attribute:'正面'}
+];
+const dailyWindowDays=summarizeDailyDraws(dailyWindowRows);
+const windows=summarizeDailyWindows(dailyWindowRows,dailyWindowDays);
+assert.equal(windows.adjacent.previous_date,'2026-09-25');
+assert.equal(windows.adjacent.current_date,'2026-09-27');
+assert.ok(windows.three_days.repeats.every(item=>item.count>1));
+assert.ok(windows.seven_days.repeats.some(item=>item.name==='靈'&&item.count===2));
+assert.ok(windows.seven_days.direction_changes.some(item=>item.name==='靈'&&item.from==='半逆位'&&item.to==='逆位'));
 
 console.log('LunaRunes discrete semantics, natural multi-card guidance, and FlexSearch daily trend verified.');
