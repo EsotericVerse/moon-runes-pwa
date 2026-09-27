@@ -43,7 +43,7 @@ export default function AuthorHomeView({section=null}){
       content:<div className="loc-grid three">
         <article><strong>文字工匠 · Wordsmith</strong><p>從詞、句子與關鍵詞的聯繫，整理文字怎麼形成自己的語意與脈絡關係。</p><p><a href="/statics/?statTab=keywords">看關鍵詞設定</a></p></article>
         <article><strong>校對者 · Calibrator</strong><p>把文字放回來源、時間與歷史裡比較，觀察文化軌跡、延續、改變、矛盾與可能的污染。</p><p><a href="/culture/">看文化</a></p></article>
-        <article><strong>語言治理架構者 · Language Governance Architect</strong><p>把語彙、脈絡、文化、搜尋與治理組織成可持續使用的個人語言與系統結構。</p><p><a href="/governance/">看治理</a></p></article>
+        <article><strong>語言架構師 · Language Governance Architect</strong><p>把語彙、脈絡、文化、搜尋與治理組織成可持續使用的個人語言與系統結構。</p><p><a href="/governance/">看治理</a></p></article>
         </div>
     },
     {
@@ -156,7 +156,7 @@ export default function AuthorHomeView({section=null}){
   if(!section)return <PageComposition
     eyebrow="Lucas Oscar Wang"
     title="政德"
-    subtitle="語言架構建築師"
+    subtitle="語言架構師"
     intro={<><p>Hello！ 你好！你可以叫我Oscar。不認識我沒關係，先來聽首我創作歌詞的歌吧！</p>
 	<p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽〈這就是我〉 →</a></p>
 	<p>微月光：「我只是微月光，若我的存在光芒能讓你在全黑夜中找到希望，我會感到榮幸，但這並不是我生來就注定成為希望。」</p>
@@ -171,7 +171,7 @@ export default function AuthorHomeView({section=null}){
       title:'認識我',
       content:<ScopeOverviewNetwork
         centerTitle="Lucas Oscar Wang 政德"
-        centerSummary="語言治理架構者。架構這一切的建築師。"
+        centerSummary="語言架構師。架構這一切的建築師。"
         nodes={AUTHOR_OVERVIEW_NODES}
       />
     }
