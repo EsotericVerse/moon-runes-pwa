@@ -332,6 +332,13 @@ function daySpan(start,end){
   const b=Date.parse(dateOnly(end)+'T00:00:00Z');
   return Number.isFinite(a)&&Number.isFinite(b)&&b>=a?Math.floor((b-a)/86400000)+1:0;
 }
+function todayInTaipei(){
+  const parts=new Intl.DateTimeFormat('en-US',{
+    timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'
+  }).formatToParts(new Date());
+  const values=Object.fromEntries(parts.filter(part=>part.type!=='literal').map(part=>[part.type,part.value]));
+  return values.year&&values.month&&values.day?values.year+'-'+values.month+'-'+values.day:'';
+}
 
 async function resolveComparisonRanges(scopeId,period){
   if(scopeId==='loc')return null;
@@ -348,7 +355,7 @@ async function resolveComparisonRanges(scopeId,period){
   }
   if(!selected?.start_date)return null;
   const currentStart=dateOnly(selected.start_date);
-  const currentEnd=dateOnly(selected.end_date)||new Date().toISOString().slice(0,10);
+  const currentEnd=dateOnly(selected.end_date)||todayInTaipei();
   const days=daySpan(currentStart,currentEnd);
   if(!days)return null;
   const previousEnd=addDays(currentStart,-1);
