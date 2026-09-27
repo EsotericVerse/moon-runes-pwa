@@ -11,7 +11,7 @@ import {
   chunkRowsByPayload,estimatePayloadBytes,initialBatchSize,mapIoIterable,
   nextAdaptiveBatchSize,reportNeonIoError,runNeonIo
 } from './io-controller';
-import {clearRuntimeTextIndexes} from './text-engine';
+import {clearRuntimeTextIndexes} from './text-engine.mjs';
 
 const TableSchema=z.enum([
   'api.user_records','api.user_settings',
