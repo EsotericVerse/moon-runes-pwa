@@ -14,7 +14,6 @@ assets/     governed domain/site assets
 pics/       frozen approved source diagrams still used by the site
 data/       frozen source workbooks, records and non-runtime provenance
 docs/       governance, architecture, API documentation and governed document copies
-services/   API/edge/deployment services
 scripts/    repository/build/migration scripts
 skills/     GPT/agent skills
 .github/    CI and repository automation
@@ -69,12 +68,6 @@ js/locMoonPhase.js
 ```
 
 This exception is retained because the lunar-day → LOC moon-phase calculation is a small standalone utility with no data authority, cache, registry or compatibility responsibility. It must not become a new shared-runtime root.
-
-### Services
-
-`services/` is reserved for deployable services that are actually part of Current. RC8 has no application-owned API runtime under `services/api/`; the former LOC8 Apps Script and card/local-JSON service paths are retired.
-
-Repository-facing build and migration entrypoints belong under `scripts/`; historical API documentation belongs under `docs/api/` and must be explicitly marked retired.
 
 ### Assets
 
