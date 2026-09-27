@@ -1,15 +1,6 @@
 'use client';
 
 export const UI_PAGE_SIZE=20;
-export const WRITE_TARGET_BYTES=512*1024;
-export const DATA_QUERY_CONCURRENCY=2;
-export const DATA_QUERY_BACKPRESSURE=2;
-export const IO_INITIAL_BATCH=128;
-export const IO_TARGET_BYTES=768*1024;
-export const IO_TARGET_MS=500;
-export const HEAVY_INITIAL_BATCH=4;
-export const HEAVY_TARGET_BYTES=256*1024;
-export const HEAVY_TARGET_MS=450;
 
 const HEAVY_COLUMNS=Object.freeze({
   'silver.lo3rwang_galaxy':Object.freeze(new Set(['content'])),
@@ -90,22 +81,6 @@ export function assertHeavyBatchSelect({table,columns}){
   }
 }
 
-export function adaptiveBatchSize({
-  current=IO_INITIAL_BATCH,
-  payloadBytes=0,
-  requestMs=0,
-  consumerMs=0,
-  targetBytes=IO_TARGET_BYTES,
-  targetMs=IO_TARGET_MS
-}={}){
-  const safeCurrent=Math.max(1,Math.floor(Number(current)||IO_INITIAL_BATCH));
-  const byteRatio=payloadBytes>0?targetBytes/payloadBytes:2;
-  const elapsed=Math.max(Number(requestMs)||0,Number(consumerMs)||0,1);
-  const timeRatio=targetMs/elapsed;
-  const factor=Math.max(0.35,Math.min(4,byteRatio,timeRatio));
-  return Math.max(1,Math.round(safeCurrent*factor));
-}
-
 const SAFE_RETURNING=Object.freeze({
   'silver.lo3rwang_galaxy':'galaxy_id',
   'silver.lo3rwang_galaxy_media':'media_id',
@@ -120,26 +95,6 @@ export function safeReturning(table,requested='*'){
   const cols=columnList(requested);
   if(cols.includes('content'))throw new Error(`Returning heavy content is blocked for ${table}`);
   return requested;
-}
-
-export function chunkWriteRows(rows,{targetBytes=WRITE_TARGET_BYTES}={}){
-  const source=Array.isArray(rows)?rows:[rows];
-  const chunks=[];
-  let current=[];
-  let currentBytes=2;
-  const target=Math.max(1024,Math.floor(Number(targetBytes)||WRITE_TARGET_BYTES));
-  for(const row of source){
-    const rowBytes=new TextEncoder().encode(JSON.stringify(row??{})).byteLength+1;
-    if(current.length&&currentBytes+rowBytes>target){
-      chunks.push(current);
-      current=[];
-      currentBytes=2;
-    }
-    current.push(row);
-    currentBytes+=rowBytes;
-  }
-  if(current.length)chunks.push(current);
-  return chunks;
 }
 
 export function assertCatalogSelect({table,columns,filters=[]}){
