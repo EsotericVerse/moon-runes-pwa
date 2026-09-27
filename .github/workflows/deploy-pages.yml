@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Verify shared FlexSearch engine
-        run: npm run verify:text-engine && npm run verify:rune-keyword-rules
+        run: npm run verify:text-engine && npm run verify:semantic-state && npm run verify:rune-keyword-rules && npm run verify:rune-draw
       - name: Build verified Next static export
         run: npm run build
       - name: Configure Pages
