@@ -1,28 +1,34 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const source = readFileSync(resolve(process.cwd(), 'app/lrunes/RuneDrawClient.jsx'), 'utf8');
+const engine = readFileSync(resolve(process.cwd(), 'app/lrunes/rune-draw-engine.js'), 'utf8');
+const publicDraw = readFileSync(resolve(process.cwd(), 'app/lrunes/RuneDrawClient.jsx'), 'utf8');
+const homeDraw = readFileSync(resolve(process.cwd(), 'app/lrunes/RunesClient.jsx'), 'utf8');
 const governance = readFileSync(resolve(process.cwd(), 'docs/LUNARUNES_DRAW_GOVERNANCE.md'), 'utf8');
 
-const required = [
+const engineRequired = [
   'RUNE_DRAW_ALGORITHM_INVARIANT',
-  'function drawRunesSequentially(items, count, selectIndex = randomInt)',
-  'for (let drawIndex = 0; drawIndex < count; drawIndex += 1)',
-  'const index = selectIndex(pool.length)',
-  'const [card] = pool.splice(index, 1)',
-  'const cards = drawRunesSequentially(data.runes, selectedMode.count)',
+  'export function drawRunesSequentially(items,count,selectIndex=randomInt)',
+  'for(let drawIndex=0;drawIndex<count;drawIndex+=1)',
+  'const index=selectIndex(pool.length)',
+  'const [card]=pool.splice(index,1)',
+  'export function drawRuneSession(items,count)'
+];
+for(const fragment of engineRequired){
+  if(!engine.includes(fragment))throw new Error(`Rune draw engine invariant missing required fragment: ${fragment}`);
+}
+for(const [name,source] of [['RuneDrawClient',publicDraw],['RunesClient',homeDraw]]){
+  if(!source.includes('drawRuneSession('))throw new Error(`${name} must use shared drawRuneSession`);
+}
+for(const fragment of [
   "{ key: 'single', count: 1",
   "{ key: 'daily', count: 1",
   "{ key: '2card', count: 2",
   "{ key: '3card', count: 3",
   "{ key: '5card', count: 5",
   "{ key: 'ow3gs', count: 11"
-];
-
-for (const fragment of required) {
-  if (!source.includes(fragment)) {
-    throw new Error(`Rune draw invariant missing required fragment: ${fragment}`);
-  }
+]){
+  if(!publicDraw.includes(fragment))throw new Error(`RuneDrawClient mode invariant missing: ${fragment}`);
 }
 
 const forbidden = [
@@ -31,9 +37,9 @@ const forbidden = [
   '[pool[i], pool[j]] = [pool[j], pool[i]]'
 ];
 
-for (const fragment of forbidden) {
-  if (source.includes(fragment)) {
-    throw new Error(`Rune draw invariant forbids batch/shuffle sampling: ${fragment}`);
+for(const fragment of forbidden){
+  for(const [name,source] of [['engine',engine],['RuneDrawClient',publicDraw],['RunesClient',homeDraw]]){
+    if(source.includes(fragment))throw new Error(`${name} forbids batch/shuffle sampling: ${fragment}`);
   }
 }
 
