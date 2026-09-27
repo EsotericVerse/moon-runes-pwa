@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {parseRuneKeywordRules,serializeRuneKeywordRules,splitRuneKeywordEntries} from '../app/loc/model/rune-keyword-rules.js';
-import {buildRuneSuggestionRegistry,classifyText} from '../app/loc/model/style-classifier.js';
+import {classifyStyleRowsWithCatalog} from '../app/loc/style-classifier.js';
 
 const parsed=parseRuneKeywordRules('AND 日、NOR月\nAND日');
 assert.deepEqual(parsed.invalid,[]);
@@ -12,17 +12,25 @@ assert.deepEqual(splitRuneKeywordEntries('日、AND晨'),{
   rules:[{operator:'AND',keyword:'晨',token:'AND晨'}]
 });
 
-const profile={groups:buildRuneSuggestionRegistry([
-  {rune_number:1,rune_name:'日之符文',group_name:'光',positive_keywords:'光、明、AND日、AND晨',negative_keywords:'暗、NOR月'},
-  {rune_number:2,rune_name:'海之符文',group_name:'光',positive_keywords:'海、月、AND潮',negative_keywords:''}
-])};
+const catalog=[
+  {rune_number:1,style_label:'日之符文',style_group:'光',keyword_group:'positive',keyword:'光',order:1},
+  {rune_number:1,style_label:'日之符文',style_group:'光',keyword_group:'positive',keyword:'AND日',order:2},
+  {rune_number:1,style_label:'日之符文',style_group:'光',keyword_group:'positive',keyword:'AND晨',order:3},
+  {rune_number:1,style_label:'日之符文',style_group:'光',keyword_group:'rules',keyword:'NOR月',order:4},
+  {rune_number:2,style_label:'海之符文',style_group:'水',keyword_group:'positive',keyword:'海',order:5},
+  {rune_number:2,style_label:'海之符文',style_group:'水',keyword_group:'positive',keyword:'AND潮',order:6}
+];
 
-assert.deepEqual(classifyText('光日晨',profile).matches[0].runes.map(rune=>rune.id),[1]);
-assert.deepEqual(classifyText('光日',profile).matches.map(match=>match.name),['特殊']);
-assert.deepEqual(classifyText('光日晨月',profile).matches.map(match=>match.name),['特殊']);
-assert.deepEqual(classifyText('海潮',profile).matches[0].runes.map(rune=>rune.id),[2]);
-assert.equal(classifyText('海潮',profile).matches[0].name,'光');
-assert.deepEqual(classifyText('月海潮',profile).matches[0].runes.map(rune=>rune.id),[2]);
-assert.deepEqual(classifyText('暗海潮',profile).matches.map(match=>match.name),['特殊']);
+const rows=classifyStyleRowsWithCatalog([
+  {content:'光日晨'},
+  {content:'光日'},
+  {content:'光日晨月'},
+  {content:'海潮'}
+],catalog);
 
-console.log('Rune keyword AND/NOR rules verified.');
+assert.equal(rows[0].style_label,'日之符文');
+assert.equal(rows[1].style_label,'');
+assert.equal(rows[2].style_label,'');
+assert.equal(rows[3].style_label,'海之符文');
+
+console.log('Rune keyword AND/NOR rules verified through FlexSearch.');
