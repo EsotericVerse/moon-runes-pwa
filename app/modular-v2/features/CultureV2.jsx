@@ -6,7 +6,6 @@ import {useQuery} from '@tanstack/react-query';
 import {
   selectAuthorPeriodSourceSnapshot,
   selectAuthorPeriodWorks,
-  selectScopeClassificationBuckets,
   selectScopeCultureData,
   selectScopeStyleSnapshot,
   selectScopeStyleWorks
