@@ -6,6 +6,14 @@ import {
   deleteNeonRows
 } from './neon-repository';
 
+const RECORD_COLUMNS=[
+  'id','record_type','record_kind','source','record_date','scope_id',
+  'mode','mode_label','moon_phase','trend','result','guidance','daily_role',
+  'card_numbers','card_names','card_positions','card_directions',
+  'card_attributes','card_states','positive_keywords','negative_keywords',
+  'created_at','updated_at'
+].join(',');
+
 async function requireUser(){
   const session=await getNeonSession();
   if(!session?.user)throw new Error('請先登入 Neon 帳號');
@@ -22,27 +30,76 @@ function normalizeRecord(record={}){
   };
 }
 
+function cardsFromRow(row={}){
+  const numbers=Array.isArray(row.card_numbers)?row.card_numbers:[];
+  const names=Array.isArray(row.card_names)?row.card_names:[];
+  const positions=Array.isArray(row.card_positions)?row.card_positions:[];
+  const directions=Array.isArray(row.card_directions)?row.card_directions:[];
+  const attributes=Array.isArray(row.card_attributes)?row.card_attributes:[];
+  const states=Array.isArray(row.card_states)?row.card_states:[];
+  const positives=Array.isArray(row.positive_keywords)?row.positive_keywords:[];
+  const negatives=Array.isArray(row.negative_keywords)?row.negative_keywords:[];
+  const size=Math.max(numbers.length,names.length,positions.length,directions.length,attributes.length,states.length,positives.length,negatives.length);
+  return Array.from({length:size},(_,index)=>({
+    number:Number(numbers[index]??0),
+    name:names[index]??'',
+    position:positions[index]??'',
+    direction:directions[index]??'',
+    card_attribute:attributes[index]??'',
+    state:states[index]??'',
+    positive_keywords:positives[index]??'',
+    negative_keywords:negatives[index]??''
+  }));
+}
+
 function dbRecord(row={}){
-  const payload=row.payload&&typeof row.payload==='object'?row.payload:{};
   return {
-    ...payload,
     id:row.id,
     type:row.record_type,
-    record_kind:row.record_kind??payload.record_kind,
-    source:row.source??payload.source,
-    record_date:row.record_date??payload.record_date,
-    scope_id:row.scope_id??payload.scope_id,
-    created_at:row.created_at??payload.created_at,
-    updated_at:row.updated_at??payload.updated_at
+    record_kind:row.record_kind??null,
+    source:row.source??null,
+    record_date:row.record_date??null,
+    scope_id:row.scope_id??null,
+    mode:row.mode??null,
+    mode_label:row.mode_label??null,
+    moon_phase:row.moon_phase??null,
+    trend:row.trend??null,
+    result:row.result??null,
+    guidance:row.guidance??null,
+    daily_role:row.daily_role??null,
+    cards:cardsFromRow(row),
+    created_at:row.created_at??null,
+    updated_at:row.updated_at??null
   };
 }
 
-function recordPayload(row){
-  const {
-    id,type,record_type,record_kind,source,record_date,scope_id,
-    created_at,updated_at,...payload
-  }=row;
-  return payload;
+function dbRecordRow(row){
+  const cards=Array.isArray(row.cards)?row.cards:[];
+  return {
+    id:row.id,
+    record_type:row.type,
+    record_kind:row.record_kind||null,
+    source:row.source||null,
+    record_date:row.record_date||null,
+    scope_id:row.scope_id||null,
+    mode:row.mode||null,
+    mode_label:row.mode_label||null,
+    moon_phase:row.moon_phase||null,
+    trend:row.trend||null,
+    result:row.result||null,
+    guidance:row.guidance||null,
+    daily_role:row.daily_role||null,
+    card_numbers:cards.map(card=>Number(card?.number)||0),
+    card_names:cards.map(card=>String(card?.name||'')),
+    card_positions:cards.map(card=>String(card?.position||'')),
+    card_directions:cards.map(card=>String(card?.direction||'')),
+    card_attributes:cards.map(card=>String(card?.card_attribute||'')),
+    card_states:cards.map(card=>String(card?.state||'')),
+    positive_keywords:cards.map(card=>String(card?.positive_keywords||'')),
+    negative_keywords:cards.map(card=>String(card?.negative_keywords||'')),
+    created_at:row.created_at,
+    updated_at:row.updated_at
+  };
 }
 
 function dateKey(value){
@@ -70,7 +127,7 @@ export async function listNeonRecords(type='',{
   if(recordKind)filters.push({column:'record_kind',operator:'eq',value:recordKind});
   if(recordDate)filters.push({column:'record_date',operator:'eq',value:recordDate});
   const result=await selectNeonRows('api.user_records',{
-    columns:'id,record_type,record_kind,source,record_date,payload,created_at,updated_at,scope_id',
+    columns:RECORD_COLUMNS,
     filters,
     orders:[{column:'updated_at',ascending:false}],
     offset,
@@ -86,7 +143,7 @@ export async function getNeonRecord(id){
   const row=await selectNeonRowById('api.user_records',{
     idColumn:'id',
     id,
-    columns:'id,record_type,record_kind,source,record_date,payload,created_at,updated_at,scope_id'
+    columns:RECORD_COLUMNS
   });
   return row?dbRecord(row):null;
 }
@@ -95,20 +152,10 @@ export async function putNeonRecord(record){
   await requireUser();
   const row=normalizeRecord(record);
   if(!row.id)throw new Error('record.id is required');
-  const dbRow={
-    id:row.id,
-    record_type:row.type,
-    record_kind:row.record_kind||null,
-    source:row.source||null,
-    record_date:row.record_date||null,
-    scope_id:row.scope_id||null,
-    payload:recordPayload(row),
-    created_at:row.created_at,
-    updated_at:row.updated_at
-  };
+  const dbRow=dbRecordRow(row);
   const rows=await upsertNeonRows('api.user_records',[dbRow],{
     conflict:'owner_id,id',
-    returning:'id,record_type,record_kind,source,record_date,payload,created_at,updated_at,scope_id'
+    returning:RECORD_COLUMNS
   });
   return dbRecord(rows[0]||dbRow);
 }
@@ -141,26 +188,64 @@ export async function clearNeonRecords(type=''){
   }
 }
 
+function settingRow(key,value){
+  const settingKey=String(key||'').trim();
+  if(!settingKey)throw new Error('setting key is required');
+  if(settingKey==='loc-ui-settings-v1'){
+    const source=value&&typeof value==='object'?value:{};
+    return {
+      setting_key:settingKey,
+      text_value:String(source.draw_response||'ritual'),
+      integer_value:Number.isFinite(Number(source.list_page_size))?Number(source.list_page_size):null,
+      updated_at:new Date().toISOString()
+    };
+  }
+  if(settingKey==='loc-locale-v1'){
+    return {
+      setting_key:settingKey,
+      text_value:String(value||'zh-Hant'),
+      integer_value:null,
+      updated_at:new Date().toISOString()
+    };
+  }
+  if(typeof value==='number'&&Number.isFinite(value)){
+    return {setting_key:settingKey,text_value:null,integer_value:value,updated_at:new Date().toISOString()};
+  }
+  if(value===null||value===undefined||typeof value==='string'||typeof value==='boolean'){
+    return {setting_key:settingKey,text_value:value===null||value===undefined?null:String(value),integer_value:null,updated_at:new Date().toISOString()};
+  }
+  throw new Error('此設定需要明確欄位，不接受 JSON 物件。');
+}
+
+function settingValue(row,key){
+  if(!row)return null;
+  if(key==='loc-ui-settings-v1'){
+    const value={draw_response:String(row.text_value||'ritual')};
+    if(Number.isFinite(Number(row.integer_value)))value.list_page_size=Number(row.integer_value);
+    return value;
+  }
+  if(key==='loc-locale-v1')return row.text_value||'zh-Hant';
+  return row.integer_value??row.text_value??null;
+}
+
 export async function getNeonSetting(key){
   await requireUser();
   const row=await selectNeonRowById('api.user_settings',{
     idColumn:'setting_key',
     id:key,
-    columns:'setting_key,payload,updated_at'
+    columns:'setting_key,text_value,integer_value,updated_at'
   });
-  return row?.payload??null;
+  return settingValue(row,String(key||'').trim());
 }
 
-export async function putNeonSetting(key,payload){
+export async function putNeonSetting(key,value){
   await requireUser();
-  const settingKey=String(key||'').trim();
-  if(!settingKey)throw new Error('setting key is required');
-  const rows=await upsertNeonRows('api.user_settings',[{
-    setting_key:settingKey,
-    payload,
-    updated_at:new Date().toISOString()
-  }],{conflict:'owner_id,setting_key',returning:'payload'});
-  return rows[0]?.payload??payload;
+  const row=settingRow(key,value);
+  const rows=await upsertNeonRows('api.user_settings',[row],{
+    conflict:'owner_id,setting_key',
+    returning:'setting_key,text_value,integer_value,updated_at'
+  });
+  return settingValue(rows[0]||row,row.setting_key);
 }
 
 export async function deleteNeonSetting(key){
@@ -192,8 +277,8 @@ export async function putRuneDrawSlot(slot,record){
     id:current?.id||randomRecordId('rune-draw-slot'),
     type:'rune-draw-slot',
     record_kind:kind,
-    scope_id:'lunarunes',
-    source:'lunarunes-management'
+    scope_id:'lrunes',
+    source:'lrunes-management'
   });
 }
 
@@ -211,7 +296,7 @@ export async function putDailyRuneRecord(record){
     record_kind:'daily',
     record_date:today,
     daily_role:role,
-    scope_id:'lunarunes',
-    source:'lunarunes-management'
+    scope_id:'lrunes',
+    source:'lrunes-management'
   });
 }
