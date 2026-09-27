@@ -13,23 +13,24 @@ import {
 } from './io-controller';
 import {clearRuntimeTextIndexes} from './text-engine.mjs';
 
-const TableSchema=z.enum([
+const CanonicalTableSchema=z.enum([
   'api.user_records','api.user_settings',
   'silver.manage','silver.resource_visibility',
-  'silver.lo3rwang_time','silver.lrunes_time',
   'silver.lo3rwang','silver.lo3rwang_style','silver.lo3rwang_style_keywords',
   'silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media',
   'silver.lrunes',
   'silver.faq_entries',
 ]);
-const WritableTableSchema=z.enum([
+const ScopeTimeTableSchema=z.string().regex(/^silver\.[a-z][a-z0-9]*_time$/);
+const TableSchema=z.union([CanonicalTableSchema,ScopeTimeTableSchema]);
+const WritableCanonicalTableSchema=z.enum([
   'api.user_records','api.user_settings',
   'silver.manage','silver.resource_visibility',
-  'silver.lo3rwang_time','silver.lrunes_time',
   'silver.lo3rwang','silver.lo3rwang_style','silver.lo3rwang_style_keywords',
   'silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media',
   'silver.lrunes'
 ]);
+const WritableTableSchema=z.union([WritableCanonicalTableSchema,ScopeTimeTableSchema]);
 const RowSchema=z.record(z.string(),z.unknown());
 const TEXT_INDEX_TABLES=new Set([
   'silver.manage','silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media','silver.lrunes'
