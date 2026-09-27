@@ -6,9 +6,8 @@ import {useNeonAccount} from './use-neon-account';
 import ScopeDefaultThemeSetting from './ScopeDefaultThemeSetting';
 
 function target(scopeId){
-  return scopeId==='loc'
-    ?{record_type:'group',column:'group_id',id:'loc'}
-    :{record_type:'scope',column:'scope_id',id:scopeId};
+  if(scopeId==='loc')return {record_type:'group',column:'group_id',id:'loc'};
+  return {record_type:'scope',column:'scope_id',id:scopeId==='lunarunes'?'lrunes':scopeId};
 }
 
 export default function ScopeBasicSettings({scopeId}){
