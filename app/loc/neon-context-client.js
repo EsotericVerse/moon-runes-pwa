@@ -114,7 +114,7 @@ async function readRuneRows(){
         {column:'record_type',operator:'eq',value:'keyword'},
         {column:'active',operator:'eq',value:true}
       ],
-      orders:[{column:'rune_number',ascending:true},{column:'order_no',ascending:true}],limit:50
+      orders:[{column:'rune_number',ascending:true},{column:'order_no',ascending:true}],limit:1000
     })
   ]);
   return {runes:runes.rows,keywords:keywords.rows};
