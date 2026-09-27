@@ -88,6 +88,10 @@ export function runNeonIo(task){
   });
 }
 
+export function reportNeonIoError(error){
+  if(isPressureError(error))pressureUntil=Date.now()+IO_PROFILE.scheduler.pressureCooldownMs;
+}
+
 export function estimatePayloadBytes(rows){
   return new TextEncoder().encode(JSON.stringify(rows||[])).byteLength;
 }
