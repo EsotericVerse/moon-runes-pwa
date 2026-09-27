@@ -180,10 +180,10 @@ export async function selectNeonAllRows(table,{
 }
 
 export async function processNeonHeavyRows(table,{
-  columns,filters=[],orFilter='',orders=[],onRow
+  columns,filters=[],orFilter='',orders=[],onRow,onBatch
 }={}){
   assertHeavyBatchSelect({table,columns});
-  if(typeof onRow!=='function')throw new TypeError('Adaptive heavy processing requires onRow');
+  if(typeof onRow!=='function'&&typeof onBatch!=='function')throw new TypeError('Adaptive heavy processing requires onRow or onBatch');
   let batchSize=initialBatchSize('heavy');
   let offset=0;
   let processed=0;
@@ -195,12 +195,18 @@ export async function processNeonHeavyRows(table,{
     if(!page.rows.length)break;
     const bytes=estimatePayloadBytes(page.rows);
     const consumeStarted=globalThis.performance?.now?.()??Date.now();
-    const iterable=mapIoIterable(page.rows,async row=>onRow(row));
-    for await(const outcome of iterable){
-      processed+=1;
-      if(outcome&&typeof outcome==='object'&&outcome.stop===true){
-        stopped=true;
-        break;
+    if(typeof onBatch==='function'){
+      const outcome=await onBatch(page.rows);
+      processed+=page.rows.length;
+      if(outcome&&typeof outcome==='object'&&outcome.stop===true)stopped=true;
+    }else{
+      const iterable=mapIoIterable(page.rows,async row=>onRow(row));
+      for await(const outcome of iterable){
+        processed+=1;
+        if(outcome&&typeof outcome==='object'&&outcome.stop===true){
+          stopped=true;
+          break;
+        }
       }
     }
     const consumerMs=(globalThis.performance?.now?.()??Date.now())-consumeStarted;
