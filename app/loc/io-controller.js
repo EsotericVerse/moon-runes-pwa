@@ -21,7 +21,12 @@ export const IO_PROFILE=Object.freeze({
     maxConcurrentRequests:2,
     fastRequestMs:250,
     slowRequestMs:800,
-    pressureCooldownMs:5000
+    fastGapMs:60,
+    normalGapMs:140,
+    slowGapMs:400,
+    pressureGapMs:1200,
+    pressureCooldownMs:15000,
+    busyQueueThreshold:4
   }),
   workers:Object.freeze({
     concurrency:2,
@@ -32,6 +37,8 @@ export const IO_PROFILE=Object.freeze({
 let activeRequests=0;
 let recentLatencyMs=0;
 let pressureUntil=0;
+let nextRequestAt=0;
+let pumpTimer=null;
 const requestQueue=[];
 
 function nowMs(){
@@ -46,9 +53,27 @@ function isPressureError(error){
 function desiredRequestConcurrency(){
   const scheduler=IO_PROFILE.scheduler;
   if(Date.now()<pressureUntil)return scheduler.minConcurrentRequests;
+  if(requestQueue.length>=scheduler.busyQueueThreshold)return scheduler.minConcurrentRequests;
   if(recentLatencyMs>=scheduler.slowRequestMs)return scheduler.minConcurrentRequests;
   if(recentLatencyMs>0&&recentLatencyMs<=scheduler.fastRequestMs)return scheduler.maxConcurrentRequests;
   return scheduler.minConcurrentRequests;
+}
+
+function requestGapMs(){
+  const scheduler=IO_PROFILE.scheduler;
+  if(Date.now()<pressureUntil)return scheduler.pressureGapMs;
+  if(recentLatencyMs>=scheduler.slowRequestMs)return scheduler.slowGapMs;
+  if(requestQueue.length>=scheduler.busyQueueThreshold)return scheduler.normalGapMs;
+  if(recentLatencyMs>0&&recentLatencyMs<=scheduler.fastRequestMs)return scheduler.fastGapMs;
+  return scheduler.normalGapMs;
+}
+
+function schedulePump(delay=0){
+  if(pumpTimer!==null)return;
+  pumpTimer=setTimeout(()=>{
+    pumpTimer=null;
+    pumpRequestQueue();
+  },Math.max(0,Math.floor(Number(delay)||0)));
 }
 
 function updateLatency(sampleMs){
@@ -57,27 +82,43 @@ function updateLatency(sampleMs){
 }
 
 function pumpRequestQueue(){
+  if(!requestQueue.length)return;
   const allowed=desiredRequestConcurrency();
-  while(activeRequests<allowed&&requestQueue.length){
-    const job=requestQueue.shift();
-    activeRequests+=1;
-    const started=nowMs();
-    Promise.resolve()
-      .then(job.task)
-      .then(value=>{
-        updateLatency(nowMs()-started);
-        job.resolve(value);
-      })
-      .catch(error=>{
-        updateLatency(nowMs()-started);
-        if(isPressureError(error))pressureUntil=Date.now()+IO_PROFILE.scheduler.pressureCooldownMs;
-        job.reject(error);
-      })
-      .finally(()=>{
-        activeRequests-=1;
-        pumpRequestQueue();
-      });
+  if(activeRequests>=allowed)return;
+
+  const now=Date.now();
+  const wait=Math.max(0,nextRequestAt-now);
+  if(wait>0){
+    schedulePump(wait);
+    return;
   }
+
+  const job=requestQueue.shift();
+  activeRequests+=1;
+  const gap=requestGapMs();
+  nextRequestAt=Date.now()+gap;
+  const started=nowMs();
+
+  Promise.resolve()
+    .then(job.task)
+    .then(value=>{
+      updateLatency(nowMs()-started);
+      job.resolve(value);
+    })
+    .catch(error=>{
+      updateLatency(nowMs()-started);
+      if(isPressureError(error)){
+        pressureUntil=Date.now()+IO_PROFILE.scheduler.pressureCooldownMs;
+        nextRequestAt=Math.max(nextRequestAt,Date.now()+IO_PROFILE.scheduler.pressureGapMs);
+      }
+      job.reject(error);
+    })
+    .finally(()=>{
+      activeRequests-=1;
+      pumpRequestQueue();
+    });
+
+  if(requestQueue.length)schedulePump(gap);
 }
 
 export function runNeonIo(task){
@@ -89,7 +130,14 @@ export function runNeonIo(task){
 }
 
 export function reportNeonIoError(error){
-  if(isPressureError(error))pressureUntil=Date.now()+IO_PROFILE.scheduler.pressureCooldownMs;
+  if(!isPressureError(error))return;
+  pressureUntil=Date.now()+IO_PROFILE.scheduler.pressureCooldownMs;
+  nextRequestAt=Math.max(nextRequestAt,Date.now()+IO_PROFILE.scheduler.pressureGapMs);
+  if(pumpTimer!==null){
+    clearTimeout(pumpTimer);
+    pumpTimer=null;
+  }
+  schedulePump(IO_PROFILE.scheduler.pressureGapMs);
 }
 
 export function estimatePayloadBytes(rows){
@@ -154,6 +202,8 @@ export function ioControllerState(){
     queuedRequests:requestQueue.length,
     recentLatencyMs,
     pressure:Boolean(Date.now()<pressureUntil),
-    requestConcurrency:desiredRequestConcurrency()
+    requestConcurrency:desiredRequestConcurrency(),
+    requestGapMs:requestGapMs(),
+    nextRequestAt
   };
 }
