@@ -3,7 +3,7 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {searchNeonRows} from '../../loc/neon-search';
-import {selectNeonRowById,selectNeonRows,updateNeonRows} from '../../loc/neon-repository';
+import {selectNeonRowById,updateNeonRows} from '../../loc/neon-repository';
 import {listResourceVisibilityFor,saveResourceVisibility,visibilityDraft} from '../../loc/resource-visibility';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {getSearchCollection} from '../../loc/search-collections';
@@ -106,7 +106,6 @@ export default function SearchV2(){
   const [pageOffset,setPageOffset]=useState(0);
   const [editingKey,setEditingKey]=useState('');
   const [editDraft,setEditDraft]=useState(null);
-  const [editAudit,setEditAudit]=useState([]);
   const [editBusy,setEditBusy]=useState(false);
   const [editError,setEditError]=useState('');
   const searchId=useRef(0);
@@ -190,31 +189,18 @@ export default function SearchV2(){
 
 
   async function startEditing(result){
-    setEditingKey(result.key);setEditError('');setEditAudit([]);
+    setEditingKey(result.key);setEditError('');
     setEditDraft(null);
     try{
       const runeScope=result.scopeId==='lrunes'||result.scopeId==='lunarunes';
       const contentColumns=result.resourceType==='galaxy'
         ?(runeScope?'record_id,scope_id,title,content':'uid,title,content')
         :(runeScope?'record_id,title,meta_tags':'media_id,title,meta_tags');
-      const [fullRow,auditResult]=await Promise.all([
-        selectNeonRowById(result.editableTable,{
-          idColumn:result.editableIdColumn,
-          id:result.editResourceId||result.resourceId,
-          columns:contentColumns
-        }),
-        selectNeonRows('silver.manage',{
-          columns:'actor_name,actor_email,changed_at,field_name,old_value,new_value',
-          filters:[
-            {column:'record_type',operator:'eq',value:'content_audit'},
-            {column:'scope_id',operator:'eq',value:result.scopeId},
-            {column:'resource_type',operator:'eq',value:result.resourceType},
-            {column:'resource_id',operator:'eq',value:result.resourceId}
-          ],
-          orders:[{column:'changed_at',ascending:false}],
-          limit:10
-        })
-      ]);
+      const fullRow=await selectNeonRowById(result.editableTable,{
+        idColumn:result.editableIdColumn,
+        id:result.editResourceId||result.resourceId,
+        columns:contentColumns
+      });
       if(!fullRow)throw new Error('找不到要編輯的資料。');
       if(runeScope&&fullRow.scope_id&&String(fullRow.scope_id)!==String(result.scopeId))throw new Error('Scope 與資料不一致。');
       setEditDraft({
@@ -222,7 +208,6 @@ export default function SearchV2(){
         body:String(fullRow[result.editableField]??''),
         ...visibilityDraft(result.settings||{})
       });
-      setEditAudit(auditResult.rows);
     }catch(exception){
       setEditingKey('');
       setEditError(String(exception?.message||exception||'無法載入編輯內容。'));
@@ -298,10 +283,6 @@ export default function SearchV2(){
             onSave={()=>saveEditing(row)}
             onCancel={()=>{setEditingKey('');setEditDraft(null);setEditError('')}}
           />:null}
-          {draft&&editAudit.length?<details><summary>近期修改紀錄</summary><ol>{editAudit.map((entry,index)=><li key={String(entry.changed_at)+entry.field_name+index}>
-            <p>{entry.field_name}｜操作者 {entry.actor_name||entry.actor_email}（{entry.actor_email}）｜{new Date(entry.changed_at).toLocaleString('zh-TW')}</p>
-            <details><summary>查看前後內容</summary><p>修改前：{entry.old_value??'（空）'}</p><p>修改後：{entry.new_value??'（空）'}</p></details>
-          </li>)}</ol></details>:null}
         </WorkSummaryCardV2>;
       })}
     </div>
