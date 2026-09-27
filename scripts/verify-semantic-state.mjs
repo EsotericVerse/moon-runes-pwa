@@ -41,7 +41,7 @@ const three=resolveSpreadState(
 assert.equal(three.layers.length,2);
 assert.equal(three.trend,'半逆位');
 assert.equal(three.result,'半正位');
-assert.equal(three.guidance,'趨勢半逆位，結果半正位。');
+assert.equal(three.guidance,'中途出現明顯偏弱的狀態的轉折；原有優勢仍在，但後續力道稍有收斂。');
 
 const five=resolveSpreadState(
   [positive,positive,positive,positive,positive],
@@ -50,6 +50,7 @@ const five=resolveSpreadState(
 );
 assert.equal(five.layers.length,4);
 assert.equal(five.sections.length,3);
+assert.equal(five.guidance,'意外因素呈現明顯偏弱的狀態；原有優勢仍在，但後續力道稍有收斂。');
 
 const ow=resolveSpreadState(
   Array.from({length:11},()=>positive),
@@ -59,6 +60,9 @@ const ow=resolveSpreadState(
 assert.equal(ow.sections.length,2);
 assert.equal(ow.sections[0].label,'1–6 因的描述層');
 assert.equal(ow.sections[1].label,'7–11 果的判定層');
+assert.ok(!/趨勢.+結果/.test(ow.guidance));
+assert.ok(ow.guidance.includes('前因脈絡顯示'));
+assert.ok(ow.guidance.includes('核心判定則顯示'));
 
 const daily=summarizeDailyDraws([
   {record_date:'2026-09-26',draw_kind:'main',rune_number:1,direction:'正位',card_attribute:'正面'},
@@ -73,4 +77,4 @@ assert.equal(daily[1].daily_trend,'半逆位');
 assert.equal(daily[1].daily_result,'半正位');
 assert.equal(daily[1].guidance,'趨勢半逆位，結果半正位。');
 
-console.log('LunaRunes discrete four-direction semantics and FlexSearch daily trend verified.');
+console.log('LunaRunes discrete semantics, natural multi-card guidance, and FlexSearch daily trend verified.');
