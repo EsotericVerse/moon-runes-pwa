@@ -184,7 +184,7 @@ export default function CultureV2(){
   const selectedGroup=categoryGroups.find(item=>item.category_key===selectedCategory)||null;
   const selectedCount=Number(selectedGroup?.item_count)||0;
   const periodWorksQuery=useQuery({
-    queryKey:['culture-period-works',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,classificationMode,styleLevel,selectedCategory,workPage],
+    queryKey:['culture-period-works',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,classificationMode,styleLevel,mediaDimension,selectedCategory,workPage],
     queryFn:()=>classificationMode==='source'
       ?selectAuthorPeriodWorks({
         startDate:selectedWorkPeriod?.start_date,
