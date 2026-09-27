@@ -8,7 +8,7 @@ import {listResourceVisibility,saveResourceVisibility,visibilityDraft} from '../
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {getSearchCollection} from '../../loc/search-collections';
 import FeaturePageV2 from '../FeaturePageV2';
-import {ScopeCardV2} from '../PageShellV2';
+import WorkSummaryCardV2 from '../WorkSummaryCardV2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import {scopeHrefV2} from '../scope-registry.v2';
 import {buildSearchNavigation,featureNavigationLinks} from '../feature-navigation.v2';
@@ -43,7 +43,18 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
   const editableField=resourceType==='galaxy'?'content':resourceType==='galaxy_media'?'meta_tags':'';
   const isScopeCard=Boolean(row.scope_card);
   const href=isScopeCard?scopeHrefV2(scope):(row.url||row.href||row.suno_url||(row.scope_id?scopeHrefV2(row.scope_id,'statics'):''));
-  return {key:identity?source+'-'+identity:source+'-'+title+'-'+String(body).slice(0,40),source,title:String(title),date:row.date||row.created_date||row.create_time||row.created_at||row.update_time||row.updated_at||'',snippet:snippet(body,q),bodyText:String(body),styleTags:String(row.style_tags||row.meta_tags||''),display:String(row.display||'summary'),scopeId:scope,resourceType,resourceId,settingsKey,settings,editableTable,editableIdColumn,editableField,isScopeCard,href,destinations:isScopeCard?[]:featureNavigationLinks(navigation)};
+  return {
+    key:identity?source+'-'+identity:source+'-'+title+'-'+String(body).slice(0,40),
+    source,title:String(title),
+    date:row.date||row.created_date||row.create_time||row.created_at||row.update_time||row.updated_at||'',
+    snippet:snippet(body,q),bodyText:String(body),styleTags:String(row.style_tags||row.meta_tags||''),
+    display:String(row.display||'summary'),scopeId:scope,resourceType,resourceId,settingsKey,settings,
+    editableTable,editableIdColumn,editableField,isScopeCard,href,
+    sourceId:row.source_id||row.media_link||'',
+    targetId:row.target_id||'',
+    refId:row.ref_id||'',
+    destinations:isScopeCard?[]:featureNavigationLinks(navigation)
+  };
 }
 
 export default function SearchV2(){
@@ -218,15 +229,22 @@ export default function SearchV2(){
         const canSearchSettings=account.canManageScopeSync(row.scopeId);
         const settings=row.settings||{};
         const draft=editingKey===row.key?editDraft:null;
-        return <ScopeCardV2 key={row.key} eyebrow={settings.show_source===false?'':row.source} title={row.title}>
-          {row.date?<p className="scope-v2-meta">{row.date}</p>:null}
-          {settings.visibility&&settings.visibility!=='public'?<p className="scope-v2-status">此項目目前隱藏（僅管理者可見）</p>:null}
-          <p>{settings.projection_level==='full'?row.bodyText:row.snippet}</p>
-          {settings.show_link!==false&&row.href?<p><a href={row.href} target={row.isScopeCard?undefined:(/^https?:/.test(row.href)?'_blank':undefined)} rel={row.isScopeCard?undefined:(/^https?:/.test(row.href)?'noreferrer':undefined)}>{row.isScopeCard?'進入 Scope':'查看連結'}</a></p>:null}
-          {row.destinations?.length?<p className="scope-v2-result-links">{row.destinations.map(destination=><a key={destination.id} href={destination.href}>{destination.label}</a>)}</p>:null}
-          {editable?<p>
-            {editable?<button type="button" onClick={()=>startEditing(row)}>{editingKey===row.key?'編輯中':'編輯'}</button>:null}
-          </p>:null}
+        return <WorkSummaryCardV2
+          key={row.key}
+          title={row.title}
+          source={row.source}
+          date={row.date}
+          body={settings.projection_level==='full'?row.bodyText:row.snippet}
+          hidden={Boolean(settings.visibility&&settings.visibility!=='public')}
+          sourceId={row.sourceId}
+          targetId={row.targetId}
+          refId={row.refId}
+          links={settings.show_link!==false&&row.href?[{id:'primary',href:row.href,label:row.isScopeCard?'進入 Scope':'查看連結'}]:[]}
+          destinations={row.destinations}
+          showSource={settings.show_source!==false}
+          showLinks={settings.show_link!==false}
+        >
+          {editable?<p><button type="button" onClick={()=>startEditing(row)}>{editingKey===row.key?'編輯中':'編輯'}</button></p>:null}
           {draft?<ContentEditorV2
             draft={draft}
             setDraft={setEditDraft}
@@ -241,7 +259,7 @@ export default function SearchV2(){
             <p>{entry.field_name}｜操作者 {entry.actor_name||entry.actor_email}（{entry.actor_email}）｜{new Date(entry.changed_at).toLocaleString('zh-TW')}</p>
             <details><summary>查看前後內容</summary><p>修改前：{entry.old_value??'（空）'}</p><p>修改後：{entry.new_value??'（空）'}</p></details>
           </li>)}</ol></details>:null}
-        </ScopeCardV2>;
+        </WorkSummaryCardV2>;
       })}
     </div>
     {hasMore?<div ref={sentinelRef} className="scope-v2-load-sentinel" aria-live="polite">
