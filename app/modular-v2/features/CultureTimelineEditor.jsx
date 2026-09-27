@@ -3,7 +3,7 @@
 import {useMemo,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useNeonAccount} from '../../loc/use-neon-account';
-import {deleteNeonRows,insertNeonRows,selectNeonRows,updateNeonRows} from '../../loc/neon-repository';
+import {deleteNeonRows,insertNeonRows,selectNeonAllRows,updateNeonRows} from '../../loc/neon-repository';
 import {FEATURE_LOADING_MESSAGE} from '../feature-data-state.v2';
 
 const EDITABLE_TYPES=Object.freeze([
@@ -55,13 +55,12 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
     queryKey:['culture-period-settings',dataScope],
     enabled:supported&&Boolean(account.user),
     queryFn:async()=>{
-      const {rows}=await selectNeonRows('silver.manage',{
+      const {rows}=await selectNeonAllRows('silver.manage',{
         columns:'record_id,record_type,scope_id,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility',
         filters:[
           {column:'scope_id',operator:'eq',value:dataScope},
           {column:'record_type',operator:'in',value:['anchor','period','event']}
-        ],
-        limit:50
+        ]
       });
       return rows;
     },
