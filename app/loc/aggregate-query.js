@@ -34,8 +34,8 @@ export async function selectSourceWeekly({scopeId='lo3rwang',startDate='',endDat
 export async function selectCanonicalWorksPage({scopeId='lo3rwang',sourceName='',startDate='',endDate='',limit=20,offset=0}={}){
   const filters=[{column:'scope_id',operator:'eq',value:scopeId}];
   if(sourceName)filters.push({column:'source_name',operator:'eq',value:sourceName});
-  if(startDate)filters.push({column:'created_at',operator:'gte',value:startDate});
-  if(endDate)filters.push({column:'created_at',operator:'lte',value:endDate});
+  if(startDate)filters.push({column:'created_at',operator:'gte',value:String(startDate).slice(0,10)+'T00:00:00+08:00'});
+  if(endDate)filters.push({column:'created_at',operator:'lte',value:String(endDate).slice(0,10)+'T23:59:59.999+08:00'});
   const {rows,count}=await selectNeonRows('silver.v_lo3rwang_canonical_works',{
     columns:'work_id,scope_id,source_name,created_at,work_type',
     filters,
