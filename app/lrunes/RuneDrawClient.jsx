@@ -272,7 +272,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
           <p><strong>1–6 因的描述層：</strong>源兩張、轉兩張、合兩張，共六張；以雙卡與三卡綜合判斷產生問題的可能狀態。</p>
           <p><strong>7–11 果的判定層：</strong>使用五卡的基本規則，共五張；以五卡方式判斷建議如何行動的治理原則。</p>
           <div className="loc-context-list">{draw.cards.slice(6, 11).map((card, index) => <div className="loc-context-item" key={`core-${card.編號}-${index}`}><strong>第 {index + 7} 張 · {card.符文名稱} · {draw.directions[index + 6]}</strong><span>{directionText(card, draw.directions[index + 6]) || card.符文說明}</span></div>)}</div>
-          <p>月相交互最後才套用，只作低權重時間修飾；重點是模型關聯，不是增加抽牌維度的複雜化。</p>
+          <p>月相交互最後才套用，只作次要時間修飾；重點是模型關聯，不是增加抽牌維度的複雜化。</p>
         </section>}
 
         <section className="loc-card" data-draw-stage="lots">
