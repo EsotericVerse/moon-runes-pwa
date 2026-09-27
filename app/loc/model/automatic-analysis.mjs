@@ -159,7 +159,7 @@ export function analyzeDistributionChange(currentRows=[],previousRows=[],{
         type:'emerging',
         term,current:now,previous:0,score:now,
         governance:'raise_candidate',
-        text:\`「\${term}」在目前區間出現 \${now} 次，前一等長區間沒有出現；這是新出現的\${label}訊號，可回看相關內容確認是否值得持續追蹤。\`
+        text:`「\${term}」在目前區間出現 \${now} 次，前一等長區間沒有出現；這是新出現的\${label}訊號，可回看相關內容確認是否值得持續追蹤。`
       });
       continue;
     }
@@ -168,7 +168,7 @@ export function analyzeDistributionChange(currentRows=[],previousRows=[],{
         type:'disappeared',
         term,current:0,previous:before,score:before,
         governance:'reduce_candidate',
-        text:\`「\${term}」前一區間出現 \${before} 次，目前區間沒有出現；可回看是否只是暫時沉寂，或分類權重需要降低。\`
+        text:`「\${term}」前一區間出現 \${before} 次，目前區間沒有出現；可回看是否只是暫時沉寂，或分類權重需要降低。`
       });
       continue;
     }
@@ -177,7 +177,7 @@ export function analyzeDistributionChange(currentRows=[],previousRows=[],{
         type:'rising',
         term,current:now,previous:before,score:ratio,
         governance:'raise_candidate',
-        text:\`「\${term}」由 \${before} 次增加到 \${now} 次，出現頻率明顯提高；先視為分布變化，建議回看前後內容確認脈絡。\`
+        text:`「\${term}」由 \${before} 次增加到 \${now} 次，出現頻率明顯提高；先視為分布變化，建議回看前後內容確認脈絡。`
       });
       continue;
     }
@@ -186,7 +186,7 @@ export function analyzeDistributionChange(currentRows=[],previousRows=[],{
         type:'falling',
         term,current:now,previous:before,score:before/(now||0.5),
         governance:'reduce_candidate',
-        text:\`「\${term}」由 \${before} 次下降到 \${now} 次，出現頻率明顯降低；可保留觀察，不直接判定其意義。\`
+        text:`「\${term}」由 \${before} 次下降到 \${now} 次，出現頻率明顯降低；可保留觀察，不直接判定其意義。`
       });
       continue;
     }
@@ -195,7 +195,7 @@ export function analyzeDistributionChange(currentRows=[],previousRows=[],{
         type:'persistent',
         term,current:now,previous:before,score:Math.min(now,before),
         governance:'keep_candidate',
-        text:\`「\${term}」在前後兩個區間都持續出現（\${before} → \${now}），可視為目前較穩定的\${label}候選。\`
+        text:`「\${term}」在前後兩個區間都持續出現（\${before} → \${now}），可視為目前較穩定的\${label}候選。`
       });
     }
   }
@@ -236,7 +236,7 @@ export function analyzeKeywordGovernance(currentRows=[],previousRows=[],{
       term,current:count,previous:0,score:count,
       governance:'add_candidate',
       action:'新增候選',
-      text:\`「\${term}」尚未在目前關鍵詞統計中，但在 metadata 候選來源重複出現 \${count} 次；可人工確認是否值得加入詞庫。\`
+      text:`「\${term}」尚未在目前關鍵詞統計中，但在 metadata 候選來源重複出現 \${count} 次；可人工確認是否值得加入詞庫。`
     });
   }
 
