@@ -1,6 +1,6 @@
 # 🌕 LOC｜月典（Luna Codex）
 
-LOC（月典／Luna Codex）是一套**模型化語言框架（Modelized Language Framework）**，用來整理語言、資料、脈絡、作品與時間之間的關係。
+LOC（月典／Luna Codex）是一套 **Language Architecture Framework（4D）／語言建築框架**，用來整理語言、資料、脈絡、作品與時間之間的關係。
 
 LunaRunes（月之符文）是 LOC 的第一套 **Symbolic Language／符號式語言**實作；lo3rwang 則是作者個人資料與創作 Scope。
 
@@ -23,7 +23,7 @@ RC7 固定四個主要公開功能：
 |---|---|
 | **Context／脈絡** | Graph only |
 | **Culture／文化** | Time River only |
-| **Statistics／統計** | 圖表呈現，不自動分析、不下定義 |
+| **Statistics／統計** | 排行榜、關鍵詞／來源／風格設定與統計圖；不替使用者下定義 |
 | **Search／搜尋** | Scope-aware keyword / full-text retrieval |
 
 另外保留 Governance、Semantic Playground，以及 LunaRunes 自身的抽牌／圖鑑／解牌功能。
@@ -77,9 +77,9 @@ Culture 只顯示 **Time River**。RC7 延續明確錨點與 Current 時期規�
 
 ---
 
-## Statistics｜Charts only
+## Statistics
 
-Statistics 以 Recharts 顯示多種圖表，只呈現資料，不替使用者下結論，也不自動定義文字或文化意義。
+Statistics 包含排行榜、關鍵詞設定、作品來源設定、風格設定與統計圖。統計結果負責呈現分布與數量，不替使用者下結論，也不自動定義文字或文化意義。
 
 ---
 
@@ -126,7 +126,7 @@ lo3rwang 是 **Lucas Oscar Wang 政德**的公開識別名稱。
 
 主要公開職能：
 
-- Language Governance Architect｜語言治理架構師
+- Language Architect｜語言建築師
 - Wordsmith｜文字工匠
 - Calibrator｜校對者
 
@@ -182,18 +182,22 @@ RC7 是目前的 Current 架構基線。它延續 Scope 邊界與 Neon SSOT，�
 
 ---
 
-## License
+## Governance & Rights
 
-本專案以 Copyleft 精神發布。原創程式、資料結構、月之符文與 LOC 內容鼓勵研究、使用、修改與衍生，同時應保留作者、來源、修改歷史與相容的共享原則。
+三個 Current Scope 的治理與權利彼此獨立：
 
-完整說明見 [`COPYLEFT.md`](COPYLEFT.md)。
+- **LOC**：採 Copyleft；LOC 原創程式碼採 GNU GPL 模型，正式版本以 Repository `LICENSE` 為準。
+- **LunaRunes**：Symbolic Language／符號式語言，採自己的 Canon、籤詩中立宣言與 Copyright 治理，不繼承 LOC Copyleft／GPL。
+- **lo3rwang**：個人作品與資料採一般 Copyright／著作權保護，不繼承 LOC Copyleft／GPL。
+
+LOC 提供治理能力，不替其他 Scope 決定授權方式。完整 LOC Copyleft 邊界見 [`COPYLEFT.md`](COPYLEFT.md)。
 
 ---
 
 ## Author
 
 **Lucas Oscar Wang 政德**  
-Language Governance Architect · Wordsmith · Calibrator
+Language Architect · Wordsmith · Calibrator
 
 - Website: <https://lo3rwang.cc/>
 - LOC: <https://loc.lo3rwang.cc/>
