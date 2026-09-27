@@ -210,16 +210,16 @@ AS $$
 BEGIN
   IF TG_TABLE_NAME='lo3rwang_galaxy' THEN
     IF OLD.title IS DISTINCT FROM NEW.title THEN
-      PERFORM silver.write_content_audit(NEW.scope_id,'galaxy',NEW.galaxy_id,'title',OLD.title,NEW.title);
+      PERFORM silver.write_content_audit(NEW.scope_id,'galaxy',NEW.uid,'title',OLD.title,NEW.title);
     END IF;
     IF OLD.content IS DISTINCT FROM NEW.content THEN
-      PERFORM silver.write_content_audit(NEW.scope_id,'galaxy',NEW.galaxy_id,'content',OLD.content,NEW.content);
+      PERFORM silver.write_content_audit(NEW.scope_id,'galaxy',NEW.uid,'content',OLD.content,NEW.content);
     END IF;
     IF OLD.meta_tags IS DISTINCT FROM NEW.meta_tags THEN
-      PERFORM silver.write_content_audit(NEW.scope_id,'galaxy',NEW.galaxy_id,'meta_tags',OLD.meta_tags,NEW.meta_tags);
+      PERFORM silver.write_content_audit(NEW.scope_id,'galaxy',NEW.uid,'meta_tags',OLD.meta_tags,NEW.meta_tags);
     END IF;
     IF OLD.source_platform IS DISTINCT FROM NEW.source_platform THEN
-      PERFORM silver.write_content_audit(NEW.scope_id,'galaxy',NEW.galaxy_id,'source_platform',OLD.source_platform,NEW.source_platform);
+      PERFORM silver.write_content_audit(NEW.scope_id,'galaxy',NEW.uid,'source_platform',OLD.source_platform,NEW.source_platform);
     END IF;
 
   ELSIF TG_TABLE_NAME='lo3rwang_galaxy_media' THEN
@@ -465,16 +465,16 @@ AS $$
 BEGIN
   IF TG_TABLE_NAME='lo3rwang_galaxy' THEN
     IF OLD.title IS DISTINCT FROM NEW.title THEN
-      PERFORM silver.write_content_audit(NEW.scope_id,'galaxy',NEW.galaxy_id,'title',OLD.title,NEW.title);
+      PERFORM silver.write_content_audit(NEW.scope_id,'galaxy',NEW.uid,'title',OLD.title,NEW.title);
     END IF;
     IF OLD.content IS DISTINCT FROM NEW.content THEN
-      PERFORM silver.write_content_audit(NEW.scope_id,'galaxy',NEW.galaxy_id,'content',OLD.content,NEW.content);
+      PERFORM silver.write_content_audit(NEW.scope_id,'galaxy',NEW.uid,'content',OLD.content,NEW.content);
     END IF;
     IF OLD.meta_tags IS DISTINCT FROM NEW.meta_tags THEN
-      PERFORM silver.write_content_audit(NEW.scope_id,'galaxy',NEW.galaxy_id,'meta_tags',OLD.meta_tags,NEW.meta_tags);
+      PERFORM silver.write_content_audit(NEW.scope_id,'galaxy',NEW.uid,'meta_tags',OLD.meta_tags,NEW.meta_tags);
     END IF;
     IF OLD.source_platform IS DISTINCT FROM NEW.source_platform THEN
-      PERFORM silver.write_content_audit(NEW.scope_id,'galaxy',NEW.galaxy_id,'source_platform',OLD.source_platform,NEW.source_platform);
+      PERFORM silver.write_content_audit(NEW.scope_id,'galaxy',NEW.uid,'source_platform',OLD.source_platform,NEW.source_platform);
     END IF;
 
   ELSIF TG_TABLE_NAME='lo3rwang_galaxy_media' THEN
