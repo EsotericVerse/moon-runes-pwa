@@ -6,12 +6,12 @@ Next.js is the primary application surface. The deployed frontend is a static ex
 
 ## Shared data — Current
 
-`app/loc/data.js` is the single shared runtime loader.
+`app/loc/data.js` and the virtual path registry are retired. Current features call explicit domain modules.
 
 ```text
 Next.js feature
-  -> fetchNeonData / fetchNeonDataBatch
-  -> shared Neon client/module
+  -> domain repository/client (for example rune-repository, culture, ranking, search)
+  -> shared Neon repository/query policy
   -> direct Neon canonical tables
 ```
 
@@ -59,7 +59,7 @@ Python search/analysis services, Render-era compatibility code, Apps Script, and
 3. Explicit Next client/module contracts established for canonical rune, context, culture, search, writing, and statistics reads.
 4. Every active runtime path now resolves to an explicit Neon canonical table or an explicit unmapped response.
 5. Search, Culture, Context and Statistics use shared modules and controlled error responses.
-6. Shared Next.js data loader changed from static JSON + IndexedDB cache to direct Neon canonical reads.
+6. The former shared path loader was removed; Current features use explicit domain repositories/clients over canonical Neon reads.
 7. Statistics and Daily Rune switched to direct Neon-backed reads.
 8. Governance shared-state reads switched to Neon.
 9. Browser shared-dataset IndexedDB cache/sync adapters removed.

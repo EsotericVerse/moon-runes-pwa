@@ -23,14 +23,15 @@ walk(resolve(root,'app'),path=>{
   const source=readFileSync(path,'utf8');
   const file=rel(path);
   if(/(?:from\s+|import\s*\(\s*)['"][^'"]*\/lib\//.test(source))failures.push(`${file}: retired lib/ import`);
+  if(['LOC_DATA','fetchNeonData(','fetchNeonDataBatch(','canonical/runes'].some(token=>source.includes(token)))failures.push(`${file}: retired path-loader contract returned`);
   const pattern=/(?:from\s+|import\s*\(\s*)['"](\.{1,2}\/[^'"]+)['"]/g;
   for(const match of source.matchAll(pattern))if(!resolves(path,match[1]))failures.push(`${file}: unresolved relative import ${match[1]}`);
 });
 
 for(const path of [
   'app/lrunes/RunesClient.jsx',
-  'app/loc/data.js',
-  'app/loc/data-paths.mjs',
+  'app/loc/rune-repository.js',
+  'app/loc/model/rune-graph-core.js',
   'app/loc/neon-context-client.js',
   'app/loc/neon-culture-client.js',
   'app/loc/neon-ranking-client.js',
@@ -42,12 +43,12 @@ for(const path of [
 ]) if(!existsSync(resolve(root,path)))failures.push(`missing module contract file: ${path}`);
 
 const runesClient=readFileSync(resolve(root,'app/lrunes/RunesClient.jsx'),'utf8');
-for(const token of ['LOC_DATA.RUNES','data-draw-action="execute"','function executeDraw','function finishDraw'])if(!runesClient.includes(token))failures.push(`RunesClient: missing draw contract ${token}`);
+for(const token of ['selectRuneCatalog','data-draw-action="execute"','function executeDraw','function finishDraw'])if(!runesClient.includes(token))failures.push(`RunesClient: missing draw contract ${token}`);
 
-const dataLoader=readFileSync(resolve(root,'app/loc/data.js'),'utf8');
-for(const token of ['selectNeonRows','fetchNeonData','fetchNeonDataBatch'])if(!dataLoader.includes(token))failures.push(`LOC data loader: missing direct Neon canonical contract ${token}`);
-if(/indexedDB|getFreshLocalDataSegment|putLocalDataSegment|runtime_json_documents/.test(dataLoader))failures.push('LOC data loader: legacy local or projection path must not return');
-if(/fetchLocJson|fetchLocDataSegments|manifestPaths|shards:\[\]/.test(dataLoader))failures.push('LOC data loader: retired JSON manifest/shard path must not return');
+const runeRepository=readFileSync(resolve(root,'app/loc/rune-repository.js'),'utf8');
+for(const token of ['selectNeonCatalog','silver.lrunes','selectRuneCatalog'])if(!runeRepository.includes(token))failures.push(`Rune repository: missing canonical contract ${token}`);
+for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs'])if(existsSync(resolve(root,retired)))failures.push(`retired path-loader returned: ${retired}`);
+if(['LOC_DATA','canonical/runes','fetchNeonData','runtime_json_documents','fetchLocJson','fetchLocDataSegments'].some(token=>runeRepository.includes(token)))failures.push('Rune repository: legacy path/JSON loader semantics returned');
 
 if(!/z\.enum/.test(readFileSync(resolve(root,'app/loc/neon-repository.js'),'utf8')))failures.push('Neon repository: Zod allowlist missing');
 for(const [client,contract] of [
@@ -64,9 +65,7 @@ if(!/getRuntimeTextIndex/.test(searchProviders)||!/searchTextIndex/.test(searchP
 if(!/searchTextIndex/.test(styleClassifier))failures.push('Culture/Statistics style classifier: shared FlexSearch contract missing');
 if(!/searchNeonRows\(/.test(readFileSync(resolve(root,'app/modular-v2/features/SearchV2.jsx'),'utf8')))failures.push('Search view: shared text search contract missing');
 
-const coreBatch=/fetchNeonDataBatch\(\[LOC_DATA\.RUNES,LOC_DATA\.LOTS,LOC_DATA\.RUNE_INTERPRETATIONS\]/.test(runesClient);
-const directRunes=runesClient.includes('fetchNeonData(LOC_DATA.RUNES)');
-if(!(coreBatch||directRunes))failures.push('RunesClient: canonical RUNES must load through the Neon-backed data loader');
+if(!runesClient.includes('selectRuneCatalog()'))failures.push('RunesClient: canonical runes must load through the domain rune repository');
 
 if(failures.length){console.error('[module-contracts] failures:\\n'+failures.map(item=>`- ${item}`).join('\\n'));process.exit(1);}
 console.log('[module-contracts] imports, canonical routes and Neon module contracts verified');

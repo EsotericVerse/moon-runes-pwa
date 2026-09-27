@@ -19,8 +19,8 @@ walk(resolve(root,'app'),path=>{
   if(!/\.(?:js|jsx|mjs)$/.test(path))return;
   const rel=relative(root,path).replaceAll('\\','/');
   const text=readFileSync(path,'utf8');
-  if(/fetchStaticJson|runtime_json_documents|fetch\(['"]\/data\/json\//.test(text)){
-    failures.push(`${rel}: runtime JSON/static fallback is forbidden`);
+  if(/fetchStaticJson|runtime_json_documents|fetch\(['"]\/data\/json\//.test(text)||['LOC_DATA','fetchNeonData(','fetchNeonDataBatch(','canonical/runes'].some(token=>text.includes(token))){
+    failures.push(`${rel}: retired JSON/path-loader runtime is forbidden`);
   }
   if(/neon-scope-projections|selectScopeProjectionRows/.test(text)){
     failures.push(`${rel}: retired projection loader reference`);
@@ -29,6 +29,7 @@ walk(resolve(root,'app'),path=>{
 
 for(const required of [
   'app/loc/neon-repository.js',
+  'app/loc/rune-repository.js',
   'app/loc/neon-context-client.js',
   'app/loc/neon-ranking-client.js',
   'app/loc/neon-culture-client.js',
@@ -38,9 +39,10 @@ for(const required of [
   if(!existsSync(resolve(root,required)))failures.push(`${required}: required Neon/module boundary missing`);
 }
 
-const dataRuntime=readFileSync(resolve(root,'app/loc/data.js'),'utf8');
-if(!/selectNeon(?:Rows|Catalog)/.test(dataRuntime))failures.push('app/loc/data.js: direct Neon table loader missing');
-if(/fetchStaticJson|runtime_json_documents|force-cache|\/api\//.test(dataRuntime))failures.push('app/loc/data.js: API/JSON/static fallback remains');
+const runeRepository=readFileSync(resolve(root,'app/loc/rune-repository.js'),'utf8');
+if(!runeRepository.includes('selectNeonCatalog')||!runeRepository.includes('silver.lrunes'))failures.push('app/loc/rune-repository.js: direct canonical Neon boundary missing');
+if(['LOC_DATA','fetchNeonData','canonical/runes','fetchStaticJson','runtime_json_documents'].some(token=>runeRepository.includes(token)))failures.push('app/loc/rune-repository.js: retired path/JSON loader semantics remain');
+for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs'])if(existsSync(resolve(root,retired)))failures.push(`${retired}: retired path-loader must remain removed`);
 
 const contextView=readFileSync(resolve(root,'app/modular-v2/features/ContextV2.jsx'),'utf8');
 if(!/selectScopeContextData\(scopeId\)/.test(contextView))failures.push('ContextV2: shared Neon context client missing');

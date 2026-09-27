@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 
-const data=fs.readFileSync('app/loc/data.js','utf8');
+const data=fs.readFileSync('app/loc/rune-repository.js','utf8');
 const client=fs.readFileSync('app/loc/neon-client.js','utf8');
 const account=fs.readFileSync('app/loc/use-neon-account.js','utf8');
 const authorization=fs.readFileSync('app/loc/scope-authorization.js','utf8');
@@ -12,7 +12,7 @@ const failures=[];
 
 const requireMatch=(text,re,label)=>{if(!re.test(text))failures.push(label);};
 
-requireMatch(data,/selectNeonRows/,'shared runtime data must use direct Neon table reads');
+requireMatch(data,/selectNeonCatalog/,'shared rune runtime must use the canonical Neon repository');
 if(/memoryCache|DEFAULT_MEMORY_CACHE_ENTRIES/.test(data))failures.push('shared runtime data must not retain a process-memory data cache');
 
 requireMatch(client,/@neondatabase\/postgrest-js/,'Public Neon Data API client dependency is required');

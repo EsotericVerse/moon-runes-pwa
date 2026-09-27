@@ -45,11 +45,9 @@ for(const [id,scope] of Object.entries(SCOPES_V2)){
   if(!scope.label)failures.push(id+' missing label');
   if(!Array.isArray(scope.localRoutes))failures.push(id+' localRoutes must be an array');
   if(!Array.isArray(scope.routePatterns))failures.push(id+' routePatterns must be an array');
-  if(!Array.isArray(scope.compatibilityRoutes))failures.push(id+' compatibilityRoutes must be an array');
   if(!scope.primary?.href||!scope.primary?.label)failures.push(id+' missing primary navigation target');
   if(!scope.role?.href||!scope.role?.label)failures.push(id+' missing role navigation target');
   if(!Array.isArray(scope.homes))failures.push(id+' homes must be an array');
-  if(!scope.dataViews||typeof scope.dataViews!=='object')failures.push(id+' missing dataViews');
   if(!scope.theme)failures.push(id+' missing theme');
   if(scope.scopeType==='directory'&&!scope.mount)failures.push('directory Scope missing mount: '+id);
 
@@ -87,8 +85,6 @@ const locApp=fs.readFileSync('app/loc/LocApp.jsx','utf8');
 for(const name of ['StatisticsV2','CultureV2','GovernanceV2','SearchV2'])if(!locApp.includes(name))failures.push('LocApp not cut over to '+name);
 if(locApp.includes('EvolutionView')||locApp.includes('evolution:CultureView'))failures.push('obsolete evolution runtime still active');
 if(!fs.readFileSync('app/globals.css','utf8').includes('./styles/v2/scope-system.v2.css'))failures.push('V2 CSS not imported');
-if(!fs.readFileSync('app/site-registry.js','utf8').includes("from './modular-v2/scope-registry.v2'"))failures.push('compat registry does not derive from V2');
-if(!fs.readFileSync('app/theme-registry.js','utf8').includes("from './modular-v2/theme-registry.v2'"))failures.push('compat theme registry does not derive from V2');
 
 
 
@@ -132,17 +128,6 @@ for(const scope of Object.values(SCOPES_V2)){
       const mountRoot=path.resolve('app',scope.mount.path.split('/').filter(Boolean)[0]);
       const mountFile=routeShellPath(mountRoot,pattern,{pattern:true});
       if(!fs.existsSync(mountFile))failures.push('Scope mount pattern shell missing: '+path.relative('.',mountFile));
-    }
-  }
-
-  for(const route of scope.compatibilityRoutes||[]){
-    const file=routeShellPath(canonicalRoot,route);
-    if(!fs.existsSync(file))failures.push('Scope compatibility route missing: '+path.relative('.',file));
-
-    if(scope.mount){
-      const mountRoot=path.resolve('app',scope.mount.path.split('/').filter(Boolean)[0]);
-      const mountFile=routeShellPath(mountRoot,route);
-      if(!fs.existsSync(mountFile))failures.push('Scope mount compatibility route missing: '+path.relative('.',mountFile));
     }
   }
 
@@ -202,6 +187,8 @@ const aliases=Object.values(SCOPES_V2).map(scope=>scope.aliasName).filter(Boolea
 if(new Set(aliases).size!==aliases.length)failures.push('duplicate Scope aliasName');
 const mounts=Object.values(SCOPES_V2).filter(scope=>scope.mount).map(scope=>scope.mount.host+'|'+scope.mount.path);
 if(new Set(mounts).size!==mounts.length)failures.push('duplicate Scope mount');
+
+for(const retired of ['app/site-registry.js','app/use-current-scope.js','app/ScopeNav.jsx','app/GlobalFooter.jsx','app/ThemeSelect.jsx','app/theme-registry.js'])if(fs.existsSync(path.resolve(retired)))failures.push('retired compatibility facade returned: '+retired);
 
 const currentFiles=['app/loc/search-collections.js','app/loc/GovernanceManagement.jsx'];
 for(const file of currentFiles){

@@ -4,7 +4,7 @@ const files={
   identity:'app/loc/views/AboutView.jsx',
   registry:'app/modular-v2/scope-registry.v2.js',
   guidance:'app/loc/model/semantic-state.mjs',
-  canonicalLoader:'app/loc/data.js',
+  canonicalLoader:'app/loc/rune-repository.js',
   search:'app/loc/neon-search.js',
   searchView:'app/modular-v2/features/SearchV2.jsx',
   dailyTrend:'app/loc/model/daily-trend-engine.mjs',
@@ -19,7 +19,7 @@ for(const [name,path] of Object.entries(files)){
 const identity=read(files.identity);
 for(const token of ['語言架構框架','Language Architecture Framework','符號式語言','Symbolic Language'])if(!identity.includes(token))failures.push(`identity: missing ${token}`);
 const registry=read(files.registry);
-for(const token of ["defaultScopeId:'loc'","dataViews:Object.freeze({context:'api.loc_context_entries',rankings:'api.loc_rankings'})","domain:'lrunes.lo3rwang.cc'"])if(!registry.includes(token))failures.push(`scope registry: missing ${token}`);
+for(const token of ["defaultScopeId:'loc'","domain:'lrunes.lo3rwang.cc'"])if(!registry.includes(token))failures.push(`scope registry: missing ${token}`);
 const guidance=read(files.guidance);
 for(const token of ['RUNE_SEMANTIC_STATES','resolveStatePair','resolveSpreadState'])if(!guidance.includes(token))failures.push(`semantic state: missing ${token}`);
 for(const token of ['buildDailyStateIndex','findDailyState','createTextIndex','searchTextIndex'])if(guidance.includes(token))failures.push(`semantic state: retired Daily search token ${token}`);
@@ -30,8 +30,12 @@ for(const token of ['isConfiguredStyleCatalog','selectCanonicalStyleCatalog','se
 if(!/isConfiguredStyleCatalog\(author\)\?author:selectCanonicalStyleCatalog\(\)/.test(styleClassifier))failures.push('style catalog fallback: author Current must fall back to locked LunaRunes catalog until configured');
 for(const token of ['SPREAD_WEIGHTS','DIRECTION_FACTOR','POLARITY_SCORE','weighted','GUIDANCE_RANGES'])if(guidance.includes(token))failures.push(`semantic state: forbidden weighted-score token ${token}`);
 const loader=read(files.canonicalLoader);
-for(const token of ['selectNeonRows','silver.lrunes'])if(!loader.includes(token))failures.push(`canonical Neon loader: missing ${token}`);
-for(const path of Object.values(files))if(/data\/json|runtime_json_documents/.test(read(path)))failures.push(`${path}: retired JSON identifier remains`);
+for(const token of ['selectNeonCatalog','silver.lrunes','selectRuneCatalog'])if(!loader.includes(token))failures.push(`canonical rune repository: missing ${token}`);
+for(const path of Object.values(files)){
+  const source=read(path);
+  if(['data/json','runtime_json_documents','LOC_DATA','canonical/runes','fetchNeonData'].some(token=>source.includes(token)))failures.push(`${path}: retired data-path/JSON identifier remains`);
+}
+for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs'])if(fs.existsSync(retired))failures.push(`${retired}: retired path loader returned`);
 
 const search=read(files.search);
 for(const token of ['columns:columns.join(\',\')','filter(value=>typeof value===\'string\')'])if(!search.includes(token))failures.push(`search: missing scalar-only projection ${token}`);
