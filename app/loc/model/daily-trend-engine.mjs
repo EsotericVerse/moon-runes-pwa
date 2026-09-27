@@ -44,6 +44,119 @@ function cardState(row,lookup){
   );
 }
 
+function dateMs(value){
+  const key=dayKey(value);
+  if(!key)return NaN;
+  return Date.parse(key+'T00:00:00Z');
+}
+
+function rowsInWindow(rows,latestDate,days){
+  const latest=dateMs(latestDate);
+  if(!Number.isFinite(latest))return [];
+  const start=latest-(Math.max(1,Number(days)||1)-1)*86400000;
+  return (rows||[]).filter(row=>{
+    const value=dateMs(row?.record_date??row?.created_at);
+    return Number.isFinite(value)&&value>=start&&value<=latest;
+  });
+}
+
+function runeIdentity(row){
+  const name=String(row?.rune_name||row?.name||row?.rune_number||'').trim();
+  return name;
+}
+
+function summarizeRepeats(rows){
+  const map=new Map();
+  for(const row of rows||[]){
+    const name=runeIdentity(row);
+    if(!name)continue;
+    if(!map.has(name))map.set(name,[]);
+    map.get(name).push({
+      date:dayKey(row?.record_date??row?.created_at),
+      direction:String(row?.direction||'未知').trim()||'未知',
+      role:roleOf(row)
+    });
+  }
+  const repeats=[];
+  const directionChanges=[];
+  for(const [name,entries] of map){
+    entries.sort((a,b)=>a.date.localeCompare(b.date)||(a.role==='main'?-1:1));
+    if(entries.length>1)repeats.push({name,count:entries.length,entries});
+    const directions=entries.map(item=>item.direction).filter(Boolean);
+    const unique=[...new Set(directions)];
+    if(unique.length>1){
+      directionChanges.push({
+        name,
+        from:directions[0],
+        to:directions.at(-1),
+        path:directions
+      });
+    }
+  }
+  repeats.sort((a,b)=>b.count-a.count||a.name.localeCompare(b.name));
+  directionChanges.sort((a,b)=>a.name.localeCompare(b.name));
+  return {repeats,directionChanges};
+}
+
+function summarizeWindow(rows,days,span){
+  const source=(days||[]).slice(-Math.max(1,span));
+  if(!source.length)return {
+    span,
+    start_date:'',
+    end_date:'',
+    from_result:'未知',
+    to_result:'未知',
+    trend:'未知',
+    result:'未知',
+    repeats:[],
+    direction_changes:[]
+  };
+  const startDate=source[0].date;
+  const endDate=source.at(-1).date;
+  const periodRows=rowsInWindow(rows,endDate,span);
+  const relation=source.length>1
+    ?resolveStatePair(source[0].result,source.at(-1).result)
+    :{from:source[0].result,result:source[0].result,trend:'未知'};
+  const repeated=summarizeRepeats(periodRows);
+  return {
+    span,
+    start_date:startDate,
+    end_date:endDate,
+    from_result:relation.from,
+    to_result:relation.result,
+    trend:relation.trend,
+    result:relation.result,
+    repeats:repeated.repeats,
+    direction_changes:repeated.directionChanges
+  };
+}
+
+export function summarizeDailyWindows(rows=[],days=[]){
+  const source=Array.isArray(days)?days:[];
+  const latest=source.at(-1)||null;
+  const previous=source.length>1?source.at(-2):null;
+  const adjacent=latest?{
+    previous_date:previous?.date||'',
+    current_date:latest.date,
+    from_result:previous?.result||'未知',
+    to_result:latest.result||'未知',
+    trend:previous?resolveStatePair(previous.result,latest.result).trend:'未知',
+    result:latest.result
+  }:{
+    previous_date:'',
+    current_date:'',
+    from_result:'未知',
+    to_result:'未知',
+    trend:'未知',
+    result:'未知'
+  };
+  return {
+    adjacent,
+    three_days:summarizeWindow(rows,source,3),
+    seven_days:summarizeWindow(rows,source,7)
+  };
+}
+
 export function summarizeDailyDraws(rows=[],runes=[]){
   const lookup=runeLookup(runes);
   const grouped=new Map();
