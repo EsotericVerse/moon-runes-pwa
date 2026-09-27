@@ -90,55 +90,81 @@ function JsonImport({scopeId}){
   </div>;
 }
 
-function MediaJsonImport({scopeId}){
+function MediaRecordInsert({scopeId}){
   const account=useNeonAccount();
-  const [fileName,setFileName]=useState('');
-  const [rows,setRows]=useState([]);
+  const [draft,setDraft]=useState({
+    galaxy_link:'',
+    source_native_id:'',
+    source_place:'',
+    media_type:'',
+    title:'',
+    url:'',
+    meta_tags:'',
+    createtime:''
+  });
   const [status,setStatus]=useState('');
   const [busy,setBusy]=useState(false);
   if(scopeId!=='lo3rwang')return null;
   if(!account.canManageScopeSync(scopeId))return null;
 
-  async function chooseFile(event){
-    const file=event.target.files?.[0];if(!file)return;
-    setFileName(file.name);setStatus('');
-    try{
-      const parsed=JSON.parse(await file.text());
-      const list=asRows(parsed);
-      setRows(list);
-      setStatus(`已讀取 ${list.length.toLocaleString()} 筆多媒體資料；URL 可留空。`);
-    }catch(error){setRows([]);setStatus('JSON 解析失敗：'+(error?.message||error));}
-  }
+  const change=(key,value)=>setDraft(current=>({...current,[key]:value}));
 
-  async function run(){
-    if(!rows.length)return;
+  async function save(event){
+    event.preventDefault();
     setBusy(true);setStatus('');
     try{
-      const payload=rows.map(row=>({
-        galaxy_link:String(firstValue(row,['galaxy_link','galaxy_uid','uid_link'])||'').trim()||null,
-        source_native_id:String(firstValue(row,['source_native_id','native_id','post_id','media_native_id'])||'').trim()||null,
-        source_place:String(firstValue(row,['source_place','place','location','checkin'])||'').trim()||null,
-        media_type:String(firstValue(row,['media_type','type'])||'media').trim()||'media',
-        title:String(firstValue(row,['title','name','caption'])||'').trim()||null,
-        url:String(firstValue(row,['url','link','permalink'])||'').trim()||null,
-        meta_tags:String(firstValue(row,['meta_tags','tags','keywords','description'])||'').trim()||null,
-        createtime:iso(firstValue(row,['createtime','created_at','create_time','created_time','date','published_at']))
-      })).filter(row=>row.media_type&&(row.title||row.meta_tags||row.source_native_id||row.source_place||row.url));
-      await insertNeonRows('silver.lo3rwang_galaxy_media',payload);
-      setStatus(`已匯入 ${payload.length.toLocaleString()} 筆多媒體；沒有 URL 的圖片仍會保留。`);
-      setRows([]);setFileName('');
-    }catch(error){setStatus(error?.message||'多媒體匯入失敗。');}
+      const galaxyLink=String(draft.galaxy_link||'').trim().toUpperCase();
+      if(galaxyLink&&galaxyLink.length!==8)throw new Error('galaxy_link 必須是 8 字 UID，或留空。');
+      const mediaType=String(draft.media_type||'').trim();
+      if(!mediaType)throw new Error('media_type 為必填欄位。');
+      const record={
+        galaxy_link:galaxyLink||null,
+        source_native_id:String(draft.source_native_id||'').trim()||null,
+        source_place:String(draft.source_place||'').trim()||null,
+        media_type:mediaType,
+        title:String(draft.title||'').trim()||null,
+        url:String(draft.url||'').trim()||null,
+        meta_tags:String(draft.meta_tags||'').trim()||null,
+        createtime:iso(draft.createtime)
+      };
+      if(!record.title&&!record.url&&!record.meta_tags&&!record.source_native_id&&!record.source_place){
+        throw new Error('至少填寫 title、url、meta_tags、source_native_id 或 source_place 其中一項。');
+      }
+      await insertNeonRows('silver.lo3rwang_galaxy_media',[record]);
+      setStatus('多媒體資料已直接寫入 Galaxy Media。');
+      setDraft({
+        galaxy_link:'',
+        source_native_id:'',
+        source_place:'',
+        media_type:'',
+        title:'',
+        url:'',
+        meta_tags:'',
+        createtime:''
+      });
+    }catch(error){setStatus(error?.message||'多媒體儲存失敗。');}
     finally{setBusy(false);}
   }
 
   return <div className="scope-v2-inline-card">
-    <h4>多媒體 JSON 匯入</h4>
-    <p>圖片、影音、音樂與單純 URL 都可匯入；URL 可留空。galaxy_link 有值就掛回文字，沒有就保留為獨立 Media。</p>
-    <label>本次檔案<input type="file" accept=".json,application/json" onChange={chooseFile}/></label>
-    {fileName?<p>檔案：<strong>{fileName}</strong></p>:null}
-    {rows.length?<details><summary>預覽前 3 筆</summary><pre style={{whiteSpace:'pre-wrap'}}>{JSON.stringify(rows.slice(0,3),null,2)}</pre></details>:null}
-    <button type="button" disabled={busy||!rows.length} onClick={run}>{busy?'匯入中…':'匯入多媒體'}</button>
-    {status?<p className="scope-v2-status">{status}</p>:null}
+    <h4>新增多媒體</h4>
+    <p>直接對應 silver.lo3rwang_galaxy_media 欄位；media_id 由資料庫自動產生，url 可留空。</p>
+    <form onSubmit={save} className="scope-v2-editor">
+      <div className="scope-v2-stat-controls">
+        <label>media_type<input value={draft.media_type} onChange={e=>change('media_type',e.target.value)} placeholder="ig_pic / facebook_pic / suno / video / url" required/></label>
+        <label>galaxy_link<input value={draft.galaxy_link} onChange={e=>change('galaxy_link',e.target.value)} placeholder="8 字 UID，可留空"/></label>
+        <label>createtime<input type="datetime-local" value={draft.createtime} onChange={e=>change('createtime',e.target.value)}/></label>
+      </div>
+      <div className="scope-v2-stat-controls">
+        <label>source_native_id<input value={draft.source_native_id} onChange={e=>change('source_native_id',e.target.value)}/></label>
+        <label>source_place<input value={draft.source_place} onChange={e=>change('source_place',e.target.value)} placeholder="打卡地點／拍攝位置"/></label>
+      </div>
+      <label>title<input value={draft.title} onChange={e=>change('title',e.target.value)}/></label>
+      <label>url<input value={draft.url} onChange={e=>change('url',e.target.value)} placeholder="可留空，之後再補"/></label>
+      <label>meta_tags<input value={draft.meta_tags} onChange={e=>change('meta_tags',e.target.value)} placeholder="逗號分隔"/></label>
+      <button type="submit" disabled={busy}>{busy?'儲存中…':'新增多媒體'}</button>
+      {status?<p className="scope-v2-status">{status}</p>:null}
+    </form>
   </div>;
 }
 
@@ -215,7 +241,7 @@ export default function ManagementImportPanel({scopeId}){
   return <section className="scope-v2-inline-card">
     <h3>匯入</h3>
     <JsonImport scopeId={scopeId}/>
-    <MediaJsonImport scopeId={scopeId}/>
+    <MediaRecordInsert scopeId={scopeId}/>
     <SunoImport scopeId={scopeId}/>
   </section>;
 }
