@@ -1,10 +1,9 @@
 export { LOC_DATA } from './data-paths.mjs';
-import pMap from 'p-map';
 import { LOC_DATA } from './data-paths.mjs';
 import {selectNeonCatalog} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
+import {mapIoTasks} from './io-controller';
 
-const DEFAULT_GLOBAL_CONCURRENCY=2;
 function sourcePath(path){
   const normalized=String(path||'').trim().replace(/^\/+/, '');
   if(!normalized)throw new Error('LOC Neon data path is required');
@@ -141,13 +140,12 @@ export async function fetchRuneRows(runeNumbers){
     .map(row=>({rune_number:Number(row.編號),rune_data:row}));
 }
 
-export async function fetchNeonDataBatch(items,{concurrency=DEFAULT_GLOBAL_CONCURRENCY,memory=true}={}){
+export async function fetchNeonDataBatch(items){
   const queue=[...items];
-  const workerCount=Math.max(1,Math.floor(Number(concurrency)||DEFAULT_GLOBAL_CONCURRENCY));
-  return pMap(queue,async item=>{
+  return mapIoTasks(queue,async item=>{
     const path=typeof item==='string'?item:item.path;
-    return fetchNeonData(path,{memory});
-  },{concurrency:workerCount});
+    return fetchNeonData(path);
+  });
 }
 
 export function clearNeonDataCache(){
@@ -165,6 +163,6 @@ export function refreshLocDataIndex(){
 }
 
 export const LOC_IO_BUDGET=Object.freeze({
-  scheduler:'p-map',
+  scheduler:'io-controller',
   maxMemoryEntries:0
 });
