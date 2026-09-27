@@ -14,8 +14,8 @@ function requireText(path,patterns,description){
   }
 }
 
-// Public canonical reads use Neon managed anonymous JWTs; management sign-in upgrades the same client session.
-requireText('app/loc/neon-client.js',[/createClient/ ,/allowAnonymous\s*:\s*true/ ,/neonPublicClient/ ,/neonAuthClient/],'Neon anonymous/auth client boundary');
+// Public canonical reads use unauthenticated PostgREST; management/user writes use the separate Auth client.
+requireText('app/loc/neon-client.js',[/NeonPostgrestClient/ ,/neonPublicClient/ ,/neonAuthClient/],'Neon public/auth client split');
 requireText('app/loc/neon-repository.js',[/from ['"]zod['"]/ ,/neonPublicClient/ ,/neonAuthClient/ ,/export async function selectNeonRows/],'Neon repository/Zod boundary');
 // TanStack Query is used by data-heavy features; statistics uses direct offset pagination.
 requireText('app/modular-v2/features/ContextV2.jsx',[/from ['"]@tanstack\/react-query['"]/ ,/selectScopeContextData/],'Context Query/Neon interop');

@@ -1,19 +1,35 @@
-import {createClient,SupabaseAuthAdapter} from '@neondatabase/neon-js';
+import {NeonPostgrestClient} from '@neondatabase/postgrest-js';
 
 const DATA_API='https://ep-rapid-queen-b3oyboy6.apirest.c-4.ap-southeast-1.aws.neon.tech/neondb/rest/v1';
-const AUTH_API='https://ep-rapid-queen-b3oyboy6.neonauth.c-4.ap-southeast-1.aws.neon.tech/neondb/auth';
+
+async function rawProbe(){
+  const url=DATA_API+'/lrunes?select=rune_number,rune_name&record_type=eq.rune&limit=1';
+  const response=await fetch(url,{
+    headers:{
+      'Accept-Profile':'silver',
+      'Origin':'https://loc.lo3rwang.cc'
+    }
+  });
+  const body=await response.text();
+  console.log(JSON.stringify({
+    probe:'raw',
+    status:response.status,
+    allowOrigin:response.headers.get('access-control-allow-origin'),
+    allowHeaders:response.headers.get('access-control-allow-headers'),
+    body:body.slice(0,500)
+  }));
+  if(!response.ok)throw new Error('Raw public Data API probe failed: '+response.status+' '+body);
+}
 
 async function clientProbe(){
-  const client=createClient({
-    auth:{url:AUTH_API,adapter:SupabaseAuthAdapter(),allowAnonymous:true},
-    dataApi:{url:DATA_API,options:{db:{schema:'silver'}}}
+  const client=new NeonPostgrestClient({
+    dataApiUrl:DATA_API,
+    options:{db:{schema:'silver'}}
   });
   for(const [table,columns] of [
     ['lrunes','rune_number,rune_name,record_type'],
     ['manage','record_id,record_type,scope_id'],
-    ['v_lo3rwang_source_catalog','source_name,work_count'],
-    ['lo3rwang_galaxy_media','media_id,media_link:galaxy_link,source_name,source_native_id,media_type,title,url,meta_tags,style_tags:style_prompt,created_at'],
-    ['v_lo3rwang_canonical_works','work_id,scope_id,source_name,created_at,work_type,title,excerpt']
+    ['v_lo3rwang_source_catalog','source_name,work_count']
   ]){
     const {data,error}=await client.from(table).select(columns).limit(1);
     console.log(JSON.stringify({probe:'client',table,rows:data?.length||0,error:error?.message||null}));
@@ -21,5 +37,6 @@ async function clientProbe(){
   }
 }
 
+await rawProbe();
 await clientProbe();
 console.log('Public Neon Data API probe passed.');
