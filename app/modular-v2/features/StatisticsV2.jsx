@@ -7,7 +7,7 @@ import {
   Bar,BarChart,CartesianGrid,Cell,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectScopeRankingAll,selectScopeRankingComparison,selectScopeRankingPage,selectScopeRankingTypes} from '../../loc/neon-ranking-client';
+import {selectScopeKeywordDiagnostics,selectScopeRankingAll,selectScopeRankingComparison,selectScopeRankingPage,selectScopeRankingTypes} from '../../loc/neon-ranking-client';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
@@ -16,7 +16,7 @@ import KeywordSettingsV2 from './KeywordSettingsV2';
 import ContextStyleManager from './ContextStyleManager';
 import MediaMetaSettingsV2 from './MediaMetaSettingsV2';
 import FeaturePageV2 from '../FeaturePageV2';
-import {analyzeDistribution,analyzeDistributionChange,analyzeKeywordGovernance} from '../../loc/model/automatic-analysis.mjs';
+import {analyzeDistribution,analyzeDistributionChange,analyzeKeywordDiagnostics,analyzeKeywordGovernance} from '../../loc/model/automatic-analysis.mjs';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const CHART_TYPES=[['bar','長條圖'],['line','折線圖'],['pie','圓餅圖']];
@@ -100,6 +100,15 @@ function useRankingComparison(scopeId,type,navigation){
   });
 }
 
+function useKeywordDiagnostics(scopeId,type,navigation){
+  return useQuery({
+    queryKey:['statistics-keyword-diagnostics',scopeId,navigation.period||'all'],
+    enabled:type==='keyword'&&scopeId!=='loc',
+    queryFn:()=>selectScopeKeywordDiagnostics(scopeId,{navigation}),
+    staleTime:30000
+  });
+}
+
 function rangeLabel(range){
   if(!range?.start_date)return '';
   return String(range.start_date).slice(0,10)+' → '+String(range.end_date||range.start_date).slice(0,10);
@@ -149,6 +158,7 @@ function ChartsPanel({scopeId,navigation,types}){
   const [chartType,setChartType]=useState('bar');
   const query=useAllRanking(scopeId,rankingType,navigation);
   const comparisonQuery=useRankingComparison(scopeId,rankingType,navigation);
+  const diagnosticsQuery=useKeywordDiagnostics(scopeId,rankingType,navigation);
   const automaticAnalysis=useMemo(()=>analyzeDistribution(query.data||[],{
     label:STAT_TYPE_LABELS[rankingType]||'統計項目'
   }),[query.data,rankingType]);
@@ -162,6 +172,12 @@ function ChartsPanel({scopeId,navigation,types}){
       })
       :analyzeDistributionChange(data.currentRows||[],data.previousRows||[],{label:STAT_TYPE_LABELS[rankingType]||'統計項目'});
   },[comparisonQuery.data,rankingType]);
+  const keywordDiagnostics=useMemo(()=>{
+    if(rankingType!=='keyword'||!diagnosticsQuery.data)return {totalRecords:0,suggestions:[]};
+    return analyzeKeywordDiagnostics(diagnosticsQuery.data,{
+      changeSuggestions:changeAnalysis.suggestions||[]
+    });
+  },[rankingType,diagnosticsQuery.data,changeAnalysis.suggestions]);
   return <section className="scope-v2-stat-section">
     <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Distribution</p><h2>統計圖</h2><p>統計圖顯示所選統計項目的完整分布，包含文字來源、風格、關鍵詞與多媒體 metadata。</p><p><strong>靈魂擺盪論：</strong>以大風格、風格與關鍵詞的增減、延續、消退、回返與擺盪觀察語言分布；系統描述變化，不替使用者下定義。</p></div></header>
     <div className="scope-v2-stat-controls">
@@ -202,6 +218,22 @@ function ChartsPanel({scopeId,navigation,types}){
         </article>)}
       </div>}
       <p>這些是風險管理用的弱訊號提示；系統只指出「這裡開始不一樣」，不替使用者定義原因、好壞或事件性質。</p>
+    </section>:null}
+
+    {rankingType==='keyword'&&diagnosticsQuery.isPending?<p className="scope-v2-status">計算關鍵詞辨識度與共現…</p>:null}
+    {rankingType==='keyword'&&diagnosticsQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(diagnosticsQuery.error)}</p>:null}
+    {rankingType==='keyword'&&!diagnosticsQuery.isPending&&!diagnosticsQuery.error&&diagnosticsQuery.data?<section className="scope-v2-card">
+      <p className="loc-eyebrow">Keyword Diagnostics</p>
+      <h3>關鍵詞辨識度／共現</h3>
+      <p>以 {Number(keywordDiagnostics.totalRecords||0).toLocaleString()} 筆文字與多媒體 metadata 紀錄計算覆蓋率、來源集中度與共現；只判斷資料形狀，不判斷文化意義。</p>
+      {!keywordDiagnostics.suggestions.length?<p className="scope-v2-status">目前沒有達到辨識度或共現提醒門檻的項目。</p>:<div className="scope-v2-list">
+        {keywordDiagnostics.suggestions.map((item,index)=><article className="scope-v2-inline-card" key={item.type+'-'+item.term+'-'+index}>
+          <strong>{item.type==='emerging_high_discrimination'?'新興高辨識候選':
+            item.type==='low_discrimination'?'低辨識度候選':
+            item.type==='source_concentration'?'來源集中':'共現'}｜{item.term}</strong>
+          <span>{item.text}</span>
+        </article>)}
+      </div>}
     </section>:null}
   </section>;
 }
