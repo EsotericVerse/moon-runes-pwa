@@ -44,13 +44,17 @@ function makeProvider({id,table,source,scopeId,columns,searchFields,filters=[],d
         orFilter:orFilter(query),
         orders:dateColumn?[{column:dateColumn,ascending:false}]:[],
         limit,
-        offset
+        offset,
+        count:'exact'
       });
-      return result.rows.map(row=>({
-        row:{...row,scope_id:row.scope_id||scopeId},
-        source,
-        providerId:id
-      }));
+      return {
+        count:Math.max(0,Number(result.count)||0),
+        rows:result.rows.map(row=>({
+          row:{...row,scope_id:row.scope_id||scopeId},
+          source,
+          providerId:id
+        }))
+      };
     }
   });
 }
