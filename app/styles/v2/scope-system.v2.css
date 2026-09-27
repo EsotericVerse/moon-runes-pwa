@@ -263,3 +263,19 @@
 .scope-period-timeline .vis-item.scope-period-density.vis-range{
   min-width:3px;
 }
+
+
+.scope-v2-governance-editable{display:grid;gap:1rem}
+.scope-v2-governance-wysiwyg{
+  min-height:24rem;
+  padding:1rem;
+  border:var(--scope-v2-border);
+  border-radius:var(--scope-v2-radius);
+  background:var(--loc-panel);
+  color:var(--scope-v2-text);
+  line-height:1.75;
+  outline:none;
+}
+.scope-v2-governance-wysiwyg:focus{border-color:var(--loc-accent-border);box-shadow:0 0 0 2px color-mix(in srgb,var(--loc-accent) 18%,transparent)}
+.scope-v2-governance-wysiwyg h1,.scope-v2-governance-wysiwyg h2,.scope-v2-governance-wysiwyg h3{margin:1rem 0 .5rem}
+.scope-v2-governance-wysiwyg p{margin:.5rem 0}
