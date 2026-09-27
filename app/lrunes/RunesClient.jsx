@@ -67,7 +67,7 @@ export default function RunesClient(){
         </div>
         <p>66個單一中文字 × 九組符文分組 × 四卡牌方向 × 月相交互</p>
         <p>可以問一件事，也可以沒有問題直接抽取。</p>
-        <nav className="scope-v2-local-menu" aria-label="月之符文小功能選單"><a href={runeHref('')}>符文抽籤</a><a href={runeHref('list')}>符文圖鑑</a><a href={runeHref('game')}>符文遊戲</a></nav>
+        <nav className="scope-v2-local-menu" aria-label="月之符文小功能選單"><a href={runeHref('')}>符文抽籤</a><a href={runeHref('duel/daily')}>每日符文</a><a href={runeHref('daily/log')}>每日紀錄</a><a href={runeHref('daily/trend')}>每日趨勢</a><a href={runeHref('list')}>符文圖鑑</a><a href={runeHref('game')}>符文遊戲</a></nav>
       </div>
       <figure className="home-hero-visual scope-home-hero-visual">
         <iframe src="https://www.instagram.com/reel/DMA-ZxLTINw/embed" title="月之符文說明" loading="eager" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" />
