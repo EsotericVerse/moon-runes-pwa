@@ -9,7 +9,7 @@ import {FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-s
 
 async function readSources(scopeId){
   if(scopeId!=='lo3rwang')return [];
-  const result=await selectSourceCatalog({scopeId:'lo3rwang',limit:64,offset:0});
+  const result=await selectSourceCatalog({scopeId:'lo3rwang'});
   return result.rows.map(row=>({
     source:row.source_name,
     count:Number(row.work_count)||0,
