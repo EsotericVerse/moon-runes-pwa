@@ -7,7 +7,7 @@ import {
   Bar,BarChart,CartesianGrid,Cell,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectScopeRankingPage,selectScopeRankingTypes} from '../../loc/neon-ranking-client';
+import {selectScopeRankingAll,selectScopeRankingPage,selectScopeRankingTypes} from '../../loc/neon-ranking-client';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
@@ -76,16 +76,7 @@ function useAllRanking(scopeId,type,navigation){
   return useQuery({
     queryKey:['statistics-ranking-all',scopeId,type,navigation.period||'all'],
     enabled:Boolean(type),
-    queryFn:async()=>{
-      const rows=[];let offset=0;
-      for(let page=0;page<100;page++){
-        const result=await selectScopeRankingPage(scopeId,{rankingType:type,offset,limit:100,navigation});
-        rows.push(...result.rows);
-        if(!result.hasMore)break;
-        offset+=result.limit;
-      }
-      return rows;
-    },
+    queryFn:()=>selectScopeRankingAll(scopeId,{rankingType:type,navigation}),
     staleTime:30000
   });
 }
