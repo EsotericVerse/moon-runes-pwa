@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {parseRuneKeywordRules,serializeRuneKeywordRules,splitRuneKeywordEntries} from '../app/loc/model/rune-keyword-rules.js';
+import {parseRuneKeywordRules,serializeRuneKeywordRules,splitRuneKeywordEntries} from '../app/loc/model/rune-keyword-rules.mjs';
 
 const parsed=parseRuneKeywordRules('AND 日、NOR月\nAND日');
 assert.deepEqual(parsed.invalid,[]);
