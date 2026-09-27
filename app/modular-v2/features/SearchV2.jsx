@@ -53,8 +53,38 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
     sourceId:row.source_id||row.media_link||'',
     targetId:row.target_id||'',
     refId:row.ref_id||'',
+    groupKey:resourceType==='galaxy'&&resourceId
+      ?'galaxy:'+resourceId
+      :(resourceType==='galaxy_media'&&row.media_link?'galaxy:'+row.media_link:'result:'+(identity||title)),
+    links:href?[{id:resourceType||'primary',href,label:resourceType==='galaxy_media'?'媒體連結':'查看連結'}]:[],
     destinations:isScopeCard?[]:featureNavigationLinks(navigation)
   };
+}
+
+
+function mergeSummaryResults(rows=[]){
+  const groups=new Map();
+  for(const row of rows){
+    const key=row.groupKey||row.key;
+    if(!groups.has(key)){
+      groups.set(key,{...row,links:[...(row.links||[])]});
+      continue;
+    }
+    const current=groups.get(key);
+    const preferRow=current.resourceType==='galaxy'?current:(row.resourceType==='galaxy'?row:current);
+    const links=[...(current.links||[]),...(row.links||[])];
+    const uniqueLinks=[...new Map(links.filter(link=>link?.href).map(link=>[link.href,link])).values()]
+      .map((link,index)=>({...link,label:(links.length>1&&link.label==='媒體連結')?('歌曲連結 '+(index+1)):link.label}));
+    groups.set(key,{
+      ...preferRow,
+      links:uniqueLinks,
+      destinations:[...(current.destinations||[]),...(row.destinations||[])].filter((item,index,all)=>all.findIndex(other=>other.href===item.href&&other.label===item.label)===index),
+      sourceId:preferRow.sourceId||current.sourceId||row.sourceId||'',
+      targetId:preferRow.targetId||current.targetId||row.targetId||'',
+      refId:preferRow.refId||current.refId||row.refId||''
+    });
+  }
+  return [...groups.values()];
 }
 
 export default function SearchV2(){
@@ -118,7 +148,7 @@ export default function SearchV2(){
         if(result.settings&&result.settings.visibility!=='public'&&!account.canManageScopeSync(result.scopeId))continue;
         seen.add(result.key);converted.push(result);
       }
-      setResults(converted);
+      setResults(mergeSummaryResults(converted));
       setHasMore(matchedRowsRef.current.length>pageSize);
       const partial=search.failures?.length?`（${search.failures.length} 張非必要資料表暫時無法查詢）`:'';
       setStatus(`「${collection.label}」搜尋「${q}」。${partial}`);
@@ -149,7 +179,7 @@ export default function SearchV2(){
           if(result.settings&&result.settings.visibility!=='public'&&!account.canManageScopeSync(result.scopeId))continue;
           seen.add(result.key);appended.push(result);
         }
-        return [...current,...appended];
+        return mergeSummaryResults([...current,...appended]);
       });
       setHasMore(matchedRowsRef.current.length>offsetRef.current);
     }catch(exception){
@@ -239,7 +269,7 @@ export default function SearchV2(){
           sourceId={row.sourceId}
           targetId={row.targetId}
           refId={row.refId}
-          links={settings.show_link!==false&&row.href?[{id:'primary',href:row.href,label:row.isScopeCard?'進入 Scope':'查看連結'}]:[]}
+          links={settings.show_link!==false?(row.links||[]):[]}
           destinations={row.destinations}
           showSource={settings.show_source!==false}
           showLinks={settings.show_link!==false}
