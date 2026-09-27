@@ -11,17 +11,17 @@ const WEEKDAYS=['日','一','二','三','四','五','六'];
 
 function localToday(){
   const now=new Date();
-  return \`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}\`;
+  return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
 }
 function formatDate(value){return String(value||'').slice(0,10).replaceAll('-','/');}
 function dateMs(value){return Date.parse(String(value||'').slice(0,10)+'T00:00:00Z');}
-function dateKey(year,month,day){return \`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}\`;}
+function dateKey(year,month,day){return `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;}
 function monthKey(value){return String(value||'').slice(0,7);}
 function addMonth(value,offset){
   const [year,month]=String(value||'').split('-').map(Number);
   if(!year||!month)return '';
   const date=new Date(Date.UTC(year,month-1+offset,1));
-  return \`${date.getUTCFullYear()}-${String(date.getUTCMonth()+1).padStart(2,'0')}\`;
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth()+1).padStart(2,'0')}`;
 }
 function monthsInRange(start,end){
   const first=monthKey(start),last=monthKey(end);
@@ -210,7 +210,7 @@ export default function DailyTrendClient(){
       <div className="scope-v2-list">
         {analysis.repeats.map(item=><article className="scope-v2-inline-card" key={item.name}>
           <strong>{item.name}｜{item.count} 次／{item.days_count} 天</strong>
-          <span>{item.entries.map(entry=>\`${formatDate(entry.date)} ${roleLabel(entry.role)}・${entry.direction}\`).join(' ｜ ')}</span>
+          <span>{item.entries.map(entry=>`${formatDate(entry.date)} ${roleLabel(entry.role)}・${entry.direction}`).join(' ｜ ')}</span>
         </article>)}
       </div>
     </section>:null}
