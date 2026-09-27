@@ -148,7 +148,7 @@ function MediaRecordInsert({scopeId}){
 
   return <div className="scope-v2-inline-card">
     <h4>新增多媒體</h4>
-    <p>直接對應 silver.lo3rwang_galaxy_media 欄位；media_id 由資料庫自動產生，url 可留空。</p>
+    <p>只記錄外部媒體參照與文字 metadata：URL／雲端連結、檔名或標題、來源 ID、時間、地點與 Meta Tag；不接收、不暫存任何圖片／音訊／影片檔案。media_id 由資料庫自動產生，url 可留空。</p>
     <form onSubmit={save} className="scope-v2-editor">
       <div className="scope-v2-stat-controls">
         <label>media_type<input value={draft.media_type} onChange={e=>change('media_type',e.target.value)} placeholder="ig_pic / facebook_pic / suno / video / url" required/></label>
@@ -159,8 +159,8 @@ function MediaRecordInsert({scopeId}){
         <label>source_native_id<input value={draft.source_native_id} onChange={e=>change('source_native_id',e.target.value)}/></label>
         <label>source_place<input value={draft.source_place} onChange={e=>change('source_place',e.target.value)} placeholder="打卡地點／拍攝位置"/></label>
       </div>
-      <label>title<input value={draft.title} onChange={e=>change('title',e.target.value)}/></label>
-      <label>url<input value={draft.url} onChange={e=>change('url',e.target.value)} placeholder="可留空，之後再補"/></label>
+      <label>title／檔名<input value={draft.title} onChange={e=>change('title',e.target.value)}/></label>
+      <label>url<input value={draft.url} onChange={e=>change('url',e.target.value)} placeholder="外部 URL／雲端連結，可留空，之後再補"/></label>
       <label>meta_tags<input value={draft.meta_tags} onChange={e=>change('meta_tags',e.target.value)} placeholder="逗號分隔"/></label>
       <button type="submit" disabled={busy}>{busy?'儲存中…':'新增多媒體'}</button>
       {status?<p className="scope-v2-status">{status}</p>:null}
