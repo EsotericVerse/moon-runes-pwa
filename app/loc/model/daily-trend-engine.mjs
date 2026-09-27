@@ -1,12 +1,4 @@
-import {cardSemanticState,resolveStatePair} from './semantic-state.mjs';
-
-const LOT_FIELD=Object.freeze({
-  '正位':'lots_positive',
-  '半正位':'lots_half_positive',
-  '半逆位':'lots_half_negative',
-  '逆位':'lots_negative'
-});
-const DOMAIN_LABELS=Object.freeze(['愛情','事業','關係','健康']);
+const DIRECTIONS=Object.freeze(['正位','半正位','半逆位','逆位']);
 
 function dayKey(value){
   const key=String(value||'').slice(0,10);
@@ -23,138 +15,13 @@ function roleOf(row){
   return role==='supplement'?'supplement':'main';
 }
 
-function runeIdentity(row){
+function runeName(row){
   return String(row?.rune_name||row?.name||row?.rune_number||'').trim();
 }
 
-function runeLookup(runes=[]){
-  const byNumber=new Map();
-  const byName=new Map();
-  for(const rune of runes||[]){
-    const number=Number(rune?.編號??rune?.rune_number);
-    const name=String(rune?.符文名稱??rune?.rune_name??'').trim();
-    if(Number.isInteger(number))byNumber.set(number,rune);
-    if(name)byName.set(name,rune);
-  }
-  return {byNumber,byName};
-}
-
-function enrichedRow(row,lookup){
-  const number=Number(row?.rune_number);
-  const name=String(row?.rune_name||'').trim();
-  const rune=lookup.byNumber.get(number)||lookup.byName.get(name)||{};
-  return {...rune,...row};
-}
-
-function cardState(row){
-  return cardSemanticState({
-    ...row,
-    卡片屬性:row?.卡片屬性??row?.card_attribute
-  },row?.direction);
-}
-
-function parseAdvice(row){
-  if(!row)return [];
-  const field=LOT_FIELD[String(row.direction||'').trim()];
-  const source=field?String(row?.[field]||'').trim():'';
-  if(!source)return [];
-  return DOMAIN_LABELS.map(label=>{
-    const match=source.match(new RegExp(label+'：\\s*([^\\n]*?)(?=(?:愛情|事業|關係|健康)：|$)'));
-    return {
-      label,
-      text:String(match?.[1]||'').trim().replace(/[。；]+$/,'')
-    };
-  }).filter(item=>item.text);
-}
-
-function normalizeAdviceText(value){
-  return String(value||'').trim().replace(/[。；，、\s]+$/g,'');
-}
-
-function sharedAdvice(groups=[]){
-  const sets=groups
-    .map(group=>new Set((group||[]).flatMap(row=>parseAdvice(row).map(item=>normalizeAdviceText(item.text))).filter(Boolean)))
-    .filter(set=>set.size);
-  if(sets.length<2)return [];
-  const [first,...rest]=sets;
-  return [...first].filter(text=>rest.every(set=>set.has(text))).sort((a,b)=>a.localeCompare(b,'zh-Hant'));
-}
-
-function rowsForDate(rows,date){
-  return (rows||[]).filter(row=>dayKey(row?.record_date??row?.created_at)===date);
-}
-
-function sortEntries(entries){
-  return [...entries].sort((a,b)=>{
-    const dateCompare=String(a.date).localeCompare(String(b.date));
-    if(dateCompare)return dateCompare;
-    return a.role===b.role?0:(a.role==='main'?-1:1);
-  });
-}
-
-function repeatSummary(rows){
-  const groups=new Map();
-  for(const row of rows||[]){
-    const name=runeIdentity(row);
-    if(!name)continue;
-    if(!groups.has(name))groups.set(name,[]);
-    groups.get(name).push({
-      name,
-      date:dayKey(row?.record_date??row?.created_at),
-      direction:String(row?.direction||'未知').trim()||'未知',
-      role:roleOf(row),
-      advice:parseAdvice(row)
-    });
-  }
-
-  const repeats=[];
-  const directionChanges=[];
-  const steadyRepeats=[];
-  for(const [name,rawEntries] of groups){
-    const entries=sortEntries(rawEntries);
-    if(entries.length<2)continue;
-    const directions=[...new Set(entries.map(item=>item.direction))];
-    const item={name,count:entries.length,entries};
-    repeats.push(item);
-    if(directions.length>1){
-      directionChanges.push({
-        ...item,
-        from:entries[0].direction,
-        to:entries.at(-1).direction,
-        path:entries.map(entry=>entry.direction),
-        advice:entries.at(-1).advice
-      });
-    }else{
-      steadyRepeats.push({
-        ...item,
-        direction:directions[0]||'未知',
-        advice:entries.at(-1).advice
-      });
-    }
-  }
-
-  const order=(a,b)=>b.count-a.count||a.name.localeCompare(b.name,'zh-Hant');
-  repeats.sort(order);
-  directionChanges.sort(order);
-  steadyRepeats.sort(order);
-  return {repeats,directionChanges,steadyRepeats};
-}
-
-function adviceFrequency(rows){
-  const counts=new Map();
-  for(const row of rows||[]){
-    for(const item of parseAdvice(row)){
-      const text=normalizeAdviceText(item.text);
-      if(!text)continue;
-      const key=item.label+'|'+text;
-      const current=counts.get(key)||{label:item.label,text,count:0};
-      current.count+=1;
-      counts.set(key,current);
-    }
-  }
-  return [...counts.values()]
-    .filter(item=>item.count>1)
-    .sort((a,b)=>b.count-a.count||a.label.localeCompare(b.label,'zh-Hant')||a.text.localeCompare(b.text,'zh-Hant'));
+function directionOf(row){
+  const direction=String(row?.direction||'未知').trim();
+  return DIRECTIONS.includes(direction)?direction:'未知';
 }
 
 function rowsInWindow(rows,latestDate,span){
@@ -167,132 +34,151 @@ function rowsInWindow(rows,latestDate,span){
   });
 }
 
-function summarizeWindow(rows,days,span){
-  const latest=days?.at(-1)||null;
-  if(!latest)return {
-    span,start_date:'',end_date:'',days:0,
-    repeats:[],direction_changes:[],steady_repeats:[],shared_advice:[],recommendations:[]
-  };
-
-  const latestMs=dateMs(latest.date);
-  const startMs=latestMs-(span-1)*86400000;
-  const sourceDays=(days||[]).filter(day=>{
-    const value=dateMs(day.date);
-    return Number.isFinite(value)&&value>=startMs&&value<=latestMs;
+function sortEntries(entries){
+  return [...entries].sort((a,b)=>{
+    const byDate=a.date.localeCompare(b.date);
+    if(byDate)return byDate;
+    if(a.role===b.role)return 0;
+    return a.role==='main'?-1:1;
   });
-  const periodRows=rowsInWindow(rows,latest.date,span);
-  const repeated=repeatSummary(periodRows);
-  const shared=adviceFrequency(periodRows);
-  const recommendations=repeated.directionChanges.length
-    ?repeated.directionChanges.map(item=>({
-        name:item.name,
-        reason:'direction_change',
-        direction:item.from+' → '+item.to,
-        advice:item.advice
-      }))
-    :repeated.steadyRepeats.map(item=>({
-        name:item.name,
-        reason:'repeated',
-        direction:item.direction,
-        advice:item.advice
-      }));
+}
 
+function summarizeRepeatedRunes(rows){
+  const groups=new Map();
+  for(const row of rows||[]){
+    const name=runeName(row);
+    if(!name)continue;
+    if(!groups.has(name))groups.set(name,[]);
+    groups.get(name).push({
+      date:dayKey(row?.record_date??row?.created_at),
+      direction:directionOf(row),
+      role:roleOf(row)
+    });
+  }
+
+  const repeats=[];
+  const directionChanges=[];
+  const sameDirection=[];
+  for(const [name,rawEntries] of groups){
+    const entries=sortEntries(rawEntries);
+    if(entries.length<2)continue;
+    const directions=[...new Set(entries.map(item=>item.direction))];
+    const base={name,count:entries.length,entries};
+    repeats.push(base);
+    if(directions.length>1){
+      directionChanges.push({
+        ...base,
+        from:entries[0].direction,
+        to:entries.at(-1).direction,
+        path:entries.map(item=>item.direction)
+      });
+    }else{
+      sameDirection.push({
+        ...base,
+        direction:directions[0]||'未知'
+      });
+    }
+  }
+
+  const order=(a,b)=>b.count-a.count||a.name.localeCompare(b.name,'zh-Hant');
+  repeats.sort(order);
+  directionChanges.sort(order);
+  sameDirection.sort(order);
+  return {repeats,directionChanges,sameDirection};
+}
+
+function directionChangeNote(item){
+  if(!item)return '';
+  if(item.from==='未知'||item.to==='未知'){
+    return `${item.name} 的位向包含未知，先保留觀察。`;
+  }
+  if(item.from===item.to){
+    return `${item.name} 重複維持${item.to}，主題持續。`;
+  }
+  return `${item.name} 由${item.from}轉為${item.to}，留意同一主題的方向變化。`;
+}
+
+function summarizeWindow(rows,latestDate,span){
+  if(!latestDate)return {
+    span,start_date:'',end_date:'',repeats:[],direction_changes:[],same_direction:[],notes:[]
+  };
+  const latest=dateMs(latestDate);
+  const start=latest-(span-1)*86400000;
+  const source=rowsInWindow(rows,latestDate,span);
+  const repeated=summarizeRepeatedRunes(source);
   return {
     span,
-    start_date:new Date(startMs).toISOString().slice(0,10),
-    end_date:latest.date,
-    days:sourceDays.length,
+    start_date:new Date(start).toISOString().slice(0,10),
+    end_date:latestDate,
     repeats:repeated.repeats,
     direction_changes:repeated.directionChanges,
-    steady_repeats:repeated.steadyRepeats,
-    shared_advice:shared,
-    recommendations
+    same_direction:repeated.sameDirection,
+    notes:[
+      ...repeated.directionChanges.map(directionChangeNote),
+      ...repeated.sameDirection.map(item=>directionChangeNote({...item,from:item.direction,to:item.direction}))
+    ]
   };
 }
 
-export function summarizeDailyDraws(rows=[],runes=[]){
-  const lookup=runeLookup(runes);
+export function summarizeDailyDraws(rows=[]){
   const grouped=new Map();
-
-  for(const raw of rows||[]){
-    const row=enrichedRow(raw,lookup);
+  for(const row of rows||[]){
     const date=dayKey(row?.record_date??row?.created_at);
     if(!date)continue;
-    if(!grouped.has(date))grouped.set(date,{date,main:null,supplement:null});
-    grouped.get(date)[roleOf(row)]=row;
-  }
-
-  return [...grouped.values()]
-    .sort((a,b)=>a.date.localeCompare(b.date))
-    .map(day=>{
-      const primary=day.main||day.supplement;
-      const mainState=day.main?cardState(day.main):'未知';
-      const supplementState=day.supplement?cardState(day.supplement):null;
-      const supplementRelation=day.main&&day.supplement
-        ?resolveStatePair(mainState,supplementState)
-        :null;
-      return {
-        ...day,
-        rows:[day.main,day.supplement].filter(Boolean),
-        main_state:mainState,
-        supplement_state:supplementState,
-        result:primary?cardState(primary):'未知',
-        advice:parseAdvice(primary),
-        supplement_advice:parseAdvice(day.supplement),
-        shared_advice:day.main&&day.supplement?sharedAdvice([[day.main],[day.supplement]]):[],
-        supplement_relation:supplementRelation
-      };
+    if(!grouped.has(date))grouped.set(date,{date,rows:[]});
+    grouped.get(date).rows.push({
+      ...row,
+      rune_name:runeName(row),
+      direction:directionOf(row),
+      role:roleOf(row)
     });
+  }
+  return [...grouped.values()].sort((a,b)=>a.date.localeCompare(b.date));
 }
 
 export function summarizeDailyWindows(rows=[],days=[]){
-  const source=Array.isArray(days)?days:[];
-  const latest=source.at(-1)||null;
-  const previous=source.length>1?source.at(-2):null;
+  const sourceDays=Array.isArray(days)?days:[];
+  const latest=sourceDays.at(-1)||null;
+  const previous=sourceDays.length>1?sourceDays.at(-2):null;
 
   let adjacent={
-    previous_date:'',
+    previous_date:previous?.date||'',
     current_date:latest?.date||'',
-    shared_advice:[],
     repeats:[],
     direction_changes:[],
-    recommendations:[]
+    same_direction:[],
+    notes:[]
   };
 
   if(previous&&latest){
-    const previousRows=rowsForDate(rows,previous.date);
-    const currentRows=rowsForDate(rows,latest.date);
-    const repeated=repeatSummary([...previousRows,...currentRows]);
+    const pairRows=(rows||[]).filter(row=>{
+      const date=dayKey(row?.record_date??row?.created_at);
+      return date===previous.date||date===latest.date;
+    });
+    const repeated=summarizeRepeatedRunes(pairRows);
+    const acrossBoth=item=>{
+      const dates=new Set(item.entries.map(entry=>entry.date));
+      return dates.has(previous.date)&&dates.has(latest.date);
+    };
+    const directionChanges=repeated.directionChanges.filter(acrossBoth);
+    const sameDirection=repeated.sameDirection.filter(acrossBoth);
     adjacent={
       previous_date:previous.date,
       current_date:latest.date,
-      shared_advice:sharedAdvice([previousRows,currentRows]),
-      repeats:repeated.repeats.filter(item=>{
-        const dates=new Set(item.entries.map(entry=>entry.date));
-        return dates.has(previous.date)&&dates.has(latest.date);
-      }),
-      direction_changes:repeated.directionChanges.filter(item=>{
-        const dates=new Set(item.entries.map(entry=>entry.date));
-        return dates.has(previous.date)&&dates.has(latest.date);
-      }),
-      recommendations:repeated.directionChanges
-        .filter(item=>{
-          const dates=new Set(item.entries.map(entry=>entry.date));
-          return dates.has(previous.date)&&dates.has(latest.date);
-        })
-        .map(item=>({
-          name:item.name,
-          reason:'direction_change',
-          direction:item.from+' → '+item.to,
-          advice:item.advice
-        }))
+      repeats:repeated.repeats.filter(acrossBoth),
+      direction_changes:directionChanges,
+      same_direction:sameDirection,
+      notes:[
+        ...directionChanges.map(directionChangeNote),
+        ...sameDirection.map(item=>directionChangeNote({...item,from:item.direction,to:item.direction}))
+      ]
     };
   }
 
   return {
     latest_day:latest,
     adjacent,
-    three_days:summarizeWindow(rows,source,3),
-    seven_days:summarizeWindow(rows,source,7)
+    three_days:summarizeWindow(rows,latest?.date||'',3),
+    seven_days:summarizeWindow(rows,latest?.date||'',7)
   };
 }
