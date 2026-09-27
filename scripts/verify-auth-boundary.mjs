@@ -15,11 +15,13 @@ const requireMatch=(text,re,label)=>{if(!re.test(text))failures.push(label);};
 requireMatch(data,/selectNeonCatalog/,'shared rune runtime must use the canonical Neon repository');
 if(/memoryCache|DEFAULT_MEMORY_CACHE_ENTRIES/.test(data))failures.push('shared runtime data must not retain a process-memory data cache');
 
-requireMatch(client,/allowAnonymous\s*:\s*true/,'public canonical reads must use Neon managed anonymous JWT transport');
-requireMatch(client,/neonPublicClient=neonClient/,'public reads must share the managed anonymous Neon client');
-requireMatch(client,/neonAuthClient=neonClient/,'management sign-in must upgrade the shared Neon client session');
+requireMatch(client,/getNeonPublicToken/,'public canonical reads must use the direct anonymous-token provider');
+requireMatch(client,/resetNeonPublicToken/,'public anonymous token recovery hook is required');
+requireMatch(client,/neonPublicClient=createClient\(\{[\s\S]*getToken:getNeonPublicToken/,'public reads must use the isolated token-provided Neon client');
+requireMatch(client,/neonAuthClient=createClient\(\{[\s\S]*SupabaseAuthAdapter/,'management writes must use a separate authenticated Neon client');
 requireMatch(client,/signInWithOAuth/,'Neon Google OAuth sign-in is required for management');
 requireMatch(client,/getSession/,'Neon session lookup is required for management');
+if(/allowAnonymous\s*:\s*true/.test(client))failures.push('public reads must not share Better Auth anonymous session cache');
 
 requireMatch(account,/selectNeonAllRows\('silver\.manage'/,'account authorization must resolve website permissions from silver.manage');
 requireMatch(account,/columns:'id,email,role'/,'account permission lookup must use the Current manage contract');
