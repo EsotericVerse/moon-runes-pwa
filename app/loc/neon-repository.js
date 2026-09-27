@@ -1,7 +1,7 @@
 'use client';
 
 import {z} from 'zod';
-import {neonClient} from './neon-client';
+import {neonAuthClient,neonPublicClient} from './neon-client';
 import {
   UI_PAGE_SIZE,
   assertSafeSelect,assertHeavyBatchSelect,assertCatalogSelect,
@@ -56,17 +56,26 @@ export class NeonRepositoryError extends Error{
   }
 }
 
+function authenticatedClient(table){
+  if(!neonAuthClient)throw new NeonRepositoryError('Production Neon Auth is not configured',{
+    table:String(table),code:'NEON_AUTH_NOT_CONFIGURED'
+  });
+  return neonAuthClient;
+}
+
 function writableRelation(table){
   const parsed=WritableTableSchema.safeParse(table);
   if(!parsed.success)throw new NeonRepositoryError('Canonical content tables are read-only; write a scope/resource link instead of copying content',{table:String(table),code:'NEON_CONTENT_WRITE_BLOCKED'});
-  return relation(parsed.data);
+  const [schema,name]=parsed.data.split('.');
+  return authenticatedClient(parsed.data).schema(schema).from(name);
 }
 
 function relation(table){
   const parsed=TableSchema.safeParse(table);
   if(!parsed.success)throw new NeonRepositoryError('Neon table is not in the shared repository allowlist',{table:String(table),code:'NEON_TABLE_NOT_ALLOWED'});
   const [schema,name]=parsed.data.split('.');
-  return neonClient.schema(schema).from(name);
+  const client=parsed.data.startsWith('api.user_')?authenticatedClient(parsed.data):neonPublicClient;
+  return client.schema(schema).from(name);
 }
 
 function applyFilters(query,filters=[]){
