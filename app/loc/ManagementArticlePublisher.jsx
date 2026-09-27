@@ -8,7 +8,7 @@ import ContentEditorV2 from '../modular-v2/ContentEditorV2';
 
 const blank=()=>({
   title:'',body:'',source:'',url:'',source_id:'',target_id:'',ref_id:'',create_time:'',
-  includeStatistics:true,fullText:false,hidden:false,showLink:true,showSource:true
+  includeStatistics:true,hidden:false,showLink:true,showSource:true
 });
 
 export default function ManagementArticlePublisher({scopeId}){
@@ -35,7 +35,6 @@ export default function ManagementArticlePublisher({scopeId}){
         url:draft.url.trim()||null,
         search:!draft.hidden,
         statics:draft.includeStatistics!==false,
-        display:draft.fullText?'full':'summary',
         create_time:draft.create_time?new Date(draft.create_time).toISOString():now,
         update_time:now
       }]);
@@ -64,7 +63,7 @@ export default function ManagementArticlePublisher({scopeId}){
 
   return <section className="scope-v2-inline-card">
     <h3>文章發表</h3>
-    <p>只在 Management 顯示。公開／私密、簡文／全文、搜尋與統計會一起寫入現有 visibility 規則。</p>
+    <p>只在 Management 顯示。列表固定使用摘要；正文是否公開由可見性規則控制。</p>
     <ContentEditorV2
       draft={draft}
       setDraft={setDraft}
