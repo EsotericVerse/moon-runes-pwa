@@ -9,6 +9,8 @@ import ManagementArticlePublisher from './ManagementArticlePublisher';
 import ManagementImportPanel from './ManagementImportPanel';
 import RuneManagementPanel from './RuneManagementPanel';
 import CultureTimelineEditor from '../modular-v2/features/CultureTimelineEditor';
+import KeywordSettingsV2 from '../modular-v2/features/KeywordSettingsV2';
+import ContextStyleManager from '../modular-v2/features/ContextStyleManager';
 import SourceSettingsV2 from '../modular-v2/features/SourceSettingsV2';
 
 const LOGIN_COPY={
@@ -56,6 +58,8 @@ function Workspace({scopeId}){
 function Structure({scopeId}){
   return <div className="scope-v2-list">
     {scopeId!=='loc'?<CultureTimelineEditor scopeId={scopeId}/>:null}
+    {scopeId==='lo3rwang'?<ContextStyleManager scopeId="lo3rwang"/>:null}
+    {scopeId!=='loc'?<KeywordSettingsV2 scopeId={scopeId}/>:null}
     <SourceSettingsV2 scopeId={scopeId}/>
   </div>;
 }
@@ -77,7 +81,7 @@ export default function GovernanceManagement(){
 
   const sections=[
     ['workspace','工作區'],
-    ['structure',scopeId==='loc'?'來源':'時期與來源'],
+    ['structure',scopeId==='loc'?'來源':'時期、關鍵詞與來源'],
     ...(scopeId==='lunarunes'?[['daily','每日符文']]:[]),
   ];
 
