@@ -2,6 +2,14 @@
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 
+function graphLabel(value=''){
+  return String(value||'')
+    .split(/[｜|]/)
+    .map(part=>part.trim())
+    .filter(Boolean)
+    .join('\n');
+}
+
 export default function ScopeOverviewNetwork({centerTitle='',centerSummary='',nodes=[]}){
   const containerRef=useRef(null);
   const networkRef=useRef(null);
@@ -25,9 +33,9 @@ export default function ScopeOverviewNetwork({centerTitle='',centerSummary='',no
       {id:centerId,label:centerTitle||'作者',title:centerSummary||'',shape:'box',color:{background:panel2,border:accent},font:{size:20,bold:true}},
       ...safeNodes.map(node=>({
         id:String(node.id),
-        label:String(node.title||node.id).split('｜').join('\n'),
+        label:graphLabel(node.title||node.id),
         title:String(node.summary||''),
-        shape:'box',margin:16,widthConstraint:{maximum:250},color:{background:panel,border:line},font:{size:16,multi:'html'}
+        shape:'box',margin:16,widthConstraint:{minimum:140,maximum:180},color:{background:panel,border:line},font:{size:16,multi:false,align:'center'}
       }))
     ];
     const graphEdges=safeNodes.map(node=>({from:centerId,to:String(node.id),color:{color:line,highlight:accent},width:2,smooth:false}));
