@@ -56,8 +56,8 @@ for(const [client,contract] of [
 ])if(!readFileSync(resolve(root,client),'utf8').includes(`${contract}.parse`))failures.push(`${client}: shared Zod feature contract not enforced`);
 
 const searchClient=readFileSync(resolve(root,'app/loc/neon-search.js'),'utf8');
-if(!/from ['"]flexsearch['"]/.test(searchClient)||!/new Index\(/.test(searchClient))failures.push('Search client: FlexSearch index missing');
-if(!/searchNeonRows\(/.test(readFileSync(resolve(root,'app/modular-v2/features/SearchV2.jsx'),'utf8')))failures.push('Search view: FlexSearch-backed search contract missing');
+if(!/getSearchProviders/.test(searchClient)||!/searchNeonRows\(/.test(searchClient))failures.push('Search client: direct Neon provider search contract missing');
+if(!/searchNeonRows\(/.test(readFileSync(resolve(root,'app/modular-v2/features/SearchV2.jsx'),'utf8')))failures.push('Search view: Neon-backed search contract missing');
 
 const coreBatch=/fetchNeonDataBatch\(\[LOC_DATA\.RUNES,LOC_DATA\.LOTS,LOC_DATA\.RUNE_INTERPRETATIONS\]/.test(runesClient);
 const directRunes=runesClient.includes('fetchNeonData(LOC_DATA.RUNES)');
