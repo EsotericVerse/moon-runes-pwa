@@ -33,6 +33,7 @@ const TABLES=Object.freeze({
 
 const SEARCH_PAGE_SIZE=500;
 const MAX_INDEX_RESULTS=5000;
+const SEARCH_CACHE=new Map();
 const SCOPE_SEARCH_ALIASES=Object.freeze({
   loc:'loc lunacodex luna codex 月典',
   lunarunes:'lunarunes lrunes 月之符文 符文',
@@ -64,7 +65,7 @@ async function selectAllNeonRows(table,source,columns,scopeId='',filters=[]){
   return rows;
 }
 
-export async function selectNeonSearchRows(collectionId){
+async function buildNeonSearchRows(collectionId){
   const tables=TABLES[collectionId]||TABLES.all;
   const settled=await Promise.all(tables.map(async([table,source,columns,scopeId,filters])=>{
     try{
@@ -105,8 +106,27 @@ export async function selectNeonSearchRows(collectionId){
   const successfulTables=settled.length-failures.length;
   if(!successfulTables)throw new AggregateError(failures,'Neon 搜尋資料表全部無法查詢');
   const index=new Index({tokenize:'full'});
-  rows.forEach(({row},id)=>index.add(id,rowSearchText(row)));
+  for(let id=0;id<rows.length;id+=1){
+    index.add(id,rowSearchText(rows[id].row));
+    if(id>0&&id%500===0)await new Promise(resolve=>setTimeout(resolve,0));
+  }
   return {index,rows,failures};
+}
+
+export function clearNeonSearchCache(collectionId=''){
+  if(collectionId)SEARCH_CACHE.delete(collectionId);
+  else SEARCH_CACHE.clear();
+}
+
+export async function selectNeonSearchRows(collectionId){
+  const key=TABLES[collectionId]?collectionId:'all';
+  if(!SEARCH_CACHE.has(key)){
+    SEARCH_CACHE.set(key,buildNeonSearchRows(key).catch(error=>{
+      SEARCH_CACHE.delete(key);
+      throw error;
+    }));
+  }
+  return SEARCH_CACHE.get(key);
 }
 
 export async function searchNeonRows(collectionId,query,{limit=MAX_INDEX_RESULTS,offset=0}={}){
