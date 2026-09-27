@@ -61,9 +61,21 @@ function summarizeRepeatedRunes(rows){
   const sameDirection=[];
   for(const [name,rawEntries] of groups){
     const entries=sortEntries(rawEntries);
-    if(entries.length<2)continue;
+    const dates=[...new Set(entries.map(item=>item.date).filter(Boolean))];
+    if(dates.length<2)continue;
     const directions=[...new Set(entries.map(item=>item.direction))];
-    const base={name,count:entries.length,entries};
+    const directionCounts=Object.fromEntries(DIRECTIONS.concat('未知').map(direction=>[
+      direction,
+      entries.filter(item=>item.direction===direction).length
+    ]));
+    const base={
+      name,
+      count:entries.length,
+      days_count:dates.length,
+      dates,
+      entries,
+      direction_counts:directionCounts
+    };
     repeats.push(base);
     if(directions.length>1){
       directionChanges.push({
@@ -80,11 +92,17 @@ function summarizeRepeatedRunes(rows){
     }
   }
 
-  const order=(a,b)=>b.count-a.count||a.name.localeCompare(b.name,'zh-Hant');
+  const order=(a,b)=>b.days_count-a.days_count||b.count-a.count||a.name.localeCompare(b.name,'zh-Hant');
   repeats.sort(order);
   directionChanges.sort(order);
   sameDirection.sort(order);
   return {repeats,directionChanges,sameDirection};
+}
+
+function directionDistribution(rows){
+  const counts=Object.fromEntries(DIRECTIONS.concat('未知').map(direction=>[direction,0]));
+  for(const row of rows||[])counts[directionOf(row)]=(counts[directionOf(row)]||0)+1;
+  return counts;
 }
 
 function directionChangeNote(item){
@@ -110,6 +128,9 @@ function summarizeWindow(rows,latestDate,span){
     span,
     start_date:new Date(start).toISOString().slice(0,10),
     end_date:latestDate,
+    total_draws:source.length,
+    unique_runes:new Set(source.map(runeName).filter(Boolean)).size,
+    direction_counts:directionDistribution(source),
     repeats:repeated.repeats,
     direction_changes:repeated.directionChanges,
     same_direction:repeated.sameDirection,
@@ -144,6 +165,9 @@ export function summarizeDailyWindows(rows=[],days=[]){
   let adjacent={
     previous_date:previous?.date||'',
     current_date:latest?.date||'',
+    total_draws:0,
+    unique_runes:0,
+    direction_counts:directionDistribution([]),
     repeats:[],
     direction_changes:[],
     same_direction:[],
@@ -165,6 +189,9 @@ export function summarizeDailyWindows(rows=[],days=[]){
     adjacent={
       previous_date:previous.date,
       current_date:latest.date,
+      total_draws:pairRows.length,
+      unique_runes:new Set(pairRows.map(runeName).filter(Boolean)).size,
+      direction_counts:directionDistribution(pairRows),
       repeats:repeated.repeats.filter(acrossBoth),
       direction_changes:directionChanges,
       same_direction:sameDirection,
