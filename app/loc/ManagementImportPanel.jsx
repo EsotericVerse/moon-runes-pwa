@@ -117,6 +117,8 @@ function MediaRecordInsert({scopeId}){
       if(galaxyLink&&galaxyLink.length!==8)throw new Error('galaxy_link 必須是 8 字 UID，或留空。');
       const mediaType=String(draft.media_type||'').trim();
       if(!mediaType)throw new Error('media_type 為必填欄位。');
+      const metaTags=String(draft.meta_tags||'').trim();
+      if(!metaTags)throw new Error('meta_tags 必須在建立多媒體紀錄時由資料提供者設定；LOC 不會自動分類。');
       const record={
         galaxy_link:galaxyLink||null,
         source_native_id:String(draft.source_native_id||'').trim()||null,
@@ -124,7 +126,7 @@ function MediaRecordInsert({scopeId}){
         media_type:mediaType,
         title:String(draft.title||'').trim()||null,
         url:String(draft.url||'').trim()||null,
-        meta_tags:String(draft.meta_tags||'').trim()||null,
+        meta_tags:metaTags,
         createtime:iso(draft.createtime)
       };
       if(!record.title&&!record.url&&!record.meta_tags&&!record.source_native_id&&!record.source_place){
@@ -161,7 +163,7 @@ function MediaRecordInsert({scopeId}){
       </div>
       <label>title／檔名<input value={draft.title} onChange={e=>change('title',e.target.value)}/></label>
       <label>url<input value={draft.url} onChange={e=>change('url',e.target.value)} placeholder="外部 URL／雲端連結，可留空，之後再補"/></label>
-      <label>meta_tags<input value={draft.meta_tags} onChange={e=>change('meta_tags',e.target.value)} placeholder="逗號分隔"/></label>
+      <label>meta_tags<input value={draft.meta_tags} onChange={e=>change('meta_tags',e.target.value)} placeholder="建立時由資料提供者設定，逗號分隔" required/></label>
       <button type="submit" disabled={busy}>{busy?'儲存中…':'新增多媒體'}</button>
       {status?<p className="scope-v2-status">{status}</p>:null}
     </form>
@@ -182,6 +184,7 @@ function SunoImport({scopeId}){
     event.preventDefault();setBusy(true);setStatus('');
     try{
       if(!draft.title.trim())throw new Error('請填寫歌名。');
+      if(!draft.metaTags.trim())throw new Error('Media Meta Tags 必須在建立時提供；LOC 不會自動分類。');
       const createtime=draft.createdDate?new Date(draft.createdDate+'T00:00:00+08:00').toISOString():new Date().toISOString();
       const lyricsUid=draft.lyrics.trim()?createUid8():null;
       const styleUid=lyricsUid&&draft.stylePrompt.trim()?createUid8():null;
@@ -224,7 +227,7 @@ function SunoImport({scopeId}){
       </div>
       <div className="scope-v2-stat-controls">
         <label>Suno Style<input value={draft.stylePrompt} onChange={e=>change('stylePrompt',e.target.value)}/></label>
-        <label>Meta Tags<input value={draft.metaTags} onChange={e=>change('metaTags',e.target.value)}/></label>
+        <label>Meta Tags<input value={draft.metaTags} onChange={e=>change('metaTags',e.target.value)} placeholder="建立時由資料提供者設定" required/></label>
       </div>
       <div className="scope-v2-stat-controls">
         <label>source_id<input value={draft.source_id} onChange={e=>change('source_id',e.target.value)}/></label>
