@@ -100,15 +100,22 @@ function LunaRunesGovernance(){
         <p className="loc-eyebrow">LunaRunes Governance</p>
         <h2>符號式語言治理</h2>
         <p>LunaRunes（月之符文）是 <strong>Symbolic Language／符號式語言</strong>，因此使用自己的符號、Canon、引用與衍生治理方式。</p>
-        <p>符文、抽籤與籤詩的分析只供參考，不是命令，也不是唯一答案。Current 定義使用現行正式符文名稱與規則；歷史版本保留演變，但不反向污染 Current Canon。</p>
+        <p>Current 定義使用現行正式符文名稱與規則；歷史版本保留演變，但不反向污染 Current Canon。</p>
       </section>
-      <section className="loc-card" id="rights">
-        <p className="loc-eyebrow">Rights · Scope</p>
-        <h2>權利邊界</h2>
-        <p>LunaRunes <strong>不採 LOC 的 Copyleft，也不採 LOC 的 GNU GPL</strong>。</p>
-        <p>引用、改作、衍生、再利用與商業使用，依 LunaRunes 自己的治理規則與作者明示授權處理；被 LOC 收錄、搜尋或分析，不會改變 LunaRunes 的權利狀態。</p>
+      <section className="loc-card" id="neutrality">
+        <p className="loc-eyebrow">Oracle Neutrality</p>
+        <h2>籤詩系統中立宣言</h2>
+        <p>抽牌、籤詩與解牌內容只供參考，不是命令，也不是唯一答案。系統協助看見當下的符號、文字與可能脈絡，但不替使用者決定身份、價值判斷或下一步行動。</p>
+        <p>使用者保留自己的判斷與決定；任何符文結果都不應被視為對現實事件的強制裁決。</p>
       </section>
     </div>
+    <section className="loc-card" id="rights">
+      <p className="loc-eyebrow">Copyright · LunaRunes</p>
+      <h2>符文與籤詩系統著作權</h2>
+      <p>LunaRunes 的符號式語言、符文設計、名稱、文字、籤詩系統、解牌結構與相關原創內容受 <strong>Copyright／著作權</strong> 保護。</p>
+      <p>LunaRunes <strong>不採 LOC 的 Copyleft，也不採 LOC 的 GNU GPL</strong>。引用、改作、衍生、再利用與商業使用，依 LunaRunes 自己的治理規則與作者明示授權處理。</p>
+      <p>被 LOC 收錄、搜尋、統計或分析，不會改變 LunaRunes 本身的權利狀態。</p>
+    </section>
   </>;
 }
 
@@ -123,18 +130,18 @@ function AuthorGovernance(){
       </section>
       <section className="loc-card" id="rights">
         <p className="loc-eyebrow">Copyright · Personal Works</p>
-        <h2>作品與資料權利</h2>
-        <p>lo3rwang 的個人作品與資料 <strong>不採 LOC 的 Copyleft，也不採 LOC 的 GNU GPL</strong>。</p>
-        <p>文字、歌曲、小說、多媒體與其他作品依各作品原有標示、來源與作者授權處理；未特別開放的內容，不因 LOC 的開放治理而自動取得相同授權。</p>
+        <h2>基本著作權保護</h2>
+        <p>lo3rwang 的文字、歌曲、小說、多媒體與其他原創作品採一般 <strong>Copyright／著作權</strong> 保護。</p>
+        <p>這些個人作品與資料 <strong>不採 LOC 的 Copyleft，也不採 LOC 的 GNU GPL</strong>；除非作品另有明示授權，否則仍依原作者權利與個別作品條件處理。</p>
       </section>
     </div>
   </>;
 }
 
 function GovernanceBody({scopeId}){
+  if(scopeId==='loc')return <LocGovernance/>;
   if(scopeId==='lunarunes')return <LunaRunesGovernance/>;
-  if(scopeId==='lo3rwang')return <AuthorGovernance/>;
-  return <LocGovernance/>;
+  return <AuthorGovernance/>;
 }
 
 function GovernanceHome(){
