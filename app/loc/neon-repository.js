@@ -2,7 +2,7 @@
 
 import {z} from 'zod';
 import {neonClient} from './neon-client';
-import {UI_PAGE_SIZE,assertSafeSelect,safePageSize,safeRange} from './query-policy';
+import {UI_PAGE_SIZE,assertSafeSelect,safePageSize,safeRange,safeReturning,chunkWriteRows} from './query-policy';
 
 const TableSchema=z.enum([
   'silver.manage','silver.resource_visibility',
@@ -105,24 +105,39 @@ export async function selectNeonRows(table,{
 
 export async function insertNeonRows(table,records,{returning='*'}={}){
   const rows=z.array(RowSchema).min(1).parse(Array.isArray(records)?records:[records]);
-  const result=await writableRelation(table).insert(rows).select(returning);
-  throwQueryError(result.error,table,'INSERT');
-  return parseRows(result.data,table);
+  const output=[];
+  const selectColumns=safeReturning(table,returning);
+  for(const batch of chunkWriteRows(rows)){
+    let query=writableRelation(table).insert(batch);
+    if(selectColumns)query=query.select(selectColumns);
+    const result=await query;
+    throwQueryError(result.error,table,'INSERT');
+    if(selectColumns)output.push(...parseRows(result.data,table));
+  }
+  return output;
 }
 
 export async function upsertNeonRows(table,records,{conflict,returning='*'}={}){
   const rows=z.array(RowSchema).min(1).parse(Array.isArray(records)?records:[records]);
   const options=conflict?{onConflict:z.string().min(1).parse(conflict)}:undefined;
-  const result=await writableRelation(table).upsert(rows,options).select(returning);
-  throwQueryError(result.error,table,'UPSERT');
-  return parseRows(result.data,table);
+  const output=[];
+  const selectColumns=safeReturning(table,returning);
+  for(const batch of chunkWriteRows(rows)){
+    let query=writableRelation(table).upsert(batch,options);
+    if(selectColumns)query=query.select(selectColumns);
+    const result=await query;
+    throwQueryError(result.error,table,'UPSERT');
+    if(selectColumns)output.push(...parseRows(result.data,table));
+  }
+  return output;
 }
 
 export async function updateNeonRows(table,values,{filters,returning='*'}={}){
   if(!Array.isArray(filters)||filters.length===0)throw new TypeError('Neon UPDATE requires at least one filter');
   const patch=RowSchema.parse(values);
   let query=applyFilters(writableRelation(table).update(patch),filters);
-  if(returning)query=query.select(returning);
+  const selectColumns=safeReturning(table,returning);
+  if(selectColumns)query=query.select(selectColumns);
   const result=await query;
   throwQueryError(result.error,table,'UPDATE');
   return parseRows(result.data,table);
@@ -131,7 +146,8 @@ export async function updateNeonRows(table,values,{filters,returning='*'}={}){
 export async function deleteNeonRows(table,{filters,returning='*'}={}){
   if(!Array.isArray(filters)||filters.length===0)throw new TypeError('Neon DELETE requires at least one filter');
   let query=applyFilters(writableRelation(table).delete(),filters);
-  if(returning)query=query.select(returning);
+  const selectColumns=safeReturning(table,returning);
+  if(selectColumns)query=query.select(selectColumns);
   const result=await query;
   throwQueryError(result.error,table,'DELETE');
   return parseRows(result.data,table);
