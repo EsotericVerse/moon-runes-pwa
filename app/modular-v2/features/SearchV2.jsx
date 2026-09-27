@@ -11,7 +11,7 @@ import FeaturePageV2 from '../FeaturePageV2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import {scopeHrefV2} from '../scope-registry.v2';
-import {galaxyRelationLinks} from '../feature-navigation.v2';
+import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation.v2';
 import {featureDataErrorMessage} from '../feature-data-state.v2';
 import ContentEditorV2 from '../ContentEditorV2';
 import {selectGalaxyIdentity,selectGalaxySummaries} from '../../loc/aggregate-query';
@@ -33,7 +33,16 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
   const title=explicitTitle||snippet(excerpt||source,q)||source;
   const bodyField=['summary','display_text','excerpt','content','meta_tags','description','interpretation','ai_summary','retrieval_text','text'].find(field=>typeof row[field]==='string'&&row[field].trim())||'';
   const isGalaxy=Boolean(row.uid);
-  const body=bodyField?decodeCultureText(row[bodyField]):(isGalaxy?'':text);
+  const isMedia=Boolean(row.media_id);
+  const mediaMetadata=[
+    row.meta_tags,
+    row.source_place?('地點：'+row.source_place):'',
+    row.media_type?('類型：'+row.media_type):'',
+    row.source_native_id?('來源識別：'+row.source_native_id):''
+  ].map(value=>decodeCultureText(value||'').trim()).filter(Boolean).join(' · ');
+  const body=isMedia
+    ?(mediaMetadata||(bodyField?decodeCultureText(row[bodyField]):text))
+    :(bodyField?decodeCultureText(row[bodyField]):(isGalaxy?'':text));
   const identity=row.media_id||row.uid||row.song_id||row.rune_id||row.id;
   const scope=row.scope_id||scopeId;
   const resourceType=(row.uid)?'galaxy':row.media_id?'galaxy_media':'';
@@ -58,7 +67,11 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
     snippet:explicitTitle?snippet(body,q):'',bodyText:explicitTitle?String(body):'',
     display:String(row.display||'summary'),scopeId:scope,resourceType,resourceId,settingsKey,settings,
     editableTable,editableIdColumn,editResourceId,editableField,isScopeCard,href,
-    relationLinks:resourceType==='galaxy'?galaxyRelationLinks(scope,row):[],
+    relationLinks:resourceType==='galaxy'
+      ?galaxyRelationLinks(scope,row)
+      :(resourceType==='galaxy_media'&&row.galaxy_link
+        ?[{id:'galaxy:'+row.galaxy_link,label:'所屬文字',href:galaxyIdentityHref(scope,row.galaxy_link)}].filter(link=>link.href)
+        :[]),
     groupKey:resourceType==='galaxy'&&resourceId
       ?'galaxy:'+resourceId
       :(resourceType==='galaxy_media'&&row.galaxy_link?'galaxy:'+row.galaxy_link:'result:'+(identity||title)),
@@ -96,6 +109,7 @@ export default function SearchV2(){
   const account=useNeonAccount();
   const searchParams=useSearchParams();
   const [query,setQuery]=useState('');
+  const [searchMode,setSearchMode]=useState('all');
   const [results,setResults]=useState([]);
   const [status,setStatus]=useState('輸入關鍵字開始搜尋。');
   const [error,setError]=useState('');
@@ -125,9 +139,9 @@ export default function SearchV2(){
     setError('');
     setHasMore(false);
     setResults([]);
-    setStatus(`搜尋「${collection.label}」資料…`);
+    setStatus(searchMode==='media'?'搜尋多媒體資料…':`搜尋「${collection.label}」資料…`);
     try{
-      const search=await searchNeonRows(collection.id,q,{limit:pageSize,offset});
+      const search=await searchNeonRows(collection.id,q,{limit:pageSize,offset,mediaOnly:searchMode==='media'});
       if(id!==searchId.current)return;
 
       const authorIds=search.rows
@@ -177,7 +191,7 @@ export default function SearchV2(){
       setTotalCount(Number(search.totalCount||0));
       setHasMore(Boolean(search.hasMore));
       const partial=search.failures?.length?`（${search.failures.length} 張非必要資料表暫時無法查詢）`:'';
-      setStatus(`「${collection.label}」搜尋「${q}」，共 ${Number(search.totalCount||0).toLocaleString()} 筆。${partial}`);
+      setStatus(`${searchMode==='media'?'多媒體':'「'+collection.label+'」'}搜尋「${q}」，共 ${Number(search.totalCount||0).toLocaleString()} 筆。${partial}`);
     }catch(exception){
       if(id!==searchId.current)return;
       setError(featureDataErrorMessage(exception));
@@ -323,9 +337,13 @@ export default function SearchV2(){
     subtitle="跨文字、音樂、多媒體、符文、脈絡與知識搜尋。"
     description={<p>輸入關鍵字，從文字、音樂、圖片、影音、符文與文件中找出相關內容。</p>}
   >
+    <div className="scope-v2-tabs" role="group" aria-label="搜尋模式">
+      <button type="button" aria-pressed={searchMode==='all'} onClick={()=>{setSearchMode('all');setResults([]);setStatus('輸入關鍵字開始搜尋。');}}>全部搜尋</button>
+      <button type="button" aria-pressed={searchMode==='media'} onClick={()=>{setSearchMode('media');setResults([]);setStatus('輸入多媒體關鍵字、類型、地點或來源識別。');}}>多媒體搜尋</button>
+    </div>
     <form className="scope-v2-search-form" onSubmit={runSearch}>
-      <label htmlFor="scope-search-query">你想找什麼？</label>
-      <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder="輸入關鍵字、作品名稱或文字" aria-label="你想找什麼？"/>
+      <label htmlFor="scope-search-query">{searchMode==='media'?'找多媒體':'你想找什麼？'}</label>
+      <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder={searchMode==='media'?'搜尋圖片、影音、URL、Meta Tag、地點或來源識別':'輸入關鍵字、作品名稱或文字'} aria-label={searchMode==='media'?'多媒體搜尋':'你想找什麼？'}/>
       <button type="submit">搜尋</button>
     </form>
     <p className="scope-v2-status">{status}</p>
