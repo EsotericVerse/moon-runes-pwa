@@ -107,7 +107,7 @@ export async function putNeonRecord(record){
     updated_at:row.updated_at
   };
   const rows=await upsertNeonRows('api.user_records',[dbRow],{
-    conflict:'id',
+    conflict:'owner_id,id',
     returning:'id,record_type,record_kind,source,record_date,payload,created_at,updated_at,scope_id'
   });
   return dbRecord(rows[0]||dbRow);
@@ -159,7 +159,7 @@ export async function putNeonSetting(key,payload){
     setting_key:settingKey,
     payload,
     updated_at:new Date().toISOString()
-  }],{conflict:'setting_key',returning:'payload'});
+  }],{conflict:'owner_id,setting_key',returning:'payload'});
   return rows[0]?.payload??payload;
 }
 
