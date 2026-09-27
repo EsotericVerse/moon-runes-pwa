@@ -110,7 +110,7 @@ export default function RunesClient(){
       {modeKey==='daily'&&<section className="loc-card" data-draw-reading="daily"><p className="loc-eyebrow">Daily · 每日指示</p><h2>{draw.cards[0].符文名稱} · {draw.directions[0]} · {moonPhase}</h2><RuneSingleReading card={draw.cards[0]} direction={draw.directions[0]}/></section>}
       <MultiReading draw={draw} mode={modeKey} phase={moonPhase}/>
       {modeKey==='ow3gs'&&<section className="loc-card runes-ow3gs-core" data-draw-reading="ow3gs"><p className="loc-eyebrow">OW3gs · 雙模型判讀</p><h2>1–6 因的描述層 → 7–11 果的判定層</h2><p>先讀成因分析，後讀判斷分析，最後套用月相交互。十一張牌不是等權並列。</p><p><strong>1–6 因的描述層：</strong>源兩張、轉兩張、合兩張，共六張；以雙卡與三卡綜合判斷產生問題的可能狀態。</p><p><strong>7–11 果的判定層：</strong>使用五卡的基本規則，共五張；以五卡方式判斷建議如何行動的治理原則。</p><div className="loc-context-list">{draw.cards.slice(6,11).map((card,index)=><div className="loc-context-item" key={`core-${card.編號}-${index}`}><strong>第 {index+7} 張 · {card.符文名稱} · {draw.directions[index+6]}</strong><span>{directionText(card,draw.directions[index+6])||card.符文說明}</span></div>)}</div><p>月相交互最後才套用，只作次要時間修飾。有時可與每日符文交替比照，重點是模型關聯，不是增加抽牌維度的複雜化。</p></section>}
-      {modeKey!=='single'&&modeKey!=='daily'?<section className="loc-card" data-draw-stage="guidance"><p className="loc-eyebrow">Lots · 籤詩</p><h2>籤詩指引</h2><p>{draw.reading?.guidance||'結果未知。'}</p></section>:null}
+      {modeKey!=='single'&&modeKey!=='daily'?<section className="loc-card" data-draw-stage="guidance"><p className="loc-eyebrow">Lots · 籤詩</p><h2>籤詩指引</h2><p>{draw.reading?.guidance||'結果未知。'}</p>{Array.isArray(draw.reading?.advice)?<div className="runes-advice-grid">{draw.reading.advice.map(item=><article key={item.label}><strong>{item.label}</strong><span>{item.text}</span></article>)}</div>:null}</section>:null}
     </>}
   </section></main>;
 }
