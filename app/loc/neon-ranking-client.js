@@ -512,7 +512,14 @@ async function selectScopeRankingRows(scopeId,{rankingType='',navigation={}}={})
     .filter(row=>row.ranking_type===type)
     .filter(row=>matchesNavigation(row,navigation));
   merged.sort((a,b)=>Number(b.rank_value)-Number(a.rank_value)||Number(b.item_count)-Number(a.item_count)||String(a.term).localeCompare(String(b.term)));
-  return {id,type,rows:merged};
+  const parsed=ScopeRankingResponseSchema.parse({
+    rows:merged,
+    offset:0,
+    limit:Math.max(1,merged.length||1),
+    hasMore:false,
+    types:[type]
+  });
+  return {id,type,rows:parsed.rows};
 }
 
 export async function selectScopeRankingAll(scopeId,{rankingType='',navigation={}}={}){
