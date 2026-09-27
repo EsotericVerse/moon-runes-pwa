@@ -86,8 +86,7 @@ export async function selectAuthorPeriodWorkSources({startDate,endDate=null}={})
   const result=await selectSourceWeekly({
     scopeId:'lo3rwang',
     startDate,
-    endDate:endDate||'',
-    limit:10000
+    endDate:endDate||''
   });
   const groups=new Map();
   for(const row of result.rows){
@@ -288,8 +287,7 @@ export async function selectScopeClassificationBuckets(scopeId,{startDate,endDat
     const result=await selectSourceWeekly({
       scopeId:'lo3rwang',
       startDate,
-      endDate:endDate||'',
-      limit:10000
+      endDate:endDate||''
     });
     const maxima=new Map();
     let globalMaximum=0;
