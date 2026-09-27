@@ -136,7 +136,7 @@ function buildSuggestions({runes,totalDays,totalDraws}){
         type:'frequency',
         rune:item.name,
         level:item.days_count>=4||dayRatio>=0.7?'high':'notice',
-        text:\`${item.name}在這段期間出現 ${item.count} 次、跨 ${item.days_count} 天，出現密度較高，可留意這個主題是否反覆出現。\`
+        text:`${item.name}在這段期間出現 ${item.count} 次、跨 ${item.days_count} 天，出現密度較高，可留意這個主題是否反覆出現。`
       });
     }
   }
@@ -146,7 +146,7 @@ function buildSuggestions({runes,totalDays,totalDraws}){
       type:'direction',
       rune:item.name,
       level:item.path.length>=3?'high':'notice',
-      text:\`${item.name}的位向由 ${item.from} 變為 ${item.to}，期間路徑為 ${item.path.join(' → ')}；同一主題的方向有變化，可回看前後紀錄。\`
+      text:`${item.name}的位向由 ${item.from} 變為 ${item.to}，期間路徑為 ${item.path.join(' → ')}；同一主題的方向有變化，可回看前後紀錄。`
     });
   }
 
