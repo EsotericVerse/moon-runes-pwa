@@ -4,7 +4,6 @@ const base=existsSync('out')?'out':'.';
 const required=[
   'pics/LOC-FrameworkPic.png',
   'pics/LunaRunes.jpg',
-  'pics/LOC-structure.png',
   'assets/lunarunes/reference/loc_runes_66_overview.jpg',
   'assets/lunarunes/cards/66_命.png',
   'assets/site/icons/icon-192x192.png',

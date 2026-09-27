@@ -23,7 +23,6 @@ const publicPics=[
   '09_specia.jpg',
   'LOC-FrameworkPic.png',
   'LOC-PicAll.png',
-  'LOC-structure.png',
   'LunaRunes.jpg',
   'aboutme.png'
 ];
