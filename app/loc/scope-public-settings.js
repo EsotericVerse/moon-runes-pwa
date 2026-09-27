@@ -5,7 +5,7 @@ import {selectNeonRows,updateNeonRows} from './neon-repository';
 const MANAGE_TABLE='silver.manage';
 
 export function databaseScopeId(scope){
-  return scope==='moon-runes'||scope==='lrunes'?'lrunes':scope;
+  return scope==='moon-runes'||scope==='lrunes'?'lunarunes':scope;
 }
 
 function manageIdentity(scope){
