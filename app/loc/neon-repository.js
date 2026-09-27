@@ -17,7 +17,7 @@ const CanonicalTableSchema=z.enum([
   'api.user_records','api.user_settings',
   'silver.manage','silver.resource_visibility',
   'silver.lo3rwang_style',
-  'silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media',
+  'silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_preview','silver.lo3rwang_galaxy_media',
   'silver.lrunes',
   'silver.faq_entries',
 ]);
