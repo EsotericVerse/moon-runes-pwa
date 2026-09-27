@@ -1,4 +1,3 @@
-import {createTextIndex,searchTextIndex} from '../text-engine.mjs';
 import {buildSpreadGuidance} from './spread-guidance.mjs';
 
 export const RUNE_SEMANTIC_STATES=Object.freeze([
@@ -275,24 +274,4 @@ export function resolveSpreadState(cards=[],directions=[],mode=''){
     unknown:spread.unknown
   };
 }
-
-// Daily trend lookup uses the same FlexSearch runtime engine as LOC Search/Culture/Statistics.
-// FlexSearch finds the day-state records; semantic judgment remains the small discrete rule above.
-export function buildDailyStateIndex(daySummaries=[]){
-  const engine=createTextIndex();
-  for(const day of daySummaries){
-    const date=String(day?.date||'').trim();
-    if(!date)continue;
-    const token='d'+date.replaceAll('-','');
-    engine.add(date,`${token} ${day.trend||''} ${day.result||''}`,day);
-  }
-  return engine;
-}
-
-export function findDailyState(engine,date){
-  const token='d'+String(date||'').replaceAll('-','');
-  if(!token||token==='d')return null;
-  return searchTextIndex(engine,token,{limit:1}).rows[0]||null;
-}
-
 export {KNOWN_STATES};
