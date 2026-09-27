@@ -90,27 +90,34 @@ export async function selectAuthorPeriodWorkSources({startDate,endDate=null}={})
   if(!startDate)return [];
   const filters=dateFilters(startDate,endDate);
   const [workRows,mediaRows]=await Promise.all([
-    selectAllRows('silver.lo3rwang_galaxy',{columns:'source_name',filters}),
-    selectAllRows('silver.lo3rwang_galaxy_media',{columns:'source_name',filters})
+    selectAllRows('silver.lo3rwang_galaxy',{columns:'galaxy_id,source_name',filters}),
+    selectAllRows('silver.lo3rwang_galaxy_media',{columns:'media_id,media_link,source_name',filters})
   ]);
-  const counts=new Map();
-  const add=(row,kind)=>{
-    const source=sourceLabel(row.source_name);
-    if(!source)return;
-    const current=counts.get(source)||{item_count:0,work_count:0,media_count:0};
-    current.item_count+=1;
-    if(kind==='media')current.media_count+=1;
-    else current.work_count+=1;
-    counts.set(source,current);
+  const groups=new Map();
+  const ensureSource=source=>{
+    if(!groups.has(source))groups.set(source,{workIds:new Set(),mediaIds:new Set()});
+    return groups.get(source);
   };
-  for(const row of workRows)add(row,'work');
-  for(const row of mediaRows)add(row,'media');
-  return [...counts.entries()].map(([source,count])=>({
+  for(const row of workRows){
+    const source=sourceLabel(row.source_name);
+    if(!source)continue;
+    ensureSource(source).workIds.add(String(row.galaxy_id));
+  }
+  for(const row of mediaRows){
+    const source=sourceLabel(row.source_name);
+    if(!source)continue;
+    const target=ensureSource(source);
+    if(row.media_link)target.workIds.add(String(row.media_link));
+    else target.mediaIds.add(String(row.media_id));
+  }
+  return [...groups.entries()].map(([source,state])=>({
     category_key:`source:${source}`,
     category_type:'source',
     source_name:source,
     display_label:source,
-    ...count
+    item_count:state.workIds.size+state.mediaIds.size,
+    work_count:state.workIds.size,
+    media_count:state.mediaIds.size
   })).sort((a,b)=>b.item_count-a.item_count||a.display_label.localeCompare(b.display_label));
 }
 
@@ -242,12 +249,30 @@ async function selectScopePeriodContentRows(scopeId,{startDate,endDate}={}){
   ];
 }
 
+function canonicalSourceWorks(rows=[]){
+  const groups=new Map();
+  for(const row of rows){
+    const source=String(row?.source_name||'').trim();
+    if(!source)continue;
+    const isMedia=String(row?.record_type||'')==='galaxy_media'||Boolean(row?.media_id);
+    const key=isMedia
+      ?String(row?.media_link||row?.media_id||'')
+      :String(row?.galaxy_id||row?.record_id||'');
+    if(!key)continue;
+    const existing=groups.get(key);
+    if(!existing||(!isMedia&&String(existing?.record_type||'')==='galaxy_media')){
+      groups.set(key,{...row,source_name:source});
+    }
+  }
+  return [...groups.values()];
+}
+
 export async function selectScopeClassificationBuckets(scopeId,{startDate,endDate,dimension='source',styleLevel='label'}={}){
   const runtimeId=runtimeScopeId(scopeId);
   if(dimension==='source'&&runtimeId==='lunarunes')return [];
   const rows=await selectScopePeriodContentRows(runtimeId,{startDate,endDate});
   if(!rows.length)return [];
-  let prepared=rows;
+  let prepared=dimension==='source'?canonicalSourceWorks(rows):rows;
   let field='source_name';
   if(dimension==='style'){
     prepared=await classifyStyleRows(rows);
