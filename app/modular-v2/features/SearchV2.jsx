@@ -29,11 +29,12 @@ function resultKey(scope,type,id){return String(scope)+':'+String(type)+':'+Stri
 function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
   const text=rowText(row);
   const excerpt=decodeCultureText(row.excerpt||'').trim();
-  const explicitTitle=row.title||row.name||row.display_title||row.label||row.rune_name||row.context_name||row.song_id||row.id||'';
+  const explicitTitle=decodeCultureText(row.title||row.name||row.display_title||row.label||row.rune_name||row.context_name||row.song_id||row.id||'').trim();
   const title=explicitTitle||snippet(excerpt||source,q)||source;
   const bodyField=['summary','display_text','excerpt','content','meta_tags','description','interpretation','ai_summary','retrieval_text','text'].find(field=>typeof row[field]==='string'&&row[field].trim())||'';
   const isGalaxy=Boolean(row.uid);
   const isMedia=Boolean(row.media_id);
+  const displaySource=isGalaxy&&row.source_name?String(row.source_name):source;
   const mediaMetadata=[
     row.meta_tags,
     row.source_place?('地點：'+row.source_place):'',
@@ -62,7 +63,7 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
   const href=isScopeCard?scopeHrefV2(scope):(row.url||row.href||row.suno_url||'');
   return {
     key:identity?source+'-'+identity:source+'-'+title+'-'+String(body).slice(0,40),
-    source,title:String(title),
+    source:displaySource,title:String(title),
     date:row.date||row.createtime||row.time_date||row.record_date||row.UpdateTime||row.updated_at||'',
     snippet:explicitTitle?snippet(body,q):'',bodyText:explicitTitle?String(body):'',
     display:String(row.display||'summary'),scopeId:scope,resourceType,resourceId,settingsKey,settings,
