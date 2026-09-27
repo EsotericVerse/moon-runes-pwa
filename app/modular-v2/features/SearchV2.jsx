@@ -13,7 +13,6 @@ import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import {scopeHrefV2} from '../scope-registry.v2';
 import {featureDataErrorMessage} from '../feature-data-state.v2';
 import ContentEditorV2 from '../ContentEditorV2';
-import {selectGalaxySummaries} from '../../loc/aggregate-query';
 import {decodeCultureText} from '../modules/culture-timeline/culture-timeline-model.mjs';
 
 const norm=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
@@ -31,7 +30,8 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
   const explicitTitle=row.title||row.name||row.display_title||row.label||row.rune_name||row.context_name||row.song_id||row.id||'';
   const title=explicitTitle||snippet(excerpt||source,q)||source;
   const bodyField=['summary','display_text','excerpt','content','meta_tags','description','interpretation','ai_summary','retrieval_text','text'].find(field=>typeof row[field]==='string'&&row[field].trim())||'';
-  const body=bodyField?decodeCultureText(row[bodyField]):text;
+  const isGalaxy=Boolean(row.uid);
+  const body=bodyField?decodeCultureText(row[bodyField]):(isGalaxy?'':text);
   const identity=row.media_id||row.uid||row.song_id||row.rune_id||row.id;
   const scope=row.scope_id||scopeId;
   const resourceType=(row.uid)?'galaxy':row.media_id?'galaxy_media':'';
@@ -108,6 +108,10 @@ export default function SearchV2(){
   const [editDraft,setEditDraft]=useState(null);
   const [editBusy,setEditBusy]=useState(false);
   const [editError,setEditError]=useState('');
+  const [fullTextKey,setFullTextKey]=useState('');
+  const [fullText,setFullText]=useState('');
+  const [fullTextError,setFullTextError]=useState('');
+  const [fullTextLoading,setFullTextLoading]=useState(false);
   const searchId=useRef(0);
   const matchedQueryRef=useRef('');
   const visibilityRef=useRef(new Map());
@@ -128,17 +132,7 @@ export default function SearchV2(){
       const search=await searchNeonRows(collection.id,q,{limit:pageSize,offset});
       if(id!==searchId.current)return;
 
-      const authorIds=search.rows
-        .map(({row})=>row?.scope_id==='lo3rwang'&&row?.uid?String(row.uid):'')
-        .filter(Boolean);
-      let summaries=[];
-      try{summaries=await selectGalaxySummaries(authorIds);}catch{}
-      const summaryMap=new Map(summaries.map(item=>[String(item.uid),item]));
-      const searchRows=search.rows.map(item=>{
-        const row=item.row||{};
-        const summary=row.uid?summaryMap.get(String(row.uid)):null;
-        return summary?{...item,row:{...row,title:row.title||summary.title||'',excerpt:summary.excerpt||''}}:item;
-      });
+      const searchRows=search.rows;
 
       matchedQueryRef.current=q;
       const pageResources=searchRows.map(({row})=>{
@@ -188,6 +182,34 @@ export default function SearchV2(){
 
 
 
+  async function toggleFullText(result){
+    if(fullTextKey===result.key){
+      setFullTextKey('');
+      setFullText('');
+      setFullTextError('');
+      return;
+    }
+    if(result.resourceType!=='galaxy'||!result.editableTable)return;
+    setFullTextKey(result.key);
+    setFullText('');
+    setFullTextError('');
+    setFullTextLoading(true);
+    try{
+      const runeScope=result.scopeId==='lrunes'||result.scopeId==='lunarunes';
+      const fullRow=await selectNeonRowById(result.editableTable,{
+        idColumn:result.editableIdColumn,
+        id:result.editResourceId||result.resourceId,
+        columns:runeScope?'record_id,content':'uid,content'
+      });
+      if(!fullRow)throw new Error('找不到全文資料。');
+      setFullText(String(fullRow.content||''));
+    }catch(exception){
+      setFullTextError(String(exception?.message||exception||'全文載入失敗。'));
+    }finally{
+      setFullTextLoading(false);
+    }
+  }
+
   async function startEditing(result){
     setEditingKey(result.key);setEditError('');
     setEditDraft(null);
@@ -233,7 +255,8 @@ export default function SearchV2(){
         visibilityRef.current.set(result.settingsKey,record);
         settings=record;
       }
-      setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:editDraft.title,bodyText:editDraft.body,snippet:snippet(editDraft.body,matchedQueryRef.current),settings}));
+      setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:editDraft.title,bodyText:'',snippet:'',settings}));
+      if(fullTextKey===result.key)setFullText(editDraft.body);
       setEditingKey('');setEditDraft(null);
     }catch(exception){setEditError(String(exception?.message||exception||'儲存失敗。'))}
     finally{setEditBusy(false)}
@@ -275,6 +298,13 @@ export default function SearchV2(){
           showSource={settings.show_source!==false}
           showLinks={settings.show_link!==false}
         >
+          {row.resourceType==='galaxy'?<div>
+            <button type="button" onClick={()=>toggleFullText(row)} disabled={fullTextLoading&&fullTextKey===row.key}>
+              {fullTextKey===row.key?(fullTextLoading?'載入全文中…':'收合全文'):'查看全文'}
+            </button>
+            {fullTextKey===row.key&&fullTextError?<p className="scope-v2-status scope-v2-error">{fullTextError}</p>:null}
+            {fullTextKey===row.key&&!fullTextLoading&&!fullTextError?<div className="scope-v2-inline-card"><p style={{whiteSpace:'pre-wrap'}}>{fullText||'此作品目前沒有正文。'}</p></div>:null}
+          </div>:null}
           {editable?<p><button type="button" onClick={()=>startEditing(row)}>{editingKey===row.key?'編輯中':'編輯'}</button></p>:null}
           {draft?<ContentEditorV2
             draft={draft}
