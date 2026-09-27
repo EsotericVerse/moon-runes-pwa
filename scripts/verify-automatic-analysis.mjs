@@ -40,10 +40,16 @@ assert.ok(change.suggestions.some(item=>item.type==='persistent'&&item.term==='�
 const governance=analyzeKeywordGovernance(
   [{term:'文化',item_count:6}],
   [{term:'文化',item_count:2},{term:'舊詞',item_count:4}],
-  {candidateRows:[{term:'新候選',item_count:5}],minimumCount:2}
+  {
+    candidateRows:[{term:'新候選',item_count:5}],
+    catalogRows:[{term:'文化'},{term:'舊詞'},{term:'零命中'}],
+    minimumCount:2
+  }
 );
 assert.ok(governance.suggestions.some(item=>item.governance==='raise_candidate'&&item.term==='文化'));
 assert.ok(governance.suggestions.some(item=>item.governance==='reduce_candidate'&&item.term==='舊詞'));
+assert.ok(governance.suggestions.some(item=>item.governance==='reduce_candidate'&&item.term==='零命中'));
 assert.ok(governance.suggestions.some(item=>item.governance==='add_candidate'&&item.term==='新候選'));
+assert.ok(governance.suggestions.every(item=>!item.text.includes('${')));
 
 console.log('LOC automatic density, distribution, weak-signal and keyword-governance analysis verified.');
