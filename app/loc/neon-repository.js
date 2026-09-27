@@ -2,6 +2,7 @@
 
 import {z} from 'zod';
 import {neonClient} from './neon-client';
+import {UI_PAGE_SIZE,assertSafeSelect,safePageSize,safeRange} from './query-policy';
 
 const TableSchema=z.enum([
   'silver.manage','silver.resource_visibility',
@@ -76,8 +77,9 @@ function throwQueryError(error,table,operation){
 }
 
 export async function selectNeonRows(table,{
-  columns='*',filters=[],orFilter='',orders=[],limit=20,offset=0,range=null,count=null
+  columns='*',filters=[],orFilter='',orders=[],limit=UI_PAGE_SIZE,offset=0,range=null,count=null
 }={}){
+  assertSafeSelect({table,columns,filters,limit,range});
   let query=relation(table).select(columns,count?{count}:undefined);
   query=applyFilters(query,filters);
   if(orFilter){
@@ -89,12 +91,10 @@ export async function selectNeonRows(table,{
     query=query.order(item.column,{ascending:item.ascending??true,nullsFirst:item.nullsFirst});
   }
   if(Array.isArray(range)&&range.length===2){
-    const start=Math.max(0,Math.floor(Number(range[0])||0));
-    const requestedEnd=Math.max(start,Math.floor(Number(range[1])||start));
-    const end=Math.min(requestedEnd,start+999);
+    const [start,end]=safeRange(range);
     query=query.range(start,end);
   }else if(Number.isFinite(limit)){
-    const size=Math.max(0,Math.min(1000,Math.floor(limit)));
+    const size=safePageSize(limit);
     const start=Math.max(0,Math.floor(Number(offset)||0));
     query=size?query.range(start,start+size-1):query.limit(0);
   }
