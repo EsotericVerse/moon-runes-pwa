@@ -1,7 +1,7 @@
 'use client';
 
 import {z} from 'zod';
-import {neonAuthClient,neonPublicClient} from './neon-client';
+import {neonAuthClient,neonPublicReadUrl} from './neon-client';
 import {
   UI_PAGE_SIZE,
   assertSafeSelect,assertHeavyBatchSelect,assertCatalogSelect,
@@ -74,8 +74,24 @@ function relation(table){
   const parsed=TableSchema.safeParse(table);
   if(!parsed.success)throw new NeonRepositoryError('Neon table is not in the shared repository allowlist',{table:String(table),code:'NEON_TABLE_NOT_ALLOWED'});
   const [schema,name]=parsed.data.split('.');
-  const client=parsed.data.startsWith('api.user_')?authenticatedClient(parsed.data):neonPublicClient;
-  return client.schema(schema).from(name);
+  return authenticatedClient(parsed.data).schema(schema).from(name);
+}
+
+async function executePublicSelect(table,{
+  columns='*',filters=[],orders=[],limit=UI_PAGE_SIZE,offset=0,range=null,count=null
+}={}){
+  const response=await fetch(neonPublicReadUrl(),{
+    method:'POST',
+    headers:{'content-type':'application/json'},
+    body:JSON.stringify({operation:'select',table,columns,filters,orders,limit,offset,range,count})
+  });
+  const payload=await response.json().catch(()=>null);
+  if(!response.ok||payload?.error){
+    throw new NeonRepositoryError(payload?.error?.message||`Public Neon read failed (${response.status})`,{
+      table,code:'NEON_PUBLIC_READ_FAILED'
+    });
+  }
+  return {data:Array.isArray(payload?.data)?payload.data:[],count:payload?.count??null,error:null};
 }
 
 function applyFilters(query,filters=[]){
@@ -107,26 +123,16 @@ async function executeSelect(table,{
   columns='*',filters=[],orFilter='',orders=[],limit=UI_PAGE_SIZE,offset=0,range=null,count=null
 }={},allowHeavyBatch=false){
   if(!allowHeavyBatch)assertSafeSelect({table,columns,filters,limit,range});
-  let query=relation(table).select(columns,count?{count}:undefined);
-  query=applyFilters(query,filters);
-  if(orFilter){
-    const expression=z.string().min(1).max(12000).parse(orFilter);
-    query=query.or(expression);
-  }
-  for(const order of orders){
-    const item=OrderSchema.parse(order);
-    query=query.order(item.column,{ascending:item.ascending??true,nullsFirst:item.nullsFirst});
-  }
-  if(Array.isArray(range)&&range.length===2){
-    const [start,end]=safeRange(range);
-    query=query.range(start,end);
-  }else if(Number.isFinite(limit)){
-    const size=safePageSize(limit);
-    const start=Math.max(0,Math.floor(Number(offset)||0));
-    query=size?query.range(start,start+size-1):query.limit(0);
-  }
-  const result=await runNeonIo(()=>query);
-  throwQueryError(result.error,table,'SELECT');
+  if(orFilter)throw new NeonRepositoryError('Public read OR filter is not supported by the current safe read endpoint',{table,code:'NEON_PUBLIC_OR_FILTER_BLOCKED'});
+  const result=await runNeonIo(()=>executePublicSelect(table,{
+    columns,
+    filters:filters.map(raw=>FilterSchema.parse(raw)),
+    orders:orders.map(raw=>OrderSchema.parse(raw)),
+    limit:Array.isArray(range)?null:safePageSize(limit),
+    offset:Math.max(0,Math.floor(Number(offset)||0)),
+    range:Array.isArray(range)&&range.length===2?safeRange(range):null,
+    count
+  }));
   return {rows:parseRows(result.data,table),count:result.count??null};
 }
 
