@@ -52,7 +52,7 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
   return {
     key:identity?source+'-'+identity:source+'-'+title+'-'+String(body).slice(0,40),
     source,title:String(title),
-    date:row.date||row.createtime||row.created_date||row.create_time||row.created_at||row.update_time||row.updated_at||'',
+    date:row.date||row.createtime||row.time_date||row.record_date||row.updated_at||'',
     snippet:explicitTitle?snippet(body,q):'',bodyText:explicitTitle?String(body):'',
     display:String(row.display||'summary'),scopeId:scope,resourceType,resourceId,settingsKey,settings,
     editableTable,editableIdColumn,editResourceId,editableField,isScopeCard,href,
