@@ -2,6 +2,7 @@ import {ScopeRankingResponseSchema} from './scope-feature-contracts';
 import {selectNeonAllRows,selectNeonCatalog} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
 import {classifyStyleRows,processStyleTableRows} from './style-classifier';
+import {selectSourceCatalog,selectSourceWeekly} from './aggregate-query';
 
 const RANKING_TYPES=Object.freeze({
   loc:Object.freeze(['keyword','source','style','style_group']),
@@ -43,13 +44,42 @@ async function authorKeywords(){
 
 async function authorSources(period){
   const range=await resolvePeriod('lo3rwang',period);
-  const filters=dateFilters(range);
-  const [textsResult,mediaResult]=await Promise.all([
-    selectNeonAllRows('silver.lo3rwang_galaxy',{columns:'source_name,created_at',filters}),
-    selectNeonAllRows('silver.lo3rwang_galaxy_media',{columns:'source_name,created_at',filters})
-  ]);
   const map=new Map();
-  for(const row of [...textsResult.rows,...mediaResult.rows])increment(map,'source',row.source_name,{source:'lo3rwang',period:period||'all'});
+  if(!range){
+    const result=await selectSourceCatalog({scopeId:'lo3rwang',limit:1000});
+    for(const row of result.rows){
+      const value=String(row.source_name||'').trim();
+      if(!value)continue;
+      map.set('source|'+value,{
+        ranking_key:'source|'+value,
+        ranking_type:'source',
+        term:value,
+        rank_value:Number(row.work_count)||0,
+        item_count:Number(row.work_count)||0,
+        source:'lo3rwang',
+        period:period||'all'
+      });
+    }
+    return [...map.values()];
+  }
+  const result=await selectSourceWeekly({
+    scopeId:'lo3rwang',
+    startDate:range.start_date||'',
+    endDate:range.end_date||'',
+    limit:10000
+  });
+  for(const row of result.rows){
+    const value=String(row.source_name||'').trim();
+    if(!value)continue;
+    const key='source|'+value;
+    const current=map.get(key)||{
+      ranking_key:key,ranking_type:'source',term:value,rank_value:0,item_count:0,
+      source:'lo3rwang',period:period||'all'
+    };
+    current.item_count+=Number(row.work_count)||0;
+    current.rank_value=current.item_count;
+    map.set(key,current);
+  }
   return [...map.values()];
 }
 
