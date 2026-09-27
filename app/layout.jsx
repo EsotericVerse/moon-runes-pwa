@@ -5,7 +5,7 @@ import QueryProvider from './QueryProvider';
 
 export const metadata = {
   title: 'LOC 月典',
-  description: 'LOC Modelized Language Framework application shell.'
+  description: 'LOC Language Architecture Framework application shell.'
 };
 
 export default function RootLayout({ children }) {
