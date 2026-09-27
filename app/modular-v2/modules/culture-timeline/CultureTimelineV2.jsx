@@ -35,7 +35,7 @@ function timelineRows(items,labelOf,focus){
       id:String(item?.id||item?.entry_id||item?.era_id||item?.period_id||item?.version||index),
       content:labelOf(item,index),
       title:[
-        item?.description,item?.milestone,item?.anchor_role,item?.anchor_type,
+        item?.title,item?.description,item?.milestone,item?.anchor_role,item?.anchor_type,
         openStart?'A 之前／open start':'',openEnd?'A 之後／open end':'',
         item?.date_status==='year_only'?'僅年份':'',
         item?.is_primary_anchor?'主要錨點':'',item?.is_rc_zone?'RC 區':''
