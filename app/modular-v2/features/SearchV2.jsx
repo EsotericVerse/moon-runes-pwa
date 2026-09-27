@@ -38,8 +38,14 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
   const resourceId=row.galaxy_id||row.media_id||'';
   const settingsKey=resourceType&&resourceId?resultKey(scope,resourceType,resourceId):'';
   const settings=settingsMap.get(settingsKey)||null;
-  const editableTable=resourceType==='galaxy'?'silver.lo3rwang_galaxy':resourceType==='galaxy_media'?'silver.lo3rwang_galaxy_media':'';
-  const editableIdColumn=resourceType==='galaxy'?'galaxy_id':resourceType==='galaxy_media'?'media_id':'';
+  const runeScope=scope==='lrunes'||scope==='lunarunes';
+  const editableTable=resourceType
+    ?(runeScope?'silver.lrunes':resourceType==='galaxy'?'silver.lo3rwang_galaxy':'silver.lo3rwang_galaxy_media')
+    :'';
+  const editableIdColumn=resourceType
+    ?(runeScope?'record_id':resourceType==='galaxy'?'galaxy_id':'media_id')
+    :'';
+  const editResourceId=runeScope?String(row.record_id||''):resourceId;
   const editableField=resourceType==='galaxy'?'content':resourceType==='galaxy_media'?'meta_tags':'';
   const isScopeCard=Boolean(row.scope_card);
   const href=isScopeCard?scopeHrefV2(scope):(row.url||row.href||row.suno_url||(row.scope_id?scopeHrefV2(row.scope_id,'statics'):''));
@@ -49,7 +55,7 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
     date:row.date||row.created_date||row.create_time||row.created_at||row.update_time||row.updated_at||'',
     snippet:snippet(body,q),bodyText:String(body),styleTags:String(row.style_tags||row.meta_tags||''),
     display:String(row.display||'summary'),scopeId:scope,resourceType,resourceId,settingsKey,settings,
-    editableTable,editableIdColumn,editableField,isScopeCard,href,
+    editableTable,editableIdColumn,editResourceId,editableField,isScopeCard,href,
     sourceId:row.source_id||row.media_link||'',
     targetId:row.target_id||'',
     refId:row.ref_id||'',
@@ -181,7 +187,7 @@ export default function SearchV2(){
       const [fullRow,auditResult]=await Promise.all([
         selectNeonRowById(result.editableTable,{
           idColumn:result.editableIdColumn,
-          id:result.resourceId,
+          id:result.editResourceId||result.resourceId,
           columns:contentColumns
         }),
         selectNeonRows('silver.manage',{
@@ -217,7 +223,7 @@ export default function SearchV2(){
       if(!account.canManageScopeSync(result.scopeId))throw new Error('沒有修改此內容的權限。');
       const contentPatch={title:editDraft.title,[result.editableField]:editDraft.body};
       if(result.resourceType==='galaxy_media')contentPatch.style_tags=String(editDraft.styleTags||'').trim()||'風格未知';
-      await updateNeonRows(result.editableTable,contentPatch,{filters:[{column:result.editableIdColumn,operator:'eq',value:result.resourceId},{column:'scope_id',operator:'eq',value:result.scopeId}]});
+      await updateNeonRows(result.editableTable,contentPatch,{filters:[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId},{column:'scope_id',operator:'eq',value:result.scopeId}]});
       let settings=result.settings||null;
       if(account.canManageScopeSync(result.scopeId)){
         const record=await saveResourceVisibility({
