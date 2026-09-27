@@ -5,7 +5,7 @@ import {selectNeonAllRows} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
 import {decodeCultureText,formatCultureDateTime,groupWorksByWeek} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
 import {classifyStyleRows,processStyleTableRows} from './style-classifier';
-import {selectCanonicalWorksPage,selectSourceWeekly} from './aggregate-query';
+import {selectGalaxyPage,selectSourceWeekly} from './aggregate-query';
 
 function sourceLabel(value){return String(value||'').trim();}
 function runtimeScopeId(scopeId){return String(scopeId||'')==='lrunes'?'lunarunes':String(scopeId||'');}
@@ -42,9 +42,9 @@ function timelineItems(rows){
   }).filter(row=>row.start_date||(row.open_start&&row.end_date))
     .sort((a,b)=>String(a.start_date||a.end_date).localeCompare(String(b.start_date||b.end_date)));
 }
-function dateFilters(startDate,endDate){
-  const filters=[{column:'created_at',operator:'gte',value:`${String(startDate).slice(0,10)}T00:00:00+08:00`}];
-  if(endDate)filters.push({column:'created_at',operator:'lte',value:String(endDate).slice(0,10)+'T23:59:59.999+08:00'});
+function dateFilters(startDate,endDate,column='created_at'){
+  const filters=[{column,operator:'gte',value:`${String(startDate).slice(0,10)}T00:00:00+08:00`}];
+  if(endDate)filters.push({column,operator:'lte',value:String(endDate).slice(0,10)+'T23:59:59.999+08:00'});
   return filters;
 }
 function withoutContent(row){
@@ -146,7 +146,7 @@ export async function selectAuthorPeriodWorkSources({startDate,endDate=null}={})
 }
 
 function mediaMetadataDescription(row){
-  const fields=[['標題',row.title],['類型',row.media_type],['來源',row.source_name],['曲風分類',row.style_tags],['補充描述',row.meta_tags]];
+  const fields=[['標題',row.title],['類型',row.media_type],['來源',row.source_name],['Meta Tag',row.meta_tags]];
   return fields.map(([label,value])=>{const text=decodeCultureText(value||'').trim();return text?`${label}：${text}`:'';}).filter(Boolean).join(' · ')||'沒有可讀的 metadata 文字';
 }
 
@@ -154,102 +154,60 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
   if(!startDate||!sourceName)return {rows:[],hasMore:false,nextOffset:null,totalCount:0};
   const pageSize=Math.max(1,Math.floor(Number(limit)||20));
   const offset=Math.max(0,Math.floor(Number(pageOffset)||0));
-  const page=await selectCanonicalWorksPage({
-    scopeId:'lo3rwang',
-    sourceName:String(sourceName),
-    startDate,
-    endDate,
-    limit:pageSize,
-    offset
-  });
+  const page=await selectGalaxyPage({sourceName:String(sourceName),startDate,endDate,limit:pageSize,offset});
   if(!page.rows.length)return {rows:[],hasMore:false,nextOffset:null,totalCount:page.totalCount};
 
-  const textIds=page.rows.filter(row=>row.work_type==='galaxy').map(row=>String(row.work_id));
-  const mediaIds=page.rows.filter(row=>row.work_type==='media').map(row=>String(row.work_id));
-  const [textResult,standaloneMediaResult,linkedMediaResult]=await Promise.all([
-    textIds.length?selectNeonAllRows('silver.lo3rwang_galaxy',{
-      columns:'galaxy_id,category,content_type,source_name,source_type,source_role,title,meta_tags,content_hash,created_at,source_ref,url,source_id,target_id,ref_id',
-      filters:[{column:'galaxy_id',operator:'in',value:textIds}]
-    }):Promise.resolve({rows:[]}),
-    mediaIds.length?selectNeonAllRows('silver.lo3rwang_galaxy_media',{
-      columns:'media_id,media_link,source_name,source_native_id,media_type,title,url,meta_tags,style_tags,created_at',
-      filters:[{column:'media_id',operator:'in',value:mediaIds}]
-    }):Promise.resolve({rows:[]}),
-    textIds.length?selectNeonAllRows('silver.lo3rwang_galaxy_media',{
-      columns:'media_id,media_link,source_name,source_native_id,media_type,title,url,meta_tags,style_tags,created_at',
-      filters:[{column:'media_link',operator:'in',value:textIds}]
-    }):Promise.resolve({rows:[]})
+  const galaxyIds=page.rows.map(row=>String(row.galaxy_id));
+  const [textResult,linkedMediaResult]=await Promise.all([
+    selectNeonAllRows('silver.lo3rwang_galaxy',{
+      columns:'galaxy_id,category,content_type,source_name,source_role,title,meta_tags,content_hash,created_at,source_ref,url,source_id,target_id,ref_id',
+      filters:[{column:'galaxy_id',operator:'in',value:galaxyIds}]
+    }),
+    selectNeonAllRows('silver.lo3rwang_galaxy_media',{
+      columns:'media_id,galaxy_link,source_name,source_native_id,media_type,title,url,meta_tags,create_time',
+      filters:[{column:'galaxy_link',operator:'in',value:galaxyIds}]
+    })
   ]);
 
   const textById=new Map(textResult.rows.map(row=>[String(row.galaxy_id),row]));
-  const mediaById=new Map(standaloneMediaResult.rows.map(row=>[String(row.media_id),row]));
   const linkedMediaByGalaxy=new Map();
   for(const media of linkedMediaResult.rows){
-    const key=String(media.media_link||'');
+    const key=String(media.galaxy_link||'');
     if(!key)continue;
     if(!linkedMediaByGalaxy.has(key))linkedMediaByGalaxy.set(key,[]);
     linkedMediaByGalaxy.get(key).push(media);
   }
   const rows=page.rows.map(item=>{
-    if(item.work_type==='galaxy'){
-      const row=textById.get(String(item.work_id));
-      if(!row)return null;
-      const linkedMedia=linkedMediaByGalaxy.get(String(row.galaxy_id))||[];
-      const links=[];
-      if(row.url&&/^https?:\/\//i.test(String(row.url)))links.push({id:'text:'+row.galaxy_id,href:row.url,label:'查看來源'});
-      linkedMedia.forEach((media,index)=>{
-        if(media.url&&/^https?:\/\//i.test(String(media.url)))links.push({
-          id:'media:'+media.media_id,href:media.url,label:`媒體連結 ${index+1}`
-        });
-      });
-      const canonicalTitle=decodeCultureText(item.title||row.title||'').trim();
-      const excerpt=decodeCultureText(item.excerpt||'').trim();
-      return {
-        key:'galaxy:'+row.galaxy_id,
-        galaxy_id:row.galaxy_id,
-        source_name:row.source_name,
-        source_type:row.source_type,
-        source_role:row.source_role,
-        title:canonicalTitle||excerpt||row.source_name||row.galaxy_id,
-        description:canonicalTitle?excerpt:linkedMedia.map(mediaMetadataDescription).filter(Boolean).join(' ｜ '),
-        created_at:row.created_at,
-        start_date:row.created_at,
-        date:row.created_at,
-        display_date:formatCultureDateTime(row.created_at),
-        entry_id:row.galaxy_id,
-        entry_type:'work',
-        source_id:row.source_id||null,
-        target_id:row.target_id||null,
-        ref_id:row.ref_id||null,
-        source_ref:row.source_ref||null,
-        url:row.url||null,
-        links,
-        group_label:sourceLabel(row.source_name),
-        scope_id:'lo3rwang'
-      };
-    }
-    const row=mediaById.get(String(item.work_id));
+    const row=textById.get(String(item.galaxy_id));
     if(!row)return null;
+    const linkedMedia=linkedMediaByGalaxy.get(String(row.galaxy_id))||[];
+    const links=[];
+    if(row.url&&/^https?:\/\//i.test(String(row.url)))links.push({id:'text:'+row.galaxy_id,href:row.url,label:'查看來源'});
+    linkedMedia.forEach((media,index)=>{
+      if(media.url&&/^https?:\/\//i.test(String(media.url)))links.push({id:'media:'+media.media_id,href:media.url,label:`媒體連結 ${index+1}`});
+    });
+    const title=decodeCultureText(item.title||row.title||'').trim();
     return {
-      key:'media:'+row.media_id,
-      galaxy_id:row.media_link||null,
-      media_id:row.media_id,
+      key:'galaxy:'+row.galaxy_id,
+      galaxy_id:row.galaxy_id,
       source_name:row.source_name,
-      title:decodeCultureText(row.title||'').trim()||'多媒體項目',
-      description:mediaMetadataDescription(row),
-      media_metadata_text:mediaMetadataDescription(row),
+      source_role:row.source_role,
+      title:title||row.source_name||row.galaxy_id,
+      description:linkedMedia.map(mediaMetadataDescription).filter(Boolean).join(' ｜ '),
       created_at:row.created_at,
       start_date:row.created_at,
       date:row.created_at,
       display_date:formatCultureDateTime(row.created_at),
-      entry_id:String(row.media_id),
-      entry_type:'work_group',
-      source_id:row.media_link||null,
-      target_id:null,
-      ref_id:null,
+      entry_id:row.galaxy_id,
+      entry_type:'work',
+      source_id:row.source_id||null,
+      target_id:row.target_id||null,
+      ref_id:row.ref_id||null,
+      source_ref:row.source_ref||null,
+      url:row.url||null,
+      links,
       group_label:sourceLabel(row.source_name),
-      scope_id:'lo3rwang',
-      links:row.url&&/^https?:\/\//i.test(String(row.url))?[{id:'media:'+row.media_id,href:row.url,label:'歌曲連結'}]:[]
+      scope_id:'lo3rwang'
     };
   }).filter(Boolean);
 
@@ -278,13 +236,13 @@ async function selectScopePeriodMetadataRows(scopeId,{startDate,endDate}={}){
       filters
     }),
     selectNeonAllRows('silver.lo3rwang_galaxy_media',{
-      columns:'media_id,title,meta_tags,style_tags,source_name,created_at,url,media_link,media_type',
-      filters
+      columns:'media_id,title,meta_tags,source_name,create_time,url,galaxy_link,media_type',
+      filters:dateFilters(startDate,endDate,'create_time')
     })
   ]);
   return [
     ...textsResult.rows.map(row=>({...row,record_type:'galaxy'})),
-    ...mediaResult.rows.map(row=>({...row,record_type:'galaxy_media'}))
+    ...mediaResult.rows.map(row=>({...row,created_at:row.create_time,record_type:'galaxy_media'}))
   ];
 }
 
@@ -312,10 +270,10 @@ async function selectScopeStyleRows(scopeId,{startDate,endDate}={}){
     onClassified:row=>{output.push({...withoutContent(row),record_type:'galaxy'});}
   });
   const mediaResult=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
-    columns:'media_id,title,meta_tags,style_tags,source_name,created_at,url,media_link,media_type',
-    filters
+    columns:'media_id,title,meta_tags,source_name,create_time,url,galaxy_link,media_type',
+    filters:dateFilters(startDate,endDate,'create_time')
   });
-  const mediaClassified=await classifyStyleRows(mediaResult.rows);
+  const mediaClassified=await classifyStyleRows(mediaResult.rows.map(row=>({...row,created_at:row.create_time})));
   output.push(...mediaClassified.map(row=>({...row,record_type:'galaxy_media'})));
   return output;
 }
@@ -327,7 +285,7 @@ function canonicalSourceWorks(rows=[]){
     if(!source)continue;
     const isMedia=String(row?.record_type||'')==='galaxy_media'||Boolean(row?.media_id);
     const key=isMedia
-      ?String(row?.media_link||row?.media_id||'')
+      ?String(row?.galaxy_link||row?.media_link||row?.media_id||'')
       :String(row?.galaxy_id||row?.record_id||'');
     if(!key)continue;
     const existing=groups.get(key);

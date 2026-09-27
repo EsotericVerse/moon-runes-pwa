@@ -55,21 +55,26 @@ function JsonImport({scopeId}){
     if(!selected){setStatus('請先選擇來源。');return;}
     setBusy(true);setStatus('');
     try{
-      const payload=rows.map((row,index)=>({
+      const payload=rows.map(row=>({
         galaxy_id:String(firstValue(row,['galaxy_id','id','post_id','article_id'])||`import:${globalThis.crypto.randomUUID()}`),
         scope_id:'lo3rwang',
-        source:selected,
+        category:String(firstValue(row,['category'])||'other').trim()||'other',
+        content_type:String(firstValue(row,['content_type','type'])||'other').trim()||'other',
+        source_role:String(firstValue(row,['source_role'])||'').trim()||null,
         title:String(firstValue(row,['title','name','subject'])||'').trim()||null,
         content:String(firstValue(row,['content','body','text','message','description'])||'').trim()||null,
+        created_at:iso(firstValue(row,['created_at','create_time','created_time','date','published_at'])),
+        source_native_id:String(firstValue(row,['source_native_id','native_id'])||'').trim()||null,
+        source_ref:String(firstValue(row,['source_ref'])||'').trim()||null,
+        source_place:String(firstValue(row,['source_place','place'])||'').trim()||null,
+        searchable:row?.searchable!==false&&row?.search!==false,
+        meta_tags:String(firstValue(row,['meta_tags'])||'').trim()||null,
         source_id:String(firstValue(row,['source_id'])||'').trim()||null,
         target_id:String(firstValue(row,['target_id'])||'').trim()||null,
         ref_id:String(firstValue(row,['ref_id'])||'').trim()||null,
         url:String(firstValue(row,['url','link','permalink'])||'').trim()||null,
-        search:row?.search!==false,
-        statics:row?.statics!==false,
-        display:String(row?.display||'summary')==='full'?'full':'summary',
-        create_time:iso(firstValue(row,['create_time','created_at','created_time','date','published_at'])),
-        update_time:new Date().toISOString()
+        source_name:selected,
+        source_type:'content'
       })).filter(row=>row.title||row.content||row.url);
       await insertNeonRows('silver.lo3rwang_galaxy',payload);
       setStatus(`已匯入 ${payload.length.toLocaleString()} 筆到來源「${selected}」。`);
@@ -91,7 +96,7 @@ function JsonImport({scopeId}){
 
 function SunoImport({scopeId}){
   const account=useNeonAccount();
-  const [draft,setDraft]=useState({title:'',lyrics:'',url:'',nativeId:'',createdDate:'',playlist:'',stylePrompt:'',metaTags:'',styleTags:'',source_id:'',target_id:'',ref_id:''});
+  const [draft,setDraft]=useState({title:'',lyrics:'',url:'',nativeId:'',createdDate:'',playlist:'',stylePrompt:'',metaTags:'',source_id:'',target_id:'',ref_id:''});
   const [status,setStatus]=useState('');const [busy,setBusy]=useState(false);
   if(scopeId!=='lo3rwang')return null;
   if(!account.canManageScopeSync(scopeId))return null;
@@ -106,21 +111,22 @@ function SunoImport({scopeId}){
       const galaxyId=draft.lyrics.trim()?'suno-lyrics:'+globalThis.crypto.randomUUID():null;
       if(galaxyId){
         await insertNeonRows('silver.lo3rwang_galaxy',[{
-          galaxy_id:galaxyId,scope_id:'lo3rwang',source:'suno',title:draft.title.trim(),content:draft.lyrics.trim(),
+          galaxy_id:galaxyId,scope_id:'lo3rwang',category:'music',content_type:'lyrics',source_role:'lyrics',
+          title:draft.title.trim(),content:draft.lyrics.trim(),
+          created_at:draft.createdDate?new Date(draft.createdDate+'T00:00:00+08:00').toISOString():new Date().toISOString(),
           source_id:draft.source_id.trim()||null,target_id:draft.target_id.trim()||null,ref_id:draft.ref_id.trim()||null,
-          url:draft.url.trim()||null,search:true,statics:true,display:'full',
-          create_time:draft.createdDate?new Date(draft.createdDate+'T00:00:00').toISOString():new Date().toISOString(),
-          update_time:new Date().toISOString()
+          url:draft.url.trim()||null,searchable:true,source_name:'suno',source_type:'content'
         }]);
       }
       await insertNeonRows('silver.lo3rwang_galaxy_media',[{
-        scope_id:'lo3rwang',source_id:galaxyId,source_platform:'suno',
+        galaxy_link:galaxyId,source_name:'suno',
         source_native_id:draft.nativeId.trim()||detectId(draft.url)||null,media_type:'song',
-        title:draft.title.trim(),url:draft.url.trim()||null,created_date:draft.createdDate||null,
+        title:draft.title.trim(),url:draft.url.trim()||null,
         playlist:draft.playlist.trim()||null,style_prompt:draft.stylePrompt.trim()||null,
-        publication_status:'published',meta_tags:draft.metaTags.trim()||null,style_tags:draft.styleTags.trim()||null
+        publication_status:'public',meta_tags:draft.metaTags.trim()||null,
+        create_time:draft.createdDate?new Date(draft.createdDate+'T00:00:00+08:00').toISOString():new Date().toISOString()
       }]);
-      setStatus('Suno 單筆資料已儲存。');setDraft({title:'',lyrics:'',url:'',nativeId:'',createdDate:'',playlist:'',stylePrompt:'',metaTags:'',styleTags:'',source_id:'',target_id:'',ref_id:''});
+      setStatus('Suno 單筆資料已儲存。');setDraft({title:'',lyrics:'',url:'',nativeId:'',createdDate:'',playlist:'',stylePrompt:'',metaTags:'',source_id:'',target_id:'',ref_id:''});
     }catch(error){setStatus(error?.message||'Suno 儲存失敗。');}
     finally{setBusy(false);}
   }
@@ -139,7 +145,6 @@ function SunoImport({scopeId}){
         <label>Playlist<input value={draft.playlist} onChange={e=>change('playlist',e.target.value)}/></label>
         <label>Suno Style<input value={draft.stylePrompt} onChange={e=>change('stylePrompt',e.target.value)}/></label>
         <label>Meta Tags<input value={draft.metaTags} onChange={e=>change('metaTags',e.target.value)}/></label>
-        <label>Style Tags<input value={draft.styleTags} onChange={e=>change('styleTags',e.target.value)}/></label>
       </div>
       <div className="scope-v2-stat-controls">
         <label>source_id<input value={draft.source_id} onChange={e=>change('source_id',e.target.value)}/></label>

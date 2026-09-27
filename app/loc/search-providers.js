@@ -92,9 +92,9 @@ const authorMedia=makeProvider({
   source:'音樂與多媒體',
   scopeId:'lo3rwang',
   idColumn:'media_id',
-  columns:['media_id','scope_id','media_link','source_name','source_native_id','media_type','title','url','meta_tags','style_tags','created_at'],
-  searchFields:['title','meta_tags','style_tags','source_name'],
-  dateColumn:'created_at'
+  columns:['media_id','galaxy_link','source_name','source_native_id','media_type','title','url','meta_tags','create_time'],
+  searchFields:['title','meta_tags','source_name'],
+  dateColumn:'create_time'
 });
 
 const authorTimeline=makeProvider({

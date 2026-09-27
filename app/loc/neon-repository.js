@@ -20,7 +20,6 @@ const TableSchema=z.enum([
   'silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media',
   'silver.lrunes',
   'silver.faq_entries',
-  'silver.v_lo3rwang_canonical_works','silver.v_lo3rwang_source_catalog','silver.v_lo3rwang_source_weekly',
 ]);
 const WritableTableSchema=z.enum([
   'api.user_records','api.user_settings',
@@ -89,25 +88,12 @@ function applyFilters(query,filters=[]){
   return query;
 }
 
-// Keep the shared media row contract aligned with the canonical media table.
-// lrunes has its own media_link/style_tags columns and must not be remapped.
-const MEDIA_COLUMNS={media_link:'galaxy_link',style_tags:'style_prompt'};
 const READ_KEYS={
   'silver.lo3rwang_galaxy':['galaxy_id'],
   'silver.lo3rwang_galaxy_media':['media_id'],
   'silver.lrunes':['record_id'],
-  'silver.manage':['record_id'],
-  'silver.v_lo3rwang_canonical_works':['work_type','work_id'],
-  'silver.v_lo3rwang_source_catalog':['scope_id','source_name'],
-  'silver.v_lo3rwang_source_weekly':['scope_id','week_start','source_name']
+  'silver.manage':['record_id']
 };
-function readColumns(table,columns){
-  if(table!=='silver.lo3rwang_galaxy_media')return columns;
-  return columns.split(',').map(column=>{
-    const name=column.trim();
-    return MEDIA_COLUMNS[name]?`${name}:${MEDIA_COLUMNS[name]}`:column;
-  }).join(',');
-}
 
 function parseRows(rows,table){
   const parsed=z.array(RowSchema).safeParse(rows??[]);
@@ -127,9 +113,8 @@ async function executeSelectOnce(table,{
   columns='*',filters=[],orFilter='',orders=[],limit=UI_PAGE_SIZE,offset=0,range=null,count=null
 }={},allowHeavyBatch=false){
   if(!allowHeavyBatch)assertSafeSelect({table,columns,filters,limit,range});
-  let query=relation(table).select(readColumns(table,columns),count?{count}:undefined);
-  query=applyFilters(query,table==='silver.lo3rwang_galaxy_media'
-    ?filters.map(filter=>({...filter,column:MEDIA_COLUMNS[filter.column]||filter.column})):filters);
+  let query=relation(table).select(columns,count?{count}:undefined);
+  query=applyFilters(query,filters);
   if(orFilter){
     const expression=z.string().min(1).max(12000).parse(orFilter);
     query=query.or(expression);
@@ -140,7 +125,7 @@ async function executeSelectOnce(table,{
   }
   for(const order of stableOrders){
     const item=OrderSchema.parse(order);
-    query=query.order(table==='silver.lo3rwang_galaxy_media'?(MEDIA_COLUMNS[item.column]||item.column):item.column,{ascending:item.ascending??true,nullsFirst:item.nullsFirst});
+    query=query.order(item.column,{ascending:item.ascending??true,nullsFirst:item.nullsFirst});
   }
   if(Array.isArray(range)&&range.length===2){
     const [start,end]=safeRange(range);

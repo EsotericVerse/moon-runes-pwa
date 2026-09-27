@@ -2,12 +2,14 @@
 
 import {useEffect,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
-import {selectScopeRankingPage} from '../../loc/neon-ranking-client';
 import {selectNeonAllRows,updateNeonRows} from '../../loc/neon-repository';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 
 const MEDIA_TYPE_LABELS={song:'曲目',reel:'Reels',video:'影片',image:'圖像',audio:'音訊'};
+function splitTags(value){
+  return String(value||'').split(/[,，]/).map(tag=>tag.trim()).filter(Boolean);
+}
 
 export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
   const queryClient=useQueryClient();
@@ -19,8 +21,16 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
   const [message,setMessage]=useState('');
 
   const tagQuery=useQuery({
-    queryKey:['media-meta-style-ranking',databaseScopeId],
-    queryFn:async()=>(await selectScopeRankingPage('lo3rwang',{rankingType:'meta_style',limit:20,navigation:{}})).rows,
+    queryKey:['media-meta-ranking',databaseScopeId],
+    queryFn:async()=>{
+      const {rows}=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{columns:'media_id,meta_tags'});
+      const counts=new Map();
+      for(const row of rows)for(const tag of splitTags(row.meta_tags))counts.set(tag,(counts.get(tag)||0)+1);
+      return [...counts.entries()]
+        .map(([term,item_count])=>({ranking_key:'meta|'+term,term,item_count}))
+        .sort((a,b)=>b.item_count-a.item_count||a.term.localeCompare(b.term))
+        .slice(0,100);
+    },
     staleTime:30000
   });
 
@@ -42,12 +52,9 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
     enabled:Boolean(selectedTag),
     queryFn:async()=>{
       const {rows}=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
-        columns:'media_id,title,media_type,source_name,style_tags,created_date',
-        filters:[
-          {column:'scope_id',operator:'eq',value:databaseScopeId},
-          {column:'style_tags',operator:'ilike',value:'%'+selectedTag+'%'}
-        ],
-        orders:[{column:'created_date',ascending:false,nullsFirst:false}]
+        columns:'media_id,title,media_type,source_name,meta_tags,create_time',
+        filters:[{column:'meta_tags',operator:'ilike',value:'%'+selectedTag+'%'}],
+        orders:[{column:'create_time',ascending:false,nullsFirst:false}]
       });
       return rows;
     },
@@ -55,17 +62,14 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
   });
 
   async function save(row){
-    const next=String(draft||'').trim()||'風格未知';
+    const next=String(draft||'').trim()||null;
     try{
-      await updateNeonRows('silver.lo3rwang_galaxy_media',{style_tags:next},{
-        filters:[
-          {column:'media_id',operator:'eq',value:row.media_id},
-          {column:'scope_id',operator:'eq',value:databaseScopeId}
-        ]
+      await updateNeonRows('silver.lo3rwang_galaxy_media',{meta_tags:next},{
+        filters:[{column:'media_id',operator:'eq',value:row.media_id}]
       });
       setEditingId('');
       setMessage('已更新媒體 Meta Tag。');
-      await queryClient.invalidateQueries({queryKey:['media-meta-style-ranking',databaseScopeId]});
+      await queryClient.invalidateQueries({queryKey:['media-meta-ranking',databaseScopeId]});
       await queryClient.invalidateQueries({queryKey:['media-meta-tag-items',databaseScopeId]});
     }catch(error){setMessage(error?.message||'更新失敗。');}
   }
@@ -75,7 +79,7 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
   return <div className="scope-v2-media-meta-settings">
     <section className="scope-v2-inline-card">
       <h4>多媒體 Meta Tag</h4>
-      <p className="scope-v2-culture-period-description">直接使用 galaxy_media.style_tags；不共用文字關鍵詞詞庫。</p>
+      <p className="scope-v2-culture-period-description">直接使用 galaxy_media.meta_tags。</p>
       {tagQuery.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
       {tagQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(tagQuery.error)}</p>:null}
       <div className="scope-v2-media-tag-cloud">
@@ -96,7 +100,7 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
             <input className="scope-v2-search-input" value={draft} onChange={event=>setDraft(event.target.value)}/>
             <button type="button" onClick={()=>save(row)}>儲存</button>
             <button type="button" onClick={()=>setEditingId('')}>取消</button>
-          </div>:<p>{row.style_tags||'風格未知'} {canEdit?<button type="button" onClick={()=>{setEditingId(row.media_id);setDraft(String(row.style_tags||''));setMessage('')}}>編輯</button>:null}</p>}
+          </div>:<p>{row.meta_tags||'未設定'} {canEdit?<button type="button" onClick={()=>{setEditingId(row.media_id);setDraft(String(row.meta_tags||''));setMessage('')}}>編輯</button>:null}</p>}
         </article>)}
       </div>
       {message?<p className="scope-v2-status" role="status">{message}</p>:null}

@@ -13,7 +13,7 @@ import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import {scopeHrefV2} from '../scope-registry.v2';
 import {featureDataErrorMessage} from '../feature-data-state.v2';
 import ContentEditorV2 from '../ContentEditorV2';
-import {selectCanonicalWorkSummaries} from '../../loc/aggregate-query';
+import {selectGalaxySummaries} from '../../loc/aggregate-query';
 import {decodeCultureText} from '../modules/culture-timeline/culture-timeline-model.mjs';
 
 const norm=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
@@ -56,12 +56,12 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
     snippet:explicitTitle?snippet(body,q):'',bodyText:explicitTitle?String(body):'',styleTags:String(row.style_tags||row.meta_tags||''),
     display:String(row.display||'summary'),scopeId:scope,resourceType,resourceId,settingsKey,settings,
     editableTable,editableIdColumn,editResourceId,editableField,isScopeCard,href,
-    sourceId:row.source_id||row.media_link||'',
+    sourceId:row.source_id||row.galaxy_link||row.media_link||'',
     targetId:row.target_id||'',
     refId:row.ref_id||'',
     groupKey:resourceType==='galaxy'&&resourceId
       ?'galaxy:'+resourceId
-      :(resourceType==='galaxy_media'&&row.media_link?'galaxy:'+row.media_link:'result:'+(identity||title)),
+      :(resourceType==='galaxy_media'&&(row.galaxy_link||row.media_link)?'galaxy:'+(row.galaxy_link||row.media_link):'result:'+(identity||title)),
     links:href?[{id:resourceType||'primary',href,label:resourceType==='galaxy_media'?'媒體連結':'查看連結'}]:[],
     destinations:[]
   };
@@ -133,8 +133,8 @@ export default function SearchV2(){
         .map(({row})=>row?.scope_id==='lo3rwang'&&row?.galaxy_id?String(row.galaxy_id):'')
         .filter(Boolean);
       let summaries=[];
-      try{summaries=await selectCanonicalWorkSummaries(authorIds);}catch{}
-      const summaryMap=new Map(summaries.map(item=>[String(item.work_id),item]));
+      try{summaries=await selectGalaxySummaries(authorIds);}catch{}
+      const summaryMap=new Map(summaries.map(item=>[String(item.galaxy_id),item]));
       const searchRows=search.rows.map(item=>{
         const row=item.row||{};
         const summary=row.galaxy_id?summaryMap.get(String(row.galaxy_id)):null;
@@ -193,9 +193,10 @@ export default function SearchV2(){
     setEditingKey(result.key);setEditError('');setEditAudit([]);
     setEditDraft(null);
     try{
+      const runeScope=result.scopeId==='lrunes'||result.scopeId==='lunarunes';
       const contentColumns=result.resourceType==='galaxy'
-        ?'galaxy_id,scope_id,title,content'
-        :'media_id,scope_id,title,meta_tags,style_tags';
+        ?(runeScope?'record_id,scope_id,title,content':'galaxy_id,scope_id,title,content')
+        :(runeScope?'record_id,scope_id,title,meta_tags,style_tags':'media_id,title,meta_tags');
       const [fullRow,auditResult]=await Promise.all([
         selectNeonRowById(result.editableTable,{
           idColumn:result.editableIdColumn,
@@ -233,9 +234,12 @@ export default function SearchV2(){
     setEditBusy(true);setEditError('');
     try{
       if(!account.canManageScopeSync(result.scopeId))throw new Error('沒有修改此內容的權限。');
+      const runeScope=result.scopeId==='lrunes'||result.scopeId==='lunarunes';
       const contentPatch={title:editDraft.title,[result.editableField]:editDraft.body};
-      if(result.resourceType==='galaxy_media')contentPatch.style_tags=String(editDraft.styleTags||'').trim()||'風格未知';
-      await updateNeonRows(result.editableTable,contentPatch,{filters:[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId},{column:'scope_id',operator:'eq',value:result.scopeId}]});
+      if(result.resourceType==='galaxy_media'&&runeScope)contentPatch.style_tags=String(editDraft.styleTags||'').trim()||null;
+      const contentFilters=[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId}];
+      if(!(result.resourceType==='galaxy_media'&&!runeScope))contentFilters.push({column:'scope_id',operator:'eq',value:result.scopeId});
+      await updateNeonRows(result.editableTable,contentPatch,{filters:contentFilters});
       let settings=result.settings||null;
       if(account.canManageScopeSync(result.scopeId)){
         const record=await saveResourceVisibility({
@@ -244,7 +248,7 @@ export default function SearchV2(){
         visibilityRef.current.set(result.settingsKey,record);
         settings=record;
       }
-      setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:editDraft.title,bodyText:editDraft.body,styleTags:result.resourceType==='galaxy_media'?(String(editDraft.styleTags||'').trim()||'風格未知'):item.styleTags,snippet:snippet(editDraft.body,matchedQueryRef.current),settings}));
+      setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:editDraft.title,bodyText:editDraft.body,styleTags:result.resourceType==='galaxy_media'?String(runeScope?editDraft.styleTags:editDraft.body).trim():item.styleTags,snippet:snippet(editDraft.body,matchedQueryRef.current),settings}));
       setEditingKey('');setEditDraft(null);
     }catch(exception){setEditError(String(exception?.message||exception||'儲存失敗。'))}
     finally{setEditBusy(false)}
@@ -293,7 +297,7 @@ export default function SearchV2(){
             busy={editBusy}
             error={editError}
             showVisibility={canSearchSettings}
-            extraFields={row.resourceType==='galaxy_media'?<label>媒體曲風分類<input value={draft.styleTags||''} onChange={event=>setEditDraft(current=>({...current,styleTags:event.target.value}))} placeholder="例如 Mandopop, 男聲, 希望向, 主題曲"/></label>:null}
+            extraFields={row.resourceType==='galaxy_media'&&(row.scopeId==='lrunes'||row.scopeId==='lunarunes')?<label>媒體標籤<input value={draft.styleTags||''} onChange={event=>setEditDraft(current=>({...current,styleTags:event.target.value}))}/></label>:null}
             onSave={()=>saveEditing(row)}
             onCancel={()=>{setEditingKey('');setEditDraft(null);setEditError('')}}
           />:null}

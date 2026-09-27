@@ -1,43 +1,95 @@
 'use client';
 
-import {selectNeonAllRows,selectNeonRows,selectNeonWindow} from './neon-repository';
+import {selectNeonAllRows,selectNeonRowById,selectNeonRows} from './neon-repository';
+
+function timeFilters(column,startDate,endDate){
+  const filters=[];
+  if(startDate)filters.push({column,operator:'gte',value:String(startDate).slice(0,10)+'T00:00:00+08:00'});
+  if(endDate)filters.push({column,operator:'lte',value:String(endDate).slice(0,10)+'T23:59:59.999+08:00'});
+  return filters;
+}
+function taipeiDateKey(value){
+  if(!value)return '';
+  const date=new Date(value);
+  if(Number.isNaN(date.getTime()))return '';
+  return new Date(date.getTime()+8*60*60*1000).toISOString().slice(0,10);
+}
+function mondayOf(value){
+  const key=taipeiDateKey(value);
+  if(!key)return '';
+  const date=new Date(key+'T00:00:00Z');
+  const day=date.getUTCDay();
+  const shift=day===0?-6:1-day;
+  date.setUTCDate(date.getUTCDate()+shift);
+  return date.toISOString().slice(0,10);
+}
+async function selectSourceRows({startDate='',endDate=''}={}){
+  const [galaxy,media]=await Promise.all([
+    selectNeonAllRows('silver.lo3rwang_galaxy',{
+      columns:'galaxy_id,source_name,created_at',
+      filters:timeFilters('created_at',startDate,endDate)
+    }),
+    selectNeonAllRows('silver.lo3rwang_galaxy_media',{
+      columns:'media_id,galaxy_link,source_name,create_time',
+      filters:[
+        {column:'galaxy_link',operator:'is',value:null},
+        ...timeFilters('create_time',startDate,endDate)
+      ]
+    })
+  ]);
+  return [
+    ...galaxy.rows.map(row=>({source_name:row.source_name,created_at:row.created_at})),
+    ...media.rows.map(row=>({source_name:row.source_name,created_at:row.create_time}))
+  ];
+}
 
 export async function selectSourceCatalog({scopeId='lo3rwang',limit=null,offset=0}={}){
-  const options={
-    columns:'scope_id,source_name,work_count,first_created_at,last_created_at',
-    filters:[{column:'scope_id',operator:'eq',value:scopeId}],
-    orders:[{column:'work_count',ascending:false},{column:'source_name',ascending:true}]
-  };
+  if(String(scopeId)!=='lo3rwang')return {rows:[],totalCount:0};
+  const rows=await selectSourceRows();
+  const map=new Map();
+  for(const row of rows){
+    const source=String(row.source_name||'').trim();
+    if(!source)continue;
+    const current=map.get(source)||{scope_id:'lo3rwang',source_name:source,work_count:0,first_created_at:null,last_created_at:null};
+    current.work_count+=1;
+    const time=row.created_at||null;
+    if(time&&(!current.first_created_at||String(time)<String(current.first_created_at)))current.first_created_at=time;
+    if(time&&(!current.last_created_at||String(time)>String(current.last_created_at)))current.last_created_at=time;
+    map.set(source,current);
+  }
+  const all=[...map.values()].sort((a,b)=>b.work_count-a.work_count||a.source_name.localeCompare(b.source_name));
+  const start=Math.max(0,Math.floor(Number(offset)||0));
   const bounded=limit!==null&&limit!==undefined&&Number.isFinite(Number(limit));
-  const result=bounded
-    ?await selectNeonWindow('silver.v_lo3rwang_source_catalog',{...options,limit:Number(limit),offset})
-    :await selectNeonAllRows('silver.v_lo3rwang_source_catalog',options);
-  return {rows:result.rows,totalCount:Number(result.count??result.rows.length)||0};
+  const page=bounded?all.slice(start,start+Math.max(0,Math.floor(Number(limit)||0))):all;
+  return {rows:page,totalCount:all.length};
 }
 
 export async function selectSourceWeekly({scopeId='lo3rwang',startDate='',endDate='',limit=null,offset=0}={}){
-  const filters=[{column:'scope_id',operator:'eq',value:scopeId}];
-  if(startDate)filters.push({column:'week_start',operator:'gte',value:startDate});
-  if(endDate)filters.push({column:'week_start',operator:'lte',value:endDate});
-  const options={
-    columns:'scope_id,source_name,week_start,work_count',
-    filters,
-    orders:[{column:'week_start',ascending:true},{column:'source_name',ascending:true}]
-  };
+  if(String(scopeId)!=='lo3rwang')return {rows:[],totalCount:0};
+  const rows=await selectSourceRows({startDate,endDate});
+  const map=new Map();
+  for(const row of rows){
+    const source=String(row.source_name||'').trim();
+    const weekStart=mondayOf(row.created_at);
+    if(!source||!weekStart)continue;
+    const key=source+'|'+weekStart;
+    const current=map.get(key)||{scope_id:'lo3rwang',source_name:source,week_start:weekStart,work_count:0};
+    current.work_count+=1;
+    map.set(key,current);
+  }
+  const all=[...map.values()].sort((a,b)=>a.week_start.localeCompare(b.week_start)||a.source_name.localeCompare(b.source_name));
+  const start=Math.max(0,Math.floor(Number(offset)||0));
   const bounded=limit!==null&&limit!==undefined&&Number.isFinite(Number(limit));
-  const result=bounded
-    ?await selectNeonWindow('silver.v_lo3rwang_source_weekly',{...options,limit:Number(limit),offset,count:'exact'})
-    :await selectNeonAllRows('silver.v_lo3rwang_source_weekly',options);
-  return {rows:result.rows,totalCount:Number(result.count??result.rows.length)||0};
+  const page=bounded?all.slice(start,start+Math.max(0,Math.floor(Number(limit)||0))):all;
+  return {rows:page,totalCount:all.length};
 }
 
-export async function selectCanonicalWorksPage({scopeId='lo3rwang',sourceName='',startDate='',endDate='',limit=20,offset=0}={}){
-  const filters=[{column:'scope_id',operator:'eq',value:scopeId}];
+export async function selectGalaxyPage({sourceName='',startDate='',endDate='',limit=20,offset=0}={}){
+  const filters=[];
   if(sourceName)filters.push({column:'source_name',operator:'eq',value:sourceName});
-  if(startDate)filters.push({column:'created_at',operator:'gte',value:String(startDate).slice(0,10)+'T00:00:00+08:00'});
-  if(endDate)filters.push({column:'created_at',operator:'lte',value:String(endDate).slice(0,10)+'T23:59:59.999+08:00'});
-  const {rows,count}=await selectNeonRows('silver.v_lo3rwang_canonical_works',{
-    columns:'work_id,scope_id,source_name,created_at,work_type,title,excerpt',
+  filters.push(...timeFilters('created_at',startDate,endDate));
+  const {rows,count}=await selectNeonRows('silver.lo3rwang_galaxy',{
+    columns:'galaxy_id,source_name,created_at,title',
     filters,
     orders:[{column:'created_at',ascending:false}],
     limit,
@@ -47,14 +99,17 @@ export async function selectCanonicalWorksPage({scopeId='lo3rwang',sourceName=''
   return {rows,totalCount:Number(count??rows.length)||0};
 }
 
-
-export async function selectCanonicalWorkSummaries(workIds=[]){
-  const ids=[...new Set((workIds||[]).map(value=>String(value||'').trim()).filter(Boolean))];
+export async function selectGalaxySummaries(galaxyIds=[]){
+  const ids=[...new Set((galaxyIds||[]).map(value=>String(value||'').trim()).filter(Boolean))];
   if(!ids.length)return [];
-  const {rows}=await selectNeonRows('silver.v_lo3rwang_canonical_works',{
-    columns:'work_id,title,excerpt',
-    filters:[{column:'work_id',operator:'in',value:ids}],
-    limit:ids.length
-  });
-  return rows;
+  const rows=await Promise.all(ids.map(id=>selectNeonRowById('silver.lo3rwang_galaxy',{
+    idColumn:'galaxy_id',
+    id,
+    columns:'galaxy_id,title,content'
+  })));
+  return rows.filter(Boolean).map(row=>({
+    galaxy_id:row.galaxy_id,
+    title:row.title||'',
+    excerpt:String(row.content||'').replace(/\s+/g,' ').trim().slice(0,600)
+  }));
 }

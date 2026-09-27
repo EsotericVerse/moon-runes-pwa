@@ -20,10 +20,10 @@ function increment(map,type,term,extra={}){
   map.set(key,row);
 }
 
-function dateFilters(range){
+function dateFilters(range,column='created_at'){
   if(!range?.start_date)return [];
-  const filters=[{column:'created_at',operator:'gte',value:String(range.start_date).slice(0,10)+'T00:00:00+08:00'}];
-  if(range.end_date)filters.push({column:'created_at',operator:'lte',value:String(range.end_date).slice(0,10)+'T23:59:59.999+08:00'});
+  const filters=[{column,operator:'gte',value:String(range.start_date).slice(0,10)+'T00:00:00+08:00'}];
+  if(range.end_date)filters.push({column,operator:'lte',value:String(range.end_date).slice(0,10)+'T23:59:59.999+08:00'});
   return filters;
 }
 
@@ -113,8 +113,8 @@ async function authorStyles(period,type){
     }
   });
   const mediaResult=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
-    columns:'media_id,title,meta_tags,style_tags,created_at',
-    filters
+    columns:'media_id,title,meta_tags,create_time',
+    filters:dateFilters(range,'create_time')
   });
   const mediaClassified=await classifyStyleRows(mediaResult.rows);
   for(const row of mediaClassified){

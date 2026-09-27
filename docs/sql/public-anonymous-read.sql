@@ -21,10 +21,7 @@ GRANT SELECT ON TABLE
   silver.lo3rwang_style_keywords,
   silver.lo3rwang_galaxy,
   silver.lo3rwang_galaxy_media,
-  silver.lrunes,
-  silver.v_lo3rwang_canonical_works,
-  silver.v_lo3rwang_source_catalog,
-  silver.v_lo3rwang_source_weekly
+  silver.lrunes
 TO anonymous;
 
 COMMIT;
