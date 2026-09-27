@@ -327,7 +327,7 @@ export async function selectScopeClassificationBuckets(scopeId,{startDate,endDat
 }
 
 export async function selectScopeStyleSnapshot(scopeId,{startDate,endDate,styleLevel='label'}={}){
-  if(!startDate)return {groups:[],buckets:[],rows:[]};
+  if(!startDate)return {groups:[],buckets:[]};
   const runtimeId=runtimeScopeId(scopeId);
   const field=styleLevel==='group'?'style_group':'style_label';
   const rows=await selectScopeStyleRows(runtimeId,{startDate,endDate});
@@ -353,7 +353,7 @@ export async function selectScopeStyleSnapshot(scopeId,{startDate,endDate,styleL
     classification_dimension:'style',
     classification_level:styleLevel
   }));
-  return {groups,buckets,rows};
+  return {groups,buckets};
 }
 
 export async function selectScopeStyleGroups(scopeId,{startDate,endDate,styleLevel='label'}={}){
