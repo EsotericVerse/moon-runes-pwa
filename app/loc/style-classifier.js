@@ -1,6 +1,6 @@
 'use client';
 
-import {selectNeonCatalog} from './neon-repository';
+import {processNeonHeavyRows,selectNeonCatalog} from './neon-repository';
 
 let canonicalCatalogPromise=null;
 
@@ -17,7 +17,7 @@ function compareRank(a,b){
 export async function selectCanonicalStyleCatalog(){
   if(canonicalCatalogPromise)return canonicalCatalogPromise;
   canonicalCatalogPromise=(async()=>{
-    const [runes,keywords]=await Promise.all([
+    const [runesResult,keywordsResult]=await Promise.all([
       selectNeonCatalog('silver.lrunes',{
         columns:'rune_number,rune_name,group_name,record_type',
         filters:[{column:'record_type',operator:'eq',value:'rune'}]
@@ -30,6 +30,8 @@ export async function selectCanonicalStyleCatalog(){
         ]
       })
     ]);
+    const runes=runesResult.rows||[];
+    const keywords=keywordsResult.rows||[];
     const runeMap=new Map(runes.map(row=>[Number(row.rune_number),{
       rune_number:Number(row.rune_number),
       style_label:String(row.rune_name||'').trim(),
@@ -122,4 +124,19 @@ export async function classifyStyleRows(rows=[]){
     ...row,
     ...classifyStyleText(styleTextOf(row),catalog)
   }));
+}
+
+export async function processStyleTableRows(table,{
+  columns,filters=[],orFilter='',orders=[],onClassified,
+  initialBatch,minBatch,maxBatch,targetBytes,targetMs
+}={}){
+  if(typeof onClassified!=='function')throw new TypeError('Style processing requires onClassified');
+  const catalog=await selectCanonicalStyleCatalog();
+  return processNeonHeavyRows(table,{
+    columns,filters,orFilter,orders,initialBatch,minBatch,maxBatch,targetBytes,targetMs,
+    onRow:row=>onClassified({
+      ...row,
+      ...classifyStyleText(styleTextOf(row),catalog)
+    })
+  });
 }
