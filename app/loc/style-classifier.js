@@ -1,19 +1,8 @@
 'use client';
 
-import {selectNeonRows} from './neon-repository';
+import {selectNeonCatalog} from './neon-repository';
 
 let canonicalCatalogPromise=null;
-
-async function selectAllRows(table,{columns,filters=[]}){
-  const rows=[];let offset=0;
-  while(true){
-    const result=await selectNeonRows(table,{columns,filters,range:[offset,offset+4999]});
-    rows.push(...result.rows);
-    if(result.rows.length<5000)break;
-    offset+=result.rows.length;
-  }
-  return rows;
-}
 
 function normalize(value){
   return String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant');
@@ -29,11 +18,11 @@ export async function selectCanonicalStyleCatalog(){
   if(canonicalCatalogPromise)return canonicalCatalogPromise;
   canonicalCatalogPromise=(async()=>{
     const [runes,keywords]=await Promise.all([
-      selectAllRows('silver.lrunes',{
+      selectNeonCatalog('silver.lrunes',{
         columns:'rune_number,rune_name,group_name,record_type',
         filters:[{column:'record_type',operator:'eq',value:'rune'}]
       }),
-      selectAllRows('silver.lrunes',{
+      selectNeonCatalog('silver.lrunes',{
         columns:'rune_number,keyword,active,record_type',
         filters:[
           {column:'record_type',operator:'eq',value:'keyword'},
