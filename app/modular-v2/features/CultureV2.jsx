@@ -260,9 +260,11 @@ export default function CultureV2(){
                 ?<p className='scope-v2-status'>{classificationMode==='source'&&classificationScope==='lunarunes'?'此 Scope 沒有作品來源分類。':'目前沒有此分類資料。'}</p>:null}
               {classificationBuckets.length?<CultureTimelineV2
                 items={classificationBuckets}
-                labelOf={item=>item.display_label||item.group_label}
+                labelOf={item=>classificationMode==='source'
+                  ?`${Number(item.work_count||0).toLocaleString()} 項`
+                  :(item.display_label||item.group_label)}
                 focus={{}}
-                mode='overview'
+                mode={classificationMode==='source'?'source':'overview'}
               />:null}
             </section>:null}
 
