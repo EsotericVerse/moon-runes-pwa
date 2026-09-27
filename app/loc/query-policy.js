@@ -17,7 +17,7 @@ const CATALOG_TABLES=Object.freeze(new Set([
 
 const EXACT_ID_COLUMNS=Object.freeze({
   'silver.lo3rwang_galaxy':Object.freeze(new Set(['uid'])),
-  'silver.lrunes':Object.freeze(new Set(['record_id','galaxy_id']))
+  'silver.lrunes':Object.freeze(new Set(['record_id','uid']))
 });
 
 function columnList(columns){

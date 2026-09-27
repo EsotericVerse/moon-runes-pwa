@@ -32,10 +32,10 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
   const title=explicitTitle||snippet(excerpt||source,q)||source;
   const bodyField=['summary','display_text','excerpt','content','meta_tags','description','interpretation','ai_summary','retrieval_text','text'].find(field=>typeof row[field]==='string'&&row[field].trim())||'';
   const body=bodyField?decodeCultureText(row[bodyField]):text;
-  const identity=row.media_id||row.uid||row.galaxy_id||row.song_id||row.rune_id||row.id;
+  const identity=row.media_id||row.uid||row.song_id||row.rune_id||row.id;
   const scope=row.scope_id||scopeId;
-  const resourceType=(row.uid||row.galaxy_id)?'galaxy':row.media_id?'galaxy_media':'';
-  const resourceId=row.uid||row.galaxy_id||row.media_id||'';
+  const resourceType=(row.uid)?'galaxy':row.media_id?'galaxy_media':'';
+  const resourceId=row.uid||row.media_id||'';
   const settingsKey=resourceType&&resourceId?resultKey(scope,resourceType,resourceId):'';
   const settings=settingsMap.get(settingsKey)||null;
   const runeScope=scope==='lrunes'||scope==='lunarunes';
@@ -142,8 +142,8 @@ export default function SearchV2(){
 
       matchedQueryRef.current=q;
       const pageResources=searchRows.map(({row})=>{
-        const resourceType=(row.uid||row.galaxy_id)?'galaxy':row.media_id?'galaxy_media':'';
-        const resourceId=row.uid||row.galaxy_id||row.media_id||'';
+        const resourceType=(row.uid)?'galaxy':row.media_id?'galaxy_media':'';
+        const resourceId=row.uid||row.media_id||'';
         return {scope:row.scope_id||scopeId,resourceType,resourceId};
       }).filter(item=>item.resourceType&&item.resourceId);
       let visibilityRows=[];

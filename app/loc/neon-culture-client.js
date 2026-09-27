@@ -222,7 +222,7 @@ async function selectScopePeriodMetadataRows(scopeId,{startDate,endDate}={}){
   const filters=dateFilters(startDate,endDate);
   if(runtimeId==='lunarunes'){
     const result=await selectNeonAllRows('silver.lrunes',{
-      columns:'record_id,record_type,galaxy_id,media_id,galaxy_link,title,meta_tags,media_type,source_name,source_type,createtime,url,source_ref',
+      columns:'record_id,record_type,uid,media_id,galaxy_link,title,meta_tags,media_type,source_name,source_type,createtime,url,source_ref',
       filters:[
         {column:'record_type',operator:'in',value:['galaxy','galaxy_media']},
         ...filters
@@ -253,7 +253,7 @@ async function selectScopeStyleRows(scopeId,{startDate,endDate}={}){
   const output=[];
   if(runtimeId==='lunarunes'){
     await processStyleTableRows('silver.lrunes',{
-      columns:'record_id,record_type,galaxy_id,media_id,galaxy_link,title,content,meta_tags,media_type,source_name,source_type,createtime,url,source_ref',
+      columns:'record_id,record_type,uid,media_id,galaxy_link,title,content,meta_tags,media_type,source_name,source_type,createtime,url,source_ref',
       filters:[
         {column:'record_type',operator:'in',value:['galaxy','galaxy_media']},
         ...filters
@@ -286,7 +286,7 @@ function canonicalSourceWorks(rows=[]){
     const isMedia=String(row?.record_type||'')==='galaxy_media'||Boolean(row?.media_id);
     const key=isMedia
       ?String(row?.galaxy_link||row?.media_id||'')
-      :String(row?.uid||row?.galaxy_id||row?.record_id||'');
+      :String(row?.uid||row?.record_id||'');
     if(!key)continue;
     const existing=groups.get(key);
     if(!existing||(!isMedia&&String(existing?.record_type||'')==='galaxy_media')){
@@ -355,7 +355,7 @@ export async function selectScopeStyleWorks(scopeId,{startDate,endDate,styleName
     const isMedia=String(row.record_type||'')==='galaxy_media'||Boolean(row.media_id);
     return {
       ...row,
-      entry_id:row.uid||row.galaxy_id||row.media_id||row.record_id,
+      entry_id:row.uid||row.media_id||row.record_id,
       entry_type:isMedia?'media_metadata':'work',
       start_date:row.createtime,
       date:row.createtime,
