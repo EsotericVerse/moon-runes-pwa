@@ -95,24 +95,20 @@ Asset migration is not complete until every consumer is updated and visual/funct
 | `icons/` | migrated/audit | verify all consumers before retirement is considered complete |
 | `card_api/` | migrated | runtime → `services/api/card/`; repository entrypoints → `scripts/card-api/`; docs → `docs/api/` |
 | `loc8_api/` | retired | executable service removed in RC8; historical documentation may remain under `docs/api/` |
-| `engine/` | audit | retain until consumers and parity are verified |
 | root `LunaRune66.xlsx` | frozen canonical source | must remain in place unless explicitly approved otherwise |
 | `data/lunarunes/source/LunaRune66.xlsx` | governed copy | does not supersede/delete the frozen root workbook |
 | root `LunarRunesCardCut.pdf` | frozen production source | physical card printing/cutting PDF |
 | `docs/LunarRunesCardCut.pdf` | governed document copy | does not redefine the PDF as tutorial content |
 | root `all.xlsx` | migrated/preserved | `data/source/all.xlsx`; retire only after explicit supersession audit |
-| root redirect HTML | compatibility | retire only after Next production parity validation |
 | root `css/` | migration debt | retire only after remaining visual parity is verified |
 
 ## Migration order
 
-1. Inventory every source file, consumer, visible section, interaction and asset variant.
+1. Inventory consumers and authoritative sources.
 2. Freeze canonical/source assets that must not move.
-3. Create the destination without deleting the source.
-4. Update every consumer and reference.
-5. Verify content, behavior, visual, asset and wording parity.
-6. Confirm build/CI after parity checks.
-7. Remove an old location only when it is proven unused and removal is authorized.
+3. Update Current consumers to the canonical module/path.
+4. Verify behavior and build/CI.
+5. Remove the retired runtime, adapter, redirect or duplicate source once no Current consumer remains.
 
 Build success, route existence, modularity, or independence from legacy runtime is not by itself migration completion.
 
@@ -120,10 +116,9 @@ Build success, route existence, modularity, or independence from legacy runtime 
 
 - Route responsibility must remain explicit.
 - Feature JavaScript, CSS and canonical data clients should load only for the feature that consumes them.
-- Data paths must be registered centrally before use.
+- Canonical data access must go through explicit domain repositories/clients; do not recreate a virtual path registry.
 - Server routes are preferred whenever a feature reads protected or canonical Neon data.
 - Performance optimization must preserve intentional small/large asset variants rather than replacing all uses with the largest file.
-- Legacy source pages remain parity evidence until their approved content and behavior have been accounted for.
 
 ## Root rule
 
