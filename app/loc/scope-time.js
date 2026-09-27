@@ -72,6 +72,7 @@ export function normalizeScopeTimeRows(rows,scopeId=''){
 export async function selectScopeTimeRows(scopeId){
   const id=String(scopeId||'').trim();
   if(!id)return [];
+  if(id==='loc')throw new Error('LOC 是聚合 Scope，不存在 silver.loc_time；請先讀 silver.manage 再逐 Scope 讀取 *_time。');
   const table=scopeDataTable(id,'time');
   const {rows}=await selectNeonAllRows(table,{
     columns:SCOPE_TIME_COLUMNS,
