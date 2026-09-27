@@ -323,47 +323,20 @@ export async function selectScopeClassificationBuckets(scopeId,{startDate,endDat
     if(runtimeId==='lunarunes'||!startDate)return [];
     return (await selectAuthorPeriodSourceSnapshot({startDate,endDate})).buckets;
   }
-  const rows=await selectScopeStyleRows(runtimeId,{startDate,endDate});
-  if(!rows.length)return [];
-  const field=styleLevel==='group'?'style_group':'style_label';
-  return groupWorksByWeek(rows,field).map(row=>({
-    ...row,
-    scope_id:'classification',
-    entry_type:'style',
-    classification_dimension:'style',
-    classification_level:styleLevel
-  }));
+  return (await selectScopeStyleSnapshot(runtimeId,{startDate,endDate,styleLevel})).buckets;
 }
 
-export async function selectScopeStyleGroups(scopeId,{startDate,endDate,styleLevel='label'}={}){
-  if(!startDate)return [];
+export async function selectScopeStyleSnapshot(scopeId,{startDate,endDate,styleLevel='label'}={}){
+  if(!startDate)return {groups:[],buckets:[],rows:[]};
   const runtimeId=runtimeScopeId(scopeId);
   const field=styleLevel==='group'?'style_group':'style_label';
+  const rows=await selectScopeStyleRows(runtimeId,{startDate,endDate});
   const counts=new Map();
-  const countRow=row=>{
+  for(const row of rows){
     const term=String(row[field]||'').trim();
     if(term)counts.set(term,(counts.get(term)||0)+1);
-  };
-  const filters=dateFilters(startDate,endDate);
-  if(runtimeId==='lunarunes'){
-    await processStyleTableRows('silver.lrunes',{
-      columns:'record_id,record_type,title,content,meta_tags,style_tags,created_at',
-      filters:[{column:'record_type',operator:'in',value:['galaxy','galaxy_media']},...filters],
-      onClassified:countRow
-    });
-  }else{
-    await processStyleTableRows('silver.lo3rwang_galaxy',{
-      columns:'galaxy_id,title,content,meta_tags,created_at',
-      filters,
-      onClassified:countRow
-    });
-    const mediaResult=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
-      columns:'media_id,title,meta_tags,style_tags,created_at',
-      filters
-    });
-    for(const row of await classifyStyleRows(mediaResult.rows))countRow(row);
   }
-  return [...counts.entries()]
+  const groups=[...counts.entries()]
     .map(([term,item_count])=>({
       category_key:`style:${styleLevel}:${term}`,
       category_type:'style',
@@ -373,6 +346,18 @@ export async function selectScopeStyleGroups(scopeId,{startDate,endDate,styleLev
       item_count
     }))
     .sort((a,b)=>b.item_count-a.item_count||a.display_label.localeCompare(b.display_label));
+  const buckets=groupWorksByWeek(rows,field).map(row=>({
+    ...row,
+    scope_id:'classification',
+    entry_type:'style',
+    classification_dimension:'style',
+    classification_level:styleLevel
+  }));
+  return {groups,buckets,rows};
+}
+
+export async function selectScopeStyleGroups(scopeId,{startDate,endDate,styleLevel='label'}={}){
+  return (await selectScopeStyleSnapshot(scopeId,{startDate,endDate,styleLevel})).groups;
 }
 
 export async function selectScopeStyleWorks(scopeId,{startDate,endDate,styleName,styleLevel='label',limit=20,pageOffset=0}={}){
