@@ -10,7 +10,7 @@ const TableSchema=z.enum([
   'silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media',
   'silver.lrunes',
   'silver.faq_entries',
-  'silver.v_lo3rwang_canonical_works','silver.v_lo3rwang_source_catalog','silver.v_lo3rwang_source_weekly',
+  'silver.v_lo3rwang_canonical_works','silver.v_lo3rwang_source_catalog','silver.v_lo3rwang_source_weekly','silver.v_lo3rwang_work_summary',
 ]);
 const WritableTableSchema=z.enum([
   'silver.manage','silver.resource_visibility',
