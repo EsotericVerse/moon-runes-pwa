@@ -140,10 +140,10 @@ function GovernanceBody({scopeId}){
 function GovernanceHome(){
   const {scopeId}=useScopeRuntimeV2();
   const subtitle=scopeId==='lunarunes'
-    ?'符號式語言的治理、Canon 與權利邊界。'
+    ?'符號式語言的治理、Canon 與權利邊界。管理也在此。'
     :scopeId==='lo3rwang'
-      ?'個人資料、作品與作者權利。'
-      :'LOC 原則、Copyleft 與 GNU GPL。';
+      ?'個人治理、作品與作者權利。管理也在此。'
+      :'LOC 原則、Copyleft 與 GNU GPL。管理也在此。';
   return <FeaturePageV2 featureId="governance" subtitle={subtitle}>
     <GovernanceBody scopeId={scopeId}/>
   </FeaturePageV2>;
