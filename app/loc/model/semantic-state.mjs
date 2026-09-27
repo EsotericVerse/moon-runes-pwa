@@ -7,6 +7,29 @@ export const RUNE_SEMANTIC_STATES=Object.freeze([
 const KNOWN_STATES=Object.freeze(['正位','半正位','中立','半逆位','逆位']);
 const STATE_SET=new Set(RUNE_SEMANTIC_STATES);
 
+const LOT_FIELD_BY_DIRECTION=Object.freeze({
+  '正位':'lots_positive',
+  '半正位':'lots_half_positive',
+  '半逆位':'lots_half_negative',
+  '逆位':'lots_negative'
+});
+
+export function runeLotGuidance(card,direction){
+  const field=LOT_FIELD_BY_DIRECTION[String(direction||'').trim()];
+  return field?String(card?.[field]||'').trim():'';
+}
+
+export function runeLotAnalyses(card,direction){
+  const text=runeLotGuidance(card,direction);
+  if(!text)return [];
+  const domains=['愛情','事業','關係','健康'];
+  return domains.map(label=>{
+    const match=text.match(new RegExp(label+'：\\s*([^\\n]*?)(?=(?:愛情|事業|關係|健康)：|$)'));
+    return {label,text:String(match?.[1]||'').trim().replace(/[。；]+$/,'')};
+  }).filter(item=>item.text);
+}
+
+
 const INVERSE_DIRECTION=Object.freeze({
   '正位':'逆位',
   '半正位':'半逆位',
@@ -113,7 +136,10 @@ export function resolveSpreadState(cards=[],directions=[],mode=''){
   }
   if(states.length===1){
     const reading={mode:resolvedMode,states,layers:[],sections:[],trend:'未知',result:states[0]};
-    return {...reading,guidance:formatRuneGuidance(reading)};
+    const guidance=resolvedMode==='single'
+      ?(runeLotGuidance(source[0],directions[0])||formatRuneGuidance(reading))
+      :formatRuneGuidance(reading);
+    return {...reading,guidance};
   }
 
   let layers=[];
