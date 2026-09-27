@@ -159,7 +159,7 @@ export function analyzeDistributionChange(currentRows=[],previousRows=[],{
         type:'emerging',
         term,current:now,previous:0,score:now,
         governance:'raise_candidate',
-        text:`「\${term}」在目前區間出現 \${now} 次，前一等長區間沒有出現；這是新出現的\${label}訊號，可回看相關內容確認是否值得持續追蹤。`
+        text:`「${term}」在目前區間出現 ${now} 次，前一等長區間沒有出現；這是新出現的${label}訊號，可回看相關內容確認是否值得持續追蹤。`
       });
       continue;
     }
@@ -168,7 +168,7 @@ export function analyzeDistributionChange(currentRows=[],previousRows=[],{
         type:'disappeared',
         term,current:0,previous:before,score:before,
         governance:'reduce_candidate',
-        text:`「\${term}」前一區間出現 \${before} 次，目前區間沒有出現；可回看是否只是暫時沉寂，或分類權重需要降低。`
+        text:`「${term}」前一區間出現 ${before} 次，目前區間沒有出現；可回看是否只是暫時沉寂，或分類權重需要降低。`
       });
       continue;
     }
@@ -177,7 +177,7 @@ export function analyzeDistributionChange(currentRows=[],previousRows=[],{
         type:'rising',
         term,current:now,previous:before,score:ratio,
         governance:'raise_candidate',
-        text:`「\${term}」由 \${before} 次增加到 \${now} 次，出現頻率明顯提高；先視為分布變化，建議回看前後內容確認脈絡。`
+        text:`「${term}」由 ${before} 次增加到 ${now} 次，出現頻率明顯提高；先視為分布變化，建議回看前後內容確認脈絡。`
       });
       continue;
     }
@@ -186,7 +186,7 @@ export function analyzeDistributionChange(currentRows=[],previousRows=[],{
         type:'falling',
         term,current:now,previous:before,score:before/(now||0.5),
         governance:'reduce_candidate',
-        text:`「\${term}」由 \${before} 次下降到 \${now} 次，出現頻率明顯降低；可保留觀察，不直接判定其意義。`
+        text:`「${term}」由 ${before} 次下降到 ${now} 次，出現頻率明顯降低；可保留觀察，不直接判定其意義。`
       });
       continue;
     }
@@ -195,7 +195,7 @@ export function analyzeDistributionChange(currentRows=[],previousRows=[],{
         type:'persistent',
         term,current:now,previous:before,score:Math.min(now,before),
         governance:'keep_candidate',
-        text:`「\${term}」在前後兩個區間都持續出現（\${before} → \${now}），可視為目前較穩定的\${label}候選。`
+        text:`「${term}」在前後兩個區間都持續出現（${before} → ${now}），可視為目前較穩定的${label}候選。`
       });
     }
   }
@@ -209,6 +209,7 @@ export function analyzeDistributionChange(currentRows=[],previousRows=[],{
 
 export function analyzeKeywordGovernance(currentRows=[],previousRows=[],{
   candidateRows=[],
+  catalogRows=[],
   minimumCount=2,
   maxSuggestions=10
 }={}){
@@ -218,14 +219,31 @@ export function analyzeKeywordGovernance(currentRows=[],previousRows=[],{
     maxSuggestions:Math.max(maxSuggestions,20)
   });
   const catalog=new Set([
+    ...(catalogRows||[]).map(row=>String(row?.term||row?.keyword||'').trim()),
     ...(currentRows||[]).map(row=>String(row?.term||'').trim()),
     ...(previousRows||[]).map(row=>String(row?.term||'').trim())
   ].filter(Boolean));
+  const currentMap=distributionMap(currentRows);
+  const previousMap=distributionMap(previousRows);
   const suggestions=change.suggestions.map(item=>({
     ...item,
     action:item.governance==='raise_candidate'?'提高觀察權重':
       item.governance==='reduce_candidate'?'降低／淘汰候選':'保留觀察'
   }));
+
+  for(const term of catalog){
+    const now=finiteNumber(currentMap.get(term));
+    const before=finiteNumber(previousMap.get(term));
+    if(now===0&&before===0){
+      suggestions.push({
+        type:'inactive_catalog',
+        term,current:0,previous:0,score:1,
+        governance:'reduce_candidate',
+        action:'降低／淘汰候選',
+        text:`「${term}」已在詞庫，但前後兩個比較區間都沒有命中；可保留一段觀察期，再決定是否降低權重或淘汰。`
+      });
+    }
+  }
 
   for(const row of candidateRows||[]){
     const term=String(row?.term||'').trim();
@@ -236,11 +254,11 @@ export function analyzeKeywordGovernance(currentRows=[],previousRows=[],{
       term,current:count,previous:0,score:count,
       governance:'add_candidate',
       action:'新增候選',
-      text:`「\${term}」尚未在目前關鍵詞統計中，但在 metadata 候選來源重複出現 \${count} 次；可人工確認是否值得加入詞庫。`
+      text:`「${term}」尚未在目前關鍵詞統計中，但在 metadata 候選來源重複出現 ${count} 次；可人工確認是否值得加入詞庫。`
     });
   }
 
-  const priority={new_candidate:6,emerging:5,rising:4,disappeared:3,falling:2,persistent:1};
+  const priority={new_candidate:7,emerging:6,rising:5,disappeared:4,falling:3,inactive_catalog:2,persistent:1};
   suggestions.sort((a,b)=>(priority[b.type]||0)-(priority[a.type]||0)||Number(b.score||0)-Number(a.score||0)||a.term.localeCompare(b.term,'zh-Hant'));
   return {changes:change.changes,suggestions:suggestions.slice(0,maxSuggestions)};
 }
