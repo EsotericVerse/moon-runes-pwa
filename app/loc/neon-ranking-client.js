@@ -5,7 +5,7 @@ import {classifyStyleRows,processStyleTableRows} from './style-classifier';
 import {selectSourceCatalog,selectSourceWeekly} from './aggregate-query';
 
 const RANKING_TYPES=Object.freeze({
-  loc:Object.freeze(['source','style','style_group']),
+  loc:Object.freeze(['source']),
   lunarunes:Object.freeze(['keyword','source','style','style_group']),
   lo3rwang:Object.freeze(['keyword','source','style','style_group'])
 });
