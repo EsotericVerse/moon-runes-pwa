@@ -93,8 +93,20 @@ const authorMedia=makeProvider({
   source:'音樂與多媒體',
   scopeId:'lo3rwang',
   idColumn:'media_id',
-  columns:['media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','createtime'],
-  searchFields:['title','meta_tags','media_type'],
+  columns:['media_id','galaxy_link','source_native_id','source_place','media_type','title','url','meta_tags','createtime'],
+  searchFields:['title','meta_tags','media_type','url','source_native_id','source_place'],
+  dateColumn:'createtime',
+  filters:[{column:'galaxy_link',operator:'is',value:null}]
+});
+
+const authorMediaAll=makeProvider({
+  id:'author-media-all',
+  table:'silver.lo3rwang_galaxy_media',
+  source:'多媒體',
+  scopeId:'lo3rwang',
+  idColumn:'media_id',
+  columns:['media_id','galaxy_link','source_native_id','source_place','media_type','title','url','meta_tags','createtime'],
+  searchFields:['title','meta_tags','media_type','url','source_native_id','source_place'],
   dateColumn:'createtime'
 });
 
@@ -188,8 +200,23 @@ const runeMedia=makeProvider({
   source:'符文多媒體',
   scopeId:'lrunes',
   idColumn:'record_id',
-  columns:['record_id','media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','createtime'],
-  searchFields:['title','meta_tags','media_type'],
+  columns:['record_id','media_id','galaxy_link','source_native_id','source_place','media_type','title','url','meta_tags','createtime'],
+  searchFields:['title','meta_tags','media_type','url','source_native_id','source_place'],
+  dateColumn:'createtime',
+  filters:[
+    {column:'record_type',operator:'eq',value:'galaxy_media'},
+    {column:'galaxy_link',operator:'is',value:null}
+  ]
+});
+
+const runeMediaAll=makeProvider({
+  id:'rune-media-all',
+  table:'silver.lrunes',
+  source:'符文多媒體',
+  scopeId:'lrunes',
+  idColumn:'record_id',
+  columns:['record_id','media_id','galaxy_link','source_native_id','source_place','media_type','title','url','meta_tags','createtime'],
+  searchFields:['title','meta_tags','media_type','url','source_native_id','source_place'],
   dateColumn:'createtime',
   filters:[{column:'record_type',operator:'eq',value:'galaxy_media'}]
 });
@@ -215,6 +242,11 @@ export const SEARCH_PROVIDERS=Object.freeze({
   '治理':Object.freeze([faq])
 });
 
+const MEDIA_SCOPE_PROVIDERS=Object.freeze({
+  lo3rwang:Object.freeze([authorMediaAll]),
+  lrunes:Object.freeze([runeMediaAll])
+});
+
 export function getSearchProviders(collectionId,scopeIds=[]){
   if(collectionId==='all'){
     const providers=[];
@@ -223,4 +255,15 @@ export function getSearchProviders(collectionId,scopeIds=[]){
     return [...new Map(providers.map(provider=>[provider.id,provider])).values()];
   }
   return SEARCH_PROVIDERS[collectionId]||[];
+}
+
+export function getMediaSearchProviders(collectionId,scopeIds=[]){
+  if(collectionId==='all'){
+    const providers=[];
+    for(const id of scopeIds)providers.push(...(MEDIA_SCOPE_PROVIDERS[String(id)]||[]));
+    return [...new Map(providers.map(provider=>[provider.id,provider])).values()];
+  }
+  if(collectionId==='lo3rwang')return [authorMediaAll];
+  if(collectionId==='月之符文')return [runeMediaAll];
+  return [];
 }
