@@ -99,17 +99,14 @@ const authorMedia=makeProvider({
 
 const authorTimeline=makeProvider({
   id:'author-timeline',
-  table:'silver.manage',
+  table:'silver.lo3rwang_time',
   source:'作者脈絡',
   scopeId:'lo3rwang',
   idColumn:'record_id',
-  columns:['record_id','record_type','scope_id','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility'],
-  searchFields:['label','note','status'],
+  columns:['record_id','record_type','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility','style_tags'],
+  searchFields:['label','note','status','style_tags'],
   dateColumn:'time_date',
-  filters:[
-    {column:'scope_id',operator:'eq',value:'lo3rwang'},
-    {column:'record_type',operator:'in',value:['anchor','period','event']}
-  ]
+  filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}]
 });
 
 const runeCore=makeProvider({
@@ -153,17 +150,14 @@ const runeRules=makeProvider({
 
 const runeTimeline=makeProvider({
   id:'rune-timeline',
-  table:'silver.manage',
+  table:'silver.lrunes_time',
   source:'符文時期',
   scopeId:'lrunes',
   idColumn:'record_id',
-  columns:['record_id','record_type','scope_id','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility'],
-  searchFields:['label','note','status'],
+  columns:['record_id','record_type','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility','style_tags'],
+  searchFields:['label','note','status','style_tags'],
   dateColumn:'time_date',
-  filters:[
-    {column:'scope_id',operator:'eq',value:'lrunes'},
-    {column:'record_type',operator:'in',value:['anchor','period','event']}
-  ]
+  filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}]
 });
 
 const runeText=makeProvider({
@@ -200,13 +194,23 @@ const faq=makeProvider({
   searchFields:['category','intent','question','answer','status']
 });
 
-export const SEARCH_PROVIDERS=Object.freeze({
-  all:Object.freeze([authorTimeline,runeCore,runeKeywords,runeRules,runeTimeline,runeText,runeMedia,authorText,faq,authorMedia]),
-  lo3rwang:Object.freeze([authorText,authorMedia]),
-  '月之符文':Object.freeze([runeCore,runeKeywords,runeRules,runeTimeline,runeText,runeMedia]),
-  '治理':Object.freeze([authorTimeline,faq])
+const SCOPE_PROVIDERS=Object.freeze({
+  lo3rwang:Object.freeze([authorTimeline,authorText,authorMedia]),
+  lrunes:Object.freeze([runeCore,runeKeywords,runeRules,runeTimeline,runeText,runeMedia])
 });
 
-export function getSearchProviders(collectionId){
-  return SEARCH_PROVIDERS[collectionId]||SEARCH_PROVIDERS.all;
+export const SEARCH_PROVIDERS=Object.freeze({
+  lo3rwang:Object.freeze([authorText,authorMedia]),
+  '月之符文':Object.freeze([runeCore,runeKeywords,runeRules,runeTimeline,runeText,runeMedia]),
+  '治理':Object.freeze([faq])
+});
+
+export function getSearchProviders(collectionId,scopeIds=[]){
+  if(collectionId==='all'){
+    const providers=[];
+    for(const id of scopeIds)providers.push(...(SCOPE_PROVIDERS[String(id)]||[]));
+    providers.push(faq);
+    return [...new Map(providers.map(provider=>[provider.id,provider])).values()];
+  }
+  return SEARCH_PROVIDERS[collectionId]||[];
 }
