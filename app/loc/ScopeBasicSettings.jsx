@@ -21,7 +21,7 @@ export default function ScopeBasicSettings({scopeId}){
     let live=true;
     if(!account.user||!canManage)return()=>{live=false};
     selectNeonRows('silver.manage',{
-      columns:'record_id,label,scope_name,display_text,include_in_global_search,include_in_global_stats,default_theme_id',
+      columns:'record_id,label,scope_name,display_text,include_in_global_search,include_in_global_stats,include_in_time,projection_level,default_theme_id',
       filters:[
         {column:'record_type',operator:'eq',value:t.record_type},
         {column:t.column,operator:'eq',value:t.id}
@@ -42,7 +42,7 @@ export default function ScopeBasicSettings({scopeId}){
     try{
       await updateNeonRows('silver.manage',next,{filters:[
         {column:'record_id',operator:'eq',value:row.record_id}
-      ],returning:'record_id,label,scope_name,display_text,include_in_global_search,include_in_global_stats,default_theme_id'});
+      ],returning:'record_id,label,scope_name,display_text,include_in_global_search,include_in_global_stats,include_in_time,projection_level,default_theme_id'});
       setStatus('已更新');
     }catch(error){
       setStatus(error?.message||'更新失敗。');
@@ -67,6 +67,13 @@ export default function ScopeBasicSettings({scopeId}){
     <div className="scope-v2-editor-options">
       <label><input type="checkbox" checked={row.include_in_global_search!==false} onChange={event=>patch({include_in_global_search:event.target.checked})}/>搜尋參加</label>
       <label><input type="checkbox" checked={row.include_in_global_stats!==false} onChange={event=>patch({include_in_global_stats:event.target.checked})}/>統計參加</label>
+      <label><input type="checkbox" checked={row.include_in_time!==false} onChange={event=>patch({include_in_time:event.target.checked})}/>時間參加</label>
+      <label>預設顯示
+        <select value={row.projection_level||'summary'} onChange={event=>patch({projection_level:event.target.value})}>
+          <option value="summary">簡文</option>
+          <option value="full">全文</option>
+        </select>
+      </label>
     </div>
 
     <ScopeDefaultThemeSetting scopeId={scopeId}/>
