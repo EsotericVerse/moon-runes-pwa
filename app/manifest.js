@@ -3,9 +3,9 @@ export const dynamic='force-static';
 export default function manifest(){
   return {
     id:'/',
-    name:'LOC｜月典｜模型化語言框架',
+    name:'LOC｜月典｜語言架構框架',
     short_name:'LOC 月典',
-    description:'LOC（月典）是一套可進化、可重複使用的模型化語言框架，用來將細小語言單元組織成可解析、分類、連結、重組與推演的模組。',
+    description:'LOC（月典）是一套 Language Architecture Framework／語言架構框架，用來整理、分析、搜尋並連結文字、時間、來源、風格與作品脈絡。',
     lang:'zh-Hant',
     start_url:'/',
     scope:'/',
