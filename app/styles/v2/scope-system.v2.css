@@ -248,3 +248,18 @@
 .scope-v2-literature-chapters article:first-child{border-top:0}
 .scope-v2-literature-chapters h2{margin:.15rem 0 .75rem}
 .scope-v2-literature-body{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.8}
+
+
+/* Source classification river: labels stay on the left; blocks encode density only. */
+.scope-period-timeline .vis-item.scope-period-density{
+  min-height:6px;
+  border-radius:999px;
+  overflow:visible;
+}
+.scope-period-timeline .vis-item.scope-period-density .vis-item-content{
+  display:none;
+  padding:0;
+}
+.scope-period-timeline .vis-item.scope-period-density.vis-range{
+  min-width:3px;
+}
