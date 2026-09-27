@@ -80,8 +80,8 @@ const authorText=makeProvider({
   table:'silver.lo3rwang_galaxy',
   source:'作者正文',
   scopeId:'lo3rwang',
-  idColumn:'galaxy_id',
-  columns:['galaxy_id','scope_id','title','source_name','source_id','target_id','ref_id','url','createtime'],
+  idColumn:'uid',
+  columns:['uid','title','source_name','source_id','target_id','ref_id','url','createtime'],
   searchFields:['title','content','source_name'],
   dateColumn:'createtime'
 });

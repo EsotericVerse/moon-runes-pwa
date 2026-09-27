@@ -89,7 +89,7 @@ function applyFilters(query,filters=[]){
 }
 
 const READ_KEYS={
-  'silver.lo3rwang_galaxy':['galaxy_id'],
+  'silver.lo3rwang_galaxy':['uid'],
   'silver.lo3rwang_galaxy_media':['media_id'],
   'silver.lrunes':['record_id'],
   'silver.manage':['record_id']

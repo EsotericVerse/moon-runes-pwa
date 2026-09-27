@@ -5,6 +5,7 @@ import {insertNeonRows} from './neon-repository';
 import {saveResourceVisibility} from './resource-visibility';
 import {useNeonAccount} from './use-neon-account';
 import ContentEditorV2 from '../modular-v2/ContentEditorV2';
+import {createUid8} from './uid';
 
 const blank=()=>({
   title:'',body:'',source:'',url:'',source_id:'',target_id:'',ref_id:'',createtime:'',
@@ -26,10 +27,10 @@ export default function ManagementArticlePublisher({scopeId}){
       if(!draft.title.trim()&&!draft.body.trim())throw new Error('標題與正文至少需要一項。');
       if(!draft.source.trim())throw new Error('請指定來源。');
       const now=new Date().toISOString();
-      const id='article:'+globalThis.crypto.randomUUID();
+      const uid=createUid8();
 
       await insertNeonRows('silver.lo3rwang_galaxy',[{
-        galaxy_id:id,scope_id:'lo3rwang',category:'article',content_type:'article',source_role:'article',
+        uid,category:'article',content_type:'article',source_role:'article',
         title:draft.title.trim()||null,content:draft.body.trim()||null,
         source_id:draft.source_id.trim()||null,target_id:draft.target_id.trim()||null,ref_id:draft.ref_id.trim()||null,
         url:draft.url.trim()||null,searchable:!draft.hidden,
@@ -38,7 +39,7 @@ export default function ManagementArticlePublisher({scopeId}){
       }]);
 
       await saveResourceVisibility({
-        scope:'lo3rwang',resourceType:'galaxy',resourceId:id,draft,sourceRef:draft.source.trim()
+        scope:'lo3rwang',resourceType:'galaxy',resourceId:uid,draft,sourceRef:draft.source.trim()
       });
 
       setDraft(blank());setStatus('文章已發表到 Galaxy。');

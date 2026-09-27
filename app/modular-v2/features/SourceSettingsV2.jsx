@@ -22,10 +22,10 @@ async function renameSource(scopeId,from,to){
   if(target===from)return;
 
   if(scopeId==='lo3rwang'){
-    await Promise.all([
-      updateNeonRows('silver.lo3rwang_galaxy',{source_name:target},{filters:[{column:'source_name',operator:'eq',value:from}],returning:null}),
-      updateNeonRows('silver.lo3rwang_galaxy_media',{source_name:target},{filters:[{column:'source_name',operator:'eq',value:from}],returning:null})
-    ]);
+    await updateNeonRows('silver.lo3rwang_galaxy',{source_name:target},{
+      filters:[{column:'source_name',operator:'eq',value:from}],
+      returning:null
+    });
   }
 }
 

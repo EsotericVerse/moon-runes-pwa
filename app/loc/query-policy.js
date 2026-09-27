@@ -16,7 +16,7 @@ const CATALOG_TABLES=Object.freeze(new Set([
 ]));
 
 const EXACT_ID_COLUMNS=Object.freeze({
-  'silver.lo3rwang_galaxy':Object.freeze(new Set(['galaxy_id'])),
+  'silver.lo3rwang_galaxy':Object.freeze(new Set(['uid'])),
   'silver.lrunes':Object.freeze(new Set(['record_id','galaxy_id']))
 });
 
@@ -83,7 +83,7 @@ export function assertHeavyBatchSelect({table,columns}){
 }
 
 const SAFE_RETURNING=Object.freeze({
-  'silver.lo3rwang_galaxy':'galaxy_id',
+  'silver.lo3rwang_galaxy':'uid',
   'silver.lo3rwang_galaxy_media':'media_id',
   'silver.lrunes':'record_id'
 });

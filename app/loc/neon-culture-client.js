@@ -157,19 +157,19 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
   const page=await selectGalaxyPage({sourceName:String(sourceName),startDate,endDate,limit:pageSize,offset});
   if(!page.rows.length)return {rows:[],hasMore:false,nextOffset:null,totalCount:page.totalCount};
 
-  const galaxyIds=page.rows.map(row=>String(row.galaxy_id));
+  const uids=page.rows.map(row=>String(row.uid));
   const [textResult,linkedMediaResult]=await Promise.all([
     selectNeonAllRows('silver.lo3rwang_galaxy',{
-      columns:'galaxy_id,category,content_type,source_name,source_role,title,meta_tags,content_hash,createtime,source_ref,url,source_id,target_id,ref_id',
-      filters:[{column:'galaxy_id',operator:'in',value:galaxyIds}]
+      columns:'uid,category,content_type,source_name,source_role,title,meta_tags,content_hash,createtime,source_ref,url,source_id,target_id,ref_id',
+      filters:[{column:'uid',operator:'in',value:uids}]
     }),
     selectNeonAllRows('silver.lo3rwang_galaxy_media',{
       columns:'media_id,galaxy_link,source_native_id,media_type,title,url,meta_tags,createtime',
-      filters:[{column:'galaxy_link',operator:'in',value:galaxyIds}]
+      filters:[{column:'galaxy_link',operator:'in',value:uids}]
     })
   ]);
 
-  const textById=new Map(textResult.rows.map(row=>[String(row.galaxy_id),row]));
+  const textById=new Map(textResult.rows.map(row=>[String(row.uid),row]));
   const linkedMediaByGalaxy=new Map();
   for(const media of linkedMediaResult.rows){
     const key=String(media.galaxy_link||'');
@@ -178,27 +178,27 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
     linkedMediaByGalaxy.get(key).push(media);
   }
   const rows=page.rows.map(item=>{
-    const row=textById.get(String(item.galaxy_id));
+    const row=textById.get(String(item.uid));
     if(!row)return null;
-    const linkedMedia=linkedMediaByGalaxy.get(String(row.galaxy_id))||[];
+    const linkedMedia=linkedMediaByGalaxy.get(String(row.uid))||[];
     const links=[];
-    if(row.url&&/^https?:\/\//i.test(String(row.url)))links.push({id:'text:'+row.galaxy_id,href:row.url,label:'查看來源'});
+    if(row.url&&/^https?:\/\//i.test(String(row.url)))links.push({id:'text:'+row.uid,href:row.url,label:'查看來源'});
     linkedMedia.forEach((media,index)=>{
       if(media.url&&/^https?:\/\//i.test(String(media.url)))links.push({id:'media:'+media.media_id,href:media.url,label:`媒體連結 ${index+1}`});
     });
     const title=decodeCultureText(item.title||row.title||'').trim();
     return {
-      key:'galaxy:'+row.galaxy_id,
-      galaxy_id:row.galaxy_id,
+      key:'galaxy:'+row.uid,
+      uid:row.uid,
       source_name:row.source_name,
       source_role:row.source_role,
-      title:title||row.source_name||row.galaxy_id,
+      title:title||row.source_name||row.uid,
       description:linkedMedia.map(mediaMetadataDescription).filter(Boolean).join(' ｜ '),
       createtime:row.createtime,
       start_date:row.createtime,
       date:row.createtime,
       display_date:formatCultureDateTime(row.createtime),
-      entry_id:row.galaxy_id,
+      entry_id:row.uid,
       entry_type:'work',
       source_id:row.source_id||null,
       target_id:row.target_id||null,
@@ -232,7 +232,7 @@ async function selectScopePeriodMetadataRows(scopeId,{startDate,endDate}={}){
   }
   const [textsResult,mediaResult]=await Promise.all([
     selectNeonAllRows('silver.lo3rwang_galaxy',{
-      columns:'galaxy_id,title,meta_tags,source_name,source_type,createtime,url,source_ref,content_hash',
+      columns:'uid,title,meta_tags,source_name,source_type,createtime,url,source_ref,content_hash',
       filters
     }),
     selectNeonAllRows('silver.lo3rwang_galaxy_media',{
@@ -264,7 +264,7 @@ async function selectScopeStyleRows(scopeId,{startDate,endDate}={}){
     return output;
   }
   await processStyleTableRows('silver.lo3rwang_galaxy',{
-    columns:'galaxy_id,title,content,meta_tags,source_name,source_type,createtime,url,source_ref,content_hash',
+    columns:'uid,title,content,meta_tags,source_name,source_type,createtime,url,source_ref,content_hash',
     filters,
     orders:[{column:'createtime',ascending:true}],
     onClassified:row=>{output.push({...withoutContent(row),record_type:'galaxy'});}
@@ -286,7 +286,7 @@ function canonicalSourceWorks(rows=[]){
     const isMedia=String(row?.record_type||'')==='galaxy_media'||Boolean(row?.media_id);
     const key=isMedia
       ?String(row?.galaxy_link||row?.media_id||'')
-      :String(row?.galaxy_id||row?.record_id||'');
+      :String(row?.uid||row?.galaxy_id||row?.record_id||'');
     if(!key)continue;
     const existing=groups.get(key);
     if(!existing||(!isMedia&&String(existing?.record_type||'')==='galaxy_media')){
@@ -355,7 +355,7 @@ export async function selectScopeStyleWorks(scopeId,{startDate,endDate,styleName
     const isMedia=String(row.record_type||'')==='galaxy_media'||Boolean(row.media_id);
     return {
       ...row,
-      entry_id:row.galaxy_id||row.media_id||row.record_id,
+      entry_id:row.uid||row.galaxy_id||row.media_id||row.record_id,
       entry_type:isMedia?'media_metadata':'work',
       start_date:row.createtime,
       date:row.createtime,

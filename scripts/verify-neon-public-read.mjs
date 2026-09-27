@@ -29,7 +29,7 @@ async function clientProbe(){
   for(const [table,columns] of [
     ['lrunes','rune_number,rune_name,record_type'],
     ['manage','record_id,record_type,scope_id'],
-    ['lo3rwang_galaxy','galaxy_id,source_name,createtime'],
+    ['lo3rwang_galaxy','uid,source_name,createtime'],
     ['lo3rwang_galaxy_media','media_id,galaxy_link,media_type,meta_tags,createtime']
   ]){
     const {data,error}=await client.from(table).select(columns).limit(1);

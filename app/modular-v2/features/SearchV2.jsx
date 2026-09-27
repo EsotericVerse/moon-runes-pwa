@@ -32,10 +32,10 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
   const title=explicitTitle||snippet(excerpt||source,q)||source;
   const bodyField=['summary','display_text','excerpt','content','meta_tags','description','interpretation','ai_summary','retrieval_text','text'].find(field=>typeof row[field]==='string'&&row[field].trim())||'';
   const body=bodyField?decodeCultureText(row[bodyField]):text;
-  const identity=row.media_id||row.galaxy_id||row.song_id||row.rune_id||row.id;
+  const identity=row.media_id||row.uid||row.galaxy_id||row.song_id||row.rune_id||row.id;
   const scope=row.scope_id||scopeId;
-  const resourceType=row.galaxy_id?'galaxy':row.media_id?'galaxy_media':'';
-  const resourceId=row.galaxy_id||row.media_id||'';
+  const resourceType=(row.uid||row.galaxy_id)?'galaxy':row.media_id?'galaxy_media':'';
+  const resourceId=row.uid||row.galaxy_id||row.media_id||'';
   const settingsKey=resourceType&&resourceId?resultKey(scope,resourceType,resourceId):'';
   const settings=settingsMap.get(settingsKey)||null;
   const runeScope=scope==='lrunes'||scope==='lunarunes';
@@ -43,7 +43,7 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
     ?(runeScope?'silver.lrunes':resourceType==='galaxy'?'silver.lo3rwang_galaxy':'silver.lo3rwang_galaxy_media')
     :'';
   const editableIdColumn=resourceType
-    ?(runeScope?'record_id':resourceType==='galaxy'?'galaxy_id':'media_id')
+    ?(runeScope?'record_id':resourceType==='galaxy'?'uid':'media_id')
     :'';
   const editResourceId=runeScope?String(row.record_id||''):resourceId;
   const editableField=resourceType==='galaxy'?'content':resourceType==='galaxy_media'?'meta_tags':'';
@@ -130,21 +130,21 @@ export default function SearchV2(){
       if(id!==searchId.current)return;
 
       const authorIds=search.rows
-        .map(({row})=>row?.scope_id==='lo3rwang'&&row?.galaxy_id?String(row.galaxy_id):'')
+        .map(({row})=>row?.scope_id==='lo3rwang'&&row?.uid?String(row.uid):'')
         .filter(Boolean);
       let summaries=[];
       try{summaries=await selectGalaxySummaries(authorIds);}catch{}
-      const summaryMap=new Map(summaries.map(item=>[String(item.galaxy_id),item]));
+      const summaryMap=new Map(summaries.map(item=>[String(item.uid),item]));
       const searchRows=search.rows.map(item=>{
         const row=item.row||{};
-        const summary=row.galaxy_id?summaryMap.get(String(row.galaxy_id)):null;
+        const summary=row.uid?summaryMap.get(String(row.uid)):null;
         return summary?{...item,row:{...row,title:row.title||summary.title||'',excerpt:summary.excerpt||''}}:item;
       });
 
       matchedQueryRef.current=q;
       const pageResources=searchRows.map(({row})=>{
-        const resourceType=row.galaxy_id?'galaxy':row.media_id?'galaxy_media':'';
-        const resourceId=row.galaxy_id||row.media_id||'';
+        const resourceType=(row.uid||row.galaxy_id)?'galaxy':row.media_id?'galaxy_media':'';
+        const resourceId=row.uid||row.galaxy_id||row.media_id||'';
         return {scope:row.scope_id||scopeId,resourceType,resourceId};
       }).filter(item=>item.resourceType&&item.resourceId);
       let visibilityRows=[];
@@ -195,7 +195,7 @@ export default function SearchV2(){
     try{
       const runeScope=result.scopeId==='lrunes'||result.scopeId==='lunarunes';
       const contentColumns=result.resourceType==='galaxy'
-        ?(runeScope?'record_id,scope_id,title,content':'galaxy_id,scope_id,title,content')
+        ?(runeScope?'record_id,scope_id,title,content':'uid,title,content')
         :(runeScope?'record_id,title,meta_tags':'media_id,title,meta_tags');
       const [fullRow,auditResult]=await Promise.all([
         selectNeonRowById(result.editableTable,{
@@ -216,7 +216,7 @@ export default function SearchV2(){
         })
       ]);
       if(!fullRow)throw new Error('找不到要編輯的資料。');
-      if(fullRow.scope_id&&String(fullRow.scope_id)!==String(result.scopeId))throw new Error('Scope 與資料不一致。');
+      if(runeScope&&fullRow.scope_id&&String(fullRow.scope_id)!==String(result.scopeId))throw new Error('Scope 與資料不一致。');
       setEditDraft({
         title:String(fullRow.title??result.title??''),
         body:String(fullRow[result.editableField]??''),
@@ -236,7 +236,7 @@ export default function SearchV2(){
       const runeScope=result.scopeId==='lrunes'||result.scopeId==='lunarunes';
       const contentPatch={title:editDraft.title,[result.editableField]:editDraft.body};
       const contentFilters=[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId}];
-      if(result.resourceType==='galaxy')contentFilters.push({column:'scope_id',operator:'eq',value:result.scopeId});
+      if(runeScope&&result.resourceType==='galaxy')contentFilters.push({column:'scope_id',operator:'eq',value:result.scopeId});
       await updateNeonRows(result.editableTable,contentPatch,{filters:contentFilters});
       let settings=result.settings||null;
       if(account.canManageScopeSync(result.scopeId)){

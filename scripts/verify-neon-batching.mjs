@@ -21,7 +21,7 @@ const client={schema(){return this;},from(table){
       if(fatal)result={status:400,error:fatal};
       else if(call.size>maxRows)result={status:413,error:{message:'response too large'}};
       else if(call.start>=total&&call.size)result={status:416,error:{code:'PGRST103',message:'offset outside range'}};
-      else result={status:200,error:null,count:missingCount?null:(call.count?total:null),data:Array.from({length:Math.max(0,Math.min(call.size,total-call.start))},(_,i)=>({galaxy_id:call.start+i}))};
+      else result={status:200,error:null,count:missingCount?null:(call.count?total:null),data:Array.from({length:Math.max(0,Math.min(call.size,total-call.start))},(_,i)=>({uid:String(call.start+i).padStart(8,'0')}))};
       return Promise.resolve(result).then(resolve,reject);
     }
   };
@@ -44,16 +44,16 @@ await repository.link(spec=>{
 await repository.evaluate();
 const api=repository.namespace;
 const table='silver.lo3rwang_galaxy';
-const options={columns:'galaxy_id',filters:[{column:'source_name',operator:'eq',value:'threads'}],orFilter:'galaxy_id.gt.0,galaxy_id.eq.0'};
+const options={columns:'uid',filters:[{column:'source_name',operator:'eq',value:'threads'}],orFilter:'uid.gt.0,uid.eq.0'};
 function reset(){calls=[];total=2501;missingCount=false;maxRows=Infinity;fatal=null;}
-function complete(rows,start,length){assert.equal(rows.length,length);assert.deepEqual(rows.map(r=>r.galaxy_id),Array.from({length},(_,i)=>start+i));}
+function complete(rows,start,length){assert.equal(rows.length,length);assert.deepEqual(rows.map(r=>Number(r.uid)),Array.from({length},(_,i)=>start+i));}
 reset();complete((await api.selectNeonRows(table,{...options,limit:2501})).rows,0,2501);
-assert(calls.length>2);assert(calls.every(c=>c.size<=1000&&c.filters[0].value==='threads'&&c.or===options.orFilter&&c.orders.includes('galaxy_id')));
+assert(calls.length>2);assert(calls.every(c=>c.size<=1000&&c.filters[0].value==='threads'&&c.or===options.orFilter&&c.orders.includes('uid')));
 reset();complete((await api.selectNeonRows(table,{...options,range:[300,2499]})).rows,300,2200);
 reset();missingCount=true;complete((await api.selectNeonAllRows(table,options)).rows,0,2501);
 reset();maxRows=17;complete((await api.selectNeonRows(table,{...options,limit:200})).rows,0,200);
 assert(calls.some((c,i)=>i>0&&c.start===calls[i-1].start&&c.size<calls[i-1].size));
-reset();total=31;maxRows=2;const heavy=[];await api.processNeonHeavyRows(table,{columns:'galaxy_id,content',onBatch:rows=>heavy.push(...rows)});complete(heavy,0,31);
+reset();total=31;maxRows=2;const heavy=[];await api.processNeonHeavyRows(table,{columns:'uid,content',onBatch:rows=>heavy.push(...rows)});complete(heavy,0,31);
 reset();fatal={code:'42703',message:'column does not exist'};await assert.rejects(api.selectNeonRows(table,options),/column does not exist/);assert.equal(calls.length,1);
 reset();maxRows=0;await assert.rejects(api.selectNeonRows(table,options),/response too large/);assert(calls.length<12);
 reset();await api.selectNeonRows('silver.lo3rwang_galaxy_media',{columns:'media_id,galaxy_link,media_type,meta_tags,createtime',filters:[{column:'galaxy_link',operator:'eq',value:'x'}],limit:1});assert.equal(calls[0].columns,'media_id,galaxy_link,media_type,meta_tags,createtime');assert.equal(calls[0].filters[0].column,'galaxy_link');

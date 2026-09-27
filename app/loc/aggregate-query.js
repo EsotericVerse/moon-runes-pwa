@@ -25,7 +25,7 @@ function mondayOf(value){
 }
 async function selectSourceRows({startDate='',endDate=''}={}){
   const result=await selectNeonAllRows('silver.lo3rwang_galaxy',{
-    columns:'galaxy_id,source_name,createtime',
+    columns:'uid,source_name,createtime',
     filters:timeFilters('createtime',startDate,endDate)
   });
   return result.rows;
@@ -74,7 +74,7 @@ export async function selectGalaxyPage({sourceName='',startDate='',endDate='',li
   if(sourceName)filters.push({column:'source_name',operator:'eq',value:sourceName});
   filters.push(...timeFilters('createtime',startDate,endDate));
   const {rows,count}=await selectNeonRows('silver.lo3rwang_galaxy',{
-    columns:'galaxy_id,source_name,createtime,title',
+    columns:'uid,source_name,createtime,title',
     filters,
     orders:[{column:'createtime',ascending:false}],
     limit,
@@ -84,16 +84,16 @@ export async function selectGalaxyPage({sourceName='',startDate='',endDate='',li
   return {rows,totalCount:Number(count??rows.length)||0};
 }
 
-export async function selectGalaxySummaries(galaxyIds=[]){
-  const ids=[...new Set((galaxyIds||[]).map(value=>String(value||'').trim()).filter(Boolean))];
+export async function selectGalaxySummaries(uids=[]){
+  const ids=[...new Set((uids||[]).map(value=>String(value||'').trim()).filter(Boolean))];
   if(!ids.length)return [];
   const rows=await Promise.all(ids.map(id=>selectNeonRowById('silver.lo3rwang_galaxy',{
-    idColumn:'galaxy_id',
+    idColumn:'uid',
     id,
-    columns:'galaxy_id,title,content'
+    columns:'uid,title,content'
   })));
   return rows.filter(Boolean).map(row=>({
-    galaxy_id:row.galaxy_id,
+    uid:row.uid,
     title:row.title||'',
     excerpt:String(row.content||'').replace(/\s+/g,' ').trim().slice(0,600)
   }));

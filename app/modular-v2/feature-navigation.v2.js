@@ -84,7 +84,7 @@ export function buildSearchNavigation(collectionId,source,row,query,currentScope
     state:{
       q:valueOf(query),
       identity:valueOf(
-        row?.galaxy_id,row?.media_id,row?.song_id,
+        row?.uid,row?.galaxy_id,row?.media_id,row?.song_id,
         row?.rune_number!==undefined?'rune:'+row.rune_number:undefined,
         row?.context_key,row?.entry_key,row?.id,
         payload.id,payload.identity

@@ -3,6 +3,7 @@
 import {useMemo,useState} from 'react';
 import {insertNeonRows} from './neon-repository';
 import {useNeonAccount} from './use-neon-account';
+import {createUid8} from './uid';
 
 function sourceSuggestion(name=''){
   const value=String(name).toLowerCase();
@@ -56,8 +57,7 @@ function JsonImport({scopeId}){
     setBusy(true);setStatus('');
     try{
       const payload=rows.map(row=>({
-        galaxy_id:String(firstValue(row,['galaxy_id','id','post_id','article_id'])||`import:${globalThis.crypto.randomUUID()}`),
-        scope_id:'lo3rwang',
+        uid:String(firstValue(row,['uid'])||createUid8()).toUpperCase(),
         category:String(firstValue(row,['category'])||'other').trim()||'other',
         content_type:String(firstValue(row,['content_type','type'])||'other').trim()||'other',
         source_role:String(firstValue(row,['source_role'])||'').trim()||null,
@@ -109,26 +109,26 @@ function SunoImport({scopeId}){
     try{
       if(!draft.title.trim())throw new Error('請填寫歌名。');
       const createtime=draft.createdDate?new Date(draft.createdDate+'T00:00:00+08:00').toISOString():new Date().toISOString();
-      const galaxyId=draft.lyrics.trim()?'suno-lyrics:'+globalThis.crypto.randomUUID():null;
-      const styleId=galaxyId&&draft.stylePrompt.trim()?'style:'+globalThis.crypto.randomUUID():null;
-      const sourceId=draft.source_id.trim()||(styleId?draft.ref_id.trim():'')||null;
-      if(galaxyId){
+      const lyricsUid=draft.lyrics.trim()?createUid8():null;
+      const styleUid=lyricsUid&&draft.stylePrompt.trim()?createUid8():null;
+      const sourceId=draft.source_id.trim()||(styleUid?draft.ref_id.trim():'')||null;
+      if(lyricsUid){
         await insertNeonRows('silver.lo3rwang_galaxy',[{
-          galaxy_id:galaxyId,scope_id:'lo3rwang',category:'music',content_type:'lyrics',source_role:'lyrics',
+          uid:lyricsUid,category:'music',content_type:'lyrics',source_role:'lyrics',
           title:draft.title.trim(),content:draft.lyrics.trim(),createtime,
-          source_id:sourceId,target_id:draft.target_id.trim()||null,ref_id:styleId||draft.ref_id.trim()||null,
+          source_id:sourceId,target_id:draft.target_id.trim()||null,ref_id:styleUid||draft.ref_id.trim()||null,
           url:draft.url.trim()||null,searchable:true,source_name:'suno',source_type:'content'
         }]);
       }
-      if(styleId){
+      if(styleUid){
         await insertNeonRows('silver.lo3rwang_galaxy',[{
-          galaxy_id:styleId,scope_id:'lo3rwang',category:'music',content_type:'instruction',source_role:'style_prompt',
+          uid:styleUid,category:'music',content_type:'instruction',source_role:'style_prompt',
           title:draft.title.trim()+'｜Suno Style',content:draft.stylePrompt.trim(),createtime,
-          target_id:galaxyId,searchable:true,source_name:'suno',source_type:'content'
+          target_id:lyricsUid,searchable:true,source_name:'suno',source_type:'content'
         }]);
       }
       await insertNeonRows('silver.lo3rwang_galaxy_media',[{
-        galaxy_link:galaxyId,
+        galaxy_link:lyricsUid,
         source_native_id:draft.nativeId.trim()||detectId(draft.url)||null,media_type:'suno',
         title:draft.title.trim(),url:draft.url.trim()||null,
         meta_tags:draft.metaTags.trim()||null,createtime
