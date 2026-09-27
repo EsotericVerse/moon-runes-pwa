@@ -80,7 +80,7 @@ Repository-facing build and migration entrypoints belong under `scripts/`; histo
 
 Asset migration is not complete until every consumer is updated and visual/function parity is verified. In particular:
 
-- `pics/` is currently an approved frozen source directory and is **not** a forbidden legacy root.
+- `pics/` is an approved frozen source directory and is **not** a forbidden legacy root. Frozen source retention does not imply wholesale publication: postbuild copies only the explicit Current picture allowlist.
 - `64images/` is retired only because its consumers are expected to use governed LunaRunes image paths; missing alternate-size assets must be restored rather than silently discarded.
 - `LunarRunesCardCut.pdf` is a physical-card production asset, not beginner documentation.
 
