@@ -76,7 +76,7 @@ export async function selectScopeTimeRows(scopeId){
       {column:'scope_id',operator:'eq',value:id},
       {column:'record_type',operator:'in',value:['anchor','period','event']}
     ],
-    limit:5000
+    limit:50
   });
   return normalizeScopeTimeRows(rows);
 }
