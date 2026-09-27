@@ -2,44 +2,20 @@
 
 import {useMemo,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
-import {selectNeonRows,updateNeonRows} from '../../loc/neon-repository';
+import {updateNeonRows} from '../../loc/neon-repository';
+import {selectSourceCatalog} from '../../loc/aggregate-query';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 
-async function selectAllRows(table,{columns,filters=[]}){
-  const rows=[];let offset=0;
-  while(true){
-    const result=await selectNeonRows(table,{columns,filters,range:[offset,offset+4999]});
-    rows.push(...result.rows);
-    if(result.rows.length<5000)break;
-    offset+=result.rows.length;
-  }
-  return rows;
-}
-
 async function readSources(scopeId){
-  const rows=[];
-  if(scopeId==='lo3rwang'){
-    const [text,media]=await Promise.all([
-      selectAllRows('silver.lo3rwang_galaxy',{columns:'source'}),
-      selectAllRows('silver.lo3rwang_galaxy_media',{columns:'source_platform'})
-    ]);
-    rows.push(...text.map(row=>({source_name:row.source,data_scope:'lo3rwang',kind:'galaxy'})));
-    rows.push(...media.map(row=>({source_name:row.source_platform,data_scope:'lo3rwang',kind:'galaxy_media'})));
-  }
-  const map=new Map();
-  for(const row of rows){
-    const source=String(row.source_name||'').trim();
-    if(!source)continue;
-    const current=map.get(source)||{source,count:0,scopes:new Set(),kinds:new Set()};
-    current.count+=1;
-    current.scopes.add(row.data_scope);
-    current.kinds.add(row.kind);
-    map.set(source,current);
-  }
-  return [...map.values()]
-    .map(row=>({...row,scopes:[...row.scopes],kinds:[...row.kinds]}))
-    .sort((a,b)=>b.count-a.count||a.source.localeCompare(b.source));
+  if(scopeId!=='lo3rwang')return [];
+  const result=await selectSourceCatalog({scopeId:'lo3rwang',limit:100,offset:0});
+  return result.rows.map(row=>({
+    source:row.source_name,
+    count:Number(row.work_count)||0,
+    first_created_at:row.first_created_at,
+    last_created_at:row.last_created_at
+  }));
 }
 
 async function renameSource(scopeId,from,to){
@@ -49,8 +25,8 @@ async function renameSource(scopeId,from,to){
 
   if(scopeId==='lo3rwang'){
     await Promise.all([
-      updateNeonRows('silver.lo3rwang_galaxy',{source:target},{filters:[{column:'source',operator:'eq',value:from}],returning:null}),
-      updateNeonRows('silver.lo3rwang_galaxy_media',{source_platform:target},{filters:[{column:'source_platform',operator:'eq',value:from}],returning:null})
+      updateNeonRows('silver.lo3rwang_galaxy',{source_name:target},{filters:[{column:'source_name',operator:'eq',value:from}],returning:null}),
+      updateNeonRows('silver.lo3rwang_galaxy_media',{source_name:target},{filters:[{column:'source_name',operator:'eq',value:from}],returning:null})
     ]);
   }
 }
