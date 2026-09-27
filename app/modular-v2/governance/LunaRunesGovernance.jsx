@@ -22,6 +22,7 @@ export default function LunaRunesGovernance(){
       <p>LunaRunes 的符號式語言、符文設計、名稱、文字、籤詩系統、解牌結構與相關原創內容受 <strong>Copyright／著作權</strong> 保護。</p>
       <p>LunaRunes 不採 LOC 的 Copyleft，也不採 LOC 的 GNU GPL。引用、改作、衍生、再利用與商業使用，依 LunaRunes 自己的治理規則與作者明示授權處理。</p>
       <p>被 LOC 收錄、搜尋、統計或分析，不會改變 LunaRunes 本身的權利狀態。</p>
+	  <p>未來這些資產將給個人工作室(EsotericVerse,秘藝文域)作為版權保護。</p>
     </section>
   </>;
 }
