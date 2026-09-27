@@ -152,7 +152,7 @@ lo3rwang 是 **Lucas Oscar Wang 政德**的公開識別名稱。
 
 Frontend：Next.js 16、React 19、React Query、Recharts、vis-network、vis-timeline。
 
-Data / Governance：Neon Postgres、Zod、Casbin、FlexSearch。
+Data / Governance：Neon Postgres、Zod、FlexSearch。
 
 ```text
 Neon SSOT
