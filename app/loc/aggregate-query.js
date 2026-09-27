@@ -6,12 +6,10 @@ export async function selectSourceCatalog({scopeId='lo3rwang',limit=null,offset=
   const options={
     columns:'scope_id,source_name,work_count,first_created_at,last_created_at',
     filters:[{column:'scope_id',operator:'eq',value:scopeId}],
-    orders:[{column:'work_count',ascending:false},{column:'source_name',ascending:true}],
-    limit,
-    offset,
-    count:'exact'
+    orders:[{column:'work_count',ascending:false},{column:'source_name',ascending:true}]
   };
-  const result=Number.isFinite(Number(limit))
+  const bounded=limit!==null&&limit!==undefined&&Number.isFinite(Number(limit));
+  const result=bounded
     ?await selectNeonWindow('silver.v_lo3rwang_source_catalog',{...options,limit:Number(limit),offset})
     :await selectNeonAllRows('silver.v_lo3rwang_source_catalog',options);
   return {rows:result.rows,totalCount:Number(result.count??result.rows.length)||0};
@@ -26,7 +24,8 @@ export async function selectSourceWeekly({scopeId='lo3rwang',startDate='',endDat
     filters,
     orders:[{column:'week_start',ascending:true},{column:'source_name',ascending:true}]
   };
-  const result=Number.isFinite(Number(limit))
+  const bounded=limit!==null&&limit!==undefined&&Number.isFinite(Number(limit));
+  const result=bounded
     ?await selectNeonWindow('silver.v_lo3rwang_source_weekly',{...options,limit:Number(limit),offset,count:'exact'})
     :await selectNeonAllRows('silver.v_lo3rwang_source_weekly',options);
   return {rows:result.rows,totalCount:Number(result.count??result.rows.length)||0};
