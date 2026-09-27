@@ -152,7 +152,8 @@ export default function AboutView(){
 <p>立於無限減一的謙遜，但要有無限減一的專業。保有探索未知的好奇，尊重無限未知的領域，進而才能學習到更多的知識。</p>
 <p> 2026.09.26.</p>
 <p>想要了解作者請點右上方的作者網頁。</p>
-	  </div><figure className="home-about-figure"><img src="/pics/aboutme.png?v=20260914" alt="作者 Lucas Oscar Wang 政德" loading="eager" decoding="async" />
+	  </div>
+	  <figure className="home-about-figure"><img src="/pics/aboutme.png?v=20260914" alt="作者 Lucas Oscar Wang 政德" loading="eager" decoding="async" />
 	  </figure></div>
     </section>
   </section>;
