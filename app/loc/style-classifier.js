@@ -2,7 +2,7 @@
 
 import {processNeonHeavyRows,selectNeonCatalog} from './neon-repository';
 import {createTextIndex,searchTextIndex} from './text-engine.mjs';
-import {splitRuneKeywordEntries} from './model/rune-keyword-rules';
+import {splitRuneKeywordEntries} from './model/rune-keyword-rules.mjs';
 
 let canonicalCatalogPromise=null;
 
