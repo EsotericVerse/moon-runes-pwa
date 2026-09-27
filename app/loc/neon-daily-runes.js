@@ -2,18 +2,25 @@ import {selectNeonCatalog,selectNeonRows} from './neon-repository';
 
 export const DAILY_RUNE_PAGE_SIZE=10;
 
-async function loadRuneNames(){
+async function loadRuneMeta(){
   const {rows}=await selectNeonCatalog('silver.lrunes',{
-    columns:'rune_number,rune_name',
+    columns:'rune_number,rune_name,card_attribute',
     filters:[{column:'record_type',operator:'eq',value:'rune'}],
     orders:[{column:'rune_number',ascending:true}]
   });
-  return new Map(rows.map(row=>[Number(row.rune_number),row.rune_name]));
+  return new Map(rows.map(row=>[Number(row.rune_number),row]));
 }
 
-async function attachRuneNames(rows){
-  const names=await loadRuneNames();
-  return rows.map(row=>({...row,rune_name:names.get(Number(row.rune_number))||String(row.rune_number)}));
+async function attachRuneMeta(rows){
+  const meta=await loadRuneMeta();
+  return rows.map(row=>{
+    const rune=meta.get(Number(row.rune_number))||{};
+    return {
+      ...row,
+      rune_name:rune.rune_name||String(row.rune_number),
+      card_attribute:rune.card_attribute||'未知'
+    };
+  });
 }
 
 function drawFilters(extra=[]){
@@ -29,7 +36,7 @@ export async function selectRecentDailyRuneDraws({limit=28}={}){
     range:[0,safeLimit-1],
     count:'exact'
   });
-  return {rows:await attachRuneNames(result.rows),count:result.count};
+  return {rows:await attachRuneMeta(result.rows),count:result.count};
 }
 
 export async function selectDailyRuneDraws({offset=0,limit=DAILY_RUNE_PAGE_SIZE}={}){
@@ -41,7 +48,7 @@ export async function selectDailyRuneDraws({offset=0,limit=DAILY_RUNE_PAGE_SIZE}
     orders:[{column:'record_date',ascending:false},{column:'draw_kind',ascending:true}],
     range:[safeOffset,safeOffset+safeLimit-1]
   });
-  return attachRuneNames(draws.rows);
+  return attachRuneMeta(draws.rows);
 }
 
 export async function selectDailyRuneMonth({year,month}={}){
@@ -59,5 +66,5 @@ export async function selectDailyRuneMonth({year,month}={}){
     orders:[{column:'record_date',ascending:true},{column:'draw_kind',ascending:true}],
     limit:62
   });
-  return attachRuneNames(draws.rows);
+  return attachRuneMeta(draws.rows);
 }
