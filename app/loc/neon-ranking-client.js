@@ -542,7 +542,9 @@ export async function selectScopeRankingComparison(scopeId,{rankingType='',navig
   return {
     type,
     period:ranges.period,
-    days:ranges.days,
+    periodLabel:ranges.periodLabel,
+    previousPeriod:ranges.previousPeriod,
+    previousPeriodLabel:ranges.previousPeriodLabel,
     currentRange:ranges.current,
     previousRange:ranges.previous,
     currentRows:mergeRows(currentRows),
@@ -562,8 +564,10 @@ export async function selectScopeKeywordDiagnostics(scopeId,{navigation={}}={}){
   return {
     ...diagnostics,
     period:ranges.period,
-    range:ranges.current,
-    days:ranges.days
+    periodLabel:ranges.periodLabel,
+    previousPeriod:ranges.previousPeriod,
+    previousPeriodLabel:ranges.previousPeriodLabel,
+    range:ranges.current
   };
 }
 
