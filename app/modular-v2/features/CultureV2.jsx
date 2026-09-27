@@ -300,6 +300,9 @@ export default function CultureV2(){
                       <time>{work.display_date||formatCultureDateTime(work.created_at)}</time>
                     </div>
                     {classificationMode==='style'?<p>{work.style_label?('風格標籤：'+work.style_label):''}{work.style_group?(' · 大群組：'+work.style_group):''}</p>:null}
+                    {work.entry_type==='media_metadata'
+                      ?(work.media_metadata_text?<p className='scope-v2-culture-work-meta-description'>{work.media_metadata_text}</p>:null)
+                      :(work.description?<p className='scope-v2-culture-work-meta-description'>{work.description}</p>:null)}
                     {externalSourceHref(work)?<a href={externalSourceHref(work)} target='_blank' rel='noreferrer'>查看來源</a>:null}
                   </article>)}
                 </div>
