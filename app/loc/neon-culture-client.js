@@ -5,6 +5,7 @@ import {selectNeonAllRows} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
 import {decodeCultureText,formatCultureDateTime,groupWorksByWeek} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
 import {classifyStyleRows,processStyleTableRows} from './style-classifier';
+import {selectSourceWeekly} from './aggregate-query';
 
 function sourceLabel(value){return String(value||'').trim();}
 function runtimeScopeId(scopeId){return String(scopeId||'')==='lrunes'?'lunarunes':String(scopeId||'');}
@@ -82,36 +83,27 @@ export async function selectScopeCultureData(scopeId){
 
 export async function selectAuthorPeriodWorkSources({startDate,endDate=null}={}){
   if(!startDate)return [];
-  const filters=dateFilters(startDate,endDate);
-  const [workResult,mediaResult]=await Promise.all([
-    selectNeonAllRows('silver.lo3rwang_galaxy',{columns:'galaxy_id,source_name',filters}),
-    selectNeonAllRows('silver.lo3rwang_galaxy_media',{columns:'media_id,media_link,source_name',filters})
-  ]);
+  const result=await selectSourceWeekly({
+    scopeId:'lo3rwang',
+    startDate,
+    endDate:endDate||'',
+    limit:10000
+  });
   const groups=new Map();
-  const ensureSource=source=>{
-    if(!groups.has(source))groups.set(source,{workIds:new Set(),mediaIds:new Set()});
-    return groups.get(source);
-  };
-  for(const row of workResult.rows){
+  for(const row of result.rows){
     const source=sourceLabel(row.source_name);
     if(!source)continue;
-    ensureSource(source).workIds.add(String(row.galaxy_id));
+    const current=groups.get(source)||0;
+    groups.set(source,current+(Number(row.work_count)||0));
   }
-  for(const row of mediaResult.rows){
-    const source=sourceLabel(row.source_name);
-    if(!source)continue;
-    const target=ensureSource(source);
-    if(row.media_link)target.workIds.add(String(row.media_link));
-    else target.mediaIds.add(String(row.media_id));
-  }
-  return [...groups.entries()].map(([source,state])=>({
+  return [...groups.entries()].map(([source,itemCount])=>({
     category_key:`source:${source}`,
     category_type:'source',
     source_name:source,
     display_label:source,
-    item_count:state.workIds.size+state.mediaIds.size,
-    work_count:state.workIds.size,
-    media_count:state.mediaIds.size
+    item_count:itemCount,
+    work_count:itemCount,
+    media_count:0
   })).sort((a,b)=>b.item_count-a.item_count||a.display_label.localeCompare(b.display_label));
 }
 
@@ -291,19 +283,61 @@ function canonicalSourceWorks(rows=[]){
 
 export async function selectScopeClassificationBuckets(scopeId,{startDate,endDate,dimension='source',styleLevel='label'}={}){
   const runtimeId=runtimeScopeId(scopeId);
-  if(dimension==='source'&&runtimeId==='lunarunes')return [];
-  const rows=dimension==='style'
-    ?await selectScopeStyleRows(runtimeId,{startDate,endDate})
-    :await selectScopePeriodMetadataRows(runtimeId,{startDate,endDate});
+  if(dimension==='source'){
+    if(runtimeId==='lunarunes'||!startDate)return [];
+    const result=await selectSourceWeekly({
+      scopeId:'lo3rwang',
+      startDate,
+      endDate:endDate||'',
+      limit:10000
+    });
+    const maxima=new Map();
+    let globalMaximum=0;
+    for(const row of result.rows){
+      const count=Number(row.work_count)||0;
+      const source=String(row.source_name||'').trim();
+      if(!source)continue;
+      maxima.set(source,Math.max(maxima.get(source)||0,count));
+      globalMaximum=Math.max(globalMaximum,count);
+    }
+    return result.rows.map(row=>{
+      const source=String(row.source_name||'').trim();
+      const count=Number(row.work_count)||0;
+      const weekStart=String(row.week_start||'').slice(0,10);
+      const weekEndDate=new Date(weekStart+'T00:00:00Z');
+      weekEndDate.setUTCDate(weekEndDate.getUTCDate()+7);
+      const weekEnd=weekEndDate.toISOString().slice(0,10);
+      return {
+        id:`source_name:${source}:${weekStart}`,
+        category:source,
+        group_label:source,
+        week_start:weekStart,
+        week_end:weekEnd,
+        start_date:weekStart,
+        end_date:weekEnd,
+        work_count:count,
+        works:[],
+        density_ratio:count/Math.max(1,maxima.get(source)||1),
+        global_density_ratio:count/Math.max(1,globalMaximum),
+        display_label:`${source} ${count} 項`,
+        title:`${weekStart} – ${weekEnd} · ${source} · ${count} 項`,
+        scope_id:'classification',
+        entry_type:'source',
+        classification_dimension:'source',
+        classification_level:'source'
+      };
+    }).filter(row=>row.group_label&&row.week_start)
+      .sort((a,b)=>a.group_label.localeCompare(b.group_label)||a.week_start.localeCompare(b.week_start));
+  }
+  const rows=await selectScopeStyleRows(runtimeId,{startDate,endDate});
   if(!rows.length)return [];
-  const prepared=dimension==='source'?canonicalSourceWorks(rows):rows;
-  const field=dimension==='style'?(styleLevel==='group'?'style_group':'style_label'):'source_name';
-  return groupWorksByWeek(prepared,field).map(row=>({
+  const field=styleLevel==='group'?'style_group':'style_label';
+  return groupWorksByWeek(rows,field).map(row=>({
     ...row,
     scope_id:'classification',
-    entry_type:dimension==='style'?'style':'source',
-    classification_dimension:dimension,
-    classification_level:dimension==='style'?styleLevel:'source'
+    entry_type:'style',
+    classification_dimension:'style',
+    classification_level:styleLevel
   }));
 }
 
