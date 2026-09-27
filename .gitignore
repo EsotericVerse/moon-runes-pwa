@@ -24,7 +24,5 @@ coverage/
 *.log
 desktop.ini
 
-# Local Cloudflare deployment config. Keep namespace ids / local deployment settings out of git.
-cloudflare/wrangler.toml
 
 .open-next/
