@@ -124,17 +124,40 @@ export async function selectGalaxySummaries(scopeId,uids=[]){
   const ids=[...new Set((uids||[]).map(value=>String(value||'').trim()).filter(Boolean))];
   if(!ids.length)return [];
   const lunarunes=String(scopeId||'')==='lunarunes'||String(scopeId||'')==='lrunes';
-  const rows=(await Promise.all(ids.map(id=>selectNeonRowById(lunarunes?'silver.lrunes':'silver.lo3rwang_galaxy',{
+
+  if(!lunarunes){
+    const [textResult,previewResult]=await Promise.all([
+      selectNeonAllRows('silver.lo3rwang_galaxy',{
+        columns:'uid,title,url,media_link',
+        filters:[{column:'uid',operator:'in',value:ids}]
+      }),
+      selectNeonAllRows('silver.lo3rwang_galaxy_preview',{
+        columns:'uid,content_preview',
+        filters:[{column:'uid',operator:'in',value:ids}]
+      })
+    ]);
+    const previewById=new Map(previewResult.rows.map(row=>[String(row.uid),String(row.content_preview||'')]));
+    const mediaRows=await mediaRowsFor('lo3rwang',textResult.rows.flatMap(row=>mediaIdsOf(row.media_link)));
+    const mediaById=new Map(mediaRows.map(row=>[String(row.media_id),row]));
+    return textResult.rows.map(row=>({
+      uid:row.uid,
+      title:row.title||'',
+      excerpt:previewById.get(String(row.uid))||'',
+      links:resolvedLinks(row,mediaById)
+    }));
+  }
+
+  const rows=(await Promise.all(ids.map(id=>selectNeonRowById('silver.lrunes',{
     idColumn:'uid',
     id,
-    columns:lunarunes?'record_id,record_type,uid,title,content,url,media_link':'uid,title,content,url,media_link'
-  })))).filter(row=>row&&(!lunarunes||row.record_type==='galaxy'));
-  const mediaRows=await mediaRowsFor(lunarunes?'lunarunes':'lo3rwang',rows.flatMap(row=>mediaIdsOf(row.media_link)));
+    columns:'record_id,record_type,uid,title,content,url,media_link'
+  })))).filter(row=>row&&row.record_type==='galaxy');
+  const mediaRows=await mediaRowsFor('lunarunes',rows.flatMap(row=>mediaIdsOf(row.media_link)));
   const mediaById=new Map(mediaRows.map(row=>[String(row.media_id),row]));
   return rows.map(row=>({
     uid:row.uid,
     title:row.title||'',
-    excerpt:String(row.content||'').replace(/\s+/g,' ').trim().slice(0,600),
+    excerpt:String(row.content||'').replace(/\s+/g,' ').trim().slice(0,20),
     links:resolvedLinks(row,mediaById)
   }));
 }
