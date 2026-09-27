@@ -1,6 +1,6 @@
 'use client';
 
-import {getSearchProviders} from './search-providers';
+import {getMediaSearchProviders,getSearchProviders} from './search-providers';
 import {selectManagedScopeIds} from './scope-list';
 import {getDatabaseWorkSearchProviders} from './database-work-search';
 
@@ -50,7 +50,8 @@ export async function searchNeonRows(collectionId,query,{
   startDate='',
   endDate='',
   and=[],
-  nor=[]
+  nor=[],
+  mediaOnly=false
 }={}){
   const q=String(query||'').trim();
   if(!q)return {rows:[],failures:[],hasMore:false,totalCount:0,nextOffset:null};
@@ -58,11 +59,13 @@ export async function searchNeonRows(collectionId,query,{
   const safeLimit=Math.max(1,Math.min(SEARCH_PAGE_SIZE,Math.floor(Number(limit)||SEARCH_PAGE_SIZE)));
   const safeOffset=Math.max(0,Math.floor(Number(offset)||0));
   const scopeIds=collectionId==='all'?await selectManagedScopeIds():[];
-  const providers=[
-    ...getDatabaseWorkSearchProviders(collectionId,scopeIds),
-    ...getSearchProviders(collectionId,scopeIds).filter(provider=>!['author-text','rune-text'].includes(provider.id))
-  ];
-  const cards=scopeCards(q,collectionId);
+  const providers=mediaOnly
+    ?getMediaSearchProviders(collectionId,scopeIds)
+    :[
+      ...getDatabaseWorkSearchProviders(collectionId,scopeIds),
+      ...getSearchProviders(collectionId,scopeIds).filter(provider=>!['author-text','rune-text'].includes(provider.id))
+    ];
+  const cards=mediaOnly?[]:scopeCards(q,collectionId);
   const failures=[];
 
   let skip=safeOffset;
