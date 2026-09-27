@@ -17,9 +17,7 @@ export function visibilityRecord({scope,resourceType,resourceId,draft}){
     resource_type:resourceType,
     resource_id:resourceId,
     visibility:draft.hidden?'private':'public',
-    search_indexed:!draft.hidden,
     statistics_included:draft.includeStatistics!==false,
-    semantic_scan_included:false,
     show_link:draft.showLink!==false,
     show_source:draft.showSource!==false,
     updated_at:new Date().toISOString()
@@ -34,7 +32,7 @@ export async function saveResourceVisibility(args){
 
 export async function listResourceVisibility(){
   const {rows}=await selectNeonAllRows('silver.resource_visibility',{
-    columns:'scope,resource_type,resource_id,visibility,search_indexed,statistics_included,semantic_scan_included,show_link,show_source,updated_at'
+    columns:'scope,resource_type,resource_id,visibility,statistics_included,show_link,show_source,updated_at'
   });
   return rows;
 }
@@ -44,7 +42,7 @@ export async function listResourceVisibilityFor(resources=[]){
   const ids=[...new Set((resources||[]).map(item=>String(item?.resourceId||item?.resource_id||'').trim()).filter(Boolean))];
   if(!ids.length)return [];
   const {rows}=await selectNeonRows('silver.resource_visibility',{
-    columns:'scope,resource_type,resource_id,visibility,search_indexed,statistics_included,semantic_scan_included,show_link,show_source,updated_at',
+    columns:'scope,resource_type,resource_id,visibility,statistics_included,show_link,show_source,updated_at',
     filters:[{column:'resource_id',operator:'in',value:ids}]
   });
   const wanted=new Set((resources||[]).map(item=>[
