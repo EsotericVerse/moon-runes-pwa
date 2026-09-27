@@ -52,8 +52,8 @@ function addKeywordCounts(map,rows,source,period){
   }
 }
 
-async function authorKeywords(period){
-  const range=await resolvePeriod('lo3rwang',period);
+async function authorKeywords(period,rangeOverride){
+  const range=rangeOverride===undefined?await resolvePeriod('lo3rwang',period):rangeOverride;
   const filters=dateFilters(range,'createtime');
   const map=new Map();
   await processKeywordTableRows('silver.lo3rwang_galaxy',{
@@ -71,8 +71,8 @@ async function authorKeywords(period){
   return [...map.values()];
 }
 
-async function authorSources(period){
-  const range=await resolvePeriod('lo3rwang',period);
+async function authorSources(period,rangeOverride){
+  const range=rangeOverride===undefined?await resolvePeriod('lo3rwang',period):rangeOverride;
   const map=new Map();
   if(!range){
     const result=await selectSourceCatalog({scopeId:'lo3rwang'});
@@ -111,8 +111,8 @@ async function authorSources(period){
   return [...map.values()];
 }
 
-async function runeKeywords(period){
-  const range=await resolvePeriod('lunarunes',period);
+async function runeKeywords(period,rangeOverride){
+  const range=rangeOverride===undefined?await resolvePeriod('lunarunes',period):rangeOverride;
   const dateRange=dateFilters(range,'createtime');
   const map=new Map();
   await processKeywordTableRows('silver.lrunes',{
@@ -137,8 +137,8 @@ async function runeKeywords(period){
   return [...map.values()];
 }
 
-async function runeSources(period){
-  const range=await resolvePeriod('lunarunes',period);
+async function runeSources(period,rangeOverride){
+  const range=rangeOverride===undefined?await resolvePeriod('lunarunes',period):rangeOverride;
   const filters=[
     {column:'record_type',operator:'eq',value:'galaxy'},
     ...dateFilters(range,'createtime')
@@ -167,8 +167,8 @@ function splitMediaTags(value){
   return String(value||'').split(/[,，]/).map(tag=>tag.trim()).filter(Boolean);
 }
 
-async function authorMedia(period,type){
-  const range=await resolvePeriod('lo3rwang',period);
+async function authorMedia(period,type,rangeOverride){
+  const range=rangeOverride===undefined?await resolvePeriod('lo3rwang',period):rangeOverride;
   const {rows}=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
     columns:'media_id,media_type,source_place,meta_tags,createtime',
     filters:dateFilters(range,'createtime')
@@ -182,8 +182,8 @@ async function authorMedia(period,type){
   return [...map.values()];
 }
 
-async function runeMedia(period,type){
-  const range=await resolvePeriod('lunarunes',period);
+async function runeMedia(period,type,rangeOverride){
+  const range=rangeOverride===undefined?await resolvePeriod('lunarunes',period):rangeOverride;
   const {rows}=await selectNeonAllRows('silver.lrunes',{
     columns:'record_id,record_type,media_type,source_place,meta_tags,createtime',
     filters:[
@@ -206,8 +206,68 @@ async function sourceRowsForScope(scopeId,period){
   return [];
 }
 
-async function authorStyles(period,type){
-  const range=await resolvePeriod('lo3rwang',period);
+async function rowsForType(id,type,period,rangeOverride){
+  if(id==='lo3rwang'){
+    if(type==='keyword')return authorKeywords(period,rangeOverride);
+    if(type==='source')return authorSources(period,rangeOverride);
+    if(type.startsWith('media_'))return authorMedia(period,type,rangeOverride);
+    return authorStyles(period,type,rangeOverride);
+  }
+  if(id==='lunarunes'){
+    if(type==='keyword')return runeKeywords(period,rangeOverride);
+    if(type==='source')return runeSources(period,rangeOverride);
+    if(type.startsWith('media_'))return runeMedia(period,type,rangeOverride);
+    return runeStyles(period,type,rangeOverride);
+  }
+  return [];
+}
+
+function dateOnly(value){
+  const text=String(value||'').slice(0,10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(text)?text:'';
+}
+function addDays(value,days){
+  const date=dateOnly(value);
+  if(!date)return '';
+  const ms=Date.parse(date+'T00:00:00Z')+Number(days||0)*86400000;
+  return new Date(ms).toISOString().slice(0,10);
+}
+function daySpan(start,end){
+  const a=Date.parse(dateOnly(start)+'T00:00:00Z');
+  const b=Date.parse(dateOnly(end)+'T00:00:00Z');
+  return Number.isFinite(a)&&Number.isFinite(b)&&b>=a?Math.floor((b-a)/86400000)+1:0;
+}
+
+async function resolveComparisonRanges(scopeId,period){
+  if(scopeId==='loc')return null;
+  const dataScope=scopeId==='lunarunes'?'lrunes':scopeId;
+  const rows=(await selectScopeTimeRows(dataScope)).filter(row=>row.entry_type==='period'&&row.start_date);
+  let selected=null;
+  const value=String(period||'all');
+  if(value&&value!=='all'){
+    selected=rows.find(row=>String(row.period||'')===value||String(row.entry_key||'')===value)||null;
+  }else{
+    selected=rows.find(row=>String(row.status||'').trim().toLowerCase()==='current')
+      ||[...rows].sort((a,b)=>String(b.start_date||'').localeCompare(String(a.start_date||'')))[0]
+      ||null;
+  }
+  if(!selected?.start_date)return null;
+  const currentStart=dateOnly(selected.start_date);
+  const currentEnd=dateOnly(selected.end_date)||new Date().toISOString().slice(0,10);
+  const days=daySpan(currentStart,currentEnd);
+  if(!days)return null;
+  const previousEnd=addDays(currentStart,-1);
+  const previousStart=addDays(previousEnd,-days+1);
+  return {
+    current:{start_date:currentStart,end_date:currentEnd},
+    previous:{start_date:previousStart,end_date:previousEnd},
+    period:String(selected.period||selected.entry_key||value||'current'),
+    days
+  };
+}
+
+async function authorStyles(period,type,rangeOverride){
+  const range=rangeOverride===undefined?await resolvePeriod('lo3rwang',period):rangeOverride;
   const filters=dateFilters(range,'createtime');
   const map=new Map();
   await processStyleTableRows('silver.lo3rwang_galaxy',{
@@ -232,8 +292,8 @@ async function authorStyles(period,type){
   return [...map.values()];
 }
 
-async function runeStyles(period,type){
-  const range=await resolvePeriod('lunarunes',period);
+async function runeStyles(period,type,rangeOverride){
+  const range=rangeOverride===undefined?await resolvePeriod('lunarunes',period):rangeOverride;
   const dateRange=dateFilters(range);
   const map=new Map();
   await processStyleTableRows('silver.lrunes',{
@@ -294,16 +354,8 @@ async function selectScopeRankingRows(scopeId,{rankingType='',navigation={}}={})
     const scopeIds=await selectManagedScopeIds();
     const groups=await Promise.all(scopeIds.map(scope=>sourceRowsForScope(scope,period)));
     rows.push(...groups.flat());
-  }else if(id==='lo3rwang'){
-    if(type==='keyword')rows.push(...await authorKeywords(period));
-    else if(type==='source')rows.push(...await authorSources(period));
-    else if(type.startsWith('media_'))rows.push(...await authorMedia(period,type));
-    else rows.push(...await authorStyles(period,type));
-  }else if(id==='lunarunes'){
-    if(type==='keyword')rows.push(...await runeKeywords(period));
-    else if(type==='source')rows.push(...await runeSources(period));
-    else if(type.startsWith('media_'))rows.push(...await runeMedia(period,type));
-    else rows.push(...await runeStyles(period,type));
+  }else{
+    rows.push(...await rowsForType(id,type,period,undefined));
   }
 
   const merged=mergeRows(rows)
@@ -325,6 +377,31 @@ export async function selectScopeRankingPage(scopeId,{offset=0,limit=20,rankingT
 
 export async function selectScopeRankingAll(scopeId,{rankingType='',navigation={}}={}){
   return (await selectScopeRankingRows(scopeId,{rankingType,navigation})).rows;
+}
+
+export async function selectScopeRankingComparison(scopeId,{rankingType='',navigation={}}={}){
+  const id=String(scopeId||'');
+  if(!RANKING_TYPES[id])throw new Error('Scope 無效');
+  if(id==='loc')return null;
+  const type=RANKING_TYPES[id].includes(rankingType)?rankingType:RANKING_TYPES[id][0];
+  const period=String(navigation.period||'all');
+  const ranges=await resolveComparisonRanges(id,period);
+  if(!ranges)return null;
+  const [currentRows,previousRows,candidateRows]=await Promise.all([
+    rowsForType(id,type,period,ranges.current),
+    rowsForType(id,type,period,ranges.previous),
+    type==='keyword'?rowsForType(id,'media_tag',period,ranges.current):Promise.resolve([])
+  ]);
+  return {
+    type,
+    period:ranges.period,
+    days:ranges.days,
+    currentRange:ranges.current,
+    previousRange:ranges.previous,
+    currentRows:mergeRows(currentRows),
+    previousRows:mergeRows(previousRows),
+    candidateRows:mergeRows(candidateRows)
+  };
 }
 
 export async function selectScopeRankingTypes(scopeId){
