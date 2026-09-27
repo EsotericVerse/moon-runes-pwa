@@ -2,12 +2,13 @@ import assert from 'node:assert/strict';
 import {createTextIndex,searchTextIndex} from '../app/loc/text-engine.mjs';
 
 const engine=createTextIndex();
-engine.add('a','微月光 光 日 晨',{id:'a'});
+engine.add('a','光 日 晨',{id:'a'});
 engine.add('b','月光 光 日',{id:'b'});
 engine.add('c','月光 光 日 晨 月',{id:'c'});
 engine.add('d','海 潮',{id:'d'});
+engine.add('e','微月光',{id:'e'});
 
-assert.deepEqual(new Set(searchTextIndex(engine,'月光',{limit:10}).ids),new Set(['a','b','c']));
+assert.deepEqual(new Set(searchTextIndex(engine,'月光',{limit:10}).ids),new Set(['b','c','e']));
 assert.deepEqual(searchTextIndex(engine,'光',{and:['日','晨'],nor:['月'],limit:10}).ids,['a']);
 assert.deepEqual(searchTextIndex(engine,'海',{and:['潮'],limit:10}).ids,['d']);
 
