@@ -5,7 +5,7 @@ import {selectNeonAllRows} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
 import {decodeCultureText,formatCultureDateTime,groupWorksByWeek} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
 import {classifyStyleRows,processStyleTableRows} from './style-classifier';
-import {selectSourceWeekly} from './aggregate-query';
+import {selectCanonicalWorksPage,selectSourceWeekly} from './aggregate-query';
 
 function sourceLabel(value){return String(value||'').trim();}
 function runtimeScopeId(scopeId){return String(scopeId||'')==='lrunes'?'lunarunes':String(scopeId||'');}
@@ -152,89 +152,87 @@ function mediaMetadataDescription(row){
 
 export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,categoryType='source',limit=20,pageOffset=0}={}){
   if(!startDate||!sourceName)return {rows:[],hasMore:false,nextOffset:null,totalCount:0};
-  const pageSize=Math.max(1,Math.min(100,Math.floor(Number(limit)||20)));
+  const pageSize=Math.max(1,Math.floor(Number(limit)||20));
   const offset=Math.max(0,Math.floor(Number(pageOffset)||0));
-  const filters=[...dateFilters(startDate,endDate),{column:'source_name',operator:'eq',value:String(sourceName)}];
+  const page=await selectCanonicalWorksPage({
+    scopeId:'lo3rwang',
+    sourceName:String(sourceName),
+    startDate,
+    endDate,
+    limit:pageSize,
+    offset
+  });
+  if(!page.rows.length)return {rows:[],hasMore:false,nextOffset:null,totalCount:page.totalCount};
+
+  const textIds=page.rows.filter(row=>row.work_type==='galaxy').map(row=>String(row.work_id));
+  const mediaIds=page.rows.filter(row=>row.work_type==='media').map(row=>String(row.work_id));
   const [textResult,mediaResult]=await Promise.all([
-    selectNeonAllRows('silver.lo3rwang_galaxy',{
+    textIds.length?selectNeonAllRows('silver.lo3rwang_galaxy',{
       columns:'galaxy_id,category,content_type,source_name,source_type,source_role,title,meta_tags,content_hash,created_at,source_ref,url,source_id,target_id,ref_id',
-      filters,
-      orders:[{column:'created_at',ascending:false}]
-    }),
-    selectNeonAllRows('silver.lo3rwang_galaxy_media',{
+      filters:[{column:'galaxy_id',operator:'in',value:textIds}]
+    }):Promise.resolve({rows:[]}),
+    mediaIds.length?selectNeonAllRows('silver.lo3rwang_galaxy_media',{
       columns:'media_id,media_link,source_name,source_type,source_native_id,media_type,title,url,meta_tags,style_tags,created_at',
-      filters,
-      orders:[{column:'created_at',ascending:false}]
-    })
+      filters:[{column:'media_id',operator:'in',value:mediaIds}]
+    }):Promise.resolve({rows:[]})
   ]);
-  const groups=new Map();
-  const ensure=(key,seed={})=>{
-    if(!groups.has(key))groups.set(key,{key,links:[],media:[],...seed});
-    return groups.get(key);
-  };
-  for(const row of textResult.rows){
-    const key=String(row.galaxy_id||row.source_id||row.target_id||row.ref_id||row.content_hash||row.title||'').trim();
-    if(!key)continue;
-    const group=ensure(key,{
-      galaxy_id:row.galaxy_id,
-      source_name:row.source_name,
-      source_type:row.source_type,
-      source_role:row.source_role,
-      title:decodeCultureText(row.title||'').trim()||row.source_name||row.galaxy_id,
-      description:'',
-      created_at:row.created_at,
-      start_date:row.created_at,
-      date:row.created_at,
-      display_date:formatCultureDateTime(row.created_at),
-      entry_id:row.galaxy_id,
-      entry_type:'work',
-      source_id:row.source_id||null,
-      target_id:row.target_id||null,
-      ref_id:row.ref_id||null,
-      source_ref:row.source_ref||null,
-      url:row.url||null,
-      group_label:sourceLabel(row.source_name),
-      scope_id:'lo3rwang'
-    });
-    if(row.url&&/^https?:\/\//i.test(String(row.url)))group.links.push({id:'text:'+row.galaxy_id,href:row.url,label:'查看來源'});
-  }
-  for(const row of mediaResult.rows){
-    const key=String(row.media_link||row.media_id||row.source_native_id||row.title||'').trim();
-    if(!key)continue;
-    const group=ensure(key,{
+
+  const textById=new Map(textResult.rows.map(row=>[String(row.galaxy_id),row]));
+  const mediaById=new Map(mediaResult.rows.map(row=>[String(row.media_id),row]));
+  const rows=page.rows.map(item=>{
+    if(item.work_type==='galaxy'){
+      const row=textById.get(String(item.work_id));
+      if(!row)return null;
+      return {
+        key:'galaxy:'+row.galaxy_id,
+        galaxy_id:row.galaxy_id,
+        source_name:row.source_name,
+        source_type:row.source_type,
+        source_role:row.source_role,
+        title:decodeCultureText(row.title||'').trim()||row.source_name||row.galaxy_id,
+        description:'',
+        created_at:row.created_at,
+        start_date:row.created_at,
+        date:row.created_at,
+        display_date:formatCultureDateTime(row.created_at),
+        entry_id:row.galaxy_id,
+        entry_type:'work',
+        source_id:row.source_id||null,
+        target_id:row.target_id||null,
+        ref_id:row.ref_id||null,
+        source_ref:row.source_ref||null,
+        url:row.url||null,
+        links:row.url&&/^https?:\/\//i.test(String(row.url))?[{id:'text:'+row.galaxy_id,href:row.url,label:'查看來源'}]:[],
+        group_label:sourceLabel(row.source_name),
+        scope_id:'lo3rwang'
+      };
+    }
+    const row=mediaById.get(String(item.work_id));
+    if(!row)return null;
+    return {
+      key:'media:'+row.media_id,
       galaxy_id:row.media_link||null,
+      media_id:row.media_id,
       source_name:row.source_name,
       title:decodeCultureText(row.title||'').trim()||'多媒體項目',
-      description:'',
+      description:mediaMetadataDescription(row),
+      media_metadata_text:mediaMetadataDescription(row),
       created_at:row.created_at,
       start_date:row.created_at,
       date:row.created_at,
       display_date:formatCultureDateTime(row.created_at),
-      entry_id:row.media_link||String(row.media_id),
+      entry_id:String(row.media_id),
       entry_type:'work_group',
       source_id:row.media_link||null,
       target_id:null,
       ref_id:null,
       group_label:sourceLabel(row.source_name),
-      scope_id:'lo3rwang'
-    });
-    group.media.push(row);
-    if(row.url&&/^https?:\/\//i.test(String(row.url))){
-      const number=group.links.filter(link=>String(link.id||'').startsWith('media:')).length+1;
-      group.links.push({id:'media:'+row.media_id,href:row.url,label:`歌曲連結 ${number}`});
-    }
-  }
-  const merged=[...groups.values()].map(group=>{
-    if(!group.description&&group.media.length){
-      group.description=group.media.map(mediaMetadataDescription).filter(Boolean).join(' ｜ ');
-    }
-    group.links=[...new Map(group.links.map(link=>[link.href,link])).values()];
-    const newest=[group.created_at,...group.media.map(row=>row.created_at)].filter(Boolean).sort().at(-1);
-    if(newest){group.created_at=newest;group.start_date=newest;group.date=newest;group.display_date=formatCultureDateTime(newest);}
-    return group;
-  }).sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
-  const totalCount=merged.length;
-  const rows=merged.slice(offset,offset+pageSize);
+      scope_id:'lo3rwang',
+      links:row.url&&/^https?:\/\//i.test(String(row.url))?[{id:'media:'+row.media_id,href:row.url,label:'歌曲連結'}]:[]
+    };
+  }).filter(Boolean);
+
+  const totalCount=Number(page.totalCount)||0;
   const hasMore=offset+pageSize<totalCount;
   return {rows,hasMore,nextOffset:hasMore?offset+pageSize:null,totalCount};
 }
