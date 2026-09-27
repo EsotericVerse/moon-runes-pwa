@@ -50,9 +50,7 @@ export const SCOPES_V2=Object.freeze({
       'duel/two',
       'duel/three',
       'duel/five',
-      'duel/ow3gs',
-      'daily/log',
-      'daily/trend'
+      'duel/ow3gs'
     ]),
     routePatterns:Object.freeze(['list/:group','list/:group/:rune']),
     compatibilityRoutes:Object.freeze([]),
@@ -202,6 +200,7 @@ export function scopeRoutePathsV2(scopeId){
   return Object.freeze([
     '/',
     ...FEATURES_V2.map(item=>'/'+item.path),
+    '/governance/manage',
     ...(scope.localRoutes||[]).map(route=>'/'+String(route).replace(/^\/+/,'')) 
   ]);
 }
