@@ -1,7 +1,8 @@
 'use client';
 
 import {useState} from 'react';
-import {insertNeonRows,upsertNeonRows} from './neon-repository';
+import {insertNeonRows} from './neon-repository';
+import {saveResourceVisibility} from './resource-visibility';
 import {useNeonAccount} from './use-neon-account';
 import ContentEditorV2 from '../modular-v2/ContentEditorV2';
 
@@ -39,18 +40,9 @@ export default function ManagementArticlePublisher({scopeId}){
         update_time:now
       }]);
 
-      await upsertNeonRows('silver.resource_visibility',{
-        scope:'lo3rwang',resource_type:'galaxy',resource_id:id,
-        visibility:draft.hidden?'private':'public',
-        projection_level:draft.fullText?'full':'summary',
-        search_indexed:!draft.hidden,
-        statistics_included:draft.includeStatistics!==false,
-        semantic_scan_included:false,
-        source_ref:draft.source.trim(),
-        show_link:draft.showLink!==false,
-        show_source:draft.showSource!==false,
-        updated_at:now
-      },{conflict:'scope,resource_type,resource_id'});
+      await saveResourceVisibility({
+        scope:'lo3rwang',resourceType:'galaxy',resourceId:id,draft,sourceRef:draft.source.trim()
+      });
 
       setDraft(blank());setStatus('文章已發表到 Galaxy。');
     }catch(error){setStatus(error?.message||'文章發表失敗。');}
