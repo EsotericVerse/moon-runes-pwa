@@ -123,6 +123,36 @@ export async function selectNeonRows(table,options={}){
   return executeSelect(table,options,false);
 }
 
+export async function selectNeonWindow(table,{
+  columns='*',filters=[],orFilter='',orders=[],
+  limit=UI_PAGE_SIZE,offset=0,count=null,concurrency=DATA_QUERY_CONCURRENCY
+}={}){
+  const requested=Math.max(0,Math.floor(Number(limit)||0));
+  const start=Math.max(0,Math.floor(Number(offset)||0));
+  if(requested<=MAX_ROW_PAGE){
+    return selectNeonRows(table,{columns,filters,orFilter,orders,limit:requested,offset:start,count});
+  }
+  assertSafeSelect({table,columns,filters,limit:1});
+  const windows=[];
+  for(let consumed=0;consumed<requested;consumed+=MAX_ROW_PAGE){
+    windows.push({
+      offset:start+consumed,
+      limit:Math.min(MAX_ROW_PAGE,requested-consumed),
+      includeCount:consumed===0
+    });
+  }
+  const pages=await pMap(windows,async window=>selectNeonRows(table,{
+    columns,filters,orFilter,orders,
+    limit:window.limit,
+    offset:window.offset,
+    count:window.includeCount?count:null
+  }),{concurrency:Math.max(1,Math.min(Number(concurrency)||DATA_QUERY_CONCURRENCY,DATA_QUERY_CONCURRENCY))});
+  return {
+    rows:pages.flatMap(page=>page.rows),
+    count:pages[0]?.count??null
+  };
+}
+
 export async function selectNeonAllRows(table,{
   columns,filters=[],orFilter='',orders=[],batchSize=MAX_ROW_PAGE,concurrency=DATA_QUERY_CONCURRENCY
 }={}){
