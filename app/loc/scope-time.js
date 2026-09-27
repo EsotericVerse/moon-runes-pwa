@@ -1,6 +1,6 @@
 'use client';
 
-import {selectNeonRows} from './neon-repository';
+import {selectNeonAllRows} from './neon-repository';
 
 export const SCOPE_TIME_COLUMNS='record_id,record_type,scope_id,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility';
 
@@ -70,13 +70,12 @@ export function normalizeScopeTimeRows(rows){
 export async function selectScopeTimeRows(scopeId){
   const id=String(scopeId||'').trim();
   if(!id)return [];
-  const {rows}=await selectNeonRows('silver.manage',{
+  const {rows}=await selectNeonAllRows('silver.manage',{
     columns:SCOPE_TIME_COLUMNS,
     filters:[
       {column:'scope_id',operator:'eq',value:id},
       {column:'record_type',operator:'in',value:['anchor','period','event']}
-    ],
-    limit:50
+    ]
   });
   return normalizeScopeTimeRows(rows);
 }
