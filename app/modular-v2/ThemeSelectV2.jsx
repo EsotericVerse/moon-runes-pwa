@@ -1,6 +1,7 @@
 'use client';
 import {useEffect,useMemo,useState} from 'react';
 import {fetchThemeStylesV2} from '../migration-bridges/theme-admin-neon.v2';
+import {getScopeThemeDefault} from '../loc/scope-public-settings';
 import {useScopeRuntimeV2} from './use-scope-runtime.v2';
 import {applyThemeV2,getThemeSlotV2,THEME_SLOTS_V2} from './theme-registry.v2';
 
@@ -13,11 +14,20 @@ export default function ThemeSelectV2(){
 
   useEffect(()=>{
     let live=true;
-    if(typeof window!=='undefined'){
-      const saved=window.localStorage.getItem(storageKey(scopeId));
-      setThemeId(/^theme-[1-8]$/.test(String(saved||''))?saved:DEFAULT_THEME_ID);
-    }
-    fetchThemeStylesV2().then(rows=>{if(live)setStyles(Array.isArray(rows)?rows:[])}).catch(()=>{if(live)setStyles([])});
+    const saved=typeof window!=='undefined'?window.localStorage.getItem(storageKey(scopeId)):'';
+    Promise.all([getScopeThemeDefault(scopeId),fetchThemeStylesV2()])
+      .then(([scopeDefault,rows])=>{
+        if(!live)return;
+        const savedTheme=/^theme-[1-8]$/.test(String(saved||''))?saved:'';
+        const defaultTheme=/^theme-[1-8]$/.test(String(scopeDefault?.default_theme_id||''))?scopeDefault.default_theme_id:DEFAULT_THEME_ID;
+        setThemeId(savedTheme||defaultTheme);
+        setStyles(Array.isArray(rows)?rows:[]);
+      })
+      .catch(()=>{
+        if(!live)return;
+        setThemeId(/^theme-[1-8]$/.test(String(saved||''))?saved:DEFAULT_THEME_ID);
+        setStyles([]);
+      });
     return()=>{live=false};
   },[scopeId]);
 
