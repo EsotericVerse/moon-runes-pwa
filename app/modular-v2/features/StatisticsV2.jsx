@@ -14,12 +14,13 @@ import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import KeywordSettingsV2 from './KeywordSettingsV2';
 import ContextStyleManager from './ContextStyleManager';
+import MediaMetaSettingsV2 from './MediaMetaSettingsV2';
 import FeaturePageV2 from '../FeaturePageV2';
 import {analyzeDistribution} from '../../loc/model/automatic-analysis.mjs';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const CHART_TYPES=[['bar','長條圖'],['line','折線圖'],['pie','圓餅圖']];
-const STAT_TABS=[['ranking','排行榜'],['keywords','關鍵詞設定'],['styles','風格設定'],['charts','統計圖']];
+const STAT_TABS=[['ranking','排行榜'],['keywords','關鍵詞設定'],['styles','風格設定'],['media','多媒體設定'],['charts','統計圖']];
 const STAT_TYPE_LABELS=Object.freeze({
   keyword:'關鍵詞',
   source:'作品來源',
@@ -174,10 +175,19 @@ function StylePanel({scopeId}){
   </section>;
 }
 
+function MediaPanel({scopeId}){
+  return <section className="scope-v2-stat-section">
+    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Media Metadata</p><h2>多媒體設定</h2><p>多媒體以 media_type、source_place 與 meta_tags 參與搜尋、文化時間分布與統計。</p></div></header>
+    {scopeId==='lo3rwang'?<MediaMetaSettingsV2 databaseScopeId="lo3rwang"/>:<p className="scope-v2-status">此 Scope 的多媒體設定沿用既有資料治理。</p>}
+  </section>;
+}
+
 function StatisticsShell({scopeId,navigation}){
   const account=useNeonAccount();
   const canManage=Boolean(account.user&&(account.canManageGlobalSync()||account.canManageScopeSync(scopeId)));
-  const visibleTabs=scopeId==='loc'?STAT_TABS.filter(([value])=>value==='ranking'||value==='charts'):STAT_TABS;
+  const visibleTabs=scopeId==='loc'
+    ?STAT_TABS.filter(([value])=>value==='ranking'||value==='charts')
+    :(scopeId==='lo3rwang'?STAT_TABS:STAT_TABS.filter(([value])=>value!=='media'));
   const requested=visibleTabs.some(([value])=>value===navigation.statTab)?navigation.statTab:'ranking';
   const active=requested;
   const typesQuery=useQuery({
@@ -193,6 +203,7 @@ function StatisticsShell({scopeId,navigation}){
     {!typesQuery.isPending&&active==='ranking'?<RankingPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
     {active==='keywords'?<KeywordPanel scopeId={scopeId}/>:null}
     {active==='styles'?<StylePanel scopeId={scopeId}/>:null}
+    {active==='media'?<MediaPanel scopeId={scopeId}/>:null}
     {!typesQuery.isPending&&active==='charts'?<ChartsPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
   </section>;
 }
