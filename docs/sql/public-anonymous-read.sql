@@ -13,12 +13,10 @@ BEGIN;
 GRANT USAGE ON SCHEMA silver TO anonymous;
 
 GRANT SELECT ON TABLE
-  silver.lo3rwang,
   silver.faq_entries,
   silver.manage,
   silver.resource_visibility,
   silver.lo3rwang_style,
-  silver.lo3rwang_style_keywords,
   silver.lo3rwang_time,
   silver.lrunes_time,
   silver.lo3rwang_galaxy,
