@@ -12,13 +12,12 @@ import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation
 import {FEATURE_EMPTY_MESSAGE,FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import KeywordSettingsV2 from './KeywordSettingsV2';
-import SourceSettingsV2 from './SourceSettingsV2';
 import ContextStyleManager from './ContextStyleManager';
 import FeaturePageV2 from '../FeaturePageV2';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const CHART_TYPES=[['bar','長條圖'],['line','折線圖'],['pie','圓餅圖']];
-const STAT_TABS=[['ranking','排行榜'],['keywords','關鍵詞設定'],['sources','作品來源設定'],['styles','風格設定'],['charts','統計圖']];
+const STAT_TABS=[['ranking','排行榜'],['keywords','關鍵詞設定'],['styles','風格設定'],['charts','統計圖']];
 const STAT_TYPE_LABELS=Object.freeze({keyword:'關鍵詞',source:'作品來源',style:'風格標籤',style_group:'風格大群組'});
 function displayTerm(row){
   return String(row?.term||'');
@@ -152,13 +151,6 @@ function KeywordPanel({scopeId}){
   </section>;
 }
 
-function SourcePanel({scopeId}){
-  return <section className="scope-v2-stat-section">
-    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Sources</p><h2>作品來源設定</h2><p>來源名稱是匯入時自訂的唯一字串；需要合併時直接批次改名，統計與 Time River 會自然依相同名稱分組。</p></div></header>
-    <SourceSettingsV2 scopeId={scopeId}/>
-  </section>;
-}
-
 function StylePanel({scopeId}){
   return <section className="scope-v2-stat-section">
     <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Styles</p><h2>風格設定</h2><p>風格採兩層群組：小群組名稱就是風格標籤，多個風格標籤歸入同一個大群組。關鍵詞規則沿用同一分類結構，規則本身另外設定。</p></div></header>
@@ -180,7 +172,6 @@ function StatisticsShell({scopeId,navigation}){
     {typesQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(typesQuery.error)}</p>:null}
     {!typesQuery.isPending&&active==='ranking'?<RankingPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
     {active==='keywords'?<KeywordPanel scopeId={scopeId}/>:null}
-    {active==='sources'?<SourcePanel scopeId={scopeId}/>:null}
     {active==='styles'?<StylePanel scopeId={scopeId}/>:null}
     {!typesQuery.isPending&&active==='charts'?<ChartsPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
   </section>;
