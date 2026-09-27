@@ -75,10 +75,14 @@ function throwQueryError(error,table,operation){
 }
 
 export async function selectNeonRows(table,{
-  columns='*',filters=[],orders=[],limit=1000,offset=0,range=null,count=null
+  columns='*',filters=[],orFilter='',orders=[],limit=1000,offset=0,range=null,count=null
 }={}){
   let query=relation(table).select(columns,count?{count}:undefined);
   query=applyFilters(query,filters);
+  if(orFilter){
+    const expression=z.string().min(1).max(12000).parse(orFilter);
+    query=query.or(expression);
+  }
   for(const order of orders){
     const item=OrderSchema.parse(order);
     query=query.order(item.column,{ascending:item.ascending??true,nullsFirst:item.nullsFirst});
