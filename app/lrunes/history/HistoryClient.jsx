@@ -60,7 +60,7 @@ export default function HistoryClient({defaultKind='all'}){
       {shown.map(record=><article className="loc-card" key={record.id}>
         <div className="loc-result-meta"><span>{record.mode_label||record.mode||record.record_kind}</span><span>{String(record.created_at||'').replace('T',' ').slice(0,16)}</span></div>
         <h2>{(record.cards||[]).map(card=>`${card.position}・${card.name}・${card.direction}`).join(' ｜ ')}</h2>
-        <p>真實月相：{record.moon_phase||'—'} · 趨勢：{record.trend||'—'}{Number.isFinite(Number(record.score))?` · 分數：${Number(record.score).toFixed(3)}`:''}</p>
+        <p>真實月相：{record.moon_phase||'—'} · 趨勢：{record.trend||'未知'} · 結果：{record.result||'未知'}</p>
         {record.guidance&&<p>{record.guidance}</p>}
         {record.archived?<p className="loc-meta">來源：{record.source} · 唯讀歷史紀錄</p>:<div className="loc-actions"><button className="loc-button" type="button" onClick={()=>remove(record.id)}>刪除</button></div>}
       </article>)}
