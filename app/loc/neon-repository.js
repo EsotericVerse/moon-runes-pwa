@@ -156,7 +156,7 @@ async function executeSelect(table,options={},allowHeavyBatch=false){
       const cause=error.cause||error;
       const message=String(cause.message||'');
       const oversized=cause.status===413||cause.code==='54000'||cause.code==='53200'||cause.code==='57014'||/response.*(too large|size.*limit)|payload too large|statement timeout/i.test(message);
-      const transient=[429,502,503,504].includes(cause.status)||/failed to fetch|fetch failed|network error/i.test(message);
+      const transient=[502,503,504].includes(cause.status)||/failed to fetch|fetch failed|network error/i.test(message);
       if(oversized&&size>1){size=Math.max(1,Math.floor(size/2));continue;}
       if(transient&&attempt<3){reportNeonIoError(cause);continue;}
       throw error;
