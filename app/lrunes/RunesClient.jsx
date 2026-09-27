@@ -8,8 +8,8 @@ import { realMoonPhase } from '../loc/model/moon-phase';
 import { buildRuneGraph, searchRuneGraph } from '../../js/rune-graph-core.js';
 import RuneAtlas from './RuneAtlas';
 import {scopeHrefV2,scopeOriginV2} from '../modular-v2/scope-registry.v2';
+import {drawRuneSession,makeRuneDrawId} from './rune-draw-engine';
 
-const DIRECTIONS=['正位','半正位','半逆位','逆位'];
 const ROTATION_CLASSES=['rune-rotate-0','rune-rotate-90','rune-rotate-n90','rune-rotate-180'];
 const GROUP_ORDER=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
 const UI_SETTINGS_KEY='loc-ui-settings-v1';
@@ -33,8 +33,6 @@ const RITUAL_MESSAGES={
   ow3gs:['您目前使用的是「OW3gs 11卡模式」。','1–6 建立事件描述層，7–11 進入核心判定。','正在整理兩段模型。','十一張命運絲線已經整理完成。']
 };
 
-function randomInt(max){if(max<=1)return 0;if(globalThis.crypto?.getRandomValues){const limit=Math.floor(0x100000000/max)*max;const value=new Uint32Array(1);do{globalThis.crypto.getRandomValues(value)}while(value[0]>=limit);return value[0]%max;}return Math.floor(Math.random()*max);}
-function sampleUnique(items,count){const pool=[...items];for(let i=pool.length-1;i>0;i--){const j=randomInt(i+1);[pool[i],pool[j]]=[pool[j],pool[i]];}return pool.slice(0,count);}
 function runeCardImage(card){const number=String(Number(card?.編號)||0).padStart(2,'0');const name=String(card?.符文名稱||'').replace(/之符文$/,'').trim();return `/assets/lunarunes/cards/${number}_${name}.png`;}
 function initialMode(){if(typeof window==='undefined')return 'single';const value=new URLSearchParams(window.location.search).get('mode')||'single';return MODES.some(item=>item.key===value)?value:'single';}
 function initialSection(){return 'draw';}
@@ -42,7 +40,6 @@ function directionText(card,direction){const field=({'正位':'正向表示','�
 function phaseAdvice(interpretations,card,direction,phase){const row=(interpretations||[]).find(item=>item?.符文名稱===card?.符文名稱);return row?.卡牌方向?.find(item=>item?.方向===direction)?.現況?.find(item=>item?.現在月相===phase)||null;}
 function narrativeCore(card,direction){return directionText(card,direction);}
 function derivedFromHistory(history){return (history?.semantic_history_cases||[]).filter(item=>item?.title&&item.title!=='混沌三兄弟').map(item=>{const parts=String(item.title).split('→').map(value=>value.trim());const target=parts.length>1?parts.at(-1):'';const resolvedRune=/^[靈魂彩憶界域鏡核向斷封鍊啟分悟誤生老病死心愛語韻樹花葉草根種實枝金玉晶地石鑽礦塵光暗水火風土雷氣日月星辰明時空因福禍無夢幻緣虛果玄命]$/.test(target)?target:null;const relation=item.kind||'derived';return {term:parts[0]||item.title,relation,resolved_rune:resolvedRune,status:relation==='balanced_ambiguity'?'ambiguous':relation.includes('out_of_domain')?'special':'confirmed',note:item.note||''};});}
-function makeDrawId(mode){const suffix=globalThis.crypto?.randomUUID?.()||String(randomInt(1000000000));return `rune-draw:${mode}:${Date.now()}:${suffix}`;}
 
 export default function RunesClient(){
   const {value:uiSettings}=useLocalStore(UI_SETTINGS_KEY,DEFAULT_UI_SETTINGS);
@@ -56,7 +53,7 @@ export default function RunesClient(){
   useEffect(()=>{setNodePage(1);setEdgePage(1);},[graphQuery,graphGroup,graphEdge,pageSize]);
   function chooseMode(key){timers.current.forEach(clearTimeout);setRitualStep(-1);setError('');setModeKey(key);setDraw(null);setActiveSection('draw');if(typeof window!=='undefined'){const url=new URL(window.location.href);url.searchParams.set('mode',key);window.history.replaceState({},'',`${url.pathname}${url.search}#draw`);}}
   function openSection(){setActiveSection('draw');}
-  function finishDraw(){try{if(!data?.runes?.length)throw new Error('符文資料尚未載入完成。');if(data.runes.length<selectedMode.count)throw new Error(`可抽取符文不足 ${selectedMode.count} 張。`);if(modeKey==='daily'&&!interpretations.length)throw new Error('每日符文解讀資料尚未載入完成。');const cards=sampleUnique(data.runes,selectedMode.count),directionIndexes=cards.map(()=>randomInt(4)),directions=directionIndexes.map(index=>DIRECTIONS[index]),evaluation=evaluateSpread(cards,directions),createdAt=new Date().toISOString();const guidance=finalGuidance(data.lots,cards.at(-1),directions.at(-1));setDraw({id:makeDrawId(modeKey),createdAt,cards,directionIndexes,directions,evaluation,guidance});setError('');}catch(err){setDraw(null);setError(`抽牌失敗：${err?.message||'未知錯誤'}`);}finally{setRitualStep(-1);}}
+  function finishDraw(){try{if(!data?.runes?.length)throw new Error('符文資料尚未載入完成。');if(data.runes.length<selectedMode.count)throw new Error(`可抽取符文不足 ${selectedMode.count} 張。`);if(modeKey==='daily'&&!interpretations.length)throw new Error('每日符文解讀資料尚未載入完成。');const {cards,directionIndexes,directions}=drawRuneSession(data.runes,selectedMode.count),evaluation=evaluateSpread(cards,directions),createdAt=new Date().toISOString();const guidance=finalGuidance(data.lots,cards.at(-1),directions.at(-1));setDraw({id:makeRuneDrawId(modeKey),createdAt,cards,directionIndexes,directions,evaluation,guidance});setError('');}catch(err){setDraw(null);setError(`抽牌失敗：${err?.message||'未知錯誤'}`);}finally{setRitualStep(-1);}}
   function executeDraw(){if(!data||ritualStep>=0)return;setError('');setDraw(null);setActiveSection('draw');timers.current.forEach(clearTimeout);timers.current=[];if(instantDraw){finishDraw();return;}setRitualStep(0);[1,2,3].forEach(step=>timers.current.push(setTimeout(()=>setRitualStep(step),step*1000)));timers.current.push(setTimeout(finishDraw,4000));}
   const ritualMessages=RITUAL_MESSAGES[modeKey]||RITUAL_MESSAGES.single;const nodePages=Math.max(1,Math.ceil(graphView.nodes.length/pageSize)),edgePages=Math.max(1,Math.ceil(graphView.edges.length/pageSize));const shownNodes=graphView.nodes.slice((nodePage-1)*pageSize,nodePage*pageSize),shownEdges=graphView.edges.slice((edgePage-1)*pageSize,edgePage*pageSize);const liveGuidance=draw?draw.guidance||'':'';
 
