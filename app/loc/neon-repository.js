@@ -2,7 +2,7 @@
 
 import {z} from 'zod';
 import {neonClient} from './neon-client';
-import {UI_PAGE_SIZE,assertSafeSelect,safePageSize,safeRange,safeReturning,chunkWriteRows} from './query-policy';
+import {UI_PAGE_SIZE,MAX_ROW_PAGE,assertSafeSelect,assertCatalogSelect,safePageSize,safeRange,safeReturning,chunkWriteRows} from './query-policy';
 
 const TableSchema=z.enum([
   'silver.manage','silver.resource_visibility',
@@ -101,6 +101,40 @@ export async function selectNeonRows(table,{
   const result=await query;
   throwQueryError(result.error,table,'SELECT');
   return {rows:parseRows(result.data,table),count:result.count??null};
+}
+
+
+export async function selectNeonCatalog(table,{
+  columns,filters=[],orFilter='',orders=[]
+}={}){
+  assertCatalogSelect({table,columns,filters});
+  const first=await selectNeonRows(table,{
+    columns,filters,orFilter,orders,limit:MAX_ROW_PAGE,offset:0,count:'exact'
+  });
+  const total=Math.max(0,Number(first.count??first.rows.length)||0);
+  if(total<=first.rows.length)return {rows:first.rows,count:total};
+  const rows=[...first.rows];
+  for(let offset=MAX_ROW_PAGE;offset<total;offset+=MAX_ROW_PAGE){
+    const page=await selectNeonRows(table,{
+      columns,filters,orFilter,orders,limit:MAX_ROW_PAGE,offset
+    });
+    rows.push(...page.rows);
+    if(!page.rows.length)break;
+  }
+  return {rows,count:total};
+}
+
+export async function selectNeonRowById(table,{
+  idColumn,id,columns
+}={}){
+  const value=String(id??'').trim();
+  if(!value)throw new TypeError('Exact ID is required');
+  const result=await selectNeonRows(table,{
+    columns,
+    filters:[{column:String(idColumn||''),operator:'eq',value}],
+    limit:1
+  });
+  return result.rows[0]||null;
 }
 
 export async function insertNeonRows(table,records,{returning='*'}={}){
