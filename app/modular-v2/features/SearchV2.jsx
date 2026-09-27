@@ -218,7 +218,11 @@ export default function SearchV2(){
     try{
       if(!account.canManageScopeSync(result.scopeId))throw new Error('沒有修改此內容的權限。');
       const runeScope=result.scopeId==='lrunes'||result.scopeId==='lunarunes';
-      const contentPatch={title:editDraft.title,[result.editableField]:editDraft.body};
+      const contentPatch={
+        title:editDraft.title,
+        [result.editableField]:editDraft.body,
+        ...(result.resourceType==='galaxy'?{searchable:!editDraft.hidden}:{})
+      };
       const contentFilters=[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId}];
       await updateNeonRows(result.editableTable,contentPatch,{filters:contentFilters});
       let settings=result.settings||null;
