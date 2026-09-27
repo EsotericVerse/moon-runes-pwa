@@ -262,7 +262,8 @@ export default function CultureV2(){
       ?'發文'
       :(classificationMode==='style'?'風格作品':(mediaDimension==='place'?'多媒體地點紀錄':'多媒體紀錄')),
     minimumCount:3,
-    highRatio:1.75
+    minimumShareDelta:0.1,
+    minimumRatio:1.5
   }),[classificationBuckets,classificationMode,mediaDimension]);
 
   return <FeaturePageV2 featureId="culture">
@@ -317,7 +318,7 @@ export default function CultureV2(){
                 <p>只比較前後區間的分布比例變化，不以單日或單筆數量判斷，也不自動建立定錨點。</p>
                 <div className='scope-v2-list'>
                   {automaticAnalysis.suggestions.map((suggestion,index)=><article className='scope-v2-inline-card' key={suggestion.type+'-'+suggestion.date+'-'+index}>
-                    <strong>{suggestion.date}</strong>
+                    <strong>{suggestion.category||'分布變化'}｜{suggestion.from||suggestion.date} → {suggestion.to||suggestion.date}</strong>
                     <span>{suggestion.text}</span>
                     <span>
                       <a href={'/search/?from='+encodeURIComponent(suggestion.from||suggestion.date)+'&to='+encodeURIComponent(suggestion.to||suggestion.date)}>搜尋這段</a>
