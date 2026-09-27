@@ -5,6 +5,10 @@ import {createClient,SupabaseAuthAdapter} from '@neondatabase/neon-js';
 const DEFAULT_NEON_DATA_API_URL='https://ep-rapid-queen-b3oyboy6.apirest.c-4.ap-southeast-1.aws.neon.tech/neondb/rest/v1';
 const DEFAULT_NEON_AUTH_URL='https://ep-rapid-queen-b3oyboy6.neonauth.c-4.ap-southeast-1.aws.neon.tech/neondb/auth';
 
+let publicToken='';
+let publicTokenExpiresAt=0;
+let publicTokenRequest=null;
+
 export function neonDataApiUrl(){
   const configured=String(process.env.NEXT_PUBLIC_NEON_DATA_API_URL||process.env.NEXT_PUBLIC_NEON_DATABASE_URL||DEFAULT_NEON_DATA_API_URL).trim().replace(/\/+$/,'');
   return configured.endsWith('/rest/v1')?configured:`${configured}/rest/v1`;
@@ -18,24 +22,68 @@ export function neonAuthConfigured(){
   return Boolean(neonAuthUrl());
 }
 
-// Public reads do not require user sign-in. Neon Auth only supplies the short-lived
-// anonymous JWT required by the Data API; PostgreSQL's anonymous role remains the
-// authority for public SELECT permissions. An authenticated management session
-// upgrades the same client rather than introducing a second data path.
-export const neonClient=createClient({
+export function resetNeonPublicToken(){
+  publicToken='';
+  publicTokenExpiresAt=0;
+  publicTokenRequest=null;
+}
+
+function normalizeExpiry(value){
+  const n=Number(value);
+  if(!Number.isFinite(n)||n<=0)return Date.now()+60_000;
+  return n>1e12?n:n*1000;
+}
+
+export async function getNeonPublicToken(){
+  const now=Date.now();
+  if(publicToken&&now<publicTokenExpiresAt-30_000)return publicToken;
+  if(publicTokenRequest)return publicTokenRequest;
+
+  publicTokenRequest=(async()=>{
+    const response=await fetch(`${neonAuthUrl()}/token/anonymous`,{
+      method:'GET',
+      headers:{accept:'application/json'},
+      cache:'no-store'
+    });
+    let payload=null;
+    try{payload=await response.json()}catch{}
+    if(!response.ok||!payload?.token){
+      const message=String(payload?.message||payload?.error||`HTTP ${response.status}`);
+      const error=new Error(`Neon anonymous token failed: ${message}`);
+      error.status=response.status;
+      throw error;
+    }
+    publicToken=String(payload.token);
+    publicTokenExpiresAt=normalizeExpiry(payload.expires_at);
+    return publicToken;
+  })();
+
+  try{return await publicTokenRequest}
+  finally{publicTokenRequest=null}
+}
+
+// Public SELECTs use a short-lived anonymous JWT obtained directly from Neon Auth.
+// The token is only a credential reference; no application data is cached here.
+// Management writes use a separate authenticated client so public reads cannot be
+// poisoned by an old signed-in or persisted Better Auth session.
+export const neonPublicClient=createClient({
+  dataApi:{
+    url:neonDataApiUrl(),
+    getToken:getNeonPublicToken,
+    options:{db:{schema:'api'}}
+  }
+});
+
+export const neonAuthClient=createClient({
   auth:{
     adapter:SupabaseAuthAdapter(),
-    url:neonAuthUrl(),
-    allowAnonymous:true
+    url:neonAuthUrl()
   },
   dataApi:{
     url:neonDataApiUrl(),
     options:{db:{schema:'api'}}
   }
 });
-
-export const neonPublicClient=neonClient;
-export const neonAuthClient=neonClient;
 
 export async function getNeonSession(){
   const {data,error}=await neonAuthClient.auth.getSession();
