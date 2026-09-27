@@ -97,7 +97,12 @@ export async function selectAuthorStyleCatalog(){
 
 export async function selectStyleCatalog(scopeId='lunarunes'){
   const id=String(scopeId||'').trim();
-  return id==='lo3rwang'?selectAuthorStyleCatalog():selectCanonicalStyleCatalog();
+  if(id!=='lo3rwang')return selectCanonicalStyleCatalog();
+  const author=await selectAuthorStyleCatalog();
+  const configured=author.length>0&&author.every(row=>
+    String(row.style_label||'').trim()&&String(row.style_group||'').trim()
+  );
+  return configured?author:selectCanonicalStyleCatalog();
 }
 
 export function styleTextOf(row={}){
