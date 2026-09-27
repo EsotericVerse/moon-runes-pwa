@@ -28,8 +28,8 @@ const AUTHOR_OVERVIEW_NODES=Object.freeze([
 ]);
 
 const AUTHOR_FUNCTIONS=Object.freeze([
-  Object.freeze({eyebrow:'Culture',title:'文化',text:'把作品放回個人時期與時間長河，觀看文字風格、作品與生命經驗如何變化。',href:'/culture/',label:'查看文化'}),
-  Object.freeze({eyebrow:'Statistics',title:'統計',text:'查看排行榜、關鍵詞設定與各項統計圖。',href:'/statics/',label:'查看統計'}),
+  Object.freeze({eyebrow:'Culture',title:'文化',text:'以時空定錨論把作品放回時間長河，從時間位置、密度與前後分布看值得回看的軌跡。',href:'/culture/',label:'查看文化'}),
+  Object.freeze({eyebrow:'Statistics',title:'統計',text:'以靈魂擺盪論觀察大風格、風格與關鍵詞的增減、延續、回返與擺盪。',href:'/statics/',label:'查看統計'}),
   Object.freeze({eyebrow:'Governance',title:'治理',text:'管理功能跟政策表達。',href:'/governance/',label:'查看治理'}),
   Object.freeze({eyebrow:'Search',title:'搜尋',text:'從關鍵詞、作品、來源或日期開始，找到時間點，再查看附近的脈絡與作品。',href:'/search/',label:'開始搜尋'})
 ]);
@@ -119,6 +119,15 @@ export default function AuthorHomeView({section=null}){
       </>
     },
     {
+      id:'oscillation',
+      eyebrow:'Oscillation · Style',
+      title:'靈魂擺盪論',
+      content:<>
+        <p>文字、風格與關鍵詞不會永遠固定在同一個位置，而會隨時間形成、延續、轉變、消退、回返與擺盪。這些變化先以分布與統計觀察，不先替它們定義好壞或意義。</p>
+        <p>在 LOC 中，時空定錨論偏向時間位置與密度；靈魂擺盪論偏向大風格、風格與關鍵詞的分布變化。兩者在 4D Graph 中交會，把「什麼時間發生變化」與「語言分布如何變化」放在同一個可觀察結構裡。</p>
+      </>
+    },
+    {
       id:'loc',
       eyebrow:'LOC · LunaRunes',
       title:'LOC／月典',
@@ -183,7 +192,7 @@ export default function AuthorHomeView({section=null}){
     work:Object.freeze(['functions','work','digital-legacy']),
     design:Object.freeze(['governance-root','loc','open-source']),
     galaxy:Object.freeze(['corpus','micro-moonlight']),
-    others:Object.freeze(['philosophy','name-origin','calibration']),
+    others:Object.freeze(['philosophy','name-origin','calibration','oscillation']),
     email:Object.freeze(['contact','official-links'])
   });
   const activeSections=section&&sectionGroups[section]
