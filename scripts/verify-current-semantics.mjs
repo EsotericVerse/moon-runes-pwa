@@ -38,7 +38,7 @@ for(const path of Object.values(files)){
 for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs'])if(fs.existsSync(retired))failures.push(`${retired}: retired path loader returned`);
 
 const search=read(files.search);
-for(const token of ['columns:columns.join(\',\')','filter(value=>typeof value===\'string\')'])if(!search.includes(token))failures.push(`search: missing scalar-only projection ${token}`);
+for(const token of ['getSearchProviders','getMediaSearchProviders','getDatabaseWorkSearchProviders','provider.search'])if(!search.includes(token))failures.push(`search: missing Current provider contract ${token}`);
 for(const path of [files.search,files.searchView,files.canonicalLoader]){
   const source=read(path);
   if(/columns:\s*['"]\*['"]|JSON\.stringify|canonical_payload|SEARCH_(?:INDEX|TABLE)_CACHE|memoryCache/.test(source))failures.push(`${path}: forbidden JSON read or retained cache remains`);
