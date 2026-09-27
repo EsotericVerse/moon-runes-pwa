@@ -161,7 +161,7 @@ function matchesNavigation(row,navigation={}){
   return true;
 }
 
-export async function selectScopeRankingPage(scopeId,{offset=0,limit=20,rankingType='',navigation={}}={}){
+async function selectScopeRankingRows(scopeId,{rankingType='',navigation={}}={}){
   const id=String(scopeId||'');
   if(!RANKING_TYPES[id])throw new Error('Scope 無效');
   const type=RANKING_TYPES[id].includes(rankingType)?rankingType:RANKING_TYPES[id][0];
@@ -179,15 +179,25 @@ export async function selectScopeRankingPage(scopeId,{offset=0,limit=20,rankingT
     else rows.push(...await runeStyles(period,type));
   }
 
-  let merged=mergeRows(rows)
+  const merged=mergeRows(rows)
     .filter(row=>row.ranking_type===type)
     .filter(row=>matchesNavigation(row,navigation));
   merged.sort((a,b)=>Number(b.rank_value)-Number(a.rank_value)||Number(b.item_count)-Number(a.item_count)||String(a.term).localeCompare(String(b.term)));
+  return {id,type,rows:merged};
+}
 
-  const size=Math.max(1,Math.min(100,Math.floor(Number(limit)||20)));
+export async function selectScopeRankingPage(scopeId,{offset=0,limit=20,rankingType='',navigation={}}={}){
+  const result=await selectScopeRankingRows(scopeId,{rankingType,navigation});
+  const size=Math.max(1,Math.floor(Number(limit)||20));
   const start=Math.max(0,Math.floor(Number(offset)||0));
-  const page=merged.slice(start,start+size);
-  return ScopeRankingResponseSchema.parse({rows:page,offset:start,limit:size,hasMore:start+size<merged.length,types:RANKING_TYPES[id]});
+  const page=result.rows.slice(start,start+size);
+  return ScopeRankingResponseSchema.parse({
+    rows:page,offset:start,limit:size,hasMore:start+size<result.rows.length,types:RANKING_TYPES[result.id]
+  });
+}
+
+export async function selectScopeRankingAll(scopeId,{rankingType='',navigation={}}={}){
+  return (await selectScopeRankingRows(scopeId,{rankingType,navigation})).rows;
 }
 
 export async function selectScopeRankingTypes(scopeId){
