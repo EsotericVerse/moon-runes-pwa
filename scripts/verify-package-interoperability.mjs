@@ -19,7 +19,7 @@ requireText('app/loc/neon-client.js',[/createClient/ ,/getNeonPublicToken/ ,/res
 requireText('app/loc/neon-repository.js',[/from ['"]zod['"]/ ,/neonPublicClient/ ,/neonAuthClient/ ,/export async function selectNeonRows/],'Neon repository/Zod boundary');
 // TanStack Query is used by data-heavy Current features.
 requireText('app/modular-v2/features/KeywordSettingsV2.jsx',[/from ['"]@tanstack\/react-query['"]/ ,/selectRuneKeywordCatalog/],'Keyword settings Query/rune repository interop');
-requireText('app/modular-v2/features/StatisticsV2.jsx',[/from ['"]@tanstack\/react-query['"]/ ,/selectScopeRankingPage/ ,/from ['"]recharts['"]/],'Statistics Query/Neon/Recharts interop');
+requireText('app/modular-v2/features/StatisticsV2.jsx',[/from ['\"]@tanstack\\/react-query['\"]/ ,/selectScopeRankingAll/ ,/PagedResultV2/ ,/from ['\"]recharts['\"]/],'Statistics Query/Neon/Recharts interop');
 requireText('app/modular-v2/features/CultureV2.jsx',[/from ['"]@tanstack\/react-query['"]/ ,/selectScopeCultureData/ ,/CultureTimelineV2/],'Culture Query/Neon/Timeline interop');
 requireText('app/modular-v2/ScopeManagementV2.jsx',[/from ['"]@tanstack\/react-query['"]/ ,/useNeonAccount/ ,/neon-scope-governance/],'Admin Query/Neon Auth boundary');
 // FlexSearch is the shared text engine. Neon remains SSOT and adaptive IO supplies index batches.
