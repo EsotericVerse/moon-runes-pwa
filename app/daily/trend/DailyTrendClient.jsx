@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import {selectRecentDailyRuneDraws} from '../../loc/neon-daily-runes';
-import {summarizeDailyDraws} from '../../loc/model/daily-trend-engine.mjs';
+import {summarizeDailyDraws,summarizeDailyWindows} from '../../loc/model/daily-trend-engine.mjs';
 
 const DAYS=14;
 function dayKey(value){
@@ -40,15 +40,8 @@ export default function DailyTrendClient(){
   const analysis=useMemo(()=>{
     const semanticDays=summarizeDailyDraws(draws).slice(-DAYS);
     const latest=semanticDays.at(-1)||null;
-    const runes=new Map();
-    for(const draw of draws){
-      const name=String(draw.rune_name||'').trim();
-      if(!name)continue;
-      const label=draw.direction?`${name} · ${draw.direction}`:name;
-      runes.set(label,(runes.get(label)||0)+1);
-    }
-    const topRunes=[...runes].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,10);
-    return {semanticDays,latest,topRunes};
+    const windows=summarizeDailyWindows(draws,semanticDays);
+    return {semanticDays,latest,windows};
   },[draws]);
 
   return <section className="loc-view">
@@ -61,8 +54,8 @@ export default function DailyTrendClient(){
     <div className="loc-grid two">
       <Card label="每日歷史紀錄" value={total} detail="Neon 紀錄總數"/>
       <Card label="最近日期" value={analysis.latest?formatDate(analysis.latest.date):'—'} detail={analysis.latest?analysis.latest.guidance:'尚無可比較紀錄'}/>
-      <Card label="最新趨勢" value={analysis.latest?.daily_trend||'未知'} detail="前日結果 → 今日結果"/>
-      <Card label="最新結果" value={analysis.latest?.daily_result||'未知'} detail="今日 Main／Supplement 綜合結果"/>
+      <Card label="前後變化" value={analysis.windows.adjacent.trend||'未知'} detail={analysis.windows.adjacent.previous_date?`${formatDate(analysis.windows.adjacent.previous_date)} → ${formatDate(analysis.windows.adjacent.current_date)}`:'尚無前一筆可比較'}/>
+      <Card label="最新結果" value={analysis.windows.adjacent.result||'未知'} detail="今日 Main／Supplement 綜合結果"/>
     </div>
 
     {error?<p role="alert" className="scope-v2-status scope-v2-error">{error}</p>:null}
@@ -81,8 +74,29 @@ export default function DailyTrendClient(){
     </section>
 
     <section className="loc-card">
-      <h2>常見符文與方向</h2>
-      {!analysis.topRunes.length?<p>目前還沒有每日抽牌資料可供分析。</p>:<ol>{analysis.topRunes.map(([label,count])=><li key={label}>{label}：{count} 次</li>)}</ol>}
+      <h2>三天內變化</h2>
+      <p>{analysis.windows.three_days.start_date?`${formatDate(analysis.windows.three_days.start_date)} → ${formatDate(analysis.windows.three_days.end_date)}｜結果 ${analysis.windows.three_days.from_result} → ${analysis.windows.three_days.to_result}｜趨勢 ${analysis.windows.three_days.trend}`:'目前沒有足夠資料。'}</p>
+      {analysis.windows.three_days.repeats.length?<div className="scope-v2-list">
+        <strong>重複出現</strong>
+        {analysis.windows.three_days.repeats.map(item=><span key={item.name}>{item.name}：{item.count} 次</span>)}
+      </div>:<p>三天內沒有重複符文。</p>}
+      {analysis.windows.three_days.direction_changes.length?<div className="scope-v2-list">
+        <strong>位向改變</strong>
+        {analysis.windows.three_days.direction_changes.map(item=><span key={item.name}>{item.name}：{item.path.join(' → ')}</span>)}
+      </div>:<p>三天內沒有同符文位向改變。</p>}
+    </section>
+
+    <section className="loc-card">
+      <h2>一週內變化</h2>
+      <p>{analysis.windows.seven_days.start_date?`${formatDate(analysis.windows.seven_days.start_date)} → ${formatDate(analysis.windows.seven_days.end_date)}｜結果 ${analysis.windows.seven_days.from_result} → ${analysis.windows.seven_days.to_result}｜趨勢 ${analysis.windows.seven_days.trend}`:'目前沒有足夠資料。'}</p>
+      {analysis.windows.seven_days.repeats.length?<div className="scope-v2-list">
+        <strong>重複出現</strong>
+        {analysis.windows.seven_days.repeats.map(item=><span key={item.name}>{item.name}：{item.count} 次</span>)}
+      </div>:<p>一週內沒有重複符文。</p>}
+      {analysis.windows.seven_days.direction_changes.length?<div className="scope-v2-list">
+        <strong>位向改變</strong>
+        {analysis.windows.seven_days.direction_changes.map(item=><span key={item.name}>{item.name}：{item.path.join(' → ')}</span>)}
+      </div>:<p>一週內沒有同符文位向改變。</p>}
     </section>
 
     <div className="loc-actions">
