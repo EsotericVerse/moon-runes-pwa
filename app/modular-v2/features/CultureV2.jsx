@@ -16,7 +16,7 @@ import {galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation.v
 import {FEATURE_EMPTY_MESSAGE,FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
 import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
-import {analyzeTemporalDensity} from '../../loc/model/automatic-analysis.mjs';
+import {analyzeDistributionChange} from '../../loc/model/automatic-analysis.mjs';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
@@ -41,30 +41,6 @@ function rowsOf(data){
 }
 function isCurrent(item){
   return String(item?.status||'').trim().toLowerCase()==='current';
-}
-function matchesCurrentMarker(item,current){
-  const samePeriod=current?.period&&item?.period&&String(item.period)===String(current.period);
-  const identity=String(current?.era_id||'');
-  const sameIdentity=identity&&[item?.era_id,item?.entry_key,item?.id].some(value=>String(value||'')===identity);
-  const sameRune=Number(current?.rune_count)>0&&Number(item?.rune_count)===Number(current.rune_count);
-  const sameTitle=String(item?.title||'')===String(current?.title||'');
-  const sameDate=String(item?.start_date||item?.end_date||'').slice(0,10)===String(current?.start_date||current?.end_date||'').slice(0,10);
-  return Boolean(samePeriod||sameIdentity||sameRune||(sameTitle&&sameDate));
-}
-function timelineFromCurrent(items,currentByScope){
-  return (Array.isArray(items)?items:[]).filter(item=>{
-    const current=currentByScope.get(String(item?.scope_id||''));
-    if(!current)return true;
-    const type=String(item?.entry_type||'');
-    if(type==='period'||type==='period_legacy')return matchesCurrentMarker(item,current);
-    if(!['anchor','event','style'].includes(type))return false;
-    const currentTime=Date.parse(current?.start_date||current?.end_date||current?.date||'');
-    const itemTime=Date.parse(item?.start_date||item?.end_date||item?.date||'');
-    return !Number.isNaN(currentTime)&&!Number.isNaN(itemTime)&&itemTime>=currentTime;
-  }).map(item=>currentByScope.has(String(item?.scope_id||''))
-    ?{...item,group_label:String(item.scope_id)}
-    :item
-  );
 }
 function sortPeriods(rows=[]){
   return [...rows].filter(item=>item?.start_date||item?.end_date).sort((a,b)=>
@@ -120,10 +96,13 @@ export default function CultureV2(){
   const primaryPeriods=scopeId==='lunarunes'?allRunePeriods:allAuthorPeriods;
   const primaryCurrent=scopeId==='lunarunes'?currentRunePeriod:currentAuthorPeriod;
   const selectedWorkPeriod=activeWorkPeriod||primaryCurrent||periodRange(primaryPeriods,classificationScope);
+  const selectedPeriodIndex=primaryPeriods.findIndex(item=>
+    String(item?.period||'')===String(selectedWorkPeriod?.period||'')
+    ||String(item?.start_date||'')===String(selectedWorkPeriod?.start_date||'')
+  );
+  const previousWorkPeriod=selectedPeriodIndex>0?primaryPeriods[selectedPeriodIndex-1]:null;
 
-  const visibleAuthorPeriods=currentAuthorPeriod
-    ?[allAuthorPeriods.find(item=>item.start_date===currentAuthorPeriod.start_date)||currentAuthorPeriod]
-    :allAuthorPeriods;
+  const visibleAuthorPeriods=allAuthorPeriods;
 
   const sourceSnapshotQuery=useQuery({
     queryKey:['culture-period-source-snapshot',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
@@ -135,10 +114,6 @@ export default function CultureV2(){
     staleTime:5*60_000
   });
 
-  const selectedPeriodCoversVisible=visibleAuthorPeriods.length===1
-    &&String(visibleAuthorPeriods[0]?.start_date||'')===String(selectedWorkPeriod?.start_date||'')
-    &&String(visibleAuthorPeriods[0]?.end_date||'')===String(selectedWorkPeriod?.end_date||'');
-
   const periodVolumesQuery=useQuery({
     queryKey:['culture-period-source-volumes',scopeId,visibleAuthorPeriods.map(item=>[item.period,item.start_date,item.end_date])],
     queryFn:async()=>{
@@ -149,7 +124,7 @@ export default function CultureV2(){
       })));
       return settled.filter(item=>item.status==='fulfilled').map(item=>item.value);
     },
-    enabled:(scopeId==='lo3rwang'||scopeId==='loc')&&visibleAuthorPeriods.length>0&&!selectedPeriodCoversVisible,
+    enabled:(scopeId==='lo3rwang'||scopeId==='loc')&&visibleAuthorPeriods.length>0,
     staleTime:5*60_000
   });
 
@@ -172,6 +147,29 @@ export default function CultureV2(){
       dimension:mediaDimension
     }),
     enabled:classificationMode==='media'&&Boolean(selectedWorkPeriod?.start_date),
+    staleTime:5*60_000
+  });
+
+  const previousClassificationQuery=useQuery({
+    queryKey:['culture-period-previous-distribution',classificationScope,classificationMode,styleLevel,mediaDimension,previousWorkPeriod?.period,previousWorkPeriod?.start_date,previousWorkPeriod?.end_date],
+    queryFn:()=>classificationMode==='source'
+      ?selectAuthorPeriodSourceSnapshot({
+        startDate:previousWorkPeriod?.start_date,
+        endDate:previousWorkPeriod?.end_date
+      })
+      :(classificationMode==='style'
+        ?selectScopeStyleSnapshot(classificationScope,{
+          startDate:previousWorkPeriod?.start_date,
+          endDate:previousWorkPeriod?.end_date,
+          styleLevel
+        })
+        :selectScopeMediaSnapshot(classificationScope,{
+          startDate:previousWorkPeriod?.start_date,
+          endDate:previousWorkPeriod?.end_date,
+          dimension:mediaDimension
+        })),
+    enabled:Boolean(previousWorkPeriod?.start_date)
+      &&!(classificationMode==='source'&&classificationScope==='lunarunes'),
     staleTime:5*60_000
   });
 
@@ -246,25 +244,33 @@ export default function CultureV2(){
 
   const timelineItems=useMemo(()=>{
     const items=(query.data?.timelineItems||[]).filter(item=>scopeId==='loc'||item.scope_id===scopeId);
-    const visible=currentRows.length?timelineFromCurrent(items,currentByScope):items;
-    return visible.map(item=>{
+    return items.map(item=>{
       if(item.scope_id!=='lo3rwang'||item.entry_type!=='period')return item;
       const workCount=periodVolumeByStart.get(String(item.start_date||'').slice(0,10));
       return workCount===undefined?item:{...item,work_count:workCount};
     });
-  },[query.data,currentRows,currentByScope,scopeId,periodVolumeByStart]);
+  },[query.data,scopeId,periodVolumeByStart]);
 
   const classificationBuckets=classificationMode==='source'
     ?(sourceSnapshotQuery.data?.buckets||[])
     :(classificationMode==='style'?(styleSnapshotQuery.data?.buckets||[]):(mediaSnapshotQuery.data?.buckets||[]));
-  const automaticAnalysis=useMemo(()=>analyzeTemporalDensity(classificationBuckets,{
-    label:classificationMode==='source'
-      ?'發文'
-      :(classificationMode==='style'?'風格作品':(mediaDimension==='place'?'多媒體地點紀錄':'多媒體紀錄')),
-    minimumCount:3,
-    minimumShareDelta:0.1,
-    minimumRatio:1.5
-  }),[classificationBuckets,classificationMode,mediaDimension]);
+  const currentDistribution=useMemo(()=>categoryGroups.map(group=>({
+    term:String(group.display_label||group.source_name||group.style_name||group.media_name||''),
+    item_count:Number(group.item_count)||0
+  })).filter(row=>row.term),[categoryGroups]);
+  const previousDistribution=useMemo(()=>((previousClassificationQuery.data?.groups)||[]).map(group=>({
+    term:String(group.display_label||group.source_name||group.style_name||group.media_name||''),
+    item_count:Number(group.item_count)||0
+  })).filter(row=>row.term),[previousClassificationQuery.data]);
+  const automaticAnalysis=useMemo(()=>previousWorkPeriod
+    ?analyzeDistributionChange(currentDistribution,previousDistribution,{
+      label:classificationMode==='source'
+        ?'作品來源'
+        :(classificationMode==='style'?'風格':(mediaDimension==='place'?'多媒體地點':'多媒體類型')),
+      maxSuggestions:6
+    })
+    :{changes:[],suggestions:[]},
+  [currentDistribution,previousDistribution,previousWorkPeriod,classificationMode,mediaDimension]);
 
   return <FeaturePageV2 featureId="culture">
     <section className='loc-card scope-v2-feature-card scope-v2-feature-card-wide'>
@@ -280,7 +286,15 @@ export default function CultureV2(){
               items={timelineItems}
               labelOf={item=>item.display_label||item.title}
               focus={navigation}
-              mode={currentRows.length?'current':'overview'}
+              mode='overview'
+              onSelect={row=>{
+                if(row?.entryType!=='period'||String(row?.scopeId||'')!==classificationScope)return;
+                const matched=primaryPeriods.find(item=>
+                  String(item?.period||'')===String(row?.period||'')
+                  ||String(item?.start_date||'')===String(row?.start||'')
+                );
+                if(matched)setActiveWorkPeriod(matched);
+              }}
             />
 
             {selectedWorkPeriod?<section className='scope-v2-card scope-v2-culture-classification-river'>
@@ -312,18 +326,14 @@ export default function CultureV2(){
                 mode={classificationMode==='source'?'source':'overview'}
               />:null}
 
-              {automaticAnalysis.suggestions.length?<section className='scope-v2-card'>
-                <p className='loc-eyebrow'>Automatic Guidance</p>
-                <h4>自動軌跡建議</h4>
-                <p>只比較前後區間的分布比例變化，不以單日或單筆數量判斷，也不自動建立定錨點。</p>
+              {previousWorkPeriod&&automaticAnalysis.suggestions.length?<section className='scope-v2-card'>
+                <p className='loc-eyebrow'>Period Distribution</p>
+                <h4>時期比例變化</h4>
+                <p>{labelOf(previousWorkPeriod,0)} → {labelOf(selectedWorkPeriod,0)}。只比較完整時期內各分類所占比例，不以單筆、單日或固定週期直接提出建議。</p>
                 <div className='scope-v2-list'>
-                  {automaticAnalysis.suggestions.map((suggestion,index)=><article className='scope-v2-inline-card' key={suggestion.type+'-'+suggestion.date+'-'+index}>
-                    <strong>{suggestion.category||'分布變化'}｜{suggestion.from||suggestion.date} → {suggestion.to||suggestion.date}</strong>
+                  {automaticAnalysis.suggestions.map((suggestion,index)=><article className='scope-v2-inline-card' key={suggestion.type+'-'+suggestion.term+'-'+index}>
+                    <strong>{suggestion.term}</strong>
                     <span>{suggestion.text}</span>
-                    <span>
-                      <a href={'/search/?from='+encodeURIComponent(suggestion.from||suggestion.date)+'&to='+encodeURIComponent(suggestion.to||suggestion.date)}>搜尋這段</a>
-                      {scopeId==='lo3rwang'?<> · <a href={'/governance/manage/?anchorDate='+encodeURIComponent(suggestion.date)}>帶入定錨設定</a></>:null}
-                    </span>
                   </article>)}
                 </div>
               </section>:null}
