@@ -11,6 +11,7 @@ import {
   chunkRowsByPayload,estimatePayloadBytes,initialBatchSize,mapIoIterable,
   nextAdaptiveBatchSize,reportNeonIoError,runNeonIo
 } from './io-controller';
+import {clearRuntimeTextIndexes} from './text-engine';
 
 const TableSchema=z.enum([
   'api.user_records','api.user_settings',
@@ -29,6 +30,12 @@ const WritableTableSchema=z.enum([
   'silver.lrunes'
 ]);
 const RowSchema=z.record(z.string(),z.unknown());
+const TEXT_INDEX_TABLES=new Set([
+  'silver.manage','silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media','silver.lrunes'
+]);
+function invalidateTextIndexes(table){
+  if(TEXT_INDEX_TABLES.has(String(table||'')))clearRuntimeTextIndexes();
+}
 const FilterSchema=z.object({
   column:z.string().regex(/^[a-z][a-z0-9_]*$/),
   operator:z.enum(['eq','neq','gt','gte','lt','lte','like','ilike','is','in']),
@@ -250,6 +257,7 @@ export async function insertNeonRows(table,records,{returning='*'}={}){
     throwQueryError(result.error,table,'INSERT');
     if(selectColumns)output.push(...parseRows(result.data,table));
   }
+  invalidateTextIndexes(table);
   return output;
 }
 
@@ -265,6 +273,7 @@ export async function upsertNeonRows(table,records,{conflict,returning='*'}={}){
     throwQueryError(result.error,table,'UPSERT');
     if(selectColumns)output.push(...parseRows(result.data,table));
   }
+  invalidateTextIndexes(table);
   return output;
 }
 
@@ -276,7 +285,9 @@ export async function updateNeonRows(table,values,{filters,returning='*'}={}){
   if(selectColumns)query=query.select(selectColumns);
   const result=await runNeonIo(()=>query);
   throwQueryError(result.error,table,'UPDATE');
-  return parseRows(result.data,table);
+  const rows=parseRows(result.data,table);
+  invalidateTextIndexes(table);
+  return rows;
 }
 
 export async function deleteNeonRows(table,{filters,returning='*'}={}){
@@ -286,5 +297,7 @@ export async function deleteNeonRows(table,{filters,returning='*'}={}){
   if(selectColumns)query=query.select(selectColumns);
   const result=await runNeonIo(()=>query);
   throwQueryError(result.error,table,'DELETE');
-  return parseRows(result.data,table);
+  const rows=parseRows(result.data,table);
+  invalidateTextIndexes(table);
+  return rows;
 }
