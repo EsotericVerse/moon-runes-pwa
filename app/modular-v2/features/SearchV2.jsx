@@ -276,7 +276,7 @@ export default function SearchV2(){
           title={row.title}
           source={row.source}
           date={row.date}
-          body={settings.projection_level==='full'?row.bodyText:row.snippet}
+          body={row.snippet}
           hidden={Boolean(settings.visibility&&settings.visibility!=='public')}
           sourceId={row.sourceId}
           targetId={row.targetId}
