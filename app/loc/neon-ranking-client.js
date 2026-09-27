@@ -493,8 +493,8 @@ async function selectScopeRankingRows(scopeId,{rankingType='',navigation={}}={})
   const rows=[];
   if(id==='loc'){
     const scopeIds=await selectManagedScopeIds();
-    const groups=await Promise.all(scopeIds.map(scope=>sourceRowsForScope(scope,period)));
-    rows.push(...groups.flat());
+    const settled=await Promise.allSettled(scopeIds.map(scope=>sourceRowsForScope(scope,period)));
+    rows.push(...settled.filter(item=>item.status==='fulfilled').flatMap(item=>item.value));
   }else{
     rows.push(...await rowsForType(id,type,period,undefined));
   }
