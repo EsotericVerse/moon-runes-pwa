@@ -26,7 +26,7 @@ if(existsSync(resolve(root,'lib')))failures.push('lib/ must not be recreated; sh
 
 requireText('app/loc/views/AboutView.jsx',[
   'LOC月典',
-  '模型化語言框架（Modelized Language Framework）',
+  '語言架構框架（Language Architecture Framework）',
   '符號式語言（Symbolic Language）',
   'ModelArchitectureExplorer',
   "scopeHrefV2('lunarunes','duel/one')",
