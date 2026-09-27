@@ -10,7 +10,7 @@ const sources={
 };
 const required=[
   [sources.home,'LOC月典'],
-  [sources.home,'模型化語言框架（Modelized Language Framework）'],
+  [sources.home,'語言架構框架（Language Architecture Framework）'],
   [sources.home,'符號式語言（Symbolic Language）'],
   [sources.home,'ModelArchitectureExplorer'],
   [sources.registry,"label:'脈絡'"],
@@ -33,6 +33,7 @@ const required=[
   [sources.locApp,'SearchV2']
 ];
 const forbiddenCurrent=[
+  'Modelized Language Framework','模型化語言框架',
   'Language Model Framework','語言模型框架',
   'Language Module Framework','語言系統模組框架',
   'Symbolic Language Module','符號式語言模組',
