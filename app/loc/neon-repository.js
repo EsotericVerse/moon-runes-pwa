@@ -76,7 +76,7 @@ function throwQueryError(error,table,operation){
 }
 
 export async function selectNeonRows(table,{
-  columns='*',filters=[],orFilter='',orders=[],limit=1000,offset=0,range=null,count=null
+  columns='*',filters=[],orFilter='',orders=[],limit=20,offset=0,range=null,count=null
 }={}){
   let query=relation(table).select(columns,count?{count}:undefined);
   query=applyFilters(query,filters);
@@ -90,7 +90,7 @@ export async function selectNeonRows(table,{
   }
   if(Array.isArray(range)&&range.length===2)query=query.range(range[0],range[1]);
   else if(Number.isFinite(limit)){
-    const size=Math.max(0,Math.min(5000,Math.floor(limit)));
+    const size=Math.max(0,Math.min(50,Math.floor(limit)));
     const start=Math.max(0,Math.floor(Number(offset)||0));
     query=size?query.range(start,start+size-1):query.limit(0);
   }
