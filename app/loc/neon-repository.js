@@ -93,11 +93,11 @@ function writableRelation(table){
   return authenticatedClient(parsed.data).schema(schema).from(name);
 }
 
-function relation(table){
+function relation(table,authenticated=false){
   const parsed=TableSchema.safeParse(table);
   if(!parsed.success)throw new NeonRepositoryError('Neon table is not in the shared repository allowlist',{table:String(table),code:'NEON_TABLE_NOT_ALLOWED'});
   const [schema,name]=parsed.data.split('.');
-  const client=parsed.data.startsWith('api.user_')?authenticatedClient(parsed.data):neonPublicClient;
+  const client=authenticated||parsed.data.startsWith('api.user_')?authenticatedClient(parsed.data):neonPublicClient;
   return client.schema(schema).from(name);
 }
 
@@ -136,10 +136,10 @@ function throwQueryError(error,table,operation){
 }
 
 async function executeSelectOnce(table,{
-  columns='*',filters=[],orFilter='',orders=[],limit=UI_PAGE_SIZE,offset=0,range=null,count=null
+  columns='*',filters=[],orFilter='',orders=[],limit=UI_PAGE_SIZE,offset=0,range=null,count=null,authenticated=false
 }={},allowHeavyBatch=false){
   if(!allowHeavyBatch)assertSafeSelect({table,columns,filters,limit,range});
-  let query=relation(table).select(columns,count?{count}:undefined);
+  let query=relation(table,authenticated).select(columns,count?{count}:undefined);
   query=applyFilters(query,filters);
   if(orFilter){
     const expression=z.string().min(1).max(12000).parse(orFilter);
@@ -180,7 +180,7 @@ async function executeSelect(table,options={},allowHeavyBatch=false){
       const oversized=cause.status===413||cause.code==='54000'||cause.code==='53200'||cause.code==='57014'||/response.*(too large|size.*limit)|payload too large|statement timeout/i.test(message);
       const transient=[502,503,504].includes(cause.status)||/failed to fetch|fetch failed|network error/i.test(message);
       const authFailure=[401,403].includes(cause.status)||/jwk not found|jwt|authentication|authorization|bearer token/i.test(message);
-      const publicRead=!String(table||'').startsWith('api.user_');
+      const publicRead=!options.authenticated&&!String(table||'').startsWith('api.user_');
       if(authFailure&&publicRead&&!authRetried){
         authRetried=true;
         resetNeonPublicToken();
@@ -204,12 +204,12 @@ export async function selectNeonRows(table,options={}){
 
 export async function selectNeonWindow(table,{
   columns='*',filters=[],orFilter='',orders=[],
-  limit=UI_PAGE_SIZE,offset=0,count=null
+  limit=UI_PAGE_SIZE,offset=0,count=null,authenticated=false
 }={}){
   if(!Number.isSafeInteger(limit)||limit<0||!Number.isSafeInteger(offset)||offset<0)throw new TypeError('SELECT limit and offset must be finite nonnegative integers');
   const requested=limit;
   const start=offset;
-  if(requested===0)return executeSelect(table,{columns,filters,orFilter,orders,limit:0,offset:start,count});
+  if(requested===0)return executeSelect(table,{columns,filters,orFilter,orders,limit:0,offset:start,count,authenticated});
   assertSafeSelect({table,columns,filters,limit:requested});
   const rows=[];
   let cursor=start;
@@ -219,7 +219,7 @@ export async function selectNeonWindow(table,{
     const size=Math.max(1,Math.min(batchSize,requested-rows.length));
     const started=globalThis.performance?.now?.()??Date.now();
     const page=await executeSelect(table,{
-      columns,filters,orFilter,orders,limit:size,offset:cursor,count:resultCount===null?count:null
+      columns,filters,orFilter,orders,limit:size,offset:cursor,count:resultCount===null?count:null,authenticated
     },false);
     const elapsed=(globalThis.performance?.now?.()??Date.now())-started;
     if(resultCount===null)resultCount=page.count??null;
@@ -238,7 +238,7 @@ export async function selectNeonWindow(table,{
 }
 
 export async function selectNeonAllRows(table,{
-  columns,filters=[],orFilter='',orders=[]
+  columns,filters=[],orFilter='',orders=[],authenticated=false
 }={}){
   assertSafeSelect({table,columns,filters,limit:1});
   const rows=[];
@@ -248,7 +248,7 @@ export async function selectNeonAllRows(table,{
   while(total===null||rows.length<total){
     const started=globalThis.performance?.now?.()??Date.now();
     const page=await executeSelect(table,{
-      columns,filters,orFilter,orders,limit:batchSize,offset:cursor,count:total===null?'exact':null
+      columns,filters,orFilter,orders,limit:batchSize,offset:cursor,count:total===null?'exact':null,authenticated
     },false);
     const elapsed=(globalThis.performance?.now?.()??Date.now())-started;
     if(total===null&&page.count!==null)total=Math.max(0,Number(page.count)||0);
