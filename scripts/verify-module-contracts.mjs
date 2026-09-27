@@ -44,6 +44,19 @@ for(const path of [
 const runesClient=readFileSync(resolve(root,'app/lrunes/RunesClient.jsx'),'utf8');
 for(const token of ['selectRuneCatalog','data-draw-action="execute"','function executeDraw','function finishDraw'])if(!runesClient.includes(token))failures.push(`RunesClient: missing draw contract ${token}`);
 
+const cultureView=readFileSync(resolve(root,'app/modular-v2/features/CultureV2.jsx'),'utf8');
+const cultureTimeline=readFileSync(resolve(root,'app/modular-v2/modules/culture-timeline/CultureTimelineV2.jsx'),'utf8');
+const governanceManagement=readFileSync(resolve(root,'app/loc/GovernanceManagement.jsx'),'utf8');
+for(const token of ["isLoc?<CultureTimelineV2","mode='current'","scope-v2-culture-period-2d","選擇完整時期","時期比例變化","只比較完整時期內各分類所占比例"]){
+  if(!cultureView.includes(token))failures.push(`Culture Current contract missing: ${token}`);
+}
+if(cultureTimeline.includes("個人時期 · {personalTitle}")||cultureTimeline.includes("LunaRunes · {runeTitle}")){
+  failures.push('LOC Culture: Current confluence must not unfold per-scope period lists');
+}
+if(!governanceManagement.includes("scopeId!=='loc'?<CultureTimelineEditor")){
+  failures.push('LOC Culture: Period settings must not run for LOC');
+}
+
 const aggregateQuery=readFileSync(resolve(root,'app/loc/aggregate-query.js'),'utf8');
 for(const token of ["silver.lo3rwang_galaxy_preview","content_preview","columns:'uid,title,url,media_link'"]){
   if(!aggregateQuery.includes(token))failures.push(`aggregate-query: fixed DB-side list preview contract missing ${token}`);

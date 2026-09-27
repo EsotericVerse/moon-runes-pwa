@@ -55,7 +55,7 @@ function Workspace({scopeId}){
 
 function Structure({scopeId}){
   return <div className="scope-v2-list">
-    <CultureTimelineEditor scopeId={scopeId}/>
+    {scopeId!=='loc'?<CultureTimelineEditor scopeId={scopeId}/>:null}
     <SourceSettingsV2 scopeId={scopeId}/>
   </div>;
 }
@@ -77,7 +77,7 @@ export default function GovernanceManagement(){
 
   const sections=[
     ['workspace','工作區'],
-    ['structure','時期與來源'],
+    ['structure',scopeId==='loc'?'來源':'時期與來源'],
     ...(scopeId==='lunarunes'?[['daily','每日符文']]:[]),
   ];
 

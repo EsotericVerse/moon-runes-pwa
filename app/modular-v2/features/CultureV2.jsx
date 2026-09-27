@@ -92,10 +92,11 @@ export default function CultureV2(){
     ...(query.data?.runeHistory?.records||[]),
     ...(query.data?.runeEras?.eras||[])
   ]),[query.data]);
-  const classificationScope=scopeId==='lunarunes'?'lunarunes':'lo3rwang';
-  const primaryPeriods=scopeId==='lunarunes'?allRunePeriods:allAuthorPeriods;
-  const primaryCurrent=scopeId==='lunarunes'?currentRunePeriod:currentAuthorPeriod;
-  const selectedWorkPeriod=activeWorkPeriod||primaryCurrent||periodRange(primaryPeriods,classificationScope);
+  const isLoc=scopeId==='loc';
+  const classificationScope=isLoc?null:(scopeId==='lunarunes'?'lunarunes':'lo3rwang');
+  const primaryPeriods=isLoc?[]:(scopeId==='lunarunes'?allRunePeriods:allAuthorPeriods);
+  const primaryCurrent=isLoc?null:(scopeId==='lunarunes'?currentRunePeriod:currentAuthorPeriod);
+  const selectedWorkPeriod=isLoc?null:(activeWorkPeriod||primaryCurrent||periodRange(primaryPeriods,classificationScope));
   const selectedPeriodIndex=primaryPeriods.findIndex(item=>
     String(item?.period||'')===String(selectedWorkPeriod?.period||'')
     ||String(item?.start_date||'')===String(selectedWorkPeriod?.start_date||'')
@@ -124,7 +125,7 @@ export default function CultureV2(){
       })));
       return settled.filter(item=>item.status==='fulfilled').map(item=>item.value);
     },
-    enabled:(scopeId==='lo3rwang'||scopeId==='loc')&&visibleAuthorPeriods.length>0,
+    enabled:scopeId==='lo3rwang'&&visibleAuthorPeriods.length>0,
     staleTime:5*60_000
   });
 
@@ -282,20 +283,36 @@ export default function CultureV2(){
       {!query.isPending&&!query.error&&timelineItems.length?<>
 
 
-            <CultureTimelineV2
+            {isLoc?<CultureTimelineV2
               items={timelineItems}
               labelOf={item=>item.display_label||item.title}
               focus={navigation}
-              mode='overview'
-              onSelect={row=>{
-                if(row?.entryType!=='period'||String(row?.scopeId||'')!==classificationScope)return;
-                const matched=primaryPeriods.find(item=>
-                  String(item?.period||'')===String(row?.period||'')
-                  ||String(item?.start_date||'')===String(row?.start||'')
-                );
-                if(matched)setActiveWorkPeriod(matched);
-              }}
-            />
+              mode='current'
+            />:<section className='scope-v2-card scope-v2-culture-period-2d' aria-label='時期'>
+              <p className='loc-eyebrow'>Period</p>
+              <h3>時期</h3>
+              <label className='scope-v2-culture-period-select'>
+                <span>選擇完整時期</span>
+                <select className='scope-v2-select'
+                  value={selectedWorkPeriod?.period||selectedWorkPeriod?.start_date||''}
+                  onChange={event=>{
+                    const value=event.target.value;
+                    const matched=primaryPeriods.find(item=>
+                      String(item?.period||item?.start_date||'')===value
+                    );
+                    if(matched)setActiveWorkPeriod(matched);
+                  }}>
+                  {primaryPeriods.map((item,index)=><option
+                    key={String(item?.period||item?.start_date||index)}
+                    value={String(item?.period||item?.start_date||'')}>
+                    {labelOf(item,index)}
+                  </option>)}
+                </select>
+              </label>
+              {selectedWorkPeriod?<p className='scope-v2-culture-period-description'>
+                {[selectedWorkPeriod.start_date,selectedWorkPeriod.end_date||'Current'].filter(Boolean).join(' – ')}
+              </p>:null}
+            </section>}
 
             {selectedWorkPeriod?<section className='scope-v2-card scope-v2-culture-classification-river'>
               <p className='loc-eyebrow'>Classification River</p>

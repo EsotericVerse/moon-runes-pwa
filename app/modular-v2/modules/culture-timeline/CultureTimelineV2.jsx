@@ -150,20 +150,6 @@ function CurrentCultureRivers({rows}){
         <text x='1080' y='580' textAnchor='end' fill='var(--loc-text,#111)' fontSize='14'>{'目前資料至 '+lastDate}</text>
       </svg>
     </div>
-    <div className='loc-grid two'>
-      <section className='scope-v2-card'>
-        <h3>個人時期 · {personalTitle}</h3>
-        <ol className='scope-v2-list'>
-          {personal.map(row=><li key={row.id}><strong>{row.content}</strong><span> · {dateLabel(row.start)}</span>{row.end?<span> – {dateLabel(row.end)}</span>:null}</li>)}
-        </ol>
-      </section>
-      <section className='scope-v2-card'>
-        <h3>LunaRunes · {runeTitle}</h3>
-        <ol className='scope-v2-list'>
-          {runes.map(row=><li key={row.id}><strong>{row.content}</strong><span> · {dateLabel(row.start)}</span>{row.end?<span> – {dateLabel(row.end)}</span>:null}</li>)}
-        </ol>
-      </section>
-    </div>
   </section>;
 }
 
