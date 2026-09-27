@@ -2,8 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchNeonData, fetchRuneRows, LOC_DATA } from '../loc/data';
-import { listNeonRecords, putNeonRecord } from '../loc/neon-user-storage';
-import { useNeonAccount } from '../loc/use-neon-account';
 import { useLocalStore } from '../loc/local-store';
 import { evaluateSpread, finalGuidance, splitDomainGuidance } from '../loc/model/semantic-guidance';
 import { realMoonPhase } from '../loc/model/moon-phase';
@@ -165,16 +163,12 @@ function MultiReading({ draw, mode, phase }) {
 }
 
 export default function RuneDrawClient({ drawKey = 'single' }) {
-  const account = useNeonAccount();
   const { value: uiSettings } = useLocalStore(UI_SETTINGS_KEY, DEFAULT_UI_SETTINGS);
   const [data, setData] = useState(null);
   const [interpretations, setInterpretations] = useState([]);
   const [error, setError] = useState('');
   const [draw, setDraw] = useState(null);
   const [ritualStep, setRitualStep] = useState(-1);
-  const [recordStatus, setRecordStatus] = useState('');
-  const [dailyRecords, setDailyRecords] = useState([]);
-  const [dailyRecordsStatus, setDailyRecordsStatus] = useState('');
   const [dailyAnalysisStatus, setDailyAnalysisStatus] = useState(drawKey === 'daily' ? '載入每日分析…' : '');
   const timers = useRef([]);
   const autoStarted = useRef(false);
@@ -195,26 +189,11 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
       })
       .catch(err => live && setError(`月之符文核心資料載入失敗：${err?.message || '未知錯誤'}`));
 
-    if (drawKey === 'daily' && account.user) {
-      setDailyRecordsStatus('載入每日紀錄…');
-      listNeonRecords('rune-draw')
-        .then(rows => {
-          if (!live) return;
-          const daily = (rows || []).filter(row => row?.record_kind === 'daily');
-          setDailyRecords(daily);
-          setDailyRecordsStatus(daily.length ? '' : '目前還沒有每日符文紀錄。');
-        })
-        .catch(err => {
-          if (!live) return;
-          setDailyRecordsStatus(`每日紀錄讀取失敗：${err?.message || '未知錯誤'}`);
-        });
-    }
-
     return () => {
       live = false;
       timers.current.forEach(clearTimeout);
     };
-  }, [drawKey, account.user?.email]);
+  }, [drawKey]);
 
   const selectedMode = useMemo(() => DRAW_TYPES.find(item => item.key === drawKey) || DRAW_TYPES[0], [drawKey]);
   const instantDraw = uiSettings?.draw_response === 'instant';
@@ -273,7 +252,6 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
       const guidance = finalGuidance(data.lots, cards.at(-1), directions.at(-1));
       setDraw({ id: `rune-draw:${drawKey}:${Date.now()}`, createdAt, cards, directionIndexes, directions, evaluation, guidance });
       enrichDraw(cards, directions);
-      setRecordStatus('');
       setError('');
     } catch (err) {
       setDraw(null);
@@ -286,7 +264,6 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
   function executeDraw() {
     if (ritualStep >= 0) return;
     setError('');
-    setRecordStatus('');
     setDraw(null);
     timers.current.forEach(clearTimeout);
     timers.current = [];
@@ -305,47 +282,12 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
     executeDraw();
   }, [data]);
 
-  async function saveCurrentDraw() {
-    if (!draw) return;
-    if (!account.user) { setRecordStatus('請先登入 Neon，再儲存抽牌紀錄。'); return; }
-    try {
-      const record = {
-        id: draw.id,
-        type: 'rune-draw',
-        record_kind: drawKey === 'daily' ? 'daily' : 'general',
-        created_at: draw.createdAt,
-        mode: drawKey,
-        mode_label: selectedMode.label,
-        moon_phase: moonPhase,
-        score: draw.evaluation.score,
-        trend: draw.evaluation.range.label,
-        guidance: liveGuidance,
-        cards: draw.cards.map((card, index) => ({
-          number: Number(card.編號),
-          name: card.符文名稱,
-          position: selectedMode.positions[index] || `第 ${index + 1} 張`,
-          direction: draw.directions[index],
-          positive_keywords: card.正向關鍵詞 || '',
-          negative_keywords: card.反向關鍵詞 || ''
-        }))
-      };
-      await putNeonRecord(record);
-      if (drawKey === 'daily') {
-        setDailyRecords(current => [record, ...current.filter(item => item.id !== record.id)]);
-        setDailyRecordsStatus('');
-      }
-      setRecordStatus(drawKey === 'daily' ? '已記錄到每日抽籤。' : '已記錄到一般抽牌。');
-    } catch (err) {
-      setRecordStatus(`Neon 紀錄失敗：${err?.message || '未知錯誤'}`);
-    }
-  }
-
   return <div className="runes-draw-surface">
     <section className="loc-view">
       <header className="loc-hero" id="intro">
         <p className="loc-eyebrow">LunaRunes · 月之符文</p>
         <h1>月之符文</h1>
-        <p>月之符文以固定 66 枚核心符文提供抽牌與語意指引。抽牌、加權與籤詩指引在瀏覽器完成；選擇性抽牌紀錄登入後儲存在 Neon。</p>
+        <p>月之符文以固定 66 枚核心符文提供抽牌與語意指引。抽牌、加權與籤詩指引在瀏覽器完成；紀錄與管理功能統一由 Governance Management 處理。</p>
       </header>
 
       <section className="loc-card" id="draw" data-draw-keyword="lunarunes-draw" data-draw-mode={drawKey}>
@@ -379,9 +321,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
           </div>
           <div className="loc-actions runes-retry">
             <button type="button" className="loc-button" data-draw-action="retry" onClick={executeDraw}>再抽一次</button>
-            <button type="button" className="loc-button primary" onClick={saveCurrentDraw}>{drawKey === 'daily' ? '記錄到每日' : '記錄一般抽牌'}</button>
           </div>
-          {recordStatus && <p className="loc-status">{recordStatus}</p>}
         </section>
 
         {drawKey === 'daily' && <section className="loc-card" data-draw-reading="daily">
@@ -390,15 +330,6 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
           {dailyAnalysisStatus ? <p className="loc-status">{dailyAnalysisStatus}</p> : <SingleAdvice card={draw.cards[0]} direction={draw.directions[0]} phase={moonPhase} interpretations={interpretations} daily/>}
         </section>}
 
-        {drawKey === 'daily' && <section className="loc-card" data-daily-records="true">
-          <p className="loc-eyebrow">Daily · 紀錄</p>
-          <h2>每日符文紀錄</h2>
-          {dailyRecordsStatus ? <p className="loc-status">{dailyRecordsStatus}</p> : null}
-          {dailyRecords.length ? <div className="loc-context-list">{dailyRecords.map(record => <article className="loc-context-item" key={record.id}>
-            <strong>{record.cards?.[0]?.name || '每日符文'} · {record.cards?.[0]?.direction || '—'}</strong>
-            <span>{record.created_at ? new Date(record.created_at).toLocaleString('zh-TW') : ''} · 真實月相：{record.moon_phase || '—'}</span>
-          </article>)}</div> : null}
-        </section>}
 
         <MultiReading draw={draw} mode={drawKey} phase={moonPhase}/>
 
