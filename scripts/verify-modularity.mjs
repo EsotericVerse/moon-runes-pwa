@@ -29,7 +29,6 @@ walk(resolve(root,'app'),path=>{
 
 for(const required of [
   'app/loc/neon-repository.js',
-  'app/loc/neon-server.js',
   'app/loc/neon-context-client.js',
   'app/loc/neon-ranking-client.js',
   'app/loc/neon-culture-client.js',
@@ -53,8 +52,8 @@ if(!/selectScopeCultureData\(scopeId\)/.test(cultureView))failures.push('Culture
 
 const searchClient=readFileSync(resolve(root,'app/loc/neon-search.js'),'utf8');
 const searchView=readFileSync(resolve(root,'app/modular-v2/features/SearchV2.jsx'),'utf8');
-if(!/from ['"]flexsearch['"]/.test(searchClient)||!/new Index\(/.test(searchClient))failures.push('Search: FlexSearch index is missing');
-if(!/searchNeonRows\(/.test(searchView))failures.push('SearchV2: FlexSearch-backed Neon search client missing');
+if(!/getSearchProviders/.test(searchClient)||!/searchNeonRows\(/.test(searchClient))failures.push('Search: direct Neon provider search boundary is missing');
+if(!/searchNeonRows\(/.test(searchView))failures.push('SearchV2: Neon search client missing');
 
 const scopeManagement=readFileSync(resolve(root,'app/modular-v2/ScopeManagementV2.jsx'),'utf8');
 if(!/useNeonAccount/.test(scopeManagement)||!/account\.canManage/.test(scopeManagement))failures.push('Scope management: manager role gate missing');
