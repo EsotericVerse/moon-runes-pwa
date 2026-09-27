@@ -198,12 +198,12 @@ function StatisticsPanel({scopeId,navigation,types}){
       {rankingType==='keyword'?<p>關鍵詞治理：這些結果可作為新增、提高、降低或淘汰候選的依據；實際詞庫變更仍需由規則與時間比較確認。</p>:null}
     </section>:null}
 
-    {comparisonQuery.isPending?<p className="scope-v2-status">比較目前時期與前一等長區間…</p>:null}
+    {comparisonQuery.isPending?<p className="scope-v2-status">比較目前時期與前一正式時期…</p>:null}
     {comparisonQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(comparisonQuery.error)}</p>:null}
     {!comparisonQuery.isPending&&!comparisonQuery.error&&comparisonQuery.data?<section className="scope-v2-card">
       <p className="loc-eyebrow">Weak Signal Comparison</p>
       <h3>時間變化／弱訊號</h3>
-      <p>目前：{rangeLabel(comparisonQuery.data.currentRange)}｜前一區間：{rangeLabel(comparisonQuery.data.previousRange)}。兩段長度相同，只比較可觀察的頻率變化。</p>
+      <p>{comparisonQuery.data.previousPeriodLabel||'前一時期'}：{rangeLabel(comparisonQuery.data.previousRange)}｜{comparisonQuery.data.periodLabel||'目前時期'}：{rangeLabel(comparisonQuery.data.currentRange)}。比較完整正式時期中各分類的占比變化，不使用等長日期窗。</p>
       {!changeAnalysis.suggestions.length?<p className="scope-v2-status">目前沒有達到提醒門檻的明顯變化。</p>:<div className="scope-v2-list">
         {changeAnalysis.suggestions.map((item,index)=><article className="scope-v2-inline-card" key={item.type+'-'+item.term+'-'+index}>
           <strong>{item.action||(
