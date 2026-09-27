@@ -5,7 +5,6 @@ import {selectNeonCatalog} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
 
 const DEFAULT_GLOBAL_CONCURRENCY=2;
-const DEFAULT_MAX_BATCH_ITEMS=24;
 function sourcePath(path){
   const normalized=String(path||'').trim().replace(/^\/+/, '');
   if(!normalized)throw new Error('LOC Neon data path is required');
@@ -142,10 +141,9 @@ export async function fetchRuneRows(runeNumbers){
     .map(row=>({rune_number:Number(row.編號),rune_data:row}));
 }
 
-export async function fetchNeonDataBatch(items,{concurrency=DEFAULT_GLOBAL_CONCURRENCY,maxItems=DEFAULT_MAX_BATCH_ITEMS,memory=true}={}){
+export async function fetchNeonDataBatch(items,{concurrency=DEFAULT_GLOBAL_CONCURRENCY,memory=true}={}){
   const queue=[...items];
-  if(queue.length>maxItems)throw new Error(`LOC data batch has ${queue.length} items; budget allows ${maxItems}`);
-  const workerCount=Math.max(1,Math.min(concurrency,DEFAULT_GLOBAL_CONCURRENCY));
+  const workerCount=Math.max(1,Math.floor(Number(concurrency)||DEFAULT_GLOBAL_CONCURRENCY));
   return pMap(queue,async item=>{
     const path=typeof item==='string'?item:item.path;
     return fetchNeonData(path,{memory});
@@ -167,7 +165,6 @@ export function refreshLocDataIndex(){
 }
 
 export const LOC_IO_BUDGET=Object.freeze({
-  maxBatchItems:DEFAULT_MAX_BATCH_ITEMS,
-  maxConcurrentRequests:DEFAULT_GLOBAL_CONCURRENCY,
+  scheduler:'p-map',
   maxMemoryEntries:0
 });
