@@ -32,7 +32,6 @@ requireText('app/loc/views/AboutView.jsx',[
   'ModelArchitectureExplorer',
   "scopeHrefV2('lunarunes','duel/one')",
   "scopeHrefV2('lunarunes','duel/daily')",
-  "featureHrefV2('lunarunes','statics')",
   '<img src="/pics/LunaRunes.jpg" alt="LunaRunes 月之符文" loading="lazy" />'
 ]);
 forbidText('app/loc/views/AboutView.jsx',[
@@ -65,10 +64,12 @@ if(!existsSync(resolve(root,'app/lrunes/page.jsx')))failures.push('app/lrunes/pa
 for(const path of [
   'app/lrunes/RuneDrawClient.jsx',
   'app/lrunes/RunesClient.jsx',
-  'app/lrunes/RuneListPage.jsx',
-  'app/lrunes/RuneHistoryPage.jsx',
-  'app/lrunes/history/HistoryClient.jsx'
+  'app/lrunes/RuneListPage.jsx'
 ])requireFile(path);
+
+for(const retired of ['app/lrunes/RuneHistoryPage.jsx','app/lrunes/history/HistoryClient.jsx']){
+  if(existsSync(resolve(root,retired)))failures.push('retired unreachable history component returned: '+retired);
+}
 
 requireText('app/lrunes/RuneDrawClient.jsx',[
   "scopeHrefV2('lunarunes','duel/one')",
