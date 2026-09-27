@@ -153,7 +153,7 @@ function StylePanel({scopeId}){
 function StatisticsShell({scopeId,navigation}){
   const account=useNeonAccount();
   const canManage=Boolean(account.user&&(account.canManageGlobalSync()||account.canManageScopeSync(scopeId)));
-  const visibleTabs=STAT_TABS;
+  const visibleTabs=scopeId==='loc'?STAT_TABS.filter(([value])=>value!=='keywords'):STAT_TABS;
   const requested=visibleTabs.some(([value])=>value===navigation.statTab)?navigation.statTab:'ranking';
   const active=requested;
   const typesQuery=useQuery({
@@ -161,7 +161,7 @@ function StatisticsShell({scopeId,navigation}){
     queryFn:()=>selectScopeRankingTypes(scopeId),
     staleTime:5*60_000
   });
-  const types=typesQuery.data||['keyword','source'];
+  const types=typesQuery.data||(scopeId==='loc'?['source']:['keyword','source']);
   return <section className="loc-card scope-v2-feature-card">
     <StatTabs scopeId={scopeId} navigation={navigation} active={active} tabs={visibleTabs}/>
     {typesQuery.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
