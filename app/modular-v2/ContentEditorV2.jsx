@@ -21,7 +21,6 @@ export default function ContentEditorV2({
     {extraFields}
     {showVisibility?<div className="scope-v2-editor-options">
       <label><input type="checkbox" checked={draft.includeStatistics!==false} onChange={event=>change('includeStatistics',event.target.checked)}/>列入統計</label>
-      <label><input type="checkbox" checked={draft.fullText===true} onChange={event=>change('fullText',event.target.checked)}/>全文顯示（未勾選為簡文）</label>
       <label><input type="checkbox" checked={draft.hidden===true} onChange={event=>change('hidden',event.target.checked)}/>私密／隱藏</label>
       <label><input type="checkbox" checked={draft.showLink!==false} onChange={event=>change('showLink',event.target.checked)}/>顯示連結</label>
       <label><input type="checkbox" checked={draft.showSource!==false} onChange={event=>change('showSource',event.target.checked)}/>顯示來源</label>
