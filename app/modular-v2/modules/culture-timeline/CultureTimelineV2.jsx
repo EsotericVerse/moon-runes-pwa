@@ -29,7 +29,8 @@ function timelineRows(items,labelOf,focus){
     ].filter(Boolean).map(String);
     const focused=focusTerms.some(term=>candidateValues.includes(term));
     const group=item?.group_label||item?.scope_id||'';
-    const density=Number(item?.density_ratio)>0?densityStyleForRatio(item.density_ratio):densityStyleForCount(item?.work_count);
+    const ratio=Number(item?.global_density_ratio)>0?Number(item.global_density_ratio):Number(item?.density_ratio)||0;
+    const density=ratio>0?densityStyleForRatio(ratio):densityStyleForCount(item?.work_count);
     return [{
       id:String(item?.id||item?.entry_id||item?.era_id||item?.period_id||item?.version||index),
       content:labelOf(item,index),
@@ -52,7 +53,7 @@ function timelineRows(items,labelOf,focus){
       ...(focused?{className:'scope-period-timeline-focus'}:{}),
       ...(density?{
         className:[focused?'scope-period-timeline-focus':'','scope-period-density'].filter(Boolean).join(' '),
-        style:'--culture-density:'+Math.max(.12,Math.min(1,Number(item?.density_ratio)||Math.min(1,Number(item?.work_count||0)/100)))+';background:color-mix(in srgb,var(--loc-accent) '+Math.round((.16+density.glow*.68)*100)+'%,var(--loc-panel));border-color:color-mix(in srgb,var(--loc-accent) '+Math.round((.42+density.glow*.5)*100)+'%,var(--loc-line));color:var(--loc-text);filter:brightness('+density.brightness+');box-shadow:0 0 '+density.blur+' color-mix(in srgb,var(--loc-accent) '+Math.round(density.glow*100)+'%,transparent);'
+        style:'--culture-density:'+Math.max(.08,Math.min(1,ratio||Math.min(1,Number(item?.work_count||0)/100)))+';height:'+(8+Math.round(Math.max(.08,Math.min(1,ratio||0))*20))+'px;background:color-mix(in srgb,var(--loc-accent) '+Math.round((.12+density.glow*.72)*100)+'%,var(--loc-panel));border-color:color-mix(in srgb,var(--loc-accent) '+Math.round((.36+density.glow*.56)*100)+'%,var(--loc-line));color:var(--loc-text);filter:brightness('+density.brightness+');box-shadow:0 0 '+density.blur+' color-mix(in srgb,var(--loc-accent) '+Math.round(density.glow*100)+'%,transparent);'
       }:{})
     }];
   });
