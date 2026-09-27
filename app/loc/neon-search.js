@@ -1,6 +1,7 @@
 'use client';
 
 import {getSearchProviders} from './search-providers';
+import {selectManagedScopeIds} from './scope-list';
 
 const SEARCH_PAGE_SIZE=20;
 
@@ -55,7 +56,8 @@ export async function searchNeonRows(collectionId,query,{
 
   const safeLimit=Math.max(1,Math.min(SEARCH_PAGE_SIZE,Math.floor(Number(limit)||SEARCH_PAGE_SIZE)));
   const safeOffset=Math.max(0,Math.floor(Number(offset)||0));
-  const providers=getSearchProviders(collectionId);
+  const scopeIds=collectionId==='all'?await selectManagedScopeIds():[];
+  const providers=getSearchProviders(collectionId,scopeIds);
   const cards=scopeCards(q,collectionId);
   const failures=[];
 
