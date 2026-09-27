@@ -6,7 +6,8 @@ const files={
   guidance:'app/loc/model/semantic-state.mjs',
   canonicalLoader:'app/loc/data.js',
   search:'app/loc/neon-search.js',
-  searchView:'app/modular-v2/features/SearchV2.jsx'
+  searchView:'app/modular-v2/features/SearchV2.jsx',
+  dailyTrend:'app/loc/model/daily-trend-engine.mjs'
 };
 const failures=[];
 const read=path=>fs.readFileSync(path,'utf8');
@@ -15,11 +16,14 @@ for(const [name,path] of Object.entries(files)){
   else if(!read(path).trim())failures.push(`${path}: empty canonical guard file`);
 }
 const identity=read(files.identity);
-for(const token of ['模型化語言框架','Modelized Language Framework','符號式語言','Symbolic Language'])if(!identity.includes(token))failures.push(`identity: missing ${token}`);
+for(const token of ['語言架構框架','Language Architecture Framework','符號式語言','Symbolic Language'])if(!identity.includes(token))failures.push(`identity: missing ${token}`);
 const registry=read(files.registry);
 for(const token of ["defaultScopeId:'loc'","dataViews:Object.freeze({context:'api.loc_context_entries',rankings:'api.loc_rankings'})","domain:'lrunes.lo3rwang.cc'"])if(!registry.includes(token))failures.push(`scope registry: missing ${token}`);
 const guidance=read(files.guidance);
-for(const token of ['RUNE_SEMANTIC_STATES','resolveStatePair','resolveSpreadState','buildDailyStateIndex'])if(!guidance.includes(token))failures.push(`semantic state: missing ${token}`);
+for(const token of ['RUNE_SEMANTIC_STATES','resolveStatePair','resolveSpreadState'])if(!guidance.includes(token))failures.push(`semantic state: missing ${token}`);
+for(const token of ['buildDailyStateIndex','findDailyState','createTextIndex','searchTextIndex'])if(guidance.includes(token))failures.push(`semantic state: retired Daily search token ${token}`);
+const dailyTrend=read(files.dailyTrend);
+for(const token of ['summarizeDailyRange','dailyPresetRange'])if(!dailyTrend.includes(token))failures.push(`daily trend: missing ${token}`);
 for(const token of ['SPREAD_WEIGHTS','DIRECTION_FACTOR','POLARITY_SCORE','weighted','GUIDANCE_RANGES'])if(guidance.includes(token))failures.push(`semantic state: forbidden weighted-score token ${token}`);
 const loader=read(files.canonicalLoader);
 for(const token of ['selectNeonRows','silver.lrunes'])if(!loader.includes(token))failures.push(`canonical Neon loader: missing ${token}`);
