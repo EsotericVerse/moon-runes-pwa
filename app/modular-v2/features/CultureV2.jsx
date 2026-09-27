@@ -18,6 +18,7 @@ import {formatCultureDateTime} from '../modules/culture-timeline/culture-timelin
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
+import PagedResultV2 from '../PagedResultV2';
 
 const CULTURE_WORK_PAGE_SIZE=20;
 
@@ -306,11 +307,15 @@ export default function CultureV2(){
                   </WorkSummaryCardV2>)}
                 </div>
                 {!periodWorksQuery.isPending&&!periodWorksQuery.error&&!(periodWorksQuery.data?.rows||[]).length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
-                <nav className='scope-v2-culture-source-pages' aria-label='作品分頁'>
-                  <button type='button' className='scope-v2-pagination-button' disabled={workPage<=0||periodWorksQuery.isPending} onClick={()=>setWorkPage(page=>Math.max(0,page-1))}>上一頁</button>
-                  <span>第 {workPage+1} / {workPageCount} 頁</span>
-                  <button type='button' className='scope-v2-pagination-button' disabled={workPage+1>=workPageCount||periodWorksQuery.isPending} onClick={()=>setWorkPage(page=>Math.min(workPageCount-1,page+1))}>下一頁</button>
-                </nav>
+                <PagedResultV2
+                  label="作品"
+                  totalCount={groupedCount}
+                  offset={workPage*CULTURE_WORK_PAGE_SIZE}
+                  pageSize={CULTURE_WORK_PAGE_SIZE}
+                  hasMore={workPage+1<workPageCount}
+                  onPrevious={()=>setWorkPage(page=>Math.max(0,page-1))}
+                  onNext={()=>setWorkPage(page=>Math.min(workPageCount-1,page+1))}
+                />
               </section>:null}
             </section>:null}
       </>:null}
