@@ -1,7 +1,7 @@
 'use client';
 
 export const UI_PAGE_SIZE=20;
-export const WRITE_BATCH_SIZE=64;
+export const WRITE_TARGET_BYTES=512*1024;
 export const DATA_QUERY_CONCURRENCY=2;
 export const DATA_QUERY_BACKPRESSURE=2;
 export const IO_INITIAL_BATCH=128;
@@ -122,10 +122,23 @@ export function safeReturning(table,requested='*'){
   return requested;
 }
 
-export function chunkWriteRows(rows){
+export function chunkWriteRows(rows,{targetBytes=WRITE_TARGET_BYTES}={}){
   const source=Array.isArray(rows)?rows:[rows];
   const chunks=[];
-  for(let i=0;i<source.length;i+=WRITE_BATCH_SIZE)chunks.push(source.slice(i,i+WRITE_BATCH_SIZE));
+  let current=[];
+  let currentBytes=2;
+  const target=Math.max(1024,Math.floor(Number(targetBytes)||WRITE_TARGET_BYTES));
+  for(const row of source){
+    const rowBytes=new TextEncoder().encode(JSON.stringify(row??{})).byteLength+1;
+    if(current.length&&currentBytes+rowBytes>target){
+      chunks.push(current);
+      current=[];
+      currentBytes=2;
+    }
+    current.push(row);
+    currentBytes+=rowBytes;
+  }
+  if(current.length)chunks.push(current);
   return chunks;
 }
 
