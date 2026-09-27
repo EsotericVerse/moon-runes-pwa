@@ -9,7 +9,7 @@ const AUTHOR_OVERVIEW_NODES=Object.freeze([
   Object.freeze({id:'wordsmith',title:'文字工匠｜Wordsmith｜關鍵詞的相關聯繫',summary:
    '把分散的文字、作品、規則、版本與歷史紀錄，整理成可搜尋、可理解、可治理、可持續維護的結構。',
    href:featureNavigationHref('lo3rwang','statics',{statTab:'keywords'})}),
-  Object.freeze({id:'calibrator',title:'校對者｜Calibrator｜文字在時間長核上的演化，文化',summary:
+  Object.freeze({id:'calibrator',title:'校對者｜Calibrator｜文字在時間長河上的演化',summary:
    '組織整理長期累積的文字、照片、影音、作品、帳號資料、版本與歷史紀錄，使其從散落檔案轉成可搜尋、可理解、可追溯來源並能長期維護的數位資產。',
    href:featureHrefV2('lo3rwang','culture')}),
   Object.freeze({id:'governance-architect',title:'語言架構師｜Language Architect｜架構語言的治理方式',summary:
