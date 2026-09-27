@@ -1,6 +1,5 @@
 import { PageComposition } from '../../PageComposition';
 import ScopeOverviewNetwork from '../../modular-v2/modules/scope-overview/ScopeOverviewNetwork';
-const ROOT=['鑑古知今，求同存異','不在其位，不謀其政','隨心所欲，而不逾己'];
 
 import {featureHrefV2} from '../../modular-v2/scope-registry.v2';
 import {featureNavigationHref} from '../../modular-v2/feature-navigation.v2';
@@ -28,10 +27,10 @@ const AUTHOR_OVERVIEW_NODES=Object.freeze([
 ]);
 
 const AUTHOR_FUNCTIONS=Object.freeze([
-  Object.freeze({eyebrow:'Culture',title:'文化',text:'把作品放回個人時期與時間長河，觀看文字風格、作品與生命經驗如何變化。',href:'/culture/',label:'查看文化'}),
-  Object.freeze({eyebrow:'Statistics',title:'統計',text:'查看排行榜、關鍵詞設定與各項統計圖。',href:'/statics/',label:'查看統計'}),
-  Object.freeze({eyebrow:'Governance',title:'治理',text:'管理功能跟政策表達。',href:'/governance/',label:'查看治理'}),
-  Object.freeze({eyebrow:'Search',title:'搜尋',text:'從關鍵詞、作品、來源或日期開始，找到時間點，再查看附近的脈絡與作品。',href:'/search/',label:'開始搜尋'})
+  Object.freeze({eyebrow:'Culture',title:'文化',text:'把作品放回個人時期與時間長河，觀看文字風格、作品與生命經驗如何變化。',href:featureHrefV2('lo3rwang','culture'),label:'查看文化'}),
+  Object.freeze({eyebrow:'Statistics',title:'統計',text:'查看排行榜、關鍵詞設定與各項統計圖。',href:featureHrefV2('lo3rwang','statics'),label:'查看統計'}),
+  Object.freeze({eyebrow:'Governance',title:'治理',text:'管理功能跟政策表達。',href:featureHrefV2('lo3rwang','governance'),label:'查看治理'}),
+  Object.freeze({eyebrow:'Search',title:'搜尋',text:'從關鍵詞、作品、來源或日期開始，找到時間點，再查看附近的脈絡與作品。',href:featureHrefV2('lo3rwang','search'),label:'開始搜尋'})
 ]);
 
 export default function AuthorHomeView({section=null}){
@@ -41,9 +40,9 @@ export default function AuthorHomeView({section=null}){
       eyebrow:'Roles',
       title:'三位一體',
       content:<div className="loc-grid three">
-        <article><strong>文字工匠 · Wordsmith</strong><p>從詞、句子與關鍵詞的聯繫，整理文字怎麼形成自己的語意與脈絡關係。</p><p><a href="/statics/?statTab=keywords">看關鍵詞設定</a></p></article>
-        <article><strong>校對者 · Calibrator</strong><p>把文字放回來源、時間與歷史裡比較，觀察文化軌跡、延續、改變、矛盾與可能的污染。</p><p><a href="/culture/">看文化</a></p></article>
-        <article><strong>語言架構師 · Language Governance Architect</strong><p>把語彙、脈絡、文化、搜尋與治理組織成可持續使用的個人語言與系統結構。</p><p><a href="/governance/">看治理</a></p></article>
+        <article><strong>文字工匠 · Wordsmith</strong><p>從詞、句子與關鍵詞的聯繫，整理文字怎麼形成自己的語意與脈絡關係。</p><p><a href={featureNavigationHref('lo3rwang','statics',{statTab:'keywords'})}>看關鍵詞設定</a></p></article>
+        <article><strong>校對者 · Calibrator</strong><p>把文字放回來源、時間與歷史裡比較，觀察文化軌跡、延續、改變、矛盾與可能的污染。</p><p><a href={featureHrefV2('lo3rwang','culture')}>看文化</a></p></article>
+        <article><strong>語言架構師 · Language Governance Architect</strong><p>把語彙、脈絡、文化、搜尋與治理組織成可持續使用的個人語言與系統結構。</p><p><a href={featureHrefV2('lo3rwang','governance')}>看治理</a></p></article>
         </div>
     },
     {
@@ -179,12 +178,8 @@ export default function AuthorHomeView({section=null}){
   />;
 
   const sectionGroups=Object.freeze({
-    style:Object.freeze(['roles','profile-content']),
     work:Object.freeze(['functions','work','digital-legacy']),
-    design:Object.freeze(['governance-root','loc','open-source']),
-    galaxy:Object.freeze(['corpus','micro-moonlight']),
-    others:Object.freeze(['philosophy','name-origin','calibration']),
-    email:Object.freeze(['contact','official-links'])
+    others:Object.freeze(['philosophy','name-origin','calibration'])
   });
   const activeSections=section&&sectionGroups[section]
     ?sections.filter(item=>sectionGroups[section].includes(item.id))
