@@ -1,60 +1,76 @@
 'use client';
 
-import {selectNeonRows} from './neon-repository';
+import {processNeonHeavyRows,selectNeonAllRows} from './neon-repository';
+import {getRuntimeTextIndex,searchTextIndex} from './text-engine';
 
-function escapeLike(value){
-  return String(value||'').replace(/[\\%_]/g,match=>'\\'+match);
+function unique(values=[]){
+  return [...new Set(values.map(value=>String(value||'').trim()).filter(Boolean))];
+}
+function dateFilters(dateColumn,startDate,endDate){
+  const filters=[];
+  if(dateColumn&&startDate)filters.push({column:dateColumn,operator:'gte',value:startDate});
+  if(dateColumn&&endDate)filters.push({column:dateColumn,operator:'lte',value:endDate});
+  return filters;
+}
+function pick(row,columns){
+  const output={};
+  for(const column of columns)if(row?.[column]!==undefined)output[column]=row[column];
+  return output;
+}
+function searchableText(row,fields){
+  return fields.map(field=>row?.[field]).filter(value=>value!==undefined&&value!==null).join(' ');
 }
 
-function makeProvider({id,table,source,scopeId,columns,searchFields,filters=[],dateColumn=''}){
-  const frozenColumns=Object.freeze([...columns]);
-  const frozenFields=Object.freeze([...searchFields]);
+function makeProvider({id,table,source,scopeId,idColumn,columns,searchFields,filters=[],dateColumn=''}){
+  const outputColumns=Object.freeze(unique(columns));
+  const indexedColumns=Object.freeze(unique([...columns,...searchFields]));
+  const frozenFields=Object.freeze(unique(searchFields));
   const frozenFilters=Object.freeze(filters.map(item=>Object.freeze({...item})));
+  const hasHeavyContent=indexedColumns.includes('content');
 
-  function orFilter(query){
-    const pattern='%'+escapeLike(query)+'%';
-    return frozenFields.map(field=>field+'.ilike.'+pattern).join(',');
+  async function buildIndex({startDate='',endDate=''}={}){
+    const rangeFilters=[...frozenFilters,...dateFilters(dateColumn,startDate,endDate)];
+    const cacheKey=['provider',id,startDate||'',endDate||''].join(':');
+    return getRuntimeTextIndex(cacheKey,async engine=>{
+      const add=row=>{
+        const key=String(row?.[idColumn]??'').trim();
+        if(!key)return;
+        const metadata={
+          ...pick(row,outputColumns),
+          scope_id:row?.scope_id||scopeId
+        };
+        engine.add(key,searchableText(row,frozenFields),{
+          row:metadata,
+          source,
+          providerId:id
+        });
+      };
+      if(hasHeavyContent){
+        await processNeonHeavyRows(table,{
+          columns:indexedColumns.join(','),
+          filters:rangeFilters,
+          orders:dateColumn?[{column:dateColumn,ascending:false}]:[],
+          onBatch:rows=>{for(const row of rows)add(row);}
+        });
+      }else{
+        const result=await selectNeonAllRows(table,{
+          columns:indexedColumns.join(','),
+          filters:rangeFilters,
+          orders:dateColumn?[{column:dateColumn,ascending:false}]:[]
+        });
+        for(const row of result.rows)add(row);
+      }
+    });
   }
 
   return Object.freeze({
-    id,table,source,scopeId,
-    columns:frozenColumns,
+    id,table,source,scopeId,idColumn,
+    columns:outputColumns,
     searchFields:frozenFields,
     filters:frozenFilters,
-    async count(query,{startDate='',endDate=''}={}){
-      const rangeFilters=[...frozenFilters];
-      if(dateColumn&&startDate)rangeFilters.push({column:dateColumn,operator:'gte',value:startDate});
-      if(dateColumn&&endDate)rangeFilters.push({column:dateColumn,operator:'lte',value:endDate});
-      const result=await selectNeonRows(table,{
-        columns:frozenColumns[0]||'*',
-        filters:rangeFilters,
-        orFilter:orFilter(query),
-        count:'exact',
-        limit:0
-      });
-      return Math.max(0,Number(result.count)||0);
-    },
-    async search(query,{limit=20,offset=0,startDate='',endDate=''}={}){
-      const rangeFilters=[...frozenFilters];
-      if(dateColumn&&startDate)rangeFilters.push({column:dateColumn,operator:'gte',value:startDate});
-      if(dateColumn&&endDate)rangeFilters.push({column:dateColumn,operator:'lte',value:endDate});
-      const result=await selectNeonRows(table,{
-        columns:frozenColumns.join(','),
-        filters:rangeFilters,
-        orFilter:orFilter(query),
-        orders:dateColumn?[{column:dateColumn,ascending:false}]:[],
-        limit,
-        offset,
-        count:'exact'
-      });
-      return {
-        count:Math.max(0,Number(result.count)||0),
-        rows:result.rows.map(row=>({
-          row:{...row,scope_id:row.scope_id||scopeId},
-          source,
-          providerId:id
-        }))
-      };
+    async search(query,{limit=20,offset=0,startDate='',endDate='',and=[],nor=[]}={}){
+      const engine=await buildIndex({startDate,endDate});
+      return searchTextIndex(engine,query,{limit,offset,and,nor});
     }
   });
 }
@@ -64,6 +80,7 @@ const authorText=makeProvider({
   table:'silver.lo3rwang_galaxy',
   source:'作者正文',
   scopeId:'lo3rwang',
+  idColumn:'galaxy_id',
   columns:['galaxy_id','scope_id','title','source_name','source_id','target_id','ref_id','url','created_at'],
   searchFields:['title','content','source_name'],
   dateColumn:'created_at'
@@ -74,7 +91,8 @@ const authorMedia=makeProvider({
   table:'silver.lo3rwang_galaxy_media',
   source:'音樂與多媒體',
   scopeId:'lo3rwang',
-  columns:['media_id','scope_id','media_link','source_name','source_native_id','media_type','title','url','created_at'],
+  idColumn:'media_id',
+  columns:['media_id','scope_id','media_link','source_name','source_native_id','media_type','title','url','meta_tags','style_tags','created_at'],
   searchFields:['title','meta_tags','style_tags','source_name'],
   dateColumn:'created_at'
 });
@@ -84,6 +102,7 @@ const authorTimeline=makeProvider({
   table:'silver.manage',
   source:'作者脈絡',
   scopeId:'lo3rwang',
+  idColumn:'record_id',
   columns:['record_id','record_type','scope_id','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility'],
   searchFields:['label','note','status'],
   dateColumn:'time_date',
@@ -98,6 +117,7 @@ const runeCore=makeProvider({
   table:'silver.lrunes',
   source:'月之符文',
   scopeId:'lrunes',
+  idColumn:'record_id',
   columns:['record_id','rune_number','rune_name','group_name','english_name','lots_positive','lots_negative','lots_half_positive','lots_half_negative','myth_story','rune_evolution_history','rune_description'],
   searchFields:['rune_name','group_name','english_name','lots_positive','lots_negative','lots_half_positive','lots_half_negative','myth_story','rune_evolution_history','rune_description'],
   filters:[{column:'record_type',operator:'eq',value:'rune'}]
@@ -108,6 +128,7 @@ const runeKeywords=makeProvider({
   table:'silver.lrunes',
   source:'符文關鍵詞',
   scopeId:'lrunes',
+  idColumn:'record_id',
   columns:['record_id','rune_number','keyword_group','keyword'],
   searchFields:['keyword_group','keyword'],
   filters:[
@@ -121,6 +142,7 @@ const runeRules=makeProvider({
   table:'silver.lrunes',
   source:'符文規則',
   scopeId:'lrunes',
+  idColumn:'record_id',
   columns:['record_id','title','rule_text','before_text','after_text','note'],
   searchFields:['title','rule_text','before_text','after_text','note'],
   filters:[
@@ -134,6 +156,7 @@ const runeTimeline=makeProvider({
   table:'silver.manage',
   source:'符文時期',
   scopeId:'lrunes',
+  idColumn:'record_id',
   columns:['record_id','record_type','scope_id','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility'],
   searchFields:['label','note','status'],
   dateColumn:'time_date',
@@ -148,7 +171,8 @@ const runeText=makeProvider({
   table:'silver.lrunes',
   source:'符文文字',
   scopeId:'lrunes',
-  columns:['record_id','galaxy_id','scope_id','category','content_type','source_name','source_role','title','created_at','source_ref','source_id','target_id','ref_id','url'],
+  idColumn:'record_id',
+  columns:['record_id','galaxy_id','scope_id','category','content_type','source_name','source_role','title','meta_tags','created_at','source_ref','source_id','target_id','ref_id','url'],
   searchFields:['title','content','meta_tags','source_name'],
   dateColumn:'created_at',
   filters:[{column:'record_type',operator:'eq',value:'galaxy'}]
@@ -159,7 +183,8 @@ const runeMedia=makeProvider({
   table:'silver.lrunes',
   source:'符文多媒體',
   scopeId:'lrunes',
-  columns:['record_id','media_id','scope_id','media_link','source_name','source_native_id','media_type','title','url','created_at'],
+  idColumn:'record_id',
+  columns:['record_id','media_id','scope_id','media_link','source_name','source_native_id','media_type','title','url','meta_tags','style_tags','created_at'],
   searchFields:['title','meta_tags','style_tags','source_name'],
   dateColumn:'created_at',
   filters:[{column:'record_type',operator:'eq',value:'galaxy_media'}]
@@ -170,6 +195,7 @@ const faq=makeProvider({
   table:'silver.faq_entries',
   source:'FAQ',
   scopeId:'loc',
+  idColumn:'faq_id',
   columns:['faq_id','category','intent','question','answer','status','source_path'],
   searchFields:['category','intent','question','answer','status']
 });
