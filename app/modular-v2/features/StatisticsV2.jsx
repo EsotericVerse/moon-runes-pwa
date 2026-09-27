@@ -11,6 +11,7 @@ import {selectScopeRankingPage,selectScopeRankingTypes} from '../../loc/neon-ran
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
+import {useNeonAccount} from '../../loc/use-neon-account';
 import KeywordSettingsV2 from './KeywordSettingsV2';
 import ContextStyleManager from './ContextStyleManager';
 import FeaturePageV2 from '../FeaturePageV2';
@@ -89,10 +90,10 @@ function useAllRanking(scopeId,type,navigation){
   });
 }
 
-function StatTabs({scopeId,navigation,active}){
+function StatTabs({scopeId,navigation,active,tabs}){
   const router=useRouter();
   return <nav className="scope-v2-stat-tabs" aria-label="統計功能">
-    {STAT_TABS.map(([value,label])=><button
+    {tabs.map(([value,label])=><button
       type="button"
       key={value}
       aria-current={active===value?'page':undefined}
@@ -159,7 +160,11 @@ function StylePanel({scopeId}){
 }
 
 function StatisticsShell({scopeId,navigation}){
-  const active=STAT_TABS.some(([value])=>value===navigation.statTab)?navigation.statTab:'ranking';
+  const account=useNeonAccount();
+  const canManage=Boolean(account.user&&(account.canManageGlobalSync()||account.canManageScopeSync(scopeId)));
+  const visibleTabs=STAT_TABS.filter(([value])=>!['keywords','styles'].includes(value)||canManage);
+  const requested=visibleTabs.some(([value])=>value===navigation.statTab)?navigation.statTab:'ranking';
+  const active=requested;
   const typesQuery=useQuery({
     queryKey:['statistics-types',scopeId],
     queryFn:()=>selectScopeRankingTypes(scopeId),
@@ -167,12 +172,12 @@ function StatisticsShell({scopeId,navigation}){
   });
   const types=typesQuery.data||['keyword','source'];
   return <section className="loc-card scope-v2-feature-card">
-    <StatTabs scopeId={scopeId} navigation={navigation} active={active}/>
+    <StatTabs scopeId={scopeId} navigation={navigation} active={active} tabs={visibleTabs}/>
     {typesQuery.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
     {typesQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(typesQuery.error)}</p>:null}
     {!typesQuery.isPending&&active==='ranking'?<RankingPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
-    {active==='keywords'?<KeywordPanel scopeId={scopeId}/>:null}
-    {active==='styles'?<StylePanel scopeId={scopeId}/>:null}
+    {canManage&&active==='keywords'?<KeywordPanel scopeId={scopeId}/>:null}
+    {canManage&&active==='styles'?<StylePanel scopeId={scopeId}/>:null}
     {!typesQuery.isPending&&active==='charts'?<ChartsPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
   </section>;
 }
