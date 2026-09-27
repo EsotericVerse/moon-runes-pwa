@@ -34,8 +34,9 @@ if(/page_manager|scope_manager|scope_owner|privacy_dispute_handler|case_id/.test
   failures.push('authorization module must remain strictly two-level: admin + scope');
 }
 
-requireMatch(userStorage,/session\?\.user\?\.email/,'user-local storage identity must use Neon Auth email');
-if(/user\?\.id|user\.id/.test(userStorage))failures.push('user-local storage must not use Neon Auth user.id as identity');
+requireMatch(userStorage,/schema\('api'\)\.from\('user_records'\)/,'authenticated user records must use api.user_records');
+requireMatch(userStorage,/schema\('api'\)\.from\('user_settings'\)/,'authenticated user settings must use api.user_settings');
+if(/localStorage|IndexedDB|readStore\(|writeStore\(/.test(userStorage))failures.push('authenticated durable user state must not use browser storage');
 
 requireMatch(scopeManagement,/account\.canManageGlobal\(\)/,'Scope create, edit and delete must be admin-only');
 requireMatch(scopeRepository,/MANAGE_TABLE='silver\.manage'/,'Scope graph structure may remain in silver.manage');
@@ -66,4 +67,4 @@ if(failures.length){
   console.error('[auth-boundary] violations:\n'+failures.join('\n'));
   process.exit(1);
 }
-console.log('[auth-boundary] Neon Auth email identity + admin/scope authorization verified');
+console.log('[auth-boundary] Neon Auth + RLS user storage + admin/scope authorization verified');
