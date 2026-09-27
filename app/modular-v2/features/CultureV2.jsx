@@ -14,6 +14,7 @@ import {galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation.v
 import {FEATURE_EMPTY_MESSAGE,FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
 import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
+import {analyzeTemporalDensity} from '../../loc/model/automatic-analysis.mjs';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
@@ -221,6 +222,11 @@ export default function CultureV2(){
   },[query.data,currentRows,currentByScope,scopeId,periodVolumeByStart]);
 
   const classificationBuckets=classificationMode==='source'?(sourceSnapshotQuery.data?.buckets||[]):(styleSnapshotQuery.data?.buckets||[]);
+  const automaticAnalysis=useMemo(()=>analyzeTemporalDensity(classificationBuckets,{
+    label:classificationMode==='source'?'發文':'風格作品',
+    minimumCount:3,
+    highRatio:1.75
+  }),[classificationBuckets,classificationMode]);
 
   return <FeaturePageV2 featureId="culture">
     <section className='loc-card scope-v2-feature-card scope-v2-feature-card-wide'>
@@ -263,6 +269,22 @@ export default function CultureV2(){
                 focus={{}}
                 mode={classificationMode==='source'?'source':'overview'}
               />:null}
+
+              {automaticAnalysis.suggestions.length?<section className='scope-v2-card'>
+                <p className='loc-eyebrow'>Automatic Guidance</p>
+                <h4>自動軌跡建議</h4>
+                <p>只依時間密度與前後分布提出回看位置，不判斷事件好壞，也不自動建立定錨點。</p>
+                <div className='scope-v2-list'>
+                  {automaticAnalysis.suggestions.map((suggestion,index)=><article className='scope-v2-inline-card' key={suggestion.type+'-'+suggestion.date+'-'+index}>
+                    <strong>{suggestion.date}</strong>
+                    <span>{suggestion.text}</span>
+                    <span>
+                      <a href={'/search/?from='+encodeURIComponent(suggestion.date)+'&to='+encodeURIComponent(suggestion.date)}>搜尋這一天</a>
+                      {classificationScope==='lo3rwang'?<> · <a href={'/governance/manage/?anchorDate='+encodeURIComponent(suggestion.date)}>帶入定錨設定</a></>:null}
+                    </span>
+                  </article>)}
+                </div>
+              </section>:null}
             </section>:null}
 
             {selectedWorkPeriod?<section className='scope-v2-card scope-v2-culture-current-works'>
