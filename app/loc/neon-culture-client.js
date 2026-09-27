@@ -1,7 +1,7 @@
 'use client';
 
 import {ScopeCultureResponseSchema} from './scope-feature-contracts';
-import {processNeonHeavyRows,selectNeonAllRows} from './neon-repository';
+import {selectNeonAllRows} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
 import {selectManagedScopeIds} from './scope-list';
 import {decodeCultureText,formatCultureDateTime,groupWorksByWeek} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
@@ -176,12 +176,14 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
     columns:'uid,category,content_type,source_name,title,createtime,url,source_id,target_id,ref_id,media_link',
     filters:[{column:'uid',operator:'in',value:uids}]
   });
-  const bodyById=new Map();
-  await processNeonHeavyRows('silver.lo3rwang_galaxy',{
-    columns:'uid,content',
-    filters:[{column:'uid',operator:'in',value:uids}],
-    onRow:row=>{bodyById.set(String(row.uid),decodeCultureText(row.content||'').trim());}
+  const previewResult=await selectNeonAllRows('silver.lo3rwang_galaxy_preview',{
+    columns:'uid,content_preview',
+    filters:[{column:'uid',operator:'in',value:uids}]
   });
+  const previewById=new Map(previewResult.rows.map(row=>[
+    String(row.uid),
+    decodeCultureText(row.content_preview||'').trim()
+  ]));
   const mediaIds=[...new Set(textResult.rows.flatMap(row=>Array.isArray(row.media_link)?row.media_link:[]).map(String).filter(Boolean))];
   const [linkedMediaResult,forwardMediaResult]=await Promise.all([
     selectNeonAllRows('silver.lo3rwang_galaxy_media',{
@@ -226,9 +228,8 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
     const rawTitle=decodeCultureText(item.title||row.title||'').trim();
     const sourceName=sourceLabel(row.source_name);
     const validTitle=rawTitle&&rawTitle.toLowerCase()!==sourceName.toLowerCase()?rawTitle:'';
-    const bodyText=bodyById.get(String(row.uid))||'';
-    const bodyPreview=bodyText.replace(/\s+/g,' ').trim().slice(0,180);
-    const displayTitle=validTitle||bodyPreview.slice(0,60)||row.uid;
+    const bodyPreview=previewById.get(String(row.uid))||'';
+    const displayTitle=validTitle||bodyPreview||row.uid;
     const mediaDescription=linkedMedia.map(mediaMetadataDescription).filter(Boolean).join(' ｜ ');
     return {
       key:'galaxy:'+row.uid,
