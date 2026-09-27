@@ -134,8 +134,7 @@ export function featureNavigationLinks({targetScope,state}){
     links.push({id:'culture',label:'文化 Time River',href:featureNavigationHref(targetScope,'culture',state)});
   }
   if(['loc','lunarunes','lo3rwang'].includes(targetScope)){
-    links.push({id:'statics-ranking',label:'統計排行榜',href:featureNavigationHref(targetScope,'statics',{...state,statTab:'ranking'})});
+    links.push({id:'statics',label:'統計',href:featureNavigationHref(targetScope,'statics',{...state,statTab:'ranking'})});
   }
-  links.push({id:'statics-charts',label:'統計圖',href:featureNavigationHref(targetScope,'statics',{...state,statTab:'charts'})});
   return links;
 }
