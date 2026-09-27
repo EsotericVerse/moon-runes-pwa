@@ -153,7 +153,7 @@ function StylePanel({scopeId}){
 function StatisticsShell({scopeId,navigation}){
   const account=useNeonAccount();
   const canManage=Boolean(account.user&&(account.canManageGlobalSync()||account.canManageScopeSync(scopeId)));
-  const visibleTabs=scopeId==='loc'?STAT_TABS.filter(([value])=>value!=='keywords'):STAT_TABS;
+  const visibleTabs=scopeId==='loc'?STAT_TABS.filter(([value])=>value==='ranking'||value==='charts'):STAT_TABS;
   const requested=visibleTabs.some(([value])=>value===navigation.statTab)?navigation.statTab:'ranking';
   const active=requested;
   const typesQuery=useQuery({
