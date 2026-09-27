@@ -41,6 +41,38 @@ export async function getNeonRecord(id){
   const email=await requireUserEmail();
   return readStore(RECORDS_KEY,email)[String(id)]||null;
 }
+
+function localDateKey(value){
+  const date=value?new Date(value):new Date();
+  if(Number.isNaN(date.getTime()))return '';
+  const year=date.getFullYear();
+  const month=String(date.getMonth()+1).padStart(2,'0');
+  const day=String(date.getDate()).padStart(2,'0');
+  return `${year}-${month}-${day}`;
+}
+
+export async function putDailyRuneRecord(record){
+  const email=await requireUserEmail();
+  const row=normalizeRecord({...record,type:'rune-draw',record_kind:'daily'});
+  const date=localDateKey(row.created_at);
+  if(!date)throw new Error('每日符文紀錄日期無效');
+  const store=readStore(RECORDS_KEY,email);
+  const dailyRows=Object.values(store)
+    .filter(item=>item?.type==='rune-draw'&&item?.record_kind==='daily'&&localDateKey(item.created_at)===date)
+    .sort((a,b)=>String(a.created_at||'').localeCompare(String(b.created_at||'')));
+  const roles=new Set(dailyRows.map(item=>String(item.daily_role||'').toLowerCase()).filter(Boolean));
+  let role='';
+  if(!roles.has('main'))role='main';
+  else if(!roles.has('supplement'))role='supplement';
+  else throw new Error('今天的主符與副符都已儲存；如需調整請到管理頁編輯。');
+
+  const id=`daily-rune:${date}:${role}`;
+  const next={...row,id,daily_role:role,updated_at:new Date().toISOString()};
+  store[id]=next;
+  writeStore(RECORDS_KEY,email,store);
+  return next;
+}
+
 export async function putNeonRecord(record){
   const email=await requireUserEmail();
   const row=normalizeRecord(record);
