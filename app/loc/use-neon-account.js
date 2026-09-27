@@ -2,7 +2,8 @@
 
 import {useCallback,useEffect,useState} from 'react';
 import {getNeonSession,signInNeonWithGoogle,signOutNeon} from './neon-client';
-import {createScopeAuthorizer} from './scope-authorization';
+import {createScopeAuthorizer,normalizeAuthEmail} from './scope-authorization';
+import {selectNeonAllRows} from './neon-repository';
 
 const emptyState={
   loading:true,user:null,email:'',role:'',authorizer:null,
@@ -21,7 +22,12 @@ export function useNeonAccount(){
         return null;
       }
 
-      const authorizer=createScopeAuthorizer(user);
+      const email=normalizeAuthEmail(user?.email);
+      const {rows:permissions}=email?await selectNeonAllRows('silver.manage',{
+        columns:'id,email,role',
+        filters:[{column:'email',operator:'ilike',value:email}]
+      }):{rows:[]};
+      const authorizer=createScopeAuthorizer(user,permissions);
       setState({
         loading:false,
         user,
