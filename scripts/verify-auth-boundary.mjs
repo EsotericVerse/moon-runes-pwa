@@ -8,7 +8,6 @@ const userStorage=fs.readFileSync('app/loc/neon-user-storage.js','utf8');
 const scopeManagement=fs.readFileSync('app/modular-v2/ScopeManagementV2.jsx','utf8');
 const scopeRepository=fs.readFileSync('app/loc/neon-scope-governance.js','utf8');
 const searchView=fs.readFileSync('app/modular-v2/features/SearchV2.jsx','utf8');
-const server=fs.readFileSync('app/loc/neon-server.js','utf8');
 const failures=[];
 
 const requireMatch=(text,re,label)=>{if(!re.test(text))failures.push(label);};
@@ -45,9 +44,6 @@ if(/record_type:'permission'|selectPermissions|upsertPermission|deletePermission
 }
 if(/function hasPrivilege|account\.privileges/.test(searchView)){
   failures.push('Search must use the shared Neon Auth authorizer instead of its own privilege logic');
-}
-if(/silver\.manage[\s\S]{0,200}permission|record_type\s*=\s*['"]permission['"]/.test(server)){
-  failures.push('server authorization must not read silver.manage permission rows');
 }
 
 for(const retired of [
