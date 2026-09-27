@@ -87,12 +87,15 @@ export function groupWorksByWeek(rows=[],field='source_name'){
     group.works.push(work);
   }
   const maxima=new Map();
+  let globalMaximum=0;
   for(const group of groups.values()){
     maxima.set(group.category,Math.max(maxima.get(group.category)||0,group.work_count));
+    globalMaximum=Math.max(globalMaximum,group.work_count);
   }
   return [...groups.values()].map(group=>({
     ...group,
     density_ratio:group.work_count/Math.max(1,maxima.get(group.category)||1),
+    global_density_ratio:group.work_count/Math.max(1,globalMaximum),
     display_label:`${group.category} ${group.work_count} 項`,
     title:`${group.week_start} – ${group.week_end} · ${group.category} · ${group.work_count} 項`
   })).sort((a,b)=>a.group_label.localeCompare(b.group_label)||a.week_start.localeCompare(b.week_start));
