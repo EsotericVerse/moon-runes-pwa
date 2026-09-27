@@ -9,7 +9,7 @@ import {
 } from './query-policy';
 import {
   chunkRowsByPayload,estimatePayloadBytes,initialBatchSize,mapIoIterable,
-  nextAdaptiveBatchSize,runNeonIo
+  nextAdaptiveBatchSize,reportNeonIoError,runNeonIo
 } from './io-controller';
 
 const TableSchema=z.enum([
@@ -81,6 +81,7 @@ function parseRows(rows,table){
 
 function throwQueryError(error,table,operation){
   if(!error)return;
+  reportNeonIoError(error);
   throw new NeonRepositoryError(`Neon ${operation} ${table}: ${error.message||'query failed'}`,{
     table,code:error.code||'NEON_QUERY_FAILED',cause:error
   });
