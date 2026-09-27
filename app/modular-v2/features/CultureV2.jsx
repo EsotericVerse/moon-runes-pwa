@@ -17,6 +17,7 @@ import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
 import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import FeaturePageV2 from '../FeaturePageV2';
+import WorkSummaryCardV2 from '../WorkSummaryCardV2';
 
 const CULTURE_WORK_PAGE_SIZE=20;
 
@@ -61,10 +62,6 @@ function timelineFromCurrent(items,currentByScope){
     ?{...item,group_label:String(item.scope_id)}
     :item
   );
-}
-function externalSourceHref(work){
-  const value=String(work?.url||work?.media_link||work?.source_ref||'').trim();
-  return /^https?:\/\//i.test(value)?value:'';
 }
 function sortPeriods(rows=[]){
   return [...rows].filter(item=>item?.start_date||item?.end_date).sort((a,b)=>
@@ -172,8 +169,6 @@ export default function CultureV2(){
   const categoryQuery=classificationMode==='source'?sourceGroupsQuery:styleGroupsQuery;
   const selectedGroup=categoryGroups.find(item=>item.category_key===selectedCategory)||null;
   const selectedCount=Number(selectedGroup?.item_count)||0;
-  const workPageCount=Math.max(1,Math.ceil(selectedCount/CULTURE_WORK_PAGE_SIZE));
-
   const periodWorksQuery=useQuery({
     queryKey:['culture-period-works',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,classificationMode,styleLevel,selectedCategory,workPage],
     queryFn:()=>classificationMode==='source'
@@ -195,6 +190,8 @@ export default function CultureV2(){
     enabled:Boolean(selectedWorkPeriod?.start_date&&selectedGroup),
     staleTime:5*60_000
   });
+  const groupedCount=Number(periodWorksQuery.data?.totalCount)||selectedCount;
+  const workPageCount=Math.max(1,Math.ceil(groupedCount/CULTURE_WORK_PAGE_SIZE));
 
   useEffect(()=>{
     setClassificationMode(scopeId==='lunarunes'?'style':'source');
@@ -294,17 +291,19 @@ export default function CultureV2(){
                 {periodWorksQuery.isPending?<p className='scope-v2-status'>載入第 {workPage+1} 頁…</p>:null}
                 {periodWorksQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksQuery.error)}</p>:null}
                 <div className='scope-v2-culture-source-work-scroll'>
-                  {(periodWorksQuery.data?.rows||[]).map((work,index)=><article className='scope-v2-inline-card' key={work.media_id||work.galaxy_id||work.record_id||work.source_id||String(work.created_at)+'-'+index}>
-                    <div className='scope-v2-culture-work-heading'>
-                      <strong>{work.title||work.galaxy_id||work.media_id||'未命名作品'}</strong>
-                      <time>{work.display_date||formatCultureDateTime(work.created_at)}</time>
-                    </div>
+                  {(periodWorksQuery.data?.rows||[]).map((work,index)=><WorkSummaryCardV2
+                    key={work.key||work.galaxy_id||work.entry_id||String(work.created_at)+'-'+index}
+                    title={work.title||work.galaxy_id||'未命名作品'}
+                    source={work.source_name||work.group_label||''}
+                    date={work.display_date||formatCultureDateTime(work.created_at)}
+                    body={work.description||work.media_metadata_text||''}
+                    sourceId={work.source_id||work.galaxy_id||''}
+                    targetId={work.target_id||''}
+                    refId={work.ref_id||''}
+                    links={work.links||[]}
+                  >
                     {classificationMode==='style'?<p>{work.style_label?('風格標籤：'+work.style_label):''}{work.style_group?(' · 大群組：'+work.style_group):''}</p>:null}
-                    {work.entry_type==='media_metadata'
-                      ?(work.media_metadata_text?<p className='scope-v2-culture-work-meta-description'>{work.media_metadata_text}</p>:null)
-                      :(work.description?<p className='scope-v2-culture-work-meta-description'>{work.description}</p>:null)}
-                    {externalSourceHref(work)?<a href={externalSourceHref(work)} target='_blank' rel='noreferrer'>查看來源</a>:null}
-                  </article>)}
+                  </WorkSummaryCardV2>)}
                 </div>
                 {!periodWorksQuery.isPending&&!periodWorksQuery.error&&!(periodWorksQuery.data?.rows||[]).length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
                 <nav className='scope-v2-culture-source-pages' aria-label='作品分頁'>
