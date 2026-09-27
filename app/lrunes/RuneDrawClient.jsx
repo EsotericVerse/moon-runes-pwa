@@ -279,6 +279,9 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
         <section className="loc-card" data-draw-stage="lots">
           <p className="loc-eyebrow">Lots · 籤詩</p><h2>籤詩指引</h2>
           <p>{draw.reading?.guidance||'結果未知。'}</p>
+          {drawKey!=='single'&&drawKey!=='daily'&&Array.isArray(draw.reading?.advice)?<div className="runes-advice-grid">
+            {draw.reading.advice.map(item=><article key={item.label}><strong>{item.label}</strong><span>{item.text}</span></article>)}
+          </div>:null}
         </section>
       </>}
     </section>
