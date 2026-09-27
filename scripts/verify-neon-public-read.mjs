@@ -11,7 +11,9 @@ async function clientProbe(){
   for(const [table,columns] of [
     ['lrunes','rune_number,rune_name,record_type'],
     ['manage','record_id,record_type,scope_id'],
-    ['v_lo3rwang_source_catalog','source_name,work_count']
+    ['v_lo3rwang_source_catalog','source_name,work_count'],
+    ['lo3rwang_galaxy_media','media_id,media_link:galaxy_link,source_name,source_native_id,media_type,title,url,meta_tags,style_tags:style_prompt,created_at'],
+    ['v_lo3rwang_canonical_works','work_id,scope_id,source_name,created_at,work_type,title,excerpt']
   ]){
     const {data,error}=await client.from(table).select(columns).limit(1);
     console.log(JSON.stringify({probe:'client',table,rows:data?.length||0,error:error?.message||null}));

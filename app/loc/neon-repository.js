@@ -89,6 +89,26 @@ function applyFilters(query,filters=[]){
   return query;
 }
 
+// Keep the shared media row contract aligned with the canonical media table.
+// lrunes has its own media_link/style_tags columns and must not be remapped.
+const MEDIA_COLUMNS={media_link:'galaxy_link',style_tags:'style_prompt'};
+const READ_KEYS={
+  'silver.lo3rwang_galaxy':['galaxy_id'],
+  'silver.lo3rwang_galaxy_media':['media_id'],
+  'silver.lrunes':['record_id'],
+  'silver.manage':['record_id'],
+  'silver.v_lo3rwang_canonical_works':['work_type','work_id'],
+  'silver.v_lo3rwang_source_catalog':['scope_id','source_name'],
+  'silver.v_lo3rwang_source_weekly':['scope_id','week_start','source_name']
+};
+function readColumns(table,columns){
+  if(table!=='silver.lo3rwang_galaxy_media')return columns;
+  return columns.split(',').map(column=>{
+    const name=column.trim();
+    return MEDIA_COLUMNS[name]?`${name}:${MEDIA_COLUMNS[name]}`:column;
+  }).join(',');
+}
+
 function parseRows(rows,table){
   const parsed=z.array(RowSchema).safeParse(rows??[]);
   if(!parsed.success)throw new NeonRepositoryError('Neon returned an invalid row shape',{table,code:'NEON_INVALID_RESPONSE',cause:parsed.error});
@@ -103,19 +123,24 @@ function throwQueryError(error,table,operation){
   });
 }
 
-async function executeSelect(table,{
+async function executeSelectOnce(table,{
   columns='*',filters=[],orFilter='',orders=[],limit=UI_PAGE_SIZE,offset=0,range=null,count=null
 }={},allowHeavyBatch=false){
   if(!allowHeavyBatch)assertSafeSelect({table,columns,filters,limit,range});
-  let query=relation(table).select(columns,count?{count}:undefined);
-  query=applyFilters(query,filters);
+  let query=relation(table).select(readColumns(table,columns),count?{count}:undefined);
+  query=applyFilters(query,table==='silver.lo3rwang_galaxy_media'
+    ?filters.map(filter=>({...filter,column:MEDIA_COLUMNS[filter.column]||filter.column})):filters);
   if(orFilter){
     const expression=z.string().min(1).max(12000).parse(orFilter);
     query=query.or(expression);
   }
-  for(const order of orders){
+  const stableOrders=[...orders];
+  for(const column of READ_KEYS[table]||[]){
+    if(!stableOrders.some(order=>order.column===column))stableOrders.push({column,ascending:true});
+  }
+  for(const order of stableOrders){
     const item=OrderSchema.parse(order);
-    query=query.order(item.column,{ascending:item.ascending??true,nullsFirst:item.nullsFirst});
+    query=query.order(table==='silver.lo3rwang_galaxy_media'?(MEDIA_COLUMNS[item.column]||item.column):item.column,{ascending:item.ascending??true,nullsFirst:item.nullsFirst});
   }
   if(Array.isArray(range)&&range.length===2){
     const [start,end]=safeRange(range);
@@ -126,22 +151,47 @@ async function executeSelect(table,{
     query=size?query.range(start,start+size-1):query.limit(0);
   }
   const result=await runNeonIo(()=>query);
+  // PostgREST reports an exhausted offset as 416, not always an empty page.
+  if(result.status===416&&result.error?.code==='PGRST103')return {rows:[],count:result.count??null};
+  if(result.error)result.error.status=result.status;
   throwQueryError(result.error,table,'SELECT');
   return {rows:parseRows(result.data,table),count:result.count??null};
 }
 
+async function executeSelect(table,options={},allowHeavyBatch=false){
+  let size=safePageSize(options.limit??UI_PAGE_SIZE);
+  for(let attempt=0;;attempt++){
+    try{return await executeSelectOnce(table,{...options,limit:size},allowHeavyBatch);}
+    catch(error){
+      const cause=error.cause||error;
+      const message=String(cause.message||'');
+      const oversized=cause.status===413||cause.code==='54000'||cause.code==='53200'||cause.code==='57014'||/response.*(too large|size.*limit)|payload too large|statement timeout/i.test(message);
+      const transient=[429,502,503,504].includes(cause.status)||/failed to fetch|fetch failed|network error/i.test(message);
+      if(oversized&&size>1){size=Math.max(1,Math.floor(size/2));continue;}
+      if(transient&&attempt<3){reportNeonIoError(cause);continue;}
+      throw error;
+    }
+  }
+}
+
 export async function selectNeonRows(table,options={}){
-  return executeSelect(table,options,false);
+  const {range,...rest}=options;
+  if(range!==undefined&&range!==null){
+    if(!Array.isArray(range)||range.length!==2||!range.every(Number.isSafeInteger)||range[0]<0||range[1]<range[0])throw new TypeError('SELECT range must contain finite nonnegative start/end offsets');
+    return selectNeonWindow(table,{...rest,offset:range[0],limit:range[1]-range[0]+1});
+  }
+  return selectNeonWindow(table,rest);
 }
 
 export async function selectNeonWindow(table,{
   columns='*',filters=[],orFilter='',orders=[],
   limit=UI_PAGE_SIZE,offset=0,count=null
 }={}){
-  const requested=Math.max(0,Math.floor(Number(limit)||0));
-  const start=Math.max(0,Math.floor(Number(offset)||0));
-  if(requested===0)return selectNeonRows(table,{columns,filters,orFilter,orders,limit:0,offset:start,count});
-  assertSafeSelect({table,columns,filters,limit:1});
+  if(!Number.isSafeInteger(limit)||limit<0||!Number.isSafeInteger(offset)||offset<0)throw new TypeError('SELECT limit and offset must be finite nonnegative integers');
+  const requested=limit;
+  const start=offset;
+  if(requested===0)return executeSelect(table,{columns,filters,orFilter,orders,limit:0,offset:start,count});
+  assertSafeSelect({table,columns,filters,limit:requested});
   const rows=[];
   let cursor=start;
   let batchSize=Math.min(requested,initialBatchSize('metadata'));
@@ -157,8 +207,9 @@ export async function selectNeonWindow(table,{
     if(!page.rows.length)break;
     rows.push(...page.rows);
     cursor+=page.rows.length;
+    if(resultCount!==null&&cursor>=resultCount)break;
     batchSize=nextAdaptiveBatchSize({
-      current:size,
+      current:page.rows.length,
       payloadBytes:estimatePayloadBytes(page.rows),
       requestMs:elapsed,
       profile:'metadata'
@@ -181,12 +232,12 @@ export async function selectNeonAllRows(table,{
       columns,filters,orFilter,orders,limit:batchSize,offset:cursor,count:total===null?'exact':null
     },false);
     const elapsed=(globalThis.performance?.now?.()??Date.now())-started;
-    if(total===null)total=Math.max(0,Number(page.count??0)||0);
+    if(total===null&&page.count!==null)total=Math.max(0,Number(page.count)||0);
     if(!page.rows.length)break;
     rows.push(...page.rows);
     cursor+=page.rows.length;
     batchSize=nextAdaptiveBatchSize({
-      current:batchSize,
+      current:page.rows.length,
       payloadBytes:estimatePayloadBytes(page.rows),
       requestMs:elapsed,
       profile:'metadata'
@@ -229,7 +280,7 @@ export async function processNeonHeavyRows(table,{
     offset+=page.rows.length;
     if(stopped)break;
     batchSize=nextAdaptiveBatchSize({
-      current:batchSize,payloadBytes:bytes,requestMs,consumerMs,profile:'heavy'
+      current:page.rows.length,payloadBytes:bytes,requestMs,consumerMs,profile:'heavy'
     });
   }
   return {processed,stopped,nextOffset:offset};

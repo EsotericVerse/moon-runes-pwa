@@ -172,11 +172,11 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
       filters:[{column:'galaxy_id',operator:'in',value:textIds}]
     }):Promise.resolve({rows:[]}),
     mediaIds.length?selectNeonAllRows('silver.lo3rwang_galaxy_media',{
-      columns:'media_id,media_link,source_name,source_type,source_native_id,media_type,title,url,meta_tags,style_tags,created_at',
+      columns:'media_id,media_link,source_name,source_native_id,media_type,title,url,meta_tags,style_tags,created_at',
       filters:[{column:'media_id',operator:'in',value:mediaIds}]
     }):Promise.resolve({rows:[]}),
     textIds.length?selectNeonAllRows('silver.lo3rwang_galaxy_media',{
-      columns:'media_id,media_link,source_name,source_type,source_native_id,media_type,title,url,meta_tags,style_tags,created_at',
+      columns:'media_id,media_link,source_name,source_native_id,media_type,title,url,meta_tags,style_tags,created_at',
       filters:[{column:'media_link',operator:'in',value:textIds}]
     }):Promise.resolve({rows:[]})
   ]);
@@ -278,7 +278,7 @@ async function selectScopePeriodMetadataRows(scopeId,{startDate,endDate}={}){
       filters
     }),
     selectNeonAllRows('silver.lo3rwang_galaxy_media',{
-      columns:'media_id,title,meta_tags,style_tags,source_name,source_type,created_at,url,media_link,media_type',
+      columns:'media_id,title,meta_tags,style_tags,source_name,created_at,url,media_link,media_type',
       filters
     })
   ]);
@@ -312,7 +312,7 @@ async function selectScopeStyleRows(scopeId,{startDate,endDate}={}){
     onClassified:row=>{output.push({...withoutContent(row),record_type:'galaxy'});}
   });
   const mediaResult=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
-    columns:'media_id,title,meta_tags,style_tags,source_name,source_type,created_at,url,media_link,media_type',
+    columns:'media_id,title,meta_tags,style_tags,source_name,created_at,url,media_link,media_type',
     filters
   });
   const mediaClassified=await classifyStyleRows(mediaResult.rows);
