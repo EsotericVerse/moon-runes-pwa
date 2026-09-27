@@ -4,7 +4,7 @@ import {useState} from 'react';
 import {useNeonAccount} from './use-neon-account';
 import {useScopeRuntimeV2} from '../modular-v2/use-scope-runtime.v2';
 import {getScopeV2} from '../modular-v2/scope-registry.v2';
-import ScopeDefaultThemeSetting from './ScopeDefaultThemeSetting';
+import ScopeBasicSettings from './ScopeBasicSettings';
 import ManagementArticlePublisher from './ManagementArticlePublisher';
 import ManagementImportPanel from './ManagementImportPanel';
 import RuneManagementPanel from './RuneManagementPanel';
@@ -50,7 +50,7 @@ function Workspace({scopeId}){
   return <div className="scope-v2-list">
     <ManagementArticlePublisher scopeId={scopeId}/>
     <ManagementImportPanel scopeId={scopeId}/>
-    <ScopeDefaultThemeSetting scopeId={scopeId}/>
+    <ScopeBasicSettings scopeId={scopeId}/>
   </div>;
 }
 
