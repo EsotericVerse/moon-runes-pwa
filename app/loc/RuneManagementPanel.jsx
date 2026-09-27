@@ -60,10 +60,13 @@ export default function RuneManagementPanel(){
   const canManage=account.canManageScopeSync('lunarunes');
 
   async function reloadRecords(){
-    const [slotRows,records]=await Promise.all([listRuneDrawSlots(),listNeonRecords('rune-draw')]);
-    setSlots(slotRows);
     const today=todayKey();
-    setDailyRows(records.filter(row=>row.record_kind==='daily'&&String(row.record_date||'')===today));
+    const [slotRows,records]=await Promise.all([
+      listRuneDrawSlots(),
+      listNeonRecords('rune-draw',{recordKind:'daily',recordDate:today,limit:2})
+    ]);
+    setSlots(slotRows);
+    setDailyRows(records);
   }
   useEffect(()=>{
     let live=true;
