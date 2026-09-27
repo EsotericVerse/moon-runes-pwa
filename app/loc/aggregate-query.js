@@ -125,8 +125,17 @@ export async function selectGalaxySummaries(scopeId,uids=[]){
   if(!ids.length)return [];
   const lunarunes=String(scopeId||'')==='lunarunes'||String(scopeId||'')==='lrunes';
 
-  if(!lunarunes){
-    const [textResult,previewResult]=await Promise.all([
+  let rows=[];let previewByUid=new Map();
+  if(lunarunes){
+    rows=(await selectNeonAllRows('silver.lrunes',{
+      columns:'record_id,record_type,uid,title,url,media_link',
+      filters:[
+        {column:'record_type',operator:'eq',value:'galaxy'},
+        {column:'uid',operator:'in',value:ids}
+      ]
+    })).rows;
+  }else{
+    const [metadata,previews]=await Promise.all([
       selectNeonAllRows('silver.lo3rwang_galaxy',{
         columns:'uid,title,url,media_link',
         filters:[{column:'uid',operator:'in',value:ids}]
@@ -136,28 +145,16 @@ export async function selectGalaxySummaries(scopeId,uids=[]){
         filters:[{column:'uid',operator:'in',value:ids}]
       })
     ]);
-    const previewById=new Map(previewResult.rows.map(row=>[String(row.uid),String(row.content_preview||'')]));
-    const mediaRows=await mediaRowsFor('lo3rwang',textResult.rows.flatMap(row=>mediaIdsOf(row.media_link)));
-    const mediaById=new Map(mediaRows.map(row=>[String(row.media_id),row]));
-    return textResult.rows.map(row=>({
-      uid:row.uid,
-      title:row.title||'',
-      excerpt:previewById.get(String(row.uid))||'',
-      links:resolvedLinks(row,mediaById)
-    }));
+    rows=metadata.rows;
+    previewByUid=new Map(previews.rows.map(row=>[String(row.uid||''),String(row.content_preview||'')]));
   }
 
-  const rows=(await Promise.all(ids.map(id=>selectNeonRowById('silver.lrunes',{
-    idColumn:'uid',
-    id,
-    columns:'record_id,record_type,uid,title,content,url,media_link'
-  })))).filter(row=>row&&row.record_type==='galaxy');
-  const mediaRows=await mediaRowsFor('lunarunes',rows.flatMap(row=>mediaIdsOf(row.media_link)));
+  const mediaRows=await mediaRowsFor(lunarunes?'lunarunes':'lo3rwang',rows.flatMap(row=>mediaIdsOf(row.media_link)));
   const mediaById=new Map(mediaRows.map(row=>[String(row.media_id),row]));
   return rows.map(row=>({
     uid:row.uid,
     title:row.title||'',
-    excerpt:String(row.content||'').replace(/\s+/g,' ').trim().slice(0,20),
+    excerpt:previewByUid.get(String(row.uid||''))||'',
     links:resolvedLinks(row,mediaById)
   }));
 }
