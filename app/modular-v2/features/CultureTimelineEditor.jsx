@@ -1,6 +1,7 @@
 'use client';
 
-import {useMemo,useState} from 'react';
+import {useEffect,useMemo,useState} from 'react';
+import {useSearchParams} from 'next/navigation';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {deleteNeonRows,insertNeonRows,selectNeonAllRows,updateNeonRows} from '../../loc/neon-repository';
@@ -44,6 +45,8 @@ function rowSortDate(row,anchors){
 
 export default function CultureTimelineEditor({scopeId='lo3rwang'}){
   const account=useNeonAccount();
+  const searchParams=useSearchParams();
+  const suggestedAnchorDate=String(searchParams?.get?.('anchorDate')||'').slice(0,10);
   const queryClient=useQueryClient();
   const runtimeScope=String(scopeId||'');
   const dataScope=runtimeScope==='lunarunes'?'lrunes':runtimeScope;
@@ -81,6 +84,18 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
     Number(a.display_order||0)-Number(b.display_order||0)||
     String(a.label||'').localeCompare(String(b.label||''))
   ),[rawRows,anchors]);
+
+  useEffect(()=>{
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(suggestedAnchorDate))return;
+    setSelectedId('');
+    setDraft({
+      ...BLANK,
+      record_type:'anchor',
+      time_date:suggestedAnchorDate,
+      note:'系統依時間分布建議回看；請確認這段時間的實際脈絡後，再自行命名與儲存。'
+    });
+    setMessage('已帶入建議日期；系統不會自動建立定錨點。');
+  },[suggestedAnchorDate]);
 
   if(!supported||account.loading||account.permissionLoading||!account.canManageScopeSync(dataScope))return null;
 
