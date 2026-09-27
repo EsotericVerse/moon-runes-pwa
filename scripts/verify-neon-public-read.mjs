@@ -2,25 +2,6 @@ import {NeonPostgrestClient} from '@neondatabase/postgrest-js';
 
 const DATA_API='https://ep-rapid-queen-b3oyboy6.apirest.c-4.ap-southeast-1.aws.neon.tech/neondb/rest/v1';
 
-async function rawProbe(){
-  const url=DATA_API+'/lrunes?select=rune_number,rune_name&record_type=eq.rune&limit=1';
-  const response=await fetch(url,{
-    headers:{
-      'Accept-Profile':'silver',
-      'Origin':'https://loc.lo3rwang.cc'
-    }
-  });
-  const body=await response.text();
-  console.log(JSON.stringify({
-    probe:'raw',
-    status:response.status,
-    allowOrigin:response.headers.get('access-control-allow-origin'),
-    allowHeaders:response.headers.get('access-control-allow-headers'),
-    body:body.slice(0,500)
-  }));
-  if(!response.ok)throw new Error('Raw public Data API probe failed: '+response.status+' '+body);
-}
-
 async function clientProbe(){
   const client=new NeonPostgrestClient({
     dataApiUrl:DATA_API,
@@ -28,7 +9,9 @@ async function clientProbe(){
   });
   for(const [table,columns] of [
     ['lrunes','rune_number,rune_name,record_type'],
-    ['manage','record_id,record_type,scope_id'],
+    ['manage','id,role'],
+    ['lo3rwang_time','record_id,record_type,resource_id'],
+    ['lrunes_time','record_id,record_type,resource_id'],
     ['lo3rwang_galaxy','uid,source_name,createtime'],
     ['lo3rwang_galaxy_media','media_id,galaxy_link,media_type,meta_tags,createtime']
   ]){
@@ -38,6 +21,5 @@ async function clientProbe(){
   }
 }
 
-await rawProbe();
 await clientProbe();
-console.log('Public Neon Data API probe passed.');
+console.log('Public Neon runtime-client probe passed.');
