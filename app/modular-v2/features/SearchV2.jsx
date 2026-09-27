@@ -30,7 +30,8 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
   const text=rowText(row);
   const excerpt=decodeCultureText(row.excerpt||'').trim();
   const explicitTitle=decodeCultureText(row.title||row.name||row.display_title||row.label||row.rune_name||row.context_name||row.song_id||row.id||'').trim();
-  const title=explicitTitle||snippet(excerpt||source,q)||source;
+  const identityTitle=String(row.uid||row.record_id||row.media_id||row.faq_id||'未命名');
+  const title=explicitTitle||(excerpt?snippet(excerpt,q):identityTitle);
   const bodyField=['summary','display_text','excerpt','content','meta_tags','description','interpretation','ai_summary','retrieval_text','text'].find(field=>typeof row[field]==='string'&&row[field].trim())||'';
   const isGalaxy=Boolean(row.uid);
   const isMedia=Boolean(row.media_id);
