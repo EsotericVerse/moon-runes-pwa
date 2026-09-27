@@ -38,6 +38,27 @@ const TEXT_INDEX_TABLES=new Set([
 function invalidateTextIndexes(table){
   if(TEXT_INDEX_TABLES.has(String(table||'')))clearRuntimeTextIndexes();
 }
+function isMediaRecord(table,row){
+  return table==='silver.lo3rwang_galaxy_media'
+    ||(table==='silver.lrunes'&&String(row?.record_type||'')==='galaxy_media');
+}
+function assertMediaMetaTagsOnCreate(table,rows){
+  for(const row of rows||[]){
+    if(!isMediaRecord(table,row))continue;
+    if(!String(row?.meta_tags??'').trim()){
+      throw new NeonRepositoryError('Media records require meta_tags supplied by the data source or user; LOC does not auto-classify media.',{
+        table:String(table),code:'MEDIA_META_TAGS_REQUIRED'
+      });
+    }
+  }
+}
+function assertMediaMetaTagsOnUpdate(table,patch){
+  if(table==='silver.lo3rwang_galaxy_media'&&Object.prototype.hasOwnProperty.call(patch,'meta_tags')&&!String(patch.meta_tags??'').trim()){
+    throw new NeonRepositoryError('Media meta_tags cannot be cleared; LOC preserves supplied classification and does not replace it automatically.',{
+      table:String(table),code:'MEDIA_META_TAGS_REQUIRED'
+    });
+  }
+}
 const FilterSchema=z.object({
   column:z.string().regex(/^[a-z][a-z0-9_]*$/),
   operator:z.enum(['eq','neq','gt','gte','lt','lte','like','ilike','is','in']),
@@ -298,6 +319,7 @@ export async function selectNeonRowById(table,{
 
 export async function insertNeonRows(table,records,{returning='*'}={}){
   const rows=z.array(RowSchema).min(1).parse(Array.isArray(records)?records:[records]);
+  assertMediaMetaTagsOnCreate(table,rows);
   const output=[];
   const selectColumns=safeReturning(table,returning);
   for(const batch of chunkRowsByPayload(rows)){
@@ -313,6 +335,7 @@ export async function insertNeonRows(table,records,{returning='*'}={}){
 
 export async function upsertNeonRows(table,records,{conflict,returning='*'}={}){
   const rows=z.array(RowSchema).min(1).parse(Array.isArray(records)?records:[records]);
+  assertMediaMetaTagsOnCreate(table,rows);
   const options=conflict?{onConflict:z.string().min(1).parse(conflict)}:undefined;
   const output=[];
   const selectColumns=safeReturning(table,returning);
@@ -330,6 +353,7 @@ export async function upsertNeonRows(table,records,{conflict,returning='*'}={}){
 export async function updateNeonRows(table,values,{filters,returning='*'}={}){
   if(!Array.isArray(filters)||filters.length===0)throw new TypeError('Neon UPDATE requires at least one filter');
   const patch=RowSchema.parse(values);
+  assertMediaMetaTagsOnUpdate(table,patch);
   let query=applyFilters(writableRelation(table).update(patch),filters);
   const selectColumns=safeReturning(table,returning);
   if(selectColumns)query=query.select(selectColumns);
