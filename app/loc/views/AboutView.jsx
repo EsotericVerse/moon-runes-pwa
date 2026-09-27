@@ -73,7 +73,7 @@ export default function AboutView(){
         </div>
       </div>
       <figure className="home-hero-visual scope-home-hero-visual">
-        <img src="/pics/LOC-PicAll.png" alt="LOC 月典模型化語言框架視覺理念圖" loading="eager" />
+        <img src="/pics/LOC-PicAll.png" alt="LOC 月典語言架構框架視覺理念圖" loading="eager" />
       </figure>
     </header>
 
@@ -84,8 +84,8 @@ export default function AboutView(){
       </div>
       <div className="home-rune-layout">
         <div className="home-author-copy">
-		<p>月典(LOC)，是一套用來分析的語言架構框架。始於月之符文。</p>
-		<p>月之符文(LunaRunes)是個具有獨特方式的符號型語言。與月典相輔相成。</p>
+		<p>月典(LOC)，是一套用來分析的語言架構框架（Language Architecture Framework）。始於月之符文。</p>
+		<p>月之符文(LunaRunes)是個具有獨特方式的符號式語言（Symbolic Language）。與月典相輔相成。</p>
 		<br/>
           <p>太複雜了！當然可以不用管月之符文是什麼，<a href={RUNES_LINKS.single}>抽了就知道！</a></p>
 		  <p>可以是問事，可以是決定當日生活主題風格的<a href={RUNES_LINKS.daily}>每日符文</a>。</p>
