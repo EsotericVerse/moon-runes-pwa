@@ -28,6 +28,25 @@ function dateFilters(range,column='createtime'){
   return filters;
 }
 
+async function authorStatisticsExclusions(){
+  const {rows}=await selectNeonAllRows('silver.resource_visibility',{
+    columns:'resource_type,resource_id',
+    filters:[
+      {column:'scope',operator:'eq',value:'lo3rwang'},
+      {column:'statistics_included',operator:'eq',value:false}
+    ]
+  });
+  const galaxy=new Set(),media=new Set();
+  for(const row of rows){
+    const type=String(row.resource_type||'');
+    const id=String(row.resource_id||'').trim();
+    if(!id)continue;
+    if(type==='galaxy'||type==='work')galaxy.add(id);
+    else if(type==='galaxy_media'||type==='media'||type==='song_version')media.add(id);
+  }
+  return {galaxy,media};
+}
+
 async function resolvePeriod(scopeId,period){
   const value=String(period||'').trim();
   if(!value||value==='all')return null;
@@ -55,27 +74,34 @@ function addKeywordCounts(map,rows,source,period){
 async function authorKeywords(period,rangeOverride){
   const range=rangeOverride===undefined?await resolvePeriod('lo3rwang',period):rangeOverride;
   const filters=dateFilters(range,'createtime');
+  const exclusions=await authorStatisticsExclusions();
   const map=new Map();
   await processKeywordTableRows('silver.lo3rwang_galaxy',{
     scopeId:'lo3rwang',
     columns:'uid,title,content,createtime',
     filters,
     orders:[{column:'createtime',ascending:true}],
+    rowFilter:row=>!exclusions.galaxy.has(String(row.uid||'')),
     onCounts:rows=>addKeywordCounts(map,rows,'lo3rwang',period)
   });
   const mediaResult=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
     columns:'media_id,title,meta_tags,createtime',
     filters
   });
-  addKeywordCounts(map,await countStyleKeywordHits(mediaResult.rows,'lo3rwang'),'lo3rwang',period);
+  addKeywordCounts(map,await countStyleKeywordHits(
+    mediaResult.rows.filter(row=>!exclusions.media.has(String(row.media_id||''))),
+    'lo3rwang'
+  ),'lo3rwang',period);
   return [...map.values()];
 }
 
 async function authorSources(period,rangeOverride){
   const range=rangeOverride===undefined?await resolvePeriod('lo3rwang',period):rangeOverride;
+  const exclusions=await authorStatisticsExclusions();
+  const excludedIds=[...exclusions.galaxy];
   const map=new Map();
   if(!range){
-    const result=await selectSourceCatalog({scopeId:'lo3rwang'});
+    const result=await selectSourceCatalog({scopeId:'lo3rwang',excludedIds});
     for(const row of result.rows){
       const value=String(row.source_name||'').trim();
       if(!value)continue;
@@ -94,7 +120,8 @@ async function authorSources(period,rangeOverride){
   const result=await selectSourceWeekly({
     scopeId:'lo3rwang',
     startDate:range.start_date||'',
-    endDate:range.end_date||''
+    endDate:range.end_date||'',
+    excludedIds
   });
   for(const row of result.rows){
     const value=String(row.source_name||'').trim();
@@ -169,12 +196,14 @@ function splitMediaTags(value){
 
 async function authorMedia(period,type,rangeOverride){
   const range=rangeOverride===undefined?await resolvePeriod('lo3rwang',period):rangeOverride;
+  const exclusions=await authorStatisticsExclusions();
   const {rows}=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
     columns:'media_id,media_type,source_place,meta_tags,createtime',
     filters:dateFilters(range,'createtime')
   });
   const map=new Map();
   for(const row of rows){
+    if(exclusions.media.has(String(row.media_id||'')))continue;
     if(type==='media_type')increment(map,type,row.media_type,{source:'lo3rwang',period:period||'all'});
     else if(type==='media_place')increment(map,type,row.source_place,{source:'lo3rwang',period:period||'all'});
     else for(const tag of splitMediaTags(row.meta_tags))increment(map,type,tag,{source:'lo3rwang',period:period||'all'});
@@ -281,18 +310,23 @@ async function keywordDiagnosticsForRange(id,range){
   const state=createKeywordDiagnostics();
   const dateRange=dateFilters(range,'createtime');
   if(id==='lo3rwang'){
+    const exclusions=await authorStatisticsExclusions();
     await processKeywordObservationRows('silver.lo3rwang_galaxy',{
       scopeId:'lo3rwang',
       columns:'uid,title,content,source_name,createtime',
       filters:dateRange,
       orders:[{column:'createtime',ascending:true}],
+      rowFilter:row=>!exclusions.galaxy.has(String(row.uid||'')),
       onObserved:rows=>addKeywordObservedRows(state,rows)
     });
     const media=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
       columns:'media_id,title,meta_tags,media_type,source_place,createtime',
       filters:dateRange
     });
-    addKeywordObservedRows(state,await observeStyleKeywordHits(media.rows,'lo3rwang'));
+    addKeywordObservedRows(state,await observeStyleKeywordHits(
+      media.rows.filter(row=>!exclusions.media.has(String(row.media_id||''))),
+      'lo3rwang'
+    ));
   }else if(id==='lunarunes'){
     await processKeywordObservationRows('silver.lrunes',{
       scopeId:'lunarunes',
@@ -371,12 +405,14 @@ async function resolveComparisonRanges(scopeId,period){
 async function authorStyles(period,type,rangeOverride){
   const range=rangeOverride===undefined?await resolvePeriod('lo3rwang',period):rangeOverride;
   const filters=dateFilters(range,'createtime');
+  const exclusions=await authorStatisticsExclusions();
   const map=new Map();
   await processStyleTableRows('silver.lo3rwang_galaxy',{
     scopeId:'lo3rwang',
     columns:'uid,title,content,createtime',
     filters,
     orders:[{column:'createtime',ascending:true}],
+    rowFilter:row=>!exclusions.galaxy.has(String(row.uid||'')),
     onClassified:row=>{
       const term=type==='style_group'?row.style_group:row.style_label;
       increment(map,type,term,{source:'lo3rwang',period:period||'all'});
@@ -386,7 +422,10 @@ async function authorStyles(period,type,rangeOverride){
     columns:'media_id,title,meta_tags,createtime',
     filters:dateFilters(range,'createtime')
   });
-  const mediaClassified=await classifyStyleRows(mediaResult.rows,'lo3rwang');
+  const mediaClassified=await classifyStyleRows(
+    mediaResult.rows.filter(row=>!exclusions.media.has(String(row.media_id||''))),
+    'lo3rwang'
+  );
   for(const row of mediaClassified){
     const term=type==='style_group'?row.style_group:row.style_label;
     increment(map,type,term,{source:'lo3rwang',period:period||'all'});
