@@ -148,9 +148,7 @@ export function normalizeCardAttribute(value){
 }
 
 export function cardSemanticState(card,direction){
-  const attribute=normalizeCardAttribute(
-    card?..card_attribute??card?.card_attribute??card?.attribute
-  );
+  const attribute=normalizeCardAttribute(card?.card_attribute);
   const normalizedDirection=normalizeDirection(direction??card?.direction);
   if(attribute==='未知'||normalizedDirection==='未知')return '未知';
   if(attribute==='中平')return '中立';
