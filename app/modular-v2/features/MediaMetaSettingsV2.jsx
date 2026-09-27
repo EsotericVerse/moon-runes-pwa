@@ -20,7 +20,7 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
 
   const tagQuery=useQuery({
     queryKey:['media-meta-style-ranking',databaseScopeId],
-    queryFn:async()=>(await selectScopeRankingPage('lo3rwang',{rankingType:'meta_style',limit:100,navigation:{}})).rows,
+    queryFn:async()=>(await selectScopeRankingPage('lo3rwang',{rankingType:'meta_style',limit:20,navigation:{}})).rows,
     staleTime:30000
   });
 
