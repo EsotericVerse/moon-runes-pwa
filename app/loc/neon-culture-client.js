@@ -285,6 +285,7 @@ async function selectScopeStyleRows(scopeId,{startDate,endDate}={}){
   const output=[];
   if(runtimeId==='lunarunes'){
     await processStyleTableRows('silver.lrunes',{
+      scopeId:'lunarunes',
       columns:'record_id,record_type,uid,title,content,source_name,createtime,url',
       filters:[
         {column:'record_type',operator:'eq',value:'galaxy'},
@@ -301,11 +302,12 @@ async function selectScopeStyleRows(scopeId,{startDate,endDate}={}){
       ],
       orders:[{column:'createtime',ascending:true}]
     });
-    const mediaClassified=await classifyStyleRows(mediaResult.rows);
+    const mediaClassified=await classifyStyleRows(mediaResult.rows,'lunarunes');
     output.push(...mediaClassified.map(row=>withoutContent(row)));
     return output;
   }
   await processStyleTableRows('silver.lo3rwang_galaxy',{
+    scopeId:'lo3rwang',
     columns:'uid,title,content,source_name,createtime,url',
     filters,
     orders:[{column:'createtime',ascending:true}],
@@ -315,7 +317,7 @@ async function selectScopeStyleRows(scopeId,{startDate,endDate}={}){
     columns:'media_id,title,meta_tags,createtime,url,galaxy_link,media_type,source_place,source_native_id',
     filters:dateFilters(startDate,endDate,'createtime')
   });
-  const mediaClassified=await classifyStyleRows(mediaResult.rows);
+  const mediaClassified=await classifyStyleRows(mediaResult.rows,'lo3rwang');
   output.push(...mediaClassified.map(row=>({...row,record_type:'galaxy_media'})));
   return output;
 }
