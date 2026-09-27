@@ -18,8 +18,7 @@ const forbidText=(path,needles)=>{
 
 for(const path of [
   'LunaRune66.xlsx','LunarRunesCardCut.pdf','pics/LOC-FrameworkPic.png',
-  'pics/LOC-structure.png','pics/LunaRunes.jpg','pics/aboutme.png',
-  'js/runes-core.js','js/galaxy.js','js/rune-graph-core.js'
+  'pics/LOC-structure.png','pics/LunaRunes.jpg','pics/aboutme.png'
 ])requireFile(path);
 
 if(existsSync(resolve(root,'lib')))failures.push('lib/ must not be recreated; shared JavaScript belongs in js/');
@@ -46,15 +45,19 @@ requireText('app/GlobalNav.jsx',[
   "import ScopeNavV2 from './modular-v2/ScopeNavV2'",
   '<ScopeNavV2/>'
 ]);
-requireText('app/GlobalFooter.jsx',[
-  "export {default} from './modular-v2/ScopeFooterV2'"
-]);
 requireText('app/modular-v2/ScopeNavV2.jsx',[
   'FEATURES_V2','featureHrefV2','useScopeRuntimeV2'
 ]);
 requireText('app/modular-v2/ScopeFooterV2.jsx',[
   'useScopeRuntimeV2','ThemeSelectV2'
 ]);
+requireText('app/layout.jsx',[
+  "import ScopeFooterV2 from './modular-v2/ScopeFooterV2'",
+  '<ScopeFooterV2 />'
+]);
+for(const retired of ['app/GlobalFooter.jsx','app/ScopeNav.jsx','app/ThemeSelect.jsx','app/theme-registry.js','app/site-registry.js','app/use-current-scope.js']){
+  if(existsSync(resolve(root,retired)))failures.push('retired compatibility facade returned: '+retired);
+}
 
 if(!existsSync(resolve(root,'app/lrunes/page.jsx')))failures.push('app/lrunes/page.jsx is the LunaRunes route root and must exist');
 for(const path of [

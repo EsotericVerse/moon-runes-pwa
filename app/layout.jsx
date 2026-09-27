@@ -1,6 +1,6 @@
 import './globals.css';
 import GlobalNav from './GlobalNav';
-import GlobalFooter from './GlobalFooter';
+import ScopeFooterV2 from './modular-v2/ScopeFooterV2';
 import QueryProvider from './QueryProvider';
 
 export const metadata = {
@@ -15,7 +15,7 @@ export default function RootLayout({ children }) {
         <QueryProvider>
           <GlobalNav />
           {children}
-          <GlobalFooter />
+          <ScopeFooterV2 />
         </QueryProvider>
       </body>
     </html>

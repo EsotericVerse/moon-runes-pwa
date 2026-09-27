@@ -1,5 +1,5 @@
 import {readFileSync} from 'node:fs';
-import {SCOPES_V2,scopeRoutePathsV2,scopeRoutePatternsV2,scopeCompatibilityRoutesV2} from '../app/modular-v2/scope-registry.v2.js';
+import {SCOPES_V2,scopeRoutePathsV2,scopeRoutePatternsV2} from '../app/modular-v2/scope-registry.v2.js';
 import {buildScopeRoutePolicyV2} from './scope-route-policy.mjs';
 
 const failures=[];
@@ -16,13 +16,6 @@ function expectPattern(host,pattern,expected=true){
   const present=policy.hosts?.[host]?.patterns?.includes(pattern)===true;
   if(present!==expected){
     failures.push(`${host} pattern ${pattern}: expected=${expected}, got ${present}`);
-  }
-}
-
-function expectCompatibility(host,path,expected=true){
-  const present=policy.hosts?.[host]?.compatibility?.includes(path)===true;
-  if(present!==expected){
-    failures.push(`${host} compatibility ${path}: expected=${expected}, got ${present}`);
   }
 }
 
@@ -50,9 +43,6 @@ for(const scope of Object.values(SCOPES_V2)){
     expectPattern(scope.domain,pattern,true);
   }
 
-  if(scope.domain)for(const route of scopeCompatibilityRoutesV2(scope.id)){
-    expectCompatibility(scope.domain,route,true);
-  }
 
   if(scope.scopeType==='domain'&&domainPolicy?.redirect){
     failures.push(scope.id+' domain Scope must not have alias redirect metadata');
@@ -64,9 +54,6 @@ for(const scope of Object.values(SCOPES_V2)){
     }
     for(const pattern of scopeRoutePatternsV2(scope.id)){
       expectPattern(scope.mount.host,mountedPath(scope.mount.path,pattern),true);
-    }
-    for(const route of scopeCompatibilityRoutesV2(scope.id)){
-      expectCompatibility(scope.mount.host,mountedPath(scope.mount.path,route),true);
     }
   }
 }
@@ -103,7 +90,6 @@ for(const token of [
   "'/docs/'",
   'hostPolicy.allow',
   'hostPolicy.patterns',
-  'hostPolicy.compatibility',
   'pathAllowed',
   'pathMatchesPattern',
   "status:404",

@@ -9,24 +9,9 @@ import {
 
 const failures=[];
 const requiredCoreScopes=['loc','lunarunes','lo3rwang','admin'];
-const requiredFeatures=['context','statics','culture','governance','search'];
-const expectedScopeViews={
-  loc:{context:'api.loc_context_entries',rankings:'api.loc_rankings'},
-  runes:{context:'api.runes_context_entries',rankings:'api.runes_rankings'},
-  lo3rwang:{context:'api.lo3rwang_context_entries',rankings:'api.lo3rwang_rankings'},
-  admin:{context:null,rankings:null}
-};
-
+const requiredFeatures=['statics','culture','governance','search'];
 for(const id of requiredCoreScopes){
   if(!SCOPES_V2[id])failures.push('Current registry missing required core Scope: '+id);
-}
-
-for(const [id,views] of Object.entries(expectedScopeViews)){
-  for(const key of ['context','rankings']){
-    if(SCOPES_V2[id]?.dataViews?.[key]!==views[key]){
-      failures.push(id+' '+key+' data view must match the current Neon API view: '+views[key]);
-    }
-  }
 }
 
 if(JSON.stringify(FEATURES_V2.map(item=>item.id))!==JSON.stringify(requiredFeatures)){
@@ -77,12 +62,14 @@ for(const [id,scope] of Object.entries(SCOPES_V2)){
     failures.push(id+' invalid scopeType');
   }
 
-  if(!scope.domain||scope.domain!==scope.domain.toLowerCase()||scope.domain.includes('/')||scope.domain.includes(':')){
-    failures.push(id+' invalid domain');
-  }
-
-  if(resolveScopeV2(scope.domain,'/')!==id){
-    failures.push(id+' domain does not resolve to itself');
+  if(scope.scopeType==='domain'){
+    if(!scope.domain||scope.domain!==scope.domain.toLowerCase()||scope.domain.includes('/')||scope.domain.includes(':')){
+      failures.push(id+' invalid domain');
+    }else if(resolveScopeV2(scope.domain,'/')!==id){
+      failures.push(id+' domain does not resolve to itself');
+    }
+  }else if(scope.domain!==null){
+    failures.push(id+' directory Scope must not duplicate a canonical domain');
   }
 
   if(scope.scopeType==='directory'&&!scope.mount){
@@ -104,9 +91,6 @@ for(const [id,scope] of Object.entries(SCOPES_V2)){
   if(!Array.isArray(scope.routePatterns)){
     failures.push(id+' routePatterns must be an array');
   }
-  if(!Array.isArray(scope.compatibilityRoutes)){
-    failures.push(id+' compatibilityRoutes must be an array');
-  }
 
   for(const route of scope.localRoutes||[]){
     if(!route||String(route).startsWith('/'))failures.push(id+' localRoutes must use relative route ids: '+route);
@@ -116,9 +100,6 @@ for(const [id,scope] of Object.entries(SCOPES_V2)){
     for(const segment of String(pattern).split('/')){
       if(segment.startsWith(':')&&segment.length===1)failures.push(id+' route pattern has empty parameter: '+pattern);
     }
-  }
-  for(const route of scope.compatibilityRoutes||[]){
-    if(!route||String(route).startsWith('/'))failures.push(id+' compatibilityRoutes must use relative route ids: '+route);
   }
 
   for(const feature of FEATURES_V2){
@@ -145,8 +126,8 @@ if(SCOPES_V2.lunarunes?.mount?.host!=='loc.lo3rwang.cc'||SCOPES_V2.lunarunes?.mo
 if(SCOPES_V2.lo3rwang?.scopeType!=='directory'){
   failures.push('Author Scope must remain directory type');
 }
-if(SCOPES_V2.lo3rwang?.aliasName!=='dlwang'){
-  failures.push('Author aliasName drifted');
+if(SCOPES_V2.lo3rwang?.aliasName!==null){
+  failures.push('Author Scope must not carry a runtime aliasName');
 }
 if(SCOPES_V2.lo3rwang?.mount?.host!=='loc.lo3rwang.cc'||SCOPES_V2.lo3rwang?.mount?.path!=='/lo3rwang'){
   failures.push('Author mount drifted');
@@ -163,26 +144,12 @@ for(const retired of [
   'scripts/generate-legacy-scope-contract.mjs',
   'tools/build_public_articles.py',
   'app/nav-route-map.js',
-  'scripts/nav-route-map.json'
+  'scripts/nav-route-map.json',
+  'app/site-registry.js',
+  'app/use-current-scope.js',
+  'app/ScopeNav.jsx'
 ]){
   if(existsSync(retired))failures.push('Retired runtime returned: '+retired);
-}
-
-const compat=readFileSync('app/site-registry.js','utf8');
-const hook=readFileSync('app/use-current-scope.js','utf8');
-
-if(!compat.includes("from './modular-v2/scope-registry.v2'")){
-  failures.push('site-registry compatibility facade must derive from V2');
-}
-
-if(!hook.includes('useScopeRuntimeV2')){
-  failures.push('compatibility Scope hook must consume V2 runtime');
-}
-
-for(const scope of Object.values(SCOPES_V2)){
-  if(compat.includes(scope.domain)){
-    failures.push('compatibility registry must not duplicate domain literal '+scope.domain);
-  }
 }
 
 if(failures.length){
@@ -190,4 +157,4 @@ if(failures.length){
   process.exit(1);
 }
 
-console.log('Single extensible Current V2 Scope registry verified; required core Scopes exist and compatibility entries are derived only.');
+console.log('Single Current V2 Scope registry verified; retired compatibility registry/hook entries are absent.');

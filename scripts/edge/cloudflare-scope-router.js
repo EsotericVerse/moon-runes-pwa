@@ -71,8 +71,7 @@ function isAssetPath(pathname='/'){
     return true;
   }
 
-  // .html is intentionally NOT treated as an asset. Legacy HTML page routes
-  // remain subject to explicit route governance rather than bypassing it.
+  // .html is not an asset; page routes remain subject to explicit route governance.
   return /\.(?:js|mjs|css|json|txt|xml|png|jpe?g|webp|gif|svg|ico|pdf|docx|xlsx|woff2?|ttf|map)$/i.test(path);
 }
 
@@ -85,7 +84,6 @@ function pathMatchesPattern(pathname,pattern){
 
 function pathAllowed(hostPolicy,pathname){
   if(hostPolicy.allow?.includes(pathname))return true;
-  if(hostPolicy.compatibility?.includes(pathname))return true;
   return (hostPolicy.patterns||[]).some(pattern=>pathMatchesPattern(pathname,pattern));
 }
 

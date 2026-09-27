@@ -4,10 +4,8 @@ on:
   pull_request:
     paths:
       - "app/GlobalNav.jsx"
-      - "app/ScopeNav.jsx"
+      - "app/layout.jsx"
       - "app/modular-v2/**"
-      - "app/site-registry.js"
-      - "app/use-current-scope.js"
       - "scripts/verify-nav-all.mjs"
       - "scripts/verify-nav-registry.mjs"
       - "scripts/verify-scope-registry.mjs"

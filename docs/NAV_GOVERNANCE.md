@@ -30,9 +30,9 @@ Scope type 分為 `domain` 與 `directory`。`domain` 型的 canonical NAV／Fea
 
 - Current Scope / NAV authority：`app/modular-v2/scope-registry.v2.js`
 - Current renderer：`app/modular-v2/ScopeNavV2.jsx`
-- 全站外殼：`app/GlobalNav.jsx`、`app/GlobalFooter.jsx`
+- 全站外殼：`app/GlobalNav.jsx`；Footer 由 `app/layout.jsx` 直接使用 `app/modular-v2/ScopeFooterV2.jsx`
 
-舊 route-map JSON、平行 NAV runtime、legacy static CSS/HTML、`whoami`／`manage` domain 與 `evolution` route 不得重新成為 Current。歷史差異只由 Git 保存。
+舊 route-map JSON、平行 NAV runtime、compatibility facade、legacy static CSS/HTML、`whoami`／`manage` domain 與 `evolution` route 不得重新成為 Current。歷史差異只由 Git 保存。
 
 
 ## 保留字與預設值

@@ -48,7 +48,6 @@ function ownersFor(route){
   const owners=[];
   for(const [host,entry] of Object.entries(policy.hosts||{})){
     if(entry.allow?.includes(route))owners.push({host,type:'allow'});
-    if(entry.compatibility?.includes(route))owners.push({host,type:'compatibility'});
     for(const pattern of entry.patterns||[]){
       if(patternMatches(pattern,route))owners.push({host,type:'pattern',pattern});
     }

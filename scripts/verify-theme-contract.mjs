@@ -5,9 +5,6 @@ const failures=[];
 const read=path=>readFileSync(path,'utf8');
 const selector=read('app/modular-v2/ThemeSelectV2.jsx');
 const footer=read('app/modular-v2/ScopeFooterV2.jsx');
-const compatRegistry=read('app/theme-registry.js');
-const compatSelector=read('app/ThemeSelect.jsx');
-const compatFooter=read('app/GlobalFooter.jsx');
 const scopeRegistry=read('app/modular-v2/scope-registry.v2.js');
 const neonRepository=read('app/loc/neon-repository.js');
 const layout=read('app/layout.jsx');
@@ -21,11 +18,9 @@ if(existsSync('app/loc/ThemeAdmin.jsx'))failures.push('retired global theme-defi
 if(/TIME_SCHEDULE|schedule:|mode:'time'|custom:Object/.test(scopeRegistry))failures.push('scope code must not keep duplicate theme/schedule settings');
 if(neonRepository.includes('api.scope_theme_defaults'))failures.push('retired scope theme table remains in the repository allowlist');
 if(!footer.includes('<ThemeSelectV2/>'))failures.push('V2 Footer must own theme selector');
-if(!compatRegistry.includes("from './modular-v2/theme-registry.v2'"))failures.push('legacy theme registry must be a V2 facade');
-if(!compatSelector.includes('./modular-v2/ThemeSelectV2'))failures.push('ThemeSelect compatibility entry must delegate to V2');
-if(!compatFooter.includes('./modular-v2/ScopeFooterV2'))failures.push('GlobalFooter compatibility entry must delegate to V2');
 if(layout.includes('<ThemeProvider>'))failures.push('obsolete global ThemeProvider must remain removed');
-for(const retired of ['app/loc/ThemeProvider.jsx','app/loc/ThemeControl.jsx','app/loc/theme-registry.js'])if(existsSync(retired))failures.push(retired+' must remain retired');
+if(!layout.includes("import ScopeFooterV2 from './modular-v2/ScopeFooterV2'"))failures.push('Root layout must use Current ScopeFooterV2 directly');
+for(const retired of ['app/loc/ThemeProvider.jsx','app/loc/ThemeControl.jsx','app/loc/theme-registry.js','app/theme-registry.js','app/ThemeSelect.jsx','app/GlobalFooter.jsx'])if(existsSync(retired))failures.push(retired+' must remain retired');
 
 if(failures.length){console.error('[theme-contract] violations:\n'+failures.join('\n'));process.exit(1);}
 console.log('[theme-contract] eight scalar themes and session-local selection verified');

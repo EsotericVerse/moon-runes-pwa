@@ -28,7 +28,6 @@ export const SCOPES_V2=Object.freeze({
     label:'月典',
     localRoutes:Object.freeze([]),
     routePatterns:Object.freeze([]),
-    compatibilityRoutes:Object.freeze([]),
     primary:Object.freeze({label:'月之符文',href:'https://lrunes.lo3rwang.cc/'}),
     role:Object.freeze({label:'作者介紹',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     homes:Object.freeze([{label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}]),
@@ -53,7 +52,6 @@ export const SCOPES_V2=Object.freeze({
       'duel/ow3gs'
     ]),
     routePatterns:Object.freeze(['list/:group','list/:group/:rune']),
-    compatibilityRoutes:Object.freeze([]),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'}),
     primary:Object.freeze({label:'月之符文',href:'https://lrunes.lo3rwang.cc/'}),
     role:Object.freeze({label:'管理者頁面',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
@@ -70,9 +68,8 @@ export const SCOPES_V2=Object.freeze({
     domain:null,
     aliasName:null,
     label:'作者簡介',
-    localRoutes:Object.freeze(['old','work','other']),
+    localRoutes:Object.freeze(['work','other']),
     routePatterns:Object.freeze([]),
-    compatibilityRoutes:Object.freeze([]),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'}),
     primary:Object.freeze({label:'簡介',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     role:Object.freeze({label:'管理者介紹',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
@@ -91,7 +88,6 @@ export const SCOPES_V2=Object.freeze({
     label:'治理管理',
     localRoutes:Object.freeze([]),
     routePatterns:Object.freeze([]),
-    compatibilityRoutes:Object.freeze([]),
     primary:Object.freeze({label:'治理管理',href:'https://admin.lo3rwang.cc/'}),
     role:Object.freeze({label:'治理管理',href:'https://admin.lo3rwang.cc/'}),
     homes:Object.freeze([
@@ -191,9 +187,6 @@ export function featureIdForPathV2(pathname='/'){
   return FEATURES_V2.find(item=>item.path===segment)?.id||null;
 }
 
-export function scopeDataViewV2(){
-  return null;
-}
 
 export function scopeRoutePathsV2(scopeId){
   const scope=getScopeV2(scopeId);
@@ -220,15 +213,10 @@ export function scopeRoutePatternsV2(scopeId){
   return Object.freeze([...(scope.routePatterns||[])].map(pattern=>cleanPath(pattern)));
 }
 
-export function scopeCompatibilityRoutesV2(scopeId){
-  const scope=getScopeV2(scopeId);
-  return Object.freeze([...(scope.compatibilityRoutes||[])].map(route=>cleanPath(route)));
-}
 
 export function isScopePathAllowedV2(scopeId,pathname='/'){
   const clean=cleanPath(pathname);
   if(scopeRoutePathsV2(scopeId).includes(clean))return true;
-  if(scopeCompatibilityRoutesV2(scopeId).includes(clean))return true;
   return scopeRoutePatternsV2(scopeId).some(pattern=>routePatternMatches(pattern,clean));
 }
 
