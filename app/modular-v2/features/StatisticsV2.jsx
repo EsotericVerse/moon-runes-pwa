@@ -20,7 +20,15 @@ import {analyzeDistribution} from '../../loc/model/automatic-analysis.mjs';
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const CHART_TYPES=[['bar','長條圖'],['line','折線圖'],['pie','圓餅圖']];
 const STAT_TABS=[['ranking','排行榜'],['keywords','關鍵詞設定'],['styles','風格設定'],['charts','統計圖']];
-const STAT_TYPE_LABELS=Object.freeze({keyword:'關鍵詞',source:'作品來源',style:'風格標籤',style_group:'風格大群組'});
+const STAT_TYPE_LABELS=Object.freeze({
+  keyword:'關鍵詞',
+  source:'作品來源',
+  style:'風格標籤',
+  style_group:'風格大群組',
+  media_type:'多媒體類型',
+  media_place:'多媒體地點',
+  media_tag:'多媒體 Meta Tag'
+});
 function displayTerm(row){
   return String(row?.term||'');
 }
@@ -129,7 +137,7 @@ function ChartsPanel({scopeId,navigation,types}){
     label:STAT_TYPE_LABELS[rankingType]||'統計項目'
   }),[query.data,rankingType]);
   return <section className="scope-v2-stat-section">
-    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Distribution</p><h2>統計圖</h2><p>統計圖顯示所選統計項目的完整分布。</p><p><strong>靈魂擺盪論：</strong>以大風格、風格與關鍵詞的增減、延續、消退、回返與擺盪觀察語言分布；系統描述變化，不替使用者下定義。</p></div></header>
+    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Distribution</p><h2>統計圖</h2><p>統計圖顯示所選統計項目的完整分布，包含文字來源、風格、關鍵詞與多媒體 metadata。</p><p><strong>靈魂擺盪論：</strong>以大風格、風格與關鍵詞的增減、延續、消退、回返與擺盪觀察語言分布；系統描述變化，不替使用者下定義。</p></div></header>
     <div className="scope-v2-stat-controls">
       <StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/>
       <label><span>圖形</span><select className="scope-v2-select" value={chartType} onChange={event=>setChartType(event.target.value)}>{CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
