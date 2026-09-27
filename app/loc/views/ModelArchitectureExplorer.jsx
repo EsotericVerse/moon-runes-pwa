@@ -19,11 +19,17 @@ export default function ModelArchitectureExplorer({ modules }) {
     {expanded ? <div className="model-module-overlay" id="model-module-menu" aria-label="LOC 八個功能模組選單">
       <button type="button" className="model-module-close" onClick={() => setExpanded(false)} aria-label="關閉八個模組選單">×</button>
       <div className="model-module-grid">
-        {modules.map(module => <a className={`model-module model-module-${module.key}${module.depth ? ' is-deep' : ''}`} href={module.href} key={module.key}>
-          <span className="model-module-name">{module.name}｜{module.zh}</span>
-          <strong>{module.summary}</strong>
-          <p>{module.detail}</p>
-        </a>)}
+        {modules.map(module => {
+          const className=`model-module model-module-${module.key}${module.depth ? ' is-deep' : ''}${module.href ? '' : ' is-static'}`;
+          const content=<>
+            <span className="model-module-name">{module.name}｜{module.zh}</span>
+            <strong>{module.summary}</strong>
+            <p>{module.detail}</p>
+          </>;
+          return module.href
+            ? <a className={className} href={module.href} key={module.key}>{content}</a>
+            : <div className={className} key={module.key}>{content}</div>;
+        })}
       </div>
     </div> : null}
   </div>;

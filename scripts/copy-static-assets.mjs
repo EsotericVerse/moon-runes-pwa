@@ -37,8 +37,11 @@ for(const name of publicPics){
   fs.copyFileSync(source,path.join(picsTarget,name));
 }
 
-const cardPdf=path.join(root,'LunarRunesCardCut.pdf');
-if(!fs.existsSync(cardPdf))throw new Error('Static asset source missing: LunarRunesCardCut.pdf');
-fs.copyFileSync(cardPdf,path.join(output,'LunarRunesCardCut.pdf'));
+const rootDownloads=['LunarRunesCardCut.pdf','LOC-GPT-Skills-v1.0.0-bundle.zip'];
+for(const name of rootDownloads){
+  const source=path.join(root,name);
+  if(!fs.existsSync(source))throw new Error(`Static asset source missing: ${name}`);
+  fs.copyFileSync(source,path.join(output,name));
+}
 
-console.log(`[static-assets] copied assets/, ${publicPics.length} Current pics and LunarRunesCardCut.pdf into out/`);
+console.log(`[static-assets] copied assets/, ${publicPics.length} Current pics and ${rootDownloads.length} governed root downloads into out/`);

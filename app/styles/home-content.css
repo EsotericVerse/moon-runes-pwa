@@ -186,6 +186,10 @@
   transform:translateY(-2px);
   outline:none;
 }
+.model-module.is-static:hover{
+  border-color:var(--loc-line);
+  transform:none;
+}
 .model-module-name{
   color:var(--loc-gold);
   font-size:.76rem;

@@ -1,17 +1,14 @@
 import ModelArchitectureExplorer from './ModelArchitectureExplorer';
-import {featureHrefV2,scopeHrefV2} from '../../modular-v2/scope-registry.v2';
+import {scopeHrefV2} from '../../modular-v2/scope-registry.v2';
 
 const RUNES_LINKS=Object.freeze({
-  home:scopeHrefV2('lrunes'),
-  list:scopeHrefV2('lrunes','list'),
-  single:scopeHrefV2('lrunes','duel/one'),
-  daily:scopeHrefV2('lrunes','duel/daily'),
-  two:scopeHrefV2('lrunes','duel/two'),
-  three:scopeHrefV2('lrunes','duel/three'),
-  five:scopeHrefV2('lrunes','duel/five'),
-  ow3gs:scopeHrefV2('lrunes','duel/ow3gs'),
-  statics:featureHrefV2('lrunes','statics'),
-  governance:featureHrefV2('lrunes','governance')
+  home:scopeHrefV2('lunarunes'),
+  single:scopeHrefV2('lunarunes','duel/one'),
+  daily:scopeHrefV2('lunarunes','duel/daily'),
+  two:scopeHrefV2('lunarunes','duel/two'),
+  three:scopeHrefV2('lunarunes','duel/three'),
+  five:scopeHrefV2('lunarunes','duel/five'),
+  ow3gs:scopeHrefV2('lunarunes','duel/ow3gs')
 });
 
 const MODEL_MODULES=[
@@ -23,32 +20,29 @@ const MODEL_MODULES=[
   {
     key:'context', name:'Context', zh:'關係脈絡', summary:'關係圖',
     detail:'整理事件、作品、來源與既有關係，讓文字與資料可以沿來源與關係被查找、比較與理解。',
-    href:'/context', depth:'deep'
+    depth:'deep'
   },
   {
     key:'music', name:'Music', zh:'音樂', summary:'Suno 音樂與歌詞',
     detail:'保存Suno音樂作品、歌詞、曲風、時期與來源，讓聲音作品能與文字、事件及其他資料建立脈絡。',
-    href:'/music'
   },
   {
     key:'literary', name:'Literary', zh:'文字創作', summary:'文字創作',
     detail:'整理文章、文學與其他文字創作，保留原文、版本、來源與衍生分析之間的差異。',
-    href:'/literary'
   },
   {
     key:'media', name:'Multimedia', zh:'多媒體', summary:'多媒體內容',
     detail:'連結圖像、影音與其他媒體來源，觀察同一語意在不同媒介中的表達與轉譯。',
-    href:'/multimedia'
   },
   {
     key:'algorithm', name:'Algorithm', zh:'演算法', summary:'方法論與演算法集合',
     detail:'把既有方法論整併成可重現的演算法，用於分類、比較、搜尋、關係運算與其他語言處理。',
-    href:'/algorithm', depth:'deep'
+    depth:'deep'
   },
   {
     key:'module', name:'Module', zh:'模組', summary:'獨立功能封裝',
     detail:'將演算法與資料結合成為可重複使用的模組，例如搜尋、Graph 與時間資料的共通功能。',
-    href:'/module', depth:'deep'
+    depth:'deep'
   },
   {
     key:'culture', name:'Culture', zh:'文化', summary:'時間長河',
@@ -92,7 +86,7 @@ export default function AboutView(){
           <p>抽到之後再看當下的文字、方向與說明就可以；想多了解一點，再慢慢往下看。</p>
           <p>你也可以完全不抽牌，直接跳過，</p>
 		  <p>或來看<a href="/statics/">脈絡分析統計排行</a>、<a href="/culture/">文化的時間長河</a>等，</p>
-		  <p>或是看看<a href="/faq/">FAQ</a>，或直接搜尋自己有興趣的文字與資料。</p>
+		  <p>或直接用<a href="/search/">搜尋</a>查 FAQ，以及自己有興趣的文字與資料。</p>
           <p><strong>那就開始吧！</strong></p>
         </div>
         <figure className="home-framework-figure"><img src="/pics/LunaRunes.jpg" alt="LunaRunes 月之符文" loading="lazy" /></figure>
