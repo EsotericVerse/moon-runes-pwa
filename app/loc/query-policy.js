@@ -11,7 +11,6 @@ const HEAVY_COLUMNS=Object.freeze({
 const CATALOG_TABLES=Object.freeze(new Set([
   'silver.lrunes',
   'silver.lo3rwang_style',
-  'silver.lo3rwang_style_keywords',
   'silver.manage'
 ]));
 
