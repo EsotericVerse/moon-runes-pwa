@@ -1,31 +1,34 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { deleteNeonRecord, listNeonRecords } from '../../loc/neon-user-storage';
 import { useNeonAccount } from '../../loc/use-neon-account';
 
 const PAGE_SIZE=20;
-const newest=(a,b)=>String(b?.created_at||'').localeCompare(String(a?.created_at||''));
 
 export default function HistoryClient({defaultKind='all'}){
   const account=useNeonAccount();
   const [records,setRecords]=useState([]);
+  const [total,setTotal]=useState(0);
   const [kind,setKind]=useState(defaultKind);
   const [page,setPage]=useState(1);
   const [status,setStatus]=useState('');
 
-  async function reload(){
-    if(!account.user||!account.canManageScopeSync('lrunes')){setRecords([]);return;}
-    const rows=await listNeonRecords('rune-draw');
-    setRecords(rows.sort(newest));
+  async function reload(targetPage=page,targetKind=kind){
+    if(!account.user||!account.canManageScopeSync('lrunes')){setRecords([]);setTotal(0);return;}
+    const result=await listNeonRecords('rune-draw',{
+      recordKind:targetKind==='all'?'':targetKind,
+      offset:(targetPage-1)*PAGE_SIZE,
+      limit:PAGE_SIZE,
+      count:true
+    });
+    setRecords(result.rows);
+    setTotal(result.totalCount);
   }
 
-  useEffect(()=>{reload().catch(error=>setStatus(String(error?.message||error)))},[account.user?.email,account.canManageScopeSync('lrunes')]);
-  useEffect(()=>setPage(1),[kind]);
-
-  const filtered=useMemo(()=>kind==='all'?records:records.filter(row=>row.record_kind===kind),[records,kind]);
-  const pageCount=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
-  const shown=filtered.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
+  useEffect(()=>{reload(1,kind).catch(error=>setStatus(String(error?.message||error)))},[account.user?.email,account.canManageScopeSync('lrunes'),kind]);
+  const pageCount=Math.max(1,Math.ceil(total/PAGE_SIZE));
+  const shown=records;
 
   async function remove(id){
     await deleteNeonRecord(id);
@@ -42,12 +45,12 @@ export default function HistoryClient({defaultKind='all'}){
     <section className="loc-card">
       {account.canManageScopeSync('lrunes')&&<div className="loc-result-meta"><span>{account.user?.email||account.user?.name}</span></div>}
       <div className="loc-filter-row">
-        <select value={kind} onChange={e=>setKind(e.target.value)}>
+        <select value={kind} onChange={e=>{setKind(e.target.value);setPage(1)}}>
           <option value="all">全部</option>
           <option value="daily">每日</option>
           <option value="general">一般抽牌</option>
         </select>
-        <span>{filtered.length} 筆</span>
+        <span>{total} 筆</span>
       </div>
       {status&&<p className="loc-status">{status}</p>}
     </section>
@@ -62,6 +65,6 @@ export default function HistoryClient({defaultKind='all'}){
         {record.archived?<p className="loc-meta">來源：{record.source} · 唯讀歷史紀錄</p>:<div className="loc-actions"><button className="loc-button" type="button" onClick={()=>remove(record.id)}>刪除</button></div>}
       </article>)}
     </div>
-    {!!filtered.length&&<div className="runes-pager"><button type="button" disabled={page<=1} onClick={()=>setPage(v=>Math.max(1,v-1))}>上一頁</button><span>{page} / {pageCount}</span><button type="button" disabled={page>=pageCount} onClick={()=>setPage(v=>Math.min(pageCount,v+1))}>下一頁</button></div>}
+    {!!total&&<div className="runes-pager"><button type="button" disabled={page<=1} onClick={async()=>{const next=Math.max(1,page-1);setPage(next);await reload(next,kind)}}>上一頁</button><span>{page} / {pageCount}</span><button type="button" disabled={page>=pageCount} onClick={async()=>{const next=Math.min(pageCount,page+1);setPage(next);await reload(next,kind)}}>下一頁</button></div>}
   </section>;
 }
