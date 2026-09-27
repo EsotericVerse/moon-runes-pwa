@@ -321,27 +321,31 @@ export async function countStyleKeywordHits(rows=[],scopeId='lunarunes'){
 }
 
 export async function processStyleTableRows(table,{
-  columns,filters=[],orFilter='',orders=[],scopeId='lunarunes',onClassified
+  columns,filters=[],orFilter='',orders=[],scopeId='lunarunes',rowFilter=null,onClassified
 }={}){
   if(typeof onClassified!=='function')throw new TypeError('Style processing requires onClassified');
   const catalog=await selectStyleCatalog(scopeId);
   return processNeonHeavyRows(table,{
     columns,filters,orFilter,orders,
     onBatch:async rows=>{
-      const classified=classifyStyleRowsWithCatalog(rows,catalog);
+      const selected=typeof rowFilter==='function'?rows.filter(rowFilter):rows;
+      const classified=classifyStyleRowsWithCatalog(selected,catalog);
       for(const row of classified)await onClassified(row);
     }
   });
 }
 
 export async function processKeywordTableRows(table,{
-  columns,filters=[],orFilter='',orders=[],scopeId='lunarunes',onCounts
+  columns,filters=[],orFilter='',orders=[],scopeId='lunarunes',rowFilter=null,onCounts
 }={}){
   if(typeof onCounts!=='function')throw new TypeError('Keyword processing requires onCounts');
   const catalog=await selectStyleCatalog(scopeId);
   return processNeonHeavyRows(table,{
     columns,filters,orFilter,orders,
-    onBatch:async rows=>onCounts(countKeywordHitsWithCatalog(rows,catalog))
+    onBatch:async rows=>{
+      const selected=typeof rowFilter==='function'?rows.filter(rowFilter):rows;
+      return onCounts(countKeywordHitsWithCatalog(selected,catalog));
+    }
   });
 }
 
@@ -351,13 +355,16 @@ export async function observeStyleKeywordHits(rows=[],scopeId='lunarunes'){
 }
 
 export async function processKeywordObservationRows(table,{
-  columns,filters=[],orFilter='',orders=[],scopeId='lunarunes',onObserved
+  columns,filters=[],orFilter='',orders=[],scopeId='lunarunes',rowFilter=null,onObserved
 }={}){
   if(typeof onObserved!=='function')throw new TypeError('Keyword observation processing requires onObserved');
   const catalog=await selectStyleCatalog(scopeId);
   return processNeonHeavyRows(table,{
     columns,filters,orFilter,orders,
-    onBatch:async rows=>onObserved(observeKeywordHitsWithCatalog(rows,catalog))
+    onBatch:async rows=>{
+      const selected=typeof rowFilter==='function'?rows.filter(rowFilter):rows;
+      return onObserved(observeKeywordHitsWithCatalog(selected,catalog));
+    }
   });
 }
 
