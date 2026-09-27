@@ -58,17 +58,17 @@ function addRegistryEdge(edges,edge,registry,evidenceStatus='recorded',evidenceK
   addEdge(edges,{...edge,source_type:'registry',registry:'名冊',registry_key:registry,evidence_kind:evidenceKind,evidence_status:evidenceStatus});
 }
 function addRegistryGraph(nodes,edges,registries={}){
-  const eras=registries.eras||{};
+  const eras=Array.isArray(registries.eras)?registries.eras:[];
   const relationships=registries.relationships||{};
 
-  const orderedEras=[...(eras.eras||[])].sort((a,b)=>(Number(a?.order)||0)-(Number(b?.order)||0));
+  const orderedEras=[...eras].sort((a,b)=>(Number(a?.order_no)||0)-(Number(b?.order_no)||0));
   for(const era of orderedEras){
-    const eid=nodeId('時期',String(era.era_id||era.period||era.name));
-    addNode(nodes,{id:eid,label:era.display_label||era.name||era.era_id,type:'時期',period:era.period||'',definition:era.description||'',source_type:'registry'});
+    const eid=nodeId('時期',String(era.resource_id||era.period||era.entry_key));
+    addNode(nodes,{id:eid,label:era.entry_name||era.title||era.resource_id,type:'時期',period:era.period||'',definition:era.summary||'',source_type:'registry'});
   }
   for(let i=1;i<orderedEras.length;i++){
-    const prev=nodeId('時期',String(orderedEras[i-1].era_id||orderedEras[i-1].period||orderedEras[i-1].name));
-    const current=nodeId('時期',String(orderedEras[i].era_id||orderedEras[i].period||orderedEras[i].name));
+    const prev=nodeId('時期',String(orderedEras[i-1].resource_id||orderedEras[i-1].period||orderedEras[i-1].entry_key));
+    const current=nodeId('時期',String(orderedEras[i].resource_id||orderedEras[i].period||orderedEras[i].entry_key));
     addRegistryEdge(edges,{source:prev,target:current,type:'temporal_before'},'LOC_ERA_REGISTRY','deterministic','deterministic_structural_evidence');
     addRegistryEdge(edges,{source:current,target:prev,type:'temporal_after'},'LOC_ERA_REGISTRY','deterministic','deterministic_structural_evidence');
   }
@@ -88,22 +88,22 @@ function addRegistryGraph(nodes,edges,registries={}){
 
 export function buildRuneGraph(runes,derivedEntries=[],registries={}){
   const nodes=new Map(),edges=new Map();
-  const runeNames=new Set((runes||[]).map(row=>String(row?.符文名稱||'').trim()).filter(Boolean));
+  const runeNames=new Set((runes||[]).map(row=>String(row?.rune_name||'').trim()).filter(Boolean));
   const runeGroup=new Map();
   GROUPS.forEach(group=>addNode(nodes,{id:nodeId('group',group),label:group,type:'群組',internal_type:'group',group}));
 
   for(const rune of runes||[]){
-    const name=String(rune?.符文名稱||'').trim();
-    if(!name||Number(rune?.編號)===0)continue;
-    const rawGroup=String(rune?.所屬分組||'').trim();
+    const name=String(rune?.rune_name||'').trim();
+    if(!name||Number(rune?.rune_number)===0)continue;
+    const rawGroup=String(rune?.group_name||'').trim();
     const group=GROUP_SET.has(rawGroup)?rawGroup:DEFAULT_GROUP;
     runeGroup.set(name,group);
     const rid=nodeId('rune',name);
-    addNode(nodes,{id:rid,label:name,type:'符文',internal_type:'rune',group,number:Number(rune?.編號)||null,english:String(rune?.英文||''),definition:String(rune?.符文說明||''),polarity:String(rune?.卡片屬性||'')});
+    addNode(nodes,{id:rid,label:name,type:'符文',internal_type:'rune',group,number:Number(rune?.rune_number)||null,english:String(rune?.english_name||''),definition:String(rune?.rune_description||''),polarity:String(rune?.card_attribute||'')});
     addEdge(edges,{source:rid,target:nodeId('group',group),type:'belongs_to_group',source_type:'registry'});
-    for(const term of splitTerms(rune?.正向關鍵詞)){const tid=nodeId('term',term);addNode(nodes,{id:tid,label:term,type:'關鍵詞',internal_type:'term',group});addEdge(edges,{source:tid,target:rid,type:'keyword_of',source_type:'keyword'});}
-    for(const term of splitTerms(rune?.反向關鍵詞)){const tid=nodeId('term',term);addNode(nodes,{id:tid,label:term,type:'關鍵詞',internal_type:'term',group});addEdge(edges,{source:tid,target:rid,type:'reverse_keyword_of',source_type:'keyword'});}
-    for(const rule of parseOwnershipRules(rune?.額外規則,runeNames)){
+    for(const term of splitTerms(rune?.positive_keywords)){const tid=nodeId('term',term);addNode(nodes,{id:tid,label:term,type:'關鍵詞',internal_type:'term',group});addEdge(edges,{source:tid,target:rid,type:'keyword_of',source_type:'keyword'});}
+    for(const term of splitTerms(rune?.negative_keywords)){const tid=nodeId('term',term);addNode(nodes,{id:tid,label:term,type:'關鍵詞',internal_type:'term',group});addEdge(edges,{source:tid,target:rid,type:'reverse_keyword_of',source_type:'keyword'});}
+    for(const rule of parseOwnershipRules(rune?.extra_rules,runeNames)){
       const sid=nodeId('term',rule.source);addNode(nodes,{id:sid,label:rule.source,type:'關鍵詞',internal_type:'term',group:DEFAULT_GROUP});
       const targetId=rule.targetRune?nodeId('rune',rule.targetRune):nodeId('term',rule.target);
       addNode(nodes,{id:targetId,label:rule.target,type:rule.targetRune?'符文':'關鍵詞',internal_type:rule.targetRune?'rune':'term',group:rule.targetRune?(runeGroup.get(rule.targetRune)||DEFAULT_GROUP):DEFAULT_GROUP});

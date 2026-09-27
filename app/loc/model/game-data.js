@@ -10,15 +10,6 @@ export const HAND_RULE = Object.freeze({ base: 5, tempCap: 8, eventDraw: 2, fail
 export const TWO_PLAYER_ROUNDS = Object.freeze(['event','event','event','resonance','event','event','event','final-resonance']);
 export const MULTI_PLAYER_ROUNDS = Object.freeze(['event','battle','event','battle','event','battle','event','final-battle']);
 
-export function createEvents(eventRegistry) {
-  return (eventRegistry?.records || []).map(record => ({
-    id: record.event_id,
-    name: record.title,
-    req: String(record.requirement_signature || '').replaceAll('OC','OD').split('+').map(v => v.trim()).filter(Boolean),
-    desc: record.description || ''
-  }));
-}
-
 export function createCards(runes) {
   return (runes || []).filter(r => r['編號'] >= 1 && r['編號'] <= 66).map(r => ({
     id: r['編號'], name: r['符文名稱'], group: r['所屬分組'],

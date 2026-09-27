@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { fetchNeonData, LOC_DATA } from '../loc/data';
+import {selectRuneCatalog} from '../loc/rune-repository';
 import RuneAtlas from './RuneAtlas';
 
 export default function RuneAtlasHome() {
@@ -12,10 +12,10 @@ export default function RuneAtlasHome() {
 
   useEffect(() => {
     let live = true;
-    fetchNeonData(LOC_DATA.RUNES)
+    selectRuneCatalog()
       .then(rows => {
         if (!live) return;
-        const canonical = (Array.isArray(rows) ? rows : []).filter(row => Number(row?.編號) >= 1 && Number(row?.編號) <= 66);
+        const canonical = (Array.isArray(rows) ? rows : []).filter(row => Number(row?.rune_number) >= 1 && Number(row?.rune_number) <= 66);
         setRunes(canonical);
         setError('');
       })
@@ -23,7 +23,7 @@ export default function RuneAtlasHome() {
     return () => { live = false; };
   }, []);
 
-  const groups = useMemo(() => [...new Set(runes.map(row => row?.所屬分組).filter(Boolean))], [runes]);
+  const groups = useMemo(() => [...new Set(runes.map(row => row?.group_name).filter(Boolean))], [runes]);
 
   if (error) return <section className="loc-card" id="library"><p className="loc-error">{error}</p></section>;
   if (!runes.length) return <section className="loc-card" id="library"><p className="loc-note">符文圖鑑載入中……</p></section>;

@@ -149,7 +149,7 @@ export function normalizeCardAttribute(value){
 
 export function cardSemanticState(card,direction){
   const attribute=normalizeCardAttribute(
-    card?.['卡片屬性']??card?.card_attribute??card?.attribute
+    card?..card_attribute??card?.card_attribute??card?.attribute
   );
   const normalizedDirection=normalizeDirection(direction??card?.direction);
   if(attribute==='未知'||normalizedDirection==='未知')return '未知';

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { fetchNeonData, fetchRuneRows, LOC_DATA } from '../loc/data';
+import {selectRuneCatalog,selectRuneRows} from '../loc/rune-repository';
 import { useLocalStore } from '../loc/local-store';
 import {resolveSpreadState} from '../loc/model/semantic-state.mjs';
 import { realMoonPhase } from '../loc/model/moon-phase';
@@ -39,48 +39,19 @@ const RITUAL_MESSAGES = {
 };
 
 async function fetchCoreRunes() {
-  return fetchNeonData(LOC_DATA.RUNES, { memory: true });
+  return selectRuneCatalog();
 }
 
 
 function runeCardImage(card) {
-  const number = String(Number(card?.編號) || 0).padStart(2, '0');
-  const name = String(card?.符文名稱 || '').replace(/之符文$/, '').trim();
+  const number = String(Number(card?.rune_number) || 0).padStart(2, '0');
+  const name = String(card?.rune_name || '').replace(/之符文$/, '').trim();
   return `/assets/lunarunes/cards/${number}_${name}.png`;
 }
 
 function directionText(card, direction) {
-  const field = ({ '正位': '正向表示', '半正位': '半正向表示', '半逆位': '半逆向表示', '逆位': '逆向表示' })[direction];
-  return card?.__neonPayload?.[field] || card?.符文說明 || '';
-}
-
-function phaseAdvice(interpretations, card, direction, phase) {
-  const row = (interpretations || []).find(item => item?.符文名稱 === card?.符文名稱);
-  return row?.卡牌方向?.find(item => item?.方向 === direction)?.現況?.find(item => item?.現在月相 === phase) || null;
-}
-
-function SingleAdvice({ card, direction, phase, interpretations, daily = false }) {
-  const info = phaseAdvice(interpretations, card, direction, phase);
-  if (!info) return <p>目前沒有這組月相與位向的補充資料。</p>;
-  if (daily) {
-    return <div className="runes-advice-grid">
-      <article><strong>今日核心</strong><span>{info.每日占卜提醒 || info.狀況表達}</span></article>
-      <article><strong>狀況</strong><span>{info.狀況形容}</span></article>
-      <article><strong>表達</strong><span>{info.狀況表達}</span></article>
-      <article><strong>引導</strong><span>{info.每日占卜引導}</span></article>
-      <article><strong>祝福</strong><span>{info.每日占卜祝福}</span></article>
-    </div>;
-  }
-  return <>
-    <p className="runes-reading-lead"><strong>占卜結論｜{card.符文名稱}・{direction}</strong><span>{directionText(card, direction)}</span></p>
-    <div className="runes-advice-grid">
-      <article><strong>愛情</strong><span>{info.愛情建議}</span></article>
-      <article><strong>事業</strong><span>{info.事業建議}</span></article>
-      <article><strong>心理</strong><span>{info.心理建議}</span></article>
-      <article><strong>健康</strong><span>{info.健康建議}</span></article>
-      <article><strong>生活</strong><span>{info.生活建議}</span></article>
-    </div>
-  </>;
+  const field = ({ '正位': 'positive_meaning', '半正位': 'half_positive_meaning', '半逆位': 'half_reverse_meaning', '逆位': 'reverse_meaning' })[direction];
+  return card?.[field] || card?.rune_description || '';
 }
 
 function MultiReading({ draw, mode, phase }) {
@@ -92,9 +63,9 @@ function MultiReading({ draw, mode, phase }) {
     return <section className="loc-card" data-draw-reading={mode}>
       <p className="loc-eyebrow">Reading · 完整解讀</p>
       <h2>{mode === '2card' ? '因 → 果' : '源 → 轉 → 合'}</h2>
-      <p><strong>完整現況：</strong>{cards.map((card, index) => `${labels[index]}「${card.符文名稱}」${directions[index]}`).join('、')}。目前真實月相為{phase}。</p>
+      <p><strong>完整現況：</strong>{cards.map((card, index) => `${labels[index]}「${card.rune_name}」${directions[index]}`).join('、')}。目前真實月相為{phase}。</p>
       <p><strong>閱讀方式：</strong>{mode === '2card' ? '先看造成現況的「因」，再看它導向的「果」。' : '依序閱讀「源 → 轉 → 合」，先找起點，再看轉化，最後看收束。'}</p>
-      <div className="loc-context-list">{cards.map((card, index) => <div className="loc-context-item" key={`${mode}-${card.編號}-${index}`}><strong>{labels[index]}：{card.符文名稱}・{directions[index]}</strong><span>{directionText(card, directions[index])}</span></div>)}</div>
+      <div className="loc-context-list">{cards.map((card, index) => <div className="loc-context-item" key={`${mode}-${card.rune_number}-${index}`}><strong>{labels[index]}：{card.rune_name}・{directions[index]}</strong><span>{directionText(card, directions[index])}</span></div>)}</div>
     </section>;
   }
   if (mode === '5card') {
@@ -102,9 +73,9 @@ function MultiReading({ draw, mode, phase }) {
     return <section className="loc-card" data-draw-reading="5card">
       <p className="loc-eyebrow">Reading · 五卡完整解讀</p>
       <h2>雙卡＋單卡＋雙卡</h2>
-      <p><strong>過去的成因：</strong>「{past1.符文名稱}」{directions[0]}：{directionText(past1, directions[0])}；「{past2.符文名稱}」{directions[1]}：{directionText(past2, directions[1])}。兩張牌共同描述事情形成的背景與潛因。</p>
-      <p><strong>意外變化：</strong>「{unexpected.符文名稱}」{directions[2]}：{directionText(unexpected, directions[2])}。單張只提供一個意外因素，不與雙卡拼接。</p>
-      <p><strong>現在狀況：</strong>「{current1.符文名稱}」{directions[3]}：{directionText(current1, directions[3])}；「{current2.符文名稱}」{directions[4]}：{directionText(current2, directions[4])}。兩張牌共同描述現在以後可能形成的結論。</p>
+      <p><strong>過去的成因：</strong>「{past1.rune_name}」{directions[0]}：{directionText(past1, directions[0])}；「{past2.rune_name}」{directions[1]}：{directionText(past2, directions[1])}。兩張牌共同描述事情形成的背景與潛因。</p>
+      <p><strong>意外變化：</strong>「{unexpected.rune_name}」{directions[2]}：{directionText(unexpected, directions[2])}。單張只提供一個意外因素，不與雙卡拼接。</p>
+      <p><strong>現在狀況：</strong>「{current1.rune_name}」{directions[3]}：{directionText(current1, directions[3])}；「{current2.rune_name}」{directions[4]}：{directionText(current2, directions[4])}。兩張牌共同描述現在以後可能形成的結論。</p>
       <p><strong>模組應用：</strong>雙卡與三卡的共同語意延伸；月相交互列於最後，只作天時關係的小幅修正，可能稍強也可能稍弱。本次真實月相為{phase}。</p>
     </section>;
   }
@@ -114,11 +85,9 @@ function MultiReading({ draw, mode, phase }) {
 export default function RuneDrawClient({ drawKey = 'single' }) {
   const { value: uiSettings } = useLocalStore(UI_SETTINGS_KEY, DEFAULT_UI_SETTINGS);
   const [data, setData] = useState(null);
-  const [interpretations, setInterpretations] = useState([]);
   const [error, setError] = useState('');
   const [draw, setDraw] = useState(null);
   const [ritualStep, setRitualStep] = useState(-1);
-  const [dailyAnalysisStatus, setDailyAnalysisStatus] = useState(drawKey === 'daily' ? '載入每日分析…' : '');
   const timers = useRef([]);
   const autoStarted = useRef(false);
 
@@ -130,7 +99,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
     fetchCoreRunes()
       .then(runes => {
         if (!live) return;
-        const canonicalRunes = (runes || []).filter(row => Number(row?.編號) >= 1 && Number(row?.編號) <= 66);
+        const canonicalRunes = (runes || []).filter(row => Number(row?.rune_number) >= 1 && Number(row?.rune_number) <= 66);
         if (canonicalRunes.length < 66) throw new Error(`核心符文資料只有 ${canonicalRunes.length} 枚，無法安全抽牌。`);
         setData({ runes: canonicalRunes });
         setError('');
@@ -149,32 +118,14 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
   const moonPhase = useMemo(() => realMoonPhase(), []);
   const ritualMessages = RITUAL_MESSAGES[drawKey] || RITUAL_MESSAGES.single;
 
-  function enrichDraw(cards, directions) {
-    const numbers=cards.map(card => Number(card?.編號)).filter(Number.isInteger);
-
-    fetchRuneRows(numbers,{timeoutMs:1500})
+  function enrichDraw(cards) {
+    const numbers=cards.map(card => Number(card?.rune_number)).filter(Number.isInteger);
+    selectRuneRows(numbers)
       .then(rows => {
-        const byNumber=new Map(rows.map(row => [Number(row.rune_number), row.rune_data || {}]));
-        setDraw(current => {
-          if(!current) return current;
-          return {
-            ...current,
-            cards: current.cards.map(card => ({ ...card, __neonPayload: byNumber.get(Number(card?.編號)) || null }))
-          };
-        });
+        const byNumber=new Map(rows.map(row => [Number(row.rune_number), row]));
+        setDraw(current => current ? {...current,cards:current.cards.map(card=>({...card,...(byNumber.get(Number(card?.rune_number))||{})}))} : current);
       })
       .catch(() => {});
-
-    if(drawKey === 'daily'){
-      setDailyAnalysisStatus('載入每日分析…');
-      fetchNeonData(LOC_DATA.RUNE_INTERPRETATIONS,{memory:true})
-        .then(rows => {
-          const list=Array.isArray(rows)?rows:[];
-          setInterpretations(list);
-          setDailyAnalysisStatus(list.length ? '' : '目前沒有每日符文分析資料。');
-        })
-        .catch(err => setDailyAnalysisStatus(`每日分析載入失敗：${err?.message || '未知錯誤'}`));
-    }
   }
 
   function finishDraw() {
@@ -185,7 +136,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
       const reading = resolveSpreadState(cards, directions, drawKey);
       const createdAt = new Date().toISOString();
       setDraw({ id: `rune-draw:${drawKey}:${Date.now()}`, createdAt, cards, directionIndexes, directions, reading, guidance: reading.guidance });
-      enrichDraw(cards, directions);
+      enrichDraw(cards);
       setError('');
     } catch (err) {
       setDraw(null);
@@ -242,15 +193,15 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
         <section className="loc-card" id="result" data-draw-stage="result" data-draw-mode={drawKey}>
           <div className="loc-result-meta"><span>{selectedMode.label}</span><span>真實月相：{moonPhase}</span></div>
           <div className="loc-draw-grid">
-            {draw.cards.map((card, index) => <article className="loc-context-item compact loc-draw-card" data-rune-id={card.編號} data-draw-position={selectedMode.positions[index] || index + 1} key={`${card.編號}-${index}`}>
+            {draw.cards.map((card, index) => <article className="loc-context-item compact loc-draw-card" data-rune-id={card.rune_number} data-draw-position={selectedMode.positions[index] || index + 1} key={`${card.rune_number}-${index}`}>
               <small>{selectedMode.positions[index] || `第 ${index + 1} 張`}</small>
-              <img className={`loc-rune-card-image ${ROTATION_CLASSES[draw.directionIndexes[index]]}`} src={runeCardImage(card)} alt={`${card.符文名稱}符文卡`}/>
-              <b>{card.符文名稱}</b>
-              <small>{card.英文 || '—'}</small>
-              <span>所屬群組：{card.所屬分組 || '—'}</span>
-              <span>{draw.directions[index]} · 卡片月相：{card.月相 || '—'}</span>
-              <small>{directionText(card, draw.directions[index]) || card.符文說明}</small>
-              <div className="runes-draw-keywords"><span><strong>正向關鍵詞</strong>{card.正向關鍵詞 || '—'}</span><span><strong>反向關鍵詞</strong>{card.反向關鍵詞 || '—'}</span></div>
+              <img className={`loc-rune-card-image ${ROTATION_CLASSES[draw.directionIndexes[index]]}`} src={runeCardImage(card)} alt={`${card.rune_name}符文卡`}/>
+              <b>{card.rune_name}</b>
+              <small>{card.english_name || '—'}</small>
+              <span>所屬群組：{card.group_name || '—'}</span>
+              <span>{draw.directions[index]} · 卡片月相：{card.moon_phase || '—'}</span>
+              <small>{directionText(card, draw.directions[index]) || card.rune_description}</small>
+              <div className="runes-draw-keywords"><span><strong>正向關鍵詞</strong>{card.positive_keywords || '—'}</span><span><strong>反向關鍵詞</strong>{card.negative_keywords || '—'}</span></div>
             </article>)}
           </div>
           <div className="loc-actions runes-retry">
@@ -260,8 +211,8 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
 
         {drawKey === 'daily' && <section className="loc-card" data-draw-reading="daily">
           <p className="loc-eyebrow">Daily · 每日分析</p>
-          <h2>{draw.cards[0].符文名稱} · {draw.directions[0]} · {moonPhase}</h2>
-          {dailyAnalysisStatus ? <p className="loc-status">{dailyAnalysisStatus}</p> : <SingleAdvice card={draw.cards[0]} direction={draw.directions[0]} phase={moonPhase} interpretations={interpretations} daily/>}
+          <h2>{draw.cards[0].rune_name} · {draw.directions[0]} · {moonPhase}</h2>
+          <RuneSingleReading card={draw.cards[0]} direction={draw.directions[0]}/>
         </section>}
 
 
@@ -272,7 +223,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
           <p>先讀成因分析，後讀判斷分析，最後套用月相交互。十一張牌不是等權並列。</p>
           <p><strong>1–6 因的描述層：</strong>源兩張、轉兩張、合兩張，共六張；以雙卡與三卡綜合判斷產生問題的可能狀態。</p>
           <p><strong>7–11 果的判定層：</strong>使用五卡的基本規則，共五張；以五卡方式判斷建議如何行動的治理原則。</p>
-          <div className="loc-context-list">{draw.cards.slice(6, 11).map((card, index) => <div className="loc-context-item" key={`core-${card.編號}-${index}`}><strong>第 {index + 7} 張 · {card.符文名稱} · {draw.directions[index + 6]}</strong><span>{directionText(card, draw.directions[index + 6]) || card.符文說明}</span></div>)}</div>
+          <div className="loc-context-list">{draw.cards.slice(6, 11).map((card, index) => <div className="loc-context-item" key={`core-${card.rune_number}-${index}`}><strong>第 {index + 7} 張 · {card.rune_name} · {draw.directions[index + 6]}</strong><span>{directionText(card, draw.directions[index + 6]) || card.rune_description}</span></div>)}</div>
           <p>月相交互最後才套用，只作次要時間修飾；重點是模型關聯，不是增加抽牌維度的複雜化。</p>
         </section>}
 

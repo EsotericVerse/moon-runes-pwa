@@ -4,12 +4,12 @@ import {runeLotAnalyses} from '../loc/model/semantic-state.mjs';
 
 function directionText(card,direction){
   const field=({
-    '正位':'正向表示',
-    '半正位':'半正向表示',
-    '半逆位':'半逆向表示',
-    '逆位':'逆向表示'
+    '正位':'positive_meaning',
+    '半正位':'half_positive_meaning',
+    '半逆位':'half_reverse_meaning',
+    '逆位':'reverse_meaning'
   })[direction];
-  return String(card?.[field]||card?.__neonPayload?.[field]||card?.符文說明||'').trim();
+  return String(card?.[field]||card?.rune_description||'').trim();
 }
 
 export default function RuneSingleReading({card,direction}){
@@ -17,7 +17,7 @@ export default function RuneSingleReading({card,direction}){
   const analyses=runeLotAnalyses(card,direction);
   return <>
     <p className="runes-reading-lead">
-      <strong>占卜結論｜{card.符文名稱}・{direction}</strong>
+      <strong>占卜結論｜{card.rune_name}・{direction}</strong>
       <span>{directionText(card,direction)||'目前沒有這個位向的符文說明。'}</span>
     </p>
     <div className="runes-advice-grid" aria-label="單卡籤詩分析">

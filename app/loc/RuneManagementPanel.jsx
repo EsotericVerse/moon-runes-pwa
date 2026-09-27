@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import {fetchNeonData,LOC_DATA} from './data';
+import {selectRuneCatalog} from './rune-repository';
 import {cardSemanticState,resolveSpreadState} from './model/semantic-state.mjs';
 import {realMoonPhase} from './model/moon-phase';
 import {drawRuneSession,makeRuneDrawId,RUNE_DIRECTIONS} from '../lrunes/rune-draw-engine';
@@ -26,12 +26,12 @@ function makeRecord(mode,session){
     id:makeRuneDrawId(mode),created_at:new Date().toISOString(),mode,mode_label:config.label,
     moon_phase:realMoonPhase(),trend:reading.trend,result:reading.result,guidance:reading.guidance,
     cards:session.cards.map((card,index)=>({
-      number:Number(card.編號),name:card.符文名稱,
+      number:Number(card.rune_number),name:card.rune_name,
       position:config.positions[index]||`第 ${index+1} 張`,
       direction:session.directions[index],
-      card_attribute:card.卡片屬性||'未知',
+      card_attribute:card.card_attribute||'未知',
       state:cardSemanticState(card,session.directions[index]),
-      positive_keywords:card.正向關鍵詞||'',negative_keywords:card.反向關鍵詞||''
+      positive_keywords:card.positive_keywords||'',negative_keywords:card.negative_keywords||''
     }))
   };
 }
@@ -41,7 +41,7 @@ function dailyRecord(session,role){
     id:makeRuneDrawId('daily'),created_at:new Date().toISOString(),mode:'daily',mode_label:'每日',
     moon_phase:realMoonPhase(),daily_role:role,
     trend:'未知',result:cardSemanticState(card,session.directions[0]),guidance:`結果${cardSemanticState(card,session.directions[0])}。`,
-    cards:[{number:Number(card.編號),name:card.符文名稱,position:role==='supplement'?'副符':'主符',direction:session.directions[0],card_attribute:card.卡片屬性||'未知',state:cardSemanticState(card,session.directions[0]),positive_keywords:card.正向關鍵詞||'',negative_keywords:card.反向關鍵詞||''}]
+    cards:[{number:Number(card.rune_number),name:card.rune_name,position:role==='supplement'?'副符':'主符',direction:session.directions[0],card_attribute:card.card_attribute||'未知',state:cardSemanticState(card,session.directions[0]),positive_keywords:card.positive_keywords||'',negative_keywords:card.negative_keywords||''}]
   };
 }
 function cardLine(record){
@@ -74,8 +74,8 @@ export default function RuneManagementPanel(){
   useEffect(()=>{
     let live=true;
     if(!account.user||!canManage){setLoading(false);return()=>{live=false};}
-    Promise.all([fetchNeonData(LOC_DATA.RUNES,{memory:true}),reloadRecords()])
-      .then(([rows])=>{if(live)setRunes((rows||[]).filter(row=>Number(row?.編號)>=1&&Number(row?.編號)<=66));})
+    Promise.all([selectRuneCatalog(),reloadRecords()])
+      .then(([rows])=>{if(live)setRunes((rows||[]).filter(row=>Number(row?.rune_number)>=1&&Number(row?.rune_number)<=66));})
       .catch(error=>{if(live)setStatus(String(error?.message||error));})
       .finally(()=>{if(live)setLoading(false);});
     return()=>{live=false};
@@ -101,7 +101,7 @@ export default function RuneManagementPanel(){
   function drawDailySupplement(){
     try{
       const mainNumber=Number((savedMain||dailyMain)?.cards?.[0]?.number);
-      const pool=runes.filter(card=>Number(card?.編號)!==mainNumber);
+      const pool=runes.filter(card=>Number(card?.rune_number)!==mainNumber);
       setDailySupplement(dailyRecord(drawRuneSession(pool,1),'supplement'));setStatus('');
     }catch(error){setStatus(error?.message||'副符抽牌失敗。');}
   }
@@ -113,12 +113,12 @@ export default function RuneManagementPanel(){
     const current=row.cards?.[0]||{};
     const nextCard={...current};
     if(field==='number'){
-      const rune=runes.find(item=>Number(item.編號)===Number(value));
-      nextCard.number=Number(value);nextCard.name=rune?.符文名稱||String(value);nextCard.card_attribute=rune?.卡片屬性||'未知';
+      const rune=runes.find(item=>Number(item.rune_number)===Number(value));
+      nextCard.number=Number(value);nextCard.name=rune?.rune_name||String(value);nextCard.card_attribute=rune?.card_attribute||'未知';
     }else nextCard.direction=value;
-    const rune=runes.find(item=>Number(item.編號)===Number(nextCard.number));
-    nextCard.card_attribute=nextCard.card_attribute||rune?.卡片屬性||'未知';
-    nextCard.state=cardSemanticState({卡片屬性:nextCard.card_attribute},nextCard.direction);
+    const rune=runes.find(item=>Number(item.rune_number)===Number(nextCard.number));
+    nextCard.card_attribute=nextCard.card_attribute||rune?.card_attribute||'未知';
+    nextCard.state=cardSemanticState({card_attribute:nextCard.card_attribute},nextCard.direction);
     try{
       await putNeonRecord({...row,result:nextCard.state,guidance:`結果${nextCard.state}。`,cards:[nextCard]});
       await reloadRecords();setStatus('每日符文紀錄已更新。');
@@ -160,7 +160,7 @@ export default function RuneManagementPanel(){
           <strong>{row.daily_role==='supplement'?'副符':'主符'}｜{card.name}・{card.direction}</strong>
           <div className="scope-v2-stat-controls">
             <label>符文<select value={card.number||''} onChange={e=>updateDaily(row,'number',e.target.value)}>
-              {runes.map(rune=><option key={rune.編號} value={rune.編號}>{rune.編號}・{rune.符文名稱}</option>)}
+              {runes.map(rune=><option key={rune.rune_number} value={rune.rune_number}>{rune.rune_number}・{rune.rune_name}</option>)}
             </select></label>
             <label>方向<select value={card.direction||'正位'} onChange={e=>updateDaily(row,'direction',e.target.value)}>
               {RUNE_DIRECTIONS.map(direction=><option key={direction} value={direction}>{direction}</option>)}

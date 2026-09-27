@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { fetchNeonDataBatch, LOC_DATA } from '../data';
-import { applyDe, createCards, createEvents, draw, evaluateEvent, finishOpening, freshPlayer, HAND_RULE, MULTI_PLAYER_ROUNDS, shuffle, TWO_PLAYER_ROUNDS } from '../model/game-data';
+import {selectRuneCatalog} from '../rune-repository';
+import { applyDe, createCards, draw, evaluateEvent, finishOpening, freshPlayer, HAND_RULE, MULTI_PLAYER_ROUNDS, shuffle, TWO_PLAYER_ROUNDS } from '../model/game-data';
 import { GAME_ACTIONS, GAME_DOC_SECTIONS, GAME_HISTORY, GAME_ROLES } from '../model/game-docs';
 
 const NAMES=['A','B','C','D'];
@@ -12,7 +12,7 @@ function GameDocs({data}){
   const[section,setSection]=useState('rules');
   return <section className="loc-card"><h2>遊戲文件</h2><div className="loc-actions">{GAME_DOC_SECTIONS.map(([id,label])=><button key={id} className={`loc-button ${section===id?'primary':''}`} onClick={()=>setSection(id)}>{label}</button>)}</div>
   {section==='rules'&&<div className="loc-log"><h3>Current Alpha 基本規則</h3><p><b>目標：</b>以 Event、Resonance／Battle 改變 De。De 範圍 0–8；先到 8 不會立即勝利。</p><p><b>2P：</b>R1–R3 Event → R4 Resonance → R5–R7 Event → R8 Resonance；R8 完成才比較 De，同分進 Duel。</p><p><b>3P/4P：</b>E → B 交替至 R8；共同 Event 與 Battle 細則仍屬 Alpha playtest。</p><p><b>Event：</b>每次固定使用兩張 Rune 回應。結果為 4/4 +2、3/4 +1、2/4 +0、1/4 補牌 +0、0/4 −1。</p><p><b>Macro：</b>SL＝Soul + Link；ML＝Mineral + Life；NE＝Nature + Element；OD＝Order + Disorder。</p><p><b>手牌：</b>基準 5、暫時上限 8；一般 Event 補 2，Fail 補 1。特殊 Rune 可另行補牌。起手流程目前為 Alpha 測試項。</p></div>}
-  {section==='events'&&<div className="loc-log"><h3>Alpha Event32</h3>{data?.events?.map(e=><p key={e.id}><b>{e.id} {e.name}</b>｜{e.req.join(' + ')}｜{e.desc}</p>)||<p>Event 資料載入中。</p>}</div>}
+  {section==='events'&&<div className="loc-log"><h3>Alpha Event32</h3>{data?.events?.length?data.events.map(e=><p key={e.id}><b>{e.id} {e.name}</b>｜{e.req.join(' + ')}｜{e.desc}</p>):<p>Event32 Current canonical source 尚未遷移；不讀舊資料。</p>}</div>}
   {section==='actions'&&<div className="loc-log"><h3>Rune Action Profile 01–64</h3><p>歷史 Game 行為原型，不反向定義 Rune Canon。De16 門檻保留歷史標記，等待 De8 playtest 遷移。</p>{Object.entries(GAME_ACTIONS).map(([id,text])=><p key={id}><b>{String(id).padStart(2,'0')}</b>｜{text}</p>)}</div>}
   {section==='roles'&&<div className="loc-log"><h3>八職業</h3><p>職業是世界失序時的回應方式，不是能力職業或人格分類；任何玩家都可使用。</p>{GAME_ROLES.map(([name,role,mode,group])=><p key={name}><b>{name}</b>｜{role}｜{mode}｜{group}</p>)}</div>}
   {section==='history'&&<div className="loc-log"><h3>版本與開發說明</h3>{GAME_HISTORY.map((x,i)=><p key={i}>{x}</p>)}</div>}
@@ -27,13 +27,13 @@ const clampRound=(count,round)=>(count===2?TWO_PLAYER_ROUNDS:MULTI_PLAYER_ROUNDS
 
 export default function GameView(){
   const[data,setData]=useState(null),[loadError,setLoadError]=useState(''),[state,setState]=useState(null),[playerCount,setPlayerCount]=useState(2),[homeView,setHomeView]=useState('play');
-  useEffect(()=>{let live=true;fetchNeonDataBatch([LOC_DATA.RUNES,LOC_DATA.GAME_EVENTS]).then(([r,e])=>{if(live)setData({cards:createCards(r),events:createEvents(e)});}).catch(e=>live&&setLoadError(e.message));return()=>{live=false};},[]);
+  useEffect(()=>{let live=true;selectRuneCatalog().then(runes=>{if(!live)return;setData({cards:createCards(runes),events:[]});setLoadError('Event32 尚未遷移至 Current canonical source；RC8 不使用舊 LOC2／JSON fallback。');}).catch(error=>live&&setLoadError(error.message));return()=>{live=false};},[]);
   const event=state?.eventDeck[state.eventIndex%state.eventDeck.length];
   const allOpened=state?.players.every(p=>!p.opening);
   const phaseLabel=state?.phase==='event'?'Event':state?.phase?.includes('battle')?'Battle':'Resonance';
   const status=useMemo(()=>loadError?'遊戲資料載入失敗。':!data?'載入符文與事件資料…':!state?'選擇人數後開始 Alpha。':state.winner!==null?`${state.players[state.winner].name} 勝出。`:state.draw?'R8 同分；多人後續判定尚未定案。':`R${state.round} · ${phaseLabel}`,[data,loadError,state,phaseLabel]);
 
-  function start(){if(data)setState(freshGame(data.events,data.cards,playerCount));}
+  function start(){if(data?.events?.length)setState(freshGame(data.events,data.cards,playerCount));}
   function toggle(pi,id){setState(s=>{if(!s)return s;const players=s.players.map((p,i)=>{if(i!==pi)return p;const limit=p.opening?3:2;const selected=p.selected.includes(id)?p.selected.filter(x=>x!==id):(p.selected.length<limit?[...p.selected,id]:p.selected);return{...p,selected};});return{...s,players};});}
   function confirmOpening(pi){setState(s=>{try{return{...s,players:s.players.map((p,i)=>i===pi?finishOpening(p,p.selected):p)}}catch(e){return{...s,result:e.message}}});}
 
@@ -61,7 +61,7 @@ export default function GameView(){
     setState(s=>{if(!s||!s.phase?.includes('battle'))return s;const actor=s.active;if(target===actor)return s;const players=s.players.map((p,i)=>i===target?applyDe(p,-Math.max(1,Math.min(4,strength))):p),actions=s.actions+1,next=(actor+1)%s.players.length,n={...s,players,actions,active:next,logs:[`R${s.round} Battle：${NAMES[actor]} → ${NAMES[target]}（測試 strength 1）`,...s.logs]};return actions===s.players.length?nextRound(n):n;});
   }
 
-  if(!state)return <section className="loc-view loc-game"><header className="loc-hero"><p className="loc-eyebrow">LunaRunes × Game · Alpha</p><h1>Semantic Playground</h1><p>Current Game 測試骨架：De 0–8；2P 為 EEE-R-EEE-R，多人為 E-B 交替。</p></header><div className="loc-actions"><button className={`loc-button ${homeView==='play'?'primary':''}`} onClick={()=>setHomeView('play')}>開始遊戲</button><button className={`loc-button ${homeView==='docs'?'primary':''}`} onClick={()=>setHomeView('docs')}>遊戲文件</button></div>{homeView==='docs'?<GameDocs data={data}/>:<><div className="loc-actions"><select value={playerCount} onChange={e=>setPlayerCount(Number(e.target.value))}><option value="2">2 Players</option><option value="3">3 Players</option><option value="4">4 Players</option></select><button className="loc-button primary" onClick={start} disabled={!data}>開始新遊戲</button></div><p className="loc-status">{loadError||status}</p></>}</section>;
+  if(!state)return <section className="loc-view loc-game"><header className="loc-hero"><p className="loc-eyebrow">LunaRunes × Game · Alpha</p><h1>Semantic Playground</h1><p>Current Game 測試骨架：De 0–8；2P 為 EEE-R-EEE-R，多人為 E-B 交替。</p></header><div className="loc-actions"><button className={`loc-button ${homeView==='play'?'primary':''}`} onClick={()=>setHomeView('play')}>開始遊戲</button><button className={`loc-button ${homeView==='docs'?'primary':''}`} onClick={()=>setHomeView('docs')}>遊戲文件</button></div>{homeView==='docs'?<GameDocs data={data}/>:<><div className="loc-actions"><select value={playerCount} onChange={e=>setPlayerCount(Number(e.target.value))}><option value="2">2 Players</option><option value="3">3 Players</option><option value="4">4 Players</option></select><button className="loc-button primary" onClick={start} disabled={!data?.events?.length}>開始新遊戲</button></div><p className="loc-status">{loadError||status}</p></>}</section>;
 
   return <section className="loc-view loc-game"><header className="loc-hero"><p className="loc-eyebrow">LunaRunes × Game · Alpha</p><h1>Semantic Playground</h1><p>{state.mode==='2p'?'2P：EEE → R → EEE → R；R8 結算，同分進 Duel。':'3P/4P：E → B 交替至 R8；Battle 細則仍屬測試。'}</p></header><p className="loc-status">{status}｜{state.result}</p>
   {!allOpened&&<p className="loc-status">起手設定：每位玩家從 8 張棄 3 張，保留 5 張。</p>}

@@ -1,5 +1,3 @@
-export const RUNES=Object.freeze([]);
-
 export const GROUPS=Object.freeze([
   {id:'01',name:'靈魂',english:'Soul',image:'/pics/01.soul.jpg',description:'聚焦精神本源、記憶、內外界線、自我映照與核心。'},
   {id:'02',name:'連結',english:'Connection',image:'/pics/02_connection.jpg',description:'描述方向、連結、切斷、封閉、啟動、分化、理解與誤解。'},
@@ -12,22 +10,20 @@ export const GROUPS=Object.freeze([
   {id:'09',name:'特殊',english:'Special',image:'/pics/09_specia.jpg',description:'特殊組包含德、玄、命；德為作者治理基準符，不參與 66 枚抽牌牌組。'}
 ]);
 
-export function runeName(card){return String(card?.符文名稱||'').replace(/之符文$/,'').trim();}
+export function runeName(card){return String(card?.rune_name||'').replace(/之符文$/,'').trim();}
 export function runeImage(card){
-  const number=String(Number(card?.編號)||0).padStart(2,'0');
+  const number=String(Number(card?.rune_number)||0).padStart(2,'0');
   return `/assets/lunarunes/cards/${number}_${runeName(card)}.png`;
 }
 export function groupById(id){return GROUPS.find(item=>item.id===String(id).padStart(2,'0'))||null;}
-export function groupRunes(){return [];}
 export function localRuneId(groupId,card){
   if(String(groupId).padStart(2,'0')==='09'){
     const map={0:'00',65:'01',66:'02'};
-    return map[Number(card?.編號)]||null;
+    return map[Number(card?.rune_number)]||null;
   }
   const start=(Number(groupId)-1)*8+1;
-  return String(Number(card?.編號)-start+1).padStart(2,'0');
+  return String(Number(card?.rune_number)-start+1).padStart(2,'0');
 }
-export function runeByRoute(){return null;}
 export function groupParams(){return GROUPS.map(group=>({group:group.id}));}
 export function runeParams(){
   return GROUPS.flatMap(group=>{

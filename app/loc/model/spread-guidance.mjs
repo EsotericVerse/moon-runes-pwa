@@ -57,7 +57,7 @@ function normalizeDirection(value){
 }
 
 function runeName(card){
-  return String(card?.符文名稱||card?.rune_name||'').replace(/之符文$/,'').trim();
+  return String(card?.rune_name||'').replace(/之符文$/,'').trim();
 }
 
 function topicOf(card){
@@ -66,7 +66,7 @@ function topicOf(card){
 }
 
 function stateOf(card,direction){
-  const attribute=normalizeAttribute(card?.卡片屬性??card?.card_attribute??card?.attribute);
+  const attribute=normalizeAttribute(card?.card_attribute);
   const normalizedDirection=normalizeDirection(direction??card?.direction);
   const key=attribute==='未知'||normalizedDirection==='未知'?'未知':attribute+'|'+normalizedDirection;
   return {attribute,direction:normalizedDirection,key,word:STATE_WORD[key]||'未知'};

@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import {fetchNeonData,LOC_DATA} from '../loc/data';
+import {selectRuneCatalog} from '../loc/rune-repository';
 import {GROUPS,groupById,localRuneId,runeImage,runeName} from './rune-directory.mjs';
 import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
 
@@ -23,9 +23,9 @@ function useNeonRunes(){
   const [error,setError]=useState('');
   useEffect(()=>{
     let live=true;
-    fetchNeonData(LOC_DATA.RUNES,{memory:true}).then(rows=>{
+    selectRuneCatalog().then(rows=>{
       if(!live)return;
-      setRunes((Array.isArray(rows)?rows:[]).filter(row=>Number(row?.編號)>=0&&Number(row?.編號)<=66));
+      setRunes((Array.isArray(rows)?rows:[]).filter(row=>Number(row?.rune_number)>=0&&Number(row?.rune_number)<=66));
     }).catch(reason=>{if(live)setError(reason?.message||'Neon canonical 讀取失敗');});
     return()=>{live=false};
   },[]);
@@ -34,9 +34,9 @@ function useNeonRunes(){
 
 function rowsForGroup(runes,groupId){
   const id=String(groupId).padStart(2,'0');
-  if(id==='09')return runes.filter(row=>[0,65,66].includes(Number(row?.編號))).sort((a,b)=>Number(a.編號)-Number(b.編號));
+  if(id==='09')return runes.filter(row=>[0,65,66].includes(Number(row?.rune_number))).sort((a,b)=>Number(a.rune_number)-Number(b.rune_number));
   const start=(Number(id)-1)*8+1;
-  return runes.filter(row=>Number(row?.編號)>=start&&Number(row?.編號)<=start+7).sort((a,b)=>Number(a.編號)-Number(b.編號));
+  return runes.filter(row=>Number(row?.rune_number)>=start&&Number(row?.rune_number)<=start+7).sort((a,b)=>Number(a.rune_number)-Number(b.rune_number));
 }
 
 
@@ -46,19 +46,19 @@ function RuneDetails({card}){
     <div className="runes-rune-profile">
       <img className="loc-rune-card-image" src={runeImage(card)} alt={`${runeName(card)}之符文卡`}/>
       <div className="runes-rune-profile-copy">
-        <h2>{String(Number(card.編號)).padStart(2,'0')} · {runeName(card)}之符文 · {decodeRuneText(card.英文)}</h2>
-        {card.符文說明?<p>{decodeRuneText(card.符文說明)}</p>:null}
-        {card.人格原型?<p>{decodeRuneText(card.人格原型)}</p>:null}
+        <h2>{String(Number(card.rune_number)).padStart(2,'0')} · {runeName(card)}之符文 · {decodeRuneText(card.english_name)}</h2>
+        {card.rune_description?<p>{decodeRuneText(card.rune_description)}</p>:null}
+        {card.personality_archetype?<p>{decodeRuneText(card.personality_archetype)}</p>:null}
       </div>
     </div>
     <div className="runes-rune-detail-grid">
-      <span><strong>所屬分組</strong>{decodeRuneText(card.所屬分組||'—')}</span>
-      <span><strong>月相</strong>{decodeRuneText(card.月相||'—')}</span>
-      <span><strong>卡片屬性</strong>{decodeRuneText(card.卡片屬性||'—')}</span>
-      <span><strong>正向關鍵詞</strong>{decodeRuneText(card.正向關鍵詞||'—')}</span>
-      <span><strong>反向關鍵詞</strong>{decodeRuneText(card.反向關鍵詞||'—')}</span>
-      {card.額外規則?<span><strong>額外規則</strong>{decodeRuneText(card.額外規則)}</span>:null}
-      {card.額外留意?<span><strong>額外留意</strong>{decodeRuneText(card.額外留意)}</span>:null}
+      <span><strong>所屬分組</strong>{decodeRuneText(card.group_name||'—')}</span>
+      <span><strong>月相</strong>{decodeRuneText(card.moon_phase||'—')}</span>
+      <span><strong>卡片屬性</strong>{decodeRuneText(card.card_attribute||'—')}</span>
+      <span><strong>正向關鍵詞</strong>{decodeRuneText(card.positive_keywords||'—')}</span>
+      <span><strong>反向關鍵詞</strong>{decodeRuneText(card.negative_keywords||'—')}</span>
+      {card.extra_rules?<span><strong>額外規則</strong>{decodeRuneText(card.extra_rules)}</span>:null}
+      {card.extra_notes?<span><strong>額外留意</strong>{decodeRuneText(card.extra_notes)}</span>:null}
     </div>
   </article>;
 }
@@ -124,8 +124,8 @@ export function RuneGroupPage({groupId}){
           return <a className="runes-library-card" key={`${group.id}-${localId}`} href={listHref(`${group.id}/${localId}/`)}>
             <img className="runes-library-thumb" src={runeImage(card)} alt={`${runeName(card)}之符文卡`} width="72" height="72" loading="lazy"/>
             <span className="runes-library-card-copy">
-              <strong>{localId} · {runeName(card)}之符文 {card.英文? `(${card.英文})`:''}</strong>
-              <small>{card.符文說明||''}</small>
+              <strong>{localId} · {runeName(card)}之符文 {card.english_name? `(${card.english_name})`:''}</strong>
+              <small>{card.rune_description||''}</small>
             </span>
           </a>;
         })}
@@ -145,7 +145,7 @@ export function RuneDetailPage({groupId,runeId}){
     <header className="loc-hero">
       <p className="loc-eyebrow">Rune · {group.id}/{String(runeId).padStart(2,'0')}</p>
       <h1>{runeName(card)}之符文</h1>
-      <p className="loc-subtitle">{group.name}組 · {card.英文}</p>
+      <p className="loc-subtitle">{group.name}組 · {card.english_name}</p>
     </header>
     <RuneDetails card={card}/>
     <nav className="loc-card"><a href={listHref(`${group.id}/`)}>回{group.name}組</a> · <a href={listHref()}>回符文圖鑑</a></nav>
