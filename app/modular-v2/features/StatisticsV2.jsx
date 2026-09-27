@@ -125,7 +125,7 @@ function ChartsPanel({scopeId,navigation,types}){
   const [chartType,setChartType]=useState('bar');
   const query=useAllRanking(scopeId,rankingType,navigation);
   return <section className="scope-v2-stat-section">
-    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Distribution</p><h2>統計圖</h2><p>統計圖顯示所選統計項目的完整分布。</p></div></header>
+    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Distribution</p><h2>統計圖</h2><p>統計圖顯示所選統計項目的完整分布。</p><p><strong>靈魂擺盪論：</strong>以大風格、風格與關鍵詞的增減、延續、消退、回返與擺盪觀察語言分布；系統描述變化，不替使用者下定義。</p></div></header>
     <div className="scope-v2-stat-controls">
       <StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/>
       <label><span>圖形</span><select className="scope-v2-select" value={chartType} onChange={event=>setChartType(event.target.value)}>{CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
