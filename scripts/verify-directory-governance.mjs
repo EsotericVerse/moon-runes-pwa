@@ -5,7 +5,7 @@ const root = process.cwd();
 const failures = [];
 const warnings = [];
 
-const requiredRoots = ['app', 'assets', 'data', 'docs', 'scripts', 'services', 'skills', 'pics'];
+const requiredRoots = ['app', 'assets', 'data', 'docs', 'scripts', 'skills', 'pics'];
 for (const name of requiredRoots) {
   if (!existsSync(resolve(root, name))) failures.push(`missing canonical root: ${name}/`);
 }
@@ -60,7 +60,6 @@ for (const path of [
   'docs/REPO_DIRECTORY_GOVERNANCE.md',
   'docs/DOMAIN_ARCHITECTURE.md',
   'assets/README.md',
-  'services/README.md',
   'data/lunarunes/source/LunaRune66.xlsx',
   'data/source/all.xlsx',
   'docs/LunarRunesCardCut.pdf'
