@@ -19,7 +19,7 @@ async function selectAllRows(table,{columns,filters=[]}){
 
 async function readSources(scopeId){
   const rows=[];
-  if(scopeId==='loc'||scopeId==='lo3rwang'){
+  if(scopeId==='lo3rwang'){
     const [text,media]=await Promise.all([
       selectAllRows('silver.lo3rwang_galaxy',{columns:'source'}),
       selectAllRows('silver.lo3rwang_galaxy_media',{columns:'source_platform'})
@@ -47,7 +47,7 @@ async function renameSource(scopeId,from,to){
   if(!target)throw new Error('來源名稱不可空白。');
   if(target===from)return;
 
-  if(scopeId==='loc'||scopeId==='lo3rwang'){
+  if(scopeId==='lo3rwang'){
     await Promise.all([
       updateNeonRows('silver.lo3rwang_galaxy',{source:target},{filters:[{column:'source',operator:'eq',value:from}],returning:null}),
       updateNeonRows('silver.lo3rwang_galaxy_media',{source_platform:target},{filters:[{column:'source_platform',operator:'eq',value:from}],returning:null})
