@@ -6,9 +6,14 @@ import {featureHrefV2} from '../../modular-v2/scope-registry.v2';
 import {featureNavigationHref} from '../../modular-v2/feature-navigation.v2';
 
 const AUTHOR_OVERVIEW_NODES=Object.freeze([
-  Object.freeze({id:'wordsmith',title:'文字工匠｜Wordsmith｜關鍵詞設定',summary:'符文的設計理念與我的用詞堅持。',href:featureNavigationHref('lo3rwang','statics',{statTab:'keywords'})}),
-  Object.freeze({id:'calibrator',title:'校對者｜Calibrator｜文化',summary:'回到來源與時間，校對文字軌跡。',href:featureHrefV2('lo3rwang','culture')}),
-  Object.freeze({id:'governance-architect',title:'語言架構師｜Language Architect｜治理',summary:'我的語言治理理念。',
+  Object.freeze({id:'wordsmith',title:'文字工匠｜Wordsmith｜關鍵詞設定',summary:
+   '把分散的文字、作品、規則、版本與歷史紀錄，整理成可搜尋、可理解、可治理、可持續維護的結構。',
+   href:featureNavigationHref('lo3rwang','statics',{statTab:'keywords'})}),
+  Object.freeze({id:'calibrator',title:'校對者｜Calibrator｜文化',summary:
+   '組織整理長期累積的文字、照片、影音、作品、帳號資料、版本與歷史紀錄，使其從散落檔案轉成可搜尋、可理解、可追溯來源並能長期維護的數位資產。',
+   href:featureHrefV2('lo3rwang','culture')}),
+  Object.freeze({id:'governance-architect',title:'語言架構師｜Language Architect｜治理',summary:
+    '我的語言治理理念。理解對方原本的語言與資料，再依實際需求建立適合自己的結構。',
    href:featureHrefV2('lo3rwang','governance')}),
   Object.freeze({id:'self',title:'自我介紹與人生觀',summary:[
     '自介：Lucas Oscar Wang 政德，叫我Oscar就好。六年級末段班，巨蟹座。',
