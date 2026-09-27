@@ -40,7 +40,7 @@ async function clientProbe(){
     ['lo3rwang_galaxy','uid,title,content,source_name,createtime'],
     ['lo3rwang_galaxy_media','media_id,galaxy_link,source_native_id,source_place,media_type,title,url,meta_tags,createtime'],
     ['lrunes','record_id,record_type,rune_number,rune_name,group_name,keyword_group,keyword,title,content,source_name,createtime,media_id,media_type,meta_tags'],
-    ['faq_entries','id,question,answer']
+    ['faq_entries','faq_id,question,answer']
   ];
   for(const [table,columns,options] of probes)await probe(client,table,columns,options||{});
 }
