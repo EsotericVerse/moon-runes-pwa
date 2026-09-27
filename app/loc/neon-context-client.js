@@ -121,12 +121,15 @@ async function readRuneRows(){
 }
 
 async function readAuthorStyles(){
-  const [styleResult,keywordResult]=await Promise.all([
-    selectNeonCatalog('silver.lo3rwang_style',{columns:'style_no,node_type,representative_name,basic_principle,order_no',filters:[{column:'node_type',operator:'eq',value:'style'}],orders:[{column:'style_no',ascending:true}]}),
-    selectNeonCatalog('silver.lo3rwang_style_keywords',{columns:'style_no,keyword_group,keyword,order_no',orders:[{column:'style_no',ascending:true},{column:'order_no',ascending:true}]})
-  ]);
-  const names=new Map(styleResult.rows.map(row=>[Number(row.style_no),row.representative_name||null]));
-  return [...styleResult.rows,...keywordResult.rows.map(row=>({...row,node_type:'keyword',representative_name:names.get(Number(row.style_no))||null,basic_principle:null}))];
+  const result=await selectNeonCatalog('silver.lo3rwang_style',{
+    columns:'style_no,node_type,representative_name,parent_group_name,basic_principle,keyword_group,keyword,order_no',
+    orders:[{column:'style_no',ascending:true},{column:'order_no',ascending:true}]
+  });
+  const names=new Map(result.rows.filter(row=>row.node_type==='style').map(row=>[Number(row.style_no),row.representative_name||null]));
+  return result.rows.map(row=>row.node_type==='keyword'
+    ?{...row,representative_name:names.get(Number(row.style_no))||null,basic_principle:null}
+    :row
+  );
 }
 
 export async function selectScopeContextData(scopeId){
