@@ -13,7 +13,7 @@ export default function KeywordSettingsV2({scopeId='loc'}){
   const runeQuery=useQuery({
     queryKey:['rune-keyword-catalog'],
     queryFn:selectRuneKeywordCatalog,
-    enabled:scopeId==='loc'||scopeId==='lunarunes',
+    enabled:scopeId==='lunarunes',
     staleTime:5*60_000
   });
 
@@ -30,7 +30,7 @@ export default function KeywordSettingsV2({scopeId='loc'}){
   },[scopeId,account.user?.email,account.permissionLoading,account.canManageGlobal,account.canManageScope]);
 
   return <div className="scope-v2-keyword-settings">
-    {scopeId==='loc'||scopeId==='lunarunes'?<section className="scope-v2-inline-card">
+    {scopeId==='lunarunes'?<section className="scope-v2-inline-card">
       <h4>符文關鍵詞詞庫（2D 圓形圖）</h4>
       {runeQuery.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
       {runeQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(runeQuery.error)}</p>:null}
