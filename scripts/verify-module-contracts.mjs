@@ -53,6 +53,12 @@ for(const token of ["isLoc?<CultureTimelineV2","mode='current'","scope-v2-cultur
 if(cultureTimeline.includes("個人時期 · {personalTitle}")||cultureTimeline.includes("LunaRunes · {runeTitle}")){
   failures.push('LOC Culture: Current confluence must not unfold per-scope period lists');
 }
+for(const token of ["const intersectionStart=Math.max(personalStartTime,runeStartTime)","const domainStart=intersectionStart","Current × Current 交會集合"]){
+  if(!cultureTimeline.includes(token))failures.push(`LOC Culture: Current intersection contract missing ${token}`);
+}
+for(const retired of ["Math.min(runeStartTime,personalStartTime,...validTimes)","personal.map((row,index)=>marker","runes.map((row,index)=>marker"]){
+  if(cultureTimeline.includes(retired))failures.push(`LOC Culture: historical/global Current river regression returned ${retired}`);
+}
 if(!governanceManagement.includes("scopeId!=='loc'?<CultureTimelineEditor")){
   failures.push('LOC Culture: Period settings must not run for LOC');
 }
