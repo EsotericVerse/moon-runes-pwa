@@ -38,7 +38,7 @@ export async function saveResourceVisibility(args){
 export async function listResourceVisibility(){
   const {rows}=await selectNeonRows('silver.resource_visibility',{
     columns:'scope,resource_type,resource_id,visibility,projection_level,search_indexed,statistics_included,semantic_scan_included,source_ref,show_link,show_source,updated_at',
-    limit:5000
+    limit:50
   });
   return rows;
 }
