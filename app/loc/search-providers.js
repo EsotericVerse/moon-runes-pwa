@@ -60,7 +60,7 @@ const authorText=makeProvider({
   table:'silver.lo3rwang_galaxy',
   source:'作者正文',
   scopeId:'lo3rwang',
-  columns:['galaxy_id','scope_id','title','content','source_name','source_id','target_id','ref_id','url','searchable','created_at','updated_at'],
+  columns:['galaxy_id','scope_id','title','source_name','source_id','target_id','ref_id','url','created_at'],
   searchFields:['title','content','source_name'],
   dateColumn:'created_at'
 });
@@ -70,7 +70,7 @@ const authorMedia=makeProvider({
   table:'silver.lo3rwang_galaxy_media',
   source:'音樂與多媒體',
   scopeId:'lo3rwang',
-  columns:['media_id','scope_id','media_link','source_name','source_native_id','media_type','title','url','meta_tags','style_tags','created_at','created_date','playlist','publication_status','play_count','like_count','view_count','is_representative'],
+  columns:['media_id','scope_id','media_link','source_name','source_native_id','media_type','title','url','created_at'],
   searchFields:['title','meta_tags','style_tags','source_name'],
   dateColumn:'created_at'
 });
@@ -144,7 +144,7 @@ const runeText=makeProvider({
   table:'silver.lrunes',
   source:'符文文字',
   scopeId:'lrunes',
-  columns:['record_id','galaxy_id','scope_id','category','content_type','source_name','source_role','title','content','meta_tags','created_at','source_ref','source_id','target_id','ref_id','url','searchable','updated_at'],
+  columns:['record_id','galaxy_id','scope_id','category','content_type','source_name','source_role','title','created_at','source_ref','source_id','target_id','ref_id','url'],
   searchFields:['title','content','meta_tags','source_name'],
   dateColumn:'created_at',
   filters:[{column:'record_type',operator:'eq',value:'galaxy'}]
@@ -155,7 +155,7 @@ const runeMedia=makeProvider({
   table:'silver.lrunes',
   source:'符文多媒體',
   scopeId:'lrunes',
-  columns:['record_id','media_id','scope_id','media_link','source_name','source_native_id','media_type','title','url','meta_tags','style_tags','created_at','created_date','playlist','publication_status','play_count','like_count','view_count','is_representative'],
+  columns:['record_id','media_id','scope_id','media_link','source_name','source_native_id','media_type','title','url','created_at'],
   searchFields:['title','meta_tags','style_tags','source_name'],
   dateColumn:'created_at',
   filters:[{column:'record_type',operator:'eq',value:'galaxy_media'}]
