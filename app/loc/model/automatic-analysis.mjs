@@ -47,7 +47,7 @@ export function analyzeTemporalDensity(rows=[],{
         count:point.count,
         baseline:localBaseline,
         ratio:Number.isFinite(ratio)?ratio:null,
-        text:\`${point.date} 附近的${label}數量明顯高於前後區間（${point.count} 項；鄰近基準約 ${Math.round(localBaseline)} 項），可能值得回看是否有想標記的事情。\`
+        text:`${point.date} 附近的${label}數量明顯高於前後區間（${point.count} 項；鄰近基準約 ${Math.round(localBaseline)} 項），可能值得回看是否有想標記的事情。`
       });
       continue;
     }
@@ -59,7 +59,7 @@ export function analyzeTemporalDensity(rows=[],{
         count:point.count,
         previous_count:previous.count,
         ratio:previousRatio,
-        text:\`${point.date} 附近的${label}數量比前一區間明顯下降（${previous.count} → ${point.count}），可回看前後是否有值得標記的變化。\`
+        text:`${point.date} 附近的${label}數量比前一區間明顯下降（${previous.count} → ${point.count}），可回看前後是否有值得標記的變化。`
       });
     }
   }
@@ -96,7 +96,7 @@ export function analyzeDistribution(rows=[],{
       type:'concentration',
       term:top.term,
       share:topShare,
-      text:\`目前${label}分布較集中在「${top.term}」，約占 ${(topShare*100).toFixed(1)}%。這是分布現象，不代表好壞，可搭配時間區間觀察是否持續。\`
+      text:`目前${label}分布較集中在「${top.term}」，約占 ${(topShare*100).toFixed(1)}%。這是分布現象，不代表好壞，可搭配時間區間觀察是否持續。`
     });
   }
 
@@ -106,7 +106,7 @@ export function analyzeDistribution(rows=[],{
     suggestions.push({
       type:'long_tail',
       share:singletons.length/data.length,
-      text:\`目前${label}有較長的低頻尾端：${singletons.length} 個項目只出現 1 次。可保留觀察，避免僅憑單次出現就提高權重。\`
+      text:`目前${label}有較長的低頻尾端：${singletons.length} 個項目只出現 1 次。可保留觀察，避免僅憑單次出現就提高權重。`
     });
   }
 
@@ -114,7 +114,7 @@ export function analyzeDistribution(rows=[],{
     suggestions.push({
       type:'stable_candidates',
       terms:repeated.slice(0,5).map(row=>row.term),
-      text:\`目前有 ${repeated.length} 個${label}重複出現；可優先把高頻項目作為後續時間比較候選，而不是直接改寫分類。\`
+      text:`目前有 ${repeated.length} 個${label}重複出現；可優先把高頻項目作為後續時間比較候選，而不是直接改寫分類。`
     });
   }
 
