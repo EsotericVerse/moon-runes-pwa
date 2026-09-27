@@ -3,6 +3,7 @@ import {selectNeonAllRows,selectNeonCatalog} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
 import {classifyStyleRows,processStyleTableRows} from './style-classifier';
 import {selectSourceCatalog,selectSourceWeekly} from './aggregate-query';
+import {selectManagedScopeIds} from './scope-list';
 
 const RANKING_TYPES=Object.freeze({
   loc:Object.freeze(['source']),
@@ -95,7 +96,35 @@ async function runeKeywords(){
   return [...map.values()];
 }
 
-async function runeSources(){
+async function runeSources(period){
+  const range=await resolvePeriod('lunarunes',period);
+  const filters=[
+    {column:'record_type',operator:'eq',value:'galaxy'},
+    ...dateFilters(range,'createtime')
+  ];
+  const {rows}=await selectNeonAllRows('silver.lrunes',{
+    columns:'record_id,source_name,createtime',
+    filters
+  });
+  const map=new Map();
+  for(const row of rows){
+    const value=String(row.source_name||'').trim();
+    if(!value)continue;
+    const key='source|'+value;
+    const current=map.get(key)||{
+      ranking_key:key,ranking_type:'source',term:value,rank_value:0,item_count:0,
+      source:'lrunes',period:period||'all'
+    };
+    current.item_count+=1;
+    current.rank_value=current.item_count;
+    map.set(key,current);
+  }
+  return [...map.values()];
+}
+
+async function sourceRowsForScope(scopeId,period){
+  if(scopeId==='lo3rwang')return authorSources(period);
+  if(scopeId==='lrunes')return runeSources(period);
   return [];
 }
 
@@ -168,12 +197,15 @@ async function selectScopeRankingRows(scopeId,{rankingType='',navigation={}}={})
   const period=String(navigation.period||'all');
 
   const rows=[];
-  if(id==='loc'||id==='lo3rwang'){
+  if(id==='loc'){
+    const scopeIds=await selectManagedScopeIds();
+    const groups=await Promise.all(scopeIds.map(scope=>sourceRowsForScope(scope,period)));
+    rows.push(...groups.flat());
+  }else if(id==='lo3rwang'){
     if(type==='keyword')rows.push(...await authorKeywords());
     else if(type==='source')rows.push(...await authorSources(period));
     else rows.push(...await authorStyles(period,type));
-  }
-  if(id==='loc'||id==='lunarunes'){
+  }else if(id==='lunarunes'){
     if(type==='keyword')rows.push(...await runeKeywords());
     else if(type==='source')rows.push(...await runeSources(period));
     else rows.push(...await runeStyles(period,type));
