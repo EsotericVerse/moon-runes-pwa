@@ -3,7 +3,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useNeonAccount} from '../../loc/use-neon-account';
-import {deleteNeonRows,insertNeonRows,selectNeonRows,updateNeonRows} from '../../loc/neon-repository';
+import {deleteNeonRows,insertNeonRows,selectNeonAllRows,updateNeonRows} from '../../loc/neon-repository';
 
 function normalizeStyleRows(rows=[]){
   return [...rows]
@@ -49,11 +49,10 @@ export default function ContextStyleManager({scopeId='lo3rwang'}){
     queryKey:['lo3rwang-style-groups',scopeId],
     enabled:scopeId==='lo3rwang',
     queryFn:async()=>{
-      const result=await selectNeonRows('silver.lo3rwang_style',{
+      const result=await selectNeonAllRows('silver.lo3rwang_style',{
         columns:'style_no,node_type,representative_name,parent_group_name,basic_principle,order_no',
         filters:[{column:'node_type',operator:'eq',value:'style'}],
-        orders:[{column:'order_no',ascending:true},{column:'style_no',ascending:true}],
-        limit:50
+        orders:[{column:'order_no',ascending:true},{column:'style_no',ascending:true}]
       });
       return normalizeStyleRows(result.rows);
     },
