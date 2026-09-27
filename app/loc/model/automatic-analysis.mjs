@@ -262,3 +262,68 @@ export function analyzeKeywordGovernance(currentRows=[],previousRows=[],{
   suggestions.sort((a,b)=>(priority[b.type]||0)-(priority[a.type]||0)||Number(b.score||0)-Number(a.score||0)||a.term.localeCompare(b.term,'zh-Hant'));
   return {changes:change.changes,suggestions:suggestions.slice(0,maxSuggestions)};
 }
+
+
+export function analyzeKeywordDiagnostics(data={},{
+  changeSuggestions=[],
+  minimumCount=3,
+  lowDiscriminationCoverage=0.55,
+  highSourceShare=0.75,
+  maxSuggestions=10
+}={}){
+  const totalRecords=finiteNumber(data?.totalRecords);
+  const risingTerms=new Set((changeSuggestions||[])
+    .filter(item=>item?.type==='emerging'||item?.type==='rising')
+    .map(item=>String(item?.term||'').trim())
+    .filter(Boolean));
+  const suggestions=[];
+
+  for(const row of data?.keywords||[]){
+    const term=String(row?.term||'').trim();
+    const count=finiteNumber(row?.item_count);
+    const coverage=finiteNumber(row?.coverage);
+    const topSource=String(row?.top_source||'').trim();
+    const topSourceShare=finiteNumber(row?.top_source_share);
+    if(!term||count<minimumCount)continue;
+
+    if(coverage>=lowDiscriminationCoverage){
+      suggestions.push({
+        type:'low_discrimination',
+        term,
+        score:coverage,
+        text:'「'+term+'」命中 '+count+' 筆，約覆蓋此區間 '+(coverage*100).toFixed(1)+'% 的紀錄；分布過廣時辨識力可能較低，可考慮降低分類權重。'
+      });
+      continue;
+    }
+
+    if(topSource&&topSourceShare>=highSourceShare){
+      const emerging=risingTerms.has(term);
+      suggestions.push({
+        type:emerging?'emerging_high_discrimination':'source_concentration',
+        term,
+        source:topSource,
+        score:topSourceShare,
+        text:'「'+term+'」有 '+(topSourceShare*100).toFixed(1)+'% 的命中集中在「'+topSource+'」'+(emerging?'，且目前區間正在增加；可列為新興高辨識候選。':'；這是來源集中現象，可作為辨識度觀察依據。')
+      });
+    }
+  }
+
+  for(const pair of data?.pairs||[]){
+    const count=finiteNumber(pair?.item_count);
+    const share=finiteNumber(pair?.share);
+    if(count<minimumCount||share<0.6)continue;
+    const a=String(pair?.term_a||'').trim();
+    const b=String(pair?.term_b||'').trim();
+    if(!a||!b)continue;
+    suggestions.push({
+      type:'cooccurrence',
+      term:a+' × '+b,
+      score:count*share,
+      text:'「'+a+'」與「'+b+'」在此區間共同出現 '+count+' 次；相對於較少出現的一方，共現比例約 '+(share*100).toFixed(1)+'%，可留意兩者是否形成穩定脈絡。'
+    });
+  }
+
+  const priority={emerging_high_discrimination:5,low_discrimination:4,source_concentration:3,cooccurrence:2};
+  suggestions.sort((a,b)=>(priority[b.type]||0)-(priority[a.type]||0)||Number(b.score||0)-Number(a.score||0)||String(a.term).localeCompare(String(b.term),'zh-Hant'));
+  return {totalRecords,suggestions:suggestions.slice(0,maxSuggestions)};
+}
