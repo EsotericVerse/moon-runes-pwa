@@ -1,90 +1,65 @@
-# LOC / Luna Codex / LunaRunes Copyleft Policy
+# LOC / Luna Codex Copyleft Policy
 
-**Status:** Current project governance intent  
-**Version:** 0.1  
-**Updated:** 2026-09-16
+**Status:** Current LOC governance intent  
+**Version:** 0.2  
+**Updated:** 2026-09-27
 
-LOC（Luna Codex／月典）and LunaRunes（月之符文）are published in a **Copyleft** spirit.
+This policy applies to **LOC（Luna Codex／月典）only**.
 
-The purpose of this policy is to keep the language system usable, inspectable, modifiable and shareable while preserving authorship, provenance and the freedom of downstream users.
+LunaRunes, lo3rwang personal works, third-party content, private data, and other Scopes do **not** inherit this Copyleft policy merely because LOC stores, indexes, analyzes, links to, or displays them.
 
-## 1. What Copyleft means here
+## 1. LOC Copyleft
 
-For original material owned by the project author, users are intended to be able to:
+LOC uses a Copyleft model so its framework, methods, and original project materials can be studied, inspected, modified, and extended while keeping provenance visible.
 
-- study it,
-- use it,
-- modify it,
-- build compatible tools or derivatives,
-- redistribute their changes.
+For LOC material that the project has the right to license, downstream use should preserve:
 
-In return, derivatives should:
+- attribution and source,
+- modification history,
+- provenance,
+- the distinction between upstream LOC and a derivative or fork.
 
-- preserve attribution and provenance,
-- clearly identify modifications,
-- preserve the same sharing/copy-left principle or a compatible share-alike model,
-- not erase the upstream history from which the work was derived.
+## 2. GNU GPL for LOC code
 
-Commercial derivatives require the project author's agreement under the current governance intent. Paid parsing interfaces, inference layers, consulting and managed services are permitted commercial scopes when separately authorized.
+Original LOC software code is governed under the **GNU General Public License (GPL)** model.
 
-## 2. Canon is not ownership of forks
+The exact GPL version and full license text are to be stated by the Repository `LICENSE` file. Until that file fixes the version, this document does not infer a specific GPL version.
 
-Copyleft allows modification; it does **not** make every modification official Luna Codex Canon.
+## 3. Scope independence
 
-A fork may change rune interpretations, software or presentation, but it must distinguish:
+Copyleft is a governance choice made by LOC for LOC. It is not a mandatory rule for Scopes built with LOC.
 
-```text
-upstream LOC / Luna Codex
-vs
-fork / derivative interpretation
-```
+A Scope may use its own copyright, licensing, neutrality, Canon, commercial-use, or derivative-work rules.
 
-Only changes accepted through the project's governance process become upstream Canon/current records.
+Examples in the Current deployment:
 
-## 3. Stable identity and freedom to evolve
+- **LOC**: Copyleft + GNU GPL governance.
+- **LunaRunes**: independent Symbolic Language governance and Copyright.
+- **lo3rwang**: ordinary Copyright for personal works and data.
 
-The upstream project currently governs the 66-rune identity/position structure as stable.
+Future Scopes may begin from a template, but after creation their governance belongs to that Scope and may be edited by its authorized managers.
 
-Copyleft freedom therefore means:
+## 4. Exceptions
 
-- anyone may study and derive from the system,
-- derivative systems may evolve,
-- upstream Canon remains identifiable,
-- a fork must not silently rewrite upstream provenance.
+This policy does not automatically relicense:
 
-This is consistent with the LOC rule:
-
-> **允許變化，但不失去結構與歷史。**
-
-## 4. Scope and exceptions
-
-This policy applies only to material for which the project author has the right to grant these freedoms.
-
-It does **not** automatically relicense:
-
+- LunaRunes,
+- personal works,
 - third-party material,
 - private corpus data,
-- content imported under another license,
+- imported content under another license,
 - personal information,
 - external platform content,
-- assets whose rights are separately restricted.
+- assets with separate rights restrictions.
 
-Rights and publication boundaries remain governed by `LOC_CONTENT_RIGHTS_POLICY.json`.
+## 5. Attribution
 
-## 5. Code and content licensing
+Preferred attribution for LOC itself:
 
-The repository currently records the author's Copyleft / share-alike intent as a governance baseline.
+**Lucas Oscar Wang 政德 / LOC / Luna Codex / EsotericVerse Studio**
 
-No GPL, AGPL, Creative Commons or other standard license is selected by this policy. Until a separate license decision is recorded, contributors should treat this file together with repository provenance and rights policies as the project's current sharing intent rather than assume third-party material is relicensed.
-
-## 6. Attribution
-
-Preferred project attribution:
-
-**Lucas Oscar Wang 政德 / LOC / Luna Codex / LunaRunes / EsotericVerse Studio**
-
-Historical works may retain their original historical attribution where provenance requires it.
+Historical works and other Scopes retain their own attribution and rights rules.
 
 ---
 
-**Copyleft principle:** freedom to use and evolve the language should propagate with the work, together with its source and history.
+**LOC principle:** openness of the framework does not erase the governance boundary of another Scope.
