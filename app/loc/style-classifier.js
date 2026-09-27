@@ -1,7 +1,7 @@
 'use client';
 
 import {processNeonHeavyRows,selectNeonCatalog} from './neon-repository';
-import {createTextIndex,searchTextIndex} from './text-engine';
+import {createTextIndex,searchTextIndex} from './text-engine.mjs';
 import {splitRuneKeywordEntries} from './model/rune-keyword-rules';
 
 let canonicalCatalogPromise=null;
