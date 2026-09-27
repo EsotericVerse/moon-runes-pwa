@@ -11,9 +11,6 @@ import {selectScopeKeywordDiagnostics,selectScopeRankingAll,selectScopeRankingCo
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
-import {useNeonAccount} from '../../loc/use-neon-account';
-import KeywordSettingsV2 from './KeywordSettingsV2';
-import ContextStyleManager from './ContextStyleManager';
 import MediaMetaSettingsV2 from './MediaMetaSettingsV2';
 import FeaturePageV2 from '../FeaturePageV2';
 import PagedResultV2 from '../PagedResultV2';
@@ -21,7 +18,7 @@ import {analyzeDistribution,analyzeDistributionChange,analyzeKeywordDiagnostics,
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const CHART_TYPES=[['bar','長條圖'],['line','折線圖'],['pie','圓餅圖']];
-const STAT_TABS=[['ranking','統計'],['keywords','關鍵詞設定'],['styles','風格設定'],['media','多媒體設定']];
+const STAT_TABS=[['ranking','統計'],['media','多媒體設定']];
 const STAT_TYPE_LABELS=Object.freeze({
   keyword:'關鍵詞',
   source:'作品來源',
@@ -236,20 +233,6 @@ function StatisticsPanel({scopeId,navigation,types}){
   </section>;
 }
 
-function KeywordPanel({scopeId}){
-  return <section className="scope-v2-stat-section">
-    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Keywords</p><h2>關鍵詞設定</h2><p>關鍵詞設定是資料設定；關鍵詞統計由同一份統計結果以排名列表與圖表呈現。</p></div></header>
-    <KeywordSettingsV2 scopeId={scopeId}/>
-  </section>;
-}
-
-function StylePanel({scopeId}){
-  return <section className="scope-v2-stat-section">
-    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Styles</p><h2>風格設定</h2><p>風格採兩層群組：小群組名稱就是風格標籤，多個風格標籤歸入同一個大群組。關鍵詞規則沿用同一分類結構，規則本身另外設定。</p></div></header>
-    {scopeId==='lo3rwang'?<ContextStyleManager scopeId="lo3rwang"/>:<p className="scope-v2-status">此 Scope 使用既有符文／群組風格結構。</p>}
-  </section>;
-}
-
 function MediaPanel({scopeId}){
   return <section className="scope-v2-stat-section">
     <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Media Metadata</p><h2>多媒體設定</h2><p>多媒體以 media_type、source_place 與 meta_tags 參與搜尋、文化時間分布與統計。</p></div></header>
@@ -258,8 +241,6 @@ function MediaPanel({scopeId}){
 }
 
 function StatisticsShell({scopeId,navigation}){
-  const account=useNeonAccount();
-  const canManage=Boolean(account.user&&(account.canManageGlobalSync()||account.canManageScopeSync(scopeId)));
   const visibleTabs=scopeId==='loc'
     ?STAT_TABS.filter(([value])=>value==='ranking')
     :(scopeId==='lo3rwang'?STAT_TABS:STAT_TABS.filter(([value])=>value!=='media'));
@@ -276,8 +257,6 @@ function StatisticsShell({scopeId,navigation}){
     {typesQuery.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
     {typesQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(typesQuery.error)}</p>:null}
     {!typesQuery.isPending&&active==='ranking'?<StatisticsPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
-    {active==='keywords'?<KeywordPanel scopeId={scopeId}/>:null}
-    {active==='styles'?<StylePanel scopeId={scopeId}/>:null}
     {active==='media'?<MediaPanel scopeId={scopeId}/>:null}
   </section>;
 }
