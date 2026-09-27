@@ -1,7 +1,7 @@
 import {ScopeRankingResponseSchema} from './scope-feature-contracts';
 import {selectNeonAllRows,selectNeonCatalog} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
-import {classifyStyleRows,processKeywordTableRows,processStyleTableRows,countStyleKeywordHits,selectStyleCatalog} from './style-classifier';
+import {classifyStyleRows,processKeywordObservationRows,processKeywordTableRows,processStyleTableRows,countStyleKeywordHits,observeStyleKeywordHits,selectStyleCatalog} from './style-classifier';
 import {selectSourceCatalog,selectSourceWeekly} from './aggregate-query';
 import {selectManagedScopeIds} from './scope-list';
 
@@ -222,6 +222,101 @@ async function rowsForType(id,type,period,rangeOverride){
   return [];
 }
 
+function createKeywordDiagnostics(){
+  return {
+    totalRecords:0,
+    keywordCounts:new Map(),
+    sourceCounts:new Map(),
+    pairCounts:new Map()
+  };
+}
+
+function keywordSourceOf(row={}){
+  return String(row.source_name||row.media_type||row.source_place||'未標記來源').trim()||'未標記來源';
+}
+
+function addKeywordObservedRows(state,rows=[]){
+  for(const row of rows||[]){
+    state.totalRecords+=1;
+    const source=keywordSourceOf(row);
+    const terms=[...new Set((row.keyword_hits||[]).map(hit=>String(hit.keyword||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh-Hant'));
+    for(const term of terms){
+      state.keywordCounts.set(term,(state.keywordCounts.get(term)||0)+1);
+      if(!state.sourceCounts.has(term))state.sourceCounts.set(term,new Map());
+      const sources=state.sourceCounts.get(term);
+      sources.set(source,(sources.get(source)||0)+1);
+    }
+    for(let i=0;i<terms.length;i++)for(let j=i+1;j<terms.length;j++){
+      const key=terms[i]+'\u0000'+terms[j];
+      state.pairCounts.set(key,(state.pairCounts.get(key)||0)+1);
+    }
+  }
+}
+
+function finalizeKeywordDiagnostics(state){
+  const keywords=[...state.keywordCounts.entries()].map(([term,item_count])=>{
+    const sources=state.sourceCounts.get(term)||new Map();
+    const ranked=[...sources.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'zh-Hant'));
+    const [topSource='',topSourceCount=0]=ranked[0]||[];
+    return {
+      term,
+      item_count,
+      coverage:state.totalRecords?item_count/state.totalRecords:0,
+      top_source:topSource,
+      top_source_count:topSourceCount,
+      top_source_share:item_count?topSourceCount/item_count:0,
+      source_count:sources.size
+    };
+  }).sort((a,b)=>b.item_count-a.item_count||a.term.localeCompare(b.term,'zh-Hant'));
+  const countByTerm=new Map(keywords.map(row=>[row.term,row.item_count]));
+  const pairs=[...state.pairCounts.entries()].map(([key,item_count])=>{
+    const [term_a,term_b]=key.split('\u0000');
+    const denominator=Math.max(1,Math.min(countByTerm.get(term_a)||0,countByTerm.get(term_b)||0));
+    return {term_a,term_b,item_count,share:item_count/denominator};
+  }).sort((a,b)=>b.item_count-a.item_count||b.share-a.share||a.term_a.localeCompare(b.term_a,'zh-Hant'));
+  return {totalRecords:state.totalRecords,keywords,pairs};
+}
+
+async function keywordDiagnosticsForRange(id,range){
+  const state=createKeywordDiagnostics();
+  const dateRange=dateFilters(range,'createtime');
+  if(id==='lo3rwang'){
+    await processKeywordObservationRows('silver.lo3rwang_galaxy',{
+      scopeId:'lo3rwang',
+      columns:'uid,title,content,source_name,createtime',
+      filters:dateRange,
+      orders:[{column:'createtime',ascending:true}],
+      onObserved:rows=>addKeywordObservedRows(state,rows)
+    });
+    const media=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
+      columns:'media_id,title,meta_tags,media_type,source_place,createtime',
+      filters:dateRange
+    });
+    addKeywordObservedRows(state,await observeStyleKeywordHits(media.rows,'lo3rwang'));
+  }else if(id==='lunarunes'){
+    await processKeywordObservationRows('silver.lrunes',{
+      scopeId:'lunarunes',
+      columns:'record_id,record_type,title,content,source_name,createtime',
+      filters:[
+        {column:'record_type',operator:'eq',value:'galaxy'},
+        ...dateRange
+      ],
+      orders:[{column:'createtime',ascending:true}],
+      onObserved:rows=>addKeywordObservedRows(state,rows)
+    });
+    const media=await selectNeonAllRows('silver.lrunes',{
+      columns:'record_id,record_type,title,meta_tags,media_type,source_place,source_name,createtime',
+      filters:[
+        {column:'record_type',operator:'eq',value:'galaxy_media'},
+        ...dateRange
+      ],
+      orders:[{column:'createtime',ascending:true}]
+    });
+    addKeywordObservedRows(state,await observeStyleKeywordHits(media.rows,'lunarunes'));
+  }
+  return finalizeKeywordDiagnostics(state);
+}
+
 function dateOnly(value){
   const text=String(value||'').slice(0,10);
   return /^\d{4}-\d{2}-\d{2}$/.test(text)?text:'';
@@ -409,6 +504,21 @@ export async function selectScopeRankingComparison(scopeId,{rankingType='',navig
     previousRows:mergeRows(previousRows),
     candidateRows:mergeRows(candidateRows),
     catalogRows
+  };
+}
+
+export async function selectScopeKeywordDiagnostics(scopeId,{navigation={}}={}){
+  const id=String(scopeId||'');
+  if(!['lo3rwang','lunarunes'].includes(id))return null;
+  const period=String(navigation.period||'all');
+  const ranges=await resolveComparisonRanges(id,period);
+  if(!ranges)return null;
+  const diagnostics=await keywordDiagnosticsForRange(id,ranges.current);
+  return {
+    ...diagnostics,
+    period:ranges.period,
+    range:ranges.current,
+    days:ranges.days
   };
 }
 
