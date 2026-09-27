@@ -46,7 +46,9 @@ export async function searchNeonRows(collectionId,query,{
   limit=SEARCH_PAGE_SIZE,
   offset=0,
   startDate='',
-  endDate=''
+  endDate='',
+  and=[],
+  nor=[]
 }={}){
   const q=String(query||'').trim();
   if(!q)return {rows:[],failures:[],hasMore:false,totalCount:0,nextOffset:null};
@@ -79,7 +81,9 @@ export async function searchNeonRows(collectionId,query,{
         limit:requestedLimit,
         offset:skip,
         startDate,
-        endDate
+        endDate,
+        and,
+        nor
       });
       successfulProviders+=1;
       totalCount+=result.count;
