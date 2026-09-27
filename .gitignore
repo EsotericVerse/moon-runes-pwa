@@ -1,28 +1,15 @@
-__pycache__/
-*.py[cod]
-.pytest_cache/
-
-# Private runtime corpora (never commit personal archives)
+# Private source material
 data/private/
 
-# Generated Next static assets (source of truth stays under data/docs/pics)
-public/data/
-public/docs/
-public/pics/
-
-# Local dependency/build/runtime artifacts
+# Node / Next build artifacts
 node_modules/
 .next/
 out/
-.wrangler/
-dist/
-build/
+
+# Local transient artifacts
 .tmp/
 tmp/
 .cache/
 coverage/
 *.log
 desktop.ini
-
-
-.open-next/

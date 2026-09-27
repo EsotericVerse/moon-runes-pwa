@@ -2,7 +2,7 @@
 
 ## Goal
 
-Keep one repository while separating application routes, JavaScript runtime, domain data, source/public assets, documentation, and deployable services clearly.
+Keep one repository while separating application routes, domain modules, source/public assets, documentation, and deployment automation clearly.
 
 Directory cleanup must never delete or relocate a still-used source merely because a replacement directory exists. Migration order is always: inventory consumers → copy/move → update consumers → parity check → remove retired location.
 
@@ -85,15 +85,11 @@ Asset migration is not complete until every consumer is updated and visual/funct
 | `js/` | exception-only | only `locMoonPhase.js` may remain; Current modules belong under `app/` |
 | `64images/` | retired pending parity audit | card assets must exist under governed LunaRunes paths before retirement is considered valid |
 | `pics/` | active/frozen | retain approved source diagrams; do not delete by migration rule |
-| `icons/` | migrated/audit | verify all consumers before retirement is considered complete |
-| `card_api/` | migrated | runtime → `services/api/card/`; repository entrypoints → `scripts/card-api/`; docs → `docs/api/` |
-| `loc8_api/` | retired | executable service removed in RC8; historical documentation may remain under `docs/api/` |
 | root `LunaRune66.xlsx` | frozen canonical source | must remain in place unless explicitly approved otherwise |
 | `data/lunarunes/source/LunaRune66.xlsx` | governed copy | does not supersede/delete the frozen root workbook |
 | root `LunarRunesCardCut.pdf` | frozen production source | physical card printing/cutting PDF |
 | `docs/LunarRunesCardCut.pdf` | governed document copy | does not redefine the PDF as tutorial content |
 | root `all.xlsx` | migrated/preserved | `data/source/all.xlsx`; retire only after explicit supersession audit |
-| root `css/` | migration debt | retire only after remaining visual parity is verified |
 
 ## Migration order
 
