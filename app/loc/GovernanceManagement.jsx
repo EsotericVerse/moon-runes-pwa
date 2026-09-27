@@ -1,79 +1,102 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import {selectScopeContextRows} from './neon-context-client';
-import { useNeonAccount } from './use-neon-account';
-import ThemeAdmin from './ThemeAdmin';
-import {SCOPE_POLICY_V2,getScopeV2} from '../modular-v2/scope-registry.v2';
+import {useState} from 'react';
+import {useNeonAccount} from './use-neon-account';
 import {useScopeRuntimeV2} from '../modular-v2/use-scope-runtime.v2';
+import {getScopeV2} from '../modular-v2/scope-registry.v2';
+import ScopeDefaultThemeSetting from './ScopeDefaultThemeSetting';
+import ManagementArticlePublisher from './ManagementArticlePublisher';
+import ManagementImportPanel from './ManagementImportPanel';
+import RuneManagementPanel from './RuneManagementPanel';
+import CultureTimelineEditor from '../modular-v2/features/CultureTimelineEditor';
+import SourceSettingsV2 from '../modular-v2/features/SourceSettingsV2';
+import ThemeAdmin from './ThemeAdmin';
+
+const LOGIN_COPY={
+  loc:{
+    eyebrow:'LOC Management',
+    title:'LOC 管理登入',
+    description:'管理 LOC 框架、治理與全域設定。LOC 採自己的 Copyleft／GPL 治理，不代表其他 Scope 必須相同。'
+  },
+  lunarunes:{
+    eyebrow:'LunaRunes Management',
+    title:'LunaRunes 管理登入',
+    description:'管理符號式語言、Canon、每日符文、數位資產與 LunaRunes Scope。'
+  },
+  lo3rwang:{
+    eyebrow:'Personal Management',
+    title:'lo3rwang 個人管理登入',
+    description:'管理個人作品、來源、時期、匯入與發表內容。'
+  }
+};
+
+function LoginScreen({scopeId,account}){
+  const copy=LOGIN_COPY[scopeId]||LOGIN_COPY.lo3rwang;
+  return <section className="loc-view">
+    <header className="loc-hero">
+      <p className="loc-eyebrow">{copy.eyebrow}</p>
+      <h1>{copy.title}</h1>
+      <p>{copy.description}</p>
+    </header>
+    <section className="loc-card">
+      <p>登入後才會顯示這個 Scope 的管理工作頁；公開頁不提供寫入功能。</p>
+      <button className="loc-button primary" type="button" onClick={account.signIn}>使用 Google 登入 Neon</button>
+      {account.error?<p className="scope-v2-status scope-v2-error">{account.error}</p>:null}
+    </section>
+  </section>;
+}
+
+function Workspace({scopeId}){
+  return <div className="scope-v2-list">
+    <ManagementArticlePublisher scopeId={scopeId}/>
+    <ManagementImportPanel scopeId={scopeId}/>
+    <ScopeDefaultThemeSetting scopeId={scopeId}/>
+  </div>;
+}
+
+function Structure({scopeId}){
+  return <div className="scope-v2-list">
+    <CultureTimelineEditor scopeId={scopeId}/>
+    <SourceSettingsV2 scopeId={scopeId}/>
+  </div>;
+}
 
 export default function GovernanceManagement(){
   const account=useNeonAccount();
   const {scopeId}=useScopeRuntimeV2();
   const scope=getScopeV2(scopeId);
+  const [section,setSection]=useState('workspace');
   const canManage=account.canManageScopeSync(scopeId);
-  const [shared,setShared]=useState({loading:false,eras:[],daily:[],events:[],relations:[],error:''});
 
-  const loadShared=async()=>{
-    setShared(current=>({...current,loading:true,error:''}));
-    try{
-      const contextRows=scope?.dataViews?.context?await selectScopeContextRows(scopeId):[];
-      const eras=contextRows.filter(row=>['時期','period','era'].includes(String(row.context_type||'').toLowerCase()));
-      const events=contextRows.filter(row=>['事件','情境事件'].includes(row.context_type));
-      const relations=contextRows.filter(row=>['關聯','跨資料關聯','符文關聯'].includes(row.context_type)||row.source&&row.target);
-      setShared({
-        loading:false,
-        eras,
-        daily:[],
-        events,
-        relations,
-        error:''
-      });
-    }catch(error){
-      setShared(current=>({...current,loading:false,error:String(error?.message||error)}));
-    }
-  };
+  if(account.loading||account.permissionLoading)return <section className="loc-view"><div className="loc-card">正在確認登入與管理權限…</div></section>;
+  if(!account.user)return <LoginScreen scopeId={scopeId} account={account}/>;
 
-  useEffect(()=>{
-    if(!account.loading&&!account.permissionLoading&&account.user&&canManage)loadShared();
-    else setShared({loading:false,eras:[],daily:[],events:[],relations:[],error:''});
-  },[account.loading,account.permissionLoading,account.user?.email,canManage,scopeId]);
+  if(!canManage)return <section className="loc-view">
+    <header className="loc-hero"><p className="loc-eyebrow">Management</p><h1>{scope.label}管理</h1></header>
+    <section className="loc-card"><p>目前登入身份沒有此 Scope 的管理權限。</p><button type="button" onClick={account.signOut}>登出</button></section>
+  </section>;
 
-  return <section className="loc-card" id="management">
-    <p className="loc-eyebrow">Governance Management</p>
-    <h2>治理管理</h2>
-    <p className="loc-subtitle">目前 Scope：{scope.label}（{scopeId}）。管理 session 與資料讀寫都必須遵守 Scope 邊界；公開 Current canonical data 維持唯讀。</p>
-    {(account.loading||account.permissionLoading)&&<p>正在確認 Neon session 與管理權限…</p>}
-    {!account.loading&&!account.permissionLoading&&account.user&&!canManage&&<p>此 Neon 身份沒有管理權限。</p>}
-    {!account.loading&&!account.permissionLoading&&account.user&&canManage&&<>
-      <p><strong>Neon session 有效。</strong> {account.user.email||account.user.name||''}</p>
-      <hr/>
-      <h3>Neon 共享資料狀態</h3>
-      {shared.loading&&<p>正在讀取 Neon Data API…</p>}
-      {!shared.loading&&!shared.error&&<>
-        <ul>
-          <li>ERA：{shared.eras.length}</li>
-          <li>每日符文：目前由 Scope 專用資料流程提供</li>
-          <li>Context 事件：{shared.events.length}</li>
-          <li>Context 關係：{shared.relations.length}</li>
-        </ul>
-        <button type="button" onClick={loadShared}>重新讀取 Neon</button>
-      </>}
-      {shared.error&&<p role="alert">Neon 讀取失敗：{shared.error}</p>}
-    </>}
-    {account.error&&<p role="alert">{account.error}</p>}
-    <hr/>
-    <h3>Scope 預設治理</h3>
-    <p>Scope 設定由 silver.manage 管理；admin 可在 2D Scope 圖新增、修改與停用。</p>
-    <ul>
-      <li>Scope ID 規則：<code>{SCOPE_POLICY_V2.scopeIdPattern}</code></li>
-      <li>Scope ID 例外：{SCOPE_POLICY_V2.scopeIdExceptions.map(item=><code key={item}>{item}</code>)}</li>
-      <li>預設 Scope：<code>{SCOPE_POLICY_V2.defaultScopeId}</code></li>
-      <li>本部署保留字：{SCOPE_POLICY_V2.reservedWords.map(item=><code key={item.word}>{item.word}</code>)}</li>
-    </ul>
-    <p className="loc-subtitle">保留字只約束目前部署，不限制其他使用者、部門或其他部署使用相同名稱。</p>
-    <hr/>
-    <h3>全站風格管理</h3>
-    {account.user&&canManage?<ThemeAdmin/>:<p>需要管理權限。</p>}
+  const sections=[
+    ['workspace','工作區'],
+    ['structure','時期與來源'],
+    ...(scopeId==='lunarunes'?[['daily','每日符文']]:[]),
+    ...(account.canManageGlobalSync()?[['theme-admin','Theme 定義']]:[])
+  ];
+
+  return <section className="loc-view">
+    <header className="loc-hero">
+      <p className="loc-eyebrow">Management · {scopeId}</p>
+      <h1>{scope.label}管理</h1>
+      <p>{account.user.email||account.user.name||''}</p>
+      <nav className="scope-v2-local-menu" aria-label="管理功能選單">
+        {sections.map(([id,label])=><button key={id} type="button" aria-pressed={section===id} onClick={()=>setSection(id)}>{label}</button>)}
+        <button type="button" onClick={account.signOut}>登出</button>
+      </nav>
+    </header>
+
+    {section==='workspace'?<Workspace scopeId={scopeId}/>:null}
+    {section==='structure'?<Structure scopeId={scopeId}/>:null}
+    {section==='daily'&&scopeId==='lunarunes'?<RuneManagementPanel/>:null}
+    {section==='theme-admin'&&account.canManageGlobalSync()?<section className="loc-card"><h2>Theme 定義</h2><ThemeAdmin/></section>:null}
   </section>;
 }
