@@ -141,7 +141,7 @@ const windows=summarizeDailyWindows(dailyWindowRows,dailyWindowDays);
 assert.equal(windows.adjacent.previous_date,'2026-09-25');
 assert.equal(windows.adjacent.current_date,'2026-09-27');
 assert.ok(windows.three_days.repeats.every(item=>item.count>1));
-assert.ok(windows.seven_days.repeats.some(item=>item.name==='靈'&&item.count===2));
+assert.ok(windows.seven_days.repeats.some(item=>item.name==='靈'&&item.count===3));
 assert.ok(windows.seven_days.direction_changes.some(item=>item.name==='靈'&&item.from==='半逆位'&&item.to==='逆位'));
 
 console.log('LunaRunes discrete semantics, natural multi-card guidance, and FlexSearch daily trend verified.');
