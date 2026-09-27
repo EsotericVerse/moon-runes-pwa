@@ -7,7 +7,7 @@ import {
   Bar,BarChart,CartesianGrid,Cell,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectScopeRankingAll,selectScopeRankingPage,selectScopeRankingTypes} from '../../loc/neon-ranking-client';
+import {selectScopeRankingAll,selectScopeRankingComparison,selectScopeRankingPage,selectScopeRankingTypes} from '../../loc/neon-ranking-client';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
@@ -16,7 +16,7 @@ import KeywordSettingsV2 from './KeywordSettingsV2';
 import ContextStyleManager from './ContextStyleManager';
 import MediaMetaSettingsV2 from './MediaMetaSettingsV2';
 import FeaturePageV2 from '../FeaturePageV2';
-import {analyzeDistribution} from '../../loc/model/automatic-analysis.mjs';
+import {analyzeDistribution,analyzeDistributionChange,analyzeKeywordGovernance} from '../../loc/model/automatic-analysis.mjs';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const CHART_TYPES=[['bar','長條圖'],['line','折線圖'],['pie','圓餅圖']];
@@ -91,6 +91,20 @@ function useAllRanking(scopeId,type,navigation){
   });
 }
 
+function useRankingComparison(scopeId,type,navigation){
+  return useQuery({
+    queryKey:['statistics-ranking-comparison',scopeId,type,navigation.period||'all'],
+    enabled:Boolean(type)&&scopeId!=='loc',
+    queryFn:()=>selectScopeRankingComparison(scopeId,{rankingType:type,navigation}),
+    staleTime:30000
+  });
+}
+
+function rangeLabel(range){
+  if(!range?.start_date)return '';
+  return String(range.start_date).slice(0,10)+' → '+String(range.end_date||range.start_date).slice(0,10);
+}
+
 function StatTabs({scopeId,navigation,active,tabs}){
   const router=useRouter();
   return <nav className="scope-v2-stat-tabs" aria-label="統計功能">
@@ -134,9 +148,17 @@ function ChartsPanel({scopeId,navigation,types}){
   const rankingType=types.includes(requested)?requested:(types[0]||'');
   const [chartType,setChartType]=useState('bar');
   const query=useAllRanking(scopeId,rankingType,navigation);
+  const comparisonQuery=useRankingComparison(scopeId,rankingType,navigation);
   const automaticAnalysis=useMemo(()=>analyzeDistribution(query.data||[],{
     label:STAT_TYPE_LABELS[rankingType]||'統計項目'
   }),[query.data,rankingType]);
+  const changeAnalysis=useMemo(()=>{
+    const data=comparisonQuery.data;
+    if(!data)return {changes:[],suggestions:[]};
+    return rankingType==='keyword'
+      ?analyzeKeywordGovernance(data.currentRows||[],data.previousRows||[],{candidateRows:data.candidateRows||[]})
+      :analyzeDistributionChange(data.currentRows||[],data.previousRows||[],{label:STAT_TYPE_LABELS[rankingType]||'統計項目'});
+  },[comparisonQuery.data,rankingType]);
   return <section className="scope-v2-stat-section">
     <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Distribution</p><h2>統計圖</h2><p>統計圖顯示所選統計項目的完整分布，包含文字來源、風格、關鍵詞與多媒體 metadata。</p><p><strong>靈魂擺盪論：</strong>以大風格、風格與關鍵詞的增減、延續、消退、回返與擺盪觀察語言分布；系統描述變化，不替使用者下定義。</p></div></header>
     <div className="scope-v2-stat-controls">
@@ -157,6 +179,26 @@ function ChartsPanel({scopeId,navigation,types}){
         </article>)}
       </div>
       {rankingType==='keyword'?<p>關鍵詞治理：這些結果可作為新增、提高、降低或淘汰候選的依據；實際詞庫變更仍需由規則與時間比較確認。</p>:null}
+    </section>:null}
+
+    {comparisonQuery.isPending?<p className="scope-v2-status">比較目前時期與前一等長區間…</p>:null}
+    {comparisonQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(comparisonQuery.error)}</p>:null}
+    {!comparisonQuery.isPending&&!comparisonQuery.error&&comparisonQuery.data?<section className="scope-v2-card">
+      <p className="loc-eyebrow">Weak Signal Comparison</p>
+      <h3>時間變化／弱訊號</h3>
+      <p>目前：{rangeLabel(comparisonQuery.data.currentRange)}｜前一區間：{rangeLabel(comparisonQuery.data.previousRange)}。兩段長度相同，只比較可觀察的頻率變化。</p>
+      {!changeAnalysis.suggestions.length?<p className="scope-v2-status">目前沒有達到提醒門檻的明顯變化。</p>:<div className="scope-v2-list">
+        {changeAnalysis.suggestions.map((item,index)=><article className="scope-v2-inline-card" key={item.type+'-'+item.term+'-'+index}>
+          <strong>{item.action||(
+            item.type==='emerging'?'新出現':
+            item.type==='rising'?'增加':
+            item.type==='disappeared'?'暫時消失':
+            item.type==='falling'?'下降':'持續'
+          )}｜{item.term}</strong>
+          <span>{item.text}</span>
+        </article>)}
+      </div>}
+      <p>這些是風險管理用的弱訊號提示；系統只指出「這裡開始不一樣」，不替使用者定義原因、好壞或事件性質。</p>
     </section>:null}
   </section>;
 }
