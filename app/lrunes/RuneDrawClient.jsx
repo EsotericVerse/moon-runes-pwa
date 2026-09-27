@@ -6,8 +6,8 @@ import { useLocalStore } from '../loc/local-store';
 import { evaluateSpread, finalGuidance, splitDomainGuidance } from '../loc/model/semantic-guidance';
 import { realMoonPhase } from '../loc/model/moon-phase';
 import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
+import {drawRuneSession} from './rune-draw-engine';
 
-const DIRECTIONS = ['正位', '半正位', '半逆位', '逆位'];
 const ROTATION_CLASSES = ['rune-rotate-0', 'rune-rotate-90', 'rune-rotate-n90', 'rune-rotate-180'];
 const UI_SETTINGS_KEY = 'loc-ui-settings-v1';
 const DEFAULT_UI_SETTINGS = { draw_response: 'ritual' };
@@ -41,39 +41,6 @@ async function fetchCoreRunes() {
   return fetchNeonData(LOC_DATA.RUNES, { memory: true });
 }
 
-
-function randomInt(max) {
-  if (max <= 1) return 0;
-  if (globalThis.crypto?.getRandomValues) {
-    const limit = Math.floor(0x100000000 / max) * max;
-    const value = new Uint32Array(1);
-    do globalThis.crypto.getRandomValues(value); while (value[0] >= limit);
-    return value[0] % max;
-  }
-  return Math.floor(Math.random() * max);
-}
-
-// RUNE_DRAW_ALGORITHM_INVARIANT — DO NOT OPTIMIZE INTO SHUFFLE/BATCH RANDOM.
-// Drawing N runes means exactly N independent rune-selection calls. Each call
-// decides only the current card; that card is removed before the next call.
-// This is sequential sampling without replacement, so duplicates are impossible
-// without retry/random-call inflation. Direction randomization is a separate domain.
-function drawRunesSequentially(items, count, selectIndex = randomInt) {
-  if (!Number.isInteger(count) || count < 0 || count > items.length) {
-    throw new Error(`無效的抽牌數量：${count}`);
-  }
-  const pool = [...items];
-  const selected = [];
-  for (let drawIndex = 0; drawIndex < count; drawIndex += 1) {
-    const index = selectIndex(pool.length);
-    if (!Number.isInteger(index) || index < 0 || index >= pool.length) {
-      throw new Error(`第 ${drawIndex + 1} 次符文亂數超出候選池範圍。`);
-    }
-    const [card] = pool.splice(index, 1);
-    selected.push(card);
-  }
-  return selected;
-}
 
 function runeCardImage(card) {
   const number = String(Number(card?.編號) || 0).padStart(2, '0');
@@ -244,9 +211,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
     try {
       if (!data?.runes?.length) throw new Error('符文資料尚未載入完成。');
       if (data.runes.length < selectedMode.count) throw new Error(`可抽取符文不足 ${selectedMode.count} 張。`);
-      const cards = drawRunesSequentially(data.runes, selectedMode.count);
-      const directionIndexes = cards.map(() => randomInt(4));
-      const directions = directionIndexes.map(index => DIRECTIONS[index]);
+      const {cards,directionIndexes,directions}=drawRuneSession(data.runes,selectedMode.count);
       const evaluation = evaluateSpread(cards, directions);
       const createdAt = new Date().toISOString();
       const guidance = finalGuidance(data.lots, cards.at(-1), directions.at(-1));
