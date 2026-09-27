@@ -20,7 +20,7 @@ if(neonRepository.includes('api.scope_theme_defaults'))failures.push('retired sc
 if(!footer.includes('<ThemeSelectV2/>'))failures.push('V2 Footer must own theme selector');
 if(layout.includes('<ThemeProvider>'))failures.push('obsolete global ThemeProvider must remain removed');
 if(!layout.includes("import ScopeFooterV2 from './modular-v2/ScopeFooterV2'"))failures.push('Root layout must use Current ScopeFooterV2 directly');
-for(const retired of ['app/loc/ThemeProvider.jsx','app/loc/ThemeControl.jsx','app/loc/theme-registry.js','app/theme-registry.js','app/ThemeSelect.jsx','app/GlobalFooter.jsx'])if(existsSync(retired))failures.push(retired+' must remain retired');
+for(const retired of ['app/loc/ThemeProvider.jsx','app/loc/ThemeControl.jsx','app/loc/theme-registry.js','app/theme-registry.js','app/ThemeSelect.jsx','app/GlobalFooter.jsx','app/loc/ScopeDefaultThemeSetting.jsx','app/loc/scope-public-settings.js'])if(existsSync(retired))failures.push(retired+' must remain retired');
 
 if(failures.length){console.error('[theme-contract] violations:\n'+failures.join('\n'));process.exit(1);}
 console.log('[theme-contract] eight scalar themes and session-local selection verified');
