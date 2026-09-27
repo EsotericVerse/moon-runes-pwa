@@ -3,7 +3,7 @@
 import {useEffect,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {selectScopeRankingPage} from '../../loc/neon-ranking-client';
-import {selectNeonRows,updateNeonRows} from '../../loc/neon-repository';
+import {selectNeonAllRows,updateNeonRows} from '../../loc/neon-repository';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 
@@ -41,14 +41,13 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
     queryKey:['media-meta-tag-items',databaseScopeId,selectedTag],
     enabled:Boolean(selectedTag),
     queryFn:async()=>{
-      const {rows}=await selectNeonRows('silver.lo3rwang_galaxy_media',{
+      const {rows}=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
         columns:'media_id,title,media_type,source_name,style_tags,created_date',
         filters:[
           {column:'scope_id',operator:'eq',value:databaseScopeId},
           {column:'style_tags',operator:'ilike',value:'%'+selectedTag+'%'}
         ],
-        orders:[{column:'created_date',ascending:false,nullsFirst:false}],
-        limit:100
+        orders:[{column:'created_date',ascending:false,nullsFirst:false}]
       });
       return rows;
     },
