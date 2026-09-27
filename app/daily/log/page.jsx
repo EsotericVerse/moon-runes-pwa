@@ -1,7 +1,3 @@
-import DailyLogClient from './DailyLogClient';
-
-export const metadata={title:'每日符文｜月之符文'};
-
-export default function DailyRuneLogPage(){
-  return <main className="loc-next-main"><DailyLogClient/></main>;
-}
+import LocApp from '../../loc/LocApp';
+export const metadata={title:'每日符文管理｜LunaRunes'};
+export default function Page(){return <LocApp forcedView="manage" forcedScope="lunarunes"/>;}
