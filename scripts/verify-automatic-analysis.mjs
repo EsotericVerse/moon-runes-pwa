@@ -8,12 +8,17 @@ import {
 } from '../app/loc/model/automatic-analysis.mjs';
 
 const density=analyzeTemporalDensity([
-  {week_start:'2026-09-01',work_count:2},
-  {week_start:'2026-09-08',work_count:2},
-  {week_start:'2026-09-15',work_count:8},
-  {week_start:'2026-09-22',work_count:2}
-],{minimumCount:3,highRatio:1.75});
-assert.ok(density.suggestions.some(item=>item.type==='density_high'&&item.date==='2026-09-15'));
+  {week_start:'2026-09-01',group_label:'A',work_count:8},
+  {week_start:'2026-09-01',group_label:'B',work_count:2},
+  {week_start:'2026-09-08',group_label:'A',work_count:8},
+  {week_start:'2026-09-08',group_label:'B',work_count:2},
+  {week_start:'2026-09-15',group_label:'A',work_count:3},
+  {week_start:'2026-09-15',group_label:'B',work_count:7},
+  {week_start:'2026-09-22',group_label:'A',work_count:2},
+  {week_start:'2026-09-22',group_label:'B',work_count:8}
+],{minimumCount:3,minimumShareDelta:0.1,minimumRatio:1.5});
+assert.ok(density.suggestions.some(item=>item.type==='share_rise'&&item.category==='B'));
+assert.ok(density.suggestions.every(item=>item.from&&item.to&&Number.isFinite(item.score)));
 
 const distribution=analyzeDistribution([
   {term:'A',item_count:8},{term:'B',item_count:2},{term:'C',item_count:1}
