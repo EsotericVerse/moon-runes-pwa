@@ -23,17 +23,18 @@ function mondayOf(value){
   date.setUTCDate(date.getUTCDate()+shift);
   return date.toISOString().slice(0,10);
 }
-async function selectSourceRows({startDate='',endDate=''}={}){
+async function selectSourceRows({startDate='',endDate='',excludedIds=[]}={}){
   const result=await selectNeonAllRows('silver.lo3rwang_galaxy',{
     columns:'uid,source_name,createtime',
     filters:timeFilters('createtime',startDate,endDate)
   });
-  return result.rows;
+  const excluded=new Set((excludedIds||[]).map(value=>String(value||'')).filter(Boolean));
+  return excluded.size?result.rows.filter(row=>!excluded.has(String(row.uid||''))):result.rows;
 }
 
-export async function selectSourceCatalog({scopeId='lo3rwang',limit=null,offset=0}={}){
+export async function selectSourceCatalog({scopeId='lo3rwang',limit=null,offset=0,excludedIds=[]}={}){
   if(String(scopeId)!=='lo3rwang')return {rows:[],totalCount:0};
-  const rows=await selectSourceRows();
+  const rows=await selectSourceRows({excludedIds});
   const map=new Map();
   for(const row of rows){
     const source=String(row.source_name||'').trim();
@@ -49,9 +50,9 @@ export async function selectSourceCatalog({scopeId='lo3rwang',limit=null,offset=
   return {rows:page,totalCount:all.length};
 }
 
-export async function selectSourceWeekly({scopeId='lo3rwang',startDate='',endDate='',limit=null,offset=0}={}){
+export async function selectSourceWeekly({scopeId='lo3rwang',startDate='',endDate='',limit=null,offset=0,excludedIds=[]}={}){
   if(String(scopeId)!=='lo3rwang')return {rows:[],totalCount:0};
-  const rows=await selectSourceRows({startDate,endDate});
+  const rows=await selectSourceRows({startDate,endDate,excludedIds});
   const map=new Map();
   for(const row of rows){
     const source=String(row.source_name||'').trim();
