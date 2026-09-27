@@ -5,14 +5,16 @@ import {neonClient} from './neon-client';
 import {UI_PAGE_SIZE,MAX_ROW_PAGE,assertSafeSelect,assertCatalogSelect,safePageSize,safeRange,safeReturning,chunkWriteRows} from './query-policy';
 
 const TableSchema=z.enum([
+  'api.user_records','api.user_settings',
   'silver.manage','silver.resource_visibility',
   'silver.lo3rwang','silver.lo3rwang_style','silver.lo3rwang_style_keywords',
   'silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media',
   'silver.lrunes',
   'silver.faq_entries',
-  'silver.v_lo3rwang_canonical_works','silver.v_lo3rwang_source_catalog','silver.v_lo3rwang_source_weekly','silver.v_lo3rwang_work_summary',
+  'silver.v_lo3rwang_canonical_works','silver.v_lo3rwang_source_catalog','silver.v_lo3rwang_source_weekly',
 ]);
 const WritableTableSchema=z.enum([
+  'api.user_records','api.user_settings',
   'silver.manage','silver.resource_visibility',
   'silver.lo3rwang','silver.lo3rwang_style','silver.lo3rwang_style_keywords',
   'silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media',
