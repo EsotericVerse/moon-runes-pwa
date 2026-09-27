@@ -1,6 +1,6 @@
 # 🌕 LOC｜月典（Luna Codex）
 
-LOC（月典／Luna Codex）是一套 **Language Architecture Framework（4D）／語言建築框架**，用來整理語言、資料、脈絡、作品與時間之間的關係。
+LOC（月典／Luna Codex）是一套 **Language Architecture Framework（4D）／語言架構框架**，用來整理語言、資料、脈絡、作品與時間之間的關係。
 
 LunaRunes（月之符文）是 LOC 的第一套 **Symbolic Language／符號式語言**實作；lo3rwang 則是作者個人資料與創作 Scope。
 
