@@ -4,7 +4,7 @@ import {useEffect,useMemo,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
 import {
-  selectAuthorPeriodWorkSources,
+  selectAuthorPeriodSourceSnapshot,
   selectAuthorPeriodWorks,
   selectScopeClassificationBuckets,
   selectScopeCultureData,
@@ -122,24 +122,28 @@ export default function CultureV2(){
     ?[allAuthorPeriods.find(item=>item.start_date===currentAuthorPeriod.start_date)||currentAuthorPeriod]
     :allAuthorPeriods;
 
+  const sourceSnapshotQuery=useQuery({
+    queryKey:['culture-period-source-snapshot',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
+    queryFn:()=>selectAuthorPeriodSourceSnapshot({
+      startDate:selectedWorkPeriod?.start_date,
+      endDate:selectedWorkPeriod?.end_date
+    }),
+    enabled:classificationScope==='lo3rwang'&&Boolean(selectedWorkPeriod?.start_date),
+    staleTime:5*60_000
+  });
+
+  const selectedPeriodCoversVisible=visibleAuthorPeriods.length===1
+    &&String(visibleAuthorPeriods[0]?.start_date||'')===String(selectedWorkPeriod?.start_date||'')
+    &&String(visibleAuthorPeriods[0]?.end_date||'')===String(selectedWorkPeriod?.end_date||'');
+
   const periodVolumesQuery=useQuery({
     queryKey:['culture-period-source-volumes',scopeId,visibleAuthorPeriods.map(item=>[item.period,item.start_date,item.end_date])],
     queryFn:async()=>Promise.all(visibleAuthorPeriods.map(async(period,index)=>({
       period:{...period,scope_id:'lo3rwang'},
-      sources:await selectAuthorPeriodWorkSources({startDate:period.start_date,endDate:period.end_date}),
+      snapshot:await selectAuthorPeriodSourceSnapshot({startDate:period.start_date,endDate:period.end_date}),
       periodIndex:index
     }))),
-    enabled:(scopeId==='lo3rwang'||scopeId==='loc')&&visibleAuthorPeriods.length>0,
-    staleTime:5*60_000
-  });
-
-  const sourceGroupsQuery=useQuery({
-    queryKey:['culture-period-work-sources',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
-    queryFn:()=>selectAuthorPeriodWorkSources({
-      startDate:selectedWorkPeriod?.start_date,
-      endDate:selectedWorkPeriod?.end_date
-    }),
-    enabled:classificationMode==='source'&&classificationScope==='lo3rwang'&&Boolean(selectedWorkPeriod?.start_date),
+    enabled:(scopeId==='lo3rwang'||scopeId==='loc')&&visibleAuthorPeriods.length>0&&!selectedPeriodCoversVisible,
     staleTime:5*60_000
   });
 
@@ -154,20 +158,21 @@ export default function CultureV2(){
     staleTime:5*60_000
   });
 
-  const classificationBucketsQuery=useQuery({
-    queryKey:['culture-classification-buckets',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,classificationMode,styleLevel],
+  const styleBucketsQuery=useQuery({
+    queryKey:['culture-classification-buckets',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,'style',styleLevel],
     queryFn:()=>selectScopeClassificationBuckets(classificationScope,{
       startDate:selectedWorkPeriod?.start_date,
       endDate:selectedWorkPeriod?.end_date,
-      dimension:classificationMode,
+      dimension:'style',
       styleLevel
     }),
-    enabled:Boolean(selectedWorkPeriod?.start_date),
+    enabled:classificationMode==='style'&&Boolean(selectedWorkPeriod?.start_date),
     staleTime:5*60_000
   });
 
-  const categoryGroups=classificationMode==='source'?(sourceGroupsQuery.data||[]):(styleGroupsQuery.data||[]);
-  const categoryQuery=classificationMode==='source'?sourceGroupsQuery:styleGroupsQuery;
+  const classificationBucketsQuery=classificationMode==='source'?sourceSnapshotQuery:styleBucketsQuery;
+  const categoryGroups=classificationMode==='source'?(sourceSnapshotQuery.data?.groups||[]):(styleGroupsQuery.data||[]);
+  const categoryQuery=classificationMode==='source'?sourceSnapshotQuery:styleGroupsQuery;
   const selectedGroup=categoryGroups.find(item=>item.category_key===selectedCategory)||null;
   const selectedCount=Number(selectedGroup?.item_count)||0;
   const periodWorksQuery=useQuery({
@@ -207,10 +212,16 @@ export default function CultureV2(){
     setWorkPage(0);
   },[classificationMode,styleLevel,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date]);
 
-  const periodVolumeByStart=useMemo(()=>new Map((periodVolumesQuery.data||[]).map(group=>[
-    String(group.period?.start_date||'').slice(0,10),
-    (group.sources||[]).reduce((sum,row)=>sum+(Number(row.item_count)||0),0)
-  ])),[periodVolumesQuery.data]);
+  const periodVolumeByStart=useMemo(()=>{
+    const map=new Map((periodVolumesQuery.data||[]).map(group=>[
+      String(group.period?.start_date||'').slice(0,10),
+      Number(group.snapshot?.totalCount)||0
+    ]));
+    if(sourceSnapshotQuery.data&&selectedWorkPeriod?.start_date){
+      map.set(String(selectedWorkPeriod.start_date).slice(0,10),Number(sourceSnapshotQuery.data.totalCount)||0);
+    }
+    return map;
+  },[periodVolumesQuery.data,sourceSnapshotQuery.data,selectedWorkPeriod?.start_date]);
 
   const timelineItems=useMemo(()=>{
     const items=(query.data?.timelineItems||[]).filter(item=>scopeId==='loc'||item.scope_id===scopeId);
@@ -222,7 +233,7 @@ export default function CultureV2(){
     });
   },[query.data,currentRows,currentByScope,scopeId,periodVolumeByStart]);
 
-  const classificationBuckets=classificationBucketsQuery.data||[];
+  const classificationBuckets=classificationMode==='source'?(sourceSnapshotQuery.data?.buckets||[]):(styleBucketsQuery.data||[]);
 
   return <FeaturePageV2 featureId="culture">
     <section className='loc-card scope-v2-feature-card scope-v2-feature-card-wide'>
