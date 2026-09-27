@@ -377,28 +377,37 @@ function todayInTaipei(){
 async function resolveComparisonRanges(scopeId,period){
   if(scopeId==='loc')return null;
   const dataScope=scopeId==='lunarunes'?'lrunes':scopeId;
-  const rows=(await selectScopeTimeRows(dataScope)).filter(row=>row.entry_type==='period'&&row.start_date);
+  const rows=(await selectScopeTimeRows(dataScope))
+    .filter(row=>row.entry_type==='period'&&row.start_date)
+    .sort((a,b)=>String(a.start_date||'').localeCompare(String(b.start_date||''))||Number(a.order_no||0)-Number(b.order_no||0));
   let selected=null;
   const value=String(period||'all');
   if(value&&value!=='all'){
     selected=rows.find(row=>String(row.period||'')===value||String(row.entry_key||'')===value)||null;
   }else{
     selected=rows.find(row=>String(row.status||'').trim().toLowerCase()==='current')
-      ||[...rows].sort((a,b)=>String(b.start_date||'').localeCompare(String(a.start_date||'')))[0]
+      ||rows.at(-1)
       ||null;
   }
   if(!selected?.start_date)return null;
-  const currentStart=dateOnly(selected.start_date);
-  const currentEnd=dateOnly(selected.end_date)||todayInTaipei();
-  const days=daySpan(currentStart,currentEnd);
-  if(!days)return null;
-  const previousEnd=addDays(currentStart,-1);
-  const previousStart=addDays(previousEnd,-days+1);
+  const index=rows.indexOf(selected);
+  const previous=index>0?rows[index-1]:null;
+  if(!previous?.start_date)return null;
+  const current={
+    start_date:dateOnly(selected.start_date),
+    end_date:dateOnly(selected.end_date)||todayInTaipei()
+  };
+  const previousRange={
+    start_date:dateOnly(previous.start_date),
+    end_date:dateOnly(previous.end_date)||addDays(current.start_date,-1)
+  };
   return {
-    current:{start_date:currentStart,end_date:currentEnd},
-    previous:{start_date:previousStart,end_date:previousEnd},
+    current,
+    previous:previousRange,
     period:String(selected.period||selected.entry_key||value||'current'),
-    days
+    periodLabel:String(selected.title||selected.label||selected.period||selected.entry_key||'目前時期'),
+    previousPeriod:String(previous.period||previous.entry_key||''),
+    previousPeriodLabel:String(previous.title||previous.label||previous.period||previous.entry_key||'前一時期')
   };
 }
 
