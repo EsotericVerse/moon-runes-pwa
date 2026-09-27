@@ -39,7 +39,7 @@ for(const required of [
 }
 
 const dataRuntime=readFileSync(resolve(root,'app/loc/data.js'),'utf8');
-if(!/selectNeonRows/.test(dataRuntime))failures.push('app/loc/data.js: direct Neon table loader missing');
+if(!/selectNeon(?:Rows|Catalog)/.test(dataRuntime))failures.push('app/loc/data.js: direct Neon table loader missing');
 if(/fetchStaticJson|runtime_json_documents|force-cache|\/api\//.test(dataRuntime))failures.push('app/loc/data.js: API/JSON/static fallback remains');
 
 const contextView=readFileSync(resolve(root,'app/modular-v2/features/ContextV2.jsx'),'utf8');
