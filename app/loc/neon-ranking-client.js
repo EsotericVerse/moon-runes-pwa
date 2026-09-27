@@ -1,24 +1,13 @@
 import {ScopeRankingResponseSchema} from './scope-feature-contracts';
-import {selectNeonRows} from './neon-repository';
+import {selectNeonAllRows,selectNeonCatalog} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
-import {classifyStyleRows} from './style-classifier';
+import {classifyStyleRows,processStyleTableRows} from './style-classifier';
 
 const RANKING_TYPES=Object.freeze({
   loc:Object.freeze(['keyword','source','style','style_group']),
   lunarunes:Object.freeze(['keyword','source','style','style_group']),
   lo3rwang:Object.freeze(['keyword','source','style','style_group'])
 });
-
-async function selectAllRows(table,{columns,filters=[]}){
-  const rows=[];let offset=0;
-  while(true){
-    const result=await selectNeonRows(table,{columns,filters,range:[offset,offset+4999]});
-    rows.push(...result.rows);
-    if(result.rows.length<5000)break;
-    offset+=result.rows.length;
-  }
-  return rows;
-}
 
 function increment(map,type,term,extra={}){
   const value=String(term||'').trim();
@@ -46,7 +35,7 @@ async function resolvePeriod(scopeId,period){
 }
 
 async function authorKeywords(){
-  const rows=await selectAllRows('silver.lo3rwang_style_keywords',{columns:'keyword,keyword_group'});
+  const {rows}=await selectNeonCatalog('silver.lo3rwang_style_keywords',{columns:'keyword,keyword_group'});
   const map=new Map();
   for(const row of rows)increment(map,'keyword',row.keyword,{source:'lo3rwang'});
   return [...map.values()];
@@ -55,18 +44,18 @@ async function authorKeywords(){
 async function authorSources(period){
   const range=await resolvePeriod('lo3rwang',period);
   const filters=dateFilters(range);
-  const [texts,media]=await Promise.all([
-    selectAllRows('silver.lo3rwang_galaxy',{columns:'source_name,created_at',filters}),
-    selectAllRows('silver.lo3rwang_galaxy_media',{columns:'source_name,created_at',filters})
+  const [textsResult,mediaResult]=await Promise.all([
+    selectNeonAllRows('silver.lo3rwang_galaxy',{columns:'source_name,created_at',filters}),
+    selectNeonAllRows('silver.lo3rwang_galaxy_media',{columns:'source_name,created_at',filters})
   ]);
   const map=new Map();
-  for(const row of [...texts,...media])increment(map,'source',row.source_name,{source:'lo3rwang',period:period||'all'});
+  for(const row of [...textsResult.rows,...mediaResult.rows])increment(map,'source',row.source_name,{source:'lo3rwang',period:period||'all'});
   return [...map.values()];
 }
 
 async function runeKeywords(){
-  const rows=await selectAllRows('silver.lrunes',{
-    columns:'keyword,active',
+  const {rows}=await selectNeonCatalog('silver.lrunes',{
+    columns:'keyword,active,record_type',
     filters:[
       {column:'record_type',operator:'eq',value:'keyword'},
       {column:'active',operator:'eq',value:true}
@@ -84,13 +73,22 @@ async function runeSources(){
 async function authorStyles(period,type){
   const range=await resolvePeriod('lo3rwang',period);
   const filters=dateFilters(range);
-  const [texts,media]=await Promise.all([
-    selectAllRows('silver.lo3rwang_galaxy',{columns:'galaxy_id,title,content,meta_tags,created_at',filters}),
-    selectAllRows('silver.lo3rwang_galaxy_media',{columns:'media_id,title,meta_tags,style_tags,created_at',filters})
-  ]);
-  const classified=await classifyStyleRows([...texts,...media]);
   const map=new Map();
-  for(const row of classified){
+  await processStyleTableRows('silver.lo3rwang_galaxy',{
+    columns:'galaxy_id,title,content,meta_tags,created_at',
+    filters,
+    orders:[{column:'created_at',ascending:true}],
+    onClassified:row=>{
+      const term=type==='style_group'?row.style_group:row.style_label;
+      increment(map,type,term,{source:'lo3rwang',period:period||'all'});
+    }
+  });
+  const mediaResult=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
+    columns:'media_id,title,meta_tags,style_tags,created_at',
+    filters
+  });
+  const mediaClassified=await classifyStyleRows(mediaResult.rows);
+  for(const row of mediaClassified){
     const term=type==='style_group'?row.style_group:row.style_label;
     increment(map,type,term,{source:'lo3rwang',period:period||'all'});
   }
@@ -103,16 +101,16 @@ async function runeStyles(period,type){
     {column:'record_type',operator:'in',value:['galaxy','galaxy_media']},
     ...dateFilters(range)
   ];
-  const rows=await selectAllRows('silver.lrunes',{
-    columns:'record_id,record_type,title,content,meta_tags,style_tags,created_at',
-    filters
-  });
-  const classified=await classifyStyleRows(rows);
   const map=new Map();
-  for(const row of classified){
-    const term=type==='style_group'?row.style_group:row.style_label;
-    increment(map,type,term,{source:'lrunes',period:period||'all'});
-  }
+  await processStyleTableRows('silver.lrunes',{
+    columns:'record_id,record_type,title,content,meta_tags,style_tags,created_at',
+    filters,
+    orders:[{column:'created_at',ascending:true}],
+    onClassified:row=>{
+      const term=type==='style_group'?row.style_group:row.style_label;
+      increment(map,type,term,{source:'lrunes',period:period||'all'});
+    }
+  });
   return [...map.values()];
 }
 
@@ -168,4 +166,3 @@ export async function selectScopeRankingTypes(scopeId){
   if(!types)throw new Error('Scope 無效');
   return [...types];
 }
-

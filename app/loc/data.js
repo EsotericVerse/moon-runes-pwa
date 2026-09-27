@@ -1,35 +1,15 @@
 export { LOC_DATA } from './data-paths.mjs';
+import pMap from 'p-map';
 import { LOC_DATA } from './data-paths.mjs';
 import {selectNeonCatalog} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
 
 const DEFAULT_GLOBAL_CONCURRENCY=2;
 const DEFAULT_MAX_BATCH_ITEMS=24;
-let activeRequests=0;
-const waiters=[];
-
 function sourcePath(path){
   const normalized=String(path||'').trim().replace(/^\/+/, '');
   if(!normalized)throw new Error('LOC Neon data path is required');
   return normalized;
-}
-
-function acquireSlot(limit=DEFAULT_GLOBAL_CONCURRENCY){
-  if(activeRequests<limit){activeRequests+=1;return Promise.resolve();}
-  return new Promise(resolve=>waiters.push({resolve,limit}));
-}
-
-function releaseSlot(){
-  activeRequests=Math.max(0,activeRequests-1);
-  for(let index=0;index<waiters.length;index+=1){
-    const waiter=waiters[index];
-    if(activeRequests<waiter.limit){
-      waiters.splice(index,1);
-      activeRequests+=1;
-      waiter.resolve();
-      return;
-    }
-  }
 }
 
 function keywordMap(rows){
@@ -130,26 +110,23 @@ async function loadCanonicalRunes(){
 
 async function fetchCanonical(path){
   const normalized=sourcePath(path);
-  await acquireSlot();
-  try{
-    if(normalized==='canonical/runes'||normalized==='canonical/lots'||normalized==='canonical/rune-interpretations'){
-      return loadCanonicalRunes();
-    }
-    if(normalized==='canonical/harmony'){
-      return (await selectNeonCatalog('silver.lrunes',{
-        columns:'rune_number,rune_name,soul_question,practice_challenge,ritual_advice,harmony_advice,updated_at',
-        filters:[{column:'record_type',operator:'eq',value:'rune'}],
-        orders:[{column:'rune_number',ascending:true}]
-      })).rows;
-    }
-    if(normalized==='culture/lrunes-periods'){
-      return {eras:periodRows((await selectScopeTimeRows('lrunes')).filter(row=>row.entry_type==='period'))};
-    }
-    if(normalized==='culture/lo3rwang-periods'){
-      return {eras:periodRows((await selectScopeTimeRows('lo3rwang')).filter(row=>row.entry_type==='period'))};
-    }
-    throw new Error(`Neon canonical data path is not mapped: ${normalized}`);
-  }finally{releaseSlot();}
+  if(normalized==='canonical/runes'||normalized==='canonical/lots'||normalized==='canonical/rune-interpretations'){
+    return loadCanonicalRunes();
+  }
+  if(normalized==='canonical/harmony'){
+    return (await selectNeonCatalog('silver.lrunes',{
+      columns:'rune_number,rune_name,soul_question,practice_challenge,ritual_advice,harmony_advice,updated_at',
+      filters:[{column:'record_type',operator:'eq',value:'rune'}],
+      orders:[{column:'rune_number',ascending:true}]
+    })).rows;
+  }
+  if(normalized==='culture/lrunes-periods'){
+    return {eras:periodRows((await selectScopeTimeRows('lrunes')).filter(row=>row.entry_type==='period'))};
+  }
+  if(normalized==='culture/lo3rwang-periods'){
+    return {eras:periodRows((await selectScopeTimeRows('lo3rwang')).filter(row=>row.entry_type==='period'))};
+  }
+  throw new Error(`Neon canonical data path is not mapped: ${normalized}`);
 }
 
 export function fetchNeonData(path){
@@ -168,20 +145,11 @@ export async function fetchRuneRows(runeNumbers){
 export async function fetchNeonDataBatch(items,{concurrency=DEFAULT_GLOBAL_CONCURRENCY,maxItems=DEFAULT_MAX_BATCH_ITEMS,memory=true}={}){
   const queue=[...items];
   if(queue.length>maxItems)throw new Error(`LOC data batch has ${queue.length} items; budget allows ${maxItems}`);
-  const results=new Array(queue.length);
-  let cursor=0;
-  async function worker(){
-    while(true){
-      const index=cursor++;
-      if(index>=queue.length)return;
-      const item=queue[index];
-      const path=typeof item==='string'?item:item.path;
-      results[index]=await fetchNeonData(path,{memory});
-    }
-  }
-  const workerCount=Math.max(1,Math.min(concurrency,DEFAULT_GLOBAL_CONCURRENCY,queue.length||1));
-  await Promise.all(Array.from({length:workerCount},()=>worker()));
-  return results;
+  const workerCount=Math.max(1,Math.min(concurrency,DEFAULT_GLOBAL_CONCURRENCY));
+  return pMap(queue,async item=>{
+    const path=typeof item==='string'?item:item.path;
+    return fetchNeonData(path,{memory});
+  },{concurrency:workerCount});
 }
 
 export function clearNeonDataCache(){

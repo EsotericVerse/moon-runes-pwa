@@ -3,7 +3,7 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {searchNeonRows} from '../../loc/neon-search';
-import {selectNeonRows,updateNeonRows} from '../../loc/neon-repository';
+import {selectNeonRowById,selectNeonRows,updateNeonRows} from '../../loc/neon-repository';
 import {listResourceVisibilityFor,saveResourceVisibility,visibilityDraft} from '../../loc/resource-visibility';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {getSearchCollection} from '../../loc/search-collections';
@@ -172,13 +172,43 @@ export default function SearchV2(){
 
 
   async function startEditing(result){
-    setEditingKey(result.key);setEditError('');
-    setEditDraft({title:result.title,body:result.bodyText,styleTags:result.styleTags||'',...visibilityDraft(result.settings||{})});
-    setEditAudit([]);
+    setEditingKey(result.key);setEditError('');setEditAudit([]);
+    setEditDraft(null);
     try{
-      const {rows}=await selectNeonRows('silver.manage',{columns:'actor_name,actor_email,changed_at,field_name,old_value,new_value',filters:[{column:'record_type',operator:'eq',value:'content_audit'},{column:'scope_id',operator:'eq',value:result.scopeId},{column:'resource_type',operator:'eq',value:result.resourceType},{column:'resource_id',operator:'eq',value:result.resourceId}],orders:[{column:'changed_at',ascending:false}],limit:10});
-      setEditAudit(rows);
-    }catch{}
+      const contentColumns=result.resourceType==='galaxy'
+        ?'galaxy_id,scope_id,title,content'
+        :'media_id,scope_id,title,meta_tags,style_tags';
+      const [fullRow,auditResult]=await Promise.all([
+        selectNeonRowById(result.editableTable,{
+          idColumn:result.editableIdColumn,
+          id:result.resourceId,
+          columns:contentColumns
+        }),
+        selectNeonRows('silver.manage',{
+          columns:'actor_name,actor_email,changed_at,field_name,old_value,new_value',
+          filters:[
+            {column:'record_type',operator:'eq',value:'content_audit'},
+            {column:'scope_id',operator:'eq',value:result.scopeId},
+            {column:'resource_type',operator:'eq',value:result.resourceType},
+            {column:'resource_id',operator:'eq',value:result.resourceId}
+          ],
+          orders:[{column:'changed_at',ascending:false}],
+          limit:10
+        })
+      ]);
+      if(!fullRow)throw new Error('找不到要編輯的資料。');
+      if(fullRow.scope_id&&String(fullRow.scope_id)!==String(result.scopeId))throw new Error('Scope 與資料不一致。');
+      setEditDraft({
+        title:String(fullRow.title??result.title??''),
+        body:String(fullRow[result.editableField]??''),
+        styleTags:String(fullRow.style_tags??result.styleTags??''),
+        ...visibilityDraft(result.settings||{})
+      });
+      setEditAudit(auditResult.rows);
+    }catch(exception){
+      setEditingKey('');
+      setEditError(String(exception?.message||exception||'無法載入編輯內容。'));
+    }
   }
   async function saveEditing(result){
     if(!editDraft||!result.editableTable||!result.editableField)return;

@@ -1,10 +1,10 @@
 'use client';
 
 import {ScopeCultureResponseSchema} from './scope-feature-contracts';
-import {selectNeonRows} from './neon-repository';
+import {selectNeonAllRows} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
 import {decodeCultureText,formatCultureDateTime,groupWorksByWeek} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
-import {classifyStyleRows} from './style-classifier';
+import {classifyStyleRows,processStyleTableRows} from './style-classifier';
 
 function sourceLabel(value){return String(value||'').trim();}
 function runtimeScopeId(scopeId){return String(scopeId||'')==='lrunes'?'lunarunes':String(scopeId||'');}
@@ -46,15 +46,9 @@ function dateFilters(startDate,endDate){
   if(endDate)filters.push({column:'created_at',operator:'lte',value:String(endDate).slice(0,10)+'T23:59:59.999+08:00'});
   return filters;
 }
-async function selectAllRows(table,{columns,filters=[]}){
-  const rows=[];let offset=0;
-  while(true){
-    const result=await selectNeonRows(table,{columns,filters,range:[offset,offset+4999]});
-    rows.push(...result.rows);
-    if(result.rows.length<5000)break;
-    offset+=result.rows.length;
-  }
-  return rows;
+function withoutContent(row){
+  const {content,...rest}=row||{};
+  return rest;
 }
 
 export async function selectScopeCultureData(scopeId){
@@ -89,21 +83,21 @@ export async function selectScopeCultureData(scopeId){
 export async function selectAuthorPeriodWorkSources({startDate,endDate=null}={}){
   if(!startDate)return [];
   const filters=dateFilters(startDate,endDate);
-  const [workRows,mediaRows]=await Promise.all([
-    selectAllRows('silver.lo3rwang_galaxy',{columns:'galaxy_id,source_name',filters}),
-    selectAllRows('silver.lo3rwang_galaxy_media',{columns:'media_id,media_link,source_name',filters})
+  const [workResult,mediaResult]=await Promise.all([
+    selectNeonAllRows('silver.lo3rwang_galaxy',{columns:'galaxy_id,source_name',filters}),
+    selectNeonAllRows('silver.lo3rwang_galaxy_media',{columns:'media_id,media_link,source_name',filters})
   ]);
   const groups=new Map();
   const ensureSource=source=>{
     if(!groups.has(source))groups.set(source,{workIds:new Set(),mediaIds:new Set()});
     return groups.get(source);
   };
-  for(const row of workRows){
+  for(const row of workResult.rows){
     const source=sourceLabel(row.source_name);
     if(!source)continue;
     ensureSource(source).workIds.add(String(row.galaxy_id));
   }
-  for(const row of mediaRows){
+  for(const row of mediaResult.rows){
     const source=sourceLabel(row.source_name);
     if(!source)continue;
     const target=ensureSource(source);
@@ -131,25 +125,24 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
   const pageSize=Math.max(1,Math.min(100,Math.floor(Number(limit)||20)));
   const offset=Math.max(0,Math.floor(Number(pageOffset)||0));
   const filters=[...dateFilters(startDate,endDate),{column:'source_name',operator:'eq',value:String(sourceName)}];
-  const [textRows,mediaRows]=await Promise.all([
-    selectAllRows('silver.lo3rwang_galaxy',{
-      columns:'galaxy_id,category,content_type,source_name,source_type,source_role,title,content,meta_tags,content_hash,created_at,source_ref,url,source_id,target_id,ref_id',
-      filters
+  const [textResult,mediaResult]=await Promise.all([
+    selectNeonAllRows('silver.lo3rwang_galaxy',{
+      columns:'galaxy_id,category,content_type,source_name,source_type,source_role,title,meta_tags,content_hash,created_at,source_ref,url,source_id,target_id,ref_id',
+      filters,
+      orders:[{column:'created_at',ascending:false}]
     }),
-    selectAllRows('silver.lo3rwang_galaxy_media',{
+    selectNeonAllRows('silver.lo3rwang_galaxy_media',{
       columns:'media_id,media_link,source_name,source_type,source_native_id,media_type,title,url,meta_tags,style_tags,created_at',
-      filters
+      filters,
+      orders:[{column:'created_at',ascending:false}]
     })
   ]);
-
   const groups=new Map();
   const ensure=(key,seed={})=>{
     if(!groups.has(key))groups.set(key,{key,links:[],media:[],...seed});
     return groups.get(key);
   };
-
-  for(const row of textRows){
-    const content=decodeCultureText(row.content||'');
+  for(const row of textResult.rows){
     const key=String(row.galaxy_id||row.source_id||row.target_id||row.ref_id||row.content_hash||row.title||'').trim();
     if(!key)continue;
     const group=ensure(key,{
@@ -157,8 +150,8 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
       source_name:row.source_name,
       source_type:row.source_type,
       source_role:row.source_role,
-      title:decodeCultureText(row.title||'').trim()||content.trim().slice(0,72)||row.source_name||row.galaxy_id,
-      description:content.trim().slice(0,400),
+      title:decodeCultureText(row.title||'').trim()||row.source_name||row.galaxy_id,
+      description:'',
       created_at:row.created_at,
       start_date:row.created_at,
       date:row.created_at,
@@ -175,8 +168,7 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
     });
     if(row.url&&/^https?:\/\//i.test(String(row.url)))group.links.push({id:'text:'+row.galaxy_id,href:row.url,label:'查看來源'});
   }
-
-  for(const row of mediaRows){
+  for(const row of mediaResult.rows){
     const key=String(row.media_link||row.media_id||row.source_native_id||row.title||'').trim();
     if(!key)continue;
     const group=ensure(key,{
@@ -202,7 +194,6 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
       group.links.push({id:'media:'+row.media_id,href:row.url,label:`歌曲連結 ${number}`});
     }
   }
-
   const merged=[...groups.values()].map(group=>{
     if(!group.description&&group.media.length){
       group.description=group.media.map(mediaMetadataDescription).filter(Boolean).join(' ｜ ');
@@ -212,41 +203,72 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
     if(newest){group.created_at=newest;group.start_date=newest;group.date=newest;group.display_date=formatCultureDateTime(newest);}
     return group;
   }).sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
-
   const totalCount=merged.length;
   const rows=merged.slice(offset,offset+pageSize);
   const hasMore=offset+pageSize<totalCount;
   return {rows,hasMore,nextOffset:hasMore?offset+pageSize:null,totalCount};
 }
 
-
-async function selectScopePeriodContentRows(scopeId,{startDate,endDate}={}){
+async function selectScopePeriodMetadataRows(scopeId,{startDate,endDate}={}){
   if(!startDate)return [];
   const runtimeId=runtimeScopeId(scopeId);
   const filters=dateFilters(startDate,endDate);
   if(runtimeId==='lunarunes'){
-    return selectAllRows('silver.lrunes',{
-      columns:'record_id,record_type,galaxy_id,media_id,title,content,meta_tags,style_tags,source_name,source_type,created_at,url,source_ref',
+    const result=await selectNeonAllRows('silver.lrunes',{
+      columns:'record_id,record_type,galaxy_id,media_id,title,meta_tags,style_tags,source_name,source_type,created_at,url,source_ref',
       filters:[
         {column:'record_type',operator:'in',value:['galaxy','galaxy_media']},
         ...filters
       ]
     });
+    return result.rows;
   }
-  const [texts,media]=await Promise.all([
-    selectAllRows('silver.lo3rwang_galaxy',{
-      columns:'galaxy_id,title,content,meta_tags,source_name,source_type,created_at,url,source_ref,content_hash',
+  const [textsResult,mediaResult]=await Promise.all([
+    selectNeonAllRows('silver.lo3rwang_galaxy',{
+      columns:'galaxy_id,title,meta_tags,source_name,source_type,created_at,url,source_ref,content_hash',
       filters
     }),
-    selectAllRows('silver.lo3rwang_galaxy_media',{
+    selectNeonAllRows('silver.lo3rwang_galaxy_media',{
       columns:'media_id,title,meta_tags,style_tags,source_name,source_type,created_at,url,media_link,media_type',
       filters
     })
   ]);
   return [
-    ...texts.map(row=>({...row,record_type:'galaxy'})),
-    ...media.map(row=>({...row,record_type:'galaxy_media'}))
+    ...textsResult.rows.map(row=>({...row,record_type:'galaxy'})),
+    ...mediaResult.rows.map(row=>({...row,record_type:'galaxy_media'}))
   ];
+}
+
+async function selectScopeStyleRows(scopeId,{startDate,endDate}={}){
+  if(!startDate)return [];
+  const runtimeId=runtimeScopeId(scopeId);
+  const filters=dateFilters(startDate,endDate);
+  const output=[];
+  if(runtimeId==='lunarunes'){
+    await processStyleTableRows('silver.lrunes',{
+      columns:'record_id,record_type,galaxy_id,media_id,title,content,meta_tags,style_tags,source_name,source_type,created_at,url,source_ref',
+      filters:[
+        {column:'record_type',operator:'in',value:['galaxy','galaxy_media']},
+        ...filters
+      ],
+      orders:[{column:'created_at',ascending:true}],
+      onClassified:row=>{output.push(withoutContent(row));}
+    });
+    return output;
+  }
+  await processStyleTableRows('silver.lo3rwang_galaxy',{
+    columns:'galaxy_id,title,content,meta_tags,source_name,source_type,created_at,url,source_ref,content_hash',
+    filters,
+    orders:[{column:'created_at',ascending:true}],
+    onClassified:row=>{output.push({...withoutContent(row),record_type:'galaxy'});}
+  });
+  const mediaResult=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
+    columns:'media_id,title,meta_tags,style_tags,source_name,source_type,created_at,url,media_link,media_type',
+    filters
+  });
+  const mediaClassified=await classifyStyleRows(mediaResult.rows);
+  output.push(...mediaClassified.map(row=>({...row,record_type:'galaxy_media'})));
+  return output;
 }
 
 function canonicalSourceWorks(rows=[]){
@@ -270,14 +292,12 @@ function canonicalSourceWorks(rows=[]){
 export async function selectScopeClassificationBuckets(scopeId,{startDate,endDate,dimension='source',styleLevel='label'}={}){
   const runtimeId=runtimeScopeId(scopeId);
   if(dimension==='source'&&runtimeId==='lunarunes')return [];
-  const rows=await selectScopePeriodContentRows(runtimeId,{startDate,endDate});
+  const rows=dimension==='style'
+    ?await selectScopeStyleRows(runtimeId,{startDate,endDate})
+    :await selectScopePeriodMetadataRows(runtimeId,{startDate,endDate});
   if(!rows.length)return [];
-  let prepared=dimension==='source'?canonicalSourceWorks(rows):rows;
-  let field='source_name';
-  if(dimension==='style'){
-    prepared=await classifyStyleRows(rows);
-    field=styleLevel==='group'?'style_group':'style_label';
-  }
+  const prepared=dimension==='source'?canonicalSourceWorks(rows):rows;
+  const field=dimension==='style'?(styleLevel==='group'?'style_group':'style_label'):'source_name';
   return groupWorksByWeek(prepared,field).map(row=>({
     ...row,
     scope_id:'classification',
@@ -288,14 +308,32 @@ export async function selectScopeClassificationBuckets(scopeId,{startDate,endDat
 }
 
 export async function selectScopeStyleGroups(scopeId,{startDate,endDate,styleLevel='label'}={}){
-  const rows=await selectScopePeriodContentRows(scopeId,{startDate,endDate});
-  const classified=await classifyStyleRows(rows);
+  if(!startDate)return [];
+  const runtimeId=runtimeScopeId(scopeId);
   const field=styleLevel==='group'?'style_group':'style_label';
   const counts=new Map();
-  for(const row of classified){
+  const countRow=row=>{
     const term=String(row[field]||'').trim();
-    if(!term)continue;
-    counts.set(term,(counts.get(term)||0)+1);
+    if(term)counts.set(term,(counts.get(term)||0)+1);
+  };
+  const filters=dateFilters(startDate,endDate);
+  if(runtimeId==='lunarunes'){
+    await processStyleTableRows('silver.lrunes',{
+      columns:'record_id,record_type,title,content,meta_tags,style_tags,created_at',
+      filters:[{column:'record_type',operator:'in',value:['galaxy','galaxy_media']},...filters],
+      onClassified:countRow
+    });
+  }else{
+    await processStyleTableRows('silver.lo3rwang_galaxy',{
+      columns:'galaxy_id,title,content,meta_tags,created_at',
+      filters,
+      onClassified:countRow
+    });
+    const mediaResult=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
+      columns:'media_id,title,meta_tags,style_tags,created_at',
+      filters
+    });
+    for(const row of await classifyStyleRows(mediaResult.rows))countRow(row);
   }
   return [...counts.entries()]
     .map(([term,item_count])=>({
@@ -313,15 +351,15 @@ export async function selectScopeStyleWorks(scopeId,{startDate,endDate,styleName
   if(!startDate||!styleName)return {rows:[],hasMore:false,nextOffset:null};
   const pageSize=Math.max(1,Math.min(100,Math.floor(Number(limit)||20)));
   const offset=Math.max(0,Math.floor(Number(pageOffset)||0));
-  const rows=await selectScopePeriodContentRows(scopeId,{startDate,endDate});
-  const classified=await classifyStyleRows(rows);
   const field=styleLevel==='group'?'style_group':'style_label';
-  const matches=classified
-    .filter(row=>String(row[field]||'')===String(styleName))
-    .sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
+  const matches=[];
+  const rows=await selectScopeStyleRows(scopeId,{startDate,endDate});
+  for(const row of rows){
+    if(String(row[field]||'')===String(styleName))matches.push(row);
+  }
+  matches.sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
   const page=matches.slice(offset,offset+pageSize).map(row=>{
     const isMedia=String(row.record_type||'')==='galaxy_media'||Boolean(row.media_id);
-    const content=decodeCultureText(row.content||'');
     return {
       ...row,
       entry_id:row.galaxy_id||row.media_id||row.record_id,
@@ -329,12 +367,13 @@ export async function selectScopeStyleWorks(scopeId,{startDate,endDate,styleName
       start_date:row.created_at,
       date:row.created_at,
       display_date:formatCultureDateTime(row.created_at),
-      title:decodeCultureText(row.title||'').trim()||content.trim().slice(0,72)||row.style_label||row.style_group||'作品',
-      description:isMedia?'':content.trim().slice(0,400),
+      title:decodeCultureText(row.title||'').trim()||row.style_label||row.style_group||'作品',
+      description:'',
       media_metadata_text:isMedia?mediaMetadataDescription(row):'',
       group_label:String(row[field]||''),
       scope_id:runtimeScopeId(scopeId)
     };
   });
-  return {rows:page,hasMore:offset+pageSize<matches.length,nextOffset:offset+pageSize<matches.length?offset+pageSize:null};
+  const hasMore=offset+pageSize<matches.length;
+  return {rows:page,hasMore,nextOffset:hasMore?offset+pageSize:null};
 }
