@@ -2,13 +2,11 @@ import {z} from 'zod';
 import {featureHrefV2} from './scope-registry.v2';
 
 const NAVIGATION_FIELDS=Object.freeze([
-  'q','identity','source','period','anchor','from','to','rankingType','statTab','statDomain','statFace'
+  'q','identity','source','period','anchor','from','to','rankingType','statTab'
 ]);
 
 const NavigationValue=z.string().trim().min(1).max(240);
-const StatisticsTab=z.enum(['ranking','keywords','sources','styles','charts']);
-const StatisticsDomain=z.enum(['text','media']);
-const StatisticsFace=z.enum(['overview','statistics','keywords','textKeywords','mediaKeywords']);
+const StatisticsTab=z.enum(['ranking','keywords','styles','media','charts']);
 
 export const FeatureNavigationSchema=z.object({
   q:NavigationValue.optional(),
@@ -19,9 +17,7 @@ export const FeatureNavigationSchema=z.object({
   from:NavigationValue.optional(),
   to:NavigationValue.optional(),
   rankingType:NavigationValue.optional(),
-  statTab:StatisticsTab.optional(),
-  statDomain:StatisticsDomain.optional(),
-  statFace:StatisticsFace.optional()
+  statTab:StatisticsTab.optional()
 }).strict();
 
 function valueOf(...values){
