@@ -59,10 +59,11 @@ export async function selectScopeCultureData(scopeId){
   if(!['loc','lrunes','lo3rwang'].includes(dataId))throw new Error('Scope 無效');
 
   const scopeIds=dataId==='loc'?await selectManagedScopeIds():[dataId];
-  const contextEntries=await Promise.all(scopeIds.map(async scope=>{
+  const contextEntries=[];
+  for(const scope of scopeIds){
     const rows=await selectScopeTimeRows(scope);
-    return [scope,rows.map(row=>({...row,scope_id:scope}))];
-  }));
+    contextEntries.push([scope,rows.map(row=>({...row,scope_id:scope}))]);
+  }
   const contextByScope=new Map(contextEntries);
   const scopeContext=contextEntries.flatMap(([,rows])=>rows);
   const authorContext=contextByScope.get('lo3rwang')||[];
