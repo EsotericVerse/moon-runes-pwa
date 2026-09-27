@@ -3,7 +3,8 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {searchNeonRows} from '../../loc/neon-search';
-import {selectNeonRows,upsertNeonRows,updateNeonRows} from '../../loc/neon-repository';
+import {selectNeonRows,updateNeonRows} from '../../loc/neon-repository';
+import {listResourceVisibility,saveResourceVisibility,visibilityDraft} from '../../loc/resource-visibility';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {getSearchCollection} from '../../loc/search-collections';
 import FeaturePageV2 from '../FeaturePageV2';
@@ -90,10 +91,7 @@ export default function SearchV2(){
       matchedRowsRef.current=search.rows;
       matchedQueryRef.current=q;
       let visibilityRows=[];
-      try{
-        const visibility=await selectNeonRows('silver.resource_visibility',{columns:'scope,resource_type,resource_id,visibility,projection_level,statistics_included,show_link,show_source',limit:5000});
-        visibilityRows=visibility.rows;
-      }catch{}
+      try{visibilityRows=await listResourceVisibility();}catch{}
       const visibilityMap=new Map();
       for(const item of visibilityRows){
         visibilityMap.set(resultKey(item.scope,item.resource_type,item.resource_id),item);
@@ -170,7 +168,7 @@ export default function SearchV2(){
 
   async function startEditing(result){
     setEditingKey(result.key);setEditError('');
-    setEditDraft({title:result.title,body:result.bodyText,styleTags:result.styleTags||'',includeStatistics:result.settings?.statistics_included??true,fullText:result.settings?.projection_level==='full',hidden:result.settings?.visibility==='private',showLink:result.settings?.show_link??true,showSource:result.settings?.show_source??true});
+    setEditDraft({title:result.title,body:result.bodyText,styleTags:result.styleTags||'',...visibilityDraft(result.settings||{})});
     setEditAudit([]);
     try{
       const {rows}=await selectNeonRows('silver.manage',{columns:'actor_name,actor_email,changed_at,field_name,old_value,new_value',filters:[{column:'record_type',operator:'eq',value:'content_audit'},{column:'scope_id',operator:'eq',value:result.scopeId},{column:'resource_type',operator:'eq',value:result.resourceType},{column:'resource_id',operator:'eq',value:result.resourceId}],orders:[{column:'changed_at',ascending:false}],limit:10});
@@ -187,8 +185,9 @@ export default function SearchV2(){
       await updateNeonRows(result.editableTable,contentPatch,{filters:[{column:result.editableIdColumn,operator:'eq',value:result.resourceId},{column:'scope_id',operator:'eq',value:result.scopeId}]});
       let settings=result.settings||null;
       if(account.canManageScopeSync(result.scopeId)){
-        const record={scope:result.scopeId,resource_type:result.resourceType,resource_id:result.resourceId,visibility:editDraft.hidden?'private':'public',projection_level:editDraft.fullText?'full':'summary',statistics_included:editDraft.includeStatistics,show_link:editDraft.showLink,show_source:editDraft.showSource};
-        await upsertNeonRows('silver.resource_visibility',record,{conflict:'scope,resource_type,resource_id'});
+        const record=await saveResourceVisibility({
+          scope:result.scopeId,resourceType:result.resourceType,resourceId:result.resourceId,draft:editDraft
+        });
         visibilityRef.current.set(result.settingsKey,record);
         settings=record;
       }
