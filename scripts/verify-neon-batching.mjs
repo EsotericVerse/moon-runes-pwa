@@ -56,7 +56,7 @@ assert(calls.some((c,i)=>i>0&&c.start===calls[i-1].start&&c.size<calls[i-1].size
 reset();total=31;maxRows=2;const heavy=[];await api.processNeonHeavyRows(table,{columns:'galaxy_id,content',onBatch:rows=>heavy.push(...rows)});complete(heavy,0,31);
 reset();fatal={code:'42703',message:'column does not exist'};await assert.rejects(api.selectNeonRows(table,options),/column does not exist/);assert.equal(calls.length,1);
 reset();maxRows=0;await assert.rejects(api.selectNeonRows(table,options),/response too large/);assert(calls.length<12);
-reset();await api.selectNeonRows('silver.lo3rwang_galaxy_media',{columns:'media_id,galaxy_link,meta_tags,create_time',filters:[{column:'galaxy_link',operator:'eq',value:'x'}],limit:1});assert.equal(calls[0].columns,'media_id,galaxy_link,meta_tags,create_time');assert.equal(calls[0].filters[0].column,'galaxy_link');
+reset();await api.selectNeonRows('silver.lo3rwang_galaxy_media',{columns:'media_id,galaxy_link,media_type,meta_tags,createtime',filters:[{column:'galaxy_link',operator:'eq',value:'x'}],limit:1});assert.equal(calls[0].columns,'media_id,galaxy_link,media_type,meta_tags,createtime');assert.equal(calls[0].filters[0].column,'galaxy_link');
 reset();await api.selectNeonRows(table,{...options,limit:0});assert.equal(calls.length,1);assert.equal(calls[0].size,0);
 await assert.rejects(api.selectNeonRows(table,{...options,limit:Infinity}),/finite/);
 console.log('Neon shared batching: 2501 rows, ranges, missing counts, 416 exhaustion, oversized retries, heavy streaming, fatal errors and media mappings passed.');

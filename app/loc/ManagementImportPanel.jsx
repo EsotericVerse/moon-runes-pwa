@@ -63,7 +63,7 @@ function JsonImport({scopeId}){
         source_role:String(firstValue(row,['source_role'])||'').trim()||null,
         title:String(firstValue(row,['title','name','subject'])||'').trim()||null,
         content:String(firstValue(row,['content','body','text','message','description'])||'').trim()||null,
-        created_at:iso(firstValue(row,['created_at','create_time','created_time','date','published_at'])),
+        createtime:iso(firstValue(row,['createtime','created_at','create_time','created_time','date','published_at'])),
         source_native_id:String(firstValue(row,['source_native_id','native_id'])||'').trim()||null,
         source_ref:String(firstValue(row,['source_ref'])||'').trim()||null,
         source_place:String(firstValue(row,['source_place','place'])||'').trim()||null,
@@ -96,7 +96,7 @@ function JsonImport({scopeId}){
 
 function SunoImport({scopeId}){
   const account=useNeonAccount();
-  const [draft,setDraft]=useState({title:'',lyrics:'',url:'',nativeId:'',createdDate:'',playlist:'',stylePrompt:'',metaTags:'',source_id:'',target_id:'',ref_id:''});
+  const [draft,setDraft]=useState({title:'',lyrics:'',url:'',nativeId:'',createdDate:'',stylePrompt:'',metaTags:'',source_id:'',target_id:'',ref_id:''});
   const [status,setStatus]=useState('');const [busy,setBusy]=useState(false);
   if(scopeId!=='lo3rwang')return null;
   if(!account.canManageScopeSync(scopeId))return null;
@@ -108,31 +108,38 @@ function SunoImport({scopeId}){
     event.preventDefault();setBusy(true);setStatus('');
     try{
       if(!draft.title.trim())throw new Error('請填寫歌名。');
+      const createtime=draft.createdDate?new Date(draft.createdDate+'T00:00:00+08:00').toISOString():new Date().toISOString();
       const galaxyId=draft.lyrics.trim()?'suno-lyrics:'+globalThis.crypto.randomUUID():null;
+      const styleId=galaxyId&&draft.stylePrompt.trim()?'style:'+globalThis.crypto.randomUUID():null;
+      const sourceId=draft.source_id.trim()||(styleId?draft.ref_id.trim():'')||null;
       if(galaxyId){
         await insertNeonRows('silver.lo3rwang_galaxy',[{
           galaxy_id:galaxyId,scope_id:'lo3rwang',category:'music',content_type:'lyrics',source_role:'lyrics',
-          title:draft.title.trim(),content:draft.lyrics.trim(),
-          created_at:draft.createdDate?new Date(draft.createdDate+'T00:00:00+08:00').toISOString():new Date().toISOString(),
-          source_id:draft.source_id.trim()||null,target_id:draft.target_id.trim()||null,ref_id:draft.ref_id.trim()||null,
+          title:draft.title.trim(),content:draft.lyrics.trim(),createtime,
+          source_id:sourceId,target_id:draft.target_id.trim()||null,ref_id:styleId||draft.ref_id.trim()||null,
           url:draft.url.trim()||null,searchable:true,source_name:'suno',source_type:'content'
         }]);
       }
+      if(styleId){
+        await insertNeonRows('silver.lo3rwang_galaxy',[{
+          galaxy_id:styleId,scope_id:'lo3rwang',category:'music',content_type:'instruction',source_role:'style_prompt',
+          title:draft.title.trim()+'｜Suno Style',content:draft.stylePrompt.trim(),createtime,
+          target_id:galaxyId,searchable:true,source_name:'suno',source_type:'content'
+        }]);
+      }
       await insertNeonRows('silver.lo3rwang_galaxy_media',[{
-        galaxy_link:galaxyId,source_name:'suno',
-        source_native_id:draft.nativeId.trim()||detectId(draft.url)||null,media_type:'song',
+        galaxy_link:galaxyId,
+        source_native_id:draft.nativeId.trim()||detectId(draft.url)||null,media_type:'suno',
         title:draft.title.trim(),url:draft.url.trim()||null,
-        playlist:draft.playlist.trim()||null,style_prompt:draft.stylePrompt.trim()||null,
-        publication_status:'public',meta_tags:draft.metaTags.trim()||null,
-        create_time:draft.createdDate?new Date(draft.createdDate+'T00:00:00+08:00').toISOString():new Date().toISOString()
+        meta_tags:draft.metaTags.trim()||null,createtime
       }]);
-      setStatus('Suno 單筆資料已儲存。');setDraft({title:'',lyrics:'',url:'',nativeId:'',createdDate:'',playlist:'',stylePrompt:'',metaTags:'',source_id:'',target_id:'',ref_id:''});
+      setStatus('Suno 單筆資料已儲存。');setDraft({title:'',lyrics:'',url:'',nativeId:'',createdDate:'',stylePrompt:'',metaTags:'',source_id:'',target_id:'',ref_id:''});
     }catch(error){setStatus(error?.message||'Suno 儲存失敗。');}
     finally{setBusy(false);}
   }
   return <div className="scope-v2-inline-card">
     <h4>Suno 單筆匯入</h4>
-    <p>Suno 無批次匯出時使用。歌詞進 Galaxy；曲目與 style/meta 進 Galaxy Media。</p>
+    <p>Suno 無批次匯出時使用。歌詞與 Suno Style 進 Galaxy；媒體連結與 Meta Tag 進 Galaxy Media。</p>
     <form onSubmit={save} className="scope-v2-editor">
       <label>歌名<input value={draft.title} onChange={e=>change('title',e.target.value)}/></label>
       <label>歌詞<textarea rows={8} value={draft.lyrics} onChange={e=>change('lyrics',e.target.value)}/></label>
@@ -142,7 +149,6 @@ function SunoImport({scopeId}){
         <label>日期<input type="date" value={draft.createdDate} onChange={e=>change('createdDate',e.target.value)}/></label>
       </div>
       <div className="scope-v2-stat-controls">
-        <label>Playlist<input value={draft.playlist} onChange={e=>change('playlist',e.target.value)}/></label>
         <label>Suno Style<input value={draft.stylePrompt} onChange={e=>change('stylePrompt',e.target.value)}/></label>
         <label>Meta Tags<input value={draft.metaTags} onChange={e=>change('metaTags',e.target.value)}/></label>
       </div>

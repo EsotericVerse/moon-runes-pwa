@@ -291,10 +291,10 @@ export default function CultureV2(){
                 {periodWorksQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksQuery.error)}</p>:null}
                 <div className='scope-v2-culture-source-work-scroll'>
                   {(periodWorksQuery.data?.rows||[]).map((work,index)=><WorkSummaryCardV2
-                    key={work.key||work.galaxy_id||work.entry_id||String(work.created_at)+'-'+index}
+                    key={work.key||work.galaxy_id||work.entry_id||String(work.createtime||work.created_at)+'-'+index}
                     title={work.title||work.galaxy_id||'未命名作品'}
                     source={work.source_name||work.group_label||''}
-                    date={work.display_date||formatCultureDateTime(work.created_at)}
+                    date={work.display_date||formatCultureDateTime(work.createtime||work.created_at)}
                     body={work.description||work.media_metadata_text||''}
                     sourceId={work.source_id||''}
                     targetId={work.target_id||''}

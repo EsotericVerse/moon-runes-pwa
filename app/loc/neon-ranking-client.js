@@ -101,20 +101,20 @@ async function runeSources(){
 
 async function authorStyles(period,type){
   const range=await resolvePeriod('lo3rwang',period);
-  const filters=dateFilters(range);
+  const filters=dateFilters(range,'createtime');
   const map=new Map();
   await processStyleTableRows('silver.lo3rwang_galaxy',{
-    columns:'galaxy_id,title,content,meta_tags,created_at',
+    columns:'galaxy_id,title,content,meta_tags,createtime',
     filters,
-    orders:[{column:'created_at',ascending:true}],
+    orders:[{column:'createtime',ascending:true}],
     onClassified:row=>{
       const term=type==='style_group'?row.style_group:row.style_label;
       increment(map,type,term,{source:'lo3rwang',period:period||'all'});
     }
   });
   const mediaResult=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
-    columns:'media_id,title,meta_tags,create_time',
-    filters:dateFilters(range,'create_time')
+    columns:'media_id,title,meta_tags,createtime',
+    filters:dateFilters(range,'createtime')
   });
   const mediaClassified=await classifyStyleRows(mediaResult.rows);
   for(const row of mediaClassified){

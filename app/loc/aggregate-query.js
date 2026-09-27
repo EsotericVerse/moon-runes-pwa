@@ -24,23 +24,11 @@ function mondayOf(value){
   return date.toISOString().slice(0,10);
 }
 async function selectSourceRows({startDate='',endDate=''}={}){
-  const [galaxy,media]=await Promise.all([
-    selectNeonAllRows('silver.lo3rwang_galaxy',{
-      columns:'galaxy_id,source_name,created_at',
-      filters:timeFilters('created_at',startDate,endDate)
-    }),
-    selectNeonAllRows('silver.lo3rwang_galaxy_media',{
-      columns:'media_id,galaxy_link,source_name,create_time',
-      filters:[
-        {column:'galaxy_link',operator:'is',value:null},
-        ...timeFilters('create_time',startDate,endDate)
-      ]
-    })
-  ]);
-  return [
-    ...galaxy.rows.map(row=>({source_name:row.source_name,created_at:row.created_at})),
-    ...media.rows.map(row=>({source_name:row.source_name,created_at:row.create_time}))
-  ];
+  const result=await selectNeonAllRows('silver.lo3rwang_galaxy',{
+    columns:'galaxy_id,source_name,createtime',
+    filters:timeFilters('createtime',startDate,endDate)
+  });
+  return result.rows;
 }
 
 export async function selectSourceCatalog({scopeId='lo3rwang',limit=null,offset=0}={}){
@@ -50,11 +38,8 @@ export async function selectSourceCatalog({scopeId='lo3rwang',limit=null,offset=
   for(const row of rows){
     const source=String(row.source_name||'').trim();
     if(!source)continue;
-    const current=map.get(source)||{scope_id:'lo3rwang',source_name:source,work_count:0,first_created_at:null,last_created_at:null};
+    const current=map.get(source)||{scope_id:'lo3rwang',source_name:source,work_count:0};
     current.work_count+=1;
-    const time=row.created_at||null;
-    if(time&&(!current.first_created_at||String(time)<String(current.first_created_at)))current.first_created_at=time;
-    if(time&&(!current.last_created_at||String(time)>String(current.last_created_at)))current.last_created_at=time;
     map.set(source,current);
   }
   const all=[...map.values()].sort((a,b)=>b.work_count-a.work_count||a.source_name.localeCompare(b.source_name));
@@ -70,7 +55,7 @@ export async function selectSourceWeekly({scopeId='lo3rwang',startDate='',endDat
   const map=new Map();
   for(const row of rows){
     const source=String(row.source_name||'').trim();
-    const weekStart=mondayOf(row.created_at);
+    const weekStart=mondayOf(row.createtime);
     if(!source||!weekStart)continue;
     const key=source+'|'+weekStart;
     const current=map.get(key)||{scope_id:'lo3rwang',source_name:source,week_start:weekStart,work_count:0};
@@ -87,11 +72,11 @@ export async function selectSourceWeekly({scopeId='lo3rwang',startDate='',endDat
 export async function selectGalaxyPage({sourceName='',startDate='',endDate='',limit=20,offset=0}={}){
   const filters=[];
   if(sourceName)filters.push({column:'source_name',operator:'eq',value:sourceName});
-  filters.push(...timeFilters('created_at',startDate,endDate));
+  filters.push(...timeFilters('createtime',startDate,endDate));
   const {rows,count}=await selectNeonRows('silver.lo3rwang_galaxy',{
-    columns:'galaxy_id,source_name,created_at,title',
+    columns:'galaxy_id,source_name,createtime,title',
     filters,
-    orders:[{column:'created_at',ascending:false}],
+    orders:[{column:'createtime',ascending:false}],
     limit,
     offset,
     count:'exact'

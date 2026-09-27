@@ -7,7 +7,7 @@ import {useNeonAccount} from './use-neon-account';
 import ContentEditorV2 from '../modular-v2/ContentEditorV2';
 
 const blank=()=>({
-  title:'',body:'',source:'',url:'',source_id:'',target_id:'',ref_id:'',create_time:'',
+  title:'',body:'',source:'',url:'',source_id:'',target_id:'',ref_id:'',createtime:'',
   includeStatistics:true,hidden:false,showLink:true,showSource:true
 });
 
@@ -29,14 +29,12 @@ export default function ManagementArticlePublisher({scopeId}){
       const id='article:'+globalThis.crypto.randomUUID();
 
       await insertNeonRows('silver.lo3rwang_galaxy',[{
-        galaxy_id:id,scope_id:'lo3rwang',source:draft.source.trim(),
+        galaxy_id:id,scope_id:'lo3rwang',category:'article',content_type:'article',source_role:'article',
         title:draft.title.trim()||null,content:draft.body.trim()||null,
         source_id:draft.source_id.trim()||null,target_id:draft.target_id.trim()||null,ref_id:draft.ref_id.trim()||null,
-        url:draft.url.trim()||null,
-        search:!draft.hidden,
-        statics:draft.includeStatistics!==false,
-        create_time:draft.create_time?new Date(draft.create_time).toISOString():now,
-        update_time:now
+        url:draft.url.trim()||null,searchable:!draft.hidden,
+        createtime:draft.createtime?new Date(draft.createtime).toISOString():now,
+        source_name:draft.source.trim(),source_type:'content'
       }]);
 
       await saveResourceVisibility({
@@ -52,7 +50,7 @@ export default function ManagementArticlePublisher({scopeId}){
     <div className="scope-v2-stat-controls">
       <label>來源<input value={draft.source} onChange={e=>setDraft(current=>({...current,source:e.target.value}))} placeholder="例如 threads / vocus / personal"/></label>
       <label>原始連結<input value={draft.url} onChange={e=>setDraft(current=>({...current,url:e.target.value}))}/></label>
-      <label>發表時間<input type="datetime-local" value={draft.create_time} onChange={e=>setDraft(current=>({...current,create_time:e.target.value}))}/></label>
+      <label>發表時間<input type="datetime-local" value={draft.createtime} onChange={e=>setDraft(current=>({...current,createtime:e.target.value}))}/></label>
     </div>
     <div className="scope-v2-stat-controls">
       <label>source_id<input value={draft.source_id} onChange={e=>setDraft(current=>({...current,source_id:e.target.value}))} placeholder="上層／來源"/></label>

@@ -6,7 +6,7 @@ import {selectNeonAllRows,updateNeonRows} from '../../loc/neon-repository';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 
-const MEDIA_TYPE_LABELS={song:'曲目',reel:'Reels',video:'影片',image:'圖像',audio:'音訊'};
+const MEDIA_TYPE_LABELS={suno:'Suno',instagram:'Instagram'};
 function splitTags(value){
   return String(value||'').split(/[,，]/).map(tag=>tag.trim()).filter(Boolean);
 }
@@ -52,9 +52,9 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
     enabled:Boolean(selectedTag),
     queryFn:async()=>{
       const {rows}=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
-        columns:'media_id,title,media_type,source_name,meta_tags,create_time',
+        columns:'media_id,title,media_type,meta_tags,createtime',
         filters:[{column:'meta_tags',operator:'ilike',value:'%'+selectedTag+'%'}],
-        orders:[{column:'create_time',ascending:false,nullsFirst:false}]
+        orders:[{column:'createtime',ascending:false,nullsFirst:false}]
       });
       return rows;
     },
@@ -95,7 +95,7 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
       {mediaQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(mediaQuery.error)}</p>:null}
       <div className="scope-v2-media-meta-list">
         {(mediaQuery.data||[]).map(row=><article key={row.media_id}>
-          <div><strong>{row.title||'未命名媒體'}</strong><span>{MEDIA_TYPE_LABELS[String(row.media_type||'').toLowerCase()]||row.media_type||'媒體'} · {row.source_name||''}</span></div>
+          <div><strong>{row.title||'未命名媒體'}</strong><span>{MEDIA_TYPE_LABELS[String(row.media_type||'').toLowerCase()]||row.media_type||'媒體'}</span></div>
           {editingId===row.media_id?<div className="scope-v2-media-meta-editor">
             <input className="scope-v2-search-input" value={draft} onChange={event=>setDraft(event.target.value)}/>
             <button type="button" onClick={()=>save(row)}>儲存</button>

@@ -81,9 +81,9 @@ const authorText=makeProvider({
   source:'作者正文',
   scopeId:'lo3rwang',
   idColumn:'galaxy_id',
-  columns:['galaxy_id','scope_id','title','source_name','source_id','target_id','ref_id','url','created_at'],
+  columns:['galaxy_id','scope_id','title','source_name','source_id','target_id','ref_id','url','createtime'],
   searchFields:['title','content','source_name'],
-  dateColumn:'created_at'
+  dateColumn:'createtime'
 });
 
 const authorMedia=makeProvider({
@@ -92,9 +92,9 @@ const authorMedia=makeProvider({
   source:'音樂與多媒體',
   scopeId:'lo3rwang',
   idColumn:'media_id',
-  columns:['media_id','galaxy_link','source_name','source_native_id','media_type','title','url','meta_tags','create_time'],
-  searchFields:['title','meta_tags','source_name'],
-  dateColumn:'create_time'
+  columns:['media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','createtime'],
+  searchFields:['title','meta_tags','media_type'],
+  dateColumn:'createtime'
 });
 
 const authorTimeline=makeProvider({

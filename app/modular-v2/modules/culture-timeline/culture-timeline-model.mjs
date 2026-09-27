@@ -66,7 +66,7 @@ export function decodeCultureText(value){
 export function groupWorksByWeek(rows=[],field='source_name'){
   const groups=new Map();
   for(const work of Array.isArray(rows)?rows:[]){
-    const timestamp=work?.created_at||work?.start_date||work?.date;
+    const timestamp=work?.createtime||work?.created_at||work?.start_date||work?.date;
     const start=utcWeekStart(timestamp);
     if(!start)continue;
     const category=String(work?.[field]||'').trim();

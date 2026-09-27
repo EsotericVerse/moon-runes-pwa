@@ -12,9 +12,7 @@ async function readSources(scopeId){
   const result=await selectSourceCatalog({scopeId:'lo3rwang'});
   return result.rows.map(row=>({
     source:row.source_name,
-    count:Number(row.work_count)||0,
-    first_created_at:row.first_created_at,
-    last_created_at:row.last_created_at
+    count:Number(row.work_count)||0
   }));
 }
 
