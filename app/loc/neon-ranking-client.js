@@ -29,25 +29,6 @@ function dateFilters(range,column='createtime'){
   return filters;
 }
 
-async function authorStatisticsExclusions(){
-  const {rows}=await selectNeonAllRows('silver.resource_visibility',{
-    columns:'resource_type,resource_id',
-    filters:[
-      {column:'scope',operator:'eq',value:'lo3rwang'},
-      {column:'statistics_included',operator:'eq',value:false}
-    ]
-  });
-  const galaxy=new Set(),media=new Set();
-  for(const row of rows){
-    const type=String(row.resource_type||'');
-    const id=String(row.resource_id||'').trim();
-    if(!id)continue;
-    if(type==='galaxy'||type==='work')galaxy.add(id);
-    else if(type==='galaxy_media'||type==='media'||type==='song_version')media.add(id);
-  }
-  return {galaxy,media};
-}
-
 async function resolvePeriod(scopeId,period){
   const value=String(period||'').trim();
   if(!value||value==='all')return null;
@@ -75,14 +56,12 @@ function addKeywordCounts(map,rows,source,period){
 async function authorKeywords(period,rangeOverride){
   const range=rangeOverride===undefined?await resolvePeriod('lo3rwang',period):rangeOverride;
   const filters=dateFilters(range,'createtime');
-  const exclusions=await authorStatisticsExclusions();
   const map=new Map();
   await processKeywordTableRows('silver.lo3rwang_galaxy',{
     scopeId:'lo3rwang',
     columns:'uid,title,content,createtime',
     filters:publicContentFilters(filters),
     orders:[{column:'createtime',ascending:true}],
-    rowFilter:row=>!exclusions.galaxy.has(String(row.uid||'')),
     onCounts:rows=>addKeywordCounts(map,rows,'lo3rwang',period)
   });
   const mediaResult=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
@@ -90,7 +69,7 @@ async function authorKeywords(period,rangeOverride){
     filters
   });
   addKeywordCounts(map,await countKeywordHits(
-    mediaResult.rows.filter(row=>!exclusions.media.has(String(row.media_id||''))),
+    mediaResult.rows,
     'lo3rwang'
   ),'lo3rwang',period);
   return [...map.values()];
@@ -98,8 +77,7 @@ async function authorKeywords(period,rangeOverride){
 
 async function authorSources(period,rangeOverride){
   const range=rangeOverride===undefined?await resolvePeriod('lo3rwang',period):rangeOverride;
-  const exclusions=await authorStatisticsExclusions();
-  const excludedIds=[...exclusions.galaxy];
+  const excludedIds=[];
   const map=new Map();
   if(!range){
     const result=await selectSourceCatalog({scopeId:'lo3rwang',excludedIds});
@@ -188,9 +166,8 @@ function splitMediaTags(value){
 
 async function authorMedia(period,type,rangeOverride){
   const range=rangeOverride===undefined?await resolvePeriod('lo3rwang',period):rangeOverride;
-  const exclusions=await authorStatisticsExclusions();
   const map=new Map();
-  if(!range&&type==='media_type'&&exclusions.media.size===0){
+  if(!range&&type==='media_type'){
     const summary=await selectNeonRows('silver.lo3rwang',{
       columns:'id,media_counts',
       filters:[{column:'id',operator:'eq',value:'lo3rwang'}],
@@ -220,7 +197,6 @@ async function authorMedia(period,type,rangeOverride){
     filters:dateFilters(range,'createtime')
   });
   for(const row of rows){
-    if(exclusions.media.has(String(row.media_id||'')))continue;
     if(type==='media_type')increment(map,type,row.media_type,{source:'lo3rwang',period:period||'all'});
     else for(const tag of splitMediaTags(row.meta_tags))increment(map,type,tag,{source:'lo3rwang',period:period||'all'});
   }
@@ -322,14 +298,12 @@ async function keywordDiagnosticsForRange(id,range){
   const state=createKeywordDiagnostics();
   const dateRange=dateFilters(range,'createtime');
   if(id==='lo3rwang'){
-    const exclusions=await authorStatisticsExclusions();
-    await processKeywordObservationRows('silver.lo3rwang_galaxy',{
+      await processKeywordObservationRows('silver.lo3rwang_galaxy',{
       scopeId:'lo3rwang',
       columns:'uid,title,content,source_name,createtime',
       filters:dateRange,
       orders:[{column:'createtime',ascending:true}],
-      rowFilter:row=>!exclusions.galaxy.has(String(row.uid||'')),
-      onObserved:rows=>addKeywordObservedRows(state,rows)
+        onObserved:rows=>addKeywordObservedRows(state,rows)
     });
     const media=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
       columns:'media_id,title,meta_tags,media_type,createtime',
