@@ -73,7 +73,7 @@ function GovernanceHome(){
       <p className="loc-eyebrow">Management</p>
       <h2>系統管理</h2>
       <p>Admin 是獨立管理站，不屬於 Scope。</p>
-      <a className="loc-button primary" href={adminHref}>進入 admin.lo3rwang.cc</a>
+      <a className="loc-button primary" href={adminHref}>進入獨立管理站</a>
     </section>:<section className="loc-card">
       <p className="loc-eyebrow">Scope Management</p>
       <h2>{getScopeV2(scopeId).label}管理</h2>
