@@ -91,6 +91,7 @@ function CurrentCultureRivers({rows,onSelect=null}){
   const personalStartTime=Date.parse(personalCurrent.start);
   const runeStartTime=Date.parse(runeCurrent.start);
   const intersectionStart=Math.max(personalStartTime,runeStartTime);
+  const domainStart=intersectionStart;
   const today=Date.parse(new Date().toISOString().slice(0,10));
   const personalEnd=Date.parse(personalCurrent.end||'');
   const runeEnd=Date.parse(runeCurrent.end||'');
@@ -109,7 +110,7 @@ function CurrentCultureRivers({rows,onSelect=null}){
   const intersectionColor='var(--loc-accent,#6b63ff)';
   const personalTitle=personalCurrent.content||'Current 個人時期';
   const runeTitle=runeCurrent.content||'Current LunaRunes';
-  const startLabel=dateLabel(intersectionStart);
+  const startLabel=dateLabel(domainStart);
   const endLabel=dateLabel(intersectionEnd);
 
   return <section className='scope-v2-current-rivers'>
@@ -117,7 +118,7 @@ function CurrentCultureRivers({rows,onSelect=null}){
       <svg viewBox='0 0 1200 520' role='img' aria-label='Current 個人時期與 LunaRunes Current 的交集時間河道' style={{display:'block',width:'100%',minWidth:'900px',height:'520px'}}>
         <title>兩個 Scope Current 時期的集合交集</title>
         <rect x='20' y='20' width='1160' height='480' rx='24' fill='var(--loc-panel,#fff)' stroke='var(--loc-border,#999)' strokeWidth='1'/>
-        <text x='64' y='72' fill='var(--loc-text,#111)' fontSize='23' fontWeight='700'>Current 交會集合</text>
+        <text x='64' y='72' fill='var(--loc-text,#111)' fontSize='23' fontWeight='700'>Current × Current 交會集合</text>
         <text x='64' y='104' fill='var(--loc-muted,#666)' fontSize='14'>只顯示兩個 Current 同時成立的集合交集，不做加總。</text>
 
         <text x='600' y='188' textAnchor='middle' fill='var(--loc-text,#111)' fontSize='16' fontWeight='700'>{personalTitle} ∩ {runeTitle}</text>
