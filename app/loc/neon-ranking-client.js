@@ -1,7 +1,7 @@
 import {ScopeRankingResponseSchema} from './scope-feature-contracts';
-import {selectNeonAllRows,selectNeonCatalog,selectNeonRows} from './neon-repository';
+import {selectNeonAllRows,selectNeonRows} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
-import {classifyStyleRows,processKeywordObservationRows,processKeywordTableRows,processStyleTableRows,countStyleKeywordHits,observeStyleKeywordHits,selectKeywordCatalog} from './style-classifier';
+import {processKeywordObservationRows,processKeywordTableRows,countKeywordHits,observeKeywordHits,selectKeywordCatalog} from './keyword-classifier';
 import {selectSourceCatalog,selectSourceWeekly} from './aggregate-query';
 import {selectManagedScopeIds} from './scope-list';
 import {publicContentFilters} from './content-policy';
@@ -89,7 +89,7 @@ async function authorKeywords(period,rangeOverride){
     columns:'media_id,title,meta_tags,createtime',
     filters
   });
-  addKeywordCounts(map,await countStyleKeywordHits(
+  addKeywordCounts(map,await countKeywordHits(
     mediaResult.rows.filter(row=>!exclusions.media.has(String(row.media_id||''))),
     'lo3rwang'
   ),'lo3rwang',period);
@@ -155,7 +155,7 @@ async function runeKeywords(period,rangeOverride){
     filters:dateRange,
     orders:[{column:'createtime',ascending:true}]
   });
-  addKeywordCounts(map,await countStyleKeywordHits(mediaResult.rows,'lunarunes'),'lrunes',period);
+  addKeywordCounts(map,await countKeywordHits(mediaResult.rows,'lunarunes'),'lrunes',period);
   return [...map.values()];
 }
 
@@ -252,13 +252,13 @@ async function rowsForType(id,type,period,rangeOverride){
     if(type==='keyword')return authorKeywords(period,rangeOverride);
     if(type==='source')return authorSources(period,rangeOverride);
     if(type.startsWith('media_'))return authorMedia(period,type,rangeOverride);
-    return authorStyles(period,type,rangeOverride);
+    return [];
   }
   if(id==='lunarunes'){
     if(type==='keyword')return runeKeywords(period,rangeOverride);
     if(type==='source')return runeSources(period,rangeOverride);
     if(type.startsWith('media_'))return runeMedia(period,type,rangeOverride);
-    return runeStyles(period,type,rangeOverride);
+    return [];
   }
   return [];
 }
@@ -335,7 +335,7 @@ async function keywordDiagnosticsForRange(id,range){
       columns:'media_id,title,meta_tags,media_type,createtime',
       filters:dateRange
     });
-    addKeywordObservedRows(state,await observeStyleKeywordHits(
+    addKeywordObservedRows(state,await observeKeywordHits(
       media.rows.filter(row=>!exclusions.media.has(String(row.media_id||''))),
       'lo3rwang'
     ));
@@ -352,7 +352,7 @@ async function keywordDiagnosticsForRange(id,range){
       filters:dateRange,
       orders:[{column:'createtime',ascending:true}]
     });
-    addKeywordObservedRows(state,await observeStyleKeywordHits(media.rows,'lunarunes'));
+    addKeywordObservedRows(state,await observeKeywordHits(media.rows,'lunarunes'));
   }
   return finalizeKeywordDiagnostics(state);
 }
@@ -415,64 +415,6 @@ async function resolveComparisonRanges(scopeId,period){
     previousPeriod:String(previous.period||previous.entry_key||''),
     previousPeriodLabel:String(previous.title||previous.label||previous.period||previous.entry_key||'前一時期')
   };
-}
-
-async function authorStyles(period,type,rangeOverride){
-  const range=rangeOverride===undefined?await resolvePeriod('lo3rwang',period):rangeOverride;
-  const filters=dateFilters(range,'createtime');
-  const exclusions=await authorStatisticsExclusions();
-  const map=new Map();
-  await processStyleTableRows('silver.lo3rwang_galaxy',{
-    scopeId:'lo3rwang',
-    columns:'uid,title,content,createtime',
-    filters,
-    orders:[{column:'createtime',ascending:true}],
-    rowFilter:row=>!exclusions.galaxy.has(String(row.uid||'')),
-    onClassified:row=>{
-      const term=type==='style_group'?row.style_group:row.style_label;
-      increment(map,type,term,{source:'lo3rwang',period:period||'all'});
-    }
-  });
-  const mediaResult=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
-    columns:'media_id,title,meta_tags,createtime',
-    filters:dateFilters(range,'createtime')
-  });
-  const mediaClassified=await classifyStyleRows(
-    mediaResult.rows.filter(row=>!exclusions.media.has(String(row.media_id||''))),
-    'lo3rwang'
-  );
-  for(const row of mediaClassified){
-    const term=type==='style_group'?row.style_group:row.style_label;
-    increment(map,type,term,{source:'lo3rwang',period:period||'all'});
-  }
-  return [...map.values()];
-}
-
-async function runeStyles(period,type,rangeOverride){
-  const range=rangeOverride===undefined?await resolvePeriod('lunarunes',period):rangeOverride;
-  const dateRange=dateFilters(range);
-  const map=new Map();
-  await processStyleTableRows('silver.lrunes_galaxy',{
-    scopeId:'lunarunes',
-    columns:'uid,title,content,createtime',
-    filters:dateRange,
-    orders:[{column:'createtime',ascending:true}],
-    onClassified:row=>{
-      const term=type==='style_group'?row.style_group:row.style_label;
-      increment(map,type,term,{source:'lrunes',period:period||'all'});
-    }
-  });
-  const mediaResult=await selectNeonAllRows('silver.lrunes_galaxy_media',{
-    columns:'media_id,title,meta_tags,createtime',
-    filters:dateRange,
-    orders:[{column:'createtime',ascending:true}]
-  });
-  const mediaClassified=await classifyStyleRows(mediaResult.rows,'lunarunes');
-  for(const row of mediaClassified){
-    const term=type==='style_group'?row.style_group:row.style_label;
-    increment(map,type,term,{source:'lrunes',period:period||'all'});
-  }
-  return [...map.values()];
 }
 
 function mergeRows(rows){
