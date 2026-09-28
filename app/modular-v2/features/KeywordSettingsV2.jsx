@@ -5,7 +5,7 @@ import {selectRuneKeywordCatalog} from '../../loc/rune-repository';
 import {FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import RuneKeywordSettingsV2 from './RuneKeywordSettingsV2';
 
-export default function KeywordSettingsV2({scopeId='loc'}){
+export default function KeywordSettingsV2({scopeId='loc',editable=false}){
   const enabled=scopeId==='lunarunes';
   const runeQuery=useQuery({
     queryKey:['rune-keyword-catalog'],
@@ -21,7 +21,7 @@ export default function KeywordSettingsV2({scopeId='loc'}){
       <h4>符文關鍵詞詞庫（2D 圓形圖）</h4>
       {runeQuery.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
       {runeQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(runeQuery.error)}</p>:null}
-      {!runeQuery.isPending&&!runeQuery.error?<RuneKeywordSettingsV2 runes={runeQuery.data?.runes||[]} readOnly/>:null}
+      {!runeQuery.isPending&&!runeQuery.error?<RuneKeywordSettingsV2 runes={runeQuery.data?.runes||[]} readOnly={!editable}/>:null}
     </section>
   </div>;
 }
