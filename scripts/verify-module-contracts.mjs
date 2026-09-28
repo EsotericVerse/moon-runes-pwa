@@ -93,7 +93,6 @@ for(const [client,contract] of [
 
 const listLoadingContract=readFileSync(resolve(root,'app/loc/list-loading-contract.mjs'),'utf8');
 const incrementalLoader=readFileSync(resolve(root,'app/modular-v2/IncrementalLoadV2.jsx'),'utf8');
-const contentPolicy=readFileSync(resolve(root,'app/loc/content-policy.js'),'utf8');
 const textEngine=readFileSync(resolve(root,'app/loc/text-engine.mjs'),'utf8');
 const searchProviders=readFileSync(resolve(root,'app/loc/search-providers.js'),'utf8');
 const keywordClassifier=readFileSync(resolve(root,'app/loc/keyword-classifier.js'),'utf8');
