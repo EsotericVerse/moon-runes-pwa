@@ -1,6 +1,7 @@
 export function realMoonPhase(date = new Date()) {
   try {
     const formatter = new Intl.DateTimeFormat('zh-TW-u-ca-chinese', {
+      timeZone: 'Asia/Taipei',
       year: 'numeric',
       month: 'numeric',
       day: 'numeric'
