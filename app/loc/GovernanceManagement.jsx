@@ -62,7 +62,7 @@ function Structure({scopeId}){
 }
 
 function KeywordStructure({scopeId}){
-  if(scopeId==='loc')return null;
+  if(scopeId!=='lunarunes')return null;
   return <div className="scope-v2-list">
     <KeywordSettingsV2 scopeId={scopeId}/>
   </div>;
@@ -86,7 +86,7 @@ export default function GovernanceManagement(){
   const sections=[
     ['workspace','工作區'],
     ['structure',scopeId==='loc'?'來源':'時期與來源'],
-    ...(scopeId!=='loc'?[['keywords','關鍵詞設定']]:[]),
+    ...(scopeId==='lunarunes'?[['keywords','關鍵詞設定']]:[]),
     ...(scopeId==='lunarunes'?[['daily','每日符文']]:[]),
   ];
 
