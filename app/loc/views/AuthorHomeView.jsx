@@ -165,7 +165,7 @@ export default function AuthorHomeView({section=null}){
   if(!section)return <PageComposition
     eyebrow="Lucas Oscar Wang"
     title="政德"
-    subtitle="語言架構師"
+    subtitle="語言建築師"
     intro={<><p>Hello！ 你好！你可以叫我Oscar。不認識我沒關係，先來聽首我創作歌詞的歌吧！</p>
 	<p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽〈這就是我〉 →</a></p>
 	<p>微月光：「我只是微月光，若我的存在光芒能讓你在全黑夜中找到希望，我會感到榮幸，但這並不是我生來就注定成為希望。」</p>
@@ -180,7 +180,7 @@ export default function AuthorHomeView({section=null}){
       title:'認識我',
       content:<ScopeOverviewNetwork
         centerTitle="Lucas Oscar Wang 政德"
-        centerSummary="語言架構師。架構這一切的建築師。"
+        centerSummary="語言建築師。架構這一切的建築師。"
         nodes={AUTHOR_OVERVIEW_NODES}
       />
     }
