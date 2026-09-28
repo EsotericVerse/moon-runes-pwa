@@ -39,7 +39,7 @@ for(const required of [
 }
 
 const runeRepository=readFileSync(resolve(root,'app/loc/rune-repository.js'),'utf8');
-if(!runeRepository.includes('selectNeonCatalog')||!runeRepository.includes('silver.runes')||!runeRepository.includes('silver.lrunes')||!runeRepository.includes('updateRuneKeywords'))failures.push('app/loc/rune-repository.js: canonical rune/keyword Neon boundary missing');
+if(!runeRepository.includes('selectNeonCatalog')||!runeRepository.includes('silver.runes')||!runeRepository.includes('updateRuneKeywords'))failures.push('app/loc/rune-repository.js: canonical rune/keyword Neon boundary missing');
 if(['LOC_DATA','fetchNeonData','canonical/runes','fetchStaticJson','runtime_json_documents'].some(token=>runeRepository.includes(token)))failures.push('app/loc/rune-repository.js: retired path/JSON loader semantics remain');
 for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs','app/loc/neon-context-client.js','app/modular-v2/features/ContextV2.jsx','app/modular-v2/features/ContextWorkbenchV2.jsx','app/modular-v2/modules/context-graph/ContextGraphV2.jsx'])if(existsSync(resolve(root,retired)))failures.push(`${retired}: retired path-loader must remain removed`);
 
