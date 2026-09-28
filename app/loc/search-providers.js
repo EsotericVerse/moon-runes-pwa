@@ -118,8 +118,8 @@ const authorTimeline=makeProvider({
   source:'作者脈絡',
   scopeId:'lo3rwang',
   idColumn:'record_id',
-  columns:['record_id','record_type','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility','include_in_time','projection_level','style_tags'],
-  searchFields:['label','note','status','style_tags'],
+  columns:['record_id','record_type','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility','include_in_time'],
+  searchFields:['label','note','status'],
   dateColumn:'time_date',
   filters:[
     {column:'record_type',operator:'in',value:['anchor','period','event']},
@@ -143,8 +143,8 @@ const runeTimeline=makeProvider({
   source:'符文時期',
   scopeId:'lrunes',
   idColumn:'record_id',
-  columns:['record_id','record_type','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility','include_in_time','projection_level','style_tags'],
-  searchFields:['label','note','status','style_tags'],
+  columns:['record_id','record_type','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility','include_in_time'],
+  searchFields:['label','note','status'],
   dateColumn:'time_date',
   filters:[
     {column:'record_type',operator:'in',value:['anchor','period','event']},
