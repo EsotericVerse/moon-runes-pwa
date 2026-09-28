@@ -3,11 +3,12 @@
 import {useMemo,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {
-  applyDe,draw,evaluateLegacyEvent,finishOpening,freshPlayer,HAND_RULE,
-  loadGameRuneData,MULTI_PLAYER_ROUNDS,shuffle,TWO_PLAYER_ROUNDS
+  applyDe,draw,evaluateAlphaEvent,finishOpening,freshPlayer,GAME_ROUNDS,HAND_RULE,
+  loadGameRuneData,shuffle
 } from './game-data';
 import {GAME_DOC_SECTIONS,GAME_HISTORY,GAME_ROLES} from './game-docs';
-import {GAME_AUTHOR_VISUAL,GAME_EVENT_VISUALS,GAME_GROUPS,runeCardImage} from './game-assets';
+import {GAME_EVENTS} from './game-events';
+import {GAME_AUTHOR_VISUAL,GAME_EVENT_VISUALS,GAME_GROUPS,groupVisual,runeCardImage} from './game-assets';
 
 const NAMES=['A','B','C','D'];
 const resultText={perfect:'完美 4/4 · De +2',pass:'過關 3/4 · De +1',fair:'尚可 2/4 · De +0',replenish:'補牌 1/4 · De +0',fail:'不行 0/4 · De −1'};
@@ -40,13 +41,13 @@ function EventVisual({item,small=false}){
   </figure>;
 }
 
-function RoundRail({round=1,count=2}){
-  const sequence=count===2?TWO_PLAYER_ROUNDS:MULTI_PLAYER_ROUNDS;
+function RoundRail({round=1}){
+  const sequence=round===9?[...GAME_ROUNDS,'duel']:GAME_ROUNDS;
   return <div className="game-round-rail" aria-label="回合進度">
     {sequence.map((phase,index)=>{
       const current=index+1===round;
       const done=index+1<round;
-      const label=phase==='event'?'E':phase.includes('battle')?'B':'R';
+      const label=phase==='event'?'E':phase==='duel'?'D':'R';
       return <div className={'game-round-node'+(current?' is-current':'')+(done?' is-done':'')} key={index}>
         <span>R{index+1}</span><b>{label}</b>
       </div>;
@@ -68,14 +69,16 @@ function GameDocs(){
       <p><b>資料：</b>遊戲符文只讀 silver.runes 與 silver.runes_etc；01–66 進可玩牌庫，0 德不進抽牌。</p>
     </div>}
     {section==='events'&&<div className="game-doc-copy">
-      <h2>Event 視覺基底</h2>
-      <p>既有四張圖先作雙群組 Event 的主視覺。後續 Event 可擴充成更多雙群組／雙職主題，不以這四張作數量上限。</p>
+      <h2>Event32</h2>
+      <p>32 張 Alpha 事件文字已恢復。需求簡稱保留作 Alpha 相容標記；Current Event 主題仍以八分組與後續雙職／雙組設計為準。</p>
+      <div className="game-role-grid">{GAME_EVENTS.map(event=><article key={event.id}><b>{event.id}｜{event.name}</b><span>{event.group}｜{event.requirement}</span><small>{event.description}</small></article>)}</div>
+      <h3>既有雙群組主視覺</h3>
       <div className="game-event-gallery">{GAME_EVENT_VISUALS.map(item=><EventVisual key={item.id} item={item}/>)}</div>
     </div>}
     {section==='roles'&&<div className="game-doc-copy">
       <h2>八職｜可再議</h2>
       <p>保留早期八分組對應文字，作為 Event 主題素材；職稱、模式與細節仍可調整。</p>
-      <div className="game-role-grid">{GAME_ROLES.map(role=><article key={role.group}><b>{role.group}｜{role.name}</b><span>{role.focus}</span><small>{role.mode}</small></article>)}</div>
+      <div className="game-role-grid">{GAME_ROLES.map(role=><article key={role.group}><b>{role.group}｜{role.name}</b><span>{role.focus}｜{role.mode}｜{role.intervention}</span><small>{role.tagline}｜{role.tool}</small></article>)}</div>
     </div>}
     {section==='history'&&<div className="game-doc-copy">
       <h2>版本與歷史</h2>
@@ -113,15 +116,15 @@ function freshGame(events,cards,count){
     mode:count===2?'2p':'multi',
     players:Array.from({length:count},(_,index)=>freshPlayer(cards,'Player '+NAMES[index])),
     eventDeck,eventIndex:0,round:1,
-    phase:(count===2?TWO_PLAYER_ROUNDS:MULTI_PLAYER_ROUNDS)[0],
+    phase:GAME_ROUNDS[0],
     active:0,actions:0,winner:null,draw:false,
     logs:['新遊戲開始。'],
     result:'每位玩家先從 8 張起手牌各棄 3 張，保留 5 張。'
   };
 }
 
-function clampRound(count,round){
-  return (count===2?TWO_PLAYER_ROUNDS:MULTI_PLAYER_ROUNDS)[round-1];
+function phaseForRound(round){
+  return GAME_ROUNDS[round-1];
 }
 
 export default function GameView(){
@@ -136,7 +139,7 @@ export default function GameView(){
   const [state,setState]=useState(null);
   const [playerCount,setPlayerCount]=useState(2);
   const [homeView,setHomeView]=useState('play');
-  const events=[];
+  const events=GAME_EVENTS;
   const event=state?.eventDeck?.length?state.eventDeck[state.eventIndex%state.eventDeck.length]:null;
   const allOpened=state?.players.every(player=>!player.opening);
   const phaseLabel=state?.phase==='event'?'Event':state?.phase?.includes('battle')?'Battle':'Resonance';
@@ -144,7 +147,7 @@ export default function GameView(){
   const status=useMemo(()=>{
     if(error)return '遊戲符文資料載入失敗：'+error.message;
     if(isLoading)return '正在讀取 silver.runes 與 silver.runes_etc…';
-    if(!state)return '66 張可玩符文已就緒。Event 正式資料仍待整理。';
+    if(!state)return '66 張可玩符文與 Event32 已就緒。';
     if(state.winner!==null)return state.players[state.winner].name+' 勝出。';
     if(state.draw)return 'R8 同分；多人後續判定尚未定案。';
     return 'R'+state.round+' · '+phaseLabel;
@@ -182,14 +185,15 @@ export default function GameView(){
     const leaders=current.players.map((player,index)=>player.de===max?index:null).filter(index=>index!==null);
     if(leaders.length===1)return {...current,winner:leaders[0]};
     return current.mode==='2p'
-      ?{...current,phase:'duel',active:0,actions:0,result:'R8 同分，進入 R9 Duel。'}
-      :{...current,draw:true,result:'R8 同分；多人後續判定保留測試。'};
+      ?{...current,round:9,phase:'duel',active:0,actions:0,result:'R8 同分，進入 R9 Duel。'}
+      :{...current,round:9,phase:'duel',active:0,actions:0,result:'R8 平分，進入 R9 Duel；多人 Duel 細節仍待測試。'};
   }
 
   function nextRound(current){
     if(current.round===8)return settleIfFinal(current);
     const round=current.round+1;
-    return {...current,round,phase:clampRound(current.players.length,round),active:0,actions:0,eventIndex:current.eventIndex+(clampRound(current.players.length,round)==='event'?1:0)};
+    const phase=phaseForRound(round);
+    return {...current,round,phase,active:0,actions:0,eventIndex:current.eventIndex+(phase==='event'?1:0)};
   }
 
   function resolve2PEvent(){
@@ -198,7 +202,7 @@ export default function GameView(){
       try{
         const outcomes=current.players.map(player=>{
           const chosen=player.hand.filter(card=>player.selected.includes(card.id));
-          const outcome=evaluateLegacyEvent(chosen,event);
+          const outcome=evaluateAlphaEvent(chosen,event);
           let next=applyDe(player,outcome.delta);
           next={...next,hand:next.hand.filter(card=>!player.selected.includes(card.id)),discard:[...next.discard,...chosen],selected:[]};
           next=draw(next,outcome.result==='fail'?HAND_RULE.failDraw:HAND_RULE.eventDraw);
@@ -228,18 +232,6 @@ export default function GameView(){
     });
   }
 
-  function battle(target,strength=1){
-    setState(current=>{
-      if(!current||!current.phase?.includes('battle'))return current;
-      const actor=current.active;
-      if(target===actor)return current;
-      const players=current.players.map((player,index)=>index===target?applyDe(player,-Math.max(1,Math.min(4,strength))):player);
-      const actions=current.actions+1;
-      const next={...current,players,actions,active:(actor+1)%current.players.length,logs:['R'+current.round+' Battle：'+NAMES[actor]+' → '+NAMES[target]+'（測試 strength 1）',...current.logs]};
-      return actions===current.players.length?nextRound(next):next;
-    });
-  }
-
   if(!state)return <section className="loc-view loc-game game-shell">
     <header className="loc-hero game-hero">
       <div>
@@ -251,7 +243,7 @@ export default function GameView(){
       <figure className="game-author-visual"><img src={GAME_AUTHOR_VISUAL} alt="LunaRunes 作者風格圖" loading="eager"/></figure>
     </header>
 
-    <div className="game-round-wrap"><RoundRail round={1} count={playerCount}/></div>
+    <div className="game-round-wrap"><RoundRail round={1}/></div>
 
     <div className="loc-actions game-home-tabs">
       <button className={'loc-button '+(homeView==='play'?'primary':'')} onClick={()=>setHomeView('play')}>遊戲盤面</button>
@@ -278,19 +270,20 @@ export default function GameView(){
         </label>
         <button className="loc-button primary" onClick={start} disabled={!cards.length||!events.length}>開始新遊戲</button>
         <p className="loc-status">{status}</p>
-        {!events.length?<p className="loc-note">Event 正式資料尚未統一，因此先完成盤面與素材圖形化；不以四張既有合圖偽造完整 Event 牌庫。</p>:null}
+        <p className="loc-note">Event32 已恢復；四張既有雙群組圖作視覺資產，不限制事件牌庫只有四類。</p>
       </div>
     </>}
   </section>;
 
   const activeEventVisual=GAME_EVENT_VISUALS[state.eventIndex%GAME_EVENT_VISUALS.length];
+  const eventGroupVisual=event?groupVisual(event.group):null;
 
   return <section className="loc-view loc-game game-shell">
     <header className="loc-hero game-compact-hero">
       <div><p className="loc-eyebrow">LunaRunes Game · Alpha</p><h1>LunaRunes Game</h1><p>{status}｜{state.result}</p></div>
       <DeMeter value={Math.max(...state.players.map(player=>player.de))}/>
     </header>
-    <div className="game-round-wrap"><RoundRail round={state.round} count={state.players.length}/></div>
+    <div className="game-round-wrap"><RoundRail round={state.round}/></div>
 
     {!allOpened?<p className="loc-status">起手設定：每位玩家從 8 張棄 3 張，保留 5 張。</p>:null}
 
@@ -309,8 +302,8 @@ export default function GameView(){
 
       {allOpened&&state.phase==='event'?<section className="loc-event game-event-field">
         <p className="loc-eyebrow">R{state.round} · EVENT</p>
-        <EventVisual item={activeEventVisual}/>
-        {event?<><h2>{event.name}</h2><p>{event.desc}</p><button className="loc-button primary" onClick={resolve2PEvent} disabled={state.mode!=='2p'||state.players.some(player=>player.selected.length!==2)}>雙卡結算 Event</button></>:<p className="loc-status">Event 正式資料尚未統一；此區先使用現有雙群組圖建立盤面位置。</p>}
+        {eventGroupVisual?<figure className="game-event-visual"><img src={eventGroupVisual.image} alt={event.group+'組代表圖'} loading="lazy"/><figcaption>{event.group}</figcaption></figure>:<EventVisual item={activeEventVisual}/>}
+        {event?<><h2>{event.id}｜{event.name}</h2><p>{event.desc}</p><p className="game-player-meta">Alpha requirement: {event.requirement}</p><button className="loc-button primary" onClick={resolve2PEvent} disabled={state.mode!=='2p'||state.players.some(player=>player.selected.length!==2)}>雙卡結算 Event</button></>:null}
       </section>:null}
 
       {allOpened&&(state.phase?.includes('resonance')||state.phase==='duel')?<section className="loc-event game-event-field game-resonance-field">
