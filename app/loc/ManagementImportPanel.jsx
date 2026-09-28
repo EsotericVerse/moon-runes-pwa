@@ -205,7 +205,7 @@ function SunoImport({scopeId}){
         await insertNeonRows('silver.lo3rwang_galaxy',[{
           uid:styleUid,content_type:'instruction',
           title:draft.title.trim()+'｜Suno Style',content:draft.stylePrompt.trim(),createtime,
-          target_id:[lyricsUid],searchable:true,source_name:'suno'
+          target_id:[lyricsUid],searchable:false,reference_only:true,source_name:'suno'
         }]);
       }
       await insertNeonRows('silver.lo3rwang_galaxy_media',[{
