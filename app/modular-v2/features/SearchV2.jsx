@@ -9,13 +9,14 @@ import {useNeonAccount} from '../../loc/use-neon-account';
 import {getSearchCollection} from '../../loc/search-collections';
 import FeaturePageV2 from '../FeaturePageV2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
+import WorkFullTextV2 from '../WorkFullTextV2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import {scopeHrefV2} from '../scope-registry.v2';
 import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation.v2';
 import {featureDataErrorMessage} from '../feature-data-state.v2';
 import ContentEditorV2 from '../ContentEditorV2';
-import {selectGalaxyIdentity} from '../../loc/aggregate-query';
-import {decodeCultureText} from '../modules/culture-timeline/culture-timeline-model.mjs';
+import {selectGalaxyContent,selectGalaxyIdentity} from '../../loc/aggregate-query';
+import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayText,workDisplayTitle} from '../work-display-model.v2';
 
 const norm=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
 function rowText(row){return Object.values(row||{}).filter(value=>typeof value==='string').join(' ')}
@@ -28,22 +29,29 @@ function snippet(text,q){
 function resultKey(scope,type,id){return String(scope)+':'+String(type)+':'+String(id)}
 function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
   const text=rowText(row);
-  const excerpt=decodeCultureText(row.excerpt||'').trim();
-  const explicitTitle=decodeCultureText(row.title||row.name||row.display_title||row.label||row.rune_name||row.context_name||row.song_id||row.id||'').trim();
-  const fallbackTitle=row.media_id?'未命名媒體':'未命名作品';
-  const title=explicitTitle||(excerpt?snippet(excerpt,q):fallbackTitle);
-  const bodyField=['summary','display_text','excerpt','content','meta_tags','description','interpretation','ai_summary','retrieval_text','text'].find(field=>typeof row[field]==='string'&&row[field].trim())||'';
   const isGalaxy=Boolean(row.uid);
   const isMedia=Boolean(row.media_id);
+  const excerpt=workDisplayText(row.excerpt||'').trim();
+  const explicitTitle=workDisplayText(row.title||row.name||row.display_title||row.label||row.rune_name||row.context_name||row.song_id||row.id||'').trim();
+  const fallbackTitle=isMedia?MEDIA_FALLBACK_TITLE:WORK_FALLBACK_TITLE;
+  const title=(isGalaxy||isMedia)
+    ?workDisplayTitle({
+      title:explicitTitle,
+      preview:excerpt||row.content||row.meta_tags||'',
+      fallback:fallbackTitle,
+      limit:80
+    })
+    :(explicitTitle||(excerpt?snippet(excerpt,q):fallbackTitle));
+  const bodyField=['summary','display_text','excerpt','content','meta_tags','description','interpretation','ai_summary','retrieval_text','text'].find(field=>typeof row[field]==='string'&&row[field].trim())||'';
   const displaySource=isGalaxy&&row.source_name?String(row.source_name):source;
   const mediaMetadata=[
     row.meta_tags,
     row.media_type?('類型：'+row.media_type):'',
     row.source_native_id?('來源識別：'+row.source_native_id):''
-  ].map(value=>decodeCultureText(value||'').trim()).filter(Boolean).join(' · ');
+  ].map(value=>workDisplayText(value||'').trim()).filter(Boolean).join(' · ');
   const body=isMedia
-    ?(mediaMetadata||(bodyField?decodeCultureText(row[bodyField]):text))
-    :(bodyField?decodeCultureText(row[bodyField]):(isGalaxy?'':text));
+    ?(mediaMetadata||(bodyField?workDisplayText(row[bodyField]):text))
+    :(bodyField?workDisplayText(row[bodyField]):(isGalaxy?'':text));
   const identity=row.media_id||row.uid||row.song_id||row.rune_id||row.id;
   const scope=row.scope_id||scopeId;
   const resourceType=(row.uid)?'galaxy':row.media_id?'galaxy_media':'';
@@ -213,7 +221,7 @@ export default function SearchV2(){
       const result=toResult({...detail,resolved_links:detail.links||[]},detail.source_name||'文字展示','',collection.id,detailScope,settingsMap);
       setResults([result]);
       setFullTextKey(result.key);
-      setFullText(decodeCultureText(detail.content||''));
+      setFullText(workDisplayText(detail.content||''));
       setTotalCount(1);
       setStatus('已載入關聯文字。');
     }catch(exception){
@@ -245,14 +253,9 @@ export default function SearchV2(){
     setFullTextError('');
     setFullTextLoading(true);
     try{
-      const runeScope=result.scopeId==='lrunes'||result.scopeId==='lunarunes';
-      const fullRow=await selectNeonRowById(result.editableTable,{
-        idColumn:result.editableIdColumn,
-        id:result.editResourceId||result.resourceId,
-        columns:runeScope?'record_id,content':'uid,content'
-      });
+      const fullRow=await selectGalaxyContent(result.scopeId,result.editResourceId||result.resourceId);
       if(!fullRow)throw new Error('找不到全文資料。');
-      setFullText(decodeCultureText(fullRow.content||''));
+      setFullText(workDisplayText(fullRow.content||''));
     }catch(exception){
       setFullTextError(String(exception?.message||exception||'全文載入失敗。'));
     }finally{
@@ -266,8 +269,8 @@ export default function SearchV2(){
     try{
       const runeScope=result.scopeId==='lrunes'||result.scopeId==='lunarunes';
       const contentColumns=result.resourceType==='galaxy'
-        ?(runeScope?'record_id,title,content':'uid,title,content')
-        :(runeScope?'record_id,title,meta_tags':'media_id,title,meta_tags');
+        ?'uid,title,content'
+        :'media_id,title,meta_tags';
       const fullRow=await selectNeonRowById(result.editableTable,{
         idColumn:result.editableIdColumn,
         id:result.editResourceId||result.resourceId,
@@ -350,13 +353,13 @@ export default function SearchV2(){
           showSource={settings.show_source!==false}
           showLinks={settings.show_link!==false}
         >
-          {row.resourceType==='galaxy'?<div>
-            <button type="button" onClick={()=>toggleFullText(row)} disabled={fullTextLoading&&fullTextKey===row.key}>
-              {fullTextKey===row.key?(fullTextLoading?'載入全文中…':'收合全文'):'查看全文'}
-            </button>
-            {fullTextKey===row.key&&fullTextError?<p className="scope-v2-status scope-v2-error">{fullTextError}</p>:null}
-            {fullTextKey===row.key&&!fullTextLoading&&!fullTextError?<div className="scope-v2-inline-card"><p style={{whiteSpace:'pre-wrap'}}>{fullText||'此作品目前沒有正文。'}</p></div>:null}
-          </div>:null}
+          {row.resourceType==='galaxy'?<WorkFullTextV2
+            open={fullTextKey===row.key}
+            loading={fullTextLoading&&fullTextKey===row.key}
+            error={fullTextKey===row.key?fullTextError:''}
+            content={fullTextKey===row.key?fullText:''}
+            onToggle={()=>toggleFullText(row)}
+          />:null}
           {editable?<p><button type="button" onClick={()=>startEditing(row)}>{editingKey===row.key?'編輯中':'編輯'}</button></p>:null}
           {draft?<ContentEditorV2
             draft={draft}

@@ -5,6 +5,7 @@ import {selectNeonAllRows} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
 import {selectManagedScopeIds} from './scope-list';
 import {decodeCultureText,formatCultureDateTime,groupWorksByWeek} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
+import {workDisplayText} from '../modular-v2/work-display-model.v2';
 import {selectGalaxyPage,selectSourceWeekly} from './aggregate-query';
 
 function sourceLabel(value){return String(value||'').trim();}
@@ -41,7 +42,7 @@ function dateFilters(startDate,endDate,column='createtime'){
 export async function selectScopeCultureData(scopeId){
   const id=runtimeScopeId(scopeId);
   const dataId=dataScopeId(scopeId);
-  if(!['loc','lrunes','lo3rwang'].includes(dataId))throw new Error('Scope 無效');
+  if(!['loc','lrunes','lo3rwang'].includes(dataId))throw new Error('資料設定無效');
 
   const scopeIds=dataId==='loc'
     ?(await selectManagedScopeIds()).filter(scope=>scope!=='loc')
@@ -170,30 +171,16 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
   const pageSize=Math.max(1,Math.floor(Number(limit)||20));
   const offset=Math.max(0,Math.floor(Number(pageOffset)||0));
   const page=await selectGalaxyPage({sourceName:String(sourceName),startDate,endDate,limit:pageSize,offset});
-  const untitledIds=page.rows
-    .filter(row=>!decodeCultureText(row.title||'').trim())
-    .map(row=>String(row.uid||'').trim())
-    .filter(Boolean);
-  const previews=new Map();
-  if(untitledIds.length){
-    const previewResult=await selectNeonAllRows('silver.lo3rwang_galaxy',{
-      columns:'uid,content',
-      filters:[{column:'uid',operator:'in',value:untitledIds}]
-    });
-    for(const row of previewResult.rows){
-      const uid=String(row.uid||'').trim();
-      const text=decodeCultureText(row.content||'').replace(/\s+/g,' ').trim();
-      if(uid&&text)previews.set(uid,text.slice(0,80));
-    }
-  }
   const rows=page.rows.map(row=>{
-    const explicitTitle=decodeCultureText(row.title||'').trim();
-    const preview=previews.get(String(row.uid||''))||'';
+    const explicitTitle=workDisplayText(row.title||'').trim();
     return {
       key:'galaxy:'+row.uid,
       uid:row.uid,
       source_name:row.source_name,
-      title:explicitTitle||preview||'未命名作品',
+      source_id:row.source_id||null,
+      target_id:row.target_id||null,
+      title:explicitTitle,
+      content_preview:'',
       description:'',
       createtime:row.createtime,
       start_date:row.createtime,

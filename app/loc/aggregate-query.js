@@ -1,6 +1,7 @@
 'use client';
 
 import {selectNeonAllRows,selectNeonRowById,selectNeonRows} from './neon-repository';
+import {isReferenceOnlyContentType,publicContentFilters} from './content-policy';
 
 function timeFilters(column,startDate,endDate){
   const filters=[];
@@ -26,7 +27,7 @@ function mondayOf(value){
 async function selectSourceRows({startDate='',endDate='',excludedIds=[]}={}){
   const result=await selectNeonAllRows('silver.lo3rwang_galaxy',{
     columns:'uid,source_name,createtime',
-    filters:timeFilters('createtime',startDate,endDate)
+    filters:publicContentFilters(timeFilters('createtime',startDate,endDate))
   });
   const excluded=new Set((excludedIds||[]).map(value=>String(value||'')).filter(Boolean));
   return excluded.size?result.rows.filter(row=>!excluded.has(String(row.uid||''))):result.rows;
@@ -75,8 +76,8 @@ export async function selectGalaxyPage({sourceName='',startDate='',endDate='',li
   if(sourceName)filters.push({column:'source_name',operator:'eq',value:sourceName});
   filters.push(...timeFilters('createtime',startDate,endDate));
   const {rows,count}=await selectNeonRows('silver.lo3rwang_galaxy',{
-    columns:'uid,source_name,createtime,title',
-    filters,
+    columns:'uid,source_name,createtime,title,content_type,source_id,target_id',
+    filters:publicContentFilters(filters),
     orders:[{column:'createtime',ascending:false}],
     limit,
     offset,
@@ -143,6 +144,18 @@ export async function selectGalaxySummaries(scopeId,uids=[]){
   }));
 }
 
+export async function selectGalaxyContent(scopeId,uid){
+  const id=String(uid||'').trim();
+  if(!id)return null;
+  const lunarunes=String(scopeId||'')==='lunarunes'||String(scopeId||'')==='lrunes';
+  const table=lunarunes?'silver.lrunes_galaxy':'silver.lo3rwang_galaxy';
+  return selectNeonRowById(table,{
+    idColumn:'uid',
+    id,
+    columns:'uid,content'
+  });
+}
+
 export async function selectGalaxyIdentity(scopeId,uid){
   const id=String(uid||'').trim();
   if(!id)return null;
@@ -151,14 +164,10 @@ export async function selectGalaxyIdentity(scopeId,uid){
   const row=await selectNeonRowById(table,{
     idColumn:'uid',
     id,
-    columns:'uid,title,source_name,createtime,url,source_id,target_id,ref_id,media_link'
+    columns:'uid,title,content_type,source_name,createtime,url,source_id,target_id,media_link'
   });
-  if(!row)return null;
-  const contentRow=await selectNeonRowById(table,{
-    idColumn:'uid',
-    id,
-    columns:'uid,content'
-  });
+  if(!row||isReferenceOnlyContentType(row.content_type))return null;
+  const contentRow=await selectGalaxyContent(scopeId,id);
   const mediaRows=await mediaRowsFor(lunarunes?'lunarunes':'lo3rwang',mediaIdsOf(row.media_link));
   const mediaById=new Map(mediaRows.map(item=>[String(item.media_id),item]));
   return {...row,content:contentRow?.content||'',links:resolvedLinks(row,mediaById)};

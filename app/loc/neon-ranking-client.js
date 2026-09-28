@@ -4,6 +4,7 @@ import {selectScopeTimeRows} from './scope-time';
 import {classifyStyleRows,processKeywordObservationRows,processKeywordTableRows,processStyleTableRows,countStyleKeywordHits,observeStyleKeywordHits,selectKeywordCatalog} from './style-classifier';
 import {selectSourceCatalog,selectSourceWeekly} from './aggregate-query';
 import {selectManagedScopeIds} from './scope-list';
+import {publicContentFilters} from './content-policy';
 
 const RANKING_TYPES=Object.freeze({
   loc:Object.freeze(['source']),
@@ -79,7 +80,7 @@ async function authorKeywords(period,rangeOverride){
   await processKeywordTableRows('silver.lo3rwang_galaxy',{
     scopeId:'lo3rwang',
     columns:'uid,title,content,createtime',
-    filters,
+    filters:publicContentFilters(filters),
     orders:[{column:'createtime',ascending:true}],
     rowFilter:row=>!exclusions.galaxy.has(String(row.uid||'')),
     onCounts:rows=>addKeywordCounts(map,rows,'lo3rwang',period)
@@ -100,31 +101,6 @@ async function authorSources(period,rangeOverride){
   const exclusions=await authorStatisticsExclusions();
   const excludedIds=[...exclusions.galaxy];
   const map=new Map();
-  if(!range&&excludedIds.length===0){
-    const summary=await selectNeonRows('silver.lo3rwang',{
-      columns:'id,source_counts',
-      filters:[{column:'id',operator:'eq',value:'lo3rwang'}],
-      limit:1
-    });
-    const counts=summary.rows[0]?.source_counts;
-    if(counts&&typeof counts==='object'&&!Array.isArray(counts)){
-      for(const [name,count] of Object.entries(counts)){
-        const value=String(name||'').trim();
-        const itemCount=Math.max(0,Number(count)||0);
-        if(!value||itemCount<=0)continue;
-        map.set('source|'+value,{
-          ranking_key:'source|'+value,
-          ranking_type:'source',
-          term:value,
-          rank_value:itemCount,
-          item_count:itemCount,
-          source:'lo3rwang',
-          period:period||'all'
-        });
-      }
-      return [...map.values()];
-    }
-  }
   if(!range){
     const result=await selectSourceCatalog({scopeId:'lo3rwang',excludedIds});
     for(const row of result.rows){
@@ -170,7 +146,7 @@ async function runeKeywords(period,rangeOverride){
   await processKeywordTableRows('silver.lrunes_galaxy',{
     scopeId:'lunarunes',
     columns:'uid,title,content,createtime',
-    filters:dateRange,
+    filters:publicContentFilters(dateRange),
     orders:[{column:'createtime',ascending:true}],
     onCounts:rows=>addKeywordCounts(map,rows,'lrunes',period)
   });
@@ -185,7 +161,7 @@ async function runeKeywords(period,rangeOverride){
 
 async function runeSources(period,rangeOverride){
   const range=rangeOverride===undefined?await resolvePeriod('lunarunes',period):rangeOverride;
-  const filters=dateFilters(range,'createtime');
+  const filters=publicContentFilters(dateFilters(range,'createtime'));
   const {rows}=await selectNeonAllRows('silver.lrunes_galaxy',{
     columns:'uid,source_name,createtime',
     filters
@@ -519,7 +495,7 @@ function matchesNavigation(row,navigation={}){
 
 async function selectScopeRankingRows(scopeId,{rankingType='',navigation={}}={}){
   const id=String(scopeId||'');
-  if(!RANKING_TYPES[id])throw new Error('Scope 無效');
+  if(!RANKING_TYPES[id])throw new Error('資料設定無效');
   const type=RANKING_TYPES[id].includes(rankingType)?rankingType:RANKING_TYPES[id][0];
   const period=String(navigation.period||'all');
 
@@ -552,7 +528,7 @@ export async function selectScopeRankingAll(scopeId,{rankingType='',navigation={
 
 export async function selectScopeRankingComparison(scopeId,{rankingType='',navigation={}}={}){
   const id=String(scopeId||'');
-  if(!RANKING_TYPES[id])throw new Error('Scope 無效');
+  if(!RANKING_TYPES[id])throw new Error('資料設定無效');
   if(id==='loc')return null;
   const type=RANKING_TYPES[id].includes(rankingType)?rankingType:RANKING_TYPES[id][0];
   const period=String(navigation.period||'all');
@@ -604,6 +580,6 @@ export async function selectScopeKeywordDiagnostics(scopeId,{navigation={}}={}){
 
 export async function selectScopeRankingTypes(scopeId){
   const types=RANKING_TYPES[String(scopeId||'')];
-  if(!types)throw new Error('Scope 無效');
+  if(!types)throw new Error('資料設定無效');
   return [...types];
 }

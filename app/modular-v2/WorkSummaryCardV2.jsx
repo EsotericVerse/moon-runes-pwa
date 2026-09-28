@@ -4,10 +4,18 @@ function externalLink(link){
   const href=String(link?.href||'').trim();
   return /^https?:\/\//i.test(href)?href:'';
 }
-function safeLinksOf(items=[]){
+function safeExternalLinksOf(items=[]){
   return (Array.isArray(items)?items:[])
     .map((link,index)=>typeof link==='string'?{id:String(index),href:link,label:'查看連結'}:link)
     .filter(link=>externalLink(link));
+}
+function safeRelationLinksOf(items=[]){
+  return (Array.isArray(items)?items:[])
+    .map((link,index)=>typeof link==='string'?{id:String(index),href:link,label:'關聯文字'}:link)
+    .filter(link=>{
+      const href=String(link?.href||'').trim();
+      return Boolean(href)&&!/^javascript:/i.test(href);
+    });
 }
 
 export default function WorkSummaryCardV2({
@@ -23,8 +31,8 @@ export default function WorkSummaryCardV2({
   showLinks=true,
   children=null
 }){
-  const safeRelations=safeLinksOf(relationLinks);
-  const safeLinks=safeLinksOf(links);
+  const safeRelations=safeRelationLinksOf(relationLinks);
+  const safeLinks=safeExternalLinksOf(links);
 
   return <article className="scope-v2-inline-card scope-v2-work-summary">
     <header className="scope-v2-culture-work-heading">
@@ -39,7 +47,7 @@ export default function WorkSummaryCardV2({
     {body?<p className="scope-v2-culture-work-meta-description">{body}</p>:null}
 
     {safeRelations.length?<div className="scope-v2-result-links scope-v2-work-relations">
-      {safeRelations.map((link,index)=><a key={link.id||link.href||index} href={externalLink(link)}>{link.label||`關聯文字 ${index+1}`}</a>)}
+      {safeRelations.map((link,index)=><a key={link.id||link.href||index} href={String(link.href||'').trim()}>{link.label||`關聯文字 ${index+1}`}</a>)}
     </div>:null}
 
     {showLinks&&safeLinks.length?<div className="scope-v2-result-links">

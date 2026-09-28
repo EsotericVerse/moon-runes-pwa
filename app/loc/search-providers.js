@@ -2,6 +2,7 @@
 
 import {processNeonHeavyRows,selectNeonAllRows} from './neon-repository';
 import {getRuntimeTextIndex,searchTextIndex} from './text-engine.mjs';
+import {publicContentFilters} from './content-policy';
 
 function unique(values=[]){
   return [...new Set(values.map(value=>String(value||'').trim()).filter(Boolean))];
@@ -82,10 +83,10 @@ const authorText=makeProvider({
   source:'作者正文',
   scopeId:'lo3rwang',
   idColumn:'uid',
-  columns:['uid','title','source_name','source_id','target_id','ref_id','url','media_link','createtime'],
+  columns:['uid','content_type','title','source_name','source_id','target_id','url','media_link','createtime'],
   searchFields:['title','content','source_name'],
   dateColumn:'createtime',
-  filters:[{column:'searchable',operator:'eq',value:true}]
+  filters:publicContentFilters([{column:'searchable',operator:'eq',value:true}])
 });
 
 const authorMedia=makeProvider({
@@ -157,10 +158,10 @@ const runeText=makeProvider({
   source:'符文文字',
   scopeId:'lrunes',
   idColumn:'uid',
-  columns:['uid','content_type','source_name','title','createtime','source_id','target_id','ref_id','url','media_link'],
+  columns:['uid','content_type','source_name','title','createtime','source_id','target_id','url','media_link'],
   searchFields:['title','content','source_name'],
   dateColumn:'createtime',
-  filters:[{column:'searchable',operator:'eq',value:true}]
+  filters:publicContentFilters([{column:'searchable',operator:'eq',value:true}])
 });
 
 const runeMedia=makeProvider({

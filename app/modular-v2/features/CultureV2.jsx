@@ -13,11 +13,13 @@ import {
 import {galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
-import {decodeCultureText,formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
-import {selectNeonRowById} from '../../loc/neon-repository';
+import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
+import {selectGalaxyContent} from '../../loc/aggregate-query';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
+import WorkFullTextV2 from '../WorkFullTextV2';
+import {WORK_FALLBACK_TITLE,workDisplayText,workDisplayTitle} from '../work-display-model.v2';
 import PagedResultV2 from '../PagedResultV2';
 
 const CULTURE_WORK_PAGE_SIZE=20;
@@ -214,13 +216,9 @@ export default function CultureV2(){
     setFullTextError('');
     setFullTextLoading(true);
     try{
-      const row=await selectNeonRowById('silver.lo3rwang_galaxy',{
-        idColumn:'uid',
-        id:uid,
-        columns:'uid,content'
-      });
+      const row=await selectGalaxyContent(classificationScope,uid);
       if(!row)throw new Error('找不到這筆作品。');
-      setFullText(decodeCultureText(row.content||''));
+      setFullText(workDisplayText(row.content||''));
     }catch(exception){
       setFullTextError(String(exception?.message||exception||'全文載入失敗。'));
     }finally{
@@ -280,7 +278,7 @@ export default function CultureV2(){
               {classificationBucketsQuery.isFetching?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
               {classificationBucketsQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(classificationBucketsQuery.error)}</p>:null}
               {!classificationBucketsQuery.isFetching&&!classificationBucketsQuery.error&&!classificationBuckets.length
-                ?<p className='scope-v2-status'>{classificationMode==='source'&&classificationScope==='lunarunes'?'此 Scope 沒有作品來源分類。':'目前沒有此分類資料。'}</p>:null}
+                ?<p className='scope-v2-status'>{classificationMode==='source'&&classificationScope==='lunarunes'?'目前沒有作品來源分類。':'目前沒有此分類資料。'}</p>:null}
               {classificationBuckets.length?<CultureTimelineV2
                 items={classificationBuckets}
                 labelOf={item=>classificationMode==='source'
@@ -307,9 +305,6 @@ export default function CultureV2(){
             {selectedWorkPeriod?<section className='scope-v2-card scope-v2-culture-current-works'>
               <p className='loc-eyebrow'>Classification</p>
               <h3>{labelOf(selectedWorkPeriod,0)}｜{classificationMode==='source'?'作品來源':'多媒體分類'}</h3>
-              <p>{classificationMode==='source'
-                ?'來源名稱是匯入時自訂的字串；相同名稱會直接視為同一來源。'
-                :'依 media_type 顯示圖片、影音、音樂與其他媒體類型分布。'}</p>
               {categoryQuery.isFetching?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
               {categoryQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(categoryQuery.error)}</p>:null}
               {!categoryQuery.isFetching&&!categoryQuery.error&&!categoryGroups.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
@@ -337,20 +332,25 @@ export default function CultureV2(){
                 <div className='scope-v2-culture-source-work-scroll'>
                   {(periodWorksQuery.data?.rows||[]).map((work,index)=><WorkSummaryCardV2
                     key={work.key||work.uid||work.entry_id||String(work.createtime||work.created_at)+'-'+index}
-                    title={work.title||'未命名作品'}
+                    title={workDisplayTitle({
+                      title:work.title,
+                      preview:work.content_preview,
+                      fallback:WORK_FALLBACK_TITLE,
+                      limit:80
+                    })}
                     source={work.source_name||work.group_label||''}
                     date={work.display_date||formatCultureDateTime(work.createtime||work.created_at)}
                     body={work.description||work.media_metadata_text||''}
                     relationLinks={galaxyRelationLinks(classificationScope,work)}
                     links={work.links||[]}
                   >
-                    {classificationMode==='source'&&work.uid?<div>
-                      <button type='button' onClick={()=>toggleWorkContent(work)} disabled={fullTextLoading&&fullTextKey===work.key}>
-                        {fullTextKey===work.key?(fullTextLoading?'載入全文中…':'收合全文'):'查看全文'}
-                      </button>
-                      {fullTextKey===work.key&&fullTextError?<p className='scope-v2-status scope-v2-error'>{fullTextError}</p>:null}
-                      {fullTextKey===work.key&&!fullTextLoading&&!fullTextError?<div className='scope-v2-inline-card'><p style={{whiteSpace:'pre-wrap'}}>{fullText||'此作品目前沒有正文。'}</p></div>:null}
-                    </div>:null}
+                    {classificationMode==='source'&&work.uid?<WorkFullTextV2
+                      open={fullTextKey===work.key}
+                      loading={fullTextLoading&&fullTextKey===work.key}
+                      error={fullTextKey===work.key?fullTextError:''}
+                      content={fullTextKey===work.key?fullText:''}
+                      onToggle={()=>toggleWorkContent(work)}
+                    />:null}
                     {classificationMode==='media'?<p>{work.media_type?('媒體類型：'+work.media_type):''}</p>:null}
                   </WorkSummaryCardV2>)}
                 </div>

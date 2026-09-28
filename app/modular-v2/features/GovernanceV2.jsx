@@ -67,7 +67,7 @@ function GovernanceHome(){
   const {View,subtitle}=governanceFor(scopeId);
   return <FeaturePageV2 featureId="governance" subtitle={subtitle}>
     <GovernanceInlineEditor scopeId={scopeId}><View/></GovernanceInlineEditor>
-    <section className="loc-card"><p className="loc-eyebrow">Management</p><h2>管理</h2><p>管理功能使用獨立登入與工作頁，不混入公開治理正文。</p><a className="loc-button primary" href={scopeHrefV2(scopeId,'governance/manage')}>進入管理</a></section>
+    <section className="loc-card"><p className="loc-eyebrow">Management</p><h2>管理</h2><a className="loc-button primary" href={scopeHrefV2(scopeId,'governance/manage')}>進入管理</a></section>
   </FeaturePageV2>;
 }
 
