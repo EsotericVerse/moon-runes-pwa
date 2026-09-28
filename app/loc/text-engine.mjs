@@ -61,20 +61,22 @@ export function searchTextIndex(engine,query,{
   for(const term of andTerms)resolver=resolver.and({query:term});
   for(const term of norTerms)resolver=resolver.not({query:term});
 
-  // Resolve IDs only. Full source text is not duplicated in the result store.
-  resolver=resolver.limit(engine.size);
-  const allIds=resolvedIds(resolver.resolve());
+  // FlexSearch Resolver supports native offset/limit. Do not resolve the full hit set
+  // and slice it in application code.
   const start=Math.max(0,Math.floor(Number(offset)||0));
   const size=Math.max(1,Math.floor(Number(limit)||20));
-  const ids=allIds.slice(start,start+size);
+  resolver=resolver.offset(start).limit(size+1);
+  const resolved=resolvedIds(resolver.resolve());
+  const hasMore=resolved.length>size;
+  const ids=resolved.slice(0,size);
   const rows=ids.map(id=>engine.records.get(id)).filter(value=>value!==undefined&&value!==null);
   const nextOffset=start+ids.length;
   return {
     ids,
     rows,
-    totalCount:allIds.length,
-    hasMore:nextOffset<allIds.length,
-    nextOffset:nextOffset<allIds.length?nextOffset:null
+    totalCount:null,
+    hasMore,
+    nextOffset:hasMore?nextOffset:null
   };
 }
 
