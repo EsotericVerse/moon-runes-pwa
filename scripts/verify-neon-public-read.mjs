@@ -36,7 +36,8 @@ for(const [table,columns,options] of [
   ['lo3rwang_source_daily','source_name,work_date,work_count'],
   ['runes','rune_id,rune_name'],
   ['lrunes','id,period,period_start,period_end,theme,search_able,statistics_able,culture_able,sources,source_counts,work_count,media_count,media_counts,updated_at'],
-  ['faq_entries','faq_id,question,answer']
+  ['faq_entries','faq_id,question,answer'],
+  ['content_blocks','block_id,scope_id,page_key,slot_key,title,body,display_order,active,updated_at']
 ])await probe(client,table,columns,options||{});
 
 console.log('Public Neon runtime repository-path probe passed.');
