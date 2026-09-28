@@ -97,12 +97,6 @@ LunaRunes canonical rune data由 `app/loc/rune-repository.js` 讀取。
 
 Current application JavaScript 放在 `app/` 對應模組內。
 
-root `js/` 唯一治理例外：
-
-`js/locMoonPhase.js`
-
-它只保留獨立月相判別，不是共享 runtime root，也不承擔資料 authority、cache、registry 或 compatibility。
-
 ## Deployment
 
 Current frontend：
