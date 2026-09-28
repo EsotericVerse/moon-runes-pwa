@@ -1,7 +1,7 @@
 'use client';
 
 import {selectNeonAllRows,selectNeonRowById,selectNeonRows} from './neon-repository';
-import {isReferenceOnlyContentType,publicContentFilters} from './content-policy';
+import {isReferenceOnlyResource,publicContentFilters} from './content-policy';
 
 function timeFilters(column,startDate,endDate){
   const filters=[];
@@ -76,14 +76,25 @@ export async function selectGalaxyPage({sourceName='',startDate='',endDate='',li
   if(sourceName)filters.push({column:'source_name',operator:'eq',value:sourceName});
   filters.push(...timeFilters('createtime',startDate,endDate));
   const {rows,count}=await selectNeonRows('silver.lo3rwang_galaxy',{
-    columns:'uid,source_name,createtime,title,content_type,source_id,target_id',
+    columns:'uid,source_name,createtime,title',
     filters:publicContentFilters(filters),
     orders:[{column:'createtime',ascending:false}],
     limit,
     offset,
     count:'exact'
   });
-  return {rows,totalCount:Number(count??rows.length)||0};
+  const ids=rows.map(row=>String(row.uid||'').trim()).filter(Boolean);
+  const relations=ids.length
+    ?(await selectNeonAllRows('silver.lo3rwang_galaxy',{
+      columns:'uid,source_id,target_id',
+      filters:[{column:'uid',operator:'in',value:ids}]
+    })).rows
+    :[];
+  const relationById=new Map(relations.map(row=>[String(row.uid),row]));
+  return {
+    rows:rows.map(row=>({...row,...(relationById.get(String(row.uid))||{})})),
+    totalCount:Number(count??rows.length)||0
+  };
 }
 
 function mediaIdsOf(value){
@@ -164,9 +175,9 @@ export async function selectGalaxyIdentity(scopeId,uid){
   const row=await selectNeonRowById(table,{
     idColumn:'uid',
     id,
-    columns:'uid,title,content_type,source_name,createtime,url,source_id,target_id,media_link'
+    columns:'uid,title,reference_only,source_name,createtime,url,source_id,target_id,media_link'
   });
-  if(!row||isReferenceOnlyContentType(row.content_type))return null;
+  if(!row||isReferenceOnlyResource(row))return null;
   const contentRow=await selectGalaxyContent(scopeId,id);
   const mediaRows=await mediaRowsFor(lunarunes?'lunarunes':'lo3rwang',mediaIdsOf(row.media_link));
   const mediaById=new Map(mediaRows.map(item=>[String(item.media_id),item]));
