@@ -7,8 +7,8 @@ import {selectManagedScopeIds} from './scope-list';
 
 const RANKING_TYPES=Object.freeze({
   loc:Object.freeze(['source']),
-  lunarunes:Object.freeze(['keyword','source','style','style_group','media_type','media_place','media_tag']),
-  lo3rwang:Object.freeze(['keyword','source','style','style_group','media_type','media_place','media_tag'])
+  lunarunes:Object.freeze(['source','keyword','style','style_group','media_type','media_place','media_tag']),
+  lo3rwang:Object.freeze(['source','keyword','style','style_group','media_type','media_place','media_tag'])
 });
 
 function increment(map,type,term,extra={}){
