@@ -93,10 +93,10 @@ export default function CultureV2(){
     ...(query.data?.runeEras?.eras||[])
   ]),[query.data]);
   const isLoc=scopeId==='loc';
-  const classificationScope=isLoc?null:(scopeId==='lunarunes'?'lunarunes':'lo3rwang');
-  const primaryPeriods=isLoc?[]:(scopeId==='lunarunes'?allRunePeriods:allAuthorPeriods);
-  const primaryCurrent=isLoc?null:(scopeId==='lunarunes'?currentRunePeriod:currentAuthorPeriod);
-  const selectedWorkPeriod=isLoc?null:(activeWorkPeriod||primaryCurrent||periodRange(primaryPeriods,classificationScope));
+  const classificationScope=scopeId==='lunarunes'?'lunarunes':'lo3rwang';
+  const primaryPeriods=scopeId==='lunarunes'?allRunePeriods:allAuthorPeriods;
+  const primaryCurrent=scopeId==='lunarunes'?currentRunePeriod:currentAuthorPeriod;
+  const selectedWorkPeriod=activeWorkPeriod||primaryCurrent||periodRange(primaryPeriods,classificationScope);
   const selectedPeriodIndex=primaryPeriods.findIndex(item=>
     String(item?.period||'')===String(selectedWorkPeriod?.period||'')
     ||String(item?.start_date||'')===String(selectedWorkPeriod?.start_date||'')
