@@ -26,11 +26,12 @@ const CULTURE_WORK_PAGE_SIZE=20;
 function labelOf(item,index){
   return item?.display_label||item?.name||item?.title||item?.period||'時期 '+(index+1);
 }
-function rowsOf(data){
+function rowsOf(data,scopeId){
   const authorRows=Array.isArray(data?.authorEras?.eras)?data.authorEras.eras.map(item=>({...item,scope_id:item?.scope_id||'lo3rwang'})):[];
   const runeRows=Array.isArray(data?.runeEras?.eras)?data.runeEras.eras.map(item=>({...item,scope_id:item?.scope_id||'lunarunes'})):[];
-  const rows=authorRows.length&&runeRows.length?[...authorRows,...runeRows]:
-    (authorRows.length?authorRows:(runeRows.length?runeRows:(data?.eras?.eras||[])));
+  const rows=scopeId==='loc'
+    ?[...authorRows,...runeRows]
+    :(scopeId==='lunarunes'?runeRows:authorRows);
   return rows.sort((a,b)=>{
     const ad=String(a?.start_date||a?.end_date||a?.date||'');
     const bd=String(b?.start_date||b?.end_date||b?.date||'');
@@ -68,7 +69,7 @@ export default function CultureV2(){
     staleTime:5*60_000
   });
 
-  const rows=useMemo(()=>rowsOf(query.data),[query.data]);
+  const rows=useMemo(()=>rowsOf(query.data,scopeId),[query.data,scopeId]);
   const [classificationMode,setClassificationMode]=useState(scopeId==='lunarunes'?'style':'source');
   const [styleLevel,setStyleLevel]=useState('label');
   const [mediaDimension,setMediaDimension]=useState('type');
