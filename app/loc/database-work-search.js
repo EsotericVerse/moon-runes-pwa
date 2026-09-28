@@ -72,7 +72,7 @@ const authorWorkSearch=makeDatabaseWorkProvider({
   scopeId:'lo3rwang',
   table:'silver.lo3rwang_galaxy',
   source:'作者正文',
-  columns:'uid,title,source_name,source_id,target_id,ref_id,url,createtime',
+  columns:'uid,title,source_name,createtime',
   filters:[{column:'searchable',operator:'eq',value:true}]
 });
 
@@ -81,7 +81,7 @@ const runeWorkSearch=makeDatabaseWorkProvider({
   scopeId:'lrunes',
   table:'silver.lrunes_galaxy',
   source:'符文文字',
-  columns:'uid,content_type,source_name,title,createtime,source_id,target_id,ref_id,url,media_link',
+  columns:'uid,title,source_name,createtime',
   filters:[{column:'searchable',operator:'eq',value:true}]
 });
 
