@@ -173,7 +173,7 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
 
   const uids=page.rows.map(row=>String(row.uid));
   const textResult=await selectNeonAllRows('silver.lo3rwang_galaxy',{
-    columns:'uid,category,content_type,source_name,title,createtime,url,source_id,target_id,ref_id,media_link',
+    columns:'uid,category,content_type,source_name,title,content,createtime,url,source_id,target_id,ref_id,media_link',
     filters:[{column:'uid',operator:'in',value:uids}]
   });
   const mediaIds=[...new Set(textResult.rows.flatMap(row=>Array.isArray(row.media_link)?row.media_link:[]).map(String).filter(Boolean))];
@@ -220,7 +220,7 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
     const rawTitle=decodeCultureText(item.title||row.title||'').trim();
     const sourceName=sourceLabel(row.source_name);
     const validTitle=rawTitle&&rawTitle.toLowerCase()!==sourceName.toLowerCase()?rawTitle:'';
-    const bodyPreview='';
+    const bodyPreview=decodeCultureText(row.content||'').trim().slice(0,20);
     const displayTitle=validTitle||bodyPreview||row.uid;
     const mediaDescription=linkedMedia.map(mediaMetadataDescription).filter(Boolean).join(' ｜ ');
     return {
