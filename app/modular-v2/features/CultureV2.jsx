@@ -13,7 +13,8 @@ import {
 import {galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
-import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
+import {decodeCultureText,formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
+import {selectNeonRowById} from '../../loc/neon-repository';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
@@ -70,6 +71,10 @@ export default function CultureV2(){
   const [selectedCategory,setSelectedCategory]=useState('');
   const [workPage,setWorkPage]=useState(0);
   const [activeWorkPeriod,setActiveWorkPeriod]=useState(null);
+  const [fullTextKey,setFullTextKey]=useState('');
+  const [fullText,setFullText]=useState('');
+  const [fullTextLoading,setFullTextLoading]=useState(false);
+  const [fullTextError,setFullTextError]=useState('');
 
   const currentRows=useMemo(()=>{
     const scopes=scopeId==='loc'?['lo3rwang','lunarunes']:[scopeId].filter(Boolean);
@@ -160,7 +165,16 @@ export default function CultureV2(){
   useEffect(()=>{
     setSelectedCategory('');
     setWorkPage(0);
+    setFullTextKey('');
+    setFullText('');
+    setFullTextError('');
   },[classificationMode,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date]);
+
+  useEffect(()=>{
+    setFullTextKey('');
+    setFullText('');
+    setFullTextError('');
+  },[selectedCategory,workPage]);
 
   const periodVolumeByStart=useMemo(()=>{
     const map=new Map();
@@ -184,6 +198,35 @@ export default function CultureV2(){
     ?(sourceSnapshotQuery.data?.buckets||[])
     :(mediaSnapshotQuery.data?.buckets||[]);
 
+
+  async function toggleWorkContent(work){
+    const uid=String(work?.uid||'').trim();
+    if(!uid)return;
+    const key=String(work?.key||('galaxy:'+uid));
+    if(fullTextKey===key){
+      setFullTextKey('');
+      setFullText('');
+      setFullTextError('');
+      return;
+    }
+    setFullTextKey(key);
+    setFullText('');
+    setFullTextError('');
+    setFullTextLoading(true);
+    try{
+      const row=await selectNeonRowById('silver.lo3rwang_galaxy',{
+        idColumn:'uid',
+        id:uid,
+        columns:'uid,content'
+      });
+      if(!row)throw new Error('找不到這筆作品。');
+      setFullText(decodeCultureText(row.content||''));
+    }catch(exception){
+      setFullTextError(String(exception?.message||exception||'全文載入失敗。'));
+    }finally{
+      setFullTextLoading(false);
+    }
+  }
 
   return <FeaturePageV2 featureId="culture">
     <section className='loc-card scope-v2-feature-card scope-v2-feature-card-wide'>
@@ -294,13 +337,20 @@ export default function CultureV2(){
                 <div className='scope-v2-culture-source-work-scroll'>
                   {(periodWorksQuery.data?.rows||[]).map((work,index)=><WorkSummaryCardV2
                     key={work.key||work.uid||work.entry_id||String(work.createtime||work.created_at)+'-'+index}
-                    title={work.title||work.uid||'未命名作品'}
+                    title={work.title||'未命名作品'}
                     source={work.source_name||work.group_label||''}
                     date={work.display_date||formatCultureDateTime(work.createtime||work.created_at)}
                     body={work.description||work.media_metadata_text||''}
                     relationLinks={galaxyRelationLinks(classificationScope,work)}
                     links={work.links||[]}
                   >
+                    {classificationMode==='source'&&work.uid?<div>
+                      <button type='button' onClick={()=>toggleWorkContent(work)} disabled={fullTextLoading&&fullTextKey===work.key}>
+                        {fullTextKey===work.key?(fullTextLoading?'載入全文中…':'收合全文'):'查看全文'}
+                      </button>
+                      {fullTextKey===work.key&&fullTextError?<p className='scope-v2-status scope-v2-error'>{fullTextError}</p>:null}
+                      {fullTextKey===work.key&&!fullTextLoading&&!fullTextError?<div className='scope-v2-inline-card'><p style={{whiteSpace:'pre-wrap'}}>{fullText||'此作品目前沒有正文。'}</p></div>:null}
+                    </div>:null}
                     {classificationMode==='media'?<p>{work.media_type?('媒體類型：'+work.media_type):''}</p>:null}
                   </WorkSummaryCardV2>)}
                 </div>
