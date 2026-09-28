@@ -32,7 +32,7 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
   const isGalaxy=Boolean(row.uid);
   const isMedia=Boolean(row.media_id);
   const excerpt=workDisplayText(row.excerpt||'').trim();
-  const explicitTitle=workDisplayText(row.title||row.name||row.display_title||row.label||row.rune_name||row.context_name||row.song_id||row.id||'').trim();
+  const explicitTitle=workDisplayText(row.title||row.name||row.display_title||row.label||row.rune_name||row.song_id||row.id||'').trim();
   const fallbackTitle=isMedia?MEDIA_FALLBACK_TITLE:WORK_FALLBACK_TITLE;
   const title=(isGalaxy||isMedia)
     ?workDisplayTitle({
