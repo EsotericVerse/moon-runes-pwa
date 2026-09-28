@@ -47,8 +47,11 @@ for(const token of ['selectRuneCatalog','data-draw-action="execute"','function e
 const cultureView=readFileSync(resolve(root,'app/modular-v2/features/CultureV2.jsx'),'utf8');
 const cultureTimeline=readFileSync(resolve(root,'app/modular-v2/modules/culture-timeline/CultureTimelineV2.jsx'),'utf8');
 const governanceManagement=readFileSync(resolve(root,'app/loc/GovernanceManagement.jsx'),'utf8');
-for(const token of ["isLoc?<CultureTimelineV2","mode='current'","scope-v2-culture-period-2d","選擇完整時期","時期比例變化","只比較完整時期內各分類所占比例"]){
+for(const token of ["isLoc?<CultureTimelineV2","mode='current'","scope-v2-culture-period-2d","選擇完整時期"]){
   if(!cultureView.includes(token))failures.push(`Culture Current contract missing: ${token}`);
+}
+for(const retired of ["時期比例變化","只比較完整時期內各分類所占比例"]){
+  if(cultureView.includes(retired))failures.push(`Culture retired suggestion returned: ${retired}`);
 }
 if(cultureTimeline.includes("個人時期 · {personalTitle}")||cultureTimeline.includes("LunaRunes · {runeTitle}")){
   failures.push('LOC Culture: Current confluence must not unfold per-scope period lists');
@@ -64,11 +67,12 @@ if(!governanceManagement.includes("scopeId!=='loc'?<CultureTimelineEditor")){
 }
 
 const aggregateQuery=readFileSync(resolve(root,'app/loc/aggregate-query.js'),'utf8');
-if(!aggregateQuery.includes("columns:'uid,title,content,url,media_link'")){
-  failures.push('aggregate-query: Galaxy summary must select source content explicitly');
+if(!aggregateQuery.includes("columns:'uid,source_name,createtime,title'")){
+  failures.push('aggregate-query: Galaxy list must use lightweight paged fields');
 }
-const summaryBlock=aggregateQuery.split('export async function selectGalaxySummaries')[1]?.split('export async function selectGalaxyIdentity')[0]||'';
-if(!/slice\(0,20\)/.test(summaryBlock))failures.push('aggregate-query: preview must be derived from the first 20 content characters');
+if(/columns:['"][^'"]*content[^'"]*(?:url|media_link)|columns:['"][^'"]*(?:url|media_link)[^'"]*content/.test(aggregateQuery)){
+  failures.push('aggregate-query: ordinary Galaxy list must not bulk-select content/url/media_link');
+}
 if(/galaxy_preview|content_preview/.test(aggregateQuery))failures.push('aggregate-query: stored preview dependency returned');
 
 const runeRepository=readFileSync(resolve(root,'app/loc/rune-repository.js'),'utf8');
