@@ -33,7 +33,8 @@ for(const [table,columns,options] of [
   ['lo3rwang_style','style_no,node_type,representative_name,parent_group_name,keyword_group,keyword,order_no'],
   ['lo3rwang_galaxy','uid,title,content,source_name,createtime'],
   ['lo3rwang_galaxy_media','media_id,galaxy_link,source_native_id,source_place,media_type,title,url,meta_tags,createtime'],
-  ['lrunes','record_id,record_type,rune_number,rune_name,group_name,keyword_group,keyword,title,content,source_name,createtime,media_id,media_type,meta_tags'],
+  ['runes','rune_id,rune_name'],
+  ['lrunes','record_id,record_type,rune_number,keyword_group,keyword,title,content,source_name,createtime,media_id,media_type,meta_tags'],
   ['faq_entries','faq_id,question,answer']
 ])await probe(client,table,columns,options||{});
 
