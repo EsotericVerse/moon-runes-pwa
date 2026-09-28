@@ -11,6 +11,7 @@ import RuneAtlas from './RuneAtlas';
 import {scopeHrefV2,scopeOriginV2} from '../modular-v2/scope-registry.v2';
 import {drawRuneSession,makeRuneDrawId} from './rune-draw-engine';
 import RuneSingleReading from './RuneSingleReading';
+import HomeContentBlocksV2 from '../modular-v2/HomeContentBlocksV2';
 
 const ROTATION_CLASSES=['rune-rotate-0','rune-rotate-90','rune-rotate-n90','rune-rotate-180'];
 const GROUP_ORDER=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
@@ -72,6 +73,7 @@ export default function RunesClient(){
         <iframe src="https://www.instagram.com/reel/DMA-ZxLTINw/embed" title="月之符文說明" loading="eager" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" />
       </figure>
     </header>
+    <HomeContentBlocksV2 scopeId="lunarunes"/>
     <section className="loc-card rune-basics">
       <h2>基本判讀順序</h2>
       <div className="basic-grid">
