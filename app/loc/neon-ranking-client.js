@@ -1,7 +1,7 @@
 import {ScopeRankingResponseSchema} from './scope-feature-contracts';
 import {selectNeonAllRows,selectNeonCatalog} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
-import {classifyStyleRows,processKeywordObservationRows,processKeywordTableRows,processStyleTableRows,countStyleKeywordHits,observeStyleKeywordHits,selectStyleCatalog} from './style-classifier';
+import {classifyStyleRows,processKeywordObservationRows,processKeywordTableRows,processStyleTableRows,countStyleKeywordHits,observeStyleKeywordHits,selectKeywordCatalog} from './style-classifier';
 import {selectSourceCatalog,selectSourceWeekly} from './aggregate-query';
 import {selectManagedScopeIds} from './scope-list';
 
