@@ -143,6 +143,18 @@ export async function selectGalaxySummaries(scopeId,uids=[]){
   }));
 }
 
+export async function selectGalaxyContent(scopeId,uid){
+  const id=String(uid||'').trim();
+  if(!id)return null;
+  const lunarunes=String(scopeId||'')==='lunarunes'||String(scopeId||'')==='lrunes';
+  const table=lunarunes?'silver.lrunes_galaxy':'silver.lo3rwang_galaxy';
+  return selectNeonRowById(table,{
+    idColumn:'uid',
+    id,
+    columns:'uid,content'
+  });
+}
+
 export async function selectGalaxyIdentity(scopeId,uid){
   const id=String(uid||'').trim();
   if(!id)return null;
@@ -154,11 +166,7 @@ export async function selectGalaxyIdentity(scopeId,uid){
     columns:'uid,title,source_name,createtime,url,source_id,target_id,ref_id,media_link'
   });
   if(!row)return null;
-  const contentRow=await selectNeonRowById(table,{
-    idColumn:'uid',
-    id,
-    columns:'uid,content'
-  });
+  const contentRow=await selectGalaxyContent(scopeId,id);
   const mediaRows=await mediaRowsFor(lunarunes?'lunarunes':'lo3rwang',mediaIdsOf(row.media_link));
   const mediaById=new Map(mediaRows.map(item=>[String(item.media_id),item]));
   return {...row,content:contentRow?.content||'',links:resolvedLinks(row,mediaById)};

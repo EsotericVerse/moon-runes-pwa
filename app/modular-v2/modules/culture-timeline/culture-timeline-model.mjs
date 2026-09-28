@@ -51,16 +51,41 @@ export function formatCultureDateTime(value){
   return `${values.year}-${values.month}-${values.day} ${values.hour}:${values.minute}`;
 }
 
-export function decodeCultureText(value){
-  const text=String(value||'');
-  if(!/[\u0080-\u00ff]/u.test(text))return text;
-  const codepoints=Array.from(text,char=>char.codePointAt(0));
-  if(codepoints.some(point=>point>255))return text;
+function decodeLatin1Utf8Chunk(value){
+  const chunk=String(value||'');
+  if(!chunk||!/[\u0080-\u00ff]/u.test(chunk))return chunk;
+  const codepoints=Array.from(chunk,char=>char.codePointAt(0));
+  if(codepoints.some(point=>point>255))return chunk;
   try{
     return new TextDecoder('utf-8',{fatal:true}).decode(new Uint8Array(codepoints));
   }catch{
-    return text;
+    return chunk;
   }
+}
+
+function decodeLatin1Utf8Pass(value){
+  const text=String(value||'');
+  let output='';
+  let latin1='';
+  for(const char of text){
+    if(char.codePointAt(0)<=255){
+      latin1+=char;
+      continue;
+    }
+    output+=decodeLatin1Utf8Chunk(latin1)+char;
+    latin1='';
+  }
+  return output+decodeLatin1Utf8Chunk(latin1);
+}
+
+export function decodeCultureText(value){
+  let text=String(value||'');
+  for(let pass=0;pass<2;pass+=1){
+    const decoded=decodeLatin1Utf8Pass(text);
+    if(decoded===text)break;
+    text=decoded;
+  }
+  return text;
 }
 
 export function groupWorksByWeek(rows=[],field='source_name'){
