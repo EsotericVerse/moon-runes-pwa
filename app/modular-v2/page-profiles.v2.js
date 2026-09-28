@@ -7,9 +7,6 @@ export const PAGE_PROFILES_V2=Object.freeze({
 
 const SCOPE_FEATURE_SUBTITLES=Object.freeze({
   lo3rwang:Object.freeze({
-    statics:'彙整各 Scope 的作品總數與共同來源分布。',
-    culture:'顯示各 Scope 的 Current 時期交會、作品密度與來源數量。',
-    governance:'個人治理、作品與權利邊界。管理也在此。',
     search:'從關鍵詞、作品、來源或日期開始，找到時間點，再查看附近的脈絡與作品。'
   }),
   lunarunes:Object.freeze({
