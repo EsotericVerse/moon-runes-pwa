@@ -16,9 +16,11 @@ import {clearRuntimeTextIndexes} from './text-engine.mjs';
 const CanonicalTableSchema=z.enum([
   'api.user_records','api.user_settings',
   'silver.manage','silver.resource_visibility',
-  'silver.lo3rwang_style',
+  'silver.lo3rwang','silver.lrunes',
+  'silver.lo3rwang_style','silver.lrunes_style',
   'silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media',
-  'silver.lrunes','silver.runes','silver.runes_group','silver.runes_etc',
+  'silver.lrunes_galaxy','silver.lrunes_galaxy_media','silver.lrunes_daily',
+  'silver.runes','silver.runes_group','silver.runes_etc',
   'silver.faq_entries',
 ]);
 const ScopeTimeTableSchema=z.string().regex(/^silver\.[a-z][a-z0-9]*_time$/);
@@ -26,21 +28,21 @@ const TableSchema=z.union([CanonicalTableSchema,ScopeTimeTableSchema]);
 const WritableCanonicalTableSchema=z.enum([
   'api.user_records','api.user_settings',
   'silver.manage','silver.resource_visibility',
-  'silver.lo3rwang_style',
+  'silver.lo3rwang','silver.lrunes',
+  'silver.lo3rwang_style','silver.lrunes_style',
   'silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media',
-  'silver.lrunes'
+  'silver.lrunes_galaxy','silver.lrunes_galaxy_media'
 ]);
 const WritableTableSchema=z.union([WritableCanonicalTableSchema,ScopeTimeTableSchema]);
 const RowSchema=z.record(z.string(),z.unknown());
 const TEXT_INDEX_TABLES=new Set([
-  'silver.manage','silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media','silver.lrunes'
+  'silver.manage','silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media','silver.lrunes_galaxy','silver.lrunes_galaxy_media'
 ]);
 function invalidateTextIndexes(table){
   if(TEXT_INDEX_TABLES.has(String(table||'')))clearRuntimeTextIndexes();
 }
 function isMediaRecord(table,row){
-  return table==='silver.lo3rwang_galaxy_media'
-    ||(table==='silver.lrunes'&&String(row?.record_type||'')==='galaxy_media');
+  return table==='silver.lo3rwang_galaxy_media'||table==='silver.lrunes_galaxy_media';
 }
 function assertMediaMetaTagsOnCreate(table,rows){
   for(const row of rows||[]){
@@ -53,7 +55,7 @@ function assertMediaMetaTagsOnCreate(table,rows){
   }
 }
 function assertMediaMetaTagsOnUpdate(table,patch){
-  if(table==='silver.lo3rwang_galaxy_media'&&Object.prototype.hasOwnProperty.call(patch,'meta_tags')&&!String(patch.meta_tags??'').trim()){
+  if(['silver.lo3rwang_galaxy_media','silver.lrunes_galaxy_media'].includes(table)&&Object.prototype.hasOwnProperty.call(patch,'meta_tags')&&!String(patch.meta_tags??'').trim()){
     throw new NeonRepositoryError('Media meta_tags cannot be cleared; LOC preserves supplied classification and does not replace it automatically.',{
       table:String(table),code:'MEDIA_META_TAGS_REQUIRED'
     });
@@ -115,7 +117,11 @@ function applyFilters(query,filters=[]){
 const READ_KEYS={
   'silver.lo3rwang_galaxy':['uid'],
   'silver.lo3rwang_galaxy_media':['media_id'],
-  'silver.lrunes':['record_id'],
+  'silver.lrunes_galaxy':['uid'],
+  'silver.lrunes_galaxy_media':['media_id'],
+  'silver.lrunes_daily':['record_id'],
+  'silver.lo3rwang':['id'],
+  'silver.lrunes':['id'],
   'silver.runes':['rune_id'],
   'silver.runes_group':['group_id'],
   'silver.runes_etc':['rune_id','dir','type'],
