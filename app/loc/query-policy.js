@@ -1,7 +1,7 @@
 'use client';
 
-export const UI_PAGE_SIZE=20;
-export const MAX_SELECT_ROWS=1000;
+export const UI_PAGE_SIZE=2000;
+export const MAX_SELECT_ROWS=5000;
 
 const HEAVY_COLUMNS=Object.freeze({
   'silver.lo3rwang_galaxy':Object.freeze(new Set(['content'])),
