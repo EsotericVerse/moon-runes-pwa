@@ -11,7 +11,7 @@ for (const name of requiredRoots) {
 }
 
 // Ambiguous or retired roots must not be recreated. `pics/` is intentionally retained.
-// Current application JavaScript belongs under `app/`; root `js/` is only the governed moon-phase exception.
+// Current application JavaScript belongs under `app/`; root `js/` runtime is retired.
 for (const name of [
   'images', 'image', 'pic', 'cloudflare', 'api', 'apps', 'loc8-api',
   '64images', 'icons', 'card_api', 'loc8_api', 'lib'
@@ -33,8 +33,7 @@ for (const path of [
 // all.xlsx remains governed under data/source rather than repository root.
 if (existsSync(resolve(root, 'all.xlsx'))) failures.push('forbidden root data file: all.xlsx');
 
-const allowedRootJs = ['locMoonPhase.js'];
-if (!existsSync(resolve(root, 'js/locMoonPhase.js'))) failures.push('missing governed moon-phase JS exception: js/locMoonPhase.js');
+const allowedRootJs = [];
 for (const name of ['galaxy.js','quick-selector.js','rune-draw.js','rune-graph-core.js','rune.js','runes-core.js','runes-pwa-ia.js']) {
   if (existsSync(resolve(root, 'js', name))) failures.push('retired root JS runtime returned: js/' + name);
 }
