@@ -22,7 +22,6 @@ const required=[
   [sources.registry,"defaultScopeId:'loc'"],
   [sources.registry,"domain:'loc.lo3rwang.cc'"],
   [sources.registry,"domain:'lrunes.lo3rwang.cc'"],
-  [sources.registry,"domain:'dlwang.lo3rwang.cc'"],
   [sources.registry,"domain:'admin.lo3rwang.cc'"],
   [sources.locApp,'StatisticsV2'],
   [sources.locApp,'CultureV2'],
