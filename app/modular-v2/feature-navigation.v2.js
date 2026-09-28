@@ -61,7 +61,8 @@ export function featureNavigationHref(scopeId,featureId,navigation={}){
 }
 
 function relationIds(value){
-  return [...new Set(String(value||'').split(/[,，]/).map(item=>item.trim()).filter(Boolean))];
+  const values=Array.isArray(value)?value:String(value||'').split(/[,，]/);
+  return [...new Set(values.map(item=>String(item||'').trim()).filter(Boolean))];
 }
 
 export function galaxyIdentityHref(scopeId,uid){
