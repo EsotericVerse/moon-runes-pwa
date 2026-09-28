@@ -37,6 +37,25 @@ for(const fragment of [
   if(!publicDraw.includes(fragment))throw new Error(`RuneDrawClient mode invariant missing: ${fragment}`);
 }
 
+for(const fragment of [
+  "const types=drawKey==='daily'?['direction','daily']:['direction','lots'];",
+  "selectRuneRows(numbers,{types})",
+  'data-draw-reading="single"',
+  'Daily · 每日指示',
+  'dailyGuidance(draw.cards[0], draw.directions[0])'
+]){
+  if(!publicDraw.includes(fragment))throw new Error(`RuneDrawClient guidance contract missing: ${fragment}`);
+}
+for(const fragment of [
+  "const types=modeKey==='daily'?['direction','daily']:['direction','lots'];",
+  "selectRuneRows(numbers,{types})",
+  'data-draw-reading="single"',
+  'Daily · 每日指示',
+  'dailyGuidance(draw.cards[0],draw.directions[0])'
+]){
+  if(!homeDraw.includes(fragment))throw new Error(`RunesClient guidance contract missing: ${fragment}`);
+}
+
 const forbidden = [
   'function sampleUnique(',
   'pool.slice(0, count)',
