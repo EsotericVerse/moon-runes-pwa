@@ -170,22 +170,42 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
   const pageSize=Math.max(1,Math.floor(Number(limit)||20));
   const offset=Math.max(0,Math.floor(Number(pageOffset)||0));
   const page=await selectGalaxyPage({sourceName:String(sourceName),startDate,endDate,limit:pageSize,offset});
-  const rows=page.rows.map(row=>({
-    key:'galaxy:'+row.uid,
-    uid:row.uid,
-    source_name:row.source_name,
-    title:decodeCultureText(row.title||'').trim(),
-    description:'',
-    createtime:row.createtime,
-    start_date:row.createtime,
-    date:row.createtime,
-    display_date:formatCultureDateTime(row.createtime),
-    entry_id:row.uid,
-    entry_type:'work',
-    group_label:sourceLabel(row.source_name),
-    scope_id:'lo3rwang',
-    links:[]
-  }));
+  const untitledIds=page.rows
+    .filter(row=>!decodeCultureText(row.title||'').trim())
+    .map(row=>String(row.uid||'').trim())
+    .filter(Boolean);
+  const previews=new Map();
+  if(untitledIds.length){
+    const previewResult=await selectNeonAllRows('silver.lo3rwang_galaxy',{
+      columns:'uid,content',
+      filters:[{column:'uid',operator:'in',value:untitledIds}]
+    });
+    for(const row of previewResult.rows){
+      const uid=String(row.uid||'').trim();
+      const text=decodeCultureText(row.content||'').replace(/\s+/g,' ').trim();
+      if(uid&&text)previews.set(uid,text.slice(0,80));
+    }
+  }
+  const rows=page.rows.map(row=>{
+    const explicitTitle=decodeCultureText(row.title||'').trim();
+    const preview=previews.get(String(row.uid||''))||'';
+    return {
+      key:'galaxy:'+row.uid,
+      uid:row.uid,
+      source_name:row.source_name,
+      title:explicitTitle||preview||'未命名作品',
+      description:'',
+      createtime:row.createtime,
+      start_date:row.createtime,
+      date:row.createtime,
+      display_date:formatCultureDateTime(row.createtime),
+      entry_id:row.uid,
+      entry_type:'work',
+      group_label:sourceLabel(row.source_name),
+      scope_id:'lo3rwang',
+      links:[]
+    };
+  });
   const totalCount=Number(page.totalCount)||0;
   const hasMore=offset+pageSize<totalCount;
   return {rows,hasMore,nextOffset:hasMore?offset+pageSize:null,totalCount};
