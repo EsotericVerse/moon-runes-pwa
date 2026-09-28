@@ -11,6 +11,7 @@ import RuneManagementPanel from './RuneManagementPanel';
 import CultureTimelineEditor from '../modular-v2/features/CultureTimelineEditor';
 import KeywordSettingsV2 from '../modular-v2/features/KeywordSettingsV2';
 import StyleKeywordSettingsV2 from '../modular-v2/features/StyleKeywordSettingsV2';
+import LunaRunesStyleModelV2 from '../modular-v2/features/LunaRunesStyleModelV2';
 
 const LOGIN_COPY={
   loc:{
@@ -71,7 +72,7 @@ function sectionOptions(scopeId){
     {value:'period',label:'時期設定'},
     {value:'classification',label:scopeId==='lunarunes'?'符文關鍵詞分組':'關鍵詞／風格分類'}
   ];
-  if(scopeId==='lunarunes')options.push({value:'daily',label:'每日符文管理'});
+  if(scopeId==='lunarunes')options.push({value:'style-model',label:'月之符文分類模型'},{value:'daily',label:'每日符文管理'});
   return options;
 }
 
@@ -134,6 +135,7 @@ export default function GovernanceManagement(){
     {section==='workspace'?<Workspace scopeId={scopeId}/>:null}
     {section==='period'?<PeriodSettings scopeId={scopeId}/>:null}
     {section==='classification'?<ClassificationSettings scopeId={scopeId}/>:null}
+    {section==='style-model'&&scopeId==='lunarunes'?<LunaRunesStyleModelV2/>:null}
     {section==='daily'&&scopeId==='lunarunes'?<RuneManagementPanel/>:null}
   </section>;
 }
