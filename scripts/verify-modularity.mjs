@@ -54,12 +54,12 @@ if(!/selectScopeCultureData\(scopeId\)/.test(cultureView))failures.push('Culture
 const searchClient=readFileSync(resolve(root,'app/loc/neon-search.js'),'utf8');
 const searchProviders=readFileSync(resolve(root,'app/loc/search-providers.js'),'utf8');
 const textEngine=readFileSync(resolve(root,'app/loc/text-engine.mjs'),'utf8');
-const styleClassifier=readFileSync(resolve(root,'app/loc/style-classifier.js'),'utf8');
+const keywordClassifier=readFileSync(resolve(root,'app/loc/keyword-classifier.js'),'utf8');
 const searchView=readFileSync(resolve(root,'app/modular-v2/features/SearchV2.jsx'),'utf8');
 if(!/from ['"]flexsearch['"]/.test(textEngine)||!/new Resolver/.test(textEngine))failures.push('Text engine: FlexSearch Resolver boundary is missing');
 if(!/getRuntimeTextIndex/.test(searchProviders)||!/searchTextIndex/.test(searchProviders))failures.push('Search: shared FlexSearch provider boundary is missing');
 if(/\.ilike\(|operator:\s*['"]ilike['"]/.test(searchProviders))failures.push('Search: direct ILIKE search must not replace the shared text engine');
-if(!/searchTextIndex/.test(styleClassifier))failures.push('Style classifier: Culture/Statistics must use the shared FlexSearch engine');
+if(!/searchTextIndex/.test(keywordClassifier))failures.push('Style classifier: Culture/Statistics must use the shared FlexSearch engine');
 if(!/searchNeonRows\(/.test(searchView))failures.push('SearchV2: shared search client missing');
 
 const scopeManagement=readFileSync(resolve(root,'app/modular-v2/ScopeManagementV2.jsx'),'utf8');
