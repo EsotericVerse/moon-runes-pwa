@@ -5,7 +5,7 @@ import {useOffsetPagination} from '../use-offset-pagination.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import {getScopeV2,scopeHrefV2} from '../scope-registry.v2';
-import GovernanceInlineEditor from '../../loc/GovernanceInlineEditor';
+import {useNeonAccount} from '../../loc/use-neon-account';
 import LocGovernance,{LocGovernanceLaw,LOC_GOVERNANCE_SUBTITLE} from '../governance/LocGovernance';
 import LunaRunesGovernance,{LUNARUNES_GOVERNANCE_SUBTITLE} from '../governance/LunaRunesGovernance';
 import PersonalGovernance,{PERSONAL_GOVERNANCE_SUBTITLE} from '../governance/PersonalGovernance';
@@ -65,10 +65,12 @@ function governanceFor(scopeId){
 
 function GovernanceHome(){
   const {scopeId}=useScopeRuntimeV2();
+  const account=useNeonAccount();
   const {View,subtitle}=governanceFor(scopeId);
   const adminHref=getScopeV2('admin').primary.href;
+  const canEdit=account.canManageScopeSync(scopeId);
   return <FeaturePageV2 featureId="governance" subtitle={subtitle}>
-    <GovernanceInlineEditor scopeId={scopeId}><View/></GovernanceInlineEditor>
+    <View canEdit={canEdit}/>
     {scopeId==='loc'?<section className="loc-card">
       <p className="loc-eyebrow">Management</p>
       <h2>系統管理</h2>
@@ -85,9 +87,11 @@ function GovernanceHome(){
 
 function GovernanceLaw(){
   const {scopeId}=useScopeRuntimeV2();
-  if(scopeId==='loc')return <FeaturePageV2 featureId="governance" subtitle="權利與授權"><LocGovernanceLaw/></FeaturePageV2>;
+  const account=useNeonAccount();
+  const canEdit=account.canManageScopeSync(scopeId);
+  if(scopeId==='loc')return <FeaturePageV2 featureId="governance" subtitle="權利與授權"><LocGovernanceLaw canEdit={canEdit}/></FeaturePageV2>;
   const {View}=governanceFor(scopeId);
-  return <FeaturePageV2 featureId="governance" subtitle="權利與授權"><View/></FeaturePageV2>;
+  return <FeaturePageV2 featureId="governance" subtitle="權利與授權"><View canEdit={canEdit}/></FeaturePageV2>;
 }
 
 export default function GovernanceV2({section=null}){
