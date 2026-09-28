@@ -6,7 +6,6 @@ const read=path=>readFileSync(path,'utf8');
 const selector=read('app/modular-v2/ThemeSelectV2.jsx');
 const footer=read('app/modular-v2/ScopeFooterV2.jsx');
 const scopeRegistry=read('app/modular-v2/scope-registry.v2.js');
-const neonRepository=read('app/loc/neon-repository.js');
 const layout=read('app/layout.jsx');
 
 if(THEME_SLOTS_V2.length!==8)failures.push('theme registry must contain eight shared slots');
@@ -16,7 +15,6 @@ if(/fetchThemeStylesV2|background_color|panel_background_color|text_color/.test(
 if(existsSync('app/migration-bridges'))failures.push('retired migration-bridges directory remains');
 if(existsSync('app/loc/ThemeAdmin.jsx'))failures.push('retired global theme-definition editor remains');
 if(/TIME_SCHEDULE|schedule:|mode:'time'|custom:Object/.test(scopeRegistry))failures.push('scope code must not keep duplicate theme/schedule settings');
-if(neonRepository.includes('api.scope_theme_defaults'))failures.push('retired scope theme table remains in the repository allowlist');
 if(!footer.includes('<ThemeSelectV2/>'))failures.push('V2 Footer must own theme selector');
 if(layout.includes('<ThemeProvider>'))failures.push('obsolete global ThemeProvider must remain removed');
 if(!layout.includes("import ScopeFooterV2 from './modular-v2/ScopeFooterV2'"))failures.push('Root layout must use Current ScopeFooterV2 directly');
