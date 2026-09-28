@@ -23,7 +23,9 @@ const RuneEtcRow=z.object({
   desc:z.string()
 });
 
-const LEGACY_MACRO=Object.freeze({
+// Event32 still carries the early Alpha shorthand. This compatibility map is
+// only for the playtest scorer; the Current eight groups remain distinct.
+const ALPHA_COMPAT_MACRO=Object.freeze({
   靈魂:'SL',連結:'SL',
   礦物:'ML',生命:'ML',
   自然:'NE',元素:'NE',
@@ -32,8 +34,10 @@ const LEGACY_MACRO=Object.freeze({
 
 export const RESULT_DE=Object.freeze({perfect:2,pass:1,fair:0,replenish:0,fail:-1});
 export const HAND_RULE=Object.freeze({base:5,tempCap:8,eventDraw:2,failDraw:1});
-export const TWO_PLAYER_ROUNDS=Object.freeze(['event','event','event','resonance','event','event','event','final-resonance']);
-export const MULTI_PLAYER_ROUNDS=Object.freeze(['event','battle','event','battle','event','battle','event','final-battle']);
+export const GAME_ROUNDS=Object.freeze([
+  'event','event','event','resonance',
+  'event','event','event','final-resonance'
+]);
 
 export async function loadGameRuneData(){
   const [runesResult,etcResult]=await Promise.all([
@@ -70,7 +74,7 @@ export async function loadGameRuneData(){
     extraRules:row.extra_rules||'',
     extraNotes:row.extra_notes||'',
     etc:etcByRune.get(row.rune_id)||[],
-    legacyMacro:LEGACY_MACRO[row.group_name]||null
+    alphaCompatMacro:ALPHA_COMPAT_MACRO[row.group_name]||null
   }));
 
   if(cards.length!==66)throw new Error('silver.runes 可玩符文數量為 '+cards.length+'，預期 66。');
@@ -117,13 +121,13 @@ export function applyDe(player,delta){
   return {...player,de:Math.max(0,Math.min(8,player.de+delta))};
 }
 
-export function evaluateLegacyEvent(cards,event){
+export function evaluateAlphaEvent(cards,event){
   if(cards.length!==2)throw new Error('Event 回應固定使用兩張符文。');
   const req=Array.isArray(event?.req)?event.req:[];
   const pool=[...req];
   let macroHits=0;
   for(const card of cards){
-    const i=pool.indexOf(card.legacyMacro);
+    const i=pool.indexOf(card.alphaCompatMacro);
     if(i>=0){macroHits++;pool.splice(i,1);}
   }
   const diversity=new Set(cards.map(card=>card.group)).size;
