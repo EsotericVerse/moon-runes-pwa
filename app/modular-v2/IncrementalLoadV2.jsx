@@ -4,6 +4,7 @@ import {useEffect,useRef} from 'react';
 import {LIST_LOAD_COOLDOWN_MS} from './list-loading.v2';
 
 const DOWN_KEYS=new Set(['ArrowDown','PageDown','End',' ']);
+const WHEEL_GESTURE_GAP_MS=600;
 
 function isDocumentBottom(){
   if(typeof window==='undefined'||typeof document==='undefined')return false;
@@ -29,14 +30,14 @@ export default function IncrementalLoadV2({
   label='還有更多資料',
   scrollRootRef=null
 }){
-  const busyRef=useRef(Boolean(loading));
+  const loadingRef=useRef(Boolean(loading));
   const readyAtRef=useRef(Date.now()+cooldownMs);
   const atBottomRef=useRef(false);
+  const lastWheelAtRef=useRef(0);
 
   useEffect(()=>{
-    busyRef.current=Boolean(loading);
-    if(!loading)readyAtRef.current=Date.now()+Math.max(0,Number(cooldownMs)||0);
-  },[loading,cooldownMs]);
+    loadingRef.current=Boolean(loading);
+  },[loading]);
 
   useEffect(()=>{
     if(!hasMore||typeof onLoadMore!=='function')return undefined;
@@ -45,17 +46,25 @@ export default function IncrementalLoadV2({
     const updateBottom=()=>{atBottomRef.current=root?isElementBottom(root):isDocumentBottom();};
     const maybeLoad=()=>{
       updateBottom();
-      if(!atBottomRef.current||busyRef.current||error||Date.now()<readyAtRef.current)return;
+      const now=Date.now();
+      if(!atBottomRef.current||loadingRef.current||error||now<readyAtRef.current)return;
+      // Lock the cooldown immediately. Do not wait for React Query / state to re-render,
+      // otherwise one physical wheel gesture can increment several pages.
+      readyAtRef.current=now+Math.max(0,Number(cooldownMs)||0);
       atBottomRef.current=false;
       onLoadMore();
     };
     const onWheel=event=>{
       if(Number(event.deltaY)<=0)return;
+      const now=Date.now();
+      const newGesture=now-lastWheelAtRef.current>WHEEL_GESTURE_GAP_MS;
+      lastWheelAtRef.current=now;
+      if(!newGesture)return;
       maybeLoad();
     };
     const onTouchEnd=()=>maybeLoad();
     const onKeyDown=event=>{
-      if(!DOWN_KEYS.has(event.key))return;
+      if(event.repeat||!DOWN_KEYS.has(event.key))return;
       maybeLoad();
     };
 
