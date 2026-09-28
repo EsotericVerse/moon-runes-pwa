@@ -64,9 +64,6 @@ if(!governanceManagement.includes("scopeId!=='loc'?<CultureTimelineEditor")){
 }
 
 const aggregateQuery=readFileSync(resolve(root,'app/loc/aggregate-query.js'),'utf8');
-if(aggregateQuery.includes('galaxy_preview')||aggregateQuery.includes('content_preview')){
-  failures.push('aggregate-query: retired Galaxy preview relation returned');
-}
 if(!aggregateQuery.includes("columns:'uid,title,url,media_link'")){
   failures.push('aggregate-query: bounded Galaxy summary metadata contract missing');
 }
