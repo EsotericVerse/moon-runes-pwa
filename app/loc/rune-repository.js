@@ -1,6 +1,6 @@
 'use client';
 
-import {neonPublicClient} from './neon-client';
+import {neonAuthClient,neonPublicClient} from './neon-client';
 
 const RUNE_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,char_action,positive_keywords,negative_keywords,extra_rules,extra_notes';
 const RUNE_DETAIL_COLUMNS='rune_evolution_history,myth_story,soul_question,practice_challenge,ritual_advice,harmony_advice';
@@ -141,6 +141,17 @@ function splitKeywords(value){
   return String(value||'').split(/[、,，\n]+/).map(item=>item.trim()).filter(Boolean);
 }
 
-export async function updateRuneKeywords(){
-  throw new Error('LunaRunes Canon 為唯讀資料。');
+export async function updateRuneKeywords({runeNumber,positiveKeywords='',negativeKeywords=''}={}){
+  const id=Number(runeNumber);
+  if(!Number.isInteger(id)||id<1||id>66)throw new Error('無效的符文編號。');
+  const {data,error}=await neonAuthClient.schema('silver').from('runes')
+    .update({
+      positive_keywords:String(positiveKeywords||'').trim()||null,
+      negative_keywords:String(negativeKeywords||'').trim()||null
+    })
+    .eq('rune_id',id)
+    .select('rune_id,positive_keywords,negative_keywords');
+  if(error)throw new Error(error.message||'符文關鍵詞更新失敗');
+  if(!data?.length)throw new Error('符文不存在或目前沒有修改權限。');
+  return normalizeRune(data[0]);
 }
