@@ -59,7 +59,7 @@
 .scope-v2-ranking span{color:var(--scope-v2-muted)}
 .scope-v2-search-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.65rem}
 .scope-v2-search-form input{min-width:0;padding:.7rem .9rem;border:var(--scope-v2-border);border-radius:999px;background:var(--loc-panel);color:var(--scope-v2-text)}
-.scope-v2-search-highlight{padding:0 .08em;border-radius:.18em;background:var(--loc-accent-soft);color:var(--loc-accent);font-weight:800}
+.scope-v2-search-highlight{padding:0 .08em;border-radius:.18em;background:var(--loc-panel-2);color:var(--loc-accent);font-weight:800}
 .scope-v2-timeline{display:grid;gap:.85rem}
 .scope-v2-timeline article{display:grid;gap:.25rem;padding:.8rem 0;border-bottom:var(--scope-v2-border)}
 .scope-v2-timeline article:last-child{border-bottom:0}
