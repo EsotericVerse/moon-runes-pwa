@@ -1,4 +1,5 @@
 import ModelArchitectureExplorer from './ModelArchitectureExplorer';
+import ScopeSummaryStatsV2 from '../../modular-v2/ScopeSummaryStatsV2';
 import {scopeHrefV2} from '../../modular-v2/scope-registry.v2';
 
 const RUNES_LINKS=Object.freeze({
@@ -70,6 +71,8 @@ export default function AboutView(){
         <img src="/pics/LOC-PicAll.png" alt="LOC 月典語言架構框架視覺理念圖" loading="eager" />
       </figure>
     </header>
+
+    <ScopeSummaryStatsV2 />
 
     <section className="loc-card home-copy-block home-beginner" id="beginner">
       <div className="home-section-heading">
