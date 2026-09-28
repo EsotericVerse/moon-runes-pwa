@@ -24,6 +24,32 @@ async function probe(client,table,columns,{filters=[]}={}){
   if(error)throw new Error(table+': '+(error.code||'')+' '+error.message);
 }
 
+async function verifyGameContract(client){
+  const {data,error,status}=await client.schema('silver').from('game')
+    .select('game_key,record_type,rule_code')
+    .eq('is_current',true)
+    .limit(500);
+  if(error)throw new Error('game: '+(error.code||'')+' '+error.message);
+  const rows=data||[];
+  const count=type=>rows.filter(row=>row.record_type===type).length;
+  const roundCount=rows.filter(row=>row.record_type==='rule'&&row.rule_code==='ROUND_PHASE').length;
+  const resultCount=rows.filter(row=>row.record_type==='rule'&&row.rule_code==='EVENT_RESULT').length;
+  const actual={
+    event:count('event'),
+    rune_action:count('rune_action'),
+    role:count('role'),
+    macro:count('macro'),
+    asset:count('asset'),
+    round:roundCount,
+    result:resultCount
+  };
+  const expected={event:32,rune_action:66,role:8,macro:4,asset:13,round:8,result:5};
+  console.log(JSON.stringify({probe:'runtime-public-game-contract',status,actual,expected}));
+  for(const [key,value] of Object.entries(expected)){
+    if(actual[key]!==value)throw new Error('silver.game '+key+' expected '+value+' got '+actual[key]);
+  }
+}
+
 const client=runtimeClient();
 for(const [table,columns,options] of [
   ['manage','id,role'],
@@ -37,9 +63,12 @@ for(const [table,columns,options] of [
   ['lo3rwang_source_stats','source_name,work_count'],
   ['lo3rwang_source_daily','source_name,work_date,work_count'],
   ['runes','rune_id,rune_name'],
+  ['game','game_key,record_type,sort_order,status,is_current,event_id,rune_id,role_id,rule_code,macro_code,asset_code'],
   ['lrunes','id,period,period_start,period_end,theme,search_able,statistics_able,culture_able,sources,source_counts,work_count,media_count,media_counts,updated_at'],
   ['faq_entries','faq_id,question,answer'],
   ['content_blocks','block_id,scope_id,page_key,slot_key,title,body,display_order,active,updated_at']
 ])await probe(client,table,columns,options||{});
+
+await verifyGameContract(client);
 
 console.log('Public Neon runtime repository-path probe passed.');
