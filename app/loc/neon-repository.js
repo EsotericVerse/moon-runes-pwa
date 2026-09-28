@@ -18,7 +18,7 @@ const CanonicalTableSchema=z.enum([
   'silver.manage','silver.resource_visibility',
   'silver.lo3rwang_style',
   'silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media',
-  'silver.lrunes',
+  'silver.lrunes','silver.runes',
   'silver.faq_entries',
 ]);
 const ScopeTimeTableSchema=z.string().regex(/^silver\.[a-z][a-z0-9]*_time$/);
@@ -116,6 +116,7 @@ const READ_KEYS={
   'silver.lo3rwang_galaxy':['uid'],
   'silver.lo3rwang_galaxy_media':['media_id'],
   'silver.lrunes':['record_id'],
+  'silver.runes':['rune_id'],
   'silver.lo3rwang_time':['record_id'],
   'silver.lrunes_time':['record_id'],
   'silver.manage':['id']
@@ -138,6 +139,7 @@ function throwQueryError(error,table,operation){
 async function executeSelectOnce(table,{
   columns='*',filters=[],orFilter='',orders=[],limit=UI_PAGE_SIZE,offset=0,range=null,count=null,authenticated=false
 }={},allowHeavyBatch=false){
+  if(table==='silver.runes'&&(!columns||String(columns).trim()==='*'))throw new NeonRepositoryError('silver.runes requires explicit columns',{table,code:'RUNE_COLUMNS_REQUIRED'});
   if(!allowHeavyBatch)assertSafeSelect({table,columns,filters,limit,range});
   let query=relation(table,authenticated).select(columns,count?{count}:undefined);
   query=applyFilters(query,filters);
