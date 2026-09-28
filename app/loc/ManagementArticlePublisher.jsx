@@ -36,7 +36,7 @@ export default function ManagementArticlePublisher({scopeId}){
       const uid=createUid8();
 
       await insertNeonRows('silver.lo3rwang_galaxy',[{
-        uid,category:'article',content_type:'article',
+        uid,content_type:'article',
         title:draft.title.trim()||null,content:draft.body.trim()||null,
         source_id:draft.source_id.trim()||null,target_id:targetIds(draft.target_id),ref_id:draft.ref_id.trim()||null,
         url:draft.url.trim()||null,searchable:!draft.hidden,
