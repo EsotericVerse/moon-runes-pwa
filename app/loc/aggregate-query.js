@@ -128,7 +128,7 @@ export async function selectGalaxySummaries(scopeId,uids=[]){
   let rows=[];
   if(lunarunes){
     rows=(await selectNeonAllRows('silver.lrunes',{
-      columns:'record_id,record_type,uid,title,url,media_link',
+      columns:'record_id,record_type,uid,title,content,url,media_link',
       filters:[
         {column:'record_type',operator:'eq',value:'galaxy'},
         {column:'uid',operator:'in',value:ids}
@@ -136,7 +136,7 @@ export async function selectGalaxySummaries(scopeId,uids=[]){
     })).rows;
   }else{
     rows=(await selectNeonAllRows('silver.lo3rwang_galaxy',{
-      columns:'uid,title,url,media_link',
+      columns:'uid,title,content,url,media_link',
       filters:[{column:'uid',operator:'in',value:ids}]
     })).rows;
   }
@@ -146,7 +146,7 @@ export async function selectGalaxySummaries(scopeId,uids=[]){
   return rows.map(row=>({
     uid:row.uid,
     title:row.title||'',
-    excerpt:'',
+    excerpt:String(row.content||'').slice(0,20),
     links:resolvedLinks(row,mediaById)
   }));
 }
