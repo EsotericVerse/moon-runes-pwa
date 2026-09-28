@@ -93,7 +93,7 @@ export function resolveSearchScope(collectionId,source,row,currentScopeId='loc')
   if(explicit==='lo3rwang'||explicit==='author'||explicit==='personal')return 'lo3rwang';
   if(collectionId==='月之符文')return 'lunarunes';
   if(collectionId==='lo3rwang')return 'lo3rwang';
-  const label=String(source||'')+' '+String(row?.context_type||'')+' '+String(row?.work_type||'');
+  const label=String(source||'')+' '+String(row?.work_type||'');
   if(/符文|rune|lunarunes/i.test(label))return 'lunarunes';
   if(/作者|歌曲|作品|時期|全文|文化|author|song|work/i.test(label))return 'lo3rwang';
   return currentScopeId;
@@ -109,7 +109,7 @@ export function buildSearchNavigation(collectionId,source,row,query,currentScope
       identity:valueOf(
         row?.uid,row?.media_id,row?.song_id,
         row?.rune_number!==undefined?'rune:'+row.rune_number:undefined,
-        row?.context_key,row?.entry_key,row?.id,
+        row?.entry_key,row?.id,
         payload.id,payload.identity
       ),
       source:valueOf(row?.source,row?.source_name,source),
