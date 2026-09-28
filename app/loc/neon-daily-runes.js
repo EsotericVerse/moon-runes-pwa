@@ -21,13 +21,11 @@ async function attachRuneMeta(rows){
   });
 }
 
-function drawFilters(extra=[]){
-  return [{column:'record_type',operator:'eq',value:'daily_draw'},...extra];
-}
+function drawFilters(extra=[]){return extra;}
 
 export async function selectRecentDailyRuneDraws({limit=28}={}){
   const safeLimit=Math.max(1,Math.min(28,Math.floor(Number(limit)||28)));
-  const result=await selectNeonRows('silver.lrunes',{
+  const result=await selectNeonRows('silver.lrunes_daily',{
     columns:'record_date,draw_kind,rune_number,direction',
     filters:drawFilters(),
     orders:[{column:'record_date',ascending:false},{column:'draw_kind',ascending:true}],
@@ -40,7 +38,7 @@ export async function selectRecentDailyRuneDraws({limit=28}={}){
 export async function selectDailyRuneDraws({offset=0,limit=DAILY_RUNE_PAGE_SIZE}={}){
   const safeOffset=Math.max(0,Math.floor(Number(offset)||0));
   const safeLimit=Math.max(1,Math.min(DAILY_RUNE_PAGE_SIZE,Math.floor(Number(limit)||DAILY_RUNE_PAGE_SIZE)));
-  const draws=await selectNeonRows('silver.lrunes',{
+  const draws=await selectNeonRows('silver.lrunes_daily',{
     columns:'record_date,draw_kind,rune_number,direction',
     filters:drawFilters(),
     orders:[{column:'record_date',ascending:false},{column:'draw_kind',ascending:true}],
@@ -55,7 +53,7 @@ export async function selectDailyRuneRange({startDate,endDate}={}){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(start)||!/^\d{4}-\d{2}-\d{2}$/.test(end))return [];
   const low=start<=end?start:end;
   const high=start<=end?end:start;
-  const result=await selectNeonAllRows('silver.lrunes',{
+  const result=await selectNeonAllRows('silver.lrunes_daily',{
     columns:'record_date,draw_kind,rune_number,direction',
     filters:drawFilters([
       {column:'record_date',operator:'gte',value:low},
@@ -72,7 +70,7 @@ export async function selectDailyRuneMonth({year,month}={}){
   const start=`${safeYear}-${String(safeMonth).padStart(2,'0')}-01`;
   const nextDate=new Date(Date.UTC(safeYear,safeMonth,1));
   const end=`${nextDate.getUTCFullYear()}-${String(nextDate.getUTCMonth()+1).padStart(2,'0')}-01`;
-  const draws=await selectNeonRows('silver.lrunes',{
+  const draws=await selectNeonRows('silver.lrunes_daily',{
     columns:'record_date,draw_kind,rune_number,direction',
     filters:drawFilters([
       {column:'record_date',operator:'gte',value:start},
