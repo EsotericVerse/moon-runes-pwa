@@ -27,11 +27,9 @@ function labelOf(item,index){
   return item?.display_label||item?.name||item?.title||item?.period||'時期 '+(index+1);
 }
 function rowsOf(data,scopeId){
-  const authorRows=Array.isArray(data?.authorEras?.eras)?data.authorEras.eras.map(item=>({...item,scope_id:item?.scope_id||'lo3rwang'})):[];
-  const runeRows=Array.isArray(data?.runeEras?.eras)?data.runeEras.eras.map(item=>({...item,scope_id:item?.scope_id||'lunarunes'})):[];
-  const rows=scopeId==='loc'
-    ?[...authorRows,...runeRows]
-    :(scopeId==='lunarunes'?runeRows:authorRows);
+  const rows=Array.isArray(data?.eras?.eras)
+    ?data.eras.eras.filter(item=>scopeId==='loc'||String(item?.scope_id||'')===scopeId)
+    :[];
   return rows.sort((a,b)=>{
     const ad=String(a?.start_date||a?.end_date||a?.date||'');
     const bd=String(b?.start_date||b?.end_date||b?.date||'');
@@ -87,11 +85,9 @@ export default function CultureV2(){
   const currentAuthorPeriod=currentByScope.get('lo3rwang')||null;
   const currentRunePeriod=currentByScope.get('lunarunes')||null;
 
-  const allAuthorPeriods=useMemo(()=>sortPeriods(query.data?.authorEras?.eras||[]),[query.data]);
-  const allRunePeriods=useMemo(()=>sortPeriods([
-    ...(query.data?.runeHistory?.records||[]),
-    ...(query.data?.runeEras?.eras||[])
-  ]),[query.data]);
+  const allPeriods=useMemo(()=>sortPeriods(query.data?.eras?.eras||[]),[query.data]);
+  const allAuthorPeriods=useMemo(()=>allPeriods.filter(item=>String(item?.scope_id||'')==='lo3rwang'),[allPeriods]);
+  const allRunePeriods=useMemo(()=>allPeriods.filter(item=>String(item?.scope_id||'')==='lunarunes'),[allPeriods]);
   const isLoc=scopeId==='loc';
   const classificationScope=scopeId==='lunarunes'?'lunarunes':'lo3rwang';
   const primaryPeriods=scopeId==='lunarunes'?allRunePeriods:allAuthorPeriods;
