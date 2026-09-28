@@ -143,8 +143,8 @@ export default function SearchV2(){
   const [status,setStatus]=useState('輸入關鍵字開始搜尋。');
   const [error,setError]=useState('');
   const [hasMore,setHasMore]=useState(false);
-  const [totalCount,setTotalCount]=useState(0);
-  const [nextOffset,setNextOffset]=useState(null);
+  const [displayedCount,setDisplayedCount]=useState(0);
+  const [nextCursor,setNextCursor]=useState(null);
   const [loadingMore,setLoadingMore]=useState(false);
   const [editingKey,setEditingKey]=useState('');
   const [editDraft,setEditDraft]=useState(null);
@@ -159,7 +159,7 @@ export default function SearchV2(){
   const pageSize=DEFAULT_LIST_BATCH_SIZE;
   const collection=useMemo(()=>getSearchCollection(scope.searchCollection),[scope.searchCollection]);
 
-  async function executeSearch(rawQuery,offset=0,{append=false}={}){
+  async function executeSearch(rawQuery,cursor=null,{append=false}={}){
     const q=String(rawQuery||'').trim();
     if(!q)return;
     const id=++searchId.current;
@@ -169,12 +169,12 @@ export default function SearchV2(){
     }else{
       matchedQueryRef.current='';
       setHasMore(false);
-      setNextOffset(null);
+      setNextCursor(null);
       setResults([]);
       setStatus(searchMode==='media'?'搜尋多媒體資料…':`搜尋「${collection.label}」資料…`);
     }
     try{
-      const search=await searchNeonRows(collection.id,q,{limit:pageSize,offset,mediaOnly:searchMode==='media'});
+      const search=await searchNeonRows(collection.id,q,{limit:pageSize,cursor,mediaOnly:searchMode==='media'});
       if(id!==searchId.current)return;
 
       const searchRows=search.rows;
@@ -188,11 +188,11 @@ export default function SearchV2(){
       }
       const pageResults=mergeSummaryResults(converted);
       setResults(current=>append?mergeSummaryResults([...current,...pageResults]):pageResults);
-      setTotalCount(Number(search.totalCount||0));
+      setDisplayedCount(current=>append?current+pageResults.length:pageResults.length);
       setHasMore(Boolean(search.hasMore));
-      setNextOffset(search.nextOffset??null);
+      setNextCursor(search.nextCursor??null);
       const partial=search.failures?.length?`（${search.failures.length} 張非必要資料表暫時無法查詢）`:'';
-      if(!append)setStatus(`${searchMode==='media'?'多媒體':'「'+collection.label+'」'}搜尋「${q}」，共 ${Number(search.totalCount||0).toLocaleString()} 筆。${partial}`);
+      if(!append)setStatus(`${searchMode==='media'?'多媒體':'「'+collection.label+'」'}搜尋「${q}」；先顯示本批結果${search.hasMore?'，向下滑動可繼續載入。':'。'}${partial}`);
     }catch(exception){
       if(id!==searchId.current)return;
       setError(featureDataErrorMessage(exception));
@@ -204,8 +204,8 @@ export default function SearchV2(){
 
   async function loadNextSearch(){
     const q=matchedQueryRef.current||query.trim();
-    if(!q||!hasMore||loadingMore||nextOffset===null)return;
-    await executeSearch(q,nextOffset,{append:true});
+    if(!q||!hasMore||loadingMore||nextCursor===null)return;
+    await executeSearch(q,nextCursor,{append:true});
   }
 
   async function executeIdentity(rawIdentity){
@@ -213,7 +213,7 @@ export default function SearchV2(){
     if(!identity)return;
     const id=++searchId.current;
     matchedQueryRef.current='';
-    setError('');setHasMore(false);setTotalCount(0);setNextOffset(null);setLoadingMore(false);
+    setError('');setHasMore(false);setDisplayedCount(0);setNextCursor(null);setLoadingMore(false);
     setStatus('載入關聯文字…');
     try{
       let detail=await selectGalaxyIdentity(scopeId,identity);
@@ -229,7 +229,7 @@ export default function SearchV2(){
       setResults([result]);
       setFullTextKey(result.key);
       setFullText(workDisplayText(detail.content||''));
-      setTotalCount(1);
+      setDisplayedCount(1);
       setStatus('已載入關聯文字。');
     }catch(exception){
       if(id!==searchId.current)return;
@@ -321,8 +321,8 @@ export default function SearchV2(){
     description={<p>輸入關鍵字，從文字、音樂、圖片、影音、符文與文件中找出相關內容。</p>}
   >
     <div className="scope-v2-tabs" role="group" aria-label="搜尋模式">
-      <button type="button" aria-pressed={searchMode==='all'} onClick={()=>{setSearchMode('all');setResults([]);setHasMore(false);setNextOffset(null);setStatus('輸入關鍵字開始搜尋。');}}>全部搜尋</button>
-      <button type="button" aria-pressed={searchMode==='media'} onClick={()=>{setSearchMode('media');setResults([]);setHasMore(false);setNextOffset(null);setStatus('輸入多媒體關鍵字、類型或來源識別。');}}>多媒體搜尋</button>
+      <button type="button" aria-pressed={searchMode==='all'} onClick={()=>{setSearchMode('all');setResults([]);setHasMore(false);setNextCursor(null);setStatus('輸入關鍵字開始搜尋。');}}>全部搜尋</button>
+      <button type="button" aria-pressed={searchMode==='media'} onClick={()=>{setSearchMode('media');setResults([]);setHasMore(false);setNextCursor(null);setStatus('輸入多媒體關鍵字、類型或來源識別。');}}>多媒體搜尋</button>
     </div>
     <form className="scope-v2-search-form" onSubmit={runSearch}>
       <label htmlFor="scope-search-query">{searchMode==='media'?'找多媒體':'你想找什麼？'}</label>
