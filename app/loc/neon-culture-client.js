@@ -169,87 +169,27 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
   const pageSize=Math.max(1,Math.floor(Number(limit)||20));
   const offset=Math.max(0,Math.floor(Number(pageOffset)||0));
   const page=await selectGalaxyPage({sourceName:String(sourceName),startDate,endDate,limit:pageSize,offset});
-  if(!page.rows.length)return {rows:[],hasMore:false,nextOffset:null,totalCount:page.totalCount};
-
-  const uids=page.rows.map(row=>String(row.uid));
-  const textResult=await selectNeonAllRows('silver.lo3rwang_galaxy',{
-    columns:'uid,category,content_type,source_name,title,content,createtime,url,source_id,target_id,ref_id,media_link',
-    filters:[{column:'uid',operator:'in',value:uids}]
-  });
-  const mediaIds=[...new Set(textResult.rows.flatMap(row=>Array.isArray(row.media_link)?row.media_link:[]).map(String).filter(Boolean))];
-  const [linkedMediaResult,forwardMediaResult]=await Promise.all([
-    selectNeonAllRows('silver.lo3rwang_galaxy_media',{
-      columns:'media_id,galaxy_link,source_native_id,source_place,media_type,title,url,meta_tags,createtime',
-      filters:[{column:'galaxy_link',operator:'in',value:uids}]
-    }),
-    mediaIds.length?selectNeonAllRows('silver.lo3rwang_galaxy_media',{
-      columns:'media_id,galaxy_link,source_native_id,source_place,media_type,title,url,meta_tags,createtime',
-      filters:[{column:'media_id',operator:'in',value:mediaIds}]
-    }):Promise.resolve({rows:[]})
-  ]);
-
-  const textById=new Map(textResult.rows.map(row=>[String(row.uid),row]));
-  const mediaById=new Map([...linkedMediaResult.rows,...forwardMediaResult.rows].map(media=>[String(media.media_id),media]));
-  const linkedMediaByGalaxy=new Map();
-  for(const media of linkedMediaResult.rows){
-    const key=String(media.galaxy_link||'');
-    if(!key)continue;
-    if(!linkedMediaByGalaxy.has(key))linkedMediaByGalaxy.set(key,[]);
-    linkedMediaByGalaxy.get(key).push(media);
-  }
-  for(const row of textResult.rows){
-    const key=String(row.uid);
-    if(!linkedMediaByGalaxy.has(key))linkedMediaByGalaxy.set(key,[]);
-    const list=linkedMediaByGalaxy.get(key);
-    const seen=new Set(list.map(media=>String(media.media_id)));
-    for(const mediaId of Array.isArray(row.media_link)?row.media_link:[]){
-      const media=mediaById.get(String(mediaId));
-      if(media&&!seen.has(String(media.media_id))){list.push(media);seen.add(String(media.media_id));}
-    }
-  }
-
-  const rows=page.rows.map(item=>{
-    const row=textById.get(String(item.uid));
-    if(!row)return null;
-    const linkedMedia=linkedMediaByGalaxy.get(String(row.uid))||[];
-    const links=[];
-    if(row.url&&/^https?:\/\//i.test(String(row.url)))links.push({id:'text:'+row.uid,href:row.url,label:'外部連結'});
-    linkedMedia.forEach((media,index)=>{
-      if(media.url&&/^https?:\/\//i.test(String(media.url)))links.push({id:'media:'+media.media_id,href:media.url,label:`媒體連結 ${index+1}`});
-    });
-    const rawTitle=decodeCultureText(item.title||row.title||'').trim();
-    const sourceName=sourceLabel(row.source_name);
-    const validTitle=rawTitle&&rawTitle.toLowerCase()!==sourceName.toLowerCase()?rawTitle:'';
-    const bodyPreview=decodeCultureText(row.content||'').trim().slice(0,20);
-    const displayTitle=validTitle||bodyPreview||row.uid;
-    const mediaDescription=linkedMedia.map(mediaMetadataDescription).filter(Boolean).join(' ｜ ');
-    return {
-      key:'galaxy:'+row.uid,
-      uid:row.uid,
-      source_name:row.source_name,
-      title:displayTitle,
-      description:[validTitle?bodyPreview:'',mediaDescription].filter(Boolean).join(' ｜ '),
-      createtime:row.createtime,
-      start_date:row.createtime,
-      date:row.createtime,
-      display_date:formatCultureDateTime(row.createtime),
-      entry_id:row.uid,
-      entry_type:'work',
-      source_id:row.source_id||null,
-      target_id:row.target_id||null,
-      ref_id:row.ref_id||null,
-      media_link:Array.isArray(row.media_link)?row.media_link:[],
-      url:row.url||null,
-      links,
-      group_label:sourceLabel(row.source_name),
-      scope_id:'lo3rwang'
-    };
-  }).filter(Boolean);
-
+  const rows=page.rows.map(row=>({
+    key:'galaxy:'+row.uid,
+    uid:row.uid,
+    source_name:row.source_name,
+    title:decodeCultureText(row.title||'').trim()||row.uid,
+    description:'',
+    createtime:row.createtime,
+    start_date:row.createtime,
+    date:row.createtime,
+    display_date:formatCultureDateTime(row.createtime),
+    entry_id:row.uid,
+    entry_type:'work',
+    group_label:sourceLabel(row.source_name),
+    scope_id:'lo3rwang',
+    links:[]
+  }));
   const totalCount=Number(page.totalCount)||0;
   const hasMore=offset+pageSize<totalCount;
   return {rows,hasMore,nextOffset:hasMore?offset+pageSize:null,totalCount};
 }
+
 async function selectScopePeriodMetadataRows(scopeId,{startDate,endDate}={}){
   if(!startDate)return [];
   const runtimeId=runtimeScopeId(scopeId);
