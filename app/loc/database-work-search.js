@@ -79,13 +79,10 @@ const authorWorkSearch=makeDatabaseWorkProvider({
 const runeWorkSearch=makeDatabaseWorkProvider({
   id:'rune-text-db',
   scopeId:'lrunes',
-  table:'silver.lrunes',
+  table:'silver.lrunes_galaxy',
   source:'符文文字',
-  columns:'record_id,uid,content_type,source_name,title,createtime,source_id,target_id,ref_id,url,media_link',
-  filters:[
-    {column:'record_type',operator:'eq',value:'galaxy'},
-    {column:'searchable',operator:'eq',value:true}
-  ]
+  columns:'uid,content_type,source_name,title,createtime,source_id,target_id,ref_id,url,media_link',
+  filters:[{column:'searchable',operator:'eq',value:true}]
 });
 
 export function getDatabaseWorkSearchProviders(collectionId,scopeIds=[]){
