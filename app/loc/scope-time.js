@@ -1,7 +1,46 @@
 'use client';
 
-import {selectNeonAllRows} from './neon-repository';
 import {scopeDataTable} from './scope-list';
+import {neonPublicClient} from './neon-client';
+
+
+function __relation(table){
+  const [schema,name]=String(table).split('.');
+  return neonPublicClient.schema(schema).from(name);
+}
+function __filters(query,filters=[]){
+  for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
+  return query;
+}
+function __orders(query,orders=[]){
+  for(const order of orders)query=query.order(order.column,{ascending:order.ascending??true,nullsFirst:order.nullsFirst});
+  return query;
+}
+async function __select(table,{columns='*',filters=[],orFilter='',orders=[],limit=null,offset=0,range=null,count=null}={}){
+  let query=__relation(table).select(columns,count?{count}:undefined);
+  query=__filters(query,filters);
+  if(orFilter)query=query.or(orFilter);
+  query=__orders(query,orders);
+  if(Array.isArray(range)&&range.length===2)query=query.range(range[0],range[1]);
+  else if(Number.isFinite(limit))query=limit>0?query.range(offset,offset+limit-1):query.limit(0);
+  const {data,error,count:total}=await query;
+  if(error)throw new Error(error.message||('Neon SELECT '+table+' failed'));
+  return {rows:data||[],count:total};
+}
+async function selectNeonRows(table,options={}){return __select(table,options);}
+async function selectNeonAllRows(table,options={}){
+  const {limit,offset,range,count,...rest}=options||{};
+  const rows=[];
+  let cursor=0;
+  const size=500;
+  while(true){
+    const page=await __select(table,{...rest,limit:size,offset:cursor});
+    rows.push(...page.rows);
+    if(page.rows.length<size)break;
+    cursor+=page.rows.length;
+  }
+  return {rows,count:rows.length};
+}
 
 export const SCOPE_TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility';
 
