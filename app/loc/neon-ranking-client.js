@@ -1,5 +1,4 @@
 import {ScopeRankingResponseSchema} from './scope-feature-contracts';
-import {selectScopeTimeRows} from './scope-time';
 import {processKeywordObservationRows,processKeywordTableRows,countKeywordHits,observeKeywordHits,selectKeywordCatalog} from './keyword-classifier';
 import {selectSourceCatalog,selectSourceWeekly} from './aggregate-query';
 import {selectManagedScopeIds} from './scope-list';
@@ -45,6 +44,43 @@ async function selectNeonAllRows(table,options={}){
   return {rows,count:rows.length};
 }
 
+
+const PERIOD_TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,time_date,anchor_pair,date_status,year_value';
+function periodDate(row){
+  if(row?.time_date)return String(row.time_date).slice(0,10);
+  const year=Number(row?.year_value);
+  return String(row?.date_status||'')==='year_only'&&Number.isInteger(year)&&year>0?`${year}-01-01`:null;
+}
+async function selectPeriodRanges(scopeId){
+  const result=await selectNeonAllRows(`silver.${scopeId}_time`,{
+    columns:PERIOD_TIME_COLUMNS,
+    filters:[{column:'record_type',operator:'in',value:['anchor','period']}]
+  });
+  const anchors=new Map(result.rows.filter(row=>row.record_type==='anchor'&&row.resource_id).map(row=>[String(row.resource_id),row]));
+  return result.rows.filter(row=>row.record_type==='period').map(row=>{
+    const [before='0',after='0']=String(row.anchor_pair||'0,0').split(',',2).map(item=>String(item||'0').trim()||'0');
+    const start=before==='0'?null:periodDate(anchors.get(before));
+    const endBoundary=after==='0'?null:periodDate(anchors.get(after));
+    let end=null;
+    if(endBoundary){
+      const date=new Date(endBoundary+'T00:00:00Z');
+      date.setUTCDate(date.getUTCDate()-1);
+      end=date.toISOString().slice(0,10);
+    }
+    const id=String(row.resource_id||row.record_id||'');
+    return {
+      ...row,
+      entry_type:'period',
+      entry_key:'period:'+id,
+      period:id,
+      title:row.label||id,
+      order_no:row.display_order,
+      start_date:start,
+      end_date:end
+    };
+  });
+}
+
 const RANKING_TYPES=Object.freeze({
   loc:Object.freeze(['source']),
   lunarunes:Object.freeze(['source','keyword','media_type','media_tag']),
@@ -72,7 +108,7 @@ async function resolvePeriod(scopeId,period){
   const value=String(period||'').trim();
   if(!value||value==='all')return null;
   const dataScope=scopeId==='lunarunes'?'lrunes':scopeId;
-  const rows=await selectScopeTimeRows(dataScope);
+  const rows=await selectPeriodRanges(dataScope);
   return rows.find(row=>row.entry_type==='period'&&(String(row.period||'')===value||String(row.entry_key||'')===value))||null;
 }
 
@@ -396,7 +432,7 @@ function todayInTaipei(){
 async function resolveComparisonRanges(scopeId,period){
   if(scopeId==='loc')return null;
   const dataScope=scopeId==='lunarunes'?'lrunes':scopeId;
-  const rows=(await selectScopeTimeRows(dataScope))
+  const rows=(await selectPeriodRanges(dataScope))
     .filter(row=>row.entry_type==='period'&&row.start_date)
     .sort((a,b)=>String(a.start_date||'').localeCompare(String(b.start_date||''))||Number(a.order_no||0)-Number(b.order_no||0));
   let selected=null;

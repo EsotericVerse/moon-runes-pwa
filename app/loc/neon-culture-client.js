@@ -1,7 +1,6 @@
 'use client';
 
 import {ScopeCultureResponseSchema} from './scope-feature-contracts';
-import {selectScopeTimeRows} from './scope-time';
 import {selectManagedScopeIds} from './scope-list';
 import {decodeCultureText,formatCultureDateTime,groupWorksByWeek} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
 import {workDisplayText} from '../modular-v2/work-display-model.v2';
@@ -47,6 +46,61 @@ async function selectNeonAllRows(table,options={}){
   return {rows,count:rows.length};
 }
 
+
+const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility';
+function timeDate(row){
+  if(row?.time_date)return String(row.time_date).slice(0,10);
+  const year=Number(row?.year_value);
+  return String(row?.date_status||'')==='year_only'&&Number.isInteger(year)&&year>0?`${year}-01-01`:null;
+}
+function anchorPair(value){
+  const [before='0',after='0']=String(value||'0,0').split(',',2).map(item=>String(item||'0').trim()||'0');
+  return {before,after};
+}
+function previousDay(value){
+  if(!value)return null;
+  const date=new Date(String(value).slice(0,10)+'T00:00:00Z');
+  date.setUTCDate(date.getUTCDate()-1);
+  return date.toISOString().slice(0,10);
+}
+async function selectCultureTimeRows(scopeId){
+  const result=await selectNeonAllRows(`silver.${scopeId}_time`,{
+    columns:TIME_COLUMNS,
+    filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}]
+  });
+  const anchors=new Map(result.rows.filter(row=>row.record_type==='anchor'&&row.resource_id).map(row=>[String(row.resource_id),row]));
+  return result.rows.flatMap(row=>{
+    const type=String(row.record_type||'');
+    const id=String(row.resource_id||row.record_id||'');
+    const pair=anchorPair(row.anchor_pair);
+    if(type!=='anchor'&&pair.before==='0'&&pair.after==='0')return [];
+    const startAnchor=pair.before==='0'?null:anchors.get(pair.before);
+    const endAnchor=pair.after==='0'?null:anchors.get(pair.after);
+    const startDate=type==='anchor'?timeDate(row):timeDate(startAnchor);
+    const endBoundary=type==='anchor'?null:timeDate(endAnchor);
+    return [{
+      ...row,
+      scope_id:scopeId,
+      entry_key:type+':'+id,
+      entry_type:type,
+      title:row.label||id,
+      summary:row.note||'',
+      era_id:type==='period'?id:null,
+      period:type==='period'?id:null,
+      entry_name:type==='period'?String(row.label||'').replace(/^P\d+\s*[｜|]\s*/,''):null,
+      order_no:row.display_order,
+      anchor_id:type==='anchor'?id:null,
+      start_anchor_id:pair.before==='0'?null:pair.before,
+      end_anchor_id:pair.after==='0'?null:pair.after,
+      event_id:type==='event'?id:null,
+      open_start:type!=='anchor'&&pair.before==='0'&&pair.after!=='0',
+      open_end:type!=='anchor'&&pair.before!=='0'&&pair.after==='0',
+      start_date:startDate,
+      end_date:type==='period'?previousDay(endBoundary):endBoundary
+    }];
+  });
+}
+
 function sourceLabel(value){return String(value||'').trim();}
 function runtimeScopeId(scopeId){return String(scopeId||'')==='lrunes'?'lunarunes':String(scopeId||'');}
 function dataScopeId(scopeId){return runtimeScopeId(scopeId)==='lunarunes'?'lrunes':runtimeScopeId(scopeId);}
@@ -87,7 +141,7 @@ export async function selectScopeCultureData(scopeId){
     ?(await selectManagedScopeIds()).filter(scope=>scope!=='loc')
     :[dataId];
   const settled=await Promise.allSettled(scopeIds.map(async scope=>{
-    const rows=await selectScopeTimeRows(scope);
+    const rows=await selectCultureTimeRows(scope);
     return rows.map(row=>({...row,scope_id:runtimeScopeId(scope)}));
   }));
   const scopeContext=settled

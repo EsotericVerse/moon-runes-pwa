@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {selectRuneCatalog} from '../loc/rune-repository';
-import {selectScopeTimeRows} from '../loc/scope-time';
+import {selectScopeCultureData} from '../loc/neon-culture-client';
 import { useLocalStore } from '../loc/local-store';
 import {resolveSpreadState} from '../loc/model/semantic-state.mjs';
 import { realMoonPhase } from '../loc/model/moon-phase';
@@ -43,7 +43,7 @@ function directionText(card,direction){const field=({'正位':'positive_meaning'
 export default function RunesClient(){
   const {value:uiSettings}=useLocalStore(UI_SETTINGS_KEY,DEFAULT_UI_SETTINGS);
   const [data,setData]=useState(null),[error,setError]=useState(''),[modeKey,setModeKey]=useState('single'),[draw,setDraw]=useState(null),[group,setGroup]=useState(''),[activeSection,setActiveSection]=useState('draw'),[ritualStep,setRitualStep]=useState(-1),[graphQuery,setGraphQuery]=useState(''),[graphGroup,setGraphGroup]=useState(''),[graphEdge,setGraphEdge]=useState(''),[nodePage,setNodePage]=useState(1),[edgePage,setEdgePage]=useState(1);const timers=useRef([]);
-  useEffect(()=>{setModeKey(initialMode());setActiveSection(initialSection());let live=true;Promise.all([selectRuneCatalog(),selectScopeTimeRows('lo3rwang')]).then(([runes,timeRows])=>{if(!live)return;const canonicalRunes=(runes||[]).filter(row=>Number(row?.rune_number)>=1&&Number(row?.rune_number)<=66);if(canonicalRunes.length<66)throw new Error(`核心符文資料只有 ${canonicalRunes.length} 枚，無法安全抽牌。`);setData({runes:canonicalRunes,eras:(timeRows||[]).filter(row=>row.entry_type==='period')});setError('');}).catch(err=>live&&setError(`月之符文核心資料載入失敗：${err?.message||'未知錯誤'}`));return()=>{live=false;timers.current.forEach(clearTimeout);};},[]);
+  useEffect(()=>{setModeKey(initialMode());setActiveSection(initialSection());let live=true;Promise.all([selectRuneCatalog(),selectScopeCultureData('lo3rwang')]).then(([runes,culture])=>{if(!live)return;const canonicalRunes=(runes||[]).filter(row=>Number(row?.rune_number)>=1&&Number(row?.rune_number)<=66);if(canonicalRunes.length<66)throw new Error(`核心符文資料只有 ${canonicalRunes.length} 枚，無法安全抽牌。`);setData({runes:canonicalRunes,eras:culture?.periods||[]});setError('');}).catch(err=>live&&setError(`月之符文核心資料載入失敗：${err?.message||'未知錯誤'}`));return()=>{live=false;timers.current.forEach(clearTimeout);};},[]);
   const selectedMode=useMemo(()=>MODES.find(item=>item.key===modeKey)||MODES[0],[modeKey]);
   const pageSize=LIST_PAGE_OPTIONS.includes(Number(uiSettings?.list_page_size))?Number(uiSettings.list_page_size):10;
   const instantDraw=uiSettings?.draw_response==='instant';
