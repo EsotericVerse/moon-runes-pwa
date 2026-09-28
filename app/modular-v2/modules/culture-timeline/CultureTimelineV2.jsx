@@ -84,7 +84,8 @@ function CurrentCultureRivers({rows}){
   const runes=[...rows].filter(row=>row.scopeId==='lunarunes');
   const personalCurrent=personal.find(row=>row.entryType==='period'&&row.status.trim().toLowerCase()==='current')
     ||personal.find(row=>row.status.trim().toLowerCase()==='current');
-  const runeCurrent=runes.find(row=>row.status.trim().toLowerCase()==='current');
+  const runeCurrent=runes.find(row=>row.entryType==='period'&&row.status.trim().toLowerCase()==='current')
+    ||runes.find(row=>row.status.trim().toLowerCase()==='current');
   if(!personalCurrent||!runeCurrent)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><p>目前缺少個人時期或符文 Current 定錨資料。</p></div>;
 
   const personalStartTime=Date.parse(personalCurrent.start);
@@ -93,49 +94,42 @@ function CurrentCultureRivers({rows}){
   const today=Date.parse(new Date().toISOString().slice(0,10));
   const personalEnd=Date.parse(personalCurrent.end||'');
   const runeEnd=Date.parse(runeCurrent.end||'');
-  const boundedEnds=[personalEnd,runeEnd].filter(Number.isFinite);
-  const intersectionEnd=boundedEnds.length?Math.min(...boundedEnds,today):today;
-  const domainStart=intersectionStart;
-  const domainEnd=Math.max(domainStart+30*86400000,intersectionEnd);
+  const personalBound=Number.isFinite(personalEnd)?Math.min(personalEnd,today):today;
+  const runeBound=Number.isFinite(runeEnd)?Math.min(runeEnd,today):today;
+  const intersectionEnd=Math.min(personalBound,runeBound);
+
+  if(!Number.isFinite(intersectionStart)||intersectionEnd<intersectionStart){
+    return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><p>目前兩個 Current 時期沒有交集。</p></div>;
+  }
 
   const left=120;
   const right=1080;
-  const xFor=time=>left+(time-domainStart)/(domainEnd-domainStart)*(right-left);
   const centerY=330;
-  const personalY=292;
-  const runeY=368;
-  const personalPath=riverPath(left,right,()=>personalY,24);
-  const runePath=riverPath(left,right,()=>runeY,24);
-  const authorColor='var(--loc-personal-river,#2878c9)';
-  const runeColor='var(--loc-rune-river,#9855bd)';
+  const intersectionPath=riverPath(left,right,()=>centerY,24);
+  const intersectionColor='var(--loc-accent,#6b63ff)';
   const personalTitle=personalCurrent.content||'Current 個人時期';
   const runeTitle=runeCurrent.content||'Current LunaRunes';
-  const endLabel=dateLabel(domainEnd);
+  const startLabel=dateLabel(intersectionStart);
+  const endLabel=dateLabel(intersectionEnd);
 
   return <section className='scope-v2-current-rivers'>
     <div className='scope-v2-current-rivers-canvas' style={{overflowX:'auto',margin:'1rem 0 1.25rem'}}>
-      <svg viewBox='0 0 1200 640' role='img' aria-label='Current 個人時期與 LunaRunes Current 的交會時間河道' style={{display:'block',width:'100%',minWidth:'900px',height:'640px'}}>
-        <title>兩個 Scope Current 時期的交會時間河道</title>
-        <rect x='20' y='20' width='1160' height='600' rx='24' fill='var(--loc-panel,#fff)' stroke='var(--loc-border,#999)' strokeWidth='1'/>
-        <text x='64' y='72' fill='var(--loc-text,#111)' fontSize='23' fontWeight='700'>Current 交會河道</text>
-        <text x='64' y='104' fill='var(--loc-muted,#666)' fontSize='14'>只顯示兩個 Scope Current 同時成立的時間區間</text>
+      <svg viewBox='0 0 1200 520' role='img' aria-label='Current 個人時期與 LunaRunes Current 的交集時間河道' style={{display:'block',width:'100%',minWidth:'900px',height:'520px'}}>
+        <title>兩個 Scope Current 時期的集合交集</title>
+        <rect x='20' y='20' width='1160' height='480' rx='24' fill='var(--loc-panel,#fff)' stroke='var(--loc-border,#999)' strokeWidth='1'/>
+        <text x='64' y='72' fill='var(--loc-text,#111)' fontSize='23' fontWeight='700'>Current 交會集合</text>
+        <text x='64' y='104' fill='var(--loc-muted,#666)' fontSize='14'>只顯示兩個 Current 同時成立的集合交集，不做加總。</text>
 
-        <path d={personalPath} fill='none' stroke={authorColor} strokeWidth='30' strokeLinecap='round' opacity='.18'/>
-        <path d={runePath} fill='none' stroke={runeColor} strokeWidth='30' strokeLinecap='round' opacity='.18'/>
-        <path d={personalPath} fill='none' stroke={authorColor} strokeWidth='13' strokeLinecap='round'/>
-        <path d={runePath} fill='none' stroke={runeColor} strokeWidth='13' strokeLinecap='round'/>
+        <text x='600' y='188' textAnchor='middle' fill='var(--loc-text,#111)' fontSize='16' fontWeight='700'>{personalTitle} ∩ {runeTitle}</text>
+        <path d={intersectionPath} fill='none' stroke={intersectionColor} strokeWidth='30' strokeLinecap='round' opacity='.18'/>
+        <path d={intersectionPath} fill='none' stroke={intersectionColor} strokeWidth='13' strokeLinecap='round'/>
+        <circle cx={left} cy={centerY} r='11' fill={intersectionColor} stroke='var(--loc-panel,#fff)' strokeWidth='4'/>
+        <circle cx={right} cy={centerY} r='11' fill={intersectionColor} stroke='var(--loc-panel,#fff)' strokeWidth='4'/>
+        <text x='600' y={centerY-28} textAnchor='middle' fill='var(--loc-text,#111)' fontSize='16' fontWeight='700'>A ∩ B</text>
 
-        <circle cx={left} cy={personalY} r='11' fill={authorColor} stroke='var(--loc-panel,#fff)' strokeWidth='4'/>
-        <circle cx={left} cy={runeY} r='11' fill={runeColor} stroke='var(--loc-panel,#fff)' strokeWidth='4'/>
-        <text x='64' y={personalY-26} fill='var(--loc-text,#111)' fontSize='16' fontWeight='700'>{personalTitle}</text>
-        <text x='64' y={runeY+44} fill='var(--loc-text,#111)' fontSize='16' fontWeight='700'>{runeTitle}</text>
-
-        <rect x='458' y='188' width='284' height='44' rx='22' fill='var(--loc-panel,#fff)' stroke='var(--loc-text,#111)' strokeWidth='1.5'/>
-        <text x='600' y='216' textAnchor='middle' fill='var(--loc-text,#111)' fontSize='16' fontWeight='700'>Current × Current 交會集合</text>
-
-        <line x1='120' y1='552' x2='1080' y2='552' stroke='var(--loc-text,#111)' strokeWidth='1' opacity='.3'/>
-        <text x='120' y='580' fill='var(--loc-text,#111)' fontSize='14'>{dateLabel(domainStart)+' 起'}</text>
-        <text x='1080' y='580' textAnchor='end' fill='var(--loc-text,#111)' fontSize='14'>{'目前至 '+endLabel}</text>
+        <line x1='120' y1='430' x2='1080' y2='430' stroke='var(--loc-text,#111)' strokeWidth='1' opacity='.3'/>
+        <text x='120' y='458' fill='var(--loc-text,#111)' fontSize='14'>{startLabel+' 起'}</text>
+        <text x='1080' y='458' textAnchor='end' fill='var(--loc-text,#111)' fontSize='14'>{endLabel+' 止'}</text>
       </svg>
     </div>
   </section>;
