@@ -9,6 +9,7 @@ const HEAVY_COLUMNS=Object.freeze({
 });
 
 const CATALOG_TABLES=Object.freeze(new Set([
+  'silver.runes',
   'silver.lrunes',
   'silver.lo3rwang_style',
   'silver.manage'
@@ -107,11 +108,11 @@ export function assertCatalogSelect({table,columns,filters=[]}){
   }
   if(table==='silver.lrunes'){
     const typeFilter=(filters||[]).find(filter=>String(filter?.column||'')==='record_type');
-    const allowed=new Set(['rune','keyword','rule']);
+    const allowed=new Set(['keyword','rule']);
     if(!typeFilter)throw new Error('LunaRunes catalog requires record_type filter');
     const values=typeFilter.operator==='eq'?[typeFilter.value]:(typeFilter.operator==='in'&&Array.isArray(typeFilter.value)?typeFilter.value:[]);
     if(!values.length||values.some(value=>!allowed.has(String(value)))){
-      throw new Error('LunaRunes catalog only allows rune/keyword/rule records');
+      throw new Error('silver.lrunes catalog only allows keyword/rule records; rune core must use silver.runes');
     }
   }
 }
