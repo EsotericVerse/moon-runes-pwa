@@ -8,6 +8,10 @@ import {selectDailyRuneRange} from '../../loc/neon-daily-runes';
 import {dailyPresetRange,summarizeDailyRange} from '../../loc/model/daily-trend-engine.mjs';
 
 const WEEKDAYS=['日','一','二','三','四','五','六'];
+const CHART_ACCENT='var(--loc-accent)';
+const CHART_TEXT='var(--loc-text)';
+const CHART_GRID='var(--loc-line)';
+const CHART_TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)',borderRadius:'8px'};
 
 function localToday(){
   const now=new Date();
@@ -91,11 +95,11 @@ function AnalysisCharts({analysis}){
       <h3>符文出現頻率</h3>
       {!runeRows.length?<p>此區間沒有符文紀錄。</p>:<ResponsiveContainer width="100%" height={Math.max(260,80+runeRows.length*28)}>
         <BarChart data={runeRows} layout="vertical" margin={{top:8,right:16,bottom:8,left:8}}>
-          <CartesianGrid strokeDasharray="3 3" horizontal={false}/>
-          <XAxis type="number" allowDecimals={false}/>
-          <YAxis type="category" dataKey="name" width={48}/>
-          <Tooltip/>
-          <Bar dataKey="count"/>
+          <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={CHART_GRID}/>
+          <XAxis type="number" allowDecimals={false} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+          <YAxis type="category" dataKey="name" width={48} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+          <Tooltip contentStyle={CHART_TOOLTIP} labelStyle={{color:CHART_TEXT}} itemStyle={{color:CHART_TEXT}}/>
+          <Bar dataKey="count" fill={CHART_ACCENT}/>
         </BarChart>
       </ResponsiveContainer>}
     </section>
@@ -103,11 +107,11 @@ function AnalysisCharts({analysis}){
       <h3>位向分布</h3>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={directionRows} margin={{top:8,right:16,bottom:8,left:8}}>
-          <CartesianGrid strokeDasharray="3 3"/>
-          <XAxis dataKey="direction"/>
-          <YAxis allowDecimals={false}/>
-          <Tooltip/>
-          <Bar dataKey="count"/>
+          <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
+          <XAxis dataKey="direction" tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+          <YAxis allowDecimals={false} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+          <Tooltip contentStyle={CHART_TOOLTIP} labelStyle={{color:CHART_TEXT}} itemStyle={{color:CHART_TEXT}}/>
+          <Bar dataKey="count" fill={CHART_ACCENT}/>
         </BarChart>
       </ResponsiveContainer>
     </section>

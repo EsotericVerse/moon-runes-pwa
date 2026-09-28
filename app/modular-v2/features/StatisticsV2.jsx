@@ -18,6 +18,10 @@ import PagedResultV2 from '../PagedResultV2';
 import {analyzeDistribution,analyzeDistributionChange,analyzeKeywordDiagnostics,analyzeKeywordGovernance} from '../../loc/model/automatic-analysis.mjs';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
+const CHART_ACCENT='var(--loc-accent)';
+const CHART_TEXT='var(--loc-text)';
+const CHART_GRID='var(--loc-line)';
+const CHART_TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)',borderRadius:'8px'};
 const CHART_TYPES=[['bar','長條圖'],['line','折線圖'],['pie','圓餅圖']];
 const STAT_TABS=[['ranking','統計'],['media','多媒體設定']];
 const STAT_TYPE_LABELS=Object.freeze({
@@ -39,22 +43,22 @@ function RankingChart({type='bar',rows,height=380}){
   if(!data.length)return <p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>;
   if(type==='line')return <ResponsiveContainer width="100%" height={height}>
     <LineChart data={data} margin={{top:8,right:18,bottom:72,left:4}}>
-      <CartesianGrid strokeDasharray="3 3"/>
-      <XAxis dataKey="term" angle={-32} textAnchor="end" interval={0} height={100}/>
-      <YAxis/><Tooltip/>
-      <Line type="monotone" dataKey="value" stroke="#7562cf" strokeWidth={2}/>
+      <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
+      <XAxis dataKey="term" angle={-32} textAnchor="end" interval={0} height={100} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+      <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/><Tooltip contentStyle={CHART_TOOLTIP} labelStyle={{color:CHART_TEXT}} itemStyle={{color:CHART_TEXT}}/>
+      <Line type="monotone" dataKey="value" stroke={CHART_ACCENT} strokeWidth={3}/>
     </LineChart>
   </ResponsiveContainer>;
   if(type==='pie')return <ResponsiveContainer width="100%" height={height}>
-    <PieChart><Tooltip/><Pie data={data} dataKey="value" nameKey="term" cx="50%" cy="50%" outerRadius={Math.min(140,height/2-26)}>
+    <PieChart><Tooltip contentStyle={CHART_TOOLTIP} labelStyle={{color:CHART_TEXT}} itemStyle={{color:CHART_TEXT}}/><Pie data={data} dataKey="value" nameKey="term" cx="50%" cy="50%" outerRadius={Math.min(140,height/2-26)}>
       {data.map((row,index)=><Cell key={row.ranking_key||row.term||index} fill={PIE_COLORS[index%PIE_COLORS.length]}/>)}
     </Pie></PieChart>
   </ResponsiveContainer>;
   return <ResponsiveContainer width="100%" height={Math.max(height,Math.min(1200,80+data.length*34))}>
     <BarChart data={data} layout="vertical" margin={{top:8,right:18,bottom:8,left:8}}>
-      <CartesianGrid strokeDasharray="3 3" horizontal={false}/>
-      <XAxis type="number"/><YAxis type="category" dataKey="term" width={128}/><Tooltip/>
-      <Bar dataKey="value" fill="#7562cf" radius={[0,4,4,0]}/>
+      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={CHART_GRID}/>
+      <XAxis type="number" tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/><YAxis type="category" dataKey="term" width={128} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/><Tooltip contentStyle={CHART_TOOLTIP} labelStyle={{color:CHART_TEXT}} itemStyle={{color:CHART_TEXT}}/>
+      <Bar dataKey="value" fill={CHART_ACCENT} radius={[0,4,4,0]}/>
     </BarChart>
   </ResponsiveContainer>;
 }
@@ -81,7 +85,7 @@ function useAllRanking(scopeId,type,navigation){
 function useRankingComparison(scopeId,type,navigation){
   return useQuery({
     queryKey:['statistics-ranking-comparison',scopeId,type,navigation.period||'all'],
-    enabled:Boolean(type)&&scopeId!=='loc',
+    enabled:Boolean(type)&&scopeId!=='loc'&&type!=='keyword',
     queryFn:()=>selectScopeRankingComparison(scopeId,{rankingType:type,navigation}),
     staleTime:30000
   });
@@ -90,7 +94,7 @@ function useRankingComparison(scopeId,type,navigation){
 function useKeywordDiagnostics(scopeId,type,navigation){
   return useQuery({
     queryKey:['statistics-keyword-diagnostics',scopeId,navigation.period||'all'],
-    enabled:type==='keyword'&&scopeId!=='loc',
+    enabled:false,
     queryFn:()=>selectScopeKeywordDiagnostics(scopeId,{navigation}),
     staleTime:30000
   });
@@ -160,6 +164,7 @@ function StatisticsPanel({scopeId,navigation,types}){
       })
       :analyzeDistributionChange(data.currentRows||[],data.previousRows||[],{label:STAT_TYPE_LABELS[rankingType]||'統計項目'});
   },[comparisonQuery.data,rankingType]);
+  const keywordDiagnosticsEnabled=false;
   const keywordDiagnostics=useMemo(()=>{
     if(rankingType!=='keyword'||!diagnosticsQuery.data)return {totalRecords:0,suggestions:[]};
     return analyzeKeywordDiagnostics(diagnosticsQuery.data,{
@@ -204,9 +209,9 @@ function StatisticsPanel({scopeId,navigation,types}){
       </div>
     </section>:null}
 
-    {comparisonQuery.isPending?<p className="scope-v2-status">比較目前時期與前一正式時期…</p>:null}
-    {comparisonQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(comparisonQuery.error)}</p>:null}
-    {!comparisonQuery.isPending&&!comparisonQuery.error&&comparisonQuery.data?<section className="scope-v2-card">
+    {rankingType!=='keyword'&&comparisonQuery.isPending?<p className="scope-v2-status">比較目前時期與前一正式時期…</p>:null}
+    {rankingType!=='keyword'&&comparisonQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(comparisonQuery.error)}</p>:null}
+    {rankingType!=='keyword'&&!comparisonQuery.isPending&&!comparisonQuery.error&&comparisonQuery.data?<section className="scope-v2-card">
       <p className="loc-eyebrow">Weak Signal Comparison</p>
       <h3>時間變化／弱訊號</h3>
       <p>{comparisonQuery.data.previousPeriodLabel||'前一時期'}：{rangeLabel(comparisonQuery.data.previousRange)}｜{comparisonQuery.data.periodLabel||'目前時期'}：{rangeLabel(comparisonQuery.data.currentRange)}</p>
@@ -223,9 +228,9 @@ function StatisticsPanel({scopeId,navigation,types}){
       </div>}
     </section>:null}
 
-    {rankingType==='keyword'&&diagnosticsQuery.isPending?<p className="scope-v2-status">計算關鍵詞辨識度與共現…</p>:null}
-    {rankingType==='keyword'&&diagnosticsQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(diagnosticsQuery.error)}</p>:null}
-    {rankingType==='keyword'&&!diagnosticsQuery.isPending&&!diagnosticsQuery.error&&diagnosticsQuery.data?<section className="scope-v2-card">
+    {keywordDiagnosticsEnabled&&rankingType==='keyword'&&diagnosticsQuery.isPending?<p className="scope-v2-status">計算關鍵詞辨識度與共現…</p>:null}
+    {keywordDiagnosticsEnabled&&rankingType==='keyword'&&diagnosticsQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(diagnosticsQuery.error)}</p>:null}
+    {keywordDiagnosticsEnabled&&rankingType==='keyword'&&!diagnosticsQuery.isPending&&!diagnosticsQuery.error&&diagnosticsQuery.data?<section className="scope-v2-card">
       <p className="loc-eyebrow">Keyword Diagnostics</p>
       <h3>關鍵詞辨識度／共現</h3>
       {!keywordDiagnostics.suggestions.length?<p className="scope-v2-status">目前沒有達到辨識度或共現提醒門檻的項目。</p>:<div className="scope-v2-list">

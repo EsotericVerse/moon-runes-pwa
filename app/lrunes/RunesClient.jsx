@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Select from 'react-select';
 import {selectRuneCatalog} from '../loc/rune-repository';
 import {selectScopeCultureData} from '../loc/neon-culture-client';
 import { useLocalStore } from '../loc/local-store';
@@ -18,7 +19,15 @@ const GROUP_ORDER=['靈魂','連結','生命','自然','礦物','元素','秩序
 const UI_SETTINGS_KEY='loc-ui-settings-v1';
 const DEFAULT_UI_SETTINGS={draw_response:'ritual',list_page_size:10};
 const LIST_PAGE_OPTIONS=[5,10,15,20,25,50];
-const runeHref=path=>`${scopeOriginV2('lunarunes')}/${String(path||'').replace(/^\/+/, '')}`;
+const runeHref=path=>`${scopeOriginV2('lunarunes')}/${String(path||'').replace(/^\\/+/, '')}`;
+const HOME_FUNCTION_OPTIONS=Object.freeze([
+  {value:'list',label:'符文圖鑑',href:runeHref('list')},
+  {value:'draw',label:'符文抽籤',href:runeHref('')},
+  {value:'daily',label:'每日符文',href:runeHref('duel/daily')},
+  {value:'log',label:'每日紀錄',href:runeHref('daily/log')},
+  {value:'trend',label:'每日趨勢',href:runeHref('daily/trend')},
+  {value:'game',label:'符文遊戲',href:runeHref('game')}
+]);
 const MODES=[
   {key:'single',count:1,label:'單卡',description:'符文本義＋卡牌方向＋月相交互。',positions:['核心'],path:'duel/one'},
   {key:'daily',count:1,label:'每日',description:'以今日為時間範圍的一張符文。',positions:['今日'],path:'duel/daily'},
@@ -67,7 +76,19 @@ export default function RunesClient(){
         </div>
         <p>66個單一中文字 × 九組符文分組 × 四卡牌方向 × 月相交互</p>
         <p>可以問一件事，也可以沒有問題直接抽取。</p>
-        <nav className="scope-v2-local-menu" aria-label="月之符文小功能選單"><a href={runeHref('list')}>符文圖鑑</a><a href={runeHref('')}>符文抽籤</a><a href={runeHref('duel/daily')}>每日符文</a><a href={runeHref('daily/log')}>每日紀錄</a><a href={runeHref('daily/trend')}>每日趨勢</a><a href={runeHref('game')}>符文遊戲</a></nav>
+        <div className="runes-home-function-select" aria-label="月之符文功能選單">
+          <Select
+            inputId="lunarunes-home-function"
+            className="scope-v2-react-select"
+            classNamePrefix="scope-v2-react-select"
+            unstyled
+            isSearchable={false}
+            options={HOME_FUNCTION_OPTIONS}
+            value={null}
+            placeholder="符文功能"
+            onChange={option=>option?.href&&window.location.assign(option.href)}
+          />
+        </div>
       </div>
       <figure className="home-hero-visual scope-home-hero-visual">
         <iframe src="https://www.instagram.com/reel/DMA-ZxLTINw/embed" title="月之符文說明" loading="eager" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" />

@@ -1,4 +1,5 @@
 import {scopeHrefV2} from '../../modular-v2/scope-registry.v2';
+import HomeStatisticsV2 from '../../modular-v2/HomeStatisticsV2';
 
 const RUNES_LINKS=Object.freeze({
   home:scopeHrefV2('lunarunes'),
@@ -29,6 +30,8 @@ export default function AboutView(){
         <img src="/pics/LOC-PicAll.png" alt="LOC 月典語言架構框架視覺理念圖" loading="eager" />
       </figure>
     </header>
+
+    <HomeStatisticsV2/>
 
     <section className="loc-card home-copy-block home-beginner" id="beginner">
       <div className="home-section-heading">
