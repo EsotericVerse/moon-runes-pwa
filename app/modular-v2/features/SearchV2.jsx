@@ -14,6 +14,7 @@ import {scopeHrefV2} from '../scope-registry.v2';
 import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation.v2';
 import {featureDataErrorMessage} from '../feature-data-state.v2';
 import ContentEditorV2 from '../ContentEditorV2';
+import SearchHighlightV2 from '../SearchHighlightV2';
 import {selectGalaxyContent,selectGalaxyIdentity} from '../../loc/aggregate-query';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayText,workDisplayTitle} from '../work-display-model.v2';
 import {clearRuntimeTextIndexes} from '../../loc/text-engine.mjs';
@@ -329,7 +330,7 @@ export default function SearchV2(){
           title={row.title}
           source={row.source}
           date={row.date}
-          body={row.snippet}
+          body={<SearchHighlightV2 text={row.snippet} query={matchedQueryRef.current}/>} 
           hidden={false}
           relationLinks={row.relationLinks||[]}
           links={row.links||[]}
