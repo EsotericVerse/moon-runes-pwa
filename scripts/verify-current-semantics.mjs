@@ -8,7 +8,7 @@ const files={
   search:'app/loc/neon-search.js',
   searchView:'app/modular-v2/features/SearchV2.jsx',
   dailyTrend:'app/loc/model/daily-trend-engine.mjs',
-  styleClassifier:'app/loc/style-classifier.js'
+  keywordClassifier:'app/loc/keyword-classifier.js'
 };
 const failures=[];
 const read=path=>fs.readFileSync(path,'utf8');
@@ -25,9 +25,9 @@ for(const token of ['RUNE_SEMANTIC_STATES','resolveStatePair','resolveSpreadStat
 for(const token of ['buildDailyStateIndex','findDailyState','createTextIndex','searchTextIndex'])if(guidance.includes(token))failures.push(`semantic state: retired Daily search token ${token}`);
 const dailyTrend=read(files.dailyTrend);
 for(const token of ['summarizeDailyRange','dailyPresetRange'])if(!dailyTrend.includes(token))failures.push(`daily trend: missing ${token}`);
-const styleClassifier=read(files.styleClassifier);
-for(const token of ['selectStyleCatalog','selectAuthorStyleCatalog','selectKeywordCatalog','silver.runes'])if(!styleClassifier.includes(token))failures.push(`style/keyword catalog: missing ${token}`);
-if(/isConfiguredStyleCatalog\(author\)\?author:selectCanonicalStyleCatalog\(\)/.test(styleClassifier))failures.push('style catalog: author Scope must not fall back to LunaRunes when style is unconfigured');
+const keywordClassifier=read(files.keywordClassifier);
+for(const token of ['selectStyleCatalog','selectAuthorStyleCatalog','selectKeywordCatalog','silver.runes'])if(!keywordClassifier.includes(token))failures.push(`style/keyword catalog: missing ${token}`);
+if(/isConfiguredStyleCatalog\(author\)\?author:selectCanonicalStyleCatalog\(\)/.test(keywordClassifier))failures.push('style catalog: author Scope must not fall back to LunaRunes when style is unconfigured');
 for(const token of ['SPREAD_WEIGHTS','DIRECTION_FACTOR','POLARITY_SCORE','weighted','GUIDANCE_RANGES'])if(guidance.includes(token))failures.push(`semantic state: forbidden weighted-score token ${token}`);
 const loader=read(files.canonicalLoader);
 for(const token of ['selectNeonCatalog','silver.runes','selectRuneCatalog'])if(!loader.includes(token))failures.push(`canonical rune repository: missing ${token}`);
