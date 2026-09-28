@@ -41,7 +41,8 @@ async function selectScopeStyleCatalog(scopeId){
     })
   ]);
   const styleMap=new Map((styleResult.rows||[]).map(row=>[Number(row.style_no),{
-    rune_number:Number(row.style_no),
+    catalog_id:Number(row.style_no),
+    style_no:Number(row.style_no),
     style_label:String(row.representative_name||'').trim(),
     style_group:String(row.parent_group_name||'').trim(),
     order:Number(row.order_no)||Number(row.style_no)
@@ -53,7 +54,8 @@ async function selectScopeStyleCatalog(scopeId){
     return {
       keyword,
       keyword_group:String(row.keyword_group||'').trim(),
-      rune_number:style.rune_number,
+      catalog_id:style.catalog_id,
+      style_no:style.style_no,
       style_label:style.style_label,
       style_group:style.style_group,
       order:Number(row.order_no)||index
@@ -75,12 +77,13 @@ export async function selectKeywordCatalog(scopeId=''){
   });
   const output=[];
   for(const row of result.rows||[]){
-    const runeNumber=Number(row.rune_id);
+    const runeId=Number(row.rune_id);
     const base={
-      rune_number:runeNumber,
+      catalog_id:runeId,
+      rune_id:runeId,
       style_label:String(row.rune_name||'').trim(),
       style_group:String(row.group_name||'').trim(),
-      order:runeNumber
+      order:runeId
     };
     for(const keyword of runeKeywordEntries(row.positive_keywords))output.push({...base,keyword,keyword_group:'positive'});
     for(const keyword of runeKeywordEntries(row.negative_keywords))output.push({...base,keyword,keyword_group:'negative'});
@@ -110,35 +113,35 @@ export function styleTextOf(row={}){
 }
 
 function compileCatalog(catalog=[]){
-  const runes=new Map();
+  const catalogItems=new Map();
   for(const item of Array.isArray(catalog)?catalog:[]){
-    const runeNumber=Number(item.rune_number);
-    if(!Number.isInteger(runeNumber))continue;
-    const rune=runes.get(runeNumber)||{
-      rune_number:runeNumber,
+    const catalogId=Number(item.catalog_id);
+    if(!Number.isInteger(catalogId))continue;
+    const catalogItem=catalogItems.get(catalogId)||{
+      catalog_id:catalogId,
       style_label:String(item.style_label||'').trim(),
       style_group:String(item.style_group||'').trim(),
-      order:Number(item.order)||runeNumber,
+      order:Number(item.order)||catalogId,
       globalRules:[],
       groups:new Map()
     };
     const keywordGroup=String(item.keyword_group||'').trim()||'default';
     const parsed=splitRuneKeywordEntries([item.keyword]);
     if(parsed.rules.length){
-      if(keywordGroup==='rules')rune.globalRules.push(...parsed.rules);
+      if(keywordGroup==='rules')catalogItem.globalRules.push(...parsed.rules);
       else{
-        const group=rune.groups.get(keywordGroup)||{keywords:[],rules:[]};
+        const group=catalogItem.groups.get(keywordGroup)||{keywords:[],rules:[]};
         group.rules.push(...parsed.rules);
-        rune.groups.set(keywordGroup,group);
+        catalogItem.groups.set(keywordGroup,group);
       }
     }else{
-      const group=rune.groups.get(keywordGroup)||{keywords:[],rules:[]};
+      const group=catalogItem.groups.get(keywordGroup)||{keywords:[],rules:[]};
       group.keywords.push(...parsed.keywords);
-      rune.groups.set(keywordGroup,group);
+      catalogItem.groups.set(keywordGroup,group);
     }
-    runes.set(runeNumber,rune);
+    catalogItems.set(catalogId,catalogItem);
   }
-  return [...runes.values()].sort((a,b)=>a.order-b.order||a.rune_number-b.rune_number);
+  return [...catalogItems.values()].sort((a,b)=>a.order-b.order||a.catalog_id-b.catalog_id);
 }
 
 function emptyClassification(){
@@ -164,10 +167,10 @@ export function classifyStyleRowsWithCatalog(rows=[],catalog=[]){
     groupCounts:new Map()
   }));
 
-  for(const rune of compiled){
-    for(const [keywordGroup,group] of rune.groups){
+  for(const catalogItem of compiled){
+    for(const [keywordGroup,group] of catalogItem.groups){
       if(!group.keywords.length)continue;
-      const rules=[...rune.globalRules,...group.rules];
+      const rules=[...catalogItem.globalRules,...group.rules];
       const and=rules.filter(rule=>rule.operator==='AND').map(rule=>rule.keyword);
       const nor=rules.filter(rule=>rule.operator==='NOR').map(rule=>rule.keyword);
       const seenKeywords=new Set();
@@ -181,26 +184,26 @@ export function classifyStyleRowsWithCatalog(rows=[],catalog=[]){
           const state=stats[index];
           if(!state)continue;
           state.hitCount+=1;
-          const runeKey=String(rune.rune_number);
-          const runeCount=state.runeCounts.get(runeKey)||{
-            key:runeKey,
-            label:rune.style_label,
-            group:rune.style_group,
+          const catalogKey=String(catalogItem.catalog_id);
+          const catalogCount=state.runeCounts.get(catalogKey)||{
+            key:catalogKey,
+            label:catalogItem.style_label,
+            group:catalogItem.style_group,
             keyword_group:keywordGroup,
-            order:rune.order,
+            order:catalogItem.order,
             count:0
           };
-          runeCount.count+=1;
-          state.runeCounts.set(runeKey,runeCount);
-          if(rune.style_group){
-            const groupCount=state.groupCounts.get(rune.style_group)||{
-              key:rune.style_group,
-              label:rune.style_group,
-              order:rune.order,
+          catalogCount.count+=1;
+          state.runeCounts.set(catalogKey,catalogCount);
+          if(catalogItem.style_group){
+            const groupCount=state.groupCounts.get(catalogItem.style_group)||{
+              key:catalogItem.style_group,
+              label:catalogItem.style_group,
+              order:catalogItem.order,
               count:0
             };
             groupCount.count+=1;
-            state.groupCounts.set(rune.style_group,groupCount);
+            state.groupCounts.set(catalogItem.style_group,groupCount);
           }
         }
       }
@@ -216,7 +219,7 @@ export function classifyStyleRowsWithCatalog(rows=[],catalog=[]){
       style_label:rankedRunes[0]?.label||'',
       style_group:rankedGroups[0]?.label||'',
       hit_count:state.hitCount,
-      rune_counts:rankedRunes,
+      catalog_counts:rankedRunes,
       group_counts:rankedGroups
     };
   });
@@ -229,10 +232,10 @@ export function countKeywordHitsWithCatalog(rows=[],catalog=[]){
   const engine=buildEngine(source);
   const output=[];
 
-  for(const rune of compiled){
-    for(const [keywordGroup,group] of rune.groups){
+  for(const catalogItem of compiled){
+    for(const [keywordGroup,group] of catalogItem.groups){
       if(!group.keywords.length)continue;
-      const rules=[...rune.globalRules,...group.rules];
+      const rules=[...catalogItem.globalRules,...group.rules];
       const and=rules.filter(rule=>rule.operator==='AND').map(rule=>rule.keyword);
       const nor=rules.filter(rule=>rule.operator==='NOR').map(rule=>rule.keyword);
       const seenKeywords=new Set();
@@ -244,9 +247,9 @@ export function countKeywordHitsWithCatalog(rows=[],catalog=[]){
         output.push({
           keyword,
           keyword_group:keywordGroup,
-          rune_number:rune.rune_number,
-          style_label:rune.style_label,
-          style_group:rune.style_group,
+          catalog_id:catalogItem.catalog_id,
+          style_label:catalogItem.style_label,
+          style_group:catalogItem.style_group,
           item_count:match.totalCount,
           rank_value:match.totalCount
         });
@@ -264,10 +267,10 @@ export function observeKeywordHitsWithCatalog(rows=[],catalog=[]){
   const engine=buildEngine(source);
   const states=source.map(()=>new Map());
 
-  for(const rune of compiled){
-    for(const [keywordGroup,group] of rune.groups){
+  for(const catalogItem of compiled){
+    for(const [keywordGroup,group] of catalogItem.groups){
       if(!group.keywords.length)continue;
-      const rules=[...rune.globalRules,...group.rules];
+      const rules=[...catalogItem.globalRules,...group.rules];
       const and=rules.filter(rule=>rule.operator==='AND').map(rule=>rule.keyword);
       const nor=rules.filter(rule=>rule.operator==='NOR').map(rule=>rule.keyword);
       const seenKeywords=new Set();
@@ -280,13 +283,13 @@ export function observeKeywordHitsWithCatalog(rows=[],catalog=[]){
           const index=Number(id);
           const state=states[index];
           if(!state)continue;
-          const key=[rune.rune_number,keywordGroup,keyword].join('\u0000');
+          const key=[catalogItem.catalog_id,keywordGroup,keyword].join('\u0000');
           state.set(key,{
             keyword,
             keyword_group:keywordGroup,
-            rune_number:rune.rune_number,
-            style_label:rune.style_label,
-            style_group:rune.style_group
+            catalog_id:catalogItem.catalog_id,
+            style_label:catalogItem.style_label,
+            style_group:catalogItem.style_group
           });
         }
       }
