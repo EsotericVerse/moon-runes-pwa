@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect,useMemo,useState} from 'react';
+import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
 import {
@@ -78,6 +78,7 @@ export default function CultureV2(){
   const [selectedCategory,setSelectedCategory]=useState('');
   const [workPage,setWorkPage]=useState(0);
   const [workRows,setWorkRows]=useState([]);
+  const workScrollRef=useRef(null);
   const [activeWorkPeriod,setActiveWorkPeriod]=useState(null);
   const [fullTextKey,setFullTextKey]=useState('');
   const [fullText,setFullText]=useState('');
@@ -183,11 +184,19 @@ export default function CultureV2(){
   },[classificationMode,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date]);
 
   useEffect(()=>{
+    setWorkRows([]);
+    setWorkPage(0);
     setFullTextKey('');
     setFullText('');
     setFullTextError('');
-    if(!selectedCategory)setWorkRows([]);
-  },[selectedCategory,workPage]);
+    if(workScrollRef.current)workScrollRef.current.scrollTop=0;
+  },[selectedCategory]);
+
+  useEffect(()=>{
+    setFullTextKey('');
+    setFullText('');
+    setFullTextError('');
+  },[workPage]);
 
   useEffect(()=>{
     const next=periodWorksQuery.data?.rows||[];
@@ -368,8 +377,9 @@ export default function CultureV2(){
                     ?'source:'+term
                     :'media:type:'+term;
                   if(categoryGroups.some(group=>group.category_key===key)){
-                    setSelectedCategory(key);
+                    setWorkRows([]);
                     setWorkPage(0);
+                    setSelectedCategory(key);
                   }
                 }}
               />:null}
@@ -392,7 +402,7 @@ export default function CultureV2(){
                   :<button type='button' key={group.category_key}
                     className='scope-v2-culture-source-button'
                     aria-pressed={selectedCategory===group.category_key}
-                    onClick={()=>{setSelectedCategory(selectedCategory===group.category_key?'':group.category_key);setWorkPage(0);}}>
+                    onClick={()=>{setWorkRows([]);setWorkPage(0);setSelectedCategory(selectedCategory===group.category_key?'':group.category_key);}}>
                     <strong>{group.display_label}</strong><span>{Number(group.item_count||0).toLocaleString()} 項作品</span>
                   </button>)}
               </div>:null}
@@ -400,16 +410,16 @@ export default function CultureV2(){
               {!isLoc&&selectedGroup?<section className='scope-v2-culture-source-detail' aria-label={selectedGroup.display_label+'列表'}>
                 <header>
                   <h4>{selectedGroup.display_label} · {selectedCount.toLocaleString()} 項作品</h4>
-                  <button type='button' className='scope-v2-pagination-button' onClick={()=>setSelectedCategory('')}>收合列表</button>
+                  <button type='button' className='scope-v2-pagination-button' onClick={()=>{setWorkRows([]);setWorkPage(0);setSelectedCategory('')}}>收合列表</button>
                 </header>
                 {periodWorksQuery.isFetching?<p className='scope-v2-status'>載入第 {workPage+1} 頁…</p>:null}
                 {periodWorksQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksQuery.error)}</p>:null}
-                <div className='scope-v2-culture-source-work-scroll'>
+                <div key={selectedCategory} ref={workScrollRef} className='scope-v2-culture-source-work-scroll'>
                   {workRows.map((work,index)=><WorkSummaryCardV2
                     key={work.key||work.uid||work.entry_id||String(work.createtime||work.created_at)+'-'+index}
                     title={workDisplayTitle({
                       title:work.title,
-                      preview:work.content_preview,
+                      content:work.content,
                       fallback:WORK_FALLBACK_TITLE,
                       limit:80
                     })}
@@ -438,9 +448,16 @@ export default function CultureV2(){
                       onCancel={()=>{setEditingWorkKey('');setEditDraft(null);setEditError('')}}
                     />:null}
                   </WorkSummaryCardV2>)}
+                  <IncrementalLoadV2
+                    hasMore={Boolean(periodWorksQuery.data?.hasMore)}
+                    loading={periodWorksQuery.isFetching}
+                    error={periodWorksQuery.error}
+                    onLoadMore={()=>setWorkPage(page=>page+1)}
+                    label="還有更多作品"
+                    scrollRootRef={workScrollRef}
+                  />
                 </div>
                 {!periodWorksQuery.isFetching&&!periodWorksQuery.error&&!workRows.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
-                <IncrementalLoadV2 hasMore={Boolean(periodWorksQuery.data?.hasMore)} loading={periodWorksQuery.isFetching} error={periodWorksQuery.error} onLoadMore={()=>setWorkPage(page=>page+1)} label="還有更多作品"/>
               </section>:null}
             </section>:null}
       </>:null}

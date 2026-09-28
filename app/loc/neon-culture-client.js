@@ -273,7 +273,7 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
       source_id:row.source_id||null,
       target_id:row.target_id||null,
       title:explicitTitle,
-      content_preview:'',
+      content:row.content||'',
       description:'',
       createtime:row.createtime,
       start_date:row.createtime,

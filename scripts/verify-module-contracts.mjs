@@ -65,11 +65,14 @@ if(!governanceManagement.includes("function PeriodSettings({scopeId})")||!govern
 }
 
 const aggregateQuery=readFileSync(resolve(root,'app/loc/aggregate-query.js'),'utf8');
-if(!aggregateQuery.includes("columns:'uid,source_name,createtime,title'")){
-  failures.push('aggregate-query: Galaxy list must use lightweight paged fields');
+if(!aggregateQuery.includes("columns:'uid,source_name,createtime,title,content'")){
+  failures.push('aggregate-query: paged Galaxy rows must carry content for title fallback');
+}
+if(!/selectGalaxyPage[\s\S]*limit[\s\S]*offset/.test(aggregateQuery)){
+  failures.push('aggregate-query: Galaxy content fallback must remain inside the paged query');
 }
 if(/columns:['"][^'"]*content[^'"]*(?:url|media_link)|columns:['"][^'"]*(?:url|media_link)[^'"]*content/.test(aggregateQuery)){
-  failures.push('aggregate-query: ordinary Galaxy list must not bulk-select content/url/media_link');
+  failures.push('aggregate-query: paged Galaxy rows must not bulk-select content together with url/media_link');
 }
 if(/galaxy_preview|content_preview/.test(aggregateQuery))failures.push('aggregate-query: stored preview dependency returned');
 

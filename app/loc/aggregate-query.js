@@ -150,7 +150,7 @@ export async function selectGalaxyPage({sourceName='',startDate='',endDate='',li
   if(sourceName)filters.push({column:'source_name',operator:'eq',value:sourceName});
   filters.push(...timeFilters('createtime',startDate,endDate));
   const {rows,count}=await selectNeonRows('silver.lo3rwang_galaxy',{
-    columns:'uid,source_name,createtime,title',
+    columns:'uid,source_name,createtime,title,content',
     filters:publicContentFilters(filters),
     orders:[{column:'createtime',ascending:false}],
     limit,

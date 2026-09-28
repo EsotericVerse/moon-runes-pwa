@@ -15,6 +15,10 @@ function isDocumentBottom(){
   );
   return Math.ceil(window.scrollY+window.innerHeight)>=height;
 }
+function isElementBottom(element){
+  if(!element)return false;
+  return Math.ceil(element.scrollTop+element.clientHeight)>=element.scrollHeight;
+}
 
 export default function IncrementalLoadV2({
   hasMore=false,
@@ -22,7 +26,8 @@ export default function IncrementalLoadV2({
   error=null,
   onLoadMore,
   cooldownMs=LIST_LOAD_COOLDOWN_MS,
-  label='還有更多資料'
+  label='還有更多資料',
+  scrollRootRef=null
 }){
   const busyRef=useRef(Boolean(loading));
   const readyAtRef=useRef(Date.now()+cooldownMs);
@@ -36,7 +41,8 @@ export default function IncrementalLoadV2({
   useEffect(()=>{
     if(!hasMore||typeof onLoadMore!=='function')return undefined;
 
-    const updateBottom=()=>{atBottomRef.current=isDocumentBottom();};
+    const root=scrollRootRef?.current||null;
+    const updateBottom=()=>{atBottomRef.current=root?isElementBottom(root):isDocumentBottom();};
     const maybeLoad=()=>{
       updateBottom();
       if(!atBottomRef.current||busyRef.current||error||Date.now()<readyAtRef.current)return;
@@ -54,17 +60,19 @@ export default function IncrementalLoadV2({
     };
 
     updateBottom();
-    window.addEventListener('scroll',updateBottom,{passive:true});
-    document.addEventListener('wheel',onWheel,{passive:true,capture:true});
-    document.addEventListener('touchend',onTouchEnd,{passive:true,capture:true});
-    document.addEventListener('keydown',onKeyDown,true);
+    const scrollTarget=root||window;
+    const inputTarget=root||document;
+    scrollTarget.addEventListener('scroll',updateBottom,{passive:true});
+    inputTarget.addEventListener('wheel',onWheel,{passive:true,capture:true});
+    inputTarget.addEventListener('touchend',onTouchEnd,{passive:true,capture:true});
+    inputTarget.addEventListener('keydown',onKeyDown,true);
     return ()=>{
-      window.removeEventListener('scroll',updateBottom);
-      document.removeEventListener('wheel',onWheel,true);
-      document.removeEventListener('touchend',onTouchEnd,true);
-      document.removeEventListener('keydown',onKeyDown,true);
+      scrollTarget.removeEventListener('scroll',updateBottom);
+      inputTarget.removeEventListener('wheel',onWheel,true);
+      inputTarget.removeEventListener('touchend',onTouchEnd,true);
+      inputTarget.removeEventListener('keydown',onKeyDown,true);
     };
-  },[hasMore,error,onLoadMore]);
+  },[hasMore,error,onLoadMore,scrollRootRef]);
 
   if(!hasMore)return null;
   return <div className={'scope-v2-load-sentinel'+(loading?' is-loading':'')} aria-live="polite">
