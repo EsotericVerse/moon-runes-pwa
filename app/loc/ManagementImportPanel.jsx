@@ -63,7 +63,6 @@ function JsonImport({scopeId}){
     try{
       const payload=rows.map(row=>({
         uid:String(firstValue(row,['uid'])||createUid8()).toUpperCase(),
-        category:String(firstValue(row,['category'])||'other').trim()||'other',
         content_type:String(firstValue(row,['content_type','type'])||'other').trim()||'other',
         title:String(firstValue(row,['title','name','subject'])||'').trim()||null,
         content:String(firstValue(row,['content','body','text','message','description'])||'').trim()||null,
@@ -196,7 +195,7 @@ function SunoImport({scopeId}){
       const sourceId=draft.source_id.trim()||(styleUid?draft.ref_id.trim():'')||null;
       if(lyricsUid){
         await insertNeonRows('silver.lo3rwang_galaxy',[{
-          uid:lyricsUid,category:'music',content_type:'lyrics',
+          uid:lyricsUid,content_type:'lyrics',
           title:draft.title.trim(),content:draft.lyrics.trim(),createtime,
           source_id:sourceId,target_id:targetIds(draft.target_id),ref_id:styleUid||draft.ref_id.trim()||null,
           url:draft.url.trim()||null,searchable:true,source_name:'suno'
@@ -204,7 +203,7 @@ function SunoImport({scopeId}){
       }
       if(styleUid){
         await insertNeonRows('silver.lo3rwang_galaxy',[{
-          uid:styleUid,category:'music',content_type:'instruction',
+          uid:styleUid,content_type:'instruction',
           title:draft.title.trim()+'｜Suno Style',content:draft.stylePrompt.trim(),createtime,
           target_id:[lyricsUid],searchable:true,source_name:'suno'
         }]);
