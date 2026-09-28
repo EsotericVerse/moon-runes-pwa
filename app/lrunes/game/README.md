@@ -28,30 +28,34 @@ Playable deck:
 - Rune 0 德: author/governance rune; not drawn into the playable deck
 - 67 aboutme: author visual asset; not a playable rune
 
-## Current 2P Alpha round structure
+## Current round structure
 
 `R1–R3 Event → R4 Resonance → R5–R7 Event → R8 Resonance`
 
-- De range: 0–8
+- This is the Current round sequence for 2–4 players.
+- De range: 0–8.
 - Reaching 8 is not immediate victory.
 - R8 is the official settlement point.
 - Higher De wins.
-- A 2P tie enters a final Duel.
+- Only a tie after R8 enters R9 Duel.
+- R9 is a tiebreak Duel, not a normal ninth round.
 
-## Event
+## Event32
 
-Each Event response uses two Rune cards.
+The 32-card Alpha Event text deck is restored in `game-events.js`.
 
-The four existing paired-group images are visual assets already available to the board:
+Each Current Event response uses two Rune cards.
 
-- Soul × Connection
-- Mineral × Life
-- Nature × Element
-- Order × Disorder
+Current four-group shorthand is fixed as:
 
-They are not a final limit of four Event themes.
+- SL = Soul + Link / 靈魂＋連結
+- ML = Mineral + Life / 礦物＋生命
+- NE = Nature + Element / 自然＋元素
+- OD = Order + Disorder / 秩序＋無序
 
-The eight rune groups remain distinct. Event expansion can use two-group or two-role themes without collapsing the eight groups into four permanent gameplay categories.
+Historical Event32 text used `OC` for the last shorthand in some records. Current normalizes that historical typo to `OD`.
+
+The four existing paired-group images are visual assets for these four pair groups. They are not a limit of four Event cards. The Event deck contains 32 Alpha scenarios, and later Event design can expand beyond the Alpha deck.
 
 ## Eight roles
 
@@ -86,7 +90,8 @@ Historical material does not restore the retired LOC1–8 architecture and does 
 
 RC8 closes structural consolidation and the first graphical pass. The following are intentionally post-RC8 product work:
 
-- Event library expansion
-- final eight-role design
-- deeper Resonance/Battle effects
+- Event32 balance and scenario refinement
+- expansion beyond the 32-card Alpha deck
+- final eight-role gameplay design
+- deeper Resonance / Duel effects
 - advanced animation and data visualization
