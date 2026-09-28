@@ -60,8 +60,8 @@ for(const token of ["const intersectionStart=Math.max(personalStartTime,runeStar
 for(const retired of ["Math.min(runeStartTime,personalStartTime,...validTimes)","personal.map((row,index)=>marker","runes.map((row,index)=>marker"]){
   if(cultureTimeline.includes(retired))failures.push(`LOC Culture: historical/global Current river regression returned ${retired}`);
 }
-if(!governanceManagement.includes("scopeId!=='loc'?<CultureTimelineEditor")){
-  failures.push('LOC Culture: Period settings must not run for LOC');
+if(!governanceManagement.includes("function PeriodSettings({scopeId})")||!governanceManagement.includes("if(scopeId==='loc')return null;")){
+  failures.push('LOC Culture: Period settings must remain Scope-only and must not run for LOC');
 }
 
 const aggregateQuery=readFileSync(resolve(root,'app/loc/aggregate-query.js'),'utf8');
