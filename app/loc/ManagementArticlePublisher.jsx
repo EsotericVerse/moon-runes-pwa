@@ -5,6 +5,7 @@ import {neonAuthClient} from './neon-client';
 import {useNeonAccount} from './use-neon-account';
 import ContentEditorV2 from '../modular-v2/ContentEditorV2';
 import {createUid8} from './uid';
+import {requireGalaxyContent} from './content-policy';
 
 function targetIds(value){
   const values=Array.isArray(value)?value:String(value||'').split(/[,，]/);
@@ -36,14 +37,14 @@ export default function ManagementArticlePublisher({scopeId}){
   async function save(){
     setBusy(true);setStatus('');
     try{
-      if(!draft.title.trim()&&!draft.body.trim())throw new Error('標題與正文至少需要一項。');
+      const content=requireGalaxyContent(draft.body);
       if(!draft.source.trim())throw new Error('請指定來源。');
       const now=new Date().toISOString();
       const uid=createUid8();
 
       await insertNeonRows('silver.lo3rwang_galaxy',[{
         uid,content_type:'article',
-        title:draft.title.trim()||null,content:draft.body.trim()||null,
+        title:draft.title.trim()||null,content,
         source_id:draft.source_id.trim()||null,target_id:targetIds(draft.target_id),ref_id:draft.ref_id.trim()||null,
         url:draft.url.trim()||null,searchable:!draft.hidden,
         createtime:draft.createtime?new Date(draft.createtime).toISOString():now,

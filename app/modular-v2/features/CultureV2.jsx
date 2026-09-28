@@ -25,6 +25,7 @@ import {workDisplayHeading,workDisplayText} from '../work-display-model.v2';
 import IncrementalLoadV2 from '../IncrementalLoadV2';
 import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
 import ContentEditorV2 from '../ContentEditorV2';
+import {requireGalaxyContent} from '../../loc/content-policy';
 
 const CULTURE_WORK_PAGE_SIZE=DEFAULT_LIST_BATCH_SIZE;
 
@@ -266,10 +267,11 @@ export default function CultureV2(){
     setEditBusy(true);setEditError('');
     try{
       if(!account.canManageScopeSync(classificationScope))throw new Error('沒有修改此 Scope 的權限。');
+      const content=requireGalaxyContent(editDraft.body);
       const {error}=await neonAuthClient.schema('silver').from(galaxyTable())
         .update({
           title:String(editDraft.title||'').trim()||null,
-          content:String(editDraft.body||''),
+          content,
           searchable:editDraft.hidden!==true
         })
         .eq('uid',uid);

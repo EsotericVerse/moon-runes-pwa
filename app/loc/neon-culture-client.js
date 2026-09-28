@@ -344,15 +344,28 @@ export async function selectScopeMediaSnapshot(scopeId,{startDate,endDate}={}){
 }
 
 export async function selectScopeMediaWorks(scopeId,{startDate,endDate,mediaName,limit=20,pageOffset=0}={}){
-  if(!startDate||!mediaName)return {rows:[],hasMore:false,nextOffset:null,totalCount:0};
+  if(!startDate||!mediaName)return {rows:[],hasMore:false,nextOffset:null,totalCount:null};
   const pageSize=Math.max(1,Math.min(100,Math.floor(Number(limit)||20)));
   const offset=Math.max(0,Math.floor(Number(pageOffset)||0));
   const field='media_type';
-  const rows=await selectScopeMediaRows(scopeId,{startDate,endDate});
-  const matches=rows.filter(row=>String(row?.[field]||'').trim()===String(mediaName));
-  matches.sort((a,b)=>String(b.createtime||'').localeCompare(String(a.createtime||'')));
-  const page=matches.slice(offset,offset+pageSize).map(row=>({
+  const table=`silver.${dataScopeId(scopeId)}_galaxy_media`;
+  const result=await selectNeonRows(table,{
+    columns:'media_id,galaxy_link,source_native_id,media_type,title,url,meta_tags,createtime',
+    filters:[
+      ...dateFilters(startDate,endDate),
+      {column:field,operator:'eq',value:String(mediaName)}
+    ],
+    orders:[
+      {column:'createtime',ascending:false},
+      {column:'media_id',ascending:true}
+    ],
+    limit:pageSize,
+    offset
+  });
+  const sourceRows=result.rows||[];
+  const page=sourceRows.map(row=>({
     ...row,
+    record_type:'galaxy_media',
     entry_id:row.media_id||row.record_id,
     entry_type:'media_metadata',
     start_date:row.createtime,
@@ -367,7 +380,7 @@ export async function selectScopeMediaWorks(scopeId,{startDate,endDate,mediaName
       ?[{id:'media:'+String(row.media_id||row.record_id),href:row.url,label:'媒體連結'}]
       :[]
   }));
-  const hasMore=offset+pageSize<matches.length;
-  return {rows:page,hasMore,nextOffset:hasMore?offset+pageSize:null,totalCount:matches.length};
+  const hasMore=sourceRows.length===pageSize;
+  return {rows:page,hasMore,nextOffset:hasMore?offset+sourceRows.length:null,totalCount:null};
 }
 

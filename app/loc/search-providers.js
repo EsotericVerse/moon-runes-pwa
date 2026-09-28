@@ -168,7 +168,8 @@ const runeCore=makeProvider({
   scopeId:'lrunes',
   idColumn:'rune_id',
   columns:['rune_id','rune_name','group_name','english_name','rune_description','archetype','char_action','positive_keywords','negative_keywords','extra_rules','extra_notes','positive_meaning','half_positive_meaning','half_reverse_meaning','reverse_meaning'],
-  searchFields:['rune_name','group_name','english_name','rune_description','archetype','char_action','positive_keywords','negative_keywords','extra_rules','extra_notes','positive_meaning','half_positive_meaning','half_reverse_meaning','reverse_meaning']
+  searchFields:['rune_name','group_name','english_name','rune_description','archetype','char_action','positive_keywords','negative_keywords','extra_rules','extra_notes','positive_meaning','half_positive_meaning','half_reverse_meaning','reverse_meaning'] ,
+  batchSize:RUNE_LIST_BATCH_SIZE
 });
 
 const runeTimeline=makeProvider({
@@ -183,7 +184,8 @@ const runeTimeline=makeProvider({
   filters:[
     {column:'record_type',operator:'in',value:['anchor','period','event']},
     {column:'include_in_time',operator:'eq',value:true}
-  ]
+  ] ,
+  batchSize:RUNE_LIST_BATCH_SIZE
 });
 
 const runeText=makeProvider({
@@ -195,7 +197,8 @@ const runeText=makeProvider({
   columns:['uid','content_type','source_name','title','createtime','source_id','target_id','url','media_link'],
   searchFields:['title','content','source_name'],
   dateColumn:'createtime',
-  filters:publicContentFilters([{column:'searchable',operator:'eq',value:true}])
+  filters:publicContentFilters([{column:'searchable',operator:'eq',value:true}]) ,
+  batchSize:RUNE_LIST_BATCH_SIZE
 });
 
 const runeMedia=makeProvider({
@@ -207,7 +210,8 @@ const runeMedia=makeProvider({
   columns:['media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','createtime'],
   searchFields:['title','meta_tags','media_type','url','source_native_id'],
   dateColumn:'createtime',
-  filters:[]
+  filters:[] ,
+  batchSize:RUNE_LIST_BATCH_SIZE
 });
 
 const runeMediaAll=makeProvider({
@@ -219,7 +223,8 @@ const runeMediaAll=makeProvider({
   columns:['media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','createtime'],
   searchFields:['title','meta_tags','media_type','url','source_native_id'],
   dateColumn:'createtime',
-  filters:[]
+  filters:[] ,
+  batchSize:RUNE_LIST_BATCH_SIZE
 });
 
 const faq=makeProvider({

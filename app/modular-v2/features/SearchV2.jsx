@@ -17,6 +17,7 @@ import ContentEditorV2 from '../ContentEditorV2';
 import SearchHighlightV2 from '../SearchHighlightV2';
 import {selectGalaxyContent,selectGalaxyIdentity} from '../../loc/aggregate-query';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model.v2';
+import {requireGalaxyContent} from '../../loc/content-policy';
 import IncrementalLoadV2 from '../IncrementalLoadV2';
 import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
 
@@ -291,9 +292,10 @@ export default function SearchV2(){
     setEditBusy(true);setEditError('');
     try{
       if(!account.canManageScopeSync(result.scopeId))throw new Error('沒有修改此內容的權限。');
+      const body=result.resourceType==='galaxy'?requireGalaxyContent(editDraft.body):editDraft.body;
       const contentPatch={
         title:editDraft.title,
-        [result.editableField]:editDraft.body,
+        [result.editableField]:body,
         ...(result.resourceType==='galaxy'?{searchable:!editDraft.hidden}:{})
       };
       const contentFilters=[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId}];
