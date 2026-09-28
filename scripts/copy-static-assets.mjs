@@ -21,6 +21,10 @@ const publicPics=[
   '07_order.jpg',
   '08_disorder.jpg',
   '09_specia.jpg',
+  'g1c-soul.link.jpg',
+  'g2c-mineral.life.jpg',
+  'g3c-nature.element.jpg',
+  'g4c-order.disorder.jpg',
   'LOC-PicAll.png',
   'LunaRunes.jpg',
   'aboutme.png'
