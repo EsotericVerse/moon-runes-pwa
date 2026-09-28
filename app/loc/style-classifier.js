@@ -17,9 +17,8 @@ export async function selectCanonicalStyleCatalog(){
   if(canonicalCatalogPromise)return canonicalCatalogPromise;
   canonicalCatalogPromise=(async()=>{
     const [runesResult,keywordsResult]=await Promise.all([
-      selectNeonCatalog('silver.lrunes',{
-        columns:'rune_number,rune_name,group_name,record_type',
-        filters:[{column:'record_type',operator:'eq',value:'rune'}]
+      selectNeonCatalog('silver.runes',{
+        columns:'rune_id,rune_name,group_name'
       }),
       selectNeonCatalog('silver.lrunes',{
         columns:'rune_number,keyword_group,keyword,active,record_type',
@@ -29,8 +28,8 @@ export async function selectCanonicalStyleCatalog(){
         ]
       })
     ]);
-    const runeMap=new Map((runesResult.rows||[]).map(row=>[Number(row.rune_number),{
-      rune_number:Number(row.rune_number),
+    const runeMap=new Map((runesResult.rows||[]).map(row=>[Number(row.rune_id),{
+      rune_number:Number(row.rune_id),
       style_label:String(row.rune_name||'').trim(),
       style_group:String(row.group_name||'').trim()
     }]));
