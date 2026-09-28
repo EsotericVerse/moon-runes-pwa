@@ -135,7 +135,7 @@ export default function CultureV2(){
       endDate:selectedWorkPeriod?.end_date,
       styleLevel
     }),
-    enabled:classificationMode==='style'&&Boolean(selectedWorkPeriod?.start_date),
+    enabled:!isLoc&&classificationMode==='style'&&Boolean(selectedWorkPeriod?.start_date),
     staleTime:5*60_000
   });
 
@@ -146,7 +146,7 @@ export default function CultureV2(){
       endDate:selectedWorkPeriod?.end_date,
       dimension:mediaDimension
     }),
-    enabled:classificationMode==='media'&&Boolean(selectedWorkPeriod?.start_date),
+    enabled:!isLoc&&classificationMode==='media'&&Boolean(selectedWorkPeriod?.start_date),
     staleTime:5*60_000
   });
 
@@ -279,16 +279,16 @@ export default function CultureV2(){
             {selectedWorkPeriod?<section className='scope-v2-card scope-v2-culture-classification-river'>
               <p className='loc-eyebrow'>Classification River</p>
               <h3>{labelOf(selectedWorkPeriod,0)}｜作品分類河道</h3>
-              <div className='scope-v2-tabs' role='group' aria-label='作品分類方式'>
+              {!isLoc?<div className='scope-v2-tabs' role='group' aria-label='作品分類方式'>
                 <button type='button' aria-pressed={classificationMode==='source'} onClick={()=>setClassificationMode('source')}>作品來源</button>
                 <button type='button' aria-pressed={classificationMode==='style'} onClick={()=>setClassificationMode('style')}>風格</button>
                 <button type='button' aria-pressed={classificationMode==='media'} onClick={()=>setClassificationMode('media')}>多媒體</button>
-              </div>
-              {classificationMode==='style'?<div className='scope-v2-tabs' role='group' aria-label='風格分類層級'>
+              </div>:null}
+              {!isLoc&&classificationMode==='style'?<div className='scope-v2-tabs' role='group' aria-label='風格分類層級'>
                 <button type='button' aria-pressed={styleLevel==='label'} onClick={()=>setStyleLevel('label')}>風格標籤</button>
                 <button type='button' aria-pressed={styleLevel==='group'} onClick={()=>setStyleLevel('group')}>風格大群組</button>
               </div>:null}
-              {classificationMode==='media'?<div className='scope-v2-tabs' role='group' aria-label='多媒體分類層級'>
+              {!isLoc&&classificationMode==='media'?<div className='scope-v2-tabs' role='group' aria-label='多媒體分類層級'>
                 <button type='button' aria-pressed={mediaDimension==='type'} onClick={()=>setMediaDimension('type')}>媒體類型</button>
                 <button type='button' aria-pressed={mediaDimension==='place'} onClick={()=>setMediaDimension('place')}>地點</button>
               </div>:null}
