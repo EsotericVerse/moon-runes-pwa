@@ -61,8 +61,10 @@ if(/\.ilike\(|operator:\s*['"]ilike['"]/.test(searchProviders))failures.push('Se
 if(!/searchTextIndex/.test(keywordClassifier))failures.push('Style classifier: Culture/Statistics must use the shared FlexSearch engine');
 if(!/searchNeonRows\(/.test(searchView))failures.push('SearchV2: shared search client missing');
 
-const scopeManagement=readFileSync(resolve(root,'app/modular-v2/ScopeManagementV2.jsx'),'utf8');
-if(!/useNeonAccount/.test(scopeManagement)||!/account\.canManage/.test(scopeManagement))failures.push('Scope management: manager role gate missing');
+const scopeManagement=readFileSync(resolve(root,'app/loc/GovernanceManagement.jsx'),'utf8');
+const adminManagement=readFileSync(resolve(root,'app/loc/views/AdminHomeView.jsx'),'utf8');
+if(!/useNeonAccount/.test(scopeManagement)||!/canManageScopeSync/.test(scopeManagement))failures.push('Scope management: manager role gate missing');
+if(!/useNeonAccount/.test(adminManagement)||!/canManageGlobalSync/.test(adminManagement))failures.push('Admin management: global manager role gate missing');
 
 for(const retired of ['app/loc/local-db.js','app/loc/google-drive.js','app/loc/storage.js','app/loc/auth-client.js']){
   if(existsSync(resolve(root,retired)))failures.push(`${retired}: retired persistence/auth module must remain removed`);
