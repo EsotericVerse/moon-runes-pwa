@@ -19,6 +19,12 @@
 .scope-v2-scope-select .scope-v2-react-select{min-width:11rem}
 .scope-v2-management-select{display:grid;gap:.35rem;max-width:24rem;margin-top:1rem}
 .scope-v2-management-select>label{color:var(--scope-v2-muted);font-size:.82rem}
+.lrunes-style-flat-list{display:grid;gap:.45rem}
+.lrunes-style-flat-item{display:grid;grid-template-columns:minmax(2.5rem,auto) auto minmax(0,1fr);align-items:center;gap:.55rem;padding:.5rem 0;border-bottom:var(--scope-v2-border)}
+.lrunes-style-flat-item:last-child{border-bottom:0}
+.lrunes-style-flat-item>span,.lrunes-style-flat-item>small{color:var(--scope-v2-muted)}
+.lrunes-style-flat-item>small{overflow-wrap:anywhere}
+.loc-card textarea{max-width:100%}
 .scope-v2-react-select__group-heading{padding:.4rem .7rem .2rem;color:var(--scope-v2-muted);font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
 .scope-v2-main{width:min(var(--scope-v2-max),calc(100% - 2rem));margin:0 auto;padding:clamp(1.2rem,4vw,3rem) 0 4rem}
 .scope-v2-page,.scope-v2-content,.scope-v2-list{display:grid;gap:var(--scope-v2-gap)}
