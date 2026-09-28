@@ -146,6 +146,7 @@ export default function LunaRunesStyleModelV2(){
       <p className="loc-eyebrow">Single Text Test</p>
       <h2>單段文字測試</h2>
       <textarea
+        className="lrunes-style-model-textarea"
         rows="8"
         value={testText}
         onChange={event=>setTestText(event.target.value)}
