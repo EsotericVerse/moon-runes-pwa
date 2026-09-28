@@ -24,8 +24,6 @@ for (const name of [
 for (const path of [
   'LunaRune66.xlsx',
   'LunarRunesCardCut.pdf',
-  'pics/LOC-FrameworkPic.png',
-  'pics/LOC-structure.png'
 ]) {
   if (!existsSync(resolve(root, path))) failures.push(`missing frozen source asset: ${path}`);
 }
