@@ -278,9 +278,9 @@ export default function CultureV2(){
                 <button type='button' aria-pressed={mediaDimension==='type'} onClick={()=>setMediaDimension('type')}>媒體類型</button>
                 <button type='button' aria-pressed={mediaDimension==='place'} onClick={()=>setMediaDimension('place')}>地點</button>
               </div>:null}
-              {classificationBucketsQuery.isPending?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
+              {classificationBucketsQuery.isFetching?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
               {classificationBucketsQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(classificationBucketsQuery.error)}</p>:null}
-              {!classificationBucketsQuery.isPending&&!classificationBucketsQuery.error&&!classificationBuckets.length
+              {!classificationBucketsQuery.isFetching&&!classificationBucketsQuery.error&&!classificationBuckets.length
                 ?<p className='scope-v2-status'>{classificationMode==='source'&&classificationScope==='lunarunes'?'此 Scope 沒有作品來源分類。':'目前沒有此分類資料。'}</p>:null}
               {classificationBuckets.length?<CultureTimelineV2
                 items={classificationBuckets}
@@ -302,9 +302,9 @@ export default function CultureV2(){
                 :(classificationMode==='style'
                   ?(styleLevel==='label'?'風格標籤是小群組名稱。':'風格大群組彙整多個風格標籤。')
                   :(mediaDimension==='place'?'依 source_place 顯示多媒體的地點分布。':'依 media_type 顯示圖片、影音、音樂與其他媒體類型分布。'))}</p>
-              {categoryQuery.isPending?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
+              {categoryQuery.isFetching?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
               {categoryQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(categoryQuery.error)}</p>:null}
-              {!categoryQuery.isPending&&!categoryQuery.error&&!categoryGroups.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+              {!categoryQuery.isFetching&&!categoryQuery.error&&!categoryGroups.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
               {categoryGroups.length?<div className='scope-v2-culture-source-groups' aria-label='作品分類'>
                 {categoryGroups.map(group=>isLoc
                   ?<button type='button' key={group.category_key} className='scope-v2-culture-source-button'
@@ -324,7 +324,7 @@ export default function CultureV2(){
                   <h4>{selectedGroup.display_label} · {selectedCount.toLocaleString()} 項作品</h4>
                   <button type='button' className='scope-v2-pagination-button' onClick={()=>setSelectedCategory('')}>收合列表</button>
                 </header>
-                {periodWorksQuery.isPending?<p className='scope-v2-status'>載入第 {workPage+1} 頁…</p>:null}
+                {periodWorksQuery.isFetching?<p className='scope-v2-status'>載入第 {workPage+1} 頁…</p>:null}
                 {periodWorksQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksQuery.error)}</p>:null}
                 <div className='scope-v2-culture-source-work-scroll'>
                   {(periodWorksQuery.data?.rows||[]).map((work,index)=><WorkSummaryCardV2
@@ -340,7 +340,7 @@ export default function CultureV2(){
                     {classificationMode==='media'?<p>{work.media_type?('媒體類型：'+work.media_type):''}{work.source_place?(' · 地點：'+work.source_place):''}</p>:null}
                   </WorkSummaryCardV2>)}
                 </div>
-                {!periodWorksQuery.isPending&&!periodWorksQuery.error&&!(periodWorksQuery.data?.rows||[]).length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+                {!periodWorksQuery.isFetching&&!periodWorksQuery.error&&!(periodWorksQuery.data?.rows||[]).length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
                 <PagedResultV2
                   label="作品"
                   totalCount={groupedCount}
