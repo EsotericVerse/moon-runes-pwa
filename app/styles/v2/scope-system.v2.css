@@ -15,6 +15,9 @@
 .scope-v2-nav-current{font-weight:700;background:var(--loc-panel-2)}
 .scope-v2-search{margin-left:auto}
 .scope-v2-search input{width:10rem;min-width:0;padding:.45rem .7rem;border:var(--scope-v2-border);border-radius:999px;background:var(--loc-panel);color:var(--scope-v2-text)}
+.scope-v2-scope-select{flex:0 0 11rem;min-width:11rem}
+.scope-v2-scope-select .scope-v2-react-select{min-width:11rem}
+.scope-v2-react-select__group-heading{padding:.4rem .7rem .2rem;color:var(--scope-v2-muted);font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
 .scope-v2-main{width:min(var(--scope-v2-max),calc(100% - 2rem));margin:0 auto;padding:clamp(1.2rem,4vw,3rem) 0 4rem}
 .scope-v2-page,.scope-v2-content,.scope-v2-list{display:grid;gap:var(--scope-v2-gap)}
 .scope-v2-grid-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--scope-v2-gap)}
