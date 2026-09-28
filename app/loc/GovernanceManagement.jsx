@@ -10,7 +10,6 @@ import ManagementImportPanel from './ManagementImportPanel';
 import RuneManagementPanel from './RuneManagementPanel';
 import CultureTimelineEditor from '../modular-v2/features/CultureTimelineEditor';
 import KeywordSettingsV2 from '../modular-v2/features/KeywordSettingsV2';
-import SourceSettingsV2 from '../modular-v2/features/SourceSettingsV2';
 
 const LOGIN_COPY={
   loc:{
