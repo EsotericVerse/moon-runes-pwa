@@ -67,7 +67,6 @@ export default function CultureV2(){
 
   const rows=useMemo(()=>rowsOf(query.data,scopeId),[query.data,scopeId]);
   const [classificationMode,setClassificationMode]=useState(scopeId==='lunarunes'?'media':'source');
-  const [mediaDimension,setMediaDimension]=useState('type');
   const [selectedCategory,setSelectedCategory]=useState('');
   const [workPage,setWorkPage]=useState(0);
   const [activeWorkPeriod,setActiveWorkPeriod]=useState(null);
@@ -111,7 +110,7 @@ export default function CultureV2(){
 
 
   const mediaSnapshotQuery=useQuery({
-    queryKey:['culture-period-media-snapshot',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,mediaDimension],
+    queryKey:['culture-period-media-snapshot',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date]
     queryFn:()=>selectScopeMediaSnapshot(classificationScope,{
       startDate:selectedWorkPeriod?.start_date,
       endDate:selectedWorkPeriod?.end_date,
@@ -130,7 +129,7 @@ export default function CultureV2(){
   const selectedGroup=categoryGroups.find(item=>item.category_key===selectedCategory)||null;
   const selectedCount=Number(selectedGroup?.item_count)||0;
   const periodWorksQuery=useQuery({
-    queryKey:['culture-period-works',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,classificationMode,mediaDimension,selectedCategory,workPage],
+    queryKey:['culture-period-works',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,classificationMode,selectedCategory,workPage],
     queryFn:()=>classificationMode==='source'
       ?selectAuthorPeriodWorks({
         startDate:selectedWorkPeriod?.start_date,
@@ -143,7 +142,6 @@ export default function CultureV2(){
           startDate:selectedWorkPeriod?.start_date,
           endDate:selectedWorkPeriod?.end_date,
           mediaName:selectedGroup?.media_name,
-          dimension:mediaDimension,
           limit:CULTURE_WORK_PAGE_SIZE,
           pageOffset:workPage*CULTURE_WORK_PAGE_SIZE
         }),
@@ -155,7 +153,6 @@ export default function CultureV2(){
 
   useEffect(()=>{
     setClassificationMode(scopeId==='lunarunes'?'media':'source');
-    setMediaDimension('type');
     setSelectedCategory('');
     setWorkPage(0);
     setActiveWorkPeriod(null);
@@ -164,7 +161,7 @@ export default function CultureV2(){
   useEffect(()=>{
     setSelectedCategory('');
     setWorkPage(0);
-  },[classificationMode,mediaDimension,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date]);
+  },[classificationMode,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date]);
 
   const periodVolumeByStart=useMemo(()=>{
     const map=new Map();
@@ -186,7 +183,7 @@ export default function CultureV2(){
 
   const classificationBuckets=classificationMode==='source'
     ?(sourceSnapshotQuery.data?.buckets||[])
-    :(classificationMode==='style'?(styleSnapshotQuery.data?.buckets||[]):(mediaSnapshotQuery.data?.buckets||[]));
+    :(mediaSnapshotQuery.data?.buckets||[]);
 
 
   return <FeaturePageV2 featureId="culture">
@@ -238,10 +235,6 @@ export default function CultureV2(){
                 <button type='button' aria-pressed={classificationMode==='source'} onClick={()=>setClassificationMode('source')}>作品來源</button>
                 <button type='button' aria-pressed={classificationMode==='media'} onClick={()=>setClassificationMode('media')}>多媒體</button>
               </div>:null}
-              {!isLoc&&classificationMode==='media'?<div className='scope-v2-tabs' role='group' aria-label='多媒體分類層級'>
-                <button type='button' aria-pressed={mediaDimension==='type'} onClick={()=>setMediaDimension('type')}>媒體類型</button>
-                <button type='button' aria-pressed={mediaDimension==='place'} onClick={()=>setMediaDimension('place')}>地點</button>
-              </div>:null}
               {classificationBucketsQuery.isFetching?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
               {classificationBucketsQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(classificationBucketsQuery.error)}</p>:null}
               {!classificationBucketsQuery.isFetching&&!classificationBucketsQuery.error&&!classificationBuckets.length
@@ -263,7 +256,7 @@ export default function CultureV2(){
               <h3>{labelOf(selectedWorkPeriod,0)}｜{classificationMode==='source'?'作品來源':'多媒體分類'}</h3>
               <p>{classificationMode==='source'
                 ?'來源名稱是匯入時自訂的字串；相同名稱會直接視為同一來源。'
-                :(mediaDimension==='place'?'依 source_place 顯示多媒體的地點分布。':'依 media_type 顯示圖片、影音、音樂與其他媒體類型分布。')}</p>
+                :'依 media_type 顯示圖片、影音、音樂與其他媒體類型分布。'}</p>
               {categoryQuery.isFetching?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
               {categoryQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(categoryQuery.error)}</p>:null}
               {!categoryQuery.isFetching&&!categoryQuery.error&&!categoryGroups.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
@@ -298,7 +291,6 @@ export default function CultureV2(){
                     relationLinks={galaxyRelationLinks(classificationScope,work)}
                     links={work.links||[]}
                   >
-                    {classificationMode==='style'?<p>{work.style_label?('風格標籤：'+work.style_label):''}{work.style_group?(' · 大群組：'+work.style_group):''}</p>:null}
                     {classificationMode==='media'?<p>{work.media_type?('媒體類型：'+work.media_type):''}{work.source_place?(' · 地點：'+work.source_place):''}</p>:null}
                   </WorkSummaryCardV2>)}
                 </div>
