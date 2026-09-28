@@ -164,7 +164,6 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
       }
       await queryClient.invalidateQueries({queryKey:['culture-period-settings',dataScope]});
       await queryClient.invalidateQueries({queryKey:['culture-timeline',scopeId]});
-      await queryClient.invalidateQueries({queryKey:['context-graph',dataScope]});
       setSelectedId('');
       setDraft({...BLANK});
       setMessage('已儲存。');
@@ -186,7 +185,6 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
       ]});
       await queryClient.invalidateQueries({queryKey:['culture-period-settings',dataScope]});
       await queryClient.invalidateQueries({queryKey:['culture-timeline',scopeId]});
-      await queryClient.invalidateQueries({queryKey:['context-graph',dataScope]});
       setSelectedId('');setDraft({...BLANK});setMessage('已刪除。');
     }catch(error){setMessage(error?.message||'刪除失敗。');}
     finally{setBusy(false);}
