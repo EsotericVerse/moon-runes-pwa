@@ -21,7 +21,6 @@ const publicPics=[
   '07_order.jpg',
   '08_disorder.jpg',
   '09_specia.jpg',
-  'LOC-FrameworkPic.png',
   'LOC-PicAll.png',
   'LunaRunes.jpg',
   'aboutme.png'
