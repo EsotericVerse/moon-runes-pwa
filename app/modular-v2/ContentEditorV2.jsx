@@ -20,10 +20,7 @@ export default function ContentEditorV2({
     {showBody?<label>{bodyLabel}<textarea rows={10} value={draft.body||''} onChange={event=>change('body',event.target.value)}/></label>:null}
     {extraFields}
     {showVisibility?<div className="scope-v2-editor-options">
-      <label><input type="checkbox" checked={draft.includeStatistics!==false} onChange={event=>change('includeStatistics',event.target.checked)}/>列入統計</label>
-      <label><input type="checkbox" checked={draft.hidden===true} onChange={event=>change('hidden',event.target.checked)}/>私密／隱藏</label>
-      <label><input type="checkbox" checked={draft.showLink!==false} onChange={event=>change('showLink',event.target.checked)}/>顯示連結</label>
-      <label><input type="checkbox" checked={draft.showSource!==false} onChange={event=>change('showSource',event.target.checked)}/>顯示來源</label>
+      <label><input type="checkbox" checked={draft.hidden===true} onChange={event=>change('hidden',event.target.checked)}/>不列入搜尋</label>
     </div>:null}
     {error?<p role="alert" className="scope-v2-error">{error}</p>:null}
     <div className="scope-v2-tabs">
