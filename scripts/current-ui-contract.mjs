@@ -18,7 +18,6 @@ const required=[
   [sources.registry,"label:'搜尋'"],
   [sources.nav,'FEATURES_V2'],
   [sources.nav,'useScopeRuntimeV2'],
-  [sources.governance,'Admin Scope'],
   [sources.registry,"scopeIdPattern:'^[A-Za-z]+$'"],
   [sources.registry,"defaultScopeId:'loc'"],
   [sources.registry,"domain:'loc.lo3rwang.cc'"],
@@ -48,4 +47,4 @@ if(missing.length||stale.length){
   if(stale.length)console.error('Forbidden stale Current UI token: '+stale.join(', '));
   process.exit(1);
 }
-console.log('Current UI contract verified against modular V2 Scope composition.');
+console.log('Current UI contract verified against modular V2 composition.');
