@@ -118,7 +118,6 @@ Current build gate 先驗證 RC contracts，再驗證 Neon public/batching contr
 - Recharts — Statistics
 - vis-network / vis-timeline — Current graph / timeline visualization
 - TanStack Query — query lifecycle
-- p-map — batching / concurrency control
 - Zod — feature/data contract
 - Neon JS — Current data access
 
