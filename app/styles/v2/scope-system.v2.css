@@ -82,7 +82,11 @@
 .scope-v2-result-links a{padding:.3rem .55rem;border:var(--scope-v2-border);border-radius:999px;background:var(--loc-panel-2);font-size:.85rem;text-decoration:none;}
 .scope-period-timeline .vis-item.scope-period-timeline-focus{background:var(--loc-accent);border-color:var(--loc-accent);color:var(--loc-panel);font-weight:700;}
 
-.scope-v2-load-sentinel{display:flex;justify-content:center;align-items:center;min-height:3rem;margin:.25rem 0;color:var(--scope-v2-muted);font-weight:700;letter-spacing:.08em}
+.scope-v2-load-sentinel{position:sticky;bottom:.75rem;z-index:8;display:flex;justify-content:center;align-items:center;min-height:3rem;margin:.5rem 0;pointer-events:none;color:var(--scope-v2-muted);font-weight:700;letter-spacing:.04em}
+.scope-v2-load-sentinel span{display:inline-flex;align-items:center;padding:.45rem .8rem;border:var(--scope-v2-border);border-radius:999px;background:color-mix(in srgb,var(--loc-panel) 92%,transparent);box-shadow:0 8px 24px rgb(0 0 0 / .12);animation:scope-v2-load-float 1.5s ease-in-out infinite}
+.scope-v2-load-sentinel.is-loading span{animation:none}
+@keyframes scope-v2-load-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@media(prefers-reduced-motion:reduce){.scope-v2-load-sentinel span{animation:none}}
 .scope-v2-stat-controls{display:flex;gap:.75rem;flex-wrap:wrap;align-items:end;margin:0 0 1rem}
 .scope-v2-stat-controls label{display:grid;gap:.35rem;min-width:10rem}
 .scope-v2-stat-controls label>span{color:var(--scope-v2-muted);font-size:.82rem}
