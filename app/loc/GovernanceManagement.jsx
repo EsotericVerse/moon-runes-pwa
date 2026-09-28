@@ -16,12 +16,12 @@ const LOGIN_COPY={
   loc:{
     eyebrow:'LOC Management',
     title:'LOC 管理登入',
-    description:'管理 LOC 框架、治理與全域設定。LOC 採自己的 Copyleft／GPL 治理，不代表其他 Scope 必須相同。'
+    description:'管理 LOC 框架、治理與全域設定。LOC 採自己的 Copyleft／GPL 治理，不代表其他內容必須相同。'
   },
   lunarunes:{
     eyebrow:'LunaRunes Management',
     title:'LunaRunes 管理登入',
-    description:'管理符號式語言、Canon、每日符文、數位資產與 LunaRunes Scope。'
+    description:'管理符號式語言、Canon、每日符文、數位資產與 LunaRunes 設定。'
   },
   lo3rwang:{
     eyebrow:'Personal Management',
@@ -39,7 +39,7 @@ function LoginScreen({scopeId,account}){
       <p>{copy.description}</p>
     </header>
     <section className="loc-card">
-      <p>登入後才會顯示這個 Scope 的管理工作頁；公開頁不提供寫入功能。</p>
+      <p>登入後才會顯示管理工作頁；公開頁不提供寫入功能。</p>
       <button className="loc-button primary" type="button" onClick={account.signIn}>使用 Google 登入 Neon</button>
       {account.error?<p className="scope-v2-status scope-v2-error">{account.error}</p>:null}
     </section>
@@ -80,7 +80,7 @@ export default function GovernanceManagement(){
 
   if(!canManage)return <section className="loc-view">
     <header className="loc-hero"><p className="loc-eyebrow">Management</p><h1>{scope.label}管理</h1></header>
-    <section className="loc-card"><p>目前登入身份沒有此 Scope 的管理權限。</p><button type="button" onClick={account.signOut}>登出</button></section>
+    <section className="loc-card"><p>目前登入身份沒有此區域的管理權限。</p><button type="button" onClick={account.signOut}>登出</button></section>
   </section>;
 
   const sections=[
