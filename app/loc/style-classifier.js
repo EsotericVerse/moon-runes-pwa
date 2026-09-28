@@ -17,72 +17,49 @@ function runeKeywordEntries(value){
   return String(value||'').split(/[、,，\n]+/).map(item=>item.trim()).filter(Boolean);
 }
 
+async function selectScopeStyleCatalog(scopeId){
+  const id=String(scopeId||'').trim()==='lunarunes'?'lrunes':String(scopeId||'').trim();
+  if(!['lo3rwang','lrunes'].includes(id))return [];
+  const table=id==='lo3rwang'?'silver.lo3rwang_style':'silver.lrunes_style';
+  const [styleResult,keywordResult]=await Promise.all([
+    selectNeonCatalog(table,{
+      columns:'style_no,node_type,representative_name,parent_group_name,order_no',
+      filters:[{column:'node_type',operator:'eq',value:'style'}],
+      orders:[{column:'order_no',ascending:true},{column:'style_no',ascending:true}]
+    }),
+    selectNeonCatalog(table,{
+      columns:'style_no,node_type,keyword_group,keyword,order_no',
+      filters:[{column:'node_type',operator:'eq',value:'keyword'}],
+      orders:[{column:'style_no',ascending:true},{column:'order_no',ascending:true}]
+    })
+  ]);
+  const styleMap=new Map((styleResult.rows||[]).map(row=>[Number(row.style_no),{
+    rune_number:Number(row.style_no),
+    style_label:String(row.representative_name||'').trim(),
+    style_group:String(row.parent_group_name||'').trim(),
+    order:Number(row.order_no)||Number(row.style_no)
+  }]));
+  return (keywordResult.rows||[]).map((row,index)=>{
+    const style=styleMap.get(Number(row.style_no));
+    const keyword=String(row.keyword||'').trim();
+    if(!style||!keyword||!style.style_label)return null;
+    return {
+      keyword,
+      keyword_group:String(row.keyword_group||'').trim(),
+      rune_number:style.rune_number,
+      style_label:style.style_label,
+      style_group:style.style_group,
+      order:Number(row.order_no)||index
+    };
+  }).filter(Boolean);
+}
+
 export async function selectCanonicalStyleCatalog(){
-  if(canonicalCatalogPromise)return canonicalCatalogPromise;
-  canonicalCatalogPromise=(async()=>{
-    const result=await selectNeonCatalog('silver.runes',{
-      columns:'rune_id,rune_name,group_name,positive_keywords,negative_keywords,extra_rules',
-      orders:[{column:'rune_id',ascending:true}]
-    });
-    const output=[];
-    for(const row of result.rows||[]){
-      const runeNumber=Number(row.rune_id);
-      const base={
-        rune_number:runeNumber,
-        style_label:String(row.rune_name||'').trim(),
-        style_group:String(row.group_name||'').trim()
-      };
-      for(const keyword of runeKeywordEntries(row.positive_keywords))output.push({...base,keyword,keyword_group:'positive',order:runeNumber});
-      for(const keyword of runeKeywordEntries(row.negative_keywords))output.push({...base,keyword,keyword_group:'negative',order:runeNumber});
-      for(const keyword of runeKeywordEntries(row.extra_rules))output.push({...base,keyword,keyword_group:'rules',order:runeNumber});
-    }
-    return output;
-  })().catch(error=>{
-    canonicalCatalogPromise=null;
-    throw error;
-  });
-  return canonicalCatalogPromise;
+  return selectScopeStyleCatalog('lrunes');
 }
 
 export async function selectAuthorStyleCatalog(){
-  if(authorCatalogPromise)return authorCatalogPromise;
-  authorCatalogPromise=(async()=>{
-    const [styleResult,keywordResult]=await Promise.all([
-      selectNeonCatalog('silver.lo3rwang_style',{
-        columns:'style_no,node_type,representative_name,parent_group_name,order_no',
-        filters:[{column:'node_type',operator:'eq',value:'style'}],
-        orders:[{column:'order_no',ascending:true},{column:'style_no',ascending:true}]
-      }),
-      selectNeonCatalog('silver.lo3rwang_style',{
-        columns:'style_no,node_type,keyword_group,keyword,order_no',
-        filters:[{column:'node_type',operator:'eq',value:'keyword'}],
-        orders:[{column:'style_no',ascending:true},{column:'order_no',ascending:true}]
-      })
-    ]);
-    const styleMap=new Map((styleResult.rows||[]).map(row=>[Number(row.style_no),{
-      rune_number:Number(row.style_no),
-      style_label:String(row.representative_name||'').trim(),
-      style_group:String(row.parent_group_name||'').trim(),
-      order:Number(row.order_no)||Number(row.style_no)
-    }]));
-    return (keywordResult.rows||[]).map((row,index)=>{
-      const style=styleMap.get(Number(row.style_no));
-      const keyword=String(row.keyword||'').trim();
-      if(!style||!keyword)return null;
-      return {
-        keyword,
-        keyword_group:String(row.keyword_group||'').trim(),
-        rune_number:style.rune_number,
-        style_label:style.style_label,
-        style_group:style.style_group,
-        order:Number(row.order_no)||index
-      };
-    }).filter(Boolean);
-  })().catch(error=>{
-    authorCatalogPromise=null;
-    throw error;
-  });
-  return authorCatalogPromise;
+  return selectScopeStyleCatalog('lo3rwang');
 }
 
 export function isConfiguredStyleCatalog(rows=[]){
@@ -94,9 +71,7 @@ export function isConfiguredStyleCatalog(rows=[]){
 
 export async function selectStyleCatalog(scopeId='lunarunes'){
   const id=String(scopeId||'').trim();
-  if(id!=='lo3rwang')return selectCanonicalStyleCatalog();
-  const author=await selectAuthorStyleCatalog();
-  return isConfiguredStyleCatalog(author)?author:selectCanonicalStyleCatalog();
+  return id==='lo3rwang'?selectAuthorStyleCatalog():selectCanonicalStyleCatalog();
 }
 
 export function styleTextOf(row={}){
@@ -315,6 +290,7 @@ export async function processStyleTableRows(table,{
 }={}){
   if(typeof onClassified!=='function')throw new TypeError('Style processing requires onClassified');
   const catalog=await selectStyleCatalog(scopeId);
+  if(!catalog.length)return {processed:0,stopped:false,nextOffset:0};
   return processNeonHeavyRows(table,{
     columns,filters,orFilter,orders,
     onBatch:async rows=>{
@@ -330,6 +306,7 @@ export async function processKeywordTableRows(table,{
 }={}){
   if(typeof onCounts!=='function')throw new TypeError('Keyword processing requires onCounts');
   const catalog=await selectStyleCatalog(scopeId);
+  if(!catalog.length)return {processed:0,stopped:false,nextOffset:0};
   return processNeonHeavyRows(table,{
     columns,filters,orFilter,orders,
     onBatch:async rows=>{
