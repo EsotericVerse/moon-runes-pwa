@@ -42,7 +42,7 @@ function dateFilters(startDate,endDate,column='createtime'){
 export async function selectScopeCultureData(scopeId){
   const id=runtimeScopeId(scopeId);
   const dataId=dataScopeId(scopeId);
-  if(!['loc','lrunes','lo3rwang'].includes(dataId))throw new Error('Scope 無效');
+  if(!['loc','lrunes','lo3rwang'].includes(dataId))throw new Error('資料設定無效');
 
   const scopeIds=dataId==='loc'
     ?(await selectManagedScopeIds()).filter(scope=>scope!=='loc')
@@ -177,6 +177,8 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
       key:'galaxy:'+row.uid,
       uid:row.uid,
       source_name:row.source_name,
+      source_id:row.source_id||null,
+      target_id:row.target_id||null,
       title:explicitTitle,
       content_preview:'',
       description:'',
