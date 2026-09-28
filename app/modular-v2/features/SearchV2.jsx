@@ -38,7 +38,6 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
   const displaySource=isGalaxy&&row.source_name?String(row.source_name):source;
   const mediaMetadata=[
     row.meta_tags,
-    row.source_place?('地點：'+row.source_place):'',
     row.media_type?('類型：'+row.media_type):'',
     row.source_native_id?('來源識別：'+row.source_native_id):''
   ].map(value=>decodeCultureText(value||'').trim()).filter(Boolean).join(' · ');
@@ -323,11 +322,11 @@ export default function SearchV2(){
   >
     <div className="scope-v2-tabs" role="group" aria-label="搜尋模式">
       <button type="button" aria-pressed={searchMode==='all'} onClick={()=>{setSearchMode('all');setResults([]);setStatus('輸入關鍵字開始搜尋。');}}>全部搜尋</button>
-      <button type="button" aria-pressed={searchMode==='media'} onClick={()=>{setSearchMode('media');setResults([]);setStatus('輸入多媒體關鍵字、類型、地點或來源識別。');}}>多媒體搜尋</button>
+      <button type="button" aria-pressed={searchMode==='media'} onClick={()=>{setSearchMode('media');setResults([]);setStatus('輸入多媒體關鍵字、類型或來源識別。');}}>多媒體搜尋</button>
     </div>
     <form className="scope-v2-search-form" onSubmit={runSearch}>
       <label htmlFor="scope-search-query">{searchMode==='media'?'找多媒體':'你想找什麼？'}</label>
-      <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder={searchMode==='media'?'搜尋圖片、影音、URL、Meta Tag、地點或來源識別':'輸入關鍵字、作品名稱或文字'} aria-label={searchMode==='media'?'多媒體搜尋':'你想找什麼？'}/>
+      <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder={searchMode==='media'?'搜尋圖片、影音、URL、Meta Tag 或來源識別':'輸入關鍵字、作品名稱或文字'} aria-label={searchMode==='media'?'多媒體搜尋':'你想找什麼？'}/>
       <button type="submit">搜尋</button>
     </form>
     <p className="scope-v2-status">{status}</p>

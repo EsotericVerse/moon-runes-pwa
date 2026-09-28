@@ -94,8 +94,8 @@ const authorMedia=makeProvider({
   source:'音樂與多媒體',
   scopeId:'lo3rwang',
   idColumn:'media_id',
-  columns:['media_id','galaxy_link','source_native_id','source_place','media_type','title','url','meta_tags','createtime'],
-  searchFields:['title','meta_tags','media_type','url','source_native_id','source_place'],
+  columns:['media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','createtime'],
+  searchFields:['title','meta_tags','media_type','url','source_native_id'],
   dateColumn:'createtime',
   filters:[{column:'galaxy_link',operator:'is',value:null}]
 });
@@ -106,8 +106,8 @@ const authorMediaAll=makeProvider({
   source:'多媒體',
   scopeId:'lo3rwang',
   idColumn:'media_id',
-  columns:['media_id','galaxy_link','source_native_id','source_place','media_type','title','url','meta_tags','createtime'],
-  searchFields:['title','meta_tags','media_type','url','source_native_id','source_place'],
+  columns:['media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','createtime'],
+  searchFields:['title','meta_tags','media_type','url','source_native_id'],
   dateColumn:'createtime'
 });
 
@@ -169,8 +169,8 @@ const runeMedia=makeProvider({
   source:'符文多媒體',
   scopeId:'lrunes',
   idColumn:'media_id',
-  columns:['media_id','galaxy_link','source_native_id','source_place','media_type','title','url','meta_tags','createtime'],
-  searchFields:['title','meta_tags','media_type','url','source_native_id','source_place'],
+  columns:['media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','createtime'],
+  searchFields:['title','meta_tags','media_type','url','source_native_id'],
   dateColumn:'createtime',
   filters:[{column:'galaxy_link',operator:'is',value:null}]
 });
@@ -181,8 +181,8 @@ const runeMediaAll=makeProvider({
   source:'符文多媒體',
   scopeId:'lrunes',
   idColumn:'media_id',
-  columns:['media_id','galaxy_link','source_native_id','source_place','media_type','title','url','meta_tags','createtime'],
-  searchFields:['title','meta_tags','media_type','url','source_native_id','source_place'],
+  columns:['media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','createtime'],
+  searchFields:['title','meta_tags','media_type','url','source_native_id'],
   dateColumn:'createtime',
   filters:[]
 });

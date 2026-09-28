@@ -22,10 +22,7 @@ const STAT_TABS=[['ranking','統計'],['media','多媒體設定']];
 const STAT_TYPE_LABELS=Object.freeze({
   keyword:'關鍵詞',
   source:'作品來源',
-  style:'風格標籤',
-  style_group:'風格大群組',
   media_type:'多媒體類型',
-  media_place:'多媒體地點',
   media_tag:'多媒體 Meta Tag'
 });
 function displayTerm(row){
@@ -235,7 +232,7 @@ function StatisticsPanel({scopeId,navigation,types}){
 
 function MediaPanel({scopeId}){
   return <section className="scope-v2-stat-section">
-    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Media Metadata</p><h2>多媒體設定</h2><p>多媒體以 media_type、source_place 與 meta_tags 參與搜尋、文化時間分布與統計。</p></div></header>
+    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Media Metadata</p><h2>多媒體設定</h2><p>多媒體以 media_type 與 meta_tags 參與搜尋、文化時間分布與統計。</p></div></header>
     {scopeId==='lo3rwang'?<MediaMetaSettingsV2 databaseScopeId="lo3rwang"/>:<p className="scope-v2-status">此 Scope 的多媒體設定沿用既有資料治理。</p>}
   </section>;
 }

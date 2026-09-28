@@ -1,22 +1,25 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import {useEffect,useMemo,useState} from 'react';
+import {Suspense,useEffect,useMemo,useState} from 'react';
 import {resolveScopeV2} from '../modular-v2/scope-registry.v2';
 import AboutView from './views/AboutView';
 import AuthorHomeView from './views/AuthorHomeView';
 import AdminHomeView from './views/AdminHomeView';
 import GenericScopeHomeV2 from '../modular-v2/GenericScopeHomeV2';
+import StatisticsV2 from '../modular-v2/features/StatisticsV2';
+import CultureV2 from '../modular-v2/features/CultureV2';
+import SearchV2 from '../modular-v2/features/SearchV2';
+import GovernanceV2 from '../modular-v2/features/GovernanceV2';
 
 const loading=()=> <div className="loc-loading">載入功能模組…</div>;
 const RunesHomeView=dynamic(()=>import('../lrunes/RunesClient'),{ssr:false,loading});
 const GameView=dynamic(()=>import('./views/GameView'),{ssr:false,loading});
-// Feature shells render synchronously so title, shared CSS and local link menus
-// never wait for Neon canonical data or client-only module hydration.
-const StaticsView=dynamic(()=>import('../modular-v2/features/StatisticsV2'),{loading});
-const CultureView=dynamic(()=>import('../modular-v2/features/CultureV2'),{loading});
-const SearchView=dynamic(()=>import('../modular-v2/features/SearchV2'),{loading});
-const GovernanceView=dynamic(()=>import('../modular-v2/features/GovernanceV2'),{loading});
+// Core feature shells are bundled synchronously so route entry never stalls on a dynamic chunk.
+const StaticsView=StatisticsV2;
+const CultureView=CultureV2;
+const SearchView=SearchV2;
+const GovernanceView=GovernanceV2;
 const ManagementView=dynamic(()=>import('./GovernanceManagement'),{loading});
 
 function BlockedScopeRoute(){return <section className="loc-view"><h1>此頁面不屬於目前 Scope</h1><p>管理功能只在 admin Scope 提供。</p></section>;}
@@ -63,5 +66,5 @@ export default function LocApp({forcedView=null,forcedSection=null,forcedScope=n
     return VIEWS[state.view]||HOME_VIEWS[state.scope]||GenericScopeHomeV2;
   },[state]);
 
-  return <div className="loc-next-main" data-loc-scope={state.scope} data-loc-view={state.view}><ActiveView section={state.section}/></div>;
+  return <div className="loc-next-main" data-loc-scope={state.scope} data-loc-view={state.view}><Suspense fallback={<div className="loc-loading">載入頁面…</div>}><ActiveView section={state.section}/></Suspense></div>;
 }
