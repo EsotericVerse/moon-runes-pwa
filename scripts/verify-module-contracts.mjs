@@ -65,6 +65,8 @@ if(!governanceManagement.includes("function PeriodSettings({scopeId})")||!govern
 }
 
 const aggregateQuery=readFileSync(resolve(root,'app/loc/aggregate-query.js'),'utf8');
+const contentPolicy=readFileSync(resolve(root,'app/loc/content-policy.js'),'utf8');
+if(!/column:'content',operator:'neq',value:''/.test(contentPolicy))failures.push('content-policy: blank Galaxy content must remain invalid');
 const sharedDisplayModel=readFileSync(resolve(root,'app/modular-v2/work-display-model.v2.js'),'utf8');
 const searchViewModel=readFileSync(resolve(root,'app/modular-v2/features/SearchV2.jsx'),'utf8');
 if(!/workDisplayHeading/.test(sharedDisplayModel)||!/workDisplayHeading/.test(searchViewModel)||!/workDisplayHeading/.test(cultureView))failures.push('Work display heading must remain shared across Search and Culture');

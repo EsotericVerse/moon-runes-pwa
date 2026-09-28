@@ -7,6 +7,7 @@ export function isReferenceOnlyResource(row){
 export function publicContentFilters(filters=[]){
   return [
     ...(Array.isArray(filters)?filters:[]),
-    {column:'reference_only',operator:'eq',value:false}
+    {column:'reference_only',operator:'eq',value:false},
+    {column:'content',operator:'neq',value:''}
   ];
 }
