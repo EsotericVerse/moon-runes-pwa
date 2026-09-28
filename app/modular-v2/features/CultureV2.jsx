@@ -67,7 +67,6 @@ export default function CultureV2(){
 
   const rows=useMemo(()=>rowsOf(query.data,scopeId),[query.data,scopeId]);
   const [classificationMode,setClassificationMode]=useState(scopeId==='lunarunes'?'media':'source');
-  const [styleLevel,setStyleLevel]=useState('label');
   const [mediaDimension,setMediaDimension]=useState('type');
   const [selectedCategory,setSelectedCategory]=useState('');
   const [workPage,setWorkPage]=useState(0);
@@ -105,7 +104,7 @@ export default function CultureV2(){
       startDate:selectedWorkPeriod?.start_date,
       endDate:selectedWorkPeriod?.end_date
     }),
-    enabled:classificationScope==='lo3rwang'&&Boolean(selectedWorkPeriod?.start_date),
+    enabled:classificationScope==='lo3rwang'&&Boolean(selectedWorkPeriod?.start_date)&&(isLoc||classificationMode==='source'),
     staleTime:5*60_000
   });
 
@@ -131,7 +130,7 @@ export default function CultureV2(){
   const selectedGroup=categoryGroups.find(item=>item.category_key===selectedCategory)||null;
   const selectedCount=Number(selectedGroup?.item_count)||0;
   const periodWorksQuery=useQuery({
-    queryKey:['culture-period-works',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,classificationMode,styleLevel,mediaDimension,selectedCategory,workPage],
+    queryKey:['culture-period-works',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,classificationMode,mediaDimension,selectedCategory,workPage],
     queryFn:()=>classificationMode==='source'
       ?selectAuthorPeriodWorks({
         startDate:selectedWorkPeriod?.start_date,
@@ -155,8 +154,7 @@ export default function CultureV2(){
   const workPageCount=Math.max(1,Math.ceil(groupedCount/CULTURE_WORK_PAGE_SIZE));
 
   useEffect(()=>{
-    setClassificationMode(scopeId==='lunarunes'?'style':'source');
-    setStyleLevel('label');
+    setClassificationMode(scopeId==='lunarunes'?'media':'source');
     setMediaDimension('type');
     setSelectedCategory('');
     setWorkPage(0);
@@ -166,7 +164,7 @@ export default function CultureV2(){
   useEffect(()=>{
     setSelectedCategory('');
     setWorkPage(0);
-  },[classificationMode,styleLevel,mediaDimension,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date]);
+  },[classificationMode,mediaDimension,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date]);
 
   const periodVolumeByStart=useMemo(()=>{
     const map=new Map();
