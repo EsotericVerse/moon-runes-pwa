@@ -2,6 +2,8 @@
 
 import {neonPublicClient} from '../../loc/neon-client';
 import {useOffsetPagination} from '../use-offset-pagination.v2';
+import IncrementalLoadV2 from '../IncrementalLoadV2';
+import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import {getScopeV2,scopeHrefV2} from '../scope-registry.v2';
@@ -10,7 +12,6 @@ import LocGovernance,{LocGovernanceLaw,LOC_GOVERNANCE_SUBTITLE} from '../governa
 import LunaRunesGovernance,{LUNARUNES_GOVERNANCE_SUBTITLE} from '../governance/LunaRunesGovernance';
 import PersonalGovernance,{PERSONAL_GOVERNANCE_SUBTITLE} from '../governance/PersonalGovernance';
 
-const FAQ_PAGE_SIZE=10;
 
 function faqQuestion(row,index){
   return row?.question||row?.title||row?.prompt||row?.faq_question||`問題 ${index+1}`;
@@ -25,7 +26,7 @@ function faqCategory(row){
 function FaqView(){
   const page=useOffsetPagination({
     key:'governance-faq',
-    pageSize:FAQ_PAGE_SIZE,
+    pageSize:DEFAULT_LIST_BATCH_SIZE,
     loadPage:async(offset,limit)=>{
       const {data,error}=await neonPublicClient.schema('silver').from('faq_entries')
         .select('faq_id,category,question,answer')
@@ -37,7 +38,7 @@ function FaqView(){
       return {rows,hasMore:rows.length===limit};
     }
   });
-  const {rows,loading,error,hasMore}=page;
+  const {rows,loading,error,hasMore,loadNext}=page;
   return <section className="loc-view">
     <header className="loc-hero">
       <p className="loc-eyebrow">FAQ</p>
@@ -53,7 +54,7 @@ function FaqView(){
         <p>{faqAnswer(row)}</p>
       </article>)}
     </div>
-    {hasMore?<div className="scope-v2-load-sentinel" aria-live="polite">&lt; {loading?'載入中…':'…'} &gt;</div>:null}
+    <IncrementalLoadV2 hasMore={hasMore} loading={loading} error={error} onLoadMore={loadNext} label="還有更多 FAQ"/>
   </section>;
 }
 
