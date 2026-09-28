@@ -38,6 +38,7 @@ export default function ThemeSelectV2(){
 
   useEffect(()=>{
     if(themeId!==AUTO_THEME_ID)return undefined;
+    setNow(new Date());
     const timer=window.setInterval(()=>setNow(new Date()),30_000);
     return ()=>window.clearInterval(timer);
   },[themeId]);
