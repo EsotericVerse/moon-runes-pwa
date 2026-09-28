@@ -110,7 +110,7 @@ export default function CultureV2(){
 
 
   const mediaSnapshotQuery=useQuery({
-    queryKey:['culture-period-media-snapshot',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date]
+    queryKey:['culture-period-media-snapshot',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
     queryFn:()=>selectScopeMediaSnapshot(classificationScope,{
       startDate:selectedWorkPeriod?.start_date,
       endDate:selectedWorkPeriod?.end_date,
