@@ -135,34 +135,6 @@ const runeCore=makeProvider({
   searchFields:['rune_name','group_name','english_name','rune_description','archetype','char_action','positive_keywords','negative_keywords','extra_rules','extra_notes','positive_meaning','half_positive_meaning','half_reverse_meaning','reverse_meaning']
 });
 
-const runeKeywords=makeProvider({
-  id:'rune-keywords',
-  table:'silver.lrunes',
-  source:'符文關鍵詞',
-  scopeId:'lrunes',
-  idColumn:'record_id',
-  columns:['record_id','rune_number','keyword_group','keyword'],
-  searchFields:['keyword_group','keyword'],
-  filters:[
-    {column:'record_type',operator:'eq',value:'keyword'},
-    {column:'active',operator:'eq',value:true}
-  ]
-});
-
-const runeRules=makeProvider({
-  id:'rune-rules',
-  table:'silver.lrunes',
-  source:'符文規則',
-  scopeId:'lrunes',
-  idColumn:'record_id',
-  columns:['record_id','title','rule_text','before_text','after_text','note'],
-  searchFields:['title','rule_text','before_text','after_text','note'],
-  filters:[
-    {column:'record_type',operator:'eq',value:'rule'},
-    {column:'active',operator:'eq',value:true}
-  ]
-});
-
 const runeTimeline=makeProvider({
   id:'rune-timeline',
   table:'silver.lrunes_time',
@@ -180,44 +152,38 @@ const runeTimeline=makeProvider({
 
 const runeText=makeProvider({
   id:'rune-text',
-  table:'silver.lrunes',
+  table:'silver.lrunes_galaxy',
   source:'符文文字',
   scopeId:'lrunes',
-  idColumn:'record_id',
-  columns:['record_id','uid','content_type','source_name','title','createtime','source_id','target_id','ref_id','url','media_link'],
+  idColumn:'uid',
+  columns:['uid','content_type','source_name','title','createtime','source_id','target_id','ref_id','url','media_link'],
   searchFields:['title','content','source_name'],
   dateColumn:'createtime',
-  filters:[
-    {column:'record_type',operator:'eq',value:'galaxy'},
-    {column:'searchable',operator:'eq',value:true}
-  ]
+  filters:[{column:'searchable',operator:'eq',value:true}]
 });
 
 const runeMedia=makeProvider({
   id:'rune-media',
-  table:'silver.lrunes',
+  table:'silver.lrunes_galaxy_media',
   source:'符文多媒體',
   scopeId:'lrunes',
-  idColumn:'record_id',
-  columns:['record_id','media_id','galaxy_link','source_native_id','source_place','media_type','title','url','meta_tags','createtime'],
+  idColumn:'media_id',
+  columns:['media_id','galaxy_link','source_native_id','source_place','media_type','title','url','meta_tags','createtime'],
   searchFields:['title','meta_tags','media_type','url','source_native_id','source_place'],
   dateColumn:'createtime',
-  filters:[
-    {column:'record_type',operator:'eq',value:'galaxy_media'},
-    {column:'galaxy_link',operator:'is',value:null}
-  ]
+  filters:[{column:'galaxy_link',operator:'is',value:null}]
 });
 
 const runeMediaAll=makeProvider({
   id:'rune-media-all',
-  table:'silver.lrunes',
+  table:'silver.lrunes_galaxy_media',
   source:'符文多媒體',
   scopeId:'lrunes',
-  idColumn:'record_id',
-  columns:['record_id','media_id','galaxy_link','source_native_id','source_place','media_type','title','url','meta_tags','createtime'],
+  idColumn:'media_id',
+  columns:['media_id','galaxy_link','source_native_id','source_place','media_type','title','url','meta_tags','createtime'],
   searchFields:['title','meta_tags','media_type','url','source_native_id','source_place'],
   dateColumn:'createtime',
-  filters:[{column:'record_type',operator:'eq',value:'galaxy_media'}]
+  filters:[]
 });
 
 const faq=makeProvider({
@@ -232,12 +198,12 @@ const faq=makeProvider({
 
 const SCOPE_PROVIDERS=Object.freeze({
   lo3rwang:Object.freeze([authorTimeline,authorText,authorMedia]),
-  lrunes:Object.freeze([runeCore,runeKeywords,runeRules,runeTimeline,runeText,runeMedia])
+  lrunes:Object.freeze([runeCore,runeTimeline,runeText,runeMedia])
 });
 
 export const SEARCH_PROVIDERS=Object.freeze({
   lo3rwang:Object.freeze([authorText,authorMedia]),
-  '月之符文':Object.freeze([runeCore,runeKeywords,runeRules,runeTimeline,runeText,runeMedia]),
+  '月之符文':Object.freeze([runeCore,runeTimeline,runeText,runeMedia]),
   '治理':Object.freeze([faq])
 });
 
