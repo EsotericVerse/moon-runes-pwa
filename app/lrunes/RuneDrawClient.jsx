@@ -8,6 +8,7 @@ import { realMoonPhase } from '../loc/model/moon-phase';
 import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
 import {drawRuneSession} from './rune-draw-engine';
 import RuneSingleReading from './RuneSingleReading';
+import {RUNE_RITUAL_DELAY_MS,RUNE_RITUAL_STEP_MS,runeRitualMessages} from './rune-ritual';
 
 const ROTATION_CLASSES = ['rune-rotate-0', 'rune-rotate-90', 'rune-rotate-n90', 'rune-rotate-180'];
 const UI_SETTINGS_KEY = 'loc-ui-settings-v1';
@@ -29,14 +30,6 @@ const DRAW_PATHS = Object.freeze({
   ow3gs: scopeHrefV2('lunarunes','duel/ow3gs')
 });
 
-const RITUAL_MESSAGES = {
-  single: ['正在進行單卡占卜。', '正在找尋那命運之線……', '微弱的月光，會在漆黑的夜裡，帶領你找到方向。', '抽牌完成。'],
-  daily: ['正在進行每日抽牌。', '這是一張屬於今日節奏與提醒的指引牌。', '正在對照今日真實月相。', '今日月符已經抽取完成。'],
-  '2card': ['正在進行雙卡占卜。', '第一張卡牌為「因」，第二張卡牌為「果」。', '正在整理兩張牌的因果位置。', '抽牌完成。'],
-  '3card': ['正在進行三卡占卜。', '第一張為「源」，第二張為「轉」，第三張為「合」。', '正在整理源、轉、合的語法位置。', '抽牌完成。'],
-  '5card': ['正在進行五卡占卜。', '兩張過去成因、一個意外變化、兩張現在狀況。', '正在整理雙卡＋單卡＋雙卡的組合。', '抽牌完成。'],
-  ow3gs: ['正在進行 OW3gs 11 卡抽牌。', '1–6 建立事件描述層，7–11 進入核心判定。', '正在整理兩段模型。', '十一張命運絲線已經整理完成。']
-};
 
 async function fetchCoreRunes() {
   return selectRuneCatalog();
@@ -116,7 +109,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
   const selectedMode = useMemo(() => DRAW_TYPES.find(item => item.key === drawKey) || DRAW_TYPES[0], [drawKey]);
   const instantDraw = uiSettings?.draw_response === 'instant';
   const moonPhase = useMemo(() => realMoonPhase(), []);
-  const ritualMessages = RITUAL_MESSAGES[drawKey] || RITUAL_MESSAGES.single;
+  const ritualMessages = runeRitualMessages(drawKey);
 
   function enrichDraw(cards) {
     const numbers=cards.map(card => Number(card?.rune_number)).filter(Number.isInteger);
@@ -157,8 +150,8 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
       return;
     }
     setRitualStep(0);
-    [1, 2, 3].forEach(step => timers.current.push(setTimeout(() => setRitualStep(step), step * 1000)));
-    timers.current.push(setTimeout(finishDraw, 4000));
+    [1, 2, 3, 4].forEach(step => timers.current.push(setTimeout(() => setRitualStep(step), step * RUNE_RITUAL_STEP_MS)));
+    timers.current.push(setTimeout(finishDraw, RUNE_RITUAL_DELAY_MS));
   }
 
   useEffect(() => {
