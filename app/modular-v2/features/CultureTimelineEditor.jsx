@@ -15,7 +15,7 @@ const EDITABLE_TYPES=Object.freeze([
 const TYPE_LABEL=Object.freeze(Object.fromEntries(EDITABLE_TYPES));
 const BLANK=Object.freeze({
   record_id:'',record_type:'anchor',label:'',resource_id:'',note:'',time_date:'',
-  before_id:'0',after_id:'0',status:'',display_order:'',date_status:'exact',year_value:'',visibility:'',style_tags:''
+  before_id:'0',after_id:'0',status:'',display_order:'',date_status:'exact',year_value:'',visibility:''
 });
 
 function dateText(value){return value?String(value).slice(0,10):'';}
@@ -131,7 +131,6 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
         anchor_pair:null,
         date_status:null,
         year_value:null,
-        style_tags:type==='period'?String(draft.style_tags||'').trim()||null:null,
         updated_at:new Date().toISOString()
       };
       if(type==='anchor'){
@@ -220,7 +219,6 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
       <label><span>名稱</span><input className="scope-v2-search-input" value={draft.label||''} onChange={event=>change('label',event.target.value)} required/></label>
       <label><span>識別</span><input className="scope-v2-search-input" value={draft.resource_id||''} disabled={Boolean(selectedId)} onChange={event=>change('resource_id',event.target.value)} placeholder="留空自動產生"/></label>
       <label><span>說明</span><textarea className="scope-v2-search-input" value={draft.note||''} onChange={event=>change('note',event.target.value)}/></label>
-      {draft.record_type==='period'?<label><span>風格標籤</span><input className="scope-v2-search-input" value={draft.style_tags||''} onChange={event=>change('style_tags',event.target.value)} placeholder="時期風格標籤"/></label>:null}
 
       {draft.record_type==='anchor'?<div className="scope-v2-stat-controls">
         <label><span>日期</span><input className="scope-v2-select" type="date" value={dateText(draft.time_date)} onChange={event=>change('time_date',event.target.value)}/></label>
