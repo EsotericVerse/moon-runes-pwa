@@ -81,7 +81,7 @@ const runeWorkSearch=makeDatabaseWorkProvider({
   scopeId:'lrunes',
   table:'silver.lrunes',
   source:'符文文字',
-  columns:'record_id,uid,category,content_type,source_name,title,createtime,source_id,target_id,ref_id,url,media_link',
+  columns:'record_id,uid,content_type,source_name,title,createtime,source_id,target_id,ref_id,url,media_link',
   filters:[
     {column:'record_type',operator:'eq',value:'galaxy'},
     {column:'searchable',operator:'eq',value:true}
