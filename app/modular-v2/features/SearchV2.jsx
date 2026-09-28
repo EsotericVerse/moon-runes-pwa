@@ -16,7 +16,7 @@ import {featureDataErrorMessage} from '../feature-data-state.v2';
 import ContentEditorV2 from '../ContentEditorV2';
 import SearchHighlightV2 from '../SearchHighlightV2';
 import {selectGalaxyContent,selectGalaxyIdentity} from '../../loc/aggregate-query';
-import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayText,workDisplayTitle} from '../work-display-model.v2';
+import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model.v2';
 import IncrementalLoadV2 from '../IncrementalLoadV2';
 import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
 
@@ -54,12 +54,7 @@ function toResult(row,source,q,scopeId){
   const explicitTitle=workDisplayText(row.title||row.name||row.display_title||row.label||row.rune_name||row.song_id||row.id||'').trim();
   const fallbackTitle=isMedia?MEDIA_FALLBACK_TITLE:WORK_FALLBACK_TITLE;
   const title=(isGalaxy||isMedia)
-    ?workDisplayTitle({
-      title:explicitTitle,
-      preview:excerpt||row.content||row.meta_tags||'',
-      fallback:fallbackTitle,
-      limit:80
-    })
+    ?workDisplayHeading(row,{media:isMedia,fallback:fallbackTitle,limit:80})
     :(explicitTitle||(excerpt?snippet(excerpt,q):fallbackTitle));
   const bodyField=['summary','display_text','excerpt','content','meta_tags','description','interpretation','ai_summary','retrieval_text','text'].find(field=>typeof row[field]==='string'&&row[field].trim())||'';
   const displaySource=isGalaxy&&row.source_name?String(row.source_name):source;

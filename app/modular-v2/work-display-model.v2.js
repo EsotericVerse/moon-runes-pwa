@@ -31,3 +31,29 @@ export function workDisplayTitle({
 export function workDisplaySource(row={},fallback=''){
   return workDisplayText(row?.source_name||row?.group_label||fallback).trim();
 }
+
+
+export function workDisplayHeading(row={},{
+  media=null,
+  fallback='',
+  limit=80
+}={}){
+  const isMedia=media===null?Boolean(row?.media_id):Boolean(media);
+  const explicitTitle=
+    row?.title||
+    row?.display_title||
+    row?.name||
+    '';
+  const preview=
+    row?.excerpt||
+    row?.content||
+    row?.meta_tags||
+    row?.description||
+    '';
+  return workDisplayTitle({
+    title:explicitTitle,
+    preview,
+    fallback:fallback||(isMedia?MEDIA_FALLBACK_TITLE:WORK_FALLBACK_TITLE),
+    limit
+  });
+}

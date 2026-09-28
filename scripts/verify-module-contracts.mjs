@@ -65,6 +65,9 @@ if(!governanceManagement.includes("function PeriodSettings({scopeId})")||!govern
 }
 
 const aggregateQuery=readFileSync(resolve(root,'app/loc/aggregate-query.js'),'utf8');
+const sharedDisplayModel=readFileSync(resolve(root,'app/modular-v2/work-display-model.v2.js'),'utf8');
+const searchViewModel=readFileSync(resolve(root,'app/modular-v2/features/SearchV2.jsx'),'utf8');
+if(!/workDisplayHeading/.test(sharedDisplayModel)||!/workDisplayHeading/.test(searchViewModel)||!/workDisplayHeading/.test(cultureView))failures.push('Work display heading must remain shared across Search and Culture');
 if(!aggregateQuery.includes("columns:'uid,source_name,createtime,title,content'")){
   failures.push('aggregate-query: paged Galaxy rows must carry content for title fallback');
 }

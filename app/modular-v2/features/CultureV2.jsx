@@ -21,7 +21,7 @@ import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
 import WorkFullTextV2 from '../WorkFullTextV2';
-import {WORK_FALLBACK_TITLE,workDisplayText,workDisplayTitle} from '../work-display-model.v2';
+import {workDisplayHeading,workDisplayText} from '../work-display-model.v2';
 import IncrementalLoadV2 from '../IncrementalLoadV2';
 import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
 import ContentEditorV2 from '../ContentEditorV2';
@@ -417,12 +417,7 @@ export default function CultureV2(){
                 <div key={selectedCategory} ref={workScrollRef} className='scope-v2-culture-source-work-scroll'>
                   {workRows.map((work,index)=><WorkSummaryCardV2
                     key={work.key||work.uid||work.entry_id||String(work.createtime||work.created_at)+'-'+index}
-                    title={workDisplayTitle({
-                      title:work.title,
-                      content:work.content,
-                      fallback:WORK_FALLBACK_TITLE,
-                      limit:80
-                    })}
+                    title={workDisplayHeading(work,{media:false,limit:80})}
                     source={work.source_name||work.group_label||''}
                     date={work.display_date||formatCultureDateTime(work.createtime||work.created_at)}
                     body={work.description||work.media_metadata_text||''}
