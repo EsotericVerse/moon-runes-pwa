@@ -3,8 +3,7 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {searchNeonRows} from '../../loc/neon-search';
-import {selectNeonRowById,updateNeonRows} from '../../loc/neon-repository';
-import {listResourceVisibilityFor,saveResourceVisibility,visibilityDraft} from '../../loc/resource-visibility';
+import {neonAuthClient} from '../../loc/neon-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {getSearchCollection} from '../../loc/search-collections';
 import FeaturePageV2 from '../FeaturePageV2';
@@ -15,8 +14,29 @@ import {scopeHrefV2} from '../scope-registry.v2';
 import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation.v2';
 import {featureDataErrorMessage} from '../feature-data-state.v2';
 import ContentEditorV2 from '../ContentEditorV2';
+import SearchHighlightV2 from '../SearchHighlightV2';
 import {selectGalaxyContent,selectGalaxyIdentity} from '../../loc/aggregate-query';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayText,workDisplayTitle} from '../work-display-model.v2';
+import {clearRuntimeTextIndexes} from '../../loc/text-engine.mjs';
+
+
+function authRelation(table){
+  const [schema,name]=String(table).split('.');
+  return neonAuthClient.schema(schema).from(name);
+}
+async function selectNeonRowById(table,{idColumn,id,columns}={}){
+  const {data,error}=await authRelation(table).select(columns).eq(idColumn,String(id)).limit(1);
+  if(error)throw new Error(error.message||('Neon SELECT '+table+' failed'));
+  return data?.[0]||null;
+}
+async function updateNeonRows(table,values,{filters=[]}={}){
+  let query=authRelation(table).update(values);
+  for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
+  const {data,error}=await query.select('*');
+  if(error)throw new Error(error.message||('Neon UPDATE '+table+' failed'));
+  clearRuntimeTextIndexes();
+  return data||[];
+}
 
 const norm=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
 function rowText(row){return Object.values(row||{}).filter(value=>typeof value==='string').join(' ')}
@@ -26,8 +46,7 @@ function snippet(text,q){
   const start=Math.max(0,(index<0?0:index)-70);
   return `${start?'…':''}${raw.slice(start,start+220)}${raw.length>start+220?'…':''}`;
 }
-function resultKey(scope,type,id){return String(scope)+':'+String(type)+':'+String(id)}
-function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
+function toResult(row,source,q,scopeId){
   const text=rowText(row);
   const isGalaxy=Boolean(row.uid);
   const isMedia=Boolean(row.media_id);
@@ -56,8 +75,6 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
   const scope=row.scope_id||scopeId;
   const resourceType=(row.uid)?'galaxy':row.media_id?'galaxy_media':'';
   const resourceId=row.uid||row.media_id||'';
-  const settingsKey=resourceType&&resourceId?resultKey(scope,resourceType,resourceId):'';
-  const settings=settingsMap.get(settingsKey)||null;
   const runeScope=scope==='lrunes'||scope==='lunarunes';
   const editableTable=resourceType
     ?(runeScope
@@ -75,8 +92,7 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
     key:identity?source+'-'+identity:source+'-'+title+'-'+String(body).slice(0,40),
     source:displaySource,title:String(title),
     date:row.date||row.createtime||row.time_date||row.record_date||row.UpdateTime||row.updated_at||'',
-    snippet:explicitTitle?snippet(body,q):'',bodyText:explicitTitle?String(body):'',
-    display:String(row.display||'summary'),scopeId:scope,resourceType,resourceId,settingsKey,settings,
+    snippet:explicitTitle?snippet(body,q):'',scopeId:scope,resourceType,resourceId,
     editableTable,editableIdColumn,editResourceId,editableField,isScopeCard,href,
     relationLinks:resourceType==='galaxy'
       ?galaxyRelationLinks(scope,row)
@@ -137,7 +153,6 @@ export default function SearchV2(){
   const [fullTextLoading,setFullTextLoading]=useState(false);
   const searchId=useRef(0);
   const matchedQueryRef=useRef('');
-  const visibilityRef=useRef(new Map());
   const pageSize=20;
   const collection=useMemo(()=>getSearchCollection(scope.searchCollection),[scope.searchCollection]);
 
@@ -158,24 +173,10 @@ export default function SearchV2(){
       const searchRows=search.rows;
 
       matchedQueryRef.current=q;
-      const pageResources=searchRows.map(({row})=>{
-        const resourceType=(row.uid)?'galaxy':row.media_id?'galaxy_media':'';
-        const resourceId=row.uid||row.media_id||'';
-        return {scope:row.scope_id||scopeId,resourceType,resourceId};
-      }).filter(item=>item.resourceType&&item.resourceId);
-      let visibilityRows=[];
-      try{visibilityRows=await listResourceVisibilityFor(pageResources);}catch{}
-      const visibilityMap=new Map();
-      for(const item of visibilityRows){
-        visibilityMap.set(resultKey(item.scope,item.resource_type,item.resource_id),item);
-      }
-      visibilityRef.current=visibilityMap;
       const converted=[];const seen=new Set();
       for(const {row,source} of searchRows){
-        const result=toResult(row,source,q,collection.id,scopeId,visibilityMap);
+        const result=toResult(row,source,q,scopeId);
         if(!result||seen.has(result.key))continue;
-        if(result.display==='hidden'&&!account.canManageScopeSync(result.scopeId))continue;
-        if(result.settings&&result.settings.visibility!=='public'&&!account.canManageScopeSync(result.scopeId))continue;
         seen.add(result.key);converted.push(result);
       }
       setResults(mergeSummaryResults(converted));
@@ -214,11 +215,7 @@ export default function SearchV2(){
       }
       if(id!==searchId.current)return;
       if(!detail)throw new Error('找不到這筆文字。');
-      const visibilityRows=await listResourceVisibilityFor([{scope:detailScope,resourceType:'galaxy',resourceId:detail.uid}]).catch(()=>[]);
-      const settings=visibilityRows[0]||null;
-      if(settings&&settings.visibility!=='public'&&!account.canManageScopeSync(detailScope))throw new Error('這筆文字目前不公開。');
-      const settingsMap=new Map(settings?[[resultKey(detailScope,'galaxy',detail.uid),settings]]:[]);
-      const result=toResult({...detail,resolved_links:detail.links||[]},detail.source_name||'文字展示','',collection.id,detailScope,settingsMap);
+      const result=toResult({...detail,resolved_links:detail.links||[]},detail.source_name||'文字展示','',detailScope);
       setResults([result]);
       setFullTextKey(result.key);
       setFullText(workDisplayText(detail.content||''));
@@ -267,9 +264,8 @@ export default function SearchV2(){
     setEditingKey(result.key);setEditError('');
     setEditDraft(null);
     try{
-      const runeScope=result.scopeId==='lrunes'||result.scopeId==='lunarunes';
       const contentColumns=result.resourceType==='galaxy'
-        ?'uid,title,content'
+        ?'uid,title,content,searchable'
         :'media_id,title,meta_tags';
       const fullRow=await selectNeonRowById(result.editableTable,{
         idColumn:result.editableIdColumn,
@@ -280,7 +276,7 @@ export default function SearchV2(){
       setEditDraft({
         title:String(fullRow.title??result.title??''),
         body:String(fullRow[result.editableField]??''),
-        ...visibilityDraft(result.settings||{})
+        hidden:result.resourceType==='galaxy'&&fullRow.searchable===false
       });
     }catch(exception){
       setEditingKey('');
@@ -292,7 +288,6 @@ export default function SearchV2(){
     setEditBusy(true);setEditError('');
     try{
       if(!account.canManageScopeSync(result.scopeId))throw new Error('沒有修改此內容的權限。');
-      const runeScope=result.scopeId==='lrunes'||result.scopeId==='lunarunes';
       const contentPatch={
         title:editDraft.title,
         [result.editableField]:editDraft.body,
@@ -300,15 +295,7 @@ export default function SearchV2(){
       };
       const contentFilters=[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId}];
       await updateNeonRows(result.editableTable,contentPatch,{filters:contentFilters});
-      let settings=result.settings||null;
-      if(account.canManageScopeSync(result.scopeId)){
-        const record=await saveResourceVisibility({
-          scope:result.scopeId,resourceType:result.resourceType,resourceId:result.resourceId,draft:editDraft
-        });
-        visibilityRef.current.set(result.settingsKey,record);
-        settings=record;
-      }
-      setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:editDraft.title,bodyText:'',snippet:'',settings}));
+      setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:editDraft.title,snippet:''}));
       if(fullTextKey===result.key)setFullText(editDraft.body);
       setEditingKey('');setEditDraft(null);
     }catch(exception){setEditError(String(exception?.message||exception||'儲存失敗。'))}
@@ -337,21 +324,19 @@ export default function SearchV2(){
     <div className="scope-v2-list">
       {results.map(row=>{
         const editable=Boolean(row.editableTable&&row.editableField&&account.canManageScopeSync(row.scopeId));
-        const canSearchSettings=account.canManageScopeSync(row.scopeId);
-        const settings=row.settings||{};
         const draft=editingKey===row.key?editDraft:null;
         return <WorkSummaryCardV2
           key={row.key}
           title={row.title}
           source={row.source}
           date={row.date}
-          body={row.snippet}
-          hidden={Boolean(settings.visibility&&settings.visibility!=='public')}
+          body={<SearchHighlightV2 text={row.snippet} query={matchedQueryRef.current}/>} 
+          hidden={false}
           relationLinks={row.relationLinks||[]}
-          links={settings.show_link!==false?(row.links||[]):[]}
+          links={row.links||[]}
           destinations={row.destinations}
-          showSource={settings.show_source!==false}
-          showLinks={settings.show_link!==false}
+          showSource
+          showLinks
         >
           {row.resourceType==='galaxy'?<WorkFullTextV2
             open={fullTextKey===row.key}
@@ -366,7 +351,7 @@ export default function SearchV2(){
             setDraft={setEditDraft}
             busy={editBusy}
             error={editError}
-            showVisibility={canSearchSettings}
+            showVisibility={row.resourceType==='galaxy'}
             onSave={()=>saveEditing(row)}
             onCancel={()=>{setEditingKey('');setEditDraft(null);setEditError('')}}
           />:null}

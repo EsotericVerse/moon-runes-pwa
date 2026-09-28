@@ -1,10 +1,85 @@
 import {ScopeRankingResponseSchema} from './scope-feature-contracts';
-import {selectNeonAllRows,selectNeonRows} from './neon-repository';
-import {selectScopeTimeRows} from './scope-time';
 import {processKeywordObservationRows,processKeywordTableRows,countKeywordHits,observeKeywordHits,selectKeywordCatalog} from './keyword-classifier';
 import {selectSourceCatalog,selectSourceWeekly} from './aggregate-query';
 import {selectManagedScopeIds} from './scope-list';
 import {publicContentFilters} from './content-policy';
+import {neonPublicClient} from './neon-client';
+
+
+function __relation(table){
+  const [schema,name]=String(table).split('.');
+  return neonPublicClient.schema(schema).from(name);
+}
+function __filters(query,filters=[]){
+  for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
+  return query;
+}
+function __orders(query,orders=[]){
+  for(const order of orders)query=query.order(order.column,{ascending:order.ascending??true,nullsFirst:order.nullsFirst});
+  return query;
+}
+async function __select(table,{columns='*',filters=[],orFilter='',orders=[],limit=null,offset=0,range=null,count=null}={}){
+  let query=__relation(table).select(columns,count?{count}:undefined);
+  query=__filters(query,filters);
+  if(orFilter)query=query.or(orFilter);
+  query=__orders(query,orders);
+  if(Array.isArray(range)&&range.length===2)query=query.range(range[0],range[1]);
+  else if(Number.isFinite(limit))query=limit>0?query.range(offset,offset+limit-1):query.limit(0);
+  const {data,error,count:total}=await query;
+  if(error)throw new Error(error.message||('Neon SELECT '+table+' failed'));
+  return {rows:data||[],count:total};
+}
+async function selectNeonRows(table,options={}){return __select(table,options);}
+async function selectNeonAllRows(table,options={}){
+  const {limit,offset,range,count,...rest}=options||{};
+  const rows=[];
+  let cursor=0;
+  const size=500;
+  while(true){
+    const page=await __select(table,{...rest,limit:size,offset:cursor});
+    rows.push(...page.rows);
+    if(page.rows.length<size)break;
+    cursor+=page.rows.length;
+  }
+  return {rows,count:rows.length};
+}
+
+
+const PERIOD_TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,time_date,anchor_pair,date_status,year_value';
+function periodDate(row){
+  if(row?.time_date)return String(row.time_date).slice(0,10);
+  const year=Number(row?.year_value);
+  return String(row?.date_status||'')==='year_only'&&Number.isInteger(year)&&year>0?`${year}-01-01`:null;
+}
+async function selectPeriodRanges(scopeId){
+  const result=await selectNeonAllRows(`silver.${scopeId}_time`,{
+    columns:PERIOD_TIME_COLUMNS,
+    filters:[{column:'record_type',operator:'in',value:['anchor','period']}]
+  });
+  const anchors=new Map(result.rows.filter(row=>row.record_type==='anchor'&&row.resource_id).map(row=>[String(row.resource_id),row]));
+  return result.rows.filter(row=>row.record_type==='period').map(row=>{
+    const [before='0',after='0']=String(row.anchor_pair||'0,0').split(',',2).map(item=>String(item||'0').trim()||'0');
+    const start=before==='0'?null:periodDate(anchors.get(before));
+    const endBoundary=after==='0'?null:periodDate(anchors.get(after));
+    let end=null;
+    if(endBoundary){
+      const date=new Date(endBoundary+'T00:00:00Z');
+      date.setUTCDate(date.getUTCDate()-1);
+      end=date.toISOString().slice(0,10);
+    }
+    const id=String(row.resource_id||row.record_id||'');
+    return {
+      ...row,
+      entry_type:'period',
+      entry_key:'period:'+id,
+      period:id,
+      title:row.label||id,
+      order_no:row.display_order,
+      start_date:start,
+      end_date:end
+    };
+  });
+}
 
 const RANKING_TYPES=Object.freeze({
   loc:Object.freeze(['source']),
@@ -29,30 +104,11 @@ function dateFilters(range,column='createtime'){
   return filters;
 }
 
-async function authorStatisticsExclusions(){
-  const {rows}=await selectNeonAllRows('silver.resource_visibility',{
-    columns:'resource_type,resource_id',
-    filters:[
-      {column:'scope',operator:'eq',value:'lo3rwang'},
-      {column:'statistics_included',operator:'eq',value:false}
-    ]
-  });
-  const galaxy=new Set(),media=new Set();
-  for(const row of rows){
-    const type=String(row.resource_type||'');
-    const id=String(row.resource_id||'').trim();
-    if(!id)continue;
-    if(type==='galaxy'||type==='work')galaxy.add(id);
-    else if(type==='galaxy_media'||type==='media'||type==='song_version')media.add(id);
-  }
-  return {galaxy,media};
-}
-
 async function resolvePeriod(scopeId,period){
   const value=String(period||'').trim();
   if(!value||value==='all')return null;
   const dataScope=scopeId==='lunarunes'?'lrunes':scopeId;
-  const rows=await selectScopeTimeRows(dataScope);
+  const rows=await selectPeriodRanges(dataScope);
   return rows.find(row=>row.entry_type==='period'&&(String(row.period||'')===value||String(row.entry_key||'')===value))||null;
 }
 
@@ -75,14 +131,12 @@ function addKeywordCounts(map,rows,source,period){
 async function authorKeywords(period,rangeOverride){
   const range=rangeOverride===undefined?await resolvePeriod('lo3rwang',period):rangeOverride;
   const filters=dateFilters(range,'createtime');
-  const exclusions=await authorStatisticsExclusions();
   const map=new Map();
   await processKeywordTableRows('silver.lo3rwang_galaxy',{
     scopeId:'lo3rwang',
     columns:'uid,title,content,createtime',
     filters:publicContentFilters(filters),
     orders:[{column:'createtime',ascending:true}],
-    rowFilter:row=>!exclusions.galaxy.has(String(row.uid||'')),
     onCounts:rows=>addKeywordCounts(map,rows,'lo3rwang',period)
   });
   const mediaResult=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
@@ -90,7 +144,7 @@ async function authorKeywords(period,rangeOverride){
     filters
   });
   addKeywordCounts(map,await countKeywordHits(
-    mediaResult.rows.filter(row=>!exclusions.media.has(String(row.media_id||''))),
+    mediaResult.rows,
     'lo3rwang'
   ),'lo3rwang',period);
   return [...map.values()];
@@ -98,8 +152,7 @@ async function authorKeywords(period,rangeOverride){
 
 async function authorSources(period,rangeOverride){
   const range=rangeOverride===undefined?await resolvePeriod('lo3rwang',period):rangeOverride;
-  const exclusions=await authorStatisticsExclusions();
-  const excludedIds=[...exclusions.galaxy];
+  const excludedIds=[];
   const map=new Map();
   if(!range){
     const result=await selectSourceCatalog({scopeId:'lo3rwang',excludedIds});
@@ -188,9 +241,8 @@ function splitMediaTags(value){
 
 async function authorMedia(period,type,rangeOverride){
   const range=rangeOverride===undefined?await resolvePeriod('lo3rwang',period):rangeOverride;
-  const exclusions=await authorStatisticsExclusions();
   const map=new Map();
-  if(!range&&type==='media_type'&&exclusions.media.size===0){
+  if(!range&&type==='media_type'){
     const summary=await selectNeonRows('silver.lo3rwang',{
       columns:'id,media_counts',
       filters:[{column:'id',operator:'eq',value:'lo3rwang'}],
@@ -220,7 +272,6 @@ async function authorMedia(period,type,rangeOverride){
     filters:dateFilters(range,'createtime')
   });
   for(const row of rows){
-    if(exclusions.media.has(String(row.media_id||'')))continue;
     if(type==='media_type')increment(map,type,row.media_type,{source:'lo3rwang',period:period||'all'});
     else for(const tag of splitMediaTags(row.meta_tags))increment(map,type,tag,{source:'lo3rwang',period:period||'all'});
   }
@@ -322,21 +373,19 @@ async function keywordDiagnosticsForRange(id,range){
   const state=createKeywordDiagnostics();
   const dateRange=dateFilters(range,'createtime');
   if(id==='lo3rwang'){
-    const exclusions=await authorStatisticsExclusions();
-    await processKeywordObservationRows('silver.lo3rwang_galaxy',{
+      await processKeywordObservationRows('silver.lo3rwang_galaxy',{
       scopeId:'lo3rwang',
       columns:'uid,title,content,source_name,createtime',
       filters:dateRange,
       orders:[{column:'createtime',ascending:true}],
-      rowFilter:row=>!exclusions.galaxy.has(String(row.uid||'')),
-      onObserved:rows=>addKeywordObservedRows(state,rows)
+        onObserved:rows=>addKeywordObservedRows(state,rows)
     });
     const media=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
       columns:'media_id,title,meta_tags,media_type,createtime',
       filters:dateRange
     });
     addKeywordObservedRows(state,await observeKeywordHits(
-      media.rows.filter(row=>!exclusions.media.has(String(row.media_id||''))),
+      media.rows,
       'lo3rwang'
     ));
   }else if(id==='lunarunes'){
@@ -383,7 +432,7 @@ function todayInTaipei(){
 async function resolveComparisonRanges(scopeId,period){
   if(scopeId==='loc')return null;
   const dataScope=scopeId==='lunarunes'?'lrunes':scopeId;
-  const rows=(await selectScopeTimeRows(dataScope))
+  const rows=(await selectPeriodRanges(dataScope))
     .filter(row=>row.entry_type==='period'&&row.start_date)
     .sort((a,b)=>String(a.start_date||'').localeCompare(String(b.start_date||''))||Number(a.order_no||0)-Number(b.order_no||0));
   let selected=null;

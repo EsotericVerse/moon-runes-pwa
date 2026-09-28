@@ -2,7 +2,6 @@
 
 import {getMediaSearchProviders,getSearchProviders} from './search-providers';
 import {selectManagedScopeIds} from './scope-list';
-import {getDatabaseWorkSearchProviders} from './database-work-search';
 
 const SEARCH_PAGE_SIZE=20;
 
@@ -61,10 +60,7 @@ export async function searchNeonRows(collectionId,query,{
   const scopeIds=collectionId==='all'?await selectManagedScopeIds():[];
   const providers=mediaOnly
     ?getMediaSearchProviders(collectionId,scopeIds)
-    :[
-      ...getDatabaseWorkSearchProviders(collectionId,scopeIds),
-      ...getSearchProviders(collectionId,scopeIds).filter(provider=>!['author-text','rune-text'].includes(provider.id))
-    ];
+    :getSearchProviders(collectionId,scopeIds);
   const cards=mediaOnly?[]:scopeCards(q,collectionId);
   const failures=[];
 

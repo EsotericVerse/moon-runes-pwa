@@ -29,7 +29,7 @@ const keywordClassifier=read(files.keywordClassifier);
 for(const token of ['selectKeywordCatalog','countKeywordHits','observeKeywordHits','silver.runes'])if(!keywordClassifier.includes(token))failures.push(`keyword catalog: missing ${token}`);
 for(const token of ['SPREAD_WEIGHTS','DIRECTION_FACTOR','POLARITY_SCORE','weighted','GUIDANCE_RANGES'])if(guidance.includes(token))failures.push(`semantic state: forbidden weighted-score token ${token}`);
 const loader=read(files.canonicalLoader);
-for(const token of ['selectNeonCatalog','silver.runes','selectRuneCatalog'])if(!loader.includes(token))failures.push(`canonical rune repository: missing ${token}`);
+for(const token of ['neonPublicClient','selectRuneCatalog'])if(!loader.includes(token))failures.push(`canonical rune repository: missing ${token}`);
 for(const path of Object.values(files)){
   const source=read(path);
   if(['data/json','runtime_json_documents','LOC_DATA','canonical/runes','fetchNeonData'].some(token=>source.includes(token)))failures.push(`${path}: retired data-path/JSON identifier remains`);
@@ -37,7 +37,7 @@ for(const path of Object.values(files)){
 for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs'])if(fs.existsSync(retired))failures.push(`${retired}: retired path loader returned`);
 
 const search=read(files.search);
-for(const token of ['getSearchProviders','getMediaSearchProviders','getDatabaseWorkSearchProviders','provider.search'])if(!search.includes(token))failures.push(`search: missing Current provider contract ${token}`);
+for(const token of ['getSearchProviders','getMediaSearchProviders','provider.search'])if(!search.includes(token))failures.push(`search: missing Current provider contract ${token}`);
 for(const path of [files.search,files.searchView,files.canonicalLoader]){
   const source=read(path);
   if(/columns:\s*['"]\*['"]|JSON\.stringify|canonical_payload|SEARCH_(?:INDEX|TABLE)_CACHE|memoryCache/.test(source))failures.push(`${path}: forbidden JSON read or retained cache remains`);

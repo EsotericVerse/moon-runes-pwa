@@ -1,14 +1,14 @@
 'use client';
 
-import {selectNeonCatalog} from './neon-repository';
+import {neonPublicClient} from './neon-client';
 
 const SCOPE_ID_PATTERN=/^[a-z][a-z0-9]*$/;
 
 export async function selectManagedScopes(){
-  const {rows}=await selectNeonCatalog('silver.manage',{
-    columns:'id,role',
-    orders:[{column:'id',ascending:true}]
-  });
+  const {data:rows,error}=await neonPublicClient.schema('silver').from('manage')
+    .select('id,role')
+    .order('id',{ascending:true});
+  if(error)throw new Error(error.message||'Neon manage read failed');
   const scopes=new Map();
   for(const row of rows){
     const id=String(row.id||'').trim();

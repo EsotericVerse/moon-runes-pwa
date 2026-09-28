@@ -34,7 +34,6 @@ for(const path of [
   'app/loc/model/rune-graph-core.js',
   'app/loc/neon-culture-client.js',
   'app/loc/neon-ranking-client.js',
-  'app/loc/neon-repository.js',
   'app/loc/text-engine.mjs',
   'assets/lunarunes/cards/65_玄.png',
   'assets/lunarunes/cards/66_命.png',
@@ -61,8 +60,8 @@ for(const token of ["const intersectionStart=Math.max(personalStartTime,runeStar
 for(const retired of ["Math.min(runeStartTime,personalStartTime,...validTimes)","personal.map((row,index)=>marker","runes.map((row,index)=>marker"]){
   if(cultureTimeline.includes(retired))failures.push(`LOC Culture: historical/global Current river regression returned ${retired}`);
 }
-if(!governanceManagement.includes("scopeId!=='loc'?<CultureTimelineEditor")){
-  failures.push('LOC Culture: Period settings must not run for LOC');
+if(!governanceManagement.includes("function PeriodSettings({scopeId})")||!governanceManagement.includes("if(scopeId==='loc')return null;")){
+  failures.push('LOC Culture: Period settings must remain Scope-only and must not run for LOC');
 }
 
 const aggregateQuery=readFileSync(resolve(root,'app/loc/aggregate-query.js'),'utf8');
@@ -75,11 +74,10 @@ if(/columns:['"][^'"]*content[^'"]*(?:url|media_link)|columns:['"][^'"]*(?:url|m
 if(/galaxy_preview|content_preview/.test(aggregateQuery))failures.push('aggregate-query: stored preview dependency returned');
 
 const runeRepository=readFileSync(resolve(root,'app/loc/rune-repository.js'),'utf8');
-for(const token of ['selectNeonCatalog','silver.runes','selectRuneCatalog','selectRuneKeywordCatalog','updateRuneKeywords'])if(!runeRepository.includes(token))failures.push(`Rune repository: missing canonical contract ${token}`);
+for(const token of ['neonPublicClient','selectRuneCatalog','selectRuneKeywordCatalog'])if(!runeRepository.includes(token))failures.push(`Rune repository: missing canonical contract ${token}`);
 for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs','app/loc/neon-context-client.js','app/modular-v2/features/ContextV2.jsx','app/modular-v2/features/ContextWorkbenchV2.jsx','app/modular-v2/modules/context-graph/ContextGraphV2.jsx'])if(existsSync(resolve(root,retired)))failures.push(`retired path-loader returned: ${retired}`);
 if(['LOC_DATA','canonical/runes','fetchNeonData','runtime_json_documents','fetchLocJson','fetchLocDataSegments'].some(token=>runeRepository.includes(token)))failures.push('Rune repository: legacy path/JSON loader semantics returned');
 
-if(!/z\.enum/.test(readFileSync(resolve(root,'app/loc/neon-repository.js'),'utf8')))failures.push('Neon repository: Zod allowlist missing');
 for(const [client,contract] of [
   ['app/loc/neon-culture-client.js','ScopeCultureResponseSchema'],
   ['app/loc/neon-ranking-client.js','ScopeRankingResponseSchema']
@@ -96,4 +94,4 @@ if(!/searchNeonRows\(/.test(readFileSync(resolve(root,'app/modular-v2/features/S
 if(!runesClient.includes('selectRuneCatalog()'))failures.push('RunesClient: canonical runes must load through the domain rune repository');
 
 if(failures.length){console.error('[module-contracts] failures:\\n'+failures.map(item=>`- ${item}`).join('\\n'));process.exit(1);}
-console.log('[module-contracts] imports, canonical routes and Neon module contracts verified');
+console.log('[module-contracts] imports, canonical routes and Neon client contracts verified');

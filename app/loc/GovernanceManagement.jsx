@@ -1,32 +1,33 @@
 'use client';
 
-import {useState} from 'react';
+import {useEffect,useMemo,useState} from 'react';
+import Select from 'react-select';
 import {useNeonAccount} from './use-neon-account';
 import {useScopeRuntimeV2} from '../modular-v2/use-scope-runtime.v2';
 import {getScopeV2} from '../modular-v2/scope-registry.v2';
-import ScopeBasicSettings from './ScopeBasicSettings';
 import ManagementArticlePublisher from './ManagementArticlePublisher';
 import ManagementImportPanel from './ManagementImportPanel';
 import RuneManagementPanel from './RuneManagementPanel';
 import CultureTimelineEditor from '../modular-v2/features/CultureTimelineEditor';
 import KeywordSettingsV2 from '../modular-v2/features/KeywordSettingsV2';
-import SourceSettingsV2 from '../modular-v2/features/SourceSettingsV2';
+import StyleKeywordSettingsV2 from '../modular-v2/features/StyleKeywordSettingsV2';
+import LunaRunesStyleModelV2 from '../modular-v2/features/LunaRunesStyleModelV2';
 
 const LOGIN_COPY={
   loc:{
     eyebrow:'LOC Management',
     title:'LOC 管理登入',
-    description:'管理 LOC 框架、治理與全域設定。LOC 採自己的 Copyleft／GPL 治理，不代表其他內容必須相同。'
+    description:'LOC 的系統管理入口位於 admin.lo3rwang.cc；Scope 內容管理請由各 Scope 的治理頁進入。'
   },
   lunarunes:{
     eyebrow:'LunaRunes Management',
     title:'LunaRunes 管理登入',
-    description:'管理符號式語言、Canon、每日符文、數位資產與 LunaRunes 設定。'
+    description:'管理符號式語言的作品、時期、關鍵詞與每日符文。'
   },
   lo3rwang:{
     eyebrow:'Personal Management',
     title:'lo3rwang 個人管理登入',
-    description:'管理個人作品、來源、時期、匯入與發表內容。'
+    description:'管理個人作品、來源、時期、匯入與風格關鍵詞。'
   }
 };
 
@@ -50,60 +51,91 @@ function Workspace({scopeId}){
   return <div className="scope-v2-list">
     <ManagementArticlePublisher scopeId={scopeId}/>
     <ManagementImportPanel scopeId={scopeId}/>
-    <ScopeBasicSettings scopeId={scopeId}/>
   </div>;
 }
 
-function Structure({scopeId}){
-  return <div className="scope-v2-list">
-    {scopeId!=='loc'?<CultureTimelineEditor scopeId={scopeId}/>:null}
-    <SourceSettingsV2 scopeId={scopeId}/>
-  </div>;
+function PeriodSettings({scopeId}){
+  if(scopeId==='loc')return null;
+  return <CultureTimelineEditor scopeId={scopeId}/>;
 }
 
-function KeywordStructure({scopeId}){
-  if(scopeId!=='lunarunes')return null;
-  return <div className="scope-v2-list">
-    <KeywordSettingsV2 scopeId={scopeId}/>
-  </div>;
+function ClassificationSettings({scopeId}){
+  if(scopeId==='lunarunes')return <KeywordSettingsV2 scopeId={scopeId} editable/>;
+  if(scopeId==='lo3rwang')return <StyleKeywordSettingsV2/>;
+  return null;
+}
+
+function sectionOptions(scopeId){
+  if(scopeId==='loc')return [];
+  const options=[
+    {value:'workspace',label:'文章與匯入'},
+    {value:'period',label:'時期設定'},
+    {value:'classification',label:scopeId==='lunarunes'?'符文關鍵詞分組':'關鍵詞／風格分類'}
+  ];
+  if(scopeId==='lunarunes')options.push({value:'style-model',label:'月之符文分類模型'},{value:'daily',label:'每日符文管理'});
+  return options;
 }
 
 export default function GovernanceManagement(){
   const account=useNeonAccount();
   const {scopeId}=useScopeRuntimeV2();
   const scope=getScopeV2(scopeId);
+  const options=useMemo(()=>sectionOptions(scopeId),[scopeId]);
   const [section,setSection]=useState('workspace');
   const canManage=account.canManageScopeSync(scopeId);
 
+  useEffect(()=>{
+    if(!options.some(option=>option.value===section))setSection(options[0]?.value||'workspace');
+  },[scopeId,options,section]);
+
   if(account.loading||account.permissionLoading)return <section className="loc-view"><div className="loc-card">正在確認登入與管理權限…</div></section>;
   if(!account.user)return <LoginScreen scopeId={scopeId} account={account}/>;
+
+  if(scopeId==='loc')return <section className="loc-view">
+    <header className="loc-hero">
+      <p className="loc-eyebrow">LOC Management</p>
+      <h1>LOC 系統管理</h1>
+      <p>LOC 的系統管理已集中到獨立管理站。</p>
+    </header>
+    <section className="loc-card">
+      <a className="loc-button primary" href={getScopeV2('admin').primary.href}>前往 admin.lo3rwang.cc</a>
+      <button className="loc-button" type="button" onClick={account.signOut}>登出</button>
+    </section>
+  </section>;
 
   if(!canManage)return <section className="loc-view">
     <header className="loc-hero"><p className="loc-eyebrow">Management</p><h1>{scope.label}管理</h1></header>
     <section className="loc-card"><p>目前登入身份沒有此區域的管理權限。</p><button type="button" onClick={account.signOut}>登出</button></section>
   </section>;
 
-  const sections=[
-    ['workspace','工作區'],
-    ['structure',scopeId==='loc'?'來源':'時期與來源'],
-    ...(scopeId==='lunarunes'?[['keywords','關鍵詞設定']]:[]),
-    ...(scopeId==='lunarunes'?[['daily','每日符文']]:[]),
-  ];
+  const selected=options.find(option=>option.value===section)||options[0]||null;
 
   return <section className="loc-view">
     <header className="loc-hero">
       <p className="loc-eyebrow">Management · {scopeId}</p>
       <h1>{scope.label}管理</h1>
       <p>{account.user.email||account.user.name||''}</p>
-      <nav className="scope-v2-local-menu" aria-label="管理功能選單">
-        {sections.map(([id,label])=><button key={id} type="button" aria-pressed={section===id} onClick={()=>setSection(id)}>{label}</button>)}
-        <button type="button" onClick={account.signOut}>登出</button>
-      </nav>
+      <div className="scope-v2-management-select">
+        <label htmlFor="scope-management-section">管理項目</label>
+        <Select
+          inputId="scope-management-section"
+          className="scope-v2-react-select"
+          classNamePrefix="scope-v2-react-select"
+          unstyled
+          isSearchable
+          options={options}
+          value={selected}
+          noOptionsMessage={()=>"沒有符合的管理項目"}
+          onChange={option=>option?.value&&setSection(option.value)}
+        />
+      </div>
+      <p><button type="button" onClick={account.signOut}>登出</button></p>
     </header>
 
     {section==='workspace'?<Workspace scopeId={scopeId}/>:null}
-    {section==='structure'?<Structure scopeId={scopeId}/>:null}
-    {section==='keywords'?<KeywordStructure scopeId={scopeId}/>:null}
+    {section==='period'?<PeriodSettings scopeId={scopeId}/>:null}
+    {section==='classification'?<ClassificationSettings scopeId={scopeId}/>:null}
+    {section==='style-model'&&scopeId==='lunarunes'?<LunaRunesStyleModelV2/>:null}
     {section==='daily'&&scopeId==='lunarunes'?<RuneManagementPanel/>:null}
   </section>;
 }

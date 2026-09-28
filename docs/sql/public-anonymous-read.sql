@@ -14,12 +14,16 @@ GRANT USAGE ON SCHEMA silver TO anonymous;
 
 GRANT SELECT ON TABLE
   silver.faq_entries,
-  silver.resource_visibility,
-  silver.lo3rwang_style,
+  silver.content_blocks,
   silver.lo3rwang_time,
   silver.lrunes_time,
   silver.lo3rwang_galaxy,
   silver.lo3rwang_galaxy_media,
+  silver.lrunes_galaxy,
+  silver.lrunes_galaxy_media,
+  silver.runes,
+  silver.lo3rwang_source_stats,
+  silver.lo3rwang_source_daily,
   silver.lrunes
 TO anonymous;
 

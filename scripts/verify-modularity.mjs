@@ -28,7 +28,6 @@ walk(resolve(root,'app'),path=>{
 });
 
 for(const required of [
-  'app/loc/neon-repository.js',
   'app/loc/rune-repository.js',
   'app/loc/neon-ranking-client.js',
   'app/loc/neon-culture-client.js',
@@ -39,7 +38,7 @@ for(const required of [
 }
 
 const runeRepository=readFileSync(resolve(root,'app/loc/rune-repository.js'),'utf8');
-if(!runeRepository.includes('selectNeonCatalog')||!runeRepository.includes('silver.runes')||!runeRepository.includes('updateRuneKeywords'))failures.push('app/loc/rune-repository.js: canonical rune/keyword Neon boundary missing');
+if(!runeRepository.includes('neonPublicClient')||!runeRepository.includes('selectRuneCatalog')||!runeRepository.includes('selectRuneKeywordCatalog'))failures.push('app/loc/rune-repository.js: canonical rune read boundary missing');
 if(['LOC_DATA','fetchNeonData','canonical/runes','fetchStaticJson','runtime_json_documents'].some(token=>runeRepository.includes(token)))failures.push('app/loc/rune-repository.js: retired path/JSON loader semantics remain');
 for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs','app/loc/neon-context-client.js','app/modular-v2/features/ContextV2.jsx','app/modular-v2/features/ContextWorkbenchV2.jsx','app/modular-v2/modules/context-graph/ContextGraphV2.jsx'])if(existsSync(resolve(root,retired)))failures.push(`${retired}: retired path-loader must remain removed`);
 
@@ -62,8 +61,10 @@ if(/\.ilike\(|operator:\s*['"]ilike['"]/.test(searchProviders))failures.push('Se
 if(!/searchTextIndex/.test(keywordClassifier))failures.push('Style classifier: Culture/Statistics must use the shared FlexSearch engine');
 if(!/searchNeonRows\(/.test(searchView))failures.push('SearchV2: shared search client missing');
 
-const scopeManagement=readFileSync(resolve(root,'app/modular-v2/ScopeManagementV2.jsx'),'utf8');
-if(!/useNeonAccount/.test(scopeManagement)||!/account\.canManage/.test(scopeManagement))failures.push('Scope management: manager role gate missing');
+const scopeManagement=readFileSync(resolve(root,'app/loc/GovernanceManagement.jsx'),'utf8');
+const adminManagement=readFileSync(resolve(root,'app/loc/views/AdminHomeView.jsx'),'utf8');
+if(!/useNeonAccount/.test(scopeManagement)||!/canManageScopeSync/.test(scopeManagement))failures.push('Scope management: manager role gate missing');
+if(!/useNeonAccount/.test(adminManagement)||!/canManageGlobalSync/.test(adminManagement))failures.push('Admin management: global manager role gate missing');
 
 for(const retired of ['app/loc/local-db.js','app/loc/google-drive.js','app/loc/storage.js','app/loc/auth-client.js']){
   if(existsSync(resolve(root,retired)))failures.push(`${retired}: retired persistence/auth module must remain removed`);
@@ -74,4 +75,4 @@ if(failures.length){
   console.error('[modularity] violations:\\n'+failures.join('\\n'));
   process.exit(1);
 }
-console.log('[modularity] Neon canonical/module boundaries verified');
+console.log('[modularity] Neon client/domain boundaries verified');

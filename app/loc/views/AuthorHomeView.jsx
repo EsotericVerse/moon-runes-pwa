@@ -1,5 +1,6 @@
 import { PageComposition } from '../../PageComposition';
 import ScopeOverviewNetwork from '../../modular-v2/modules/scope-overview/ScopeOverviewNetwork';
+import HomeContentBlocksV2 from '../../modular-v2/HomeContentBlocksV2';
 const ROOT=['鑑古知今，求同存異','不在其位，不謀其政','隨心所欲，而不逾己'];
 
 import {featureHrefV2} from '../../modular-v2/scope-registry.v2';
@@ -162,7 +163,7 @@ export default function AuthorHomeView({section=null}){
     }
   ];
 
-  if(!section)return <PageComposition
+  if(!section)return <><PageComposition
     eyebrow="Lucas Oscar Wang"
     title="政德"
     subtitle="語言建築師"
@@ -185,7 +186,9 @@ export default function AuthorHomeView({section=null}){
       />
     }
 	]}
-  />;
+  />
+  <section className="loc-view"><HomeContentBlocksV2 scopeId="lo3rwang"/></section>
+</>;
 
   const sectionGroups=Object.freeze({
     style:Object.freeze(['roles','profile-content']),

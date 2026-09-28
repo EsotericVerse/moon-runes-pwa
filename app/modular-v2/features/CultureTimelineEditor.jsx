@@ -4,10 +4,42 @@ import {useEffect,useMemo,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useNeonAccount} from '../../loc/use-neon-account';
-import {deleteNeonRows,insertNeonRows,selectNeonAllRows,updateNeonRows} from '../../loc/neon-repository';
-import {SCOPE_TIME_COLUMNS} from '../../loc/scope-time';
+import {neonAuthClient,neonPublicClient} from '../../loc/neon-client';
 import {scopeDataTable} from '../../loc/scope-list';
 import {FEATURE_LOADING_MESSAGE} from '../feature-data-state.v2';
+
+const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility';
+
+function timeRelation(client,table){
+  const [schema,name]=String(table).split('.');
+  return client.schema(schema).from(name);
+}
+async function selectNeonAllRows(table,{columns,filters=[]}={}){
+  let query=timeRelation(neonPublicClient,table).select(columns);
+  for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
+  const {data,error}=await query;
+  if(error)throw new Error(error.message||('Neon SELECT '+table+' failed'));
+  return {rows:data||[]};
+}
+async function insertNeonRows(table,rows){
+  const {data,error}=await timeRelation(neonAuthClient,table).insert(rows).select('*');
+  if(error)throw new Error(error.message||('Neon INSERT '+table+' failed'));
+  return data||[];
+}
+async function updateNeonRows(table,values,{filters=[]}={}){
+  let query=timeRelation(neonAuthClient,table).update(values);
+  for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
+  const {data,error}=await query.select('*');
+  if(error)throw new Error(error.message||('Neon UPDATE '+table+' failed'));
+  return data||[];
+}
+async function deleteNeonRows(table,{filters=[]}={}){
+  let query=timeRelation(neonAuthClient,table).delete();
+  for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
+  const {data,error}=await query.select('*');
+  if(error)throw new Error(error.message||('Neon DELETE '+table+' failed'));
+  return data||[];
+}
 
 const EDITABLE_TYPES=Object.freeze([
   ['anchor','定錨點'],['period','時期'],['event','事件']
@@ -62,7 +94,7 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
     enabled:supported&&Boolean(account.user),
     queryFn:async()=>{
       const {rows}=await selectNeonAllRows(timeTable,{
-        columns:SCOPE_TIME_COLUMNS,
+        columns:TIME_COLUMNS,
         filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}]
       });
       return rows;

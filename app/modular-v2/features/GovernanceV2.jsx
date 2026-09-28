@@ -1,11 +1,11 @@
 'use client';
 
-import {selectNeonRows} from '../../loc/neon-repository';
+import {neonPublicClient} from '../../loc/neon-client';
 import {useOffsetPagination} from '../use-offset-pagination.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
-import {scopeHrefV2} from '../scope-registry.v2';
-import GovernanceInlineEditor from '../../loc/GovernanceInlineEditor';
+import {getScopeV2,scopeHrefV2} from '../scope-registry.v2';
+import {useNeonAccount} from '../../loc/use-neon-account';
 import LocGovernance,{LocGovernanceLaw,LOC_GOVERNANCE_SUBTITLE} from '../governance/LocGovernance';
 import LunaRunesGovernance,{LUNARUNES_GOVERNANCE_SUBTITLE} from '../governance/LunaRunesGovernance';
 import PersonalGovernance,{PERSONAL_GOVERNANCE_SUBTITLE} from '../governance/PersonalGovernance';
@@ -27,13 +27,14 @@ function FaqView(){
     key:'governance-faq',
     pageSize:FAQ_PAGE_SIZE,
     loadPage:async(offset,limit)=>{
-      const result=await selectNeonRows('silver.faq_entries',{
-        columns:'faq_id,category,question,answer',
-        orders:[{column:'category',ascending:true},{column:'faq_id',ascending:true}],
-        offset,
-        limit
-      });
-      return {rows:result.rows,hasMore:result.rows.length===limit};
+      const {data,error}=await neonPublicClient.schema('silver').from('faq_entries')
+        .select('faq_id,category,question,answer')
+        .order('category',{ascending:true})
+        .order('faq_id',{ascending:true})
+        .range(offset,offset+limit-1);
+      if(error)throw new Error(error.message||'FAQ 載入失敗');
+      const rows=data||[];
+      return {rows,hasMore:rows.length===limit};
     }
   });
   const {rows,loading,error,hasMore}=page;
@@ -64,18 +65,33 @@ function governanceFor(scopeId){
 
 function GovernanceHome(){
   const {scopeId}=useScopeRuntimeV2();
+  const account=useNeonAccount();
   const {View,subtitle}=governanceFor(scopeId);
+  const adminHref=getScopeV2('admin').primary.href;
+  const canEdit=account.canManageScopeSync(scopeId);
   return <FeaturePageV2 featureId="governance" subtitle={subtitle}>
-    <GovernanceInlineEditor scopeId={scopeId}><View/></GovernanceInlineEditor>
-    <section className="loc-card"><p className="loc-eyebrow">Management</p><h2>管理</h2><a className="loc-button primary" href={scopeHrefV2(scopeId,'governance/manage')}>進入管理</a></section>
+    <View canEdit={canEdit}/>
+    {scopeId==='loc'?<section className="loc-card">
+      <p className="loc-eyebrow">Management</p>
+      <h2>系統管理</h2>
+      <p>Admin 是獨立管理站，不屬於 Scope。</p>
+      <a className="loc-button primary" href={adminHref}>進入獨立管理站</a>
+    </section>:<section className="loc-card">
+      <p className="loc-eyebrow">Scope Management</p>
+      <h2>{getScopeV2(scopeId).label}管理</h2>
+      <p>時期、關鍵詞／風格分類與其他 Scope 設定集中在這裡；頁面文字仍在原頁直接編輯。</p>
+      <a className="loc-button primary" href={scopeHrefV2(scopeId,'governance/manage')}>進入 Scope 管理</a>
+    </section>}
   </FeaturePageV2>;
 }
 
 function GovernanceLaw(){
   const {scopeId}=useScopeRuntimeV2();
-  if(scopeId==='loc')return <FeaturePageV2 featureId="governance" subtitle="權利與授權"><LocGovernanceLaw/></FeaturePageV2>;
+  const account=useNeonAccount();
+  const canEdit=account.canManageScopeSync(scopeId);
+  if(scopeId==='loc')return <FeaturePageV2 featureId="governance" subtitle="權利與授權"><LocGovernanceLaw canEdit={canEdit}/></FeaturePageV2>;
   const {View}=governanceFor(scopeId);
-  return <FeaturePageV2 featureId="governance" subtitle="權利與授權"><View/></FeaturePageV2>;
+  return <FeaturePageV2 featureId="governance" subtitle="權利與授權"><View canEdit={canEdit}/></FeaturePageV2>;
 }
 
 export default function GovernanceV2({section=null}){
