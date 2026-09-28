@@ -3,10 +3,9 @@ import {selectNeonAllRows,selectNeonCatalog,selectNeonRows} from './neon-reposit
 export const DAILY_RUNE_PAGE_SIZE=10;
 
 async function loadRuneMeta(){
-  const {rows}=await selectNeonCatalog('silver.lrunes',{
-    columns:'rune_number,rune_name',
-    filters:[{column:'record_type',operator:'eq',value:'rune'}],
-    orders:[{column:'rune_number',ascending:true}]
+  const {rows}=await selectNeonCatalog('silver.runes',{
+    columns:'rune_id,rune_name',
+    orders:[{column:'rune_id',ascending:true}]
   });
   return new Map(rows.map(row=>[Number(row.rune_id),row]));
 }
