@@ -43,7 +43,7 @@ function EventVisual({item,small=false}){
 
 function RoundRail({round=1}){
   const sequence=round===9?[...GAME_ROUNDS,'duel']:GAME_ROUNDS;
-  return <div className="game-round-rail" aria-label="回合進度">
+  return <div className="game-round-rail" aria-label="回合進度" style={{gridTemplateColumns:'repeat('+sequence.length+',minmax(64px,1fr))'}}>
     {sequence.map((phase,index)=>{
       const current=index+1===round;
       const done=index+1<round;
@@ -63,8 +63,8 @@ function GameDocs(){
     </div>
     {section==='rules'&&<div className="game-doc-copy">
       <h2>Current Alpha 基本規則</h2>
-      <p><b>目標：</b>以 Event、Resonance／Battle 改變 De。De 範圍 0–8；到達 8 不會立即勝利。</p>
-      <p><b>2P：</b>R1–R3 Event → R4 Resonance → R5–R7 Event → R8 Resonance；R8 完成才比較 De，同分才進 Duel。</p>
+      <p><b>目標：</b>以 Event 與 Resonance 改變 De。De 範圍 0–8；到達 8 不會立即勝利。</p>
+      <p><b>回合：</b>R1–R3 Event → R4 Resonance → R5–R7 Event → R8 Resonance；R8 完成才比較 De，平分才進 R9 Duel。</p>
       <p><b>Event：</b>每次固定使用兩張 Rune 回應。四張雙群組圖目前只作既有視覺資產，不把 Event 限制成四類。</p>
       <p><b>資料：</b>遊戲符文只讀 silver.runes 與 silver.runes_etc；01–66 進可玩牌庫，0 德不進抽牌。</p>
     </div>}
@@ -142,14 +142,14 @@ export default function GameView(){
   const events=GAME_EVENTS;
   const event=state?.eventDeck?.length?state.eventDeck[state.eventIndex%state.eventDeck.length]:null;
   const allOpened=state?.players.every(player=>!player.opening);
-  const phaseLabel=state?.phase==='event'?'Event':state?.phase?.includes('battle')?'Battle':'Resonance';
+  const phaseLabel=state?.phase==='event'?'Event':state?.phase==='duel'?'Duel':'Resonance';
 
   const status=useMemo(()=>{
     if(error)return '遊戲符文資料載入失敗：'+error.message;
     if(isLoading)return '正在讀取 silver.runes 與 silver.runes_etc…';
     if(!state)return '66 張可玩符文與 Event32 已就緒。';
     if(state.winner!==null)return state.players[state.winner].name+' 勝出。';
-    if(state.draw)return 'R8 同分；多人後續判定尚未定案。';
+    if(state.draw)return 'R9 Duel 仍平分；後續判定待定。';
     return 'R'+state.round+' · '+phaseLabel;
   },[error,isLoading,state,phaseLabel]);
 
@@ -184,9 +184,7 @@ export default function GameView(){
     const max=Math.max(...current.players.map(player=>player.de));
     const leaders=current.players.map((player,index)=>player.de===max?index:null).filter(index=>index!==null);
     if(leaders.length===1)return {...current,winner:leaders[0]};
-    return current.mode==='2p'
-      ?{...current,round:9,phase:'duel',active:0,actions:0,result:'R8 同分，進入 R9 Duel。'}
-      :{...current,round:9,phase:'duel',active:0,actions:0,result:'R8 平分，進入 R9 Duel；多人 Duel 細節仍待測試。'};
+    return {...current,round:9,phase:'duel',duelists:leaders,active:leaders[0],actions:0,result:'R8 平分，進入 R9 Duel。'};
   }
 
   function nextRound(current){
@@ -196,7 +194,7 @@ export default function GameView(){
     return {...current,round,phase,active:0,actions:0,eventIndex:current.eventIndex+(phase==='event'?1:0)};
   }
 
-  function resolve2PEvent(){
+  function resolveEvent(){
     setState(current=>{
       if(!current||current.phase!=='event'||!event)return current;
       try{
@@ -214,19 +212,25 @@ export default function GameView(){
     });
   }
 
-  function resonance(kind){
+  function resonance(kind,targetIndex=null){
     setState(current=>{
       if(!current||(!current.phase?.includes('resonance')&&current.phase!=='duel'))return current;
+      const participants=current.phase==='duel'?(current.duelists||[]):current.players.map((_,index)=>index);
       const actor=current.active;
-      const target=kind==='self'?actor:1-actor;
+      const target=kind==='self'?actor:targetIndex;
+      if(target===null||target===undefined||!participants.includes(actor)||!participants.includes(target)||(kind!=='self'&&target===actor))return current;
       const players=current.players.map((player,index)=>index===target?applyDe(player,kind==='self'?1:-2):player);
       const actions=current.actions+1;
-      const next={...current,players,actions,active:1-actor,logs:[(current.phase==='duel'?'R9 Duel':'R'+current.round+' Resonance')+'：'+NAMES[actor]+' '+(kind==='self'?'+1':'對手 −2'),...current.logs]};
-      if(actions<2)return next;
+      const actorPosition=participants.indexOf(actor);
+      const nextActive=participants[(actorPosition+1)%participants.length];
+      const actionText=kind==='self'?'+1':'→ '+NAMES[target]+' −2';
+      const next={...current,players,actions,active:nextActive,logs:[(current.phase==='duel'?'R9 Duel':'R'+current.round+' Resonance')+'：'+NAMES[actor]+' '+actionText,...current.logs]};
+      if(actions<participants.length)return next;
       if(current.phase==='duel'){
-        const [a,b]=players;
-        if(a.de===b.de)return {...next,result:'Duel 仍同分；Duel 細則待測試修正。'};
-        return {...next,winner:a.de>b.de?0:1};
+        const max=Math.max(...participants.map(index=>players[index].de));
+        const leaders=participants.filter(index=>players[index].de===max);
+        if(leaders.length===1)return {...next,winner:leaders[0]};
+        return {...next,draw:true,result:'R9 Duel 仍平分；後續判定待定。'};
       }
       return nextRound(next);
     });
@@ -303,7 +307,7 @@ export default function GameView(){
       {allOpened&&state.phase==='event'?<section className="loc-event game-event-field">
         <p className="loc-eyebrow">R{state.round} · EVENT</p>
         {eventGroupVisual?<figure className="game-event-visual"><img src={eventGroupVisual.image} alt={event.group+'組代表圖'} loading="lazy"/><figcaption>{event.group}</figcaption></figure>:<EventVisual item={activeEventVisual}/>}
-        {event?<><h2>{event.id}｜{event.name}</h2><p>{event.desc}</p><p className="game-player-meta">Alpha requirement: {event.requirement}</p><button className="loc-button primary" onClick={resolve2PEvent} disabled={state.mode!=='2p'||state.players.some(player=>player.selected.length!==2)}>雙卡結算 Event</button></>:null}
+        {event?<><h2>{event.id}｜{event.name}</h2><p>{event.desc}</p><p className="game-player-meta">Alpha requirement: {event.requirement}</p><button className="loc-button primary" onClick={resolveEvent} disabled={state.players.some(player=>player.selected.length!==2)}>雙卡結算 Event</button></>:null}
       </section>:null}
 
       {allOpened&&(state.phase?.includes('resonance')||state.phase==='duel')?<section className="loc-event game-event-field game-resonance-field">
@@ -311,14 +315,10 @@ export default function GameView(){
         <div className="game-resonance-orbit"><span/><i/><span/></div>
         <h2>{state.phase==='duel'?'Duel':'Resonance'}</h2>
         <p>輪到 {state.players[state.active].name}</p>
-        <div className="loc-actions"><button className="loc-button primary" onClick={()=>resonance('self')}>自我共振 +1</button><button className="loc-button" onClick={()=>resonance('attack')}>破壞共振 −2</button></div>
-      </section>:null}
-
-      {allOpened&&state.phase?.includes('battle')?<section className="loc-event game-event-field">
-        <p className="loc-eyebrow">R{state.round} · BATTLE</p>
-        <h2>Battle · Alpha</h2>
-        <p>輪到 {state.players[state.active].name}。1–4 派別分數機制仍待接回。</p>
-        <div className="loc-actions">{state.players.map((player,index)=>index!==state.active?<button className="loc-button" key={player.name} onClick={()=>battle(index,1)}>對 {player.name} 測試 −1</button>:null)}</div>
+        <div className="loc-actions">
+          <button className="loc-button primary" onClick={()=>resonance('self')}>自我共振 +1</button>
+          {(state.phase==='duel'?(state.duelists||[]):state.players.map((_,index)=>index)).filter(index=>index!==state.active).map(index=><button className="loc-button" key={index} onClick={()=>resonance('attack',index)}>對 {state.players[index].name} −2</button>)}
+        </div>
       </section>:null}
     </div>
 
