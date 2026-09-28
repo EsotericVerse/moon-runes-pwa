@@ -27,6 +27,7 @@ async function probe(client,table,columns,{filters=[]}={}){
 const client=runtimeClient();
 for(const [table,columns,options] of [
   ['manage','id,role'],
+  ['lo3rwang','id,period,period_start,period_end,style,theme,search_able,statistics_able,culture_able,sources,source_counts,work_count,media_count,media_counts,updated_at'],
   ['lo3rwang_time','record_id,record_type,resource_id,label,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility,style_tags'],
   ['lrunes_time','record_id,record_type,resource_id,label,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility,style_tags'],
   ['resource_visibility','scope,resource_type,resource_id,visibility,statistics_included,show_link,show_source,updated_at'],
@@ -34,7 +35,7 @@ for(const [table,columns,options] of [
   ['lo3rwang_galaxy','uid,title,content,source_name,createtime'],
   ['lo3rwang_galaxy_media','media_id,galaxy_link,source_native_id,source_place,media_type,title,url,meta_tags,createtime'],
   ['runes','rune_id,rune_name'],
-  ['lrunes','id,email,period,period_start,period_end,style,theme,search_able,statistics_able,culture_able,sources,source_counts,work_count,updated_at'],
+  ['lrunes','id,period,period_start,period_end,style,theme,search_able,statistics_able,culture_able,sources,source_counts,work_count,media_count,media_counts,updated_at'],
   ['faq_entries','faq_id,question,answer']
 ])await probe(client,table,columns,options||{});
 
