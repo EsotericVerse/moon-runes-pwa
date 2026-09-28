@@ -1,6 +1,6 @@
 'use client';
 
-import {processNeonHeavyRows,selectNeonCatalog} from './neon-repository';
+import {processNeonHeavyRows,selectNeonCatalog,selectNeonRows} from './neon-repository';
 import {createTextIndex,searchTextIndex} from './text-engine.mjs';
 import {splitRuneKeywordEntries} from './model/rune-keyword-rules.mjs';
 
@@ -20,6 +20,13 @@ function runeKeywordEntries(value){
 async function selectScopeStyleCatalog(scopeId){
   const id=String(scopeId||'').trim()==='lunarunes'?'lrunes':String(scopeId||'').trim();
   if(!['lo3rwang','lrunes'].includes(id))return [];
+  const scopeTable='silver.'+id;
+  const current=await selectNeonRows(scopeTable,{
+    columns:'id,style',
+    filters:[{column:'id',operator:'eq',value:id}],
+    limit:1
+  });
+  if(!current.rows[0]?.style)return [];
   const table=id==='lo3rwang'?'silver.lo3rwang_style':'silver.lrunes_style';
   const [styleResult,keywordResult]=await Promise.all([
     selectNeonCatalog(table,{
