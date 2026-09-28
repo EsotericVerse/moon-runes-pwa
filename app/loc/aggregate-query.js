@@ -94,12 +94,9 @@ async function mediaRowsFor(scopeId,mediaIds=[]){
   if(!ids.length)return [];
   const lunarunes=String(scopeId||'')==='lunarunes'||String(scopeId||'')==='lrunes';
   if(lunarunes){
-    return (await selectNeonAllRows('silver.lrunes',{
-      columns:'record_id,media_id,title,url,media_type',
-      filters:[
-        {column:'record_type',operator:'eq',value:'galaxy_media'},
-        {column:'media_id',operator:'in',value:ids}
-      ]
+    return (await selectNeonAllRows('silver.lrunes_galaxy_media',{
+      columns:'media_id,title,url,media_type',
+      filters:[{column:'media_id',operator:'in',value:ids}]
     })).rows;
   }
   return (await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
@@ -127,27 +124,22 @@ export async function selectGalaxySummaries(scopeId,uids=[]){
 
   let rows=[];
   if(lunarunes){
-    rows=(await selectNeonAllRows('silver.lrunes',{
-      columns:'record_id,record_type,uid,title,content,url,media_link',
-      filters:[
-        {column:'record_type',operator:'eq',value:'galaxy'},
-        {column:'uid',operator:'in',value:ids}
-      ]
+    rows=(await selectNeonAllRows('silver.lrunes_galaxy',{
+      columns:'uid,title',
+      filters:[{column:'uid',operator:'in',value:ids}]
     })).rows;
   }else{
     rows=(await selectNeonAllRows('silver.lo3rwang_galaxy',{
-      columns:'uid,title,content,url,media_link',
+      columns:'uid,title',
       filters:[{column:'uid',operator:'in',value:ids}]
     })).rows;
   }
 
-  const mediaRows=await mediaRowsFor(lunarunes?'lunarunes':'lo3rwang',rows.flatMap(row=>mediaIdsOf(row.media_link)));
-  const mediaById=new Map(mediaRows.map(row=>[String(row.media_id),row]));
   return rows.map(row=>({
     uid:row.uid,
     title:row.title||'',
-    excerpt:String(row.content||'').slice(0,20),
-    links:resolvedLinks(row,mediaById)
+    excerpt:'',
+    links:[]
   }));
 }
 
@@ -155,14 +147,12 @@ export async function selectGalaxyIdentity(scopeId,uid){
   const id=String(uid||'').trim();
   if(!id)return null;
   const lunarunes=String(scopeId||'')==='lunarunes'||String(scopeId||'')==='lrunes';
-  const row=await selectNeonRowById(lunarunes?'silver.lrunes':'silver.lo3rwang_galaxy',{
+  const row=await selectNeonRowById(lunarunes?'silver.lrunes_galaxy':'silver.lo3rwang_galaxy',{
     idColumn:'uid',
     id,
-    columns:lunarunes
-      ?'record_id,uid,title,content,source_name,createtime,url,source_id,target_id,ref_id,media_link,record_type'
-      :'uid,title,content,source_name,createtime,url,source_id,target_id,ref_id,media_link'
+    columns:'uid,title,content,source_name,createtime,url,source_id,target_id,ref_id,media_link'
   });
-  if(!row||lunarunes&&row.record_type!=='galaxy')return null;
+  if(!row)return null;
   const mediaRows=await mediaRowsFor(lunarunes?'lunarunes':'lo3rwang',mediaIdsOf(row.media_link));
   const mediaById=new Map(mediaRows.map(item=>[String(item.media_id),item]));
   return {...row,links:resolvedLinks(row,mediaById)};
