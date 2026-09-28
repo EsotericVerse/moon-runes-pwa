@@ -3,6 +3,7 @@
 import {createTextIndex,searchTextIndex} from './text-engine.mjs';
 import {publicContentFilters} from './content-policy';
 import {neonPublicClient} from './neon-client';
+import {DEFAULT_LIST_BATCH_SIZE,RUNE_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
 
 
 function __relation(table){
@@ -47,11 +48,12 @@ function searchableText(row,fields){
   return fields.map(field=>row?.[field]).filter(value=>value!==undefined&&value!==null).join(' ');
 }
 
-function makeProvider({id,table,source,scopeId,idColumn,columns,searchFields,filters=[],dateColumn=''}) {
+function makeProvider({id,table,source,scopeId,idColumn,columns,searchFields,filters=[],dateColumn='',batchSize=DEFAULT_LIST_BATCH_SIZE}) {
   const outputColumns=Object.freeze(unique(columns));
   const indexedColumns=Object.freeze(unique([...columns,...searchFields]));
   const frozenFields=Object.freeze(unique(searchFields));
   const frozenFilters=Object.freeze(filters.map(item=>Object.freeze({...item})));
+  const rawBatchSize=Math.max(1,Math.floor(Number(batchSize)||DEFAULT_LIST_BATCH_SIZE));
 
   function recordFor(row){
     const metadata={
@@ -67,66 +69,44 @@ function makeProvider({id,table,source,scopeId,idColumn,columns,searchFields,fil
     columns:outputColumns,
     searchFields:frozenFields,
     filters:frozenFilters,
-    async search(query,{limit=10,cursor=0,startDate='',endDate='',and=[],nor=[]}={}){
-      const safeLimit=Math.max(1,Math.floor(Number(limit)||10));
-      let sourceOffset=Math.max(0,Math.floor(Number(cursor)||0));
-      let scanSize=128;
-      const maxScanSize=1024;
+    rawBatchSize,
+    async search(query,{cursor=0,startDate='',endDate='',and=[],nor=[]}={}){
+      const sourceOffset=Math.max(0,Math.floor(Number(cursor)||0));
       const rangeFilters=[...frozenFilters,...dateFilters(dateColumn,startDate,endDate)];
       const orders=dateColumn
         ?[{column:dateColumn,ascending:false},{column:idColumn,ascending:true}]
         :[{column:idColumn,ascending:true}];
-      const matched=[];
 
-      while(matched.length<safeLimit){
-        const page=await selectNeonRows(table,{
-          columns:indexedColumns.join(','),
-          filters:rangeFilters,
-          orders,
-          limit:scanSize,
-          offset:sourceOffset
-        });
-        const sourceRows=page.rows||[];
-        if(!sourceRows.length)return {rows:matched,hasMore:false,nextCursor:null};
+      const page=await selectNeonRows(table,{
+        columns:indexedColumns.join(','),
+        filters:rangeFilters,
+        orders,
+        limit:rawBatchSize,
+        offset:sourceOffset
+      });
+      const sourceRows=page.rows||[];
+      if(!sourceRows.length)return {rows:[],hasMore:false,nextCursor:null};
 
-        const engine=createTextIndex();
-        for(const row of sourceRows){
-          const key=String(row?.[idColumn]??'').trim();
-          if(!key)continue;
-          engine.add(key,searchableText(row,frozenFields),recordFor(row));
-        }
-        const found=searchTextIndex(engine,query,{
-          limit:Math.max(1,sourceRows.length),
-          offset:0,
-          and,
-          nor
-        });
-        const matchedIds=new Set(found.ids.map(String));
-
-        let consumed=sourceRows.length;
-        for(let index=0;index<sourceRows.length;index+=1){
-          const row=sourceRows[index];
-          const key=String(row?.[idColumn]??'').trim();
-          if(key&&matchedIds.has(key)){
-            const record=engine.records.get(key);
-            if(record)matched.push(record);
-            if(matched.length>=safeLimit){
-              consumed=index+1;
-              break;
-            }
-          }
-        }
-
-        sourceOffset+=consumed;
-        const sourceEnded=sourceRows.length<scanSize&&consumed>=sourceRows.length;
-        if(matched.length>=safeLimit){
-          const hasMore=!sourceEnded&&(consumed<sourceRows.length||sourceRows.length===scanSize);
-          return {rows:matched.slice(0,safeLimit),hasMore,nextCursor:hasMore?sourceOffset:null};
-        }
-        if(sourceEnded)return {rows:matched,hasMore:false,nextCursor:null};
-        scanSize=Math.min(maxScanSize,scanSize*2);
+      const engine=createTextIndex();
+      for(const row of sourceRows){
+        const key=String(row?.[idColumn]??'').trim();
+        if(!key)continue;
+        engine.add(key,searchableText(row,frozenFields),recordFor(row));
       }
-      return {rows:matched.slice(0,safeLimit),hasMore:true,nextCursor:sourceOffset};
+      const found=searchTextIndex(engine,query,{
+        limit:Math.max(1,sourceRows.length),
+        offset:0,
+        and,
+        nor
+      });
+
+      const nextOffset=sourceOffset+sourceRows.length;
+      const hasMore=sourceRows.length===rawBatchSize;
+      return {
+        rows:found.rows||[],
+        hasMore,
+        nextCursor:hasMore?nextOffset:null
+      };
     }
   });
 }

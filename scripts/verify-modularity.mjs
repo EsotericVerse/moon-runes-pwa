@@ -58,6 +58,7 @@ const searchView=readFileSync(resolve(root,'app/modular-v2/features/SearchV2.jsx
 if(!/from ['"]flexsearch['"]/.test(textEngine)||!/new Resolver/.test(textEngine))failures.push('Text engine: FlexSearch Resolver boundary is missing');
 if(!/createTextIndex/.test(searchProviders)||!/searchTextIndex/.test(searchProviders)||!/nextCursor|cursor=/.test(searchProviders))failures.push('Search: batched FlexSearch provider boundary is missing');
 if(/getRuntimeTextIndex/.test(searchProviders))failures.push('Search: runtime index cache must remain retired from providers');
+if(/scanSize|maxScanSize|while\(matched\.length/.test(searchProviders))failures.push('Search: provider auto-scan beyond one raw batch is forbidden');
 if(/\.ilike\(|operator:\s*['"]ilike['"]/.test(searchProviders))failures.push('Search: direct ILIKE search must not replace the shared text engine');
 if(!/searchTextIndex/.test(keywordClassifier))failures.push('Style classifier: Culture/Statistics must use the shared FlexSearch engine');
 if(!/searchNeonRows\(/.test(searchView))failures.push('SearchV2: shared search client missing');

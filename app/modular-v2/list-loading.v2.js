@@ -1,7 +1,6 @@
-export const DEFAULT_LIST_BATCH_SIZE=10;
-export const RUNE_LIST_BATCH_SIZE=8;
-export const LIST_LOAD_COOLDOWN_MS=1500;
-
-export function listBatchSize(kind='default'){
-  return kind==='rune'?RUNE_LIST_BATCH_SIZE:DEFAULT_LIST_BATCH_SIZE;
-}
+export {
+  DEFAULT_LIST_BATCH_SIZE,
+  RUNE_LIST_BATCH_SIZE,
+  LIST_LOAD_COOLDOWN_MS,
+  listBatchSize
+} from '../loc/list-loading-contract.mjs';
