@@ -196,22 +196,19 @@ async function selectScopePeriodMetadataRows(scopeId,{startDate,endDate}={}){
   const filters=dateFilters(startDate,endDate);
   if(runtimeId==='lunarunes'){
     const [textResult,mediaResult]=await Promise.all([
-      selectNeonAllRows('silver.lrunes',{
-        columns:'record_id,record_type,uid,title,source_name,createtime,url',
-        filters:[
-          {column:'record_type',operator:'eq',value:'galaxy'},
-          ...filters
-        ]
+      selectNeonAllRows('silver.lrunes_galaxy',{
+        columns:'uid,title,source_name,createtime,url',
+        filters
       }),
-      selectNeonAllRows('silver.lrunes',{
-        columns:'record_id,record_type,media_id,galaxy_link,title,meta_tags,media_type,source_name,source_place,source_native_id,createtime,url',
-        filters:[
-          {column:'record_type',operator:'eq',value:'galaxy_media'},
-          ...filters
-        ]
+      selectNeonAllRows('silver.lrunes_galaxy_media',{
+        columns:'media_id,galaxy_link,title,meta_tags,media_type,source_name,source_place,source_native_id,createtime,url',
+        filters
       })
     ]);
-    return [...textResult.rows,...mediaResult.rows];
+    return [
+      ...textResult.rows.map(row=>({...row,record_type:'galaxy'})),
+      ...mediaResult.rows.map(row=>({...row,record_type:'galaxy_media'}))
+    ];
   }
   const [textsResult,mediaResult]=await Promise.all([
     selectNeonAllRows('silver.lo3rwang_galaxy',{
@@ -235,26 +232,20 @@ async function selectScopeStyleRows(scopeId,{startDate,endDate}={}){
   const filters=dateFilters(startDate,endDate);
   const output=[];
   if(runtimeId==='lunarunes'){
-    await processStyleTableRows('silver.lrunes',{
+    await processStyleTableRows('silver.lrunes_galaxy',{
       scopeId:'lunarunes',
-      columns:'record_id,record_type,uid,title,content,source_name,createtime,url',
-      filters:[
-        {column:'record_type',operator:'eq',value:'galaxy'},
-        ...filters
-      ],
+      columns:'uid,title,content,source_name,createtime,url',
+      filters,
       orders:[{column:'createtime',ascending:true}],
-      onClassified:row=>{output.push(withoutContent(row));}
+      onClassified:row=>{output.push({...withoutContent(row),record_type:'galaxy'});}
     });
-    const mediaResult=await selectNeonAllRows('silver.lrunes',{
-      columns:'record_id,record_type,media_id,galaxy_link,title,meta_tags,media_type,source_name,source_place,source_native_id,createtime,url',
-      filters:[
-        {column:'record_type',operator:'eq',value:'galaxy_media'},
-        ...filters
-      ],
+    const mediaResult=await selectNeonAllRows('silver.lrunes_galaxy_media',{
+      columns:'media_id,galaxy_link,title,meta_tags,media_type,source_name,source_place,source_native_id,createtime,url',
+      filters,
       orders:[{column:'createtime',ascending:true}]
     });
     const mediaClassified=await classifyStyleRows(mediaResult.rows,'lunarunes');
-    output.push(...mediaClassified.map(row=>withoutContent(row)));
+    output.push(...mediaClassified.map(row=>({...withoutContent(row),record_type:'galaxy_media'})));
     return output;
   }
   await processStyleTableRows('silver.lo3rwang_galaxy',{
@@ -339,15 +330,12 @@ async function selectScopeMediaRows(scopeId,{startDate,endDate}={}){
   const runtimeId=runtimeScopeId(scopeId);
   const filters=dateFilters(startDate,endDate);
   if(runtimeId==='lunarunes'){
-    const result=await selectNeonAllRows('silver.lrunes',{
-      columns:'record_id,record_type,media_id,galaxy_link,source_native_id,source_place,media_type,title,url,meta_tags,createtime',
-      filters:[
-        {column:'record_type',operator:'eq',value:'galaxy_media'},
-        ...filters
-      ],
+    const result=await selectNeonAllRows('silver.lrunes_galaxy_media',{
+      columns:'media_id,galaxy_link,source_native_id,source_place,media_type,title,url,meta_tags,createtime',
+      filters,
       orders:[{column:'createtime',ascending:true}]
     });
-    return result.rows;
+    return result.rows.map(row=>({...row,record_type:'galaxy_media'}));
   }
   const result=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
     columns:'media_id,galaxy_link,source_native_id,source_place,media_type,title,url,meta_tags,createtime',
