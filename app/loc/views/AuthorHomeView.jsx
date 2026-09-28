@@ -12,7 +12,7 @@ const AUTHOR_OVERVIEW_NODES=Object.freeze([
   Object.freeze({id:'calibrator',title:'校對者｜Calibrator｜文字在時間長河上的演化',summary:
    '組織整理長期累積的文字、照片、影音、作品、帳號資料、版本與歷史紀錄，使其從散落檔案轉成可搜尋、可理解、可追溯來源並能長期維護的數位資產。',
    href:featureHrefV2('lo3rwang','culture')}),
-  Object.freeze({id:'governance-architect',title:'語言架構師｜Language Architect｜架構語言的治理方式',summary:
+  Object.freeze({id:'governance-architect',title:'語言建築師｜Language Architect｜架構語言的治理方式',summary:
     '我的語言治理理念。理解對方原本的語言與資料，再依實際需求建立適合自己的結構。',
    href:featureHrefV2('lo3rwang','governance')}),
   Object.freeze({id:'self',title:'自我介紹與人生觀',summary:[
@@ -43,7 +43,7 @@ export default function AuthorHomeView({section=null}){
       content:<div className="loc-grid three">
         <article><strong>文字工匠 · Wordsmith</strong><p>從詞、句子與關鍵詞的聯繫，整理文字怎麼形成自己的語意與脈絡關係。</p><p><a href="/statics/?statTab=keywords">看關鍵詞設定</a></p></article>
         <article><strong>校對者 · Calibrator</strong><p>把文字放回來源、時間與歷史裡比較，觀察文化軌跡、延續、改變、矛盾與可能的污染。</p><p><a href="/culture/">看文化</a></p></article>
-        <article><strong>語言架構師 · Language Architect</strong><p>把語彙、脈絡、文化、搜尋與治理組織成可持續使用的個人語言與系統結構。</p><p><a href="/governance/">看治理</a></p></article>
+        <article><strong>語言建築師 · Language Architect</strong><p>把語彙、脈絡、文化、搜尋與治理組織成可持續使用的個人語言與系統結構。</p><p><a href="/governance/">看治理</a></p></article>
         </div>
     },
     {
