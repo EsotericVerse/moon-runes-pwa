@@ -189,7 +189,7 @@ export default function CultureV2(){
           limit:CULTURE_WORK_PAGE_SIZE,
           pageOffset:workPage*CULTURE_WORK_PAGE_SIZE
         })),
-    enabled:Boolean(selectedWorkPeriod?.start_date&&selectedGroup),
+    enabled:!isLoc&&Boolean(selectedWorkPeriod?.start_date&&selectedGroup),
     staleTime:5*60_000
   });
   const groupedCount=Number(periodWorksQuery.data?.totalCount)||selectedCount;
@@ -319,15 +319,19 @@ export default function CultureV2(){
               {categoryQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(categoryQuery.error)}</p>:null}
               {!categoryQuery.isPending&&!categoryQuery.error&&!categoryGroups.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
               {categoryGroups.length?<div className='scope-v2-culture-source-groups' aria-label='作品分類'>
-                {categoryGroups.map(group=><button type='button' key={group.category_key}
-                  className='scope-v2-culture-source-button'
-                  aria-pressed={selectedCategory===group.category_key}
-                  onClick={()=>{setSelectedCategory(selectedCategory===group.category_key?'':group.category_key);setWorkPage(0);}}>
-                  <strong>{group.display_label}</strong><span>{Number(group.item_count||0).toLocaleString()} 項作品</span>
-                </button>)}
+                {categoryGroups.map(group=>isLoc
+                  ?<article key={group.category_key} className='scope-v2-culture-source-button'>
+                    <strong>{group.display_label}</strong><span>{Number(group.item_count||0).toLocaleString()} 項作品</span>
+                  </article>
+                  :<button type='button' key={group.category_key}
+                    className='scope-v2-culture-source-button'
+                    aria-pressed={selectedCategory===group.category_key}
+                    onClick={()=>{setSelectedCategory(selectedCategory===group.category_key?'':group.category_key);setWorkPage(0);}}>
+                    <strong>{group.display_label}</strong><span>{Number(group.item_count||0).toLocaleString()} 項作品</span>
+                  </button>)}
               </div>:null}
 
-              {selectedGroup?<section className='scope-v2-culture-source-detail' aria-label={selectedGroup.display_label+'列表'}>
+              {!isLoc&&selectedGroup?<section className='scope-v2-culture-source-detail' aria-label={selectedGroup.display_label+'列表'}>
                 <header>
                   <h4>{selectedGroup.display_label} · {selectedCount.toLocaleString()} 項作品</h4>
                   <button type='button' className='scope-v2-pagination-button' onClick={()=>setSelectedCategory('')}>收合列表</button>
