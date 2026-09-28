@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import {useEffect,useMemo,useState} from 'react';
+import {Suspense,useEffect,useMemo,useState} from 'react';
 import {resolveScopeV2} from '../modular-v2/scope-registry.v2';
 import AboutView from './views/AboutView';
 import AuthorHomeView from './views/AuthorHomeView';
@@ -66,5 +66,5 @@ export default function LocApp({forcedView=null,forcedSection=null,forcedScope=n
     return VIEWS[state.view]||HOME_VIEWS[state.scope]||GenericScopeHomeV2;
   },[state]);
 
-  return <div className="loc-next-main" data-loc-scope={state.scope} data-loc-view={state.view}><ActiveView section={state.section}/></div>;
+  return <div className="loc-next-main" data-loc-scope={state.scope} data-loc-view={state.view}><Suspense fallback={<div className="loc-loading">載入頁面…</div>}><ActiveView section={state.section}/></Suspense></div>;
 }
