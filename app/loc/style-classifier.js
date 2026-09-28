@@ -61,15 +61,11 @@ async function selectScopeStyleCatalog(scopeId){
   }).filter(Boolean);
 }
 
-export async function selectCanonicalStyleCatalog(){
-  return selectScopeStyleCatalog('lrunes');
-}
-
 export async function selectAuthorStyleCatalog(){
   return selectScopeStyleCatalog('lo3rwang');
 }
 
-export async function selectKeywordCatalog(scopeId='lunarunes'){
+export async function selectKeywordCatalog(scopeId=''){
   const id=String(scopeId||'').trim();
   if(id==='lo3rwang')return selectAuthorStyleCatalog();
   if(!['lunarunes','lrunes'].includes(id))return [];
@@ -100,9 +96,11 @@ export function isConfiguredStyleCatalog(rows=[]){
   );
 }
 
-export async function selectStyleCatalog(scopeId='lunarunes'){
+export async function selectStyleCatalog(scopeId=''){
   const id=String(scopeId||'').trim();
-  return id==='lo3rwang'?selectAuthorStyleCatalog():selectCanonicalStyleCatalog();
+  if(id==='lo3rwang')return selectAuthorStyleCatalog();
+  if(id==='lunarunes'||id==='lrunes')return selectScopeStyleCatalog('lrunes');
+  return [];
 }
 
 export function styleTextOf(row={}){
@@ -306,18 +304,18 @@ export function classifyStyleText(value,catalog=[]){
   return classifyStyleRowsWithCatalog([{content:value}],catalog)[0]||emptyClassification();
 }
 
-export async function classifyStyleRows(rows=[],scopeId='lunarunes'){
+export async function classifyStyleRows(rows=[],scopeId=''){
   const catalog=await selectStyleCatalog(scopeId);
   return classifyStyleRowsWithCatalog(rows,catalog);
 }
 
-export async function countStyleKeywordHits(rows=[],scopeId='lunarunes'){
+export async function countStyleKeywordHits(rows=[],scopeId=''){
   const catalog=await selectKeywordCatalog(scopeId);
   return countKeywordHitsWithCatalog(rows,catalog);
 }
 
 export async function processStyleTableRows(table,{
-  columns,filters=[],orFilter='',orders=[],scopeId='lunarunes',rowFilter=null,onClassified
+  columns,filters=[],orFilter='',orders=[],scopeId='',rowFilter=null,onClassified
 }={}){
   if(typeof onClassified!=='function')throw new TypeError('Style processing requires onClassified');
   const catalog=await selectStyleCatalog(scopeId);
@@ -333,7 +331,7 @@ export async function processStyleTableRows(table,{
 }
 
 export async function processKeywordTableRows(table,{
-  columns,filters=[],orFilter='',orders=[],scopeId='lunarunes',rowFilter=null,onCounts
+  columns,filters=[],orFilter='',orders=[],scopeId='',rowFilter=null,onCounts
 }={}){
   if(typeof onCounts!=='function')throw new TypeError('Keyword processing requires onCounts');
   const catalog=await selectKeywordCatalog(scopeId);
@@ -347,13 +345,13 @@ export async function processKeywordTableRows(table,{
   });
 }
 
-export async function observeStyleKeywordHits(rows=[],scopeId='lunarunes'){
+export async function observeStyleKeywordHits(rows=[],scopeId=''){
   const catalog=await selectKeywordCatalog(scopeId);
   return observeKeywordHitsWithCatalog(rows,catalog);
 }
 
 export async function processKeywordObservationRows(table,{
-  columns,filters=[],orFilter='',orders=[],scopeId='lunarunes',rowFilter=null,onObserved
+  columns,filters=[],orFilter='',orders=[],scopeId='',rowFilter=null,onObserved
 }={}){
   if(typeof onObserved!=='function')throw new TypeError('Keyword observation processing requires onObserved');
   const catalog=await selectKeywordCatalog(scopeId);
