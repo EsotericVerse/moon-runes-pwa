@@ -116,11 +116,11 @@ OW3gs 的輸出不是 11 個單卡解釋相加，而是：
 
 更深入的月相交互理論上可進一步區分高度相似的情景，但目前不增加此層的演算法複雜度。OW3gs 在未深化月相交互的狀態下已是完整可用模板。
 
-## 10. 與 LOC2 卡片遊戲的歷史邊界
+## 10. 與 LunaRunes Game 的歷史邊界
 
-Historical LOC2／Semantic Playground 的卡片遊戲規則**不使用四向面向**。遊戲可共享 66 符、群組、關係與模組化規則，但不因 OW3gs 使用四向而把面向重新加入遊戲基礎規則。
+OW3gs 與 LunaRunes Game 可共享 66 符、群組與關係，但 OW3gs 的四向與綜合情景不自動成為 Game 基礎規則。
 
-此名稱只作 Historical／既有資料辨識，不恢復已廢止的 LOC1–8 Current 架構。符文文學使用 OW3gs 的四向與綜合情景，是符文規則的延伸應用，不是 Historical LOC2 規則搬移。
+Game 的 Current／Historical 規則、資料來源與版本邊界統一維護於 `app/lrunes/game/`；本文件只保留 OW3gs 與 Game 的系統邊界，避免重複維護兩份遊戲規則。
 
 ## 11. 延伸體系的資料分層
 
