@@ -174,7 +174,7 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
     key:'galaxy:'+row.uid,
     uid:row.uid,
     source_name:row.source_name,
-    title:decodeCultureText(row.title||'').trim()||row.uid,
+    title:decodeCultureText(row.title||'').trim(),
     description:'',
     createtime:row.createtime,
     start_date:row.createtime,
