@@ -1,8 +1,9 @@
 'use client';
 
 import {useState} from 'react';
-import {FEATURES_V2,featureHrefV2,featureIdForPathV2} from './scope-registry.v2';
+import {FEATURES_V2,featureHrefV2,featureIdForPathV2,scopeHrefV2} from './scope-registry.v2';
 import {useScopeRuntimeV2} from './use-scope-runtime.v2';
+import ScopeHomeSelectV2 from './ScopeHomeSelectV2';
 
 function normalizePath(value='/'){
   const path=String(value||'/').replace(/\/+$/,'');
@@ -22,28 +23,32 @@ function NavTarget({href,label,current=false}){
 const NAV_FEATURE_ORDER=['culture','statics','governance'];
 
 export default function ScopeNavV2(){
-  const {scopeId,scope,host,pathname}=useScopeRuntimeV2();
+  const {scopeId,host,pathname}=useScopeRuntimeV2();
   const currentFeature=featureIdForPathV2(pathname);
   const [searchText,setSearchText]=useState('');
+  const locHome=scopeHrefV2('loc');
 
   function submitSearch(event){
     event.preventDefault();
     const q=searchText.trim();
     if(!q)return;
-    const url=new URL(featureHrefV2(scopeId,'search'));
+    const url=new URL(featureHrefV2(scopeId==='admin'?'loc':scopeId,'search'));
     url.searchParams.set('q',q);
     window.location.assign(url.toString());
   }
 
+  if(scopeId==='admin')return <nav className="scope-v2-nav" aria-label="管理站導覽">
+    <NavTarget href={locHome} label="LOC 主頁"/>
+  </nav>;
+
   return <nav className="scope-v2-nav" aria-label="全站導覽">
-    <NavTarget href={scope.primary.href} label={scope.primary.label} current={targetIsCurrent(scope.primary.href,host,pathname)}/>
+    <NavTarget href={locHome} label="LOC 主頁" current={targetIsCurrent(locHome,host,pathname)}/>
     {NAV_FEATURE_ORDER.map(id=>FEATURES_V2.find(item=>item.id===id)).filter(Boolean).map(item=>
       <NavTarget key={item.id} href={featureHrefV2(scopeId,item.id)} label={item.label} current={currentFeature===item.id}/>
     )}
     <form onSubmit={submitSearch} role="search" className="scope-v2-search">
       <input name="q" type="search" aria-label="搜尋文字" placeholder="搜尋" value={searchText} onChange={event=>setSearchText(event.target.value)}/>
     </form>
-    {scopeId!=='admin'?<NavTarget href={scope.role.href} label={scope.role.label} current={targetIsCurrent(scope.role.href,host,pathname)}/>:null}
-    {scope.homes.map(item=><NavTarget key={item.label} href={item.href} label={item.label} current={targetIsCurrent(item.href,host,pathname)}/>)}
+    <ScopeHomeSelectV2/>
   </nav>;
 }
