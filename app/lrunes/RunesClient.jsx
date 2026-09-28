@@ -19,7 +19,7 @@ const GROUP_ORDER=['靈魂','連結','生命','自然','礦物','元素','秩序
 const UI_SETTINGS_KEY='loc-ui-settings-v1';
 const DEFAULT_UI_SETTINGS={draw_response:'ritual',list_page_size:10};
 const LIST_PAGE_OPTIONS=[5,10,15,20,25,50];
-const runeHref=path=>`${scopeOriginV2('lunarunes')}/${String(path||'').replace(/^\\/+/, '')}`;
+const runeHref=path=>`${scopeOriginV2('lunarunes')}/${String(path||'').replace(/^\/+/, '')}`;
 const HOME_FUNCTION_OPTIONS=Object.freeze([
   {value:'list',label:'符文圖鑑',href:runeHref('list')},
   {value:'draw',label:'符文抽籤',href:runeHref('')},
