@@ -7,16 +7,11 @@ const OpenRowSchema=z.object({}).passthrough();
 export const ScopeCultureResponseSchema=z.object({
   scopeId:z.enum(['loc','lunarunes','lo3rwang']),
   eras:z.object({eras:z.array(OpenRowSchema).default([])}).default({eras:[]}),
-  authorEras:z.object({eras:z.array(OpenRowSchema).default([])}).optional(),
-  runeEras:z.object({eras:z.array(OpenRowSchema).default([])}).default({eras:[]}),
-  runeHistory:z.record(z.string(),z.unknown()).default({}),
   periods:z.array(OpenRowSchema).default([]),
+  timelineItems:z.array(OpenRowSchema).default([]),
   events:z.array(OpenRowSchema).default([]),
   trajectories:z.array(OpenRowSchema).default([]),
-  works:z.array(OpenRowSchema).default([]),
-  authorKeywords:z.object({keywords:z.array(OpenRowSchema).default([])}).default({keywords:[]}),
-  musicPeriods:z.record(z.string(),z.unknown()).default({periods:[]}),
-  writingPeriods:z.record(z.string(),z.unknown()).default({periods:[]})
+  works:z.array(OpenRowSchema).default([])
 }).passthrough();
 
 export const ScopeRankingResponseSchema=z.object({
