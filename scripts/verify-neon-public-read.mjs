@@ -32,6 +32,8 @@ for(const [table,columns,options] of [
   ['lrunes_time','record_id,record_type,resource_id,label,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility'],
   ['lo3rwang_galaxy','uid,title,content,source_name,createtime'],
   ['lo3rwang_galaxy_media','media_id,galaxy_link,source_native_id,media_type,title,url,meta_tags,createtime'],
+  ['lrunes_galaxy','uid,title,content,source_name,createtime'],
+  ['lrunes_galaxy_media','media_id,galaxy_link,source_native_id,media_type,title,url,meta_tags,createtime'],
   ['lo3rwang_source_stats','source_name,work_count'],
   ['lo3rwang_source_daily','source_name,work_date,work_count'],
   ['runes','rune_id,rune_name'],
