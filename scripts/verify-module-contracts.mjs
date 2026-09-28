@@ -64,8 +64,11 @@ if(!governanceManagement.includes("scopeId!=='loc'?<CultureTimelineEditor")){
 }
 
 const aggregateQuery=readFileSync(resolve(root,'app/loc/aggregate-query.js'),'utf8');
-for(const token of ["silver.lo3rwang_galaxy_preview","content_preview","columns:'uid,title,url,media_link'"]){
-  if(!aggregateQuery.includes(token))failures.push(`aggregate-query: fixed DB-side list preview contract missing ${token}`);
+if(aggregateQuery.includes('galaxy_preview')||aggregateQuery.includes('content_preview')){
+  failures.push('aggregate-query: retired Galaxy preview relation returned');
+}
+if(!aggregateQuery.includes("columns:'uid,title,url,media_link'")){
+  failures.push('aggregate-query: bounded Galaxy summary metadata contract missing');
 }
 const summaryBlock=aggregateQuery.split('export async function selectGalaxySummaries')[1]?.split('export async function selectGalaxyIdentity')[0]||'';
 if(/columns:[^\n]*['",]content(?:['",]|$)/.test(summaryBlock)||/row\.content(?:\b|\[)/.test(summaryBlock)){
