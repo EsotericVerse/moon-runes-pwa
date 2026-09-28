@@ -13,36 +13,34 @@ import {
 } from './io-controller';
 import {clearRuntimeTextIndexes} from './text-engine.mjs';
 
-const CanonicalTableSchema=z.enum([
+const FixedCanonicalTableSchema=z.enum([
   'api.user_records','api.user_settings',
   'silver.manage','silver.resource_visibility',
-  'silver.lo3rwang','silver.lrunes',
-  'silver.lo3rwang_style','silver.lrunes_style',
-  'silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media',
-  'silver.lrunes_galaxy','silver.lrunes_galaxy_media','silver.lrunes_daily',
   'silver.runes','silver.runes_group','silver.runes_etc',
-  'silver.faq_entries',
+  'silver.faq_entries'
 ]);
-const ScopeTimeTableSchema=z.string().regex(/^silver\.[a-z][a-z0-9]*_time$/);
-const TableSchema=z.union([CanonicalTableSchema,ScopeTimeTableSchema]);
-const WritableCanonicalTableSchema=z.enum([
+const ScopeMainTableSchema=z.string().regex(/^silver\.[a-z][a-z0-9]*$/);
+const ScopeDataTableSchema=z.string().regex(/^silver\.[a-z][a-z0-9]*_(?:style|galaxy|galaxy_media|daily|time)$/);
+const TableSchema=z.union([FixedCanonicalTableSchema,ScopeMainTableSchema,ScopeDataTableSchema]);
+const WritableFixedTableSchema=z.enum([
   'api.user_records','api.user_settings',
-  'silver.manage','silver.resource_visibility',
-  'silver.lo3rwang','silver.lrunes',
-  'silver.lo3rwang_style','silver.lrunes_style',
-  'silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media',
-  'silver.lrunes_galaxy','silver.lrunes_galaxy_media'
+  'silver.manage','silver.resource_visibility'
 ]);
-const WritableTableSchema=z.union([WritableCanonicalTableSchema,ScopeTimeTableSchema]);
+const WritableScopeTableSchema=z.string().regex(/^silver\.[a-z][a-z0-9]*(?:_(?:style|galaxy|galaxy_media|time))?$/);
+const WritableTableSchema=z.union([WritableFixedTableSchema,WritableScopeTableSchema]);
 const RowSchema=z.record(z.string(),z.unknown());
-const TEXT_INDEX_TABLES=new Set([
-  'silver.manage','silver.lo3rwang_galaxy','silver.lo3rwang_galaxy_media','silver.lrunes_galaxy','silver.lrunes_galaxy_media'
-]);
+function isGalaxyTable(table){return /^silver\.[a-z][a-z0-9]*_galaxy$/.test(String(table||''));}
+function isMediaTable(table){return /^silver\.[a-z][a-z0-9]*_galaxy_media$/.test(String(table||''));}
+function isScopeMainTable(table){
+  const value=String(table||'');
+  return /^silver\.[a-z][a-z0-9]*$/.test(value)
+    && !['silver.manage','silver.resource_visibility','silver.runes','silver.runes_group','silver.runes_etc','silver.faq_entries'].includes(value);
+}
 function invalidateTextIndexes(table){
-  if(TEXT_INDEX_TABLES.has(String(table||'')))clearRuntimeTextIndexes();
+  if(String(table||'')==='silver.manage'||isGalaxyTable(table)||isMediaTable(table))clearRuntimeTextIndexes();
 }
 function isMediaRecord(table,row){
-  return table==='silver.lo3rwang_galaxy_media'||table==='silver.lrunes_galaxy_media';
+  return isMediaTable(table);
 }
 function assertMediaMetaTagsOnCreate(table,rows){
   for(const row of rows||[]){
@@ -55,7 +53,7 @@ function assertMediaMetaTagsOnCreate(table,rows){
   }
 }
 function assertMediaMetaTagsOnUpdate(table,patch){
-  if(['silver.lo3rwang_galaxy_media','silver.lrunes_galaxy_media'].includes(table)&&Object.prototype.hasOwnProperty.call(patch,'meta_tags')&&!String(patch.meta_tags??'').trim()){
+  if(isMediaTable(table)&&Object.prototype.hasOwnProperty.call(patch,'meta_tags')&&!String(patch.meta_tags??'').trim()){
     throw new NeonRepositoryError('Media meta_tags cannot be cleared; LOC preserves supplied classification and does not replace it automatically.',{
       table:String(table),code:'MEDIA_META_TAGS_REQUIRED'
     });
@@ -114,21 +112,18 @@ function applyFilters(query,filters=[]){
   return query;
 }
 
-const READ_KEYS={
-  'silver.lo3rwang_galaxy':['uid'],
-  'silver.lo3rwang_galaxy_media':['media_id'],
-  'silver.lrunes_galaxy':['uid'],
-  'silver.lrunes_galaxy_media':['media_id'],
-  'silver.lrunes_daily':['record_id'],
-  'silver.lo3rwang':['id'],
-  'silver.lrunes':['id'],
-  'silver.runes':['rune_id'],
-  'silver.runes_group':['group_id'],
-  'silver.runes_etc':['rune_id','dir','type'],
-  'silver.lo3rwang_time':['record_id'],
-  'silver.lrunes_time':['record_id'],
-  'silver.manage':['id']
-};
+function readKeysFor(table){
+  if(isGalaxyTable(table))return ['uid'];
+  if(isMediaTable(table))return ['media_id'];
+  if(/_daily$/.test(String(table||'')))return ['record_id'];
+  if(/_time$/.test(String(table||'')))return ['record_id'];
+  if(isScopeMainTable(table))return ['id'];
+  if(table==='silver.runes')return ['rune_id'];
+  if(table==='silver.runes_group')return ['group_id'];
+  if(table==='silver.runes_etc')return ['rune_id','dir','type'];
+  if(table==='silver.manage')return ['id'];
+  return [];
+}
 
 function parseRows(rows,table){
   const parsed=z.array(RowSchema).safeParse(rows??[]);
@@ -156,7 +151,7 @@ async function executeSelectOnce(table,{
     query=query.or(expression);
   }
   const stableOrders=[...orders];
-  for(const column of READ_KEYS[table]||[]){
+  for(const column of readKeysFor(table)){
     if(!stableOrders.some(order=>order.column===column))stableOrders.push({column,ascending:true});
   }
   for(const order of stableOrders){
