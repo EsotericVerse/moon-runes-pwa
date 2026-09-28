@@ -7,6 +7,12 @@ import {useNeonAccount} from './use-neon-account';
 import ContentEditorV2 from '../modular-v2/ContentEditorV2';
 import {createUid8} from './uid';
 
+function targetIds(value){
+  const values=Array.isArray(value)?value:String(value||'').split(/[,，]/);
+  const ids=[...new Set(values.map(item=>String(item||'').trim()).filter(Boolean))];
+  return ids.length?ids:null;
+}
+
 const blank=()=>({
   title:'',body:'',source:'',url:'',source_id:'',target_id:'',ref_id:'',createtime:'',
   includeStatistics:true,hidden:false,showLink:true,showSource:true
@@ -32,7 +38,7 @@ export default function ManagementArticlePublisher({scopeId}){
       await insertNeonRows('silver.lo3rwang_galaxy',[{
         uid,category:'article',content_type:'article',
         title:draft.title.trim()||null,content:draft.body.trim()||null,
-        source_id:draft.source_id.trim()||null,target_id:draft.target_id.trim()||null,ref_id:draft.ref_id.trim()||null,
+        source_id:draft.source_id.trim()||null,target_id:targetIds(draft.target_id),ref_id:draft.ref_id.trim()||null,
         url:draft.url.trim()||null,searchable:!draft.hidden,
         createtime:draft.createtime?new Date(draft.createtime).toISOString():now,
         source_name:draft.source.trim()
