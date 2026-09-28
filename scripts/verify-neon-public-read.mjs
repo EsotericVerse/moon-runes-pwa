@@ -24,6 +24,7 @@ async function probe(client,table,columns,{filters=[]}={}){
   if(error)throw new Error(table+': '+(error.code||'')+' '+error.message);
 }
 
+// silver.game SSOT contract: fail RC when any required Game segment is missing.
 async function verifyGameContract(client){
   const {data,error,status}=await client.schema('silver').from('game')
     .select('game_key,record_type,rule_code')
