@@ -214,7 +214,7 @@ export default function SearchV2(){
       const result=toResult({...detail,resolved_links:detail.links||[]},detail.source_name||'文字展示','',collection.id,detailScope,settingsMap);
       setResults([result]);
       setFullTextKey(result.key);
-      setFullText(String(detail.content||''));
+      setFullText(decodeCultureText(detail.content||''));
       setTotalCount(1);
       setStatus('已載入關聯文字。');
     }catch(exception){
@@ -253,7 +253,7 @@ export default function SearchV2(){
         columns:runeScope?'record_id,content':'uid,content'
       });
       if(!fullRow)throw new Error('找不到全文資料。');
-      setFullText(String(fullRow.content||''));
+      setFullText(decodeCultureText(fullRow.content||''));
     }catch(exception){
       setFullTextError(String(exception?.message||exception||'全文載入失敗。'));
     }finally{
