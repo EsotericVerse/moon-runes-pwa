@@ -105,7 +105,7 @@ export async function selectStyleCatalog(scopeId=''){
 
 export function styleTextOf(row={}){
   return [
-    row.title,row.content,row.meta_tags,row.style_tags,row.description,row.media_metadata_text
+    row.title,row.content,row.meta_tags,row.description,row.media_metadata_text
   ].filter(Boolean).join(' ');
 }
 
