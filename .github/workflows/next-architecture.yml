@@ -4,7 +4,6 @@ on:
   pull_request:
     paths:
       - "app/**"
-      - "js/locMoonPhase.js"
       - "scripts/**"
       - "package.json"
       - "next.config.mjs"
