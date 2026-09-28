@@ -74,13 +74,13 @@ function GovernanceHome(){
     {scopeId==='loc'?<section className="loc-card">
       <p className="loc-eyebrow">Management</p>
       <h2>系統管理</h2>
-      <p>Admin 是獨立管理站，不屬於 Scope。</p>
+      <p>管理功能使用獨立管理站。</p>
       <a className="loc-button primary" href={adminHref}>進入獨立管理站</a>
     </section>:<section className="loc-card">
-      <p className="loc-eyebrow">Scope Management</p>
+      <p className="loc-eyebrow">Management</p>
       <h2>{getScopeV2(scopeId).label}管理</h2>
-      <p>時期、關鍵詞／風格分類與其他 Scope 設定集中在這裡；頁面文字仍在原頁直接編輯。</p>
-      <a className="loc-button primary" href={scopeHrefV2(scopeId,'governance/manage')}>進入 Scope 管理</a>
+      <p>時期、關鍵詞／風格分類與其他設定集中在這裡；頁面文字仍在原頁直接編輯。</p>
+      <a className="loc-button primary" href={scopeHrefV2(scopeId,'governance/manage')}>進入管理</a>
     </section>}
   </FeaturePageV2>;
 }
