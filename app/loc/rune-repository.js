@@ -1,12 +1,11 @@
 'use client';
 
-import {deleteNeonRows,insertNeonRows,selectNeonCatalog} from './neon-repository';
+import {selectNeonCatalog,updateNeonRows} from './neon-repository';
 
 const RUNE_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,char_action,positive_keywords,negative_keywords,extra_rules,extra_notes';
 const RUNE_DETAIL_COLUMNS='rune_evolution_history,myth_story,soul_question,practice_challenge,ritual_advice,harmony_advice';
 const GROUP_COLUMNS='group_id,english_name,desc,quality,style,runeslist';
 const ETC_COLUMNS='rune_id,dir,type,desc';
-const KEYWORD_COLUMNS='rune_number,keyword_group,keyword';
 const MOON_PHASE_LABELS=Object.freeze({1:'新月',2:'上弦',3:'滿月',4:'下弦'});
 const CARD_ATTRIBUTE_LABELS=Object.freeze({1:'正面',2:'中平',3:'負面',4:'未知'});
 const DIRECTION_FIELDS=Object.freeze({1:'positive_meaning',2:'half_positive_meaning',3:'half_reverse_meaning',4:'reverse_meaning'});
@@ -65,18 +64,6 @@ function mergeRuneEtc(runes,etcRows){
   return [...map.values()];
 }
 
-function keywordMap(rows){
-  const map=new Map();
-  for(const row of rows||[]){
-    const number=Number(row?.rune_number);
-    if(!Number.isInteger(number)||!row?.keyword)continue;
-    if(!map.has(number))map.set(number,{positive:[],negative:[]});
-    const bucket=map.get(number);
-    if(row.keyword_group==='positive')bucket.positive.push(row.keyword);
-    if(row.keyword_group==='negative')bucket.negative.push(row.keyword);
-  }
-  return map;
-}
 
 export async function selectRuneGroupCatalog(){
   const result=await selectNeonCatalog('silver.runes_group',{columns:GROUP_COLUMNS});
@@ -134,26 +121,11 @@ export async function selectRuneDetail(runeNumber,{types=['direction','lots','da
 }
 
 export async function selectRuneKeywordCatalog(){
-  const [runes,groups,keywords]=await Promise.all([
+  const [runes,groups]=await Promise.all([
     selectRuneCatalog(),
-    selectRuneGroupCatalog(),
-    selectNeonCatalog('silver.lrunes',{
-      columns:KEYWORD_COLUMNS,
-      filters:[
-        {column:'record_type',operator:'eq',value:'keyword'},
-        {column:'active',operator:'eq',value:true}
-      ],
-      orders:[{column:'rune_number',ascending:true},{column:'order_no',ascending:true}]
-    })
+    selectRuneGroupCatalog()
   ]);
-  const keywordsByRune=keywordMap(keywords.rows);
-  return {
-    groups,
-    runes:runes.map(row=>{
-      const bucket=keywordsByRune.get(Number(row.rune_number))||{positive:[],negative:[]};
-      return {...row,positive_keywords:bucket.positive.join('、'),negative_keywords:bucket.negative.join('、')};
-    })
-  };
+  return {groups,runes};
 }
 
 function splitKeywords(value){
@@ -163,26 +135,13 @@ function splitKeywords(value){
 export async function updateRuneKeywords({runeNumber,positiveKeywords,negativeKeywords}){
   const number=Number(runeNumber);
   if(!Number.isInteger(number)||number<0||number>66)throw new TypeError('符文編號無效');
-  for(const group of ['positive','negative']){
-    await deleteNeonRows('silver.lrunes',{filters:[
-      {column:'record_type',operator:'eq',value:'keyword'},
-      {column:'rune_number',operator:'eq',value:number},
-      {column:'keyword_group',operator:'eq',value:group}
-    ],returning:null});
-  }
-  const rows=[];
-  for(const [group,value] of [['positive',positiveKeywords],['negative',negativeKeywords]]){
-    splitKeywords(value).forEach((keyword,index)=>rows.push({
-      record_id:'keyword:'+number+':'+group+':'+keyword,
-      record_type:'keyword',
-      rune_number:number,
-      keyword_group:group,
-      keyword,
-      order_no:index+1,
-      active:true,
-      UpdateTime:new Date().toISOString()
-    }));
-  }
-  if(rows.length)await insertNeonRows('silver.lrunes',rows,{returning:'record_id'});
+  const rows=await updateNeonRows('silver.runes',{
+    positive_keywords:splitKeywords(positiveKeywords).join('、'),
+    negative_keywords:splitKeywords(negativeKeywords).join('、')
+  },{
+    filters:[{column:'rune_id',operator:'eq',value:number}],
+    returning:'rune_id'
+  });
+  if(!rows.length)throw new Error('符文不存在');
   return {rune_number:number};
 }
