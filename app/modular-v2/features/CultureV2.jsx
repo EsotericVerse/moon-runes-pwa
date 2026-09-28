@@ -278,7 +278,7 @@ export default function CultureV2(){
               {classificationBucketsQuery.isFetching?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
               {classificationBucketsQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(classificationBucketsQuery.error)}</p>:null}
               {!classificationBucketsQuery.isFetching&&!classificationBucketsQuery.error&&!classificationBuckets.length
-                ?<p className='scope-v2-status'>{classificationMode==='source'&&classificationScope==='lunarunes'?'此 Scope 沒有作品來源分類。':'目前沒有此分類資料。'}</p>:null}
+                ?<p className='scope-v2-status'>{classificationMode==='source'&&classificationScope==='lunarunes'?'目前沒有作品來源分類。':'目前沒有此分類資料。'}</p>:null}
               {classificationBuckets.length?<CultureTimelineV2
                 items={classificationBuckets}
                 labelOf={item=>classificationMode==='source'
