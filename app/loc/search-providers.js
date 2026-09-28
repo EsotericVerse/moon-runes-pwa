@@ -152,7 +152,7 @@ const authorMedia=makeProvider({
   columns:['media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','createtime'],
   searchFields:['title','meta_tags','media_type','url','source_native_id'],
   dateColumn:'createtime',
-  filters:[]
+  filters:[{column:'galaxy_link',operator:'is',value:null}]
 });
 
 const authorMediaAll=makeProvider({
@@ -227,7 +227,7 @@ const runeMedia=makeProvider({
   columns:['media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','createtime'],
   searchFields:['title','meta_tags','media_type','url','source_native_id'],
   dateColumn:'createtime',
-  filters:[]
+  filters:[{column:'galaxy_link',operator:'is',value:null}]
 });
 
 const runeMediaAll=makeProvider({
