@@ -19,7 +19,7 @@ skills/     GPT/agent skills
 .github/    CI and repository automation
 ```
 
-`lib/` and the former shared root `js/` runtime are retired. Current application modules belong under `app/`. The only governed root-JS exception is `js/locMoonPhase.js`, retained as a small standalone moon-phase utility.
+`lib/` and the former shared root `js/` runtime are retired. Current application modules belong under `app/`; root `js/` must not contain runtime modules.
 
 ## Frozen root sources
 
@@ -63,10 +63,6 @@ Current application JavaScript lives with its owning module under `app/`. Shared
 
 The only governed root-JS exception is:
 
-```text
-js/locMoonPhase.js
-```
-
 This exception is retained because the lunar-day → LOC moon-phase calculation is a small standalone utility with no data authority, cache, registry or compatibility responsibility. It must not become a new shared-runtime root.
 
 ### Assets
@@ -82,7 +78,7 @@ Asset migration is not complete until every consumer is updated and visual/funct
 | Historical/current location | Status | Rule |
 |---|---|---|
 | `lib/` | retired | do not recreate a parallel shared-runtime root |
-| `js/` | exception-only | only `locMoonPhase.js` may remain; Current modules belong under `app/` |
+| `js/` | retired | Current modules belong under `app/`; do not recreate root runtime modules |
 | `64images/` | retired pending parity audit | card assets must exist under governed LunaRunes paths before retirement is considered valid |
 | `pics/` | active/frozen | retain approved source diagrams; do not delete by migration rule |
 | root `LunaRune66.xlsx` | frozen canonical source | must remain in place unless explicitly approved otherwise |
