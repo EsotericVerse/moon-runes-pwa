@@ -44,7 +44,7 @@ for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs','app/loc/neon-c
 
 const statisticsView=readFileSync(resolve(root,'app/modular-v2/features/StatisticsV2.jsx'),'utf8');
 if(!/selectScopeRankingAll\(scopeId/.test(statisticsView))failures.push('StatisticsV2: shared canonical ranking query missing');
-if(!/PagedResultV2/.test(statisticsView))failures.push('StatisticsV2: UI pagination missing');
+if(!/IncrementalLoadV2/.test(statisticsView))failures.push('StatisticsV2: shared incremental ranking loader missing');
 if(/selectScopeRankingPage\(/.test(statisticsView))failures.push('StatisticsV2: retired duplicate SQL ranking pagination returned');
 
 const cultureView=readFileSync(resolve(root,'app/modular-v2/features/CultureV2.jsx'),'utf8');
