@@ -37,14 +37,12 @@ export default function ScopeNavV2(){
     window.location.assign(url.toString());
   }
 
-  if(scopeId==='admin')return <nav className="scope-v2-nav" aria-label="管理站導覽">
-    <NavTarget href={locHome} label="LOC 主頁"/>
-  </nav>;
+  const navScopeId=scopeId==='admin'?'loc':scopeId;
 
   return <nav className="scope-v2-nav" aria-label="全站導覽">
     <NavTarget href={locHome} label="LOC 主頁" current={targetIsCurrent(locHome,host,pathname)}/>
     {NAV_FEATURE_ORDER.map(id=>FEATURES_V2.find(item=>item.id===id)).filter(Boolean).map(item=>
-      <NavTarget key={item.id} href={featureHrefV2(scopeId,item.id)} label={item.label} current={currentFeature===item.id}/>
+      <NavTarget key={item.id} href={featureHrefV2(navScopeId,item.id)} label={item.label} current={scopeId!=='admin'&&currentFeature===item.id}/>
     )}
     <form onSubmit={submitSearch} role="search" className="scope-v2-search">
       <input name="q" type="search" aria-label="搜尋文字" placeholder="搜尋" value={searchText} onChange={event=>setSearchText(event.target.value)}/>
