@@ -23,10 +23,11 @@ import FeaturePageV2 from '../FeaturePageV2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
 import WorkFullTextV2 from '../WorkFullTextV2';
 import {WORK_FALLBACK_TITLE,workDisplayText,workDisplayTitle} from '../work-display-model.v2';
-import PagedResultV2 from '../PagedResultV2';
+import IncrementalLoadV2 from '../IncrementalLoadV2';
+import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
 import ContentEditorV2 from '../ContentEditorV2';
 
-const CULTURE_WORK_PAGE_SIZE=20;
+const CULTURE_WORK_PAGE_SIZE=DEFAULT_LIST_BATCH_SIZE;
 
 function labelOf(item,index){
   return item?.display_label||item?.name||item?.title||item?.period||'時期 '+(index+1);
@@ -77,6 +78,7 @@ export default function CultureV2(){
   const [classificationMode,setClassificationMode]=useState(scopeId==='lunarunes'?'media':'source');
   const [selectedCategory,setSelectedCategory]=useState('');
   const [workPage,setWorkPage]=useState(0);
+  const [workRows,setWorkRows]=useState([]);
   const [activeWorkPeriod,setActiveWorkPeriod]=useState(null);
   const [fullTextKey,setFullTextKey]=useState('');
   const [fullText,setFullText]=useState('');
@@ -163,19 +165,19 @@ export default function CultureV2(){
     enabled:!isLoc&&Boolean(selectedWorkPeriod?.start_date&&selectedGroup),
     staleTime:5*60_000
   });
-  const groupedCount=Number(periodWorksQuery.data?.totalCount)||selectedCount;
-  const workPageCount=Math.max(1,Math.ceil(groupedCount/CULTURE_WORK_PAGE_SIZE));
 
   useEffect(()=>{
     setClassificationMode(scopeId==='lunarunes'?'media':'source');
     setSelectedCategory('');
     setWorkPage(0);
+    setWorkRows([]);
     setActiveWorkPeriod(null);
   },[scopeId]);
 
   useEffect(()=>{
     setSelectedCategory('');
     setWorkPage(0);
+    setWorkRows([]);
     setFullTextKey('');
     setFullText('');
     setFullTextError('');
@@ -185,7 +187,19 @@ export default function CultureV2(){
     setFullTextKey('');
     setFullText('');
     setFullTextError('');
+    if(!selectedCategory)setWorkRows([]);
   },[selectedCategory,workPage]);
+
+  useEffect(()=>{
+    const next=periodWorksQuery.data?.rows||[];
+    if(!next.length)return;
+    setWorkRows(current=>{
+      if(workPage===0)return next;
+      const map=new Map(current.map((row,index)=>[String(row.key||row.uid||row.entry_id||index),row]));
+      next.forEach((row,index)=>map.set(String(row.key||row.uid||row.entry_id||('next-'+index)),row));
+      return [...map.values()];
+    });
+  },[periodWorksQuery.data,workPage]);
 
   const periodVolumeByStart=useMemo(()=>{
     const map=new Map();
@@ -393,7 +407,7 @@ export default function CultureV2(){
                 {periodWorksQuery.isFetching?<p className='scope-v2-status'>載入第 {workPage+1} 頁…</p>:null}
                 {periodWorksQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksQuery.error)}</p>:null}
                 <div className='scope-v2-culture-source-work-scroll'>
-                  {(periodWorksQuery.data?.rows||[]).map((work,index)=><WorkSummaryCardV2
+                  {workRows.map((work,index)=><WorkSummaryCardV2
                     key={work.key||work.uid||work.entry_id||String(work.createtime||work.created_at)+'-'+index}
                     title={workDisplayTitle({
                       title:work.title,
@@ -427,16 +441,8 @@ export default function CultureV2(){
                     />:null}
                   </WorkSummaryCardV2>)}
                 </div>
-                {!periodWorksQuery.isFetching&&!periodWorksQuery.error&&!(periodWorksQuery.data?.rows||[]).length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
-                <PagedResultV2
-                  label="作品"
-                  totalCount={groupedCount}
-                  offset={workPage*CULTURE_WORK_PAGE_SIZE}
-                  pageSize={CULTURE_WORK_PAGE_SIZE}
-                  hasMore={workPage+1<workPageCount}
-                  onPrevious={()=>setWorkPage(page=>Math.max(0,page-1))}
-                  onNext={()=>setWorkPage(page=>Math.min(workPageCount-1,page+1))}
-                />
+                {!periodWorksQuery.isFetching&&!periodWorksQuery.error&&!workRows.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+                <IncrementalLoadV2 hasMore={Boolean(periodWorksQuery.data?.hasMore)} loading={periodWorksQuery.isFetching} error={periodWorksQuery.error} onLoadMore={()=>setWorkPage(page=>page+1)} label="還有更多作品"/>
               </section>:null}
             </section>:null}
       </>:null}

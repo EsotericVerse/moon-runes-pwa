@@ -7,7 +7,8 @@ import {useNeonAccount} from '../../loc/use-neon-account';
 import {FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation.v2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
-import PagedResultV2 from '../PagedResultV2';
+import IncrementalLoadV2 from '../IncrementalLoadV2';
+import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
 import {clearRuntimeTextIndexes} from '../../loc/text-engine.mjs';
 
 
@@ -41,7 +42,7 @@ async function updateNeonRows(table,values,{filters=[]}={}){
 }
 
 const MEDIA_TYPE_LABELS={suno:'Suno',instagram:'Instagram'};
-const MEDIA_PAGE_SIZE=20;
+const MEDIA_PAGE_SIZE=DEFAULT_LIST_BATCH_SIZE;
 function splitTags(value){
   return String(value||'').split(/[,，]/).map(tag=>tag.trim()).filter(Boolean);
 }
@@ -60,6 +61,7 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
   const tables=tableNames(databaseScopeId);
   const [selectedTag,setSelectedTag]=useState('');
   const [mediaPage,setMediaPage]=useState(0);
+  const [loadedMediaRows,setLoadedMediaRows]=useState([]);
   const [canEdit,setCanEdit]=useState(false);
   const [editingId,setEditingId]=useState('');
   const [draft,setDraft]=useState('');
@@ -83,7 +85,7 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
     if(!selectedTag&&tagQuery.data?.length)setSelectedTag(String(tagQuery.data[0].term||''));
   },[selectedTag,tagQuery.data]);
 
-  useEffect(()=>{setMediaPage(0);},[selectedTag]);
+  useEffect(()=>{setMediaPage(0);setLoadedMediaRows([]);},[selectedTag,databaseScopeId]);
 
   useEffect(()=>{
     let active=true;
@@ -99,13 +101,12 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
     enabled:Boolean(selectedTag),
     queryFn:async()=>{
       const offset=mediaPage*MEDIA_PAGE_SIZE;
-      const {rows,count}=await selectNeonRows(tables.media,{
+      const {rows}=await selectNeonRows(tables.media,{
         columns:'media_id,galaxy_link,title,url,media_type,meta_tags,createtime',
         filters:[{column:'meta_tags',operator:'ilike',value:'%'+selectedTag+'%'}],
         orders:[{column:'createtime',ascending:false,nullsFirst:false}],
         limit:MEDIA_PAGE_SIZE,
-        offset,
-        count:'exact'
+        offset
       });
       const galaxyIds=[...new Set(rows.map(row=>String(row.galaxy_link||'').trim()).filter(Boolean))];
       const galaxyRows=galaxyIds.length
@@ -115,11 +116,9 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
         })).rows
         :[];
       const byId=new Map(galaxyRows.map(row=>[String(row.uid),row]));
-      const totalCount=Math.max(0,Number(count??rows.length)||0);
       return {
         rows:rows.map(row=>({...row,galaxy_relation:byId.get(String(row.galaxy_link||''))||null})),
-        totalCount,
-        hasMore:offset+rows.length<totalCount
+        hasMore:rows.length===MEDIA_PAGE_SIZE
       };
     },
     staleTime:15000
@@ -138,9 +137,19 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
     }catch(error){setMessage(error?.message||'更新失敗。');}
   }
 
+  useEffect(()=>{
+    const next=mediaQuery.data?.rows||[];
+    if(!next.length)return;
+    setLoadedMediaRows(current=>{
+      if(mediaPage===0)return next;
+      const map=new Map(current.map(row=>[String(row.media_id),row]));
+      next.forEach(row=>map.set(String(row.media_id),row));
+      return [...map.values()];
+    });
+  },[mediaQuery.data,mediaPage]);
+
   const tags=tagQuery.data||[];
-  const mediaRows=mediaQuery.data?.rows||[];
-  const totalCount=Number(mediaQuery.data?.totalCount||0);
+  const mediaRows=loadedMediaRows;
 
   return <div className="scope-v2-media-meta-settings">
     <section className="scope-v2-inline-card">
@@ -184,15 +193,7 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
           </WorkSummaryCardV2>;
         })}
       </div>
-      {!mediaQuery.isPending&&!mediaQuery.error?<PagedResultV2
-        label="作品"
-        totalCount={totalCount}
-        offset={mediaPage*MEDIA_PAGE_SIZE}
-        pageSize={MEDIA_PAGE_SIZE}
-        hasMore={Boolean(mediaQuery.data?.hasMore)}
-        onPrevious={()=>setMediaPage(page=>Math.max(0,page-1))}
-        onNext={()=>setMediaPage(page=>page+1)}
-      />:null}
+      <IncrementalLoadV2 hasMore={Boolean(mediaQuery.data?.hasMore)} loading={mediaQuery.isFetching} error={mediaQuery.error} onLoadMore={()=>setMediaPage(page=>page+1)} label="還有更多媒體"/>
       {message?<p className="scope-v2-status" role="status">{message}</p>:null}
     </section>:null}
   </div>;
