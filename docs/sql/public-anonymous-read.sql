@@ -14,6 +14,7 @@ GRANT USAGE ON SCHEMA silver TO anonymous;
 
 GRANT SELECT ON TABLE
   silver.faq_entries,
+  silver.content_blocks,
   silver.lo3rwang_time,
   silver.lrunes_time,
   silver.lo3rwang_galaxy,
