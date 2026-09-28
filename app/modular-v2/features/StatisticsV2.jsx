@@ -229,7 +229,7 @@ function StatisticsPanel({scopeId,navigation,types}){
 function MediaPanel({scopeId}){
   return <section className="scope-v2-stat-section">
     <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Media Metadata</p><h2>多媒體設定</h2></div></header>
-    {scopeId==='lo3rwang'?<MediaMetaSettingsV2 databaseScopeId="lo3rwang"/>:<p className="scope-v2-status">此 Scope 的多媒體設定沿用既有資料治理。</p>}
+    {scopeId==='lo3rwang'?<MediaMetaSettingsV2 databaseScopeId="lo3rwang"/>:null}
   </section>;
 }
 
