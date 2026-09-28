@@ -16,6 +16,7 @@ RC8 的工程目標是收斂 Current：
 - 不保留 compatibility facade、virtual data path loader 或第二套路由權威。
 - 共用能力集中在模組，Feature/UI 不重造資料 transport、batch、validation 或 route 規則。
 - 自動分析只偵測變化、提供建議，不替使用者定義事件意義。
+- LunaRunes Game 已完成 RC8 前的圖形化與結構收斂：遊戲程式、文件與素材映射集中於 `app/lrunes/game/`，符文資料直接讀取 `silver.runes` 與 `silver.runes_etc`。
 
 歷史差異由 Git history 保存，不在 Current tree 保留可執行舊架構。
 
@@ -91,7 +92,7 @@ legacy static JS runtime
 LOC1–8 service/index builders
 ```
 
-LunaRunes canonical rune data由 `app/loc/rune-repository.js` 讀取。
+LunaRunes 一般功能的 canonical rune data 仍由 `app/loc/rune-repository.js` 共用讀取；Game 為獨立 feature，直接讀取 `silver.runes` 與 `silver.runes_etc`，不建立第二套符文資料。
 
 ## JavaScript Boundary
 
