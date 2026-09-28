@@ -20,7 +20,8 @@ requireText('app/loc/neon-client.js',[/createClient/ ,/getNeonPublicToken/ ,/res
 requireText('app/modular-v2/features/KeywordSettingsV2.jsx',[/from ['"]@tanstack\/react-query['"]/ ,/selectRuneKeywordCatalog/],'Keyword settings Query/rune repository interop');
 requireText('app/modular-v2/features/StatisticsV2.jsx',[/from ['\"]@tanstack\\/react-query['\"]/ ,/selectScopeRankingAll/ ,/PagedResultV2/ ,/from ['\"]recharts['\"]/],'Statistics Query/Neon/Recharts interop');
 requireText('app/modular-v2/features/CultureV2.jsx',[/from ['"]@tanstack\/react-query['"]/ ,/selectScopeCultureData/ ,/CultureTimelineV2/],'Culture Query/Neon/Timeline interop');
-requireText('app/modular-v2/ScopeManagementV2.jsx',[/from ['"]@tanstack\/react-query['"]/ ,/useNeonAccount/ ,/neon-scope-governance/],'Admin Query/Neon Auth boundary');
+requireText('app/loc/GovernanceManagement.jsx',[/from ['"]react-select['"]/ ,/useNeonAccount/ ,/StyleKeywordSettingsV2/ ,/CultureTimelineEditor/],'Scope management React Select/Neon Auth boundary');
+requireText('app/loc/views/AdminHomeView.jsx',[/from ['"]react-select['"]/ ,/useNeonAccount/ ,/canManageGlobalSync/],'Admin React Select/Neon Auth boundary');
 // FlexSearch is the shared text engine. Neon remains SSOT and adaptive IO supplies index batches.
 requireText('app/loc/text-engine.mjs',[/from ['"]flexsearch['"]/ ,/new Index/ ,/new Resolver/ ,/Charset\.CJK/],'Shared FlexSearch text engine');
 requireText('app/loc/search-providers.js',[/getRuntimeTextIndex/ ,/searchTextIndex/ ,/neonPublicClient/],'Search/FlexSearch Neon client boundary');
