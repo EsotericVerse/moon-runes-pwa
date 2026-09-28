@@ -245,6 +245,17 @@ export default function CultureV2(){
                   :(item.display_label||item.group_label)}
                 focus={{}}
                 mode={classificationMode==='source'?'source':'overview'}
+                onSelect={item=>{
+                  const term=String(item?.group||'').trim();
+                  if(!term)return;
+                  const key=classificationMode==='source'
+                    ?'source:'+term
+                    :'media:type:'+term;
+                  if(categoryGroups.some(group=>group.category_key===key)){
+                    setSelectedCategory(key);
+                    setWorkPage(0);
+                  }
+                }}
               />:null}
 
 
