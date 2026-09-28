@@ -176,14 +176,6 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
     columns:'uid,category,content_type,source_name,title,createtime,url,source_id,target_id,ref_id,media_link',
     filters:[{column:'uid',operator:'in',value:uids}]
   });
-  const previewResult=await selectNeonAllRows('silver.lo3rwang_galaxy_preview',{
-    columns:'uid,content_preview',
-    filters:[{column:'uid',operator:'in',value:uids}]
-  });
-  const previewById=new Map(previewResult.rows.map(row=>[
-    String(row.uid),
-    decodeCultureText(row.content_preview||'').trim()
-  ]));
   const mediaIds=[...new Set(textResult.rows.flatMap(row=>Array.isArray(row.media_link)?row.media_link:[]).map(String).filter(Boolean))];
   const [linkedMediaResult,forwardMediaResult]=await Promise.all([
     selectNeonAllRows('silver.lo3rwang_galaxy_media',{
@@ -228,7 +220,7 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
     const rawTitle=decodeCultureText(item.title||row.title||'').trim();
     const sourceName=sourceLabel(row.source_name);
     const validTitle=rawTitle&&rawTitle.toLowerCase()!==sourceName.toLowerCase()?rawTitle:'';
-    const bodyPreview=previewById.get(String(row.uid))||'';
+    const bodyPreview='';
     const displayTitle=validTitle||bodyPreview||row.uid;
     const mediaDescription=linkedMedia.map(mediaMetadataDescription).filter(Boolean).join(' ｜ ');
     return {
