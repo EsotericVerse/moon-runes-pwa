@@ -69,6 +69,30 @@ export async function selectAuthorStyleCatalog(){
   return selectScopeStyleCatalog('lo3rwang');
 }
 
+export async function selectKeywordCatalog(scopeId='lunarunes'){
+  const id=String(scopeId||'').trim();
+  if(id==='lo3rwang')return selectAuthorStyleCatalog();
+  if(!['lunarunes','lrunes'].includes(id))return [];
+  const result=await selectNeonCatalog('silver.runes',{
+    columns:'rune_id,rune_name,group_name,positive_keywords,negative_keywords,extra_rules',
+    orders:[{column:'rune_id',ascending:true}]
+  });
+  const output=[];
+  for(const row of result.rows||[]){
+    const runeNumber=Number(row.rune_id);
+    const base={
+      rune_number:runeNumber,
+      style_label:String(row.rune_name||'').trim(),
+      style_group:String(row.group_name||'').trim(),
+      order:runeNumber
+    };
+    for(const keyword of runeKeywordEntries(row.positive_keywords))output.push({...base,keyword,keyword_group:'positive'});
+    for(const keyword of runeKeywordEntries(row.negative_keywords))output.push({...base,keyword,keyword_group:'negative'});
+    for(const keyword of runeKeywordEntries(row.extra_rules))output.push({...base,keyword,keyword_group:'rules'});
+  }
+  return output;
+}
+
 export function isConfiguredStyleCatalog(rows=[]){
   const source=Array.isArray(rows)?rows:[];
   return source.length>0&&source.every(row=>
@@ -288,7 +312,7 @@ export async function classifyStyleRows(rows=[],scopeId='lunarunes'){
 }
 
 export async function countStyleKeywordHits(rows=[],scopeId='lunarunes'){
-  const catalog=await selectStyleCatalog(scopeId);
+  const catalog=await selectKeywordCatalog(scopeId);
   return countKeywordHitsWithCatalog(rows,catalog);
 }
 
@@ -312,7 +336,7 @@ export async function processKeywordTableRows(table,{
   columns,filters=[],orFilter='',orders=[],scopeId='lunarunes',rowFilter=null,onCounts
 }={}){
   if(typeof onCounts!=='function')throw new TypeError('Keyword processing requires onCounts');
-  const catalog=await selectStyleCatalog(scopeId);
+  const catalog=await selectKeywordCatalog(scopeId);
   if(!catalog.length)return {processed:0,stopped:false,nextOffset:0};
   return processNeonHeavyRows(table,{
     columns,filters,orFilter,orders,
@@ -324,7 +348,7 @@ export async function processKeywordTableRows(table,{
 }
 
 export async function observeStyleKeywordHits(rows=[],scopeId='lunarunes'){
-  const catalog=await selectStyleCatalog(scopeId);
+  const catalog=await selectKeywordCatalog(scopeId);
   return observeKeywordHitsWithCatalog(rows,catalog);
 }
 
@@ -332,7 +356,7 @@ export async function processKeywordObservationRows(table,{
   columns,filters=[],orFilter='',orders=[],scopeId='lunarunes',rowFilter=null,onObserved
 }={}){
   if(typeof onObserved!=='function')throw new TypeError('Keyword observation processing requires onObserved');
-  const catalog=await selectStyleCatalog(scopeId);
+  const catalog=await selectKeywordCatalog(scopeId);
   if(!catalog.length)return {processed:0,stopped:false,nextOffset:0};
   return processNeonHeavyRows(table,{
     columns,filters,orFilter,orders,
