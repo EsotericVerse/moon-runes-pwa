@@ -1,5 +1,5 @@
 import {ScopeRankingResponseSchema} from './scope-feature-contracts';
-import {selectNeonAllRows,selectNeonCatalog} from './neon-repository';
+import {selectNeonAllRows,selectNeonCatalog,selectNeonRows} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
 import {classifyStyleRows,processKeywordObservationRows,processKeywordTableRows,processStyleTableRows,countStyleKeywordHits,observeStyleKeywordHits,selectKeywordCatalog} from './style-classifier';
 import {selectSourceCatalog,selectSourceWeekly} from './aggregate-query';
@@ -7,8 +7,8 @@ import {selectManagedScopeIds} from './scope-list';
 
 const RANKING_TYPES=Object.freeze({
   loc:Object.freeze(['source']),
-  lunarunes:Object.freeze(['source','keyword','style','style_group','media_type','media_place','media_tag']),
-  lo3rwang:Object.freeze(['source','keyword','style','style_group','media_type','media_place','media_tag'])
+  lunarunes:Object.freeze(['source','keyword','media_type','media_tag']),
+  lo3rwang:Object.freeze(['source','keyword','media_type','media_tag'])
 });
 
 function increment(map,type,term,extra={}){
@@ -100,6 +100,31 @@ async function authorSources(period,rangeOverride){
   const exclusions=await authorStatisticsExclusions();
   const excludedIds=[...exclusions.galaxy];
   const map=new Map();
+  if(!range&&excludedIds.length===0){
+    const summary=await selectNeonRows('silver.lo3rwang',{
+      columns:'id,source_counts',
+      filters:[{column:'id',operator:'eq',value:'lo3rwang'}],
+      limit:1
+    });
+    const counts=summary.rows[0]?.source_counts;
+    if(counts&&typeof counts==='object'&&!Array.isArray(counts)){
+      for(const [name,count] of Object.entries(counts)){
+        const value=String(name||'').trim();
+        const itemCount=Math.max(0,Number(count)||0);
+        if(!value||itemCount<=0)continue;
+        map.set('source|'+value,{
+          ranking_key:'source|'+value,
+          ranking_type:'source',
+          term:value,
+          rank_value:itemCount,
+          item_count:itemCount,
+          source:'lo3rwang',
+          period:period||'all'
+        });
+      }
+      return [...map.values()];
+    }
+  }
   if(!range){
     const result=await selectSourceCatalog({scopeId:'lo3rwang',excludedIds});
     for(const row of result.rows){
@@ -188,15 +213,39 @@ function splitMediaTags(value){
 async function authorMedia(period,type,rangeOverride){
   const range=rangeOverride===undefined?await resolvePeriod('lo3rwang',period):rangeOverride;
   const exclusions=await authorStatisticsExclusions();
+  const map=new Map();
+  if(!range&&type==='media_type'&&exclusions.media.size===0){
+    const summary=await selectNeonRows('silver.lo3rwang',{
+      columns:'id,media_counts',
+      filters:[{column:'id',operator:'eq',value:'lo3rwang'}],
+      limit:1
+    });
+    const counts=summary.rows[0]?.media_counts;
+    if(counts&&typeof counts==='object'&&!Array.isArray(counts)){
+      for(const [name,count] of Object.entries(counts)){
+        const value=String(name||'').trim();
+        const itemCount=Math.max(0,Number(count)||0);
+        if(!value||itemCount<=0)continue;
+        map.set(type+'|'+value,{
+          ranking_key:type+'|'+value,
+          ranking_type:type,
+          term:value,
+          rank_value:itemCount,
+          item_count:itemCount,
+          source:'lo3rwang',
+          period:period||'all'
+        });
+      }
+      return [...map.values()];
+    }
+  }
   const {rows}=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
-    columns:'media_id,media_type,source_place,meta_tags,createtime',
+    columns:'media_id,media_type,meta_tags,createtime',
     filters:dateFilters(range,'createtime')
   });
-  const map=new Map();
   for(const row of rows){
     if(exclusions.media.has(String(row.media_id||'')))continue;
     if(type==='media_type')increment(map,type,row.media_type,{source:'lo3rwang',period:period||'all'});
-    else if(type==='media_place')increment(map,type,row.source_place,{source:'lo3rwang',period:period||'all'});
     else for(const tag of splitMediaTags(row.meta_tags))increment(map,type,tag,{source:'lo3rwang',period:period||'all'});
   }
   return [...map.values()];
@@ -205,13 +254,12 @@ async function authorMedia(period,type,rangeOverride){
 async function runeMedia(period,type,rangeOverride){
   const range=rangeOverride===undefined?await resolvePeriod('lunarunes',period):rangeOverride;
   const {rows}=await selectNeonAllRows('silver.lrunes_galaxy_media',{
-    columns:'media_id,media_type,source_place,meta_tags,createtime',
+    columns:'media_id,media_type,meta_tags,createtime',
     filters:dateFilters(range,'createtime')
   });
   const map=new Map();
   for(const row of rows){
     if(type==='media_type')increment(map,type,row.media_type,{source:'lrunes',period:period||'all'});
-    else if(type==='media_place')increment(map,type,row.source_place,{source:'lrunes',period:period||'all'});
     else for(const tag of splitMediaTags(row.meta_tags))increment(map,type,tag,{source:'lrunes',period:period||'all'});
   }
   return [...map.values()];
@@ -249,7 +297,7 @@ function createKeywordDiagnostics(){
 }
 
 function keywordSourceOf(row={}){
-  return String(row.source_name||row.media_type||row.source_place||'未標記來源').trim()||'未標記來源';
+  return String(row.source_name||row.media_type||'未標記來源').trim()||'未標記來源';
 }
 
 function addKeywordObservedRows(state,rows=[]){
@@ -308,7 +356,7 @@ async function keywordDiagnosticsForRange(id,range){
       onObserved:rows=>addKeywordObservedRows(state,rows)
     });
     const media=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
-      columns:'media_id,title,meta_tags,media_type,source_place,createtime',
+      columns:'media_id,title,meta_tags,media_type,createtime',
       filters:dateRange
     });
     addKeywordObservedRows(state,await observeStyleKeywordHits(
@@ -324,7 +372,7 @@ async function keywordDiagnosticsForRange(id,range){
       onObserved:rows=>addKeywordObservedRows(state,rows)
     });
     const media=await selectNeonAllRows('silver.lrunes_galaxy_media',{
-      columns:'media_id,title,meta_tags,media_type,source_place,source_name,createtime',
+      columns:'media_id,title,meta_tags,media_type,source_name,createtime',
       filters:dateRange,
       orders:[{column:'createtime',ascending:true}]
     });
@@ -515,7 +563,7 @@ export async function selectScopeRankingComparison(scopeId,{rankingType='',navig
     rowsForType(id,type,period,ranges.previous),
     type==='keyword'?rowsForType(id,'media_tag',period,ranges.current):Promise.resolve([]),
     type==='keyword'
-      ?selectStyleCatalog(id).then(rows=>rows
+      ?selectKeywordCatalog(id).then(rows=>rows
         .filter(row=>!/^\s*(AND|NOR)\b/i.test(String(row.keyword||'')))
         .map(row=>({term:String(row.keyword||'').trim(),style_label:row.style_label,style_group:row.style_group}))
         .filter(row=>row.term)
