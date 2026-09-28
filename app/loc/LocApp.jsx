@@ -14,7 +14,7 @@ import GovernanceV2 from '../modular-v2/features/GovernanceV2';
 
 const loading=()=> <div className="loc-loading">載入功能模組…</div>;
 const RunesHomeView=dynamic(()=>import('../lrunes/RunesClient'),{ssr:false,loading});
-const GameView=dynamic(()=>import('./views/GameView'),{ssr:false,loading});
+const GameView=dynamic(()=>import('../lrunes/game/GameView'),{ssr:false,loading});
 // Core feature shells are bundled synchronously so route entry never stalls on a dynamic chunk.
 const StaticsView=StatisticsV2;
 const CultureView=CultureV2;
@@ -34,14 +34,14 @@ const HOME_VIEWS={loc:AboutView,lunarunes:RunesHomeView,lo3rwang:AuthorHomeView,
 
 function routeState(){
   if(typeof window==='undefined')return {scope:'loc',view:'home'};
-  const pathname=window.location.pathname.replace(/\/$/,'')||'/';
+  const pathname=window.location.pathname.replace(//$/,'')||'/';
   const host=window.location.hostname.toLowerCase();
   const scope=resolveScopeV2(host,pathname);
   if(pathname==='/admin'||pathname.startsWith('/admin/')){
     if(host==='loc.lo3rwang.cc')return {scope:'loc',view:'admin-redirect'};
     if(host!=='admin.lo3rwang.cc')return {scope,view:'blocked'};
   }
-  if(scope==='lunarunes'&&/^\/lo3rwang(?:\/|$)/.test(pathname))return {scope,view:'blocked'};
+  if(scope==='lunarunes'&&/^/lo3rwang(?:/|$)/.test(pathname))return {scope,view:'blocked'};
   const route=pathname.split('/').filter(Boolean).at(-1)||'home';
   return {scope,view:VIEWS[route]?route:'home'};
 }
