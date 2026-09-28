@@ -127,13 +127,12 @@ const authorTimeline=makeProvider({
 
 const runeCore=makeProvider({
   id:'rune-core',
-  table:'silver.lrunes',
+  table:'silver.runes',
   source:'月之符文',
   scopeId:'lrunes',
-  idColumn:'record_id',
-  columns:['record_id','rune_number','rune_name','group_name','english_name','lots_positive','lots_negative','lots_half_positive','lots_half_negative','myth_story','rune_evolution_history','rune_description'],
-  searchFields:['rune_name','group_name','english_name','lots_positive','lots_negative','lots_half_positive','lots_half_negative','myth_story','rune_evolution_history','rune_description'],
-  filters:[{column:'record_type',operator:'eq',value:'rune'}]
+  idColumn:'rune_id',
+  columns:['rune_id','rune_name','group_name','english_name','rune_description','archetype','char_action','positive_keywords','negative_keywords','extra_rules','extra_notes','positive_meaning','half_positive_meaning','half_reverse_meaning','reverse_meaning'],
+  searchFields:['rune_name','group_name','english_name','rune_description','archetype','char_action','positive_keywords','negative_keywords','extra_rules','extra_notes','positive_meaning','half_positive_meaning','half_reverse_meaning','reverse_meaning']
 });
 
 const runeKeywords=makeProvider({
