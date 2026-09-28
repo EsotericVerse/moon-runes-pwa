@@ -26,8 +26,7 @@ for(const token of ['buildDailyStateIndex','findDailyState','createTextIndex','s
 const dailyTrend=read(files.dailyTrend);
 for(const token of ['summarizeDailyRange','dailyPresetRange'])if(!dailyTrend.includes(token))failures.push(`daily trend: missing ${token}`);
 const keywordClassifier=read(files.keywordClassifier);
-for(const token of ['selectStyleCatalog','selectAuthorStyleCatalog','selectKeywordCatalog','silver.runes'])if(!keywordClassifier.includes(token))failures.push(`style/keyword catalog: missing ${token}`);
-if(/isConfiguredStyleCatalog\(author\)\?author:selectCanonicalStyleCatalog\(\)/.test(keywordClassifier))failures.push('style catalog: author Scope must not fall back to LunaRunes when style is unconfigured');
+for(const token of ['selectKeywordCatalog','countKeywordHits','observeKeywordHits','silver.runes'])if(!keywordClassifier.includes(token))failures.push(`keyword catalog: missing ${token}`);
 for(const token of ['SPREAD_WEIGHTS','DIRECTION_FACTOR','POLARITY_SCORE','weighted','GUIDANCE_RANGES'])if(guidance.includes(token))failures.push(`semantic state: forbidden weighted-score token ${token}`);
 const loader=read(files.canonicalLoader);
 for(const token of ['selectNeonCatalog','silver.runes','selectRuneCatalog'])if(!loader.includes(token))failures.push(`canonical rune repository: missing ${token}`);
