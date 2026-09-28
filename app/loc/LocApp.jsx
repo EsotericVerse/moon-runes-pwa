@@ -22,7 +22,7 @@ const SearchView=SearchV2;
 const GovernanceView=GovernanceV2;
 const ManagementView=dynamic(()=>import('./GovernanceManagement'),{loading});
 
-function BlockedScopeRoute(){return <section className="loc-view"><h1>此頁面不屬於目前 Scope</h1><p>管理功能只在 admin Scope 提供。</p></section>;}
+function BlockedScopeRoute(){return <section className="loc-view"><h1>此頁面目前不可使用</h1><p>管理功能僅限管理站。</p></section>;}
 function AdminRedirect(){useEffect(()=>{window.location.replace('https://admin.lo3rwang.cc/');},[]);return <section className="loc-view"><h1>前往系統掌控者頁面</h1><p>正在轉往 admin.lo3rwang.cc…</p></section>;}
 
 const VIEWS={
