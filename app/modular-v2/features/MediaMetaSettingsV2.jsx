@@ -2,12 +2,43 @@
 
 import {useEffect,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
-import {selectNeonAllRows,selectNeonRows,updateNeonRows} from '../../loc/neon-repository';
+import {neonAuthClient,neonPublicClient} from '../../loc/neon-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation.v2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
 import PagedResultV2 from '../PagedResultV2';
+import {clearRuntimeTextIndexes} from '../../loc/text-engine.mjs';
+
+
+function mediaRelation(client,table){
+  const [schema,name]=String(table).split('.');
+  return client.schema(schema).from(name);
+}
+async function selectNeonAllRows(table,{columns,filters=[]}={}){
+  let query=mediaRelation(neonPublicClient,table).select(columns);
+  for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
+  const {data,error}=await query;
+  if(error)throw new Error(error.message||('Neon SELECT '+table+' failed'));
+  return {rows:data||[]};
+}
+async function selectNeonRows(table,{columns,filters=[],orders=[],limit=20,offset=0,count=null}={}){
+  let query=mediaRelation(neonPublicClient,table).select(columns,count?{count}:undefined);
+  for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
+  for(const order of orders)query=query.order(order.column,{ascending:order.ascending??true,nullsFirst:order.nullsFirst});
+  query=query.range(offset,offset+Math.max(0,limit)-1);
+  const {data,error,count:total}=await query;
+  if(error)throw new Error(error.message||('Neon SELECT '+table+' failed'));
+  return {rows:data||[],count:total};
+}
+async function updateNeonRows(table,values,{filters=[]}={}){
+  let query=mediaRelation(neonAuthClient,table).update(values);
+  for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
+  const {data,error}=await query.select('*');
+  if(error)throw new Error(error.message||('Neon UPDATE '+table+' failed'));
+  clearRuntimeTextIndexes();
+  return data||[];
+}
 
 const MEDIA_TYPE_LABELS={suno:'Suno',instagram:'Instagram'};
 const MEDIA_PAGE_SIZE=20;

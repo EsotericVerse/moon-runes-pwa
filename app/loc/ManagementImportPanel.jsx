@@ -1,9 +1,10 @@
 'use client';
 
 import {useMemo,useState} from 'react';
-import {insertNeonRows} from './neon-repository';
+import {neonAuthClient} from './neon-client';
 import {useNeonAccount} from './use-neon-account';
 import {createUid8} from './uid';
+import {clearRuntimeTextIndexes} from './text-engine.mjs';
 
 function sourceSuggestion(name=''){
   const value=String(name).toLowerCase();

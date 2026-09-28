@@ -3,7 +3,7 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {searchNeonRows} from '../../loc/neon-search';
-import {selectNeonRowById,updateNeonRows} from '../../loc/neon-repository';
+import {neonAuthClient} from '../../loc/neon-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {getSearchCollection} from '../../loc/search-collections';
 import FeaturePageV2 from '../FeaturePageV2';
@@ -16,6 +16,26 @@ import {featureDataErrorMessage} from '../feature-data-state.v2';
 import ContentEditorV2 from '../ContentEditorV2';
 import {selectGalaxyContent,selectGalaxyIdentity} from '../../loc/aggregate-query';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayText,workDisplayTitle} from '../work-display-model.v2';
+import {clearRuntimeTextIndexes} from '../../loc/text-engine.mjs';
+
+
+function authRelation(table){
+  const [schema,name]=String(table).split('.');
+  return neonAuthClient.schema(schema).from(name);
+}
+async function selectNeonRowById(table,{idColumn,id,columns}={}){
+  const {data,error}=await authRelation(table).select(columns).eq(idColumn,String(id)).limit(1);
+  if(error)throw new Error(error.message||('Neon SELECT '+table+' failed'));
+  return data?.[0]||null;
+}
+async function updateNeonRows(table,values,{filters=[]}={}){
+  let query=authRelation(table).update(values);
+  for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
+  const {data,error}=await query.select('*');
+  if(error)throw new Error(error.message||('Neon UPDATE '+table+' failed'));
+  clearRuntimeTextIndexes();
+  return data||[];
+}
 
 const norm=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
 function rowText(row){return Object.values(row||{}).filter(value=>typeof value==='string').join(' ')}
