@@ -227,16 +227,17 @@ function StatisticsPanel({scopeId,navigation,types}){
 }
 
 function MediaPanel({scopeId}){
+  const databaseScopeId=scopeId==='lunarunes'?'lrunes':'lo3rwang';
   return <section className="scope-v2-stat-section">
     <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Media Metadata</p><h2>多媒體設定</h2></div></header>
-    {scopeId==='lo3rwang'?<MediaMetaSettingsV2 databaseScopeId="lo3rwang"/>:null}
+    <MediaMetaSettingsV2 databaseScopeId={databaseScopeId}/>
   </section>;
 }
 
 function StatisticsShell({scopeId,navigation}){
   const visibleTabs=scopeId==='loc'
     ?STAT_TABS.filter(([value])=>value==='ranking')
-    :(scopeId==='lo3rwang'?STAT_TABS:STAT_TABS.filter(([value])=>value!=='media'));
+    :STAT_TABS;
   const requested=visibleTabs.some(([value])=>value===navigation.statTab)?navigation.statTab:'ranking';
   const active=requested;
   const typesQuery=useQuery({
