@@ -53,7 +53,7 @@ export const GAME_HISTORY=Object.freeze([
   'Current 回合固定為 8 回合：R1–R3 Event → R4 Resonance → R5–R7 Event → R8 Resonance。',
   'R8 結算後若平分，才進入 R9 Duel；R9 不是一般第九回合。',
   'Current De 為 0–8；到達 8 不是立即勝利，仍需完成 R8 結算。',
-  'Event32 已恢復為 Alpha 事件文字牌庫；其 SL／ML／NE／OC 簡稱只保留作早期 Alpha 相容標記，不重新定義八分組。',
+  'Event32 已恢復為 Alpha 事件文字牌庫；Current 四組簡稱固定為 SL＝靈魂＋連結、ML＝礦物＋生命、NE＝自然＋元素、OD＝秩序＋無序。早期資料中的 OC 視為歷史錯字。',
   '早期 v1.3 的 De16、16★、R3/R6 RP、0′ RP 等流程只保留作歷史，不屬 Current。',
   'Game 與占卜／duel 分離；Game 不反向定義 LunaRunes Canon。',
   '八職的基本語義與器物設定保留；細部玩法仍可再議。',
