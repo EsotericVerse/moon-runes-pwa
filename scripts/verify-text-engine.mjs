@@ -14,9 +14,23 @@ assert.deepEqual(searchTextIndex(engine,'海',{and:['潮'],limit:10}).ids,['d'])
 
 const page1=searchTextIndex(engine,'月光',{limit:1,offset:0});
 const page2=searchTextIndex(engine,'月光',{limit:1,offset:1});
-assert.equal(page1.totalCount,3);
+const page3=searchTextIndex(engine,'月光',{limit:1,offset:2});
+
+assert.equal(page1.totalCount,null);
 assert.equal(page1.ids.length,1);
+assert.equal(page1.hasMore,true);
+assert.equal(page1.nextOffset,1);
+
+assert.equal(page2.totalCount,null);
 assert.equal(page2.ids.length,1);
+assert.equal(page2.hasMore,true);
+assert.equal(page2.nextOffset,2);
 assert.notEqual(page1.ids[0],page2.ids[0]);
 
-console.log('FlexSearch shared text engine CJK / AND / NOR / offset verified.');
+assert.equal(page3.totalCount,null);
+assert.equal(page3.ids.length,1);
+assert.equal(page3.hasMore,false);
+assert.equal(page3.nextOffset,null);
+assert.equal(new Set([...page1.ids,...page2.ids,...page3.ids]).size,3);
+
+console.log('FlexSearch shared text engine CJK / AND / NOR / native offset verified.');
