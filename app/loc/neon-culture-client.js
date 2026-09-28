@@ -5,7 +5,7 @@ import {selectNeonAllRows} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
 import {selectManagedScopeIds} from './scope-list';
 import {decodeCultureText,formatCultureDateTime,groupWorksByWeek} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
-import {classifyStyleRows,processStyleTableRows} from './style-classifier';
+import {classifyStyleRows,processStyleTableRows,selectStyleCatalog} from './style-classifier';
 import {selectGalaxyPage,selectSourceWeekly} from './aggregate-query';
 
 function sourceLabel(value){return String(value||'').trim();}
@@ -229,6 +229,8 @@ async function selectScopePeriodMetadataRows(scopeId,{startDate,endDate}={}){
 async function selectScopeStyleRows(scopeId,{startDate,endDate}={}){
   if(!startDate)return [];
   const runtimeId=runtimeScopeId(scopeId);
+  const catalog=await selectStyleCatalog(runtimeId);
+  if(!catalog.length)return [];
   const filters=dateFilters(startDate,endDate);
   const output=[];
   if(runtimeId==='lunarunes'){
