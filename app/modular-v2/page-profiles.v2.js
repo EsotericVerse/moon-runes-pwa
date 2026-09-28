@@ -7,8 +7,8 @@ export const PAGE_PROFILES_V2=Object.freeze({
 
 const SCOPE_FEATURE_SUBTITLES=Object.freeze({
   lo3rwang:Object.freeze({
-    statics:'排行榜、關鍵詞設定與各項統計圖集中於此。',
-    culture:'透過以時間作為分類標準，來找尋各項時期的變化趨勢。',
+    statics:'彙整各 Scope 的作品總數與共同來源分布。',
+    culture:'顯示各 Scope 的 Current 時期交會、作品密度與來源數量。',
     governance:'個人治理、作品與權利邊界。管理也在此。',
     search:'從關鍵詞、作品、來源或日期開始，找到時間點，再查看附近的脈絡與作品。'
   }),
@@ -32,5 +32,7 @@ export function scopeFeatureSubtitleV2(scopeId,featureId){
 
 export function pageProfileV2(featureId,scope){
   const base=PAGE_PROFILES_V2[featureId]||{eyebrow:'LOC',title:featureId,subtitle:''};
+  if(scope?.id==='loc'&&featureId==='statics')return {...base,subtitle:scopeFeatureSubtitleV2('loc','statics'),description:'只比較各 Scope 可共同對照的作品數量與來源統計；不跨 Scope 統計關鍵詞或風格。'};
+  if(scope?.id==='loc'&&featureId==='culture')return {...base,subtitle:scopeFeatureSubtitleV2('loc','culture'),description:'只呈現 Current 時期交會、作品密度與來源數量；明細請進入各 Scope 的時間長河。'};
   return {...base,subtitle:scopeFeatureSubtitleV2(scope?.id,featureId)};
 }
