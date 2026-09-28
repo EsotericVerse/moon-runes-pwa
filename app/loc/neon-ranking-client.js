@@ -310,7 +310,7 @@ async function keywordDiagnosticsForRange(id,range){
       filters:dateRange
     });
     addKeywordObservedRows(state,await observeKeywordHits(
-      media.rows.filter(row=>!exclusions.media.has(String(row.media_id||''))),
+      media.rows,
       'lo3rwang'
     ));
   }else if(id==='lunarunes'){
