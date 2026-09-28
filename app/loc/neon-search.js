@@ -2,6 +2,7 @@
 
 import {getMediaSearchProviders,getSearchProviders} from './search-providers';
 import {selectManagedScopeIds} from './scope-list';
+import {DEFAULT_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
 
 const SEARCH_PAGE_SIZE=DEFAULT_LIST_BATCH_SIZE;
 
