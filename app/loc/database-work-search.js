@@ -1,6 +1,6 @@
 'use client';
 
-import {selectNeonRows} from './neon-repository';
+import {processNeonHeavyRows,selectNeonRows} from './neon-repository';
 
 function dateFilters(column,startDate,endDate){
   const filters=[];
@@ -27,12 +27,16 @@ function textOrFilter(term){
   ].join(',');
 }
 
-function wrapRows(rows,scopeId,source,providerId){
-  return (rows||[]).map(row=>({
-    row:{...row,scope_id:scopeId},
-    source,
-    providerId
-  }));
+function wrapRows(rows,scopeId,source,providerId,previews=new Map()){
+  return (rows||[]).map(row=>{
+    const uid=String(row?.uid||'');
+    const preview=!String(row?.title||'').trim()?String(previews.get(uid)||'').slice(0,220):'';
+    return {
+      row:{...row,...(preview?{excerpt:preview}:{}),scope_id:scopeId},
+      source,
+      providerId
+    };
+  });
 }
 
 function makeDatabaseWorkProvider({id,scopeId,table,source,columns,filters=[]}){
@@ -54,7 +58,24 @@ function makeDatabaseWorkProvider({id,scopeId,table,source,columns,filters=[]}){
         count:'exact'
       });
       const count=Math.max(0,Number(result.count)||0);
-      const rows=wrapRows(result.rows,scopeId,source,id);
+      const previews=new Map();
+      const untitledIds=result.rows
+        .filter(row=>!String(row?.title||'').trim())
+        .map(row=>String(row?.uid||'').trim())
+        .filter(Boolean);
+      if(untitledIds.length){
+        await processNeonHeavyRows(table,{
+          columns:'uid,content',
+          filters:[{column:'uid',operator:'in',value:untitledIds}],
+          onBatch:batch=>{
+            for(const row of batch){
+              const uid=String(row?.uid||'').trim();
+              if(uid)previews.set(uid,String(row?.content||''));
+            }
+          }
+        });
+      }
+      const rows=wrapRows(result.rows,scopeId,source,id,previews);
       const nextOffset=Math.max(0,Math.floor(Number(offset)||0))+rows.length;
       return {
         rows,
