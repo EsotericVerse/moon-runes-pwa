@@ -5,7 +5,6 @@ import {selectNeonAllRows} from './neon-repository';
 import {selectScopeTimeRows} from './scope-time';
 import {selectManagedScopeIds} from './scope-list';
 import {decodeCultureText,formatCultureDateTime,groupWorksByWeek} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
-import {classifyStyleRows,processStyleTableRows,selectStyleCatalog} from './style-classifier';
 import {selectGalaxyPage,selectSourceWeekly} from './aggregate-query';
 
 function sourceLabel(value){return String(value||'').trim();}
@@ -18,15 +17,6 @@ function periodRows(rows){
     order:Number(row.order_no||0),status:row.status||'',anchor_id:row.anchor_id||null,start_anchor_id:row.start_anchor_id||null,
     end_anchor_id:row.end_anchor_id||null,date_status:row.date_status||'',open_start:Boolean(row.open_start),open_end:Boolean(row.open_end)
   })).sort((a,b)=>a.order-b.order||String(a.period).localeCompare(String(b.period)));
-}
-function runeTimelineRows(rows){
-  const periods=periodRows((rows||[]).filter(row=>row.entry_type==='period'))
-    .map(row=>({...row,scope_id:'lunarunes'}));
-  const current=periods.find(row=>String(row.status).trim().toLowerCase()==='current');
-  return {
-    eras:current?[current]:[],
-    history:periods.filter(row=>row!==current).map(row=>({...row,status:'history'}))
-  };
 }
 function timelineItems(rows){
   const all=Array.isArray(rows)?rows:[];
@@ -48,11 +38,6 @@ function dateFilters(startDate,endDate,column='createtime'){
   if(endDate)filters.push({column,operator:'lte',value:String(endDate).slice(0,10)+'T23:59:59.999+08:00'});
   return filters;
 }
-function withoutContent(row){
-  const {content,...rest}=row||{};
-  return rest;
-}
-
 export async function selectScopeCultureData(scopeId){
   const id=runtimeScopeId(scopeId);
   const dataId=dataScopeId(scopeId);
@@ -206,143 +191,6 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
   return {rows,hasMore,nextOffset:hasMore?offset+pageSize:null,totalCount};
 }
 
-async function selectScopePeriodMetadataRows(scopeId,{startDate,endDate}={}){
-  if(!startDate)return [];
-  const runtimeId=runtimeScopeId(scopeId);
-  const filters=dateFilters(startDate,endDate);
-  if(runtimeId==='lunarunes'){
-    const [textResult,mediaResult]=await Promise.all([
-      selectNeonAllRows('silver.lrunes_galaxy',{
-        columns:'uid,title,source_name,createtime,url',
-        filters
-      }),
-      selectNeonAllRows('silver.lrunes_galaxy_media',{
-        columns:'media_id,galaxy_link,title,meta_tags,media_type,source_name,source_place,source_native_id,createtime,url',
-        filters
-      })
-    ]);
-    return [
-      ...textResult.rows.map(row=>({...row,record_type:'galaxy'})),
-      ...mediaResult.rows.map(row=>({...row,record_type:'galaxy_media'}))
-    ];
-  }
-  const [textsResult,mediaResult]=await Promise.all([
-    selectNeonAllRows('silver.lo3rwang_galaxy',{
-      columns:'uid,title,source_name,createtime,url',
-      filters
-    }),
-    selectNeonAllRows('silver.lo3rwang_galaxy_media',{
-      columns:'media_id,title,meta_tags,createtime,url,galaxy_link,media_type,source_place,source_native_id',
-      filters:dateFilters(startDate,endDate,'createtime')
-    })
-  ]);
-  return [
-    ...textsResult.rows.map(row=>({...row,record_type:'galaxy'})),
-    ...mediaResult.rows.map(row=>({...row,record_type:'galaxy_media'}))
-  ];
-}
-
-async function selectScopeStyleRows(scopeId,{startDate,endDate}={}){
-  if(!startDate)return [];
-  const runtimeId=runtimeScopeId(scopeId);
-  const catalog=await selectStyleCatalog(runtimeId);
-  if(!catalog.length)return [];
-  const filters=dateFilters(startDate,endDate);
-  const output=[];
-  if(runtimeId==='lunarunes'){
-    await processStyleTableRows('silver.lrunes_galaxy',{
-      scopeId:'lunarunes',
-      columns:'uid,title,content,source_name,createtime,url',
-      filters,
-      orders:[{column:'createtime',ascending:true}],
-      onClassified:row=>{output.push({...withoutContent(row),record_type:'galaxy'});}
-    });
-    const mediaResult=await selectNeonAllRows('silver.lrunes_galaxy_media',{
-      columns:'media_id,galaxy_link,title,meta_tags,media_type,source_name,source_place,source_native_id,createtime,url',
-      filters,
-      orders:[{column:'createtime',ascending:true}]
-    });
-    const mediaClassified=await classifyStyleRows(mediaResult.rows,'lunarunes');
-    output.push(...mediaClassified.map(row=>({...withoutContent(row),record_type:'galaxy_media'})));
-    return output;
-  }
-  await processStyleTableRows('silver.lo3rwang_galaxy',{
-    scopeId:'lo3rwang',
-    columns:'uid,title,content,source_name,createtime,url',
-    filters,
-    orders:[{column:'createtime',ascending:true}],
-    onClassified:row=>{output.push({...withoutContent(row),record_type:'galaxy'});}
-  });
-  const mediaResult=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
-    columns:'media_id,title,meta_tags,createtime,url,galaxy_link,media_type,source_place,source_native_id',
-    filters:dateFilters(startDate,endDate,'createtime')
-  });
-  const mediaClassified=await classifyStyleRows(mediaResult.rows,'lo3rwang');
-  output.push(...mediaClassified.map(row=>({...row,record_type:'galaxy_media'})));
-  return output;
-}
-
-function canonicalSourceWorks(rows=[]){
-  const groups=new Map();
-  for(const row of rows){
-    const source=String(row?.source_name||'').trim();
-    if(!source)continue;
-    const isMedia=String(row?.record_type||'')==='galaxy_media'||Boolean(row?.media_id);
-    const key=isMedia
-      ?String(row?.galaxy_link||row?.media_id||'')
-      :String(row?.uid||row?.record_id||'');
-    if(!key)continue;
-    const existing=groups.get(key);
-    if(!existing||(!isMedia&&String(existing?.record_type||'')==='galaxy_media')){
-      groups.set(key,{...row,source_name:source});
-    }
-  }
-  return [...groups.values()];
-}
-
-export async function selectScopeClassificationBuckets(scopeId,{startDate,endDate,dimension='source',styleLevel='label',mediaDimension='type'}={}){
-  const runtimeId=runtimeScopeId(scopeId);
-  if(dimension==='source'){
-    if(runtimeId==='lunarunes'||!startDate)return [];
-    return (await selectAuthorPeriodSourceSnapshot({startDate,endDate})).buckets;
-  }
-  if(dimension==='media'){
-    return (await selectScopeMediaSnapshot(runtimeId,{startDate,endDate,dimension:mediaDimension})).buckets;
-  }
-  return (await selectScopeStyleSnapshot(runtimeId,{startDate,endDate,styleLevel})).buckets;
-}
-
-export async function selectScopeStyleSnapshot(scopeId,{startDate,endDate,styleLevel='label'}={}){
-  if(!startDate)return {groups:[],buckets:[]};
-  const runtimeId=runtimeScopeId(scopeId);
-  const field=styleLevel==='group'?'style_group':'style_label';
-  const rows=await selectScopeStyleRows(runtimeId,{startDate,endDate});
-  const counts=new Map();
-  for(const row of rows){
-    const term=String(row[field]||'').trim();
-    if(term)counts.set(term,(counts.get(term)||0)+1);
-  }
-  const groups=[...counts.entries()]
-    .map(([term,item_count])=>({
-      category_key:`style:${styleLevel}:${term}`,
-      category_type:'style',
-      style_level:styleLevel,
-      style_name:term,
-      display_label:term,
-      item_count
-    }))
-    .sort((a,b)=>b.item_count-a.item_count||a.display_label.localeCompare(b.display_label));
-  const buckets=groupWorksByWeek(rows,field).map(row=>({
-    ...row,
-    works:[],
-    scope_id:'classification',
-    entry_type:'style',
-    classification_dimension:'style',
-    classification_level:styleLevel
-  }));
-  return {groups,buckets};
-}
-
 async function selectScopeMediaRows(scopeId,{startDate,endDate}={}){
   if(!startDate)return [];
   const runtimeId=runtimeScopeId(scopeId);
@@ -423,37 +271,3 @@ export async function selectScopeMediaWorks(scopeId,{startDate,endDate,mediaName
   return {rows:page,hasMore,nextOffset:hasMore?offset+pageSize:null,totalCount:matches.length};
 }
 
-export async function selectScopeStyleGroups(scopeId,{startDate,endDate,styleLevel='label'}={}){
-  return (await selectScopeStyleSnapshot(scopeId,{startDate,endDate,styleLevel})).groups;
-}
-
-export async function selectScopeStyleWorks(scopeId,{startDate,endDate,styleName,styleLevel='label',limit=20,pageOffset=0}={}){
-  if(!startDate||!styleName)return {rows:[],hasMore:false,nextOffset:null};
-  const pageSize=Math.max(1,Math.min(100,Math.floor(Number(limit)||20)));
-  const offset=Math.max(0,Math.floor(Number(pageOffset)||0));
-  const field=styleLevel==='group'?'style_group':'style_label';
-  const matches=[];
-  const rows=await selectScopeStyleRows(scopeId,{startDate,endDate});
-  for(const row of rows){
-    if(String(row[field]||'')===String(styleName))matches.push(row);
-  }
-  matches.sort((a,b)=>String(b.createtime||'').localeCompare(String(a.createtime||'')));
-  const page=matches.slice(offset,offset+pageSize).map(row=>{
-    const isMedia=String(row.record_type||'')==='galaxy_media'||Boolean(row.media_id);
-    return {
-      ...row,
-      entry_id:row.uid||row.media_id||row.record_id,
-      entry_type:isMedia?'media_metadata':'work',
-      start_date:row.createtime,
-      date:row.createtime,
-      display_date:formatCultureDateTime(row.createtime),
-      title:decodeCultureText(row.title||'').trim()||row.style_label||row.style_group||'作品',
-      description:'',
-      media_metadata_text:isMedia?mediaMetadataDescription(row):'',
-      group_label:String(row[field]||''),
-      scope_id:runtimeScopeId(scopeId)
-    };
-  });
-  const hasMore=offset+pageSize<matches.length;
-  return {rows:page,hasMore,nextOffset:hasMore?offset+pageSize:null};
-}
