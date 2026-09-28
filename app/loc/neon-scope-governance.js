@@ -1,8 +1,11 @@
 'use client';
 
-import {deleteNeonRows,insertNeonRows,selectNeonCatalog,selectNeonRows,updateNeonRows} from './neon-repository';
+import {neonAuthClient,neonPublicClient} from './neon-client';
 
 export const MANAGE_TABLE='silver.manage';
+
+function manageRelation(client){return client.schema('silver').from('manage');}
+
 const ID_PATTERN=/^[A-Za-z][A-Za-z0-9_.-]{0,62}$/;
 
 function safeId(value,label='ID'){
@@ -24,11 +27,12 @@ function idOf(row){
 }
 
 export async function selectManagedNodes(){
-  return (await selectNeonCatalog(MANAGE_TABLE,{
-    columns:'record_id,record_type,group_id,scope_id,parent_group_id,active,display_order,created_at,updated_at',
-    filters:[{column:'record_type',operator:'in',value:['group','scope']}],
-    orders:[{column:'display_order',ascending:true}]
-  })).rows;
+  const {data,error}=await manageRelation(neonPublicClient)
+    .select('record_id,record_type,group_id,scope_id,parent_group_id,active,display_order,created_at,updated_at')
+    .in('record_type',['group','scope'])
+    .order('display_order',{ascending:true});
+  if(error)throw new Error(error.message||'管理資料讀取失敗');
+  return data||[];
 }
 
 export async function createManagedNode(values){
@@ -45,8 +49,9 @@ export async function createManagedNode(values){
     display_order:Number.isFinite(Number(values.display_order))?Number(values.display_order):null
   };
   if(type==='scope'&&!payload.parent_group_id)throw new Error('Scope 必須掛在 Group 之下');
-  const rows=await insertNeonRows(MANAGE_TABLE,[payload]);
-  return rows[0];
+  const {data,error}=await manageRelation(neonAuthClient).insert([payload]).select('*');
+  if(error)throw new Error(error.message||'管理節點新增失敗');
+  return data?.[0];
 }
 
 export async function updateManagedNode(row,values){
@@ -62,34 +67,33 @@ export async function updateManagedNode(row,values){
     updated_at:new Date().toISOString()
   };
   const idColumn=type==='group'?'group_id':'scope_id';
-  const rows=await updateNeonRows(MANAGE_TABLE,patch,{filters:[
-    {column:'record_type',operator:'eq',value:type},
-    {column:idColumn,operator:'eq',value:nodeId}
-  ]});
-  if(!rows.length)throw new Error('管理節點不存在');
-  return rows[0];
+  let query=manageRelation(neonAuthClient).update(patch).eq('record_type',type).eq(idColumn,nodeId);
+  const {data,error}=await query.select('*');
+  if(error)throw new Error(error.message||'管理節點更新失敗');
+  if(!data?.length)throw new Error('管理節點不存在');
+  return data[0];
 }
 
 export async function deleteManagedNode(row){
   const type=safeType(row?.record_type);
   const nodeId=safeId(idOf(row),type==='group'?'Group ID':'Scope ID');
   if(type==='group'){
-    const {rows:children}=await selectNeonRows(MANAGE_TABLE,{
-      columns:'record_id',
-      filters:[
-        {column:'record_type',operator:'in',value:['group','scope']},
-        {column:'parent_group_id',operator:'eq',value:nodeId}
-      ],
-      limit:1
-    });
-    if(children.length)throw new Error('此 Group 仍有下層節點，請先移動下層節點');
+    const {data:children,error}=await manageRelation(neonPublicClient)
+      .select('record_id')
+      .in('record_type',['group','scope'])
+      .eq('parent_group_id',nodeId)
+      .limit(1);
+    if(error)throw new Error(error.message||'管理節點讀取失敗');
+    if(children?.length)throw new Error('此 Group 仍有下層節點，請先移動下層節點');
   }
   const idColumn=type==='group'?'group_id':'scope_id';
-  const rows=await deleteNeonRows(MANAGE_TABLE,{filters:[
-    {column:'record_type',operator:'eq',value:type},
-    {column:idColumn,operator:'eq',value:nodeId}
-  ]});
-  return rows[0]||null;
+  const {data,error}=await manageRelation(neonAuthClient)
+    .delete()
+    .eq('record_type',type)
+    .eq(idColumn,nodeId)
+    .select('*');
+  if(error)throw new Error(error.message||'管理節點刪除失敗');
+  return data?.[0]||null;
 }
 
 export function managedNodeId(row){return idOf(row)}

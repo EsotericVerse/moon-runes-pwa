@@ -1,10 +1,12 @@
 'use client';
 
-import {getNeonSession} from './neon-client';
-import {
-  selectNeonRows,selectNeonRowById,upsertNeonRows,
-  deleteNeonRows
-} from './neon-repository';
+
+
+function apiRelation(name){return neonAuthClient.schema('api').from(name);}
+function applyRecordFilters(query,filters=[]){
+  for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
+  return query;
+}
 
 const RECORD_COLUMNS=[
   'id','record_type','record_kind','source','record_date','scope_id',
@@ -126,26 +128,19 @@ export async function listNeonRecords(type='',{
   if(type)filters.push({column:'record_type',operator:'eq',value:type});
   if(recordKind)filters.push({column:'record_kind',operator:'eq',value:recordKind});
   if(recordDate)filters.push({column:'record_date',operator:'eq',value:recordDate});
-  const result=await selectNeonRows('api.user_records',{
-    columns:RECORD_COLUMNS,
-    filters,
-    orders:[{column:'updated_at',ascending:false}],
-    offset,
-    limit,
-    count:count?'exact':null
-  });
-  const rows=result.rows.map(dbRecord);
-  return count?{rows,totalCount:Number(result.count||0)}:rows;
+  let query=apiRelation('user_records').select(RECORD_COLUMNS,count?{count:'exact'}:undefined);
+  query=applyRecordFilters(query,filters).order('updated_at',{ascending:false}).range(offset,offset+limit-1);
+  const {data,error,count:total}=await query;
+  if(error)throw new Error(error.message||'個人紀錄讀取失敗');
+  const rows=(data||[]).map(dbRecord);
+  return count?{rows,totalCount:Number(total||0)}:rows;
 }
 
 export async function getNeonRecord(id){
   await requireUser();
-  const row=await selectNeonRowById('api.user_records',{
-    idColumn:'id',
-    id,
-    columns:RECORD_COLUMNS
-  });
-  return row?dbRecord(row):null;
+  const {data,error}=await apiRelation('user_records').select(RECORD_COLUMNS).eq('id',String(id)).limit(1);
+  if(error)throw new Error(error.message||'個人紀錄讀取失敗');
+  return data?.[0]?dbRecord(data[0]):null;
 }
 
 export async function putNeonRecord(record){
@@ -153,37 +148,29 @@ export async function putNeonRecord(record){
   const row=normalizeRecord(record);
   if(!row.id)throw new Error('record.id is required');
   const dbRow=dbRecordRow(row);
-  const rows=await upsertNeonRows('api.user_records',[dbRow],{
-    conflict:'owner_id,id',
-    returning:RECORD_COLUMNS
-  });
-  return dbRecord(rows[0]||dbRow);
+  const {data,error}=await apiRelation('user_records').upsert([dbRow],{onConflict:'owner_id,id'}).select(RECORD_COLUMNS);
+  if(error)throw new Error(error.message||'個人紀錄儲存失敗');
+  return dbRecord(data?.[0]||dbRow);
 }
 
 export async function deleteNeonRecord(id){
   await requireUser();
-  await deleteNeonRows('api.user_records',{
-    filters:[{column:'id',operator:'eq',value:String(id)}],
-    returning:null
-  });
+  const {error}=await apiRelation('user_records').delete().eq('id',String(id));
+  if(error)throw new Error(error.message||'個人紀錄刪除失敗');
 }
 
 export async function clearNeonRecords(type=''){
   await requireUser();
   if(type){
-    await deleteNeonRows('api.user_records',{
-      filters:[{column:'record_type',operator:'eq',value:type}],
-      returning:null
-    });
+    const {error}=await apiRelation('user_records').delete().eq('record_type',type);
+    if(error)throw new Error(error.message||'個人紀錄清除失敗');
     return;
   }
   while(true){
     const rows=await listNeonRecords('',{offset:0,limit:64});
     if(!rows.length)break;
-    await deleteNeonRows('api.user_records',{
-      filters:[{column:'id',operator:'in',value:rows.map(row=>row.id)}],
-      returning:null
-    });
+    const {error}=await apiRelation('user_records').delete().in('id',rows.map(row=>row.id));
+    if(error)throw new Error(error.message||'個人紀錄清除失敗');
     if(rows.length<64)break;
   }
 }
@@ -230,30 +217,28 @@ function settingValue(row,key){
 
 export async function getNeonSetting(key){
   await requireUser();
-  const row=await selectNeonRowById('api.user_settings',{
-    idColumn:'setting_key',
-    id:key,
-    columns:'setting_key,text_value,integer_value,updated_at'
-  });
-  return settingValue(row,String(key||'').trim());
+  const {data,error}=await apiRelation('user_settings')
+    .select('setting_key,text_value,integer_value,updated_at')
+    .eq('setting_key',String(key))
+    .limit(1);
+  if(error)throw new Error(error.message||'個人設定讀取失敗');
+  return settingValue(data?.[0]||null,String(key||'').trim());
 }
 
 export async function putNeonSetting(key,value){
   await requireUser();
   const row=settingRow(key,value);
-  const rows=await upsertNeonRows('api.user_settings',[row],{
-    conflict:'owner_id,setting_key',
-    returning:'setting_key,text_value,integer_value,updated_at'
-  });
-  return settingValue(rows[0]||row,row.setting_key);
+  const {data,error}=await apiRelation('user_settings')
+    .upsert([row],{onConflict:'owner_id,setting_key'})
+    .select('setting_key,text_value,integer_value,updated_at');
+  if(error)throw new Error(error.message||'個人設定儲存失敗');
+  return settingValue(data?.[0]||row,row.setting_key);
 }
 
 export async function deleteNeonSetting(key){
   await requireUser();
-  await deleteNeonRows('api.user_settings',{
-    filters:[{column:'setting_key',operator:'eq',value:String(key)}],
-    returning:null
-  });
+  const {error}=await apiRelation('user_settings').delete().eq('setting_key',String(key));
+  if(error)throw new Error(error.message||'個人設定刪除失敗');
 }
 
 export async function listRuneDrawSlots(){
