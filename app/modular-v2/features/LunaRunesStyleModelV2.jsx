@@ -22,6 +22,9 @@ function preview(value,limit=90){
 function groupEntryCount(group){
   return group.runes.reduce((sum,rune)=>sum+rune.keywords.length+rune.rules.length,0);
 }
+function oneCharCount(runes=[]){
+  return runes.reduce((sum,rune)=>sum+rune.keywords.filter(item=>[...item.value].length===1).length,0);
+}
 function modelStats(model){
   const counts=model.styles.map(rune=>({
     name:rune.rune_name,
@@ -29,10 +32,12 @@ function modelStats(model){
     count:rune.keywords.length+rune.rules.length
   }));
   const total=counts.reduce((sum,item)=>sum+item.count,0);
+  const lexical=model.styles.reduce((sum,rune)=>sum+rune.keywords.length,0);
+  const singleChars=oneCharCount(model.styles);
   const avg=counts.length?total/counts.length:0;
   const max=counts.reduce((best,item)=>!best||item.count>best.count?item:best,null);
   const min=counts.reduce((best,item)=>!best||item.count<best.count?item:best,null);
-  return {total,avg,max,min};
+  return {total,lexical,singleChars,avg,max,min};
 }
 
 export default function LunaRunesStyleModelV2(){
@@ -118,6 +123,7 @@ export default function LunaRunesStyleModelV2(){
         <span>9 組</span>
         <span>67 枚符文</span>
         <span>{stats.total} 個關鍵詞／規則</span>
+        <span>單字關鍵詞 {stats.singleChars}/{stats.lexical}</span>
         <span>平均 {stats.avg.toFixed(1)}／符文</span>
         {stats.max?<span>最多：{stats.max.name} {stats.max.count}</span>:null}
         {stats.min?<span>最少：{stats.min.name} {stats.min.count}</span>:null}
@@ -128,13 +134,15 @@ export default function LunaRunesStyleModelV2(){
       {model.groups.map(group=><article className="loc-card" key={group.name}>
         <p className="loc-eyebrow">{group.name}</p>
         <h2>{group.runes.length} 枚符文 · {groupEntryCount(group)} 條</h2>
+        <p className="scope-v2-meta"><span>單字關鍵詞 {oneCharCount(group.runes)}</span></p>
         <div className="lrunes-style-flat-list">
           {group.runes.map(rune=>{
             const count=rune.keywords.length+rune.rules.length;
+            const singles=rune.keywords.filter(item=>[...item.value].length===1).length;
             const rules=rune.rules.map(rule=>rule.token).join(' → ');
             return <div className="lrunes-style-flat-item" key={rune.style_no}>
               <strong>{rune.rune_name}</strong>
-              <span>{count} 條</span>
+              <span>{count} 條{singles?(' · 單字 '+singles):''}</span>
               {rules?<small>{rules}</small>:null}
             </div>;
           })}
