@@ -29,7 +29,5 @@ export function scopeFeatureSubtitleV2(scopeId,featureId){
 
 export function pageProfileV2(featureId,scope){
   const base=PAGE_PROFILES_V2[featureId]||{eyebrow:'LOC',title:featureId,subtitle:''};
-  if(scope?.id==='loc'&&featureId==='statics')return {...base,subtitle:scopeFeatureSubtitleV2('loc','statics'),description:'只比較各 Scope 可共同對照的作品數量與來源統計；不跨 Scope 統計關鍵詞或風格。'};
-  if(scope?.id==='loc'&&featureId==='culture')return {...base,subtitle:scopeFeatureSubtitleV2('loc','culture'),description:'只呈現 Current 時期交會、作品密度與來源數量；明細請進入各 Scope 的時間長河。'};
   return {...base,subtitle:scopeFeatureSubtitleV2(scope?.id,featureId)};
 }
