@@ -47,6 +47,11 @@ function directionText(card, direction) {
   return card?.[field] || card?.rune_description || '';
 }
 
+function dailyGuidance(card, direction) {
+  const field = ({ '正位': 'daily_positive', '半正位': 'daily_half_positive', '半逆位': 'daily_half_reverse', '逆位': 'daily_reverse' })[direction];
+  return String(card?.[field] || '').trim();
+}
+
 function MultiReading({ draw, mode, phase }) {
   if (!draw) return null;
   const cards = draw.cards;
@@ -111,25 +116,19 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
   const moonPhase = useMemo(() => realMoonPhase(), []);
   const ritualMessages = runeRitualMessages(drawKey);
 
-  function enrichDraw(cards) {
-    const numbers=cards.map(card => Number(card?.rune_number)).filter(Number.isInteger);
-    selectRuneRows(numbers)
-      .then(rows => {
-        const byNumber=new Map(rows.map(row => [Number(row.rune_number), row]));
-        setDraw(current => current ? {...current,cards:current.cards.map(card=>({...card,...(byNumber.get(Number(card?.rune_number))||{})}))} : current);
-      })
-      .catch(() => {});
-  }
-
-  function finishDraw() {
+  async function finishDraw() {
     try {
       if (!data?.runes?.length) throw new Error('符文資料尚未載入完成。');
       if (data.runes.length < selectedMode.count) throw new Error(`可抽取符文不足 ${selectedMode.count} 張。`);
       const {cards,directionIndexes,directions}=drawRuneSession(data.runes,selectedMode.count);
-      const reading = resolveSpreadState(cards, directions, drawKey);
+      const numbers=cards.map(card => Number(card?.rune_number)).filter(Number.isInteger);
+      const types=drawKey==='daily'?['direction','daily']:['direction','lots'];
+      const rows=await selectRuneRows(numbers,{types});
+      const byNumber=new Map(rows.map(row => [Number(row.rune_number), row]));
+      const enrichedCards=cards.map(card=>({...card,...(byNumber.get(Number(card?.rune_number))||{})}));
+      const reading = resolveSpreadState(enrichedCards, directions, drawKey);
       const createdAt = new Date().toISOString();
-      setDraw({ id: `rune-draw:${drawKey}:${Date.now()}`, createdAt, cards, directionIndexes, directions, reading, guidance: reading.guidance });
-      enrichDraw(cards);
+      setDraw({ id: `rune-draw:${drawKey}:${Date.now()}`, createdAt, cards: enrichedCards, directionIndexes, directions, reading, guidance: reading.guidance });
       setError('');
     } catch (err) {
       setDraw(null);
@@ -202,12 +201,17 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
           </div>
         </section>
 
-        {drawKey === 'daily' && <section className="loc-card" data-draw-reading="daily">
-          <p className="loc-eyebrow">Daily · 每日分析</p>
-          <h2>{draw.cards[0].rune_name} · {draw.directions[0]} · {moonPhase}</h2>
+        {drawKey === 'single' && <section className="loc-card" data-draw-reading="single">
+          <p className="loc-eyebrow">Lots · 單卡籤詩</p>
+          <h2>{draw.cards[0].rune_name} · {draw.directions[0]}</h2>
           <RuneSingleReading card={draw.cards[0]} direction={draw.directions[0]}/>
         </section>}
 
+        {drawKey === 'daily' && <section className="loc-card" data-draw-reading="daily">
+          <p className="loc-eyebrow">Daily · 每日指示</p>
+          <h2>{draw.cards[0].rune_name} · {draw.directions[0]} · {moonPhase}</h2>
+          <p className="runes-reading-lead"><strong>今日指引</strong><span>{dailyGuidance(draw.cards[0], draw.directions[0]) || directionText(draw.cards[0], draw.directions[0]) || '目前沒有這個位向的每日指示。'}</span></p>
+        </section>}
 
         <MultiReading draw={draw} mode={drawKey} phase={moonPhase}/>
 
@@ -220,13 +224,13 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
           <p>月相交互最後才套用，只作次要時間修飾；重點是模型關聯，不是增加抽牌維度的複雜化。</p>
         </section>}
 
-        <section className="loc-card" data-draw-stage="lots">
+        {drawKey!=='single'&&drawKey!=='daily'&&<section className="loc-card" data-draw-stage="lots">
           <p className="loc-eyebrow">Lots · 籤詩</p><h2>籤詩指引</h2>
           <p>{draw.reading?.guidance||'結果未知。'}</p>
-          {drawKey!=='single'&&drawKey!=='daily'&&Array.isArray(draw.reading?.advice)?<div className="runes-advice-grid">
+          {Array.isArray(draw.reading?.advice)?<div className="runes-advice-grid">
             {draw.reading.advice.map(item=><article key={item.label}><strong>{item.label}</strong><span>{item.text}</span></article>)}
           </div>:null}
-        </section>
+        </section>}
       </>}
     </section>
   </div>;
