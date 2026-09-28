@@ -14,7 +14,7 @@ import {scopeHrefV2} from '../scope-registry.v2';
 import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation.v2';
 import {featureDataErrorMessage} from '../feature-data-state.v2';
 import ContentEditorV2 from '../ContentEditorV2';
-import {selectGalaxyIdentity,selectGalaxySummaries} from '../../loc/aggregate-query';
+import {selectGalaxyIdentity} from '../../loc/aggregate-query';
 import {decodeCultureText} from '../modules/culture-timeline/culture-timeline-model.mjs';
 
 const norm=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
@@ -53,12 +53,14 @@ function toResult(row,source,q,collectionId,scopeId,settingsMap=new Map()){
   const settings=settingsMap.get(settingsKey)||null;
   const runeScope=scope==='lrunes'||scope==='lunarunes';
   const editableTable=resourceType
-    ?(runeScope?'silver.lrunes':resourceType==='galaxy'?'silver.lo3rwang_galaxy':'silver.lo3rwang_galaxy_media')
+    ?(runeScope
+      ?(resourceType==='galaxy'?'silver.lrunes_galaxy':'silver.lrunes_galaxy_media')
+      :(resourceType==='galaxy'?'silver.lo3rwang_galaxy':'silver.lo3rwang_galaxy_media'))
     :'';
   const editableIdColumn=resourceType
-    ?(runeScope?'record_id':resourceType==='galaxy'?'uid':'media_id')
+    ?(resourceType==='galaxy'?'uid':'media_id')
     :'';
-  const editResourceId=runeScope?String(row.record_id||''):resourceId;
+  const editResourceId=resourceId;
   const editableField=resourceType==='galaxy'?'content':resourceType==='galaxy_media'?'meta_tags':'';
   const isScopeCard=Boolean(row.scope_card);
   const href=isScopeCard?scopeHrefV2(scope):(row.url||row.href||row.suno_url||'');
@@ -146,27 +148,7 @@ export default function SearchV2(){
       const search=await searchNeonRows(collection.id,q,{limit:pageSize,offset,mediaOnly:searchMode==='media'});
       if(id!==searchId.current)return;
 
-      const authorIds=search.rows
-        .map(({row})=>row?.scope_id==='lo3rwang'&&row?.uid?String(row.uid):'')
-        .filter(Boolean);
-      const runeIds=search.rows
-        .map(({row})=>(row?.scope_id==='lrunes'||row?.scope_id==='lunarunes')&&row?.uid?String(row.uid):'')
-        .filter(Boolean);
-      let authorSummaries=[];let runeSummaries=[];
-      try{[authorSummaries,runeSummaries]=await Promise.all([
-        selectGalaxySummaries('lo3rwang',authorIds),
-        selectGalaxySummaries('lunarunes',runeIds)
-      ]);}catch{}
-      const summaryMap=new Map([
-        ...authorSummaries.map(item=>['lo3rwang:'+String(item.uid),item]),
-        ...runeSummaries.map(item=>['lunarunes:'+String(item.uid),item])
-      ]);
-      const searchRows=search.rows.map(item=>{
-        const row=item.row||{};
-        const scopeKey=(row.scope_id==='lrunes'?'lunarunes':row.scope_id)||scopeId;
-        const summary=row.uid?summaryMap.get(scopeKey+':'+String(row.uid)):null;
-        return summary?{...item,row:{...row,title:row.title||summary.title||'',excerpt:summary.excerpt||'',resolved_links:summary.links||[]}}:item;
-      });
+      const searchRows=search.rows;
 
       matchedQueryRef.current=q;
       const pageResources=searchRows.map(({row})=>{
