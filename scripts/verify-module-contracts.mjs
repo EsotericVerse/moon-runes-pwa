@@ -87,7 +87,8 @@ const textEngine=readFileSync(resolve(root,'app/loc/text-engine.mjs'),'utf8');
 const searchProviders=readFileSync(resolve(root,'app/loc/search-providers.js'),'utf8');
 const keywordClassifier=readFileSync(resolve(root,'app/loc/keyword-classifier.js'),'utf8');
 if(!/from ['"]flexsearch['"]/.test(textEngine)||!/Charset\.CJK/.test(textEngine)||!/new Resolver/.test(textEngine))failures.push('Text engine: FlexSearch CJK/Resolver contract missing');
-if(!/getRuntimeTextIndex/.test(searchProviders)||!/searchTextIndex/.test(searchProviders))failures.push('Search client: shared FlexSearch contract missing');
+if(!/createTextIndex/.test(searchProviders)||!/searchTextIndex/.test(searchProviders)||!/nextCursor|cursor=/.test(searchProviders))failures.push('Search client: batched FlexSearch contract missing');
+if(/getRuntimeTextIndex/.test(searchProviders))failures.push('Search client: runtime index cache must not return to batched providers');
 if(!/searchTextIndex/.test(keywordClassifier))failures.push('Culture/Statistics keyword classifier: shared FlexSearch contract missing');
 if(!/searchNeonRows\(/.test(readFileSync(resolve(root,'app/modular-v2/features/SearchV2.jsx'),'utf8')))failures.push('Search view: shared text search contract missing');
 

@@ -24,7 +24,7 @@ requireText('app/loc/GovernanceManagement.jsx',[/from ['"]react-select['"]/ ,/us
 requireText('app/loc/views/AdminHomeView.jsx',[/from ['"]react-select['"]/ ,/useNeonAccount/ ,/canManageGlobalSync/],'Admin React Select/Neon Auth boundary');
 // FlexSearch is the shared text engine. Neon remains SSOT and adaptive IO supplies index batches.
 requireText('app/loc/text-engine.mjs',[/from ['"]flexsearch['"]/ ,/new Index/ ,/new Resolver/ ,/Charset\.CJK/],'Shared FlexSearch text engine');
-requireText('app/loc/search-providers.js',[/getRuntimeTextIndex/ ,/searchTextIndex/ ,/neonPublicClient/],'Search/FlexSearch Neon client boundary');
+requireText('app/loc/search-providers.js',[/createTextIndex/ ,/searchTextIndex/ ,/neonPublicClient/ ,/nextCursor|cursor=/],'Search/FlexSearch batched Neon boundary');
 requireText('app/loc/style-classifier.js',[/createTextIndex/ ,/searchTextIndex/ ,/splitRuneKeywordEntries/],'Culture/Statistics FlexSearch classifier boundary');
 // Graph and timeline packages are loaded only by their corresponding Neon feature modules.
 requireText('app/modular-v2/modules/keyword-graph/KeywordGraph2DV2.jsx',[/vis-network\/standalone/ ,/new Network/],'Keyword graph vis-network package boundary');
