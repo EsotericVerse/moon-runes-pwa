@@ -2,7 +2,6 @@
 
 import {useState} from 'react';
 import {insertNeonRows} from './neon-repository';
-import {saveResourceVisibility} from './resource-visibility';
 import {useNeonAccount} from './use-neon-account';
 import ContentEditorV2 from '../modular-v2/ContentEditorV2';
 import {createUid8} from './uid';
@@ -15,7 +14,7 @@ function targetIds(value){
 
 const blank=()=>({
   title:'',body:'',source:'',url:'',source_id:'',target_id:'',ref_id:'',createtime:'',
-  includeStatistics:true,hidden:false,showLink:true,showSource:true
+  hidden:false
 });
 
 export default function ManagementArticlePublisher({scopeId}){
@@ -44,10 +43,6 @@ export default function ManagementArticlePublisher({scopeId}){
         source_name:draft.source.trim()
       }]);
 
-      await saveResourceVisibility({
-        scope:'lo3rwang',resourceType:'galaxy',resourceId:uid,draft
-      });
-
       setDraft(blank());setStatus('文章已發表到 Galaxy。');
     }catch(error){setStatus(error?.message||'文章發表失敗。');}
     finally{setBusy(false);}
@@ -68,7 +63,6 @@ export default function ManagementArticlePublisher({scopeId}){
 
   return <section className="scope-v2-inline-card">
     <h3>文章發表</h3>
-    <p>只在 Management 顯示。列表固定使用摘要；正文是否公開由可見性規則控制。</p>
     <ContentEditorV2
       draft={draft}
       setDraft={setDraft}
