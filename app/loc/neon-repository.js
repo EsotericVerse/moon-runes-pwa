@@ -17,7 +17,8 @@ const FixedCanonicalTableSchema=z.enum([
   'api.user_records','api.user_settings',
   'silver.manage','silver.resource_visibility',
   'silver.runes','silver.runes_group','silver.runes_etc',
-  'silver.faq_entries'
+  'silver.faq_entries',
+  'silver.lo3rwang_source_stats','silver.lo3rwang_source_daily'
 ]);
 const ScopeMainTableSchema=z.string().regex(/^silver\.[a-z][a-z0-9]*$/);
 const ScopeDataTableSchema=z.string().regex(/^silver\.[a-z][a-z0-9]*_(?:style|galaxy|galaxy_media|daily|time)$/);
