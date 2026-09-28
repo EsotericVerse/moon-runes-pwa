@@ -4,7 +4,7 @@ import {neonPublicClient} from '../../loc/neon-client';
 import {useOffsetPagination} from '../use-offset-pagination.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
-import {scopeHrefV2} from '../scope-registry.v2';
+import {getScopeV2} from '../scope-registry.v2';
 import GovernanceInlineEditor from '../../loc/GovernanceInlineEditor';
 import LocGovernance,{LocGovernanceLaw,LOC_GOVERNANCE_SUBTITLE} from '../governance/LocGovernance';
 import LunaRunesGovernance,{LUNARUNES_GOVERNANCE_SUBTITLE} from '../governance/LunaRunesGovernance';
@@ -66,9 +66,15 @@ function governanceFor(scopeId){
 function GovernanceHome(){
   const {scopeId}=useScopeRuntimeV2();
   const {View,subtitle}=governanceFor(scopeId);
+  const adminHref=getScopeV2('admin').primary.href;
   return <FeaturePageV2 featureId="governance" subtitle={subtitle}>
     <GovernanceInlineEditor scopeId={scopeId}><View/></GovernanceInlineEditor>
-    <section className="loc-card"><p className="loc-eyebrow">Management</p><h2>管理</h2><a className="loc-button primary" href={scopeHrefV2(scopeId,'governance/manage')}>進入管理</a></section>
+    {scopeId==='loc'?<section className="loc-card">
+      <p className="loc-eyebrow">Management</p>
+      <h2>管理</h2>
+      <p>管理介面獨立於公開 Scope，從 LOC 治理頁進入。</p>
+      <a className="loc-button primary" href={adminHref}>進入管理</a>
+    </section>:null}
   </FeaturePageV2>;
 }
 
