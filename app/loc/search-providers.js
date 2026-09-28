@@ -184,7 +184,7 @@ const runeText=makeProvider({
   source:'符文文字',
   scopeId:'lrunes',
   idColumn:'record_id',
-  columns:['record_id','uid','category','content_type','source_name','title','createtime','source_id','target_id','ref_id','url','media_link'],
+  columns:['record_id','uid','content_type','source_name','title','createtime','source_id','target_id','ref_id','url','media_link'],
   searchFields:['title','content','source_name'],
   dateColumn:'createtime',
   filters:[
