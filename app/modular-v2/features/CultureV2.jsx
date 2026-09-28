@@ -305,9 +305,7 @@ export default function CultureV2(){
             {selectedWorkPeriod?<section className='scope-v2-card scope-v2-culture-current-works'>
               <p className='loc-eyebrow'>Classification</p>
               <h3>{labelOf(selectedWorkPeriod,0)}｜{classificationMode==='source'?'作品來源':'多媒體分類'}</h3>
-              <p>{classificationMode==='source'
-                ?'來源名稱是匯入時自訂的字串；相同名稱會直接視為同一來源。'
-                :'依 media_type 顯示圖片、影音、音樂與其他媒體類型分布。'}</p>
+              {classificationMode==='media'?<p>依 media_type 顯示圖片、影音、音樂與其他媒體類型分布。</p>:null}
               {categoryQuery.isFetching?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
               {categoryQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(categoryQuery.error)}</p>:null}
               {!categoryQuery.isFetching&&!categoryQuery.error&&!categoryGroups.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
