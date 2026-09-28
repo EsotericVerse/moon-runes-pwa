@@ -15,12 +15,16 @@ import {FEATURE_EMPTY_MESSAGE,FEATURE_LOADING_MESSAGE,featureDataErrorMessage} f
 import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
 import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
 import {selectGalaxyContent} from '../../loc/aggregate-query';
+import {neonAuthClient} from '../../loc/neon-client';
+import {useNeonAccount} from '../../loc/use-neon-account';
+import {clearRuntimeTextIndexes} from '../../loc/text-engine.mjs';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
 import WorkFullTextV2 from '../WorkFullTextV2';
 import {WORK_FALLBACK_TITLE,workDisplayText,workDisplayTitle} from '../work-display-model.v2';
 import PagedResultV2 from '../PagedResultV2';
+import ContentEditorV2 from '../ContentEditorV2';
 
 const CULTURE_WORK_PAGE_SIZE=20;
 
@@ -60,6 +64,7 @@ function periodRange(rows=[],scope='lo3rwang'){
 
 export default function CultureV2(){
   const {scopeId}=useScopeRuntimeV2();
+  const account=useNeonAccount();
   const searchParams=useSearchParams();
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
   const query=useQuery({
@@ -77,6 +82,10 @@ export default function CultureV2(){
   const [fullText,setFullText]=useState('');
   const [fullTextLoading,setFullTextLoading]=useState(false);
   const [fullTextError,setFullTextError]=useState('');
+  const [editingWorkKey,setEditingWorkKey]=useState('');
+  const [editDraft,setEditDraft]=useState(null);
+  const [editBusy,setEditBusy]=useState(false);
+  const [editError,setEditError]=useState('');
 
   const currentRows=useMemo(()=>{
     const scopes=scopeId==='loc'?['lo3rwang','lunarunes']:[scopeId].filter(Boolean);
@@ -200,6 +209,60 @@ export default function CultureV2(){
     ?(sourceSnapshotQuery.data?.buckets||[])
     :(mediaSnapshotQuery.data?.buckets||[]);
 
+
+  function galaxyTable(){
+    return classificationScope==='lunarunes'?'lrunes_galaxy':'lo3rwang_galaxy';
+  }
+
+  async function startEditingWork(work){
+    const uid=String(work?.uid||'').trim();
+    if(!uid)return;
+    const key=String(work?.key||('galaxy:'+uid));
+    setEditingWorkKey(key);setEditDraft(null);setEditError('');
+    try{
+      const {data,error}=await neonAuthClient.schema('silver').from(galaxyTable())
+        .select('uid,title,content,searchable')
+        .eq('uid',uid)
+        .limit(1);
+      if(error)throw new Error(error.message||'作品內容讀取失敗');
+      const row=data?.[0];
+      if(!row)throw new Error('找不到這筆作品。');
+      setEditDraft({
+        title:String(row.title||work.title||''),
+        body:String(row.content||''),
+        hidden:row.searchable===false
+      });
+    }catch(exception){
+      setEditingWorkKey('');
+      setEditError(String(exception?.message||exception||'無法載入編輯內容。'));
+    }
+  }
+
+  async function saveEditingWork(work){
+    const uid=String(work?.uid||'').trim();
+    if(!uid||!editDraft)return;
+    setEditBusy(true);setEditError('');
+    try{
+      if(!account.canManageScopeSync(classificationScope))throw new Error('沒有修改此 Scope 的權限。');
+      const {error}=await neonAuthClient.schema('silver').from(galaxyTable())
+        .update({
+          title:String(editDraft.title||'').trim()||null,
+          content:String(editDraft.body||''),
+          searchable:editDraft.hidden!==true
+        })
+        .eq('uid',uid);
+      if(error)throw new Error(error.message||'作品儲存失敗');
+      clearRuntimeTextIndexes();
+      const key=String(work?.key||('galaxy:'+uid));
+      if(fullTextKey===key)setFullText(String(editDraft.body||''));
+      setEditingWorkKey('');setEditDraft(null);
+      await periodWorksQuery.refetch();
+    }catch(exception){
+      setEditError(String(exception?.message||exception||'儲存失敗。'));
+    }finally{
+      setEditBusy(false);
+    }
+  }
 
   async function toggleWorkContent(work){
     const uid=String(work?.uid||'').trim();
@@ -352,6 +415,16 @@ export default function CultureV2(){
                       onToggle={()=>toggleWorkContent(work)}
                     />:null}
                     {classificationMode==='media'?<p>{work.media_type?('媒體類型：'+work.media_type):''}</p>:null}
+                    {classificationMode==='source'&&work.uid&&account.canManageScopeSync(classificationScope)?<p><button type="button" onClick={()=>startEditingWork(work)}>{editingWorkKey===String(work.key||('galaxy:'+work.uid))?'編輯中':'編輯'}</button></p>:null}
+                    {editingWorkKey===String(work.key||('galaxy:'+work.uid))&&editDraft?<ContentEditorV2
+                      draft={editDraft}
+                      setDraft={setEditDraft}
+                      busy={editBusy}
+                      error={editError}
+                      showVisibility
+                      onSave={()=>saveEditingWork(work)}
+                      onCancel={()=>{setEditingWorkKey('');setEditDraft(null);setEditError('')}}
+                    />:null}
                   </WorkSummaryCardV2>)}
                 </div>
                 {!periodWorksQuery.isFetching&&!periodWorksQuery.error&&!(periodWorksQuery.data?.rows||[]).length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
