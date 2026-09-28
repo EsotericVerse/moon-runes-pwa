@@ -326,6 +326,7 @@ export async function processKeywordObservationRows(table,{
 }={}){
   if(typeof onObserved!=='function')throw new TypeError('Keyword observation processing requires onObserved');
   const catalog=await selectStyleCatalog(scopeId);
+  if(!catalog.length)return {processed:0,stopped:false,nextOffset:0};
   return processNeonHeavyRows(table,{
     columns,filters,orFilter,orders,
     onBatch:async rows=>{
