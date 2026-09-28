@@ -79,7 +79,7 @@ function riverPath(startX,endX,yAt,steps=48){
   return points.join(' ');
 }
 
-function CurrentCultureRivers({rows}){
+function CurrentCultureRivers({rows,onSelect=null}){
   const personal=[...rows].filter(row=>row.scopeId==='lo3rwang');
   const runes=[...rows].filter(row=>row.scopeId==='lunarunes');
   const personalCurrent=personal.find(row=>row.entryType==='period'&&row.status.trim().toLowerCase()==='current')
@@ -113,7 +113,7 @@ function CurrentCultureRivers({rows}){
   const endLabel=dateLabel(intersectionEnd);
 
   return <section className='scope-v2-current-rivers'>
-    <div className='scope-v2-current-rivers-canvas' style={{overflowX:'auto',margin:'1rem 0 1.25rem'}}>
+    <div className='scope-v2-current-rivers-canvas' role='button' tabIndex={0} onClick={()=>onSelect?.({type:'current-intersection'})} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();onSelect?.({type:'current-intersection'});}}} style={{overflowX:'auto',margin:'1rem 0 1.25rem',cursor:onSelect?'pointer':'default'}}>
       <svg viewBox='0 0 1200 520' role='img' aria-label='Current 個人時期與 LunaRunes Current 的交集時間河道' style={{display:'block',width:'100%',minWidth:'900px',height:'520px'}}>
         <title>兩個 Scope Current 時期的集合交集</title>
         <rect x='20' y='20' width='1160' height='480' rx='24' fill='var(--loc-panel,#fff)' stroke='var(--loc-border,#999)' strokeWidth='1'/>
@@ -186,7 +186,7 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
     return()=>{cancelled=true;if(instance)instance.destroy();};
   },[rows,timelineHeight]);
 
-  if(currentConfluence)return <CurrentCultureRivers rows={rows}/>;
+  if(currentConfluence)return <CurrentCultureRivers rows={rows} onSelect={onSelect}/>;
   if(!rows.length)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><div className='scope-period-timeline scope-period-timeline-empty-line' role='region' aria-label='時間長河'/><p>{mode==='overview'?'尚未設定時期，目前以「所有」總覽顯示。':'目前時期尚無可顯示的時間資料。'}</p></div>;
 
   return <div className='scope-period-timeline-wrap'>
