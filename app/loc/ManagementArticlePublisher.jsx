@@ -5,7 +5,6 @@ import {neonAuthClient} from './neon-client';
 import {useNeonAccount} from './use-neon-account';
 import ContentEditorV2 from '../modular-v2/ContentEditorV2';
 import {createUid8} from './uid';
-import {clearRuntimeTextIndexes} from './text-engine.mjs';
 
 function targetIds(value){
   const values=Array.isArray(value)?value:String(value||'').split(/[,，]/);
@@ -17,7 +16,6 @@ async function insertNeonRows(table,rows){
   const [schema,name]=String(table).split('.');
   const {data,error}=await neonAuthClient.schema(schema).from(name).insert(rows).select('*');
   if(error)throw new Error(error.message||('Neon INSERT '+table+' failed'));
-  clearRuntimeTextIndexes();
   return data||[];
 }
 

@@ -17,7 +17,6 @@ import ContentEditorV2 from '../ContentEditorV2';
 import SearchHighlightV2 from '../SearchHighlightV2';
 import {selectGalaxyContent,selectGalaxyIdentity} from '../../loc/aggregate-query';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayText,workDisplayTitle} from '../work-display-model.v2';
-import {clearRuntimeTextIndexes} from '../../loc/text-engine.mjs';
 import IncrementalLoadV2 from '../IncrementalLoadV2';
 import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
 
@@ -36,7 +35,6 @@ async function updateNeonRows(table,values,{filters=[]}={}){
   for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
   const {data,error}=await query.select('*');
   if(error)throw new Error(error.message||('Neon UPDATE '+table+' failed'));
-  clearRuntimeTextIndexes();
   return data||[];
 }
 

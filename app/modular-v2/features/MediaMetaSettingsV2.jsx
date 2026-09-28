@@ -9,7 +9,6 @@ import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation.v2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
 import IncrementalLoadV2 from '../IncrementalLoadV2';
 import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
-import {clearRuntimeTextIndexes} from '../../loc/text-engine.mjs';
 
 
 function mediaRelation(client,table){
@@ -37,7 +36,6 @@ async function updateNeonRows(table,values,{filters=[]}={}){
   for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
   const {data,error}=await query.select('*');
   if(error)throw new Error(error.message||('Neon UPDATE '+table+' failed'));
-  clearRuntimeTextIndexes();
   return data||[];
 }
 

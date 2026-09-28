@@ -17,7 +17,6 @@ import {formatCultureDateTime} from '../modules/culture-timeline/culture-timelin
 import {selectGalaxyContent} from '../../loc/aggregate-query';
 import {neonAuthClient} from '../../loc/neon-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
-import {clearRuntimeTextIndexes} from '../../loc/text-engine.mjs';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
@@ -266,7 +265,6 @@ export default function CultureV2(){
         })
         .eq('uid',uid);
       if(error)throw new Error(error.message||'作品儲存失敗');
-      clearRuntimeTextIndexes();
       const key=String(work?.key||('galaxy:'+uid));
       if(fullTextKey===key)setFullText(String(editDraft.body||''));
       setEditingWorkKey('');setEditDraft(null);

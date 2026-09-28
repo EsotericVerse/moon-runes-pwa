@@ -2,8 +2,6 @@
 
 import {Charset,Index,Resolver} from 'flexsearch';
 
-const runtimeIndexes=new Map();
-
 export function normalizeIndexedText(value){
   return String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').trim();
 }
@@ -77,33 +75,5 @@ export function searchTextIndex(engine,query,{
     totalCount:null,
     hasMore,
     nextOffset:hasMore?nextOffset:null
-  };
-}
-
-export async function getRuntimeTextIndex(key,builder){
-  const cacheKey=String(key||'').trim();
-  if(!cacheKey)throw new TypeError('Text index key is required');
-  const cached=runtimeIndexes.get(cacheKey);
-  if(cached)return cached;
-  const promise=(async()=>{
-    const engine=createTextIndex();
-    await builder(engine);
-    return engine;
-  })().catch(error=>{
-    if(runtimeIndexes.get(cacheKey)===promise)runtimeIndexes.delete(cacheKey);
-    throw error;
-  });
-  runtimeIndexes.set(cacheKey,promise);
-  return promise;
-}
-
-export function clearRuntimeTextIndexes(){
-  runtimeIndexes.clear();
-}
-
-export function runtimeTextIndexState(){
-  return {
-    keys:[...runtimeIndexes.keys()],
-    count:runtimeIndexes.size
   };
 }

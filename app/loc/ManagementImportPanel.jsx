@@ -4,7 +4,6 @@ import {useMemo,useState} from 'react';
 import {neonAuthClient} from './neon-client';
 import {useNeonAccount} from './use-neon-account';
 import {createUid8} from './uid';
-import {clearRuntimeTextIndexes} from './text-engine.mjs';
 
 async function insertNeonRows(table,rows){
   if(String(table).endsWith('_galaxy_media')){
@@ -13,7 +12,6 @@ async function insertNeonRows(table,rows){
   const [schema,name]=String(table).split('.');
   const {data,error}=await neonAuthClient.schema(schema).from(name).insert(rows).select('*');
   if(error)throw new Error(error.message||('Neon INSERT '+table+' failed'));
-  clearRuntimeTextIndexes();
   return data||[];
 }
 
