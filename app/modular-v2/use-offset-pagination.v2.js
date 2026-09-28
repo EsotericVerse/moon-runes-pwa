@@ -1,18 +1,35 @@
 'use client';
 
 import {useCallback,useEffect,useRef,useState} from 'react';
+import {DEFAULT_LIST_BATCH_SIZE} from './list-loading.v2';
 
-export function useOffsetPagination({key,pageSize,loadPage,enabled=true}){
+function appendUnique(current,next,getRowKey){
+  if(typeof getRowKey!=='function')return [...current,...next];
+  const map=new Map(current.map((row,index)=>[getRowKey(row,index),row]));
+  next.forEach((row,index)=>map.set(getRowKey(row,current.length+index),row));
+  return [...map.values()];
+}
+
+export function useOffsetPagination({
+  key,
+  pageSize=DEFAULT_LIST_BATCH_SIZE,
+  loadPage,
+  enabled=true,
+  getRowKey=null
+}){
   const [rows,setRows]=useState([]);
   const [loading,setLoading]=useState(false);
   const [error,setError]=useState(null);
   const [hasMore,setHasMore]=useState(true);
+  const [reloadKey,setReloadKey]=useState(0);
   const offsetRef=useRef(0);
   const busyRef=useRef(false);
   const hasMoreRef=useRef(true);
   const requestIdRef=useRef(0);
   const loadPageRef=useRef(loadPage);
+  const getRowKeyRef=useRef(getRowKey);
   loadPageRef.current=loadPage;
+  getRowKeyRef.current=getRowKey;
 
   const loadNext=useCallback(async()=>{
     if(!enabled||busyRef.current||!hasMoreRef.current)return;
@@ -24,10 +41,10 @@ export function useOffsetPagination({key,pageSize,loadPage,enabled=true}){
     try{
       const page=await loadPageRef.current(offset,pageSize);
       if(requestId!==requestIdRef.current)return;
-      const nextRows=page.rows||[];
+      const nextRows=Array.isArray(page?.rows)?page.rows:[];
       offsetRef.current=offset+nextRows.length;
-      hasMoreRef.current=Boolean(page.hasMore);
-      setRows(current=>[...current,...nextRows]);
+      hasMoreRef.current=typeof page?.hasMore==='boolean'?page.hasMore:nextRows.length===pageSize;
+      setRows(current=>appendUnique(current,nextRows,getRowKeyRef.current));
       setHasMore(hasMoreRef.current);
     }catch(nextError){
       if(requestId===requestIdRef.current)setError(nextError);
@@ -49,17 +66,15 @@ export function useOffsetPagination({key,pageSize,loadPage,enabled=true}){
     setError(null);
     if(!enabled){
       setLoading(false);
-      return ()=>{
-        if(requestId===requestIdRef.current)requestIdRef.current+=1;
-      };
+      return ()=>{if(requestId===requestIdRef.current)requestIdRef.current+=1;};
     }
     busyRef.current=true;
     setLoading(true);
     Promise.resolve().then(()=>loadPageRef.current(0,pageSize)).then(page=>{
       if(requestId!==requestIdRef.current)return;
-      const firstRows=page.rows||[];
+      const firstRows=Array.isArray(page?.rows)?page.rows:[];
       offsetRef.current=firstRows.length;
-      hasMoreRef.current=Boolean(page.hasMore);
+      hasMoreRef.current=typeof page?.hasMore==='boolean'?page.hasMore:firstRows.length===pageSize;
       setRows(firstRows);
       setHasMore(hasMoreRef.current);
     }).catch(nextError=>{
@@ -70,22 +85,9 @@ export function useOffsetPagination({key,pageSize,loadPage,enabled=true}){
         setLoading(false);
       }
     });
-    return ()=>{
-      if(requestId===requestIdRef.current)requestIdRef.current+=1;
-    };
-  },[enabled,key,pageSize]);
+    return ()=>{if(requestId===requestIdRef.current)requestIdRef.current+=1;};
+  },[enabled,key,pageSize,reloadKey]);
 
-  useEffect(()=>{
-    const loadAtPageEnd=()=>{
-      if(error)return;
-      const pageBottom=window.scrollY+window.innerHeight;
-      const documentBottom=document.documentElement.scrollHeight;
-      if(pageBottom>=documentBottom-160)loadNext();
-    };
-    window.addEventListener('scroll',loadAtPageEnd,{passive:true});
-    loadAtPageEnd();
-    return ()=>window.removeEventListener('scroll',loadAtPageEnd);
-  },[loadNext,rows.length,hasMore,loading,error]);
-
-  return {rows,loading,error,hasMore};
+  const reload=useCallback(()=>setReloadKey(value=>value+1),[]);
+  return {rows,loading,error,hasMore,loadNext,reload};
 }
