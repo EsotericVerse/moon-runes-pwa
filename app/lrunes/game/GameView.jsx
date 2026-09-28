@@ -287,7 +287,7 @@ export default function GameView(){
 
   return <section className="loc-view loc-game game-shell">
     <header className="loc-hero game-compact-hero">
-      <div><p className="loc-eyebrow">LunaRunes × Game · Alpha</p><h1>LunaRunes Game</h1><p>{status}｜{state.result}</p></div>
+      <div><p className="loc-eyebrow">LunaRunes Game · Alpha</p><h1>LunaRunes Game</h1><p>{status}｜{state.result}</p></div>
       <DeMeter value={Math.max(...state.players.map(player=>player.de))}/>
     </header>
     <div className="game-round-wrap"><RoundRail round={state.round} count={state.players.length}/></div>
