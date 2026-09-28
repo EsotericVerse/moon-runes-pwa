@@ -2,8 +2,24 @@
 
 import {deleteNeonRows,insertNeonRows,selectNeonCatalog} from './neon-repository';
 
-const RUNE_COLUMNS='rune_number,rune_name,group_name,english_name,lots_positive,lots_negative,lots_half_positive,lots_half_negative,myth_story,rune_evolution_history,personality_archetype,card_attribute,totem,moon_phase,positive_meaning,reverse_meaning,half_positive_meaning,half_reverse_meaning,rune_description,character_action,extra_notes,extra_rules,soul_question,practice_challenge,ritual_advice,harmony_advice,UpdateTime';
+const RUNE_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,char_action,positive_keywords,negative_keywords,extra_rules,extra_notes,positive_meaning,half_positive_meaning,half_reverse_meaning,reverse_meaning';
 const KEYWORD_COLUMNS='rune_number,keyword_group,keyword';
+const MOON_PHASE_LABELS=Object.freeze({1:'新月',2:'上弦',3:'滿月',4:'下弦'});
+const CARD_ATTRIBUTE_LABELS=Object.freeze({1:'正面',2:'中平',3:'負面',4:'未知'});
+
+function normalizeRune(row){
+  const runeId=Number(row?.rune_id);
+  const moonCode=Number(row?.moon_phase);
+  const attrCode=Number(row?.card_attr);
+  return {
+    ...row,
+    rune_number:runeId,
+    personality_archetype:row?.archetype||'',
+    character_action:row?.char_action||'',
+    moon_phase:Number.isInteger(moonCode)?(MOON_PHASE_LABELS[moonCode]||''): '',
+    card_attribute:Number.isInteger(attrCode)?(CARD_ATTRIBUTE_LABELS[attrCode]||'未知'):'未知'
+  };
+}
 
 function keywordMap(rows){
   const map=new Map();
@@ -19,12 +35,27 @@ function keywordMap(rows){
 }
 
 export async function selectRuneCatalog(){
+  const runes=await selectNeonCatalog('silver.runes',{
+    columns:RUNE_COLUMNS,
+    orders:[{column:'rune_id',ascending:true}]
+  });
+  return runes.rows.map(normalizeRune);
+}
+
+export async function selectRuneRows(runeNumbers=[]){
+  const wanted=[...new Set(runeNumbers.map(Number).filter(number=>Number.isInteger(number)&&number>=0&&number<=66))];
+  if(!wanted.length)return [];
+  const runes=await selectNeonCatalog('silver.runes',{
+    columns:RUNE_COLUMNS,
+    filters:[{column:'rune_id',operator:'in',value:wanted}],
+    orders:[{column:'rune_id',ascending:true}]
+  });
+  return runes.rows.map(normalizeRune);
+}
+
+export async function selectRuneKeywordCatalog(){
   const [runes,keywords]=await Promise.all([
-    selectNeonCatalog('silver.lrunes',{
-      columns:RUNE_COLUMNS,
-      filters:[{column:'record_type',operator:'eq',value:'rune'}],
-      orders:[{column:'rune_number',ascending:true}]
-    }),
+    selectRuneCatalog(),
     selectNeonCatalog('silver.lrunes',{
       columns:KEYWORD_COLUMNS,
       filters:[
@@ -35,22 +66,10 @@ export async function selectRuneCatalog(){
     })
   ]);
   const keywordsByRune=keywordMap(keywords.rows);
-  return runes.rows.map(row=>{
+  return {runes:runes.map(row=>{
     const bucket=keywordsByRune.get(Number(row.rune_number))||{positive:[],negative:[]};
     return {...row,positive_keywords:bucket.positive.join('、'),negative_keywords:bucket.negative.join('、')};
-  });
-}
-
-export async function selectRuneRows(runeNumbers=[]){
-  const wanted=new Set(runeNumbers.map(Number).filter(Number.isInteger));
-  if(!wanted.size)return [];
-  const rows=await selectRuneCatalog();
-  return rows.filter(row=>wanted.has(Number(row.rune_number)));
-}
-
-
-export async function selectRuneKeywordCatalog(){
-  return {runes:await selectRuneCatalog()};
+  })};
 }
 
 function splitKeywords(value){
