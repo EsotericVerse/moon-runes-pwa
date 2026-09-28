@@ -13,8 +13,6 @@ function targetIds(value){
   return ids.length?ids:null;
 }
 
-const blank=()=>({
-
 async function insertNeonRows(table,rows){
   const [schema,name]=String(table).split('.');
   const {data,error}=await neonAuthClient.schema(schema).from(name).insert(rows).select('*');
@@ -22,6 +20,8 @@ async function insertNeonRows(table,rows){
   clearRuntimeTextIndexes();
   return data||[];
 }
+
+const blank=()=>({
   title:'',body:'',source:'',url:'',source_id:'',target_id:'',ref_id:'',createtime:'',
   hidden:false
 });
