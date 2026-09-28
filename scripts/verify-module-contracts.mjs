@@ -64,16 +64,15 @@ if(!governanceManagement.includes("scopeId!=='loc'?<CultureTimelineEditor")){
 }
 
 const aggregateQuery=readFileSync(resolve(root,'app/loc/aggregate-query.js'),'utf8');
-if(!aggregateQuery.includes("columns:'uid,title,url,media_link'")){
-  failures.push('aggregate-query: bounded Galaxy summary metadata contract missing');
+if(!aggregateQuery.includes("columns:'uid,title,content,url,media_link'")){
+  failures.push('aggregate-query: Galaxy summary must select source content explicitly');
 }
 const summaryBlock=aggregateQuery.split('export async function selectGalaxySummaries')[1]?.split('export async function selectGalaxyIdentity')[0]||'';
-if(/columns:[^\n]*['",]content(?:['",]|$)/.test(summaryBlock)||/row\.content(?:\b|\[)/.test(summaryBlock)){
-  failures.push('aggregate-query: list summaries must not SELECT or slice full content');
-}
+if(!/slice\(0,20\)/.test(summaryBlock))failures.push('aggregate-query: preview must be derived from the first 20 content characters');
+if(/galaxy_preview|content_preview/.test(aggregateQuery))failures.push('aggregate-query: stored preview dependency returned');
 
 const runeRepository=readFileSync(resolve(root,'app/loc/rune-repository.js'),'utf8');
-for(const token of ['selectNeonCatalog','silver.lrunes','selectRuneCatalog','selectRuneKeywordCatalog','updateRuneKeywords'])if(!runeRepository.includes(token))failures.push(`Rune repository: missing canonical contract ${token}`);
+for(const token of ['selectNeonCatalog','silver.runes','silver.lrunes','selectRuneCatalog','selectRuneKeywordCatalog','updateRuneKeywords'])if(!runeRepository.includes(token))failures.push(`Rune repository: missing canonical contract ${token}`);
 for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs','app/loc/neon-context-client.js','app/modular-v2/features/ContextV2.jsx','app/modular-v2/features/ContextWorkbenchV2.jsx','app/modular-v2/modules/context-graph/ContextGraphV2.jsx'])if(existsSync(resolve(root,retired)))failures.push(`retired path-loader returned: ${retired}`);
 if(['LOC_DATA','canonical/runes','fetchNeonData','runtime_json_documents','fetchLocJson','fetchLocDataSegments'].some(token=>runeRepository.includes(token)))failures.push('Rune repository: legacy path/JSON loader semantics returned');
 
