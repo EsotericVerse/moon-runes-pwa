@@ -15,7 +15,7 @@ import {clearRuntimeTextIndexes} from './text-engine.mjs';
 
 const FixedCanonicalTableSchema=z.enum([
   'api.user_records','api.user_settings',
-  'silver.manage','silver.resource_visibility',
+  'silver.manage',
   'silver.runes','silver.runes_group','silver.runes_etc',
   'silver.faq_entries',
   'silver.lo3rwang_source_stats','silver.lo3rwang_source_daily'
@@ -25,7 +25,7 @@ const ScopeDataTableSchema=z.string().regex(/^silver\.[a-z][a-z0-9]*_(?:style|ga
 const TableSchema=z.union([FixedCanonicalTableSchema,ScopeMainTableSchema,ScopeDataTableSchema]);
 const WritableFixedTableSchema=z.enum([
   'api.user_records','api.user_settings',
-  'silver.manage','silver.resource_visibility'
+  'silver.manage'
 ]);
 const WritableScopeTableSchema=z.string().regex(/^silver\.[a-z][a-z0-9]*(?:_(?:style|galaxy|galaxy_media|time))?$/);
 const WritableTableSchema=z.union([WritableFixedTableSchema,WritableScopeTableSchema]);
@@ -35,7 +35,7 @@ function isMediaTable(table){return /^silver\.[a-z][a-z0-9]*_galaxy_media$/.test
 function isScopeMainTable(table){
   const value=String(table||'');
   return /^silver\.[a-z][a-z0-9]*$/.test(value)
-    && !['silver.manage','silver.resource_visibility','silver.runes','silver.runes_group','silver.runes_etc','silver.faq_entries'].includes(value);
+    && !['silver.manage','silver.runes','silver.runes_group','silver.runes_etc','silver.faq_entries'].includes(value);
 }
 function invalidateTextIndexes(table){
   if(String(table||'')==='silver.manage'||isGalaxyTable(table)||isMediaTable(table))clearRuntimeTextIndexes();
