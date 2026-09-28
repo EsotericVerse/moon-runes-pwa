@@ -13,39 +13,30 @@ function compareRank(a,b){
     ||String(a.label||'').localeCompare(String(b.label||''));
 }
 
+function runeKeywordEntries(value){
+  return String(value||'').split(/[、,，\n]+/).map(item=>item.trim()).filter(Boolean);
+}
+
 export async function selectCanonicalStyleCatalog(){
   if(canonicalCatalogPromise)return canonicalCatalogPromise;
   canonicalCatalogPromise=(async()=>{
-    const [runesResult,keywordsResult]=await Promise.all([
-      selectNeonCatalog('silver.runes',{
-        columns:'rune_id,rune_name,group_name'
-      }),
-      selectNeonCatalog('silver.lrunes',{
-        columns:'rune_number,keyword_group,keyword,active,record_type',
-        filters:[
-          {column:'record_type',operator:'eq',value:'keyword'},
-          {column:'active',operator:'eq',value:true}
-        ]
-      })
-    ]);
-    const runeMap=new Map((runesResult.rows||[]).map(row=>[Number(row.rune_id),{
-      rune_number:Number(row.rune_id),
-      style_label:String(row.rune_name||'').trim(),
-      style_group:String(row.group_name||'').trim()
-    }]));
-    return (keywordsResult.rows||[]).map((row,index)=>{
-      const rune=runeMap.get(Number(row.rune_number));
-      const keyword=String(row.keyword||'').trim();
-      if(!rune||!keyword)return null;
-      return {
-        keyword,
-        keyword_group:String(row.keyword_group||'').trim(),
-        rune_number:rune.rune_number,
-        style_label:rune.style_label,
-        style_group:rune.style_group,
-        order:index
+    const result=await selectNeonCatalog('silver.runes',{
+      columns:'rune_id,rune_name,group_name,positive_keywords,negative_keywords,extra_rules',
+      orders:[{column:'rune_id',ascending:true}]
+    });
+    const output=[];
+    for(const row of result.rows||[]){
+      const runeNumber=Number(row.rune_id);
+      const base={
+        rune_number:runeNumber,
+        style_label:String(row.rune_name||'').trim(),
+        style_group:String(row.group_name||'').trim()
       };
-    }).filter(Boolean);
+      for(const keyword of runeKeywordEntries(row.positive_keywords))output.push({...base,keyword,keyword_group:'positive',order:runeNumber});
+      for(const keyword of runeKeywordEntries(row.negative_keywords))output.push({...base,keyword,keyword_group:'negative',order:runeNumber});
+      for(const keyword of runeKeywordEntries(row.extra_rules))output.push({...base,keyword,keyword_group:'rules',order:runeNumber});
+    }
+    return output;
   })().catch(error=>{
     canonicalCatalogPromise=null;
     throw error;
