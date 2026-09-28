@@ -163,7 +163,7 @@ export default function AuthorHomeView({section=null}){
     }
   ];
 
-  if(!section)return <>
+  if(!section)return <><PageComposition
     eyebrow="Lucas Oscar Wang"
     title="政德"
     subtitle="語言建築師"
