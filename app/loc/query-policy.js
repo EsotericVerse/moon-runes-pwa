@@ -10,6 +10,8 @@ const HEAVY_COLUMNS=Object.freeze({
 
 const CATALOG_TABLES=Object.freeze(new Set([
   'silver.runes',
+  'silver.runes_group',
+  'silver.runes_etc',
   'silver.lrunes',
   'silver.lo3rwang_style',
   'silver.manage'
@@ -105,6 +107,16 @@ export function assertCatalogSelect({table,columns,filters=[]}){
   const heavy=HEAVY_COLUMNS[table];
   if(heavy&&selected.some(column=>heavy.has(column))){
     throw new Error(`Catalog cannot return heavy columns from ${table}`);
+  }
+  if(table==='silver.runes_etc'){
+    const typeFilter=(filters||[]).find(filter=>String(filter?.column||'')==='type');
+    const runeFilter=(filters||[]).find(filter=>String(filter?.column||'')==='rune_id');
+    if(!typeFilter&&!runeFilter)throw new Error('silver.runes_etc requires a type or rune_id filter');
+    if(typeFilter){
+      const allowed=new Set(['direction','lots','daily']);
+      const values=typeFilter.operator==='eq'?[typeFilter.value]:(typeFilter.operator==='in'&&Array.isArray(typeFilter.value)?typeFilter.value:[]);
+      if(!values.length||values.some(value=>!allowed.has(String(value))))throw new Error('silver.runes_etc only allows direction/lots/daily types');
+    }
   }
   if(table==='silver.lrunes'){
     const typeFilter=(filters||[]).find(filter=>String(filter?.column||'')==='record_type');
