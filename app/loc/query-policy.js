@@ -3,31 +3,37 @@
 export const UI_PAGE_SIZE=2000;
 export const MAX_SELECT_ROWS=5000;
 
-const HEAVY_COLUMNS=Object.freeze({
-  'silver.lo3rwang_galaxy':Object.freeze(new Set(['content'])),
-  'silver.lrunes_galaxy':Object.freeze(new Set(['content']))
-});
+function isGalaxyTable(table){
+  return /^silver\.[a-z][a-z0-9]*_galaxy$/.test(String(table||''));
+}
+function isGalaxyMediaTable(table){
+  return /^silver\.[a-z][a-z0-9]*_galaxy_media$/.test(String(table||''));
+}
+function isStyleTable(table){
+  return /^silver\.[a-z][a-z0-9]*_style$/.test(String(table||''));
+}
+function heavyColumnsFor(table){
+  return isGalaxyTable(table)?new Set(['content']):null;
+}
 
 const CATALOG_TABLES=Object.freeze(new Set([
   'silver.runes',
   'silver.runes_group',
   'silver.runes_etc',
-  'silver.lo3rwang_style',
-  'silver.lrunes_style',
   'silver.manage'
 ]));
 
-const EXACT_ID_COLUMNS=Object.freeze({
-  'silver.lo3rwang_galaxy':Object.freeze(new Set(['uid'])),
-  'silver.lrunes_galaxy':Object.freeze(new Set(['uid']))
-});
+function exactIdColumnsFor(table){
+  if(isGalaxyTable(table))return new Set(['uid']);
+  return null;
+}
 
 function columnList(columns){
   return String(columns||'').split(',').map(value=>value.trim()).filter(Boolean);
 }
 
 function hasExactIdFilter(table,filters=[]){
-  const ids=EXACT_ID_COLUMNS[table];
+  const ids=exactIdColumnsFor(table);
   if(!ids)return false;
   return filters.some(filter=>
     ids.has(String(filter?.column||'')) &&
@@ -39,7 +45,7 @@ function hasExactIdFilter(table,filters=[]){
 }
 
 export function selectedHeavyColumns(table,columns){
-  const heavy=HEAVY_COLUMNS[table];
+  const heavy=heavyColumnsFor(table);
   if(!heavy)return [];
   const selected=columnList(columns);
   if(selected.includes('*'))return [...heavy];
@@ -63,7 +69,7 @@ export function safeRange(range){
 }
 
 export function assertSafeSelect({table,columns,filters=[],limit=UI_PAGE_SIZE,range=null}){
-  const heavy=HEAVY_COLUMNS[table];
+  const heavy=heavyColumnsFor(table);
   if(!heavy)return;
   const selected=columnList(columns);
   if(selected.includes('*'))throw new Error(`SELECT * blocked for large-content table ${table}`);
@@ -84,16 +90,15 @@ export function assertHeavyBatchSelect({table,columns}){
   }
 }
 
-const SAFE_RETURNING=Object.freeze({
-  'silver.lo3rwang_galaxy':'uid',
-  'silver.lo3rwang_galaxy_media':'media_id',
-  'silver.lrunes_galaxy':'uid',
-  'silver.lrunes_galaxy_media':'media_id'
-});
+function safeReturningColumn(table){
+  if(isGalaxyTable(table))return 'uid';
+  if(isGalaxyMediaTable(table))return 'media_id';
+  return '';
+}
 
 export function safeReturning(table,requested='*'){
   if(requested===null||requested===false)return null;
-  const safe=SAFE_RETURNING[table];
+  const safe=safeReturningColumn(table);
   if(!safe)return requested;
   if(!requested||requested==='*')return safe;
   const cols=columnList(requested);
@@ -102,10 +107,10 @@ export function safeReturning(table,requested='*'){
 }
 
 export function assertCatalogSelect({table,columns,filters=[]}){
-  if(!CATALOG_TABLES.has(table))throw new Error(`Catalog loading is not allowed for ${table}`);
+  if(!CATALOG_TABLES.has(table)&&!isStyleTable(table))throw new Error(`Catalog loading is not allowed for ${table}`);
   const selected=columnList(columns);
   if(selected.includes('*'))throw new Error(`Catalog SELECT * blocked for ${table}`);
-  const heavy=HEAVY_COLUMNS[table];
+  const heavy=heavyColumnsFor(table);
   if(heavy&&selected.some(column=>heavy.has(column))){
     throw new Error(`Catalog cannot return heavy columns from ${table}`);
   }
