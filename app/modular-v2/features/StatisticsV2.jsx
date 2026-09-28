@@ -159,7 +159,7 @@ function StatisticsPanel({scopeId,navigation,types}){
   const pageOffset=safePage*pageSize;
   const pageRows=allRows.slice(pageOffset,pageOffset+pageSize);
   return <section className="scope-v2-stat-section">
-    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Statistics</p><h2>統計</h2><p>排名列表與統計圖使用同一份排序結果；列表每頁 10 筆，圖表顯示完整分布。</p></div></header>
+    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Statistics</p><h2>統計</h2></div></header>
     <div className="scope-v2-stat-controls">
       <StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/>
       <label><span>圖形</span><select className="scope-v2-select" value={chartType} onChange={event=>setChartType(event.target.value)}>{CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
@@ -182,14 +182,12 @@ function StatisticsPanel({scopeId,navigation,types}){
     {!query.isPending&&!query.error&&automaticAnalysis.suggestions.length?<section className="scope-v2-card">
       <p className="loc-eyebrow">Automatic Analysis</p>
       <h3>自動分布分析</h3>
-      <p>依目前統計分布做機械式判斷，只描述集中、低頻尾端與重複候選，不替使用者定義文化意義。</p>
       <div className="scope-v2-list">
         {automaticAnalysis.suggestions.map((item,index)=><article className="scope-v2-inline-card" key={item.type+'-'+index}>
           <strong>{item.type==='concentration'?'分布集中':item.type==='long_tail'?'低頻尾端':'重複候選'}</strong>
           <span>{item.text}</span>
         </article>)}
       </div>
-      {rankingType==='keyword'?<p>關鍵詞治理：這些結果可作為新增、提高、降低或淘汰候選的依據；實際詞庫變更仍需由規則與時間比較確認。</p>:null}
     </section>:null}
 
     {comparisonQuery.isPending?<p className="scope-v2-status">比較目前時期與前一正式時期…</p>:null}
@@ -197,7 +195,7 @@ function StatisticsPanel({scopeId,navigation,types}){
     {!comparisonQuery.isPending&&!comparisonQuery.error&&comparisonQuery.data?<section className="scope-v2-card">
       <p className="loc-eyebrow">Weak Signal Comparison</p>
       <h3>時間變化／弱訊號</h3>
-      <p>{comparisonQuery.data.previousPeriodLabel||'前一時期'}：{rangeLabel(comparisonQuery.data.previousRange)}｜{comparisonQuery.data.periodLabel||'目前時期'}：{rangeLabel(comparisonQuery.data.currentRange)}。比較完整正式時期中各分類的占比變化，不使用等長日期窗。</p>
+      <p>{comparisonQuery.data.previousPeriodLabel||'前一時期'}：{rangeLabel(comparisonQuery.data.previousRange)}｜{comparisonQuery.data.periodLabel||'目前時期'}：{rangeLabel(comparisonQuery.data.currentRange)}</p>
       {!changeAnalysis.suggestions.length?<p className="scope-v2-status">目前沒有達到提醒門檻的明顯變化。</p>:<div className="scope-v2-list">
         {changeAnalysis.suggestions.map((item,index)=><article className="scope-v2-inline-card" key={item.type+'-'+item.term+'-'+index}>
           <strong>{item.action||(
@@ -209,7 +207,6 @@ function StatisticsPanel({scopeId,navigation,types}){
           <span>{item.text}</span>
         </article>)}
       </div>}
-      <p>這些是風險管理用的弱訊號提示；系統只指出「這裡開始不一樣」，不替使用者定義原因、好壞或事件性質。</p>
     </section>:null}
 
     {rankingType==='keyword'&&diagnosticsQuery.isPending?<p className="scope-v2-status">計算關鍵詞辨識度與共現…</p>:null}
@@ -217,7 +214,6 @@ function StatisticsPanel({scopeId,navigation,types}){
     {rankingType==='keyword'&&!diagnosticsQuery.isPending&&!diagnosticsQuery.error&&diagnosticsQuery.data?<section className="scope-v2-card">
       <p className="loc-eyebrow">Keyword Diagnostics</p>
       <h3>關鍵詞辨識度／共現</h3>
-      <p>以 {Number(keywordDiagnostics.totalRecords||0).toLocaleString()} 筆文字與多媒體 metadata 紀錄計算覆蓋率、來源集中度與共現；只判斷資料形狀，不判斷文化意義。</p>
       {!keywordDiagnostics.suggestions.length?<p className="scope-v2-status">目前沒有達到辨識度或共現提醒門檻的項目。</p>:<div className="scope-v2-list">
         {keywordDiagnostics.suggestions.map((item,index)=><article className="scope-v2-inline-card" key={item.type+'-'+item.term+'-'+index}>
           <strong>{item.type==='emerging_high_discrimination'?'新興高辨識候選':
