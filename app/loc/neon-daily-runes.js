@@ -8,7 +8,7 @@ async function loadRuneMeta(){
     filters:[{column:'record_type',operator:'eq',value:'rune'}],
     orders:[{column:'rune_number',ascending:true}]
   });
-  return new Map(rows.map(row=>[Number(row.rune_number),row]));
+  return new Map(rows.map(row=>[Number(row.rune_id),row]));
 }
 
 async function attachRuneMeta(rows){
