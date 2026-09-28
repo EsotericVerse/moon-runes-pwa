@@ -59,7 +59,7 @@ export default function AuthorHomeView({section=null}){
     },
     {
       id:'functions',
-      eyebrow:'Personal Scope · Functions',
+      eyebrow:'Personal · Functions',
       title:'我的資料怎麼被整理',
       content:<div className="loc-grid two">{AUTHOR_FUNCTIONS.map(item=><article key={item.title}><p className="loc-eyebrow">{item.eyebrow}</p><h3>{item.title}</h3><p>{item.text}</p><p><a href={item.href}>{item.label} →</a></p></article>)}</div>
     },
