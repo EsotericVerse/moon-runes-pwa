@@ -115,19 +115,6 @@ export default function CultureV2(){
     staleTime:5*60_000
   });
 
-  const periodVolumesQuery=useQuery({
-    queryKey:['culture-period-source-volumes',scopeId,visibleAuthorPeriods.map(item=>[item.period,item.start_date,item.end_date])],
-    queryFn:async()=>{
-      const settled=await Promise.allSettled(visibleAuthorPeriods.map(async(period,index)=>({
-        period:{...period,scope_id:'lo3rwang'},
-        snapshot:await selectAuthorPeriodSourceSnapshot({startDate:period.start_date,endDate:period.end_date}),
-        periodIndex:index
-      })));
-      return settled.filter(item=>item.status==='fulfilled').map(item=>item.value);
-    },
-    enabled:scopeId==='lo3rwang'&&visibleAuthorPeriods.length>0,
-    staleTime:5*60_000
-  });
 
   const styleSnapshotQuery=useQuery({
     queryKey:['culture-period-style-snapshot',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,styleLevel],
@@ -211,15 +198,13 @@ export default function CultureV2(){
   },[classificationMode,styleLevel,mediaDimension,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date]);
 
   const periodVolumeByStart=useMemo(()=>{
-    const map=new Map((periodVolumesQuery.data||[]).map(group=>[
-      String(group.period?.start_date||'').slice(0,10),
-      Number(group.snapshot?.totalCount)||0
-    ]));
+    const map=new Map();
     if(sourceSnapshotQuery.data&&selectedWorkPeriod?.start_date){
       map.set(String(selectedWorkPeriod.start_date).slice(0,10),Number(sourceSnapshotQuery.data.totalCount)||0);
     }
     return map;
-  },[periodVolumesQuery.data,sourceSnapshotQuery.data,selectedWorkPeriod?.start_date]);
+  },[sourceSnapshotQuery.data,selectedWorkPeriod?.start_date]);
+
 
   const timelineItems=useMemo(()=>{
     const items=(query.data?.timelineItems||[]).filter(item=>scopeId==='loc'||item.scope_id===scopeId);
