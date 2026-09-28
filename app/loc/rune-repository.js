@@ -1,6 +1,6 @@
 'use client';
 
-import {selectNeonCatalog,updateNeonRows} from './neon-repository';
+import {neonPublicClient} from './neon-client';
 
 const RUNE_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,char_action,positive_keywords,negative_keywords,extra_rules,extra_notes';
 const RUNE_DETAIL_COLUMNS='rune_evolution_history,myth_story,soul_question,practice_challenge,ritual_advice,harmony_advice';
@@ -12,6 +12,19 @@ const DIRECTION_FIELDS=Object.freeze({1:'positive_meaning',2:'half_positive_mean
 const LOTS_FIELDS=Object.freeze({1:'lots_positive',2:'lots_half_positive',3:'lots_half_negative',4:'lots_negative'});
 const DAILY_FIELDS=Object.freeze({1:'daily_positive',2:'daily_half_positive',3:'daily_half_reverse',4:'daily_reverse'});
 const ETC_TYPES=new Set(['direction','lots','daily']);
+async function selectRuneTable(table,columns,{filters=[],orders=[]}={}){
+  let query=neonPublicClient.schema('silver').from(table).select(columns);
+  for(const filter of filters){
+    query=filter.operator==='in'
+      ?query.in(filter.column,filter.value)
+      :query[filter.operator](filter.column,filter.value);
+  }
+  for(const order of orders)query=query.order(order.column,{ascending:order.ascending??true});
+  const {data,error}=await query;
+  if(error)throw new Error(error.message||('Neon '+table+' read failed'));
+  return data||[];
+}
+
 
 function normalizeRune(row){
   const runeId=Number(row?.rune_id);
@@ -66,8 +79,8 @@ function mergeRuneEtc(runes,etcRows){
 
 
 export async function selectRuneGroupCatalog(){
-  const result=await selectNeonCatalog('silver.runes_group',{columns:GROUP_COLUMNS});
-  return result.rows.map(normalizeGroup).sort((a,b)=>Number(a.id)-Number(b.id));
+  const rows=await selectRuneTable('runes_group',GROUP_COLUMNS);
+  return rows.map(normalizeGroup).sort((a,b)=>Number(a.id)-Number(b.id));
 }
 
 export async function selectRuneEtcRows({runeNumbers=[],types=[]}={}){
@@ -77,24 +90,21 @@ export async function selectRuneEtcRows({runeNumbers=[],types=[]}={}){
   const filters=[];
   if(wanted.length)filters.push({column:'rune_id',operator:'in',value:wanted});
   if(selectedTypes.length)filters.push({column:'type',operator:'in',value:selectedTypes});
-  const result=await selectNeonCatalog('silver.runes_etc',{
-    columns:ETC_COLUMNS,
+  return selectRuneTable('runes_etc',ETC_COLUMNS,{
     filters,
     orders:[{column:'rune_id',ascending:true},{column:'dir',ascending:true},{column:'type',ascending:true}]
   });
-  return result.rows;
 }
 
 export async function selectRuneCatalog({types=[]}={}){
   const selectedTypes=normalizeEtcTypes(types);
   const [runes,etcRows]=await Promise.all([
-    selectNeonCatalog('silver.runes',{
-      columns:RUNE_COLUMNS,
+    selectRuneTable('runes',RUNE_COLUMNS,{
       orders:[{column:'rune_id',ascending:true}]
     }),
     selectedTypes.length?selectRuneEtcRows({types:selectedTypes}):Promise.resolve([])
   ]);
-  const normalized=runes.rows.map(normalizeRune);
+  const normalized=runes.map(normalizeRune);
   return selectedTypes.length?mergeRuneEtc(normalized,etcRows):normalized;
 }
 
@@ -104,14 +114,13 @@ export async function selectRuneRows(runeNumbers=[],{types=[],detail=false}={}){
   const selectedTypes=normalizeEtcTypes(types);
   const columns=detail?`${RUNE_COLUMNS},${RUNE_DETAIL_COLUMNS}`:RUNE_COLUMNS;
   const [runes,etcRows]=await Promise.all([
-    selectNeonCatalog('silver.runes',{
-      columns,
+    selectRuneTable('runes',columns,{
       filters:[{column:'rune_id',operator:'in',value:wanted}],
       orders:[{column:'rune_id',ascending:true}]
     }),
     selectedTypes.length?selectRuneEtcRows({runeNumbers:wanted,types:selectedTypes}):Promise.resolve([])
   ]);
-  const normalized=runes.rows.map(normalizeRune);
+  const normalized=runes.map(normalizeRune);
   return selectedTypes.length?mergeRuneEtc(normalized,etcRows):normalized;
 }
 
@@ -132,16 +141,6 @@ function splitKeywords(value){
   return String(value||'').split(/[、,，\n]+/).map(item=>item.trim()).filter(Boolean);
 }
 
-export async function updateRuneKeywords({runeNumber,positiveKeywords,negativeKeywords}){
-  const number=Number(runeNumber);
-  if(!Number.isInteger(number)||number<0||number>66)throw new TypeError('符文編號無效');
-  const rows=await updateNeonRows('silver.runes',{
-    positive_keywords:splitKeywords(positiveKeywords).join('、'),
-    negative_keywords:splitKeywords(negativeKeywords).join('、')
-  },{
-    filters:[{column:'rune_id',operator:'eq',value:number}],
-    returning:'rune_id'
-  });
-  if(!rows.length)throw new Error('符文不存在');
-  return {rune_number:number};
+export async function updateRuneKeywords(){
+  throw new Error('LunaRunes Canon 為唯讀資料。');
 }

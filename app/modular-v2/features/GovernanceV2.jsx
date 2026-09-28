@@ -1,6 +1,6 @@
 'use client';
 
-import {selectNeonRows} from '../../loc/neon-repository';
+import {neonPublicClient} from '../../loc/neon-client';
 import {useOffsetPagination} from '../use-offset-pagination.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
@@ -27,13 +27,14 @@ function FaqView(){
     key:'governance-faq',
     pageSize:FAQ_PAGE_SIZE,
     loadPage:async(offset,limit)=>{
-      const result=await selectNeonRows('silver.faq_entries',{
-        columns:'faq_id,category,question,answer',
-        orders:[{column:'category',ascending:true},{column:'faq_id',ascending:true}],
-        offset,
-        limit
-      });
-      return {rows:result.rows,hasMore:result.rows.length===limit};
+      const {data,error}=await neonPublicClient.schema('silver').from('faq_entries')
+        .select('faq_id,category,question,answer')
+        .order('category',{ascending:true})
+        .order('faq_id',{ascending:true})
+        .range(offset,offset+limit-1);
+      if(error)throw new Error(error.message||'FAQ 載入失敗');
+      const rows=data||[];
+      return {rows,hasMore:rows.length===limit};
     }
   });
   const {rows,loading,error,hasMore}=page;
