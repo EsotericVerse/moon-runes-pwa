@@ -5,8 +5,9 @@ const client=fs.readFileSync('app/loc/neon-client.js','utf8');
 const account=fs.readFileSync('app/loc/use-neon-account.js','utf8');
 const authorization=fs.readFileSync('app/loc/scope-authorization.js','utf8');
 const userStorage=fs.readFileSync('app/loc/neon-user-storage.js','utf8');
-const scopeManagement=fs.readFileSync('app/modular-v2/ScopeManagementV2.jsx','utf8');
-const scopeRepository=fs.readFileSync('app/loc/neon-scope-governance.js','utf8');
+const scopeManagement=fs.readFileSync('app/loc/GovernanceManagement.jsx','utf8');
+const adminManagement=fs.readFileSync('app/loc/views/AdminHomeView.jsx','utf8');
+const contentBlocks=fs.readFileSync('app/loc/content-blocks.js','utf8');
 const searchView=fs.readFileSync('app/modular-v2/features/SearchV2.jsx','utf8');
 const failures=[];
 
@@ -23,8 +24,8 @@ requireMatch(client,/signInWithOAuth/,'Neon Google OAuth sign-in is required for
 requireMatch(client,/getSession/,'Neon session lookup is required for management');
 if(/allowAnonymous\s*:\s*true/.test(client))failures.push('public reads must not share Better Auth anonymous session cache');
 
-requireMatch(account,/selectNeonAllRows\('silver\.manage'/,'account authorization must resolve website permissions from silver.manage');
-requireMatch(account,/columns:'id,email,role'/,'account permission lookup must use the Current manage contract');
+requireMatch(account,/schema\('silver'\)\.from\('manage'\)/,'account authorization must resolve website permissions from silver.manage');
+requireMatch(account,/select\('id,email,role'\)/,'account permission lookup must use the Current manage contract');
 requireMatch(account,/email:authorizer\.email/,'email must be the account identity key');
 requireMatch(account,/role:authorizer\.role/,'resolved manage role must be exposed by the account state');
 if(/OWNER_EMAIL|isOwner\(|user\?\.id|user\.id|canManagePage|user\?\.role|user\.role/.test(account)){
@@ -44,10 +45,11 @@ requireMatch(userStorage,/conflict:'owner_id,id'/,'user record upserts must be o
 requireMatch(userStorage,/conflict:'owner_id,setting_key'/,'user setting upserts must be owner-scoped');
 if(/localStorage|IndexedDB|readStore\(|writeStore\(/.test(userStorage))failures.push('authenticated durable user state must not use browser storage');
 
-requireMatch(scopeManagement,/account\.canManageGlobal\(\)/,'Scope create, edit and delete must be admin-only');
-requireMatch(scopeRepository,/MANAGE_TABLE='silver\.manage'/,'Scope graph structure may remain in silver.manage');
-if(/record_type:'permission'|selectPermissions|upsertPermission|deletePermission/.test(scopeRepository+scopeManagement)){
-  failures.push('website users/permissions must not be mirrored into silver.manage');
+requireMatch(scopeManagement,/account\.canManageScopeSync\(scopeId\)/,'Scope management must use the shared scope authorizer');
+requireMatch(adminManagement,/account\.canManageGlobalSync\(\)/,'Admin management must require the global admin role');
+requireMatch(contentBlocks,/schema\('silver'\)\.from\('content_blocks'\)/,'public editable blocks must use the shared content_blocks repository');
+if(/record_type:'permission'|selectPermissions|upsertPermission|deletePermission/.test(scopeManagement+adminManagement+contentBlocks)){
+  failures.push('website users/permissions must not be mirrored outside silver.manage');
 }
 if(/function hasPrivilege|account\.privileges/.test(searchView)){
   failures.push('Search must use the shared Neon Auth authorizer instead of its own privilege logic');
@@ -55,6 +57,8 @@ if(/function hasPrivilege|account\.privileges/.test(searchView)){
 
 for(const retired of [
   'app/loc/neon-legacy-migration.js',
+  'app/loc/neon-scope-governance.js',
+  'app/modular-v2/ScopeManagementV2.jsx',
   'app/loc/auth-client.js',
   'app/loc/local-db.js',
   'app/loc/google-drive.js',
