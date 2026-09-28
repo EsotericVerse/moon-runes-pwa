@@ -13,13 +13,13 @@ const SCOPE_FEATURE_SUBTITLES=Object.freeze({
     statics:'排行榜、關鍵詞設定與各項統計圖集中於此。',
     culture:'透過以時間作為分類標準，來找尋各項時期的變化趨勢。',
     governance:'符號式語言的治理、Canon 與權利邊界。管理也在此。',
-    search:'從符文名稱、關鍵詞或相關文字開始；Scope 命中優先，再回到具體符文與內容。'
+    search:'從符文名稱、關鍵詞或相關文字開始，再回到具體符文與內容。'
   }),
   loc:Object.freeze({
     statics:'排行榜、關鍵詞設定與各項統計圖集中於此。',
     culture:'透過以時間作為分類標準，來找尋各項時期的變化趨勢。',
     governance:'LOC 原則、Copyleft 與 GNU GPL。管理也在此。',
-    search:'跨 LOC 的關鍵詞入口；Scope 命中優先，再進入對應資料與關係位置。'
+    search:'跨 LOC 的關鍵詞入口，再進入對應資料與關係位置。'
   })
 });
 
