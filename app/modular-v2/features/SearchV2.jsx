@@ -18,6 +18,8 @@ import SearchHighlightV2 from '../SearchHighlightV2';
 import {selectGalaxyContent,selectGalaxyIdentity} from '../../loc/aggregate-query';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayText,workDisplayTitle} from '../work-display-model.v2';
 import {clearRuntimeTextIndexes} from '../../loc/text-engine.mjs';
+import IncrementalLoadV2 from '../IncrementalLoadV2';
+import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
 
 
 function authRelation(table){
@@ -142,7 +144,8 @@ export default function SearchV2(){
   const [error,setError]=useState('');
   const [hasMore,setHasMore]=useState(false);
   const [totalCount,setTotalCount]=useState(0);
-  const [pageOffset,setPageOffset]=useState(0);
+  const [nextOffset,setNextOffset]=useState(null);
+  const [loadingMore,setLoadingMore]=useState(false);
   const [editingKey,setEditingKey]=useState('');
   const [editDraft,setEditDraft]=useState(null);
   const [editBusy,setEditBusy]=useState(false);
@@ -153,49 +156,56 @@ export default function SearchV2(){
   const [fullTextLoading,setFullTextLoading]=useState(false);
   const searchId=useRef(0);
   const matchedQueryRef=useRef('');
-  const pageSize=20;
+  const pageSize=DEFAULT_LIST_BATCH_SIZE;
   const collection=useMemo(()=>getSearchCollection(scope.searchCollection),[scope.searchCollection]);
 
-  async function executeSearch(rawQuery,offset=0){
+  async function executeSearch(rawQuery,offset=0,{append=false}={}){
     const q=String(rawQuery||'').trim();
     if(!q)return;
     const id=++searchId.current;
-    setPageOffset(offset);
-    matchedQueryRef.current='';
     setError('');
-    setHasMore(false);
-    setResults([]);
-    setStatus(searchMode==='media'?'搜尋多媒體資料…':`搜尋「${collection.label}」資料…`);
+    if(append){
+      setLoadingMore(true);
+    }else{
+      matchedQueryRef.current='';
+      setHasMore(false);
+      setNextOffset(null);
+      setResults([]);
+      setStatus(searchMode==='media'?'搜尋多媒體資料…':`搜尋「${collection.label}」資料…`);
+    }
     try{
       const search=await searchNeonRows(collection.id,q,{limit:pageSize,offset,mediaOnly:searchMode==='media'});
       if(id!==searchId.current)return;
 
       const searchRows=search.rows;
 
-      matchedQueryRef.current=q;
+      if(!append)matchedQueryRef.current=q;
       const converted=[];const seen=new Set();
       for(const {row,source} of searchRows){
         const result=toResult(row,source,q,scopeId);
         if(!result||seen.has(result.key))continue;
         seen.add(result.key);converted.push(result);
       }
-      setResults(mergeSummaryResults(converted));
+      const pageResults=mergeSummaryResults(converted);
+      setResults(current=>append?mergeSummaryResults([...current,...pageResults]):pageResults);
       setTotalCount(Number(search.totalCount||0));
       setHasMore(Boolean(search.hasMore));
+      setNextOffset(search.nextOffset??null);
       const partial=search.failures?.length?`（${search.failures.length} 張非必要資料表暫時無法查詢）`:'';
-      setStatus(`${searchMode==='media'?'多媒體':'「'+collection.label+'」'}搜尋「${q}」，共 ${Number(search.totalCount||0).toLocaleString()} 筆。${partial}`);
+      if(!append)setStatus(`${searchMode==='media'?'多媒體':'「'+collection.label+'」'}搜尋「${q}」，共 ${Number(search.totalCount||0).toLocaleString()} 筆。${partial}`);
     }catch(exception){
       if(id!==searchId.current)return;
       setError(featureDataErrorMessage(exception));
       setStatus('搜尋失敗。');
     }finally{
+      if(append&&id===searchId.current)setLoadingMore(false);
     }
   }
 
-  async function goToPage(offset){
+  async function loadNextSearch(){
     const q=matchedQueryRef.current||query.trim();
-    if(!q)return;
-    await executeSearch(q,Math.max(0,offset));
+    if(!q||!hasMore||loadingMore||nextOffset===null)return;
+    await executeSearch(q,nextOffset,{append:true});
   }
 
   async function executeIdentity(rawIdentity){
@@ -203,7 +213,7 @@ export default function SearchV2(){
     if(!identity)return;
     const id=++searchId.current;
     matchedQueryRef.current='';
-    setError('');setHasMore(false);setTotalCount(0);setPageOffset(0);
+    setError('');setHasMore(false);setTotalCount(0);setNextOffset(null);setLoadingMore(false);
     setStatus('載入關聯文字…');
     try{
       let detail=await selectGalaxyIdentity(scopeId,identity);
@@ -311,8 +321,8 @@ export default function SearchV2(){
     description={<p>輸入關鍵字，從文字、音樂、圖片、影音、符文與文件中找出相關內容。</p>}
   >
     <div className="scope-v2-tabs" role="group" aria-label="搜尋模式">
-      <button type="button" aria-pressed={searchMode==='all'} onClick={()=>{setSearchMode('all');setResults([]);setStatus('輸入關鍵字開始搜尋。');}}>全部搜尋</button>
-      <button type="button" aria-pressed={searchMode==='media'} onClick={()=>{setSearchMode('media');setResults([]);setStatus('輸入多媒體關鍵字、類型或來源識別。');}}>多媒體搜尋</button>
+      <button type="button" aria-pressed={searchMode==='all'} onClick={()=>{setSearchMode('all');setResults([]);setHasMore(false);setNextOffset(null);setStatus('輸入關鍵字開始搜尋。');}}>全部搜尋</button>
+      <button type="button" aria-pressed={searchMode==='media'} onClick={()=>{setSearchMode('media');setResults([]);setHasMore(false);setNextOffset(null);setStatus('輸入多媒體關鍵字、類型或來源識別。');}}>多媒體搜尋</button>
     </div>
     <form className="scope-v2-search-form" onSubmit={runSearch}>
       <label htmlFor="scope-search-query">{searchMode==='media'?'找多媒體':'你想找什麼？'}</label>
@@ -358,10 +368,6 @@ export default function SearchV2(){
         </WorkSummaryCardV2>;
       })}
     </div>
-    {totalCount>pageSize?<nav className="scope-v2-pagination" aria-label="搜尋結果分頁">
-      <button type="button" disabled={pageOffset<=0} onClick={()=>goToPage(pageOffset-pageSize)}>上一頁</button>
-      <span>{Math.floor(pageOffset/pageSize)+1} / {Math.max(1,Math.ceil(totalCount/pageSize))}</span>
-      <button type="button" disabled={!hasMore} onClick={()=>goToPage(pageOffset+pageSize)}>下一頁</button>
-    </nav>:null}
+    <IncrementalLoadV2 hasMore={hasMore} loading={loadingMore} error={error} onLoadMore={loadNextSearch} label="還有更多搜尋結果"/>
   </FeaturePageV2>;
 }

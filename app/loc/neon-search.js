@@ -3,7 +3,7 @@
 import {getMediaSearchProviders,getSearchProviders} from './search-providers';
 import {selectManagedScopeIds} from './scope-list';
 
-const SEARCH_PAGE_SIZE=20;
+const SEARCH_PAGE_SIZE=10;
 
 const SCOPE_SEARCH_ALIASES=Object.freeze({
   loc:'loc lunacodex luna codex 月典',
