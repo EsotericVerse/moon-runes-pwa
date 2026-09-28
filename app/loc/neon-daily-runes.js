@@ -1,8 +1,9 @@
-import {neonPublicClient} from './neon-client';
+import {neonAuthClient,neonPublicClient} from './neon-client';
 
 export const DAILY_RUNE_PAGE_SIZE=10;
 
 function silver(name){return neonPublicClient.schema('silver').from(name);}
+function silverAuth(name){return neonAuthClient.schema('silver').from(name);}
 
 
 async function loadRuneMeta(){
@@ -78,4 +79,35 @@ export async function selectDailyRuneMonth({year,month}={}){
     .limit(62);
   if(error)throw new Error(error.message||'每日符文讀取失敗');
   return attachRuneMeta(data||[]);
+}
+
+
+const DAILY_DRAW_KINDS=new Set(['main','supplement']);
+const DAILY_DIRECTIONS=new Set(['正位','半正位','半逆位','逆位']);
+
+export async function insertDailyRuneRecord({recordDate,drawKind,runeNumber,direction}={}){
+  const date=String(recordDate||'').slice(0,10);
+  const kind=String(drawKind||'').trim();
+  const rune=Number(runeNumber);
+  const dir=String(direction||'').trim();
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Error('日期格式不正確。');
+  if(!DAILY_DRAW_KINDS.has(kind))throw new Error('紀錄類型不正確。');
+  if(!Number.isInteger(rune)||rune<0||rune>66)throw new Error('符文編號不正確。');
+  if(!DAILY_DIRECTIONS.has(dir))throw new Error('符文方向不正確。');
+  const row={
+    record_id:'manual:'+date+':'+kind,
+    record_date:date,
+    draw_kind:kind,
+    rune_number:rune,
+    direction:dir
+  };
+  const {data,error}=await silverAuth('lrunes_daily')
+    .insert(row)
+    .select('record_date,draw_kind,rune_number,direction');
+  if(error){
+    if(String(error.code||'')==='23505')throw new Error('這一天已經有相同種類的紀錄。');
+    throw new Error(error.message||'每日符文紀錄新增失敗');
+  }
+  const attached=await attachRuneMeta(data||[]);
+  return attached[0]||null;
 }
