@@ -2,7 +2,6 @@ import {existsSync} from 'node:fs';
 
 const base=existsSync('out')?'out':'.';
 const required=[
-  'pics/LOC-FrameworkPic.png',
   'pics/LunaRunes.jpg',
   'assets/lunarunes/reference/loc_runes_66_overview.jpg',
   'assets/lunarunes/cards/66_命.png',
