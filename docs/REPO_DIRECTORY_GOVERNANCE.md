@@ -28,8 +28,6 @@ The following files are intentionally protected in place and are excluded from o
 ```text
 LunaRune66.xlsx                 LunaRunes mother workbook / canonical source
 LunarRunesCardCut.pdf           physical card printing and cutting source PDF
-pics/LOC-FrameworkPic.png       approved framework diagram source
-pics/LOC-structure.png          approved structure diagram source
 ```
 
 A governed mirror or runtime derivative does **not** authorize deletion, replacement, or relocation of these frozen originals. Any future change to a frozen source location requires explicit approval.
