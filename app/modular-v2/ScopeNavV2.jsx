@@ -26,7 +26,7 @@ export default function ScopeNavV2(){
   const currentFeature=featureIdForPathV2(pathname);
   const [searchText,setSearchText]=useState('');
   const navScopeId=scopeId==='admin'?'loc':scopeId;
-  const runeHome=scopeHrefV2('lunarunes');
+  const lunarunesHome=scopeHrefV2('lunarunes');
   const authorHome=scopeHrefV2('lo3rwang');
   const locHome=scopeHrefV2('loc');
 
@@ -40,7 +40,7 @@ export default function ScopeNavV2(){
   }
 
   return <nav className="scope-v2-nav" aria-label="全站導覽">
-    <NavTarget href={runeHome} label="月之符文" current={targetIsCurrent(runeHome,host,pathname)}/>
+    <NavTarget href={lunarunesHome} label="月之符文" current={targetIsCurrent(lunarunesHome,host,pathname)}/>
     {NAV_FEATURE_ORDER.map(id=>FEATURES_V2.find(item=>item.id===id)).filter(Boolean).map(item=>
       <NavTarget key={item.id} href={featureHrefV2(navScopeId,item.id)} label={item.label} current={scopeId!=='admin'&&currentFeature===item.id}/>
     )}
