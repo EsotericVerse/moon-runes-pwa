@@ -95,9 +95,10 @@ export async function searchNeonRows(collectionId,query,{
         nor
       });
       successfulProviders+=1;
-      totalCount+=result.count;
-      if(skip>=result.count){
-        skip-=result.count;
+      const providerCount=Math.max(0,Number(result.totalCount??result.count??result.rows?.length)||0);
+      totalCount+=providerCount;
+      if(skip>=providerCount){
+        skip-=providerCount;
         continue;
       }
       skip=0;
