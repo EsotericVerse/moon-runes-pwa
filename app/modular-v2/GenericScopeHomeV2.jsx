@@ -8,9 +8,9 @@ export default function GenericScopeHomeV2(){
   const {scope}=useScopeRuntimeV2();
 
   return <PageShellV2
-    eyebrow="Scope"
+    eyebrow="Home"
     title={scope.label}
-    subtitle="此 Scope 使用共用頁面框架；內容、canonical 資料與導覽由 Current Scope Registry 提供。"
+    subtitle="使用共用頁面框架；內容、資料與導覽依目前區域設定提供。"
   >
     <ScopeCardV2 eyebrow="Primary" title={scope.primary.label}>
       <p><a href={scope.primary.href}>進入主要內容</a></p>
