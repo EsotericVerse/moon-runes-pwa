@@ -48,7 +48,7 @@ const options={columns:'uid',filters:[{column:'source_name',operator:'eq',value:
 function reset(){calls=[];total=2501;missingCount=false;maxRows=Infinity;fatal=null;}
 function complete(rows,start,length){assert.equal(rows.length,length);assert.deepEqual(rows.map(r=>Number(r.uid)),Array.from({length},(_,i)=>start+i));}
 reset();complete((await api.selectNeonRows(table,{...options,limit:2501})).rows,0,2501);
-assert(calls.length>2);assert(calls.every(c=>c.size<=1000&&c.filters[0].value==='threads'&&c.or===options.orFilter&&c.orders.includes('uid')));
+const maxSelectRows=Number(policy.namespace.MAX_SELECT_ROWS);\nassert(calls.length>2);assert(calls.every(c=>c.size<=maxSelectRows&&c.filters[0].value==='threads'&&c.or===options.orFilter&&c.orders.includes('uid')));
 reset();complete((await api.selectNeonRows(table,{...options,range:[300,2499]})).rows,300,2200);
 reset();missingCount=true;complete((await api.selectNeonAllRows(table,options)).rows,0,2501);
 reset();maxRows=17;complete((await api.selectNeonRows(table,{...options,limit:200})).rows,0,200);
