@@ -128,7 +128,9 @@ export default function GameView(){
   const {data,error,isLoading}=useQuery({
     queryKey:['lunarunes','game','runes'],
     queryFn:loadGameRuneData,
-    staleTime:5*60*1000
+    staleTime:0,
+    gcTime:0,
+    refetchOnMount:'always'
   });
   const cards=data?.cards||[];
   const [state,setState]=useState(null);
@@ -241,8 +243,8 @@ export default function GameView(){
   if(!state)return <section className="loc-view loc-game game-shell">
     <header className="loc-hero game-hero">
       <div>
-        <p className="loc-eyebrow">LunaRunes × Game · Alpha</p>
-        <h1>Semantic Playground</h1>
+        <p className="loc-eyebrow">LunaRunes Game · Alpha</p>
+        <h1>LunaRunes Game</h1>
         <p>把既有符文卡、群組圖與 Event 圖直接放回盤面。規則仍是 Alpha；圖形介面先完整落地。</p>
         <div className="game-hero-badges"><span>66 Rune Cards</span><span>De 0–8</span><span>EEE-R-EEE-R</span></div>
       </div>
@@ -285,7 +287,7 @@ export default function GameView(){
 
   return <section className="loc-view loc-game game-shell">
     <header className="loc-hero game-compact-hero">
-      <div><p className="loc-eyebrow">LunaRunes × Game · Alpha</p><h1>Semantic Playground</h1><p>{status}｜{state.result}</p></div>
+      <div><p className="loc-eyebrow">LunaRunes × Game · Alpha</p><h1>LunaRunes Game</h1><p>{status}｜{state.result}</p></div>
       <DeMeter value={Math.max(...state.players.map(player=>player.de))}/>
     </header>
     <div className="game-round-wrap"><RoundRail round={state.round} count={state.players.length}/></div>
