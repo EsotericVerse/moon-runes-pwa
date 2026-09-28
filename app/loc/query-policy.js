@@ -5,21 +5,21 @@ export const MAX_SELECT_ROWS=5000;
 
 const HEAVY_COLUMNS=Object.freeze({
   'silver.lo3rwang_galaxy':Object.freeze(new Set(['content'])),
-  'silver.lrunes':Object.freeze(new Set(['content']))
+  'silver.lrunes_galaxy':Object.freeze(new Set(['content']))
 });
 
 const CATALOG_TABLES=Object.freeze(new Set([
   'silver.runes',
   'silver.runes_group',
   'silver.runes_etc',
-  'silver.lrunes',
   'silver.lo3rwang_style',
+  'silver.lrunes_style',
   'silver.manage'
 ]));
 
 const EXACT_ID_COLUMNS=Object.freeze({
   'silver.lo3rwang_galaxy':Object.freeze(new Set(['uid'])),
-  'silver.lrunes':Object.freeze(new Set(['record_id','uid']))
+  'silver.lrunes_galaxy':Object.freeze(new Set(['uid']))
 });
 
 function columnList(columns){
@@ -87,7 +87,8 @@ export function assertHeavyBatchSelect({table,columns}){
 const SAFE_RETURNING=Object.freeze({
   'silver.lo3rwang_galaxy':'uid',
   'silver.lo3rwang_galaxy_media':'media_id',
-  'silver.lrunes':'record_id'
+  'silver.lrunes_galaxy':'uid',
+  'silver.lrunes_galaxy_media':'media_id'
 });
 
 export function safeReturning(table,requested='*'){
@@ -118,13 +119,5 @@ export function assertCatalogSelect({table,columns,filters=[]}){
       if(!values.length||values.some(value=>!allowed.has(String(value))))throw new Error('silver.runes_etc only allows direction/lots/daily types');
     }
   }
-  if(table==='silver.lrunes'){
-    const typeFilter=(filters||[]).find(filter=>String(filter?.column||'')==='record_type');
-    const allowed=new Set(['keyword','rule']);
-    if(!typeFilter)throw new Error('LunaRunes catalog requires record_type filter');
-    const values=typeFilter.operator==='eq'?[typeFilter.value]:(typeFilter.operator==='in'&&Array.isArray(typeFilter.value)?typeFilter.value:[]);
-    if(!values.length||values.some(value=>!allowed.has(String(value)))){
-      throw new Error('silver.lrunes catalog only allows keyword/rule records; rune core must use silver.runes');
-    }
-  }
+
 }
