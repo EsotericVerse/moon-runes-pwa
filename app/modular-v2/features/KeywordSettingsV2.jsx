@@ -9,7 +9,7 @@ import {selectRuneKeywordCatalog} from '../../loc/rune-repository';
 import {clearStyleCatalogCache} from '../../loc/style-classifier';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
-import RuneContextV2 from './RuneContextV2';
+import RuneKeywordSettingsV2 from './RuneKeywordSettingsV2';
 
 function AuthorKeywordSettings(){
   const account=useNeonAccount();
@@ -193,7 +193,7 @@ export default function KeywordSettingsV2({scopeId='loc'}){
       <h4>符文關鍵詞詞庫（2D 圓形圖）</h4>
       {runeQuery.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
       {runeQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(runeQuery.error)}</p>:null}
-      {!runeQuery.isPending&&!runeQuery.error?<RuneContextV2 runes={runeQuery.data?.runes||[]} readOnly={scopeId!=='lunarunes'||!canEditRunes}/>:null}
+      {!runeQuery.isPending&&!runeQuery.error?<RuneKeywordSettingsV2 runes={runeQuery.data?.runes||[]} readOnly={scopeId!=='lunarunes'||!canEditRunes}/>:null}
     </section>:null}
   </div>;
 }
