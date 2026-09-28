@@ -58,40 +58,56 @@ export async function selectScopeCultureData(scopeId){
   const dataId=dataScopeId(scopeId);
   if(!['loc','lrunes','lo3rwang'].includes(dataId))throw new Error('Scope 無效');
 
-  const scopeIds=dataId==='loc'?(await selectManagedScopeIds()).filter(scope=>scope!=='loc'):[dataId];
-  let contextEntries=[];
-  if(dataId==='loc'){
-    const settled=await Promise.allSettled(scopeIds.map(async scope=>{
-      const rows=await selectScopeTimeRows(scope);
-      return [scope,rows.map(row=>({...row,scope_id:scope}))];
-    }));
-    contextEntries=settled.filter(item=>item.status==='fulfilled').map(item=>item.value);
-  }else{
-    const rows=await selectScopeTimeRows(dataId);
-    contextEntries=[[dataId,rows.map(row=>({...row,scope_id:dataId}))]];
-  }
-  const contextByScope=new Map(contextEntries);
-  const scopeContext=contextEntries.flatMap(([,rows])=>rows);
-  const authorContext=contextByScope.get('lo3rwang')||[];
-  const runeContext=contextByScope.get('lrunes')||[];
+  const scopeIds=dataId==='loc'
+    ?(await selectManagedScopeIds()).filter(scope=>scope!=='loc')
+    :[dataId];
+  const settled=await Promise.allSettled(scopeIds.map(async scope=>{
+    const rows=await selectScopeTimeRows(scope);
+    return rows.map(row=>({...row,scope_id:runtimeScopeId(scope)}));
+  }));
+  const scopeContext=settled
+    .filter(item=>item.status==='fulfilled')
+    .flatMap(item=>item.value);
 
-  const eraSource=authorContext.filter(row=>row.entry_type==='period');
-  const runeTimeline=runeTimelineRows(runeContext);
-  const eras=periodRows(eraSource);
-  const contextEvents=dataId==='lo3rwang'?authorContext.filter(row=>row.entry_type==='event').map(row=>({
-    entry_id:row.event_id||row.entry_key,event_id:row.event_id||row.entry_key,title:row.title,description:row.summary||'',date:row.start_date||null,
-    start_date:row.start_date||null,end_date:row.end_date||null,status:row.status||'',visibility:row.visibility||'public'
-  })):[];
-  const contextAnchors=dataId==='lo3rwang'?authorContext.filter(row=>row.entry_type==='anchor').map(row=>({
-    entry_id:row.entry_key,trajectory_id:row.entry_key,title:row.title,description:row.summary||'',start_date:row.start_date||null,date:row.start_date||null,
-    end_date:row.end_date||null,anchor_id:row.anchor_id||null,status:row.status||''
-  })):[];
-  const authorPeriods=eras.map(row=>({...row,scope_id:'lo3rwang',group_label:'lo3rwang 時期'}));
+  const periods=scopeContext.filter(row=>row.entry_type==='period');
+  const eras=periods.map(row=>({
+    ...periodRows([row])[0],
+    scope_id:runtimeScopeId(row.scope_id),
+    group_label:`${runtimeScopeId(row.scope_id)} 時期`
+  }));
+  const events=scopeContext.filter(row=>row.entry_type==='event').map(row=>({
+    entry_id:row.event_id||row.entry_key,
+    event_id:row.event_id||row.entry_key,
+    scope_id:runtimeScopeId(row.scope_id),
+    title:row.title,
+    description:row.summary||'',
+    date:row.start_date||null,
+    start_date:row.start_date||null,
+    end_date:row.end_date||null,
+    status:row.status||'',
+    visibility:row.visibility||'public'
+  }));
+  const trajectories=scopeContext.filter(row=>row.entry_type==='anchor').map(row=>({
+    entry_id:row.entry_key,
+    trajectory_id:row.entry_key,
+    scope_id:runtimeScopeId(row.scope_id),
+    title:row.title,
+    description:row.summary||'',
+    start_date:row.start_date||null,
+    date:row.start_date||null,
+    end_date:row.end_date||null,
+    anchor_id:row.anchor_id||null,
+    status:row.status||''
+  }));
+
   return ScopeCultureResponseSchema.parse({
-    scopeId:id,eras:{eras:dataId==='lrunes'?runeTimeline.eras:(dataId==='loc'?authorPeriods:eras)},
-    authorEras:dataId==='lo3rwang'||dataId==='loc'?{eras:dataId==='loc'?authorPeriods:eras}:undefined,
-    runeEras:{eras:runeTimeline.eras},runeHistory:{records:runeTimeline.history},periods:eraSource,timelineItems:timelineItems(scopeContext),
-    events:contextEvents,trajectories:contextAnchors,works:[],authorKeywords:{keywords:[]},musicPeriods:{periods:[]},writingPeriods:{periods:[]}
+    scopeId:id,
+    eras:{eras},
+    periods,
+    timelineItems:timelineItems(scopeContext),
+    events,
+    trajectories,
+    works:[]
   });
 }
 
