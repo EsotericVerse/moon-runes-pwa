@@ -28,7 +28,6 @@ requireText('app/loc/views/AboutView.jsx',[
   'LOC月典',
   '語言架構框架（Language Architecture Framework）',
   '符號式語言（Symbolic Language）',
-  'ModelArchitectureExplorer',
   "scopeHrefV2('lunarunes','duel/one')",
   "scopeHrefV2('lunarunes','duel/daily')",
   '<img src="/pics/LunaRunes.jpg" alt="LunaRunes 月之符文" loading="lazy" />'
