@@ -11,13 +11,13 @@ export function LocGovernanceLaw({canEdit=false}){
       id="copyright"
       eyebrow="Copyleft · GNU GPL"
       title="LOC 授權"
-      body={"LOC 採 Copyleft 原則；LOC 的原創程式碼採 GNU GPL 授權。\nLOC 的方法、架構與可授權內容可以被研究、使用與延伸，但應保留來源、作者、修改歷史與必要的衍生標示。\n這個授權邊界只屬於 LOC，不自動涵蓋 LunaRunes、個人 Scope、第三方內容、私人資料或另有權利條件的資產。\nGNU GPL 的正式版本將以 Repository 的 LICENSE 文件為準；在 LICENSE 尚未明定前，不自行推定特定 GPL 版本。"}
+      body={"LOC 採 Copyleft 原則；LOC 的原創程式碼採 GNU GPL 授權。\nLOC 的方法、架構與可授權內容可以被研究、使用與延伸，但應保留來源、作者、修改歷史與必要的衍生標示。\n這個授權邊界只屬於 LOC，不自動涵蓋 LunaRunes、個人內容、第三方內容、私人資料或另有權利條件的資產。\nGNU GPL 的正式版本將以 Repository 的 LICENSE 文件為準；在 LICENSE 尚未明定前，不自行推定特定 GPL 版本。"}
       displayOrder={3}
       canEdit={canEdit}
     >
       <p>LOC 採 <strong>Copyleft</strong> 原則；LOC 的原創程式碼採 <strong>GNU GPL</strong> 授權。</p>
       <p>LOC 的方法、架構與可授權內容可以被研究、使用與延伸，但應保留來源、作者、修改歷史與必要的衍生標示。</p>
-      <p>這個授權邊界只屬於 LOC，不自動涵蓋 LunaRunes、個人 Scope、第三方內容、私人資料或另有權利條件的資產。</p>
+      <p>這個授權邊界只屬於 LOC，不自動涵蓋 LunaRunes、個人內容、第三方內容、私人資料或另有權利條件的資產。</p>
       <p>GNU GPL 的正式版本將以 Repository 的 LICENSE 文件為準；在 LICENSE 尚未明定前，不自行推定特定 GPL 版本。</p>
     </EditableContentBlockV2>
     <EditableContentBlockV2
@@ -61,14 +61,14 @@ export default function LocGovernance({canEdit=false}){
         pageKey="governance"
         slotKey="scope-boundary"
         id="scope-boundary"
-        eyebrow="Scope Governance"
+        eyebrow="Governance Boundary"
         title="治理邊界"
-        body={"每個 Scope 擁有自己的資料與治理權。跨 Scope 可以引用、連結與比較，但不因此取得對方治理權。\nLOC 提供治理能力與管理框架，不替其他 Scope 決定著作權、授權方式或法律立場。"}
+        body={"各區域擁有自己的資料與治理權。不同區域可以引用、連結與比較，但不因此取得對方治理權。\nLOC 提供治理能力與管理框架，不替其他區域決定著作權、授權方式或法律立場。"}
         displayOrder={2}
         canEdit={canEdit}
       >
-        <p>每個 Scope 擁有自己的資料與治理權。跨 Scope 可以引用、連結與比較，但不因此取得對方治理權。</p>
-        <p>LOC 提供治理能力與管理框架，不替其他 Scope 決定著作權、授權方式或法律立場。</p>
+        <p>各區域擁有自己的資料與治理權。不同區域可以引用、連結與比較，但不因此取得對方治理權。</p>
+        <p>LOC 提供治理能力與管理框架，不替其他區域決定著作權、授權方式或法律立場。</p>
       </EditableContentBlockV2>
     </div>
     <LocGovernanceLaw canEdit={canEdit}/>
