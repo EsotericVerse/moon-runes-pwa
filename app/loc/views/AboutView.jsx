@@ -1,4 +1,3 @@
-import ModelArchitectureExplorer from './ModelArchitectureExplorer';
 import {scopeHrefV2} from '../../modular-v2/scope-registry.v2';
 
 const RUNES_LINKS=Object.freeze({
@@ -10,46 +9,6 @@ const RUNES_LINKS=Object.freeze({
   five:scopeHrefV2('lunarunes','duel/five'),
   ow3gs:scopeHrefV2('lunarunes','duel/ow3gs')
 });
-
-const MODEL_MODULES=[
-  {
-    key:'runes', name:'LunaRunes', zh:'月之符文', summary:'籤詩系統',
-    detail:'月之符文作提供固定符文資料、組合語法與可追溯的語意參照',
-    href:RUNES_LINKS.home, depth:'deep'
-  },
-  {
-    key:'context', name:'Context', zh:'關係脈絡', summary:'關係圖',
-    detail:'整理事件、作品、來源與既有關係，讓文字與資料可以沿來源與關係被查找、比較與理解。',
-    depth:'deep'
-  },
-  {
-    key:'music', name:'Music', zh:'音樂', summary:'Suno 音樂與歌詞',
-    detail:'保存Suno音樂作品、歌詞、曲風、時期與來源，讓聲音作品能與文字、事件及其他資料建立脈絡。',
-  },
-  {
-    key:'literary', name:'Literary', zh:'文字創作', summary:'文字創作',
-    detail:'整理文章、文學與其他文字創作，保留原文、版本、來源與衍生分析之間的差異。',
-  },
-  {
-    key:'media', name:'Multimedia', zh:'多媒體', summary:'多媒體內容',
-    detail:'連結圖像、影音與其他媒體來源，觀察同一語意在不同媒介中的表達與轉譯。',
-  },
-  {
-    key:'algorithm', name:'Algorithm', zh:'演算法', summary:'方法論與演算法集合',
-    detail:'把既有方法論整併成可重現的演算法，用於分類、比較、搜尋、關係運算與其他語言處理。',
-    depth:'deep'
-  },
-  {
-    key:'module', name:'Module', zh:'模組', summary:'獨立功能封裝',
-    detail:'將演算法與資料結合成為可重複使用的模組，例如搜尋、Graph 與時間資料的共通功能。',
-    depth:'deep'
-  },
-  {
-    key:'culture', name:'Culture', zh:'文化', summary:'時間長河',
-    detail:'把文字與脈絡放回時間長河內，觀察趨勢，或是因外在造成的擺盪，並且找出文字演化的可能。',
-    href:'/culture', depth:'deep'
-  }
-];
 
 export default function AboutView(){
   return <section className="loc-view loc-home">
@@ -113,15 +72,6 @@ export default function AboutView(){
           </div>
         </div>
       </div>
-    </section>
-
-    <section className="loc-card home-framework" id="framework-map">
-      <div className="home-section-heading"><p className="loc-eyebrow">LOC Model Architecture</p><h2>LOC模型架構</h2><p className="loc-subtitle">LOC八種架構依資料、處理與組合關係協作。</p></div>
-      <div className="home-framework-stage" aria-label="LOC 八個功能模組架構">
-	  <ModelArchitectureExplorer modules={MODEL_MODULES} />
-	  <div className="model-relationship" aria-label="架構關係"><span>語彙與表達資料</span>
-	  <b aria-hidden="true">→</b><span>脈絡與方法處理</span><b aria-hidden="true">↔</b>
-	  <span>演算法與模組組合</span><b aria-hidden="true">→</b><span>文化時間演變</span></div></div>
     </section>
 
     <section className="loc-card home-copy-block home-skills" id="skills">
