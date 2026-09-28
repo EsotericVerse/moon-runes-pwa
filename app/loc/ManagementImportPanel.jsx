@@ -12,6 +12,11 @@ function sourceSuggestion(name=''){
   }
   return String(name).replace(/\.json$/i,'').trim().toLowerCase().replace(/[^a-z0-9_-]+/g,'-')||'import';
 }
+function targetIds(value){
+  const values=Array.isArray(value)?value:String(value||'').split(/[,，]/);
+  const ids=[...new Set(values.map(item=>String(item||'').trim()).filter(Boolean))];
+  return ids.length?ids:null;
+}
 function firstValue(row,keys){
   for(const key of keys)if(row?.[key]!==undefined&&row?.[key]!==null&&String(row[key]).trim()!=='')return row[key];
   return '';
@@ -67,7 +72,7 @@ function JsonImport({scopeId}){
         source_place:String(firstValue(row,['source_place','place'])||'').trim()||null,
         searchable:row?.searchable!==false&&row?.search!==false,
         source_id:String(firstValue(row,['source_id'])||'').trim()||null,
-        target_id:String(firstValue(row,['target_id'])||'').trim()||null,
+        target_id:targetIds(firstValue(row,['target_id'])),
         ref_id:String(firstValue(row,['ref_id'])||'').trim()||null,
         url:String(firstValue(row,['url','link','permalink'])||'').trim()||null,
         source_name:selected
@@ -193,7 +198,7 @@ function SunoImport({scopeId}){
         await insertNeonRows('silver.lo3rwang_galaxy',[{
           uid:lyricsUid,category:'music',content_type:'lyrics',
           title:draft.title.trim(),content:draft.lyrics.trim(),createtime,
-          source_id:sourceId,target_id:draft.target_id.trim()||null,ref_id:styleUid||draft.ref_id.trim()||null,
+          source_id:sourceId,target_id:targetIds(draft.target_id),ref_id:styleUid||draft.ref_id.trim()||null,
           url:draft.url.trim()||null,searchable:true,source_name:'suno'
         }]);
       }
@@ -201,7 +206,7 @@ function SunoImport({scopeId}){
         await insertNeonRows('silver.lo3rwang_galaxy',[{
           uid:styleUid,category:'music',content_type:'instruction',
           title:draft.title.trim()+'｜Suno Style',content:draft.stylePrompt.trim(),createtime,
-          target_id:lyricsUid,searchable:true,source_name:'suno'
+          target_id:[lyricsUid],searchable:true,source_name:'suno'
         }]);
       }
       await insertNeonRows('silver.lo3rwang_galaxy_media',[{
