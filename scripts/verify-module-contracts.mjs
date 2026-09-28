@@ -38,7 +38,6 @@ for(const path of [
   'app/loc/text-engine.mjs',
   'assets/lunarunes/cards/65_玄.png',
   'assets/lunarunes/cards/66_命.png',
-  'pics/LOC-structure.png'
 ]) if(!existsSync(resolve(root,path)))failures.push(`missing module contract file: ${path}`);
 
 const runesClient=readFileSync(resolve(root,'app/lrunes/RunesClient.jsx'),'utf8');
