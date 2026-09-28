@@ -145,9 +145,10 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
   const fallbackRows=useMemo(()=>[...rows].sort((a,b)=>String(b.start).localeCompare(String(a.start))),[rows]);
   const currentConfluence=mode==='current'&&rows.some(row=>row.scopeId==='lo3rwang'&&row.status.trim().toLowerCase()==='current')&&rows.some(row=>row.scopeId==='lunarunes'&&row.status.trim().toLowerCase()==='current');
   const groupCount=new Set(rows.map(row=>row.group).filter(Boolean)).size;
-  const timelineHeight=mode==='source'
-    ?Math.max(220,Math.min(560,96+Math.max(1,groupCount)*46))
-    :(mode==='overview'?Math.max(640,Math.min(1400,440+rows.length*18)):640);
+  const compactGroupCount=Math.max(1,groupCount||rows.length);
+  const timelineHeight=(mode==='source'||mode==='overview')
+    ?Math.max(220,Math.min(560,96+compactGroupCount*46))
+    :640;
 
   useEffect(()=>{onSelectRef.current=onSelect},[onSelect]);
 
