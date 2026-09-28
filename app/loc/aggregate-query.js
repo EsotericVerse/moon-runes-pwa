@@ -125,7 +125,7 @@ export async function selectGalaxySummaries(scopeId,uids=[]){
   if(!ids.length)return [];
   const lunarunes=String(scopeId||'')==='lunarunes'||String(scopeId||'')==='lrunes';
 
-  let rows=[];let previewByUid=new Map();
+  let rows=[];
   if(lunarunes){
     rows=(await selectNeonAllRows('silver.lrunes',{
       columns:'record_id,record_type,uid,title,url,media_link',
@@ -135,18 +135,10 @@ export async function selectGalaxySummaries(scopeId,uids=[]){
       ]
     })).rows;
   }else{
-    const [metadata,previews]=await Promise.all([
-      selectNeonAllRows('silver.lo3rwang_galaxy',{
-        columns:'uid,title,url,media_link',
-        filters:[{column:'uid',operator:'in',value:ids}]
-      }),
-      selectNeonAllRows('silver.lo3rwang_galaxy_preview',{
-        columns:'uid,content_preview',
-        filters:[{column:'uid',operator:'in',value:ids}]
-      })
-    ]);
-    rows=metadata.rows;
-    previewByUid=new Map(previews.rows.map(row=>[String(row.uid||''),String(row.content_preview||'')]));
+    rows=(await selectNeonAllRows('silver.lo3rwang_galaxy',{
+      columns:'uid,title,url,media_link',
+      filters:[{column:'uid',operator:'in',value:ids}]
+    })).rows;
   }
 
   const mediaRows=await mediaRowsFor(lunarunes?'lunarunes':'lo3rwang',rows.flatMap(row=>mediaIdsOf(row.media_link)));
@@ -154,7 +146,7 @@ export async function selectGalaxySummaries(scopeId,uids=[]){
   return rows.map(row=>({
     uid:row.uid,
     title:row.title||'',
-    excerpt:previewByUid.get(String(row.uid||''))||'',
+    excerpt:'',
     links:resolvedLinks(row,mediaById)
   }));
 }
