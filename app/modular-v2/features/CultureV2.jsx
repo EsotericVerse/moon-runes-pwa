@@ -114,7 +114,6 @@ export default function CultureV2(){
     queryFn:()=>selectScopeMediaSnapshot(classificationScope,{
       startDate:selectedWorkPeriod?.start_date,
       endDate:selectedWorkPeriod?.end_date,
-      dimension:mediaDimension
     }),
     enabled:!isLoc&&classificationMode==='media'&&Boolean(selectedWorkPeriod?.start_date),
     staleTime:5*60_000
@@ -291,7 +290,7 @@ export default function CultureV2(){
                     relationLinks={galaxyRelationLinks(classificationScope,work)}
                     links={work.links||[]}
                   >
-                    {classificationMode==='media'?<p>{work.media_type?('媒體類型：'+work.media_type):''}{work.source_place?(' · 地點：'+work.source_place):''}</p>:null}
+                    {classificationMode==='media'?<p>{work.media_type?('媒體類型：'+work.media_type):''}</p>:null}
                   </WorkSummaryCardV2>)}
                 </div>
                 {!periodWorksQuery.isFetching&&!periodWorksQuery.error&&!(periodWorksQuery.data?.rows||[]).length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
