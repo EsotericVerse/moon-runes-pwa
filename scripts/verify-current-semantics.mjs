@@ -30,7 +30,7 @@ for(const token of ['isConfiguredStyleCatalog','selectCanonicalStyleCatalog','se
 if(!/isConfiguredStyleCatalog\(author\)\?author:selectCanonicalStyleCatalog\(\)/.test(styleClassifier))failures.push('style catalog fallback: author Current must fall back to locked LunaRunes catalog until configured');
 for(const token of ['SPREAD_WEIGHTS','DIRECTION_FACTOR','POLARITY_SCORE','weighted','GUIDANCE_RANGES'])if(guidance.includes(token))failures.push(`semantic state: forbidden weighted-score token ${token}`);
 const loader=read(files.canonicalLoader);
-for(const token of ['selectNeonCatalog','silver.lrunes','selectRuneCatalog'])if(!loader.includes(token))failures.push(`canonical rune repository: missing ${token}`);
+for(const token of ['selectNeonCatalog','silver.runes','selectRuneCatalog'])if(!loader.includes(token))failures.push(`canonical rune repository: missing ${token}`);
 for(const path of Object.values(files)){
   const source=read(path);
   if(['data/json','runtime_json_documents','LOC_DATA','canonical/runes','fetchNeonData'].some(token=>source.includes(token)))failures.push(`${path}: retired data-path/JSON identifier remains`);
