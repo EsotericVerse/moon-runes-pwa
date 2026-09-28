@@ -16,7 +16,6 @@ import {galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation.v
 import {FEATURE_EMPTY_MESSAGE,FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
 import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
-import {analyzeDistributionChange} from '../../loc/model/automatic-analysis.mjs';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
@@ -151,28 +150,6 @@ export default function CultureV2(){
     staleTime:5*60_000
   });
 
-  const previousClassificationQuery=useQuery({
-    queryKey:['culture-period-previous-distribution',classificationScope,classificationMode,styleLevel,mediaDimension,previousWorkPeriod?.period,previousWorkPeriod?.start_date,previousWorkPeriod?.end_date],
-    queryFn:()=>classificationMode==='source'
-      ?selectAuthorPeriodSourceSnapshot({
-        startDate:previousWorkPeriod?.start_date,
-        endDate:previousWorkPeriod?.end_date
-      })
-      :(classificationMode==='style'
-        ?selectScopeStyleSnapshot(classificationScope,{
-          startDate:previousWorkPeriod?.start_date,
-          endDate:previousWorkPeriod?.end_date,
-          styleLevel
-        })
-        :selectScopeMediaSnapshot(classificationScope,{
-          startDate:previousWorkPeriod?.start_date,
-          endDate:previousWorkPeriod?.end_date,
-          dimension:mediaDimension
-        })),
-    enabled:Boolean(previousWorkPeriod?.start_date)
-      &&!(classificationMode==='source'&&classificationScope==='lunarunes'),
-    staleTime:5*60_000
-  });
 
   const classificationBucketsQuery=classificationMode==='source'
     ?sourceSnapshotQuery
@@ -255,23 +232,7 @@ export default function CultureV2(){
   const classificationBuckets=classificationMode==='source'
     ?(sourceSnapshotQuery.data?.buckets||[])
     :(classificationMode==='style'?(styleSnapshotQuery.data?.buckets||[]):(mediaSnapshotQuery.data?.buckets||[]));
-  const currentDistribution=useMemo(()=>categoryGroups.map(group=>({
-    term:String(group.display_label||group.source_name||group.style_name||group.media_name||''),
-    item_count:Number(group.item_count)||0
-  })).filter(row=>row.term),[categoryGroups]);
-  const previousDistribution=useMemo(()=>((previousClassificationQuery.data?.groups)||[]).map(group=>({
-    term:String(group.display_label||group.source_name||group.style_name||group.media_name||''),
-    item_count:Number(group.item_count)||0
-  })).filter(row=>row.term),[previousClassificationQuery.data]);
-  const automaticAnalysis=useMemo(()=>previousWorkPeriod
-    ?analyzeDistributionChange(currentDistribution,previousDistribution,{
-      label:classificationMode==='source'
-        ?'作品來源'
-        :(classificationMode==='style'?'風格':(mediaDimension==='place'?'多媒體地點':'多媒體類型')),
-      maxSuggestions:6
-    })
-    :{changes:[],suggestions:[]},
-  [currentDistribution,previousDistribution,previousWorkPeriod,classificationMode,mediaDimension]);
+
 
   return <FeaturePageV2 featureId="culture">
     <section className='loc-card scope-v2-feature-card scope-v2-feature-card-wide'>
@@ -343,17 +304,7 @@ export default function CultureV2(){
                 mode={classificationMode==='source'?'source':'overview'}
               />:null}
 
-              {previousWorkPeriod&&automaticAnalysis.suggestions.length?<section className='scope-v2-card'>
-                <p className='loc-eyebrow'>Period Distribution</p>
-                <h4>時期比例變化</h4>
-                <p>{labelOf(previousWorkPeriod,0)} → {labelOf(selectedWorkPeriod,0)}。只比較完整時期內各分類所占比例，不以單筆、單日或固定週期直接提出建議。</p>
-                <div className='scope-v2-list'>
-                  {automaticAnalysis.suggestions.map((suggestion,index)=><article className='scope-v2-inline-card' key={suggestion.type+'-'+suggestion.term+'-'+index}>
-                    <strong>{suggestion.term}</strong>
-                    <span>{suggestion.text}</span>
-                  </article>)}
-                </div>
-              </section>:null}
+
             </section>:null}
 
             {selectedWorkPeriod?<section className='scope-v2-card scope-v2-culture-current-works'>
