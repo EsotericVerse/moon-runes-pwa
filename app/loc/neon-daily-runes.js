@@ -111,3 +111,39 @@ export async function insertDailyRuneRecord({recordDate,drawKind,runeNumber,dire
   const attached=await attachRuneMeta(data||[]);
   return attached[0]||null;
 }
+
+
+export async function updateDailyRuneRecord({recordDate,drawKind,runeNumber,direction}={}){
+  const date=String(recordDate||'').slice(0,10);
+  const kind=String(drawKind||'').trim();
+  const rune=Number(runeNumber);
+  const dir=String(direction||'').trim();
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Error('日期格式不正確。');
+  if(!DAILY_DRAW_KINDS.has(kind))throw new Error('紀錄類型不正確。');
+  if(!Number.isInteger(rune)||rune<0||rune>66)throw new Error('符文編號不正確。');
+  if(!DAILY_DIRECTIONS.has(dir))throw new Error('符文方向不正確。');
+  const {data,error}=await silverAuth('lrunes_daily')
+    .update({rune_number:rune,direction:dir,updated_at:new Date().toISOString()})
+    .eq('record_date',date)
+    .eq('draw_kind',kind)
+    .select('record_date,draw_kind,rune_number,direction');
+  if(error)throw new Error(error.message||'每日符文紀錄修改失敗');
+  if(!data?.length)throw new Error('找不到紀錄或目前沒有修改權限。');
+  const attached=await attachRuneMeta(data);
+  return attached[0]||null;
+}
+
+export async function deleteDailyRuneRecord({recordDate,drawKind}={}){
+  const date=String(recordDate||'').slice(0,10);
+  const kind=String(drawKind||'').trim();
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Error('日期格式不正確。');
+  if(!DAILY_DRAW_KINDS.has(kind))throw new Error('紀錄類型不正確。');
+  const {data,error}=await silverAuth('lrunes_daily')
+    .delete()
+    .eq('record_date',date)
+    .eq('draw_kind',kind)
+    .select('record_date,draw_kind');
+  if(error)throw new Error(error.message||'每日符文紀錄刪除失敗');
+  if(!data?.length)throw new Error('找不到紀錄或目前沒有刪除權限。');
+  return data[0];
+}
