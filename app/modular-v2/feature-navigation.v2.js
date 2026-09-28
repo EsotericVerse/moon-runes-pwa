@@ -75,12 +75,15 @@ export function galaxyIdentityHref(scopeId,uid){
 export function galaxyRelationLinks(scopeId,row={}){
   const links=[];
   const source=valueOf(row.source_id);
-  if(source)links.push({id:'source:'+source,label:'來源文字',href:galaxyIdentityHref(scopeId,source)});
-  relationIds(row.target_id).forEach((target,index)=>{
-    links.push({id:'target:'+target,label:`目標文字 ${index+1}`,href:galaxyIdentityHref(scopeId,target)});
+  if(source)links.push({id:'source:'+source,label:'上筆',href:galaxyIdentityHref(scopeId,source)});
+  const targets=relationIds(row.target_id);
+  targets.forEach((target,index)=>{
+    links.push({
+      id:'target:'+target,
+      label:targets.length===1?'下筆':`下筆 ${index+1}`,
+      href:galaxyIdentityHref(scopeId,target)
+    });
   });
-  const ref=valueOf(row.ref_id);
-  if(ref)links.push({id:'ref:'+ref,label:'參照文字',href:galaxyIdentityHref(scopeId,ref)});
   return links.filter(link=>link.href);
 }
 
