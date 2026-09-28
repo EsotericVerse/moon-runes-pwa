@@ -8,15 +8,15 @@ import {featureNavigationHref} from '../../modular-v2/feature-navigation.v2';
 
 const AUTHOR_OVERVIEW_NODES=Object.freeze([
   Object.freeze({id:'wordsmith',title:'文字工匠｜Wordsmith｜關鍵詞的相關聯繫',summary:
-   '把分散的文字、作品、規則、版本與歷史紀錄，整理成可搜尋、可理解、可治理、可持續維護的結構。',
+   '把分散的文字，整理成可搜尋、可理解、可治理、可持續維護的結構。',
    href:featureNavigationHref('lo3rwang','statics',{statTab:'keywords'})}),
   Object.freeze({id:'calibrator',title:'校對者｜Calibrator｜文字在時間長河上的演化',summary:
-   '組織整理長期累積的文字、照片、影音、作品、帳號資料、版本與歷史紀錄，使其從散落檔案轉成可搜尋、可理解、可追溯來源並能長期維護的數位資產。',
+   '以時空定錨論把作品放回時間長河，從時間位置、密度與前後分布看值得回看的軌跡，並找出關鍵點。',
    href:featureHrefV2('lo3rwang','culture')}),
   Object.freeze({id:'governance-architect',title:'語言建築師｜Language Architect｜架構語言的治理方式',summary:
-    '我的語言治理理念。理解對方原本的語言與資料，再依實際需求建立適合自己的結構。',
+    '我的語言歸納理念。理解原本的語言與資料，再依實際需求建立適合自己的結構，並做到對未來的風險控管。',
    href:featureHrefV2('lo3rwang','governance')}),
-  Object.freeze({id:'self',title:'自我介紹與人生觀',summary:[
+  Object.freeze({id:'self',title:'自我介紹與人生觀｜Introduction',summary:[
     '自介：Lucas Oscar Wang 政德，叫我Oscar就好。六年級末段班，巨蟹座。',
     '人生觀：鑑古知今，求同存異。不在其位，不謀其政。隨心所欲，而不逾己。',
 	'原則態度：敬畏未知，尊重異者，專業為先。',
