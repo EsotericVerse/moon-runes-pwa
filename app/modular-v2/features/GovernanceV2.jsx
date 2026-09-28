@@ -4,7 +4,7 @@ import {neonPublicClient} from '../../loc/neon-client';
 import {useOffsetPagination} from '../use-offset-pagination.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
-import {getScopeV2} from '../scope-registry.v2';
+import {getScopeV2,scopeHrefV2} from '../scope-registry.v2';
 import GovernanceInlineEditor from '../../loc/GovernanceInlineEditor';
 import LocGovernance,{LocGovernanceLaw,LOC_GOVERNANCE_SUBTITLE} from '../governance/LocGovernance';
 import LunaRunesGovernance,{LUNARUNES_GOVERNANCE_SUBTITLE} from '../governance/LunaRunesGovernance';
@@ -71,10 +71,15 @@ function GovernanceHome(){
     <GovernanceInlineEditor scopeId={scopeId}><View/></GovernanceInlineEditor>
     {scopeId==='loc'?<section className="loc-card">
       <p className="loc-eyebrow">Management</p>
-      <h2>管理</h2>
-      <p>管理介面獨立於公開 Scope，從 LOC 治理頁進入。</p>
-      <a className="loc-button primary" href={adminHref}>進入管理</a>
-    </section>:null}
+      <h2>系統管理</h2>
+      <p>Admin 是獨立管理站，不屬於 Scope。</p>
+      <a className="loc-button primary" href={adminHref}>進入 admin.lo3rwang.cc</a>
+    </section>:<section className="loc-card">
+      <p className="loc-eyebrow">Scope Management</p>
+      <h2>{getScopeV2(scopeId).label}管理</h2>
+      <p>時期、關鍵詞／風格分類與其他 Scope 設定集中在這裡；頁面文字仍在原頁直接編輯。</p>
+      <a className="loc-button primary" href={scopeHrefV2(scopeId,'governance/manage')}>進入 Scope 管理</a>
+    </section>}
   </FeaturePageV2>;
 }
 
