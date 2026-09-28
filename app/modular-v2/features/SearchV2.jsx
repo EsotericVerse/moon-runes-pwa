@@ -25,7 +25,7 @@ function snippet(text,q){
   const start=Math.max(0,(index<0?0:index)-70);
   return `${start?'…':''}${raw.slice(start,start+220)}${raw.length>start+220?'…':''}`;
 }
-function toResult(row,source,q,collectionId,scopeId){
+function toResult(row,source,q,scopeId){
   const text=rowText(row);
   const isGalaxy=Boolean(row.uid);
   const isMedia=Boolean(row.media_id);
@@ -71,8 +71,7 @@ function toResult(row,source,q,collectionId,scopeId){
     key:identity?source+'-'+identity:source+'-'+title+'-'+String(body).slice(0,40),
     source:displaySource,title:String(title),
     date:row.date||row.createtime||row.time_date||row.record_date||row.UpdateTime||row.updated_at||'',
-    snippet:explicitTitle?snippet(body,q):'',bodyText:explicitTitle?String(body):'',
-    display:String(row.display||'summary'),scopeId:scope,resourceType,resourceId,
+    snippet:explicitTitle?snippet(body,q):'',scopeId:scope,resourceType,resourceId,
     editableTable,editableIdColumn,editResourceId,editableField,isScopeCard,href,
     relationLinks:resourceType==='galaxy'
       ?galaxyRelationLinks(scope,row)
@@ -155,9 +154,8 @@ export default function SearchV2(){
       matchedQueryRef.current=q;
       const converted=[];const seen=new Set();
       for(const {row,source} of searchRows){
-        const result=toResult(row,source,q,collection.id,scopeId);
+        const result=toResult(row,source,q,scopeId);
         if(!result||seen.has(result.key))continue;
-        if(result.display==='hidden'&&!account.canManageScopeSync(result.scopeId))continue;
         seen.add(result.key);converted.push(result);
       }
       setResults(mergeSummaryResults(converted));
@@ -196,7 +194,7 @@ export default function SearchV2(){
       }
       if(id!==searchId.current)return;
       if(!detail)throw new Error('找不到這筆文字。');
-      const result=toResult({...detail,resolved_links:detail.links||[]},detail.source_name||'文字展示','',collection.id,detailScope);
+      const result=toResult({...detail,resolved_links:detail.links||[]},detail.source_name||'文字展示','',detailScope);
       setResults([result]);
       setFullTextKey(result.key);
       setFullText(workDisplayText(detail.content||''));
@@ -245,7 +243,6 @@ export default function SearchV2(){
     setEditingKey(result.key);setEditError('');
     setEditDraft(null);
     try{
-      const runeScope=result.scopeId==='lrunes'||result.scopeId==='lunarunes';
       const contentColumns=result.resourceType==='galaxy'
         ?'uid,title,content,searchable'
         :'media_id,title,meta_tags';
@@ -270,7 +267,6 @@ export default function SearchV2(){
     setEditBusy(true);setEditError('');
     try{
       if(!account.canManageScopeSync(result.scopeId))throw new Error('沒有修改此內容的權限。');
-      const runeScope=result.scopeId==='lrunes'||result.scopeId==='lunarunes';
       const contentPatch={
         title:editDraft.title,
         [result.editableField]:editDraft.body,
@@ -278,7 +274,7 @@ export default function SearchV2(){
       };
       const contentFilters=[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId}];
       await updateNeonRows(result.editableTable,contentPatch,{filters:contentFilters});
-      setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:editDraft.title,bodyText:'',snippet:''}));
+      setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:editDraft.title,snippet:''}));
       if(fullTextKey===result.key)setFullText(editDraft.body);
       setEditingKey('');setEditDraft(null);
     }catch(exception){setEditError(String(exception?.message||exception||'儲存失敗。'))}
