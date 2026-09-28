@@ -60,7 +60,7 @@ export default function LunaRunesStyleModelV2(){
     if(!model.styles.length)return;
     setScanning(true);setScanError('');setScanResult(null);
     try{
-      let offset=0,scanned=0,classified=0;
+      let offset=0,scanned=0,classified=0,unmatchedCount=0;
       const runeCounts=new Map();
       const groupCounts=new Map();
       const unmatched=[];
@@ -79,6 +79,7 @@ export default function LunaRunesStyleModelV2(){
           scanned+=1;
           const result=classifyLunaRunesStyleText(content,model);
           if(result.unmatched){
+            unmatchedCount+=1;
             if(unmatched.length<60)unmatched.push({
               uid:row.uid,
               title:row.title||'未命名歌曲',
@@ -101,6 +102,7 @@ export default function LunaRunesStyleModelV2(){
         scanned,
         classified,
         unmatched,
+        unmatchedCount,
         runeCounts:[...runeCounts.entries()].sort((a,b)=>b[1]-a[1]),
         groupCounts:[...groupCounts.entries()].sort((a,b)=>b[1]-a[1])
       });
@@ -175,7 +177,7 @@ export default function LunaRunesStyleModelV2(){
       <p><button type="button" disabled={scanning} onClick={scanSuno}>{scanning?'掃描中…':'掃描 Suno 歌詞'}</button></p>
       {scanError?<p className="scope-v2-status scope-v2-error">{scanError}</p>:null}
       {scanResult?<div className="scope-v2-list">
-        <p>掃描 {scanResult.scanned.toLocaleString()} 首；有分類 {scanResult.classified.toLocaleString()} 首；完全未命中 {scanResult.unmatched.length.toLocaleString()} 首（最多列 60 首）。</p>
+        <p>掃描 {scanResult.scanned.toLocaleString()} 首；有分類 {scanResult.classified.toLocaleString()} 首；完全未命中 {scanResult.unmatchedCount.toLocaleString()} 首（最多列 60 首）。</p>
         <div className="loc-grid two">
           <article className="scope-v2-inline-card">
             <strong>群組命中</strong>
