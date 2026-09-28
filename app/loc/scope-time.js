@@ -3,7 +3,7 @@
 import {selectNeonAllRows} from './neon-repository';
 import {scopeDataTable} from './scope-list';
 
-export const SCOPE_TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility,style_tags';
+export const SCOPE_TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility';
 
 function dateText(value){return value?String(value).slice(0,10):null;}
 function addDays(value,amount){
