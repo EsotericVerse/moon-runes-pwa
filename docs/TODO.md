@@ -13,6 +13,7 @@
 - [x] Multimedia is a first-class language extension layer. Media metadata may participate in Search, Culture, and Statistics without requiring the original asset URL.
 - [x] Production Neon has no Current cache table, ranking table, or materialized view used to duplicate the corpus.
 - [x] Old JSON/cache/shard TODO items are retired and no longer count as RC8 work.
+- [x] LunaRunes Game RC8 pre-close pass completed: Game code/docs/assets are consolidated under `app/lrunes/game/`; the UI uses the existing Rune card, group, Event, and author visuals; Game rune reads are fixed to `silver.runes` + `silver.runes_etc`.
 
 ## Current open blockers
 
@@ -29,4 +30,4 @@ The next engineering pass is a module-usage audit rather than feature completion
 - Media Meta Tags are supplied at record creation by the source/user/manager. LOC may normalize storage format, search, count, and compare those tags, but must not invent or auto-classify them.
 - Keep LOC responsible for normalization, relationships, time/place metadata, governance, Search/Culture/Statistics integration, and Neon reference persistence.
 
-Long-range family-scale corpus work, locale expansion, semantic-display experiments, and Game UI evolution are future product directions. They are not unfinished RC8 migration work and must not reintroduce retired JSON/cache architecture.
+Long-range family-scale corpus work, locale expansion, semantic-display experiments, deeper Game effects, Event expansion, and the still-discussable eight-role design are future product directions. They are not unfinished RC8 migration work and must not reintroduce retired JSON/cache architecture.
