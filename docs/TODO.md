@@ -33,20 +33,25 @@ RC9 is the final release candidate. It does not expand the product boundary; it 
 - [ ] Broaden use of installed modules where they fit existing functions cleanly, replacing unnecessary hand-built infrastructure without changing the Current SSOT or feature meaning.
 - [ ] Finish LunaRunes interpretation sentence handling so single, Daily, multi-card, and related guidance use the intended existing sentence rules consistently.
 - [ ] Finish LunaRunes keyword handling, including the canonical keyword library, rule handling, management flow, Search/Statistics use, and consistency with current rune definitions.
+- [ ] Complete LunaRunes Game rules, graphical interface, interaction flow, and placement/configuration as part of RC9.
+- [ ] Consolidate existing interface configuration so shared layout and feature placement do not depend on page-specific exceptions.
 - [ ] Re-run existing-function regression checks after those changes and preserve the RC8 runtime/data invariants.
 
 RC9 closes when the existing functional surface is complete enough that remaining work is multimedia/image integration and final visual stabilization.
 
-## 1.0 Release — multimedia and visual stabilization
+## 1.0 Release — multimedia, extensibility, and visual stabilization
 
-There is no RC10. After RC9, the next release target is **1.0 Release**.
+There is no RC10. After RC9, the next release target is **1.0 Release (1.0R)**. Working target: **2026-10-15**.
 
 - [ ] Integrate image multimedia already present in source material, especially Facebook, Threads, Instagram, and other existing media-bearing records.
 - [ ] Preserve multimedia as first-class media/reference data; do not fabricate empty text works to represent images.
 - [ ] Connect image metadata and relationships to the existing Galaxy / Media / Search / Culture / Statistics model where appropriate.
 - [ ] Stabilize all graphical pages and visualizations across the existing LOC, LunaRunes, author, management, Culture, Statistics, graph/timeline, Daily, and Game surfaces.
+- [ ] Make ordinary Scope/Group extension work through the shared architecture without requiring bespoke core implementation.
+- [ ] Make ordinary Scope/Group governance and feature setup achievable through simple Admin configuration.
+- [ ] Verify shared permissions, navigation, feature mounting, and visual conventions remain coherent when Scope/Group instances are extended.
 - [ ] Complete final regression, responsive, loading, and failure-state checks for the visual application.
-- [ ] Freeze the resulting build as **1.0 Release**.
+- [ ] Freeze the resulting build as **1.0 Release (1.0R)**.
 
 ## Version policy
 

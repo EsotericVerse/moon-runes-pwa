@@ -8,7 +8,7 @@ RC8 is the reference point for regressions; it is not reopened for ordinary post
 
 ## RC9 — Final release candidate
 
-RC9 focuses on the functions that already exist. Its scope is deliberately narrower than a feature expansion.
+RC9 focuses on completing and arranging the functions that already exist. Its scope includes Game completion and interface configuration, but does not reopen the RC8 architecture baseline.
 
 ### RC9 completion criteria
 
@@ -16,13 +16,17 @@ RC9 focuses on the functions that already exist. Its scope is deliberately narro
 2. Existing installed modules are used more broadly where they fit the current functions and remove unnecessary custom infrastructure.
 3. LunaRunes interpretation sentences are completed and consistently routed through the intended existing rules.
 4. LunaRunes keyword handling is completed: canonical vocabulary, rules, management, Search/Statistics integration, and definition consistency.
-5. Existing functionality remains stable against the RC8 invariants.
+5. LunaRunes Game rules, graphical presentation, interaction flow, and interface placement/configuration are completed to the intended RC9 level.
+6. Existing LOC/LunaRunes interface configuration is consolidated so shared layout and feature placement are predictable rather than page-specific exceptions.
+7. Existing functionality remains stable against the RC8 invariants.
 
 RC9 is complete when the Current product surface is functionally coherent and the main remaining release work is image multimedia integration and final visual stabilization.
 
 ## 1.0 Release
 
-There is **no RC10**. The version sequence after RC9 goes directly to **1.0 Release**.
+There is **no RC10**. The version sequence after RC9 goes directly to **1.0 Release (1.0R)**.
+
+**Target:** complete 1.0R by mid-October 2026, with 2026-10-15 as the working target date.
 
 ### 1.0 completion criteria
 
@@ -30,6 +34,9 @@ There is **no RC10**. The version sequence after RC9 goes directly to **1.0 Rele
 2. Images remain media/reference entities and are linked to Galaxy/content records through the existing relationship model; they are not represented by fabricated empty text content.
 3. Search, Culture, Statistics, and other relevant surfaces can use the image metadata/relationships that already belong in their current responsibilities.
 4. All graphical pages are stable: graphs, timelines, statistical visualizations, Daily, Game, management visualization, and other visual surfaces.
-5. Final responsive, loading, failure-state, regression, and deployment validation passes.
+5. Scope/Group extension is mature: ordinary new Scope/Group instances can extend from the shared architecture without requiring a new bespoke core implementation.
+6. Admin provides simple configuration for ordinary Scope/Group governance and feature setup, so routine extension can be completed through managed settings rather than source-level rewiring.
+7. Shared Scope/Group behavior, permissions, navigation, feature mounting, and visual conventions remain consistent as the system extends.
+8. Final responsive, loading, failure-state, regression, and deployment validation passes.
 
-The resulting build is the LOC **1.0 Release**.
+The resulting build is the LOC **1.0 Release (1.0R)**: a mature, extensible product whose ordinary Scope/Group growth is handled by shared architecture plus simple Admin configuration.
