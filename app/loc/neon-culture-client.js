@@ -4,7 +4,7 @@ import {ScopeCultureResponseSchema} from './scope-feature-contracts';
 import {decodeCultureText,formatCultureDateTime} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
 import {workDisplayText} from '../modular-v2/work-display-model.v2';
 import {selectCategoryCounts,selectDailyCategoryCounts,selectDailyCounts,selectGalaxyPage,selectSourceCatalog,selectSourceDaily} from './aggregate-query';
-import {selectNeonCount,selectNeonRows} from './neon-query';
+import {selectAllNeonRows,selectNeonCount,selectNeonRows} from './neon-query';
 import {publicContentFilters} from './content-policy';
 import {resolveScopeTables} from './scope-table-mapping';
 
@@ -32,7 +32,7 @@ async function selectCultureTimeRows(scopeId,tableName=''){
     columns:TIME_COLUMNS,
     filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}],
     orders:[{column:'display_order',ascending:true},{column:'record_id',ascending:true}],
-    limit:1000,
+    limit:5000,
     offset:0
   });
   const anchors=rows.filter(row=>row.record_type==='anchor');
@@ -126,59 +126,8 @@ function dateFilters(startDate,endDate,column='createtime'){
   if(endDate)filters.push({column,operator:'lte',value:String(endDate).slice(0,10)+'T23:59:59.999+08:00'});
   return filters;
 }
-export async function selectScopeCultureData(scopeId){
-  const id=runtimeScopeId(scopeId);
-  const dataId=dataScopeId(scopeId);
-  if(!['loc','lrunes','lo3rwang'].includes(dataId))throw new Error('資料設定無效');
-
-  if(dataId==='loc'){
-    const [authorCurrent,runeCurrent]=await Promise.all([
-      selectCurrentPeriodRange('lo3rwang'),
-      selectCurrentPeriodRange('lrunes')
-    ]);
-    const currentRanges=[authorCurrent,runeCurrent].filter(Boolean);
-    const starts=currentRanges.map(row=>String(row.start_date||'')).filter(Boolean).sort();
-    const intersectionStart=starts.at(-1)||'';
-    if(intersectionStart){
-      const textFilters=publicContentFilters(dateFilters(intersectionStart,null));
-      const mediaFilters=dateFilters(intersectionStart,null);
-      const [authorTables,runeTables]=await Promise.all([
-        resolveScopeTables('lo3rwang'),
-        resolveScopeTables('lrunes')
-      ]);
-      const [authorText,authorMedia,runeText,runeMedia]=await Promise.all([
-        selectNeonCount(authorTables.galaxy,{filters:textFilters}),
-        selectNeonCount(authorTables.galaxyMedia,{filters:mediaFilters}),
-        selectNeonCount(runeTables.galaxy,{filters:textFilters}),
-        selectNeonCount(runeTables.galaxyMedia,{filters:mediaFilters})
-      ]);
-      for(const range of currentRanges){
-        const isRune=String(range.scope_id)==='lunarunes';
-        range.intersection_start=intersectionStart;
-        range.text_count=isRune?runeText:authorText;
-        range.media_count=isRune?runeMedia:authorMedia;
-        range.item_count=range.text_count+range.media_count;
-      }
-    }
-    return ScopeCultureResponseSchema.parse({
-      scopeId:id,
-      eras:{eras:[]},
-      periods:[],
-      currentRanges,
-      scopeRanges:[],
-      timelineItems:[],
-      events:[],
-      trajectories:[],
-      works:[]
-    });
-  }
-
-  const [scopeContext,currentRange]=await Promise.all([
-    selectCultureTimeRows(dataId),
-    selectCurrentPeriodRange(dataId)
-  ]);
-  const runtimeId=runtimeScopeId(dataId);
-  const normalizedContext=scopeContext.map(row=>({...row,scope_id:runtimeId}));
+function cultureParts(scopeContext,runtimeId){
+  const normalizedContext=(scopeContext||[]).map(row=>({...row,scope_id:runtimeId}));
   const periods=normalizedContext.filter(row=>row.entry_type==='period');
   const eras=periods.map(row=>({
     ...periodRows([row])[0],
@@ -209,15 +158,124 @@ export async function selectScopeCultureData(scopeId){
     anchor_id:row.anchor_id||null,
     status:row.status||''
   }));
+  return {normalizedContext,periods,eras,events,trajectories};
+}
+
+export async function selectScopeCultureData(scopeId){
+  const id=runtimeScopeId(scopeId);
+  const dataId=dataScopeId(scopeId);
+  if(!['loc','lrunes','lo3rwang'].includes(dataId))throw new Error('資料設定無效');
+
+  if(dataId==='loc'){
+    const [authorTables,runeTables]=await Promise.all([
+      resolveScopeTables('lo3rwang'),
+      resolveScopeTables('lrunes')
+    ]);
+    const [authorContext,runeContext]=await Promise.all([
+      selectCultureTimeRows('lo3rwang',authorTables.time),
+      selectCultureTimeRows('lrunes',runeTables.time)
+    ]);
+    const authorCurrent=currentPeriodRangeFromRows('lo3rwang',authorContext);
+    const runeCurrent=currentPeriodRangeFromRows('lrunes',runeContext);
+    const currentRanges=[authorCurrent,runeCurrent].filter(Boolean);
+    const starts=currentRanges.map(row=>String(row.start_date||'')).filter(Boolean).sort();
+    const intersectionStart=starts.at(-1)||'';
+
+    let authorText={rows:[],count:0};
+    let runeText={rows:[],count:0};
+    let authorMedia=0;
+    let runeMedia=0;
+    if(intersectionStart){
+      const textFilters=publicContentFilters(dateFilters(intersectionStart,null));
+      const mediaFilters=dateFilters(intersectionStart,null);
+      [authorText,runeText,authorMedia,runeMedia]=await Promise.all([
+        selectAllNeonRows(authorTables.galaxy,{
+          columns:'uid,title,source_name,createtime,url',
+          filters:textFilters,
+          orders:[{column:'createtime',ascending:false},{column:'uid',ascending:true}],
+          pageSize:5000
+        }),
+        selectAllNeonRows(runeTables.galaxy,{
+          columns:'uid,title,source_name,createtime,url',
+          filters:textFilters,
+          orders:[{column:'createtime',ascending:false},{column:'uid',ascending:true}],
+          pageSize:5000
+        }),
+        selectNeonCount(authorTables.galaxyMedia,{filters:mediaFilters}),
+        selectNeonCount(runeTables.galaxyMedia,{filters:mediaFilters})
+      ]);
+      for(const range of currentRanges){
+        const isRune=String(range.scope_id)==='lunarunes';
+        const textCount=isRune?Number(runeText.count||0):Number(authorText.count||0);
+        const mediaCount=isRune?Number(runeMedia||0):Number(authorMedia||0);
+        range.intersection_start=intersectionStart;
+        range.text_count=textCount;
+        range.media_count=mediaCount;
+        range.item_count=textCount+mediaCount;
+      }
+    }
+
+    const authorParts=cultureParts(authorContext,'lo3rwang');
+    const runeParts=cultureParts(runeContext,'lunarunes');
+    const currentCountByScope=new Map(currentRanges.map(row=>[String(row.scope_id),Number(row.item_count)||0]));
+    const currentPeriodByScope=new Map(currentRanges.map(row=>[String(row.scope_id),String(row.period||'')]));
+    const mergedTimeline=timelineItems([
+      ...authorParts.normalizedContext,
+      ...runeParts.normalizedContext
+    ]).map(item=>{
+      const scope=String(item.scope_id||'');
+      const isCurrent=item.entry_type==='period'&&String(item.period||'')===currentPeriodByScope.get(scope);
+      if(!isCurrent)return item;
+      const count=currentCountByScope.get(scope)||0;
+      return {...item,item_count:count,display_label:(item.display_label||item.title||item.period)+' · '+count.toLocaleString()+' 項'};
+    });
+    const works=[
+      ...(authorText.rows||[]).map(row=>({
+        ...row,
+        key:'lo3rwang:'+row.uid,
+        scope_id:'lo3rwang',
+        entry_type:'work',
+        original_source:row.source_name||'',
+        display_date:formatCultureDateTime(row.createtime)
+      })),
+      ...(runeText.rows||[]).map(row=>({
+        ...row,
+        key:'lunarunes:'+row.uid,
+        scope_id:'lunarunes',
+        entry_type:'work',
+        original_source:row.source_name||'',
+        display_date:formatCultureDateTime(row.createtime)
+      }))
+    ].sort((a,b)=>String(b.createtime||'').localeCompare(String(a.createtime||'')));
+
+    return ScopeCultureResponseSchema.parse({
+      scopeId:id,
+      eras:{eras:[...authorParts.eras,...runeParts.eras]},
+      periods:[...authorParts.periods,...runeParts.periods],
+      currentRanges,
+      scopeRanges:[],
+      timelineItems:mergedTimeline,
+      events:[...authorParts.events,...runeParts.events],
+      trajectories:[...authorParts.trajectories,...runeParts.trajectories],
+      works,
+      intersectionStart
+    });
+  }
+
+  const tables=await resolveScopeTables(dataId);
+  const scopeContext=await selectCultureTimeRows(dataId,tables.time);
+  const runtimeId=runtimeScopeId(dataId);
+  const parts=cultureParts(scopeContext,runtimeId);
+  const currentRange=currentPeriodRangeFromRows(dataId,scopeContext);
   return ScopeCultureResponseSchema.parse({
     scopeId:id,
-    eras:{eras},
-    periods,
+    eras:{eras:parts.eras},
+    periods:parts.periods,
     currentRanges:currentRange?[currentRange]:[],
     scopeRanges:[],
-    timelineItems:timelineItems(normalizedContext),
-    events,
-    trajectories,
+    timelineItems:timelineItems(parts.normalizedContext),
+    events:parts.events,
+    trajectories:parts.trajectories,
     works:[]
   });
 }
