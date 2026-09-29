@@ -437,19 +437,18 @@ export default function CultureV2(){
               <h3>{labelOf(selectedWorkPeriod,0)}｜{classificationMode==='source'?'作品來源':'多媒體分類'}</h3>
               {categoryQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(categoryQuery.error)}</p>:null}
               {!categoryQuery.isFetching&&!categoryQuery.error&&!categoryGroups.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
-              {categoryGroups.length?<div className='scope-v2-culture-source-groups' aria-label='作品分類'>
-                {categoryGroups.map(group=>isLoc
-                  ?<button type='button' key={group.category_key} className='scope-v2-culture-source-button'
-                    onClick={()=>window.alert('歡迎到該成員的時間長河看明細！')}>
-                    <strong>{group.display_label}</strong><span>{Number(group.item_count||0).toLocaleString()} 項作品</span>
-                  </button>
-                  :<button type='button' key={group.category_key}
-                    className='scope-v2-culture-source-button'
-                    aria-pressed={selectedCategory===group.category_key}
-                    onClick={()=>{setWorkRows([]);setWorkPage(0);setSelectedCategory(selectedCategory===group.category_key?'':group.category_key);}}>
-                    <strong>{group.display_label}</strong><span>{Number(group.item_count||0).toLocaleString()} 項作品</span>
-                  </button>)}
-              </div>:null}
+              {categoryGroups.length?<IncrementalListV2
+                items={categoryGroups}
+                batchSize={DEFAULT_LIST_BATCH_SIZE}
+                resetKey={classificationMode+'|'+String(selectedWorkPeriod?.period||'all')}
+                className='scope-v2-culture-source-groups'
+                renderItem={group=><button type='button' key={group.category_key}
+                  className='scope-v2-culture-source-button'
+                  aria-pressed={selectedCategory===group.category_key}
+                  onClick={()=>{setWorkRows([]);setWorkPage(0);setSelectedCategory(selectedCategory===group.category_key?'':group.category_key);}}>
+                  <strong>{group.display_label}</strong><span>{Number(group.item_count||0).toLocaleString()} 項作品</span>
+                </button>}
+              />:null}
 
               {!isLoc&&selectedGroup?<section className='scope-v2-culture-source-detail' aria-label={selectedGroup.display_label+'列表'}>
                 <header>
