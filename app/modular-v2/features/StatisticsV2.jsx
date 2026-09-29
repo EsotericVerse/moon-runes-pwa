@@ -1,6 +1,6 @@
 'use client';
 
-import {useMemo,useState} from 'react';
+import {useEffect,useMemo,useState} from 'react';
 import {useRouter,useSearchParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
 import Select from 'react-select';
@@ -63,13 +63,14 @@ function RankingChart({type='bar',rows,height=380}){
   </ResponsiveContainer>;
 }
 
-function RankingList({rows=[],resetKey=''}) {
+function RankingList({rows=[],resetKey='',onVisibleRows=null}) {
   return <IncrementalListV2
     items={rows}
     batchSize={DEFAULT_LIST_BATCH_SIZE}
     resetKey={resetKey}
     className="scope-v2-ranking"
     empty={<p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>}
+    onVisibleItemsChange={onVisibleRows}
     renderItem={(row,index)=><div key={row.ranking_key||row.term||index}>
       <strong>{index+1}. {displayTerm(row)}</strong>
       <span>{Number(row.item_count||0).toLocaleString()}</span>
@@ -130,6 +131,9 @@ function StatisticsPanel({scopeId,navigation,types}){
   const [chartType,setChartType]=useState('bar');
   const query=useRanking(scopeId,rankingType,navigation);
   const allRows=query.data||[];
+  const [visibleRows,setVisibleRows]=useState([]);
+  useEffect(()=>{setVisibleRows([]);},[scopeId,rankingType,navigation.period]);
+  const chartData=visibleRows.length?visibleRows:allRows.slice(0,DEFAULT_LIST_BATCH_SIZE);
   return <section className="scope-v2-stat-section">
     <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Statistics</p><h2>統計</h2></div></header>
     <div className="scope-v2-stat-controls">
@@ -138,8 +142,8 @@ function StatisticsPanel({scopeId,navigation,types}){
     </div>
         {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
     {!query.isPending&&!query.error?<>
-      <RankingList rows={allRows} resetKey={scopeId+"|"+rankingType+"|"+String(navigation.period||"all")}/>
-      <RankingChart type={chartType} rows={allRows} height={380}/>
+      <RankingList rows={allRows} resetKey={scopeId+"|"+rankingType+"|"+String(navigation.period||"all")} onVisibleRows={setVisibleRows}/>
+      <RankingChart type={chartType} rows={chartData} height={380}/>
     </>:null}
 
   </section>;
