@@ -76,7 +76,7 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
   const supported=['lo3rwang','lrunes'].includes(dataScope);
   const tableQuery=useQuery({
     queryKey:['scope-table-mapping',dataScope,account.email],
-    enabled:supported&&Boolean(account.user&&timeTable),
+    enabled:supported&&Boolean(account.user),
     queryFn:()=>resolveScopeTables(dataScope,{email:account.email}),
     staleTime:5*60_000
   });
@@ -88,7 +88,7 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
 
   const query=useQuery({
     queryKey:['culture-period-settings',dataScope,timeTable],
-    enabled:supported&&Boolean(account.user),
+    enabled:supported&&Boolean(account.user&&timeTable),
     queryFn:async()=>{
       const groups=await Promise.all(EDITABLE_TYPES.map(async([type])=>{
         const filters=[{column:'record_type',operator:'eq',value:type}];
