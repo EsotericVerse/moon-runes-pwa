@@ -33,7 +33,8 @@ async function selectAggregateRows(table,{columns,filters=[],orders=[]}={}){
   return output;
 }
 
-export async function selectSourceCatalog({scopeId='lo3rwang',startDate='',endDate='',limit=20}={}){
+export async function selectSourceCatalog({scopeId,startDate='',endDate='',limit=20}={}){
+  if(!scopeId)throw new Error('scopeId is required');
   const {galaxy:table}=await resolveScopeTables(scopeId);
   const filters=publicContentFilters([
     ...timeFilters('createtime',startDate,endDate),
@@ -49,7 +50,7 @@ export async function selectSourceCatalog({scopeId='lo3rwang',startDate='',endDa
   });
   return {
     rows:rows.map(row=>({
-      scope_id:String(scopeId)==='lrunes'?'lrunes':'lo3rwang',
+      scope_id:String(scopeId),
       source_name:String(row.source_name||'').trim(),
       item_count:Number(row.item_count)||0
     })).filter(row=>row.source_name),
@@ -69,7 +70,7 @@ export async function selectSourceDaily({scopeId='lo3rwang',startDate='',endDate
     orders:[{column:'day',ascending:true},{column:'source_name',ascending:true}]
   });
   return rows.map(row=>({
-    scope_id:String(scopeId)==='lrunes'?'lrunes':'lo3rwang',
+    scope_id:String(scopeId),
     source_name:String(row.source_name||'').trim(),
     day:String(row.day||''),
     item_count:Number(row.item_count)||0
@@ -124,7 +125,8 @@ export async function selectCategoryCounts(table,categoryColumn,{startDate='',en
   })).filter(row=>row.term);
 }
 
-export async function selectGalaxyPage({scopeId='lo3rwang',sourceName='',startDate='',endDate='',limit=20,offset=0}={}){
+export async function selectGalaxyPage({scopeId,sourceName='',startDate='',endDate='',limit=20,offset=0}={}){
+  if(!scopeId)throw new Error('scopeId is required');
   const {galaxy:table}=await resolveScopeTables(scopeId);
   const filters=[];
   if(sourceName)filters.push({column:'source_name',operator:'eq',value:sourceName});
