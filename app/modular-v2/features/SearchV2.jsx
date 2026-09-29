@@ -136,8 +136,7 @@ export default function SearchV2(){
   const searchId=useRef(0);
   const matchedQueryRef=useRef('');
   const pageSize=DEFAULT_LIST_BATCH_SIZE;
-  const collectionId=String(scope.searchCollection||'all');
-  const collectionLabel=collectionId==='all'?'全部':collectionId;
+  const collectionLabel=scopeId==='loc'?'全部 Scope':String(scope?.label||scopeId);
 
   async function executeSearch(rawQuery,cursor=null,{append=false}={}){
     const q=String(rawQuery||'').trim();
@@ -154,7 +153,7 @@ export default function SearchV2(){
       setStatus(searchMode==='media'?'搜尋多媒體資料…':`搜尋「${collectionLabel}」資料…`);
     }
     try{
-      const search=await searchNeonRows(collectionId,q,{limit:pageSize,cursor,mediaOnly:searchMode==='media'});
+      const search=await searchNeonRows(scopeId,q,{limit:pageSize,cursor,mediaOnly:searchMode==='media'});
       if(id!==searchId.current)return;
 
       const searchRows=search.rows;
