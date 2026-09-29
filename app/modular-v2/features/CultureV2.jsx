@@ -201,14 +201,23 @@ export default function CultureV2(){
   },[sourceSnapshotQuery.data,selectedWorkPeriod?.start_date]);
 
 
-  const timelineItems=useMemo(()=>{
-    const items=(query.data?.timelineItems||[]).filter(item=>scopeId==='loc'||item.scope_id===scopeId);
-    return items.map(item=>{
-      if(item.scope_id!=='lo3rwang'||item.entry_type!=='period')return item;
-      const workCount=periodVolumeByStart.get(String(item.start_date||'').slice(0,10));
-      return workCount===undefined?item:{...item,item_count:workCount};
-    });
-  },[query.data,scopeId,periodVolumeByStart]);
+  const timelineItems=useMemo(()=>
+    (query.data?.timelineItems||[]).filter(item=>scopeId==='loc'||item.scope_id===scopeId)
+  ,[query.data,scopeId]);
+  const locSourceRiverItems=useMemo(()=>query.data?.sourceRiverItems||[],[query.data]);
+  const locSourceGroups=useMemo(()=>query.data?.sourceGroups||[],[query.data]);
+  const locSuggestions=useMemo(()=>{
+    const totals=new Map();
+    for(const item of locSourceRiverItems){
+      const day=String(item?.start_date||'').slice(0,10);
+      if(!day)continue;
+      totals.set(day,(totals.get(day)||0)+(Number(item?.item_count)||0));
+    }
+    return [...totals.entries()]
+      .map(([date,item_count])=>({date,item_count}))
+      .sort((a,b)=>b.item_count-a.item_count||b.date.localeCompare(a.date))
+      .slice(0,5);
+  },[locSourceRiverItems]);
   const anchoredEvents=useMemo(()=>(query.data?.events||[])
     .filter(item=>String(item?.scope_id||'')===scopeId&&item?.start_date&&item?.end_date)
     .sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))||String(a.title||'').localeCompare(String(b.title||''))),[query.data,scopeId]);
@@ -311,25 +320,45 @@ export default function CultureV2(){
 
 
             {isLoc?<>
-              <CultureTimelineV2
-                items={timelineItems}
-                labelOf={item=>item.display_label||item.title}
-                focus={navigation}
-                mode='overview'
-                onSelect={()=>window.alert('歡迎到該成員的時間長河看明細！')}
-              />
-              <section className='scope-v2-card scope-v2-culture-current-works'>
-                <p className='loc-eyebrow'>Intersection Works</p>
-                <h3>交會時期作品</h3>
-                {query.data?.intersectionStart?<p>交會起點：{String(query.data.intersectionStart).slice(0,10)} · 文字作品 {Number(query.data?.works?.length||0).toLocaleString()} 項</p>:null}
-                <div className='scope-v2-culture-source-work-scroll'>
-                  {(query.data?.works||[]).map(work=><article className='scope-v2-inline-card' key={work.key||work.uid}>
-                    <strong>{work.title||'未命名作品'}</strong>
-                    <span>{work.scope_id==='lunarunes'?'LunaRunes':String(work.scope_id||'Scope')} · 原始來源：{work.original_source||work.source_name||'未標示'} · {work.display_date||formatCultureDateTime(work.createtime)}</span>
-                    {work.url&&/^https?:\/\//i.test(String(work.url))?<a href={work.url} target='_blank' rel='noreferrer'>來源連結</a>:null}
+              <section className='scope-v2-card'>
+                <p className='loc-eyebrow'>Intersection Anchors</p>
+                <h3>時期交會｜定錨點</h3>
+                {query.data?.intersectionStart?<p>交會起點：{String(query.data.intersectionStart).slice(0,10)}</p>:<p>尚未設定交會時期，顯示現有定錨點。</p>}
+                <CultureTimelineV2
+                  items={timelineItems}
+                  labelOf={item=>item.display_label||item.title}
+                  focus={navigation}
+                  mode='overview'
+                />
+              </section>
+
+              <section className='scope-v2-card scope-v2-culture-classification-river'>
+                <p className='loc-eyebrow'>Source Density</p>
+                <h3>作品來源分佈</h3>
+                <CultureTimelineV2
+                  items={locSourceRiverItems}
+                  labelOf={()=>''}
+                  focus={{}}
+                  mode='source'
+                />
+                {locSourceGroups.length?<div className='scope-v2-culture-source-groups' aria-label='作品來源分類'>
+                  {locSourceGroups.map(group=><article className='scope-v2-inline-card' key={group.category_key}>
+                    <strong>{group.display_label}</strong>
+                    <span>{Number(group.item_count||0).toLocaleString()} 項</span>
+                  </article>)}
+                </div>:null}
+              </section>
+
+              {locSuggestions.length?<section className='scope-v2-card'>
+                <p className='loc-eyebrow'>Review Suggestions</p>
+                <h3>建議回看日期</h3>
+                <div className='scope-v2-list'>
+                  {locSuggestions.map(item=><article className='scope-v2-inline-card' key={'suggest:'+item.date}>
+                    <strong>{item.date}</strong>
+                    <span>當日作品量 {Number(item.item_count||0).toLocaleString()} 項</span>
                   </article>)}
                 </div>
-              </section>
+              </section>:null}
             </>:<>
               {!isLoc?<label className='scope-v2-culture-period-select'>
                 <span>時間長河</span>
