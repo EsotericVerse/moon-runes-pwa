@@ -224,14 +224,24 @@ export async function selectScopeCultureData(scopeId){
       range.item_count=textCount+mediaCount;
     }
 
-    const currentCountByScope=new Map(currentRanges.map(row=>[String(row.scope_id),Number(row.item_count)||0]));
-    const currentPeriodByScope=new Map(currentRanges.map(row=>[String(row.scope_id),String(row.period||'')]));
-    const mergedTimeline=timelineItems(bundles.flatMap(bundle=>bundle.parts.normalizedContext)).map(item=>{
-      const scope=String(item.scope_id||'');
-      const isCurrent=item.entry_type==='period'&&String(item.period||'')===currentPeriodByScope.get(scope);
-      if(!isCurrent)return item;
-      const count=currentCountByScope.get(scope)||0;
-      return {...item,item_count:count,display_label:(item.display_label||item.title||item.period)+' · '+count.toLocaleString()+' 項'};
+    const today=new Date().toISOString().slice(0,10);
+    const intersectionTimeline=currentRanges.map(range=>{
+      const scope=String(range.scope_id||'');
+      const count=Number(range.item_count)||0;
+      return {
+        id:'intersection:'+scope,
+        entry_id:'intersection:'+scope,
+        entry_type:'intersection',
+        scope_id:scope,
+        group_label:scope,
+        title:range.title||range.period||scope,
+        display_label:(range.title||range.period||scope)+' · '+count.toLocaleString()+' 項',
+        start_date:intersectionStart,
+        end_date:today,
+        item_count:count,
+        intersection_start:intersectionStart,
+        intersection_end:today
+      };
     });
 
     const works=workResults.flatMap(result=>(result.text?.rows||[]).map(row=>({
@@ -243,17 +253,38 @@ export async function selectScopeCultureData(scopeId){
       display_date:formatCultureDateTime(row.createtime)
     }))).sort((a,b)=>String(b.createtime||'').localeCompare(String(a.createtime||'')));
 
+    const sourceMap=new Map();
+    for(const work of works){
+      const source=String(work.original_source||work.source_name||'未標示').trim()||'未標示';
+      const key=String(work.scope_id||'')+'|'+source;
+      const current=sourceMap.get(key)||{
+        key,
+        scope_id:String(work.scope_id||''),
+        source_name:source,
+        item_count:0
+      };
+      current.item_count+=1;
+      sourceMap.set(key,current);
+    }
+    const sourceGroups=[...sourceMap.values()].sort((a,b)=>
+      String(a.scope_id).localeCompare(String(b.scope_id))||
+      Number(b.item_count)-Number(a.item_count)||
+      String(a.source_name).localeCompare(String(b.source_name))
+    );
+
     return ScopeCultureResponseSchema.parse({
       scopeId:id,
       eras:{eras:bundles.flatMap(bundle=>bundle.parts.eras)},
       periods:bundles.flatMap(bundle=>bundle.parts.periods),
       currentRanges,
       scopeRanges:[],
-      timelineItems:mergedTimeline,
-      events:bundles.flatMap(bundle=>bundle.parts.events),
-      trajectories:bundles.flatMap(bundle=>bundle.parts.trajectories),
+      timelineItems:intersectionTimeline,
+      events:[],
+      trajectories:[],
       works,
-      intersectionStart
+      sourceGroups,
+      intersectionStart,
+      intersectionEnd:today
     });
   }
 
