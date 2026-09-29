@@ -58,7 +58,8 @@ export async function selectSourceCatalog({scopeId,startDate='',endDate='',limit
   };
 }
 
-export async function selectSourceDaily({scopeId='lo3rwang',startDate='',endDate=''}={}){
+export async function selectSourceDaily({scopeId='',startDate='',endDate=''}={}){
+  if(!String(scopeId||'').trim())throw new Error('Scope ID 無效');
   const {galaxy:table}=await resolveScopeTables(scopeId);
   const filters=publicContentFilters([
     ...timeFilters('createtime',startDate,endDate),
