@@ -24,7 +24,7 @@ import FeaturePageV2 from '../FeaturePageV2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
 import WorkFullTextV2 from '../WorkFullTextV2';
 import {workDisplayHeading,workDisplayText} from '../work-display-model.v2';
-import IncrementalLoadV2 from '../IncrementalLoadV2';
+import IncrementalListV2 from '../IncrementalListV2';
 import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
 import ContentEditorV2 from '../ContentEditorV2';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
@@ -457,8 +457,17 @@ export default function CultureV2(){
                   <button type='button' className='scope-v2-pagination-button' onClick={()=>{setWorkRows([]);setWorkPage(0);setSelectedCategory('')}}>收合列表</button>
                 </header>
                 {periodWorksQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksQuery.error)}</p>:null}
-                <div key={selectedCategory} ref={workScrollRef} className='scope-v2-culture-source-work-scroll'>
-                  {workRows.map((work,index)=><WorkSummaryCardV2
+                <IncrementalListV2
+                  items={workRows}
+                  batchSize={CULTURE_WORK_PAGE_SIZE}
+                  resetKey={selectedCategory+'|'+classificationMode}
+                  className='scope-v2-culture-source-work-scroll'
+                  externalHasMore={Boolean(periodWorksQuery.data?.hasMore)}
+                  loading={periodWorksQuery.isFetching}
+                  error={periodWorksQuery.error}
+                  onLoadMore={()=>setWorkPage(page=>page+1)}
+                  scrollRootRef={workScrollRef}
+                  renderItem={(work,index)=><WorkSummaryCardV2
                     key={work.key||work.uid||work.entry_id||String(work.createtime||work.created_at)+'-'+index}
                     title={workDisplayHeading(work,{media:false,limit:80})}
                     source={work.source_name||work.group_label||''}
@@ -485,16 +494,8 @@ export default function CultureV2(){
                       onSave={()=>saveEditingWork(work)}
                       onCancel={()=>{setEditingWorkKey('');setEditDraft(null);setEditError('')}}
                     />:null}
-                  </WorkSummaryCardV2>)}
-                  <IncrementalLoadV2
-                    hasMore={Boolean(periodWorksQuery.data?.hasMore)}
-                    loading={periodWorksQuery.isFetching}
-                    error={periodWorksQuery.error}
-                    onLoadMore={()=>setWorkPage(page=>page+1)}
-                    label="還有更多作品"
-                    scrollRootRef={workScrollRef}
-                  />
-                </div>
+                  </WorkSummaryCardV2>}
+                />
                 {!periodWorksQuery.isFetching&&!periodWorksQuery.error&&!workRows.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
               </section>:null}
             </section>:null}
