@@ -4,8 +4,8 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
 import {
-  selectAuthorPeriodSourceSnapshot,
-  selectAuthorPeriodWorks,
+  selectScopePeriodSourceSnapshot,
+  selectScopePeriodWorks,
   selectScopeCultureData,
   selectScopeWorkSnapshot,
   selectScopeMediaSnapshot,
@@ -40,7 +40,7 @@ function sortPeriods(rows=[]){
     Number(a.order||0)-Number(b.order||0)
   );
 }
-function periodRange(rows=[],scope='lo3rwang'){
+function periodRange(rows=[],scope=''){
   if(!rows.length)return null;
   const starts=rows.map(row=>row.start_date||row.end_date).filter(Boolean).sort();
   const ends=rows.map(row=>row.end_date||row.start_date).filter(Boolean).sort();
@@ -63,7 +63,7 @@ export default function CultureV2(){
   });
 
   const [timelineMode,setTimelineMode]=useState('works');
-  const [classificationMode,setClassificationMode]=useState(scopeId==='lunarunes'?'media':'source');
+  const [classificationMode,setClassificationMode]=useState('source');
   const [selectedCategory,setSelectedCategory]=useState('');
   const [workPage,setWorkPage]=useState(0);
   const [workRows,setWorkRows]=useState([]);
@@ -83,7 +83,7 @@ export default function CultureV2(){
 
   const allPeriods=useMemo(()=>sortPeriods(query.data?.eras?.eras||[]),[query.data]);
   const isLoc=scopeId==='loc';
-  const classificationScope=isLoc?'lo3rwang':scopeId;
+  const classificationScope=scopeId;
   const primaryPeriods=isLoc?[]:allPeriods.filter(item=>String(item?.scope_id||'')===scopeId);
   const primaryCurrent=isLoc?null:(currentByScope.get(scopeId)||null);
   const selectedWorkPeriod=primaryCurrent||periodRange(primaryPeriods,classificationScope);
@@ -100,11 +100,11 @@ export default function CultureV2(){
 
   const sourceSnapshotQuery=useQuery({
     queryKey:['culture-period-source-snapshot',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
-    queryFn:()=>selectAuthorPeriodSourceSnapshot({
+    queryFn:()=>selectScopePeriodSourceSnapshot(classificationScope,{
       startDate:selectedWorkPeriod?.start_date,
       endDate:selectedWorkPeriod?.end_date
     }),
-    enabled:!isLoc&&classificationScope==='lo3rwang'&&Boolean(selectedWorkPeriod?.start_date)&&classificationMode==='source',
+    enabled:!isLoc&&Boolean(selectedWorkPeriod?.start_date)&&classificationMode==='source',
     staleTime:5*60_000
   });
 
@@ -131,7 +131,7 @@ export default function CultureV2(){
   const periodWorksQuery=useQuery({
     queryKey:['culture-period-works',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,classificationMode,selectedCategory,workPage],
     queryFn:()=>classificationMode==='source'
-      ?selectAuthorPeriodWorks({
+      ?selectScopePeriodWorks(classificationScope,{
         startDate:selectedWorkPeriod?.start_date,
         endDate:selectedWorkPeriod?.end_date,
         sourceName:selectedGroup?.source_name,
@@ -151,7 +151,7 @@ export default function CultureV2(){
 
   useEffect(()=>{
     setTimelineMode('works');
-    setClassificationMode(scopeId==='lunarunes'?'media':'source');
+    setClassificationMode('source');
     setSelectedCategory('');
     setWorkPage(0);
     setWorkRows([]);
@@ -378,7 +378,7 @@ export default function CultureV2(){
               </div>:null}
               {classificationBucketsQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(classificationBucketsQuery.error)}</p>:null}
               {!classificationBucketsQuery.isFetching&&!classificationBucketsQuery.error&&!classificationBuckets.length
-                ?<p className='scope-v2-status'>{classificationMode==='source'&&classificationScope==='lunarunes'?'目前沒有作品來源分類。':'目前沒有此分類資料。'}</p>:null}
+                ?<p className='scope-v2-status'>{'目前沒有此分類資料。'}</p>:null}
               {classificationBuckets.length?<CultureTimelineV2
                 items={classificationBuckets}
                 labelOf={item=>classificationMode==='source'
