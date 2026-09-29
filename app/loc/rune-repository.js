@@ -12,13 +12,14 @@ const DIRECTION_FIELDS=Object.freeze({1:'positive_meaning',2:'half_positive_mean
 const LOTS_FIELDS=Object.freeze({1:'lots_positive',2:'lots_half_positive',3:'lots_half_negative',4:'lots_negative'});
 const DAILY_FIELDS=Object.freeze({1:'daily_positive',2:'daily_half_positive',3:'daily_half_reverse',4:'daily_reverse'});
 const ETC_TYPES=new Set(['direction','lots','daily']);
-async function selectRuneTable(table,columns,{filters=[],orders=[]}={}){
+async function selectRuneTable(table,columns,{filters=[],orders=[],orFilter=''}={}){
   let query=neonPublicClient.schema('silver').from(table).select(columns);
   for(const filter of filters){
     query=filter.operator==='in'
       ?query.in(filter.column,filter.value)
       :query[filter.operator](filter.column,filter.value);
   }
+  if(orFilter)query=query.or(orFilter);
   for(const order of orders)query=query.order(order.column,{ascending:order.ascending??true});
   const {data,error}=await query;
   if(error)throw new Error(error.message||('Neon '+table+' read failed'));
@@ -83,50 +84,79 @@ export async function selectRuneGroupCatalog(){
   return rows.map(normalizeGroup).sort((a,b)=>Number(a.id)-Number(b.id));
 }
 
-export async function selectRuneEtcRows({runeNumbers=[],types=[]}={}){
+export async function selectRuneEtcRows({runeNumbers=[],types=[],dirs=[],pairs=[]}={}){
   const wanted=[...new Set((runeNumbers||[]).map(Number).filter(number=>Number.isInteger(number)&&number>=0&&number<=66))];
   const selectedTypes=normalizeEtcTypes(types);
-  if(!wanted.length&&!selectedTypes.length)throw new TypeError('runes_etc requires runeNumbers or types');
+  const selectedDirs=[...new Set((dirs||[]).map(Number).filter(dir=>Number.isInteger(dir)&&dir>=1&&dir<=4))];
+  const selectedPairs=[];
+  const pairKeys=new Set();
+  for(const item of pairs||[]){
+    const runeNumber=Number(item?.runeNumber);
+    const dir=Number(item?.dir);
+    if(!Number.isInteger(runeNumber)||runeNumber<0||runeNumber>66||!Number.isInteger(dir)||dir<1||dir>4)continue;
+    const key=`${runeNumber}:${dir}`;
+    if(pairKeys.has(key))continue;
+    pairKeys.add(key);
+    selectedPairs.push({runeNumber,dir});
+  }
+  if(!wanted.length&&!selectedPairs.length)throw new TypeError('runes_etc requires exact runeNumbers or rune/dir pairs');
   const filters=[];
-  if(wanted.length)filters.push({column:'rune_id',operator:'in',value:wanted});
   if(selectedTypes.length)filters.push({column:'type',operator:'in',value:selectedTypes});
+  if(!selectedPairs.length&&wanted.length)filters.push({column:'rune_id',operator:'in',value:wanted});
+  if(!selectedPairs.length&&selectedDirs.length)filters.push({column:'dir',operator:'in',value:selectedDirs});
+  const orFilter=selectedPairs.length
+    ?selectedPairs.map(item=>`and(rune_id.eq.${item.runeNumber},dir.eq.${item.dir})`).join(',')
+    :'';
   return selectRuneTable('runes_etc',ETC_COLUMNS,{
     filters,
+    orFilter,
     orders:[{column:'rune_id',ascending:true},{column:'dir',ascending:true},{column:'type',ascending:true}]
   });
 }
 
-export async function selectRuneCatalog({types=[],detail=false}={}){
-  const selectedTypes=normalizeEtcTypes(types);
+export async function selectRuneCatalog({detail=false}={}){
   const columns=detail?`${RUNE_COLUMNS},${RUNE_DETAIL_COLUMNS}`:RUNE_COLUMNS;
-  const [runes,etcRows]=await Promise.all([
-    selectRuneTable('runes',columns,{
-      orders:[{column:'rune_id',ascending:true}]
-    }),
-    selectedTypes.length?selectRuneEtcRows({types:selectedTypes}):Promise.resolve([])
-  ]);
-  const normalized=runes.map(normalizeRune);
-  return selectedTypes.length?mergeRuneEtc(normalized,etcRows):normalized;
+  const runes=await selectRuneTable('runes',columns,{
+    orders:[{column:'rune_id',ascending:true}]
+  });
+  return runes.map(normalizeRune);
 }
 
-export async function selectRuneRows(runeNumbers=[],{types=[],detail=false}={}){
+export async function selectRuneRows(runeNumbers=[],{detail=false}={}){
   const wanted=[...new Set((runeNumbers||[]).map(Number).filter(number=>Number.isInteger(number)&&number>=0&&number<=66))];
   if(!wanted.length)return [];
-  const selectedTypes=normalizeEtcTypes(types);
   const columns=detail?`${RUNE_COLUMNS},${RUNE_DETAIL_COLUMNS}`:RUNE_COLUMNS;
-  const [runes,etcRows]=await Promise.all([
-    selectRuneTable('runes',columns,{
-      filters:[{column:'rune_id',operator:'in',value:wanted}],
-      orders:[{column:'rune_id',ascending:true}]
-    }),
-    selectedTypes.length?selectRuneEtcRows({runeNumbers:wanted,types:selectedTypes}):Promise.resolve([])
-  ]);
-  const normalized=runes.map(normalizeRune);
-  return selectedTypes.length?mergeRuneEtc(normalized,etcRows):normalized;
+  const runes=await selectRuneTable('runes',columns,{
+    filters:[{column:'rune_id',operator:'in',value:wanted}],
+    orders:[{column:'rune_id',ascending:true}]
+  });
+  return runes.map(normalizeRune);
 }
 
-export async function selectRuneDetail(runeNumber,{types=['direction','lots','daily']}={}){
-  const rows=await selectRuneRows([runeNumber],{types,detail:true});
+export async function selectRuneDrawRows(pairs=[],{types=[]}={}){
+  const selectedTypes=normalizeEtcTypes(types);
+  const exactPairs=[];
+  const pairKeys=new Set();
+  for(const item of pairs||[]){
+    const runeNumber=Number(item?.runeNumber);
+    const dir=Number(item?.dir);
+    if(!Number.isInteger(runeNumber)||runeNumber<1||runeNumber>66||!Number.isInteger(dir)||dir<1||dir>4)continue;
+    const key=`${runeNumber}:${dir}`;
+    if(pairKeys.has(key))continue;
+    pairKeys.add(key);
+    exactPairs.push({runeNumber,dir});
+  }
+  if(!exactPairs.length)return [];
+  const runeNumbers=exactPairs.map(item=>item.runeNumber);
+  const [runes,etcRows]=await Promise.all([
+    selectRuneRows(runeNumbers),
+    selectedTypes.length?selectRuneEtcRows({pairs:exactPairs,types:selectedTypes}):Promise.resolve([])
+  ]);
+  return selectedTypes.length?mergeRuneEtc(runes,etcRows):runes;
+}
+
+export async function selectRuneDetail(runeNumber){
+  const rows=await selectRuneRows([runeNumber],{detail:true});
   return rows[0]||null;
 }
 
