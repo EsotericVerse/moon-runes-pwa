@@ -18,6 +18,7 @@ import {formatCultureDateTime} from '../modules/culture-timeline/culture-timelin
 import {selectGalaxyContent} from '../../loc/aggregate-query';
 import {neonAuthClient} from '../../loc/neon-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
+import {resolveScopeTables} from '../../loc/scope-table-mapping';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
@@ -232,7 +233,7 @@ export default function CultureV2(){
     return items.map(item=>{
       if(item.scope_id!=='lo3rwang'||item.entry_type!=='period')return item;
       const workCount=periodVolumeByStart.get(String(item.start_date||'').slice(0,10));
-      return workCount===undefined?item:{...item,work_count:workCount};
+      return workCount===undefined?item:{...item,item_count:workCount};
     });
   },[query.data,scopeId,periodVolumeByStart]);
   const anchoredEvents=useMemo(()=>(query.data?.events||[])
@@ -248,8 +249,8 @@ export default function CultureV2(){
     :(mediaSnapshotQuery.data?.buckets||[]);
 
 
-  function galaxyTable(){
-    return classificationScope==='lunarunes'?'lrunes_galaxy':'lo3rwang_galaxy';
+  async function galaxyTable(){
+    return (await resolveScopeTables(classificationScope)).galaxy.split('.').at(-1);
   }
 
   async function startEditingWork(work){
@@ -258,7 +259,7 @@ export default function CultureV2(){
     const key=String(work?.key||('galaxy:'+uid));
     setEditingWorkKey(key);setEditDraft(null);setEditError('');
     try{
-      const {data,error}=await neonAuthClient.schema('silver').from(galaxyTable())
+      const {data,error}=await neonAuthClient.schema('silver').from(await galaxyTable())
         .select('uid,title,content,searchable')
         .eq('uid',uid)
         .limit(1);
@@ -337,14 +338,26 @@ export default function CultureV2(){
       {!query.isPending&&!query.error&&hasTimelineSurface?<>
 
 
-            {isLoc?<CultureTimelineV2
-              items={timelineItems}
-              labelOf={item=>item.display_label||item.title}
-              focus={navigation}
-              mode='current'
-              currentRanges={query.data?.currentRanges||[]}
-              onSelect={()=>window.alert('歡迎到該成員的時間長河看明細！')}
-            />:<>
+            {isLoc?<>
+              <CultureTimelineV2
+                items={timelineItems}
+                labelOf={item=>item.display_label||item.title}
+                focus={navigation}
+                mode='current'
+                currentRanges={query.data?.currentRanges||[]}
+                onSelect={()=>window.alert('歡迎到該成員的時間長河看明細！')}
+              />
+              <section className='scope-v2-card scope-v2-culture-current-works'>
+                <p className='loc-eyebrow'>Works</p>
+                <h3>目前作品內容分佈</h3>
+                <div className='scope-v2-list'>
+                  {currentRows.map(row=><article className='scope-v2-inline-card' key={'loc-work-count:'+row.scope_id}>
+                    <strong>{row.scope_id==='lunarunes'?'LunaRunes':'lo3rwang'}</strong>
+                    <span>文字 {Number(row.text_count||0).toLocaleString()} · 多媒體 {Number(row.media_count||0).toLocaleString()} · 合計 {Number(row.item_count||0).toLocaleString()} 項</span>
+                  </article>)}
+                </div>
+              </section>
+            </>:<>
               {!isLoc?<label className='scope-v2-culture-period-select'>
                 <span>時間長河</span>
                 <select className='scope-v2-select' value={timelineMode} onChange={event=>setTimelineMode(event.target.value)}>
