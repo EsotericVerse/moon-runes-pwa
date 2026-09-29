@@ -79,30 +79,16 @@ async function selectSourceRows({startDate='',endDate='',excludedIds=[]}={}){
 
 export async function selectSourceCatalog({scopeId='lo3rwang',limit=null,offset=0,excludedIds=[]}={}){
   if(String(scopeId)!=='lo3rwang')return {rows:[],totalCount:0};
-  const excluded=(excludedIds||[]).map(value=>String(value||'')).filter(Boolean);
-  let all;
-  if(!excluded.length){
-    const result=await selectNeonAllRows('silver.lo3rwang_source_stats',{
-      columns:'source_name,work_count',
-      orders:[{column:'work_count',ascending:false},{column:'source_name',ascending:true}]
-    });
-    all=result.rows.map(row=>({
-      scope_id:'lo3rwang',
-      source_name:String(row.source_name||''),
-      work_count:Number(row.work_count)||0
-    }));
-  }else{
-    const rows=await selectSourceRows({excludedIds:excluded});
-    const map=new Map();
-    for(const row of rows){
-      const source=String(row.source_name||'').trim();
-      if(!source)continue;
-      const current=map.get(source)||{scope_id:'lo3rwang',source_name:source,work_count:0};
-      current.work_count+=1;
-      map.set(source,current);
-    }
-    all=[...map.values()].sort((a,b)=>b.work_count-a.work_count||a.source_name.localeCompare(b.source_name));
+  const rows=await selectSourceRows({excludedIds});
+  const map=new Map();
+  for(const row of rows){
+    const source=String(row.source_name||'').trim();
+    if(!source)continue;
+    const current=map.get(source)||{scope_id:'lo3rwang',source_name:source,work_count:0};
+    current.work_count+=1;
+    map.set(source,current);
   }
+  const all=[...map.values()].sort((a,b)=>b.work_count-a.work_count||a.source_name.localeCompare(b.source_name));
   const start=Math.max(0,Math.floor(Number(offset)||0));
   const bounded=limit!==null&&limit!==undefined&&Number.isFinite(Number(limit));
   const page=bounded?all.slice(start,start+Math.max(0,Math.floor(Number(limit)||0))):all;
@@ -111,31 +97,15 @@ export async function selectSourceCatalog({scopeId='lo3rwang',limit=null,offset=
 
 export async function selectSourceWeekly({scopeId='lo3rwang',startDate='',endDate='',limit=null,offset=0,excludedIds=[]}={}){
   if(String(scopeId)!=='lo3rwang')return {rows:[],totalCount:0};
-  const excluded=(excludedIds||[]).map(value=>String(value||'')).filter(Boolean);
-  let rows;
-  let aggregated=false;
-  if(!excluded.length){
-    const filters=[];
-    if(startDate)filters.push({column:'work_date',operator:'gte',value:String(startDate).slice(0,10)});
-    if(endDate)filters.push({column:'work_date',operator:'lte',value:String(endDate).slice(0,10)});
-    const result=await selectNeonAllRows('silver.lo3rwang_source_daily',{
-      columns:'source_name,work_date,work_count',
-      filters,
-      orders:[{column:'work_date',ascending:true},{column:'source_name',ascending:true}]
-    });
-    rows=result.rows;
-    aggregated=true;
-  }else{
-    rows=await selectSourceRows({startDate,endDate,excludedIds:excluded});
-  }
+  const rows=await selectSourceRows({startDate,endDate,excludedIds});
   const map=new Map();
   for(const row of rows){
     const source=String(row.source_name||'').trim();
-    const weekStart=mondayOf(aggregated?row.work_date:row.createtime);
+    const weekStart=mondayOf(row.createtime);
     if(!source||!weekStart)continue;
     const key=source+'|'+weekStart;
     const current=map.get(key)||{scope_id:'lo3rwang',source_name:source,week_start:weekStart,work_count:0};
-    current.work_count+=aggregated?(Number(row.work_count)||0):1;
+    current.work_count+=1;
     map.set(key,current);
   }
   const all=[...map.values()].sort((a,b)=>a.week_start.localeCompare(b.week_start)||a.source_name.localeCompare(b.source_name));

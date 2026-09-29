@@ -61,8 +61,6 @@ for(const [table,columns,options] of [
   ['lo3rwang_galaxy_media','media_id,galaxy_link,source_native_id,media_type,title,url,meta_tags,createtime'],
   ['lrunes_galaxy','uid,title,content,source_name,createtime'],
   ['lrunes_galaxy_media','media_id,galaxy_link,source_native_id,media_type,title,url,meta_tags,createtime'],
-  ['lo3rwang_source_stats','source_name,work_count'],
-  ['lo3rwang_source_daily','source_name,work_date,work_count'],
   ['runes','rune_id,rune_name'],
   ['game','game_key,record_type,sort_order,status,is_current,event_id,rune_id,role_id,rule_code,macro_code,asset_code'],
   ['lrunes','id,period,period_start,period_end,theme,search_able,statistics_able,culture_able,sources,source_counts,work_count,media_count,media_counts,updated_at'],

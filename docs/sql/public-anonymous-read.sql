@@ -22,8 +22,6 @@ GRANT SELECT ON TABLE
   silver.lrunes_galaxy,
   silver.lrunes_galaxy_media,
   silver.runes,
-  silver.lo3rwang_source_stats,
-  silver.lo3rwang_source_daily,
   silver.lrunes
 TO anonymous;
 
