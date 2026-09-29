@@ -88,7 +88,7 @@ export async function selectDailyCounts(table,{startDate='',endDate='',filters=[
   return rows.map(row=>({day:String(row.day||''),item_count:Number(row.item_count)||0}));
 }
 
-export async function selectDailyCategoryCounts(table,categoryColumn,{startDate='',endDate='',filters=[],includeEmpty=false}={}){
+export async function selectDailyCategoryCounts(table,categoryColumn,{startDate='',endDate='',filters=[],includeEmpty=false,includeUndated=false}={}){
   const resolved=[
     ...filters,
     ...timeFilters('createtime',startDate,endDate),
@@ -103,7 +103,7 @@ export async function selectDailyCategoryCounts(table,categoryColumn,{startDate=
     category:String(row?.[categoryColumn]||'').trim(),
     day:String(row.day||''),
     item_count:Number(row.item_count)||0
-  })).filter(row=>row.day&&(includeEmpty||row.category));
+  })).filter(row=>(includeUndated||row.day)&&(includeEmpty||row.category));
 }
 
 export async function selectCategoryCounts(table,categoryColumn,{startDate='',endDate='',filters=[],limit=20}={}){
