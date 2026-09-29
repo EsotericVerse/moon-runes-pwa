@@ -87,47 +87,6 @@ export function galaxyRelationLinks(scopeId,row={}){
   return links.filter(link=>link.href);
 }
 
-export function resolveSearchScope(collectionId,source,row,currentScopeId='loc'){
-  const explicit=valueOf(row?.scope_id,row?.scope);
-  if(explicit==='lunarunes')return 'lunarunes';
-  if(explicit==='lo3rwang'||explicit==='author'||explicit==='personal')return 'lo3rwang';
-  if(collectionId==='月之符文')return 'lunarunes';
-  if(collectionId==='lo3rwang')return 'lo3rwang';
-  const label=String(source||'')+' '+String(row?.work_type||'');
-  if(/符文|rune|lunarunes/i.test(label))return 'lunarunes';
-  if(/作者|歌曲|作品|時期|全文|文化|author|song|work/i.test(label))return 'lo3rwang';
-  return currentScopeId;
-}
-
-export function buildSearchNavigation(collectionId,source,row,query,currentScopeId='loc'){
-  const payload=payloadOf(row);
-  const targetScope=resolveSearchScope(collectionId,source,row,currentScopeId);
-  return {
-    targetScope,
-    state:{
-      q:valueOf(query),
-      identity:valueOf(
-        row?.uid,row?.media_id,row?.song_id,
-        row?.rune_number!==undefined?'rune:'+row.rune_number:undefined,
-        row?.entry_key,row?.id,
-        payload.id,payload.identity
-      ),
-      source:valueOf(row?.source,row?.source_name,source),
-      period:valueOf(
-        row?.period_code,row?.era_code,row?.period,row?.era_id,
-        payload.period_code,payload.era_code,payload.period,payload.era_id
-      ),
-      anchor:valueOf(
-        row?.anchor_id,row?.anchor_role,row?.anchor_type,
-        payload.anchor_id,payload.anchor_role,payload.anchor_type,
-        payload.anchor?.id,payload.anchor?.role,payload.anchor?.type
-      ),
-      from:valueOf(row?.start_date,row?.active_from,row?.date,payload.start_date),
-      to:valueOf(row?.end_date,row?.active_until,payload.end_date)
-    }
-  };
-}
-
 function hasTemporalCondition(state){
   return Boolean(state.period||state.anchor||state.from||state.to);
 }
@@ -137,7 +96,7 @@ export function featureNavigationLinks({targetScope,state}){
   if(hasTemporalCondition(state)){
     links.push({id:'culture',label:'文化 Time River',href:featureNavigationHref(targetScope,'culture',state)});
   }
-  if(['loc','lunarunes','lo3rwang'].includes(targetScope)){
+  if(String(targetScope||'').trim()){
     links.push({id:'statics',label:'統計',href:featureNavigationHref(targetScope,'statics',{...state,statTab:'ranking'})});
   }
   return links;
