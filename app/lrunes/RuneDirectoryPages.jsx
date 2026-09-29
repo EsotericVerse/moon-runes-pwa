@@ -23,7 +23,7 @@ function useNeonRunes(){
   const [error,setError]=useState('');
   useEffect(()=>{
     let live=true;
-    selectRuneCatalog().then(rows=>{
+    selectRuneCatalog({detail:true}).then(rows=>{
       if(!live)return;
       setRunes((Array.isArray(rows)?rows:[]).filter(row=>Number(row?.rune_number)>=0&&Number(row?.rune_number)<=66));
     }).catch(reason=>{if(live)setError(reason?.message||'Neon canonical 讀取失敗');});
@@ -57,8 +57,17 @@ function RuneDetails({card}){
       <span><strong>卡片屬性</strong>{decodeRuneText(card.card_attribute||'—')}</span>
       <span><strong>正向關鍵詞</strong>{decodeRuneText(card.positive_keywords||'—')}</span>
       <span><strong>反向關鍵詞</strong>{decodeRuneText(card.negative_keywords||'—')}</span>
+      {card.character_action?<span><strong>角色行動</strong>{decodeRuneText(card.character_action)}</span>:null}
       {card.extra_rules?<span><strong>額外規則</strong>{decodeRuneText(card.extra_rules)}</span>:null}
       {card.extra_notes?<span><strong>額外留意</strong>{decodeRuneText(card.extra_notes)}</span>:null}
+    </div>
+    <div className="loc-context-list runes-rune-long-details">
+      {card.rune_evolution_history?<section className="loc-context-item"><strong>符文歷史</strong><span>{decodeRuneText(card.rune_evolution_history)}</span></section>:null}
+      {card.myth_story?<section className="loc-context-item"><strong>神話故事</strong><span>{decodeRuneText(card.myth_story)}</span></section>:null}
+      {card.soul_question?<section className="loc-context-item"><strong>靈魂課題</strong><span>{decodeRuneText(card.soul_question)}</span></section>:null}
+      {card.practice_challenge?<section className="loc-context-item"><strong>實踐挑戰</strong><span>{decodeRuneText(card.practice_challenge)}</span></section>:null}
+      {card.ritual_advice?<section className="loc-context-item"><strong>儀式建議</strong><span>{decodeRuneText(card.ritual_advice)}</span></section>:null}
+      {card.harmony_advice?<section className="loc-context-item"><strong>調和建議</strong><span>{decodeRuneText(card.harmony_advice)}</span></section>:null}
     </div>
   </article>;
 }
