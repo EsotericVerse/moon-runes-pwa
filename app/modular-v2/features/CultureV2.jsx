@@ -27,8 +27,6 @@ import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
 import ContentEditorV2 from '../ContentEditorV2';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 
-const CULTURE_WORK_PAGE_SIZE=DEFAULT_LIST_BATCH_SIZE;
-
 function labelOf(item,index){
   return item?.display_label||item?.name||item?.title||item?.period||'時期 '+(index+1);
 }
@@ -39,14 +37,15 @@ function sortPeriods(rows=[]){
   );
 }
 function periodRange(rows=[],scope=''){
-  if(!rows.length)return null;
   const starts=rows.map(row=>row.start_date||row.end_date).filter(Boolean).sort();
   const ends=rows.map(row=>row.end_date||row.start_date).filter(Boolean).sort();
-  if(!starts.length)return null;
   return {
-    period:'全部時期',title:'全部時期',display_label:'全部時期',
-    start_date:starts[0],end_date:ends.at(-1)||null,scope_id:scope
+    period:'all',title:'全部時間',display_label:'全部時間',
+    start_date:starts[0]||'',end_date:ends.at(-1)||null,scope_id:scope
   };
+}
+function periodKey(item){
+  return String(item?.period||item?.era_id||item?.id||'').trim();
 }
 
 export default function CultureV2(){
@@ -61,9 +60,8 @@ export default function CultureV2(){
   });
 
   const [timelineMode,setTimelineMode]=useState('works');
+  const [selectedPeriodKey,setSelectedPeriodKey]=useState('');
   const [selectedCategory,setSelectedCategory]=useState('');
-  const [workPage,setWorkPage]=useState(0);
-  const [workRows,setWorkRows]=useState([]);
   const workScrollRef=useRef(null);
   const [fullTextKey,setFullTextKey]=useState('');
   const [fullText,setFullText]=useState('');
@@ -83,7 +81,18 @@ export default function CultureV2(){
   const classificationScope=scopeId;
   const primaryPeriods=isLoc?[]:allPeriods.filter(item=>String(item?.scope_id||'')===scopeId);
   const openPeriod=isLoc?null:(openByScope.get(scopeId)||null);
-  const selectedWorkPeriod=openPeriod||periodRange(primaryPeriods,classificationScope);
+  const allTimePeriod=useMemo(()=>periodRange(primaryPeriods,classificationScope),[primaryPeriods,classificationScope]);
+  useEffect(()=>{
+    if(isLoc)return;
+    const preferred=periodKey(openPeriod)||periodKey(primaryPeriods.at(-1))||'all';
+    setSelectedPeriodKey(preferred);
+  },[scopeId,isLoc,openPeriod?.period,openPeriod?.start_date,primaryPeriods.length]);
+  const selectedWorkPeriod=selectedPeriodKey==='all'
+    ?allTimePeriod
+    :(primaryPeriods.find(item=>periodKey(item)===selectedPeriodKey)||openPeriod||allTimePeriod);
+  const selectedPeriodIndex=primaryPeriods.findIndex(item=>periodKey(item)===periodKey(selectedWorkPeriod));
+  const selectedWindowStart=String(selectedWorkPeriod?.start_date||'');
+  const selectedWindowEnd=String(selectedWorkPeriod?.end_date||new Date().toISOString().slice(0,10));
 
   const periodWorkTimelineQuery=useQuery({
     queryKey:['culture-period-work-timeline',scopeId,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
@@ -91,7 +100,7 @@ export default function CultureV2(){
       startDate:selectedWorkPeriod?.start_date,
       endDate:selectedWorkPeriod?.end_date
     }),
-    enabled:!isLoc&&Boolean(selectedWorkPeriod?.start_date),
+    enabled:!isLoc,
     staleTime:5*60_000
   });
 
@@ -101,7 +110,7 @@ export default function CultureV2(){
       startDate:selectedWorkPeriod?.start_date,
       endDate:selectedWorkPeriod?.end_date
     }),
-    enabled:!isLoc&&Boolean(selectedWorkPeriod?.start_date),
+    enabled:!isLoc,
     staleTime:5*60_000
   });
 
@@ -111,67 +120,41 @@ export default function CultureV2(){
   const categoryGroups=sourceSnapshotQuery.data?.groups||[];
   const categoryQuery=sourceSnapshotQuery;
   const selectedGroup=categoryGroups.find(item=>item.category_key===selectedCategory)||null;
-  const selectedCount=Number(selectedGroup?.item_count)||0;
   const periodWorksQuery=useQuery({
-    queryKey:['culture-period-works',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,selectedCategory,workPage],
+    queryKey:['culture-period-works',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,selectedCategory],
     queryFn:()=>selectScopePeriodWorks(classificationScope,{
-      startDate:selectedWorkPeriod?.start_date,
+      startDate:selectedWorkPeriod?.start_date||'',
       endDate:selectedWorkPeriod?.end_date,
-      sourceName:selectedGroup?.source_name,
+      sourceName:selectedGroup?.source_name||'',
       sourceNames:selectedGroup?.source_names||[],
       mediaTypes:selectedGroup?.media_types||[],
-      limit:CULTURE_WORK_PAGE_SIZE,
-      pageOffset:workPage*CULTURE_WORK_PAGE_SIZE
+      edgeLimit:200
     }),
-    enabled:!isLoc&&Boolean(selectedWorkPeriod?.start_date&&selectedGroup),
+    enabled:!isLoc,
     staleTime:5*60_000
   });
+  const selectedCount=Number(periodWorksQuery.data?.totalCount)||Number(selectedGroup?.item_count)||0;
+  const visibleWorkRows=periodWorksQuery.data?.rows||[];
 
   useEffect(()=>{
     setTimelineMode('works');
     setSelectedCategory('');
-    setWorkPage(0);
-    setWorkRows([]);
   },[scopeId]);
 
   useEffect(()=>{
     setSelectedCategory('');
-    setWorkPage(0);
-    setWorkRows([]);
     setFullTextKey('');
     setFullText('');
     setFullTextError('');
+    if(workScrollRef.current)workScrollRef.current.scrollTop=0;
   },[selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date]);
 
   useEffect(()=>{
-    setWorkRows([]);
-    setWorkPage(0);
     setFullTextKey('');
     setFullText('');
     setFullTextError('');
     if(workScrollRef.current)workScrollRef.current.scrollTop=0;
   },[selectedCategory]);
-
-  useEffect(()=>{
-    setFullTextKey('');
-    setFullText('');
-    setFullTextError('');
-  },[workPage]);
-
-  useEffect(()=>{
-    const next=periodWorksQuery.data?.rows||[];
-    if(!next.length)return;
-    setWorkRows(current=>{
-      if(workPage===0)return next;
-      const map=new Map(current.map((row,index)=>[String(row.key||row.uid||row.entry_id||index),row]));
-      next.forEach((row,index)=>map.set(String(row.key||row.uid||row.entry_id||('next-'+index)),row));
-      return [...map.values()];
-    });
-  },[periodWorksQuery.data,workPage]);
-
-  const visibleWorkRows=workPage===0
-    ?(periodWorksQuery.data?.rows||[])
-    :workRows;
 
   const periodVolumeByStart=useMemo(()=>{
     const map=new Map();
@@ -318,14 +301,23 @@ export default function CultureV2(){
               </section>
 
             </>:<>
-              {!isLoc?<label className='scope-v2-culture-period-select'>
-                <span>時間長河</span>
-                <select className='scope-v2-select' value={timelineMode} onChange={event=>setTimelineMode(event.target.value)}>
-                  <option value='works'>時期分割作品</option>
-                  {anchoredEvents.length?<option value='event'>事件分割作品</option>:null}
-                  <option value='anchor'>定錨點</option>
-                </select>
-              </label>:null}
+              {!isLoc?<div className='scope-v2-stat-controls'>
+                <label className='scope-v2-culture-period-select'>
+                  <span>時期</span>
+                  <select className='scope-v2-select' value={selectedPeriodKey||'all'} onChange={event=>setSelectedPeriodKey(event.target.value)}>
+                    <option value='all'>全部時間</option>
+                    {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{labelOf(item,0)}</option>)}
+                  </select>
+                </label>
+                <label className='scope-v2-culture-period-select'>
+                  <span>時間長河</span>
+                  <select className='scope-v2-select' value={timelineMode} onChange={event=>setTimelineMode(event.target.value)}>
+                    <option value='works'>時期分割作品</option>
+                    {anchoredEvents.length?<option value='event'>事件分割作品</option>:null}
+                    <option value='anchor'>定錨點</option>
+                  </select>
+                </label>
+              </div>:null}
               {timelineMode==='anchor'
                 ?<CultureTimelineV2
                     items={anchorTimelineItems}
@@ -351,6 +343,14 @@ export default function CultureV2(){
                         labelOf={item=>item.display_label||item.evidence_group||item.group_label}
                         focus={{}}
                         mode='overview'
+                        windowStart={selectedWindowStart}
+                        windowEnd={selectedWindowEnd}
+                        onBoundaryNavigate={direction=>{
+                          if(selectedPeriodIndex<0)return;
+                          const nextIndex=direction==='previous'?selectedPeriodIndex-1:selectedPeriodIndex+1;
+                          const next=primaryPeriods[nextIndex];
+                          if(next)setSelectedPeriodKey(periodKey(next));
+                        }}
                       />:null}
                     </>}
 
@@ -395,7 +395,7 @@ export default function CultureV2(){
                 renderItem={group=><button type='button' key={group.category_key}
                   className='scope-v2-culture-source-button'
                   aria-pressed={selectedCategory===group.category_key}
-                  onClick={()=>{setWorkRows([]);setWorkPage(0);setSelectedCategory(selectedCategory===group.category_key?'':group.category_key);}}>
+                  onClick={()=>{setSelectedCategory(selectedCategory===group.category_key?'':group.category_key);}}>
                   <strong>{group.display_label}</strong><span>{Number(group.item_count||0).toLocaleString()} 項作品</span>
                 </button>}
               />:null}
@@ -403,7 +403,7 @@ export default function CultureV2(){
               {!isLoc&&selectedGroup?<section className='scope-v2-culture-source-detail' aria-label={selectedGroup.display_label+'列表'}>
                 <header>
                   <h4>{selectedGroup.display_label} · {selectedCount.toLocaleString()} 項作品</h4>
-                  <button type='button' className='scope-v2-pagination-button' onClick={()=>{setWorkRows([]);setWorkPage(0);setSelectedCategory('')}}>收合列表</button>
+                  <button type='button' className='scope-v2-pagination-button' onClick={()=>{setSelectedCategory('')}}>收合列表</button>
                 </header>
                 {periodWorksQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksQuery.error)}</p>:null}
                 <IncrementalListV2
@@ -411,10 +411,8 @@ export default function CultureV2(){
                   batchSize={CULTURE_WORK_PAGE_SIZE}
                   resetKey={selectedCategory+'|source'}
                   className='scope-v2-culture-source-work-scroll'
-                  externalHasMore={Boolean(periodWorksQuery.data?.hasMore)}
                   loading={periodWorksQuery.isFetching}
                   error={periodWorksQuery.error}
-                  onLoadMore={()=>setWorkPage(page=>page+1)}
                   scrollRootRef={workScrollRef}
                   renderItem={(work,index)=><WorkSummaryCardV2
                     key={work.key||work.uid||work.entry_id||String(work.createtime||work.created_at)+'-'+index}
