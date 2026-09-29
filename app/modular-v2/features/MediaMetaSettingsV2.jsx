@@ -4,7 +4,6 @@ import {useEffect,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {neonAuthClient} from '../../loc/neon-client';
 import {selectNeonCount,selectNeonRows} from '../../loc/neon-query';
-import {selectCategoryCounts} from '../../loc/aggregate-query';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation.v2';
@@ -31,6 +30,25 @@ function navigationScopeId(databaseScopeId){
   return String(databaseScopeId||'').trim();
 }
 
+function splitMediaTags(value=''){
+  return [...new Set(String(value||'')
+    .split(/[,，]/u)
+    .map(tag=>tag.trim())
+    .filter(Boolean))];
+}
+
+function countMediaTags(rows=[]){
+  const counts=new Map();
+  for(const row of rows){
+    for(const tag of splitMediaTags(row?.meta_tags)){
+      counts.set(tag,(counts.get(tag)||0)+1);
+    }
+  }
+  return [...counts.entries()]
+    .map(([term,item_count])=>({ranking_key:'meta|'+term,term,item_count}))
+    .sort((a,b)=>b.item_count-a.item_count||a.term.localeCompare(b.term,'zh-Hant'));
+}
+
 export default function MediaMetaSettingsV2({databaseScopeId}){
   const queryClient=useQueryClient();
   const account=useNeonAccount();
@@ -53,8 +71,13 @@ export default function MediaMetaSettingsV2({databaseScopeId}){
     queryKey:['media-meta-ranking',databaseScopeId],
     enabled:Boolean(tables?.galaxyMedia),
     queryFn:async()=>{
-      const rows=await selectCategoryCounts(tables.galaxyMedia,'meta_tags',{limit:10});
-      return rows.map(row=>({ranking_key:'meta|'+row.term,term:row.term,item_count:row.item_count}));
+      const {rows}=await selectNeonRows(tables.galaxyMedia,{
+        columns:'meta_tags',
+        filters:[{column:'meta_tags',operator:'neq',value:''}],
+        limit:5000,
+        offset:0
+      });
+      return countMediaTags(rows);
     },
     staleTime:30000
   });
@@ -137,11 +160,14 @@ export default function MediaMetaSettingsV2({databaseScopeId}){
       <h4>多媒體 Meta Tag</h4>
       {tagQuery.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
       {tagQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(tagQuery.error)}</p>:null}
-      <div className="scope-v2-media-tag-cloud">
-        {tags.map(row=><button type="button" key={row.ranking_key} aria-pressed={selectedTag===row.term} onClick={()=>setSelectedTag(String(row.term))}>
-          <strong>{row.term}</strong><span>{Number(row.item_count||0).toLocaleString()}</span>
-        </button>)}
-      </div>
+      {tags.length?<label className="scope-v2-react-select-field">
+        <span>選擇 Meta Tag</span>
+        <select className="scope-v2-select" value={selectedTag} onChange={event=>setSelectedTag(event.target.value)}>
+          {tags.map(row=><option key={row.ranking_key} value={row.term}>
+            {row.term}（{Number(row.item_count||0).toLocaleString()}）
+          </option>)}
+        </select>
+      </label>:null}
     </section>
 
     {selectedTag?<section className="scope-v2-inline-card">
