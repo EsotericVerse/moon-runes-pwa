@@ -73,10 +73,11 @@ async function selectCultureTimeRows(scopeId){
     const type=String(row.record_type||'');
     const id=String(row.resource_id||row.record_id||'');
     const pair=anchorPair(row.anchor_pair);
-    if(type!=='anchor'&&pair.before==='0'&&pair.after==='0')return [];
+    if(type==='period'&&pair.before==='0'&&pair.after==='0')return [];
     const startAnchor=pair.before==='0'?null:anchors.get(pair.before);
     const endAnchor=pair.after==='0'?null:anchors.get(pair.after);
-    const startDate=type==='anchor'?timeDate(row):timeDate(startAnchor);
+    const directEventDate=type==='event'?timeDate(row):null;
+    const startDate=type==='anchor'?timeDate(row):(directEventDate||timeDate(startAnchor));
     const endBoundary=type==='anchor'?null:timeDate(endAnchor);
     return [{
       ...row,

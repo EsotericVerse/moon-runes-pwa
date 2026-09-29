@@ -233,6 +233,7 @@ export default function CultureV2(){
       return workCount===undefined?item:{...item,work_count:workCount};
     });
   },[query.data,scopeId,periodVolumeByStart]);
+  const eventTimelineItems=useMemo(()=>timelineItems.filter(item=>String(item?.entry_type||'')==='event'),[timelineItems]);
   const periodTimelineItems=useMemo(()=>timelineItems.filter(item=>['period','anchor'].includes(String(item?.entry_type||''))),[timelineItems]);
   const workTimelineItems=workTimelineQuery.data?.buckets||[];
   const hasTimelineSurface=isLoc?timelineItems.length>0:Boolean(scopeRange?.start_date||timelineItems.length);
@@ -343,6 +344,7 @@ export default function CultureV2(){
                 <span>時間長河</span>
                 <select className='scope-v2-select' value={timelineMode} onChange={event=>setTimelineMode(event.target.value)}>
                   <option value='works'>作品時間長河</option>
+                  <option value='event'>事件時間長河</option>
                   <option value='period'>時期時間長河</option>
                 </select>
               </label>:null}
@@ -353,18 +355,28 @@ export default function CultureV2(){
                     focus={navigation}
                     mode='overview'
                   />
-                :<>
-                    {workTimelineQuery.isFetching?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
-                    {workTimelineQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(workTimelineQuery.error)}</p>:null}
-                    {!workTimelineQuery.isFetching&&!workTimelineQuery.error&&!workTimelineItems.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
-                    {workTimelineItems.length?<CultureTimelineV2
-                      items={workTimelineItems}
-                      labelOf={item=>item.display_label||item.group_label}
-                      focus={{}}
-                      mode='overview'
-                    />:null}
-                    {scopeRange?.start_date?<p className='scope-v2-culture-period-description'>{scopeRange.start_date} – Current</p>:null}
-                  </>}
+                :timelineMode==='event'&&scopeId==='lo3rwang'
+                  ?<>
+                      {!eventTimelineItems.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+                      {eventTimelineItems.length?<CultureTimelineV2
+                        items={eventTimelineItems}
+                        labelOf={item=>item.display_label||item.title}
+                        focus={navigation}
+                        mode='overview'
+                      />:null}
+                    </>
+                  :<>
+                      {workTimelineQuery.isFetching?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
+                      {workTimelineQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(workTimelineQuery.error)}</p>:null}
+                      {!workTimelineQuery.isFetching&&!workTimelineQuery.error&&!workTimelineItems.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+                      {workTimelineItems.length?<CultureTimelineV2
+                        items={workTimelineItems}
+                        labelOf={item=>item.display_label||item.group_label}
+                        focus={{}}
+                        mode='overview'
+                      />:null}
+                      {scopeRange?.start_date?<p className='scope-v2-culture-period-description'>{scopeRange.start_date} – Current</p>:null}
+                    </>}
               {timelineMode==='period'&&scopeId==='lo3rwang'?<section className='scope-v2-card scope-v2-culture-period-2d' aria-label='時期'>
                 <p className='loc-eyebrow'>Period</p>
                 <h3>時期</h3>
