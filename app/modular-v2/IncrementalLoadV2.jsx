@@ -27,7 +27,7 @@ export default function IncrementalLoadV2({
   error=null,
   onLoadMore,
   cooldownMs=LIST_LOAD_COOLDOWN_MS,
-  label='還有更多資料',
+  label='…',
   scrollRootRef=null
 }){
   const loadingRef=useRef(Boolean(loading));
@@ -85,6 +85,6 @@ export default function IncrementalLoadV2({
 
   if(!hasMore)return null;
   return <div className={'scope-v2-load-sentinel'+(loading?' is-loading':'')} aria-live="polite">
-    <span>{loading?'載入下一批…':'↓ '+label}</span>
+    <span>{loading?'…':label}</span>
   </div>;
 }
