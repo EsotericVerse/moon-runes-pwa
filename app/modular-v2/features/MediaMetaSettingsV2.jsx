@@ -106,7 +106,7 @@ export default function MediaMetaSettingsV2({databaseScopeId}){
     enabled:Boolean(tables?.galaxyMedia),
     queryFn:async()=>{
       const {rows}=await selectNeonRows(tables.galaxyMedia,{
-        columns:'media_id,galaxy_link,title,url,media_type,meta_tags,createtime',
+        columns:'media_id,meta_tags,createtime',
         filters:[{column:'meta_tags',operator:'neq',value:''}],
         limit:5000,
         offset:0
@@ -135,16 +135,46 @@ export default function MediaMetaSettingsV2({databaseScopeId}){
     ()=>rankMediaForTag(tagQuery.data?.rows||[],selectedTag,tagQuery.data?.tags||[]),
     [tagQuery.data,selectedTag]
   );
-  const visibleMediaRows=useMemo(
+  const visibleRankRows=useMemo(
     ()=>rankedMediaRows.slice(0,(mediaPage+1)*MEDIA_PAGE_SIZE),
     [rankedMediaRows,mediaPage]
+  );
+  const visibleMediaIds=useMemo(
+    ()=>visibleRankRows.map(row=>String(row.media_id||'').trim()).filter(Boolean),
+    [visibleRankRows]
+  );
+  const detailQuery=useQuery({
+    queryKey:['media-meta-visible-details',databaseScopeId,visibleMediaIds.join(',')],
+    enabled:Boolean(tables?.galaxyMedia&&visibleMediaIds.length),
+    queryFn:async()=>{
+      const {rows}=await selectNeonRows(tables.galaxyMedia,{
+        columns:'media_id,galaxy_link,title,url,media_type,meta_tags,createtime',
+        filters:[{column:'media_id',operator:'in',value:visibleMediaIds}],
+        limit:visibleMediaIds.length
+      });
+      return rows;
+    },
+    staleTime:30000
+  });
+  const detailById=useMemo(
+    ()=>new Map((detailQuery.data||[]).map(row=>[String(row.media_id),row])),
+    [detailQuery.data]
+  );
+  const visibleMediaRows=useMemo(
+    ()=>visibleRankRows
+      .map(rankRow=>{
+        const detail=detailById.get(String(rankRow.media_id));
+        return detail?{...detail,representative_score:rankRow.representative_score}:null;
+      })
+      .filter(Boolean),
+    [visibleRankRows,detailById]
   );
   const visibleGalaxyIds=useMemo(
     ()=>[...new Set(visibleMediaRows.map(row=>String(row.galaxy_link||'').trim()).filter(Boolean))],
     [visibleMediaRows]
   );
   const relationQuery=useQuery({
-    queryKey:['media-meta-visible-relations',databaseScopeId,selectedTag,visibleGalaxyIds.join(',')],
+    queryKey:['media-meta-visible-relations',databaseScopeId,visibleGalaxyIds.join(',')],
     enabled:Boolean(tables?.galaxy&&visibleGalaxyIds.length),
     queryFn:async()=>{
       const {rows}=await selectNeonRows(tables.galaxy,{
@@ -175,13 +205,14 @@ export default function MediaMetaSettingsV2({databaseScopeId}){
 
   const tags=tagQuery.data?.tags||[];
   const mediaRows=visibleMediaRows;
-  const hasMore=mediaRows.length<rankedMediaRows.length;
+  const hasMore=visibleRankRows.length<rankedMediaRows.length;
 
   return <div className="scope-v2-media-meta-settings">
     <section className="scope-v2-inline-card">
       <h4>多媒體 Meta Tag</h4>
       {tagQuery.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
       {tagQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(tagQuery.error)}</p>:null}
+      {detailQuery.isFetching?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
       {tags.length?<label className="scope-v2-react-select-field">
         <span>選擇 Meta Tag</span>
         <select className="scope-v2-select" value={selectedTag} onChange={event=>setSelectedTag(event.target.value)}>
