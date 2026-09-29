@@ -5,6 +5,7 @@ import {neonAuthClient} from './neon-client';
 import {useNeonAccount} from './use-neon-account';
 import {createUid8} from './uid';
 import {normalizeGalaxyContent,resolveGalaxyTitle} from './content-policy';
+import {resolveScopeTables} from './scope-table-mapping';
 
 async function insertNeonRows(table,rows){
   if(String(table).endsWith('_galaxy_media')){
@@ -90,7 +91,8 @@ function JsonImport({scopeId}){
         };
       }).filter(row=>row.content);
       const skipped=Math.max(0,rows.length-payload.length);
-      await insertNeonRows('silver.lo3rwang_galaxy',payload);
+      const {galaxy}=await resolveScopeTables(scopeId,{email:account.email});
+      await insertNeonRows(galaxy,payload);
       setStatus(`已匯入 ${payload.length.toLocaleString()} 筆到來源「${selected}」${skipped?`；略過 ${skipped.toLocaleString()} 筆無正文資料。`:''}`);
       setRows([]);setFileName('');
     }catch(error){setStatus(error?.message||'匯入失敗。');}
@@ -149,7 +151,8 @@ function MediaRecordInsert({scopeId}){
       if(!record.title&&!record.url&&!record.meta_tags&&!record.source_native_id&&!record.source_place){
         throw new Error('至少填寫 title、url、meta_tags、source_native_id 或 source_place 其中一項。');
       }
-      await insertNeonRows('silver.lo3rwang_galaxy_media',[record]);
+      const {galaxyMedia}=await resolveScopeTables(scopeId,{email:account.email});
+      await insertNeonRows(galaxyMedia,[record]);
       setStatus('多媒體資料已直接寫入 Galaxy Media。');
       setDraft({
         galaxy_link:'',
@@ -206,8 +209,9 @@ function SunoImport({scopeId}){
       const lyricsUid=draft.lyrics.trim()?createUid8():null;
       const styleUid=lyricsUid&&draft.stylePrompt.trim()?createUid8():null;
       const sourceId=draft.source_id.trim()||(styleUid?draft.ref_id.trim():'')||null;
+      const {galaxy,galaxyMedia}=await resolveScopeTables(scopeId,{email:account.email});
       if(lyricsUid){
-        await insertNeonRows('silver.lo3rwang_galaxy',[{
+        await insertNeonRows(galaxy,[{
           uid:lyricsUid,content_type:'lyrics',
           title:draft.title.trim(),content:draft.lyrics.trim(),createtime,
           source_id:sourceId,target_id:targetIds(draft.target_id),ref_id:styleUid||draft.ref_id.trim()||null,
@@ -215,13 +219,13 @@ function SunoImport({scopeId}){
         }]);
       }
       if(styleUid){
-        await insertNeonRows('silver.lo3rwang_galaxy',[{
+        await insertNeonRows(galaxy,[{
           uid:styleUid,content_type:'instruction',
           title:draft.title.trim()+'｜Suno Style',content:draft.stylePrompt.trim(),createtime,
           target_id:[lyricsUid],searchable:false,reference_only:true,source_name:'suno'
         }]);
       }
-      await insertNeonRows('silver.lo3rwang_galaxy_media',[{
+      await insertNeonRows(galaxyMedia,[{
         galaxy_link:lyricsUid,
         source_native_id:draft.nativeId.trim()||detectId(draft.url)||null,media_type:'suno',
         title:draft.title.trim(),url:draft.url.trim()||null,
