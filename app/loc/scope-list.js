@@ -1,6 +1,7 @@
 'use client';
 
 import {selectNeonCount,selectNeonRows} from './neon-query';
+import {mappedScopeTable,normalizeDataScopeId,selectScopeTableMapping} from './scope-table-mapping';
 
 const SCOPE_ID_PATTERN=/^[a-z][a-z0-9]*$/;
 
@@ -12,7 +13,7 @@ export async function selectManagedScopes(){
   let offset=0;
   while(offset<total){
     const page=await selectNeonRows('silver.manage',{
-      columns:'id,role,birthday',
+      columns:'id,email,role,galaxy,time,birthday',
       filters,
       orders:[{column:'id',ascending:true}],
       limit:Math.min(1000,total-offset),
@@ -29,7 +30,13 @@ export async function selectManagedScopes(){
     const birthday=String(row.birthday||'').slice(0,10);
     if(!SCOPE_ID_PATTERN.test(id))continue;
     const current=scopes.get(id);
-    scopes.set(id,{id,role:current?.role==='admin'||role==='admin'?'admin':role,birthday:birthday||current?.birthday||null});
+    scopes.set(id,{
+      id,
+      role:current?.role==='admin'||role==='admin'?'admin':role,
+      birthday:birthday||current?.birthday||null,
+      galaxy:String(row.galaxy||current?.galaxy||'galaxy'),
+      time:String(row.time||current?.time||'time')
+    });
   }
   return [...scopes.values()].sort((a,b)=>a.id.localeCompare(b.id));
 }
@@ -38,10 +45,11 @@ export async function selectManagedScopeIds(){
   return (await selectManagedScopes()).map(row=>row.id);
 }
 
-export function scopeDataTable(scopeId,suffix){
-  const id=String(scopeId||'').trim();
-  const tail=String(suffix||'').trim();
-  if(!SCOPE_ID_PATTERN.test(id))throw new Error('Scope ID 無效');
-  if(!/^[a-z][a-z0-9_]*$/.test(tail))throw new Error('Scope table suffix 無效');
-  return `silver.${id}_${tail}`;
+export async function scopeDataTable(scopeId,kind,{email=''}={}){
+  const id=normalizeDataScopeId(scopeId);
+  const mapping=await selectScopeTableMapping(id,{email});
+  if(kind==='galaxy')return mappedScopeTable(id,'galaxy',mapping.galaxy);
+  if(kind==='galaxy_media')return mappedScopeTable(id,'galaxy',mapping.galaxy)+'_media';
+  if(kind==='time')return mappedScopeTable(id,'time',mapping.time);
+  throw new Error('Scope table kind 無效');
 }
