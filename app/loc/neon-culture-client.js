@@ -185,6 +185,20 @@ export async function selectScopeCultureData(scopeId){
       derived_from:'birthday'
     };
   }).filter(Boolean);
+  const scopeRanges=scopeRows.map(scopeMeta=>{
+    const birthday=String(scopeMeta.birthday||'').slice(0,10);
+    if(!birthday)return null;
+    return {
+      scope_id:runtimeScopeId(scopeMeta.id),
+      entry_type:'scope_range',
+      title:'完整時間範圍',
+      display_label:'完整時間範圍',
+      start_date:birthday,
+      end_date:null,
+      open_end:true,
+      derived_from:'birthday'
+    };
+  }).filter(Boolean);
   const events=scopeContext.filter(row=>row.entry_type==='event').map(row=>({
     entry_id:row.event_id||row.entry_key,
     event_id:row.event_id||row.entry_key,
@@ -215,11 +229,80 @@ export async function selectScopeCultureData(scopeId){
     eras:{eras},
     periods,
     currentRanges,
+    scopeRanges,
     timelineItems:timelineItems(scopeContext),
     events,
     trajectories,
     works:[]
   });
+}
+
+
+function normalizedWorkTimelineBuckets(rows=[]){
+  const maximum=Math.max(1,...rows.map(row=>Number(row.work_count)||0));
+  return rows.map(row=>({
+    ...row,
+    global_density_ratio:(Number(row.work_count)||0)/maximum
+  })).sort((a,b)=>String(a.start_date||'').localeCompare(String(b.start_date||''))||String(a.group_label||'').localeCompare(String(b.group_label||'')));
+}
+
+export async function selectScopeWorkSnapshot(scopeId,{startDate,endDate=null}={}){
+  if(!startDate)return {buckets:[],totalCount:0};
+  const runtimeId=runtimeScopeId(scopeId);
+  const dataId=dataScopeId(scopeId);
+  if(!['lo3rwang','lrunes'].includes(dataId))return {buckets:[],totalCount:0};
+  const buckets=[];
+  let textCount=0;
+
+  if(runtimeId==='lo3rwang'){
+    const result=await selectSourceWeekly({scopeId:'lo3rwang',startDate,endDate:endDate||''});
+    const weeks=new Map();
+    for(const row of result.rows){
+      const weekStart=String(row.week_start||'').slice(0,10);
+      if(!weekStart)continue;
+      const count=Number(row.work_count)||0;
+      textCount+=count;
+      weeks.set(weekStart,(weeks.get(weekStart)||0)+count);
+    }
+    for(const [weekStart,workCount] of weeks){
+      const end=new Date(weekStart+'T00:00:00Z');end.setUTCDate(end.getUTCDate()+7);
+      buckets.push({
+        id:'works:text:'+weekStart,
+        category:'文字作品',
+        group_label:'文字作品',
+        display_label:'文字作品 '+workCount+' 項',
+        title:weekStart+' – '+end.toISOString().slice(0,10)+' · 文字作品 · '+workCount+' 項',
+        start_date:weekStart,
+        end_date:end.toISOString().slice(0,10),
+        work_count:workCount,
+        scope_id:runtimeId,
+        entry_type:'work_density'
+      });
+    }
+  }else{
+    const result=await selectNeonAllRows('silver.lrunes_galaxy',{
+      columns:'uid,createtime',
+      filters:dateFilters(startDate,endDate),
+      orders:[{column:'createtime',ascending:true}]
+    });
+    textCount=result.rows.length;
+    buckets.push(...groupWorksByWeek(
+      result.rows.map(row=>({...row,timeline_group:'文字作品'})),
+      'timeline_group'
+    ).map(row=>({...row,scope_id:runtimeId,entry_type:'work_density'})));
+  }
+
+  const mediaRows=await selectScopeMediaRows(runtimeId,{startDate,endDate});
+  const mediaBuckets=groupWorksByWeek(
+    mediaRows.map(row=>({...row,timeline_group:'多媒體'})),
+    'timeline_group'
+  ).map(row=>({...row,scope_id:runtimeId,entry_type:'work_density'}));
+  buckets.push(...mediaBuckets);
+
+  return {
+    buckets:normalizedWorkTimelineBuckets(buckets),
+    totalCount:textCount+mediaRows.length
+  };
 }
 
 export async function selectAuthorPeriodSourceSnapshot({startDate,endDate=null}={}){

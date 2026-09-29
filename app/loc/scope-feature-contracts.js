@@ -9,6 +9,7 @@ export const ScopeCultureResponseSchema=z.object({
   eras:z.object({eras:z.array(OpenRowSchema).default([])}).default({eras:[]}),
   periods:z.array(OpenRowSchema).default([]),
   currentRanges:z.array(OpenRowSchema).default([]),
+  scopeRanges:z.array(OpenRowSchema).default([]),
   timelineItems:z.array(OpenRowSchema).default([]),
   events:z.array(OpenRowSchema).default([]),
   trajectories:z.array(OpenRowSchema).default([]),
