@@ -5,10 +5,10 @@ import {useRouter,useSearchParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
 import Select from 'react-select';
 import {
-  Bar,BarChart,CartesianGrid,Cell,Line,LineChart,Pie,PieChart,
+  Bar,BarChart,CartesianGrid,Cell,Legend,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectScopeRankingRows,selectScopeRankingTypes,selectScopeSourceBucketDetails} from '../../loc/neon-ranking-client';
+import {selectScopeRankingRows,selectScopeRankingTypes,selectScopeSourceBucketDetails,selectScopeSourceTrendRows} from '../../loc/neon-ranking-client';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
@@ -27,6 +27,76 @@ const STAT_TABS=[['ranking','統計'],['media','多媒體設定']];
 const STAT_TYPE_LABELS=Object.freeze({
   source:'作品來源'
 });
+const SOURCE_TREND_ORDER=Object.freeze(['Facebook','Threads','IG','Twitter(X)','YouTube','Others']);
+const TIME_STANDARDS=Object.freeze([
+  {value:'10y',label:'10 年',months:120,bucket:'quarter'},
+  {value:'5y',label:'5 年',months:60,bucket:'month'},
+  {value:'3y',label:'3 年',months:36,bucket:'month'},
+  {value:'1y',label:'1 年',months:12,bucket:'month'},
+  {value:'6m',label:'半年',months:6,bucket:'week'},
+  {value:'3m',label:'一季',months:3,bucket:'week'},
+  {value:'1m',label:'一月',months:1,bucket:'day'}
+]);
+function dateKey(value){
+  const key=String(value||'').slice(0,10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(key)?key:'';
+}
+function subtractMonths(value,months){
+  const key=dateKey(value);
+  if(!key)return '';
+  const date=new Date(key+'T00:00:00Z');
+  date.setUTCMonth(date.getUTCMonth()-Math.max(0,Number(months)||0));
+  return date.toISOString().slice(0,10);
+}
+function trendBucket(value,unit){
+  const key=dateKey(value);
+  if(!key)return null;
+  const date=new Date(key+'T00:00:00Z');
+  const year=date.getUTCFullYear();
+  const month=date.getUTCMonth();
+  if(unit==='quarter'){
+    const quarter=Math.floor(month/3)+1;
+    return {key:year+'-Q'+quarter,label:year+' Q'+quarter};
+  }
+  if(unit==='month'){
+    const monthText=String(month+1).padStart(2,'0');
+    return {key:year+'-'+monthText,label:year+'/'+monthText};
+  }
+  if(unit==='week'){
+    const day=date.getUTCDay();
+    date.setUTCDate(date.getUTCDate()+(day===0?-6:1-day));
+    const week=date.toISOString().slice(0,10);
+    return {key:week,label:week.slice(5).replace('-','/')};
+  }
+  return {key,label:key.slice(5).replace('-','/')};
+}
+function buildSourceTrend(rows=[],standard='10y'){
+  const config=TIME_STANDARDS.find(item=>item.value===standard)||TIME_STANDARDS[0];
+  const dates=rows.map(row=>dateKey(row.day)).filter(Boolean).sort();
+  const endDate=dates.at(-1)||'';
+  if(!endDate)return [];
+  const startDate=subtractMonths(endDate,config.months);
+  const buckets=new Map();
+  for(const row of rows){
+    const day=dateKey(row.day);
+    if(!day||day<startDate||day>endDate)continue;
+    const bucket=trendBucket(day,config.bucket);
+    if(!bucket)continue;
+    const item=buckets.get(bucket.key)||{period:bucket.label,_sort:bucket.key,total:0};
+    const source=SOURCE_TREND_ORDER.includes(row.source)?row.source:'Others';
+    const count=Number(row.item_count)||0;
+    item[source]=(Number(item[source])||0)+count;
+    item.total+=count;
+    buckets.set(bucket.key,item);
+  }
+  return [...buckets.values()].sort((a,b)=>a._sort.localeCompare(b._sort)).map(item=>{
+    const output={period:item.period,total:item.total};
+    for(const source of SOURCE_TREND_ORDER){
+      output[source]=item.total>0?Number((((Number(item[source])||0)/item.total)*100).toFixed(2)):0;
+    }
+    return output;
+  });
+}
 function displayTerm(row){
   return String(row?.term||'');
 }
@@ -57,6 +127,34 @@ function RankingChart({type='bar',rows,height=380}){
       <XAxis type="number" tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/><YAxis type="category" dataKey="term" width={128} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/><Tooltip contentStyle={CHART_TOOLTIP} labelStyle={{color:CHART_TEXT}} itemStyle={{color:CHART_TEXT}}/>
       <Bar dataKey="value" fill={CHART_ACCENT} radius={[0,4,4,0]}/>
     </BarChart>
+  </ResponsiveContainer>;
+}
+
+function SourceTrendChart({rows=[],standard='10y',height=420}){
+  const data=useMemo(()=>buildSourceTrend(rows,standard),[rows,standard]);
+  if(!data.length)return <p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>;
+  return <ResponsiveContainer width="100%" height={height}>
+    <LineChart data={data} margin={{top:8,right:18,bottom:48,left:4}}>
+      <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
+      <XAxis dataKey="period" angle={-24} textAnchor="end" interval="preserveStartEnd" height={72} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+      <YAxis domain={[0,100]} tick={{fill:CHART_TEXT}} stroke={CHART_GRID} tickFormatter={value=>value+'%'}/>
+      <Tooltip
+        contentStyle={CHART_TOOLTIP}
+        labelStyle={{color:CHART_TEXT}}
+        itemStyle={{color:CHART_TEXT}}
+        formatter={value=>[Number(value).toFixed(1)+'%']}
+      />
+      <Legend/>
+      {SOURCE_TREND_ORDER.map((source,index)=><Line
+        key={source}
+        type="monotone"
+        dataKey={source}
+        stroke={PIE_COLORS[index%PIE_COLORS.length]}
+        strokeWidth={2}
+        dot={false}
+        connectNulls
+      />)}
+    </LineChart>
   </ResponsiveContainer>;
 }
 
@@ -128,8 +226,15 @@ function StatisticsPanel({scopeId,navigation,types}){
   const requested=String(navigation.rankingType||'');
   const rankingType=types.includes(requested)?requested:(types[0]||'');
   const [chartType,setChartType]=useState('bar');
+  const [timeStandard,setTimeStandard]=useState('10y');
   const [detailBucket,setDetailBucket]=useState('');
   const query=useRanking(scopeId,rankingType,navigation);
+  const trendQuery=useQuery({
+    queryKey:['statistics-source-trend',scopeId],
+    queryFn:()=>selectScopeSourceTrendRows(scopeId),
+    enabled:rankingType==='source',
+    staleTime:5*60_000
+  });
   const allRows=query.data||[];
   const [visibleRows,setVisibleRows]=useState([]);
   const canDrillDown=scopeId!=='loc'&&rankingType==='source';
@@ -146,8 +251,10 @@ function StatisticsPanel({scopeId,navigation,types}){
     <div className="scope-v2-stat-controls">
       <StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/>
       <label><span>圖形</span><select className="scope-v2-select" value={chartType} onChange={event=>setChartType(event.target.value)}>{CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+      {chartType==='line'?<label><span>時間標準</span><select className="scope-v2-select" value={timeStandard} onChange={event=>setTimeStandard(event.target.value)}>{TIME_STANDARDS.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}</select></label>:null}
     </div>
         {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
+    {chartType==='line'&&trendQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(trendQuery.error)}</p>:null}
     {!query.isPending&&!query.error?<>
       <RankingList
         rows={allRows}
@@ -161,7 +268,9 @@ function StatisticsPanel({scopeId,navigation,types}){
         {detailQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(detailQuery.error)}</p>:null}
         {!detailQuery.isPending&&!detailQuery.error?<RankingList rows={detailQuery.data||[]} resetKey={scopeId+"|detail|"+detailBucket+"|"+String(navigation.period||"all")}/>:null}
       </section>:null}
-      <RankingChart type={chartType} rows={chartData} height={380}/>
+      {chartType==='line'
+        ?<SourceTrendChart rows={trendQuery.data||[]} standard={timeStandard} height={420}/>
+        :<RankingChart type={chartType} rows={chartData} height={380}/>} 
     </>:null}
 
   </section>;
