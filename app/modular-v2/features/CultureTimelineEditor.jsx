@@ -103,9 +103,28 @@ export default function CultureTimelineEditor({scopeId=''}){
   });
 
   const rawRows=query.data||[];
-  const anchors=useMemo(()=>new Map(rawRows
-    .filter(row=>row.record_type==='anchor'&&row.resource_id)
-    .map(row=>[String(row.resource_id),row])),[rawRows]);
+  const duplicateAnchorIds=useMemo(()=>{
+    const seen=new Set();
+    const duplicates=new Set();
+    for(const row of rawRows){
+      if(row.record_type!=='anchor')continue;
+      const id=String(row.resource_id||'').trim();
+      if(!id)continue;
+      if(seen.has(id))duplicates.add(id);
+      seen.add(id);
+    }
+    return [...duplicates].sort();
+  },[rawRows]);
+  const anchors=useMemo(()=>{
+    const map=new Map();
+    for(const row of rawRows){
+      if(row.record_type!=='anchor')continue;
+      const id=String(row.resource_id||'').trim();
+      if(!id||map.has(id))continue;
+      map.set(id,row);
+    }
+    return map;
+  },[rawRows]);
   const anchorOptions=useMemo(()=>[...anchors.values()].sort((a,b)=>{
     const ad=dateText(a.time_date)||String(a.year_value||'9999');
     const bd=dateText(b.time_date)||String(b.year_value||'9999');
@@ -151,6 +170,14 @@ export default function CultureTimelineEditor({scopeId=''}){
       const label=String(draft.label||'').trim();
       if(!label)throw new Error('請填寫名稱。');
       const resourceId=String(draft.resource_id||'').trim()||newResourceId(type);
+      if(type==='anchor'){
+        const duplicate=rawRows.find(row=>
+          row.record_type==='anchor'&&
+          String(row.resource_id||'').trim()===resourceId&&
+          String(row.record_id||'')!==String(selectedId||'')
+        );
+        if(duplicate)throw new Error('同一 Scope 已存在相同定錨點識別：'+resourceId);
+      }
       const payload={
         record_type:type,
         label,
@@ -226,6 +253,7 @@ export default function CultureTimelineEditor({scopeId=''}){
     <h2>時期設定</h2>
     <p>定錨點只能在這裡新增；時間長河只負責顯示。時期與事件共用前／後兩個定錨點，0 代表該方向不存在。</p>
     {query.error?<p className="scope-v2-status scope-v2-error">{query.error.message}</p>:null}
+    {duplicateAnchorIds.length?<p className="scope-v2-status scope-v2-error">同一 Scope 存在重複定錨點識別：{duplicateAnchorIds.join('、')}。請先修正，Culture 不會再靜默覆蓋。</p>:null}
     {query.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
     <div className="scope-v2-tabs">
       {EDITABLE_TYPES.map(([type,label])=><button key={type} type="button" onClick={()=>beginAdd(type)}>新增{label}</button>)}
