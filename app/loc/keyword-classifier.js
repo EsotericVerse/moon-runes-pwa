@@ -1,6 +1,6 @@
 'use client';
 
-import {createTextIndex,searchTextIndex} from './text-engine.mjs';
+import {createTextIndex,literalTextMatches,searchTextIndex} from './text-engine.mjs';
 import {splitRuneKeywordEntries} from './model/rune-keyword-rules.mjs';
 import {selectNeonCount,selectNeonRows} from './neon-query';
 
@@ -92,6 +92,13 @@ function buildEngine(rows=[]){
   return engine;
 }
 
+function literalMatchedIds(source,ids,keyword,{and=[],nor=[]}={}){
+  return (Array.isArray(ids)?ids:[]).filter(id=>{
+    const row=source[Number(id)];
+    return row&&literalTextMatches(keywordTextOf(row),keyword,{and,nor});
+  });
+}
+
 export function countKeywordHitsWithCatalog(rows=[],catalog=[]){
   const source=Array.isArray(rows)?rows:[];
   const compiled=compileCatalog(catalog);
@@ -111,14 +118,15 @@ export function countKeywordHitsWithCatalog(rows=[],catalog=[]){
         if(!keyword||seenKeywords.has(keyword))continue;
         seenKeywords.add(keyword);
         const match=searchTextIndex(engine,keyword,{and,nor,limit:engine.size,offset:0});
+        const matchedIds=literalMatchedIds(source,match.ids,keyword,{and,nor});
         output.push({
           keyword,
           keyword_group:keywordGroup,
           rune_number:rune.rune_number,
           style_label:rune.style_label,
           style_group:rune.style_group,
-          item_count:match.ids.length,
-          rank_value:match.ids.length
+          item_count:matchedIds.length,
+          rank_value:matchedIds.length
         });
       }
     }
@@ -146,7 +154,8 @@ export function observeKeywordHitsWithCatalog(rows=[],catalog=[]){
         if(!keyword||seenKeywords.has(keyword))continue;
         seenKeywords.add(keyword);
         const match=searchTextIndex(engine,keyword,{and,nor,limit:engine.size,offset:0});
-        for(const id of match.ids){
+        const matchedIds=literalMatchedIds(source,match.ids,keyword,{and,nor});
+        for(const id of matchedIds){
           const index=Number(id);
           const state=states[index];
           if(!state)continue;

@@ -106,13 +106,16 @@ if(!/requireGalaxyContent/.test(contentPolicy))failures.push('Galaxy content pol
 if(!/from ['"]flexsearch['"]/.test(textEngine)||!/Charset\.CJK/.test(textEngine)||!/new Resolver/.test(textEngine))failures.push('Text engine: FlexSearch CJK/Resolver contract missing');
 if(/records\s*=\s*new Map|records\.set|engine\.records/.test(textEngine))failures.push('Text engine: FlexSearch may retain IDs only; record payload storage is forbidden');
 if(!/const ids=new Set\(\)/.test(textEngine))failures.push('Text engine: ID-only transient index contract missing');
-if(!/createTextIndex/.test(searchProviders)||!/searchTextIndex/.test(searchProviders)||!/selectNeonRows/.test(searchProviders)||!/nextCursor|cursor=/.test(searchProviders))failures.push('Search client: batched FlexSearch/Neon query contract missing');
+if(!/createTextIndex/.test(searchProviders)||!/searchTextIndex/.test(searchProviders)||!/literalTextMatches/.test(searchProviders)||!/selectNeonRows/.test(searchProviders)||!/nextCursor|cursor=/.test(searchProviders))failures.push('Search client: batched FlexSearch candidate + literal verification contract missing');
 if(/engine\.add\([^\n]*recordFor/.test(searchProviders))failures.push('Search client: FlexSearch index must not retain record payloads');
 if(/getRuntimeTextIndex/.test(searchProviders))failures.push('Search client: runtime index cache must not return to batched providers');
 if(/scanSize|maxScanSize|while\(matched\.length/.test(searchProviders))failures.push('Search client: provider must fetch exactly one raw batch per user trigger');
-if(!/searchTextIndex/.test(keywordClassifier))failures.push('Culture/Statistics keyword classifier: shared FlexSearch contract missing');
+if(/suggest\s*:|context\s*:|tokenize\s*:\s*['"]tolerant['"]/.test(textEngine))failures.push('Text engine: semantic/fuzzy rendering options are forbidden');
+if(!/searchTextIndex/.test(keywordClassifier)||!/literalTextMatches/.test(keywordClassifier))failures.push('Statistics keyword classifier: literal lexical verification contract missing');
+if(existsSync(resolve(root,'app/loc/style-classifier.js')))failures.push('Retired duplicate style-classifier.js returned');
 if(!/searchNeonRows\(/.test(readFileSync(resolve(root,'app/modular-v2/features/SearchV2.jsx'),'utf8')))failures.push('Search view: shared text search contract missing');
 const cultureClientSource=readFileSync(resolve(root,'app/loc/neon-culture-client.js'),'utf8');
+if(!/selectNeonRows\(/.test(cultureClientSource)||!/filters/.test(cultureClientSource))failures.push('Culture: precise Neon filter query boundary missing');
 const mediaWorksSource=(cultureClientSource.split('export async function selectScopeMediaWorks')[1]||'');
 if(!/selectNeonRows\(/.test(mediaWorksSource)||/const rows=await selectScopeMediaRows/.test(mediaWorksSource))failures.push('Culture media works: detail list must page Neon directly instead of full-read then slice');
 

@@ -56,11 +56,13 @@ const textEngine=readFileSync(resolve(root,'app/loc/text-engine.mjs'),'utf8');
 const keywordClassifier=readFileSync(resolve(root,'app/loc/keyword-classifier.js'),'utf8');
 const searchView=readFileSync(resolve(root,'app/modular-v2/features/SearchV2.jsx'),'utf8');
 if(!/from ['"]flexsearch['"]/.test(textEngine)||!/new Resolver/.test(textEngine))failures.push('Text engine: FlexSearch Resolver boundary is missing');
-if(!/createTextIndex/.test(searchProviders)||!/searchTextIndex/.test(searchProviders)||!/nextCursor|cursor=/.test(searchProviders))failures.push('Search: batched FlexSearch provider boundary is missing');
+if(!/createTextIndex/.test(searchProviders)||!/searchTextIndex/.test(searchProviders)||!/literalTextMatches/.test(searchProviders)||!/nextCursor|cursor=/.test(searchProviders))failures.push('Search: batched FlexSearch candidate + literal verification boundary is missing');
 if(/getRuntimeTextIndex/.test(searchProviders))failures.push('Search: runtime index cache must remain retired from providers');
 if(/scanSize|maxScanSize|while\(matched\.length/.test(searchProviders))failures.push('Search: provider auto-scan beyond one raw batch is forbidden');
 if(/\.ilike\(|operator:\s*['"]ilike['"]/.test(searchProviders))failures.push('Search: direct ILIKE search must not replace the shared text engine');
-if(!/searchTextIndex/.test(keywordClassifier))failures.push('Style classifier: Culture/Statistics must use the shared FlexSearch engine');
+if(/suggest\s*:|context\s*:|tokenize\s*:\s*['"]tolerant['"]/.test(textEngine))failures.push('Text engine: fuzzy/context/suggest search is forbidden');
+if(!/searchTextIndex/.test(keywordClassifier)||!/literalTextMatches/.test(keywordClassifier))failures.push('Statistics keyword classifier: literal lexical verification contract missing');
+if(existsSync(resolve(root,'app/loc/style-classifier.js')))failures.push('app/loc/style-classifier.js: retired duplicate classifier returned');
 if(!/searchNeonRows\(/.test(searchView))failures.push('SearchV2: shared search client missing');
 
 const scopeManagement=readFileSync(resolve(root,'app/loc/GovernanceManagement.jsx'),'utf8');

@@ -41,6 +41,18 @@ function resolvedIds(result){
   return [];
 }
 
+export function literalTextMatches(text,query,{and=[],nor=[]}={}){
+  const source=normalizeIndexedText(text);
+  const base=normalizeIndexedText(query);
+  const andTerms=cleanTerms(and);
+  const norTerms=cleanTerms(nor);
+  if(!source)return false;
+  if(base&&!source.includes(base))return false;
+  if(andTerms.some(term=>!source.includes(term)))return false;
+  if(norTerms.some(term=>source.includes(term)))return false;
+  return Boolean(base||andTerms.length);
+}
+
 export function searchTextIndex(engine,query,{
   and=[],
   nor=[],

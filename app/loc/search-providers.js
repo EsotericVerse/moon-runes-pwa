@@ -1,6 +1,6 @@
 'use client';
 
-import {createTextIndex,searchTextIndex} from './text-engine.mjs';
+import {createTextIndex,literalTextMatches,searchTextIndex} from './text-engine.mjs';
 import {publicContentFilters} from './content-policy';
 import {neonPublicClient} from './neon-client';
 import {DEFAULT_LIST_BATCH_SIZE,RUNE_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
@@ -103,7 +103,10 @@ function makeProvider({id,table,source,scopeId,idColumn,columns,searchFields,fil
       const hasMore=sourceRows.length===rawBatchSize;
       const byId=new Map(sourceRows.map(row=>[String(row?.[idColumn]??'').trim(),row]));
       return {
-        rows:(found.ids||[]).map(key=>byId.get(String(key))).filter(Boolean).map(recordFor),
+        rows:(found.ids||[])
+          .map(key=>byId.get(String(key)))
+          .filter(row=>row&&literalTextMatches(searchableText(row,frozenFields),query,{and,nor}))
+          .map(recordFor),
         hasMore,
         nextCursor:hasMore?nextOffset:null
       };
