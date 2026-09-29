@@ -26,7 +26,7 @@ export default function AboutView(){
         </div>
       </div>
       <figure className="home-hero-visual scope-home-hero-visual">
-        <img src="/pics/LOC-PicAll.png" alt="LOC 月典語言架構框架視覺理念圖" loading="eager" />
+        <img src="/pics/LOC-PicAll.png?v=9a46a595" alt="LOC 月典語言架構框架視覺理念圖" loading="eager" />
       </figure>
     </header>
 
