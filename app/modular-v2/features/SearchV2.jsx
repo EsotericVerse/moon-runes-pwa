@@ -5,7 +5,6 @@ import {useSearchParams} from 'next/navigation';
 import {searchNeonRows} from '../../loc/neon-search';
 import {neonAuthClient} from '../../loc/neon-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
-import {getSearchCollection} from '../../loc/search-collections';
 import FeaturePageV2 from '../FeaturePageV2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
 import WorkFullTextV2 from '../WorkFullTextV2';
@@ -144,7 +143,8 @@ export default function SearchV2(){
   const searchId=useRef(0);
   const matchedQueryRef=useRef('');
   const pageSize=DEFAULT_LIST_BATCH_SIZE;
-  const collection=useMemo(()=>getSearchCollection(scope.searchCollection),[scope.searchCollection]);
+  const collectionId=String(scope.searchCollection||'all');
+  const collectionLabel=collectionId==='all'?'全部':collectionId;
 
   async function executeSearch(rawQuery,cursor=null,{append=false}={}){
     const q=String(rawQuery||'').trim();
@@ -158,10 +158,10 @@ export default function SearchV2(){
       setHasMore(false);
       setNextCursor(null);
       setResults([]);
-      setStatus(searchMode==='media'?'搜尋多媒體資料…':`搜尋「${collection.label}」資料…`);
+      setStatus(searchMode==='media'?'搜尋多媒體資料…':`搜尋「${collectionLabel}」資料…`);
     }
     try{
-      const search=await searchNeonRows(collection.id,q,{limit:pageSize,cursor,mediaOnly:searchMode==='media'});
+      const search=await searchNeonRows(collectionId,q,{limit:pageSize,cursor,mediaOnly:searchMode==='media'});
       if(id!==searchId.current)return;
 
       const searchRows=search.rows;
@@ -179,7 +179,7 @@ export default function SearchV2(){
       setHasMore(Boolean(search.hasMore));
       setNextCursor(search.nextCursor??null);
       const partial=search.failures?.length?`（${search.failures.length} 張非必要資料表暫時無法查詢）`:'';
-      if(!append)setStatus(`${searchMode==='media'?'多媒體':'「'+collection.label+'」'}搜尋「${q}」；先顯示本批結果${search.hasMore?'，向下滑動可繼續載入。':'。'}${partial}`);
+      if(!append)setStatus(`${searchMode==='media'?'多媒體':'「'+collectionLabel+'」'}搜尋「${q}」；先顯示本批結果${search.hasMore?'，向下滑動可繼續載入。':'。'}${partial}`);
     }catch(exception){
       if(id!==searchId.current)return;
       setError(featureDataErrorMessage(exception));
