@@ -1,5 +1,5 @@
 import {ScopeRankingResponseSchema} from './scope-feature-contracts';
-import {selectCategoryCounts,selectSourceCatalog} from './aggregate-query';
+import {selectCategoryCounts,selectDailyCategoryCounts,selectSourceCatalog,selectSourceDaily} from './aggregate-query';
 import {selectNeonRows} from './neon-query';
 import {resolveScopeTables} from './scope-table-mapping';
 import {selectManagedScopes} from './scope-list';
@@ -208,4 +208,57 @@ export async function selectScopeRankingTypes(scopeId){
   const id=String(scopeId||'').trim();
   if(!id)throw new Error('資料設定無效');
   return ['source'];
+}
+
+
+async function scopeSourceTrendRows(scopeId){
+  const tables=await resolveScopeTables(scopeId);
+  const [textDaily,mediaDaily]=await Promise.all([
+    selectSourceDaily({scopeId}),
+    selectDailyCategoryCounts(tables.galaxyMedia,'media_type')
+  ]);
+  const combined=new Map();
+  for(const row of textDaily){
+    const day=dateOnly(row.day);
+    if(!day)continue;
+    const bucket=sourceBucket(row.source_name);
+    const key=day+'|'+bucket;
+    combined.set(key,(combined.get(key)||0)+(Number(row.item_count)||0));
+  }
+  for(const row of mediaDaily){
+    const day=dateOnly(row.day);
+    if(!day)continue;
+    const bucket=sourceBucket(row.category);
+    const key=day+'|'+bucket;
+    combined.set(key,(combined.get(key)||0)+(Number(row.item_count)||0));
+  }
+  return [...combined.entries()].map(([key,item_count])=>{
+    const split=key.indexOf('|');
+    return {
+      day:key.slice(0,split),
+      source:key.slice(split+1),
+      item_count:Number(item_count)||0
+    };
+  }).sort((a,b)=>a.day.localeCompare(b.day)||SOURCE_BUCKET_ORDER.indexOf(a.source)-SOURCE_BUCKET_ORDER.indexOf(b.source));
+}
+
+export async function selectScopeSourceTrendRows(scopeId){
+  const id=String(scopeId||'').trim();
+  if(!id)throw new Error('資料設定無效');
+  const rows=id==='loc'
+    ?(await Promise.all((await selectManagedScopes()).filter(scope=>scope.id!=='loc').map(scope=>scopeSourceTrendRows(scope.id)))).flat()
+    :await scopeSourceTrendRows(id);
+  const merged=new Map();
+  for(const row of rows){
+    const key=row.day+'|'+row.source;
+    merged.set(key,(merged.get(key)||0)+(Number(row.item_count)||0));
+  }
+  return [...merged.entries()].map(([key,item_count])=>{
+    const split=key.indexOf('|');
+    return {
+      day:key.slice(0,split),
+      source:key.slice(split+1),
+      item_count:Number(item_count)||0
+    };
+  }).sort((a,b)=>a.day.localeCompare(b.day)||SOURCE_BUCKET_ORDER.indexOf(a.source)-SOURCE_BUCKET_ORDER.indexOf(b.source));
 }
