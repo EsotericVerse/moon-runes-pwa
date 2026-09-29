@@ -1,10 +1,11 @@
 'use client';
 
-import {useMemo,useState} from 'react';
+import {useEffect,useMemo,useState} from 'react';
 import Select from 'react-select';
 import {SCOPES_V2} from '../../modular-v2/scope-registry.v2';
 import {THEME_SLOTS_V2} from '../../modular-v2/theme-registry.v2';
 import {useNeonAccount} from '../use-neon-account';
+import {neonAuthClient} from '../neon-client';
 
 const ADMIN_OPTIONS=Object.freeze([
   {value:'scopes',label:'區域總覽'},
@@ -24,6 +25,33 @@ function Login({account}){
 
 function ScopeOverview(){
   const scopes=Object.values(SCOPES_V2).filter(scope=>scope.id!=='admin');
+  const [mappings,setMappings]=useState([]);
+  const [status,setStatus]=useState('');
+  useEffect(()=>{
+    let active=true;
+    neonAuthClient.schema('silver').from('manage')
+      .select('id,email,role,galaxy,time,birthday')
+      .order('id',{ascending:true})
+      .order('email',{ascending:true})
+      .then(({data,error})=>{
+        if(!active)return;
+        if(error){setStatus(error.message||'Mapping 讀取失敗。');return;}
+        setMappings(data||[]);
+      });
+    return()=>{active=false};
+  },[]);
+  const change=(index,key,value)=>setMappings(rows=>rows.map((row,rowIndex)=>rowIndex===index?{...row,[key]:value}:row));
+  const save=async(index)=>{
+    const row=mappings[index];
+    const galaxy=String(row?.galaxy||'galaxy').trim()||'galaxy';
+    const time=String(row?.time||'time').trim()||'time';
+    if(!/^[a-z][a-z0-9_]*$/.test(galaxy)||!/^[a-z][a-z0-9_]*$/.test(time)){setStatus('galaxy / time mapping 只能使用小寫英數與底線。');return;}
+    const {error}=await neonAuthClient.schema('silver').from('manage')
+      .update({galaxy,time})
+      .eq('id',row.id)
+      .eq('email',row.email);
+    setStatus(error?(error.message||'Mapping 儲存失敗。'):'Mapping 已更新。');
+  };
   return <section className="loc-card">
     <p className="loc-eyebrow">Current Scope Registry</p>
     <h2>區域總覽</h2>
@@ -33,6 +61,20 @@ function ScopeOverview(){
         <span>{scope.id} · {scope.scopeType}</span>
       </article>)}
     </div>
+    <h3>資料表 Mapping</h3>
+    <p>每個 (id, email) 可各自指定 Galaxy 與 Time suffix；空值會回到 galaxy / time。</p>
+    <div className="scope-v2-list">
+      {mappings.map((row,index)=><article className="scope-v2-inline-card" key={row.id+':'+row.email}>
+        <strong>{row.id} · {row.email}</strong>
+        <span>{row.role}</span>
+        <div className="scope-v2-stat-controls">
+          <label><span>Galaxy</span><input value={row.galaxy||'galaxy'} onChange={event=>change(index,'galaxy',event.target.value)}/></label>
+          <label><span>Time</span><input value={row.time||'time'} onChange={event=>change(index,'time',event.target.value)}/></label>
+          <button type="button" onClick={()=>save(index)}>儲存 Mapping</button>
+        </div>
+      </article>)}
+    </div>
+    {status?<p className="scope-v2-status" role="status">{status}</p>:null}
   </section>;
 }
 
