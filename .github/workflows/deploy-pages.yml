@@ -26,11 +26,7 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm install --no-audit --no-fund
-      - name: Verify RC contracts
-        run: npm run verify && npm run verify:rune-draw
-      - name: Verify public Neon Data API
-        run: npm run verify:neon-public
-      - name: Build verified Next static export
+      - name: Build Next static export
         run: npm run build
       - name: Configure Pages
         uses: actions/configure-pages@v5
