@@ -162,9 +162,18 @@ export async function selectRuneDetail(runeNumber){
   return rows[0]||null;
 }
 
-export async function selectRuneKeywordCatalog(){
-  const [runes,groups]=await Promise.all([selectRuneCatalog(),selectRuneGroupCatalog()]);
-  return {groups,runes};
+export async function selectRuneKeywordGroups(){
+  return selectRuneGroupCatalog();
+}
+
+export async function selectRuneKeywordGroup(groupName){
+  const name=String(groupName||'').trim();
+  if(!name)return [];
+  const rows=await selectRuneTable('runes',RUNE_COLUMNS,{
+    filters:[{column:'group_name',operator:'eq',value:name}],
+    orders:[{column:'rune_id',ascending:true}]
+  });
+  return rows.map(normalizeRune);
 }
 
 export async function updateRuneKeywords({runeNumber,positiveKeywords='',negativeKeywords=''}={}){

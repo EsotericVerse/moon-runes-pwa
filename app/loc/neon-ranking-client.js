@@ -72,35 +72,6 @@ async function resolvePeriod(scopeId,period='all'){
   return resolvePeriodRow(scopeId,await selectPeriodRow(scopeId,requested));
 }
 
-async function resolveComparisonRanges(scopeId,period='all'){
-  if(scopeId==='loc')return null;
-  const requested=periodId(period);
-  const currentRow=await selectPeriodRow(scopeId,requested&&requested!=='all'?requested:'all');
-  if(!currentRow)return null;
-  const current=await resolvePeriodRow(scopeId,currentRow);
-  if(!current?.start_date)return null;
-  const table='silver.'+dataScopeId(scopeId)+'_time';
-  const {rows}=await selectNeonRows(table,{
-    columns:PERIOD_COLUMNS,
-    filters:[
-      {column:'record_type',operator:'eq',value:'period'},
-      {column:'display_order',operator:'lt',value:Number(currentRow.display_order)||0}
-    ],
-    orders:[{column:'display_order',ascending:false}],
-    limit:1
-  });
-  const previous=await resolvePeriodRow(scopeId,rows[0]||null);
-  if(!previous?.start_date)return null;
-  return {
-    current:{start_date:current.start_date,end_date:current.end_date},
-    previous:{start_date:previous.start_date,end_date:previous.end_date},
-    period:current.period,
-    periodLabel:current.title,
-    previousPeriod:previous.period,
-    previousPeriodLabel:previous.title
-  };
-}
-
 function rankingRow(type,term,count,source,period){
   const text=String(term||'').trim();
   const value=Number(count)||0;
@@ -145,7 +116,7 @@ async function rowsForType(scopeId,type,period,rangeOverride=undefined){
   return [];
 }
 
-async function selectScopeRankingRows(scopeId,{rankingType='',navigation={}}={}){
+async function queryScopeRankingRows(scopeId,{rankingType='',navigation={}}={}){
   const id=String(scopeId||'');
   const types=RANKING_TYPES[id];
   if(!types)throw new Error('資料設定無效');
@@ -171,39 +142,8 @@ async function selectScopeRankingRows(scopeId,{rankingType='',navigation={}}={})
   return {id,type,rows:parsed.rows};
 }
 
-export async function selectScopeRankingAll(scopeId,{rankingType='',navigation={}}={}){
-  return (await selectScopeRankingRows(scopeId,{rankingType,navigation})).rows;
-}
-
-export async function selectScopeRankingComparison(scopeId,{rankingType='',navigation={}}={}){
-  const id=String(scopeId||'');
-  const types=RANKING_TYPES[id];
-  if(!types||id==='loc')return null;
-  const type=types.includes(rankingType)?rankingType:types[0];
-  const period=String(navigation.period||'all');
-  const ranges=await resolveComparisonRanges(id,period);
-  if(!ranges)return null;
-  const [currentRows,previousRows]=await Promise.all([
-    rowsForType(id,type,ranges.period,ranges.current),
-    rowsForType(id,type,ranges.previousPeriod,ranges.previous)
-  ]);
-  return {
-    type,
-    period:ranges.period,
-    periodLabel:ranges.periodLabel,
-    previousPeriod:ranges.previousPeriod,
-    previousPeriodLabel:ranges.previousPeriodLabel,
-    currentRange:ranges.current,
-    previousRange:ranges.previous,
-    currentRows,
-    previousRows,
-    candidateRows:[],
-    catalogRows:[]
-  };
-}
-
-export async function selectScopeKeywordDiagnostics(){
-  return null;
+export async function selectScopeRankingRows(scopeId,{rankingType='',navigation={}}={}){
+  return (await queryScopeRankingRows(scopeId,{rankingType,navigation})).rows;
 }
 
 export async function selectScopeRankingTypes(scopeId){

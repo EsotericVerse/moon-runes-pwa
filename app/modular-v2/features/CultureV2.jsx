@@ -130,7 +130,7 @@ export default function CultureV2(){
       startDate:selectedWorkPeriod?.start_date,
       endDate:selectedWorkPeriod?.end_date
     }),
-    enabled:classificationScope==='lo3rwang'&&Boolean(selectedWorkPeriod?.start_date)&&(isLoc||classificationMode==='source'),
+    enabled:!isLoc&&classificationScope==='lo3rwang'&&Boolean(selectedWorkPeriod?.start_date)&&classificationMode==='source',
     staleTime:5*60_000
   });
 
@@ -384,7 +384,7 @@ export default function CultureV2(){
 
             </>}
 
-            {selectedWorkPeriod?<section className='scope-v2-card scope-v2-culture-classification-river'>
+            {!isLoc&&selectedWorkPeriod?<section className='scope-v2-card scope-v2-culture-classification-river'>
               <p className='loc-eyebrow'>Classification River</p>
               <h3>{labelOf(selectedWorkPeriod,0)}｜作品分類河道</h3>
               {!isLoc?<div className='scope-v2-tabs' role='group' aria-label='作品分類方式'>
@@ -419,7 +419,7 @@ export default function CultureV2(){
 
             </section>:null}
 
-            {selectedWorkPeriod?<section className='scope-v2-card scope-v2-culture-current-works'>
+            {!isLoc&&selectedWorkPeriod?<section className='scope-v2-card scope-v2-culture-current-works'>
               <p className='loc-eyebrow'>Classification</p>
               <h3>{labelOf(selectedWorkPeriod,0)}｜{classificationMode==='source'?'作品來源':'多媒體分類'}</h3>
               {categoryQuery.isFetching?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}

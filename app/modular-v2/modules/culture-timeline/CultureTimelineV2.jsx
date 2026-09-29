@@ -106,6 +106,8 @@ function CurrentCultureRivers({ranges,onSelect=null}){
   const intersectionColor='var(--loc-accent,#6b63ff)';
   const personalTitle=personalCurrent.display_label||personalCurrent.title||'目前個人時期';
   const runeTitle=runeCurrent.display_label||runeCurrent.title||'目前 LunaRunes';
+  const personalCount=Number(personalCurrent.work_count)||0;
+  const runeCount=Number(runeCurrent.work_count)||0;
   const startLabel=dateLabel(domainStart);
   const endLabel=dateLabel(intersectionEnd);
 
@@ -118,6 +120,7 @@ function CurrentCultureRivers({ranges,onSelect=null}){
         <text x='64' y='104' fill='var(--loc-muted,#666)' fontSize='14'>只顯示兩個 Current 同時成立的集合交集，不做加總。</text>
 
         <text x='600' y='188' textAnchor='middle' fill='var(--loc-text,#111)' fontSize='16' fontWeight='700'>{personalTitle} ∩ {runeTitle}</text>
+        <text x='600' y='218' textAnchor='middle' fill='var(--loc-muted,#666)' fontSize='14'>個人 {personalCount.toLocaleString()} 項 · LunaRunes {runeCount.toLocaleString()} 項</text>
         <path d={intersectionPath} fill='none' stroke={intersectionColor} strokeWidth='30' strokeLinecap='round' opacity='.18'/>
         <path d={intersectionPath} fill='none' stroke={intersectionColor} strokeWidth='13' strokeLinecap='round'/>
         <circle cx={left} cy={centerY} r='11' fill={intersectionColor} stroke='var(--loc-panel,#fff)' strokeWidth='4'/>

@@ -182,6 +182,25 @@ export async function selectScopeCultureData(scopeId){
       selectCurrentPeriodRange('lrunes')
     ]);
     const currentRanges=[authorCurrent,runeCurrent].filter(Boolean);
+    const starts=currentRanges.map(row=>String(row.start_date||'')).filter(Boolean).sort();
+    const intersectionStart=starts.at(-1)||'';
+    if(intersectionStart){
+      const textFilters=publicContentFilters(dateFilters(intersectionStart,null));
+      const mediaFilters=dateFilters(intersectionStart,null);
+      const [authorText,authorMedia,runeText,runeMedia]=await Promise.all([
+        selectNeonCount('silver.lo3rwang_galaxy',{filters:textFilters}),
+        selectNeonCount('silver.lo3rwang_galaxy_media',{filters:mediaFilters}),
+        selectNeonCount('silver.lrunes_galaxy',{filters:textFilters}),
+        selectNeonCount('silver.lrunes_galaxy_media',{filters:mediaFilters})
+      ]);
+      for(const range of currentRanges){
+        const isRune=String(range.scope_id)==='lunarunes';
+        range.intersection_start=intersectionStart;
+        range.text_count=isRune?runeText:authorText;
+        range.media_count=isRune?runeMedia:authorMedia;
+        range.work_count=range.text_count+range.media_count;
+      }
+    }
     return ScopeCultureResponseSchema.parse({
       scopeId:id,
       eras:{eras:[]},

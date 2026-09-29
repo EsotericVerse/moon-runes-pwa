@@ -1,9 +1,9 @@
-import {neonAuthClient,neonPublicClient} from './neon-client';
+import {neonAuthClient} from './neon-client';
+import {selectNeonCount,selectNeonRows} from './neon-query';
 import {selectRuneRows} from './rune-repository';
 
 export const DAILY_RUNE_PAGE_SIZE=10;
 
-function silver(name){return neonPublicClient.schema('silver').from(name);}
 function silverAuth(name){return neonAuthClient.schema('silver').from(name);}
 
 
@@ -23,27 +23,48 @@ async function attachRuneMeta(rows){
 
 function drawFilters(extra=[]){return extra;}
 
+async function selectDailyRangeRows(filters=[],orders=[]){
+  const total=await selectNeonCount('silver.lrunes_daily',{filters});
+  if(!total)return [];
+  const rows=[];
+  let offset=0;
+  while(offset<total){
+    const page=await selectNeonRows('silver.lrunes_daily',{
+      columns:'record_date,draw_kind,rune_number,direction',
+      filters,
+      orders,
+      limit:Math.min(1000,total-offset),
+      offset
+    });
+    if(!page.rows.length)break;
+    rows.push(...page.rows);
+    offset+=page.rows.length;
+  }
+  return rows;
+}
+
 export async function selectRecentDailyRuneDraws({limit=28}={}){
   const safeLimit=Math.max(1,Math.min(28,Math.floor(Number(limit)||28)));
-  const {data,error,count}=await silver('lrunes_daily')
-    .select('record_date,draw_kind,rune_number,direction',{count:'exact'})
-    .order('record_date',{ascending:false})
-    .order('draw_kind',{ascending:true})
-    .range(0,safeLimit-1);
-  if(error)throw new Error(error.message||'每日符文讀取失敗');
-  return {rows:await attachRuneMeta(data||[]),count};
+  const count=await selectNeonCount('silver.lrunes_daily');
+  const {rows}=await selectNeonRows('silver.lrunes_daily',{
+    columns:'record_date,draw_kind,rune_number,direction',
+    orders:[{column:'record_date',ascending:false},{column:'draw_kind',ascending:true}],
+    limit:safeLimit,
+    offset:0
+  });
+  return {rows:await attachRuneMeta(rows),count};
 }
 
 export async function selectDailyRuneDraws({offset=0,limit=DAILY_RUNE_PAGE_SIZE}={}){
   const safeOffset=Math.max(0,Math.floor(Number(offset)||0));
   const safeLimit=Math.max(1,Math.min(DAILY_RUNE_PAGE_SIZE,Math.floor(Number(limit)||DAILY_RUNE_PAGE_SIZE)));
-  const {data,error}=await silver('lrunes_daily')
-    .select('record_date,draw_kind,rune_number,direction')
-    .order('record_date',{ascending:false})
-    .order('draw_kind',{ascending:true})
-    .range(safeOffset,safeOffset+safeLimit-1);
-  if(error)throw new Error(error.message||'每日符文讀取失敗');
-  return attachRuneMeta(data||[]);
+  const {rows}=await selectNeonRows('silver.lrunes_daily',{
+    columns:'record_date,draw_kind,rune_number,direction',
+    orders:[{column:'record_date',ascending:false},{column:'draw_kind',ascending:true}],
+    limit:safeLimit,
+    offset:safeOffset
+  });
+  return attachRuneMeta(rows);
 }
 
 export async function selectDailyRuneRange({startDate,endDate}={}){
@@ -52,14 +73,14 @@ export async function selectDailyRuneRange({startDate,endDate}={}){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(start)||!/^\d{4}-\d{2}-\d{2}$/.test(end))return [];
   const low=start<=end?start:end;
   const high=start<=end?end:start;
-  const {data,error}=await silver('lrunes_daily')
-    .select('record_date,draw_kind,rune_number,direction')
-    .gte('record_date',low)
-    .lte('record_date',high)
-    .order('record_date',{ascending:true})
-    .order('draw_kind',{ascending:true});
-  if(error)throw new Error(error.message||'每日符文讀取失敗');
-  return attachRuneMeta(data||[]);
+  const rows=await selectDailyRangeRows([
+    {column:'record_date',operator:'gte',value:low},
+    {column:'record_date',operator:'lte',value:high}
+  ],[
+    {column:'record_date',ascending:true},
+    {column:'draw_kind',ascending:true}
+  ]);
+  return attachRuneMeta(rows);
 }
 
 export async function selectDailyRuneMonth({year,month}={}){
@@ -68,15 +89,14 @@ export async function selectDailyRuneMonth({year,month}={}){
   const start=`${safeYear}-${String(safeMonth).padStart(2,'0')}-01`;
   const nextDate=new Date(Date.UTC(safeYear,safeMonth,1));
   const end=`${nextDate.getUTCFullYear()}-${String(nextDate.getUTCMonth()+1).padStart(2,'0')}-01`;
-  const {data,error}=await silver('lrunes_daily')
-    .select('record_date,draw_kind,rune_number,direction')
-    .gte('record_date',start)
-    .lt('record_date',end)
-    .order('record_date',{ascending:true})
-    .order('draw_kind',{ascending:true})
-    .limit(62);
-  if(error)throw new Error(error.message||'每日符文讀取失敗');
-  return attachRuneMeta(data||[]);
+  const rows=await selectDailyRangeRows([
+    {column:'record_date',operator:'gte',value:start},
+    {column:'record_date',operator:'lt',value:end}
+  ],[
+    {column:'record_date',ascending:true},
+    {column:'draw_kind',ascending:true}
+  ]);
+  return attachRuneMeta(rows);
 }
 
 

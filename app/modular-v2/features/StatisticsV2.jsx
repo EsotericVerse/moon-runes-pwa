@@ -8,13 +8,12 @@ import {
   Bar,BarChart,CartesianGrid,Cell,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectScopeKeywordDiagnostics,selectScopeRankingAll,selectScopeRankingComparison,selectScopeRankingTypes} from '../../loc/neon-ranking-client';
+import {selectScopeRankingRows,selectScopeRankingTypes} from '../../loc/neon-ranking-client';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import MediaMetaSettingsV2 from './MediaMetaSettingsV2';
 import FeaturePageV2 from '../FeaturePageV2';
-import {analyzeDistribution,analyzeDistributionChange,analyzeKeywordDiagnostics,analyzeKeywordGovernance} from '../../loc/model/automatic-analysis.mjs';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const CHART_ACCENT='var(--loc-accent)';
@@ -72,36 +71,13 @@ function RankingList({rows,offset=0}){
   </div>;
 }
 
-function useAllRanking(scopeId,type,navigation){
+function useRanking(scopeId,type,navigation){
   return useQuery({
-    queryKey:['statistics-ranking-all',scopeId,type,navigation.period||'all'],
+    queryKey:['statistics-ranking',scopeId,type,navigation.period||'all'],
     enabled:Boolean(type),
-    queryFn:()=>selectScopeRankingAll(scopeId,{rankingType:type,navigation}),
+    queryFn:()=>selectScopeRankingRows(scopeId,{rankingType:type,navigation}),
     staleTime:30000
   });
-}
-
-function useRankingComparison(scopeId,type,navigation){
-  return useQuery({
-    queryKey:['statistics-ranking-comparison',scopeId,type,navigation.period||'all'],
-    enabled:Boolean(type)&&scopeId!=='loc'&&type!=='keyword',
-    queryFn:()=>selectScopeRankingComparison(scopeId,{rankingType:type,navigation}),
-    staleTime:30000
-  });
-}
-
-function useKeywordDiagnostics(scopeId,type,navigation){
-  return useQuery({
-    queryKey:['statistics-keyword-diagnostics',scopeId,navigation.period||'all'],
-    enabled:false,
-    queryFn:()=>selectScopeKeywordDiagnostics(scopeId,{navigation}),
-    staleTime:30000
-  });
-}
-
-function rangeLabel(range){
-  if(!range?.start_date)return '';
-  return String(range.start_date).slice(0,10)+' → '+String(range.end_date||range.start_date).slice(0,10);
 }
 
 function StatTabs({scopeId,navigation,active,tabs}){
@@ -146,29 +122,7 @@ function StatisticsPanel({scopeId,navigation,types}){
   const requested=String(navigation.rankingType||'');
   const rankingType=types.includes(requested)?requested:(types[0]||'');
   const [chartType,setChartType]=useState('bar');
-  const query=useAllRanking(scopeId,rankingType,navigation);
-  const comparisonQuery=useRankingComparison(scopeId,rankingType,navigation);
-  const diagnosticsQuery=useKeywordDiagnostics(scopeId,rankingType,navigation);
-  const automaticAnalysis=useMemo(()=>analyzeDistribution(query.data||[],{
-    label:STAT_TYPE_LABELS[rankingType]||'統計項目'
-  }),[query.data,rankingType]);
-  const changeAnalysis=useMemo(()=>{
-    const data=comparisonQuery.data;
-    if(!data)return {changes:[],suggestions:[]};
-    return rankingType==='keyword'
-      ?analyzeKeywordGovernance(data.currentRows||[],data.previousRows||[],{
-        candidateRows:data.candidateRows||[],
-        catalogRows:data.catalogRows||[]
-      })
-      :analyzeDistributionChange(data.currentRows||[],data.previousRows||[],{label:STAT_TYPE_LABELS[rankingType]||'統計項目'});
-  },[comparisonQuery.data,rankingType]);
-  const keywordDiagnosticsEnabled=false;
-  const keywordDiagnostics=useMemo(()=>{
-    if(rankingType!=='keyword'||!diagnosticsQuery.data)return {totalRecords:0,suggestions:[]};
-    return analyzeKeywordDiagnostics(diagnosticsQuery.data,{
-      changeSuggestions:changeAnalysis.suggestions||[]
-    });
-  },[rankingType,diagnosticsQuery.data,changeAnalysis.suggestions]);
+  const query=useRanking(scopeId,rankingType,navigation);
   const allRows=query.data||[];
   return <section className="scope-v2-stat-section">
     <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Statistics</p><h2>統計</h2></div></header>
@@ -182,50 +136,7 @@ function StatisticsPanel({scopeId,navigation,types}){
       <RankingList rows={allRows} offset={0}/>
       <RankingChart type={chartType} rows={allRows} height={380}/>
     </>:null}
-    {!query.isPending&&!query.error&&automaticAnalysis.suggestions.length?<section className="scope-v2-card">
-      <p className="loc-eyebrow">Automatic Analysis</p>
-      <h3>自動分布分析</h3>
-      <div className="scope-v2-list">
-        {automaticAnalysis.suggestions.map((item,index)=><article className="scope-v2-inline-card" key={item.type+'-'+index}>
-          <strong>{item.type==='concentration'?'分布集中':item.type==='long_tail'?'低頻尾端':'重複候選'}</strong>
-          <span>{item.text}</span>
-        </article>)}
-      </div>
-    </section>:null}
 
-    {rankingType!=='keyword'&&comparisonQuery.isPending?<p className="scope-v2-status">比較目前時期與前一正式時期…</p>:null}
-    {rankingType!=='keyword'&&comparisonQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(comparisonQuery.error)}</p>:null}
-    {rankingType!=='keyword'&&!comparisonQuery.isPending&&!comparisonQuery.error&&comparisonQuery.data?<section className="scope-v2-card">
-      <p className="loc-eyebrow">Weak Signal Comparison</p>
-      <h3>時間變化／弱訊號</h3>
-      <p>{comparisonQuery.data.previousPeriodLabel||'前一時期'}：{rangeLabel(comparisonQuery.data.previousRange)}｜{comparisonQuery.data.periodLabel||'目前時期'}：{rangeLabel(comparisonQuery.data.currentRange)}</p>
-      {!changeAnalysis.suggestions.length?<p className="scope-v2-status">目前沒有達到提醒門檻的明顯變化。</p>:<div className="scope-v2-list">
-        {changeAnalysis.suggestions.map((item,index)=><article className="scope-v2-inline-card" key={item.type+'-'+item.term+'-'+index}>
-          <strong>{item.action||(
-            item.type==='emerging'?'新出現':
-            item.type==='rising'?'增加':
-            item.type==='disappeared'?'暫時消失':
-            item.type==='falling'?'下降':'持續'
-          )}｜{item.term}</strong>
-          <span>{item.text}</span>
-        </article>)}
-      </div>}
-    </section>:null}
-
-    {keywordDiagnosticsEnabled&&rankingType==='keyword'&&diagnosticsQuery.isPending?<p className="scope-v2-status">計算關鍵詞辨識度與共現…</p>:null}
-    {keywordDiagnosticsEnabled&&rankingType==='keyword'&&diagnosticsQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(diagnosticsQuery.error)}</p>:null}
-    {keywordDiagnosticsEnabled&&rankingType==='keyword'&&!diagnosticsQuery.isPending&&!diagnosticsQuery.error&&diagnosticsQuery.data?<section className="scope-v2-card">
-      <p className="loc-eyebrow">Keyword Diagnostics</p>
-      <h3>關鍵詞辨識度／共現</h3>
-      {!keywordDiagnostics.suggestions.length?<p className="scope-v2-status">目前沒有達到辨識度或共現提醒門檻的項目。</p>:<div className="scope-v2-list">
-        {keywordDiagnostics.suggestions.map((item,index)=><article className="scope-v2-inline-card" key={item.type+'-'+item.term+'-'+index}>
-          <strong>{item.type==='emerging_high_discrimination'?'新興高辨識候選':
-            item.type==='low_discrimination'?'低辨識度候選':
-            item.type==='source_concentration'?'來源集中':'共現'}｜{item.term}</strong>
-          <span>{item.text}</span>
-        </article>)}
-      </div>}
-    </section>:null}
   </section>;
 }
 
