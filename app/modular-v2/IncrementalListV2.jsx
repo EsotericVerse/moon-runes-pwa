@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect,useRef,useState} from 'react';
+import {useEffect,useMemo,useRef,useState} from 'react';
 import IncrementalLoadV2 from './IncrementalLoadV2';
 import {DEFAULT_LIST_BATCH_SIZE} from './list-loading.v2';
 
@@ -15,7 +15,8 @@ export default function IncrementalListV2({
   loading=false,
   error=null,
   onLoadMore=null,
-  scrollRootRef=null
+  scrollRootRef=null,
+  onVisibleItemsChange=null
 }){
   const size=Math.max(1,Math.floor(Number(batchSize)||DEFAULT_LIST_BATCH_SIZE));
   const source=Array.isArray(items)?items:[];
@@ -41,7 +42,11 @@ export default function IncrementalListV2({
 
   const hasBuffered=visibleCount<source.length;
   const hasMore=hasBuffered||Boolean(externalHasMore);
-  const visible=source.slice(0,visibleCount);
+  const visible=useMemo(()=>source.slice(0,visibleCount),[source,visibleCount]);
+
+  useEffect(()=>{
+    if(typeof onVisibleItemsChange==='function')onVisibleItemsChange(visible);
+  },[visible,onVisibleItemsChange]);
 
   const loadMore=()=>{
     if(loading)return;
