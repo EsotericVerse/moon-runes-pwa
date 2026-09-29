@@ -4,7 +4,7 @@ import {useMemo,useState} from 'react';
 import {neonAuthClient} from './neon-client';
 import {useNeonAccount} from './use-neon-account';
 import {createUid8} from './uid';
-import {clearRuntimeTextIndexes} from './text-engine.mjs';
+import {normalizeGalaxyContent} from './content-policy';
 
 async function insertNeonRows(table,rows){
   if(String(table).endsWith('_galaxy_media')){
@@ -13,7 +13,6 @@ async function insertNeonRows(table,rows){
   const [schema,name]=String(table).split('.');
   const {data,error}=await neonAuthClient.schema(schema).from(name).insert(rows).select('*');
   if(error)throw new Error(error.message||('Neon INSERT '+table+' failed'));
-  clearRuntimeTextIndexes();
   return data||[];
 }
 
@@ -77,7 +76,7 @@ function JsonImport({scopeId}){
         uid:String(firstValue(row,['uid'])||createUid8()).toUpperCase(),
         content_type:String(firstValue(row,['content_type','type'])||'other').trim()||'other',
         title:String(firstValue(row,['title','name','subject'])||'').trim()||null,
-        content:String(firstValue(row,['content','body','text','message','description'])||'').trim()||null,
+        content:normalizeGalaxyContent(firstValue(row,['content','body','text','message','description']))||null,
         createtime:iso(firstValue(row,['createtime','created_at','create_time','created_time','date','published_at'])),
         source_native_id:String(firstValue(row,['source_native_id','native_id'])||'').trim()||null,
         source_place:String(firstValue(row,['source_place','place'])||'').trim()||null,
@@ -87,9 +86,10 @@ function JsonImport({scopeId}){
         ref_id:String(firstValue(row,['ref_id'])||'').trim()||null,
         url:String(firstValue(row,['url','link','permalink'])||'').trim()||null,
         source_name:selected
-      })).filter(row=>row.title||row.content||row.url);
+      })).filter(row=>row.content);
+      const skipped=Math.max(0,rows.length-payload.length);
       await insertNeonRows('silver.lo3rwang_galaxy',payload);
-      setStatus(`已匯入 ${payload.length.toLocaleString()} 筆到來源「${selected}」。`);
+      setStatus(`已匯入 ${payload.length.toLocaleString()} 筆到來源「${selected}」${skipped?`；略過 ${skipped.toLocaleString()} 筆無正文資料。`:''}`);
       setRows([]);setFileName('');
     }catch(error){setStatus(error?.message||'匯入失敗。');}
     finally{setBusy(false);}

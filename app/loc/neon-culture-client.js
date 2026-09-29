@@ -1,50 +1,11 @@
 'use client';
 
 import {ScopeCultureResponseSchema} from './scope-feature-contracts';
-import {selectManagedScopeIds} from './scope-list';
+import {selectManagedScopes} from './scope-list';
 import {decodeCultureText,formatCultureDateTime,groupWorksByWeek} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
 import {workDisplayText} from '../modular-v2/work-display-model.v2';
 import {selectGalaxyPage,selectSourceWeekly} from './aggregate-query';
-import {neonPublicClient} from './neon-client';
-
-
-function __relation(table){
-  const [schema,name]=String(table).split('.');
-  return neonPublicClient.schema(schema).from(name);
-}
-function __filters(query,filters=[]){
-  for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
-  return query;
-}
-function __orders(query,orders=[]){
-  for(const order of orders)query=query.order(order.column,{ascending:order.ascending??true,nullsFirst:order.nullsFirst});
-  return query;
-}
-async function __select(table,{columns='*',filters=[],orFilter='',orders=[],limit=null,offset=0,range=null,count=null}={}){
-  let query=__relation(table).select(columns,count?{count}:undefined);
-  query=__filters(query,filters);
-  if(orFilter)query=query.or(orFilter);
-  query=__orders(query,orders);
-  if(Array.isArray(range)&&range.length===2)query=query.range(range[0],range[1]);
-  else if(Number.isFinite(limit))query=limit>0?query.range(offset,offset+limit-1):query.limit(0);
-  const {data,error,count:total}=await query;
-  if(error)throw new Error(error.message||('Neon SELECT '+table+' failed'));
-  return {rows:data||[],count:total};
-}
-async function selectNeonRows(table,options={}){return __select(table,options);}
-async function selectNeonAllRows(table,options={}){
-  const {limit,offset,range,count,...rest}=options||{};
-  const rows=[];
-  let cursor=0;
-  const size=500;
-  while(true){
-    const page=await __select(table,{...rest,limit:size,offset:cursor});
-    rows.push(...page.rows);
-    if(page.rows.length<size)break;
-    cursor+=page.rows.length;
-  }
-  return {rows,count:rows.length};
-}
+import {selectNeonRows,selectNeonAllRows} from './neon-query';
 
 
 const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility';
@@ -137,9 +98,11 @@ export async function selectScopeCultureData(scopeId){
   const dataId=dataScopeId(scopeId);
   if(!['loc','lrunes','lo3rwang'].includes(dataId))throw new Error('資料設定無效');
 
-  const scopeIds=dataId==='loc'
-    ?(await selectManagedScopeIds()).filter(scope=>scope!=='loc')
-    :[dataId];
+  const managedScopes=await selectManagedScopes();
+  const scopeRows=dataId==='loc'
+    ?managedScopes.filter(scope=>scope.id!=='loc')
+    :managedScopes.filter(scope=>scope.id===dataId);
+  const scopeIds=scopeRows.map(scope=>scope.id);
   const settled=await Promise.allSettled(scopeIds.map(async scope=>{
     const rows=await selectCultureTimeRows(scope);
     return rows.map(row=>({...row,scope_id:runtimeScopeId(scope)}));
@@ -154,6 +117,49 @@ export async function selectScopeCultureData(scopeId){
     scope_id:runtimeScopeId(row.scope_id),
     group_label:`${runtimeScopeId(row.scope_id)} 時期`
   }));
+  const currentRanges=scopeRows.map(scopeMeta=>{
+    const scopeId=runtimeScopeId(scopeMeta.id);
+    const scopePeriods=periods.filter(row=>runtimeScopeId(row.scope_id)===scopeId);
+    const currentPeriod=scopePeriods.find(row=>Boolean(row.open_end))||null;
+    if(currentPeriod){
+      const normalized=periodRows([currentPeriod])[0];
+      return {
+        ...normalized,
+        scope_id:scopeId,
+        entry_type:'period',
+        display_label:currentPeriod.title||normalized.title,
+        derived_from:'period'
+      };
+    }
+    if(scopePeriods.length)return null;
+    const birthday=String(scopeMeta.birthday||'').slice(0,10);
+    if(!birthday)return null;
+    return {
+      scope_id:scopeId,
+      entry_type:'scope_range',
+      period:'',
+      title:'目前時期',
+      display_label:'目前時期',
+      start_date:birthday,
+      end_date:null,
+      open_end:true,
+      derived_from:'birthday'
+    };
+  }).filter(Boolean);
+  const scopeRanges=scopeRows.map(scopeMeta=>{
+    const birthday=String(scopeMeta.birthday||'').slice(0,10);
+    if(!birthday)return null;
+    return {
+      scope_id:runtimeScopeId(scopeMeta.id),
+      entry_type:'scope_range',
+      title:'完整時間範圍',
+      display_label:'完整時間範圍',
+      start_date:birthday,
+      end_date:null,
+      open_end:true,
+      derived_from:'birthday'
+    };
+  }).filter(Boolean);
   const events=scopeContext.filter(row=>row.entry_type==='event').map(row=>({
     entry_id:row.event_id||row.entry_key,
     event_id:row.event_id||row.entry_key,
@@ -183,11 +189,81 @@ export async function selectScopeCultureData(scopeId){
     scopeId:id,
     eras:{eras},
     periods,
+    currentRanges,
+    scopeRanges,
     timelineItems:timelineItems(scopeContext),
     events,
     trajectories,
     works:[]
   });
+}
+
+
+function normalizedWorkTimelineBuckets(rows=[]){
+  const maximum=Math.max(1,...rows.map(row=>Number(row.work_count)||0));
+  return rows.map(row=>({
+    ...row,
+    global_density_ratio:(Number(row.work_count)||0)/maximum
+  })).sort((a,b)=>String(a.start_date||'').localeCompare(String(b.start_date||''))||String(a.group_label||'').localeCompare(String(b.group_label||'')));
+}
+
+export async function selectScopeWorkSnapshot(scopeId,{startDate,endDate=null}={}){
+  if(!startDate)return {buckets:[],totalCount:0};
+  const runtimeId=runtimeScopeId(scopeId);
+  const dataId=dataScopeId(scopeId);
+  if(!['lo3rwang','lrunes'].includes(dataId))return {buckets:[],totalCount:0};
+  const buckets=[];
+  let textCount=0;
+
+  if(runtimeId==='lo3rwang'){
+    const result=await selectSourceWeekly({scopeId:'lo3rwang',startDate,endDate:endDate||''});
+    const weeks=new Map();
+    for(const row of result.rows){
+      const weekStart=String(row.week_start||'').slice(0,10);
+      if(!weekStart)continue;
+      const count=Number(row.work_count)||0;
+      textCount+=count;
+      weeks.set(weekStart,(weeks.get(weekStart)||0)+count);
+    }
+    for(const [weekStart,workCount] of weeks){
+      const end=new Date(weekStart+'T00:00:00Z');end.setUTCDate(end.getUTCDate()+7);
+      buckets.push({
+        id:'works:text:'+weekStart,
+        category:'文字作品',
+        group_label:'文字作品',
+        display_label:'文字作品 '+workCount+' 項',
+        title:weekStart+' – '+end.toISOString().slice(0,10)+' · 文字作品 · '+workCount+' 項',
+        start_date:weekStart,
+        end_date:end.toISOString().slice(0,10),
+        work_count:workCount,
+        scope_id:runtimeId,
+        entry_type:'work_density'
+      });
+    }
+  }else{
+    const result=await selectNeonAllRows('silver.lrunes_galaxy',{
+      columns:'uid,createtime',
+      filters:dateFilters(startDate,endDate),
+      orders:[{column:'createtime',ascending:true}]
+    });
+    textCount=result.rows.length;
+    buckets.push(...groupWorksByWeek(
+      result.rows.map(row=>({...row,timeline_group:'文字作品'})),
+      'timeline_group'
+    ).map(row=>({...row,scope_id:runtimeId,entry_type:'work_density'})));
+  }
+
+  const mediaRows=await selectScopeMediaRows(runtimeId,{startDate,endDate});
+  const mediaBuckets=groupWorksByWeek(
+    mediaRows.map(row=>({...row,timeline_group:'多媒體'})),
+    'timeline_group'
+  ).map(row=>({...row,scope_id:runtimeId,entry_type:'work_density'}));
+  buckets.push(...mediaBuckets);
+
+  return {
+    buckets:normalizedWorkTimelineBuckets(buckets),
+    totalCount:textCount+mediaRows.length
+  };
 }
 
 export async function selectAuthorPeriodSourceSnapshot({startDate,endDate=null}={}){
@@ -273,7 +349,7 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
       source_id:row.source_id||null,
       target_id:row.target_id||null,
       title:explicitTitle,
-      content_preview:'',
+      content:row.content||'',
       description:'',
       createtime:row.createtime,
       start_date:row.createtime,
@@ -344,15 +420,28 @@ export async function selectScopeMediaSnapshot(scopeId,{startDate,endDate}={}){
 }
 
 export async function selectScopeMediaWorks(scopeId,{startDate,endDate,mediaName,limit=20,pageOffset=0}={}){
-  if(!startDate||!mediaName)return {rows:[],hasMore:false,nextOffset:null,totalCount:0};
+  if(!startDate||!mediaName)return {rows:[],hasMore:false,nextOffset:null,totalCount:null};
   const pageSize=Math.max(1,Math.min(100,Math.floor(Number(limit)||20)));
   const offset=Math.max(0,Math.floor(Number(pageOffset)||0));
   const field='media_type';
-  const rows=await selectScopeMediaRows(scopeId,{startDate,endDate});
-  const matches=rows.filter(row=>String(row?.[field]||'').trim()===String(mediaName));
-  matches.sort((a,b)=>String(b.createtime||'').localeCompare(String(a.createtime||'')));
-  const page=matches.slice(offset,offset+pageSize).map(row=>({
+  const table=`silver.${dataScopeId(scopeId)}_galaxy_media`;
+  const result=await selectNeonRows(table,{
+    columns:'media_id,galaxy_link,source_native_id,media_type,title,url,meta_tags,createtime',
+    filters:[
+      ...dateFilters(startDate,endDate),
+      {column:field,operator:'eq',value:String(mediaName)}
+    ],
+    orders:[
+      {column:'createtime',ascending:false},
+      {column:'media_id',ascending:true}
+    ],
+    limit:pageSize,
+    offset
+  });
+  const sourceRows=result.rows||[];
+  const page=sourceRows.map(row=>({
     ...row,
+    record_type:'galaxy_media',
     entry_id:row.media_id||row.record_id,
     entry_type:'media_metadata',
     start_date:row.createtime,
@@ -367,7 +456,7 @@ export async function selectScopeMediaWorks(scopeId,{startDate,endDate,mediaName
       ?[{id:'media:'+String(row.media_id||row.record_id),href:row.url,label:'媒體連結'}]
       :[]
   }));
-  const hasMore=offset+pageSize<matches.length;
-  return {rows:page,hasMore,nextOffset:hasMore?offset+pageSize:null,totalCount:matches.length};
+  const hasMore=sourceRows.length===pageSize;
+  return {rows:page,hasMore,nextOffset:hasMore?offset+sourceRows.length:null,totalCount:null};
 }
 

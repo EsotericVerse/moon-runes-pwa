@@ -6,6 +6,7 @@ const publicDraw = readFileSync(resolve(process.cwd(), 'app/lrunes/RuneDrawClien
 const homeDraw = readFileSync(resolve(process.cwd(), 'app/lrunes/RunesClient.jsx'), 'utf8');
 const governance = readFileSync(resolve(process.cwd(), 'docs/LUNARUNES_DRAW_GOVERNANCE.md'), 'utf8');
 const semantics = readFileSync(resolve(process.cwd(), 'app/loc/model/semantic-state.mjs'), 'utf8');
+const ritual = readFileSync(resolve(process.cwd(), 'app/lrunes/rune-ritual.js'), 'utf8');
 
 const engineRequired = [
   'RUNE_DRAW_ALGORITHM_INVARIANT',
@@ -20,6 +21,10 @@ for(const fragment of engineRequired){
 }
 for(const [name,source] of [['RuneDrawClient',publicDraw],['RunesClient',homeDraw]]){
   if(!source.includes('drawRuneSession('))throw new Error(`${name} must use shared drawRuneSession`);
+  if(!source.includes('RUNE_RITUAL_DELAY_MS')||!source.includes('runeRitualMessages'))throw new Error(`${name} must use the shared five-second ritual loader`);
+}
+for(const fragment of ['RUNE_RITUAL_DELAY_MS=5000','RUNE_RITUAL_STEP_MS=1000','月之符文由 66 枚核心符文、九組符文分組與四種卡牌方向構成。']){
+  if(!ritual.includes(fragment))throw new Error(`Rune ritual invariant missing: ${fragment}`);
 }
 for(const fragment of [
   "{ key: 'single', count: 1",
@@ -30,6 +35,25 @@ for(const fragment of [
   "{ key: 'ow3gs', count: 11"
 ]){
   if(!publicDraw.includes(fragment))throw new Error(`RuneDrawClient mode invariant missing: ${fragment}`);
+}
+
+for(const fragment of [
+  "const types=drawKey==='daily'?['direction','daily']:['direction','lots'];",
+  "selectRuneRows(numbers,{types})",
+  'data-draw-reading="single"',
+  'Daily · 每日指示',
+  'dailyGuidance(draw.cards[0], draw.directions[0])'
+]){
+  if(!publicDraw.includes(fragment))throw new Error(`RuneDrawClient guidance contract missing: ${fragment}`);
+}
+for(const fragment of [
+  "const types=modeKey==='daily'?['direction','daily']:['direction','lots'];",
+  "selectRuneRows(numbers,{types})",
+  'data-draw-reading="single"',
+  'Daily · 每日指示',
+  'dailyGuidance(draw.cards[0],draw.directions[0])'
+]){
+  if(!homeDraw.includes(fragment))throw new Error(`RunesClient guidance contract missing: ${fragment}`);
 }
 
 const forbidden = [

@@ -6,16 +6,17 @@ const SCOPE_ID_PATTERN=/^[a-z][a-z0-9]*$/;
 
 export async function selectManagedScopes(){
   const {data:rows,error}=await neonPublicClient.schema('silver').from('manage')
-    .select('id,role')
+    .select('id,role,birthday')
     .order('id',{ascending:true});
   if(error)throw new Error(error.message||'Neon manage read failed');
   const scopes=new Map();
   for(const row of rows){
     const id=String(row.id||'').trim();
     const role=String(row.role||'').trim();
+    const birthday=String(row.birthday||'').slice(0,10);
     if(!SCOPE_ID_PATTERN.test(id))continue;
     const current=scopes.get(id);
-    scopes.set(id,{id,role:current?.role==='admin'||role==='admin'?'admin':role});
+    scopes.set(id,{id,role:current?.role==='admin'||role==='admin'?'admin':role,birthday:birthday||current?.birthday||null});
   }
   return [...scopes.values()].sort((a,b)=>a.id.localeCompare(b.id));
 }

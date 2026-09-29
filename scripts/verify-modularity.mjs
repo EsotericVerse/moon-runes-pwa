@@ -44,7 +44,7 @@ for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs','app/loc/neon-c
 
 const statisticsView=readFileSync(resolve(root,'app/modular-v2/features/StatisticsV2.jsx'),'utf8');
 if(!/selectScopeRankingAll\(scopeId/.test(statisticsView))failures.push('StatisticsV2: shared canonical ranking query missing');
-if(!/PagedResultV2/.test(statisticsView))failures.push('StatisticsV2: UI pagination missing');
+if(!/IncrementalLoadV2/.test(statisticsView))failures.push('StatisticsV2: shared incremental ranking loader missing');
 if(/selectScopeRankingPage\(/.test(statisticsView))failures.push('StatisticsV2: retired duplicate SQL ranking pagination returned');
 
 const cultureView=readFileSync(resolve(root,'app/modular-v2/features/CultureV2.jsx'),'utf8');
@@ -56,7 +56,9 @@ const textEngine=readFileSync(resolve(root,'app/loc/text-engine.mjs'),'utf8');
 const keywordClassifier=readFileSync(resolve(root,'app/loc/keyword-classifier.js'),'utf8');
 const searchView=readFileSync(resolve(root,'app/modular-v2/features/SearchV2.jsx'),'utf8');
 if(!/from ['"]flexsearch['"]/.test(textEngine)||!/new Resolver/.test(textEngine))failures.push('Text engine: FlexSearch Resolver boundary is missing');
-if(!/getRuntimeTextIndex/.test(searchProviders)||!/searchTextIndex/.test(searchProviders))failures.push('Search: shared FlexSearch provider boundary is missing');
+if(!/createTextIndex/.test(searchProviders)||!/searchTextIndex/.test(searchProviders)||!/nextCursor|cursor=/.test(searchProviders))failures.push('Search: batched FlexSearch provider boundary is missing');
+if(/getRuntimeTextIndex/.test(searchProviders))failures.push('Search: runtime index cache must remain retired from providers');
+if(/scanSize|maxScanSize|while\(matched\.length/.test(searchProviders))failures.push('Search: provider auto-scan beyond one raw batch is forbidden');
 if(/\.ilike\(|operator:\s*['"]ilike['"]/.test(searchProviders))failures.push('Search: direct ILIKE search must not replace the shared text engine');
 if(!/searchTextIndex/.test(keywordClassifier))failures.push('Style classifier: Culture/Statistics must use the shared FlexSearch engine');
 if(!/searchNeonRows\(/.test(searchView))failures.push('SearchV2: shared search client missing');

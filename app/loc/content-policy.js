@@ -1,5 +1,19 @@
 'use client';
 
+export function normalizeGalaxyContent(value){
+  return String(value??'').trim();
+}
+
+export function hasValidGalaxyContent(value){
+  return normalizeGalaxyContent(value).length>0;
+}
+
+export function requireGalaxyContent(value){
+  const content=normalizeGalaxyContent(value);
+  if(!content)throw new Error('Galaxy 文字作品必須有正文；純媒體請寫入 Galaxy Media。');
+  return content;
+}
+
 export function isReferenceOnlyResource(row){
   return row?.reference_only===true;
 }
@@ -7,6 +21,7 @@ export function isReferenceOnlyResource(row){
 export function publicContentFilters(filters=[]){
   return [
     ...(Array.isArray(filters)?filters:[]),
-    {column:'reference_only',operator:'eq',value:false}
+    {column:'reference_only',operator:'eq',value:false},
+    {column:'content',operator:'neq',value:''}
   ];
 }

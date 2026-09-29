@@ -6,7 +6,7 @@
 --   db_anon_role = anonymous
 --   exposed schemas include silver
 --
--- This file grants SELECT only. It does not grant INSERT/UPDATE/DELETE.
+-- This file grants canonical SELECT only. Disposable spool write permissions are isolated in runtime-spool.sql.
 
 BEGIN;
 
@@ -22,8 +22,6 @@ GRANT SELECT ON TABLE
   silver.lrunes_galaxy,
   silver.lrunes_galaxy_media,
   silver.runes,
-  silver.lo3rwang_source_stats,
-  silver.lo3rwang_source_daily,
   silver.lrunes
 TO anonymous;
 

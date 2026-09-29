@@ -2,8 +2,9 @@
 
 import {getMediaSearchProviders,getSearchProviders} from './search-providers';
 import {selectManagedScopeIds} from './scope-list';
+import {DEFAULT_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
 
-const SEARCH_PAGE_SIZE=20;
+const SEARCH_PAGE_SIZE=DEFAULT_LIST_BATCH_SIZE;
 
 const SCOPE_SEARCH_ALIASES=Object.freeze({
   loc:'loc lunacodex luna codex 月典',
@@ -45,7 +46,7 @@ function scopeCards(query,collectionId){
 
 export async function searchNeonRows(collectionId,query,{
   limit=SEARCH_PAGE_SIZE,
-  offset=0,
+  cursor=null,
   startDate='',
   endDate='',
   and=[],
@@ -53,10 +54,9 @@ export async function searchNeonRows(collectionId,query,{
   mediaOnly=false
 }={}){
   const q=String(query||'').trim();
-  if(!q)return {rows:[],failures:[],hasMore:false,totalCount:0,nextOffset:null};
+  if(!q)return {rows:[],failures:[],hasMore:false,nextCursor:null};
 
   const safeLimit=Math.max(1,Math.min(SEARCH_PAGE_SIZE,Math.floor(Number(limit)||SEARCH_PAGE_SIZE)));
-  const safeOffset=Math.max(0,Math.floor(Number(offset)||0));
   const scopeIds=collectionId==='all'?await selectManagedScopeIds():[];
   const providers=mediaOnly
     ?getMediaSearchProviders(collectionId,scopeIds)
@@ -64,59 +64,61 @@ export async function searchNeonRows(collectionId,query,{
   const cards=mediaOnly?[]:scopeCards(q,collectionId);
   const failures=[];
 
-  let skip=safeOffset;
-  let remaining=safeLimit;
-  const rows=[];
-  let totalCount=cards.length;
+  let stage=Number.isInteger(cursor?.stage)
+    ?cursor.stage
+    :(cards.length?0:1);
+  const sourceOffset=Math.max(0,Math.floor(Number(cursor?.offset)||0));
 
-  if(skip<cards.length){
-    const take=Math.min(remaining,cards.length-skip);
-    rows.push(...cards.slice(skip,skip+take));
-    remaining-=take;
-    skip=0;
-  }else{
-    skip-=cards.length;
+  if(stage===0){
+    const rows=cards.slice(sourceOffset,sourceOffset+safeLimit);
+    const nextOffset=sourceOffset+rows.length;
+    const cardsRemain=nextOffset<cards.length;
+    const hasMore=cardsRemain||providers.length>0;
+    return {
+      rows,
+      failures,
+      hasMore,
+      nextCursor:hasMore
+        ?(cardsRemain?{stage:0,offset:nextOffset}:{stage:1,offset:0})
+        :null
+    };
   }
 
-  let successfulProviders=0;
-  for(const provider of providers){
-    try{
-      const requestedLimit=remaining>0?safeLimit:0;
-      const result=await provider.search(q,{
-        limit:requestedLimit,
-        offset:skip,
-        startDate,
-        endDate,
-        and,
-        nor
-      });
-      successfulProviders+=1;
-      const providerCount=Math.max(0,Number(result.totalCount??result.count??result.rows?.length)||0);
-      totalCount+=providerCount;
-      if(skip>=providerCount){
-        skip-=providerCount;
-        continue;
-      }
-      skip=0;
-      if(remaining<=0)continue;
-      const take=result.rows.slice(0,remaining);
-      rows.push(...take);
-      remaining-=take.length;
-    }catch(error){
-      failures.push(new Error(`${provider.id}: ${error?.message||'search failed'}`));
+  const provider=providers[stage-1];
+  if(!provider)return {rows:[],failures,hasMore:false,nextCursor:null};
+
+  try{
+    const result=await provider.search(q,{
+      cursor:sourceOffset,
+      startDate,
+      endDate,
+      and,
+      nor
+    });
+    if(result.hasMore){
+      return {
+        rows:result.rows||[],
+        failures,
+        hasMore:true,
+        nextCursor:{stage,offset:result.nextCursor}
+      };
     }
+    const hasMore=stage<providers.length;
+    return {
+      rows:result.rows||[],
+      failures,
+      hasMore,
+      nextCursor:hasMore?{stage:stage+1,offset:0}:null
+    };
+  }catch(error){
+    failures.push(new Error(`${provider.id}: ${error?.message||'search failed'}`));
+    const hasMore=stage<providers.length;
+    if(!hasMore)throw new AggregateError(failures,'Neon 搜尋 Provider 無法查詢');
+    return {
+      rows:[],
+      failures,
+      hasMore:true,
+      nextCursor:{stage:stage+1,offset:0}
+    };
   }
-
-  if(providers.length&&!successfulProviders){
-    throw new AggregateError(failures,'Neon 搜尋 Provider 全部無法查詢');
-  }
-
-  const nextOffset=safeOffset+rows.length;
-  return {
-    rows,
-    failures,
-    totalCount,
-    hasMore:nextOffset<totalCount,
-    nextOffset:nextOffset<totalCount?nextOffset:null
-  };
 }

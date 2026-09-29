@@ -2,8 +2,6 @@
 
 import {Charset,Index,Resolver} from 'flexsearch';
 
-const runtimeIndexes=new Map();
-
 export function normalizeIndexedText(value){
   return String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').trim();
 }
@@ -15,19 +13,19 @@ export function createTextIndex(){
     encoder:Charset.CJK,
     cache:false
   });
-  const records=new Map();
+  const ids=new Set();
   return {
     index,
-    records,
-    add(id,text,record=null){
+    ids,
+    add(id,text){
       const key=String(id??'').trim();
       const content=normalizeIndexedText(text);
       if(!key||!content)return false;
       index.add(key,content);
-      records.set(key,record);
+      ids.add(key);
       return true;
     },
-    get size(){return records.size;}
+    get size(){return ids.size;}
   };
 }
 
@@ -61,47 +59,18 @@ export function searchTextIndex(engine,query,{
   for(const term of andTerms)resolver=resolver.and({query:term});
   for(const term of norTerms)resolver=resolver.not({query:term});
 
-  // Resolve IDs only. Full source text is not duplicated in the result store.
-  resolver=resolver.limit(engine.size);
-  const allIds=resolvedIds(resolver.resolve());
   const start=Math.max(0,Math.floor(Number(offset)||0));
   const size=Math.max(1,Math.floor(Number(limit)||20));
-  const ids=allIds.slice(start,start+size);
-  const rows=ids.map(id=>engine.records.get(id)).filter(value=>value!==undefined&&value!==null);
+  resolver=resolver.offset(start).limit(size+1);
+  const resolved=resolvedIds(resolver.resolve());
+  const hasMore=resolved.length>size;
+  const ids=resolved.slice(0,size);
   const nextOffset=start+ids.length;
   return {
     ids,
-    rows,
-    totalCount:allIds.length,
-    hasMore:nextOffset<allIds.length,
-    nextOffset:nextOffset<allIds.length?nextOffset:null
-  };
-}
-
-export async function getRuntimeTextIndex(key,builder){
-  const cacheKey=String(key||'').trim();
-  if(!cacheKey)throw new TypeError('Text index key is required');
-  const cached=runtimeIndexes.get(cacheKey);
-  if(cached)return cached;
-  const promise=(async()=>{
-    const engine=createTextIndex();
-    await builder(engine);
-    return engine;
-  })().catch(error=>{
-    if(runtimeIndexes.get(cacheKey)===promise)runtimeIndexes.delete(cacheKey);
-    throw error;
-  });
-  runtimeIndexes.set(cacheKey,promise);
-  return promise;
-}
-
-export function clearRuntimeTextIndexes(){
-  runtimeIndexes.clear();
-}
-
-export function runtimeTextIndexState(){
-  return {
-    keys:[...runtimeIndexes.keys()],
-    count:runtimeIndexes.size
+    rows:[],
+    totalCount:null,
+    hasMore,
+    nextOffset:hasMore?nextOffset:null
   };
 }

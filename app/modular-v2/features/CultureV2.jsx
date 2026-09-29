@@ -1,12 +1,13 @@
 'use client';
 
-import {useEffect,useMemo,useState} from 'react';
+import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
 import {
   selectAuthorPeriodSourceSnapshot,
   selectAuthorPeriodWorks,
   selectScopeCultureData,
+  selectScopeWorkSnapshot,
   selectScopeMediaSnapshot,
   selectScopeMediaWorks
 } from '../../loc/neon-culture-client';
@@ -17,16 +18,17 @@ import {formatCultureDateTime} from '../modules/culture-timeline/culture-timelin
 import {selectGalaxyContent} from '../../loc/aggregate-query';
 import {neonAuthClient} from '../../loc/neon-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
-import {clearRuntimeTextIndexes} from '../../loc/text-engine.mjs';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
 import WorkFullTextV2 from '../WorkFullTextV2';
-import {WORK_FALLBACK_TITLE,workDisplayText,workDisplayTitle} from '../work-display-model.v2';
-import PagedResultV2 from '../PagedResultV2';
+import {workDisplayHeading,workDisplayText} from '../work-display-model.v2';
+import IncrementalLoadV2 from '../IncrementalLoadV2';
+import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
 import ContentEditorV2 from '../ContentEditorV2';
+import {requireGalaxyContent} from '../../loc/content-policy';
 
-const CULTURE_WORK_PAGE_SIZE=20;
+const CULTURE_WORK_PAGE_SIZE=DEFAULT_LIST_BATCH_SIZE;
 
 function labelOf(item,index){
   return item?.display_label||item?.name||item?.title||item?.period||'時期 '+(index+1);
@@ -41,9 +43,6 @@ function rowsOf(data,scopeId){
     if(ad&&bd&&ad!==bd)return ad.localeCompare(bd);
     return Number(a.order||0)-Number(b.order||0);
   });
-}
-function isCurrent(item){
-  return String(item?.status||'').trim().toLowerCase()==='current';
 }
 function sortPeriods(rows=[]){
   return [...rows].filter(item=>item?.start_date||item?.end_date).sort((a,b)=>
@@ -74,10 +73,12 @@ export default function CultureV2(){
   });
 
   const rows=useMemo(()=>rowsOf(query.data,scopeId),[query.data,scopeId]);
+  const [timelineMode,setTimelineMode]=useState('works');
   const [classificationMode,setClassificationMode]=useState(scopeId==='lunarunes'?'media':'source');
   const [selectedCategory,setSelectedCategory]=useState('');
   const [workPage,setWorkPage]=useState(0);
-  const [activeWorkPeriod,setActiveWorkPeriod]=useState(null);
+  const [workRows,setWorkRows]=useState([]);
+  const workScrollRef=useRef(null);
   const [fullTextKey,setFullTextKey]=useState('');
   const [fullText,setFullText]=useState('');
   const [fullTextLoading,setFullTextLoading]=useState(false);
@@ -89,10 +90,9 @@ export default function CultureV2(){
 
   const currentRows=useMemo(()=>{
     const scopes=scopeId==='loc'?['lo3rwang','lunarunes']:[scopeId].filter(Boolean);
-    return scopes
-      .map(id=>rows.find(item=>String(item?.scope_id||'')===id&&isCurrent(item)))
-      .filter(Boolean);
-  },[scopeId,rows]);
+    return (query.data?.currentRanges||[])
+      .filter(item=>scopes.includes(String(item?.scope_id||'')));
+  },[scopeId,query.data]);
   const currentByScope=useMemo(()=>new Map(currentRows.map(item=>[String(item.scope_id||''),item])),[currentRows]);
   const currentAuthorPeriod=currentByScope.get('lo3rwang')||null;
   const currentRunePeriod=currentByScope.get('lunarunes')||null;
@@ -102,14 +102,53 @@ export default function CultureV2(){
   const allRunePeriods=useMemo(()=>allPeriods.filter(item=>String(item?.scope_id||'')==='lunarunes'),[allPeriods]);
   const isLoc=scopeId==='loc';
   const classificationScope=scopeId==='lunarunes'?'lunarunes':'lo3rwang';
+  const scopeRange=useMemo(()=>(query.data?.scopeRanges||[]).find(item=>String(item?.scope_id||'')===scopeId)||null,[query.data,scopeId]);
   const primaryPeriods=scopeId==='lunarunes'?allRunePeriods:allAuthorPeriods;
   const primaryCurrent=scopeId==='lunarunes'?currentRunePeriod:currentAuthorPeriod;
-  const selectedWorkPeriod=activeWorkPeriod||primaryCurrent||periodRange(primaryPeriods,classificationScope);
+  const selectedWorkPeriod=primaryCurrent||periodRange(primaryPeriods,classificationScope);
   const selectedPeriodIndex=primaryPeriods.findIndex(item=>
     String(item?.period||'')===String(selectedWorkPeriod?.period||'')
     ||String(item?.start_date||'')===String(selectedWorkPeriod?.start_date||'')
   );
   const previousWorkPeriod=selectedPeriodIndex>0?primaryPeriods[selectedPeriodIndex-1]:null;
+
+  const workPeriods=useMemo(()=>{
+    if(primaryPeriods.length)return primaryPeriods;
+    return scopeRange?.start_date?[{
+      period:'birthday-range',
+      title:'完整時期',
+      display_label:'完整時期',
+      start_date:scopeRange.start_date,
+      end_date:scopeRange.end_date||null,
+      scope_id:scopeId,
+      derived_from:'birthday'
+    }]:[];
+  },[primaryPeriods,scopeRange,scopeId]);
+  const periodWorkTimelineQuery=useQuery({
+    queryKey:['culture-period-work-timeline',scopeId,workPeriods.map(item=>[item.period,item.start_date,item.end_date].join(':')).join('|')],
+    queryFn:async()=>{
+      const groups=await Promise.all(workPeriods.map(async period=>{
+        const snapshot=await selectScopeWorkSnapshot(scopeId,{
+          startDate:period.start_date,
+          endDate:period.end_date
+        });
+        return (snapshot.buckets||[]).map(bucket=>({
+          ...bucket,
+          id:'period:'+String(period.period||period.start_date)+':'+String(bucket.id||bucket.start_date),
+          period_id:period.period||period.start_date,
+          period_title:period.title||period.display_label||'時期',
+          period_start_date:period.start_date,
+          period_end_date:period.end_date,
+          evidence_group:bucket.group_label,
+          group_label:period.title||period.display_label||'時期',
+          title:(period.title||period.display_label||'時期')+' · '+(bucket.title||bucket.display_label||'作品')
+        }));
+      }));
+      return groups.flat();
+    },
+    enabled:!isLoc&&workPeriods.length>0,
+    staleTime:5*60_000
+  });
 
   const visibleAuthorPeriods=allAuthorPeriods;
 
@@ -163,29 +202,49 @@ export default function CultureV2(){
     enabled:!isLoc&&Boolean(selectedWorkPeriod?.start_date&&selectedGroup),
     staleTime:5*60_000
   });
-  const groupedCount=Number(periodWorksQuery.data?.totalCount)||selectedCount;
-  const workPageCount=Math.max(1,Math.ceil(groupedCount/CULTURE_WORK_PAGE_SIZE));
 
   useEffect(()=>{
+    setTimelineMode('works');
     setClassificationMode(scopeId==='lunarunes'?'media':'source');
     setSelectedCategory('');
     setWorkPage(0);
-    setActiveWorkPeriod(null);
+    setWorkRows([]);
   },[scopeId]);
 
   useEffect(()=>{
     setSelectedCategory('');
     setWorkPage(0);
+    setWorkRows([]);
     setFullTextKey('');
     setFullText('');
     setFullTextError('');
   },[classificationMode,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date]);
 
   useEffect(()=>{
+    setWorkRows([]);
+    setWorkPage(0);
     setFullTextKey('');
     setFullText('');
     setFullTextError('');
-  },[selectedCategory,workPage]);
+    if(workScrollRef.current)workScrollRef.current.scrollTop=0;
+  },[selectedCategory]);
+
+  useEffect(()=>{
+    setFullTextKey('');
+    setFullText('');
+    setFullTextError('');
+  },[workPage]);
+
+  useEffect(()=>{
+    const next=periodWorksQuery.data?.rows||[];
+    if(!next.length)return;
+    setWorkRows(current=>{
+      if(workPage===0)return next;
+      const map=new Map(current.map((row,index)=>[String(row.key||row.uid||row.entry_id||index),row]));
+      next.forEach((row,index)=>map.set(String(row.key||row.uid||row.entry_id||('next-'+index)),row));
+      return [...map.values()];
+    });
+  },[periodWorksQuery.data,workPage]);
 
   const periodVolumeByStart=useMemo(()=>{
     const map=new Map();
@@ -204,6 +263,38 @@ export default function CultureV2(){
       return workCount===undefined?item:{...item,work_count:workCount};
     });
   },[query.data,scopeId,periodVolumeByStart]);
+  const anchoredEvents=useMemo(()=>(query.data?.events||[])
+    .filter(item=>String(item?.scope_id||'')===scopeId&&item?.start_date&&item?.end_date)
+    .sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))||String(a.title||'').localeCompare(String(b.title||''))),[query.data,scopeId]);
+  const eventWorkTimelineQuery=useQuery({
+    queryKey:['culture-event-work-timeline',scopeId,anchoredEvents.map(item=>[item.event_id,item.start_date,item.end_date].join(':')).join('|')],
+    queryFn:async()=>{
+      const groups=await Promise.all(anchoredEvents.map(async event=>{
+        const snapshot=await selectScopeWorkSnapshot(scopeId,{
+          startDate:event.start_date,
+          endDate:event.end_date
+        });
+        return (snapshot.buckets||[]).map(bucket=>({
+          ...bucket,
+          id:'event:'+String(event.event_id||event.entry_id||event.title)+':'+String(bucket.id||bucket.start_date),
+          event_id:event.event_id||event.entry_id,
+          event_title:event.title,
+          event_start_date:event.start_date,
+          event_end_date:event.end_date,
+          evidence_group:bucket.group_label,
+          group_label:event.title||'事件',
+          title:(event.title||'事件')+' · '+(bucket.title||bucket.display_label||'作品')
+        }));
+      }));
+      return groups.flat();
+    },
+    enabled:scopeId==='lo3rwang'&&timelineMode==='event'&&anchoredEvents.length>0,
+    staleTime:5*60_000
+  });
+  const eventTimelineItems=eventWorkTimelineQuery.data||[];
+  const anchorTimelineItems=useMemo(()=>timelineItems.filter(item=>String(item?.entry_type||'')==='anchor'),[timelineItems]);
+  const periodWorkTimelineItems=periodWorkTimelineQuery.data||[];
+  const hasTimelineSurface=isLoc?timelineItems.length>0:Boolean(scopeRange?.start_date||timelineItems.length);
 
   const classificationBuckets=classificationMode==='source'
     ?(sourceSnapshotQuery.data?.buckets||[])
@@ -244,15 +335,15 @@ export default function CultureV2(){
     setEditBusy(true);setEditError('');
     try{
       if(!account.canManageScopeSync(classificationScope))throw new Error('沒有修改此 Scope 的權限。');
+      const content=requireGalaxyContent(editDraft.body);
       const {error}=await neonAuthClient.schema('silver').from(galaxyTable())
         .update({
           title:String(editDraft.title||'').trim()||null,
-          content:String(editDraft.body||''),
+          content,
           searchable:editDraft.hidden!==true
         })
         .eq('uid',uid);
       if(error)throw new Error(error.message||'作品儲存失敗');
-      clearRuntimeTextIndexes();
       const key=String(work?.key||('galaxy:'+uid));
       if(fullTextKey===key)setFullText(String(editDraft.body||''));
       setEditingWorkKey('');setEditDraft(null);
@@ -295,8 +386,8 @@ export default function CultureV2(){
       <h2>時間長河</h2>
       {query.isPending?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
       {query.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(query.error)}</p>:null}
-      {!query.isPending&&!query.error&&!timelineItems.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
-      {!query.isPending&&!query.error&&timelineItems.length?<>
+      {!query.isPending&&!query.error&&!hasTimelineSurface?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+      {!query.isPending&&!query.error&&hasTimelineSurface?<>
 
 
             {isLoc?<CultureTimelineV2
@@ -304,32 +395,50 @@ export default function CultureV2(){
               labelOf={item=>item.display_label||item.title}
               focus={navigation}
               mode='current'
+              currentRanges={query.data?.currentRanges||[]}
               onSelect={()=>window.alert('歡迎到該成員的時間長河看明細！')}
-            />:<section className='scope-v2-card scope-v2-culture-period-2d' aria-label='時期'>
-              <p className='loc-eyebrow'>Period</p>
-              <h3>時期</h3>
-              <label className='scope-v2-culture-period-select'>
-                <span>選擇完整時期</span>
-                <select className='scope-v2-select'
-                  value={selectedWorkPeriod?.period||selectedWorkPeriod?.start_date||''}
-                  onChange={event=>{
-                    const value=event.target.value;
-                    const matched=primaryPeriods.find(item=>
-                      String(item?.period||item?.start_date||'')===value
-                    );
-                    if(matched)setActiveWorkPeriod(matched);
-                  }}>
-                  {primaryPeriods.map((item,index)=><option
-                    key={String(item?.period||item?.start_date||index)}
-                    value={String(item?.period||item?.start_date||'')}>
-                    {labelOf(item,index)}
-                  </option>)}
+            />:<>
+              {!isLoc?<label className='scope-v2-culture-period-select'>
+                <span>時間長河</span>
+                <select className='scope-v2-select' value={timelineMode} onChange={event=>setTimelineMode(event.target.value)}>
+                  <option value='works'>時期分割作品</option>
+                  {anchoredEvents.length?<option value='event'>事件分割作品</option>:null}
+                  <option value='anchor'>定錨點</option>
                 </select>
-              </label>
-              {selectedWorkPeriod?<p className='scope-v2-culture-period-description'>
-                {[selectedWorkPeriod.start_date,selectedWorkPeriod.end_date||'Current'].filter(Boolean).join(' – ')}
-              </p>:null}
-            </section>}
+              </label>:null}
+              {timelineMode==='anchor'
+                ?<CultureTimelineV2
+                    items={anchorTimelineItems}
+                    labelOf={item=>item.display_label||item.title}
+                    focus={navigation}
+                    mode='overview'
+                  />
+                :timelineMode==='event'
+                  ?<>
+                      {eventWorkTimelineQuery.isFetching?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
+                      {eventWorkTimelineQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(eventWorkTimelineQuery.error)}</p>:null}
+                      {!eventWorkTimelineQuery.isFetching&&!eventWorkTimelineQuery.error&&!anchoredEvents.length?<p className='scope-v2-status'>目前沒有具有前後定錨點的事件。</p>:null}
+                      {!eventWorkTimelineQuery.isFetching&&!eventWorkTimelineQuery.error&&anchoredEvents.length>0&&!eventTimelineItems.length?<p className='scope-v2-status'>目前這些事件範圍內沒有作品。</p>:null}
+                      {eventTimelineItems.length?<CultureTimelineV2
+                        items={eventTimelineItems}
+                        labelOf={item=>item.display_label||item.evidence_group||item.title}
+                        focus={{}}
+                        mode='overview'
+                      />:null}
+                    </>
+                  :<>
+                      {periodWorkTimelineQuery.isFetching?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
+                      {periodWorkTimelineQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorkTimelineQuery.error)}</p>:null}
+                      {!periodWorkTimelineQuery.isFetching&&!periodWorkTimelineQuery.error&&!periodWorkTimelineItems.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+                      {periodWorkTimelineItems.length?<CultureTimelineV2
+                        items={periodWorkTimelineItems}
+                        labelOf={item=>item.display_label||item.evidence_group||item.group_label}
+                        focus={{}}
+                        mode='overview'
+                      />:null}
+                    </>}
+
+            </>}
 
             {selectedWorkPeriod?<section className='scope-v2-card scope-v2-culture-classification-river'>
               <p className='loc-eyebrow'>Classification River</p>
@@ -356,8 +465,9 @@ export default function CultureV2(){
                     ?'source:'+term
                     :'media:type:'+term;
                   if(categoryGroups.some(group=>group.category_key===key)){
-                    setSelectedCategory(key);
+                    setWorkRows([]);
                     setWorkPage(0);
+                    setSelectedCategory(key);
                   }
                 }}
               />:null}
@@ -380,7 +490,7 @@ export default function CultureV2(){
                   :<button type='button' key={group.category_key}
                     className='scope-v2-culture-source-button'
                     aria-pressed={selectedCategory===group.category_key}
-                    onClick={()=>{setSelectedCategory(selectedCategory===group.category_key?'':group.category_key);setWorkPage(0);}}>
+                    onClick={()=>{setWorkRows([]);setWorkPage(0);setSelectedCategory(selectedCategory===group.category_key?'':group.category_key);}}>
                     <strong>{group.display_label}</strong><span>{Number(group.item_count||0).toLocaleString()} 項作品</span>
                   </button>)}
               </div>:null}
@@ -388,19 +498,14 @@ export default function CultureV2(){
               {!isLoc&&selectedGroup?<section className='scope-v2-culture-source-detail' aria-label={selectedGroup.display_label+'列表'}>
                 <header>
                   <h4>{selectedGroup.display_label} · {selectedCount.toLocaleString()} 項作品</h4>
-                  <button type='button' className='scope-v2-pagination-button' onClick={()=>setSelectedCategory('')}>收合列表</button>
+                  <button type='button' className='scope-v2-pagination-button' onClick={()=>{setWorkRows([]);setWorkPage(0);setSelectedCategory('')}}>收合列表</button>
                 </header>
                 {periodWorksQuery.isFetching?<p className='scope-v2-status'>載入第 {workPage+1} 頁…</p>:null}
                 {periodWorksQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksQuery.error)}</p>:null}
-                <div className='scope-v2-culture-source-work-scroll'>
-                  {(periodWorksQuery.data?.rows||[]).map((work,index)=><WorkSummaryCardV2
+                <div key={selectedCategory} ref={workScrollRef} className='scope-v2-culture-source-work-scroll'>
+                  {workRows.map((work,index)=><WorkSummaryCardV2
                     key={work.key||work.uid||work.entry_id||String(work.createtime||work.created_at)+'-'+index}
-                    title={workDisplayTitle({
-                      title:work.title,
-                      preview:work.content_preview,
-                      fallback:WORK_FALLBACK_TITLE,
-                      limit:80
-                    })}
+                    title={workDisplayHeading(work,{media:false,limit:80})}
                     source={work.source_name||work.group_label||''}
                     date={work.display_date||formatCultureDateTime(work.createtime||work.created_at)}
                     body={work.description||work.media_metadata_text||''}
@@ -426,17 +531,16 @@ export default function CultureV2(){
                       onCancel={()=>{setEditingWorkKey('');setEditDraft(null);setEditError('')}}
                     />:null}
                   </WorkSummaryCardV2>)}
+                  <IncrementalLoadV2
+                    hasMore={Boolean(periodWorksQuery.data?.hasMore)}
+                    loading={periodWorksQuery.isFetching}
+                    error={periodWorksQuery.error}
+                    onLoadMore={()=>setWorkPage(page=>page+1)}
+                    label="還有更多作品"
+                    scrollRootRef={workScrollRef}
+                  />
                 </div>
-                {!periodWorksQuery.isFetching&&!periodWorksQuery.error&&!(periodWorksQuery.data?.rows||[]).length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
-                <PagedResultV2
-                  label="作品"
-                  totalCount={groupedCount}
-                  offset={workPage*CULTURE_WORK_PAGE_SIZE}
-                  pageSize={CULTURE_WORK_PAGE_SIZE}
-                  hasMore={workPage+1<workPageCount}
-                  onPrevious={()=>setWorkPage(page=>Math.max(0,page-1))}
-                  onNext={()=>setWorkPage(page=>Math.min(workPageCount-1,page+1))}
-                />
+                {!periodWorksQuery.isFetching&&!periodWorksQuery.error&&!workRows.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
               </section>:null}
             </section>:null}
       </>:null}

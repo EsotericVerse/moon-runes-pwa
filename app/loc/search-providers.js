@@ -1,62 +1,10 @@
 'use client';
 
-import {getRuntimeTextIndex,searchTextIndex} from './text-engine.mjs';
+import {createTextIndex,searchTextIndex} from './text-engine.mjs';
 import {publicContentFilters} from './content-policy';
-import {neonPublicClient} from './neon-client';
+import {selectNeonRows} from './neon-query';
+import {DEFAULT_LIST_BATCH_SIZE,RUNE_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
 
-
-function __relation(table){
-  const [schema,name]=String(table).split('.');
-  return neonPublicClient.schema(schema).from(name);
-}
-function __filters(query,filters=[]){
-  for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
-  return query;
-}
-function __orders(query,orders=[]){
-  for(const order of orders)query=query.order(order.column,{ascending:order.ascending??true,nullsFirst:order.nullsFirst});
-  return query;
-}
-async function __select(table,{columns='*',filters=[],orFilter='',orders=[],limit=null,offset=0,range=null,count=null}={}){
-  let query=__relation(table).select(columns,count?{count}:undefined);
-  query=__filters(query,filters);
-  if(orFilter)query=query.or(orFilter);
-  query=__orders(query,orders);
-  if(Array.isArray(range)&&range.length===2)query=query.range(range[0],range[1]);
-  else if(Number.isFinite(limit))query=limit>0?query.range(offset,offset+limit-1):query.limit(0);
-  const {data,error,count:total}=await query;
-  if(error)throw new Error(error.message||('Neon SELECT '+table+' failed'));
-  return {rows:data||[],count:total};
-}
-async function selectNeonRows(table,options={}){return __select(table,options);}
-async function selectNeonAllRows(table,options={}){
-  const {limit,offset,range,count,...rest}=options||{};
-  const rows=[];
-  let cursor=0;
-  const size=500;
-  while(true){
-    const page=await __select(table,{...rest,limit:size,offset:cursor});
-    rows.push(...page.rows);
-    if(page.rows.length<size)break;
-    cursor+=page.rows.length;
-  }
-  return {rows,count:rows.length};
-}
-
-async function processNeonHeavyRows(table,{columns,filters=[],orFilter='',orders=[],onRow,onBatch}={}){
-  let offset=0,processed=0;
-  const size=96;
-  while(true){
-    const page=await __select(table,{columns,filters,orFilter,orders,limit:size,offset});
-    if(!page.rows.length)break;
-    if(typeof onBatch==='function')await onBatch(page.rows);
-    else if(typeof onRow==='function')for(const row of page.rows)await onRow(row);
-    processed+=page.rows.length;
-    offset+=page.rows.length;
-    if(page.rows.length<size)break;
-  }
-  return {processed,stopped:false,nextOffset:offset};
-}
 
 function unique(values=[]){
   return [...new Set(values.map(value=>String(value||'').trim()).filter(Boolean))];
@@ -76,47 +24,20 @@ function searchableText(row,fields){
   return fields.map(field=>row?.[field]).filter(value=>value!==undefined&&value!==null).join(' ');
 }
 
-function makeProvider({id,table,source,scopeId,idColumn,columns,searchFields,filters=[],dateColumn=''}){
+function makeProvider({id,table,source,scopeId,idColumn,columns,searchFields,filters=[],dateColumn='',batchSize=DEFAULT_LIST_BATCH_SIZE}) {
   const outputColumns=Object.freeze(unique(columns));
   const indexedColumns=Object.freeze(unique([...columns,...searchFields]));
   const frozenFields=Object.freeze(unique(searchFields));
   const frozenFilters=Object.freeze(filters.map(item=>Object.freeze({...item})));
-  const hasHeavyContent=indexedColumns.includes('content');
+  const rawBatchSize=Math.max(1,Math.floor(Number(batchSize)||DEFAULT_LIST_BATCH_SIZE));
 
-  async function buildIndex({startDate='',endDate=''}={}){
-    const rangeFilters=[...frozenFilters,...dateFilters(dateColumn,startDate,endDate)];
-    const cacheKey=['provider',id,startDate||'',endDate||''].join(':');
-    return getRuntimeTextIndex(cacheKey,async engine=>{
-      const add=row=>{
-        const key=String(row?.[idColumn]??'').trim();
-        if(!key)return;
-        const metadata={
-          ...pick(row,outputColumns),
-          ...(row?.content&&!row?.title?{excerpt:String(row.content).slice(0,220)}:{}),
-          scope_id:row?.scope_id||scopeId
-        };
-        engine.add(key,searchableText(row,frozenFields),{
-          row:metadata,
-          source,
-          providerId:id
-        });
-      };
-      if(hasHeavyContent){
-        await processNeonHeavyRows(table,{
-          columns:indexedColumns.join(','),
-          filters:rangeFilters,
-          orders:dateColumn?[{column:dateColumn,ascending:false}]:[],
-          onBatch:rows=>{for(const row of rows)add(row);}
-        });
-      }else{
-        const result=await selectNeonAllRows(table,{
-          columns:indexedColumns.join(','),
-          filters:rangeFilters,
-          orders:dateColumn?[{column:dateColumn,ascending:false}]:[]
-        });
-        for(const row of result.rows)add(row);
-      }
-    });
+  function recordFor(row){
+    const metadata={
+      ...pick(row,outputColumns),
+      ...(row?.content&&!row?.title?{excerpt:String(row.content).slice(0,220)}:{}),
+      scope_id:row?.scope_id||scopeId
+    };
+    return {row:metadata,source,providerId:id};
   }
 
   return Object.freeze({
@@ -124,9 +45,45 @@ function makeProvider({id,table,source,scopeId,idColumn,columns,searchFields,fil
     columns:outputColumns,
     searchFields:frozenFields,
     filters:frozenFilters,
-    async search(query,{limit=20,offset=0,startDate='',endDate='',and=[],nor=[]}={}){
-      const engine=await buildIndex({startDate,endDate});
-      return searchTextIndex(engine,query,{limit,offset,and,nor});
+    rawBatchSize,
+    async search(query,{cursor=0,startDate='',endDate='',and=[],nor=[]}={}){
+      const sourceOffset=Math.max(0,Math.floor(Number(cursor)||0));
+      const rangeFilters=[...frozenFilters,...dateFilters(dateColumn,startDate,endDate)];
+      const orders=dateColumn
+        ?[{column:dateColumn,ascending:false},{column:idColumn,ascending:true}]
+        :[{column:idColumn,ascending:true}];
+
+      const page=await selectNeonRows(table,{
+        columns:indexedColumns.join(','),
+        filters:rangeFilters,
+        orders,
+        limit:rawBatchSize,
+        offset:sourceOffset
+      });
+      const sourceRows=page.rows||[];
+      if(!sourceRows.length)return {rows:[],hasMore:false,nextCursor:null};
+
+      const engine=createTextIndex();
+      for(const row of sourceRows){
+        const key=String(row?.[idColumn]??'').trim();
+        if(!key)continue;
+        engine.add(key,searchableText(row,frozenFields));
+      }
+      const found=searchTextIndex(engine,query,{
+        limit:Math.max(1,sourceRows.length),
+        offset:0,
+        and,
+        nor
+      });
+
+      const nextOffset=sourceOffset+sourceRows.length;
+      const hasMore=sourceRows.length===rawBatchSize;
+      const byId=new Map(sourceRows.map(row=>[String(row?.[idColumn]??'').trim(),row]));
+      return {
+        rows:(found.ids||[]).map(key=>byId.get(String(key))).filter(Boolean).map(recordFor),
+        hasMore,
+        nextCursor:hasMore?nextOffset:null
+      };
     }
   });
 }
@@ -188,7 +145,8 @@ const runeCore=makeProvider({
   scopeId:'lrunes',
   idColumn:'rune_id',
   columns:['rune_id','rune_name','group_name','english_name','rune_description','archetype','char_action','positive_keywords','negative_keywords','extra_rules','extra_notes','positive_meaning','half_positive_meaning','half_reverse_meaning','reverse_meaning'],
-  searchFields:['rune_name','group_name','english_name','rune_description','archetype','char_action','positive_keywords','negative_keywords','extra_rules','extra_notes','positive_meaning','half_positive_meaning','half_reverse_meaning','reverse_meaning']
+  searchFields:['rune_name','group_name','english_name','rune_description','archetype','char_action','positive_keywords','negative_keywords','extra_rules','extra_notes','positive_meaning','half_positive_meaning','half_reverse_meaning','reverse_meaning'] ,
+  batchSize:RUNE_LIST_BATCH_SIZE
 });
 
 const runeTimeline=makeProvider({
@@ -203,7 +161,8 @@ const runeTimeline=makeProvider({
   filters:[
     {column:'record_type',operator:'in',value:['anchor','period','event']},
     {column:'include_in_time',operator:'eq',value:true}
-  ]
+  ] ,
+  batchSize:RUNE_LIST_BATCH_SIZE
 });
 
 const runeText=makeProvider({
@@ -215,7 +174,8 @@ const runeText=makeProvider({
   columns:['uid','content_type','source_name','title','createtime','source_id','target_id','url','media_link'],
   searchFields:['title','content','source_name'],
   dateColumn:'createtime',
-  filters:publicContentFilters([{column:'searchable',operator:'eq',value:true}])
+  filters:publicContentFilters([{column:'searchable',operator:'eq',value:true}]) ,
+  batchSize:RUNE_LIST_BATCH_SIZE
 });
 
 const runeMedia=makeProvider({
@@ -227,7 +187,8 @@ const runeMedia=makeProvider({
   columns:['media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','createtime'],
   searchFields:['title','meta_tags','media_type','url','source_native_id'],
   dateColumn:'createtime',
-  filters:[]
+  filters:[] ,
+  batchSize:RUNE_LIST_BATCH_SIZE
 });
 
 const runeMediaAll=makeProvider({
@@ -239,7 +200,8 @@ const runeMediaAll=makeProvider({
   columns:['media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','createtime'],
   searchFields:['title','meta_tags','media_type','url','source_native_id'],
   dateColumn:'createtime',
-  filters:[]
+  filters:[] ,
+  batchSize:RUNE_LIST_BATCH_SIZE
 });
 
 const faq=makeProvider({

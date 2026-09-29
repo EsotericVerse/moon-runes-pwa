@@ -14,7 +14,7 @@ import GovernanceV2 from '../modular-v2/features/GovernanceV2';
 
 const loading=()=> <div className="loc-loading">載入功能模組…</div>;
 const RunesHomeView=dynamic(()=>import('../lrunes/RunesClient'),{ssr:false,loading});
-const GameView=dynamic(()=>import('./views/GameView'),{ssr:false,loading});
+const GameView=dynamic(()=>import('../lrunes/game/GameView'),{ssr:false,loading});
 // Core feature shells are bundled synchronously so route entry never stalls on a dynamic chunk.
 const StaticsView=StatisticsV2;
 const CultureView=CultureV2;
