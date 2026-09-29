@@ -26,6 +26,6 @@ GRANT SELECT ON TABLE
 TO anonymous;
 
 REVOKE SELECT ON TABLE silver.manage FROM anonymous;
-GRANT SELECT (id, role, birthday) ON silver.manage TO anonymous;
+GRANT SELECT (id, role, birthday, galaxy, time) ON silver.manage TO anonymous;
 
 COMMIT;
