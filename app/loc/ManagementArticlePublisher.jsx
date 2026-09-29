@@ -6,6 +6,7 @@ import {useNeonAccount} from './use-neon-account';
 import ContentEditorV2 from '../modular-v2/ContentEditorV2';
 import {createUid8} from './uid';
 import {requireGalaxyContent,resolveGalaxyTitle} from './content-policy';
+import {resolveScopeTables} from './scope-table-mapping';
 
 function targetIds(value){
   const values=Array.isArray(value)?value:String(value||'').split(/[,，]/);
@@ -41,7 +42,8 @@ export default function ManagementArticlePublisher({scopeId}){
       const now=new Date().toISOString();
       const uid=createUid8();
 
-      await insertNeonRows('silver.lo3rwang_galaxy',[{
+      const {galaxy}=await resolveScopeTables(scopeId,{email:account.email});
+      await insertNeonRows(galaxy,[{
         uid,content_type:'article',
         title:resolveGalaxyTitle(draft.title,content),content,
         source_id:draft.source_id.trim()||null,target_id:targetIds(draft.target_id),ref_id:draft.ref_id.trim()||null,
