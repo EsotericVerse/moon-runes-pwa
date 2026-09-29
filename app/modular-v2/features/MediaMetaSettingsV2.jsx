@@ -1,9 +1,9 @@
 'use client';
 
-import {useEffect,useState} from 'react';
+import {useEffect,useMemo,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {neonAuthClient} from '../../loc/neon-client';
-import {selectNeonCount,selectNeonRows} from '../../loc/neon-query';
+import {selectNeonRows} from '../../loc/neon-query';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation.v2';
@@ -62,6 +62,33 @@ function countMediaTags(rows=[]){
     .sort((a,b)=>b.item_count-a.item_count||a.term.localeCompare(b.term,'zh-Hant'));
 }
 
+function rankMediaForTag(rows=[],selectedTag=''){
+  const tag=String(selectedTag||'').trim();
+  if(!tag)return [];
+  const matching=(rows||[]).filter(row=>splitMediaTags(row?.meta_tags).includes(tag));
+  if(!matching.length)return [];
+  const coCounts=new Map();
+  for(const row of matching){
+    for(const item of splitMediaTags(row?.meta_tags)){
+      if(item===tag)continue;
+      coCounts.set(item,(coCounts.get(item)||0)+1);
+    }
+  }
+  const total=matching.length;
+  return matching.map(row=>{
+    const supportTags=splitMediaTags(row?.meta_tags).filter(item=>item!==tag);
+    const representative_score=supportTags.reduce(
+      (sum,item)=>sum+(Number(coCounts.get(item))||0)/total,
+      0
+    );
+    return {...row,representative_score};
+  }).sort((a,b)=>
+    Number(b.representative_score||0)-Number(a.representative_score||0)||
+    String(b.createtime||'').localeCompare(String(a.createtime||''))||
+    String(a.media_id||'').localeCompare(String(b.media_id||''))
+  );
+}
+
 export default function MediaMetaSettingsV2({databaseScopeId}){
   const queryClient=useQueryClient();
   const account=useNeonAccount();
@@ -74,7 +101,6 @@ export default function MediaMetaSettingsV2({databaseScopeId}){
   const navigationScope=navigationScopeId(databaseScopeId);
   const [selectedTag,setSelectedTag]=useState('');
   const [mediaPage,setMediaPage]=useState(0);
-  const [loadedMediaRows,setLoadedMediaRows]=useState([]);
   const [canEdit,setCanEdit]=useState(false);
   const [editingId,setEditingId]=useState('');
   const [draft,setDraft]=useState('');
@@ -85,21 +111,21 @@ export default function MediaMetaSettingsV2({databaseScopeId}){
     enabled:Boolean(tables?.galaxyMedia),
     queryFn:async()=>{
       const {rows}=await selectNeonRows(tables.galaxyMedia,{
-        columns:'meta_tags',
+        columns:'media_id,galaxy_link,title,url,media_type,meta_tags,createtime',
         filters:[{column:'meta_tags',operator:'neq',value:''}],
         limit:5000,
         offset:0
       });
-      return countMediaTags(rows);
+      return {tags:countMediaTags(rows),rows};
     },
     staleTime:30000
   });
 
   useEffect(()=>{
-    if(!selectedTag&&tagQuery.data?.length)setSelectedTag(String(tagQuery.data[0].term||''));
+    if(!selectedTag&&tagQuery.data?.tags?.length)setSelectedTag(String(tagQuery.data.tags[0].term||''));
   },[selectedTag,tagQuery.data]);
 
-  useEffect(()=>{setMediaPage(0);setLoadedMediaRows([]);},[selectedTag,databaseScopeId]);
+  useEffect(()=>{setMediaPage(0);},[selectedTag,databaseScopeId]);
 
   useEffect(()=>{
     let active=true;
@@ -110,36 +136,35 @@ export default function MediaMetaSettingsV2({databaseScopeId}){
     return()=>{active=false};
   },[account.email,account.permissionLoading,account.user,account.canManageGlobal,account.canManageScope,databaseScopeId]);
 
-  const mediaQuery=useQuery({
-    queryKey:['media-meta-tag-items',databaseScopeId,selectedTag,mediaPage],
-    enabled:Boolean(selectedTag&&tables?.galaxyMedia&&tables?.galaxy),
+  const rankedMediaRows=useMemo(
+    ()=>rankMediaForTag(tagQuery.data?.rows||[],selectedTag),
+    [tagQuery.data,selectedTag]
+  );
+  const visibleMediaRows=useMemo(
+    ()=>rankedMediaRows.slice(0,(mediaPage+1)*MEDIA_PAGE_SIZE),
+    [rankedMediaRows,mediaPage]
+  );
+  const visibleGalaxyIds=useMemo(
+    ()=>[...new Set(visibleMediaRows.map(row=>String(row.galaxy_link||'').trim()).filter(Boolean))],
+    [visibleMediaRows]
+  );
+  const relationQuery=useQuery({
+    queryKey:['media-meta-visible-relations',databaseScopeId,selectedTag,visibleGalaxyIds.join(',')],
+    enabled:Boolean(tables?.galaxy&&visibleGalaxyIds.length),
     queryFn:async()=>{
-      const offset=mediaPage*MEDIA_PAGE_SIZE;
-      const filters=[{column:'meta_tags',operator:'ilike',value:'%'+selectedTag+'%'}];
-      const totalCount=await selectNeonCount(tables.galaxyMedia,{filters});
-      const {rows}=await selectNeonRows(tables.galaxyMedia,{
-        columns:'media_id,galaxy_link,title,url,media_type,meta_tags,createtime',
-        filters,
-        orders:[{column:'createtime',ascending:false,nullsFirst:false}],
-        limit:MEDIA_PAGE_SIZE,
-        offset
+      const {rows}=await selectNeonRows(tables.galaxy,{
+        columns:'uid,source_id,target_id',
+        filters:[{column:'uid',operator:'in',value:visibleGalaxyIds}],
+        limit:visibleGalaxyIds.length
       });
-      const galaxyIds=[...new Set(rows.map(row=>String(row.galaxy_link||'').trim()).filter(Boolean))];
-      const galaxyRows=galaxyIds.length
-        ?(await selectNeonRows(tables.galaxy,{
-          columns:'uid,source_id,target_id',
-          filters:[{column:'uid',operator:'in',value:galaxyIds}],
-          limit:galaxyIds.length
-        })).rows
-        :[];
-      const byId=new Map(galaxyRows.map(row=>[String(row.uid),row]));
-      return {
-        rows:rows.map(row=>({...row,galaxy_relation:byId.get(String(row.galaxy_link||''))||null})),
-        hasMore:offset+MEDIA_PAGE_SIZE<totalCount
-      };
+      return rows;
     },
-    staleTime:15000
+    staleTime:30000
   });
+  const galaxyRelations=useMemo(
+    ()=>new Map((relationQuery.data||[]).map(row=>[String(row.uid),row])),
+    [relationQuery.data]
+  );
 
   async function save(row){
     const next=String(draft||'').trim()||null;
@@ -150,23 +175,12 @@ export default function MediaMetaSettingsV2({databaseScopeId}){
       setEditingId('');
       setMessage('已更新媒體 Meta Tag。');
       await queryClient.invalidateQueries({queryKey:['media-meta-ranking',databaseScopeId]});
-      await queryClient.invalidateQueries({queryKey:['media-meta-tag-items',databaseScopeId]});
     }catch(error){setMessage(error?.message||'更新失敗。');}
   }
 
-  useEffect(()=>{
-    const next=mediaQuery.data?.rows||[];
-    if(!next.length)return;
-    setLoadedMediaRows(current=>{
-      if(mediaPage===0)return next;
-      const map=new Map(current.map(row=>[String(row.media_id),row]));
-      next.forEach(row=>map.set(String(row.media_id),row));
-      return [...map.values()];
-    });
-  },[mediaQuery.data,mediaPage]);
-
-  const tags=tagQuery.data||[];
-  const mediaRows=loadedMediaRows;
+  const tags=tagQuery.data?.tags||[];
+  const mediaRows=visibleMediaRows;
+  const hasMore=mediaRows.length<rankedMediaRows.length;
 
   return <div className="scope-v2-media-meta-settings">
     <section className="scope-v2-inline-card">
@@ -185,13 +199,13 @@ export default function MediaMetaSettingsV2({databaseScopeId}){
 
     {selectedTag?<section className="scope-v2-inline-card">
       <h4>{selectedTag}</h4>
-      {mediaQuery.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
-      {mediaQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(mediaQuery.error)}</p>:null}
+      {tagQuery.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
+      {tagQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(tagQuery.error)}</p>:null}
       <div className="scope-v2-media-meta-list">
         {mediaRows.map(row=>{
           const relationLinks=[
             ...(row.galaxy_link?[{id:'galaxy:'+row.galaxy_link,label:'作品',href:galaxyIdentityHref(navigationScope,row.galaxy_link)}]:[]),
-            ...galaxyRelationLinks(navigationScope,row.galaxy_relation||{})
+            ...galaxyRelationLinks(navigationScope,galaxyRelations.get(String(row.galaxy_link||''))||{})
           ].filter(link=>link.href);
           const links=row.url&&/^https?:\/\//i.test(String(row.url))
             ?[{id:'media:'+row.media_id,href:row.url,label:'媒體連結'}]
@@ -213,7 +227,7 @@ export default function MediaMetaSettingsV2({databaseScopeId}){
           </WorkSummaryCardV2>;
         })}
       </div>
-      <IncrementalLoadV2 hasMore={Boolean(mediaQuery.data?.hasMore)} loading={mediaQuery.isFetching} error={mediaQuery.error} onLoadMore={()=>setMediaPage(page=>page+1)} label="還有更多媒體"/>
+      <IncrementalLoadV2 hasMore={hasMore} loading={false} error={null} onLoadMore={()=>setMediaPage(page=>page+1)} label="還有更多媒體"/>
       {message?<p className="scope-v2-status" role="status">{message}</p>:null}
     </section>:null}
   </div>;
