@@ -372,8 +372,6 @@ export default function CultureV2(){
                   if(!term)return;
                   const key='source:'+term;
                   if(categoryGroups.some(group=>group.category_key===key)){
-                    setWorkRows([]);
-                    setWorkPage(0);
                     setSelectedCategory(key);
                   }
                 }}
@@ -400,15 +398,16 @@ export default function CultureV2(){
                 </button>}
               />:null}
 
-              {!isLoc&&selectedGroup?<section className='scope-v2-culture-source-detail' aria-label={selectedGroup.display_label+'列表'}>
+              {!isLoc?<section className='scope-v2-culture-source-detail' aria-label={(selectedGroup?.display_label||'全部作品')+'列表'}>
                 <header>
-                  <h4>{selectedGroup.display_label} · {selectedCount.toLocaleString()} 項作品</h4>
-                  <button type='button' className='scope-v2-pagination-button' onClick={()=>{setSelectedCategory('')}}>收合列表</button>
+                  <h4>{selectedGroup?.display_label||'全部作品'} · {selectedCount.toLocaleString()} 項作品</h4>
+                  {selectedGroup?<button type='button' className='scope-v2-pagination-button' onClick={()=>setSelectedCategory('')}>顯示全部作品</button>:null}
                 </header>
+                {periodWorksQuery.data?.truncated?<p className='scope-v2-status'>此範圍僅載入最早 200 與最新 200 項作品；中間作品請用搜尋或縮小時間範圍查找。</p>:null}
                 {periodWorksQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksQuery.error)}</p>:null}
                 <IncrementalListV2
                   items={visibleWorkRows}
-                  batchSize={CULTURE_WORK_PAGE_SIZE}
+                  batchSize={DEFAULT_LIST_BATCH_SIZE}
                   resetKey={selectedCategory+'|source'}
                   className='scope-v2-culture-source-work-scroll'
                   loading={periodWorksQuery.isFetching}
