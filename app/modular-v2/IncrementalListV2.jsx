@@ -29,6 +29,10 @@ export default function IncrementalListV2({
   },[resetKey,size]);
 
   useEffect(()=>{
+    if(source.length>0&&visibleCount===0&&!pendingExternalRef.current){
+      setVisibleCount(Math.min(size,source.length));
+      return;
+    }
     if(visibleCount>source.length){
       setVisibleCount(Math.min(size,source.length));
       pendingExternalRef.current=false;
