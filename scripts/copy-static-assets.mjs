@@ -26,7 +26,7 @@ const publicPics=[
   'g3c-nature.element.jpg',
   'g4c-order.disorder.jpg',
   'LOC-PicAll.png',
-  'LunaRunes.jpg',
+  'LunaRunes.png',
   'aboutme.png'
 ];
 
