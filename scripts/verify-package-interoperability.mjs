@@ -19,7 +19,7 @@ requireText('app/loc/neon-client.js',[/createClient/ ,/getNeonPublicToken/ ,/res
 // TanStack Query is used by data-heavy Current features.
 requireText('app/modular-v2/features/StatisticsV2.jsx',[/from ['\"]@tanstack\/react-query['\"]/ ,/selectScopeRankingRows/ ,/from ['\"]recharts['\"]/],'Statistics Query/Neon/Recharts interop');
 requireText('app/modular-v2/features/CultureV2.jsx',[/from ['"]@tanstack\/react-query['"]/ ,/selectScopeCultureData/ ,/CultureTimelineV2/],'Culture Query/Neon/Timeline interop');
-requireText('app/loc/GovernanceManagement.jsx',[/from ['"]react-select['"]/ ,/useNeonAccount/ ,/StyleKeywordSettingsV2/ ,/CultureTimelineEditor/],'Scope management React Select/Neon Auth boundary');
+requireText('app/loc/GovernanceManagement.jsx',[/from ['"]react-select['"]/ ,/useNeonAccount/ ,/CultureTimelineEditor/],'Scope management React Select/Neon Auth boundary');
 requireText('app/loc/views/AdminHomeView.jsx',[/from ['"]react-select['"]/ ,/useNeonAccount/ ,/canManageGlobalSync/],'Admin React Select/Neon Auth boundary');
 // Search filtering is executed by Neon/PostgREST; the browser receives only matched rows.
 requireText('app/loc/search-providers.js',[/count:'exact',head:true/ ,/\.or\(/ ,/\.range\(/ ,/outputColumns\.join/],'Search direct Neon literal-query boundary');

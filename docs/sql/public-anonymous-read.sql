@@ -15,7 +15,6 @@ GRANT SELECT ON TABLE
   silver.lo3rwang_time,
   silver.lo3rwang_galaxy,
   silver.lo3rwang_galaxy_media,
-  silver.lo3rwang_style,
   silver.lrunes,
   silver.lrunes_daily,
   silver.lrunes_time,
