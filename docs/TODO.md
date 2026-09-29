@@ -53,6 +53,12 @@ There is no RC10. After RC9, the next release target is **1.0 Release (1.0R)**. 
 - [ ] Make ordinary Scope/Group governance and feature setup achievable through simple Admin configuration.
 - [ ] Verify shared permissions, navigation, feature mounting, and visual conventions remain coherent when Scope/Group instances are extended.
 - [ ] Make the Admin import flow operational for governed text/link ingestion.
+- [ ] Require a valid OAuth-backed source authorization before import is available.
+- [ ] Restrict import execution to Scope managers and Admin; non-manager Scope users cannot use the importer.
+- [ ] Require the importing user to affirm they have the necessary right/authorization to import/use the selected content; record the authenticated source/provenance without treating OAuth itself as copyright certification.
+- [ ] Default all newly imported records to private/non-public visibility; publishing is a separate explicit management action.
+- [ ] Preserve source name, source-native identity, original link, and other available provenance on import.
+- [ ] Enforce traversal/usage limits so the importer cannot be used as a bulk backup or mirroring service.
 - [ ] Add a basic OAuth-capable authenticated page reader for approved/imported pages: read page text and links, then follow only directly linked pages; limit traversal to two total layers (start page + one linked-page layer), with no deeper recursive crawl.
 - [ ] Route imported text, links, source identity, duplicate checks, and relationships through the existing governance/import pipeline and Neon SSOT.
 - [ ] Deliver the author's private personal-analysis app alongside 1.0R, sharing the governed Current data model rather than a separate corpus authority.

@@ -32,6 +32,16 @@ There is **no RC10**. The version sequence after RC9 goes directly to **1.0 Rele
 
 **Release gate:** OAuth-authorized page import with governed two-layer text/link parsing is mandatory for 1.0R. If this capability is not operational, 1.0R is not considered complete.
 
+### Import security and responsibility boundary
+
+- Import is unavailable without a valid OAuth-backed source authorization.
+- Import actions require Scope management authority or Admin authority; ordinary non-manager Scope users cannot run the importer.
+- OAuth establishes authenticated access to content the connected account is permitted to read. It does not itself certify copyright ownership.
+- The importing user must affirm that they have the right or authorization to import/use the selected source content. LOC records the authenticated source context and provenance but does not independently adjudicate copyright ownership.
+- Source provenance must be retained for imported records so origin, source-native identity, and original link remain traceable.
+- Newly imported records default to private/non-public visibility. Publication requires a separate explicit management action after import.
+- Import remains bounded by the two-layer traversal rule and usage limits so it cannot function as a bulk backup/mirroring service.
+
 1. Image multimedia from existing source material—including Facebook, Threads, Instagram, and other media-bearing sources—is integrated into the Current media model.
 2. Images remain media/reference entities and are linked to Galaxy/content records through the existing relationship model; they are not represented by fabricated empty text content.
 3. Search, Culture, Statistics, and other relevant surfaces can use the image metadata/relationships that already belong in their current responsibilities.
