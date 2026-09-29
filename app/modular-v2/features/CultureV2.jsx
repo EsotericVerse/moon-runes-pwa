@@ -12,7 +12,7 @@ import {
   selectScopeMediaWorks
 } from '../../loc/neon-culture-client';
 import {galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation.v2';
-import {FEATURE_EMPTY_MESSAGE,FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
+import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
 import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
 import {selectGalaxyContent} from '../../loc/aggregate-query';
@@ -77,22 +77,15 @@ export default function CultureV2(){
   const [editBusy,setEditBusy]=useState(false);
   const [editError,setEditError]=useState('');
 
-  const currentRows=useMemo(()=>{
-    const scopes=scopeId==='loc'?['lo3rwang','lunarunes']:[scopeId].filter(Boolean);
-    return (query.data?.currentRanges||[])
-      .filter(item=>scopes.includes(String(item?.scope_id||'')));
-  },[scopeId,query.data]);
+  const currentRows=useMemo(()=>(query.data?.currentRanges||[])
+    .filter(item=>scopeId==='loc'||String(item?.scope_id||'')===scopeId),[scopeId,query.data]);
   const currentByScope=useMemo(()=>new Map(currentRows.map(item=>[String(item.scope_id||''),item])),[currentRows]);
-  const currentAuthorPeriod=currentByScope.get('lo3rwang')||null;
-  const currentRunePeriod=currentByScope.get('lunarunes')||null;
 
   const allPeriods=useMemo(()=>sortPeriods(query.data?.eras?.eras||[]),[query.data]);
-  const allAuthorPeriods=useMemo(()=>allPeriods.filter(item=>String(item?.scope_id||'')==='lo3rwang'),[allPeriods]);
-  const allRunePeriods=useMemo(()=>allPeriods.filter(item=>String(item?.scope_id||'')==='lunarunes'),[allPeriods]);
   const isLoc=scopeId==='loc';
-  const classificationScope=scopeId==='lunarunes'?'lunarunes':'lo3rwang';
-  const primaryPeriods=scopeId==='lunarunes'?allRunePeriods:allAuthorPeriods;
-  const primaryCurrent=scopeId==='lunarunes'?currentRunePeriod:currentAuthorPeriod;
+  const classificationScope=isLoc?'lo3rwang':scopeId;
+  const primaryPeriods=isLoc?[]:allPeriods.filter(item=>String(item?.scope_id||'')===scopeId);
+  const primaryCurrent=isLoc?null:(currentByScope.get(scopeId)||null);
   const selectedWorkPeriod=primaryCurrent||periodRange(primaryPeriods,classificationScope);
 
   const periodWorkTimelineQuery=useQuery({
@@ -332,7 +325,7 @@ export default function CultureV2(){
                 <div className='scope-v2-culture-source-work-scroll'>
                   {(query.data?.works||[]).map(work=><article className='scope-v2-inline-card' key={work.key||work.uid}>
                     <strong>{work.title||'未命名作品'}</strong>
-                    <span>{work.scope_id==='lunarunes'?'LunaRunes':'lo3rwang'} · 原始來源：{work.original_source||work.source_name||'未標示'} · {work.display_date||formatCultureDateTime(work.createtime)}</span>
+                    <span>{work.scope_id==='lunarunes'?'LunaRunes':String(work.scope_id||'Scope')} · 原始來源：{work.original_source||work.source_name||'未標示'} · {work.display_date||formatCultureDateTime(work.createtime)}</span>
                     {work.url&&/^https?:\/\//i.test(String(work.url))?<a href={work.url} target='_blank' rel='noreferrer'>來源連結</a>:null}
                   </article>)}
                 </div>
