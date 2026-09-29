@@ -62,23 +62,18 @@ function countMediaTags(rows=[]){
     .sort((a,b)=>b.item_count-a.item_count||a.term.localeCompare(b.term,'zh-Hant'));
 }
 
-function rankMediaForTag(rows=[],selectedTag=''){
+function rankMediaForTag(rows=[],selectedTag='',tagRanking=[]){
   const tag=String(selectedTag||'').trim();
   if(!tag)return [];
+  const weights=new Map((tagRanking||[]).map(row=>[
+    String(row.term||'').trim(),
+    Number(row.item_count)||0
+  ]));
+  const maxWeight=Math.max(1,...weights.values());
   const matching=(rows||[]).filter(row=>splitMediaTags(row?.meta_tags).includes(tag));
-  if(!matching.length)return [];
-  const coCounts=new Map();
-  for(const row of matching){
-    for(const item of splitMediaTags(row?.meta_tags)){
-      if(item===tag)continue;
-      coCounts.set(item,(coCounts.get(item)||0)+1);
-    }
-  }
-  const total=matching.length;
   return matching.map(row=>{
-    const supportTags=splitMediaTags(row?.meta_tags).filter(item=>item!==tag);
-    const representative_score=supportTags.reduce(
-      (sum,item)=>sum+(Number(coCounts.get(item))||0)/total,
+    const representative_score=splitMediaTags(row?.meta_tags).reduce(
+      (sum,item)=>sum+(Number(weights.get(item))||0)/maxWeight,
       0
     );
     return {...row,representative_score};
@@ -137,7 +132,7 @@ export default function MediaMetaSettingsV2({databaseScopeId}){
   },[account.email,account.permissionLoading,account.user,account.canManageGlobal,account.canManageScope,databaseScopeId]);
 
   const rankedMediaRows=useMemo(
-    ()=>rankMediaForTag(tagQuery.data?.rows||[],selectedTag),
+    ()=>rankMediaForTag(tagQuery.data?.rows||[],selectedTag,tagQuery.data?.tags||[]),
     [tagQuery.data,selectedTag]
   );
   const visibleMediaRows=useMemo(
