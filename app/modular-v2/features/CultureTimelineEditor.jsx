@@ -66,7 +66,7 @@ function rowSortDate(row,anchors){
   return dateText(anchors.get(pair.before)?.time_date)||dateText(anchors.get(pair.after)?.time_date)||'9999-12-31';
 }
 
-export default function CultureTimelineEditor({scopeId='lo3rwang'}){
+export default function CultureTimelineEditor({scopeId=''}){
   const account=useNeonAccount();
   const searchParams=useSearchParams();
   const suggestedAnchorDate=String(searchParams?.get?.('anchorDate')||'').slice(0,10);
