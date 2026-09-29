@@ -5,7 +5,7 @@ import {
   resolveStatePair
 } from '../app/loc/model/semantic-state.mjs';
 import {dailyPresetRange,summarizeDailyDraws,summarizeDailyRange,summarizeDailyWindows} from '../app/loc/model/daily-trend-engine.mjs';
-import {buildSpreadGuidance,knownPairStateKeys} from '../app/loc/model/spread-guidance.mjs';
+import {buildSpreadGuidance} from '../app/loc/model/spread-guidance.mjs';
 
 const positive={card_attribute:'正面'};
 const negative={card_attribute:'負面'};
@@ -64,57 +64,31 @@ assert.equal(ow.sections[1].label,'7–11 果的判定層');
 assert.ok(!/趨勢.+結果/.test(ow.guidance));
 assert.ok(ow.guidance.length>0);
 
-const pairAttributes=['正面','中平','負面'];
-const pairDirections=['正位','半正位','半逆位','逆位'];
-const pairSentences=new Set();
-for(const fromAttribute of pairAttributes){
-  for(const fromDirection of pairDirections){
-    for(const toAttribute of pairAttributes){
-      for(const toDirection of pairDirections){
-        const reading=buildSpreadGuidance(
-          [
-            {rune_name:'靈',card_attribute:fromAttribute},
-            {rune_name:'向',card_attribute:toAttribute}
-          ],
-          [fromDirection,toDirection],
-          '2card'
-        );
-        pairSentences.add(reading.sentence);
-      }
-    }
-  }
-}
-assert.equal(knownPairStateKeys().length,12);
-assert.equal(pairSentences.size,144);
+const grammarCard=(name,directionText,lotsText)=>({
+  rune_name:name,
+  card_attribute:'正面',
+  positive_meaning:directionText,
+  lots_positive:lotsText
+});
+const grammarCards=Array.from({length:11},(_,index)=>grammarCard(
+  String(index+1),
+  '句'+String(index+1),
+  '愛情：愛'+String(index+1)+'。事業：事'+String(index+1)+'。關係：關'+String(index+1)+'。健康：健'+String(index+1)+'。'
+));
+const grammarDirections=Array.from({length:11},()=> '正位');
 
-assert.match(
-  buildSpreadGuidance(
-    [{rune_name:'玄',card_attribute:'未知'},{rune_name:'向',card_attribute:'中平'}],
-    ['正位','正位'],
-    '2card'
-  ).sentence,
-  /來源未知/
-);
-assert.match(
-  buildSpreadGuidance(
-    [{rune_name:'靈',card_attribute:'正面'},{rune_name:'命',card_attribute:'未知'}],
-    ['正位','正位'],
-    '2card'
-  ).sentence,
-  /結果.*未知|結果仍然未知/
-);
-assert.match(
-  buildSpreadGuidance(
-    [
-      {rune_name:'靈',card_attribute:'正面'},
-      {rune_name:'玄',card_attribute:'未知'},
-      {rune_name:'向',card_attribute:'中平'}
-    ],
-    ['正位','正位','正位'],
-    '3card'
-  ).sentence,
-  /變數.*未知/
-);
+assert.equal(buildSpreadGuidance(grammarCards.slice(0,2),grammarDirections.slice(0,2),'2card').sentence,'因為句1，所以句2。');
+assert.equal(buildSpreadGuidance(grammarCards.slice(0,3),grammarDirections.slice(0,3),'3card').sentence,'因為句1，但會有句2的改變，所以句3。');
+assert.equal(buildSpreadGuidance(grammarCards.slice(0,5),grammarDirections.slice(0,5),'5card').sentence,'因為句1、句2，但會有句3的變化，所以句4、句5。');
+assert.equal(buildSpreadGuidance(grammarCards,grammarDirections,'ow3gs').sentence,'因為（因為句1、句2，但會有句3、句4的變化，所以句5、句6），所以（因為句7、句8，但會有句9的變化，所以句10、句11）。');
+
+const pairAdvice=buildSpreadGuidance(grammarCards.slice(0,2),grammarDirections.slice(0,2),'2card').advice;
+assert.equal(pairAdvice.length,4);
+assert.equal(pairAdvice.find(item=>item.label==='愛情建議')?.text,'因為愛1，所以愛2。');
+const fiveAdvice=buildSpreadGuidance(grammarCards.slice(0,5),grammarDirections.slice(0,5),'5card').advice;
+assert.equal(fiveAdvice.find(item=>item.label==='事業建議')?.text,'因為事1、事2，但會有事3的變化，所以事4、事5。');
+const owAdvice=buildSpreadGuidance(grammarCards,grammarDirections,'ow3gs').advice;
+assert.equal(owAdvice.find(item=>item.label==='健康建議')?.text,'因為（因為健1、健2，但會有健3、健4的變化，所以健5、健6），所以（因為健7、健8，但會有健9的變化，所以健10、健11）。');
 
 const daily=summarizeDailyDraws([
   {record_date:'2026-09-26',draw_kind:'main',rune_number:1,rune_name:'靈',direction:'正位'},
@@ -158,4 +132,4 @@ assert.equal(windows.seven_days.start_date,'2026-09-21');
 assert.equal(windows.today_tomorrow.start_date,'2026-09-27');
 assert.equal(windows.yesterday_today_tomorrow.start_date,'2026-09-26');
 
-console.log('LunaRunes discrete semantics, natural multi-card guidance, and calendar-based daily range analysis verified.');
+console.log('LunaRunes discrete reference semantics, fixed multi-card grammar, per-card lots advice, and calendar-based daily range analysis verified.');

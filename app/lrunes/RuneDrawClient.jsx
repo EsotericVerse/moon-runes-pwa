@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {selectRuneDrawRows} from '../loc/rune-repository';
 import { useLocalStore } from '../loc/local-store';
-import {resolveSpreadState} from '../loc/model/semantic-state.mjs';
+import {buildSpreadGuidance} from '../loc/model/spread-guidance.mjs';
 import { realMoonPhase } from '../loc/model/moon-phase';
 import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
 import {drawRuneSession} from './rune-draw-engine';
@@ -98,7 +98,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
       const byNumber=new Map(rows.map(row=>[Number(row.rune_number),row]));
       const cards=runeNumbers.map(number=>byNumber.get(Number(number))).filter(Boolean);
       if(cards.length!==runeNumbers.length)throw new Error('抽中的符文資料不完整。');
-      const reading=resolveSpreadState(cards,directions,drawKey);
+      const reading=buildSpreadGuidance(cards,directions,drawKey);
       const createdAt=new Date().toISOString();
       setDraw({id:`rune-draw:${drawKey}:${Date.now()}`,createdAt,cards,directionIndexes,directions,reading,guidance:reading.guidance});
       setError('');
