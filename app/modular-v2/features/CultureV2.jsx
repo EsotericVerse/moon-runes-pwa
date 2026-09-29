@@ -34,17 +34,6 @@ const CULTURE_WORK_PAGE_SIZE=DEFAULT_LIST_BATCH_SIZE;
 function labelOf(item,index){
   return item?.display_label||item?.name||item?.title||item?.period||'時期 '+(index+1);
 }
-function rowsOf(data,scopeId){
-  const rows=Array.isArray(data?.eras?.eras)
-    ?data.eras.eras.filter(item=>scopeId==='loc'||String(item?.scope_id||'')===scopeId)
-    :[];
-  return rows.sort((a,b)=>{
-    const ad=String(a?.start_date||a?.end_date||a?.date||'');
-    const bd=String(b?.start_date||b?.end_date||b?.date||'');
-    if(ad&&bd&&ad!==bd)return ad.localeCompare(bd);
-    return Number(a.order||0)-Number(b.order||0);
-  });
-}
 function sortPeriods(rows=[]){
   return [...rows].filter(item=>item?.start_date||item?.end_date).sort((a,b)=>
     String(a.start_date||a.end_date||'').localeCompare(String(b.start_date||b.end_date||''))||
@@ -73,7 +62,6 @@ export default function CultureV2(){
     staleTime:5*60_000
   });
 
-  const rows=useMemo(()=>rowsOf(query.data,scopeId),[query.data,scopeId]);
   const [timelineMode,setTimelineMode]=useState('works');
   const [classificationMode,setClassificationMode]=useState(scopeId==='lunarunes'?'media':'source');
   const [selectedCategory,setSelectedCategory]=useState('');
@@ -103,15 +91,9 @@ export default function CultureV2(){
   const allRunePeriods=useMemo(()=>allPeriods.filter(item=>String(item?.scope_id||'')==='lunarunes'),[allPeriods]);
   const isLoc=scopeId==='loc';
   const classificationScope=scopeId==='lunarunes'?'lunarunes':'lo3rwang';
-  const scopeRange=useMemo(()=>(query.data?.scopeRanges||[]).find(item=>String(item?.scope_id||'')===scopeId)||null,[query.data,scopeId]);
   const primaryPeriods=scopeId==='lunarunes'?allRunePeriods:allAuthorPeriods;
   const primaryCurrent=scopeId==='lunarunes'?currentRunePeriod:currentAuthorPeriod;
   const selectedWorkPeriod=primaryCurrent||periodRange(primaryPeriods,classificationScope);
-  const selectedPeriodIndex=primaryPeriods.findIndex(item=>
-    String(item?.period||'')===String(selectedWorkPeriod?.period||'')
-    ||String(item?.start_date||'')===String(selectedWorkPeriod?.start_date||'')
-  );
-  const previousWorkPeriod=selectedPeriodIndex>0?primaryPeriods[selectedPeriodIndex-1]:null;
 
   const periodWorkTimelineQuery=useQuery({
     queryKey:['culture-period-work-timeline',scopeId,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
@@ -122,8 +104,6 @@ export default function CultureV2(){
     enabled:!isLoc&&Boolean(selectedWorkPeriod?.start_date),
     staleTime:5*60_000
   });
-
-  const visibleAuthorPeriods=allAuthorPeriods;
 
   const sourceSnapshotQuery=useQuery({
     queryKey:['culture-period-source-snapshot',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
@@ -284,7 +264,7 @@ export default function CultureV2(){
     try{
       if(!account.canManageScopeSync(classificationScope))throw new Error('沒有修改此 Scope 的權限。');
       const content=requireGalaxyContent(editDraft.body);
-      const {error}=await neonAuthClient.schema('silver').from(galaxyTable())
+      const {error}=await neonAuthClient.schema('silver').from(await galaxyTable())
         .update({
           title:resolveGalaxyTitle(editDraft.title,content),
           content,
