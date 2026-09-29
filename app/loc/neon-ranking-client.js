@@ -81,6 +81,32 @@ function rankingRow(type,term,count,source,period){
   };
 }
 
+const SOURCE_BUCKET_ORDER=Object.freeze(['Facebook','Threads','IG','Twitter(X)','YouTube','Others']);
+
+function sourceBucket(value=''){
+  const source=String(value||'').trim().toLowerCase();
+  if(source.includes('facebook')||source==='fb')return 'Facebook';
+  if(source.includes('threads'))return 'Threads';
+  if(source.includes('instagram')||source==='ig')return 'IG';
+  if(source==='x'||source.includes('twitter'))return 'Twitter(X)';
+  if(source.includes('youtube')||source.includes('youtu.be'))return 'YouTube';
+  return 'Others';
+}
+
+function mergeSourceBuckets(rows=[],source='loc',period='all'){
+  const totals=new Map(SOURCE_BUCKET_ORDER.map(name=>[name,0]));
+  for(const row of rows){
+    const raw=String(row?.source_name??row?.term??'').trim();
+    if(!raw)continue;
+    const bucket=sourceBucket(raw);
+    totals.set(bucket,(totals.get(bucket)||0)+(Number(row?.item_count)||0));
+  }
+  return SOURCE_BUCKET_ORDER
+    .map(term=>rankingRow('source',term,totals.get(term)||0,source,period))
+    .filter(row=>row.item_count>0)
+    .sort((a,b)=>b.item_count-a.item_count||SOURCE_BUCKET_ORDER.indexOf(a.term)-SOURCE_BUCKET_ORDER.indexOf(b.term));
+}
+
 async function sourceRows(scopeId,period='all',rangeOverride=undefined){
   const dataId=String(scopeId||'').trim();
   const range=rangeOverride===undefined?await resolvePeriod(scopeId,period):rangeOverride;
@@ -90,7 +116,7 @@ async function sourceRows(scopeId,period='all',rangeOverride=undefined){
     endDate:range?.end_date||'',
     limit:5000
   });
-  return result.rows.map(row=>rankingRow('source',row.source_name,row.item_count,dataId,period));
+  return mergeSourceBuckets(result.rows,dataId,period);
 }
 
 async function mediaTypeRows(scopeId,period='all',rangeOverride=undefined){
@@ -112,15 +138,7 @@ async function rowsForType(scopeId,type,period,rangeOverride=undefined){
 }
 
 function mergeLocSourceRows(rows=[]){
-  const totals=new Map();
-  for(const row of rows){
-    const term=String(row?.term||'').trim();
-    if(!term)continue;
-    totals.set(term,(totals.get(term)||0)+(Number(row?.item_count)||0));
-  }
-  return [...totals.entries()]
-    .map(([term,count])=>rankingRow('source',term,count,'loc','all'))
-    .sort((a,b)=>b.item_count-a.item_count||a.term.localeCompare(b.term));
+  return mergeSourceBuckets(rows,'loc','all');
 }
 
 async function queryScopeRankingRows(scopeId,{rankingType='',navigation={}}={}){
