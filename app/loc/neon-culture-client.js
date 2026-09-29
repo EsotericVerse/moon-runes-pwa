@@ -42,7 +42,25 @@ async function selectCultureTimeRows(scopeId,tableName='',birthday=''){
   const anchors=rows.filter(row=>row.record_type==='anchor');
   const periods=rows.filter(row=>row.record_type==='period');
   const events=rows.filter(row=>row.record_type==='event');
-  const anchorMap=new Map(anchors.filter(row=>row.resource_id).map(row=>[String(row.resource_id),row]));
+  const anchorMap=new Map();
+  for(const row of anchors){
+    const anchorId=String(row.resource_id||'').trim();
+    if(!anchorId)continue;
+    const existing=anchorMap.get(anchorId);
+    if(existing){
+      const existingSignature=existing.time_date
+        ?'exact:'+String(existing.time_date).slice(0,10)
+        :String(existing.date_status||'')==='year_only'?'year:'+String(existing.year_value||''):'unknown';
+      const nextSignature=row.time_date
+        ?'exact:'+String(row.time_date).slice(0,10)
+        :String(row.date_status||'')==='year_only'?'year:'+String(row.year_value||''):'unknown';
+      if(existingSignature!==nextSignature){
+        throw new Error('Scope '+scopeId+' 定錨點識別衝突：'+anchorId+' 對應不同日期（'+existingSignature+' / '+nextSignature+'）');
+      }
+      continue;
+    }
+    anchorMap.set(anchorId,row);
+  }
   const normalize=(row,type)=>{
     const id=String(row.resource_id||row.record_id||'');
     const pair=anchorPair(row.anchor_pair);
