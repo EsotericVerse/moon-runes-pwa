@@ -9,23 +9,12 @@ export function workDisplayText(value){
   return decodeCultureText(value??'');
 }
 
-export function workDisplayPreview(value,{limit=80}={}){
-  const text=workDisplayText(value).replace(/\s+/g,' ').trim();
-  const size=Math.max(1,Math.floor(Number(limit)||80));
-  return text.slice(0,size);
-}
-
 export function workDisplayTitle({
   title='',
-  preview='',
-  content='',
-  fallback=WORK_FALLBACK_TITLE,
-  limit=80
+  fallback=WORK_FALLBACK_TITLE
 }={}){
   const explicit=workDisplayText(title).trim();
-  if(explicit)return explicit;
-  const derived=workDisplayPreview(preview||content,{limit});
-  return derived||fallback;
+  return explicit||fallback;
 }
 
 export function workDisplaySource(row={},fallback=''){
@@ -35,8 +24,7 @@ export function workDisplaySource(row={},fallback=''){
 
 export function workDisplayHeading(row={},{
   media=null,
-  fallback='',
-  limit=80
+  fallback=''
 }={}){
   const isMedia=media===null?Boolean(row?.media_id):Boolean(media);
   const explicitTitle=
@@ -44,16 +32,8 @@ export function workDisplayHeading(row={},{
     row?.display_title||
     row?.name||
     '';
-  const preview=
-    row?.excerpt||
-    row?.content||
-    row?.meta_tags||
-    row?.description||
-    '';
   return workDisplayTitle({
     title:explicitTitle,
-    preview,
-    fallback:fallback||(isMedia?MEDIA_FALLBACK_TITLE:WORK_FALLBACK_TITLE),
-    limit
+    fallback:fallback||(isMedia?MEDIA_FALLBACK_TITLE:WORK_FALLBACK_TITLE)
   });
 }

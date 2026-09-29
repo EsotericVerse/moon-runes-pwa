@@ -58,7 +58,6 @@ function makeProvider({id,table,source,scopeId,idColumn,columns,searchFields,fil
   function recordFor(row){
     const metadata={
       ...pick(row,outputColumns),
-      ...(row?.content&&!row?.title?{excerpt:String(row.content).slice(0,220)}:{}),
       scope_id:row?.scope_id||scopeId
     };
     return {row:metadata,source,providerId:id};

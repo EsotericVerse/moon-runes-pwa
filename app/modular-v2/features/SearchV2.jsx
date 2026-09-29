@@ -17,7 +17,7 @@ import ContentEditorV2 from '../ContentEditorV2';
 import SearchHighlightV2 from '../SearchHighlightV2';
 import {selectGalaxyContent,selectGalaxyIdentity} from '../../loc/aggregate-query';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model.v2';
-import {requireGalaxyContent} from '../../loc/content-policy';
+import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 import IncrementalLoadV2 from '../IncrementalLoadV2';
 import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
 
@@ -41,12 +41,6 @@ async function updateNeonRows(table,values,{filters=[]}={}){
 
 const norm=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
 function rowText(row){return Object.values(row||{}).filter(value=>typeof value==='string').join(' ')}
-function snippet(text,q){
-  const raw=String(text||'').replace(/\s+/g,' ').trim();
-  const index=norm(raw).indexOf(norm(q));
-  const start=Math.max(0,(index<0?0:index)-70);
-  return `${start?'…':''}${raw.slice(start,start+220)}${raw.length>start+220?'…':''}`;
-}
 function toResult(row,source,q,scopeId){
   const text=rowText(row);
   const isGalaxy=Boolean(row.uid);
@@ -56,7 +50,7 @@ function toResult(row,source,q,scopeId){
   const fallbackTitle=isMedia?MEDIA_FALLBACK_TITLE:WORK_FALLBACK_TITLE;
   const title=(isGalaxy||isMedia)
     ?workDisplayHeading(row,{media:isMedia,fallback:fallbackTitle,limit:80})
-    :(explicitTitle||(excerpt?snippet(excerpt,q):fallbackTitle));
+    :(explicitTitle||fallbackTitle);
   const bodyField=['summary','display_text','excerpt','content','meta_tags','description','interpretation','ai_summary','retrieval_text','text'].find(field=>typeof row[field]==='string'&&row[field].trim())||'';
   const displaySource=isGalaxy&&row.source_name?String(row.source_name):source;
   const mediaMetadata=[
@@ -67,7 +61,7 @@ function toResult(row,source,q,scopeId){
   const body=isMedia
     ?(mediaMetadata||(bodyField?workDisplayText(row[bodyField]):text))
     :(bodyField?workDisplayText(row[bodyField]):(isGalaxy?'':text));
-  const identity=row.media_id||row.uid||row.song_id||row.rune_id||row.id;
+  const identity=row.media_id||row.uid||row.song_id||row.rune_id||row.faq_id||row.record_id||row.resource_id||row.id;
   const scope=row.scope_id||scopeId;
   const resourceType=(row.uid)?'galaxy':row.media_id?'galaxy_media':'';
   const resourceId=row.uid||row.media_id||'';
@@ -85,10 +79,10 @@ function toResult(row,source,q,scopeId){
   const isScopeCard=Boolean(row.scope_card);
   const href=isScopeCard?scopeHrefV2(scope):(row.url||row.href||row.suno_url||'');
   return {
-    key:identity?source+'-'+identity:source+'-'+title+'-'+String(body).slice(0,40),
+    key:identity?source+'-'+identity:[source,scope,title].join('-'),
     source:displaySource,title:String(title),
     date:row.date||row.createtime||row.time_date||row.record_date||row.UpdateTime||row.updated_at||'',
-    snippet:explicitTitle?snippet(body,q):'',scopeId:scope,resourceType,resourceId,
+    snippet:'',scopeId:scope,resourceType,resourceId,
     editableTable,editableIdColumn,editResourceId,editableField,isScopeCard,href,
     relationLinks:resourceType==='galaxy'
       ?galaxyRelationLinks(scope,row)
@@ -293,14 +287,17 @@ export default function SearchV2(){
     try{
       if(!account.canManageScopeSync(result.scopeId))throw new Error('沒有修改此內容的權限。');
       const body=result.resourceType==='galaxy'?requireGalaxyContent(editDraft.body):editDraft.body;
+      const nextTitle=result.resourceType==='galaxy'
+        ?resolveGalaxyTitle(editDraft.title,body)
+        :(String(editDraft.title||'').trim()||null);
       const contentPatch={
-        title:editDraft.title,
+        title:nextTitle,
         [result.editableField]:body,
         ...(result.resourceType==='galaxy'?{searchable:!editDraft.hidden}:{})
       };
       const contentFilters=[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId}];
       await updateNeonRows(result.editableTable,contentPatch,{filters:contentFilters});
-      setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:editDraft.title,snippet:''}));
+      setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:nextTitle,snippet:''}));
       if(fullTextKey===result.key)setFullText(editDraft.body);
       setEditingKey('');setEditDraft(null);
     }catch(exception){setEditError(String(exception?.message||exception||'儲存失敗。'))}

@@ -14,6 +14,13 @@ export function requireGalaxyContent(value){
   return content;
 }
 
+export function resolveGalaxyTitle(title,content){
+  const explicit=String(title??'').trim();
+  if(explicit)return explicit;
+  const text=normalizeGalaxyContent(content).replace(/\s+/g,' ');
+  return Array.from(text).filter((_,index)=>index<12).join('');
+}
+
 export function isReferenceOnlyResource(row){
   return row?.reference_only===true;
 }

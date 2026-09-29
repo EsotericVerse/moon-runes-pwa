@@ -4,7 +4,7 @@ import {useMemo,useState} from 'react';
 import {neonAuthClient} from './neon-client';
 import {useNeonAccount} from './use-neon-account';
 import {createUid8} from './uid';
-import {normalizeGalaxyContent} from './content-policy';
+import {normalizeGalaxyContent,resolveGalaxyTitle} from './content-policy';
 
 async function insertNeonRows(table,rows){
   if(String(table).endsWith('_galaxy_media')){
@@ -72,21 +72,24 @@ function JsonImport({scopeId}){
     if(!selected){setStatus('請先選擇來源。');return;}
     setBusy(true);setStatus('');
     try{
-      const payload=rows.map(row=>({
-        uid:String(firstValue(row,['uid'])||createUid8()).toUpperCase(),
-        content_type:String(firstValue(row,['content_type','type'])||'other').trim()||'other',
-        title:String(firstValue(row,['title','name','subject'])||'').trim()||null,
-        content:normalizeGalaxyContent(firstValue(row,['content','body','text','message','description']))||null,
-        createtime:iso(firstValue(row,['createtime','created_at','create_time','created_time','date','published_at'])),
-        source_native_id:String(firstValue(row,['source_native_id','native_id'])||'').trim()||null,
-        source_place:String(firstValue(row,['source_place','place'])||'').trim()||null,
-        searchable:row?.searchable!==false&&row?.search!==false,
-        source_id:String(firstValue(row,['source_id'])||'').trim()||null,
-        target_id:targetIds(firstValue(row,['target_id'])),
-        ref_id:String(firstValue(row,['ref_id'])||'').trim()||null,
-        url:String(firstValue(row,['url','link','permalink'])||'').trim()||null,
-        source_name:selected
-      })).filter(row=>row.content);
+      const payload=rows.map(row=>{
+        const content=normalizeGalaxyContent(firstValue(row,['content','body','text','message','description']));
+        return {
+          uid:String(firstValue(row,['uid'])||createUid8()).toUpperCase(),
+          content_type:String(firstValue(row,['content_type','type'])||'other').trim()||'other',
+          title:resolveGalaxyTitle(firstValue(row,['title','name','subject']),content),
+          content:content||null,
+          createtime:iso(firstValue(row,['createtime','created_at','create_time','created_time','date','published_at'])),
+          source_native_id:String(firstValue(row,['source_native_id','native_id'])||'').trim()||null,
+          source_place:String(firstValue(row,['source_place','place'])||'').trim()||null,
+          searchable:row?.searchable!==false&&row?.search!==false,
+          source_id:String(firstValue(row,['source_id'])||'').trim()||null,
+          target_id:targetIds(firstValue(row,['target_id'])),
+          ref_id:String(firstValue(row,['ref_id'])||'').trim()||null,
+          url:String(firstValue(row,['url','link','permalink'])||'').trim()||null,
+          source_name:selected
+        };
+      }).filter(row=>row.content);
       const skipped=Math.max(0,rows.length-payload.length);
       await insertNeonRows('silver.lo3rwang_galaxy',payload);
       setStatus(`已匯入 ${payload.length.toLocaleString()} 筆到來源「${selected}」${skipped?`；略過 ${skipped.toLocaleString()} 筆無正文資料。`:''}`);
@@ -100,7 +103,6 @@ function JsonImport({scopeId}){
     {fileName?<p>檔案：<strong>{fileName}</strong>｜建議來源：<strong>{suggested}</strong></p>:null}
     <label>來源選擇<input value={source} onChange={e=>setSource(e.target.value)} placeholder={suggested}/></label>
     <p className="loc-subtitle">建議位置只作提示；實際來源仍由管理者決定。source_id／target_id／ref_id 若存在會一併帶入。</p>
-    {rows.length?<details><summary>預覽前 3 筆</summary><pre style={{whiteSpace:'pre-wrap'}}>{JSON.stringify(rows.slice(0,3),null,2)}</pre></details>:null}
     <button type="button" disabled={busy||!rows.length} onClick={run}>{busy?'匯入中…':'開始匯入'}</button>
     {status?<p className="scope-v2-status">{status}</p>:null}
   </div>;
