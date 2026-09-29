@@ -25,6 +25,12 @@ walk(resolve(root,'app'),path=>{
   if(/neon-scope-projections|selectScopeProjectionRows/.test(text)){
     failures.push(`${rel}: retired projection loader reference`);
   }
+  if(/\bwork_count\b/.test(text)){
+    failures.push(`${rel}: stored work_count/runtime work_count naming is forbidden; use live item_count aggregates`);
+  }
+  if(/silver\.(?:lo3rwang|lrunes)_(?:galaxy(?:_media)?|time)\b/.test(text)){
+    failures.push(`${rel}: scope Galaxy/Time table must resolve through silver.manage mapping`);
+  }
 });
 
 for(const required of [
