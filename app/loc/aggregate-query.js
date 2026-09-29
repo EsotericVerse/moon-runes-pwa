@@ -117,14 +117,15 @@ export async function selectCategoryCounts(table,categoryColumn,{startDate='',en
   const {rows}=await selectNeonRows(table,{
     columns:`${categoryColumn},item_count:count()`,
     filters:resolved,
-    orders:[{column:'item_count',ascending:false},{column:categoryColumn,ascending:true}],
+    orders:[{column:categoryColumn,ascending:true}],
     limit:safeLimit,
     offset:0
   });
   return rows.map(row=>({
     term:String(row?.[categoryColumn]||'').trim(),
     item_count:Number(row.item_count)||0
-  })).filter(row=>row.term);
+  })).filter(row=>row.term)
+    .sort((a,b)=>b.item_count-a.item_count||a.term.localeCompare(b.term));
 }
 
 export async function selectGalaxyPage({scopeId,sourceName='',startDate='',endDate='',limit=20,offset=0}={}){
