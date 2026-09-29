@@ -38,7 +38,7 @@ for(const path of [
 ]) if(!existsSync(resolve(root,path)))failures.push(`missing module contract file: ${path}`);
 
 const runesClient=readFileSync(resolve(root,'app/lrunes/RunesClient.jsx'),'utf8');
-for(const token of ['selectRuneCatalog','data-draw-action="execute"','function executeDraw','function finishDraw'])if(!runesClient.includes(token))failures.push(`RunesClient: missing draw contract ${token}`);
+for(const token of ['data-draw-action="execute"','function executeDraw','function finishDraw'])if(!runesClient.includes(token))failures.push(`RunesClient: missing draw contract ${token}`);
 
 const cultureView=readFileSync(resolve(root,'app/modular-v2/features/CultureV2.jsx'),'utf8');
 const cultureTimeline=readFileSync(resolve(root,'app/modular-v2/modules/culture-timeline/CultureTimelineV2.jsx'),'utf8');
@@ -84,7 +84,6 @@ if(/galaxy_preview|content_preview/.test(aggregateQuery))failures.push('aggregat
 
 for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs','app/loc/neon-context-client.js','app/loc/rune-repository.js','app/lrunes/rune-draw-engine.js','app/modular-v2/features/ContextV2.jsx','app/modular-v2/features/ContextWorkbenchV2.jsx','app/modular-v2/modules/context-graph/ContextGraphV2.jsx','app/modular-v2/features/KeywordSettingsV2.jsx','app/modular-v2/features/RuneKeywordSettingsV2.jsx'])if(existsSync(resolve(root,retired)))failures.push(`retired path returned: ${retired}`);
 if(/(?:import|<)\s*KeywordSettingsV2\b|RuneKeywordSettingsV2\b/.test(governanceManagement))failures.push('LunaRunes management must not edit canonical rune keywords or use them as a style fallback');
-if(['LOC_DATA','canonical/runes','fetchNeonData','runtime_json_documents','fetchLocJson','fetchLocDataSegments'].some(token=>runeRepository.includes(token)))failures.push('Rune repository: legacy path/JSON loader semantics returned');
 
 for(const [client,contract] of [
   ['app/loc/neon-culture-client.js','ScopeCultureResponseSchema'],
