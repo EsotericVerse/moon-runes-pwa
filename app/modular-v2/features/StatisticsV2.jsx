@@ -10,10 +10,12 @@ import {
 } from 'recharts';
 import {selectScopeRankingRows,selectScopeRankingTypes} from '../../loc/neon-ranking-client';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation.v2';
-import {FEATURE_EMPTY_MESSAGE,FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
+import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import MediaMetaSettingsV2 from './MediaMetaSettingsV2';
 import FeaturePageV2 from '../FeaturePageV2';
+import IncrementalListV2 from '../IncrementalListV2';
+import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const CHART_ACCENT='var(--loc-accent)';
@@ -61,14 +63,18 @@ function RankingChart({type='bar',rows,height=380}){
   </ResponsiveContainer>;
 }
 
-function RankingList({rows,offset=0}){
-  if(!rows?.length)return <p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>;
-  return <div className="scope-v2-ranking">
-    {rows.map((row,index)=><div key={row.ranking_key||row.term||index}>
-      <strong>{offset+index+1}. {displayTerm(row)}</strong>
+function RankingList({rows=[],resetKey=''}) {
+  return <IncrementalListV2
+    items={rows}
+    batchSize={DEFAULT_LIST_BATCH_SIZE}
+    resetKey={resetKey}
+    className="scope-v2-ranking"
+    empty={<p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>}
+    renderItem={(row,index)=><div key={row.ranking_key||row.term||index}>
+      <strong>{index+1}. {displayTerm(row)}</strong>
       <span>{Number(row.item_count||0).toLocaleString()}</span>
-    </div>)}
-  </div>;
+    </div>}
+  />;
 }
 
 function useRanking(scopeId,type,navigation){
@@ -130,10 +136,9 @@ function StatisticsPanel({scopeId,navigation,types}){
       <StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/>
       <label><span>圖形</span><select className="scope-v2-select" value={chartType} onChange={event=>setChartType(event.target.value)}>{CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
     </div>
-    {query.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
-    {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
+        {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
     {!query.isPending&&!query.error?<>
-      <RankingList rows={allRows} offset={0}/>
+      <RankingList rows={allRows} resetKey={scopeId+"|"+rankingType+"|"+String(navigation.period||"all")}/>
       <RankingChart type={chartType} rows={allRows} height={380}/>
     </>:null}
 
@@ -162,7 +167,6 @@ function StatisticsShell({scopeId,navigation}){
   const types=typesQuery.data||[];
   return <section className="loc-card scope-v2-feature-card">
     <StatTabs scopeId={scopeId} navigation={navigation} active={active} tabs={visibleTabs}/>
-    {typesQuery.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
     {typesQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(typesQuery.error)}</p>:null}
     {!typesQuery.isPending&&active==='ranking'?<StatisticsPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
     {active==='media'?<MediaPanel scopeId={scopeId}/>:null}
