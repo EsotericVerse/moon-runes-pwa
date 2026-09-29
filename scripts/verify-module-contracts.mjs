@@ -46,8 +46,11 @@ for(const token of ['selectRuneCatalog','data-draw-action="execute"','function e
 const cultureView=readFileSync(resolve(root,'app/modular-v2/features/CultureV2.jsx'),'utf8');
 const cultureTimeline=readFileSync(resolve(root,'app/modular-v2/modules/culture-timeline/CultureTimelineV2.jsx'),'utf8');
 const governanceManagement=readFileSync(resolve(root,'app/loc/GovernanceManagement.jsx'),'utf8');
-for(const token of ["isLoc?<CultureTimelineV2","mode='current'","scope-v2-culture-period-2d","選擇完整時期"]){
+for(const token of ["isLoc?<CultureTimelineV2","mode='current'","<option value='works'>時期分割作品</option>","<option value='anchor'>定錨點</option>","culture-period-work-timeline"]){
   if(!cultureView.includes(token))failures.push(`Culture Current contract missing: ${token}`);
+}
+if(/scope-v2-culture-period-2d|選擇完整時期|activeWorkPeriod|setActiveWorkPeriod/.test(cultureView)){
+  failures.push('Culture: retired manual Period selector returned');
 }
 for(const retired of ["時期比例變化","只比較完整時期內各分類所占比例"]){
   if(cultureView.includes(retired))failures.push(`Culture retired suggestion returned: ${retired}`);

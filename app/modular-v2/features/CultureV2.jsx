@@ -79,7 +79,6 @@ export default function CultureV2(){
   const [workPage,setWorkPage]=useState(0);
   const [workRows,setWorkRows]=useState([]);
   const workScrollRef=useRef(null);
-  const [activeWorkPeriod,setActiveWorkPeriod]=useState(null);
   const [fullTextKey,setFullTextKey]=useState('');
   const [fullText,setFullText]=useState('');
   const [fullTextLoading,setFullTextLoading]=useState(false);
@@ -106,7 +105,7 @@ export default function CultureV2(){
   const scopeRange=useMemo(()=>(query.data?.scopeRanges||[]).find(item=>String(item?.scope_id||'')===scopeId)||null,[query.data,scopeId]);
   const primaryPeriods=scopeId==='lunarunes'?allRunePeriods:allAuthorPeriods;
   const primaryCurrent=scopeId==='lunarunes'?currentRunePeriod:currentAuthorPeriod;
-  const selectedWorkPeriod=activeWorkPeriod||primaryCurrent||periodRange(primaryPeriods,classificationScope);
+  const selectedWorkPeriod=primaryCurrent||periodRange(primaryPeriods,classificationScope);
   const selectedPeriodIndex=primaryPeriods.findIndex(item=>
     String(item?.period||'')===String(selectedWorkPeriod?.period||'')
     ||String(item?.start_date||'')===String(selectedWorkPeriod?.start_date||'')
@@ -210,7 +209,6 @@ export default function CultureV2(){
     setSelectedCategory('');
     setWorkPage(0);
     setWorkRows([]);
-    setActiveWorkPeriod(null);
   },[scopeId]);
 
   useEffect(()=>{
