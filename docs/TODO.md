@@ -25,15 +25,33 @@ None recorded. RC8 Current close-out is closed.
 - [ ] Any management-page defect found after this baseline is a focused UI/management correction unless it exposes a data-integrity or runtime-authority defect.
 - [ ] Do not reopen retired JSON/cache/legacy runtime architecture while correcting management UI.
 
-## Next stage — not an RC8 close-out blocker
+## RC9 — existing-function completion
 
-The next engineering pass is a module-usage audit rather than feature completion:
+RC9 is the final release candidate. It does not expand the product boundary; it completes and stabilizes the functions already present in Current.
 
-- Review installed modules and use them where they replace hand-built infrastructure cleanly.
-- Remove direct dependencies that Current code does not use directly.
-- Select mature reference/metadata management modules for media URLs, cloud links, filenames, source IDs, and text metadata instead of building file-processing logic inside LOC.
-- Media Current stores references only: URL/cloud link, filename or title, source ID, time/place metadata, Meta Tags, and Galaxy relationships. LOC does not upload, cache, transcode, thumbnail, parse, or persist image/audio/video binary files.
-- Media Meta Tags are supplied at record creation by the source/user/manager. LOC may normalize storage format, search, count, and compare those tags, but must not invent or auto-classify them.
-- Keep LOC responsible for normalization, relationships, time/place metadata, governance, Search/Culture/Statistics integration, and Neon reference persistence.
+- [ ] Complete manual review and correction of Governance / Admin management pages and edit flows.
+- [ ] Broaden use of installed modules where they fit existing functions cleanly, replacing unnecessary hand-built infrastructure without changing the Current SSOT or feature meaning.
+- [ ] Finish LunaRunes interpretation sentence handling so single, Daily, multi-card, and related guidance use the intended existing sentence rules consistently.
+- [ ] Finish LunaRunes keyword handling, including the canonical keyword library, rule handling, management flow, Search/Statistics use, and consistency with current rune definitions.
+- [ ] Re-run existing-function regression checks after those changes and preserve the RC8 runtime/data invariants.
 
-Long-range family-scale corpus work, locale expansion, semantic-display experiments, deeper Game effects, Event expansion, and the still-discussable eight-role design are future product directions. They are not unfinished RC8 migration work and must not reintroduce retired JSON/cache architecture.
+RC9 closes when the existing functional surface is complete enough that remaining work is multimedia/image integration and final visual stabilization.
+
+## 1.0 Release — multimedia and visual stabilization
+
+There is no RC10. After RC9, the next release target is **1.0 Release**.
+
+- [ ] Integrate image multimedia already present in source material, especially Facebook, Threads, Instagram, and other existing media-bearing records.
+- [ ] Preserve multimedia as first-class media/reference data; do not fabricate empty text works to represent images.
+- [ ] Connect image metadata and relationships to the existing Galaxy / Media / Search / Culture / Statistics model where appropriate.
+- [ ] Stabilize all graphical pages and visualizations across the existing LOC, LunaRunes, author, management, Culture, Statistics, graph/timeline, Daily, and Game surfaces.
+- [ ] Complete final regression, responsive, loading, and failure-state checks for the visual application.
+- [ ] Freeze the resulting build as **1.0 Release**.
+
+## Version policy
+
+- RC8 = stable architecture/data/runtime baseline.
+- RC9 = final candidate for existing-function completion and language/keyword quality.
+- RC10 = **not used**.
+- 1.0 Release = multimedia image integration + complete graphical-page stabilization + final release validation.
+
