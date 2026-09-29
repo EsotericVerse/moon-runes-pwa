@@ -71,80 +71,14 @@ function dateLabel(value){
   const formatted=formatCultureDateTime(value);
   return formatted.length>=10?formatted.slice(0,10):formatted;
 }
-function riverPath(startX,endX,yAt,steps=48){
-  const points=[];
-  for(let index=0;index<=steps;index++){
-    const x=startX+(endX-startX)*index/steps;
-    points.push((index===0?'M':'L')+x.toFixed(1)+' '+yAt(x).toFixed(1));
-  }
-  return points.join(' ');
-}
 
-function CurrentCultureRivers({ranges,onSelect=null}){
-  const personalCurrent=(ranges||[]).find(row=>String(row?.scope_id||'')==='lo3rwang')||null;
-  const runeCurrent=(ranges||[]).find(row=>String(row?.scope_id||'')==='lunarunes')||null;
-  if(!personalCurrent||!runeCurrent)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><p>目前缺少可計算的時間範圍。</p></div>;
-
-  const personalStartTime=Date.parse(personalCurrent.start_date||'');
-  const runeStartTime=Date.parse(runeCurrent.start_date||'');
-  const intersectionStart=Math.max(personalStartTime,runeStartTime);
-  const domainStart=intersectionStart;
-  const today=Date.parse(new Date().toISOString().slice(0,10));
-  const personalEnd=Date.parse(personalCurrent.end_date||'');
-  const runeEnd=Date.parse(runeCurrent.end_date||'');
-  const personalBound=Number.isFinite(personalEnd)?Math.min(personalEnd,today):today;
-  const runeBound=Number.isFinite(runeEnd)?Math.min(runeEnd,today):today;
-  const intersectionEnd=Math.min(personalBound,runeBound);
-
-  if(!Number.isFinite(intersectionStart)||intersectionEnd<intersectionStart){
-    return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><p>目前兩個 Current 時期沒有交集。</p></div>;
-  }
-
-  const left=120;
-  const right=1080;
-  const centerY=330;
-  const intersectionPath=riverPath(left,right,()=>centerY,24);
-  const intersectionColor='var(--loc-accent,#6b63ff)';
-  const personalTitle=personalCurrent.display_label||personalCurrent.title||'目前個人時期';
-  const runeTitle=runeCurrent.display_label||runeCurrent.title||'目前 LunaRunes';
-  const personalCount=Number(personalCurrent.item_count)||0;
-  const runeCount=Number(runeCurrent.item_count)||0;
-  const startLabel=dateLabel(domainStart);
-  const endLabel=dateLabel(intersectionEnd);
-
-  return <section className='scope-v2-current-rivers'>
-    <div className={'scope-v2-current-rivers-canvas'+(onSelect?' is-clickable':'')} role='button' tabIndex={0} onClick={()=>onSelect?.({type:'current-intersection'})} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();onSelect?.({type:'current-intersection'});}}}>
-      <svg viewBox='0 0 1200 520' role='img' aria-label='Current 個人時期與 LunaRunes Current 的交集時間河道' className='scope-v2-current-rivers-svg'>
-        <title>兩個 Scope Current 時期的集合交集</title>
-        <rect x='20' y='20' width='1160' height='480' rx='24' fill='var(--loc-panel,#fff)' stroke='var(--loc-border,#999)' strokeWidth='1'/>
-        <text x='64' y='72' fill='var(--loc-text,#111)' fontSize='23' fontWeight='700'>Current × Current 交會集合</text>
-        <text x='64' y='104' fill='var(--loc-muted,#666)' fontSize='14'>只顯示兩個 Current 同時成立的集合交集，不做加總。</text>
-
-        <text x='600' y='188' textAnchor='middle' fill='var(--loc-text,#111)' fontSize='16' fontWeight='700'>{personalTitle} ∩ {runeTitle}</text>
-        <text x='600' y='218' textAnchor='middle' fill='var(--loc-muted,#666)' fontSize='14'>個人 {personalCount.toLocaleString()} 項 · LunaRunes {runeCount.toLocaleString()} 項</text>
-        <path d={intersectionPath} fill='none' stroke={intersectionColor} strokeWidth='30' strokeLinecap='round' opacity='.18'/>
-        <path d={intersectionPath} fill='none' stroke={intersectionColor} strokeWidth='13' strokeLinecap='round'/>
-        <circle cx={left} cy={centerY} r='11' fill={intersectionColor} stroke='var(--loc-panel,#fff)' strokeWidth='4'/>
-        <circle cx={right} cy={centerY} r='11' fill={intersectionColor} stroke='var(--loc-panel,#fff)' strokeWidth='4'/>
-        <text x='600' y={centerY-28} textAnchor='middle' fill='var(--loc-text,#111)' fontSize='16' fontWeight='700'>A ∩ B</text>
-
-        <line x1='120' y1='430' x2='1080' y2='430' stroke='var(--loc-text,#111)' strokeWidth='1' opacity='.3'/>
-        <text x='120' y='458' fill='var(--loc-text,#111)' fontSize='14'>{startLabel+' 起'}</text>
-        <text x='1080' y='458' textAnchor='end' fill='var(--loc-text,#111)' fontSize='14'>{endLabel+' 止'}</text>
-      </svg>
-    </div>
-  </section>;
-}
-
-export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),focus={},mode='period',currentRanges=[],onSelect=null}){
+export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),focus={},mode='period',onSelect=null}){
   const containerRef=useRef(null);
   const onSelectRef=useRef(onSelect);
   const [ready,setReady]=useState(false);
   const [chartError,setChartError]=useState(false);
   const rows=useMemo(()=>timelineRows(items,labelOf,focus),[items,labelOf,focus]);
-  const fallbackRows=useMemo(()=>[...rows].sort((a,b)=>String(b.start).localeCompare(String(a.start))),[rows]);
-  const currentConfluence=mode==='current'&&currentRanges.some(row=>String(row?.scope_id||'')==='lo3rwang')&&currentRanges.some(row=>String(row?.scope_id||'')==='lunarunes');
-  const groupCount=new Set(rows.map(row=>row.group).filter(Boolean)).size;
+  const fallbackRows=useMemo(()=>[...rows].sort((a,b)=>String(b.start).localeCompare(String(a.start))),[rows]);  const groupCount=new Set(rows.map(row=>row.group).filter(Boolean)).size;
   const compactGroupCount=Math.max(1,groupCount||rows.length);
   const timelineHeight=(mode==='source'||mode==='overview')
     ?Math.max(220,Math.min(560,96+compactGroupCount*46))
@@ -190,7 +124,6 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
     return()=>{cancelled=true;if(instance)instance.destroy();};
   },[rows,timelineHeight]);
 
-  if(currentConfluence)return <CurrentCultureRivers ranges={currentRanges} onSelect={onSelect}/>;
   if(!rows.length)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><div className='scope-period-timeline scope-period-timeline-empty-line' role='region' aria-label='時間長河'/><p>{mode==='overview'?'尚未設定時期，目前以「所有」總覽顯示。':'目前時期尚無可顯示的時間資料。'}</p></div>;
 
   return <div className='scope-period-timeline-wrap'>
