@@ -234,19 +234,7 @@ export default function CultureV2(){
     });
   },[query.data,scopeId,periodVolumeByStart]);
   const periodTimelineItems=useMemo(()=>timelineItems.filter(item=>['period','anchor'].includes(String(item?.entry_type||''))),[timelineItems]);
-  const workTimelineEvents=useMemo(()=>(query.data?.events||[])
-    .filter(item=>String(item?.scope_id||'')===scopeId&&item?.start_date&&item?.end_date)
-    .map(item=>({
-      ...item,
-      id:'event:'+String(item.event_id||item.entry_id||item.title),
-      entry_type:'event',
-      group_label:'事件',
-      display_label:item.title||'事件'
-    })),[query.data,scopeId]);
-  const workTimelineItems=useMemo(()=>[
-    ...(workTimelineQuery.data?.buckets||[]),
-    ...workTimelineEvents
-  ],[workTimelineQuery.data,workTimelineEvents]);
+  const workTimelineItems=workTimelineQuery.data?.buckets||[];
   const hasTimelineSurface=isLoc?timelineItems.length>0:Boolean(scopeRange?.start_date||timelineItems.length);
 
   const classificationBuckets=classificationMode==='source'
