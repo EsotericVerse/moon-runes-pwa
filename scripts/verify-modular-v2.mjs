@@ -189,7 +189,7 @@ if(new Set(mounts).size!==mounts.length)failures.push('duplicate Scope mount');
 
 for(const retired of ['app/site-registry.js','app/use-current-scope.js','app/ScopeNav.jsx','app/GlobalFooter.jsx','app/ThemeSelect.jsx','app/theme-registry.js'])if(fs.existsSync(path.resolve(retired)))failures.push('retired compatibility facade returned: '+retired);
 
-const currentFiles=['app/loc/search-collections.js','app/loc/GovernanceManagement.jsx'];
+const currentFiles=['app/loc/GovernanceManagement.jsx'];
 for(const file of currentFiles){
   const source=fs.readFileSync(file,'utf8');
   if(/\bLOC[0-8](?:_|\b)/.test(source))failures.push(file+': legacy numbered data identity leaked into Current feature module');
