@@ -284,7 +284,7 @@ export default function CultureV2(){
     try{
       if(!account.canManageScopeSync(classificationScope))throw new Error('沒有修改此 Scope 的權限。');
       const content=requireGalaxyContent(editDraft.body);
-      const {error}=await neonAuthClient.schema('silver').from(galaxyTable())
+      const {error}=await neonAuthClient.schema('silver').from(await galaxyTable())
         .update({
           title:resolveGalaxyTitle(editDraft.title,content),
           content,
