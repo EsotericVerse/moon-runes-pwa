@@ -341,7 +341,6 @@ export async function selectAuthorPeriodSourceSnapshot({startDate,endDate=null}=
     source_name:row.source_name,
     display_label:row.source_name,
     item_count:Number(row.item_count)||0,
-    item_count:Number(row.item_count)||0,
     media_count:0
   }));
   const buckets=daily.map(row=>{
@@ -412,7 +411,7 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
 export async function selectScopeMediaSnapshot(scopeId,{startDate,endDate}={}){
   if(!startDate)return {groups:[],buckets:[],totalCount:0};
   const runtimeId=runtimeScopeId(scopeId);
-  const table=`silver.${dataScopeId(scopeId)}_galaxy_media`;
+  const table=(await resolveScopeTables(dataScopeId(scopeId))).galaxyMedia;
   const filters=dateFilters(startDate,endDate);
   const [groupRows,daily,totalCount]=await Promise.all([
     selectCategoryCounts(table,'media_type',{startDate,endDate,limit:20}),
@@ -465,7 +464,7 @@ export async function selectScopeMediaWorks(scopeId,{startDate,endDate,mediaName
   const pageSize=Math.max(1,Math.min(100,Math.floor(Number(limit)||20)));
   const offset=Math.max(0,Math.floor(Number(pageOffset)||0));
   const field='media_type';
-  const table=`silver.${dataScopeId(scopeId)}_galaxy_media`;
+  const table=(await resolveScopeTables(dataScopeId(scopeId))).galaxyMedia;
   const filters=[
     ...dateFilters(startDate,endDate),
     {column:field,operator:'eq',value:String(mediaName)}
