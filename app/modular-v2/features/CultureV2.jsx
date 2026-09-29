@@ -104,12 +104,6 @@ export default function CultureV2(){
   const isLoc=scopeId==='loc';
   const classificationScope=scopeId==='lunarunes'?'lunarunes':'lo3rwang';
   const scopeRange=useMemo(()=>(query.data?.scopeRanges||[]).find(item=>String(item?.scope_id||'')===scopeId)||null,[query.data,scopeId]);
-  const workTimelineQuery=useQuery({
-    queryKey:['culture-work-timeline',scopeId,scopeRange?.start_date,scopeRange?.end_date],
-    queryFn:()=>selectScopeWorkSnapshot(scopeId,{startDate:scopeRange?.start_date,endDate:scopeRange?.end_date}),
-    enabled:!isLoc&&Boolean(scopeRange?.start_date),
-    staleTime:5*60_000
-  });
   const primaryPeriods=scopeId==='lunarunes'?allRunePeriods:allAuthorPeriods;
   const primaryCurrent=scopeId==='lunarunes'?currentRunePeriod:currentAuthorPeriod;
   const selectedWorkPeriod=activeWorkPeriod||primaryCurrent||periodRange(primaryPeriods,classificationScope);
@@ -118,6 +112,44 @@ export default function CultureV2(){
     ||String(item?.start_date||'')===String(selectedWorkPeriod?.start_date||'')
   );
   const previousWorkPeriod=selectedPeriodIndex>0?primaryPeriods[selectedPeriodIndex-1]:null;
+
+  const workPeriods=useMemo(()=>{
+    if(primaryPeriods.length)return primaryPeriods;
+    return scopeRange?.start_date?[{
+      period:'birthday-range',
+      title:'完整時期',
+      display_label:'完整時期',
+      start_date:scopeRange.start_date,
+      end_date:scopeRange.end_date||null,
+      scope_id:scopeId,
+      derived_from:'birthday'
+    }]:[];
+  },[primaryPeriods,scopeRange,scopeId]);
+  const periodWorkTimelineQuery=useQuery({
+    queryKey:['culture-period-work-timeline',scopeId,workPeriods.map(item=>[item.period,item.start_date,item.end_date].join(':')).join('|')],
+    queryFn:async()=>{
+      const groups=await Promise.all(workPeriods.map(async period=>{
+        const snapshot=await selectScopeWorkSnapshot(scopeId,{
+          startDate:period.start_date,
+          endDate:period.end_date
+        });
+        return (snapshot.buckets||[]).map(bucket=>({
+          ...bucket,
+          id:'period:'+String(period.period||period.start_date)+':'+String(bucket.id||bucket.start_date),
+          period_id:period.period||period.start_date,
+          period_title:period.title||period.display_label||'時期',
+          period_start_date:period.start_date,
+          period_end_date:period.end_date,
+          evidence_group:bucket.group_label,
+          group_label:period.title||period.display_label||'時期',
+          title:(period.title||period.display_label||'時期')+' · '+(bucket.title||bucket.display_label||'作品')
+        }));
+      }));
+      return groups.flat();
+    },
+    enabled:!isLoc&&workPeriods.length>0,
+    staleTime:5*60_000
+  });
 
   const visibleAuthorPeriods=allAuthorPeriods;
 
@@ -262,8 +294,8 @@ export default function CultureV2(){
     staleTime:5*60_000
   });
   const eventTimelineItems=eventWorkTimelineQuery.data||[];
-  const periodTimelineItems=useMemo(()=>timelineItems.filter(item=>['period','anchor'].includes(String(item?.entry_type||''))),[timelineItems]);
-  const workTimelineItems=workTimelineQuery.data?.buckets||[];
+  const anchorTimelineItems=useMemo(()=>timelineItems.filter(item=>String(item?.entry_type||'')==='anchor'),[timelineItems]);
+  const periodWorkTimelineItems=periodWorkTimelineQuery.data||[];
   const hasTimelineSurface=isLoc?timelineItems.length>0:Boolean(scopeRange?.start_date||timelineItems.length);
 
   const classificationBuckets=classificationMode==='source'
@@ -368,22 +400,22 @@ export default function CultureV2(){
               currentRanges={query.data?.currentRanges||[]}
               onSelect={()=>window.alert('歡迎到該成員的時間長河看明細！')}
             />:<>
-              {scopeId==='lo3rwang'?<label className='scope-v2-culture-period-select'>
+              {!isLoc?<label className='scope-v2-culture-period-select'>
                 <span>時間長河</span>
                 <select className='scope-v2-select' value={timelineMode} onChange={event=>setTimelineMode(event.target.value)}>
-                  <option value='works'>作品時間長河</option>
-                  <option value='event'>事件時間長河</option>
-                  <option value='period'>時期時間長河</option>
+                  <option value='works'>時期分割作品</option>
+                  {anchoredEvents.length?<option value='event'>事件分割作品</option>:null}
+                  <option value='anchor'>定錨點</option>
                 </select>
               </label>:null}
-              {timelineMode==='period'&&scopeId==='lo3rwang'
+              {timelineMode==='anchor'
                 ?<CultureTimelineV2
-                    items={periodTimelineItems}
+                    items={anchorTimelineItems}
                     labelOf={item=>item.display_label||item.title}
                     focus={navigation}
                     mode='overview'
                   />
-                :timelineMode==='event'&&scopeId==='lo3rwang'
+                :timelineMode==='event'
                   ?<>
                       {eventWorkTimelineQuery.isFetching?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
                       {eventWorkTimelineQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(eventWorkTimelineQuery.error)}</p>:null}
@@ -397,42 +429,17 @@ export default function CultureV2(){
                       />:null}
                     </>
                   :<>
-                      {workTimelineQuery.isFetching?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
-                      {workTimelineQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(workTimelineQuery.error)}</p>:null}
-                      {!workTimelineQuery.isFetching&&!workTimelineQuery.error&&!workTimelineItems.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
-                      {workTimelineItems.length?<CultureTimelineV2
-                        items={workTimelineItems}
-                        labelOf={item=>item.display_label||item.group_label}
+                      {periodWorkTimelineQuery.isFetching?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
+                      {periodWorkTimelineQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorkTimelineQuery.error)}</p>:null}
+                      {!periodWorkTimelineQuery.isFetching&&!periodWorkTimelineQuery.error&&!periodWorkTimelineItems.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+                      {periodWorkTimelineItems.length?<CultureTimelineV2
+                        items={periodWorkTimelineItems}
+                        labelOf={item=>item.display_label||item.evidence_group||item.group_label}
                         focus={{}}
                         mode='overview'
                       />:null}
-                      {scopeRange?.start_date?<p className='scope-v2-culture-period-description'>{scopeRange.start_date} – Current</p>:null}
                     </>}
-              {timelineMode==='period'&&scopeId==='lo3rwang'?<section className='scope-v2-card scope-v2-culture-period-2d' aria-label='時期'>
-                <p className='loc-eyebrow'>Period</p>
-                <h3>時期</h3>
-                {primaryPeriods.length?<label className='scope-v2-culture-period-select'>
-                  <span>選擇完整時期</span>
-                  <select className='scope-v2-select'
-                    value={selectedWorkPeriod?.period||selectedWorkPeriod?.start_date||''}
-                    onChange={event=>{
-                      const value=event.target.value;
-                      const matched=primaryPeriods.find(item=>
-                        String(item?.period||item?.start_date||'')===value
-                      );
-                      if(matched)setActiveWorkPeriod(matched);
-                    }}>
-                    {primaryPeriods.map((item,index)=><option
-                      key={String(item?.period||item?.start_date||index)}
-                      value={String(item?.period||item?.start_date||'')}>
-                      {labelOf(item,index)}
-                    </option>)}
-                  </select>
-                </label>:null}
-                {selectedWorkPeriod?<p className='scope-v2-culture-period-description'>
-                  {[selectedWorkPeriod.start_date,selectedWorkPeriod.end_date||'Current'].filter(Boolean).join(' – ')}
-                </p>:null}
-              </section>:null}
+
             </>}
 
             {selectedWorkPeriod?<section className='scope-v2-card scope-v2-culture-classification-river'>
