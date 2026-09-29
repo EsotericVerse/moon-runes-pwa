@@ -35,6 +35,7 @@ for(const path of [
   'app/loc/neon-culture-client.js',
   'app/loc/neon-ranking-client.js',
   'app/loc/text-engine.mjs',
+  'app/loc/spool-client.js',
   'assets/lunarunes/cards/65_玄.png',
   'assets/lunarunes/cards/66_命.png',
 ]) if(!existsSync(resolve(root,path)))failures.push(`missing module contract file: ${path}`);
@@ -101,7 +102,13 @@ if((searchProviders.match(/batchSize:RUNE_LIST_BATCH_SIZE/g)||[]).length<5)failu
 if(!/WHEEL_GESTURE_GAP_MS/.test(incrementalLoader)||!/readyAtRef\.current=now\+/.test(incrementalLoader)||/busyRef/.test(incrementalLoader))failures.push('Incremental loader: one-user-gesture / immediate-cooldown contract missing');
 if(!/requireGalaxyContent/.test(contentPolicy))failures.push('Galaxy content policy: shared nonblank write guard missing');
 if(!/from ['"]flexsearch['"]/.test(textEngine)||!/Charset\.CJK/.test(textEngine)||!/new Resolver/.test(textEngine))failures.push('Text engine: FlexSearch CJK/Resolver contract missing');
+if(/records\s*=\s*new Map|records\.set|engine\.records/.test(textEngine))failures.push('Text engine: FlexSearch may retain IDs only; record payload storage is forbidden');
+if(!/const ids=new Set\(\)/.test(textEngine))failures.push('Text engine: ID-only transient index contract missing');
 if(!/createTextIndex/.test(searchProviders)||!/searchTextIndex/.test(searchProviders)||!/nextCursor|cursor=/.test(searchProviders))failures.push('Search client: batched FlexSearch contract missing');
+if(/engine\.add\([^\n]*recordFor/.test(searchProviders))failures.push('Search client: FlexSearch index must not retain record payloads');
+const spoolClient=readFileSync(resolve(root,'app/loc/spool-client.js'),'utf8');
+for(const token of ['MAX_SPOOL_IDS=10000','SPOOL_BATCH_SIZE=500','writeSpoolIds','clearSpool','withSpoolIds'])if(!spoolClient.includes(token))failures.push(`Spool contract missing: ${token}`);
+if(/\b(content|title|url|meta_tags|source_name)\b/.test(spoolClient))failures.push('Spool client: content/media payload fields are forbidden');
 if(/getRuntimeTextIndex/.test(searchProviders))failures.push('Search client: runtime index cache must not return to batched providers');
 if(/scanSize|maxScanSize|while\(matched\.length/.test(searchProviders))failures.push('Search client: provider must fetch exactly one raw batch per user trigger');
 if(!/searchTextIndex/.test(keywordClassifier))failures.push('Culture/Statistics keyword classifier: shared FlexSearch contract missing');

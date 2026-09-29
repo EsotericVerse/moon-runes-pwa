@@ -13,19 +13,19 @@ export function createTextIndex(){
     encoder:Charset.CJK,
     cache:false
   });
-  const records=new Map();
+  const ids=new Set();
   return {
     index,
-    records,
-    add(id,text,record=null){
+    ids,
+    add(id,text){
       const key=String(id??'').trim();
       const content=normalizeIndexedText(text);
       if(!key||!content)return false;
       index.add(key,content);
-      records.set(key,record);
+      ids.add(key);
       return true;
     },
-    get size(){return records.size;}
+    get size(){return ids.size;}
   };
 }
 
@@ -59,20 +59,17 @@ export function searchTextIndex(engine,query,{
   for(const term of andTerms)resolver=resolver.and({query:term});
   for(const term of norTerms)resolver=resolver.not({query:term});
 
-  // FlexSearch Resolver supports native offset/limit. Do not resolve the full hit set
-  // and slice it in application code.
   const start=Math.max(0,Math.floor(Number(offset)||0));
   const size=Math.max(1,Math.floor(Number(limit)||20));
   resolver=resolver.offset(start).limit(size+1);
   const resolved=resolvedIds(resolver.resolve());
   const hasMore=resolved.length>size;
   const ids=resolved.slice(0,size);
-  const rows=ids.map(id=>engine.records.get(id)).filter(value=>value!==undefined&&value!==null);
   const nextOffset=start+ids.length;
   return {
     ids,
-    rows,
-    totalCount:null,
+    rows:[],
+    totalCount:hasMore?null:ids.length,
     hasMore,
     nextOffset:hasMore?nextOffset:null
   };

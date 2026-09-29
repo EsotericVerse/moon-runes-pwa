@@ -91,7 +91,7 @@ function makeProvider({id,table,source,scopeId,idColumn,columns,searchFields,fil
       for(const row of sourceRows){
         const key=String(row?.[idColumn]??'').trim();
         if(!key)continue;
-        engine.add(key,searchableText(row,frozenFields),recordFor(row));
+        engine.add(key,searchableText(row,frozenFields));
       }
       const found=searchTextIndex(engine,query,{
         limit:Math.max(1,sourceRows.length),
@@ -102,8 +102,9 @@ function makeProvider({id,table,source,scopeId,idColumn,columns,searchFields,fil
 
       const nextOffset=sourceOffset+sourceRows.length;
       const hasMore=sourceRows.length===rawBatchSize;
+      const byId=new Map(sourceRows.map(row=>[String(row?.[idColumn]??'').trim(),row]));
       return {
-        rows:found.rows||[],
+        rows:(found.ids||[]).map(key=>byId.get(String(key))).filter(Boolean).map(recordFor),
         hasMore,
         nextCursor:hasMore?nextOffset:null
       };
