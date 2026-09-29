@@ -137,24 +137,6 @@ async function sourceRows(scopeId,period='all',rangeOverride=undefined){
   return mergeSourceBuckets([...result.rows,...mediaRows],dataId,period);
 }
 
-async function mediaTypeRows(scopeId,period='all',rangeOverride=undefined){
-  const dataId=String(scopeId||'').trim();
-  const range=rangeOverride===undefined?await resolvePeriod(scopeId,period):rangeOverride;
-  const table=(await resolveScopeTables(dataId)).galaxyMedia;
-  const rows=await selectCategoryCounts(table,'media_type',{
-    startDate:range?.start_date||'',
-    endDate:range?.end_date||'',
-    limit:5000
-  });
-  return rows.map(row=>rankingRow('media_type',row.term,row.item_count,dataId,period));
-}
-
-async function rowsForType(scopeId,type,period,rangeOverride=undefined){
-  if(type==='source')return sourceRows(scopeId,period,rangeOverride);
-  if(type==='media_type')return mediaTypeRows(scopeId,period,rangeOverride);
-  return [];
-}
-
 function mergeLocSourceRows(rows=[]){
   return mergeSourceBuckets(rows,'loc','all');
 }
@@ -162,8 +144,8 @@ function mergeLocSourceRows(rows=[]){
 async function queryScopeRankingRows(scopeId,{rankingType='',navigation={}}={}){
   const id=String(scopeId||'').trim();
   if(!id)throw new Error('資料設定無效');
-  const types=id==='loc'?['source']:['source','media_type'];
-  const type=types.includes(rankingType)?rankingType:types[0];
+  const types=['source'];
+  const type='source';
   const period=String(navigation.period||'all');
   let rows=[];
   if(id==='loc'){
@@ -171,7 +153,7 @@ async function queryScopeRankingRows(scopeId,{rankingType='',navigation={}}={}){
     const results=await Promise.all(scopes.map(scope=>sourceRows(scope.id,'all',null)));
     rows=mergeLocSourceRows(results.flat());
   }else{
-    rows=await rowsForType(id,type,period,undefined);
+    rows=await sourceRows(id,period,undefined);
   }
   const parsed=ScopeRankingResponseSchema.parse({
     rows,
@@ -187,8 +169,43 @@ export async function selectScopeRankingRows(scopeId,{rankingType='',navigation=
   return (await queryScopeRankingRows(scopeId,{rankingType,navigation})).rows;
 }
 
+export async function selectScopeSourceBucketDetails(scopeId,{bucket='Others',navigation={}}={}){
+  const id=String(scopeId||'').trim();
+  if(!id||id==='loc')return [];
+  const period=String(navigation.period||'all');
+  const range=await resolvePeriod(id,period);
+  const tables=await resolveScopeTables(id);
+  const [catalog,mediaCatalog]=await Promise.all([
+    selectSourceCatalog({
+      scopeId:id,
+      startDate:range?.start_date||'',
+      endDate:range?.end_date||'',
+      limit:5000
+    }),
+    selectCategoryCounts(tables.galaxyMedia,'media_type',{
+      startDate:range?.start_date||'',
+      endDate:range?.end_date||'',
+      limit:5000
+    })
+  ]);
+  const totals=new Map();
+  for(const row of catalog.rows){
+    const raw=String(row.source_name||'').trim();
+    if(!raw||sourceBucket(raw)!==bucket)continue;
+    totals.set(raw,(totals.get(raw)||0)+(Number(row.item_count)||0));
+  }
+  for(const row of mediaCatalog){
+    const raw=String(row.term||'').trim();
+    if(!raw||sourceBucket(raw)!==bucket)continue;
+    totals.set(raw,(totals.get(raw)||0)+(Number(row.item_count)||0));
+  }
+  return [...totals.entries()]
+    .map(([term,count])=>rankingRow('source_detail',term,count,id,period))
+    .sort((a,b)=>b.item_count-a.item_count||a.term.localeCompare(b.term,'zh-Hant'));
+}
+
 export async function selectScopeRankingTypes(scopeId){
   const id=String(scopeId||'').trim();
   if(!id)throw new Error('資料設定無效');
-  return id==='loc'?['source']:['source','media_type'];
+  return ['source'];
 }
