@@ -18,7 +18,7 @@ import {resolveGalaxyExternalLinks,selectGalaxyContent,selectGalaxyIdentity} fro
 import {selectManagedScopes} from '../../loc/scope-list';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model.v2';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
-import IncrementalLoadV2 from '../IncrementalLoadV2';
+import IncrementalListV2 from '../IncrementalListV2';
 import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
 
 
@@ -337,8 +337,15 @@ export default function SearchV2(){
     </form>
     <p className="scope-v2-status">{status}</p>
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
-    <div className="scope-v2-list">
-      {results.map(row=>{
+    <IncrementalListV2
+      items={results}
+      batchSize={pageSize}
+      resetKey={searchMode+'|'+matchedQueryRef.current}
+      externalHasMore={hasMore}
+      loading={loadingMore}
+      error={error}
+      onLoadMore={loadNextSearch}
+      renderItem={row=>{
         const editable=Boolean(row.editableTable&&row.editableField&&account.canManageScopeSync(row.scopeId));
         const draft=editingKey===row.key?editDraft:null;
         return <WorkSummaryCardV2
@@ -346,7 +353,7 @@ export default function SearchV2(){
           title={row.title}
           source={row.source}
           date={row.date}
-          body={<SearchHighlightV2 text={row.snippet} query={matchedQueryRef.current}/>} 
+          body={<SearchHighlightV2 text={row.snippet} query={matchedQueryRef.current}/>}
           hidden={false}
           relationLinks={row.relationLinks||[]}
           links={row.links||[]}
@@ -372,8 +379,7 @@ export default function SearchV2(){
             onCancel={()=>{setEditingKey('');setEditDraft(null);setEditError('')}}
           />:null}
         </WorkSummaryCardV2>;
-      })}
-    </div>
-    <IncrementalLoadV2 hasMore={hasMore} loading={loadingMore} error={error} onLoadMore={loadNextSearch} label="還有更多搜尋結果"/>
+      }}
+    />
   </FeaturePageV2>;
 }
