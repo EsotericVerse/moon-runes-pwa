@@ -25,7 +25,7 @@ requireText('app/loc/views/AdminHomeView.jsx',[/from ['"]react-select['"]/ ,/use
 // FlexSearch is the shared text engine. Neon remains SSOT and adaptive IO supplies index batches.
 requireText('app/loc/text-engine.mjs',[/from ['"]flexsearch['"]/ ,/new Index/ ,/new Resolver/ ,/Charset\.CJK/],'Shared FlexSearch text engine');
 requireText('app/loc/search-providers.js',[/createTextIndex/ ,/searchTextIndex/ ,/literalTextMatches/ ,/selectNeonRows/ ,/nextCursor|cursor=/],'Search/FlexSearch precise lexical Neon boundary');
-requireText('app/loc/keyword-classifier.js',[/createTextIndex/ ,/searchTextIndex/ ,/literalTextMatches/ ,/splitRuneKeywordEntries/],'Statistics precise lexical classifier boundary');
+requireText('app/loc/keyword-classifier.js',[/createTextIndex/ ,/searchTextIndex/ ,/literalTextMatches/ ,/splitRuneKeywordEntries/ ,/silver\.lo3rwang_style/ ,/selectAuthorStyleCatalog/ ,/selectRuneCatalog/],'Statistics precise lexical classifier and single-source style boundary');
 // Graph and timeline packages are loaded only by their corresponding Neon feature modules.
 requireText('app/modular-v2/modules/keyword-graph/KeywordGraph2DV2.jsx',[/vis-network\/standalone/ ,/new Network/],'Keyword graph vis-network package boundary');
 requireText('app/modular-v2/modules/culture-timeline/CultureTimelineV2.jsx',[/vis-timeline\/standalone/ ,/new Timeline/],'Neon culture timeline package boundary');
