@@ -192,6 +192,10 @@ export default function CultureV2(){
     });
   },[periodWorksQuery.data,workPage]);
 
+  const visibleWorkRows=workPage===0
+    ?(periodWorksQuery.data?.rows||[])
+    :workRows;
+
   const periodVolumeByStart=useMemo(()=>{
     const map=new Map();
     if(sourceSnapshotQuery.data&&selectedWorkPeriod?.start_date){
@@ -436,7 +440,7 @@ export default function CultureV2(){
                 </header>
                 {periodWorksQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksQuery.error)}</p>:null}
                 <IncrementalListV2
-                  items={workRows}
+                  items={visibleWorkRows}
                   batchSize={CULTURE_WORK_PAGE_SIZE}
                   resetKey={selectedCategory+'|'+classificationMode}
                   className='scope-v2-culture-source-work-scroll'
@@ -474,7 +478,7 @@ export default function CultureV2(){
                     />:null}
                   </WorkSummaryCardV2>}
                 />
-                {!periodWorksQuery.isFetching&&!periodWorksQuery.error&&!workRows.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+                {!periodWorksQuery.isFetching&&!periodWorksQuery.error&&!visibleWorkRows.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
               </section>:null}
             </section>:null}
       </>:null}
