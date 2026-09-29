@@ -96,6 +96,38 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
       instance=new Timeline(containerRef.current,data,groups,{
         autoResize:true,
         height:timelineHeight+'px',
+        locale:'zh-tw',
+        locales:{
+          'zh-tw':{
+            current:'目前',
+            time:'時間',
+            deleteSelected:'刪除所選項目'
+          }
+        },
+        format:{
+          minorLabels:{
+            millisecond:'SSS',
+            second:'s秒',
+            minute:'HH:mm',
+            hour:'HH:mm',
+            weekday:'M/D',
+            day:'M/D',
+            week:'M/D',
+            month:'M月',
+            year:'YYYY'
+          },
+          majorLabels:{
+            millisecond:'YYYY/M/D HH:mm:ss',
+            second:'YYYY/M/D HH:mm',
+            minute:'YYYY/M/D',
+            hour:'YYYY/M/D',
+            weekday:'YYYY/M',
+            day:'YYYY/M',
+            week:'YYYY/M',
+            month:'YYYY年',
+            year:''
+          }
+        },
         horizontalScroll:true,
         zoomKey:'ctrlKey',
         zoomMin:1000*60*60*24*14,
