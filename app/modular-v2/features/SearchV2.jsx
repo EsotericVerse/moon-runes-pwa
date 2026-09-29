@@ -75,7 +75,7 @@ function toResult(row,source,q,scopeId){
     key:identity?source+'-'+identity:[source,scope,title].join('-'),
     source:displaySource,title:String(title),
     date:row.date||row.createtime||row.time_date||row.record_date||row.UpdateTime||row.updated_at||'',
-    snippet:'',scopeId:scope,resourceType,resourceId,
+    snippet:body,scopeId:scope,resourceType,resourceId,
     editableTable,editableIdColumn,editResourceId,editableField,isScopeCard,href,
     relationLinks:resourceType==='galaxy'
       ?galaxyRelationLinks(scope,row)
@@ -291,7 +291,7 @@ export default function SearchV2(){
       };
       const contentFilters=[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId}];
       await updateNeonRows(result.editableTable,contentPatch,{filters:contentFilters});
-      setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:nextTitle,snippet:''}));
+      setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:nextTitle,snippet:result.resourceType==='galaxy'?'':body}));
       if(fullTextKey===result.key)setFullText(editDraft.body);
       setEditingKey('');setEditDraft(null);
     }catch(exception){setEditError(String(exception?.message||exception||'儲存失敗。'))}
