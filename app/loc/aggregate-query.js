@@ -44,17 +44,19 @@ export async function selectSourceCatalog({scopeId,startDate='',endDate='',limit
   const {rows}=await selectNeonRows(table,{
     columns:'source_name,item_count:count()',
     filters,
-    orders:[{column:'item_count',ascending:false},{column:'source_name',ascending:true}],
+    orders:[{column:'source_name',ascending:true}],
     limit:safeLimit,
     offset:0
   });
+  const normalized=rows.map(row=>({
+    scope_id:String(scopeId),
+    source_name:String(row.source_name||'').trim(),
+    item_count:Number(row.item_count)||0
+  })).filter(row=>row.source_name)
+    .sort((a,b)=>b.item_count-a.item_count||a.source_name.localeCompare(b.source_name));
   return {
-    rows:rows.map(row=>({
-      scope_id:String(scopeId),
-      source_name:String(row.source_name||'').trim(),
-      item_count:Number(row.item_count)||0
-    })).filter(row=>row.source_name),
-    totalCount:rows.length
+    rows:normalized,
+    totalCount:normalized.length
   };
 }
 
