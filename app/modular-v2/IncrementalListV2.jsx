@@ -56,17 +56,19 @@ export default function IncrementalListV2({
   };
 
   if(!source.length&&!loading&&!externalHasMore)return empty;
+  const loader=<IncrementalLoadV2
+    hasMore={hasMore}
+    loading={loading}
+    error={error}
+    onLoadMore={loadMore}
+    label="…"
+    scrollRootRef={scrollRootRef}
+  />;
   return <>
     <div ref={scrollRootRef||undefined} className={className}>
       {visible.map((item,index)=>renderItem(item,index))}
+      {scrollRootRef?loader:null}
     </div>
-    <IncrementalLoadV2
-      hasMore={hasMore}
-      loading={loading}
-      error={error}
-      onLoadMore={loadMore}
-      label="…"
-      scrollRootRef={scrollRootRef}
-    />
+    {!scrollRootRef?loader:null}
   </>;
 }
