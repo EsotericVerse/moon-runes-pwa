@@ -73,7 +73,6 @@ export default function CultureV2(){
     staleTime:5*60_000
   });
 
-  const rows=useMemo(()=>rowsOf(query.data,scopeId),[query.data,scopeId]);
   const [timelineMode,setTimelineMode]=useState('works');
   const [classificationMode,setClassificationMode]=useState(scopeId==='lunarunes'?'media':'source');
   const [selectedCategory,setSelectedCategory]=useState('');
@@ -103,7 +102,6 @@ export default function CultureV2(){
   const allRunePeriods=useMemo(()=>allPeriods.filter(item=>String(item?.scope_id||'')==='lunarunes'),[allPeriods]);
   const isLoc=scopeId==='loc';
   const classificationScope=scopeId==='lunarunes'?'lunarunes':'lo3rwang';
-  const scopeRange=useMemo(()=>(query.data?.scopeRanges||[]).find(item=>String(item?.scope_id||'')===scopeId)||null,[query.data,scopeId]);
   const primaryPeriods=scopeId==='lunarunes'?allRunePeriods:allAuthorPeriods;
   const primaryCurrent=scopeId==='lunarunes'?currentRunePeriod:currentAuthorPeriod;
   const selectedWorkPeriod=primaryCurrent||periodRange(primaryPeriods,classificationScope);
@@ -111,7 +109,6 @@ export default function CultureV2(){
     String(item?.period||'')===String(selectedWorkPeriod?.period||'')
     ||String(item?.start_date||'')===String(selectedWorkPeriod?.start_date||'')
   );
-  const previousWorkPeriod=selectedPeriodIndex>0?primaryPeriods[selectedPeriodIndex-1]:null;
 
   const periodWorkTimelineQuery=useQuery({
     queryKey:['culture-period-work-timeline',scopeId,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
@@ -122,8 +119,6 @@ export default function CultureV2(){
     enabled:!isLoc&&Boolean(selectedWorkPeriod?.start_date),
     staleTime:5*60_000
   });
-
-  const visibleAuthorPeriods=allAuthorPeriods;
 
   const sourceSnapshotQuery=useQuery({
     queryKey:['culture-period-source-snapshot',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
