@@ -17,8 +17,8 @@ function requireText(path,patterns,description){
 // Public canonical reads use an isolated anonymous-token provider; management keeps its own authenticated client.
 requireText('app/loc/neon-client.js',[/createClient/ ,/getNeonPublicToken/ ,/resetNeonPublicToken/ ,/getToken:getNeonPublicToken/ ,/neonAuthClient=createClient/],'Neon isolated public-token/auth client boundary');
 // TanStack Query is used by data-heavy Current features.
-requireText('app/modular-v2/features/KeywordSettingsV2.jsx',[/from ['\"]@tanstack\\/react-query['\"]/ ,/selectRuneKeywordGroups/],'Keyword settings Query/rune repository interop');
-requireText('app/modular-v2/features/StatisticsV2.jsx',[/from ['\"]@tanstack\\/react-query['\"]/ ,/selectScopeRankingRows/ ,/from ['\"]recharts['\"]/],'Statistics Query/Neon/Recharts interop');
+requireText('app/modular-v2/features/KeywordSettingsV2.jsx',[/from ['\"]@tanstack\/react-query['\"]/ ,/selectRuneKeywordGroups/],'Keyword settings Query/rune repository interop');
+requireText('app/modular-v2/features/StatisticsV2.jsx',[/from ['\"]@tanstack\/react-query['\"]/ ,/selectScopeRankingRows/ ,/from ['\"]recharts['\"]/],'Statistics Query/Neon/Recharts interop');
 requireText('app/modular-v2/features/CultureV2.jsx',[/from ['"]@tanstack\/react-query['"]/ ,/selectScopeCultureData/ ,/CultureTimelineV2/],'Culture Query/Neon/Timeline interop');
 requireText('app/loc/GovernanceManagement.jsx',[/from ['"]react-select['"]/ ,/useNeonAccount/ ,/StyleKeywordSettingsV2/ ,/CultureTimelineEditor/],'Scope management React Select/Neon Auth boundary');
 requireText('app/loc/views/AdminHomeView.jsx',[/from ['"]react-select['"]/ ,/useNeonAccount/ ,/canManageGlobalSync/],'Admin React Select/Neon Auth boundary');
