@@ -48,7 +48,7 @@ export default function AboutView(){
 		  <p>或直接用<a href="/search/">搜尋</a>查 FAQ，以及自己有興趣的文字與資料。</p>
           <p><strong>那就開始吧！</strong></p>
         </div>
-        <figure className="home-framework-figure"><img src="/pics/LunaRunes.jpg" alt="LunaRunes 月之符文" loading="lazy" /></figure>
+        <figure className="home-framework-figure"><img src="/pics/LunaRunes.png" alt="LunaRunes 月之符文" loading="lazy" /></figure>
       </div>
     </section>
 
