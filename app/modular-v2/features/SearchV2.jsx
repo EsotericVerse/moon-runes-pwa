@@ -63,12 +63,7 @@ function toResult(row,source,q,scopeId){
   const scope=row.scope_id||scopeId;
   const resourceType=(row.uid)?'galaxy':row.media_id?'galaxy_media':'';
   const resourceId=row.uid||row.media_id||'';
-  const runeScope=scope==='lrunes'||scope==='lunarunes';
-  const editableTable=resourceType
-    ?(runeScope
-      ?(resourceType==='galaxy'?'silver.lrunes_galaxy':'silver.lrunes_galaxy_media')
-      :(resourceType==='galaxy'?'silver.lo3rwang_galaxy':'silver.lo3rwang_galaxy_media'))
-    :'';
+  const editableTable=resourceType?String(row.__table||''):'';
   const editableIdColumn=resourceType
     ?(resourceType==='galaxy'?'uid':'media_id')
     :'';
