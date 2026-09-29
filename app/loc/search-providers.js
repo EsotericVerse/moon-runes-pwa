@@ -99,110 +99,6 @@ function makeProvider({id,table,source,scopeId,idColumn,columns,searchFields,fil
   });
 }
 
-const authorText=makeProvider({
-  id:'author-text',
-  table:galaxyTable('lo3rwang'),
-  source:'作者正文',
-  scopeId:'lo3rwang',
-  idColumn:'uid',
-  columns:['uid','content_type','title','source_name','source_id','target_id','url','media_link','createtime'],
-  searchFields:['title','content','source_name'],
-  dateColumn:'createtime',
-  filters:publicContentFilters([{column:'searchable',operator:'eq',value:true}])
-});
-const authorMedia=makeProvider({
-  id:'author-media',
-  table:mediaTable('lo3rwang'),
-  source:'音樂與多媒體',
-  scopeId:'lo3rwang',
-  idColumn:'media_id',
-  columns:['media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','createtime'],
-  searchFields:['title','meta_tags','media_type','url','source_native_id'],
-  dateColumn:'createtime'
-});
-const authorMediaAll=makeProvider({
-  id:'author-media-all',
-  table:mediaTable('lo3rwang'),
-  source:'多媒體',
-  scopeId:'lo3rwang',
-  idColumn:'media_id',
-  columns:['media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','createtime'],
-  searchFields:['title','meta_tags','media_type','url','source_native_id'],
-  dateColumn:'createtime'
-});
-const authorTimeline=makeProvider({
-  id:'author-timeline',
-  table:timeTable('lo3rwang'),
-  source:'作者脈絡',
-  scopeId:'lo3rwang',
-  idColumn:'record_id',
-  columns:['record_id','record_type','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility','include_in_time'],
-  searchFields:['label','note','status'],
-  dateColumn:'time_date',
-  filters:[
-    {column:'record_type',operator:'in',value:['anchor','period','event']},
-    {column:'include_in_time',operator:'eq',value:true}
-  ]
-});
-const runeCore=makeProvider({
-  id:'rune-core',
-  table:'silver.runes',
-  source:'月之符文',
-  scopeId:'lrunes',
-  idColumn:'rune_id',
-  columns:['rune_id','rune_name','group_name','english_name','rune_description','archetype','char_action','positive_keywords','negative_keywords','extra_rules','extra_notes'],
-  searchFields:['rune_name','group_name','english_name','rune_description','archetype','char_action','positive_keywords','negative_keywords','extra_rules','extra_notes'],
-  batchSize:RUNE_LIST_BATCH_SIZE
-});
-const runeTimeline=makeProvider({
-  id:'rune-timeline',
-  table:timeTable('lrunes'),
-  source:'符文時期',
-  scopeId:'lrunes',
-  idColumn:'record_id',
-  columns:['record_id','record_type','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility','include_in_time'],
-  searchFields:['label','note','status'],
-  dateColumn:'time_date',
-  filters:[
-    {column:'record_type',operator:'in',value:['anchor','period','event']},
-    {column:'include_in_time',operator:'eq',value:true}
-  ],
-  batchSize:RUNE_LIST_BATCH_SIZE
-});
-const runeText=makeProvider({
-  id:'rune-text',
-  table:galaxyTable('lrunes'),
-  source:'符文文字',
-  scopeId:'lrunes',
-  idColumn:'uid',
-  columns:['uid','content_type','source_name','title','createtime','source_id','target_id','url','media_link'],
-  searchFields:['title','content','source_name'],
-  dateColumn:'createtime',
-  filters:publicContentFilters([{column:'searchable',operator:'eq',value:true}]),
-  batchSize:RUNE_LIST_BATCH_SIZE
-});
-const runeMedia=makeProvider({
-  id:'rune-media',
-  table:mediaTable('lrunes'),
-  source:'符文多媒體',
-  scopeId:'lrunes',
-  idColumn:'media_id',
-  columns:['media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','createtime'],
-  searchFields:['title','meta_tags','media_type','url','source_native_id'],
-  dateColumn:'createtime',
-  batchSize:RUNE_LIST_BATCH_SIZE
-});
-const runeMediaAll=makeProvider({
-  id:'rune-media-all',
-  table:mediaTable('lrunes'),
-  source:'符文多媒體',
-  scopeId:'lrunes',
-  idColumn:'media_id',
-  columns:['media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','createtime'],
-  searchFields:['title','meta_tags','media_type','url','source_native_id'],
-  dateColumn:'createtime',
-  batchSize:RUNE_LIST_BATCH_SIZE
-});
 const faq=makeProvider({
   id:'faq',
   table:'silver.faq_entries',
@@ -213,37 +109,65 @@ const faq=makeProvider({
   searchFields:['category','intent','question','answer','status']
 });
 
-const SCOPE_PROVIDERS=Object.freeze({
-  lo3rwang:Object.freeze([authorTimeline,authorText,authorMedia]),
-  lrunes:Object.freeze([runeCore,runeTimeline,runeText,runeMedia])
-});
-export const PUBLIC_SEARCH_SCOPE_IDS=Object.freeze(['lo3rwang','lrunes']);
-export const SEARCH_PROVIDERS=Object.freeze({
-  lo3rwang:Object.freeze([authorText,authorMedia]),
-  '月之符文':Object.freeze([runeCore,runeTimeline,runeText,runeMedia]),
-  '治理':Object.freeze([faq])
-});
-const MEDIA_SCOPE_PROVIDERS=Object.freeze({
-  lo3rwang:Object.freeze([authorMediaAll]),
-  lrunes:Object.freeze([runeMediaAll])
+const runeCore=makeProvider({
+  id:'rune-core',
+  table:'silver.runes',
+  source:'月之符文',
+  scopeId:'lrunes',
+  idColumn:'rune_id',
+  columns:['rune_id','rune_name','group_name','english_name','rune_description','archetype','char_action','positive_keywords','negative_keywords','extra_rules','extra_notes'],
+  searchFields:['rune_name','group_name','english_name','rune_description','archetype','char_action','positive_keywords','negative_keywords','extra_rules','extra_notes'],
+  batchSize:RUNE_LIST_BATCH_SIZE
 });
 
-export function getSearchProviders(collectionId,scopeIds=[]){
-  if(collectionId==='all'){
-    const providers=[];
-    for(const id of scopeIds)providers.push(...(SCOPE_PROVIDERS[String(id)]||[]));
-    providers.push(faq);
-    return [...new Map(providers.map(provider=>[provider.id,provider])).values()];
-  }
-  return SEARCH_PROVIDERS[collectionId]||[];
+function genericScopeProviders(scopeId,{mediaOnly=false}={}){
+  const id=String(scopeId||'').trim();
+  if(!id)return [];
+  const text=makeProvider({
+    id:id+':text',
+    table:galaxyTable(id),
+    source:id+' 文字',
+    scopeId:id,
+    idColumn:'uid',
+    columns:['uid','content_type','title','source_name','source_id','target_id','url','media_link','createtime'],
+    searchFields:['title','content','source_name'],
+    dateColumn:'createtime',
+    filters:publicContentFilters([{column:'searchable',operator:'eq',value:true}])
+  });
+  const media=makeProvider({
+    id:id+':media',
+    table:mediaTable(id),
+    source:id+' 多媒體',
+    scopeId:id,
+    idColumn:'media_id',
+    columns:['media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','createtime'],
+    searchFields:['title','meta_tags','media_type','url','source_native_id'],
+    dateColumn:'createtime'
+  });
+  if(mediaOnly)return [media];
+  const timeline=makeProvider({
+    id:id+':timeline',
+    table:timeTable(id),
+    source:id+' 時期',
+    scopeId:id,
+    idColumn:'record_id',
+    columns:['record_id','record_type','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility','include_in_time'],
+    searchFields:['label','note','status'],
+    dateColumn:'time_date',
+    filters:[
+      {column:'record_type',operator:'in',value:['anchor','period','event']},
+      {column:'include_in_time',operator:'eq',value:true}
+    ]
+  });
+  return [...(id==='lrunes'?[runeCore]:[]),timeline,text,media];
 }
-export function getMediaSearchProviders(collectionId,scopeIds=[]){
-  if(collectionId==='all'){
-    const providers=[];
-    for(const id of scopeIds)providers.push(...(MEDIA_SCOPE_PROVIDERS[String(id)]||[]));
-    return [...new Map(providers.map(provider=>[provider.id,provider])).values()];
-  }
-  if(collectionId==='lo3rwang')return [authorMediaAll];
-  if(collectionId==='月之符文')return [runeMediaAll];
-  return [];
+
+export function getSearchProviders(scopeIds=[],{includeFaq=false}={}){
+  const providers=scopeIds.flatMap(id=>genericScopeProviders(id));
+  if(includeFaq)providers.push(faq);
+  return [...new Map(providers.map(provider=>[provider.id,provider])).values()];
+}
+
+export function getMediaSearchProviders(scopeIds=[]){
+  return scopeIds.flatMap(id=>genericScopeProviders(id,{mediaOnly:true}));
 }
