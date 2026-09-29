@@ -6,6 +6,7 @@ import {workDisplayText} from '../modular-v2/work-display-model.v2';
 import {selectCategoryCounts,selectDailyCategoryCounts,selectDailyCounts,selectGalaxyPage,selectSourceCatalog,selectSourceDaily} from './aggregate-query';
 import {selectNeonCount,selectNeonRows} from './neon-query';
 import {publicContentFilters} from './content-policy';
+import {resolveScopeTables} from './scope-table-mapping';
 
 
 
@@ -26,7 +27,7 @@ function previousDay(value){
   return date.toISOString().slice(0,10);
 }
 async function selectTimeTypeRows(scopeId,type){
-  const table=`silver.${scopeId}_time`;
+  const {time:table}=await resolveScopeTables(scopeId);
   const filters=[{column:'record_type',operator:'eq',value:type}];
   const total=await selectNeonCount(table,{filters});
   if(!total)return [];
@@ -50,7 +51,7 @@ async function selectTimeTypeRows(scopeId,type){
 }
 
 async function selectCurrentPeriodRange(scopeId){
-  const table=`silver.${scopeId}_time`;
+  const {time:table}=await resolveScopeTables(scopeId);
   const {rows}=await selectNeonRows(table,{
     columns:'record_id,label,resource_id,display_order,anchor_pair',
     filters:[
@@ -187,18 +188,22 @@ export async function selectScopeCultureData(scopeId){
     if(intersectionStart){
       const textFilters=publicContentFilters(dateFilters(intersectionStart,null));
       const mediaFilters=dateFilters(intersectionStart,null);
+      const [authorTables,runeTables]=await Promise.all([
+        resolveScopeTables('lo3rwang'),
+        resolveScopeTables('lrunes')
+      ]);
       const [authorText,authorMedia,runeText,runeMedia]=await Promise.all([
-        selectNeonCount('silver.lo3rwang_galaxy',{filters:textFilters}),
-        selectNeonCount('silver.lo3rwang_galaxy_media',{filters:mediaFilters}),
-        selectNeonCount('silver.lrunes_galaxy',{filters:textFilters}),
-        selectNeonCount('silver.lrunes_galaxy_media',{filters:mediaFilters})
+        selectNeonCount(authorTables.galaxy,{filters:textFilters}),
+        selectNeonCount(authorTables.galaxyMedia,{filters:mediaFilters}),
+        selectNeonCount(runeTables.galaxy,{filters:textFilters}),
+        selectNeonCount(runeTables.galaxyMedia,{filters:mediaFilters})
       ]);
       for(const range of currentRanges){
         const isRune=String(range.scope_id)==='lunarunes';
         range.intersection_start=intersectionStart;
         range.text_count=isRune?runeText:authorText;
         range.media_count=isRune?runeMedia:authorMedia;
-        range.work_count=range.text_count+range.media_count;
+        range.item_count=range.text_count+range.media_count;
       }
     }
     return ScopeCultureResponseSchema.parse({
@@ -264,10 +269,10 @@ export async function selectScopeCultureData(scopeId){
 }
 
 function normalizedWorkTimelineBuckets(rows=[]){
-  const maximum=Math.max(1,...rows.map(row=>Number(row.work_count)||0));
+  const maximum=Math.max(1,...rows.map(row=>Number(row.item_count)||0));
   return rows.map(row=>({
     ...row,
-    global_density_ratio:(Number(row.work_count)||0)/maximum
+    global_density_ratio:(Number(row.item_count)||0)/maximum
   })).sort((a,b)=>String(a.start_date||'').localeCompare(String(b.start_date||''))||String(a.group_label||'').localeCompare(String(b.group_label||'')));
 }
 
@@ -276,8 +281,9 @@ export async function selectScopeWorkSnapshot(scopeId,{startDate,endDate=null}={
   const runtimeId=runtimeScopeId(scopeId);
   const dataId=dataScopeId(scopeId);
   if(!['lo3rwang','lrunes'].includes(dataId))return {buckets:[],totalCount:0};
-  const textTable=`silver.${dataId}_galaxy`;
-  const mediaTable=`silver.${dataId}_galaxy_media`;
+  const tables=await resolveScopeTables(dataId);
+  const textTable=tables.galaxy;
+  const mediaTable=tables.galaxyMedia;
   const textFilters=publicContentFilters(dateFilters(startDate,endDate));
   const mediaFilters=dateFilters(startDate,endDate);
   const [textDaily,mediaDaily,textCount,mediaCount]=await Promise.all([
@@ -291,10 +297,10 @@ export async function selectScopeWorkSnapshot(scopeId,{startDate,endDate=null}={
       id:'works:text:'+row.day,
       category:'文字作品',
       group_label:'文字作品',
-      display_label:'文字作品 '+row.work_count+' 項',
-      title:row.day+' · 文字作品 · '+row.work_count+' 項',
+      display_label:'文字作品 '+row.item_count+' 項',
+      title:row.day+' · 文字作品 · '+row.item_count+' 項',
       start_date:row.day,
-      work_count:Number(row.work_count)||0,
+      item_count:Number(row.item_count)||0,
       scope_id:runtimeId,
       entry_type:'work_density'
     })),
@@ -302,10 +308,10 @@ export async function selectScopeWorkSnapshot(scopeId,{startDate,endDate=null}={
       id:'works:media:'+row.day,
       category:'多媒體',
       group_label:'多媒體',
-      display_label:'多媒體 '+row.work_count+' 項',
-      title:row.day+' · 多媒體 · '+row.work_count+' 項',
+      display_label:'多媒體 '+row.item_count+' 項',
+      title:row.day+' · 多媒體 · '+row.item_count+' 項',
       start_date:row.day,
-      work_count:Number(row.work_count)||0,
+      item_count:Number(row.item_count)||0,
       scope_id:runtimeId,
       entry_type:'work_density'
     }))
@@ -319,13 +325,13 @@ export async function selectAuthorPeriodSourceSnapshot({startDate,endDate=null}=
   const [catalog,daily,totalCount]=await Promise.all([
     selectSourceCatalog({scopeId:'lo3rwang',startDate,endDate:endDate||'',limit:20}),
     selectSourceDaily({scopeId:'lo3rwang',startDate,endDate:endDate||''}),
-    selectNeonCount('silver.lo3rwang_galaxy',{filters})
+    selectNeonCount((await resolveScopeTables('lo3rwang')).galaxy,{filters})
   ]);
   const maxima=new Map();
   let globalMaximum=0;
   for(const row of daily){
     const source=sourceLabel(row.source_name);
-    const count=Number(row.work_count)||0;
+    const count=Number(row.item_count)||0;
     maxima.set(source,Math.max(maxima.get(source)||0,count));
     globalMaximum=Math.max(globalMaximum,count);
   }
@@ -334,20 +340,20 @@ export async function selectAuthorPeriodSourceSnapshot({startDate,endDate=null}=
     category_type:'source',
     source_name:row.source_name,
     display_label:row.source_name,
-    item_count:Number(row.work_count)||0,
-    work_count:Number(row.work_count)||0,
+    item_count:Number(row.item_count)||0,
+    item_count:Number(row.item_count)||0,
     media_count:0
   }));
   const buckets=daily.map(row=>{
     const source=sourceLabel(row.source_name);
-    const count=Number(row.work_count)||0;
+    const count=Number(row.item_count)||0;
     const day=String(row.day||'').slice(0,10);
     return {
       id:'source_name:'+source+':'+day,
       category:source,
       group_label:source,
       start_date:day,
-      work_count:count,
+      item_count:count,
       works:[],
       density_ratio:count/Math.max(1,maxima.get(source)||1),
       global_density_ratio:count/Math.max(1,globalMaximum),
@@ -417,7 +423,7 @@ export async function selectScopeMediaSnapshot(scopeId,{startDate,endDate}={}){
   let globalMaximum=0;
   for(const row of daily){
     const term=String(row.category||'').trim();
-    const count=Number(row.work_count)||0;
+    const count=Number(row.item_count)||0;
     maxima.set(term,Math.max(maxima.get(term)||0,count));
     globalMaximum=Math.max(globalMaximum,count);
   }
@@ -433,13 +439,13 @@ export async function selectScopeMediaSnapshot(scopeId,{startDate,endDate}={}){
   const buckets=daily.map(row=>{
     const term=String(row.category||'').trim();
     const day=String(row.day||'').slice(0,10);
-    const count=Number(row.work_count)||0;
+    const count=Number(row.item_count)||0;
     return {
       id:'media_type:'+term+':'+day,
       category:term,
       group_label:term,
       start_date:day,
-      work_count:count,
+      item_count:count,
       works:[],
       density_ratio:count/Math.max(1,maxima.get(term)||1),
       global_density_ratio:count/Math.max(1,globalMaximum),
