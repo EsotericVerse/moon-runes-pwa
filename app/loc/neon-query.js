@@ -54,3 +54,25 @@ export async function selectNeonRows(table,{
   if(error)throw new Error(error.message||('Neon SELECT '+table+' failed'));
   return {rows:data||[],count:total};
 }
+
+export async function selectAllNeonRows(table,{
+  columns,
+  filters=[],
+  orFilter='',
+  orders=[],
+  pageSize=1000
+}={}){
+  const size=Math.max(1,Math.min(1000,Math.floor(Number(pageSize)||1000)));
+  const first=await selectNeonRows(table,{columns,filters,orFilter,orders,limit:size,offset:0,count:'exact'});
+  const rows=[...first.rows];
+  const total=Number(first.count) || rows.length;
+  let offset=rows.length;
+  while(offset<total){
+    const page=await selectNeonRows(table,{columns,filters,orFilter,orders,limit:size,offset});
+    if(!page.rows.length)break;
+    rows.push(...page.rows);
+    offset+=page.rows.length;
+  }
+  return {rows,count:total};
+}
+
