@@ -24,13 +24,54 @@ function runeKeywordEntries(value){
   return String(value||'').split(/[、,，\n]+/).map(item=>item.trim()).filter(Boolean);
 }
 
-export async function selectKeywordCatalog(scopeId=''){
-  const id=String(scopeId||'').trim();
-  if(!['lo3rwang','lunarunes','lrunes'].includes(id))return [];
+async function selectAuthorStyleCatalog(){
+  const styles=await selectNeonRows('silver.lo3rwang_style',{
+    columns:'style_no,representative_name,parent_group_name,order_no',
+    filters:[{column:'node_type',operator:'eq',value:'style'}],
+    orders:[{column:'style_no',ascending:true}],
+    limit:8
+  });
+  const total=await selectNeonCount('silver.lo3rwang_style',{
+    filters:[{column:'node_type',operator:'eq',value:'keyword'}]
+  });
+  const keywords=[];
+  let offset=0;
+  const size=500;
+  while(offset<total){
+    const page=await selectNeonRows('silver.lo3rwang_style',{
+      columns:'style_no,keyword_group,keyword,order_no',
+      filters:[{column:'node_type',operator:'eq',value:'keyword'}],
+      orders:[{column:'style_no',ascending:true},{column:'order_no',ascending:true}],
+      limit:Math.min(size,total-offset),
+      offset
+    });
+    if(!page.rows.length)break;
+    keywords.push(...page.rows);
+    offset+=page.rows.length;
+  }
+  const styleMap=new Map((styles.rows||[]).map(row=>[Number(row.style_no),{
+    rune_number:Number(row.style_no),
+    style_label:String(row.representative_name||'').trim(),
+    style_group:String(row.parent_group_name||'').trim(),
+    order:Number(row.order_no)||Number(row.style_no)
+  }]));
+  return keywords.map(row=>{
+    const style=styleMap.get(Number(row.style_no));
+    const keyword=String(row.keyword||'').trim();
+    if(!style||!keyword||!style.style_label)return null;
+    return {
+      ...style,
+      keyword,
+      keyword_group:String(row.keyword_group||'').trim()
+    };
+  }).filter(Boolean);
+}
+
+async function selectRuneCatalog(){
   const result=await selectNeonRows('silver.runes',{
     columns:'rune_id,rune_name,group_name,positive_keywords,negative_keywords,extra_rules',
     orders:[{column:'rune_id',ascending:true}],
-    limit:128
+    limit:67
   });
   const output=[];
   for(const row of result.rows||[]){
@@ -46,6 +87,13 @@ export async function selectKeywordCatalog(scopeId=''){
     for(const keyword of runeKeywordEntries(row.extra_rules))output.push({...base,keyword,keyword_group:'rules'});
   }
   return output;
+}
+
+export async function selectKeywordCatalog(scopeId=''){
+  const id=String(scopeId||'').trim();
+  if(id==='lo3rwang')return selectAuthorStyleCatalog();
+  if(id==='lunarunes'||id==='lrunes')return selectRuneCatalog();
+  return [];
 }
 
 export function keywordTextOf(row={}){
