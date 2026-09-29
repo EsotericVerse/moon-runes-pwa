@@ -1,6 +1,7 @@
 import {ScopeRankingResponseSchema} from './scope-feature-contracts';
 import {selectCategoryCounts,selectSourceCatalog} from './aggregate-query';
 import {selectNeonRows} from './neon-query';
+import {resolveScopeTables} from './scope-table-mapping';
 
 const PERIOD_COLUMNS='record_id,record_type,label,resource_id,display_order,time_date,anchor_pair,date_status,year_value';
 const RANKING_TYPES=Object.freeze({
@@ -25,7 +26,7 @@ function previousDay(value){
 function periodId(value){return String(value||'').trim().replace(/^period:/,'');}
 
 async function selectPeriodRow(scopeId,period='all'){
-  const table='silver.'+dataScopeId(scopeId)+'_time';
+  const table=(await resolveScopeTables(dataScopeId(scopeId))).time;
   const requested=periodId(period);
   const filters=[{column:'record_type',operator:'eq',value:'period'}];
   const orders=[];
@@ -41,7 +42,7 @@ async function selectPeriodRow(scopeId,period='all'){
 
 async function resolvePeriodRow(scopeId,row){
   if(!row)return null;
-  const table='silver.'+dataScopeId(scopeId)+'_time';
+  const table=(await resolveScopeTables(dataScopeId(scopeId))).time;
   const [before='0',after='0']=String(row.anchor_pair||'0,0').split(',',2).map(value=>String(value||'0').trim()||'0');
   const ids=[before,after].filter(value=>value!=='0');
   let anchors=[];
@@ -95,13 +96,13 @@ async function sourceRows(scopeId,period='all',rangeOverride=undefined){
     endDate:range?.end_date||'',
     limit:20
   });
-  return result.rows.map(row=>rankingRow('source',row.source_name,row.work_count,dataId,period));
+  return result.rows.map(row=>rankingRow('source',row.source_name,row.item_count,dataId,period));
 }
 
 async function mediaTypeRows(scopeId,period='all',rangeOverride=undefined){
   const dataId=dataScopeId(scopeId);
   const range=rangeOverride===undefined?await resolvePeriod(scopeId,period):rangeOverride;
-  const table='silver.'+dataId+'_galaxy_media';
+  const table=(await resolveScopeTables(dataId)).galaxyMedia;
   const rows=await selectCategoryCounts(table,'media_type',{
     startDate:range?.start_date||'',
     endDate:range?.end_date||'',
