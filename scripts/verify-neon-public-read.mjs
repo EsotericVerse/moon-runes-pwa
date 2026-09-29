@@ -16,10 +16,30 @@ function runtimeClient(){
   });
 }
 
-async function probeDenied(client,table,columns){
-  const {error,status}=await client.schema('silver').from(table).select(columns).limit(1);
-  console.log(JSON.stringify({probe:'runtime-public-denied',table,columns,status,code:error?.code||null,error:error?.message||null}));
-  if(!error)throw new Error(table+': anonymous access unexpectedly allowed');
+async function verifyPublicSpoolContract(client){
+  const runId=crypto.randomUUID();
+  const row={run_id:runId,scope_id:'lo3rwang',purpose:'search',uid:'A11CE001'};
+  let inserted=false;
+  try{
+    const {error:writeError,status:writeStatus}=await client.schema('silver').from('spool').insert(row);
+    console.log(JSON.stringify({probe:'runtime-public-spool-write',status:writeStatus,code:writeError?.code||null,error:writeError?.message||null}));
+    if(writeError)throw new Error('spool anonymous write: '+(writeError.code||'')+' '+writeError.message);
+    inserted=true;
+
+    const {data,error:readError,status:readStatus}=await client.schema('silver').from('spool')
+      .select('uid')
+      .eq('run_id',runId)
+      .eq('uid',row.uid);
+    console.log(JSON.stringify({probe:'runtime-public-spool-read',status:readStatus,rows:data?.length||0,code:readError?.code||null,error:readError?.message||null}));
+    if(readError)throw new Error('spool anonymous read: '+(readError.code||'')+' '+readError.message);
+    if(data?.length!==1||data[0]?.uid?.trim()!==row.uid)throw new Error('spool anonymous read: UID contract mismatch');
+  }finally{
+    if(inserted){
+      const {error:deleteError,status:deleteStatus}=await client.schema('silver').from('spool').delete().eq('run_id',runId);
+      console.log(JSON.stringify({probe:'runtime-public-spool-delete',status:deleteStatus,code:deleteError?.code||null,error:deleteError?.message||null}));
+      if(deleteError)throw new Error('spool anonymous delete: '+(deleteError.code||'')+' '+deleteError.message);
+    }
+  }
 }
 
 async function probe(client,table,columns,{filters=[]}={}){
@@ -74,7 +94,7 @@ for(const [table,columns,options] of [
   ['content_blocks','block_id,scope_id,page_key,slot_key,title,body,display_order,active,updated_at']
 ])await probe(client,table,columns,options||{});
 
-await probeDenied(client,'spool','run_id,scope_id,purpose,entity_type,entity_id');
+await verifyPublicSpoolContract(client);
 
 await verifyGameContract(client);
 
