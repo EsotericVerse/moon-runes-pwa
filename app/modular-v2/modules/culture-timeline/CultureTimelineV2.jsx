@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
+import {DataSet,Timeline} from 'vis-timeline/standalone';
 import {densityStyleForCount,densityStyleForRatio,formatCultureDateTime} from './culture-timeline-model.mjs';
 
 function timelineRows(items,labelOf,focus){
@@ -157,8 +158,8 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
     setChartError(false);
     if(!containerRef.current||!rows.length){setReady(false);return()=>{cancelled=true};}
     setReady(false);
-    import('vis-timeline/standalone').then(({DataSet,Timeline})=>{
-      if(cancelled||!containerRef.current)return;
+    try{
+      if(cancelled||!containerRef.current)return()=>{cancelled=true};
       const data=new DataSet(rows);
       const groupIds=[...new Set(rows.map(row=>row.group).filter(Boolean))];
       const groups=groupIds.length?new DataSet(groupIds.map(id=>({id,content:groupLabel(id)}))):null;
@@ -181,9 +182,11 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
         const selectedId=selectedItems[0];
         onSelectRef.current?.(rows.find(row=>row.id===selectedId)||null);
       });
-      instance.fit({animation:{duration:180,easingFunction:'easeInOutQuad'}});
+      instance.fit({animation:false});
       setReady(true);
-    }).catch(()=>{if(!cancelled){setReady(false);setChartError(true)}});
+    }catch{
+      if(!cancelled){setReady(false);setChartError(true);}
+    }
     return()=>{cancelled=true;if(instance)instance.destroy();};
   },[rows,timelineHeight]);
 
@@ -191,7 +194,6 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
   if(!rows.length)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><div className='scope-period-timeline scope-period-timeline-empty-line' role='region' aria-label='時間長河'/><p>{mode==='overview'?'尚未設定時期，目前以「所有」總覽顯示。':'目前時期尚無可顯示的時間資料。'}</p></div>;
 
   return <div className='scope-period-timeline-wrap'>
-    {!ready&&!chartError?<p className='scope-v2-status'>載入時間長河…</p>:null}
     {chartError?<p className='scope-v2-status'>圖表載入失敗，以下改用清單顯示。</p>:null}
     <div ref={containerRef} className='scope-period-timeline' role='region' aria-label={mode==='overview'?'所有時期與定錨點時間長河':'Current 時期時間長河'} style={{'--scope-period-timeline-min-height':timelineHeight+'px'}}/>
     {chartError?<ol className='scope-v2-list'>
