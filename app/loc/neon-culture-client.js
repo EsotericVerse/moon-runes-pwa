@@ -4,7 +4,7 @@ import {ScopeCultureResponseSchema} from './scope-feature-contracts';
 import {decodeCultureText,formatCultureDateTime} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
 import {workDisplayText} from '../modular-v2/work-display-model.v2';
 import {selectCategoryCounts,selectDailyCategoryCounts,selectDailyCounts,selectGalaxyPage,selectSourceCatalog,selectSourceDaily} from './aggregate-query';
-import {selectAllNeonRows,selectNeonCount,selectNeonRows} from './neon-query';
+import {selectNeonCount,selectNeonRows} from './neon-query';
 import {publicContentFilters} from './content-policy';
 import {mappedScopeTable,resolveScopeTables} from './scope-table-mapping';
 import {selectManagedScopes} from './scope-list';
@@ -27,7 +27,7 @@ function previousDay(value){
   date.setUTCDate(date.getUTCDate()-1);
   return date.toISOString().slice(0,10);
 }
-async function selectCultureTimeRows(scopeId,tableName=''){
+async function selectCultureTimeRows(scopeId,tableName='',birthday=''){
   const table=tableName||(await resolveScopeTables(scopeId)).time;
   const {rows}=await selectNeonRows(table,{
     columns:TIME_COLUMNS,
@@ -36,6 +36,9 @@ async function selectCultureTimeRows(scopeId,tableName=''){
     limit:5000,
     offset:0
   });
+  const scopeBirthday=/^\d{4}-\d{2}-\d{2}$/.test(String(birthday||'').slice(0,10))
+    ?String(birthday).slice(0,10)
+    :null;
   const anchors=rows.filter(row=>row.record_type==='anchor');
   const periods=rows.filter(row=>row.record_type==='period');
   const events=rows.filter(row=>row.record_type==='event');
@@ -45,8 +48,12 @@ async function selectCultureTimeRows(scopeId,tableName=''){
     const pair=anchorPair(row.anchor_pair);
     const startAnchor=pair.before==='0'?null:anchorMap.get(pair.before);
     const endAnchor=pair.after==='0'?null:anchorMap.get(pair.after);
-    const startDate=type==='anchor'?timeDate(row):timeDate(startAnchor);
-    const endBoundary=type==='anchor'?null:timeDate(endAnchor);
+    const startDate=type==='anchor'
+      ?timeDate(row)
+      :(pair.before==='0'?scopeBirthday:timeDate(startAnchor));
+    const endBoundary=type==='anchor'
+      ?null
+      :(pair.after==='0'?null:timeDate(endAnchor));
     return {
       ...row,
       scope_id:scopeId,
@@ -56,14 +63,14 @@ async function selectCultureTimeRows(scopeId,tableName=''){
       summary:row.note||'',
       era_id:type==='period'?id:null,
       period:type==='period'?id:null,
-      entry_name:type==='period'?String(row.label||'').replace(/^P\\d+\\s*[｜|]\\s*/,''):null,
+      entry_name:type==='period'?String(row.label||'').replace(/^P\d+\s*[｜|]\s*/,''):null,
       order_no:row.display_order,
       anchor_id:type==='anchor'?id:null,
       start_anchor_id:pair.before==='0'?null:pair.before,
       end_anchor_id:pair.after==='0'?null:pair.after,
       event_id:type==='event'?id:null,
-      open_start:type!=='anchor'&&pair.before==='0'&&pair.after!=='0',
-      open_end:type!=='anchor'&&pair.before!=='0'&&pair.after==='0',
+      open_start:type!=='anchor'&&pair.before==='0',
+      open_end:type!=='anchor'&&pair.after==='0',
       start_date:startDate,
       end_date:type==='period'?previousDay(endBoundary):endBoundary
     };
@@ -86,6 +93,61 @@ function openPeriodRangeFromRows(scopeId,rows=[]){
     display_label:period.title||period.period||'時期',
     derived_from:'anchor_pair.after=0'
   };
+}
+
+const LOC_SOURCE_ORDER=Object.freeze(['Facebook','Threads','Instagram','X','YouTube','Others']);
+function locSourceCategory(value=''){
+  const source=String(value||'').trim().toLowerCase();
+  if(!source)return 'Others';
+  if(source.includes('facebook'))return 'Facebook';
+  if(source.includes('threads'))return 'Threads';
+  if(source.includes('instagram')||source==='ig')return 'Instagram';
+  if(source==='x'||source.includes('twitter'))return 'X';
+  if(source.includes('youtube')||source.includes('youtu.be'))return 'YouTube';
+  return 'Others';
+}
+function buildLocSourceRiver(rows=[]){
+  const combined=new Map();
+  const totals=new Map(LOC_SOURCE_ORDER.map(category=>[category,0]));
+  for(const row of rows){
+    const category=locSourceCategory(row.category);
+    const count=Number(row.item_count)||0;
+    totals.set(category,(totals.get(category)||0)+count);
+    const day=String(row.day||'').slice(0,10);
+    if(!day)continue;
+    const key=category+'|'+day;
+    const current=combined.get(key)||{category,day,item_count:0};
+    current.item_count+=count;
+    combined.set(key,current);
+  }
+  const perCategoryMax=new Map();
+  let globalMax=0;
+  for(const row of combined.values()){
+    perCategoryMax.set(row.category,Math.max(perCategoryMax.get(row.category)||0,row.item_count));
+    globalMax=Math.max(globalMax,row.item_count);
+  }
+  const sourceRiverItems=[...combined.values()].map(row=>({
+    id:'loc-source:'+row.category+':'+row.day,
+    entry_id:'loc-source:'+row.category+':'+row.day,
+    entry_type:'source_density',
+    scope_id:'loc',
+    group_label:row.category,
+    category:row.category,
+    start_date:row.day,
+    item_count:row.item_count,
+    density_ratio:row.item_count/Math.max(1,perCategoryMax.get(row.category)||1),
+    global_density_ratio:row.item_count/Math.max(1,globalMax),
+    display_label:row.category+' '+row.item_count+' 項',
+    title:row.day+' · '+row.category+' · '+row.item_count+' 項'
+  })).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))||LOC_SOURCE_ORDER.indexOf(a.category)-LOC_SOURCE_ORDER.indexOf(b.category));
+  const sourceGroups=LOC_SOURCE_ORDER.map(category=>({
+    category_key:'source:'+category,
+    category_type:'source',
+    source_name:category,
+    display_label:category,
+    item_count:Number(totals.get(category))||0
+  })).filter(row=>row.item_count>0);
+  return {sourceRiverItems,sourceGroups};
 }
 
 function sourceLabel(value){return String(value||'').trim();}
@@ -172,18 +234,20 @@ export async function selectScopeCultureData(scopeId){
     if(!managedScopes.length){
       return ScopeCultureResponseSchema.parse({
         scopeId:id,eras:{eras:[]},periods:[],openRanges:[],scopeRanges:[],
-        timelineItems:[],events:[],trajectories:[],works:[],intersectionStart:''
+        timelineItems:[],sourceRiverItems:[],sourceGroups:[],events:[],trajectories:[],
+        works:[],intersectionStart:''
       });
     }
 
     const bundles=await Promise.all(managedScopes.map(async scope=>{
       const galaxy=mappedScopeTable(scope.id,'galaxy',scope.galaxy);
       const time=mappedScopeTable(scope.id,'time',scope.time);
-      const context=await selectCultureTimeRows(scope.id,time);
+      const context=await selectCultureTimeRows(scope.id,time,scope.birthday);
       const runtimeId=runtimeScopeId(scope.id);
       return {
         dataId:scope.id,
         runtimeId,
+        birthday:String(scope.birthday||'').slice(0,10),
         galaxy,
         galaxyMedia:galaxy+'_media',
         context,
@@ -195,82 +259,46 @@ export async function selectScopeCultureData(scopeId){
     const openRanges=bundles.map(bundle=>bundle.openRange).filter(Boolean);
     const starts=openRanges.map(row=>String(row.start_date||'')).filter(Boolean).sort();
     const intersectionStart=starts.at(-1)||'';
-    const textFilters=intersectionStart?publicContentFilters(dateFilters(intersectionStart,null)):[];
-    const mediaFilters=intersectionStart?dateFilters(intersectionStart,null):[];
-
-    const workResults=intersectionStart
-      ?await Promise.all(bundles.map(async bundle=>{
-        const [text,mediaCount]=await Promise.all([
-          selectAllNeonRows(bundle.galaxy,{
-            columns:'uid,title,source_name,createtime,url',
-            filters:textFilters,
-            orders:[{column:'createtime',ascending:false},{column:'uid',ascending:true}],
-            pageSize:5000
-          }),
-          selectNeonCount(bundle.galaxyMedia,{filters:mediaFilters})
-        ]);
-        return {runtimeId:bundle.runtimeId,text,mediaCount:Number(mediaCount)||0};
-      }))
-      :bundles.map(bundle=>({runtimeId:bundle.runtimeId,text:{rows:[],count:0},mediaCount:0}));
-
-    const workByScope=new Map(workResults.map(result=>[result.runtimeId,result]));
-    for(const range of openRanges){
-      const result=workByScope.get(String(range.scope_id||''))||{text:{count:0},mediaCount:0};
-      const textCount=Number(result.text?.count)||0;
-      const mediaCount=Number(result.mediaCount)||0;
-      range.intersection_start=intersectionStart;
-      range.text_count=textCount;
-      range.media_count=mediaCount;
-      range.item_count=textCount+mediaCount;
-    }
-
     const today=new Date().toISOString().slice(0,10);
-    const intersectionTimeline=openRanges.map(range=>{
-      const scope=String(range.scope_id||'');
-      const count=Number(range.item_count)||0;
-      return {
-        id:'intersection:'+scope,
-        entry_id:'intersection:'+scope,
-        entry_type:'intersection',
-        scope_id:scope,
-        group_label:scope,
-        title:range.title||range.period||scope,
-        display_label:(range.title||range.period||scope)+' · '+count.toLocaleString()+' 項',
-        start_date:intersectionStart,
-        end_date:today,
-        item_count:count,
-        intersection_start:intersectionStart,
-        intersection_end:today
-      };
-    });
 
-    const works=workResults.flatMap(result=>(result.text?.rows||[]).map(row=>({
-      ...row,
-      key:result.runtimeId+':'+row.uid,
-      scope_id:result.runtimeId,
-      entry_type:'work',
-      original_source:row.source_name||'',
-      display_date:formatCultureDateTime(row.createtime)
-    }))).sort((a,b)=>String(b.createtime||'').localeCompare(String(a.createtime||'')));
-
-    const sourceMap=new Map();
-    for(const work of works){
-      const source=String(work.original_source||work.source_name||'未標示').trim()||'未標示';
-      const key=String(work.scope_id||'')+'|'+source;
-      const current=sourceMap.get(key)||{
-        key,
-        scope_id:String(work.scope_id||''),
-        source_name:source,
-        item_count:0
-      };
-      current.item_count+=1;
-      sourceMap.set(key,current);
-    }
-    const sourceGroups=[...sourceMap.values()].sort((a,b)=>
-      String(a.scope_id).localeCompare(String(b.scope_id))||
-      Number(b.item_count)-Number(a.item_count)||
-      String(a.source_name).localeCompare(String(b.source_name))
+    const periodRiverItems=bundles.flatMap(bundle=>bundle.context
+      .filter(row=>row.entry_type==='anchor'&&row.start_date)
+      .map(row=>({
+        ...row,
+        id:bundle.runtimeId+':anchor:'+row.anchor_id,
+        entry_id:bundle.runtimeId+':anchor:'+row.anchor_id,
+        scope_id:bundle.runtimeId,
+        group_label:bundle.runtimeId,
+        display_label:row.title,
+        start_date:String(row.start_date).slice(0,10),
+        date:String(row.start_date).slice(0,10),
+        entry_type:'anchor'
+      }))
+      .filter(row=>(!intersectionStart||row.start_date>=intersectionStart)&&row.start_date<=today)
     );
+
+    const aggregateRows=(await Promise.all(bundles.map(async bundle=>{
+      const [textDaily,mediaDaily]=await Promise.all([
+        selectDailyCategoryCounts(bundle.galaxy,'source_name',{
+          startDate:intersectionStart||'',
+          filters:publicContentFilters([]),
+          includeEmpty:true,
+          includeUndated:true
+        }),
+        selectDailyCategoryCounts(bundle.galaxyMedia,'media_type',{
+          startDate:intersectionStart||'',
+          filters:[{column:'galaxy_link',operator:'is',value:null}],
+          includeEmpty:true,
+          includeUndated:true
+        })
+      ]);
+      return [
+        ...textDaily.map(row=>({...row,scope_id:bundle.runtimeId,record_source:'text'})),
+        ...mediaDaily.map(row=>({...row,scope_id:bundle.runtimeId,record_source:'unlinked_media'}))
+      ];
+    }))).flat();
+
+    const {sourceRiverItems,sourceGroups}=buildLocSourceRiver(aggregateRows);
 
     return ScopeCultureResponseSchema.parse({
       scopeId:id,
@@ -278,11 +306,12 @@ export async function selectScopeCultureData(scopeId){
       periods:bundles.flatMap(bundle=>bundle.parts.periods),
       openRanges,
       scopeRanges:[],
-      timelineItems:intersectionTimeline,
-      events:[],
-      trajectories:[],
-      works,
+      timelineItems:periodRiverItems,
+      sourceRiverItems,
       sourceGroups,
+      events:bundles.flatMap(bundle=>bundle.parts.events),
+      trajectories:bundles.flatMap(bundle=>bundle.parts.trajectories),
+      works:[],
       intersectionStart,
       intersectionEnd:today
     });
