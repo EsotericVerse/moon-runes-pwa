@@ -35,7 +35,8 @@ function makeRuneDrawId(mode='single'){
 }
 
 const RUNE_COLUMNS='rune_id,rune_name,english_name,group_name,moon_phase,card_attr,rune_description,positive_keywords,negative_keywords,extra_rules,extra_notes';
-const MOON_PHASE_LABELS=Object.freeze({1:'新月',2:'上弦',3:'滿月',4:'下弦'});
+const CARD_ATTR_LABELS=Object.freeze({1:'正面',2:'中平',3:'負面',4:'未知'});
+function cardAttrLabel(value){return CARD_ATTR_LABELS[Number(value)]||'';}
 function directionNo(direction){return RUNE_DIRECTIONS.indexOf(direction)+1;}
 async function loadDrawCards(pairs,types){
   const ids=[...new Set(pairs.map(item=>Number(item.runeNumber)))];
@@ -116,7 +117,7 @@ function makeRecord(mode,session){
       number:Number(card.rune_id),name:card.rune_name,
       position:config.positions[index]||`第 ${index+1} 張`,
       direction:session.directions[index],
-      card_attribute:card.card_attr||'',
+      card_attribute:cardAttrLabel(card.card_attr),
       state:'',
       positive_keywords:card.positive_keywords||'',negative_keywords:card.negative_keywords||''
     }))
@@ -129,7 +130,7 @@ function dailyRecord(session,role){
     id:makeRuneDrawId('daily'),created_at:new Date().toISOString(),mode:'daily',mode_label:'每日',
     moon_phase:realMoonPhase(),daily_role:role,
     trend:null,result:null,guidance:dailyGuidance(card,direction)||directionText(card,direction),
-    cards:[{number:Number(card.rune_id),name:card.rune_name,position:role==='supplement'?'副符':'主符',direction,card_attribute:card.card_attr||'',state:'',positive_keywords:card.positive_keywords||'',negative_keywords:card.negative_keywords||''}]
+    cards:[{number:Number(card.rune_id),name:card.rune_name,position:role==='supplement'?'副符':'主符',direction,card_attribute:cardAttrLabel(card.card_attr),state:'',positive_keywords:card.positive_keywords||'',negative_keywords:card.negative_keywords||''}]
   };
 }
 function cardLine(record){
@@ -211,7 +212,7 @@ export default function RuneManagementPanel(){
       const [resolved]=await loadDrawCards([{runeNumber:Number(nextCard.number),dir}],['direction','daily']);
       if(!resolved)throw new Error('符文資料不存在。');
       nextCard.name=resolved.rune_name||String(nextCard.number);
-      nextCard.card_attribute=resolved.card_attr||'';
+      nextCard.card_attribute=cardAttrLabel(resolved.card_attr);
       nextCard.state='';
       await putNeonRecord({...row,trend:null,result:null,guidance:dailyGuidance(resolved,nextCard.direction)||directionText(resolved,nextCard.direction),cards:[nextCard]});
       await reloadRecords();setStatus('每日符文紀錄已更新。');

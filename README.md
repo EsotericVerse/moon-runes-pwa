@@ -94,7 +94,7 @@ legacy static JS runtime
 LOC1–8 service/index builders
 ```
 
-LunaRunes 一般功能的 canonical rune data 由 `app/loc/rune-repository.js` 作為薄 query boundary；Game 為獨立 feature，只讀取實際需要的 `silver.runes` 與 `silver.game`。四向文字由抽牌流程依 rune／direction／type 精準讀取 `silver.runes_etc`，不建立第二套符文資料。
+LunaRunes 一般功能直接使用共用 Neon query 精準讀取 `silver.runes` 與 `silver.runes_etc`；不保留 rune repository、相容欄位模型或第二套符文資料。Game 為獨立 feature，只讀取實際需要的 `silver.runes` 與 `silver.game`。
 
 ## JavaScript Boundary
 

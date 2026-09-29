@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 
-const data=fs.readFileSync('app/loc/rune-repository.js','utf8');
+const runeRuntime=fs.readFileSync('app/lrunes/RunesClient.jsx','utf8');
+const runeManagement=fs.readFileSync('app/loc/RuneManagementPanel.jsx','utf8');
 const client=fs.readFileSync('app/loc/neon-client.js','utf8');
 const account=fs.readFileSync('app/loc/use-neon-account.js','utf8');
 const authorization=fs.readFileSync('app/loc/scope-authorization.js','utf8');
@@ -12,9 +13,11 @@ const failures=[];
 
 const requireMatch=(text,re,label)=>{if(!re.test(text))failures.push(label);};
 
-requireMatch(data,/selectNeonRows/,'shared rune runtime must use direct Neon read queries');
-if(/neonAuthClient|updateRuneKeywords|\.update\(|\.insert\(|\.upsert\(|\.delete\(/.test(data))failures.push('silver.runes canonical data must remain app-side read-only');
-if(/memoryCache|DEFAULT_MEMORY_CACHE_ENTRIES/.test(data))failures.push('shared runtime data must not retain a process-memory data cache');
+for(const [name,source] of [['RunesClient',runeRuntime],['RuneManagementPanel',runeManagement]]){
+  requireMatch(source,/selectNeonRows/,`${name} must use direct Neon read queries`);
+  if(/neonAuthClient|updateRuneKeywords|\.update\(|\.insert\(|\.upsert\(|\.delete\(/.test(source))failures.push(`${name}: silver.runes canonical data must remain app-side read-only`);
+  if(/memoryCache|DEFAULT_MEMORY_CACHE_ENTRIES/.test(source))failures.push(`${name}: rune runtime must not retain a process-memory data cache`);
+}
 
 requireMatch(client,/getNeonPublicToken/,'public canonical reads must use the direct anonymous-token provider');
 requireMatch(client,/resetNeonPublicToken/,'public anonymous token recovery hook is required');
@@ -54,6 +57,8 @@ if(/function hasPrivilege|account\.privileges/.test(searchView)){
 }
 
 for(const retired of [
+  'app/loc/rune-repository.js',
+  'app/lrunes/rune-draw-engine.js',
   'app/loc/neon-legacy-migration.js',
   'app/loc/neon-scope-governance.js',
   'app/modular-v2/ScopeManagementV2.jsx',
