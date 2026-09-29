@@ -21,7 +21,7 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm install --no-audit --no-fund
-      - name: Verify shared FlexSearch engine
+      - name: Verify direct Neon text query
         run: npm run verify:text-engine && npm run verify:semantic-state && npm run verify:rune-keyword-rules && npm run verify:rune-draw
       - name: Verify public Neon Data API
         run: npm run verify:neon-public
