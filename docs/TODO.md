@@ -1,6 +1,6 @@
 # LOC TODO Ledger
 
-## RC8 Current close-out
+## RC8 Current close-out — CLOSED
 
 - [x] Neon Postgres is the Current SSOT.
 - [x] Current runtime no longer uses JSON / JSONB content authority, JSON shard fallback, or old JS/data reverse-read.
@@ -17,7 +17,13 @@
 
 ## Current open blockers
 
-None recorded.
+None recorded. RC8 Current close-out is closed.
+
+## RC8 post-freeze manual validation
+
+- [ ] Manually review Governance / Admin management pages and edit flows.
+- [ ] Any management-page defect found after this baseline is a focused UI/management correction unless it exposes a data-integrity or runtime-authority defect.
+- [ ] Do not reopen retired JSON/cache/legacy runtime architecture while correcting management UI.
 
 ## Next stage — not an RC8 close-out blocker
 

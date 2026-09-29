@@ -6,9 +6,9 @@
 
 LOC 是用來整理語言、資料、脈絡、作品與時間關係的 Language Architecture Framework。LunaRunes 是 LOC 中的 Symbolic Language 實作。定位已固定，不因定位另外增加功能。
 
-## Current / RC8
+## Current / RC8 Stable Baseline
 
-RC8 的工程目標是收斂 Current：
+RC8 已於 2026-09-29 封板為目前 Current 的穩定候選基線。RC8 的工程邊界是收斂 Current：
 
 - Neon Postgres 是 Current SSOT。
 - 不使用 JSON／舊 JS／靜態檔作 Current authority 或 fallback。
@@ -19,6 +19,8 @@ RC8 的工程目標是收斂 Current：
 - LunaRunes Game 已完成 RC8 前的圖形化與結構收斂：遊戲程式、文件與素材映射集中於 `app/lrunes/game/`，符文資料直接讀取 `silver.runes` 與 `silver.runes_etc`。
 
 歷史差異由 Git history 保存，不在 Current tree 保留可執行舊架構。
+
+RC8 baseline 與驗證紀錄見 `docs/RC8_BASELINE.md`。管理頁面仍需人工操作驗收；該驗收不改變 RC8 的資料與 runtime 基線，也不得以驗收修正為由重新引入已退役架構。
 
 ## Current Scopes
 
