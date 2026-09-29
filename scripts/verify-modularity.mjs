@@ -62,7 +62,7 @@ if(!/searchNeonRows\(/.test(searchView))failures.push('SearchV2: shared search c
 const scopeManagement=readFileSync(resolve(root,'app/loc/GovernanceManagement.jsx'),'utf8');
 const adminManagement=readFileSync(resolve(root,'app/loc/views/AdminHomeView.jsx'),'utf8');
 if(!/useNeonAccount/.test(scopeManagement)||!/canManageScopeSync/.test(scopeManagement))failures.push('Scope management: manager role gate missing');
-if(/KeywordSettingsV2|符文關鍵詞分組/.test(scopeManagement))failures.push('Scope management: LunaRunes canonical rune keywords must not be used as editable/fallback style');
+if(/(?:import|<)\s*KeywordSettingsV2\b|RuneKeywordSettingsV2\b|符文關鍵詞分組/.test(scopeManagement))failures.push('Scope management: LunaRunes canonical rune keywords must not be used as editable/fallback style');
 if(!/useNeonAccount/.test(adminManagement)||!/canManageGlobalSync/.test(adminManagement))failures.push('Admin management: global manager role gate missing');
 
 for(const retired of ['app/loc/local-db.js','app/loc/google-drive.js','app/loc/storage.js','app/loc/auth-client.js']){

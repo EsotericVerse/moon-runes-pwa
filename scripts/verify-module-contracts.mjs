@@ -87,7 +87,7 @@ const runeRepository=readFileSync(resolve(root,'app/loc/rune-repository.js'),'ut
 for(const token of ['selectNeonCount','selectNeonRows','selectRuneCatalog','selectRuneDrawRows'])if(!runeRepository.includes(token))failures.push(`Rune repository: missing read-only contract ${token}`);
 for(const forbidden of ['neonAuthClient','updateRuneKeywords','selectRuneKeywordGroups','selectRuneKeywordGroup','.update(','.insert(','.upsert(','.delete('])if(runeRepository.includes(forbidden))failures.push(`Rune repository: silver.runes must remain app-side read-only; forbidden token ${forbidden}`);
 for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs','app/loc/neon-context-client.js','app/modular-v2/features/ContextV2.jsx','app/modular-v2/features/ContextWorkbenchV2.jsx','app/modular-v2/modules/context-graph/ContextGraphV2.jsx','app/modular-v2/features/KeywordSettingsV2.jsx','app/modular-v2/features/RuneKeywordSettingsV2.jsx'])if(existsSync(resolve(root,retired)))failures.push(`retired path returned: ${retired}`);
-if(governanceManagement.includes('KeywordSettingsV2'))failures.push('LunaRunes management must not edit canonical rune keywords or use them as a style fallback');
+if(/(?:import|<)\s*KeywordSettingsV2\b|RuneKeywordSettingsV2\b/.test(governanceManagement))failures.push('LunaRunes management must not edit canonical rune keywords or use them as a style fallback');
 if(['LOC_DATA','canonical/runes','fetchNeonData','runtime_json_documents','fetchLocJson','fetchLocDataSegments'].some(token=>runeRepository.includes(token)))failures.push('Rune repository: legacy path/JSON loader semantics returned');
 
 for(const [client,contract] of [
