@@ -14,7 +14,7 @@ import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation.v2';
 import {featureDataErrorMessage} from '../feature-data-state.v2';
 import ContentEditorV2 from '../ContentEditorV2';
 import SearchHighlightV2 from '../SearchHighlightV2';
-import {selectGalaxyContent,selectGalaxyIdentity} from '../../loc/aggregate-query';
+import {resolveGalaxyExternalLinks,selectGalaxyContent,selectGalaxyIdentity} from '../../loc/aggregate-query';
 import {selectManagedScopes} from '../../loc/scope-list';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model.v2';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
@@ -157,11 +157,31 @@ export default function SearchV2(){
       const search=await searchNeonRows(scopeId,q,{limit:pageSize,cursor,mediaOnly:searchMode==='media'});
       if(id!==searchId.current)return;
 
-      const searchRows=search.rows;
+      const searchRows=[...(search.rows||[])];
+      const textByScope=new Map();
+      for(const entry of searchRows){
+        const row=entry?.row;
+        if(!row?.uid)continue;
+        const rowScope=String(row.scope_id||scopeId||'').trim();
+        if(!rowScope)continue;
+        if(!textByScope.has(rowScope))textByScope.set(rowScope,[]);
+        textByScope.get(rowScope).push(row);
+      }
+      const resolvedByKey=new Map();
+      await Promise.all([...textByScope.entries()].map(async([rowScope,rows])=>{
+        const resolved=await resolveGalaxyExternalLinks(rowScope,rows);
+        for(const row of resolved)resolvedByKey.set(rowScope+':'+row.uid,row);
+      }));
+      const enrichedRows=searchRows.map(entry=>{
+        const row=entry?.row;
+        if(!row?.uid)return entry;
+        const rowScope=String(row.scope_id||scopeId||'').trim();
+        return {...entry,row:resolvedByKey.get(rowScope+':'+row.uid)||row};
+      });
 
       if(!append)matchedQueryRef.current=q;
       const converted=[];const seen=new Set();
-      for(const {row,source} of searchRows){
+      for(const {row,source} of enrichedRows){
         const result=toResult(row,source,scopeId);
         if(!result||seen.has(result.key))continue;
         seen.add(result.key);converted.push(result);
