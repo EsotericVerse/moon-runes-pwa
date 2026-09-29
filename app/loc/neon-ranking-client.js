@@ -2,15 +2,9 @@ import {ScopeRankingResponseSchema} from './scope-feature-contracts';
 import {selectCategoryCounts,selectSourceCatalog} from './aggregate-query';
 import {selectNeonRows} from './neon-query';
 import {resolveScopeTables} from './scope-table-mapping';
+import {selectManagedScopes} from './scope-list';
 
 const PERIOD_COLUMNS='record_id,record_type,label,resource_id,display_order,time_date,anchor_pair,date_status,year_value';
-const RANKING_TYPES=Object.freeze({
-  loc:Object.freeze(['source']),
-  lunarunes:Object.freeze(['source','media_type']),
-  lo3rwang:Object.freeze(['source','media_type'])
-});
-
-function dataScopeId(scopeId){return String(scopeId)==='lunarunes'?'lrunes':String(scopeId);}
 function dateOnly(value){return String(value||'').slice(0,10);}
 function periodDate(row){
   if(row?.time_date)return dateOnly(row.time_date);
@@ -26,7 +20,7 @@ function previousDay(value){
 function periodId(value){return String(value||'').trim().replace(/^period:/,'');}
 
 async function selectPeriodRow(scopeId,period='all'){
-  const table=(await resolveScopeTables(dataScopeId(scopeId))).time;
+  const table=(await resolveScopeTables(scopeId)).time;
   const requested=periodId(period);
   const filters=[{column:'record_type',operator:'eq',value:'period'}];
   const orders=[];
@@ -42,7 +36,7 @@ async function selectPeriodRow(scopeId,period='all'){
 
 async function resolvePeriodRow(scopeId,row){
   if(!row)return null;
-  const table=(await resolveScopeTables(dataScopeId(scopeId))).time;
+  const table=(await resolveScopeTables(scopeId)).time;
   const [before='0',after='0']=String(row.anchor_pair||'0,0').split(',',2).map(value=>String(value||'0').trim()||'0');
   const ids=[before,after].filter(value=>value!=='0');
   let anchors=[];
@@ -88,7 +82,7 @@ function rankingRow(type,term,count,source,period){
 }
 
 async function sourceRows(scopeId,period='all',rangeOverride=undefined){
-  const dataId=dataScopeId(scopeId);
+  const dataId=String(scopeId||'').trim();
   const range=rangeOverride===undefined?await resolvePeriod(scopeId,period):rangeOverride;
   const result=await selectSourceCatalog({
     scopeId:dataId,
@@ -100,7 +94,7 @@ async function sourceRows(scopeId,period='all',rangeOverride=undefined){
 }
 
 async function mediaTypeRows(scopeId,period='all',rangeOverride=undefined){
-  const dataId=dataScopeId(scopeId);
+  const dataId=String(scopeId||'').trim();
   const range=rangeOverride===undefined?await resolvePeriod(scopeId,period):rangeOverride;
   const table=(await resolveScopeTables(dataId)).galaxyMedia;
   const rows=await selectCategoryCounts(table,'media_type',{
@@ -118,18 +112,16 @@ async function rowsForType(scopeId,type,period,rangeOverride=undefined){
 }
 
 async function queryScopeRankingRows(scopeId,{rankingType='',navigation={}}={}){
-  const id=String(scopeId||'');
-  const types=RANKING_TYPES[id];
-  if(!types)throw new Error('資料設定無效');
+  const id=String(scopeId||'').trim();
+  if(!id)throw new Error('資料設定無效');
+  const types=id==='loc'?['source']:['source','media_type'];
   const type=types.includes(rankingType)?rankingType:types[0];
   const period=String(navigation.period||'all');
   let rows=[];
   if(id==='loc'){
-    const [author,runes]=await Promise.all([
-      sourceRows('lo3rwang',period,null),
-      sourceRows('lunarunes',period,null)
-    ]);
-    rows=[...author,...runes];
+    const scopes=await selectManagedScopes();
+    const results=await Promise.all(scopes.map(scope=>sourceRows(scope.id,period,null)));
+    rows=results.flat();
   }else{
     rows=await rowsForType(id,type,period,undefined);
   }
@@ -148,7 +140,7 @@ export async function selectScopeRankingRows(scopeId,{rankingType='',navigation=
 }
 
 export async function selectScopeRankingTypes(scopeId){
-  const types=RANKING_TYPES[String(scopeId||'')];
-  if(!types)throw new Error('資料設定無效');
-  return [...types];
+  const id=String(scopeId||'').trim();
+  if(!id)throw new Error('資料設定無效');
+  return id==='loc'?['source']:['source','media_type'];
 }
