@@ -22,7 +22,7 @@ function sourceFilters(startDate='',endDate=''){
 async function selectAggregateRows(table,{columns,filters=[],orders=[]}={}){
   const output=[];
   let offset=0;
-  const pageSize=1000;
+  const pageSize=5000;
   while(true){
     const {rows}=await selectNeonRows(table,{columns,filters,orders,limit:pageSize,offset});
     if(!rows.length)break;
@@ -133,26 +133,17 @@ export async function selectGalaxyPage({scopeId,sourceName='',startDate='',endDa
   if(sourceName)filters.push({column:'source_name',operator:'eq',value:sourceName});
   filters.push(...timeFilters('createtime',startDate,endDate));
   const publicFilters=publicContentFilters(filters);
-  const totalCount=await selectNeonCount(table,{filters:publicFilters});
-  const {rows}=await selectNeonRows(table,{
-    columns:'uid,source_name,createtime,title,content',
+  const {rows,count}=await selectNeonRows(table,{
+    columns:'uid,source_name,createtime,title,url,source_id,target_id',
     filters:publicFilters,
-    orders:[{column:'createtime',ascending:false}],
+    orders:[{column:'createtime',ascending:false},{column:'uid',ascending:true}],
     limit,
-    offset
+    offset,
+    count:'exact'
   });
-  const ids=rows.map(row=>String(row.uid||'').trim()).filter(Boolean);
-  const relations=ids.length
-    ?(await selectNeonRows(table,{
-      columns:'uid,source_id,target_id',
-      filters:[{column:'uid',operator:'in',value:ids}],
-      limit:ids.length
-    })).rows
-    :[];
-  const relationById=new Map(relations.map(row=>[String(row.uid),row]));
   return {
-    rows:rows.map(row=>({...row,...(relationById.get(String(row.uid))||{})})),
-    totalCount
+    rows,
+    totalCount:Number(count)||rows.length
   };
 }
 
