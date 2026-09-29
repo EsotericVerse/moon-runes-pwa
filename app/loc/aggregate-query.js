@@ -14,88 +14,115 @@ function timeFilters(column,startDate,endDate){
   if(endDate)filters.push({column,operator:'lte',value:String(endDate).slice(0,10)+'T23:59:59.999+08:00'});
   return filters;
 }
-function taipeiDateKey(value){
-  if(!value)return '';
-  const date=new Date(value);
-  if(Number.isNaN(date.getTime()))return '';
-  return new Date(date.getTime()+8*60*60*1000).toISOString().slice(0,10);
-}
-function mondayOf(value){
-  const key=taipeiDateKey(value);
-  if(!key)return '';
-  const date=new Date(key+'T00:00:00Z');
-  const day=date.getUTCDay();
-  const shift=day===0?-6:1-day;
-  date.setUTCDate(date.getUTCDate()+shift);
-  return date.toISOString().slice(0,10);
-}
 function sourceFilters(startDate='',endDate=''){
   return publicContentFilters(timeFilters('createtime',startDate,endDate));
 }
 
-export async function selectSourceCatalog({scopeId='lo3rwang'}={}){
-  if(String(scopeId)!=='lo3rwang')return {rows:[],totalCount:0};
-  const {rows}=await selectNeonRows('silver.lo3rwang_galaxy',{
-    columns:'source_name,work_count:count()',
-    filters:sourceFilters(),
-    orders:[{column:'work_count',ascending:false}],
-    limit:100
-  });
-  const normalized=rows
-    .filter(row=>String(row.source_name||'').trim())
-    .map(row=>({
-      scope_id:'lo3rwang',
-      source_name:String(row.source_name).trim(),
-      work_count:Number(row.work_count)||0
-    }))
-    .sort((a,b)=>b.work_count-a.work_count||a.source_name.localeCompare(b.source_name));
-  return {rows:normalized,totalCount:normalized.length};
-}
-
-export async function selectSourceWeekly({scopeId='lo3rwang',startDate='',endDate='',limit=10000,offset=0}={}){
-  if(String(scopeId)!=='lo3rwang')return {rows:[],totalCount:0};
-  const {rows}=await selectNeonRows('silver.lo3rwang_galaxy',{
-    columns:'source_name,day:createtime::date,work_count:count()',
-    filters:sourceFilters(startDate,endDate),
-    limit,
-    offset
-  });
-  const weekly=new Map();
-  for(const row of rows){
-    const source=String(row.source_name||'').trim();
-    const weekStart=mondayOf(row.day);
-    if(!source||!weekStart)continue;
-    const key=source+'|'+weekStart;
-    const current=weekly.get(key)||{scope_id:'lo3rwang',source_name:source,week_start:weekStart,work_count:0};
-    current.work_count+=Number(row.work_count)||0;
-    weekly.set(key,current);
+async function selectAggregateRows(table,{columns,filters=[],orders=[]}={}){
+  const baseCount=await selectNeonCount(table,{filters});
+  if(!baseCount)return [];
+  const output=[];
+  let offset=0;
+  const pageSize=1000;
+  while(offset<baseCount){
+    const {rows}=await selectNeonRows(table,{columns,filters,orders,limit:pageSize,offset});
+    if(!rows.length)break;
+    output.push(...rows);
+    offset+=rows.length;
+    if(rows.length<pageSize)break;
   }
-  const output=[...weekly.values()].sort((a,b)=>a.week_start.localeCompare(b.week_start)||a.source_name.localeCompare(b.source_name));
-  return {rows:output,totalCount:output.length};
+  return output;
 }
 
-export async function selectDailyCounts(table,{startDate='',endDate='',filters=[],limit=10000,offset=0}={}){
-  const result=await selectNeonRows(table,{
+export async function selectSourceCatalog({scopeId='lo3rwang',startDate='',endDate='',limit=20}={}){
+  const table=String(scopeId)==='lrunes'?'silver.lrunes_galaxy':'silver.lo3rwang_galaxy';
+  const filters=publicContentFilters([
+    ...timeFilters('createtime',startDate,endDate),
+    {column:'source_name',operator:'neq',value:''}
+  ]);
+  const safeLimit=Math.max(1,Math.min(1000,Math.floor(Number(limit)||20)));
+  const {rows}=await selectNeonRows(table,{
+    columns:'source_name,work_count:count()',
+    filters,
+    orders:[{column:'work_count',ascending:false},{column:'source_name',ascending:true}],
+    limit:safeLimit,
+    offset:0
+  });
+  return {
+    rows:rows.map(row=>({
+      scope_id:String(scopeId)==='lrunes'?'lrunes':'lo3rwang',
+      source_name:String(row.source_name||'').trim(),
+      work_count:Number(row.work_count)||0
+    })).filter(row=>row.source_name),
+    totalCount:rows.length
+  };
+}
+
+export async function selectSourceDaily({scopeId='lo3rwang',startDate='',endDate=''}={}){
+  const table=String(scopeId)==='lrunes'?'silver.lrunes_galaxy':'silver.lo3rwang_galaxy';
+  const filters=publicContentFilters([
+    ...timeFilters('createtime',startDate,endDate),
+    {column:'source_name',operator:'neq',value:''}
+  ]);
+  const rows=await selectAggregateRows(table,{
+    columns:'source_name,day:createtime::date,work_count:count()',
+    filters,
+    orders:[{column:'day',ascending:true},{column:'source_name',ascending:true}]
+  });
+  return rows.map(row=>({
+    scope_id:String(scopeId)==='lrunes'?'lrunes':'lo3rwang',
+    source_name:String(row.source_name||'').trim(),
+    day:String(row.day||''),
+    work_count:Number(row.work_count)||0
+  }));
+}
+
+export async function selectDailyCounts(table,{startDate='',endDate='',filters=[]}={}){
+  const resolved=[...filters,...timeFilters('createtime',startDate,endDate)];
+  const rows=await selectAggregateRows(table,{
     columns:'day:createtime::date,work_count:count()',
-    filters:[...filters,...timeFilters('createtime',startDate,endDate)],
-    limit,
-    offset
+    filters:resolved,
+    orders:[{column:'day',ascending:true}]
   });
-  return result.rows.map(row=>({day:String(row.day||''),work_count:Number(row.work_count)||0}));
+  return rows.map(row=>({day:String(row.day||''),work_count:Number(row.work_count)||0}));
 }
 
-export async function selectDailyCategoryCounts(table,categoryColumn,{startDate='',endDate='',filters=[],limit=10000,offset=0}={}){
-  const result=await selectNeonRows(table,{
+export async function selectDailyCategoryCounts(table,categoryColumn,{startDate='',endDate='',filters=[]}={}){
+  const resolved=[
+    ...filters,
+    ...timeFilters('createtime',startDate,endDate),
+    {column:categoryColumn,operator:'neq',value:''}
+  ];
+  const rows=await selectAggregateRows(table,{
     columns:`${categoryColumn},day:createtime::date,work_count:count()`,
-    filters:[...filters,...timeFilters('createtime',startDate,endDate)],
-    limit,
-    offset
+    filters:resolved,
+    orders:[{column:'day',ascending:true},{column:categoryColumn,ascending:true}]
   });
-  return result.rows.map(row=>({
+  return rows.map(row=>({
     category:String(row?.[categoryColumn]||'').trim(),
     day:String(row.day||''),
     work_count:Number(row.work_count)||0
   })).filter(row=>row.category&&row.day);
+}
+
+export async function selectCategoryCounts(table,categoryColumn,{startDate='',endDate='',filters=[],limit=20}={}){
+  const resolved=[
+    ...filters,
+    ...timeFilters('createtime',startDate,endDate),
+    {column:categoryColumn,operator:'neq',value:''}
+  ];
+  const safeLimit=Math.max(1,Math.min(1000,Math.floor(Number(limit)||20)));
+  const {rows}=await selectNeonRows(table,{
+    columns:`${categoryColumn},item_count:count()`,
+    filters:resolved,
+    orders:[{column:'item_count',ascending:false},{column:categoryColumn,ascending:true}],
+    limit:safeLimit,
+    offset:0
+  });
+  return rows.map(row=>({
+    term:String(row?.[categoryColumn]||'').trim(),
+    item_count:Number(row.item_count)||0
+  })).filter(row=>row.term);
 }
 
 export async function selectGalaxyPage({sourceName='',startDate='',endDate='',limit=20,offset=0}={}){

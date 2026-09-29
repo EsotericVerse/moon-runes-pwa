@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {neonPublicClient} from '../../loc/neon-client';
+import {selectNeonCount,selectNeonRows} from '../../loc/neon-query';
 
 const RuneRow=z.object({
   rune_id:z.coerce.number().int().min(0).max(66),
@@ -70,6 +70,52 @@ const GameRow=z.object({
   asset_title:z.string().nullable().optional()
 }).passthrough();
 
+const GAME_RUNE_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,extra_rules,extra_notes';
+const GAME_COLUMNS=Object.freeze({
+  macro:'game_key,record_type,sort_order,status,is_current,macro_code,macro_group_a,macro_group_b,macro_title,macro_description',
+  rune_action:'game_key,record_type,sort_order,status,is_current,rune_id,rune_name,rune_group,rune_action_text,rune_action_kind,rune_action_value',
+  event:'game_key,record_type,sort_order,status,is_current,event_id,event_group,event_title,event_requirement,event_description',
+  role:'game_key,record_type,sort_order,status,is_current,role_id,role_formal_name,role_public_name,role_group,role_core_function,role_intervention_type,role_intervention_name,role_tool,role_tagline',
+  rule:'game_key,record_type,sort_order,status,is_current,rule_code,rule_title,rule_text,rule_round_no,rule_phase,rule_result_code,rule_de_delta,rule_draw_count,rule_value_int,rule_value_text',
+  asset:'game_key,record_type,sort_order,status,is_current,asset_code,asset_kind,asset_group,asset_group_2,asset_path,asset_title'
+});
+
+async function selectGameRunes(){
+  const filters=[
+    {column:'rune_id',operator:'gte',value:0},
+    {column:'rune_id',operator:'lte',value:66}
+  ];
+  const total=await selectNeonCount('silver.runes',{filters});
+  if(!total)return [];
+  const {rows}=await selectNeonRows('silver.runes',{
+    columns:GAME_RUNE_COLUMNS,
+    filters,
+    orders:[{column:'rune_id',ascending:true}],
+    limit:total,
+    offset:0
+  });
+  return z.array(RuneRow).parse(rows);
+}
+
+async function selectGameType(recordType){
+  const columns=GAME_COLUMNS[recordType];
+  if(!columns)throw new Error('未知的 silver.game record_type：'+recordType);
+  const filters=[
+    {column:'is_current',operator:'eq',value:true},
+    {column:'record_type',operator:'eq',value:recordType}
+  ];
+  const total=await selectNeonCount('silver.game',{filters});
+  if(!total)return [];
+  const {rows}=await selectNeonRows('silver.game',{
+    columns,
+    filters,
+    orders:[{column:'sort_order',ascending:true}],
+    limit:total,
+    offset:0
+  });
+  return z.array(GameRow).parse(rows);
+}
+
 function splitRequirement(value){
   return String(value||'').split('+').map(item=>item.trim()).filter(Boolean);
 }
@@ -87,24 +133,17 @@ function requiredDelta(rows,code){
 }
 
 export async function loadGameData(){
-  const [runesResult,gameResult]=await Promise.all([
-    neonPublicClient.schema('silver').from('runes')
-      .select('rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,extra_rules,extra_notes')
-      .gte('rune_id',0).lte('rune_id',66).order('rune_id',{ascending:true}),
-    neonPublicClient.schema('silver').from('game')
-      .select('*')
-      .eq('is_current',true)
-      .order('record_type',{ascending:true})
-      .order('sort_order',{ascending:true})
+  const [runes,macroRows,runeActionRows,eventRows,roleRows,ruleRows,assetRows]=await Promise.all([
+    selectGameRunes(),
+    selectGameType('macro'),
+    selectGameType('rune_action'),
+    selectGameType('event'),
+    selectGameType('role'),
+    selectGameType('rule'),
+    selectGameType('asset')
   ]);
 
-  if(runesResult.error)throw new Error(runesResult.error.message||'silver.runes 讀取失敗');
-  if(gameResult.error)throw new Error(gameResult.error.message||'silver.game 讀取失敗');
-
-  const runes=z.array(RuneRow).parse(runesResult.data||[]);
-  const gameRows=z.array(GameRow).parse(gameResult.data||[]);
-
-  const macros=gameRows.filter(row=>row.record_type==='macro').map(row=>({
+  const macros=macroRows.map(row=>({
     code:row.macro_code,
     groupA:row.macro_group_a,
     groupB:row.macro_group_b,
@@ -120,7 +159,7 @@ export async function loadGameData(){
     if(macro.groupB)macroByGroup.set(macro.groupB,macro.code);
   }
 
-  const runeActions=gameRows.filter(row=>row.record_type==='rune_action')
+  const runeActions=runeActionRows
     .sort((a,b)=>(a.rune_id||0)-(b.rune_id||0))
     .map(row=>({
       runeId:row.rune_id,
@@ -155,7 +194,7 @@ export async function loadGameData(){
   });
   if(cards.length!==66)throw new Error('silver.runes 可玩符文數量不是 66。');
 
-  const events=gameRows.filter(row=>row.record_type==='event')
+  const events=eventRows
     .sort((a,b)=>a.sort_order-b.sort_order)
     .map(row=>({
       id:row.event_id,
@@ -169,7 +208,7 @@ export async function loadGameData(){
     }));
   if(events.length!==32)throw new Error('silver.game Event 數量不是 32。');
 
-  const roles=gameRows.filter(row=>row.record_type==='role')
+  const roles=roleRows
     .sort((a,b)=>a.sort_order-b.sort_order)
     .map(row=>({
       id:row.role_id,
@@ -185,7 +224,7 @@ export async function loadGameData(){
     }));
   if(roles.length!==8)throw new Error('silver.game Role 數量不是 8。');
 
-  const rules=gameRows.filter(row=>row.record_type==='rule').sort((a,b)=>a.sort_order-b.sort_order);
+  const rules=ruleRows.sort((a,b)=>a.sort_order-b.sort_order);
   const rounds=rules.filter(row=>row.rule_code==='ROUND_PHASE')
     .sort((a,b)=>(a.rule_round_no||0)-(b.rule_round_no||0))
     .map(row=>({round:row.rule_round_no,phase:row.rule_phase,title:row.rule_title,text:row.rule_text}));
@@ -223,7 +262,7 @@ export async function loadGameData(){
     resonanceAttack:requiredDelta(rules,'RESONANCE_ATTACK')
   };
 
-  const assets=gameRows.filter(row=>row.record_type==='asset')
+  const assets=assetRows
     .sort((a,b)=>a.sort_order-b.sort_order)
     .map(row=>({
       code:row.asset_code,

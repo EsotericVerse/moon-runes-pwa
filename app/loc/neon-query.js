@@ -25,16 +25,16 @@ function applyOrders(query,orders=[]){
 }
 
 export async function selectNeonCount(table,{filters=[],orFilter=''}={}){
-  let query=relation(table).select('*',{count:'exact',head:true});
+  let query=relation(table).select('item_count:count()').limit(1);
   query=applyFilters(query,filters);
   if(orFilter)query=query.or(orFilter);
-  const {error,count}=await query;
+  const {data,error}=await query;
   if(error)throw new Error(error.message||('Neon COUNT '+table+' failed'));
-  return Number(count)||0;
+  return Number(data?.[0]?.item_count)||0;
 }
 
 export async function selectNeonRows(table,{
-  columns='*',
+  columns,
   filters=[],
   orFilter='',
   orders=[],
@@ -42,7 +42,8 @@ export async function selectNeonRows(table,{
   offset=0,
   count=null
 }={}){
-  const safeLimit=Math.max(1,Math.min(10000,Math.floor(Number(limit)||20)));
+  if(!String(columns||'').trim()||String(columns).trim()==='*')throw new Error('Neon SELECT requires explicit columns');
+  const safeLimit=Math.max(1,Math.min(1000,Math.floor(Number(limit)||20)));
   const safeOffset=Math.max(0,Math.floor(Number(offset)||0));
   let query=relation(table).select(columns,count?{count}:undefined);
   query=applyFilters(query,filters);

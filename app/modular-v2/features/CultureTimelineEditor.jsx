@@ -5,7 +5,7 @@ import {useSearchParams} from 'next/navigation';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {neonAuthClient} from '../../loc/neon-client';
-import {selectNeonRows} from '../../loc/neon-query';
+import {selectNeonCount,selectNeonRows} from '../../loc/neon-query';
 import {scopeDataTable} from '../../loc/scope-list';
 import {FEATURE_LOADING_MESSAGE} from '../feature-data-state.v2';
 
@@ -16,23 +16,20 @@ function timeRelation(client,table){
   return client.schema(schema).from(name);
 }
 async function insertNeonRows(table,rows){
-  const {data,error}=await timeRelation(neonAuthClient,table).insert(rows).select('*');
+  const {error}=await timeRelation(neonAuthClient,table).insert(rows);
   if(error)throw new Error(error.message||('Neon INSERT '+table+' failed'));
-  return data||[];
 }
 async function updateNeonRows(table,values,{filters=[]}={}){
   let query=timeRelation(neonAuthClient,table).update(values);
   for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
-  const {data,error}=await query.select('*');
+  const {error}=await query;
   if(error)throw new Error(error.message||('Neon UPDATE '+table+' failed'));
-  return data||[];
 }
 async function deleteNeonRows(table,{filters=[]}={}){
   let query=timeRelation(neonAuthClient,table).delete();
   for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
-  const {data,error}=await query.select('*');
+  const {error}=await query;
   if(error)throw new Error(error.message||('Neon DELETE '+table+' failed'));
-  return data||[];
 }
 
 const EDITABLE_TYPES=Object.freeze([
@@ -87,12 +84,22 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
     queryKey:['culture-period-settings',dataScope],
     enabled:supported&&Boolean(account.user),
     queryFn:async()=>{
-      const {rows}=await selectNeonRows(timeTable,{
-        columns:TIME_COLUMNS,
-        filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}],
-        limit:512
-      });
-      return rows;
+      const groups=await Promise.all(EDITABLE_TYPES.map(async([type])=>{
+        const filters=[{column:'record_type',operator:'eq',value:type}];
+        const total=await selectNeonCount(timeTable,{filters});
+        if(!total)return [];
+        const {rows}=await selectNeonRows(timeTable,{
+          columns:TIME_COLUMNS,
+          filters,
+          orders:type==='anchor'
+            ?[{column:'time_date',ascending:true},{column:'record_id',ascending:true}]
+            :[{column:'display_order',ascending:true},{column:'record_id',ascending:true}],
+          limit:total,
+          offset:0
+        });
+        return rows;
+      }));
+      return groups.flat();
     },
     staleTime:20_000
   });

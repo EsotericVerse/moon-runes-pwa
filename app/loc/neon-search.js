@@ -1,7 +1,6 @@
 'use client';
 
-import {getMediaSearchProviders,getSearchProviders} from './search-providers';
-import {selectManagedScopeIds} from './scope-list';
+import {getMediaSearchProviders,getSearchProviders,PUBLIC_SEARCH_SCOPE_IDS} from './search-providers';
 import {DEFAULT_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
 
 const SEARCH_PAGE_SIZE=DEFAULT_LIST_BATCH_SIZE;
@@ -57,7 +56,7 @@ export async function searchNeonRows(collectionId,query,{
   if(!q)return {rows:[],failures:[],hasMore:false,nextCursor:null};
 
   const safeLimit=Math.max(1,Math.min(SEARCH_PAGE_SIZE,Math.floor(Number(limit)||SEARCH_PAGE_SIZE)));
-  const scopeIds=collectionId==='all'?await selectManagedScopeIds():[];
+  const scopeIds=collectionId==='all'?[...PUBLIC_SEARCH_SCOPE_IDS]:[];
   const providers=mediaOnly
     ?getMediaSearchProviders(collectionId,scopeIds)
     :getSearchProviders(collectionId,scopeIds);
@@ -70,17 +69,11 @@ export async function searchNeonRows(collectionId,query,{
   const sourceOffset=Math.max(0,Math.floor(Number(cursor?.offset)||0));
 
   if(stage===0){
-    const rows=cards.slice(sourceOffset,sourceOffset+safeLimit);
-    const nextOffset=sourceOffset+rows.length;
-    const cardsRemain=nextOffset<cards.length;
-    const hasMore=cardsRemain||providers.length>0;
     return {
-      rows,
+      rows:cards,
       failures,
-      hasMore,
-      nextCursor:hasMore
-        ?(cardsRemain?{stage:0,offset:nextOffset}:{stage:1,offset:0})
-        :null
+      hasMore:providers.length>0,
+      nextCursor:providers.length?{stage:1,offset:0}:null
     };
   }
 

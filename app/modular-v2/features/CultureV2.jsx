@@ -112,41 +112,13 @@ export default function CultureV2(){
   );
   const previousWorkPeriod=selectedPeriodIndex>0?primaryPeriods[selectedPeriodIndex-1]:null;
 
-  const workPeriods=useMemo(()=>{
-    if(primaryPeriods.length)return primaryPeriods;
-    return scopeRange?.start_date?[{
-      period:'birthday-range',
-      title:'完整時期',
-      display_label:'完整時期',
-      start_date:scopeRange.start_date,
-      end_date:scopeRange.end_date||null,
-      scope_id:scopeId,
-      derived_from:'birthday'
-    }]:[];
-  },[primaryPeriods,scopeRange,scopeId]);
   const periodWorkTimelineQuery=useQuery({
-    queryKey:['culture-period-work-timeline',scopeId,workPeriods.map(item=>[item.period,item.start_date,item.end_date].join(':')).join('|')],
-    queryFn:async()=>{
-      const groups=await Promise.all(workPeriods.map(async period=>{
-        const snapshot=await selectScopeWorkSnapshot(scopeId,{
-          startDate:period.start_date,
-          endDate:period.end_date
-        });
-        return (snapshot.buckets||[]).map(bucket=>({
-          ...bucket,
-          id:'period:'+String(period.period||period.start_date)+':'+String(bucket.id||bucket.start_date),
-          period_id:period.period||period.start_date,
-          period_title:period.title||period.display_label||'時期',
-          period_start_date:period.start_date,
-          period_end_date:period.end_date,
-          evidence_group:bucket.group_label,
-          group_label:period.title||period.display_label||'時期',
-          title:(period.title||period.display_label||'時期')+' · '+(bucket.title||bucket.display_label||'作品')
-        }));
-      }));
-      return groups.flat();
-    },
-    enabled:!isLoc&&workPeriods.length>0,
+    queryKey:['culture-period-work-timeline',scopeId,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
+    queryFn:()=>selectScopeWorkSnapshot(scopeId,{
+      startDate:selectedWorkPeriod?.start_date,
+      endDate:selectedWorkPeriod?.end_date
+    }),
+    enabled:!isLoc&&Boolean(selectedWorkPeriod?.start_date),
     staleTime:5*60_000
   });
 
@@ -266,35 +238,10 @@ export default function CultureV2(){
   const anchoredEvents=useMemo(()=>(query.data?.events||[])
     .filter(item=>String(item?.scope_id||'')===scopeId&&item?.start_date&&item?.end_date)
     .sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))||String(a.title||'').localeCompare(String(b.title||''))),[query.data,scopeId]);
-  const eventWorkTimelineQuery=useQuery({
-    queryKey:['culture-event-work-timeline',scopeId,anchoredEvents.map(item=>[item.event_id,item.start_date,item.end_date].join(':')).join('|')],
-    queryFn:async()=>{
-      const groups=await Promise.all(anchoredEvents.map(async event=>{
-        const snapshot=await selectScopeWorkSnapshot(scopeId,{
-          startDate:event.start_date,
-          endDate:event.end_date
-        });
-        return (snapshot.buckets||[]).map(bucket=>({
-          ...bucket,
-          id:'event:'+String(event.event_id||event.entry_id||event.title)+':'+String(bucket.id||bucket.start_date),
-          event_id:event.event_id||event.entry_id,
-          event_title:event.title,
-          event_start_date:event.start_date,
-          event_end_date:event.end_date,
-          evidence_group:bucket.group_label,
-          group_label:event.title||'事件',
-          title:(event.title||'事件')+' · '+(bucket.title||bucket.display_label||'作品')
-        }));
-      }));
-      return groups.flat();
-    },
-    enabled:scopeId==='lo3rwang'&&timelineMode==='event'&&anchoredEvents.length>0,
-    staleTime:5*60_000
-  });
-  const eventTimelineItems=eventWorkTimelineQuery.data||[];
+  const eventTimelineItems=anchoredEvents;
   const anchorTimelineItems=useMemo(()=>timelineItems.filter(item=>String(item?.entry_type||'')==='anchor'),[timelineItems]);
-  const periodWorkTimelineItems=periodWorkTimelineQuery.data||[];
-  const hasTimelineSurface=isLoc?timelineItems.length>0:Boolean(scopeRange?.start_date||timelineItems.length);
+  const periodWorkTimelineItems=periodWorkTimelineQuery.data?.buckets||[];
+  const hasTimelineSurface=isLoc?currentRows.length>0:Boolean(timelineItems.length||selectedWorkPeriod?.start_date);
 
   const classificationBuckets=classificationMode==='source'
     ?(sourceSnapshotQuery.data?.buckets||[])
@@ -415,13 +362,10 @@ export default function CultureV2(){
                   />
                 :timelineMode==='event'
                   ?<>
-                      {eventWorkTimelineQuery.isFetching?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
-                      {eventWorkTimelineQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(eventWorkTimelineQuery.error)}</p>:null}
-                      {!eventWorkTimelineQuery.isFetching&&!eventWorkTimelineQuery.error&&!anchoredEvents.length?<p className='scope-v2-status'>目前沒有具有前後定錨點的事件。</p>:null}
-                      {!eventWorkTimelineQuery.isFetching&&!eventWorkTimelineQuery.error&&anchoredEvents.length>0&&!eventTimelineItems.length?<p className='scope-v2-status'>目前這些事件範圍內沒有作品。</p>:null}
+                      {!anchoredEvents.length?<p className='scope-v2-status'>目前沒有具有前後定錨點的事件。</p>:null}
                       {eventTimelineItems.length?<CultureTimelineV2
                         items={eventTimelineItems}
-                        labelOf={item=>item.display_label||item.evidence_group||item.title}
+                        labelOf={item=>item.display_label||item.title}
                         focus={{}}
                         mode='overview'
                       />:null}

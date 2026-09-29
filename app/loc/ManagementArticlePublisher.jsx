@@ -15,9 +15,8 @@ function targetIds(value){
 
 async function insertNeonRows(table,rows){
   const [schema,name]=String(table).split('.');
-  const {data,error}=await neonAuthClient.schema(schema).from(name).insert(rows).select('*');
+  const {error}=await neonAuthClient.schema(schema).from(name).insert(rows);
   if(error)throw new Error(error.message||('Neon INSERT '+table+' failed'));
-  return data||[];
 }
 
 const blank=()=>({

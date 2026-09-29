@@ -34,9 +34,8 @@ async function selectNeonRowById(table,{idColumn,id,columns}={}){
 async function updateNeonRows(table,values,{filters=[]}={}){
   let query=authRelation(table).update(values);
   for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
-  const {data,error}=await query.select('*');
+  const {error}=await query;
   if(error)throw new Error(error.message||('Neon UPDATE '+table+' failed'));
-  return data||[];
 }
 
 const norm=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');

@@ -1,14 +1,27 @@
 'use client';
 
-import {neonPublicClient} from './neon-client';
+import {selectNeonCount,selectNeonRows} from './neon-query';
 
 const SCOPE_ID_PATTERN=/^[a-z][a-z0-9]*$/;
 
 export async function selectManagedScopes(){
-  const {data:rows,error}=await neonPublicClient.schema('silver').from('manage')
-    .select('id,role,birthday')
-    .order('id',{ascending:true});
-  if(error)throw new Error(error.message||'Neon manage read failed');
+  const filters=[{column:'role',operator:'in',value:['admin','scope']}];
+  const total=await selectNeonCount('silver.manage',{filters});
+  if(!total)return [];
+  const rows=[];
+  let offset=0;
+  while(offset<total){
+    const page=await selectNeonRows('silver.manage',{
+      columns:'id,role,birthday',
+      filters,
+      orders:[{column:'id',ascending:true}],
+      limit:Math.min(1000,total-offset),
+      offset
+    });
+    if(!page.rows.length)break;
+    rows.push(...page.rows);
+    offset+=page.rows.length;
+  }
   const scopes=new Map();
   for(const row of rows){
     const id=String(row.id||'').trim();

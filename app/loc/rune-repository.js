@@ -1,6 +1,7 @@
 'use client';
 
-import {neonAuthClient,neonPublicClient} from './neon-client';
+import {neonAuthClient} from './neon-client';
+import {selectNeonCount,selectNeonRows} from './neon-query';
 
 const RUNE_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,char_action,positive_keywords,negative_keywords,extra_rules,extra_notes';
 const RUNE_DETAIL_COLUMNS='rune_evolution_history,myth_story,soul_question,practice_challenge,ritual_advice,harmony_advice';
@@ -13,18 +14,26 @@ const LOTS_FIELDS=Object.freeze({1:'lots_positive',2:'lots_half_positive',3:'lot
 const DAILY_FIELDS=Object.freeze({1:'daily_positive',2:'daily_half_positive',3:'daily_half_reverse',4:'daily_reverse'});
 const ETC_TYPES=new Set(['direction','lots','daily']);
 
-async function selectRuneTable(table,columns,{filters=[],orders=[],orFilter=''}={}){
-  let query=neonPublicClient.schema('silver').from(table).select(columns);
-  for(const filter of filters){
-    query=filter.operator==='in'
-      ?query.in(filter.column,filter.value)
-      :query[filter.operator](filter.column,filter.value);
+async function selectRuneTable(table,columns,{filters=[],orders=[],orFilter='',limit=null}={}){
+  const fullTable='silver.'+table;
+  if(Number.isInteger(limit)&&limit>0){
+    return (await selectNeonRows(fullTable,{columns,filters,orders,orFilter,limit,offset:0})).rows;
   }
-  if(orFilter)query=query.or(orFilter);
-  for(const order of orders)query=query.order(order.column,{ascending:order.ascending??true});
-  const {data,error}=await query;
-  if(error)throw new Error(error.message||('Neon '+table+' read failed'));
-  return data||[];
+  const total=await selectNeonCount(fullTable,{filters,orFilter});
+  if(!total)return [];
+  const rows=[];
+  let offset=0;
+  while(offset<total){
+    const page=await selectNeonRows(fullTable,{
+      columns,filters,orders,orFilter,
+      limit:Math.min(1000,total-offset),
+      offset
+    });
+    if(!page.rows.length)break;
+    rows.push(...page.rows);
+    offset+=page.rows.length;
+  }
+  return rows;
 }
 
 function normalizeRune(row){
@@ -100,7 +109,8 @@ async function selectRuneEtcPairs(pairs=[],types=[]){
   return selectRuneTable('runes_etc',ETC_COLUMNS,{
     filters:[{column:'type',operator:'in',value:selectedTypes}],
     orFilter:exactPairs.map(item=>`and(rune_id.eq.${item.runeNumber},dir.eq.${item.dir})`).join(','),
-    orders:[{column:'rune_id',ascending:true},{column:'dir',ascending:true},{column:'type',ascending:true}]
+    orders:[{column:'rune_id',ascending:true},{column:'dir',ascending:true},{column:'type',ascending:true}],
+    limit:exactPairs.length*selectedTypes.length
   });
 }
 
@@ -131,7 +141,8 @@ export async function selectRuneRows(runeNumbers=[],{detail=false}={}){
   const columns=detail?`${RUNE_COLUMNS},${RUNE_DETAIL_COLUMNS}`:RUNE_COLUMNS;
   const runes=await selectRuneTable('runes',columns,{
     filters:[{column:'rune_id',operator:'in',value:wanted}],
-    orders:[{column:'rune_id',ascending:true}]
+    orders:[{column:'rune_id',ascending:true}],
+    limit:wanted.length
   });
   return runes.map(normalizeRune);
 }

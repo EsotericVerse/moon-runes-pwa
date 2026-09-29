@@ -34,7 +34,6 @@ for(const path of [
   'app/loc/model/rune-graph-core.js',
   'app/loc/neon-culture-client.js',
   'app/loc/neon-ranking-client.js',
-  'app/loc/text-engine.mjs',
   'assets/lunarunes/cards/65_玄.png',
   'assets/lunarunes/cards/66_命.png',
 ]) if(!existsSync(resolve(root,path)))failures.push(`missing module contract file: ${path}`);
@@ -85,7 +84,7 @@ if(/columns:['"][^'"]*content[^'"]*(?:url|media_link)|columns:['"][^'"]*(?:url|m
 if(/galaxy_preview|content_preview/.test(aggregateQuery))failures.push('aggregate-query: stored preview dependency returned');
 
 const runeRepository=readFileSync(resolve(root,'app/loc/rune-repository.js'),'utf8');
-for(const token of ['neonPublicClient','selectRuneCatalog','selectRuneKeywordCatalog'])if(!runeRepository.includes(token))failures.push(`Rune repository: missing canonical contract ${token}`);
+for(const token of ['selectNeonCount','selectNeonRows','selectRuneCatalog','selectRuneKeywordCatalog'])if(!runeRepository.includes(token))failures.push(`Rune repository: missing canonical contract ${token}`);
 for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs','app/loc/neon-context-client.js','app/modular-v2/features/ContextV2.jsx','app/modular-v2/features/ContextWorkbenchV2.jsx','app/modular-v2/modules/context-graph/ContextGraphV2.jsx'])if(existsSync(resolve(root,retired)))failures.push(`retired path-loader returned: ${retired}`);
 if(['LOC_DATA','canonical/runes','fetchNeonData','runtime_json_documents','fetchLocJson','fetchLocDataSegments'].some(token=>runeRepository.includes(token)))failures.push('Rune repository: legacy path/JSON loader semantics returned');
 
@@ -96,22 +95,15 @@ for(const [client,contract] of [
 
 const listLoadingContract=readFileSync(resolve(root,'app/loc/list-loading-contract.mjs'),'utf8');
 const incrementalLoader=readFileSync(resolve(root,'app/modular-v2/IncrementalLoadV2.jsx'),'utf8');
-const textEngine=readFileSync(resolve(root,'app/loc/text-engine.mjs'),'utf8');
 const searchProviders=readFileSync(resolve(root,'app/loc/search-providers.js'),'utf8');
-const keywordClassifier=readFileSync(resolve(root,'app/loc/keyword-classifier.js'),'utf8');
 if(!/DEFAULT_LIST_BATCH_SIZE=20/.test(listLoadingContract)||!/RUNE_LIST_BATCH_SIZE=16/.test(listLoadingContract))failures.push('List loading: Current batch contract must remain 20 general / 16 rune');
-if((searchProviders.match(/batchSize:RUNE_LIST_BATCH_SIZE/g)||[]).length<5)failures.push('Search client: all LunaRunes providers must use the 16-row rune batch');
+if((searchProviders.match(/batchSize:RUNE_LIST_BATCH_SIZE/g)||[]).length<5)failures.push('Search client: all LunaRunes providers must use the 16-row rune page size');
 if(!/WHEEL_GESTURE_GAP_MS/.test(incrementalLoader)||!/readyAtRef\.current=now\+/.test(incrementalLoader)||/busyRef/.test(incrementalLoader))failures.push('Incremental loader: one-user-gesture / immediate-cooldown contract missing');
 if(!/requireGalaxyContent/.test(contentPolicy))failures.push('Galaxy content policy: shared nonblank write guard missing');
-if(!/from ['"]flexsearch['"]/.test(textEngine)||!/Charset\.CJK/.test(textEngine)||!/new Resolver/.test(textEngine))failures.push('Text engine: FlexSearch CJK/Resolver contract missing');
-if(/records\s*=\s*new Map|records\.set|engine\.records/.test(textEngine))failures.push('Text engine: FlexSearch may retain IDs only; record payload storage is forbidden');
-if(!/const ids=new Set\(\)/.test(textEngine))failures.push('Text engine: ID-only transient index contract missing');
-if(!/createTextIndex/.test(searchProviders)||!/searchTextIndex/.test(searchProviders)||!/literalTextMatches/.test(searchProviders)||!/selectNeonRows/.test(searchProviders)||!/nextCursor|cursor=/.test(searchProviders))failures.push('Search client: batched FlexSearch candidate + literal verification contract missing');
-if(/engine\.add\([^\n]*recordFor/.test(searchProviders))failures.push('Search client: FlexSearch index must not retain record payloads');
-if(/getRuntimeTextIndex/.test(searchProviders))failures.push('Search client: runtime index cache must not return to batched providers');
-if(/scanSize|maxScanSize|while\(matched\.length/.test(searchProviders))failures.push('Search client: provider must fetch exactly one raw batch per user trigger');
-if(/suggest\s*:|context\s*:|tokenize\s*:\s*['"]tolerant['"]/.test(textEngine))failures.push('Text engine: semantic/fuzzy rendering options are forbidden');
-if(!/searchTextIndex/.test(keywordClassifier)||!/literalTextMatches/.test(keywordClassifier))failures.push('Statistics keyword classifier: literal lexical verification contract missing');
+for(const token of ["count:'exact',head:true",".or(",".range("])if(!searchProviders.includes(token))failures.push('Search client: direct Neon literal-query contract missing '+token);
+for(const forbidden of ['createTextIndex','searchTextIndex','literalTextMatches'])if(searchProviders.includes(forbidden))failures.push('Search client: retired client text engine returned '+forbidden);
+if(existsSync(resolve(root,'app/loc/text-engine.mjs')))failures.push('Retired app/loc/text-engine.mjs returned');
+if(existsSync(resolve(root,'app/loc/keyword-classifier.js')))failures.push('Retired app/loc/keyword-classifier.js returned');
 if(existsSync(resolve(root,'app/loc/style-classifier.js')))failures.push('Retired duplicate style-classifier.js returned');
 if(!/searchNeonRows\(/.test(readFileSync(resolve(root,'app/modular-v2/features/SearchV2.jsx'),'utf8')))failures.push('Search view: shared text search contract missing');
 const cultureClientSource=readFileSync(resolve(root,'app/loc/neon-culture-client.js'),'utf8');

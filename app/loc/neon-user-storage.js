@@ -1,5 +1,6 @@
 'use client';
 
+import {getNeonSession,neonAuthClient} from './neon-client';
 
 
 function apiRelation(name){return neonAuthClient.schema('api').from(name);}
@@ -128,12 +129,20 @@ export async function listNeonRecords(type='',{
   if(type)filters.push({column:'record_type',operator:'eq',value:type});
   if(recordKind)filters.push({column:'record_kind',operator:'eq',value:recordKind});
   if(recordDate)filters.push({column:'record_date',operator:'eq',value:recordDate});
-  let query=apiRelation('user_records').select(RECORD_COLUMNS,count?{count:'exact'}:undefined);
+  let totalCount=null;
+  if(count){
+    let countQuery=apiRelation('user_records').select('id',{count:'exact',head:true});
+    countQuery=applyRecordFilters(countQuery,filters);
+    const {error:countError,count:total}=await countQuery;
+    if(countError)throw new Error(countError.message||'個人紀錄筆數讀取失敗');
+    totalCount=Number(total||0);
+  }
+  let query=apiRelation('user_records').select(RECORD_COLUMNS);
   query=applyRecordFilters(query,filters).order('updated_at',{ascending:false}).range(offset,offset+limit-1);
-  const {data,error,count:total}=await query;
+  const {data,error}=await query;
   if(error)throw new Error(error.message||'個人紀錄讀取失敗');
   const rows=(data||[]).map(dbRecord);
-  return count?{rows,totalCount:Number(total||0)}:rows;
+  return count?{rows,totalCount}:rows;
 }
 
 export async function getNeonRecord(id){
@@ -161,18 +170,10 @@ export async function deleteNeonRecord(id){
 
 export async function clearNeonRecords(type=''){
   await requireUser();
-  if(type){
-    const {error}=await apiRelation('user_records').delete().eq('record_type',type);
-    if(error)throw new Error(error.message||'個人紀錄清除失敗');
-    return;
-  }
-  while(true){
-    const rows=await listNeonRecords('',{offset:0,limit:64});
-    if(!rows.length)break;
-    const {error}=await apiRelation('user_records').delete().in('id',rows.map(row=>row.id));
-    if(error)throw new Error(error.message||'個人紀錄清除失敗');
-    if(rows.length<64)break;
-  }
+  let query=apiRelation('user_records').delete();
+  query=type?query.eq('record_type',type):query.not('id','is',null);
+  const {error}=await query;
+  if(error)throw new Error(error.message||'個人紀錄清除失敗');
 }
 
 function settingRow(key,value){

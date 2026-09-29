@@ -31,20 +31,18 @@ for(const required of [
   'app/loc/rune-repository.js',
   'app/loc/neon-ranking-client.js',
   'app/loc/neon-culture-client.js',
-  'app/loc/neon-search.js',
-  'app/loc/text-engine.mjs'
+  'app/loc/neon-search.js'
 ]){
   if(!existsSync(resolve(root,required)))failures.push(`${required}: required Neon/module boundary missing`);
 }
 
 const runeRepository=readFileSync(resolve(root,'app/loc/rune-repository.js'),'utf8');
-if(!runeRepository.includes('neonPublicClient')||!runeRepository.includes('selectRuneCatalog')||!runeRepository.includes('selectRuneKeywordCatalog'))failures.push('app/loc/rune-repository.js: canonical rune read boundary missing');
+if(!runeRepository.includes('selectNeonCount')||!runeRepository.includes('selectNeonRows')||!runeRepository.includes('selectRuneCatalog')||!runeRepository.includes('selectRuneKeywordCatalog'))failures.push('app/loc/rune-repository.js: canonical rune read boundary missing');
 if(['LOC_DATA','fetchNeonData','canonical/runes','fetchStaticJson','runtime_json_documents'].some(token=>runeRepository.includes(token)))failures.push('app/loc/rune-repository.js: retired path/JSON loader semantics remain');
 for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs','app/loc/neon-context-client.js','app/modular-v2/features/ContextV2.jsx','app/modular-v2/features/ContextWorkbenchV2.jsx','app/modular-v2/modules/context-graph/ContextGraphV2.jsx'])if(existsSync(resolve(root,retired)))failures.push(`${retired}: retired path-loader must remain removed`);
 
 const statisticsView=readFileSync(resolve(root,'app/modular-v2/features/StatisticsV2.jsx'),'utf8');
 if(!/selectScopeRankingAll\(scopeId/.test(statisticsView))failures.push('StatisticsV2: shared canonical ranking query missing');
-if(!/IncrementalLoadV2/.test(statisticsView))failures.push('StatisticsV2: shared incremental ranking loader missing');
 if(/selectScopeRankingPage\(/.test(statisticsView))failures.push('StatisticsV2: retired duplicate SQL ranking pagination returned');
 
 const cultureView=readFileSync(resolve(root,'app/modular-v2/features/CultureV2.jsx'),'utf8');
@@ -52,16 +50,11 @@ if(!/selectScopeCultureData\(scopeId\)/.test(cultureView))failures.push('Culture
 
 const searchClient=readFileSync(resolve(root,'app/loc/neon-search.js'),'utf8');
 const searchProviders=readFileSync(resolve(root,'app/loc/search-providers.js'),'utf8');
-const textEngine=readFileSync(resolve(root,'app/loc/text-engine.mjs'),'utf8');
-const keywordClassifier=readFileSync(resolve(root,'app/loc/keyword-classifier.js'),'utf8');
 const searchView=readFileSync(resolve(root,'app/modular-v2/features/SearchV2.jsx'),'utf8');
-if(!/from ['"]flexsearch['"]/.test(textEngine)||!/new Resolver/.test(textEngine))failures.push('Text engine: FlexSearch Resolver boundary is missing');
-if(!/createTextIndex/.test(searchProviders)||!/searchTextIndex/.test(searchProviders)||!/literalTextMatches/.test(searchProviders)||!/nextCursor|cursor=/.test(searchProviders))failures.push('Search: batched FlexSearch candidate + literal verification boundary is missing');
-if(/getRuntimeTextIndex/.test(searchProviders))failures.push('Search: runtime index cache must remain retired from providers');
-if(/scanSize|maxScanSize|while\(matched\.length/.test(searchProviders))failures.push('Search: provider auto-scan beyond one raw batch is forbidden');
-if(/\.ilike\(|operator:\s*['"]ilike['"]/.test(searchProviders))failures.push('Search: direct ILIKE search must not replace the shared text engine');
-if(/suggest\s*:|context\s*:|tokenize\s*:\s*['"]tolerant['"]/.test(textEngine))failures.push('Text engine: fuzzy/context/suggest search is forbidden');
-if(!/searchTextIndex/.test(keywordClassifier)||!/literalTextMatches/.test(keywordClassifier))failures.push('Statistics keyword classifier: literal lexical verification contract missing');
+for(const token of ["count:'exact',head:true",".or(",".range("])if(!searchProviders.includes(token))failures.push('Search: direct Neon literal query contract missing '+token);
+for(const forbidden of ['createTextIndex','searchTextIndex','literalTextMatches'])if(searchProviders.includes(forbidden))failures.push('Search: retired client text engine returned '+forbidden);
+if(existsSync(resolve(root,'app/loc/text-engine.mjs')))failures.push('app/loc/text-engine.mjs: retired client text engine returned');
+if(existsSync(resolve(root,'app/loc/keyword-classifier.js')))failures.push('app/loc/keyword-classifier.js: retired JS keyword classifier returned');
 if(existsSync(resolve(root,'app/loc/style-classifier.js')))failures.push('app/loc/style-classifier.js: retired duplicate classifier returned');
 if(!/searchNeonRows\(/.test(searchView))failures.push('SearchV2: shared search client missing');
 

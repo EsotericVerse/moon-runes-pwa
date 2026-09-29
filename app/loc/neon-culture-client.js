@@ -1,10 +1,9 @@
 'use client';
 
 import {ScopeCultureResponseSchema} from './scope-feature-contracts';
-import {selectManagedScopes} from './scope-list';
 import {decodeCultureText,formatCultureDateTime} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
 import {workDisplayText} from '../modular-v2/work-display-model.v2';
-import {selectDailyCategoryCounts,selectDailyCounts,selectGalaxyPage,selectSourceWeekly} from './aggregate-query';
+import {selectCategoryCounts,selectDailyCategoryCounts,selectDailyCounts,selectGalaxyPage,selectSourceCatalog,selectSourceDaily} from './aggregate-query';
 import {selectNeonCount,selectNeonRows} from './neon-query';
 import {publicContentFilters} from './content-policy';
 
@@ -26,23 +25,86 @@ function previousDay(value){
   date.setUTCDate(date.getUTCDate()-1);
   return date.toISOString().slice(0,10);
 }
-async function selectCultureTimeRows(scopeId){
-  const result=await selectNeonRows(`silver.${scopeId}_time`,{
-    columns:TIME_COLUMNS,
-    filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}],
-    limit:512
+async function selectTimeTypeRows(scopeId,type){
+  const table=`silver.${scopeId}_time`;
+  const filters=[{column:'record_type',operator:'eq',value:type}];
+  const total=await selectNeonCount(table,{filters});
+  if(!total)return [];
+  const rows=[];
+  let offset=0;
+  while(offset<total){
+    const page=await selectNeonRows(table,{
+      columns:TIME_COLUMNS,
+      filters,
+      orders:type==='anchor'
+        ?[{column:'time_date',ascending:true},{column:'record_id',ascending:true}]
+        :[{column:'display_order',ascending:true},{column:'record_id',ascending:true}],
+      limit:Math.min(1000,total-offset),
+      offset
+    });
+    if(!page.rows.length)break;
+    rows.push(...page.rows);
+    offset+=page.rows.length;
+  }
+  return rows;
+}
+
+async function selectCurrentPeriodRange(scopeId){
+  const table=`silver.${scopeId}_time`;
+  const {rows}=await selectNeonRows(table,{
+    columns:'record_id,label,resource_id,display_order,anchor_pair',
+    filters:[
+      {column:'record_type',operator:'eq',value:'period'},
+      {column:'anchor_pair',operator:'like',value:'%,0'}
+    ],
+    orders:[{column:'display_order',ascending:false}],
+    limit:1
   });
-  const anchors=new Map(result.rows.filter(row=>row.record_type==='anchor'&&row.resource_id).map(row=>[String(row.resource_id),row]));
-  return result.rows.flatMap(row=>{
-    const type=String(row.record_type||'');
+  const period=rows[0];
+  if(!period)return null;
+  const [before='0']=String(period.anchor_pair||'0,0').split(',',2).map(value=>String(value||'0').trim()||'0');
+  if(before==='0')return null;
+  const anchorPage=await selectNeonRows(table,{
+    columns:'resource_id,time_date,date_status,year_value',
+    filters:[
+      {column:'record_type',operator:'eq',value:'anchor'},
+      {column:'resource_id',operator:'eq',value:before}
+    ],
+    limit:1
+  });
+  const start=timeDate(anchorPage.rows[0]);
+  if(!start)return null;
+  return {
+    scope_id:runtimeScopeId(scopeId),
+    entry_type:'period',
+    period:String(period.resource_id||period.record_id||''),
+    title:period.label||period.resource_id||'目前時期',
+    display_label:period.label||period.resource_id||'目前時期',
+    order_no:period.display_order,
+    start_anchor_id:before,
+    end_anchor_id:null,
+    start_date:start,
+    end_date:null,
+    open_end:true,
+    derived_from:'period'
+  };
+}
+
+async function selectCultureTimeRows(scopeId){
+  const [anchors,periods,events]=await Promise.all([
+    selectTimeTypeRows(scopeId,'anchor'),
+    selectTimeTypeRows(scopeId,'period'),
+    selectTimeTypeRows(scopeId,'event')
+  ]);
+  const anchorMap=new Map(anchors.filter(row=>row.resource_id).map(row=>[String(row.resource_id),row]));
+  const normalize=(row,type)=>{
     const id=String(row.resource_id||row.record_id||'');
     const pair=anchorPair(row.anchor_pair);
-    if(type!=='anchor'&&pair.before==='0'&&pair.after==='0')return [];
-    const startAnchor=pair.before==='0'?null:anchors.get(pair.before);
-    const endAnchor=pair.after==='0'?null:anchors.get(pair.after);
+    const startAnchor=pair.before==='0'?null:anchorMap.get(pair.before);
+    const endAnchor=pair.after==='0'?null:anchorMap.get(pair.after);
     const startDate=type==='anchor'?timeDate(row):timeDate(startAnchor);
     const endBoundary=type==='anchor'?null:timeDate(endAnchor);
-    return [{
+    return {
       ...row,
       scope_id:scopeId,
       entry_key:type+':'+id,
@@ -61,8 +123,13 @@ async function selectCultureTimeRows(scopeId){
       open_end:type!=='anchor'&&pair.before!=='0'&&pair.after==='0',
       start_date:startDate,
       end_date:type==='period'?previousDay(endBoundary):endBoundary
-    }];
-  });
+    };
+  };
+  return [
+    ...anchors.map(row=>normalize(row,'anchor')),
+    ...periods.map(row=>normalize(row,'period')),
+    ...events.map(row=>normalize(row,'event'))
+  ];
 }
 
 function sourceLabel(value){return String(value||'').trim();}
@@ -109,72 +176,41 @@ export async function selectScopeCultureData(scopeId){
   const dataId=dataScopeId(scopeId);
   if(!['loc','lrunes','lo3rwang'].includes(dataId))throw new Error('資料設定無效');
 
-  const managedScopes=await selectManagedScopes();
-  const scopeRows=dataId==='loc'
-    ?managedScopes.filter(scope=>scope.id!=='loc')
-    :managedScopes.filter(scope=>scope.id===dataId);
-  const scopeIds=scopeRows.map(scope=>scope.id);
-  const settled=await Promise.allSettled(scopeIds.map(async scope=>{
-    const rows=await selectCultureTimeRows(scope);
-    return rows.map(row=>({...row,scope_id:runtimeScopeId(scope)}));
-  }));
-  const scopeContext=settled
-    .filter(item=>item.status==='fulfilled')
-    .flatMap(item=>item.value);
+  if(dataId==='loc'){
+    const [authorCurrent,runeCurrent]=await Promise.all([
+      selectCurrentPeriodRange('lo3rwang'),
+      selectCurrentPeriodRange('lrunes')
+    ]);
+    const currentRanges=[authorCurrent,runeCurrent].filter(Boolean);
+    return ScopeCultureResponseSchema.parse({
+      scopeId:id,
+      eras:{eras:[]},
+      periods:[],
+      currentRanges,
+      scopeRanges:[],
+      timelineItems:[],
+      events:[],
+      trajectories:[],
+      works:[]
+    });
+  }
 
-  const periods=scopeContext.filter(row=>row.entry_type==='period');
+  const [scopeContext,currentRange]=await Promise.all([
+    selectCultureTimeRows(dataId),
+    selectCurrentPeriodRange(dataId)
+  ]);
+  const runtimeId=runtimeScopeId(dataId);
+  const normalizedContext=scopeContext.map(row=>({...row,scope_id:runtimeId}));
+  const periods=normalizedContext.filter(row=>row.entry_type==='period');
   const eras=periods.map(row=>({
     ...periodRows([row])[0],
-    scope_id:runtimeScopeId(row.scope_id),
-    group_label:`${runtimeScopeId(row.scope_id)} 時期`
+    scope_id:runtimeId,
+    group_label:runtimeId+' 時期'
   }));
-  const currentRanges=scopeRows.map(scopeMeta=>{
-    const scopeId=runtimeScopeId(scopeMeta.id);
-    const scopePeriods=periods.filter(row=>runtimeScopeId(row.scope_id)===scopeId);
-    const currentPeriod=scopePeriods.find(row=>Boolean(row.open_end))||null;
-    if(currentPeriod){
-      const normalized=periodRows([currentPeriod])[0];
-      return {
-        ...normalized,
-        scope_id:scopeId,
-        entry_type:'period',
-        display_label:currentPeriod.title||normalized.title,
-        derived_from:'period'
-      };
-    }
-    if(scopePeriods.length)return null;
-    const birthday=String(scopeMeta.birthday||'').slice(0,10);
-    if(!birthday)return null;
-    return {
-      scope_id:scopeId,
-      entry_type:'scope_range',
-      period:'',
-      title:'目前時期',
-      display_label:'目前時期',
-      start_date:birthday,
-      end_date:null,
-      open_end:true,
-      derived_from:'birthday'
-    };
-  }).filter(Boolean);
-  const scopeRanges=scopeRows.map(scopeMeta=>{
-    const birthday=String(scopeMeta.birthday||'').slice(0,10);
-    if(!birthday)return null;
-    return {
-      scope_id:runtimeScopeId(scopeMeta.id),
-      entry_type:'scope_range',
-      title:'完整時間範圍',
-      display_label:'完整時間範圍',
-      start_date:birthday,
-      end_date:null,
-      open_end:true,
-      derived_from:'birthday'
-    };
-  }).filter(Boolean);
-  const events=scopeContext.filter(row=>row.entry_type==='event').map(row=>({
+  const events=normalizedContext.filter(row=>row.entry_type==='event').map(row=>({
     entry_id:row.event_id||row.entry_key,
     event_id:row.event_id||row.entry_key,
-    scope_id:runtimeScopeId(row.scope_id),
+    scope_id:runtimeId,
     title:row.title,
     description:row.summary||'',
     date:row.start_date||null,
@@ -183,10 +219,10 @@ export async function selectScopeCultureData(scopeId){
     status:row.status||'',
     visibility:row.visibility||'public'
   }));
-  const trajectories=scopeContext.filter(row=>row.entry_type==='anchor').map(row=>({
+  const trajectories=normalizedContext.filter(row=>row.entry_type==='anchor').map(row=>({
     entry_id:row.entry_key,
     trajectory_id:row.entry_key,
-    scope_id:runtimeScopeId(row.scope_id),
+    scope_id:runtimeId,
     title:row.title,
     description:row.summary||'',
     start_date:row.start_date||null,
@@ -195,20 +231,18 @@ export async function selectScopeCultureData(scopeId){
     anchor_id:row.anchor_id||null,
     status:row.status||''
   }));
-
   return ScopeCultureResponseSchema.parse({
     scopeId:id,
     eras:{eras},
     periods,
-    currentRanges,
-    scopeRanges,
-    timelineItems:timelineItems(scopeContext),
+    currentRanges:currentRange?[currentRange]:[],
+    scopeRanges:[],
+    timelineItems:timelineItems(normalizedContext),
     events,
     trajectories,
     works:[]
   });
 }
-
 
 function normalizedWorkTimelineBuckets(rows=[]){
   const maximum=Math.max(1,...rows.map(row=>Number(row.work_count)||0));
@@ -223,152 +257,90 @@ export async function selectScopeWorkSnapshot(scopeId,{startDate,endDate=null}={
   const runtimeId=runtimeScopeId(scopeId);
   const dataId=dataScopeId(scopeId);
   if(!['lo3rwang','lrunes'].includes(dataId))return {buckets:[],totalCount:0};
-  const buckets=[];
-  let textCount=0;
-
-  if(runtimeId==='lo3rwang'){
-    const result=await selectSourceWeekly({scopeId:'lo3rwang',startDate,endDate:endDate||''});
-    const weeks=new Map();
-    for(const row of result.rows){
-      const weekStart=String(row.week_start||'').slice(0,10);
-      if(!weekStart)continue;
-      const count=Number(row.work_count)||0;
-      textCount+=count;
-      weeks.set(weekStart,(weeks.get(weekStart)||0)+count);
-    }
-    for(const [weekStart,workCount] of weeks){
-      const end=new Date(weekStart+'T00:00:00Z');end.setUTCDate(end.getUTCDate()+7);
-      buckets.push({
-        id:'works:text:'+weekStart,
-        category:'文字作品',
-        group_label:'文字作品',
-        display_label:'文字作品 '+workCount+' 項',
-        title:weekStart+' – '+end.toISOString().slice(0,10)+' · 文字作品 · '+workCount+' 項',
-        start_date:weekStart,
-        end_date:end.toISOString().slice(0,10),
-        work_count:workCount,
-        scope_id:runtimeId,
-        entry_type:'work_density'
-      });
-    }
-  }else{
-    const daily=await selectDailyCounts('silver.lrunes_galaxy',{
-      startDate,
-      endDate,
-      filters:publicContentFilters([])
-    });
-    const weeks=new Map();
-    for(const row of daily){
-      const weekStart=mondayOf(row.day);
-      if(!weekStart)continue;
-      const count=Number(row.work_count)||0;
-      textCount+=count;
-      weeks.set(weekStart,(weeks.get(weekStart)||0)+count);
-    }
-    for(const [weekStart,workCount] of weeks){
-      const end=new Date(weekStart+'T00:00:00Z');end.setUTCDate(end.getUTCDate()+7);
-      buckets.push({
-        id:'works:text:'+weekStart,
-        category:'文字作品',
-        group_label:'文字作品',
-        display_label:'文字作品 '+workCount+' 項',
-        title:weekStart+' – '+end.toISOString().slice(0,10)+' · 文字作品 · '+workCount+' 項',
-        start_date:weekStart,
-        end_date:end.toISOString().slice(0,10),
-        work_count:workCount,
-        scope_id:runtimeId,
-        entry_type:'work_density'
-      });
-    }
-  }
-
-  const mediaSnapshot=await selectScopeMediaSnapshot(runtimeId,{startDate,endDate});
-  const mediaWeeks=new Map();
-  for(const row of mediaSnapshot.buckets){
-    const key=String(row.start_date||'');
-    if(!key)continue;
-    mediaWeeks.set(key,(mediaWeeks.get(key)||0)+(Number(row.work_count)||0));
-  }
-  for(const [weekStart,workCount] of mediaWeeks){
-    const end=new Date(weekStart+'T00:00:00Z');end.setUTCDate(end.getUTCDate()+7);
-    buckets.push({
-      id:'works:media:'+weekStart,
-      category:'多媒體',
-      group_label:'多媒體',
-      display_label:'多媒體 '+workCount+' 項',
-      title:weekStart+' – '+end.toISOString().slice(0,10)+' · 多媒體 · '+workCount+' 項',
-      start_date:weekStart,
-      end_date:end.toISOString().slice(0,10),
-      work_count:workCount,
+  const textTable=`silver.${dataId}_galaxy`;
+  const mediaTable=`silver.${dataId}_galaxy_media`;
+  const textFilters=publicContentFilters(dateFilters(startDate,endDate));
+  const mediaFilters=dateFilters(startDate,endDate);
+  const [textDaily,mediaDaily,textCount,mediaCount]=await Promise.all([
+    selectDailyCounts(textTable,{startDate,endDate,filters:publicContentFilters([])}),
+    selectDailyCounts(mediaTable,{startDate,endDate}),
+    selectNeonCount(textTable,{filters:textFilters}),
+    selectNeonCount(mediaTable,{filters:mediaFilters})
+  ]);
+  const buckets=[
+    ...textDaily.map(row=>({
+      id:'works:text:'+row.day,
+      category:'文字作品',
+      group_label:'文字作品',
+      display_label:'文字作品 '+row.work_count+' 項',
+      title:row.day+' · 文字作品 · '+row.work_count+' 項',
+      start_date:row.day,
+      work_count:Number(row.work_count)||0,
       scope_id:runtimeId,
       entry_type:'work_density'
-    });
-  }
-
-  return {
-    buckets:normalizedWorkTimelineBuckets(buckets),
-    totalCount:textCount+mediaSnapshot.totalCount
-  };
+    })),
+    ...mediaDaily.map(row=>({
+      id:'works:media:'+row.day,
+      category:'多媒體',
+      group_label:'多媒體',
+      display_label:'多媒體 '+row.work_count+' 項',
+      title:row.day+' · 多媒體 · '+row.work_count+' 項',
+      start_date:row.day,
+      work_count:Number(row.work_count)||0,
+      scope_id:runtimeId,
+      entry_type:'work_density'
+    }))
+  ];
+  return {buckets:normalizedWorkTimelineBuckets(buckets),totalCount:textCount+mediaCount};
 }
 
 export async function selectAuthorPeriodSourceSnapshot({startDate,endDate=null}={}){
   if(!startDate)return {groups:[],buckets:[],totalCount:0};
-  const result=await selectSourceWeekly({
-    scopeId:'lo3rwang',
-    startDate,
-    endDate:endDate||''
-  });
-  const groups=new Map();
+  const filters=publicContentFilters(dateFilters(startDate,endDate));
+  const [catalog,daily,totalCount]=await Promise.all([
+    selectSourceCatalog({scopeId:'lo3rwang',startDate,endDate:endDate||'',limit:20}),
+    selectSourceDaily({scopeId:'lo3rwang',startDate,endDate:endDate||''}),
+    selectNeonCount('silver.lo3rwang_galaxy',{filters})
+  ]);
   const maxima=new Map();
   let globalMaximum=0;
-  let totalCount=0;
-  for(const row of result.rows){
+  for(const row of daily){
     const source=sourceLabel(row.source_name);
-    if(!source)continue;
     const count=Number(row.work_count)||0;
-    totalCount+=count;
-    groups.set(source,(groups.get(source)||0)+count);
     maxima.set(source,Math.max(maxima.get(source)||0,count));
     globalMaximum=Math.max(globalMaximum,count);
   }
-  const sourceGroups=[...groups.entries()].map(([source,itemCount])=>({
-    category_key:`source:${source}`,
+  const groups=catalog.rows.map(row=>({
+    category_key:'source:'+row.source_name,
     category_type:'source',
-    source_name:source,
-    display_label:source,
-    item_count:itemCount,
-    work_count:itemCount,
+    source_name:row.source_name,
+    display_label:row.source_name,
+    item_count:Number(row.work_count)||0,
+    work_count:Number(row.work_count)||0,
     media_count:0
-  })).sort((x,y)=>y.item_count-x.item_count||x.display_label.localeCompare(y.display_label));
-  const buckets=result.rows.map(row=>{
+  }));
+  const buckets=daily.map(row=>{
     const source=sourceLabel(row.source_name);
     const count=Number(row.work_count)||0;
-    const weekStart=String(row.week_start||'').slice(0,10);
-    if(!source||!weekStart)return null;
-    const weekEndDate=new Date(weekStart+'T00:00:00Z');
-    weekEndDate.setUTCDate(weekEndDate.getUTCDate()+7);
-    const weekEnd=weekEndDate.toISOString().slice(0,10);
+    const day=String(row.day||'').slice(0,10);
     return {
-      id:`source_name:${source}:${weekStart}`,
+      id:'source_name:'+source+':'+day,
       category:source,
       group_label:source,
-      week_start:weekStart,
-      week_end:weekEnd,
-      start_date:weekStart,
-      end_date:weekEnd,
+      start_date:day,
       work_count:count,
       works:[],
       density_ratio:count/Math.max(1,maxima.get(source)||1),
       global_density_ratio:count/Math.max(1,globalMaximum),
-      display_label:`${source} ${count} 項`,
-      title:`${weekStart} – ${weekEnd} · ${source} · ${count} 項`,
+      display_label:source+' '+count+' 項',
+      title:day+' · '+source+' · '+count+' 項',
       scope_id:'classification',
       entry_type:'source',
       classification_dimension:'source',
       classification_level:'source'
     };
-  }).filter(Boolean).sort((x,y)=>x.group_label.localeCompare(y.group_label)||x.week_start.localeCompare(y.week_start));
-  return {groups:sourceGroups,buckets,totalCount};
+  });
+  return {groups,buckets,totalCount};
 }
 
 export async function selectAuthorPeriodWorkSources({startDate,endDate=null}={}){
@@ -416,64 +388,50 @@ export async function selectScopeMediaSnapshot(scopeId,{startDate,endDate}={}){
   if(!startDate)return {groups:[],buckets:[],totalCount:0};
   const runtimeId=runtimeScopeId(scopeId);
   const table=`silver.${dataScopeId(scopeId)}_galaxy_media`;
-  const daily=await selectDailyCategoryCounts(table,'media_type',{startDate,endDate});
-  const counts=new Map();
-  const weekly=new Map();
-  let totalCount=0;
-  for(const row of daily){
-    const term=String(row.category||'').trim();
-    const weekStart=mondayOf(row.day);
-    const count=Number(row.work_count)||0;
-    if(!term||!weekStart||count<=0)continue;
-    totalCount+=count;
-    counts.set(term,(counts.get(term)||0)+count);
-    const key=term+'|'+weekStart;
-    weekly.set(key,(weekly.get(key)||0)+count);
-  }
-  const groups=[...counts.entries()]
-    .map(([term,item_count])=>({
-      category_key:`media:type:${term}`,
-      category_type:'media',
-      media_dimension:'type',
-      media_name:term,
-      display_label:term,
-      item_count,
-      media_count:item_count
-    }))
-    .sort((a,b)=>b.item_count-a.item_count||a.display_label.localeCompare(b.display_label));
+  const filters=dateFilters(startDate,endDate);
+  const [groupRows,daily,totalCount]=await Promise.all([
+    selectCategoryCounts(table,'media_type',{startDate,endDate,limit:20}),
+    selectDailyCategoryCounts(table,'media_type',{startDate,endDate}),
+    selectNeonCount(table,{filters})
+  ]);
   const maxima=new Map();
   let globalMaximum=0;
-  for(const [key,count] of weekly){
-    const term=key.split('|')[0];
+  for(const row of daily){
+    const term=String(row.category||'').trim();
+    const count=Number(row.work_count)||0;
     maxima.set(term,Math.max(maxima.get(term)||0,count));
     globalMaximum=Math.max(globalMaximum,count);
   }
-  const buckets=[...weekly.entries()].map(([key,count])=>{
-    const split=key.lastIndexOf('|');
-    const term=key.slice(0,split);
-    const weekStart=key.slice(split+1);
-    const end=new Date(weekStart+'T00:00:00Z');end.setUTCDate(end.getUTCDate()+7);
-    const weekEnd=end.toISOString().slice(0,10);
+  const groups=groupRows.map(row=>({
+    category_key:'media:type:'+row.term,
+    category_type:'media',
+    media_dimension:'type',
+    media_name:row.term,
+    display_label:row.term,
+    item_count:Number(row.item_count)||0,
+    media_count:Number(row.item_count)||0
+  }));
+  const buckets=daily.map(row=>{
+    const term=String(row.category||'').trim();
+    const day=String(row.day||'').slice(0,10);
+    const count=Number(row.work_count)||0;
     return {
-      id:`media_type:${term}:${weekStart}`,
+      id:'media_type:'+term+':'+day,
       category:term,
       group_label:term,
-      week_start:weekStart,
-      week_end:weekEnd,
-      start_date:weekStart,
-      end_date:weekEnd,
+      start_date:day,
       work_count:count,
       works:[],
       density_ratio:count/Math.max(1,maxima.get(term)||1),
       global_density_ratio:count/Math.max(1,globalMaximum),
-      display_label:`${term} ${count} 項`,
-      title:`${weekStart} – ${weekEnd} · ${term} · ${count} 項`,
+      display_label:term+' '+count+' 項',
+      title:day+' · '+term+' · '+count+' 項',
       scope_id:runtimeId,
       entry_type:'media',
       classification_dimension:'media',
       classification_level:'type'
     };
-  }).sort((a,b)=>a.group_label.localeCompare(b.group_label)||a.week_start.localeCompare(b.week_start));
+  });
   return {groups,buckets,totalCount};
 }
 

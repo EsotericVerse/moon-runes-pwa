@@ -11,9 +11,8 @@ async function insertNeonRows(table,rows){
     for(const row of rows||[])if(!String(row?.meta_tags||'').trim())throw new Error('Media records require meta_tags.');
   }
   const [schema,name]=String(table).split('.');
-  const {data,error}=await neonAuthClient.schema(schema).from(name).insert(rows).select('*');
+  const {error}=await neonAuthClient.schema(schema).from(name).insert(rows);
   if(error)throw new Error(error.message||('Neon INSERT '+table+' failed'));
-  return data||[];
 }
 
 function sourceSuggestion(name=''){

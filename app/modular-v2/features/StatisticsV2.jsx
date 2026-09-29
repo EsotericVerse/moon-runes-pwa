@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect,useMemo,useState} from 'react';
+import {useMemo,useState} from 'react';
 import {useRouter,useSearchParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
 import Select from 'react-select';
@@ -14,8 +14,6 @@ import {FEATURE_EMPTY_MESSAGE,FEATURE_LOADING_MESSAGE,featureDataErrorMessage} f
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import MediaMetaSettingsV2 from './MediaMetaSettingsV2';
 import FeaturePageV2 from '../FeaturePageV2';
-import IncrementalLoadV2 from '../IncrementalLoadV2';
-import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
 import {analyzeDistribution,analyzeDistributionChange,analyzeKeywordDiagnostics,analyzeKeywordGovernance} from '../../loc/model/automatic-analysis.mjs';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
@@ -148,7 +146,6 @@ function StatisticsPanel({scopeId,navigation,types}){
   const requested=String(navigation.rankingType||'');
   const rankingType=types.includes(requested)?requested:(types[0]||'');
   const [chartType,setChartType]=useState('bar');
-  const [rankingVisible,setRankingVisible]=useState(DEFAULT_LIST_BATCH_SIZE);
   const query=useAllRanking(scopeId,rankingType,navigation);
   const comparisonQuery=useRankingComparison(scopeId,rankingType,navigation);
   const diagnosticsQuery=useKeywordDiagnostics(scopeId,rankingType,navigation);
@@ -173,8 +170,6 @@ function StatisticsPanel({scopeId,navigation,types}){
     });
   },[rankingType,diagnosticsQuery.data,changeAnalysis.suggestions]);
   const allRows=query.data||[];
-  useEffect(()=>setRankingVisible(DEFAULT_LIST_BATCH_SIZE),[scopeId,rankingType,navigation.period]);
-  const pageRows=allRows.slice(0,rankingVisible);
   return <section className="scope-v2-stat-section">
     <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Statistics</p><h2>統計</h2></div></header>
     <div className="scope-v2-stat-controls">
@@ -184,8 +179,7 @@ function StatisticsPanel({scopeId,navigation,types}){
     {query.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
     {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
     {!query.isPending&&!query.error?<>
-      <RankingList rows={pageRows} offset={0}/>
-      <IncrementalLoadV2 hasMore={rankingVisible<allRows.length} loading={false} onLoadMore={()=>setRankingVisible(value=>Math.min(allRows.length,value+DEFAULT_LIST_BATCH_SIZE))} label="還有更多排名"/>
+      <RankingList rows={allRows} offset={0}/>
       <RankingChart type={chartType} rows={allRows} height={380}/>
     </>:null}
     {!query.isPending&&!query.error&&automaticAnalysis.suggestions.length?<section className="scope-v2-card">

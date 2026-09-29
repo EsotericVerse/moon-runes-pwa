@@ -1,4 +1,5 @@
 import {neonAuthClient,neonPublicClient} from './neon-client';
+import {selectRuneRows} from './rune-repository';
 
 export const DAILY_RUNE_PAGE_SIZE=10;
 
@@ -6,15 +7,12 @@ function silver(name){return neonPublicClient.schema('silver').from(name);}
 function silverAuth(name){return neonAuthClient.schema('silver').from(name);}
 
 
-async function loadRuneMeta(){
-  const {data,error}=await silver('runes').select('rune_id,rune_name').order('rune_id',{ascending:true});
-  if(error)throw new Error(error.message||'符文資料讀取失敗');
-  return new Map((data||[]).map(row=>[Number(row.rune_id),row]));
-}
-
 async function attachRuneMeta(rows){
-  const meta=await loadRuneMeta();
-  return rows.map(row=>{
+  const source=Array.isArray(rows)?rows:[];
+  const ids=[...new Set(source.map(row=>Number(row.rune_number)).filter(number=>Number.isInteger(number)&&number>=0&&number<=66))];
+  const runes=ids.length?await selectRuneRows(ids):[];
+  const meta=new Map(runes.map(row=>[Number(row.rune_number),row]));
+  return source.map(row=>{
     const rune=meta.get(Number(row.rune_number))||{};
     return {
       ...row,

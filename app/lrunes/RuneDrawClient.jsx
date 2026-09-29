@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import {selectRuneCatalog,selectRuneDrawRows} from '../loc/rune-repository';
+import {selectRuneDrawRows} from '../loc/rune-repository';
 import { useLocalStore } from '../loc/local-store';
 import {resolveSpreadState} from '../loc/model/semantic-state.mjs';
 import { realMoonPhase } from '../loc/model/moon-phase';
@@ -29,11 +29,6 @@ const DRAW_PATHS = Object.freeze({
   '5card': scopeHrefV2('lunarunes','duel/five'),
   ow3gs: scopeHrefV2('lunarunes','duel/ow3gs')
 });
-
-
-async function fetchCoreRunes() {
-  return selectRuneCatalog();
-}
 
 
 function runeCardImage(card) {
@@ -82,34 +77,11 @@ function MultiReading({ draw, mode, phase }) {
 
 export default function RuneDrawClient({ drawKey = 'single' }) {
   const { value: uiSettings } = useLocalStore(UI_SETTINGS_KEY, DEFAULT_UI_SETTINGS);
-  const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [draw, setDraw] = useState(null);
   const [ritualStep, setRitualStep] = useState(-1);
   const timers = useRef([]);
   const autoStarted = useRef(false);
-
-  useEffect(() => {
-    let live = true;
-
-    // Core draw readiness depends only on Neon canonical runes. Do not block the first
-    // draw on lots or interpretation payloads.
-    fetchCoreRunes()
-      .then(runes => {
-        if (!live) return;
-        const canonicalRunes = (runes || []).filter(row => Number(row?.rune_number) >= 1 && Number(row?.rune_number) <= 66);
-        if (canonicalRunes.length < 66) throw new Error(`核心符文資料只有 ${canonicalRunes.length} 枚，無法安全抽牌。`);
-        setData({ runes: canonicalRunes });
-        setError('');
-
-      })
-      .catch(err => live && setError(`月之符文核心資料載入失敗：${err?.message || '未知錯誤'}`));
-
-    return () => {
-      live = false;
-      timers.current.forEach(clearTimeout);
-    };
-  }, [drawKey]);
 
   const selectedMode = useMemo(() => DRAW_TYPES.find(item => item.key === drawKey) || DRAW_TYPES[0], [drawKey]);
   const instantDraw = uiSettings?.draw_response === 'instant';
@@ -118,17 +90,17 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
 
   async function finishDraw() {
     try {
-      if (!data?.runes?.length) throw new Error('符文資料尚未載入完成。');
-      if (data.runes.length < selectedMode.count) throw new Error(`可抽取符文不足 ${selectedMode.count} 張。`);
-      const {cards,directionIndexes,directions}=drawRuneSession(data.runes,selectedMode.count);
-      const pairs=cards.map((card,index)=>({runeNumber:Number(card?.rune_number),dir:Number(directionIndexes[index])+1}));
+      const runePool=Array.from({length:66},(_,index)=>index+1);
+      const {cards:runeNumbers,directionIndexes,directions}=drawRuneSession(runePool,selectedMode.count);
+      const pairs=runeNumbers.map((runeNumber,index)=>({runeNumber:Number(runeNumber),dir:Number(directionIndexes[index])+1}));
       const types=drawKey==='daily'?['direction','daily']:['direction','lots'];
       const rows=await selectRuneDrawRows(pairs,{types});
-      const byNumber=new Map(rows.map(row => [Number(row.rune_number), row]));
-      const enrichedCards=cards.map(card=>({...card,...(byNumber.get(Number(card?.rune_number))||{})}));
-      const reading = resolveSpreadState(enrichedCards, directions, drawKey);
-      const createdAt = new Date().toISOString();
-      setDraw({ id: `rune-draw:${drawKey}:${Date.now()}`, createdAt, cards: enrichedCards, directionIndexes, directions, reading, guidance: reading.guidance });
+      const byNumber=new Map(rows.map(row=>[Number(row.rune_number),row]));
+      const cards=runeNumbers.map(number=>byNumber.get(Number(number))).filter(Boolean);
+      if(cards.length!==runeNumbers.length)throw new Error('抽中的符文資料不完整。');
+      const reading=resolveSpreadState(cards,directions,drawKey);
+      const createdAt=new Date().toISOString();
+      setDraw({id:`rune-draw:${drawKey}:${Date.now()}`,createdAt,cards,directionIndexes,directions,reading,guidance:reading.guidance});
       setError('');
     } catch (err) {
       setDraw(null);
@@ -154,10 +126,10 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
   }
 
   useEffect(() => {
-    if (!data || autoStarted.current) return;
+    if (autoStarted.current) return;
     autoStarted.current = true;
     executeDraw();
-  }, [data]);
+  }, [drawKey]);
 
   return <div className="runes-draw-surface">
     <section className="loc-view">

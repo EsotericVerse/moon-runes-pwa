@@ -4,6 +4,7 @@ import {useEffect,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {neonAuthClient} from '../../loc/neon-client';
 import {selectNeonCount,selectNeonRows} from '../../loc/neon-query';
+import {selectCategoryCounts} from '../../loc/aggregate-query';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation.v2';
@@ -19,16 +20,12 @@ function mediaRelation(client,table){
 async function updateNeonRows(table,values,{filters=[]}={}){
   let query=mediaRelation(neonAuthClient,table).update(values);
   for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
-  const {data,error}=await query.select('*');
+  const {error}=await query;
   if(error)throw new Error(error.message||('Neon UPDATE '+table+' failed'));
-  return data||[];
 }
 
 const MEDIA_TYPE_LABELS={suno:'Suno',instagram:'Instagram'};
 const MEDIA_PAGE_SIZE=DEFAULT_LIST_BATCH_SIZE;
-function splitTags(value){
-  return String(value||'').split(/[,，]/).map(tag=>tag.trim()).filter(Boolean);
-}
 function tableNames(databaseScopeId){
   const lunarunes=String(databaseScopeId||'')==='lunarunes'||String(databaseScopeId||'')==='lrunes';
   return {
@@ -53,19 +50,8 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
   const tagQuery=useQuery({
     queryKey:['media-meta-ranking',databaseScopeId],
     queryFn:async()=>{
-      const {rows}=await selectNeonRows(tables.media,{
-        columns:'meta_tags,item_count:count()',
-        limit:10000
-      });
-      const counts=new Map();
-      for(const row of rows){
-        const weight=Number(row.item_count)||0;
-        for(const tag of splitTags(row.meta_tags))counts.set(tag,(counts.get(tag)||0)+weight);
-      }
-      return [...counts.entries()]
-        .map(([term,item_count])=>({ranking_key:'meta|'+term,term,item_count}))
-        .sort((a,b)=>b.item_count-a.item_count||a.term.localeCompare(b.term))
-        .filter((_,index)=>index<10);
+      const rows=await selectCategoryCounts(tables.media,'meta_tags',{limit:10});
+      return rows.map(row=>({ranking_key:'meta|'+row.term,term:row.term,item_count:row.item_count}));
     },
     staleTime:30000
   });
