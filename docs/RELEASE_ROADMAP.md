@@ -6,6 +6,14 @@ RC8 is frozen as the stable Current architecture/data/runtime baseline. It estab
 
 RC8 is the reference point for regressions; it is not reopened for ordinary post-freeze UI corrections.
 
+## RC8.1 — Current stabilization
+
+RC8.1 is the post-RC8 stabilization candidate. It preserves the RC8 architecture baseline while incorporating verified UI/data-surface corrections: Scope-specific Theme identity, clearer Theme palettes, Culture source consolidation, source-only Statistics with personal drill-down, and Meta Tag statistical filtering/weighting experiments.
+
+RC8.1 does **not** introduce a persistent ranking/cache authority. The proposed `silver.cache_uid100` experiment is deferred and is not part of this candidate. Keyword-weight performance remains a post-freeze validation item rather than an RC8.1 release gate.
+
+Existing management-menu behavior has already passed the author's prior manual inspection. Further management UX refinement may continue toward RC9 without reopening RC8.1.
+
 ## RC9 — Final release candidate
 
 RC9 focuses on completing and arranging the functions that already exist. Its scope includes Game completion and interface configuration, but does not reopen the RC8 architecture baseline.

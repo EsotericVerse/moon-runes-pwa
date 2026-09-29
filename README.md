@@ -6,9 +6,9 @@
 
 LOC 是用來整理語言、資料、脈絡、作品與時間關係的 Language Architecture Framework。LunaRunes 是 LOC 中的 Symbolic Language 實作。定位已固定，不因定位另外增加功能。
 
-## Current / RC8 Stable Baseline
+## Current / RC8.1 Stable Baseline
 
-RC8 已於 2026-09-29 封板為目前 Current 的穩定候選基線。RC8 的工程邊界是收斂 Current：
+RC8.1 已於 2026-09-30 進入目前 Current 的穩定候選基線。RC8 保留為前一個架構基準；RC8.1 在不重開架構的前提下收斂 Theme、Culture、Statistics 與 Meta Tag 統計行為：
 
 - Neon Postgres 是 Current SSOT。
 - 不使用 JSON／舊 JS／靜態檔作 Current authority 或 fallback。
@@ -20,7 +20,7 @@ RC8 已於 2026-09-29 封板為目前 Current 的穩定候選基線。RC8 的工
 
 歷史差異由 Git history 保存，不在 Current tree 保留可執行舊架構。
 
-RC8 baseline 與驗證紀錄見 `docs/RC8_BASELINE.md`。管理頁面仍需人工操作驗收；該驗收不改變 RC8 的資料與 runtime 基線，也不得以驗收修正為由重新引入已退役架構。
+RC8 baseline 與驗證紀錄見 `docs/RC8_BASELINE.md`；RC8.1 封板紀錄見 `docs/RC8_1_BASELINE.md`。既有管理選單已完成先前人工檢查。關鍵詞權重目前仍屬測試功能，不作為 RC8.1 release gate；`silver.cache_uid100` 尚未建立，Neon cache 實驗延後。
 
 ## Current Scopes
 
@@ -124,7 +124,7 @@ Current build gate 先驗證 RC contracts，再驗證 Neon public/batching contr
 - Zod — feature/data contract
 - Neon JS — Current data access
 
-模組是否深化使用另行評估；RC8 不因模組能力新增不必要功能。
+模組是否深化使用另行評估；RC8.1 不因模組能力新增不必要功能。
 
 ## Governance Root
 
