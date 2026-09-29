@@ -8,7 +8,7 @@ export default function ScopeFooterV2(){
   return <footer className="scope-v2-footer" data-scope={scopeId}>
     <div className="scope-v2-footer-row">
       <a href="mailto:sopa2306@gmail.com">聯絡方式</a>
-      <ThemeSelectV2/>
+      <ThemeSelectV2 scopeId={scopeId}/>
     </div>
   </footer>;
 }
