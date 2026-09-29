@@ -61,11 +61,7 @@ function timelineRows(items,labelOf,focus){
 }
 
 function groupLabel(id){
-  if(id==='lo3rwang')return '個人時期';
-  if(id==='lunarunes')return 'LunaRunes 沿革';
-  if(String(id).startsWith('lo3rwang ·'))return String(id).replace('lo3rwang ·','個人時期 ·');
-  if(String(id).startsWith('lunarunes ·'))return String(id).replace('lunarunes ·','LunaRunes ·');
-  return id;
+  return String(id||'');
 }
 function dateLabel(value){
   const formatted=formatCultureDateTime(value);
@@ -128,7 +124,7 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
 
   return <div className='scope-period-timeline-wrap'>
     {chartError?<p className='scope-v2-status'>圖表載入失敗，以下改用清單顯示。</p>:null}
-    <div ref={containerRef} className='scope-period-timeline' role='region' aria-label={mode==='overview'?'所有時期與定錨點時間長河':'Current 時期時間長河'} style={{'--scope-period-timeline-min-height':timelineHeight+'px'}}/>
+    <div ref={containerRef} className='scope-period-timeline' role='region' aria-label={mode==='overview'?'所有時期與定錨點時間長河':'時間長河'} style={{'--scope-period-timeline-min-height':timelineHeight+'px'}}/>
     {chartError?<ol className='scope-v2-list'>
       {fallbackRows.map(row=><li key={row.id}><strong>{row.content}</strong>{row.group?<span> · {groupLabel(row.group)}</span>:null}<span> · {dateLabel(row.start)}</span>{row.title?<p>{row.title}</p>:null}</li>)}
     </ol>:null}
