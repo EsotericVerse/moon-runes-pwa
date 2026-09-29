@@ -1,49 +1,37 @@
 'use client';
 
-import {getMediaSearchProviders,getSearchProviders,PUBLIC_SEARCH_SCOPE_IDS} from './search-providers';
+import {getMediaSearchProviders,getSearchProviders} from './search-providers';
 import {DEFAULT_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
+import {selectManagedScopes} from './scope-list';
+import {normalizeDataScopeId} from './scope-table-mapping';
 
 const SEARCH_PAGE_SIZE=DEFAULT_LIST_BATCH_SIZE;
-
-const SCOPE_SEARCH_ALIASES=Object.freeze({
-  loc:'loc lunacodex luna codex 月典',
-  lunarunes:'lunarunes lrunes 月之符文 符文',
-  lo3rwang:'lo3rwang 政德 王政德 lucas oscar wang'
-});
-const SCOPE_SEARCH_TITLES=Object.freeze({
-  loc:'LunaCodex／月典',
-  lunarunes:'LunaRunes／月之符文',
-  lo3rwang:'lo3rwang／政德'
-});
 
 function normalize(value){
   return String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
 }
 
-function scopeCards(query,collectionId){
-  if(collectionId!=='all')return [];
+function scopeCards(query,scopes=[]){
   const q=normalize(query);
   if(!q)return [];
-  const rows=[];
-  for(const scopeId of Object.keys(SCOPE_SEARCH_ALIASES)){
-    const haystack=normalize(scopeId+' '+SCOPE_SEARCH_ALIASES[scopeId]+' '+SCOPE_SEARCH_TITLES[scopeId]);
-    if(!haystack.includes(q))continue;
-    rows.push({
+  return scopes.flatMap(scope=>{
+    const id=String(scope?.id||'').trim();
+    if(!id||!normalize(id).includes(q))return [];
+    return [{
       row:{
         scope_card:true,
-        scope_id:scopeId,
-        title:SCOPE_SEARCH_TITLES[scopeId],
-        search_terms:SCOPE_SEARCH_ALIASES[scopeId],
+        scope_id:id,
+        title:id,
+        search_terms:id,
         summary:''
       },
       source:'Scope',
       providerId:'scope-card'
-    });
-  }
-  return rows;
+    }];
+  });
 }
 
-export async function searchNeonRows(collectionId,query,{
+export async function searchNeonRows(scopeId,query,{
   limit=SEARCH_PAGE_SIZE,
   cursor=null,
   startDate='',
@@ -56,11 +44,17 @@ export async function searchNeonRows(collectionId,query,{
   if(!q)return {rows:[],failures:[],hasMore:false,nextCursor:null};
 
   const safeLimit=Math.max(1,Math.min(SEARCH_PAGE_SIZE,Math.floor(Number(limit)||SEARCH_PAGE_SIZE)));
-  const scopeIds=collectionId==='all'?[...PUBLIC_SEARCH_SCOPE_IDS]:[];
+  const runtimeScope=String(scopeId||'').trim();
+  const managedScopes=await selectManagedScopes();
+  const dataScope=normalizeDataScopeId(runtimeScope);
+  const targetScopes=runtimeScope==='loc'
+    ?managedScopes
+    :managedScopes.filter(scope=>scope.id===dataScope);
+  const scopeIds=targetScopes.map(scope=>scope.id);
   const providers=mediaOnly
-    ?getMediaSearchProviders(collectionId,scopeIds)
-    :getSearchProviders(collectionId,scopeIds);
-  const cards=mediaOnly?[]:scopeCards(q,collectionId);
+    ?getMediaSearchProviders(scopeIds)
+    :getSearchProviders(scopeIds,{includeFaq:runtimeScope==='loc'});
+  const cards=mediaOnly?[]:scopeCards(q,targetScopes);
   const failures=[];
 
   let stage=Number.isInteger(cursor?.stage)
@@ -86,7 +80,8 @@ export async function searchNeonRows(collectionId,query,{
       startDate,
       endDate,
       and,
-      nor
+      nor,
+      limit:safeLimit
     });
     if(result.hasMore){
       return {
