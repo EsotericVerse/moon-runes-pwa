@@ -1,6 +1,7 @@
 'use client';
 
 import {selectNeonRows} from './neon-query';
+import {neonAuthClient} from './neon-client';
 
 const SCOPE_ID_PATTERN=/^[a-z][a-z0-9]*$/;
 const TABLE_TOKEN_PATTERN=/^[a-z][a-z0-9_]*$/;
@@ -28,15 +29,23 @@ export function mappedScopeTable(scopeId,mappingKey,mappingValue){
 export async function selectScopeTableMapping(scopeId,{email=''}={}){
   const id=normalizeDataScopeId(scopeId);
   if(!SCOPE_ID_PATTERN.test(id))throw new Error('Scope ID 無效');
-  const filters=[{column:'id',operator:'eq',value:id}];
   const normalizedEmail=String(email||'').trim().toLowerCase();
-  if(normalizedEmail)filters.push({column:'email',operator:'eq',value:normalizedEmail});
-  const {rows}=await selectNeonRows('silver.manage',{
-    columns:'id,email,galaxy,time',
-    filters,
-    orders:[{column:'email',ascending:true}],
-    limit:normalizedEmail?1:1000
-  });
+  let rows=[];
+  if(normalizedEmail){
+    const {data,error}=await neonAuthClient.schema('silver').from('manage')
+      .select('id,email,galaxy,time')
+      .eq('id',id)
+      .eq('email',normalizedEmail)
+      .limit(1);
+    if(error)throw new Error(error.message||'Scope table mapping read failed');
+    rows=data||[];
+  }else{
+    ({rows}=await selectNeonRows('silver.manage',{
+      columns:'id,galaxy,time',
+      filters:[{column:'id',operator:'eq',value:id}],
+      limit:1000
+    }));
+  }
   if(!rows.length)return {...DEFAULT_MAPPING};
   if(normalizedEmail){
     const row=rows[0];
