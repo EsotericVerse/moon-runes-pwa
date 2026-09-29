@@ -88,11 +88,11 @@ export async function selectDailyCounts(table,{startDate='',endDate='',filters=[
   return rows.map(row=>({day:String(row.day||''),item_count:Number(row.item_count)||0}));
 }
 
-export async function selectDailyCategoryCounts(table,categoryColumn,{startDate='',endDate='',filters=[]}={}){
+export async function selectDailyCategoryCounts(table,categoryColumn,{startDate='',endDate='',filters=[],includeEmpty=false}={}){
   const resolved=[
     ...filters,
     ...timeFilters('createtime',startDate,endDate),
-    {column:categoryColumn,operator:'neq',value:''}
+    ...(!includeEmpty?[{column:categoryColumn,operator:'neq',value:''}]:[])
   ];
   const rows=await selectAggregateRows(table,{
     columns:`${categoryColumn},day:createtime::date,item_count:count()`,
@@ -103,7 +103,7 @@ export async function selectDailyCategoryCounts(table,categoryColumn,{startDate=
     category:String(row?.[categoryColumn]||'').trim(),
     day:String(row.day||''),
     item_count:Number(row.item_count)||0
-  })).filter(row=>row.category&&row.day);
+  })).filter(row=>row.day&&(includeEmpty||row.category));
 }
 
 export async function selectCategoryCounts(table,categoryColumn,{startDate='',endDate='',filters=[],limit=20}={}){
