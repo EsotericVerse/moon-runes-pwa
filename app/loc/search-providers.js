@@ -6,7 +6,7 @@ import {DEFAULT_LIST_BATCH_SIZE,RUNE_LIST_BATCH_SIZE} from './list-loading-contr
 import {resolveScopeTables} from './scope-table-mapping';
 
 function relation(activeTable){
-  const [schema,name]=String(table).split('.');
+  const [schema,name]=String(activeTable).split('.');
   return neonPublicClient.schema(schema).from(name);
 }
 function applyFilters(query,filters=[]){
