@@ -88,7 +88,7 @@ async function sourceRows(scopeId,period='all',rangeOverride=undefined){
     scopeId:dataId,
     startDate:range?.start_date||'',
     endDate:range?.end_date||'',
-    limit:20
+    limit:5000
   });
   return result.rows.map(row=>rankingRow('source',row.source_name,row.item_count,dataId,period));
 }
@@ -100,7 +100,7 @@ async function mediaTypeRows(scopeId,period='all',rangeOverride=undefined){
   const rows=await selectCategoryCounts(table,'media_type',{
     startDate:range?.start_date||'',
     endDate:range?.end_date||'',
-    limit:20
+    limit:5000
   });
   return rows.map(row=>rankingRow('media_type',row.term,row.item_count,dataId,period));
 }
