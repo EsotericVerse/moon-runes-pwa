@@ -47,7 +47,8 @@ export async function selectSourceCatalog({scopeId='lo3rwang'}={}){
       scope_id:'lo3rwang',
       source_name:String(row.source_name).trim(),
       work_count:Number(row.work_count)||0
-    }));
+    }))
+    .sort((a,b)=>b.work_count-a.work_count||a.source_name.localeCompare(b.source_name));
   return {rows:normalized,totalCount:normalized.length};
 }
 
