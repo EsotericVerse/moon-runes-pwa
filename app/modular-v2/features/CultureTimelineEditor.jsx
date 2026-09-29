@@ -5,7 +5,7 @@ import {useSearchParams} from 'next/navigation';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {neonAuthClient} from '../../loc/neon-client';
-import {selectNeonCount,selectNeonRows} from '../../loc/neon-query';
+import {selectNeonRows} from '../../loc/neon-query';
 import {resolveScopeTables} from '../../loc/scope-table-mapping';
 import {FEATURE_LOADING_MESSAGE} from '../feature-data-state.v2';
 
@@ -71,12 +71,12 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
   const searchParams=useSearchParams();
   const suggestedAnchorDate=String(searchParams?.get?.('anchorDate')||'').slice(0,10);
   const queryClient=useQueryClient();
-  const runtimeScope=String(scopeId||'');
-  const dataScope=runtimeScope==='lunarunes'?'lrunes':runtimeScope;
-  const supported=['lo3rwang','lrunes'].includes(dataScope);
+  const runtimeScope=String(scopeId||'').trim();
+  const dataScope=runtimeScope;
+  const editable=Boolean(dataScope&&dataScope!=='loc');
   const tableQuery=useQuery({
     queryKey:['scope-table-mapping',dataScope,account.email],
-    enabled:supported&&Boolean(account.user),
+    enabled:editable&&Boolean(account.user),
     queryFn:()=>resolveScopeTables(dataScope,{email:account.email}),
     staleTime:5*60_000
   });
@@ -88,24 +88,16 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
 
   const query=useQuery({
     queryKey:['culture-period-settings',dataScope,timeTable],
-    enabled:supported&&Boolean(account.user&&timeTable),
+    enabled:editable&&Boolean(account.user&&timeTable),
     queryFn:async()=>{
-      const groups=await Promise.all(EDITABLE_TYPES.map(async([type])=>{
-        const filters=[{column:'record_type',operator:'eq',value:type}];
-        const total=await selectNeonCount(timeTable,{filters});
-        if(!total)return [];
-        const {rows}=await selectNeonRows(timeTable,{
-          columns:TIME_COLUMNS,
-          filters,
-          orders:type==='anchor'
-            ?[{column:'time_date',ascending:true},{column:'record_id',ascending:true}]
-            :[{column:'display_order',ascending:true},{column:'record_id',ascending:true}],
-          limit:total,
-          offset:0
-        });
-        return rows;
-      }));
-      return groups.flat();
+      const {rows}=await selectNeonRows(timeTable,{
+        columns:TIME_COLUMNS,
+        filters:[{column:'record_type',operator:'in',value:EDITABLE_TYPES.map(([type])=>type)}],
+        orders:[{column:'display_order',ascending:true},{column:'record_id',ascending:true}],
+        limit:5000,
+        offset:0
+      });
+      return rows;
     },
     staleTime:20_000
   });
@@ -137,7 +129,7 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
     setMessage('已帶入建議日期；系統不會自動建立定錨點。');
   },[suggestedAnchorDate]);
 
-  if(!supported||account.loading||account.permissionLoading||!account.canManageScopeSync(dataScope))return null;
+  if(!editable||account.loading||account.permissionLoading||!account.canManageScopeSync(dataScope))return null;
 
   const selectRow=row=>{
     setSelectedId(String(row.record_id));
