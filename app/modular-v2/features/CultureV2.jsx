@@ -222,7 +222,7 @@ export default function CultureV2(){
   const eventTimelineItems=anchoredEvents;
   const anchorTimelineItems=useMemo(()=>timelineItems.filter(item=>String(item?.entry_type||'')==='anchor'),[timelineItems]);
   const periodWorkTimelineItems=periodWorkTimelineQuery.data?.buckets||[];
-  const hasTimelineSurface=isLoc?currentRows.length>0:Boolean(timelineItems.length||selectedWorkPeriod?.start_date);
+  const hasTimelineSurface=isLoc?Boolean(timelineItems.length):Boolean(timelineItems.length||selectedWorkPeriod?.start_date);
 
   const classificationBuckets=classificationMode==='source'
     ?(sourceSnapshotQuery.data?.buckets||[])
@@ -312,7 +312,6 @@ export default function CultureV2(){
     <section className='loc-card scope-v2-feature-card scope-v2-feature-card-wide'>
       <p className='loc-eyebrow'>Time River</p>
       <h2>時間長河</h2>
-      {query.isPending?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
       {query.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(query.error)}</p>:null}
       {!query.isPending&&!query.error&&!hasTimelineSurface?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
       {!query.isPending&&!query.error&&hasTimelineSurface?<>
@@ -323,17 +322,18 @@ export default function CultureV2(){
                 items={timelineItems}
                 labelOf={item=>item.display_label||item.title}
                 focus={navigation}
-                mode='current'
-                currentRanges={query.data?.currentRanges||[]}
+                mode='overview'
                 onSelect={()=>window.alert('歡迎到該成員的時間長河看明細！')}
               />
               <section className='scope-v2-card scope-v2-culture-current-works'>
-                <p className='loc-eyebrow'>Works</p>
-                <h3>目前作品內容分佈</h3>
-                <div className='scope-v2-list'>
-                  {currentRows.map(row=><article className='scope-v2-inline-card' key={'loc-work-count:'+row.scope_id}>
-                    <strong>{row.scope_id==='lunarunes'?'LunaRunes':'lo3rwang'}</strong>
-                    <span>文字 {Number(row.text_count||0).toLocaleString()} · 多媒體 {Number(row.media_count||0).toLocaleString()} · 合計 {Number(row.item_count||0).toLocaleString()} 項</span>
+                <p className='loc-eyebrow'>Intersection Works</p>
+                <h3>Current 交會時期作品</h3>
+                {query.data?.intersectionStart?<p>交會起點：{String(query.data.intersectionStart).slice(0,10)} · 文字作品 {Number(query.data?.works?.length||0).toLocaleString()} 項</p>:null}
+                <div className='scope-v2-culture-source-work-scroll'>
+                  {(query.data?.works||[]).map(work=><article className='scope-v2-inline-card' key={work.key||work.uid}>
+                    <strong>{work.title||'未命名作品'}</strong>
+                    <span>{work.scope_id==='lunarunes'?'LunaRunes':'lo3rwang'} · 原始來源：{work.original_source||work.source_name||'未標示'} · {work.display_date||formatCultureDateTime(work.createtime)}</span>
+                    {work.url&&/^https?:\/\//i.test(String(work.url))?<a href={work.url} target='_blank' rel='noreferrer'>來源連結</a>:null}
                   </article>)}
                 </div>
               </section>
@@ -364,7 +364,6 @@ export default function CultureV2(){
                       />:null}
                     </>
                   :<>
-                      {periodWorkTimelineQuery.isFetching?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
                       {periodWorkTimelineQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorkTimelineQuery.error)}</p>:null}
                       {!periodWorkTimelineQuery.isFetching&&!periodWorkTimelineQuery.error&&!periodWorkTimelineItems.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
                       {periodWorkTimelineItems.length?<CultureTimelineV2
@@ -384,7 +383,6 @@ export default function CultureV2(){
                 <button type='button' aria-pressed={classificationMode==='source'} onClick={()=>setClassificationMode('source')}>作品來源</button>
                 <button type='button' aria-pressed={classificationMode==='media'} onClick={()=>setClassificationMode('media')}>多媒體</button>
               </div>:null}
-              {classificationBucketsQuery.isFetching?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
               {classificationBucketsQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(classificationBucketsQuery.error)}</p>:null}
               {!classificationBucketsQuery.isFetching&&!classificationBucketsQuery.error&&!classificationBuckets.length
                 ?<p className='scope-v2-status'>{classificationMode==='source'&&classificationScope==='lunarunes'?'目前沒有作品來源分類。':'目前沒有此分類資料。'}</p>:null}
@@ -415,7 +413,6 @@ export default function CultureV2(){
             {!isLoc&&selectedWorkPeriod?<section className='scope-v2-card scope-v2-culture-current-works'>
               <p className='loc-eyebrow'>Classification</p>
               <h3>{labelOf(selectedWorkPeriod,0)}｜{classificationMode==='source'?'作品來源':'多媒體分類'}</h3>
-              {categoryQuery.isFetching?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
               {categoryQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(categoryQuery.error)}</p>:null}
               {!categoryQuery.isFetching&&!categoryQuery.error&&!categoryGroups.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
               {categoryGroups.length?<div className='scope-v2-culture-source-groups' aria-label='作品分類'>
@@ -437,7 +434,6 @@ export default function CultureV2(){
                   <h4>{selectedGroup.display_label} · {selectedCount.toLocaleString()} 項作品</h4>
                   <button type='button' className='scope-v2-pagination-button' onClick={()=>{setWorkRows([]);setWorkPage(0);setSelectedCategory('')}}>收合列表</button>
                 </header>
-                {periodWorksQuery.isFetching?<p className='scope-v2-status'>載入第 {workPage+1} 頁…</p>:null}
                 {periodWorksQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksQuery.error)}</p>:null}
                 <div key={selectedCategory} ref={workScrollRef} className='scope-v2-culture-source-work-scroll'>
                   {workRows.map((work,index)=><WorkSummaryCardV2
