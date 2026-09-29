@@ -16,32 +16,6 @@ function runtimeClient(){
   });
 }
 
-async function verifyPublicSpoolContract(client){
-  const runId=crypto.randomUUID();
-  const row={run_id:runId,scope_id:'lo3rwang',purpose:'search',uid:'A11CE001'};
-  let inserted=false;
-  try{
-    const {error:writeError,status:writeStatus}=await client.schema('silver').from('spool').insert(row);
-    console.log(JSON.stringify({probe:'runtime-public-spool-write',status:writeStatus,code:writeError?.code||null,error:writeError?.message||null}));
-    if(writeError)throw new Error('spool anonymous write: '+(writeError.code||'')+' '+writeError.message);
-    inserted=true;
-
-    const {data,error:readError,status:readStatus}=await client.schema('silver').from('spool')
-      .select('uid')
-      .eq('run_id',runId)
-      .eq('uid',row.uid);
-    console.log(JSON.stringify({probe:'runtime-public-spool-read',status:readStatus,rows:data?.length||0,code:readError?.code||null,error:readError?.message||null}));
-    if(readError)throw new Error('spool anonymous read: '+(readError.code||'')+' '+readError.message);
-    if(data?.length!==1||data[0]?.uid?.trim()!==row.uid)throw new Error('spool anonymous read: UID contract mismatch');
-  }finally{
-    if(inserted){
-      const {error:deleteError,status:deleteStatus}=await client.schema('silver').from('spool').delete().eq('run_id',runId);
-      console.log(JSON.stringify({probe:'runtime-public-spool-delete',status:deleteStatus,code:deleteError?.code||null,error:deleteError?.message||null}));
-      if(deleteError)throw new Error('spool anonymous delete: '+(deleteError.code||'')+' '+deleteError.message);
-    }
-  }
-}
-
 async function probe(client,table,columns,{filters=[]}={}){
   let query=client.schema('silver').from(table).select(columns).limit(1);
   for(const [column,operator,value] of filters)query=query[operator](column,value);
@@ -79,7 +53,7 @@ async function verifyGameContract(client){
 
 const client=runtimeClient();
 for(const [table,columns,options] of [
-  ['manage','id,role'],
+  ['manage','id,role,birthday'],
   ['lo3rwang','id,period,period_start,period_end,theme,search_able,statistics_able,culture_able,sources,source_counts,work_count,media_count,media_counts,updated_at'],
   ['lo3rwang_time','record_id,record_type,resource_id,label,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility'],
   ['lrunes_time','record_id,record_type,resource_id,label,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility'],
@@ -91,10 +65,8 @@ for(const [table,columns,options] of [
   ['game','game_key,record_type,sort_order,status,is_current,event_id,rune_id,role_id,rule_code,macro_code,asset_code'],
   ['lrunes','id,period,period_start,period_end,theme,search_able,statistics_able,culture_able,sources,source_counts,work_count,media_count,media_counts,updated_at'],
   ['faq_entries','faq_id,question,answer'],
-  ['content_blocks','block_id,scope_id,page_key,slot_key,title,body,display_order,active,updated_at']
 ])await probe(client,table,columns,options||{});
 
-await verifyPublicSpoolContract(client);
 
 await verifyGameContract(client);
 

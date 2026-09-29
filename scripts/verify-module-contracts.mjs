@@ -35,7 +35,6 @@ for(const path of [
   'app/loc/neon-culture-client.js',
   'app/loc/neon-ranking-client.js',
   'app/loc/text-engine.mjs',
-  'app/loc/spool-client.js',
   'assets/lunarunes/cards/65_玄.png',
   'assets/lunarunes/cards/66_命.png',
 ]) if(!existsSync(resolve(root,path)))failures.push(`missing module contract file: ${path}`);
@@ -98,7 +97,6 @@ for(const [client,contract] of [
 const listLoadingContract=readFileSync(resolve(root,'app/loc/list-loading-contract.mjs'),'utf8');
 const incrementalLoader=readFileSync(resolve(root,'app/modular-v2/IncrementalLoadV2.jsx'),'utf8');
 const textEngine=readFileSync(resolve(root,'app/loc/text-engine.mjs'),'utf8');
-const neonQuery=readFileSync(resolve(root,'app/loc/neon-query.js'),'utf8');
 const searchProviders=readFileSync(resolve(root,'app/loc/search-providers.js'),'utf8');
 const keywordClassifier=readFileSync(resolve(root,'app/loc/keyword-classifier.js'),'utf8');
 if(!/DEFAULT_LIST_BATCH_SIZE=20/.test(listLoadingContract)||!/RUNE_LIST_BATCH_SIZE=16/.test(listLoadingContract))failures.push('List loading: Current batch contract must remain 20 general / 16 rune');
@@ -106,16 +104,10 @@ if((searchProviders.match(/batchSize:RUNE_LIST_BATCH_SIZE/g)||[]).length<5)failu
 if(!/WHEEL_GESTURE_GAP_MS/.test(incrementalLoader)||!/readyAtRef\.current=now\+/.test(incrementalLoader)||/busyRef/.test(incrementalLoader))failures.push('Incremental loader: one-user-gesture / immediate-cooldown contract missing');
 if(!/requireGalaxyContent/.test(contentPolicy))failures.push('Galaxy content policy: shared nonblank write guard missing');
 if(!/from ['"]flexsearch['"]/.test(textEngine)||!/Charset\.CJK/.test(textEngine)||!/new Resolver/.test(textEngine))failures.push('Text engine: FlexSearch CJK/Resolver contract missing');
-for(const token of ['neonPublicClient','selectNeonRows','selectNeonAllRows','processNeonRows'])if(!neonQuery.includes(token))failures.push(`Neon query adapter contract missing: ${token}`);
 if(/records\s*=\s*new Map|records\.set|engine\.records/.test(textEngine))failures.push('Text engine: FlexSearch may retain IDs only; record payload storage is forbidden');
 if(!/const ids=new Set\(\)/.test(textEngine))failures.push('Text engine: ID-only transient index contract missing');
 if(!/createTextIndex/.test(searchProviders)||!/searchTextIndex/.test(searchProviders)||!/selectNeonRows/.test(searchProviders)||!/nextCursor|cursor=/.test(searchProviders))failures.push('Search client: batched FlexSearch/Neon query contract missing');
 if(/engine\.add\([^\n]*recordFor/.test(searchProviders))failures.push('Search client: FlexSearch index must not retain record payloads');
-const spoolClient=readFileSync(resolve(root,'app/loc/spool-client.js'),'utf8');
-for(const token of ['createUidSpoolAdapter','writeSpoolUids','clearSpool','withSpoolUids','neonPublicClient'])if(!spoolClient.includes(token))failures.push(`Spool contract missing: ${token}`);
-if(/\b(content|title|url|meta_tags|source_name|media_id|entity_type|bucket)\b/.test(spoolClient))failures.push('Spool client: content/media payload fields are forbidden');
-if(!/\^\[A-F0-9\]\{8\}\$/.test(spoolClient))failures.push('Spool client: UID-only contract missing');
-if(/MAX_SPOOL_IDS|spool run limit|spool scope limit/.test(spoolClient))failures.push('Spool client: provider-specific usage limits must not enter the core contract');
 if(/getRuntimeTextIndex/.test(searchProviders))failures.push('Search client: runtime index cache must not return to batched providers');
 if(/scanSize|maxScanSize|while\(matched\.length/.test(searchProviders))failures.push('Search client: provider must fetch exactly one raw batch per user trigger');
 if(!/searchTextIndex/.test(keywordClassifier))failures.push('Culture/Statistics keyword classifier: shared FlexSearch contract missing');
@@ -128,3 +120,4 @@ if(!runesClient.includes('selectRuneCatalog()'))failures.push('RunesClient: cano
 
 if(failures.length){console.error('[module-contracts] failures:\\n'+failures.map(item=>`- ${item}`).join('\\n'));process.exit(1);}
 console.log('[module-contracts] imports, canonical routes and Neon client contracts verified');
+

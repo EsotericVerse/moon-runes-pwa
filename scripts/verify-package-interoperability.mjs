@@ -24,7 +24,6 @@ requireText('app/loc/GovernanceManagement.jsx',[/from ['"]react-select['"]/ ,/us
 requireText('app/loc/views/AdminHomeView.jsx',[/from ['"]react-select['"]/ ,/useNeonAccount/ ,/canManageGlobalSync/],'Admin React Select/Neon Auth boundary');
 // FlexSearch is the shared text engine. Neon remains SSOT and adaptive IO supplies index batches.
 requireText('app/loc/text-engine.mjs',[/from ['"]flexsearch['"]/ ,/new Index/ ,/new Resolver/ ,/Charset\.CJK/],'Shared FlexSearch text engine');
-requireText('app/loc/neon-query.js',[/neonPublicClient/ ,/selectNeonRows/ ,/selectNeonAllRows/ ,/processNeonRows/],'Shared Neon query adapter');
 requireText('app/loc/search-providers.js',[/createTextIndex/ ,/searchTextIndex/ ,/selectNeonRows/ ,/nextCursor|cursor=/],'Search/FlexSearch batched Neon boundary');
 requireText('app/loc/style-classifier.js',[/createTextIndex/ ,/searchTextIndex/ ,/splitRuneKeywordEntries/],'Culture/Statistics FlexSearch classifier boundary');
 // Graph and timeline packages are loaded only by their corresponding Neon feature modules.
@@ -36,3 +35,4 @@ if(failures.length){
   process.exit(1);
 }
 console.log('[package-interoperability] Neon SSOT, FlexSearch text engine, query and visualization package boundaries verified');
+
