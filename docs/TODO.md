@@ -41,6 +41,8 @@ RC9 closes when the existing functional surface is complete enough that remainin
 
 ## 1.0 Release — multimedia, extensibility, and visual stabilization
 
+**Hard release gate:** OAuth-authorized managed import must be operational, including two-layer text/link parsing. 1.0R cannot be closed without it.
+
 There is no RC10. After RC9, the next release target is **1.0 Release (1.0R)**. Working target: **2026-10-15**.
 
 - [ ] Integrate image multimedia already present in source material, especially Facebook, Threads, Instagram, and other existing media-bearing records.

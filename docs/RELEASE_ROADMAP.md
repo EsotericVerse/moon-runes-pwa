@@ -30,6 +30,8 @@ There is **no RC10**. The version sequence after RC9 goes directly to **1.0 Rele
 
 ### 1.0 completion criteria
 
+**Release gate:** OAuth-authorized page import with governed two-layer text/link parsing is mandatory for 1.0R. If this capability is not operational, 1.0R is not considered complete.
+
 1. Image multimedia from existing source material—including Facebook, Threads, Instagram, and other media-bearing sources—is integrated into the Current media model.
 2. Images remain media/reference entities and are linked to Galaxy/content records through the existing relationship model; they are not represented by fabricated empty text content.
 3. Search, Culture, Statistics, and other relevant surfaces can use the image metadata/relationships that already belong in their current responsibilities.
