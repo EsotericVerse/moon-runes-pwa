@@ -5,6 +5,7 @@ import {LIST_LOAD_COOLDOWN_MS} from './list-loading.v2';
 
 const DOWN_KEYS=new Set(['ArrowDown','PageDown','End',' ']);
 const WHEEL_GESTURE_GAP_MS=600;
+const TOUCH_SCROLL_WINDOW_MS=2200;
 
 function isDocumentBottom(){
   if(typeof window==='undefined'||typeof document==='undefined')return false;
@@ -34,6 +35,7 @@ export default function IncrementalLoadV2({
   const readyAtRef=useRef(Date.now()+cooldownMs);
   const atBottomRef=useRef(false);
   const lastWheelAtRef=useRef(0);
+  const lastTouchAtRef=useRef(0);
 
   useEffect(()=>{
     loadingRef.current=Boolean(loading);
@@ -62,7 +64,17 @@ export default function IncrementalLoadV2({
       if(!newGesture)return;
       maybeLoad();
     };
-    const onTouchEnd=()=>maybeLoad();
+    const markTouch=()=>{lastTouchAtRef.current=Date.now();};
+    const onTouchEnd=()=>{
+      markTouch();
+      maybeLoad();
+    };
+    const onScroll=()=>{
+      updateBottom();
+      // iOS momentum scrolling often reaches the bottom after touchend has already fired.
+      // Allow the scroll event itself to finish the same recent touch gesture.
+      if(Date.now()-lastTouchAtRef.current<=TOUCH_SCROLL_WINDOW_MS)maybeLoad();
+    };
     const onKeyDown=event=>{
       if(event.repeat||!DOWN_KEYS.has(event.key))return;
       maybeLoad();
@@ -71,13 +83,17 @@ export default function IncrementalLoadV2({
     updateBottom();
     const scrollTarget=root||window;
     const inputTarget=root||document;
-    scrollTarget.addEventListener('scroll',updateBottom,{passive:true});
+    scrollTarget.addEventListener('scroll',onScroll,{passive:true});
     inputTarget.addEventListener('wheel',onWheel,{passive:true,capture:true});
+    inputTarget.addEventListener('touchstart',markTouch,{passive:true,capture:true});
+    inputTarget.addEventListener('touchmove',markTouch,{passive:true,capture:true});
     inputTarget.addEventListener('touchend',onTouchEnd,{passive:true,capture:true});
     inputTarget.addEventListener('keydown',onKeyDown,true);
     return ()=>{
-      scrollTarget.removeEventListener('scroll',updateBottom);
+      scrollTarget.removeEventListener('scroll',onScroll);
       inputTarget.removeEventListener('wheel',onWheel,true);
+      inputTarget.removeEventListener('touchstart',markTouch,true);
+      inputTarget.removeEventListener('touchmove',markTouch,true);
       inputTarget.removeEventListener('touchend',onTouchEnd,true);
       inputTarget.removeEventListener('keydown',onKeyDown,true);
     };
