@@ -9,7 +9,7 @@ const AUTHOR_OVERVIEW_NODES=Object.freeze([
   Object.freeze({id:'wordsmith',title:'文字工匠｜Wordsmith｜關鍵詞的相關聯繫',summary:
    '把分散的文字，整理成可搜尋、可理解、可治理、可持續維護的結構。',
    href:featureNavigationHref('lo3rwang','statics',{statTab:'keywords'})}),
-  Object.freeze({id:'calibrator',title:'校對者｜Calibrator｜文字在時間長河上的演化',summary:
+  Object.freeze({id:'calibrator',title:'混沌校對者｜Chaos Calibrator｜文字在時間長河上的演化',summary:
    '以時空定錨論把作品放回時間長河，從時間位置、密度與前後分布看值得回看的軌跡，並找出關鍵點。',
    href:featureHrefV2('lo3rwang','culture')}),
   Object.freeze({id:'governance-architect',title:'語言建築師｜Language Architect｜架構語言的治理方式',summary:
@@ -41,9 +41,9 @@ export default function AuthorHomeView({section=null}){
       eyebrow:'Roles',
       title:'三位一體',
       content:<div className="loc-grid three">
-        <article><strong>文字工匠 · Wordsmith</strong><p>從詞、句子與關鍵詞的聯繫，整理文字怎麼形成自己的語意與脈絡關係。</p><p><a href="/statics/?statTab=keywords">看關鍵詞設定</a></p></article>
-        <article><strong>校對者 · Calibrator</strong><p>把文字放回來源、時間與歷史裡比較，觀察文化軌跡、延續、改變、矛盾與可能的污染。</p><p><a href="/culture/">看文化</a></p></article>
-        <article><strong>語言建築師 · Language Architect</strong><p>把語彙、脈絡、文化、搜尋與治理組織成可持續使用的個人語言與系統結構。</p><p><a href="/governance/">看治理</a></p></article>
+        <article><strong>文字工匠·Wordsmith</strong><p>從詞、句子與關鍵詞的聯繫，整理文字怎麼形成自己的語意與脈絡關係。</p><p><a href="/statics/?statTab=keywords">看關鍵詞設定</a></p></article>
+        <article><strong>混沌校對者·Chaos Calibrator</strong><p>把文字放回來源、時間與歷史裡比較，觀察文化軌跡、延續、改變、矛盾與可能的污染。</p><p><a href="/culture/">看文化</a></p></article>
+        <article><strong>語言建築師·Language Architect</strong><p>把語彙、脈絡、文化、搜尋與治理組織成可持續使用的個人語言與系統結構。</p><p><a href="/governance/">看治理</a></p></article>
         </div>
     },
     {
@@ -110,7 +110,7 @@ export default function AuthorHomeView({section=null}){
     },
     {
       id:'calibration',
-      eyebrow:'Calibration · Time',
+      eyebrow:'Chaos Calibration · Time',
       title:'時空定錨論',
       content:<>
         <p>時間是一條不可逆的時間長河。年份是定位與比較的參考指標，並不代表經驗會自動依整齊規則排列。</p>
@@ -172,6 +172,7 @@ export default function AuthorHomeView({section=null}){
 	<p><a href="https://suno.com/song/a0a724c1-d35f-4ccf-9ac1-0c1c9f2d6a50" target="_blank" rel="noopener noreferrer">聽〈只是微月光〉 →</a></p>
 	<p>微月光：「赤子的心沒有離場，成熟也不是後來才穿上的衣裳。它們可以同時存在，像月與夜，像火與霜，像明亮身後必然跟著的陰暗。」</p>
 	<p><a href="https://suno.com/song/9ff928a0-aa9d-4563-8c0c-867709e62d09" target="_blank" rel="noopener noreferrer">聽〈無限減一的月光〉 →</a></p>
+	<p>Wordsmith · Chaos Calibrator · Language Architect · Creator of LOC and LunaRunes</p>
 	</>}
     heroVisual={<iframe src="https://www.instagram.com/p/DdX5ki-oZY6/embed" title="這就是我｜Lucas Oscar Wang 政德自我介紹" loading="eager" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" frameBorder="0" scrolling="no"/>}
     sections={[{
