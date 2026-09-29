@@ -43,7 +43,7 @@ export async function selectNeonRows(table,{
   count=null
 }={}){
   if(!String(columns||'').trim()||String(columns).trim()==='*')throw new Error('Neon SELECT requires explicit columns');
-  const safeLimit=Math.max(1,Math.min(1000,Math.floor(Number(limit)||20)));
+  const safeLimit=Math.max(1,Math.min(5000,Math.floor(Number(limit)||20)));
   const safeOffset=Math.max(0,Math.floor(Number(offset)||0));
   let query=relation(table).select(columns,count?{count}:undefined);
   query=applyFilters(query,filters);
@@ -60,9 +60,9 @@ export async function selectAllNeonRows(table,{
   filters=[],
   orFilter='',
   orders=[],
-  pageSize=1000
+  pageSize=5000
 }={}){
-  const size=Math.max(1,Math.min(1000,Math.floor(Number(pageSize)||1000)));
+  const size=Math.max(1,Math.min(5000,Math.floor(Number(pageSize)||5000)));
   const first=await selectNeonRows(table,{columns,filters,orFilter,orders,limit:size,offset:0,count:'exact'});
   const rows=[...first.rows];
   const total=Number(first.count) || rows.length;
