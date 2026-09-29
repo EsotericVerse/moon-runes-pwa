@@ -9,7 +9,6 @@ import ManagementArticlePublisher from './ManagementArticlePublisher';
 import ManagementImportPanel from './ManagementImportPanel';
 import RuneManagementPanel from './RuneManagementPanel';
 import CultureTimelineEditor from '../modular-v2/features/CultureTimelineEditor';
-import KeywordSettingsV2 from '../modular-v2/features/KeywordSettingsV2';
 import StyleKeywordSettingsV2 from '../modular-v2/features/StyleKeywordSettingsV2';
 
 const LOGIN_COPY={
@@ -21,7 +20,7 @@ const LOGIN_COPY={
   lunarunes:{
     eyebrow:'LunaRunes Management',
     title:'LunaRunes 管理登入',
-    description:'管理符號式語言的作品、時期、關鍵詞與每日符文。'
+    description:'管理符號式語言的作品、時期與每日符文。'
   },
   lo3rwang:{
     eyebrow:'Personal Management',
@@ -59,7 +58,6 @@ function PeriodSettings({scopeId}){
 }
 
 function ClassificationSettings({scopeId}){
-  if(scopeId==='lunarunes')return <KeywordSettingsV2 scopeId={scopeId} editable/>;
   if(scopeId==='lo3rwang')return <StyleKeywordSettingsV2/>;
   return null;
 }
@@ -68,9 +66,9 @@ function sectionOptions(scopeId){
   if(scopeId==='loc')return [];
   const options=[
     {value:'workspace',label:'文章與匯入'},
-    {value:'period',label:'時期設定'},
-    {value:'classification',label:scopeId==='lunarunes'?'符文關鍵詞分組':'關鍵詞／風格分類'}
+    {value:'period',label:'時期設定'}
   ];
+  if(scopeId==='lo3rwang')options.push({value:'classification',label:'關鍵詞／風格分類'});
   if(scopeId==='lunarunes')options.push({value:'daily',label:'每日符文管理'});
   return options;
 }

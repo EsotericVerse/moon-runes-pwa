@@ -1,6 +1,5 @@
 'use client';
 
-import {neonAuthClient} from './neon-client';
 import {selectNeonCount,selectNeonRows} from './neon-query';
 
 const RUNE_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,char_action,positive_keywords,negative_keywords,extra_rules,extra_notes';
@@ -160,33 +159,4 @@ export async function selectRuneDrawRows(pairs=[],{types=[]}={}){
 export async function selectRuneDetail(runeNumber){
   const rows=await selectRuneRows([runeNumber],{detail:true});
   return rows[0]||null;
-}
-
-export async function selectRuneKeywordGroups(){
-  return selectRuneGroupCatalog();
-}
-
-export async function selectRuneKeywordGroup(groupName){
-  const name=String(groupName||'').trim();
-  if(!name)return [];
-  const rows=await selectRuneTable('runes',RUNE_COLUMNS,{
-    filters:[{column:'group_name',operator:'eq',value:name}],
-    orders:[{column:'rune_id',ascending:true}]
-  });
-  return rows.map(normalizeRune);
-}
-
-export async function updateRuneKeywords({runeNumber,positiveKeywords='',negativeKeywords=''}={}){
-  const id=Number(runeNumber);
-  if(!Number.isInteger(id)||id<1||id>66)throw new Error('無效的符文編號。');
-  const {data,error}=await neonAuthClient.schema('silver').from('runes')
-    .update({
-      positive_keywords:String(positiveKeywords||'').trim()||null,
-      negative_keywords:String(negativeKeywords||'').trim()||null
-    })
-    .eq('rune_id',id)
-    .select('rune_id,positive_keywords,negative_keywords');
-  if(error)throw new Error(error.message||'符文關鍵詞更新失敗');
-  if(!data?.length)throw new Error('符文不存在或目前沒有修改權限。');
-  return normalizeRune(data[0]);
 }

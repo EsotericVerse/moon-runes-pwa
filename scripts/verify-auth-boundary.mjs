@@ -12,7 +12,8 @@ const failures=[];
 
 const requireMatch=(text,re,label)=>{if(!re.test(text))failures.push(label);};
 
-requireMatch(data,/selectNeonCatalog/,'shared rune runtime must use the canonical Neon repository');
+requireMatch(data,/selectNeonRows/,'shared rune runtime must use direct Neon read queries');
+if(/neonAuthClient|updateRuneKeywords|\.update\(|\.insert\(|\.upsert\(|\.delete\(/.test(data))failures.push('silver.runes canonical data must remain app-side read-only');
 if(/memoryCache|DEFAULT_MEMORY_CACHE_ENTRIES/.test(data))failures.push('shared runtime data must not retain a process-memory data cache');
 
 requireMatch(client,/getNeonPublicToken/,'public canonical reads must use the direct anonymous-token provider');

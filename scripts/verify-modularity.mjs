@@ -37,9 +37,10 @@ for(const required of [
 }
 
 const runeRepository=readFileSync(resolve(root,'app/loc/rune-repository.js'),'utf8');
-if(!runeRepository.includes('selectNeonCount')||!runeRepository.includes('selectNeonRows')||!runeRepository.includes('selectRuneCatalog')||!runeRepository.includes('selectRuneKeywordGroups')||!runeRepository.includes('selectRuneKeywordGroup'))failures.push('app/loc/rune-repository.js: canonical rune read boundary missing');
+if(!runeRepository.includes('selectNeonCount')||!runeRepository.includes('selectNeonRows')||!runeRepository.includes('selectRuneCatalog')||!runeRepository.includes('selectRuneDrawRows'))failures.push('app/loc/rune-repository.js: read-only rune boundary missing');
+for(const forbidden of ['neonAuthClient','updateRuneKeywords','selectRuneKeywordGroups','selectRuneKeywordGroup','.update(','.insert(','.upsert(','.delete('])if(runeRepository.includes(forbidden))failures.push('app/loc/rune-repository.js: canonical silver.runes must remain app-side read-only: '+forbidden);
 if(['LOC_DATA','fetchNeonData','canonical/runes','fetchStaticJson','runtime_json_documents'].some(token=>runeRepository.includes(token)))failures.push('app/loc/rune-repository.js: retired path/JSON loader semantics remain');
-for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs','app/loc/neon-context-client.js','app/modular-v2/features/ContextV2.jsx','app/modular-v2/features/ContextWorkbenchV2.jsx','app/modular-v2/modules/context-graph/ContextGraphV2.jsx'])if(existsSync(resolve(root,retired)))failures.push(`${retired}: retired path-loader must remain removed`);
+for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs','app/loc/neon-context-client.js','app/modular-v2/features/ContextV2.jsx','app/modular-v2/features/ContextWorkbenchV2.jsx','app/modular-v2/modules/context-graph/ContextGraphV2.jsx','app/modular-v2/features/KeywordSettingsV2.jsx','app/modular-v2/features/RuneKeywordSettingsV2.jsx'])if(existsSync(resolve(root,retired)))failures.push(`${retired}: retired path must remain removed`);
 
 const statisticsView=readFileSync(resolve(root,'app/modular-v2/features/StatisticsV2.jsx'),'utf8');
 if(!/selectScopeRankingRows\(scopeId/.test(statisticsView))failures.push('StatisticsV2: shared canonical ranking query missing');
@@ -61,6 +62,7 @@ if(!/searchNeonRows\(/.test(searchView))failures.push('SearchV2: shared search c
 const scopeManagement=readFileSync(resolve(root,'app/loc/GovernanceManagement.jsx'),'utf8');
 const adminManagement=readFileSync(resolve(root,'app/loc/views/AdminHomeView.jsx'),'utf8');
 if(!/useNeonAccount/.test(scopeManagement)||!/canManageScopeSync/.test(scopeManagement))failures.push('Scope management: manager role gate missing');
+if(/KeywordSettingsV2|符文關鍵詞分組/.test(scopeManagement))failures.push('Scope management: LunaRunes canonical rune keywords must not be used as editable/fallback style');
 if(!/useNeonAccount/.test(adminManagement)||!/canManageGlobalSync/.test(adminManagement))failures.push('Admin management: global manager role gate missing');
 
 for(const retired of ['app/loc/local-db.js','app/loc/google-drive.js','app/loc/storage.js','app/loc/auth-client.js']){
