@@ -127,7 +127,7 @@ function compileCatalog(catalog=[]){
 
 function buildEngine(rows=[]){
   const engine=createTextIndex();
-  rows.forEach((row,index)=>engine.add(String(index),keywordTextOf(row),row));
+  rows.forEach((row,index)=>engine.add(String(index),keywordTextOf(row)));
   return engine;
 }
 
@@ -156,8 +156,8 @@ export function countKeywordHitsWithCatalog(rows=[],catalog=[]){
           rune_number:rune.rune_number,
           style_label:rune.style_label,
           style_group:rune.style_group,
-          item_count:match.totalCount,
-          rank_value:match.totalCount
+          item_count:match.ids.length,
+          rank_value:match.ids.length
         });
       }
     }

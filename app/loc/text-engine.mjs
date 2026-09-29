@@ -69,7 +69,7 @@ export function searchTextIndex(engine,query,{
   return {
     ids,
     rows:[],
-    totalCount:hasMore?null:ids.length,
+    totalCount:null,
     hasMore,
     nextOffset:hasMore?nextOffset:null
   };
