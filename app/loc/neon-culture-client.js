@@ -326,13 +326,14 @@ export async function selectScopeWorkSnapshot(scopeId,{startDate,endDate=null}={
   return {buckets:normalizedWorkTimelineBuckets(buckets),totalCount:textCount+mediaCount};
 }
 
-export async function selectAuthorPeriodSourceSnapshot({startDate,endDate=null}={}){
+export async function selectScopePeriodSourceSnapshot(scopeId,{startDate,endDate=null}={}){
+  if(!scopeId)throw new Error('scopeId is required');
   if(!startDate)return {groups:[],buckets:[],totalCount:0};
   const filters=publicContentFilters(dateFilters(startDate,endDate));
   const [catalog,daily,totalCount]=await Promise.all([
-    selectSourceCatalog({scopeId:'lo3rwang',startDate,endDate:endDate||'',limit:20}),
-    selectSourceDaily({scopeId:'lo3rwang',startDate,endDate:endDate||''}),
-    selectNeonCount((await resolveScopeTables('lo3rwang')).galaxy,{filters})
+    selectSourceCatalog({scopeId,startDate,endDate:endDate||'',limit:20}),
+    selectSourceDaily({scopeId,startDate,endDate:endDate||''}),
+    selectNeonCount((await resolveScopeTables(scopeId)).galaxy,{filters})
   ]);
   const maxima=new Map();
   let globalMaximum=0;
@@ -374,8 +375,8 @@ export async function selectAuthorPeriodSourceSnapshot({startDate,endDate=null}=
   return {groups,buckets,totalCount};
 }
 
-export async function selectAuthorPeriodWorkSources({startDate,endDate=null}={}){
-  return (await selectAuthorPeriodSourceSnapshot({startDate,endDate})).groups;
+export async function selectScopePeriodWorkSources(scopeId,{startDate,endDate=null}={}){
+  return (await selectScopePeriodSourceSnapshot(scopeId,{startDate,endDate})).groups;
 }
 
 function mediaMetadataDescription(row){
@@ -383,11 +384,12 @@ function mediaMetadataDescription(row){
   return fields.map(([label,value])=>{const text=decodeCultureText(value||'').trim();return text?`${label}：${text}`:'';}).filter(Boolean).join(' · ')||'沒有可讀的 metadata 文字';
 }
 
-export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,categoryType='source',limit=20,pageOffset=0}={}){
+export async function selectScopePeriodWorks(scopeId,{startDate,endDate,sourceName,categoryType='source',limit=20,pageOffset=0}={}){
+  if(!scopeId)throw new Error('scopeId is required');
   if(!startDate||!sourceName)return {rows:[],hasMore:false,nextOffset:null,totalCount:0};
   const pageSize=Math.max(1,Math.floor(Number(limit)||20));
   const offset=Math.max(0,Math.floor(Number(pageOffset)||0));
-  const page=await selectGalaxyPage({sourceName:String(sourceName),startDate,endDate,limit:pageSize,offset});
+  const page=await selectGalaxyPage({scopeId,sourceName:String(sourceName),startDate,endDate,limit:pageSize,offset});
   const rows=page.rows.map(row=>{
     const explicitTitle=workDisplayText(row.title||'').trim();
     return {
@@ -406,7 +408,7 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
       entry_id:row.uid,
       entry_type:'work',
       group_label:sourceLabel(row.source_name),
-      scope_id:'lo3rwang',
+      scope_id:runtimeScopeId(scopeId),
       links:[]
     };
   });
