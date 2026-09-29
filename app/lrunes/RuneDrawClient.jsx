@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import {selectRuneCatalog,selectRuneRows} from '../loc/rune-repository';
+import {selectRuneCatalog,selectRuneDrawRows} from '../loc/rune-repository';
 import { useLocalStore } from '../loc/local-store';
 import {resolveSpreadState} from '../loc/model/semantic-state.mjs';
 import { realMoonPhase } from '../loc/model/moon-phase';
@@ -121,9 +121,9 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
       if (!data?.runes?.length) throw new Error('符文資料尚未載入完成。');
       if (data.runes.length < selectedMode.count) throw new Error(`可抽取符文不足 ${selectedMode.count} 張。`);
       const {cards,directionIndexes,directions}=drawRuneSession(data.runes,selectedMode.count);
-      const numbers=cards.map(card => Number(card?.rune_number)).filter(Number.isInteger);
+      const pairs=cards.map((card,index)=>({runeNumber:Number(card?.rune_number),dir:Number(directionIndexes[index])+1}));
       const types=drawKey==='daily'?['direction','daily']:['direction','lots'];
-      const rows=await selectRuneRows(numbers,{types});
+      const rows=await selectRuneDrawRows(pairs,{types});
       const byNumber=new Map(rows.map(row => [Number(row.rune_number), row]));
       const enrichedCards=cards.map(card=>({...card,...(byNumber.get(Number(card?.rune_number))||{})}));
       const reading = resolveSpreadState(enrichedCards, directions, drawKey);

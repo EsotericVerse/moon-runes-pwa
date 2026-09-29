@@ -38,8 +38,9 @@ for(const fragment of [
 }
 
 for(const fragment of [
+  "const pairs=cards.map((card,index)=>({runeNumber:Number(card?.rune_number),dir:Number(directionIndexes[index])+1}));",
   "const types=drawKey==='daily'?['direction','daily']:['direction','lots'];",
-  "selectRuneRows(numbers,{types})",
+  "selectRuneDrawRows(pairs,{types})",
   'data-draw-reading="single"',
   'Daily · 每日指示',
   'dailyGuidance(draw.cards[0], draw.directions[0])'
@@ -47,8 +48,9 @@ for(const fragment of [
   if(!publicDraw.includes(fragment))throw new Error(`RuneDrawClient guidance contract missing: ${fragment}`);
 }
 for(const fragment of [
+  "const pairs=cards.map((card,index)=>({runeNumber:Number(card?.rune_number),dir:Number(directionIndexes[index])+1}));",
   "const types=modeKey==='daily'?['direction','daily']:['direction','lots'];",
-  "selectRuneRows(numbers,{types})",
+  "selectRuneDrawRows(pairs,{types})",
   'data-draw-reading="single"',
   'Daily · 每日指示',
   'dailyGuidance(draw.cards[0],draw.directions[0])'

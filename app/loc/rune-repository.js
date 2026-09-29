@@ -12,6 +12,7 @@ const DIRECTION_FIELDS=Object.freeze({1:'positive_meaning',2:'half_positive_mean
 const LOTS_FIELDS=Object.freeze({1:'lots_positive',2:'lots_half_positive',3:'lots_half_negative',4:'lots_negative'});
 const DAILY_FIELDS=Object.freeze({1:'daily_positive',2:'daily_half_positive',3:'daily_half_reverse',4:'daily_reverse'});
 const ETC_TYPES=new Set(['direction','lots','daily']);
+
 async function selectRuneTable(table,columns,{filters=[],orders=[],orFilter=''}={}){
   let query=neonPublicClient.schema('silver').from(table).select(columns);
   for(const filter of filters){
@@ -25,7 +26,6 @@ async function selectRuneTable(table,columns,{filters=[],orders=[],orFilter=''}=
   if(error)throw new Error(error.message||('Neon '+table+' read failed'));
   return data||[];
 }
-
 
 function normalizeRune(row){
   const runeId=Number(row?.rune_id);
@@ -62,6 +62,21 @@ function normalizeEtcTypes(types=[]){
   return [...new Set((types||[]).map(value=>String(value||'').trim()).filter(value=>ETC_TYPES.has(value)))];
 }
 
+function normalizePairs(pairs=[]){
+  const output=[];
+  const seen=new Set();
+  for(const item of pairs||[]){
+    const runeNumber=Number(item?.runeNumber);
+    const dir=Number(item?.dir);
+    if(!Number.isInteger(runeNumber)||runeNumber<1||runeNumber>66||!Number.isInteger(dir)||dir<1||dir>4)continue;
+    const key=`${runeNumber}:${dir}`;
+    if(seen.has(key))continue;
+    seen.add(key);
+    output.push({runeNumber,dir});
+  }
+  return output;
+}
+
 function mergeRuneEtc(runes,etcRows){
   const map=new Map((runes||[]).map(row=>[Number(row.rune_number),{...row,rune_etc:{}}]));
   for(const row of etcRows||[]){
@@ -78,47 +93,35 @@ function mergeRuneEtc(runes,etcRows){
   return [...map.values()];
 }
 
+async function selectRuneEtcPairs(pairs=[],types=[]){
+  const exactPairs=normalizePairs(pairs);
+  const selectedTypes=normalizeEtcTypes(types);
+  if(!exactPairs.length||!selectedTypes.length)return [];
+  return selectRuneTable('runes_etc',ETC_COLUMNS,{
+    filters:[{column:'type',operator:'in',value:selectedTypes}],
+    orFilter:exactPairs.map(item=>`and(rune_id.eq.${item.runeNumber},dir.eq.${item.dir})`).join(','),
+    orders:[{column:'rune_id',ascending:true},{column:'dir',ascending:true},{column:'type',ascending:true}]
+  });
+}
 
 export async function selectRuneGroupCatalog(){
   const rows=await selectRuneTable('runes_group',GROUP_COLUMNS);
   return rows.map(normalizeGroup).sort((a,b)=>Number(a.id)-Number(b.id));
 }
 
-export async function selectRuneEtcRows({runeNumbers=[],types=[],dirs=[],pairs=[]}={}){
-  const wanted=[...new Set((runeNumbers||[]).map(Number).filter(number=>Number.isInteger(number)&&number>=0&&number<=66))];
-  const selectedTypes=normalizeEtcTypes(types);
-  const selectedDirs=[...new Set((dirs||[]).map(Number).filter(dir=>Number.isInteger(dir)&&dir>=1&&dir<=4))];
-  const selectedPairs=[];
-  const pairKeys=new Set();
-  for(const item of pairs||[]){
-    const runeNumber=Number(item?.runeNumber);
-    const dir=Number(item?.dir);
-    if(!Number.isInteger(runeNumber)||runeNumber<0||runeNumber>66||!Number.isInteger(dir)||dir<1||dir>4)continue;
-    const key=`${runeNumber}:${dir}`;
-    if(pairKeys.has(key))continue;
-    pairKeys.add(key);
-    selectedPairs.push({runeNumber,dir});
-  }
-  if(!wanted.length&&!selectedPairs.length)throw new TypeError('runes_etc requires exact runeNumbers or rune/dir pairs');
-  const filters=[];
-  if(selectedTypes.length)filters.push({column:'type',operator:'in',value:selectedTypes});
-  if(!selectedPairs.length&&wanted.length)filters.push({column:'rune_id',operator:'in',value:wanted});
-  if(!selectedPairs.length&&selectedDirs.length)filters.push({column:'dir',operator:'in',value:selectedDirs});
-  const orFilter=selectedPairs.length
-    ?selectedPairs.map(item=>`and(rune_id.eq.${item.runeNumber},dir.eq.${item.dir})`).join(',')
-    :'';
-  return selectRuneTable('runes_etc',ETC_COLUMNS,{
-    filters,
-    orFilter,
-    orders:[{column:'rune_id',ascending:true},{column:'dir',ascending:true},{column:'type',ascending:true}]
+export async function selectRuneGroup(routeId){
+  const id=Number(routeId);
+  if(!Number.isInteger(id)||id<1||id>9)return null;
+  const anchor=id===9?65:(id-1)*8+1;
+  const rows=await selectRuneTable('runes_group',GROUP_COLUMNS,{
+    filters:[{column:'runeslist',operator:'contains',value:[anchor]}]
   });
+  return rows.length?normalizeGroup(rows[0]):null;
 }
 
 export async function selectRuneCatalog({detail=false}={}){
   const columns=detail?`${RUNE_COLUMNS},${RUNE_DETAIL_COLUMNS}`:RUNE_COLUMNS;
-  const runes=await selectRuneTable('runes',columns,{
-    orders:[{column:'rune_id',ascending:true}]
-  });
+  const runes=await selectRuneTable('runes',columns,{orders:[{column:'rune_id',ascending:true}]});
   return runes.map(normalizeRune);
 }
 
@@ -134,25 +137,13 @@ export async function selectRuneRows(runeNumbers=[],{detail=false}={}){
 }
 
 export async function selectRuneDrawRows(pairs=[],{types=[]}={}){
-  const selectedTypes=normalizeEtcTypes(types);
-  const exactPairs=[];
-  const pairKeys=new Set();
-  for(const item of pairs||[]){
-    const runeNumber=Number(item?.runeNumber);
-    const dir=Number(item?.dir);
-    if(!Number.isInteger(runeNumber)||runeNumber<1||runeNumber>66||!Number.isInteger(dir)||dir<1||dir>4)continue;
-    const key=`${runeNumber}:${dir}`;
-    if(pairKeys.has(key))continue;
-    pairKeys.add(key);
-    exactPairs.push({runeNumber,dir});
-  }
+  const exactPairs=normalizePairs(pairs);
   if(!exactPairs.length)return [];
-  const runeNumbers=exactPairs.map(item=>item.runeNumber);
   const [runes,etcRows]=await Promise.all([
-    selectRuneRows(runeNumbers),
-    selectedTypes.length?selectRuneEtcRows({pairs:exactPairs,types:selectedTypes}):Promise.resolve([])
+    selectRuneRows(exactPairs.map(item=>item.runeNumber)),
+    selectRuneEtcPairs(exactPairs,types)
   ]);
-  return selectedTypes.length?mergeRuneEtc(runes,etcRows):runes;
+  return mergeRuneEtc(runes,etcRows);
 }
 
 export async function selectRuneDetail(runeNumber){
@@ -161,15 +152,8 @@ export async function selectRuneDetail(runeNumber){
 }
 
 export async function selectRuneKeywordCatalog(){
-  const [runes,groups]=await Promise.all([
-    selectRuneCatalog(),
-    selectRuneGroupCatalog()
-  ]);
+  const [runes,groups]=await Promise.all([selectRuneCatalog(),selectRuneGroupCatalog()]);
   return {groups,runes};
-}
-
-function splitKeywords(value){
-  return String(value||'').split(/[、,，\n]+/).map(item=>item.trim()).filter(Boolean);
 }
 
 export async function updateRuneKeywords({runeNumber,positiveKeywords='',negativeKeywords=''}={}){

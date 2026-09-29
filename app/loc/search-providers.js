@@ -167,8 +167,8 @@ const runeCore=makeProvider({
   source:'月之符文',
   scopeId:'lrunes',
   idColumn:'rune_id',
-  columns:['rune_id','rune_name','group_name','english_name','rune_description','archetype','char_action','positive_keywords','negative_keywords','extra_rules','extra_notes','positive_meaning','half_positive_meaning','half_reverse_meaning','reverse_meaning'],
-  searchFields:['rune_name','group_name','english_name','rune_description','archetype','char_action','positive_keywords','negative_keywords','extra_rules','extra_notes','positive_meaning','half_positive_meaning','half_reverse_meaning','reverse_meaning'] ,
+  columns:['rune_id','rune_name','group_name','english_name','rune_description','archetype','char_action','positive_keywords','negative_keywords','extra_rules','extra_notes'],
+  searchFields:['rune_name','group_name','english_name','rune_description','archetype','char_action','positive_keywords','negative_keywords','extra_rules','extra_notes'],
   batchSize:RUNE_LIST_BATCH_SIZE
 });
 

@@ -13,7 +13,7 @@
 - [x] Multimedia is a first-class language extension layer. Media metadata may participate in Search, Culture, and Statistics without requiring the original asset URL.
 - [x] Production Neon has no Current cache table, ranking table, or materialized view used to duplicate the corpus.
 - [x] Old JSON/cache/shard TODO items are retired and no longer count as RC8 work.
-- [x] LunaRunes Game RC8 pre-close pass completed: Game code/docs/assets are consolidated under `app/lrunes/game/`; the UI uses the existing Rune card, group, Event, and author visuals; Game rune reads are fixed to `silver.runes` + `silver.runes_etc`.
+- [x] LunaRunes Game RC8 pre-close pass completed: Game code/docs/assets are consolidated under `app/lrunes/game/`; the UI uses the existing Rune card, group, Event, and author visuals; Game rune reads are fixed to only the tables it uses: `silver.runes` + `silver.game`.
 
 ## Current open blockers
 

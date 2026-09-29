@@ -188,7 +188,7 @@ export default function GameView(){
 
   const status=useMemo(()=>{
     if(error)return '遊戲資料載入失敗：'+error.message;
-    if(isLoading)return '正在讀取 silver.runes、silver.runes_etc、silver.game…';
+    if(isLoading)return '正在讀取 silver.runes、silver.game…';
     if(!data)return '遊戲資料尚未就緒。';
     if(!state)return data.cards.length+' 張可玩符文、'+data.events.length+' 張 Event 已就緒。';
     if(state.winner!==null)return state.players[state.winner].name+' 勝出。';

@@ -15,13 +15,6 @@ const RuneRow=z.object({
   extra_notes:z.string().nullable().optional()
 }).passthrough();
 
-const RuneEtcRow=z.object({
-  rune_id:z.coerce.number().int().min(0).max(66),
-  dir:z.coerce.number().int().min(1).max(4),
-  type:z.string(),
-  desc:z.string()
-});
-
 const GameRow=z.object({
   game_key:z.string(),
   record_type:z.enum(['event','rune_action','role','rule','macro','asset']),
@@ -94,14 +87,10 @@ function requiredDelta(rows,code){
 }
 
 export async function loadGameData(){
-  const [runesResult,etcResult,gameResult]=await Promise.all([
+  const [runesResult,gameResult]=await Promise.all([
     neonPublicClient.schema('silver').from('runes')
       .select('rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,extra_rules,extra_notes')
       .gte('rune_id',0).lte('rune_id',66).order('rune_id',{ascending:true}),
-    neonPublicClient.schema('silver').from('runes_etc')
-      .select('rune_id,dir,type,desc')
-      .gte('rune_id',0).lte('rune_id',66)
-      .order('rune_id',{ascending:true}).order('dir',{ascending:true}).order('type',{ascending:true}),
     neonPublicClient.schema('silver').from('game')
       .select('*')
       .eq('is_current',true)
@@ -110,18 +99,10 @@ export async function loadGameData(){
   ]);
 
   if(runesResult.error)throw new Error(runesResult.error.message||'silver.runes 讀取失敗');
-  if(etcResult.error)throw new Error(etcResult.error.message||'silver.runes_etc 讀取失敗');
   if(gameResult.error)throw new Error(gameResult.error.message||'silver.game 讀取失敗');
 
   const runes=z.array(RuneRow).parse(runesResult.data||[]);
-  const etc=z.array(RuneEtcRow).parse(etcResult.data||[]);
   const gameRows=z.array(GameRow).parse(gameResult.data||[]);
-
-  const etcByRune=new Map();
-  for(const row of etc){
-    if(!etcByRune.has(row.rune_id))etcByRune.set(row.rune_id,[]);
-    etcByRune.get(row.rune_id).push(row);
-  }
 
   const macros=gameRows.filter(row=>row.record_type==='macro').map(row=>({
     code:row.macro_code,
@@ -166,7 +147,6 @@ export async function loadGameData(){
       archetype:row.archetype||'',
       extraRules:row.extra_rules||'',
       extraNotes:row.extra_notes||'',
-      etc:etcByRune.get(row.rune_id)||[],
       action:action?.text||'',
       actionKind:action?.kind||null,
       actionValue:action?.value??null,
@@ -263,7 +243,7 @@ export async function loadGameData(){
 
   const de=runes.find(row=>row.rune_id===0)||null;
   return {
-    cards,de,etc,
+    cards,de,
     events,roles,rules,macros,runeActions,
     rounds,resultByCoverage,config,
     assets,groupAssets,eventVisuals,authorAsset

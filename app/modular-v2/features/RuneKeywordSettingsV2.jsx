@@ -2,7 +2,6 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import {useMutation,useQueryClient} from '@tanstack/react-query';
-import {GROUPS} from '../../lrunes/rune-directory.mjs';
 import {updateRuneKeywords} from '../../loc/rune-repository';
 import {parseRuneKeywordRules,splitRuneKeywordEntries} from '../../loc/model/rune-keyword-rules.mjs';
 import KeywordGraph2DV2 from '../modules/keyword-graph/KeywordGraph2DV2';
@@ -37,7 +36,7 @@ function keywordFieldWithRules(value,rules,operator){
 }
 const RUNE_KEYWORD_GROUPS=Object.freeze([['positive','正向關鍵詞'],['negative','反向關鍵詞'],['rules','規則']]);
 
-export default function RuneKeywordSettingsV2({runes=[],readOnly=false}){
+export default function RuneKeywordSettingsV2({runes=[],groups=[],readOnly=false}){
   const [groupId,setGroupId]=useState(null);
   const [runeNumber,setRuneNumber]=useState(null);
   const [editing,setEditing]=useState(false);
@@ -48,7 +47,7 @@ export default function RuneKeywordSettingsV2({runes=[],readOnly=false}){
   const queryClient=useQueryClient();
   const selected=useMemo(()=>runeNumber===null?null:(runes.find(item=>Number(item.rune_number)===Number(runeNumber))||null),[runes,runeNumber]);
   const selectedKeywordFields=useMemo(()=>readRuneKeywordFields(selected),[selected?.positive_keywords,selected?.negative_keywords]);
-  const activeGroup=GROUPS.find(group=>group.id===groupId)||null;
+  const activeGroup=groups.find(group=>group.id===groupId)||null;
   const groupRunes=useMemo(()=>activeGroup?runes.filter(rune=>String(rune.group_name||'').trim()===activeGroup.name):[],[runes,activeGroup]);
   const graphGroups=useMemo(()=>runes.map(rune=>({
     style_no:Number(rune.rune_number),
@@ -58,7 +57,7 @@ export default function RuneKeywordSettingsV2({runes=[],readOnly=false}){
   })),[runes]);
   const selectGraphItem=item=>{
     const rune=runes.find(row=>Number(row.rune_number)===Number(item?.styleNo));
-    const group=GROUPS.find(row=>row.name===String(rune?.group_name||'').trim());
+    const group=groups.find(row=>row.name===String(rune?.group_name||'').trim());
     if(!rune||!group)return;
     setGroupId(group.id);
     setRuneNumber(Number(rune.rune_number));
@@ -159,7 +158,7 @@ export default function RuneKeywordSettingsV2({runes=[],readOnly=false}){
       onSelect={selectGraphItem}
     />
     <div className="loc-rune-context-grid loc-rune-context-groups">
-      {GROUPS.map(group=>{
+      {groups.map(group=>{
         const count=runes.filter(rune=>String(rune.group_name||'').trim()===group.name).length;
         return <button type="button" className="loc-rune-context-tile" key={group.id} onClick={()=>setGroupId(group.id)}>
           <span>GROUP {group.id}</span>

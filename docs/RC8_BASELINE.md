@@ -19,7 +19,7 @@ RC8 is the stable candidate baseline for the Current LOC architecture. This free
 - Rune draw ritual timing and sequential random draw behavior remain verifier-protected.
 - LunaRunes core data comes from `silver.runes` and `silver.runes_etc`.
 - For runes 1–64, `silver.runes_etc` contains complete 4-direction sets for `direction`, `lots`, and `daily` (256 rows each).
-- Single and Daily guidance are loaded after the draw for only the selected rune(s); the full guidance matrix is not loaded up front.
+- Directional guidance is loaded only after a draw and only for the selected `(rune_id, direction, type)` combinations; the full four-direction matrix is never loaded up front.
 - `/game` first graphical RC8 pass remains intact and reads canonical Neon data.
 
 ## Verification at freeze

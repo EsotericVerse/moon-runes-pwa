@@ -16,10 +16,9 @@ The Game is independent from divination routes such as `/duel`.
 Game runtime reads only:
 
 - `silver.runes` — Rune canonical identity / group / descriptive fields
-- `silver.runes_etc` — Rune directional / auxiliary text
 - `silver.game` — all Game-specific data and rules
 
-Do not reintroduce Game data as JS constants, JSON registries, KM files, or legacy LOC2 runtime fallbacks.
+Directional text is not part of the Game payload. Do not reintroduce Game data as JS constants, JSON registries, KM files, or legacy LOC2 runtime fallbacks.
 
 ## silver.game structure
 

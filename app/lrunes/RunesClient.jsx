@@ -2,13 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Select from 'react-select';
-import {selectRuneCatalog,selectRuneRows} from '../loc/rune-repository';
+import {selectRuneCatalog,selectRuneDrawRows} from '../loc/rune-repository';
 import {selectScopeCultureData} from '../loc/neon-culture-client';
 import { useLocalStore } from '../loc/local-store';
 import {resolveSpreadState} from '../loc/model/semantic-state.mjs';
 import { realMoonPhase } from '../loc/model/moon-phase';
 import { buildRuneGraph, searchRuneGraph } from '../loc/model/rune-graph-core.js';
-import RuneAtlas from './RuneAtlas';
 import {scopeHrefV2,scopeOriginV2} from '../modular-v2/scope-registry.v2';
 import {drawRuneSession,makeRuneDrawId} from './rune-draw-engine';
 import RuneSingleReading from './RuneSingleReading';
@@ -55,7 +54,7 @@ export default function RunesClient(){
   useEffect(()=>{setNodePage(1);setEdgePage(1);},[graphQuery,graphGroup,graphEdge,pageSize]);
   function chooseMode(key){timers.current.forEach(clearTimeout);setRitualStep(-1);setError('');setModeKey(key);setDraw(null);setActiveSection('draw');if(typeof window!=='undefined'){const url=new URL(window.location.href);url.searchParams.set('mode',key);window.history.replaceState({},'',`${url.pathname}${url.search}#draw`);}}
   function openSection(){setActiveSection('draw');}
-  async function finishDraw(){try{if(!data?.runes?.length)throw new Error('符文資料尚未載入完成。');if(data.runes.length<selectedMode.count)throw new Error(`可抽取符文不足 ${selectedMode.count} 張。`);const {cards,directionIndexes,directions}=drawRuneSession(data.runes,selectedMode.count);const numbers=cards.map(card=>Number(card?.rune_number)).filter(Number.isInteger);const types=modeKey==='daily'?['direction','daily']:['direction','lots'];const rows=await selectRuneRows(numbers,{types});const byNumber=new Map(rows.map(row=>[Number(row.rune_number),row]));const enrichedCards=cards.map(card=>({...card,...(byNumber.get(Number(card?.rune_number))||{})}));const reading=resolveSpreadState(enrichedCards,directions,modeKey),createdAt=new Date().toISOString();setDraw({id:makeRuneDrawId(modeKey),createdAt,cards:enrichedCards,directionIndexes,directions,reading,guidance:reading.guidance});setError('');}catch(err){setDraw(null);setError(`抽牌失敗：${err?.message||'未知錯誤'}`);}finally{setRitualStep(-1);}}
+  async function finishDraw(){try{if(!data?.runes?.length)throw new Error('符文資料尚未載入完成。');if(data.runes.length<selectedMode.count)throw new Error(`可抽取符文不足 ${selectedMode.count} 張。`);const {cards,directionIndexes,directions}=drawRuneSession(data.runes,selectedMode.count);const pairs=cards.map((card,index)=>({runeNumber:Number(card?.rune_number),dir:Number(directionIndexes[index])+1}));const types=modeKey==='daily'?['direction','daily']:['direction','lots'];const rows=await selectRuneDrawRows(pairs,{types});const byNumber=new Map(rows.map(row=>[Number(row.rune_number),row]));const enrichedCards=cards.map(card=>({...card,...(byNumber.get(Number(card?.rune_number))||{})}));const reading=resolveSpreadState(enrichedCards,directions,modeKey),createdAt=new Date().toISOString();setDraw({id:makeRuneDrawId(modeKey),createdAt,cards:enrichedCards,directionIndexes,directions,reading,guidance:reading.guidance});setError('');}catch(err){setDraw(null);setError(`抽牌失敗：${err?.message||'未知錯誤'}`);}finally{setRitualStep(-1);}}
   function executeDraw(){if(!data||ritualStep>=0)return;setError('');setDraw(null);setActiveSection('draw');timers.current.forEach(clearTimeout);timers.current=[];if(instantDraw){finishDraw();return;}setRitualStep(0);[1,2,3,4].forEach(step=>timers.current.push(setTimeout(()=>setRitualStep(step),step*RUNE_RITUAL_STEP_MS)));timers.current.push(setTimeout(finishDraw,RUNE_RITUAL_DELAY_MS));}
   const ritualMessages=runeRitualMessages(modeKey);const nodePages=Math.max(1,Math.ceil(graphView.nodes.length/pageSize)),edgePages=Math.max(1,Math.ceil(graphView.edges.length/pageSize));const shownNodes=graphView.nodes.slice((nodePage-1)*pageSize,nodePage*pageSize),shownEdges=graphView.edges.slice((edgePage-1)*pageSize,edgePage*pageSize);
 

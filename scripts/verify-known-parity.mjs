@@ -61,7 +61,8 @@ if(!existsSync(resolve(root,'app/lrunes/page.jsx')))failures.push('app/lrunes/pa
 for(const path of [
   'app/lrunes/RuneDrawClient.jsx',
   'app/lrunes/RunesClient.jsx',
-  'app/lrunes/RuneListPage.jsx'
+  'app/lrunes/RuneDirectoryPages.jsx',
+  'app/lrunes/rune-directory.mjs'
 ])requireFile(path);
 
 for(const retired of ['app/lrunes/RuneHistoryPage.jsx','app/lrunes/history/HistoryClient.jsx']){
