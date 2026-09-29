@@ -3,9 +3,36 @@
 import {useEffect,useMemo,useState} from 'react';
 import {selectRuneCatalog,selectRuneDrawRows} from './rune-repository';
 import {realMoonPhase} from './model/moon-phase';
-import {drawRuneSession,makeRuneDrawId,RUNE_DIRECTIONS} from '../lrunes/rune-draw-engine';
 import {listNeonRecords,listRuneDrawSlots,putDailyRuneRecord,putNeonRecord,putRuneDrawSlot} from './neon-user-storage';
 import {useNeonAccount} from './use-neon-account';
+
+const RUNE_DIRECTIONS=Object.freeze(['正位','半正位','半逆位','逆位']);
+
+function randomIndex(max){
+  if(max<=1)return 0;
+  if(globalThis.crypto?.getRandomValues){
+    const limit=Math.floor(0x100000000/max)*max;
+    const value=new Uint32Array(1);
+    do globalThis.crypto.getRandomValues(value);while(value[0]>=limit);
+    return value[0]%max;
+  }
+  return Math.floor(Math.random()*max);
+}
+function drawRuneSession(items,count){
+  if(!Number.isInteger(count)||count<0||count>items.length)throw new Error(`無效的抽牌數量：${count}`);
+  const pool=[...items],cards=[];
+  for(let index=0;index<count;index+=1){
+    const pick=randomIndex(pool.length);
+    cards.push(pool.splice(pick,1)[0]);
+  }
+  const directionIndexes=cards.map(()=>randomIndex(4));
+  return {cards,directionIndexes,directions:directionIndexes.map(index=>RUNE_DIRECTIONS[index])};
+}
+
+function makeRuneDrawId(mode='single'){
+  const suffix=globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return `rune-draw:${mode}:${Date.now()}:${suffix}`;
+}
 
 const MODES=[
   {key:'single',label:'單卡',count:1,positions:['核心']},

@@ -8,11 +8,32 @@ import { useLocalStore } from '../loc/local-store';
 import { realMoonPhase } from '../loc/model/moon-phase';
 import { buildRuneGraph, searchRuneGraph } from '../loc/model/rune-graph-core.js';
 import {scopeHrefV2,scopeOriginV2} from '../modular-v2/scope-registry.v2';
-import {drawRuneSession,makeRuneDrawId} from './rune-draw-engine';
 import RuneSingleReading from './RuneSingleReading';
 import {RUNE_RITUAL_DELAY_MS,RUNE_RITUAL_STEP_MS,runeRitualMessages} from './rune-ritual';
 
 const ROTATION_CLASSES=['rune-rotate-0','rune-rotate-90','rune-rotate-n90','rune-rotate-180'];
+const RUNE_DIRECTIONS=Object.freeze(['正位','半正位','半逆位','逆位']);
+
+function randomIndex(max){
+  if(max<=1)return 0;
+  if(globalThis.crypto?.getRandomValues){
+    const limit=Math.floor(0x100000000/max)*max;
+    const value=new Uint32Array(1);
+    do globalThis.crypto.getRandomValues(value);while(value[0]>=limit);
+    return value[0]%max;
+  }
+  return Math.floor(Math.random()*max);
+}
+function drawRuneSession(items,count){
+  if(!Number.isInteger(count)||count<0||count>items.length)throw new Error(`無效的抽牌數量：${count}`);
+  const pool=[...items],cards=[];
+  for(let index=0;index<count;index+=1){
+    const pick=randomIndex(pool.length);
+    cards.push(pool.splice(pick,1)[0]);
+  }
+  const directionIndexes=cards.map(()=>randomIndex(4));
+  return {cards,directionIndexes,directions:directionIndexes.map(index=>RUNE_DIRECTIONS[index])};
+}
 const GROUP_ORDER=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
 const UI_SETTINGS_KEY='loc-ui-settings-v1';
 const DEFAULT_UI_SETTINGS={draw_response:'ritual',list_page_size:10};
@@ -90,7 +111,7 @@ export default function RunesClient(){
   useEffect(()=>{setNodePage(1);setEdgePage(1);},[graphQuery,graphGroup,graphEdge,pageSize]);
   function chooseMode(key){timers.current.forEach(clearTimeout);setRitualStep(-1);setError('');setModeKey(key);setDraw(null);setActiveSection('draw');if(typeof window!=='undefined'){const url=new URL(window.location.href);url.searchParams.set('mode',key);window.history.replaceState({},'',`${url.pathname}${url.search}#draw`);}}
   function openSection(){setActiveSection('draw');}
-  async function finishDraw(){try{const runePool=Array.from({length:66},(_,index)=>index+1);const {cards:runeNumbers,directionIndexes,directions}=drawRuneSession(runePool,selectedMode.count);const pairs=runeNumbers.map((runeNumber,index)=>({runeNumber:Number(runeNumber),dir:Number(directionIndexes[index])+1}));const types=modeKey==='daily'?['direction','daily']:['direction','lots'];const rows=await selectRuneDrawRows(pairs,{types});const byNumber=new Map(rows.map(row=>[Number(row.rune_number),row]));const cards=runeNumbers.map(number=>byNumber.get(Number(number))).filter(Boolean);if(cards.length!==runeNumbers.length)throw new Error('抽中的符文資料不完整。');const reading=buildFixedReading(cards,directions,modeKey),createdAt=new Date().toISOString();setDraw({id:makeRuneDrawId(modeKey),createdAt,cards,directionIndexes,directions,reading});setError('');}catch(err){setDraw(null);setError(`抽牌失敗：${err?.message||'未知錯誤'}`);}finally{setRitualStep(-1);}}
+  async function finishDraw(){try{const runePool=Array.from({length:66},(_,index)=>index+1);const {cards:runeNumbers,directionIndexes,directions}=drawRuneSession(runePool,selectedMode.count);const pairs=runeNumbers.map((runeNumber,index)=>({runeNumber:Number(runeNumber),dir:Number(directionIndexes[index])+1}));const types=modeKey==='daily'?['direction','daily']:['direction','lots'];const rows=await selectRuneDrawRows(pairs,{types});const byNumber=new Map(rows.map(row=>[Number(row.rune_number),row]));const cards=runeNumbers.map(number=>byNumber.get(Number(number))).filter(Boolean);if(cards.length!==runeNumbers.length)throw new Error('抽中的符文資料不完整。');const reading=buildFixedReading(cards,directions,modeKey),createdAt=new Date().toISOString();setDraw({id:`rune-draw:${modeKey}:${Date.now()}`,createdAt,cards,directionIndexes,directions,reading});setError('');}catch(err){setDraw(null);setError(`抽牌失敗：${err?.message||'未知錯誤'}`);}finally{setRitualStep(-1);}}
   function executeDraw(){if(ritualStep>=0)return;setError('');setDraw(null);setActiveSection('draw');timers.current.forEach(clearTimeout);timers.current=[];if(instantDraw){finishDraw();return;}setRitualStep(0);[1,2,3,4].forEach(step=>timers.current.push(setTimeout(()=>setRitualStep(step),step*RUNE_RITUAL_STEP_MS)));timers.current.push(setTimeout(finishDraw,RUNE_RITUAL_DELAY_MS));}
   const ritualMessages=runeRitualMessages(modeKey);const nodePages=Math.max(1,Math.ceil(graphView.nodes.length/pageSize)),edgePages=Math.max(1,Math.ceil(graphView.edges.length/pageSize));const shownNodes=graphView.nodes.slice((nodePage-1)*pageSize,nodePage*pageSize),shownEdges=graphView.edges.slice((edgePage-1)*pageSize,edgePage*pageSize);
 

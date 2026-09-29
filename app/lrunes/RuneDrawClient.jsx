@@ -5,11 +5,32 @@ import {selectRuneDrawRows} from '../loc/rune-repository';
 import { useLocalStore } from '../loc/local-store';
 import { realMoonPhase } from '../loc/model/moon-phase';
 import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
-import {drawRuneSession} from './rune-draw-engine';
 import RuneSingleReading from './RuneSingleReading';
 import {RUNE_RITUAL_DELAY_MS,RUNE_RITUAL_STEP_MS,runeRitualMessages} from './rune-ritual';
 
 const ROTATION_CLASSES = ['rune-rotate-0', 'rune-rotate-90', 'rune-rotate-n90', 'rune-rotate-180'];
+const RUNE_DIRECTIONS=Object.freeze(['正位','半正位','半逆位','逆位']);
+
+function randomIndex(max){
+  if(max<=1)return 0;
+  if(globalThis.crypto?.getRandomValues){
+    const limit=Math.floor(0x100000000/max)*max;
+    const value=new Uint32Array(1);
+    do globalThis.crypto.getRandomValues(value);while(value[0]>=limit);
+    return value[0]%max;
+  }
+  return Math.floor(Math.random()*max);
+}
+function drawRuneSession(items,count){
+  if(!Number.isInteger(count)||count<0||count>items.length)throw new Error(`無效的抽牌數量：${count}`);
+  const pool=[...items],cards=[];
+  for(let index=0;index<count;index+=1){
+    const pick=randomIndex(pool.length);
+    cards.push(pool.splice(pick,1)[0]);
+  }
+  const directionIndexes=cards.map(()=>randomIndex(4));
+  return {cards,directionIndexes,directions:directionIndexes.map(index=>RUNE_DIRECTIONS[index])};
+}
 const UI_SETTINGS_KEY = 'loc-ui-settings-v1';
 const DEFAULT_UI_SETTINGS = { draw_response: 'ritual' };
 const DRAW_TYPES = [

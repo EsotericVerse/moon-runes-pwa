@@ -1,21 +1,20 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const engine=readFileSync(resolve(process.cwd(),'app/lrunes/rune-draw-engine.js'),'utf8');
 const publicDraw=readFileSync(resolve(process.cwd(),'app/lrunes/RuneDrawClient.jsx'),'utf8');
 const homeDraw=readFileSync(resolve(process.cwd(),'app/lrunes/RunesClient.jsx'),'utf8');
 const governance=readFileSync(resolve(process.cwd(),'docs/LUNARUNES_DRAW_GOVERNANCE.md'),'utf8');
 const ritual=readFileSync(resolve(process.cwd(),'app/lrunes/rune-ritual.js'),'utf8');
 
-for(const fragment of [
-  'RUNE_DRAW_ALGORITHM_INVARIANT',
-  'export function drawRunesSequentially(items,count,selectIndex=randomInt)',
-  'for(let drawIndex=0;drawIndex<count;drawIndex+=1)',
-  'const index=selectIndex(pool.length)',
-  'const [card]=pool.splice(index,1)',
-  'export function drawRuneSession(items,count)'
-]){
-  if(!engine.includes(fragment))throw new Error(`Rune draw engine invariant missing: ${fragment}`);
+for(const [name,source] of [['RuneDrawClient',publicDraw],['RunesClient',homeDraw]]){
+  for(const fragment of [
+    "function randomIndex(max)",
+    "function drawRuneSession(items,count)",
+    "const pool=[...items],cards=[];",
+    "cards.push(pool.splice(pick,1)[0]);",
+    "const directionIndexes=cards.map(()=>randomIndex(4));"
+  ])if(!source.includes(fragment))throw new Error(`${name} missing local fixed draw rule: ${fragment}`);
+  if(source.includes('rune-draw-engine'))throw new Error(`${name} must not depend on retired rune-draw-engine`);
 }
 
 for(const [name,source,modeToken] of [
@@ -54,4 +53,4 @@ for(const fragment of [
   if(!governance.includes(fragment))throw new Error(`Rune governance missing: ${fragment}`);
 }
 
-console.log('Rune draw verified: exact selected-ID reads, fixed 2/3/5/11 structural grammar, direct lots text, and five-second ritual are present.');
+console.log('Rune draw verified: local fixed draw rule, exact selected-ID reads, fixed 2/3/5/11 structural grammar, direct lots text, and five-second ritual are present.');
