@@ -26,77 +26,18 @@ function previousDay(value){
   date.setUTCDate(date.getUTCDate()-1);
   return date.toISOString().slice(0,10);
 }
-async function selectTimeTypeRows(scopeId,type){
-  const {time:table}=await resolveScopeTables(scopeId);
-  const filters=[{column:'record_type',operator:'eq',value:type}];
-  const total=await selectNeonCount(table,{filters});
-  if(!total)return [];
-  const rows=[];
-  let offset=0;
-  while(offset<total){
-    const page=await selectNeonRows(table,{
-      columns:TIME_COLUMNS,
-      filters,
-      orders:type==='anchor'
-        ?[{column:'time_date',ascending:true},{column:'record_id',ascending:true}]
-        :[{column:'display_order',ascending:true},{column:'record_id',ascending:true}],
-      limit:Math.min(1000,total-offset),
-      offset
-    });
-    if(!page.rows.length)break;
-    rows.push(...page.rows);
-    offset+=page.rows.length;
-  }
-  return rows;
-}
-
-async function selectCurrentPeriodRange(scopeId){
-  const {time:table}=await resolveScopeTables(scopeId);
+async function selectCultureTimeRows(scopeId,tableName=''){
+  const table=tableName||(await resolveScopeTables(scopeId)).time;
   const {rows}=await selectNeonRows(table,{
-    columns:'record_id,label,resource_id,display_order,anchor_pair',
-    filters:[
-      {column:'record_type',operator:'eq',value:'period'},
-      {column:'anchor_pair',operator:'like',value:'%,0'}
-    ],
-    orders:[{column:'display_order',ascending:false}],
-    limit:1
+    columns:TIME_COLUMNS,
+    filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}],
+    orders:[{column:'display_order',ascending:true},{column:'record_id',ascending:true}],
+    limit:1000,
+    offset:0
   });
-  const period=rows[0];
-  if(!period)return null;
-  const [before='0']=String(period.anchor_pair||'0,0').split(',',2).map(value=>String(value||'0').trim()||'0');
-  if(before==='0')return null;
-  const anchorPage=await selectNeonRows(table,{
-    columns:'resource_id,time_date,date_status,year_value',
-    filters:[
-      {column:'record_type',operator:'eq',value:'anchor'},
-      {column:'resource_id',operator:'eq',value:before}
-    ],
-    limit:1
-  });
-  const start=timeDate(anchorPage.rows[0]);
-  if(!start)return null;
-  return {
-    scope_id:runtimeScopeId(scopeId),
-    entry_type:'period',
-    period:String(period.resource_id||period.record_id||''),
-    title:period.label||period.resource_id||'目前時期',
-    display_label:period.label||period.resource_id||'目前時期',
-    order_no:period.display_order,
-    start_anchor_id:before,
-    end_anchor_id:null,
-    start_date:start,
-    end_date:null,
-    open_end:true,
-    derived_from:'period'
-  };
-}
-
-async function selectCultureTimeRows(scopeId){
-  const [anchors,periods,events]=await Promise.all([
-    selectTimeTypeRows(scopeId,'anchor'),
-    selectTimeTypeRows(scopeId,'period'),
-    selectTimeTypeRows(scopeId,'event')
-  ]);
+  const anchors=rows.filter(row=>row.record_type==='anchor');
+  const periods=rows.filter(row=>row.record_type==='period');
+  const events=rows.filter(row=>row.record_type==='event');
   const anchorMap=new Map(anchors.filter(row=>row.resource_id).map(row=>[String(row.resource_id),row]));
   const normalize=(row,type)=>{
     const id=String(row.resource_id||row.record_id||'');
@@ -114,7 +55,7 @@ async function selectCultureTimeRows(scopeId){
       summary:row.note||'',
       era_id:type==='period'?id:null,
       period:type==='period'?id:null,
-      entry_name:type==='period'?String(row.label||'').replace(/^P\d+\s*[｜|]\s*/,''):null,
+      entry_name:type==='period'?String(row.label||'').replace(/^P\\d+\\s*[｜|]\\s*/,''):null,
       order_no:row.display_order,
       anchor_id:type==='anchor'?id:null,
       start_anchor_id:pair.before==='0'?null:pair.before,
@@ -131,6 +72,19 @@ async function selectCultureTimeRows(scopeId){
     ...periods.map(row=>normalize(row,'period')),
     ...events.map(row=>normalize(row,'event'))
   ];
+}
+
+function currentPeriodRangeFromRows(scopeId,rows=[]){
+  const period=[...rows]
+    .filter(row=>row.entry_type==='period'&&row.open_end&&row.start_date)
+    .sort((a,b)=>Number(b.order_no||0)-Number(a.order_no||0))[0];
+  if(!period)return null;
+  return {
+    ...period,
+    scope_id:runtimeScopeId(scopeId),
+    display_label:period.title||period.period||'目前時期',
+    derived_from:'period'
+  };
 }
 
 function sourceLabel(value){return String(value||'').trim();}
