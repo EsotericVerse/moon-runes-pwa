@@ -8,7 +8,7 @@ import {
   Bar,BarChart,CartesianGrid,Cell,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectScopeRankingRows,selectScopeRankingTypes} from '../../loc/neon-ranking-client';
+import {selectScopeRankingRows,selectScopeRankingTypes,selectScopeSourceBucketDetails} from '../../loc/neon-ranking-client';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
@@ -25,10 +25,7 @@ const CHART_TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-l
 const CHART_TYPES=[['bar','長條圖'],['line','折線圖'],['pie','圓餅圖']];
 const STAT_TABS=[['ranking','統計'],['media','多媒體設定']];
 const STAT_TYPE_LABELS=Object.freeze({
-  keyword:'關鍵詞',
-  source:'作品來源',
-  media_type:'多媒體類型',
-  media_tag:'多媒體 Meta Tag'
+  source:'作品來源'
 });
 function displayTerm(row){
   return String(row?.term||'');
@@ -63,7 +60,7 @@ function RankingChart({type='bar',rows,height=380}){
   </ResponsiveContainer>;
 }
 
-function RankingList({rows=[],resetKey='',onVisibleRows=null}) {
+function RankingList({rows=[],resetKey='',onVisibleRows=null,onSelect=null,selectedTerm=''}) {
   return <IncrementalListV2
     items={rows}
     batchSize={DEFAULT_LIST_BATCH_SIZE}
@@ -71,10 +68,12 @@ function RankingList({rows=[],resetKey='',onVisibleRows=null}) {
     className="scope-v2-ranking"
     empty={<p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>}
     onVisibleItemsChange={onVisibleRows}
-    renderItem={(row,index)=><div key={row.ranking_key||row.term||index}>
-      <strong>{index+1}. {displayTerm(row)}</strong>
-      <span>{Number(row.item_count||0).toLocaleString()}</span>
-    </div>}
+    renderItem={(row,index)=>{
+      const content=<><strong>{index+1}. {displayTerm(row)}</strong><span>{Number(row.item_count||0).toLocaleString()}</span></>;
+      return onSelect
+        ?<button type="button" key={row.ranking_key||row.term||index} aria-pressed={selectedTerm===row.term} onClick={()=>onSelect(row)}>{content}</button>
+        :<div key={row.ranking_key||row.term||index}>{content}</div>;
+    }}
   />;
 }
 
@@ -129,10 +128,18 @@ function StatisticsPanel({scopeId,navigation,types}){
   const requested=String(navigation.rankingType||'');
   const rankingType=types.includes(requested)?requested:(types[0]||'');
   const [chartType,setChartType]=useState('bar');
+  const [detailBucket,setDetailBucket]=useState('');
   const query=useRanking(scopeId,rankingType,navigation);
   const allRows=query.data||[];
   const [visibleRows,setVisibleRows]=useState([]);
-  useEffect(()=>{setVisibleRows([]);},[scopeId,rankingType,navigation.period]);
+  const canDrillDown=scopeId!=='loc'&&rankingType==='source';
+  const detailQuery=useQuery({
+    queryKey:['statistics-source-detail',scopeId,detailBucket,navigation.period||'all'],
+    queryFn:()=>selectScopeSourceBucketDetails(scopeId,{bucket:detailBucket,navigation}),
+    enabled:canDrillDown&&Boolean(detailBucket),
+    staleTime:30000
+  });
+  useEffect(()=>{setVisibleRows([]);setDetailBucket('');},[scopeId,rankingType,navigation.period]);
   const chartData=visibleRows.length?visibleRows:allRows.slice(0,DEFAULT_LIST_BATCH_SIZE);
   return <section className="scope-v2-stat-section">
     <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Statistics</p><h2>統計</h2></div></header>
@@ -142,7 +149,18 @@ function StatisticsPanel({scopeId,navigation,types}){
     </div>
         {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
     {!query.isPending&&!query.error?<>
-      <RankingList rows={allRows} resetKey={scopeId+"|"+rankingType+"|"+String(navigation.period||"all")} onVisibleRows={setVisibleRows}/>
+      <RankingList
+        rows={allRows}
+        resetKey={scopeId+"|"+rankingType+"|"+String(navigation.period||"all")}
+        onVisibleRows={setVisibleRows}
+        onSelect={canDrillDown?row=>setDetailBucket(current=>current===row.term?'':row.term):null}
+        selectedTerm={detailBucket}
+      />
+      {canDrillDown&&detailBucket?<section className="scope-v2-inline-card">
+        <h3>{detailBucket}｜來源細分</h3>
+        {detailQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(detailQuery.error)}</p>:null}
+        {!detailQuery.isPending&&!detailQuery.error?<RankingList rows={detailQuery.data||[]} resetKey={scopeId+"|detail|"+detailBucket+"|"+String(navigation.period||"all")}/>:null}
+      </section>:null}
       <RankingChart type={chartType} rows={chartData} height={380}/>
     </>:null}
 
