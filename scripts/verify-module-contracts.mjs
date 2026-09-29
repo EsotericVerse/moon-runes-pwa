@@ -98,6 +98,7 @@ for(const [client,contract] of [
 const listLoadingContract=readFileSync(resolve(root,'app/loc/list-loading-contract.mjs'),'utf8');
 const incrementalLoader=readFileSync(resolve(root,'app/modular-v2/IncrementalLoadV2.jsx'),'utf8');
 const textEngine=readFileSync(resolve(root,'app/loc/text-engine.mjs'),'utf8');
+const neonQuery=readFileSync(resolve(root,'app/loc/neon-query.js'),'utf8');
 const searchProviders=readFileSync(resolve(root,'app/loc/search-providers.js'),'utf8');
 const keywordClassifier=readFileSync(resolve(root,'app/loc/keyword-classifier.js'),'utf8');
 if(!/DEFAULT_LIST_BATCH_SIZE=20/.test(listLoadingContract)||!/RUNE_LIST_BATCH_SIZE=16/.test(listLoadingContract))failures.push('List loading: Current batch contract must remain 20 general / 16 rune');
@@ -105,9 +106,10 @@ if((searchProviders.match(/batchSize:RUNE_LIST_BATCH_SIZE/g)||[]).length<5)failu
 if(!/WHEEL_GESTURE_GAP_MS/.test(incrementalLoader)||!/readyAtRef\.current=now\+/.test(incrementalLoader)||/busyRef/.test(incrementalLoader))failures.push('Incremental loader: one-user-gesture / immediate-cooldown contract missing');
 if(!/requireGalaxyContent/.test(contentPolicy))failures.push('Galaxy content policy: shared nonblank write guard missing');
 if(!/from ['"]flexsearch['"]/.test(textEngine)||!/Charset\.CJK/.test(textEngine)||!/new Resolver/.test(textEngine))failures.push('Text engine: FlexSearch CJK/Resolver contract missing');
+for(const token of ['neonPublicClient','selectNeonRows','selectNeonAllRows','processNeonRows'])if(!neonQuery.includes(token))failures.push(`Neon query adapter contract missing: ${token}`);
 if(/records\s*=\s*new Map|records\.set|engine\.records/.test(textEngine))failures.push('Text engine: FlexSearch may retain IDs only; record payload storage is forbidden');
 if(!/const ids=new Set\(\)/.test(textEngine))failures.push('Text engine: ID-only transient index contract missing');
-if(!/createTextIndex/.test(searchProviders)||!/searchTextIndex/.test(searchProviders)||!/nextCursor|cursor=/.test(searchProviders))failures.push('Search client: batched FlexSearch contract missing');
+if(!/createTextIndex/.test(searchProviders)||!/searchTextIndex/.test(searchProviders)||!/selectNeonRows/.test(searchProviders)||!/nextCursor|cursor=/.test(searchProviders))failures.push('Search client: batched FlexSearch/Neon query contract missing');
 if(/engine\.add\([^\n]*recordFor/.test(searchProviders))failures.push('Search client: FlexSearch index must not retain record payloads');
 const spoolClient=readFileSync(resolve(root,'app/loc/spool-client.js'),'utf8');
 for(const token of ['createUidSpoolAdapter','writeSpoolUids','clearSpool','withSpoolUids','neonPublicClient'])if(!spoolClient.includes(token))failures.push(`Spool contract missing: ${token}`);

@@ -15,7 +15,7 @@
     "verify:rune-draw": "node scripts/verify-rune-draw-algorithm.mjs",
     "verify:rune-keyword-rules": "node scripts/verify-rune-keyword-rules.mjs",
     "verify:semantics": "node scripts/verify-current-semantics.mjs",
-    "verify": "npm run verify:text-engine && npm run verify:semantic-state && npm run verify:automatic-analysis && npm run verify:rune-keyword-rules && npm run verify:modules && npm run verify:semantics && npm run verify:modularity && npm run verify:modular-v2 && npm run verify:directories",
+    "verify": "npm run verify:text-engine && npm run verify:semantic-state && npm run verify:automatic-analysis && npm run verify:rune-keyword-rules && npm run verify:modules && npm run verify:packages && npm run verify:semantics && npm run verify:modularity && npm run verify:modular-v2 && npm run verify:directories",
     "build": "next build",
     "verify:ui": "node scripts/current-ui-contract.mjs",
     "verify:theme": "node scripts/verify-theme-contract.mjs",
