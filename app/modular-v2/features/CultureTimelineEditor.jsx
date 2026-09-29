@@ -6,7 +6,7 @@ import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {neonAuthClient} from '../../loc/neon-client';
 import {selectNeonCount,selectNeonRows} from '../../loc/neon-query';
-import {scopeDataTable} from '../../loc/scope-list';
+import {resolveScopeTables} from '../../loc/scope-table-mapping';
 import {FEATURE_LOADING_MESSAGE} from '../feature-data-state.v2';
 
 const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility';
@@ -74,14 +74,20 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
   const runtimeScope=String(scopeId||'');
   const dataScope=runtimeScope==='lunarunes'?'lrunes':runtimeScope;
   const supported=['lo3rwang','lrunes'].includes(dataScope);
-  const timeTable=supported?scopeDataTable(dataScope,'time'):'';
+  const tableQuery=useQuery({
+    queryKey:['scope-table-mapping',dataScope,account.email],
+    enabled:supported&&Boolean(account.user&&timeTable),
+    queryFn:()=>resolveScopeTables(dataScope,{email:account.email}),
+    staleTime:5*60_000
+  });
+  const timeTable=tableQuery.data?.time||'';
   const [draft,setDraft]=useState({...BLANK});
   const [selectedId,setSelectedId]=useState('');
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
 
   const query=useQuery({
-    queryKey:['culture-period-settings',dataScope],
+    queryKey:['culture-period-settings',dataScope,timeTable],
     enabled:supported&&Boolean(account.user),
     queryFn:async()=>{
       const groups=await Promise.all(EDITABLE_TYPES.map(async([type])=>{
