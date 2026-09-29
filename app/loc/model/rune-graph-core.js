@@ -94,12 +94,12 @@ export function buildRuneGraph(runes,derivedEntries=[],registries={}){
 
   for(const rune of runes||[]){
     const name=String(rune?.rune_name||'').trim();
-    if(!name||Number(rune?.rune_number)===0)continue;
+    if(!name||Number(rune?.rune_id)===0)continue;
     const rawGroup=String(rune?.group_name||'').trim();
     const group=GROUP_SET.has(rawGroup)?rawGroup:DEFAULT_GROUP;
     runeGroup.set(name,group);
     const rid=nodeId('rune',name);
-    addNode(nodes,{id:rid,label:name,type:'符文',internal_type:'rune',group,number:Number(rune?.rune_number)||null,english:String(rune?.english_name||''),definition:String(rune?.rune_description||''),polarity:String(rune?.card_attribute||'')});
+    addNode(nodes,{id:rid,label:name,type:'符文',internal_type:'rune',group,number:Number(rune?.rune_id)||null,english:String(rune?.english_name||''),definition:String(rune?.rune_description||''),polarity:String(rune?.card_attr||'')});
     addEdge(edges,{source:rid,target:nodeId('group',group),type:'belongs_to_group',source_type:'registry'});
     for(const term of splitTerms(rune?.positive_keywords)){const tid=nodeId('term',term);addNode(nodes,{id:tid,label:term,type:'關鍵詞',internal_type:'term',group});addEdge(edges,{source:tid,target:rid,type:'keyword_of',source_type:'keyword'});}
     for(const term of splitTerms(rune?.negative_keywords)){const tid=nodeId('term',term);addNode(nodes,{id:tid,label:term,type:'關鍵詞',internal_type:'term',group});addEdge(edges,{source:tid,target:rid,type:'reverse_keyword_of',source_type:'keyword'});}

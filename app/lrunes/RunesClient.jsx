@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Select from 'react-select';
-import {selectRuneCatalog,selectRuneDrawRows} from '../loc/rune-repository';
+import {selectNeonRows} from '../loc/neon-query';
 import {selectScopeCultureData} from '../loc/neon-culture-client';
 import { useLocalStore } from '../loc/local-store';
 import { realMoonPhase } from '../loc/model/moon-phase';
@@ -34,6 +34,39 @@ function drawRuneSession(items,count){
   const directionIndexes=cards.map(()=>randomIndex(4));
   return {cards,directionIndexes,directions:directionIndexes.map(index=>RUNE_DIRECTIONS[index])};
 }
+const RUNE_COLUMNS='rune_id,rune_name,english_name,group_name,moon_phase,card_attr,rune_description,positive_keywords,negative_keywords,extra_rules,extra_notes';
+const MOON_PHASE_LABELS=Object.freeze({1:'新月',2:'上弦',3:'滿月',4:'下弦'});
+function directionNo(direction){return RUNE_DIRECTIONS.indexOf(direction)+1;}
+async function loadDrawCards(pairs,types){
+  const ids=[...new Set(pairs.map(item=>Number(item.runeNumber)))];
+  const [runeResult,etcResult]=await Promise.all([
+    selectNeonRows('silver.runes',{
+      columns:RUNE_COLUMNS,
+      filters:[{column:'rune_id',operator:'in',value:ids}],
+      limit:ids.length,
+      offset:0
+    }),
+    selectNeonRows('silver.runes_etc',{
+      columns:'rune_id,dir,type,desc',
+      filters:[{column:'type',operator:'in',value:types}],
+      orFilter:pairs.map(item=>`and(rune_id.eq.${Number(item.runeNumber)},dir.eq.${Number(item.dir)})`).join(','),
+      limit:Math.max(1,pairs.length*types.length),
+      offset:0
+    })
+  ]);
+  const map=new Map((runeResult.rows||[]).map(row=>[Number(row.rune_id),{...row,rune_etc:{}}]));
+  for(const row of etcResult.rows||[]){
+    const rune=map.get(Number(row.rune_id));
+    if(!rune)continue;
+    rune.rune_etc[row.type]??={};
+    rune.rune_etc[row.type][Number(row.dir)]=String(row.desc||'');
+  }
+  return [...map.values()];
+}
+function runeEtcText(card,type,direction){
+  return String(card?.rune_etc?.[type]?.[directionNo(direction)]||'').trim();
+}
+
 const GROUP_ORDER=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
 const UI_SETTINGS_KEY='loc-ui-settings-v1';
 const DEFAULT_UI_SETTINGS={draw_response:'ritual',list_page_size:10};
@@ -56,18 +89,12 @@ const MODES=[
   {key:'ow3gs',count:11,label:'11卡 OW3gs',description:'1–6 因的描述層＋7–11 果的判定層。',positions:['1','2','3','4','5','6','7','8','9','10','11'],path:'duel/ow3gs'}
 ];
 
-function runeCardImage(card){const number=String(Number(card?.rune_number)||0).padStart(2,'0');const name=String(card?.rune_name||'').replace(/之符文$/,'').trim();return `/assets/lunarunes/cards/${number}_${name}.png`;}
+function runeCardImage(card){const number=String(Number(card?.rune_id)||0).padStart(2,'0');const name=String(card?.rune_name||'').replace(/之符文$/,'').trim();return `/assets/lunarunes/cards/${number}_${name}.png`;}
 function initialMode(){if(typeof window==='undefined')return 'single';const value=new URLSearchParams(window.location.search).get('mode')||'single';return MODES.some(item=>item.key===value)?value:'single';}
 function initialSection(){return 'draw';}
-function directionText(card,direction){const field=({'正位':'positive_meaning','半正位':'half_positive_meaning','半逆位':'half_reverse_meaning','逆位':'reverse_meaning'})[direction];return card?.[field]||'';}
-function dailyGuidance(card,direction){const field=({'正位':'daily_positive','半正位':'daily_half_positive','半逆位':'daily_half_reverse','逆位':'daily_reverse'})[direction];return String(card?.[field]||'').trim();}
+function directionText(card,direction){return runeEtcText(card,'direction',direction)||String(card?.rune_description||'').trim();}
+function dailyGuidance(card,direction){return runeEtcText(card,'daily',direction);}
 
-const LOT_FIELD_BY_DIRECTION=Object.freeze({
-  '正位':'lots_positive',
-  '半正位':'lots_half_positive',
-  '半逆位':'lots_half_negative',
-  '逆位':'lots_negative'
-});
 const LOT_DOMAINS=Object.freeze(['愛情','事業','關係','健康']);
 
 function cleanGrammarPart(value){
@@ -83,8 +110,7 @@ function composeFixedGrammar(values,mode){
   return parts.length?`${parts.join('、')}。`:'資訊不足。';
 }
 function lotDomainText(card,direction,label){
-  const field=LOT_FIELD_BY_DIRECTION[direction];
-  const text=field?String(card?.[field]||'').trim():'';
+  const text=runeEtcText(card,'lots',direction);
   if(!text)return '資訊不足';
   const match=text.match(new RegExp(label+'：\\s*([^\\n]*?)(?=(?:愛情|事業|關係|健康)：|$)'));
   return cleanGrammarPart(match?.[1]||'資訊不足');
@@ -102,7 +128,7 @@ function buildFixedReading(cards,directions,mode){
 export default function RunesClient(){
   const {value:uiSettings}=useLocalStore(UI_SETTINGS_KEY,DEFAULT_UI_SETTINGS);
   const [data,setData]=useState(null),[error,setError]=useState(''),[modeKey,setModeKey]=useState('single'),[draw,setDraw]=useState(null),[group,setGroup]=useState(''),[activeSection,setActiveSection]=useState('draw'),[ritualStep,setRitualStep]=useState(-1),[graphQuery,setGraphQuery]=useState(''),[graphGroup,setGraphGroup]=useState(''),[graphEdge,setGraphEdge]=useState(''),[nodePage,setNodePage]=useState(1),[edgePage,setEdgePage]=useState(1);const timers=useRef([]);
-  useEffect(()=>{setModeKey(initialMode());setActiveSection(initialSection());let live=true;Promise.all([selectRuneCatalog(),selectScopeCultureData('lo3rwang')]).then(([runes,culture])=>{if(!live)return;const canonicalRunes=(runes||[]).filter(row=>Number(row?.rune_number)>=1&&Number(row?.rune_number)<=66);if(canonicalRunes.length<66)throw new Error(`核心符文資料只有 ${canonicalRunes.length} 枚，無法安全抽牌。`);setData({runes:canonicalRunes,eras:culture?.periods||[]});setError('');}).catch(err=>live&&setError(`月之符文核心資料載入失敗：${err?.message||'未知錯誤'}`));return()=>{live=false;timers.current.forEach(clearTimeout);};},[]);
+  useEffect(()=>{setModeKey(initialMode());setActiveSection(initialSection());let live=true;Promise.all([selectNeonRows('silver.runes',{columns:RUNE_COLUMNS,orders:[{column:'rune_id',ascending:true}],limit:67,offset:0}),selectScopeCultureData('lo3rwang')]).then(([runeResult,culture])=>{if(!live)return;const canonicalRunes=(runeResult.rows||[]).filter(row=>Number(row?.rune_id)>=1&&Number(row?.rune_id)<=66);if(canonicalRunes.length<66)throw new Error(`核心符文資料只有 ${canonicalRunes.length} 枚，無法安全抽牌。`);setData({runes:canonicalRunes,eras:culture?.periods||[]});setError('');}).catch(err=>live&&setError(`月之符文核心資料載入失敗：${err?.message||'未知錯誤'}`));return()=>{live=false;timers.current.forEach(clearTimeout);};},[]);
   const selectedMode=useMemo(()=>MODES.find(item=>item.key===modeKey)||MODES[0],[modeKey]);
   const pageSize=LIST_PAGE_OPTIONS.includes(Number(uiSettings?.list_page_size))?Number(uiSettings.list_page_size):10;
   const instantDraw=uiSettings?.draw_response==='instant';
@@ -111,7 +137,7 @@ export default function RunesClient(){
   useEffect(()=>{setNodePage(1);setEdgePage(1);},[graphQuery,graphGroup,graphEdge,pageSize]);
   function chooseMode(key){timers.current.forEach(clearTimeout);setRitualStep(-1);setError('');setModeKey(key);setDraw(null);setActiveSection('draw');if(typeof window!=='undefined'){const url=new URL(window.location.href);url.searchParams.set('mode',key);window.history.replaceState({},'',`${url.pathname}${url.search}#draw`);}}
   function openSection(){setActiveSection('draw');}
-  async function finishDraw(){try{const runePool=Array.from({length:66},(_,index)=>index+1);const {cards:runeNumbers,directionIndexes,directions}=drawRuneSession(runePool,selectedMode.count);const pairs=runeNumbers.map((runeNumber,index)=>({runeNumber:Number(runeNumber),dir:Number(directionIndexes[index])+1}));const types=modeKey==='daily'?['direction','daily']:['direction','lots'];const rows=await selectRuneDrawRows(pairs,{types});const byNumber=new Map(rows.map(row=>[Number(row.rune_number),row]));const cards=runeNumbers.map(number=>byNumber.get(Number(number))).filter(Boolean);if(cards.length!==runeNumbers.length)throw new Error('抽中的符文資料不完整。');const reading=buildFixedReading(cards,directions,modeKey),createdAt=new Date().toISOString();setDraw({id:`rune-draw:${modeKey}:${Date.now()}`,createdAt,cards,directionIndexes,directions,reading});setError('');}catch(err){setDraw(null);setError(`抽牌失敗：${err?.message||'未知錯誤'}`);}finally{setRitualStep(-1);}}
+  async function finishDraw(){try{const runePool=Array.from({length:66},(_,index)=>index+1);const {cards:runeNumbers,directionIndexes,directions}=drawRuneSession(runePool,selectedMode.count);const pairs=runeNumbers.map((runeNumber,index)=>({runeNumber:Number(runeNumber),dir:Number(directionIndexes[index])+1}));const types=modeKey==='daily'?['direction','daily']:['direction','lots'];const rows=await loadDrawCards(pairs,types);const byNumber=new Map(rows.map(row=>[Number(row.rune_id),row]));const cards=runeNumbers.map(number=>byNumber.get(Number(number))).filter(Boolean);if(cards.length!==runeNumbers.length)throw new Error('抽中的符文資料不完整。');const reading=buildFixedReading(cards,directions,modeKey),createdAt=new Date().toISOString();setDraw({id:`rune-draw:${modeKey}:${Date.now()}`,createdAt,cards,directionIndexes,directions,reading});setError('');}catch(err){setDraw(null);setError(`抽牌失敗：${err?.message||'未知錯誤'}`);}finally{setRitualStep(-1);}}
   function executeDraw(){if(ritualStep>=0)return;setError('');setDraw(null);setActiveSection('draw');timers.current.forEach(clearTimeout);timers.current=[];if(instantDraw){finishDraw();return;}setRitualStep(0);[1,2,3,4].forEach(step=>timers.current.push(setTimeout(()=>setRitualStep(step),step*RUNE_RITUAL_STEP_MS)));timers.current.push(setTimeout(finishDraw,RUNE_RITUAL_DELAY_MS));}
   const ritualMessages=runeRitualMessages(modeKey);const nodePages=Math.max(1,Math.ceil(graphView.nodes.length/pageSize)),edgePages=Math.max(1,Math.ceil(graphView.edges.length/pageSize));const shownNodes=graphView.nodes.slice((nodePage-1)*pageSize,nodePage*pageSize),shownEdges=graphView.edges.slice((edgePage-1)*pageSize,edgePage*pageSize);
 
@@ -174,11 +200,11 @@ export default function RunesClient(){
 
     <section className="loc-card" id="draw" data-draw-keyword="lunarunes-draw" data-draw-mode={modeKey} data-draw-action="execute"><p className="loc-eyebrow">Draw · 抽籤</p><h2>占卜抽籤</h2><div className="runes-mode-nav" aria-label="選擇抽牌方式">{MODES.map(item=><a key={item.key} href={runeHref(item.path)} data-draw-mode={item.key} className={`loc-button ${modeKey===item.key?'primary':''}`}><strong>{item.label}</strong><span>{item.description}</span></a>)}</div></section>
     {ritualStep>=0&&<section className="loc-card runes-ritual" data-draw-stage="ritual" data-draw-mode={modeKey} aria-live="polite"><div className="runes-ritual-card"><img src="/assets/lunarunes/cards/65_玄.png" alt="玄之符文"/><strong>玄之符文</strong><span>Chaos</span></div><div className="runes-ritual-copy"><p className="loc-eyebrow">等待片刻</p><h2>{ritualMessages[ritualStep]}</h2><p>真實月相：{moonPhase}</p></div></section>}
-    {draw&&<><section className="loc-card" id="result" data-draw-stage="result" data-draw-mode={modeKey}><div className="loc-result-meta"><span>{selectedMode.label}</span><span>真實月相：{moonPhase}</span></div><div className="loc-draw-grid">{draw.cards.map((card,index)=><article className="loc-context-item compact loc-draw-card" data-rune-id={card.rune_number} data-draw-position={selectedMode.positions[index]||index+1} key={`${card.rune_number}-${index}`}><small>{selectedMode.positions[index]||`第 ${index+1} 張`}</small><img className={`loc-rune-card-image ${ROTATION_CLASSES[draw.directionIndexes[index]]}`} src={runeCardImage(card)} alt={`${card.rune_name}符文卡`}/><b>{card.rune_name}</b><small>{card.english_name||'—'}</small><span>所屬群組：{card.group_name||'—'}</span><span>{draw.directions[index]} · 卡片月相：{card.moon_phase||'—'}</span><small>{directionText(card,draw.directions[index])||card.rune_description}</small><div className="runes-draw-keywords"><span><strong>正向關鍵詞</strong>{card.positive_keywords||'—'}</span><span><strong>反向關鍵詞</strong>{card.negative_keywords||'—'}</span></div></article>)}</div><div className="loc-actions runes-retry"><button type="button" className="loc-button" data-draw-action="retry" onClick={executeDraw}>再抽一次</button></div></section>
+    {draw&&<><section className="loc-card" id="result" data-draw-stage="result" data-draw-mode={modeKey}><div className="loc-result-meta"><span>{selectedMode.label}</span><span>真實月相：{moonPhase}</span></div><div className="loc-draw-grid">{draw.cards.map((card,index)=><article className="loc-context-item compact loc-draw-card" data-rune-id={card.rune_id} data-draw-position={selectedMode.positions[index]||index+1} key={`${card.rune_id}-${index}`}><small>{selectedMode.positions[index]||`第 ${index+1} 張`}</small><img className={`loc-rune-card-image ${ROTATION_CLASSES[draw.directionIndexes[index]]}`} src={runeCardImage(card)} alt={`${card.rune_name}符文卡`}/><b>{card.rune_name}</b><small>{card.english_name||'—'}</small><span>所屬群組：{card.group_name||'—'}</span><span>{draw.directions[index]} · 卡片月相：{MOON_PHASE_LABELS[Number(card.moon_phase)]||'—'}</span><small>{directionText(card,draw.directions[index])||card.rune_description}</small><div className="runes-draw-keywords"><span><strong>正向關鍵詞</strong>{card.positive_keywords||'—'}</span><span><strong>反向關鍵詞</strong>{card.negative_keywords||'—'}</span></div></article>)}</div><div className="loc-actions runes-retry"><button type="button" className="loc-button" data-draw-action="retry" onClick={executeDraw}>再抽一次</button></div></section>
       {modeKey==='single'&&<section className="loc-card" data-draw-reading="single"><p className="loc-eyebrow">Lots · 單卡籤詩</p><h2>{draw.cards[0].rune_name} · {draw.directions[0]}</h2><RuneSingleReading card={draw.cards[0]} direction={draw.directions[0]}/></section>}
       {modeKey==='daily'&&<section className="loc-card" data-draw-reading="daily"><p className="loc-eyebrow">Daily · 每日指示</p><h2>{draw.cards[0].rune_name} · {draw.directions[0]} · {moonPhase}</h2><p className="runes-reading-lead"><strong>今日指引</strong><span>{dailyGuidance(draw.cards[0],draw.directions[0])||directionText(draw.cards[0],draw.directions[0])||'目前沒有這個位向的每日指示。'}</span></p></section>}
       <MultiReading draw={draw} mode={modeKey} phase={moonPhase}/>
-      {modeKey==='ow3gs'&&<section className="loc-card runes-ow3gs-core" data-draw-reading="ow3gs"><p className="loc-eyebrow">OW3gs · 雙模型判讀</p><h2>1–6 因的描述層 → 7–11 果的判定層</h2><p>先讀成因分析，後讀判斷分析，最後套用月相交互。十一張牌不是等權並列。</p><p><strong>1–6 因的描述層：</strong>源兩張、轉兩張、合兩張，共六張；依固定卡位組合前因。</p><p><strong>7–11 果的判定層：</strong>使用五卡的基本規則，共五張；依固定五卡結構組合結果。</p><div className="loc-context-list">{draw.cards.slice(6,11).map((card,index)=><div className="loc-context-item" key={`core-${card.rune_number}-${index}`}><strong>第 {index+7} 張 · {card.rune_name} · {draw.directions[index+6]}</strong><span>{directionText(card,draw.directions[index+6])||card.rune_description}</span></div>)}</div><p>月相交互最後才套用，只作次要時間修飾。有時可與每日符文交替比照，重點是模型關聯，不是增加抽牌維度的複雜化。</p></section>}
+      {modeKey==='ow3gs'&&<section className="loc-card runes-ow3gs-core" data-draw-reading="ow3gs"><p className="loc-eyebrow">OW3gs · 雙模型判讀</p><h2>1–6 因的描述層 → 7–11 果的判定層</h2><p>先讀成因分析，後讀判斷分析，最後套用月相交互。十一張牌不是等權並列。</p><p><strong>1–6 因的描述層：</strong>源兩張、轉兩張、合兩張，共六張；依固定卡位組合前因。</p><p><strong>7–11 果的判定層：</strong>使用五卡的基本規則，共五張；依固定五卡結構組合結果。</p><div className="loc-context-list">{draw.cards.slice(6,11).map((card,index)=><div className="loc-context-item" key={`core-${card.rune_id}-${index}`}><strong>第 {index+7} 張 · {card.rune_name} · {draw.directions[index+6]}</strong><span>{directionText(card,draw.directions[index+6])||card.rune_description}</span></div>)}</div><p>月相交互最後才套用，只作次要時間修飾。有時可與每日符文交替比照，重點是模型關聯，不是增加抽牌維度的複雜化。</p></section>}
       {modeKey!=='single'&&modeKey!=='daily'?<section className="loc-card" data-draw-stage="lots"><p className="loc-eyebrow">Lots · 籤詩</p><h2>籤詩</h2><p>{draw.reading?.sentence||'資訊不足。'}</p>{Array.isArray(draw.reading?.domains)?<div className="runes-advice-grid">{draw.reading.domains.map(item=><article key={item.label}><strong>{item.label}</strong><span>{item.text}</span></article>)}</div>:null}</section>:null}
     </>}
   </section></main>;

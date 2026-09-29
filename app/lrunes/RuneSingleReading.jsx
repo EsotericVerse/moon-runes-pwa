@@ -1,14 +1,8 @@
 'use client';
 
-const LOT_FIELD_BY_DIRECTION=Object.freeze({
-  '正位':'lots_positive',
-  '半正位':'lots_half_positive',
-  '半逆位':'lots_half_negative',
-  '逆位':'lots_negative'
-});
+function directionNo(direction){return ['正位','半正位','半逆位','逆位'].indexOf(direction)+1;}
 function lotSections(card,direction){
-  const field=LOT_FIELD_BY_DIRECTION[direction];
-  const text=field?String(card?.[field]||'').trim():'';
+  const text=String(card?.rune_etc?.lots?.[directionNo(direction)]||'').trim();
   if(!text)return [];
   return ['愛情','事業','關係','健康'].map(label=>{
     const match=text.match(new RegExp(label+'：\\s*([^\\n]*?)(?=(?:愛情|事業|關係|健康)：|$)'));
@@ -17,13 +11,7 @@ function lotSections(card,direction){
 }
 
 function directionText(card,direction){
-  const field=({
-    '正位':'positive_meaning',
-    '半正位':'half_positive_meaning',
-    '半逆位':'half_reverse_meaning',
-    '逆位':'reverse_meaning'
-  })[direction];
-  return String(card?.[field]||card?.rune_description||'').trim();
+  return String(card?.rune_etc?.direction?.[directionNo(direction)]||card?.rune_description||'').trim();
 }
 
 export default function RuneSingleReading({card,direction}){

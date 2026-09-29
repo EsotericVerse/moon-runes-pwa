@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import {selectRuneDrawRows} from '../loc/rune-repository';
+import {selectNeonRows} from '../loc/neon-query';
 import { useLocalStore } from '../loc/local-store';
 import { realMoonPhase } from '../loc/model/moon-phase';
 import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
@@ -31,6 +31,39 @@ function drawRuneSession(items,count){
   const directionIndexes=cards.map(()=>randomIndex(4));
   return {cards,directionIndexes,directions:directionIndexes.map(index=>RUNE_DIRECTIONS[index])};
 }
+const RUNE_COLUMNS='rune_id,rune_name,english_name,group_name,moon_phase,card_attr,rune_description,positive_keywords,negative_keywords,extra_rules,extra_notes';
+const MOON_PHASE_LABELS=Object.freeze({1:'新月',2:'上弦',3:'滿月',4:'下弦'});
+function directionNo(direction){return RUNE_DIRECTIONS.indexOf(direction)+1;}
+async function loadDrawCards(pairs,types){
+  const ids=[...new Set(pairs.map(item=>Number(item.runeNumber)))];
+  const [runeResult,etcResult]=await Promise.all([
+    selectNeonRows('silver.runes',{
+      columns:RUNE_COLUMNS,
+      filters:[{column:'rune_id',operator:'in',value:ids}],
+      limit:ids.length,
+      offset:0
+    }),
+    selectNeonRows('silver.runes_etc',{
+      columns:'rune_id,dir,type,desc',
+      filters:[{column:'type',operator:'in',value:types}],
+      orFilter:pairs.map(item=>`and(rune_id.eq.${Number(item.runeNumber)},dir.eq.${Number(item.dir)})`).join(','),
+      limit:Math.max(1,pairs.length*types.length),
+      offset:0
+    })
+  ]);
+  const map=new Map((runeResult.rows||[]).map(row=>[Number(row.rune_id),{...row,rune_etc:{}}]));
+  for(const row of etcResult.rows||[]){
+    const rune=map.get(Number(row.rune_id));
+    if(!rune)continue;
+    rune.rune_etc[row.type]??={};
+    rune.rune_etc[row.type][Number(row.dir)]=String(row.desc||'');
+  }
+  return [...map.values()];
+}
+function runeEtcText(card,type,direction){
+  return String(card?.rune_etc?.[type]?.[directionNo(direction)]||'').trim();
+}
+
 const UI_SETTINGS_KEY = 'loc-ui-settings-v1';
 const DEFAULT_UI_SETTINGS = { draw_response: 'ritual' };
 const DRAW_TYPES = [
@@ -52,27 +85,19 @@ const DRAW_PATHS = Object.freeze({
 
 
 function runeCardImage(card) {
-  const number = String(Number(card?.rune_number) || 0).padStart(2, '0');
+  const number = String(Number(card?.rune_id) || 0).padStart(2, '0');
   const name = String(card?.rune_name || '').replace(/之符文$/, '').trim();
   return `/assets/lunarunes/cards/${number}_${name}.png`;
 }
 
 function directionText(card, direction) {
-  const field = ({ '正位': 'positive_meaning', '半正位': 'half_positive_meaning', '半逆位': 'half_reverse_meaning', '逆位': 'reverse_meaning' })[direction];
-  return card?.[field] || card?.rune_description || '';
+  return runeEtcText(card,'direction',direction)||String(card?.rune_description||'').trim();
 }
 
 function dailyGuidance(card, direction) {
-  const field = ({ '正位': 'daily_positive', '半正位': 'daily_half_positive', '半逆位': 'daily_half_reverse', '逆位': 'daily_reverse' })[direction];
-  return String(card?.[field] || '').trim();
+  return runeEtcText(card,'daily',direction);
 }
 
-const LOT_FIELD_BY_DIRECTION=Object.freeze({
-  '正位':'lots_positive',
-  '半正位':'lots_half_positive',
-  '半逆位':'lots_half_negative',
-  '逆位':'lots_negative'
-});
 const LOT_DOMAINS=Object.freeze(['愛情','事業','關係','健康']);
 
 function cleanGrammarPart(value){
@@ -88,8 +113,7 @@ function composeFixedGrammar(values,mode){
   return parts.length?`${parts.join('、')}。`:'資訊不足。';
 }
 function lotDomainText(card,direction,label){
-  const field=LOT_FIELD_BY_DIRECTION[direction];
-  const text=field?String(card?.[field]||'').trim():'';
+  const text=runeEtcText(card,'lots',direction);
   if(!text)return '資訊不足';
   const match=text.match(new RegExp(label+'：\\s*([^\\n]*?)(?=(?:愛情|事業|關係|健康)：|$)'));
   return cleanGrammarPart(match?.[1]||'資訊不足');
@@ -115,7 +139,7 @@ function MultiReading({ draw, mode, phase }) {
       <h2>{mode === '2card' ? '因 → 果' : '源 → 轉 → 合'}</h2>
       <p><strong>完整現況：</strong>{cards.map((card, index) => `${labels[index]}「${card.rune_name}」${directions[index]}`).join('、')}。目前真實月相為{phase}。</p>
       <p><strong>閱讀方式：</strong>{mode === '2card' ? '先看造成現況的「因」，再看它導向的「果」。' : '依序閱讀「源 → 轉 → 合」，先找起點，再看轉化，最後看收束。'}</p>
-      <div className="loc-context-list">{cards.map((card, index) => <div className="loc-context-item" key={`${mode}-${card.rune_number}-${index}`}><strong>{labels[index]}：{card.rune_name}・{directions[index]}</strong><span>{directionText(card, directions[index])}</span></div>)}</div>
+      <div className="loc-context-list">{cards.map((card, index) => <div className="loc-context-item" key={`${mode}-${card.rune_id}-${index}`}><strong>{labels[index]}：{card.rune_name}・{directions[index]}</strong><span>{directionText(card, directions[index])}</span></div>)}</div>
     </section>;
   }
   if (mode === '5card') {
@@ -151,8 +175,8 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
       const {cards:runeNumbers,directionIndexes,directions}=drawRuneSession(runePool,selectedMode.count);
       const pairs=runeNumbers.map((runeNumber,index)=>({runeNumber:Number(runeNumber),dir:Number(directionIndexes[index])+1}));
       const types=drawKey==='daily'?['direction','daily']:['direction','lots'];
-      const rows=await selectRuneDrawRows(pairs,{types});
-      const byNumber=new Map(rows.map(row=>[Number(row.rune_number),row]));
+      const rows=await loadDrawCards(pairs,types);
+      const byNumber=new Map(rows.map(row=>[Number(row.rune_id),row]));
       const cards=runeNumbers.map(number=>byNumber.get(Number(number))).filter(Boolean);
       if(cards.length!==runeNumbers.length)throw new Error('抽中的符文資料不完整。');
       const reading=buildFixedReading(cards,directions,drawKey);
@@ -214,13 +238,13 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
         <section className="loc-card" id="result" data-draw-stage="result" data-draw-mode={drawKey}>
           <div className="loc-result-meta"><span>{selectedMode.label}</span><span>真實月相：{moonPhase}</span></div>
           <div className="loc-draw-grid">
-            {draw.cards.map((card, index) => <article className="loc-context-item compact loc-draw-card" data-rune-id={card.rune_number} data-draw-position={selectedMode.positions[index] || index + 1} key={`${card.rune_number}-${index}`}>
+            {draw.cards.map((card, index) => <article className="loc-context-item compact loc-draw-card" data-rune-id={card.rune_id} data-draw-position={selectedMode.positions[index] || index + 1} key={`${card.rune_id}-${index}`}>
               <small>{selectedMode.positions[index] || `第 ${index + 1} 張`}</small>
               <img className={`loc-rune-card-image ${ROTATION_CLASSES[draw.directionIndexes[index]]}`} src={runeCardImage(card)} alt={`${card.rune_name}符文卡`}/>
               <b>{card.rune_name}</b>
               <small>{card.english_name || '—'}</small>
               <span>所屬群組：{card.group_name || '—'}</span>
-              <span>{draw.directions[index]} · 卡片月相：{card.moon_phase || '—'}</span>
+              <span>{draw.directions[index]} · 卡片月相：{MOON_PHASE_LABELS[Number(card.moon_phase)] || '—'}</span>
               <small>{directionText(card, draw.directions[index]) || card.rune_description}</small>
               <div className="runes-draw-keywords"><span><strong>正向關鍵詞</strong>{card.positive_keywords || '—'}</span><span><strong>反向關鍵詞</strong>{card.negative_keywords || '—'}</span></div>
             </article>)}
@@ -249,7 +273,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
           <p>先讀成因分析，後讀判斷分析，最後套用月相交互。十一張牌不是等權並列。</p>
           <p><strong>1–6 因的描述層：</strong>源兩張、轉兩張、合兩張，共六張；依固定卡位組合前因。</p>
           <p><strong>7–11 果的判定層：</strong>使用五卡的基本規則，共五張；依固定五卡結構組合結果。</p>
-          <div className="loc-context-list">{draw.cards.slice(6, 11).map((card, index) => <div className="loc-context-item" key={`core-${card.rune_number}-${index}`}><strong>第 {index + 7} 張 · {card.rune_name} · {draw.directions[index + 6]}</strong><span>{directionText(card, draw.directions[index + 6]) || card.rune_description}</span></div>)}</div>
+          <div className="loc-context-list">{draw.cards.slice(6, 11).map((card, index) => <div className="loc-context-item" key={`core-${card.rune_id}-${index}`}><strong>第 {index + 7} 張 · {card.rune_name} · {draw.directions[index + 6]}</strong><span>{directionText(card, draw.directions[index + 6]) || card.rune_description}</span></div>)}</div>
           <p>月相交互最後才套用，只作次要時間修飾；重點是模型關聯，不是增加抽牌維度的複雜化。</p>
         </section>}
 
