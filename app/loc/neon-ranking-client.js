@@ -87,7 +87,7 @@ function sourceBucket(value=''){
   const source=String(value||'').trim().toLowerCase();
   if(source.includes('facebook')||source==='fb')return 'Facebook';
   if(source.includes('threads'))return 'Threads';
-  if(source.includes('instagram')||source==='ig')return 'IG';
+  if(source.includes('instagram')||source.includes('reels')||source==='ig')return 'IG';
   if(source==='x'||source.includes('twitter'))return 'Twitter(X)';
   if(source.includes('youtube')||source.includes('youtu.be'))return 'YouTube';
   return 'Others';
@@ -107,16 +107,34 @@ function mergeSourceBuckets(rows=[],source='loc',period='all'){
     .sort((a,b)=>b.item_count-a.item_count||SOURCE_BUCKET_ORDER.indexOf(a.term)-SOURCE_BUCKET_ORDER.indexOf(b.term));
 }
 
-async function sourceRows(scopeId,period='all',rangeOverride=undefined){
+async function mediaSourceRows(scopeId,period='all',rangeOverride=undefined){
   const dataId=String(scopeId||'').trim();
   const range=rangeOverride===undefined?await resolvePeriod(scopeId,period):rangeOverride;
-  const result=await selectSourceCatalog({
-    scopeId:dataId,
+  const table=(await resolveScopeTables(dataId)).galaxyMedia;
+  const rows=await selectCategoryCounts(table,'media_type',{
     startDate:range?.start_date||'',
     endDate:range?.end_date||'',
     limit:5000
   });
-  return mergeSourceBuckets(result.rows,dataId,period);
+  return rows.map(row=>({
+    source_name:String(row.term||'').trim(),
+    item_count:Number(row.item_count)||0
+  }));
+}
+
+async function sourceRows(scopeId,period='all',rangeOverride=undefined){
+  const dataId=String(scopeId||'').trim();
+  const range=rangeOverride===undefined?await resolvePeriod(scopeId,period):rangeOverride;
+  const [result,mediaRows]=await Promise.all([
+    selectSourceCatalog({
+      scopeId:dataId,
+      startDate:range?.start_date||'',
+      endDate:range?.end_date||'',
+      limit:5000
+    }),
+    mediaSourceRows(dataId,period,range)
+  ]);
+  return mergeSourceBuckets([...result.rows,...mediaRows],dataId,period);
 }
 
 async function mediaTypeRows(scopeId,period='all',rangeOverride=undefined){
