@@ -134,7 +134,7 @@ export async function selectGalaxyPage({scopeId,sourceName='',startDate='',endDa
   filters.push(...timeFilters('createtime',startDate,endDate));
   const publicFilters=publicContentFilters(filters);
   const {rows,count}=await selectNeonRows(table,{
-    columns:'uid,source_name,createtime,title,url,source_id,target_id',
+    columns:'uid,source_name,createtime,title,url,source_id,target_id,media_link',
     filters:publicFilters,
     orders:[{column:'createtime',ascending:false},{column:'uid',ascending:true}],
     limit,
@@ -142,7 +142,7 @@ export async function selectGalaxyPage({scopeId,sourceName='',startDate='',endDa
     count:'exact'
   });
   return {
-    rows,
+    rows:await resolveGalaxyExternalLinks(scopeId,rows),
     totalCount:Number(count)||rows.length
   };
 }
@@ -172,6 +172,15 @@ function resolvedLinks(row,mediaById){
     }
   }
   return links;
+}
+
+export async function resolveGalaxyExternalLinks(scopeId,rows=[]){
+  const source=Array.isArray(rows)?rows:[];
+  if(!source.length)return [];
+  const ids=[...new Set(source.flatMap(row=>mediaIdsOf(row?.media_link)))];
+  const mediaRows=await mediaRowsFor(scopeId,ids);
+  const mediaById=new Map(mediaRows.map(item=>[String(item.media_id),item]));
+  return source.map(row=>({...row,resolved_links:resolvedLinks(row,mediaById)}));
 }
 
 export async function selectGalaxySummaries(scopeId,uids=[]){
