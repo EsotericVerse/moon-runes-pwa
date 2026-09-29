@@ -30,7 +30,6 @@ walk(resolve(root,'app'),path=>{
 
 for(const path of [
   'app/lrunes/RunesClient.jsx',
-  'app/loc/rune-repository.js',
   'app/loc/model/rune-graph-core.js',
   'app/loc/neon-culture-client.js',
   'app/loc/neon-ranking-client.js',
@@ -83,10 +82,7 @@ if(/columns:['"][^'"]*content[^'"]*(?:url|media_link)|columns:['"][^'"]*(?:url|m
 }
 if(/galaxy_preview|content_preview/.test(aggregateQuery))failures.push('aggregate-query: stored preview dependency returned');
 
-const runeRepository=readFileSync(resolve(root,'app/loc/rune-repository.js'),'utf8');
-for(const token of ['selectNeonCount','selectNeonRows','selectRuneCatalog','selectRuneDrawRows'])if(!runeRepository.includes(token))failures.push(`Rune repository: missing read-only contract ${token}`);
-for(const forbidden of ['neonAuthClient','updateRuneKeywords','selectRuneKeywordGroups','selectRuneKeywordGroup','.update(','.insert(','.upsert(','.delete('])if(runeRepository.includes(forbidden))failures.push(`Rune repository: silver.runes must remain app-side read-only; forbidden token ${forbidden}`);
-for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs','app/loc/neon-context-client.js','app/modular-v2/features/ContextV2.jsx','app/modular-v2/features/ContextWorkbenchV2.jsx','app/modular-v2/modules/context-graph/ContextGraphV2.jsx','app/modular-v2/features/KeywordSettingsV2.jsx','app/modular-v2/features/RuneKeywordSettingsV2.jsx'])if(existsSync(resolve(root,retired)))failures.push(`retired path returned: ${retired}`);
+for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs','app/loc/neon-context-client.js','app/loc/rune-repository.js','app/lrunes/rune-draw-engine.js','app/modular-v2/features/ContextV2.jsx','app/modular-v2/features/ContextWorkbenchV2.jsx','app/modular-v2/modules/context-graph/ContextGraphV2.jsx','app/modular-v2/features/KeywordSettingsV2.jsx','app/modular-v2/features/RuneKeywordSettingsV2.jsx'])if(existsSync(resolve(root,retired)))failures.push(`retired path returned: ${retired}`);
 if(/(?:import|<)\s*KeywordSettingsV2\b|RuneKeywordSettingsV2\b/.test(governanceManagement))failures.push('LunaRunes management must not edit canonical rune keywords or use them as a style fallback');
 if(['LOC_DATA','canonical/runes','fetchNeonData','runtime_json_documents','fetchLocJson','fetchLocDataSegments'].some(token=>runeRepository.includes(token)))failures.push('Rune repository: legacy path/JSON loader semantics returned');
 
@@ -113,7 +109,8 @@ if(!/selectNeonRows\(/.test(cultureClientSource)||!/filters/.test(cultureClientS
 const mediaWorksSource=(cultureClientSource.split('export async function selectScopeMediaWorks')[1]||'');
 if(!/selectNeonRows\(/.test(mediaWorksSource)||/const rows=await selectScopeMediaRows/.test(mediaWorksSource))failures.push('Culture media works: detail list must page Neon directly instead of full-read then slice');
 
-if(!runesClient.includes('selectRuneCatalog()'))failures.push('RunesClient: canonical runes must load through the domain rune repository');
+for(const token of ["selectNeonRows('silver.runes'","selectNeonRows('silver.runes_etc'"])if(!runesClient.includes(token))failures.push('RunesClient: direct canonical Neon rune query missing '+token);
+if(runesClient.includes('rune-repository'))failures.push('RunesClient: retired rune repository returned');
 
 if(failures.length){console.error('[module-contracts] failures:\\n'+failures.map(item=>`- ${item}`).join('\\n'));process.exit(1);}
 console.log('[module-contracts] imports, canonical routes and Neon client contracts verified');

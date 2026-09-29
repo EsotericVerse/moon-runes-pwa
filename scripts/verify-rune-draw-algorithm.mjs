@@ -24,7 +24,9 @@ for(const [name,source,modeToken] of [
   for(const fragment of [
     "const runePool=Array.from({length:66},(_,index)=>index+1);",
     "drawRuneSession(runePool,selectedMode.count)",
-    "selectRuneDrawRows(pairs,{types})",
+    "loadDrawCards(pairs,types)",
+    "selectNeonRows('silver.runes'",
+    "selectNeonRows('silver.runes_etc'",
     "buildFixedReading(",
     "composeFixedGrammar("
   ])if(!source.includes(fragment))throw new Error(`${name} missing precise draw contract: ${fragment}`);

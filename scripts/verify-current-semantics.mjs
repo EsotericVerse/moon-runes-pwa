@@ -3,7 +3,6 @@ import fs from 'node:fs';
 const files={
   identity:'app/loc/views/AboutView.jsx',
   registry:'app/modular-v2/scope-registry.v2.js',
-  canonicalLoader:'app/loc/rune-repository.js',
   search:'app/loc/neon-search.js',
   searchView:'app/modular-v2/features/SearchV2.jsx',
   dailyTrend:'app/loc/model/daily-trend-engine.mjs',
@@ -21,13 +20,13 @@ const registry=read(files.registry);
 for(const token of ["defaultScopeId:'loc'","domain:'lrunes.lo3rwang.cc'"])if(!registry.includes(token))failures.push(`scope registry: missing ${token}`);
 const dailyTrend=read(files.dailyTrend);
 for(const token of ['summarizeDailyRange','dailyPresetRange'])if(!dailyTrend.includes(token))failures.push(`daily trend: missing ${token}`);
-const loader=read(files.canonicalLoader);
-for(const token of ['selectNeonCount','selectNeonRows','selectRuneCatalog'])if(!loader.includes(token))failures.push(`canonical rune repository: missing ${token}`);
+const runeRuntime=read('app/lrunes/RunesClient.jsx');
+for(const token of ["selectNeonRows('silver.runes'","selectNeonRows('silver.runes_etc'"])if(!runeRuntime.includes(token))failures.push(`canonical rune runtime: missing ${token}`);
 for(const path of Object.values(files)){
   const source=read(path);
   if(['data/json','runtime_json_documents','LOC_DATA','canonical/runes','fetchNeonData'].some(token=>source.includes(token)))failures.push(`${path}: retired data-path/JSON identifier remains`);
 }
-for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs','app/loc/model/semantic-state.mjs','app/loc/model/spread-guidance.mjs'])if(fs.existsSync(retired))failures.push(`${retired}: retired runtime layer returned`);
+for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs','app/loc/rune-repository.js','app/lrunes/rune-draw-engine.js','app/loc/model/semantic-state.mjs','app/loc/model/spread-guidance.mjs'])if(fs.existsSync(retired))failures.push(`${retired}: retired runtime layer returned`);
 for(const path of ['app/lrunes/RunesClient.jsx','app/lrunes/RuneDrawClient.jsx','app/lrunes/RuneSingleReading.jsx','app/loc/RuneManagementPanel.jsx']){
   const source=read(path);
   for(const forbidden of ['semantic-state','spread-guidance','resolveSpreadState','cardSemanticState','buildSpreadGuidance'])if(source.includes(forbidden))failures.push(`${path}: semantic rendering layer returned: ${forbidden}`);
@@ -40,7 +39,7 @@ for(const forbidden of ['createTextIndex','searchTextIndex','literalTextMatches'
 if(fs.existsSync('app/loc/text-engine.mjs'))failures.push('app/loc/text-engine.mjs: retired client text engine returned');
 if(fs.existsSync('app/loc/keyword-classifier.js'))failures.push('app/loc/keyword-classifier.js: retired JS keyword classifier returned');
 for(const token of ['getSearchProviders','getMediaSearchProviders','provider.search'])if(!search.includes(token))failures.push(`search: missing Current provider contract ${token}`);
-for(const path of [files.search,files.searchView,files.canonicalLoader]){
+for(const path of [files.search,files.searchView]){
   const source=read(path);
   if(/columns:\s*['"]\*['"]|JSON\.stringify|canonical_payload|SEARCH_(?:INDEX|TABLE)_CACHE|memoryCache/.test(source))failures.push(`${path}: forbidden JSON read or retained cache remains`);
 }

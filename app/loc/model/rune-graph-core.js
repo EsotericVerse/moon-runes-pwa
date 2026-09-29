@@ -2,6 +2,7 @@ const GROUPS=['靈魂','連結','生命','自然','礦物','元素','秩序','�
 const DEFAULT_GROUP='特殊';
 const GROUP_SET=new Set(GROUPS);
 const TYPE_ORDER=['群組','符文','關鍵詞','延伸詞','時期','文學','音樂','角色','多媒體','資料'];
+const CARD_ATTR_LABELS=Object.freeze({1:'正面',2:'中平',3:'負面',4:'未知'});
 const splitTerms=value=>String(value||'').split(/[、,，;；/]/).map(x=>x.trim()).filter(Boolean);
 const nodeId=(type,label)=>`${type}:${label}`;
 const publicType=type=>({
@@ -99,7 +100,7 @@ export function buildRuneGraph(runes,derivedEntries=[],registries={}){
     const group=GROUP_SET.has(rawGroup)?rawGroup:DEFAULT_GROUP;
     runeGroup.set(name,group);
     const rid=nodeId('rune',name);
-    addNode(nodes,{id:rid,label:name,type:'符文',internal_type:'rune',group,number:Number(rune?.rune_id)||null,english:String(rune?.english_name||''),definition:String(rune?.rune_description||''),polarity:String(rune?.card_attr||'')});
+    addNode(nodes,{id:rid,label:name,type:'符文',internal_type:'rune',group,number:Number(rune?.rune_id)||null,english:String(rune?.english_name||''),definition:String(rune?.rune_description||''),polarity:CARD_ATTR_LABELS[Number(rune?.card_attr)]||''});
     addEdge(edges,{source:rid,target:nodeId('group',group),type:'belongs_to_group',source_type:'registry'});
     for(const term of splitTerms(rune?.positive_keywords)){const tid=nodeId('term',term);addNode(nodes,{id:tid,label:term,type:'關鍵詞',internal_type:'term',group});addEdge(edges,{source:tid,target:rid,type:'keyword_of',source_type:'keyword'});}
     for(const term of splitTerms(rune?.negative_keywords)){const tid=nodeId('term',term);addNode(nodes,{id:tid,label:term,type:'關鍵詞',internal_type:'term',group});addEdge(edges,{source:tid,target:rid,type:'reverse_keyword_of',source_type:'keyword'});}
