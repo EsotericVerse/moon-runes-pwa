@@ -141,7 +141,7 @@ function StatisticsPanel({scopeId,navigation,types}){
 }
 
 function MediaPanel({scopeId}){
-  const databaseScopeId=scopeId==='lunarunes'?'lrunes':'lo3rwang';
+  const databaseScopeId=scopeId;
   return <section className="scope-v2-stat-section">
     <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Media Metadata</p><h2>多媒體設定</h2></div></header>
     <MediaMetaSettingsV2 databaseScopeId={databaseScopeId}/>
@@ -159,7 +159,7 @@ function StatisticsShell({scopeId,navigation}){
     queryFn:()=>selectScopeRankingTypes(scopeId),
     staleTime:5*60_000
   });
-  const types=typesQuery.data||(scopeId==='loc'?['source']:['keyword','source']);
+  const types=typesQuery.data||[];
   return <section className="loc-card scope-v2-feature-card">
     <StatTabs scopeId={scopeId} navigation={navigation} active={active} tabs={visibleTabs}/>
     {typesQuery.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
