@@ -30,7 +30,7 @@ function navigationScopeId(databaseScopeId){
   return String(databaseScopeId||'').trim();
 }
 
-const MEDIA_TAG_STAT_EXCLUSIONS=new Set(['正位','半正位','半逆位','逆位']);
+const MEDIA_TAG_STAT_EXCLUSIONS=new Set(['正位','半正位','半逆位','逆位','男聲','女聲','合唱']);
 
 function statisticalMediaTag(value=''){
   const tag=String(value||'').trim();
