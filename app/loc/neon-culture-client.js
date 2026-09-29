@@ -6,7 +6,8 @@ import {workDisplayText} from '../modular-v2/work-display-model.v2';
 import {selectCategoryCounts,selectDailyCategoryCounts,selectDailyCounts,selectGalaxyPage,selectSourceCatalog,selectSourceDaily} from './aggregate-query';
 import {selectAllNeonRows,selectNeonCount,selectNeonRows} from './neon-query';
 import {publicContentFilters} from './content-policy';
-import {resolveScopeTables} from './scope-table-mapping';
+import {mappedScopeTable,resolveScopeTables} from './scope-table-mapping';
+import {selectManagedScopes} from './scope-list';
 
 
 
@@ -164,99 +165,93 @@ function cultureParts(scopeContext,runtimeId){
 export async function selectScopeCultureData(scopeId){
   const id=runtimeScopeId(scopeId);
   const dataId=dataScopeId(scopeId);
-  if(!['loc','lrunes','lo3rwang'].includes(dataId))throw new Error('資料設定無效');
+  if(!dataId)throw new Error('資料設定無效');
 
   if(dataId==='loc'){
-    const [authorTables,runeTables]=await Promise.all([
-      resolveScopeTables('lo3rwang'),
-      resolveScopeTables('lrunes')
-    ]);
-    const [authorContext,runeContext]=await Promise.all([
-      selectCultureTimeRows('lo3rwang',authorTables.time),
-      selectCultureTimeRows('lrunes',runeTables.time)
-    ]);
-    const authorCurrent=currentPeriodRangeFromRows('lo3rwang',authorContext);
-    const runeCurrent=currentPeriodRangeFromRows('lrunes',runeContext);
-    const currentRanges=[authorCurrent,runeCurrent].filter(Boolean);
-    const starts=currentRanges.map(row=>String(row.start_date||'')).filter(Boolean).sort();
-    const intersectionStart=starts.at(-1)||'';
-
-    let authorText={rows:[],count:0};
-    let runeText={rows:[],count:0};
-    let authorMedia=0;
-    let runeMedia=0;
-    if(intersectionStart){
-      const textFilters=publicContentFilters(dateFilters(intersectionStart,null));
-      const mediaFilters=dateFilters(intersectionStart,null);
-      [authorText,runeText,authorMedia,runeMedia]=await Promise.all([
-        selectAllNeonRows(authorTables.galaxy,{
-          columns:'uid,title,source_name,createtime,url',
-          filters:textFilters,
-          orders:[{column:'createtime',ascending:false},{column:'uid',ascending:true}],
-          pageSize:5000
-        }),
-        selectAllNeonRows(runeTables.galaxy,{
-          columns:'uid,title,source_name,createtime,url',
-          filters:textFilters,
-          orders:[{column:'createtime',ascending:false},{column:'uid',ascending:true}],
-          pageSize:5000
-        }),
-        selectNeonCount(authorTables.galaxyMedia,{filters:mediaFilters}),
-        selectNeonCount(runeTables.galaxyMedia,{filters:mediaFilters})
-      ]);
-      for(const range of currentRanges){
-        const isRune=String(range.scope_id)==='lunarunes';
-        const textCount=isRune?Number(runeText.count||0):Number(authorText.count||0);
-        const mediaCount=isRune?Number(runeMedia||0):Number(authorMedia||0);
-        range.intersection_start=intersectionStart;
-        range.text_count=textCount;
-        range.media_count=mediaCount;
-        range.item_count=textCount+mediaCount;
-      }
+    const managedScopes=(await selectManagedScopes()).filter(scope=>scope.id!=='loc');
+    if(!managedScopes.length){
+      return ScopeCultureResponseSchema.parse({
+        scopeId:id,eras:{eras:[]},periods:[],currentRanges:[],scopeRanges:[],
+        timelineItems:[],events:[],trajectories:[],works:[],intersectionStart:''
+      });
     }
 
-    const authorParts=cultureParts(authorContext,'lo3rwang');
-    const runeParts=cultureParts(runeContext,'lunarunes');
+    const bundles=await Promise.all(managedScopes.map(async scope=>{
+      const galaxy=mappedScopeTable(scope.id,'galaxy',scope.galaxy);
+      const time=mappedScopeTable(scope.id,'time',scope.time);
+      const context=await selectCultureTimeRows(scope.id,time);
+      const runtimeId=runtimeScopeId(scope.id);
+      return {
+        dataId:scope.id,
+        runtimeId,
+        galaxy,
+        galaxyMedia:galaxy+'_media',
+        context,
+        current:currentPeriodRangeFromRows(scope.id,context),
+        parts:cultureParts(context,runtimeId)
+      };
+    }));
+
+    const currentRanges=bundles.map(bundle=>bundle.current).filter(Boolean);
+    const starts=currentRanges.map(row=>String(row.start_date||'')).filter(Boolean).sort();
+    const intersectionStart=starts.at(-1)||'';
+    const textFilters=intersectionStart?publicContentFilters(dateFilters(intersectionStart,null)):[];
+    const mediaFilters=intersectionStart?dateFilters(intersectionStart,null):[];
+
+    const workResults=intersectionStart
+      ?await Promise.all(bundles.map(async bundle=>{
+        const [text,mediaCount]=await Promise.all([
+          selectAllNeonRows(bundle.galaxy,{
+            columns:'uid,title,source_name,createtime,url',
+            filters:textFilters,
+            orders:[{column:'createtime',ascending:false},{column:'uid',ascending:true}],
+            pageSize:5000
+          }),
+          selectNeonCount(bundle.galaxyMedia,{filters:mediaFilters})
+        ]);
+        return {runtimeId:bundle.runtimeId,text,mediaCount:Number(mediaCount)||0};
+      }))
+      :bundles.map(bundle=>({runtimeId:bundle.runtimeId,text:{rows:[],count:0},mediaCount:0}));
+
+    const workByScope=new Map(workResults.map(result=>[result.runtimeId,result]));
+    for(const range of currentRanges){
+      const result=workByScope.get(String(range.scope_id||''))||{text:{count:0},mediaCount:0};
+      const textCount=Number(result.text?.count)||0;
+      const mediaCount=Number(result.mediaCount)||0;
+      range.intersection_start=intersectionStart;
+      range.text_count=textCount;
+      range.media_count=mediaCount;
+      range.item_count=textCount+mediaCount;
+    }
+
     const currentCountByScope=new Map(currentRanges.map(row=>[String(row.scope_id),Number(row.item_count)||0]));
     const currentPeriodByScope=new Map(currentRanges.map(row=>[String(row.scope_id),String(row.period||'')]));
-    const mergedTimeline=timelineItems([
-      ...authorParts.normalizedContext,
-      ...runeParts.normalizedContext
-    ]).map(item=>{
+    const mergedTimeline=timelineItems(bundles.flatMap(bundle=>bundle.parts.normalizedContext)).map(item=>{
       const scope=String(item.scope_id||'');
       const isCurrent=item.entry_type==='period'&&String(item.period||'')===currentPeriodByScope.get(scope);
       if(!isCurrent)return item;
       const count=currentCountByScope.get(scope)||0;
       return {...item,item_count:count,display_label:(item.display_label||item.title||item.period)+' · '+count.toLocaleString()+' 項'};
     });
-    const works=[
-      ...(authorText.rows||[]).map(row=>({
-        ...row,
-        key:'lo3rwang:'+row.uid,
-        scope_id:'lo3rwang',
-        entry_type:'work',
-        original_source:row.source_name||'',
-        display_date:formatCultureDateTime(row.createtime)
-      })),
-      ...(runeText.rows||[]).map(row=>({
-        ...row,
-        key:'lunarunes:'+row.uid,
-        scope_id:'lunarunes',
-        entry_type:'work',
-        original_source:row.source_name||'',
-        display_date:formatCultureDateTime(row.createtime)
-      }))
-    ].sort((a,b)=>String(b.createtime||'').localeCompare(String(a.createtime||'')));
+
+    const works=workResults.flatMap(result=>(result.text?.rows||[]).map(row=>({
+      ...row,
+      key:result.runtimeId+':'+row.uid,
+      scope_id:result.runtimeId,
+      entry_type:'work',
+      original_source:row.source_name||'',
+      display_date:formatCultureDateTime(row.createtime)
+    }))).sort((a,b)=>String(b.createtime||'').localeCompare(String(a.createtime||'')));
 
     return ScopeCultureResponseSchema.parse({
       scopeId:id,
-      eras:{eras:[...authorParts.eras,...runeParts.eras]},
-      periods:[...authorParts.periods,...runeParts.periods],
+      eras:{eras:bundles.flatMap(bundle=>bundle.parts.eras)},
+      periods:bundles.flatMap(bundle=>bundle.parts.periods),
       currentRanges,
       scopeRanges:[],
       timelineItems:mergedTimeline,
-      events:[...authorParts.events,...runeParts.events],
-      trajectories:[...authorParts.trajectories,...runeParts.trajectories],
+      events:bundles.flatMap(bundle=>bundle.parts.events),
+      trajectories:bundles.flatMap(bundle=>bundle.parts.trajectories),
       works,
       intersectionStart
     });
