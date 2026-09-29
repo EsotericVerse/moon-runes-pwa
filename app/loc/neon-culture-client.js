@@ -440,7 +440,7 @@ export async function selectScopePeriodWorks(scopeId,{startDate,endDate,sourceNa
       entry_type:'work',
       group_label:sourceLabel(row.source_name),
       scope_id:runtimeScopeId(scopeId),
-      links:[]
+      links:Array.isArray(row.resolved_links)?row.resolved_links:[]
     };
   });
   const totalCount=Number(page.totalCount)||0;
