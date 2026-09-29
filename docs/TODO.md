@@ -64,6 +64,7 @@ There is no RC10. After RC9, the next release target is **1.0 Release (1.0R)**. 
 - [ ] Deliver the author's private personal-analysis app alongside 1.0R, sharing the governed Current data model rather than a separate corpus authority.
 - [ ] During Personal Scope onboarding, collect a private birth-date anchor and initialize the AI-analysis anchor to 2023-01-01 by default.
 - [ ] Allow the user to edit both anchors later; use them only to derive analysis periods, never to rewrite source timestamps or provenance.
+- [ ] Permit analysis anchors earlier than birth, but clamp personal-text parsing to the birth-date anchor: effective analysis start = later of birth date and configured analysis anchor.
 - [ ] Complete final regression, responsive, loading, and failure-state checks for the visual application.
 - [ ] Freeze the resulting build as **1.0 Release (1.0R)**.
 

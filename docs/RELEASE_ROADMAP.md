@@ -55,6 +55,7 @@ There is **no RC10**. The version sequence after RC9 goes directly to **1.0 Rele
 11. A private personal-analysis app is delivered alongside 1.0R for the author's own analysis use. It remains private and uses the same governed Current data model rather than creating a second corpus authority.
 12. Personal Scope onboarding initializes a private birth-date anchor and an AI-analysis anchor. The default AI anchor is 2023-01-01; both anchors remain user-editable after setup.
 13. Anchor changes affect derived analysis periods only. They must not rewrite original content timestamps, provenance, or historical records.
-14. Final responsive, loading, failure-state, regression, and deployment validation passes.
+14. An analysis anchor may be configured earlier than the user's birth date, but personal-text analysis must never begin before the birth-date anchor. The effective analysis start is the later of the birth date and the configured analysis anchor; if the AI anchor predates birth, the AI-influence period begins at birth.
+15. Final responsive, loading, failure-state, regression, and deployment validation passes.
 
 The resulting build is the LOC **1.0 Release (1.0R)**: a mature, extensible product whose ordinary Scope/Group growth is handled by shared architecture plus simple Admin configuration, with a working governed import path and an accompanying private personal-analysis app.
