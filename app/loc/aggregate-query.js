@@ -69,25 +69,24 @@ export async function selectSourceDaily({scopeId='',startDate='',endDate=''}={})
   ]);
   const rows=await selectAggregateRows(table,{
     columns:'source_name,day:createtime::date,item_count:count()',
-    filters,
-    orders:[{column:'day',ascending:true},{column:'source_name',ascending:true}]
+    filters
   });
   return rows.map(row=>({
     scope_id:String(scopeId),
     source_name:String(row.source_name||'').trim(),
     day:String(row.day||''),
     item_count:Number(row.item_count)||0
-  }));
+  })).sort((a,b)=>a.day.localeCompare(b.day)||a.source_name.localeCompare(b.source_name));
 }
 
 export async function selectDailyCounts(table,{startDate='',endDate='',filters=[]}={}){
   const resolved=[...filters,...timeFilters('createtime',startDate,endDate)];
   const rows=await selectAggregateRows(table,{
     columns:'day:createtime::date,item_count:count()',
-    filters:resolved,
-    orders:[{column:'day',ascending:true}]
+    filters:resolved
   });
-  return rows.map(row=>({day:String(row.day||''),item_count:Number(row.item_count)||0}));
+  return rows.map(row=>({day:String(row.day||''),item_count:Number(row.item_count)||0}))
+    .sort((a,b)=>a.day.localeCompare(b.day));
 }
 
 export async function selectDailyCategoryCounts(table,categoryColumn,{startDate='',endDate='',filters=[],includeEmpty=false,includeUndated=false}={}){
@@ -98,14 +97,14 @@ export async function selectDailyCategoryCounts(table,categoryColumn,{startDate=
   ];
   const rows=await selectAggregateRows(table,{
     columns:`${categoryColumn},day:createtime::date,item_count:count()`,
-    filters:resolved,
-    orders:[{column:'day',ascending:true},{column:categoryColumn,ascending:true}]
+    filters:resolved
   });
   return rows.map(row=>({
     category:String(row?.[categoryColumn]||'').trim(),
     day:String(row.day||''),
     item_count:Number(row.item_count)||0
-  })).filter(row=>(includeUndated||row.day)&&(includeEmpty||row.category));
+  })).filter(row=>(includeUndated||row.day)&&(includeEmpty||row.category))
+    .sort((a,b)=>a.day.localeCompare(b.day)||a.category.localeCompare(b.category));
 }
 
 export async function selectCategoryCounts(table,categoryColumn,{startDate='',endDate='',filters=[],limit=20}={}){
