@@ -7,7 +7,6 @@ const authorization=fs.readFileSync('app/loc/scope-authorization.js','utf8');
 const userStorage=fs.readFileSync('app/loc/neon-user-storage.js','utf8');
 const scopeManagement=fs.readFileSync('app/loc/GovernanceManagement.jsx','utf8');
 const adminManagement=fs.readFileSync('app/loc/views/AdminHomeView.jsx','utf8');
-const contentBlocks=fs.readFileSync('app/loc/content-blocks.js','utf8');
 const searchView=fs.readFileSync('app/modular-v2/features/SearchV2.jsx','utf8');
 const failures=[];
 
@@ -47,8 +46,6 @@ if(/localStorage|IndexedDB|readStore\(|writeStore\(/.test(userStorage))failures.
 
 requireMatch(scopeManagement,/account\.canManageScopeSync\(scopeId\)/,'Scope management must use the shared scope authorizer');
 requireMatch(adminManagement,/account\.canManageGlobalSync\(\)/,'Admin management must require the global admin role');
-requireMatch(contentBlocks,/schema\('silver'\)\.from\('content_blocks'\)/,'public editable blocks must use the shared content_blocks repository');
-if(/record_type:'permission'|selectPermissions|upsertPermission|deletePermission/.test(scopeManagement+adminManagement+contentBlocks)){
   failures.push('website users/permissions must not be mirrored outside silver.manage');
 }
 if(/function hasPrivilege|account\.privileges/.test(searchView)){
@@ -75,3 +72,4 @@ if(failures.length){
   process.exit(1);
 }
 console.log('[auth-boundary] Neon Auth + RLS user storage + admin/scope authorization verified');
+

@@ -2,7 +2,6 @@
 
 import PageShellV2,{ScopeCardV2} from './PageShellV2';
 import {useScopeRuntimeV2} from './use-scope-runtime.v2';
-import HomeContentBlocksV2 from './HomeContentBlocksV2';
 
 export default function GenericScopeHomeV2(){
   const {scope}=useScopeRuntimeV2();
@@ -23,6 +22,5 @@ export default function GenericScopeHomeV2(){
     {scope.homes?.length?<ScopeCardV2 eyebrow="Home" title="返回入口">
       <p>{scope.homes.map((item,index)=><span key={item.label}>{index?' · ':''}<a href={item.href}>{item.label}</a></span>)}</p>
     </ScopeCardV2>:null}
-    <HomeContentBlocksV2 scopeId={scope.id}/>
   </PageShellV2>;
 }
