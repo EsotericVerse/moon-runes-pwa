@@ -2,7 +2,8 @@
 
 import {useEffect,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
-import {neonAuthClient,neonPublicClient} from '../../loc/neon-client';
+import {neonAuthClient} from '../../loc/neon-client';
+import {selectNeonCount,selectNeonRows} from '../../loc/neon-query';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {FEATURE_LOADING_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation.v2';
@@ -14,22 +15,6 @@ import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
 function mediaRelation(client,table){
   const [schema,name]=String(table).split('.');
   return client.schema(schema).from(name);
-}
-async function selectNeonAllRows(table,{columns,filters=[]}={}){
-  let query=mediaRelation(neonPublicClient,table).select(columns);
-  for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
-  const {data,error}=await query;
-  if(error)throw new Error(error.message||('Neon SELECT '+table+' failed'));
-  return {rows:data||[]};
-}
-async function selectNeonRows(table,{columns,filters=[],orders=[],limit=20,offset=0,count=null}={}){
-  let query=mediaRelation(neonPublicClient,table).select(columns,count?{count}:undefined);
-  for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
-  for(const order of orders)query=query.order(order.column,{ascending:order.ascending??true,nullsFirst:order.nullsFirst});
-  query=query.range(offset,offset+Math.max(0,limit)-1);
-  const {data,error,count:total}=await query;
-  if(error)throw new Error(error.message||('Neon SELECT '+table+' failed'));
-  return {rows:data||[],count:total};
 }
 async function updateNeonRows(table,values,{filters=[]}={}){
   let query=mediaRelation(neonAuthClient,table).update(values);
@@ -68,13 +53,19 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
   const tagQuery=useQuery({
     queryKey:['media-meta-ranking',databaseScopeId],
     queryFn:async()=>{
-      const {rows}=await selectNeonAllRows(tables.media,{columns:'media_id,meta_tags'});
+      const {rows}=await selectNeonRows(tables.media,{
+        columns:'meta_tags,item_count:count()',
+        limit:10000
+      });
       const counts=new Map();
-      for(const row of rows)for(const tag of splitTags(row.meta_tags))counts.set(tag,(counts.get(tag)||0)+1);
+      for(const row of rows){
+        const weight=Number(row.item_count)||0;
+        for(const tag of splitTags(row.meta_tags))counts.set(tag,(counts.get(tag)||0)+weight);
+      }
       return [...counts.entries()]
         .map(([term,item_count])=>({ranking_key:'meta|'+term,term,item_count}))
         .sort((a,b)=>b.item_count-a.item_count||a.term.localeCompare(b.term))
-        .slice(0,10);
+        .filter((_,index)=>index<10);
     },
     staleTime:30000
   });
@@ -99,24 +90,27 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
     enabled:Boolean(selectedTag),
     queryFn:async()=>{
       const offset=mediaPage*MEDIA_PAGE_SIZE;
+      const filters=[{column:'meta_tags',operator:'ilike',value:'%'+selectedTag+'%'}];
+      const totalCount=await selectNeonCount(tables.media,{filters});
       const {rows}=await selectNeonRows(tables.media,{
         columns:'media_id,galaxy_link,title,url,media_type,meta_tags,createtime',
-        filters:[{column:'meta_tags',operator:'ilike',value:'%'+selectedTag+'%'}],
+        filters,
         orders:[{column:'createtime',ascending:false,nullsFirst:false}],
         limit:MEDIA_PAGE_SIZE,
         offset
       });
       const galaxyIds=[...new Set(rows.map(row=>String(row.galaxy_link||'').trim()).filter(Boolean))];
       const galaxyRows=galaxyIds.length
-        ?(await selectNeonAllRows(tables.galaxy,{
+        ?(await selectNeonRows(tables.galaxy,{
           columns:'uid,source_id,target_id',
-          filters:[{column:'uid',operator:'in',value:galaxyIds}]
+          filters:[{column:'uid',operator:'in',value:galaxyIds}],
+          limit:galaxyIds.length
         })).rows
         :[];
       const byId=new Map(galaxyRows.map(row=>[String(row.uid),row]));
       return {
         rows:rows.map(row=>({...row,galaxy_relation:byId.get(String(row.galaxy_link||''))||null})),
-        hasMore:rows.length===MEDIA_PAGE_SIZE
+        hasMore:offset+MEDIA_PAGE_SIZE<totalCount
       };
     },
     staleTime:15000

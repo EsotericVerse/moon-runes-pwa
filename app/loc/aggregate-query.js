@@ -1,49 +1,10 @@
 'use client';
 
 import {isReferenceOnlyResource,publicContentFilters} from './content-policy';
-import {neonPublicClient} from './neon-client';
-
-
-function __relation(table){
-  const [schema,name]=String(table).split('.');
-  return neonPublicClient.schema(schema).from(name);
-}
-function __filters(query,filters=[]){
-  for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
-  return query;
-}
-function __orders(query,orders=[]){
-  for(const order of orders)query=query.order(order.column,{ascending:order.ascending??true,nullsFirst:order.nullsFirst});
-  return query;
-}
-async function __select(table,{columns='*',filters=[],orFilter='',orders=[],limit=null,offset=0,range=null,count=null}={}){
-  let query=__relation(table).select(columns,count?{count}:undefined);
-  query=__filters(query,filters);
-  if(orFilter)query=query.or(orFilter);
-  query=__orders(query,orders);
-  if(Array.isArray(range)&&range.length===2)query=query.range(range[0],range[1]);
-  else if(Number.isFinite(limit))query=limit>0?query.range(offset,offset+limit-1):query.limit(0);
-  const {data,error,count:total}=await query;
-  if(error)throw new Error(error.message||('Neon SELECT '+table+' failed'));
-  return {rows:data||[],count:total};
-}
-async function selectNeonRows(table,options={}){return __select(table,options);}
-async function selectNeonAllRows(table,options={}){
-  const {limit,offset,range,count,...rest}=options||{};
-  const rows=[];
-  let cursor=0;
-  const size=500;
-  while(true){
-    const page=await __select(table,{...rest,limit:size,offset:cursor});
-    rows.push(...page.rows);
-    if(page.rows.length<size)break;
-    cursor+=page.rows.length;
-  }
-  return {rows,count:rows.length};
-}
+import {selectNeonCount,selectNeonRows} from './neon-query';
 
 async function selectNeonRowById(table,{idColumn,id,columns}={}){
-  const page=await __select(table,{columns,filters:[{column:idColumn,operator:'eq',value:String(id)}],limit:1});
+  const page=await selectNeonRows(table,{columns,filters:[{column:idColumn,operator:'eq',value:String(id)}],limit:1});
   return page.rows[0]||null;
 }
 
@@ -68,76 +29,99 @@ function mondayOf(value){
   date.setUTCDate(date.getUTCDate()+shift);
   return date.toISOString().slice(0,10);
 }
-async function selectSourceRows({startDate='',endDate='',excludedIds=[]}={}){
-  const result=await selectNeonAllRows('silver.lo3rwang_galaxy',{
-    columns:'uid,source_name,createtime',
-    filters:publicContentFilters(timeFilters('createtime',startDate,endDate))
+function sourceFilters(startDate='',endDate=''){
+  return publicContentFilters(timeFilters('createtime',startDate,endDate));
+}
+
+export async function selectSourceCatalog({scopeId='lo3rwang'}={}){
+  if(String(scopeId)!=='lo3rwang')return {rows:[],totalCount:0};
+  const {rows}=await selectNeonRows('silver.lo3rwang_galaxy',{
+    columns:'source_name,work_count:count()',
+    filters:sourceFilters(),
+    orders:[{column:'work_count',ascending:false}],
+    limit:100
   });
-  const excluded=new Set((excludedIds||[]).map(value=>String(value||'')).filter(Boolean));
-  return excluded.size?result.rows.filter(row=>!excluded.has(String(row.uid||''))):result.rows;
+  const normalized=rows
+    .filter(row=>String(row.source_name||'').trim())
+    .map(row=>({
+      scope_id:'lo3rwang',
+      source_name:String(row.source_name).trim(),
+      work_count:Number(row.work_count)||0
+    }));
+  return {rows:normalized,totalCount:normalized.length};
 }
 
-export async function selectSourceCatalog({scopeId='lo3rwang',limit=null,offset=0,excludedIds=[]}={}){
+export async function selectSourceWeekly({scopeId='lo3rwang',startDate='',endDate='',limit=10000,offset=0}={}){
   if(String(scopeId)!=='lo3rwang')return {rows:[],totalCount:0};
-  const rows=await selectSourceRows({excludedIds});
-  const map=new Map();
+  const {rows}=await selectNeonRows('silver.lo3rwang_galaxy',{
+    columns:'source_name,day:createtime::date,work_count:count()',
+    filters:sourceFilters(startDate,endDate),
+    limit,
+    offset
+  });
+  const weekly=new Map();
   for(const row of rows){
     const source=String(row.source_name||'').trim();
-    if(!source)continue;
-    const current=map.get(source)||{scope_id:'lo3rwang',source_name:source,work_count:0};
-    current.work_count+=1;
-    map.set(source,current);
-  }
-  const all=[...map.values()].sort((a,b)=>b.work_count-a.work_count||a.source_name.localeCompare(b.source_name));
-  const start=Math.max(0,Math.floor(Number(offset)||0));
-  const bounded=limit!==null&&limit!==undefined&&Number.isFinite(Number(limit));
-  const page=bounded?all.slice(start,start+Math.max(0,Math.floor(Number(limit)||0))):all;
-  return {rows:page,totalCount:all.length};
-}
-
-export async function selectSourceWeekly({scopeId='lo3rwang',startDate='',endDate='',limit=null,offset=0,excludedIds=[]}={}){
-  if(String(scopeId)!=='lo3rwang')return {rows:[],totalCount:0};
-  const rows=await selectSourceRows({startDate,endDate,excludedIds});
-  const map=new Map();
-  for(const row of rows){
-    const source=String(row.source_name||'').trim();
-    const weekStart=mondayOf(row.createtime);
+    const weekStart=mondayOf(row.day);
     if(!source||!weekStart)continue;
     const key=source+'|'+weekStart;
-    const current=map.get(key)||{scope_id:'lo3rwang',source_name:source,week_start:weekStart,work_count:0};
-    current.work_count+=1;
-    map.set(key,current);
+    const current=weekly.get(key)||{scope_id:'lo3rwang',source_name:source,week_start:weekStart,work_count:0};
+    current.work_count+=Number(row.work_count)||0;
+    weekly.set(key,current);
   }
-  const all=[...map.values()].sort((a,b)=>a.week_start.localeCompare(b.week_start)||a.source_name.localeCompare(b.source_name));
-  const start=Math.max(0,Math.floor(Number(offset)||0));
-  const bounded=limit!==null&&limit!==undefined&&Number.isFinite(Number(limit));
-  const page=bounded?all.slice(start,start+Math.max(0,Math.floor(Number(limit)||0))):all;
-  return {rows:page,totalCount:all.length};
+  const output=[...weekly.values()].sort((a,b)=>a.week_start.localeCompare(b.week_start)||a.source_name.localeCompare(b.source_name));
+  return {rows:output,totalCount:output.length};
+}
+
+export async function selectDailyCounts(table,{startDate='',endDate='',filters=[],limit=10000,offset=0}={}){
+  const result=await selectNeonRows(table,{
+    columns:'day:createtime::date,work_count:count()',
+    filters:[...filters,...timeFilters('createtime',startDate,endDate)],
+    limit,
+    offset
+  });
+  return result.rows.map(row=>({day:String(row.day||''),work_count:Number(row.work_count)||0}));
+}
+
+export async function selectDailyCategoryCounts(table,categoryColumn,{startDate='',endDate='',filters=[],limit=10000,offset=0}={}){
+  const result=await selectNeonRows(table,{
+    columns:`${categoryColumn},day:createtime::date,work_count:count()`,
+    filters:[...filters,...timeFilters('createtime',startDate,endDate)],
+    limit,
+    offset
+  });
+  return result.rows.map(row=>({
+    category:String(row?.[categoryColumn]||'').trim(),
+    day:String(row.day||''),
+    work_count:Number(row.work_count)||0
+  })).filter(row=>row.category&&row.day);
 }
 
 export async function selectGalaxyPage({sourceName='',startDate='',endDate='',limit=20,offset=0}={}){
   const filters=[];
   if(sourceName)filters.push({column:'source_name',operator:'eq',value:sourceName});
   filters.push(...timeFilters('createtime',startDate,endDate));
-  const {rows,count}=await selectNeonRows('silver.lo3rwang_galaxy',{
+  const publicFilters=publicContentFilters(filters);
+  const totalCount=await selectNeonCount('silver.lo3rwang_galaxy',{filters:publicFilters});
+  const {rows}=await selectNeonRows('silver.lo3rwang_galaxy',{
     columns:'uid,source_name,createtime,title,content',
-    filters:publicContentFilters(filters),
+    filters:publicFilters,
     orders:[{column:'createtime',ascending:false}],
     limit,
-    offset,
-    count:'exact'
+    offset
   });
   const ids=rows.map(row=>String(row.uid||'').trim()).filter(Boolean);
   const relations=ids.length
-    ?(await selectNeonAllRows('silver.lo3rwang_galaxy',{
+    ?(await selectNeonRows('silver.lo3rwang_galaxy',{
       columns:'uid,source_id,target_id',
-      filters:[{column:'uid',operator:'in',value:ids}]
+      filters:[{column:'uid',operator:'in',value:ids}],
+      limit:ids.length
     })).rows
     :[];
   const relationById=new Map(relations.map(row=>[String(row.uid),row]));
   return {
     rows:rows.map(row=>({...row,...(relationById.get(String(row.uid))||{})})),
-    totalCount:Number(count??rows.length)||0
+    totalCount
   };
 }
 
@@ -150,14 +134,16 @@ async function mediaRowsFor(scopeId,mediaIds=[]){
   if(!ids.length)return [];
   const lunarunes=String(scopeId||'')==='lunarunes'||String(scopeId||'')==='lrunes';
   if(lunarunes){
-    return (await selectNeonAllRows('silver.lrunes_galaxy_media',{
+    return (await selectNeonRows('silver.lrunes_galaxy_media',{
       columns:'media_id,title,url,media_type',
-      filters:[{column:'media_id',operator:'in',value:ids}]
+      filters:[{column:'media_id',operator:'in',value:ids}],
+      limit:ids.length
     })).rows;
   }
-  return (await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
+  return (await selectNeonRows('silver.lo3rwang_galaxy_media',{
     columns:'media_id,title,url,media_type',
-    filters:[{column:'media_id',operator:'in',value:ids}]
+    filters:[{column:'media_id',operator:'in',value:ids}],
+    limit:ids.length
   })).rows;
 }
 
@@ -180,14 +166,16 @@ export async function selectGalaxySummaries(scopeId,uids=[]){
 
   let rows=[];
   if(lunarunes){
-    rows=(await selectNeonAllRows('silver.lrunes_galaxy',{
+    rows=(await selectNeonRows('silver.lrunes_galaxy',{
       columns:'uid,title',
-      filters:[{column:'uid',operator:'in',value:ids}]
+      filters:[{column:'uid',operator:'in',value:ids}],
+      limit:ids.length
     })).rows;
   }else{
-    rows=(await selectNeonAllRows('silver.lo3rwang_galaxy',{
+    rows=(await selectNeonRows('silver.lo3rwang_galaxy',{
       columns:'uid,title',
-      filters:[{column:'uid',operator:'in',value:ids}]
+      filters:[{column:'uid',operator:'in',value:ids}],
+      limit:ids.length
     })).rows;
   }
 

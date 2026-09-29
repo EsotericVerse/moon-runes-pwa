@@ -4,7 +4,8 @@ import {useEffect,useMemo,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useNeonAccount} from '../../loc/use-neon-account';
-import {neonAuthClient,neonPublicClient} from '../../loc/neon-client';
+import {neonAuthClient} from '../../loc/neon-client';
+import {selectNeonRows} from '../../loc/neon-query';
 import {scopeDataTable} from '../../loc/scope-list';
 import {FEATURE_LOADING_MESSAGE} from '../feature-data-state.v2';
 
@@ -13,13 +14,6 @@ const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status
 function timeRelation(client,table){
   const [schema,name]=String(table).split('.');
   return client.schema(schema).from(name);
-}
-async function selectNeonAllRows(table,{columns,filters=[]}={}){
-  let query=timeRelation(neonPublicClient,table).select(columns);
-  for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
-  const {data,error}=await query;
-  if(error)throw new Error(error.message||('Neon SELECT '+table+' failed'));
-  return {rows:data||[]};
 }
 async function insertNeonRows(table,rows){
   const {data,error}=await timeRelation(neonAuthClient,table).insert(rows).select('*');
@@ -93,9 +87,10 @@ export default function CultureTimelineEditor({scopeId='lo3rwang'}){
     queryKey:['culture-period-settings',dataScope],
     enabled:supported&&Boolean(account.user),
     queryFn:async()=>{
-      const {rows}=await selectNeonAllRows(timeTable,{
+      const {rows}=await selectNeonRows(timeTable,{
         columns:TIME_COLUMNS,
-        filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}]
+        filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}],
+        limit:512
       });
       return rows;
     },

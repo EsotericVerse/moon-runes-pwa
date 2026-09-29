@@ -4,47 +4,9 @@ import {ScopeCultureResponseSchema} from './scope-feature-contracts';
 import {selectManagedScopes} from './scope-list';
 import {decodeCultureText,formatCultureDateTime,groupWorksByWeek} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
 import {workDisplayText} from '../modular-v2/work-display-model.v2';
-import {selectGalaxyPage,selectSourceWeekly} from './aggregate-query';
-import {neonPublicClient} from './neon-client';
+import {selectDailyCategoryCounts,selectDailyCounts,selectGalaxyPage,selectSourceWeekly} from './aggregate-query';
+import {selectNeonCount,selectNeonRows} from './neon-query';
 
-
-function __relation(table){
-  const [schema,name]=String(table).split('.');
-  return neonPublicClient.schema(schema).from(name);
-}
-function __filters(query,filters=[]){
-  for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
-  return query;
-}
-function __orders(query,orders=[]){
-  for(const order of orders)query=query.order(order.column,{ascending:order.ascending??true,nullsFirst:order.nullsFirst});
-  return query;
-}
-async function __select(table,{columns='*',filters=[],orFilter='',orders=[],limit=null,offset=0,range=null,count=null}={}){
-  let query=__relation(table).select(columns,count?{count}:undefined);
-  query=__filters(query,filters);
-  if(orFilter)query=query.or(orFilter);
-  query=__orders(query,orders);
-  if(Array.isArray(range)&&range.length===2)query=query.range(range[0],range[1]);
-  else if(Number.isFinite(limit))query=limit>0?query.range(offset,offset+limit-1):query.limit(0);
-  const {data,error,count:total}=await query;
-  if(error)throw new Error(error.message||('Neon SELECT '+table+' failed'));
-  return {rows:data||[],count:total};
-}
-async function selectNeonRows(table,options={}){return __select(table,options);}
-async function selectNeonAllRows(table,options={}){
-  const {limit,offset,range,count,...rest}=options||{};
-  const rows=[];
-  let cursor=0;
-  const size=500;
-  while(true){
-    const page=await __select(table,{...rest,limit:size,offset:cursor});
-    rows.push(...page.rows);
-    if(page.rows.length<size)break;
-    cursor+=page.rows.length;
-  }
-  return {rows,count:rows.length};
-}
 
 
 const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility';
@@ -64,9 +26,10 @@ function previousDay(value){
   return date.toISOString().slice(0,10);
 }
 async function selectCultureTimeRows(scopeId){
-  const result=await selectNeonAllRows(`silver.${scopeId}_time`,{
+  const result=await selectNeonRows(`silver.${scopeId}_time`,{
     columns:TIME_COLUMNS,
-    filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}]
+    filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}],
+    limit:512
   });
   const anchors=new Map(result.rows.filter(row=>row.record_type==='anchor'&&row.resource_id).map(row=>[String(row.resource_id),row]));
   return result.rows.flatMap(row=>{
@@ -102,6 +65,14 @@ async function selectCultureTimeRows(scopeId){
 }
 
 function sourceLabel(value){return String(value||'').trim();}
+function mondayOf(value){
+  const key=String(value||'').slice(0,10);
+  if(!key)return '';
+  const date=new Date(key+'T00:00:00Z');
+  const day=date.getUTCDay();
+  date.setUTCDate(date.getUTCDate()+(day===0?-6:1-day));
+  return date.toISOString().slice(0,10);
+}
 function runtimeScopeId(scopeId){return String(scopeId||'')==='lrunes'?'lunarunes':String(scopeId||'');}
 function dataScopeId(scopeId){return runtimeScopeId(scopeId)==='lunarunes'?'lrunes':runtimeScopeId(scopeId);}
 function periodRows(rows){
@@ -280,28 +251,62 @@ export async function selectScopeWorkSnapshot(scopeId,{startDate,endDate=null}={
       });
     }
   }else{
-    const result=await selectNeonAllRows('silver.lrunes_galaxy',{
-      columns:'uid,createtime',
-      filters:dateFilters(startDate,endDate),
-      orders:[{column:'createtime',ascending:true}]
+    const daily=await selectDailyCounts('silver.lrunes_galaxy',{
+      startDate,
+      endDate,
+      filters:publicContentFilters([])
     });
-    textCount=result.rows.length;
-    buckets.push(...groupWorksByWeek(
-      result.rows.map(row=>({...row,timeline_group:'文字作品'})),
-      'timeline_group'
-    ).map(row=>({...row,scope_id:runtimeId,entry_type:'work_density'})));
+    const weeks=new Map();
+    for(const row of daily){
+      const weekStart=mondayOf(row.day);
+      if(!weekStart)continue;
+      const count=Number(row.work_count)||0;
+      textCount+=count;
+      weeks.set(weekStart,(weeks.get(weekStart)||0)+count);
+    }
+    for(const [weekStart,workCount] of weeks){
+      const end=new Date(weekStart+'T00:00:00Z');end.setUTCDate(end.getUTCDate()+7);
+      buckets.push({
+        id:'works:text:'+weekStart,
+        category:'文字作品',
+        group_label:'文字作品',
+        display_label:'文字作品 '+workCount+' 項',
+        title:weekStart+' – '+end.toISOString().slice(0,10)+' · 文字作品 · '+workCount+' 項',
+        start_date:weekStart,
+        end_date:end.toISOString().slice(0,10),
+        work_count:workCount,
+        scope_id:runtimeId,
+        entry_type:'work_density'
+      });
+    }
   }
 
-  const mediaRows=await selectScopeMediaRows(runtimeId,{startDate,endDate});
-  const mediaBuckets=groupWorksByWeek(
-    mediaRows.map(row=>({...row,timeline_group:'多媒體'})),
-    'timeline_group'
-  ).map(row=>({...row,scope_id:runtimeId,entry_type:'work_density'}));
-  buckets.push(...mediaBuckets);
+  const mediaSnapshot=await selectScopeMediaSnapshot(runtimeId,{startDate,endDate});
+  const mediaWeeks=new Map();
+  for(const row of mediaSnapshot.buckets){
+    const key=String(row.start_date||'');
+    if(!key)continue;
+    mediaWeeks.set(key,(mediaWeeks.get(key)||0)+(Number(row.work_count)||0));
+  }
+  for(const [weekStart,workCount] of mediaWeeks){
+    const end=new Date(weekStart+'T00:00:00Z');end.setUTCDate(end.getUTCDate()+7);
+    buckets.push({
+      id:'works:media:'+weekStart,
+      category:'多媒體',
+      group_label:'多媒體',
+      display_label:'多媒體 '+workCount+' 項',
+      title:weekStart+' – '+end.toISOString().slice(0,10)+' · 多媒體 · '+workCount+' 項',
+      start_date:weekStart,
+      end_date:end.toISOString().slice(0,10),
+      work_count:workCount,
+      scope_id:runtimeId,
+      entry_type:'work_density'
+    });
+  }
 
   return {
     buckets:normalizedWorkTimelineBuckets(buckets),
-    totalCount:textCount+mediaRows.length
+    totalCount:textCount+mediaSnapshot.totalCount
   };
 }
 
@@ -406,35 +411,23 @@ export async function selectAuthorPeriodWorks({startDate,endDate,sourceName,cate
   return {rows,hasMore,nextOffset:hasMore?offset+pageSize:null,totalCount};
 }
 
-async function selectScopeMediaRows(scopeId,{startDate,endDate}={}){
-  if(!startDate)return [];
-  const runtimeId=runtimeScopeId(scopeId);
-  const filters=dateFilters(startDate,endDate);
-  if(runtimeId==='lunarunes'){
-    const result=await selectNeonAllRows('silver.lrunes_galaxy_media',{
-      columns:'media_id,galaxy_link,source_native_id,media_type,title,url,meta_tags,createtime',
-      filters,
-      orders:[{column:'createtime',ascending:true}]
-    });
-    return result.rows.map(row=>({...row,record_type:'galaxy_media'}));
-  }
-  const result=await selectNeonAllRows('silver.lo3rwang_galaxy_media',{
-    columns:'media_id,galaxy_link,source_native_id,media_type,title,url,meta_tags,createtime',
-    filters,
-    orders:[{column:'createtime',ascending:true}]
-  });
-  return result.rows.map(row=>({...row,record_type:'galaxy_media'}));
-}
-
 export async function selectScopeMediaSnapshot(scopeId,{startDate,endDate}={}){
   if(!startDate)return {groups:[],buckets:[],totalCount:0};
-  const field='media_type';
-  const rows=await selectScopeMediaRows(scopeId,{startDate,endDate});
-  const counted=rows.filter(row=>String(row?.[field]||'').trim());
+  const runtimeId=runtimeScopeId(scopeId);
+  const table=`silver.${dataScopeId(scopeId)}_galaxy_media`;
+  const daily=await selectDailyCategoryCounts(table,'media_type',{startDate,endDate});
   const counts=new Map();
-  for(const row of counted){
-    const term=String(row[field]||'').trim();
-    counts.set(term,(counts.get(term)||0)+1);
+  const weekly=new Map();
+  let totalCount=0;
+  for(const row of daily){
+    const term=String(row.category||'').trim();
+    const weekStart=mondayOf(row.day);
+    const count=Number(row.work_count)||0;
+    if(!term||!weekStart||count<=0)continue;
+    totalCount+=count;
+    counts.set(term,(counts.get(term)||0)+count);
+    const key=term+'|'+weekStart;
+    weekly.set(key,(weekly.get(key)||0)+count);
   }
   const groups=[...counts.entries()]
     .map(([term,item_count])=>({
@@ -447,15 +440,40 @@ export async function selectScopeMediaSnapshot(scopeId,{startDate,endDate}={}){
       media_count:item_count
     }))
     .sort((a,b)=>b.item_count-a.item_count||a.display_label.localeCompare(b.display_label));
-  const buckets=groupWorksByWeek(counted,field).map(row=>({
-    ...row,
-    works:[],
-    scope_id:'classification',
-    entry_type:'media',
-    classification_dimension:'media',
-    classification_level:'type'
-  }));
-  return {groups,buckets,totalCount:counted.length};
+  const maxima=new Map();
+  let globalMaximum=0;
+  for(const [key,count] of weekly){
+    const term=key.split('|')[0];
+    maxima.set(term,Math.max(maxima.get(term)||0,count));
+    globalMaximum=Math.max(globalMaximum,count);
+  }
+  const buckets=[...weekly.entries()].map(([key,count])=>{
+    const split=key.lastIndexOf('|');
+    const term=key.slice(0,split);
+    const weekStart=key.slice(split+1);
+    const end=new Date(weekStart+'T00:00:00Z');end.setUTCDate(end.getUTCDate()+7);
+    const weekEnd=end.toISOString().slice(0,10);
+    return {
+      id:`media_type:${term}:${weekStart}`,
+      category:term,
+      group_label:term,
+      week_start:weekStart,
+      week_end:weekEnd,
+      start_date:weekStart,
+      end_date:weekEnd,
+      work_count:count,
+      works:[],
+      density_ratio:count/Math.max(1,maxima.get(term)||1),
+      global_density_ratio:count/Math.max(1,globalMaximum),
+      display_label:`${term} ${count} 項`,
+      title:`${weekStart} – ${weekEnd} · ${term} · ${count} 項`,
+      scope_id:runtimeId,
+      entry_type:'media',
+      classification_dimension:'media',
+      classification_level:'type'
+    };
+  }).sort((a,b)=>a.group_label.localeCompare(b.group_label)||a.week_start.localeCompare(b.week_start));
+  return {groups,buckets,totalCount};
 }
 
 export async function selectScopeMediaWorks(scopeId,{startDate,endDate,mediaName,limit=20,pageOffset=0}={}){
@@ -464,12 +482,14 @@ export async function selectScopeMediaWorks(scopeId,{startDate,endDate,mediaName
   const offset=Math.max(0,Math.floor(Number(pageOffset)||0));
   const field='media_type';
   const table=`silver.${dataScopeId(scopeId)}_galaxy_media`;
+  const filters=[
+    ...dateFilters(startDate,endDate),
+    {column:field,operator:'eq',value:String(mediaName)}
+  ];
+  const totalCount=await selectNeonCount(table,{filters});
   const result=await selectNeonRows(table,{
     columns:'media_id,galaxy_link,source_native_id,media_type,title,url,meta_tags,createtime',
-    filters:[
-      ...dateFilters(startDate,endDate),
-      {column:field,operator:'eq',value:String(mediaName)}
-    ],
+    filters,
     orders:[
       {column:'createtime',ascending:false},
       {column:'media_id',ascending:true}
@@ -495,7 +515,7 @@ export async function selectScopeMediaWorks(scopeId,{startDate,endDate,mediaName
       ?[{id:'media:'+String(row.media_id||row.record_id),href:row.url,label:'媒體連結'}]
       :[]
   }));
-  const hasMore=sourceRows.length===pageSize;
-  return {rows:page,hasMore,nextOffset:hasMore?offset+sourceRows.length:null,totalCount:null};
+  const hasMore=offset+pageSize<totalCount;
+  return {rows:page,hasMore,nextOffset:hasMore?offset+pageSize:null,totalCount};
 }
 
