@@ -30,10 +30,23 @@ function navigationScopeId(databaseScopeId){
   return String(databaseScopeId||'').trim();
 }
 
+const MEDIA_TAG_STAT_EXCLUSIONS=new Set(['正位','半正位','半逆位','逆位']);
+
+function statisticalMediaTag(value=''){
+  const tag=String(value||'').trim();
+  if(!tag)return '';
+  if(MEDIA_TAG_STAT_EXCLUSIONS.has(tag))return '';
+  const parts=tag.split('/').map(part=>part.trim()).filter(Boolean);
+  if(parts.length>1&&MEDIA_TAG_STAT_EXCLUSIONS.has(parts.at(-1))){
+    return parts.slice(0,-1).join('/').trim();
+  }
+  return tag;
+}
+
 function splitMediaTags(value=''){
   return [...new Set(String(value||'')
     .split(/[,，]/u)
-    .map(tag=>tag.trim())
+    .map(statisticalMediaTag)
     .filter(Boolean))];
 }
 
