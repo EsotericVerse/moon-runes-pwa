@@ -7,7 +7,7 @@ const GROUP_IMAGE_BY_ID=Object.freeze({
 export function groupImage(id){return GROUP_IMAGE_BY_ID[String(id).padStart(2,'0')]||'';}
 export function runeName(card){return String(card?.rune_name||'').replace(/之符文$/,'').trim();}
 export function runeImage(card){
-  const number=String(Number(card?.rune_number)||0).padStart(2,'0');
+  const number=String(Number(card?.rune_id)||0).padStart(2,'0');
   return `/assets/lunarunes/cards/${number}_${runeName(card)}.png`;
 }
 export function runeNumbersForGroup(groupId){
@@ -25,9 +25,9 @@ export function runeNumberForRoute(groupId,runeId){
   return (group-1)*8+local;
 }
 export function localRuneId(groupId,card){
-  if(String(groupId).padStart(2,'0')==='09')return ({0:'00',65:'01',66:'02'})[Number(card?.rune_number)]||null;
+  if(String(groupId).padStart(2,'0')==='09')return ({0:'00',65:'01',66:'02'})[Number(card?.rune_id)]||null;
   const start=(Number(groupId)-1)*8+1;
-  return String(Number(card?.rune_number)-start+1).padStart(2,'0');
+  return String(Number(card?.rune_id)-start+1).padStart(2,'0');
 }
 export function groupParams(){return Array.from({length:9},(_,index)=>({group:String(index+1).padStart(2,'0')}));}
 export function runeParams(){

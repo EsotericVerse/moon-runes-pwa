@@ -7,7 +7,7 @@ import {
   selectDailyRuneMonth,
   updateDailyRuneRecord
 } from '../../loc/neon-daily-runes';
-import {selectRuneCatalog} from '../../loc/rune-repository';
+import {selectNeonRows} from '../../loc/neon-query';
 import {useNeonAccount} from '../../loc/use-neon-account';
 
 const FIRST_MONTH=2026*12+7;
@@ -92,11 +92,16 @@ export default function DailyLogClient(){
   useEffect(()=>{
     if(!canWrite)return;
     let active=true;
-    selectRuneCatalog().then(data=>{
+    selectNeonRows('silver.runes',{
+      columns:'rune_id,rune_name',
+      orders:[{column:'rune_id',ascending:true}],
+      limit:67,
+      offset:0
+    }).then(({rows})=>{
       if(!active)return;
-      setRunes(data||[]);
-      if(data?.length&&!data.some(row=>String(row.rune_number)===String(newForm.runeNumber))){
-        setNewForm(current=>({...current,runeNumber:String(data[0].rune_number)}));
+      setRunes(rows||[]);
+      if(rows?.length&&!rows.some(row=>String(row.rune_id)===String(newForm.runeNumber))){
+        setNewForm(current=>({...current,runeNumber:String(rows[0].rune_id)}));
       }
     }).catch(reason=>setMessage(String(reason?.message||reason||'符文資料讀取失敗。')));
     return()=>{active=false;};
@@ -220,7 +225,7 @@ export default function DailyLogClient(){
       <form className="scope-v2-stat-controls" onSubmit={addRecord}>
         <label><span>日期</span><input className="scope-v2-select" type="date" min="2026-08-01" value={newForm.recordDate} onChange={event=>setNewForm(current=>({...current,recordDate:event.target.value}))}/></label>
         <label><span>種類</span><select className="scope-v2-select" value={newForm.drawKind} onChange={event=>setNewForm(current=>({...current,drawKind:event.target.value}))}><option value="main">主抽</option><option value="supplement">補抽</option></select></label>
-        <label><span>符文</span><select className="scope-v2-select" value={newForm.runeNumber} onChange={event=>setNewForm(current=>({...current,runeNumber:event.target.value}))}>{runes.map(row=><option value={row.rune_number} key={row.rune_number}>{row.rune_number}｜{row.rune_name}</option>)}</select></label>
+        <label><span>符文</span><select className="scope-v2-select" value={newForm.runeNumber} onChange={event=>setNewForm(current=>({...current,runeNumber:event.target.value}))}>{runes.map(row=><option value={row.rune_id} key={row.rune_id}>{row.rune_id}｜{row.rune_name}</option>)}</select></label>
         <label><span>方向</span><select className="scope-v2-select" value={newForm.direction} onChange={event=>setNewForm(current=>({...current,direction:event.target.value}))}>{DIRECTIONS.map(value=><option value={value} key={value}>{value}</option>)}</select></label>
         <button className="loc-button" type="submit" disabled={saving||!runes.length}>{saving?'儲存中…':'新增紀錄'}</button>
       </form>
@@ -241,7 +246,7 @@ export default function DailyLogClient(){
           {!editing?<><h3>{row.rune_name}・{row.direction}</h3>
             {canWrite?<div className="scope-v2-tabs"><button type="button" disabled={saving} onClick={()=>beginEdit(row)}>編輯</button><button type="button" disabled={saving} onClick={()=>removeRecord(row)}>刪除</button></div>:null}
           </>:<form className="scope-v2-stat-controls" onSubmit={saveEdit}>
-            <label><span>符文</span><select className="scope-v2-select" value={editForm.runeNumber} onChange={event=>setEditForm(current=>({...current,runeNumber:event.target.value}))}>{runes.map(item=><option value={item.rune_number} key={item.rune_number}>{item.rune_number}｜{item.rune_name}</option>)}</select></label>
+            <label><span>符文</span><select className="scope-v2-select" value={editForm.runeNumber} onChange={event=>setEditForm(current=>({...current,runeNumber:event.target.value}))}>{runes.map(item=><option value={item.rune_id} key={item.rune_id}>{item.rune_id}｜{item.rune_name}</option>)}</select></label>
             <label><span>方向</span><select className="scope-v2-select" value={editForm.direction} onChange={event=>setEditForm(current=>({...current,direction:event.target.value}))}>{DIRECTIONS.map(value=><option value={value} key={value}>{value}</option>)}</select></label>
             <button className="loc-button" type="submit" disabled={saving}>儲存</button>
             <button className="loc-button" type="button" disabled={saving} onClick={()=>{setEditingKey('');setEditForm(null)}}>取消</button>

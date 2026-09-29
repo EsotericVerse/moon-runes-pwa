@@ -1,11 +1,30 @@
 'use client';
 
 import {useEffect,useState} from 'react';
-import {selectRuneDetail,selectRuneGroup,selectRuneGroupCatalog,selectRuneRows} from '../loc/rune-repository';
+import {selectNeonRows} from '../loc/neon-query';
 import {groupImage,localRuneId,runeImage,runeName,runeNumberForRoute,runeNumbersForGroup} from './rune-directory.mjs';
 import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
 
-const listHref=(path='')=>scopeHrefV2('lunarunes',`list${path?'/'+String(path).replace(/^\/+/, ''):''}`);
+const listHref=(path='')=>scopeHrefV2('lunarunes',`list${path?'/'+String(path).replace(/^\\/+/, ''):''}`);
+const RUNE_COLUMNS='rune_id,rune_name,english_name,group_name,moon_phase,card_attr,rune_description,archetype,char_action,positive_keywords,negative_keywords,extra_rules,extra_notes';
+const RUNE_DETAIL_COLUMNS='rune_evolution_history,myth_story,soul_question,practice_challenge,ritual_advice,harmony_advice';
+const GROUP_COLUMNS='group_id,english_name,desc,runeslist';
+const MOON_PHASE_LABELS=Object.freeze({1:'新月',2:'上弦',3:'滿月',4:'下弦'});
+const CARD_ATTR_LABELS=Object.freeze({1:'正面',2:'中平',3:'負面',4:'未知'});
+
+function groupView(row){
+  const runes=Array.isArray(row?.runeslist)?row.runeslist.map(Number).filter(Number.isInteger):[];
+  const positive=runes.filter(number=>number>0);
+  const first=positive.length?Math.min(...positive):65;
+  return {
+    ...row,
+    id:first>=65?'09':String(Math.floor((first-1)/8)+1).padStart(2,'0'),
+    name:row?.group_id||'',
+    english:row?.english_name||'',
+    description:row?.desc||'',
+    runeslist:runes
+  };
+}
 
 function decodeRuneText(value){
   return String(value??'')
@@ -16,23 +35,23 @@ function decodeRuneText(value){
 }
 function useRuneGroups(){
   const [groups,setGroups]=useState([]),[error,setError]=useState('');
-  useEffect(()=>{let live=true;selectRuneGroupCatalog().then(rows=>{if(live){setGroups(rows||[]);setError('');}}).catch(reason=>{if(live)setError(reason?.message||'Neon 符文群組讀取失敗');});return()=>{live=false};},[]);
+  useEffect(()=>{let live=true;selectNeonRows('silver.runes_group',{columns:GROUP_COLUMNS,limit:9,offset:0}).then(({rows})=>{if(live){setGroups((rows||[]).map(groupView).sort((a,b)=>Number(a.id)-Number(b.id)));setError('');}}).catch(reason=>{if(live)setError(reason?.message||'Neon 符文群組讀取失敗');});return()=>{live=false};},[]);
   return {groups,error};
 }
 function useRuneGroup(groupId){
   const [group,setGroup]=useState(null),[error,setError]=useState('');
-  useEffect(()=>{let live=true;selectRuneGroup(groupId).then(row=>{if(live){setGroup(row);setError('');}}).catch(reason=>{if(live)setError(reason?.message||'Neon 符文群組讀取失敗');});return()=>{live=false};},[groupId]);
+  useEffect(()=>{let live=true;const id=Number(groupId);if(!Number.isInteger(id)||id<1||id>9){setGroup(null);setError('找不到符文群組。');return()=>{live=false};}const anchor=id===9?65:(id-1)*8+1;selectNeonRows('silver.runes_group',{columns:GROUP_COLUMNS,filters:[{column:'runeslist',operator:'contains',value:[anchor]}],limit:1,offset:0}).then(({rows})=>{if(live){setGroup(rows?.[0]?groupView(rows[0]):null);setError(rows?.[0]?'':'找不到符文群組。');}}).catch(reason=>{if(live)setError(reason?.message||'Neon 符文群組讀取失敗');});return()=>{live=false};},[groupId]);
   return {group,error};
 }
 function useRuneRows(runeNumbers){
   const key=(runeNumbers||[]).join(',');
   const [runes,setRunes]=useState([]),[error,setError]=useState('');
-  useEffect(()=>{let live=true;selectRuneRows(runeNumbers).then(rows=>{if(live){setRunes(rows||[]);setError('');}}).catch(reason=>{if(live)setError(reason?.message||'Neon canonical 讀取失敗');});return()=>{live=false};},[key]);
+  useEffect(()=>{let live=true;const ids=[...new Set((runeNumbers||[]).map(Number).filter(Number.isInteger))];if(!ids.length){setRunes([]);setError('');return()=>{live=false};}selectNeonRows('silver.runes',{columns:RUNE_COLUMNS,filters:[{column:'rune_id',operator:'in',value:ids}],orders:[{column:'rune_id',ascending:true}],limit:ids.length,offset:0}).then(({rows})=>{if(live){setRunes(rows||[]);setError('');}}).catch(reason=>{if(live)setError(reason?.message||'Neon canonical 讀取失敗');});return()=>{live=false};},[key]);
   return {runes,error};
 }
 function useRuneDetail(runeNumber){
   const [card,setCard]=useState(null),[error,setError]=useState('');
-  useEffect(()=>{let live=true;if(runeNumber===null){setCard(null);setError('找不到對應符文。');return()=>{live=false};}selectRuneDetail(runeNumber).then(row=>{if(live){setCard(row);setError(row?'':'找不到對應符文。');}}).catch(reason=>{if(live)setError(reason?.message||'Neon canonical 讀取失敗');});return()=>{live=false};},[runeNumber]);
+  useEffect(()=>{let live=true;if(runeNumber===null){setCard(null);setError('找不到對應符文。');return()=>{live=false};}selectNeonRows('silver.runes',{columns:RUNE_COLUMNS+','+RUNE_DETAIL_COLUMNS,filters:[{column:'rune_id',operator:'eq',value:Number(runeNumber)}],limit:1,offset:0}).then(({rows})=>{if(live){setCard(rows?.[0]||null);setError(rows?.[0]?'':'找不到對應符文。');}}).catch(reason=>{if(live)setError(reason?.message||'Neon canonical 讀取失敗');});return()=>{live=false};},[runeNumber]);
   return {card,error};
 }
 
@@ -42,18 +61,18 @@ function RuneDetails({card}){
     <div className="runes-rune-profile">
       <img className="loc-rune-card-image" src={runeImage(card)} alt={`${runeName(card)}之符文卡`}/>
       <div className="runes-rune-profile-copy">
-        <h2>{String(Number(card.rune_number)).padStart(2,'0')} · {runeName(card)}之符文 · {decodeRuneText(card.english_name)}</h2>
+        <h2>{String(Number(card.rune_id)).padStart(2,'0')} · {runeName(card)}之符文 · {decodeRuneText(card.english_name)}</h2>
         {card.rune_description?<p>{decodeRuneText(card.rune_description)}</p>:null}
-        {card.personality_archetype?<p>{decodeRuneText(card.personality_archetype)}</p>:null}
+        {card.archetype?<p>{decodeRuneText(card.archetype)}</p>:null}
       </div>
     </div>
     <div className="runes-rune-detail-grid">
       <span><strong>所屬分組</strong>{decodeRuneText(card.group_name||'—')}</span>
-      <span><strong>月相</strong>{decodeRuneText(card.moon_phase||'—')}</span>
-      <span><strong>卡片屬性</strong>{decodeRuneText(card.card_attribute||'—')}</span>
+      <span><strong>月相</strong>{decodeRuneText(MOON_PHASE_LABELS[Number(card.moon_phase)]||'—')}</span>
+      <span><strong>卡片屬性</strong>{decodeRuneText(CARD_ATTR_LABELS[Number(card.card_attr)]||'—')}</span>
       <span><strong>正向關鍵詞</strong>{decodeRuneText(card.positive_keywords||'—')}</span>
       <span><strong>反向關鍵詞</strong>{decodeRuneText(card.negative_keywords||'—')}</span>
-      {card.character_action?<span><strong>角色行動</strong>{decodeRuneText(card.character_action)}</span>:null}
+      {card.char_action?<span><strong>角色行動</strong>{decodeRuneText(card.char_action)}</span>:null}
       {card.extra_rules?<span><strong>額外規則</strong>{decodeRuneText(card.extra_rules)}</span>:null}
       {card.extra_notes?<span><strong>額外留意</strong>{decodeRuneText(card.extra_notes)}</span>:null}
     </div>

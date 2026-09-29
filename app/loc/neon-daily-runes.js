@@ -1,6 +1,5 @@
 import {neonAuthClient} from './neon-client';
 import {selectNeonCount,selectNeonRows} from './neon-query';
-import {selectRuneRows} from './rune-repository';
 
 export const DAILY_RUNE_PAGE_SIZE=10;
 
@@ -10,8 +9,13 @@ function silverAuth(name){return neonAuthClient.schema('silver').from(name);}
 async function attachRuneMeta(rows){
   const source=Array.isArray(rows)?rows:[];
   const ids=[...new Set(source.map(row=>Number(row.rune_number)).filter(number=>Number.isInteger(number)&&number>=0&&number<=66))];
-  const runes=ids.length?await selectRuneRows(ids):[];
-  const meta=new Map(runes.map(row=>[Number(row.rune_number),row]));
+  const runes=ids.length?(await selectNeonRows('silver.runes',{
+    columns:'rune_id,rune_name',
+    filters:[{column:'rune_id',operator:'in',value:ids}],
+    limit:ids.length,
+    offset:0
+  })).rows:[];
+  const meta=new Map(runes.map(row=>[Number(row.rune_id),row]));
   return source.map(row=>{
     const rune=meta.get(Number(row.rune_number))||{};
     return {
