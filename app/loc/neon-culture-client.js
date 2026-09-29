@@ -261,80 +261,77 @@ export async function selectScopeCultureData(scopeId){
       const galaxy=mappedScopeTable(scope.id,'galaxy',scope.galaxy);
       const time=mappedScopeTable(scope.id,'time',scope.time);
       const context=await selectCultureTimeRows(scope.id,time,scope.birthday);
-      const runtimeId=runtimeScopeId(scope.id);
       return {
         dataId:scope.id,
-        runtimeId,
-        birthday:String(scope.birthday||'').slice(0,10),
+        runtimeId:runtimeScopeId(scope.id),
         galaxy,
-        galaxyMedia:galaxy+'_media',
         context,
-        openRange:openPeriodRangeFromRows(scope.id,context),
-        parts:cultureParts(context,runtimeId)
+        openRange:openPeriodRangeFromRows(scope.id,context)
       };
     }));
 
-    const openRanges=bundles.map(bundle=>bundle.openRange).filter(Boolean);
-    const allScopesHaveOpenRange=bundles.every(bundle=>Boolean(bundle.openRange?.start_date));
-    const starts=allScopesHaveOpenRange
-      ?openRanges.map(row=>String(row.start_date||'')).filter(Boolean).sort()
-      :[];
-    const intersectionStart=allScopesHaveOpenRange?(starts.at(-1)||''):'';
+    const validBundles=bundles.filter(bundle=>Boolean(bundle.openRange?.start_date));
+    const openRanges=validBundles.map(bundle=>bundle.openRange);
+    const starts=openRanges.map(row=>String(row.start_date||'')).filter(Boolean).sort();
+    const intersectionStart=starts.at(-1)||'';
     const today=new Date().toISOString().slice(0,10);
 
-    const periodRiverItems=bundles.flatMap(bundle=>bundle.context
-      .filter(row=>row.entry_type==='anchor'&&row.start_date)
-      .map(row=>({
-        ...row,
-        id:bundle.runtimeId+':anchor:'+row.anchor_id,
-        entry_id:bundle.runtimeId+':anchor:'+row.anchor_id,
-        scope_id:bundle.runtimeId,
-        group_label:bundle.runtimeId,
-        display_label:row.title,
-        start_date:String(row.start_date).slice(0,10),
-        date:String(row.start_date).slice(0,10),
-        entry_type:'anchor'
-      }))
-      .filter(row=>(!intersectionStart||row.start_date>=intersectionStart)&&row.start_date<=today)
-    );
+    if(!intersectionStart){
+      return ScopeCultureResponseSchema.parse({
+        scopeId:id,eras:{eras:[]},periods:[],openRanges:[],scopeRanges:[],
+        timelineItems:[],sourceRiverItems:[],sourceGroups:[],events:[],trajectories:[],
+        works:[],intersectionStart:'',intersectionEnd:today,intersectionScopeIds:[]
+      });
+    }
 
-    const aggregateRows=(await Promise.all(bundles.map(async bundle=>{
-      const [textDaily,mediaDaily]=await Promise.all([
-        selectDailyCategoryCounts(bundle.galaxy,'source_name',{
-          startDate:intersectionStart||'',
-          filters:publicContentFilters([]),
-          includeEmpty:true,
-          includeUndated:true
-        }),
-        selectDailyCategoryCounts(bundle.galaxyMedia,'media_type',{
-          startDate:intersectionStart||'',
-          filters:[{column:'galaxy_link',operator:'is',value:null}],
-          includeEmpty:true,
-          includeUndated:true
-        })
-      ]);
-      return [
-        ...textDaily.map(row=>({...row,scope_id:bundle.runtimeId,record_source:'text'})),
-        ...mediaDaily.map(row=>({...row,scope_id:bundle.runtimeId,record_source:'unlinked_media'}))
-      ];
+    const intersectionScopeIds=validBundles
+      .filter(bundle=>String(bundle.openRange?.start_date||'')===intersectionStart)
+      .map(bundle=>bundle.runtimeId);
+
+    const aggregateRows=(await Promise.all(validBundles.map(async bundle=>{
+      const textDaily=await selectDailyCategoryCounts(bundle.galaxy,'source_name',{
+        startDate:intersectionStart,
+        endDate:today,
+        filters:publicContentFilters([]),
+        includeEmpty:true,
+        includeUndated:false
+      });
+      return textDaily.map(row=>({...row,scope_id:bundle.runtimeId}));
     }))).flat();
 
-    const {sourceRiverItems,sourceGroups}=buildLocSourceRiver(aggregateRows);
+    const built=buildLocSourceRiver(aggregateRows);
+    const intersectionMarkers=intersectionScopeIds.map(scope=>({
+      id:'loc-intersection:'+scope+':'+intersectionStart,
+      entry_id:'loc-intersection:'+scope+':'+intersectionStart,
+      entry_type:'intersection_start',
+      scope_id:'loc',
+      group_label:scope,
+      category:scope,
+      start_date:intersectionStart,
+      item_count:0,
+      density_ratio:0,
+      global_density_ratio:0,
+      display_label:scope,
+      title:scope
+    }));
+    const sourceRiverItems=[...built.sourceRiverItems,...intersectionMarkers]
+      .sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))||String(a.group_label||'').localeCompare(String(b.group_label||'')));
 
     return ScopeCultureResponseSchema.parse({
       scopeId:id,
-      eras:{eras:bundles.flatMap(bundle=>bundle.parts.eras)},
-      periods:bundles.flatMap(bundle=>bundle.parts.periods),
+      eras:{eras:[]},
+      periods:[],
       openRanges,
       scopeRanges:[],
-      timelineItems:periodRiverItems,
+      timelineItems:[],
       sourceRiverItems,
-      sourceGroups,
-      events:bundles.flatMap(bundle=>bundle.parts.events),
-      trajectories:bundles.flatMap(bundle=>bundle.parts.trajectories),
+      sourceGroups:built.sourceGroups,
+      events:[],
+      trajectories:[],
       works:[],
       intersectionStart,
-      intersectionEnd:today
+      intersectionEnd:today,
+      intersectionScopeIds
     });
   }
 
