@@ -107,9 +107,10 @@ if(!/const ids=new Set\(\)/.test(textEngine))failures.push('Text engine: ID-only
 if(!/createTextIndex/.test(searchProviders)||!/searchTextIndex/.test(searchProviders)||!/nextCursor|cursor=/.test(searchProviders))failures.push('Search client: batched FlexSearch contract missing');
 if(/engine\.add\([^\n]*recordFor/.test(searchProviders))failures.push('Search client: FlexSearch index must not retain record payloads');
 const spoolClient=readFileSync(resolve(root,'app/loc/spool-client.js'),'utf8');
-for(const token of ['MAX_SPOOL_IDS=10000','SPOOL_BATCH_SIZE=500','writeSpoolIds','clearSpool','withSpoolIds','neonAuthClient'])if(!spoolClient.includes(token))failures.push(`Spool contract missing: ${token}`);
-if(/\b(content|title|url|meta_tags|source_name)\b/.test(spoolClient))failures.push('Spool client: content/media payload fields are forbidden');
-if(/neonPublicClient/.test(spoolClient))failures.push('Spool client: anonymous/public client access is forbidden');
+for(const token of ['createUidSpoolAdapter','writeSpoolUids','clearSpool','withSpoolUids','neonPublicClient'])if(!spoolClient.includes(token))failures.push(`Spool contract missing: ${token}`);
+if(/\b(content|title|url|meta_tags|source_name|media_id|entity_type|bucket)\b/.test(spoolClient))failures.push('Spool client: content/media payload fields are forbidden');
+if(!/\^\[A-F0-9\]\{8\}\$/.test(spoolClient))failures.push('Spool client: UID-only contract missing');
+if(/MAX_SPOOL_IDS|spool run limit|spool scope limit/.test(spoolClient))failures.push('Spool client: provider-specific usage limits must not enter the core contract');
 if(/getRuntimeTextIndex/.test(searchProviders))failures.push('Search client: runtime index cache must not return to batched providers');
 if(/scanSize|maxScanSize|while\(matched\.length/.test(searchProviders))failures.push('Search client: provider must fetch exactly one raw batch per user trigger');
 if(!/searchTextIndex/.test(keywordClassifier))failures.push('Culture/Statistics keyword classifier: shared FlexSearch contract missing');
