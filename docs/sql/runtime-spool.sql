@@ -1,5 +1,6 @@
 -- Disposable runtime spool.
--- This is not a cache, not a content store, and never a Current data authority.
+-- This is the only allowed transient DB work table.
+-- It is not a cache, not a content store, and never a Current data authority.
 -- Only short identifiers may be written here. Payload/content/media metadata are forbidden.
 
 CREATE TABLE IF NOT EXISTS silver.spool (
@@ -26,4 +27,55 @@ CREATE INDEX IF NOT EXISTS spool_run_idx ON silver.spool (run_id,scope_id,purpos
 COMMENT ON TABLE silver.spool IS 'Disposable UID/media_id work spool. Never a canonical data source.';
 
 REVOKE ALL ON TABLE silver.spool FROM anonymous;
-GRANT SELECT, INSERT, DELETE ON TABLE silver.spool TO anonymous;
+GRANT SELECT, INSERT, DELETE ON TABLE silver.spool TO authenticated;
+
+ALTER TABLE silver.spool ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS spool_scope_read ON silver.spool;
+DROP POLICY IF EXISTS spool_scope_insert ON silver.spool;
+DROP POLICY IF EXISTS spool_scope_delete ON silver.spool;
+
+CREATE POLICY spool_scope_read ON silver.spool
+  FOR SELECT TO authenticated
+  USING (silver.can_manage_scope(scope_id));
+
+CREATE POLICY spool_scope_insert ON silver.spool
+  FOR INSERT TO authenticated
+  WITH CHECK (silver.can_manage_scope(scope_id));
+
+CREATE POLICY spool_scope_delete ON silver.spool
+  FOR DELETE TO authenticated
+  USING (silver.can_manage_scope(scope_id));
+
+CREATE OR REPLACE FUNCTION silver.guard_spool_insert()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO silver, public
+AS $$
+DECLARE
+  run_count bigint;
+  scope_count bigint;
+BEGIN
+  SELECT count(*) INTO run_count
+  FROM silver.spool
+  WHERE run_id=NEW.run_id AND expires_at>now();
+  IF run_count >= 10000 THEN
+    RAISE EXCEPTION 'spool run limit exceeded';
+  END IF;
+
+  SELECT count(*) INTO scope_count
+  FROM silver.spool
+  WHERE scope_id=NEW.scope_id AND expires_at>now();
+  IF scope_count >= 20000 THEN
+    RAISE EXCEPTION 'spool scope limit exceeded';
+  END IF;
+
+  RETURN NEW;
+END
+$$;
+
+DROP TRIGGER IF EXISTS spool_insert_guard ON silver.spool;
+CREATE TRIGGER spool_insert_guard
+BEFORE INSERT ON silver.spool
+FOR EACH ROW EXECUTE FUNCTION silver.guard_spool_insert();

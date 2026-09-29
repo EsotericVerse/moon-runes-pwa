@@ -1,6 +1,6 @@
 'use client';
 
-import {neonPublicClient} from './neon-client';
+import {neonAuthClient} from './neon-client';
 
 export const MAX_SPOOL_IDS=10000;
 export const SPOOL_BATCH_SIZE=500;
@@ -8,7 +8,7 @@ const VALID_PURPOSES=new Set(['search','timeline','statistics']);
 const VALID_ENTITY_TYPES=new Set(['uid','media_id']);
 
 function relation(){
-  return neonPublicClient.schema('silver').from('spool');
+  return neonAuthClient.schema('silver').from('spool');
 }
 function clean(value,max){
   const text=String(value??'').trim();

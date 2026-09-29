@@ -107,8 +107,9 @@ if(!/const ids=new Set\(\)/.test(textEngine))failures.push('Text engine: ID-only
 if(!/createTextIndex/.test(searchProviders)||!/searchTextIndex/.test(searchProviders)||!/nextCursor|cursor=/.test(searchProviders))failures.push('Search client: batched FlexSearch contract missing');
 if(/engine\.add\([^\n]*recordFor/.test(searchProviders))failures.push('Search client: FlexSearch index must not retain record payloads');
 const spoolClient=readFileSync(resolve(root,'app/loc/spool-client.js'),'utf8');
-for(const token of ['MAX_SPOOL_IDS=10000','SPOOL_BATCH_SIZE=500','writeSpoolIds','clearSpool','withSpoolIds'])if(!spoolClient.includes(token))failures.push(`Spool contract missing: ${token}`);
+for(const token of ['MAX_SPOOL_IDS=10000','SPOOL_BATCH_SIZE=500','writeSpoolIds','clearSpool','withSpoolIds','neonAuthClient'])if(!spoolClient.includes(token))failures.push(`Spool contract missing: ${token}`);
 if(/\b(content|title|url|meta_tags|source_name)\b/.test(spoolClient))failures.push('Spool client: content/media payload fields are forbidden');
+if(/neonPublicClient/.test(spoolClient))failures.push('Spool client: anonymous/public client access is forbidden');
 if(/getRuntimeTextIndex/.test(searchProviders))failures.push('Search client: runtime index cache must not return to batched providers');
 if(/scanSize|maxScanSize|while\(matched\.length/.test(searchProviders))failures.push('Search client: provider must fetch exactly one raw batch per user trigger');
 if(!/searchTextIndex/.test(keywordClassifier))failures.push('Culture/Statistics keyword classifier: shared FlexSearch contract missing');

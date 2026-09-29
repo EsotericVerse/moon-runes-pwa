@@ -16,6 +16,12 @@ function runtimeClient(){
   });
 }
 
+async function probeDenied(client,table,columns){
+  const {error,status}=await client.schema('silver').from(table).select(columns).limit(1);
+  console.log(JSON.stringify({probe:'runtime-public-denied',table,columns,status,code:error?.code||null,error:error?.message||null}));
+  if(!error)throw new Error(table+': anonymous access unexpectedly allowed');
+}
+
 async function probe(client,table,columns,{filters=[]}={}){
   let query=client.schema('silver').from(table).select(columns).limit(1);
   for(const [column,operator,value] of filters)query=query[operator](column,value);
@@ -67,6 +73,8 @@ for(const [table,columns,options] of [
   ['faq_entries','faq_id,question,answer'],
   ['content_blocks','block_id,scope_id,page_key,slot_key,title,body,display_order,active,updated_at']
 ])await probe(client,table,columns,options||{});
+
+await probeDenied(client,'spool','run_id,scope_id,purpose,entity_type,entity_id');
 
 await verifyGameContract(client);
 
