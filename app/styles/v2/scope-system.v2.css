@@ -302,3 +302,23 @@
 .scope-v2-governance-wysiwyg p{margin:.5rem 0}
 
 .runes-home-function-select{width:min(100%,20rem);margin-top:1rem}
+
+
+/* Static presentation belongs in CSS; JS only supplies state or runtime configuration. */
+.scope-v2-prewrap{white-space:pre-wrap}
+.scope-v2-daily-calendar-nav{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin-bottom:1rem}
+.scope-v2-daily-calendar-nav h2{margin:0}
+.scope-v2-daily-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.25rem}
+.scope-v2-daily-calendar-weekday{text-align:center;padding:.5rem .125rem;font-weight:600}
+.scope-v2-daily-calendar-cell{min-height:72px;padding:.375rem .1875rem;border:1px solid currentColor;border-radius:8px;background:transparent;color:inherit;opacity:.68;cursor:pointer}
+.scope-v2-daily-calendar-cell.has-entry{opacity:1}
+.scope-v2-daily-calendar-cell[aria-pressed="true"]{border-width:2px;background:var(--loc-focus,rgba(128,128,128,.16))}
+.scope-v2-daily-calendar-day{display:block;font-weight:600}
+.scope-v2-daily-calendar-flags{display:flex;justify-content:center;gap:.1875rem;flex-wrap:wrap;margin-top:.25rem;font-size:.68rem}
+.scope-v2-daily-calendar-range-cell{min-height:84px;padding:.375rem .25rem;border:1px solid var(--loc-line,rgba(128,128,128,.3));border-radius:8px;opacity:.45}
+.scope-v2-daily-calendar-range-cell.is-selected{border-width:2px;border-color:currentColor;opacity:1}
+.scope-v2-daily-calendar-entry-list{display:grid;gap:.125rem;margin-top:.25rem;font-size:.72rem}
+.scope-v2-current-rivers-canvas{overflow-x:auto;margin:1rem 0 1.25rem;cursor:default}
+.scope-v2-current-rivers-canvas.is-clickable{cursor:pointer}
+.scope-v2-current-rivers-svg{display:block;width:100%;min-width:900px;height:520px}
+.scope-period-timeline{min-height:var(--scope-period-timeline-min-height,220px)}

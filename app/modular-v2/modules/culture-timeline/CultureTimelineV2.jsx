@@ -112,8 +112,8 @@ function CurrentCultureRivers({ranges,onSelect=null}){
   const endLabel=dateLabel(intersectionEnd);
 
   return <section className='scope-v2-current-rivers'>
-    <div className='scope-v2-current-rivers-canvas' role='button' tabIndex={0} onClick={()=>onSelect?.({type:'current-intersection'})} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();onSelect?.({type:'current-intersection'});}}} style={{overflowX:'auto',margin:'1rem 0 1.25rem',cursor:onSelect?'pointer':'default'}}>
-      <svg viewBox='0 0 1200 520' role='img' aria-label='Current 個人時期與 LunaRunes Current 的交集時間河道' style={{display:'block',width:'100%',minWidth:'900px',height:'520px'}}>
+    <div className={'scope-v2-current-rivers-canvas'+(onSelect?' is-clickable':'')} role='button' tabIndex={0} onClick={()=>onSelect?.({type:'current-intersection'})} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();onSelect?.({type:'current-intersection'});}}}>
+      <svg viewBox='0 0 1200 520' role='img' aria-label='Current 個人時期與 LunaRunes Current 的交集時間河道' className='scope-v2-current-rivers-svg'>
         <title>兩個 Scope Current 時期的集合交集</title>
         <rect x='20' y='20' width='1160' height='480' rx='24' fill='var(--loc-panel,#fff)' stroke='var(--loc-border,#999)' strokeWidth='1'/>
         <text x='64' y='72' fill='var(--loc-text,#111)' fontSize='23' fontWeight='700'>Current × Current 交會集合</text>
@@ -193,7 +193,7 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
   return <div className='scope-period-timeline-wrap'>
     {!ready&&!chartError?<p className='scope-v2-status'>載入時間長河…</p>:null}
     {chartError?<p className='scope-v2-status'>圖表載入失敗，以下改用清單顯示。</p>:null}
-    <div ref={containerRef} className='scope-period-timeline' role='region' aria-label={mode==='overview'?'所有時期與定錨點時間長河':'Current 時期時間長河'} style={{minHeight:timelineHeight+'px'}}/>
+    <div ref={containerRef} className='scope-period-timeline' role='region' aria-label={mode==='overview'?'所有時期與定錨點時間長河':'Current 時期時間長河'} style={{'--scope-period-timeline-min-height':timelineHeight+'px'}}/>
     {chartError?<ol className='scope-v2-list'>
       {fallbackRows.map(row=><li key={row.id}><strong>{row.content}</strong>{row.group?<span> · {groupLabel(row.group)}</span>:null}<span> · {dateLabel(row.start)}</span>{row.title?<p>{row.title}</p>:null}</li>)}
     </ol>:null}

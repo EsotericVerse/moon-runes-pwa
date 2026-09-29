@@ -14,7 +14,7 @@ export default function WorkFullTextV2({
     </button>
     {open&&error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
     {open&&!loading&&!error?<div className="scope-v2-inline-card">
-      <p style={{whiteSpace:'pre-wrap'}}>{content||emptyText}</p>
+      <p className="scope-v2-prewrap">{content||emptyText}</p>
     </div>:null}
   </div>;
 }

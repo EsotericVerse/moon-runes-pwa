@@ -182,13 +182,13 @@ export default function DailyLogClient(){
     </header>
 
     <section className="loc-card" aria-label="每日符文行事曆">
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,marginBottom:16}}>
+      <div className="scope-v2-daily-calendar-nav">
         <button className="loc-button" type="button" disabled={monthValue<=FIRST_MONTH||loading} onClick={()=>setMonthValue(value=>value-1)} aria-label="上個月">‹</button>
-        <h2 style={{margin:0}} aria-live="polite">{monthLabel(monthValue)}</h2>
+        <h2 aria-live="polite">{monthLabel(monthValue)}</h2>
         <button className="loc-button" type="button" disabled={loading} onClick={()=>setMonthValue(value=>value+1)} aria-label="下個月">›</button>
       </div>
-      <div role="grid" aria-label={monthLabel(monthValue)} style={{display:'grid',gridTemplateColumns:'repeat(7,minmax(0,1fr))',gap:4}}>
-        {WEEKDAYS.map((day,index)=><div role="columnheader" key={'weekday-'+index} style={{textAlign:'center',padding:'8px 2px',fontWeight:600}}>{day}</div>)}
+      <div role="grid" aria-label={monthLabel(monthValue)} className="scope-v2-daily-calendar-grid">
+        {WEEKDAYS.map((day,index)=><div role="columnheader" key={'weekday-'+index} className="scope-v2-daily-calendar-weekday">{day}</div>)}
         {cells.map((day,index)=>{
           if(!day)return <div role="gridcell" aria-hidden="true" key={'blank-'+index}/>;
           const key=dateKey(year,month,day);
@@ -203,10 +203,10 @@ export default function DailyLogClient(){
             aria-pressed={selected}
             aria-label={formatDate(key)+(main?'，主抽':'')+(supplement?'，補抽':'')}
             onClick={()=>setSelectedDate(key)}
-            style={{minHeight:72,padding:'6px 3px',borderRadius:8,border:selected?'2px solid currentColor':'1px solid currentColor',background:selected?'var(--loc-focus,rgba(128,128,128,.16))':'transparent',color:'inherit',opacity:entries.length?1:.68,cursor:'pointer'}}
+            className={"scope-v2-daily-calendar-cell"+(entries.length?" has-entry":"")}
           >
-            <span style={{display:'block',fontWeight:600}}>{day}</span>
-            <span style={{display:'flex',justifyContent:'center',gap:3,flexWrap:'wrap',marginTop:4,fontSize:'0.68rem'}}>
+            <span className="scope-v2-daily-calendar-day">{day}</span>
+            <span className="scope-v2-daily-calendar-flags">
               {main?<span>主抽</span>:null}{supplement?<span>補抽</span>:null}
             </span>
           </button>;

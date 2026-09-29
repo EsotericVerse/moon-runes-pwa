@@ -62,8 +62,8 @@ function RangeCalendar({rows,startDate,endDate}){
       const cells=[...Array(firstWeekday).fill(null),...Array.from({length:dayCount},(_,index)=>index+1)];
       return <section className="loc-card" key={monthValue} aria-label={year+' 年 '+month+' 月每日符文行事曆'}>
         <h3>{year} 年 {month} 月</h3>
-        <div role="grid" style={{display:'grid',gridTemplateColumns:'repeat(7,minmax(0,1fr))',gap:4}}>
-          {WEEKDAYS.map((day,index)=><div role="columnheader" key={index} style={{textAlign:'center',padding:'7px 2px',fontWeight:600}}>{day}</div>)}
+        <div role="grid" className="scope-v2-daily-calendar-grid">
+          {WEEKDAYS.map((day,index)=><div role="columnheader" key={index} className="scope-v2-daily-calendar-weekday">{day}</div>)}
           {cells.map((day,index)=>{
             if(!day)return <div role="gridcell" aria-hidden="true" key={'blank-'+index}/>;
             const key=dateKey(year,month,day);
@@ -71,9 +71,9 @@ function RangeCalendar({rows,startDate,endDate}){
             const ms=dateMs(key);
             const selected=Number.isFinite(ms)&&ms>=low&&ms<=high;
             return <div role="gridcell" key={key} aria-label={formatDate(key)}
-              style={{minHeight:84,padding:'6px 4px',borderRadius:8,border:selected?'2px solid currentColor':'1px solid var(--loc-line,rgba(128,128,128,.3))',opacity:selected?1:.45}}>
+              className={"scope-v2-daily-calendar-range-cell"+(selected?" is-selected":"")}>
               <strong>{day}</strong>
-              <div style={{display:'grid',gap:2,marginTop:4,fontSize:'0.72rem'}}>
+              <div className="scope-v2-daily-calendar-entry-list">
                 {entries.map(row=><span key={row.draw_kind+'-'+row.rune_number}>
                   {roleLabel(row.draw_kind)}｜{row.rune_name}・{row.direction}
                 </span>)}
