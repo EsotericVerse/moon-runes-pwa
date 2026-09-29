@@ -28,10 +28,10 @@ async function updateNeonRows(table,values,{filters=[]}={}){
 const MEDIA_TYPE_LABELS={suno:'Suno',instagram:'Instagram'};
 const MEDIA_PAGE_SIZE=DEFAULT_LIST_BATCH_SIZE;
 function navigationScopeId(databaseScopeId){
-  return String(databaseScopeId||'')==='lunarunes'||String(databaseScopeId||'')==='lrunes'?'lunarunes':'lo3rwang';
+  return String(databaseScopeId||'').trim();
 }
 
-export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
+export default function MediaMetaSettingsV2({databaseScopeId}){
   const queryClient=useQueryClient();
   const account=useNeonAccount();
   const tableQuery=useQuery({
