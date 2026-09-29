@@ -43,9 +43,6 @@ function rowsOf(data,scopeId){
     return Number(a.order||0)-Number(b.order||0);
   });
 }
-function isCurrent(item){
-  return String(item?.status||'').trim().toLowerCase()==='current';
-}
 function sortPeriods(rows=[]){
   return [...rows].filter(item=>item?.start_date||item?.end_date).sort((a,b)=>
     String(a.start_date||a.end_date||'').localeCompare(String(b.start_date||b.end_date||''))||
@@ -92,10 +89,9 @@ export default function CultureV2(){
 
   const currentRows=useMemo(()=>{
     const scopes=scopeId==='loc'?['lo3rwang','lunarunes']:[scopeId].filter(Boolean);
-    return scopes
-      .map(id=>rows.find(item=>String(item?.scope_id||'')===id&&isCurrent(item)))
-      .filter(Boolean);
-  },[scopeId,rows]);
+    return (query.data?.currentRanges||[])
+      .filter(item=>scopes.includes(String(item?.scope_id||'')));
+  },[scopeId,query.data]);
   const currentByScope=useMemo(()=>new Map(currentRows.map(item=>[String(item.scope_id||''),item])),[currentRows]);
   const currentAuthorPeriod=currentByScope.get('lo3rwang')||null;
   const currentRunePeriod=currentByScope.get('lunarunes')||null;
@@ -327,11 +323,12 @@ export default function CultureV2(){
               labelOf={item=>item.display_label||item.title}
               focus={navigation}
               mode='current'
+              currentRanges={query.data?.currentRanges||[]}
               onSelect={()=>window.alert('歡迎到該成員的時間長河看明細！')}
             />:<section className='scope-v2-card scope-v2-culture-period-2d' aria-label='時期'>
               <p className='loc-eyebrow'>Period</p>
               <h3>時期</h3>
-              <label className='scope-v2-culture-period-select'>
+              {primaryPeriods.length?<label className='scope-v2-culture-period-select'>
                 <span>選擇完整時期</span>
                 <select className='scope-v2-select'
                   value={selectedWorkPeriod?.period||selectedWorkPeriod?.start_date||''}
@@ -348,7 +345,7 @@ export default function CultureV2(){
                     {labelOf(item,index)}
                   </option>)}
                 </select>
-              </label>
+              </label>:<p className='scope-v2-culture-period-description'>未設定時期，使用生日作為目前範圍起點。</p>}
               {selectedWorkPeriod?<p className='scope-v2-culture-period-description'>
                 {[selectedWorkPeriod.start_date,selectedWorkPeriod.end_date||'Current'].filter(Boolean).join(' – ')}
               </p>:null}

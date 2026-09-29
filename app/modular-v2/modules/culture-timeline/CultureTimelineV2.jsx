@@ -79,22 +79,18 @@ function riverPath(startX,endX,yAt,steps=48){
   return points.join(' ');
 }
 
-function CurrentCultureRivers({rows,onSelect=null}){
-  const personal=[...rows].filter(row=>row.scopeId==='lo3rwang');
-  const runes=[...rows].filter(row=>row.scopeId==='lunarunes');
-  const personalCurrent=personal.find(row=>row.entryType==='period'&&row.status.trim().toLowerCase()==='current')
-    ||personal.find(row=>row.status.trim().toLowerCase()==='current');
-  const runeCurrent=runes.find(row=>row.entryType==='period'&&row.status.trim().toLowerCase()==='current')
-    ||runes.find(row=>row.status.trim().toLowerCase()==='current');
-  if(!personalCurrent||!runeCurrent)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><p>目前缺少個人時期或符文 Current 定錨資料。</p></div>;
+function CurrentCultureRivers({ranges,onSelect=null}){
+  const personalCurrent=(ranges||[]).find(row=>String(row?.scope_id||'')==='lo3rwang')||null;
+  const runeCurrent=(ranges||[]).find(row=>String(row?.scope_id||'')==='lunarunes')||null;
+  if(!personalCurrent||!runeCurrent)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><p>目前缺少可計算的時間範圍。</p></div>;
 
-  const personalStartTime=Date.parse(personalCurrent.start);
-  const runeStartTime=Date.parse(runeCurrent.start);
+  const personalStartTime=Date.parse(personalCurrent.start_date||'');
+  const runeStartTime=Date.parse(runeCurrent.start_date||'');
   const intersectionStart=Math.max(personalStartTime,runeStartTime);
   const domainStart=intersectionStart;
   const today=Date.parse(new Date().toISOString().slice(0,10));
-  const personalEnd=Date.parse(personalCurrent.end||'');
-  const runeEnd=Date.parse(runeCurrent.end||'');
+  const personalEnd=Date.parse(personalCurrent.end_date||'');
+  const runeEnd=Date.parse(runeCurrent.end_date||'');
   const personalBound=Number.isFinite(personalEnd)?Math.min(personalEnd,today):today;
   const runeBound=Number.isFinite(runeEnd)?Math.min(runeEnd,today):today;
   const intersectionEnd=Math.min(personalBound,runeBound);
@@ -108,8 +104,8 @@ function CurrentCultureRivers({rows,onSelect=null}){
   const centerY=330;
   const intersectionPath=riverPath(left,right,()=>centerY,24);
   const intersectionColor='var(--loc-accent,#6b63ff)';
-  const personalTitle=personalCurrent.content||'Current 個人時期';
-  const runeTitle=runeCurrent.content||'Current LunaRunes';
+  const personalTitle=personalCurrent.display_label||personalCurrent.title||'目前個人時期';
+  const runeTitle=runeCurrent.display_label||runeCurrent.title||'目前 LunaRunes';
   const startLabel=dateLabel(domainStart);
   const endLabel=dateLabel(intersectionEnd);
 
@@ -136,14 +132,14 @@ function CurrentCultureRivers({rows,onSelect=null}){
   </section>;
 }
 
-export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),focus={},mode='period',onSelect=null}){
+export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),focus={},mode='period',currentRanges=[],onSelect=null}){
   const containerRef=useRef(null);
   const onSelectRef=useRef(onSelect);
   const [ready,setReady]=useState(false);
   const [chartError,setChartError]=useState(false);
   const rows=useMemo(()=>timelineRows(items,labelOf,focus),[items,labelOf,focus]);
   const fallbackRows=useMemo(()=>[...rows].sort((a,b)=>String(b.start).localeCompare(String(a.start))),[rows]);
-  const currentConfluence=mode==='current'&&rows.some(row=>row.scopeId==='lo3rwang'&&row.status.trim().toLowerCase()==='current')&&rows.some(row=>row.scopeId==='lunarunes'&&row.status.trim().toLowerCase()==='current');
+  const currentConfluence=mode==='current'&&currentRanges.some(row=>String(row?.scope_id||'')==='lo3rwang')&&currentRanges.some(row=>String(row?.scope_id||'')==='lunarunes');
   const groupCount=new Set(rows.map(row=>row.group).filter(Boolean)).size;
   const compactGroupCount=Math.max(1,groupCount||rows.length);
   const timelineHeight=(mode==='source'||mode==='overview')
@@ -188,7 +184,7 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
     return()=>{cancelled=true;if(instance)instance.destroy();};
   },[rows,timelineHeight]);
 
-  if(currentConfluence)return <CurrentCultureRivers rows={rows} onSelect={onSelect}/>;
+  if(currentConfluence)return <CurrentCultureRivers ranges={currentRanges} onSelect={onSelect}/>;
   if(!rows.length)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><div className='scope-period-timeline scope-period-timeline-empty-line' role='region' aria-label='時間長河'/><p>{mode==='overview'?'尚未設定時期，目前以「所有」總覽顯示。':'目前時期尚無可顯示的時間資料。'}</p></div>;
 
   return <div className='scope-period-timeline-wrap'>

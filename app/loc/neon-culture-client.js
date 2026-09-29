@@ -1,7 +1,7 @@
 'use client';
 
 import {ScopeCultureResponseSchema} from './scope-feature-contracts';
-import {selectManagedScopeIds} from './scope-list';
+import {selectManagedScopes} from './scope-list';
 import {decodeCultureText,formatCultureDateTime,groupWorksByWeek} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
 import {workDisplayText} from '../modular-v2/work-display-model.v2';
 import {selectGalaxyPage,selectSourceWeekly} from './aggregate-query';
@@ -137,9 +137,11 @@ export async function selectScopeCultureData(scopeId){
   const dataId=dataScopeId(scopeId);
   if(!['loc','lrunes','lo3rwang'].includes(dataId))throw new Error('資料設定無效');
 
-  const scopeIds=dataId==='loc'
-    ?(await selectManagedScopeIds()).filter(scope=>scope!=='loc')
-    :[dataId];
+  const managedScopes=await selectManagedScopes();
+  const scopeRows=dataId==='loc'
+    ?managedScopes.filter(scope=>scope.id!=='loc')
+    :managedScopes.filter(scope=>scope.id===dataId);
+  const scopeIds=scopeRows.map(scope=>scope.id);
   const settled=await Promise.allSettled(scopeIds.map(async scope=>{
     const rows=await selectCultureTimeRows(scope);
     return rows.map(row=>({...row,scope_id:runtimeScopeId(scope)}));
@@ -154,6 +156,35 @@ export async function selectScopeCultureData(scopeId){
     scope_id:runtimeScopeId(row.scope_id),
     group_label:`${runtimeScopeId(row.scope_id)} 時期`
   }));
+  const currentRanges=scopeRows.map(scopeMeta=>{
+    const scopeId=runtimeScopeId(scopeMeta.id);
+    const scopePeriods=periods.filter(row=>runtimeScopeId(row.scope_id)===scopeId);
+    const currentPeriod=scopePeriods.find(row=>Boolean(row.open_end))||null;
+    if(currentPeriod){
+      const normalized=periodRows([currentPeriod])[0];
+      return {
+        ...normalized,
+        scope_id:scopeId,
+        entry_type:'period',
+        display_label:currentPeriod.title||normalized.title,
+        derived_from:'period'
+      };
+    }
+    if(scopePeriods.length)return null;
+    const birthday=String(scopeMeta.birthday||'').slice(0,10);
+    if(!birthday)return null;
+    return {
+      scope_id:scopeId,
+      entry_type:'scope_range',
+      period:'',
+      title:'目前時期',
+      display_label:'目前時期',
+      start_date:birthday,
+      end_date:null,
+      open_end:true,
+      derived_from:'birthday'
+    };
+  }).filter(Boolean);
   const events=scopeContext.filter(row=>row.entry_type==='event').map(row=>({
     entry_id:row.event_id||row.entry_key,
     event_id:row.event_id||row.entry_key,
@@ -183,6 +214,7 @@ export async function selectScopeCultureData(scopeId){
     scopeId:id,
     eras:{eras},
     periods,
+    currentRanges,
     timelineItems:timelineItems(scopeContext),
     events,
     trajectories,

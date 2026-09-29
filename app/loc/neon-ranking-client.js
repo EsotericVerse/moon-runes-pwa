@@ -45,7 +45,7 @@ async function selectNeonAllRows(table,options={}){
 }
 
 
-const PERIOD_TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,time_date,anchor_pair,date_status,year_value';
+const PERIOD_TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,time_date,anchor_pair,date_status,year_value';
 function periodDate(row){
   if(row?.time_date)return String(row.time_date).slice(0,10);
   const year=Number(row?.year_value);
@@ -75,6 +75,7 @@ async function selectPeriodRanges(scopeId){
       period:id,
       title:row.label||id,
       order_no:row.display_order,
+      open_end:before!=='0'&&after==='0',
       start_date:start,
       end_date:end
     };
@@ -440,7 +441,7 @@ async function resolveComparisonRanges(scopeId,period){
   if(value&&value!=='all'){
     selected=rows.find(row=>String(row.period||'')===value||String(row.entry_key||'')===value)||null;
   }else{
-    selected=rows.find(row=>String(row.status||'').trim().toLowerCase()==='current')
+    selected=rows.find(row=>Boolean(row.open_end))
       ||rows.at(-1)
       ||null;
   }
