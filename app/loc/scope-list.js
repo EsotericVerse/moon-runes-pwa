@@ -1,7 +1,6 @@
 'use client';
 
 import {selectNeonCount,selectNeonRows} from './neon-query';
-import {mappedScopeTable,normalizeDataScopeId,selectScopeTableMapping} from './scope-table-mapping';
 
 const SCOPE_ID_PATTERN=/^[a-z][a-z0-9]*$/;
 
@@ -45,11 +44,3 @@ export async function selectManagedScopeIds(){
   return (await selectManagedScopes()).map(row=>row.id);
 }
 
-export async function scopeDataTable(scopeId,kind,{email=''}={}){
-  const id=normalizeDataScopeId(scopeId);
-  const mapping=await selectScopeTableMapping(id,{email});
-  if(kind==='galaxy')return mappedScopeTable(id,'galaxy',mapping.galaxy);
-  if(kind==='galaxy_media')return mappedScopeTable(id,'galaxy',mapping.galaxy)+'_media';
-  if(kind==='time')return mappedScopeTable(id,'time',mapping.time);
-  throw new Error('Scope table kind 無效');
-}
