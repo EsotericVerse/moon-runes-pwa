@@ -111,6 +111,18 @@ async function rowsForType(scopeId,type,period,rangeOverride=undefined){
   return [];
 }
 
+function mergeLocSourceRows(rows=[]){
+  const totals=new Map();
+  for(const row of rows){
+    const term=String(row?.term||'').trim();
+    if(!term)continue;
+    totals.set(term,(totals.get(term)||0)+(Number(row?.item_count)||0));
+  }
+  return [...totals.entries()]
+    .map(([term,count])=>rankingRow('source',term,count,'loc','all'))
+    .sort((a,b)=>b.item_count-a.item_count||a.term.localeCompare(b.term));
+}
+
 async function queryScopeRankingRows(scopeId,{rankingType='',navigation={}}={}){
   const id=String(scopeId||'').trim();
   if(!id)throw new Error('資料設定無效');
@@ -119,9 +131,9 @@ async function queryScopeRankingRows(scopeId,{rankingType='',navigation={}}={}){
   const period=String(navigation.period||'all');
   let rows=[];
   if(id==='loc'){
-    const scopes=await selectManagedScopes();
-    const results=await Promise.all(scopes.map(scope=>sourceRows(scope.id,period,null)));
-    rows=results.flat();
+    const scopes=(await selectManagedScopes()).filter(scope=>scope.id!=='loc');
+    const results=await Promise.all(scopes.map(scope=>sourceRows(scope.id,'all',null)));
+    rows=mergeLocSourceRows(results.flat());
   }else{
     rows=await rowsForType(id,type,period,undefined);
   }
