@@ -2,34 +2,10 @@
 
 import {createTextIndex,searchTextIndex} from './text-engine.mjs';
 import {publicContentFilters} from './content-policy';
-import {neonPublicClient} from './neon-client';
+import {selectNeonRows} from './neon-query';
 import {DEFAULT_LIST_BATCH_SIZE,RUNE_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
 
 
-function __relation(table){
-  const [schema,name]=String(table).split('.');
-  return neonPublicClient.schema(schema).from(name);
-}
-function __filters(query,filters=[]){
-  for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
-  return query;
-}
-function __orders(query,orders=[]){
-  for(const order of orders)query=query.order(order.column,{ascending:order.ascending??true,nullsFirst:order.nullsFirst});
-  return query;
-}
-async function __select(table,{columns='*',filters=[],orFilter='',orders=[],limit=null,offset=0,range=null,count=null}={}){
-  let query=__relation(table).select(columns,count?{count}:undefined);
-  query=__filters(query,filters);
-  if(orFilter)query=query.or(orFilter);
-  query=__orders(query,orders);
-  if(Array.isArray(range)&&range.length===2)query=query.range(range[0],range[1]);
-  else if(Number.isFinite(limit))query=limit>0?query.range(offset,offset+limit-1):query.limit(0);
-  const {data,error,count:total}=await query;
-  if(error)throw new Error(error.message||('Neon SELECT '+table+' failed'));
-  return {rows:data||[],count:total};
-}
-async function selectNeonRows(table,options={}){return __select(table,options);}
 function unique(values=[]){
   return [...new Set(values.map(value=>String(value||'').trim()).filter(Boolean))];
 }
