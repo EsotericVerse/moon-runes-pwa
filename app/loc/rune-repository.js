@@ -96,10 +96,11 @@ export async function selectRuneEtcRows({runeNumbers=[],types=[]}={}){
   });
 }
 
-export async function selectRuneCatalog({types=[]}={}){
+export async function selectRuneCatalog({types=[],detail=false}={}){
   const selectedTypes=normalizeEtcTypes(types);
+  const columns=detail?`${RUNE_COLUMNS},${RUNE_DETAIL_COLUMNS}`:RUNE_COLUMNS;
   const [runes,etcRows]=await Promise.all([
-    selectRuneTable('runes',RUNE_COLUMNS,{
+    selectRuneTable('runes',columns,{
       orders:[{column:'rune_id',ascending:true}]
     }),
     selectedTypes.length?selectRuneEtcRows({types:selectedTypes}):Promise.resolve([])
