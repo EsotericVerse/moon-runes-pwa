@@ -13,7 +13,7 @@ export function workDisplayTitle({
   title='',
   fallback=WORK_FALLBACK_TITLE
 }={}){
-  const explicit=workDisplayText(title).trim();
+  const explicit=decodeCultureText(title??'').trim();
   return explicit||fallback;
 }
 
