@@ -234,7 +234,20 @@ export default function CultureV2(){
     });
   },[query.data,scopeId,periodVolumeByStart]);
   const periodTimelineItems=useMemo(()=>timelineItems.filter(item=>['period','anchor'].includes(String(item?.entry_type||''))),[timelineItems]);
-  const workTimelineItems=workTimelineQuery.data?.buckets||[];
+  const workTimelineEvents=useMemo(()=>(query.data?.events||[])
+    .filter(item=>String(item?.scope_id||'')===scopeId&&item?.start_date&&item?.end_date)
+    .map(item=>({
+      ...item,
+      id:'event:'+String(item.event_id||item.entry_id||item.title),
+      entry_type:'event',
+      group_label:'事件',
+      display_label:item.title||'事件'
+    })),[query.data,scopeId]);
+  const workTimelineItems=useMemo(()=>[
+    ...(workTimelineQuery.data?.buckets||[]),
+    ...workTimelineEvents
+  ],[workTimelineQuery.data,workTimelineEvents]);
+  const hasTimelineSurface=isLoc?timelineItems.length>0:Boolean(scopeRange?.start_date||timelineItems.length);
 
   const classificationBuckets=classificationMode==='source'
     ?(sourceSnapshotQuery.data?.buckets||[])
@@ -326,8 +339,8 @@ export default function CultureV2(){
       <h2>時間長河</h2>
       {query.isPending?<p className='scope-v2-status'>{FEATURE_LOADING_MESSAGE}</p>:null}
       {query.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(query.error)}</p>:null}
-      {!query.isPending&&!query.error&&!timelineItems.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
-      {!query.isPending&&!query.error&&timelineItems.length?<>
+      {!query.isPending&&!query.error&&!hasTimelineSurface?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+      {!query.isPending&&!query.error&&hasTimelineSurface?<>
 
 
             {isLoc?<CultureTimelineV2
