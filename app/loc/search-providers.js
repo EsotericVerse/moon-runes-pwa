@@ -3,8 +3,9 @@
 import {publicContentFilters} from './content-policy';
 import {neonPublicClient} from './neon-client';
 import {DEFAULT_LIST_BATCH_SIZE,RUNE_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
+import {resolveScopeTables} from './scope-table-mapping';
 
-function relation(table){
+function relation(activeTable){
   const [schema,name]=String(table).split('.');
   return neonPublicClient.schema(schema).from(name);
 }
@@ -48,9 +49,13 @@ function dateFilters(dateColumn,startDate,endDate){
   if(dateColumn&&endDate)filters.push({column:dateColumn,operator:'lte',value:endDate});
   return filters;
 }
-function recordFor(row,source,providerId,scopeId){
-  return {row:{...row,scope_id:row?.scope_id||scopeId},source,providerId};
+function recordFor(row,source,providerId,scopeId,table){
+  return {row:{...row,scope_id:row?.scope_id||scopeId,__table:table},source,providerId};
 }
+async function resolvedTable(table){return typeof table==='function'?await table():table;}
+const galaxyTable=scopeId=>async()=>(await resolveScopeTables(scopeId)).galaxy;
+const mediaTable=scopeId=>async()=>(await resolveScopeTables(scopeId)).galaxyMedia;
+const timeTable=scopeId=>async()=>(await resolveScopeTables(scopeId)).time;
 
 function makeProvider({id,table,source,scopeId,idColumn,columns,searchFields,filters=[],dateColumn='',batchSize=DEFAULT_LIST_BATCH_SIZE}) {
   const outputColumns=Object.freeze(unique(columns));
@@ -65,27 +70,28 @@ function makeProvider({id,table,source,scopeId,idColumn,columns,searchFields,fil
     filters:frozenFilters,
     async search(query,{cursor=0,startDate='',endDate='',and=[],nor=[]}={}){
       const offset=Math.max(0,Math.floor(Number(cursor)||0));
+      const activeTable=await resolvedTable(table);
       const filters=[...frozenFilters,...dateFilters(dateColumn,startDate,endDate)];
       const orders=dateColumn
         ?[{column:dateColumn,ascending:false},{column:idColumn,ascending:true}]
         :[{column:idColumn,ascending:true}];
 
-      let countQuery=relation(table).select(idColumn,{count:'exact',head:true});
+      let countQuery=relation(activeTable).select(idColumn,{count:'exact',head:true});
       countQuery=applyFilters(countQuery,filters);
       countQuery=applyLiteralTerms(countQuery,frozenFields,query,and,nor);
       const {error:countError,count}=await countQuery;
-      if(countError)throw new Error(countError.message||('Neon COUNT '+table+' failed'));
+      if(countError)throw new Error(countError.message||('Neon COUNT '+activeTable+' failed'));
       const totalCount=Number(count)||0;
       if(!totalCount||offset>=totalCount)return {rows:[],hasMore:false,nextCursor:null,totalCount};
 
-      let dataQuery=relation(table).select(outputColumns.join(','));
+      let dataQuery=relation(activeTable).select(outputColumns.join(','));
       dataQuery=applyFilters(dataQuery,filters);
       dataQuery=applyLiteralTerms(dataQuery,frozenFields,query,and,nor);
       dataQuery=applyOrders(dataQuery,orders);
       dataQuery=dataQuery.range(offset,offset+pageSize-1);
       const {data,error}=await dataQuery;
-      if(error)throw new Error(error.message||('Neon SELECT '+table+' failed'));
-      const rows=(data||[]).map(row=>recordFor(row,source,id,scopeId));
+      if(error)throw new Error(error.message||('Neon SELECT '+activeTable+' failed'));
+      const rows=(data||[]).map(row=>recordFor(row,source,id,scopeId,activeTable));
       const nextOffset=offset+rows.length;
       const hasMore=nextOffset<totalCount;
       return {rows,hasMore,nextCursor:hasMore?nextOffset:null,totalCount};
@@ -95,7 +101,7 @@ function makeProvider({id,table,source,scopeId,idColumn,columns,searchFields,fil
 
 const authorText=makeProvider({
   id:'author-text',
-  table:'silver.lo3rwang_galaxy',
+  table:galaxyTable('lo3rwang'),
   source:'作者正文',
   scopeId:'lo3rwang',
   idColumn:'uid',
@@ -106,7 +112,7 @@ const authorText=makeProvider({
 });
 const authorMedia=makeProvider({
   id:'author-media',
-  table:'silver.lo3rwang_galaxy_media',
+  table:mediaTable('lo3rwang'),
   source:'音樂與多媒體',
   scopeId:'lo3rwang',
   idColumn:'media_id',
@@ -116,7 +122,7 @@ const authorMedia=makeProvider({
 });
 const authorMediaAll=makeProvider({
   id:'author-media-all',
-  table:'silver.lo3rwang_galaxy_media',
+  table:mediaTable('lo3rwang'),
   source:'多媒體',
   scopeId:'lo3rwang',
   idColumn:'media_id',
@@ -126,7 +132,7 @@ const authorMediaAll=makeProvider({
 });
 const authorTimeline=makeProvider({
   id:'author-timeline',
-  table:'silver.lo3rwang_time',
+  table:timeTable('lo3rwang'),
   source:'作者脈絡',
   scopeId:'lo3rwang',
   idColumn:'record_id',
@@ -150,7 +156,7 @@ const runeCore=makeProvider({
 });
 const runeTimeline=makeProvider({
   id:'rune-timeline',
-  table:'silver.lrunes_time',
+  table:timeTable('lrunes'),
   source:'符文時期',
   scopeId:'lrunes',
   idColumn:'record_id',
@@ -165,7 +171,7 @@ const runeTimeline=makeProvider({
 });
 const runeText=makeProvider({
   id:'rune-text',
-  table:'silver.lrunes_galaxy',
+  table:galaxyTable('lrunes'),
   source:'符文文字',
   scopeId:'lrunes',
   idColumn:'uid',
@@ -177,7 +183,7 @@ const runeText=makeProvider({
 });
 const runeMedia=makeProvider({
   id:'rune-media',
-  table:'silver.lrunes_galaxy_media',
+  table:mediaTable('lrunes'),
   source:'符文多媒體',
   scopeId:'lrunes',
   idColumn:'media_id',
@@ -188,7 +194,7 @@ const runeMedia=makeProvider({
 });
 const runeMediaAll=makeProvider({
   id:'rune-media-all',
-  table:'silver.lrunes_galaxy_media',
+  table:mediaTable('lrunes'),
   source:'符文多媒體',
   scopeId:'lrunes',
   idColumn:'media_id',
