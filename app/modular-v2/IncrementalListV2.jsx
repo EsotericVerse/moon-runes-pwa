@@ -57,7 +57,7 @@ export default function IncrementalListV2({
 
   if(!source.length&&!loading&&!externalHasMore)return empty;
   return <>
-    <div className={className}>
+    <div ref={scrollRootRef||undefined} className={className}>
       {visible.map((item,index)=>renderItem(item,index))}
     </div>
     <IncrementalLoadV2
