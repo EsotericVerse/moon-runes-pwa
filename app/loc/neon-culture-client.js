@@ -257,8 +257,11 @@ export async function selectScopeCultureData(scopeId){
     }));
 
     const openRanges=bundles.map(bundle=>bundle.openRange).filter(Boolean);
-    const starts=openRanges.map(row=>String(row.start_date||'')).filter(Boolean).sort();
-    const intersectionStart=starts.at(-1)||'';
+    const allScopesHaveOpenRange=bundles.every(bundle=>Boolean(bundle.openRange?.start_date));
+    const starts=allScopesHaveOpenRange
+      ?openRanges.map(row=>String(row.start_date||'')).filter(Boolean).sort()
+      :[];
+    const intersectionStart=allScopesHaveOpenRange?(starts.at(-1)||''):'';
     const today=new Date().toISOString().slice(0,10);
 
     const periodRiverItems=bundles.flatMap(bundle=>bundle.context
@@ -391,7 +394,7 @@ export async function selectScopePeriodSourceSnapshot(scopeId,{startDate,endDate
   if(!startDate)return {groups:[],buckets:[],totalCount:0};
   const filters=publicContentFilters(dateFilters(startDate,endDate));
   const [catalog,daily,totalCount]=await Promise.all([
-    selectSourceCatalog({scopeId,startDate,endDate:endDate||'',limit:20}),
+    selectSourceCatalog({scopeId,startDate,endDate:endDate||'',limit:5000}),
     selectSourceDaily({scopeId,startDate,endDate:endDate||''}),
     selectNeonCount((await resolveScopeTables(scopeId)).galaxy,{filters})
   ]);
@@ -483,7 +486,7 @@ export async function selectScopeMediaSnapshot(scopeId,{startDate,endDate}={}){
   const table=(await resolveScopeTables(dataScopeId(scopeId))).galaxyMedia;
   const filters=dateFilters(startDate,endDate);
   const [groupRows,daily,totalCount]=await Promise.all([
-    selectCategoryCounts(table,'media_type',{startDate,endDate,limit:20}),
+    selectCategoryCounts(table,'media_type',{startDate,endDate,limit:5000}),
     selectDailyCategoryCounts(table,'media_type',{startDate,endDate}),
     selectNeonCount(table,{filters})
   ]);
