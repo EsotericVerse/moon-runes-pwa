@@ -75,7 +75,7 @@ async function selectCultureTimeRows(scopeId,tableName=''){
   ];
 }
 
-function currentPeriodRangeFromRows(scopeId,rows=[]){
+function openPeriodRangeFromRows(scopeId,rows=[]){
   const period=[...rows]
     .filter(row=>row.entry_type==='period'&&row.open_end&&row.start_date)
     .sort((a,b)=>Number(b.order_no||0)-Number(a.order_no||0))[0];
@@ -83,8 +83,8 @@ function currentPeriodRangeFromRows(scopeId,rows=[]){
   return {
     ...period,
     scope_id:runtimeScopeId(scopeId),
-    display_label:period.title||period.period||'目前時期',
-    derived_from:'period'
+    display_label:period.title||period.period||'時期',
+    derived_from:'anchor_pair.after=0'
   };
 }
 
@@ -171,7 +171,7 @@ export async function selectScopeCultureData(scopeId){
     const managedScopes=(await selectManagedScopes()).filter(scope=>scope.id!=='loc');
     if(!managedScopes.length){
       return ScopeCultureResponseSchema.parse({
-        scopeId:id,eras:{eras:[]},periods:[],currentRanges:[],scopeRanges:[],
+        scopeId:id,eras:{eras:[]},periods:[],openRanges:[],scopeRanges:[],
         timelineItems:[],events:[],trajectories:[],works:[],intersectionStart:''
       });
     }
@@ -187,13 +187,13 @@ export async function selectScopeCultureData(scopeId){
         galaxy,
         galaxyMedia:galaxy+'_media',
         context,
-        current:currentPeriodRangeFromRows(scope.id,context),
+        openRange:openPeriodRangeFromRows(scope.id,context),
         parts:cultureParts(context,runtimeId)
       };
     }));
 
-    const currentRanges=bundles.map(bundle=>bundle.current).filter(Boolean);
-    const starts=currentRanges.map(row=>String(row.start_date||'')).filter(Boolean).sort();
+    const openRanges=bundles.map(bundle=>bundle.openRange).filter(Boolean);
+    const starts=openRanges.map(row=>String(row.start_date||'')).filter(Boolean).sort();
     const intersectionStart=starts.at(-1)||'';
     const textFilters=intersectionStart?publicContentFilters(dateFilters(intersectionStart,null)):[];
     const mediaFilters=intersectionStart?dateFilters(intersectionStart,null):[];
@@ -214,7 +214,7 @@ export async function selectScopeCultureData(scopeId){
       :bundles.map(bundle=>({runtimeId:bundle.runtimeId,text:{rows:[],count:0},mediaCount:0}));
 
     const workByScope=new Map(workResults.map(result=>[result.runtimeId,result]));
-    for(const range of currentRanges){
+    for(const range of openRanges){
       const result=workByScope.get(String(range.scope_id||''))||{text:{count:0},mediaCount:0};
       const textCount=Number(result.text?.count)||0;
       const mediaCount=Number(result.mediaCount)||0;
@@ -225,7 +225,7 @@ export async function selectScopeCultureData(scopeId){
     }
 
     const today=new Date().toISOString().slice(0,10);
-    const intersectionTimeline=currentRanges.map(range=>{
+    const intersectionTimeline=openRanges.map(range=>{
       const scope=String(range.scope_id||'');
       const count=Number(range.item_count)||0;
       return {
@@ -276,7 +276,7 @@ export async function selectScopeCultureData(scopeId){
       scopeId:id,
       eras:{eras:bundles.flatMap(bundle=>bundle.parts.eras)},
       periods:bundles.flatMap(bundle=>bundle.parts.periods),
-      currentRanges,
+      openRanges,
       scopeRanges:[],
       timelineItems:intersectionTimeline,
       events:[],
@@ -292,12 +292,12 @@ export async function selectScopeCultureData(scopeId){
   const scopeContext=await selectCultureTimeRows(dataId,tables.time);
   const runtimeId=runtimeScopeId(dataId);
   const parts=cultureParts(scopeContext,runtimeId);
-  const currentRange=currentPeriodRangeFromRows(dataId,scopeContext);
+  const openRange=openPeriodRangeFromRows(dataId,scopeContext);
   return ScopeCultureResponseSchema.parse({
     scopeId:id,
     eras:{eras:parts.eras},
     periods:parts.periods,
-    currentRanges:currentRange?[currentRange]:[],
+    openRanges:openRange?[openRange]:[],
     scopeRanges:[],
     timelineItems:timelineItems(parts.normalizedContext),
     events:parts.events,
