@@ -39,9 +39,10 @@ function sortPeriods(rows=[]){
 function periodRange(rows=[],scope=''){
   const starts=rows.map(row=>row.start_date||row.end_date).filter(Boolean).sort();
   const ends=rows.map(row=>row.end_date||row.start_date).filter(Boolean).sort();
+  const openEnded=rows.some(row=>Boolean(row?.open_end)||!row?.end_date);
   return {
     period:'all',title:'全部時間',display_label:'全部時間',
-    start_date:starts[0]||'',end_date:ends.at(-1)||null,scope_id:scope
+    start_date:starts[0]||'',end_date:openEnded?null:(ends.at(-1)||null),scope_id:scope
   };
 }
 function periodKey(item){
@@ -121,7 +122,7 @@ export default function CultureV2(){
   const categoryQuery=sourceSnapshotQuery;
   const selectedGroup=categoryGroups.find(item=>item.category_key===selectedCategory)||null;
   const periodWorksQuery=useQuery({
-    queryKey:['culture-period-works',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,selectedCategory],
+    queryKey:['culture-period-works',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,selectedCategory,selectedGroup?.source_name||'all'],
     queryFn:()=>selectScopePeriodWorks(classificationScope,{
       startDate:selectedWorkPeriod?.start_date||'',
       endDate:selectedWorkPeriod?.end_date,
@@ -130,7 +131,7 @@ export default function CultureV2(){
       mediaTypes:selectedGroup?.media_types||[],
       edgeLimit:200
     }),
-    enabled:!isLoc,
+    enabled:!isLoc&&(!selectedCategory||Boolean(selectedGroup)),
     staleTime:5*60_000
   });
   const selectedCount=Number(periodWorksQuery.data?.totalCount)||Number(selectedGroup?.item_count)||0;
