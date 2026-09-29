@@ -62,9 +62,12 @@ There is no RC10. After RC9, the next release target is **1.0 Release (1.0R)**. 
 - [ ] Add a basic OAuth-capable authenticated page reader for approved/imported pages: read page text and links, then follow only directly linked pages; limit traversal to two total layers (start page + one linked-page layer), with no deeper recursive crawl.
 - [ ] Route imported text, links, source identity, duplicate checks, and relationships through the existing governance/import pipeline and Neon SSOT.
 - [ ] Deliver the author's private personal-analysis app alongside 1.0R, sharing the governed Current data model rather than a separate corpus authority.
-- [ ] During Personal Scope onboarding, collect a private birth-date anchor and initialize the AI-analysis anchor to 2023-01-01 by default.
-- [ ] Allow the user to edit both anchors later; use them only to derive analysis periods, never to rewrite source timestamps or provenance.
-- [ ] Permit analysis anchors earlier than birth, but clamp personal-text parsing to the birth-date anchor: effective analysis start = later of birth date and configured analysis anchor.
+- [ ] During Personal Scope onboarding, collect a private birth date and initialize the AI-analysis anchor to 2023-01-01 by default.
+- [ ] Treat birth date as stable personal time-axis data; allow later correction for an initially wrong entry rather than routine period tuning.
+- [ ] Allow multimedia chronology from birth, independently of text-style analysis.
+- [ ] Default personal text-style analysis to age 10 onward (`birth date + 10 years`); keep this separate from multimedia analysis.
+- [ ] Use the AI anchor only to partition eligible text into human-default vs AI-possible periods; do not use it as the text-analysis start date.
+- [ ] Keep all anchors/thresholds as derived-analysis settings only; never rewrite source timestamps or provenance.
 - [ ] Complete final regression, responsive, loading, and failure-state checks for the visual application.
 - [ ] Freeze the resulting build as **1.0 Release (1.0R)**.
 

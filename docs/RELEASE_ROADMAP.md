@@ -53,9 +53,10 @@ There is **no RC10**. The version sequence after RC9 goes directly to **1.0 Rele
 9. A basic authenticated page importer/crawler supports OAuth-backed access where required: the user provides a starting page, LOC reads the accessible page text and links, then follows only the directly linked page layer. The crawler is limited to two total layers (start page + one linked-page layer) and does not recursively expand beyond that boundary.
 10. Imported page text, links, source identity, and relationships enter the existing governance/import pipeline; authenticated crawling does not bypass validation, permissions, duplicate handling, or Neon SSOT rules.
 11. A private personal-analysis app is delivered alongside 1.0R for the author's own analysis use. It remains private and uses the same governed Current data model rather than creating a second corpus authority.
-12. Personal Scope onboarding initializes a private birth-date anchor and an AI-analysis anchor. The default AI anchor is 2023-01-01; both anchors remain user-editable after setup.
-13. Anchor changes affect derived analysis periods only. They must not rewrite original content timestamps, provenance, or historical records.
-14. An analysis anchor may be configured earlier than the user's birth date, but personal-text analysis must never begin before the birth-date anchor. The effective analysis start is the later of the birth date and the configured analysis anchor; if the AI anchor predates birth, the AI-influence period begins at birth.
-15. Final responsive, loading, failure-state, regression, and deployment validation passes.
+12. Personal Scope onboarding initializes a private birth date and an AI-analysis anchor. Birth date is treated as stable identity/time-axis data and is editable only to correct an initially wrong entry. The default AI anchor is 2023-01-01 and remains user-adjustable.
+13. Personal multimedia chronology may begin at birth. Text-style analysis is a separate layer and defaults to age 10 onward (`birth date + 10 years`), because earlier-life media records do not imply independently authored text style.
+14. The AI anchor does not define when text analysis begins; it only partitions eligible text into pre-anchor human-default and post-anchor AI-possible periods. If the AI anchor predates the text-style start, the analyzed text simply begins inside the AI-possible period.
+15. These analysis settings affect derived periods only. They must not rewrite original content timestamps, provenance, or historical records.
+16. Final responsive, loading, failure-state, regression, and deployment validation passes.
 
 The resulting build is the LOC **1.0 Release (1.0R)**: a mature, extensible product whose ordinary Scope/Group growth is handled by shared architecture plus simple Admin configuration, with a working governed import path and an accompanying private personal-analysis app.
