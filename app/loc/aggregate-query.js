@@ -2,6 +2,7 @@
 
 import {isReferenceOnlyResource,publicContentFilters} from './content-policy';
 import {selectNeonCount,selectNeonRows} from './neon-query';
+import {resolveScopeTables} from './scope-table-mapping';
 
 async function selectNeonRowById(table,{idColumn,id,columns}={}){
   const page=await selectNeonRows(table,{columns,filters:[{column:idColumn,operator:'eq',value:String(id)}],limit:1});
@@ -19,12 +20,10 @@ function sourceFilters(startDate='',endDate=''){
 }
 
 async function selectAggregateRows(table,{columns,filters=[],orders=[]}={}){
-  const baseCount=await selectNeonCount(table,{filters});
-  if(!baseCount)return [];
   const output=[];
   let offset=0;
   const pageSize=1000;
-  while(offset<baseCount){
+  while(true){
     const {rows}=await selectNeonRows(table,{columns,filters,orders,limit:pageSize,offset});
     if(!rows.length)break;
     output.push(...rows);
@@ -35,16 +34,16 @@ async function selectAggregateRows(table,{columns,filters=[],orders=[]}={}){
 }
 
 export async function selectSourceCatalog({scopeId='lo3rwang',startDate='',endDate='',limit=20}={}){
-  const table=String(scopeId)==='lrunes'?'silver.lrunes_galaxy':'silver.lo3rwang_galaxy';
+  const {galaxy:table}=await resolveScopeTables(scopeId);
   const filters=publicContentFilters([
     ...timeFilters('createtime',startDate,endDate),
     {column:'source_name',operator:'neq',value:''}
   ]);
   const safeLimit=Math.max(1,Math.min(1000,Math.floor(Number(limit)||20)));
   const {rows}=await selectNeonRows(table,{
-    columns:'source_name,work_count:count()',
+    columns:'source_name,item_count:count()',
     filters,
-    orders:[{column:'work_count',ascending:false},{column:'source_name',ascending:true}],
+    orders:[{column:'item_count',ascending:false},{column:'source_name',ascending:true}],
     limit:safeLimit,
     offset:0
   });
@@ -52,7 +51,7 @@ export async function selectSourceCatalog({scopeId='lo3rwang',startDate='',endDa
     rows:rows.map(row=>({
       scope_id:String(scopeId)==='lrunes'?'lrunes':'lo3rwang',
       source_name:String(row.source_name||'').trim(),
-      work_count:Number(row.work_count)||0
+      item_count:Number(row.item_count)||0
     })).filter(row=>row.source_name),
     totalCount:rows.length
   };
@@ -65,7 +64,7 @@ export async function selectSourceDaily({scopeId='lo3rwang',startDate='',endDate
     {column:'source_name',operator:'neq',value:''}
   ]);
   const rows=await selectAggregateRows(table,{
-    columns:'source_name,day:createtime::date,work_count:count()',
+    columns:'source_name,day:createtime::date,item_count:count()',
     filters,
     orders:[{column:'day',ascending:true},{column:'source_name',ascending:true}]
   });
@@ -73,18 +72,18 @@ export async function selectSourceDaily({scopeId='lo3rwang',startDate='',endDate
     scope_id:String(scopeId)==='lrunes'?'lrunes':'lo3rwang',
     source_name:String(row.source_name||'').trim(),
     day:String(row.day||''),
-    work_count:Number(row.work_count)||0
+    item_count:Number(row.item_count)||0
   }));
 }
 
 export async function selectDailyCounts(table,{startDate='',endDate='',filters=[]}={}){
   const resolved=[...filters,...timeFilters('createtime',startDate,endDate)];
   const rows=await selectAggregateRows(table,{
-    columns:'day:createtime::date,work_count:count()',
+    columns:'day:createtime::date,item_count:count()',
     filters:resolved,
     orders:[{column:'day',ascending:true}]
   });
-  return rows.map(row=>({day:String(row.day||''),work_count:Number(row.work_count)||0}));
+  return rows.map(row=>({day:String(row.day||''),item_count:Number(row.item_count)||0}));
 }
 
 export async function selectDailyCategoryCounts(table,categoryColumn,{startDate='',endDate='',filters=[]}={}){
@@ -94,14 +93,14 @@ export async function selectDailyCategoryCounts(table,categoryColumn,{startDate=
     {column:categoryColumn,operator:'neq',value:''}
   ];
   const rows=await selectAggregateRows(table,{
-    columns:`${categoryColumn},day:createtime::date,work_count:count()`,
+    columns:`${categoryColumn},day:createtime::date,item_count:count()`,
     filters:resolved,
     orders:[{column:'day',ascending:true},{column:categoryColumn,ascending:true}]
   });
   return rows.map(row=>({
     category:String(row?.[categoryColumn]||'').trim(),
     day:String(row.day||''),
-    work_count:Number(row.work_count)||0
+    item_count:Number(row.item_count)||0
   })).filter(row=>row.category&&row.day);
 }
 
@@ -125,13 +124,14 @@ export async function selectCategoryCounts(table,categoryColumn,{startDate='',en
   })).filter(row=>row.term);
 }
 
-export async function selectGalaxyPage({sourceName='',startDate='',endDate='',limit=20,offset=0}={}){
+export async function selectGalaxyPage({scopeId='lo3rwang',sourceName='',startDate='',endDate='',limit=20,offset=0}={}){
+  const {galaxy:table}=await resolveScopeTables(scopeId);
   const filters=[];
   if(sourceName)filters.push({column:'source_name',operator:'eq',value:sourceName});
   filters.push(...timeFilters('createtime',startDate,endDate));
   const publicFilters=publicContentFilters(filters);
-  const totalCount=await selectNeonCount('silver.lo3rwang_galaxy',{filters:publicFilters});
-  const {rows}=await selectNeonRows('silver.lo3rwang_galaxy',{
+  const totalCount=await selectNeonCount(table,{filters:publicFilters});
+  const {rows}=await selectNeonRows(table,{
     columns:'uid,source_name,createtime,title,content',
     filters:publicFilters,
     orders:[{column:'createtime',ascending:false}],
@@ -140,7 +140,7 @@ export async function selectGalaxyPage({sourceName='',startDate='',endDate='',li
   });
   const ids=rows.map(row=>String(row.uid||'').trim()).filter(Boolean);
   const relations=ids.length
-    ?(await selectNeonRows('silver.lo3rwang_galaxy',{
+    ?(await selectNeonRows(table,{
       columns:'uid,source_id,target_id',
       filters:[{column:'uid',operator:'in',value:ids}],
       limit:ids.length
@@ -160,15 +160,8 @@ function mediaIdsOf(value){
 async function mediaRowsFor(scopeId,mediaIds=[]){
   const ids=[...new Set(mediaIds.map(String).filter(Boolean))];
   if(!ids.length)return [];
-  const lunarunes=String(scopeId||'')==='lunarunes'||String(scopeId||'')==='lrunes';
-  if(lunarunes){
-    return (await selectNeonRows('silver.lrunes_galaxy_media',{
-      columns:'media_id,title,url,media_type',
-      filters:[{column:'media_id',operator:'in',value:ids}],
-      limit:ids.length
-    })).rows;
-  }
-  return (await selectNeonRows('silver.lo3rwang_galaxy_media',{
+  const {galaxyMedia}=await resolveScopeTables(scopeId);
+  return (await selectNeonRows(galaxyMedia,{
     columns:'media_id,title,url,media_type',
     filters:[{column:'media_id',operator:'in',value:ids}],
     limit:ids.length
@@ -190,48 +183,26 @@ function resolvedLinks(row,mediaById){
 export async function selectGalaxySummaries(scopeId,uids=[]){
   const ids=[...new Set((uids||[]).map(value=>String(value||'').trim()).filter(Boolean))];
   if(!ids.length)return [];
-  const lunarunes=String(scopeId||'')==='lunarunes'||String(scopeId||'')==='lrunes';
-
-  let rows=[];
-  if(lunarunes){
-    rows=(await selectNeonRows('silver.lrunes_galaxy',{
-      columns:'uid,title',
-      filters:[{column:'uid',operator:'in',value:ids}],
-      limit:ids.length
-    })).rows;
-  }else{
-    rows=(await selectNeonRows('silver.lo3rwang_galaxy',{
-      columns:'uid,title',
-      filters:[{column:'uid',operator:'in',value:ids}],
-      limit:ids.length
-    })).rows;
-  }
-
-  return rows.map(row=>({
-    uid:row.uid,
-    title:row.title||'',
-    excerpt:'',
-    links:[]
-  }));
+  const {galaxy}=await resolveScopeTables(scopeId);
+  const rows=(await selectNeonRows(galaxy,{
+    columns:'uid,title',
+    filters:[{column:'uid',operator:'in',value:ids}],
+    limit:ids.length
+  })).rows;
+  return rows.map(row=>({uid:row.uid,title:row.title||'',excerpt:'',links:[]}));
 }
 
 export async function selectGalaxyContent(scopeId,uid){
   const id=String(uid||'').trim();
   if(!id)return null;
-  const lunarunes=String(scopeId||'')==='lunarunes'||String(scopeId||'')==='lrunes';
-  const table=lunarunes?'silver.lrunes_galaxy':'silver.lo3rwang_galaxy';
-  return selectNeonRowById(table,{
-    idColumn:'uid',
-    id,
-    columns:'uid,content'
-  });
+  const {galaxy}=await resolveScopeTables(scopeId);
+  return selectNeonRowById(galaxy,{idColumn:'uid',id,columns:'uid,content'});
 }
 
 export async function selectGalaxyIdentity(scopeId,uid){
   const id=String(uid||'').trim();
   if(!id)return null;
-  const lunarunes=String(scopeId||'')==='lunarunes'||String(scopeId||'')==='lrunes';
-  const table=lunarunes?'silver.lrunes_galaxy':'silver.lo3rwang_galaxy';
+  const {galaxy:table}=await resolveScopeTables(scopeId);
   const row=await selectNeonRowById(table,{
     idColumn:'uid',
     id,
@@ -239,7 +210,7 @@ export async function selectGalaxyIdentity(scopeId,uid){
   });
   if(!row||isReferenceOnlyResource(row))return null;
   const contentRow=await selectGalaxyContent(scopeId,id);
-  const mediaRows=await mediaRowsFor(lunarunes?'lunarunes':'lo3rwang',mediaIdsOf(row.media_link));
+  const mediaRows=await mediaRowsFor(scopeId,mediaIdsOf(row.media_link));
   const mediaById=new Map(mediaRows.map(item=>[String(item.media_id),item]));
   return {...row,content:contentRow?.content||'',links:resolvedLinks(row,mediaById)};
 }
