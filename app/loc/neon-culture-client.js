@@ -4,7 +4,7 @@ import {ScopeCultureResponseSchema} from './scope-feature-contracts';
 import {decodeCultureText,formatCultureDateTime} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
 import {workDisplayText} from '../modular-v2/work-display-model.v2';
 import {resolveGalaxyExternalLinks,selectCategoryCounts,selectDailyCategoryCounts,selectDailyCounts,selectSourceCatalog,selectSourceDaily} from './aggregate-query';
-import {selectNeonCount,selectNeonRows} from './neon-query';
+import {selectNeonBoundedRows,selectNeonCount,selectNeonRows} from './neon-query';
 import {publicContentFilters} from './content-policy';
 import {mappedScopeTable,resolveScopeTables} from './scope-table-mapping';
 import {selectManagedScopes} from './scope-list';
@@ -203,7 +203,8 @@ function timelineItems(rows){
     .sort((a,b)=>String(a.start_date||a.end_date).localeCompare(String(b.start_date||b.end_date)));
 }
 function dateFilters(startDate,endDate,column='createtime'){
-  const filters=[{column,operator:'gte',value:`${String(startDate).slice(0,10)}T00:00:00+08:00`}];
+  const filters=[];
+  if(startDate)filters.push({column,operator:'gte',value:`${String(startDate).slice(0,10)}T00:00:00+08:00`});
   if(endDate)filters.push({column,operator:'lte',value:String(endDate).slice(0,10)+'T23:59:59.999+08:00'});
   return filters;
 }
@@ -361,8 +362,7 @@ function normalizedWorkTimelineBuckets(rows=[]){
   })).sort((a,b)=>String(a.start_date||'').localeCompare(String(b.start_date||''))||String(a.group_label||'').localeCompare(String(b.group_label||'')));
 }
 
-export async function selectScopeWorkSnapshot(scopeId,{startDate,endDate=null}={}){
-  if(!startDate)return {buckets:[],totalCount:0};
+export async function selectScopeWorkSnapshot(scopeId,{startDate='',endDate=null}={}){
   const runtimeId=runtimeScopeId(scopeId);
   const dataId=dataScopeId(scopeId);
   if(!dataId)return {buckets:[],totalCount:0};
@@ -391,9 +391,8 @@ export async function selectScopeWorkSnapshot(scopeId,{startDate,endDate=null}={
   return {buckets:normalizedWorkTimelineBuckets(buckets),totalCount:[...byDay.values()].reduce((sum,count)=>sum+count,0)};
 }
 
-export async function selectScopePeriodSourceSnapshot(scopeId,{startDate,endDate=null}={}){
+export async function selectScopePeriodSourceSnapshot(scopeId,{startDate='',endDate=null}={}){
   if(!scopeId)throw new Error('scopeId is required');
-  if(!startDate)return {groups:[],buckets:[],totalCount:0};
   const tables=await resolveScopeTables(dataScopeId(scopeId));
   const [catalog,daily,mediaCatalog,mediaDaily]=await Promise.all([
     selectSourceCatalog({scopeId,startDate,endDate:endDate||'',limit:5000}),
@@ -491,12 +490,8 @@ function mediaMetadataDescription(row){
   return fields.map(([label,value])=>{const text=decodeCultureText(value||'').trim();return text?`${label}：${text}`:'';}).filter(Boolean).join(' · ')||'沒有可讀的 metadata 文字';
 }
 
-export async function selectScopePeriodWorks(scopeId,{startDate,endDate,sourceName,sourceNames=[],mediaTypes=[],limit=20,pageOffset=0}={}){
+export async function selectScopePeriodWorks(scopeId,{startDate='',endDate=null,sourceName='',sourceNames=[],mediaTypes=[],edgeLimit=200}={}){
   if(!scopeId)throw new Error('scopeId is required');
-  if(!startDate||!sourceName)return {rows:[],hasMore:false,nextOffset:null,totalCount:0};
-  const pageSize=Math.max(1,Math.floor(Number(limit)||20));
-  const offset=Math.max(0,Math.floor(Number(pageOffset)||0));
-  const fetchLimit=Math.min(5000,offset+pageSize);
   const tables=await resolveScopeTables(dataScopeId(scopeId));
   const rawSources=[...new Set((sourceNames||[]).map(value=>String(value||'').trim()).filter(Boolean))];
   const rawMedia=[...new Set((mediaTypes||[]).map(value=>String(value||'').trim()).filter(Boolean))];
@@ -510,23 +505,23 @@ export async function selectScopePeriodWorks(scopeId,{startDate,endDate,sourceNa
     ...(rawMedia.length?[{column:'media_type',operator:'in',value:rawMedia}]:[])
   ];
 
-  const [galaxyResult,mediaResult,galaxyCount,mediaCount]=await Promise.all([
-    rawSources.length?selectNeonRows(tables.galaxy,{
+  const includeGalaxy=!sourceName||rawSources.length>0;
+  const includeMedia=!sourceName||rawMedia.length>0;
+  const [galaxyResult,mediaResult]=await Promise.all([
+    includeGalaxy?selectNeonBoundedRows(tables.galaxy,{
       columns:'uid,source_name,createtime,title,url,source_id,target_id,media_link',
       filters:galaxyFilters,
-      orders:[{column:'createtime',ascending:false},{column:'uid',ascending:true}],
-      limit:fetchLimit,
-      offset:0
-    }):Promise.resolve({rows:[]}),
-    rawMedia.length?selectNeonRows(tables.galaxyMedia,{
+      orderColumn:'createtime',
+      idColumn:'uid',
+      edgeLimit
+    }):Promise.resolve({rows:[],totalCount:0,truncated:false}),
+    includeMedia?selectNeonBoundedRows(tables.galaxyMedia,{
       columns:'media_id,galaxy_link,source_native_id,media_type,title,url,meta_tags,createtime',
       filters:mediaFilters,
-      orders:[{column:'createtime',ascending:false},{column:'media_id',ascending:true}],
-      limit:fetchLimit,
-      offset:0
-    }):Promise.resolve({rows:[]}),
-    rawSources.length?selectNeonCount(tables.galaxy,{filters:galaxyFilters}):0,
-    rawMedia.length?selectNeonCount(tables.galaxyMedia,{filters:mediaFilters}):0
+      orderColumn:'createtime',
+      idColumn:'media_id',
+      edgeLimit
+    }):Promise.resolve({rows:[],totalCount:0,truncated:false})
   ]);
 
   const resolvedGalaxy=await resolveGalaxyExternalLinks(scopeId,galaxyResult.rows||[]);
@@ -568,12 +563,22 @@ export async function selectScopePeriodWorks(scopeId,{startDate,endDate,sourceNa
       :[]
   }));
 
-  const rows=[...galaxyRows,...mediaRows]
-    .sort((a,b)=>String(b.createtime||'').localeCompare(String(a.createtime||''))||String(a.entry_id||'').localeCompare(String(b.entry_id||'')))
-    .slice(offset,offset+pageSize);
-  const totalCount=Number(galaxyCount||0)+Number(mediaCount||0);
-  const hasMore=offset+pageSize<totalCount;
-  return {rows,hasMore,nextOffset:hasMore?offset+pageSize:null,totalCount};
+  const combined=[...galaxyRows,...mediaRows]
+    .sort((a,b)=>String(a.createtime||'').localeCompare(String(b.createtime||''))||String(a.entry_id||'').localeCompare(String(b.entry_id||'')));
+  const edge=Math.max(1,Math.min(1000,Math.floor(Number(edgeLimit)||200)));
+  const first=combined.slice(0,edge);
+  const last=combined.slice(Math.max(edge,combined.length-edge));
+  const map=new Map([...first,...last].map(row=>[String(row.key||row.entry_id),row]));
+  const rows=[...map.values()].sort((a,b)=>String(b.createtime||'').localeCompare(String(a.createtime||''))||String(a.entry_id||'').localeCompare(String(b.entry_id||'')));
+  const totalCount=Number(galaxyResult.totalCount||0)+Number(mediaResult.totalCount||0);
+  return {
+    rows,
+    hasMore:false,
+    nextOffset:null,
+    totalCount,
+    truncated:totalCount>rows.length,
+    edgeLimit:edge
+  };
 }
 
 export async function selectScopeMediaSnapshot(scopeId,{startDate,endDate}={}){
