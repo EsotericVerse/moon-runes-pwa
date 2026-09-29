@@ -11,6 +11,7 @@ import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation.v2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
 import IncrementalLoadV2 from '../IncrementalLoadV2';
 import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
+import {resolveScopeTables} from '../../loc/scope-table-mapping';
 
 
 function mediaRelation(client,table){
@@ -26,19 +27,20 @@ async function updateNeonRows(table,values,{filters=[]}={}){
 
 const MEDIA_TYPE_LABELS={suno:'Suno',instagram:'Instagram'};
 const MEDIA_PAGE_SIZE=DEFAULT_LIST_BATCH_SIZE;
-function tableNames(databaseScopeId){
-  const lunarunes=String(databaseScopeId||'')==='lunarunes'||String(databaseScopeId||'')==='lrunes';
-  return {
-    media:lunarunes?'silver.lrunes_galaxy_media':'silver.lo3rwang_galaxy_media',
-    galaxy:lunarunes?'silver.lrunes_galaxy':'silver.lo3rwang_galaxy',
-    navigationScope:lunarunes?'lunarunes':'lo3rwang'
-  };
+function navigationScopeId(databaseScopeId){
+  return String(databaseScopeId||'')==='lunarunes'||String(databaseScopeId||'')==='lrunes'?'lunarunes':'lo3rwang';
 }
 
 export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
   const queryClient=useQueryClient();
   const account=useNeonAccount();
-  const tables=tableNames(databaseScopeId);
+  const tableQuery=useQuery({
+    queryKey:['scope-table-mapping',databaseScopeId],
+    queryFn:()=>resolveScopeTables(databaseScopeId),
+    staleTime:5*60_000
+  });
+  const tables=tableQuery.data||null;
+  const navigationScope=navigationScopeId(databaseScopeId);
   const [selectedTag,setSelectedTag]=useState('');
   const [mediaPage,setMediaPage]=useState(0);
   const [loadedMediaRows,setLoadedMediaRows]=useState([]);
@@ -49,8 +51,9 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
 
   const tagQuery=useQuery({
     queryKey:['media-meta-ranking',databaseScopeId],
+    enabled:Boolean(tables?.galaxyMedia),
     queryFn:async()=>{
-      const rows=await selectCategoryCounts(tables.media,'meta_tags',{limit:10});
+      const rows=await selectCategoryCounts(tables.galaxyMedia,'meta_tags',{limit:10});
       return rows.map(row=>({ranking_key:'meta|'+row.term,term:row.term,item_count:row.item_count}));
     },
     staleTime:30000
@@ -73,12 +76,12 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
 
   const mediaQuery=useQuery({
     queryKey:['media-meta-tag-items',databaseScopeId,selectedTag,mediaPage],
-    enabled:Boolean(selectedTag),
+    enabled:Boolean(selectedTag&&tables?.galaxyMedia&&tables?.galaxy),
     queryFn:async()=>{
       const offset=mediaPage*MEDIA_PAGE_SIZE;
       const filters=[{column:'meta_tags',operator:'ilike',value:'%'+selectedTag+'%'}];
-      const totalCount=await selectNeonCount(tables.media,{filters});
-      const {rows}=await selectNeonRows(tables.media,{
+      const totalCount=await selectNeonCount(tables.galaxyMedia,{filters});
+      const {rows}=await selectNeonRows(tables.galaxyMedia,{
         columns:'media_id,galaxy_link,title,url,media_type,meta_tags,createtime',
         filters,
         orders:[{column:'createtime',ascending:false,nullsFirst:false}],
@@ -105,7 +108,7 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
   async function save(row){
     const next=String(draft||'').trim()||null;
     try{
-      await updateNeonRows(tables.media,{meta_tags:next},{
+      await updateNeonRows(tables.galaxyMedia,{meta_tags:next},{
         filters:[{column:'media_id',operator:'eq',value:row.media_id}]
       });
       setEditingId('');
@@ -148,8 +151,8 @@ export default function MediaMetaSettingsV2({databaseScopeId='lo3rwang'}){
       <div className="scope-v2-media-meta-list">
         {mediaRows.map(row=>{
           const relationLinks=[
-            ...(row.galaxy_link?[{id:'galaxy:'+row.galaxy_link,label:'作品',href:galaxyIdentityHref(tables.navigationScope,row.galaxy_link)}]:[]),
-            ...galaxyRelationLinks(tables.navigationScope,row.galaxy_relation||{})
+            ...(row.galaxy_link?[{id:'galaxy:'+row.galaxy_link,label:'作品',href:galaxyIdentityHref(navigationScope,row.galaxy_link)}]:[]),
+            ...galaxyRelationLinks(navigationScope,row.galaxy_relation||{})
           ].filter(link=>link.href);
           const links=row.url&&/^https?:\/\//i.test(String(row.url))
             ?[{id:'media:'+row.media_id,href:row.url,label:'媒體連結'}]
