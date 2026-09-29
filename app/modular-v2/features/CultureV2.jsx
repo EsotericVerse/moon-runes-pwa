@@ -77,16 +77,16 @@ export default function CultureV2(){
   const [editBusy,setEditBusy]=useState(false);
   const [editError,setEditError]=useState('');
 
-  const currentRows=useMemo(()=>(query.data?.currentRanges||[])
+  const openRows=useMemo(()=>(query.data?.openRanges||[])
     .filter(item=>scopeId==='loc'||String(item?.scope_id||'')===scopeId),[scopeId,query.data]);
-  const currentByScope=useMemo(()=>new Map(currentRows.map(item=>[String(item.scope_id||''),item])),[currentRows]);
+  const openByScope=useMemo(()=>new Map(openRows.map(item=>[String(item.scope_id||''),item])),[openRows]);
 
   const allPeriods=useMemo(()=>sortPeriods(query.data?.eras?.eras||[]),[query.data]);
   const isLoc=scopeId==='loc';
   const classificationScope=scopeId;
   const primaryPeriods=isLoc?[]:allPeriods.filter(item=>String(item?.scope_id||'')===scopeId);
-  const primaryCurrent=isLoc?null:(currentByScope.get(scopeId)||null);
-  const selectedWorkPeriod=primaryCurrent||periodRange(primaryPeriods,classificationScope);
+  const openPeriod=isLoc?null:(openByScope.get(scopeId)||null);
+  const selectedWorkPeriod=openPeriod||periodRange(primaryPeriods,classificationScope);
 
   const periodWorkTimelineQuery=useQuery({
     queryKey:['culture-period-work-timeline',scopeId,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
@@ -320,7 +320,7 @@ export default function CultureV2(){
               />
               <section className='scope-v2-card scope-v2-culture-current-works'>
                 <p className='loc-eyebrow'>Intersection Works</p>
-                <h3>Current 交會時期作品</h3>
+                <h3>交會時期作品</h3>
                 {query.data?.intersectionStart?<p>交會起點：{String(query.data.intersectionStart).slice(0,10)} · 文字作品 {Number(query.data?.works?.length||0).toLocaleString()} 項</p>:null}
                 <div className='scope-v2-culture-source-work-scroll'>
                   {(query.data?.works||[]).map(work=><article className='scope-v2-inline-card' key={work.key||work.uid}>
