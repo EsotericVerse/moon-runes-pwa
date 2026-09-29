@@ -31,8 +31,7 @@ export default function ManagementArticlePublisher({scopeId}){
   const [status,setStatus]=useState('');
   const [busy,setBusy]=useState(false);
 
-  if(scopeId!=='lo3rwang')return <section className="scope-v2-inline-card"><h3>文章發表</h3><p>此 Current Scope 沒有 Galaxy 文章資料表；不會把文章寫進其他 Scope 的資料庫。</p></section>;
-  if(!account.canManageScopeSync(scopeId))return null;
+  if(!scopeId||!account.canManageScopeSync(scopeId))return null;
 
   async function save(){
     setBusy(true);setStatus('');
