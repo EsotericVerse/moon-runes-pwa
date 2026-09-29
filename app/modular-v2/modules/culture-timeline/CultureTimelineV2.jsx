@@ -68,9 +68,10 @@ function dateLabel(value){
   return formatted.length>=10?formatted.slice(0,10):formatted;
 }
 
-export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),focus={},mode='period',onSelect=null}){
+export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),focus={},mode='period',onSelect=null,windowStart='',windowEnd='',onBoundaryNavigate=null}){
   const containerRef=useRef(null);
   const onSelectRef=useRef(onSelect);
+  const onBoundaryNavigateRef=useRef(onBoundaryNavigate);
   const [ready,setReady]=useState(false);
   const [chartError,setChartError]=useState(false);
   const rows=useMemo(()=>timelineRows(items,labelOf,focus),[items,labelOf,focus]);
@@ -81,6 +82,7 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
     :640;
 
   useEffect(()=>{onSelectRef.current=onSelect},[onSelect]);
+  useEffect(()=>{onBoundaryNavigateRef.current=onBoundaryNavigate},[onBoundaryNavigate]);
 
   useEffect(()=>{
     let cancelled=false;
@@ -144,13 +146,27 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
         const selectedId=selectedItems[0];
         onSelectRef.current?.(rows.find(row=>row.id===selectedId)||null);
       });
-      instance.fit({animation:false});
+      instance.on('click',properties=>{
+        if(!onBoundaryNavigateRef.current||properties?.what==='item')return;
+        const startMs=Date.parse(windowStart||'');
+        const endMs=Date.parse(windowEnd||'');
+        const clickMs=properties?.time instanceof Date?properties.time.getTime():Date.parse(properties?.time||'');
+        if(!Number.isFinite(startMs)||!Number.isFinite(endMs)||!Number.isFinite(clickMs)||endMs<=startMs)return;
+        const threshold=Math.max(86400000,(endMs-startMs)*0.08);
+        if(clickMs<=startMs+threshold)onBoundaryNavigateRef.current('previous');
+        else if(clickMs>=endMs-threshold)onBoundaryNavigateRef.current('next');
+      });
+      if(windowStart&&windowEnd&&Number.isFinite(Date.parse(windowStart))&&Number.isFinite(Date.parse(windowEnd))){
+        instance.setWindow(windowStart,windowEnd,{animation:false});
+      }else{
+        instance.fit({animation:false});
+      }
       setReady(true);
     }catch{
       if(!cancelled){setReady(false);setChartError(true);}
     }
     return()=>{cancelled=true;if(instance)instance.destroy();};
-  },[rows,timelineHeight]);
+  },[rows,timelineHeight,windowStart,windowEnd]);
 
   if(!rows.length)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><div className='scope-period-timeline scope-period-timeline-empty-line' role='region' aria-label='時間長河'/><p>{mode==='overview'?'尚未設定時期，目前以「所有」總覽顯示。':'目前時期尚無可顯示的時間資料。'}</p></div>;
 
