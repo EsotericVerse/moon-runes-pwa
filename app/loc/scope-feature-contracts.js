@@ -5,7 +5,7 @@ import {z} from 'zod';
 const OpenRowSchema=z.object({}).passthrough();
 
 export const ScopeCultureResponseSchema=z.object({
-  scopeId:z.enum(['loc','lunarunes','lo3rwang']),
+  scopeId:z.string().min(1),
   eras:z.object({eras:z.array(OpenRowSchema).default([])}).default({eras:[]}),
   periods:z.array(OpenRowSchema).default([]),
   currentRanges:z.array(OpenRowSchema).default([]),
