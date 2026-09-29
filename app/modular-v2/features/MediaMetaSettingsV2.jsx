@@ -50,38 +50,49 @@ function splitMediaTags(value=''){
     .filter(Boolean))];
 }
 
-function countMediaTags(rows=[]){
+const MEDIA_RANK_CACHE_LIMIT=100;
+
+function buildMediaTagIndex(rows=[]){
+  const parsed=(rows||[]).map(row=>({
+    media_id:String(row?.media_id||'').trim(),
+    createtime:String(row?.createtime||''),
+    tags:splitMediaTags(row?.meta_tags)
+  })).filter(row=>row.media_id&&row.tags.length);
+
   const counts=new Map();
-  for(const row of rows){
-    for(const tag of splitMediaTags(row?.meta_tags)){
-      counts.set(tag,(counts.get(tag)||0)+1);
-    }
+  for(const row of parsed){
+    for(const tag of row.tags)counts.set(tag,(counts.get(tag)||0)+1);
   }
-  return [...counts.entries()]
+
+  const tags=[...counts.entries()]
     .map(([term,item_count])=>({ranking_key:'meta|'+term,term,item_count}))
     .sort((a,b)=>b.item_count-a.item_count||a.term.localeCompare(b.term,'zh-Hant'));
-}
 
-function rankMediaForTag(rows=[],selectedTag='',tagRanking=[]){
-  const tag=String(selectedTag||'').trim();
-  if(!tag)return [];
-  const weights=new Map((tagRanking||[]).map(row=>[
-    String(row.term||'').trim(),
-    Number(row.item_count)||0
-  ]));
-  const maxWeight=Math.max(1,...weights.values());
-  const matching=(rows||[]).filter(row=>splitMediaTags(row?.meta_tags).includes(tag));
-  return matching.map(row=>{
-    const representative_score=splitMediaTags(row?.meta_tags).reduce(
-      (sum,item)=>sum+(Number(weights.get(item))||0)/maxWeight,
+  const maxWeight=Math.max(1,...counts.values());
+  const buckets=new Map();
+  for(const row of parsed){
+    const representative_score=row.tags.reduce(
+      (sum,tag)=>sum+(Number(counts.get(tag))||0)/maxWeight,
       0
     );
-    return {...row,representative_score};
-  }).sort((a,b)=>
-    Number(b.representative_score||0)-Number(a.representative_score||0)||
-    String(b.createtime||'').localeCompare(String(a.createtime||''))||
-    String(a.media_id||'').localeCompare(String(b.media_id||''))
-  );
+    const ranked={media_id:row.media_id,createtime:row.createtime,representative_score};
+    for(const tag of row.tags){
+      if(!buckets.has(tag))buckets.set(tag,[]);
+      buckets.get(tag).push(ranked);
+    }
+  }
+
+  const top100ByTag={};
+  for(const [tag,items] of buckets){
+    top100ByTag[tag]=items
+      .sort((a,b)=>
+        Number(b.representative_score||0)-Number(a.representative_score||0)||
+        String(b.createtime||'').localeCompare(String(a.createtime||''))||
+        String(a.media_id||'').localeCompare(String(b.media_id||''))
+      )
+      .slice(0,MEDIA_RANK_CACHE_LIMIT);
+  }
+  return {tags,top100ByTag};
 }
 
 export default function MediaMetaSettingsV2({databaseScopeId}){
@@ -111,9 +122,10 @@ export default function MediaMetaSettingsV2({databaseScopeId}){
         limit:5000,
         offset:0
       });
-      return {tags:countMediaTags(rows),rows};
+      return buildMediaTagIndex(rows);
     },
-    staleTime:30000
+    staleTime:5*60_000,
+    gcTime:30*60_000
   });
 
   useEffect(()=>{
@@ -132,7 +144,7 @@ export default function MediaMetaSettingsV2({databaseScopeId}){
   },[account.email,account.permissionLoading,account.user,account.canManageGlobal,account.canManageScope,databaseScopeId]);
 
   const rankedMediaRows=useMemo(
-    ()=>rankMediaForTag(tagQuery.data?.rows||[],selectedTag,tagQuery.data?.tags||[]),
+    ()=>tagQuery.data?.top100ByTag?.[selectedTag]||[],
     [tagQuery.data,selectedTag]
   );
   const visibleRankRows=useMemo(
