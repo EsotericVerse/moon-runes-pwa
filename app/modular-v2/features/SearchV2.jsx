@@ -37,13 +37,11 @@ async function updateNeonRows(table,values,{filters=[]}={}){
   if(error)throw new Error(error.message||('Neon UPDATE '+table+' failed'));
 }
 
-const norm=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
 function rowText(row){return Object.values(row||{}).filter(value=>typeof value==='string').join(' ')}
-function toResult(row,source,q,scopeId){
+function toResult(row,source,scopeId){
   const text=rowText(row);
   const isGalaxy=Boolean(row.uid);
   const isMedia=Boolean(row.media_id);
-  const excerpt=workDisplayText(row.excerpt||'').trim();
   const explicitTitle=workDisplayText(row.title||row.name||row.display_title||row.label||row.rune_name||row.song_id||row.id||'').trim();
   const fallbackTitle=isMedia?MEDIA_FALLBACK_TITLE:WORK_FALLBACK_TITLE;
   const title=(isGalaxy||isMedia)
@@ -60,7 +58,8 @@ function toResult(row,source,q,scopeId){
     ?(mediaMetadata||(bodyField?workDisplayText(row[bodyField]):text))
     :(bodyField?workDisplayText(row[bodyField]):(isGalaxy?'':text));
   const identity=row.media_id||row.uid||row.song_id||row.rune_id||row.faq_id||row.record_id||row.resource_id||row.id;
-  const scope=row.scope_id||scopeId;
+  const rawScope=String(row.scope_id||scopeId||'');
+  const scope=rawScope==='lrunes'?'lunarunes':rawScope;
   const resourceType=(row.uid)?'galaxy':row.media_id?'galaxy_media':'';
   const resourceId=row.uid||row.media_id||'';
   const editableTable=resourceType?String(row.__table||''):'';
@@ -124,7 +123,6 @@ export default function SearchV2(){
   const [status,setStatus]=useState('輸入關鍵字開始搜尋。');
   const [error,setError]=useState('');
   const [hasMore,setHasMore]=useState(false);
-  const [displayedCount,setDisplayedCount]=useState(0);
   const [nextCursor,setNextCursor]=useState(null);
   const [loadingMore,setLoadingMore]=useState(false);
   const [editingKey,setEditingKey]=useState('');
@@ -164,14 +162,13 @@ export default function SearchV2(){
       if(!append)matchedQueryRef.current=q;
       const converted=[];const seen=new Set();
       for(const {row,source} of searchRows){
-        const result=toResult(row,source,q,scopeId);
+        const result=toResult(row,source,scopeId);
         if(!result||seen.has(result.key))continue;
         seen.add(result.key);converted.push(result);
       }
       const pageResults=mergeSummaryResults(converted);
       setResults(current=>append?mergeSummaryResults([...current,...pageResults]):pageResults);
-      setDisplayedCount(current=>append?current+pageResults.length:pageResults.length);
-      setHasMore(Boolean(search.hasMore));
+            setHasMore(Boolean(search.hasMore));
       setNextCursor(search.nextCursor??null);
       const partial=search.failures?.length?`（${search.failures.length} 張非必要資料表暫時無法查詢）`:'';
       if(!append)setStatus(`${searchMode==='media'?'多媒體':'「'+collectionLabel+'」'}搜尋「${q}」；先顯示本批結果${search.hasMore?'，向下滑動可繼續載入。':'。'}${partial}`);
@@ -207,12 +204,11 @@ export default function SearchV2(){
       }
       if(id!==searchId.current)return;
       if(!detail)throw new Error('找不到這筆文字。');
-      const result=toResult({...detail,resolved_links:detail.links||[]},detail.source_name||'文字展示','',detailScope);
+      const result=toResult({...detail,resolved_links:detail.links||[]},detail.source_name||'文字展示',detailScope);
       setResults([result]);
       setFullTextKey(result.key);
       setFullText(workDisplayText(detail.content||''));
-      setDisplayedCount(1);
-      setStatus('已載入關聯文字。');
+            setStatus('已載入關聯文字。');
     }catch(exception){
       if(id!==searchId.current)return;
       setResults([]);setError(featureDataErrorMessage(exception));setStatus('文字載入失敗。');
