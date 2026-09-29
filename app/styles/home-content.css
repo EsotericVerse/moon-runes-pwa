@@ -510,8 +510,8 @@
     grid-template-columns:1fr;
   }
   .home-beginner .home-framework-figure{
-    width:min(82vw,280px);
-    max-width:280px;
+    width:min(100%,520px);
+    max-width:520px;
     justify-self:center;
     margin-top:.6rem;
   }
