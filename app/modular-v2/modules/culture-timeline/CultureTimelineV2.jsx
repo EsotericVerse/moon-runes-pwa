@@ -30,7 +30,7 @@ function timelineRows(items,labelOf,focus){
     const focused=focusTerms.some(term=>candidateValues.includes(term));
     const group=item?.group_label||item?.scope_id||'';
     const ratio=Number(item?.global_density_ratio)>0?Number(item.global_density_ratio):Number(item?.density_ratio)||0;
-    const density=ratio>0?densityStyleForRatio(ratio):densityStyleForCount(item?.work_count);
+    const density=ratio>0?densityStyleForRatio(ratio):densityStyleForCount(item?.item_count);
     return [{
       id:String(item?.id||item?.entry_id||item?.era_id||item?.period_id||item?.version||index),
       content:labelOf(item,index),
@@ -45,7 +45,7 @@ function timelineRows(items,labelOf,focus){
       entryType:String(item?.entry_type||''),
       period:String(item?.period||''),
       runeCount:Number(item?.rune_count||0),
-      workCount:Number(item?.work_count||0),
+      workCount:Number(item?.item_count||0),
       status:String(item?.status||''),
       openStart,openEnd,
       ...(group?{group:String(group)}:{}),
@@ -53,7 +53,7 @@ function timelineRows(items,labelOf,focus){
       ...(focused?{className:'scope-period-timeline-focus'}:{}),
       ...(density?{
         className:[focused?'scope-period-timeline-focus':'','scope-period-density'].filter(Boolean).join(' '),
-        style:'--culture-density:'+Math.max(.08,Math.min(1,ratio||Math.min(1,Number(item?.work_count||0)/100)))+';height:'+(8+Math.round(Math.max(.08,Math.min(1,ratio||0))*20))+'px;background:color-mix(in srgb,var(--loc-accent) '+Math.round((.12+density.glow*.72)*100)+'%,var(--loc-panel));border-color:color-mix(in srgb,var(--loc-accent) '+Math.round((.36+density.glow*.56)*100)+'%,var(--loc-line));color:var(--loc-text);filter:brightness('+density.brightness+');box-shadow:0 0 '+density.blur+' color-mix(in srgb,var(--loc-accent) '+Math.round(density.glow*100)+'%,transparent);'
+        style:'--culture-density:'+Math.max(.08,Math.min(1,ratio||Math.min(1,Number(item?.item_count||0)/100)))+';height:'+(8+Math.round(Math.max(.08,Math.min(1,ratio||0))*20))+'px;background:color-mix(in srgb,var(--loc-accent) '+Math.round((.12+density.glow*.72)*100)+'%,var(--loc-panel));border-color:color-mix(in srgb,var(--loc-accent) '+Math.round((.36+density.glow*.56)*100)+'%,var(--loc-line));color:var(--loc-text);filter:brightness('+density.brightness+');box-shadow:0 0 '+density.blur+' color-mix(in srgb,var(--loc-accent) '+Math.round(density.glow*100)+'%,transparent);'
       }:{})
     }];
   });
@@ -106,8 +106,8 @@ function CurrentCultureRivers({ranges,onSelect=null}){
   const intersectionColor='var(--loc-accent,#6b63ff)';
   const personalTitle=personalCurrent.display_label||personalCurrent.title||'目前個人時期';
   const runeTitle=runeCurrent.display_label||runeCurrent.title||'目前 LunaRunes';
-  const personalCount=Number(personalCurrent.work_count)||0;
-  const runeCount=Number(runeCurrent.work_count)||0;
+  const personalCount=Number(personalCurrent.item_count)||0;
+  const runeCount=Number(runeCurrent.item_count)||0;
   const startLabel=dateLabel(domainStart);
   const endLabel=dateLabel(intersectionEnd);
 
