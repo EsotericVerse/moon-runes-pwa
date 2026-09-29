@@ -34,17 +34,6 @@ const CULTURE_WORK_PAGE_SIZE=DEFAULT_LIST_BATCH_SIZE;
 function labelOf(item,index){
   return item?.display_label||item?.name||item?.title||item?.period||'時期 '+(index+1);
 }
-function rowsOf(data,scopeId){
-  const rows=Array.isArray(data?.eras?.eras)
-    ?data.eras.eras.filter(item=>scopeId==='loc'||String(item?.scope_id||'')===scopeId)
-    :[];
-  return rows.sort((a,b)=>{
-    const ad=String(a?.start_date||a?.end_date||a?.date||'');
-    const bd=String(b?.start_date||b?.end_date||b?.date||'');
-    if(ad&&bd&&ad!==bd)return ad.localeCompare(bd);
-    return Number(a.order||0)-Number(b.order||0);
-  });
-}
 function sortPeriods(rows=[]){
   return [...rows].filter(item=>item?.start_date||item?.end_date).sort((a,b)=>
     String(a.start_date||a.end_date||'').localeCompare(String(b.start_date||b.end_date||''))||
@@ -105,10 +94,6 @@ export default function CultureV2(){
   const primaryPeriods=scopeId==='lunarunes'?allRunePeriods:allAuthorPeriods;
   const primaryCurrent=scopeId==='lunarunes'?currentRunePeriod:currentAuthorPeriod;
   const selectedWorkPeriod=primaryCurrent||periodRange(primaryPeriods,classificationScope);
-  const selectedPeriodIndex=primaryPeriods.findIndex(item=>
-    String(item?.period||'')===String(selectedWorkPeriod?.period||'')
-    ||String(item?.start_date||'')===String(selectedWorkPeriod?.start_date||'')
-  );
 
   const periodWorkTimelineQuery=useQuery({
     queryKey:['culture-period-work-timeline',scopeId,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
