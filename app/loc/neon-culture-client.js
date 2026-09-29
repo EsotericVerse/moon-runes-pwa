@@ -350,7 +350,7 @@ export async function selectScopeWorkSnapshot(scopeId,{startDate,endDate=null}={
   if(!startDate)return {buckets:[],totalCount:0};
   const runtimeId=runtimeScopeId(scopeId);
   const dataId=dataScopeId(scopeId);
-  if(!['lo3rwang','lrunes'].includes(dataId))return {buckets:[],totalCount:0};
+  if(!dataId)return {buckets:[],totalCount:0};
   const tables=await resolveScopeTables(dataId);
   const textTable=tables.galaxy;
   const mediaTable=tables.galaxyMedia;
