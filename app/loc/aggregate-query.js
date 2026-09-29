@@ -58,7 +58,7 @@ export async function selectSourceCatalog({scopeId='lo3rwang',startDate='',endDa
 }
 
 export async function selectSourceDaily({scopeId='lo3rwang',startDate='',endDate=''}={}){
-  const table=String(scopeId)==='lrunes'?'silver.lrunes_galaxy':'silver.lo3rwang_galaxy';
+  const {galaxy:table}=await resolveScopeTables(scopeId);
   const filters=publicContentFilters([
     ...timeFilters('createtime',startDate,endDate),
     {column:'source_name',operator:'neq',value:''}
