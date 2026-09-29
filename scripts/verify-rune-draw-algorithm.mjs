@@ -38,9 +38,12 @@ for(const fragment of [
 }
 
 for(const fragment of [
-  "const pairs=cards.map((card,index)=>({runeNumber:Number(card?.rune_number),dir:Number(directionIndexes[index])+1}));",
+  "const runePool=Array.from({length:66},(_,index)=>index+1);",
+  "const {cards:runeNumbers,directionIndexes,directions}=drawRuneSession(runePool,selectedMode.count);",
+  "const pairs=runeNumbers.map((runeNumber,index)=>({runeNumber:Number(runeNumber),dir:Number(directionIndexes[index])+1}));",
   "const types=drawKey==='daily'?['direction','daily']:['direction','lots'];",
   "selectRuneDrawRows(pairs,{types})",
+  "if(cards.length!==runeNumbers.length)throw new Error('抽中的符文資料不完整。');",
   'data-draw-reading="single"',
   'Daily · 每日指示',
   'dailyGuidance(draw.cards[0], draw.directions[0])'
