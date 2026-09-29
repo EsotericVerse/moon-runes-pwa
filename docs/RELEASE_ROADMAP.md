@@ -37,6 +37,10 @@ There is **no RC10**. The version sequence after RC9 goes directly to **1.0 Rele
 5. Scope/Group extension is mature: ordinary new Scope/Group instances can extend from the shared architecture without requiring a new bespoke core implementation.
 6. Admin provides simple configuration for ordinary Scope/Group governance and feature setup, so routine extension can be completed through managed settings rather than source-level rewiring.
 7. Shared Scope/Group behavior, permissions, navigation, feature mounting, and visual conventions remain consistent as the system extends.
-8. Final responsive, loading, failure-state, regression, and deployment validation passes.
+8. Admin import is operational for managed text/link ingestion rather than being a placeholder flow.
+9. A basic authenticated page importer/crawler supports OAuth-backed access where required: the user provides a starting page, LOC reads the accessible page text and links, then follows only the directly linked page layer. The crawler is limited to two total layers (start page + one linked-page layer) and does not recursively expand beyond that boundary.
+10. Imported page text, links, source identity, and relationships enter the existing governance/import pipeline; authenticated crawling does not bypass validation, permissions, duplicate handling, or Neon SSOT rules.
+11. A private personal-analysis app is delivered alongside 1.0R for the author's own analysis use. It remains private and uses the same governed Current data model rather than creating a second corpus authority.
+12. Final responsive, loading, failure-state, regression, and deployment validation passes.
 
-The resulting build is the LOC **1.0 Release (1.0R)**: a mature, extensible product whose ordinary Scope/Group growth is handled by shared architecture plus simple Admin configuration.
+The resulting build is the LOC **1.0 Release (1.0R)**: a mature, extensible product whose ordinary Scope/Group growth is handled by shared architecture plus simple Admin configuration, with a working governed import path and an accompanying private personal-analysis app.

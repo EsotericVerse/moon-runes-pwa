@@ -50,6 +50,10 @@ There is no RC10. After RC9, the next release target is **1.0 Release (1.0R)**. 
 - [ ] Make ordinary Scope/Group extension work through the shared architecture without requiring bespoke core implementation.
 - [ ] Make ordinary Scope/Group governance and feature setup achievable through simple Admin configuration.
 - [ ] Verify shared permissions, navigation, feature mounting, and visual conventions remain coherent when Scope/Group instances are extended.
+- [ ] Make the Admin import flow operational for governed text/link ingestion.
+- [ ] Add a basic OAuth-capable authenticated page reader for approved/imported pages: read page text and links, then follow only directly linked pages; limit traversal to two total layers (start page + one linked-page layer), with no deeper recursive crawl.
+- [ ] Route imported text, links, source identity, duplicate checks, and relationships through the existing governance/import pipeline and Neon SSOT.
+- [ ] Deliver the author's private personal-analysis app alongside 1.0R, sharing the governed Current data model rather than a separate corpus authority.
 - [ ] Complete final regression, responsive, loading, and failure-state checks for the visual application.
 - [ ] Freeze the resulting build as **1.0 Release (1.0R)**.
 
@@ -58,5 +62,5 @@ There is no RC10. After RC9, the next release target is **1.0 Release (1.0R)**. 
 - RC8 = stable architecture/data/runtime baseline.
 - RC9 = final candidate for existing-function completion and language/keyword quality.
 - RC10 = **not used**.
-- 1.0 Release = multimedia image integration + complete graphical-page stabilization + final release validation.
+- 1.0 Release = multimedia image integration + Scope/Group maturity + governed Admin import/OAuth two-layer page parsing + private personal-analysis app + complete graphical-page stabilization + final release validation.
 
