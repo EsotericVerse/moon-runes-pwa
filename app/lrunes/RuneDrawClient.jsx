@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {selectRuneDrawRows} from '../loc/rune-repository';
 import { useLocalStore } from '../loc/local-store';
-import {buildSpreadGuidance} from '../loc/model/spread-guidance.mjs';
 import { realMoonPhase } from '../loc/model/moon-phase';
 import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
 import {drawRuneSession} from './rune-draw-engine';
@@ -47,6 +46,43 @@ function dailyGuidance(card, direction) {
   return String(card?.[field] || '').trim();
 }
 
+const LOT_FIELD_BY_DIRECTION=Object.freeze({
+  '正位':'lots_positive',
+  '半正位':'lots_half_positive',
+  '半逆位':'lots_half_negative',
+  '逆位':'lots_negative'
+});
+const LOT_DOMAINS=Object.freeze(['愛情','事業','關係','健康']);
+
+function cleanGrammarPart(value){
+  return String(value||'').trim().replace(/[。；;，,\s]+$/g,'')||'資訊不足';
+}
+function composeFixedGrammar(values,mode){
+  const parts=(values||[]).map(cleanGrammarPart);
+  if(mode==='2card'&&parts.length>=2)return `因為${parts[0]}，所以${parts[1]}。`;
+  if(mode==='3card'&&parts.length>=3)return `因為${parts[0]}，但會有${parts[1]}的改變，所以${parts[2]}。`;
+  if(mode==='5card'&&parts.length>=5)return `因為${parts[0]}、${parts[1]}，但會有${parts[2]}的變化，所以${parts[3]}、${parts[4]}。`;
+  if(mode==='ow3gs'&&parts.length>=11)return `因為（因為${parts[0]}、${parts[1]}，但會有${parts[2]}、${parts[3]}的變化，所以${parts[4]}、${parts[5]}），所以（因為${parts[6]}、${parts[7]}，但會有${parts[8]}的變化，所以${parts[9]}、${parts[10]}）。`;
+  if(parts.length===1)return `${parts[0]}。`;
+  return parts.length?`${parts.join('、')}。`:'資訊不足。';
+}
+function lotDomainText(card,direction,label){
+  const field=LOT_FIELD_BY_DIRECTION[direction];
+  const text=field?String(card?.[field]||'').trim():'';
+  if(!text)return '資訊不足';
+  const match=text.match(new RegExp(label+'：\\s*([^\\n]*?)(?=(?:愛情|事業|關係|健康)：|$)'));
+  return cleanGrammarPart(match?.[1]||'資訊不足');
+}
+function buildFixedReading(cards,directions,mode){
+  const source=Array.isArray(cards)?cards:[];
+  const sentence=composeFixedGrammar(source.map((card,index)=>directionText(card,directions[index])||card?.rune_description||'資訊不足'),mode);
+  const domains=(mode==='single'||mode==='daily')?[]:LOT_DOMAINS.map(label=>({
+    label:label+'建議',
+    text:composeFixedGrammar(source.map((card,index)=>lotDomainText(card,directions[index],label)),mode)
+  }));
+  return {sentence,domains};
+}
+
 function MultiReading({ draw, mode, phase }) {
   if (!draw) return null;
   const cards = draw.cards;
@@ -69,7 +105,7 @@ function MultiReading({ draw, mode, phase }) {
       <p><strong>過去的成因：</strong>「{past1.rune_name}」{directions[0]}：{directionText(past1, directions[0])}；「{past2.rune_name}」{directions[1]}：{directionText(past2, directions[1])}。兩張牌共同描述事情形成的背景與潛因。</p>
       <p><strong>意外變化：</strong>「{unexpected.rune_name}」{directions[2]}：{directionText(unexpected, directions[2])}。單張只提供一個意外因素，不與雙卡拼接。</p>
       <p><strong>現在狀況：</strong>「{current1.rune_name}」{directions[3]}：{directionText(current1, directions[3])}；「{current2.rune_name}」{directions[4]}：{directionText(current2, directions[4])}。兩張牌共同描述現在以後可能形成的結論。</p>
-      <p><strong>模組應用：</strong>雙卡與三卡的共同語意延伸；月相交互列於最後，只作天時關係的小幅修正，可能稍強也可能稍弱。本次真實月相為{phase}。</p>
+      <p><strong>模組應用：</strong>雙卡與三卡的共同結構延伸；月相交互列於最後，只作天時關係的小幅修正，可能稍強也可能稍弱。本次真實月相為{phase}。</p>
     </section>;
   }
   return null;
@@ -98,9 +134,9 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
       const byNumber=new Map(rows.map(row=>[Number(row.rune_number),row]));
       const cards=runeNumbers.map(number=>byNumber.get(Number(number))).filter(Boolean);
       if(cards.length!==runeNumbers.length)throw new Error('抽中的符文資料不完整。');
-      const reading=buildSpreadGuidance(cards,directions,drawKey);
+      const reading=buildFixedReading(cards,directions,drawKey);
       const createdAt=new Date().toISOString();
-      setDraw({id:`rune-draw:${drawKey}:${Date.now()}`,createdAt,cards,directionIndexes,directions,reading,guidance:reading.guidance});
+      setDraw({id:`rune-draw:${drawKey}:${Date.now()}`,createdAt,cards,directionIndexes,directions,reading});
       setError('');
     } catch (err) {
       setDraw(null);
@@ -136,7 +172,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
       <header className="loc-hero" id="intro">
         <p className="loc-eyebrow">LunaRunes · 月之符文</p>
         <h1>月之符文</h1>
-        <p>月之符文以固定 66 枚核心符文提供抽牌與語意指引。抽牌、四向判讀與籤詩指引在瀏覽器完成；紀錄與管理功能統一由 Governance Management 處理。</p>
+        <p>月之符文以固定 66 枚核心符文提供抽牌、四向文字與籤詩。抽牌、四向文字與固定組句在瀏覽器完成；紀錄與管理功能統一由 Governance Management 處理。</p>
       </header>
 
       <section className="loc-card" id="draw" data-draw-keyword="lunarunes-draw" data-draw-mode={drawKey}>
@@ -190,17 +226,17 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
         {drawKey === 'ow3gs' && <section className="loc-card runes-ow3gs-core" data-draw-reading="ow3gs">
           <p className="loc-eyebrow">OW3gs · 雙模型判讀</p><h2>1–6 因的描述層 → 7–11 果的判定層</h2><p>第 7–11 張為核心判定。</p>
           <p>先讀成因分析，後讀判斷分析，最後套用月相交互。十一張牌不是等權並列。</p>
-          <p><strong>1–6 因的描述層：</strong>源兩張、轉兩張、合兩張，共六張；以雙卡與三卡綜合判斷產生問題的可能狀態。</p>
-          <p><strong>7–11 果的判定層：</strong>使用五卡的基本規則，共五張；以五卡方式判斷建議如何行動的治理原則。</p>
+          <p><strong>1–6 因的描述層：</strong>源兩張、轉兩張、合兩張，共六張；依固定卡位組合前因。</p>
+          <p><strong>7–11 果的判定層：</strong>使用五卡的基本規則，共五張；依固定五卡結構組合結果。</p>
           <div className="loc-context-list">{draw.cards.slice(6, 11).map((card, index) => <div className="loc-context-item" key={`core-${card.rune_number}-${index}`}><strong>第 {index + 7} 張 · {card.rune_name} · {draw.directions[index + 6]}</strong><span>{directionText(card, draw.directions[index + 6]) || card.rune_description}</span></div>)}</div>
           <p>月相交互最後才套用，只作次要時間修飾；重點是模型關聯，不是增加抽牌維度的複雜化。</p>
         </section>}
 
         {drawKey!=='single'&&drawKey!=='daily'&&<section className="loc-card" data-draw-stage="lots">
           <p className="loc-eyebrow">Lots · 籤詩</p><h2>籤詩指引</h2>
-          <p>{draw.reading?.guidance||'結果未知。'}</p>
-          {Array.isArray(draw.reading?.advice)?<div className="runes-advice-grid">
-            {draw.reading.advice.map(item=><article key={item.label}><strong>{item.label}</strong><span>{item.text}</span></article>)}
+          <p>{draw.reading?.sentence||'資訊不足。'}</p>
+          {Array.isArray(draw.reading?.domains)?<div className="runes-advice-grid">
+            {draw.reading.domains.map(item=><article key={item.label}><strong>{item.label}</strong><span>{item.text}</span></article>)}
           </div>:null}
         </section>}
       </>}

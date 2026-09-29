@@ -5,7 +5,6 @@ import Select from 'react-select';
 import {selectRuneCatalog,selectRuneDrawRows} from '../loc/rune-repository';
 import {selectScopeCultureData} from '../loc/neon-culture-client';
 import { useLocalStore } from '../loc/local-store';
-import {buildSpreadGuidance} from '../loc/model/spread-guidance.mjs';
 import { realMoonPhase } from '../loc/model/moon-phase';
 import { buildRuneGraph, searchRuneGraph } from '../loc/model/rune-graph-core.js';
 import {scopeHrefV2,scopeOriginV2} from '../modular-v2/scope-registry.v2';
@@ -31,7 +30,7 @@ const MODES=[
   {key:'single',count:1,label:'單卡',description:'符文本義＋卡牌方向＋月相交互。',positions:['核心'],path:'duel/one'},
   {key:'daily',count:1,label:'每日',description:'以今日為時間範圍的一張符文。',positions:['今日'],path:'duel/daily'},
   {key:'2card',count:2,label:'雙卡',description:'以「因 → 果」觀看兩者關係。',positions:['因','果'],path:'duel/two'},
-  {key:'3card',count:3,label:'三卡',description:'以「源 → 轉 → 合」形成語意路徑。',positions:['源','轉','合'],path:'duel/three'},
+  {key:'3card',count:3,label:'三卡',description:'以「源 → 轉 → 合」形成固定結構。',positions:['源','轉','合'],path:'duel/three'},
   {key:'5card',count:5,label:'五卡',description:'兩張過去成因＋一個意外變化＋兩張現在狀況。',positions:['過去成因 1','過去成因 2','意外變化','現在狀況 1','現在狀況 2'],path:'duel/five'},
   {key:'ow3gs',count:11,label:'11卡 OW3gs',description:'1–6 因的描述層＋7–11 果的判定層。',positions:['1','2','3','4','5','6','7','8','9','10','11'],path:'duel/ow3gs'}
 ];
@@ -41,6 +40,43 @@ function initialMode(){if(typeof window==='undefined')return 'single';const valu
 function initialSection(){return 'draw';}
 function directionText(card,direction){const field=({'正位':'positive_meaning','半正位':'half_positive_meaning','半逆位':'half_reverse_meaning','逆位':'reverse_meaning'})[direction];return card?.[field]||'';}
 function dailyGuidance(card,direction){const field=({'正位':'daily_positive','半正位':'daily_half_positive','半逆位':'daily_half_reverse','逆位':'daily_reverse'})[direction];return String(card?.[field]||'').trim();}
+
+const LOT_FIELD_BY_DIRECTION=Object.freeze({
+  '正位':'lots_positive',
+  '半正位':'lots_half_positive',
+  '半逆位':'lots_half_negative',
+  '逆位':'lots_negative'
+});
+const LOT_DOMAINS=Object.freeze(['愛情','事業','關係','健康']);
+
+function cleanGrammarPart(value){
+  return String(value||'').trim().replace(/[。；;，,\s]+$/g,'')||'資訊不足';
+}
+function composeFixedGrammar(values,mode){
+  const parts=(values||[]).map(cleanGrammarPart);
+  if(mode==='2card'&&parts.length>=2)return `因為${parts[0]}，所以${parts[1]}。`;
+  if(mode==='3card'&&parts.length>=3)return `因為${parts[0]}，但會有${parts[1]}的改變，所以${parts[2]}。`;
+  if(mode==='5card'&&parts.length>=5)return `因為${parts[0]}、${parts[1]}，但會有${parts[2]}的變化，所以${parts[3]}、${parts[4]}。`;
+  if(mode==='ow3gs'&&parts.length>=11)return `因為（因為${parts[0]}、${parts[1]}，但會有${parts[2]}、${parts[3]}的變化，所以${parts[4]}、${parts[5]}），所以（因為${parts[6]}、${parts[7]}，但會有${parts[8]}的變化，所以${parts[9]}、${parts[10]}）。`;
+  if(parts.length===1)return `${parts[0]}。`;
+  return parts.length?`${parts.join('、')}。`:'資訊不足。';
+}
+function lotDomainText(card,direction,label){
+  const field=LOT_FIELD_BY_DIRECTION[direction];
+  const text=field?String(card?.[field]||'').trim():'';
+  if(!text)return '資訊不足';
+  const match=text.match(new RegExp(label+'：\\s*([^\\n]*?)(?=(?:愛情|事業|關係|健康)：|$)'));
+  return cleanGrammarPart(match?.[1]||'資訊不足');
+}
+function buildFixedReading(cards,directions,mode){
+  const source=Array.isArray(cards)?cards:[];
+  const sentence=composeFixedGrammar(source.map((card,index)=>directionText(card,directions[index])||card?.rune_description||'資訊不足'),mode);
+  const domains=(mode==='single'||mode==='daily')?[]:LOT_DOMAINS.map(label=>({
+    label:label+'建議',
+    text:composeFixedGrammar(source.map((card,index)=>lotDomainText(card,directions[index],label)),mode)
+  }));
+  return {sentence,domains};
+}
 
 export default function RunesClient(){
   const {value:uiSettings}=useLocalStore(UI_SETTINGS_KEY,DEFAULT_UI_SETTINGS);
@@ -54,7 +90,7 @@ export default function RunesClient(){
   useEffect(()=>{setNodePage(1);setEdgePage(1);},[graphQuery,graphGroup,graphEdge,pageSize]);
   function chooseMode(key){timers.current.forEach(clearTimeout);setRitualStep(-1);setError('');setModeKey(key);setDraw(null);setActiveSection('draw');if(typeof window!=='undefined'){const url=new URL(window.location.href);url.searchParams.set('mode',key);window.history.replaceState({},'',`${url.pathname}${url.search}#draw`);}}
   function openSection(){setActiveSection('draw');}
-  async function finishDraw(){try{const runePool=Array.from({length:66},(_,index)=>index+1);const {cards:runeNumbers,directionIndexes,directions}=drawRuneSession(runePool,selectedMode.count);const pairs=runeNumbers.map((runeNumber,index)=>({runeNumber:Number(runeNumber),dir:Number(directionIndexes[index])+1}));const types=modeKey==='daily'?['direction','daily']:['direction','lots'];const rows=await selectRuneDrawRows(pairs,{types});const byNumber=new Map(rows.map(row=>[Number(row.rune_number),row]));const cards=runeNumbers.map(number=>byNumber.get(Number(number))).filter(Boolean);if(cards.length!==runeNumbers.length)throw new Error('抽中的符文資料不完整。');const reading=buildSpreadGuidance(cards,directions,modeKey),createdAt=new Date().toISOString();setDraw({id:makeRuneDrawId(modeKey),createdAt,cards,directionIndexes,directions,reading,guidance:reading.guidance});setError('');}catch(err){setDraw(null);setError(`抽牌失敗：${err?.message||'未知錯誤'}`);}finally{setRitualStep(-1);}}
+  async function finishDraw(){try{const runePool=Array.from({length:66},(_,index)=>index+1);const {cards:runeNumbers,directionIndexes,directions}=drawRuneSession(runePool,selectedMode.count);const pairs=runeNumbers.map((runeNumber,index)=>({runeNumber:Number(runeNumber),dir:Number(directionIndexes[index])+1}));const types=modeKey==='daily'?['direction','daily']:['direction','lots'];const rows=await selectRuneDrawRows(pairs,{types});const byNumber=new Map(rows.map(row=>[Number(row.rune_number),row]));const cards=runeNumbers.map(number=>byNumber.get(Number(number))).filter(Boolean);if(cards.length!==runeNumbers.length)throw new Error('抽中的符文資料不完整。');const reading=buildFixedReading(cards,directions,modeKey),createdAt=new Date().toISOString();setDraw({id:makeRuneDrawId(modeKey),createdAt,cards,directionIndexes,directions,reading});setError('');}catch(err){setDraw(null);setError(`抽牌失敗：${err?.message||'未知錯誤'}`);}finally{setRitualStep(-1);}}
   function executeDraw(){if(ritualStep>=0)return;setError('');setDraw(null);setActiveSection('draw');timers.current.forEach(clearTimeout);timers.current=[];if(instantDraw){finishDraw();return;}setRitualStep(0);[1,2,3,4].forEach(step=>timers.current.push(setTimeout(()=>setRitualStep(step),step*RUNE_RITUAL_STEP_MS)));timers.current.push(setTimeout(finishDraw,RUNE_RITUAL_DELAY_MS));}
   const ritualMessages=runeRitualMessages(modeKey);const nodePages=Math.max(1,Math.ceil(graphView.nodes.length/pageSize)),edgePages=Math.max(1,Math.ceil(graphView.edges.length/pageSize));const shownNodes=graphView.nodes.slice((nodePage-1)*pageSize,nodePage*pageSize),shownEdges=graphView.edges.slice((edgePage-1)*pageSize,edgePage*pageSize);
 
@@ -121,8 +157,8 @@ export default function RunesClient(){
       {modeKey==='single'&&<section className="loc-card" data-draw-reading="single"><p className="loc-eyebrow">Lots · 單卡籤詩</p><h2>{draw.cards[0].rune_name} · {draw.directions[0]}</h2><RuneSingleReading card={draw.cards[0]} direction={draw.directions[0]}/></section>}
       {modeKey==='daily'&&<section className="loc-card" data-draw-reading="daily"><p className="loc-eyebrow">Daily · 每日指示</p><h2>{draw.cards[0].rune_name} · {draw.directions[0]} · {moonPhase}</h2><p className="runes-reading-lead"><strong>今日指引</strong><span>{dailyGuidance(draw.cards[0],draw.directions[0])||directionText(draw.cards[0],draw.directions[0])||'目前沒有這個位向的每日指示。'}</span></p></section>}
       <MultiReading draw={draw} mode={modeKey} phase={moonPhase}/>
-      {modeKey==='ow3gs'&&<section className="loc-card runes-ow3gs-core" data-draw-reading="ow3gs"><p className="loc-eyebrow">OW3gs · 雙模型判讀</p><h2>1–6 因的描述層 → 7–11 果的判定層</h2><p>先讀成因分析，後讀判斷分析，最後套用月相交互。十一張牌不是等權並列。</p><p><strong>1–6 因的描述層：</strong>源兩張、轉兩張、合兩張，共六張；以雙卡與三卡綜合判斷產生問題的可能狀態。</p><p><strong>7–11 果的判定層：</strong>使用五卡的基本規則，共五張；以五卡方式判斷建議如何行動的治理原則。</p><div className="loc-context-list">{draw.cards.slice(6,11).map((card,index)=><div className="loc-context-item" key={`core-${card.rune_number}-${index}`}><strong>第 {index+7} 張 · {card.rune_name} · {draw.directions[index+6]}</strong><span>{directionText(card,draw.directions[index+6])||card.rune_description}</span></div>)}</div><p>月相交互最後才套用，只作次要時間修飾。有時可與每日符文交替比照，重點是模型關聯，不是增加抽牌維度的複雜化。</p></section>}
-      {modeKey!=='single'&&modeKey!=='daily'?<section className="loc-card" data-draw-stage="guidance"><p className="loc-eyebrow">Lots · 籤詩</p><h2>籤詩指引</h2><p>{draw.reading?.guidance||'結果未知。'}</p>{Array.isArray(draw.reading?.advice)?<div className="runes-advice-grid">{draw.reading.advice.map(item=><article key={item.label}><strong>{item.label}</strong><span>{item.text}</span></article>)}</div>:null}</section>:null}
+      {modeKey==='ow3gs'&&<section className="loc-card runes-ow3gs-core" data-draw-reading="ow3gs"><p className="loc-eyebrow">OW3gs · 雙模型判讀</p><h2>1–6 因的描述層 → 7–11 果的判定層</h2><p>先讀成因分析，後讀判斷分析，最後套用月相交互。十一張牌不是等權並列。</p><p><strong>1–6 因的描述層：</strong>源兩張、轉兩張、合兩張，共六張；依固定卡位組合前因。</p><p><strong>7–11 果的判定層：</strong>使用五卡的基本規則，共五張；依固定五卡結構組合結果。</p><div className="loc-context-list">{draw.cards.slice(6,11).map((card,index)=><div className="loc-context-item" key={`core-${card.rune_number}-${index}`}><strong>第 {index+7} 張 · {card.rune_name} · {draw.directions[index+6]}</strong><span>{directionText(card,draw.directions[index+6])||card.rune_description}</span></div>)}</div><p>月相交互最後才套用，只作次要時間修飾。有時可與每日符文交替比照，重點是模型關聯，不是增加抽牌維度的複雜化。</p></section>}
+      {modeKey!=='single'&&modeKey!=='daily'?<section className="loc-card" data-draw-stage="lots"><p className="loc-eyebrow">Lots · 籤詩</p><h2>籤詩</h2><p>{draw.reading?.sentence||'資訊不足。'}</p>{Array.isArray(draw.reading?.domains)?<div className="runes-advice-grid">{draw.reading.domains.map(item=><article key={item.label}><strong>{item.label}</strong><span>{item.text}</span></article>)}</div>:null}</section>:null}
     </>}
   </section></main>;
 }

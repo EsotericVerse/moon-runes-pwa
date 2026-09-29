@@ -3,7 +3,6 @@ import fs from 'node:fs';
 const files={
   identity:'app/loc/views/AboutView.jsx',
   registry:'app/modular-v2/scope-registry.v2.js',
-  guidance:'app/loc/model/semantic-state.mjs',
   canonicalLoader:'app/loc/rune-repository.js',
   search:'app/loc/neon-search.js',
   searchView:'app/modular-v2/features/SearchV2.jsx',
@@ -20,19 +19,19 @@ const identity=read(files.identity);
 for(const token of ['語言架構框架','Language Architecture Framework','符號式語言','Symbolic Language'])if(!identity.includes(token))failures.push(`identity: missing ${token}`);
 const registry=read(files.registry);
 for(const token of ["defaultScopeId:'loc'","domain:'lrunes.lo3rwang.cc'"])if(!registry.includes(token))failures.push(`scope registry: missing ${token}`);
-const guidance=read(files.guidance);
-for(const token of ['RUNE_SEMANTIC_STATES','resolveStatePair','resolveSpreadState'])if(!guidance.includes(token))failures.push(`semantic state: missing ${token}`);
-for(const token of ['buildDailyStateIndex','findDailyState','createTextIndex','searchTextIndex'])if(guidance.includes(token))failures.push(`semantic state: retired Daily search token ${token}`);
 const dailyTrend=read(files.dailyTrend);
 for(const token of ['summarizeDailyRange','dailyPresetRange'])if(!dailyTrend.includes(token))failures.push(`daily trend: missing ${token}`);
-for(const token of ['SPREAD_WEIGHTS','DIRECTION_FACTOR','POLARITY_SCORE','weighted','GUIDANCE_RANGES'])if(guidance.includes(token))failures.push(`semantic state: forbidden weighted-score token ${token}`);
 const loader=read(files.canonicalLoader);
 for(const token of ['selectNeonCount','selectNeonRows','selectRuneCatalog'])if(!loader.includes(token))failures.push(`canonical rune repository: missing ${token}`);
 for(const path of Object.values(files)){
   const source=read(path);
   if(['data/json','runtime_json_documents','LOC_DATA','canonical/runes','fetchNeonData'].some(token=>source.includes(token)))failures.push(`${path}: retired data-path/JSON identifier remains`);
 }
-for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs'])if(fs.existsSync(retired))failures.push(`${retired}: retired path loader returned`);
+for(const retired of ['app/loc/data.js','app/loc/data-paths.mjs','app/loc/model/semantic-state.mjs','app/loc/model/spread-guidance.mjs'])if(fs.existsSync(retired))failures.push(`${retired}: retired runtime layer returned`);
+for(const path of ['app/lrunes/RunesClient.jsx','app/lrunes/RuneDrawClient.jsx','app/lrunes/RuneSingleReading.jsx','app/loc/RuneManagementPanel.jsx']){
+  const source=read(path);
+  for(const forbidden of ['semantic-state','spread-guidance','resolveSpreadState','cardSemanticState','buildSpreadGuidance'])if(source.includes(forbidden))failures.push(`${path}: semantic rendering layer returned: ${forbidden}`);
+}
 
 const search=read(files.search);
 const searchProviders=read(files.searchProviders);
@@ -47,4 +46,4 @@ for(const path of [files.search,files.searchView,files.canonicalLoader]){
 }
 
 if(failures.length){console.error('Current semantic authority guard failed:\\n'+failures.map(item=>`- ${item}`).join('\\n'));process.exit(1);}
-console.log('Current semantic authority guard passed for the Neon canonical runtime.');
+console.log('Current runtime authority guard passed: canonical Neon data with no semantic rendering layer.');

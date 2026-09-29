@@ -1,8 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import {selectRuneCatalog} from './rune-repository';
-import {cardSemanticState,resolveSpreadState} from './model/semantic-state.mjs';
+import {selectRuneCatalog,selectRuneDrawRows} from './rune-repository';
 import {realMoonPhase} from './model/moon-phase';
 import {drawRuneSession,makeRuneDrawId,RUNE_DIRECTIONS} from '../lrunes/rune-draw-engine';
 import {listNeonRecords,listRuneDrawSlots,putDailyRuneRecord,putNeonRecord,putRuneDrawSlot} from './neon-user-storage';
@@ -16,32 +15,63 @@ const MODES=[
   {key:'ow3gs',label:'11卡 OW3gs',count:11,positions:['1','2','3','4','5','6','7','8','9','10','11']}
 ];
 
+function directionText(card,direction){
+  const field=({'正位':'positive_meaning','半正位':'half_positive_meaning','半逆位':'half_reverse_meaning','逆位':'reverse_meaning'})[direction];
+  return String(card?.[field]||card?.rune_description||'').trim();
+}
+function dailyGuidance(card,direction){
+  const field=({'正位':'daily_positive','半正位':'daily_half_positive','半逆位':'daily_half_reverse','逆位':'daily_reverse'})[direction];
+  return String(card?.[field]||'').trim();
+}
+function cleanGrammarPart(value){
+  return String(value||'').trim().replace(/[。；;，,\s]+$/g,'')||'資訊不足';
+}
+function composeFixedGrammar(values,mode){
+  const parts=(values||[]).map(cleanGrammarPart);
+  if(mode==='2card'&&parts.length>=2)return `因為${parts[0]}，所以${parts[1]}。`;
+  if(mode==='3card'&&parts.length>=3)return `因為${parts[0]}，但會有${parts[1]}的改變，所以${parts[2]}。`;
+  if(mode==='5card'&&parts.length>=5)return `因為${parts[0]}、${parts[1]}，但會有${parts[2]}的變化，所以${parts[3]}、${parts[4]}。`;
+  if(mode==='ow3gs'&&parts.length>=11)return `因為（因為${parts[0]}、${parts[1]}，但會有${parts[2]}、${parts[3]}的變化，所以${parts[4]}、${parts[5]}），所以（因為${parts[6]}、${parts[7]}，但會有${parts[8]}的變化，所以${parts[9]}、${parts[10]}）。`;
+  if(parts.length===1)return `${parts[0]}。`;
+  return parts.length?`${parts.join('、')}。`:'資訊不足。';
+}
+async function resolvedSession(pool,count,types){
+  const raw=drawRuneSession(pool,count);
+  const pairs=raw.cards.map((runeNumber,index)=>({runeNumber:Number(runeNumber),dir:Number(raw.directionIndexes[index])+1}));
+  const rows=await selectRuneDrawRows(pairs,{types});
+  const byNumber=new Map(rows.map(row=>[Number(row.rune_number),row]));
+  const cards=raw.cards.map(number=>byNumber.get(Number(number))).filter(Boolean);
+  if(cards.length!==raw.cards.length)throw new Error('抽中的符文資料不完整。');
+  return {...raw,cards};
+}
+
 function todayKey(){
   const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
 }
 function makeRecord(mode,session){
   const config=MODES.find(item=>item.key===mode)||MODES[0];
-  const reading=resolveSpreadState(session.cards,session.directions,mode);
+  const guidance=composeFixedGrammar(session.cards.map((card,index)=>directionText(card,session.directions[index])),mode);
   return {
     id:makeRuneDrawId(mode),created_at:new Date().toISOString(),mode,mode_label:config.label,
-    moon_phase:realMoonPhase(),trend:reading.trend,result:reading.result,guidance:reading.guidance,
+    moon_phase:realMoonPhase(),trend:null,result:null,guidance,
     cards:session.cards.map((card,index)=>({
       number:Number(card.rune_number),name:card.rune_name,
       position:config.positions[index]||`第 ${index+1} 張`,
       direction:session.directions[index],
-      card_attribute:card.card_attribute||'未知',
-      state:cardSemanticState(card,session.directions[index]),
+      card_attribute:card.card_attribute||'',
+      state:'',
       positive_keywords:card.positive_keywords||'',negative_keywords:card.negative_keywords||''
     }))
   };
 }
 function dailyRecord(session,role){
   const card=session.cards[0];
+  const direction=session.directions[0];
   return {
     id:makeRuneDrawId('daily'),created_at:new Date().toISOString(),mode:'daily',mode_label:'每日',
     moon_phase:realMoonPhase(),daily_role:role,
-    trend:'未知',result:cardSemanticState(card,session.directions[0]),guidance:`結果${cardSemanticState(card,session.directions[0])}。`,
-    cards:[{number:Number(card.rune_number),name:card.rune_name,position:role==='supplement'?'副符':'主符',direction:session.directions[0],card_attribute:card.card_attribute||'未知',state:cardSemanticState(card,session.directions[0]),positive_keywords:card.positive_keywords||'',negative_keywords:card.negative_keywords||''}]
+    trend:null,result:null,guidance:dailyGuidance(card,direction)||directionText(card,direction),
+    cards:[{number:Number(card.rune_number),name:card.rune_name,position:role==='supplement'?'副符':'主符',direction,card_attribute:card.card_attribute||'',state:'',positive_keywords:card.positive_keywords||'',negative_keywords:card.negative_keywords||''}]
   };
 }
 function cardLine(record){
@@ -85,24 +115,28 @@ export default function RuneManagementPanel(){
   const savedMain=dailyRows.find(row=>row.daily_role==='main');
   const savedSupplement=dailyRows.find(row=>row.daily_role==='supplement');
 
-  function drawGroup(){
-    try{setDraw(makeRecord(mode,drawRuneSession(runes,config.count)));setStatus('');}
-    catch(error){setStatus(error?.message||'抽牌失敗。');}
+  async function drawGroup(){
+    try{
+      const pool=Array.from({length:66},(_,index)=>index+1);
+      setDraw(makeRecord(mode,await resolvedSession(pool,config.count,['direction','lots'])));setStatus('');
+    }catch(error){setStatus(error?.message||'抽牌失敗。');}
   }
   async function saveSlot(){
     if(!draw)return;
     try{await putRuneDrawSlot(slot,draw);await reloadRecords();setStatus(`第 ${slot} 組已更新；舊內容已覆蓋。`);}
     catch(error){setStatus(error?.message||'儲存失敗。');}
   }
-  function drawDailyMain(){
-    try{setDailyMain(dailyRecord(drawRuneSession(runes,1),'main'));setDailySupplement(null);setStatus('');}
-    catch(error){setStatus(error?.message||'抽牌失敗。');}
+  async function drawDailyMain(){
+    try{
+      const pool=Array.from({length:66},(_,index)=>index+1);
+      setDailyMain(dailyRecord(await resolvedSession(pool,1,['direction','daily']),'main'));setDailySupplement(null);setStatus('');
+    }catch(error){setStatus(error?.message||'抽牌失敗。');}
   }
-  function drawDailySupplement(){
+  async function drawDailySupplement(){
     try{
       const mainNumber=Number((savedMain||dailyMain)?.cards?.[0]?.number);
-      const pool=runes.filter(card=>Number(card?.rune_number)!==mainNumber);
-      setDailySupplement(dailyRecord(drawRuneSession(pool,1),'supplement'));setStatus('');
+      const pool=Array.from({length:66},(_,index)=>index+1).filter(number=>number!==mainNumber);
+      setDailySupplement(dailyRecord(await resolvedSession(pool,1,['direction','daily']),'supplement'));setStatus('');
     }catch(error){setStatus(error?.message||'副符抽牌失敗。');}
   }
   async function saveDaily(record){
@@ -112,15 +146,16 @@ export default function RuneManagementPanel(){
   async function updateDaily(row,field,value){
     const current=row.cards?.[0]||{};
     const nextCard={...current};
-    if(field==='number'){
-      const rune=runes.find(item=>Number(item.rune_number)===Number(value));
-      nextCard.number=Number(value);nextCard.name=rune?.rune_name||String(value);nextCard.card_attribute=rune?.card_attribute||'未知';
-    }else nextCard.direction=value;
-    const rune=runes.find(item=>Number(item.rune_number)===Number(nextCard.number));
-    nextCard.card_attribute=nextCard.card_attribute||rune?.card_attribute||'未知';
-    nextCard.state=cardSemanticState({card_attribute:nextCard.card_attribute},nextCard.direction);
+    if(field==='number')nextCard.number=Number(value);
+    else nextCard.direction=value;
     try{
-      await putNeonRecord({...row,result:nextCard.state,guidance:`結果${nextCard.state}。`,cards:[nextCard]});
+      const dir=RUNE_DIRECTIONS.indexOf(nextCard.direction)+1;
+      const [resolved]=await selectRuneDrawRows([{runeNumber:Number(nextCard.number),dir}],{types:['direction','daily']});
+      if(!resolved)throw new Error('符文資料不存在。');
+      nextCard.name=resolved.rune_name||String(nextCard.number);
+      nextCard.card_attribute=resolved.card_attribute||'';
+      nextCard.state='';
+      await putNeonRecord({...row,trend:null,result:null,guidance:dailyGuidance(resolved,nextCard.direction)||directionText(resolved,nextCard.direction),cards:[nextCard]});
       await reloadRecords();setStatus('每日符文紀錄已更新。');
     }catch(error){setStatus(error?.message||'更新失敗。');}
   }

@@ -4,7 +4,6 @@ import { resolve } from 'node:path';
 const engine=readFileSync(resolve(process.cwd(),'app/lrunes/rune-draw-engine.js'),'utf8');
 const publicDraw=readFileSync(resolve(process.cwd(),'app/lrunes/RuneDrawClient.jsx'),'utf8');
 const homeDraw=readFileSync(resolve(process.cwd(),'app/lrunes/RunesClient.jsx'),'utf8');
-const spread=readFileSync(resolve(process.cwd(),'app/loc/model/spread-guidance.mjs'),'utf8');
 const governance=readFileSync(resolve(process.cwd(),'docs/LUNARUNES_DRAW_GOVERNANCE.md'),'utf8');
 const ritual=readFileSync(resolve(process.cwd(),'app/lrunes/rune-ritual.js'),'utf8');
 
@@ -27,25 +26,22 @@ for(const [name,source,modeToken] of [
     "const runePool=Array.from({length:66},(_,index)=>index+1);",
     "drawRuneSession(runePool,selectedMode.count)",
     "selectRuneDrawRows(pairs,{types})",
-    "buildSpreadGuidance("
+    "buildFixedReading(",
+    "composeFixedGrammar("
   ])if(!source.includes(fragment))throw new Error(`${name} missing precise draw contract: ${fragment}`);
   if(source.includes('resolveSpreadState('))throw new Error(`${name} must not use semantic-state as the public multi-card guidance path`);
   if(source.includes('drawRuneSession(data.runes,selectedMode.count)'))throw new Error(`${name} must not draw from a SELECT-all rune catalog`);
   if(!source.includes('RUNE_RITUAL_DELAY_MS')||!source.includes('runeRitualMessages'))throw new Error(`${name} must retain the five-second ritual`);
 }
 
-for(const fragment of [
-  "return `因為\${values[0]}，所以\${values[1]}。`;",
-  "return `因為\${values[0]}，但會有\${values[1]}的改變，所以\${values[2]}。`;",
-  "return `因為\${values[0]}、\${values[1]}，但會有\${values[2]}的變化，所以\${values[3]}、\${values[4]}。`;",
-  "return `因為（因為\${values[0]}、\${values[1]}，但會有\${values[2]}、\${values[3]}的變化，所以\${values[4]}、\${values[5]}），所以（因為\${values[6]}、\${values[7]}，但會有\${values[8]}的變化，所以\${values[9]}、\${values[10]}）。`;",
-  "DOMAIN_LABELS.map(label=>({",
-  "lotsByCard.map(item=>item[label])"
-]){
-  if(!spread.includes(fragment))throw new Error(`Spread grammar missing: ${fragment}`);
-}
-for(const forbidden of ['TOPIC_BY_RUNE','STATE_WORD']){
-  if(spread.includes(forbidden))throw new Error(`Spread grammar must use selected direction/lots text, not synthetic semantic words: ${forbidden}`);
+for(const source of [publicDraw,homeDraw]){
+  for(const fragment of [
+    "return \`因為\\${parts[0]}，所以\\${parts[1]}。\`;",
+    "return \`因為\\${parts[0]}，但會有\\${parts[1]}的改變，所以\\${parts[2]}。\`;",
+    "return \`因為\\${parts[0]}、\\${parts[1]}，但會有\\${parts[2]}的變化，所以\\${parts[3]}、\\${parts[4]}。\`;",
+    "return \`因為（因為\\${parts[0]}、\\${parts[1]}，但會有\\${parts[2]}、\\${parts[3]}的變化，所以\\${parts[4]}、\\${parts[5]}），所以（因為\\${parts[6]}、\\${parts[7]}，但會有\\${parts[8]}的變化，所以\\${parts[9]}、\\${parts[10]}）。\`;"
+  ])if(!source.includes(fragment))throw new Error(`Fixed rune grammar missing: ${fragment}`);
+  for(const forbidden of ['semantic-state','spread-guidance','resolveSpreadState','buildSpreadGuidance'])if(source.includes(forbidden))throw new Error(`Public draw must not use semantic rendering layer: ${forbidden}`);
 }
 
 for(const fragment of ['RUNE_RITUAL_DELAY_MS=5000','RUNE_RITUAL_STEP_MS=1000']){
@@ -58,4 +54,4 @@ for(const fragment of [
   if(!governance.includes(fragment))throw new Error(`Rune governance missing: ${fragment}`);
 }
 
-console.log('Rune draw verified: exact selected-ID reads, fixed 2/3/5/11 grammar, per-card lots advice, and five-second ritual are present.');
+console.log('Rune draw verified: exact selected-ID reads, fixed 2/3/5/11 structural grammar, direct lots text, and five-second ritual are present.');
