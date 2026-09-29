@@ -60,3 +60,7 @@ There is **no RC10**. The version sequence after RC9 goes directly to **1.0 Rele
 16. Final responsive, loading, failure-state, regression, and deployment validation passes.
 
 The resulting build is the LOC **1.0 Release (1.0R)**: a mature, extensible product whose ordinary Scope/Group growth is handled by shared architecture plus simple Admin configuration, with a working governed import path and an accompanying private personal-analysis app.
+
+### Personal-analysis model
+
+The private analysis app is trajectory-first rather than text-first. Text is one analytical signal, not a prerequisite for participation. Event anchors, time, multimedia presence, source/place metadata, explicit user tags, and periods of text absence may all contribute contextual structure. Multimedia remains record/context data rather than an automatic inference target. This allows people with sparse writing histories to use LOC without forcing multimedia interpretation or fabricated text analysis.
