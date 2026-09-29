@@ -53,7 +53,6 @@ function JsonImport({scopeId}){
   const [status,setStatus]=useState('');
   const [busy,setBusy]=useState(false);
   const suggested=useMemo(()=>sourceSuggestion(fileName),[fileName]);
-  if(scopeId!=='lo3rwang')return <p>此 Current Scope 尚未啟用 Galaxy JSON 匯入。</p>;
   if(!account.canManageScopeSync(scopeId))return null;
 
   async function chooseFile(event){
@@ -123,7 +122,6 @@ function MediaRecordInsert({scopeId}){
   });
   const [status,setStatus]=useState('');
   const [busy,setBusy]=useState(false);
-  if(scopeId!=='lo3rwang')return null;
   if(!account.canManageScopeSync(scopeId))return null;
 
   const change=(key,value)=>setDraft(current=>({...current,[key]:value}));
@@ -194,7 +192,6 @@ function SunoImport({scopeId}){
   const account=useNeonAccount();
   const [draft,setDraft]=useState({title:'',lyrics:'',url:'',nativeId:'',createdDate:'',stylePrompt:'',metaTags:'',source_id:'',target_id:'',ref_id:''});
   const [status,setStatus]=useState('');const [busy,setBusy]=useState(false);
-  if(scopeId!=='lo3rwang')return null;
   if(!account.canManageScopeSync(scopeId))return null;
   const change=(key,value)=>setDraft(current=>({...current,[key]:value}));
   function detectId(url){
