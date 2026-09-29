@@ -224,7 +224,7 @@ export default function CultureV2(){
   const eventTimelineItems=anchoredEvents;
   const anchorTimelineItems=useMemo(()=>timelineItems.filter(item=>String(item?.entry_type||'')==='anchor'),[timelineItems]);
   const periodWorkTimelineItems=periodWorkTimelineQuery.data?.buckets||[];
-  const hasTimelineSurface=isLoc?Boolean(timelineItems.length):Boolean(timelineItems.length||selectedWorkPeriod?.start_date);
+  const hasTimelineSurface=isLoc?Boolean(locSourceRiverItems.length):Boolean(timelineItems.length||selectedWorkPeriod?.start_date);
 
   const classificationBuckets=classificationMode==='source'
     ?(sourceSnapshotQuery.data?.buckets||[])
@@ -320,24 +320,13 @@ export default function CultureV2(){
 
 
             {isLoc?<>
-              <section className='scope-v2-card'>
-                <p className='loc-eyebrow'>Intersection Anchors</p>
-                <h3>時期交會｜定錨點</h3>
-                {query.data?.intersectionStart?<p>交會起點：{String(query.data.intersectionStart).slice(0,10)}</p>:<p>尚未設定交會時期，顯示現有定錨點。</p>}
-                <CultureTimelineV2
-                  items={timelineItems}
-                  labelOf={item=>item.display_label||item.title}
-                  focus={navigation}
-                  mode='overview'
-                />
-              </section>
 
               <section className='scope-v2-card scope-v2-culture-classification-river'>
                 <p className='loc-eyebrow'>Source Density</p>
                 <h3>作品來源分佈</h3>
                 <CultureTimelineV2
                   items={locSourceRiverItems}
-                  labelOf={()=>''}
+                  labelOf={item=>item.entry_type==='intersection_start'?item.display_label:''}
                   focus={{}}
                   mode='source'
                 />
@@ -349,16 +338,6 @@ export default function CultureV2(){
                 </div>:null}
               </section>
 
-              {locSuggestions.length?<section className='scope-v2-card'>
-                <p className='loc-eyebrow'>Review Suggestions</p>
-                <h3>建議回看日期</h3>
-                <div className='scope-v2-list'>
-                  {locSuggestions.map(item=><article className='scope-v2-inline-card' key={'suggest:'+item.date}>
-                    <strong>{item.date}</strong>
-                    <span>當日作品量 {Number(item.item_count||0).toLocaleString()} 項</span>
-                  </article>)}
-                </div>
-              </section>:null}
             </>:<>
               {!isLoc?<label className='scope-v2-culture-period-select'>
                 <span>時間長河</span>
