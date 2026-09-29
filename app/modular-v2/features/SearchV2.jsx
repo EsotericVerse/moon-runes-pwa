@@ -15,6 +15,7 @@ import {featureDataErrorMessage} from '../feature-data-state.v2';
 import ContentEditorV2 from '../ContentEditorV2';
 import SearchHighlightV2 from '../SearchHighlightV2';
 import {selectGalaxyContent,selectGalaxyIdentity} from '../../loc/aggregate-query';
+import {selectManagedScopes} from '../../loc/scope-list';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model.v2';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 import IncrementalLoadV2 from '../IncrementalLoadV2';
@@ -191,15 +192,19 @@ export default function SearchV2(){
     if(!identity)return;
     const id=++searchId.current;
     matchedQueryRef.current='';
-    setError('');setHasMore(false);setDisplayedCount(0);setNextCursor(null);setLoadingMore(false);
+    setError('');setHasMore(false);setNextCursor(null);setLoadingMore(false);
     setStatus('載入關聯文字…');
     try{
-      let detail=await selectGalaxyIdentity(scopeId,identity);
+      let detail=null;
       let detailScope=scopeId;
-      if(!detail&&scopeId==='loc'){
-        detail=await selectGalaxyIdentity('lo3rwang',identity);
-        detailScope='lo3rwang';
-        if(!detail){detail=await selectGalaxyIdentity('lunarunes',identity);detailScope='lunarunes';}
+      if(scopeId==='loc'){
+        const scopes=await selectManagedScopes();
+        for(const managedScope of scopes){
+          detail=await selectGalaxyIdentity(managedScope.id,identity);
+          if(detail){detailScope=managedScope.id;break;}
+        }
+      }else{
+        detail=await selectGalaxyIdentity(scopeId,identity);
       }
       if(id!==searchId.current)return;
       if(!detail)throw new Error('找不到這筆文字。');
