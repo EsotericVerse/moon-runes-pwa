@@ -7,9 +7,7 @@ import {
   selectScopePeriodSourceSnapshot,
   selectScopePeriodWorks,
   selectScopeCultureData,
-  selectScopeWorkSnapshot,
-  selectScopeMediaSnapshot,
-  selectScopeMediaWorks
+  selectScopeWorkSnapshot
 } from '../../loc/neon-culture-client';
 import {galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
@@ -63,7 +61,6 @@ export default function CultureV2(){
   });
 
   const [timelineMode,setTimelineMode]=useState('works');
-  const [classificationMode,setClassificationMode]=useState('source');
   const [selectedCategory,setSelectedCategory]=useState('');
   const [workPage,setWorkPage]=useState(0);
   const [workRows,setWorkRows]=useState([]);
@@ -104,54 +101,34 @@ export default function CultureV2(){
       startDate:selectedWorkPeriod?.start_date,
       endDate:selectedWorkPeriod?.end_date
     }),
-    enabled:!isLoc&&Boolean(selectedWorkPeriod?.start_date)&&classificationMode==='source',
+    enabled:!isLoc&&Boolean(selectedWorkPeriod?.start_date),
     staleTime:5*60_000
   });
 
 
 
-  const mediaSnapshotQuery=useQuery({
-    queryKey:['culture-period-media-snapshot',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
-    queryFn:()=>selectScopeMediaSnapshot(classificationScope,{
-      startDate:selectedWorkPeriod?.start_date,
-      endDate:selectedWorkPeriod?.end_date,
-    }),
-    enabled:!isLoc&&classificationMode==='media'&&Boolean(selectedWorkPeriod?.start_date),
-    staleTime:5*60_000
-  });
-
-
-  const classificationBucketsQuery=classificationMode==='source'?sourceSnapshotQuery:mediaSnapshotQuery;
-  const categoryGroups=classificationMode==='source'
-    ?(sourceSnapshotQuery.data?.groups||[])
-    :(mediaSnapshotQuery.data?.groups||[]);
-  const categoryQuery=classificationMode==='source'?sourceSnapshotQuery:mediaSnapshotQuery;
+  const classificationBucketsQuery=sourceSnapshotQuery;
+  const categoryGroups=sourceSnapshotQuery.data?.groups||[];
+  const categoryQuery=sourceSnapshotQuery;
   const selectedGroup=categoryGroups.find(item=>item.category_key===selectedCategory)||null;
   const selectedCount=Number(selectedGroup?.item_count)||0;
   const periodWorksQuery=useQuery({
-    queryKey:['culture-period-works',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,classificationMode,selectedCategory,workPage],
-    queryFn:()=>classificationMode==='source'
-      ?selectScopePeriodWorks(classificationScope,{
-        startDate:selectedWorkPeriod?.start_date,
-        endDate:selectedWorkPeriod?.end_date,
-        sourceName:selectedGroup?.source_name,
-        limit:CULTURE_WORK_PAGE_SIZE,
-        pageOffset:workPage*CULTURE_WORK_PAGE_SIZE
-      })
-      :selectScopeMediaWorks(classificationScope,{
-          startDate:selectedWorkPeriod?.start_date,
-          endDate:selectedWorkPeriod?.end_date,
-          mediaName:selectedGroup?.media_name,
-          limit:CULTURE_WORK_PAGE_SIZE,
-          pageOffset:workPage*CULTURE_WORK_PAGE_SIZE
-        }),
+    queryKey:['culture-period-works',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,selectedCategory,workPage],
+    queryFn:()=>selectScopePeriodWorks(classificationScope,{
+      startDate:selectedWorkPeriod?.start_date,
+      endDate:selectedWorkPeriod?.end_date,
+      sourceName:selectedGroup?.source_name,
+      sourceNames:selectedGroup?.source_names||[],
+      mediaTypes:selectedGroup?.media_types||[],
+      limit:CULTURE_WORK_PAGE_SIZE,
+      pageOffset:workPage*CULTURE_WORK_PAGE_SIZE
+    }),
     enabled:!isLoc&&Boolean(selectedWorkPeriod?.start_date&&selectedGroup),
     staleTime:5*60_000
   });
 
   useEffect(()=>{
     setTimelineMode('works');
-    setClassificationMode('source');
     setSelectedCategory('');
     setWorkPage(0);
     setWorkRows([]);
@@ -164,7 +141,7 @@ export default function CultureV2(){
     setFullTextKey('');
     setFullText('');
     setFullTextError('');
-  },[classificationMode,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date]);
+  },[selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date]);
 
   useEffect(()=>{
     setWorkRows([]);
@@ -230,9 +207,7 @@ export default function CultureV2(){
   const periodWorkTimelineItems=periodWorkTimelineQuery.data?.buckets||[];
   const hasTimelineSurface=isLoc?Boolean(locSourceRiverItems.length):Boolean(timelineItems.length||selectedWorkPeriod?.start_date);
 
-  const classificationBuckets=classificationMode==='source'
-    ?(sourceSnapshotQuery.data?.buckets||[])
-    :(mediaSnapshotQuery.data?.buckets||[]);
+  const classificationBuckets=sourceSnapshotQuery.data?.buckets||[];
 
 
   async function galaxyTable(){
@@ -384,26 +359,18 @@ export default function CultureV2(){
             {!isLoc&&selectedWorkPeriod?<section className='scope-v2-card scope-v2-culture-classification-river'>
               <p className='loc-eyebrow'>Classification River</p>
               <h3>{labelOf(selectedWorkPeriod,0)}｜作品分類河道</h3>
-              {!isLoc?<div className='scope-v2-tabs' role='group' aria-label='作品分類方式'>
-                <button type='button' aria-pressed={classificationMode==='source'} onClick={()=>setClassificationMode('source')}>作品來源</button>
-                <button type='button' aria-pressed={classificationMode==='media'} onClick={()=>setClassificationMode('media')}>多媒體</button>
-              </div>:null}
               {classificationBucketsQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(classificationBucketsQuery.error)}</p>:null}
               {!classificationBucketsQuery.isFetching&&!classificationBucketsQuery.error&&!classificationBuckets.length
                 ?<p className='scope-v2-status'>{'目前沒有此分類資料。'}</p>:null}
               {classificationBuckets.length?<CultureTimelineV2
                 items={classificationBuckets}
-                labelOf={item=>classificationMode==='source'
-                  ?''
-                  :(item.display_label||item.group_label)}
+                labelOf={()=>''}
                 focus={{}}
-                mode={classificationMode==='source'?'source':'overview'}
+                mode='source'
                 onSelect={item=>{
                   const term=String(item?.group||'').trim();
                   if(!term)return;
-                  const key=classificationMode==='source'
-                    ?'source:'+term
-                    :'media:type:'+term;
+                  const key='source:'+term;
                   if(categoryGroups.some(group=>group.category_key===key)){
                     setWorkRows([]);
                     setWorkPage(0);
@@ -417,13 +384,13 @@ export default function CultureV2(){
 
             {!isLoc&&selectedWorkPeriod?<section className='scope-v2-card scope-v2-culture-current-works'>
               <p className='loc-eyebrow'>Classification</p>
-              <h3>{labelOf(selectedWorkPeriod,0)}｜{classificationMode==='source'?'作品來源':'多媒體分類'}</h3>
+              <h3>{labelOf(selectedWorkPeriod,0)}｜作品來源</h3>
               {categoryQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(categoryQuery.error)}</p>:null}
               {!categoryQuery.isFetching&&!categoryQuery.error&&!categoryGroups.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
               {categoryGroups.length?<IncrementalListV2
                 items={categoryGroups}
                 batchSize={DEFAULT_LIST_BATCH_SIZE}
-                resetKey={classificationMode+'|'+String(selectedWorkPeriod?.period||'all')}
+                resetKey={'source|'+String(selectedWorkPeriod?.period||'all')}
                 className='scope-v2-culture-source-groups'
                 renderItem={group=><button type='button' key={group.category_key}
                   className='scope-v2-culture-source-button'
@@ -442,7 +409,7 @@ export default function CultureV2(){
                 <IncrementalListV2
                   items={visibleWorkRows}
                   batchSize={CULTURE_WORK_PAGE_SIZE}
-                  resetKey={selectedCategory+'|'+classificationMode}
+                  resetKey={selectedCategory+'|source'}
                   className='scope-v2-culture-source-work-scroll'
                   externalHasMore={Boolean(periodWorksQuery.data?.hasMore)}
                   loading={periodWorksQuery.isFetching}
@@ -458,15 +425,14 @@ export default function CultureV2(){
                     relationLinks={galaxyRelationLinks(classificationScope,work)}
                     links={work.links||[]}
                   >
-                    {classificationMode==='source'&&work.uid?<WorkFullTextV2
+                    {work.uid?<WorkFullTextV2
                       open={fullTextKey===work.key}
                       loading={fullTextLoading&&fullTextKey===work.key}
                       error={fullTextKey===work.key?fullTextError:''}
                       content={fullTextKey===work.key?fullText:''}
                       onToggle={()=>toggleWorkContent(work)}
                     />:null}
-                    {classificationMode==='media'?<p>{work.media_type?('媒體類型：'+work.media_type):''}</p>:null}
-                    {classificationMode==='source'&&work.uid&&account.canManageScopeSync(classificationScope)?<p><button type="button" onClick={()=>startEditingWork(work)}>{editingWorkKey===String(work.key||('galaxy:'+work.uid))?'編輯中':'編輯'}</button></p>:null}
+                    {work.uid&&account.canManageScopeSync(classificationScope)?<p><button type="button" onClick={()=>startEditingWork(work)}>{editingWorkKey===String(work.key||('galaxy:'+work.uid))?'編輯中':'編輯'}</button></p>:null}
                     {editingWorkKey===String(work.key||('galaxy:'+work.uid))&&editDraft?<ContentEditorV2
                       draft={editDraft}
                       setDraft={setEditDraft}
