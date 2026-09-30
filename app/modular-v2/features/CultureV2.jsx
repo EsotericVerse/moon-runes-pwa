@@ -432,6 +432,8 @@ export default function CultureV2(){
                         mode='overview'
                         windowStart={activeWindowStart}
                         windowEnd={activeWindowEnd}
+                        boundaryStart={selectedWindowStart}
+                        boundaryEnd={selectedWindowEnd}
                         onBoundaryNavigate={direction=>{
                           if(selectedPeriodIndex<0)return;
                           const nextIndex=direction==='previous'?selectedPeriodIndex-1:selectedPeriodIndex+1;
