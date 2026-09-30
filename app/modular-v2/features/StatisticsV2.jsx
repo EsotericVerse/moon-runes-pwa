@@ -8,7 +8,7 @@ import {
   Bar,BarChart,CartesianGrid,Cell,Legend,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectScopeRankingTypes,selectScopeSourceTrendRows} from '../../loc/neon-ranking-client';
+import {selectScopeRankingTypes,selectScopeSourceTrendRows} from '../../loc/neon-statistics-client';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
