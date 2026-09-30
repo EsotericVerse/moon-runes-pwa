@@ -29,13 +29,14 @@ const STAT_TYPE_LABELS=Object.freeze({
 });
 const SOURCE_TREND_ORDER=Object.freeze(['Facebook','Threads','IG','Twitter(X)','YouTube','Others']);
 const TIME_STANDARDS=Object.freeze([
-  {value:'10y',label:'10 年',months:120,bucket:'quarter'},
+  {value:'10y',label:'10 年',months:120,bucket:'month'},
   {value:'5y',label:'5 年',months:60,bucket:'month'},
   {value:'3y',label:'3 年',months:36,bucket:'month'},
-  {value:'1y',label:'1 年',months:12,bucket:'month'},
+  {value:'1y',label:'1 年',months:12,bucket:'week'},
   {value:'6m',label:'半年',months:6,bucket:'week'},
   {value:'3m',label:'一季',months:3,bucket:'week'},
-  {value:'1m',label:'一月',months:1,bucket:'day'}
+  {value:'1m',label:'一月',months:1,bucket:'day'},
+  {value:'1w',label:'一週',days:6,bucket:'day'}
 ]);
 function dateKey(value){
   const key=String(value||'').slice(0,10);
@@ -46,6 +47,13 @@ function subtractMonths(value,months){
   if(!key)return '';
   const date=new Date(key+'T00:00:00Z');
   date.setUTCMonth(date.getUTCMonth()-Math.max(0,Number(months)||0));
+  return date.toISOString().slice(0,10);
+}
+function subtractDays(value,days){
+  const key=dateKey(value);
+  if(!key)return '';
+  const date=new Date(key+'T00:00:00Z');
+  date.setUTCDate(date.getUTCDate()-Math.max(0,Number(days)||0));
   return date.toISOString().slice(0,10);
 }
 function trendBucket(value,unit){
@@ -75,7 +83,9 @@ function buildSourceTrend(rows=[],standard='10y'){
   const dates=rows.map(row=>dateKey(row.day)).filter(Boolean).sort();
   const endDate=dates.at(-1)||'';
   if(!endDate)return [];
-  const startDate=subtractMonths(endDate,config.months);
+  const startDate=Number.isFinite(config.days)
+    ?subtractDays(endDate,config.days)
+    :subtractMonths(endDate,config.months);
   const buckets=new Map();
   for(const row of rows){
     const day=dateKey(row.day);
