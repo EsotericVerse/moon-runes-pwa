@@ -1,3 +1,3 @@
 import LocApp from '../loc/LocApp';
-export const metadata={title:'搜尋｜LOC 月典',description:'LOC 統一搜尋入口。'};
+export const metadata={title:'文字與作品搜尋｜月典',description:'輸入關鍵字搜尋文字、作品、多媒體與符文內容，並沿來源與關係查看前後脈絡。'};
 export default function SearchPage(){return <LocApp forcedView="search"/>;}
