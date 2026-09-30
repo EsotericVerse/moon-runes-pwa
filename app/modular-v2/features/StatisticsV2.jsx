@@ -22,7 +22,7 @@ const CHART_ACCENT='var(--loc-accent)';
 const CHART_TEXT='var(--loc-text)';
 const CHART_GRID='var(--loc-line)';
 const CHART_TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)',borderRadius:'8px'};
-const CHART_TYPES=[['bar','長條圖'],['line','折線圖'],['pie','圓餅圖']];
+const CHART_TYPES=[['line','折線圖'],['bar','長條圖'],['pie','圓餅圖']];
 const STAT_TABS=[['ranking','統計'],['media','多媒體設定']];
 const STAT_TYPE_LABELS=Object.freeze({
   source:'作品來源'
@@ -225,7 +225,7 @@ function StatisticTypeSelect({scopeId,navigation,types}){
 function StatisticsPanel({scopeId,navigation,types}){
   const requested=String(navigation.rankingType||'');
   const rankingType=types.includes(requested)?requested:(types[0]||'');
-  const [chartType,setChartType]=useState('bar');
+  const [chartType,setChartType]=useState('line');
   const [timeStandard,setTimeStandard]=useState('10y');
   const [detailBucket,setDetailBucket]=useState('');
   const query=useRanking(scopeId,rankingType,navigation);
