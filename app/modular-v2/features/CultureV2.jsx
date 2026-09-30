@@ -7,8 +7,7 @@ import {
   selectScopePeriodSourceSnapshot,
   selectScopePeriodWorkIndex,
   selectScopePeriodWorkDetails,
-  selectScopeCultureData,
-  selectScopeWorkSnapshot
+  selectScopeCultureData
 } from '../../loc/neon-culture-client';
 import {galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
@@ -70,7 +69,6 @@ export default function CultureV2(){
     staleTime:5*60_000
   });
 
-  const [timelineMode,setTimelineMode]=useState('works');
   const [selectedPeriodKey,setSelectedPeriodKey]=useState('');
   const [selectedCategory,setSelectedCategory]=useState('');
   const workScrollRef=useRef(null);
@@ -101,13 +99,10 @@ export default function CultureV2(){
   const selectedWorkPeriod=selectedPeriodKey==='all'
     ?allTimePeriod
     :(primaryPeriods.find(item=>periodKey(item)===selectedPeriodKey)||openPeriod||allTimePeriod);
-  const selectedPeriodIndex=primaryPeriods.findIndex(item=>periodKey(item)===periodKey(selectedWorkPeriod));
   const selectedWindowStart=String(selectedWorkPeriod?.start_date||'');
   const selectedWindowEnd=String(selectedWorkPeriod?.end_date||new Date().toISOString().slice(0,10));
   const requestedWindowStart=String(navigation.from||'').slice(0,10);
   const requestedWindowEnd=String(navigation.to||'').slice(0,10);
-  const activeWindowStart=requestedWindowStart||selectedWindowStart;
-  const activeWindowEnd=requestedWindowEnd||selectedWindowEnd;
   useEffect(()=>{
     if(isLoc||!requestedWindowStart||!primaryPeriods.length)return;
     const matched=primaryPeriods.find(item=>{
@@ -117,16 +112,6 @@ export default function CultureV2(){
     });
     if(matched)setSelectedPeriodKey(periodKey(matched));
   },[isLoc,requestedWindowStart,primaryPeriods]);
-
-  const periodWorkTimelineQuery=useQuery({
-    queryKey:['culture-period-work-timeline',scopeId,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
-    queryFn:()=>selectScopeWorkSnapshot(scopeId,{
-      startDate:selectedWorkPeriod?.start_date,
-      endDate:selectedWorkPeriod?.end_date
-    }),
-    enabled:!isLoc,
-    staleTime:5*60_000
-  });
 
   const sourceSnapshotQuery=useQuery({
     queryKey:['culture-period-source-snapshot',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
@@ -183,7 +168,6 @@ export default function CultureV2(){
   const visibleWorkRows=periodWorksPage.rows||[];
 
   useEffect(()=>{
-    setTimelineMode('works');
     setSelectedCategory('');
   },[scopeId]);
 
@@ -201,14 +185,6 @@ export default function CultureV2(){
     setFullTextError('');
     if(workScrollRef.current)workScrollRef.current.scrollTop=0;
   },[selectedCategory]);
-
-  const periodVolumeByStart=useMemo(()=>{
-    const map=new Map();
-    if(sourceSnapshotQuery.data&&selectedWorkPeriod?.start_date){
-      map.set(String(selectedWorkPeriod.start_date).slice(0,10),Number(sourceSnapshotQuery.data.totalCount)||0);
-    }
-    return map;
-  },[sourceSnapshotQuery.data,selectedWorkPeriod?.start_date]);
 
 
   const timelineItems=useMemo(()=>
@@ -275,24 +251,6 @@ export default function CultureV2(){
       };
     }).filter(item=>item.group_label&&item.start_date);
   },[locScopeDistributionItems]);
-  const locSuggestions=useMemo(()=>{
-    const totals=new Map();
-    for(const item of locSourceRiverItems){
-      const day=String(item?.start_date||'').slice(0,10);
-      if(!day)continue;
-      totals.set(day,(totals.get(day)||0)+(Number(item?.item_count)||0));
-    }
-    return [...totals.entries()]
-      .map(([date,item_count])=>({date,item_count}))
-      .sort((a,b)=>b.item_count-a.item_count||b.date.localeCompare(a.date))
-      .slice(0,5);
-  },[locSourceRiverItems]);
-  const anchoredEvents=useMemo(()=>(query.data?.events||[])
-    .filter(item=>String(item?.scope_id||'')===scopeId&&item?.start_date&&item?.end_date)
-    .sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))||String(a.title||'').localeCompare(String(b.title||''))),[query.data,scopeId]);
-  const eventTimelineItems=anchoredEvents;
-  const anchorTimelineItems=useMemo(()=>timelineItems.filter(item=>String(item?.entry_type||'')==='anchor'),[timelineItems]);
-  const periodWorkTimelineItems=periodWorkTimelineQuery.data?.buckets||[];
   const hasTimelineSurface=isLoc?Boolean(locSourceRiverItems.length):Boolean(timelineItems.length||selectedWorkPeriod?.start_date);
 
   const classificationBuckets=sourceSnapshotQuery.data?.buckets||[];
@@ -423,154 +381,116 @@ export default function CultureV2(){
 
 
             </>:<>
-              {!isLoc?<div className='scope-v2-stat-controls'>
-                <label className='scope-v2-culture-period-select'>
-                  <span>時期</span>
-                  <select className='scope-v2-select' value={selectedPeriodKey||'all'} onChange={event=>setSelectedPeriodKey(event.target.value)}>
-                    <option value='all'>全部時間</option>
-                    {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{labelOf(item,0)}</option>)}
-                  </select>
-                </label>
-                <label className='scope-v2-culture-period-select'>
-                  <span>時間長河</span>
-                  <select className='scope-v2-select' value={timelineMode} onChange={event=>setTimelineMode(event.target.value)}>
-                    <option value='works'>時期分割作品</option>
-                    {anchoredEvents.length?<option value='event'>事件分割作品</option>:null}
-                    <option value='anchor'>定錨點</option>
-                  </select>
-                </label>
-              </div>:null}
-              {timelineMode==='anchor'
-                ?<CultureTimelineV2
-                    items={anchorTimelineItems}
-                    labelOf={item=>item.display_label||item.title}
-                    focus={navigation}
-                    mode='overview'
-                  />
-                :timelineMode==='event'
-                  ?<>
-                      {!anchoredEvents.length?<p className='scope-v2-status'>目前沒有具有前後定錨點的事件。</p>:null}
-                      {eventTimelineItems.length?<CultureTimelineV2
-                        items={eventTimelineItems}
-                        labelOf={item=>item.display_label||item.title}
-                        focus={{}}
-                        mode='overview'
-                      />:null}
-                    </>
-                  :<>
-                      {periodWorkTimelineQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorkTimelineQuery.error)}</p>:null}
-                      {!periodWorkTimelineQuery.isFetching&&!periodWorkTimelineQuery.error&&!periodWorkTimelineItems.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
-                      {periodWorkTimelineItems.length?<CultureTimelineV2
-                        items={periodWorkTimelineItems}
-                        labelOf={item=>item.display_label||item.evidence_group||item.group_label}
-                        focus={{}}
-                        mode='overview'
-                        windowStart={activeWindowStart}
-                        windowEnd={activeWindowEnd}
-                        boundaryStart={selectedWindowStart}
-                        boundaryEnd={selectedWindowEnd}
-                        onBoundaryNavigate={direction=>{
-                          if(selectedPeriodIndex<0)return;
-                          const nextIndex=direction==='previous'?selectedPeriodIndex-1:selectedPeriodIndex+1;
-                          const next=primaryPeriods[nextIndex];
-                          if(next)setSelectedPeriodKey(periodKey(next));
-                        }}
-                      />:null}
-                    </>}
+              <section className='scope-v2-card scope-v2-culture-structure-river'>
+                <p className='loc-eyebrow'>Time River</p>
+                <h3>時期・事件・定錨點</h3>
+                {timelineItems.length?<CultureTimelineV2
+                  items={timelineItems}
+                  labelOf={item=>item.display_label||item.title}
+                  focus={navigation}
+                  mode='overview'
+                />:<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>}
+              </section>
 
-            </>}
+              {selectedWorkPeriod?<section className='scope-v2-card scope-v2-culture-classification-river'>
+                <div className='scope-v2-stat-controls'>
+                  <label className='scope-v2-culture-period-select'>
+                    <span>時期</span>
+                    <select className='scope-v2-select' value={selectedPeriodKey||periodKey(selectedWorkPeriod)} onChange={event=>setSelectedPeriodKey(event.target.value)}>
+                      {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{labelOf(item,0)}</option>)}
+                    </select>
+                  </label>
+                </div>
+                <p className='loc-eyebrow'>Classification River</p>
+                <h3>{labelOf(selectedWorkPeriod,0)}｜作品分類河道</h3>
+                {classificationBucketsQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(classificationBucketsQuery.error)}</p>:null}
+                {!classificationBucketsQuery.isFetching&&!classificationBucketsQuery.error&&!classificationBuckets.length
+                  ?<p className='scope-v2-status'>目前沒有此時期的作品分類資料。</p>:null}
+                {classificationBuckets.length?<CultureTimelineV2
+                  items={classificationBuckets}
+                  labelOf={()=>''}
+                  focus={{}}
+                  mode='source'
+                  windowStart={selectedWindowStart}
+                  windowEnd={selectedWindowEnd}
+                  onSelect={item=>{
+                    const term=String(item?.category||item?.group||'').split(' · ')[0].trim();
+                    if(!term)return;
+                    const key='source:'+term;
+                    if(categoryGroups.some(group=>group.category_key===key)){
+                      setSelectedCategory(key);
+                    }
+                  }}
+                />:null}
 
-            {!isLoc&&selectedWorkPeriod?<section className='scope-v2-card scope-v2-culture-classification-river'>
-              <p className='loc-eyebrow'>Classification River</p>
-              <h3>{labelOf(selectedWorkPeriod,0)}｜作品分類河道</h3>
-              {classificationBucketsQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(classificationBucketsQuery.error)}</p>:null}
-              {!classificationBucketsQuery.isFetching&&!classificationBucketsQuery.error&&!classificationBuckets.length
-                ?<p className='scope-v2-status'>{'目前沒有此分類資料。'}</p>:null}
-              {classificationBuckets.length?<CultureTimelineV2
-                items={classificationBuckets}
-                labelOf={()=>''}
-                focus={{}}
-                mode='source'
-                onSelect={item=>{
-                  const term=String(item?.group||'').trim();
-                  if(!term)return;
-                  const key='source:'+term;
-                  if(categoryGroups.some(group=>group.category_key===key)){
-                    setSelectedCategory(key);
-                  }
-                }}
-              />:null}
+                <p className='scope-v2-status'>該時期總作品數：{Number(sourceSnapshotQuery.data?.totalCount||0).toLocaleString()} 項。</p>
 
-
-            </section>:null}
-
-            {!isLoc&&selectedWorkPeriod?<section className='scope-v2-card scope-v2-culture-current-works'>
-              <p className='loc-eyebrow'>Classification</p>
-              <h3>{labelOf(selectedWorkPeriod,0)}｜作品來源</h3>
-              {categoryQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(categoryQuery.error)}</p>:null}
-              {!categoryQuery.isFetching&&!categoryQuery.error&&!categoryGroups.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
-              {categoryGroups.length?<IncrementalListV2
-                items={categoryGroups}
-                batchSize={DEFAULT_LIST_BATCH_SIZE}
-                resetKey={'source|'+String(selectedWorkPeriod?.period||'all')}
-                className='scope-v2-culture-source-groups'
-                renderItem={group=><button type='button' key={group.category_key}
-                  className='scope-v2-culture-source-button'
-                  aria-pressed={selectedCategory===group.category_key}
-                  onClick={()=>{setSelectedCategory(selectedCategory===group.category_key?'':group.category_key);}}>
-                  <strong>{group.display_label}</strong><span>{Number(group.item_count||0).toLocaleString()} 項作品</span>
-                </button>}
-              />:null}
-
-              {!isLoc?<section className='scope-v2-culture-source-detail' aria-label={(selectedGroup?.display_label||'全部作品')+'列表'}>
-                <header>
-                  <h4>{selectedGroup?.display_label||'全部作品'} · {selectedCount.toLocaleString()} 項作品</h4>
-                  {selectedGroup?<button type='button' className='scope-v2-pagination-button' onClick={()=>setSelectedCategory('')}>顯示全部作品</button>:null}
-                </header>
-                {periodWorkIndexQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorkIndexQuery.error)}</p>:null}
-                {periodWorksPage.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksPage.error)}</p>:null}
-                <IncrementalListV2
-                  items={visibleWorkRows}
+                {categoryQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(categoryQuery.error)}</p>:null}
+                {!categoryQuery.isFetching&&!categoryQuery.error&&!categoryGroups.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+                {categoryGroups.length?<IncrementalListV2
+                  items={categoryGroups}
                   batchSize={DEFAULT_LIST_BATCH_SIZE}
-                  resetKey={selectedCategory+'|source'}
-                  className='scope-v2-culture-source-work-scroll'
-                  externalHasMore={periodWorksPage.hasMore}
-                  loading={periodWorkIndexQuery.isFetching||periodWorksPage.loading}
-                  error={periodWorkIndexQuery.error||periodWorksPage.error}
-                  onLoadMore={periodWorksPage.loadNext}
-                  scrollRootRef={workScrollRef}
-                  renderItem={(work,index)=><WorkSummaryCardV2
-                    key={work.key||work.uid||work.entry_id||String(work.createtime||work.created_at)+'-'+index}
-                    title={workDisplayHeading(work,{media:false,limit:80})}
-                    source={work.source_name||work.group_label||''}
-                    scopeId={work.scope_id||classificationScope}
-                    date={work.display_date||formatCultureDateTime(work.createtime||work.created_at)}
-                    body={work.description||work.media_metadata_text||''}
-                    relationLinks={galaxyRelationLinks(classificationScope,work)}
-                    links={work.links||[]}
-                  >
-                    {work.uid?<WorkFullTextV2
-                      open={fullTextKey===work.key}
-                      loading={fullTextLoading&&fullTextKey===work.key}
-                      error={fullTextKey===work.key?fullTextError:''}
-                      content={fullTextKey===work.key?fullText:''}
-                      onToggle={()=>toggleWorkContent(work)}
-                    />:null}
-                    {work.uid&&account.canManageScopeSync(classificationScope)?<p><button type="button" onClick={()=>startEditingWork(work)}>{editingWorkKey===String(work.key||('galaxy:'+work.uid))?'編輯中':'編輯'}</button></p>:null}
-                    {editingWorkKey===String(work.key||('galaxy:'+work.uid))&&editDraft?<ContentEditorV2
-                      draft={editDraft}
-                      setDraft={setEditDraft}
-                      busy={editBusy}
-                      error={editError}
-                      showVisibility
-                      onSave={()=>saveEditingWork(work)}
-                      onCancel={()=>{setEditingWorkKey('');setEditDraft(null);setEditError('')}}
-                    />:null}
-                  </WorkSummaryCardV2>}
-                />
-                {!periodWorkIndexQuery.isFetching&&!periodWorksPage.loading&&!periodWorkIndexQuery.error&&!periodWorksPage.error&&!visibleWorkRows.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+                  resetKey={'source|'+String(selectedWorkPeriod?.period||'')}
+                  className='scope-v2-culture-source-groups'
+                  renderItem={group=><button type='button' key={group.category_key}
+                    className='scope-v2-culture-source-button'
+                    aria-pressed={selectedCategory===group.category_key}
+                    onClick={()=>{setSelectedCategory(selectedCategory===group.category_key?'':group.category_key);}}>
+                    <strong>{group.display_label}</strong>
+                    <span>{Number(group.item_count||0).toLocaleString()} 項 · {group.first_date||'—'} → {group.last_date||'—'}</span>
+                  </button>}
+                />:null}
+
+                <section className='scope-v2-culture-source-detail' aria-label={(selectedGroup?.display_label||'全部作品')+'列表'}>
+                  <header>
+                    <h4>{selectedGroup?.display_label||'全部作品'} · {selectedCount.toLocaleString()} 項作品</h4>
+                    {selectedGroup?<button type='button' className='scope-v2-pagination-button' onClick={()=>setSelectedCategory('')}>顯示全部作品</button>:null}
+                  </header>
+                  {periodWorkIndexQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorkIndexQuery.error)}</p>:null}
+                  {periodWorksPage.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksPage.error)}</p>:null}
+                  <IncrementalListV2
+                    items={visibleWorkRows}
+                    batchSize={DEFAULT_LIST_BATCH_SIZE}
+                    resetKey={selectedCategory+'|source'}
+                    className='scope-v2-culture-source-work-scroll'
+                    externalHasMore={periodWorksPage.hasMore}
+                    loading={periodWorkIndexQuery.isFetching||periodWorksPage.loading}
+                    error={periodWorkIndexQuery.error||periodWorksPage.error}
+                    onLoadMore={periodWorksPage.loadNext}
+                    scrollRootRef={workScrollRef}
+                    renderItem={(work,index)=><WorkSummaryCardV2
+                      key={work.key||work.uid||work.entry_id||String(work.createtime||work.created_at)+'-'+index}
+                      title={workDisplayHeading(work,{media:false,limit:80})}
+                      source={work.source_name||work.group_label||''}
+                      scopeId={work.scope_id||classificationScope}
+                      date={work.display_date||formatCultureDateTime(work.createtime||work.created_at)}
+                      body={work.description||work.media_metadata_text||''}
+                      relationLinks={galaxyRelationLinks(classificationScope,work)}
+                      links={work.links||[]}
+                    >
+                      {work.uid?<WorkFullTextV2
+                        open={fullTextKey===work.key}
+                        loading={fullTextLoading&&fullTextKey===work.key}
+                        error={fullTextKey===work.key?fullTextError:''}
+                        content={fullTextKey===work.key?fullText:''}
+                        onToggle={()=>toggleWorkContent(work)}
+                      />:null}
+                      {work.uid&&account.canManageScopeSync(classificationScope)?<p><button type="button" onClick={()=>startEditingWork(work)}>{editingWorkKey===String(work.key||('galaxy:'+work.uid))?'編輯中':'編輯'}</button></p>:null}
+                      {editingWorkKey===String(work.key||('galaxy:'+work.uid))&&editDraft?<ContentEditorV2
+                        draft={editDraft}
+                        setDraft={setEditDraft}
+                        busy={editBusy}
+                        error={editError}
+                        showVisibility
+                        onSave={()=>saveEditingWork(work)}
+                        onCancel={()=>{setEditingWorkKey('');setEditDraft(null);setEditError('')}}
+                      />:null}
+                    </WorkSummaryCardV2>}
+                  />
+                  {!periodWorkIndexQuery.isFetching&&!periodWorksPage.loading&&!periodWorkIndexQuery.error&&!periodWorksPage.error&&!visibleWorkRows.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+                </section>
               </section>:null}
-            </section>:null}
+            </>}
       </>:null}
     </section>
   </FeaturePageV2>;
