@@ -1,0 +1,1 @@
+export const NEON_QUERY_BATCH_SIZE=10000;
