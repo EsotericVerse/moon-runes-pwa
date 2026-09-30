@@ -221,6 +221,7 @@ export default function CultureV2(){
       .map(([scope,count])=>({scope,count}))
       .sort((a,b)=>a.scope.localeCompare(b.scope));
   },[locScopeDistributionItems]);
+  const locIntersectionTotal=useMemo(()=>locScopeTotals.reduce((sum,item)=>sum+Number(item.count||0),0),[locScopeTotals]);
   const locScopeRiverItems=useMemo(()=>{
     const perScopeMax=new Map();
     let globalMax=0;
@@ -365,9 +366,9 @@ export default function CultureV2(){
               <section className='scope-v2-card scope-v2-culture-classification-river'>
                 <p className='loc-eyebrow'>Scope Intersection</p>
                 <h3>作品時間分佈</h3>
-                {locScopeTotals.length?<div className='scope-v2-culture-scope-totals' aria-label='交集作品筆數'>
-                  {locScopeTotals.map(item=><span key={item.scope}><strong>{item.scope}</strong>：{item.count.toLocaleString()} 筆</span>)}
-                </div>:null}
+                {locScopeTotals.length?<p className='scope-v2-status'>
+                  交會時期的總文章數：{locIntersectionTotal.toLocaleString()} 篇，其中 {locScopeTotals.map(item=>item.scope+' '+Number(item.count||0).toLocaleString()+' 篇').join('、')}。
+                </p>:null}
                 {locScopeRiverItems.length?<CultureTimelineV2
                   items={locScopeRiverItems}
                   labelOf={()=>''}
