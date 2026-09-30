@@ -4,6 +4,7 @@ const DAY_MS=86400000;
 const ANCHOR_COVER_DAYS=3;
 const SUGGESTION_MIN_GAP_DAYS=7;
 const SUGGESTION_MIN_SEGMENT_SHARE=0.03;
+export const MIN_ANCHOR_SUGGESTION_ITEMS=20;
 
 function dayKey(value){
   const key=String(value||'').slice(0,10);
@@ -86,6 +87,9 @@ export function analyzeRiverDensity(rows=[],anchorDates=[]){
   }
 
   const totalCount=values.reduce((sum,value)=>sum+value,0);
+  if(totalCount<MIN_ANCHOR_SUGGESTION_ITEMS){
+    return {density,changepoints,hiddenDates:[],suggestions:[],suggestionEligible:false,totalCount};
+  }
   const boundaries=[0,...changepoints,density.length];
   const segmentTotals=[];
   for(let i=0;i<boundaries.length-1;i++){
@@ -177,6 +181,8 @@ export function analyzeRiverDensity(rows=[],anchorDates=[]){
     density,
     changepoints,
     hiddenDates,
-    suggestions:explainedSuggestions
+    suggestions:explainedSuggestions,
+    suggestionEligible:true,
+    totalCount
   };
 }
