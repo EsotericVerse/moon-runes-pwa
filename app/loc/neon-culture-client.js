@@ -113,15 +113,13 @@ function openPeriodRangeFromRows(scopeId,rows=[]){
   };
 }
 
-const LOC_SOURCE_ORDER=Object.freeze(['Facebook','Threads','IG','Twitter(X)','YouTube','Others']);
+const LOC_SOURCE_ORDER=Object.freeze(['Facebook','Threads','IG','Others']);
 function locSourceCategory(value=''){
   const source=String(value||'').trim().toLowerCase();
   if(!source)return 'Others';
   if(source.includes('facebook')||source==='fb')return 'Facebook';
   if(source.includes('threads'))return 'Threads';
   if(source.includes('instagram')||source.includes('reels')||source==='ig')return 'IG';
-  if(source==='x'||source.includes('twitter'))return 'Twitter(X)';
-  if(source.includes('youtube')||source.includes('youtu.be'))return 'YouTube';
   return 'Others';
 }
 function buildLocScopeDistribution(rows=[]){
