@@ -206,6 +206,8 @@ export default function CultureV2(){
     (query.data?.timelineItems||[]).filter(item=>scopeId==='loc'||item.scope_id===scopeId)
   ,[query.data,scopeId]);
   const locSourceRiverItems=useMemo(()=>query.data?.sourceRiverItems||[],[query.data]);
+  const locSourceGroups=useMemo(()=>query.data?.sourceGroups||[],[query.data]);
+  const locCombinedSourceTotal=useMemo(()=>locSourceGroups.reduce((sum,item)=>sum+Number(item?.item_count||0),0),[locSourceGroups]);
   const locScopeDistributionItems=useMemo(()=>query.data?.scopeRanges||[],[query.data]);
   const locDistributionStart=String(query.data?.intersectionStart||'');
   const locDistributionEnd=String(query.data?.intersectionEnd||new Date().toISOString().slice(0,10));
@@ -378,6 +380,16 @@ export default function CultureV2(){
                   fixedMin={locDistributionStart}
                   fixedMax={locDistributionEnd}
                 />:null}
+                {locSourceGroups.length?<div className='scope-v2-culture-source-groups' aria-label='交會來源佔比'>
+                  {locSourceGroups.map(group=>{
+                    const count=Number(group.item_count||0);
+                    const ratio=locCombinedSourceTotal>0?(count/locCombinedSourceTotal)*100:0;
+                    return <article className='scope-v2-inline-card' key={group.category_key}>
+                      <strong>{group.display_label}</strong>
+                      <span>{count.toLocaleString()} 篇 · {ratio.toFixed(1)}%</span>
+                    </article>;
+                  })}
+                </div>:null}
 
               </section>
 
