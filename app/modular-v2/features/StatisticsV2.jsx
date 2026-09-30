@@ -119,7 +119,8 @@ function buildSourceTrend(rows=[],standard='10y'){
     return output;
   });
 }
-const MAJOR_SOURCE_SHARE_DELTA=25;
+const MONTHLY_SOURCE_SHARE_DELTA=10;
+const FINE_SOURCE_SHARE_DELTA=20;
 const MAJOR_VOLUME_CHANGE_RATIO=.60;
 const MAJOR_VOLUME_MIN=10;
 
@@ -193,7 +194,8 @@ function buildTrendSuggestions(rows=[],standard='10y',anchorDates=[]){
           delta=change;
         }
       }
-      if(source&&Math.abs(delta)>=MAJOR_SOURCE_SHARE_DELTA){
+      const shareThreshold=config.bucket==='month'?MONTHLY_SOURCE_SHARE_DELTA:FINE_SOURCE_SHARE_DELTA;
+      if(source&&Math.abs(delta)>=shareThreshold){
         candidates.push({
           key:'share|'+source+'|'+previous.start_date+'|'+current.end_date,
           kind:'share',
