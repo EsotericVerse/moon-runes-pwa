@@ -482,11 +482,27 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
 }
 
 .scope-v2-culture-source-button{
+  min-width:0;
   min-height:4rem;
   padding:.85rem 1rem;
   border-color:var(--rc81-hairline);
   border-radius:var(--rc81-radius-md);
   background:var(--rc81-panel-soft);
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  align-content:center;
+  justify-items:start;
+  gap:.25rem;
+}
+.scope-v2-culture-source-button strong,
+.scope-v2-culture-source-button span{
+  display:block;
+  width:100%;
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+.scope-v2-culture-source-button span{
+  line-height:1.35;
 }
 
 .scope-v2-culture-source-button[aria-pressed="true"]{
