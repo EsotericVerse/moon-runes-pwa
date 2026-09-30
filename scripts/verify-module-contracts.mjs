@@ -32,7 +32,7 @@ for(const path of [
   'app/lrunes/RunesClient.jsx',
   'app/loc/model/rune-graph-core.js',
   'app/loc/neon-culture-client.js',
-  'app/loc/neon-ranking-client.js',
+  'app/loc/neon-statistics-client.js',
   'assets/lunarunes/cards/65_玄.png',
   'assets/lunarunes/cards/66_命.png',
 ]) if(!existsSync(resolve(root,path)))failures.push(`missing module contract file: ${path}`);
@@ -91,7 +91,7 @@ if(/(?:import|<)\s*KeywordSettingsV2\b|RuneKeywordSettingsV2\b/.test(governanceM
 
 for(const [client,contract] of [
   ['app/loc/neon-culture-client.js','ScopeCultureResponseSchema'],
-  ['app/loc/neon-ranking-client.js','ScopeRankingResponseSchema']
+  ['app/loc/neon-statistics-client.js','ScopeRankingResponseSchema']
 ])if(!readFileSync(resolve(root,client),'utf8').includes(`${contract}.parse`))failures.push(`${client}: shared Zod feature contract not enforced`);
 
 const listLoadingContract=readFileSync(resolve(root,'app/loc/list-loading-contract.mjs'),'utf8');
