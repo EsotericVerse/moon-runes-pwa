@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect,useMemo,useState} from 'react';
+import {useMemo,useState} from 'react';
 import {useRouter,useSearchParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
 import Select from 'react-select';
@@ -8,14 +8,12 @@ import {
   Bar,BarChart,CartesianGrid,Cell,Legend,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectScopeAnchorDates,selectScopeRankingRows,selectScopeRankingTypes,selectScopeSourceBucketDetails,selectScopeSourceTrendRows} from '../../loc/neon-ranking-client';
+import {selectScopeRankingTypes,selectScopeSourceTrendRows} from '../../loc/neon-ranking-client';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import MediaMetaSettingsV2 from './MediaMetaSettingsV2';
 import FeaturePageV2 from '../FeaturePageV2';
-import IncrementalListV2 from '../IncrementalListV2';
-import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const CHART_ACCENT='var(--loc-accent)';
@@ -24,38 +22,31 @@ const CHART_GRID='var(--loc-line)';
 const CHART_TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)',borderRadius:'8px'};
 const CHART_TYPES=[['line','折線圖'],['bar','長條圖'],['pie','圓餅圖']];
 const STAT_TABS=[['ranking','統計'],['media','多媒體設定']];
-const STAT_TYPE_LABELS=Object.freeze({
-  total:'總來源',
-  source:'作品來源'
-});
+const STAT_TYPE_LABELS=Object.freeze({total:'總來源',source:'作品來源'});
 const SOURCE_TREND_ORDER=Object.freeze(['Facebook','Threads','IG','Others']);
 const TIME_STANDARDS=Object.freeze([
-  {value:'10y',label:'10 年',months:120,bucket:'month'},
-  {value:'5y',label:'5 年',months:60,bucket:'month'},
-  {value:'3y',label:'3 年',months:36,bucket:'month'},
-  {value:'1y',label:'1 年',months:12,bucket:'week'},
-  {value:'6m',label:'半年',months:6,bucket:'week'},
-  {value:'3m',label:'一季',months:3,bucket:'week'},
+  {value:'1y',label:'一年',months:12,bucket:'month'},
   {value:'1m',label:'一月',months:1,bucket:'day'},
-  {value:'1w',label:'一週',days:6,bucket:'day'}
+  {value:'1w',label:'一週',days:6,bucket:'day'},
+  {value:'custom',label:'自訂範圍',bucket:'auto'}
 ]);
+
 function dateKey(value){
   const key=String(value||'').slice(0,10);
   return /^\d{4}-\d{2}-\d{2}$/.test(key)?key:'';
 }
-function subtractMonths(value,months){
+function shiftDate(value,{months=0,days=0}={}){
   const key=dateKey(value);
   if(!key)return '';
   const date=new Date(key+'T00:00:00Z');
-  date.setUTCMonth(date.getUTCMonth()-Math.max(0,Number(months)||0));
+  if(months)date.setUTCMonth(date.getUTCMonth()+months);
+  if(days)date.setUTCDate(date.getUTCDate()+days);
   return date.toISOString().slice(0,10);
 }
-function subtractDays(value,days){
-  const key=dateKey(value);
-  if(!key)return '';
-  const date=new Date(key+'T00:00:00Z');
-  date.setUTCDate(date.getUTCDate()-Math.max(0,Number(days)||0));
-  return date.toISOString().slice(0,10);
+function dayDistance(from,to){
+  const a=new Date(from+'T00:00:00Z').getTime();
+  const b=new Date(to+'T00:00:00Z').getTime();
+  return Math.max(0,Math.round((b-a)/86400000));
 }
 function trendBucket(value,unit){
   const key=dateKey(value);
@@ -63,12 +54,6 @@ function trendBucket(value,unit){
   const date=new Date(key+'T00:00:00Z');
   const year=date.getUTCFullYear();
   const month=date.getUTCMonth();
-  if(unit==='quarter'){
-    const quarter=Math.floor(month/3)+1;
-    const start=new Date(Date.UTC(year,(quarter-1)*3,1));
-    const end=new Date(Date.UTC(year,quarter*3,0));
-    return {key:year+'-Q'+quarter,label:year+' Q'+quarter,start:start.toISOString().slice(0,10),end:end.toISOString().slice(0,10)};
-  }
   if(unit==='month'){
     const monthText=String(month+1).padStart(2,'0');
     const end=new Date(Date.UTC(year,month+1,0)).toISOString().slice(0,10);
@@ -83,74 +68,46 @@ function trendBucket(value,unit){
   }
   return {key,label:key.slice(5).replace('-','/'),start:key,end:key};
 }
-function addMonths(value,months){
-  const key=dateKey(value);
-  if(!key)return '';
-  const date=new Date(key+'T00:00:00Z');
-  date.setUTCMonth(date.getUTCMonth()+Number(months||0));
-  return date.toISOString().slice(0,10);
-}
-function addDays(value,days){
-  const key=dateKey(value);
-  if(!key)return '';
-  const date=new Date(key+'T00:00:00Z');
-  date.setUTCDate(date.getUTCDate()+Number(days||0));
-  return date.toISOString().slice(0,10);
-}
-function midpointDate(from='',to=''){
-  const start=dateKey(from);
-  const end=dateKey(to);
-  if(!start||!end)return '';
-  const a=new Date(start+'T00:00:00Z').getTime();
-  const b=new Date(end+'T00:00:00Z').getTime();
-  return new Date(Math.round((a+b)/2)).toISOString().slice(0,10);
-}
-function trendWindow(dates=[],config,focusRange=null){
-  const dataStart=dates[0]||'';
-  const dataEnd=dates.at(-1)||'';
-  if(!dataEnd)return {startDate:'',endDate:''};
-  const focus=midpointDate(focusRange?.from,focusRange?.to);
-  if(!focus){
-    return {
-      startDate:Number.isFinite(config.days)?subtractDays(dataEnd,config.days):subtractMonths(dataEnd,config.months),
-      endDate:dataEnd
-    };
-  }
-  let startDate='';
-  let endDate='';
-  if(Number.isFinite(config.days)){
-    const before=Math.floor(config.days/2);
-    const after=Math.max(0,config.days-before);
-    startDate=addDays(focus,-before);
-    endDate=addDays(focus,after);
-  }else{
-    const before=Math.floor(config.months/2);
-    const after=Math.max(0,config.months-before);
-    startDate=addMonths(focus,-before);
-    endDate=addMonths(focus,after);
-  }
-  if(dataStart&&startDate<dataStart)startDate=dataStart;
-  if(dataEnd&&endDate>dataEnd)endDate=dataEnd;
-  return {startDate,endDate};
-}
-function buildSourceTrend(rows=[],standard='10y',focusRange=null){
-  const config=TIME_STANDARDS.find(item=>item.value===standard)||TIME_STANDARDS[0];
+function statisticsWindow(rows=[],standard='1y',customRange={}){
   const dates=rows.map(row=>dateKey(row.day)).filter(Boolean).sort();
-  const {startDate,endDate}=trendWindow(dates,config,focusRange);
-  if(!startDate||!endDate)return [];
+  const dataEnd=dates.at(-1)||'';
+  if(!dataEnd)return {startDate:'',endDate:'',bucket:'day'};
+  if(standard==='custom'){
+    const from=dateKey(customRange.from);
+    const to=dateKey(customRange.to);
+    if(!from||!to||from>to)return {startDate:'',endDate:'',bucket:'day'};
+    const days=dayDistance(from,to);
+    return {startDate:from,endDate:to,bucket:days>730?'month':days>90?'week':'day'};
+  }
+  const config=TIME_STANDARDS.find(item=>item.value===standard)||TIME_STANDARDS[0];
+  const startDate=Number.isFinite(config.days)
+    ?shiftDate(dataEnd,{days:-config.days})
+    :shiftDate(dataEnd,{months:-config.months});
+  return {startDate,endDate:dataEnd,bucket:config.bucket};
+}
+function rowsInWindow(rows=[],standard='1y',customRange={}){
+  const window=statisticsWindow(rows,standard,customRange);
+  if(!window.startDate||!window.endDate)return {rows:[],...window};
+  return {
+    ...window,
+    rows:rows.filter(row=>{
+      const day=dateKey(row.day);
+      return day&&day>=window.startDate&&day<=window.endDate;
+    })
+  };
+}
+function buildSourceTrend(rows=[],standard='1y',customRange={}){
+  const window=rowsInWindow(rows,standard,customRange);
+  if(!window.startDate||!window.endDate)return [];
   const buckets=new Map();
-
-  for(let cursor=new Date(startDate+'T00:00:00Z'),end=new Date(endDate+'T00:00:00Z');cursor<=end;cursor.setUTCDate(cursor.getUTCDate()+1)){
+  for(let cursor=new Date(window.startDate+'T00:00:00Z'),end=new Date(window.endDate+'T00:00:00Z');cursor<=end;cursor.setUTCDate(cursor.getUTCDate()+1)){
     const day=cursor.toISOString().slice(0,10);
-    const bucket=trendBucket(day,config.bucket);
+    const bucket=trendBucket(day,window.bucket);
     if(!bucket||buckets.has(bucket.key))continue;
     buckets.set(bucket.key,{period:bucket.label,_sort:bucket.key,start_date:bucket.start,end_date:bucket.end,total:0});
   }
-
-  for(const row of rows){
-    const day=dateKey(row.day);
-    if(!day||day<startDate||day>endDate)continue;
-    const bucket=trendBucket(day,config.bucket);
+  for(const row of window.rows){
+    const bucket=trendBucket(row.day,window.bucket);
     if(!bucket)continue;
     const item=buckets.get(bucket.key)||{period:bucket.label,_sort:bucket.key,start_date:bucket.start,end_date:bucket.end,total:0};
     const source=SOURCE_TREND_ORDER.includes(row.source)?row.source:'Others';
@@ -167,240 +124,87 @@ function buildSourceTrend(rows=[],standard='10y',focusRange=null){
     return output;
   });
 }
-const MONTHLY_VOLUME_CHANGE_RATIO=.10;
-const FINE_VOLUME_CHANGE_RATIO=.25;
-const MAJOR_VOLUME_MIN=10;
-
-function rangeHasAnchor(anchorDates=[],from='',to=''){
-  if(!from||!to)return false;
-  return (anchorDates||[]).some(anchor=>{
-    const date=dateKey(anchor?.date||anchor);
-    return date&&date>=from&&date<=to;
-  });
-}
-function rangesOverlap(a,b){
-  return Boolean(a?.from&&a?.to&&b?.from&&b?.to&&a.from<=b.to&&b.from<=a.to);
-}
-function buildTrendSuggestions(rows=[],standard='10y',anchorDates=[],focusRange=null,{suppressAnchors=true}={}){
-  const data=buildSourceTrend(rows,standard,focusRange);
-  if(data.length<2)return [];
-  const config=TIME_STANDARDS.find(item=>item.value===standard)||TIME_STANDARDS[0];
-  const volumeThreshold=config.bucket==='month'?MONTHLY_VOLUME_CHANGE_RATIO:FINE_VOLUME_CHANGE_RATIO;
-  const minRunTransitions=config.bucket==='day'?3:2;
-  const cliffRatio=.50;
-  const candidates=[];
-
-  const addCandidate=candidate=>{
-    if(!candidate?.from||!candidate?.to)return;
-    if(suppressAnchors&&rangeHasAnchor(anchorDates,candidate.from,candidate.to))return;
-    candidates.push(candidate);
+function buildSummary(rows=[],standard='1y',customRange={}){
+  const window=rowsInWindow(rows,standard,customRange);
+  const totals=new Map(SOURCE_TREND_ORDER.map(source=>[source,0]));
+  let total=0;
+  for(const row of window.rows){
+    const source=SOURCE_TREND_ORDER.includes(row.source)?row.source:'Others';
+    const count=Number(row.item_count)||0;
+    totals.set(source,(totals.get(source)||0)+count);
+    total+=count;
+  }
+  return {
+    total,
+    sources:SOURCE_TREND_ORDER.map(source=>({term:source,item_count:totals.get(source)||0})),
+    startDate:window.startDate,
+    endDate:window.endDate
   };
-
-  let index=1;
-  while(index<data.length){
-    const previousTotal=Number(data[index-1].total)||0;
-    const currentTotal=Number(data[index].total)||0;
-
-    // Leading / internal zero runs are states, not repeated point suggestions.
-    if(previousTotal===0){
-      index+=1;
-      continue;
-    }
-
-    // Collapse positive -> zero -> zero... into one structural break.
-    if(currentTotal===0){
-      let declineStart=index-1;
-      while(declineStart>0){
-        const before=Number(data[declineStart-1].total)||0;
-        const at=Number(data[declineStart].total)||0;
-        if(before<=0||at<=0||before<at)break;
-        declineStart-=1;
-      }
-      let zeroEnd=index;
-      while(zeroEnd+1<data.length&&(Number(data[zeroEnd+1].total)||0)===0)zeroEnd+=1;
-      addCandidate({
-        key:'zero|'+data[declineStart].start_date+'|'+data[index].end_date,
-        kind:'zero',
-        from:data[declineStart].start_date,
-        to:data[index].end_date,
-        previousTotal:Number(data[declineStart].total)||previousTotal,
-        currentTotal:0,
-        reason:declineStart<index-1?'總來源持續下降後歸零':'總來源降至 0',
-        score:10000+(index-declineStart)*100+previousTotal
-      });
-      index=zeroEnd+1;
-      continue;
-    }
-
-    // Build one monotonic trend run instead of suggesting every adjacent bucket.
-    const initialDelta=currentTotal-previousTotal;
-    if(initialDelta===0){
-      index+=1;
-      continue;
-    }
-    const direction=Math.sign(initialDelta);
-    const runStart=index-1;
-    let runEnd=index;
-    while(runEnd+1<data.length){
-      const at=Number(data[runEnd].total)||0;
-      const next=Number(data[runEnd+1].total)||0;
-      if(at<=0||next<=0)break;
-      const delta=next-at;
-      if(delta===0){
-        runEnd+=1;
-        continue;
-      }
-      if(Math.sign(delta)!==direction)break;
-      runEnd+=1;
-    }
-
-    const startTotal=Number(data[runStart].total)||0;
-    const endTotal=Number(data[runEnd].total)||0;
-    const transitions=runEnd-runStart;
-    const netRatio=startTotal>0?Math.abs(endTotal-startTotal)/startTotal:0;
-    const largeEnough=netRatio>=volumeThreshold;
-    const broadEnough=transitions>=minRunTransitions;
-    const cliff=netRatio>=cliffRatio;
-
-    if(startTotal>=MAJOR_VOLUME_MIN&&largeEnough&&(broadEnough||cliff)){
-      addCandidate({
-        key:'trend|'+data[runStart].start_date+'|'+data[runEnd].end_date,
-        kind:'trend',
-        from:data[runStart].start_date,
-        to:data[runEnd].end_date,
-        previousTotal:startTotal,
-        currentTotal:endTotal,
-        reason:'總來源'+(direction>0?'持續增加 ':'持續下降 ')+Math.round(netRatio*100)+'%',
-        score:(cliff?7000:5000)+netRatio*1000+transitions*100
-      });
-    }
-    index=runEnd+1;
-  }
-
-  // Nearby/overlapping signals describe the same structural change.
-  // Keep only the strongest one, then return a small number of broad review ranges.
-  const accepted=[];
-  for(const candidate of candidates.sort((a,b)=>b.score-a.score||String(b.to).localeCompare(String(a.to)))){
-    if(accepted.some(item=>rangesOverlap(item,candidate)))continue;
-    accepted.push(candidate);
-    if(accepted.length>=3)break;
-  }
-  return accepted.sort((a,b)=>String(a.from).localeCompare(String(b.from)));
 }
 
-function displayTerm(row){
-  return String(row?.term||'');
+function SummaryList({rankingType,summary}){
+  const rows=rankingType==='total'
+    ?[{term:'總來源',item_count:summary.total}]
+    :summary.sources;
+  return <div className="scope-v2-ranking">
+    {rows.map(row=><div key={row.term}><strong>{row.term}</strong><span>{Number(row.item_count||0).toLocaleString()}</span></div>)}
+  </div>;
 }
-
-function chartRows(rows){
-  return (rows||[]).map(row=>({...row,term:displayTerm(row),value:Number(row.rank_value??row.item_count??0)||0}));
-}
-
-function RankingChart({type='bar',rows,height=380}){
-  const data=chartRows(rows);
+function SummaryChart({type='bar',rankingType,summary,height=380}){
+  const data=rankingType==='total'
+    ?[{term:'總來源',value:summary.total}]
+    :summary.sources.map(row=>({term:row.term,value:Number(row.item_count)||0}));
   if(!data.length)return <p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>;
-  if(type==='line')return <ResponsiveContainer width="100%" height={height}>
-    <LineChart data={data} margin={{top:8,right:18,bottom:72,left:4}}>
-      <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
-      <XAxis dataKey="term" angle={-32} textAnchor="end" interval={0} height={100} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
-      <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/><Tooltip contentStyle={CHART_TOOLTIP} labelStyle={{color:CHART_TEXT}} itemStyle={{color:CHART_TEXT}}/>
-      <Line type="monotone" dataKey="value" stroke={CHART_ACCENT} strokeWidth={3}/>
-    </LineChart>
-  </ResponsiveContainer>;
   if(type==='pie')return <ResponsiveContainer width="100%" height={height}>
-    <PieChart><Tooltip contentStyle={CHART_TOOLTIP} labelStyle={{color:CHART_TEXT}} itemStyle={{color:CHART_TEXT}}/><Pie data={data} dataKey="value" nameKey="term" cx="50%" cy="50%" outerRadius={Math.min(140,height/2-26)}>
-      {data.map((row,index)=><Cell key={row.ranking_key||row.term||index} fill={PIE_COLORS[index%PIE_COLORS.length]}/>)}
+    <PieChart><Tooltip contentStyle={CHART_TOOLTIP}/><Pie data={data} dataKey="value" nameKey="term" cx="50%" cy="50%" outerRadius={Math.min(140,height/2-26)}>
+      {data.map((row,index)=><Cell key={row.term} fill={PIE_COLORS[index%PIE_COLORS.length]}/>)}
     </Pie></PieChart>
   </ResponsiveContainer>;
-  return <ResponsiveContainer width="100%" height={Math.max(height,Math.min(1200,80+data.length*34))}>
-    <BarChart data={data} layout="vertical" margin={{top:8,right:18,bottom:8,left:8}}>
-      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={CHART_GRID}/>
-      <XAxis type="number" tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/><YAxis type="category" dataKey="term" width={128} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/><Tooltip contentStyle={CHART_TOOLTIP} labelStyle={{color:CHART_TEXT}} itemStyle={{color:CHART_TEXT}}/>
-      <Bar dataKey="value" fill={CHART_ACCENT} radius={[0,4,4,0]}/>
+  return <ResponsiveContainer width="100%" height={height}>
+    <BarChart data={data} margin={{top:8,right:18,bottom:32,left:8}}>
+      <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
+      <XAxis dataKey="term" tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+      <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+      <Tooltip contentStyle={CHART_TOOLTIP}/>
+      <Bar dataKey="value" fill={CHART_ACCENT} radius={[4,4,0,0]}/>
     </BarChart>
   </ResponsiveContainer>;
 }
-
-function TotalTrendChart({rows=[],standard='10y',focusRange=null,height=420}){
-  const data=useMemo(()=>buildSourceTrend(rows,standard,focusRange),[rows,standard,focusRange]);
+function TotalTrendChart({rows=[],standard='1y',customRange={},height=420}){
+  const data=useMemo(()=>buildSourceTrend(rows,standard,customRange),[rows,standard,customRange]);
   if(!data.length)return <p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>;
   return <ResponsiveContainer width="100%" height={height}>
     <LineChart data={data} margin={{top:8,right:18,bottom:48,left:4}}>
       <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
       <XAxis dataKey="period" angle={-24} textAnchor="end" interval="preserveStartEnd" height={72} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
       <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
-      <Tooltip contentStyle={CHART_TOOLTIP} labelStyle={{color:CHART_TEXT}} itemStyle={{color:CHART_TEXT}} formatter={value=>[Number(value).toLocaleString()+' 項','總來源']}/>
-      <Line type="monotone" dataKey="total" name="總來源" stroke={CHART_ACCENT} strokeWidth={3} dot={false} connectNulls={false}/>
+      <Tooltip contentStyle={CHART_TOOLTIP} formatter={value=>[Number(value).toLocaleString()+' 項','總來源']}/>
+      <Line type="monotone" dataKey="total" name="總來源" stroke={CHART_ACCENT} strokeWidth={3} dot={false}/>
     </LineChart>
   </ResponsiveContainer>;
 }
-
-function SourceTrendChart({rows=[],standard='10y',focusRange=null,height=420}){
-  const data=useMemo(()=>buildSourceTrend(rows,standard,focusRange),[rows,standard,focusRange]);
+function SourceTrendChart({rows=[],standard='1y',customRange={},height=420}){
+  const data=useMemo(()=>buildSourceTrend(rows,standard,customRange),[rows,standard,customRange]);
   if(!data.length)return <p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>;
   return <ResponsiveContainer width="100%" height={height}>
     <LineChart data={data} margin={{top:8,right:18,bottom:48,left:4}}>
       <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
       <XAxis dataKey="period" angle={-24} textAnchor="end" interval="preserveStartEnd" height={72} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
       <YAxis domain={[0,100]} tick={{fill:CHART_TEXT}} stroke={CHART_GRID} tickFormatter={value=>value+'%'}/>
-      <Tooltip
-        contentStyle={CHART_TOOLTIP}
-        labelStyle={{color:CHART_TEXT}}
-        itemStyle={{color:CHART_TEXT}}
-        formatter={value=>[Number(value).toFixed(1)+'%']}
-      />
+      <Tooltip contentStyle={CHART_TOOLTIP} formatter={value=>[Number(value).toFixed(1)+'%']}/>
       <Legend/>
-      {SOURCE_TREND_ORDER.map((source,index)=><Line
-        key={source}
-        type="monotone"
-        dataKey={source}
-        stroke={PIE_COLORS[index%PIE_COLORS.length]}
-        strokeWidth={2}
-        dot={false}
-        connectNulls
-      />)}
+      {SOURCE_TREND_ORDER.map((source,index)=><Line key={source} type="monotone" dataKey={source} stroke={PIE_COLORS[index%PIE_COLORS.length]} strokeWidth={2} dot={false} connectNulls/>)}
     </LineChart>
   </ResponsiveContainer>;
-}
-
-function RankingList({rows=[],resetKey='',onVisibleRows=null,onSelect=null,selectedTerm=''}) {
-  return <IncrementalListV2
-    items={rows}
-    batchSize={DEFAULT_LIST_BATCH_SIZE}
-    resetKey={resetKey}
-    className="scope-v2-ranking"
-    empty={<p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>}
-    onVisibleItemsChange={onVisibleRows}
-    renderItem={(row,index)=>{
-      const content=<><strong>{index+1}. {displayTerm(row)}</strong><span>{Number(row.item_count||0).toLocaleString()}</span></>;
-      return onSelect
-        ?<button type="button" key={row.ranking_key||row.term||index} aria-pressed={selectedTerm===row.term} onClick={()=>onSelect(row)}>{content}</button>
-        :<div key={row.ranking_key||row.term||index}>{content}</div>;
-    }}
-  />;
-}
-
-function useRanking(scopeId,type,navigation){
-  return useQuery({
-    queryKey:['statistics-ranking',scopeId,type,navigation.period||'all'],
-    enabled:Boolean(type),
-    queryFn:()=>selectScopeRankingRows(scopeId,{rankingType:type,navigation}),
-    staleTime:30000
-  });
 }
 
 function StatTabs({scopeId,navigation,active,tabs}){
   const router=useRouter();
   return <nav className="scope-v2-stat-tabs" aria-label="統計功能">
-    {tabs.map(([value,label])=><button
-      type="button"
-      key={value}
-      aria-current={active===value?'page':undefined}
-      onClick={()=>router.push(featureNavigationHref(scopeId,'statics',{...navigation,statTab:value}))}
-    >{label}</button>)}
+    {tabs.map(([value,label])=><button type="button" key={value} aria-current={active===value?'page':undefined}
+      onClick={()=>router.push(featureNavigationHref(scopeId,'statics',{...navigation,statTab:value}))}>{label}</button>)}
   </nav>;
 }
-
 function StatisticTypeSelect({scopeId,navigation,types}){
   const router=useRouter();
   const requested=String(navigation.rankingType||'');
@@ -410,137 +214,70 @@ function StatisticTypeSelect({scopeId,navigation,types}){
   if(!types.length)return null;
   return <label className="scope-v2-react-select-field">
     <span>統計項目</span>
-    <Select
-      inputId="statistics-ranking-type"
-      className="scope-v2-react-select"
-      classNamePrefix="scope-v2-react-select"
-      unstyled
-      isSearchable
-      options={options}
-      value={selected}
-      noOptionsMessage={()=>"沒有符合的統計項目"}
+    <Select inputId="statistics-ranking-type" className="scope-v2-react-select" classNamePrefix="scope-v2-react-select" unstyled
+      isSearchable options={options} value={selected} noOptionsMessage={()=>"沒有符合的統計項目"}
       onChange={option=>{
         if(!option?.value||option.value===active)return;
         router.push(featureNavigationHref(scopeId,'statics',{...navigation,rankingType:option.value}));
-      }}
-    />
+      }}/>
   </label>;
 }
 
 function StatisticsPanel({scopeId,navigation,types}){
-  const router=useRouter();
   const requested=String(navigation.rankingType||'');
   const rankingType=types.includes(requested)?requested:(types[0]||'');
   const [chartType,setChartType]=useState('line');
-  const [timeStandard,setTimeStandard]=useState('10y');
-  const [analysisFocus,setAnalysisFocus]=useState(null);
-  const [detailBucket,setDetailBucket]=useState('');
-  const query=useRanking(scopeId,rankingType,navigation);
+  const [timeStandard,setTimeStandard]=useState('1y');
+  const [customFrom,setCustomFrom]=useState('');
+  const [customTo,setCustomTo]=useState('');
   const trendQuery=useQuery({
     queryKey:['statistics-source-trend',scopeId],
     queryFn:()=>selectScopeSourceTrendRows(scopeId),
-    enabled:rankingType==='total'||rankingType==='source',
+    enabled:Boolean(rankingType),
     staleTime:5*60_000
   });
-  const anchorQuery=useQuery({
-    queryKey:['statistics-anchor-dates',scopeId],
-    queryFn:()=>selectScopeAnchorDates(scopeId),
-    enabled:rankingType==='total',
-    staleTime:5*60_000
-  });
-  const allRows=query.data||[];
-  const trendSuggestions=useMemo(
-    ()=>rankingType==='total'?buildTrendSuggestions(trendQuery.data||[],timeStandard,anchorQuery.data||[],analysisFocus):[],
-    [rankingType,trendQuery.data,timeStandard,anchorQuery.data,analysisFocus]
-  );
-  const analysisCandidates=useMemo(
-    ()=>rankingType==='total'?buildTrendSuggestions(trendQuery.data||[],timeStandard,anchorQuery.data||[],analysisFocus,{suppressAnchors:false}):[],
-    [rankingType,trendQuery.data,timeStandard,anchorQuery.data,analysisFocus]
-  );
-  const [visibleRows,setVisibleRows]=useState([]);
-  const canDrillDown=scopeId!=='loc'&&rankingType==='source';
-  const detailQuery=useQuery({
-    queryKey:['statistics-source-detail',scopeId,detailBucket,navigation.period||'all'],
-    queryFn:()=>selectScopeSourceBucketDetails(scopeId,{bucket:detailBucket,navigation}),
-    enabled:canDrillDown&&Boolean(detailBucket),
-    staleTime:30000
-  });
-  useEffect(()=>{setVisibleRows([]);setDetailBucket('');setAnalysisFocus(null);setTimeStandard('10y');},[scopeId,rankingType,navigation.period]);
-  const changeTimeStandard=nextStandard=>{
-    if(nextStandard===timeStandard)return;
-    const currentIndex=TIME_STANDARDS.findIndex(item=>item.value===timeStandard);
-    const nextIndex=TIME_STANDARDS.findIndex(item=>item.value===nextStandard);
-    if(rankingType==='total'&&nextIndex>currentIndex&&analysisCandidates.length){
-      const focus=analysisCandidates.reduce((best,item)=>!best||Number(item.score||0)>Number(best.score||0)?item:best,null);
-      setAnalysisFocus(focus?{from:focus.from,to:focus.to}:analysisFocus);
-    }else if(nextIndex<currentIndex){
-      setAnalysisFocus(null);
-    }
-    setTimeStandard(nextStandard);
-  };
-  const chartData=visibleRows.length?visibleRows:allRows.slice(0,DEFAULT_LIST_BATCH_SIZE);
+  const customRange=useMemo(()=>({from:customFrom,to:customTo}),[customFrom,customTo]);
+  const summary=useMemo(()=>buildSummary(trendQuery.data||[],timeStandard,customRange),[trendQuery.data,timeStandard,customRange]);
+  const customReady=timeStandard!=='custom'||Boolean(dateKey(customFrom)&&dateKey(customTo)&&customFrom<=customTo);
+
   return <section className="scope-v2-stat-section">
     <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Statistics</p><h2>統計</h2></div></header>
     <div className="scope-v2-stat-controls">
       <StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/>
-      <label><span>圖形</span><select className="scope-v2-select" value={chartType} onChange={event=>setChartType(event.target.value)}>{CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
-      {chartType==='line'?<label><span>時間標準</span><select className="scope-v2-select" value={timeStandard} onChange={event=>changeTimeStandard(event.target.value)}>{TIME_STANDARDS.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}</select></label>:null}
+      <label><span>圖形</span><select className="scope-v2-select" value={chartType} onChange={event=>setChartType(event.target.value)}>
+        {CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}
+      </select></label>
+      <label><span>時間範圍</span><select className="scope-v2-select" value={timeStandard} onChange={event=>setTimeStandard(event.target.value)}>
+        {TIME_STANDARDS.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
+      </select></label>
+      {timeStandard==='custom'?<>
+        <label><span>開始</span><input className="scope-v2-input" type="date" value={customFrom} onChange={event=>setCustomFrom(event.target.value)}/></label>
+        <label><span>結束</span><input className="scope-v2-input" type="date" value={customTo} onChange={event=>setCustomTo(event.target.value)}/></label>
+      </>:null}
     </div>
-        {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
-    {chartType==='line'&&trendQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(trendQuery.error)}</p>:null}
-    {!query.isPending&&!query.error?<>
-      <RankingList
-        rows={allRows}
-        resetKey={scopeId+"|"+rankingType+"|"+String(navigation.period||"all")}
-        onVisibleRows={setVisibleRows}
-        onSelect={canDrillDown?row=>setDetailBucket(current=>current===row.term?'':row.term):null}
-        selectedTerm={detailBucket}
-      />
-      {canDrillDown&&detailBucket?<section className="scope-v2-inline-card">
-        <h3>{detailBucket}｜來源細分</h3>
-        {detailQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(detailQuery.error)}</p>:null}
-        {!detailQuery.isPending&&!detailQuery.error?<RankingList rows={detailQuery.data||[]} resetKey={scopeId+"|detail|"+detailBucket+"|"+String(navigation.period||"all")}/>:null}
-      </section>:null}
+    {trendQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(trendQuery.error)}</p>:null}
+    {timeStandard==='custom'&&!customReady?<p className="scope-v2-status">請設定有效的開始與結束日期。</p>:null}
+    {!trendQuery.isPending&&!trendQuery.error&&customReady?<>
+      <p className="scope-v2-status">{summary.startDate&&summary.endDate?summary.startDate+' ～ '+summary.endDate:''}</p>
+      <SummaryList rankingType={rankingType} summary={summary}/>
       {chartType==='line'
-        ?<>
-          {rankingType==='total'
-            ?<TotalTrendChart rows={trendQuery.data||[]} standard={timeStandard} focusRange={analysisFocus} height={420}/>
-            :<SourceTrendChart rows={trendQuery.data||[]} standard={timeStandard} focusRange={analysisFocus} height={420}/>}
-          {rankingType==='total'&&analysisFocus?<p className="scope-v2-status">分析焦點：{analysisFocus.from} ～ {analysisFocus.to}</p>:null}
-          {rankingType==='total'&&trendSuggestions.length?<section className="scope-v2-stat-suggestions" aria-label="趨勢建議">
-            <header><p className="loc-eyebrow">Trend Suggestion</p><h3>建議回看區間</h3></header>
-            <div>
-              {trendSuggestions.map(item=><button
-                type="button"
-                key={item.key}
-                onClick={()=>router.push(featureNavigationHref(scopeId,'culture',{from:item.from,to:item.to}))}
-              >
-                <strong>{item.from} ～ {item.to}</strong>
-                <span>{item.reason}；總來源 {item.previousTotal.toLocaleString()} → {item.currentTotal.toLocaleString()}</span>
-              </button>)}
-            </div>
-          </section>:null}
-        </>
-        :<RankingChart type={chartType} rows={chartData} height={380}/>} 
+        ?rankingType==='total'
+          ?<TotalTrendChart rows={trendQuery.data||[]} standard={timeStandard} customRange={customRange} height={420}/>
+          :<SourceTrendChart rows={trendQuery.data||[]} standard={timeStandard} customRange={customRange} height={420}/>
+        :<SummaryChart type={chartType} rankingType={rankingType} summary={summary} height={380}/>}
     </>:null}
-
   </section>;
 }
 
 function MediaPanel({scopeId}){
-  const databaseScopeId=scopeId;
   return <section className="scope-v2-stat-section">
     <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Media Metadata</p><h2>多媒體設定</h2></div></header>
-    <MediaMetaSettingsV2 databaseScopeId={databaseScopeId}/>
+    <MediaMetaSettingsV2 databaseScopeId={scopeId}/>
   </section>;
 }
-
 function StatisticsShell({scopeId,navigation}){
-  const visibleTabs=scopeId==='loc'
-    ?STAT_TABS.filter(([value])=>value==='ranking')
-    :STAT_TABS;
-  const requested=visibleTabs.some(([value])=>value===navigation.statTab)?navigation.statTab:'ranking';
-  const active=requested;
+  const visibleTabs=scopeId==='loc'?STAT_TABS.filter(([value])=>value==='ranking'):STAT_TABS;
+  const active=visibleTabs.some(([value])=>value===navigation.statTab)?navigation.statTab:'ranking';
   const typesQuery=useQuery({
     queryKey:['statistics-types',scopeId],
     queryFn:()=>selectScopeRankingTypes(scopeId),
@@ -554,7 +291,6 @@ function StatisticsShell({scopeId,navigation}){
     {active==='media'?<MediaPanel scopeId={scopeId}/>:null}
   </section>;
 }
-
 export default function StatisticsV2(){
   const {scopeId}=useScopeRuntimeV2();
   const searchParams=useSearchParams();
