@@ -44,11 +44,21 @@ function LoginScreen({scopeId,account}){
   </section>;
 }
 
-function Workspace({scopeId}){
-  return <div className="scope-v2-list">
-    <ManagementArticlePublisher scopeId={scopeId}/>
-    <ManagementImportPanel scopeId={scopeId}/>
-  </div>;
+function ArticleSettings({scopeId}){
+  return <ManagementArticlePublisher scopeId={scopeId}/>;
+}
+
+function ImportSettings({scopeId}){
+  return <ManagementImportPanel scopeId={scopeId}/>;
+}
+
+function KeywordSettings(){
+  return <section className="loc-card scope-v2-feature-card">
+    <p className="loc-eyebrow">Keywords</p>
+    <h2>關鍵詞管理</h2>
+    <p>Current Neon 尚未配置獨立的關鍵詞 SSOT；舊 Style 關鍵詞表已退役。</p>
+    <p>此入口先固定在管理選單中，但不會把關鍵詞偷寫入 Meta Tag、時期 Style Tag、符文 Canon 或其他不相干欄位。待既有資料結構確定後，這裡直接承接新增、編輯與命名。</p>
+  </section>;
 }
 
 function PeriodSettings({scopeId}){
@@ -59,8 +69,10 @@ function PeriodSettings({scopeId}){
 function sectionOptions(scopeId){
   if(scopeId==='loc')return [];
   const options=[
-    {value:'workspace',label:'文章與匯入'},
-    {value:'period',label:'時期設定'}
+    {value:'article',label:'文章發表'},
+    {value:'import',label:'資料匯入'},
+    {value:'period',label:'時期設定'},
+    {value:'keywords',label:'關鍵詞管理'}
   ];
   if(scopeId==='lunarunes')options.push({value:'daily',label:'每日符文管理'});
   return options;
@@ -71,11 +83,11 @@ export default function GovernanceManagement(){
   const {scopeId}=useScopeRuntimeV2();
   const scope=getScopeV2(scopeId);
   const options=useMemo(()=>sectionOptions(scopeId),[scopeId]);
-  const [section,setSection]=useState('workspace');
+  const [section,setSection]=useState('article');
   const canManage=account.canManageScopeSync(scopeId);
 
   useEffect(()=>{
-    if(!options.some(option=>option.value===section))setSection(options[0]?.value||'workspace');
+    if(!options.some(option=>option.value===section))setSection(options[0]?.value||'article');
   },[scopeId,options,section]);
 
   if(account.loading||account.permissionLoading)return <section className="loc-view"><div className="loc-card">正在確認登入與管理權限…</div></section>;
@@ -122,8 +134,10 @@ export default function GovernanceManagement(){
       <p><button type="button" onClick={account.signOut}>登出</button></p>
     </header>
 
-    {section==='workspace'?<Workspace scopeId={scopeId}/>:null}
+    {section==='article'?<ArticleSettings scopeId={scopeId}/>:null}
+    {section==='import'?<ImportSettings scopeId={scopeId}/>:null}
     {section==='period'?<PeriodSettings scopeId={scopeId}/>:null}
+    {section==='keywords'?<KeywordSettings/>:null}
     {section==='daily'&&scopeId==='lunarunes'?<RuneManagementPanel/>:null}
   </section>;
 }
