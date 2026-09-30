@@ -25,7 +25,7 @@
     "verify:text-engine": "node scripts/verify-text-engine.mjs",
     "verify:neon-public": "node scripts/verify-neon-public-read.mjs",
     "test:ui": "playwright test",
-    "verify:rc81": "npm run verify && npm run verify:ui && npm run verify:theme && npm run build && npm run test:ui"
+    "verify:rc81": "npm run verify:ui && npm run verify:theme && npm run verify:parity && npm run verify:semantics && npm run verify:modularity && npm run build && npm run test:ui"
   },
   "dependencies": {
     "@neondatabase/neon-js": "0.7.0-beta",
