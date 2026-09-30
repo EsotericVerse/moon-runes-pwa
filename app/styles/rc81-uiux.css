@@ -865,3 +865,167 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
 }
 
 /* RC8.1 final visual pass synced against Current main. */
+
+/* Non-content finishing pass: browser, touch, safe-area and resilient interaction polish. */
+html{
+  scrollbar-gutter:stable;
+  scrollbar-color:color-mix(in srgb,var(--loc-line) 72%,transparent) transparent;
+  -webkit-text-size-adjust:100%;
+}
+
+body{
+  min-height:100dvh;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+:where(button,[role="button"],a,input,select,textarea){
+  touch-action:manipulation;
+}
+
+:where(button,[role="button"],input[type="button"],input[type="submit"],input[type="reset"]){
+  cursor:pointer;
+}
+
+:where(button,[role="button"],input):disabled{
+  cursor:not-allowed;
+}
+
+:where(input,select,textarea){
+  accent-color:var(--loc-accent);
+  caret-color:var(--loc-accent);
+}
+
+:where(input,textarea)::placeholder{
+  color:color-mix(in srgb,var(--loc-muted) 78%,transparent);
+  opacity:1;
+}
+
+:where(input,textarea):-webkit-autofill,
+:where(input,textarea):-webkit-autofill:hover,
+:where(input,textarea):-webkit-autofill:focus{
+  -webkit-text-fill-color:var(--loc-text);
+  caret-color:var(--loc-accent);
+  box-shadow:0 0 0 1000px var(--loc-panel) inset!important;
+  transition:background-color 9999s ease-out 0s;
+}
+
+.scope-v2-global{
+  padding-top:max(.65rem,env(safe-area-inset-top));
+  padding-left:max(.65rem,env(safe-area-inset-left));
+  padding-right:max(.65rem,env(safe-area-inset-right));
+}
+
+.loc-next-main,.scope-v2-main{
+  padding-left:env(safe-area-inset-left);
+  padding-right:env(safe-area-inset-right);
+}
+
+.scope-v2-footer{
+  padding-bottom:max(3rem,calc(env(safe-area-inset-bottom) + 1.25rem));
+}
+
+.scope-v2-nav{
+  overscroll-behavior-x:contain;
+  scroll-snap-type:x proximity;
+}
+
+.scope-v2-nav>a,.scope-v2-nav>.scope-v2-nav-current{
+  scroll-snap-align:start;
+  scroll-margin-inline:.45rem;
+}
+
+:where(.loc-button,.loc-control,.scope-v2-tabs button,.scope-v2-stat-tabs button,
+.scope-v2-pagination-button,.scope-v2-search-form button,.scope-v2-culture-source-button,
+.runes-group-choice,.runes-library-card,.runes-pager button):active{
+  transform:translateY(0) scale(.985);
+}
+
+:where(.loc-button,.loc-control,.scope-v2-tabs button,.scope-v2-stat-tabs button,
+.scope-v2-pagination-button,.scope-v2-search-form button,.scope-v2-culture-source-button,
+.runes-group-choice,.runes-library-card,.runes-pager button):disabled{
+  opacity:.52;
+  box-shadow:none;
+  transform:none;
+}
+
+.scope-v2-search-highlight{
+  -webkit-box-decoration-break:clone;
+  box-decoration-break:clone;
+}
+
+.scope-v2-table,.loc-table{
+  font-variant-numeric:tabular-nums;
+}
+
+.scope-v2-ranking,
+.scope-v2-stat-controls,
+.scope-v2-culture-source-groups{
+  font-variant-numeric:tabular-nums;
+}
+
+.scope-period-timeline,
+.scope-overview-network,
+.scope-v2-ranking-chart{
+  isolation:isolate;
+}
+
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .scope-v2-global{
+    background:color-mix(in srgb,var(--loc-bg) 96%,var(--loc-panel));
+  }
+  .loc-table th,.scope-v2-table th{
+    background:var(--loc-panel);
+  }
+}
+
+@media (pointer:coarse){
+  :where(.scope-v2-nav a,.scope-v2-nav-current,.loc-button,.loc-control,
+  .scope-v2-tabs button,.scope-v2-stat-tabs button,.scope-v2-pagination-button,
+  .scope-v2-search-form button,.scope-v2-culture-source-button,.runes-pager button){
+    min-height:44px;
+  }
+
+  :where(input,select,textarea,.scope-v2-react-select__control){
+    min-height:44px!important;
+  }
+
+  .scope-v2-nav{
+    scroll-padding-inline:.45rem;
+  }
+}
+
+@media (forced-colors:active){
+  .loc-card,.loc-panel,.loc-hero,.scope-v2-card,.scope-v2-hero,.scope-v2-inline-card,
+  .scope-v2-feature-card,.scope-v2-ranking-chart,.scope-period-timeline,
+  .scope-overview-network{
+    border:1px solid CanvasText;
+    box-shadow:none;
+  }
+
+  .rc81-scroll-progress{
+    background:Highlight;
+    box-shadow:none;
+  }
+
+  :where(a,button,input,select,textarea,summary,[tabindex]):focus-visible{
+    outline:2px solid Highlight;
+  }
+}
+
+@media(max-width:760px){
+  .scope-v2-global{
+    padding-top:max(.45rem,env(safe-area-inset-top));
+    padding-left:max(.5rem,env(safe-area-inset-left));
+    padding-right:max(.5rem,env(safe-area-inset-right));
+  }
+
+  .scope-v2-nav{
+    scroll-behavior:smooth;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .scope-v2-nav{scroll-behavior:auto}
+}
+
