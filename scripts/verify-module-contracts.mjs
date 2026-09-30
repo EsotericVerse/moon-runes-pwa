@@ -59,11 +59,11 @@ for(const retired of ["時期比例變化","只比較完整時期內各分類所
 if(cultureTimeline.includes("個人時期 · {personalTitle}")||cultureTimeline.includes("LunaRunes · {runeTitle}")){
   failures.push('LOC Culture: Current confluence must not unfold per-scope period lists');
 }
-for(const token of ["const intersectionStart=Math.max(personalStartTime,runeStartTime)","const domainStart=intersectionStart","Current × Current 交會集合"]){
-  if(!cultureTimeline.includes(token))failures.push(`LOC Culture: Current intersection contract missing ${token}`);
+for(const token of ["交會時期的總文章數","fixedMin={locDistributionStart}","fixedMax={locDistributionEnd}"]){
+  if(!cultureView.includes(token))failures.push(`LOC Culture: fixed intersection river contract missing ${token}`);
 }
-for(const retired of ["Math.min(runeStartTime,personalStartTime,...validTimes)","personal.map((row,index)=>marker","runes.map((row,index)=>marker"]){
-  if(cultureTimeline.includes(retired))failures.push(`LOC Culture: historical/global Current river regression returned ${retired}`);
+for(const token of ["const intersectionStart=starts.at(-1)||''","intersectionScopeIds","buildLocScopeDistribution"]){
+  if(!cultureClientContractSource.includes(token))failures.push(`LOC Culture: Neon intersection contract missing ${token}`);
 }
 if(!governanceManagement.includes("function PeriodSettings({scopeId})")||!governanceManagement.includes("if(scopeId==='loc')return null;")){
   failures.push('LOC Culture: Period settings must remain Scope-only and must not run for LOC');
