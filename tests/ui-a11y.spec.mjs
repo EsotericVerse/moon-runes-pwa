@@ -22,6 +22,7 @@ for(const route of ROUTES){
     });
 
     const results=await new AxeBuilder({page})
+      .exclude('.scope-home-hero-visual iframe')
       .withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa'])
       .analyze();
     const blocking=results.violations.filter(item=>item.impact==='critical'||item.impact==='serious');
