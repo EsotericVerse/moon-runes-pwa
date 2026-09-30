@@ -144,23 +144,28 @@ function mergeLocSourceRows(rows=[]){
 async function queryScopeRankingRows(scopeId,{rankingType='',navigation={}}={}){
   const id=String(scopeId||'').trim();
   if(!id)throw new Error('資料設定無效');
-  const types=['source'];
-  const type='source';
+  const types=['total','source'];
+  const requested=String(rankingType||'');
+  const type=types.includes(requested)?requested:'total';
   const period=String(navigation.period||'all');
-  let rows=[];
+  let sourceRowsResult=[];
   if(id==='loc'){
     const scopes=(await selectManagedScopes()).filter(scope=>scope.id!=='loc');
     const results=await Promise.all(scopes.map(scope=>sourceRows(scope.id,'all',null)));
-    rows=mergeLocSourceRows(results.flat());
+    sourceRowsResult=mergeLocSourceRows(results.flat());
   }else{
-    rows=await sourceRows(id,period,undefined);
+    sourceRowsResult=await sourceRows(id,period,undefined);
   }
+  const total=sourceRowsResult.reduce((sum,row)=>sum+(Number(row.item_count)||0),0);
+  const rows=type==='total'
+    ?[rankingRow('total','總來源',total,id,period)]
+    :sourceRowsResult;
   const parsed=ScopeRankingResponseSchema.parse({
     rows,
     offset:0,
     limit:Math.max(1,rows.length||1),
     hasMore:false,
-    types:[type]
+    types
   });
   return {id,type,rows:parsed.rows};
 }
@@ -207,7 +212,7 @@ export async function selectScopeSourceBucketDetails(scopeId,{bucket='Others',na
 export async function selectScopeRankingTypes(scopeId){
   const id=String(scopeId||'').trim();
   if(!id)throw new Error('資料設定無效');
-  return ['source'];
+  return ['total','source'];
 }
 
 
