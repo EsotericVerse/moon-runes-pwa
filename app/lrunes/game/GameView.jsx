@@ -20,9 +20,9 @@ function groupVisual(groupAssets,groupName){
 }
 
 function phaseMark(phase){
-  if(phase==='event')return 'E';
-  if(phase==='duel')return 'D';
-  return 'R';
+  if(phase==='event')return '事';
+  if(phase==='duel')return '決';
+  return '鳴';
 }
 
 function signed(value){
@@ -99,7 +99,7 @@ function GameDocs({data}){
     </div>}
 
     {section==='events'&&<div className="game-doc-copy">
-      <h2>Event32</h2>
+      <h2>32 張事件卡</h2>
       <div className="game-role-grid">
         {data.events.map(event=><article key={event.id}><b>{event.id}｜{event.name}</b><span>{event.group}｜{event.requirement}</span><small>{event.description}</small></article>)}
       </div>
@@ -151,7 +151,7 @@ function BoardPreview({data}){
 function freshGame(data,count){
   const eventDeck=shuffle(data.events);
   return {
-    players:Array.from({length:count},(_,index)=>freshPlayer(data.cards,'Player '+NAMES[index],data.config)),
+    players:Array.from({length:count},(_,index)=>freshPlayer(data.cards,'玩家 '+NAMES[index],data.config)),
     eventDeck,
     eventIndex:0,
     round:1,
@@ -184,7 +184,7 @@ export default function GameView(){
 
   const event=state?.eventDeck?.length?state.eventDeck[state.eventIndex%state.eventDeck.length]:null;
   const allOpened=state?.players.every(player=>!player.opening);
-  const phaseLabel=state?.phase==='event'?'Event':state?.phase==='duel'?'Duel':'Resonance';
+  const phaseLabel=state?.phase==='event'?'事件':state?.phase==='duel'?'決鬥':'共鳴';
 
   const status=useMemo(()=>{
     if(error)return '遊戲資料載入失敗：'+error.message;
@@ -192,7 +192,7 @@ export default function GameView(){
     if(!data)return '遊戲資料尚未就緒。';
     if(!state)return data.cards.length+' 張可玩符文、'+data.events.length+' 張事件卡已就緒。';
     if(state.winner!==null)return state.players[state.winner].name+' 勝出。';
-    if(state.draw)return 'R9 Duel 仍平分；後續判定待定。';
+    if(state.draw)return '第 9 回合決鬥仍平分；後續判定待定。';
     return 'R'+state.round+' · '+phaseLabel;
   },[data,error,isLoading,state,phaseLabel]);
 
@@ -249,7 +249,7 @@ export default function GameView(){
       duelists:leaders,
       active:leaders[0],
       actions:0,
-      result:'R8 平分，進入 R9 Duel。'
+      result:'第 8 回合平分，進入第 9 回合決鬥。'
     };
   }
 
@@ -290,7 +290,7 @@ export default function GameView(){
         return nextRound({
           ...current,
           players:outcomes.map(entry=>entry.player),
-          logs:['R'+current.round+' Event：'+line,...current.logs],
+          logs:['第 '+current.round+' 回合事件：'+line,...current.logs],
           result:line
         });
       }catch(problem){
@@ -318,7 +318,7 @@ export default function GameView(){
         players,
         actions,
         active:nextActive,
-        logs:[(current.phase==='duel'?'R9 Duel':'R'+current.round+' Resonance')+'：'+NAMES[actor]+' '+actionText,...current.logs]
+        logs:[(current.phase==='duel'?'第 9 回合決鬥':'第 '+current.round+' 回合共鳴')+'：'+NAMES[actor]+' '+actionText,...current.logs]
       };
 
       if(actions<participants.length)return next;
@@ -326,7 +326,7 @@ export default function GameView(){
         const max=Math.max(...participants.map(index=>players[index].de));
         const leaders=participants.filter(index=>players[index].de===max);
         if(leaders.length===1)return {...next,winner:leaders[0]};
-        return {...next,draw:true,result:'R9 Duel 仍平分；後續判定待定。'};
+        return {...next,draw:true,result:'第 9 回合決鬥仍平分；後續判定待定。'};
       }
       return nextRound(next);
     });
@@ -410,15 +410,15 @@ export default function GameView(){
       </section>)}
 
       {allOpened&&state.phase==='event'?<section className="loc-event game-event-field">
-        <p className="loc-eyebrow">R{state.round} · EVENT</p>
+        <p className="loc-eyebrow">第 {state.round} 回合 · 事件</p>
         {eventGroupVisual?<EventVisual item={eventGroupVisual}/>:null}
-        {event?<><h2>{event.id}｜{event.name}</h2><p>{event.desc}</p><p className="game-player-meta">條件：{event.requirement}</p><button className="loc-button primary" onClick={resolveEvent} disabled={state.players.some(player=>player.selected.length!==data.config.eventResponseCards)}>{data.config.eventResponseCards} 卡結算 Event</button></>:null}
+        {event?<><h2>{event.id}｜{event.name}</h2><p>{event.desc}</p><p className="game-player-meta">條件：{event.requirement}</p><button className="loc-button primary" onClick={resolveEvent} disabled={state.players.some(player=>player.selected.length!==data.config.eventResponseCards)}>{data.config.eventResponseCards} 卡結算事件</button></>:null}
       </section>:null}
 
       {allOpened&&(state.phase?.includes('resonance')||state.phase==='duel')?<section className="loc-event game-event-field game-resonance-field">
-        <p className="loc-eyebrow">{state.phase==='duel'?'R9 DUEL':'R'+state.round+' · RESONANCE'}</p>
+        <p className="loc-eyebrow">{state.phase==='duel'?'第 9 回合 · 決鬥':'第 '+state.round+' 回合 · 共鳴'}</p>
         <div className="game-resonance-orbit"><span/><i/><span/></div>
-        <h2>{state.phase==='duel'?'Duel':'Resonance'}</h2>
+        <h2>{state.phase==='duel'?'決鬥':'共鳴'}</h2>
         <p>輪到 {state.players[state.active].name}</p>
         <div className="loc-actions">
           <button className="loc-button primary" onClick={()=>resonance('self')}>自我共振 {signed(data.config.resonanceSelf)}</button>
