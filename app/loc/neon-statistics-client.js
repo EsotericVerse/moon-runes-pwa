@@ -215,11 +215,11 @@ export async function selectScopeRankingTypes(scopeId){
 }
 
 
-async function scopeSourceTrendRows(scopeId){
+async function scopeSourceTrendRows(scopeId,{startDate='',endDate=''}={}){
   const tables=await resolveScopeTables(scopeId);
   const [textDaily,mediaDaily]=await Promise.all([
-    selectSourceDaily({scopeId}),
-    selectDailyCategoryCounts(tables.galaxyMedia,'media_type')
+    selectSourceDaily({scopeId,startDate,endDate}),
+    selectDailyCategoryCounts(tables.galaxyMedia,'media_type',{startDate,endDate})
   ]);
   const combined=new Map();
   for(const row of textDaily){
@@ -246,12 +246,13 @@ async function scopeSourceTrendRows(scopeId){
   }).sort((a,b)=>a.day.localeCompare(b.day)||SOURCE_BUCKET_ORDER.indexOf(a.source)-SOURCE_BUCKET_ORDER.indexOf(b.source));
 }
 
-export async function selectScopeSourceTrendRows(scopeId){
+export async function selectScopeSourceTrendRows(scopeId,{startDate='',endDate=''}={}){
   const id=String(scopeId||'').trim();
   if(!id)throw new Error('資料設定無效');
+  const range={startDate:dateOnly(startDate),endDate:dateOnly(endDate)};
   const rows=id==='loc'
-    ?(await Promise.all((await selectManagedScopes()).filter(scope=>scope.id!=='loc').map(scope=>scopeSourceTrendRows(scope.id)))).flat()
-    :await scopeSourceTrendRows(id);
+    ?(await Promise.all((await selectManagedScopes()).filter(scope=>scope.id!=='loc').map(scope=>scopeSourceTrendRows(scope.id,range)))).flat()
+    :await scopeSourceTrendRows(id,range);
   const merged=new Map();
   for(const row of rows){
     const key=row.day+'|'+row.source;
