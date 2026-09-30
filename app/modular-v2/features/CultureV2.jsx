@@ -175,7 +175,8 @@ export default function CultureV2(){
       const details=await selectScopePeriodWorkDetails(classificationScope,{items});
       return {
         rows:details.rows||[],
-        hasMore:offset+items.length<indexRows.length
+        hasMore:offset+items.length<indexRows.length,
+        nextOffset:offset+items.length
       };
     },
     getRowKey:row=>String(row?.key||row?.uid||row?.entry_id||'')
