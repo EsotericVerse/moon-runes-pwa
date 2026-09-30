@@ -364,7 +364,7 @@ function StatisticsPanel({scopeId,navigation,types}){
   const anchorQuery=useQuery({
     queryKey:['statistics-anchor-dates',scopeId],
     queryFn:()=>selectScopeAnchorDates(scopeId),
-    enabled:rankingType==='source',
+    enabled:rankingType==='total',
     staleTime:5*60_000
   });
   const allRows=query.data||[];
