@@ -154,7 +154,7 @@ export default function CultureV2(){
     ].join('|'),
     pageSize:DEFAULT_LIST_BATCH_SIZE,
     enabled:!isLoc&&!periodWorkIndexQuery.isPending&&!periodWorkIndexQuery.error&&(!selectedCategory||Boolean(selectedGroup)),
-    loadPage:async(offset,limit)=>{
+    loadPage:async(cursor,limit)=>{
       const indexPage=await selectScopePeriodWorkIndex(classificationScope,{
         startDate:selectedWorkPeriod?.start_date||'',
         endDate:selectedWorkPeriod?.end_date,
@@ -162,14 +162,14 @@ export default function CultureV2(){
         sourceNames:selectedGroup?.source_names||[],
         mediaTypes:selectedGroup?.media_types||[],
         limit,
-        offset
+        cursor:cursor&&typeof cursor==='object'?cursor:null
       });
       const items=indexPage.rows||[];
       const details=await selectScopePeriodWorkDetails(classificationScope,{items});
       return {
         rows:details.rows||[],
-        hasMore:offset+items.length<Number(indexPage.totalCount||0),
-        nextOffset:offset+items.length
+        hasMore:Number(indexPage.nextCursor?.galaxyOffset||0)+Number(indexPage.nextCursor?.mediaOffset||0)<Number(indexPage.totalCount||0),
+        nextCursor:indexPage.nextCursor
       };
     },
     getRowKey:row=>String(row?.key||row?.uid||row?.entry_id||'')
