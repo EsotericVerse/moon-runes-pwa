@@ -206,7 +206,6 @@ export default function CultureV2(){
     (query.data?.timelineItems||[]).filter(item=>scopeId==='loc'||item.scope_id===scopeId)
   ,[query.data,scopeId]);
   const locSourceRiverItems=useMemo(()=>query.data?.sourceRiverItems||[],[query.data]);
-  const locSourceGroups=useMemo(()=>query.data?.sourceGroups||[],[query.data]);
   const locScopeDistributionItems=useMemo(()=>query.data?.scopeRanges||[],[query.data]);
   const locDistributionStart=String(query.data?.intersectionStart||'');
   const locDistributionEnd=String(query.data?.intersectionEnd||new Date().toISOString().slice(0,10));
