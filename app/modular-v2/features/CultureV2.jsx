@@ -130,13 +130,15 @@ export default function CultureV2(){
   const categoryQuery=sourceSnapshotQuery;
   const selectedGroup=categoryGroups.find(item=>item.category_key===selectedCategory)||null;
   const periodWorkIndexQuery=useQuery({
-    queryKey:['culture-period-work-index',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,selectedCategory,selectedGroup?.source_name||'all'],
+    queryKey:['culture-period-work-count',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,selectedCategory,selectedGroup?.source_name||'all'],
     queryFn:()=>selectScopePeriodWorkIndex(classificationScope,{
       startDate:selectedWorkPeriod?.start_date||'',
       endDate:selectedWorkPeriod?.end_date,
       sourceName:selectedGroup?.source_name||'',
       sourceNames:selectedGroup?.source_names||[],
-      mediaTypes:selectedGroup?.media_types||[]
+      mediaTypes:selectedGroup?.media_types||[],
+      limit:1,
+      offset:0
     }),
     enabled:!isLoc&&(!selectedCategory||Boolean(selectedGroup)),
     staleTime:5*60_000
@@ -153,12 +155,20 @@ export default function CultureV2(){
     pageSize:DEFAULT_LIST_BATCH_SIZE,
     enabled:!isLoc&&!periodWorkIndexQuery.isPending&&!periodWorkIndexQuery.error&&(!selectedCategory||Boolean(selectedGroup)),
     loadPage:async(offset,limit)=>{
-      const indexRows=periodWorkIndexQuery.data?.rows||[];
-      const items=indexRows.slice(offset,offset+limit);
+      const indexPage=await selectScopePeriodWorkIndex(classificationScope,{
+        startDate:selectedWorkPeriod?.start_date||'',
+        endDate:selectedWorkPeriod?.end_date,
+        sourceName:selectedGroup?.source_name||'',
+        sourceNames:selectedGroup?.source_names||[],
+        mediaTypes:selectedGroup?.media_types||[],
+        limit,
+        offset
+      });
+      const items=indexPage.rows||[];
       const details=await selectScopePeriodWorkDetails(classificationScope,{items});
       return {
         rows:details.rows||[],
-        hasMore:offset+items.length<indexRows.length,
+        hasMore:offset+items.length<Number(indexPage.totalCount||0),
         nextOffset:offset+items.length
       };
     },
