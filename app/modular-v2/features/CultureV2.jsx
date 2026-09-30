@@ -57,6 +57,65 @@ function nextRiverDay(value){
   date.setUTCDate(date.getUTCDate()+1);
   return date.toISOString().slice(0,10);
 }
+function previousRiverDay(value){
+  const key=String(value||'').slice(0,10);
+  if(!key)return '';
+  const date=new Date(key+'T00:00:00Z');
+  if(Number.isNaN(date.getTime()))return '';
+  date.setUTCDate(date.getUTCDate()-1);
+  return date.toISOString().slice(0,10);
+}
+function riverDayDistance(from,to){
+  const a=Date.parse(String(from||'').slice(0,10)+'T00:00:00Z');
+  const b=Date.parse(String(to||'').slice(0,10)+'T00:00:00Z');
+  return Number.isFinite(a)&&Number.isFinite(b)?Math.round((b-a)/86400000):0;
+}
+function median(values=[]){
+  const sorted=values.filter(value=>Number.isFinite(value)&&value>0).sort((a,b)=>a-b);
+  if(!sorted.length)return 1;
+  const middle=Math.floor(sorted.length/2);
+  return sorted.length%2?sorted[middle]:(sorted[middle-1]+sorted[middle])/2;
+}
+function buildRiverGapSuggestions(buckets=[],timelineItems=[]){
+  const anchorDates=(timelineItems||[])
+    .filter(item=>String(item?.entry_type||'')==='anchor')
+    .map(item=>String(item?.start_date||item?.date||'').slice(0,10))
+    .filter(Boolean);
+  const bySource=new Map();
+  for(const item of buckets||[]){
+    const source=String(item?.category||'').trim();
+    const day=String(item?.start_date||'').slice(0,10);
+    if(!source||!day||Number(item?.item_count||0)<=0)continue;
+    if(!bySource.has(source))bySource.set(source,new Set());
+    bySource.get(source).add(day);
+  }
+  const suggestions=[];
+  for(const [source,dateSet] of bySource){
+    const dates=[...dateSet].sort();
+    if(dates.length<4)continue;
+    const intervals=[];
+    for(let index=1;index<dates.length;index++)intervals.push(riverDayDistance(dates[index-1],dates[index]));
+    const cadence=Math.max(1,median(intervals));
+    const minimumGap=Math.max(7,Math.ceil(cadence*3));
+    for(let index=1;index<dates.length;index++){
+      const interval=riverDayDistance(dates[index-1],dates[index]);
+      const blankDays=interval-1;
+      if(blankDays<minimumGap)continue;
+      const from=nextRiverDay(dates[index-1]);
+      const to=previousRiverDay(dates[index]);
+      if(anchorDates.some(date=>date>=from&&date<=to))continue;
+      suggestions.push({
+        key:'river-gap:'+source+':'+from+':'+to,
+        source,from,to,blankDays,cadence,
+        score:blankDays/Math.max(1,cadence)
+      });
+    }
+  }
+  return suggestions
+    .sort((a,b)=>b.score-a.score||b.blankDays-a.blankDays||a.from.localeCompare(b.from))
+    .slice(0,3)
+    .sort((a,b)=>a.from.localeCompare(b.from));
+}
 
 export default function CultureV2(){
   const {scopeId}=useScopeRuntimeV2();
@@ -71,6 +130,7 @@ export default function CultureV2(){
 
   const [selectedPeriodKey,setSelectedPeriodKey]=useState('');
   const [selectedCategory,setSelectedCategory]=useState('');
+  const [riverFocusRange,setRiverFocusRange]=useState(null);
   const workScrollRef=useRef(null);
   const [fullTextKey,setFullTextKey]=useState('');
   const [fullText,setFullText]=useState('');
@@ -173,6 +233,7 @@ export default function CultureV2(){
 
   useEffect(()=>{
     setSelectedCategory('');
+    setRiverFocusRange(null);
     setFullTextKey('');
     setFullText('');
     setFullTextError('');
@@ -254,6 +315,10 @@ export default function CultureV2(){
   const hasTimelineSurface=isLoc?Boolean(locSourceRiverItems.length):Boolean(timelineItems.length||selectedWorkPeriod?.start_date);
 
   const classificationBuckets=sourceSnapshotQuery.data?.buckets||[];
+  const riverGapSuggestions=useMemo(
+    ()=>buildRiverGapSuggestions(classificationBuckets,timelineItems),
+    [classificationBuckets,timelineItems]
+  );
 
 
   async function galaxyTable(){
@@ -411,8 +476,8 @@ export default function CultureV2(){
                   labelOf={()=>''}
                   focus={{}}
                   mode='source'
-                  windowStart={selectedWindowStart}
-                  windowEnd={selectedWindowEnd}
+                  windowStart={riverFocusRange?.from||selectedWindowStart}
+                  windowEnd={riverFocusRange?.to||selectedWindowEnd}
                   onSelect={item=>{
                     const term=String(item?.category||item?.group||'').split(' · ')[0].trim();
                     if(!term)return;
@@ -422,6 +487,20 @@ export default function CultureV2(){
                     }
                   }}
                 />:null}
+                {riverGapSuggestions.length?<section className='scope-v2-stat-suggestions' aria-label='時間長河建議'>
+                  <header><p className='loc-eyebrow'>River Suggestion</p><h4>建議檢視區間</h4></header>
+                  <div>
+                    {riverGapSuggestions.map(item=><button type='button' key={item.key} onClick={()=>{
+                      setRiverFocusRange({from:item.from,to:item.to});
+                      const categoryKey='source:'+item.source;
+                      if(categoryGroups.some(group=>group.category_key===categoryKey))setSelectedCategory(categoryKey);
+                    }}>
+                      <strong>{item.source} · {item.from} ～ {item.to}</strong>
+                      <span>河道中斷 {item.blankDays} 天；平常間距約 {Number(item.cadence).toFixed(1)} 天</span>
+                    </button>)}
+                  </div>
+                </section>:null}
+                {riverFocusRange?<p className='scope-v2-status'>目前放大：{riverFocusRange.from} ～ {riverFocusRange.to} · <button type='button' onClick={()=>setRiverFocusRange(null)}>返回完整河道</button></p>:null}
 
                 <p className='scope-v2-status'>該時期總作品數：{Number(sourceSnapshotQuery.data?.totalCount||0).toLocaleString()} 項。</p>
 
