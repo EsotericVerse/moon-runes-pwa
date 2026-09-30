@@ -329,22 +329,7 @@ export async function selectScopeCultureData(scopeId){
 
     const built=buildLocSourceRiver(aggregateRows);
     const scopeRanges=buildLocScopeDistribution(aggregateRows);
-    const intersectionMarkers=intersectionScopeIds.map(scope=>({
-      id:'loc-intersection:'+scope+':'+intersectionStart,
-      entry_id:'loc-intersection:'+scope+':'+intersectionStart,
-      entry_type:'intersection_start',
-      scope_id:'loc',
-      group_label:scope,
-      category:scope,
-      start_date:intersectionStart,
-      item_count:0,
-      density_ratio:0,
-      global_density_ratio:0,
-      display_label:scope,
-      title:scope
-    }));
-    const sourceRiverItems=[...built.sourceRiverItems,...intersectionMarkers]
-      .sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))||String(a.group_label||'').localeCompare(String(b.group_label||'')));
+    const sourceRiverItems=built.sourceRiverItems;
 
     return ScopeCultureResponseSchema.parse({
       scopeId:id,
