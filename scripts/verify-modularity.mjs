@@ -34,7 +34,7 @@ walk(resolve(root,'app'),path=>{
 });
 
 for(const required of [
-  'app/loc/neon-ranking-client.js',
+  'app/loc/neon-statistics-client.js',
   'app/loc/neon-culture-client.js',
   'app/loc/neon-search.js'
 ]){
