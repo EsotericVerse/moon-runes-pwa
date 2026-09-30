@@ -1,6 +1,8 @@
 import {detectChangepoints,PoissonCost} from 'karaul';
 
 const DAY_MS=86400000;
+const ANCHOR_COVER_DAYS=3;
+const SUGGESTION_MIN_GAP_DAYS=7;
 
 function dayKey(value){
   const key=String(value||'').slice(0,10);
@@ -88,11 +90,15 @@ export function analyzeRiverDensity(rows=[],anchorDates=[]){
     end:segment.endIndex<density.length?density[segment.endIndex].date:dayFromMs(dayMs(density.at(-1).date)+DAY_MS)
   }));
 
-  const existing=new Set((anchorDates||[]).map(dayKey).filter(Boolean));
+  const existing=(anchorDates||[]).map(dayMs).filter(Number.isFinite);
   const suggestions=new Map();
+  const coveredByAnchor=key=>{
+    const value=dayMs(key);
+    return Number.isFinite(value)&&existing.some(anchor=>Math.abs(value-anchor)<=ANCHOR_COVER_DAYS*DAY_MS);
+  };
   const addSuggestion=(date,reason)=>{
     const key=dayKey(date);
-    if(!key||existing.has(key))return;
+    if(!key||coveredByAnchor(key))return;
     const current=suggestions.get(key);
     if(!current||reason==='gap-edge')suggestions.set(key,{date:key,reason});
   };
@@ -108,10 +114,28 @@ export function analyzeRiverDensity(rows=[],anchorDates=[]){
     addSuggestion(nearestPublishedAtOrAfter(density,segment.endIndex),'gap-edge');
   }
 
+  const rawSuggestions=[...suggestions.values()].sort((a,b)=>a.date.localeCompare(b.date));
+  const densityIndex=new Map(density.map((row,index)=>[row.date,index]));
+  const contrast=item=>{
+    const index=densityIndex.get(item.date);
+    if(!Number.isInteger(index))return 0;
+    const before=density.slice(Math.max(0,index-3),index);
+    const after=density.slice(index+1,Math.min(density.length,index+4));
+    const mean=list=>list.length?list.reduce((sum,row)=>sum+(Number(row.count)||0),0)/list.length:0;
+    return Math.abs(mean(after)-mean(before));
+  };
+  const clusters=[];
+  for(const item of rawSuggestions){
+    const last=clusters.at(-1);
+    if(last&&dayMs(item.date)-dayMs(last.at(-1).date)<SUGGESTION_MIN_GAP_DAYS*DAY_MS)last.push(item);
+    else clusters.push([item]);
+  }
+  const filteredSuggestions=clusters.map(cluster=>[...cluster].sort((a,b)=>contrast(b)-contrast(a)||a.date.localeCompare(b.date))[0]);
+
   return {
     density,
     changepoints,
     hiddenDates,
-    suggestions:[...suggestions.values()].sort((a,b)=>a.date.localeCompare(b.date))
+    suggestions:filteredSuggestions
   };
 }
