@@ -170,8 +170,8 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
   padding:.42rem .72rem;
   border:1px solid transparent;
   color:var(--loc-muted);
-  font-size:.82rem;
-  letter-spacing:.015em;
+  font-size:.86rem;
+  letter-spacing:.01em;
 }
 
 .scope-v2-nav a:hover{
@@ -194,8 +194,8 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
 
 .scope-v2-search input{
   width:clamp(7.5rem,12vw,11rem);
-  min-height:2.25rem;
-  padding:.42rem .8rem;
+  min-height:2.4rem;
+  padding:.46rem .82rem;
   border:1px solid var(--rc81-hairline);
   background:color-mix(in srgb,var(--loc-bg) 45%,transparent);
 }
@@ -288,7 +288,7 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
 
 .scope-home-hero-with-visual{
   grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr)!important;
-  min-height:clamp(390px,56vh,620px);
+  min-height:clamp(330px,44vh,500px);
   gap:clamp(1.5rem,4vw,4rem)!important;
 }
 
@@ -385,6 +385,20 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
   border-color:var(--loc-accent-border)!important;
   box-shadow:0 0 0 3px var(--rc81-accent-soft)!important;
   outline:0;
+}
+
+/* React Select owns its internal text input geometry. */
+.scope-v2-react-select__input,
+.scope-v2-react-select__input:focus{
+  min-height:0!important;
+  width:auto!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  outline:0!important;
 }
 
 .scope-v2-local-menu{
@@ -518,16 +532,31 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
 
 /* Search */
 .scope-v2-search-form{
-  padding:.7rem;
+  grid-template-columns:minmax(0,1fr) auto;
+  grid-template-areas:"label label" "input submit";
+  gap:.55rem .7rem;
+  padding:.85rem;
   border:1px solid var(--rc81-hairline);
-  border-radius:999px;
+  border-radius:var(--rc81-radius-lg);
   background:color-mix(in srgb,var(--loc-panel) 68%,transparent);
 }
-
+.scope-v2-search-form label{
+  grid-area:label;
+  padding:0 .15rem;
+  color:var(--loc-muted);
+  font-size:.82rem;
+}
 .scope-v2-search-form input{
-  border:0!important;
-  background:transparent!important;
+  grid-area:input;
+  min-height:2.75rem;
+  border:1px solid var(--rc81-hairline)!important;
+  border-radius:999px!important;
+  background:color-mix(in srgb,var(--loc-bg) 28%,transparent)!important;
   box-shadow:none!important;
+}
+.scope-v2-search-form button{
+  grid-area:submit;
+  min-width:6.5rem;
 }
 
 .scope-v2-search-highlight{
@@ -664,6 +693,15 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
   border-radius:var(--rc81-radius-lg);
   background:color-mix(in srgb,var(--loc-bg) 48%,transparent);
 }
+.scope-overview-network .vis-navigation .vis-button{
+  opacity:.72;
+  filter:grayscale(1) saturate(0) contrast(.85);
+  transition:opacity var(--rc81-fast) var(--rc81-ease),filter var(--rc81-fast) var(--rc81-ease);
+}
+.scope-overview-network .vis-navigation .vis-button:hover{
+  opacity:1;
+  filter:grayscale(1) saturate(0) contrast(1.05);
+}
 
 .scope-v2-footer{
   max-width:var(--rc81-max);
@@ -679,10 +717,6 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
     transform:translateY(-2px);
     border-color:var(--loc-accent-border);
     box-shadow:0 10px 26px rgb(0 0 0 / .12);
-  }
-
-  .loc-card:hover,.scope-v2-card:hover,.scope-v2-feature-card:hover{
-    border-color:color-mix(in srgb,var(--loc-line) 62%,var(--loc-accent));
   }
 
   .model-module:hover,.runes-group-choice:hover,.runes-library-card:hover,
@@ -753,6 +787,7 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
   }
   .scope-v2-search-form{
     grid-template-columns:1fr;
+    grid-template-areas:"label" "input" "submit";
     border-radius:var(--rc81-radius-md);
   }
   .scope-v2-search-form button{width:100%}
