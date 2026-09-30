@@ -50,8 +50,6 @@ if(/localStorage|IndexedDB|readStore\(|writeStore\(/.test(userStorage))failures.
 
 requireMatch(scopeManagement,/account\.canManageScopeSync\(scopeId\)/,'Scope management must use the shared scope authorizer');
 requireMatch(adminManagement,/account\.canManageGlobalSync\(\)/,'Admin management must require the global admin role');
-  failures.push('website users/permissions must not be mirrored outside silver.manage');
-}
 if(/function hasPrivilege|account\.privileges/.test(searchView)){
   failures.push('Search must use the shared Neon Auth authorizer instead of its own privilege logic');
 }
