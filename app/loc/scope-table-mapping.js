@@ -26,6 +26,35 @@ export function mappedScopeTable(scopeId,mappingKey,mappingValue){
   return `silver.${id}_${suffix}`;
 }
 
+export async function selectManagedScopes(){
+  const {rows}=await selectNeonRows('silver.manage',{
+    columns:'id,role,galaxy,time,birthday',
+    filters:[{column:'role',operator:'in',value:['admin','scope']}],
+    orders:[{column:'id',ascending:true}],
+    limit:1000,
+    offset:0
+  });
+  const scopes=new Map();
+  for(const row of rows){
+    const id=normalizeDataScopeId(row?.id);
+    if(!SCOPE_ID_PATTERN.test(id))continue;
+    const role=String(row?.role||'').trim();
+    const current=scopes.get(id);
+    scopes.set(id,{
+      id,
+      role:current?.role==='admin'||role==='admin'?'admin':role,
+      birthday:String(row?.birthday||current?.birthday||'').slice(0,10)||null,
+      galaxy:safeToken(row?.galaxy,current?.galaxy||DEFAULT_MAPPING.galaxy),
+      time:safeToken(row?.time,current?.time||DEFAULT_MAPPING.time)
+    });
+  }
+  return [...scopes.values()];
+}
+
+export async function selectManagedScopeIds(){
+  return (await selectManagedScopes()).map(row=>row.id);
+}
+
 export async function selectScopeTableMapping(scopeId,{email=''}={}){
   const id=normalizeDataScopeId(scopeId);
   if(!SCOPE_ID_PATTERN.test(id))throw new Error('Scope ID 無效');
