@@ -364,8 +364,8 @@ export default function CultureV2(){
             {isLoc?<>
 
               <section className='scope-v2-card scope-v2-culture-classification-river'>
-                <p className='loc-eyebrow'>Scope Intersection</p>
-                <h3>作品時間分佈</h3>
+                <p className='loc-eyebrow'>Time River</p>
+                <h3>交會時間長河</h3>
                 {locScopeTotals.length?<p className='scope-v2-status'>
                   交會時期的總文章數：{locIntersectionTotal.toLocaleString()} 篇，其中 {locScopeTotals.map(item=>item.scope+' '+Number(item.count||0).toLocaleString()+' 篇').join('、')}。
                 </p>:null}
@@ -379,12 +379,7 @@ export default function CultureV2(){
                   fixedMin={locDistributionStart}
                   fixedMax={locDistributionEnd}
                 />:null}
-                {locSourceGroups.length?<div className='scope-v2-culture-source-groups' aria-label='作品來源分類'>
-                  {locSourceGroups.map(group=><article className='scope-v2-inline-card' key={group.category_key}>
-                    <strong>{group.display_label}</strong>
-                    <span>{Number(group.item_count||0).toLocaleString()} 項</span>
-                  </article>)}
-                </div>:null}
+
               </section>
 
 
