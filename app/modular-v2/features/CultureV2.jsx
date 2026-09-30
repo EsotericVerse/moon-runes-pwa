@@ -449,9 +449,15 @@ export default function CultureV2(){
                     }
                   }}
                 />:null}
-                {riverAnalysis.suggestions.length?<p className='scope-v2-status'>
-                  建議定錨：{riverAnalysis.suggestions.map(item=>item.date).join('、')}
-                </p>:null}
+                {riverAnalysis.suggestions.length?<section className='scope-v2-status scope-v2-culture-anchor-suggestions'>
+                  <strong>建議定錨</strong>
+                  {riverAnalysis.suggestions.map(item=><article key={item.date}>
+                    <strong>{item.date}</strong>
+                    <ul>
+                      {(item.analysis||[]).map((line,index)=><li key={item.date+':'+index}>{line}</li>)}
+                    </ul>
+                  </article>)}
+                </section>:null}
 
                 <p className='scope-v2-status'>該時期總作品數：{Number(sourceSnapshotQuery.data?.totalCount||0).toLocaleString()} 項。</p>
 
