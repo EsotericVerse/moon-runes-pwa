@@ -1,0 +1,59 @@
+name: RC8.1 UIUX Quality
+
+on:
+  push:
+    branches:
+      - 'RC8.1UI/UX'
+    paths:
+      - 'app/**'
+      - 'tests/**'
+      - 'playwright.config.mjs'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/rc81-uiux-quality.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rc81-uiux-quality
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify RC8.1 change boundary
+        run: npm run verify:rc81-boundary
+
+      - name: Verify theme contract
+        run: npm run verify:theme
+
+      - name: Build static export
+        run: npm run build
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run RC8.1 browser and accessibility checks
+        run: npm run test:ui
+
+      - name: Upload RC8.1 visual review renders
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rc81-uiux-renders
+          path: test-results
+          if-no-files-found: ignore

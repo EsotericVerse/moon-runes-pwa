@@ -23,12 +23,16 @@
     "verify:packages": "node scripts/verify-package-interoperability.mjs",
     "postbuild": "node scripts/copy-static-assets.mjs",
     "verify:text-engine": "node scripts/verify-text-engine.mjs",
-    "verify:neon-public": "node scripts/verify-neon-public-read.mjs"
+    "verify:neon-public": "node scripts/verify-neon-public-read.mjs",
+    "test:ui": "playwright test",
+    "verify:rc81": "npm run verify:rc81-boundary && npm run verify:theme && npm run build && npm run test:ui",
+    "verify:rc81-boundary": "node scripts/verify-rc81-uiux-boundary.mjs"
   },
   "dependencies": {
     "@neondatabase/neon-js": "0.7.0-beta",
     "@tanstack/react-query": "5.103.1",
     "karaul": "0.1.0",
+    "motion": "13.4.4",
     "next": "16.3.5",
     "react": "19.3.0",
     "react-dom": "19.3.0",
@@ -37,5 +41,9 @@
     "vis-network": "10.1.0",
     "vis-timeline": "8.5.4",
     "zod": "4.6.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "1.63.0"
   }
 }
