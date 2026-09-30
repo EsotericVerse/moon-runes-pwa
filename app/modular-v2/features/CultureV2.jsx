@@ -194,18 +194,19 @@ export default function CultureV2(){
   ,[query.data,scopeId]);
   const locSourceRiverItems=useMemo(()=>query.data?.sourceRiverItems||[],[query.data]);
   const locSourceGroups=useMemo(()=>query.data?.sourceGroups||[],[query.data]);
-  const locScopeIds=useMemo(()=>[...new Set(locSourceRiverItems.map(item=>String(item?.scope_id||item?.group_label||'')).filter(value=>value&&value!=='loc'))].sort(),[locSourceRiverItems]);
+  const locScopeDistributionItems=useMemo(()=>query.data?.scopeRanges||[],[query.data]);
+  const locScopeIds=useMemo(()=>[...new Set(locScopeDistributionItems.map(item=>String(item?.scope_id||'')).filter(Boolean))].sort(),[locScopeDistributionItems]);
   const locDistributionStart=String(query.data?.intersectionStart||'');
   const locDistributionEnd=String(query.data?.intersectionEnd||new Date().toISOString().slice(0,10));
   const locScopeDistributions=useMemo(()=>locScopeIds.map(scope=>({
     scope,
     buckets:locDistributionBuckets(
-      locSourceRiverItems.filter(item=>String(item?.scope_id||item?.group_label||'')===scope),
+      locScopeDistributionItems.filter(item=>String(item?.scope_id||'')===scope),
       locBucketCount,
       locDistributionStart,
       locDistributionEnd
     )
-  })),[locScopeIds,locSourceRiverItems,locBucketCount,locDistributionStart,locDistributionEnd]);
+  })),[locScopeIds,locScopeDistributionItems,locBucketCount,locDistributionStart,locDistributionEnd]);
   const locSuggestions=useMemo(()=>{
     const totals=new Map();
     for(const item of locSourceRiverItems){
@@ -404,6 +405,8 @@ export default function CultureV2(){
                         mode='overview'
                         windowStart={selectedWindowStart}
                         windowEnd={selectedWindowEnd}
+                        fixedMin={selectedWindowStart}
+                        fixedMax={selectedWindowEnd}
                         onBoundaryNavigate={direction=>{
                           if(selectedPeriodIndex<0)return;
                           const nextIndex=direction==='previous'?selectedPeriodIndex-1:selectedPeriodIndex+1;
