@@ -2,7 +2,6 @@
 
 import {getMediaSearchProviders,getSearchProviders} from './search-providers';
 import {DEFAULT_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
-import {selectManagedScopes} from './scope-table-mapping';
 import {normalizeDataScopeId,selectManagedScopes} from './scope-table-mapping';
 
 const SEARCH_PAGE_SIZE=DEFAULT_LIST_BATCH_SIZE;
