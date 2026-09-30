@@ -1,0 +1,30 @@
+name: RC8.1 sync latest main
+
+on:
+  push:
+    branches:
+      - 'RC8.1UI/UX'
+    paths:
+      - '.github/workflows/rc81-sync-main.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  sync-main:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout RC8.1UI/UX
+        uses: actions/checkout@v4
+        with:
+          ref: 'RC8.1UI/UX'
+          fetch-depth: 0
+
+      - name: Merge latest main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git merge --no-edit origin/main
+          git push origin HEAD:RC8.1UI/UX
