@@ -35,7 +35,7 @@ function decodeRuneText(value){
 }
 function useRuneGroups(){
   const [groups,setGroups]=useState([]),[error,setError]=useState('');
-  useEffect(()=>{let live=true;selectNeonRows('silver.runes_group',{columns:GROUP_COLUMNS,limit:9,offset:0}).then(({rows})=>{if(live){setGroups((rows||[]).map(groupView).sort((a,b)=>Number(a.id)-Number(b.id)));setError('');}}).catch(reason=>{if(live)setError(reason?.message||'Neon 符文群組讀取失敗');});return()=>{live=false};},[]);
+  useEffect(()=>{let live=true;selectNeonRows('silver.runes_group',{columns:GROUP_COLUMNS,limit:9,offset:0}).then(({rows})=>{if(live){setGroups((rows||[]).map(groupView).sort((a,b)=>Number(a.id)-Number(b.id)));setError('');}}).catch(reason=>{if(live)setError(reason?.message||'符文群組讀取失敗');});return()=>{live=false};},[]);
   return {groups,error};
 }
 function useRuneGroup(groupId){
@@ -46,7 +46,7 @@ function useRuneGroup(groupId){
 function useRuneRows(runeNumbers){
   const key=(runeNumbers||[]).join(',');
   const [runes,setRunes]=useState([]),[error,setError]=useState('');
-  useEffect(()=>{let live=true;const ids=[...new Set((runeNumbers||[]).map(Number).filter(Number.isInteger))];if(!ids.length){setRunes([]);setError('');return()=>{live=false};}selectNeonRows('silver.runes',{columns:RUNE_COLUMNS,filters:[{column:'rune_id',operator:'in',value:ids}],orders:[{column:'rune_id',ascending:true}],limit:ids.length,offset:0}).then(({rows})=>{if(live){setRunes(rows||[]);setError('');}}).catch(reason=>{if(live)setError(reason?.message||'Neon canonical 讀取失敗');});return()=>{live=false};},[key]);
+  useEffect(()=>{let live=true;const ids=[...new Set((runeNumbers||[]).map(Number).filter(Number.isInteger))];if(!ids.length){setRunes([]);setError('');return()=>{live=false};}selectNeonRows('silver.runes',{columns:RUNE_COLUMNS,filters:[{column:'rune_id',operator:'in',value:ids}],orders:[{column:'rune_id',ascending:true}],limit:ids.length,offset:0}).then(({rows})=>{if(live){setRunes(rows||[]);setError('');}}).catch(reason=>{if(live)setError(reason?.message||'符文資料讀取失敗');});return()=>{live=false};},[key]);
   return {runes,error};
 }
 function useRuneDetail(runeNumber){
@@ -61,7 +61,7 @@ function RuneDetails({card}){
     <div className="runes-rune-profile">
       <img className="loc-rune-card-image" src={runeImage(card)} alt={`${runeName(card)}之符文卡`}/>
       <div className="runes-rune-profile-copy">
-        <h2>{String(Number(card.rune_id)).padStart(2,'0')} · {runeName(card)}之符文 · {decodeRuneText(card.english_name)}</h2>
+        <h2>{String(Number(card.rune_id)).padStart(2,'0')} · {runeName(card)}之符文</h2>
         {card.rune_description?<p>{decodeRuneText(card.rune_description)}</p>:null}
         {card.archetype?<p>{decodeRuneText(card.archetype)}</p>:null}
       </div>
@@ -90,14 +90,14 @@ function RuneDetails({card}){
 export function RuneDirectoryRoot(){
   const {groups,error}=useRuneGroups();
   return <main className="loc-next-main"><section className="loc-view">
-    <header className="loc-hero"><p className="loc-eyebrow">Rune Atlas · 符文圖鑑</p><h1>月之符文圖鑑</h1><p className="loc-subtitle">總圖與群組入口。入口頁不直接展開 1–66 符文列表。</p></header>
+    <header className="loc-hero"><h1>月之符文圖鑑</h1><p className="loc-subtitle">從九組分類開始瀏覽，再進入各組查看符文名稱、月相、方向與基本說明。</p></header>
     <section className="loc-card"><figure className="runes-atlas-overview"><img src="/assets/lunarunes/reference/loc_runes_66_overview.jpg" alt="月之符文 66 符總圖" loading="eager"/><figcaption>月之符文 66 符總圖</figcaption></figure></section>
-    <section className="loc-card"><p className="loc-eyebrow">Rune Groups</p><h2>群組列表</h2>
+    <section className="loc-card"><h2>群組列表</h2>
       {error?<p className="loc-error" role="alert">符文群組讀取失敗：{error}</p>:null}
-      {!error&&!groups.length?<p className="loc-note">正在從 Neon 讀取符文群組…</p>:null}
+      {!error&&!groups.length?<p className="loc-note">正在讀取符文群組…</p>:null}
       <div className="runes-group-picker">{groups.map(group=><a key={group.id} className="runes-group-choice" href={listHref(`${group.id}/`)}>
         <img className="runes-group-choice-image" data-rune-group={group.id} src={groupImage(group.id)} alt={`${group.name}組概念圖`} width="144" height="96" loading="lazy"/>
-        <span className="runes-group-choice-copy"><strong>{group.id} · {group.name} ({group.english})</strong><small>{group.description}</small></span>
+        <span className="runes-group-choice-copy"><strong>{group.id} · {group.name}</strong><small>{group.description}</small></span>
       </a>)}</div>
     </section>
   </section></main>;
@@ -110,14 +110,14 @@ export function RuneGroupPage({groupId}){
   if(!group&&!error)return <main className="loc-next-main"><section className="loc-view"><p className="loc-note">正在從 Neon 讀取符文群組…</p></section></main>;
   if(!group)return <main className="loc-next-main"><section className="loc-view"><p className="loc-error" role="alert">{error||'找不到符文群組。'}</p></section></main>;
   return <main className="loc-next-main"><section className="loc-view">
-    <header className="loc-hero"><p className="loc-eyebrow">Rune Group · {group.id}</p><h1>{group.name}組 · {group.english}</h1><p className="loc-subtitle">{group.description}</p></header>
+    <header className="loc-hero"><p className="loc-eyebrow">第 {group.id} 組</p><h1>{group.name}組</h1><p className="loc-subtitle">{group.description}</p></header>
     <section className="loc-card">
       {error?<p className="loc-error" role="alert">符文讀取失敗：{error}</p>:null}
-      {!error&&!cards.length?<p className="loc-note">正在從 Neon 讀取符文…</p>:null}
+      {!error&&!cards.length?<p className="loc-note">正在讀取符文…</p>:null}
       <div className="runes-group-head"><img className="runes-group-choice-image" data-rune-group={group.id} src={groupImage(group.id)} alt={`${group.name}組概念圖`} width="160" height="120"/><div><h2>{group.name}組資訊</h2><p>{group.description}</p><p>符文構成：{cards.map(card=>runeName(card)).join('、')}</p></div></div>
     </section>
-    <section className="loc-card"><p className="loc-eyebrow">Runes</p><h2>符文</h2><div className="runes-library-grid">
-      {cards.map(card=>{const localId=localRuneId(group.id,card);return <a className="runes-library-card" key={`${group.id}-${localId}`} href={listHref(`${group.id}/${localId}/`)}><img className="runes-library-thumb" src={runeImage(card)} alt={`${runeName(card)}之符文卡`} width="72" height="72" loading="lazy"/><span className="runes-library-card-copy"><strong>{localId} · {runeName(card)}之符文 {card.english_name?`(${card.english_name})`:''}</strong><small>{card.rune_description||''}</small></span></a>;})}
+    <section className="loc-card"><h2>符文列表</h2><div className="runes-library-grid">
+      {cards.map(card=>{const localId=localRuneId(group.id,card);return <a className="runes-library-card" key={`${group.id}-${localId}`} href={listHref(`${group.id}/${localId}/`)}><img className="runes-library-thumb" src={runeImage(card)} alt={`${runeName(card)}之符文卡`} width="72" height="72" loading="lazy"/><span className="runes-library-card-copy"><strong>{localId} · {runeName(card)}之符文</strong><small>{card.rune_description||''}</small></span></a>;})}
     </div></section>
     <nav className="loc-card"><a href={listHref()}>回符文圖鑑</a></nav>
   </section></main>;
@@ -131,7 +131,7 @@ export function RuneDetailPage({groupId,runeId}){
   if((!group||!card)&&!error)return <main className="loc-next-main"><section className="loc-view"><p className="loc-note">正在從 Neon 讀取符文…</p></section></main>;
   if(!group||!card)return <main className="loc-next-main"><section className="loc-view"><p className="loc-error" role="alert">{error||'找不到對應符文。'}</p></section></main>;
   return <main className="loc-next-main"><section className="loc-view">
-    <header className="loc-hero"><p className="loc-eyebrow">Rune · {group.id}/{String(runeId).padStart(2,'0')}</p><h1>{runeName(card)}之符文</h1><p className="loc-subtitle">{group.name}組 · {card.english_name}</p></header>
+    <header className="loc-hero"><p className="loc-eyebrow">{group.name}組 · 第 {String(runeId).padStart(2,'0')} 枚</p><h1>{runeName(card)}之符文</h1><p className="loc-subtitle">{group.name}組</p></header>
     <RuneDetails card={card}/>
     <nav className="loc-card"><a href={listHref(`${group.id}/`)}>回{group.name}組</a> · <a href={listHref()}>回符文圖鑑</a></nav>
   </section></main>;
