@@ -1,6 +1,7 @@
+'use client';
+
 import {NEON_QUERY_BATCH_SIZE} from './query-contract.mjs';
 
-'use client';
 
 import {neonPublicClient} from './neon-client';
 
