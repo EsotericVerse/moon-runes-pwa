@@ -148,6 +148,17 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
         const selectedId=selectedItems[0];
         onSelectRef.current?.(rows.find(row=>row.id===selectedId)||null);
       });
+      instance.on('rangechanged',properties=>{
+        if(!onBoundaryNavigateRef.current||fixedMin||fixedMax||properties?.byUser!==true)return;
+        const startMs=Date.parse(windowStart||'');
+        const endMs=Date.parse(windowEnd||'');
+        const visibleStart=properties?.start instanceof Date?properties.start.getTime():Date.parse(properties?.start||'');
+        const visibleEnd=properties?.end instanceof Date?properties.end.getTime():Date.parse(properties?.end||'');
+        if(!Number.isFinite(startMs)||!Number.isFinite(endMs)||!Number.isFinite(visibleStart)||!Number.isFinite(visibleEnd)||endMs<=startMs)return;
+        const threshold=Math.max(86400000,(endMs-startMs)*0.04);
+        if(visibleStart<startMs-threshold)onBoundaryNavigateRef.current('previous');
+        else if(visibleEnd>endMs+threshold)onBoundaryNavigateRef.current('next');
+      });
       instance.on('click',properties=>{
         if(!onBoundaryNavigateRef.current||properties?.what==='item')return;
         const startMs=Date.parse(windowStart||'');
