@@ -1,3 +1,4 @@
+import {NEON_QUERY_BATCH_SIZE} from './query-contract.mjs';
 'use client';
 
 import {isReferenceOnlyResource,publicContentFilters} from './content-policy';
@@ -22,7 +23,7 @@ function sourceFilters(startDate='',endDate=''){
 async function selectAggregateRows(table,{columns,filters=[],orders=[]}={}){
   const output=[];
   let offset=0;
-  const pageSize=5000;
+  const pageSize=NEON_QUERY_BATCH_SIZE;
   while(true){
     const {rows}=await selectNeonRows(table,{columns,filters,orders,limit:pageSize,offset});
     if(!rows.length)break;
@@ -40,7 +41,7 @@ export async function selectSourceCatalog({scopeId,startDate='',endDate='',limit
     ...timeFilters('createtime',startDate,endDate),
     {column:'source_name',operator:'neq',value:''}
   ]);
-  const safeLimit=Math.max(1,Math.min(1000,Math.floor(Number(limit)||20)));
+  const safeLimit=Math.max(1,Math.min(NEON_QUERY_BATCH_SIZE,Math.floor(Number(limit)||20)));
   const {rows}=await selectNeonRows(table,{
     columns:'source_name,item_count:count()',
     filters,
@@ -113,7 +114,7 @@ export async function selectCategoryCounts(table,categoryColumn,{startDate='',en
     ...timeFilters('createtime',startDate,endDate),
     {column:categoryColumn,operator:'neq',value:''}
   ];
-  const safeLimit=Math.max(1,Math.min(1000,Math.floor(Number(limit)||20)));
+  const safeLimit=Math.max(1,Math.min(NEON_QUERY_BATCH_SIZE,Math.floor(Number(limit)||20)));
   const {rows}=await selectNeonRows(table,{
     columns:`${categoryColumn},item_count:count()`,
     filters:resolved,
