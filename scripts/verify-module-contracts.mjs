@@ -41,10 +41,14 @@ const runesClient=readFileSync(resolve(root,'app/lrunes/RunesClient.jsx'),'utf8'
 for(const token of ['data-draw-action="execute"','function executeDraw','function finishDraw'])if(!runesClient.includes(token))failures.push(`RunesClient: missing draw contract ${token}`);
 
 const cultureView=readFileSync(resolve(root,'app/modular-v2/features/CultureV2.jsx'),'utf8');
+const cultureClientContractSource=readFileSync(resolve(root,'app/loc/neon-culture-client.js'),'utf8');
 const cultureTimeline=readFileSync(resolve(root,'app/modular-v2/modules/culture-timeline/CultureTimelineV2.jsx'),'utf8');
 const governanceManagement=readFileSync(resolve(root,'app/loc/GovernanceManagement.jsx'),'utf8');
-for(const token of ["{isLoc?<>","mode='current'","<option value='works'>時期分割作品</option>","<option value='anchor'>定錨點</option>","culture-period-work-timeline"]){
-  if(!cultureView.includes(token))failures.push(`Culture Current contract missing: ${token}`);
+for(const token of ["{isLoc?<>","時期・事件・定錨點","作品分類河道","該時期總作品數","first_date","last_date"]){
+  if(!cultureView.includes(token)&&!cultureClientContractSource.includes(token))failures.push(`Culture Current contract missing: ${token}`);
+}
+for(const retired of ["<option value='works'>時期分割作品</option>","<option value='event'>事件分割作品</option>","<option value='anchor'>定錨點</option>","culture-period-work-timeline"]){
+  if(cultureView.includes(retired))failures.push(`Culture retired river-mode contract returned: ${retired}`);
 }
 if(/scope-v2-culture-period-2d|選擇完整時期|activeWorkPeriod|setActiveWorkPeriod/.test(cultureView)){
   failures.push('Culture: retired manual Period selector returned');
