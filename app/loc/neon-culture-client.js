@@ -7,7 +7,7 @@ import {resolveGalaxyExternalLinks,selectCategoryCounts,selectDailyCategoryCount
 import {selectNeonCount,selectNeonRows} from './neon-query';
 import {publicContentFilters} from './content-policy';
 import {mappedScopeTable,resolveScopeTables} from './scope-table-mapping';
-import {selectManagedScopes} from './scope-list';
+import {selectManagedScopes} from './scope-table-mapping';
 
 
 
