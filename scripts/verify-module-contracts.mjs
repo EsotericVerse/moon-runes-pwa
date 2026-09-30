@@ -109,6 +109,7 @@ if(existsSync(resolve(root,'app/loc/style-classifier.js')))failures.push('Retire
 if(!/searchNeonRows\(/.test(readFileSync(resolve(root,'app/modular-v2/features/SearchV2.jsx'),'utf8')))failures.push('Search view: shared text search contract missing');
 const cultureClientSource=readFileSync(resolve(root,'app/loc/neon-culture-client.js'),'utf8');
 if(!/selectNeonRows\(/.test(cultureClientSource)||!/filters/.test(cultureClientSource))failures.push('Culture: precise Neon filter query boundary missing');
+if(!/Number\.isFinite\(cursorGalaxyOffset\)/.test(cultureClientSource)||!/Number\.isFinite\(cursorMediaOffset\)/.test(cultureClientSource))failures.push('Culture: merged cursor offsets must reject NaN and fall back to the legacy offset');
 const mediaWorksSource=(cultureClientSource.split('export async function selectScopeMediaWorks')[1]||'');
 if(!/selectNeonRows\(/.test(mediaWorksSource)||/const rows=await selectScopeMediaRows/.test(mediaWorksSource))failures.push('Culture media works: detail list must page Neon directly instead of full-read then slice');
 
