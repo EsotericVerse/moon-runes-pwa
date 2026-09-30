@@ -539,8 +539,14 @@ export async function selectScopePeriodWorkIndex(scopeId,{startDate='',endDate=n
   const rawMedia=[...new Set((mediaTypes||[]).map(value=>String(value||'').trim()).filter(Boolean))];
   const pageSize=Math.max(1,Math.floor(Number(limit)||10));
   const legacyOffset=Math.max(0,Math.floor(Number(offset)||0));
-  const galaxyOffset=Math.max(0,Math.floor(Number(cursor?.galaxyOffset)??legacyOffset));
-  const mediaOffset=Math.max(0,Math.floor(Number(cursor?.mediaOffset)??legacyOffset));
+  const cursorGalaxyOffset=Number(cursor?.galaxyOffset);
+  const cursorMediaOffset=Number(cursor?.mediaOffset);
+  const galaxyOffset=Number.isFinite(cursorGalaxyOffset)
+    ?Math.max(0,Math.floor(cursorGalaxyOffset))
+    :legacyOffset;
+  const mediaOffset=Number.isFinite(cursorMediaOffset)
+    ?Math.max(0,Math.floor(cursorMediaOffset))
+    :legacyOffset;
 
   const galaxyFilters=publicContentFilters([
     ...dateFilters(startDate,endDate),
