@@ -309,3 +309,12 @@
 .scope-v2-current-rivers-canvas.is-clickable{cursor:pointer}
 .scope-v2-current-rivers-svg{display:block;width:100%;min-width:900px;height:520px}
 .scope-period-timeline{min-height:var(--scope-period-timeline-min-height,220px)}
+
+
+.scope-v2-loc-distribution-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:.8rem;margin:.85rem 0}
+.scope-v2-loc-distribution-card{display:grid;gap:.75rem;padding:.9rem;border:var(--scope-v2-border);border-radius:var(--scope-v2-radius);background:var(--loc-panel-2)}
+.scope-v2-loc-distribution-card>header{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap}
+.scope-v2-loc-distribution-card>header span{color:var(--scope-v2-muted)}
+.scope-v2-loc-distribution-buckets{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(28px,1fr);gap:.4rem;min-height:92px;align-items:end}
+.scope-v2-loc-distribution-bucket{display:flex;align-items:flex-end;justify-content:center;min-height:48px;height:calc(48px + 44px * var(--loc-density));padding:.35rem .2rem;border:1px solid var(--loc-accent-border);border-radius:10px;background:color-mix(in srgb,var(--loc-accent) calc(10% + 55% * var(--loc-density)),var(--loc-panel));overflow:hidden}
+.scope-v2-loc-distribution-bucket span{font-size:.75rem;line-height:1;color:var(--loc-text);white-space:nowrap}
