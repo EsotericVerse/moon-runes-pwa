@@ -1,3 +1,4 @@
+import {NEON_QUERY_BATCH_SIZE} from './query-contract.mjs';
 'use client';
 
 import {ScopeCultureResponseSchema} from './scope-feature-contracts';
@@ -33,7 +34,7 @@ async function selectCultureTimeRows(scopeId,tableName='',birthday=''){
     columns:TIME_COLUMNS,
     filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}],
     orders:[{column:'display_order',ascending:true},{column:'record_id',ascending:true}],
-    limit:5000,
+    limit:NEON_QUERY_BATCH_SIZE,
     offset:0
   });
   const scopeBirthday=/^\d{4}-\d{2}-\d{2}$/.test(String(birthday||'').slice(0,10))
@@ -422,9 +423,9 @@ export async function selectScopePeriodSourceSnapshot(scopeId,{startDate='',endD
   if(!scopeId)throw new Error('scopeId is required');
   const tables=await resolveScopeTables(dataScopeId(scopeId));
   const [catalog,daily,mediaCatalog,mediaDaily]=await Promise.all([
-    selectSourceCatalog({scopeId,startDate,endDate:endDate||'',limit:5000}),
+    selectSourceCatalog({scopeId,startDate,endDate:endDate||'',limit:NEON_QUERY_BATCH_SIZE}),
     selectSourceDaily({scopeId,startDate,endDate:endDate||''}),
-    selectCategoryCounts(tables.galaxyMedia,'media_type',{startDate,endDate,limit:5000}),
+    selectCategoryCounts(tables.galaxyMedia,'media_type',{startDate,endDate,limit:NEON_QUERY_BATCH_SIZE}),
     selectDailyCategoryCounts(tables.galaxyMedia,'media_type',{startDate,endDate})
   ]);
 
@@ -704,7 +705,7 @@ export async function selectScopeMediaSnapshot(scopeId,{startDate,endDate}={}){
   const table=(await resolveScopeTables(dataScopeId(scopeId))).galaxyMedia;
   const filters=dateFilters(startDate,endDate);
   const [groupRows,daily,totalCount]=await Promise.all([
-    selectCategoryCounts(table,'media_type',{startDate,endDate,limit:5000}),
+    selectCategoryCounts(table,'media_type',{startDate,endDate,limit:NEON_QUERY_BATCH_SIZE}),
     selectDailyCategoryCounts(table,'media_type',{startDate,endDate}),
     selectNeonCount(table,{filters})
   ]);
