@@ -89,15 +89,6 @@ export default function CultureV2(){
     const preferred=periodKey(openPeriod)||periodKey(primaryPeriods.at(-1))||'all';
     setSelectedPeriodKey(preferred);
   },[scopeId,isLoc,openPeriod?.period,openPeriod?.start_date,primaryPeriods.length]);
-  useEffect(()=>{
-    if(isLoc||!requestedWindowStart||!primaryPeriods.length)return;
-    const matched=primaryPeriods.find(item=>{
-      const start=String(item?.start_date||'').slice(0,10);
-      const end=String(item?.end_date||'9999-12-31').slice(0,10);
-      return (!start||requestedWindowStart>=start)&&requestedWindowStart<=end;
-    });
-    if(matched)setSelectedPeriodKey(periodKey(matched));
-  },[isLoc,requestedWindowStart,primaryPeriods]);
   const selectedWorkPeriod=selectedPeriodKey==='all'
     ?allTimePeriod
     :(primaryPeriods.find(item=>periodKey(item)===selectedPeriodKey)||openPeriod||allTimePeriod);
@@ -108,6 +99,15 @@ export default function CultureV2(){
   const requestedWindowEnd=String(navigation.to||'').slice(0,10);
   const activeWindowStart=requestedWindowStart||selectedWindowStart;
   const activeWindowEnd=requestedWindowEnd||selectedWindowEnd;
+  useEffect(()=>{
+    if(isLoc||!requestedWindowStart||!primaryPeriods.length)return;
+    const matched=primaryPeriods.find(item=>{
+      const start=String(item?.start_date||'').slice(0,10);
+      const end=String(item?.end_date||'9999-12-31').slice(0,10);
+      return (!start||requestedWindowStart>=start)&&requestedWindowStart<=end;
+    });
+    if(matched)setSelectedPeriodKey(periodKey(matched));
+  },[isLoc,requestedWindowStart,primaryPeriods]);
 
   const periodWorkTimelineQuery=useQuery({
     queryKey:['culture-period-work-timeline',scopeId,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
