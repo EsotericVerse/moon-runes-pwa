@@ -520,7 +520,7 @@ export default function CultureV2(){
                   ?<p className='scope-v2-status'>目前沒有此時期的作品分類資料。</p>:null}
                 {classificationRiverItems.length?<CultureTimelineV2
                   items={classificationRiverItems}
-                  labelOf={()=>''}
+                  labelOf={item=>item?.entry_type==='virtual_anchor'?'◇':''}
                   focus={{}}
                   mode='source'
                   windowStart={selectedWindowStart}
