@@ -81,15 +81,13 @@ function rankingRow(type,term,count,source,period){
   };
 }
 
-const SOURCE_BUCKET_ORDER=Object.freeze(['Facebook','Threads','IG','Twitter(X)','YouTube','Others']);
+const SOURCE_BUCKET_ORDER=Object.freeze(['Facebook','Threads','IG','Others']);
 
 function sourceBucket(value=''){
   const source=String(value||'').trim().toLowerCase();
   if(source.includes('facebook')||source==='fb')return 'Facebook';
   if(source.includes('threads'))return 'Threads';
   if(source.includes('instagram')||source.includes('reels')||source==='ig')return 'IG';
-  if(source==='x'||source.includes('twitter'))return 'Twitter(X)';
-  if(source.includes('youtube')||source.includes('youtu.be'))return 'YouTube';
   return 'Others';
 }
 
