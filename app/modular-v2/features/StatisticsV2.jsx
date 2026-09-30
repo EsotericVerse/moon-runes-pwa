@@ -64,19 +64,23 @@ function trendBucket(value,unit){
   const month=date.getUTCMonth();
   if(unit==='quarter'){
     const quarter=Math.floor(month/3)+1;
-    return {key:year+'-Q'+quarter,label:year+' Q'+quarter};
+    const start=new Date(Date.UTC(year,(quarter-1)*3,1));
+    const end=new Date(Date.UTC(year,quarter*3,0));
+    return {key:year+'-Q'+quarter,label:year+' Q'+quarter,start:start.toISOString().slice(0,10),end:end.toISOString().slice(0,10)};
   }
   if(unit==='month'){
     const monthText=String(month+1).padStart(2,'0');
-    return {key:year+'-'+monthText,label:year+'/'+monthText};
+    const end=new Date(Date.UTC(year,month+1,0)).toISOString().slice(0,10);
+    return {key:year+'-'+monthText,label:year+'/'+monthText,start:year+'-'+monthText+'-01',end};
   }
   if(unit==='week'){
     const day=date.getUTCDay();
     date.setUTCDate(date.getUTCDate()+(day===0?-6:1-day));
-    const week=date.toISOString().slice(0,10);
-    return {key:week,label:week.slice(5).replace('-','/')};
+    const start=date.toISOString().slice(0,10);
+    const endDate=new Date(date);endDate.setUTCDate(endDate.getUTCDate()+6);
+    return {key:start,label:start.slice(5).replace('-','/'),start,end:endDate.toISOString().slice(0,10)};
   }
-  return {key,label:key.slice(5).replace('-','/')};
+  return {key,label:key.slice(5).replace('-','/'),start:key,end:key};
 }
 function buildSourceTrend(rows=[],standard='10y'){
   const config=TIME_STANDARDS.find(item=>item.value===standard)||TIME_STANDARDS[0];
@@ -92,7 +96,7 @@ function buildSourceTrend(rows=[],standard='10y'){
     if(!day||day<startDate||day>endDate)continue;
     const bucket=trendBucket(day,config.bucket);
     if(!bucket)continue;
-    const item=buckets.get(bucket.key)||{period:bucket.label,_sort:bucket.key,total:0};
+    const item=buckets.get(bucket.key)||{period:bucket.label,_sort:bucket.key,start_date:bucket.start,end_date:bucket.end,total:0};
     const source=SOURCE_TREND_ORDER.includes(row.source)?row.source:'Others';
     const count=Number(row.item_count)||0;
     item[source]=(Number(item[source])||0)+count;
@@ -100,13 +104,46 @@ function buildSourceTrend(rows=[],standard='10y'){
     buckets.set(bucket.key,item);
   }
   return [...buckets.values()].sort((a,b)=>a._sort.localeCompare(b._sort)).map(item=>{
-    const output={period:item.period,total:item.total};
+    const output={period:item.period,start_date:item.start_date,end_date:item.end_date,total:item.total};
     for(const source of SOURCE_TREND_ORDER){
       output[source]=item.total>0?Number((((Number(item[source])||0)/item.total)*100).toFixed(2)):0;
     }
     return output;
   });
 }
+function buildTrendSuggestions(rows=[],standard='10y'){
+  const data=buildSourceTrend(rows,standard);
+  const suggestions=[];
+  for(let index=1;index<data.length;index+=1){
+    const previous=data[index-1];
+    const current=data[index];
+    let source='';
+    let delta=0;
+    for(const candidate of SOURCE_TREND_ORDER){
+      const change=(Number(current[candidate])||0)-(Number(previous[candidate])||0);
+      if(Math.abs(change)>Math.abs(delta)){
+        source=candidate;
+        delta=change;
+      }
+    }
+    const totalDelta=(Number(current.total)||0)-(Number(previous.total)||0);
+    if(!source&&!totalDelta)continue;
+    suggestions.push({
+      key:(previous.start_date||previous.period)+'|'+(current.end_date||current.period),
+      from:previous.start_date||'',
+      to:current.end_date||'',
+      source,
+      delta,
+      totalDelta,
+      previousTotal:Number(previous.total)||0,
+      currentTotal:Number(current.total)||0
+    });
+  }
+  return suggestions
+    .sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta)||Math.abs(b.totalDelta)-Math.abs(a.totalDelta)||String(b.to).localeCompare(String(a.to)))
+    .slice(0,3);
+}
+
 function displayTerm(row){
   return String(row?.term||'');
 }
@@ -233,6 +270,7 @@ function StatisticTypeSelect({scopeId,navigation,types}){
 }
 
 function StatisticsPanel({scopeId,navigation,types}){
+  const router=useRouter();
   const requested=String(navigation.rankingType||'');
   const rankingType=types.includes(requested)?requested:(types[0]||'');
   const [chartType,setChartType]=useState('line');
@@ -246,6 +284,7 @@ function StatisticsPanel({scopeId,navigation,types}){
     staleTime:5*60_000
   });
   const allRows=query.data||[];
+  const trendSuggestions=useMemo(()=>buildTrendSuggestions(trendQuery.data||[],timeStandard),[trendQuery.data,timeStandard]);
   const [visibleRows,setVisibleRows]=useState([]);
   const canDrillDown=scopeId!=='loc'&&rankingType==='source';
   const detailQuery=useQuery({
@@ -279,7 +318,22 @@ function StatisticsPanel({scopeId,navigation,types}){
         {!detailQuery.isPending&&!detailQuery.error?<RankingList rows={detailQuery.data||[]} resetKey={scopeId+"|detail|"+detailBucket+"|"+String(navigation.period||"all")}/>:null}
       </section>:null}
       {chartType==='line'
-        ?<SourceTrendChart rows={trendQuery.data||[]} standard={timeStandard} height={420}/>
+        ?<>
+          <SourceTrendChart rows={trendQuery.data||[]} standard={timeStandard} height={420}/>
+          {trendSuggestions.length?<section className="scope-v2-stat-suggestions" aria-label="趨勢建議">
+            <header><p className="loc-eyebrow">Trend Suggestion</p><h3>建議回看區間</h3></header>
+            <div>
+              {trendSuggestions.map(item=><button
+                type="button"
+                key={item.key}
+                onClick={()=>router.push(featureNavigationHref(scopeId,'culture',{from:item.from,to:item.to}))}
+              >
+                <strong>{item.from} ～ {item.to}</strong>
+                <span>{item.source?item.source+' 比例'+(item.delta>=0?'上升 ':'下降 ')+Math.abs(item.delta).toFixed(1)+' 個百分點':'作品量變化'}；作品量 {item.previousTotal.toLocaleString()} → {item.currentTotal.toLocaleString()}</span>
+              </button>)}
+            </div>
+          </section>:null}
+        </>
         :<RankingChart type={chartType} rows={chartData} height={380}/>} 
     </>:null}
 
