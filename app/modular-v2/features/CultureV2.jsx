@@ -50,6 +50,15 @@ function periodRange(rows=[],scope=''){
 function periodKey(item){
   return String(item?.period||item?.era_id||item?.id||'').trim();
 }
+function nextRiverDay(value){
+  const key=String(value||'').slice(0,10);
+  if(!key)return '';
+  const date=new Date(key+'T00:00:00Z');
+  if(Number.isNaN(date.getTime()))return '';
+  date.setUTCDate(date.getUTCDate()+1);
+  return date.toISOString().slice(0,10);
+}
+
 export default function CultureV2(){
   const {scopeId}=useScopeRuntimeV2();
   const account=useNeonAccount();
@@ -219,6 +228,7 @@ export default function CultureV2(){
   },[locSourceGroups,locCombinedSourceTotal]);
   const locCombinedSourceRiverItems=useMemo(()=>locSourceRiverItems.map(item=>({
     ...item,
+    end_date:nextRiverDay(item?.start_date),
     group_label:locSourceGroupLabel.get(String(item?.category||item?.group_label||''))||String(item?.group_label||'')
   })),[locSourceRiverItems,locSourceGroupLabel]);
   const locScopeDistributionItems=useMemo(()=>query.data?.scopeRanges||[],[query.data]);
@@ -259,6 +269,7 @@ export default function CultureV2(){
         category:scope,
         display_label:'',
         title:day+' · '+scope+' · '+count+' 項',
+        end_date:nextRiverDay(day),
         density_ratio:count/Math.max(1,perScopeMax.get(scope)||1),
         global_density_ratio:count/Math.max(1,globalMax)
       };
