@@ -363,7 +363,7 @@ export default function CultureV2(){
                   {locScopeDistributions.map(group=>{
                     const total=group.buckets.reduce((sum,item)=>sum+item.count,0);
                     return <article className='scope-v2-loc-distribution-card' key={group.scope}>
-                      <header><strong>{group.scope} 文字</strong><span>{total.toLocaleString()} 項</span></header>
+                      <header><strong>{group.scope}：{total.toLocaleString()} 筆</strong></header>
                       <div className='scope-v2-loc-distribution-buckets'>
                         {group.buckets.map(bucket=><div
                           className='scope-v2-loc-distribution-bucket'
