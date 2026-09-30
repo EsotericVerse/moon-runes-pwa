@@ -1,5 +1,6 @@
 import './globals.css';
 import GlobalNav from './GlobalNav';
+import Rc81Experience from './Rc81Experience';
 import ScopeFooterV2 from './modular-v2/ScopeFooterV2';
 import QueryProvider from './QueryProvider';
 
@@ -13,6 +14,7 @@ export default function RootLayout({ children }) {
     <html lang="zh-Hant" suppressHydrationWarning>
       <body className="next-migration-shell">
         <QueryProvider>
+          <Rc81Experience />
           <GlobalNav />
           {children}
           <ScopeFooterV2 />
