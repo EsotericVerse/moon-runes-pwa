@@ -106,7 +106,9 @@ function buildRiverGapSuggestions(buckets=[],timelineItems=[]){
       if(anchorDates.some(date=>date>=from&&date<=to))continue;
       suggestions.push({
         key:'river-gap:'+source+':'+from+':'+to,
-        source,from,to,blankDays,cadence,
+        source,from,to,
+        viewFrom:dates[index-1],viewTo:dates[index],
+        blankDays,cadence,
         score:blankDays/Math.max(1,cadence)
       });
     }
@@ -491,7 +493,7 @@ export default function CultureV2(){
                   <header><p className='loc-eyebrow'>River Suggestion</p><h4>建議檢視區間</h4></header>
                   <div>
                     {riverGapSuggestions.map(item=><button type='button' key={item.key} onClick={()=>{
-                      setRiverFocusRange({from:item.from,to:item.to});
+                      setRiverFocusRange({from:item.viewFrom,to:item.viewTo});
                       const categoryKey='source:'+item.source;
                       if(categoryGroups.some(group=>group.category_key===categoryKey))setSelectedCategory(categoryKey);
                     }}>
