@@ -1,6 +1,7 @@
 'use client';
 
 import {selectNeonRows} from './neon-query';
+import {NEON_QUERY_BATCH_SIZE} from './query-contract.mjs';
 import {neonAuthClient} from './neon-client';
 
 const SCOPE_ID_PATTERN=/^[a-z][a-z0-9]*$/;
@@ -31,7 +32,7 @@ export async function selectManagedScopes(){
     columns:'id,role,galaxy,time,birthday',
     filters:[{column:'role',operator:'in',value:['admin','scope']}],
     orders:[{column:'id',ascending:true}],
-    limit:1000,
+    limit:NEON_QUERY_BATCH_SIZE,
     offset:0
   });
   const scopes=new Map();
@@ -72,7 +73,7 @@ export async function selectScopeTableMapping(scopeId,{email=''}={}){
     ({rows}=await selectNeonRows('silver.manage',{
       columns:'id,galaxy,time',
       filters:[{column:'id',operator:'eq',value:id}],
-      limit:1000
+      limit:NEON_QUERY_BATCH_SIZE
     }));
   }
   if(!rows.length)return {...DEFAULT_MAPPING};
