@@ -50,29 +50,6 @@ function periodRange(rows=[],scope=''){
 function periodKey(item){
   return String(item?.period||item?.era_id||item?.id||'').trim();
 }
-function locDistributionBuckets(items=[],bucketCount=3,startDate='',endDate=''){
-  const count=Math.max(1,Math.min(12,Number(bucketCount)||3));
-  const startMs=Date.parse(String(startDate||'').slice(0,10)+'T00:00:00Z');
-  const endMs=Date.parse(String(endDate||'').slice(0,10)+'T23:59:59Z');
-  if(!Number.isFinite(startMs)||!Number.isFinite(endMs)||endMs<=startMs)return [];
-  const span=(endMs-startMs)/count;
-  const buckets=Array.from({length:count},(_,index)=>({
-    index,
-    start:new Date(startMs+span*index).toISOString().slice(0,10),
-    end:new Date(index===count-1?endMs:startMs+span*(index+1)-1).toISOString().slice(0,10),
-    count:0
-  }));
-  for(const item of items){
-    if(item?.entry_type==='intersection_start')continue;
-    const ms=Date.parse(String(item?.start_date||'').slice(0,10)+'T00:00:00Z');
-    if(!Number.isFinite(ms)||ms<startMs||ms>endMs)continue;
-    const index=Math.min(count-1,Math.max(0,Math.floor((ms-startMs)/Math.max(1,span))));
-    buckets[index].count+=Number(item?.item_count)||0;
-  }
-  const maximum=Math.max(1,...buckets.map(item=>item.count));
-  return buckets.map(item=>({...item,ratio:item.count/maximum}));
-}
-
 export default function CultureV2(){
   const {scopeId}=useScopeRuntimeV2();
   const account=useNeonAccount();
@@ -87,7 +64,6 @@ export default function CultureV2(){
   const [timelineMode,setTimelineMode]=useState('works');
   const [selectedPeriodKey,setSelectedPeriodKey]=useState('');
   const [selectedCategory,setSelectedCategory]=useState('');
-  const [locBucketCount,setLocBucketCount]=useState(3);
   const workScrollRef=useRef(null);
   const [fullTextKey,setFullTextKey]=useState('');
   const [fullText,setFullText]=useState('');
@@ -113,12 +89,25 @@ export default function CultureV2(){
     const preferred=periodKey(openPeriod)||periodKey(primaryPeriods.at(-1))||'all';
     setSelectedPeriodKey(preferred);
   },[scopeId,isLoc,openPeriod?.period,openPeriod?.start_date,primaryPeriods.length]);
+  useEffect(()=>{
+    if(isLoc||!requestedWindowStart||!primaryPeriods.length)return;
+    const matched=primaryPeriods.find(item=>{
+      const start=String(item?.start_date||'').slice(0,10);
+      const end=String(item?.end_date||'9999-12-31').slice(0,10);
+      return (!start||requestedWindowStart>=start)&&requestedWindowStart<=end;
+    });
+    if(matched)setSelectedPeriodKey(periodKey(matched));
+  },[isLoc,requestedWindowStart,primaryPeriods]);
   const selectedWorkPeriod=selectedPeriodKey==='all'
     ?allTimePeriod
     :(primaryPeriods.find(item=>periodKey(item)===selectedPeriodKey)||openPeriod||allTimePeriod);
   const selectedPeriodIndex=primaryPeriods.findIndex(item=>periodKey(item)===periodKey(selectedWorkPeriod));
   const selectedWindowStart=String(selectedWorkPeriod?.start_date||'');
   const selectedWindowEnd=String(selectedWorkPeriod?.end_date||new Date().toISOString().slice(0,10));
+  const requestedWindowStart=String(navigation.from||'').slice(0,10);
+  const requestedWindowEnd=String(navigation.to||'').slice(0,10);
+  const activeWindowStart=requestedWindowStart||selectedWindowStart;
+  const activeWindowEnd=requestedWindowEnd||selectedWindowEnd;
 
   const periodWorkTimelineQuery=useQuery({
     queryKey:['culture-period-work-timeline',scopeId,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
@@ -219,18 +208,47 @@ export default function CultureV2(){
   const locSourceRiverItems=useMemo(()=>query.data?.sourceRiverItems||[],[query.data]);
   const locSourceGroups=useMemo(()=>query.data?.sourceGroups||[],[query.data]);
   const locScopeDistributionItems=useMemo(()=>query.data?.scopeRanges||[],[query.data]);
-  const locScopeIds=useMemo(()=>[...new Set(locScopeDistributionItems.map(item=>String(item?.scope_id||'')).filter(Boolean))].sort(),[locScopeDistributionItems]);
   const locDistributionStart=String(query.data?.intersectionStart||'');
   const locDistributionEnd=String(query.data?.intersectionEnd||new Date().toISOString().slice(0,10));
-  const locScopeDistributions=useMemo(()=>locScopeIds.map(scope=>({
-    scope,
-    buckets:locDistributionBuckets(
-      locScopeDistributionItems.filter(item=>String(item?.scope_id||'')===scope),
-      locBucketCount,
-      locDistributionStart,
-      locDistributionEnd
-    )
-  })),[locScopeIds,locScopeDistributionItems,locBucketCount,locDistributionStart,locDistributionEnd]);
+  const locScopeTotals=useMemo(()=>{
+    const totals=new Map();
+    for(const item of locScopeDistributionItems){
+      const scope=String(item?.scope_id||'').trim();
+      if(!scope)continue;
+      totals.set(scope,(totals.get(scope)||0)+(Number(item?.item_count)||0));
+    }
+    return [...totals.entries()]
+      .map(([scope,count])=>({scope,count}))
+      .sort((a,b)=>a.scope.localeCompare(b.scope));
+  },[locScopeDistributionItems]);
+  const locScopeRiverItems=useMemo(()=>{
+    const perScopeMax=new Map();
+    let globalMax=0;
+    for(const item of locScopeDistributionItems){
+      const scope=String(item?.scope_id||'').trim();
+      const count=Number(item?.item_count)||0;
+      if(!scope)continue;
+      perScopeMax.set(scope,Math.max(perScopeMax.get(scope)||0,count));
+      globalMax=Math.max(globalMax,count);
+    }
+    return locScopeDistributionItems.map((item,index)=>{
+      const scope=String(item?.scope_id||'').trim();
+      const day=String(item?.start_date||'').slice(0,10);
+      const count=Number(item?.item_count)||0;
+      return {
+        ...item,
+        id:item?.id||('loc-scope:'+scope+':'+day+':'+index),
+        entry_id:item?.entry_id||('loc-scope:'+scope+':'+day+':'+index),
+        entry_type:'scope_density',
+        group_label:scope,
+        category:scope,
+        display_label:'',
+        title:day+' · '+scope+' · '+count+' 項',
+        density_ratio:count/Math.max(1,perScopeMax.get(scope)||1),
+        global_density_ratio:count/Math.max(1,globalMax)
+      };
+    }).filter(item=>item.group_label&&item.start_date);
+  },[locScopeDistributionItems]);
   const locSuggestions=useMemo(()=>{
     const totals=new Map();
     for(const item of locSourceRiverItems){
@@ -345,37 +363,21 @@ export default function CultureV2(){
             {isLoc?<>
 
               <section className='scope-v2-card scope-v2-culture-classification-river'>
-                <div className='scope-v2-stat-controls'>
-                  <div>
-                    <p className='loc-eyebrow'>Scope Distribution</p>
-                    <h3>作品時間分佈</h3>
-                  </div>
-                  <label>
-                    <span>時間焦點</span>
-                    <select className='scope-v2-select' value={locBucketCount} onChange={event=>setLocBucketCount(Number(event.target.value)||3)}>
-                      <option value='3'>粗略</option>
-                      <option value='6'>中等</option>
-                      <option value='12'>較細</option>
-                    </select>
-                  </label>
-                </div>
-                <p className='scope-v2-status'>{locDistributionStart} ～ {locDistributionEnd}；左右邊界固定，只調整區段密度，不提供拖曳。</p>
-                <div className='scope-v2-loc-distribution-grid'>
-                  {locScopeDistributions.map(group=>{
-                    const total=group.buckets.reduce((sum,item)=>sum+item.count,0);
-                    return <article className='scope-v2-loc-distribution-card' key={group.scope}>
-                      <header><strong>{group.scope}：{total.toLocaleString()} 筆</strong></header>
-                      <div className='scope-v2-loc-distribution-buckets'>
-                        {group.buckets.map(bucket=><div
-                          className='scope-v2-loc-distribution-bucket'
-                          key={group.scope+'|'+bucket.index}
-                          title={bucket.start+' ～ '+bucket.end+' · '+bucket.count+' 項'}
-                          style={{'--loc-density':Math.max(.08,bucket.ratio)}}
-                        ><span>{bucket.count.toLocaleString()}</span></div>)}
-                      </div>
-                    </article>;
-                  })}
-                </div>
+                <p className='loc-eyebrow'>Scope Intersection</p>
+                <h3>作品時間分佈</h3>
+                {locScopeTotals.length?<div className='scope-v2-culture-scope-totals' aria-label='交集作品筆數'>
+                  {locScopeTotals.map(item=><span key={item.scope}><strong>{item.scope}</strong>：{item.count.toLocaleString()} 筆</span>)}
+                </div>:null}
+                {locScopeRiverItems.length?<CultureTimelineV2
+                  items={locScopeRiverItems}
+                  labelOf={()=>''}
+                  focus={{}}
+                  mode='source'
+                  windowStart={requestedWindowStart||locDistributionStart}
+                  windowEnd={requestedWindowEnd||locDistributionEnd}
+                  fixedMin={locDistributionStart}
+                  fixedMax={locDistributionEnd}
+                />:null}
                 {locSourceGroups.length?<div className='scope-v2-culture-source-groups' aria-label='作品來源分類'>
                   {locSourceGroups.map(group=><article className='scope-v2-inline-card' key={group.category_key}>
                     <strong>{group.display_label}</strong>
@@ -383,6 +385,7 @@ export default function CultureV2(){
                   </article>)}
                 </div>:null}
               </section>
+
 
             </>:<>
               {!isLoc?<div className='scope-v2-stat-controls'>
@@ -427,10 +430,8 @@ export default function CultureV2(){
                         labelOf={item=>item.display_label||item.evidence_group||item.group_label}
                         focus={{}}
                         mode='overview'
-                        windowStart={selectedWindowStart}
-                        windowEnd={selectedWindowEnd}
-                        fixedMin={selectedWindowStart}
-                        fixedMax={selectedWindowEnd}
+                        windowStart={activeWindowStart}
+                        windowEnd={activeWindowEnd}
                         onBoundaryNavigate={direction=>{
                           if(selectedPeriodIndex<0)return;
                           const nextIndex=direction==='previous'?selectedPeriodIndex-1:selectedPeriodIndex+1;
