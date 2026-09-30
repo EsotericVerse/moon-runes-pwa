@@ -4,7 +4,7 @@ import {ScopeCultureResponseSchema} from './scope-feature-contracts';
 import {decodeCultureText,formatCultureDateTime} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
 import {workDisplayText} from '../modular-v2/work-display-model.v2';
 import {resolveGalaxyExternalLinks,selectCategoryCounts,selectDailyCategoryCounts,selectDailyCounts,selectSourceCatalog,selectSourceDaily} from './aggregate-query';
-import {selectAllNeonRows,selectNeonCount,selectNeonRows} from './neon-query';
+import {selectNeonCount,selectNeonRows} from './neon-query';
 import {publicContentFilters} from './content-policy';
 import {mappedScopeTable,resolveScopeTables} from './scope-table-mapping';
 import {selectManagedScopes} from './scope-list';
@@ -519,6 +519,18 @@ function mediaMetadataDescription(row){
   return fields.map(([label,value])=>{const text=decodeCultureText(value||'').trim();return text?`${label}：${text}`:'';}).filter(Boolean).join(' · ')||'沒有可讀的 metadata 文字';
 }
 
+async function selectLightweightIndexRows(table,{columns,filters=[],orders=[]}={}){
+  const totalCount=await selectNeonCount(table,{filters});
+  if(!totalCount)return [];
+  return (await selectNeonRows(table,{
+    columns,
+    filters,
+    orders,
+    limit:totalCount,
+    maxLimit:totalCount
+  })).rows;
+}
+
 export async function selectScopePeriodWorkIndex(scopeId,{startDate='',endDate=null,sourceName='',sourceNames=[],mediaTypes=[]}={}){
   if(!scopeId)throw new Error('scopeId is required');
   const tables=await resolveScopeTables(dataScopeId(scopeId));
@@ -537,27 +549,27 @@ export async function selectScopePeriodWorkIndex(scopeId,{startDate='',endDate=n
   const includeGalaxy=!sourceName||rawSources.length>0;
   const includeMedia=!sourceName||rawMedia.length>0;
   const [galaxyResult,mediaResult]=await Promise.all([
-    includeGalaxy?selectAllNeonRows(tables.galaxy,{
+    includeGalaxy?selectLightweightIndexRows(tables.galaxy,{
       columns:'uid,createtime',
       filters:galaxyFilters,
       orders:[{column:'createtime',ascending:false},{column:'uid',ascending:true}]
-    }):Promise.resolve({rows:[],count:0}),
-    includeMedia?selectAllNeonRows(tables.galaxyMedia,{
+    }):Promise.resolve([]),
+    includeMedia?selectLightweightIndexRows(tables.galaxyMedia,{
       columns:'media_id,createtime',
       filters:mediaFilters,
       orders:[{column:'createtime',ascending:false},{column:'media_id',ascending:true}]
-    }):Promise.resolve({rows:[],count:0})
+    }):Promise.resolve([])
   ]);
 
   const rows=[
-    ...(galaxyResult.rows||[]).map(row=>({
+    ...(galaxyResult||[]).map(row=>({
       key:'galaxy:'+row.uid,
       entry_type:'work',
       entry_id:String(row.uid||''),
       uid:String(row.uid||''),
       createtime:row.createtime
     })),
-    ...(mediaResult.rows||[]).map(row=>({
+    ...(mediaResult||[]).map(row=>({
       key:'media:'+row.media_id,
       entry_type:'media_metadata',
       entry_id:String(row.media_id||''),
