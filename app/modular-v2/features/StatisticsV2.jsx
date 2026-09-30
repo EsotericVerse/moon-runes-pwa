@@ -8,7 +8,7 @@ import {
   Bar,BarChart,CartesianGrid,Cell,Legend,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectScopeRankingRows,selectScopeRankingTypes,selectScopeSourceBucketDetails,selectScopeSourceTrendRows} from '../../loc/neon-ranking-client';
+import {selectScopeAnchorDates,selectScopeRankingRows,selectScopeRankingTypes,selectScopeSourceBucketDetails,selectScopeSourceTrendRows} from '../../loc/neon-ranking-client';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
@@ -91,6 +91,14 @@ function buildSourceTrend(rows=[],standard='10y'){
     ?subtractDays(endDate,config.days)
     :subtractMonths(endDate,config.months);
   const buckets=new Map();
+
+  for(let cursor=new Date(startDate+'T00:00:00Z'),end=new Date(endDate+'T00:00:00Z');cursor<=end;cursor.setUTCDate(cursor.getUTCDate()+1)){
+    const day=cursor.toISOString().slice(0,10);
+    const bucket=trendBucket(day,config.bucket);
+    if(!bucket||buckets.has(bucket.key))continue;
+    buckets.set(bucket.key,{period:bucket.label,_sort:bucket.key,start_date:bucket.start,end_date:bucket.end,total:0});
+  }
+
   for(const row of rows){
     const day=dateKey(row.day);
     if(!day||day<startDate||day>endDate)continue;
@@ -111,37 +119,106 @@ function buildSourceTrend(rows=[],standard='10y'){
     return output;
   });
 }
-function buildTrendSuggestions(rows=[],standard='10y'){
+const MAJOR_SOURCE_SHARE_DELTA=25;
+const MAJOR_VOLUME_CHANGE_RATIO=.60;
+const MAJOR_VOLUME_MIN=10;
+
+function rangeHasAnchor(anchorDates=[],from='',to=''){
+  if(!from||!to)return false;
+  return (anchorDates||[]).some(anchor=>{
+    const date=dateKey(anchor?.date||anchor);
+    return date&&date>=from&&date<=to;
+  });
+}
+function rangesOverlap(a,b){
+  return Boolean(a?.from&&a?.to&&b?.from&&b?.to&&a.from<=b.to&&b.from<=a.to);
+}
+function buildTrendSuggestions(rows=[],standard='10y',anchorDates=[]){
   const data=buildSourceTrend(rows,standard);
-  const suggestions=[];
+  if(data.length<2)return [];
+  const config=TIME_STANDARDS.find(item=>item.value===standard)||TIME_STANDARDS[0];
+  const candidates=[];
+
   for(let index=1;index<data.length;index+=1){
     const previous=data[index-1];
     const current=data[index];
-    let source='';
-    let delta=0;
-    for(const candidate of SOURCE_TREND_ORDER){
-      const change=(Number(current[candidate])||0)-(Number(previous[candidate])||0);
-      if(Math.abs(change)>Math.abs(delta)){
-        source=candidate;
-        delta=change;
+    const previousTotal=Number(previous.total)||0;
+    const currentTotal=Number(current.total)||0;
+
+    if(previousTotal>0&&currentTotal===0){
+      let endIndex=index;
+      while(endIndex+1<data.length&&(Number(data[endIndex+1].total)||0)===0)endIndex+=1;
+      const leadBuckets=config.bucket==='day'?6:1;
+      const leadIndex=Math.max(0,index-leadBuckets);
+      const zeroLength=endIndex-index+1;
+      candidates.push({
+        key:'zero|'+data[leadIndex].start_date+'|'+data[endIndex].end_date,
+        kind:'zero',
+        from:data[leadIndex].start_date,
+        to:data[endIndex].end_date,
+        previousTotal,
+        currentTotal:0,
+        reason:zeroLength>1
+          ?'作品量降至 0，並連續 '+zeroLength+' 個時間區段沒有作品'
+          :'作品量降至 0',
+        score:10000+zeroLength*100+previousTotal
+      });
+      index=endIndex;
+      continue;
+    }
+
+    if(previousTotal>0&&currentTotal>0&&Math.max(previousTotal,currentTotal)>=MAJOR_VOLUME_MIN){
+      const ratio=Math.abs(currentTotal-previousTotal)/Math.max(1,previousTotal);
+      if(ratio>=MAJOR_VOLUME_CHANGE_RATIO){
+        candidates.push({
+          key:'volume|'+previous.start_date+'|'+current.end_date,
+          kind:'volume',
+          from:previous.start_date,
+          to:current.end_date,
+          previousTotal,
+          currentTotal,
+          reason:'作品量'+(currentTotal>previousTotal?'大幅增加':'大幅下降')+' '+Math.round(ratio*100)+'%',
+          score:5000+ratio*1000+Math.abs(currentTotal-previousTotal)
+        });
       }
     }
-    const totalDelta=(Number(current.total)||0)-(Number(previous.total)||0);
-    if(!source&&!totalDelta)continue;
-    suggestions.push({
-      key:(previous.start_date||previous.period)+'|'+(current.end_date||current.period),
-      from:previous.start_date||'',
-      to:current.end_date||'',
-      source,
-      delta,
-      totalDelta,
-      previousTotal:Number(previous.total)||0,
-      currentTotal:Number(current.total)||0
-    });
+
+    if(previousTotal>=MAJOR_VOLUME_MIN&&currentTotal>=MAJOR_VOLUME_MIN){
+      let source='';
+      let delta=0;
+      for(const candidate of SOURCE_TREND_ORDER){
+        const change=(Number(current[candidate])||0)-(Number(previous[candidate])||0);
+        if(Math.abs(change)>Math.abs(delta)){
+          source=candidate;
+          delta=change;
+        }
+      }
+      if(source&&Math.abs(delta)>=MAJOR_SOURCE_SHARE_DELTA){
+        candidates.push({
+          key:'share|'+source+'|'+previous.start_date+'|'+current.end_date,
+          kind:'share',
+          from:previous.start_date,
+          to:current.end_date,
+          source,
+          delta,
+          previousTotal,
+          currentTotal,
+          reason:source+' 佔比'+(delta>0?'大幅上升 ':'大幅下降 ')+Math.abs(delta).toFixed(1)+' 個百分點',
+          score:3000+Math.abs(delta)*20
+        });
+      }
+    }
   }
-  return suggestions
-    .sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta)||Math.abs(b.totalDelta)-Math.abs(a.totalDelta)||String(b.to).localeCompare(String(a.to)))
-    .slice(0,3);
+
+  const accepted=[];
+  for(const candidate of candidates
+    .filter(item=>!rangeHasAnchor(anchorDates,item.from,item.to))
+    .sort((a,b)=>b.score-a.score||String(b.to).localeCompare(String(a.to)))){
+    if(accepted.some(item=>rangesOverlap(item,candidate)))continue;
+    accepted.push(candidate);
+    if(accepted.length>=3)break;
+  }
+  return accepted;
 }
 
 function displayTerm(row){
@@ -283,8 +360,17 @@ function StatisticsPanel({scopeId,navigation,types}){
     enabled:rankingType==='source',
     staleTime:5*60_000
   });
+  const anchorQuery=useQuery({
+    queryKey:['statistics-anchor-dates',scopeId],
+    queryFn:()=>selectScopeAnchorDates(scopeId),
+    enabled:rankingType==='source',
+    staleTime:5*60_000
+  });
   const allRows=query.data||[];
-  const trendSuggestions=useMemo(()=>buildTrendSuggestions(trendQuery.data||[],timeStandard),[trendQuery.data,timeStandard]);
+  const trendSuggestions=useMemo(
+    ()=>buildTrendSuggestions(trendQuery.data||[],timeStandard,anchorQuery.data||[]),
+    [trendQuery.data,timeStandard,anchorQuery.data]
+  );
   const [visibleRows,setVisibleRows]=useState([]);
   const canDrillDown=scopeId!=='loc'&&rankingType==='source';
   const detailQuery=useQuery({
@@ -329,7 +415,7 @@ function StatisticsPanel({scopeId,navigation,types}){
                 onClick={()=>router.push(featureNavigationHref(scopeId,'culture',{from:item.from,to:item.to}))}
               >
                 <strong>{item.from} ～ {item.to}</strong>
-                <span>{item.source?item.source+' 比例'+(item.delta>=0?'上升 ':'下降 ')+Math.abs(item.delta).toFixed(1)+' 個百分點':'作品量變化'}；作品量 {item.previousTotal.toLocaleString()} → {item.currentTotal.toLocaleString()}</span>
+                <span>{item.reason}；作品量 {item.previousTotal.toLocaleString()} → {item.currentTotal.toLocaleString()}</span>
               </button>)}
             </div>
           </section>:null}
