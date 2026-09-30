@@ -5,7 +5,7 @@ export default function manifest(){
     id:'/',
     name:'LOC｜月典｜語言架構框架',
     short_name:'LOC 月典',
-    description:'LOC（月典）是一套 Language Architecture Framework／語言架構框架，用來整理、分析、搜尋並連結文字、時間、來源、風格與作品脈絡。',
+    description:'月典是一套語言建構框架工具，用來整理文字、作品與時間脈絡，並透過搜尋、統計與時間變化協助回看資料。',
     lang:'zh-Hant',
     start_url:'/',
     scope:'/',
