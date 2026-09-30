@@ -3,6 +3,7 @@ import {detectChangepoints,PoissonCost} from 'karaul';
 const DAY_MS=86400000;
 const ANCHOR_COVER_DAYS=3;
 const SUGGESTION_MIN_GAP_DAYS=7;
+const SUGGESTION_MIN_SEGMENT_SHARE=0.03;
 
 function dayKey(value){
   const key=String(value||'').slice(0,10);
@@ -84,6 +85,20 @@ export function analyzeRiverDensity(rows=[],anchorDates=[]){
     changepoints=[];
   }
 
+  const totalCount=values.reduce((sum,value)=>sum+value,0);
+  const boundaries=[0,...changepoints,density.length];
+  const segmentTotals=[];
+  for(let i=0;i<boundaries.length-1;i++){
+    let total=0;
+    for(let index=boundaries[i];index<boundaries[i+1];index++)total+=values[index];
+    segmentTotals.push(total);
+  }
+  const supportedBoundaries=new Set();
+  for(let i=1;i<boundaries.length-1;i++){
+    const share=totalCount>0?Math.max(segmentTotals[i-1]||0,segmentTotals[i]||0)/totalCount:0;
+    if(share>=SUGGESTION_MIN_SEGMENT_SHARE)supportedBoundaries.add(boundaries[i]);
+  }
+
   const emptySegments=structuralEmptyRuns(density,changepoints);
   const hiddenDates=emptySegments.map(segment=>({
     start:density[segment.startIndex].date,
@@ -104,14 +119,15 @@ export function analyzeRiverDensity(rows=[],anchorDates=[]){
   };
 
   for(const index of changepoints){
+    if(!supportedBoundaries.has(index))continue;
     const before=Number(density[index-1]?.count)||0;
     const after=Number(density[index]?.count)||0;
     if(before>0&&after===0)addSuggestion(nearestPublishedBefore(density,index),'change-point');
     else addSuggestion(nearestPublishedAtOrAfter(density,index),'change-point');
   }
   for(const segment of emptySegments){
-    addSuggestion(nearestPublishedBefore(density,segment.startIndex),'gap-edge');
-    addSuggestion(nearestPublishedAtOrAfter(density,segment.endIndex),'gap-edge');
+    if(supportedBoundaries.has(segment.startIndex))addSuggestion(nearestPublishedBefore(density,segment.startIndex),'gap-edge');
+    if(supportedBoundaries.has(segment.endIndex))addSuggestion(nearestPublishedAtOrAfter(density,segment.endIndex),'gap-edge');
   }
 
   const rawSuggestions=[...suggestions.values()].sort((a,b)=>a.date.localeCompare(b.date));
