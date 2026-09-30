@@ -1,15 +1,14 @@
-import {LOC_ORIGIN,LUNARUNES_ORIGIN} from './seo/metadata';
-import {runeParams} from './lrunes/rune-directory.mjs';
+import {LOC_ORIGIN} from './seo/metadata';
 
 export const dynamic='force-static';
 
-function url(origin,path='/'){
+function url(path='/'){
   const clean='/' + String(path||'/').split('/').filter(Boolean).join('/');
-  return origin+(clean==='/'?'/':clean+'/');
+  return LOC_ORIGIN+(clean==='/'?'/':clean+'/');
 }
 
 export default function sitemap(){
-  const locPaths=[
+  return [
     '/',
     '/statics',
     '/culture',
@@ -20,32 +19,5 @@ export default function sitemap(){
     '/lo3rwang/statics',
     '/lo3rwang/culture',
     '/lo3rwang/governance'
-  ];
-
-  const runePaths=[
-    '/',
-    '/statics',
-    '/culture',
-    '/governance',
-    '/list',
-    '/game',
-    '/daily/log',
-    '/daily/trend',
-    '/duel/one',
-    '/duel/daily',
-    '/duel/two',
-    '/duel/three',
-    '/duel/five',
-    '/duel/ow3gs'
-  ];
-
-  const runeDirectory=[
-    ...Array.from({length:9},(_,index)=>'/list/'+String(index+1).padStart(2,'0')),
-    ...runeParams().map(({group,rune})=>'/list/'+group+'/'+rune)
-  ];
-
-  return [
-    ...locPaths.map(path=>({url:url(LOC_ORIGIN,path)})),
-    ...[...runePaths,...runeDirectory].map(path=>({url:url(LUNARUNES_ORIGIN,path)}))
-  ];
+  ].map(path=>({url:url(path)}));
 }
