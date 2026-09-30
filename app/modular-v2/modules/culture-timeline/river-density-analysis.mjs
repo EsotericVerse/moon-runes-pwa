@@ -147,11 +147,34 @@ export function analyzeRiverDensity(rows=[],anchorDates=[]){
     else clusters.push([item]);
   }
   const filteredSuggestions=clusters.map(cluster=>[...cluster].sort((a,b)=>contrast(b)-contrast(a)||a.date.localeCompare(b.date))[0]);
+  const explainedSuggestions=filteredSuggestions.map(item=>{
+    const index=densityIndex.get(item.date);
+    const beforeRows=Number.isInteger(index)?density.slice(Math.max(0,index-3),index):[];
+    const afterRows=Number.isInteger(index)?density.slice(index+1,Math.min(density.length,index+4)):[];
+    const mean=list=>list.length?list.reduce((sum,row)=>sum+(Number(row.count)||0),0)/list.length:0;
+    const beforeMean=mean(beforeRows);
+    const afterMean=mean(afterRows);
+    const delta=afterMean-beforeMean;
+    const analysis=[];
+    if(item.reason==='gap-edge'){
+      if(beforeMean>0&&afterMean===0)analysis.push('作品分布在此處進入結構性空白。');
+      else if(beforeMean===0&&afterMean>0)analysis.push('作品分布在此處由結構性空白恢復。');
+      else analysis.push('此處位於作品分布的結構性空白邊界。');
+    }else{
+      analysis.push('PELT 偵測到此處前後的作品密度出現變化。');
+    }
+    if(beforeRows.length&&afterRows.length){
+      const direction=delta>0?'增加':delta<0?'減少':'持平';
+      analysis.push('前 3 日平均 '+beforeMean.toFixed(1)+' 項／日，後 3 日平均 '+afterMean.toFixed(1)+' 項／日，密度'+direction+'。');
+    }
+    analysis.push('相鄰區段至少一側占此時期作品總量 3% 以上。');
+    return {...item,beforeMean,afterMean,delta,analysis};
+  });
 
   return {
     density,
     changepoints,
     hiddenDates,
-    suggestions:filteredSuggestions
+    suggestions:explainedSuggestions
   };
 }
