@@ -1,5 +1,6 @@
-import {NEON_QUERY_BATCH_SIZE} from '../../loc/query-contract.mjs';
 'use client';
+
+import {NEON_QUERY_BATCH_SIZE} from '../../loc/query-contract.mjs';
 
 import {useEffect,useMemo,useState} from 'react';
 import {useSearchParams} from 'next/navigation';

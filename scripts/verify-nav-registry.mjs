@@ -11,7 +11,7 @@ for(const [id,scope] of Object.entries(SCOPES_V2)){
     const expectedBase=scope.scopeType==='directory'&&scope.mount
       ?`https://${scope.mount.host}${scope.mount.path}`
       :`https://${scope.domain}`;
-    if(featureHrefV2(id,feature.id)!==`${expectedBase}/${feature.path}`)throw new Error(`${id}/${feature.id} route drifted`);
+    if(featureHrefV2(id,feature.id)!==`${expectedBase}/${feature.path}/`)throw new Error(`${id}/${feature.id} route drifted`);
   }
 }
 const globalNav=await readFile('app/GlobalNav.jsx','utf8');

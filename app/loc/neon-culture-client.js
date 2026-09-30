@@ -1,5 +1,6 @@
-import {NEON_QUERY_BATCH_SIZE} from './query-contract.mjs';
 'use client';
+
+import {NEON_QUERY_BATCH_SIZE} from './query-contract.mjs';
 
 import {ScopeCultureResponseSchema} from './scope-feature-contracts';
 import {decodeCultureText,formatCultureDateTime} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
