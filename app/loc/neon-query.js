@@ -40,10 +40,12 @@ export async function selectNeonRows(table,{
   orders=[],
   limit=20,
   offset=0,
-  count=null
+  count=null,
+  maxLimit=5000
 }={}){
   if(!String(columns||'').trim()||String(columns).trim()==='*')throw new Error('Neon SELECT requires explicit columns');
-  const safeLimit=Math.max(1,Math.min(5000,Math.floor(Number(limit)||20)));
+  const safeMaximum=Math.max(1,Math.floor(Number(maxLimit)||5000));
+  const safeLimit=Math.max(1,Math.min(safeMaximum,Math.floor(Number(limit)||20)));
   const safeOffset=Math.max(0,Math.floor(Number(offset)||0));
   let query=relation(table).select(columns,count?{count}:undefined);
   query=applyFilters(query,filters);
