@@ -124,6 +124,21 @@ function locSourceCategory(value=''){
   if(source.includes('youtube')||source.includes('youtu.be'))return 'YouTube';
   return 'Others';
 }
+function buildLocScopeDistribution(rows=[]){
+  const combined=new Map();
+  for(const row of rows){
+    const scope=runtimeScopeId(row?.scope_id||'');
+    const day=String(row?.day||'').slice(0,10);
+    if(!scope||!day)continue;
+    const key=scope+'|'+day;
+    const current=combined.get(key)||{scope_id:scope,start_date:day,item_count:0};
+    current.item_count+=Number(row?.item_count)||0;
+    combined.set(key,current);
+  }
+  return [...combined.values()]
+    .sort((a,b)=>String(a.scope_id).localeCompare(String(b.scope_id))||String(a.start_date).localeCompare(String(b.start_date)));
+}
+
 function buildLocSourceRiver(rows=[]){
   const combined=new Map();
   const totals=new Map(LOC_SOURCE_ORDER.map(category=>[category,0]));
@@ -260,12 +275,14 @@ export async function selectScopeCultureData(scopeId){
 
     const bundles=await Promise.all(managedScopes.map(async scope=>{
       const galaxy=mappedScopeTable(scope.id,'galaxy',scope.galaxy);
+      const galaxyMedia=galaxy+'_media';
       const time=mappedScopeTable(scope.id,'time',scope.time);
       const context=await selectCultureTimeRows(scope.id,time,scope.birthday);
       return {
         dataId:scope.id,
         runtimeId:runtimeScopeId(scope.id),
         galaxy,
+        galaxyMedia,
         context,
         openRange:openPeriodRangeFromRows(scope.id,context)
       };
@@ -290,17 +307,29 @@ export async function selectScopeCultureData(scopeId){
       .map(bundle=>bundle.runtimeId);
 
     const aggregateRows=(await Promise.all(validBundles.map(async bundle=>{
-      const textDaily=await selectDailyCategoryCounts(bundle.galaxy,'source_name',{
-        startDate:intersectionStart,
-        endDate:today,
-        filters:publicContentFilters([]),
-        includeEmpty:true,
-        includeUndated:false
-      });
-      return textDaily.map(row=>({...row,scope_id:bundle.runtimeId}));
+      const [textDaily,mediaDaily]=await Promise.all([
+        selectDailyCategoryCounts(bundle.galaxy,'source_name',{
+          startDate:intersectionStart,
+          endDate:today,
+          filters:publicContentFilters([]),
+          includeEmpty:true,
+          includeUndated:false
+        }),
+        selectDailyCategoryCounts(bundle.galaxyMedia,'media_type',{
+          startDate:intersectionStart,
+          endDate:today,
+          includeEmpty:true,
+          includeUndated:false
+        })
+      ]);
+      return [
+        ...textDaily.map(row=>({...row,scope_id:bundle.runtimeId})),
+        ...mediaDaily.map(row=>({...row,scope_id:bundle.runtimeId}))
+      ];
     }))).flat();
 
     const built=buildLocSourceRiver(aggregateRows);
+    const scopeRanges=buildLocScopeDistribution(aggregateRows);
     const intersectionMarkers=intersectionScopeIds.map(scope=>({
       id:'loc-intersection:'+scope+':'+intersectionStart,
       entry_id:'loc-intersection:'+scope+':'+intersectionStart,
@@ -323,7 +352,7 @@ export async function selectScopeCultureData(scopeId){
       eras:{eras:[]},
       periods:[],
       openRanges,
-      scopeRanges:[],
+      scopeRanges,
       timelineItems:[],
       sourceRiverItems,
       sourceGroups:built.sourceGroups,
