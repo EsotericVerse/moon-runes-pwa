@@ -230,7 +230,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
       </section>
 
       {ritualStep >= 0 && <section className="loc-card runes-ritual" data-draw-stage="ritual" data-draw-mode={drawKey} aria-live="polite">
-        <div className="runes-ritual-card"><img src="/assets/lunarunes/cards/65_玄.png" alt="玄之符文"/><strong>玄之符文</strong><span>Chaos</span></div>
+        <div className="runes-ritual-card"><img src="/assets/lunarunes/cards/65_玄.png" alt="玄之符文"/><strong>玄之符文</strong></div>
         <div className="runes-ritual-copy"><p className="loc-eyebrow">等待片刻</p><h2>{ritualMessages[ritualStep]}</h2><p>真實月相：{moonPhase}</p></div>
       </section>}
 
@@ -242,7 +242,6 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
               <small>{selectedMode.positions[index] || `第 ${index + 1} 張`}</small>
               <img className={`loc-rune-card-image ${ROTATION_CLASSES[draw.directionIndexes[index]]}`} src={runeCardImage(card)} alt={`${card.rune_name}符文卡`}/>
               <b>{card.rune_name}</b>
-              <small>{card.english_name || '—'}</small>
               <span>所屬群組：{card.group_name || '—'}</span>
               <span>{draw.directions[index]} · 卡片月相：{MOON_PHASE_LABELS[Number(card.moon_phase)] || '—'}</span>
               <small>{directionText(card, draw.directions[index]) || card.rune_description}</small>

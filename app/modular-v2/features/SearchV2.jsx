@@ -28,14 +28,14 @@ function authRelation(table){
 }
 async function selectNeonRowById(table,{idColumn,id,columns}={}){
   const {data,error}=await authRelation(table).select(columns).eq(idColumn,String(id)).limit(1);
-  if(error)throw new Error(error.message||('Neon SELECT '+table+' failed'));
+  if(error)throw new Error(error.message||'資料讀取失敗');
   return data?.[0]||null;
 }
 async function updateNeonRows(table,values,{filters=[]}={}){
   let query=authRelation(table).update(values);
   for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
   const {error}=await query;
-  if(error)throw new Error(error.message||('Neon UPDATE '+table+' failed'));
+  if(error)throw new Error(error.message||'資料更新失敗');
 }
 
 function rowText(row){return Object.values(row||{}).filter(value=>typeof value==='string').join(' ')}
