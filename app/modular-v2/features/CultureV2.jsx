@@ -208,6 +208,19 @@ export default function CultureV2(){
   const locSourceRiverItems=useMemo(()=>query.data?.sourceRiverItems||[],[query.data]);
   const locSourceGroups=useMemo(()=>query.data?.sourceGroups||[],[query.data]);
   const locCombinedSourceTotal=useMemo(()=>locSourceGroups.reduce((sum,item)=>sum+Number(item?.item_count||0),0),[locSourceGroups]);
+  const locSourceGroupLabel=useMemo(()=>{
+    const labels=new Map();
+    for(const group of locSourceGroups){
+      const count=Number(group?.item_count)||0;
+      const ratio=locCombinedSourceTotal>0?(count/locCombinedSourceTotal)*100:0;
+      labels.set(String(group?.source_name||group?.display_label||''),String(group?.display_label||group?.source_name||'')+' '+count.toLocaleString()+' 篇 · '+ratio.toFixed(1)+'%');
+    }
+    return labels;
+  },[locSourceGroups,locCombinedSourceTotal]);
+  const locCombinedSourceRiverItems=useMemo(()=>locSourceRiverItems.map(item=>({
+    ...item,
+    group_label:locSourceGroupLabel.get(String(item?.category||item?.group_label||''))||String(item?.group_label||'')
+  })),[locSourceRiverItems,locSourceGroupLabel]);
   const locScopeDistributionItems=useMemo(()=>query.data?.scopeRanges||[],[query.data]);
   const locDistributionStart=String(query.data?.intersectionStart||'');
   const locDistributionEnd=String(query.data?.intersectionEnd||new Date().toISOString().slice(0,10));
@@ -380,16 +393,20 @@ export default function CultureV2(){
                   fixedMin={locDistributionStart}
                   fixedMax={locDistributionEnd}
                 />:null}
-                {locSourceGroups.length?<div className='scope-v2-culture-source-groups' aria-label='交會來源佔比'>
-                  {locSourceGroups.map(group=>{
-                    const count=Number(group.item_count||0);
-                    const ratio=locCombinedSourceTotal>0?(count/locCombinedSourceTotal)*100:0;
-                    return <article className='scope-v2-inline-card' key={group.category_key}>
-                      <strong>{group.display_label}</strong>
-                      <span>{count.toLocaleString()} 篇 · {ratio.toFixed(1)}%</span>
-                    </article>;
-                  })}
-                </div>:null}
+                {locCombinedSourceRiverItems.length?<section className='scope-v2-culture-combined-source-river'>
+                  <p className='loc-eyebrow'>Combined Sources</p>
+                  <h4>綜合來源時間長河</h4>
+                  <CultureTimelineV2
+                    items={locCombinedSourceRiverItems}
+                    labelOf={()=>''}
+                    focus={{}}
+                    mode='source'
+                    windowStart={requestedWindowStart||locDistributionStart}
+                    windowEnd={requestedWindowEnd||locDistributionEnd}
+                    fixedMin={locDistributionStart}
+                    fixedMax={locDistributionEnd}
+                  />
+                </section>:null}
 
               </section>
 
