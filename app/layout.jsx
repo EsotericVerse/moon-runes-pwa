@@ -6,7 +6,7 @@ import QueryProvider from './QueryProvider';
 
 export const metadata = {
   title: 'LOC 月典',
-  description: 'LOC Language Architecture Framework application shell.'
+  description: '月典是一套語言建構框架工具，用來整理文字、作品與時間脈絡。'
 };
 
 export default function RootLayout({ children }) {

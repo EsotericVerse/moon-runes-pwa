@@ -1,8 +1,8 @@
 import LocApp from '../loc/LocApp';
 
 export const metadata={
-  title:'月之符文｜LOC',
-  description:'LunaRunes directory ingress under LOC.'
+  title:'月之符文｜符文籤詩與圖鑑',
+  description:'月之符文以固定符文、九組分類、四種方向與月相關係組成，可用於抽籤、籤詩、每日指引與符文圖鑑瀏覽。'
 };
 
 export default function LunaRunesScopePage(){

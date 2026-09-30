@@ -135,7 +135,7 @@ function MultiReading({ draw, mode, phase }) {
   if (mode === '2card' || mode === '3card') {
     const labels = mode === '2card' ? ['因', '果'] : ['源', '轉', '合'];
     return <section className="loc-card" data-draw-reading={mode}>
-      <p className="loc-eyebrow">Reading · 完整解讀</p>
+      <p className="loc-eyebrow">完整解讀</p>
       <h2>{mode === '2card' ? '因 → 果' : '源 → 轉 → 合'}</h2>
       <p><strong>完整現況：</strong>{cards.map((card, index) => `${labels[index]}「${card.rune_name}」${directions[index]}`).join('、')}。目前真實月相為{phase}。</p>
       <p><strong>閱讀方式：</strong>{mode === '2card' ? '先看造成現況的「因」，再看它導向的「果」。' : '依序閱讀「源 → 轉 → 合」，先找起點，再看轉化，最後看收束。'}</p>
@@ -145,12 +145,12 @@ function MultiReading({ draw, mode, phase }) {
   if (mode === '5card') {
     const [past1, past2, unexpected, current1, current2] = cards;
     return <section className="loc-card" data-draw-reading="5card">
-      <p className="loc-eyebrow">Reading · 五卡完整解讀</p>
+      <p className="loc-eyebrow">五卡完整解讀</p>
       <h2>雙卡＋單卡＋雙卡</h2>
       <p><strong>過去的成因：</strong>「{past1.rune_name}」{directions[0]}：{directionText(past1, directions[0])}；「{past2.rune_name}」{directions[1]}：{directionText(past2, directions[1])}。兩張牌共同描述事情形成的背景與潛因。</p>
       <p><strong>意外變化：</strong>「{unexpected.rune_name}」{directions[2]}：{directionText(unexpected, directions[2])}。單張只提供一個意外因素，不與雙卡拼接。</p>
       <p><strong>現在狀況：</strong>「{current1.rune_name}」{directions[3]}：{directionText(current1, directions[3])}；「{current2.rune_name}」{directions[4]}：{directionText(current2, directions[4])}。兩張牌共同描述現在以後可能形成的結論。</p>
-      <p><strong>模組應用：</strong>雙卡與三卡的共同結構延伸；月相交互列於最後，只作天時關係的小幅修正，可能稍強也可能稍弱。本次真實月相為{phase}。</p>
+      <p><strong>閱讀補充：</strong>這組結構延伸雙卡與三卡的讀法；月相放在最後，只作次要的時間修飾，可能稍強也可能稍弱。本次真實月相為{phase}。</p>
     </section>;
   }
   return null;
@@ -215,13 +215,13 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
   return <div className="runes-draw-surface">
     <section className="loc-view">
       <header className="loc-hero" id="intro">
-        <p className="loc-eyebrow">LunaRunes · 月之符文</p>
+        <p className="loc-eyebrow">月之符文</p>
         <h1>月之符文</h1>
-        <p>月之符文以固定 66 枚核心符文提供抽牌、四向文字與籤詩。抽牌、四向文字與固定組句在瀏覽器完成；紀錄與管理功能統一由 Governance Management 處理。</p>
+        <p>月之符文由 66 枚核心符文組成。選擇抽牌方式後，系統會依符文、方向與固定組句規則產生籤詩；結果只供參考，你仍保有自己的判斷與選擇。</p>
       </header>
 
       <section className="loc-card" id="draw" data-draw-keyword="lunarunes-draw" data-draw-mode={drawKey}>
-        <p className="loc-eyebrow">Draw · 抽籤</p>
+        <p className="loc-eyebrow">抽籤</p>
         <h2>{selectedMode.label}抽牌</h2>
         <div className="runes-mode-nav" aria-label="抽牌模式">
           {DRAW_TYPES.map(item => <a key={item.key} href={DRAW_PATHS[item.key]} data-draw-mode={item.key} className={`loc-button ${drawKey === item.key ? 'primary' : ''}`}>{item.label}</a>)}
@@ -255,13 +255,13 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
         </section>
 
         {drawKey === 'single' && <section className="loc-card" data-draw-reading="single">
-          <p className="loc-eyebrow">Lots · 單卡籤詩</p>
+          <p className="loc-eyebrow">單卡籤詩</p>
           <h2>{draw.cards[0].rune_name} · {draw.directions[0]}</h2>
           <RuneSingleReading card={draw.cards[0]} direction={draw.directions[0]}/>
         </section>}
 
         {drawKey === 'daily' && <section className="loc-card" data-draw-reading="daily">
-          <p className="loc-eyebrow">Daily · 每日指示</p>
+          <p className="loc-eyebrow">每日指示</p>
           <h2>{draw.cards[0].rune_name} · {draw.directions[0]} · {moonPhase}</h2>
           <p className="runes-reading-lead"><strong>今日指引</strong><span>{dailyGuidance(draw.cards[0], draw.directions[0]) || directionText(draw.cards[0], draw.directions[0]) || '目前沒有這個位向的每日指示。'}</span></p>
         </section>}
@@ -278,7 +278,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
         </section>}
 
         {drawKey!=='single'&&drawKey!=='daily'&&<section className="loc-card" data-draw-stage="lots">
-          <p className="loc-eyebrow">Lots · 籤詩</p><h2>籤詩指引</h2>
+          <p className="loc-eyebrow">籤詩</p><h2>籤詩指引</h2>
           <p>{draw.reading?.sentence||'資訊不足。'}</p>
           {Array.isArray(draw.reading?.domains)?<div className="runes-advice-grid">
             {draw.reading.domains.map(item=><article key={item.label}><strong>{item.label}</strong><span>{item.text}</span></article>)}

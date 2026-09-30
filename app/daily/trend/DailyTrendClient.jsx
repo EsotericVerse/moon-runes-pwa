@@ -163,9 +163,9 @@ export default function DailyTrendClient(){
 
   return <section className="loc-view">
     <header className="loc-hero">
-      <p className="loc-eyebrow">Daily Trend · LunaRunes</p>
+      <p className="loc-eyebrow">每日符文趨勢</p>
       <h1>每日趨勢</h1>
-      <p>以每日正抽／補抽的行事曆紀錄做區間統計，機械式觀察符文出現密度與同符文位向變化，再提出中立的回看建議。</p>
+      <p>選擇一段時間後，統計每日主抽與補抽紀錄，觀察符文出現頻率、重複情況與方向變化，提供回看時的參考。</p>
     </header>
 
     <section className="loc-card">
@@ -195,7 +195,7 @@ export default function DailyTrendClient(){
     </div>
 
     <section className="loc-card">
-      <p className="loc-eyebrow">Automatic Suggestion</p>
+      <p className="loc-eyebrow">自動分析</p>
       <h2>自動分析建議</h2>
       {!analysis.total_draws?<p>此區間目前沒有每日符文紀錄。</p>:<div className="scope-v2-list">
         {analysis.suggestions.map((item,index)=><article className="scope-v2-inline-card" key={item.type+'-'+item.rune+'-'+index}>

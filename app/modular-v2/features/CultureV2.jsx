@@ -387,7 +387,7 @@ export default function CultureV2(){
 
   return <FeaturePageV2 featureId="culture">
     <section className='loc-card scope-v2-feature-card scope-v2-feature-card-wide'>
-      <p className='loc-eyebrow'>Time River</p>
+      <p className='loc-eyebrow'>時間分布</p>
       <h2>時間長河</h2>
       {query.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(query.error)}</p>:null}
       {!query.isPending&&!query.error&&!hasTimelineSurface?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
@@ -397,7 +397,7 @@ export default function CultureV2(){
             {isLoc?<>
 
               <section className='scope-v2-card scope-v2-culture-classification-river scope-v2-loc-time-river'>
-                <p className='loc-eyebrow'>Time River</p>
+                <p className='loc-eyebrow'>時間分布</p>
                 <h3>交會時間長河</h3>
                 {locScopeTotals.length?<p className='scope-v2-status'>
                   交會時期的總文章數：{locIntersectionTotal.toLocaleString()} 篇，其中 {locScopeTotals.map(item=>item.scope+' '+Number(item.count||0).toLocaleString()+' 篇').join('、')}。
@@ -434,7 +434,7 @@ export default function CultureV2(){
 
             </>:<>
               <section className='scope-v2-card scope-v2-culture-structure-river'>
-                <p className='loc-eyebrow'>Time River</p>
+                <p className='loc-eyebrow'>時間分布</p>
                 <h3>時期・事件・定錨點</h3>
                 {timelineItems.length?<CultureTimelineV2
                   items={timelineItems}

@@ -18,19 +18,19 @@ function timeRelation(client,table){
 }
 async function insertNeonRows(table,rows){
   const {error}=await timeRelation(neonAuthClient,table).insert(rows);
-  if(error)throw new Error(error.message||('Neon INSERT '+table+' failed'));
+  if(error)throw new Error(error.message||'新增資料失敗');
 }
 async function updateNeonRows(table,values,{filters=[]}={}){
   let query=timeRelation(neonAuthClient,table).update(values);
   for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
   const {error}=await query;
-  if(error)throw new Error(error.message||('Neon UPDATE '+table+' failed'));
+  if(error)throw new Error(error.message||'更新資料失敗');
 }
 async function deleteNeonRows(table,{filters=[]}={}){
   let query=timeRelation(neonAuthClient,table).delete();
   for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
   const {error}=await query;
-  if(error)throw new Error(error.message||('Neon DELETE '+table+' failed'));
+  if(error)throw new Error(error.message||'刪除資料失敗');
 }
 
 const EDITABLE_TYPES=Object.freeze([
@@ -177,7 +177,7 @@ export default function CultureTimelineEditor({scopeId=''}){
           String(row.resource_id||'').trim()===resourceId&&
           String(row.record_id||'')!==String(selectedId||'')
         );
-        if(duplicate)throw new Error('同一 Scope 已存在相同定錨點識別：'+resourceId);
+        if(duplicate)throw new Error('同一資料區域已存在相同定錨點識別：'+resourceId);
       }
       const payload={
         record_type:type,
@@ -250,11 +250,11 @@ export default function CultureTimelineEditor({scopeId=''}){
   };
 
   return <section className="loc-card scope-v2-feature-card">
-    <p className="loc-eyebrow">Culture Option</p>
+    <p className="loc-eyebrow">時期與定錨</p>
     <h2>時期設定</h2>
-    <p>定錨點只能在這裡新增；時間長河只負責顯示。時期與事件共用前／後兩個定錨點，0 代表該方向不存在。</p>
+    <p>新增或調整定錨點請在這裡處理；時間長河只呈現結果。時期與事件共用前／後兩個定錨點，沒有對應定錨時請選 0。</p>
     {query.error?<p className="scope-v2-status scope-v2-error">{query.error.message}</p>:null}
-    {duplicateAnchorIds.length?<p className="scope-v2-status scope-v2-error">同一 Scope 存在重複定錨點識別：{duplicateAnchorIds.join('、')}。請先修正，Culture 不會再靜默覆蓋。</p>:null}
+    {duplicateAnchorIds.length?<p className="scope-v2-status scope-v2-error">同一資料區域存在重複的定錨點識別：{duplicateAnchorIds.join('、')}。請先修正，否則無法正確呈現文化資料。</p>:null}
     {query.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
     <div className="scope-v2-tabs">
       {EDITABLE_TYPES.map(([type,label])=><button key={type} type="button" onClick={()=>beginAdd(type)}>新增{label}</button>)}

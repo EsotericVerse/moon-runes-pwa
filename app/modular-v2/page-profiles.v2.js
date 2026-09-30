@@ -1,25 +1,45 @@
 export const PAGE_PROFILES_V2=Object.freeze({
-  statics:Object.freeze({eyebrow:'Statistics',title:'統計',subtitle:'排行榜、關鍵詞設定與各項統計圖集中於此。',description:'透過排行、關鍵詞設定與圖表，查看資料的分布。'}),
-  culture:Object.freeze({eyebrow:'Cuture',title:'文化',subtitle:'透過以時間作為分類標準，來找尋各項時期的變化趨勢。',description:'文字留下風格，風格經過時間累積，才看得見文字風格的變化。'}),
-  governance:Object.freeze({eyebrow:'Governance',title:'治理',subtitle:'宣示原則與權利邊界。管理也在此。'}),
-  search:Object.freeze({eyebrow:'Cross-format Search',title:'多元搜尋',subtitle:'跨文字、音樂、多媒體、符文、脈絡與知識搜尋。'})
+  statics:Object.freeze({
+    eyebrow:'',
+    title:'統計',
+    subtitle:'用圖表查看作品數量、來源比例與時間變化。',
+    description:'選擇統計項目、圖形與時間範圍，比較資料在不同時期的分布與變化。'
+  }),
+  culture:Object.freeze({
+    eyebrow:'',
+    title:'文化',
+    subtitle:'把作品放回時間順序，觀察不同時期的累積與變化。',
+    description:'時間長河依日期呈現作品與來源；定錨點用來切分時期，方便比較前後差異。'
+  }),
+  governance:Object.freeze({
+    eyebrow:'',
+    title:'治理',
+    subtitle:'說明使用原則、權利邊界與管理入口。',
+    description:'治理頁整理這個區域的基本原則、著作權與授權方式，並提供對應的管理入口。'
+  }),
+  search:Object.freeze({
+    eyebrow:'',
+    title:'搜尋',
+    subtitle:'輸入關鍵字，從文字、作品、多媒體與符文中找到相關內容。',
+    description:'搜尋結果會保留原本的來源與關係，方便回到完整內容或延伸查看前後脈絡。'
+  })
 });
 
 const SCOPE_FEATURE_SUBTITLES=Object.freeze({
   lo3rwang:Object.freeze({
-    search:'從關鍵詞、作品、來源或日期開始，找到時間點，再查看附近的脈絡與作品。'
+    search:'從關鍵字、作品、來源或日期找到相關內容，再查看前後脈絡。'
   }),
   lunarunes:Object.freeze({
-    statics:'排行榜、關鍵詞設定與各項統計圖集中於此。',
-    culture:'透過以時間作為分類標準，來找尋各項時期的變化趨勢。',
-    governance:'符號式語言的治理、Canon 與權利邊界。管理也在此。',
-    search:'從符文名稱、關鍵詞或相關文字開始，再回到具體符文與內容。'
+    statics:'查看月之符文相關資料的數量、來源與時間變化。',
+    culture:'把月之符文相關紀錄放回時間順序，觀察不同時期的變化。',
+    governance:'說明月之符文的使用原則、權利與管理入口。',
+    search:'從符文名稱、關鍵字或相關文字找到對應內容。'
   }),
   loc:Object.freeze({
-    statics:'排行榜、關鍵詞設定與各項統計圖集中於此。',
-    culture:'透過以時間作為分類標準，來找尋各項時期的變化趨勢。',
-    governance:'LOC 原則、Copyleft 與 GNU GPL。管理也在此。',
-    search:'跨 LOC 的關鍵詞入口，再進入對應資料與關係位置。'
+    statics:'用圖表查看作品數量、來源比例與時間變化。',
+    culture:'把作品放回時間順序，觀察不同時期的累積與變化。',
+    governance:'說明月典的使用原則、權利與管理入口。',
+    search:'從關鍵字找到月典中的文字、作品、多媒體與相關內容。'
   })
 });
 
@@ -28,6 +48,6 @@ export function scopeFeatureSubtitleV2(scopeId,featureId){
 }
 
 export function pageProfileV2(featureId,scope){
-  const base=PAGE_PROFILES_V2[featureId]||{eyebrow:'LOC',title:featureId,subtitle:''};
+  const base=PAGE_PROFILES_V2[featureId]||{eyebrow:'',title:featureId,subtitle:''};
   return {...base,subtitle:scopeFeatureSubtitleV2(scope?.id,featureId)};
 }

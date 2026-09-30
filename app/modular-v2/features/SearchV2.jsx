@@ -137,7 +137,7 @@ export default function SearchV2(){
   const searchId=useRef(0);
   const matchedQueryRef=useRef('');
   const pageSize=DEFAULT_LIST_BATCH_SIZE;
-  const collectionLabel=scopeId==='loc'?'全部 Scope':String(scope?.label||scopeId);
+  const collectionLabel=scopeId==='loc'?'全部內容':String(scope?.label||scopeId);
 
   async function executeSearch(rawQuery,cursor=null,{append=false}={}){
     const q=String(rawQuery||'').trim();
@@ -190,7 +190,7 @@ export default function SearchV2(){
       setResults(current=>append?mergeSummaryResults([...current,...pageResults]):pageResults);
             setHasMore(Boolean(search.hasMore));
       setNextCursor(search.nextCursor??null);
-      const partial=search.failures?.length?`（${search.failures.length} 張非必要資料表暫時無法查詢）`:'';
+      const partial=search.failures?.length?`（部分延伸資料暫時無法查詢）`:'';
       if(!append)setStatus(`${searchMode==='media'?'多媒體':'「'+collectionLabel+'」'}搜尋「${q}」；先顯示本批結果${search.hasMore?'，向下滑動可繼續載入。':'。'}${partial}`);
     }catch(exception){
       if(id!==searchId.current)return;
@@ -321,18 +321,14 @@ export default function SearchV2(){
   async function runSearch(event){event.preventDefault();await executeSearch(query)}
 
 
-  return <FeaturePageV2
-    featureId="search"
-    subtitle="跨文字、音樂、多媒體、符文、脈絡與知識搜尋。"
-    description={<p>輸入關鍵字，從文字、音樂、圖片、影音、符文與文件中找出相關內容。</p>}
-  >
+  return <FeaturePageV2 featureId="search">
     <div className="scope-v2-tabs" role="group" aria-label="搜尋模式">
       <button type="button" aria-pressed={searchMode==='all'} onClick={()=>{setSearchMode('all');setResults([]);setHasMore(false);setNextCursor(null);setStatus('輸入關鍵字開始搜尋。');}}>全部搜尋</button>
       <button type="button" aria-pressed={searchMode==='media'} onClick={()=>{setSearchMode('media');setResults([]);setHasMore(false);setNextCursor(null);setStatus('輸入多媒體關鍵字、類型或來源識別。');}}>多媒體搜尋</button>
     </div>
     <form className="scope-v2-search-form" onSubmit={runSearch}>
       <label htmlFor="scope-search-query">{searchMode==='media'?'找多媒體':'你想找什麼？'}</label>
-      <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder={searchMode==='media'?'搜尋圖片、影音、URL、Meta Tag 或來源識別':'輸入關鍵字、作品名稱或文字'} aria-label={searchMode==='media'?'多媒體搜尋':'你想找什麼？'}/>
+      <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder={searchMode==='media'?'搜尋圖片、影音、網址、標籤或來源識別':'輸入關鍵字、作品名稱或文字'} aria-label={searchMode==='media'?'多媒體搜尋':'你想找什麼？'}/>
       <button type="submit">搜尋</button>
     </form>
     <p className="scope-v2-status">{status}</p>

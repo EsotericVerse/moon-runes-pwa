@@ -20,9 +20,9 @@ function groupVisual(groupAssets,groupName){
 }
 
 function phaseMark(phase){
-  if(phase==='event')return 'E';
-  if(phase==='duel')return 'D';
-  return 'R';
+  if(phase==='event')return '事';
+  if(phase==='duel')return '決';
+  return '鳴';
 }
 
 function signed(value){
@@ -78,13 +78,13 @@ function GameDocs({data}){
   return <section className="loc-card game-docs">
     <div className="game-doc-tabs">
       <button type="button" className={'loc-button '+(section==='rules'?'primary':'')} onClick={()=>setSection('rules')}>遊戲規則</button>
-      <button type="button" className={'loc-button '+(section==='events'?'primary':'')} onClick={()=>setSection('events')}>Event32</button>
+      <button type="button" className={'loc-button '+(section==='events'?'primary':'')} onClick={()=>setSection('events')}>事件卡</button>
       <button type="button" className={'loc-button '+(section==='roles'?'primary':'')} onClick={()=>setSection('roles')}>八職</button>
       <button type="button" className={'loc-button '+(section==='actions'?'primary':'')} onClick={()=>setSection('actions')}>符文行動</button>
     </div>
 
     {section==='rules'&&<div className="game-doc-copy">
-      <h2>Current 規則</h2>
+      <h2>遊戲規則</h2>
       <div className="game-role-grid">
         {currentRules.map(rule=><article key={rule.game_key}><b>{rule.rule_title}</b><span>{rule.rule_text}</span><small>{rule.rule_code}</small></article>)}
       </div>
@@ -99,7 +99,7 @@ function GameDocs({data}){
     </div>}
 
     {section==='events'&&<div className="game-doc-copy">
-      <h2>Event32</h2>
+      <h2>32 張事件卡</h2>
       <div className="game-role-grid">
         {data.events.map(event=><article key={event.id}><b>{event.id}｜{event.name}</b><span>{event.group}｜{event.requirement}</span><small>{event.description}</small></article>)}
       </div>
@@ -129,18 +129,18 @@ function BoardPreview({data}){
   const previewB=Math.min(3,max);
   return <section className="game-preview-board" aria-label="遊戲盤面預覽">
     <div className="game-preview-player">
-      <p className="loc-eyebrow">PLAYER A</p>
+      <p className="loc-eyebrow">玩家 A</p>
       <strong>De {previewA} / {max}</strong>
       <DeMeter value={previewA} max={max}/>
       <div className="game-preview-hand">{data.cards.slice(0,5).map(card=><RuneCard key={card.id} card={card} compact/>)}</div>
     </div>
     <div className="game-preview-center">
-      <p className="loc-eyebrow">EVENT FIELD</p>
+      <p className="loc-eyebrow">事件區</p>
       <EventVisual item={data.eventVisuals[0]}/>
-      <p>Event32 + 雙卡回應</p>
+      <p>32 張事件卡＋雙卡回應</p>
     </div>
     <div className="game-preview-player">
-      <p className="loc-eyebrow">PLAYER B</p>
+      <p className="loc-eyebrow">玩家 B</p>
       <strong>De {previewB} / {max}</strong>
       <DeMeter value={previewB} max={max}/>
       <div className="game-preview-hand">{data.cards.slice(8,13).map(card=><RuneCard key={card.id} card={card} compact/>)}</div>
@@ -151,7 +151,7 @@ function BoardPreview({data}){
 function freshGame(data,count){
   const eventDeck=shuffle(data.events);
   return {
-    players:Array.from({length:count},(_,index)=>freshPlayer(data.cards,'Player '+NAMES[index],data.config)),
+    players:Array.from({length:count},(_,index)=>freshPlayer(data.cards,'玩家 '+NAMES[index],data.config)),
     eventDeck,
     eventIndex:0,
     round:1,
@@ -184,15 +184,15 @@ export default function GameView(){
 
   const event=state?.eventDeck?.length?state.eventDeck[state.eventIndex%state.eventDeck.length]:null;
   const allOpened=state?.players.every(player=>!player.opening);
-  const phaseLabel=state?.phase==='event'?'Event':state?.phase==='duel'?'Duel':'Resonance';
+  const phaseLabel=state?.phase==='event'?'事件':state?.phase==='duel'?'決鬥':'共鳴';
 
   const status=useMemo(()=>{
     if(error)return '遊戲資料載入失敗：'+error.message;
-    if(isLoading)return '正在讀取 silver.runes、silver.game…';
+    if(isLoading)return '正在準備遊戲資料…';
     if(!data)return '遊戲資料尚未就緒。';
-    if(!state)return data.cards.length+' 張可玩符文、'+data.events.length+' 張 Event 已就緒。';
+    if(!state)return data.cards.length+' 張可玩符文、'+data.events.length+' 張事件卡已就緒。';
     if(state.winner!==null)return state.players[state.winner].name+' 勝出。';
-    if(state.draw)return 'R9 Duel 仍平分；後續判定待定。';
+    if(state.draw)return '第 9 回合決鬥仍平分；後續判定待定。';
     return 'R'+state.round+' · '+phaseLabel;
   },[data,error,isLoading,state,phaseLabel]);
 
@@ -249,7 +249,7 @@ export default function GameView(){
       duelists:leaders,
       active:leaders[0],
       actions:0,
-      result:'R8 平分，進入 R9 Duel。'
+      result:'第 8 回合平分，進入第 9 回合決鬥。'
     };
   }
 
@@ -290,7 +290,7 @@ export default function GameView(){
         return nextRound({
           ...current,
           players:outcomes.map(entry=>entry.player),
-          logs:['R'+current.round+' Event：'+line,...current.logs],
+          logs:['第 '+current.round+' 回合事件：'+line,...current.logs],
           result:line
         });
       }catch(problem){
@@ -318,7 +318,7 @@ export default function GameView(){
         players,
         actions,
         active:nextActive,
-        logs:[(current.phase==='duel'?'R9 Duel':'R'+current.round+' Resonance')+'：'+NAMES[actor]+' '+actionText,...current.logs]
+        logs:[(current.phase==='duel'?'第 9 回合決鬥':'第 '+current.round+' 回合共鳴')+'：'+NAMES[actor]+' '+actionText,...current.logs]
       };
 
       if(actions<participants.length)return next;
@@ -326,7 +326,7 @@ export default function GameView(){
         const max=Math.max(...participants.map(index=>players[index].de));
         const leaders=participants.filter(index=>players[index].de===max);
         if(leaders.length===1)return {...next,winner:leaders[0]};
-        return {...next,draw:true,result:'R9 Duel 仍平分；後續判定待定。'};
+        return {...next,draw:true,result:'第 9 回合決鬥仍平分；後續判定待定。'};
       }
       return nextRound(next);
     });
@@ -338,11 +338,11 @@ export default function GameView(){
   if(!state)return <section className="loc-view loc-game game-shell">
     <header className="loc-hero game-hero">
       <div>
-        <p className="loc-eyebrow">LunaRunes Game · Alpha</p>
-        <h1>LunaRunes Game</h1>
-        <p>符文、Event、角色、規則與 Game 素材皆由 Neon Current 資料載入。</p>
+        <p className="loc-eyebrow">月之符文遊戲</p>
+        <h1>月之符文遊戲</h1>
+        <p>這是一套以符文、事件、角色與 De 值變化為核心的卡牌遊戲。選擇玩家人數後即可開始，完整規則與角色資料可從「遊戲文件」查看。</p>
         <div className="game-hero-badges">
-          <span>{data.cards.length} Rune Cards</span>
+          <span>{data.cards.length} 張符文卡</span>
           <span>De {data.config.deMin}–{data.config.deMax}</span>
           <span>{roundBadge}</span>
         </div>
@@ -360,12 +360,12 @@ export default function GameView(){
     {homeView==='docs'?<GameDocs data={data}/>:<>
       <BoardPreview data={data}/>
       <section className="loc-card">
-        <p className="loc-eyebrow">EVENT VISUALS</p>
+        <p className="loc-eyebrow">事件圖</p>
         <h2>雙群組事件圖</h2>
         <div className="game-event-gallery">{data.eventVisuals.map(item=><EventVisual key={item.code} item={item}/>)}</div>
       </section>
       <section className="loc-card">
-        <p className="loc-eyebrow">GROUPS</p>
+        <p className="loc-eyebrow">符文分組</p>
         <h2>八分組</h2>
         <div className="game-group-gallery">
           {data.groupAssets.map(group=><figure key={group.code}><img src={group.path} alt={(group.title||group.group)+'代表圖'} loading="lazy"/><figcaption><b>{group.title||group.group}</b></figcaption></figure>)}
@@ -374,12 +374,12 @@ export default function GameView(){
       <div className="loc-card game-start-panel">
         <label>玩家人數
           <select value={playerCount} onChange={event=>setPlayerCount(Number(event.target.value))}>
-            {playerOptions.map(count=><option key={count} value={count}>{count} Players</option>)}
+            {playerOptions.map(count=><option key={count} value={count}>{count} 人</option>)}
           </select>
         </label>
         <button className="loc-button primary" onClick={start}>開始新遊戲</button>
         <p className="loc-status">{status}</p>
-        <p className="loc-note">Event32、66 符文行動、八職、規則與素材路徑皆讀取 silver.game。</p>
+        <p className="loc-note">遊戲包含 32 張事件卡、66 枚符文行動與八種職業；開始前可先從「遊戲文件」查看完整規則。</p>
       </div>
     </>}
   </section>;
@@ -388,7 +388,7 @@ export default function GameView(){
 
   return <section className="loc-view loc-game game-shell">
     <header className="loc-hero game-compact-hero">
-      <div><p className="loc-eyebrow">LunaRunes Game · Alpha</p><h1>LunaRunes Game</h1><p>{status}｜{state.result}</p></div>
+      <div><p className="loc-eyebrow">月之符文遊戲</p><h1>月之符文遊戲</h1><p>{status}｜{state.result}</p></div>
       <DeMeter value={Math.max(...state.players.map(player=>player.de))} max={data.config.deMax}/>
     </header>
 
@@ -410,15 +410,15 @@ export default function GameView(){
       </section>)}
 
       {allOpened&&state.phase==='event'?<section className="loc-event game-event-field">
-        <p className="loc-eyebrow">R{state.round} · EVENT</p>
+        <p className="loc-eyebrow">第 {state.round} 回合 · 事件</p>
         {eventGroupVisual?<EventVisual item={eventGroupVisual}/>:null}
-        {event?<><h2>{event.id}｜{event.name}</h2><p>{event.desc}</p><p className="game-player-meta">Alpha requirement: {event.requirement}</p><button className="loc-button primary" onClick={resolveEvent} disabled={state.players.some(player=>player.selected.length!==data.config.eventResponseCards)}>{data.config.eventResponseCards} 卡結算 Event</button></>:null}
+        {event?<><h2>{event.id}｜{event.name}</h2><p>{event.desc}</p><p className="game-player-meta">條件：{event.requirement}</p><button className="loc-button primary" onClick={resolveEvent} disabled={state.players.some(player=>player.selected.length!==data.config.eventResponseCards)}>{data.config.eventResponseCards} 卡結算事件</button></>:null}
       </section>:null}
 
       {allOpened&&(state.phase?.includes('resonance')||state.phase==='duel')?<section className="loc-event game-event-field game-resonance-field">
-        <p className="loc-eyebrow">{state.phase==='duel'?'R9 DUEL':'R'+state.round+' · RESONANCE'}</p>
+        <p className="loc-eyebrow">{state.phase==='duel'?'第 9 回合 · 決鬥':'第 '+state.round+' 回合 · 共鳴'}</p>
         <div className="game-resonance-orbit"><span/><i/><span/></div>
-        <h2>{state.phase==='duel'?'Duel':'Resonance'}</h2>
+        <h2>{state.phase==='duel'?'決鬥':'共鳴'}</h2>
         <p>輪到 {state.players[state.active].name}</p>
         <div className="loc-actions">
           <button className="loc-button primary" onClick={()=>resonance('self')}>自我共振 {signed(data.config.resonanceSelf)}</button>
