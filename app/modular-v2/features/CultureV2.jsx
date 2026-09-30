@@ -339,7 +339,7 @@ export default function CultureV2(){
     if(!uid||!editDraft)return;
     setEditBusy(true);setEditError('');
     try{
-      if(!account.canManageScopeSync(classificationScope))throw new Error('沒有修改此 Scope 的權限。');
+      if(!account.canManageScopeSync(classificationScope))throw new Error('沒有修改此資料區域的權限。');
       const content=requireGalaxyContent(editDraft.body);
       const {error}=await neonAuthClient.schema('silver').from(await galaxyTable())
         .update({
