@@ -824,7 +824,7 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
     grid-template-columns:1fr;
   }
   .scope-v2-culture-source-groups{
-    grid-template-columns:1fr 1fr;
+    grid-template-columns:1fr;
   }
   .scope-v2-culture-source-button{
     min-height:3.4rem;
