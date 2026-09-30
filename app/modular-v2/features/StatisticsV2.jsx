@@ -12,7 +12,6 @@ import {selectScopeRankingTypes,selectScopeSourceTrendRows} from '../../loc/neon
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
-import MediaMetaSettingsV2 from './MediaMetaSettingsV2';
 import FeaturePageV2 from '../FeaturePageV2';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
@@ -21,7 +20,6 @@ const CHART_TEXT='var(--loc-text)';
 const CHART_GRID='var(--loc-line)';
 const CHART_TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)',borderRadius:'8px'};
 const CHART_TYPES=[['line','折線圖'],['bar','長條圖'],['pie','圓餅圖']];
-const STAT_TABS=[['ranking','統計'],['media','多媒體設定']];
 const STAT_TYPE_LABELS=Object.freeze({total:'總來源',source:'作品來源'});
 const SOURCE_TREND_ORDER=Object.freeze(['Facebook','Threads','IG','Others']);
 const TIME_STANDARDS=Object.freeze([
@@ -198,13 +196,6 @@ function SourceTrendChart({rows=[],standard='1y',customRange={},height=420}){
   </ResponsiveContainer>;
 }
 
-function StatTabs({scopeId,navigation,active,tabs}){
-  const router=useRouter();
-  return <nav className="scope-v2-stat-tabs" aria-label="統計功能">
-    {tabs.map(([value,label])=><button type="button" key={value} aria-current={active===value?'page':undefined}
-      onClick={()=>router.push(featureNavigationHref(scopeId,'statics',{...navigation,statTab:value}))}>{label}</button>)}
-  </nav>;
-}
 function StatisticTypeSelect({scopeId,navigation,types}){
   const router=useRouter();
   const requested=String(navigation.rankingType||'');
@@ -269,15 +260,7 @@ function StatisticsPanel({scopeId,navigation,types}){
   </section>;
 }
 
-function MediaPanel({scopeId}){
-  return <section className="scope-v2-stat-section">
-    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Media Metadata</p><h2>多媒體設定</h2></div></header>
-    <MediaMetaSettingsV2 databaseScopeId={scopeId}/>
-  </section>;
-}
 function StatisticsShell({scopeId,navigation}){
-  const visibleTabs=scopeId==='loc'?STAT_TABS.filter(([value])=>value==='ranking'):STAT_TABS;
-  const active=visibleTabs.some(([value])=>value===navigation.statTab)?navigation.statTab:'ranking';
   const typesQuery=useQuery({
     queryKey:['statistics-types',scopeId],
     queryFn:()=>selectScopeRankingTypes(scopeId),
@@ -285,10 +268,8 @@ function StatisticsShell({scopeId,navigation}){
   });
   const types=typesQuery.data||[];
   return <section className="loc-card scope-v2-feature-card">
-    <StatTabs scopeId={scopeId} navigation={navigation} active={active} tabs={visibleTabs}/>
     {typesQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(typesQuery.error)}</p>:null}
-    {!typesQuery.isPending&&active==='ranking'?<StatisticsPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
-    {active==='media'?<MediaPanel scopeId={scopeId}/>:null}
+    {!typesQuery.isPending?<StatisticsPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
   </section>;
 }
 export default function StatisticsV2(){
