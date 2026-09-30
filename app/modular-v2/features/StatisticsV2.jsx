@@ -138,18 +138,30 @@ function buildTrendSuggestions(rows=[],standard='10y',anchorDates=[]){
   const data=buildSourceTrend(rows,standard);
   if(data.length<2)return [];
   const config=TIME_STANDARDS.find(item=>item.value===standard)||TIME_STANDARDS[0];
+  const volumeThreshold=config.bucket==='month'?MONTHLY_VOLUME_CHANGE_RATIO:FINE_VOLUME_CHANGE_RATIO;
+  const minRunTransitions=config.bucket==='day'?3:2;
+  const cliffRatio=.50;
   const candidates=[];
 
-  for(let index=1;index<data.length;index+=1){
-    const previous=data[index-1];
-    const current=data[index];
-    const previousTotal=Number(previous.total)||0;
-    const currentTotal=Number(current.total)||0;
+  const addCandidate=candidate=>{
+    if(!candidate?.from||!candidate?.to)return;
+    if(rangeHasAnchor(anchorDates,candidate.from,candidate.to))return;
+    candidates.push(candidate);
+  };
 
-    // A zero run is one state change, not one suggestion per empty bucket.
-    // The useful review range ends at the first zero; trailing zero buckets
-    // are skipped until data resumes.
-    if(previousTotal>0&&currentTotal===0){
+  let index=1;
+  while(index<data.length){
+    const previousTotal=Number(data[index-1].total)||0;
+    const currentTotal=Number(data[index].total)||0;
+
+    // Leading / internal zero runs are states, not repeated point suggestions.
+    if(previousTotal===0){
+      index+=1;
+      continue;
+    }
+
+    // Collapse positive -> zero -> zero... into one structural break.
+    if(currentTotal===0){
       let declineStart=index-1;
       while(declineStart>0){
         const before=Number(data[declineStart-1].total)||0;
@@ -157,55 +169,76 @@ function buildTrendSuggestions(rows=[],standard='10y',anchorDates=[]){
         if(before<=0||at<=0||before<at)break;
         declineStart-=1;
       }
-
       let zeroEnd=index;
       while(zeroEnd+1<data.length&&(Number(data[zeroEnd+1].total)||0)===0)zeroEnd+=1;
-
-      candidates.push({
-        key:'zero|'+data[declineStart].start_date+'|'+current.end_date,
+      addCandidate({
+        key:'zero|'+data[declineStart].start_date+'|'+data[index].end_date,
         kind:'zero',
         from:data[declineStart].start_date,
-        to:current.end_date,
+        to:data[index].end_date,
         previousTotal:Number(data[declineStart].total)||previousTotal,
         currentTotal:0,
-        reason:declineStart<index-1?'作品量持續下降後歸零':'作品量降至 0',
+        reason:declineStart<index-1?'總來源持續下降後歸零':'總來源降至 0',
         score:10000+(index-declineStart)*100+previousTotal
       });
-
-      index=zeroEnd;
+      index=zeroEnd+1;
       continue;
     }
 
-    // Zero -> positive is a recovery boundary, not a second suggestion.
-    if(previousTotal===0||currentTotal===0)continue;
-
-    if(Math.max(previousTotal,currentTotal)>=MAJOR_VOLUME_MIN){
-      const ratio=Math.abs(currentTotal-previousTotal)/Math.max(1,previousTotal);
-      const volumeThreshold=config.bucket==='month'?MONTHLY_VOLUME_CHANGE_RATIO:FINE_VOLUME_CHANGE_RATIO;
-      if(ratio>=volumeThreshold){
-        candidates.push({
-          key:'volume|'+previous.start_date+'|'+current.end_date,
-          kind:'volume',
-          from:previous.start_date,
-          to:current.end_date,
-          previousTotal,
-          currentTotal,
-          reason:'作品量'+(currentTotal>previousTotal?'大幅增加':'大幅下降')+' '+Math.round(ratio*100)+'%',
-          score:5000+ratio*1000+Math.abs(currentTotal-previousTotal)
-        });
-      }
+    // Build one monotonic trend run instead of suggesting every adjacent bucket.
+    const initialDelta=currentTotal-previousTotal;
+    if(initialDelta===0){
+      index+=1;
+      continue;
     }
+    const direction=Math.sign(initialDelta);
+    const runStart=index-1;
+    let runEnd=index;
+    while(runEnd+1<data.length){
+      const at=Number(data[runEnd].total)||0;
+      const next=Number(data[runEnd+1].total)||0;
+      if(at<=0||next<=0)break;
+      const delta=next-at;
+      if(delta===0){
+        runEnd+=1;
+        continue;
+      }
+      if(Math.sign(delta)!==direction)break;
+      runEnd+=1;
+    }
+
+    const startTotal=Number(data[runStart].total)||0;
+    const endTotal=Number(data[runEnd].total)||0;
+    const transitions=runEnd-runStart;
+    const netRatio=startTotal>0?Math.abs(endTotal-startTotal)/startTotal:0;
+    const largeEnough=netRatio>=volumeThreshold;
+    const broadEnough=transitions>=minRunTransitions;
+    const cliff=netRatio>=cliffRatio;
+
+    if(startTotal>=MAJOR_VOLUME_MIN&&largeEnough&&(broadEnough||cliff)){
+      addCandidate({
+        key:'trend|'+data[runStart].start_date+'|'+data[runEnd].end_date,
+        kind:'trend',
+        from:data[runStart].start_date,
+        to:data[runEnd].end_date,
+        previousTotal:startTotal,
+        currentTotal:endTotal,
+        reason:'總來源'+(direction>0?'持續增加 ':'持續下降 ')+Math.round(netRatio*100)+'%',
+        score:(cliff?7000:5000)+netRatio*1000+transitions*100
+      });
+    }
+    index=runEnd+1;
   }
 
+  // Nearby/overlapping signals describe the same structural change.
+  // Keep only the strongest one, then return a small number of broad review ranges.
   const accepted=[];
-  for(const candidate of candidates
-    .filter(item=>!rangeHasAnchor(anchorDates,item.from,item.to))
-    .sort((a,b)=>b.score-a.score||String(b.to).localeCompare(String(a.to)))){
+  for(const candidate of candidates.sort((a,b)=>b.score-a.score||String(b.to).localeCompare(String(a.to)))){
     if(accepted.some(item=>rangesOverlap(item,candidate)))continue;
     accepted.push(candidate);
     if(accepted.length>=3)break;
   }
-  return accepted;
+  return accepted.sort((a,b)=>String(a.from).localeCompare(String(b.from)));
 }
 
 function displayTerm(row){
