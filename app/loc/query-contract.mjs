@@ -1,1 +1,1 @@
-export const NEON_QUERY_BATCH_SIZE=10000;
+export const NEON_QUERY_BATCH_SIZE=15000;
