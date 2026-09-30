@@ -1,92 +1,115 @@
-function riverDate(value){
+import {detectChangepoints,PoissonCost} from 'karaul';
+
+const DAY_MS=86400000;
+
+function dayKey(value){
   const key=String(value||'').slice(0,10);
-  return /^\d{4}-\d{2}-\d{2}$/.test(key)&&Number.isFinite(Date.parse(key+'T00:00:00Z'))?key:'';
+  return /^\d{4}-\d{2}-\d{2}$/.test(key)?key:'';
+}
+function dayMs(value){
+  const key=dayKey(value);
+  return key?Date.parse(key+'T00:00:00Z'):NaN;
+}
+function dayFromMs(value){
+  return new Date(value).toISOString().slice(0,10);
 }
 
-function nextRiverDate(value){
-  const key=riverDate(value);
-  if(!key)return '';
-  const date=new Date(key+'T00:00:00Z');
-  date.setUTCDate(date.getUTCDate()+1);
-  return date.toISOString().slice(0,10);
-}
-
-export function normalizeRiverDensitySeries(rows=[]){
+export function aggregateRiverDensity(rows=[]){
   const counts=new Map();
-  for(const row of Array.isArray(rows)?rows:[]){
-    const date=riverDate(row?.date||row?.day||row?.start_date||row?.createtime||row?.created_at);
-    if(!date)continue;
-    const count=Math.max(0,Number(row?.count??row?.item_count??row?.work_count??0)||0);
+  for(const row of rows||[]){
+    const date=dayKey(row?.date||row?.day||row?.start_date);
+    const count=Math.max(0,Number(row?.count??row?.item_count??0)||0);
+    if(!date||count<=0)continue;
     counts.set(date,(counts.get(date)||0)+count);
   }
   return [...counts.entries()]
-    .sort(([a],[b])=>a.localeCompare(b))
-    .map(([date,count])=>({date,count}));
+    .map(([date,count])=>({date,count}))
+    .sort((a,b)=>a.date.localeCompare(b.date));
 }
 
-export function completeRiverDensitySeries(rows=[],{startDate='',endDate=''}={}){
-  const normalized=normalizeRiverDensitySeries(rows);
-  if(!normalized.length&&!riverDate(startDate)&&!riverDate(endDate))return [];
-  const start=riverDate(startDate)||normalized[0]?.date||'';
-  const end=riverDate(endDate)||normalized.at(-1)?.date||'';
-  if(!start||!end||start>end)return normalized;
-  const counts=new Map(normalized.map(item=>[item.date,item.count]));
-  const result=[];
-  for(let date=start;date&&date<=end;date=nextRiverDate(date)){
-    result.push({date,count:counts.get(date)||0});
+export function fillRiverDensity(rows=[]){
+  const aggregated=aggregateRiverDensity(rows);
+  if(!aggregated.length)return [];
+  const counts=new Map(aggregated.map(row=>[row.date,row.count]));
+  const start=dayMs(aggregated[0].date);
+  const end=dayMs(aggregated.at(-1).date);
+  const filled=[];
+  for(let cursor=start;cursor<=end;cursor+=DAY_MS){
+    const date=dayFromMs(cursor);
+    filled.push({date,count:counts.get(date)||0});
   }
-  return result;
+  return filled;
 }
 
-export function mapRiverChangeIndexesToPublishedDates(series=[],changeIndexes=[]){
-  const rows=normalizeRiverDensitySeries(series);
-  if(!rows.length)return [];
-  const publishedIndexes=rows
-    .map((item,index)=>item.count>0?index:-1)
-    .filter(index=>index>=0);
-  const dates=new Set();
-  for(const rawIndex of Array.isArray(changeIndexes)?changeIndexes:[]){
-    const index=Math.max(0,Math.min(rows.length,Math.trunc(Number(rawIndex))));
-    if(!Number.isFinite(index))continue;
-    const before=[...publishedIndexes].reverse().find(candidate=>candidate<index);
-    const after=publishedIndexes.find(candidate=>candidate>=index);
-    if(Number.isInteger(before))dates.add(rows[before].date);
-    if(Number.isInteger(after))dates.add(rows[after].date);
+function nearestPublishedBefore(rows,index){
+  for(let cursor=Math.min(index-1,rows.length-1);cursor>=0;cursor--){
+    if(Number(rows[cursor]?.count)>0)return rows[cursor].date;
   }
-  return [...dates].sort();
+  return '';
+}
+function nearestPublishedAtOrAfter(rows,index){
+  for(let cursor=Math.max(0,index);cursor<rows.length;cursor++){
+    if(Number(rows[cursor]?.count)>0)return rows[cursor].date;
+  }
+  return '';
+}
+function zeroSegments(rows,changepoints){
+  const boundaries=[0,...changepoints,rows.length]
+    .filter((value,index,array)=>Number.isInteger(value)&&value>=0&&value<=rows.length&&array.indexOf(value)===index)
+    .sort((a,b)=>a-b);
+  const segments=[];
+  for(let index=1;index<boundaries.length;index++){
+    const startIndex=boundaries[index-1];
+    const endIndex=boundaries[index];
+    if(endIndex<=startIndex)continue;
+    const segment=rows.slice(startIndex,endIndex);
+    if(segment.length&&segment.every(row=>Number(row.count)===0)){
+      segments.push({startIndex,endIndex});
+    }
+  }
+  return segments;
 }
 
-export function excludeAnchoredRiverDates(candidateDates=[],anchorDates=[]){
-  const anchored=new Set((Array.isArray(anchorDates)?anchorDates:[]).map(riverDate).filter(Boolean));
-  return [...new Set((Array.isArray(candidateDates)?candidateDates:[]).map(riverDate).filter(Boolean))]
-    .filter(date=>!anchored.has(date))
-    .sort();
-}
+export function analyzeRiverDensity(rows=[],anchorDates=[]){
+  const density=fillRiverDensity(rows);
+  if(density.length<3)return {density,changepoints:[],hiddenDates:[],suggestions:[]};
 
-export function hiddenDatesFromGapBoundaries(gaps=[]){
-  return (Array.isArray(gaps)?gaps:[]).flatMap(gap=>{
-    const before=riverDate(gap?.before||gap?.from||gap?.leftDate);
-    const after=riverDate(gap?.after||gap?.to||gap?.rightDate);
-    if(!before||!after||before>=after)return [];
-    const start=nextRiverDate(before);
-    if(!start||start>=after)return [];
-    return [{start,end:after}];
-  });
-}
+  const values=density.map(row=>Number(row.count)||0);
+  let changepoints=[];
+  try{
+    changepoints=detectChangepoints(values,new PoissonCost())
+      .filter(index=>Number.isInteger(index)&&index>0&&index<density.length);
+  }catch{
+    changepoints=[];
+  }
 
-export function buildRiverDensityAnalysis({
-  densityRows=[],
-  startDate='',
-  endDate='',
-  changeIndexes=[],
-  gapBoundaries=[],
-  anchorDates=[]
-}={}){
-  const series=completeRiverDensitySeries(densityRows,{startDate,endDate});
-  const candidates=mapRiverChangeIndexesToPublishedDates(series,changeIndexes);
+  const emptySegments=zeroSegments(density,changepoints);
+  const hiddenDates=emptySegments.map(segment=>({
+    start:density[segment.startIndex].date,
+    end:segment.endIndex<density.length?density[segment.endIndex].date:dayFromMs(dayMs(density.at(-1).date)+DAY_MS)
+  }));
+
+  const existing=new Set((anchorDates||[]).map(dayKey).filter(Boolean));
+  const suggestions=new Map();
+  const addSuggestion=(date,reason)=>{
+    const key=dayKey(date);
+    if(!key||existing.has(key))return;
+    const current=suggestions.get(key);
+    if(!current||reason==='gap-edge')suggestions.set(key,{date:key,reason});
+  };
+
+  for(const index of changepoints){
+    addSuggestion(nearestPublishedAtOrAfter(density,index),'change-point');
+  }
+  for(const segment of emptySegments){
+    addSuggestion(nearestPublishedBefore(density,segment.startIndex),'gap-edge');
+    addSuggestion(nearestPublishedAtOrAfter(density,segment.endIndex),'gap-edge');
+  }
+
   return {
-    series,
-    candidateDates:excludeAnchoredRiverDates(candidates,anchorDates),
-    hiddenDates:hiddenDatesFromGapBoundaries(gapBoundaries)
+    density,
+    changepoints,
+    hiddenDates,
+    suggestions:[...suggestions.values()].sort((a,b)=>a.date.localeCompare(b.date))
   };
 }
