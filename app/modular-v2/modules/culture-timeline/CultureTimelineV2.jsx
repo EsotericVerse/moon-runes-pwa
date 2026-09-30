@@ -68,7 +68,7 @@ function dateLabel(value){
   return formatted.length>=10?formatted.slice(0,10):formatted;
 }
 
-export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),focus={},mode='period',onSelect=null,windowStart='',windowEnd='',onBoundaryNavigate=null}){
+export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),focus={},mode='period',onSelect=null,windowStart='',windowEnd='',onBoundaryNavigate=null,fixedMin='',fixedMax=''}){
   const containerRef=useRef(null);
   const onSelectRef=useRef(onSelect);
   const onBoundaryNavigateRef=useRef(onBoundaryNavigate);
@@ -134,6 +134,8 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
         zoomKey:'ctrlKey',
         zoomMin:1000*60*60*24*14,
         zoomMax:1000*60*60*24*365*50,
+        ...(fixedMin&&Number.isFinite(Date.parse(fixedMin))?{min:fixedMin}:{}),
+        ...(fixedMax&&Number.isFinite(Date.parse(fixedMax))?{max:fixedMax}:{}),
         selectable:true,
         moveable:true,
         showCurrentTime:false,
@@ -166,7 +168,7 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
       if(!cancelled){setReady(false);setChartError(true);}
     }
     return()=>{cancelled=true;if(instance)instance.destroy();};
-  },[rows,timelineHeight,windowStart,windowEnd]);
+  },[rows,timelineHeight,windowStart,windowEnd,fixedMin,fixedMax]);
 
   if(!rows.length)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><div className='scope-period-timeline scope-period-timeline-empty-line' role='region' aria-label='時間長河'/><p>{mode==='overview'?'尚未設定時期，目前以「所有」總覽顯示。':'目前時期尚無可顯示的時間資料。'}</p></div>;
 
