@@ -1,3 +1,4 @@
+import {NEON_QUERY_BATCH_SIZE} from '../../loc/query-contract.mjs';
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
@@ -94,7 +95,7 @@ export default function CultureTimelineEditor({scopeId=''}){
         columns:TIME_COLUMNS,
         filters:[{column:'record_type',operator:'in',value:EDITABLE_TYPES.map(([type])=>type)}],
         orders:[{column:'display_order',ascending:true},{column:'record_id',ascending:true}],
-        limit:5000,
+        limit:NEON_QUERY_BATCH_SIZE,
         offset:0
       });
       return rows;
