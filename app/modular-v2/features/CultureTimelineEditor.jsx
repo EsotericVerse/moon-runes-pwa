@@ -254,7 +254,7 @@ export default function CultureTimelineEditor({scopeId=''}){
     <h2>時期設定</h2>
     <p>新增或調整定錨點請在這裡處理；時間長河只呈現結果。時期與事件共用前／後兩個定錨點，沒有對應定錨時請選 0。</p>
     {query.error?<p className="scope-v2-status scope-v2-error">{query.error.message}</p>:null}
-    {duplicateAnchorIds.length?<p className="scope-v2-status scope-v2-error">同一 Scope 存在重複定錨點識別：{duplicateAnchorIds.join('、')}。請先修正，Culture 不會再靜默覆蓋。</p>:null}
+    {duplicateAnchorIds.length?<p className="scope-v2-status scope-v2-error">同一資料區域存在重複的定錨點識別：{duplicateAnchorIds.join('、')}。請先修正，否則無法正確呈現文化資料。</p>:null}
     {query.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
     <div className="scope-v2-tabs">
       {EDITABLE_TYPES.map(([type,label])=><button key={type} type="button" onClick={()=>beginAdd(type)}>新增{label}</button>)}
