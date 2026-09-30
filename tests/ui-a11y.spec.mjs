@@ -4,7 +4,7 @@ import AxeBuilder from '@axe-core/playwright';
 const ROUTES=['/','/lrunes/','/culture/','/statics/','/search/','/game/','/lo3rwang/'];
 
 for(const route of ROUTES){
-  test(`${route} keeps the RC8.1 visual contract`,async({page})=>{
+  test(`${route} keeps the RC8.1 visual contract`,async({page},testInfo)=>{
     await page.goto(route,{waitUntil:'domcontentloaded'});
     await expect(page.locator('body')).toBeVisible();
     await expect(page.locator('.scope-v2-global')).toBeVisible();
@@ -14,6 +14,12 @@ for(const route of ROUTES){
 
     const main=page.locator('.loc-next-main,.scope-v2-main').first();
     await expect(main).toBeVisible();
+
+    await page.screenshot({
+      path:testInfo.outputPath('full-page.png'),
+      fullPage:true,
+      animations:'disabled'
+    });
 
     const results=await new AxeBuilder({page})
       .withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa'])
