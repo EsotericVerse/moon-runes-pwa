@@ -388,7 +388,7 @@ export default function CultureV2(){
 
             {isLoc?<>
 
-              <section className='scope-v2-card scope-v2-culture-classification-river'>
+              <section className='scope-v2-card scope-v2-culture-classification-river scope-v2-loc-time-river'>
                 <p className='loc-eyebrow'>Time River</p>
                 <h3>交會時間長河</h3>
                 {locScopeTotals.length?<p className='scope-v2-status'>
