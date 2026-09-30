@@ -24,6 +24,11 @@ function phaseMark(phase){
   if(phase==='duel')return '決';
   return '鳴';
 }
+function phaseText(phase){
+  if(phase==='event')return '事件';
+  if(phase==='duel')return '決鬥';
+  return '共鳴';
+}
 
 function signed(value){
   const number=Number(value||0);
@@ -54,19 +59,19 @@ function RuneCard({card,selected=false,onClick=null,compact=false}){
 function EventVisual({item,small=false}){
   if(!item)return null;
   return <figure className={'game-event-visual'+(small?' is-small':'')}>
-    <img src={item.path} alt={(item.title||'Event')+'圖'} loading="lazy"/>
+    <img src={item.path} alt={(item.title||'事件')+'圖'} loading="lazy"/>
     <figcaption>{item.title}</figcaption>
   </figure>;
 }
 
 function RoundRail({round=1,rounds=[]}){
-  const sequence=round===9?[...rounds,{round:9,phase:'duel',title:'R9'}]:rounds;
+  const sequence=round===9?[...rounds,{round:9,phase:'duel',title:'第 9 回合'}]:rounds;
   return <div className="game-round-rail" aria-label="回合進度" style={{gridTemplateColumns:'repeat('+sequence.length+',minmax(64px,1fr))'}}>
     {sequence.map(item=>{
       const current=item.round===round;
       const done=item.round<round;
       return <div className={'game-round-node'+(current?' is-current':'')+(done?' is-done':'')} key={item.round}>
-        <span>R{item.round}</span><b>{phaseMark(item.phase)}</b>
+        <span>第 {item.round} 回合</span><b>{phaseMark(item.phase)}</b>
       </div>;
     })}
   </div>;
@@ -86,7 +91,7 @@ function GameDocs({data}){
     {section==='rules'&&<div className="game-doc-copy">
       <h2>遊戲規則</h2>
       <div className="game-role-grid">
-        {currentRules.map(rule=><article key={rule.game_key}><b>{rule.rule_title}</b><span>{rule.rule_text}</span><small>{rule.rule_code}</small></article>)}
+        {currentRules.map(rule=><article key={rule.game_key}><b>{rule.rule_title}</b><span>{rule.rule_text}</span></article>)}
       </div>
       <h3>四組簡稱</h3>
       <div className="game-role-grid">
@@ -94,7 +99,7 @@ function GameDocs({data}){
       </div>
       <h3>回合</h3>
       <div className="game-role-grid">
-        {data.rounds.map(item=><article key={item.round}><b>R{item.round}｜{item.phase}</b><span>{item.text}</span></article>)}
+        {data.rounds.map(item=><article key={item.round}><b>第 {item.round} 回合｜{phaseText(item.phase)}</b><span>{item.text}</span></article>)}
       </div>
     </div>}
 
@@ -193,7 +198,7 @@ export default function GameView(){
     if(!state)return data.cards.length+' 張可玩符文、'+data.events.length+' 張事件卡已就緒。';
     if(state.winner!==null)return state.players[state.winner].name+' 勝出。';
     if(state.draw)return '第 9 回合決鬥仍平分；後續判定待定。';
-    return 'R'+state.round+' · '+phaseLabel;
+    return '第 '+state.round+' 回合 · '+phaseLabel;
   },[data,error,isLoading,state,phaseLabel]);
 
   if(isLoading)return <section className="loc-view loc-game game-shell"><p className="loc-status">{status}</p></section>;
@@ -347,7 +352,7 @@ export default function GameView(){
           <span>{roundBadge}</span>
         </div>
       </div>
-      {authorAsset?<figure className="game-author-visual"><img src={authorAsset.path} alt={authorAsset.title||'LunaRunes 作者圖'} loading="eager"/></figure>:null}
+      {authorAsset?<figure className="game-author-visual"><img src={authorAsset.path} alt={authorAsset.title||'月之符文作者圖'} loading="eager"/></figure>:null}
     </header>
 
     <div className="game-round-wrap"><RoundRail round={1} rounds={data.rounds}/></div>
@@ -428,7 +433,6 @@ export default function GameView(){
     </div>
 
     <section className="loc-card game-log-card">
-      <p className="loc-eyebrow">MATCH LOG</p>
       <h2>對局紀錄</h2>
       <div className="game-log">{state.logs.map((line,index)=><p key={index}><span>◈</span>{line}</p>)}</div>
     </section>
