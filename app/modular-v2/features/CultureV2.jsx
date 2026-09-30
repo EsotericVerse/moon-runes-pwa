@@ -13,6 +13,7 @@ import {galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation.v
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
 import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
+import {analyzeRiverDensity} from '../modules/culture-timeline/river-density-analysis.mjs';
 import {selectGalaxyContent} from '../../loc/aggregate-query';
 import {neonAuthClient} from '../../loc/neon-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
@@ -254,6 +255,21 @@ export default function CultureV2(){
 
   const classificationBuckets=sourceSnapshotQuery.data?.buckets||[];
 
+  const existingAnchorDates=useMemo(()=>
+    timelineItems
+      .filter(item=>String(item?.entry_type||'')==='anchor')
+      .map(item=>String(item?.start_date||item?.date||'').slice(0,10))
+      .filter(Boolean)
+  ,[timelineItems]);
+  const riverAnalysis=useMemo(
+    ()=>analyzeRiverDensity(classificationBuckets,existingAnchorDates),
+    [classificationBuckets,existingAnchorDates]
+  );
+  const locRiverAnalysis=useMemo(
+    ()=>analyzeRiverDensity(locCombinedSourceRiverItems,[]),
+    [locCombinedSourceRiverItems]
+  );
+
   async function galaxyTable(){
     return (await resolveScopeTables(classificationScope)).galaxy.split('.').at(-1);
   }
@@ -359,6 +375,7 @@ export default function CultureV2(){
                   windowEnd={requestedWindowEnd||locDistributionEnd}
                   fixedMin={locDistributionStart}
                   fixedMax={locDistributionEnd}
+                  hiddenDates={locRiverAnalysis.hiddenDates}
                 />:null}
                 {locCombinedSourceRiverItems.length?<section className='scope-v2-culture-combined-source-river'>
                   <p className='loc-eyebrow'>Combined Sources</p>
@@ -372,6 +389,7 @@ export default function CultureV2(){
                     windowEnd={requestedWindowEnd||locDistributionEnd}
                     fixedMin={locDistributionStart}
                     fixedMax={locDistributionEnd}
+                    hiddenDates={locRiverAnalysis.hiddenDates}
                   />
                 </section>:null}
 
@@ -411,6 +429,7 @@ export default function CultureV2(){
                   mode='source'
                   windowStart={selectedWindowStart}
                   windowEnd={selectedWindowEnd}
+                  hiddenDates={riverAnalysis.hiddenDates}
                   onSelect={item=>{
                     const term=String(item?.category||item?.group||'').split(' · ')[0].trim();
                     if(!term)return;
@@ -420,6 +439,9 @@ export default function CultureV2(){
                     }
                   }}
                 />:null}
+                {riverAnalysis.suggestions.length?<p className='scope-v2-status'>
+                  建議定錨：{riverAnalysis.suggestions.map(item=>item.date).join('、')}
+                </p>:null}
 
                 <p className='scope-v2-status'>該時期總作品數：{Number(sourceSnapshotQuery.data?.totalCount||0).toLocaleString()} 項。</p>
 
