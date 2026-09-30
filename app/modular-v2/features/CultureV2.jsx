@@ -218,6 +218,7 @@ export default function CultureV2(){
     group_label:locSourceGroupLabel.get(String(item?.category||item?.group_label||''))||String(item?.group_label||'')
   })),[locSourceRiverItems,locSourceGroupLabel]);
   const locScopeDistributionItems=useMemo(()=>query.data?.scopeRanges||[],[query.data]);
+  const locIntersectionScopeIds=useMemo(()=>query.data?.intersectionScopeIds||[],[query.data]);
   const locDistributionStart=String(query.data?.intersectionStart||'');
   const locDistributionEnd=String(query.data?.intersectionEnd||new Date().toISOString().slice(0,10));
   const locScopeTotals=useMemo(()=>{
@@ -227,10 +228,14 @@ export default function CultureV2(){
       if(!scope)continue;
       totals.set(scope,(totals.get(scope)||0)+(Number(item?.item_count)||0));
     }
+    for(const scopeId of locIntersectionScopeIds){
+      const scope=String(scopeId||'').trim();
+      if(scope&&!totals.has(scope))totals.set(scope,0);
+    }
     return [...totals.entries()]
       .map(([scope,count])=>({scope,count}))
       .sort((a,b)=>a.scope.localeCompare(b.scope));
-  },[locScopeDistributionItems]);
+  },[locScopeDistributionItems,locIntersectionScopeIds]);
   const locIntersectionTotal=useMemo(()=>locScopeTotals.reduce((sum,item)=>sum+Number(item.count||0),0),[locScopeTotals]);
   const locScopeRiverItems=useMemo(()=>{
     const perScopeMax=new Map();
@@ -242,7 +247,7 @@ export default function CultureV2(){
       perScopeMax.set(scope,Math.max(perScopeMax.get(scope)||0,count));
       globalMax=Math.max(globalMax,count);
     }
-    return locScopeDistributionItems.map((item,index)=>{
+    const rows=locScopeDistributionItems.map((item,index)=>{
       const scope=String(item?.scope_id||'').trim();
       const day=String(item?.start_date||'').slice(0,10);
       const count=Number(item?.item_count)||0;
@@ -260,7 +265,28 @@ export default function CultureV2(){
         global_density_ratio:count/Math.max(1,globalMax)
       };
     }).filter(item=>item.group_label&&item.start_date);
-  },[locScopeDistributionItems]);
+    const represented=new Set(rows.map(item=>String(item.group_label||'')));
+    for(const scopeId of locIntersectionScopeIds){
+      const scope=String(scopeId||'').trim();
+      if(!scope||represented.has(scope)||!locDistributionStart)continue;
+      rows.push({
+        id:'loc-scope-empty:'+scope,
+        entry_id:'loc-scope-empty:'+scope,
+        entry_type:'scope_density',
+        scope_id:scope,
+        group_label:scope,
+        category:scope,
+        display_label:'',
+        title:locDistributionStart+' · '+scope+' · 0 項',
+        start_date:locDistributionStart,
+        end_date:nextRiverDay(locDistributionStart),
+        item_count:0,
+        density_ratio:0,
+        global_density_ratio:0
+      });
+    }
+    return rows;
+  },[locScopeDistributionItems,locIntersectionScopeIds,locDistributionStart]);
   const hasTimelineSurface=isLoc?Boolean(locSourceRiverItems.length):Boolean(timelineItems.length||selectedWorkPeriod?.start_date);
 
   const classificationBuckets=sourceSnapshotQuery.data?.buckets||[];
