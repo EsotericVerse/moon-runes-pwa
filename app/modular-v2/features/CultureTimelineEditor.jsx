@@ -18,19 +18,19 @@ function timeRelation(client,table){
 }
 async function insertNeonRows(table,rows){
   const {error}=await timeRelation(neonAuthClient,table).insert(rows);
-  if(error)throw new Error(error.message||('Neon INSERT '+table+' failed'));
+  if(error)throw new Error(error.message||'新增資料失敗');
 }
 async function updateNeonRows(table,values,{filters=[]}={}){
   let query=timeRelation(neonAuthClient,table).update(values);
   for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
   const {error}=await query;
-  if(error)throw new Error(error.message||('Neon UPDATE '+table+' failed'));
+  if(error)throw new Error(error.message||'更新資料失敗');
 }
 async function deleteNeonRows(table,{filters=[]}={}){
   let query=timeRelation(neonAuthClient,table).delete();
   for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
   const {error}=await query;
-  if(error)throw new Error(error.message||('Neon DELETE '+table+' failed'));
+  if(error)throw new Error(error.message||'刪除資料失敗');
 }
 
 const EDITABLE_TYPES=Object.freeze([
@@ -177,7 +177,7 @@ export default function CultureTimelineEditor({scopeId=''}){
           String(row.resource_id||'').trim()===resourceId&&
           String(row.record_id||'')!==String(selectedId||'')
         );
-        if(duplicate)throw new Error('同一 Scope 已存在相同定錨點識別：'+resourceId);
+        if(duplicate)throw new Error('同一資料區域已存在相同定錨點識別：'+resourceId);
       }
       const payload={
         record_type:type,
