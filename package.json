@@ -1,6 +1,6 @@
 {
   "name": "loc-next-architecture",
-  "version": "0.8.1-rc.1",
+  "version": "0.8.2-rc.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
