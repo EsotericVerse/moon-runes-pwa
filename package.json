@@ -38,5 +38,10 @@
     "vis-network": "10.1.0",
     "vis-timeline": "8.5.4",
     "zod": "4.6.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@lhci/cli": "0.15.1",
+    "@playwright/test": "1.63.0"
   }
 }
