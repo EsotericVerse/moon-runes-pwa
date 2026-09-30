@@ -21,6 +21,7 @@ function safeRelationLinksOf(items=[]){
 export default function WorkSummaryCardV2({
   title='未命名作品',
   source='',
+  scopeId='',
   date='',
   body='',
   hidden=false,
@@ -37,7 +38,7 @@ export default function WorkSummaryCardV2({
   return <article className="scope-v2-inline-card scope-v2-work-summary">
     <header className="scope-v2-culture-work-heading">
       <div>
-        {showSource&&source?<p className="loc-eyebrow">{source}</p>:null}
+        {(scopeId||showSource&&source)?<p className="loc-eyebrow">{[scopeId,showSource?source:''].filter(Boolean).join(' · ')}</p>:null}
         <strong>{title}</strong>
       </div>
       {date?<time>{date}</time>:null}
