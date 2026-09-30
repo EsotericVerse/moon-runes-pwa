@@ -322,3 +322,11 @@
 .scope-v2-loc-distribution-buckets{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(28px,1fr);gap:.4rem;min-height:92px;align-items:end}
 .scope-v2-loc-distribution-bucket{display:flex;align-items:flex-end;justify-content:center;min-height:48px;height:calc(48px + 44px * var(--loc-density));padding:.35rem .2rem;border:1px solid var(--loc-accent-border);border-radius:10px;background:color-mix(in srgb,var(--loc-accent) calc(10% + 55% * var(--loc-density)),var(--loc-panel));overflow:hidden}
 .scope-v2-loc-distribution-bucket span{font-size:.75rem;line-height:1;color:var(--loc-text);white-space:nowrap}
+
+.scope-v2-stat-suggestions{display:grid;gap:.65rem;margin-top:1rem}
+.scope-v2-stat-suggestions>header h3{margin:.15rem 0 0}
+.scope-v2-stat-suggestions>div{display:grid;gap:.5rem}
+.scope-v2-stat-suggestions button{display:grid;grid-template-columns:minmax(10rem,auto) 1fr;gap:.75rem;align-items:center;width:100%;padding:.65rem .8rem;border:var(--scope-v2-border);border-radius:12px;background:var(--loc-panel-2);color:var(--scope-v2-text);text-align:left;cursor:pointer}
+.scope-v2-stat-suggestions button:hover{border-color:var(--loc-accent-border);background:var(--loc-gold-surface)}
+.scope-v2-stat-suggestions button span{color:var(--scope-v2-muted)}
+@media(max-width:680px){.scope-v2-stat-suggestions button{grid-template-columns:1fr}}
