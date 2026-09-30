@@ -352,6 +352,7 @@ export default function SearchV2(){
           key={row.key}
           title={row.title}
           source={row.source}
+          scopeId={row.scopeId}
           date={row.date}
           body={<SearchHighlightV2 text={row.snippet} query={matchedQueryRef.current}/>}
           hidden={false}
