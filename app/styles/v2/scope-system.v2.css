@@ -186,7 +186,7 @@
 .scope-v2-culture-source-groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:.6rem;margin:.75rem 0}
 .scope-v2-culture-source-button{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.7rem .85rem;border:var(--scope-v2-border);border-radius:14px;background:var(--loc-panel-2);color:var(--scope-v2-text);text-align:left;cursor:pointer}
 .scope-v2-culture-source-button:hover,.scope-v2-culture-source-button[aria-pressed="true"]{border-color:var(--loc-accent-border);background:var(--loc-gold-surface)}
-.scope-v2-culture-source-button span{color:var(--scope-v2-muted);white-space:nowrap}
+.scope-v2-culture-source-button{min-width:0;overflow:hidden}\n.scope-v2-culture-source-button span{min-width:0;color:var(--scope-v2-muted);white-space:normal;overflow-wrap:anywhere}
 .scope-v2-culture-source-detail{display:grid;gap:.65rem;min-height:16rem;margin-top:.8rem;padding:.8rem;border:var(--scope-v2-border);border-radius:var(--scope-v2-radius);background:var(--loc-surface-soft)}
 .scope-v2-culture-source-detail>header,.scope-v2-culture-work-heading,.scope-v2-culture-source-pages{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap}
 .scope-v2-culture-source-detail h4{margin:0}
@@ -312,6 +312,22 @@
 .scope-v2-loc-time-river{min-width:0;max-width:100%;overflow:hidden}
 .scope-v2-loc-time-river .scope-period-timeline-wrap{min-width:0;max-width:100%;overflow:hidden}
 .scope-v2-loc-time-river .scope-period-timeline{min-width:0;max-width:100%}
+.scope-v2-loc-time-river .vis-panel.vis-left{
+  width:clamp(104px,16vw,180px)!important;
+  max-width:180px!important;
+}
+.scope-v2-loc-time-river .vis-labelset .vis-label{
+  width:100%!important;
+  min-width:0;
+}
+.scope-v2-loc-time-river .vis-labelset .vis-label .vis-inner{
+  width:100%;
+  min-width:0;
+  padding:.45rem .55rem;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  line-height:1.25;
+}
 
 
 .scope-v2-stat-suggestions{display:grid;gap:.65rem;margin-top:1rem}
