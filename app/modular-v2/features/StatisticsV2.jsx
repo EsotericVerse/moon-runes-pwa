@@ -28,7 +28,7 @@ const STAT_TYPE_LABELS=Object.freeze({
   total:'總來源',
   source:'作品來源'
 });
-const SOURCE_TREND_ORDER=Object.freeze(['Facebook','Threads','IG','Twitter(X)','YouTube','Others']);
+const SOURCE_TREND_ORDER=Object.freeze(['Facebook','Threads','IG','Others']);
 const TIME_STANDARDS=Object.freeze([
   {value:'10y',label:'10 年',months:120,bucket:'month'},
   {value:'5y',label:'5 年',months:60,bucket:'month'},
