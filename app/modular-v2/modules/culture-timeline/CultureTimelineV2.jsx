@@ -68,7 +68,7 @@ function dateLabel(value){
   return formatted.length>=10?formatted.slice(0,10):formatted;
 }
 
-export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),focus={},mode='period',onSelect=null,windowStart='',windowEnd='',onBoundaryNavigate=null,fixedMin='',fixedMax=''}){
+export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),focus={},mode='period',onSelect=null,windowStart='',windowEnd='',boundaryStart='',boundaryEnd='',onBoundaryNavigate=null,fixedMin='',fixedMax=''}){
   const containerRef=useRef(null);
   const onSelectRef=useRef(onSelect);
   const onBoundaryNavigateRef=useRef(onBoundaryNavigate);
@@ -150,8 +150,8 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
       });
       instance.on('rangechanged',properties=>{
         if(!onBoundaryNavigateRef.current||fixedMin||fixedMax||properties?.byUser!==true)return;
-        const startMs=Date.parse(windowStart||'');
-        const endMs=Date.parse(windowEnd||'');
+        const startMs=Date.parse(boundaryStart||windowStart||'');
+        const endMs=Date.parse(boundaryEnd||windowEnd||'');
         const visibleStart=properties?.start instanceof Date?properties.start.getTime():Date.parse(properties?.start||'');
         const visibleEnd=properties?.end instanceof Date?properties.end.getTime():Date.parse(properties?.end||'');
         if(!Number.isFinite(startMs)||!Number.isFinite(endMs)||!Number.isFinite(visibleStart)||!Number.isFinite(visibleEnd)||endMs<=startMs)return;
@@ -161,8 +161,8 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
       });
       instance.on('click',properties=>{
         if(!onBoundaryNavigateRef.current||properties?.what==='item')return;
-        const startMs=Date.parse(windowStart||'');
-        const endMs=Date.parse(windowEnd||'');
+        const startMs=Date.parse(boundaryStart||windowStart||'');
+        const endMs=Date.parse(boundaryEnd||windowEnd||'');
         const clickMs=properties?.time instanceof Date?properties.time.getTime():Date.parse(properties?.time||'');
         if(!Number.isFinite(startMs)||!Number.isFinite(endMs)||!Number.isFinite(clickMs)||endMs<=startMs)return;
         const threshold=Math.max(86400000,(endMs-startMs)*0.08);
@@ -179,7 +179,7 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
       if(!cancelled){setReady(false);setChartError(true);}
     }
     return()=>{cancelled=true;if(instance)instance.destroy();};
-  },[rows,timelineHeight,windowStart,windowEnd,fixedMin,fixedMax]);
+  },[rows,timelineHeight,windowStart,windowEnd,boundaryStart,boundaryEnd,fixedMin,fixedMax]);
 
   if(!rows.length)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><div className='scope-period-timeline scope-period-timeline-empty-line' role='region' aria-label='時間長河'/><p>{mode==='overview'?'尚未設定時期，目前以「所有」總覽顯示。':'目前時期尚無可顯示的時間資料。'}</p></div>;
 
