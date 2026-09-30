@@ -20,7 +20,7 @@ function faqAnswer(row){
   return row?.answer||row?.content||row?.body||row?.faq_answer||row?.description||'';
 }
 function faqCategory(row){
-  return row?.category||row?.group_name||row?.section||row?.scope||'FAQ';
+  return row?.category||row?.group_name||row?.section||row?.scope||'常見問題';
 }
 
 function FaqView(){
@@ -33,7 +33,7 @@ function FaqView(){
         .order('category',{ascending:true})
         .order('faq_id',{ascending:true})
         .range(offset,offset+limit-1);
-      if(error)throw new Error(error.message||'FAQ 載入失敗');
+      if(error)throw new Error(error.message||'常見問題載入失敗');
       const rows=data||[];
       return {rows,hasMore:rows.length===limit};
     }
@@ -41,12 +41,12 @@ function FaqView(){
   const {rows,loading,error,hasMore,loadNext}=page;
   return <section className="loc-view">
     <header className="loc-hero">
-      <p className="loc-eyebrow">FAQ</p>
       <h1>常見問題</h1>
+      <p>整理月典、月之符文與各項功能在使用時常見的問題與說明。</p>
     </header>
-    {loading&&!rows.length?<p className="scope-v2-status">載入 FAQ…</p>:null}
+    {loading&&!rows.length?<p className="scope-v2-status">載入常見問題…</p>:null}
     {error?<p className="scope-v2-status scope-v2-error">{error.message}</p>:null}
-    {!loading&&!error&&!rows.length?<p>目前沒有 FAQ 資料。</p>:null}
+    {!loading&&!error&&!rows.length?<p>目前沒有常見問題資料。</p>:null}
     <div className="loc-grid two">
       {rows.map((row,index)=><article className="loc-card" key={row?.faq_id||row?.id||row?.faq_key||index}>
         <p className="loc-eyebrow">{faqCategory(row)}</p>
@@ -54,7 +54,7 @@ function FaqView(){
         <p>{faqAnswer(row)}</p>
       </article>)}
     </div>
-    <IncrementalLoadV2 hasMore={hasMore} loading={loading} error={error} onLoadMore={loadNext} label="還有更多 FAQ"/>
+    <IncrementalLoadV2 hasMore={hasMore} loading={loading} error={error} onLoadMore={loadNext} label="還有更多常見問題"/>
   </section>;
 }
 
