@@ -250,9 +250,9 @@ export default function CultureTimelineEditor({scopeId=''}){
   };
 
   return <section className="loc-card scope-v2-feature-card">
-    <p className="loc-eyebrow">Culture Option</p>
+    <p className="loc-eyebrow">時期與定錨</p>
     <h2>時期設定</h2>
-    <p>定錨點只能在這裡新增；時間長河只負責顯示。時期與事件共用前／後兩個定錨點，0 代表該方向不存在。</p>
+    <p>新增或調整定錨點請在這裡處理；時間長河只呈現結果。時期與事件共用前／後兩個定錨點，沒有對應定錨時請選 0。</p>
     {query.error?<p className="scope-v2-status scope-v2-error">{query.error.message}</p>:null}
     {duplicateAnchorIds.length?<p className="scope-v2-status scope-v2-error">同一 Scope 存在重複定錨點識別：{duplicateAnchorIds.join('、')}。請先修正，Culture 不會再靜默覆蓋。</p>:null}
     {query.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
