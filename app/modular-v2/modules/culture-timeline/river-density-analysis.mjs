@@ -154,6 +154,8 @@ export function analyzeRiverDensity(rows=[],anchorDates=[]){
     const mean=list=>list.length?list.reduce((sum,row)=>sum+(Number(row.count)||0),0)/list.length:0;
     const beforeMean=mean(beforeRows);
     const afterMean=mean(afterRows);
+    const beforeCount=beforeRows.reduce((sum,row)=>sum+(Number(row.count)||0),0);
+    const afterCount=afterRows.reduce((sum,row)=>sum+(Number(row.count)||0),0);
     const delta=afterMean-beforeMean;
     const analysis=[];
     if(item.reason==='gap-edge'){
@@ -165,10 +167,10 @@ export function analyzeRiverDensity(rows=[],anchorDates=[]){
     }
     if(beforeRows.length&&afterRows.length){
       const direction=delta>0?'增加':delta<0?'減少':'持平';
-      analysis.push('前 3 日平均 '+beforeMean.toFixed(1)+' 項／日，後 3 日平均 '+afterMean.toFixed(1)+' 項／日，密度'+direction+'。');
+      analysis.push('切點前 3 日 '+beforeCount.toLocaleString()+' 項，後 3 日 '+afterCount.toLocaleString()+' 項；平均 '+beforeMean.toFixed(1)+' → '+afterMean.toFixed(1)+' 項／日，密度'+direction+'。');
     }
     analysis.push('相鄰區段至少一側占此時期作品總量 3% 以上。');
-    return {...item,beforeMean,afterMean,delta,analysis};
+    return {...item,beforeMean,afterMean,beforeCount,afterCount,delta,analysis};
   });
 
   return {
