@@ -2,7 +2,7 @@ import {ScopeRankingResponseSchema} from './scope-feature-contracts';
 import {selectCategoryCounts,selectDailyCategoryCounts,selectSourceCatalog,selectSourceDaily} from './aggregate-query';
 import {selectNeonRows} from './neon-query';
 import {resolveScopeTables} from './scope-table-mapping';
-import {selectManagedScopes} from './scope-list';
+import {selectManagedScopes} from './scope-table-mapping';
 
 const PERIOD_COLUMNS='record_id,record_type,label,resource_id,display_order,time_date,anchor_pair,date_status,year_value';
 function dateOnly(value){return String(value||'').slice(0,10);}
