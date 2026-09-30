@@ -547,14 +547,15 @@ async function selectLightweightIndexPage(table,{columns,filters=[],orders=[],li
   })).rows;
 }
 
-export async function selectScopePeriodWorkIndex(scopeId,{startDate='',endDate=null,sourceName='',sourceNames=[],mediaTypes=[],limit=10,offset=0}={}){
+export async function selectScopePeriodWorkIndex(scopeId,{startDate='',endDate=null,sourceName='',sourceNames=[],mediaTypes=[],limit=10,offset=0,cursor=null}={}){
   if(!scopeId)throw new Error('scopeId is required');
   const tables=await resolveScopeTables(dataScopeId(scopeId));
   const rawSources=[...new Set((sourceNames||[]).map(value=>String(value||'').trim()).filter(Boolean))];
   const rawMedia=[...new Set((mediaTypes||[]).map(value=>String(value||'').trim()).filter(Boolean))];
   const pageSize=Math.max(1,Math.floor(Number(limit)||10));
-  const pageOffset=Math.max(0,Math.floor(Number(offset)||0));
-  const fetchLimit=pageOffset+pageSize;
+  const legacyOffset=Math.max(0,Math.floor(Number(offset)||0));
+  const galaxyOffset=Math.max(0,Math.floor(Number(cursor?.galaxyOffset)??legacyOffset));
+  const mediaOffset=Math.max(0,Math.floor(Number(cursor?.mediaOffset)??legacyOffset));
 
   const galaxyFilters=publicContentFilters([
     ...dateFilters(startDate,endDate),
@@ -574,36 +575,59 @@ export async function selectScopePeriodWorkIndex(scopeId,{startDate='',endDate=n
       columns:'uid,createtime',
       filters:galaxyFilters,
       orders:[{column:'createtime',ascending:false},{column:'uid',ascending:true}],
-      limit:fetchLimit
+      limit:pageSize,
+      offset:galaxyOffset
     }):Promise.resolve([]),
     includeMedia?selectLightweightIndexPage(tables.galaxyMedia,{
       columns:'media_id,createtime',
       filters:mediaFilters,
       orders:[{column:'createtime',ascending:false},{column:'media_id',ascending:true}],
-      limit:fetchLimit
+      limit:pageSize,
+      offset:mediaOffset
     }):Promise.resolve([])
   ]);
 
-  const rows=[
-    ...(galaxyResult||[]).map(row=>({
-      key:'galaxy:'+row.uid,
-      entry_type:'work',
-      entry_id:String(row.uid||''),
-      uid:String(row.uid||''),
-      createtime:row.createtime
-    })),
-    ...(mediaResult||[]).map(row=>({
-      key:'media:'+row.media_id,
-      entry_type:'media_metadata',
-      entry_id:String(row.media_id||''),
-      media_id:String(row.media_id||''),
-      createtime:row.createtime
-    }))
-  ].filter(row=>row.entry_id)
-    .sort((a,b)=>String(b.createtime||'').localeCompare(String(a.createtime||''))||String(a.entry_id).localeCompare(String(b.entry_id)))
-    .slice(pageOffset,pageOffset+pageSize);
+  const galaxyRows=(galaxyResult||[]).map(row=>({
+    key:'galaxy:'+row.uid,
+    entry_type:'work',
+    entry_id:String(row.uid||''),
+    uid:String(row.uid||''),
+    createtime:row.createtime
+  })).filter(row=>row.entry_id);
+  const mediaRows=(mediaResult||[]).map(row=>({
+    key:'media:'+row.media_id,
+    entry_type:'media_metadata',
+    entry_id:String(row.media_id||''),
+    media_id:String(row.media_id||''),
+    createtime:row.createtime
+  })).filter(row=>row.entry_id);
 
-  return {rows,totalCount:Number(galaxyCount||0)+Number(mediaCount||0)};
+  const rows=[];
+  let galaxyIndex=0;
+  let mediaIndex=0;
+  while(rows.length<pageSize&&(galaxyIndex<galaxyRows.length||mediaIndex<mediaRows.length)){
+    const galaxyRow=galaxyRows[galaxyIndex];
+    const mediaRow=mediaRows[mediaIndex];
+    if(!mediaRow||(galaxyRow&&(
+      String(galaxyRow.createtime||'')>String(mediaRow.createtime||'')||
+      (String(galaxyRow.createtime||'')===String(mediaRow.createtime||'')&&String(galaxyRow.entry_id)<=String(mediaRow.entry_id))
+    ))){
+      rows.push(galaxyRow);
+      galaxyIndex+=1;
+    }else{
+      rows.push(mediaRow);
+      mediaIndex+=1;
+    }
+  }
+
+  return {
+    rows,
+    totalCount:Number(galaxyCount||0)+Number(mediaCount||0),
+    nextCursor:{
+      galaxyOffset:galaxyOffset+galaxyIndex,
+      mediaOffset:mediaOffset+mediaIndex
+    }
+  };
 }
 
 export async function selectScopePeriodWorkDetails(scopeId,{items=[]}={}){
