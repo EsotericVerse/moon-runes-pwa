@@ -23,6 +23,12 @@ function timelineRows(items,labelOf,focus){
     const start=Number.isFinite(parsedStart)?rawStart:(openStart&&Number.isFinite(parsedEnd)?new Date(domainStart).toISOString().slice(0,10):null);
     if(!start||Number.isNaN(Date.parse(start)))return [];
     let end=Number.isFinite(parsedEnd)&&parsedEnd>Date.parse(start)?rawEnd:null;
+    const densityRatio=Number(item?.global_density_ratio)>0?Number(item.global_density_ratio):Number(item?.density_ratio)||0;
+    if(!end&&densityRatio>0){
+      const next=new Date(Date.parse(start));
+      next.setUTCDate(next.getUTCDate()+1);
+      end=next.toISOString().slice(0,10);
+    }
     if(!end&&openEnd&&domainEnd>Date.parse(start))end=new Date(domainEnd).toISOString().slice(0,10);
     const candidateValues=[
       item?.era_id,item?.period_id,item?.version,item?.id,item?.period,item?.name,item?.title,
@@ -30,7 +36,7 @@ function timelineRows(items,labelOf,focus){
     ].filter(Boolean).map(String);
     const focused=focusTerms.some(term=>candidateValues.includes(term));
     const group=item?.group_label||item?.scope_id||'';
-    const ratio=Number(item?.global_density_ratio)>0?Number(item.global_density_ratio):Number(item?.density_ratio)||0;
+    const ratio=densityRatio;
     const density=ratio>0?densityStyleForRatio(ratio):densityStyleForCount(item?.item_count);
     return [{
       id:String(item?.id||item?.entry_id||item?.era_id||item?.period_id||item?.version||index),
@@ -75,11 +81,11 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
   const [ready,setReady]=useState(false);
   const [chartError,setChartError]=useState(false);
   const rows=useMemo(()=>timelineRows(items,labelOf,focus),[items,labelOf,focus]);
-  const fallbackRows=useMemo(()=>[...rows].sort((a,b)=>String(b.start).localeCompare(String(a.start))),[rows]);  const groupCount=new Set(rows.map(row=>row.group).filter(Boolean)).size;
+  const fallbackRows=useMemo(()=>[...rows].sort((a,b)=>String(b.start).localeCompare(String(a.start))),[rows]);
+  const groupCount=new Set(rows.map(row=>row.group).filter(Boolean)).size;
   const compactGroupCount=Math.max(1,groupCount||rows.length);
-  const timelineHeight=(mode==='source'||mode==='overview')
-    ?Math.max(220,Math.min(560,96+compactGroupCount*46))
-    :640;
+  const timelineMinHeight=Math.max(180,96+compactGroupCount*46);
+  const timelineMaxHeight=Math.max(360,Math.min(760,180+compactGroupCount*92));
 
   useEffect(()=>{onSelectRef.current=onSelect},[onSelect]);
   useEffect(()=>{onBoundaryNavigateRef.current=onBoundaryNavigate},[onBoundaryNavigate]);
@@ -97,7 +103,9 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
       const groups=groupIds.length?new DataSet(groupIds.map(id=>({id,content:groupLabel(id)}))):null;
       instance=new Timeline(containerRef.current,data,groups,{
         autoResize:true,
-        height:timelineHeight+'px',
+        minHeight:timelineMinHeight+'px',
+        maxHeight:timelineMaxHeight+'px',
+        verticalScroll:true,
         locale:'zh-tw',
         locales:{
           'zh-tw':{
@@ -139,7 +147,7 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
         selectable:true,
         moveable:true,
         showCurrentTime:false,
-        stack:true,
+        stack:mode!=='source',
         margin:mode==='source'
           ?{axis:10,item:{horizontal:3,vertical:5}}
           :{item:{horizontal:8,vertical:12}}
@@ -179,13 +187,13 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
       if(!cancelled){setReady(false);setChartError(true);}
     }
     return()=>{cancelled=true;if(instance)instance.destroy();};
-  },[rows,timelineHeight,windowStart,windowEnd,boundaryStart,boundaryEnd,fixedMin,fixedMax]);
+  },[rows,timelineMinHeight,timelineMaxHeight,mode,windowStart,windowEnd,boundaryStart,boundaryEnd,fixedMin,fixedMax]);
 
   if(!rows.length)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><div className='scope-period-timeline scope-period-timeline-empty-line' role='region' aria-label='時間長河'/><p>{mode==='overview'?'尚未設定時期，目前以「所有」總覽顯示。':'目前時期尚無可顯示的時間資料。'}</p></div>;
 
   return <div className='scope-period-timeline-wrap'>
     {chartError?<p className='scope-v2-status'>圖表載入失敗，以下改用清單顯示。</p>:null}
-    <div ref={containerRef} className='scope-period-timeline' role='region' aria-label={mode==='overview'?'所有時期與定錨點時間長河':'時間長河'} style={{'--scope-period-timeline-min-height':timelineHeight+'px'}}/>
+    <div ref={containerRef} className='scope-period-timeline' role='region' aria-label={mode==='overview'?'所有時期與定錨點時間長河':'時間長河'} style={{'--scope-period-timeline-min-height':timelineMinHeight+'px'}}/>
     {chartError?<ol className='scope-v2-list'>
       {fallbackRows.map(row=><li key={row.id}><strong>{row.content}</strong>{row.group?<span> · {groupLabel(row.group)}</span>:null}<span> · {dateLabel(row.start)}</span>{row.title?<p>{row.title}</p>:null}</li>)}
     </ol>:null}
