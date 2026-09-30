@@ -1,3 +1,5 @@
+import {NEON_QUERY_BATCH_SIZE} from './query-contract.mjs';
+
 'use client';
 
 import {neonPublicClient} from './neon-client';
@@ -41,10 +43,10 @@ export async function selectNeonRows(table,{
   limit=20,
   offset=0,
   count=null,
-  maxLimit=5000
+  maxLimit=NEON_QUERY_BATCH_SIZE
 }={}){
   if(!String(columns||'').trim()||String(columns).trim()==='*')throw new Error('Neon SELECT requires explicit columns');
-  const safeMaximum=Math.max(1,Math.floor(Number(maxLimit)||5000));
+  const safeMaximum=Math.max(1,Math.floor(Number(maxLimit)||NEON_QUERY_BATCH_SIZE));
   const safeLimit=Math.max(1,Math.min(safeMaximum,Math.floor(Number(limit)||20)));
   const safeOffset=Math.max(0,Math.floor(Number(offset)||0));
   let query=relation(table).select(columns,count?{count}:undefined);
@@ -62,9 +64,9 @@ export async function selectAllNeonRows(table,{
   filters=[],
   orFilter='',
   orders=[],
-  pageSize=5000
+  pageSize=NEON_QUERY_BATCH_SIZE
 }={}){
-  const size=Math.max(1,Math.min(5000,Math.floor(Number(pageSize)||5000)));
+  const size=Math.max(1,Math.min(NEON_QUERY_BATCH_SIZE,Math.floor(Number(pageSize)||NEON_QUERY_BATCH_SIZE)));
   const first=await selectNeonRows(table,{columns,filters,orFilter,orders,limit:size,offset:0,count:'exact'});
   const rows=[...first.rows];
   const total=Number(first.count) || rows.length;
