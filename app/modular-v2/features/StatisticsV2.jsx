@@ -119,8 +119,6 @@ function buildSourceTrend(rows=[],standard='10y'){
     return output;
   });
 }
-const MONTHLY_SOURCE_SHARE_DELTA=10;
-const FINE_SOURCE_SHARE_DELTA=20;
 const MONTHLY_VOLUME_CHANGE_RATIO=.10;
 const FINE_VOLUME_CHANGE_RATIO=.25;
 const MAJOR_VOLUME_MIN=10;
@@ -147,29 +145,40 @@ function buildTrendSuggestions(rows=[],standard='10y',anchorDates=[]){
     const previousTotal=Number(previous.total)||0;
     const currentTotal=Number(current.total)||0;
 
+    // A zero run is one state change, not one suggestion per empty bucket.
+    // The useful review range ends at the first zero; trailing zero buckets
+    // are skipped until data resumes.
     if(previousTotal>0&&currentTotal===0){
-      let endIndex=index;
-      while(endIndex+1<data.length&&(Number(data[endIndex+1].total)||0)===0)endIndex+=1;
-      const leadBuckets=config.bucket==='day'?6:1;
-      const leadIndex=Math.max(0,index-leadBuckets);
-      const zeroLength=endIndex-index+1;
+      let declineStart=index-1;
+      while(declineStart>0){
+        const before=Number(data[declineStart-1].total)||0;
+        const at=Number(data[declineStart].total)||0;
+        if(before<=0||at<=0||before<at)break;
+        declineStart-=1;
+      }
+
+      let zeroEnd=index;
+      while(zeroEnd+1<data.length&&(Number(data[zeroEnd+1].total)||0)===0)zeroEnd+=1;
+
       candidates.push({
-        key:'zero|'+data[leadIndex].start_date+'|'+data[endIndex].end_date,
+        key:'zero|'+data[declineStart].start_date+'|'+current.end_date,
         kind:'zero',
-        from:data[leadIndex].start_date,
-        to:data[endIndex].end_date,
-        previousTotal,
+        from:data[declineStart].start_date,
+        to:current.end_date,
+        previousTotal:Number(data[declineStart].total)||previousTotal,
         currentTotal:0,
-        reason:zeroLength>1
-          ?'作品量降至 0，並連續 '+zeroLength+' 個時間區段沒有作品'
-          :'作品量降至 0',
-        score:10000+zeroLength*100+previousTotal
+        reason:declineStart<index-1?'作品量持續下降後歸零':'作品量降至 0',
+        score:10000+(index-declineStart)*100+previousTotal
       });
-      index=endIndex;
+
+      index=zeroEnd;
       continue;
     }
 
-    if(previousTotal>0&&currentTotal>0&&Math.max(previousTotal,currentTotal)>=MAJOR_VOLUME_MIN){
+    // Zero -> positive is a recovery boundary, not a second suggestion.
+    if(previousTotal===0||currentTotal===0)continue;
+
+    if(Math.max(previousTotal,currentTotal)>=MAJOR_VOLUME_MIN){
       const ratio=Math.abs(currentTotal-previousTotal)/Math.max(1,previousTotal);
       const volumeThreshold=config.bucket==='month'?MONTHLY_VOLUME_CHANGE_RATIO:FINE_VOLUME_CHANGE_RATIO;
       if(ratio>=volumeThreshold){
@@ -182,33 +191,6 @@ function buildTrendSuggestions(rows=[],standard='10y',anchorDates=[]){
           currentTotal,
           reason:'作品量'+(currentTotal>previousTotal?'大幅增加':'大幅下降')+' '+Math.round(ratio*100)+'%',
           score:5000+ratio*1000+Math.abs(currentTotal-previousTotal)
-        });
-      }
-    }
-
-    if(previousTotal>=MAJOR_VOLUME_MIN&&currentTotal>=MAJOR_VOLUME_MIN){
-      let source='';
-      let delta=0;
-      for(const candidate of SOURCE_TREND_ORDER){
-        const change=(Number(current[candidate])||0)-(Number(previous[candidate])||0);
-        if(Math.abs(change)>Math.abs(delta)){
-          source=candidate;
-          delta=change;
-        }
-      }
-      const shareThreshold=config.bucket==='month'?MONTHLY_SOURCE_SHARE_DELTA:FINE_SOURCE_SHARE_DELTA;
-      if(source&&Math.abs(delta)>=shareThreshold){
-        candidates.push({
-          key:'share|'+source+'|'+previous.start_date+'|'+current.end_date,
-          kind:'share',
-          from:previous.start_date,
-          to:current.end_date,
-          source,
-          delta,
-          previousTotal,
-          currentTotal,
-          reason:source+' 佔比'+(delta>0?'大幅上升 ':'大幅下降 ')+Math.abs(delta).toFixed(1)+' 個百分點',
-          score:3000+Math.abs(delta)*20
         });
       }
     }
