@@ -25,6 +25,7 @@ const CHART_TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-l
 const CHART_TYPES=[['line','折線圖'],['bar','長條圖'],['pie','圓餅圖']];
 const STAT_TABS=[['ranking','統計'],['media','多媒體設定']];
 const STAT_TYPE_LABELS=Object.freeze({
+  total:'總來源',
   source:'作品來源'
 });
 const SOURCE_TREND_ORDER=Object.freeze(['Facebook','Threads','IG','Twitter(X)','YouTube','Others']);
@@ -240,6 +241,20 @@ function RankingChart({type='bar',rows,height=380}){
   </ResponsiveContainer>;
 }
 
+function TotalTrendChart({rows=[],standard='10y',height=420}){
+  const data=useMemo(()=>buildSourceTrend(rows,standard),[rows,standard]);
+  if(!data.length)return <p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>;
+  return <ResponsiveContainer width="100%" height={height}>
+    <LineChart data={data} margin={{top:8,right:18,bottom:48,left:4}}>
+      <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
+      <XAxis dataKey="period" angle={-24} textAnchor="end" interval="preserveStartEnd" height={72} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+      <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+      <Tooltip contentStyle={CHART_TOOLTIP} labelStyle={{color:CHART_TEXT}} itemStyle={{color:CHART_TEXT}} formatter={value=>[Number(value).toLocaleString()+' 項','總來源']}/>
+      <Line type="monotone" dataKey="total" name="總來源" stroke={CHART_ACCENT} strokeWidth={3} dot={false} connectNulls={false}/>
+    </LineChart>
+  </ResponsiveContainer>;
+}
+
 function SourceTrendChart({rows=[],standard='10y',height=420}){
   const data=useMemo(()=>buildSourceTrend(rows,standard),[rows,standard]);
   if(!data.length)return <p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>;
@@ -343,7 +358,7 @@ function StatisticsPanel({scopeId,navigation,types}){
   const trendQuery=useQuery({
     queryKey:['statistics-source-trend',scopeId],
     queryFn:()=>selectScopeSourceTrendRows(scopeId),
-    enabled:rankingType==='source',
+    enabled:rankingType==='total'||rankingType==='source',
     staleTime:5*60_000
   });
   const anchorQuery=useQuery({
@@ -354,8 +369,8 @@ function StatisticsPanel({scopeId,navigation,types}){
   });
   const allRows=query.data||[];
   const trendSuggestions=useMemo(
-    ()=>buildTrendSuggestions(trendQuery.data||[],timeStandard,anchorQuery.data||[]),
-    [trendQuery.data,timeStandard,anchorQuery.data]
+    ()=>rankingType==='total'?buildTrendSuggestions(trendQuery.data||[],timeStandard,anchorQuery.data||[]):[],
+    [rankingType,trendQuery.data,timeStandard,anchorQuery.data]
   );
   const [visibleRows,setVisibleRows]=useState([]);
   const canDrillDown=scopeId!=='loc'&&rankingType==='source';
@@ -391,8 +406,10 @@ function StatisticsPanel({scopeId,navigation,types}){
       </section>:null}
       {chartType==='line'
         ?<>
-          <SourceTrendChart rows={trendQuery.data||[]} standard={timeStandard} height={420}/>
-          {trendSuggestions.length?<section className="scope-v2-stat-suggestions" aria-label="趨勢建議">
+          {rankingType==='total'
+            ?<TotalTrendChart rows={trendQuery.data||[]} standard={timeStandard} height={420}/>
+            :<SourceTrendChart rows={trendQuery.data||[]} standard={timeStandard} height={420}/>}
+          {rankingType==='total'&&trendSuggestions.length?<section className="scope-v2-stat-suggestions" aria-label="趨勢建議">
             <header><p className="loc-eyebrow">Trend Suggestion</p><h3>建議回看區間</h3></header>
             <div>
               {trendSuggestions.map(item=><button
@@ -401,7 +418,7 @@ function StatisticsPanel({scopeId,navigation,types}){
                 onClick={()=>router.push(featureNavigationHref(scopeId,'culture',{from:item.from,to:item.to}))}
               >
                 <strong>{item.from} ～ {item.to}</strong>
-                <span>{item.reason}；作品量 {item.previousTotal.toLocaleString()} → {item.currentTotal.toLocaleString()}</span>
+                <span>{item.reason}；總來源 {item.previousTotal.toLocaleString()} → {item.currentTotal.toLocaleString()}</span>
               </button>)}
             </div>
           </section>:null}
