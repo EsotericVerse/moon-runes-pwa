@@ -301,9 +301,7 @@ export async function selectScopeCultureData(scopeId){
       });
     }
 
-    const intersectionScopeIds=validBundles
-      .filter(bundle=>String(bundle.openRange?.start_date||'')===intersectionStart)
-      .map(bundle=>bundle.runtimeId);
+    const intersectionScopeIds=validBundles.map(bundle=>bundle.runtimeId);
 
     const aggregateRows=(await Promise.all(validBundles.map(async bundle=>{
       const [textDaily,mediaDaily]=await Promise.all([
