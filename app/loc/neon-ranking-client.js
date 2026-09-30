@@ -1,3 +1,4 @@
+import {NEON_QUERY_BATCH_SIZE} from './query-contract.mjs';
 import {ScopeRankingResponseSchema} from './scope-feature-contracts';
 import {selectCategoryCounts,selectDailyCategoryCounts,selectSourceCatalog,selectSourceDaily} from './aggregate-query';
 import {selectNeonRows} from './neon-query';
@@ -112,7 +113,7 @@ async function mediaSourceRows(scopeId,period='all',rangeOverride=undefined){
   const rows=await selectCategoryCounts(table,'media_type',{
     startDate:range?.start_date||'',
     endDate:range?.end_date||'',
-    limit:5000
+    limit:NEON_QUERY_BATCH_SIZE
   });
   return rows.map(row=>({
     source_name:String(row.term||'').trim(),
@@ -128,7 +129,7 @@ async function sourceRows(scopeId,period='all',rangeOverride=undefined){
       scopeId:dataId,
       startDate:range?.start_date||'',
       endDate:range?.end_date||'',
-      limit:5000
+      limit:NEON_QUERY_BATCH_SIZE
     }),
     mediaSourceRows(dataId,period,range)
   ]);
@@ -183,12 +184,12 @@ export async function selectScopeSourceBucketDetails(scopeId,{bucket='Others',na
       scopeId:id,
       startDate:range?.start_date||'',
       endDate:range?.end_date||'',
-      limit:5000
+      limit:NEON_QUERY_BATCH_SIZE
     }),
     selectCategoryCounts(tables.galaxyMedia,'media_type',{
       startDate:range?.start_date||'',
       endDate:range?.end_date||'',
-      limit:5000
+      limit:NEON_QUERY_BATCH_SIZE
     })
   ]);
   const totals=new Map();
@@ -272,7 +273,7 @@ async function scopeAnchorDates(scopeId){
     columns:'resource_id,label,time_date,date_status,year_value',
     filters:[{column:'record_type',operator:'eq',value:'anchor'}],
     orders:[{column:'time_date',ascending:true},{column:'resource_id',ascending:true}],
-    limit:5000,
+    limit:NEON_QUERY_BATCH_SIZE,
     offset:0
   });
   return rows.map(row=>({
