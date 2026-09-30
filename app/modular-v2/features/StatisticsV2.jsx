@@ -83,14 +83,61 @@ function trendBucket(value,unit){
   }
   return {key,label:key.slice(5).replace('-','/'),start:key,end:key};
 }
-function buildSourceTrend(rows=[],standard='10y'){
+function addMonths(value,months){
+  const key=dateKey(value);
+  if(!key)return '';
+  const date=new Date(key+'T00:00:00Z');
+  date.setUTCMonth(date.getUTCMonth()+Number(months||0));
+  return date.toISOString().slice(0,10);
+}
+function addDays(value,days){
+  const key=dateKey(value);
+  if(!key)return '';
+  const date=new Date(key+'T00:00:00Z');
+  date.setUTCDate(date.getUTCDate()+Number(days||0));
+  return date.toISOString().slice(0,10);
+}
+function midpointDate(from='',to=''){
+  const start=dateKey(from);
+  const end=dateKey(to);
+  if(!start||!end)return '';
+  const a=new Date(start+'T00:00:00Z').getTime();
+  const b=new Date(end+'T00:00:00Z').getTime();
+  return new Date(Math.round((a+b)/2)).toISOString().slice(0,10);
+}
+function trendWindow(dates=[],config,focusRange=null){
+  const dataStart=dates[0]||'';
+  const dataEnd=dates.at(-1)||'';
+  if(!dataEnd)return {startDate:'',endDate:''};
+  const focus=midpointDate(focusRange?.from,focusRange?.to);
+  if(!focus){
+    return {
+      startDate:Number.isFinite(config.days)?subtractDays(dataEnd,config.days):subtractMonths(dataEnd,config.months),
+      endDate:dataEnd
+    };
+  }
+  let startDate='';
+  let endDate='';
+  if(Number.isFinite(config.days)){
+    const before=Math.floor(config.days/2);
+    const after=Math.max(0,config.days-before);
+    startDate=addDays(focus,-before);
+    endDate=addDays(focus,after);
+  }else{
+    const before=Math.floor(config.months/2);
+    const after=Math.max(0,config.months-before);
+    startDate=addMonths(focus,-before);
+    endDate=addMonths(focus,after);
+  }
+  if(dataStart&&startDate<dataStart)startDate=dataStart;
+  if(dataEnd&&endDate>dataEnd)endDate=dataEnd;
+  return {startDate,endDate};
+}
+function buildSourceTrend(rows=[],standard='10y',focusRange=null){
   const config=TIME_STANDARDS.find(item=>item.value===standard)||TIME_STANDARDS[0];
   const dates=rows.map(row=>dateKey(row.day)).filter(Boolean).sort();
-  const endDate=dates.at(-1)||'';
-  if(!endDate)return [];
-  const startDate=Number.isFinite(config.days)
-    ?subtractDays(endDate,config.days)
-    :subtractMonths(endDate,config.months);
+  const {startDate,endDate}=trendWindow(dates,config,focusRange);
+  if(!startDate||!endDate)return [];
   const buckets=new Map();
 
   for(let cursor=new Date(startDate+'T00:00:00Z'),end=new Date(endDate+'T00:00:00Z');cursor<=end;cursor.setUTCDate(cursor.getUTCDate()+1)){
@@ -134,8 +181,8 @@ function rangeHasAnchor(anchorDates=[],from='',to=''){
 function rangesOverlap(a,b){
   return Boolean(a?.from&&a?.to&&b?.from&&b?.to&&a.from<=b.to&&b.from<=a.to);
 }
-function buildTrendSuggestions(rows=[],standard='10y',anchorDates=[]){
-  const data=buildSourceTrend(rows,standard);
+function buildTrendSuggestions(rows=[],standard='10y',anchorDates=[],focusRange=null){
+  const data=buildSourceTrend(rows,standard,focusRange);
   if(data.length<2)return [];
   const config=TIME_STANDARDS.find(item=>item.value===standard)||TIME_STANDARDS[0];
   const volumeThreshold=config.bucket==='month'?MONTHLY_VOLUME_CHANGE_RATIO:FINE_VOLUME_CHANGE_RATIO;
@@ -274,8 +321,8 @@ function RankingChart({type='bar',rows,height=380}){
   </ResponsiveContainer>;
 }
 
-function TotalTrendChart({rows=[],standard='10y',height=420}){
-  const data=useMemo(()=>buildSourceTrend(rows,standard),[rows,standard]);
+function TotalTrendChart({rows=[],standard='10y',focusRange=null,height=420}){
+  const data=useMemo(()=>buildSourceTrend(rows,standard,focusRange),[rows,standard,focusRange]);
   if(!data.length)return <p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>;
   return <ResponsiveContainer width="100%" height={height}>
     <LineChart data={data} margin={{top:8,right:18,bottom:48,left:4}}>
@@ -288,8 +335,8 @@ function TotalTrendChart({rows=[],standard='10y',height=420}){
   </ResponsiveContainer>;
 }
 
-function SourceTrendChart({rows=[],standard='10y',height=420}){
-  const data=useMemo(()=>buildSourceTrend(rows,standard),[rows,standard]);
+function SourceTrendChart({rows=[],standard='10y',focusRange=null,height=420}){
+  const data=useMemo(()=>buildSourceTrend(rows,standard,focusRange),[rows,standard,focusRange]);
   if(!data.length)return <p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>;
   return <ResponsiveContainer width="100%" height={height}>
     <LineChart data={data} margin={{top:8,right:18,bottom:48,left:4}}>
@@ -386,6 +433,7 @@ function StatisticsPanel({scopeId,navigation,types}){
   const rankingType=types.includes(requested)?requested:(types[0]||'');
   const [chartType,setChartType]=useState('line');
   const [timeStandard,setTimeStandard]=useState('10y');
+  const [analysisFocus,setAnalysisFocus]=useState(null);
   const [detailBucket,setDetailBucket]=useState('');
   const query=useRanking(scopeId,rankingType,navigation);
   const trendQuery=useQuery({
@@ -402,8 +450,8 @@ function StatisticsPanel({scopeId,navigation,types}){
   });
   const allRows=query.data||[];
   const trendSuggestions=useMemo(
-    ()=>rankingType==='total'?buildTrendSuggestions(trendQuery.data||[],timeStandard,anchorQuery.data||[]):[],
-    [rankingType,trendQuery.data,timeStandard,anchorQuery.data]
+    ()=>rankingType==='total'?buildTrendSuggestions(trendQuery.data||[],timeStandard,anchorQuery.data||[],analysisFocus):[],
+    [rankingType,trendQuery.data,timeStandard,anchorQuery.data,analysisFocus]
   );
   const [visibleRows,setVisibleRows]=useState([]);
   const canDrillDown=scopeId!=='loc'&&rankingType==='source';
@@ -413,14 +461,26 @@ function StatisticsPanel({scopeId,navigation,types}){
     enabled:canDrillDown&&Boolean(detailBucket),
     staleTime:30000
   });
-  useEffect(()=>{setVisibleRows([]);setDetailBucket('');},[scopeId,rankingType,navigation.period]);
+  useEffect(()=>{setVisibleRows([]);setDetailBucket('');setAnalysisFocus(null);setTimeStandard('10y');},[scopeId,rankingType,navigation.period]);
+  const changeTimeStandard=nextStandard=>{
+    if(nextStandard===timeStandard)return;
+    const currentIndex=TIME_STANDARDS.findIndex(item=>item.value===timeStandard);
+    const nextIndex=TIME_STANDARDS.findIndex(item=>item.value===nextStandard);
+    if(rankingType==='total'&&nextIndex>currentIndex&&trendSuggestions.length){
+      const focus=trendSuggestions.reduce((best,item)=>!best||Number(item.score||0)>Number(best.score||0)?item:best,null);
+      setAnalysisFocus(focus?{from:focus.from,to:focus.to}:analysisFocus);
+    }else if(nextIndex<currentIndex){
+      setAnalysisFocus(null);
+    }
+    setTimeStandard(nextStandard);
+  };
   const chartData=visibleRows.length?visibleRows:allRows.slice(0,DEFAULT_LIST_BATCH_SIZE);
   return <section className="scope-v2-stat-section">
     <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Statistics</p><h2>統計</h2></div></header>
     <div className="scope-v2-stat-controls">
       <StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/>
       <label><span>圖形</span><select className="scope-v2-select" value={chartType} onChange={event=>setChartType(event.target.value)}>{CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
-      {chartType==='line'?<label><span>時間標準</span><select className="scope-v2-select" value={timeStandard} onChange={event=>setTimeStandard(event.target.value)}>{TIME_STANDARDS.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}</select></label>:null}
+      {chartType==='line'?<label><span>時間標準</span><select className="scope-v2-select" value={timeStandard} onChange={event=>changeTimeStandard(event.target.value)}>{TIME_STANDARDS.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}</select></label>:null}
     </div>
         {query.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(query.error)}</p>:null}
     {chartType==='line'&&trendQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(trendQuery.error)}</p>:null}
@@ -440,8 +500,9 @@ function StatisticsPanel({scopeId,navigation,types}){
       {chartType==='line'
         ?<>
           {rankingType==='total'
-            ?<TotalTrendChart rows={trendQuery.data||[]} standard={timeStandard} height={420}/>
-            :<SourceTrendChart rows={trendQuery.data||[]} standard={timeStandard} height={420}/>}
+            ?<TotalTrendChart rows={trendQuery.data||[]} standard={timeStandard} focusRange={analysisFocus} height={420}/>
+            :<SourceTrendChart rows={trendQuery.data||[]} standard={timeStandard} focusRange={analysisFocus} height={420}/>}
+          {rankingType==='total'&&analysisFocus?<p className="scope-v2-status">分析焦點：{analysisFocus.from} ～ {analysisFocus.to}</p>:null}
           {rankingType==='total'&&trendSuggestions.length?<section className="scope-v2-stat-suggestions" aria-label="趨勢建議">
             <header><p className="loc-eyebrow">Trend Suggestion</p><h3>建議回看區間</h3></header>
             <div>
