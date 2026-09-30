@@ -121,7 +121,8 @@ function buildSourceTrend(rows=[],standard='10y'){
 }
 const MONTHLY_SOURCE_SHARE_DELTA=10;
 const FINE_SOURCE_SHARE_DELTA=20;
-const MAJOR_VOLUME_CHANGE_RATIO=.60;
+const MONTHLY_VOLUME_CHANGE_RATIO=.10;
+const FINE_VOLUME_CHANGE_RATIO=.25;
 const MAJOR_VOLUME_MIN=10;
 
 function rangeHasAnchor(anchorDates=[],from='',to=''){
@@ -170,7 +171,8 @@ function buildTrendSuggestions(rows=[],standard='10y',anchorDates=[]){
 
     if(previousTotal>0&&currentTotal>0&&Math.max(previousTotal,currentTotal)>=MAJOR_VOLUME_MIN){
       const ratio=Math.abs(currentTotal-previousTotal)/Math.max(1,previousTotal);
-      if(ratio>=MAJOR_VOLUME_CHANGE_RATIO){
+      const volumeThreshold=config.bucket==='month'?MONTHLY_VOLUME_CHANGE_RATIO:FINE_VOLUME_CHANGE_RATIO;
+      if(ratio>=volumeThreshold){
         candidates.push({
           key:'volume|'+previous.start_date+'|'+current.end_date,
           kind:'volume',
