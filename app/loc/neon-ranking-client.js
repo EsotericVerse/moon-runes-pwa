@@ -262,3 +262,36 @@ export async function selectScopeSourceTrendRows(scopeId){
     };
   }).sort((a,b)=>a.day.localeCompare(b.day)||SOURCE_BUCKET_ORDER.indexOf(a.source)-SOURCE_BUCKET_ORDER.indexOf(b.source));
 }
+
+async function scopeAnchorDates(scopeId){
+  const table=(await resolveScopeTables(scopeId)).time;
+  const {rows}=await selectNeonRows(table,{
+    columns:'resource_id,label,time_date,date_status,year_value',
+    filters:[{column:'record_type',operator:'eq',value:'anchor'}],
+    orders:[{column:'time_date',ascending:true},{column:'resource_id',ascending:true}],
+    limit:5000,
+    offset:0
+  });
+  return rows.map(row=>({
+    scope_id:String(scopeId),
+    anchor_id:String(row.resource_id||''),
+    label:String(row.label||row.resource_id||''),
+    date:row.time_date?dateOnly(row.time_date):null,
+    date_status:String(row.date_status||'')
+  })).filter(row=>row.date&&row.date_status!=='year_only');
+}
+
+export async function selectScopeAnchorDates(scopeId){
+  const id=String(scopeId||'').trim();
+  if(!id)throw new Error('資料設定無效');
+  const rows=id==='loc'
+    ?(await Promise.all((await selectManagedScopes()).filter(scope=>scope.id!=='loc').map(scope=>scopeAnchorDates(scope.id)))).flat()
+    :await scopeAnchorDates(id);
+  const seen=new Set();
+  return rows.filter(row=>{
+    const key=row.scope_id+'|'+row.anchor_id+'|'+row.date;
+    if(seen.has(key))return false;
+    seen.add(key);
+    return true;
+  }).sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.scope_id).localeCompare(String(b.scope_id)));
+}
