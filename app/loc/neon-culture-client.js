@@ -469,33 +469,50 @@ export async function selectScopePeriodSourceSnapshot(scopeId,{startDate='',endD
   }
 
   const maxima=new Map();
+  const firstDates=new Map();
+  const lastDates=new Map();
   let globalMaximum=0;
   for(const [key,count] of combined){
-    const category=key.split('|')[0];
+    const split=key.lastIndexOf('|');
+    const category=key.slice(0,split);
+    const day=key.slice(split+1);
     maxima.set(category,Math.max(maxima.get(category)||0,count));
     globalMaximum=Math.max(globalMaximum,count);
+    const first=firstDates.get(category);
+    const last=lastDates.get(category);
+    if(!first||day<first)firstDates.set(category,day);
+    if(!last||day>last)lastDates.set(category,day);
   }
 
   const groups=LOC_SOURCE_ORDER.map(category=>{
     const group=groupMap.get(category);
     return {
       ...group,
+      first_date:firstDates.get(category)||null,
+      last_date:lastDates.get(category)||null,
       source_names:[...new Set(group.source_names)].filter(Boolean),
       media_types:[...new Set(group.media_types)].filter(Boolean)
     };
-  }).filter(group=>group.item_count>0);
+  }).filter(group=>group.item_count>0&&group.first_date&&group.last_date);
 
+  const activeCategories=new Set(groups.map(group=>group.source_name));
   const buckets=[...combined.entries()].map(([key,count])=>{
     const split=key.lastIndexOf('|');
     const source=key.slice(0,split);
     const day=key.slice(split+1);
+    if(!activeCategories.has(source))return null;
+    const group=groupMap.get(source);
+    const firstDate=firstDates.get(source)||day;
+    const lastDate=lastDates.get(source)||day;
     return {
       id:'source_name:'+source+':'+day,
       category:source,
-      group_label:source,
+      group_label:source+' · '+Number(group?.item_count||0).toLocaleString()+' 項 · '+firstDate+' → '+lastDate,
       start_date:day,
       item_count:count,
       works:[],
+      first_date:firstDate,
+      last_date:lastDate,
       density_ratio:count/Math.max(1,maxima.get(source)||1),
       global_density_ratio:count/Math.max(1,globalMaximum),
       display_label:source+' '+count+' 項',
@@ -505,7 +522,7 @@ export async function selectScopePeriodSourceSnapshot(scopeId,{startDate='',endD
       classification_dimension:'source',
       classification_level:'source'
     };
-  }).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))||LOC_SOURCE_ORDER.indexOf(a.category)-LOC_SOURCE_ORDER.indexOf(b.category));
+  }).filter(Boolean).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))||LOC_SOURCE_ORDER.indexOf(a.category)-LOC_SOURCE_ORDER.indexOf(b.category));
 
   return {groups,buckets,totalCount:groups.reduce((sum,row)=>sum+Number(row.item_count||0),0)};
 }
