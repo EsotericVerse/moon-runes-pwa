@@ -40,7 +40,7 @@ function useRuneGroups(){
 }
 function useRuneGroup(groupId){
   const [group,setGroup]=useState(null),[error,setError]=useState('');
-  useEffect(()=>{let live=true;const id=Number(groupId);if(!Number.isInteger(id)||id<1||id>9){setGroup(null);setError('找不到符文群組。');return()=>{live=false};}const anchor=id===9?65:(id-1)*8+1;selectNeonRows('silver.runes_group',{columns:GROUP_COLUMNS,filters:[{column:'runeslist',operator:'contains',value:[anchor]}],limit:1,offset:0}).then(({rows})=>{if(live){setGroup(rows?.[0]?groupView(rows[0]):null);setError(rows?.[0]?'':'找不到符文群組。');}}).catch(reason=>{if(live)setError(reason?.message||'Neon 符文群組讀取失敗');});return()=>{live=false};},[groupId]);
+  useEffect(()=>{let live=true;const id=Number(groupId);if(!Number.isInteger(id)||id<1||id>9){setGroup(null);setError('找不到符文群組。');return()=>{live=false};}const anchor=id===9?65:(id-1)*8+1;selectNeonRows('silver.runes_group',{columns:GROUP_COLUMNS,filters:[{column:'runeslist',operator:'contains',value:[anchor]}],limit:1,offset:0}).then(({rows})=>{if(live){setGroup(rows?.[0]?groupView(rows[0]):null);setError(rows?.[0]?'':'找不到符文群組。');}}).catch(reason=>{if(live)setError(reason?.message||'符文群組讀取失敗');});return()=>{live=false};},[groupId]);
   return {group,error};
 }
 function useRuneRows(runeNumbers){
@@ -51,7 +51,7 @@ function useRuneRows(runeNumbers){
 }
 function useRuneDetail(runeNumber){
   const [card,setCard]=useState(null),[error,setError]=useState('');
-  useEffect(()=>{let live=true;if(runeNumber===null){setCard(null);setError('找不到對應符文。');return()=>{live=false};}selectNeonRows('silver.runes',{columns:RUNE_COLUMNS+','+RUNE_DETAIL_COLUMNS,filters:[{column:'rune_id',operator:'eq',value:Number(runeNumber)}],limit:1,offset:0}).then(({rows})=>{if(live){setCard(rows?.[0]||null);setError(rows?.[0]?'':'找不到對應符文。');}}).catch(reason=>{if(live)setError(reason?.message||'Neon canonical 讀取失敗');});return()=>{live=false};},[runeNumber]);
+  useEffect(()=>{let live=true;if(runeNumber===null){setCard(null);setError('找不到對應符文。');return()=>{live=false};}selectNeonRows('silver.runes',{columns:RUNE_COLUMNS+','+RUNE_DETAIL_COLUMNS,filters:[{column:'rune_id',operator:'eq',value:Number(runeNumber)}],limit:1,offset:0}).then(({rows})=>{if(live){setCard(rows?.[0]||null);setError(rows?.[0]?'':'找不到對應符文。');}}).catch(reason=>{if(live)setError(reason?.message||'符文資料讀取失敗');});return()=>{live=false};},[runeNumber]);
   return {card,error};
 }
 
@@ -107,7 +107,7 @@ export function RuneGroupPage({groupId}){
   const {group,error:groupError}=useRuneGroup(groupId);
   const {runes:cards,error:runeError}=useRuneRows(runeNumbersForGroup(groupId));
   const error=groupError||runeError;
-  if(!group&&!error)return <main className="loc-next-main"><section className="loc-view"><p className="loc-note">正在從 Neon 讀取符文群組…</p></section></main>;
+  if(!group&&!error)return <main className="loc-next-main"><section className="loc-view"><p className="loc-note">正在讀取符文群組…</p></section></main>;
   if(!group)return <main className="loc-next-main"><section className="loc-view"><p className="loc-error" role="alert">{error||'找不到符文群組。'}</p></section></main>;
   return <main className="loc-next-main"><section className="loc-view">
     <header className="loc-hero"><p className="loc-eyebrow">第 {group.id} 組</p><h1>{group.name}組</h1><p className="loc-subtitle">{group.description}</p></header>
@@ -128,7 +128,7 @@ export function RuneDetailPage({groupId,runeId}){
   const {group,error:groupError}=useRuneGroup(groupId);
   const {card,error:runeError}=useRuneDetail(runeNumber);
   const error=groupError||runeError;
-  if((!group||!card)&&!error)return <main className="loc-next-main"><section className="loc-view"><p className="loc-note">正在從 Neon 讀取符文…</p></section></main>;
+  if((!group||!card)&&!error)return <main className="loc-next-main"><section className="loc-view"><p className="loc-note">正在讀取符文…</p></section></main>;
   if(!group||!card)return <main className="loc-next-main"><section className="loc-view"><p className="loc-error" role="alert">{error||'找不到對應符文。'}</p></section></main>;
   return <main className="loc-next-main"><section className="loc-view">
     <header className="loc-hero"><p className="loc-eyebrow">{group.name}組 · 第 {String(runeId).padStart(2,'0')} 枚</p><h1>{runeName(card)}之符文</h1><p className="loc-subtitle">{group.name}組</p></header>
