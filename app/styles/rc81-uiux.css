@@ -697,9 +697,6 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
     filter:saturate(1.05) contrast(1.02);
   }
 
-  .loc-draw-card:hover .loc-rune-card-image{
-    transform:translateY(-4px) scale(1.012);
-  }
 }
 
 /* Responsive hierarchy */
@@ -779,7 +776,8 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
     padding:.36rem .6rem;
     font-size:.78rem;
   }
-  .scope-v2-search{display:none}
+  .scope-v2-search{display:block;min-width:5.8rem}
+  .scope-v2-search input,.scope-v2-search input:focus{width:5.8rem}
   .loc-card,.loc-panel,.scope-v2-card,.scope-v2-feature-card{
     padding:1rem;
     border-radius:var(--rc81-radius-md);
