@@ -15,7 +15,7 @@ import {featureDataErrorMessage} from '../feature-data-state.v2';
 import ContentEditorV2 from '../ContentEditorV2';
 import SearchHighlightV2 from '../SearchHighlightV2';
 import {resolveGalaxyExternalLinks,selectGalaxyContent,selectGalaxyIdentity} from '../../loc/aggregate-query';
-import {selectManagedScopes} from '../../loc/scope-list';
+import {selectManagedScopes} from '../../loc/scope-table-mapping';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model.v2';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 import IncrementalListV2 from '../IncrementalListV2';
