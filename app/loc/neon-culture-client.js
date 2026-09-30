@@ -534,23 +534,27 @@ function mediaMetadataDescription(row){
   return fields.map(([label,value])=>{const text=decodeCultureText(value||'').trim();return text?`${label}：${text}`:'';}).filter(Boolean).join(' · ')||'沒有可讀的 metadata 文字';
 }
 
-async function selectLightweightIndexRows(table,{columns,filters=[],orders=[]}={}){
-  const totalCount=await selectNeonCount(table,{filters});
-  if(!totalCount)return [];
+async function selectLightweightIndexPage(table,{columns,filters=[],orders=[],limit=10,offset=0}={}){
+  const pageSize=Math.max(1,Math.floor(Number(limit)||10));
+  const pageOffset=Math.max(0,Math.floor(Number(offset)||0));
   return (await selectNeonRows(table,{
     columns,
     filters,
     orders,
-    limit:totalCount,
-    maxLimit:totalCount
+    limit:pageSize,
+    offset:pageOffset,
+    maxLimit:pageSize
   })).rows;
 }
 
-export async function selectScopePeriodWorkIndex(scopeId,{startDate='',endDate=null,sourceName='',sourceNames=[],mediaTypes=[]}={}){
+export async function selectScopePeriodWorkIndex(scopeId,{startDate='',endDate=null,sourceName='',sourceNames=[],mediaTypes=[],limit=10,offset=0}={}){
   if(!scopeId)throw new Error('scopeId is required');
   const tables=await resolveScopeTables(dataScopeId(scopeId));
   const rawSources=[...new Set((sourceNames||[]).map(value=>String(value||'').trim()).filter(Boolean))];
   const rawMedia=[...new Set((mediaTypes||[]).map(value=>String(value||'').trim()).filter(Boolean))];
+  const pageSize=Math.max(1,Math.floor(Number(limit)||10));
+  const pageOffset=Math.max(0,Math.floor(Number(offset)||0));
+  const fetchLimit=pageOffset+pageSize;
 
   const galaxyFilters=publicContentFilters([
     ...dateFilters(startDate,endDate),
@@ -563,16 +567,20 @@ export async function selectScopePeriodWorkIndex(scopeId,{startDate='',endDate=n
 
   const includeGalaxy=!sourceName||rawSources.length>0;
   const includeMedia=!sourceName||rawMedia.length>0;
-  const [galaxyResult,mediaResult]=await Promise.all([
-    includeGalaxy?selectLightweightIndexRows(tables.galaxy,{
+  const [galaxyCount,mediaCount,galaxyResult,mediaResult]=await Promise.all([
+    includeGalaxy?selectNeonCount(tables.galaxy,{filters:galaxyFilters}):Promise.resolve(0),
+    includeMedia?selectNeonCount(tables.galaxyMedia,{filters:mediaFilters}):Promise.resolve(0),
+    includeGalaxy?selectLightweightIndexPage(tables.galaxy,{
       columns:'uid,createtime',
       filters:galaxyFilters,
-      orders:[{column:'createtime',ascending:false},{column:'uid',ascending:true}]
+      orders:[{column:'createtime',ascending:false},{column:'uid',ascending:true}],
+      limit:fetchLimit
     }):Promise.resolve([]),
-    includeMedia?selectLightweightIndexRows(tables.galaxyMedia,{
+    includeMedia?selectLightweightIndexPage(tables.galaxyMedia,{
       columns:'media_id,createtime',
       filters:mediaFilters,
-      orders:[{column:'createtime',ascending:false},{column:'media_id',ascending:true}]
+      orders:[{column:'createtime',ascending:false},{column:'media_id',ascending:true}],
+      limit:fetchLimit
     }):Promise.resolve([])
   ]);
 
@@ -592,9 +600,10 @@ export async function selectScopePeriodWorkIndex(scopeId,{startDate='',endDate=n
       createtime:row.createtime
     }))
   ].filter(row=>row.entry_id)
-    .sort((a,b)=>String(b.createtime||'').localeCompare(String(a.createtime||''))||String(a.entry_id).localeCompare(String(b.entry_id)));
+    .sort((a,b)=>String(b.createtime||'').localeCompare(String(a.createtime||''))||String(a.entry_id).localeCompare(String(b.entry_id)))
+    .slice(pageOffset,pageOffset+pageSize);
 
-  return {rows,totalCount:rows.length};
+  return {rows,totalCount:Number(galaxyCount||0)+Number(mediaCount||0)};
 }
 
 export async function selectScopePeriodWorkDetails(scopeId,{items=[]}={}){
