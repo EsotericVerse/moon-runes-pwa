@@ -48,6 +48,28 @@ function periodRange(rows=[],scope=''){
 function periodKey(item){
   return String(item?.period||item?.era_id||item?.id||'').trim();
 }
+function locDistributionBuckets(items=[],bucketCount=3,startDate='',endDate=''){
+  const count=Math.max(1,Math.min(12,Number(bucketCount)||3));
+  const startMs=Date.parse(String(startDate||'').slice(0,10)+'T00:00:00Z');
+  const endMs=Date.parse(String(endDate||'').slice(0,10)+'T23:59:59Z');
+  if(!Number.isFinite(startMs)||!Number.isFinite(endMs)||endMs<=startMs)return [];
+  const span=(endMs-startMs)/count;
+  const buckets=Array.from({length:count},(_,index)=>({
+    index,
+    start:new Date(startMs+span*index).toISOString().slice(0,10),
+    end:new Date(index===count-1?endMs:startMs+span*(index+1)-1).toISOString().slice(0,10),
+    count:0
+  }));
+  for(const item of items){
+    if(item?.entry_type==='intersection_start')continue;
+    const ms=Date.parse(String(item?.start_date||'').slice(0,10)+'T00:00:00Z');
+    if(!Number.isFinite(ms)||ms<startMs||ms>endMs)continue;
+    const index=Math.min(count-1,Math.max(0,Math.floor((ms-startMs)/Math.max(1,span))));
+    buckets[index].count+=Number(item?.item_count)||0;
+  }
+  const maximum=Math.max(1,...buckets.map(item=>item.count));
+  return buckets.map(item=>({...item,ratio:item.count/maximum}));
+}
 
 export default function CultureV2(){
   const {scopeId}=useScopeRuntimeV2();
@@ -63,6 +85,7 @@ export default function CultureV2(){
   const [timelineMode,setTimelineMode]=useState('works');
   const [selectedPeriodKey,setSelectedPeriodKey]=useState('');
   const [selectedCategory,setSelectedCategory]=useState('');
+  const [locBucketCount,setLocBucketCount]=useState(3);
   const workScrollRef=useRef(null);
   const [fullTextKey,setFullTextKey]=useState('');
   const [fullText,setFullText]=useState('');
@@ -171,6 +194,18 @@ export default function CultureV2(){
   ,[query.data,scopeId]);
   const locSourceRiverItems=useMemo(()=>query.data?.sourceRiverItems||[],[query.data]);
   const locSourceGroups=useMemo(()=>query.data?.sourceGroups||[],[query.data]);
+  const locScopeIds=useMemo(()=>[...new Set(locSourceRiverItems.map(item=>String(item?.scope_id||item?.group_label||'')).filter(value=>value&&value!=='loc'))].sort(),[locSourceRiverItems]);
+  const locDistributionStart=String(query.data?.intersectionStart||'');
+  const locDistributionEnd=String(query.data?.intersectionEnd||new Date().toISOString().slice(0,10));
+  const locScopeDistributions=useMemo(()=>locScopeIds.map(scope=>({
+    scope,
+    buckets:locDistributionBuckets(
+      locSourceRiverItems.filter(item=>String(item?.scope_id||item?.group_label||'')===scope),
+      locBucketCount,
+      locDistributionStart,
+      locDistributionEnd
+    )
+  })),[locScopeIds,locSourceRiverItems,locBucketCount,locDistributionStart,locDistributionEnd]);
   const locSuggestions=useMemo(()=>{
     const totals=new Map();
     for(const item of locSourceRiverItems){
@@ -285,14 +320,37 @@ export default function CultureV2(){
             {isLoc?<>
 
               <section className='scope-v2-card scope-v2-culture-classification-river'>
-                <p className='loc-eyebrow'>Source Density</p>
-                <h3>作品來源分佈</h3>
-                <CultureTimelineV2
-                  items={locSourceRiverItems}
-                  labelOf={item=>item.entry_type==='intersection_start'?item.display_label:''}
-                  focus={{}}
-                  mode='source'
-                />
+                <div className='scope-v2-stat-controls'>
+                  <div>
+                    <p className='loc-eyebrow'>Scope Distribution</p>
+                    <h3>作品時間分佈</h3>
+                  </div>
+                  <label>
+                    <span>時間焦點</span>
+                    <select className='scope-v2-select' value={locBucketCount} onChange={event=>setLocBucketCount(Number(event.target.value)||3)}>
+                      <option value='3'>粗略</option>
+                      <option value='6'>中等</option>
+                      <option value='12'>較細</option>
+                    </select>
+                  </label>
+                </div>
+                <p className='scope-v2-status'>{locDistributionStart} ～ {locDistributionEnd}；左右邊界固定，只調整區段密度，不提供拖曳。</p>
+                <div className='scope-v2-loc-distribution-grid'>
+                  {locScopeDistributions.map(group=>{
+                    const total=group.buckets.reduce((sum,item)=>sum+item.count,0);
+                    return <article className='scope-v2-loc-distribution-card' key={group.scope}>
+                      <header><strong>{group.scope} 文字</strong><span>{total.toLocaleString()} 項</span></header>
+                      <div className='scope-v2-loc-distribution-buckets'>
+                        {group.buckets.map(bucket=><div
+                          className='scope-v2-loc-distribution-bucket'
+                          key={group.scope+'|'+bucket.index}
+                          title={bucket.start+' ～ '+bucket.end+' · '+bucket.count+' 項'}
+                          style={{'--loc-density':Math.max(.08,bucket.ratio)}}
+                        ><span>{bucket.count.toLocaleString()}</span></div>)}
+                      </div>
+                    </article>;
+                  })}
+                </div>
                 {locSourceGroups.length?<div className='scope-v2-culture-source-groups' aria-label='作品來源分類'>
                   {locSourceGroups.map(group=><article className='scope-v2-inline-card' key={group.category_key}>
                     <strong>{group.display_label}</strong>
@@ -418,6 +476,7 @@ export default function CultureV2(){
                     key={work.key||work.uid||work.entry_id||String(work.createtime||work.created_at)+'-'+index}
                     title={workDisplayHeading(work,{media:false,limit:80})}
                     source={work.source_name||work.group_label||''}
+                    scopeId={work.scope_id||classificationScope}
                     date={work.display_date||formatCultureDateTime(work.createtime||work.created_at)}
                     body={work.description||work.media_metadata_text||''}
                     relationLinks={galaxyRelationLinks(classificationScope,work)}
