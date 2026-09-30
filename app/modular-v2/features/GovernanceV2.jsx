@@ -73,14 +73,12 @@ function GovernanceHome(){
   return <FeaturePageV2 featureId="governance" subtitle={subtitle}>
     <View canEdit={canEdit}/>
     {scopeId==='loc'?<section className="loc-card">
-      <p className="loc-eyebrow">Management</p>
       <h2>系統管理</h2>
-      <p>管理功能使用獨立管理站。</p>
+      <p>月典的系統設定集中在獨立管理站，公開治理頁只保留原則與權利說明。</p>
       <a className="loc-button primary" href={adminHref}>進入獨立管理站</a>
     </section>:<section className="loc-card">
-      <p className="loc-eyebrow">Management</p>
       <h2>{getScopeV2(scopeId).label}管理</h2>
-      <p>時期、關鍵詞／風格分類與其他設定集中在這裡；頁面文字仍在原頁直接編輯。</p>
+      <p>時期、分類與其他可調整項目集中在管理頁，需要修改設定時可從這裡進入。</p>
       <a className="loc-button primary" href={scopeHrefV2(scopeId,'governance/manage')}>進入管理</a>
     </section>}
   </FeaturePageV2>;
