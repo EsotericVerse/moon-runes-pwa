@@ -181,7 +181,7 @@ function rangeHasAnchor(anchorDates=[],from='',to=''){
 function rangesOverlap(a,b){
   return Boolean(a?.from&&a?.to&&b?.from&&b?.to&&a.from<=b.to&&b.from<=a.to);
 }
-function buildTrendSuggestions(rows=[],standard='10y',anchorDates=[],focusRange=null){
+function buildTrendSuggestions(rows=[],standard='10y',anchorDates=[],focusRange=null,{suppressAnchors=true}={}){
   const data=buildSourceTrend(rows,standard,focusRange);
   if(data.length<2)return [];
   const config=TIME_STANDARDS.find(item=>item.value===standard)||TIME_STANDARDS[0];
@@ -192,7 +192,7 @@ function buildTrendSuggestions(rows=[],standard='10y',anchorDates=[],focusRange=
 
   const addCandidate=candidate=>{
     if(!candidate?.from||!candidate?.to)return;
-    if(rangeHasAnchor(anchorDates,candidate.from,candidate.to))return;
+    if(suppressAnchors&&rangeHasAnchor(anchorDates,candidate.from,candidate.to))return;
     candidates.push(candidate);
   };
 
@@ -453,6 +453,10 @@ function StatisticsPanel({scopeId,navigation,types}){
     ()=>rankingType==='total'?buildTrendSuggestions(trendQuery.data||[],timeStandard,anchorQuery.data||[],analysisFocus):[],
     [rankingType,trendQuery.data,timeStandard,anchorQuery.data,analysisFocus]
   );
+  const analysisCandidates=useMemo(
+    ()=>rankingType==='total'?buildTrendSuggestions(trendQuery.data||[],timeStandard,anchorQuery.data||[],analysisFocus,{suppressAnchors:false}):[],
+    [rankingType,trendQuery.data,timeStandard,anchorQuery.data,analysisFocus]
+  );
   const [visibleRows,setVisibleRows]=useState([]);
   const canDrillDown=scopeId!=='loc'&&rankingType==='source';
   const detailQuery=useQuery({
@@ -466,8 +470,8 @@ function StatisticsPanel({scopeId,navigation,types}){
     if(nextStandard===timeStandard)return;
     const currentIndex=TIME_STANDARDS.findIndex(item=>item.value===timeStandard);
     const nextIndex=TIME_STANDARDS.findIndex(item=>item.value===nextStandard);
-    if(rankingType==='total'&&nextIndex>currentIndex&&trendSuggestions.length){
-      const focus=trendSuggestions.reduce((best,item)=>!best||Number(item.score||0)>Number(best.score||0)?item:best,null);
+    if(rankingType==='total'&&nextIndex>currentIndex&&analysisCandidates.length){
+      const focus=analysisCandidates.reduce((best,item)=>!best||Number(item.score||0)>Number(best.score||0)?item:best,null);
       setAnalysisFocus(focus?{from:focus.from,to:focus.to}:analysisFocus);
     }else if(nextIndex<currentIndex){
       setAnalysisFocus(null);
