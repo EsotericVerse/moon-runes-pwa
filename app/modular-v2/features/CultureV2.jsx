@@ -5,7 +5,8 @@ import {useSearchParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
 import {
   selectScopePeriodSourceSnapshot,
-  selectScopePeriodWorks,
+  selectScopePeriodWorkIndex,
+  selectScopePeriodWorkDetails,
   selectScopeCultureData,
   selectScopeWorkSnapshot
 } from '../../loc/neon-culture-client';
@@ -23,6 +24,7 @@ import WorkSummaryCardV2 from '../WorkSummaryCardV2';
 import WorkFullTextV2 from '../WorkFullTextV2';
 import {workDisplayHeading,workDisplayText} from '../work-display-model.v2';
 import IncrementalListV2 from '../IncrementalListV2';
+import {useOffsetPagination} from '../use-offset-pagination.v2';
 import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
 import ContentEditorV2 from '../ContentEditorV2';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
@@ -144,21 +146,42 @@ export default function CultureV2(){
   const categoryGroups=sourceSnapshotQuery.data?.groups||[];
   const categoryQuery=sourceSnapshotQuery;
   const selectedGroup=categoryGroups.find(item=>item.category_key===selectedCategory)||null;
-  const periodWorksQuery=useQuery({
-    queryKey:['culture-period-works',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,selectedCategory,selectedGroup?.source_name||'all'],
-    queryFn:()=>selectScopePeriodWorks(classificationScope,{
+  const periodWorkIndexQuery=useQuery({
+    queryKey:['culture-period-work-index',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,selectedCategory,selectedGroup?.source_name||'all'],
+    queryFn:()=>selectScopePeriodWorkIndex(classificationScope,{
       startDate:selectedWorkPeriod?.start_date||'',
       endDate:selectedWorkPeriod?.end_date,
       sourceName:selectedGroup?.source_name||'',
       sourceNames:selectedGroup?.source_names||[],
-      mediaTypes:selectedGroup?.media_types||[],
-      edgeLimit:200
+      mediaTypes:selectedGroup?.media_types||[]
     }),
     enabled:!isLoc&&(!selectedCategory||Boolean(selectedGroup)),
     staleTime:5*60_000
   });
-  const selectedCount=Number(periodWorksQuery.data?.totalCount)||Number(selectedGroup?.item_count)||0;
-  const visibleWorkRows=periodWorksQuery.data?.rows||[];
+  const periodWorksPage=useOffsetPagination({
+    key:[
+      classificationScope,
+      selectedWorkPeriod?.period||'all',
+      selectedWorkPeriod?.start_date||'',
+      selectedWorkPeriod?.end_date||'',
+      selectedCategory||'all',
+      Number(periodWorkIndexQuery.data?.totalCount)||0
+    ].join('|'),
+    pageSize:DEFAULT_LIST_BATCH_SIZE,
+    enabled:!isLoc&&!periodWorkIndexQuery.isPending&&!periodWorkIndexQuery.error&&(!selectedCategory||Boolean(selectedGroup)),
+    loadPage:async(offset,limit)=>{
+      const indexRows=periodWorkIndexQuery.data?.rows||[];
+      const items=indexRows.slice(offset,offset+limit);
+      const details=await selectScopePeriodWorkDetails(classificationScope,{items});
+      return {
+        rows:details.rows||[],
+        hasMore:offset+items.length<indexRows.length
+      };
+    },
+    getRowKey:row=>String(row?.key||row?.uid||row?.entry_id||'')
+  });
+  const selectedCount=Number(periodWorkIndexQuery.data?.totalCount)||Number(selectedGroup?.item_count)||0;
+  const visibleWorkRows=periodWorksPage.rows||[];
 
   useEffect(()=>{
     setTimelineMode('works');
@@ -276,7 +299,7 @@ export default function CultureV2(){
       const key=String(work?.key||('galaxy:'+uid));
       if(fullTextKey===key)setFullText(String(editDraft.body||''));
       setEditingWorkKey('');setEditDraft(null);
-      await periodWorksQuery.refetch();
+      periodWorksPage.reload();
     }catch(exception){
       setEditError(String(exception?.message||exception||'儲存失敗。'));
     }finally{
@@ -465,15 +488,17 @@ export default function CultureV2(){
                   <h4>{selectedGroup?.display_label||'全部作品'} · {selectedCount.toLocaleString()} 項作品</h4>
                   {selectedGroup?<button type='button' className='scope-v2-pagination-button' onClick={()=>setSelectedCategory('')}>顯示全部作品</button>:null}
                 </header>
-                {periodWorksQuery.data?.truncated?<p className='scope-v2-status'>此範圍僅載入最早 200 與最新 200 項作品；中間作品請用搜尋或縮小時間範圍查找。</p>:null}
-                {periodWorksQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksQuery.error)}</p>:null}
+                {periodWorkIndexQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorkIndexQuery.error)}</p>:null}
+                {periodWorksPage.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksPage.error)}</p>:null}
                 <IncrementalListV2
                   items={visibleWorkRows}
                   batchSize={DEFAULT_LIST_BATCH_SIZE}
                   resetKey={selectedCategory+'|source'}
                   className='scope-v2-culture-source-work-scroll'
-                  loading={periodWorksQuery.isFetching}
-                  error={periodWorksQuery.error}
+                  externalHasMore={periodWorksPage.hasMore}
+                  loading={periodWorkIndexQuery.isFetching||periodWorksPage.loading}
+                  error={periodWorkIndexQuery.error||periodWorksPage.error}
+                  onLoadMore={periodWorksPage.loadNext}
                   scrollRootRef={workScrollRef}
                   renderItem={(work,index)=><WorkSummaryCardV2
                     key={work.key||work.uid||work.entry_id||String(work.createtime||work.created_at)+'-'+index}
@@ -504,7 +529,7 @@ export default function CultureV2(){
                     />:null}
                   </WorkSummaryCardV2>}
                 />
-                {!periodWorksQuery.isFetching&&!periodWorksQuery.error&&!visibleWorkRows.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+                {!periodWorkIndexQuery.isFetching&&!periodWorksPage.loading&&!periodWorkIndexQuery.error&&!periodWorksPage.error&&!visibleWorkRows.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
               </section>:null}
             </section>:null}
       </>:null}
