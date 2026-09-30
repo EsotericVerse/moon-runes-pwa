@@ -53,21 +53,20 @@ function nearestPublishedAtOrAfter(rows,index){
   }
   return '';
 }
-function zeroSegments(rows,changepoints){
-  const boundaries=[0,...changepoints,rows.length]
-    .filter((value,index,array)=>Number.isInteger(value)&&value>=0&&value<=rows.length&&array.indexOf(value)===index)
-    .sort((a,b)=>a-b);
-  const segments=[];
-  for(let index=1;index<boundaries.length;index++){
-    const startIndex=boundaries[index-1];
-    const endIndex=boundaries[index];
-    if(endIndex<=startIndex)continue;
-    const segment=rows.slice(startIndex,endIndex);
-    if(segment.length&&segment.every(row=>Number(row.count)===0)){
-      segments.push({startIndex,endIndex});
+function structuralEmptyRuns(rows,changepoints){
+  const changeSet=new Set(changepoints);
+  const runs=[];
+  let start=-1;
+  for(let index=0;index<=rows.length;index++){
+    const empty=index<rows.length&&Number(rows[index]?.count)===0;
+    if(empty&&start<0)start=index;
+    if((!empty||index===rows.length)&&start>=0){
+      const endIndex=index;
+      if(changeSet.has(start)||changeSet.has(endIndex))runs.push({startIndex:start,endIndex});
+      start=-1;
     }
   }
-  return segments;
+  return runs;
 }
 
 export function analyzeRiverDensity(rows=[],anchorDates=[]){
@@ -83,7 +82,7 @@ export function analyzeRiverDensity(rows=[],anchorDates=[]){
     changepoints=[];
   }
 
-  const emptySegments=zeroSegments(density,changepoints);
+  const emptySegments=structuralEmptyRuns(density,changepoints);
   const hiddenDates=emptySegments.map(segment=>({
     start:density[segment.startIndex].date,
     end:segment.endIndex<density.length?density[segment.endIndex].date:dayFromMs(dayMs(density.at(-1).date)+DAY_MS)
@@ -99,7 +98,10 @@ export function analyzeRiverDensity(rows=[],anchorDates=[]){
   };
 
   for(const index of changepoints){
-    addSuggestion(nearestPublishedAtOrAfter(density,index),'change-point');
+    const before=Number(density[index-1]?.count)||0;
+    const after=Number(density[index]?.count)||0;
+    if(before>0&&after===0)addSuggestion(nearestPublishedBefore(density,index),'change-point');
+    else addSuggestion(nearestPublishedAtOrAfter(density,index),'change-point');
   }
   for(const segment of emptySegments){
     addSuggestion(nearestPublishedBefore(density,segment.startIndex),'gap-edge');
