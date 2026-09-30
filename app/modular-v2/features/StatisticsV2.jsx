@@ -232,7 +232,7 @@ function StatisticsPanel({scopeId,navigation,types}){
   const customReady=timeStandard!=='custom'||Boolean(dateKey(customFrom)&&dateKey(customTo)&&customFrom<=customTo);
 
   return <section className="scope-v2-stat-section">
-    <header className="scope-v2-stat-domain-heading"><div><p className="loc-eyebrow">Statistics</p><h2>統計</h2></div></header>
+    <header className="scope-v2-stat-domain-heading"><div><h2>統計結果</h2></div></header>
     <div className="scope-v2-stat-controls">
       <StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/>
       <label><span>圖形</span><select className="scope-v2-select" value={chartType} onChange={event=>setChartType(event.target.value)}>
