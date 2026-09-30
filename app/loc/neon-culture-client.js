@@ -4,7 +4,7 @@ import {ScopeCultureResponseSchema} from './scope-feature-contracts';
 import {decodeCultureText,formatCultureDateTime} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
 import {workDisplayText} from '../modular-v2/work-display-model.v2';
 import {resolveGalaxyExternalLinks,selectCategoryCounts,selectDailyCategoryCounts,selectDailyCounts,selectSourceCatalog,selectSourceDaily} from './aggregate-query';
-import {selectNeonBoundedRows,selectNeonCount,selectNeonRows} from './neon-query';
+import {selectAllNeonRows,selectNeonCount,selectNeonRows} from './neon-query';
 import {publicContentFilters} from './content-policy';
 import {mappedScopeTable,resolveScopeTables} from './scope-table-mapping';
 import {selectManagedScopes} from './scope-list';
@@ -519,7 +519,7 @@ function mediaMetadataDescription(row){
   return fields.map(([label,value])=>{const text=decodeCultureText(value||'').trim();return text?`${label}：${text}`:'';}).filter(Boolean).join(' · ')||'沒有可讀的 metadata 文字';
 }
 
-export async function selectScopePeriodWorks(scopeId,{startDate='',endDate=null,sourceName='',sourceNames=[],mediaTypes=[],edgeLimit=200}={}){
+export async function selectScopePeriodWorkIndex(scopeId,{startDate='',endDate=null,sourceName='',sourceNames=[],mediaTypes=[]}={}){
   if(!scopeId)throw new Error('scopeId is required');
   const tables=await resolveScopeTables(dataScopeId(scopeId));
   const rawSources=[...new Set((sourceNames||[]).map(value=>String(value||'').trim()).filter(Boolean))];
@@ -537,27 +537,65 @@ export async function selectScopePeriodWorks(scopeId,{startDate='',endDate=null,
   const includeGalaxy=!sourceName||rawSources.length>0;
   const includeMedia=!sourceName||rawMedia.length>0;
   const [galaxyResult,mediaResult]=await Promise.all([
-    includeGalaxy?selectNeonBoundedRows(tables.galaxy,{
-      columns:'uid,source_name,createtime,title,url,source_id,target_id,media_link',
+    includeGalaxy?selectAllNeonRows(tables.galaxy,{
+      columns:'uid,createtime',
       filters:galaxyFilters,
-      orderColumn:'createtime',
-      idColumn:'uid',
-      edgeLimit
-    }):Promise.resolve({rows:[],totalCount:0,truncated:false}),
-    includeMedia?selectNeonBoundedRows(tables.galaxyMedia,{
-      columns:'media_id,galaxy_link,source_native_id,media_type,title,url,meta_tags,createtime',
+      orders:[{column:'createtime',ascending:false},{column:'uid',ascending:true}]
+    }):Promise.resolve({rows:[],count:0}),
+    includeMedia?selectAllNeonRows(tables.galaxyMedia,{
+      columns:'media_id,createtime',
       filters:mediaFilters,
-      orderColumn:'createtime',
-      idColumn:'media_id',
-      edgeLimit
-    }):Promise.resolve({rows:[],totalCount:0,truncated:false})
+      orders:[{column:'createtime',ascending:false},{column:'media_id',ascending:true}]
+    }):Promise.resolve({rows:[],count:0})
+  ]);
+
+  const rows=[
+    ...(galaxyResult.rows||[]).map(row=>({
+      key:'galaxy:'+row.uid,
+      entry_type:'work',
+      entry_id:String(row.uid||''),
+      uid:String(row.uid||''),
+      createtime:row.createtime
+    })),
+    ...(mediaResult.rows||[]).map(row=>({
+      key:'media:'+row.media_id,
+      entry_type:'media_metadata',
+      entry_id:String(row.media_id||''),
+      media_id:String(row.media_id||''),
+      createtime:row.createtime
+    }))
+  ].filter(row=>row.entry_id)
+    .sort((a,b)=>String(b.createtime||'').localeCompare(String(a.createtime||''))||String(a.entry_id).localeCompare(String(b.entry_id)));
+
+  return {rows,totalCount:rows.length};
+}
+
+export async function selectScopePeriodWorkDetails(scopeId,{items=[]}={}){
+  if(!scopeId)throw new Error('scopeId is required');
+  const source=Array.isArray(items)?items:[];
+  if(!source.length)return {rows:[],hasMore:false};
+  const tables=await resolveScopeTables(dataScopeId(scopeId));
+  const galaxyIds=[...new Set(source.filter(row=>row?.entry_type==='work').map(row=>String(row?.uid||row?.entry_id||'').trim()).filter(Boolean))];
+  const mediaIds=[...new Set(source.filter(row=>row?.entry_type==='media_metadata').map(row=>String(row?.media_id||row?.entry_id||'').trim()).filter(Boolean))];
+
+  const [galaxyResult,mediaResult]=await Promise.all([
+    galaxyIds.length?selectNeonRows(tables.galaxy,{
+      columns:'uid,source_name,createtime,title,url,source_id,target_id,media_link',
+      filters:publicContentFilters([{column:'uid',operator:'in',value:galaxyIds}]),
+      limit:galaxyIds.length
+    }):Promise.resolve({rows:[]}),
+    mediaIds.length?selectNeonRows(tables.galaxyMedia,{
+      columns:'media_id,galaxy_link,source_native_id,media_type,title,url,meta_tags,createtime',
+      filters:[{column:'media_id',operator:'in',value:mediaIds}],
+      limit:mediaIds.length
+    }):Promise.resolve({rows:[]})
   ]);
 
   const resolvedGalaxy=await resolveGalaxyExternalLinks(scopeId,galaxyResult.rows||[]);
-  const galaxyRows=resolvedGalaxy.map(row=>({
+  const galaxyById=new Map(resolvedGalaxy.map(row=>[String(row.uid),{
     key:'galaxy:'+row.uid,
     uid:row.uid,
-    source_name:sourceName,
+    source_name:String(row.source_name||''),
     source_id:row.source_id||null,
     target_id:row.target_id||null,
     title:workDisplayText(row.title||'').trim(),
@@ -568,45 +606,35 @@ export async function selectScopePeriodWorks(scopeId,{startDate='',endDate=null,
     display_date:formatCultureDateTime(row.createtime),
     entry_id:row.uid,
     entry_type:'work',
-    group_label:sourceName,
+    group_label:String(row.source_name||''),
     scope_id:runtimeScopeId(scopeId),
     links:Array.isArray(row.resolved_links)?row.resolved_links:[]
-  }));
-  const mediaRows=(mediaResult.rows||[]).map(row=>({
+  }]));
+  const mediaById=new Map((mediaResult.rows||[]).map(row=>[String(row.media_id),{
     ...row,
     key:'media:'+row.media_id,
     record_type:'galaxy_media',
-    source_name:sourceName,
+    source_name:String(row.media_type||''),
     entry_id:row.media_id,
     entry_type:'media_metadata',
     start_date:row.createtime,
     date:row.createtime,
     display_date:formatCultureDateTime(row.createtime),
-    title:decodeCultureText(row.title||'').trim()||row.media_type||sourceName,
+    title:decodeCultureText(row.title||'').trim()||row.media_type||'多媒體',
     description:mediaMetadataDescription(row),
     media_metadata_text:mediaMetadataDescription(row),
-    group_label:sourceName,
+    group_label:String(row.media_type||''),
     scope_id:runtimeScopeId(scopeId),
     links:row.url&&/^https?:\/\//i.test(String(row.url))
       ?[{id:'media:'+String(row.media_id),href:row.url,label:'媒體連結'}]
       :[]
-  }));
+  }]));
 
-  const combined=[...galaxyRows,...mediaRows]
-    .sort((a,b)=>String(a.createtime||'').localeCompare(String(b.createtime||''))||String(a.entry_id||'').localeCompare(String(b.entry_id||'')));
-  const edge=Math.max(1,Math.min(1000,Math.floor(Number(edgeLimit)||200)));
-  const first=combined.slice(0,edge);
-  const last=combined.slice(Math.max(edge,combined.length-edge));
-  const map=new Map([...first,...last].map(row=>[String(row.key||row.entry_id),row]));
-  const rows=[...map.values()].sort((a,b)=>String(b.createtime||'').localeCompare(String(a.createtime||''))||String(a.entry_id||'').localeCompare(String(b.entry_id||'')));
-  const totalCount=Number(galaxyResult.totalCount||0)+Number(mediaResult.totalCount||0);
   return {
-    rows,
-    hasMore:false,
-    nextOffset:null,
-    totalCount,
-    truncated:totalCount>rows.length,
-    edgeLimit:edge
+    rows:source.map(row=>row.entry_type==='work'
+      ?galaxyById.get(String(row.uid||row.entry_id))
+      :mediaById.get(String(row.media_id||row.entry_id))
+    ).filter(Boolean)
   };
 }
 
