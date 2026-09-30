@@ -42,7 +42,7 @@ export function useOffsetPagination({
       const page=await loadPageRef.current(offset,pageSize);
       if(requestId!==requestIdRef.current)return;
       const nextRows=Array.isArray(page?.rows)?page.rows:[];
-      offsetRef.current=Number.isFinite(Number(page?.nextOffset))?Number(page.nextOffset):offset+nextRows.length;
+      offsetRef.current=page?.nextCursor??(Number.isFinite(Number(page?.nextOffset))?Number(page.nextOffset):Number(offset||0)+nextRows.length);
       hasMoreRef.current=typeof page?.hasMore==='boolean'?page.hasMore:nextRows.length===pageSize;
       setRows(current=>appendUnique(current,nextRows,getRowKeyRef.current));
       setHasMore(hasMoreRef.current);
@@ -73,7 +73,7 @@ export function useOffsetPagination({
     Promise.resolve().then(()=>loadPageRef.current(0,pageSize)).then(page=>{
       if(requestId!==requestIdRef.current)return;
       const firstRows=Array.isArray(page?.rows)?page.rows:[];
-      offsetRef.current=Number.isFinite(Number(page?.nextOffset))?Number(page.nextOffset):firstRows.length;
+      offsetRef.current=page?.nextCursor??(Number.isFinite(Number(page?.nextOffset))?Number(page.nextOffset):firstRows.length);
       hasMoreRef.current=typeof page?.hasMore==='boolean'?page.hasMore:firstRows.length===pageSize;
       setRows(firstRows);
       setHasMore(hasMoreRef.current);
