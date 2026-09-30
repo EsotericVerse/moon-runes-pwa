@@ -1,5 +1,6 @@
-import {NEON_QUERY_BATCH_SIZE} from './query-contract.mjs';
 'use client';
+
+import {NEON_QUERY_BATCH_SIZE} from './query-contract.mjs';
 
 import {isReferenceOnlyResource,publicContentFilters} from './content-policy';
 import {selectNeonCount,selectNeonRows} from './neon-query';
