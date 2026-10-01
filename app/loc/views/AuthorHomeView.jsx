@@ -71,7 +71,7 @@ function SystemsCopy(){
   return <div className="author-system-grid">
     <article className="author-editorial-block">
       <h3>LOC／月典</h3>
-      <p>LOC／月典現在的重心，是文化分析與文化建築。從文字、時間與關係裡找出文化特徵、轉折與規律，再把分析結果整理成可以繼續延伸的結構。</p>
+      <p>LOC／月典本來就是為文化分析而設計，尤其關注尚未被主流充分理解、仍處在社會與法律分類灰區的次文化。它會先把現象、語言、時間與關係整理清楚，讓這些灰色地帶能更快被看見與理解，並為之後更合適的法律定位提供脈絡與材料。</p>
       <p><a href="https://loc.lo3rwang.cc/">查看 LOC／月典 →</a></p>
     </article>
     <article className="author-editorial-block">
