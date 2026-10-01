@@ -13,8 +13,8 @@ const RUNES_LINKS=Object.freeze({
 
 export default function AboutView(){
   return <section className="loc-view loc-home">
-    <header className="loc-hero scope-home-hero-with-visual">
-      <div className="scope-home-hero-copy">
+    <header className="loc-hero loc-home-hero">
+      <div className="loc-home-hero-copy">
         <p className="loc-eyebrow">LOC (Language Architecture Framework)</p>
         <div className="home-title-row">
           <h1>LOC月典</h1>
@@ -26,7 +26,7 @@ export default function AboutView(){
           <p>當微光慢慢集中變亮，你也將綻放屬於自己的光芒。</p>
         </div>
       </div>
-      <figure className="home-hero-visual scope-home-hero-visual">
+      <figure className="home-hero-visual">
         <picture>
           <source media="(max-width: 900px)" srcSet={SITE_IMAGES.locHeroSmall.src} />
           <img src={SITE_IMAGES.locHero.src} width={SITE_IMAGES.locHero.width} height={SITE_IMAGES.locHero.height} alt="LOC 月典語言架構框架視覺理念圖" loading="lazy" decoding="async" />
