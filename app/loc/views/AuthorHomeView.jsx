@@ -140,13 +140,9 @@ export default function AuthorHomeView({section=null}){
     title="政德"
     subtitle="語言建築師"
     intro={<>
-      <p>Hello！ 你好！你可以叫我Oscar。不認識我沒關係，先來聽首我創作歌詞的歌吧！</p>
-      <p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽〈這就是我〉 →</a></p>
-      <p>微月光：「我只是微月光，若我的存在光芒能讓你在全黑夜中找到希望，我會感到榮幸，但這並不是我生來就注定成為希望。」</p>
-      <p><a href="https://suno.com/song/a0a724c1-d35f-4ccf-9ac1-0c1c9f2d6a50" target="_blank" rel="noopener noreferrer">聽〈只是微月光〉 →</a></p>
-      <p>微月光：「赤子的心沒有離場，成熟也不是後來才穿上的衣裳。它們可以同時存在，像月與夜，像火與霜，像明亮身後必然跟著的陰暗。」</p>
-      <p><a href="https://suno.com/song/9ff928a0-aa9d-4563-8c0c-867709e62d09" target="_blank" rel="noopener noreferrer">聽〈無限減一的月光〉 →</a></p>
+      <p>Hello！你好！你可以叫我 Oscar。</p>
       <p>Wordsmith · Chaos Calibrator · Language Architect · Creator of LOC and LunaRunes</p>
+      <p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽〈這就是我〉 →</a></p>
     </>}
     heroVisual={<iframe src="https://www.instagram.com/p/DdX5ki-oZY6/embed" title="這就是我｜Lucas Oscar Wang 政德自我介紹" loading="eager" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" frameBorder="0" scrolling="no"/>}
     sections={[
@@ -154,12 +150,49 @@ export default function AuthorHomeView({section=null}){
         id:'introduction',
         eyebrow:'Introduction',
         title:'自我介紹',
-        content:<div className="home-author-copy">
-          <p><strong>Lucas Oscar Wang 政德</strong>，叫我 Oscar 就好。六年級末段班，巨蟹座。</p>
-          <p><strong>人生觀：</strong>鑑古知今，求同存異。不在其位，不謀其政。隨心所欲，而不逾己。</p>
-          <p><strong>原則態度：</strong>敬畏未知，尊重異者，專業為先。</p>
-          <p><strong>擅長能力：</strong>事物的歸納整理跟系統化。擅長把一件可能很難的原理講到很簡單。<br/><strong>職業定位：</strong>聚焦於語言治理、知識與資料架構、數位資產整理，以及相關專案實作。</p>
-          <p><strong>興趣：</strong>寫作閱讀、音樂創作、符文占卜籤詩、到處看看。<br/>秘藝文域（EsotericVerse），籌備中。</p>
+        content:<div className="loc-grid two">
+          <article>
+            <h3>我主要在做什麼？</h3>
+            <p>我的工作重心不是單純的內容創作，而是處理<strong>語言、資料、脈絡與時間</strong>之間的關係：把分散的文字、作品、規則、版本與歷史紀錄，整理成可搜尋、可理解、可治理、可持續維護的結構。</p>
+            <p>目前工作方向聚焦於語言治理、語言系統設計、知識與資料架構、數位遺產管理，以及相關顧問與專案實作。</p>
+            <p>Facebook、Threads、Instagram、Suno 等平台主要是作品、生活文字、音樂與系統發展紀錄的來源；內容再依 LOC 的模組與資料責任進行整理、搜尋、分析與治理，而不是把平台本身當成身份。</p>
+          </article>
+          <article>
+            <h3>語言顧問、語言治理與系統設計</h3>
+            <p>對外合作職能以 <strong>Language Consultant</strong> 為主要定位，可依個案以顧問、專案或系統實作方式合作，處理命名與正名、語意治理、資料分類、知識架構、RAG、搜尋與解析、版本治理、文本關係、長期演化，以及既有系統中的語意污染與資料責任問題。</p>
+            <p>目標不是把每個個案套進 LOC，而是理解對方原本的語言與資料，再依實際需求建立適合自己的結構。</p>
+          </article>
+          <article>
+            <h3>數位資產管理</h3>
+            <p>另一個長期發展方向是數位資產管理：協助個人、創作者或組織整理長期累積的文字、照片、影音、作品、帳號資料、版本與歷史紀錄，使其從散落檔案轉成可搜尋、可理解、可追溯來源並能長期維護的數位資產。</p>
+            <p>這不只是備份，而包含沿革整理、時間校準、身份與名稱治理、資料關聯、權限與來源紀錄，以及未來如何被繼承、研究或再次使用。</p>
+          </article>
+          <article>
+            <h3>開放方法，專業工作有其價值</h3>
+            <p>我支持開放、Copyleft 與可追溯來源的創作方式，也鼓勵每個人發展自己的符號、自己的語言系統與自己的風格。</p>
+            <p><strong>開放核心不等於無償勞務。</strong>顧問判斷、架構設計、資料整理、系統實作、個案研究與持續治理都需要投入專業時間。公開的是可被理解與延伸的方法；商業價值則來自如何針對真實問題完成分析、設計與實作。</p>
+          </article>
+          <article>
+            <h3>思想取向</h3>
+            <p>作者本人自我描述，思想上偏向道教老子體系。此處所說的「道德」，主要取道家語境中的道與德、天地人，而非儒家「天地君親師」的倫理秩序。</p>
+            <p>在實踐態度上，則偏向 Druid 所象徵的自然觀與無為：觀察自然、順勢而行，不以強制控制取代理解。這也是我後來處理語言、治理、創作與人生經驗時的重要底色之一。</p>
+          </article>
+          <article>
+            <h3>Lucas Oscar Wang 政德</h3>
+            <p><strong>Lucas</strong> 取其「光芒」的意象；常用的 <strong>Oscar</strong> 則來自凱爾特文化，取「神聖長矛」之意，象徵勇氣。</p>
+            <p>兩者組合成英文名 <strong>Lucas Oscar Wang</strong>，象徵光芒的勇氣，與現行中文名<strong>政德</strong>共同構成目前使用的作者姓名。<strong>lo3rwang</strong> 則作為公開識別。</p>
+            <p>另有別名 <strong>dlwang／Lucipher Drucula Wang</strong>，作為自己的陰暗面名稱。它用來承認人在情緒低落或人生失常時也可能呈現不同的一面；不否定那些過去的自己，而是學著面對、接受並繼續前進。</p>
+          </article>
+          <article>
+            <h3>聯絡方式</h3>
+            <p>合作、顧問、系統設計、數位遺產管理或其他公開內容相關事項，請透過電子郵件聯絡。</p>
+            <p><a href="mailto:sopa2306@gmail.com">sopa2306@gmail.com</a></p>
+          </article>
+          <article>
+            <h3>官方連結</h3>
+            <p><a href="https://lo3rwang.cc/" target="_blank" rel="noopener noreferrer">個人網站</a> · <a href="https://github.com/lo3rwang" target="_blank" rel="noopener noreferrer">GitHub 個人</a> · <a href="https://github.com/EsotericVerse/moon-runes-pwa" target="_blank" rel="noopener noreferrer">LOC 專案 GitHub</a></p>
+            <p><a href="https://www.linkedin.com/in/lo3rwang/" target="_blank" rel="noopener noreferrer">LinkedIn</a> · <a href="https://www.instagram.com/lo3rwang/" target="_blank" rel="noopener noreferrer">Instagram</a> · <a href="https://www.threads.com/@lo3rwang" target="_blank" rel="noopener noreferrer">Threads</a></p>
+          </article>
         </div>
       },
       {
@@ -169,9 +202,9 @@ export default function AuthorHomeView({section=null}){
         content:<div className="home-architecture-layout">
           <div className="home-architecture-copy">
             <div className="home-author-copy">
-              <p><strong>文字工匠 · Wordsmith</strong><br/>從詞、句子與關鍵詞的聯繫，整理文字怎麼形成自己的語意與脈絡關係。 <a href="/statics/?statTab=keywords">看關鍵詞設定</a></p>
-              <p><strong>混沌校對者 · Chaos Calibrator</strong><br/>把文字放回來源、時間與歷史裡比較，觀察文化軌跡、延續、改變、矛盾與可能的污染。 <a href="/culture/">看文化</a></p>
-              <p><strong>語言建築師 · Language Architect</strong><br/>把語彙、脈絡、文化、搜尋與治理組織成可持續使用的個人語言與系統結構。 <a href="/governance/">看治理</a></p>
+              <p><strong>文字工匠 · Wordsmith</strong><br/>從詞、句子與關鍵詞的聯繫，整理文字怎麼形成自己的語意與脈絡關係。 <a href="/lo3rwang/statics/?statTab=keywords">看關鍵詞設定</a></p>
+              <p><strong>混沌校對者 · Chaos Calibrator</strong><br/>把文字放回來源、時間與歷史裡比較，觀察文化軌跡、延續、改變、矛盾與可能的污染。 <a href="/lo3rwang/culture/">看文化</a></p>
+              <p><strong>語言建築師 · Language Architect</strong><br/>把語彙、脈絡、文化、搜尋與治理組織成可持續使用的個人語言與系統結構。 <a href="/lo3rwang/governance/">看治理</a></p>
             </div>
           </div>
           <figure className="home-architecture-figure">
