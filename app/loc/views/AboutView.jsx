@@ -160,7 +160,11 @@ export default function AboutView(){
 <p>而是把散落、原本只能靠直覺掌握的經驗，整理成可回看、可搜尋、可解析的方式，才能進一步面對未來的各種可能，做到風險管理。</p>
 <p>我的原則：敬畏未知，尊重異者，專業為先。</p>
 <p>立於無限減一的謙遜，但要有無限減一的專業。保有探索未知的好奇，尊重無限未知的領域，進而才能學習到更多的知識。</p>
-<p> 2026.09.26.</p>
+<p>為此LOC提供一套建議方式，在每個風格改變的關鍵點，提出設定日期為定錨點的建議，進而找到關鍵。</p>
+<p>用舊有被放在硬碟裡面，關站時備份的文字壓縮檔，用來分析解析，喚起過去的回憶，找回過去的自己。</p>
+<p>找到舊有的文字風格，用來檢視現在的自己。進而知道該進步該前進的方向。選擇權都在自己手上。</p>
+<p>退是喚醒「過去」，在人生時間長河上的銀河鐵道，人生月台的「現在」暫停區，決定前往「未來」班車的時刻。</p>
+<p>Lucas Oscar Wang 政德. 2026.10.01.(ex-admin of StarRiver BBS.)</p>
 <p>想要了解作者請點右上方的作者網頁。</p>
 	  </div>
 	  <figure className="home-about-figure"><img src={SITE_IMAGES.author.src} width={SITE_IMAGES.author.width} height={SITE_IMAGES.author.height} alt="作者 Lucas Oscar Wang 政德" loading="lazy" decoding="async" />
