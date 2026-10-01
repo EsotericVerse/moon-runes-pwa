@@ -50,6 +50,11 @@
 .runes-spread-ow3gs .runes-spread-stack-row{align-items:start}
 .runes-spread-row .home-rune-preview{height:100%;min-width:0}
 .runes-spread-row .home-rune-preview>.loc-eyebrow{margin:0 0 .55rem;text-align:center}
+.runes-spread-reading-layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.25rem;align-items:start}
+.runes-spread-reading-left,.runes-spread-reading-right{min-width:0}
+.runes-spread-reading-right{display:grid;gap:1rem}
+.runes-spread-selection{padding-top:1rem;border-top:1px solid var(--loc-line)}
+.runes-spread-selection h3{margin:.2rem 0 .75rem}
 
 .loc-rune-card-image{display:block;width:min(100%,260px);aspect-ratio:1/1;object-fit:contain;margin:.2rem auto .35rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel-2);transition:transform .2s ease}
 .rune-rotate-0{transform:rotate(0deg)}
@@ -125,6 +130,7 @@
 @media(max-width:1100px){.runes-group-picker{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:980px){.runes-library-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.runes-graph-controls{grid-template-columns:minmax(0,1fr) 1fr 1fr}}
 @media(max-width:700px){
+  .runes-spread-reading-layout{grid-template-columns:1fr}
   .runes-rune-profile{grid-template-columns:1fr}
   .runes-rune-detail-grid{grid-template-columns:1fr}
   .loc-draw-grid{grid-template-columns:repeat(2,minmax(0,1fr));max-width:none;margin-inline:0}
