@@ -7,6 +7,7 @@ import { realMoonPhase } from '../loc/model/moon-phase';
 import { buildRuneGraph, searchRuneGraph } from '../loc/model/rune-graph-core.js';
 import {scopeHrefV2,scopeOriginV2} from '../modular-v2/scope-registry.v2';
 import RuneSingleReading from './RuneSingleReading';
+import RuneCardInfo from './RuneCardInfo';
 import {RUNE_RITUAL_DELAY_MS,RUNE_RITUAL_STEP_MS,runeRitualMessages} from './rune-ritual';
 
 const ROTATION_CLASSES=['rune-rotate-0','rune-rotate-90','rune-rotate-n90','rune-rotate-180'];
@@ -33,13 +34,14 @@ function drawRuneSession(items,count){
   return {cards,directionIndexes,directions:directionIndexes.map(index=>RUNE_DIRECTIONS[index])};
 }
 const RUNE_COLUMNS='rune_id,rune_name,english_name,group_name,moon_phase,card_attr,rune_description,positive_keywords,negative_keywords,extra_rules,extra_notes';
+const DRAW_RUNE_COLUMNS=RUNE_COLUMNS+',totem,archetype';
 const MOON_PHASE_LABELS=Object.freeze({1:'新月',2:'上弦',3:'滿月',4:'下弦'});
 function directionNo(direction){return RUNE_DIRECTIONS.indexOf(direction)+1;}
 async function loadDrawCards(pairs,types){
   const ids=[...new Set(pairs.map(item=>Number(item.runeNumber)))];
   const [runeResult,etcResult]=await Promise.all([
     selectNeonRows('silver.runes',{
-      columns:RUNE_COLUMNS,
+      columns:DRAW_RUNE_COLUMNS,
       filters:[{column:'rune_id',operator:'in',value:ids}],
       limit:ids.length,
       offset:0
@@ -185,7 +187,17 @@ export default function RunesClient(){
 
     <section className="loc-card" id="draw" data-draw-keyword="lunarunes-draw" data-draw-mode={modeKey} data-draw-action="execute"><p className="loc-eyebrow">抽籤</p><h2>占卜抽籤</h2><div className="runes-mode-nav" aria-label="選擇抽牌方式">{MODES.map(item=><a key={item.key} href={runeHref(item.path)} data-draw-mode={item.key} className={`loc-button ${modeKey===item.key?'primary':''}`}><strong>{item.label}</strong><span>{item.description}</span></a>)}</div></section>
     {ritualStep>=0&&<section className="loc-card runes-ritual" data-draw-stage="ritual" data-draw-mode={modeKey} aria-live="polite"><div className="runes-ritual-card"><img src="/assets/lunarunes/cards/65_玄.png" alt="玄之符文"/><strong>玄之符文</strong></div><div className="runes-ritual-copy"><p className="loc-eyebrow">等待片刻</p><h2>{ritualMessages[ritualStep]}</h2><p>真實月相：{moonPhase}</p></div></section>}
-    {draw&&<><section className="loc-card" id="result" data-draw-stage="result" data-draw-mode={modeKey}><div className="loc-result-meta"><span>{selectedMode.label}</span><span>真實月相：{moonPhase}</span></div><div className="loc-draw-grid">{draw.cards.map((card,index)=><article className="loc-context-item compact loc-draw-card" data-rune-id={card.rune_id} data-draw-position={selectedMode.positions[index]||index+1} key={`${card.rune_id}-${index}`}><small>{selectedMode.positions[index]||`第 ${index+1} 張`}</small><img className={`loc-rune-card-image ${ROTATION_CLASSES[draw.directionIndexes[index]]}`} src={runeCardImage(card)} alt={`${card.rune_name}符文卡`}/><b>{card.rune_name}</b><span>所屬群組：{card.group_name||'—'}</span><span>{draw.directions[index]} · 卡片月相：{MOON_PHASE_LABELS[Number(card.moon_phase)]||'—'}</span><small>{directionText(card,draw.directions[index])||card.rune_description}</small><div className="runes-draw-keywords"><span><strong>正向關鍵詞</strong>{card.positive_keywords||'—'}</span><span><strong>反向關鍵詞</strong>{card.negative_keywords||'—'}</span></div></article>)}</div><div className="loc-actions runes-retry"><button type="button" className="loc-button" data-draw-action="retry" onClick={executeDraw}>再抽一次</button></div></section>
+    {draw&&<><section className="loc-card" id="result" data-draw-stage="result" data-draw-mode={modeKey}><div className="loc-result-meta"><span>{selectedMode.label}</span><span>真實月相：{moonPhase}</span></div><div className="loc-draw-grid">{draw.cards.map((card,index)=><RuneCardInfo
+        key={`${card.rune_id}-${index}`}
+        card={card}
+        imageSrc={runeCardImage(card)}
+        imageClassName={`loc-rune-card-image ${ROTATION_CLASSES[draw.directionIndexes[index]]}`}
+        positionLabel={selectedMode.positions[index]||`第 ${index+1} 張`}
+        direction={draw.directions[index]}
+        realMoonPhase={moonPhase}
+        dataRuneId={card.rune_id}
+        dataDrawPosition={selectedMode.positions[index]||index+1}
+      />)}</div><div className="loc-actions runes-retry"><button type="button" className="loc-button" data-draw-action="retry" onClick={executeDraw}>再抽一次</button></div></section>
       {modeKey==='single'&&<section className="loc-card" data-draw-reading="single"><p className="loc-eyebrow">單卡籤詩</p><h2>{draw.cards[0].rune_name} · {draw.directions[0]}</h2><RuneSingleReading card={draw.cards[0]} direction={draw.directions[0]}/></section>}
       {modeKey==='daily'&&<section className="loc-card" data-draw-reading="daily"><p className="loc-eyebrow">每日指示</p><h2>{draw.cards[0].rune_name} · {draw.directions[0]} · {moonPhase}</h2><p className="runes-reading-lead"><strong>今日指引</strong><span>{dailyGuidance(draw.cards[0],draw.directions[0])||directionText(draw.cards[0],draw.directions[0])||'目前沒有這個位向的每日指示。'}</span></p></section>}
       <MultiReading draw={draw} mode={modeKey} phase={moonPhase}/>
