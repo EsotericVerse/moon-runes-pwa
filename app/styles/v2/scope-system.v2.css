@@ -87,9 +87,10 @@
 .scope-v2-select{padding:.55rem .75rem;border:var(--scope-v2-border);border-radius:999px;background:var(--loc-panel);color:var(--scope-v2-text)}
 .scope-v2-react-select-field{min-width:13rem}
 .scope-v2-react-select{position:relative;min-width:13rem}
-.scope-v2-react-select__control{min-height:2.45rem;padding:0 .3rem .05rem .75rem;border:var(--scope-v2-border);border-radius:999px;background:var(--loc-panel);color:var(--scope-v2-text);cursor:pointer}
+.scope-v2-react-select__control{min-height:2.45rem;padding:0 .3rem .05rem .75rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-sm);background:color-mix(in srgb,var(--loc-panel) 72%,transparent);color:var(--loc-text);box-shadow:inset 0 1px 0 rgb(255 255 255 / .018);cursor:pointer}
 .scope-v2-react-select__control--is-focused{outline:2px solid color-mix(in srgb,var(--loc-accent) 48%,transparent);outline-offset:2px}
 .scope-v2-react-select__value-container{padding:0;gap:.25rem}
+.scope-v2-react-select__input,.scope-v2-react-select__input:focus{min-height:0!important;width:auto!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;outline:0!important}
 .scope-v2-react-select__single-value,.scope-v2-react-select__input-container,.scope-v2-react-select__placeholder{color:var(--scope-v2-text)}
 .scope-v2-react-select__indicators{display:flex;align-items:center;color:var(--scope-v2-muted)}
 .scope-v2-react-select__indicator{display:flex;padding:.35rem}
@@ -99,6 +100,8 @@
 .scope-v2-react-select__option{padding:.55rem .7rem;border-radius:10px;color:var(--scope-v2-text);cursor:pointer}
 .scope-v2-react-select__option--is-focused{background:var(--loc-panel-2)}
 .scope-v2-react-select__option--is-selected{background:var(--loc-accent);color:var(--loc-panel);font-weight:700}
+
+@media (pointer:coarse){.scope-v2-react-select__control{min-height:44px!important}}
 
 .scope-v2-stat-tabs{margin:0 0 1rem}
 .scope-v2-stat-tabs a{padding:.45rem .8rem;border:var(--scope-v2-border);border-radius:999px;background:var(--loc-panel);color:var(--scope-v2-text);text-decoration:none}
@@ -135,31 +138,32 @@
 .scope-v2-hero>.home-title-row{
   display:grid!important;
   grid-template-columns:max-content minmax(0,1fr)!important;
-  column-gap:1.5rem!important;
+  gap:clamp(1rem,3vw,2.75rem)!important;
   align-items:end!important;
   width:100%;
   margin:.12rem 0 .72rem!important;
 }
 .scope-v2-hero>.home-title-row>h1{
   grid-column:1!important;
-  margin:0!important;
-  padding:0 .8rem .6rem 0!important;
-  border-bottom:1px solid var(--loc-line)!important;
+  max-width:14ch;
+  margin:.18rem 0 0!important;
+  padding:0!important;
+  border:0!important;
 }
 .scope-v2-hero>.home-title-row>.scope-v2-subtitle{
   grid-column:2!important;
   align-self:end!important;
   justify-self:start!important;
+  max-width:32rem;
   margin:0!important;
-  padding:0 0 .6rem .8rem!important;
-  border-left:1px solid var(--loc-line)!important;
-  border-bottom:1px solid var(--loc-line)!important;
+  padding:0 0 .35rem!important;
+  border:0!important;
 }
 .scope-v2-hero-description{
   display:block;
   margin-top:.2rem;
 }
-@media(max-width:680px){
+@media(max-width:760px){
   .scope-v2-hero>.home-title-row{
     grid-template-columns:1fr!important;
     align-items:start!important;
@@ -167,9 +171,10 @@
   .scope-v2-hero>.home-title-row>h1,
   .scope-v2-hero>.home-title-row>.scope-v2-subtitle{
     grid-column:1!important;
-    padding-left:0!important;
-    padding-right:0!important;
-    border-left:0!important;
+  }
+  .scope-v2-hero>.home-title-row>.scope-v2-subtitle{
+    max-width:none;
+    padding-top:.3rem!important;
   }
 }
 
@@ -287,9 +292,6 @@
 .scope-v2-governance-wysiwyg:focus{border-color:var(--loc-accent-border);box-shadow:0 0 0 2px color-mix(in srgb,var(--loc-accent) 18%,transparent)}
 .scope-v2-governance-wysiwyg h1,.scope-v2-governance-wysiwyg h2,.scope-v2-governance-wysiwyg h3{margin:1rem 0 .5rem}
 .scope-v2-governance-wysiwyg p{margin:.5rem 0}
-
-.runes-home-function-select{width:min(100%,20rem);margin-top:1rem;display:grid;gap:.65rem}
-
 
 /* Static presentation belongs in CSS; JS only supplies state or runtime configuration. */
 .scope-v2-prewrap{white-space:pre-wrap}
