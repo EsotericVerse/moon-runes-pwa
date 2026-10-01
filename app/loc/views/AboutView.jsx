@@ -134,7 +134,7 @@ export default function AboutView(){
         </span>
         <span className="loc-bubble">
           系統模組
-          <p>FlexSearch · Recharts · vis-network · vis-timeline · TanStack Query · Motion · Zod · react-select</p>
+          <p>關鍵詞與搜尋：FlexSearch<br/>文化時間長河：vis-timeline<br/>統計：Recharts<br/>管理框架：vis-network</p>
         </span>
       </div>
     </section>
