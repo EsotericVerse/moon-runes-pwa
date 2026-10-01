@@ -202,7 +202,7 @@ export default function AuthorHomeView({section=null}){
         eyebrow:'Professional',
         title:'我在做什麼',
         content:<>
-          <p className="author-section-lead">我習慣先抓原則，再處理例外；工作從文字、命名與語義開始，延伸到規則、資料與系統結構。</p>
+          <p className="author-section-lead">資訊工程出身。長期程式設計養成的習慣，應用在語言上，就是「物件導向（OOP）」。</p>
           <ProfessionalRoles/>
           <div className="author-professional-grid">
             <article className="author-editorial-block">
