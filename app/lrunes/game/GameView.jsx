@@ -61,7 +61,9 @@ function MatchTrend({history=[],players=[],focusPlayer=null,focusStep=''}) {
 
 function ResonanceNetwork({players=[],active=0,focusPlayer=null,cooperations=[],lastInteraction=null,onSelect=null}){
   const containerRef=useRef(null);
+  const onSelectRef=useRef(onSelect);
   const [error,setError]=useState('');
+  useEffect(()=>{onSelectRef.current=onSelect;},[onSelect]);
   useEffect(()=>{
     let cancelled=false;
     let network=null;
@@ -111,12 +113,12 @@ function ResonanceNetwork({players=[],active=0,focusPlayer=null,cooperations=[],
       });
       network.on('selectNode',event=>{
         const id=Number(event.nodes?.[0]);
-        if(Number.isInteger(id)&&typeof onSelect==='function')onSelect(id);
+        if(Number.isInteger(id)&&typeof onSelectRef.current==='function')onSelectRef.current(id);
       });
       network.fit({animation:{duration:180,easingFunction:'easeInOutQuad'}});
     }).catch(reason=>{if(!cancelled)setError(reason?.message||'共鳴網路載入失敗');});
     return()=>{cancelled=true;network?.destroy();};
-  },[players,active,focusPlayer,cooperations,lastInteraction,onSelect]);
+  },[players,active,focusPlayer,cooperations,lastInteraction]);
   return <div className="game-network-wrap">
     {error?<p className="loc-status">{error}</p>:null}
     <div ref={containerRef} className="game-resonance-network" role="img" aria-label="玩家共鳴與合作關係圖"/>
@@ -142,7 +144,10 @@ function replayRound(line=''){
 
 function ReplayTimeline({logs=[],selectedLogIndex=null,onSelect=null}){
   const containerRef=useRef(null);
+  const timelineRef=useRef(null);
+  const onSelectRef=useRef(onSelect);
   const [error,setError]=useState('');
+  useEffect(()=>{onSelectRef.current=onSelect;},[onSelect]);
   useEffect(()=>{
     let cancelled=false;
     let instance=null;
@@ -181,13 +186,17 @@ function ReplayTimeline({logs=[],selectedLogIndex=null,onSelect=null}){
       );
       instance.on('select',({items=[]})=>{
         const selected=Number(items[0]);
-        if(Number.isInteger(selected)&&typeof onSelect==='function')onSelect(selected);
+        if(Number.isInteger(selected)&&typeof onSelectRef.current==='function')onSelectRef.current(selected);
       });
-      if(Number.isInteger(selectedLogIndex))instance.setSelection([String(selectedLogIndex)]);
+      timelineRef.current=instance;
       instance.fit({animation:false});
     }).catch(reason=>{if(!cancelled)setError(reason?.message||'對局時間軸載入失敗');});
-    return()=>{cancelled=true;instance?.destroy();};
-  },[logs,selectedLogIndex,onSelect]);
+    return()=>{cancelled=true;instance?.destroy();timelineRef.current=null;};
+  },[logs]);
+  useEffect(()=>{
+    if(!timelineRef.current)return;
+    timelineRef.current.setSelection(Number.isInteger(selectedLogIndex)?[String(selectedLogIndex)]:[]);
+  },[selectedLogIndex]);
   if(!logs.length)return null;
   return <section className="loc-card game-replay-card">
     <h2>對局 Replay</h2>
