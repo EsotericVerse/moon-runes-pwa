@@ -193,27 +193,28 @@ export default function AuthorHomeView({section=null}){
         id:'roles',
         eyebrow:'Roles',
         title:'三位一體',
-        content:<div className="home-architecture-layout author-trinity-layout">
-          <div className="home-architecture-copy author-trinity-copy">
-            <article className="loc-bubble">
-              <h3>文字工匠 · Wordsmith</h3>
-              <p>從詞、句子與關鍵詞的聯繫，整理文字怎麼形成自己的語意與脈絡關係。</p>
-              <p><a href="/lo3rwang/statics/?statTab=keywords">看關鍵詞設定 →</a></p>
+        content:<div className="author-trinity-layout">
+          <figure className="home-architecture-figure author-trinity-figure">
+            <img src="/pics/lo3rwang-3.png" alt="三魂、擬人化與未來命名關係圖：Oscar 政德、玄鑒 Lucas、符韻 Rune，以及柏隆 Bruno、睿汶 Raven" loading="lazy"/>
+          </figure>
+          <div className="author-trinity-copy">
+            <article className="loc-bubble author-trinity-core">
+              <h3>Oscar／政德 · 本體</h3>
+              <p>日常稱呼仍是 Oscar。作為本體／人魂，是情緒、理性、創作與現實選擇的中心；完整署名為 Lucas Oscar Wang 政德。</p>
             </article>
             <article className="loc-bubble">
-              <h3>混沌校對者 · Chaos Calibrator</h3>
-              <p>把文字放回來源、時間與歷史裡比較，觀察文化軌跡、延續、改變、矛盾與可能的污染。</p>
-              <p><a href="/lo3rwang/culture/">看文化 →</a></p>
+              <h3>玄鑒／Lucas · 天魂</h3>
+              <p>對應 LOC／月典。嚴謹、秩序、略帶強迫，透過尋找規律取得平衡；字為月典。</p>
             </article>
             <article className="loc-bubble">
-              <h3>語言建築師 · Language Architect</h3>
-              <p>把語彙、脈絡、文化、搜尋與治理組織成可持續使用的個人語言與系統結構。</p>
-              <p><a href="/lo3rwang/governance/">看治理 →</a></p>
+              <h3>符韻／Rune · 地魂</h3>
+              <p>對應 LunaRunes／月語。以符文、文字與韻律和未知溝通，帶有年輕外表與較成熟的學者感；字為月語。</p>
+            </article>
+            <article className="loc-bubble author-trinity-future">
+              <h3>柏隆／Bruno · 睿汶／Raven</h3>
+              <p>這兩個名稱只作為未來真實兒女的預留命名想法，不屬於三魂，也不替未來的人生預先下定義。</p>
             </article>
           </div>
-          <figure className="home-architecture-figure author-trinity-figure">
-            <img src="/pics/lo3rwang-3.png" alt="政德三位一體與三魂擬人化關係圖" loading="lazy"/>
-          </figure>
         </div>
       }
     ]}
