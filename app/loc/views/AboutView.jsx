@@ -74,6 +74,25 @@ export default function AboutView(){
       </div>
     </section>
 
+    <section className="loc-card home-framework home-architecture-presentation" id="framework-map">
+      <div className="home-architecture-layout">
+        <div className="home-architecture-copy">
+          <div className="home-section-heading">
+            <p className="loc-eyebrow">LOC Architecture</p><h2>月典架構</h2>
+          </div>
+          <div className="home-author-copy">
+            <p><strong>文化：</strong>時間長河。文字作品在時間長河的分佈表現密度。</p>
+            <p><strong>統計：</strong>文字作品的相關分類統計。</p>
+            <p><strong>搜尋：</strong>文字作品的精準搜尋。</p>
+            <p><strong>治理：</strong>管理頁面的功能選項以及法律頁面的說明。</p>
+          </div>
+        </div>
+        <figure className="home-architecture-figure">
+          <img src="/pics/ChaosGalaxy.png" alt="LOC 月典架構：時間長河、玄子、玄裂與玄宇宙" loading="lazy" />
+        </figure>
+      </div>
+    </section>
+
     <section className="loc-card home-copy-block home-progress" id="progress">
       <div className="home-section-heading">
         <p className="loc-eyebrow">System Status</p><h2>系統狀態</h2>
@@ -99,25 +118,6 @@ export default function AboutView(){
             <p>關鍵詞與搜尋：FlexSearch 0.8.212<br/>文化時間長河：vis-timeline 8.5.4<br/>統計：Recharts 3.10.1<br/>管理框架：vis-network 10.1.0<br/>安全認證：Zod 4.6.0 / Neon Auth<br/>頁面：Motion 13.4.4<br/>多媒體搜尋：TanStack Query 5.103.1</p>
           </details>
         </div>
-      </div>
-    </section>
-
-    <section className="loc-card home-framework home-architecture-presentation" id="framework-map">
-      <div className="home-architecture-layout">
-        <div className="home-architecture-copy">
-          <div className="home-section-heading">
-            <p className="loc-eyebrow">LOC Architecture</p><h2>月典架構</h2>
-          </div>
-          <div className="home-author-copy">
-            <p><strong>文化：</strong>時間長河。文字作品在時間長河的分佈表現密度。</p>
-            <p><strong>統計：</strong>文字作品的相關分類統計。</p>
-            <p><strong>搜尋：</strong>文字作品的精準搜尋。</p>
-            <p><strong>治理：</strong>管理頁面的功能選項以及法律頁面的說明。</p>
-          </div>
-        </div>
-        <figure className="home-architecture-figure">
-          <img src="/pics/ChaosGalaxy.png" alt="LOC 月典架構：時間長河、玄子、玄裂與玄宇宙" loading="lazy" />
-        </figure>
       </div>
     </section>
 
