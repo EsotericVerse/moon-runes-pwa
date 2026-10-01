@@ -70,19 +70,24 @@ function trendBucket(value,unit){
 }
 function statisticsWindow(rows=[],standard='1y',customRange={}){
   const dates=rows.map(row=>dateKey(row.day)).filter(Boolean).sort();
+  const dataStart=dates[0]||'';
   const dataEnd=dates.at(-1)||'';
   if(!dataEnd)return {startDate:'',endDate:'',bucket:'day'};
   if(standard==='custom'){
     const from=dateKey(customRange.from);
     const to=dateKey(customRange.to);
     if(!from||!to||from>to)return {startDate:'',endDate:'',bucket:'day'};
-    const days=dayDistance(from,to);
-    return {startDate:from,endDate:to,bucket:days>730?'month':days>90?'week':'day'};
+    const startDate=dataStart&&from<dataStart?dataStart:from;
+    const endDate=to>dataEnd?dataEnd:to;
+    if(startDate>endDate)return {startDate:'',endDate:'',bucket:'day'};
+    const days=dayDistance(startDate,endDate);
+    return {startDate,endDate,bucket:days>730?'month':days>90?'week':'day'};
   }
   const config=TIME_STANDARDS.find(item=>item.value===standard)||TIME_STANDARDS[0];
-  const startDate=Number.isFinite(config.days)
+  const requestedStart=Number.isFinite(config.days)
     ?shiftDate(dataEnd,{days:-config.days})
     :shiftDate(dataEnd,{months:-config.months});
+  const startDate=dataStart&&requestedStart<dataStart?dataStart:requestedStart;
   return {startDate,endDate:dataEnd,bucket:config.bucket};
 }
 function rowsInWindow(rows=[],standard='1y',customRange={}){
