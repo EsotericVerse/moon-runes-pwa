@@ -40,11 +40,10 @@ export default function AboutView(){
 		<p>月典(LOC)，是一套用來分析的語言建築框架。始於月之符文。</p>
 		<p>月之符文(LunaRunes)是個具有獨特方式的符號式語言。與月典相輔相成。</p>
 		<br/>
-          <p>太複雜了！當然可以不用管月之符文是什麼，<a href={RUNES_LINKS.single}>抽了就知道！</a></p>
-		  <p>可以是問事，可以是決定當日生活主題風格的<a href={RUNES_LINKS.daily}>每日符文</a>。</p>
-          <p>完全不了解符文？沒關係！抽看看如何？抽到之後再看當下的文字、方向與說明就可以。</p>
-          <p>不想了解符文？當然可以！</p>
-		  <p>當然也可以完全不抽牌，直接跳過符文籤詩系統。到達下一個架構圖說明。</p>
+          <p>太複雜了？不用先理解月之符文，<a href={RUNES_LINKS.single}>抽了就知道！</a></p>
+		  <p>可以問事，也可以用<a href={RUNES_LINKS.daily}>每日符文</a>決定當日生活主題。</p>
+          <p>完全不了解符文也沒關係，抽到之後再看當下的文字、方向與說明即可。</p>
+		  <p>不想抽牌也沒關係，直接跳過符文籤詩系統，往下看 LOC 架構。</p>
           <p><strong>那就開始吧！</strong></p>
         </div>
         <figure className="home-framework-figure"><img src="/pics/LunaRunes.png" alt="LunaRunes 月之符文" loading="lazy" /></figure>
@@ -85,10 +84,9 @@ export default function AboutView(){
             <p><strong>統計：</strong>將文字作品依來源、分類與時間區間整理成統計結果，協助看見整體分佈與變化。</p>
             <p><strong>搜尋：</strong>以精準關鍵詞尋找文字、作品與相關資料，快速回到原始內容與前後脈絡。</p>
             <p><strong>治理：</strong>提供管理頁面的設定與功能選項，並集中說明系統使用原則與法律資訊。</p>
-			<p>自己也可以整理自己的風格標籤！我以我個人作品的文字分佈做展示，當然可以自己用來整理自己的！</p>
-			<p>LOC本身有建議功能，可以自動找出某幾個文字風格變化的關鍵時間點(定錨點)，並給予建議！</p>
-			<p>找出個人風格很重要！但最特別的是，可以找出趨勢跟隱患！藉由建議點探查出你所不知道或忘記時間點的改變！</p>
-			<p>LOC完全不會武斷批判！要怎麼選擇自己的路，怎麼選擇風格，掌握權在使用的你手上！</p>
+			<p>這裡以我的作品作為展示，同樣的架構也能用來整理自己的文字與風格標籤。</p>
+			<p>LOC 會依文字與時間分佈提出可能的定錨點，協助回看風格變化較明顯的時期，也能用來觀察趨勢與值得留意的風險。</p>
+			<p>這些結果是建議，不是判定或預測；最後如何理解與選擇，仍由使用者決定。</p>
           </div>
         </div>
         <figure className="home-architecture-figure">
@@ -125,7 +123,7 @@ export default function AboutView(){
     <section className="loc-card home-copy-block home-skills" id="skills">
       <div className="home-section-heading"><p className="loc-eyebrow">LOC GPT Skills</p><h2>Skills</h2>
 	  <p className="loc-subtitle">把月典延伸可以重複使用的工作流程。<br/>把語言治理與治理資料儲存庫，封裝成可直接調用的 AI Skills。</p></div>
-      <div className="home-author-copy"><p><strong>loc-km-governance</strong>：檢查 Canon、KM、FAQ、Registry、Base66、術語一致性、資料權威。</p>
+      <div className="home-author-copy"><p><strong>loc-km-governance</strong>：檢查 Canon、KM、Registry、Base66、術語一致性、資料權威。</p>
 	  <p><strong>loc-repo-health-check</strong>：檢查儲存庫結構、路徑、API／搜尋、部署與效能風險等。</p>
 	  <p>Skills 不是另一套理論，而是把 LOC 已形成的治理管理理念跟方法，轉成GPT可以重複執行的工作流程。</p></div>
 
@@ -136,7 +134,7 @@ export default function AboutView(){
       <div className="home-about-layout"><div className="home-author-copy">
 	  <p>文字資料經過基本解析以後，分析出關鍵詞。將關鍵詞整理分類以後，並配合時間線的可能風格變化，進一步解析成為該區間內的風格。</p>
 <p>人總會因為各種狀況導致文字風格突變，例如當兵，例如車禍意外等等。改變是循序漸進，突變也有其因素影響，從文字可見一斑。</p>
-<p>其實做整套架構，本來只是用於自己總數三百多萬中文字作品的展示整理，不自覺的整理出了兩項東西，一套是歸納的系統架構論LOC，一套是有點偏神秘學的月之符文。</p>
+<p>其實做整套架構，本來只是用於自己累積數百萬字作品的展示整理，不自覺地整理出了兩項東西，一套是歸納的系統架構論LOC，一套是以符號式語言形成的月之符文。</p>
 <p>整合出月典，並不是為了把現有人生，固定成某種發展模式，也不是完全為了賺錢，</p>
 <p>而是把散落、原本只能靠直覺掌握的經驗，整理成可回看、可搜尋、可解析的方式，才能進一步面對未來的各種可能，做到風險管理。</p>
 <p>我的原則：敬畏未知，尊重異者，專業為先。</p>
