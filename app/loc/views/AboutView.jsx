@@ -104,11 +104,7 @@ export default function AboutView(){
       <div className="home-draw-bubbles home-status-bubbles" aria-label="LOC 系統狀態">
         <div className="loc-bubble">
           <strong>文字系統</strong>
-          <p>總文字數：4,505,362 字<br/>資料列數：35,498 列</p>
-          <details className="home-status-details">
-            <summary>資料來源</summary>
-            <p>Facebook · Threads · KKCity · Vocus · Suno · PTT · Pixnet · Wretch<br/>Galaxy 多媒體 metadata 另存，不計入總文字數。<br/>最早：2005-04-12<br/>最新：2026-09-30</p>
-          </details>
+          <p>總文字數：4,505,362 字<br/>文字時間：2005-04-12 ～ 2026-09-30<br/>資料來源：Facebook · Threads · KKCity · Vocus · Suno · PTT · Pixnet · Wretch</p>
         </div>
         <div className="loc-bubble">
           <strong>系統模組</strong>
