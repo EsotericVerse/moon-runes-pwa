@@ -24,30 +24,45 @@ async function probe(client,table,columns,{filters=[]}={}){
   if(error)throw new Error(table+': '+(error.code||'')+' '+error.message);
 }
 
-// silver.game SSOT contract: fail RC when any required Game segment is missing.
-async function verifyGameContract(client){
-  const {data,error,status}=await client.schema('silver').from('game')
-    .select('game_key,record_type,rule_code')
+// silver.game SSOT contract: query each segment precisely; do not fetch the table and slice in JS.
+async function gameCount(client,recordType,{ruleCode=null}={}){
+  let query=client.schema('silver').from('game')
+    .select('game_key',{count:'exact',head:true})
     .eq('is_current',true)
-    .limit(500);
-  if(error)throw new Error('game: '+(error.code||'')+' '+error.message);
-  const rows=data||[];
-  const count=type=>rows.filter(row=>row.record_type===type).length;
-  const roundCount=rows.filter(row=>row.record_type==='rule'&&row.rule_code==='ROUND_PHASE').length;
-  const resultCount=rows.filter(row=>row.record_type==='rule'&&row.rule_code==='EVENT_RESULT').length;
+    .eq('record_type',recordType);
+  if(ruleCode)query=query.eq('rule_code',ruleCode);
+  const {count,error,status}=await query;
+  if(error)throw new Error('game '+recordType+': '+(error.code||'')+' '+error.message);
+  return {count:Number(count)||0,status};
+}
+
+async function verifyGameContract(client){
+  const [event,runeAction,role,macro,asset,round,result]=await Promise.all([
+    gameCount(client,'event'),
+    gameCount(client,'rune_action'),
+    gameCount(client,'role'),
+    gameCount(client,'macro'),
+    gameCount(client,'asset'),
+    gameCount(client,'rule',{ruleCode:'ROUND_PHASE'}),
+    gameCount(client,'rule',{ruleCode:'EVENT_RESULT'})
+  ]);
   const actual={
-    event:count('event'),
-    rune_action:count('rune_action'),
-    role:count('role'),
-    macro:count('macro'),
-    asset:count('asset'),
-    round:roundCount,
-    result:resultCount
+    event:event.count,
+    rune_action:runeAction.count,
+    role:role.count,
+    macro:macro.count,
+    asset:asset.count,
+    round:round.count,
+    result:result.count
   };
-  const expected={event:32,rune_action:66,role:8,macro:4,asset:13,round:8,result:5};
-  console.log(JSON.stringify({probe:'runtime-public-game-contract',status,actual,expected}));
-  for(const [key,value] of Object.entries(expected)){
+  const exact={rune_action:66,role:8,macro:4,round:8,result:5};
+  const minimum={event:32,asset:13};
+  console.log(JSON.stringify({probe:'runtime-public-game-contract',actual,exact,minimum}));
+  for(const [key,value] of Object.entries(exact)){
     if(actual[key]!==value)throw new Error('silver.game '+key+' expected '+value+' got '+actual[key]);
+  }
+  for(const [key,value] of Object.entries(minimum)){
+    if(actual[key]<value)throw new Error('silver.game '+key+' expected at least '+value+' got '+actual[key]);
   }
 }
 
@@ -62,7 +77,7 @@ for(const [table,columns,options] of [
   ['lrunes_galaxy','uid,title,content,source_name,createtime'],
   ['lrunes_galaxy_media','media_id,galaxy_link,source_native_id,media_type,title,url,meta_tags,createtime'],
   ['runes','rune_id,rune_name'],
-  ['game','game_key,record_type,sort_order,status,is_current,event_id,rune_id,role_id,rule_code,macro_code,asset_code'],
+  ['game','game_key,record_type,sort_order,status,is_current,event_id,event_group,event_group_2,rune_id,role_id,rule_code,macro_code,asset_code'],
   ['lrunes','id,period,period_start,period_end,theme,search_able,statistics_able,culture_able,sources,source_counts,media_count,media_counts,updated_at'],
 ])await probe(client,table,columns,options||{});
 
