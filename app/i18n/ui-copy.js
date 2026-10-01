@@ -163,11 +163,6 @@ const zhHant=Object.freeze({
     creating:'建立中…'
   }),
   governance:Object.freeze({
-    faq:'常見問題',
-    faqIntro:'整理月典、月之符文與各項功能在使用時常見的問題與說明。',
-    faqLoading:'載入常見問題…',
-    faqEmpty:'目前沒有常見問題資料。',
-    faqMore:'還有更多常見問題',
     rights:'權利與授權',
     systemManagement:'系統管理',
     enterAdmin:'進入獨立管理站',

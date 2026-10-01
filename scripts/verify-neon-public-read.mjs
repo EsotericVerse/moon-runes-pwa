@@ -64,7 +64,6 @@ for(const [table,columns,options] of [
   ['runes','rune_id,rune_name'],
   ['game','game_key,record_type,sort_order,status,is_current,event_id,rune_id,role_id,rule_code,macro_code,asset_code'],
   ['lrunes','id,period,period_start,period_end,theme,search_able,statistics_able,culture_able,sources,source_counts,media_count,media_counts,updated_at'],
-  ['faq_entries','faq_id,question,answer'],
 ])await probe(client,table,columns,options||{});
 
 

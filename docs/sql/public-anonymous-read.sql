@@ -9,7 +9,6 @@ BEGIN;
 GRANT USAGE ON SCHEMA silver TO anonymous;
 
 GRANT SELECT ON TABLE
-  silver.faq_entries,
   silver.game,
   silver.lo3rwang,
   silver.lo3rwang_time,

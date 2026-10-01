@@ -99,16 +99,6 @@ function makeProvider({id,table,source,scopeId,idColumn,columns,searchFields,fil
   });
 }
 
-const faq=makeProvider({
-  id:'faq',
-  table:'silver.faq_entries',
-  source:'FAQ',
-  scopeId:'loc',
-  idColumn:'faq_id',
-  columns:['faq_id','category','intent','question','answer','status'],
-  searchFields:['category','intent','question','answer','status']
-});
-
 const runeCore=makeProvider({
   id:'rune-core',
   table:'silver.runes',
@@ -162,9 +152,8 @@ function genericScopeProviders(scopeId,{mediaOnly=false}={}){
   return [...(id==='lrunes'?[runeCore]:[]),timeline,text,media];
 }
 
-export function getSearchProviders(scopeIds=[],{includeFaq=false}={}){
+export function getSearchProviders(scopeIds=[]){
   const providers=scopeIds.flatMap(id=>genericScopeProviders(id));
-  if(includeFaq)providers.push(faq);
   return [...new Map(providers.map(provider=>[provider.id,provider])).values()];
 }
 

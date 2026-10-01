@@ -60,7 +60,7 @@ function toResult(row,source,scopeId){
   const body=isMedia
     ?(mediaMetadata||(bodyField?workDisplayText(row[bodyField]):text))
     :(bodyField?workDisplayText(row[bodyField]):(isGalaxy?'':text));
-  const identity=row.media_id||row.uid||row.song_id||row.rune_id||row.faq_id||row.record_id||row.resource_id||row.id;
+  const identity=row.media_id||row.uid||row.song_id||row.rune_id||row.record_id||row.resource_id||row.id;
   const rawScope=String(row.scope_id||scopeId||'');
   const scope=rawScope==='lrunes'?'lunarunes':rawScope;
   const resourceType=(row.uid)?'galaxy':row.media_id?'galaxy_media':'';

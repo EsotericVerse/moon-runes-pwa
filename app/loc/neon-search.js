@@ -52,7 +52,7 @@ export async function searchNeonRows(scopeId,query,{
   const scopeIds=targetScopes.map(scope=>scope.id);
   const providers=mediaOnly
     ?getMediaSearchProviders(scopeIds)
-    :getSearchProviders(scopeIds,{includeFaq:runtimeScope==='loc'});
+    :getSearchProviders(scopeIds);
   const cards=mediaOnly?[]:scopeCards(q,targetScopes);
   const failures=[];
 
