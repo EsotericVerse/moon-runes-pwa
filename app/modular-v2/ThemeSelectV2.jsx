@@ -39,13 +39,13 @@ function scopeThemePolicy(scopeId='loc'){
   return SCOPE_THEME_POLICY[String(scopeId||'').trim()]||SCOPE_THEME_POLICY.loc;
 }
 
-export default function ThemeSelectV2({scopeId='loc'}){
+export default function ThemeSelectV2({scopeId='loc',themeOverrides=null}){
   const policy=scopeThemePolicy(scopeId);
   const fixedThemeId=policy.mode==='fixed'?policy.themeId:'';
   const [themeId,setThemeId]=useState(AUTO_THEME_ID);
   const [now,setNow]=useState(()=>new Date());
   const effectiveThemeId=fixedThemeId||(themeId===AUTO_THEME_ID?automaticThemeId(now):themeId);
-  const slot=useMemo(()=>getThemeSlotV2(effectiveThemeId),[effectiveThemeId]);
+  const slot=useMemo(()=>getThemeSlotV2(effectiveThemeId,themeOverrides),[effectiveThemeId,themeOverrides]);
 
   useEffect(()=>{
     applyThemeV2(slot);
