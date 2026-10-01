@@ -75,7 +75,7 @@ function SystemsCopy(){
   return <div className="author-system-grid">
     <article className="author-editorial-block">
       <h3>LOC／月典</h3>
-      <p>LOC 是我從長期文字、作品與時間整理需求中逐步形成的語言架構框架。它把原本只能靠直覺掌握的脈絡，整理成可以回看、搜尋與比較的結構。</p>
+      <p>LOC 是一套持續成長中的語言架構框架，用來把文字、作品、來源與時間放進可以回看、搜尋、比較與分析的結構。</p>
       <p><a href="https://loc.lo3rwang.cc/">查看 LOC／月典 →</a></p>
     </article>
     <article className="author-editorial-block">
@@ -223,7 +223,7 @@ export default function AuthorHomeView({section=null}){
       {
         id:'systems',
         eyebrow:'Systems',
-        title:'從自己的問題長出的系統',
+        title:'兩個持續發展的系統',
         content:<SystemsCopy/>
       },
       {
