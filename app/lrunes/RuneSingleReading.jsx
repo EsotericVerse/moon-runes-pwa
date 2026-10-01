@@ -14,7 +14,7 @@ function directionText(card,direction){
   return String(card?.rune_etc?.direction?.[directionNo(direction)]||card?.rune_description||'').trim();
 }
 
-export default function RuneSingleReading({card,direction}){
+export default function RuneSingleReading({card,direction,bubbleLayout=false}){
   if(!card)return null;
   const analyses=lotSections(card,direction);
   return <>
@@ -22,8 +22,12 @@ export default function RuneSingleReading({card,direction}){
       <strong>占卜結論｜{card.rune_name}・{direction}</strong>
       <span>{directionText(card,direction)||'目前沒有這個位向的符文說明。'}</span>
     </p>
-    <div className="runes-advice-grid" aria-label="單卡籤詩分析">
-      {analyses.map(item=><article key={item.label}><strong>{item.label}</strong><span>{item.text}</span></article>)}
-    </div>
+    {bubbleLayout?
+      <div className="home-draw-bubbles" aria-label="單卡籤詩分析">
+        {analyses.map(item=><div className="loc-bubble" key={item.label}><strong>{item.label}</strong><p>{item.text}</p></div>)}
+      </div>:
+      <div className="runes-advice-grid" aria-label="單卡籤詩分析">
+        {analyses.map(item=><article key={item.label}><strong>{item.label}</strong><span>{item.text}</span></article>)}
+      </div>}
   </>;
 }
