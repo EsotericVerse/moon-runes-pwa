@@ -78,18 +78,14 @@ requireText('app/lrunes/RuneDrawClient.jsx',[
 forbidText('app/lrunes/RuneDrawClient.jsx',["'/duel/one'","'/duel/daily'"]);
 
 requireText('app/modular-v2/scope-registry.v2.js',[
-  "scopeIdPattern:'^[A-Za-z]+$'",
-  "scopeIdExceptions:Object.freeze(['lo3rwang'])",
-  "defaultScopeId:'loc'",
-  "word:'loc'",
+  "routeAuthority:'next-filesystem'",
+  "dataAuthority:'neon'",
   "domain:'lrunes.lo3rwang.cc'",
   "mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'})",
   "localRoutes:Object.freeze([",
-  "'list'",
   "'duel/one'",
   "'duel/ow3gs'",
-  'export function scopeHrefV2',
-  'export function isScopeRequestAllowedV2'
+  'export function scopeHrefV2'
 ]);
 
 requireText('app/loc/model/moon-phase.js',[

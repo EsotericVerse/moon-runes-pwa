@@ -64,6 +64,7 @@ const scopeManagement=readFileSync(resolve(root,'app/loc/GovernanceManagement.js
 const adminManagement=readFileSync(resolve(root,'app/loc/views/AdminHomeView.jsx'),'utf8');
 if(!/useNeonAccount/.test(scopeManagement)||!/canManageScopeSync/.test(scopeManagement))failures.push('Scope management: manager role gate missing');
 if(/(?:import|<)\s*KeywordSettingsV2\b|RuneKeywordSettingsV2\b|符文關鍵詞分組/.test(scopeManagement))failures.push('Scope management: LunaRunes canonical rune keywords must not be used as editable/fallback style');
+if(/silver\.runes|positive_keywords|negative_keywords/.test(scopeManagement))failures.push('Scope management: general Scope defaults must not read LunaRunes canonical keyword data');
 if(!/useNeonAccount/.test(adminManagement)||!/canManageGlobalSync/.test(adminManagement))failures.push('Admin management: global manager role gate missing');
 
 for(const retired of ['app/loc/local-db.js','app/loc/google-drive.js','app/loc/storage.js','app/loc/auth-client.js']){
