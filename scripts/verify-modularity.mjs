@@ -54,10 +54,10 @@ const searchClient=readFileSync(resolve(root,'app/loc/neon-search.js'),'utf8');
 const searchProviders=readFileSync(resolve(root,'app/loc/search-providers.js'),'utf8');
 const searchView=readFileSync(resolve(root,'app/modular-v2/features/SearchV2.jsx'),'utf8');
 for(const token of ["count:'exact',head:true",".or(",".range("])if(!searchProviders.includes(token))failures.push('Search: direct Neon literal query contract missing '+token);
-for(const forbidden of ['createTextIndex','searchTextIndex','literalTextMatches'])if(searchProviders.includes(forbidden))failures.push('Search: retired client text engine returned '+forbidden);
-if(existsSync(resolve(root,'app/loc/text-engine.mjs')))failures.push('app/loc/text-engine.mjs: retired client text engine returned');
-if(existsSync(resolve(root,'app/loc/keyword-classifier.js')))failures.push('app/loc/keyword-classifier.js: retired JS keyword classifier returned');
-if(existsSync(resolve(root,'app/loc/style-classifier.js')))failures.push('app/loc/style-classifier.js: retired duplicate classifier returned');
+if(/flexsearch|createSurfaceSearch|new Index\\(/i.test(searchProviders))failures.push('Search: global providers must remain Neon-first; FlexSearch belongs to the local surface-search layer');
+const surfaceSearch=readFileSync(resolve(root,'app/loc/surface-search.js'),'utf8');
+if(!surfaceSearch.includes("from 'flexsearch'")||!surfaceSearch.includes('new Index('))failures.push('Surface search: FlexSearch lexical index missing');
+for(const forbidden of ['neonPublicClient','selectNeonRows','resolveScopeTables'])if(surfaceSearch.includes(forbidden))failures.push('Surface search: must not own Neon access '+forbidden);
 if(!/searchNeonRows\(/.test(searchView))failures.push('SearchV2: shared search client missing');
 
 const scopeManagement=readFileSync(resolve(root,'app/loc/GovernanceManagement.jsx'),'utf8');

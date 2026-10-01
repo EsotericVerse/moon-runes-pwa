@@ -6,7 +6,8 @@ const files={
   search:'app/loc/neon-search.js',
   searchView:'app/modular-v2/features/SearchV2.jsx',
   dailyTrend:'app/loc/model/daily-trend-engine.mjs',
-  searchProviders:'app/loc/search-providers.js'
+  searchProviders:'app/loc/search-providers.js',
+  surfaceSearch:'app/loc/surface-search.js'
 };
 const failures=[];
 const read=path=>fs.readFileSync(path,'utf8');
@@ -35,9 +36,10 @@ for(const path of ['app/lrunes/RunesClient.jsx','app/lrunes/RuneDrawClient.jsx',
 const search=read(files.search);
 const searchProviders=read(files.searchProviders);
 for(const token of ["count:'exact',head:true",".or(",".range("])if(!searchProviders.includes(token))failures.push(`search providers: missing direct Neon query contract ${token}`);
-for(const forbidden of ['createTextIndex','searchTextIndex','literalTextMatches'])if(searchProviders.includes(forbidden))failures.push(`search providers: retired client text engine returned ${forbidden}`);
-if(fs.existsSync('app/loc/text-engine.mjs'))failures.push('app/loc/text-engine.mjs: retired client text engine returned');
-if(fs.existsSync('app/loc/keyword-classifier.js'))failures.push('app/loc/keyword-classifier.js: retired JS keyword classifier returned');
+if(/flexsearch|createSurfaceSearch|new Index\\(/i.test(searchProviders))failures.push('search providers: FlexSearch must not become the global corpus query layer');
+const surfaceSearch=read(files.surfaceSearch);
+for(const token of ["from 'flexsearch'",'new Index(','cache:cacheSize'])if(!surfaceSearch.includes(token))failures.push(`surface search: missing ${token}`);
+for(const forbidden of ['neonPublicClient','selectNeonRows','resolveScopeTables'])if(surfaceSearch.includes(forbidden))failures.push(`surface search: must not own Neon access ${forbidden}`);
 for(const token of ['getSearchProviders','getMediaSearchProviders','provider.search'])if(!search.includes(token))failures.push(`search: missing Current provider contract ${token}`);
 for(const path of [files.search,files.searchView]){
   const source=read(path);

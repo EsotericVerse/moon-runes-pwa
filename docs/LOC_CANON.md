@@ -88,6 +88,13 @@ Multimedia 併入來源統計；無文字媒體與 YouTube 等可落入 Others �
 
 Search 是精準詞／metadata query，不做 semantic rendering。
 
+Current Search 分成兩層：
+
+- **Neon 深層查詢**：負責 SSOT、Scope、SQL filter、日期、權限、COUNT 與分頁；全域／跨作品查詢不得把完整 corpus 拉到前端再切片。
+- **FlexSearch 表皮輕微搜尋**：允許建立 in-memory lexical index 與 query cache，但只接受已經被 Neon／Scope／頁面條件縮小的局部資料，用於 keyword list、autocomplete、同頁高頻重複查詢與小範圍快速比對。
+
+FlexSearch 不是第二份資料權威、不做 semantic rendering、不負責全 corpus 掃描，也不得取代 Neon 的精準 SQL 與分頁。
+
 一般 Scope 不可在缺值時讀 LunaRunes keyword、positive_keywords、negative_keywords 或其他 Rune Canon 作 fallback。
 
 ## 9. LunaRunes structure

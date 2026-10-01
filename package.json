@@ -15,7 +15,7 @@
     "verify:rune-draw": "node scripts/verify-rune-draw-algorithm.mjs",
     "verify:rune-keyword-rules": "node scripts/verify-rune-keyword-rules.mjs",
     "verify:semantics": "node scripts/verify-current-semantics.mjs",
-    "verify": "npm run verify:text-engine && npm run verify:rune-keyword-rules && npm run verify:modules && npm run verify:packages && npm run verify:semantics && npm run verify:modularity && npm run verify:modular-v2 && npm run verify:directories",
+    "verify": "npm run verify:text-engine && npm run verify:flexsearch && npm run verify:rune-keyword-rules && npm run verify:modules && npm run verify:packages && npm run verify:semantics && npm run verify:modularity && npm run verify:modular-v2 && npm run verify:directories",
     "build": "next build",
     "verify:ui": "node scripts/current-ui-contract.mjs",
     "verify:theme": "node scripts/verify-theme-contract.mjs",
@@ -26,7 +26,8 @@
     "verify:neon-public": "node scripts/verify-neon-public-read.mjs",
     "test:ui": "playwright test",
     "verify:rc81": "npm run verify:rc81-boundary && npm run verify:theme && npm run build && npm run test:ui",
-    "verify:rc81-boundary": "node scripts/verify-rc81-uiux-boundary.mjs"
+    "verify:rc81-boundary": "node scripts/verify-rc81-uiux-boundary.mjs",
+    "verify:flexsearch": "node scripts/verify-flexsearch-role.mjs"
   },
   "dependencies": {
     "@neondatabase/neon-js": "0.7.0-beta",
@@ -40,7 +41,8 @@
     "recharts": "3.10.1",
     "vis-network": "10.1.0",
     "vis-timeline": "8.5.4",
-    "zod": "4.6.0"
+    "zod": "4.6.0",
+    "flexsearch": "0.8.212"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
