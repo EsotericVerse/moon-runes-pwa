@@ -48,8 +48,10 @@ export default function ThemeSelectV2({scopeId='loc',themeOverrides=null}){
   const slot=useMemo(()=>getThemeSlotV2(effectiveThemeId,themeOverrides),[effectiveThemeId,themeOverrides]);
 
   useEffect(()=>{
+    const root=document.documentElement;
+    if(!themeOverrides&&root.dataset.themeId===slot.id)return;
     applyThemeV2(slot);
-  },[slot,scopeId]);
+  },[slot,scopeId,themeOverrides]);
 
   useEffect(()=>{
     if(fixedThemeId||themeId!==AUTO_THEME_ID)return undefined;

@@ -58,5 +58,7 @@ export function applyThemeV2(slot){
   const root=document.documentElement;
   THEME_TOKEN_KEYS_V2.forEach(key=>root.style.removeProperty(key));
   root.dataset.theme=slot.scheme;
+  root.dataset.themeId=slot.id;
+  root.style.colorScheme=slot.scheme;
   Object.entries(slot.tokens).forEach(([key,value])=>{if(value)root.style.setProperty(key,value);});
 }

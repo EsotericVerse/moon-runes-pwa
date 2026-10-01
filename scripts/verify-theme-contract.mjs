@@ -54,6 +54,10 @@ if(full===probe||full.tokens['--loc-bg']!=='#010203')failures.push('complete the
 for(const token of ["AUTO_THEME_ID='auto'","THEME_TIME_ZONE='Asia/Taipei'","DAY_THEME_ID='theme-7'","NIGHT_THEME_ID='theme-1'","AUTHOR_THEME_ID='theme-2'","LUNARUNES_THEME_ID='theme-5'","lo3rwang:Object.freeze({mode:'fixed',themeId:AUTHOR_THEME_ID})","lunarunes:Object.freeze({mode:'fixed',themeId:LUNARUNES_THEME_ID})","loc:Object.freeze({mode:'auto'})"])if(!selector.includes(token))failures.push('Theme selector missing '+token);
 if(!footer.includes('<ThemeSelectV2 scopeId={scopeId}/>'))failures.push('ScopeFooter must pass Scope identity to ThemeSelectV2');
 if(!layout.includes("import ScopeFooterV2 from './modular-v2/ScopeFooterV2'")||!layout.includes('<ScopeFooterV2 />'))failures.push('Root layout must use ScopeFooterV2');
+if(!layout.includes('id="loc-theme-bootstrap"')||!layout.includes("getThemeSlotV2"))failures.push('Root layout must apply the initial Scope theme before first paint');
+if(!selector.includes("root.dataset.themeId===slot.id"))failures.push('Theme selector must avoid reapplying the already bootstrapped theme');
+const registry=read('app/modular-v2/theme-registry.v2.js');
+if(!registry.includes("root.dataset.themeId=slot.id")||!registry.includes("root.style.colorScheme=slot.scheme"))failures.push('Theme registry must mark the applied theme identity and color scheme');
 if(failures.length){
   console.error('[theme-contract] failures:\n'+failures.map(item=>'- '+item).join('\n'));
   process.exit(1);
