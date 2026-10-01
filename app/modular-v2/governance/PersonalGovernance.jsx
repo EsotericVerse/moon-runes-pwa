@@ -4,8 +4,8 @@ export default function PersonalGovernance({canEdit=false}){
   return <>
     <section className="loc-card" id="provenance">
       <h2>來源與版本</h2>
-      <p>原稿、原始貼文與可追溯版本，優先作為作品沿革與風格判讀的依據。</p>
-      <p>轉錄、轉貼、引用、AI 輔助或來源不明的內容，應保留其來源與性質標示，不與原作或可確認版本混為同一層級。</p>
+      <p>原稿、原始貼文與可追溯版本，優先作為作品沿革與版本確認的依據。</p>
+      <p>轉錄、轉貼、引用、AI 輔助或來源不明的內容，應保留其來源與性質標示，避免與原作或可確認版本混淆。</p>
       <p>作品的日期、署名、來源與版本沿革應盡量保留；整理、轉載或重新發布，不應改寫原本的歷史紀錄。</p>
     </section>
     <section className="loc-card" id="rights">
