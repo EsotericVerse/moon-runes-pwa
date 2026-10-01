@@ -680,7 +680,7 @@
 .author-profile-bubble.is-wide{grid-column:1/-1}
 .author-profile-bubble-title{
   display:block;
-  margin:0 0 .65rem;
+  margin:0 0 .65rem!important;
   color:var(--loc-gold)!important;
   font-size:1rem;
   font-weight:800;
@@ -726,6 +726,14 @@
 .author-trinity-copy .loc-bubble{
   padding:1rem 1.05rem;
   background:var(--loc-surface-soft);
+}
+.author-trinity-copy .loc-bubble h3{
+  margin:0 0 .45rem;
+  padding:0;
+  border:0;
+  color:var(--loc-gold);
+  font-size:1rem;
+  line-height:1.45;
 }
 .author-trinity-copy .loc-bubble p{
   max-width:none;

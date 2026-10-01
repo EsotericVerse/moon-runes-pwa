@@ -137,6 +137,7 @@ export default function AuthorHomeView({section=null}){
 
   const sectionMap=new Map(sections.map(item=>[item.id,item]));
   const profileBubbleIds=[
+    'name-origin',
     'profile-content',
     'work',
     'digital-legacy',
@@ -144,7 +145,6 @@ export default function AuthorHomeView({section=null}){
     'oscillation',
     'philosophy',
     'open-source',
-    'name-origin',
     'functions',
     'loc',
     'contact',
@@ -169,7 +169,7 @@ export default function AuthorHomeView({section=null}){
         title:'自我介紹',
         content:<div className="author-profile-bubbles">
           <article className="loc-bubble author-profile-bubble">
-            <strong className="author-profile-bubble-title">關於我</strong>
+            <h3 className="author-profile-bubble-title">關於我</h3>
             <div className="author-profile-bubble-content">
               <p>Lucas Oscar Wang 政德，叫我Oscar就好。六年級末段班，巨蟹座。</p>
               <p><strong>人生觀：</strong>鑑古知今，求同存異。不在其位，不謀其政。隨心所欲，而不逾己。</p>
@@ -182,7 +182,7 @@ export default function AuthorHomeView({section=null}){
             const item=sectionMap.get(id);
             if(!item)return null;
             return <article className={`loc-bubble author-profile-bubble ${wideProfileBubbles.has(id)?'is-wide':''}`} data-author-block={id} key={id}>
-              <strong className="author-profile-bubble-title">{item.title}</strong>
+              <h3 className="author-profile-bubble-title">{item.title}</h3>
               <div className="author-profile-bubble-content">{item.content}</div>
               {item.links?.length?<div className="author-profile-bubble-actions">{item.links.map(link=><a href={link.href} key={link.href}>{link.label} →</a>)}</div>:null}
             </article>;
@@ -196,17 +196,17 @@ export default function AuthorHomeView({section=null}){
         content:<div className="home-architecture-layout author-trinity-layout">
           <div className="home-architecture-copy author-trinity-copy">
             <article className="loc-bubble">
-              <strong>文字工匠 · Wordsmith</strong>
+              <h3>文字工匠 · Wordsmith</h3>
               <p>從詞、句子與關鍵詞的聯繫，整理文字怎麼形成自己的語意與脈絡關係。</p>
               <p><a href="/lo3rwang/statics/?statTab=keywords">看關鍵詞設定 →</a></p>
             </article>
             <article className="loc-bubble">
-              <strong>混沌校對者 · Chaos Calibrator</strong>
+              <h3>混沌校對者 · Chaos Calibrator</h3>
               <p>把文字放回來源、時間與歷史裡比較，觀察文化軌跡、延續、改變、矛盾與可能的污染。</p>
               <p><a href="/lo3rwang/culture/">看文化 →</a></p>
             </article>
             <article className="loc-bubble">
-              <strong>語言建築師 · Language Architect</strong>
+              <h3>語言建築師 · Language Architect</h3>
               <p>把語彙、脈絡、文化、搜尋與治理組織成可持續使用的個人語言與系統結構。</p>
               <p><a href="/lo3rwang/governance/">看治理 →</a></p>
             </article>
