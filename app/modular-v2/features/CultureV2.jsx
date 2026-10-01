@@ -32,7 +32,7 @@ import ContentEditorV2 from '../ContentEditorV2';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 
 function labelOf(item,index){
-  return item?.display_label||item?.name||item?.title||item?.period||'時期 '+(index+1);
+  return item?.display_label||item?.name||item?.title||item?.period||UI_COPY.format.period(index+1);
 }
 function sortPeriods(rows=[]){
   return [...rows].filter(item=>item?.start_date||item?.end_date).sort((a,b)=>
@@ -477,7 +477,7 @@ export default function CultureV2(){
                   hiddenDates={locRiverAnalysis.hiddenDates}
                 />:null}
                 {locCombinedSourceRiverItems.length?<section className='scope-v2-culture-combined-source-river'>
-                  <p className='loc-eyebrow'>Combined Sources</p>
+                  <p className='loc-eyebrow'>{UI_COPY.culture.combinedSources}</p>
                   <h4>{UI_COPY.culture.combinedRiver}</h4>
                   <CultureTimelineV2
                     items={locCombinedSourceRiverItems}
@@ -516,7 +516,7 @@ export default function CultureV2(){
                     </select>
                   </label>
                 </div>
-                <p className='loc-eyebrow'>Classification River</p>
+                <p className='loc-eyebrow'>{UI_COPY.culture.classificationRiver}</p>
                 <h3>{labelOf(selectedWorkPeriod,0)}｜作品分類河道</h3>
                 {classificationBucketsQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(classificationBucketsQuery.error)}</p>:null}
                 {!classificationBucketsQuery.isFetching&&!classificationBucketsQuery.error&&!classificationBuckets.length
@@ -547,7 +547,7 @@ export default function CultureV2(){
                   <p>{UI_COPY.culture.virtualAnchorHelp}</p>
                   {riverAnalysis.suggestions.map(item=><article key={item.date}>
                     <button type='button' onClick={()=>toggleVirtualAnchor(item.date)} aria-pressed={selectedVirtualAnchorDates.includes(item.date)}>
-                      {selectedVirtualAnchorDates.includes(item.date)?'已選取｜':''}{item.date}
+                      {selectedVirtualAnchorDates.includes(item.date)?UI_COPY.culture.selectedPrefix:''}{item.date}
                     </button>
                     <p>切點前 3 日 {Number(item.beforeCount||0).toLocaleString()} 項｜後 3 日 {Number(item.afterCount||0).toLocaleString()} 項</p>
                     <ul>
@@ -556,7 +556,7 @@ export default function CultureV2(){
                   </article>)}
                   {account.canManageScopeSync(classificationScope)&&selectedVirtualAnchorDates.length?<div className='scope-v2-tabs'>
                     <button type='button' disabled={anchorSaveBusy} onClick={saveSelectedVirtualAnchors}>
-                      {anchorSaveBusy?'建立中…':'一次建立 '+selectedVirtualAnchorDates.length+' 個定錨點'}
+                      {anchorSaveBusy?UI_COPY.culture.creating:'一次建立 '+selectedVirtualAnchorDates.length+' 個定錨點'}
                     </button>
                   </div>:null}
                   {anchorSaveMessage?<p role='status'>{anchorSaveMessage}</p>:null}
