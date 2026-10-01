@@ -1,8 +1,8 @@
 # LOC Current TODO
 
-**Current version:** 0.8.2-rc
+**Current version:** 0.8.3.2-rc
 
-## 0.8.2 RC backlog
+## 0.8.3.2 RC backlog
 
 - [ ] 完成 LunaRunes interpretation sentence handling，確保 single、Daily、2／3／5／11 card 只使用實際抽到的方向資料。
 - [ ] 完成 LunaRunes canonical keyword library 與管理流程。

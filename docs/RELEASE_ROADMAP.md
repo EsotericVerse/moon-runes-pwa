@@ -1,8 +1,8 @@
 # LOC Release Roadmap
 
-## Current — 0.8.2-rc
+## Current — 0.8.3.2-rc
 
-0.8.2-rc 是目前 Current candidate。Current 已具備：
+0.8.3.2-rc 是目前 Current candidate。Current 已具備：
 
 - Neon SSOT。
 - Search／Statistics／Culture shared features。
@@ -17,11 +17,11 @@
 - Scope registry responsibility cleanup。
 - branch freeze governance。
 
-## 0.8.2 RC backlog
+## 0.8.3.2 RC backlog
 
-0.8.2 RC 以現有功能完成度為主，不重新建立另一套架構。
+0.8.3.2 RC 以現有功能完成度為主，不重新建立另一套架構。
 
-Current 0.8.2 RC backlog：
+Current 0.8.3.2 RC backlog：
 
 - 完成 LunaRunes interpretation sentence 的一致性。
 - 完成 LunaRunes keyword library 與治理；Rune special semantics 只留在 LunaRunes。
