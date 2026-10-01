@@ -1,5 +1,7 @@
 'use client';
 
+import {UI_COPY} from '../i18n/ui-copy';
+
 import {useEffect,useMemo,useState} from 'react';
 import Select from 'react-select';
 import {useNeonAccount} from './use-neon-account';
@@ -70,11 +72,11 @@ function PeriodSettings({scopeId}){
 function sectionOptions(scopeId){
   if(scopeId==='loc')return [];
   const options=[
-    {value:'data',label:'資料管理'},
-    {value:'article',label:'文章發表'},
-    {value:'import',label:'資料匯入'},
-    {value:'period',label:'時期設定'},
-    {value:'keywords',label:'關鍵詞管理'}
+    {value:'data',label:UI_COPY.management.data},
+    {value:'article',label:UI_COPY.management.article},
+    {value:'import',label:UI_COPY.management.import},
+    {value:'period',label:UI_COPY.management.period},
+    {value:'keywords',label:UI_COPY.management.keywords}
   ];
   if(scopeId==='lunarunes')options.push({value:'daily',label:'每日符文管理'});
   return options;
@@ -92,7 +94,7 @@ export default function GovernanceManagement(){
     if(!options.some(option=>option.value===section))setSection(options[0]?.value||'data');
   },[scopeId,options,section]);
 
-  if(account.loading||account.permissionLoading)return <section className="loc-view"><div className="loc-card">正在確認登入與管理權限…</div></section>;
+  if(account.loading||account.permissionLoading)return <section className="loc-view"><div className="loc-card">{UI_COPY.management.checking}</div></section>;
   if(!account.user)return <LoginScreen scopeId={scopeId} account={account}/>;
 
   if(scopeId==='loc')return <section className="loc-view">
@@ -103,13 +105,13 @@ export default function GovernanceManagement(){
     </header>
     <section className="loc-card">
       <a className="loc-button primary" href={getScopeV2('admin').primary.href}>前往 admin.lo3rwang.cc</a>
-      <button className="loc-button" type="button" onClick={account.signOut}>登出</button>
+      <button className="loc-button" type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button>
     </section>
   </section>;
 
   if(!canManage)return <section className="loc-view">
     <header className="loc-hero"><p className="loc-eyebrow">Management</p><h1>{scope.label}管理</h1></header>
-    <section className="loc-card"><p>目前登入身份沒有此區域的管理權限。</p><button type="button" onClick={account.signOut}>登出</button></section>
+    <section className="loc-card"><p>{UI_COPY.management.permissionDenied}</p><button type="button" onClick={account.signOut}>登出</button></section>
   </section>;
 
   const selected=options.find(option=>option.value===section)||options[0]||null;
@@ -120,7 +122,7 @@ export default function GovernanceManagement(){
       <h1>{scope.label}管理</h1>
       <p>{account.user.email||account.user.name||''}</p>
       <div className="scope-v2-management-select">
-        <label htmlFor="scope-management-section">管理項目</label>
+        <label htmlFor="scope-management-section">{UI_COPY.management.item}</label>
         <Select
           inputId="scope-management-section"
           className="scope-v2-react-select"
@@ -129,7 +131,7 @@ export default function GovernanceManagement(){
           isSearchable
           options={options}
           value={selected}
-          noOptionsMessage={()=>"沒有符合的管理項目"}
+          noOptionsMessage={()=>UI_COPY.management.noOptions}
           onChange={option=>option?.value&&setSection(option.value)}
         />
       </div>
