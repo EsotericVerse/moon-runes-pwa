@@ -1,4 +1,4 @@
-import {UI_COPY} from '../i18n/ui-copy';
+import {UI_COPY} from '../i18n/ui-copy.js';
 
 // Current V2 Scope registry.
 export const SCOPE_POLICY_V2=Object.freeze({
