@@ -1,5 +1,7 @@
 'use client';
 
+import {UI_COPY} from '../i18n/ui-copy';
+
 import {useEffect,useState} from 'react';
 import {neonAuthClient} from './neon-client';
 import {useNeonAccount} from './use-neon-account';
@@ -54,21 +56,21 @@ export default function ManagementDataPanel({scopeId}){
 
   return <section className="loc-card scope-v2-feature-card">
     <p className="loc-eyebrow">Canonical Data</p>
-    <h2>資料管理</h2>
+    <h2>{UI_COPY.management.data}</h2>
     <p>管理視圖直接讀取此 Scope 的 canonical tables；不套用公開搜尋、統計或時間長河的顯示條件。</p>
     <div className="scope-v2-stat-controls">
-      <label><span>資料類型</span><select className="scope-v2-select" value={kind} onChange={event=>setKind(event.target.value)}>
-        <option value="galaxy">Galaxy 文字</option>
+      <label><span>{UI_COPY.management.dataType}</span><select className="scope-v2-select" value={kind} onChange={event=>setKind(event.target.value)}>
+        <option value="galaxy">{UI_COPY.management.galaxyText}</option>
         <option value="media">Galaxy Media</option>
       </select></label>
-      {kind==='galaxy'?<label><span>搜尋狀態</span><select className="scope-v2-select" value={visibility} onChange={event=>setVisibility(event.target.value)}>
-        <option value="all">全部資料</option>
-        <option value="hidden">不可搜尋資料</option>
+      {kind==='galaxy'?<label><span>{UI_COPY.management.searchStatus}</span><select className="scope-v2-select" value={visibility} onChange={event=>setVisibility(event.target.value)}>
+        <option value="all">{UI_COPY.management.allData}</option>
+        <option value="hidden">{UI_COPY.management.notSearchableData}</option>
       </select></label>:null}
     </div>
     <p className="scope-v2-status">共 {total.toLocaleString()} 筆｜第 {Math.min(page+1,pageCount)} / {pageCount} 頁</p>
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
-    {busy?<p className="scope-v2-status">讀取中…</p>:null}
+    {busy?<p className="scope-v2-status">{UI_COPY.common.loading}</p>:null}
     {!busy&&!error?<div className="scope-v2-ranking">
       {rows.map(row=>{
         const id=kind==='media'?row.media_id:row.uid;
@@ -78,11 +80,11 @@ export default function ManagementDataPanel({scopeId}){
           :[row.source_name,row.searchable===false?'不可搜尋':'可搜尋','建立 '+dateText(row.createtime),'更新 '+dateText(row.UpdateTime)].filter(Boolean).join(' · ');
         return <div key={String(id)}><strong>{label}</strong><span>{meta}</span></div>;
       })}
-      {!rows.length?<p className="scope-v2-status">沒有資料。</p>:null}
+      {!rows.length?<p className="scope-v2-status">{UI_COPY.common.none}</p>:null}
     </div>:null}
     <div className="scope-v2-stat-controls">
-      <button type="button" disabled={busy||page<=0} onClick={()=>setPage(value=>Math.max(0,value-1))}>上一頁</button>
-      <button type="button" disabled={busy||page+1>=pageCount} onClick={()=>setPage(value=>value+1)}>下一頁</button>
+      <button type="button" disabled={busy||page<=0} onClick={()=>setPage(value=>Math.max(0,value-1))}>{UI_COPY.management.previous}</button>
+      <button type="button" disabled={busy||page+1>=pageCount} onClick={()=>setPage(value=>value+1)}>{UI_COPY.management.next}</button>
     </div>
   </section>;
 }
