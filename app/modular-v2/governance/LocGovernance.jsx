@@ -33,7 +33,7 @@ export default function LocGovernance({canEdit=false}){
       </section>
       <section className="loc-card" id="loc-lunarunes-relationship">
         <h2>月典與月之符文</h2>
-        <p>月典（LOC）是語言架構框架，用來整理、歸類與呈現資料；月之符文（LunaRunes）則是一套獨立的符號式語言與原創系統。</p>
+        <p>月典（LOC）是語言架構框架，用來整理、歸類與呈現資料；月之符文（LunaRunes）則是一套獨立的符號式語言宇宙。</p>
         <p>兩者可以互相參照，但不互相依賴。使用月典不必使用月之符文；使用月之符文，也不必限定在月典裡。</p>
       </section>
       <section className="loc-card" id="analysis-provenance">
