@@ -4,9 +4,10 @@ import {useEffect,useState} from 'react';
 import {selectNeonRows} from '../loc/neon-query';
 import {groupImage,localRuneId,runeImage,runeName,runeNumberForRoute,runeNumbersForGroup} from './rune-directory.mjs';
 import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
+import RuneCardInfo from './RuneCardInfo';
 
 const listHref=(path='')=>scopeHrefV2('lunarunes',`list${path?'/'+String(path).replace(/^\/+/, ''):''}`);
-const RUNE_COLUMNS='rune_id,rune_name,english_name,group_name,moon_phase,card_attr,rune_description,archetype,char_action,positive_keywords,negative_keywords,extra_rules,extra_notes';
+const RUNE_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,char_action,positive_keywords,negative_keywords,extra_rules,extra_notes';
 const RUNE_DETAIL_COLUMNS='rune_evolution_history,myth_story,soul_question,practice_challenge,ritual_advice,harmony_advice';
 const GROUP_COLUMNS='group_id,english_name,desc,runeslist';
 const MOON_PHASE_LABELS=Object.freeze({1:'新月',2:'上弦',3:'滿月',4:'下弦'});
@@ -58,20 +59,13 @@ function useRuneDetail(runeNumber){
 function RuneDetails({card}){
   if(!card)return null;
   return <article className="loc-card runes-rune-profile-card">
-    <div className="runes-rune-profile">
-      <img className="loc-rune-card-image" src={runeImage(card)} alt={`${runeName(card)}之符文卡`}/>
-      <div className="runes-rune-profile-copy">
-        <h2>{String(Number(card.rune_id)).padStart(2,'0')} · {runeName(card)}之符文</h2>
-        {card.rune_description?<p>{decodeRuneText(card.rune_description)}</p>:null}
-        {card.archetype?<p>{decodeRuneText(card.archetype)}</p>:null}
-      </div>
-    </div>
+    <RuneCardInfo
+      card={card}
+      imageSrc={runeImage(card)}
+      imageClassName="loc-rune-card-image"
+      layout="profile"
+    />
     <div className="runes-rune-detail-grid">
-      <span><strong>所屬分組</strong>{decodeRuneText(card.group_name||'—')}</span>
-      <span><strong>月相</strong>{decodeRuneText(MOON_PHASE_LABELS[Number(card.moon_phase)]||'—')}</span>
-      <span><strong>卡片屬性</strong>{decodeRuneText(CARD_ATTR_LABELS[Number(card.card_attr)]||'—')}</span>
-      <span><strong>正向關鍵詞</strong>{decodeRuneText(card.positive_keywords||'—')}</span>
-      <span><strong>反向關鍵詞</strong>{decodeRuneText(card.negative_keywords||'—')}</span>
       {card.char_action?<span><strong>角色行動</strong>{decodeRuneText(card.char_action)}</span>:null}
       {card.extra_rules?<span><strong>額外規則</strong>{decodeRuneText(card.extra_rules)}</span>:null}
       {card.extra_notes?<span><strong>額外留意</strong>{decodeRuneText(card.extra_notes)}</span>:null}
