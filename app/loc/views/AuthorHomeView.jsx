@@ -1,10 +1,10 @@
 import { PageComposition } from '../../PageComposition';
 
 const AUTHOR_FUNCTIONS=Object.freeze([
-  Object.freeze({eyebrow:'Culture',title:'文化',text:'以時空定錨論把作品放回時間長河，從時間位置、密度與前後分布看值得回看的軌跡。',href:'/culture/',label:'查看文化'}),
-  Object.freeze({eyebrow:'Statistics',title:'統計',text:'以靈魂擺盪論觀察大風格、風格與關鍵詞的增減、延續、回返與擺盪。',href:'/statics/',label:'查看統計'}),
-  Object.freeze({eyebrow:'Governance',title:'治理',text:'管理功能跟政策表達。',href:'/governance/',label:'查看治理'}),
-  Object.freeze({eyebrow:'Search',title:'搜尋',text:'從關鍵詞、作品、來源或日期開始，找到時間點，再查看附近的脈絡與作品。',href:'/search/',label:'開始搜尋'})
+  Object.freeze({eyebrow:'Culture',title:'文化',text:'以時空定錨論把作品放回時間長河，從時間位置、密度與前後分布看值得回看的軌跡。',href:'/lo3rwang/culture/',label:'查看文化'}),
+  Object.freeze({eyebrow:'Statistics',title:'統計',text:'以靈魂擺盪論觀察大風格、風格與關鍵詞的增減、延續、回返與擺盪。',href:'/lo3rwang/statics/',label:'查看統計'}),
+  Object.freeze({eyebrow:'Governance',title:'治理',text:'管理功能跟政策表達。',href:'/lo3rwang/governance/',label:'查看治理'}),
+  Object.freeze({eyebrow:'Search',title:'搜尋',text:'從關鍵詞、作品、來源或日期開始，找到時間點，再查看附近的脈絡與作品。',href:'/lo3rwang/search/',label:'開始搜尋'})
 ]);
 
 export default function AuthorHomeView({section=null}){
@@ -135,24 +135,22 @@ export default function AuthorHomeView({section=null}){
     }
   ];
 
-  const homeSections=sections.map(item=>item.id==='roles'
-    ?{
-      ...item,
-      content:<div className="home-architecture-layout">
-        <div className="home-architecture-copy">
-          <div className="home-author-copy">
-            <p><strong>文字工匠 · Wordsmith</strong><br/>從詞、句子與關鍵詞的聯繫，整理文字怎麼形成自己的語意與脈絡關係。 <a href="/lo3rwang/statics/?statTab=keywords">看關鍵詞設定</a></p>
-            <p><strong>混沌校對者 · Chaos Calibrator</strong><br/>把文字放回來源、時間與歷史裡比較，觀察文化軌跡、延續、改變、矛盾與可能的污染。 <a href="/lo3rwang/culture/">看文化</a></p>
-            <p><strong>語言建築師 · Language Architect</strong><br/>把語彙、脈絡、文化、搜尋與治理組織成可持續使用的個人語言與系統結構。 <a href="/lo3rwang/governance/">看治理</a></p>
-          </div>
-        </div>
-        <figure className="home-architecture-figure">
-          <img src="/pics/lo3rwang-3.png" alt="政德三位一體與三魂擬人化關係圖" loading="lazy"/>
-        </figure>
-      </div>
-    }
-    :item
-  );
+  const sectionMap=new Map(sections.map(item=>[item.id,item]));
+  const profileBubbleIds=[
+    'profile-content',
+    'work',
+    'digital-legacy',
+    'calibration',
+    'oscillation',
+    'philosophy',
+    'open-source',
+    'name-origin',
+    'functions',
+    'loc',
+    'contact',
+    'official-links'
+  ];
+  const wideProfileBubbles=new Set(['profile-content','functions','loc']);
 
   if(!section)return <PageComposition
     eyebrow="Lucas Oscar Wang"
@@ -160,11 +158,65 @@ export default function AuthorHomeView({section=null}){
     subtitle="語言建築師"
     intro={<>
       <p>Hello！你好！你可以叫我 Oscar。</p>
-      <p>Wordsmith · Chaos Calibrator · Language Architect · Creator of LOC and LunaRunes</p>
-      <p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽〈這就是我〉 →</a></p>
+      <p>Wordsmith · Chaos Calibrator · Language Architect</p>
+      <p>Creator of LOC and LunaRunes · <a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽〈這就是我〉 →</a></p>
     </>}
     heroVisual={<iframe src="https://www.instagram.com/p/DdX5ki-oZY6/embed" title="這就是我｜Lucas Oscar Wang 政德自我介紹" loading="eager" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" frameBorder="0" scrolling="no"/>}
-    sections={homeSections}
+    sections={[
+      {
+        id:'introduction',
+        eyebrow:'Introduction',
+        title:'自我介紹',
+        content:<div className="author-profile-bubbles">
+          <article className="loc-bubble author-profile-bubble">
+            <strong className="author-profile-bubble-title">關於我</strong>
+            <div className="author-profile-bubble-content">
+              <p>Lucas Oscar Wang 政德，叫我Oscar就好。六年級末段班，巨蟹座。</p>
+              <p><strong>人生觀：</strong>鑑古知今，求同存異。不在其位，不謀其政。隨心所欲，而不逾己。</p>
+              <p><strong>原則態度：</strong>敬畏未知，尊重異者，專業為先。</p>
+              <p><strong>擅長能力：</strong>事物的歸納整理跟系統化。擅長把一件可能很難的原理講到很簡單。</p>
+              <p><strong>興趣：</strong>寫作閱讀、音樂創作、符文占卜籤詩、到處看看。秘藝文域（EsotericVerse），籌備中。</p>
+            </div>
+          </article>
+          {profileBubbleIds.map(id=>{
+            const item=sectionMap.get(id);
+            if(!item)return null;
+            return <article className={`loc-bubble author-profile-bubble ${wideProfileBubbles.has(id)?'is-wide':''}`} data-author-block={id} key={id}>
+              <strong className="author-profile-bubble-title">{item.title}</strong>
+              <div className="author-profile-bubble-content">{item.content}</div>
+              {item.links?.length?<div className="author-profile-bubble-actions">{item.links.map(link=><a href={link.href} key={link.href}>{link.label} →</a>)}</div>:null}
+            </article>;
+          })}
+        </div>
+      },
+      {
+        id:'roles',
+        eyebrow:'Roles',
+        title:'三位一體',
+        content:<div className="home-architecture-layout author-trinity-layout">
+          <div className="home-architecture-copy author-trinity-copy">
+            <article className="loc-bubble">
+              <strong>文字工匠 · Wordsmith</strong>
+              <p>從詞、句子與關鍵詞的聯繫，整理文字怎麼形成自己的語意與脈絡關係。</p>
+              <p><a href="/lo3rwang/statics/?statTab=keywords">看關鍵詞設定 →</a></p>
+            </article>
+            <article className="loc-bubble">
+              <strong>混沌校對者 · Chaos Calibrator</strong>
+              <p>把文字放回來源、時間與歷史裡比較，觀察文化軌跡、延續、改變、矛盾與可能的污染。</p>
+              <p><a href="/lo3rwang/culture/">看文化 →</a></p>
+            </article>
+            <article className="loc-bubble">
+              <strong>語言建築師 · Language Architect</strong>
+              <p>把語彙、脈絡、文化、搜尋與治理組織成可持續使用的個人語言與系統結構。</p>
+              <p><a href="/lo3rwang/governance/">看治理 →</a></p>
+            </article>
+          </div>
+          <figure className="home-architecture-figure author-trinity-figure">
+            <img src="/pics/lo3rwang-3.png" alt="政德三位一體與三魂擬人化關係圖" loading="lazy"/>
+          </figure>
+        </div>
+      }
+    ]}
   />;
 
   const sectionGroups=Object.freeze({
