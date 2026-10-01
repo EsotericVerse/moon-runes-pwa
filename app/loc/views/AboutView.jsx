@@ -104,14 +104,15 @@ export default function AboutView(){
           <p>總文字數：4,532,597 字<br/>資料列數：35,498 列</p>
           <details className="home-status-details">
             <summary>資料來源</summary>
-            <p>Facebook · Threads · KKCity · Vocus · Suno · PTT · Pixnet · Wretch<br/>另含 Galaxy 多媒體 metadata。</p>
+            <p>Facebook · Threads · KKCity · Vocus · Suno · PTT · Pixnet · Wretch<br/>另含 Galaxy 多媒體 metadata。<br/>最早：2005-04-12<br/>最新：2026-09-30</p>
           </details>
         </div>
         <div className="loc-bubble">
           <strong>系統模組</strong>
+          <p>Next.js + React + PostgreSQL</p>
           <details className="home-status-details">
             <summary>架構</summary>
-            <p>React 19.3.0 · Next.js 16.3.5<br/>PostgreSQL（Neon） · Neon SDK 0.7.0-beta</p>
+            <p>Next.js 16.3.5<br/>React 19.3.0<br/>PostgreSQL（Neon） / Neon SDK 0.7.0-beta</p>
           </details>
           <details className="home-status-details">
             <summary>模組</summary>
