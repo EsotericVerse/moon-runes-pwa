@@ -7,4 +7,4 @@ export const metadata=lunarunesMetadata({
   path:'/statics/'
 });
 
-export default function Page(){return <LocApp forcedView="statics"/>;}
+export default function Page(){return <LocApp forcedView="statics" forcedScope="lunarunes"/>;}
