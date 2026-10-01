@@ -25,5 +25,7 @@ jobs:
         run: npm run verify:text-engine && npm run verify:rune-keyword-rules && npm run verify:rune-draw
       - name: Verify public Neon Data API
         run: npm run verify:neon-public
+      - name: Verify Scope and NAV governance
+        run: node scripts/verify-nav-all.mjs
       - name: Verify modularity and build Current static export
         run: npm run build
