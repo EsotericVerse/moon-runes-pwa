@@ -120,22 +120,29 @@ export default function AboutView(){
 
     <section className="loc-card home-copy-block home-progress" id="progress">
       <div className="home-section-heading">
-        <p className="loc-eyebrow">Current Progress</p><h2>進度</h2>
-        <p className="loc-subtitle">目前 LOC 的資料規模、系統架構與主要系統模組。</p>
+        <p className="loc-eyebrow">System Status</p><h2>系統狀態</h2>
+        <p className="loc-subtitle">目前 LOC 的文字資料、系統架構與主要模組。</p>
       </div>
-      <div className="home-draw-bubbles" aria-label="LOC 目前進度">
-        <span className="loc-bubble">
-          資料總數
-          <p>文字數：4,532,597 字<br/>資料列數：35,498 列<br/>含目前 Galaxy 文字與多媒體 metadata。</p>
-        </span>
-        <span className="loc-bubble">
-          系統架構
-          <p>React 19.3.0<br/>Next.js 16.3.5<br/>PostgreSQL（Neon）</p>
-        </span>
-        <span className="loc-bubble">
-          系統模組
-          <p>關鍵詞與搜尋：FlexSearch 0.8.212<br/>文化時間長河：vis-timeline 8.5.4<br/>統計：Recharts 3.10.1<br/>管理框架：vis-network 10.1.0<br/>安全認證：Zod 4.6.0 / Neon Auth（@neondatabase/neon-js 0.7.0-beta）<br/>頁面：Motion 13.4.4<br/>多媒體搜尋：TanStack Query 5.103.1</p>
-        </span>
+      <div className="home-draw-bubbles home-status-bubbles" aria-label="LOC 系統狀態">
+        <div className="loc-bubble">
+          <strong>文字系統</strong>
+          <p>總文字數：4,532,597 字<br/>資料列數：35,498 列</p>
+          <details className="home-status-details">
+            <summary>資料來源</summary>
+            <p>Facebook · Threads · KKCity · Vocus · Suno · PTT · Pixnet · Wretch<br/>另含 Galaxy 多媒體 metadata。</p>
+          </details>
+        </div>
+        <div className="loc-bubble">
+          <strong>系統模組</strong>
+          <details className="home-status-details">
+            <summary>架構</summary>
+            <p>React 19.3.0 · Next.js 16.3.5<br/>PostgreSQL（Neon） · Neon SDK 0.7.0-beta</p>
+          </details>
+          <details className="home-status-details">
+            <summary>模組</summary>
+            <p>關鍵詞與搜尋：FlexSearch 0.8.212<br/>文化時間長河：vis-timeline 8.5.4<br/>統計：Recharts 3.10.1<br/>管理框架：vis-network 10.1.0<br/>安全認證：Zod 4.6.0 / Neon Auth<br/>頁面：Motion 13.4.4<br/>多媒體搜尋：TanStack Query 5.103.1</p>
+          </details>
+        </div>
       </div>
     </section>
 
