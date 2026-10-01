@@ -71,7 +71,7 @@ requireText(
   'Culture density changepoint boundary'
 );
 
-// Motion owns the global scroll progress presentation only.
+// Motion owns global presentation and explicit Game interaction transitions.
 requireText(
   'app/AppExperience.jsx',
   [/from ['"]motion\/react['"]/,/useScroll/,/useSpring/,/<motion\.div/],
@@ -117,6 +117,26 @@ requireText(
   'app/loc/neon-statistics-client.js',
   [/ScopeRankingResponseSchema\.parse\(/],
   'Statistics Zod parse boundary'
+);
+
+// LunaRunes Game is the experimental interop surface: each module has a bounded job.
+requireText(
+  'app/lrunes/game/GameView.jsx',
+  [
+    /from ['"]@tanstack\/react-query['"]/,
+    /from ['"]flexsearch['"]/,
+    /from ['"]motion\/react['"]/,
+    /from ['"]react-select['"]/,
+    /from ['"]recharts['"]/,
+    /import\(['"]vis-network\/standalone['"]\)/,
+    /import\(['"]vis-timeline\/standalone['"]\)/
+  ],
+  'LunaRunes Game module interop'
+);
+requireText(
+  'app/lrunes/game/game-data.js',
+  [/from ['"]zod['"]/,/selectNeonCount/,/selectNeonRows/,/normalizePlayableEvent/],
+  'LunaRunes Game Neon/Zod/Event boundary'
 );
 
 // Playwright + axe are Current browser/accessibility test dependencies.
