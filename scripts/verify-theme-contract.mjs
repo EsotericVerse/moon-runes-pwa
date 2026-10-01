@@ -1,5 +1,5 @@
 import {existsSync,readFileSync} from 'node:fs';
-import {THEME_SLOTS_V2,THEME_TOKEN_KEYS_V2} from '../app/modular-v2/theme-registry.v2.js';
+import {THEME_SLOTS_V2,THEME_TOKEN_KEYS_V2,getThemeSlotV2} from '../app/modular-v2/theme-registry.v2.js';
 
 const failures=[];
 const read=path=>readFileSync(path,'utf8');
@@ -52,6 +52,19 @@ for(const slot of THEME_SLOTS_V2){
   if(panel2Ratio===null||panel2Ratio<4.5)failures.push(`${slot.id}: --loc-text contrast on --loc-panel-2 must be at least 4.5:1`);
 }
 for(const group of ['靈魂','連結','生命','自然','礦物','元素','秩序','無序'])if(!THEME_SLOTS_V2.some(slot=>slot.group===group))failures.push('missing theme group '+group);
+const overrideProbe=THEME_SLOTS_V2[0];
+const partialOverride=getThemeSlotV2(overrideProbe.id,{
+  [overrideProbe.id]:{scheme:overrideProbe.scheme,tokens:{'--loc-bg':'#010203'}}
+});
+if(partialOverride!==overrideProbe)failures.push('partial Admin theme overrides must be rejected as a whole');
+
+const fullProbeTokens=Object.fromEntries(THEME_TOKEN_KEYS_V2.map(key=>[key,overrideProbe.tokens[key]]));
+fullProbeTokens['--loc-bg']='#010203';
+const fullOverride=getThemeSlotV2(overrideProbe.id,{
+  [overrideProbe.id]:{scheme:overrideProbe.scheme,tokens:fullProbeTokens}
+});
+if(fullOverride===overrideProbe||fullOverride.tokens['--loc-bg']!=='#010203')failures.push('complete Admin theme overrides must be accepted atomically');
+
 if(selector.includes('localStorage')||selector.includes('migration-bridges')||selector.includes('scope-public-settings'))failures.push('theme selection must remain session-local and must not query retired scope settings');
 if(!selector.includes("AUTO_THEME_ID='auto'")||!selector.includes("THEME_TIME_ZONE='Asia/Taipei'"))failures.push('LOC theme selector must retain Taiwan day/night automatic mode');
 if(!selector.includes("DAY_THEME_ID='theme-7'")||!selector.includes("NIGHT_THEME_ID='theme-1'"))failures.push('automatic theme mapping must remain order-by-day and soul-by-night');
