@@ -17,12 +17,3 @@
 @import "./styles/v2/scope-system.v2.css";
 @import "./styles/uiux.css";
 
-/* Keep the Start Here LunaRunes concept image secondary to the copy. */
-.home-beginner .home-framework-figure{
-  width:min(100%,420px);
-  justify-self:center;
-}
-.home-beginner .home-framework-figure img{
-  width:100%;
-  height:auto;
-}

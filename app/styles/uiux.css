@@ -429,20 +429,6 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
   background:var(--loc-ui-panel-soft);
 }
 
-.home-framework-stage,.model-architecture-explorer{
-  border-color:var(--loc-ui-hairline);
-  border-radius:var(--loc-ui-radius-lg);
-}
-
-.model-module{
-  border-color:var(--loc-ui-hairline);
-  border-radius:var(--loc-ui-radius-md);
-  background:color-mix(in srgb,var(--loc-panel) 78%,transparent);
-}
-
-.model-module strong{font-size:1rem}
-.model-module p{font-size:.81rem}
-
 .home-about-figure,.home-framework-figure{
   border-color:var(--loc-ui-hairline);
   border-radius:var(--loc-ui-radius-lg);
@@ -734,7 +720,7 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
     box-shadow:0 10px 26px rgb(0 0 0 / .12);
   }
 
-  .model-module:hover,.runes-group-choice:hover,.runes-library-card:hover,
+  .runes-group-choice:hover,.runes-library-card:hover,
   .scope-v2-culture-source-button:hover{
     transform:translateY(-3px);
     border-color:color-mix(in srgb,var(--loc-accent) 40%,var(--loc-line));
