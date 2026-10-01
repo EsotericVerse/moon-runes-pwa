@@ -29,7 +29,7 @@ function GovernanceHome(){
       <h2>{UI_COPY.governance.systemManagement}</h2>
       <p>月典的系統設定集中在獨立管理站，公開治理頁只保留原則與權利說明。</p>
       <a className="loc-button primary" href={adminHref}>{UI_COPY.governance.enterAdmin}</a>
-    </section>:<section className={`loc-card ${scopeId==='lunarunes'?'':'governance-management-cta'}`.trim()}>
+    </section>:<section className="loc-card governance-management-cta">
       <h2>{getScopeV2(scopeId).label}管理</h2>
       <p>時期、分類與其他可調整項目集中在管理頁，需要修改設定時可從這裡進入。</p>
       <a className="loc-button primary" href={scopeHrefV2(scopeId,'governance/manage')}>{UI_COPY.governance.enterManagement}</a>
