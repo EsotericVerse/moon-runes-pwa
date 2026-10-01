@@ -122,6 +122,9 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
   padding:clamp(1.25rem,3vw,2.5rem) 0 clamp(4rem,8vw,7rem);
   animation:loc-ui-page-in var(--loc-ui-slow) var(--loc-ui-ease-soft) both;
 }
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"]{
+  animation:none;
+}
 
 @keyframes loc-ui-page-in{
   from{opacity:0;transform:translateY(12px)}

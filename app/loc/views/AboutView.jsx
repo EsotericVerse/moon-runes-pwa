@@ -107,26 +107,8 @@ export default function AboutView(){
       <div className="home-draw-bubbles home-status-bubbles" aria-label="LOC 系統狀態">
         <div className="loc-bubble">
           <strong>文字系統</strong>
-          <p>總文字數：4,318,355 字<br/>總列數：32,483 列<br/>文字時間：2005-04-12 ～ 2026-09-30</p>
-          <details className="home-status-details">
-            <summary>資料來源</summary>
-            <div className="home-status-table-scroll">
-              <table className="loc-table home-source-table">
-                <thead><tr><th>來源</th><th>最早</th><th>最新</th><th>列數</th></tr></thead>
-                <tbody>
-                  <tr><td>KKCity</td><td>2005-04-12</td><td>2010-09-21</td><td>940</td></tr>
-                  <tr><td>Wretch</td><td>2009-01-23</td><td>2012-01-30</td><td>59</td></tr>
-                  <tr><td>Pixnet</td><td>2009-03-25</td><td>2025-06-23</td><td>58</td></tr>
-                  <tr><td>Facebook</td><td>2009-09-30</td><td>2026-08-30</td><td>18,467</td></tr>
-                  <tr><td>PTT</td><td>2010-05-28</td><td>2025-05-09</td><td>78</td></tr>
-                  <tr><td>Threads</td><td>2024-11-18</td><td>2026-09-22</td><td>11,569</td></tr>
-                  <tr><td>Suno</td><td>2025-02-21</td><td>2026-09-30</td><td>1,045</td></tr>
-                  <tr><td>Vocus</td><td>2025-05-18</td><td>2026-07-09</td><td>240</td></tr>
-                  <tr><td>未標來源</td><td>2026-09-17</td><td>2026-09-30</td><td>27</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </details>
+          <p>作品文字量：超過 400 萬字<br/>資料時間：2005 ～ 至今</p>
+          <p className="home-status-reference"><a href={scopeHrefV2('loc','statics')}>詳細即時總數、來源與分布以統計頁面為準 →</a></p>
         </div>
         <div className="loc-bubble">
           <strong>系統模組</strong>

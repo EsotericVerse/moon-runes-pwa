@@ -227,6 +227,13 @@
 .home-progress .home-status-bubbles{
   grid-template-columns:repeat(2,minmax(0,1fr));
 }
+.home-status-reference{
+  margin:.65rem 0 0!important;
+  font-size:.86rem;
+  line-height:1.55;
+}
+.home-status-reference a{font-weight:700}
+
 .home-status-details{
   width:100%;
   margin-top:.55rem;
@@ -245,27 +252,7 @@
   line-height:1.55;
   color:var(--loc-muted);
 }
-.home-status-table-scroll{
-  width:100%;
-  max-width:100%;
-  margin-top:.45rem;
-  overflow-x:auto;
-  overscroll-behavior-inline:contain;
-}
-.home-source-table{
-  width:100%;
-  max-width:100%;
-  min-width:0;
-  table-layout:fixed;
-  font-size:.78rem;
-}
 .home-source-table th,
-.home-source-table td{
-  padding:.55rem .45rem;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
 .home-source-table th:first-child,
 .home-source-table td:first-child{width:25%}
 .home-source-table th:nth-child(2),
