@@ -9,6 +9,8 @@ const userStorage=fs.readFileSync('app/loc/neon-user-storage.js','utf8');
 const scopeManagement=fs.readFileSync('app/loc/GovernanceManagement.jsx','utf8');
 const adminManagement=fs.readFileSync('app/loc/views/AdminHomeView.jsx','utf8');
 const searchView=fs.readFileSync('app/modular-v2/features/SearchV2.jsx','utf8');
+const cultureView=fs.readFileSync('app/modular-v2/features/CultureV2.jsx','utf8');
+const managementData=fs.readFileSync('app/loc/ManagementDataPanel.jsx','utf8');
 const failures=[];
 
 const requireMatch=(text,re,label)=>{if(!re.test(text))failures.push(label);};
@@ -52,6 +54,15 @@ requireMatch(scopeManagement,/account\.canManageScopeSync\(scopeId\)/,'Scope man
 requireMatch(adminManagement,/account\.canManageGlobalSync\(\)/,'Admin management must require the global admin role');
 if(/function hasPrivilege|account\.privileges/.test(searchView)){
   failures.push('Search must use the shared Neon Auth authorizer instead of its own privilege logic');
+}
+
+requireMatch(managementData,/resolveScopeTables\(scopeId/,'Management data must resolve the canonical Scope tables directly');
+requireMatch(managementData,/uid,title,source_name,createtime,UpdateTime,searchable/,'Management data must expose Galaxy searchable state and UpdateTime');
+if(/publicContentFilters|search_able|statistics_able|culture_able/.test(managementData)){
+  failures.push('Management data must not inherit public Search/Statistics/Culture visibility filters');
+}
+for(const [name,source] of [['Search',searchView],['Culture',cultureView]]){
+  requireMatch(source,/UpdateTime:new Date\(\)\.toISOString\(\)/,name+' Galaxy updates must refresh UpdateTime');
 }
 
 for(const retired of [

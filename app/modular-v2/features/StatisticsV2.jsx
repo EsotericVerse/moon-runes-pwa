@@ -221,15 +221,18 @@ function StatisticsPanel({scopeId,navigation,types}){
   const [timeStandard,setTimeStandard]=useState('1y');
   const [customFrom,setCustomFrom]=useState('');
   const [customTo,setCustomTo]=useState('');
+  const customRange=useMemo(()=>({from:customFrom,to:customTo}),[customFrom,customTo]);
+  const customReady=timeStandard!=='custom'||Boolean(dateKey(customFrom)&&dateKey(customTo)&&customFrom<=customTo);
+  const queryRange=useMemo(()=>timeStandard==='custom'&&customReady
+    ?{startDate:customFrom,endDate:customTo}
+    :{startDate:'',endDate:''},[timeStandard,customReady,customFrom,customTo]);
   const trendQuery=useQuery({
-    queryKey:['statistics-source-trend',scopeId],
-    queryFn:()=>selectScopeSourceTrendRows(scopeId),
-    enabled:Boolean(rankingType),
+    queryKey:['statistics-source-trend',scopeId,queryRange.startDate,queryRange.endDate],
+    queryFn:()=>selectScopeSourceTrendRows(scopeId,queryRange),
+    enabled:Boolean(rankingType)&&(timeStandard!=='custom'||customReady),
     staleTime:5*60_000
   });
-  const customRange=useMemo(()=>({from:customFrom,to:customTo}),[customFrom,customTo]);
   const summary=useMemo(()=>buildSummary(trendQuery.data||[],timeStandard,customRange),[trendQuery.data,timeStandard,customRange]);
-  const customReady=timeStandard!=='custom'||Boolean(dateKey(customFrom)&&dateKey(customTo)&&customFrom<=customTo);
 
   return <section className="scope-v2-stat-section">
     <header className="scope-v2-stat-domain-heading"><div><h2>統計結果</h2></div></header>

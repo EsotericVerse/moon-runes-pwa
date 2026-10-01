@@ -7,6 +7,7 @@ import {useScopeRuntimeV2} from '../modular-v2/use-scope-runtime.v2';
 import {getScopeV2} from '../modular-v2/scope-registry.v2';
 import ManagementArticlePublisher from './ManagementArticlePublisher';
 import ManagementImportPanel from './ManagementImportPanel';
+import ManagementDataPanel from './ManagementDataPanel';
 import RuneManagementPanel from './RuneManagementPanel';
 import CultureTimelineEditor from '../modular-v2/features/CultureTimelineEditor';
 
@@ -69,6 +70,7 @@ function PeriodSettings({scopeId}){
 function sectionOptions(scopeId){
   if(scopeId==='loc')return [];
   const options=[
+    {value:'data',label:'資料管理'},
     {value:'article',label:'文章發表'},
     {value:'import',label:'資料匯入'},
     {value:'period',label:'時期設定'},
@@ -83,11 +85,11 @@ export default function GovernanceManagement(){
   const {scopeId}=useScopeRuntimeV2();
   const scope=getScopeV2(scopeId);
   const options=useMemo(()=>sectionOptions(scopeId),[scopeId]);
-  const [section,setSection]=useState('article');
+  const [section,setSection]=useState('data');
   const canManage=account.canManageScopeSync(scopeId);
 
   useEffect(()=>{
-    if(!options.some(option=>option.value===section))setSection(options[0]?.value||'article');
+    if(!options.some(option=>option.value===section))setSection(options[0]?.value||'data');
   },[scopeId,options,section]);
 
   if(account.loading||account.permissionLoading)return <section className="loc-view"><div className="loc-card">正在確認登入與管理權限…</div></section>;
@@ -134,6 +136,7 @@ export default function GovernanceManagement(){
       <p><button type="button" onClick={account.signOut}>登出</button></p>
     </header>
 
+    {section==='data'?<ManagementDataPanel scopeId={scopeId}/>:null}
     {section==='article'?<ArticleSettings scopeId={scopeId}/>:null}
     {section==='import'?<ImportSettings scopeId={scopeId}/>:null}
     {section==='period'?<PeriodSettings scopeId={scopeId}/>:null}
