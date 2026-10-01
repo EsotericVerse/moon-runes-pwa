@@ -62,16 +62,6 @@ const zhHant=Object.freeze({
       governance:'說明月典的使用原則、權利與管理入口。',
       search:'從關鍵字找到月典中的文字、作品、多媒體與相關內容。'
     }),
-    lunarunes:Object.freeze({
-      label:'月之符文',
-      role:'管理者頁面',
-      home:'回月典首頁',
-      ranking:'月之符文排行榜',
-      statics:'查看月之符文相關資料的數量、來源與時間變化。',
-      culture:'把月之符文相關紀錄放回時間順序，觀察不同時期的變化。',
-      governance:'說明月之符文的使用原則、權利與管理入口。',
-      search:'從符文名稱、關鍵字或相關文字找到對應內容。'
-    }),
     author:Object.freeze({
       label:'作者簡介',
       primary:'簡介',
@@ -94,7 +84,6 @@ const zhHant=Object.freeze({
     import:'資料匯入',
     period:'時期設定',
     keywords:'關鍵詞管理',
-    daily:'每日符文管理',
     checking:'正在確認登入與管理權限…',
     signOut:'登出'
   }),
