@@ -20,5 +20,14 @@ export default function LunaRunesGovernance({canEdit=false}){
       <p>月之符文不因與 LOC 共存於同一 Repository、被 LOC 收錄或由 LOC 分析，而自動套用 LOC 的 Copyleft 治理方向或其他程式碼授權。引用、改作、衍生、再利用與商業使用，依月之符文自己的治理規則與作者明示授權處理。</p>
       <p>內容被 LOC 收錄、搜尋、統計或分析，不會改變月之符文本身的權利狀態。</p>
     </section>
+    <section className="loc-card" id="core-buyout">
+      <h2>核心買斷原則</h2>
+      <p>LunaRunes 的核心語言系統不出售。</p>
+      <p>若必須為其完整永久買斷指定一個有限價格，則以 LunaRunes 本身的完整變化空間作為定義：</p>
+      <p><strong>66! × 4⁶⁶</strong></p>
+      <p>即：66 張符文全部有序抽取，並計入每張符文的四向狀態。</p>
+      <p>不另行換算，不提供折價，也不以一般市場估值取代此原則。</p>
+      <p>LunaRunes 可以被使用、研究、延伸與創作；核心所有權不因此移轉。</p>
+    </section>
   </>;
 }
