@@ -22,16 +22,34 @@ const slots=[
   {id:'theme-8',styleKey:'disorder',group:'無序',label:'無序',scheme:'dark',tokens:{'--loc-bg':'#6b3e2e','--loc-panel':'#4a281f','--loc-panel-2':'#6f3f2e','--loc-panel-strong':'rgba(74,40,31,.96)','--loc-panel-nav':'rgba(55,29,23,.98)','--loc-panel-tab':'rgba(111,63,46,.94)','--loc-rune-bg':'#3d211a','--loc-rune-selected-bg':'#875039','--loc-line':'rgba(238,190,157,.30)','--loc-line-soft':'rgba(238,190,157,.15)','--loc-line-softer':'rgba(238,190,157,.18)','--loc-line-faint':'rgba(238,190,157,.20)','--loc-text':'#fff3eb','--loc-muted':'#e0b9a5','--loc-heading':'#fffaf6','--loc-accent':'#d48d69','--loc-gold':'#e2a77e','--loc-danger':'#ffb9a3','--loc-surface':'rgba(74,40,31,.94)','--loc-surface-soft':'rgba(238,190,157,.06)','--loc-surface-faint':'rgba(238,190,157,.035)','--loc-surface-status':'rgba(238,190,157,.07)','--loc-accent-surface':'rgba(212,141,105,.12)','--loc-accent-surface-strong':'rgba(212,141,105,.22)','--loc-accent-border':'rgba(212,141,105,.62)','--loc-accent-border-soft':'rgba(212,141,105,.46)','--loc-accent-border-faint':'rgba(212,141,105,.34)','--loc-gold-surface':'rgba(226,167,126,.12)','--loc-gold-surface-soft':'rgba(226,167,126,.08)','--loc-gold-border':'rgba(226,167,126,.64)','--loc-gold-border-soft':'rgba(226,167,126,.48)','--loc-gold-border-faint':'rgba(226,167,126,.36)','--loc-gold-ring':'rgba(226,167,126,.30)','--loc-gold-ring-soft':'rgba(226,167,126,.18)','--loc-danger-border':'rgba(255,185,163,.38)','--loc-primary-start':'#875039','--loc-primary-end':'#5c3024','--loc-body-glow':'#754331','--loc-body-mid':'#2b1712','--loc-hero-start':'rgba(112,61,43,.96)','--loc-hero-end':'rgba(43,23,18,.98)','--loc-shadow':'0 20px 55px rgba(43,23,18,.34)','--loc-shadow-card':'0 12px 35px rgba(43,23,18,.22)'}}
 ];
 
-export const THEME_SLOTS_V2=Object.freeze(slots.map((slot,index)=>Object.freeze({
+export const THEME_DEFAULT_SLOTS_V2=Object.freeze(slots.map((slot,index)=>Object.freeze({
   ...slot,
   identityColor:GROUP_IDENTITY_COLORS_V2[slot.group],
   order:index+1,
   tokens:Object.freeze(slot.tokens)
 })));
 
-export function getThemeSlotV2(id){
-  const slot=THEME_SLOTS_V2.find(item=>item.id===id)||THEME_SLOTS_V2.find(item=>item.id==='theme-7');
-  return slot;
+/* Backward-compatible current registry. These are complete fallback palettes.
+   Future Admin-managed overrides may replace scheme/tokens at read time without
+   mutating the defaults or requiring feature components to know the storage source. */
+export const THEME_SLOTS_V2=THEME_DEFAULT_SLOTS_V2;
+
+function themeOverrideV2(slot,override){
+  if(!override||typeof override!=='object')return slot;
+  const tokens={...slot.tokens};
+  const source=override.tokens&&typeof override.tokens==='object'?override.tokens:{};
+  for(const key of THEME_TOKEN_KEYS_V2){
+    const value=source[key];
+    if(typeof value==='string'&&value.trim())tokens[key]=value.trim();
+  }
+  const scheme=override.scheme==='dark'||override.scheme==='light'?override.scheme:slot.scheme;
+  return Object.freeze({...slot,scheme,tokens:Object.freeze(tokens)});
+}
+
+export function getThemeSlotV2(id,overrides=null){
+  const slot=THEME_DEFAULT_SLOTS_V2.find(item=>item.id===id)||THEME_DEFAULT_SLOTS_V2.find(item=>item.id==='theme-7');
+  const override=overrides&&typeof overrides==='object'?overrides[slot.id]:null;
+  return themeOverrideV2(slot,override);
 }
 
 export function applyThemeV2(slot){
