@@ -134,7 +134,7 @@ export default function AboutView(){
         </span>
         <span className="loc-bubble">
           系統模組
-          <p>關鍵詞與搜尋：FlexSearch<br/>文化時間長河：vis-timeline<br/>統計：Recharts<br/>管理框架：vis-network<br/>安全認證：Zod / Neon Auth<br/>頁面：Motion<br/>多媒體搜尋：TanStack Query</p>
+          <p>關鍵詞與搜尋：FlexSearch 0.8.212<br/>文化時間長河：vis-timeline 8.5.4<br/>統計：Recharts 3.10.1<br/>管理框架：vis-network 10.1.0<br/>安全認證：Zod 4.6.0 / Neon Auth（@neondatabase/neon-js 0.7.0-beta）<br/>頁面：Motion 13.4.4<br/>多媒體搜尋：TanStack Query 5.103.1</p>
         </span>
       </div>
     </section>
