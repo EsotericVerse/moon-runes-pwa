@@ -40,6 +40,17 @@
 .loc-draw-grid[data-draw-layout="ow3gs"]>article:nth-child(10){grid-column:1}
 .loc-draw-grid[data-draw-layout="ow3gs"]>article:nth-child(11){grid-column:2}
 .loc-draw-card{display:grid;gap:.45rem;align-content:start}
+.runes-spread-cards{display:grid;gap:1rem}
+.runes-spread-row{display:grid;gap:1rem;align-items:start}
+.runes-spread-row-two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.runes-spread-row-three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.runes-spread-cards>.runes-spread-row-two{width:min(100%,66.666%);margin-inline:auto}
+.runes-spread-stack{display:grid;gap:1rem;align-content:start}
+.runes-spread-single-center{display:grid;align-content:start}
+.runes-spread-ow3gs .runes-spread-stack-row{align-items:start}
+.runes-spread-row .home-rune-preview{height:100%;min-width:0}
+.runes-spread-row .home-rune-preview>.loc-eyebrow{margin:0 0 .55rem;text-align:center}
+
 .loc-rune-card-image{display:block;width:min(100%,260px);aspect-ratio:1/1;object-fit:contain;margin:.2rem auto .35rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel-2);transition:transform .2s ease}
 .rune-rotate-0{transform:rotate(0deg)}
 .rune-rotate-90{transform:rotate(90deg)}
