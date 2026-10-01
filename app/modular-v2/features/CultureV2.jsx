@@ -405,7 +405,8 @@ export default function CultureV2(){
         .update({
           title:resolveGalaxyTitle(editDraft.title,content),
           content,
-          searchable:editDraft.hidden!==true
+          searchable:editDraft.hidden!==true,
+          UpdateTime:new Date().toISOString()
         })
         .eq('uid',uid);
       if(error)throw new Error(error.message||'作品儲存失敗');
