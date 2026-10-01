@@ -36,13 +36,14 @@ export const THEME_SLOTS_V2=THEME_DEFAULT_SLOTS_V2;
 
 function themeOverrideV2(slot,override){
   if(!override||typeof override!=='object')return slot;
-  const tokens={...slot.tokens};
-  const source=override.tokens&&typeof override.tokens==='object'?override.tokens:{};
-  for(const key of THEME_TOKEN_KEYS_V2){
-    const value=source[key];
-    if(typeof value==='string'&&value.trim())tokens[key]=value.trim();
-  }
-  const scheme=override.scheme==='dark'||override.scheme==='light'?override.scheme:slot.scheme;
+  const source=override.tokens&&typeof override.tokens==='object'?override.tokens:null;
+  const scheme=override.scheme==='dark'||override.scheme==='light'?override.scheme:null;
+  if(!source||!scheme)return slot;
+  const sourceKeys=Object.keys(source);
+  if(sourceKeys.length!==THEME_TOKEN_KEYS_V2.length)return slot;
+  if(THEME_TOKEN_KEYS_V2.some(key=>typeof source[key]!=='string'||!source[key].trim()))return slot;
+  if(sourceKeys.some(key=>!THEME_TOKEN_KEYS_V2.includes(key)))return slot;
+  const tokens=Object.fromEntries(THEME_TOKEN_KEYS_V2.map(key=>[key,source[key].trim()]));
   return Object.freeze({...slot,scheme,tokens:Object.freeze(tokens)});
 }
 
