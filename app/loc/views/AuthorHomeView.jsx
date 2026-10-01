@@ -3,15 +3,15 @@ import { PageComposition } from '../../PageComposition';
 const PROFESSIONAL_ROLES=Object.freeze([
   Object.freeze({
     title:'文字工匠 · Wordsmith',
-    text:'對字詞保持敏感，重視語義、音調、節奏與押韻，把想法磨成精準、自然，而且具有辨識度的文字。'
+    text:'從字詞、語義、音韻與節奏下手，反覆校對一個字、一個音與一個意象是否真正到位，直到文字能準確表達原本想說的東西。'
   }),
   Object.freeze({
     title:'混沌校對者 · Chaos Calibrator',
-    text:'面對混亂與未知時，先找出規律、矛盾與誤差，再把問題校準到可以理解、可以討論，也可以繼續前進的位置。'
+    text:'面對混亂、矛盾或未知，先拆開規則、例外與誤差，再把問題校準到可以理解、比較與繼續推進的狀態。'
   }),
   Object.freeze({
     title:'語言建築師 · Language Architect',
-    text:'把命名、語義、規則與結構組合成可以延伸的語言系統，讓概念不只被說明，也能被持續使用、演化與創作。'
+    text:'把命名、語義、分類、規則與關係搭成可以運作的語言結構；從單一詞義到完整系統，都要求能延伸而不失去原意。'
   })
 ]);
 
@@ -34,7 +34,7 @@ function ProfessionalRoles(){
 function WorkCopy(){
   return <>
     <p>目前以 <strong>Language Architect</strong> 為主要專業定位；對外合作可依個案採語言顧問、系統設計或專案實作方式進行。</p>
-    <p>工作內容聚焦於命名與正名、語意治理、資料分類、知識與資料架構、搜尋與解析、版本治理、文本關係、長期演化，以及既有系統中的語意污染與資料責任問題。</p>
+    <p>工作內容包括命名與正名、語意與分類設計、知識與資料架構、規則整理、版本與關係設計，以及既有系統裡的語意衝突與結構問題。</p>
     <p>每個個案都從既有的語言、資料與工作脈絡出發，再建立真正適合使用與長期維護的結構。</p>
   </>;
 }
@@ -73,12 +73,12 @@ function SystemsCopy(){
   return <div className="author-system-grid">
     <article className="author-editorial-block">
       <h3>LOC／月典</h3>
-      <p>LOC 是一套持續成長中的語言架構框架，用來把文字、作品、來源與時間放進可以回看、搜尋、比較與分析的結構。</p>
+      <p>LOC 是一套仍在持續成長的 Language Architecture Framework，用來整理文字、作品、來源、關係與時間，並從中建立可以持續延伸的分析結構。</p>
       <p><a href="https://loc.lo3rwang.cc/">查看 LOC／月典 →</a></p>
     </article>
     <article className="author-editorial-block">
       <h3>LunaRunes／月之符文</h3>
-      <p>LunaRunes 是我建立的另一套符號式語言與原創系統。它與 LOC 可以互相參照，但兩者有各自的定義、用途與發展脈絡。</p>
+      <p>LunaRunes 是我建立的符號式語言宇宙。核心符文與定義恆定，各種應用與創作則從這套語言向外延伸。</p>
       <p><a href="https://lrunes.lo3rwang.cc/">查看 LunaRunes／月之符文 →</a></p>
     </article>
   </div>;
@@ -204,7 +204,7 @@ export default function AuthorHomeView({section=null}){
         eyebrow:'Professional',
         title:'我在做什麼',
         content:<>
-          <p className="author-section-lead">我的工作重心是處理語言、資料、脈絡與時間之間的關係，讓分散的文字、規則、版本與歷史紀錄形成可理解、可維護的結構。</p>
+          <p className="author-section-lead">我習慣先抓原則，再處理例外；工作從文字、命名與語義開始，延伸到規則、資料與系統結構。</p>
           <ProfessionalRoles/>
           <div className="author-professional-grid">
             <article className="author-editorial-block">
@@ -221,7 +221,7 @@ export default function AuthorHomeView({section=null}){
       {
         id:'systems',
         eyebrow:'Systems',
-        title:'兩個持續發展的系統',
+        title:'LOC 與 LunaRunes',
         content:<SystemsCopy/>
       },
       {
