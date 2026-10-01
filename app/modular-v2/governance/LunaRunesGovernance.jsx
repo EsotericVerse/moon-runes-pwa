@@ -1,4 +1,4 @@
-export const LUNARUNES_GOVERNANCE_SUBTITLE='說明月之符文的使用原則、正式定義、權利與管理方式。';
+export const LUNARUNES_GOVERNANCE_SUBTITLE='說明月之符文的使用原則、恆定定義、權利與管理方式。';
 
 export default function LunaRunesGovernance({canEdit=false}){
   return <>
@@ -6,7 +6,18 @@ export default function LunaRunesGovernance({canEdit=false}){
       <section className="loc-card" id="principles">
         <h2>使用原則</h2>
         <p>月之符文，是一套符號式語言宇宙。</p>
-        <p>目前使用的符文名稱、定義與規則以正式 Canon 為準；歷史版本保留演變過程，但不取代現行定義。</p>
+        <p><strong>符文名稱與定義永遠恆定。</strong></p>
+        <div className="loc-context-list">
+          <p><strong>靈魂 Soul（1–8）：</strong>靈 Spirit · 魂 Soul · 彩 Spectrum · 憶 Memory · 界 Boundary · 域 Domain · 鏡 Mirror · 核 Core</p>
+          <p><strong>連結 Link（9–16）：</strong>向 Path · 斷 Sever · 封 Seal · 鍊 Chain · 啟 Awaken · 分 Separation · 悟 Insight · 誤 Error</p>
+          <p><strong>生命 Life（17–24）：</strong>生 Birth · 老 Aging · 病 Illness · 死 Death · 心 Heart · 愛 Love · 語 Language · 韻 Resonance</p>
+          <p><strong>自然 Nature（25–32）：</strong>樹 Tree · 花 Blossom · 葉 Leaf · 草 Grass · 根 Root · 種 Seed · 實 Fruit · 枝 Branch</p>
+          <p><strong>礦物 Mineral（33–40）：</strong>金 Gold · 玉 Jade · 晶 Crystal · 地 Land · 石 Stone · 鑽 Diamond · 礦 Ore · 塵 Dust</p>
+          <p><strong>元素 Element（41–48）：</strong>光 Radiance · 暗 Shadow · 水 Water · 火 Flame · 風 Wind · 土 Earth · 雷 Thunder · 氣 Air</p>
+          <p><strong>秩序 Order（49–56）：</strong>日 Sun · 月 Moon · 星 Star · 辰 Phase · 明 Clarity · 時 Time · 空 Space · 因 Reason</p>
+          <p><strong>無序 Disorder（57–64）：</strong>福 Blessing · 禍 Calamity · 無 Blank · 夢 Dream · 幻 Illusion · 緣 Karma · 虛 Void · 果 Result</p>
+          <p><strong>特殊 Special：</strong>65 玄 Chaos · 66 命 Fate · 0 德 Virtue</p>
+        </div>
       </section>
       <section className="loc-card" id="neutrality">
         <h2>使用邊界</h2>
