@@ -9,8 +9,12 @@ import {CartesianGrid,Legend,Line,LineChart,ReferenceLine,ResponsiveContainer,To
 import {
   applyDe,draw,evaluateAlphaEvent,finishOpening,freshPlayer,loadGameData,shuffle
 } from './game-data';
+import {getThemeSlotV2,THEME_SLOTS_V2} from '../../modular-v2/theme-registry.v2';
 
 const NAMES=['A','B','C','D'];
+const GAME_THEME_DEFAULT='theme-5';
+const GAME_THEME_AUTO='event-auto';
+const GAME_THEME_BY_GROUP=Object.freeze(Object.fromEntries(THEME_SLOTS_V2.map(slot=>[slot.group,slot.id])));
 const CHART_STROKES=['var(--loc-accent)','var(--loc-gold)','var(--loc-text)','var(--loc-muted)'];
 const CHART_TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)',borderRadius:'8px'};
 
@@ -231,6 +235,28 @@ function phaseText(phase){
 function signed(value){
   const number=Number(value||0);
   return number>0?'+'+number:String(number);
+}
+
+function GameThemeControl({value,onChange,effectiveSlot}){
+  const options=[
+    {value:GAME_THEME_AUTO,label:'事件跟隨'},
+    ...THEME_SLOTS_V2.map(slot=>({value:slot.id,label:slot.label}))
+  ];
+  const selected=options.find(option=>option.value===value)||options.find(option=>option.value===GAME_THEME_DEFAULT);
+  return <label className="game-theme-control">
+    <span>遊戲主題</span>
+    <Select
+      className="game-theme-select"
+      classNamePrefix="game-theme-select"
+      unstyled
+      isSearchable={false}
+      options={options}
+      value={selected}
+      onChange={option=>onChange(option?.value||GAME_THEME_DEFAULT)}
+      aria-label="遊戲主題"
+    />
+    <small>{value===GAME_THEME_AUTO?'目前跟隨 '+effectiveSlot.label+' 組':'局部 '+effectiveSlot.label+' 主題'}</small>
+  </label>;
 }
 
 function DeMeter({value=0,max=8}){
@@ -468,8 +494,13 @@ export default function GameView(){
   const [networkTarget,setNetworkTarget]=useState(null);
   const [focusPlayer,setFocusPlayer]=useState(null);
   const [replayLogIndex,setReplayLogIndex]=useState(null);
+  const [gameThemeId,setGameThemeId]=useState(GAME_THEME_DEFAULT);
 
   const event=state?.eventDeck?.length?state.eventDeck[state.eventIndex%state.eventDeck.length]:null;
+  const eventThemeId=GAME_THEME_BY_GROUP[event?.groups?.[0]]||GAME_THEME_DEFAULT;
+  const effectiveGameThemeId=gameThemeId===GAME_THEME_AUTO?eventThemeId:gameThemeId;
+  const gameTheme=useMemo(()=>getThemeSlotV2(effectiveGameThemeId),[effectiveGameThemeId]);
+  const gameThemeStyle=useMemo(()=>({...gameTheme.tokens,colorScheme:gameTheme.scheme}),[gameTheme]);
   const allOpened=state?.players.every(player=>!player.opening);
   const phaseLabel=state?.phase==='event'?'事件':state?.phase==='duel'?'決鬥':'共鳴';
 
@@ -665,7 +696,7 @@ export default function GameView(){
   const authorAsset=data.authorAsset;
   const roundBadge=data.rounds.map(item=>phaseMark(item.phase)).join('-');
 
-  if(!state)return <section className="loc-view loc-game game-shell">
+  if(!state)return <section className="loc-view loc-game game-shell" data-game-theme={gameTheme.id} data-game-scheme={gameTheme.scheme} style={gameThemeStyle}>
     <header className="loc-hero game-hero">
       <div>
         <p className="loc-eyebrow">月之符文遊戲</p>
@@ -679,6 +710,10 @@ export default function GameView(){
       </div>
       {authorAsset?<figure className="game-author-visual"><img src={authorAsset.path} alt={authorAsset.title||'月之符文作者圖'} loading="eager"/></figure>:null}
     </header>
+
+    <div className="game-theme-row">
+      <GameThemeControl value={gameThemeId} onChange={setGameThemeId} effectiveSlot={gameTheme}/>
+    </div>
 
     <div className="game-round-wrap"><RoundRail round={1} rounds={data.rounds}/></div>
 
@@ -714,11 +749,16 @@ export default function GameView(){
     </>}
   </section>;
 
-  return <section className="loc-view loc-game game-shell">
+  return <section className="loc-view loc-game game-shell" data-game-theme={gameTheme.id} data-game-scheme={gameTheme.scheme} style={gameThemeStyle}>
     <header className="loc-hero game-compact-hero">
       <div><p className="loc-eyebrow">月之符文遊戲</p><h1>月之符文遊戲</h1><p>{status}｜{state.result}</p></div>
       <DeMeter value={Math.max(...state.players.map(player=>player.de))} max={data.config.deMax}/>
     </header>
+
+    <div className="game-theme-row">
+      <GameThemeControl value={gameThemeId} onChange={setGameThemeId} effectiveSlot={gameTheme}/>
+      {gameThemeId===GAME_THEME_AUTO&&event?<p className="game-player-meta">Event {event.id} · {event.groups.join('＋')} → {gameTheme.label}</p>:null}
+    </div>
 
     <div className="game-round-wrap"><RoundRail round={state.round} rounds={data.rounds}/></div>
 
