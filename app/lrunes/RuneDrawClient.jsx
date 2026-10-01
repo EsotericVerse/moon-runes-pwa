@@ -231,7 +231,7 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
       {draw && <>
         <section className="loc-card" id="result" data-draw-stage="result" data-draw-mode={drawKey}>
           <div className="loc-result-meta"><span>{selectedMode.label}</span><span>真實月相：{moonPhase}</span></div>
-          <div className="loc-draw-grid">
+          <div className="loc-draw-grid" data-draw-layout={drawKey}>
             {draw.cards.map((card, index) => <RuneCardInfo
               key={`${card.rune_id}-${index}`}
               card={card}
