@@ -71,12 +71,12 @@ function SystemsCopy(){
   return <div className="author-system-grid">
     <article className="author-editorial-block">
       <h3>LOC／月典</h3>
-      <p>LOC 是一套仍在持續成長的 Language Architecture Framework，用來整理文字、作品、來源、關係與時間，並從中建立可以持續延伸的分析結構。</p>
+      <p>LOC／月典現在的重心，是文化分析與文化建築。從文字、時間與關係裡找出文化特徵、轉折與規律，再把分析結果整理成可以繼續延伸的結構。</p>
       <p><a href="https://loc.lo3rwang.cc/">查看 LOC／月典 →</a></p>
     </article>
     <article className="author-editorial-block">
       <h3>LunaRunes／月之符文</h3>
-      <p>LunaRunes 是我建立的符號式語言宇宙。核心符文與定義恆定，各種應用與創作則從這套語言向外延伸。</p>
+      <p>LunaRunes／月之符文最早從認字學習卡的設計開始，後來逐步發展成一套獨特的符號式語言宇宙，並延伸出「玄宇宙」理論。接下來也準備分別從語言學與工程學整理成論文送審。</p>
       <p><a href="https://lrunes.lo3rwang.cc/">查看 LunaRunes／月之符文 →</a></p>
     </article>
   </div>;
