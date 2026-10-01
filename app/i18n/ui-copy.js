@@ -150,6 +150,16 @@ const zhHant=Object.freeze({
     enterAdmin:'進入獨立管理站',
     enterManagement:'進入管理'
   }),
+  work:Object.freeze({
+    viewLinks:'查看連結',
+    relatedText:'關聯文字',
+    untitled:'未命名作品',
+    hidden:'此項目目前隱藏（僅管理者可見）',
+    noBody:'此作品目前沒有正文。',
+    loadingBody:'載入全文中…',
+    collapseBody:'收合全文',
+    viewBody:'查看全文'
+  }),
   management:Object.freeze({
     data:'資料管理',
     article:'文章發表',
@@ -160,7 +170,32 @@ const zhHant=Object.freeze({
     signOut:'登出',
     item:'管理項目',
     noOptions:'沒有符合的管理項目',
-    permissionDenied:'目前登入身份沒有此區域的管理權限。'
+    permissionDenied:'目前登入身份沒有此區域的管理權限。',
+    dataType:'資料類型',
+    galaxyText:'Galaxy 文字',
+    searchStatus:'搜尋狀態',
+    allData:'全部資料',
+    searchable:'可搜尋',
+    notSearchable:'不可搜尋',
+    notSearchableData:'不可搜尋資料',
+    previous:'上一頁',
+    next:'下一頁',
+    articleSource:'來源',
+    articleParent:'上層／來源',
+    articleTarget:'下層／目標',
+    articleReference:'參照',
+    articleBody:'正文',
+    articleUrl:'原始連結',
+    articleTime:'發表時間',
+    importJson:'JSON 匯入',
+    sourceChoice:'來源選擇',
+    currentFile:'本次檔案',
+    startImport:'開始匯入',
+    importing:'匯入中…',
+    addMedia:'新增多媒體',
+    addSuno:'儲存 Suno 資料',
+    songTitle:'歌名',
+    lyrics:'歌詞'
   })
 });
 
