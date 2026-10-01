@@ -1,3 +1,5 @@
+import {UI_COPY} from '../i18n/ui-copy';
+
 // Current V2 Scope registry.
 export const SCOPE_POLICY_V2=Object.freeze({
   scopeIdPattern:'^[A-Za-z]+$',
@@ -13,10 +15,10 @@ export const SCOPE_POLICY_V2=Object.freeze({
 });
 
 export const FEATURES_V2=Object.freeze([
-  Object.freeze({id:'statics',label:'統計',path:'statics'}),
-  Object.freeze({id:'culture',label:'文化',path:'culture'}),
-  Object.freeze({id:'governance',label:'治理',path:'governance'}),
-  Object.freeze({id:'search',label:'搜尋',path:'search'})
+  Object.freeze({id:'statics',label:UI_COPY.features.statics.title,path:'statics'}),
+  Object.freeze({id:'culture',label:UI_COPY.features.culture.title,path:'culture'}),
+  Object.freeze({id:'governance',label:UI_COPY.features.governance.title,path:'governance'}),
+  Object.freeze({id:'search',label:UI_COPY.features.search.title,path:'search'})
 ]);
 
 export const SCOPES_V2=Object.freeze({
@@ -25,14 +27,14 @@ export const SCOPES_V2=Object.freeze({
     scopeType:'domain',
     domain:'loc.lo3rwang.cc',
     aliasName:null,
-    label:'月典',
+    label:UI_COPY.scope.loc.label,
     localRoutes:Object.freeze([]),
     routePatterns:Object.freeze([]),
-    primary:Object.freeze({label:'月之符文',href:'https://lrunes.lo3rwang.cc/'}),
-    role:Object.freeze({label:'作者介紹',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
-    homes:Object.freeze([{label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}]),
+    primary:Object.freeze({label:UI_COPY.scope.loc.primary,href:'https://lrunes.lo3rwang.cc/'}),
+    role:Object.freeze({label:UI_COPY.scope.loc.role,href:'https://loc.lo3rwang.cc/lo3rwang/'}),
+    homes:Object.freeze([{label:UI_COPY.scope.loc.home,href:'https://loc.lo3rwang.cc/'}]),
     searchCollection:'all',
-    rankingTitle:'總排行榜',
+    rankingTitle:UI_COPY.scope.loc.ranking,
   }),
 
   lunarunes:Object.freeze({
@@ -40,7 +42,7 @@ export const SCOPES_V2=Object.freeze({
     scopeType:'domain',
     domain:'lrunes.lo3rwang.cc',
     aliasName:null,
-    label:'月之符文',
+    label:UI_COPY.scope.lunarunes.label,
     localRoutes:Object.freeze([
       'game',
       'list',
@@ -55,13 +57,13 @@ export const SCOPES_V2=Object.freeze({
     ]),
     routePatterns:Object.freeze(['list/:group','list/:group/:rune']),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'}),
-    primary:Object.freeze({label:'月之符文',href:'https://lrunes.lo3rwang.cc/'}),
-    role:Object.freeze({label:'管理者頁面',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
+    primary:Object.freeze({label:UI_COPY.scope.lunarunes.label,href:'https://lrunes.lo3rwang.cc/'}),
+    role:Object.freeze({label:UI_COPY.scope.lunarunes.role,href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     homes:Object.freeze([
-      {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
+      {label:UI_COPY.scope.lunarunes.home,href:'https://loc.lo3rwang.cc/'}
     ]),
     searchCollection:'月之符文',
-    rankingTitle:'月之符文排行榜',
+    rankingTitle:UI_COPY.scope.lunarunes.ranking,
   }),
 
   lo3rwang:Object.freeze({
@@ -69,17 +71,17 @@ export const SCOPES_V2=Object.freeze({
     scopeType:'directory',
     domain:null,
     aliasName:null,
-    label:'作者簡介',
+    label:UI_COPY.scope.author.label,
     localRoutes:Object.freeze(['work','other']),
     routePatterns:Object.freeze([]),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'}),
-    primary:Object.freeze({label:'簡介',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
-    role:Object.freeze({label:'管理者介紹',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
+    primary:Object.freeze({label:UI_COPY.scope.author.primary,href:'https://loc.lo3rwang.cc/lo3rwang/'}),
+    role:Object.freeze({label:UI_COPY.scope.author.role,href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     homes:Object.freeze([
-      {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
+      {label:UI_COPY.scope.author.home,href:'https://loc.lo3rwang.cc/'}
     ]),
     searchCollection:'lo3rwang',
-    rankingTitle:'作者排行榜'
+    rankingTitle:UI_COPY.scope.author.ranking
   }),
 
   admin:Object.freeze({
@@ -87,17 +89,17 @@ export const SCOPES_V2=Object.freeze({
     scopeType:'domain',
     domain:'admin.lo3rwang.cc',
     aliasName:null,
-    label:'治理管理',
+    label:UI_COPY.scope.admin.label,
     localRoutes:Object.freeze([]),
     routePatterns:Object.freeze([]),
-    primary:Object.freeze({label:'治理管理',href:'https://admin.lo3rwang.cc/'}),
-    role:Object.freeze({label:'治理管理',href:'https://admin.lo3rwang.cc/'}),
+    primary:Object.freeze({label:UI_COPY.scope.admin.primary,href:'https://admin.lo3rwang.cc/'}),
+    role:Object.freeze({label:UI_COPY.scope.admin.role,href:'https://admin.lo3rwang.cc/'}),
     homes:Object.freeze([
-      {label:'回治理管理',href:'https://admin.lo3rwang.cc/'},
-      {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
+      {label:UI_COPY.scope.admin.home,href:'https://admin.lo3rwang.cc/'},
+      {label:UI_COPY.scope.admin.locHome,href:'https://loc.lo3rwang.cc/'}
     ]),
     searchCollection:'治理',
-    rankingTitle:'排行榜',
+    rankingTitle:UI_COPY.scope.admin.ranking,
   })
 });
 
