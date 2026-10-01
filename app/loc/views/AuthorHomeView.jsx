@@ -17,8 +17,6 @@ const PROFESSIONAL_ROLES=Object.freeze([
 
 const OFFICIAL_LINKS=Object.freeze([
   Object.freeze({label:'個人網站',href:'https://lo3rwang.cc/'}),
-  Object.freeze({label:'GitHub 個人',href:'https://github.com/lo3rwang'}),
-  Object.freeze({label:'LOC 專案 GitHub',href:'https://github.com/EsotericVerse/moon-runes-pwa'}),
   Object.freeze({label:'LinkedIn',href:'https://www.linkedin.com/in/lo3rwang/'}),
   Object.freeze({label:'Instagram',href:'https://www.instagram.com/lo3rwang/'}),
   Object.freeze({label:'Threads',href:'https://www.threads.com/@lo3rwang'})
