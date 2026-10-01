@@ -1,5 +1,7 @@
 'use client';
 
+import {UI_COPY} from '../../i18n/ui-copy';
+
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
@@ -30,7 +32,7 @@ import ContentEditorV2 from '../ContentEditorV2';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 
 function labelOf(item,index){
-  return item?.display_label||item?.name||item?.title||item?.period||'時期 '+(index+1);
+  return item?.display_label||item?.name||item?.title||item?.period||UI_COPY.format.period(index+1);
 }
 function sortPeriods(rows=[]){
   return [...rows].filter(item=>item?.start_date||item?.end_date).sort((a,b)=>
@@ -43,7 +45,7 @@ function periodRange(rows=[],scope=''){
   const ends=rows.map(row=>row.end_date||row.start_date).filter(Boolean).sort();
   const openEnded=rows.some(row=>Boolean(row?.open_end)||!row?.end_date);
   return {
-    period:'all',title:'全部時間',display_label:'全部時間',
+    period:'all',title:UI_COPY.culture.allTime,display_label:UI_COPY.culture.allTime,
     start_date:starts[0]||'',end_date:openEnded?null:(ends.at(-1)||null),scope_id:scope
   };
 }
@@ -448,8 +450,8 @@ export default function CultureV2(){
 
   return <FeaturePageV2 featureId="culture">
     <section className='loc-card scope-v2-feature-card scope-v2-feature-card-wide'>
-      <p className='loc-eyebrow'>時間分布</p>
-      <h2>時間長河</h2>
+      <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
+      <h2>{UI_COPY.culture.river}</h2>
       {query.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(query.error)}</p>:null}
       {!query.isPending&&!query.error&&!hasTimelineSurface?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
       {!query.isPending&&!query.error&&hasTimelineSurface?<>
@@ -458,8 +460,8 @@ export default function CultureV2(){
             {isLoc?<>
 
               <section className='scope-v2-card scope-v2-culture-classification-river scope-v2-loc-time-river'>
-                <p className='loc-eyebrow'>時間分布</p>
-                <h3>交會時間長河</h3>
+                <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
+                <h3>{UI_COPY.culture.intersectionRiver}</h3>
                 {locScopeTotals.length?<p className='scope-v2-status'>
                   交會時期的總文章數：{locIntersectionTotal.toLocaleString()} 篇，其中 {locScopeTotals.map(item=>item.scope+' '+Number(item.count||0).toLocaleString()+' 篇').join('、')}。
                 </p>:null}
@@ -475,8 +477,8 @@ export default function CultureV2(){
                   hiddenDates={locRiverAnalysis.hiddenDates}
                 />:null}
                 {locCombinedSourceRiverItems.length?<section className='scope-v2-culture-combined-source-river'>
-                  <p className='loc-eyebrow'>Combined Sources</p>
-                  <h4>綜合來源時間長河</h4>
+                  <p className='loc-eyebrow'>{UI_COPY.culture.combinedSources}</p>
+                  <h4>{UI_COPY.culture.combinedRiver}</h4>
                   <CultureTimelineV2
                     items={locCombinedSourceRiverItems}
                     labelOf={()=>''}
@@ -495,8 +497,8 @@ export default function CultureV2(){
 
             </>:<>
               <section className='scope-v2-card scope-v2-culture-structure-river'>
-                <p className='loc-eyebrow'>時間分布</p>
-                <h3>時期・事件・定錨點</h3>
+                <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
+                <h3>{UI_COPY.culture.structure}</h3>
                 {timelineItems.length?<CultureTimelineV2
                   items={timelineItems}
                   labelOf={item=>item.display_label||item.title}
@@ -508,17 +510,17 @@ export default function CultureV2(){
               {selectedWorkPeriod?<section className='scope-v2-card scope-v2-culture-classification-river'>
                 <div className='scope-v2-stat-controls'>
                   <label className='scope-v2-culture-period-select'>
-                    <span>時期</span>
+                    <span>{UI_COPY.culture.period}</span>
                     <select className='scope-v2-select' value={selectedPeriodKey||periodKey(selectedWorkPeriod)} onChange={event=>setSelectedPeriodKey(event.target.value)}>
                       {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{labelOf(item,0)}</option>)}
                     </select>
                   </label>
                 </div>
-                <p className='loc-eyebrow'>Classification River</p>
+                <p className='loc-eyebrow'>{UI_COPY.culture.classificationRiver}</p>
                 <h3>{labelOf(selectedWorkPeriod,0)}｜作品分類河道</h3>
                 {classificationBucketsQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(classificationBucketsQuery.error)}</p>:null}
                 {!classificationBucketsQuery.isFetching&&!classificationBucketsQuery.error&&!classificationBuckets.length
-                  ?<p className='scope-v2-status'>目前沒有此時期的作品分類資料。</p>:null}
+                  ?<p className='scope-v2-status'>{UI_COPY.culture.noPeriodClassification}</p>:null}
                 {classificationRiverItems.length?<CultureTimelineV2
                   items={classificationRiverItems}
                   labelOf={item=>item?.entry_type==='virtual_anchor'?'◇':''}
@@ -541,11 +543,11 @@ export default function CultureV2(){
                   }}
                 />:null}
                 {riverAnalysis.suggestions.length?<section className='scope-v2-status scope-v2-culture-anchor-suggestions'>
-                  <strong>虛擬定錨點</strong>
-                  <p>點時間長河上的 ◇ 或下方日期可查看並選取切點；虛擬點不會寫入資料庫。</p>
+                  <strong>{UI_COPY.culture.virtualAnchor}</strong>
+                  <p>{UI_COPY.culture.virtualAnchorHelp}</p>
                   {riverAnalysis.suggestions.map(item=><article key={item.date}>
                     <button type='button' onClick={()=>toggleVirtualAnchor(item.date)} aria-pressed={selectedVirtualAnchorDates.includes(item.date)}>
-                      {selectedVirtualAnchorDates.includes(item.date)?'已選取｜':''}{item.date}
+                      {selectedVirtualAnchorDates.includes(item.date)?UI_COPY.culture.selectedPrefix:''}{item.date}
                     </button>
                     <p>切點前 3 日 {Number(item.beforeCount||0).toLocaleString()} 項｜後 3 日 {Number(item.afterCount||0).toLocaleString()} 項</p>
                     <ul>
@@ -554,7 +556,7 @@ export default function CultureV2(){
                   </article>)}
                   {account.canManageScopeSync(classificationScope)&&selectedVirtualAnchorDates.length?<div className='scope-v2-tabs'>
                     <button type='button' disabled={anchorSaveBusy} onClick={saveSelectedVirtualAnchors}>
-                      {anchorSaveBusy?'建立中…':'一次建立 '+selectedVirtualAnchorDates.length+' 個定錨點'}
+                      {anchorSaveBusy?UI_COPY.culture.creating:'一次建立 '+selectedVirtualAnchorDates.length+' 個定錨點'}
                     </button>
                   </div>:null}
                   {anchorSaveMessage?<p role='status'>{anchorSaveMessage}</p>:null}
@@ -578,10 +580,10 @@ export default function CultureV2(){
                   </button>}
                 />:null}
 
-                <section className='scope-v2-culture-source-detail' aria-label={(selectedGroup?.display_label||'全部作品')+'列表'}>
+                <section className='scope-v2-culture-source-detail' aria-label={(selectedGroup?.display_label||UI_COPY.culture.allWorks)+'列表'}>
                   <header>
-                    <h4>{selectedGroup?.display_label||'全部作品'} · {selectedCount.toLocaleString()} 項作品</h4>
-                    {selectedGroup?<button type='button' className='scope-v2-pagination-button' onClick={()=>setSelectedCategory('')}>顯示全部作品</button>:null}
+                    <h4>{selectedGroup?.display_label||UI_COPY.culture.allWorks} · {selectedCount.toLocaleString()} 項作品</h4>
+                    {selectedGroup?<button type='button' className='scope-v2-pagination-button' onClick={()=>setSelectedCategory('')}>{UI_COPY.culture.showAllWorks}</button>:null}
                   </header>
                   {periodWorkIndexQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorkIndexQuery.error)}</p>:null}
                   {periodWorksPage.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksPage.error)}</p>:null}
@@ -612,7 +614,7 @@ export default function CultureV2(){
                         content={fullTextKey===work.key?fullText:''}
                         onToggle={()=>toggleWorkContent(work)}
                       />:null}
-                      {work.uid&&account.canManageScopeSync(classificationScope)?<p><button type="button" onClick={()=>startEditingWork(work)}>{editingWorkKey===String(work.key||('galaxy:'+work.uid))?'編輯中':'編輯'}</button></p>:null}
+                      {work.uid&&account.canManageScopeSync(classificationScope)?<p><button type="button" onClick={()=>startEditingWork(work)}>{editingWorkKey===String(work.key||('galaxy:'+work.uid))?UI_COPY.culture.editing:'編輯'}</button></p>:null}
                       {editingWorkKey===String(work.key||('galaxy:'+work.uid))&&editDraft?<ContentEditorV2
                         draft={editDraft}
                         setDraft={setEditDraft}

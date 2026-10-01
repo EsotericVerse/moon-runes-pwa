@@ -1,5 +1,7 @@
 'use client';
 
+import {UI_COPY} from '../i18n/ui-copy';
+
 import {useState} from 'react';
 import {neonAuthClient} from './neon-client';
 import {useNeonAccount} from './use-neon-account';
@@ -37,7 +39,7 @@ export default function ManagementArticlePublisher({scopeId}){
     setBusy(true);setStatus('');
     try{
       const content=requireGalaxyContent(draft.body);
-      if(!draft.source.trim())throw new Error('請指定來源。');
+      if(!draft.source.trim())throw new Error(UI_COPY.management.sourceRequired);
       const now=new Date().toISOString();
       const uid=createUid8();
 
@@ -51,35 +53,35 @@ export default function ManagementArticlePublisher({scopeId}){
         source_name:draft.source.trim()
       }]);
 
-      setDraft(blank());setStatus('文章已發表到 Galaxy。');
-    }catch(error){setStatus(error?.message||'文章發表失敗。');}
+      setDraft(blank());setStatus(UI_COPY.management.articlePublished);
+    }catch(error){setStatus(error?.message||UI_COPY.management.articlePublishFailed);}
     finally{setBusy(false);}
   }
 
   const extraFields=<>
     <div className="scope-v2-stat-controls">
-      <label>來源<input value={draft.source} onChange={e=>setDraft(current=>({...current,source:e.target.value}))} placeholder="例如 threads / vocus / personal"/></label>
-      <label>原始連結<input value={draft.url} onChange={e=>setDraft(current=>({...current,url:e.target.value}))}/></label>
-      <label>發表時間<input type="datetime-local" value={draft.createtime} onChange={e=>setDraft(current=>({...current,createtime:e.target.value}))}/></label>
+      <label>{UI_COPY.management.articleSource}<input value={draft.source} onChange={e=>setDraft(current=>({...current,source:e.target.value}))} placeholder="例如 threads / vocus / personal"/></label>
+      <label>{UI_COPY.management.articleUrl}<input value={draft.url} onChange={e=>setDraft(current=>({...current,url:e.target.value}))}/></label>
+      <label>{UI_COPY.management.articleTime}<input type="datetime-local" value={draft.createtime} onChange={e=>setDraft(current=>({...current,createtime:e.target.value}))}/></label>
     </div>
     <div className="scope-v2-stat-controls">
-      <label>source_id<input value={draft.source_id} onChange={e=>setDraft(current=>({...current,source_id:e.target.value}))} placeholder="上層／來源"/></label>
-      <label>target_id<input value={draft.target_id} onChange={e=>setDraft(current=>({...current,target_id:e.target.value}))} placeholder="下層／目標"/></label>
-      <label>ref_id<input value={draft.ref_id} onChange={e=>setDraft(current=>({...current,ref_id:e.target.value}))} placeholder="參照"/></label>
+      <label>source_id<input value={draft.source_id} onChange={e=>setDraft(current=>({...current,source_id:e.target.value}))} placeholder={UI_COPY.management.articleParent}/></label>
+      <label>target_id<input value={draft.target_id} onChange={e=>setDraft(current=>({...current,target_id:e.target.value}))} placeholder={UI_COPY.management.articleTarget}/></label>
+      <label>ref_id<input value={draft.ref_id} onChange={e=>setDraft(current=>({...current,ref_id:e.target.value}))} placeholder={UI_COPY.management.articleReference}/></label>
     </div>
   </>;
 
   return <section className="scope-v2-inline-card">
-    <h3>文章發表</h3>
+    <h3>{UI_COPY.management.article}</h3>
     <ContentEditorV2
       draft={draft}
       setDraft={setDraft}
       busy={busy}
-      error={status&&status!=='文章已發表到 Galaxy。'?status:''}
-      bodyLabel="正文"
+      error={status&&status!==UI_COPY.management.articlePublished?status:''}
+      bodyLabel={UI_COPY.management.articleBody}
       extraFields={extraFields}
       onSave={save}
     />
-    {status==='文章已發表到 Galaxy。'?<p className="scope-v2-status">{status}</p>:null}
+    {status===UI_COPY.management.articlePublished?<p className="scope-v2-status">{status}</p>:null}
   </section>;
 }

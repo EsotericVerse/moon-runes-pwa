@@ -1,5 +1,7 @@
 'use client';
 
+import {UI_COPY} from '../../i18n/ui-copy';
+
 import {useEffect,useMemo,useState} from 'react';
 import Select from 'react-select';
 import {SCOPES_V2} from '../../modular-v2/scope-registry.v2';
@@ -8,16 +10,16 @@ import {useNeonAccount} from '../use-neon-account';
 import {neonAuthClient} from '../neon-client';
 
 const ADMIN_OPTIONS=Object.freeze([
-  {value:'scopes',label:'區域總覽'},
-  {value:'themes',label:'預設 Theme'}
+  {value:'scopes',label:UI_COPY.admin.overview},
+  {value:'themes',label:UI_COPY.admin.theme}
 ]);
 
 function Login({account}){
   return <section className="loc-view">
-    <header className="loc-hero"><p className="loc-eyebrow">Admin</p><h1>系統管理登入</h1></header>
+    <header className="loc-hero"><p className="loc-eyebrow">{UI_COPY.admin.eyebrow}</p><h1>{UI_COPY.admin.loginTitle}</h1></header>
     <section className="loc-card">
-      <p>Admin 是獨立管理站，不屬於 Scope。</p>
-      <button className="loc-button primary" type="button" onClick={account.signIn}>使用 Google 登入 Neon</button>
+      <p>{UI_COPY.admin.loginIntro}</p>
+      <button className="loc-button primary" type="button" onClick={account.signIn}>{UI_COPY.admin.signIn}</button>
       {account.error?<p className="scope-v2-status scope-v2-error">{account.error}</p>:null}
     </section>
   </section>;
@@ -54,7 +56,7 @@ function ScopeOverview(){
   };
   return <section className="loc-card">
     <p className="loc-eyebrow">Current Scope Registry</p>
-    <h2>區域總覽</h2>
+    <h2>{UI_COPY.admin.overview}</h2>
     <div className="scope-v2-list">
       {scopes.map(scope=><article className="scope-v2-inline-card" key={scope.id}>
         <strong>{scope.label}</strong>
@@ -81,7 +83,7 @@ function ScopeOverview(){
 function ThemeOverview(){
   return <section className="loc-card">
     <p className="loc-eyebrow">Theme Registry</p>
-    <h2>預設 Theme</h2>
+    <h2>{UI_COPY.admin.theme}</h2>
     <p>RC8 前先確認現有 8 個 Theme 槽位，不在這裡改寫 Theme 定義。</p>
     <div className="scope-v2-list">
       {THEME_SLOTS_V2.map(theme=><article className="scope-v2-inline-card" key={theme.id}>
@@ -97,20 +99,20 @@ export default function AdminHomeView(){
   const [section,setSection]=useState('scopes');
   const selected=useMemo(()=>ADMIN_OPTIONS.find(option=>option.value===section)||ADMIN_OPTIONS[0],[section]);
 
-  if(account.loading||account.permissionLoading)return <section className="loc-view"><div className="loc-card">正在確認 Admin 權限…</div></section>;
+  if(account.loading||account.permissionLoading)return <section className="loc-view"><div className="loc-card">{UI_COPY.admin.checking}</div></section>;
   if(!account.user)return <Login account={account}/>;
   if(!account.canManageGlobalSync())return <section className="loc-view">
-    <header className="loc-hero"><p className="loc-eyebrow">Admin</p><h1>系統管理</h1></header>
-    <section className="loc-card"><p>目前登入身份沒有 Admin 權限。</p><button type="button" onClick={account.signOut}>登出</button></section>
+    <header className="loc-hero"><p className="loc-eyebrow">{UI_COPY.admin.eyebrow}</p><h1>{UI_COPY.admin.eyebrow}</h1></header>
+    <section className="loc-card"><p>{UI_COPY.admin.denied}</p><button type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button></section>
   </section>;
 
   return <section className="loc-view">
     <header className="loc-hero">
-      <p className="loc-eyebrow">Admin · RC8 Preview</p>
-      <h1>系統管理</h1>
+      <p className="loc-eyebrow">{UI_COPY.admin.eyebrow}</p>
+      <h1>{UI_COPY.admin.eyebrow}</h1>
       <p>先保持簡單；Scope 的完整管理仍由各 Scope 自己負責。</p>
       <div className="scope-v2-management-select">
-        <label htmlFor="admin-management-section">管理項目</label>
+        <label htmlFor="admin-management-section">{UI_COPY.admin.item}</label>
         <Select
           inputId="admin-management-section"
           className="scope-v2-react-select"
@@ -121,7 +123,7 @@ export default function AdminHomeView(){
           onChange={option=>option?.value&&setSection(option.value)}
         />
       </div>
-      <p><button type="button" onClick={account.signOut}>登出</button></p>
+      <p><button type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button></p>
     </header>
     {section==='scopes'?<ScopeOverview/>:<ThemeOverview/>}
   </section>;

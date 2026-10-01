@@ -1,6 +1,7 @@
 'use client';
 
 import {useState} from 'react';
+import {UI_COPY} from '../i18n/ui-copy';
 import {FEATURES_V2,featureHrefV2,featureIdForPathV2,scopeHrefV2} from './scope-registry.v2';
 import {useScopeRuntimeV2} from './use-scope-runtime.v2';
 
@@ -39,15 +40,15 @@ export default function ScopeNavV2(){
     window.location.assign(url.toString());
   }
 
-  return <nav className="scope-v2-nav" aria-label="全站導覽">
-    <NavTarget href={lunarunesHome} label="月之符文" current={targetIsCurrent(lunarunesHome,host,pathname)}/>
+  return <nav className="scope-v2-nav" aria-label={UI_COPY.nav.aria}>
+    <NavTarget href={lunarunesHome} label={UI_COPY.nav.lunarunes} current={targetIsCurrent(lunarunesHome,host,pathname)}/>
     {NAV_FEATURE_ORDER.map(id=>FEATURES_V2.find(item=>item.id===id)).filter(Boolean).map(item=>
       <NavTarget key={item.id} href={featureHrefV2(navScopeId,item.id)} label={item.label} current={scopeId!=='admin'&&currentFeature===item.id}/>
     )}
     <form onSubmit={submitSearch} role="search" className="scope-v2-search">
-      <input name="q" type="search" aria-label="搜尋文字" placeholder="搜尋" value={searchText} onChange={event=>setSearchText(event.target.value)}/>
+      <input name="q" type="search" aria-label={UI_COPY.nav.searchAria} placeholder={UI_COPY.nav.search} value={searchText} onChange={event=>setSearchText(event.target.value)}/>
     </form>
-    <NavTarget href={authorHome} label="作者介紹" current={targetIsCurrent(authorHome,host,pathname)}/>
-    <NavTarget href={locHome} label="回月典首頁" current={targetIsCurrent(locHome,host,pathname)}/>
+    <NavTarget href={authorHome} label={UI_COPY.nav.author} current={targetIsCurrent(authorHome,host,pathname)}/>
+    <NavTarget href={locHome} label={UI_COPY.nav.home} current={targetIsCurrent(locHome,host,pathname)}/>
   </nav>;
 }

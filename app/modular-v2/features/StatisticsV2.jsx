@@ -1,5 +1,7 @@
 'use client';
 
+import {UI_COPY} from '../../i18n/ui-copy';
+
 import {useMemo,useState} from 'react';
 import {useRouter,useSearchParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
@@ -19,14 +21,14 @@ const CHART_ACCENT='var(--loc-accent)';
 const CHART_TEXT='var(--loc-text)';
 const CHART_GRID='var(--loc-line)';
 const CHART_TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)',borderRadius:'8px'};
-const CHART_TYPES=[['line','折線圖'],['bar','長條圖'],['pie','圓餅圖']];
-const STAT_TYPE_LABELS=Object.freeze({total:'總來源',source:'作品來源'});
+const CHART_TYPES=[['line',UI_COPY.statistics.line],['bar',UI_COPY.statistics.bar],['pie',UI_COPY.statistics.pie]];
+const STAT_TYPE_LABELS=Object.freeze({total:UI_COPY.statistics.totalSource,source:UI_COPY.statistics.workSource});
 const SOURCE_TREND_ORDER=Object.freeze(['Facebook','Threads','IG','Others']);
 const TIME_STANDARDS=Object.freeze([
-  {value:'1y',label:'一年',months:12,bucket:'month'},
-  {value:'1m',label:'一月',months:1,bucket:'day'},
-  {value:'1w',label:'一週',days:6,bucket:'day'},
-  {value:'custom',label:'自訂範圍',bucket:'auto'}
+  {value:'1y',label:UI_COPY.statistics.year,months:12,bucket:'month'},
+  {value:'1m',label:UI_COPY.statistics.month,months:1,bucket:'day'},
+  {value:'1w',label:UI_COPY.statistics.week,days:6,bucket:'day'},
+  {value:'custom',label:UI_COPY.statistics.custom,bucket:'auto'}
 ]);
 
 function dateKey(value){
@@ -142,7 +144,7 @@ function buildSummary(rows=[],standard='1y',customRange={}){
 
 function SummaryList({rankingType,summary}){
   const rows=rankingType==='total'
-    ?[{term:'總來源',item_count:summary.total}]
+    ?[{term:UI_COPY.statistics.totalSource,item_count:summary.total}]
     :summary.sources;
   return <div className="scope-v2-ranking">
     {rows.map(row=><div key={row.term}><strong>{row.term}</strong><span>{Number(row.item_count||0).toLocaleString()}</span></div>)}
@@ -150,7 +152,7 @@ function SummaryList({rankingType,summary}){
 }
 function SummaryChart({type='bar',rankingType,summary,height=380}){
   const data=rankingType==='total'
-    ?[{term:'總來源',value:summary.total}]
+    ?[{term:UI_COPY.statistics.totalSource,value:summary.total}]
     :summary.sources.map(row=>({term:row.term,value:Number(row.item_count)||0}));
   if(!data.length)return <p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>;
   if(type==='pie')return <ResponsiveContainer width="100%" height={height}>
@@ -176,7 +178,7 @@ function TotalTrendChart({rows=[],standard='1y',customRange={},height=420}){
       <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
       <XAxis dataKey="period" angle={-24} textAnchor="end" interval="preserveStartEnd" height={72} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
       <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
-      <Tooltip contentStyle={CHART_TOOLTIP} formatter={value=>[Number(value).toLocaleString()+' 項','總來源']}/>
+      <Tooltip contentStyle={CHART_TOOLTIP} formatter={value=>[Number(value).toLocaleString()+' 項',UI_COPY.statistics.totalSource]}/>
       <Line type="monotone" dataKey="total" name="總來源" stroke={CHART_ACCENT} strokeWidth={3} dot={false}/>
     </LineChart>
   </ResponsiveContainer>;
@@ -204,9 +206,9 @@ function StatisticTypeSelect({scopeId,navigation,types}){
   const selected=options.find(option=>option.value===active)||options[0]||null;
   if(!types.length)return null;
   return <label className="scope-v2-react-select-field">
-    <span>統計項目</span>
+    <span>{UI_COPY.statistics.item}</span>
     <Select inputId="statistics-ranking-type" className="scope-v2-react-select" classNamePrefix="scope-v2-react-select" unstyled
-      isSearchable options={options} value={selected} noOptionsMessage={()=>"沒有符合的統計項目"}
+      isSearchable options={options} value={selected} noOptionsMessage={()=>UI_COPY.statistics.noOptions}
       onChange={option=>{
         if(!option?.value||option.value===active)return;
         router.push(featureNavigationHref(scopeId,'statics',{...navigation,rankingType:option.value}));
@@ -235,18 +237,18 @@ function StatisticsPanel({scopeId,navigation,types}){
   const summary=useMemo(()=>buildSummary(trendQuery.data||[],timeStandard,customRange),[trendQuery.data,timeStandard,customRange]);
 
   return <section className="scope-v2-stat-section">
-    <header className="scope-v2-stat-domain-heading"><div><h2>統計結果</h2></div></header>
+    <header className="scope-v2-stat-domain-heading"><div><h2>{UI_COPY.statistics.result}</h2></div></header>
     <div className="scope-v2-stat-controls">
       <StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/>
-      <label><span>圖形</span><select className="scope-v2-select" value={chartType} onChange={event=>setChartType(event.target.value)}>
+      <label><span>{UI_COPY.statistics.chart}</span><select className="scope-v2-select" value={chartType} onChange={event=>setChartType(event.target.value)}>
         {CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}
       </select></label>
-      <label><span>時間範圍</span><select className="scope-v2-select" value={timeStandard} onChange={event=>setTimeStandard(event.target.value)}>
+      <label><span>{UI_COPY.statistics.range}</span><select className="scope-v2-select" value={timeStandard} onChange={event=>setTimeStandard(event.target.value)}>
         {TIME_STANDARDS.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
       </select></label>
       {timeStandard==='custom'?<>
-        <label><span>開始</span><input className="scope-v2-input" type="date" value={customFrom} onChange={event=>setCustomFrom(event.target.value)}/></label>
-        <label><span>結束</span><input className="scope-v2-input" type="date" value={customTo} onChange={event=>setCustomTo(event.target.value)}/></label>
+        <label><span>{UI_COPY.statistics.start}</span><input className="scope-v2-input" type="date" value={customFrom} onChange={event=>setCustomFrom(event.target.value)}/></label>
+        <label><span>{UI_COPY.statistics.end}</span><input className="scope-v2-input" type="date" value={customTo} onChange={event=>setCustomTo(event.target.value)}/></label>
       </>:null}
     </div>
     {trendQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(trendQuery.error)}</p>:null}

@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
+import {UI_COPY} from '../i18n/ui-copy';
 import {applyThemeV2,getThemeSlotV2,THEME_SLOTS_V2} from './theme-registry.v2';
 
 const AUTO_THEME_ID='auto';
@@ -64,9 +65,9 @@ export default function ThemeSelectV2({scopeId='loc'}){
   if(fixedThemeId)return null;
 
   return <label className="scope-v2-theme-control">
-    <span>主題</span>
-    <select value={themeId} onChange={event=>setThemeId(event.target.value)} aria-label="主題">
-      <option value={AUTO_THEME_ID}>自動（日／夜）</option>
+    <span>{UI_COPY.common.theme}</span>
+    <select value={themeId} onChange={event=>setThemeId(event.target.value)} aria-label={UI_COPY.common.theme}>
+      <option value={AUTO_THEME_ID}>{UI_COPY.common.autoTheme}</option>
       {THEME_SLOTS_V2.map(item=><option value={item.id} key={item.id}>{item.label}</option>)}
     </select>
   </label>;

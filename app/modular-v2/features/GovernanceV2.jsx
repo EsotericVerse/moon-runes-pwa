@@ -1,5 +1,7 @@
 'use client';
 
+import {UI_COPY} from '../../i18n/ui-copy';
+
 import {neonPublicClient} from '../../loc/neon-client';
 import {useOffsetPagination} from '../use-offset-pagination.v2';
 import IncrementalLoadV2 from '../IncrementalLoadV2';
@@ -20,7 +22,7 @@ function faqAnswer(row){
   return row?.answer||row?.content||row?.body||row?.faq_answer||row?.description||'';
 }
 function faqCategory(row){
-  return row?.category||row?.group_name||row?.section||row?.scope||'常見問題';
+  return row?.category||row?.group_name||row?.section||row?.scope||UI_COPY.governance.faq;
 }
 
 function FaqView(){
@@ -33,7 +35,7 @@ function FaqView(){
         .order('category',{ascending:true})
         .order('faq_id',{ascending:true})
         .range(offset,offset+limit-1);
-      if(error)throw new Error(error.message||'常見問題載入失敗');
+      if(error)throw new Error(error.message||UI_COPY.governance.faq+'載入失敗');
       const rows=data||[];
       return {rows,hasMore:rows.length===limit};
     }
@@ -41,12 +43,12 @@ function FaqView(){
   const {rows,loading,error,hasMore,loadNext}=page;
   return <section className="loc-view">
     <header className="loc-hero">
-      <h1>常見問題</h1>
-      <p>整理月典、月之符文與各項功能在使用時常見的問題與說明。</p>
+      <h1>{UI_COPY.governance.faq}</h1>
+      <p>{UI_COPY.governance.faqIntro}</p>
     </header>
-    {loading&&!rows.length?<p className="scope-v2-status">載入常見問題…</p>:null}
+    {loading&&!rows.length?<p className="scope-v2-status">{UI_COPY.governance.faqLoading}</p>:null}
     {error?<p className="scope-v2-status scope-v2-error">{error.message}</p>:null}
-    {!loading&&!error&&!rows.length?<p>目前沒有常見問題資料。</p>:null}
+    {!loading&&!error&&!rows.length?<p>{UI_COPY.governance.faqEmpty}</p>:null}
     <div className="loc-grid two">
       {rows.map((row,index)=><article className="loc-card" key={row?.faq_id||row?.id||row?.faq_key||index}>
         <p className="loc-eyebrow">{faqCategory(row)}</p>
@@ -54,7 +56,7 @@ function FaqView(){
         <p>{faqAnswer(row)}</p>
       </article>)}
     </div>
-    <IncrementalLoadV2 hasMore={hasMore} loading={loading} error={error} onLoadMore={loadNext} label="還有更多常見問題"/>
+    <IncrementalLoadV2 hasMore={hasMore} loading={loading} error={error} onLoadMore={loadNext} label={UI_COPY.governance.faqMore}/>
   </section>;
 }
 
@@ -73,13 +75,13 @@ function GovernanceHome(){
   return <FeaturePageV2 featureId="governance" subtitle={subtitle}>
     <View canEdit={canEdit}/>
     {scopeId==='loc'?<section className="loc-card">
-      <h2>系統管理</h2>
+      <h2>{UI_COPY.governance.systemManagement}</h2>
       <p>月典的系統設定集中在獨立管理站，公開治理頁只保留原則與權利說明。</p>
-      <a className="loc-button primary" href={adminHref}>進入獨立管理站</a>
+      <a className="loc-button primary" href={adminHref}>{UI_COPY.governance.enterAdmin}</a>
     </section>:<section className="loc-card">
       <h2>{getScopeV2(scopeId).label}管理</h2>
       <p>時期、分類與其他可調整項目集中在管理頁，需要修改設定時可從這裡進入。</p>
-      <a className="loc-button primary" href={scopeHrefV2(scopeId,'governance/manage')}>進入管理</a>
+      <a className="loc-button primary" href={scopeHrefV2(scopeId,'governance/manage')}>{UI_COPY.governance.enterManagement}</a>
     </section>}
   </FeaturePageV2>;
 }
@@ -88,9 +90,9 @@ function GovernanceLaw(){
   const {scopeId}=useScopeRuntimeV2();
   const account=useNeonAccount();
   const canEdit=account.canManageScopeSync(scopeId);
-  if(scopeId==='loc')return <FeaturePageV2 featureId="governance" subtitle="權利與授權"><LocGovernanceLaw canEdit={canEdit}/></FeaturePageV2>;
+  if(scopeId==='loc')return <FeaturePageV2 featureId="governance" subtitle={UI_COPY.governance.rights}><LocGovernanceLaw canEdit={canEdit}/></FeaturePageV2>;
   const {View}=governanceFor(scopeId);
-  return <FeaturePageV2 featureId="governance" subtitle="權利與授權"><View canEdit={canEdit}/></FeaturePageV2>;
+  return <FeaturePageV2 featureId="governance" subtitle={UI_COPY.governance.rights}><View canEdit={canEdit}/></FeaturePageV2>;
 }
 
 export default function GovernanceV2({section=null}){

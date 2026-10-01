@@ -1,5 +1,7 @@
 'use client';
 
+import {UI_COPY} from '../../i18n/ui-copy';
+
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {searchNeonRows} from '../../loc/neon-search';
@@ -28,14 +30,14 @@ function authRelation(table){
 }
 async function selectNeonRowById(table,{idColumn,id,columns}={}){
   const {data,error}=await authRelation(table).select(columns).eq(idColumn,String(id)).limit(1);
-  if(error)throw new Error(error.message||'資料讀取失敗');
+  if(error)throw new Error(error.message||UI_COPY.search.readFailed);
   return data?.[0]||null;
 }
 async function updateNeonRows(table,values,{filters=[]}={}){
   let query=authRelation(table).update(values);
   for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
   const {error}=await query;
-  if(error)throw new Error(error.message||'資料更新失敗');
+  if(error)throw new Error(error.message||UI_COPY.search.updateFailed);
 }
 
 function rowText(row){return Object.values(row||{}).filter(value=>typeof value==='string').join(' ')}
@@ -52,8 +54,8 @@ function toResult(row,source,scopeId){
   const displaySource=isGalaxy&&row.source_name?String(row.source_name):source;
   const mediaMetadata=[
     row.meta_tags,
-    row.media_type?('類型：'+row.media_type):'',
-    row.source_native_id?('來源識別：'+row.source_native_id):''
+    row.media_type?(UI_COPY.search.typePrefix+row.media_type):'',
+    row.source_native_id?(UI_COPY.search.sourceIdPrefix+row.source_native_id):''
   ].map(value=>workDisplayText(value||'').trim()).filter(Boolean).join(' · ');
   const body=isMedia
     ?(mediaMetadata||(bodyField?workDisplayText(row[bodyField]):text))
@@ -80,12 +82,12 @@ function toResult(row,source,scopeId){
     relationLinks:resourceType==='galaxy'
       ?galaxyRelationLinks(scope,row)
       :(resourceType==='galaxy_media'&&row.galaxy_link
-        ?[{id:'galaxy:'+row.galaxy_link,label:'所屬文字',href:galaxyIdentityHref(scope,row.galaxy_link)}].filter(link=>link.href)
+        ?[{id:'galaxy:'+row.galaxy_link,label:UI_COPY.search.parentText,href:galaxyIdentityHref(scope,row.galaxy_link)}].filter(link=>link.href)
         :[]),
     groupKey:resourceType==='galaxy'&&resourceId
       ?'galaxy:'+resourceId
       :(resourceType==='galaxy_media'&&row.galaxy_link?'galaxy:'+row.galaxy_link:'result:'+(identity||title)),
-    links:[...(href?[{id:resourceType||'primary',href,label:resourceType==='galaxy_media'?'媒體連結':'外部連結'}]:[]),...(Array.isArray(row.resolved_links)?row.resolved_links:[])],
+    links:[...(href?[{id:resourceType||'primary',href,label:resourceType==='galaxy_media'?UI_COPY.search.mediaLink:UI_COPY.search.externalLink}]:[]),...(Array.isArray(row.resolved_links)?row.resolved_links:[])],
     destinations:[]
   };
 }
@@ -103,7 +105,7 @@ function mergeSummaryResults(rows=[]){
     const preferRow=current.resourceType==='galaxy'?current:(row.resourceType==='galaxy'?row:current);
     const links=[...(current.links||[]),...(row.links||[])];
     const uniqueLinks=[...new Map(links.filter(link=>link?.href).map(link=>[link.href,link])).values()]
-      .map((link,index)=>({...link,label:(links.length>1&&link.label==='媒體連結')?('歌曲連結 '+(index+1)):link.label}));
+      .map((link,index)=>({...link,label:(links.length>1&&link.label===UI_COPY.search.mediaLink)?UI_COPY.format.songLink(index+1):link.label}));
     groups.set(key,{
       ...preferRow,
       links:uniqueLinks,
@@ -121,7 +123,7 @@ export default function SearchV2(){
   const [query,setQuery]=useState('');
   const [searchMode,setSearchMode]=useState('all');
   const [results,setResults]=useState([]);
-  const [status,setStatus]=useState('輸入關鍵字開始搜尋。');
+  const [status,setStatus]=useState(UI_COPY.search.start);
   const [error,setError]=useState('');
   const [hasMore,setHasMore]=useState(false);
   const [nextCursor,setNextCursor]=useState(null);
@@ -137,7 +139,7 @@ export default function SearchV2(){
   const searchId=useRef(0);
   const matchedQueryRef=useRef('');
   const pageSize=DEFAULT_LIST_BATCH_SIZE;
-  const collectionLabel=scopeId==='loc'?'全部內容':String(scope?.label||scopeId);
+  const collectionLabel=scopeId==='loc'?UI_COPY.search.allContent:String(scope?.label||scopeId);
 
   async function executeSearch(rawQuery,cursor=null,{append=false}={}){
     const q=String(rawQuery||'').trim();
@@ -151,7 +153,7 @@ export default function SearchV2(){
       setHasMore(false);
       setNextCursor(null);
       setResults([]);
-      setStatus(searchMode==='media'?'搜尋多媒體資料…':`搜尋「${collectionLabel}」資料…`);
+      setStatus(searchMode==='media'?UI_COPY.search.searching:UI_COPY.format.searchScope(collectionLabel));
     }
     try{
       const search=await searchNeonRows(scopeId,q,{limit:pageSize,cursor,mediaOnly:searchMode==='media'});
@@ -190,12 +192,12 @@ export default function SearchV2(){
       setResults(current=>append?mergeSummaryResults([...current,...pageResults]):pageResults);
             setHasMore(Boolean(search.hasMore));
       setNextCursor(search.nextCursor??null);
-      const partial=search.failures?.length?`（部分延伸資料暫時無法查詢）`:'';
-      if(!append)setStatus(`${searchMode==='media'?'多媒體':'「'+collectionLabel+'」'}搜尋「${q}」；先顯示本批結果${search.hasMore?'，向下滑動可繼續載入。':'。'}${partial}`);
+      const partial=search.failures?.length?'（部分延伸資料暫時無法查詢）':'';
+      if(!append)setStatus(UI_COPY.format.searchResult({label:searchMode==='media'?UI_COPY.search.media:'「'+collectionLabel+'」',query:q,hasMore:search.hasMore,partial}));
     }catch(exception){
       if(id!==searchId.current)return;
       setError(featureDataErrorMessage(exception));
-      setStatus('搜尋失敗。');
+      setStatus(UI_COPY.search.failed);
     }finally{
       if(append&&id===searchId.current)setLoadingMore(false);
     }
@@ -213,7 +215,7 @@ export default function SearchV2(){
     const id=++searchId.current;
     matchedQueryRef.current='';
     setError('');setHasMore(false);setNextCursor(null);setLoadingMore(false);
-    setStatus('載入關聯文字…');
+    setStatus(UI_COPY.search.loadingRelation);
     try{
       let detail=null;
       let detailScope=scopeId;
@@ -227,15 +229,15 @@ export default function SearchV2(){
         detail=await selectGalaxyIdentity(scopeId,identity);
       }
       if(id!==searchId.current)return;
-      if(!detail)throw new Error('找不到這筆文字。');
-      const result=toResult({...detail,resolved_links:detail.links||[]},detail.source_name||'文字展示',detailScope);
+      if(!detail)throw new Error(UI_COPY.search.notFound);
+      const result=toResult({...detail,resolved_links:detail.links||[]},detail.source_name||UI_COPY.search.displaySource,detailScope);
       setResults([result]);
       setFullTextKey(result.key);
       setFullText(workDisplayText(detail.content||''));
-            setStatus('已載入關聯文字。');
+            setStatus(UI_COPY.search.relationLoaded);
     }catch(exception){
       if(id!==searchId.current)return;
-      setResults([]);setError(featureDataErrorMessage(exception));setStatus('文字載入失敗。');
+      setResults([]);setError(featureDataErrorMessage(exception));setStatus(UI_COPY.search.relationFailed);
     }
   }
 
@@ -263,10 +265,10 @@ export default function SearchV2(){
     setFullTextLoading(true);
     try{
       const fullRow=await selectGalaxyContent(result.scopeId,result.editResourceId||result.resourceId);
-      if(!fullRow)throw new Error('找不到全文資料。');
+      if(!fullRow)throw new Error(UI_COPY.search.fullTextNotFound);
       setFullText(workDisplayText(fullRow.content||''));
     }catch(exception){
-      setFullTextError(String(exception?.message||exception||'全文載入失敗。'));
+      setFullTextError(String(exception?.message||exception||UI_COPY.search.fullTextFailed));
     }finally{
       setFullTextLoading(false);
     }
@@ -284,7 +286,7 @@ export default function SearchV2(){
         id:result.editResourceId||result.resourceId,
         columns:contentColumns
       });
-      if(!fullRow)throw new Error('找不到要編輯的資料。');
+      if(!fullRow)throw new Error(UI_COPY.search.editNotFound);
       setEditDraft({
         title:String(fullRow.title??result.title??''),
         body:String(fullRow[result.editableField]??''),
@@ -292,14 +294,14 @@ export default function SearchV2(){
       });
     }catch(exception){
       setEditingKey('');
-      setEditError(String(exception?.message||exception||'無法載入編輯內容。'));
+      setEditError(String(exception?.message||exception||UI_COPY.search.editLoadFailed));
     }
   }
   async function saveEditing(result){
     if(!editDraft||!result.editableTable||!result.editableField)return;
     setEditBusy(true);setEditError('');
     try{
-      if(!account.canManageScopeSync(result.scopeId))throw new Error('沒有修改此內容的權限。');
+      if(!account.canManageScopeSync(result.scopeId))throw new Error(UI_COPY.search.editDenied);
       const body=result.resourceType==='galaxy'?requireGalaxyContent(editDraft.body):editDraft.body;
       const nextTitle=result.resourceType==='galaxy'
         ?resolveGalaxyTitle(editDraft.title,body)
@@ -314,7 +316,7 @@ export default function SearchV2(){
       setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:nextTitle,snippet:result.resourceType==='galaxy'?'':body}));
       if(fullTextKey===result.key)setFullText(editDraft.body);
       setEditingKey('');setEditDraft(null);
-    }catch(exception){setEditError(String(exception?.message||exception||'儲存失敗。'))}
+    }catch(exception){setEditError(String(exception?.message||exception||UI_COPY.search.saveFailed))}
     finally{setEditBusy(false)}
   }
 
@@ -322,14 +324,14 @@ export default function SearchV2(){
 
 
   return <FeaturePageV2 featureId="search">
-    <div className="scope-v2-tabs" role="group" aria-label="搜尋模式">
-      <button type="button" aria-pressed={searchMode==='all'} onClick={()=>{setSearchMode('all');setResults([]);setHasMore(false);setNextCursor(null);setStatus('輸入關鍵字開始搜尋。');}}>全部搜尋</button>
-      <button type="button" aria-pressed={searchMode==='media'} onClick={()=>{setSearchMode('media');setResults([]);setHasMore(false);setNextCursor(null);setStatus('輸入多媒體關鍵字、類型或來源識別。');}}>多媒體搜尋</button>
+    <div className="scope-v2-tabs" role="group" aria-label={UI_COPY.search.mode}>
+      <button type="button" aria-pressed={searchMode==='all'} onClick={()=>{setSearchMode('all');setResults([]);setHasMore(false);setNextCursor(null);setStatus(UI_COPY.search.start);}}>{UI_COPY.search.allSearch}</button>
+      <button type="button" aria-pressed={searchMode==='media'} onClick={()=>{setSearchMode('media');setResults([]);setHasMore(false);setNextCursor(null);setStatus(UI_COPY.search.mediaPrompt);}}>{UI_COPY.search.mediaSearch}</button>
     </div>
     <form className="scope-v2-search-form" onSubmit={runSearch}>
-      <label htmlFor="scope-search-query">{searchMode==='media'?'找多媒體':'你想找什麼？'}</label>
-      <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder={searchMode==='media'?'搜尋圖片、影音、網址、標籤或來源識別':'輸入關鍵字、作品名稱或文字'} aria-label={searchMode==='media'?'多媒體搜尋':'你想找什麼？'}/>
-      <button type="submit">搜尋</button>
+      <label htmlFor="scope-search-query">{searchMode==='media'?UI_COPY.search.mediaPromptLabel:UI_COPY.search.textPromptLabel}</label>
+      <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder={searchMode==='media'?UI_COPY.search.mediaPlaceholder:UI_COPY.search.textPlaceholder} aria-label={searchMode==='media'?UI_COPY.search.mediaSearch:UI_COPY.search.textPromptLabel}/>
+      <button type="submit">{UI_COPY.nav.search}</button>
     </form>
     <p className="scope-v2-status">{status}</p>
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
@@ -365,7 +367,7 @@ export default function SearchV2(){
             content={fullTextKey===row.key?fullText:''}
             onToggle={()=>toggleFullText(row)}
           />:null}
-          {editable?<p><button type="button" onClick={()=>startEditing(row)}>{editingKey===row.key?'編輯中':'編輯'}</button></p>:null}
+          {editable?<p><button type="button" onClick={()=>startEditing(row)}>{editingKey===row.key?UI_COPY.search.editing:UI_COPY.common.edit}</button></p>:null}
           {draft?<ContentEditorV2
             draft={draft}
             setDraft={setEditDraft}
