@@ -218,9 +218,9 @@ function GameDocs({data}){
     </div>}
 
     {section==='events'&&<div className="game-doc-copy">
-      <h2>32 張事件卡</h2>
+      <h2>{data.events.length} 張事件卡</h2>
       <div className="game-role-grid">
-        {data.events.map(event=><article key={event.id}><b>{event.id}｜{event.name}</b><span>{event.group}｜{event.requirement}</span><small>{event.description}</small></article>)}
+        {data.events.map(event=><article key={event.id}><b>{event.id}｜{event.name}</b><span>{event.group}{event.group2?'＋'+event.group2:''}｜{event.requirement}</span><small>{event.description}</small></article>)}
       </div>
       <h3>雙群組主視覺</h3>
       <div className="game-event-gallery">{data.eventVisuals.map(item=><EventVisual key={item.code} item={item}/>)}</div>
@@ -256,7 +256,7 @@ function BoardPreview({data}){
     <div className="game-preview-center">
       <p className="loc-eyebrow">事件區</p>
       <EventVisual item={data.eventVisuals[0]}/>
-      <p>32 張事件卡＋雙卡回應</p>
+      <p>{data.events.length} 張事件卡＋雙卡回應</p>
     </div>
     <div className="game-preview-player">
       <p className="loc-eyebrow">玩家 B</p>
@@ -269,8 +269,9 @@ function BoardPreview({data}){
 
 function freshGame(data,count){
   const eventDeck=shuffle(data.events);
+  const players=Array.from({length:count},(_,index)=>freshPlayer(data.cards,'玩家 '+NAMES[index],data.config));
   return {
-    players:Array.from({length:count},(_,index)=>freshPlayer(data.cards,'玩家 '+NAMES[index],data.config)),
+    players,
     eventDeck,
     eventIndex:0,
     round:1,
@@ -279,6 +280,9 @@ function freshGame(data,count){
     actions:0,
     winner:null,
     draw:false,
+    cooperations:[],
+    lastInteraction:null,
+    history:[deSnapshot(players,'開始')],
     logs:['新遊戲開始。'],
     result:'每位玩家先從 '+data.config.openingDraw+' 張起手牌各棄 '+data.config.openingDiscard+' 張，保留 '+data.config.handBase+' 張。'
   };
@@ -300,10 +304,13 @@ export default function GameView(){
   const [state,setState]=useState(null);
   const [playerCount,setPlayerCount]=useState(2);
   const [homeView,setHomeView]=useState('play');
+  const [networkTarget,setNetworkTarget]=useState(null);
 
   const event=state?.eventDeck?.length?state.eventDeck[state.eventIndex%state.eventDeck.length]:null;
   const allOpened=state?.players.every(player=>!player.opening);
   const phaseLabel=state?.phase==='event'?'事件':state?.phase==='duel'?'決鬥':'共鳴';
+
+  useEffect(()=>{setNetworkTarget(null);},[state?.round,state?.active,state?.phase]);
 
   const status=useMemo(()=>{
     if(error)return '遊戲資料載入失敗：'+error.message;
@@ -498,7 +505,7 @@ export default function GameView(){
         </label>
         <button className="loc-button primary" onClick={start}>開始新遊戲</button>
         <p className="loc-status">{status}</p>
-        <p className="loc-note">遊戲包含 32 張事件卡、66 枚符文行動與八種職業；開始前可先從「遊戲文件」查看完整規則。</p>
+        <p className="loc-note">事件牌庫由 Neon 擴充，不受實體印刷張數限制；目前 {data.events.length} 張事件卡、66 枚符文行動與八種職業。</p>
       </div>
     </>}
   </section>;
