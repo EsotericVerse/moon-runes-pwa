@@ -1,14 +1,5 @@
 export const LOC_GOVERNANCE_SUBTITLE='說明月典的使用原則、權利邊界與管理方式。';
 
-export function LocGovernanceLaw({canEdit=false}){
-  return <section className="loc-card" id="copyright">
-    <h2>公開程式碼與授權</h2>
-    <p>LOC Repository 的公開可見性主要用於檢視、協作與版本追溯；公開可讀不等於整個 LOC 專案已被授權為 Open Source，也不代表其中所有內容都可以自由複製、改作、散布或商業使用。</p>
-    <p>若特定程式碼、檔案或資產另有明示的 LICENSE 或授權聲明，該部分依其明示條件處理；沒有明示授權的內容，不由本頁擴張其使用權。</p>
-    <p>LOC 的名稱、文件、架構敘述、資料內容、個人作品、LunaRunes、第三方內容、私人資料與另有權利條件的資產，各自維持原有的權利狀態。</p>
-  </section>;
-}
-
 export default function LocGovernance({canEdit=false}){
   return <>
     <div className="loc-grid two governance-grid governance-grid-loc">
@@ -35,6 +26,5 @@ export default function LocGovernance({canEdit=false}){
         <p>時間、事件、多媒體、來源與地點都可以成為脈絡的一部分；月典只呈現紀錄與關係，不替使用者解釋其心理或人生意義。</p>
       </section>
     </div>
-    <LocGovernanceLaw canEdit={canEdit}/>
   </>;
 }
