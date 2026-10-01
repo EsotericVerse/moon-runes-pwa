@@ -1,0 +1,128 @@
+'use client';
+
+import RuneCardInfo from './RuneCardInfo';
+import RuneSingleReading from './RuneSingleReading';
+import {RUNE_DRAW_MODES} from './rune-draw-modes.mjs';
+import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
+
+const ROTATION_CLASSES=['rune-rotate-0','rune-rotate-90','rune-rotate-n90','rune-rotate-180'];
+
+function directionNo(direction){
+  return ['正位','半正位','半逆位','逆位'].indexOf(direction)+1;
+}
+function runeEtcText(card,type,direction){
+  return String(card?.rune_etc?.[type]?.[directionNo(direction)]||'').trim();
+}
+function directionText(card,direction){
+  return runeEtcText(card,'direction',direction)||String(card?.rune_description||'').trim();
+}
+function dailySections(card,direction){
+  const raw=runeEtcText(card,'daily',direction)||directionText(card,direction);
+  if(!raw)return [{label:'今日指引',text:'目前沒有這個位向的每日指示。'}];
+
+  const lines=raw.split(/\r?\n+/).map(item=>item.trim()).filter(Boolean);
+  if(lines.length>1){
+    return lines.map(line=>{
+      const match=line.match(/^([^：:]{1,12})[：:]\s*(.+)$/);
+      return match?{label:match[1].trim(),text:match[2].trim()}:{label:'',text:line};
+    });
+  }
+
+  const matches=[...raw.matchAll(/(?:^|[；;]\s*)([^：:；;]{1,12})[：:]\s*([^；;]+)(?=$|[；;])/g)];
+  if(matches.length>1)return matches.map(match=>({label:match[1].trim(),text:match[2].trim()}));
+
+  return [{label:'今日指引',text:raw}];
+}
+function runeCardImage(card){
+  const number=String(Number(card?.rune_id)||0).padStart(2,'0');
+  const name=String(card?.rune_name||'').replace(/之符文$/,'').trim();
+  return `/assets/lunarunes/cards/${number}_${name}.png`;
+}
+
+export default function RuneSingleDailySurface({
+  modeKey,
+  selectedMode,
+  draw,
+  ritualStep,
+  ritualMessage,
+  moonPhase,
+  error,
+  ritualCard,
+  onRetry
+}){
+  const isDaily=modeKey==='daily';
+  const drawnCard=draw?.cards?.[0]||null;
+  const displayCard=drawnCard||ritualCard||{rune_id:65,rune_name:'玄'};
+  const displayDirection=drawnCard?draw?.directions?.[0]||'':'';
+  const directionIndex=drawnCard?Number(draw?.directionIndexes?.[0]??0):0;
+  const waiting=ritualStep>=0;
+  const dailyItems=drawnCard&&isDaily?dailySections(drawnCard,displayDirection):[];
+
+  return <>
+    <section className="loc-card runes-single-daily-stage" id="draw" data-draw-mode={modeKey}>
+      <div className="home-rune-layout">
+        <RuneCardInfo
+          card={displayCard}
+          imageSrc={runeCardImage(displayCard)}
+          imageClassName={`loc-rune-card-image ${drawnCard?ROTATION_CLASSES[directionIndex]:'rune-rotate-0'}`}
+          direction={displayDirection}
+          realMoonPhase={moonPhase}
+          layout="home"
+        />
+
+        <div className="home-rune-copy home-rune-copy-plain">
+          {waiting?<>
+            <p className="loc-eyebrow">等待片刻</p>
+            <h2>{ritualMessage}</h2>
+            <p>{selectedMode.label}抽牌進行中。</p>
+            <p>真實月相：{moonPhase}</p>
+          </>:null}
+
+          {!waiting&&error?<p className="loc-status error">{error}</p>:null}
+
+          {!waiting&&drawnCard&&!isDaily?<>
+            <p className="loc-eyebrow">單卡籤詩</p>
+            <h2>{drawnCard.rune_name} · {displayDirection}</h2>
+            <RuneSingleReading card={drawnCard} direction={displayDirection} bubbleLayout/>
+          </>:null}
+
+          {!waiting&&drawnCard&&isDaily?<>
+            <p className="loc-eyebrow">每日指示</p>
+            <h2>{drawnCard.rune_name} · {displayDirection}</h2>
+            <div className="home-draw-bubbles" aria-label="每日符文建議">
+              {dailyItems.map((item,index)=><div className="loc-bubble" key={item.label+'-'+index}>
+                {item.label?<strong>{item.label}</strong>:null}
+                <p>{item.text}</p>
+              </div>)}
+            </div>
+          </>:null}
+
+          {!waiting&&!drawnCard&&!error?<>
+            <p className="loc-eyebrow">{selectedMode.label}抽牌</p>
+            <h2>{selectedMode.description}</h2>
+          </>:null}
+
+          {!waiting&&drawnCard?<div className="loc-actions runes-retry">
+            <button type="button" className="loc-button" onClick={onRetry}>再抽一次</button>
+          </div>:null}
+        </div>
+      </div>
+    </section>
+
+    <section className="loc-card" data-draw-selection={modeKey}>
+      <p className="loc-eyebrow">抽牌選擇</p>
+      <h2>選擇抽牌方式</h2>
+      <div className="home-draw-bubbles" aria-label="選擇抽牌方式">
+        {RUNE_DRAW_MODES.map(item=><a
+          className="loc-bubble"
+          key={item.key}
+          href={scopeHrefV2('lunarunes',item.path)}
+          aria-current={item.key===modeKey?'page':undefined}
+        >
+          <strong>{item.label}</strong>
+          <p>{item.description}</p>
+        </a>)}
+      </div>
+    </section>
+  </>;
+}
