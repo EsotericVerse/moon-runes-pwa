@@ -86,26 +86,6 @@ function SystemsCopy(){
   </div>;
 }
 
-function ArchiveTools(){
-  return <div className="author-role-grid">
-    <article className="author-editorial-block">
-      <h3>文化 · Culture</h3>
-      <p>把作品放回時間長河與來源分布，先看不同時期如何出現、集中、稀疏與交會，再回到原始內容理解脈絡。</p>
-      <p><a href="/lo3rwang/culture/">查看文化 →</a></p>
-    </article>
-    <article className="author-editorial-block">
-      <h3>統計 · Statistics</h3>
-      <p>把作品數量、來源與其他可計算資料整理成分布與比較。數字用來看結構，不直接代替內容判讀。</p>
-      <p><a href="/lo3rwang/statics/">查看統計 →</a></p>
-    </article>
-    <article className="author-editorial-block">
-      <h3>搜尋 · Search</h3>
-      <p>從累積的文字、作品與多媒體描述中找回原文、標題、來源與相關紀錄；搜尋負責找到資料，不替資料生成新的語意。</p>
-      <p><a href="/lo3rwang/search/">開始搜尋 →</a></p>
-    </article>
-  </div>;
-}
-
 function OfficialLinks(){
   return <div className="author-official-links">
     {OFFICIAL_LINKS.map(link=><a href={link.href} target="_blank" rel="noopener noreferrer" key={link.href}>{link.label}</a>)}
@@ -238,15 +218,6 @@ export default function AuthorHomeView({section=null}){
               <DigitalAssetCopy/>
             </article>
           </div>
-        </>
-      },
-      {
-        id:'archive-tools',
-        eyebrow:'Explore',
-        title:'文化、統計與搜尋',
-        content:<>
-          <p className="author-section-lead">同一批作品可以從時間、數量與文字三個方向重新閱讀；三個功能都回到原始資料，不替作品增加新的判定。</p>
-          <ArchiveTools/>
         </>
       },
       {
