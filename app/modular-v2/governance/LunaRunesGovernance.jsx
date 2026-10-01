@@ -7,16 +7,16 @@ export default function LunaRunesGovernance({canEdit=false}){
         <h2>使用原則</h2>
         <p>月之符文，是一套符號式語言宇宙。</p>
         <p><strong>符文名稱與定義永遠恆定。</strong></p>
-        <div className="loc-context-list">
-          <p><strong>靈魂 Soul（1–8）：</strong>靈 Spirit · 魂 Soul · 彩 Spectrum · 憶 Memory · 界 Boundary · 域 Domain · 鏡 Mirror · 核 Core</p>
-          <p><strong>連結 Link（9–16）：</strong>向 Path · 斷 Sever · 封 Seal · 鍊 Chain · 啟 Awaken · 分 Separation · 悟 Insight · 誤 Error</p>
-          <p><strong>生命 Life（17–24）：</strong>生 Birth · 老 Aging · 病 Illness · 死 Death · 心 Heart · 愛 Love · 語 Language · 韻 Resonance</p>
-          <p><strong>自然 Nature（25–32）：</strong>樹 Tree · 花 Blossom · 葉 Leaf · 草 Grass · 根 Root · 種 Seed · 實 Fruit · 枝 Branch</p>
-          <p><strong>礦物 Mineral（33–40）：</strong>金 Gold · 玉 Jade · 晶 Crystal · 地 Land · 石 Stone · 鑽 Diamond · 礦 Ore · 塵 Dust</p>
-          <p><strong>元素 Element（41–48）：</strong>光 Radiance · 暗 Shadow · 水 Water · 火 Flame · 風 Wind · 土 Earth · 雷 Thunder · 氣 Air</p>
-          <p><strong>秩序 Order（49–56）：</strong>日 Sun · 月 Moon · 星 Star · 辰 Phase · 明 Clarity · 時 Time · 空 Space · 因 Reason</p>
-          <p><strong>無序 Disorder（57–64）：</strong>福 Blessing · 禍 Calamity · 無 Blank · 夢 Dream · 幻 Illusion · 緣 Karma · 虛 Void · 果 Result</p>
-          <p><strong>特殊 Special：</strong>65 玄 Chaos · 66 命 Fate · 0 德 Virtue</p>
+        <div className="lunarunes-governance-groups">
+          <div className="lunarunes-governance-group"><strong>靈魂 Soul（1–8）</strong><span>靈 Spirit · 魂 Soul · 彩 Spectrum · 憶 Memory · 界 Boundary · 域 Domain · 鏡 Mirror · 核 Core</span></div>
+          <div className="lunarunes-governance-group"><strong>連結 Link（9–16）</strong><span>向 Path · 斷 Sever · 封 Seal · 鍊 Chain · 啟 Awaken · 分 Separation · 悟 Insight · 誤 Error</span></div>
+          <div className="lunarunes-governance-group"><strong>生命 Life（17–24）</strong><span>生 Birth · 老 Aging · 病 Illness · 死 Death · 心 Heart · 愛 Love · 語 Language · 韻 Resonance</span></div>
+          <div className="lunarunes-governance-group"><strong>自然 Nature（25–32）</strong><span>樹 Tree · 花 Blossom · 葉 Leaf · 草 Grass · 根 Root · 種 Seed · 實 Fruit · 枝 Branch</span></div>
+          <div className="lunarunes-governance-group"><strong>礦物 Mineral（33–40）</strong><span>金 Gold · 玉 Jade · 晶 Crystal · 地 Land · 石 Stone · 鑽 Diamond · 礦 Ore · 塵 Dust</span></div>
+          <div className="lunarunes-governance-group"><strong>元素 Element（41–48）</strong><span>光 Radiance · 暗 Shadow · 水 Water · 火 Flame · 風 Wind · 土 Earth · 雷 Thunder · 氣 Air</span></div>
+          <div className="lunarunes-governance-group"><strong>秩序 Order（49–56）</strong><span>日 Sun · 月 Moon · 星 Star · 辰 Phase · 明 Clarity · 時 Time · 空 Space · 因 Reason</span></div>
+          <div className="lunarunes-governance-group"><strong>無序 Disorder（57–64）</strong><span>福 Blessing · 禍 Calamity · 無 Blank · 夢 Dream · 幻 Illusion · 緣 Karma · 虛 Void · 果 Result</span></div>
+          <div className="lunarunes-governance-group"><strong>特殊 Special</strong><span>65 玄 Chaos · 66 命 Fate · 0 德 Virtue</span></div>
         </div>
       </section>
       <section className="loc-card" id="neutrality">
