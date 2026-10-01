@@ -56,6 +56,26 @@
 .loc-rune-principle{padding:.9rem;border-left:3px solid var(--loc-accent);background:var(--loc-surface-soft)}
 .loc-rune-principle p:last-child{margin-bottom:0}
 
+.lunarunes-governance-groups{
+  display:grid;
+  gap:.75rem;
+  margin-top:1rem;
+}
+.lunarunes-governance-group{
+  display:grid;
+  gap:.25rem;
+  min-width:0;
+  padding:.7rem .8rem;
+  border-left:3px solid var(--loc-line);
+  background:var(--loc-surface-soft);
+}
+.lunarunes-governance-group strong,
+.lunarunes-governance-group span{
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+.lunarunes-governance-group span{line-height:1.65}
+
 /* Governance: preserve different content models while keeping editorial rhythm consistent. */
 .governance-grid,
 .governance-law-grid{align-items:stretch}
