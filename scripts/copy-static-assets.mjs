@@ -25,6 +25,7 @@ const publicPics=[
   'g2c-mineral.life.jpg',
   'g3c-nature.element.jpg',
   'g4c-order.disorder.jpg',
+  'LOC-FrameworkPic.png',
   'LOC-PicAll.png',
   'LunaRunes.png',
   'aboutme.png'
