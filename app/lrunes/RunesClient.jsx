@@ -4,7 +4,7 @@ import Select from 'react-select';
 import {scopeOriginV2} from '../modular-v2/scope-registry.v2';
 import DailyRuneCalendar from './DailyRuneCalendar';
 
-const runeHref=path=>`${scopeOriginV2('lunarunes')}/${String(path||'').replace(/^\\/+/, '')}`;
+const runeHref=path=>{const clean=String(path||'').split('/').filter(Boolean).join('/');return `${scopeOriginV2('lunarunes')}/${clean}`;};
 
 const HOME_RUNE_OPTIONS=Object.freeze([
   {value:'list',label:'符文圖鑑',href:runeHref('list')},
