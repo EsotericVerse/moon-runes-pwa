@@ -38,6 +38,28 @@ export default function RuneCardInfo({
   const positive=text(card.positive_keywords)||'—';
   const negative=text(card.negative_keywords)||'—';
 
+  if(layout==='home'){
+    return <div className="home-rune-preview" data-rune-id={dataRuneId??card.rune_id}>
+      {imageSrc?<img className={imageClassName} src={imageSrc} alt={runeTitle(card)}/>:null}
+      <div className="home-rune-card-data">
+        <div className="home-rune-card-title">
+          <strong>{runeTitle(card)}</strong>
+          {glyph?<span className="home-rune-glyph">{glyph}</span>:null}
+          {english?<span>({english})</span>:null}
+        </div>
+        <p>{description||'—'}{archetype?' / '+archetype:''}</p>
+        <details className="home-rune-keywords">
+          <summary>關鍵詞（點擊展開）</summary>
+          <p>正面：{positive}</p>
+          <p>負面：{negative}</p>
+        </details>
+        <p>所屬分組：{group} / 卡片屬性：{cardAttr}</p>
+        <p>卡片月相：{cardMoon}{realMoonPhase?' / 真實月相：'+realMoonPhase:''}</p>
+        {direction?<p className="home-rune-direction">卡片面向：<strong>{direction}</strong></p>:null}
+      </div>
+    </div>;
+  }
+
   if(layout==='profile'){
     return <>
       <div className="runes-rune-profile">
