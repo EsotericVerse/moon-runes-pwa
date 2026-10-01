@@ -531,8 +531,6 @@ export default function GameView(){
     </>}
   </section>;
 
-  const eventGroupVisual=event?groupVisual(data.groupAssets,event.group):null;
-
   return <section className="loc-view loc-game game-shell">
     <header className="loc-hero game-compact-hero">
       <div><p className="loc-eyebrow">月之符文遊戲</p><h1>月之符文遊戲</h1><p>{status}｜{state.result}</p></div>
@@ -556,23 +554,29 @@ export default function GameView(){
         {player.opening?<button className="loc-button primary" onClick={()=>confirmOpening(pi)} disabled={player.selected.length!==data.config.openingDiscard}>棄 {data.config.openingDiscard} 張，保留 {data.config.handBase} 張</button>:null}
       </section>)}
 
-      {allOpened&&state.phase==='event'?<section className="loc-event game-event-field">
-        <p className="loc-eyebrow">第 {state.round} 回合 · 事件</p>
-        {eventGroupVisual?<EventVisual item={eventGroupVisual}/>:null}
-        {event?<><h2>{event.id}｜{event.name}</h2><p>{event.desc}</p><p className="game-player-meta">條件：{event.requirement}</p><button className="loc-button primary" onClick={resolveEvent} disabled={state.players.some(player=>player.selected.length!==data.config.eventResponseCards)}>{data.config.eventResponseCards} 卡結算事件</button></>:null}
-      </section>:null}
+      <AnimatePresence mode="wait">
+        {allOpened&&state.phase==='event'?<motion.section key={'event-'+state.round} initial={{opacity:0,y:18}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-18}} className="loc-event game-event-field">
+          <p className="loc-eyebrow">第 {state.round} 回合 · 事件</p>
+          <EventScene event={event} data={data}/>
+          {event?<><h2>{event.id}｜{event.name}</h2><p>{event.desc}</p><p className="game-player-meta">條件：{event.requirement}</p><button className="loc-button primary" onClick={resolveEvent} disabled={state.players.some(player=>player.selected.length!==data.config.eventResponseCards)}>{data.config.eventResponseCards} 卡結算事件</button></>:null}
+        </motion.section>:null}
 
-      {allOpened&&(state.phase?.includes('resonance')||state.phase==='duel')?<section className="loc-event game-event-field game-resonance-field">
-        <p className="loc-eyebrow">{state.phase==='duel'?'第 9 回合 · 決鬥':'第 '+state.round+' 回合 · 共鳴'}</p>
-        <div className="game-resonance-orbit"><span/><i/><span/></div>
-        <h2>{state.phase==='duel'?'決鬥':'共鳴'}</h2>
-        <p>輪到 {state.players[state.active].name}</p>
-        <div className="loc-actions">
-          <button className="loc-button primary" onClick={()=>resonance('self')}>自我共振 {signed(data.config.resonanceSelf)}</button>
-          {(state.phase==='duel'?(state.duelists||[]):state.players.map((_,index)=>index)).filter(index=>index!==state.active).map(index=><button className="loc-button" key={index} onClick={()=>resonance('attack',index)}>對 {state.players[index].name} {signed(data.config.resonanceAttack)}</button>)}
-        </div>
-      </section>:null}
+        {allOpened&&(state.phase?.includes('resonance')||state.phase==='duel')?<motion.section key={'resonance-'+state.round} initial={{opacity:0,scale:.98}} animate={{opacity:1,scale:1}} exit={{opacity:0,scale:.98}} className="loc-event game-event-field game-resonance-field">
+          <p className="loc-eyebrow">{state.phase==='duel'?'第 9 回合 · 決鬥':'第 '+state.round+' 回合 · 共鳴'}</p>
+          <h2>{state.phase==='duel'?'決鬥':'共鳴'}</h2>
+          <p>輪到 {state.players[state.active].name}{networkTarget!==null&&networkTarget!==state.active?'｜已選 '+state.players[networkTarget].name:''}</p>
+          <ResonanceNetwork players={state.players} active={state.active} cooperations={state.cooperations||[]} lastInteraction={state.lastInteraction} onSelect={setNetworkTarget}/>
+          <div className="loc-actions">
+            <button className="loc-button primary" onClick={()=>resonance('self')}>自我共振 {signed(data.config.resonanceSelf)}</button>
+            {networkTarget!==null&&networkTarget!==state.active?<button className="loc-button" onClick={()=>resonance('attack',networkTarget)}>干擾 {state.players[networkTarget].name} {signed(data.config.resonanceAttack)}</button>:null}
+            {state.phase!=='duel'&&networkTarget!==null&&networkTarget!==state.active?<button className="loc-button" onClick={()=>toggleCooperation(networkTarget)}>{(state.cooperations||[]).some(item=>samePair(item.a,item.b,state.active,networkTarget))?'解除合作':'建立合作'}</button>:null}
+          </div>
+          <p className="game-player-meta">合作狀態目前只作互動標記，不改變 De 或既有規則。</p>
+        </motion.section>:null}
+      </AnimatePresence>
     </div>
+
+    <MatchTrend history={state.history||[]} players={state.players}/>
 
     <section className="loc-card game-log-card">
       <h2>對局紀錄</h2>
