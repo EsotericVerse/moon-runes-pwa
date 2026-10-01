@@ -55,7 +55,7 @@ export default function ManagementDataPanel({scopeId}){
   const pageCount=Math.max(1,Math.ceil(total/PAGE_SIZE));
 
   return <section className="loc-card scope-v2-feature-card">
-    <p className="loc-eyebrow">Canonical Data</p>
+    <p className="loc-eyebrow">{UI_COPY.management.data}</p>
     <h2>{UI_COPY.management.data}</h2>
     <p>管理視圖直接讀取此 Scope 的 canonical tables；不套用公開搜尋、統計或時間長河的顯示條件。</p>
     <div className="scope-v2-stat-controls">
