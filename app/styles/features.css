@@ -84,7 +84,6 @@
   min-width:0;
   height:100%;
 }
-.governance-grid-personal>.governance-card-wide{grid-column:1/-1}
 .governance-management-cta{
   display:grid;
   grid-template-columns:minmax(0,1fr) auto;
@@ -99,7 +98,6 @@
   justify-self:end;
 }
 @media(max-width:700px){
-  .governance-grid-personal>.governance-card-wide{grid-column:auto}
   .governance-management-cta{grid-template-columns:1fr}
   .governance-management-cta h2,
   .governance-management-cta p,
