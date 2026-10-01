@@ -143,7 +143,7 @@ export default function AboutView(){
       <div className="home-author-copy"><p><strong>loc-km-governance</strong>：檢查 Canon、KM、Registry、Base66、術語一致性、資料權威。</p>
 	  <p><strong>loc-repo-health-check</strong>：檢查儲存庫結構、路徑、API／搜尋、部署與效能風險等。</p>
 	  <p>Skills 不是另一套理論，而是把 LOC 已形成的治理管理理念跟方法，轉成GPT可以重複執行的工作流程。</p>
-	  <div className="loc-actions"><a className="loc-button primary" href="/LOC-GPT-Skills-v1.0.0-bundle.zip">下載 LOC GPT Skills v1.0.0</a></div></div>
+	  <div className="loc-actions"><a className="loc-button primary" href="/LOC-GPT-Skills-v2.0-bundle.zip">下載 LOC GPT Skills v2.0</a></div></div>
 
     </section>
 
