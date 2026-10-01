@@ -70,6 +70,39 @@ const GameRow=z.object({
   asset_title:z.string().nullable().optional()
 }).passthrough();
 
+export const PlayableEvent=z.object({
+  id:z.string().min(1),
+  name:z.string().min(1),
+  description:z.string(),
+  groups:z.array(z.string().min(1)).max(8),
+  requirement:z.string(),
+  req:z.array(z.string().min(1)).max(4),
+  origin:z.enum(['catalog','generated']),
+  runeContext:z.array(z.coerce.number().int().min(1).max(66)).max(66).default([]),
+  seed:z.string().nullable().default(null),
+  generatorVersion:z.string().nullable().default(null)
+});
+
+export function normalizePlayableEvent(input){
+  const groups=Array.isArray(input?.groups)
+    ?[...new Set(input.groups.map(value=>String(value||'').trim()).filter(Boolean))]
+    :[input?.group,input?.group2].map(value=>String(value||'').trim()).filter(Boolean);
+  const requirement=String(input?.requirement||'').trim();
+  const req=Array.isArray(input?.req)?input.req:splitRequirement(requirement);
+  return PlayableEvent.parse({
+    id:String(input?.id||'').trim(),
+    name:String(input?.name||'').trim(),
+    description:String(input?.description||'').trim(),
+    groups,
+    requirement,
+    req,
+    origin:input?.origin==='generated'?'generated':'catalog',
+    runeContext:Array.isArray(input?.runeContext)?input.runeContext:[],
+    seed:input?.seed??null,
+    generatorVersion:input?.generatorVersion??null
+  });
+}
+
 const GAME_RUNE_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,extra_rules,extra_notes';
 const GAME_COLUMNS=Object.freeze({
   macro:'game_key,record_type,sort_order,status,is_current,macro_code,macro_group_a,macro_group_b,macro_title,macro_description',
@@ -196,16 +229,13 @@ export async function loadGameData(){
 
   const events=eventRows
     .sort((a,b)=>a.sort_order-b.sort_order)
-    .map(row=>({
+    .map(row=>normalizePlayableEvent({
       id:row.event_id,
       name:row.event_title,
-      group:row.event_group,
-      group2:row.event_group_2||null,
-      requirement:row.event_requirement,
-      req:splitRequirement(row.event_requirement),
       description:row.event_description,
-      desc:row.event_description,
-      status:row.status
+      groups:[row.event_group,row.event_group_2].filter(Boolean),
+      requirement:row.event_requirement,
+      origin:'catalog'
     }));
   if(events.length<32)throw new Error('silver.game Event 數量少於 Alpha 基線 32。');
 
