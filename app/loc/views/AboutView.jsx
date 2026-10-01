@@ -123,11 +123,8 @@ export default function AboutView(){
         <p className="loc-eyebrow">Current Progress</p><h2>進度</h2>
         <p className="loc-subtitle">目前系統已能把大量文字與作品整理後，進一步搜尋、統計、放回時間脈絡，並保留可持續擴充與調整的空間。</p>
       </div>
-      <div className="home-progress-grid" aria-label="LOC 目前進度">
-        <article className="home-progress-item">
-          <strong>目前進度</strong>
-          <span>LOC 已從單純整理資料，逐步形成可搜尋、可統計、可回看時間分布與關係脈絡的語言建築框架；現階段重點是讓既有資料、分析結果與多媒體能在同一套架構中持續運作。</span>
-        </article>
+      <div className="home-author-copy">
+        <p>LOC 已從單純整理資料，逐步形成可搜尋、可統計、可回看時間分布與關係脈絡的語言建築框架；現階段重點是讓既有資料、分析結果與多媒體能在同一套架構中持續運作。</p>
       </div>
       <div className="home-draw-bubbles" aria-label="LOC 進度文字泡泡">
         <span className="loc-bubble">資料整理<p>文字與作品進入統一結構。</p></span>
