@@ -147,19 +147,23 @@ function signed(value){
 
 function DeMeter({value=0,max=8}){
   return <div className="game-de-meter" aria-label={'De '+value+' / '+max} style={{gridTemplateColumns:'repeat('+max+',1fr)'}}>
-    {Array.from({length:max},(_,index)=><span key={index} className={index<value?'is-on':''}/>)}
+    {Array.from({length:max},(_,index)=><motion.span key={index} className={index<value?'is-on':''} animate={{scaleY:index<value?1.3:1,opacity:index<value?1:.65}} transition={{duration:.18}}/>)}
   </div>;
 }
 
 function RuneCard({card,selected=false,onClick=null,compact=false}){
   if(!card)return null;
-  const Tag=onClick?'button':'div';
+  const Tag=onClick?motion.button:motion.div;
   return <Tag
+    layout
     type={onClick?'button':undefined}
     className={'game-rune-card'+(selected?' is-selected':'')+(compact?' is-compact':'')}
     onClick={onClick||undefined}
     aria-pressed={onClick?selected:undefined}
     title={card.name+'｜'+card.group+(card.action?'｜'+card.action:'')}
+    animate={{y:selected?-8:0,scale:selected?1.025:1}}
+    whileHover={onClick?{y:-5,scale:1.015}:undefined}
+    transition={{type:'spring',stiffness:340,damping:26}}
   >
     <img src={runeCardImage(card)} alt={card.name+'符文卡'} loading="lazy"/>
     <span><b>{String(card.id).padStart(2,'0')} {card.name}</b><small>{card.group}</small></span>
@@ -168,10 +172,10 @@ function RuneCard({card,selected=false,onClick=null,compact=false}){
 
 function EventVisual({item,small=false}){
   if(!item)return null;
-  return <figure className={'game-event-visual'+(small?' is-small':'')}>
+  return <motion.figure layout initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-10}} className={'game-event-visual'+(small?' is-small':'')}>
     <img src={item.path} alt={(item.title||'事件')+'圖'} loading="lazy"/>
     <figcaption>{item.title}</figcaption>
-  </figure>;
+  </motion.figure>;
 }
 
 function RoundRail({round=1,rounds=[]}){
@@ -180,9 +184,9 @@ function RoundRail({round=1,rounds=[]}){
     {sequence.map(item=>{
       const current=item.round===round;
       const done=item.round<round;
-      return <div className={'game-round-node'+(current?' is-current':'')+(done?' is-done':'')} key={item.round}>
+      return <motion.div layout className={'game-round-node'+(current?' is-current':'')+(done?' is-done':'')} key={item.round} animate={{y:current?-2:0,scale:current?1.025:1}} transition={{duration:.18}}>
         <span>第 {item.round} 回合</span><b>{phaseMark(item.phase)}</b>
-      </div>;
+      </motion.div>;
     })}
   </div>;
 }
