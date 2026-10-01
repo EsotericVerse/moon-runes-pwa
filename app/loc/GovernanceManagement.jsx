@@ -111,7 +111,7 @@ export default function GovernanceManagement(){
 
   if(!canManage)return <section className="loc-view">
     <header className="loc-hero"><p className="loc-eyebrow">Management</p><h1>{scope.label}管理</h1></header>
-    <section className="loc-card"><p>{UI_COPY.management.permissionDenied}</p><button type="button" onClick={account.signOut}>登出</button></section>
+    <section className="loc-card"><p>{UI_COPY.management.permissionDenied}</p><button type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button></section>
   </section>;
 
   const selected=options.find(option=>option.value===section)||options[0]||null;
@@ -135,7 +135,7 @@ export default function GovernanceManagement(){
           onChange={option=>option?.value&&setSection(option.value)}
         />
       </div>
-      <p><button type="button" onClick={account.signOut}>登出</button></p>
+      <p><button type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button></p>
     </header>
 
     {section==='data'?<ManagementDataPanel scopeId={scopeId}/>:null}
