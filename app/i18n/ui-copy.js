@@ -143,7 +143,9 @@ const zhHant=Object.freeze({
     distribution:'時間分布',
     river:'時間長河',
     intersectionRiver:'交會時間長河',
+    combinedSources:'綜合來源',
     combinedRiver:'綜合來源時間長河',
+    classificationRiver:'作品分類河道',
     structure:'時期・事件・定錨點',
     period:'時期',
     allTime:'全部時間',
@@ -190,6 +192,10 @@ const zhHant=Object.freeze({
     item:'管理項目',
     noOptions:'沒有符合的管理項目',
     permissionDenied:'目前登入身份沒有此區域的管理權限。',
+    eyebrow:'管理',
+    locTitle:'LOC 系統管理',
+    locDescription:'LOC 的系統管理已集中到獨立管理站。',
+    locAdminLink:'前往 admin.lo3rwang.cc',
     dataType:'資料類型',
     galaxyText:'Galaxy 文字',
     searchStatus:'搜尋狀態',
@@ -220,6 +226,17 @@ const zhHant=Object.freeze({
     addSuno:'儲存 Suno 資料',
     songTitle:'歌名',
     lyrics:'歌詞'
+  }),
+  admin:Object.freeze({
+    eyebrow:'系統管理',
+    loginTitle:'系統管理登入',
+    loginIntro:'Admin 是獨立管理站，不屬於 Scope。',
+    signIn:'使用 Google 登入 Neon',
+    checking:'正在確認 Admin 權限…',
+    denied:'目前登入身份沒有 Admin 權限。',
+    overview:'區域總覽',
+    theme:'預設 Theme',
+    item:'管理項目'
   }),
   format:Object.freeze({
     searchScope:label=>`搜尋「${label}」資料…`,
