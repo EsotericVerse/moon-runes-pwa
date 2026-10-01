@@ -5,7 +5,7 @@ import {useQuery} from '@tanstack/react-query';
 import Select from 'react-select';
 import {Index} from 'flexsearch';
 import {AnimatePresence,motion} from 'motion/react';
-import {CartesianGrid,Legend,Line,LineChart,ResponsiveContainer,Tooltip,XAxis,YAxis} from 'recharts';
+import {CartesianGrid,Legend,Line,LineChart,ReferenceLine,ResponsiveContainer,Tooltip,XAxis,YAxis} from 'recharts';
 import {
   applyDe,draw,evaluateAlphaEvent,finishOpening,freshPlayer,loadGameData,shuffle
 } from './game-data';
@@ -39,7 +39,7 @@ function EventScene({event,data}){
   </div>;
 }
 
-function MatchTrend({history=[],players=[]}){
+function MatchTrend({history=[],players=[],focusPlayer=null,focusStep=''}) {
   if(history.length<2)return null;
   return <section className="loc-card game-trend-card">
     <h2>De 軌跡</h2>
@@ -51,14 +51,15 @@ function MatchTrend({history=[],players=[]}){
           <YAxis allowDecimals={false} tick={{fill:'var(--loc-text)'}} stroke="var(--loc-line)"/>
           <Tooltip contentStyle={CHART_TOOLTIP}/>
           <Legend/>
-          {players.map((player,index)=><Line key={player.name} type="monotone" dataKey={NAMES[index]} name={player.name} stroke={CHART_STROKES[index%CHART_STROKES.length]} strokeWidth={2.5} dot={{r:3}} isAnimationActive/>)}
+          {focusStep?<ReferenceLine x={focusStep} stroke="var(--loc-gold)" strokeDasharray="4 4"/>:null}
+          {players.map((player,index)=><Line key={player.name} type="monotone" dataKey={NAMES[index]} name={player.name} stroke={CHART_STROKES[index%CHART_STROKES.length]} strokeWidth={focusPlayer===null||focusPlayer===index?3:1.5} strokeOpacity={focusPlayer===null||focusPlayer===index?1:.28} dot={{r:focusPlayer===index?5:3}} isAnimationActive/>)}
         </LineChart>
       </ResponsiveContainer>
     </div>
   </section>;
 }
 
-function ResonanceNetwork({players=[],active=0,cooperations=[],lastInteraction=null,onSelect=null}){
+function ResonanceNetwork({players=[],active=0,focusPlayer=null,cooperations=[],lastInteraction=null,onSelect=null}){
   const containerRef=useRef(null);
   const [error,setError]=useState('');
   useEffect(()=>{
@@ -82,9 +83,9 @@ function ResonanceNetwork({players=[],active=0,cooperations=[],lastInteraction=n
         y:Math.sin(angle)*95,
         fixed:true,
         shape:'dot',
-        size:index===active?34:28,
-        color:{background:panel,border:index===active?accent:line},
-        font:{color:text,size:15,bold:index===active}
+        size:index===focusPlayer?38:index===active?34:28,
+        color:{background:panel,border:index===focusPlayer?gold:index===active?accent:line},
+        font:{color:text,size:15,bold:index===active||index===focusPlayer}
       };
     });
     const edges=cooperations.map((item,index)=>({
@@ -115,7 +116,7 @@ function ResonanceNetwork({players=[],active=0,cooperations=[],lastInteraction=n
       network.fit({animation:{duration:180,easingFunction:'easeInOutQuad'}});
     }).catch(reason=>{if(!cancelled)setError(reason?.message||'共鳴網路載入失敗');});
     return()=>{cancelled=true;network?.destroy();};
-  },[players,active,cooperations,lastInteraction,onSelect]);
+  },[players,active,focusPlayer,cooperations,lastInteraction,onSelect]);
   return <div className="game-network-wrap">
     {error?<p className="loc-status">{error}</p>:null}
     <div ref={containerRef} className="game-resonance-network" role="img" aria-label="玩家共鳴與合作關係圖"/>
@@ -130,7 +131,16 @@ function replayGroup(line=''){
   return '系統';
 }
 
-function ReplayTimeline({logs=[]}){
+function replayPlayerIndex(line=''){
+  return NAMES.findIndex(name=>new RegExp('(^|[^A-Z])'+name+'([^A-Z]|$)').test(String(line||'')));
+}
+
+function replayRound(line=''){
+  const match=String(line||'').match(/第\s*(\d+)\s*回合/);
+  return match?Number(match[1]):null;
+}
+
+function ReplayTimeline({logs=[],selectedLogIndex=null,onSelect=null}){
   const containerRef=useRef(null);
   const [error,setError]=useState('');
   useEffect(()=>{
@@ -138,15 +148,15 @@ function ReplayTimeline({logs=[]}){
     let instance=null;
     if(!containerRef.current||!logs.length)return undefined;
     setError('');
-    const chronological=[...logs].reverse();
+    const chronological=logs.map((line,logIndex)=>({line,logIndex})).reverse();
     const base=Date.UTC(2000,0,1,0,0,0);
     import('vis-timeline/standalone').then(({DataSet,Timeline})=>{
       if(cancelled||!containerRef.current)return;
-      const rows=chronological.map((line,index)=>({
-        id:String(index),
-        group:replayGroup(line),
-        content:String(line),
-        title:String(line),
+      const rows=chronological.map((entry,index)=>({
+        id:String(entry.logIndex),
+        group:replayGroup(entry.line),
+        content:String(entry.line),
+        title:String(entry.line),
         start:new Date(base+index*60000),
         type:'point'
       }));
@@ -169,14 +179,19 @@ function ReplayTimeline({logs=[]}){
           margin:{axis:8,item:{horizontal:8,vertical:8}}
         }
       );
+      instance.on('select',({items=[]})=>{
+        const selected=Number(items[0]);
+        if(Number.isInteger(selected)&&typeof onSelect==='function')onSelect(selected);
+      });
+      if(Number.isInteger(selectedLogIndex))instance.setSelection([String(selectedLogIndex)]);
       instance.fit({animation:false});
     }).catch(reason=>{if(!cancelled)setError(reason?.message||'對局時間軸載入失敗');});
     return()=>{cancelled=true;instance?.destroy();};
-  },[logs]);
+  },[logs,selectedLogIndex,onSelect]);
   if(!logs.length)return null;
   return <section className="loc-card game-replay-card">
     <h2>對局 Replay</h2>
-    <p className="game-player-meta">事件、共鳴、合作與系統操作依實際發生順序排列。</p>
+    <p className="game-player-meta">事件、共鳴、合作與系統操作依實際發生順序排列；點選節點可同步聚焦盤面與 De 軌跡。</p>
     {error?<p className="loc-status">{error}</p>:null}
     <div ref={containerRef} className="game-replay-timeline" role="region" aria-label="對局 Replay 時序"/>
   </section>;
@@ -442,12 +457,34 @@ export default function GameView(){
   const [playerCount,setPlayerCount]=useState(2);
   const [homeView,setHomeView]=useState('play');
   const [networkTarget,setNetworkTarget]=useState(null);
+  const [focusPlayer,setFocusPlayer]=useState(null);
+  const [replayLogIndex,setReplayLogIndex]=useState(null);
 
   const event=state?.eventDeck?.length?state.eventDeck[state.eventIndex%state.eventDeck.length]:null;
   const allOpened=state?.players.every(player=>!player.opening);
   const phaseLabel=state?.phase==='event'?'事件':state?.phase==='duel'?'決鬥':'共鳴';
 
   useEffect(()=>{setNetworkTarget(null);},[state?.round,state?.active,state?.phase]);
+
+  const replayLine=Number.isInteger(replayLogIndex)?state?.logs?.[replayLogIndex]||'':'';
+  const replayRoundNo=replayRound(replayLine);
+  const replayStep=useMemo(()=>{
+    if(!replayRoundNo||!state?.history?.length)return '';
+    return [...state.history].reverse().find(row=>String(row.step||'').startsWith('R'+replayRoundNo))?.step||'';
+  },[replayRoundNo,state?.history]);
+
+  function focusFromReplay(logIndex){
+    setReplayLogIndex(logIndex);
+    const line=state?.logs?.[logIndex]||'';
+    const playerIndex=replayPlayerIndex(line);
+    setFocusPlayer(playerIndex>=0?playerIndex:null);
+  }
+
+  function focusFromNetwork(playerIndex){
+    setNetworkTarget(playerIndex);
+    setFocusPlayer(playerIndex);
+    setReplayLogIndex(null);
+  }
 
   const status=useMemo(()=>{
     if(error)return '遊戲資料載入失敗：'+error.message;
@@ -611,7 +648,7 @@ export default function GameView(){
       return {
         ...current,
         cooperations,
-        logs:[NAMES[actor]+' 與 '+NAMES[targetIndex]+' '+(exists?'解除合作狀態':'建立合作狀態'),...current.logs]
+        logs:['第 '+current.round+' 回合合作：'+NAMES[actor]+' 與 '+NAMES[targetIndex]+' '+(exists?'解除合作狀態':'建立合作狀態'),...current.logs]
       };
     });
   }
@@ -679,7 +716,7 @@ export default function GameView(){
     {!allOpened?<p className="loc-status">起手設定：每位玩家從 {data.config.openingDraw} 張棄 {data.config.openingDiscard} 張，保留 {data.config.handBase} 張。</p>:null}
 
     <div className={'game-live-board players-'+state.players.length}>
-      {state.players.map((player,pi)=><section className={'loc-player game-player '+(state.active===pi?'is-turn':'')} key={player.name}>
+      {state.players.map((player,pi)=><motion.section layout animate={{scale:focusPlayer===pi?1.012:1,opacity:focusPlayer===null||focusPlayer===pi?1:.72}} transition={{duration:.18}} className={'loc-player game-player '+(state.active===pi?'is-turn ':'')+(focusPlayer===pi?'is-focused':'')} key={player.name}>
         <div className="game-player-head">
           <div><p className="loc-eyebrow">{player.name}</p><strong>{player.de} / {data.config.deMax} De</strong></div>
           <DeMeter value={player.de} max={data.config.deMax}/>
@@ -689,7 +726,7 @@ export default function GameView(){
           {player.hand.map(card=><RuneCard key={card.id} card={card} selected={player.selected.includes(card.id)} onClick={()=>toggle(pi,card.id)}/>)}
         </div>
         {player.opening?<button className="loc-button primary" onClick={()=>confirmOpening(pi)} disabled={player.selected.length!==data.config.openingDiscard}>棄 {data.config.openingDiscard} 張，保留 {data.config.handBase} 張</button>:null}
-      </section>)}
+      </motion.section>)}
 
       <AnimatePresence mode="wait">
         {allOpened&&state.phase==='event'?<motion.section key={'event-'+state.round} initial={{opacity:0,y:18}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-18}} className="loc-event game-event-field">
@@ -702,7 +739,7 @@ export default function GameView(){
           <p className="loc-eyebrow">{state.phase==='duel'?'第 9 回合 · 決鬥':'第 '+state.round+' 回合 · 共鳴'}</p>
           <h2>{state.phase==='duel'?'決鬥':'共鳴'}</h2>
           <p>輪到 {state.players[state.active].name}{networkTarget!==null&&networkTarget!==state.active?'｜已選 '+state.players[networkTarget].name:''}</p>
-          <ResonanceNetwork players={state.players} active={state.active} cooperations={state.cooperations||[]} lastInteraction={state.lastInteraction} onSelect={setNetworkTarget}/>
+          <ResonanceNetwork players={state.players} active={state.active} focusPlayer={focusPlayer} cooperations={state.cooperations||[]} lastInteraction={state.lastInteraction} onSelect={focusFromNetwork}/>
           <div className="loc-actions">
             <button className="loc-button primary" onClick={()=>resonance('self')}>自我共振 {signed(data.config.resonanceSelf)}</button>
             {networkTarget!==null&&networkTarget!==state.active?<button className="loc-button" onClick={()=>resonance('attack',networkTarget)}>干擾 {state.players[networkTarget].name} {signed(data.config.resonanceAttack)}</button>:null}
@@ -713,13 +750,13 @@ export default function GameView(){
       </AnimatePresence>
     </div>
 
-    <MatchTrend history={state.history||[]} players={state.players}/>
+    <MatchTrend history={state.history||[]} players={state.players} focusPlayer={focusPlayer} focusStep={replayStep}/>
 
-    <ReplayTimeline logs={state.logs}/>
+    <ReplayTimeline logs={state.logs} selectedLogIndex={replayLogIndex} onSelect={focusFromReplay}/>
 
     <section className="loc-card game-log-card">
       <h2>對局紀錄</h2>
-      <div className="game-log">{state.logs.map((line,index)=><p key={index}><span>◈</span>{line}</p>)}</div>
+      <div className="game-log">{state.logs.map((line,index)=><motion.button type="button" key={index} className={'game-log-row '+(replayLogIndex===index?'is-replay-selected':'')} onClick={()=>focusFromReplay(index)} animate={{x:replayLogIndex===index?5:0}} transition={{duration:.16}}><span>◈</span>{line}</motion.button>)}</div>
     </section>
   </section>;
 }
