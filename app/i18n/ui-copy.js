@@ -10,14 +10,17 @@ const zhHant=Object.freeze({
     refresh:'重新整理',
     loading:'讀取中…',
     none:'目前沒有資料。',
+    title:'標題',
+    body:'全文',
     date:'日期',
     type:'種類',
-    direction:'方向',
-    rune:'符文',
     source:'來源',
     result:'結果',
     settings:'設定',
-    management:'管理'
+    management:'管理',
+    hiddenFromSearch:'不列入搜尋',
+    theme:'主題',
+    autoTheme:'自動（日／夜）'
   }),
   nav:Object.freeze({
     aria:'全站導覽',
@@ -79,25 +82,86 @@ const zhHant=Object.freeze({
       ranking:'排行榜'
     })
   }),
+  search:Object.freeze({
+    start:'輸入關鍵字開始搜尋。',
+    allContent:'全部內容',
+    mode:'搜尋模式',
+    media:'多媒體',
+    mediaSearch:'多媒體搜尋',
+    allSearch:'全部搜尋',
+    mediaPrompt:'輸入多媒體關鍵字、類型或來源識別。',
+    mediaPlaceholder:'搜尋圖片、影音、網址、標籤或來源識別',
+    textPlaceholder:'輸入關鍵字、作品名稱或文字',
+    mediaLink:'媒體連結',
+    externalLink:'外部連結',
+    parentText:'所屬文字',
+    searching:'搜尋中…',
+    failed:'搜尋失敗。',
+    loadingRelation:'載入關聯文字…',
+    relationLoaded:'已載入關聯文字。',
+    relationFailed:'文字載入失敗。',
+    editing:'編輯中',
+    more:'載入更多',
+    empty:'沒有符合條件的結果。'
+  }),
+  statistics:Object.freeze({
+    line:'折線圖',
+    bar:'長條圖',
+    pie:'圓餅圖',
+    totalSource:'總來源',
+    workSource:'作品來源',
+    year:'一年',
+    month:'一月',
+    week:'一週',
+    custom:'自訂範圍',
+    noOptions:'沒有符合的統計項目',
+    item:'統計項目',
+    result:'統計結果',
+    chart:'圖形',
+    range:'時間範圍',
+    start:'開始',
+    end:'結束',
+    invalidRange:'請設定有效的開始與結束日期。'
+  }),
+  culture:Object.freeze({
+    distribution:'時間分布',
+    river:'時間長河',
+    intersectionRiver:'交會時間長河',
+    combinedRiver:'綜合來源時間長河',
+    structure:'時期・事件・定錨點',
+    period:'時期',
+    allTime:'全部時間',
+    allWorks:'全部作品',
+    list:'列表',
+    virtualAnchor:'虛擬定錨點',
+    virtualAnchorHelp:'點時間長河上的 ◇ 或下方日期可查看並選取切點；虛擬點不會寫入資料庫。',
+    showAllWorks:'顯示全部作品',
+    editing:'編輯中',
+    noPeriodClassification:'目前沒有此時期的作品分類資料。'
+  }),
+  governance:Object.freeze({
+    faq:'常見問題',
+    faqIntro:'整理月典、月之符文與各項功能在使用時常見的問題與說明。',
+    faqLoading:'載入常見問題…',
+    faqEmpty:'目前沒有常見問題資料。',
+    faqMore:'還有更多常見問題',
+    rights:'權利與授權',
+    systemManagement:'系統管理',
+    enterAdmin:'進入獨立管理站',
+    enterManagement:'進入管理'
+  }),
   management:Object.freeze({
+    data:'資料管理',
     article:'文章發表',
     import:'資料匯入',
     period:'時期設定',
     keywords:'關鍵詞管理',
     checking:'正在確認登入與管理權限…',
-    signOut:'登出'
-  }),
-  search:Object.freeze({
-    start:'輸入關鍵字開始搜尋。',
-    allContent:'全部內容',
-    mediaLink:'媒體連結',
-    externalLink:'外部連結',
-    parentText:'所屬文字',
-    loading:'搜尋中…',
-    more:'載入更多',
-    empty:'沒有符合條件的結果。'
-  }),
-
+    signOut:'登出',
+    item:'管理項目',
+    noOptions:'沒有符合的管理項目',
+    permissionDenied:'目前登入身份沒有此區域的管理權限。'
+  })
 });
 
 export const UI_LOCALE='zh-Hant';
