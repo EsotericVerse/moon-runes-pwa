@@ -86,7 +86,6 @@ Current 文件入口：
 - docs/DOMAIN_ARCHITECTURE.md
 - docs/NAV_GOVERNANCE.md
 - docs/REPO_DIRECTORY_GOVERNANCE.md
-- docs/KM.md
 - docs/LUNARUNES_DRAW_GOVERNANCE.md
 - docs/RELEASE_ROADMAP.md
 - docs/TODO.md

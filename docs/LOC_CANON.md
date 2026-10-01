@@ -22,7 +22,9 @@ Current implementation 以最新 main + Current Neon 為準。
 - LunaRunes runtime：silver.runes、silver.runes_etc。
 - LunaRunes mother/source data 不因 UI、KM 或 Search 被反向改寫。
 
-文件、KM、UI copy、Search result 與 analysis output 都不能建立第二份資料權威。
+文件、KM、FAQ、UI copy、Search result 與 analysis output 都不能建立第二份資料權威。
+
+KM 若重新啟用，只能作為 Current knowledge layer：保存已確認、可重複使用的知識單元。KM 不得建立 route、table mapping、permission、keyword fallback、Registry metadata 或 Canon；當 KM 與 Current main／Current Neon 衝突時，一律以 Current main／Current Neon 為準並修正或刪除 KM 內容。
 
 ## 3. Shared features
 

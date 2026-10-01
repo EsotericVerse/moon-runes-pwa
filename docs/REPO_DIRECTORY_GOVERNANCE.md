@@ -47,6 +47,4 @@ Application JavaScript 跟隨 owning feature 放在 app/。共用 module 必須�
 
 ## Documentation
 
-docs/ 只保存 Current 正文與必要 governance。版本 patch、RC snapshot、lineage memo 不作為第二份 Current 規格。
-
-KM 放在 docs/km/，但 KM 不是 Canon 或 runtime data authority。
+docs/ 只保存 Current 正文與必要 governance。Migration、patch、RC snapshot、lineage memo 不得以額外 Markdown 留在 Current tree；有價值的內容必須整併進既有正本，否則刪除。Current repo 不建立「暫存規格文件」或「等待整併文件」。
