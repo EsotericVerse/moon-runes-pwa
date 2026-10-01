@@ -47,8 +47,8 @@ const zhHant=Object.freeze({
     }),
     governance:Object.freeze({
       title:'治理',
-      subtitle:'說明使用原則、權利邊界與管理入口。',
-      description:'治理頁整理這個區域的基本原則、著作權與授權方式，並提供對應的管理入口。'
+      subtitle:'說明使用原則、權利邊界與管理方式。',
+      description:'治理頁整理這個區域的基本原則、著作權與授權方式。'
     }),
     search:Object.freeze({
       title:'搜尋',
@@ -65,7 +65,7 @@ const zhHant=Object.freeze({
       ranking:'總排行榜',
       statics:'用圖表查看作品數量、來源比例與時間變化。',
       culture:'把作品放回時間順序，觀察不同時期的累積與變化。',
-      governance:'說明月典的使用原則、權利與管理入口。',
+      governance:'說明月典的使用原則、權利邊界與管理方式。',
       search:'從關鍵字找到月典中的文字、作品、多媒體與相關內容。'
     }),
     author:Object.freeze({
