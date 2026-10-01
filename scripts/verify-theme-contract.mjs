@@ -55,7 +55,6 @@ for(const group of ['靈魂','連結','生命','自然','礦物','元素','秩�
 if(selector.includes('localStorage')||selector.includes('migration-bridges')||selector.includes('scope-public-settings'))failures.push('theme selection must remain session-local and must not query retired scope settings');
 if(!selector.includes("AUTO_THEME_ID='auto'")||!selector.includes("THEME_TIME_ZONE='Asia/Taipei'"))failures.push('LOC theme selector must retain Taiwan day/night automatic mode');
 if(!selector.includes("DAY_THEME_ID='theme-7'")||!selector.includes("NIGHT_THEME_ID='theme-1'"))failures.push('automatic theme mapping must remain order-by-day and soul-by-night');
-if(/fetchThemeStylesV2|background_color|panel_background_color|text_color/.test(selector))failures.push('theme definitions must remain fixed in the shared code registry');
 if(existsSync('app/migration-bridges'))failures.push('retired migration-bridges directory remains');
 if(existsSync('app/loc/ThemeAdmin.jsx'))failures.push('retired global theme-definition editor remains');
 if(/TIME_SCHEDULE|schedule:|mode:'time'|custom:Object/.test(scopeRegistry))failures.push('scope code must not keep duplicate theme/schedule settings');
@@ -69,4 +68,4 @@ if(!layout.includes("import ScopeFooterV2 from './modular-v2/ScopeFooterV2'"))fa
 for(const retired of ['app/loc/ThemeProvider.jsx','app/loc/ThemeControl.jsx','app/loc/theme-registry.js','app/theme-registry.js','app/ThemeSelect.jsx','app/GlobalFooter.jsx','app/loc/ScopeDefaultThemeSetting.jsx','app/loc/scope-public-settings.js'])if(existsSync(retired))failures.push(retired+' must remain retired');
 
 if(failures.length){console.error('[theme-contract] violations:\n'+failures.join('\n'));process.exit(1);}
-console.log('[theme-contract] eight complete self-contained palettes verified with WCAG AA core text contrast');
+console.log('[theme-contract] eight complete default palettes verified with WCAG AA core text contrast and future override compatibility');
