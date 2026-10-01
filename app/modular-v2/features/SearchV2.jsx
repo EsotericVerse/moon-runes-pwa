@@ -105,7 +105,7 @@ function mergeSummaryResults(rows=[]){
     const preferRow=current.resourceType==='galaxy'?current:(row.resourceType==='galaxy'?row:current);
     const links=[...(current.links||[]),...(row.links||[])];
     const uniqueLinks=[...new Map(links.filter(link=>link?.href).map(link=>[link.href,link])).values()]
-      .map((link,index)=>({...link,label:(links.length>1&&link.label==='媒體連結')?UI_COPY.format.songLink(index+1):link.label}));
+      .map((link,index)=>({...link,label:(links.length>1&&link.label===UI_COPY.search.mediaLink)?UI_COPY.format.songLink(index+1):link.label}));
     groups.set(key,{
       ...preferRow,
       links:uniqueLinks,
@@ -330,7 +330,7 @@ export default function SearchV2(){
     </div>
     <form className="scope-v2-search-form" onSubmit={runSearch}>
       <label htmlFor="scope-search-query">{searchMode==='media'?UI_COPY.search.mediaPromptLabel:UI_COPY.search.textPromptLabel}</label>
-      <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder={searchMode==='media'?UI_COPY.search.mediaPlaceholder:UI_COPY.search.textPlaceholder} aria-label={searchMode==='media'?UI_COPY.search.mediaSearch:'你想找什麼？'}/>
+      <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder={searchMode==='media'?UI_COPY.search.mediaPlaceholder:UI_COPY.search.textPlaceholder} aria-label={searchMode==='media'?UI_COPY.search.mediaSearch:UI_COPY.search.textPromptLabel}/>
       <button type="submit">{UI_COPY.nav.search}</button>
     </form>
     <p className="scope-v2-status">{status}</p>
