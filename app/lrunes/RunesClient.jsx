@@ -9,6 +9,7 @@ import {scopeHrefV2,scopeOriginV2} from '../modular-v2/scope-registry.v2';
 import RuneSingleReading from './RuneSingleReading';
 import RuneCardInfo from './RuneCardInfo';
 import {RUNE_RITUAL_DELAY_MS,RUNE_RITUAL_STEP_MS,runeRitualMessages} from './rune-ritual';
+import {RUNE_DRAW_MODES as MODES} from './rune-draw-modes.mjs';
 
 const ROTATION_CLASSES=['rune-rotate-0','rune-rotate-90','rune-rotate-n90','rune-rotate-180'];
 const RUNE_DIRECTIONS=Object.freeze(['正位','半正位','半逆位','逆位']);
@@ -72,15 +73,6 @@ const UI_SETTINGS_KEY='loc-ui-settings-v1';
 const DEFAULT_UI_SETTINGS={draw_response:'ritual',list_page_size:10};
 const LIST_PAGE_OPTIONS=[5,10,15,20,25,50];
 const runeHref=path=>{const clean=String(path||'').split('/').filter(Boolean).join('/');return `${scopeOriginV2('lunarunes')}/${clean}`;};
-const MODES=[
-  {key:'single',count:1,label:'單卡',description:'符文本義＋卡牌方向＋月相交互。',positions:['核心'],path:'duel/one'},
-  {key:'daily',count:1,label:'每日',description:'以今日為時間範圍的一張符文。',positions:['今日'],path:'duel/daily'},
-  {key:'2card',count:2,label:'雙卡',description:'以「因 → 果」觀看兩者關係。',positions:['因','果'],path:'duel/two'},
-  {key:'3card',count:3,label:'三卡',description:'以「源 → 轉 → 合」形成固定結構。',positions:['源','轉','合'],path:'duel/three'},
-  {key:'5card',count:5,label:'五卡',description:'兩張過去成因＋一個意外變化＋兩張現在狀況。',positions:['過去成因 1','過去成因 2','意外變化','現在狀況 1','現在狀況 2'],path:'duel/five'},
-  {key:'ow3gs',count:11,label:'11卡 OW3gs',description:'1–6 因的描述層＋7–11 果的判定層。',positions:['1','2','3','4','5','6','7','8','9','10','11'],path:'duel/ow3gs'}
-];
-
 function runeCardImage(card){const number=String(Number(card?.rune_id)||0).padStart(2,'0');const name=String(card?.rune_name||'').replace(/之符文$/,'').trim();return `/assets/lunarunes/cards/${number}_${name}.png`;}
 function initialMode(){if(typeof window==='undefined')return 'single';const value=new URLSearchParams(window.location.search).get('mode')||'single';return MODES.some(item=>item.key===value)?value:'single';}
 function initialSection(){return 'draw';}
