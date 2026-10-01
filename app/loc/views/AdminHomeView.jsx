@@ -123,7 +123,7 @@ export default function AdminHomeView(){
           onChange={option=>option?.value&&setSection(option.value)}
         />
       </div>
-      <p><button type="button" onClick={account.signOut}>登出</button></p>
+      <p><button type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button></p>
     </header>
     {section==='scopes'?<ScopeOverview/>:<ThemeOverview/>}
   </section>;
