@@ -1,60 +1,37 @@
 # Domain Architecture
 
-## Responsibility model
+## Current deployment surfaces
 
-```text
-lo3rwang.cc          root brand / portal
-whoami.lo3rwang.cc   author identity
-loc.lo3rwang.cc      LOC model, knowledge, governance, search, context, evolution
-lrunes.lo3rwang.cc   LunaRunes product identity and rune reference
-app.lo3rwang.cc      interactive applications and workspace
-api.lo3rwang.cc      machine-service interface
-```
+| Surface | Canonical location | Responsibility |
+| --- | --- | --- |
+| LOC | https://loc.lo3rwang.cc/ | framework homepage and shared analysis/navigation |
+| LunaRunes | https://lrunes.lo3rwang.cc/ | Symbolic Language product/runtime |
+| LunaRunes mount | https://loc.lo3rwang.cc/lrunes/ | alternate ingress to the same LunaRunes Scope |
+| Author | https://loc.lo3rwang.cc/lo3rwang/ | author Scope |
+| Admin | https://admin.lo3rwang.cc/ | management/admin surface |
 
-## Canonical domains
+不存在第二套 Current whoami、manage、app 或 api domain architecture 定義。
 
-### `lo3rwang.cc`
-Root brand and navigation portal. It should not duplicate full LOC or application functionality.
+## Responsibility
 
-### `whoami.lo3rwang.cc`
-Public identity for 王政德 / Lucas Oscar Wang / lo3rwang: professional roles, selected work, author context and public links.
+Domain/mount 是 deployment identity，不是資料表名稱。
 
-### `loc.lo3rwang.cc`
-Public LOC knowledge/system surface. Responsibilities include:
+Current route authority 是 Next filesystem。app/modular-v2/scope-registry.v2.js 保存 deployment/navigation metadata，用來解析 canonical domain、mount 與 shared feature URL。
 
-- LOC overview
-- Search
-- Context
-- Statistics
-- Evolution
-- Governance
-- Documentation
-- Language-module discovery
+Data Scope 由 Neon 管理。Current silver.manage managed rows：
 
-### `lrunes.lo3rwang.cc`
-LunaRunes product/reference identity. It describes and exposes LunaRunes as a symbolic language model, including rune reference, draw semantics, companion datasets and learning material.
+- lo3rwang — role admin
+- lrunes — role scope
 
-### `app.lo3rwang.cc`
-Interactive execution surface. Candidate routes include:
+Data Scope 與 deployment Scope 不要求一對一同名；例如 deployment id lunarunes 對應 data id lrunes。
 
-- `/draw`
-- `/game`
-- `/dashboard`
-- `/tools`
+## Shared feature paths
 
-It must not contain remote personal/daily-life data. Daily/personal life records remain local-only.
+Current shared features：
 
-### `api.lo3rwang.cc`
-Machine-service boundary. API contracts, search endpoints, module endpoints and future programmatic services belong here.
+- /statics
+- /culture
+- /governance
+- /search
 
-## Governing principle
-
-Domains are divided by responsibility, not by LOC1–8 numbering.
-
-- LOC = understand / discover / govern
-- App = operate / interact
-- API = serve machines
-- LunaRunes = product/module identity
-- WhoAmI = author identity
-
-`app` and `api` may share the same repository and schemas, but must remain separate deployment responsibilities.
+LunaRunes 另外擁有自己的特殊 route，例如 game、list、duel/*、daily/*。這些特殊 route 只屬 LunaRunes，不建立一般 Scope 的預設 route allowlist。

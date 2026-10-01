@@ -1,77 +1,94 @@
-# LunaRunes 抽牌治理與演算法原則
+# LunaRunes Draw Governance
 
-狀態：Current KM Principle  
-日期：2026-09-16
+## Authority
 
-本文件先記錄已確認的抽牌治理與演算法原則。母資料 Excel／Base66 不因本文件而修改；正式母資料仍由作者治理。
+Rune identity 與 card fields：silver.runes。  
+Directional lots／daily text：silver.runes_etc。
 
-## 1. 特殊化保留原則
+Draw UI 不保存第二份 Rune Canon。
 
-LOC／LunaRunes 的既有設計可以討論、檢討與修改，但已明確確認為刻意特殊化的規則，不得在重構、一般化、模組化、效能最佳化、安全處理或介面統一時被自行刪除、合併、覆蓋或擴張限制。
+## Draw pool
 
-若修改會碰到既有特殊化規則，必須先指出衝突與理由並取得作者確認，再變更實作。沒有明文限制，不代表可以自行補上「合理限制」。
+- 一般抽牌使用 01–66。
+- 第零符 德不進抽取池。
+- 同一 Draw Session 內 Rune 不重複。
+- 每抽一張執行一次 rune-selection random，抽出後從當次候選池移除。
+- 不以一次 shuffle／batch random 取代逐張 random。
+- direction random 與 rune-selection random 分離。
+- 新 Draw Session 重新使用完整 66 Rune pool。
 
-已知案例包括：一般列表預設 10／符文列表預設 8、逐張獨立 random、Daily 抽牌與紀錄分離、OW3gs 的 11 張綜合結構。
+Current ritual 5 秒與逐次 random 是刻意行為，不因效能重構自行移除。
 
-## 2. 單次 Draw Session 原則
+## Directions
 
-- 單次抽 N 張，必須執行 N 次獨立 rune-selection random。
-- 每一次 random 只決定當下的一張符文。
-- 抽出後立即從該次候選池移除，因此同一次 Draw Session 內不得重複。
-- 不使用撞牌後重抽；不得讓 N 張因重試而消耗超過 N 次有效 rune-selection random。
-- 禁止以 shuffle、單一 seed、batch random、預先排列或一次 random 決定多張符文取代逐張抽取。
-- 位向 direction random 為另一個獨立 domain，不計入 rune-selection random 次數。
-- 不同 Draw Session 彼此沒有排除關係；新的一次抽牌重新使用完整 66 符文候選池，因此不同次抽牌可以出現相同符文。
+方向固定為：
 
-工程 invariant：`drawCount === runeRandomCallCount === uniqueRuneCount`（作用域為單次 Draw Session）。
+1. 正位
+2. 半正位
+3. 半逆位
+4. 逆位
 
-## 3. Daily 特殊雙卡原則
+DB code 1–4 僅是儲存形式；UI 可以依 locale 顯示 label，但不得改寫 canonical meaning。
 
-Daily 的「抽牌」與「紀錄」是兩件不同的事。
+## Precise directional query
 
-- Daily 抽牌次數不限，不因當日已有紀錄而禁止繼續抽牌。
-- 每次抽完後，由使用者決定是否紀錄；未選擇紀錄的結果不得自動寫入 Daily history。
-- Daily 可以單張完成：第一張為主要（Main），本身就是完整結果。
-- 使用者需要釐清第一張時，可以補抽第二張作為補充（Supplement）。補充不是推翻、覆蓋或重抽主要結果，而是解釋主要結果留下的問題。
-- Main + Supplement 屬於同一次特殊雙卡 Draw Session，因此兩張不得重複；第二張只有在使用者實際要求補抽時才執行第二次 rune-selection random，不得預先抽好。
-- 每日正式紀錄只保留 Main／Supplement 兩個角色；紀錄已存在時不得以新的抽牌結果覆蓋造成污染。
-- 紀錄的刪除／修正屬 Management／後端資料治理，不得反向變成前台抽牌次數限制。
+單卡解讀只讀當張：
 
-## 4. 補抽／解釋抽原則
+- rune_id
+- selected direction
+- requested type
 
-抽籤文化中的補抽用於解釋原抽，不是否定原抽。
+例如 lots 只查 type=lots；Daily 只查 type=daily。不得為當次結果載入同一 Rune 其他三個方向，也不得 select all 後在 JS slice。
 
-- 原抽結果成立。
-- 看不懂或需要補充時，可以再啟動一次新的 Draw Session 作為解釋抽。
-- 解釋抽與原抽是不同 Draw Session，因此兩組之間可以重複符文；各組內仍遵守單次不重複。
-- 例如第一次三卡「源／轉／合」完成後，可以再抽第二組三卡解釋第一組；第二組重新使用完整 66 符文候選池。
-- 解釋牌可以有額外說明或不同的解讀角色；抽牌紀錄因此也是後續解釋抽的語意基準，不只是歷史展示。
+多卡同樣逐張取得實際抽到的 direction text。
 
-## 5. OW3gs 綜合模組原則
+## Grammar
 
-OW3gs 是 2／3／5 結構的綜合應用，不是把 11 張視為沒有角色的平面牌陣。
+### Single
 
-結構固定為：
+使用該 Rune、該 direction 的結果。
 
-`源2 + 轉2 + 合2 + 五卡建議 = 11`
+### Two cards
 
-- 「源／轉／合」提供三卡的情境骨架。
-- 每個節點以雙卡展開，因此前段共 6 張。
-- 後 5 張形成基於前段情境的建議結構；它與一般五卡用途不完全相同。
-- OW3gs 執行上仍是一個單次 11 張 Draw Session，所以 11 張全部不得重複，並執行恰好 11 次 rune-selection random。
-- 其用途偏向複雜情境描述與建議：整理某段時間內的前因、變化、匯合與建議。
-- 符文歌曲可使用同一結構，把某段時間的情境原理結構化後轉譯成歌曲；核心不是單純在歌詞中放入 11 個符文字。
+**因為 A，所以 B。**
 
-## 6. 四向語意判讀原則
+A 與 B 各自只使用實際抽到的 direction data。
 
-- LunaRunes Current 語意判讀不使用數值權重、平均分數、機率分數或加權值。
-- 判讀狀態只使用：正位、半正位、半逆位、逆位；必要時加入中立與未知。
-- 「趨勢」描述前後狀態如何改變；「結果」描述最後落點。兩者不得合併成單一分數。
-- 例如：前態正位、後態半正位，表示趨勢為半逆位、結果為半正位；正在轉弱不等於結果已轉為負向。
-- 雙卡以因→果判讀；三卡保留源→轉→合的兩層轉折；五卡保留雙因＋意外＋雙果；OW3gs 保留 1–6 因的描述層與 7–11 果的判定層。
-- Daily 若只有 Main，保留單卡結果；若有 Main + Supplement，先形成當日雙卡結果。跨日趨勢以前一日結果對今日結果判讀，不使用平均。
-- FlexSearch 可負責每日狀態、日期與既有語意資料的即時查找；它不改寫上述 LunaRunes Grammar。
+### Three cards
 
-## 7. 修改治理
+**因為 1，但會有 2 的改變，所以 3。**
 
-以上原則不是永遠禁止修改；可以提出修改、比較與演化方案。但任何會改變上述特殊化行為的實作，不得先改後問。應先確認治理變更，再同步 KM、演算法、驗證與 UI。
+### Five cards
+
+**因為 1、2，但會有 3 的變化，所以 4、5。**
+
+結構是雙因 + 一個變數 + 雙果。
+
+### OW3gs
+
+11 cards：
+
+**因為（因為 1、2，變數 3、4，所以 5、6），所以（因為 7、8，變數 9，所以 10、11）。**
+
+- 1–6：因的描述層。
+- 7–11：核心判定層。
+- 11 張屬同一 Draw Session，因此 Rune 全部不重複。
+- 不把 11 張當成等權單卡相加。
+
+## Daily
+
+Daily 抽牌與 Daily record 分開：
+
+- 抽牌本身不因已有 record 被禁止。
+- Main 單張可以構成完整結果。
+- Supplement 是使用者要求的補充，不預抽。
+- Main + Supplement 若屬同一 session，兩張 Rune 不重複。
+- 是否保存 record 由使用者決定。
+
+## Moon phase
+
+卡片月相與真實月相分開保存。真實月相只能作次要時間情境，不覆蓋 Rune meaning、direction 或 spread Grammar。
+
+## No numeric semantic score
+
+LunaRunes direction／spread reading 不以平均值、概率值或加權分數取代 Grammar。需要描述趨勢時，描述狀態變化與最後落點，不能把兩者壓成單一分數。

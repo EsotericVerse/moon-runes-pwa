@@ -1,53 +1,26 @@
-# Authentication architecture
+# Authentication Architecture
 
-## Current authentication
+## Current boundary
 
-The Current application uses Neon Managed Auth. The browser initializes `@neondatabase/neon-js` with the Neon HTTPS database endpoint and uses the managed Google OAuth flow.
+Management authentication 使用 Neon Managed Auth。Browser 透過 Neon client 啟動登入；登入後的 JWT 由 Neon boundary 處理，資料庫權限與 RLS 決定可讀寫範圍。
 
-The authenticated JWT is forwarded by the Neon client to the Data API, where PostgreSQL RLS controls personal records and settings.
+## Public data
 
-## Data boundaries
+公開 Search、Culture、Statistics、Rune reference 等功能以 read-only Neon query 取得允許公開的 canonical data。
 
-### Public/shared Current data
+公開讀取不因此取得 management write authority。
 
-```text
-Static Next frontend
-  -> direct Neon client/module
-  -> Neon silver/vault canonical tables
-  -> read-only rows assembled in the feature client
-```
+## Management data
 
-Public roles receive read-only access to the canonical tables allowed for that route; no runtime JSON document or copied projection is used.
+Management UI 只有在已登入且 Current permission check 通過後才提供寫入操作。
 
-### Authenticated personal data
+- Scope manager 只能管理授權 Scope。
+- Admin authority 與 Scope public feature flag 是不同責任。
+- public searchable=false 不代表管理頁不可見。
+- Scope 的 Search／Statistics／Culture public flag 關閉，也不代表 canonical record 從管理頁消失。
 
-```text
-Next.js client
-  -> Neon Managed Auth
-  -> authenticated JWT
-  -> Neon Data API
-  -> api.user_records / api.user_settings
-  -> RLS: auth.user_id() = owner_id
-```
+## Credential rule
 
-`api.user_records` stores user-owned records such as selected draw history, Library text, and classification results. `api.user_settings` stores personal style, style groups, theme, language, and UI preferences.
+Browser 不保存 Postgres owner password。Runtime 使用 Neon client／Managed Auth boundary；資料庫授權由 Neon role／RLS／Current application permission contract 控制。
 
-Anonymous users may browse/use public features but cannot CRUD personal tables.
-
-## Retired paths
-
-The Current application does not use:
-
-- Vercel KV;
-- Cloudflare KV;
-- Cloudflare management-auth/state proxy;
-- IndexedDB as durable persistence;
-- Google Drive as an application persistence provider.
-
-A temporary browser migration helper may read legacy IndexedDB/localStorage only once after successful Neon login, migrate those values into the authenticated Neon tables, and remove the old browser storage.
-
-## Credential boundary
-
-No Postgres password is exposed to the browser. The public Neon endpoint identifies the service; authentication and database permissions are enforced by Managed Auth, Data API roles, and RLS.
-
-`npm run verify:auth` guards this architecture against reintroducing retired persistence/auth paths.
+任何新增 write path 都必須沿用既有 auth boundary，不得以文件、local file、JSON 或 client-side hidden flag 取代資料庫權限。

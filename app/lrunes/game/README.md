@@ -1,140 +1,77 @@
 # LunaRunes Game
 
-Current Game runtime and documentation are consolidated under `app/lrunes/game/`.
+## Runtime
 
-## Current scope
+- Canonical feature route: LunaRunes /game
+- Alternate LOC mount: /lrunes/game
+- Runtime view: GameView.jsx
+- Data/query logic: game-data.js
+- Presentation: app/styles/game.css
 
-- Route: `/game` and `/lrunes/game`
-- Runtime view: `GameView.jsx`
-- SQL adapter / game logic: `game-data.js`
-- Presentation: `app/styles/game.css`
-
-The Game is independent from divination routes such as `/duel`.
+Game 與 divination routes 分離；抽籤 Grammar 不自動成為 Game 規則。
 
 ## SSOT
 
-Game runtime reads only:
+Game runtime 只讀：
 
-- `silver.runes` — Rune canonical identity / group / descriptive fields
-- `silver.game` — all Game-specific data and rules
+- silver.runes — Rune identity／group／必要描述欄位
+- silver.game — Game 專用規則、事件、角色、巨觀組合與素材
 
-Directional text is not part of the Game payload. Do not reintroduce Game data as JS constants, JSON registries, KM files, or legacy LOC2 runtime fallbacks.
+GameView 不保存 canonical Game data；mutable Game definitions 必須來自 Neon。
 
-## silver.game structure
+silver.game Current record types：
 
-`silver.game` uses explicit column segments rather than a generic content dump.
+- event — 32
+- rune_action — 66
+- role — 8
+- rule — 30
+- macro — 4
+- asset — 13
 
-### Event columns
-- `event_id`
-- `event_group`
-- `event_title`
-- `event_requirement`
-- `event_description`
+## Current core rules
 
-### Rune Action columns
-- `rune_id`
-- `rune_name`
-- `rune_group`
-- `rune_action_text`
-- `rune_action_kind`
-- `rune_action_value`
+Current Neon rule rows 定義：
 
-### Role columns
-- `role_id`
-- `role_formal_name`
-- `role_public_name`
-- `role_group`
-- `role_core_function`
-- `role_intervention_type`
-- `role_intervention_name`
-- `role_tool`
-- `role_tagline`
+- 2–4 players。
+- 起手抽 8 張，棄 3 張；基準手牌 5 張。
+- 暫時手牌上限 8。
+- 每次 Event 固定使用 2 張 Rune 回應。
+- Event 一般補 2 張；Fail 補 1 張。
+- De 範圍為 0–8；到達 8 不立即結束。
+- R1–R3 Event。
+- R4 Resonance。
+- R5–R7 Event。
+- R8 Resonance / Settlement。
+- 只有 R8 平手才進入 R9 Duel。
+- 自我共振 De +1。
+- 破壞性共振指定其他玩家 De -2。
 
-### Rule columns
-- `rule_code`
-- `rule_title`
-- `rule_text`
-- `rule_round_no`
-- `rule_phase`
-- `rule_result_code`
-- `rule_de_delta`
-- `rule_draw_count`
-- `rule_value_int`
-- `rule_value_text`
+Event result：
 
-### Macro columns
-- `macro_code`
-- `macro_group_a`
-- `macro_group_b`
-- `macro_title`
-- `macro_description`
+| Result | Match | De | Draw |
+| --- | --- | ---: | ---: |
+| perfect | 4/4 | +2 | 2 |
+| pass | 3/4 | +1 | 2 |
+| fair | 2/4 | 0 | 2 |
+| replenish | 1/4 | 0 | 2 |
+| fail | 0/4 | -1 | 1 |
 
-### Asset columns
-- `asset_code`
-- `asset_kind`
-- `asset_group`
-- `asset_group_2`
-- `asset_path`
-- `asset_title`
+Special Rune actions：
 
-## Current data
+- 65 玄：補牌 1 張。
+- 66 命：補牌 2 張。
 
-`silver.game` currently contains:
+## Macro mapping
 
-- Event32: 32 Alpha Event records
-- Rune Action: 66 records
-- Role: 8 records
-- Macro: 4 records
-- Rule: Current rules, eight round phases and five Event result rows
-- Asset: eight group visuals, four paired-group Event visuals and author visual
+- SL = 靈魂＋連結
+- ML = 礦物＋生命
+- NE = 自然＋元素
+- OD = 秩序＋無序
 
-Rune Action 01–64 was migrated from the canonical mother field `silver.runes.char_action`.
+## Ownership rule
 
-Current special Rune Game actions:
+符文只會被影響，不會被永久奪取。允許的效果由 Current Game rule data 決定，例如查看、公開、棄置、封印、控頂或暫時失效。
 
-- 65 玄 — draw 1
-- 66 命 — draw 2
+## Assets
 
-## Current macro mapping
-
-- SL = Soul + Link / 靈魂＋連結
-- ML = Mineral + Life / 礦物＋生命
-- NE = Nature + Element / 自然＋元素
-- OD = Order + Disorder / 秩序＋無序
-
-Historical Event32 text that used `OC` is normalized to Current `OD`.
-
-## Current round structure
-
-`R1–R3 Event → R4 Resonance → R5–R7 Event → R8 Resonance`
-
-- 2–4 players use the same eight-round structure.
-- De range is 0–8.
-- Reaching 8 does not immediately end the game.
-- R8 is the settlement point.
-- Only an R8 tie enters R9 Duel.
-- R9 is a tiebreak Duel, not a normal ninth round.
-
-## Runtime rule
-
-`GameView.jsx` must not own canonical Game data.
-
-`game-data.js` may contain query, validation, normalization and game calculations, but all mutable Game definitions must come from SQL.
-
-## Visual layer
-
-The Game board reads group / Event / author visual paths from `silver.game`.
-
-Rune card image filenames are derived from Rune ID + Rune name because the canonical files already follow the fixed `NN_名稱.png` naming convention.
-
-The separate Rune 0 德 image is not currently present under a known main path and must not be fabricated or aliased to the aboutme image.
-
-## RC8 boundary
-
-RC8 closes structural consolidation and the first graphical pass. Post-RC8 work can include:
-
-- Event32 balance and scenario refinement
-- expansion beyond the 32-card Alpha deck
-- final eight-role gameplay design
-- deeper Resonance / Duel effects
-- advanced animation and data visualization
+Game board 的 group／Event／author visual path 由 silver.game 提供。Rune card image 依固定 rune id + rune name 命名規則取得；不得把其他圖片冒充 Rune 0 德。

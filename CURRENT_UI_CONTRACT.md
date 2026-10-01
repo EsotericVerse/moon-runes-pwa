@@ -1,21 +1,65 @@
-# Current UI contract
+# Current UI Contract
 
-Homepage title: LOC月典
-Homepage explanation: 語言架構框架（Language Architecture Framework）
+**Version:** 0.8.31-rc
 
-LOC has one official navigation bar. LunaRunes uses the same single-NAV rule; page-local feature links are local menus, not additional NAV layers.
+## Identity
 
-Homepage architecture: `LOC Model Architecture｜月典模型架構` renders exactly eight bilingual functional modules: LunaRunes、Context、Music、Literary、MultiMedia、Algorithm、Module、Culture. Methodologies are consolidated into Algorithm; Module packages algorithms with data and functions; Culture owns time, trajectory, trend and textual evolution. Governance is presented separately as governance discourse and must not be encoded as an architecture layer or as part of the eight-module diagram.
+Homepage title: LOC月典  
+Homepage explanation: 語言架構框架（Language Architecture Framework）  
+LunaRunes explanation: 符號式語言（Symbolic Language）
 
+## Navigation
 
-Homepage moon-phase example: card phase `無` and real phase `空亡` remain distinct fields.
+全站只有一套正式 NAV。GlobalNav 使用 ScopeNav；Page 內的選單、抽牌模式、圖鑑分類與管理選單都屬局部 UI，不建立第二套全站 NAV。
 
-Governance homepage publishes portable LOC principles and links to authorized management, immutable audit requirements and the separate LunaRunes governance homepage. Different cultures and Scopes retain their own governance and are not judged or absorbed by the LOC governance page.
+Current 共用功能固定為：
 
-LunaRunes governance is limited to the LunaRunes Scope and does not include the author's personal articles or ERA.
+- Statistics
+- Culture
+- Governance
+- Search
 
-The lo3rwang personal homepage is a separate personal Scope. Its first NAV label can be changed locally by the personal Scope manager without changing LOC Canon.
+NAV URL 由 Current Scope registry 產生；實際 route 是否存在由 Next filesystem 決定。
 
-Historical retired numbered architectures and numbered navigation-layer names must not be rendered as Current UI.
+## Scope presentation
 
-The current contract is enforced by `scripts/current-ui-contract.mjs` and the known-parity guard.
+- LOC 使用 loc.lo3rwang.cc。
+- LunaRunes canonical domain 為 lrunes.lo3rwang.cc，並可由 loc.lo3rwang.cc/lrunes 進入。
+- Author canonical mount 為 loc.lo3rwang.cc/lo3rwang。
+- Admin 使用 admin.lo3rwang.cc。
+
+一般 Scope 不因缺少設定而繼承 LunaRunes 的關鍵詞、Style、Canon 或特殊 route 定義。
+
+## Analysis presentation
+
+Homepage 與共用分析以 Culture、Statistics、Search 為主：
+
+- Culture 顯示時間交會、密度、來源與 Anchor。
+- Statistics 顯示即時統計與可選時間區間。
+- Search 顯示精準文字／metadata 結果。
+- Governance 說明規則與管理責任。
+
+不再以固定八模組圖作為 Current UI 架構定義。
+
+## Theme
+
+八組 Theme 必須各自提供完整 palette。切換 Theme 時不得從上一組或其他 Theme 繼承缺少的 palette token。共用 geometry 與 typography 可以共用；palette、surface、state、background 與 shadow 由 Theme 自己負責。
+
+## Localization boundary
+
+固定 UI copy 可集中管理，但下列內容不得因 UI localization 被改寫：
+
+- Galaxy／作品正文
+- 歌詞、文章與創作文字
+- LunaRunes rune name／English name
+- LunaRunes Canon 語意
+- 抽牌方向與籤詩 canonical data
+
+## Management visibility
+
+管理頁必須能看到 canonical records，即使：
+
+- Scope 的 public Search／Statistics／Culture flag 關閉；
+- Galaxy searchable=false。
+
+Public visibility 與 management visibility 是不同責任。

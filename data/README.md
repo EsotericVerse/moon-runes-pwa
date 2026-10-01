@@ -1,6 +1,6 @@
 # Data Directory
 
-The data directory stores frozen source workbooks, provenance records and migration evidence. It is not a website runtime data store.
+data/ 保存 source workbook、provenance 與明確的 repository records；不是網站 runtime data store。
 
 ~~~text
 data/
@@ -13,13 +13,11 @@ data/
    └─ rune-readings/
 ~~~
 
-The website reads canonical content from Neon through the Next.js static-export runtime clients. Do not add data/json, runtime JSON snapshots, copied projections, or local JSON caches.
+Current runtime content 由 Neon canonical tables 提供。
 
-Rules:
+Rules：
 
-- lunarunes/source/: frozen LunaRunes mother/source workbooks.
-- source/: retained source workbooks awaiting narrower governance.
-- records/: explicit repository records and audit notes, not website canonical content.
-- Neon silver tables are the canonical runtime content layer.
-- Neon link tables store scope membership and statistics/search inclusion by ID; they do not copy content.
-- Package/tool configuration files remain with their owning component when a tool requires them.
+- LunaRunes mother/source workbook 保留來源責任，不直接成為 browser runtime store。
+- repository records 是 provenance／audit record，不是第二份 Current corpus authority。
+- 不建立 runtime JSON snapshot、local corpus cache 或 copied projection 作 Neon fallback。
+- 資料關係以 Current Neon schema 與 ID linkage 為準。

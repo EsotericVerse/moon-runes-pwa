@@ -1,145 +1,92 @@
 # LOC｜Luna Codex
 
+**Current version: 0.8.31-rc**
+
 **LunaRunes — Symbolic Language**  
 **LOC — Language Architecture Framework**  
-**Lucas Oscar Wang — Language Architect｜語言建築師**
+**Lucas Oscar Wang 政德 — Language Architect｜語言建築師**
 
-LOC 是用來整理語言、資料、脈絡、作品與時間關係的 Language Architecture Framework。LunaRunes 是 LOC 中的 Symbolic Language 實作。定位已固定，不因定位另外增加功能。
+LOC 用來整理文字、作品、來源、時間、關係與分析結果。LunaRunes 是獨立的符號式語言實作；它的特殊語意規則只作用於 LunaRunes，不作為其他 Scope 的預設。
 
-## Current / RC8.1 Stable Baseline
+## Current architecture
 
-RC8.1 已於 2026-09-30 進入目前 Current 的穩定候選基線。RC8 保留為前一個架構基準；RC8.1 在不重開架構的前提下收斂 Theme、Culture、Statistics 與 Meta Tag 統計行為：
+- Next.js 負責應用與路由，React 負責 UI。
+- Neon 是 Current runtime data SSOT。
+- Next filesystem 是 route authority。
+- Scope registry 只管理 deployment／navigation metadata，不取代 Neon 資料治理。
+- silver.manage 提供資料 Scope 與 Galaxy／Time table mapping。
+- Search、Statistics、Culture 一律以精準 Neon query 與分頁執行，不先全讀再切片。
+- Search 是精準文字／metadata 查詢，不做語意渲染。
+- 缺少一般 Scope 設定時維持空值；不得借用 LunaRunes 關鍵詞、Style 或 Canon 作 fallback。
 
-- Neon Postgres 是 Current SSOT。
-- 不使用 JSON／舊 JS／靜態檔作 Current authority 或 fallback。
-- 不保留 LOC1–8 numbered runtime architecture。
-- 不保留 compatibility facade、virtual data path loader 或第二套路由權威。
-- 共用能力集中在模組，Feature/UI 不重造資料 transport、batch、validation 或 route 規則。
-- 自動分析只偵測變化、提供建議，不替使用者定義事件意義。
-- LunaRunes Game 已完成 RC8 前的圖形化與結構收斂：遊戲程式、文件與素材映射集中於 `app/lrunes/game/`，只讀取遊戲實際需要的 `silver.runes` 與 `silver.game`。
+## Deployment scopes
 
-歷史差異由 Git history 保存，不在 Current tree 保留可執行舊架構。
+- LOC — https://loc.lo3rwang.cc/
+- LunaRunes — https://lrunes.lo3rwang.cc/
+- LunaRunes alternate mount — https://loc.lo3rwang.cc/lrunes/
+- Author — https://loc.lo3rwang.cc/lo3rwang/
+- Admin — https://admin.lo3rwang.cc/
 
-RC8 baseline 與驗證紀錄見 `docs/RC8_BASELINE.md`；RC8.1 封板紀錄見 `docs/RC8_1_BASELINE.md`。既有管理選單已完成先前人工檢查。關鍵詞權重目前仍屬測試功能，不作為 RC8.1 release gate；`silver.cache_uid100` 尚未建立，Neon cache 實驗延後。
+Deployment Scope 與 data Scope 是不同責任。Current Neon managed data scopes 為 lo3rwang 與 lrunes；data table mapping 由 silver.manage 決定。
 
-## Current Scopes
+## Shared features
 
-Current Scope registry 位於：
-
-`app/modular-v2/scope-registry.v2.js`
-
-目前核心 Scope：
-
-- `loc` — 月典
-- `lunarunes` — 月之符文
-- `lo3rwang` — 作者
-- `admin` — 治理管理
-
-Scope ID、domain、mount 與顯示名稱分開治理；跨 Scope 可以讀取、引用與導航，但不因此取得對方治理權。
-
-## Shared Features
-
-Current 共用 Feature：
-
-| Feature | Responsibility |
+| Feature | Current responsibility |
 | --- | --- |
-| Statistics | 排行、來源、風格、關鍵詞、Meta Tag 與時間比較等統計 |
-| Culture | Time River、來源／風格／類型／地點的時間分布與機械式變化偵測 |
-| Governance | 公開治理內容與管理入口 |
-| Search | Scope-aware 文字、metadata 與關係線搜尋 |
+| Statistics | 即時計算來源、分布、關鍵詞／Meta Tag 與時間區間統計 |
+| Culture | 以 Time River 顯示交會時間、作品密度、來源分群與 Anchor |
+| Governance | 公開治理說明與授權管理入口 |
+| Search | Scope-aware 精準文字、metadata 與關係查詢 |
 
-Daily 屬 LunaRunes 的獨立功能，以 Calendar 為主，不使用 Time River。
+Daily、Rune Directory、Draw、Game 等屬 LunaRunes 自身功能，不提升為所有 Scope 的共同規則。
+
+## Data rules
+
+Galaxy 使用 uid 作為主識別。文字與多媒體分工：
+
+- 有正文的作品存在 Galaxy。
+- 純多媒體不製造空白正文；存在 Galaxy Media。
+- media metadata／meta_tags 可參與 Search、Culture、Statistics。
+- source_id 表示上層來源；target_id 可表示多值關聯；ref_id 表示參照。
+- galaxy.url 保存原文連結。
+- media 的 galaxy_link 連回 Galaxy；source_native_id 保存來源平台原生識別。
+- 統計即時計算，不建立第二份 corpus authority、ranking snapshot 或 materialized content cache。
+
+管理頁讀 canonical data，不因 public feature flag 或 Galaxy searchable=false 而把資料變成管理黑戶。
 
 ## LunaRunes
 
-月之符文目前為 66 符：
+Current draw pool 為 66 符：
 
-- 1–64：八組核心符文
+- 01–64：八個核心群組
 - 65 玄 — Chaos
 - 66 命 — Fate
-- 0 德 — 作者自用，不參與一般抽牌
+- 第零符 德 — 作者基準符，不進抽取池
 
-四方向：正位、半正位、半逆位、逆位。
+四方向固定為：正位、半正位、半逆位、逆位；資料庫方向碼為 1–4。
 
-主要抽牌：
+LunaRunes runtime canonical tables：
 
-- 單卡
-- Daily
-- 雙卡：因 → 果
-- 三卡：源 → 轉 → 合
-- 五卡：雙因＋意外＋雙果
-- OW3gs：1–6 因的描述層＋7–11 果的判定層
+- silver.runes
+- silver.runes_etc
 
-## Data Architecture
+抽牌只讀當次需要的 rune_id、direction、type，不預載無關方向。具體規則見 docs/LUNARUNES_DRAW_GOVERNANCE.md。
 
-```text
-Feature / UI
-    ↓
-Domain repository / client
-    ↓
-Shared Neon repository / query policy
-    ↓
-Neon canonical tables
-```
+## Theme and UI
 
-Current 不再經過：
+八組 Theme 都提供完整 palette，不互相繼承缺少的色彩 token。固定 UI copy 集中在 app/i18n/ui-copy.js；創作文字、Galaxy 內容與 LunaRunes Canon 不經 UI localization 改寫。
 
-```text
-LOC_DATA
-virtual path registry
-app/loc/data.js
-app/loc/data-paths.mjs
-JSON runtime snapshots
-legacy static JS runtime
-LOC1–8 service/index builders
-```
+## Governance
 
-LunaRunes 一般功能直接使用共用 Neon query 精準讀取 `silver.runes` 與 `silver.runes_etc`；不保留 rune repository、相容欄位模型或第二套符文資料。Game 為獨立 feature，只讀取實際需要的 `silver.runes` 與 `silver.game`。
+> 系統幫你看見軌跡，但不替你決定你是誰。
 
-## JavaScript Boundary
+Current 文件入口：
 
-Current application JavaScript 放在 `app/` 對應模組內。
-
-## Deployment
-
-Current frontend：
-
-- Next.js static export
-- GitHub Pages
-- main 直接部署
-- 新 main deployment 會取代尚未完成的舊 deployment，避免高頻 commit 形成過期部署佇列
-
-主要 deployment workflow：
-
-`.github/workflows/deploy-pages.yml`
-
-Current build gate 先驗證 RC contracts，再驗證 Neon public/batching contract，最後執行 Next build 與 Pages deploy。
-
-## Main Modules
-
-- FlexSearch — 文字索引、AND / NOR
-- Recharts — Statistics
-- vis-network / vis-timeline — Current graph / timeline visualization
-- TanStack Query — query lifecycle
-- Zod — feature/data contract
-- Neon JS — Current data access
-
-模組是否深化使用另行評估；RC8.1 不因模組能力新增不必要功能。
-
-## Governance Root
-
-> 鑑古知今，求同存異  
-> 不在其位，不謀其政  
-> 隨心所欲，而不逾己
-
-## Public Entrypoints
-
-- LOC: https://loc.lo3rwang.cc/
-- LunaRunes: https://lrunes.lo3rwang.cc/
-- Author: https://loc.lo3rwang.cc/lo3rwang/
-- Admin: https://admin.lo3rwang.cc/
-
-## Author
-
-**Lucas Oscar Wang 政德**  
-Language Architect｜語言建築師
+- docs/LOC_CANON.md
+- docs/DOMAIN_ARCHITECTURE.md
+- docs/NAV_GOVERNANCE.md
+- docs/REPO_DIRECTORY_GOVERNANCE.md
+- docs/KM.md
+- docs/LUNARUNES_DRAW_GOVERNANCE.md
+- docs/RELEASE_ROADMAP.md
+- docs/TODO.md

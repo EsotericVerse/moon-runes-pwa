@@ -91,7 +91,7 @@ requireText('app/modular-v2/scope-registry.v2.js',[
 requireText('app/loc/model/moon-phase.js',[
   'day >= 1 && day <= 7',"return '新月'","return '上弦'","return '滿月'","return '下弦'","return '空亡'"
 ]);
-requireText('docs/LOC_Canon_1.1.md',['「卡片月相」與「真實月相」是兩個不同欄位']);
+requireText('docs/LOC_CANON.md',['「卡片月相」與「真實月相」是兩個不同欄位']);
 requireText('scripts/verify-public-payload.mjs',['pics/LunaRunes.png','LunarRunesCardCut.pdf']);
 
 if(failures.length){

@@ -1,108 +1,52 @@
 # Repository Directory Governance
 
-## Goal
+## Current structure
 
-Keep one repository while separating application routes, domain modules, source/public assets, documentation, and deployment automation clearly.
-
-Directory cleanup must never delete or relocate a still-used source merely because a replacement directory exists. Migration order is always: inventory consumers → copy/move → update consumers → parity check → remove retired location.
-
-## Canonical top-level structure
-
-```text
-app/        Next.js routes and UI
-assets/     governed domain/site assets
-pics/       frozen approved source diagrams still used by the site
-data/       frozen source workbooks, records and non-runtime provenance
-docs/       governance, architecture, API documentation and governed document copies
-scripts/    repository/build/migration scripts
-skills/     GPT/agent skills
+~~~text
+app/        Next.js routes, UI, clients and feature modules
+assets/     governed runtime/domain assets
+pics/       approved source/site images currently referenced by the app
+data/       source workbooks and explicit repository records
+docs/       Current governance and architecture documentation
+scripts/    verification/build utilities
+skills/     explicit agent skills
 .github/    CI and repository automation
-```
+governance/ repository governance state such as frozen branches
+~~~
 
-`lib/` and the former shared root `js/` runtime are retired. Current application modules belong under `app/`; root `js/` must not contain runtime modules.
+## Source files
 
-## Frozen root sources
+Root canonical/production source files that are intentionally kept in place：
 
-The following files are intentionally protected in place and are excluded from ordinary directory migration:
+- LunaRune66.xlsx
+- LunarRunesCardCut.pdf
 
-```text
-LunaRune66.xlsx                 LunaRunes mother workbook / canonical source
-LunarRunesCardCut.pdf           physical card printing and cutting source PDF
-```
+它們不因 data/ 或 docs/ 內存在 copy 就失去來源責任。
 
-A governed mirror or runtime derivative does **not** authorize deletion, replacement, or relocation of these frozen originals. Any future change to a frozen source location requires explicit approval.
+## Runtime data boundary
 
-## Domain rules
+Repository directory 不是 Current runtime corpus authority。Website runtime content 由 Neon canonical tables 提供。
 
-### LunaRunes
+不要新增：
 
-`LunaRune66.xlsx` is the frozen mother workbook. Website runtime reads Neon canonical tables; repository workbooks and records remain provenance/source material and must not silently replace the mother workbook.
+- runtime JSON corpus
+- copied Neon projection 作 fallback
+- root generic JS data registry
+- 第二套 Scope data registry
+- materialized content snapshot 作 Current authority
 
-A governed workbook copy may also exist under:
+## Module ownership
 
-```text
-data/lunarunes/source/LunaRune66.xlsx
-```
+Application JavaScript 跟隨 owning feature 放在 app/。共用 module 必須有明確責任，不因方便而建立新的 generic root runtime layer。
 
-The presence of that copy does not make the root mother workbook disposable.
+## Assets
 
-LunaRunes assets currently include:
+- assets/lunarunes/cards 保存 Rune card runtime images。
+- pics/ 保存目前仍被正式頁面使用的核准圖。
+- physical-card PDF 與 runtime card image 是不同責任，不互相替代。
 
-```text
-assets/lunarunes/cards/        runtime card images
-assets/lunarunes/reference/    overview/reference images
-```
+## Documentation
 
-Do not collapse distinct large-card, small-card/overview, printable-card, or reference assets merely because they depict the same rune system. Their delivery and performance roles must be audited separately.
+docs/ 只保存 Current 正文與必要 governance。版本 patch、RC snapshot、lineage memo 不作為第二份 Current 規格。
 
-### JavaScript
-
-Current application JavaScript lives with its owning module under `app/`. Shared browser/runtime logic must not recreate a generic root `js/` layer.
-
-The only governed root-JS exception is:
-
-This exception is retained because the lunar-day → LOC moon-phase calculation is a small standalone utility with no data authority, cache, registry or compatibility responsibility. It must not become a new shared-runtime root.
-
-### Assets
-
-Asset migration is not complete until every consumer is updated and visual/function parity is verified. In particular:
-
-- `pics/` is an approved frozen source directory and is **not** a forbidden legacy root. Frozen source retention does not imply wholesale publication: postbuild copies only the explicit Current picture allowlist.
-- `64images/` is retired only because its consumers are expected to use governed LunaRunes image paths; missing alternate-size assets must be restored rather than silently discarded.
-- `LunarRunesCardCut.pdf` is a physical-card production asset, not beginner documentation.
-
-## Migration ledger
-
-| Historical/current location | Status | Rule |
-|---|---|---|
-| `lib/` | retired | do not recreate a parallel shared-runtime root |
-| `js/` | retired | Current modules belong under `app/`; do not recreate root runtime modules |
-| `64images/` | retired pending parity audit | card assets must exist under governed LunaRunes paths before retirement is considered valid |
-| `pics/` | active/frozen | retain approved source diagrams; do not delete by migration rule |
-| root `LunaRune66.xlsx` | frozen canonical source | must remain in place unless explicitly approved otherwise |
-| `data/lunarunes/source/LunaRune66.xlsx` | governed copy | does not supersede/delete the frozen root workbook |
-| root `LunarRunesCardCut.pdf` | frozen production source | physical card printing/cutting PDF |
-| `docs/LunarRunesCardCut.pdf` | governed document copy | does not redefine the PDF as tutorial content |
-| root `all.xlsx` | migrated/preserved | `data/source/all.xlsx`; retire only after explicit supersession audit |
-
-## Migration order
-
-1. Inventory consumers and authoritative sources.
-2. Freeze canonical/source assets that must not move.
-3. Update Current consumers to the canonical module/path.
-4. Verify behavior and build/CI.
-5. Remove the retired runtime, adapter, redirect or duplicate source once no Current consumer remains.
-
-Build success, route existence, modularity, or independence from legacy runtime is not by itself migration completion.
-
-## Next.js performance and modularity rules
-
-- Route responsibility must remain explicit.
-- Feature JavaScript, CSS and canonical data clients should load only for the feature that consumes them.
-- Canonical data access must go through explicit domain repositories/clients; do not recreate a virtual path registry.
-- Server routes are preferred whenever a feature reads protected or canonical Neon data.
-- Performance optimization must preserve intentional small/large asset variants rather than replacing all uses with the largest file.
-
-## Root rule
-
-New arbitrary domain folders should not be added at repository root. The frozen root exceptions above are intentional canonical/production sources and must not be moved by automated directory governance. Any future exception requires explicit governance approval.
+KM 放在 docs/km/，但 KM 不是 Canon 或 runtime data authority。
