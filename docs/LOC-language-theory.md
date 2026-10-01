@@ -22,7 +22,7 @@ LOC 將下列責任分開：
 
 ## Search and semantics
 
-Current LOC Search 不做語意渲染。文字是否命中由實際欄位與字詞決定，不由 LunaRunes classifier 自動改寫。
+Current LOC Search 不做語意渲染。文字是否命中由實際欄位與字詞決定，不由 LunaRunes Canon／關鍵詞自動改寫。
 
 搜尋責任分成兩層：Neon 處理資料權威、Scope、SQL 篩選與分頁；FlexSearch 處理「表皮輕微搜尋」，只在已縮小的局部集合內建立可重建 lexical index／cache，適合關鍵詞列表、autocomplete 與同頁重複查詢。FlexSearch 不讀整個 corpus 作 authority，也不取代 Neon。
 
@@ -31,7 +31,7 @@ LunaRunes 可以在自己的 Scope 進行符號式語意分類，但：
 - 不作為一般 Scope 的預設 keyword。
 - 不作為其他文化的判定標準。
 - 不把 rune character 的字面出現直接當成 rune semantic hit。
-- 不把 classifier output 反向改寫 Base66 Canon。
+- 不把 analysis output 反向改寫 Base66 Canon。
 
 ## Culture
 

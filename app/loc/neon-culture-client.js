@@ -538,15 +538,15 @@ export async function selectScopePeriodWorkIndex(scopeId,{startDate='',endDate=n
   const rawSources=[...new Set((sourceNames||[]).map(value=>String(value||'').trim()).filter(Boolean))];
   const rawMedia=[...new Set((mediaTypes||[]).map(value=>String(value||'').trim()).filter(Boolean))];
   const pageSize=Math.max(1,Math.floor(Number(limit)||10));
-  const legacyOffset=Math.max(0,Math.floor(Number(offset)||0));
+  const baseOffset=Math.max(0,Math.floor(Number(offset)||0));
   const cursorGalaxyOffset=Number(cursor?.galaxyOffset);
   const cursorMediaOffset=Number(cursor?.mediaOffset);
   const galaxyOffset=Number.isFinite(cursorGalaxyOffset)
     ?Math.max(0,Math.floor(cursorGalaxyOffset))
-    :legacyOffset;
+    :baseOffset;
   const mediaOffset=Number.isFinite(cursorMediaOffset)
     ?Math.max(0,Math.floor(cursorMediaOffset))
-    :legacyOffset;
+    :baseOffset;
 
   const galaxyFilters=publicContentFilters([
     ...dateFilters(startDate,endDate),

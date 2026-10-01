@@ -1,7 +1,7 @@
 import {z} from 'zod';
 
 // Stable Current feature contracts. Database table names and split layout stay behind
-// domain clients, so a Neon table migration does not require UI rewrites.
+// domain clients so UI contracts remain independent from storage layout.
 const OpenRowSchema=z.object({}).passthrough();
 
 export const ScopeCultureResponseSchema=z.object({

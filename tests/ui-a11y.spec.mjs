@@ -4,7 +4,7 @@ import AxeBuilder from '@axe-core/playwright';
 const ROUTES=['/','/lrunes/','/culture/','/statics/','/search/','/game/','/lo3rwang/'];
 
 for(const route of ROUTES){
-  test(`${route} keeps the RC8.1 visual contract`,async({page},testInfo)=>{
+  test(`${route} keeps the Current visual contract`,async({page},testInfo)=>{
     await page.goto(route,{waitUntil:'domcontentloaded'});
     await expect(page.locator('body')).toBeVisible();
     await expect(page.locator('.scope-v2-global')).toBeVisible();
@@ -33,6 +33,6 @@ for(const route of ROUTES){
 test('reduced motion disables decorative progress',async({page})=>{
   await page.emulateMedia({reducedMotion:'reduce'});
   await page.goto('/',{waitUntil:'domcontentloaded'});
-  const progress=page.locator('.rc81-scroll-progress');
+  const progress=page.locator('.loc-scroll-progress');
   await expect(progress).toHaveCSS('display','none');
 });

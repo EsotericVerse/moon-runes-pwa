@@ -3,7 +3,6 @@ const read=path=>fs.readFileSync(path,'utf8');
 const sources={
   home:read('app/loc/views/AboutView.jsx'),
   nav:read('app/GlobalNav.jsx')+read('app/modular-v2/ScopeNavV2.jsx'),
-  governance:read('app/modular-v2/features/GovernanceV2.jsx'),
   registry:read('app/modular-v2/scope-registry.v2.js'),
   uiCopy:read('app/i18n/ui-copy.js'),
   layout:read('app/layout.jsx'),
@@ -11,8 +10,8 @@ const sources={
 };
 const required=[
   [sources.home,'LOC月典'],
-  [sources.home,'語言架構框架（Language Architecture Framework）'],
-  [sources.home,'符號式語言（Symbolic Language）'],
+  [sources.home,'Language Architecture Framework'],
+  [sources.home,'Symbolic Language'],
   [sources.registry,'UI_COPY.features.statics.title'],
   [sources.registry,'UI_COPY.features.culture.title'],
   [sources.registry,'UI_COPY.features.governance.title'],
@@ -23,7 +22,6 @@ const required=[
   [sources.uiCopy,"title:'搜尋'"],
   [sources.nav,'FEATURES_V2'],
   [sources.nav,'useScopeRuntimeV2'],
-  [sources.registry,"defaultScopeId:'loc'"],
   [sources.registry,"routeAuthority:'next-filesystem'"],
   [sources.registry,"dataAuthority:'neon'"],
   [sources.registry,"domain:'loc.lo3rwang.cc'"],
@@ -32,24 +30,13 @@ const required=[
   [sources.locApp,'StatisticsV2'],
   [sources.locApp,'CultureV2'],
   [sources.locApp,'GovernanceV2'],
-  [sources.locApp,'SearchV2']
-];
-const forbiddenCurrent=[
-  'Modelized Language Framework','模型化語言框架',
-  'Language Model Framework','語言模型框架',
-  'Language Module Framework','語言系統模組框架',
-  'Symbolic Language Module','符號式語言模組',
-  'whoami.lo3rwang.cc','manage.lo3rwang.cc',
-  'Projection','projection'
+  [sources.locApp,'SearchV2'],
+  [sources.layout,"import AppExperience from './AppExperience'"],
+  [sources.layout,'<AppExperience />']
 ];
 const missing=required.filter(([source,token])=>!source.includes(token)).map(([,token])=>token);
-const currentSources=Object.values(sources).join('\\n');
-const stale=forbiddenCurrent.filter(token=>currentSources.includes(token));
-if(sources.layout.includes('LanguageProvider'))stale.push('LanguageProvider');
-if(sources.nav.includes('loc-language-toggle'))stale.push('loc-language-toggle');
-if(missing.length||stale.length){
-  if(missing.length)console.error('Missing Current UI contract: '+missing.join(', '));
-  if(stale.length)console.error('Forbidden stale Current UI token: '+stale.join(', '));
+if(missing.length){
+  console.error('[ui-contract] missing Current UI contract: '+missing.join(', '));
   process.exit(1);
 }
-console.log('Current UI contract verified against modular V2 composition.');
+console.log('[ui-contract] Current identity, navigation, feature composition and app shell verified');

@@ -4,8 +4,12 @@ on:
   pull_request:
     paths:
       - "app/**"
+      - "assets/**"
+      - "docs/**"
       - "scripts/**"
+      - "tests/**"
       - "package.json"
+      - "package-lock.json"
       - "next.config.mjs"
       - ".github/workflows/next-architecture.yml"
   workflow_dispatch:
@@ -20,12 +24,14 @@ jobs:
           node-version: "22"
           cache: npm
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
-      - name: Verify direct Neon text query
-        run: npm run verify:text-engine && npm run verify:rune-keyword-rules && npm run verify:rune-draw
+        run: npm ci --no-audit --no-fund
+      - name: Verify Current repository contracts
+        run: npm run verify
       - name: Verify public Neon Data API
         run: npm run verify:neon-public
-      - name: Verify Scope and NAV governance
-        run: node scripts/verify-nav-all.mjs
-      - name: Verify modularity and build Current static export
+      - name: Build Current static export
         run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run browser accessibility checks
+        run: npm run test:ui

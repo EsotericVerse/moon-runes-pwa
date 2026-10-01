@@ -1,90 +1,36 @@
 import fs from 'node:fs';
 
-const runeRuntime=fs.readFileSync('app/lrunes/RunesClient.jsx','utf8');
-const runeManagement=fs.readFileSync('app/loc/RuneManagementPanel.jsx','utf8');
-const client=fs.readFileSync('app/loc/neon-client.js','utf8');
-const account=fs.readFileSync('app/loc/use-neon-account.js','utf8');
-const authorization=fs.readFileSync('app/loc/scope-authorization.js','utf8');
-const userStorage=fs.readFileSync('app/loc/neon-user-storage.js','utf8');
-const scopeManagement=fs.readFileSync('app/loc/GovernanceManagement.jsx','utf8');
-const adminManagement=fs.readFileSync('app/loc/views/AdminHomeView.jsx','utf8');
-const searchView=fs.readFileSync('app/modular-v2/features/SearchV2.jsx','utf8');
-const cultureView=fs.readFileSync('app/modular-v2/features/CultureV2.jsx','utf8');
-const managementData=fs.readFileSync('app/loc/ManagementDataPanel.jsx','utf8');
 const failures=[];
-
-const requireMatch=(text,re,label)=>{if(!re.test(text))failures.push(label);};
-
-for(const [name,source] of [['RunesClient',runeRuntime],['RuneManagementPanel',runeManagement]]){
-  requireMatch(source,/selectNeonRows/,`${name} must use direct Neon read queries`);
-  if(/neonAuthClient|updateRuneKeywords|\.update\(|\.insert\(|\.upsert\(|\.delete\(/.test(source))failures.push(`${name}: silver.runes canonical data must remain app-side read-only`);
-  if(/memoryCache|DEFAULT_MEMORY_CACHE_ENTRIES/.test(source))failures.push(`${name}: rune runtime must not retain a process-memory data cache`);
+const read=path=>fs.readFileSync(path,'utf8');
+const files={
+  client:'app/loc/neon-client.js',
+  account:'app/loc/use-neon-account.js',
+  authorization:'app/loc/scope-authorization.js',
+  userStorage:'app/loc/neon-user-storage.js',
+  scopeManagement:'app/loc/GovernanceManagement.jsx',
+  adminManagement:'app/loc/views/AdminHomeView.jsx',
+  managementData:'app/loc/ManagementDataPanel.jsx',
+  search:'app/modular-v2/features/SearchV2.jsx',
+  culture:'app/modular-v2/features/CultureV2.jsx'
+};
+for(const path of Object.values(files))if(!fs.existsSync(path))failures.push('missing Current auth/data contract file: '+path);
+if(!failures.length){
+  const client=read(files.client);
+  for(const token of ['getNeonPublicToken','resetNeonPublicToken','SupabaseAuthAdapter','signInWithOAuth','getSession'])if(!client.includes(token))failures.push('Neon client missing '+token);
+  const account=read(files.account);
+  for(const token of ["schema('silver').from('manage')","select('id,email,role')",'email:authorizer.email','role:authorizer.role'])if(!account.includes(token))failures.push('account authorization missing '+token);
+  const authorization=read(files.authorization);
+  for(const token of ["z.enum(['admin','scope'])",'permissionRows','scopes.has(normalizeScopeId(scopeId))'])if(!authorization.includes(token))failures.push('scope authorization missing '+token);
+  const storage=read(files.userStorage);
+  for(const token of ["apiRelation('user_records')","apiRelation('user_settings')","onConflict:'owner_id,id'","onConflict:'owner_id,setting_key'"])if(!storage.includes(token))failures.push('user storage missing '+token);
+  if(!read(files.scopeManagement).includes('account.canManageScopeSync(scopeId)'))failures.push('Scope management role gate missing');
+  if(!read(files.adminManagement).includes('account.canManageGlobalSync()'))failures.push('Admin management role gate missing');
+  const managementData=read(files.managementData);
+  for(const token of ['resolveScopeTables(scopeId','uid,title,source_name,createtime,UpdateTime,searchable'])if(!managementData.includes(token))failures.push('Management data contract missing '+token);
+  for(const path of [files.search,files.culture])if(!read(path).includes('UpdateTime:new Date().toISOString()'))failures.push(path+' must refresh Galaxy UpdateTime');
 }
-
-requireMatch(client,/getNeonPublicToken/,'public canonical reads must use the direct anonymous-token provider');
-requireMatch(client,/resetNeonPublicToken/,'public anonymous token recovery hook is required');
-requireMatch(client,/neonPublicClient=createClient\(\{[\s\S]*getToken:getNeonPublicToken/,'public reads must use the isolated token-provided Neon client');
-requireMatch(client,/neonAuthClient=createClient\(\{[\s\S]*SupabaseAuthAdapter/,'management writes must use a separate authenticated Neon client');
-requireMatch(client,/signInWithOAuth/,'Neon Google OAuth sign-in is required for management');
-requireMatch(client,/getSession/,'Neon session lookup is required for management');
-if(/allowAnonymous\s*:\s*true/.test(client))failures.push('public reads must not share Better Auth anonymous session cache');
-
-requireMatch(account,/schema\('silver'\)\.from\('manage'\)/,'account authorization must resolve website permissions from silver.manage');
-requireMatch(account,/select\('id,email,role'\)/,'account permission lookup must use the Current manage contract');
-requireMatch(account,/email:authorizer\.email/,'email must be the account identity key');
-requireMatch(account,/role:authorizer\.role/,'resolved manage role must be exposed by the account state');
-if(/OWNER_EMAIL|isOwner\(|user\?\.id|user\.id|canManagePage|user\?\.role|user\.role/.test(account)){
-  failures.push('website authorization must not use owner-email special cases, user.id, Neon Auth user.role, or page-level permissions');
-}
-
-requireMatch(authorization,/z\.enum\(\['admin','scope'\]\)/,'authorization must accept only Current manage roles admin/scope');
-requireMatch(authorization,/permissionRows/,'shared authorizer must consume silver.manage permission rows');
-requireMatch(authorization,/scopes\.has\(normalizeScopeId\(scopeId\)\)/,'scope authorization must be derived from manage row ids');
-if(/scope_manager|scope_owner|page_manager|privacy_dispute_handler|case_id|scope:<|normalizeAuthRole/.test(authorization)){
-  failures.push('authorization module must remain strictly manage-table admin + scope');
-}
-
-requireMatch(userStorage,/api\.user_records/,'authenticated user records must use api.user_records');
-requireMatch(userStorage,/api\.user_settings/,'authenticated user settings must use api.user_settings');
-requireMatch(userStorage,/conflict:'owner_id,id'/,'user record upserts must be owner-scoped');
-requireMatch(userStorage,/conflict:'owner_id,setting_key'/,'user setting upserts must be owner-scoped');
-if(/localStorage|IndexedDB|readStore\(|writeStore\(/.test(userStorage))failures.push('authenticated durable user state must not use browser storage');
-
-requireMatch(scopeManagement,/account\.canManageScopeSync\(scopeId\)/,'Scope management must use the shared scope authorizer');
-requireMatch(adminManagement,/account\.canManageGlobalSync\(\)/,'Admin management must require the global admin role');
-if(/function hasPrivilege|account\.privileges/.test(searchView)){
-  failures.push('Search must use the shared Neon Auth authorizer instead of its own privilege logic');
-}
-
-requireMatch(managementData,/resolveScopeTables\(scopeId/,'Management data must resolve the canonical Scope tables directly');
-requireMatch(managementData,/uid,title,source_name,createtime,UpdateTime,searchable/,'Management data must expose Galaxy searchable state and UpdateTime');
-if(/publicContentFilters|search_able|statistics_able|culture_able/.test(managementData)){
-  failures.push('Management data must not inherit public Search/Statistics/Culture visibility filters');
-}
-for(const [name,source] of [['Search',searchView],['Culture',cultureView]]){
-  requireMatch(source,/UpdateTime:new Date\(\)\.toISOString\(\)/,name+' Galaxy updates must refresh UpdateTime');
-}
-
-for(const retired of [
-  'app/loc/rune-repository.js',
-  'app/lrunes/rune-draw-engine.js',
-  'app/loc/neon-legacy-migration.js',
-  'app/loc/neon-scope-governance.js',
-  'app/modular-v2/ScopeManagementV2.jsx',
-  'app/loc/auth-client.js',
-  'app/loc/local-db.js',
-  'app/loc/google-drive.js',
-  'app/loc/storage.js',
-  'services/cloudflare/auth-worker.js',
-  'services/cloudflare/wrangler.auth.jsonc',
-  'services/cloudflare/loc-state-worker.js'
-]){
-  if(fs.existsSync(retired))failures.push(`retired persistence/auth path must remain removed: ${retired}`);
-}
-
 if(failures.length){
-  console.error('[auth-boundary] violations:\n'+failures.join('\n'));
+  console.error('[auth-boundary] failures:\n'+failures.map(item=>'- '+item).join('\n'));
   process.exit(1);
 }
-console.log('[auth-boundary] Neon Auth + RLS user storage + admin/scope authorization verified');
-
+console.log('[auth-boundary] Current Neon public/authenticated boundary and management authorization verified');

@@ -1,6 +1,6 @@
 import './globals.css';
 import GlobalNav from './GlobalNav';
-import Rc81Experience from './Rc81Experience';
+import AppExperience from './AppExperience';
 import ScopeFooterV2 from './modular-v2/ScopeFooterV2';
 import QueryProvider from './QueryProvider';
 import {LOC_ORIGIN} from './seo/metadata';
@@ -16,9 +16,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="zh-Hant" suppressHydrationWarning>
-      <body className="next-migration-shell">
+      <body className="loc-app-shell">
         <QueryProvider>
-          <Rc81Experience />
+          <AppExperience />
           <GlobalNav />
           {children}
           <ScopeFooterV2 />
