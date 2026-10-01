@@ -1,4 +1,4 @@
-export const LUNARUNES_GOVERNANCE_SUBTITLE='說明月之符文的使用原則、恆定定義、權利與管理方式。';
+export const LUNARUNES_GOVERNANCE_SUBTITLE='說明月之符文的使用原則、恆定符文、權利與管理方式。';
 
 export default function LunaRunesGovernance({canEdit=false}){
   return <>
@@ -7,24 +7,28 @@ export default function LunaRunesGovernance({canEdit=false}){
         <h2>使用原則</h2>
         <p>月之符文，是一套符號式語言宇宙。</p>
         <p><strong>符文名稱與定義永遠恆定。</strong></p>
-        <div className="lunarunes-governance-groups">
-          <div className="lunarunes-governance-group"><strong>靈魂 Soul（1–8）</strong><span>靈 Spirit · 魂 Soul · 彩 Spectrum · 憶 Memory · 界 Boundary · 域 Domain · 鏡 Mirror · 核 Core</span></div>
-          <div className="lunarunes-governance-group"><strong>連結 Link（9–16）</strong><span>向 Path · 斷 Sever · 封 Seal · 鍊 Chain · 啟 Awaken · 分 Separation · 悟 Insight · 誤 Error</span></div>
-          <div className="lunarunes-governance-group"><strong>生命 Life（17–24）</strong><span>生 Birth · 老 Aging · 病 Illness · 死 Death · 心 Heart · 愛 Love · 語 Language · 韻 Resonance</span></div>
-          <div className="lunarunes-governance-group"><strong>自然 Nature（25–32）</strong><span>樹 Tree · 花 Blossom · 葉 Leaf · 草 Grass · 根 Root · 種 Seed · 實 Fruit · 枝 Branch</span></div>
-          <div className="lunarunes-governance-group"><strong>礦物 Mineral（33–40）</strong><span>金 Gold · 玉 Jade · 晶 Crystal · 地 Land · 石 Stone · 鑽 Diamond · 礦 Ore · 塵 Dust</span></div>
-          <div className="lunarunes-governance-group"><strong>元素 Element（41–48）</strong><span>光 Radiance · 暗 Shadow · 水 Water · 火 Flame · 風 Wind · 土 Earth · 雷 Thunder · 氣 Air</span></div>
-          <div className="lunarunes-governance-group"><strong>秩序 Order（49–56）</strong><span>日 Sun · 月 Moon · 星 Star · 辰 Phase · 明 Clarity · 時 Time · 空 Space · 因 Reason</span></div>
-          <div className="lunarunes-governance-group"><strong>無序 Disorder（57–64）</strong><span>福 Blessing · 禍 Calamity · 無 Blank · 夢 Dream · 幻 Illusion · 緣 Karma · 虛 Void · 果 Result</span></div>
-          <div className="lunarunes-governance-group"><strong>特殊 Special</strong><span>65 玄 Chaos · 66 命 Fate · 0 德 Virtue</span></div>
-        </div>
+
       </section>
       <section className="loc-card" id="neutrality">
         <h2>使用邊界</h2>
-        <p>抽牌、籤詩與解牌內容只供參考，不是命令，也不是唯一答案。</p>
-        <p>系統協助整理當下的符號、文字與可能脈絡，但不替使用者決定身份、價值判斷或下一步行動。最後的判斷與選擇仍由使用者自己決定。</p>
+        <p>籤詩產生系統的抽牌、籤詩與解牌內容只供參考，不是命令，也不是唯一答案。</p>
+        <p>月之符文提供的是語言與可能性；如何理解、是否採用，以及下一步如何行動，仍由使用者自己決定。</p>
       </section>
     </div>
+    <section className="loc-card" id="runes">
+      <h2>恆定符文</h2>
+      <div className="lunarunes-governance-groups">
+        <div className="lunarunes-governance-group"><strong>靈魂 Soul（1–8）</strong><span>靈 Spirit · 魂 Soul · 彩 Spectrum · 憶 Memory · 界 Boundary · 域 Domain · 鏡 Mirror · 核 Core</span></div>
+        <div className="lunarunes-governance-group"><strong>連結 Link（9–16）</strong><span>向 Path · 斷 Sever · 封 Seal · 鍊 Chain · 啟 Awaken · 分 Separation · 悟 Insight · 誤 Error</span></div>
+        <div className="lunarunes-governance-group"><strong>生命 Life（17–24）</strong><span>生 Birth · 老 Aging · 病 Illness · 死 Death · 心 Heart · 愛 Love · 語 Language · 韻 Resonance</span></div>
+        <div className="lunarunes-governance-group"><strong>自然 Nature（25–32）</strong><span>樹 Tree · 花 Blossom · 葉 Leaf · 草 Grass · 根 Root · 種 Seed · 實 Fruit · 枝 Branch</span></div>
+        <div className="lunarunes-governance-group"><strong>礦物 Mineral（33–40）</strong><span>金 Gold · 玉 Jade · 晶 Crystal · 地 Land · 石 Stone · 鑽 Diamond · 礦 Ore · 塵 Dust</span></div>
+        <div className="lunarunes-governance-group"><strong>元素 Element（41–48）</strong><span>光 Radiance · 暗 Shadow · 水 Water · 火 Flame · 風 Wind · 土 Earth · 雷 Thunder · 氣 Air</span></div>
+        <div className="lunarunes-governance-group"><strong>秩序 Order（49–56）</strong><span>日 Sun · 月 Moon · 星 Star · 辰 Phase · 明 Clarity · 時 Time · 空 Space · 因 Reason</span></div>
+        <div className="lunarunes-governance-group"><strong>無序 Disorder（57–64）</strong><span>福 Blessing · 禍 Calamity · 無 Blank · 夢 Dream · 幻 Illusion · 緣 Karma · 虛 Void · 果 Result</span></div>
+        <div className="lunarunes-governance-group"><strong>特殊 Special</strong><span>65 玄 Chaos · 66 命 Fate · 0 德 Virtue</span></div>
+      </div>
+    </section>
     <section className="loc-card" id="rights">
       <h2>著作權與授權</h2>
       <p>月之符文的符文體系設計、核心語彙、規則結構、原創文字、籤詩產生系統、解牌結構與相關原創內容受著作權保護。</p>
