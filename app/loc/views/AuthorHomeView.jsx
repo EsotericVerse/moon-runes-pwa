@@ -7,7 +7,7 @@ const PROFESSIONAL_ROLES=Object.freeze([
   }),
   Object.freeze({
     title:'混沌校對者 · Chaos Calibrator',
-    text:'面對混亂、矛盾或未知，先拆開規則、例外與誤差，再把問題校準到可以理解、比較與繼續推進的狀態。'
+    text:'不急著消除混亂，而是先找出其中的規則、矛盾與有價值的錯誤，再把問題校準到足以理解並繼續推進的位置。'
   }),
   Object.freeze({
     title:'語言建築師 · Language Architect',
