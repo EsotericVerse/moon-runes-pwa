@@ -92,7 +92,7 @@ function GovernanceLaw(){
   const canEdit=account.canManageScopeSync(scopeId);
   if(scopeId==='loc')return <FeaturePageV2 featureId="governance" subtitle={UI_COPY.governance.rights}><LocGovernanceLaw canEdit={canEdit}/></FeaturePageV2>;
   const {View}=governanceFor(scopeId);
-  return <FeaturePageV2 featureId="governance" subtitle="權利與授權"><View canEdit={canEdit}/></FeaturePageV2>;
+  return <FeaturePageV2 featureId="governance" subtitle={UI_COPY.governance.rights}><View canEdit={canEdit}/></FeaturePageV2>;
 }
 
 export default function GovernanceV2({section=null}){
