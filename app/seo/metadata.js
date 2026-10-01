@@ -72,8 +72,8 @@ export function lunarunesMetadata({title,description,path='/',noIndex=false,imag
 
 export function authorMetadata({title,description,path='/lo3rwang/',noIndex=false}){
   return pageMetadata({
-    origin:LOC_ORIGIN,path,siteName:'LOC 月典',title,description,
-    image:AUTHOR_IMAGE,imageAlt:'作者政德',noIndex
+    origin:LOC_ORIGIN,path,siteName:'Lucas Oscar Wang 政德',title,description,
+    image:AUTHOR_IMAGE,imageAlt:'Lucas Oscar Wang 政德',noIndex
   });
 }
 
