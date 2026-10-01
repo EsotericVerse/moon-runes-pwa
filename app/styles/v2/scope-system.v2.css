@@ -288,7 +288,7 @@
 .scope-v2-governance-wysiwyg h1,.scope-v2-governance-wysiwyg h2,.scope-v2-governance-wysiwyg h3{margin:1rem 0 .5rem}
 .scope-v2-governance-wysiwyg p{margin:.5rem 0}
 
-.runes-home-function-select{width:min(100%,20rem);margin-top:1rem}
+.runes-home-function-select{width:min(100%,20rem);margin-top:1rem;display:grid;gap:.65rem}
 
 
 /* Static presentation belongs in CSS; JS only supplies state or runtime configuration. */
