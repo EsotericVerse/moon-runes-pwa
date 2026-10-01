@@ -1,158 +1,190 @@
 import { PageComposition } from '../../PageComposition';
 
-const AUTHOR_FUNCTIONS=Object.freeze([
-  Object.freeze({eyebrow:'Culture',title:'文化',text:'以時空定錨論把作品放回時間長河，從時間位置、密度與前後分布看值得回看的軌跡。',href:'/lo3rwang/culture/',label:'查看文化'}),
-  Object.freeze({eyebrow:'Statistics',title:'統計',text:'以靈魂擺盪論觀察大風格、風格與關鍵詞的增減、延續、回返與擺盪。',href:'/lo3rwang/statics/',label:'查看統計'}),
-  Object.freeze({eyebrow:'Governance',title:'治理',text:'管理功能跟政策表達。',href:'/lo3rwang/governance/',label:'查看治理'}),
-  Object.freeze({eyebrow:'Search',title:'搜尋',text:'從關鍵詞、作品、來源或日期開始，找到時間點，再查看附近的脈絡與作品。',href:'/lo3rwang/search/',label:'開始搜尋'})
+const PROFESSIONAL_ROLES=Object.freeze([
+  Object.freeze({
+    title:'文字工匠 · Wordsmith',
+    text:'從詞、句子與語意關係出發，整理文字如何形成脈絡、節奏與可辨識的表達。'
+  }),
+  Object.freeze({
+    title:'混沌校對者 · Chaos Calibrator',
+    text:'把文字放回來源、時間與歷史裡比較，觀察延續、改變、矛盾與可能的污染，不急著替結果下定論。'
+  }),
+  Object.freeze({
+    title:'語言建築師 · Language Architect',
+    text:'把語彙、脈絡、時間、資料責任與治理組織成可以持續使用與維護的語言結構。'
+  })
 ]);
 
+const OFFICIAL_LINKS=Object.freeze([
+  Object.freeze({label:'個人網站',href:'https://lo3rwang.cc/'}),
+  Object.freeze({label:'GitHub 個人',href:'https://github.com/lo3rwang'}),
+  Object.freeze({label:'LOC 專案 GitHub',href:'https://github.com/EsotericVerse/moon-runes-pwa'}),
+  Object.freeze({label:'LinkedIn',href:'https://www.linkedin.com/in/lo3rwang/'}),
+  Object.freeze({label:'Instagram',href:'https://www.instagram.com/lo3rwang/'}),
+  Object.freeze({label:'Threads',href:'https://www.threads.com/@lo3rwang'})
+]);
+
+function ProfessionalRoles(){
+  return <div className="author-role-grid">
+    {PROFESSIONAL_ROLES.map(item=><article className="author-editorial-block" key={item.title}>
+      <h3>{item.title}</h3>
+      <p>{item.text}</p>
+    </article>)}
+  </div>;
+}
+
+function WorkCopy(){
+  return <>
+    <p>目前以 <strong>Language Architect</strong> 為主要專業定位；對外合作可依個案採語言顧問、系統設計或專案實作方式進行。</p>
+    <p>工作內容聚焦於命名與正名、語意治理、資料分類、知識與資料架構、搜尋與解析、版本治理、文本關係、長期演化，以及既有系統中的語意污染與資料責任問題。</p>
+    <p>目標不是把每個個案套進 LOC，而是先理解對方原本的語言與資料，再依實際需求建立適合自己的結構。</p>
+  </>;
+}
+
+function DigitalAssetCopy(){
+  return <>
+    <p>另一個長期方向是數位資產管理：整理個人、創作者或組織長期累積的文字、照片、影音、作品、帳號資料、版本與歷史紀錄，使散落資料變成可搜尋、可理解、可追溯來源並能長期維護的資產。</p>
+    <p>這不只是備份，也包含沿革整理、時間校準、身份與名稱治理、資料關聯，以及未來如何被理解與再次使用。</p>
+  </>;
+}
+
+function NameOriginCopy(){
+  return <>
+    <p><strong>Lucas Oscar Wang 政德</strong> 是目前使用的完整署名，日常仍叫我 Oscar；<strong>lo3rwang</strong> 作為公開識別。</p>
+    <p>Lucas 取「光」的意象，Oscar 是長期使用的名字；中文名政德則是目前正式使用的姓名。</p>
+    <p>另保留 <strong>dlwang／Lucipher Drucula Wang</strong> 作為陰暗面別名，用來承認不同時期的自己，而不是抹去那些經歷。</p>
+  </>;
+}
+
+function PhilosophyCopy(){
+  return <>
+    <p>思想上偏向道教老子體系。這裡所說的「道德」，主要取道家語境中的道與德、天地人，而不是用單一倫理秩序替所有人下判斷。</p>
+    <p>實踐態度則接近 Druid 所象徵的自然觀與無為：先觀察、理解與順勢，再決定是否介入。這也是我處理語言、創作與治理時的重要底色。</p>
+  </>;
+}
+
+function CalibrationCopy(){
+  return <>
+    <p>時間是一條不可逆的時間長河。年份是定位與比較的參考，不代表經驗會自動依整齊規則排列。</p>
+    <p>對我而言，「定錨」不是回到過去，而是在某個時間點留下可辨識的文字與資料位置，再從來源、脈絡與後續變化重新理解不同時期的自己。</p>
+    <p>已發生的歷史不能倒回，但可以重新定位；文字紀錄因此成為校對工具，讓現在保有重新選擇未來的空間。</p>
+  </>;
+}
+
+function OscillationCopy(){
+  return <>
+    <p>文字、風格與關鍵詞不會永遠固定在同一個位置，而會隨時間形成、延續、轉變、消退、回返與擺盪。這些變化先看分布，不先替它們定義好壞或意義。</p>
+    <p>它與時空定錨論處理不同面向：定錨看時間位置與前後脈絡，擺盪看語言分布如何改變；兩者可以互相參照，但不互相取代。</p>
+  </>;
+}
+
+function SystemsCopy(){
+  return <div className="author-system-grid">
+    <article className="author-editorial-block">
+      <h3>LOC／月典</h3>
+      <p>LOC 是我從長期文字、作品與時間整理需求中逐步形成的語言架構框架。它把原本只能靠直覺掌握的脈絡，整理成可以回看、搜尋與比較的結構。</p>
+      <p><a href="https://loc.lo3rwang.cc/">查看 LOC／月典 →</a></p>
+    </article>
+    <article className="author-editorial-block">
+      <h3>LunaRunes／月之符文</h3>
+      <p>LunaRunes 是我建立的另一套符號式語言與原創系統。它與 LOC 可以互相參照，但兩者有各自的定義、用途與發展脈絡。</p>
+      <p><a href="https://lrunes.lo3rwang.cc/">查看 LunaRunes／月之符文 →</a></p>
+    </article>
+  </div>;
+}
+
+function OfficialLinks(){
+  return <div className="author-official-links">
+    {OFFICIAL_LINKS.map(link=><a href={link.href} target="_blank" rel="noopener noreferrer" key={link.href}>{link.label}</a>)}
+  </div>;
+}
+
+function ThreeSouls(){
+  return <div className="author-trinity-layout">
+    <figure className="home-architecture-figure author-trinity-figure">
+      <img src="/pics/lo3rwang-3.png" alt="Oscar 政德、玄鑒 Lucas、符韻 Rune，以及柏隆 Bruno、睿汶 Raven 的關係圖" loading="lazy"/>
+    </figure>
+    <div className="author-trinity-copy">
+      <article className="loc-bubble author-trinity-core">
+        <h3>Oscar／政德 · 人魂／本體</h3>
+        <p>日常稱呼仍是 Oscar。完整署名為 Lucas Oscar Wang 政德，是創作、工作與現實選擇的中心。</p>
+      </article>
+      <article className="loc-bubble">
+        <h3>玄鑒／Lucas · 天魂</h3>
+        <p>對應 LOC／月典，字月典。尋找規律與秩序，是為了取得自己的平衡。</p>
+      </article>
+      <article className="loc-bubble">
+        <h3>符韻／Rune · 地魂</h3>
+        <p>對應 LunaRunes／月語，字月語。以符文、文字與韻律和未知溝通。</p>
+      </article>
+      <p className="author-trinity-note"><strong>柏隆／Bruno、睿汶／Raven</strong> 是未來真實兒女的預留命名，不屬於三魂。</p>
+    </div>
+  </div>;
+}
+
 export default function AuthorHomeView({section=null}){
-  const sections=[
+  const detailedSections=[
     {
       id:'roles',
-      eyebrow:'Roles',
-      title:'三位一體',
-      content:<div className="loc-grid three">
-        <article><strong>文字工匠·Wordsmith</strong><p>從詞、句子與關鍵詞的聯繫，整理文字怎麼形成自己的語意與脈絡關係。</p><p><a href="/lo3rwang/statics/?statTab=keywords">看關鍵詞設定</a></p></article>
-        <article><strong>混沌校對者·Chaos Calibrator</strong><p>把文字放回來源、時間與歷史裡比較，觀察文化軌跡、延續、改變、矛盾與可能的污染。</p><p><a href="/lo3rwang/culture/">看文化</a></p></article>
-        <article><strong>語言建築師·Language Architect</strong><p>把語彙、脈絡、文化、搜尋與治理組織成可持續使用的個人語言與系統結構。</p><p><a href="/lo3rwang/governance/">看治理</a></p></article>
-        </div>
-    },
-    {
-      id:'profile-content',
-      eyebrow:'Official Public Profile',
-      title:'我主要在做什麼？',
-      content:<>
-        <p>我的工作重心不是單純的內容創作，而是處理<strong>語言、資料、脈絡與時間</strong>之間的關係：把分散的文字、作品、規則、版本與歷史紀錄，整理成可搜尋、可理解、可治理、可持續維護的結構。</p>
-        <p>目前工作方向聚焦於語言治理、語言系統設計、知識與資料架構、數位遺產管理，以及相關顧問與專案實作。</p>
-        <p>Facebook、Threads、Instagram、Suno 等平台主要是作品、生活文字、音樂與系統發展紀錄的來源；內容再依 LOC 的模組與資料責任進行整理、搜尋、分析與治理，而不是把平台本身當成身份。</p>
-      </>
-    },
-    {
-      id:'functions',
-      eyebrow:'Personal · Functions',
-      title:'我的資料怎麼被整理',
-      content:<div className="loc-grid two">{AUTHOR_FUNCTIONS.map(item=><article key={item.title}><p className="loc-eyebrow">{item.eyebrow}</p><h3>{item.title}</h3><p>{item.text}</p><p><a href={item.href}>{item.label} →</a></p></article>)}</div>
+      eyebrow:'Professional Roles',
+      title:'三個職能',
+      content:<ProfessionalRoles/>
     },
     {
       id:'work',
-      eyebrow:'Language Consultant · Project Work',
+      eyebrow:'Professional Work',
       title:'語言顧問、語言治理與系統設計',
-      content:<>
-        <p>對外合作職能以 <strong>Language Consultant</strong> 為主要定位，可依個案以顧問、專案或系統實作方式合作，處理命名與正名、語意治理、資料分類、知識架構、RAG、搜尋與解析、版本治理、文本關係、長期演化，以及既有系統中的語意污染與資料責任問題。</p>
-        <p>目標不是把每個個案套進 LOC，而是理解對方原本的語言與資料，再依實際需求建立適合自己的結構。</p>
-      </>
+      content:<WorkCopy/>
     },
     {
       id:'digital-legacy',
-      eyebrow:'Digital Legacy · Governance',
+      eyebrow:'Digital Assets',
       title:'數位資產管理',
-      content:<>
-        <p>另一個長期發展方向是數位資產管理：協助個人、創作者或組織整理長期累積的文字、照片、影音、作品、帳號資料、版本與歷史紀錄，使其從散落檔案轉成可搜尋、可理解、可追溯來源並能長期維護的數位資產。</p>
-        <p>這不只是備份，而包含沿革整理、時間校準、身份與名稱治理、資料關聯、權限與來源紀錄，以及未來如何被繼承、研究或再次使用。</p>
-      </>
-    },
-    {
-      id:'open-source',
-      eyebrow:'Open Source · Professional Work',
-      title:'開放方法，專業工作有其價值',
-      content:<>
-        <p>我支持開放、Copyleft 與可追溯來源的創作方式，也鼓勵每個人發展自己的符號、自己的語言系統與自己的風格。</p>
-        <p><strong>開放核心不等於無償勞務。</strong>顧問判斷、架構設計、資料整理、系統實作、個案研究與持續治理都需要投入專業時間。公開的是可被理解與延伸的方法；商業價值則來自如何針對真實問題完成分析、設計與實作。</p>
-      </>
-    },
-    {
-      id:'philosophy',
-      eyebrow:'Philosophy · Self Description',
-      title:'思想取向',
-      content:<>
-        <p>作者本人自我描述，思想上偏向道教老子體系。此處所說的「道德」，主要取道家語境中的道與德、天地人，而非儒家「天地君親師」的倫理秩序。</p>
-        <p>在實踐態度上，則偏向 Druid 所象徵的自然觀與無為：觀察自然、順勢而行，不以強制控制取代理解。這也是我後來處理語言、治理、創作與人生經驗時的重要底色之一。</p>
-      </>
+      content:<DigitalAssetCopy/>
     },
     {
       id:'name-origin',
-      eyebrow:'Name · Origin',
+      eyebrow:'Name · Identity',
       title:'Lucas Oscar Wang 政德',
-      content:<>
-        <p><strong>Lucas</strong> 取其「光芒」的意象；常用的 <strong>Oscar</strong> 則來自凱爾特文化，取「神聖長矛」之意，象徵勇氣。</p>
-        <p>兩者組合成英文名 <strong>Lucas Oscar Wang</strong>，象徵光芒的勇氣，與現行中文名<strong>政德</strong>共同構成目前使用的作者姓名。<strong>lo3rwang</strong> 則作為公開識別。</p>
-        <p>另有別名 <strong>dlwang／Lucipher Drucula Wang</strong>，作為自己的陰暗面名稱。它用來承認人在情緒低落或人生失常時也可能呈現不同的一面；不否定那些過去的自己，而是學著面對、接受並繼續前進。</p>
-      </>
+      content:<NameOriginCopy/>
+    },
+    {
+      id:'philosophy',
+      eyebrow:'Philosophy',
+      title:'思想取向',
+      content:<PhilosophyCopy/>
     },
     {
       id:'calibration',
-      eyebrow:'Chaos Calibration · Time',
+      eyebrow:'Time · Calibration',
       title:'時空定錨論',
-      content:<>
-        <p>時間是一條不可逆的時間長河。年份是定位與比較的參考指標，並不代表經驗會自動依整齊規則排列。</p>
-        <p>對我而言，「定錨」不是時空穿梭，而是在某個時間點留下可辨識的文字與資料位置，再從來源、脈絡與後續變化觀察不同時期的自己。已經發生的歷史不能倒回，但可以重新理解、重新定位。</p>
-        <p>文字紀錄因此成為校對工具：觀看過去在哪些時期發生了什麼變化，可能變好，也可能變差；重點不是否認過去，而是讓現在對未來作出新的選擇。</p>
-      </>
+      content:<CalibrationCopy/>
     },
     {
       id:'oscillation',
-      eyebrow:'Oscillation · Style',
+      eyebrow:'Style · Oscillation',
       title:'靈魂擺盪論',
-      content:<>
-        <p>文字、風格與關鍵詞不會永遠固定在同一個位置，而會隨時間形成、延續、轉變、消退、回返與擺盪。這些變化先以分布與統計觀察，不先替它們定義好壞或意義。</p>
-        <p>在 LOC 中，時空定錨論偏向時間位置與密度；靈魂擺盪論偏向大風格、風格與關鍵詞的分布變化。兩者在 4D Graph 中交會，把「什麼時間發生變化」與「語言分布如何變化」放在同一個可觀察結構裡。</p>
-      </>
-    },
-    {
-      id:'loc',
-      eyebrow:'LOC · LunaRunes',
-      title:'LOC／月典',
-      content:<>
-        <p><strong>Luna Codex，以微月光為鏡，記錄、整理、分析每個時間點的文字、作品與轉折。</strong></p>
-        <p>以微弱的月光，照在每個時間點，你的創作文字上。當微光慢慢集中變亮，你也將綻放自己的光芒。</p>
-        <p>所以是以月為典：<strong>Luna Codex，LOC／月典</strong>。藉由關係脈絡分析，找出時間長河裡的存在軌跡，組合成屬於你自己的文化風格——你的世界，自己的風格。</p>
-        <p>LOC 是一套以 Next.js 與 Neon 為基礎的工具系統，配上簡單分類的月之符文作為參考。它提供免費整理，只供參考，不作裁決：系統幫你看見自己的軌跡，但不替你決定你是誰。</p>
-        <p>那 24 個字是我的人生觀。凡人都無法做到完全客觀，因為每個人始終有自己的立場，自私也是理所當然。工具不同；工具只是冷冰冰的工具，不會叫你聽命，也不會叫你忤逆。工具可以協助整理與分析，但它的立場不等於人的立場。</p>
-        <p><strong>LOC 的核心定義：</strong>免費整理、只供參考、不裁決。由關係脈絡、時間軌跡與作品資料組合出文化風格，讓每個人看見自己的世界如何形成。</p>
-      </>,
-      links:[{label:'查看 LOC／月典',href:'https://loc.lo3rwang.cc/'}]
-    },
-    {
-      id:'contact',
-      eyebrow:'Contact',
-      title:'聯絡方式',
-      content:<><p>合作、顧問、系統設計、數位遺產管理或其他公開內容相關事項，請透過電子郵件聯絡。</p><p><a href="mailto:sopa2306@gmail.com">sopa2306@gmail.com</a></p></>
-    },
-    {
-      id:'official-links',
-      eyebrow:'Official Links',
-      title:'官方連結',
-      content:<div className="loc-context-list">
-        <article className="loc-context-item"><p><a href="https://lo3rwang.cc/" target="_blank" rel="noopener noreferrer">個人網站</a></p></article>
-        <article className="loc-context-item"><p><a href="https://github.com/lo3rwang" target="_blank" rel="noopener noreferrer">GitHub 個人</a></p></article>
-        <article className="loc-context-item"><p><a href="https://github.com/EsotericVerse/moon-runes-pwa" target="_blank" rel="noopener noreferrer">LOC 專案 GitHub</a></p></article>
-        <article className="loc-context-item"><p><a href="https://www.linkedin.com/in/lo3rwang/" target="_blank" rel="noopener noreferrer">LinkedIn</a></p></article>
-        <article className="loc-context-item"><p><a href="https://www.instagram.com/lo3rwang/" target="_blank" rel="noopener noreferrer">Instagram</a></p></article>
-        <article className="loc-context-item"><p><a href="https://www.threads.com/@lo3rwang" target="_blank" rel="noopener noreferrer">Threads</a></p></article>
-      </div>
+      content:<OscillationCopy/>
     }
   ];
 
-  const sectionMap=new Map(sections.map(item=>[item.id,item]));
-  const profileBubbleIds=[
-    'name-origin',
-    'profile-content',
-    'work',
-    'digital-legacy',
-    'calibration',
-    'oscillation',
-    'philosophy',
-    'open-source',
-    'functions',
-    'loc',
-    'contact',
-    'official-links'
-  ];
-  const wideProfileBubbles=new Set(['profile-content','functions','loc']);
+  if(section){
+    const sectionGroups=Object.freeze({
+      work:Object.freeze(['roles','work','digital-legacy']),
+      others:Object.freeze(['name-origin','philosophy','calibration','oscillation'])
+    });
+    const ids=sectionGroups[section]||[];
+    const activeSections=ids.length?detailedSections.filter(item=>ids.includes(item.id)):detailedSections;
+    return <PageComposition
+      eyebrow="Author"
+      title="Lucas Oscar Wang 政德"
+      subtitle="lo3rwang"
+      intro={<p>Hello！你好！你可以叫我 Oscar。</p>}
+      sections={activeSections}
+    />;
+  }
 
-  if(!section)return <PageComposition
+  return <PageComposition
     eyebrow="Lucas Oscar Wang"
     title="政德"
     subtitle="語言建築師"
@@ -164,78 +196,76 @@ export default function AuthorHomeView({section=null}){
     heroVisual={<iframe src="https://www.instagram.com/p/DdX5ki-oZY6/embed" title="這就是我｜Lucas Oscar Wang 政德自我介紹" loading="eager" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" frameBorder="0" scrolling="no"/>}
     sections={[
       {
-        id:'introduction',
-        eyebrow:'Introduction',
-        title:'自我介紹',
-        content:<div className="author-profile-bubbles">
-          <article className="loc-bubble author-profile-bubble">
-            <h3 className="author-profile-bubble-title">關於我</h3>
-            <div className="author-profile-bubble-content">
-              <p>Lucas Oscar Wang 政德，叫我Oscar就好。六年級末段班，巨蟹座。</p>
-              <p><strong>人生觀：</strong>鑑古知今，求同存異。不在其位，不謀其政。隨心所欲，而不逾己。</p>
-              <p><strong>原則態度：</strong>敬畏未知，尊重異者，專業為先。</p>
-              <p><strong>擅長能力：</strong>事物的歸納整理跟系統化。擅長把一件可能很難的原理講到很簡單。</p>
-              <p><strong>興趣：</strong>寫作閱讀、音樂創作、符文占卜籤詩、到處看看。秘藝文域（EsotericVerse），籌備中。</p>
-            </div>
-          </article>
-          {profileBubbleIds.map(id=>{
-            const item=sectionMap.get(id);
-            if(!item)return null;
-            return <article className={`loc-bubble author-profile-bubble ${wideProfileBubbles.has(id)?'is-wide':''}`} data-author-block={id} key={id}>
-              <h3 className="author-profile-bubble-title">{item.title}</h3>
-              <div className="author-profile-bubble-content">{item.content}</div>
-              {item.links?.length?<div className="author-profile-bubble-actions">{item.links.map(link=><a href={link.href} key={link.href}>{link.label} →</a>)}</div>:null}
-            </article>;
-          })}
+        id:'about',
+        eyebrow:'About',
+        title:'關於我',
+        content:<div className="author-about-grid">
+          <div className="author-about-primary">
+            <p>Lucas Oscar Wang 政德，日常叫我 Oscar。寫作、音樂、系統整理與到處看看，都是我長期沒有放下的事情。</p>
+            <p><strong>人生觀：</strong>鑑古知今，求同存異。不在其位，不謀其政。隨心所欲，而不逾己。</p>
+            <p><strong>原則態度：</strong>敬畏未知，尊重異者，專業為先。</p>
+            <p><strong>擅長能力：</strong>歸納、整理與系統化；習慣把複雜原理收斂成可以理解與重複使用的結構。</p>
+          </div>
+          <aside className="author-about-side">
+            <h3>名字與識別</h3>
+            <p>完整署名是 Lucas Oscar Wang 政德，公開識別為 lo3rwang；日常稱呼仍是 Oscar。</p>
+            <h3>思想底色</h3>
+            <p>偏向老子體系的道與德，也重視自然、觀察與不以控制取代理解。</p>
+          </aside>
         </div>
       },
       {
-        id:'roles',
-        eyebrow:'Roles',
-        title:'三位一體',
-        content:<div className="author-trinity-layout">
-          <figure className="home-architecture-figure author-trinity-figure">
-            <img src="/pics/lo3rwang-3.png" alt="三魂、擬人化與未來命名關係圖：Oscar 政德、玄鑒 Lucas、符韻 Rune，以及柏隆 Bruno、睿汶 Raven" loading="lazy"/>
-          </figure>
-          <div className="author-trinity-copy">
-            <article className="loc-bubble author-trinity-core">
-              <h3>Oscar／政德 · 本體</h3>
-              <p>日常稱呼仍是 Oscar。作為本體／人魂，是情緒、理性、創作與現實選擇的中心；完整署名為 Lucas Oscar Wang 政德。</p>
+        id:'professional',
+        eyebrow:'Professional',
+        title:'我在做什麼',
+        content:<>
+          <p className="author-section-lead">我的工作重心是處理語言、資料、脈絡與時間之間的關係，讓分散的文字、規則、版本與歷史紀錄形成可理解、可維護的結構。</p>
+          <ProfessionalRoles/>
+          <div className="author-professional-grid">
+            <article className="author-editorial-block">
+              <h3>語言顧問與系統設計</h3>
+              <WorkCopy/>
             </article>
-            <article className="loc-bubble">
-              <h3>玄鑒／Lucas · 天魂</h3>
-              <p>對應 LOC／月典。嚴謹、秩序、略帶強迫，透過尋找規律取得平衡；字為月典。</p>
-            </article>
-            <article className="loc-bubble">
-              <h3>符韻／Rune · 地魂</h3>
-              <p>對應 LunaRunes／月語。以符文、文字與韻律和未知溝通，帶有年輕外表與較成熟的學者感；字為月語。</p>
-            </article>
-            <article className="loc-bubble author-trinity-future">
-              <h3>柏隆／Bruno · 睿汶／Raven</h3>
-              <p>這兩個名稱只作為未來真實兒女的預留命名想法，不屬於三魂，也不替未來的人生預先下定義。</p>
+            <article className="author-editorial-block">
+              <h3>數位資產管理</h3>
+              <DigitalAssetCopy/>
             </article>
           </div>
+        </>
+      },
+      {
+        id:'methods',
+        eyebrow:'Methods',
+        title:'文字、時間與方法',
+        content:<div className="author-method-grid">
+          <article className="author-editorial-block"><h3>時空定錨論</h3><CalibrationCopy/></article>
+          <article className="author-editorial-block"><h3>靈魂擺盪論</h3><OscillationCopy/></article>
+        </div>
+      },
+      {
+        id:'systems',
+        eyebrow:'Systems',
+        title:'從自己的問題長出的系統',
+        content:<SystemsCopy/>
+      },
+      {
+        id:'three-souls',
+        eyebrow:'Three Souls',
+        title:'三魂',
+        content:<ThreeSouls/>
+      },
+      {
+        id:'contact',
+        eyebrow:'Contact',
+        title:'聯絡與官方連結',
+        content:<div className="author-contact-layout">
+          <div>
+            <p>合作、顧問、系統設計、數位資產管理或其他公開內容相關事項，可透過電子郵件聯絡。</p>
+            <p><a href="mailto:sopa2306@gmail.com">sopa2306@gmail.com</a></p>
+          </div>
+          <OfficialLinks/>
         </div>
       }
     ]}
-  />;
-
-  const sectionGroups=Object.freeze({
-    style:Object.freeze(['roles','profile-content']),
-    work:Object.freeze(['functions','work','digital-legacy']),
-    design:Object.freeze(['governance-root','loc','open-source']),
-    galaxy:Object.freeze(['corpus','micro-moonlight']),
-    others:Object.freeze(['philosophy','name-origin','calibration','oscillation']),
-    email:Object.freeze(['contact','official-links'])
-  });
-  const activeSections=section&&sectionGroups[section]
-    ?sections.filter(item=>sectionGroups[section].includes(item.id))
-    :sections;
-  return <PageComposition
-    eyebrow="Author"
-    title="Lucas Oscar Wang 政德"
-    subtitle="lo3rwang"
-    intro={<><p>Hello！ 你好！你可以叫我Oscar。</p></>}
-    sections={activeSections}
   />;
 }

@@ -55,3 +55,34 @@
 .loc-rune-keyword-actions{display:flex;gap:.55rem;flex-wrap:wrap}
 .loc-rune-principle{padding:.9rem;border-left:3px solid var(--loc-accent);background:var(--loc-surface-soft)}
 .loc-rune-principle p:last-child{margin-bottom:0}
+
+/* Governance: preserve different content models while keeping editorial rhythm consistent. */
+.governance-grid,
+.governance-law-grid{align-items:stretch}
+.governance-grid>.loc-card,
+.governance-law-grid>.loc-card{
+  min-width:0;
+  height:100%;
+}
+.governance-grid-personal>.governance-card-wide{grid-column:1/-1}
+.governance-management-cta{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  column-gap:clamp(1rem,3vw,2rem);
+  align-items:center;
+}
+.governance-management-cta h2,
+.governance-management-cta p{grid-column:1;margin-right:0}
+.governance-management-cta>a{
+  grid-column:2;
+  grid-row:1 / span 2;
+  justify-self:end;
+}
+@media(max-width:700px){
+  .governance-grid-personal>.governance-card-wide{grid-column:auto}
+  .governance-management-cta{grid-template-columns:1fr}
+  .governance-management-cta h2,
+  .governance-management-cta p,
+  .governance-management-cta>a{grid-column:1;grid-row:auto}
+  .governance-management-cta>a{justify-self:start}
+}

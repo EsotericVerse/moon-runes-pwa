@@ -1,25 +1,24 @@
-export const LOC_GOVERNANCE_SUBTITLE='說明月典的使用原則、權利與管理方式。';
+export const LOC_GOVERNANCE_SUBTITLE='說明月典的使用原則、權利邊界與管理方式。';
 
 export function LocGovernanceLaw({canEdit=false}){
-  return <div className="loc-grid two">
+  return <div className="loc-grid two governance-law-grid">
     <section className="loc-card" id="copyright">
-      <h2>著作權與授權</h2>
-      <p>LOC 採 <strong>Copyleft</strong> 原則，原創程式碼以 <strong>GNU GPL</strong> 為授權方向。</p>
-      <p>LOC 的方法、架構與可授權內容可以被研究、使用與延伸，但應保留來源、作者與必要的修改紀錄。</p>
-      <p>這個授權範圍只屬於 LOC，不會自動延伸到月之符文、個人作品、第三方內容、私人資料或另有授權條件的資產。</p>
-      <p>正式授權版本與條款以 Repository 公開的 LICENSE 文件為準；本頁只說明治理原則，不取代正式授權文件。</p>
+      <h2>公開程式碼與授權</h2>
+      <p>LOC Repository 的公開可見性主要用於檢視、協作與版本追溯；公開可讀不等於整個 LOC 專案已被授權為 Open Source，也不代表其中所有內容都可以自由複製、改作、散布或商業使用。</p>
+      <p>若特定程式碼、檔案或資產另有明示的 LICENSE 或授權聲明，該部分依其明示條件處理；沒有明示授權的內容，不由本頁擴張其使用權。</p>
+      <p>LOC 的名稱、文件、架構敘述、資料內容、個人作品、LunaRunes、第三方內容、私人資料與另有權利條件的資產，各自維持原有的權利狀態。</p>
     </section>
     <section className="loc-card" id="documents">
       <h2>治理文件</h2>
-      <p><a href="https://github.com/EsotericVerse/moon-runes-pwa">程式與授權文件</a>：程式碼、README 與正式授權文件由 Repository 統一管理。</p>
-      <p><a href="/docs/LOC_Canon.docx">LOC Canon</a>：記錄月典目前採用的架構、定義與治理基準。</p>
+      <p><a href="https://github.com/EsotericVerse/moon-runes-pwa">LOC Repository</a>：原始碼、README、版本紀錄與個別授權聲明由 Repository 統一管理。</p>
+      <p><a href="https://github.com/EsotericVerse/moon-runes-pwa/blob/main/docs/LOC_CANON.md">LOC Current Canon</a>：記錄月典目前採用的架構、定義與治理基準。</p>
     </section>
   </div>;
 }
 
 export default function LocGovernance({canEdit=false}){
   return <>
-    <div className="loc-grid two">
+    <div className="loc-grid two governance-grid governance-grid-loc">
       <section className="loc-card" id="principles">
         <h2>治理原則</h2>
         <p className="loc-core-line">尊重 · 和平 · 包容 · 友善</p>
@@ -28,15 +27,13 @@ export default function LocGovernance({canEdit=false}){
       </section>
       <section className="loc-card" id="scope-boundary">
         <h2>治理邊界</h2>
-        <p>不同資料區域可以互相引用、連結與比較，但各自保有自己的內容與管理權。</p>
+        <p>不同資料區域可以互相引用、連結與比較，但各自保有自己的內容、權利與管理責任。</p>
         <p>月典提供共同的整理框架，不替其他區域決定著作權、授權方式或法律立場。</p>
       </section>
       <section className="loc-card" id="loc-lunarunes-relationship">
         <h2>月典與月之符文</h2>
-        <p>月典（LOC）是語言架構框架，是用來整理、歸類與呈現資料的工具；月之符文（LunaRunes）則是一套獨立的符文籤詩系統與符號式語言。</p>
-        <p>月之符文本身不具有神秘學的權威性，它提供的是意見、分析角度與不同的想法；月典也不負責替使用者定義語意或判斷分類對錯，只依使用者選擇的方式整理與劃分。</p>
-        <p>兩者的關係，就像一本書與一張書籤。書本不依賴特定書籤，閱讀一本書也不一定需要書籤；同一張書籤也可以拿去閱讀其他書。</p>
-        <p>因此，使用月典不必使用月之符文；使用月之符文，也不必限定在月典裡。</p>
+        <p>月典（LOC）是語言架構框架，用來整理、歸類與呈現資料；月之符文（LunaRunes）則是一套獨立的符號式語言與原創系統。</p>
+        <p>兩者可以互相參照，但不互相依賴。使用月典不必使用月之符文；使用月之符文，也不必限定在月典裡。</p>
       </section>
       <section className="loc-card" id="analysis-provenance">
         <h2>來源與判讀</h2>
