@@ -7,7 +7,7 @@ function lotSections(card,direction){
   return ['愛情','事業','關係','健康'].map(label=>{
     const match=text.match(new RegExp(label+'：\\s*([^\\n]*?)(?=(?:愛情|事業|關係|健康)：|$)'));
     return {label,text:String(match?.[1]||'').trim().replace(/[。；]+$/,'')};
-  }).filter(item=>item.text);
+  }).map(item=>({...item,text:item.text||'資訊不足'}));
 }
 
 function directionText(card,direction){
