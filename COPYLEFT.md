@@ -13,7 +13,7 @@ LOC 的原始程式碼與可授權的專案材料採 Copyleft 方向治理。下
 - modification provenance
 - upstream LOC 與 derivative／fork 的區隔
 
-程式碼的正式授權版本以 Repository LICENSE 為準。
+程式碼與其他專案材料若另有正式 LICENSE 或明示授權聲明，以該檔案或聲明為準；沒有明示授權的內容，不因 Repository 公開可讀而自動取得複製、改作、散布或商業使用權。
 
 ## Scope independence
 
