@@ -126,9 +126,9 @@ function buildFixedReading(cards,directions,mode){
 }
 
 function DrawSelection({activeKey}){
-  return <section className="loc-card" data-draw-selection={activeKey}>
+  return <div className="runes-spread-selection" data-draw-selection={activeKey}>
     <p className="loc-eyebrow">抽牌選擇</p>
-    <h2>選擇抽牌方式</h2>
+    <h3>選擇抽牌方式</h3>
     <div className="home-draw-bubbles" aria-label="選擇抽牌方式">
       {DRAW_TYPES.map(item=><a
         key={item.key}
@@ -140,7 +140,7 @@ function DrawSelection({activeKey}){
         <p>{item.description}</p>
       </a>)}
     </div>
-  </section>;
+  </div>;
 }
 
 function RuneCardAt({draw,index,selectedMode,moonPhase}){
@@ -199,25 +199,25 @@ function MultiReading({draw,mode,phase}){
 
   if(mode==='2card'||mode==='3card'){
     const labels=mode==='2card'?['因','果']:['源','轉','合'];
-    return <section className="loc-card" data-draw-reading={mode}>
+    return <div className="runes-spread-explanation" data-draw-reading={mode}>
       <p className="loc-eyebrow">完整解讀</p>
       <h2>{mode==='2card'?'因 → 果':'源 → 轉 → 合'}</h2>
       <p><strong>完整現況：</strong>{cards.map((card,index)=>`${labels[index]}「${card.rune_name}」${directions[index]}`).join('、')}。目前真實月相為{phase}。</p>
       <p><strong>閱讀方式：</strong>{mode==='2card'?'先看造成現況的「因」，再看它導向的「果」。':'依序閱讀「源 → 轉 → 合」，先找起點，再看轉化，最後看收束。'}</p>
       <div className="loc-context-list">{cards.map((card,index)=><div className="loc-context-item" key={`${mode}-${card.rune_id}-${index}`}><strong>{labels[index]}：{card.rune_name}・{directions[index]}</strong><span>{directionText(card,directions[index])}</span></div>)}</div>
-    </section>;
+    </div>;
   }
 
   if(mode==='5card'){
     const [past1,past2,unexpected,current1,current2]=cards;
-    return <section className="loc-card" data-draw-reading="5card">
+    return <div className="runes-spread-explanation" data-draw-reading="5card">
       <p className="loc-eyebrow">五卡完整解讀</p>
       <h2>雙卡＋單卡＋雙卡</h2>
       <p><strong>過去的成因：</strong>「{past1.rune_name}」{directions[0]}：{directionText(past1,directions[0])}；「{past2.rune_name}」{directions[1]}：{directionText(past2,directions[1])}。兩張牌共同描述事情形成的背景與潛因。</p>
       <p><strong>意外變化：</strong>「{unexpected.rune_name}」{directions[2]}：{directionText(unexpected,directions[2])}。單張只提供一個意外因素，不與雙卡拼接。</p>
       <p><strong>現在狀況：</strong>「{current1.rune_name}」{directions[3]}：{directionText(current1,directions[3])}；「{current2.rune_name}」{directions[4]}：{directionText(current2,directions[4])}。兩張牌共同描述現在以後可能形成的結論。</p>
       <p><strong>閱讀補充：</strong>這組結構延伸雙卡與三卡的讀法；月相放在最後，只作次要的時間修飾，可能稍強也可能稍弱。本次真實月相為{phase}。</p>
-    </section>;
+    </div>;
   }
 
   return null;
@@ -308,12 +308,6 @@ export default function RuneDrawClient({drawKey='single'}){
           onRetry={executeDraw}
         />:
         <>
-          <section className="loc-card" id="draw" data-draw-keyword="lunarunes-draw" data-draw-mode={drawKey}>
-            <p className="loc-eyebrow">抽籤</p>
-            <h2>{selectedMode.label}抽牌</h2>
-            <p className={`loc-status ${error?'error':''}`}>{error||(ritualStep>=0?'抽牌倒數進行中…':`${selectedMode.label}：${selectedMode.positions.join(' → ')}`)}</p>
-          </section>
-
           {ritualStep>=0&&<section className="loc-card runes-ritual" data-draw-stage="ritual" data-draw-mode={drawKey} aria-live="polite">
             <div className="runes-ritual-card">
               <img src="/assets/lunarunes/cards/65_玄.png" alt="玄之符文"/>
@@ -335,29 +329,33 @@ export default function RuneDrawClient({drawKey='single'}){
               </div>
             </section>
 
-            <MultiReading draw={draw} mode={drawKey} phase={moonPhase}/>
+            <section className="loc-card runes-spread-reading-layout">
+              <div className="runes-spread-reading-left">
+                <MultiReading draw={draw} mode={drawKey} phase={moonPhase}/>
+                {drawKey==='ow3gs'&&<div className="runes-ow3gs-core" data-draw-reading="ow3gs">
+                  <p className="loc-eyebrow">OW3gs · 雙模型判讀</p>
+                  <h2>1–6 因的描述層 → 7–11 果的判定層</h2>
+                  <p>第 7–11 張為核心判定。</p>
+                  <p>先讀成因分析，後讀判斷分析，最後套用月相交互。十一張牌不是等權並列。</p>
+                  <p><strong>1–6 因的描述層：</strong>源兩張、轉兩張、合兩張，共六張；依固定卡位組合前因。</p>
+                  <p><strong>7–11 果的判定層：</strong>使用五卡的基本規則，共五張；依固定五卡結構組合結果。</p>
+                  <div className="loc-context-list">{draw.cards.slice(6,11).map((card,index)=><div className="loc-context-item" key={`core-${card.rune_id}-${index}`}><strong>第 {index+7} 張 · {card.rune_name} · {draw.directions[index+6]}</strong><span>{directionText(card,draw.directions[index+6])||card.rune_description}</span></div>)}</div>
+                  <p>月相交互最後才套用，只作次要時間修飾；重點是模型關聯，不是增加抽牌維度的複雜化。</p>
+                </div>}
+              </div>
 
-            {drawKey==='ow3gs'&&<section className="loc-card runes-ow3gs-core" data-draw-reading="ow3gs">
-              <p className="loc-eyebrow">OW3gs · 雙模型判讀</p>
-              <h2>1–6 因的描述層 → 7–11 果的判定層</h2>
-              <p>第 7–11 張為核心判定。</p>
-              <p>先讀成因分析，後讀判斷分析，最後套用月相交互。十一張牌不是等權並列。</p>
-              <p><strong>1–6 因的描述層：</strong>源兩張、轉兩張、合兩張，共六張；依固定卡位組合前因。</p>
-              <p><strong>7–11 果的判定層：</strong>使用五卡的基本規則，共五張；依固定五卡結構組合結果。</p>
-              <div className="loc-context-list">{draw.cards.slice(6,11).map((card,index)=><div className="loc-context-item" key={`core-${card.rune_id}-${index}`}><strong>第 {index+7} 張 · {card.rune_name} · {draw.directions[index+6]}</strong><span>{directionText(card,draw.directions[index+6])||card.rune_description}</span></div>)}</div>
-              <p>月相交互最後才套用，只作次要時間修飾；重點是模型關聯，不是增加抽牌維度的複雜化。</p>
-            </section>}
-
-            <section className="loc-card" data-draw-stage="lots">
-              <p className="loc-eyebrow">籤詩</p>
-              <h2>籤詩指引</h2>
-              <p>{draw.reading?.sentence||'資訊不足。'}</p>
-              {Array.isArray(draw.reading?.domains)?<div className="runes-advice-grid">
-                {draw.reading.domains.map(item=><article key={item.label}><strong>{item.label}</strong><span>{item.text}</span></article>)}
-              </div>:null}
+              <div className="runes-spread-reading-right">
+                <div data-draw-stage="lots">
+                  <p className="loc-eyebrow">籤詩</p>
+                  <h2>占卜結果</h2>
+                  <p>{draw.reading?.sentence||'資訊不足。'}</p>
+                  {Array.isArray(draw.reading?.domains)?<div className="runes-advice-grid">
+                    {draw.reading.domains.map(item=><article key={item.label}><strong>{item.label}</strong><span>{item.text}</span></article>)}
+                  </div>:null}
+                </div>
+                <DrawSelection activeKey={drawKey}/>
+              </div>
             </section>
-
-            <DrawSelection activeKey={drawKey}/>
           </>}
         </>
       }
