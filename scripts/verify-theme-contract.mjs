@@ -6,6 +6,7 @@ const read=path=>readFileSync(path,'utf8');
 const selector=read('app/modular-v2/ThemeSelectV2.jsx');
 const footer=read('app/modular-v2/ScopeFooterV2.jsx');
 const layout=read('app/layout.jsx');
+const game=read('app/lrunes/game/GameView.jsx');
 
 if(THEME_SLOTS_V2.length!==8)failures.push('theme registry must contain eight shared slots');
 const expectedSchemes=Object.freeze({
@@ -56,6 +57,8 @@ if(!footer.includes('<ThemeSelectV2 scopeId={scopeId}/>'))failures.push('ScopeFo
 if(!layout.includes("import ScopeFooterV2 from './modular-v2/ScopeFooterV2'")||!layout.includes('<ScopeFooterV2 />'))failures.push('Root layout must use ScopeFooterV2');
 if(!layout.includes('id="loc-theme-bootstrap"')||!layout.includes("getThemeSlotV2"))failures.push('Root layout must apply the initial Scope theme before first paint');
 if(!selector.includes("root.dataset.themeId===slot.id"))failures.push('Theme selector must avoid reapplying the already bootstrapped theme');
+if(!game.includes("THEME_SLOTS_V2")||!game.includes("getThemeSlotV2")||!game.includes("GAME_THEME_DEFAULT='theme-5'")||!game.includes("GAME_THEME_AUTO='event-auto'"))failures.push('Game must consume the shared eight-group theme registry locally');
+if(game.includes('applyThemeV2(')||game.includes('document.documentElement'))failures.push('Game theme must stay scoped and must not mutate the root Scope theme');
 const registry=read('app/modular-v2/theme-registry.v2.js');
 if(!registry.includes("root.dataset.themeId=slot.id")||!registry.includes("root.style.colorScheme=slot.scheme"))failures.push('Theme registry must mark the applied theme identity and color scheme');
 if(failures.length){
