@@ -146,3 +146,39 @@
   .game-doc-tools{grid-template-columns:1fr}
   .game-replay-timeline{min-height:260px}
 }
+
+
+/* Cross-module focus states: reuse the Current LunaRunes/LOC visual tokens. */
+.game-player.is-focused{
+  border-color:var(--loc-gold);
+  box-shadow:0 0 0 1px var(--loc-gold-surface-soft),var(--loc-shadow-card);
+}
+.game-log-row{
+  appearance:none;
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:.5rem;
+  width:100%;
+  margin:0;
+  padding:.55rem .65rem;
+  border:0;
+  border-bottom:1px solid var(--loc-line);
+  background:transparent;
+  color:var(--loc-text);
+  font:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+.game-log-row:hover{background:var(--loc-surface-soft)}
+.game-log-row span{color:var(--loc-gold)}
+.game-log-row.is-replay-selected{
+  background:var(--loc-accent-surface-strong);
+  box-shadow:inset 3px 0 0 var(--loc-gold);
+}
+.game-trend-card,.game-replay-card{
+  transition:border-color .18s ease,box-shadow .18s ease;
+}
+.game-replay-card:has(.vis-item.vis-selected){
+  border-color:var(--loc-accent-border);
+  box-shadow:0 0 0 1px var(--loc-accent-border-soft),var(--loc-shadow-card);
+}
