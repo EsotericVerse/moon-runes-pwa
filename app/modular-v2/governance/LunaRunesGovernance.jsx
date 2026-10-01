@@ -1,4 +1,4 @@
-export const LUNARUNES_GOVERNANCE_SUBTITLE='說明月之符文的使用原則、恆定符文、權利與管理方式。';
+export const LUNARUNES_GOVERNANCE_SUBTITLE='說明月之符文的使用原則、恆定符文、著作權與核心所有權原則。';
 
 export default function LunaRunesGovernance({canEdit=false}){
   return <>
