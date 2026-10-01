@@ -118,6 +118,37 @@ export default function AboutView(){
       </div>
     </section>
 
+    <section className="loc-card home-copy-block home-progress" id="progress">
+      <div className="home-section-heading">
+        <p className="loc-eyebrow">Current Progress</p><h2>進度</h2>
+        <p className="loc-subtitle">目前已能使用的主要功能與資料整理成果。</p>
+      </div>
+      <div className="home-progress-grid" aria-label="LOC 目前進度">
+        <article className="home-progress-item">
+          <strong>搜尋與資料整理</strong>
+          <span>文字、作品、來源與 metadata 已能依範圍搜尋，並回到實際內容查看結果。</span>
+        </article>
+        <article className="home-progress-item">
+          <strong>統計與分布</strong>
+          <span>可查看來源、關鍵詞與其他資料分布，並依時間或資料範圍觀察變化。</span>
+        </article>
+        <article className="home-progress-item">
+          <strong>文化時間長河</strong>
+          <span>把作品放回時間中，觀察不同來源、密度、定錨與文字演化的分布。</span>
+        </article>
+        <article className="home-progress-item">
+          <strong>治理與模組化</strong>
+          <span>資料、搜尋、顯示與治理責任逐步分開，讓不同 Scope 能在同一架構下運作。</span>
+        </article>
+      </div>
+      <div className="home-draw-bubbles" aria-label="LOC 進度功能入口">
+        <a className="loc-bubble" href="/search/">搜尋<p>查文字、作品與 metadata。</p></a>
+        <a className="loc-bubble" href="/statics/">統計<p>查看分布與排行。</p></a>
+        <a className="loc-bubble" href="/culture/">文化<p>查看時間長河與作品變化。</p></a>
+        <a className="loc-bubble" href="/governance/">治理<p>查看規則與治理邊界。</p></a>
+      </div>
+    </section>
+
     <section className="loc-card home-framework" id="framework-map">
       <div className="home-section-heading">
         <p className="loc-eyebrow">LOC Architecture</p><h2>月典架構</h2>
