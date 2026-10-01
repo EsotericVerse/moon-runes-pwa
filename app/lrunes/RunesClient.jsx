@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import Select from 'react-select';
 import {selectNeonRows} from '../loc/neon-query';
 import { useNeonSetting } from '../loc/use-neon-setting';
 import { realMoonPhase } from '../loc/model/moon-phase';
@@ -71,16 +70,6 @@ const UI_SETTINGS_KEY='loc-ui-settings-v1';
 const DEFAULT_UI_SETTINGS={draw_response:'ritual',list_page_size:10};
 const LIST_PAGE_OPTIONS=[5,10,15,20,25,50];
 const runeHref=path=>{const clean=String(path||'').split('/').filter(Boolean).join('/');return `${scopeOriginV2('lunarunes')}/${clean}`;};
-const HOME_RUNE_OPTIONS=Object.freeze([
-  {value:'home',label:'月之符文首頁',href:runeHref('')},
-  {value:'list',label:'符文圖鑑',href:runeHref('list')},
-  {value:'draw',label:'符文抽籤',href:runeHref('duel/one')}
-]);
-const HOME_DAILY_OPTIONS=Object.freeze([
-  {value:'daily',label:'每日符文',href:runeHref('duel/daily')},
-  {value:'log',label:'每日符文紀錄',href:runeHref('daily/log')},
-  {value:'trend',label:'每日符文趨勢',href:runeHref('daily/trend')}
-]);
 const MODES=[
   {key:'single',count:1,label:'單卡',description:'符文本義＋卡牌方向＋月相交互。',positions:['核心'],path:'duel/one'},
   {key:'daily',count:1,label:'每日',description:'以今日為時間範圍的一張符文。',positions:['今日'],path:'duel/daily'},
@@ -152,31 +141,14 @@ export default function RunesClient(){
         </div>
         <p>66個單一中文字 × 九組符文分組 × 四卡牌方向 × 月相交互</p>
         <p>可以問一件事，也可以沒有問題直接抽取。</p>
-        <div className="runes-home-function-select" aria-label="月之符文功能選單">
-          <Select
-            inputId="lunarunes-home-rune-function"
-            className="scope-v2-react-select"
-            classNamePrefix="scope-v2-react-select"
-            unstyled
-            isSearchable={false}
-            options={HOME_RUNE_OPTIONS}
-            value={null}
-            placeholder="符文功能"
-            onChange={option=>option?.href&&window.location.assign(option.href)}
-          />
-          <Select
-            inputId="lunarunes-home-daily-function"
-            className="scope-v2-react-select"
-            classNamePrefix="scope-v2-react-select"
-            unstyled
-            isSearchable={false}
-            options={HOME_DAILY_OPTIONS}
-            value={null}
-            placeholder="每日符文"
-            onChange={option=>option?.href&&window.location.assign(option.href)}
-          />
-          <a className="loc-button runes-home-game-link" href={runeHref('game')}>符文遊戲</a>
-        </div>
+        <nav className="runes-home-nav" aria-label="月之符文功能">
+          <a className="loc-button" href={runeHref('duel/one')}>符文抽籤</a>
+          <a className="loc-button" href={runeHref('list')}>符文圖鑑</a>
+          <a className="loc-button" href={runeHref('game')}>符文遊戲</a>
+          <a className="loc-button" href={runeHref('duel/daily')}>每日符文抽牌</a>
+          <a className="loc-button" href={runeHref('daily/log')}>每日符文紀錄</a>
+          <a className="loc-button" href={runeHref('daily/trend')}>每日符文趨勢</a>
+        </nav>
       </div>
       <figure className="home-hero-visual scope-home-hero-visual">
         <iframe src="https://www.instagram.com/reel/DMA-ZxLTINw/embed" title="月之符文說明" loading="eager" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" />
