@@ -307,6 +307,23 @@
 .scope-v2-daily-calendar-range-cell{min-height:84px;padding:.375rem .25rem;border:1px solid var(--loc-line,rgba(128,128,128,.3));border-radius:8px;opacity:.45}
 .scope-v2-daily-calendar-range-cell.is-selected{border-width:2px;border-color:currentColor;opacity:1}
 .scope-v2-daily-calendar-entry-list{display:grid;gap:.125rem;margin-top:.25rem;font-size:.72rem}
+.daily-log-calendar{padding:clamp(.75rem,1.5vw,1rem)}
+.daily-log-calendar .scope-v2-daily-calendar-nav{gap:.5rem;margin-bottom:.5rem}
+.daily-log-calendar .scope-v2-daily-calendar-nav h2{font-size:clamp(1rem,1.8vw,1.2rem)}
+.daily-log-calendar .scope-v2-daily-calendar-nav .loc-button{min-height:2rem;padding:.25rem .6rem}
+.daily-log-calendar .scope-v2-daily-calendar-grid{gap:.125rem}
+.daily-log-calendar .scope-v2-daily-calendar-weekday{padding:.25rem .0625rem;font-size:.75rem}
+.daily-log-calendar .scope-v2-daily-calendar-cell{min-height:42px;padding:.2rem .125rem;border-radius:6px}
+.daily-log-calendar .scope-v2-daily-calendar-day{font-size:.78rem;line-height:1.1}
+.daily-log-calendar .scope-v2-daily-calendar-flags{gap:.1rem;margin-top:.125rem;font-size:.58rem;line-height:1.05}
+@media(max-width:700px){
+  .daily-log-calendar{padding:.625rem}
+  .daily-log-calendar .scope-v2-daily-calendar-nav{margin-bottom:.375rem}
+  .daily-log-calendar .scope-v2-daily-calendar-cell{min-height:36px;padding:.125rem .0625rem}
+  .daily-log-calendar .scope-v2-daily-calendar-day{font-size:.72rem}
+  .daily-log-calendar .scope-v2-daily-calendar-flags{font-size:.52rem}
+}
+
 .scope-v2-current-rivers-canvas{overflow-x:auto;margin:1rem 0 1.25rem;cursor:default}
 .scope-v2-current-rivers-canvas.is-clickable{cursor:pointer}
 .scope-v2-current-rivers-svg{display:block;width:100%;min-width:900px;height:520px}
