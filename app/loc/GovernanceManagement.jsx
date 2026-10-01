@@ -99,18 +99,18 @@ export default function GovernanceManagement(){
 
   if(scopeId==='loc')return <section className="loc-view">
     <header className="loc-hero">
-      <p className="loc-eyebrow">LOC Management</p>
-      <h1>LOC 系統管理</h1>
-      <p>LOC 的系統管理已集中到獨立管理站。</p>
+      <p className="loc-eyebrow">{UI_COPY.management.eyebrow}</p>
+      <h1>{UI_COPY.management.locTitle}</h1>
+      <p>{UI_COPY.management.locDescription}</p>
     </header>
     <section className="loc-card">
-      <a className="loc-button primary" href={getScopeV2('admin').primary.href}>前往 admin.lo3rwang.cc</a>
+      <a className="loc-button primary" href={getScopeV2('admin').primary.href}>{UI_COPY.management.locAdminLink}</a>
       <button className="loc-button" type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button>
     </section>
   </section>;
 
   if(!canManage)return <section className="loc-view">
-    <header className="loc-hero"><p className="loc-eyebrow">Management</p><h1>{scope.label}管理</h1></header>
+    <header className="loc-hero"><p className="loc-eyebrow">{UI_COPY.management.eyebrow}</p><h1>{scope.label}管理</h1></header>
     <section className="loc-card"><p>{UI_COPY.management.permissionDenied}</p><button type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button></section>
   </section>;
 
@@ -118,7 +118,7 @@ export default function GovernanceManagement(){
 
   return <section className="loc-view">
     <header className="loc-hero">
-      <p className="loc-eyebrow">Management · {scopeId}</p>
+      <p className="loc-eyebrow">{UI_COPY.management.eyebrow} · {scopeId}</p>
       <h1>{scope.label}管理</h1>
       <p>{account.user.email||account.user.name||''}</p>
       <div className="scope-v2-management-select">
