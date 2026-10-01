@@ -72,6 +72,7 @@ const DEFAULT_UI_SETTINGS={draw_response:'ritual',list_page_size:10};
 const LIST_PAGE_OPTIONS=[5,10,15,20,25,50];
 const runeHref=path=>{const clean=String(path||'').split('/').filter(Boolean).join('/');return `${scopeOriginV2('lunarunes')}/${clean}`;};
 const HOME_RUNE_OPTIONS=Object.freeze([
+  {value:'home',label:'月之符文首頁',href:runeHref('')},
   {value:'list',label:'符文圖鑑',href:runeHref('list')},
   {value:'draw',label:'符文抽籤',href:runeHref('duel/one')}
 ]);
