@@ -24,7 +24,8 @@ export default function RuneCardInfo({
   realMoonPhase='',
   className='loc-context-item compact loc-draw-card',
   dataRuneId,
-  dataDrawPosition
+  dataDrawPosition,
+  layout='draw'
 }){
   if(!card)return null;
   const description=text(card.rune_description);
@@ -36,6 +37,27 @@ export default function RuneCardInfo({
   const cardMoon=MOON_PHASE_LABELS[Number(card.moon_phase)]||'無';
   const positive=text(card.positive_keywords)||'—';
   const negative=text(card.negative_keywords)||'—';
+
+  if(layout==='profile'){
+    return <>
+      <div className="runes-rune-profile">
+        {imageSrc?<img className={imageClassName} src={imageSrc} alt={runeTitle(card)}/>:null}
+        <div className="runes-rune-profile-copy">
+          <h2>{String(Number(card.rune_id)).padStart(2,'0')} · {runeTitle(card)}{glyph?' '+glyph:''}{english?' ('+english+')':''}</h2>
+          <p>{description||'—'}{archetype?' / '+archetype:''}</p>
+        </div>
+      </div>
+      <div className="runes-rune-detail-grid">
+        <span><strong>正向關鍵詞</strong>{positive}</span>
+        <span><strong>反向關鍵詞</strong>{negative}</span>
+        <span><strong>所屬分組</strong>{group}</span>
+        <span><strong>卡片屬性</strong>{cardAttr}</span>
+        <span><strong>卡片月相</strong>{cardMoon}</span>
+        {realMoonPhase?<span><strong>真實月相</strong>{realMoonPhase}</span>:null}
+        {direction?<span><strong>卡片面向</strong>{direction}</span>:null}
+      </div>
+    </>;
+  }
 
   return <article
     className={className}
