@@ -84,7 +84,7 @@ function ThemeOverview(){
   return <section className="loc-card">
     <p className="loc-eyebrow">Theme Registry</p>
     <h2>{UI_COPY.admin.theme}</h2>
-    <p>RC8 前先確認現有 8 個 Theme 槽位，不在這裡改寫 Theme 定義。</p>
+    <p>目前先檢視 8 組完整預設 Theme，不在這裡直接改色。未來可由 Admin 覆寫整組設定；沒有管理設定時一律回到預設 Theme。</p>
     <div className="scope-v2-list">
       {THEME_SLOTS_V2.map(theme=><article className="scope-v2-inline-card" key={theme.id}>
         <strong>{theme.label}</strong>
