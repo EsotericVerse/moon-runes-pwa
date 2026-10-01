@@ -74,8 +74,7 @@ const LIST_PAGE_OPTIONS=[5,10,15,20,25,50];
 const runeHref=path=>`${scopeOriginV2('lunarunes')}/${String(path||'').replace(/^\/+/, '')}`;
 const HOME_RUNE_OPTIONS=Object.freeze([
   {value:'list',label:'符文圖鑑',href:runeHref('list')},
-  {value:'draw',label:'符文抽籤',href:runeHref('')},
-  {value:'game',label:'符文遊戲',href:runeHref('game')}
+  {value:'draw',label:'符文抽籤',href:runeHref('')}
 ]);
 const HOME_DAILY_OPTIONS=Object.freeze([
   {value:'daily',label:'每日符文',href:runeHref('duel/daily')},
@@ -176,6 +175,7 @@ export default function RunesClient(){
             placeholder="每日符文"
             onChange={option=>option?.href&&window.location.assign(option.href)}
           />
+          <a className="loc-button runes-home-game-link" href={runeHref('game')}>符文遊戲</a>
         </div>
       </div>
       <figure className="home-hero-visual scope-home-hero-visual">
