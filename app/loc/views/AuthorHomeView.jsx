@@ -1,31 +1,4 @@
 import { PageComposition } from '../../PageComposition';
-import ScopeOverviewNetwork from '../../modular-v2/modules/scope-overview/ScopeOverviewNetwork';
-const ROOT=['鑑古知今，求同存異','不在其位，不謀其政','隨心所欲，而不逾己'];
-
-import {featureHrefV2} from '../../modular-v2/scope-registry.v2';
-import {featureNavigationHref} from '../../modular-v2/feature-navigation.v2';
-
-const AUTHOR_OVERVIEW_NODES=Object.freeze([
-  Object.freeze({id:'wordsmith',title:'文字工匠｜Wordsmith｜關鍵詞的相關聯繫',summary:
-   '把分散的文字，整理成可搜尋、可理解、可治理、可持續維護的結構。',
-   href:featureNavigationHref('lo3rwang','statics',{statTab:'keywords'})}),
-  Object.freeze({id:'calibrator',title:'混沌校對者｜Chaos Calibrator｜文字在時間長河上的演化',summary:
-   '以時空定錨論把作品放回時間長河，從時間位置、密度與前後分布看值得回看的軌跡，並找出關鍵點。',
-   href:featureHrefV2('lo3rwang','culture')}),
-  Object.freeze({id:'governance-architect',title:'語言建築師｜Language Architect｜架構語言的治理方式',summary:
-    '我的語言歸納理念。理解原本的語言與資料，再依實際需求建立適合自己的結構，並做到對未來的風險控管。',
-   href:featureHrefV2('lo3rwang','governance')}),
-  Object.freeze({id:'self',title:'自我介紹與人生觀｜Introduction',summary:[
-    '自介：Lucas Oscar Wang 政德，叫我Oscar就好。六年級末段班，巨蟹座。',
-    '人生觀：鑑古知今，求同存異。不在其位，不謀其政。隨心所欲，而不逾己。',
-	'原則態度：敬畏未知，尊重異者，專業為先。',
-    '擅長能力：事物的歸納整理跟系統化。擅長把一件可能很難的原理講到很簡單。',
-    '職業定位：聚焦於語言治理、知識與資料架構、數位資產整理，以及相關專案實作。',
-    '興趣：寫作閱讀、音樂創作、符文占卜籤詩、到處看看。',
-    '聯絡方式：頁面最左下角有聯絡信箱。',
-    '秘藝文域(EsotericVerse)，籌備中。'
-  ].join('\n')})
-]);
 
 const AUTHOR_FUNCTIONS=Object.freeze([
   Object.freeze({eyebrow:'Culture',title:'文化',text:'以時空定錨論把作品放回時間長河，從時間位置、密度與前後分布看值得回看的軌跡。',href:'/culture/',label:'查看文化'}),
@@ -162,32 +135,52 @@ export default function AuthorHomeView({section=null}){
     }
   ];
 
-  if(!section)return <><PageComposition
+  if(!section)return <PageComposition
     eyebrow="Lucas Oscar Wang"
     title="政德"
     subtitle="語言建築師"
-    intro={<><p>Hello！ 你好！你可以叫我Oscar。不認識我沒關係，先來聽首我創作歌詞的歌吧！</p>
-	<p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽〈這就是我〉 →</a></p>
-	<p>微月光：「我只是微月光，若我的存在光芒能讓你在全黑夜中找到希望，我會感到榮幸，但這並不是我生來就注定成為希望。」</p>
-	<p><a href="https://suno.com/song/a0a724c1-d35f-4ccf-9ac1-0c1c9f2d6a50" target="_blank" rel="noopener noreferrer">聽〈只是微月光〉 →</a></p>
-	<p>微月光：「赤子的心沒有離場，成熟也不是後來才穿上的衣裳。它們可以同時存在，像月與夜，像火與霜，像明亮身後必然跟著的陰暗。」</p>
-	<p><a href="https://suno.com/song/9ff928a0-aa9d-4563-8c0c-867709e62d09" target="_blank" rel="noopener noreferrer">聽〈無限減一的月光〉 →</a></p>
-	<p>Wordsmith · Chaos Calibrator · Language Architect · Creator of LOC and LunaRunes</p>
-	</>}
+    intro={<>
+      <p>Hello！ 你好！你可以叫我Oscar。不認識我沒關係，先來聽首我創作歌詞的歌吧！</p>
+      <p><a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽〈這就是我〉 →</a></p>
+      <p>微月光：「我只是微月光，若我的存在光芒能讓你在全黑夜中找到希望，我會感到榮幸，但這並不是我生來就注定成為希望。」</p>
+      <p><a href="https://suno.com/song/a0a724c1-d35f-4ccf-9ac1-0c1c9f2d6a50" target="_blank" rel="noopener noreferrer">聽〈只是微月光〉 →</a></p>
+      <p>微月光：「赤子的心沒有離場，成熟也不是後來才穿上的衣裳。它們可以同時存在，像月與夜，像火與霜，像明亮身後必然跟著的陰暗。」</p>
+      <p><a href="https://suno.com/song/9ff928a0-aa9d-4563-8c0c-867709e62d09" target="_blank" rel="noopener noreferrer">聽〈無限減一的月光〉 →</a></p>
+      <p>Wordsmith · Chaos Calibrator · Language Architect · Creator of LOC and LunaRunes</p>
+    </>}
     heroVisual={<iframe src="https://www.instagram.com/p/DdX5ki-oZY6/embed" title="這就是我｜Lucas Oscar Wang 政德自我介紹" loading="eager" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" frameBorder="0" scrolling="no"/>}
-    sections={[{
-      id:'overview-graph',
-      eyebrow:'Overview',
-      title:'認識我',
-      content:<ScopeOverviewNetwork
-        centerTitle="Lucas Oscar Wang 政德"
-        centerSummary="語言建築師。架構這一切的建築師。"
-        nodes={AUTHOR_OVERVIEW_NODES}
-      />
-    }
-	]}
-  />
-</>;
+    sections={[
+      {
+        id:'introduction',
+        eyebrow:'Introduction',
+        title:'自我介紹',
+        content:<div className="home-author-copy">
+          <p><strong>Lucas Oscar Wang 政德</strong>，叫我 Oscar 就好。六年級末段班，巨蟹座。</p>
+          <p><strong>人生觀：</strong>鑑古知今，求同存異。不在其位，不謀其政。隨心所欲，而不逾己。</p>
+          <p><strong>原則態度：</strong>敬畏未知，尊重異者，專業為先。</p>
+          <p><strong>擅長能力：</strong>事物的歸納整理跟系統化。擅長把一件可能很難的原理講到很簡單。<br/><strong>職業定位：</strong>聚焦於語言治理、知識與資料架構、數位資產整理，以及相關專案實作。</p>
+          <p><strong>興趣：</strong>寫作閱讀、音樂創作、符文占卜籤詩、到處看看。<br/>秘藝文域（EsotericVerse），籌備中。</p>
+        </div>
+      },
+      {
+        id:'roles',
+        eyebrow:'Roles',
+        title:'三位一體',
+        content:<div className="home-architecture-layout">
+          <div className="home-architecture-copy">
+            <div className="home-author-copy">
+              <p><strong>文字工匠 · Wordsmith</strong><br/>從詞、句子與關鍵詞的聯繫，整理文字怎麼形成自己的語意與脈絡關係。 <a href="/statics/?statTab=keywords">看關鍵詞設定</a></p>
+              <p><strong>混沌校對者 · Chaos Calibrator</strong><br/>把文字放回來源、時間與歷史裡比較，觀察文化軌跡、延續、改變、矛盾與可能的污染。 <a href="/culture/">看文化</a></p>
+              <p><strong>語言建築師 · Language Architect</strong><br/>把語彙、脈絡、文化、搜尋與治理組織成可持續使用的個人語言與系統結構。 <a href="/governance/">看治理</a></p>
+            </div>
+          </div>
+          <figure className="home-architecture-figure">
+            <img src="/pics/lo3rwang-3.png" alt="政德三位一體與三魂擬人化關係圖" loading="lazy"/>
+          </figure>
+        </div>
+      }
+    ]}
+  />;
 
   const sectionGroups=Object.freeze({
     style:Object.freeze(['roles','profile-content']),

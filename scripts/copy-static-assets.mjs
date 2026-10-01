@@ -28,6 +28,7 @@ const publicPics=[
   'ChaosGalaxy.png',
   'LOC-PicAll.png',
   'LunaRunes.png',
+  'lo3rwang-3.png',
   'aboutme.png'
 ];
 
