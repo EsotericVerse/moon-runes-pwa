@@ -3,15 +3,15 @@ import { PageComposition } from '../../PageComposition';
 const PROFESSIONAL_ROLES=Object.freeze([
   Object.freeze({
     title:'文字工匠 · Wordsmith',
-    text:'從詞、句子與語意關係出發，整理文字如何形成脈絡、節奏與可辨識的表達。'
+    text:'對字詞保持敏感，重視語義、音調、節奏與押韻，把想法磨成精準、自然，而且具有辨識度的文字。'
   }),
   Object.freeze({
     title:'混沌校對者 · Chaos Calibrator',
-    text:'把文字放回來源、時間與歷史裡比較，觀察延續、改變、矛盾與可能的污染，不急著替結果下定論。'
+    text:'面對混亂與未知時，先找出規律、矛盾與誤差，再把問題校準到可以理解、可以討論，也可以繼續前進的位置。'
   }),
   Object.freeze({
     title:'語言建築師 · Language Architect',
-    text:'把語彙、脈絡、時間、資料責任與治理組織成可以持續使用與維護的語言結構。'
+    text:'把命名、語義、規則與結構組合成可以延伸的語言系統，讓概念不只被說明，也能被持續使用、演化與創作。'
   })
 ]);
 
