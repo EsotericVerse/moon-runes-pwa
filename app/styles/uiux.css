@@ -250,25 +250,13 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
   text-transform:uppercase;
 }
 
-.home-title-row,.scope-v2-hero>.home-title-row{
-  gap:clamp(1rem,3vw,2.75rem)!important;
-  align-items:end!important;
-}
-
 .home-title-row h1,.scope-v2-hero>.home-title-row>h1{
-  max-width:14ch;
-  border:0!important;
-  padding:0!important;
-  margin:.18rem 0 0!important;
   color:var(--loc-text);
   letter-spacing:-.055em;
   text-wrap:balance;
 }
 
 .home-title-row>.loc-subtitle,.scope-v2-hero>.home-title-row>.scope-v2-subtitle{
-  max-width:32rem;
-  padding:0 0 .35rem!important;
-  border:0!important;
   color:var(--loc-accent)!important;
   text-wrap:pretty;
 }
@@ -286,12 +274,6 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
 
 .scope-v2-hero-description :where(p,li),.loc-hero-copy p{
   color:color-mix(in srgb,var(--loc-text) 88%,var(--loc-muted))!important;
-}
-
-.scope-home-hero-with-visual{
-  grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr)!important;
-  min-height:clamp(330px,44vh,500px);
-  gap:clamp(1.5rem,4vw,4rem)!important;
 }
 
 .scope-home-hero-visual,.loc-home>.loc-hero>.home-hero-visual{
@@ -375,7 +357,7 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
   box-shadow:0 8px 24px color-mix(in srgb,var(--loc-accent) 9%,transparent),inset 0 1px 0 rgb(255 255 255 / .05);
 }
 
-:where(input,select,textarea,.scope-v2-select,.scope-v2-search-input,.scope-v2-react-select__control){
+:where(input,select,textarea,.scope-v2-select,.scope-v2-search-input){
   border:1px solid var(--loc-ui-hairline)!important;
   border-radius:var(--loc-ui-radius-sm)!important;
   background:color-mix(in srgb,var(--loc-panel) 72%,transparent)!important;
@@ -387,20 +369,6 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
   border-color:var(--loc-accent-border)!important;
   box-shadow:0 0 0 3px var(--loc-ui-accent-soft)!important;
   outline:0;
-}
-
-/* React Select owns its internal text input geometry. */
-.scope-v2-react-select__input,
-.scope-v2-react-select__input:focus{
-  min-height:0!important;
-  width:auto!important;
-  margin:0!important;
-  padding:0!important;
-  border:0!important;
-  border-radius:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-  outline:0!important;
 }
 
 .scope-v2-local-menu{
@@ -742,10 +710,6 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
   :root{
     --loc-type-page-title:clamp(2.5rem,7vw,5rem);
   }
-  .scope-home-hero-with-visual{
-    grid-template-columns:minmax(0,1fr) minmax(240px,320px)!important;
-    min-height:auto;
-  }
   .scope-v2-nav{
     max-width:calc(100vw - 1.3rem);
   }
@@ -775,19 +739,6 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
   .loc-hero,.scope-v2-hero{
     padding:1.25rem;
     border-radius:var(--loc-ui-radius-lg);
-  }
-  .scope-home-hero-with-visual{
-    grid-template-columns:1fr!important;
-    gap:1.25rem!important;
-  }
-  .home-title-row,.scope-v2-hero>.home-title-row{
-    grid-template-columns:1fr!important;
-    align-items:start!important;
-  }
-  .home-title-row>.loc-subtitle,.scope-v2-hero>.home-title-row>.scope-v2-subtitle{
-    grid-column:1!important;
-    max-width:none;
-    padding-top:.3rem!important;
   }
   .scope-v2-search-form{
     grid-template-columns:1fr;
@@ -990,7 +941,7 @@ body{
     min-height:44px;
   }
 
-  :where(input,select,textarea,.scope-v2-react-select__control){
+  :where(input,select,textarea){
     min-height:44px!important;
   }
 
