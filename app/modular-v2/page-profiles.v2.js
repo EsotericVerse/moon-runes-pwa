@@ -12,10 +12,10 @@ const SCOPE_FEATURE_SUBTITLES=Object.freeze({
     search:UI_COPY.scope.author.search
   }),
   lunarunes:Object.freeze({
-    statics:UI_COPY.scope.lunarunes.statics,
-    culture:UI_COPY.scope.lunarunes.culture,
-    governance:UI_COPY.scope.lunarunes.governance,
-    search:UI_COPY.scope.lunarunes.search
+    statics:'查看月之符文相關資料的數量、來源與時間變化。',
+    culture:'把月之符文相關紀錄放回時間順序，觀察不同時期的變化。',
+    governance:'說明月之符文的使用原則、權利與管理入口。',
+    search:'從符文名稱、關鍵字或相關文字找到對應內容。'
   }),
   loc:Object.freeze({
     statics:UI_COPY.scope.loc.statics,
