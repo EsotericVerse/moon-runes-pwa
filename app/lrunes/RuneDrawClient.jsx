@@ -6,6 +6,7 @@ import { useNeonSetting } from '../loc/use-neon-setting';
 import { realMoonPhase } from '../loc/model/moon-phase';
 import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
 import RuneSingleReading from './RuneSingleReading';
+import RuneCardInfo from './RuneCardInfo';
 import {RUNE_RITUAL_DELAY_MS,RUNE_RITUAL_STEP_MS,runeRitualMessages} from './rune-ritual';
 
 const ROTATION_CLASSES = ['rune-rotate-0', 'rune-rotate-90', 'rune-rotate-n90', 'rune-rotate-180'];
@@ -31,7 +32,7 @@ function drawRuneSession(items,count){
   const directionIndexes=cards.map(()=>randomIndex(4));
   return {cards,directionIndexes,directions:directionIndexes.map(index=>RUNE_DIRECTIONS[index])};
 }
-const RUNE_COLUMNS='rune_id,rune_name,english_name,group_name,moon_phase,card_attr,rune_description,positive_keywords,negative_keywords,extra_rules,extra_notes';
+const RUNE_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,positive_keywords,negative_keywords,extra_rules,extra_notes';
 const MOON_PHASE_LABELS=Object.freeze({1:'新月',2:'上弦',3:'滿月',4:'下弦'});
 function directionNo(direction){return RUNE_DIRECTIONS.indexOf(direction)+1;}
 async function loadDrawCards(pairs,types){
@@ -67,12 +68,12 @@ function runeEtcText(card,type,direction){
 const UI_SETTINGS_KEY = 'loc-ui-settings-v1';
 const DEFAULT_UI_SETTINGS = { draw_response: 'ritual' };
 const DRAW_TYPES = [
-  { key: 'single', count: 1, label: '單卡', positions: ['核心'] },
-  { key: 'daily', count: 1, label: '每日', positions: ['今日'] },
-  { key: '2card', count: 2, label: '雙卡', positions: ['因', '果'] },
-  { key: '3card', count: 3, label: '三卡', positions: ['源', '轉', '合'] },
-  { key: '5card', count: 5, label: '五卡', positions: ['過去成因 1', '過去成因 2', '意外變化', '現在狀況 1', '現在狀況 2'] },
-  { key: 'ow3gs', count: 11, label: '11卡 OW3gs', positions: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'] }
+  { key: 'single', count: 1, label: '單卡', description: '1 張｜符文本義＋卡牌方向＋月相交互。', positions: ['核心'] },
+  { key: 'daily', count: 1, label: '每日', description: '1 張｜以今日為時間範圍的一張符文。', positions: ['今日'] },
+  { key: '2card', count: 2, label: '雙卡', description: '2 張｜以「因 → 果」觀看兩者關係。', positions: ['因', '果'] },
+  { key: '3card', count: 3, label: '三卡', description: '3 張｜以「源 → 轉 → 合」形成固定結構。', positions: ['源', '轉', '合'] },
+  { key: '5card', count: 5, label: '五卡', description: '5 張｜兩張過去成因＋一個意外變化＋兩張現在狀況。', positions: ['過去成因 1', '過去成因 2', '意外變化', '現在狀況 1', '現在狀況 2'] },
+  { key: 'ow3gs', count: 11, label: '11卡 OW3gs', description: '11 張｜1–6 因的描述層＋7–11 果的判定層。', positions: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'] }
 ];
 const DRAW_PATHS = Object.freeze({
   single: scopeHrefV2('lunarunes','duel/one'),
@@ -223,10 +224,10 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
       <section className="loc-card" id="draw" data-draw-keyword="lunarunes-draw" data-draw-mode={drawKey}>
         <p className="loc-eyebrow">抽籤</p>
         <h2>{selectedMode.label}抽牌</h2>
-        <div className="runes-mode-nav" aria-label="抽牌模式">
-          {DRAW_TYPES.map(item => <a key={item.key} href={DRAW_PATHS[item.key]} data-draw-mode={item.key} className={`loc-button ${drawKey === item.key ? 'primary' : ''}`}>{item.label}</a>)}
-        </div>
         <p className={`loc-status ${error ? 'error' : ''}`}>{error || (ritualStep >= 0 ? '抽牌倒數進行中…' : `${selectedMode.label}：${selectedMode.positions.join(' → ')}${drawKey === 'daily' ? `／真實月相：${moonPhase}` : ''}`)}</p>
+        <div className="runes-mode-nav" aria-label="抽牌模式">
+          {DRAW_TYPES.map(item => <a key={item.key} href={DRAW_PATHS[item.key]} data-draw-mode={item.key} className={`loc-button ${drawKey === item.key ? 'primary' : ''}`}><strong>{item.label}</strong><span>{item.description}</span></a>)}
+        </div>
       </section>
 
       {ritualStep >= 0 && <section className="loc-card runes-ritual" data-draw-stage="ritual" data-draw-mode={drawKey} aria-live="polite">
@@ -238,15 +239,17 @@ export default function RuneDrawClient({ drawKey = 'single' }) {
         <section className="loc-card" id="result" data-draw-stage="result" data-draw-mode={drawKey}>
           <div className="loc-result-meta"><span>{selectedMode.label}</span><span>真實月相：{moonPhase}</span></div>
           <div className="loc-draw-grid">
-            {draw.cards.map((card, index) => <article className="loc-context-item compact loc-draw-card" data-rune-id={card.rune_id} data-draw-position={selectedMode.positions[index] || index + 1} key={`${card.rune_id}-${index}`}>
-              <small>{selectedMode.positions[index] || `第 ${index + 1} 張`}</small>
-              <img className={`loc-rune-card-image ${ROTATION_CLASSES[draw.directionIndexes[index]]}`} src={runeCardImage(card)} alt={`${card.rune_name}符文卡`}/>
-              <b>{card.rune_name}</b>
-              <span>所屬群組：{card.group_name || '—'}</span>
-              <span>{draw.directions[index]} · 卡片月相：{MOON_PHASE_LABELS[Number(card.moon_phase)] || '—'}</span>
-              <small>{directionText(card, draw.directions[index]) || card.rune_description}</small>
-              <div className="runes-draw-keywords"><span><strong>正向關鍵詞</strong>{card.positive_keywords || '—'}</span><span><strong>反向關鍵詞</strong>{card.negative_keywords || '—'}</span></div>
-            </article>)}
+            {draw.cards.map((card, index) => <RuneCardInfo
+              key={`${card.rune_id}-${index}`}
+              card={card}
+              imageSrc={runeCardImage(card)}
+              imageClassName={`loc-rune-card-image ${ROTATION_CLASSES[draw.directionIndexes[index]]}`}
+              positionLabel={selectedMode.positions[index] || `第 ${index + 1} 張`}
+              direction={draw.directions[index]}
+              realMoonPhase={moonPhase}
+              dataRuneId={card.rune_id}
+              dataDrawPosition={selectedMode.positions[index] || index + 1}
+            />)}
           </div>
           <div className="loc-actions runes-retry">
             <button type="button" className="loc-button" data-draw-action="retry" onClick={executeDraw}>再抽一次</button>
