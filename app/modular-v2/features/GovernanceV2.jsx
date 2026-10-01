@@ -6,7 +6,7 @@ import FeaturePageV2 from '../FeaturePageV2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import {getScopeV2,scopeHrefV2} from '../scope-registry.v2';
 import {useNeonAccount} from '../../loc/use-neon-account';
-import LocGovernance,{LocGovernanceLaw,LOC_GOVERNANCE_SUBTITLE} from '../governance/LocGovernance';
+import LocGovernance,{LOC_GOVERNANCE_SUBTITLE} from '../governance/LocGovernance';
 import LunaRunesGovernance,{LUNARUNES_GOVERNANCE_SUBTITLE} from '../governance/LunaRunesGovernance';
 import PersonalGovernance,{PERSONAL_GOVERNANCE_SUBTITLE} from '../governance/PersonalGovernance';
 
@@ -41,7 +41,6 @@ function GovernanceLaw(){
   const {scopeId}=useScopeRuntimeV2();
   const account=useNeonAccount();
   const canEdit=account.canManageScopeSync(scopeId);
-  if(scopeId==='loc')return <FeaturePageV2 featureId="governance" subtitle={UI_COPY.governance.rights}><LocGovernanceLaw canEdit={canEdit}/></FeaturePageV2>;
   const {View}=governanceFor(scopeId);
   return <FeaturePageV2 featureId="governance" subtitle={UI_COPY.governance.rights}><View canEdit={canEdit}/></FeaturePageV2>;
 }
