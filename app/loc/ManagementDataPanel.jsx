@@ -77,7 +77,7 @@ export default function ManagementDataPanel({scopeId}){
         const label=String(row.title||'').trim()||String(id||'');
         const meta=kind==='media'
           ?[row.media_type,row.galaxy_link,dateText(row.createtime)].filter(Boolean).join(' · ')
-          :[row.source_name,row.searchable===false?'不可搜尋':'可搜尋','建立 '+dateText(row.createtime),'更新 '+dateText(row.UpdateTime)].filter(Boolean).join(' · ');
+          :[row.source_name,row.searchable===false?UI_COPY.management.notSearchable:UI_COPY.management.searchable,UI_COPY.management.createdPrefix+dateText(row.createtime),UI_COPY.management.updatedPrefix+dateText(row.UpdateTime)].filter(Boolean).join(' · ');
         return <div key={String(id)}><strong>{label}</strong><span>{meta}</span></div>;
       })}
       {!rows.length?<p className="scope-v2-status">{UI_COPY.common.none}</p>:null}
