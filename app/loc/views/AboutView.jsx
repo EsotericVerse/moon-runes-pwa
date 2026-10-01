@@ -43,7 +43,8 @@ export default function AboutView(){
           <p>太複雜了！當然可以不用管月之符文是什麼，<a href={RUNES_LINKS.single}>抽了就知道！</a></p>
 		  <p>可以是問事，可以是決定當日生活主題風格的<a href={RUNES_LINKS.daily}>每日符文</a>。</p>
           <p>完全不了解符文？沒關係！抽看看如何？抽到之後再看當下的文字、方向與說明就可以。</p>
-          <p>不想了解符文？當然可以！當然也可以完全不抽牌，直接跳過符文籤詩系統。到達下一個架構圖說明。</p>
+          <p>不想了解符文？當然可以！</p>
+		  <p>當然也可以完全不抽牌，直接跳過符文籤詩系統。到達下一個架構圖說明。</p>
           <p><strong>那就開始吧！</strong></p>
         </div>
         <figure className="home-framework-figure"><img src="/pics/LunaRunes.png" alt="LunaRunes 月之符文" loading="lazy" /></figure>
