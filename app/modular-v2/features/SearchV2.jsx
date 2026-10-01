@@ -307,7 +307,7 @@ export default function SearchV2(){
       const contentPatch={
         title:nextTitle,
         [result.editableField]:body,
-        ...(result.resourceType==='galaxy'?{searchable:!editDraft.hidden}:{})
+        ...(result.resourceType==='galaxy'?{searchable:!editDraft.hidden,UpdateTime:new Date().toISOString()}:{})
       };
       const contentFilters=[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId}];
       await updateNeonRows(result.editableTable,contentPatch,{filters:contentFilters});
