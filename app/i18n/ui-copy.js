@@ -1,3 +1,6 @@
+// Site UI copy only. Do not route Galaxy/work content, LunaRunes canonical semantics,
+// rune English names, divination text, or other authored content through this registry.
+
 const zhHant=Object.freeze({
   common:Object.freeze({
     save:'儲存',
