@@ -3,7 +3,7 @@
 import Select from 'react-select';
 import {scopeOriginV2} from '../modular-v2/scope-registry.v2';
 
-const runeHref=path=>`${scopeOriginV2('lunarunes')}/${String(path||'').replace(/^\\/+/, '')}`;
+const runeHref=path=>`${scopeOriginV2('lunarunes')}/${String(path||'').replace(/^\/+/, '')}`;
 
 const HOME_FUNCTION_OPTIONS=Object.freeze([
   {value:'list',label:'符文圖鑑',href:runeHref('list')},
