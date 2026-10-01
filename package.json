@@ -17,12 +17,13 @@
     "verify:theme": "node scripts/verify-theme-contract.mjs",
     "verify:scope-registry": "node scripts/verify-scope-registry.mjs",
     "verify:packages": "node scripts/verify-package-interoperability.mjs",
-    "postbuild": "node scripts/copy-static-assets.mjs",
+    "postbuild": "node scripts/copy-static-assets.mjs && node scripts/verify-static-export.mjs",
     "verify:text-engine": "node scripts/verify-text-engine.mjs",
     "verify:neon-public": "node scripts/verify-neon-public-read.mjs",
     "test:ui": "playwright test",
     "verify:flexsearch": "node scripts/verify-flexsearch-role.mjs",
-    "verify:nav": "node scripts/verify-nav-all.mjs"
+    "verify:nav": "node scripts/verify-nav-all.mjs",
+    "verify:static-export": "node scripts/verify-static-export.mjs"
   },
   "dependencies": {
     "@neondatabase/neon-js": "0.7.0-beta",
