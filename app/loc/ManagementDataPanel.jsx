@@ -35,7 +35,7 @@ export default function ManagementDataPanel({scopeId}){
         const table=kind==='media'?tables.galaxyMedia:tables.galaxy;
         let query=kind==='media'
           ?relation(table).select('media_id,title,media_type,createtime,galaxy_link',{count:'exact'})
-          :relation(table).select('uid,title,source_name,createtime,searchable',{count:'exact'});
+          :relation(table).select('uid,title,source_name,createtime,UpdateTime,searchable',{count:'exact'});
         if(kind==='galaxy'&&visibility==='hidden')query=query.eq('searchable',false);
         query=query.order('createtime',{ascending:false}).range(page*PAGE_SIZE,page*PAGE_SIZE+PAGE_SIZE-1);
         const {data,count,error:queryError}=await query;
@@ -75,7 +75,7 @@ export default function ManagementDataPanel({scopeId}){
         const label=String(row.title||'').trim()||String(id||'');
         const meta=kind==='media'
           ?[row.media_type,row.galaxy_link,dateText(row.createtime)].filter(Boolean).join(' · ')
-          :[row.source_name,row.searchable===false?'不可搜尋':'可搜尋',dateText(row.createtime)].filter(Boolean).join(' · ');
+          :[row.source_name,row.searchable===false?'不可搜尋':'可搜尋','建立 '+dateText(row.createtime),'更新 '+dateText(row.UpdateTime)].filter(Boolean).join(' · ');
         return <div key={String(id)}><strong>{label}</strong><span>{meta}</span></div>;
       })}
       {!rows.length?<p className="scope-v2-status">沒有資料。</p>:null}
