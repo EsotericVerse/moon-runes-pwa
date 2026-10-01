@@ -221,7 +221,6 @@ export default function DailyTrendClient(){
 
     <div className="loc-actions">
       <button className="loc-button" type="button" disabled={loading} onClick={()=>load()}>重新整理</button>
-      <a href="/daily/log/">查看單日行事曆紀錄</a>
     </div>
   </section>;
 }
