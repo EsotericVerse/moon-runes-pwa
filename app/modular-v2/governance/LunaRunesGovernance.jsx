@@ -5,7 +5,7 @@ export default function LunaRunesGovernance({canEdit=false}){
     <div className="loc-grid two">
       <section className="loc-card" id="principles">
         <h2>使用原則</h2>
-        <p>月之符文是一套符號式語言，由固定的符文、分組、卡牌方向與月相關係構成；籤詩產生系統是目前公開應用之一。</p>
+        <p>月之符文，是一套符號式語言宇宙。</p>
         <p>目前使用的符文名稱、定義與規則以正式 Canon 為準；歷史版本保留演變過程，但不取代現行定義。</p>
       </section>
       <section className="loc-card" id="neutrality">
