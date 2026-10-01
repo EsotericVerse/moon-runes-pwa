@@ -413,9 +413,11 @@ export default function GameView(){
         const line=outcomes.map((entry,index)=>
           NAMES[index]+' '+entry.outcome.label+' '+entry.outcome.coverageText+' · De '+signed(entry.outcome.delta)
         ).join('｜');
+        const players=outcomes.map(entry=>entry.player);
         return nextRound({
           ...current,
-          players:outcomes.map(entry=>entry.player),
+          players,
+          history:[...(current.history||[]),deSnapshot(players,'R'+current.round+' 事件')],
           logs:['第 '+current.round+' 回合事件：'+line,...current.logs],
           result:line
         });
@@ -444,6 +446,8 @@ export default function GameView(){
         players,
         actions,
         active:nextActive,
+        lastInteraction:{from:actor,to:target,type:kind},
+        history:[...(current.history||[]),deSnapshot(players,(current.phase==='duel'?'R9':'R'+current.round)+' '+NAMES[actor])],
         logs:[(current.phase==='duel'?'第 9 回合決鬥':'第 '+current.round+' 回合共鳴')+'：'+NAMES[actor]+' '+actionText,...current.logs]
       };
 
@@ -455,6 +459,23 @@ export default function GameView(){
         return {...next,draw:true,result:'第 9 回合決鬥仍平分；後續判定待定。'};
       }
       return nextRound(next);
+    });
+  }
+
+  function toggleCooperation(targetIndex){
+    setState(current=>{
+      if(!current||!current.phase?.includes('resonance'))return current;
+      const actor=current.active;
+      if(targetIndex===null||targetIndex===undefined||targetIndex===actor)return current;
+      const exists=(current.cooperations||[]).some(item=>samePair(item.a,item.b,actor,targetIndex));
+      const cooperations=exists
+        ?current.cooperations.filter(item=>!samePair(item.a,item.b,actor,targetIndex))
+        :[...(current.cooperations||[]),{a:actor,b:targetIndex}];
+      return {
+        ...current,
+        cooperations,
+        logs:[NAMES[actor]+' 與 '+NAMES[targetIndex]+' '+(exists?'解除合作狀態':'建立合作狀態'),...current.logs]
+      };
     });
   }
 
