@@ -2,16 +2,9 @@ import {UI_COPY} from '../i18n/ui-copy.js';
 
 // Current V2 Scope registry.
 export const SCOPE_POLICY_V2=Object.freeze({
-  scopeIdPattern:'^[A-Za-z]+$',
-  scopeIdExceptions:Object.freeze(['lo3rwang']),
   defaultScopeId:'loc',
-  reservedWords:Object.freeze([
-    Object.freeze({
-      word:'loc',
-      scope:'deployment',
-      reason:'LOC is reserved in this Current deployment; this does not reserve the word globally for other users, teams, departments or deployments.'
-    })
-  ])
+  routeAuthority:'next-filesystem',
+  dataAuthority:'neon'
 });
 
 export const FEATURES_V2=Object.freeze([
@@ -26,22 +19,17 @@ export const SCOPES_V2=Object.freeze({
     id:'loc',
     scopeType:'domain',
     domain:'loc.lo3rwang.cc',
-    aliasName:null,
     label:UI_COPY.scope.loc.label,
-    localRoutes:Object.freeze([]),
-    routePatterns:Object.freeze([]),
     primary:Object.freeze({label:UI_COPY.scope.loc.primary,href:'https://lrunes.lo3rwang.cc/'}),
     role:Object.freeze({label:UI_COPY.scope.loc.role,href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     homes:Object.freeze([{label:UI_COPY.scope.loc.home,href:'https://loc.lo3rwang.cc/'}]),
     searchCollection:'all',
-    rankingTitle:UI_COPY.scope.loc.ranking,
   }),
 
   lunarunes:Object.freeze({
     id:'lunarunes',
     scopeType:'domain',
     domain:'lrunes.lo3rwang.cc',
-    aliasName:null,
     label:'月之符文',
     localRoutes:Object.freeze([
       'game',
@@ -63,17 +51,13 @@ export const SCOPES_V2=Object.freeze({
       {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
     ]),
     searchCollection:'月之符文',
-    rankingTitle:'月之符文排行榜',
   }),
 
   lo3rwang:Object.freeze({
     id:'lo3rwang',
     scopeType:'directory',
     domain:null,
-    aliasName:null,
     label:UI_COPY.scope.author.label,
-    localRoutes:Object.freeze(['work','other']),
-    routePatterns:Object.freeze([]),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'}),
     primary:Object.freeze({label:UI_COPY.scope.author.primary,href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     role:Object.freeze({label:UI_COPY.scope.author.role,href:'https://loc.lo3rwang.cc/lo3rwang/'}),
@@ -81,14 +65,12 @@ export const SCOPES_V2=Object.freeze({
       {label:UI_COPY.scope.author.home,href:'https://loc.lo3rwang.cc/'}
     ]),
     searchCollection:'lo3rwang',
-    rankingTitle:UI_COPY.scope.author.ranking
   }),
 
   admin:Object.freeze({
     id:'admin',
     scopeType:'domain',
     domain:'admin.lo3rwang.cc',
-    aliasName:null,
     label:UI_COPY.scope.admin.label,
     localRoutes:Object.freeze([]),
     routePatterns:Object.freeze([]),
@@ -99,7 +81,6 @@ export const SCOPES_V2=Object.freeze({
       {label:UI_COPY.scope.admin.locHome,href:'https://loc.lo3rwang.cc/'}
     ]),
     searchCollection:'治理',
-    rankingTitle:UI_COPY.scope.admin.ranking,
   })
 });
 
@@ -191,58 +172,3 @@ export function featureIdForPathV2(pathname='/'){
   return FEATURES_V2.find(item=>item.path===segment)?.id||null;
 }
 
-
-export function scopeRoutePathsV2(scopeId){
-  const scope=getScopeV2(scopeId);
-  return Object.freeze([
-    '/',
-    ...FEATURES_V2.map(item=>'/'+item.path),
-    '/governance/manage',
-    ...(scope.localRoutes||[]).map(route=>'/'+String(route).replace(/^\/+/,'')) 
-  ]);
-}
-
-function routePatternMatches(pattern,pathname){
-  const expected=cleanPath(pattern).split('/').filter(Boolean);
-  const actual=cleanPath(pathname).split('/').filter(Boolean);
-  if(expected.length!==actual.length)return false;
-  return expected.every((segment,index)=>{
-    if(segment.startsWith(':'))return Boolean(actual[index]);
-    return segment===actual[index];
-  });
-}
-
-export function scopeRoutePatternsV2(scopeId){
-  const scope=getScopeV2(scopeId);
-  return Object.freeze([...(scope.routePatterns||[])].map(pattern=>cleanPath(pattern)));
-}
-
-
-export function isScopePathAllowedV2(scopeId,pathname='/'){
-  const clean=cleanPath(pathname);
-  if(scopeRoutePathsV2(scopeId).includes(clean))return true;
-  return scopeRoutePatternsV2(scopeId).some(pattern=>routePatternMatches(pattern,clean));
-}
-
-export function stripScopeMountV2(scopeId,host='',pathname='/'){
-  const scope=getScopeV2(scopeId);
-  if(!scope.mount||cleanHost(host)!==cleanHost(scope.mount.host)){
-    return cleanPath(pathname);
-  }
-
-  const full=cleanPath(pathname);
-  const base=cleanPath(scope.mount.path);
-
-  if(full===base)return '/';
-  if(full.startsWith(base+'/')){
-    return cleanPath(full.slice(base.length));
-  }
-  return full;
-}
-
-export function isScopeRequestAllowedV2(scopeId,host='',pathname='/'){
-  return isScopePathAllowedV2(
-    scopeId,
-    stripScopeMountV2(scopeId,host,pathname)
-  );
-}
