@@ -73,7 +73,7 @@ requireText(
 
 // Motion owns the global scroll progress presentation only.
 requireText(
-  'app/Rc81Experience.jsx',
+  'app/AppExperience.jsx',
   [/from ['"]motion\/react['"]/,/useScroll/,/useSpring/,/<motion\.div/],
   'Motion presentation boundary'
 );
@@ -105,8 +105,18 @@ requireText(
 // Zod validates Current feature/auth/data contracts.
 requireText(
   'app/loc/scope-feature-contracts.js',
-  [/from ['"]zod['"]/,/\.parse\(/],
-  'Zod feature-contract boundary'
+  [/from ['"]zod['"]/,/z\.object\(/],
+  'Zod schema-definition boundary'
+);
+requireText(
+  'app/loc/neon-culture-client.js',
+  [/ScopeCultureResponseSchema\.parse\(/],
+  'Culture Zod parse boundary'
+);
+requireText(
+  'app/loc/neon-statistics-client.js',
+  [/ScopeRankingResponseSchema\.parse\(/],
+  'Statistics Zod parse boundary'
 );
 
 // Playwright + axe are Current browser/accessibility test dependencies.

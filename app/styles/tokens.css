@@ -172,4 +172,4 @@ body{
 }
 a{color:inherit}
 button,input,select,textarea{font:inherit}
-.next-migration-shell{min-height:100vh}
+.loc-app-shell{min-height:100vh}

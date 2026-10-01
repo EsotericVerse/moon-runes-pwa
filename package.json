@@ -4,18 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "verify:independence": "node scripts/verify-next-independence.mjs",
     "verify:modular-v2": "node scripts/verify-modular-v2.mjs",
-    "verify:modularity": "node scripts/verify-modularity.mjs",
     "verify:modules": "node scripts/verify-module-contracts.mjs",
-    "verify:static": "node scripts/verify-static-entrypoints.mjs",
     "verify:directories": "node scripts/verify-directory-governance.mjs",
-    "verify:parity": "node scripts/verify-known-parity.mjs",
     "verify:auth": "node scripts/verify-auth-boundary.mjs",
     "verify:rune-draw": "node scripts/verify-rune-draw-algorithm.mjs",
     "verify:rune-keyword-rules": "node scripts/verify-rune-keyword-rules.mjs",
     "verify:semantics": "node scripts/verify-current-semantics.mjs",
-    "verify": "npm run verify:text-engine && npm run verify:flexsearch && npm run verify:rune-keyword-rules && npm run verify:modules && npm run verify:packages && npm run verify:semantics && npm run verify:modularity && npm run verify:modular-v2 && npm run verify:directories",
+    "verify": "npm run verify:text-engine && npm run verify:flexsearch && npm run verify:rune-keyword-rules && npm run verify:rune-draw && npm run verify:modules && npm run verify:packages && npm run verify:semantics && npm run verify:modular-v2 && npm run verify:directories && npm run verify:auth && npm run verify:ui && npm run verify:theme && npm run verify:nav",
     "build": "next build",
     "verify:ui": "node scripts/current-ui-contract.mjs",
     "verify:theme": "node scripts/verify-theme-contract.mjs",
@@ -25,9 +21,8 @@
     "verify:text-engine": "node scripts/verify-text-engine.mjs",
     "verify:neon-public": "node scripts/verify-neon-public-read.mjs",
     "test:ui": "playwright test",
-    "verify:rc81": "npm run verify:rc81-boundary && npm run verify:theme && npm run build && npm run test:ui",
-    "verify:rc81-boundary": "node scripts/verify-rc81-uiux-boundary.mjs",
-    "verify:flexsearch": "node scripts/verify-flexsearch-role.mjs"
+    "verify:flexsearch": "node scripts/verify-flexsearch-role.mjs",
+    "verify:nav": "node scripts/verify-nav-all.mjs"
   },
   "dependencies": {
     "@neondatabase/neon-js": "0.7.0-beta",

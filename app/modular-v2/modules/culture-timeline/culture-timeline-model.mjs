@@ -60,19 +60,19 @@ const WINDOWS_1252_BYTES=new Map([
   [0x017e,0x9e],[0x0178,0x9f]
 ]);
 
-function legacyByteForChar(char){
+function windowsByteForChar(char){
   const point=char.codePointAt(0);
   if(point<=255)return point;
   return WINDOWS_1252_BYTES.get(point)??null;
 }
 
-function decodeLegacyUtf8Chunk(value){
+function decodeWindowsUtf8Chunk(value){
   const chunk=String(value||'');
   if(!chunk)return chunk;
   const bytes=[];
   let hasHighByte=false;
   for(const char of chunk){
-    const byte=legacyByteForChar(char);
+    const byte=windowsByteForChar(char);
     if(byte===null)return chunk;
     bytes.push(byte);
     if(byte>=0x80)hasHighByte=true;
@@ -85,25 +85,25 @@ function decodeLegacyUtf8Chunk(value){
   }
 }
 
-function decodeLegacyUtf8Pass(value){
+function decodeWindowsUtf8Pass(value){
   const text=String(value||'');
   let output='';
-  let legacy='';
+  let encoded='';
   for(const char of text){
-    if(legacyByteForChar(char)!==null){
-      legacy+=char;
+    if(windowsByteForChar(char)!==null){
+      encoded+=char;
       continue;
     }
-    output+=decodeLegacyUtf8Chunk(legacy)+char;
-    legacy='';
+    output+=decodeWindowsUtf8Chunk(encoded)+char;
+    encoded='';
   }
-  return output+decodeLegacyUtf8Chunk(legacy);
+  return output+decodeWindowsUtf8Chunk(encoded);
 }
 
 export function decodeCultureText(value){
   let text=String(value||'');
   for(let pass=0;pass<3;pass+=1){
-    const decoded=decodeLegacyUtf8Pass(text);
+    const decoded=decodeWindowsUtf8Pass(text);
     if(decoded===text)break;
     text=decoded;
   }

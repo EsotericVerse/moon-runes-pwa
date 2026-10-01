@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {selectNeonRows} from '../loc/neon-query';
-import { useLocalStore } from '../loc/local-store';
+import { useNeonSetting } from '../loc/use-neon-setting';
 import { realMoonPhase } from '../loc/model/moon-phase';
 import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
 import RuneSingleReading from './RuneSingleReading';
@@ -157,7 +157,7 @@ function MultiReading({ draw, mode, phase }) {
 }
 
 export default function RuneDrawClient({ drawKey = 'single' }) {
-  const { value: uiSettings } = useLocalStore(UI_SETTINGS_KEY, DEFAULT_UI_SETTINGS);
+  const { value: uiSettings } = useNeonSetting(UI_SETTINGS_KEY, DEFAULT_UI_SETTINGS);
   const [error, setError] = useState('');
   const [draw, setDraw] = useState(null);
   const [ritualStep, setRitualStep] = useState(-1);

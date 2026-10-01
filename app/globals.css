@@ -6,18 +6,16 @@
 @import "./styles/composition.css";
 @import "./styles/home-runes.css";
 @import "./styles/home-content.css";
-@import "./styles/home-title-spacing.css";
 @import "./styles/runes.css";
 @import "./styles/features.css";
 @import "./styles/personal.css";
 @import "./styles/game.css";
 @import "./styles/responsive.css";
-@import "./styles/stabilization.css";
 @import "./styles/keywords.css";
 @import "./styles/nav.css";
 @import "./styles/multimedia.css";
 @import "./styles/v2/scope-system.v2.css";
-@import "./styles/rc81-uiux.css";
+@import "./styles/uiux.css";
 
 /* Keep the Start Here LunaRunes concept image secondary to the copy. */
 .home-beginner .home-framework-figure{
