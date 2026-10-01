@@ -63,7 +63,7 @@ function MatchTrend({history=[],players=[],focusPlayer=null,focusStep=''}) {
   </section>;
 }
 
-function ResonanceNetwork({players=[],active=0,focusPlayer=null,cooperations=[],lastInteraction=null,onSelect=null}){
+function ResonanceNetwork({players=[],active=0,focusPlayer=null,cooperations=[],lastInteraction=null,onSelect=null,themeKey=''}){
   const containerRef=useRef(null);
   const onSelectRef=useRef(onSelect);
   const [error,setError]=useState('');
@@ -122,7 +122,7 @@ function ResonanceNetwork({players=[],active=0,focusPlayer=null,cooperations=[],
       network.fit({animation:{duration:180,easingFunction:'easeInOutQuad'}});
     }).catch(reason=>{if(!cancelled)setError(reason?.message||'共鳴網路載入失敗');});
     return()=>{cancelled=true;network?.destroy();};
-  },[players,active,focusPlayer,cooperations,lastInteraction]);
+  },[players,active,focusPlayer,cooperations,lastInteraction,themeKey]);
   return <div className="game-network-wrap">
     {error?<p className="loc-status">{error}</p>:null}
     <div ref={containerRef} className="game-resonance-network" role="img" aria-label="玩家共鳴與合作關係圖"/>
@@ -788,7 +788,7 @@ export default function GameView(){
           <p className="loc-eyebrow">{state.phase==='duel'?'第 9 回合 · 決鬥':'第 '+state.round+' 回合 · 共鳴'}</p>
           <h2>{state.phase==='duel'?'決鬥':'共鳴'}</h2>
           <p>輪到 {state.players[state.active].name}{networkTarget!==null&&networkTarget!==state.active?'｜已選 '+state.players[networkTarget].name:''}</p>
-          <ResonanceNetwork players={state.players} active={state.active} focusPlayer={focusPlayer} cooperations={state.cooperations||[]} lastInteraction={state.lastInteraction} onSelect={focusFromNetwork}/>
+          <ResonanceNetwork players={state.players} active={state.active} focusPlayer={focusPlayer} cooperations={state.cooperations||[]} lastInteraction={state.lastInteraction} onSelect={focusFromNetwork} themeKey={gameTheme.id}/>
           <div className="loc-actions">
             <button className="loc-button primary" onClick={()=>resonance('self')}>自我共振 {signed(data.config.resonanceSelf)}</button>
             {networkTarget!==null&&networkTarget!==state.active?<button className="loc-button" onClick={()=>resonance('attack',networkTarget)}>干擾 {state.players[networkTarget].name} {signed(data.config.resonanceAttack)}</button>:null}
