@@ -89,6 +89,11 @@ const zhHant=Object.freeze({
     media:'多媒體',
     mediaSearch:'多媒體搜尋',
     allSearch:'全部搜尋',
+    mediaPromptLabel:'找多媒體',
+    textPromptLabel:'你想找什麼？',
+    typePrefix:'類型：',
+    sourceIdPrefix:'來源識別：',
+    songLink:'歌曲連結',
     mediaPrompt:'輸入多媒體關鍵字、類型或來源識別。',
     mediaPlaceholder:'搜尋圖片、影音、網址、標籤或來源識別',
     textPlaceholder:'輸入關鍵字、作品名稱或文字',
@@ -97,9 +102,19 @@ const zhHant=Object.freeze({
     parentText:'所屬文字',
     searching:'搜尋中…',
     failed:'搜尋失敗。',
+    readFailed:'資料讀取失敗',
+    updateFailed:'資料更新失敗',
     loadingRelation:'載入關聯文字…',
     relationLoaded:'已載入關聯文字。',
     relationFailed:'文字載入失敗。',
+    notFound:'找不到這筆文字。',
+    displaySource:'文字展示',
+    fullTextNotFound:'找不到全文資料。',
+    fullTextFailed:'全文載入失敗。',
+    editNotFound:'找不到要編輯的資料。',
+    editLoadFailed:'無法載入編輯內容。',
+    editDenied:'沒有修改此內容的權限。',
+    saveFailed:'儲存失敗。',
     editing:'編輯中',
     more:'載入更多',
     empty:'沒有符合條件的結果。'
@@ -121,7 +136,8 @@ const zhHant=Object.freeze({
     range:'時間範圍',
     start:'開始',
     end:'結束',
-    invalidRange:'請設定有效的開始與結束日期。'
+    invalidRange:'請設定有效的開始與結束日期。',
+    itemSuffix:'項'
   }),
   culture:Object.freeze({
     distribution:'時間分布',
@@ -137,7 +153,9 @@ const zhHant=Object.freeze({
     virtualAnchorHelp:'點時間長河上的 ◇ 或下方日期可查看並選取切點；虛擬點不會寫入資料庫。',
     showAllWorks:'顯示全部作品',
     editing:'編輯中',
-    noPeriodClassification:'目前沒有此時期的作品分類資料。'
+    noPeriodClassification:'目前沒有此時期的作品分類資料。',
+    selectedPrefix:'已選取｜',
+    creating:'建立中…'
   }),
   governance:Object.freeze({
     faq:'常見問題',
@@ -155,6 +173,7 @@ const zhHant=Object.freeze({
     relatedText:'關聯文字',
     untitled:'未命名作品',
     hidden:'此項目目前隱藏（僅管理者可見）',
+    link:'連結',
     noBody:'此作品目前沒有正文。',
     loadingBody:'載入全文中…',
     collapseBody:'收合全文',
@@ -180,6 +199,8 @@ const zhHant=Object.freeze({
     notSearchableData:'不可搜尋資料',
     previous:'上一頁',
     next:'下一頁',
+    createdPrefix:'建立 ',
+    updatedPrefix:'更新 ',
     articleSource:'來源',
     articleParent:'上層／來源',
     articleTarget:'下層／目標',
@@ -187,6 +208,9 @@ const zhHant=Object.freeze({
     articleBody:'正文',
     articleUrl:'原始連結',
     articleTime:'發表時間',
+    sourceRequired:'請指定來源。',
+    articlePublished:'文章已發表到 Galaxy。',
+    articlePublishFailed:'文章發表失敗。',
     importJson:'JSON 匯入',
     sourceChoice:'來源選擇',
     currentFile:'本次檔案',
@@ -196,6 +220,15 @@ const zhHant=Object.freeze({
     addSuno:'儲存 Suno 資料',
     songTitle:'歌名',
     lyrics:'歌詞'
+  }),
+  format:Object.freeze({
+    searchScope:label=>`搜尋「${label}」資料…`,
+    searchResult:({label,query,hasMore,partial=''})=>`${label}搜尋「${query}」；先顯示本批結果${hasMore?'，向下滑動可繼續載入。':'。'}${partial}`,
+    relatedText:index=>`${zhHant.work.relatedText} ${index}`,
+    link:index=>`${zhHant.work.link} ${index}`,
+    songLink:index=>`${zhHant.search.songLink} ${index}`,
+    period:index=>`時期 ${index}`,
+    selected:value=>`${zhHant.culture.selectedPrefix}${value}`
   })
 });
 
