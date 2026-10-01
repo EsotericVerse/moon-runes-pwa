@@ -50,11 +50,11 @@ export default function WorkSummaryCardV2({
     {body?<p className="scope-v2-culture-work-meta-description">{body}</p>:null}
 
     {safeRelations.length?<div className="scope-v2-result-links scope-v2-work-relations">
-      {safeRelations.map((link,index)=><a key={link.id||link.href||index} href={String(link.href||'').trim()}>{link.label||`${UI_COPY.work.relatedText} ${index+1}`}</a>)}
+      {safeRelations.map((link,index)=><a key={link.id||link.href||index} href={String(link.href||'').trim()}>{link.label||UI_COPY.format.relatedText(index+1)}</a>)}
     </div>:null}
 
     {showLinks&&safeLinks.length?<div className="scope-v2-result-links">
-      {safeLinks.map((link,index)=><a key={link.id||link.href||index} href={externalLink(link)} target="_blank" rel="noreferrer">{link.label||`連結 ${index+1}`}</a>)}
+      {safeLinks.map((link,index)=><a key={link.id||link.href||index} href={externalLink(link)} target="_blank" rel="noreferrer">{link.label||UI_COPY.format.link(index+1)}</a>)}
     </div>:null}
 
     {destinations?.length?<div className="scope-v2-result-links">
