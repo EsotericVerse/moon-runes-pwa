@@ -11,6 +11,7 @@ export function LocGovernanceLaw({canEdit=false}){
     <section className="loc-card" id="documents">
       <h2>治理文件</h2>
       <p><a href="https://github.com/EsotericVerse/moon-runes-pwa">LOC Repository</a>：原始碼、README、版本紀錄與個別授權聲明由 Repository 統一管理。</p>
+      <p><a href="https://github.com/EsotericVerse/moon-runes-pwa/blob/main/COPYLEFT.md">LOC Copyleft Policy</a>：說明 LOC 本身的 Copyleft 治理方向，以及不同 Scope 不會自動互相繼承授權。</p>
       <p><a href="https://github.com/EsotericVerse/moon-runes-pwa/blob/main/docs/LOC_CANON.md">LOC Current Canon</a>：記錄月典目前採用的架構、定義與治理基準。</p>
     </section>
   </div>;
