@@ -71,13 +71,6 @@ function CalibrationCopy(){
   </>;
 }
 
-function OscillationCopy(){
-  return <>
-    <p>文字、風格與關鍵詞不會永遠固定在同一個位置，而會隨時間形成、延續、轉變、消退、回返與擺盪。這些變化先看分布，不先替它們定義好壞或意義。</p>
-    <p>它與時空定錨論處理不同面向：定錨看時間位置與前後脈絡，擺盪看語言分布如何改變；兩者可以互相參照，但不互相取代。</p>
-  </>;
-}
-
 function SystemsCopy(){
   return <div className="author-system-grid">
     <article className="author-editorial-block">
@@ -89,6 +82,26 @@ function SystemsCopy(){
       <h3>LunaRunes／月之符文</h3>
       <p>LunaRunes 是我建立的另一套符號式語言與原創系統。它與 LOC 可以互相參照，但兩者有各自的定義、用途與發展脈絡。</p>
       <p><a href="https://lrunes.lo3rwang.cc/">查看 LunaRunes／月之符文 →</a></p>
+    </article>
+  </div>;
+}
+
+function ArchiveTools(){
+  return <div className="author-role-grid">
+    <article className="author-editorial-block">
+      <h3>文化 · Culture</h3>
+      <p>把作品放回時間長河與來源分布，先看不同時期如何出現、集中、稀疏與交會，再回到原始內容理解脈絡。</p>
+      <p><a href="/lo3rwang/culture/">查看文化 →</a></p>
+    </article>
+    <article className="author-editorial-block">
+      <h3>統計 · Statistics</h3>
+      <p>把作品數量、來源與其他可計算資料整理成分布與比較。數字用來看結構，不直接代替內容判讀。</p>
+      <p><a href="/lo3rwang/statics/">查看統計 →</a></p>
+    </article>
+    <article className="author-editorial-block">
+      <h3>搜尋 · Search</h3>
+      <p>從累積的文字、作品與多媒體描述中找回原文、標題、來源與相關紀錄；搜尋負責找到資料，不替資料生成新的語意。</p>
+      <p><a href="/lo3rwang/search/">開始搜尋 →</a></p>
     </article>
   </div>;
 }
@@ -160,18 +173,12 @@ export default function AuthorHomeView({section=null}){
       title:'時空定錨論',
       content:<CalibrationCopy/>
     },
-    {
-      id:'oscillation',
-      eyebrow:'Style · Oscillation',
-      title:'靈魂擺盪論',
-      content:<OscillationCopy/>
-    }
   ];
 
   if(section){
     const sectionGroups=Object.freeze({
       work:Object.freeze(['roles','work','digital-legacy']),
-      others:Object.freeze(['name-origin','philosophy','calibration','oscillation'])
+      others:Object.freeze(['name-origin','philosophy','calibration'])
     });
     const ids=sectionGroups[section]||[];
     const activeSections=ids.length?detailedSections.filter(item=>ids.includes(item.id)):detailedSections;
@@ -234,13 +241,13 @@ export default function AuthorHomeView({section=null}){
         </>
       },
       {
-        id:'methods',
-        eyebrow:'Methods',
-        title:'文字、時間與方法',
-        content:<div className="author-method-grid">
-          <article className="author-editorial-block"><h3>時空定錨論</h3><CalibrationCopy/></article>
-          <article className="author-editorial-block"><h3>靈魂擺盪論</h3><OscillationCopy/></article>
-        </div>
+        id:'archive-tools',
+        eyebrow:'Explore',
+        title:'文化、統計與搜尋',
+        content:<>
+          <p className="author-section-lead">同一批作品可以從時間、數量與文字三個方向重新閱讀；三個功能都回到原始資料，不替作品增加新的判定。</p>
+          <ArchiveTools/>
+        </>
       },
       {
         id:'systems',
