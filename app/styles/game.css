@@ -98,3 +98,22 @@
   .game-group-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}
   .game-compact-hero{display:grid}
 }
+
+
+/* Experimental Game interaction layer */
+.game-event-pair-composite{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem;width:min(100%,760px)}
+.game-event-pair-composite .game-event-visual{min-width:0}
+.game-network-wrap{width:min(100%,760px);display:grid;gap:.5rem}
+.game-resonance-network{width:100%;height:320px;border:1px solid var(--loc-line);border-radius:var(--loc-radius);background:radial-gradient(circle at 50% 50%,var(--loc-accent-surface-strong),transparent 62%),var(--loc-surface-soft);overflow:hidden}
+.game-trend-card{display:grid;gap:.8rem}
+.game-trend-chart{width:100%;height:300px}
+.game-resonance-field .loc-actions{position:relative;z-index:2}
+.game-resonance-field{overflow:hidden}
+.game-resonance-field::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 42%,var(--loc-accent-surface-strong),transparent 45%);opacity:.55}
+.game-resonance-field>*{position:relative;z-index:1}
+
+@media(max-width:620px){
+  .game-event-pair-composite{grid-template-columns:1fr}
+  .game-resonance-network{height:280px}
+  .game-trend-chart{height:260px}
+}
