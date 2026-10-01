@@ -1,4 +1,3 @@
-import ModelArchitectureExplorer from './ModelArchitectureExplorer';
 import {scopeHrefV2} from '../../modular-v2/scope-registry.v2';
 
 const RUNES_LINKS=Object.freeze({
@@ -10,49 +9,6 @@ const RUNES_LINKS=Object.freeze({
   five:scopeHrefV2('lunarunes','duel/five'),
   ow3gs:scopeHrefV2('lunarunes','duel/ow3gs')
 });
-
-const MODEL_MODULES=[
-  {
-    key:'lots', name:'Lots', zh:'抽籤', summary:'月之符文籤詩系統',
-    detail:'以月之符文作為語意起點，提供抽牌、方向與籤詩閱讀。',
-    href:RUNES_LINKS.home
-  },
-  {
-    key:'game', name:'Game', zh:'遊戲', summary:'Semantic Playground',
-    detail:'把符文語意放進規則、事件與互動中，形成可玩的語意系統。',
-    href:'/game/'
-  },
-  {
-    key:'music', name:'Music', zh:'微月光', summary:'音樂創作',
-    detail:'整理音樂、歌詞、曲風與作品脈絡，讓聲音作品能被搜尋與分析。',
-    href:'/search/?q=微月光'
-  },
-  {
-    key:'writing', name:'Writing', zh:'文字創作', summary:'小說與文章',
-    detail:'整理小說、文章與其他文字作品，保留作品、來源與時間脈絡。',
-    href:'/search/?q=文字創作'
-  },
-  {
-    key:'resonance', name:'Resonance', zh:'共響', summary:'跨媒介連結',
-    detail:'連結文字、音樂、影像與多媒體，觀看同一主題在不同媒介中的共響。',
-    href:'/search/?q=共響'
-  },
-  {
-    key:'governance', name:'Governance', zh:'治理', summary:'原則與規則',
-    detail:'整理價值觀、治理原則與規則，讓系統保留清楚的邊界與選擇權。',
-    href:'/governance/'
-  },
-  {
-    key:'text-architecture', name:'Text Architecture', zh:'文字建築', summary:'文字架構',
-    detail:'整理文字結構、搜尋、關係與資料治理，讓大量文字可以被重新理解與使用。',
-    href:'/search/?q=文字建築'
-  },
-  {
-    key:'life', name:'Life', zh:'生活', summary:'生活應用',
-    detail:'把整理、分析與選擇的方法帶回日常生活，保留可持續調整的使用空間。',
-    href:'/search/?q=生活'
-  }
-];
 
 export default function AboutView(){
   return <section className="loc-view loc-home">
@@ -146,13 +102,22 @@ export default function AboutView(){
       </div>
     </section>
 
-    <section className="loc-card home-framework" id="framework-map">
-      <div className="home-section-heading">
-        <p className="loc-eyebrow">LOC Architecture</p><h2>月典架構</h2>
-        <p className="loc-subtitle">點擊架構圖展開八個文字入口。</p>
-      </div>
-      <div className="home-framework-stage" aria-label="LOC 架構圖與八個文字入口">
-        <ModelArchitectureExplorer modules={MODEL_MODULES} />
+    <section className="loc-card home-framework home-architecture-presentation" id="framework-map">
+      <div className="home-architecture-layout">
+        <div className="home-architecture-copy">
+          <div className="home-section-heading">
+            <p className="loc-eyebrow">LOC Architecture</p><h2>月典架構</h2>
+          </div>
+          <div className="home-author-copy">
+            <p><strong>文化：</strong>時間長河。文字作品在時間長河的分佈表現密度。</p>
+            <p><strong>統計：</strong>文字作品的相關分類統計。</p>
+            <p><strong>搜尋：</strong>文字作品的精準搜尋。</p>
+            <p><strong>治理：</strong>管理頁面的功能選項以及法律頁面的說明。</p>
+          </div>
+        </div>
+        <figure className="home-architecture-figure">
+          <img src="/pics/ChaosGalaxy.png" alt="LOC 月典架構：時間長河、玄子、玄裂與玄宇宙" loading="lazy" />
+        </figure>
       </div>
     </section>
 
