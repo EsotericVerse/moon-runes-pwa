@@ -48,7 +48,7 @@ function rowKey(row){
   return String(row.record_date||'').slice(0,10)+'|'+String(row.draw_kind||'');
 }
 
-export default function DailyLogClient(){
+export default function DailyLogClient({embedded=false}={}){
   const account=useNeonAccount();
   const [monthValue,setMonthValue]=useState(()=>Math.max(FIRST_MONTH,currentMonthValue()));
   const [rows,setRows]=useState([]);
@@ -180,11 +180,11 @@ export default function DailyLogClient(){
   }
 
   return <section className="loc-view">
-    <header className="loc-hero">
+    {!embedded?<header className="loc-hero">
       <p className="loc-eyebrow">每日抽籤紀錄</p>
       <h1>每日符文抽籤紀錄</h1>
       <p>依日期保存每日符文的主抽與補抽，方便回看當天結果，也可作為每日趨勢分析的紀錄來源。</p>
-    </header>
+    </header>:null}
 
     <section className="loc-card" aria-label="每日符文行事曆">
       <div className="scope-v2-daily-calendar-nav">
@@ -219,7 +219,7 @@ export default function DailyLogClient(){
       </div>
     </section>
 
-    {canWrite?<section className="loc-card">
+    {!embedded&&canWrite?<section className="loc-card">
       <p className="loc-eyebrow">手動紀錄</p>
       <h2>人工新增紀錄</h2>
       <form className="scope-v2-stat-controls" onSubmit={addRecord}>
