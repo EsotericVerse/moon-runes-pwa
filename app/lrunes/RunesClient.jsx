@@ -9,7 +9,6 @@ import { buildRuneGraph, searchRuneGraph } from '../loc/model/rune-graph-core.js
 import {scopeHrefV2,scopeOriginV2} from '../modular-v2/scope-registry.v2';
 import RuneSingleReading from './RuneSingleReading';
 import {RUNE_RITUAL_DELAY_MS,RUNE_RITUAL_STEP_MS,runeRitualMessages} from './rune-ritual';
-import DailyRuneCalendar from './DailyRuneCalendar';
 
 const ROTATION_CLASSES=['rune-rotate-0','rune-rotate-90','rune-rotate-n90','rune-rotate-180'];
 const RUNE_DIRECTIONS=Object.freeze(['正位','半正位','半逆位','逆位']);
@@ -182,7 +181,6 @@ export default function RunesClient(){
         <iframe src="https://www.instagram.com/reel/DMA-ZxLTINw/embed" title="月之符文說明" loading="eager" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" />
       </figure>
     </header>
-    <DailyRuneCalendar/>
     <section className="loc-card rune-basics">
       <h2>基本判讀順序</h2>
       <div className="basic-grid">
