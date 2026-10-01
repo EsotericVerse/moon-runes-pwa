@@ -121,18 +121,21 @@ export default function AboutView(){
     <section className="loc-card home-copy-block home-progress" id="progress">
       <div className="home-section-heading">
         <p className="loc-eyebrow">Current Progress</p><h2>進度</h2>
-        <p className="loc-subtitle">目前系統已能把大量文字與作品整理後，進一步搜尋、統計、放回時間脈絡，並保留可持續擴充與調整的空間。</p>
+        <p className="loc-subtitle">目前 LOC 的資料規模、系統架構與主要系統模組。</p>
       </div>
-      <div className="home-author-copy">
-        <p>LOC 已從單純整理資料，逐步形成可搜尋、可統計、可回看時間分布與關係脈絡的語言建築框架；現階段重點是讓既有資料、分析結果與多媒體能在同一套架構中持續運作。</p>
-      </div>
-      <div className="home-draw-bubbles" aria-label="LOC 進度文字泡泡">
-        <span className="loc-bubble">資料整理<p>文字與作品進入統一結構。</p></span>
-        <span className="loc-bubble">搜尋<p>從大量資料中快速找到需要的內容。</p></span>
-        <span className="loc-bubble">統計<p>觀看資料分布與變化。</p></span>
-        <span className="loc-bubble">時間<p>把作品重新放回時間長河。</p></span>
-        <span className="loc-bubble">關係<p>保留作品、來源與彼此連結。</p></span>
-        <span className="loc-bubble">多媒體<p>文字、音樂、影像一起納入分析。</p></span>
+      <div className="home-draw-bubbles" aria-label="LOC 目前進度">
+        <span className="loc-bubble">
+          資料總數
+          <p>文字數：4,532,597 字<br/>資料列數：35,498 列<br/>含目前 Galaxy 文字與多媒體 metadata。</p>
+        </span>
+        <span className="loc-bubble">
+          系統架構
+          <p>React 19.3.0<br/>Next.js 16.3.5<br/>PostgreSQL（Neon）</p>
+        </span>
+        <span className="loc-bubble">
+          系統模組
+          <p>FlexSearch · Recharts · vis-network · vis-timeline · TanStack Query · Motion · Zod · react-select</p>
+        </span>
       </div>
     </section>
 
