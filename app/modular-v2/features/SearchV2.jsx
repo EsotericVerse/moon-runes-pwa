@@ -1,5 +1,7 @@
 'use client';
 
+import {UI_COPY} from '../../i18n/ui-copy';
+
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {searchNeonRows} from '../../loc/neon-search';
@@ -80,12 +82,12 @@ function toResult(row,source,scopeId){
     relationLinks:resourceType==='galaxy'
       ?galaxyRelationLinks(scope,row)
       :(resourceType==='galaxy_media'&&row.galaxy_link
-        ?[{id:'galaxy:'+row.galaxy_link,label:'所屬文字',href:galaxyIdentityHref(scope,row.galaxy_link)}].filter(link=>link.href)
+        ?[{id:'galaxy:'+row.galaxy_link,label:UI_COPY.search.parentText,href:galaxyIdentityHref(scope,row.galaxy_link)}].filter(link=>link.href)
         :[]),
     groupKey:resourceType==='galaxy'&&resourceId
       ?'galaxy:'+resourceId
       :(resourceType==='galaxy_media'&&row.galaxy_link?'galaxy:'+row.galaxy_link:'result:'+(identity||title)),
-    links:[...(href?[{id:resourceType||'primary',href,label:resourceType==='galaxy_media'?'媒體連結':'外部連結'}]:[]),...(Array.isArray(row.resolved_links)?row.resolved_links:[])],
+    links:[...(href?[{id:resourceType||'primary',href,label:resourceType==='galaxy_media'?UI_COPY.search.mediaLink:UI_COPY.search.externalLink}]:[]),...(Array.isArray(row.resolved_links)?row.resolved_links:[])],
     destinations:[]
   };
 }
@@ -121,7 +123,7 @@ export default function SearchV2(){
   const [query,setQuery]=useState('');
   const [searchMode,setSearchMode]=useState('all');
   const [results,setResults]=useState([]);
-  const [status,setStatus]=useState('輸入關鍵字開始搜尋。');
+  const [status,setStatus]=useState(UI_COPY.search.start);
   const [error,setError]=useState('');
   const [hasMore,setHasMore]=useState(false);
   const [nextCursor,setNextCursor]=useState(null);
@@ -137,7 +139,7 @@ export default function SearchV2(){
   const searchId=useRef(0);
   const matchedQueryRef=useRef('');
   const pageSize=DEFAULT_LIST_BATCH_SIZE;
-  const collectionLabel=scopeId==='loc'?'全部內容':String(scope?.label||scopeId);
+  const collectionLabel=scopeId==='loc'?UI_COPY.search.allContent:String(scope?.label||scopeId);
 
   async function executeSearch(rawQuery,cursor=null,{append=false}={}){
     const q=String(rawQuery||'').trim();
@@ -195,7 +197,7 @@ export default function SearchV2(){
     }catch(exception){
       if(id!==searchId.current)return;
       setError(featureDataErrorMessage(exception));
-      setStatus('搜尋失敗。');
+      setStatus(UI_COPY.search.failed);
     }finally{
       if(append&&id===searchId.current)setLoadingMore(false);
     }
@@ -213,7 +215,7 @@ export default function SearchV2(){
     const id=++searchId.current;
     matchedQueryRef.current='';
     setError('');setHasMore(false);setNextCursor(null);setLoadingMore(false);
-    setStatus('載入關聯文字…');
+    setStatus(UI_COPY.search.loadingRelation);
     try{
       let detail=null;
       let detailScope=scopeId;
@@ -232,10 +234,10 @@ export default function SearchV2(){
       setResults([result]);
       setFullTextKey(result.key);
       setFullText(workDisplayText(detail.content||''));
-            setStatus('已載入關聯文字。');
+            setStatus(UI_COPY.search.relationLoaded);
     }catch(exception){
       if(id!==searchId.current)return;
-      setResults([]);setError(featureDataErrorMessage(exception));setStatus('文字載入失敗。');
+      setResults([]);setError(featureDataErrorMessage(exception));setStatus(UI_COPY.search.relationFailed);
     }
   }
 
@@ -322,14 +324,14 @@ export default function SearchV2(){
 
 
   return <FeaturePageV2 featureId="search">
-    <div className="scope-v2-tabs" role="group" aria-label="搜尋模式">
-      <button type="button" aria-pressed={searchMode==='all'} onClick={()=>{setSearchMode('all');setResults([]);setHasMore(false);setNextCursor(null);setStatus('輸入關鍵字開始搜尋。');}}>全部搜尋</button>
-      <button type="button" aria-pressed={searchMode==='media'} onClick={()=>{setSearchMode('media');setResults([]);setHasMore(false);setNextCursor(null);setStatus('輸入多媒體關鍵字、類型或來源識別。');}}>多媒體搜尋</button>
+    <div className="scope-v2-tabs" role="group" aria-label={UI_COPY.search.mode}>
+      <button type="button" aria-pressed={searchMode==='all'} onClick={()=>{setSearchMode('all');setResults([]);setHasMore(false);setNextCursor(null);setStatus(UI_COPY.search.start);}}>{UI_COPY.search.allSearch}</button>
+      <button type="button" aria-pressed={searchMode==='media'} onClick={()=>{setSearchMode('media');setResults([]);setHasMore(false);setNextCursor(null);setStatus(UI_COPY.search.mediaPrompt);}}>{UI_COPY.search.mediaSearch}</button>
     </div>
     <form className="scope-v2-search-form" onSubmit={runSearch}>
       <label htmlFor="scope-search-query">{searchMode==='media'?'找多媒體':'你想找什麼？'}</label>
-      <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder={searchMode==='media'?'搜尋圖片、影音、網址、標籤或來源識別':'輸入關鍵字、作品名稱或文字'} aria-label={searchMode==='media'?'多媒體搜尋':'你想找什麼？'}/>
-      <button type="submit">搜尋</button>
+      <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder={searchMode==='media'?UI_COPY.search.mediaPlaceholder:UI_COPY.search.textPlaceholder} aria-label={searchMode==='media'?UI_COPY.search.mediaSearch:'你想找什麼？'}/>
+      <button type="submit">{UI_COPY.nav.search}</button>
     </form>
     <p className="scope-v2-status">{status}</p>
     {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
@@ -365,7 +367,7 @@ export default function SearchV2(){
             content={fullTextKey===row.key?fullText:''}
             onToggle={()=>toggleFullText(row)}
           />:null}
-          {editable?<p><button type="button" onClick={()=>startEditing(row)}>{editingKey===row.key?'編輯中':'編輯'}</button></p>:null}
+          {editable?<p><button type="button" onClick={()=>startEditing(row)}>{editingKey===row.key?UI_COPY.search.editing:UI_COPY.common.edit}</button></p>:null}
           {draft?<ContentEditorV2
             draft={draft}
             setDraft={setEditDraft}
