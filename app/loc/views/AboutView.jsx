@@ -39,14 +39,11 @@ export default function AboutView(){
         <div className="home-author-copy">
 		<p>月典(LOC)，是一套用來分析的語言建築框架。始於月之符文。</p>
 		<p>月之符文(LunaRunes)是個具有獨特方式的符號式語言。與月典相輔相成。</p>
-        <p>第一次來不需要先理解完整架構。可以從抽牌、統計、時間長河或搜尋任一入口開始，先找到自己有感的內容，再慢慢理解文字、時間與關聯如何被整理。</p>
 		<br/>
           <p>太複雜了！當然可以不用管月之符文是什麼，<a href={RUNES_LINKS.single}>抽了就知道！</a></p>
 		  <p>可以是問事，可以是決定當日生活主題風格的<a href={RUNES_LINKS.daily}>每日符文</a>。</p>
-          <p>抽到之後再看當下的文字、方向與說明就可以；想多了解一點，再慢慢往下看。</p>
-          <p>你也可以完全不抽牌，直接跳過，</p>
-		  <p>或來看<a href="/statics/">脈絡分析統計排行</a>、<a href="/culture/">文化的時間長河</a>等，</p>
-		  <p>或直接用<a href="/search/">搜尋</a>查自己有興趣的文字與資料。</p>
+          <p>完全不了解符文？沒關係！抽看看如何？抽到之後再看當下的文字、方向與說明就可以。</p>
+          <p>不想了解符文？當然可以！當然也可以完全不抽牌，直接跳過符文籤詩系統。到達下一個架構圖說明。</p>
           <p><strong>那就開始吧！</strong></p>
         </div>
         <figure className="home-framework-figure"><img src="/pics/LunaRunes.png" alt="LunaRunes 月之符文" loading="lazy" /></figure>
@@ -79,14 +76,18 @@ export default function AboutView(){
       <div className="home-architecture-layout">
         <div className="home-architecture-copy">
           <div className="home-section-heading">
-            <p className="loc-eyebrow">LOC Architecture</p><h2>月典架構</h2>
+            <p className="loc-eyebrow">LOC Architecture</p><h2>LOC架構</h2>
           </div>
           <div className="home-author-copy">
-            <p>LOC 把分散在不同時間與來源的文字作品重新整理，讓過去留下的內容可以被看見、搜尋、比較，也能回到原本的時間與脈絡。</p>
+			<p>第一次來不需要管完整架構。可以先找到自己有感的內容，再慢慢來看，文字、時間與關聯如何被整理，進而自己做！</p>
             <p><strong>文化：</strong>以時間長河呈現作品在不同時期的分佈與密度，觀察文字如何隨時間累積與變化。</p>
             <p><strong>統計：</strong>將文字作品依來源、分類與時間區間整理成統計結果，協助看見整體分佈與變化。</p>
             <p><strong>搜尋：</strong>以精準關鍵詞尋找文字、作品與相關資料，快速回到原始內容與前後脈絡。</p>
             <p><strong>治理：</strong>提供管理頁面的設定與功能選項，並集中說明系統使用原則與法律資訊。</p>
+			<p>自己也可以整理自己的風格標籤！我以我個人作品的文字分佈做展示，當然可以自己用來整理自己的！</p>
+			<p>LOC本身有建議功能，可以自動找出某幾個文字風格變化的關鍵時間點(定錨點)，並給予建議！</p>
+			<p>找出個人風格很重要！但最特別的是，可以找出趨勢跟隱患！藉由建議點探查出你所不知道或忘記時間點的改變！</p>
+			<p>LOC完全不會武斷批判！要怎麼選擇自己的路，怎麼選擇風格，掌握權在使用的你手上！</p>
           </div>
         </div>
         <figure className="home-architecture-figure">
