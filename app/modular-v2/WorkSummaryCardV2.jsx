@@ -1,17 +1,19 @@
 'use client';
 
+import {UI_COPY} from '../i18n/ui-copy';
+
 function externalLink(link){
   const href=String(link?.href||'').trim();
   return /^https?:\/\//i.test(href)?href:'';
 }
 function safeExternalLinksOf(items=[]){
   return (Array.isArray(items)?items:[])
-    .map((link,index)=>typeof link==='string'?{id:String(index),href:link,label:'查看連結'}:link)
+    .map((link,index)=>typeof link==='string'?{id:String(index),href:link,label:UI_COPY.work.viewLinks}:link)
     .filter(link=>externalLink(link));
 }
 function safeRelationLinksOf(items=[]){
   return (Array.isArray(items)?items:[])
-    .map((link,index)=>typeof link==='string'?{id:String(index),href:link,label:'關聯文字'}:link)
+    .map((link,index)=>typeof link==='string'?{id:String(index),href:link,label:UI_COPY.work.relatedText}:link)
     .filter(link=>{
       const href=String(link?.href||'').trim();
       return Boolean(href)&&!/^javascript:/i.test(href);
@@ -19,7 +21,7 @@ function safeRelationLinksOf(items=[]){
 }
 
 export default function WorkSummaryCardV2({
-  title='未命名作品',
+  title=UI_COPY.work.untitled,
   source='',
   scopeId='',
   date='',
@@ -44,11 +46,11 @@ export default function WorkSummaryCardV2({
       {date?<time>{date}</time>:null}
     </header>
 
-    {hidden?<p className="scope-v2-status">此項目目前隱藏（僅管理者可見）</p>:null}
+    {hidden?<p className="scope-v2-status">{UI_COPY.work.hidden}</p>:null}
     {body?<p className="scope-v2-culture-work-meta-description">{body}</p>:null}
 
     {safeRelations.length?<div className="scope-v2-result-links scope-v2-work-relations">
-      {safeRelations.map((link,index)=><a key={link.id||link.href||index} href={String(link.href||'').trim()}>{link.label||`關聯文字 ${index+1}`}</a>)}
+      {safeRelations.map((link,index)=><a key={link.id||link.href||index} href={String(link.href||'').trim()}>{link.label||`${UI_COPY.work.relatedText} ${index+1}`}</a>)}
     </div>:null}
 
     {showLinks&&safeLinks.length?<div className="scope-v2-result-links">
