@@ -39,7 +39,7 @@ export default function ManagementArticlePublisher({scopeId}){
     setBusy(true);setStatus('');
     try{
       const content=requireGalaxyContent(draft.body);
-      if(!draft.source.trim())throw new Error('請指定來源。');
+      if(!draft.source.trim())throw new Error(UI_COPY.management.sourceRequired);
       const now=new Date().toISOString();
       const uid=createUid8();
 
@@ -53,8 +53,8 @@ export default function ManagementArticlePublisher({scopeId}){
         source_name:draft.source.trim()
       }]);
 
-      setDraft(blank());setStatus('文章已發表到 Galaxy。');
-    }catch(error){setStatus(error?.message||'文章發表失敗。');}
+      setDraft(blank());setStatus(UI_COPY.management.articlePublished);
+    }catch(error){setStatus(error?.message||UI_COPY.management.articlePublishFailed);}
     finally{setBusy(false);}
   }
 
@@ -77,11 +77,11 @@ export default function ManagementArticlePublisher({scopeId}){
       draft={draft}
       setDraft={setDraft}
       busy={busy}
-      error={status&&status!=='文章已發表到 Galaxy。'?status:''}
+      error={status&&status!==UI_COPY.management.articlePublished?status:''}
       bodyLabel={UI_COPY.management.articleBody}
       extraFields={extraFields}
       onSave={save}
     />
-    {status==='文章已發表到 Galaxy。'?<p className="scope-v2-status">{status}</p>:null}
+    {status===UI_COPY.management.articlePublished?<p className="scope-v2-status">{status}</p>:null}
   </section>;
 }
