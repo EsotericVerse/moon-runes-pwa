@@ -42,7 +42,7 @@ export const SCOPES_V2=Object.freeze({
     scopeType:'domain',
     domain:'lrunes.lo3rwang.cc',
     aliasName:null,
-    label:UI_COPY.scope.lunarunes.label,
+    label:'月之符文',
     localRoutes:Object.freeze([
       'game',
       'list',
@@ -57,13 +57,13 @@ export const SCOPES_V2=Object.freeze({
     ]),
     routePatterns:Object.freeze(['list/:group','list/:group/:rune']),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'}),
-    primary:Object.freeze({label:UI_COPY.scope.lunarunes.label,href:'https://lrunes.lo3rwang.cc/'}),
-    role:Object.freeze({label:UI_COPY.scope.lunarunes.role,href:'https://loc.lo3rwang.cc/lo3rwang/'}),
+    primary:Object.freeze({label:'月之符文',href:'https://lrunes.lo3rwang.cc/'}),
+    role:Object.freeze({label:'管理者頁面',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     homes:Object.freeze([
-      {label:UI_COPY.scope.lunarunes.home,href:'https://loc.lo3rwang.cc/'}
+      {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
     ]),
     searchCollection:'月之符文',
-    rankingTitle:UI_COPY.scope.lunarunes.ranking,
+    rankingTitle:'月之符文排行榜',
   }),
 
   lo3rwang:Object.freeze({
