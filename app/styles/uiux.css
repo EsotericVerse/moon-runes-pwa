@@ -270,7 +270,7 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
   text-wrap:pretty;
 }
 
-.loc-home>.loc-hero>.scope-home-hero-copy>.home-title-row>h1{
+.loc-home-hero-copy>.home-title-row>h1{
   font-size:clamp(3.25rem,8vw,7rem)!important;
   letter-spacing:-.065em!important;
   line-height:.9!important;
@@ -818,7 +818,7 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
     padding:1rem;
     border-radius:var(--loc-ui-radius-md);
   }
-  .loc-home>.loc-hero>.scope-home-hero-copy>.home-title-row>h1{
+  .loc-home-hero-copy>.home-title-row>h1{
     font-size:clamp(3rem,16vw,4.65rem)!important;
   }
   .home-progress-grid,.runes-mode-nav,.scope-v2-metrics{

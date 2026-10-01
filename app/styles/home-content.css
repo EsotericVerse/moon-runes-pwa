@@ -1,3 +1,53 @@
+/* LOC homepage hero layout lives here only; shared Scope heroes are governed separately. */
+.loc-home-hero{
+  display:grid;
+  grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);
+  gap:clamp(1.5rem,4vw,4rem);
+  min-height:clamp(330px,44vh,500px);
+  align-items:center;
+}
+.loc-home-hero-copy{
+  grid-column:1;
+  min-width:0;
+}
+.loc-home-hero>.home-hero-visual{
+  grid-column:2;
+  grid-row:1;
+  align-self:center;
+  justify-self:stretch;
+  width:100%;
+  max-width:none;
+  margin:0;
+}
+.loc-home-hero>.home-hero-visual picture,
+.loc-home-hero>.home-hero-visual img{
+  display:block;
+  width:100%;
+  height:auto;
+}
+@media(max-width:1024px){
+  .loc-home-hero{
+    grid-template-columns:minmax(0,1fr) minmax(240px,320px);
+    min-height:auto;
+  }
+  .loc-home-hero>.home-hero-visual{max-width:320px}
+}
+@media(max-width:760px){
+  .loc-home-hero{
+    grid-template-columns:1fr;
+    gap:1.25rem;
+  }
+  .loc-home-hero-copy,
+  .loc-home-hero>.home-hero-visual{grid-column:1}
+  .loc-home-hero>.home-hero-visual{
+    grid-row:2;
+    justify-self:center;
+    width:min(100%,520px);
+    max-width:520px;
+    margin-top:.25rem;
+  }
+}
+
 .home-progress-grid{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
@@ -47,11 +97,12 @@
   gap:1.35rem;
   align-items:start;
 }
+/* Start Here concept image stays secondary to the onboarding copy. */
 .home-beginner .home-framework-figure{
-  width:100%;
+  width:min(100%,420px);
   max-width:none;
   margin:0;
-  justify-self:stretch;
+  justify-self:center;
   align-self:start;
 }
 .home-beginner .home-framework-figure img{
@@ -61,16 +112,6 @@
   height:auto;
   margin:0;
   object-fit:contain;
-}
-
-/* Start Here concept image stays secondary to the onboarding copy. */
-.home-beginner .home-framework-figure{
-  width:min(100%,420px);
-  justify-self:center;
-}
-.home-beginner .home-framework-figure img{
-  width:100%;
-  height:auto;
 }
 
 .home-author-copy{
@@ -107,20 +148,20 @@
 /* Homepage title hierarchy: left title, right short explanation. */
 .home-title-row{
   display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(180px,.62fr);
-  gap:1.5rem;
+  grid-template-columns:max-content minmax(0,1fr);
+  column-gap:1.5rem;
   align-items:start;
 }
 .home-title-row h1{margin:0}
 .home-title-row>.loc-subtitle{
-  justify-self:end;
+  justify-self:start;
   max-width:26ch;
   margin:.25rem 0 0!important;
   text-align:left;
 }
 .home-section-heading{
   display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(180px,.48fr);
+  grid-template-columns:max-content minmax(0,1fr);
   column-gap:1.5rem;
   align-items:start;
 }
@@ -135,7 +176,7 @@
 .home-section-heading>.loc-subtitle{
   grid-column:2;
   grid-row:1 / span 2;
-  justify-self:end;
+  justify-self:start;
   max-width:28ch;
   margin:.1rem 0 0!important;
 }
@@ -179,28 +220,6 @@
     width:min(68vw,240px);
     max-width:240px;
     justify-self:center;
-  }
-}
-
-/* Homepage heading spacing: keep explanations visually attached to their headings. */
-.home-title-row{
-  grid-template-columns:max-content minmax(0,1fr);
-  column-gap:1.5rem;
-}
-.home-title-row>.loc-subtitle{
-  justify-self:start;
-}
-.home-section-heading{
-  grid-template-columns:max-content minmax(0,1fr);
-  column-gap:1.5rem;
-}
-.home-section-heading>.loc-subtitle{
-  justify-self:start;
-}
-@media(max-width:720px){
-  .home-title-row,
-  .home-section-heading{
-    grid-template-columns:1fr;
   }
 }
 
