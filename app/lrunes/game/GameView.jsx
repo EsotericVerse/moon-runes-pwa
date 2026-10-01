@@ -2,6 +2,8 @@
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
+import Select from 'react-select';
+import {Index} from 'flexsearch';
 import {AnimatePresence,motion} from 'motion/react';
 import {CartesianGrid,Legend,Line,LineChart,ResponsiveContainer,Tooltip,XAxis,YAxis} from 'recharts';
 import {
@@ -120,6 +122,66 @@ function ResonanceNetwork({players=[],active=0,cooperations=[],lastInteraction=n
   </div>;
 }
 
+
+function replayGroup(line=''){
+  if(line.includes('事件'))return '事件';
+  if(line.includes('共鳴')||line.includes('決鬥'))return '共鳴';
+  if(line.includes('合作'))return '合作';
+  return '系統';
+}
+
+function ReplayTimeline({logs=[]}){
+  const containerRef=useRef(null);
+  const [error,setError]=useState('');
+  useEffect(()=>{
+    let cancelled=false;
+    let instance=null;
+    if(!containerRef.current||!logs.length)return undefined;
+    setError('');
+    const chronological=[...logs].reverse();
+    const base=Date.UTC(2000,0,1,0,0,0);
+    import('vis-timeline/standalone').then(({DataSet,Timeline})=>{
+      if(cancelled||!containerRef.current)return;
+      const rows=chronological.map((line,index)=>({
+        id:String(index),
+        group:replayGroup(line),
+        content:String(line),
+        title:String(line),
+        start:new Date(base+index*60000),
+        type:'point'
+      }));
+      const groupIds=[...new Set(rows.map(row=>row.group))];
+      instance=new Timeline(
+        containerRef.current,
+        new DataSet(rows),
+        new DataSet(groupIds.map(id=>({id,content:id}))),
+        {
+          autoResize:true,
+          minHeight:'220px',
+          maxHeight:'320px',
+          showCurrentTime:false,
+          showMajorLabels:false,
+          showMinorLabels:false,
+          selectable:true,
+          moveable:false,
+          zoomable:false,
+          stack:true,
+          margin:{axis:8,item:{horizontal:8,vertical:8}}
+        }
+      );
+      instance.fit({animation:false});
+    }).catch(reason=>{if(!cancelled)setError(reason?.message||'對局時間軸載入失敗');});
+    return()=>{cancelled=true;instance?.destroy();};
+  },[logs]);
+  if(!logs.length)return null;
+  return <section className="loc-card game-replay-card">
+    <h2>對局 Replay</h2>
+    <p className="game-player-meta">事件、共鳴、合作與系統操作依實際發生順序排列。</p>
+    {error?<p className="loc-status">{error}</p>:null}
+    <div ref={containerRef} className="game-replay-timeline" role="region" aria-label="對局 Replay 時序"/>
+  </section>;
+}
+
 function runeCardImage(card){
   const id=Number(card?.id??card?.rune_id??card?.rune_number);
   const number=String(Number.isFinite(id)?id:0).padStart(2,'0');
@@ -195,13 +257,83 @@ function RoundRail({round=1,rounds=[]}){
 
 function GameDocs({data}){
   const [section,setSection]=useState('rules');
-  const currentRules=data.rules.filter(row=>!['ROUND_PHASE','EVENT_RESULT'].includes(row.rule_code));
+  const [query,setQuery]=useState('');
+  const [groupFilter,setGroupFilter]=useState(null);
+
+  const searchState=useMemo(()=>{
+    const rows=[];
+    const add=(sectionName,row,title,body,groups=[])=>{
+      rows.push({
+        key:String(rows.length+1),
+        section:sectionName,
+        row,
+        groups:[...new Set((groups||[]).filter(Boolean))],
+        text:[title,body,...groups].filter(Boolean).join(' ')
+      });
+    };
+    data.rules.filter(row=>!['ROUND_PHASE','EVENT_RESULT'].includes(row.rule_code))
+      .forEach(row=>add('rules',row,row.rule_title,row.rule_text));
+    data.events.forEach(row=>add('events',row,row.name,[row.requirement,row.description].filter(Boolean).join(' '),row.groups));
+    data.roles.forEach(row=>add('roles',row,row.name,[row.focus,row.mode,row.intervention,row.tool,row.tagline].filter(Boolean).join(' '),[row.group]));
+    data.runeActions.forEach(row=>add('actions',row,row.name,[row.text,row.kind,row.value].filter(value=>value!==null&&value!==undefined).join(' '),[row.group]));
+    const index=new Index({tokenize:'forward',cache:100});
+    rows.forEach(item=>index.add(Number(item.key),item.text));
+    return {rows,index};
+  },[data]);
+
+  const groupOptions=useMemo(()=>[...new Set(data.cards.map(card=>card.group).filter(Boolean))]
+    .map(group=>({value:group,label:group})),[data.cards]);
+
+  const visibleRows=useMemo(()=>{
+    const normalized=String(query||'').normalize('NFKC').trim();
+    const hits=normalized
+      ?new Set(searchState.index.search(normalized,{limit:200,cache:true}).map(String))
+      :null;
+    return searchState.rows.filter(item=>
+      item.section===section
+      &&(!groupFilter?.value||item.groups.includes(groupFilter.value))
+      &&(!hits||hits.has(item.key))
+    );
+  },[searchState,section,query,groupFilter]);
+
+  const currentRules=visibleRows.filter(item=>item.section==='rules').map(item=>item.row);
+  const events=visibleRows.filter(item=>item.section==='events').map(item=>item.row);
+  const roles=visibleRows.filter(item=>item.section==='roles').map(item=>item.row);
+  const actions=visibleRows.filter(item=>item.section==='actions').map(item=>item.row);
+
+  function switchSection(next){
+    setSection(next);
+    setGroupFilter(null);
+  }
+
   return <section className="loc-card game-docs">
     <div className="game-doc-tabs">
-      <button type="button" className={'loc-button '+(section==='rules'?'primary':'')} onClick={()=>setSection('rules')}>遊戲規則</button>
-      <button type="button" className={'loc-button '+(section==='events'?'primary':'')} onClick={()=>setSection('events')}>事件卡</button>
-      <button type="button" className={'loc-button '+(section==='roles'?'primary':'')} onClick={()=>setSection('roles')}>八職</button>
-      <button type="button" className={'loc-button '+(section==='actions'?'primary':'')} onClick={()=>setSection('actions')}>符文行動</button>
+      <button type="button" className={'loc-button '+(section==='rules'?'primary':'')} onClick={()=>switchSection('rules')}>遊戲規則</button>
+      <button type="button" className={'loc-button '+(section==='events'?'primary':'')} onClick={()=>switchSection('events')}>事件卡</button>
+      <button type="button" className={'loc-button '+(section==='roles'?'primary':'')} onClick={()=>switchSection('roles')}>八職</button>
+      <button type="button" className={'loc-button '+(section==='actions'?'primary':'')} onClick={()=>switchSection('actions')}>符文行動</button>
+    </div>
+
+    <div className="game-doc-tools">
+      <label className="game-doc-search">
+        <span>局部搜尋</span>
+        <input type="search" value={query} onChange={event=>setQuery(event.target.value)} placeholder="搜尋事件、規則、職業或符文行動"/>
+      </label>
+      {section!=='rules'?<label className="game-doc-group-filter">
+        <span>分組</span>
+        <Select
+          className="game-select"
+          classNamePrefix="game-select"
+          unstyled
+          isClearable
+          isSearchable
+          options={groupOptions}
+          value={groupFilter}
+          onChange={setGroupFilter}
+          placeholder="全部分組"
+          noOptionsMessage={()=>"沒有符合的分組"}
+        />
+      </label>:null}
     </div>
 
     {section==='rules'&&<div className="game-doc-copy">
@@ -209,6 +341,7 @@ function GameDocs({data}){
       <div className="game-role-grid">
         {currentRules.map(rule=><article key={rule.game_key}><b>{rule.rule_title}</b><span>{rule.rule_text}</span></article>)}
       </div>
+      {!currentRules.length?<p className="loc-status">沒有符合的規則。</p>:null}
       <h3>四組簡稱</h3>
       <div className="game-role-grid">
         {data.macros.map(item=><article key={item.code}><b>{item.code}｜{item.title}</b><span>{item.description}</span><small>{item.groupA}＋{item.groupB}</small></article>)}
@@ -220,10 +353,11 @@ function GameDocs({data}){
     </div>}
 
     {section==='events'&&<div className="game-doc-copy">
-      <h2>{data.events.length} 張事件卡</h2>
+      <h2>{events.length} / {data.events.length} 張事件卡</h2>
       <div className="game-role-grid">
-        {data.events.map(event=><article key={event.id}><b>{event.id}｜{event.name}</b><span>{event.groups.join('＋')}｜{event.requirement}</span><small>{event.description}</small></article>)}
+        {events.map(event=><article key={event.id}><b>{event.id}｜{event.name}</b><span>{event.groups.join('＋')}｜{event.requirement}</span><small>{event.description}</small></article>)}
       </div>
+      {!events.length?<p className="loc-status">沒有符合的事件。</p>:null}
       <h3>雙群組主視覺</h3>
       <div className="game-event-gallery">{data.eventVisuals.map(item=><EventVisual key={item.code} item={item}/>)}</div>
     </div>}
@@ -231,19 +365,20 @@ function GameDocs({data}){
     {section==='roles'&&<div className="game-doc-copy">
       <h2>八職</h2>
       <div className="game-role-grid">
-        {data.roles.map(role=><article key={role.id}><b>{role.group}｜{role.name}</b><span>{role.focus}｜{role.mode}｜{role.intervention}</span><small>{role.tagline}｜{role.tool}</small></article>)}
+        {roles.map(role=><article key={role.id}><b>{role.group}｜{role.name}</b><span>{role.focus}｜{role.mode}｜{role.intervention}</span><small>{role.tagline}｜{role.tool}</small></article>)}
       </div>
+      {!roles.length?<p className="loc-status">沒有符合的職業。</p>:null}
     </div>}
 
     {section==='actions'&&<div className="game-doc-copy">
-      <h2>66 符文遊戲行動</h2>
+      <h2>{actions.length} / {data.runeActions.length} 符文遊戲行動</h2>
       <div className="game-role-grid">
-        {data.runeActions.map(action=><article key={action.runeId}><b>{String(action.runeId).padStart(2,'0')}｜{action.name}</b><span>{action.text}</span><small>{action.group}{action.kind?'｜'+action.kind+(action.value!==null?' '+action.value:''):''}</small></article>)}
+        {actions.map(action=><article key={action.runeId}><b>{String(action.runeId).padStart(2,'0')}｜{action.name}</b><span>{action.text}</span><small>{action.group}{action.kind?'｜'+action.kind+(action.value!==null?' '+action.value:''):''}</small></article>)}
       </div>
+      {!actions.length?<p className="loc-status">沒有符合的符文行動。</p>:null}
     </div>}
   </section>;
 }
-
 function BoardPreview({data}){
   const max=data.config.deMax;
   const previewA=Math.min(4,max);
@@ -579,6 +714,8 @@ export default function GameView(){
     </div>
 
     <MatchTrend history={state.history||[]} players={state.players}/>
+
+    <ReplayTimeline logs={state.logs}/>
 
     <section className="loc-card game-log-card">
       <h2>對局紀錄</h2>
