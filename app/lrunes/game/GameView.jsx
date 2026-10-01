@@ -24,14 +24,16 @@ function samePair(a,b,x,y){
 
 function EventScene({event,data}){
   if(!event)return null;
-  const first=groupVisual(data.groupAssets,event.group);
-  if(!event.group2)return first?<EventVisual item={first}/>:null;
-  const bespoke=data.eventVisuals.find(item=>samePair(item.group,item.group2,event.group,event.group2));
-  if(bespoke)return <EventVisual item={bespoke}/>;
-  const second=groupVisual(data.groupAssets,event.group2);
+  const groups=event.groups||[];
+  const visuals=groups.map(group=>groupVisual(data.groupAssets,group)).filter(Boolean);
+  if(groups.length===2){
+    const bespoke=data.eventVisuals.find(item=>samePair(item.group,item.group2,groups[0],groups[1]));
+    if(bespoke)return <EventVisual item={bespoke}/>;
+  }
+  if(visuals.length===1)return <EventVisual item={visuals[0]}/>;
+  if(!visuals.length)return null;
   return <div className="game-event-pair-composite">
-    {first?<EventVisual item={first}/>:null}
-    {second?<EventVisual item={second}/>:null}
+    {visuals.map(item=><EventVisual key={item.code} item={item}/>)}
   </div>;
 }
 
@@ -220,7 +222,7 @@ function GameDocs({data}){
     {section==='events'&&<div className="game-doc-copy">
       <h2>{data.events.length} 張事件卡</h2>
       <div className="game-role-grid">
-        {data.events.map(event=><article key={event.id}><b>{event.id}｜{event.name}</b><span>{event.group}{event.group2?'＋'+event.group2:''}｜{event.requirement}</span><small>{event.description}</small></article>)}
+        {data.events.map(event=><article key={event.id}><b>{event.id}｜{event.name}</b><span>{event.groups.join('＋')}｜{event.requirement}</span><small>{event.description}</small></article>)}
       </div>
       <h3>雙群組主視覺</h3>
       <div className="game-event-gallery">{data.eventVisuals.map(item=><EventVisual key={item.code} item={item}/>)}</div>
@@ -558,7 +560,7 @@ export default function GameView(){
         {allOpened&&state.phase==='event'?<motion.section key={'event-'+state.round} initial={{opacity:0,y:18}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-18}} className="loc-event game-event-field">
           <p className="loc-eyebrow">第 {state.round} 回合 · 事件</p>
           <EventScene event={event} data={data}/>
-          {event?<><h2>{event.id}｜{event.name}</h2><p>{event.desc}</p><p className="game-player-meta">條件：{event.requirement}</p><button className="loc-button primary" onClick={resolveEvent} disabled={state.players.some(player=>player.selected.length!==data.config.eventResponseCards)}>{data.config.eventResponseCards} 卡結算事件</button></>:null}
+          {event?<><h2>{event.id}｜{event.name}</h2><p>{event.description}</p><p className="game-player-meta">條件：{event.requirement}</p><button className="loc-button primary" onClick={resolveEvent} disabled={state.players.some(player=>player.selected.length!==data.config.eventResponseCards)}>{data.config.eventResponseCards} 卡結算事件</button></>:null}
         </motion.section>:null}
 
         {allOpened&&(state.phase?.includes('resonance')||state.phase==='duel')?<motion.section key={'resonance-'+state.round} initial={{opacity:0,scale:.98}} animate={{opacity:1,scale:1}} exit={{opacity:0,scale:.98}} className="loc-event game-event-field game-resonance-field">
