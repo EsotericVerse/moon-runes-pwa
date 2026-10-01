@@ -14,9 +14,9 @@ export default function AuthorHomeView({section=null}){
       eyebrow:'Roles',
       title:'三位一體',
       content:<div className="loc-grid three">
-        <article><strong>文字工匠·Wordsmith</strong><p>從詞、句子與關鍵詞的聯繫，整理文字怎麼形成自己的語意與脈絡關係。</p><p><a href="/statics/?statTab=keywords">看關鍵詞設定</a></p></article>
-        <article><strong>混沌校對者·Chaos Calibrator</strong><p>把文字放回來源、時間與歷史裡比較，觀察文化軌跡、延續、改變、矛盾與可能的污染。</p><p><a href="/culture/">看文化</a></p></article>
-        <article><strong>語言建築師·Language Architect</strong><p>把語彙、脈絡、文化、搜尋與治理組織成可持續使用的個人語言與系統結構。</p><p><a href="/governance/">看治理</a></p></article>
+        <article><strong>文字工匠·Wordsmith</strong><p>從詞、句子與關鍵詞的聯繫，整理文字怎麼形成自己的語意與脈絡關係。</p><p><a href="/lo3rwang/statics/?statTab=keywords">看關鍵詞設定</a></p></article>
+        <article><strong>混沌校對者·Chaos Calibrator</strong><p>把文字放回來源、時間與歷史裡比較，觀察文化軌跡、延續、改變、矛盾與可能的污染。</p><p><a href="/lo3rwang/culture/">看文化</a></p></article>
+        <article><strong>語言建築師·Language Architect</strong><p>把語彙、脈絡、文化、搜尋與治理組織成可持續使用的個人語言與系統結構。</p><p><a href="/lo3rwang/governance/">看治理</a></p></article>
         </div>
     },
     {
