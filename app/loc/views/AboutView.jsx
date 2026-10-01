@@ -1,4 +1,5 @@
 import {scopeHrefV2} from '../../modular-v2/scope-registry.v2';
+import {SITE_IMAGES} from '../../site-images';
 
 const RUNES_LINKS=Object.freeze({
   home:scopeHrefV2('lunarunes'),
@@ -26,7 +27,7 @@ export default function AboutView(){
         </div>
       </div>
       <figure className="home-hero-visual scope-home-hero-visual">
-        <img src="/pics/LOC-PicAll.png?v=9a46a595" alt="LOC 月典語言架構框架視覺理念圖" loading="eager" />
+        <img src={SITE_IMAGES.locHero.src} width={SITE_IMAGES.locHero.width} height={SITE_IMAGES.locHero.height} alt="LOC 月典語言架構框架視覺理念圖" loading="lazy" decoding="async" />
       </figure>
     </header>
 
@@ -46,7 +47,7 @@ export default function AboutView(){
 		  <p>不想抽牌也沒關係，直接跳過符文籤詩系統，往下看 LOC 架構。</p>
           <p><strong>那就開始吧！</strong></p>
         </div>
-        <figure className="home-framework-figure"><img src="/pics/LunaRunes.png" alt="LunaRunes 月之符文" loading="lazy" /></figure>
+        <figure className="home-framework-figure"><img src={SITE_IMAGES.lunarunes.src} width={SITE_IMAGES.lunarunes.width} height={SITE_IMAGES.lunarunes.height} alt="LunaRunes 月之符文" loading="lazy" decoding="async" /></figure>
       </div>
     </section>
 
@@ -55,7 +56,7 @@ export default function AboutView(){
 	  <br/>不保證一定就是註定，你擁有選擇權。</p></div>
       <div className="home-rune-layout">
         <div className="home-rune-preview" aria-label="命之符文示例">
-          <img src="/assets/lunarunes/cards/66_命.png" alt="命之符文" />
+          <img src="/assets/lunarunes/cards/66_命.png" alt="命之符文" loading="lazy" decoding="async" />
           <div className="home-rune-card-data"><div className="home-rune-card-title"><strong>命之符文</strong><span className="home-rune-glyph">⟁</span><span>(Fate)</span></div><p>定論的所有可能 / 命定者</p><details className="home-rune-keywords"><summary>關鍵詞（點擊展開）</summary><p>正面：定論、必然、法則</p><p>負面：—</p></details><p>所屬分組：特殊 / 卡片屬性：未知</p><p>卡片月相：無 / 真實月相：空亡</p><p className="home-rune-direction">卡片面向：<strong>正位</strong></p></div>
         </div>
         <div className="home-rune-copy home-rune-copy-plain">
@@ -90,7 +91,7 @@ export default function AboutView(){
           </div>
         </div>
         <figure className="home-architecture-figure">
-          <img src="/pics/ChaosGalaxy.png" alt="LOC 月典架構：時間長河、玄子、玄裂與玄宇宙" loading="lazy" />
+          <img src={SITE_IMAGES.locArchitecture.src} width={SITE_IMAGES.locArchitecture.width} height={SITE_IMAGES.locArchitecture.height} alt="LOC 月典架構：時間長河、玄子、玄裂與玄宇宙" loading="lazy" decoding="async" />
         </figure>
       </div>
     </section>
@@ -162,7 +163,7 @@ export default function AboutView(){
 <p> 2026.09.26.</p>
 <p>想要了解作者請點右上方的作者網頁。</p>
 	  </div>
-	  <figure className="home-about-figure"><img src="/pics/aboutme.png?v=20260914" alt="作者 Lucas Oscar Wang 政德" loading="eager" decoding="async" />
+	  <figure className="home-about-figure"><img src={SITE_IMAGES.author.src} width={SITE_IMAGES.author.width} height={SITE_IMAGES.author.height} alt="作者 Lucas Oscar Wang 政德" loading="lazy" decoding="async" />
 	  </figure></div>
     </section>
   </section>;

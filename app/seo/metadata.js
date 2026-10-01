@@ -1,9 +1,11 @@
+import {SITE_IMAGES} from '../site-images';
+
 export const LOC_ORIGIN='https://loc.lo3rwang.cc';
 export const LUNARUNES_ORIGIN='https://lrunes.lo3rwang.cc';
 
-const LOC_IMAGE=LOC_ORIGIN+'/pics/LOC-PicAll.png';
-const LUNARUNES_IMAGE=LUNARUNES_ORIGIN+'/pics/LunaRunes.png';
-const AUTHOR_IMAGE=LOC_ORIGIN+'/pics/aboutme.png';
+const LOC_IMAGE=LOC_ORIGIN+SITE_IMAGES.locHero.src;
+const LUNARUNES_IMAGE=LUNARUNES_ORIGIN+SITE_IMAGES.lunarunes.src;
+const AUTHOR_IMAGE=LOC_ORIGIN+SITE_IMAGES.author.src;
 
 function cleanPath(path='/'){
   const value='/' + String(path||'/').split('?')[0].split('#')[0].split('/').filter(Boolean).join('/');
