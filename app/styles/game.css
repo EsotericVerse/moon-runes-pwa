@@ -1,4 +1,12 @@
-.game-shell{gap:1rem}
+.game-shell{
+  gap:1rem;
+  padding:clamp(.7rem,2vw,1.2rem);
+  border-radius:var(--loc-radius);
+  background:radial-gradient(circle at 50% -10%,var(--loc-body-glow) 0,var(--loc-body-mid) 30rem,var(--loc-bg) 58rem);
+  color:var(--loc-text);
+  isolation:isolate;
+  transition:color .22s ease,background-color .22s ease,border-color .22s ease;
+}
 .game-hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(220px,.8fr);gap:1.4rem;align-items:center;overflow:hidden}
 .game-author-visual{margin:0;display:grid;place-items:center}
 .game-author-visual img{display:block;width:min(100%,360px);max-height:340px;object-fit:contain;border-radius:22px;box-shadow:var(--loc-shadow-card)}
@@ -181,4 +189,27 @@
 .game-replay-card:has(.vis-item.vis-selected){
   border-color:var(--loc-accent-border);
   box-shadow:0 0 0 1px var(--loc-accent-border-soft),var(--loc-shadow-card);
+}
+
+
+.game-theme-row{display:flex;align-items:end;justify-content:space-between;gap:.75rem;flex-wrap:wrap}
+.game-theme-control{display:grid;grid-template-columns:auto minmax(180px,240px);align-items:center;gap:.35rem .65rem;color:var(--loc-muted);font-size:.82rem}
+.game-theme-control>small{grid-column:2;color:var(--loc-muted)}
+.game-theme-select{min-width:180px}
+.game-theme-select__control{display:flex;align-items:center;min-height:2.55rem;padding:0 .55rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel-2);color:var(--loc-text);box-shadow:var(--loc-shadow-card)}
+.game-theme-select__value-container{display:flex;align-items:center;gap:.25rem;flex:1;min-width:0}
+.game-theme-select__single-value{color:var(--loc-text)}
+.game-theme-select__indicator-separator{background:var(--loc-line)}
+.game-theme-select__indicators{display:flex;align-items:center;color:var(--loc-muted)}
+.game-theme-select__menu{z-index:30;margin-top:.3rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel);box-shadow:var(--loc-shadow-card);overflow:hidden}
+.game-theme-select__option{padding:.55rem .7rem;color:var(--loc-text);cursor:pointer}
+.game-theme-select__option--is-focused{background:var(--loc-surface-soft)}
+.game-theme-select__option--is-selected{background:var(--loc-accent-surface-strong)}
+.game-shell .recharts-default-tooltip{background:var(--loc-panel)!important;border-color:var(--loc-line)!important;color:var(--loc-text)!important}
+
+@media(max-width:620px){
+  .game-theme-row{align-items:stretch}
+  .game-theme-control{grid-template-columns:1fr}
+  .game-theme-control>small{grid-column:1}
+  .game-theme-select{min-width:0}
 }
