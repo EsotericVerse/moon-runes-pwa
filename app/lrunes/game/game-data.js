@@ -74,7 +74,7 @@ const GAME_RUNE_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_ph
 const GAME_COLUMNS=Object.freeze({
   macro:'game_key,record_type,sort_order,status,is_current,macro_code,macro_group_a,macro_group_b,macro_title,macro_description',
   rune_action:'game_key,record_type,sort_order,status,is_current,rune_id,rune_name,rune_group,rune_action_text,rune_action_kind,rune_action_value',
-  event:'game_key,record_type,sort_order,status,is_current,event_id,event_group,event_title,event_requirement,event_description',
+  event:'game_key,record_type,sort_order,status,is_current,event_id,event_group,event_group_2,event_title,event_requirement,event_description',
   role:'game_key,record_type,sort_order,status,is_current,role_id,role_formal_name,role_public_name,role_group,role_core_function,role_intervention_type,role_intervention_name,role_tool,role_tagline',
   rule:'game_key,record_type,sort_order,status,is_current,rule_code,rule_title,rule_text,rule_round_no,rule_phase,rule_result_code,rule_de_delta,rule_draw_count,rule_value_int,rule_value_text',
   asset:'game_key,record_type,sort_order,status,is_current,asset_code,asset_kind,asset_group,asset_group_2,asset_path,asset_title'
@@ -200,13 +200,14 @@ export async function loadGameData(){
       id:row.event_id,
       name:row.event_title,
       group:row.event_group,
+      group2:row.event_group_2||null,
       requirement:row.event_requirement,
       req:splitRequirement(row.event_requirement),
       description:row.event_description,
       desc:row.event_description,
       status:row.status
     }));
-  if(events.length!==32)throw new Error('silver.game Event 數量不是 32。');
+  if(events.length<32)throw new Error('silver.game Event 數量少於 Alpha 基線 32。');
 
   const roles=roleRows
     .sort((a,b)=>a.sort_order-b.sort_order)
