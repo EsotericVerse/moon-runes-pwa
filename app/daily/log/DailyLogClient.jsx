@@ -186,7 +186,7 @@ export default function DailyLogClient({embedded=false}={}){
       <p>依日期保存每日符文的主抽與補抽，方便回看當天結果，也可作為每日趨勢分析的紀錄來源。</p>
     </header>:null}
 
-    <section className="loc-card" aria-label="每日符文行事曆">
+    <section className="loc-card daily-log-calendar" aria-label="每日符文行事曆">
       <div className="scope-v2-daily-calendar-nav">
         <button className="loc-button" type="button" disabled={monthValue<=FIRST_MONTH||loading} onClick={()=>setMonthValue(value=>value-1)} aria-label="上個月">‹</button>
         <h2 aria-live="polite">{monthLabel(monthValue)}</h2>
