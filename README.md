@@ -1,6 +1,6 @@
 # LOC｜Luna Codex
 
-**Current version: 0.8.31-rc**
+**Current version: 0.8.2-rc**
 
 This repository contains two related but separately governed systems:
 

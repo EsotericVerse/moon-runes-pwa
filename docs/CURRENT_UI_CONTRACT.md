@@ -1,6 +1,6 @@
 # Current UI Contract
 
-**Version:** 0.8.31-rc
+**Version:** 0.8.2-rc
 
 ## Identity
 
