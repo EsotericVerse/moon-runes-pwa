@@ -1,12 +1,122 @@
 'use client';
 
-import {useMemo,useState} from 'react';
+import {useEffect,useMemo,useRef,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
+import {AnimatePresence,motion} from 'motion/react';
+import {CartesianGrid,Legend,Line,LineChart,ResponsiveContainer,Tooltip,XAxis,YAxis} from 'recharts';
 import {
   applyDe,draw,evaluateAlphaEvent,finishOpening,freshPlayer,loadGameData,shuffle
 } from './game-data';
 
 const NAMES=['A','B','C','D'];
+const CHART_STROKES=['var(--loc-accent)','var(--loc-gold)','var(--loc-text)','var(--loc-muted)'];
+const CHART_TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)',borderRadius:'8px'};
+
+function deSnapshot(players,label){
+  const row={step:label};
+  players.forEach((player,index)=>{row[NAMES[index]]=player.de;});
+  return row;
+}
+
+function samePair(a,b,x,y){
+  return (a===x&&b===y)||(a===y&&b===x);
+}
+
+function EventScene({event,data}){
+  if(!event)return null;
+  const first=groupVisual(data.groupAssets,event.group);
+  if(!event.group2)return first?<EventVisual item={first}/>:null;
+  const bespoke=data.eventVisuals.find(item=>samePair(item.group,item.group2,event.group,event.group2));
+  if(bespoke)return <EventVisual item={bespoke}/>;
+  const second=groupVisual(data.groupAssets,event.group2);
+  return <div className="game-event-pair-composite">
+    {first?<EventVisual item={first}/>:null}
+    {second?<EventVisual item={second}/>:null}
+  </div>;
+}
+
+function MatchTrend({history=[],players=[]}){
+  if(history.length<2)return null;
+  return <section className="loc-card game-trend-card">
+    <h2>De 軌跡</h2>
+    <div className="game-trend-chart">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={history} margin={{top:10,right:20,bottom:8,left:0}}>
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--loc-line)"/>
+          <XAxis dataKey="step" tick={{fill:'var(--loc-text)'}} stroke="var(--loc-line)"/>
+          <YAxis allowDecimals={false} tick={{fill:'var(--loc-text)'}} stroke="var(--loc-line)"/>
+          <Tooltip contentStyle={CHART_TOOLTIP}/>
+          <Legend/>
+          {players.map((player,index)=><Line key={player.name} type="monotone" dataKey={NAMES[index]} name={player.name} stroke={CHART_STROKES[index%CHART_STROKES.length]} strokeWidth={2.5} dot={{r:3}} isAnimationActive/>)}
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  </section>;
+}
+
+function ResonanceNetwork({players=[],active=0,cooperations=[],lastInteraction=null,onSelect=null}){
+  const containerRef=useRef(null);
+  const [error,setError]=useState('');
+  useEffect(()=>{
+    let cancelled=false;
+    let network=null;
+    if(!containerRef.current)return undefined;
+    setError('');
+    const computed=getComputedStyle(containerRef.current);
+    const accent=computed.getPropertyValue('--loc-accent').trim()||'#7c9bbd';
+    const gold=computed.getPropertyValue('--loc-gold').trim()||accent;
+    const panel=computed.getPropertyValue('--loc-panel').trim()||'#fff';
+    const line=computed.getPropertyValue('--loc-line').trim()||'#aab';
+    const text=computed.getPropertyValue('--loc-text').trim()||'#222';
+    const count=Math.max(1,players.length);
+    const nodes=players.map((player,index)=>{
+      const angle=(-Math.PI/2)+(Math.PI*2*index/count);
+      return {
+        id:String(index),
+        label:player.name+'\nDe '+player.de,
+        x:Math.cos(angle)*150,
+        y:Math.sin(angle)*95,
+        fixed:true,
+        shape:'dot',
+        size:index===active?34:28,
+        color:{background:panel,border:index===active?accent:line},
+        font:{color:text,size:15,bold:index===active}
+      };
+    });
+    const edges=cooperations.map((item,index)=>({
+      id:'coop-'+index,
+      from:String(item.a),to:String(item.b),
+      label:'合作',width:3,color:{color:accent,highlight:accent},smooth:{type:'curvedCW',roundness:.14}
+    }));
+    if(lastInteraction?.type==='attack'&&lastInteraction.from!==lastInteraction.to){
+      edges.push({
+        id:'last-attack',
+        from:String(lastInteraction.from),to:String(lastInteraction.to),
+        label:'干擾',arrows:'to',dashes:true,width:3,color:{color:gold,highlight:gold},smooth:{type:'curvedCCW',roundness:.14}
+      });
+    }
+    import('vis-network/standalone').then(({Network})=>{
+      if(cancelled||!containerRef.current)return;
+      network=new Network(containerRef.current,{nodes,edges},{
+        autoResize:true,
+        physics:{enabled:false},
+        interaction:{hover:true,dragNodes:false,zoomView:false,dragView:false,selectable:true},
+        nodes:{borderWidth:2},
+        edges:{font:{align:'middle',size:12,color:text},selectionWidth:2}
+      });
+      network.on('selectNode',event=>{
+        const id=Number(event.nodes?.[0]);
+        if(Number.isInteger(id)&&typeof onSelect==='function')onSelect(id);
+      });
+      network.fit({animation:{duration:180,easingFunction:'easeInOutQuad'}});
+    }).catch(reason=>{if(!cancelled)setError(reason?.message||'共鳴網路載入失敗');});
+    return()=>{cancelled=true;network?.destroy();};
+  },[players,active,cooperations,lastInteraction,onSelect]);
+  return <div className="game-network-wrap">
+    {error?<p className="loc-status">{error}</p>:null}
+    <div ref={containerRef} className="game-resonance-network" role="img" aria-label="玩家共鳴與合作關係圖"/>
+  </div>;
+}
 
 function runeCardImage(card){
   const id=Number(card?.id??card?.rune_id??card?.rune_number);
