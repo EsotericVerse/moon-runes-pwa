@@ -1,4 +1,4 @@
-import {UI_COPY} from '../i18n/ui-copy';
+import {UI_COPY} from '../i18n/ui-copy.js';
 
 export const PAGE_PROFILES_V2=Object.freeze({
   statics:Object.freeze({eyebrow:'',...UI_COPY.features.statics}),
