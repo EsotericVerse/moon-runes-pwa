@@ -16,7 +16,6 @@ const PROFESSIONAL_ROLES=Object.freeze([
 ]);
 
 const OFFICIAL_LINKS=Object.freeze([
-  Object.freeze({label:'個人網站',href:'https://lo3rwang.cc/'}),
   Object.freeze({label:'LinkedIn',href:'https://www.linkedin.com/in/lo3rwang/'}),
   Object.freeze({label:'Instagram',href:'https://www.instagram.com/lo3rwang/'}),
   Object.freeze({label:'Threads',href:'https://www.threads.com/@lo3rwang'})
