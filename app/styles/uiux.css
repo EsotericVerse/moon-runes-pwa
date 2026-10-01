@@ -119,8 +119,13 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
 .loc-next-main,.scope-v2-main{
   width:min(var(--loc-ui-max),calc(100% - clamp(1rem,4vw,4rem)));
   margin-inline:auto;
-  padding:clamp(1.25rem,3vw,2.5rem) 0 clamp(4rem,8vw,7rem);
+  padding:clamp(1.25rem,3vw,2.5rem) 0 clamp(1.25rem,2.5vw,2rem);
   animation:loc-ui-page-in var(--loc-ui-slow) var(--loc-ui-ease-soft) both;
+}
+.loc-next-main>.scope-v2-main{
+  width:100%;
+  margin:0;
+  padding:0;
 }
 .loc-next-main[data-loc-scope="loc"][data-loc-view="home"]{
   animation:none;
