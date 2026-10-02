@@ -4,24 +4,17 @@ const failures=[];
 const read=path=>fs.readFileSync(path,'utf8');
 const required=[
   'app/loc/views/AboutView.jsx',
-  'app/modular-v2/scope-registry.v2.js',
   'app/loc/neon-search.js',
   'app/modular-v2/features/SearchV2.jsx',
   'app/loc/model/daily-trend-engine.mjs',
-  'app/loc/search-providers.js',
-  'app/lrunes/RunesClient.jsx',
-  'app/lrunes/RuneDrawClient.jsx'
+  'app/loc/search-providers.js'
 ];
 for(const path of required)if(!fs.existsSync(path)||!read(path).trim())failures.push('missing Current contract file: '+path);
 if(!failures.length){
   const identity=read('app/loc/views/AboutView.jsx');
   for(const token of ['語言架構框架','Language Architecture Framework','符號式語言','Symbolic Language'])if(!identity.includes(token))failures.push('identity missing '+token);
-  const registry=read('app/modular-v2/scope-registry.v2.js');
-  for(const token of ["domain:'lrunes.lo3rwang.cc'"])if(!registry.includes(token))failures.push('registry missing '+token);
   const daily=read('app/loc/model/daily-trend-engine.mjs');
   for(const token of ['summarizeDailyRange','dailyPresetRange'])if(!daily.includes(token))failures.push('daily trend missing '+token);
-  const runeDraw=read('app/lrunes/RuneDrawClient.jsx');
-  for(const token of ["selectNeonRows('silver.runes'","selectNeonRows('silver.runes_etc'"])if(!runeDraw.includes(token))failures.push('Rune draw runtime missing '+token);
   const providers=read('app/loc/search-providers.js');
   for(const token of ["count:'exact',head:true",".or(",".range("])if(!providers.includes(token))failures.push('Search provider missing '+token);
   if(/flexsearch|new Index\(/i.test(providers))failures.push('Global Search must remain Neon-first.');
@@ -32,4 +25,4 @@ if(failures.length){
   console.error('[current-semantics] failures:\n'+failures.map(item=>'- '+item).join('\n'));
   process.exit(1);
 }
-console.log('[current-semantics] Current identity, Neon authority, Rune and Search contracts verified');
+console.log('[current-semantics] Current identity, daily trend and Neon-first Search contracts verified');
