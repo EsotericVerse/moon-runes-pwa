@@ -92,8 +92,8 @@ a,button,input,select,textarea,.loc-card,.loc-panel,.scope-card,.scope-inline-ca
   -webkit-tap-highlight-color:transparent;
 }
 
-button,a,.loc-control,.loc-button,.scope-local-menu a,
-.scope-tabs button,.scope-stat-tabs button,.scope-pagination-button,
+button,a,.loc-control,.loc-button,
+.scope-tabs button,.scope-pagination-button,
 .scope-culture-source-button,.runes-group-choice,.runes-library-card{
   transition:
     color var(--loc-ui-fast) var(--loc-ui-ease),
@@ -343,7 +343,7 @@ button,a,.loc-control,.loc-button,.scope-local-menu a,
 }
 
 /* Buttons and controls */
-.loc-button,.loc-control,.scope-tabs button,.scope-stat-tabs button,
+.loc-button,.loc-control,.scope-tabs button,
 .scope-pagination-button,.scope-search-form button,.scope-keyword-batch-editor button,
 .scope-media-meta-settings button{
   min-height:2.6rem;
@@ -356,7 +356,7 @@ button,a,.loc-control,.loc-button,.scope-local-menu a,
 }
 
 .loc-button.primary,.loc-control-primary,
-.scope-tabs button[aria-pressed="true"],.scope-stat-tabs button[aria-current="page"]{
+.scope-tabs button[aria-pressed="true"][aria-current="page"]{
   border-color:color-mix(in srgb,var(--loc-accent) 46%,var(--loc-line));
   background:linear-gradient(135deg,color-mix(in srgb,var(--loc-accent) 18%,var(--loc-panel)),color-mix(in srgb,var(--loc-gold) 9%,var(--loc-panel)));
   box-shadow:0 8px 24px color-mix(in srgb,var(--loc-accent) 9%,transparent),inset 0 1px 0 rgb(255 255 255 / .05);
@@ -381,12 +381,12 @@ button,a,.loc-control,.loc-button,.scope-local-menu a,
   border-top:1px solid var(--loc-ui-hairline);
 }
 
-.scope-local-menu a,.scope-result-links a{
+.scope-result-links a{
   border-color:var(--loc-ui-hairline);
   background:transparent;
 }
 
-.scope-local-menu a:hover,.scope-result-links a:hover{
+.scope-result-links a:hover{
   color:var(--loc-text);
   border-color:var(--loc-accent-border);
   background:var(--loc-ui-accent-soft);
@@ -586,12 +586,12 @@ button,a,.loc-control,.loc-button,.scope-local-menu a,
 }
 
 /* Tables, lists and utility surfaces */
-.loc-table,.scope-table{
+.loc-table{
   border-collapse:separate;
   border-spacing:0;
 }
 
-.loc-table th,.scope-table th{
+.loc-table th{
   position:sticky;
   top:0;
   z-index:2;
@@ -599,7 +599,7 @@ button,a,.loc-control,.loc-button,.scope-local-menu a,
   backdrop-filter:blur(14px);
 }
 
-.loc-table th,.loc-table td,.scope-table th,.scope-table td{
+.loc-table th,.loc-table td{
   border-bottom-color:var(--loc-ui-hairline);
 }
 
@@ -615,20 +615,6 @@ button,a,.loc-control,.loc-button,.scope-local-menu a,
   background:var(--loc-ui-gold-soft);
 }
 
-.scope-overview-network{
-  border-color:var(--loc-ui-hairline);
-  border-radius:var(--loc-ui-radius-lg);
-  background:color-mix(in srgb,var(--loc-bg) 48%,transparent);
-}
-.scope-overview-network .vis-navigation .vis-button{
-  opacity:.72;
-  filter:grayscale(1) saturate(0) contrast(.85);
-  transition:opacity var(--loc-ui-fast) var(--loc-ui-ease),filter var(--loc-ui-fast) var(--loc-ui-ease);
-}
-.scope-overview-network .vis-navigation .vis-button:hover{
-  opacity:1;
-  filter:grayscale(1) saturate(0) contrast(1.05);
-}
 
 .scope-footer{
   max-width:var(--loc-ui-max);
@@ -639,7 +625,7 @@ button,a,.loc-control,.loc-button,.scope-local-menu a,
 
 /* Micro interaction — pointer devices only */
 @media (hover:hover) and (pointer:fine){
-  .loc-button:hover,.loc-control:hover,.scope-tabs button:hover,.scope-stat-tabs button:hover,
+  .loc-button:hover,.loc-control:hover,.scope-tabs button:hover:hover,
   .scope-pagination-button:hover:hover{
     transform:translateY(-2px);
     border-color:var(--loc-accent-border);
@@ -730,7 +716,7 @@ button,a,.loc-control,.loc-button,.scope-local-menu a,
   .loc-home-hero-copy>.home-title-row>h1{
     font-size:clamp(3rem,16vw,4.65rem)!important;
   }
-  .home-progress-grid,.scope-metrics{
+  .home-progress-grid{
     grid-template-columns:1fr;
   }
   .scope-culture-source-groups{
@@ -844,13 +830,13 @@ body{
   scroll-margin-inline:.45rem;
 }
 
-:where(.loc-button,.loc-control,.scope-tabs button,.scope-stat-tabs button,
+:where(.loc-button,.loc-control,.scope-tabs button,
 .scope-pagination-button,.scope-search-form button,.scope-culture-source-button,
 .runes-group-choice,.runes-library-card):active{
   transform:translateY(0) scale(.985);
 }
 
-:where(.loc-button,.loc-control,.scope-tabs button,.scope-stat-tabs button,
+:where(.loc-button,.loc-control,.scope-tabs button,
 .scope-pagination-button,.scope-search-form button,.scope-culture-source-button,
 .runes-group-choice,.runes-library-card):disabled{
   opacity:.52;
@@ -863,7 +849,7 @@ body{
   box-decoration-break:clone;
 }
 
-.scope-table,.loc-table{
+.loc-table{
   font-variant-numeric:tabular-nums;
 }
 
@@ -874,7 +860,7 @@ body{
 }
 
 .scope-period-timeline,
-.scope-overview-network,
+
 .scope-ranking-chart{
   isolation:isolate;
 }
@@ -883,14 +869,14 @@ body{
   .scope-global{
     background:color-mix(in srgb,var(--loc-bg) 96%,var(--loc-panel));
   }
-  .loc-table th,.scope-table th{
+  .loc-table th{
     background:var(--loc-panel);
   }
 }
 
 @media (pointer:coarse){
   :where(.scope-nav a,.scope-nav-current,.loc-button,.loc-control,
-  .scope-tabs button,.scope-stat-tabs button,.scope-pagination-button,
+  .scope-tabs button,.scope-pagination-button,
   .scope-search-form button,.scope-culture-source-button){
     min-height:44px;
   }
@@ -907,11 +893,7 @@ body{
 @media (forced-colors:active){
   .loc-card,.loc-panel,.loc-hero,.scope-card,.scope-hero,.scope-inline-card,
   .scope-feature-card,.scope-ranking-chart,.scope-period-timeline,
-  .scope-overview-network{
-    border:1px solid CanvasText;
-    box-shadow:none;
-  }
-
+  
   .loc-scroll-progress{
     background:Highlight;
     box-shadow:none;
