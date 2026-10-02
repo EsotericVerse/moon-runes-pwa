@@ -3,8 +3,8 @@ import {basename,join,resolve} from 'node:path';
 
 const root=process.cwd();
 const failures=[];
-const allowedRootDirs=new Set(['.github','app','assets','docs','governance','pics','scripts','tests']);
-for(const name of ['app','assets','docs','governance','pics','scripts','tests']){
+const allowedRootDirs=new Set(['.github','app','assets','docs','governance','pics','public','scripts','tests']);
+for(const name of ['app','assets','docs','governance','pics','public','scripts','tests']){
   if(!existsSync(resolve(root,name)))failures.push('missing Current root directory: '+name+'/');
 }
 for(const name of readdirSync(root)){
