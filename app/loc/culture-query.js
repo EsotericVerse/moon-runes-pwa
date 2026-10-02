@@ -3,7 +3,7 @@
 import {NEON_QUERY_BATCH_SIZE} from './query-contract.mjs';
 
 import {decodeCultureText,formatCultureDateTime} from '../modular/modules/culture-timeline/culture-timeline-model.mjs';
-import {workDisplayText} from '../modular-v2/work-display-model.v2';
+import {workDisplayText} from '../modular/work-display-model';
 import {resolveGalaxyExternalLinks,selectCategoryCounts,selectDailyCategoryCounts,selectSourceCatalog,selectSourceDaily} from './galaxy-query';
 import {selectNeonCount,selectNeonRows} from './neon-query';
 import {publicContentFilters} from './content-policy';
