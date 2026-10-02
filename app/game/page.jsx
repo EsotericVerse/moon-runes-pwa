@@ -1,4 +1,4 @@
-import GameView from '../lrunes/game/GameView';
+import PrivateGameView from '../lrunes/game/PrivateGameView';
 import {lunarunesMetadata} from '../seo/metadata';
 
 export const metadata=lunarunesMetadata({
@@ -9,5 +9,5 @@ export const metadata=lunarunesMetadata({
 });
 
 export default function GamePage(){
-  return <GameView/>;
+  return <PrivateGameView/>;
 }
