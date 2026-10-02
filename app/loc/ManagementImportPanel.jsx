@@ -32,6 +32,30 @@ function iso(value){
   return Number.isNaN(date.getTime())?null:date.toISOString();
 }
 
+function normalizeJsonImportEntry(entry,source){
+  const row=entry?.raw||entry||{};
+  const content=normalizeGalaxyContent(firstValue(row,['content','body','text','message','description']));
+  const uid=String(entry?.import_uid||firstValue(row,['uid'])||createUid8()).trim().toUpperCase();
+  if(!content)return {record:null,error:'無正文'};
+  if(uid.length!==8)return {record:null,error:'UID 必須為 8 字'};
+  const record={
+    uid,
+    content_type:String(firstValue(row,['content_type','type'])||'other').trim()||'other',
+    title:resolveGalaxyTitle(firstValue(row,['title','name','subject']),content),
+    content,
+    createtime:iso(firstValue(row,['createtime','created_at','create_time','created_time','date','published_at'])),
+    source_native_id:String(firstValue(row,['source_native_id','native_id'])||'').trim()||null,
+    source_place:String(firstValue(row,['source_place','place'])||'').trim()||null,
+    searchable:row?.searchable!==false&&row?.search!==false,
+    source_id:String(firstValue(row,['source_id'])||'').trim()||null,
+    target_id:normalizeRelationIds(firstValue(row,['target_id'])),
+    ref_id:String(firstValue(row,['ref_id'])||'').trim()||null,
+    url:String(firstValue(row,['url','link','permalink'])||'').trim()||null,
+    source_name:String(source||'').trim()
+  };
+  return {record,error:''};
+}
+
 function JsonImport({scopeId}){
   const account=useNeonAccount();
   const [fileName,setFileName]=useState('');
@@ -40,58 +64,83 @@ function JsonImport({scopeId}){
   const [status,setStatus]=useState('');
   const [busy,setBusy]=useState(false);
   const suggested=useMemo(()=>sourceSuggestion(fileName),[fileName]);
+  const analyzed=useMemo(()=>{
+    const selected=source.trim();
+    const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,selected));
+    return {
+      valid:normalized.filter(item=>item.record).map(item=>item.record),
+      invalid:normalized.filter(item=>!item.record)
+    };
+  },[rows,source]);
   if(!account.canManageScopeSync(scopeId))return null;
 
   async function chooseFile(event){
-    const file=event.target.files?.[0];if(!file)return;
+    const file=event.target.files?.[0];
+    if(!file)return;
     setFileName(file.name);setStatus('');
     try{
       const parsed=JSON.parse(await file.text());
       const list=asRows(parsed);
-      setRows(list);setSource(current=>current||sourceSuggestion(file.name));
-      setStatus(`已讀取 ${list.length.toLocaleString()} 筆；JSON 只作本次匯入載體，不作 Current 資料源。`);
-    }catch(error){setRows([]);setStatus('JSON 解析失敗：'+(error?.message||error));}
+      const prepared=list.map(row=>({
+        raw:row,
+        import_uid:String(firstValue(row,['uid'])||createUid8()).trim().toUpperCase()
+      }));
+      setRows(prepared);
+      setSource(sourceSuggestion(file.name));
+      setStatus(`已解析 ${list.length.toLocaleString()} 筆；請先確認預覽，再執行匯入。`);
+    }catch(error){
+      setRows([]);
+      setStatus('JSON 解析失敗：'+(error?.message||error));
+    }
   }
+
   async function run(){
     if(!rows.length)return;
     const selected=source.trim();
     if(!selected){setStatus('請先選擇來源。');return;}
+    if(!analyzed.valid.length){setStatus('沒有可匯入的有效資料。');return;}
     setBusy(true);setStatus('');
     try{
-      const payload=rows.map(row=>{
-        const content=normalizeGalaxyContent(firstValue(row,['content','body','text','message','description']));
-        return {
-          uid:String(firstValue(row,['uid'])||createUid8()).toUpperCase(),
-          content_type:String(firstValue(row,['content_type','type'])||'other').trim()||'other',
-          title:resolveGalaxyTitle(firstValue(row,['title','name','subject']),content),
-          content:content||null,
-          createtime:iso(firstValue(row,['createtime','created_at','create_time','created_time','date','published_at'])),
-          source_native_id:String(firstValue(row,['source_native_id','native_id'])||'').trim()||null,
-          source_place:String(firstValue(row,['source_place','place'])||'').trim()||null,
-          searchable:row?.searchable!==false&&row?.search!==false,
-          source_id:String(firstValue(row,['source_id'])||'').trim()||null,
-          target_id:normalizeRelationIds(firstValue(row,['target_id'])),
-          ref_id:String(firstValue(row,['ref_id'])||'').trim()||null,
-          url:String(firstValue(row,['url','link','permalink'])||'').trim()||null,
-          source_name:selected
-        };
-      }).filter(row=>row.content);
-      const skipped=Math.max(0,rows.length-payload.length);
       const galaxy=account.scopeDataFor(scopeId)?.galaxy;
       if(!galaxy)throw new Error('Scope data 未解析');
-      await insertNeonRows(galaxy,payload);
-      setStatus(`已匯入 ${payload.length.toLocaleString()} 筆到來源「${selected}」${skipped?`；略過 ${skipped.toLocaleString()} 筆無正文資料。`:''}`);
+      const unique=[];
+      const seen=new Set();
+      let duplicateCount=0;
+      for(const record of analyzed.valid){
+        if(seen.has(record.uid)){duplicateCount+=1;continue;}
+        seen.add(record.uid);unique.push(record);
+      }
+      await insertNeonRows(galaxy,unique);
+      const skipped=analyzed.invalid.length+duplicateCount;
+      setStatus(`已匯入 ${unique.length.toLocaleString()} 筆到來源「${selected}」${skipped?`；略過 ${skipped.toLocaleString()} 筆無效／重複資料。`:''}`);
       setRows([]);setFileName('');
-    }catch(error){setStatus(error?.message||'匯入失敗。');}
-    finally{setBusy(false);}
+    }catch(error){
+      setStatus(error?.message||'匯入失敗。');
+    }finally{
+      setBusy(false);
+    }
   }
+
   return <div className="scope-inline-card">
     <h4>{UI_COPY.management.importJson}</h4>
     <label>{UI_COPY.management.currentFile}<input type="file" accept=".json,application/json" onChange={chooseFile}/></label>
     {fileName?<p>檔案：<strong>{fileName}</strong>｜建議來源：<strong>{suggested}</strong></p>:null}
-    <label>{UI_COPY.management.sourceChoice}<input value={source} onChange={e=>setSource(e.target.value)} placeholder={suggested}/></label>
-    <p className="loc-subtitle">建議位置只作提示；實際來源仍由管理者決定。source_id／target_id／ref_id 若存在會一併帶入。</p>
-    <button type="button" disabled={busy||!rows.length} onClick={run}>{busy?UI_COPY.management.importing:UI_COPY.management.startImport}</button>
+    <label>{UI_COPY.management.sourceChoice}<input value={source} onChange={event=>setSource(event.target.value)} placeholder={suggested}/></label>
+    <p className="loc-subtitle">JSON 只作本次匯入載體。會解析正文、標題、時間、URL、來源 ID、關聯欄位與搜尋狀態，再寫入此 Scope 的 Galaxy。</p>
+
+    {rows.length?<section className="scope-import-preview" aria-label="JSON 匯入預覽">
+      <p className="scope-status">有效 {analyzed.valid.length.toLocaleString()} 筆｜略過 {analyzed.invalid.length.toLocaleString()} 筆</p>
+      <div className="scope-management-records">
+        {analyzed.valid.slice(0,5).map(record=><article className="scope-inline-card" key={record.uid}>
+          <strong>{record.title||record.uid}</strong>
+          <span>{record.uid} · {record.content_type} · {String(record.createtime||'').slice(0,10)||'無日期'}</span>
+          <p>{String(record.content||'').slice(0,180)}{String(record.content||'').length>180?'…':''}</p>
+        </article>)}
+      </div>
+      {analyzed.invalid.length?<p className="scope-status">前幾筆略過原因：{analyzed.invalid.slice(0,5).map(item=>item.error).join('、')}</p>:null}
+    </section>:null}
+
+    <button type="button" disabled={busy||!analyzed.valid.length} onClick={run}>{busy?UI_COPY.management.importing:UI_COPY.management.startImport}</button>
     {status?<p className="scope-status">{status}</p>:null}
   </div>;
 }
