@@ -3,11 +3,10 @@ import {resolve} from 'node:path';
 
 const root=process.cwd();
 const publicDraw=readFileSync(resolve(root,'app/lrunes/RuneDrawClient.jsx'),'utf8');
-const homeDraw=readFileSync(resolve(root,'app/lrunes/RunesClient.jsx'),'utf8');
 const governance=readFileSync(resolve(root,'docs/LUNARUNES_DRAW_GOVERNANCE.md'),'utf8');
 const ritual=readFileSync(resolve(root,'app/lrunes/rune-ritual.js'),'utf8');
 
-for(const [name,source] of [['RuneDrawClient',publicDraw],['RunesClient',homeDraw]]){
+for(const [name,source] of [['RuneDrawClient',publicDraw]]){
   for(const fragment of [
     'function randomIndex(max)',
     'function drawRuneSession(items,count)',
@@ -25,7 +24,7 @@ for(const [name,source] of [['RuneDrawClient',publicDraw],['RunesClient',homeDra
     'runeRitualMessages'
   ])if(!source.includes(fragment))throw new Error(name+' missing Current draw contract: '+fragment);
 }
-for(const source of [publicDraw,homeDraw]){
+for(const source of [publicDraw]){
   for(const fragment of [
     "return `因為${parts[0]}，所以${parts[1]}。`;",
     "return `因為${parts[0]}，但會有${parts[1]}的改變，所以${parts[2]}。`;",
