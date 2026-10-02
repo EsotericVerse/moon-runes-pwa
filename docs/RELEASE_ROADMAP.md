@@ -1,8 +1,8 @@
 # LOC Release Roadmap
 
-## Current — 0.8.3.2-rc
+## Current — 0.8.4-rc
 
-0.8.3.2-rc 是目前 Current candidate。Current 已具備：
+0.8.4-rc 是目前 Current candidate。此版封存共用架構、模組化與 Ponytail code review 收尾；LunaRunes 功能／語意另行驗收，不回退已完成的共用架構。Current 已具備：
 
 - Neon SSOT。
 - Search／Statistics／Culture shared features。
@@ -16,14 +16,17 @@
 - 共用 UI copy registry。
 - Scope registry responsibility cleanup。
 - branch freeze governance。
+- 共用 resolver、Scope mapping、Theme bootstrap 與 404 fallback contract 已完成收斂。
+- Current 文件已移除 retired V2／parallel authority。
+- CSS／JS ownership 與重複責任已進行安全收斂，避免為了刪重複而增加新的平行實作。
 
-## 0.8.3.2 RC backlog
+## 0.8.4 RC follow-up verification
 
-0.8.3.2 RC 以現有功能完成度為主，不重新建立另一套架構。
+0.8.4 RC 的共用架構與 code review 已完成；以下屬後續功能／人工驗收，不重新建立另一套架構。
 
-Current 0.8.3.2 RC backlog：
+Current 0.8.4 RC follow-up：
 
-- 完成 LunaRunes interpretation sentence 的一致性。
+- 獨立驗收 LunaRunes interpretation sentence 的一致性。
 - 完成 LunaRunes keyword library 與治理；Rune special semantics 只留在 LunaRunes。
 - 完成 LunaRunes Game 的規則呈現、互動與最終 UI。
 - 完成 Governance／Admin management 的最終人工檢查。
