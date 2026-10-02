@@ -56,12 +56,7 @@
   color:var(--loc-text);
   vertical-align:baseline;
 }
-.loc-subtitle{
-  color:var(--loc-accent)!important;
-  font-size:.9rem!important;
-  font-weight:600;
-  line-height:1.65!important;
-}
+
 .loc-card>.loc-subtitle,
 .loc-panel>.loc-subtitle,
 .loc-home>.loc-hero>.loc-subtitle{
@@ -182,12 +177,7 @@
   line-height:1.8;
 }
 
-.home-rune-layout{
-  display:grid;
-  grid-template-columns:minmax(220px,320px) minmax(0,1fr);
-  gap:1.25rem;
-  align-items:start;
-}
+
 .home-rune-preview{
   padding:1rem;
   border:1px solid var(--loc-line);
