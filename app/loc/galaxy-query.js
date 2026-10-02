@@ -18,9 +18,6 @@ function timeFilters(column,startDate,endDate){
   if(endDate)filters.push({column,operator:'lte',value:String(endDate).slice(0,10)+'T23:59:59.999+08:00'});
   return filters;
 }
-async function selectAggregateRows(table,options={}){
-  return (await selectAllNeonRows(table,options)).rows;
-}
 async function selectNeonRowById(table,{idColumn,id,columns}={}){
   const page=await selectNeonRows(table,{columns,filters:[{column:idColumn,operator:'eq',value:String(id)}],limit:1});
   return page.rows[0]||null;
@@ -55,10 +52,10 @@ export async function selectSourceDaily(scope,{startDate='',endDate=''}={}){
     ...timeFilters('createtime',startDate,endDate),
     {column:'source_name',operator:'neq',value:''}
   ]);
-  const rows=await selectAggregateRows(current.galaxy,{
+  const rows=(await selectAllNeonRows(current.galaxy,{
     columns:'source_name,day:createtime::date,item_count:count()',
     filters
-  });
+  })).rows;
   return rows.map(row=>({
     scope_id:current.id,
     source_name:String(row.source_name||'').trim(),
@@ -73,10 +70,10 @@ export async function selectDailyCategoryCounts(table,categoryColumn,{startDate=
     ...timeFilters('createtime',startDate,endDate),
     ...(!includeEmpty?[{column:categoryColumn,operator:'neq',value:''}]:[])
   ];
-  const rows=await selectAggregateRows(table,{
+  const rows=(await selectAllNeonRows(table,{
     columns:`${categoryColumn},day:createtime::date,item_count:count()`,
     filters:resolved
-  });
+  })).rows;
   return rows.map(row=>({
     category:String(row?.[categoryColumn]||'').trim(),
     day:String(row.day||''),
