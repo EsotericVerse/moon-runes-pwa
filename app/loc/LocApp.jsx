@@ -6,7 +6,6 @@ import {resolveScopeV2} from '../modular-v2/scope-registry.v2';
 import AboutView from './views/AboutView';
 import AuthorHomeView from './views/AuthorHomeView';
 import AdminHomeView from './views/AdminHomeView';
-import GenericScopeHomeV2 from '../modular-v2/GenericScopeHomeV2';
 import StatisticsV2 from '../modular-v2/features/StatisticsV2';
 import CultureV2 from '../modular-v2/features/CultureV2';
 import SearchV2 from '../modular-v2/features/SearchV2';
@@ -62,8 +61,8 @@ export default function LocApp({forcedView=null,forcedSection=null,forcedScope=n
   const ActiveView=useMemo(()=>{
     if(state.view==='blocked')return BlockedScopeRoute;
     if(state.view==='admin-redirect')return AdminRedirect;
-    if(state.view==='home')return HOME_VIEWS[state.scope]||GenericScopeHomeV2;
-    return VIEWS[state.view]||HOME_VIEWS[state.scope]||GenericScopeHomeV2;
+    if(state.view==='home')return HOME_VIEWS[state.scope]||AboutView;
+    return VIEWS[state.view]||HOME_VIEWS[state.scope]||AboutView;
   },[state]);
 
   return <div className="loc-next-main" data-loc-scope={state.scope} data-loc-view={state.view}><Suspense fallback={<div className="loc-loading">載入頁面…</div>}><ActiveView section={state.section}/></Suspense></div>;
