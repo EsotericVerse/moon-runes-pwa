@@ -9,14 +9,15 @@
     "verify:auth": "node scripts/verify-auth-boundary.mjs",
     "verify:rune-draw": "node scripts/verify-rune-draw-algorithm.mjs",
     "verify:semantics": "node scripts/verify-current-semantics.mjs",
-    "verify": "npm run verify:rune-draw && npm run verify:modules && npm run verify:semantics && npm run verify:scope-registry && npm run verify:directories && npm run verify:auth && npm run verify:theme",
+    "verify": "npm run verify:rune-draw && npm run verify:modules && npm run verify:semantics && npm run verify:scope-registry && npm run verify:directories && npm run verify:auth && npm run verify:theme && npm run verify:management",
     "build": "next build",
     "verify:theme": "node scripts/verify-theme-contract.mjs",
     "verify:scope-registry": "node scripts/verify-scope-registry.mjs",
     "postbuild": "node scripts/copy-static-assets.mjs && node scripts/verify-static-export.mjs",
     "verify:neon-public": "node scripts/verify-neon-public-read.mjs",
     "test:ui": "playwright test",
-    "verify:static-export": "node scripts/verify-static-export.mjs"
+    "verify:static-export": "node scripts/verify-static-export.mjs",
+    "verify:management": "node scripts/verify-management-contract.mjs"
   },
   "dependencies": {
     "@neondatabase/neon-js": "0.7.0-beta",
