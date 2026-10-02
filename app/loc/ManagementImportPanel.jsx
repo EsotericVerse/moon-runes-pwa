@@ -3,7 +3,7 @@
 import {UI_COPY} from '../i18n/ui-copy';
 
 import {useMemo,useState} from 'react';
-import {insertNeonRows} from './neon-client';
+import {insertNeonRows,neonAuthRelation} from './neon-client';
 import {useNeonAccount} from './use-neon-account';
 import {createUid8} from './uid';
 import {normalizeGalaxyContent,normalizeRelationIds,resolveGalaxyTitle} from './content-policy';
@@ -110,9 +110,18 @@ function JsonImport({scopeId}){
         if(seen.has(record.uid)){duplicateCount+=1;continue;}
         seen.add(record.uid);unique.push(record);
       }
-      await insertNeonRows(galaxy,unique);
-      const skipped=analyzed.invalid.length+duplicateCount;
-      setStatus(`已匯入 ${unique.length.toLocaleString()} 筆到來源「${selected}」${skipped?`；略過 ${skipped.toLocaleString()} 筆無效／重複資料。`:''}`);
+
+      const existing=new Set();
+      for(let offset=0;offset<unique.length;offset+=200){
+        const ids=unique.slice(offset,offset+200).map(record=>record.uid);
+        const {data,error}=await neonAuthRelation(galaxy).select('uid').in('uid',ids);
+        if(error)throw new Error(error.message||'既有 UID 檢查失敗。');
+        for(const row of data||[])existing.add(String(row.uid||'').toUpperCase());
+      }
+      const payload=unique.filter(record=>!existing.has(record.uid));
+      await insertNeonRows(galaxy,payload);
+      const skipped=analyzed.invalid.length+duplicateCount+existing.size;
+      setStatus(`已匯入 ${payload.length.toLocaleString()} 筆到來源「${selected}」${skipped?`；略過 ${skipped.toLocaleString()} 筆無效／重複／已存在資料。`:''}`);
       setRows([]);setFileName('');
     }catch(error){
       setStatus(error?.message||'匯入失敗。');
