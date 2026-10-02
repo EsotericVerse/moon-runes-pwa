@@ -37,7 +37,6 @@ function currentMonthValue(){
   return Number(parts.year)*12+(Number(parts.month)-1);
 }
 function monthParts(value){return {year:Math.floor(value/12),month:value%12+1};}
-function monthLabel(value){const {year,month}=monthParts(value);return year+' 年 '+month+' 月';}
 function dateKey(year,month,day){return year+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');}
 function formatDate(value){return String(value||'').slice(0,10).replaceAll('-','/');}
 function monthValueOf(date){
