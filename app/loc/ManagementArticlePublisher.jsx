@@ -3,23 +3,13 @@
 import {UI_COPY} from '../i18n/ui-copy';
 
 import {useState} from 'react';
-import {neonAuthRelation} from './neon-client';
+import {insertNeonRows} from './neon-client';
 import {useNeonAccount} from './use-neon-account';
 import ContentEditorV2 from '../modular-v2/ContentEditorV2';
 import {createUid8} from './uid';
-import {requireGalaxyContent,resolveGalaxyTitle} from './content-policy';
+import {normalizeRelationIds,requireGalaxyContent,resolveGalaxyTitle} from './content-policy';
 import {resolveScopeTables} from './scope-table-mapping';
 
-function targetIds(value){
-  const values=Array.isArray(value)?value:String(value||'').split(/[,，]/);
-  const ids=[...new Set(values.map(item=>String(item||'').trim()).filter(Boolean))];
-  return ids.length?ids:null;
-}
-
-async function insertNeonRows(table,rows){
-  const {error}=await neonAuthRelation(table).insert(rows);
-  if(error)throw new Error(error.message||('Neon INSERT '+table+' failed'));
-}
 
 const blank=()=>({
   title:'',body:'',source:'',url:'',source_id:'',target_id:'',ref_id:'',createtime:'',
@@ -46,7 +36,7 @@ export default function ManagementArticlePublisher({scopeId}){
       await insertNeonRows(galaxy,[{
         uid,content_type:'article',
         title:resolveGalaxyTitle(draft.title,content),content,
-        source_id:draft.source_id.trim()||null,target_id:targetIds(draft.target_id),ref_id:draft.ref_id.trim()||null,
+        source_id:draft.source_id.trim()||null,target_id:normalizeRelationIds(draft.target_id),ref_id:draft.ref_id.trim()||null,
         url:draft.url.trim()||null,searchable:!draft.hidden,
         createtime:draft.createtime?new Date(draft.createtime).toISOString():now,
         source_name:draft.source.trim()
