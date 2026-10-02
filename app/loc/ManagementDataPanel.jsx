@@ -105,10 +105,12 @@ export default function ManagementDataPanel({scopeId}){
     try{
       if(kind==='media'){
         const galaxyLink=String(draft.galaxy_link||'').trim().toUpperCase();
+        const metaTags=String(draft.body||'').trim();
         if(galaxyLink&&galaxyLink.length!==8)throw new Error('galaxy_link 必須是 8 字 UID，或留空。');
+        if(!metaTags)throw new Error('Meta Tags 為必填欄位。');
         await updateNeonRows(scopeData.galaxyMedia,{
           title:String(draft.title||'').trim()||null,
-          meta_tags:String(draft.body||'').trim()||null,
+          meta_tags:metaTags,
           media_type:String(draft.media_type||'').trim()||'other',
           url:String(draft.url||'').trim()||null,
           galaxy_link:galaxyLink||null,
