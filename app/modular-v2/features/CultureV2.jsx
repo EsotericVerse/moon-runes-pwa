@@ -17,7 +17,7 @@ import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
 import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
 import {analyzeRiverDensity} from '../modules/culture-timeline/river-density-analysis.mjs';
 import {selectGalaxyContent} from '../../loc/aggregate-query';
-import {neonAuthRelation} from '../../loc/neon-client';
+import {insertNeonRows,neonAuthRelation} from '../../loc/neon-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {resolveScopeTables} from '../../loc/scope-table-mapping';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
@@ -338,8 +338,7 @@ export default function CultureV2(){
         year_value:null,
         updated_at:now
       }));
-      const {error}=await neonAuthRelation(time).insert(rows);
-      if(error)throw new Error(error.message||'批量建立定錨點失敗');
+      await insertNeonRows(time,rows);
       setSelectedVirtualAnchorDates([]);
       setAnchorSaveMessage('已一次建立 '+rows.length+' 個正式定錨點。');
       await query.refetch();
