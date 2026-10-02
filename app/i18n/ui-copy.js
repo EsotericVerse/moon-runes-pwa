@@ -29,6 +29,7 @@ const zhHant=Object.freeze({
     aria:'全站導覽',
     lunarunes:'月之符文',
     author:'作者介紹',
+    home:'回月典首頁',
     search:'搜尋',
     searchAria:'搜尋文字',
     contact:'聯絡方式'
