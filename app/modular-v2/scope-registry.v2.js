@@ -1,8 +1,6 @@
 import {UI_COPY} from '../i18n/ui-copy.js';
 
 // Current V2 Scope registry.
-const DEFAULT_SCOPE_ID='loc';
-
 export const FEATURES_V2=Object.freeze([
   Object.freeze({id:'statics',label:UI_COPY.features.statics.title,path:'statics'}),
   Object.freeze({id:'culture',label:UI_COPY.features.culture.title,path:'culture'}),
@@ -15,27 +13,38 @@ export const SCOPES_V2=Object.freeze({
     id:'loc',
     domain:'loc.lo3rwang.cc',
     label:UI_COPY.scope.loc.label,
+    default:true,
+    nav:Object.freeze({position:'after',order:2,label:UI_COPY.nav.home}),
+    theme:Object.freeze({mode:'auto'})
   }),
 
-  lunarunes:Object.freeze({
-    id:'lunarunes',
+  lrunes:Object.freeze({
+    id:'lrunes',
     domain:'lrunes.lo3rwang.cc',
     label:'月之符文',
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'}),
+    nav:Object.freeze({position:'before',order:1,label:UI_COPY.nav.lunarunes}),
+    theme:Object.freeze({mode:'fixed',themeId:'theme-5'})
   }),
 
   lo3rwang:Object.freeze({
     id:'lo3rwang',
     label:UI_COPY.scope.author.label,
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'}),
+    nav:Object.freeze({position:'after',order:1,label:UI_COPY.nav.author}),
+    theme:Object.freeze({mode:'fixed',themeId:'theme-2'})
   }),
 
   admin:Object.freeze({
     id:'admin',
     domain:'admin.lo3rwang.cc',
     label:UI_COPY.scope.admin.label,
+    featureScope:'loc',
+    theme:Object.freeze({mode:'auto'})
   })
 });
+
+const DEFAULT_SCOPE_ID=Object.values(SCOPES_V2).find(scope=>scope.default)?.id||Object.keys(SCOPES_V2)[0];
 
 function cleanHost(host=''){
   return String(host||'').toLowerCase().split(':')[0];
