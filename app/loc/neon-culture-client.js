@@ -2,7 +2,6 @@
 
 import {NEON_QUERY_BATCH_SIZE} from './query-contract.mjs';
 
-import {ScopeCultureResponseSchema} from './scope-feature-contracts';
 import {decodeCultureText,formatCultureDateTime} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
 import {workDisplayText} from '../modular-v2/work-display-model.v2';
 import {resolveGalaxyExternalLinks,selectCategoryCounts,selectDailyCategoryCounts,selectDailyCounts,selectSourceCatalog,selectSourceDaily} from './aggregate-query';
@@ -266,11 +265,11 @@ export async function selectScopeCultureData(scopeId){
   if(dataId==='loc'){
     const managedScopes=(await selectManagedScopes()).filter(scope=>scope.id!=='loc');
     if(!managedScopes.length){
-      return ScopeCultureResponseSchema.parse({
+      return {
         scopeId:id,eras:{eras:[]},periods:[],openRanges:[],scopeRanges:[],
         timelineItems:[],sourceRiverItems:[],sourceGroups:[],events:[],trajectories:[],
         works:[],intersectionStart:''
-      });
+      };
     }
 
     const bundles=await Promise.all(managedScopes.map(async scope=>{
@@ -295,11 +294,11 @@ export async function selectScopeCultureData(scopeId){
     const today=new Date().toISOString().slice(0,10);
 
     if(!intersectionStart){
-      return ScopeCultureResponseSchema.parse({
+      return {
         scopeId:id,eras:{eras:[]},periods:[],openRanges:[],scopeRanges:[],
         timelineItems:[],sourceRiverItems:[],sourceGroups:[],events:[],trajectories:[],
         works:[],intersectionStart:'',intersectionEnd:today,intersectionScopeIds:[]
-      });
+      };
     }
 
     const intersectionScopeIds=validBundles.map(bundle=>bundle.runtimeId);
@@ -330,7 +329,7 @@ export async function selectScopeCultureData(scopeId){
     const scopeRanges=buildLocScopeDistribution(aggregateRows);
     const sourceRiverItems=built.sourceRiverItems;
 
-    return ScopeCultureResponseSchema.parse({
+    return {
       scopeId:id,
       eras:{eras:[]},
       periods:[],
@@ -345,7 +344,7 @@ export async function selectScopeCultureData(scopeId){
       intersectionStart,
       intersectionEnd:today,
       intersectionScopeIds
-    });
+    };
   }
 
   const tables=await resolveScopeTables(dataId);
@@ -353,7 +352,7 @@ export async function selectScopeCultureData(scopeId){
   const runtimeId=runtimeScopeId(dataId);
   const parts=cultureParts(scopeContext,runtimeId);
   const openRange=openPeriodRangeFromRows(dataId,scopeContext);
-  return ScopeCultureResponseSchema.parse({
+  return {
     scopeId:id,
     eras:{eras:parts.eras},
     periods:parts.periods,
@@ -363,7 +362,7 @@ export async function selectScopeCultureData(scopeId){
     events:parts.events,
     trajectories:parts.trajectories,
     works:[]
-  });
+  };
 }
 
 function normalizedWorkTimelineBuckets(rows=[]){
