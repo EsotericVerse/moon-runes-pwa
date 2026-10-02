@@ -20,6 +20,7 @@ function buildScopeData(row,id){
   const galaxy=`silver.${id}_${galaxySuffix}`;
   return {
     id,
+    config:`silver.${id}`,
     role:String(row?.role||'').trim(),
     birthday:String(row?.birthday||'').slice(0,10)||null,
     galaxy,
