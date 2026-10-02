@@ -37,16 +37,28 @@ walk(resolve(root,'app'),path=>{
 for(const path of [
   'app/lrunes/RunesClient.jsx',
   'app/lrunes/RuneDrawClient.jsx',
-  'app/loc/neon-culture-client.js',
-  'app/loc/neon-statistics-client.js',
+  'app/loc/scope-data.js',
+  'app/loc/galaxy-query.js',
+  'app/loc/culture-query.js',
   'assets/lunarunes/cards/65_玄.png',
   'assets/lunarunes/cards/66_命.png'
 ]){
   if(!existsSync(resolve(root,path)))failures.push('missing Current module/asset: '+path);
 }
 
+for(const path of [
+  'app/loc/scope-table-mapping.js',
+  'app/loc/aggregate-query.js',
+  'app/loc/neon-search.js',
+  'app/loc/search-providers.js',
+  'app/loc/neon-statistics-client.js',
+  'app/loc/neon-culture-client.js'
+]){
+  if(existsSync(resolve(root,path)))failures.push('retired data-layer module still present: '+path);
+}
+
 if(failures.length){
   console.error('[module-contracts] failures:\n'+failures.map(item=>'- '+item).join('\n'));
   process.exit(1);
 }
-console.log('[module-contracts] imports, Scope table ownership and retired-column guards verified');
+console.log('[module-contracts] imports, single Scope data source, shared Galaxy pipeline and retired-column guards verified');
