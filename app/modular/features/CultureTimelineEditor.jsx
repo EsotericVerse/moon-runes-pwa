@@ -10,7 +10,7 @@ import {deleteNeonRows,insertNeonRows,updateNeonRows} from '../../loc/neon-clien
 import {selectNeonRows} from '../../loc/neon-query';
 import {FEATURE_LOADING_MESSAGE} from '../feature-data-state';
 
-const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility';
+const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility,style_tags';
 
 
 const EDITABLE_TYPES=Object.freeze([
@@ -19,7 +19,7 @@ const EDITABLE_TYPES=Object.freeze([
 const TYPE_LABEL=Object.freeze(Object.fromEntries(EDITABLE_TYPES));
 const BLANK=Object.freeze({
   record_id:'',record_type:'anchor',label:'',resource_id:'',note:'',time_date:'',
-  before_id:'0',after_id:'0',status:'',display_order:'',date_status:'exact',year_value:'',visibility:''
+  before_id:'0',after_id:'0',status:'',display_order:'',date_status:'exact',year_value:'',visibility:'',style_tags:''
 });
 
 function dateText(value){return value?String(value).slice(0,10):'';}
@@ -167,6 +167,7 @@ export default function CultureTimelineEditor({scopeId=''}){
         status:String(draft.status||'').trim()||null,
         display_order:draft.display_order===''?null:Number(draft.display_order),
         visibility:String(draft.visibility||'').trim()||null,
+        style_tags:String(draft.style_tags||'').trim()||null,
         time_date:null,
         anchor_pair:null,
         date_status:null,
@@ -276,6 +277,8 @@ export default function CultureTimelineEditor({scopeId=''}){
           {anchorOptions.map(row=><option key={row.resource_id} value={row.resource_id}>{dateText(row.time_date)||row.year_value||'未知'}｜{row.label}</option>)}
         </select></label>
       </div>:null}
+
+      {draft.record_type!=='anchor'?<label className="scope-management-wide-field"><span>風格標籤</span><input className="scope-search-input" value={draft.style_tags||''} onChange={event=>change('style_tags',event.target.value)} placeholder="以逗號分隔；時間長河與搜尋共用"/></label>:null}
 
       <div className="scope-stat-controls">
         <label><span>狀態</span><input className="scope-search-input" value={draft.status||''} onChange={event=>change('status',event.target.value)}/></label>
