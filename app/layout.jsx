@@ -1,8 +1,5 @@
 import './globals.css';
-import ScopeNav from './modular/ScopeNav';
-import AppExperience from './AppExperience';
-import ScopeFooter from './modular/ScopeFooter';
-import QueryProvider from './QueryProvider';
+import AppShell from './AppShell';
 import {LOC_ORIGIN} from './seo/metadata';
 import {getThemeSlot} from './modular/theme-registry';
 import {SCOPES} from './modular/scope-registry';
@@ -70,12 +67,7 @@ export default function RootLayout({ children }) {
         <script id="loc-theme-bootstrap" dangerouslySetInnerHTML={{__html:INITIAL_THEME_SCRIPT}} />
       </head>
       <body className="loc-app-shell">
-        <QueryProvider>
-          <AppExperience />
-          <header className="scope-global"><ScopeNav/></header>
-          {children}
-          <ScopeFooter />
-        </QueryProvider>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
