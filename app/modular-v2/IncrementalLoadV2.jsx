@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useRef} from 'react';
-import {LIST_LOAD_COOLDOWN_MS} from './list-loading.v2';
+import {LIST_LOAD_COOLDOWN_MS} from '../loc/list-loading-contract.mjs';
 
 const DOWN_KEYS=new Set(['ArrowDown','PageDown','End',' ']);
 const WHEEL_GESTURE_GAP_MS=600;
