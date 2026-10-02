@@ -17,7 +17,7 @@ for(const [name,source] of [['RuneDrawClient',publicDraw]]){
     'const directionIndexes=cards.map(()=>randomIndex(4));',
     'const runePool=Array.from({length:66},(_,index)=>index+1);',
     'drawRuneSession(runePool,selectedMode.count)',
-    'loadDrawCards(pairs,types)',
+    'loadDrawCards(pairs,queryPlan)',
     "selectNeonRows('silver.runes'",
     "selectNeonRows('silver.runes_etc'",
     'buildFixedReading(',
@@ -54,4 +54,4 @@ for(const fragment of [
 ])if(!guidance.includes(fragment))throw new Error('Rune x/y guidance missing: '+fragment);
 for(const fragment of ['狀況形容','狀況表達','每日占卜提醒','每日占卜引導','每日占卜祝福'])if(!dailySurface.includes(fragment))throw new Error('Daily moon-aware layer missing: '+fragment);
 for(const fragment of ['## Draw pool','## Precise directional query','### Two cards','### Three cards','### Five cards','### OW3gs','## Daily'])if(!governance.includes(fragment))throw new Error('Draw Governance missing Current section: '+fragment);
-console.log('[rune-draw] Current 66-Rune draw, precise Neon reads, 2/3/5/11 grammar and ritual verified');
+console.log('[rune-draw] Current 66-Rune draw, exact moon-aware Situation/Daily reads, x/y guidance, 2/3/5/11 grammar and ritual verified');
