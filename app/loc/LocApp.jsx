@@ -1,8 +1,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import {Suspense,useEffect,useMemo,useState} from 'react';
-import {resolveScopeV2} from '../modular-v2/scope-registry.v2';
+import {Suspense} from 'react';
+import {useScopeRuntimeV2} from '../modular-v2/use-scope-runtime.v2';
 import AboutView from './views/AboutView';
 import AuthorHomeView from './views/AuthorHomeView';
 import AdminHomeView from './views/AdminHomeView';
@@ -14,56 +14,28 @@ import GovernanceV2 from '../modular-v2/features/GovernanceV2';
 const loading=()=> <div className="loc-loading">載入功能模組…</div>;
 const RunesHomeView=dynamic(()=>import('../lrunes/RunesClient'),{ssr:false,loading});
 const GameView=dynamic(()=>import('../lrunes/game/GameView'),{ssr:false,loading});
-// Core feature shells are bundled synchronously so route entry never stalls on a dynamic chunk.
-const StaticsView=StatisticsV2;
-const CultureView=CultureV2;
-const SearchView=SearchV2;
-const GovernanceView=GovernanceV2;
 const ManagementView=dynamic(()=>import('./GovernanceManagement'),{loading});
 
-function BlockedScopeRoute(){return <section className="loc-view"><h1>此頁面目前不可使用</h1><p>管理功能僅限管理站。</p></section>;}
-function AdminRedirect(){useEffect(()=>{window.location.replace('https://admin.lo3rwang.cc/');},[]);return <section className="loc-view"><h1>前往系統掌控者頁面</h1><p>正在轉往 admin.lo3rwang.cc…</p></section>;}
-
 const VIEWS={
-  game:GameView,statics:StaticsView,
-  culture:CultureView,search:SearchView,governance:GovernanceView,manage:ManagementView
+  game:GameView,
+  statics:StatisticsV2,
+  culture:CultureV2,
+  search:SearchV2,
+  governance:GovernanceV2,
+  manage:ManagementView
 };
-
 const HOME_VIEWS={loc:AboutView,lunarunes:RunesHomeView,lo3rwang:AuthorHomeView,admin:AdminHomeView};
 
-function routeState(){
-  if(typeof window==='undefined')return {scope:'loc',view:'home'};
-  const pathname=window.location.pathname.replace(/\/$/,'')||'/';
-  const host=window.location.hostname.toLowerCase();
-  const scope=resolveScopeV2(host,pathname);
-  if(pathname==='/admin'||pathname.startsWith('/admin/')){
-    if(host==='loc.lo3rwang.cc')return {scope:'loc',view:'admin-redirect'};
-    if(host!=='admin.lo3rwang.cc')return {scope,view:'blocked'};
-  }
-  if(scope==='lunarunes'&&/^\/lo3rwang(?:\/|$)/.test(pathname))return {scope,view:'blocked'};
-  const route=pathname.split('/').filter(Boolean).at(-1)||'home';
-  return {scope,view:VIEWS[route]?route:'home'};
-}
+export default function LocApp({forcedView='home',forcedSection=null,forcedScope=null}){
+  const {scopeId}=useScopeRuntimeV2();
+  const scope=forcedScope||scopeId;
+  const ActiveView=forcedView==='home'
+    ?HOME_VIEWS[scope]||AboutView
+    :VIEWS[forcedView]||AboutView;
 
-export default function LocApp({forcedView=null,forcedSection=null,forcedScope=null}){
-  const [state,setState]=useState({scope:forcedScope||'loc',view:forcedView||'home',section:forcedSection});
-  useEffect(()=>{
-    if(forcedView){
-      const scope=forcedScope||resolveScopeV2(window.location.hostname,window.location.pathname);
-      setState({scope,view:forcedView,section:forcedSection});
-      return undefined;
-    }
-    const sync=()=>setState(routeState());
-    sync();window.addEventListener('popstate',sync);
-    return()=>window.removeEventListener('popstate',sync);
-  },[forcedView,forcedSection,forcedScope]);
-
-  const ActiveView=useMemo(()=>{
-    if(state.view==='blocked')return BlockedScopeRoute;
-    if(state.view==='admin-redirect')return AdminRedirect;
-    if(state.view==='home')return HOME_VIEWS[state.scope]||AboutView;
-    return VIEWS[state.view]||HOME_VIEWS[state.scope]||AboutView;
-  },[state]);
-
-  return <div className="loc-next-main" data-loc-scope={state.scope} data-loc-view={state.view}><Suspense fallback={<div className="loc-loading">載入頁面…</div>}><ActiveView section={state.section}/></Suspense></div>;
+  return <div className="loc-next-main" data-loc-scope={scope} data-loc-view={forcedView}>
+    <Suspense fallback={<div className="loc-loading">載入頁面…</div>}>
+      <ActiveView section={forcedSection}/>
+    </Suspense>
+  </div>;
 }
