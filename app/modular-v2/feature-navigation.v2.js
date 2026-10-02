@@ -30,9 +30,6 @@ function valueOf(...values){
   return undefined;
 }
 
-function payloadOf(row){
-  return row?.payload&&typeof row.payload==='object'&&!Array.isArray(row.payload)?row.payload:{};
-}
 
 export function readFeatureNavigation(searchParams){
   const raw={};
