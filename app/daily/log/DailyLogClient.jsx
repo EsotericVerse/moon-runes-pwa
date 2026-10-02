@@ -7,7 +7,7 @@ import {
   insertDailyRuneRecord,
   selectDailyRuneMonth,
   updateDailyRuneRecord
-} from '../../loc/neon-daily-runes';
+} from '../../lrunes/neon-daily-runes';
 import {selectNeonRows} from '../../loc/neon-query';
 import {useNeonAccount} from '../../loc/use-neon-account';
 
