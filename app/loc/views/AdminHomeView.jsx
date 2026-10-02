@@ -184,18 +184,25 @@ function ThemeOverview({account}){
         if(error)throw new Error(error.message||'Scope 設定讀取失敗。');
         const ids=[...new Set((data||[]).map(row=>String(row.id||'').trim()).filter(Boolean))];
         const loaded=[];
+        const failures=[];
         for(const id of ids){
           const config=account.scopeDataFor(id)?.config;
-          if(!config)continue;
+          if(!config){failures.push(id+'：Scope config 未解析');continue;}
           try{
             const row=await selectNeonAuthRow(config,{
               idColumn:'id',id,
               columns:'id,theme,search_able,statistics_able,culture_able'
             });
-            if(row)loaded.push({...row,config});
-          }catch{}
+            if(!row)failures.push(id+'：找不到 Scope config');
+            else loaded.push({...row,config});
+          }catch(error){
+            failures.push(id+'：'+String(error?.message||error||'Scope config 讀取失敗'));
+          }
         }
-        if(active)setRows(loaded);
+        if(active){
+          setRows(loaded);
+          if(failures.length)setStatus('部分 Scope 設定讀取失敗：'+failures.join('；'));
+        }
       }catch(error){
         if(active)setStatus(error.message||'Scope 設定讀取失敗。');
       }
