@@ -496,6 +496,9 @@ export default function Culture(){
                 </div>
                 <p className='loc-eyebrow'>{UI_COPY.culture.classificationRiver}</p>
                 <h3>{labelOf(selectedWorkPeriod,0)}｜作品分類河道</h3>
+                {String(selectedWorkPeriod?.style_tags||'').trim()?<div className='scope-style-tags' aria-label='風格標籤'>
+                  {String(selectedWorkPeriod.style_tags).split(/[,，]/).map(item=>item.trim()).filter(Boolean).map(tag=><span key={tag}>{tag}</span>)}
+                </div>:null}
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error)}</p>:null}
                 {!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!classificationBuckets.length
                   ?<p className='scope-status'>{UI_COPY.culture.noPeriodClassification}</p>:null}
