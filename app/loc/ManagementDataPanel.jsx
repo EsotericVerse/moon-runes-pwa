@@ -46,7 +46,7 @@ export default function ManagementDataPanel({scopeId}){
         const table=kind==='media'?scopeData.galaxyMedia:scopeData.galaxy;
         let query=kind==='media'
           ?neonAuthRelation(table).select('media_id,title,media_type,createtime,galaxy_link,url,meta_tags',{count:'exact'})
-          :neonAuthRelation(table).select('uid,title,source_name,content_type,createtime,UpdateTime,searchable,url',{count:'exact'});
+          :neonAuthRelation(table).select('uid,title,source_name,createtime,UpdateTime,searchable,content_type,url',{count:'exact'});
         if(kind==='galaxy'&&visibility==='hidden')query=query.eq('searchable',false);
         query=query.order('createtime',{ascending:false}).range(page*PAGE_SIZE,page*PAGE_SIZE+PAGE_SIZE-1);
         const {data,count,error:queryError}=await query;
