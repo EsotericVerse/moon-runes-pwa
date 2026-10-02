@@ -22,8 +22,6 @@ const required=[
   [sources.uiCopy,"title:'搜尋'"],
   [sources.nav,'FEATURES_V2'],
   [sources.nav,'useScopeRuntimeV2'],
-  [sources.registry,"routeAuthority:'next-filesystem'"],
-  [sources.registry,"dataAuthority:'neon'"],
   [sources.registry,"domain:'loc.lo3rwang.cc'"],
   [sources.registry,"domain:'lrunes.lo3rwang.cc'"],
   [sources.registry,"domain:'admin.lo3rwang.cc'"],
