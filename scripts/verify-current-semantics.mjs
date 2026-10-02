@@ -9,7 +9,6 @@ const required=[
   'app/modular-v2/features/SearchV2.jsx',
   'app/loc/model/daily-trend-engine.mjs',
   'app/loc/search-providers.js',
-  'app/loc/surface-search.js',
   'app/lrunes/RunesClient.jsx',
   'app/lrunes/RuneDrawClient.jsx'
 ];
@@ -24,10 +23,8 @@ if(!failures.length){
   const runeDraw=read('app/lrunes/RuneDrawClient.jsx');
   for(const token of ["selectNeonRows('silver.runes'","selectNeonRows('silver.runes_etc'"])if(!runeDraw.includes(token))failures.push('Rune draw runtime missing '+token);
   const providers=read('app/loc/search-providers.js');
-  const surfaceSearch=read('app/loc/surface-search.js');
   for(const token of ["count:'exact',head:true",".or(",".range("])if(!providers.includes(token))failures.push('Search provider missing '+token);
-  for(const token of ["from 'flexsearch'",'new Index(','cache:cacheSize'])if(!surfaceSearch.includes(token))failures.push('Surface FlexSearch missing '+token);
-  for(const forbidden of ['neonPublicClient','selectNeonRows','resolveScopeTables'])if(surfaceSearch.includes(forbidden))failures.push('Surface FlexSearch must not own Neon access '+forbidden);
+  if(/flexsearch|new Index\(/i.test(providers))failures.push('Global Search must remain Neon-first.');
   const search=read('app/loc/neon-search.js');
   for(const token of ['getSearchProviders','getMediaSearchProviders','provider.search'])if(!search.includes(token))failures.push('Search orchestration missing '+token);
 }
