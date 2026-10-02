@@ -36,8 +36,6 @@ export function createScopeAuthorizer(user,permissionRows=[]){
     email,
     role:admin?'admin':(scopes.size?'scope':''),
     scopeIds:Object.freeze([...scopes].sort()),
-    canManageGlobal:async()=>admin,
-    canManageScope:async scopeId=>admin||scopes.has(normalizeScopeId(scopeId)),
     canManageGlobalSync:()=>admin,
     canManageScopeSync:scopeId=>admin||scopes.has(normalizeScopeId(scopeId))
   });
