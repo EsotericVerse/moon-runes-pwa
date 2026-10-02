@@ -3,7 +3,7 @@
 import {UI_COPY} from '../i18n/ui-copy';
 
 import {useMemo,useState} from 'react';
-import {neonAuthClient} from './neon-client';
+import {neonAuthRelation} from './neon-client';
 import {useNeonAccount} from './use-neon-account';
 import {createUid8} from './uid';
 import {normalizeGalaxyContent,resolveGalaxyTitle} from './content-policy';
@@ -13,8 +13,7 @@ async function insertNeonRows(table,rows){
   if(String(table).endsWith('_galaxy_media')){
     for(const row of rows||[])if(!String(row?.meta_tags||'').trim())throw new Error('Media records require meta_tags.');
   }
-  const [schema,name]=String(table).split('.');
-  const {error}=await neonAuthClient.schema(schema).from(name).insert(rows);
+  const {error}=await neonAuthRelation(table).insert(rows);
   if(error)throw new Error(error.message||('Neon INSERT '+table+' failed'));
 }
 
