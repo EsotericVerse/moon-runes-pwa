@@ -4,7 +4,7 @@ export function normalizeGalaxyContent(value){
   return String(value??'').trim();
 }
 
-export function hasValidGalaxyContent(value){
+function hasValidGalaxyContent(value){
   return normalizeGalaxyContent(value).length>0;
 }
 
