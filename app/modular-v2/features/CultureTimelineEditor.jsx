@@ -6,28 +6,12 @@ import {useEffect,useMemo,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useNeonAccount} from '../../loc/use-neon-account';
-import {neonAuthRelation} from '../../loc/neon-client';
-import {applyNeonFilters,selectNeonRows} from '../../loc/neon-query';
+import {deleteNeonRows,insertNeonRows,updateNeonRows} from '../../loc/neon-client';
+import {selectNeonRows} from '../../loc/neon-query';
 import {FEATURE_LOADING_MESSAGE} from '../feature-data-state.v2';
 
 const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility';
 
-async function insertNeonRows(table,rows){
-  const {error}=await neonAuthRelation(table).insert(rows);
-  if(error)throw new Error(error.message||'新增資料失敗');
-}
-async function updateNeonRows(table,values,{filters=[]}={}){
-  let query=neonAuthRelation(table).update(values);
-  query=applyNeonFilters(query,filters);
-  const {error}=await query;
-  if(error)throw new Error(error.message||'更新資料失敗');
-}
-async function deleteNeonRows(table,{filters=[]}={}){
-  let query=neonAuthRelation(table).delete();
-  query=applyNeonFilters(query,filters);
-  const {error}=await query;
-  if(error)throw new Error(error.message||'刪除資料失敗');
-}
 
 const EDITABLE_TYPES=Object.freeze([
   ['anchor','定錨點'],['period','時期'],['event','事件']
