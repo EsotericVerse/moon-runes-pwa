@@ -1,0 +1,34 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const failures=[];
+const read=relative=>fs.readFileSync(path.join(root,relative),'utf8');
+const must=(condition,message)=>{if(!condition)failures.push(message);};
+
+const galaxy=read('app/loc/galaxy-query.js');
+const culture=read('app/loc/culture-query.js');
+const editor=read('app/modular/features/CultureTimelineEditor.jsx');
+const management=read('app/loc/GovernanceManagement.jsx');
+const governance=read('app/modular/features/Governance.jsx');
+const data=read('app/loc/ManagementDataPanel.jsx');
+const admin=read('app/loc/views/AdminHomeView.jsx');
+
+must(!galaxy.includes('include_in_time'),'generic search must not query nonexistent include_in_time');
+must(galaxy.includes("'style_tags'")&&galaxy.includes("searchFields:['label','note','status','style_tags']"),'generic Time search must include style_tags');
+must(culture.includes('visibility,style_tags'),'Culture shared Time contract must include style_tags');
+must(editor.includes("style_tags:''")&&editor.includes('風格標籤'),'shared Time editor must edit style_tags');
+must(management.includes("section==='group'&&scopeId==='loc'"),'LOC Scope Group must have its own Manage');
+must(management.includes('ScopeGroupManagement')&&management.includes('RuneKeywordManagement'),'Manage must compose group and rune keyword modules');
+must(!management.includes("if(scopeId==='loc')return"),'LOC Manage must not collapse into an Admin redirect');
+must(governance.includes("scopeHref(scopeId,'governance/manage')"),'Governance must link to Scope Manage');
+must(data.includes('updateNeonRows')&&data.includes('deleteNeonRows')&&data.includes('ContentEditor'),'canonical data management must expose shared CRUD');
+must(admin.includes("neonAuthRelation('silver.manage').insert")&&admin.includes(".delete().eq('id'"),'Admin must support mapping add/remove');
+
+if(failures.length){
+  console.error('[management-contract] verification failed');
+  failures.forEach(item=>console.error(' - '+item));
+  process.exit(1);
+}
+console.log('[management-contract] shared CRUD, Style Tag, Scope Group Manage and Admin separation verified');
