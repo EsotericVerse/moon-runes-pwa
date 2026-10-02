@@ -9,7 +9,7 @@ import {
   Bar,BarChart,CartesianGrid,Cell,Legend,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectScopeRankingTypes,selectScopeSourceTrendRows} from '../../loc/neon-statistics-client';
+import {selectScopeSourceTrendRows} from '../../loc/neon-statistics-client';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
@@ -21,6 +21,7 @@ const CHART_TEXT='var(--loc-text)';
 const CHART_GRID='var(--loc-line)';
 const CHART_TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)',borderRadius:'8px'};
 const CHART_TYPES=[['line',UI_COPY.statistics.line],['bar',UI_COPY.statistics.bar],['pie',UI_COPY.statistics.pie]];
+const STAT_TYPES=['total','source'];
 const STAT_TYPE_LABELS=Object.freeze({total:UI_COPY.statistics.totalSource,source:UI_COPY.statistics.workSource});
 const SOURCE_TREND_ORDER=Object.freeze(['Facebook','Threads','IG','Others']);
 const TIME_STANDARDS=Object.freeze([
@@ -269,15 +270,8 @@ function StatisticsPanel({scopeId,navigation,types}){
 }
 
 function StatisticsShell({scopeId,navigation}){
-  const typesQuery=useQuery({
-    queryKey:['statistics-types',scopeId],
-    queryFn:()=>selectScopeRankingTypes(scopeId),
-    staleTime:5*60_000
-  });
-  const types=typesQuery.data||[];
   return <section className="loc-card scope-v2-feature-card">
-    {typesQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(typesQuery.error)}</p>:null}
-    {!typesQuery.isPending?<StatisticsPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
+    <StatisticsPanel scopeId={scopeId} navigation={navigation} types={STAT_TYPES}/>
   </section>;
 }
 export default function StatisticsV2(){
