@@ -3,10 +3,11 @@
 import {useCallback,useEffect,useState} from 'react';
 import {getNeonSession,neonAuthRelation,signInNeonWithGoogle,signOutNeon} from './neon-client';
 import {createScopeAuthorizer,normalizeAuthEmail} from './scope-authorization';
+import {scopeDataFromManageRows} from './scope-data';
 
 const emptyState={
   loading:true,user:null,email:'',role:'',authorizer:null,
-  permissionLoading:true,error:''
+  permissionLoading:true,error:'',scopes:[]
 };
 
 export function useNeonAccount(){
@@ -25,18 +26,20 @@ export function useNeonAccount(){
       let permissions=[];
       if(email){
         const {data,error}=await neonAuthRelation('silver.manage')
-          .select('id,email,role')
+          .select('id,email,role,galaxy,time,birthday')
           .eq('email',email);
         if(error)throw new Error(error.message||'Neon manage permission read failed');
         permissions=data||[];
       }
       const authorizer=createScopeAuthorizer(user,permissions);
+      const scopes=scopeDataFromManageRows(permissions);
       setState({
         loading:false,
         user,
         email:authorizer.email,
         role:authorizer.role,
         authorizer,
+        scopes,
         permissionLoading:false,
         error:''
       });
@@ -71,9 +74,13 @@ export function useNeonAccount(){
     ()=>Boolean(state.authorizer?.canManageGlobalSync()),
     [state.authorizer]
   );
+  const scopeDataFor=useCallback(
+    scopeId=>state.scopes.find(scope=>scope.id===String(scopeId||'').trim())||null,
+    [state.scopes]
+  );
 
   return {
     ...state,refresh,signIn,signOut,
-    canManageScope,canManageGlobal,canManageScopeSync,canManageGlobalSync
+    canManageScope,canManageGlobal,canManageScopeSync,canManageGlobalSync,scopeDataFor
   };
 }
