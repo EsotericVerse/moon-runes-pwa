@@ -131,3 +131,9 @@
   .scope-management-records{max-height:none}
   .scope-management-preview iframe{height:62vh}
 }
+
+
+.scope-import-preview{display:grid;gap:.7rem;margin:.8rem 0;padding:.8rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-lg);background:var(--loc-panel)}
+.scope-import-preview .scope-management-records{max-height:24rem}
+.scope-setting-toggle{display:flex!important;align-items:center;gap:.55rem;min-height:2.6rem;padding:.55rem .65rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-md)}
+.scope-setting-toggle input{width:1.05rem;height:1.05rem;margin:0}
