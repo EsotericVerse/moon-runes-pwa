@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
+import {runeImage} from './rune-directory.mjs';
 import {selectNeonRows} from '../loc/neon-query';
 import {useNeonSetting} from '../loc/use-neon-setting';
 import {realMoonPhase} from '../loc/model/moon-phase';
@@ -96,11 +97,6 @@ function runeEtcText(card,type,direction){
 const UI_SETTINGS_KEY='loc-ui-settings-v1';
 const DEFAULT_UI_SETTINGS={draw_response:'ritual'};
 
-function runeCardImage(card){
-  const number=String(Number(card?.rune_id)||0).padStart(2,'0');
-  const name=String(card?.rune_name||'').replace(/之符文$/,'').trim();
-  return `/assets/lunarunes/cards/${number}_${name}.png`;
-}
 function runeDisplayName(card){
   const chinese=String(card?.rune_name||'').trim();
   const english=String(card?.english_name||'').trim();
@@ -184,7 +180,7 @@ function RuneCardAt({draw,index,selectedMode,moonPhase}){
   return <RuneCardInfo
     key={`${card.rune_id}-${index}`}
     card={card}
-    imageSrc={runeCardImage(card)}
+    imageSrc={runeImage(card)}
     imageClassName={`loc-rune-card-image ${ROTATION_CLASSES[draw.directionIndexes[index]]}`}
     positionLabel={selectedMode.positions[index]||`第 ${index+1} 張`}
     direction={draw.directions[index]}
