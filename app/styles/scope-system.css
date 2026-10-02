@@ -33,11 +33,8 @@
 .scope-status{margin:0;padding:.8rem 1rem;border:var(--scope-border);}
 .scope-error{font-weight:700}
 .scope-tabs{display:flex;gap:.5rem;flex-wrap:wrap}
-.scope-tabs button,.scope-pagination button,.scope-search-form button{padding:.45rem .8rem;border:var(--scope-border);border-radius:999px;background:var(--loc-panel);color:var(--scope-text);cursor:pointer}
+.scope-tabs button,.scope-search-form button{cursor:pointer}
 .scope-tabs button[aria-pressed="true"]{font-weight:700;}
-.scope-pagination{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;color:var(--scope-muted)}
-.scope-pagination>div{display:flex;gap:.5rem}
-.scope-pagination button:disabled{opacity:.45;cursor:not-allowed}
 .scope-ranking{display:grid;gap:.45rem}
 .scope-ranking>div{display:flex;justify-content:space-between;gap:1rem;border-bottom:var(--scope-border)}
 .scope-ranking>div:last-child{border-bottom:0}
@@ -56,13 +53,9 @@
 .scope-theme-control{display:inline-flex;align-items:center;gap:.45rem}
 .scope-theme-control select{padding:.35rem .55rem;border:var(--scope-border);border-radius:999px;background:var(--loc-panel);color:var(--scope-text)}
 @media(max-width:720px){
-  .scope-main{width:min(100% - 1rem,var(--scope-max))}
-  .scope-nav{padding:.6rem .5rem}
-  .scope-search input{width:8rem}
   .scope-ranking>div{align-items:flex-start;flex-direction:column}
   .scope-grid-two{grid-template-columns:1fr}
   .scope-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .scope-search-form{grid-template-columns:1fr}
 }
 
 .scope-result-links{display:flex;gap:.55rem;flex-wrap:wrap;}
@@ -166,7 +159,7 @@
 /* Source groups and paginated work details stay in their own bounded panel. */
 .scope-culture-source-groups{display:grid;margin:.75rem 0}
 .scope-culture-source-button{align-items:center;justify-content:space-between;border:var(--scope-border);color:var(--scope-text);text-align:left;cursor:pointer}
-.scope-culture-source-button:hover,.scope-culture-source-button[aria-pressed="true"]{border-color:var(--loc-accent-border);background:var(--loc-gold-surface)}
+.scope-culture-source-button:hover{border-color:var(--loc-accent-border);background:var(--loc-gold-surface)}
 .scope-culture-source-button{overflow:hidden}\n.scope-culture-source-button span{min-width:0;color:var(--scope-muted);white-space:normal;overflow-wrap:anywhere}
 .scope-culture-source-detail{display:grid;gap:.65rem;min-height:16rem;margin-top:.8rem;border:var(--scope-border);border-radius:var(--scope-radius);}
 .scope-culture-source-detail>header,.scope-culture-work-heading,.scope-culture-source-pages{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap}
