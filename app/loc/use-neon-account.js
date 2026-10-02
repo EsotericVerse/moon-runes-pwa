@@ -3,7 +3,7 @@
 import {useCallback,useEffect,useState} from 'react';
 import {z} from 'zod';
 import {getNeonSession,neonAuthRelation,signInNeonWithGoogle,signOutNeon} from './neon-client';
-import {scopeDataFromManageRows} from './scope-data';
+import {defaultScopeData,scopeDataFromManageRows} from './scope-data';
 
 const EmailSchema=z.string().trim().toLowerCase().email();
 const ManageRoleSchema=z.enum(['admin','scope']);
@@ -99,10 +99,11 @@ export function useNeonAccount(){
     ()=>Boolean(state.authorizer?.canManageGlobalSync()),
     [state.authorizer]
   );
-  const scopeDataFor=useCallback(
-    scopeId=>state.scopes.find(scope=>scope.id===String(scopeId||'').trim())||null,
-    [state.scopes]
-  );
+  const scopeDataFor=useCallback(scopeId=>{
+    const id=normalizeScopeId(scopeId);
+    return state.scopes.find(scope=>scope.id===id)
+      ||(state.authorizer?.canManageGlobalSync()?defaultScopeData(id):null);
+  },[state.authorizer,state.scopes]);
 
   return {
     ...state,refresh,signIn,signOut,
