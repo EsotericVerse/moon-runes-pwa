@@ -27,7 +27,7 @@ import WorkFullTextV2 from '../WorkFullTextV2';
 import {workDisplayHeading,workDisplayText} from '../work-display-model.v2';
 import IncrementalListV2 from '../IncrementalListV2';
 import {useOffsetPagination} from '../use-offset-pagination.v2';
-import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
+import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import ContentEditorV2 from '../ContentEditorV2';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 
