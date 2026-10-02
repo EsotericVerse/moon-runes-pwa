@@ -23,7 +23,6 @@ export const SCOPES_V2=Object.freeze({
     primary:Object.freeze({label:UI_COPY.scope.loc.primary,href:'https://lrunes.lo3rwang.cc/'}),
     role:Object.freeze({label:UI_COPY.scope.loc.role,href:'https://loc.lo3rwang.cc/lo3rwang/'}),
     homes:Object.freeze([{label:UI_COPY.scope.loc.home,href:'https://loc.lo3rwang.cc/'}]),
-    searchCollection:'all',
   }),
 
   lunarunes:Object.freeze({
@@ -50,7 +49,6 @@ export const SCOPES_V2=Object.freeze({
     homes:Object.freeze([
       {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
     ]),
-    searchCollection:'月之符文',
   }),
 
   lo3rwang:Object.freeze({
@@ -64,7 +62,6 @@ export const SCOPES_V2=Object.freeze({
     homes:Object.freeze([
       {label:UI_COPY.scope.author.home,href:'https://loc.lo3rwang.cc/'}
     ]),
-    searchCollection:'lo3rwang',
   }),
 
   admin:Object.freeze({
@@ -80,7 +77,6 @@ export const SCOPES_V2=Object.freeze({
       {label:UI_COPY.scope.admin.home,href:'https://admin.lo3rwang.cc/'},
       {label:UI_COPY.scope.admin.locHome,href:'https://loc.lo3rwang.cc/'}
     ]),
-    searchCollection:'治理',
   })
 });
 
