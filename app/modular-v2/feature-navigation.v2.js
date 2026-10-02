@@ -1,5 +1,6 @@
 import {z} from 'zod';
 import {featureHrefV2} from './scope-registry.v2';
+import {normalizeRelationIds} from '../loc/content-policy';
 
 const NAVIGATION_FIELDS=Object.freeze([
   'q','identity','source','period','anchor','from','to','rankingType','statTab'
@@ -60,10 +61,6 @@ export function featureNavigationHref(scopeId,featureId,navigation={}){
   return query?base+'?'+query:base;
 }
 
-function relationIds(value){
-  const values=Array.isArray(value)?value:String(value||'').split(/[,，]/);
-  return [...new Set(values.map(item=>String(item||'').trim()).filter(Boolean))];
-}
 
 export function galaxyIdentityHref(scopeId,uid){
   const id=valueOf(uid);
@@ -76,7 +73,7 @@ export function galaxyRelationLinks(scopeId,row={}){
   const links=[];
   const source=valueOf(row.source_id);
   if(source)links.push({id:'source:'+source,label:'上筆',href:galaxyIdentityHref(scopeId,source)});
-  const targets=relationIds(row.target_id);
+  const targets=normalizeRelationIds(row.target_id)||[];
   targets.forEach((target,index)=>{
     links.push({
       id:'target:'+target,
