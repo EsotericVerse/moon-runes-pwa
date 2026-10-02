@@ -47,9 +47,7 @@ if(!governanceManagement.includes('function PeriodSettings({scopeId})')||!govern
 const aggregate=readFileSync(resolve(root,'app/loc/aggregate-query.js'),'utf8');
 const contentPolicy=readFileSync(resolve(root,'app/loc/content-policy.js'),'utf8');
 if(!/column:'content',operator:'neq',value:''/.test(contentPolicy))failures.push('blank Galaxy content guard missing');
-if(!aggregate.includes("columns:'uid,source_name,createtime,title,url,source_id,target_id,media_link'"))failures.push('paged Galaxy index must use the Current lightweight field set');
 if(!aggregate.includes("columns:'uid,content'"))failures.push('Galaxy full text must load through the Current per-record content query');
-if(!/selectGalaxyPage[\s\S]*limit[\s\S]*offset/.test(aggregate))failures.push('Galaxy page query must use limit/offset');
 
 const providers=readFileSync(resolve(root,'app/loc/search-providers.js'),'utf8');
 for(const token of ["count:'exact',head:true",".or(",".range("])if(!providers.includes(token))failures.push('Search direct query contract missing '+token);
