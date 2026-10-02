@@ -10,6 +10,8 @@ const listHref=(path='')=>scopeHrefV2('lunarunes',`list${path?'/'+String(path).r
 const RUNE_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,char_action,positive_keywords,negative_keywords,extra_rules,extra_notes';
 const RUNE_DETAIL_COLUMNS='rune_evolution_history,myth_story,soul_question,practice_challenge,ritual_advice,harmony_advice';
 const GROUP_COLUMNS='group_id,english_name,desc,runeslist';
+const MOON_PHASE_LABELS=Object.freeze({1:'新月',2:'上弦',3:'滿月',4:'下弦'});
+const CARD_ATTR_LABELS=Object.freeze({1:'正面',2:'中平',3:'負面',4:'未知'});
 
 function groupView(row){
   const runes=Array.isArray(row?.runeslist)?row.runeslist.map(Number).filter(Number.isInteger):[];
@@ -82,7 +84,7 @@ function RuneDetails({card}){
 export function RuneDirectoryRoot(){
   const {groups,error}=useRuneGroups();
   return <main className="loc-next-main"><section className="loc-view">
-    <header className="loc-hero"><h1>月之符文圖鑑</h1><p className="loc-subtitle">從九組分類開始瀏覽，再進入各組查看符文名稱、月相與基本說明。</p></header>
+    <header className="loc-hero"><h1>月之符文圖鑑</h1><p className="loc-subtitle">從九組分類開始瀏覽，再進入各組查看符文名稱、月相、方向與基本說明。</p></header>
     <section className="loc-card"><figure className="runes-atlas-overview"><img src="/assets/lunarunes/reference/loc_runes_66_overview.jpg" alt="月之符文 66 符總圖" loading="eager"/><figcaption>月之符文 66 符總圖</figcaption></figure></section>
     <section className="loc-card"><h2>群組列表</h2>
       {error?<p className="loc-error" role="alert">符文群組讀取失敗：{error}</p>:null}
