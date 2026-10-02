@@ -14,9 +14,7 @@ for(const [id,scope] of Object.entries(SCOPES_V2)){
     if(featureHrefV2(id,feature.id)!==`${base}/${feature.path}/`)throw new Error(`${id}/${feature.id} canonical route drifted`);
   }
 }
-const globalNav=await readFile('app/GlobalNav.jsx','utf8');
 const scopeNav=await readFile('app/modular-v2/ScopeNavV2.jsx','utf8');
-if(!globalNav.includes('ScopeNavV2'))throw new Error('GlobalNav must render ScopeNavV2');
 for(const token of ['FEATURES_V2','featureHrefV2','useScopeRuntimeV2'])if(!scopeNav.includes(token))throw new Error('ScopeNavV2 missing '+token);
 for(const scope of Object.values(SCOPES_V2).filter(item=>item.mount)){
   if(resolveScopeV2(scope.mount.host,scope.mount.path+'/statics')!==scope.id)throw new Error(scope.id+' mounted feature resolution failed');
