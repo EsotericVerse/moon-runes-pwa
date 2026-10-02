@@ -4,7 +4,7 @@ import {NEON_QUERY_BATCH_SIZE} from './query-contract.mjs';
 
 import {decodeCultureText,formatCultureDateTime} from '../modular-v2/modules/culture-timeline/culture-timeline-model.mjs';
 import {workDisplayText} from '../modular-v2/work-display-model.v2';
-import {resolveGalaxyExternalLinks,selectCategoryCounts,selectDailyCategoryCounts,selectDailyCounts,selectSourceCatalog,selectSourceDaily} from './aggregate-query';
+import {resolveGalaxyExternalLinks,selectCategoryCounts,selectDailyCategoryCounts,selectSourceCatalog,selectSourceDaily} from './aggregate-query';
 import {selectNeonCount,selectNeonRows} from './neon-query';
 import {publicContentFilters} from './content-policy';
 import {mappedScopeTable,resolveScopeTables} from './scope-table-mapping';
@@ -365,43 +365,6 @@ export async function selectScopeCultureData(scopeId){
   };
 }
 
-function normalizedWorkTimelineBuckets(rows=[]){
-  const maximum=Math.max(1,...rows.map(row=>Number(row.item_count)||0));
-  return rows.map(row=>({
-    ...row,
-    global_density_ratio:(Number(row.item_count)||0)/maximum
-  })).sort((a,b)=>String(a.start_date||'').localeCompare(String(b.start_date||''))||String(a.group_label||'').localeCompare(String(b.group_label||'')));
-}
-
-export async function selectScopeWorkSnapshot(scopeId,{startDate='',endDate=null}={}){
-  const runtimeId=runtimeScopeId(scopeId);
-  const dataId=dataScopeId(scopeId);
-  if(!dataId)return {buckets:[],totalCount:0};
-  const tables=await resolveScopeTables(dataId);
-  const [textDaily,mediaDaily]=await Promise.all([
-    selectDailyCounts(tables.galaxy,{startDate,endDate,filters:publicContentFilters([])}),
-    selectDailyCounts(tables.galaxyMedia,{startDate,endDate})
-  ]);
-  const byDay=new Map();
-  for(const row of [...textDaily,...mediaDaily]){
-    const day=String(row.day||'').slice(0,10);
-    if(!day)continue;
-    byDay.set(day,(byDay.get(day)||0)+(Number(row.item_count)||0));
-  }
-  const buckets=[...byDay.entries()].map(([day,item_count])=>({
-    id:'works:'+day,
-    category:'作品',
-    group_label:'作品',
-    display_label:'作品 '+item_count+' 項',
-    title:day+' · 作品 · '+item_count+' 項',
-    start_date:day,
-    item_count,
-    scope_id:runtimeId,
-    entry_type:'work_density'
-  }));
-  return {buckets:normalizedWorkTimelineBuckets(buckets),totalCount:[...byDay.values()].reduce((sum,count)=>sum+count,0)};
-}
-
 export async function selectScopePeriodSourceSnapshot(scopeId,{startDate='',endDate=null}={}){
   if(!scopeId)throw new Error('scopeId is required');
   const tables=await resolveScopeTables(dataScopeId(scopeId));
@@ -507,10 +470,6 @@ export async function selectScopePeriodSourceSnapshot(scopeId,{startDate='',endD
   }).filter(Boolean).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))||LOC_SOURCE_ORDER.indexOf(a.category)-LOC_SOURCE_ORDER.indexOf(b.category));
 
   return {groups,buckets,totalCount:groups.reduce((sum,row)=>sum+Number(row.item_count||0),0)};
-}
-
-export async function selectScopePeriodWorkSources(scopeId,{startDate,endDate=null}={}){
-  return (await selectScopePeriodSourceSnapshot(scopeId,{startDate,endDate})).groups;
 }
 
 function mediaMetadataDescription(row){
@@ -687,98 +646,3 @@ export async function selectScopePeriodWorkDetails(scopeId,{items=[]}={}){
     ).filter(Boolean)
   };
 }
-
-export async function selectScopeMediaSnapshot(scopeId,{startDate,endDate}={}){
-  if(!startDate)return {groups:[],buckets:[],totalCount:0};
-  const runtimeId=runtimeScopeId(scopeId);
-  const table=(await resolveScopeTables(dataScopeId(scopeId))).galaxyMedia;
-  const filters=dateFilters(startDate,endDate);
-  const [groupRows,daily,totalCount]=await Promise.all([
-    selectCategoryCounts(table,'media_type',{startDate,endDate,limit:NEON_QUERY_BATCH_SIZE}),
-    selectDailyCategoryCounts(table,'media_type',{startDate,endDate}),
-    selectNeonCount(table,{filters})
-  ]);
-  const maxima=new Map();
-  let globalMaximum=0;
-  for(const row of daily){
-    const term=String(row.category||'').trim();
-    const count=Number(row.item_count)||0;
-    maxima.set(term,Math.max(maxima.get(term)||0,count));
-    globalMaximum=Math.max(globalMaximum,count);
-  }
-  const groups=groupRows.map(row=>({
-    category_key:'media:type:'+row.term,
-    category_type:'media',
-    media_dimension:'type',
-    media_name:row.term,
-    display_label:row.term,
-    item_count:Number(row.item_count)||0,
-    media_count:Number(row.item_count)||0
-  }));
-  const buckets=daily.map(row=>{
-    const term=String(row.category||'').trim();
-    const day=String(row.day||'').slice(0,10);
-    const count=Number(row.item_count)||0;
-    return {
-      id:'media_type:'+term+':'+day,
-      category:term,
-      group_label:term,
-      start_date:day,
-      item_count:count,
-      works:[],
-      density_ratio:count/Math.max(1,maxima.get(term)||1),
-      global_density_ratio:count/Math.max(1,globalMaximum),
-      display_label:term+' '+count+' 項',
-      title:day+' · '+term+' · '+count+' 項',
-      scope_id:runtimeId,
-      entry_type:'media',
-      classification_dimension:'media',
-      classification_level:'type'
-    };
-  });
-  return {groups,buckets,totalCount};
-}
-
-export async function selectScopeMediaWorks(scopeId,{startDate,endDate,mediaName,limit=20,pageOffset=0}={}){
-  if(!startDate||!mediaName)return {rows:[],hasMore:false,nextOffset:null,totalCount:null};
-  const pageSize=Math.max(1,Math.min(100,Math.floor(Number(limit)||20)));
-  const offset=Math.max(0,Math.floor(Number(pageOffset)||0));
-  const field='media_type';
-  const table=(await resolveScopeTables(dataScopeId(scopeId))).galaxyMedia;
-  const filters=[
-    ...dateFilters(startDate,endDate),
-    {column:field,operator:'eq',value:String(mediaName)}
-  ];
-  const totalCount=await selectNeonCount(table,{filters});
-  const result=await selectNeonRows(table,{
-    columns:'media_id,galaxy_link,source_native_id,media_type,title,url,meta_tags,createtime',
-    filters,
-    orders:[
-      {column:'createtime',ascending:false},
-      {column:'media_id',ascending:true}
-    ],
-    limit:pageSize,
-    offset
-  });
-  const sourceRows=result.rows||[];
-  const page=sourceRows.map(row=>({
-    ...row,
-    record_type:'galaxy_media',
-    entry_id:row.media_id||row.record_id,
-    entry_type:'media_metadata',
-    start_date:row.createtime,
-    date:row.createtime,
-    display_date:formatCultureDateTime(row.createtime),
-    title:decodeCultureText(row.title||'').trim()||row.media_type||'多媒體',
-    description:mediaMetadataDescription(row),
-    media_metadata_text:mediaMetadataDescription(row),
-    group_label:String(row[field]||''),
-    scope_id:runtimeScopeId(scopeId),
-    links:row.url&&/^https?:\/\//i.test(String(row.url))
-      ?[{id:'media:'+String(row.media_id||row.record_id),href:row.url,label:'媒體連結'}]
-      :[]
-  }));
-  const hasMore=offset+pageSize<totalCount;
-  return {rows:page,hasMore,nextOffset:hasMore?offset+pageSize:null,totalCount};
-}
-
