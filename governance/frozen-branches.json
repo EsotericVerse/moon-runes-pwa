@@ -1,5 +1,5 @@
 {
-  "frozen_at": "2026-10-01",
+  "frozen_at": "2026-10-02",
   "policy": "Frozen branches are historical only. Do not add new work or open new PRs from them. Start new work from the latest main.",
   "active": [
     "main"
@@ -13,6 +13,7 @@
     "backup/upload-20260911-133816",
     "batch/title-governance-20260914",
     "chore/repository-data-governance-round2",
+    "cleanup/ponytail-final-20261002",
     "consolidate-search-life-20260907",
     "consolidate-search-life-final-20260907",
     "data-governance-json-classification",
