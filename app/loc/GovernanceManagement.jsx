@@ -9,7 +9,6 @@ import ManagementArticlePublisher from './ManagementArticlePublisher';
 import ManagementImportPanel from './ManagementImportPanel';
 import ManagementDataPanel from './ManagementDataPanel';
 import RuneManagementPanel from './RuneManagementPanel';
-import RuneKeywordManagement from './RuneKeywordManagement';
 import ScopeGroupManagement from './ScopeGroupManagement';
 import CultureTimelineEditor from '../modular/features/CultureTimelineEditor';
 
@@ -100,7 +99,6 @@ export default function GovernanceManagement(){
     {section==='article'&&scopeId!=='loc'?<ManagementArticlePublisher scopeId={scopeId}/>:null}
     {section==='import'&&scopeId!=='loc'?<ManagementImportPanel scopeId={scopeId}/>:null}
     {section==='period'&&scopeId!=='loc'?<CultureTimelineEditor scopeId={scopeId}/>:null}
-    {section==='keywords'&&scopeId==='lrunes'?<RuneKeywordManagement/>:null}
     {section==='daily'&&scopeId==='lrunes'?<RuneManagementPanel/>:null}
   </section>;
 }
