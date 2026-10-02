@@ -8,7 +8,7 @@ import {getScope,scopeHref} from '../modular/scope-registry';
 import ManagementArticlePublisher from './ManagementArticlePublisher';
 import ManagementImportPanel from './ManagementImportPanel';
 import ManagementDataPanel from './ManagementDataPanel';
-import RuneManagementPanel from './RuneManagementPanel';
+import RuneManagementPanel from '../lrunes/RuneManagementPanel';
 import ScopeGroupManagement from './ScopeGroupManagement';
 import CultureTimelineEditor from '../modular/features/CultureTimelineEditor';
 
