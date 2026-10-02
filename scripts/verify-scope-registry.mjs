@@ -1,4 +1,3 @@
-import {existsSync} from 'node:fs';
 import {FEATURES_V2,SCOPES_V2,featureHrefV2,resolveScopeV2} from '../app/modular-v2/scope-registry.v2.js';
 
 const failures=[];
