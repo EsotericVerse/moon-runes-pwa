@@ -3,6 +3,9 @@ import {createClient} from '@neondatabase/neon-js';
 const DATA_API='https://ep-rapid-queen-b3oyboy6.apirest.c-4.ap-southeast-1.aws.neon.tech/neondb/rest/v1';
 const AUTH_API='https://ep-rapid-queen-b3oyboy6.neonauth.c-4.ap-southeast-1.aws.neon.tech/neondb/auth';
 
+const SCOPE_ID_PATTERN=/^[a-z][a-z0-9]*$/;
+const TABLE_TOKEN_PATTERN=/^[a-z][a-z0-9_]*$/;
+
 async function anonymousToken(){
   const response=await fetch(AUTH_API+'/token/anonymous',{headers:{accept:'application/json'}});
   const payload=await response.json().catch(()=>null);
@@ -22,6 +25,45 @@ async function probe(client,table,columns,{filters=[]}={}){
   const {data,error,status}=await query;
   console.log(JSON.stringify({probe:'runtime-public-token',table,columns,status,rows:data?.length||0,code:error?.code||null,error:error?.message||null}));
   if(error)throw new Error(table+': '+(error.code||'')+' '+error.message);
+}
+
+function requiredToken(value,label){
+  const token=String(value||'').trim()||label;
+  if(!TABLE_TOKEN_PATTERN.test(token))throw new Error('silver.manage '+label+' setting invalid');
+  return token;
+}
+
+function scopeMapping(row){
+  const id=String(row?.id||'').trim();
+  if(!SCOPE_ID_PATTERN.test(id))throw new Error('silver.manage Scope id invalid: '+id);
+  const galaxySuffix=requiredToken(row?.galaxy,'galaxy');
+  const timeSuffix=requiredToken(row?.time,'time');
+  const galaxy=id+'_'+galaxySuffix;
+  return {
+    id,
+    role:String(row?.role||'').trim(),
+    metadata:id,
+    galaxy,
+    galaxyMedia:galaxy+'_media',
+    time:id+'_'+timeSuffix
+  };
+}
+
+async function managedScopes(client){
+  const {data,error,status}=await client.schema('silver').from('manage')
+    .select('id,role,birthday,galaxy,time')
+    .in('role',['admin','scope'])
+    .order('id',{ascending:true});
+  console.log(JSON.stringify({probe:'runtime-public-scope-mapping',status,rows:data?.length||0,code:error?.code||null,error:error?.message||null}));
+  if(error)throw new Error('manage: '+(error.code||'')+' '+error.message);
+  return (data||[]).map(scopeMapping);
+}
+
+async function verifyManagedScope(client,scope){
+  await probe(client,scope.metadata,'id,period,period_start,period_end,theme,search_able,statistics_able,culture_able,sources,source_counts,media_count,media_counts,updated_at');
+  await probe(client,scope.time,'record_id,record_type,resource_id,label,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility');
+  await probe(client,scope.galaxy,'uid,title,content,source_name,createtime');
+  await probe(client,scope.galaxyMedia,'media_id,galaxy_link,source_native_id,media_type,title,url,meta_tags,createtime');
 }
 
 // silver.game SSOT contract: query each segment precisely; do not fetch the table and slice in JS.
@@ -67,21 +109,15 @@ async function verifyGameContract(client){
 }
 
 const client=runtimeClient();
-for(const [table,columns,options] of [
-  ['manage','id,role,birthday,galaxy,time'],
-  ['lo3rwang','id,period,period_start,period_end,theme,search_able,statistics_able,culture_able,sources,source_counts,media_count,media_counts,updated_at'],
-  ['lo3rwang_time','record_id,record_type,resource_id,label,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility'],
-  ['lrunes_time','record_id,record_type,resource_id,label,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility'],
-  ['lo3rwang_galaxy','uid,title,content,source_name,createtime'],
-  ['lo3rwang_galaxy_media','media_id,galaxy_link,source_native_id,media_type,title,url,meta_tags,createtime'],
-  ['lrunes_galaxy','uid,title,content,source_name,createtime'],
-  ['lrunes_galaxy_media','media_id,galaxy_link,source_native_id,media_type,title,url,meta_tags,createtime'],
-  ['runes','rune_id,rune_name'],
-  ['game','game_key,record_type,sort_order,status,is_current,event_id,event_group,event_group_2,rune_id,role_id,rule_code,macro_code,asset_code'],
-  ['lrunes','id,period,period_start,period_end,theme,search_able,statistics_able,culture_able,sources,source_counts,media_count,media_counts,updated_at'],
-])await probe(client,table,columns,options||{});
+await probe(client,'manage','id,role,birthday,galaxy,time');
 
+const scopes=await managedScopes(client);
+if(!scopes.length)throw new Error('silver.manage returned no managed Scopes');
+for(const scope of scopes)await verifyManagedScope(client,scope);
 
+// LunaRunes-only canonical SSOT remains explicitly named; it is not a general Scope mapping path.
+await probe(client,'runes','rune_id,rune_name');
+await probe(client,'game','game_key,record_type,sort_order,status,is_current,event_id,event_group,event_group_2,rune_id,role_id,rule_code,macro_code,asset_code');
 await verifyGameContract(client);
 
 console.log('Public Neon runtime repository-path probe passed.');
