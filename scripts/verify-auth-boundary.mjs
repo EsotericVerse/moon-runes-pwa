@@ -5,7 +5,6 @@ const read=path=>fs.readFileSync(path,'utf8');
 const files={
   client:'app/loc/neon-client.js',
   account:'app/loc/use-neon-account.js',
-  authorization:'app/loc/scope-authorization.js',
   userStorage:'app/loc/neon-user-storage.js',
   scopeManagement:'app/loc/GovernanceManagement.jsx',
   adminManagement:'app/loc/views/AdminHomeView.jsx',
@@ -19,8 +18,7 @@ if(!failures.length){
   for(const token of ['getNeonPublicToken','SupabaseAuthAdapter','signInWithOAuth','getSession'])if(!client.includes(token))failures.push('Neon client missing '+token);
   const account=read(files.account);
   for(const token of ["neonAuthRelation('silver.manage')","select('id,email,role,galaxy,time,birthday')",'scopeDataFromManageRows','email:authorizer.email','role:authorizer.role'])if(!account.includes(token))failures.push('account authorization missing '+token);
-  const authorization=read(files.authorization);
-  for(const token of ["z.enum(['admin','scope'])",'permissionRows','scopes.has(normalizeScopeId(scopeId))'])if(!authorization.includes(token))failures.push('scope authorization missing '+token);
+  for(const token of ["z.enum(['admin','scope'])",'permissionRows','scopes.has(normalizeScopeId(scopeId))'])if(!account.includes(token))failures.push('account authorization missing '+token);
   const storage=read(files.userStorage);
   for(const token of ["apiRelation('user_records')","apiRelation('user_settings')","onConflict:'owner_id,id'","onConflict:'owner_id,setting_key'"])if(!storage.includes(token))failures.push('user storage missing '+token);
   if(!read(files.scopeManagement).includes('account.canManageScopeSync(scopeId)'))failures.push('Scope management role gate missing');
