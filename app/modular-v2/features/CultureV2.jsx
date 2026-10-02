@@ -17,7 +17,7 @@ import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
 import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
 import {analyzeRiverDensity} from '../modules/culture-timeline/river-density-analysis.mjs';
 import {selectGalaxyContent} from '../../loc/aggregate-query';
-import {neonAuthClient} from '../../loc/neon-client';
+import {neonAuthRelation} from '../../loc/neon-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {resolveScopeTables} from '../../loc/scope-table-mapping';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
@@ -323,7 +323,6 @@ export default function CultureV2(){
     try{
       if(!account.canManageScopeSync(classificationScope))throw new Error('沒有建立此資料區域定錨點的權限。');
       const {time}=await resolveScopeTables(classificationScope,{email:account.email});
-      const [schema,table]=String(time).split('.');
       const now=new Date().toISOString();
       const rows=selectedVirtualAnchorDates.map(date=>({
         record_type:'anchor',
@@ -339,7 +338,7 @@ export default function CultureV2(){
         year_value:null,
         updated_at:now
       }));
-      const {error}=await neonAuthClient.schema(schema).from(table).insert(rows);
+      const {error}=await neonAuthRelation(time).insert(rows);
       if(error)throw new Error(error.message||'批量建立定錨點失敗');
       setSelectedVirtualAnchorDates([]);
       setAnchorSaveMessage('已一次建立 '+rows.length+' 個正式定錨點。');
@@ -352,7 +351,7 @@ export default function CultureV2(){
   }
 
   async function galaxyTable(){
-    return (await resolveScopeTables(classificationScope)).galaxy.split('.').at(-1);
+    return (await resolveScopeTables(classificationScope)).galaxy;
   }
 
   async function startEditingWork(work){
@@ -361,7 +360,7 @@ export default function CultureV2(){
     const key=String(work?.key||('galaxy:'+uid));
     setEditingWorkKey(key);setEditDraft(null);setEditError('');
     try{
-      const {data,error}=await neonAuthClient.schema('silver').from(await galaxyTable())
+      const {data,error}=await neonAuthRelation(await galaxyTable())
         .select('uid,title,content,searchable')
         .eq('uid',uid)
         .limit(1);
@@ -386,7 +385,7 @@ export default function CultureV2(){
     try{
       if(!account.canManageScopeSync(classificationScope))throw new Error('沒有修改此資料區域的權限。');
       const content=requireGalaxyContent(editDraft.body);
-      const {error}=await neonAuthClient.schema('silver').from(await galaxyTable())
+      const {error}=await neonAuthRelation(await galaxyTable())
         .update({
           title:resolveGalaxyTitle(editDraft.title,content),
           content,
