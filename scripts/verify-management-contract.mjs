@@ -14,6 +14,7 @@ const management=read('app/loc/GovernanceManagement.jsx');
 const governance=read('app/modular/features/Governance.jsx');
 const data=read('app/loc/ManagementDataPanel.jsx');
 const admin=read('app/loc/views/AdminHomeView.jsx');
+const neonClient=read('app/loc/neon-client.js');
 
 must(!galaxy.includes('include_in_time'),'generic search must not query nonexistent include_in_time');
 must(galaxy.includes("'style_tags'")&&galaxy.includes("searchFields:['label','note','status','style_tags']"),'generic Time search must include style_tags');
@@ -26,8 +27,9 @@ must(governance.includes("scopeHref(scopeId,'governance/manage')"),'Governance m
 must(data.includes('updateNeonRows')&&data.includes('deleteNeonRows')&&data.includes('ContentEditor'),'canonical data management must expose shared CRUD');
 must(data.includes('detailRequestRef')&&data.includes('requestId!==detailRequestRef.current'),'record detail UI must ignore stale async responses');
 must(data.includes("toUpperCase()")&&data.includes("galaxy_link 必須是 8 字 UID"),'media edit must normalize and validate galaxy_link');
-must(admin.includes("neonAuthRelation('silver.manage').insert")&&admin.includes(".delete().eq('id'"),'Admin must support mapping add/remove');
+must(admin.includes("insertNeonRows('silver.manage'")&&admin.includes("deleteNeonRows('silver.manage'"),'Admin must support mapping add/remove through shared management write');
 must(admin.includes('selectDraftScope')&&admin.includes('同一 Scope 的 Galaxy / Time mapping 必須一致'),'Admin permission rows must inherit and preserve one Scope mapping');
+must(neonClient.includes("rpc('management_write'")&&neonClient.includes('batchSize=200'),'management writes must use the authorized RPC with bounded insert batches');
 
 must(!/silver\.runes(?:_etc)?\b/.test(galaxy),'generic Galaxy/Search provider must not expose private Rune Core tables');
 const sharedSearch=read('app/modular/features/Search.jsx');
