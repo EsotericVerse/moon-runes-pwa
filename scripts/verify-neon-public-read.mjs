@@ -49,6 +49,19 @@ function scopeMapping(row){
   };
 }
 
+function scopeMappings(rows=[]){
+  const scopes=new Map();
+  for(const row of rows){
+    const next=scopeMapping(row);
+    const current=scopes.get(next.id);
+    if(current&&(current.galaxy!==next.galaxy||current.time!==next.time)){
+      throw new Error('silver.manage Scope '+next.id+' galaxy/time mapping conflict');
+    }
+    scopes.set(next.id,current||next);
+  }
+  return [...scopes.values()].sort((a,b)=>a.id.localeCompare(b.id));
+}
+
 async function managedScopes(client){
   const {data,error,status}=await client.schema('silver').from('manage')
     .select('id,role,birthday,galaxy,time')
@@ -56,7 +69,7 @@ async function managedScopes(client){
     .order('id',{ascending:true});
   console.log(JSON.stringify({probe:'runtime-public-scope-mapping',status,rows:data?.length||0,code:error?.code||null,error:error?.message||null}));
   if(error)throw new Error('manage: '+(error.code||'')+' '+error.message);
-  return (data||[]).map(scopeMapping);
+  return scopeMappings(data||[]);
 }
 
 async function verifyManagedScope(client,scope){
