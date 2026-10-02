@@ -21,7 +21,7 @@ function GovernanceHome(){
   const {scopeId}=useScopeRuntimeV2();
   const account=useNeonAccount();
   const {View,subtitle}=governanceFor(scopeId);
-  const adminHref=getScopeV2('admin').primary.href;
+  const adminHref=scopeHrefV2('admin');
   const canEdit=account.canManageScopeSync(scopeId);
   return <FeaturePageV2 featureId="governance" subtitle={subtitle}>
     <View canEdit={canEdit}/>
