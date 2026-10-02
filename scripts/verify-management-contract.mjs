@@ -31,7 +31,9 @@ must(admin.includes("insertNeonRows('silver.manage'")&&admin.includes("deleteNeo
 must(admin.includes('selectDraftScope')&&admin.includes('同一 Scope 的 Galaxy / Time mapping 必須一致'),'Admin permission rows must inherit and preserve one Scope mapping');
 must(neonClient.includes("rpc('management_write'")&&neonClient.includes('batchSize=200'),'management writes must use the authorized RPC with bounded insert batches');
 must(neonClient.includes('syncManageScopeRow')&&neonClient.includes("p_operation:'scope_sync'"),'Scope mapping updates must use one atomic management write');
+must(neonClient.includes('affected 0 rows')&&neonClient.includes('affected!==batch.length'),'management write helpers must reject zero-row updates/deletes and incomplete inserts');
 must(admin.includes('syncManageScopeRow('),'Admin must update one Scope mapping atomically');
+must(admin.includes('部分 Scope 設定讀取失敗')&&!admin.includes('}catch{}'),'Admin Scope config failures must be surfaced, not swallowed');
 must(data.includes("來源為必填欄位。")&&data.includes('source_name:sourceName'),'Galaxy edits must preserve a nonempty source');
 
 must(!/silver\.runes(?:_etc)?\b/.test(galaxy),'generic Galaxy/Search provider must not expose private Rune Core tables');
