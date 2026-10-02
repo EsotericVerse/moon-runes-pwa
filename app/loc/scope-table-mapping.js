@@ -9,7 +9,8 @@ const TABLE_TOKEN_PATTERN=/^[a-z][a-z0-9_]*$/;
 const DEFAULT_MAPPING=Object.freeze({galaxy:'galaxy',time:'time'});
 
 export function normalizeDataScopeId(scopeId){
-  return String(scopeId||'').trim();
+  const id=String(scopeId||'').trim();
+  return id==='lunarunes'?'lrunes':id;
 }
 
 function safeToken(value,fallback){
