@@ -5,7 +5,7 @@ import {UI_COPY} from '../i18n/ui-copy';
 import {useState} from 'react';
 import {insertNeonRows} from './neon-client';
 import {useNeonAccount} from './use-neon-account';
-import ContentEditor from '../modular/ContentEditor';
+import {ContentEditor} from '../modular/ui';
 import {createUid8} from './uid';
 import {normalizeRelationIds,requireGalaxyContent,resolveGalaxyTitle} from './content-policy';
 
