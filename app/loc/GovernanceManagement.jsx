@@ -103,7 +103,7 @@ export default function GovernanceManagement(){
       <p>{UI_COPY.management.locDescription}</p>
     </header>
     <section className="loc-card">
-      <a className="loc-button primary" href={getScopeV2('admin').primary.href}>{UI_COPY.management.locAdminLink}</a>
+      <a className="loc-button primary" href={scopeHrefV2('admin')}>{UI_COPY.management.locAdminLink}</a>
       <button className="loc-button" type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button>
     </section>
   </section>;
