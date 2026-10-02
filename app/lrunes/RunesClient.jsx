@@ -1,6 +1,5 @@
 import {scopeOriginV2} from '../modular-v2/scope-registry.v2';
 import {RUNE_DRAW_MODES as MODES} from './rune-draw-modes.mjs';
-import DailyRuneCalendar from './DailyRuneCalendar';
 
 const runeHref=path=>{
   const clean=String(path||'').split('/').filter(Boolean).join('/');
@@ -31,8 +30,6 @@ export default function RunesClient(){
         <iframe src="https://www.instagram.com/reel/DMA-ZxLTINw/embed" title="月之符文說明" loading="eager" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" />
       </figure>
     </header>
-
-    <DailyRuneCalendar/>
 
     <section className="loc-card rune-basics">
       <h2>基本判讀順序</h2>
