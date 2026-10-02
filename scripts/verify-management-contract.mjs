@@ -19,9 +19,10 @@ must(!galaxy.includes('include_in_time'),'generic search must not query nonexist
 must(galaxy.includes("'style_tags'")&&galaxy.includes("searchFields:['label','note','status','style_tags']"),'generic Time search must include style_tags');
 must(culture.includes('visibility,style_tags'),'Culture shared Time contract must include style_tags');
 must(editor.includes("style_tags:''")&&editor.includes('風格標籤'),'shared Time editor must edit style_tags');
-must(management.includes("section==='group'&&scopeId==='loc'"),'LOC Scope Group must have its own Manage');
+must(management.includes("section==='group'&&scope.aggregateChildren"),'aggregate Scope Group must have its own Manage');
 must(management.includes('ScopeGroupManagement'),'Manage must compose the Scope Group module');
-must(management.includes("canManage=scopeId==='loc'?account.canManageGlobalSync():account.canManageScopeSync(scopeId)"),'LOC Scope Group Manage must use global management authority without becoming Admin');
+must(!/\blrunes\b/i.test(management),'generic Scope management must not special-case LunaRunes');
+must(management.includes("canManage=scope.aggregateChildren?account.canManageGlobalSync():account.canManageScopeSync(scopeId)"),'aggregate Scope Group Manage must use global authority without becoming Admin');
 must(governance.includes("scopeHref(scopeId,'governance/manage')"),'Governance must link to Scope Manage');
 must(data.includes('updateNeonRows')&&data.includes('deleteNeonRows')&&data.includes('ContentEditor'),'canonical data management must expose shared CRUD');
 must(data.includes('detailRequestRef')&&data.includes('requestId!==detailRequestRef.current'),'record detail UI must ignore stale async responses');
