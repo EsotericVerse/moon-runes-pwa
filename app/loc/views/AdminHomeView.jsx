@@ -6,7 +6,7 @@ import {useEffect,useState} from 'react';
 import {SCOPES_V2} from '../../modular-v2/scope-registry.v2';
 import {THEME_SLOTS_V2} from '../../modular-v2/theme-registry.v2';
 import {useNeonAccount} from '../use-neon-account';
-import {neonAuthClient} from '../neon-client';
+import {neonAuthRelation} from '../neon-client';
 
 const ADMIN_OPTIONS=Object.freeze([
   {value:'scopes',label:UI_COPY.admin.overview},
@@ -30,7 +30,7 @@ function ScopeOverview(){
   const [status,setStatus]=useState('');
   useEffect(()=>{
     let active=true;
-    neonAuthClient.schema('silver').from('manage')
+    neonAuthRelation('silver.manage')
       .select('id,email,role,galaxy,time,birthday')
       .order('id',{ascending:true})
       .order('email',{ascending:true})
@@ -47,7 +47,7 @@ function ScopeOverview(){
     const galaxy=String(row?.galaxy||'galaxy').trim()||'galaxy';
     const time=String(row?.time||'time').trim()||'time';
     if(!/^[a-z][a-z0-9_]*$/.test(galaxy)||!/^[a-z][a-z0-9_]*$/.test(time)){setStatus('galaxy / time mapping 只能使用小寫英數與底線。');return;}
-    const {error}=await neonAuthClient.schema('silver').from('manage')
+    const {error}=await neonAuthRelation('silver.manage')
       .update({galaxy,time})
       .eq('id',row.id)
       .eq('email',row.email);
@@ -59,7 +59,7 @@ function ScopeOverview(){
     <div className="scope-v2-list">
       {scopes.map(scope=><article className="scope-v2-inline-card" key={scope.id}>
         <strong>{scope.label}</strong>
-        <span>{scope.id} · {scope.scopeType}</span>
+        <span>{scope.id} · {scope.domain||scope.mount?.path}</span>
       </article>)}
     </div>
     <h3>資料表 Mapping</h3>
