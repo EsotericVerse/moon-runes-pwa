@@ -120,10 +120,12 @@ export default function ManagementDataPanel({scopeId}){
         },{filters:[{column:'media_id',operator:'eq',value:selectedId}]});
       }else{
         const content=requireGalaxyContent(draft.body);
+        const sourceName=String(draft.source_name||'').trim();
+        if(!sourceName)throw new Error('來源為必填欄位。');
         await updateNeonRows(scopeData.galaxy,{
           title:resolveGalaxyTitle(draft.title,content),content,
           content_type:String(draft.content_type||'article').trim()||'article',
-          source_name:String(draft.source_name||'').trim()||null,
+          source_name:sourceName,
           url:String(draft.url||'').trim()||null,
           source_id:String(draft.source_id||'').trim()||null,
           target_id:normalizeRelationIds(draft.target_id),
