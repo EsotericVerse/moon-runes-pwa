@@ -2,7 +2,7 @@
 
 import {selectNeonRows} from './neon-query';
 import {NEON_QUERY_BATCH_SIZE} from './query-contract.mjs';
-import {neonAuthClient} from './neon-client';
+import {neonAuthRelation} from './neon-client';
 
 const SCOPE_ID_PATTERN=/^[a-z][a-z0-9]*$/;
 const TABLE_TOKEN_PATTERN=/^[a-z][a-z0-9_]*$/;
@@ -59,7 +59,7 @@ async function selectScopeTableMapping(scopeId,{email=''}={}){
   const normalizedEmail=String(email||'').trim().toLowerCase();
   let rows=[];
   if(normalizedEmail){
-    const {data,error}=await neonAuthClient.schema('silver').from('manage')
+    const {data,error}=await neonAuthRelation('silver.manage')
       .select('id,email,galaxy,time')
       .eq('id',id)
       .eq('email',normalizedEmail)
