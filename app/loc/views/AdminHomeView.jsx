@@ -54,6 +54,10 @@ function ScopeOverview(){
     for(const value of [row.galaxy||'galaxy',row.time||'time']){
       if(!/^[a-z][a-z0-9_]*$/.test(String(value)))throw new Error('galaxy / time mapping 只能使用小寫英數與底線。');
     }
+    const existing=mappings.find(item=>item.id===row.id);
+    if(existing&&(String(existing.galaxy||'galaxy')!==String(row.galaxy||'galaxy')||String(existing.time||'time')!==String(row.time||'time'))){
+      throw new Error('同一 Scope 的 Galaxy / Time mapping 必須一致。');
+    }
   };
 
   const save=async index=>{
@@ -71,6 +75,16 @@ function ScopeOverview(){
       if(error)throw new Error(error.message);
       setStatus('Mapping 已更新。');setRevision(value=>value+1);
     }catch(error){setStatus(error.message||'Mapping 儲存失敗。');}
+  };
+
+  const selectDraftScope=id=>{
+    const existing=mappings.find(row=>row.id===id);
+    setDraft(value=>({
+      ...value,id,
+      galaxy:String(existing?.galaxy||'galaxy'),
+      time:String(existing?.time||'time'),
+      birthday:String(existing?.birthday||'').slice(0,10)
+    }));
   };
 
   const add=async()=>{
@@ -121,7 +135,7 @@ function ScopeOverview(){
     <section className="scope-inline-card">
       <h3>新增既有 Scope 權限</h3>
       <div className="scope-management-fields">
-        <label><span>Scope</span><select value={draft.id} onChange={event=>setDraft(value=>({...value,id:event.target.value}))}>
+        <label><span>Scope</span><select value={draft.id} onChange={event=>selectDraftScope(event.target.value)}>
           <option value="">選擇</option>{[...dataScopeIds].map(id=><option key={id} value={id}>{id}</option>)}
         </select></label>
         <label><span>Email</span><input type="email" value={draft.email} onChange={event=>setDraft(value=>({...value,email:event.target.value}))}/></label>
