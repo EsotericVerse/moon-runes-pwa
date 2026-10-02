@@ -3,7 +3,7 @@
 import {NEON_QUERY_BATCH_SIZE} from './query-contract.mjs';
 
 import {isReferenceOnlyResource,publicContentFilters} from './content-policy';
-import {selectNeonCount,selectNeonRows} from './neon-query';
+import {selectAllNeonRows,selectNeonRows} from './neon-query';
 import {resolveScopeTables} from './scope-table-mapping';
 
 async function selectNeonRowById(table,{idColumn,id,columns}={}){
@@ -21,18 +21,8 @@ function sourceFilters(startDate='',endDate=''){
   return publicContentFilters(timeFilters('createtime',startDate,endDate));
 }
 
-async function selectAggregateRows(table,{columns,filters=[],orders=[]}={}){
-  const output=[];
-  let offset=0;
-  const pageSize=NEON_QUERY_BATCH_SIZE;
-  while(true){
-    const {rows}=await selectNeonRows(table,{columns,filters,orders,limit:pageSize,offset});
-    if(!rows.length)break;
-    output.push(...rows);
-    offset+=rows.length;
-    if(rows.length<pageSize)break;
-  }
-  return output;
+async function selectAggregateRows(table,options={}){
+  return (await selectAllNeonRows(table,options)).rows;
 }
 
 export async function selectSourceCatalog({scopeId,startDate='',endDate='',limit=20}={}){
