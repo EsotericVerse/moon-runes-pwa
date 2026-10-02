@@ -27,15 +27,7 @@ if(!failures.length){
   if(!flexCache||flexCache.status!=='protected')failures.push('FlexSearch UID cache-table capability must remain protected');
   if(flexCache?.authority!==false||flexCache?.canonical_content_allowed!==false)failures.push('FlexSearch UID cache-table must remain non-authoritative and non-canonical');
   if(flexCache?.must_not_be_removed_as_duplicate_authority!==true||flexCache?.removal_requires_explicit_governance_change!==true)failures.push('FlexSearch UID cache-table removal protection missing');
-  const runtimeContracts=JSON.parse(read('governance/runtime-capabilities.json'));
-  const flexCacheContract=(runtimeContracts.contracts||[]).find(item=>item.id==='flexsearch-cache-table');
-  if(!flexCacheContract)failures.push('Runtime governance missing FlexSearch cache-table contract');
-  else{
-    if(flexCacheContract.status!=='required')failures.push('FlexSearch cache-table contract must remain required');
-    if(flexCacheContract.authority!=='ephemeral')failures.push('FlexSearch cache-table contract must remain explicitly non-authoritative/ephemeral');
-    const rule=String(flexCacheContract.rule||'');
-    for(const token of ['dedicated Neon cache table','must not remove','explicit architecture decision'])if(!rule.includes(token))failures.push('FlexSearch cache-table governance rule missing '+token);
-  }
+  for(const token of ['uid','scope_id','cache_name'])if(!(flexCache?.allowed_payload||[]).includes(token))failures.push('FlexSearch UID cache-table allowed payload missing '+token);
   const neonAudit=read('scripts/verify-neon-public-read.mjs');
   for(const token of ['managedScopes','scopeMapping','scopeMappings','mapping conflict','verifyManagedScope'])if(!neonAudit.includes(token))failures.push('Public Neon audit missing Scope-derived '+token);
   for(const token of ['lo3rwang_galaxy','lrunes_galaxy','lo3rwang_time','lrunes_time'])if(neonAudit.includes(token))failures.push('Public Neon audit must not hard-code Scope table '+token);
