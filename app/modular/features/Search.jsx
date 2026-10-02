@@ -12,7 +12,7 @@ import FeaturePage from '../FeaturePage';
 import WorkSummaryCard from '../WorkSummaryCard';
 import WorkFullText from '../WorkFullText';
 import {useScopeRuntime} from '../use-scope-runtime';
-import {SCOPES,scopeHref} from '../scope-registry.v2';
+import {SCOPES,scopeHref} from '../scope-registry';
 import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
 import ContentEditor from '../ContentEditor';
