@@ -1,4 +1,4 @@
-export const THEME_TOKEN_KEYS_V2=[
+export const THEME_TOKEN_KEYS=[
   '--loc-bg','--loc-panel','--loc-panel-2','--loc-panel-strong','--loc-panel-nav','--loc-panel-tab','--loc-rune-bg','--loc-rune-selected-bg',
   '--loc-line','--loc-line-soft','--loc-line-softer','--loc-line-faint','--loc-text','--loc-muted','--loc-heading','--loc-accent','--loc-gold','--loc-danger',
   '--loc-surface','--loc-surface-soft','--loc-surface-faint','--loc-surface-status','--loc-accent-surface','--loc-accent-surface-strong','--loc-accent-border','--loc-accent-border-soft','--loc-accent-border-faint',
@@ -6,7 +6,7 @@ export const THEME_TOKEN_KEYS_V2=[
   '--loc-primary-start','--loc-primary-end','--loc-body-glow','--loc-body-mid','--loc-hero-start','--loc-hero-end','--loc-shadow','--loc-shadow-card'
 ];
 
-export const GROUP_IDENTITY_COLORS_V2=Object.freeze({
+const GROUP_IDENTITY_COLORS=Object.freeze({
   '靈魂':'#1d2f8f','連結':'#9bd7ff','生命':'#ff8a00','自然':'#1f6b3a',
   '礦物':'#c7cdd3','元素':'#e53935','秩序':'#ffffff','無序':'#6b3e2e'
 });
@@ -22,24 +22,22 @@ const slots=[
   {id:'theme-8',styleKey:'disorder',group:'無序',label:'無序',scheme:'dark',tokens:{'--loc-bg':'#6b3e2e','--loc-panel':'#4a281f','--loc-panel-2':'#6f3f2e','--loc-panel-strong':'rgba(74,40,31,.96)','--loc-panel-nav':'rgba(55,29,23,.98)','--loc-panel-tab':'rgba(111,63,46,.94)','--loc-rune-bg':'#3d211a','--loc-rune-selected-bg':'#875039','--loc-line':'rgba(238,190,157,.30)','--loc-line-soft':'rgba(238,190,157,.15)','--loc-line-softer':'rgba(238,190,157,.18)','--loc-line-faint':'rgba(238,190,157,.20)','--loc-text':'#fff3eb','--loc-muted':'#e0b9a5','--loc-heading':'#fffaf6','--loc-accent':'#d48d69','--loc-gold':'#e2a77e','--loc-danger':'#ffb9a3','--loc-surface':'rgba(74,40,31,.94)','--loc-surface-soft':'rgba(238,190,157,.06)','--loc-surface-faint':'rgba(238,190,157,.035)','--loc-surface-status':'rgba(238,190,157,.07)','--loc-accent-surface':'rgba(212,141,105,.12)','--loc-accent-surface-strong':'rgba(212,141,105,.22)','--loc-accent-border':'rgba(212,141,105,.62)','--loc-accent-border-soft':'rgba(212,141,105,.46)','--loc-accent-border-faint':'rgba(212,141,105,.34)','--loc-gold-surface':'rgba(226,167,126,.12)','--loc-gold-surface-soft':'rgba(226,167,126,.08)','--loc-gold-border':'rgba(226,167,126,.64)','--loc-gold-border-soft':'rgba(226,167,126,.48)','--loc-gold-border-faint':'rgba(226,167,126,.36)','--loc-gold-ring':'rgba(226,167,126,.30)','--loc-gold-ring-soft':'rgba(226,167,126,.18)','--loc-danger-border':'rgba(255,185,163,.38)','--loc-primary-start':'#875039','--loc-primary-end':'#5c3024','--loc-body-glow':'#754331','--loc-body-mid':'#2b1712','--loc-hero-start':'rgba(112,61,43,.96)','--loc-hero-end':'rgba(43,23,18,.98)','--loc-shadow':'0 20px 55px rgba(43,23,18,.34)','--loc-shadow-card':'0 12px 35px rgba(43,23,18,.22)'}}
 ];
 
-export const THEME_DEFAULT_SLOTS_V2=Object.freeze(slots.map((slot,index)=>Object.freeze({
+export const THEME_SLOTS=Object.freeze(slots.map((slot,index)=>Object.freeze({
   ...slot,
-  identityColor:GROUP_IDENTITY_COLORS_V2[slot.group],
+  identityColor:GROUP_IDENTITY_COLORS[slot.group],
   order:index+1,
   tokens:Object.freeze(slot.tokens)
 })));
 
-export const THEME_SLOTS_V2=THEME_DEFAULT_SLOTS_V2;
-
-export function getThemeSlotV2(id){
-  return THEME_DEFAULT_SLOTS_V2.find(item=>item.id===id)
-    ||THEME_DEFAULT_SLOTS_V2.find(item=>item.id==='theme-7');
+export function getThemeSlot(id){
+  return THEME_SLOTS.find(item=>item.id===id)
+    ||THEME_SLOTS.find(item=>item.id==='theme-7');
 }
 
-export function applyThemeV2(slot){
+export function applyTheme(slot){
   if(typeof document==='undefined'||!slot)return;
   const root=document.documentElement;
-  THEME_TOKEN_KEYS_V2.forEach(key=>root.style.removeProperty(key));
+  THEME_TOKEN_KEYS.forEach(key=>root.style.removeProperty(key));
   root.dataset.theme=slot.scheme;
   root.dataset.themeId=slot.id;
   root.style.colorScheme=slot.scheme;

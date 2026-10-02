@@ -1,10 +1,8 @@
 import './globals.css';
-import ScopeNavV2 from './modular-v2/ScopeNavV2';
-import AppExperience from './AppExperience';
-import ScopeFooterV2 from './modular-v2/ScopeFooterV2';
-import QueryProvider from './QueryProvider';
+import AppShell from './AppShell';
 import {LOC_ORIGIN} from './seo/metadata';
-import {getThemeSlotV2} from './modular-v2/theme-registry.v2';
+import {getThemeSlot} from './modular/theme-registry';
+import {SCOPES} from './modular/scope-registry';
 
 export const metadata = {
   metadataBase:new URL(LOC_ORIGIN),
@@ -14,28 +12,44 @@ export const metadata = {
   referrer:'origin-when-cross-origin'
 };
 
-const INITIAL_THEME_IDS=['theme-1','theme-2','theme-5','theme-7'];
+const AUTO_DAY_THEME_ID='theme-7';
+const AUTO_NIGHT_THEME_ID='theme-1';
+const INITIAL_SCOPE_THEMES=Object.values(SCOPES).map(scope=>({
+  domain:scope.domain||'',
+  mount:scope.mount||null,
+  theme:scope.theme||{mode:'auto'}
+}));
+const INITIAL_THEME_IDS=[...new Set([
+  AUTO_DAY_THEME_ID,
+  AUTO_NIGHT_THEME_ID,
+  ...INITIAL_SCOPE_THEMES.map(scope=>scope.theme?.themeId).filter(Boolean)
+])];
 const INITIAL_THEME_SLOTS=Object.fromEntries(INITIAL_THEME_IDS.map(id=>{
-  const slot=getThemeSlotV2(id);
+  const slot=getThemeSlot(id);
   return [id,{id:slot.id,scheme:slot.scheme,tokens:slot.tokens}];
 }));
 const INITIAL_THEME_SCRIPT=`(()=>{try{
   const slots=${JSON.stringify(INITIAL_THEME_SLOTS)};
+  const scopes=${JSON.stringify(INITIAL_SCOPE_THEMES)};
   const host=window.location.hostname.toLowerCase();
   const pathname=(window.location.pathname||'/').toLowerCase();
-  let themeId='';
-  if(host==='lrunes.lo3rwang.cc'||pathname==='/lrunes'||pathname.startsWith('/lrunes/')){
-    themeId='theme-5';
-  }else if(pathname==='/lo3rwang'||pathname.startsWith('/lo3rwang/')){
-    themeId='theme-2';
-  }else{
+  const match=scopes.find(scope=>{
+    if(scope.mount){
+      const base=String(scope.mount.path||'/').replace(/\\/+$/,'')||'/';
+      if(host===String(scope.mount.host||'').toLowerCase()&&(pathname===base||pathname.startsWith(base+'/')))return true;
+    }
+    return scope.domain&&host===String(scope.domain).toLowerCase();
+  });
+  const policy=match?.theme||{mode:'auto'};
+  let themeId=policy.mode==='fixed'?policy.themeId:'';
+  if(!themeId){
     let hour=new Date().getHours();
     try{
       const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Taipei',hour:'2-digit',hourCycle:'h23'}).formatToParts(new Date());
       const part=parts.find(item=>item.type==='hour');
       if(part)hour=Number(part.value);
     }catch{}
-    themeId=hour>=6&&hour<18?'theme-7':'theme-1';
+    themeId=hour>=6&&hour<18?'${AUTO_DAY_THEME_ID}':'${AUTO_NIGHT_THEME_ID}';
   }
   const slot=slots[themeId];
   if(!slot)return;
@@ -53,12 +67,7 @@ export default function RootLayout({ children }) {
         <script id="loc-theme-bootstrap" dangerouslySetInnerHTML={{__html:INITIAL_THEME_SCRIPT}} />
       </head>
       <body className="loc-app-shell">
-        <QueryProvider>
-          <AppExperience />
-          <header className="scope-v2-global"><ScopeNavV2/></header>
-          {children}
-          <ScopeFooterV2 />
-        </QueryProvider>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

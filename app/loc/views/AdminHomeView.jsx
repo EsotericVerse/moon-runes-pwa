@@ -3,10 +3,10 @@
 import {UI_COPY} from '../../i18n/ui-copy';
 
 import {useEffect,useState} from 'react';
-import {SCOPES_V2} from '../../modular-v2/scope-registry.v2';
-import {THEME_SLOTS_V2} from '../../modular-v2/theme-registry.v2';
+import {SCOPES} from '../../modular/scope-registry';
+import {THEME_SLOTS} from '../../modular/theme-registry';
 import {useNeonAccount} from '../use-neon-account';
-import {neonAuthClient} from '../neon-client';
+import {neonAuthRelation} from '../neon-client';
 
 const ADMIN_OPTIONS=Object.freeze([
   {value:'scopes',label:UI_COPY.admin.overview},
@@ -19,18 +19,18 @@ function Login({account}){
     <section className="loc-card">
       <p>{UI_COPY.admin.loginIntro}</p>
       <button className="loc-button primary" type="button" onClick={account.signIn}>{UI_COPY.admin.signIn}</button>
-      {account.error?<p className="scope-v2-status scope-v2-error">{account.error}</p>:null}
+      {account.error?<p className="scope-status scope-error">{account.error}</p>:null}
     </section>
   </section>;
 }
 
 function ScopeOverview(){
-  const scopes=Object.values(SCOPES_V2).filter(scope=>scope.id!=='admin');
+  const scopes=Object.values(SCOPES).filter(scope=>scope.id!=='admin');
   const [mappings,setMappings]=useState([]);
   const [status,setStatus]=useState('');
   useEffect(()=>{
     let active=true;
-    neonAuthClient.schema('silver').from('manage')
+    neonAuthRelation('silver.manage')
       .select('id,email,role,galaxy,time,birthday')
       .order('id',{ascending:true})
       .order('email',{ascending:true})
@@ -47,7 +47,7 @@ function ScopeOverview(){
     const galaxy=String(row?.galaxy||'galaxy').trim()||'galaxy';
     const time=String(row?.time||'time').trim()||'time';
     if(!/^[a-z][a-z0-9_]*$/.test(galaxy)||!/^[a-z][a-z0-9_]*$/.test(time)){setStatus('galaxy / time mapping 只能使用小寫英數與底線。');return;}
-    const {error}=await neonAuthClient.schema('silver').from('manage')
+    const {error}=await neonAuthRelation('silver.manage')
       .update({galaxy,time})
       .eq('id',row.id)
       .eq('email',row.email);
@@ -56,26 +56,26 @@ function ScopeOverview(){
   return <section className="loc-card">
     <p className="loc-eyebrow">Current Scope Registry</p>
     <h2>{UI_COPY.admin.overview}</h2>
-    <div className="scope-v2-list">
-      {scopes.map(scope=><article className="scope-v2-inline-card" key={scope.id}>
+    <div className="scope-list">
+      {scopes.map(scope=><article className="scope-inline-card" key={scope.id}>
         <strong>{scope.label}</strong>
-        <span>{scope.id} · {scope.scopeType}</span>
+        <span>{scope.id} · {scope.domain||scope.mount?.path}</span>
       </article>)}
     </div>
     <h3>資料表 Mapping</h3>
     <p>每個 (id, email) 可各自指定 Galaxy 與 Time suffix；空值會回到 galaxy / time。</p>
-    <div className="scope-v2-list">
-      {mappings.map((row,index)=><article className="scope-v2-inline-card" key={row.id+':'+row.email}>
+    <div className="scope-list">
+      {mappings.map((row,index)=><article className="scope-inline-card" key={row.id+':'+row.email}>
         <strong>{row.id} · {row.email}</strong>
         <span>{row.role}</span>
-        <div className="scope-v2-stat-controls">
+        <div className="scope-stat-controls">
           <label><span>Galaxy</span><input value={row.galaxy||'galaxy'} onChange={event=>change(index,'galaxy',event.target.value)}/></label>
           <label><span>Time</span><input value={row.time||'time'} onChange={event=>change(index,'time',event.target.value)}/></label>
           <button type="button" onClick={()=>save(index)}>儲存 Mapping</button>
         </div>
       </article>)}
     </div>
-    {status?<p className="scope-v2-status" role="status">{status}</p>:null}
+    {status?<p className="scope-status" role="status">{status}</p>:null}
   </section>;
 }
 
@@ -84,8 +84,8 @@ function ThemeOverview(){
     <p className="loc-eyebrow">Theme Registry</p>
     <h2>{UI_COPY.admin.theme}</h2>
     <p>目前先檢視 8 組完整預設 Theme，不在這裡直接改色。未來可由 Admin 覆寫整組設定；沒有管理設定時一律回到預設 Theme。</p>
-    <div className="scope-v2-list">
-      {THEME_SLOTS_V2.map(theme=><article className="scope-v2-inline-card" key={theme.id}>
+    <div className="scope-list">
+      {THEME_SLOTS.map(theme=><article className="scope-inline-card" key={theme.id}>
         <strong>{theme.label}</strong>
         <span>{theme.id} · {theme.scheme}</span>
       </article>)}
@@ -108,9 +108,9 @@ export default function AdminHomeView(){
       <p className="loc-eyebrow">{UI_COPY.admin.eyebrow}</p>
       <h1>{UI_COPY.admin.eyebrow}</h1>
       <p>先保持簡單；Scope 的完整管理仍由各 Scope 自己負責。</p>
-      <div className="scope-v2-management-select">
+      <div className="scope-management-select">
         <label htmlFor="admin-management-section">{UI_COPY.admin.item}</label>
-        <select id="admin-management-section" className="scope-v2-select" value={section} onChange={event=>setSection(event.target.value)}>
+        <select id="admin-management-section" className="scope-select" value={section} onChange={event=>setSection(event.target.value)}>
           {ADMIN_OPTIONS.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}
         </select>
       </div>

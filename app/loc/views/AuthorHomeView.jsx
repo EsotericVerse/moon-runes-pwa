@@ -1,4 +1,24 @@
-import { PageComposition } from '../../PageComposition';
+function AuthorPage({eyebrow,title,subtitle,intro,heroVisual=null,sections=[]}){
+  return <section className="loc-view scope-home-composition">
+    {heroVisual?<header className="loc-hero scope-home-hero-with-visual" id="top">
+      <div className="scope-home-hero-copy">
+        {eyebrow?<p className="loc-eyebrow">{eyebrow}</p>:null}
+        <div className="home-title-row"><h1>{title}</h1>{subtitle?<p className="loc-subtitle">{subtitle}</p>:null}</div>
+        {intro}
+      </div>
+      <figure className="home-hero-visual scope-home-hero-visual">{heroVisual}</figure>
+    </header>:<header className="loc-hero" id="top">
+      {eyebrow?<p className="loc-eyebrow">{eyebrow}</p>:null}
+      <div className="home-title-row"><h1>{title}</h1>{subtitle?<p className="loc-subtitle">{subtitle}</p>:null}</div>
+      {intro}
+    </header>}
+    {sections.map((section,index)=><section className="loc-card scope-home-section" id={section.id} key={section.id} data-composition-slot={index+1}>
+      {section.eyebrow?<p className="loc-eyebrow">{section.eyebrow}</p>:null}
+      <h2>{section.title}</h2>
+      {section.content}
+    </section>)}
+  </section>;
+}
 
 const PROFESSIONAL_ROLES=Object.freeze([
   Object.freeze({
@@ -157,7 +177,7 @@ export default function AuthorHomeView({section=null}){
     });
     const ids=sectionGroups[section]||[];
     const activeSections=ids.length?detailedSections.filter(item=>ids.includes(item.id)):detailedSections;
-    return <PageComposition
+    return <AuthorPage
       eyebrow="Author"
       title="Lucas Oscar Wang 政德"
       subtitle="lo3rwang"
@@ -166,7 +186,7 @@ export default function AuthorHomeView({section=null}){
     />;
   }
 
-  return <PageComposition
+  return <AuthorPage
     eyebrow="Lucas Oscar Wang"
     title="政德"
     subtitle="語言建築師"

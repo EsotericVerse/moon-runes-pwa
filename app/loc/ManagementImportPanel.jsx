@@ -3,20 +3,10 @@
 import {UI_COPY} from '../i18n/ui-copy';
 
 import {useMemo,useState} from 'react';
-import {neonAuthClient} from './neon-client';
+import {insertNeonRows} from './neon-client';
 import {useNeonAccount} from './use-neon-account';
 import {createUid8} from './uid';
-import {normalizeGalaxyContent,resolveGalaxyTitle} from './content-policy';
-import {resolveScopeTables} from './scope-table-mapping';
-
-async function insertNeonRows(table,rows){
-  if(String(table).endsWith('_galaxy_media')){
-    for(const row of rows||[])if(!String(row?.meta_tags||'').trim())throw new Error('Media records require meta_tags.');
-  }
-  const [schema,name]=String(table).split('.');
-  const {error}=await neonAuthClient.schema(schema).from(name).insert(rows);
-  if(error)throw new Error(error.message||('Neon INSERT '+table+' failed'));
-}
+import {normalizeGalaxyContent,normalizeRelationIds,resolveGalaxyTitle} from './content-policy';
 
 function sourceSuggestion(name=''){
   const value=String(name).toLowerCase();
@@ -24,11 +14,6 @@ function sourceSuggestion(name=''){
     if(value.includes(key))return key;
   }
   return String(name).replace(/\.json$/i,'').trim().toLowerCase().replace(/[^a-z0-9_-]+/g,'-')||'import';
-}
-function targetIds(value){
-  const values=Array.isArray(value)?value:String(value||'').split(/[,，]/);
-  const ids=[...new Set(values.map(item=>String(item||'').trim()).filter(Boolean))];
-  return ids.length?ids:null;
 }
 function firstValue(row,keys){
   for(const key of keys)if(row?.[key]!==undefined&&row?.[key]!==null&&String(row[key]).trim()!=='')return row[key];
@@ -85,28 +70,29 @@ function JsonImport({scopeId}){
           source_place:String(firstValue(row,['source_place','place'])||'').trim()||null,
           searchable:row?.searchable!==false&&row?.search!==false,
           source_id:String(firstValue(row,['source_id'])||'').trim()||null,
-          target_id:targetIds(firstValue(row,['target_id'])),
+          target_id:normalizeRelationIds(firstValue(row,['target_id'])),
           ref_id:String(firstValue(row,['ref_id'])||'').trim()||null,
           url:String(firstValue(row,['url','link','permalink'])||'').trim()||null,
           source_name:selected
         };
       }).filter(row=>row.content);
       const skipped=Math.max(0,rows.length-payload.length);
-      const {galaxy}=await resolveScopeTables(scopeId,{email:account.email});
+      const galaxy=account.scopeDataFor(scopeId)?.galaxy;
+      if(!galaxy)throw new Error('Scope data 未解析');
       await insertNeonRows(galaxy,payload);
       setStatus(`已匯入 ${payload.length.toLocaleString()} 筆到來源「${selected}」${skipped?`；略過 ${skipped.toLocaleString()} 筆無正文資料。`:''}`);
       setRows([]);setFileName('');
     }catch(error){setStatus(error?.message||'匯入失敗。');}
     finally{setBusy(false);}
   }
-  return <div className="scope-v2-inline-card">
+  return <div className="scope-inline-card">
     <h4>{UI_COPY.management.importJson}</h4>
     <label>{UI_COPY.management.currentFile}<input type="file" accept=".json,application/json" onChange={chooseFile}/></label>
     {fileName?<p>檔案：<strong>{fileName}</strong>｜建議來源：<strong>{suggested}</strong></p>:null}
     <label>{UI_COPY.management.sourceChoice}<input value={source} onChange={e=>setSource(e.target.value)} placeholder={suggested}/></label>
     <p className="loc-subtitle">建議位置只作提示；實際來源仍由管理者決定。source_id／target_id／ref_id 若存在會一併帶入。</p>
     <button type="button" disabled={busy||!rows.length} onClick={run}>{busy?UI_COPY.management.importing:UI_COPY.management.startImport}</button>
-    {status?<p className="scope-v2-status">{status}</p>:null}
+    {status?<p className="scope-status">{status}</p>:null}
   </div>;
 }
 
@@ -151,7 +137,8 @@ function MediaRecordInsert({scopeId}){
       if(!record.title&&!record.url&&!record.meta_tags&&!record.source_native_id&&!record.source_place){
         throw new Error('至少填寫 title、url、meta_tags、source_native_id 或 source_place 其中一項。');
       }
-      const {galaxyMedia}=await resolveScopeTables(scopeId,{email:account.email});
+      const galaxyMedia=account.scopeDataFor(scopeId)?.galaxyMedia;
+      if(!galaxyMedia)throw new Error('Scope data 未解析');
       await insertNeonRows(galaxyMedia,[record]);
       setStatus('多媒體資料已直接寫入 Galaxy Media。');
       setDraft({
@@ -168,16 +155,16 @@ function MediaRecordInsert({scopeId}){
     finally{setBusy(false);}
   }
 
-  return <div className="scope-v2-inline-card">
+  return <div className="scope-inline-card">
     <h4>{UI_COPY.management.addMedia}</h4>
     <p>只記錄外部媒體參照與文字 metadata：URL／雲端連結、檔名或標題、來源 ID、時間、地點與 Meta Tag；不接收、不暫存任何圖片／音訊／影片檔案。media_id 由資料庫自動產生，url 可留空。</p>
-    <form onSubmit={save} className="scope-v2-editor">
-      <div className="scope-v2-stat-controls">
+    <form onSubmit={save} className="scope-editor">
+      <div className="scope-stat-controls">
         <label>media_type<input value={draft.media_type} onChange={e=>change('media_type',e.target.value)} placeholder="ig_pic / facebook_pic / suno / video / url" required/></label>
         <label>galaxy_link<input value={draft.galaxy_link} onChange={e=>change('galaxy_link',e.target.value)} placeholder="8 字 UID，可留空"/></label>
         <label>createtime<input type="datetime-local" value={draft.createtime} onChange={e=>change('createtime',e.target.value)}/></label>
       </div>
-      <div className="scope-v2-stat-controls">
+      <div className="scope-stat-controls">
         <label>source_native_id<input value={draft.source_native_id} onChange={e=>change('source_native_id',e.target.value)}/></label>
         <label>source_place<input value={draft.source_place} onChange={e=>change('source_place',e.target.value)} placeholder="打卡地點／拍攝位置"/></label>
       </div>
@@ -185,7 +172,7 @@ function MediaRecordInsert({scopeId}){
       <label>url<input value={draft.url} onChange={e=>change('url',e.target.value)} placeholder="外部 URL／雲端連結，可留空，之後再補"/></label>
       <label>meta_tags<input value={draft.meta_tags} onChange={e=>change('meta_tags',e.target.value)} placeholder="建立時由資料提供者設定，逗號分隔" required/></label>
       <button type="submit" disabled={busy}>{busy?UI_COPY.common.saving:UI_COPY.management.addMedia}</button>
-      {status?<p className="scope-v2-status">{status}</p>:null}
+      {status?<p className="scope-status">{status}</p>:null}
     </form>
   </div>;
 }
@@ -208,12 +195,14 @@ function SunoImport({scopeId}){
       const lyricsUid=draft.lyrics.trim()?createUid8():null;
       const styleUid=lyricsUid&&draft.stylePrompt.trim()?createUid8():null;
       const sourceId=draft.source_id.trim()||(styleUid?draft.ref_id.trim():'')||null;
-      const {galaxy,galaxyMedia}=await resolveScopeTables(scopeId,{email:account.email});
+      const scopeData=account.scopeDataFor(scopeId);
+      if(!scopeData)throw new Error('Scope data 未解析');
+      const {galaxy,galaxyMedia}=scopeData;
       if(lyricsUid){
         await insertNeonRows(galaxy,[{
           uid:lyricsUid,content_type:'lyrics',
           title:draft.title.trim(),content:draft.lyrics.trim(),createtime,
-          source_id:sourceId,target_id:targetIds(draft.target_id),ref_id:styleUid||draft.ref_id.trim()||null,
+          source_id:sourceId,target_id:normalizeRelationIds(draft.target_id),ref_id:styleUid||draft.ref_id.trim()||null,
           url:draft.url.trim()||null,searchable:true,source_name:'suno'
         }]);
       }
@@ -234,34 +223,34 @@ function SunoImport({scopeId}){
     }catch(error){setStatus(error?.message||'Suno 儲存失敗。');}
     finally{setBusy(false);}
   }
-  return <div className="scope-v2-inline-card">
+  return <div className="scope-inline-card">
     <h4>Suno 單筆匯入</h4>
     <p>Suno 無批次匯出時使用。歌詞與 Suno Style 進 Galaxy；媒體連結與 Meta Tag 進 Galaxy Media。</p>
-    <form onSubmit={save} className="scope-v2-editor">
+    <form onSubmit={save} className="scope-editor">
       <label>{UI_COPY.management.songTitle}<input value={draft.title} onChange={e=>change('title',e.target.value)}/></label>
       <label>{UI_COPY.management.lyrics}<textarea rows={8} value={draft.lyrics} onChange={e=>change('lyrics',e.target.value)}/></label>
-      <div className="scope-v2-stat-controls">
+      <div className="scope-stat-controls">
         <label>Suno URL<input value={draft.url} onChange={e=>change('url',e.target.value)}/></label>
         <label>Suno ID<input value={draft.nativeId} onChange={e=>change('nativeId',e.target.value)} placeholder="可由 URL 自動辨識"/></label>
         <label>日期<input type="date" value={draft.createdDate} onChange={e=>change('createdDate',e.target.value)}/></label>
       </div>
-      <div className="scope-v2-stat-controls">
+      <div className="scope-stat-controls">
         <label>Suno Style<input value={draft.stylePrompt} onChange={e=>change('stylePrompt',e.target.value)}/></label>
         <label>Meta Tags<input value={draft.metaTags} onChange={e=>change('metaTags',e.target.value)} placeholder="建立時由資料提供者設定" required/></label>
       </div>
-      <div className="scope-v2-stat-controls">
+      <div className="scope-stat-controls">
         <label>source_id<input value={draft.source_id} onChange={e=>change('source_id',e.target.value)}/></label>
         <label>target_id<input value={draft.target_id} onChange={e=>change('target_id',e.target.value)}/></label>
         <label>ref_id<input value={draft.ref_id} onChange={e=>change('ref_id',e.target.value)}/></label>
       </div>
       <button type="submit" disabled={busy}>{busy?UI_COPY.common.saving:UI_COPY.management.addSuno}</button>
-      {status?<p className="scope-v2-status">{status}</p>:null}
+      {status?<p className="scope-status">{status}</p>:null}
     </form>
   </div>;
 }
 
 export default function ManagementImportPanel({scopeId}){
-  return <section className="scope-v2-inline-card">
+  return <section className="scope-inline-card">
     <h3>{UI_COPY.management.import}</h3>
     <JsonImport scopeId={scopeId}/>
     <MediaRecordInsert scopeId={scopeId}/>

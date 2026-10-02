@@ -4,9 +4,12 @@ export function normalizeGalaxyContent(value){
   return String(value??'').trim();
 }
 
-export function hasValidGalaxyContent(value){
-  return normalizeGalaxyContent(value).length>0;
+export function normalizeRelationIds(value){
+  const values=Array.isArray(value)?value:String(value||'').split(/[,，]/);
+  const ids=[...new Set(values.map(item=>String(item||'').trim()).filter(Boolean))];
+  return ids.length?ids:null;
 }
+
 
 export function requireGalaxyContent(value){
   const content=normalizeGalaxyContent(value);

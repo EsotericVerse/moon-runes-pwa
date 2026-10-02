@@ -3,39 +3,39 @@
 import {UI_COPY} from '../../i18n/ui-copy';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
+import {useQuery} from '@tanstack/react-query';
 import {useSearchParams} from 'next/navigation';
-import {searchNeonRows} from '../../loc/neon-search';
-import {neonAuthRelation} from '../../loc/neon-client';
+
+import {selectNeonAuthRow,updateNeonRows} from '../../loc/neon-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
-import FeaturePageV2 from '../FeaturePageV2';
-import WorkSummaryCardV2 from '../WorkSummaryCardV2';
-import WorkFullTextV2 from '../WorkFullTextV2';
-import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
-import {scopeHrefV2} from '../scope-registry.v2';
-import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation.v2';
-import {featureDataErrorMessage} from '../feature-data-state.v2';
-import ContentEditorV2 from '../ContentEditorV2';
-import SearchHighlightV2 from '../SearchHighlightV2';
-import {resolveGalaxyExternalLinks,selectGalaxyContent,selectGalaxyIdentity} from '../../loc/aggregate-query';
-import {selectManagedScopes} from '../../loc/scope-table-mapping';
-import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model.v2';
+import {ContentEditor,FeaturePage,IncrementalList,WorkFullText,WorkSummaryCard} from '../ui';
+import {useScopeRuntime} from '../use-scope-runtime';
+import {SCOPES,scopeHref} from '../scope-registry';
+import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation';
+import {featureDataErrorMessage} from '../feature-data-state';
+import {resolveGalaxyExternalLinks,searchGalaxyRows,selectGalaxyContent,selectGalaxyIdentity} from '../../loc/galaxy-query';
+import {selectManagedScopes} from '../../loc/scope-data';
+import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
-import IncrementalListV2 from '../IncrementalListV2';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import {applyNeonFilters} from '../../loc/neon-query';
 
 
-async function selectNeonRowById(table,{idColumn,id,columns}={}){
-  const {data,error}=await neonAuthRelation(table).select(columns).eq(idColumn,String(id)).limit(1);
-  if(error)throw new Error(error.message||UI_COPY.search.readFailed);
-  return data?.[0]||null;
+function escapeSearchRegExp(value){
+  return String(value||'').replace(/[.*+?^\${}()|[\]\\]/g,'\\$&');
 }
-async function updateNeonRows(table,values,{filters=[]}={}){
-  let query=neonAuthRelation(table).update(values);
-  query=applyNeonFilters(query,filters);
-  const {error}=await query;
-  if(error)throw new Error(error.message||UI_COPY.search.updateFailed);
+function highlightSearchText(text='',query=''){
+  const source=String(text||''),raw=String(query||'').trim();
+  if(!source||!raw)return source;
+  const terms=[...new Set([raw,...raw.split(/\s+/g)].map(item=>item.trim()).filter(Boolean))].sort((a,b)=>b.length-a.length);
+  const pattern=new RegExp('('+terms.map(escapeSearchRegExp).join('|')+')','giu');
+  const normalized=new Set(terms.map(term=>term.normalize('NFKC').toLocaleLowerCase('zh-Hant')));
+  return source.split(pattern).map((part,index)=>{
+    const key=part.normalize('NFKC').toLocaleLowerCase('zh-Hant');
+    return normalized.has(key)?<mark className="scope-search-highlight" key={index}>{part}</mark>:part;
+  });
 }
+
 
 function rowText(row){return Object.values(row||{}).filter(value=>typeof value==='string').join(' ')}
 function toResult(row,source,scopeId){
@@ -58,8 +58,7 @@ function toResult(row,source,scopeId){
     ?(mediaMetadata||(bodyField?workDisplayText(row[bodyField]):text))
     :(bodyField?workDisplayText(row[bodyField]):(isGalaxy?'':text));
   const identity=row.media_id||row.uid||row.song_id||row.rune_id||row.record_id||row.resource_id||row.id;
-  const rawScope=String(row.scope_id||scopeId||'');
-  const scope=rawScope==='lrunes'?'lunarunes':rawScope;
+  const scope=String(row.scope_id||scopeId||'').trim();
   const resourceType=(row.uid)?'galaxy':row.media_id?'galaxy_media':'';
   const resourceId=row.uid||row.media_id||'';
   const editableTable=resourceType?String(row.__table||''):'';
@@ -69,7 +68,7 @@ function toResult(row,source,scopeId){
   const editResourceId=resourceId;
   const editableField=resourceType==='galaxy'?'content':resourceType==='galaxy_media'?'meta_tags':'';
   const isScopeCard=Boolean(row.scope_card);
-  const href=isScopeCard?scopeHrefV2(scope):(row.url||row.href||row.suno_url||'');
+  const href=isScopeCard?scopeHref(scope):(row.url||row.href||row.suno_url||'');
   return {
     key:identity?source+'-'+identity:[source,scope,title].join('-'),
     source:displaySource,title:String(title),
@@ -113,8 +112,8 @@ function mergeSummaryResults(rows=[]){
   return [...groups.values()];
 }
 
-export default function SearchV2(){
-  const {scopeId,scope}=useScopeRuntimeV2();
+export default function Search(){
+  const {scopeId,scope}=useScopeRuntime();
   const account=useNeonAccount();
   const searchParams=useSearchParams();
   const [query,setQuery]=useState('');
@@ -136,7 +135,19 @@ export default function SearchV2(){
   const searchId=useRef(0);
   const matchedQueryRef=useRef('');
   const pageSize=DEFAULT_LIST_BATCH_SIZE;
-  const collectionLabel=scopeId==='loc'?UI_COPY.search.allContent:String(scope?.label||scopeId);
+  const scopesQuery=useQuery({
+    queryKey:['managed-scopes'],
+    queryFn:selectManagedScopes,
+    staleTime:5*60_000
+  });
+  const aggregateScopes=Boolean(scope?.aggregateChildren);
+  const targetScopes=useMemo(()=>{
+    const scopes=scopesQuery.data||[];
+    return aggregateScopes?scopes:scopes.filter(item=>item.id===scopeId);
+  },[aggregateScopes,scopeId,scopesQuery.data]);
+  const scopeById=useMemo(()=>new Map(targetScopes.map(item=>[item.id,item])),[targetScopes]);
+  const runeScopeIds=useMemo(()=>Object.values(SCOPES).filter(item=>item.searchKind==='runes').map(item=>item.id),[]);
+  const collectionLabel=aggregateScopes?UI_COPY.search.allContent:String(scope?.label||scopeId);
 
   async function executeSearch(rawQuery,cursor=null,{append=false}={}){
     const q=String(rawQuery||'').trim();
@@ -153,7 +164,7 @@ export default function SearchV2(){
       setStatus(searchMode==='media'?UI_COPY.search.searching:UI_COPY.format.searchScope(collectionLabel));
     }
     try{
-      const search=await searchNeonRows(scopeId,q,{limit:pageSize,cursor,mediaOnly:searchMode==='media'});
+      const search=await searchGalaxyRows(targetScopes,q,{limit:pageSize,cursor,mediaOnly:searchMode==='media',runeScopeIds});
       if(id!==searchId.current)return;
 
       const searchRows=[...(search.rows||[])];
@@ -168,7 +179,9 @@ export default function SearchV2(){
       }
       const resolvedByKey=new Map();
       await Promise.all([...textByScope.entries()].map(async([rowScope,rows])=>{
-        const resolved=await resolveGalaxyExternalLinks(rowScope,rows);
+        const scopeData=scopeById.get(rowScope);
+        if(!scopeData)return;
+        const resolved=await resolveGalaxyExternalLinks(scopeData,rows);
         for(const row of resolved)resolvedByKey.set(rowScope+':'+row.uid,row);
       }));
       const enrichedRows=searchRows.map(entry=>{
@@ -216,14 +229,9 @@ export default function SearchV2(){
     try{
       let detail=null;
       let detailScope=scopeId;
-      if(scopeId==='loc'){
-        const scopes=await selectManagedScopes();
-        for(const managedScope of scopes){
-          detail=await selectGalaxyIdentity(managedScope.id,identity);
-          if(detail){detailScope=managedScope.id;break;}
-        }
-      }else{
-        detail=await selectGalaxyIdentity(scopeId,identity);
+      for(const scopeData of targetScopes){
+        detail=await selectGalaxyIdentity(scopeData,identity);
+        if(detail){detailScope=scopeData.id;break;}
       }
       if(id!==searchId.current)return;
       if(!detail)throw new Error(UI_COPY.search.notFound);
@@ -239,12 +247,13 @@ export default function SearchV2(){
   }
 
   useEffect(()=>{
+    if(!scopesQuery.isSuccess)return;
     const identity=String(searchParams?.get('identity')||'').trim();
     const value=String(searchParams?.get('q')||'').trim();
     if(identity){setQuery('');executeIdentity(identity);return;}
     if(value){setQuery(value);executeSearch(value);}
-  },[searchParams,scopeId]);
-  useEffect(()=>{if(query.trim()&&!searchParams?.get('identity'))executeSearch(query);},[scopeId]);
+  },[searchParams,scopeId,scopesQuery.isSuccess,scopesQuery.data]);
+  useEffect(()=>{if(scopesQuery.isSuccess&&query.trim()&&!searchParams?.get('identity'))executeSearch(query);},[scopeId,scopesQuery.isSuccess,scopesQuery.data]);
 
 
 
@@ -261,7 +270,9 @@ export default function SearchV2(){
     setFullTextError('');
     setFullTextLoading(true);
     try{
-      const fullRow=await selectGalaxyContent(result.scopeId,result.editResourceId||result.resourceId);
+      const scopeData=scopeById.get(result.scopeId);
+      if(!scopeData)throw new Error(UI_COPY.search.fullTextNotFound);
+      const fullRow=await selectGalaxyContent(scopeData,result.editResourceId||result.resourceId);
       if(!fullRow)throw new Error(UI_COPY.search.fullTextNotFound);
       setFullText(workDisplayText(fullRow.content||''));
     }catch(exception){
@@ -278,7 +289,7 @@ export default function SearchV2(){
       const contentColumns=result.resourceType==='galaxy'
         ?'uid,title,content,searchable'
         :'media_id,title,meta_tags';
-      const fullRow=await selectNeonRowById(result.editableTable,{
+      const fullRow=await selectNeonAuthRow(result.editableTable,{
         idColumn:result.editableIdColumn,
         id:result.editResourceId||result.resourceId,
         columns:contentColumns
@@ -320,19 +331,19 @@ export default function SearchV2(){
   async function runSearch(event){event.preventDefault();await executeSearch(query)}
 
 
-  return <FeaturePageV2 featureId="search">
-    <div className="scope-v2-tabs" role="group" aria-label={UI_COPY.search.mode}>
+  return <FeaturePage featureId="search">
+    <div className="scope-tabs" role="group" aria-label={UI_COPY.search.mode}>
       <button type="button" aria-pressed={searchMode==='all'} onClick={()=>{setSearchMode('all');setResults([]);setHasMore(false);setNextCursor(null);setStatus(UI_COPY.search.start);}}>{UI_COPY.search.allSearch}</button>
       <button type="button" aria-pressed={searchMode==='media'} onClick={()=>{setSearchMode('media');setResults([]);setHasMore(false);setNextCursor(null);setStatus(UI_COPY.search.mediaPrompt);}}>{UI_COPY.search.mediaSearch}</button>
     </div>
-    <form className="scope-v2-search-form" onSubmit={runSearch}>
+    <form className="scope-search-form" onSubmit={runSearch}>
       <label htmlFor="scope-search-query">{searchMode==='media'?UI_COPY.search.mediaPromptLabel:UI_COPY.search.textPromptLabel}</label>
       <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder={searchMode==='media'?UI_COPY.search.mediaPlaceholder:UI_COPY.search.textPlaceholder} aria-label={searchMode==='media'?UI_COPY.search.mediaSearch:UI_COPY.search.textPromptLabel}/>
       <button type="submit">{UI_COPY.nav.search}</button>
     </form>
-    <p className="scope-v2-status">{status}</p>
-    {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
-    <IncrementalListV2
+    <p className="scope-status">{status}</p>
+    {error?<p className="scope-status scope-error">{error}</p>:null}
+    <IncrementalList
       items={results}
       batchSize={pageSize}
       resetKey={searchMode+'|'+matchedQueryRef.current}
@@ -343,13 +354,13 @@ export default function SearchV2(){
       renderItem={row=>{
         const editable=Boolean(row.editableTable&&row.editableField&&account.canManageScopeSync(row.scopeId));
         const draft=editingKey===row.key?editDraft:null;
-        return <WorkSummaryCardV2
+        return <WorkSummaryCard
           key={row.key}
           title={row.title}
           source={row.source}
           scopeId={row.scopeId}
           date={row.date}
-          body={<SearchHighlightV2 text={row.snippet} query={matchedQueryRef.current}/>}
+          body={highlightSearchText(row.snippet,matchedQueryRef.current)}
           hidden={false}
           relationLinks={row.relationLinks||[]}
           links={row.links||[]}
@@ -357,7 +368,7 @@ export default function SearchV2(){
           showSource
           showLinks
         >
-          {row.resourceType==='galaxy'?<WorkFullTextV2
+          {row.resourceType==='galaxy'?<WorkFullText
             open={fullTextKey===row.key}
             loading={fullTextLoading&&fullTextKey===row.key}
             error={fullTextKey===row.key?fullTextError:''}
@@ -365,7 +376,7 @@ export default function SearchV2(){
             onToggle={()=>toggleFullText(row)}
           />:null}
           {editable?<p><button type="button" onClick={()=>startEditing(row)}>{editingKey===row.key?UI_COPY.search.editing:UI_COPY.common.edit}</button></p>:null}
-          {draft?<ContentEditorV2
+          {draft?<ContentEditor
             draft={draft}
             setDraft={setEditDraft}
             busy={editBusy}
@@ -374,8 +385,8 @@ export default function SearchV2(){
             onSave={()=>saveEditing(row)}
             onCancel={()=>{setEditingKey('');setEditDraft(null);setEditError('')}}
           />:null}
-        </WorkSummaryCardV2>;
+        </WorkSummaryCard>;
       }}
     />
-  </FeaturePageV2>;
+  </FeaturePage>;
 }

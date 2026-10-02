@@ -9,12 +9,12 @@ import {CartesianGrid,Legend,Line,LineChart,ReferenceLine,ResponsiveContainer,To
 import {
   applyDe,draw,evaluateAlphaEvent,finishOpening,freshPlayer,loadGameData,shuffle
 } from './game-data';
-import {getThemeSlotV2,THEME_SLOTS_V2} from '../../modular-v2/theme-registry.v2';
+import {getThemeSlot,THEME_SLOTS} from '../../modular/theme-registry';
 
 const NAMES=['A','B','C','D'];
 const GAME_THEME_DEFAULT='theme-5';
 const GAME_THEME_AUTO='event-auto';
-const GAME_THEME_BY_GROUP=Object.freeze(Object.fromEntries(THEME_SLOTS_V2.map(slot=>[slot.group,slot.id])));
+const GAME_THEME_BY_GROUP=Object.freeze(Object.fromEntries(THEME_SLOTS.map(slot=>[slot.group,slot.id])));
 const CHART_STROKES=['var(--loc-accent)','var(--loc-gold)','var(--loc-text)','var(--loc-muted)'];
 const CHART_TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)',borderRadius:'8px'};
 
@@ -240,7 +240,7 @@ function signed(value){
 function GameThemeControl({value,onChange,effectiveSlot}){
   const options=[
     {value:GAME_THEME_AUTO,label:'事件跟隨'},
-    ...THEME_SLOTS_V2.map(slot=>({value:slot.id,label:slot.label}))
+    ...THEME_SLOTS.map(slot=>({value:slot.id,label:slot.label}))
   ];
   const selected=options.find(option=>option.value===value)||options.find(option=>option.value===GAME_THEME_DEFAULT);
   return <label className="game-theme-control">
@@ -481,7 +481,7 @@ function phaseForRound(data,round){
 
 export default function GameView(){
   const {data,error,isLoading}=useQuery({
-    queryKey:['lunarunes','game','current'],
+    queryKey:['lrunes','game','current'],
     queryFn:loadGameData,
     staleTime:0,
     gcTime:0,
@@ -499,7 +499,7 @@ export default function GameView(){
   const event=state?.eventDeck?.length?state.eventDeck[state.eventIndex%state.eventDeck.length]:null;
   const eventThemeId=GAME_THEME_BY_GROUP[event?.groups?.[0]]||GAME_THEME_DEFAULT;
   const effectiveGameThemeId=gameThemeId===GAME_THEME_AUTO?eventThemeId:gameThemeId;
-  const gameTheme=useMemo(()=>getThemeSlotV2(effectiveGameThemeId),[effectiveGameThemeId]);
+  const gameTheme=useMemo(()=>getThemeSlot(effectiveGameThemeId),[effectiveGameThemeId]);
   const gameThemeStyle=useMemo(()=>({...gameTheme.tokens,colorScheme:gameTheme.scheme}),[gameTheme]);
   const allOpened=state?.players.every(player=>!player.opening);
   const phaseLabel=state?.phase==='event'?'事件':state?.phase==='duel'?'決鬥':'共鳴';

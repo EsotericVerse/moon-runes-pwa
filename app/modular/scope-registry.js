@@ -1,0 +1,150 @@
+import {UI_COPY} from '../i18n/ui-copy.js';
+
+// Current Scope registry.
+export const FEATURES=Object.freeze([
+  Object.freeze({id:'statics',label:UI_COPY.features.statics.title,path:'statics'}),
+  Object.freeze({id:'culture',label:UI_COPY.features.culture.title,path:'culture'}),
+  Object.freeze({id:'governance',label:UI_COPY.features.governance.title,path:'governance'}),
+  Object.freeze({id:'search',label:UI_COPY.features.search.title,path:'search'})
+]);
+
+export const SCOPES=Object.freeze({
+  loc:Object.freeze({
+    id:'loc',
+    domain:'loc.lo3rwang.cc',
+    label:UI_COPY.scope.loc.label,
+    default:true,
+    aggregateChildren:true,
+    featureSubtitles:Object.freeze({
+      statics:UI_COPY.scope.loc.statics,
+      culture:UI_COPY.scope.loc.culture,
+      governance:UI_COPY.scope.loc.governance,
+      search:UI_COPY.scope.loc.search
+    }),
+    nav:Object.freeze({position:'after',order:2,label:UI_COPY.nav.home}),
+    theme:Object.freeze({mode:'auto'})
+  }),
+
+  lrunes:Object.freeze({
+    id:'lrunes',
+    domain:'lrunes.lo3rwang.cc',
+    label:'月之符文',
+    mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'}),
+    featureSubtitles:Object.freeze({
+      statics:'查看月之符文相關資料的數量、來源與時間變化。',
+      culture:'把月之符文相關紀錄放回時間順序，觀察不同時期的變化。',
+      governance:'說明月之符文的使用原則、權利邊界與管理方式。',
+      search:'從符文名稱、關鍵字或相關文字找到對應內容。'
+    }),
+    nav:Object.freeze({position:'before',order:1,label:UI_COPY.nav.lunarunes}),
+    theme:Object.freeze({mode:'fixed',themeId:'theme-5'}),
+    searchKind:'runes'
+  }),
+
+  lo3rwang:Object.freeze({
+    id:'lo3rwang',
+    label:UI_COPY.scope.author.label,
+    featureSubtitles:Object.freeze({search:UI_COPY.scope.author.search}),
+    mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'}),
+    nav:Object.freeze({position:'after',order:1,label:UI_COPY.nav.author}),
+    theme:Object.freeze({mode:'fixed',themeId:'theme-2'})
+  }),
+
+  admin:Object.freeze({
+    id:'admin',
+    domain:'admin.lo3rwang.cc',
+    label:UI_COPY.scope.admin.label,
+    featureScope:'loc',
+    theme:Object.freeze({mode:'auto'})
+  })
+});
+
+const DEFAULT_SCOPE_ID=Object.values(SCOPES).find(scope=>scope.default)?.id||Object.keys(SCOPES)[0];
+
+function cleanHost(host=''){
+  return String(host||'').toLowerCase().split(':')[0];
+}
+
+function cleanPath(pathname='/'){
+  const value='/' + String(pathname||'/')
+    .split('?')[0]
+    .split('#')[0]
+    .split('/')
+    .filter(Boolean)
+    .join('/');
+  return value==='/'?'/':value;
+}
+
+const SCOPE_BY_DOMAIN=Object.freeze(
+  Object.fromEntries(
+    Object.entries(SCOPES)
+      .filter(([,scope])=>Boolean(scope.domain))
+      .map(([id,scope])=>[scope.domain,id])
+  )
+);
+
+function matchesMount(scope,host,pathname){
+  if(!scope.mount)return false;
+  const h=cleanHost(host);
+  const p=cleanPath(pathname);
+  const base=cleanPath(scope.mount.path);
+  return h===cleanHost(scope.mount.host)&&(p===base||p.startsWith(base+'/'));
+}
+
+export function resolveScope(host='',pathname='/'){
+  const h=cleanHost(host);
+  for(const [id,scope] of Object.entries(SCOPES)){
+    if(matchesMount(scope,h,pathname))return id;
+  }
+  if(!h){
+    const path=cleanPath(pathname);
+    for(const [id,scope] of Object.entries(SCOPES)){
+      const base=scope.mount?cleanPath(scope.mount.path):null;
+      if(base&&(path===base||path.startsWith(base+'/')))return id;
+    }
+  }
+  return SCOPE_BY_DOMAIN[h]||DEFAULT_SCOPE_ID;
+}
+
+export function getScope(id){
+  return SCOPES[id]||SCOPES[DEFAULT_SCOPE_ID];
+}
+
+export function scopeOrigin(scopeId){
+  const scope=getScope(scopeId);
+  const host=scope.domain||scope.mount?.host;
+  return host?`https://${host}`:'';
+}
+
+function scopeBaseHref(scopeId){
+  const scope=getScope(scopeId);
+  if(scope.domain)return scopeOrigin(scopeId);
+  if(scope.mount)return `https://${scope.mount.host}${cleanPath(scope.mount.path)}`;
+  return '';
+}
+
+export function scopeHref(scopeId,localPath=''){
+  const base=scopeBaseHref(scopeId).replace(/\/$/,'');
+  const raw=String(localPath||'');
+  const marker=raw.search(/[?#]/);
+  const routePart=marker>=0?raw.slice(0,marker):raw;
+  const suffix=marker>=0?raw.slice(marker):'';
+  const path=routePart.split('/').filter(Boolean).join('/');
+  const pathname=path?`/${path}/`:'/';
+  return `${base}${pathname}${suffix}`;
+}
+
+export function featureHref(scopeId,featureId){
+  const feature=FEATURES.find(item=>item.id===featureId);
+  if(!feature)throw new Error('Unknown feature: '+featureId);
+  return scopeHref(scopeId,feature.path);
+}
+
+export function featureIdForPath(pathname='/'){
+  const segment=String(pathname||'/')
+    .split('/')
+    .filter(Boolean)
+    .at(-1)||'';
+  return FEATURES.find(item=>item.path===segment)?.id||null;
+}
+

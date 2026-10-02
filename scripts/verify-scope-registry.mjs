@@ -1,17 +1,17 @@
-import {FEATURES_V2,SCOPES_V2,featureHrefV2,resolveScopeV2} from '../app/modular-v2/scope-registry.v2.js';
+import {FEATURES,SCOPES,featureHref,resolveScope} from '../app/modular/scope-registry.js';
 
 const failures=[];
-if(resolveScopeV2('unknown.example','/')!=='loc')failures.push('default Scope must remain loc');
-for(const [id,scope] of Object.entries(SCOPES_V2)){
+if(resolveScope('unknown.example','/')!=='loc')failures.push('default Scope must remain loc');
+if(SCOPES.lunarunes)failures.push('retired lunarunes runtime Scope id must not return');
+if(!SCOPES.lrunes)failures.push('canonical lrunes Scope id missing');
+for(const [id,scope] of Object.entries(SCOPES)){
   if(scope.id!==id)failures.push(id+' registry key/id mismatch');
-  if(!['domain','directory'].includes(scope.scopeType))failures.push(id+' invalid scopeType');
-  if(scope.scopeType==='domain'){
-    if(!scope.domain)failures.push(id+' domain missing');
-    else if(resolveScopeV2(scope.domain,'/')!==id)failures.push(id+' domain resolution mismatch');
-  }else if(!scope.mount)failures.push(id+' directory mount missing');
-  if(scope.mount&&resolveScopeV2(scope.mount.host,scope.mount.path)!==id)failures.push(id+' mount resolution mismatch');
-  for(const feature of FEATURES_V2){
-    if(!featureHrefV2(id,feature.id).startsWith('https://'))failures.push(id+'/'+feature.id+' canonical href invalid');
+  if(scope.domain&&resolveScope(scope.domain,'/')!==id)failures.push(id+' domain resolution mismatch');
+  if(scope.domain&&!featureHref(id,FEATURES[0].id).startsWith('https://'+scope.domain+'/'))failures.push(id+' canonical domain mismatch');
+  if(!scope.domain&&!scope.mount)failures.push(id+' route identity missing');
+  if(scope.mount&&resolveScope(scope.mount.host,scope.mount.path)!==id)failures.push(id+' mount resolution mismatch');
+  for(const feature of FEATURES){
+    if(!featureHref(id,feature.id).startsWith('https://'))failures.push(id+'/'+feature.id+' canonical href invalid');
   }
 }
 if(failures.length){

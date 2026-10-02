@@ -4,13 +4,13 @@ import {UI_COPY} from '../i18n/ui-copy';
 
 import {useEffect,useMemo,useState} from 'react';
 import {useNeonAccount} from './use-neon-account';
-import {useScopeRuntimeV2} from '../modular-v2/use-scope-runtime.v2';
-import {getScopeV2,scopeHrefV2} from '../modular-v2/scope-registry.v2';
+import {useScopeRuntime} from '../modular/use-scope-runtime';
+import {getScope,scopeHref} from '../modular/scope-registry';
 import ManagementArticlePublisher from './ManagementArticlePublisher';
 import ManagementImportPanel from './ManagementImportPanel';
 import ManagementDataPanel from './ManagementDataPanel';
 import RuneManagementPanel from './RuneManagementPanel';
-import CultureTimelineEditor from '../modular-v2/features/CultureTimelineEditor';
+import CultureTimelineEditor from '../modular/features/CultureTimelineEditor';
 
 const LOGIN_COPY={
   loc:{
@@ -18,7 +18,7 @@ const LOGIN_COPY={
     title:'LOC 管理登入',
     description:'LOC 的系統管理入口位於 admin.lo3rwang.cc；Scope 內容管理請由各 Scope 的治理頁進入。'
   },
-  lunarunes:{
+  lrunes:{
     eyebrow:'LunaRunes Management',
     title:'LunaRunes 管理登入',
     description:'管理符號式語言的作品、時期與每日符文。'
@@ -41,7 +41,7 @@ function LoginScreen({scopeId,account}){
     <section className="loc-card">
       <p>登入後才會顯示管理工作頁；公開頁不提供寫入功能。</p>
       <button className="loc-button primary" type="button" onClick={account.signIn}>使用 Google 登入 Neon</button>
-      {account.error?<p className="scope-v2-status scope-v2-error">{account.error}</p>:null}
+      {account.error?<p className="scope-status scope-error">{account.error}</p>:null}
     </section>
   </section>;
 }
@@ -55,7 +55,7 @@ function ImportSettings({scopeId}){
 }
 
 function KeywordSettings(){
-  return <section className="loc-card scope-v2-feature-card">
+  return <section className="loc-card scope-feature-card">
     <p className="loc-eyebrow">Keywords</p>
     <h2>關鍵詞管理</h2>
     <p>Current Neon 尚未配置獨立的關鍵詞 SSOT；舊 Style 關鍵詞表已退役。</p>
@@ -77,14 +77,14 @@ function sectionOptions(scopeId){
     {value:'period',label:UI_COPY.management.period},
     {value:'keywords',label:UI_COPY.management.keywords}
   ];
-  if(scopeId==='lunarunes')options.push({value:'daily',label:'每日符文管理'});
+  if(scopeId==='lrunes')options.push({value:'daily',label:'每日符文管理'});
   return options;
 }
 
 export default function GovernanceManagement(){
   const account=useNeonAccount();
-  const {scopeId}=useScopeRuntimeV2();
-  const scope=getScopeV2(scopeId);
+  const {scopeId}=useScopeRuntime();
+  const scope=getScope(scopeId);
   const options=useMemo(()=>sectionOptions(scopeId),[scopeId]);
   const [section,setSection]=useState('data');
   const canManage=account.canManageScopeSync(scopeId);
@@ -103,7 +103,7 @@ export default function GovernanceManagement(){
       <p>{UI_COPY.management.locDescription}</p>
     </header>
     <section className="loc-card">
-      <a className="loc-button primary" href={scopeHrefV2('admin')}>{UI_COPY.management.locAdminLink}</a>
+      <a className="loc-button primary" href={scopeHref('admin')}>{UI_COPY.management.locAdminLink}</a>
       <button className="loc-button" type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button>
     </section>
   </section>;
@@ -118,9 +118,9 @@ export default function GovernanceManagement(){
       <p className="loc-eyebrow">{UI_COPY.management.eyebrow} · {scopeId}</p>
       <h1>{scope.label}管理</h1>
       <p>{account.user.email||account.user.name||''}</p>
-      <div className="scope-v2-management-select">
+      <div className="scope-management-select">
         <label htmlFor="scope-management-section">{UI_COPY.management.item}</label>
-        <select id="scope-management-section" className="scope-v2-select" value={section} onChange={event=>setSection(event.target.value)}>
+        <select id="scope-management-section" className="scope-select" value={section} onChange={event=>setSection(event.target.value)}>
           {options.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}
         </select>
       </div>
@@ -132,6 +132,6 @@ export default function GovernanceManagement(){
     {section==='import'?<ImportSettings scopeId={scopeId}/>:null}
     {section==='period'?<PeriodSettings scopeId={scopeId}/>:null}
     {section==='keywords'?<KeywordSettings/>:null}
-    {section==='daily'&&scopeId==='lunarunes'?<RuneManagementPanel/>:null}
+    {section==='daily'&&scopeId==='lrunes'?<RuneManagementPanel/>:null}
   </section>;
 }

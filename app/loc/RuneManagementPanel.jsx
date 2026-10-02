@@ -149,7 +149,7 @@ export default function RuneManagementPanel(){
   const [dailySupplement,setDailySupplement]=useState(null);
   const [status,setStatus]=useState('');
   const [loading,setLoading]=useState(true);
-  const canManage=account.canManageScopeSync('lunarunes');
+  const canManage=account.canManageScopeSync('lrunes');
 
   async function reloadRecords(){
     const today=todayKey();
@@ -220,23 +220,23 @@ export default function RuneManagementPanel(){
   }
 
   if(!canManage)return null;
-  if(loading)return <section className="scope-v2-inline-card"><h3>每日符文與抽牌紀錄</h3><p>正在讀取…</p></section>;
+  if(loading)return <section className="scope-inline-card"><h3>每日符文與抽牌紀錄</h3><p>正在讀取…</p></section>;
 
-  return <section className="scope-v2-inline-card">
+  return <section className="scope-inline-card">
     <h3>抽牌與 8 組儲存槽</h3>
     <p>每次 Draw Session 算一組；11 卡 OW3gs 也只占一組。儲存到相同槽位時直接覆蓋舊組。</p>
-    <div className="scope-v2-tabs">
+    <div className="scope-tabs">
       {MODES.map(item=><button type="button" key={item.key} aria-pressed={mode===item.key} onClick={()=>setMode(item.key)}>{item.label}</button>)}
       <button type="button" onClick={drawGroup}>抽牌</button>
     </div>
     {draw?<article className="loc-card"><strong>{draw.mode_label}</strong><p>{cardLine(draw)}</p><p>{draw.guidance}</p>
-      <div className="scope-v2-stat-controls">
+      <div className="scope-stat-controls">
         <label>儲存到<select value={slot} onChange={e=>setSlot(Number(e.target.value))}>{Array.from({length:8},(_,i)=><option key={i+1} value={i+1}>第 {i+1} 組</option>)}</select></label>
         <button type="button" onClick={saveSlot}>覆蓋／儲存這一組</button>
       </div>
     </article>:null}
-    <div className="scope-v2-context-list">
-      {slots.map(item=><article className="scope-v2-inline-card" key={item.slot}><strong>第 {item.slot} 組</strong><p>{item.record?cardLine(item.record):'尚未儲存'}</p></article>)}
+    <div className="scope-context-list">
+      {slots.map(item=><article className="scope-inline-card" key={item.slot}><strong>第 {item.slot} 組</strong><p>{item.record?cardLine(item.record):'尚未儲存'}</p></article>)}
     </div>
 
     <hr/>
@@ -247,12 +247,12 @@ export default function RuneManagementPanel(){
     {dailyMain&&!savedMain?<p>待存主符：{cardLine(dailyMain)}</p>:null}
     {dailySupplement&&!savedSupplement?<p>待存副符：{cardLine(dailySupplement)}</p>:null}
 
-    <div className="scope-v2-context-list">
+    <div className="scope-context-list">
       {dailyRows.map(row=>{
         const card=row.cards?.[0]||{};
-        return <article className="scope-v2-inline-card" key={row.id}>
+        return <article className="scope-inline-card" key={row.id}>
           <strong>{row.daily_role==='supplement'?'副符':'主符'}｜{card.name}・{card.direction}</strong>
-          <div className="scope-v2-stat-controls">
+          <div className="scope-stat-controls">
             <label>符文<select value={card.number||''} onChange={e=>updateDaily(row,'number',e.target.value)}>
               {runes.map(rune=><option key={rune.rune_id} value={rune.rune_id}>{rune.rune_id}・{rune.rune_name}</option>)}
             </select></label>
@@ -263,6 +263,6 @@ export default function RuneManagementPanel(){
         </article>;
       })}
     </div>
-    {status?<p className="scope-v2-status">{status}</p>:null}
+    {status?<p className="scope-status">{status}</p>:null}
   </section>;
 }

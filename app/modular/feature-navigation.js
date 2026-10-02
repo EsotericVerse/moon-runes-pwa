@@ -1,5 +1,6 @@
 import {z} from 'zod';
-import {featureHrefV2} from './scope-registry.v2';
+import {featureHref} from './scope-registry';
+import {normalizeRelationIds} from '../loc/content-policy';
 
 const NAVIGATION_FIELDS=Object.freeze([
   'q','identity','source','period','anchor','from','to','rankingType','statTab'
@@ -29,9 +30,6 @@ function valueOf(...values){
   return undefined;
 }
 
-function payloadOf(row){
-  return row?.payload&&typeof row.payload==='object'&&!Array.isArray(row.payload)?row.payload:{};
-}
 
 export function readFeatureNavigation(searchParams){
   const raw={};
@@ -55,20 +53,16 @@ function featureNavigationQuery(navigation={}){
 }
 
 export function featureNavigationHref(scopeId,featureId,navigation={}){
-  const base=featureHrefV2(scopeId,featureId);
+  const base=featureHref(scopeId,featureId);
   const query=featureNavigationQuery(navigation);
   return query?base+'?'+query:base;
 }
 
-function relationIds(value){
-  const values=Array.isArray(value)?value:String(value||'').split(/[,，]/);
-  return [...new Set(values.map(item=>String(item||'').trim()).filter(Boolean))];
-}
 
 export function galaxyIdentityHref(scopeId,uid){
   const id=valueOf(uid);
   if(!id)return '';
-  const targetScope=String(scopeId||'')==='lrunes'?'lunarunes':String(scopeId||'');
+  const targetScope=String(scopeId||'').trim();
   return featureNavigationHref(targetScope,'search',{identity:id});
 }
 
@@ -76,7 +70,7 @@ export function galaxyRelationLinks(scopeId,row={}){
   const links=[];
   const source=valueOf(row.source_id);
   if(source)links.push({id:'source:'+source,label:'上筆',href:galaxyIdentityHref(scopeId,source)});
-  const targets=relationIds(row.target_id);
+  const targets=normalizeRelationIds(row.target_id)||[];
   targets.forEach((target,index)=>{
     links.push({
       id:'target:'+target,

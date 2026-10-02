@@ -8,5 +8,5 @@ export const metadata=lunarunesMetadata({
 });
 
 export default function GamePage(){
-  return <LocApp forcedView="game" forcedScope="lunarunes"/>;
+  return <LocApp forcedView="game" forcedScope="lrunes"/>;
 }

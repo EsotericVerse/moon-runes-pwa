@@ -7,4 +7,4 @@ export const metadata=lunarunesMetadata({
   path:'/culture/'
 });
 
-export default function Page(){return <LocApp forcedView="culture" forcedScope="lunarunes"/>;}
+export default function Page(){return <LocApp forcedView="culture" forcedScope="lrunes"/>;}

@@ -3,15 +3,13 @@
 import {useEffect,useState} from 'react';
 import {selectNeonRows} from '../loc/neon-query';
 import {groupImage,localRuneId,runeImage,runeName,runeNumberForRoute,runeNumbersForGroup} from './rune-directory.mjs';
-import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
+import {scopeHref} from '../modular/scope-registry';
 import RuneCardInfo from './RuneCardInfo';
 
-const listHref=(path='')=>scopeHrefV2('lunarunes',`list${path?'/'+String(path).replace(/^\/+/, ''):''}`);
+const listHref=(path='')=>scopeHref('lrunes',`list${path?'/'+String(path).replace(/^\/+/, ''):''}`);
 const RUNE_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,char_action,positive_keywords,negative_keywords,extra_rules,extra_notes';
 const RUNE_DETAIL_COLUMNS='rune_evolution_history,myth_story,soul_question,practice_challenge,ritual_advice,harmony_advice';
 const GROUP_COLUMNS='group_id,english_name,desc,runeslist';
-const MOON_PHASE_LABELS=Object.freeze({1:'新月',2:'上弦',3:'滿月',4:'下弦'});
-const CARD_ATTR_LABELS=Object.freeze({1:'正面',2:'中平',3:'負面',4:'未知'});
 
 function groupView(row){
   const runes=Array.isArray(row?.runeslist)?row.runeslist.map(Number).filter(Number.isInteger):[];

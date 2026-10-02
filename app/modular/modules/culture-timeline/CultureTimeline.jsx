@@ -74,7 +74,7 @@ function dateLabel(value){
   return formatted.length>=10?formatted.slice(0,10):formatted;
 }
 
-export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),focus={},mode='period',onSelect=null,windowStart='',windowEnd='',boundaryStart='',boundaryEnd='',onBoundaryNavigate=null,fixedMin='',fixedMax='',hiddenDates=[]}){
+export default function CultureTimeline({items=[],labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),focus={},mode='period',onSelect=null,windowStart='',windowEnd='',boundaryStart='',boundaryEnd='',onBoundaryNavigate=null,fixedMin='',fixedMax='',hiddenDates=[]}){
   const containerRef=useRef(null);
   const onSelectRef=useRef(onSelect);
   const onBoundaryNavigateRef=useRef(onBoundaryNavigate);
@@ -193,9 +193,9 @@ export default function CultureTimelineV2({items=[],labelOf=(item,index)=>item?.
   if(!rows.length)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><div className='scope-period-timeline scope-period-timeline-empty-line' role='region' aria-label='時間長河'/><p>{mode==='overview'?'尚未設定時期，目前以「所有」總覽顯示。':'目前時期尚無可顯示的時間資料。'}</p></div>;
 
   return <div className='scope-period-timeline-wrap'>
-    {chartError?<p className='scope-v2-status'>圖表載入失敗，以下改用清單顯示。</p>:null}
+    {chartError?<p className='scope-status'>圖表載入失敗，以下改用清單顯示。</p>:null}
     <div ref={containerRef} className='scope-period-timeline' role='region' aria-label={mode==='overview'?'所有時期與定錨點時間長河':'時間長河'} style={{'--scope-period-timeline-min-height':timelineMinHeight+'px'}}/>
-    {chartError?<ol className='scope-v2-list'>
+    {chartError?<ol className='scope-list'>
       {fallbackRows.map(row=><li key={row.id}><strong>{row.content}</strong>{row.group?<span> · {groupLabel(row.group)}</span>:null}<span> · {dateLabel(row.start)}</span>{row.title?<p>{row.title}</p>:null}</li>)}
     </ol>:null}
   </div>;
