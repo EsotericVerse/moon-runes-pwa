@@ -10,7 +10,7 @@ import {selectNeonAuthRow,updateNeonRows} from '../../loc/neon-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {ContentEditor,FeaturePage,IncrementalList,WorkFullText,WorkSummaryCard} from '../ui';
 import {useScopeRuntime} from '../use-scope-runtime';
-import {SCOPES,scopeHref} from '../scope-registry';
+import {scopeHref} from '../scope-registry';
 import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
 import {resolveGalaxyExternalLinks,searchGalaxyRows,selectGalaxyContent,selectGalaxyIdentity} from '../../loc/galaxy-query';
@@ -146,7 +146,6 @@ export default function Search(){
     return aggregateScopes?scopes:scopes.filter(item=>item.id===scopeId);
   },[aggregateScopes,scopeId,scopesQuery.data]);
   const scopeById=useMemo(()=>new Map(targetScopes.map(item=>[item.id,item])),[targetScopes]);
-  const runeScopeIds=useMemo(()=>Object.values(SCOPES).filter(item=>item.searchKind==='runes').map(item=>item.id),[]);
   const collectionLabel=aggregateScopes?UI_COPY.search.allContent:String(scope?.label||scopeId);
 
   async function executeSearch(rawQuery,cursor=null,{append=false}={}){
@@ -164,7 +163,7 @@ export default function Search(){
       setStatus(searchMode==='media'?UI_COPY.search.searching:UI_COPY.format.searchScope(collectionLabel));
     }
     try{
-      const search=await searchGalaxyRows(targetScopes,q,{limit:pageSize,cursor,mediaOnly:searchMode==='media',runeScopeIds});
+      const search=await searchGalaxyRows(targetScopes,q,{limit:pageSize,cursor,mediaOnly:searchMode==='media'});
       if(id!==searchId.current)return;
 
       const searchRows=[...(search.rows||[])];

@@ -17,7 +17,7 @@ import CultureTimeline from '../modules/culture-timeline/CultureTimeline';
 import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
 import {analyzeRiverDensity} from '../modules/culture-timeline/river-density-analysis.mjs';
 import {selectGalaxyContent} from '../../loc/galaxy-query';
-import {insertNeonRows,neonAuthRelation} from '../../loc/neon-client';
+import {insertNeonRows,neonAuthRelation,updateNeonRows} from '../../loc/neon-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {ContentEditor,FeaturePage,IncrementalList,WorkFullText,WorkSummaryCard} from '../ui';
@@ -380,15 +380,12 @@ export default function Culture(){
       if(!account.canManageScopeSync(classificationScope))throw new Error('沒有修改此資料區域的權限。');
       if(!scopeData)throw new Error('Scope data 未解析');
       const content=requireGalaxyContent(editDraft.body);
-      const {error}=await neonAuthRelation(scopeData.galaxy)
-        .update({
-          title:resolveGalaxyTitle(editDraft.title,content),
-          content,
-          searchable:editDraft.hidden!==true,
-          UpdateTime:new Date().toISOString()
-        })
-        .eq('uid',uid);
-      if(error)throw new Error(error.message||'作品儲存失敗');
+      await updateNeonRows(scopeData.galaxy,{
+        title:resolveGalaxyTitle(editDraft.title,content),
+        content,
+        searchable:editDraft.hidden!==true,
+        UpdateTime:new Date().toISOString()
+      },{filters:[{column:'uid',operator:'eq',value:uid}]});
       const key=String(work?.key||('galaxy:'+uid));
       if(fullTextKey===key)setFullText(String(editDraft.body||''));
       setEditingWorkKey('');setEditDraft(null);
@@ -496,6 +493,9 @@ export default function Culture(){
                 </div>
                 <p className='loc-eyebrow'>{UI_COPY.culture.classificationRiver}</p>
                 <h3>{labelOf(selectedWorkPeriod,0)}｜作品分類河道</h3>
+                {String(selectedWorkPeriod?.style_tags||'').trim()?<div className='scope-style-tags' aria-label='風格標籤'>
+                  {String(selectedWorkPeriod.style_tags).split(/[,，]/).map(item=>item.trim()).filter(Boolean).map(tag=><span key={tag}>{tag}</span>)}
+                </div>:null}
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error)}</p>:null}
                 {!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!classificationBuckets.length
                   ?<p className='scope-status'>{UI_COPY.culture.noPeriodClassification}</p>:null}

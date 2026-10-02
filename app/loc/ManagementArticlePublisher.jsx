@@ -5,7 +5,7 @@ import {UI_COPY} from '../i18n/ui-copy';
 import {useState} from 'react';
 import {insertNeonRows} from './neon-client';
 import {useNeonAccount} from './use-neon-account';
-import {ContentEditor} from '../modular/ui';
+import {ContentEditor,WorkSummaryCard} from '../modular/ui';
 import {createUid8} from './uid';
 import {normalizeRelationIds,requireGalaxyContent,resolveGalaxyTitle} from './content-policy';
 
@@ -62,6 +62,19 @@ export default function ManagementArticlePublisher({scopeId}){
 
   return <section className="scope-inline-card">
     <h3>{UI_COPY.management.article}</h3>
+    <div className="scope-management-split">
+      <div className="scope-management-editor">
+        <WorkSummaryCard
+          title={draft.title||'未命名文章'}
+          scopeId={scopeId}
+          source={draft.source}
+          date={draft.createtime}
+          body={draft.body}
+          hidden={draft.hidden}
+          links={draft.url?[{id:'draft-url',href:draft.url,label:'外部連結'}]:[]}
+        />
+      </div>
+      <div>
     <ContentEditor
       draft={draft}
       setDraft={setDraft}
@@ -72,5 +85,7 @@ export default function ManagementArticlePublisher({scopeId}){
       onSave={save}
     />
     {status===UI_COPY.management.articlePublished?<p className="scope-status">{status}</p>:null}
+      </div>
+    </div>
   </section>;
 }

@@ -1,17 +1,19 @@
 'use client';
 
 import {UI_COPY} from '../../i18n/ui-copy';
-
-import {useEffect,useState} from 'react';
+import {useEffect,useMemo,useState} from 'react';
 import {SCOPES} from '../../modular/scope-registry';
 import {THEME_SLOTS} from '../../modular/theme-registry';
 import {useNeonAccount} from '../use-neon-account';
-import {neonAuthRelation} from '../neon-client';
+import {
+  deleteNeonRows,insertNeonRows,neonAuthRelation,selectNeonAuthRow,updateNeonRows
+} from '../neon-client';
 
 const ADMIN_OPTIONS=Object.freeze([
   {value:'scopes',label:UI_COPY.admin.overview},
   {value:'themes',label:UI_COPY.admin.theme}
 ]);
+const EMPTY_MAPPING={id:'',email:'',role:'scope',galaxy:'galaxy',time:'time',birthday:''};
 
 function Login({account}){
   return <section className="loc-view">
@@ -26,8 +28,12 @@ function Login({account}){
 
 function ScopeOverview(){
   const scopes=Object.values(SCOPES).filter(scope=>scope.id!=='admin');
+  const dataScopeIds=useMemo(()=>new Set(scopes.filter(scope=>scope.id!=='loc').map(scope=>scope.id)),[scopes]);
   const [mappings,setMappings]=useState([]);
+  const [draft,setDraft]=useState({...EMPTY_MAPPING});
   const [status,setStatus]=useState('');
+  const [revision,setRevision]=useState(0);
+
   useEffect(()=>{
     let active=true;
     neonAuthRelation('silver.manage')
@@ -37,59 +43,217 @@ function ScopeOverview(){
       .then(({data,error})=>{
         if(!active)return;
         if(error){setStatus(error.message||'Mapping 讀取失敗。');return;}
-        setMappings(data||[]);
+        setMappings((data||[]).map(row=>({...row,birthday:String(row.birthday||'').slice(0,10)})));
       });
     return()=>{active=false};
-  },[]);
+  },[revision]);
+
   const change=(index,key,value)=>setMappings(rows=>rows.map((row,rowIndex)=>rowIndex===index?{...row,[key]:value}:row));
-  const save=async(index)=>{
-    const row=mappings[index];
-    const galaxy=String(row?.galaxy||'galaxy').trim()||'galaxy';
-    const time=String(row?.time||'time').trim()||'time';
-    if(!/^[a-z][a-z0-9_]*$/.test(galaxy)||!/^[a-z][a-z0-9_]*$/.test(time)){setStatus('galaxy / time mapping 只能使用小寫英數與底線。');return;}
-    const {error}=await neonAuthRelation('silver.manage')
-      .update({galaxy,time})
-      .eq('id',row.id)
-      .eq('email',row.email);
-    setStatus(error?(error.message||'Mapping 儲存失敗。'):'Mapping 已更新。');
+
+  const validate=row=>{
+    if(!dataScopeIds.has(String(row.id||'')))throw new Error('目前只能管理已部署的資料 Scope。');
+    if(!/^\S+@\S+\.\S+$/.test(String(row.email||'')))throw new Error('Email 格式不正確。');
+    if(!['admin','scope'].includes(row.role))throw new Error('Role 不正確。');
+    for(const value of [row.galaxy||'galaxy',row.time||'time']){
+      if(!/^[a-z][a-z0-9_]*$/.test(String(value)))throw new Error('galaxy / time mapping 只能使用小寫英數與底線。');
+    }
   };
-  return <section className="loc-card">
+
+  const validateNewMapping=row=>{
+    validate(row);
+    const existing=mappings.find(item=>item.id===row.id);
+    if(!existing)return;
+    if(String(existing.galaxy||'galaxy')!==String(row.galaxy||'galaxy')||String(existing.time||'time')!==String(row.time||'time')){
+      throw new Error('同一 Scope 的 Galaxy / Time mapping 必須一致。');
+    }
+    const existingBirthday=String(existing.birthday||'').slice(0,10);
+    const nextBirthday=String(row.birthday||'').slice(0,10);
+    if(existingBirthday&&nextBirthday&&existingBirthday!==nextBirthday){
+      throw new Error('同一 Scope 的生日設定必須一致。');
+    }
+  };
+
+  const save=async index=>{
+    const row=mappings[index];
+    setStatus('');
+    try{
+      validate(row);
+      const galaxy=String(row.galaxy||'galaxy').trim()||'galaxy';
+      const time=String(row.time||'time').trim()||'time';
+      const birthday=row.birthday||null;
+      await updateNeonRows('silver.manage',{
+        role:row.role,galaxy,time,birthday
+      },{filters:[
+        {column:'id',operator:'eq',value:row.id},
+        {column:'email',operator:'eq',value:row.email}
+      ]});
+      await updateNeonRows('silver.manage',{
+        galaxy,time,birthday
+      },{filters:[{column:'id',operator:'eq',value:row.id}]});
+      setStatus('Scope Mapping 已同步更新。');setRevision(value=>value+1);
+    }catch(error){setStatus(error.message||'Mapping 儲存失敗。');}
+  };
+
+  const selectDraftScope=id=>{
+    const existing=mappings.find(row=>row.id===id);
+    setDraft(value=>({
+      ...value,id,
+      galaxy:String(existing?.galaxy||'galaxy'),
+      time:String(existing?.time||'time'),
+      birthday:String(existing?.birthday||'').slice(0,10)
+    }));
+  };
+
+  const add=async()=>{
+    setStatus('');
+    try{
+      validateNewMapping(draft);
+      await insertNeonRows('silver.manage',[{...draft,birthday:draft.birthday||null}]);
+      setDraft({...EMPTY_MAPPING});setStatus('Mapping 已新增。');setRevision(value=>value+1);
+    }catch(error){setStatus(error.message||'Mapping 新增失敗。');}
+  };
+
+  const remove=async row=>{
+    if(!window.confirm('確定移除 '+row.id+' / '+row.email+' 的管理 Mapping？'))return;
+    setStatus('');
+    try{
+      await deleteNeonRows('silver.manage',{filters:[
+        {column:'id',operator:'eq',value:row.id},
+        {column:'email',operator:'eq',value:row.email}
+      ]});
+      setStatus('Mapping 已移除。');setRevision(value=>value+1);
+    }catch(error){setStatus(error.message||'Mapping 刪除失敗。');}
+  };
+
+  return <section className="loc-card scope-management-workspace">
     <p className="loc-eyebrow">Current Scope Registry</p>
     <h2>{UI_COPY.admin.overview}</h2>
+    <p>Admin 管理系統身份、權限與資料表 Mapping；各 Scope 的內容請回到各自 Manage。</p>
+
     <div className="scope-list">
       {scopes.map(scope=><article className="scope-inline-card" key={scope.id}>
         <strong>{scope.label}</strong>
-        <span>{scope.id} · {scope.domain||scope.mount?.path}</span>
+        <span>{scope.id} · {scope.domain||scope.mount?.path} · {scope.aggregateChildren?'Scope Group':'Scope'}</span>
       </article>)}
     </div>
-    <h3>資料表 Mapping</h3>
-    <p>每個 (id, email) 可各自指定 Galaxy 與 Time suffix；空值會回到 galaxy / time。</p>
-    <div className="scope-list">
+
+    <h3>資料 Scope Mapping</h3>
+    <div className="scope-management-records">
       {mappings.map((row,index)=><article className="scope-inline-card" key={row.id+':'+row.email}>
         <strong>{row.id} · {row.email}</strong>
-        <span>{row.role}</span>
-        <div className="scope-stat-controls">
+        <div className="scope-management-fields">
+          <label><span>Role</span><select value={row.role} onChange={event=>change(index,'role',event.target.value)}><option value="scope">scope</option><option value="admin">admin</option></select></label>
           <label><span>Galaxy</span><input value={row.galaxy||'galaxy'} onChange={event=>change(index,'galaxy',event.target.value)}/></label>
           <label><span>Time</span><input value={row.time||'time'} onChange={event=>change(index,'time',event.target.value)}/></label>
-          <button type="button" onClick={()=>save(index)}>儲存 Mapping</button>
+          <label><span>Birthday</span><input type="date" value={row.birthday||''} onChange={event=>change(index,'birthday',event.target.value)}/></label>
+        </div>
+        <div className="scope-tabs">
+          <button type="button" onClick={()=>save(index)}>儲存</button>
+          <button type="button" onClick={()=>remove(row)}>移除</button>
         </div>
       </article>)}
     </div>
+
+    <section className="scope-inline-card">
+      <h3>新增既有 Scope 權限</h3>
+      <div className="scope-management-fields">
+        <label><span>Scope</span><select value={draft.id} onChange={event=>selectDraftScope(event.target.value)}>
+          <option value="">選擇</option>{[...dataScopeIds].map(id=><option key={id} value={id}>{id}</option>)}
+        </select></label>
+        <label><span>Email</span><input type="email" value={draft.email} onChange={event=>setDraft(value=>({...value,email:event.target.value}))}/></label>
+        <label><span>Role</span><select value={draft.role} onChange={event=>setDraft(value=>({...value,role:event.target.value}))}><option value="scope">scope</option><option value="admin">admin</option></select></label>
+        <label><span>Galaxy</span><input value={draft.galaxy} onChange={event=>setDraft(value=>({...value,galaxy:event.target.value}))}/></label>
+        <label><span>Time</span><input value={draft.time} onChange={event=>setDraft(value=>({...value,time:event.target.value}))}/></label>
+        <label><span>Birthday</span><input type="date" value={draft.birthday} onChange={event=>setDraft(value=>({...value,birthday:event.target.value}))}/></label>
+      </div>
+      <button type="button" className="loc-button" onClick={add}>新增 Mapping</button>
+    </section>
     {status?<p className="scope-status" role="status">{status}</p>:null}
   </section>;
 }
 
-function ThemeOverview(){
-  return <section className="loc-card">
-    <p className="loc-eyebrow">Theme Registry</p>
+function ThemeOverview({account}){
+  const [rows,setRows]=useState([]);
+  const [status,setStatus]=useState('');
+  const [busyId,setBusyId]=useState('');
+  const [revision,setRevision]=useState(0);
+
+  useEffect(()=>{
+    let active=true;
+    (async()=>{
+      setStatus('');
+      try{
+        const {data,error}=await neonAuthRelation('silver.manage')
+          .select('id')
+          .order('id',{ascending:true});
+        if(error)throw new Error(error.message||'Scope 設定讀取失敗。');
+        const ids=[...new Set((data||[]).map(row=>String(row.id||'').trim()).filter(Boolean))];
+        const loaded=[];
+        for(const id of ids){
+          const config=account.scopeDataFor(id)?.config;
+          if(!config)continue;
+          try{
+            const row=await selectNeonAuthRow(config,{
+              idColumn:'id',id,
+              columns:'id,theme,search_able,statistics_able,culture_able'
+            });
+            if(row)loaded.push({...row,config});
+          }catch{}
+        }
+        if(active)setRows(loaded);
+      }catch(error){
+        if(active)setStatus(error.message||'Scope 設定讀取失敗。');
+      }
+    })();
+    return()=>{active=false;};
+  },[account.scopes,revision]);
+
+  const change=(index,key,value)=>setRows(current=>current.map((row,rowIndex)=>rowIndex===index?{...row,[key]:value}:row));
+
+  async function save(index){
+    const row=rows[index];
+    setBusyId(row.id);setStatus('');
+    try{
+      await updateNeonRows(row.config,{
+        theme:String(row.theme||'').trim(),
+        search_able:Boolean(row.search_able),
+        statistics_able:Boolean(row.statistics_able),
+        culture_able:Boolean(row.culture_able),
+        updated_at:new Date().toISOString()
+      },{filters:[{column:'id',operator:'eq',value:row.id}]});
+      setStatus(row.id+' 設定已更新。');setRevision(value=>value+1);
+    }catch(error){setStatus(error.message||'Scope 設定儲存失敗。');}
+    finally{setBusyId('');}
+  }
+
+  return <section className="loc-card scope-management-workspace">
+    <p className="loc-eyebrow">Scope Presentation</p>
     <h2>{UI_COPY.admin.theme}</h2>
-    <p>目前先檢視 8 組完整預設 Theme，不在這裡直接改色。未來可由 Admin 覆寫整組設定；沒有管理設定時一律回到預設 Theme。</p>
+    <p>Theme 與公開功能開關直接寫回各 Scope 既有設定；Theme 與 Style Tag 仍是不同責任。</p>
+
+    <div className="scope-management-records">
+      {rows.map((row,index)=><article className="scope-inline-card" key={row.id}>
+        <strong>{SCOPES[row.id]?.label||row.id}</strong>
+        <div className="scope-management-fields">
+          <label><span>Theme</span><select value={row.theme||''} onChange={event=>change(index,'theme',event.target.value)}>
+            {THEME_SLOTS.map(theme=><option key={theme.id} value={theme.id}>{theme.label} · {theme.id}</option>)}
+          </select></label>
+          <label className="scope-setting-toggle"><input type="checkbox" checked={Boolean(row.search_able)} onChange={event=>change(index,'search_able',event.target.checked)}/><span>Search 公開</span></label>
+          <label className="scope-setting-toggle"><input type="checkbox" checked={Boolean(row.statistics_able)} onChange={event=>change(index,'statistics_able',event.target.checked)}/><span>Statistics 公開</span></label>
+          <label className="scope-setting-toggle"><input type="checkbox" checked={Boolean(row.culture_able)} onChange={event=>change(index,'culture_able',event.target.checked)}/><span>Culture 公開</span></label>
+        </div>
+        <button type="button" className="loc-button" disabled={busyId===row.id} onClick={()=>save(index)}>{busyId===row.id?'儲存中…':'儲存設定'}</button>
+      </article>)}
+      {!rows.length&&!status?<p className="scope-status">沒有可管理的 Scope 設定。</p>:null}
+    </div>
+
+    <h3>八組 Theme</h3>
     <div className="scope-list">
       {THEME_SLOTS.map(theme=><article className="scope-inline-card" key={theme.id}>
-        <strong>{theme.label}</strong>
-        <span>{theme.id} · {theme.scheme}</span>
+        <strong>{theme.label}</strong><span>{theme.id} · {theme.scheme}</span>
       </article>)}
     </div>
+    {status?<p className="scope-status" role="status">{status}</p>:null}
   </section>;
 }
 
@@ -103,11 +267,11 @@ export default function AdminHomeView(){
     <section className="loc-card"><p>{UI_COPY.admin.denied}</p><button type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button></section>
   </section>;
 
-  return <section className="loc-view">
+  return <section className="loc-view scope-management-page">
     <header className="loc-hero">
       <p className="loc-eyebrow">{UI_COPY.admin.eyebrow}</p>
       <h1>{UI_COPY.admin.eyebrow}</h1>
-      <p>先保持簡單；Scope 的完整管理仍由各 Scope 自己負責。</p>
+      <p>系統級設定與 Scope Manage 分離；這裡只處理全域責任。</p>
       <div className="scope-management-select">
         <label htmlFor="admin-management-section">{UI_COPY.admin.item}</label>
         <select id="admin-management-section" className="scope-select" value={section} onChange={event=>setSection(event.target.value)}>
@@ -116,6 +280,6 @@ export default function AdminHomeView(){
       </div>
       <p><button type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button></p>
     </header>
-    {section==='scopes'?<ScopeOverview/>:<ThemeOverview/>}
+    {section==='scopes'?<ScopeOverview/>:<ThemeOverview account={account}/>}
   </section>;
 }

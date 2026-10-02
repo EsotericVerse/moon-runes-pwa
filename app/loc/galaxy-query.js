@@ -1,7 +1,7 @@
 'use client';
 
 import {NEON_QUERY_BATCH_SIZE} from './query-contract.mjs';
-import {DEFAULT_LIST_BATCH_SIZE,RUNE_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
+import {DEFAULT_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
 import {publicContentFilters} from './content-policy';
 import {applyNeonFilters,applyNeonOrders,neonPublicRelation,selectAllNeonRows,selectNeonRows} from './neon-query';
 
@@ -226,20 +226,7 @@ function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filte
   });
 }
 
-function runeCoreProvider(scope){
-  return makeProvider({
-    id:scope.id+':rune-core',
-    table:'silver.runes',
-    source:'月之符文',
-    scope,
-    idColumn:'rune_id',
-    columns:['rune_id','rune_name','group_name','english_name','rune_description','archetype','char_action','positive_keywords','negative_keywords','extra_rules','extra_notes'],
-    searchFields:['rune_name','group_name','english_name','rune_description','archetype','char_action','positive_keywords','negative_keywords','extra_rules','extra_notes'],
-    batchSize:RUNE_LIST_BATCH_SIZE
-  });
-}
-
-function genericScopeProviders(scope,{mediaOnly=false,includeRuneCore=false}={}){
+function genericScopeProviders(scope,{mediaOnly=false}={}){
   const current=scopeOf(scope);
   const text=makeProvider({
     id:current.id+':text',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
@@ -255,11 +242,11 @@ function genericScopeProviders(scope,{mediaOnly=false,includeRuneCore=false}={})
   if(mediaOnly)return [media];
   const timeline=makeProvider({
     id:current.id+':timeline',table:current.time,source:current.id+' 時期',scope:current,idColumn:'record_id',
-    columns:['record_id','record_type','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility','include_in_time'],
-    searchFields:['label','note','status'],dateColumn:'time_date',
-    filters:[{column:'record_type',operator:'in',value:['anchor','period','event']},{column:'include_in_time',operator:'eq',value:true}]
+    columns:['record_id','record_type','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility','style_tags'],
+    searchFields:['label','note','status','style_tags'],dateColumn:'time_date',
+    filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}]
   });
-  return [...(includeRuneCore?[runeCoreProvider(current)]:[]),timeline,text,media];
+  return [timeline,text,media];
 }
 
 function normalizeSearch(value){
@@ -276,14 +263,13 @@ function scopeCards(query,scopes=[]){
 }
 
 export async function searchGalaxyRows(scopes,query,{
-  limit=DEFAULT_LIST_BATCH_SIZE,cursor=null,startDate='',endDate='',and=[],nor=[],mediaOnly=false,runeScopeIds=[]
+  limit=DEFAULT_LIST_BATCH_SIZE,cursor=null,startDate='',endDate='',and=[],nor=[],mediaOnly=false
 }={}){
   const q=String(query||'').trim();
   if(!q)return {rows:[],failures:[],hasMore:false,nextCursor:null};
   const safeLimit=Math.max(1,Math.min(DEFAULT_LIST_BATCH_SIZE,Math.floor(Number(limit)||DEFAULT_LIST_BATCH_SIZE)));
   const scopeList=(Array.isArray(scopes)?scopes:[]).filter(scope=>scope?.id);
-  const runeIds=new Set((runeScopeIds||[]).map(String));
-  const providers=scopeList.flatMap(scope=>genericScopeProviders(scope,{mediaOnly,includeRuneCore:runeIds.has(scope.id)}));
+  const providers=scopeList.flatMap(scope=>genericScopeProviders(scope,{mediaOnly}));
   const cards=mediaOnly?[]:scopeCards(q,scopeList);
   const failures=[];
 

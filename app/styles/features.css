@@ -106,3 +106,34 @@
   .governance-management-cta>a{grid-column:1;grid-row:auto}
   .governance-management-cta>a{justify-self:start}
 }
+
+
+/* Management workspace */
+.scope-management-page{--management-min:16rem}
+.scope-management-split{display:grid;grid-template-columns:minmax(15rem,.78fr) minmax(0,1.22fr);gap:1rem;align-items:start}
+.scope-management-records{display:grid;gap:.55rem;max-height:62vh;overflow:auto;padding-right:.2rem}
+.scope-management-record{width:100%;text-align:left;display:grid;gap:.2rem;color:var(--loc-text);cursor:pointer}
+.scope-management-record span{color:var(--loc-muted);font-size:.86rem;overflow-wrap:anywhere}
+.scope-management-record[aria-pressed="true"]{border-color:var(--loc-accent-border);background:var(--loc-ui-accent-soft)}
+.scope-management-editor{position:sticky;top:5.4rem;display:grid;gap:.8rem}
+.scope-management-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(var(--management-min),1fr));gap:.7rem;margin:.8rem 0}
+.scope-management-fields label,.scope-management-wide-field{display:grid;gap:.35rem}
+.scope-management-wide-field{margin:.8rem 0}
+.scope-management-preview{margin-top:1rem;min-height:62vh;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-lg);overflow:hidden;background:var(--loc-bg)}
+.scope-management-preview iframe{display:block;width:100%;height:70vh;border:0;background:var(--loc-bg)}
+.scope-preview-links{display:flex;flex-wrap:wrap;gap:.55rem;align-items:center}
+.scope-style-tags{display:flex;flex-wrap:wrap;gap:.4rem;margin:.55rem 0 1rem}
+.scope-style-tags span{padding:.34rem .62rem;border:1px solid var(--loc-accent-border);border-radius:999px;background:var(--loc-ui-accent-soft);font-size:.82rem}
+.scope-danger-button{margin-top:.65rem;border-color:color-mix(in srgb,#d44 55%,var(--loc-line))!important}
+@media(max-width:860px){
+  .scope-management-split{grid-template-columns:1fr}
+  .scope-management-editor{position:static}
+  .scope-management-records{max-height:none}
+  .scope-management-preview iframe{height:62vh}
+}
+
+
+.scope-import-preview{display:grid;gap:.7rem;margin:.8rem 0;padding:.8rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-lg);background:var(--loc-panel)}
+.scope-import-preview .scope-management-records{max-height:24rem}
+.scope-setting-toggle{display:flex!important;align-items:center;gap:.55rem;min-height:2.6rem;padding:.55rem .65rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-md)}
+.scope-setting-toggle input{width:1.05rem;height:1.05rem;margin:0}

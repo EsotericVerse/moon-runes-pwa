@@ -20,6 +20,7 @@ function buildScopeData(row,id){
   const galaxy=`silver.${id}_${galaxySuffix}`;
   return {
     id,
+    config:`silver.${id}`,
     role:String(row?.role||'').trim(),
     birthday:String(row?.birthday||'').slice(0,10)||null,
     galaxy,
@@ -72,4 +73,17 @@ export async function selectManagedScope(scopeId){
     offset:0
   });
   return scopeDataFromManageRows(rows)[0]||null;
+}
+
+
+export async function selectScopeConfig(scopeId){
+  const scope=defaultScopeData(scopeId);
+  if(!scope)return null;
+  const {rows}=await selectNeonRows(scope.config,{
+    columns:'id,theme,search_able,statistics_able,culture_able',
+    filters:[{column:'id',operator:'eq',value:scope.id}],
+    limit:1,
+    offset:0
+  });
+  return rows[0]||null;
 }

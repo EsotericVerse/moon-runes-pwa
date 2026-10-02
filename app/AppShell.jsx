@@ -2,11 +2,12 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import {motion,useScroll,useSpring} from 'motion/react';
-import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
+import {QueryClient,QueryClientProvider,useQuery} from '@tanstack/react-query';
 import {UI_COPY} from './i18n/ui-copy';
 import {FEATURES,SCOPES,featureHref,featureIdForPath,getScope,scopeHref} from './modular/scope-registry';
 import {applyTheme,getThemeSlot,THEME_SLOTS} from './modular/theme-registry';
 import {useScopeRuntime} from './modular/use-scope-runtime';
+import {selectScopeConfig} from './loc/scope-data';
 
 const AUTO_THEME_ID='auto';
 const DAY_THEME_ID='theme-7';
@@ -43,8 +44,16 @@ function automaticThemeId(date=new Date()){
 }
 
 function ThemeSelect({scopeId}){
-  const policy=getScope(String(scopeId||'').trim()).theme||{mode:'auto'};
-  const fixedThemeId=policy.mode==='fixed'?policy.themeId:'';
+  const scope=getScope(String(scopeId||'').trim());
+  const policy=scope.theme||{mode:'auto'};
+  const configQuery=useQuery({
+    queryKey:['scope-public-config',scopeId],
+    queryFn:()=>selectScopeConfig(scopeId),
+    staleTime:60_000,
+    enabled:!scope.aggregateChildren&&scope.id!=='admin'
+  });
+  const configuredThemeId=String(configQuery.data?.theme||'').trim();
+  const fixedThemeId=configuredThemeId||(policy.mode==='fixed'?policy.themeId:'');
   const [themeId,setThemeId]=useState(AUTO_THEME_ID);
   const [now,setNow]=useState(()=>new Date());
   const effectiveThemeId=fixedThemeId||(themeId===AUTO_THEME_ID?automaticThemeId(now):themeId);
