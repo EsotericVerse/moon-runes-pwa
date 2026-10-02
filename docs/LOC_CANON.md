@@ -115,9 +115,11 @@ Search 是精準詞／metadata query，不做 semantic rendering。
 Current Search 分成兩層：
 
 - **Neon 深層查詢**：負責 SSOT、Scope、SQL filter、日期、權限、COUNT 與分頁；全域／跨作品查詢不得把完整 corpus 拉到前端再切片。
-- **FlexSearch 表皮輕微搜尋**：允許建立 in-memory lexical index 與 query cache，但只接受已經被 Neon／Scope／頁面條件縮小的局部資料，用於 keyword list、autocomplete、同頁高頻重複查詢與小範圍快速比對。
+- **FlexSearch 表皮輕微搜尋**：允許建立 in-memory lexical index 與 query cache，也永久保留使用 Neon cache table 保存 transient UID working set 的權利；只接受已經被 Neon／Scope／頁面條件縮小或明確選定的識別子集合，用於 keyword list、keyword ratio、autocomplete、同頁高頻重複查詢、小範圍快速比對與相關統計。
 
-FlexSearch 不是第二份資料權威、不做 semantic rendering、不負責全 corpus 掃描，也不得取代 Neon 的精準 SQL 與分頁。
+FlexSearch 的 UID cache table 只能保存 UID／Scope／cache 名稱與必要 working-set metadata，不保存第二份 canonical content。它是執行暫存層，不是第二份 corpus authority；不得因「Neon-first」、「去除重複 authority」或一般 cleanup/refactor 而取消 FlexSearch 使用 cache table 的能力。移除此能力必須先修改 `governance/runtime-capabilities.json` 的明確治理條款。
+
+FlexSearch 不是第二份資料權威、不做 semantic rendering、不負責以 cache 取代 Neon canonical corpus，也不得取代 Neon 的精準 SQL 與分頁。
 
 一般 Scope 不可在缺值時讀 LunaRunes keyword、positive_keywords、negative_keywords 或其他 Rune Canon 作 fallback。
 
