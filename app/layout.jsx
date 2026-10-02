@@ -1,5 +1,5 @@
 import './globals.css';
-import GlobalNav from './GlobalNav';
+import ScopeNavV2 from './modular-v2/ScopeNavV2';
 import AppExperience from './AppExperience';
 import ScopeFooterV2 from './modular-v2/ScopeFooterV2';
 import QueryProvider from './QueryProvider';
@@ -55,7 +55,7 @@ export default function RootLayout({ children }) {
       <body className="loc-app-shell">
         <QueryProvider>
           <AppExperience />
-          <GlobalNav />
+          <header className="scope-v2-global"><ScopeNavV2/></header>
           {children}
           <ScopeFooterV2 />
         </QueryProvider>
