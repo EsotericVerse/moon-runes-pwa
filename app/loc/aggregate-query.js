@@ -2,8 +2,8 @@
 
 import {NEON_QUERY_BATCH_SIZE} from './query-contract.mjs';
 
-import {isReferenceOnlyResource,publicContentFilters} from './content-policy';
-import {selectNeonCount,selectNeonRows} from './neon-query';
+import {publicContentFilters} from './content-policy';
+import {selectAllNeonRows,selectNeonRows} from './neon-query';
 import {resolveScopeTables} from './scope-table-mapping';
 
 async function selectNeonRowById(table,{idColumn,id,columns}={}){
@@ -17,22 +17,8 @@ function timeFilters(column,startDate,endDate){
   if(endDate)filters.push({column,operator:'lte',value:String(endDate).slice(0,10)+'T23:59:59.999+08:00'});
   return filters;
 }
-function sourceFilters(startDate='',endDate=''){
-  return publicContentFilters(timeFilters('createtime',startDate,endDate));
-}
-
-async function selectAggregateRows(table,{columns,filters=[],orders=[]}={}){
-  const output=[];
-  let offset=0;
-  const pageSize=NEON_QUERY_BATCH_SIZE;
-  while(true){
-    const {rows}=await selectNeonRows(table,{columns,filters,orders,limit:pageSize,offset});
-    if(!rows.length)break;
-    output.push(...rows);
-    offset+=rows.length;
-    if(rows.length<pageSize)break;
-  }
-  return output;
+async function selectAggregateRows(table,options={}){
+  return (await selectAllNeonRows(table,options)).rows;
 }
 
 export async function selectSourceCatalog({scopeId,startDate='',endDate='',limit=20}={}){
@@ -81,16 +67,6 @@ export async function selectSourceDaily({scopeId='',startDate='',endDate=''}={})
   })).sort((a,b)=>a.day.localeCompare(b.day)||a.source_name.localeCompare(b.source_name));
 }
 
-export async function selectDailyCounts(table,{startDate='',endDate='',filters=[]}={}){
-  const resolved=[...filters,...timeFilters('createtime',startDate,endDate)];
-  const rows=await selectAggregateRows(table,{
-    columns:'day:createtime::date,item_count:count()',
-    filters:resolved
-  });
-  return rows.map(row=>({day:String(row.day||''),item_count:Number(row.item_count)||0}))
-    .sort((a,b)=>a.day.localeCompare(b.day));
-}
-
 export async function selectDailyCategoryCounts(table,categoryColumn,{startDate='',endDate='',filters=[],includeEmpty=false,includeUndated=false}={}){
   const resolved=[
     ...filters,
@@ -130,27 +106,6 @@ export async function selectCategoryCounts(table,categoryColumn,{startDate='',en
     .sort((a,b)=>b.item_count-a.item_count||a.term.localeCompare(b.term));
 }
 
-export async function selectGalaxyPage({scopeId,sourceName='',startDate='',endDate='',limit=20,offset=0}={}){
-  if(!scopeId)throw new Error('scopeId is required');
-  const {galaxy:table}=await resolveScopeTables(scopeId);
-  const filters=[];
-  if(sourceName)filters.push({column:'source_name',operator:'eq',value:sourceName});
-  filters.push(...timeFilters('createtime',startDate,endDate));
-  const publicFilters=publicContentFilters(filters);
-  const {rows,count}=await selectNeonRows(table,{
-    columns:'uid,source_name,createtime,title,url,source_id,target_id,media_link',
-    filters:publicFilters,
-    orders:[{column:'createtime',ascending:false},{column:'uid',ascending:true}],
-    limit,
-    offset,
-    count:'exact'
-  });
-  return {
-    rows:await resolveGalaxyExternalLinks(scopeId,rows),
-    totalCount:Number(count)||rows.length
-  };
-}
-
 function mediaIdsOf(value){
   return [...new Set((Array.isArray(value)?value:[]).map(item=>String(item||'').trim()).filter(Boolean))];
 }
@@ -187,18 +142,6 @@ export async function resolveGalaxyExternalLinks(scopeId,rows=[]){
   return source.map(row=>({...row,resolved_links:resolvedLinks(row,mediaById)}));
 }
 
-export async function selectGalaxySummaries(scopeId,uids=[]){
-  const ids=[...new Set((uids||[]).map(value=>String(value||'').trim()).filter(Boolean))];
-  if(!ids.length)return [];
-  const {galaxy}=await resolveScopeTables(scopeId);
-  const rows=(await selectNeonRows(galaxy,{
-    columns:'uid,title',
-    filters:[{column:'uid',operator:'in',value:ids}],
-    limit:ids.length
-  })).rows;
-  return rows.map(row=>({uid:row.uid,title:row.title||'',excerpt:'',links:[]}));
-}
-
 export async function selectGalaxyContent(scopeId,uid){
   const id=String(uid||'').trim();
   if(!id)return null;
@@ -213,9 +156,9 @@ export async function selectGalaxyIdentity(scopeId,uid){
   const row=await selectNeonRowById(table,{
     idColumn:'uid',
     id,
-    columns:'uid,title,reference_only,source_name,createtime,url,source_id,target_id,media_link'
+    columns:'uid,title,source_name,createtime,url,source_id,target_id,media_link'
   });
-  if(!row||isReferenceOnlyResource(row))return null;
+  if(!row)return null;
   const contentRow=await selectGalaxyContent(scopeId,id);
   const mediaRows=await mediaRowsFor(scopeId,mediaIdsOf(row.media_link));
   const mediaById=new Map(mediaRows.map(item=>[String(item.media_id),item]));

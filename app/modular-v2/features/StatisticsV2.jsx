@@ -5,12 +5,11 @@ import {UI_COPY} from '../../i18n/ui-copy';
 import {useMemo,useState} from 'react';
 import {useRouter,useSearchParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
-import Select from 'react-select';
 import {
   Bar,BarChart,CartesianGrid,Cell,Legend,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectScopeRankingTypes,selectScopeSourceTrendRows} from '../../loc/neon-statistics-client';
+import {selectScopeSourceTrendRows} from '../../loc/neon-statistics-client';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
@@ -22,6 +21,7 @@ const CHART_TEXT='var(--loc-text)';
 const CHART_GRID='var(--loc-line)';
 const CHART_TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)',borderRadius:'8px'};
 const CHART_TYPES=[['line',UI_COPY.statistics.line],['bar',UI_COPY.statistics.bar],['pie',UI_COPY.statistics.pie]];
+const STAT_TYPES=['total','source'];
 const STAT_TYPE_LABELS=Object.freeze({total:UI_COPY.statistics.totalSource,source:UI_COPY.statistics.workSource});
 const SOURCE_TREND_ORDER=Object.freeze(['Facebook','Threads','IG','Others']);
 const TIME_STANDARDS=Object.freeze([
@@ -207,17 +207,16 @@ function StatisticTypeSelect({scopeId,navigation,types}){
   const router=useRouter();
   const requested=String(navigation.rankingType||'');
   const active=types.includes(requested)?requested:(types[0]||'');
-  const options=types.map(value=>({value,label:STAT_TYPE_LABELS[value]||value}));
-  const selected=options.find(option=>option.value===active)||options[0]||null;
   if(!types.length)return null;
-  return <label className="scope-v2-react-select-field">
+  return <label>
     <span>{UI_COPY.statistics.item}</span>
-    <Select inputId="statistics-ranking-type" className="scope-v2-react-select" classNamePrefix="scope-v2-react-select" unstyled
-      isSearchable options={options} value={selected} noOptionsMessage={()=>UI_COPY.statistics.noOptions}
-      onChange={option=>{
-        if(!option?.value||option.value===active)return;
-        router.push(featureNavigationHref(scopeId,'statics',{...navigation,rankingType:option.value}));
-      }}/>
+    <select id="statistics-ranking-type" className="scope-v2-select" value={active} onChange={event=>{
+      const value=event.target.value;
+      if(!value||value===active)return;
+      router.push(featureNavigationHref(scopeId,'statics',{...navigation,rankingType:value}));
+    }}>
+      {types.map(value=><option key={value} value={value}>{STAT_TYPE_LABELS[value]||value}</option>)}
+    </select>
   </label>;
 }
 
@@ -271,15 +270,8 @@ function StatisticsPanel({scopeId,navigation,types}){
 }
 
 function StatisticsShell({scopeId,navigation}){
-  const typesQuery=useQuery({
-    queryKey:['statistics-types',scopeId],
-    queryFn:()=>selectScopeRankingTypes(scopeId),
-    staleTime:5*60_000
-  });
-  const types=typesQuery.data||[];
   return <section className="loc-card scope-v2-feature-card">
-    {typesQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(typesQuery.error)}</p>:null}
-    {!typesQuery.isPending?<StatisticsPanel scopeId={scopeId} navigation={navigation} types={types}/>:null}
+    <StatisticsPanel scopeId={scopeId} navigation={navigation} types={STAT_TYPES}/>
   </section>;
 }
 export default function StatisticsV2(){

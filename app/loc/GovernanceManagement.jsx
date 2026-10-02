@@ -3,10 +3,9 @@
 import {UI_COPY} from '../i18n/ui-copy';
 
 import {useEffect,useMemo,useState} from 'react';
-import Select from 'react-select';
 import {useNeonAccount} from './use-neon-account';
 import {useScopeRuntimeV2} from '../modular-v2/use-scope-runtime.v2';
-import {getScopeV2} from '../modular-v2/scope-registry.v2';
+import {getScopeV2,scopeHrefV2} from '../modular-v2/scope-registry.v2';
 import ManagementArticlePublisher from './ManagementArticlePublisher';
 import ManagementImportPanel from './ManagementImportPanel';
 import ManagementDataPanel from './ManagementDataPanel';
@@ -104,7 +103,7 @@ export default function GovernanceManagement(){
       <p>{UI_COPY.management.locDescription}</p>
     </header>
     <section className="loc-card">
-      <a className="loc-button primary" href={getScopeV2('admin').primary.href}>{UI_COPY.management.locAdminLink}</a>
+      <a className="loc-button primary" href={scopeHrefV2('admin')}>{UI_COPY.management.locAdminLink}</a>
       <button className="loc-button" type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button>
     </section>
   </section>;
@@ -114,8 +113,6 @@ export default function GovernanceManagement(){
     <section className="loc-card"><p>{UI_COPY.management.permissionDenied}</p><button type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button></section>
   </section>;
 
-  const selected=options.find(option=>option.value===section)||options[0]||null;
-
   return <section className="loc-view">
     <header className="loc-hero">
       <p className="loc-eyebrow">{UI_COPY.management.eyebrow} · {scopeId}</p>
@@ -123,17 +120,9 @@ export default function GovernanceManagement(){
       <p>{account.user.email||account.user.name||''}</p>
       <div className="scope-v2-management-select">
         <label htmlFor="scope-management-section">{UI_COPY.management.item}</label>
-        <Select
-          inputId="scope-management-section"
-          className="scope-v2-react-select"
-          classNamePrefix="scope-v2-react-select"
-          unstyled
-          isSearchable
-          options={options}
-          value={selected}
-          noOptionsMessage={()=>UI_COPY.management.noOptions}
-          onChange={option=>option?.value&&setSection(option.value)}
-        />
+        <select id="scope-management-section" className="scope-v2-select" value={section} onChange={event=>setSection(event.target.value)}>
+          {options.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}
+        </select>
       </div>
       <p><button type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button></p>
     </header>

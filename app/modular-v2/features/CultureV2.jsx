@@ -27,7 +27,7 @@ import WorkFullTextV2 from '../WorkFullTextV2';
 import {workDisplayHeading,workDisplayText} from '../work-display-model.v2';
 import IncrementalListV2 from '../IncrementalListV2';
 import {useOffsetPagination} from '../use-offset-pagination.v2';
-import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
+import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import ContentEditorV2 from '../ContentEditorV2';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 
@@ -130,35 +130,18 @@ export default function CultureV2(){
 
 
 
-  const classificationBucketsQuery=sourceSnapshotQuery;
   const categoryGroups=sourceSnapshotQuery.data?.groups||[];
-  const categoryQuery=sourceSnapshotQuery;
   const selectedGroup=categoryGroups.find(item=>item.category_key===selectedCategory)||null;
-  const periodWorkIndexQuery=useQuery({
-    queryKey:['culture-period-work-count',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date,selectedCategory,selectedGroup?.source_name||'all'],
-    queryFn:()=>selectScopePeriodWorkIndex(classificationScope,{
-      startDate:selectedWorkPeriod?.start_date||'',
-      endDate:selectedWorkPeriod?.end_date,
-      sourceName:selectedGroup?.source_name||'',
-      sourceNames:selectedGroup?.source_names||[],
-      mediaTypes:selectedGroup?.media_types||[],
-      limit:1,
-      offset:0
-    }),
-    enabled:!isLoc&&(!selectedCategory||Boolean(selectedGroup)),
-    staleTime:5*60_000
-  });
   const periodWorksPage=useOffsetPagination({
     key:[
       classificationScope,
       selectedWorkPeriod?.period||'all',
       selectedWorkPeriod?.start_date||'',
       selectedWorkPeriod?.end_date||'',
-      selectedCategory||'all',
-      Number(periodWorkIndexQuery.data?.totalCount)||0
+      selectedCategory||'all'
     ].join('|'),
     pageSize:DEFAULT_LIST_BATCH_SIZE,
-    enabled:!isLoc&&!periodWorkIndexQuery.isPending&&!periodWorkIndexQuery.error&&(!selectedCategory||Boolean(selectedGroup)),
+    enabled:!isLoc&&(!selectedCategory||Boolean(selectedGroup)),
     loadPage:async(cursor,limit)=>{
       const indexPage=await selectScopePeriodWorkIndex(classificationScope,{
         startDate:selectedWorkPeriod?.start_date||'',
@@ -169,17 +152,17 @@ export default function CultureV2(){
         limit,
         cursor:cursor&&typeof cursor==='object'?cursor:null
       });
-      const items=indexPage.rows||[];
-      const details=await selectScopePeriodWorkDetails(classificationScope,{items});
+      const details=await selectScopePeriodWorkDetails(classificationScope,{items:indexPage.rows||[]});
       return {
         rows:details.rows||[],
+        totalCount:Number(indexPage.totalCount)||0,
         hasMore:Number(indexPage.nextCursor?.galaxyOffset||0)+Number(indexPage.nextCursor?.mediaOffset||0)<Number(indexPage.totalCount||0),
         nextCursor:indexPage.nextCursor
       };
     },
     getRowKey:row=>String(row?.key||row?.uid||row?.entry_id||'')
   });
-  const selectedCount=Number(periodWorkIndexQuery.data?.totalCount)||Number(selectedGroup?.item_count)||0;
+  const selectedCount=Number(periodWorksPage.totalCount??selectedGroup?.item_count)||0;
   const visibleWorkRows=periodWorksPage.rows||[];
 
   useEffect(()=>{
@@ -518,8 +501,8 @@ export default function CultureV2(){
                 </div>
                 <p className='loc-eyebrow'>{UI_COPY.culture.classificationRiver}</p>
                 <h3>{labelOf(selectedWorkPeriod,0)}｜作品分類河道</h3>
-                {classificationBucketsQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(classificationBucketsQuery.error)}</p>:null}
-                {!classificationBucketsQuery.isFetching&&!classificationBucketsQuery.error&&!classificationBuckets.length
+                {sourceSnapshotQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(sourceSnapshotQuery.error)}</p>:null}
+                {!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!classificationBuckets.length
                   ?<p className='scope-v2-status'>{UI_COPY.culture.noPeriodClassification}</p>:null}
                 {classificationRiverItems.length?<CultureTimelineV2
                   items={classificationRiverItems}
@@ -564,8 +547,8 @@ export default function CultureV2(){
 
                 <p className='scope-v2-status'>該時期總作品數：{Number(sourceSnapshotQuery.data?.totalCount||0).toLocaleString()} 項。</p>
 
-                {categoryQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(categoryQuery.error)}</p>:null}
-                {!categoryQuery.isFetching&&!categoryQuery.error&&!categoryGroups.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+                {sourceSnapshotQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(sourceSnapshotQuery.error)}</p>:null}
+                {!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!categoryGroups.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
                 {categoryGroups.length?<IncrementalListV2
                   items={categoryGroups}
                   batchSize={DEFAULT_LIST_BATCH_SIZE}
@@ -585,7 +568,6 @@ export default function CultureV2(){
                     <h4>{selectedGroup?.display_label||UI_COPY.culture.allWorks} · {selectedCount.toLocaleString()} 項作品</h4>
                     {selectedGroup?<button type='button' className='scope-v2-pagination-button' onClick={()=>setSelectedCategory('')}>{UI_COPY.culture.showAllWorks}</button>:null}
                   </header>
-                  {periodWorkIndexQuery.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorkIndexQuery.error)}</p>:null}
                   {periodWorksPage.error?<p className='scope-v2-status scope-v2-error'>{featureDataErrorMessage(periodWorksPage.error)}</p>:null}
                   <IncrementalListV2
                     items={visibleWorkRows}
@@ -593,8 +575,8 @@ export default function CultureV2(){
                     resetKey={selectedCategory+'|source'}
                     className='scope-v2-culture-source-work-scroll'
                     externalHasMore={periodWorksPage.hasMore}
-                    loading={periodWorkIndexQuery.isFetching||periodWorksPage.loading}
-                    error={periodWorkIndexQuery.error||periodWorksPage.error}
+                    loading={periodWorksPage.loading}
+                    error={periodWorksPage.error}
                     onLoadMore={periodWorksPage.loadNext}
                     scrollRootRef={workScrollRef}
                     renderItem={(work,index)=><WorkSummaryCardV2
@@ -626,7 +608,7 @@ export default function CultureV2(){
                       />:null}
                     </WorkSummaryCardV2>}
                   />
-                  {!periodWorkIndexQuery.isFetching&&!periodWorksPage.loading&&!periodWorkIndexQuery.error&&!periodWorksPage.error&&!visibleWorkRows.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+                  {!periodWorksPage.loading&&!periodWorksPage.error&&!visibleWorkRows.length?<p className='scope-v2-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
                 </section>
               </section>:null}
             </>}

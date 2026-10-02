@@ -15,7 +15,7 @@
 
 .game-round-wrap{padding:.8rem 1rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius);background:var(--loc-surface);overflow-x:auto}
 .game-round-rail{display:grid;grid-template-columns:repeat(8,minmax(64px,1fr));gap:.45rem;min-width:620px}
-.game-round-node{display:grid;gap:.18rem;place-items:center;padding:.55rem .3rem;border:1px solid var(--loc-line);border-radius:12px;background:var(--loc-surface-soft);color:var(--loc-muted);transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.game-round-node{display:grid;gap:.18rem;place-items:center;padding:.55rem .3rem;border:1px solid var(--loc-line);border-radius:12px;color:var(--loc-muted);transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
 .game-round-node span{font-size:.72rem}.game-round-node b{font-size:1rem}
 .game-round-node.is-done{opacity:.72}
 .game-round-node.is-current{border-color:var(--loc-accent-border);color:var(--loc-text);box-shadow:0 0 0 1px var(--loc-accent-border-soft),0 0 22px var(--loc-accent-surface-strong);transform:translateY(-2px)}
@@ -59,7 +59,7 @@
 .game-doc-copy h2{margin:0}
 .game-doc-copy p{margin:0}
 .game-role-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}
-.game-role-grid article{display:grid;gap:.2rem;padding:.8rem;border:1px solid var(--loc-line);border-radius:12px;background:var(--loc-surface-soft)}
+.game-role-grid article{display:grid;gap:.2rem;padding:.8rem;border:1px solid var(--loc-line);border-radius:12px;}
 .game-role-grid span{font-size:.9rem}.game-role-grid small{color:var(--loc-muted)}
 
 .game-de-meter{display:grid;grid-template-columns:repeat(8,1fr);gap:.22rem;width:min(100%,230px)}
@@ -70,7 +70,7 @@
 .game-live-board{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;align-items:start}
 .game-live-board.players-3,.game-live-board.players-4{grid-template-columns:repeat(2,minmax(0,1fr))}
 .game-player{display:grid;gap:.8rem;transition:border-color .18s ease,box-shadow .18s ease}
-.game-player.is-turn{border-color:var(--loc-accent-border);box-shadow:0 0 0 1px var(--loc-accent-border-soft),var(--loc-shadow-card)}
+
 .game-player-head{display:flex;align-items:center;justify-content:space-between;gap:.8rem}
 .game-player-head>div{display:grid;gap:.2rem}
 .game-player-meta{margin:0;color:var(--loc-muted);font-size:.84rem}
@@ -80,7 +80,7 @@
 .game-event-field .loc-actions{justify-content:center}
 
 .game-resonance-orbit{position:relative;display:grid;grid-template-columns:48px 100px 48px;gap:.2rem;align-items:center;justify-content:center;min-height:74px}
-.game-resonance-orbit span{width:48px;height:48px;border:1px solid var(--loc-accent-border);border-radius:50%;box-shadow:0 0 24px var(--loc-accent-surface-strong)}
+.game-resonance-orbit span{width:48px;height:48px;border:1px solid var(--loc-accent-border);border-radius:50%;}
 .game-resonance-orbit i{height:2px;background:linear-gradient(90deg,transparent,var(--loc-gold),transparent);animation:gameResonance 1.8s ease-in-out infinite}
 @keyframes gameResonance{0%,100%{opacity:.35;transform:scaleX(.65)}50%{opacity:1;transform:scaleX(1)}}
 
@@ -103,7 +103,7 @@
   .game-role-grid{grid-template-columns:1fr}
   .game-preview-hand{grid-template-columns:repeat(5,minmax(54px,1fr));overflow-x:auto}
   .game-hand{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .game-group-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}
+  
   .game-compact-hero{display:grid}
 }
 

@@ -7,7 +7,7 @@ const DENSITY_LEVELS=Object.freeze([
   Object.freeze({minimum:11,key:'focus-1',label:'11–25 篇',brightness:1.05,glow:0.3})
 ]);
 
-export function densityLevelForCount(value){
+function densityLevelForCount(value){
   const count=Number(value)||0;
   return DENSITY_LEVELS.find(level=>count>=level.minimum)||null;
 }
@@ -30,17 +30,6 @@ export function densityStyleForRatio(value){
     glow:.12+ratio*.78,
     blur:`${(4+ratio*20).toFixed(1)}px`
   };
-}
-
-function utcWeekStart(value){
-  const date=new Date(value);
-  if(Number.isNaN(date.getTime()))return null;
-  const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);
-  const values=Object.fromEntries(parts.map(part=>[part.type,part.value]));
-  const localDate=new Date(Date.UTC(Number(values.year),Number(values.month)-1,Number(values.day)));
-  const weekday=(localDate.getUTCDay()+6)%7;
-  localDate.setUTCDate(localDate.getUTCDate()-weekday);
-  return localDate;
 }
 
 export function formatCultureDateTime(value){
@@ -109,47 +98,3 @@ export function decodeCultureText(value){
   }
   return text;
 }
-
-export function groupWorksByWeek(rows=[],field='source_name'){
-  const groups=new Map();
-  for(const work of Array.isArray(rows)?rows:[]){
-    const timestamp=work?.createtime||work?.created_at||work?.start_date||work?.date;
-    const start=utcWeekStart(timestamp);
-    if(!start)continue;
-    const category=String(work?.[field]||'').trim();
-    if(!category)continue;
-    const startDate=start.toISOString().slice(0,10);
-    const id=`${field}:${category}:${startDate}`;
-    if(!groups.has(id)){
-      const weekEnd=new Date(start);weekEnd.setUTCDate(weekEnd.getUTCDate()+7);
-      groups.set(id,{
-        id,category,group_label:category,
-        week_start:startDate,week_end:weekEnd.toISOString().slice(0,10),
-        start_date:startDate,end_date:weekEnd.toISOString().slice(0,10),
-        item_count:0,works:[]
-      });
-    }
-    const group=groups.get(id);
-    group.item_count+=1;
-    group.works.push(work);
-  }
-  const maxima=new Map();
-  let globalMaximum=0;
-  for(const group of groups.values()){
-    maxima.set(group.category,Math.max(maxima.get(group.category)||0,group.item_count));
-    globalMaximum=Math.max(globalMaximum,group.item_count);
-  }
-  return [...groups.values()].map(group=>({
-    ...group,
-    density_ratio:group.item_count/Math.max(1,maxima.get(group.category)||1),
-    global_density_ratio:group.item_count/Math.max(1,globalMaximum),
-    display_label:`${group.category} ${group.item_count} 項`,
-    title:`${group.week_start} – ${group.week_end} · ${group.category} · ${group.item_count} 項`
-  })).sort((a,b)=>a.group_label.localeCompare(b.group_label)||a.week_start.localeCompare(b.week_start));
-}
-
-export function groupWorksByWeekAndSource(rows=[]){
-  return groupWorksByWeek(rows,'source_name');
-}
-
-export const DENSITY_LEVELS_V2=DENSITY_LEVELS;

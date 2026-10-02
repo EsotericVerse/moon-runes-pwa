@@ -3,16 +3,12 @@
 import {UI_COPY} from '../i18n/ui-copy';
 
 import {useEffect,useState} from 'react';
-import {neonAuthClient} from './neon-client';
+import {neonAuthRelation} from './neon-client';
 import {useNeonAccount} from './use-neon-account';
 import {resolveScopeTables} from './scope-table-mapping';
 
 const PAGE_SIZE=20;
 
-function relation(table){
-  const [schema,name]=String(table).split('.');
-  return neonAuthClient.schema(schema).from(name);
-}
 function dateText(value){return String(value||'').slice(0,10)||'—';}
 
 export default function ManagementDataPanel({scopeId}){
@@ -36,8 +32,8 @@ export default function ManagementDataPanel({scopeId}){
         const tables=await resolveScopeTables(scopeId,{email:account.email});
         const table=kind==='media'?tables.galaxyMedia:tables.galaxy;
         let query=kind==='media'
-          ?relation(table).select('media_id,title,media_type,createtime,galaxy_link',{count:'exact'})
-          :relation(table).select('uid,title,source_name,createtime,UpdateTime,searchable',{count:'exact'});
+          ?neonAuthRelation(table).select('media_id,title,media_type,createtime,galaxy_link',{count:'exact'})
+          :neonAuthRelation(table).select('uid,title,source_name,createtime,UpdateTime,searchable',{count:'exact'});
         if(kind==='galaxy'&&visibility==='hidden')query=query.eq('searchable',false);
         query=query.order('createtime',{ascending:false}).range(page*PAGE_SIZE,page*PAGE_SIZE+PAGE_SIZE-1);
         const {data,count,error:queryError}=await query;

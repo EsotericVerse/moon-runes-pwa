@@ -1,11 +1,7 @@
 import {UI_COPY} from '../i18n/ui-copy.js';
 
 // Current V2 Scope registry.
-export const SCOPE_POLICY_V2=Object.freeze({
-  defaultScopeId:'loc',
-  routeAuthority:'next-filesystem',
-  dataAuthority:'neon'
-});
+const DEFAULT_SCOPE_ID='loc';
 
 export const FEATURES_V2=Object.freeze([
   Object.freeze({id:'statics',label:UI_COPY.features.statics.title,path:'statics'}),
@@ -20,10 +16,6 @@ export const SCOPES_V2=Object.freeze({
     scopeType:'domain',
     domain:'loc.lo3rwang.cc',
     label:UI_COPY.scope.loc.label,
-    primary:Object.freeze({label:UI_COPY.scope.loc.primary,href:'https://lrunes.lo3rwang.cc/'}),
-    role:Object.freeze({label:UI_COPY.scope.loc.role,href:'https://loc.lo3rwang.cc/lo3rwang/'}),
-    homes:Object.freeze([{label:UI_COPY.scope.loc.home,href:'https://loc.lo3rwang.cc/'}]),
-    searchCollection:'all',
   }),
 
   lunarunes:Object.freeze({
@@ -31,26 +23,7 @@ export const SCOPES_V2=Object.freeze({
     scopeType:'domain',
     domain:'lrunes.lo3rwang.cc',
     label:'月之符文',
-    localRoutes:Object.freeze([
-      'game',
-      'list',
-      'duel/one',
-      'duel/daily',
-      'duel/two',
-      'duel/three',
-      'duel/five',
-      'duel/ow3gs',
-      'daily/log',
-      'daily/trend'
-    ]),
-    routePatterns:Object.freeze(['list/:group','list/:group/:rune']),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'}),
-    primary:Object.freeze({label:'月之符文',href:'https://lrunes.lo3rwang.cc/'}),
-    role:Object.freeze({label:'管理者頁面',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
-    homes:Object.freeze([
-      {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
-    ]),
-    searchCollection:'月之符文',
   }),
 
   lo3rwang:Object.freeze({
@@ -59,12 +32,6 @@ export const SCOPES_V2=Object.freeze({
     domain:null,
     label:UI_COPY.scope.author.label,
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'}),
-    primary:Object.freeze({label:UI_COPY.scope.author.primary,href:'https://loc.lo3rwang.cc/lo3rwang/'}),
-    role:Object.freeze({label:UI_COPY.scope.author.role,href:'https://loc.lo3rwang.cc/lo3rwang/'}),
-    homes:Object.freeze([
-      {label:UI_COPY.scope.author.home,href:'https://loc.lo3rwang.cc/'}
-    ]),
-    searchCollection:'lo3rwang',
   }),
 
   admin:Object.freeze({
@@ -72,15 +39,6 @@ export const SCOPES_V2=Object.freeze({
     scopeType:'domain',
     domain:'admin.lo3rwang.cc',
     label:UI_COPY.scope.admin.label,
-    localRoutes:Object.freeze([]),
-    routePatterns:Object.freeze([]),
-    primary:Object.freeze({label:UI_COPY.scope.admin.primary,href:'https://admin.lo3rwang.cc/'}),
-    role:Object.freeze({label:UI_COPY.scope.admin.role,href:'https://admin.lo3rwang.cc/'}),
-    homes:Object.freeze([
-      {label:UI_COPY.scope.admin.home,href:'https://admin.lo3rwang.cc/'},
-      {label:UI_COPY.scope.admin.locHome,href:'https://loc.lo3rwang.cc/'}
-    ]),
-    searchCollection:'治理',
   })
 });
 
@@ -126,11 +84,11 @@ export function resolveScopeV2(host='',pathname='/'){
       if(base&&(path===base||path.startsWith(base+'/')))return id;
     }
   }
-  return SCOPE_BY_DOMAIN_V2[h]||SCOPE_POLICY_V2.defaultScopeId;
+  return SCOPE_BY_DOMAIN_V2[h]||DEFAULT_SCOPE_ID;
 }
 
 export function getScopeV2(id){
-  return SCOPES_V2[id]||SCOPES_V2[SCOPE_POLICY_V2.defaultScopeId];
+  return SCOPES_V2[id]||SCOPES_V2[DEFAULT_SCOPE_ID];
 }
 
 export function scopeOriginV2(scopeId){

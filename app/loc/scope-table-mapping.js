@@ -52,11 +52,8 @@ export async function selectManagedScopes(){
   return [...scopes.values()];
 }
 
-export async function selectManagedScopeIds(){
-  return (await selectManagedScopes()).map(row=>row.id);
-}
 
-export async function selectScopeTableMapping(scopeId,{email=''}={}){
+async function selectScopeTableMapping(scopeId,{email=''}={}){
   const id=normalizeDataScopeId(scopeId);
   if(!SCOPE_ID_PATTERN.test(id))throw new Error('Scope ID 無效');
   const normalizedEmail=String(email||'').trim().toLowerCase();

@@ -5,7 +5,7 @@ import {UI_COPY} from '../../i18n/ui-copy';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {searchNeonRows} from '../../loc/neon-search';
-import {neonAuthClient} from '../../loc/neon-client';
+import {neonAuthRelation} from '../../loc/neon-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import FeaturePageV2 from '../FeaturePageV2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
@@ -21,21 +21,18 @@ import {selectManagedScopes} from '../../loc/scope-table-mapping';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model.v2';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 import IncrementalListV2 from '../IncrementalListV2';
-import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
+import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
+import {applyNeonFilters} from '../../loc/neon-query';
 
 
-function authRelation(table){
-  const [schema,name]=String(table).split('.');
-  return neonAuthClient.schema(schema).from(name);
-}
 async function selectNeonRowById(table,{idColumn,id,columns}={}){
-  const {data,error}=await authRelation(table).select(columns).eq(idColumn,String(id)).limit(1);
+  const {data,error}=await neonAuthRelation(table).select(columns).eq(idColumn,String(id)).limit(1);
   if(error)throw new Error(error.message||UI_COPY.search.readFailed);
   return data?.[0]||null;
 }
 async function updateNeonRows(table,values,{filters=[]}={}){
-  let query=authRelation(table).update(values);
-  for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
+  let query=neonAuthRelation(table).update(values);
+  query=applyNeonFilters(query,filters);
   const {error}=await query;
   if(error)throw new Error(error.message||UI_COPY.search.updateFailed);
 }

@@ -161,22 +161,6 @@ function buildSuggestions({runes,totalDays,totalDraws}){
   return suggestions;
 }
 
-export function summarizeDailyDraws(rows=[]){
-  const grouped=new Map();
-  for(const row of rows||[]){
-    const date=dayKey(row?.record_date??row?.created_at);
-    if(!date)continue;
-    if(!grouped.has(date))grouped.set(date,{date,rows:[]});
-    grouped.get(date).rows.push({
-      ...row,
-      rune_name:runeName(row),
-      direction:directionOf(row),
-      role:roleOf(row)
-    });
-  }
-  return [...grouped.values()].sort((a,b)=>a.date.localeCompare(b.date));
-}
-
 export function summarizeDailyRange(rows=[],{startDate='',endDate='',label='自訂區間'}={}){
   const start=dayKey(startDate);
   const end=dayKey(endDate);
@@ -217,17 +201,4 @@ export function dailyPresetRange(today,mode){
   if(mode==='yesterday-today-tomorrow')return {startDate:addDays(current,-1),endDate:addDays(current,1)};
   if(mode==='seven-days')return {startDate:addDays(current,-6),endDate:current};
   return {startDate:current,endDate:current};
-}
-
-export function summarizeDailyWindows(rows=[],today=''){
-  const anchor=dayKey(today)||summarizeDailyDraws(rows).at(-1)?.date||'';
-  const two=dailyPresetRange(anchor,'today-tomorrow');
-  const three=dailyPresetRange(anchor,'yesterday-today-tomorrow');
-  const seven=dailyPresetRange(anchor,'seven-days');
-  return {
-    anchor_date:anchor,
-    today_tomorrow:summarizeDailyRange(rows,{...two,label:'今天＋明天'}),
-    yesterday_today_tomorrow:summarizeDailyRange(rows,{...three,label:'昨天＋今天＋明天'}),
-    seven_days:summarizeDailyRange(rows,{...seven,label:'近七天'})
-  };
 }

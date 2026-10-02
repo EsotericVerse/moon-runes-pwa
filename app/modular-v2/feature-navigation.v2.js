@@ -8,7 +8,7 @@ const NAVIGATION_FIELDS=Object.freeze([
 const NavigationValue=z.string().trim().min(1).max(240);
 const StatisticsTab=z.enum(['ranking','keywords','styles','media','charts']);
 
-export const FeatureNavigationSchema=z.object({
+const FeatureNavigationSchema=z.object({
   q:NavigationValue.optional(),
   identity:NavigationValue.optional(),
   source:NavigationValue.optional(),
@@ -43,7 +43,7 @@ export function readFeatureNavigation(searchParams){
   return parsed.success?parsed.data:{};
 }
 
-export function featureNavigationQuery(navigation={}){
+function featureNavigationQuery(navigation={}){
   const params=new URLSearchParams();
   const parsed=FeatureNavigationSchema.safeParse(navigation);
   if(!parsed.success)return '';
@@ -85,19 +85,4 @@ export function galaxyRelationLinks(scopeId,row={}){
     });
   });
   return links.filter(link=>link.href);
-}
-
-function hasTemporalCondition(state){
-  return Boolean(state.period||state.anchor||state.from||state.to);
-}
-
-export function featureNavigationLinks({targetScope,state}){
-  const links=[];
-  if(hasTemporalCondition(state)){
-    links.push({id:'culture',label:'文化 Time River',href:featureNavigationHref(targetScope,'culture',state)});
-  }
-  if(String(targetScope||'').trim()){
-    links.push({id:'statics',label:'統計',href:featureNavigationHref(targetScope,'statics',{...state,statTab:'ranking'})});
-  }
-  return links;
 }

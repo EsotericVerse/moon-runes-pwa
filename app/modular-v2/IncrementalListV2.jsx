@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import IncrementalLoadV2 from './IncrementalLoadV2';
-import {DEFAULT_LIST_BATCH_SIZE} from './list-loading.v2';
+import {DEFAULT_LIST_BATCH_SIZE} from '../loc/list-loading-contract.mjs';
 
 export default function IncrementalListV2({
   items=[],

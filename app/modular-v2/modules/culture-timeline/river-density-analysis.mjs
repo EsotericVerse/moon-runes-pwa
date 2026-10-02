@@ -4,7 +4,7 @@ const DAY_MS=86400000;
 const ANCHOR_COVER_DAYS=3;
 const SUGGESTION_MIN_GAP_DAYS=7;
 const SUGGESTION_MIN_SEGMENT_SHARE=0.03;
-export const MIN_ANCHOR_SUGGESTION_ITEMS=20;
+const MIN_ANCHOR_SUGGESTION_ITEMS=20;
 
 function dayKey(value){
   const key=String(value||'').slice(0,10);
@@ -18,7 +18,7 @@ function dayFromMs(value){
   return new Date(value).toISOString().slice(0,10);
 }
 
-export function aggregateRiverDensity(rows=[]){
+function aggregateRiverDensity(rows=[]){
   const counts=new Map();
   for(const row of rows||[]){
     const date=dayKey(row?.date||row?.day||row?.start_date);
@@ -31,7 +31,7 @@ export function aggregateRiverDensity(rows=[]){
     .sort((a,b)=>a.date.localeCompare(b.date));
 }
 
-export function fillRiverDensity(rows=[]){
+function fillRiverDensity(rows=[]){
   const aggregated=aggregateRiverDensity(rows);
   if(!aggregated.length)return [];
   const counts=new Map(aggregated.map(row=>[row.date,row.count]));

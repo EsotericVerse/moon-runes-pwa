@@ -1,28 +1,10 @@
 'use client';
 
 import {publicContentFilters} from './content-policy';
-import {neonPublicClient} from './neon-client';
 import {DEFAULT_LIST_BATCH_SIZE,RUNE_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
+import {applyNeonFilters,applyNeonOrders,neonPublicRelation} from './neon-query';
 import {resolveScopeTables} from './scope-table-mapping';
 
-function relation(activeTable){
-  const [schema,name]=String(activeTable).split('.');
-  return neonPublicClient.schema(schema).from(name);
-}
-function applyFilters(query,filters=[]){
-  for(const filter of filters){
-    query=filter.operator==='in'
-      ?query.in(filter.column,filter.value)
-      :query[filter.operator](filter.column,filter.value);
-  }
-  return query;
-}
-function applyOrders(query,orders=[]){
-  for(const order of orders){
-    query=query.order(order.column,{ascending:order.ascending??true,nullsFirst:order.nullsFirst});
-  }
-  return query;
-}
 function unique(values=[]){
   return [...new Set(values.map(value=>String(value||'').trim()).filter(Boolean))];
 }
@@ -76,18 +58,18 @@ function makeProvider({id,table,source,scopeId,idColumn,columns,searchFields,fil
         ?[{column:dateColumn,ascending:false},{column:idColumn,ascending:true}]
         :[{column:idColumn,ascending:true}];
 
-      let countQuery=relation(activeTable).select(idColumn,{count:'exact',head:true});
-      countQuery=applyFilters(countQuery,filters);
+      let countQuery=neonPublicRelation(activeTable).select(idColumn,{count:'exact',head:true});
+      countQuery=applyNeonFilters(countQuery,filters);
       countQuery=applyLiteralTerms(countQuery,frozenFields,query,and,nor);
       const {error:countError,count}=await countQuery;
       if(countError)throw new Error(countError.message||('Neon COUNT '+activeTable+' failed'));
       const totalCount=Number(count)||0;
       if(!totalCount||offset>=totalCount)return {rows:[],hasMore:false,nextCursor:null,totalCount};
 
-      let dataQuery=relation(activeTable).select(outputColumns.join(','));
-      dataQuery=applyFilters(dataQuery,filters);
+      let dataQuery=neonPublicRelation(activeTable).select(outputColumns.join(','));
+      dataQuery=applyNeonFilters(dataQuery,filters);
       dataQuery=applyLiteralTerms(dataQuery,frozenFields,query,and,nor);
-      dataQuery=applyOrders(dataQuery,orders);
+      dataQuery=applyNeonOrders(dataQuery,orders);
       dataQuery=dataQuery.range(offset,offset+pageSize-1);
       const {data,error}=await dataQuery;
       if(error)throw new Error(error.message||('Neon SELECT '+activeTable+' failed'));

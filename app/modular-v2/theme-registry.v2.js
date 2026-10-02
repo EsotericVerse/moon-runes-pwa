@@ -29,28 +29,11 @@ export const THEME_DEFAULT_SLOTS_V2=Object.freeze(slots.map((slot,index)=>Object
   tokens:Object.freeze(slot.tokens)
 })));
 
-/* Backward-compatible current registry. These are complete fallback palettes.
-   Future Admin-managed overrides may replace scheme/tokens at read time without
-   mutating the defaults or requiring feature components to know the storage source. */
 export const THEME_SLOTS_V2=THEME_DEFAULT_SLOTS_V2;
 
-function themeOverrideV2(slot,override){
-  if(!override||typeof override!=='object')return slot;
-  const source=override.tokens&&typeof override.tokens==='object'?override.tokens:null;
-  const scheme=override.scheme==='dark'||override.scheme==='light'?override.scheme:null;
-  if(!source||!scheme)return slot;
-  const sourceKeys=Object.keys(source);
-  if(sourceKeys.length!==THEME_TOKEN_KEYS_V2.length)return slot;
-  if(THEME_TOKEN_KEYS_V2.some(key=>typeof source[key]!=='string'||!source[key].trim()))return slot;
-  if(sourceKeys.some(key=>!THEME_TOKEN_KEYS_V2.includes(key)))return slot;
-  const tokens=Object.fromEntries(THEME_TOKEN_KEYS_V2.map(key=>[key,source[key].trim()]));
-  return Object.freeze({...slot,scheme,tokens:Object.freeze(tokens)});
-}
-
-export function getThemeSlotV2(id,overrides=null){
-  const slot=THEME_DEFAULT_SLOTS_V2.find(item=>item.id===id)||THEME_DEFAULT_SLOTS_V2.find(item=>item.id==='theme-7');
-  const override=overrides&&typeof overrides==='object'?overrides[slot.id]:null;
-  return themeOverrideV2(slot,override);
+export function getThemeSlotV2(id){
+  return THEME_DEFAULT_SLOTS_V2.find(item=>item.id===id)
+    ||THEME_DEFAULT_SLOTS_V2.find(item=>item.id==='theme-7');
 }
 
 export function applyThemeV2(slot){

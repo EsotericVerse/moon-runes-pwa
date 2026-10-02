@@ -17,8 +17,16 @@ for(const route of [
   'statics/index.html',
   'culture/index.html',
   'search/index.html',
-  'governance/index.html'
+  'governance/index.html',
+  '404.html'
 ])requireFile(route);
+
+const notFoundPath=path.join(out,'404.html');
+if(fs.existsSync(notFoundPath)){
+  const html=fs.readFileSync(notFoundPath,'utf8');
+  if(!html.includes('https://loc.lo3rwang.cc/'))failures.push('404 export must redirect to LOC homepage');
+  if(!html.includes('current.origin===home.origin'))failures.push('404 redirect must retain the LOC homepage loop guard');
+}
 
 const indexPath=path.join(out,'index.html');
 if(fs.existsSync(indexPath)){

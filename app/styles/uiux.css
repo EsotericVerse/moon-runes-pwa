@@ -754,7 +754,7 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
   .scope-v2-stat-controls{
     align-items:stretch;
   }
-  .scope-v2-stat-controls label,.scope-v2-react-select-field{
+  .scope-v2-stat-controls label{
     min-width:min(100%,14rem);
     flex:1 1 12rem;
   }
