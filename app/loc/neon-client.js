@@ -97,14 +97,17 @@ export async function insertNeonRows(table,rows){
   const batchSize=200;
   let count=0;
   for(let offset=0;offset<list.length;offset+=batchSize){
+    const batch=list.slice(offset,offset+batchSize);
     const result=await managementWrite({
       p_table:table,
       p_operation:'insert',
-      p_rows:list.slice(offset,offset+batchSize),
+      p_rows:batch,
       p_values:null,
       p_filters:[]
     });
-    count+=Number(result?.count||0);
+    const affected=Number(result?.count||0);
+    if(affected!==batch.length)throw new Error(`Neon INSERT ${table} incomplete: expected ${batch.length}, affected ${affected}`);
+    count+=affected;
   }
   return {count};
 }
@@ -117,7 +120,9 @@ export async function updateNeonRows(table,values,{filters=[]}={}){
     p_values:values||{},
     p_filters:filters
   });
-  return result;
+  const affected=Number(result?.count||0);
+  if(affected<1)throw new Error(`Neon UPDATE ${table} affected 0 rows; record may not exist or filter did not match`);
+  return {...result,count:affected};
 }
 
 export async function deleteNeonRows(table,{filters=[]}={}){
@@ -128,11 +133,13 @@ export async function deleteNeonRows(table,{filters=[]}={}){
     p_values:null,
     p_filters:filters
   });
-  return result;
+  const affected=Number(result?.count||0);
+  if(affected<1)throw new Error(`Neon DELETE ${table} affected 0 rows; record may not exist or filter did not match`);
+  return {...result,count:affected};
 }
 
 export async function syncManageScopeRow(values,{scopeId,email}={}){
-  return managementWrite({
+  const result=await managementWrite({
     p_table:'silver.manage',
     p_operation:'scope_sync',
     p_rows:null,
@@ -142,6 +149,9 @@ export async function syncManageScopeRow(values,{scopeId,email}={}){
       {column:'email',operator:'eq',value:String(email||'')}
     ]
   });
+  const affected=Number(result?.count||0);
+  if(affected<1)throw new Error('Scope mapping update affected 0 rows');
+  return {...result,count:affected};
 }
 
 export async function getNeonSession(){
