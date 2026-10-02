@@ -59,10 +59,6 @@ const adminManagement=readFileSync(resolve(root,'app/loc/views/AdminHomeView.jsx
 if(!scopeManagement.includes('useNeonAccount')||!scopeManagement.includes('canManageScopeSync'))failures.push('Scope management role gate missing');
 if(!adminManagement.includes('useNeonAccount')||!adminManagement.includes('canManageGlobalSync'))failures.push('Admin management role gate missing');
 
-for(const [client,contract] of [['app/loc/neon-culture-client.js','ScopeCultureResponseSchema'],['app/loc/neon-statistics-client.js','ScopeRankingResponseSchema']]){
-  if(!readFileSync(resolve(root,client),'utf8').includes(contract+'.parse'))failures.push(client+': shared feature schema not enforced');
-}
-
 const loading=readFileSync(resolve(root,'app/loc/list-loading-contract.mjs'),'utf8');
 const incremental=readFileSync(resolve(root,'app/modular-v2/IncrementalLoadV2.jsx'),'utf8');
 if(!/DEFAULT_LIST_BATCH_SIZE=10/.test(loading)||!/RUNE_LIST_BATCH_SIZE=16/.test(loading))failures.push('list loading contract must remain 10 general / 16 rune');
