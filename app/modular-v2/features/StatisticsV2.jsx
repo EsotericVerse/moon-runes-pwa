@@ -5,7 +5,6 @@ import {UI_COPY} from '../../i18n/ui-copy';
 import {useMemo,useState} from 'react';
 import {useRouter,useSearchParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
-import Select from 'react-select';
 import {
   Bar,BarChart,CartesianGrid,Cell,Legend,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
@@ -207,17 +206,16 @@ function StatisticTypeSelect({scopeId,navigation,types}){
   const router=useRouter();
   const requested=String(navigation.rankingType||'');
   const active=types.includes(requested)?requested:(types[0]||'');
-  const options=types.map(value=>({value,label:STAT_TYPE_LABELS[value]||value}));
-  const selected=options.find(option=>option.value===active)||options[0]||null;
   if(!types.length)return null;
-  return <label className="scope-v2-react-select-field">
+  return <label>
     <span>{UI_COPY.statistics.item}</span>
-    <Select inputId="statistics-ranking-type" className="scope-v2-react-select" classNamePrefix="scope-v2-react-select" unstyled
-      isSearchable options={options} value={selected} noOptionsMessage={()=>UI_COPY.statistics.noOptions}
-      onChange={option=>{
-        if(!option?.value||option.value===active)return;
-        router.push(featureNavigationHref(scopeId,'statics',{...navigation,rankingType:option.value}));
-      }}/>
+    <select id="statistics-ranking-type" className="scope-v2-select" value={active} onChange={event=>{
+      const value=event.target.value;
+      if(!value||value===active)return;
+      router.push(featureNavigationHref(scopeId,'statics',{...navigation,rankingType:value}));
+    }}>
+      {types.map(value=><option key={value} value={value}>{STAT_TYPE_LABELS[value]||value}</option>)}
+    </select>
   </label>;
 }
 
