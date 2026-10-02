@@ -13,11 +13,3 @@ export default function PageShellV2({eyebrow,title,subtitle,description,children
     </section>
   </main>;
 }
-
-export function ScopeCardV2({eyebrow,title,children,className=''}) {
-  return <section className={`scope-v2-card ${className}`.trim()}>
-    {eyebrow?<p className="scope-v2-eyebrow">{eyebrow}</p>:null}
-    {title?<h2>{title}</h2>:null}
-    {children}
-  </section>;
-}
