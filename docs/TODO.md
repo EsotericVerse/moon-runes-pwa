@@ -1,10 +1,10 @@
 # LOC Current TODO
 
-**Current version:** 0.8.3.2-rc
+**Current version:** 0.8.4-rc
 
-## 0.8.3.2 RC backlog
+## 0.8.4 RC follow-up verification
 
-- [ ] 完成 LunaRunes interpretation sentence handling，確保 single、Daily、2／3／5／11 card 只使用實際抽到的方向資料。
+- [ ] 獨立驗收 LunaRunes interpretation sentence handling，確保 single、Daily、2／3／5／11 card 只使用實際抽到的方向資料。
 - [ ] 完成 LunaRunes canonical keyword library 與管理流程。
 - [ ] 確保 LunaRunes keyword／positive_keywords／negative_keywords 不成為一般 Scope fallback。
 - [ ] 完成 LunaRunes Game 規則呈現、互動與最終 UI。
