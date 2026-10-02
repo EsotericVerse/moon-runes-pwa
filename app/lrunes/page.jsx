@@ -9,5 +9,5 @@ export const metadata=lunarunesMetadata({
 });
 
 export default function LunaRunesScopePage(){
-  return <><JsonLd data={lunarunesWebSiteJsonLd()}/><LocApp forcedView="home" forcedScope="lunarunes"/></>;
+  return <><JsonLd data={lunarunesWebSiteJsonLd()}/><LocApp forcedView="home" forcedScope="lrunes"/></>;
 }
