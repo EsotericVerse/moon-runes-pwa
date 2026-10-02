@@ -59,12 +59,7 @@
   font-family:var(--loc-font-family);
 }
 
-.loc-eyebrow{
-  font-size:var(--loc-type-eyebrow)!important;
-  font-weight:var(--loc-weight-eyebrow)!important;
-  line-height:1.45!important;
-  letter-spacing:.08em!important;
-}
+
 
 /* First title of every page is the largest title on that page. */
 .loc-view>.loc-hero>h1,
@@ -137,10 +132,6 @@
   width:100%;
   max-width:none;
   margin:0;
-  overflow:hidden;
-  border:1px solid var(--loc-line-soft);
-  border-radius:var(--loc-radius-sm);
-  background:var(--loc-bg);
 }
 .scope-home-hero-visual iframe{
   display:block;
