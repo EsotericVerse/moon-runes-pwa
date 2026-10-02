@@ -19,7 +19,6 @@ export function GET(){
     '/culture',
     '/governance',
     '/list',
-    '/game',
     '/daily/log',
     '/daily/trend',
     '/duel/one',
