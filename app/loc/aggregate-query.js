@@ -2,7 +2,7 @@
 
 import {NEON_QUERY_BATCH_SIZE} from './query-contract.mjs';
 
-import {isReferenceOnlyResource,publicContentFilters} from './content-policy';
+import {publicContentFilters} from './content-policy';
 import {selectAllNeonRows,selectNeonRows} from './neon-query';
 import {resolveScopeTables} from './scope-table-mapping';
 
@@ -156,9 +156,9 @@ export async function selectGalaxyIdentity(scopeId,uid){
   const row=await selectNeonRowById(table,{
     idColumn:'uid',
     id,
-    columns:'uid,title,reference_only,source_name,createtime,url,source_id,target_id,media_link'
+    columns:'uid,title,source_name,createtime,url,source_id,target_id,media_link'
   });
-  if(!row||isReferenceOnlyResource(row))return null;
+  if(!row)return null;
   const contentRow=await selectGalaxyContent(scopeId,id);
   const mediaRows=await mediaRowsFor(scopeId,mediaIdsOf(row.media_link));
   const mediaById=new Map(mediaRows.map(item=>[String(item.media_id),item]));
