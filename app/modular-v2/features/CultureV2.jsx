@@ -10,16 +10,15 @@ import {
   selectScopePeriodWorkIndex,
   selectScopePeriodWorkDetails,
   selectScopeCultureData
-} from '../../loc/neon-culture-client';
+} from '../../loc/culture-query';
 import {galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import CultureTimelineV2 from '../modules/culture-timeline/CultureTimelineV2';
 import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
 import {analyzeRiverDensity} from '../modules/culture-timeline/river-density-analysis.mjs';
-import {selectGalaxyContent} from '../../loc/aggregate-query';
+import {selectGalaxyContent} from '../../loc/galaxy-query';
 import {insertNeonRows,neonAuthRelation} from '../../loc/neon-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
-import {resolveScopeTables} from '../../loc/scope-table-mapping';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
 import FeaturePageV2 from '../FeaturePageV2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
@@ -93,6 +92,7 @@ export default function CultureV2(){
   const allPeriods=useMemo(()=>sortPeriods(query.data?.eras?.eras||[]),[query.data]);
   const isLoc=scopeId==='loc';
   const classificationScope=scopeId;
+  const scopeData=query.data?.scope||null;
   const primaryPeriods=isLoc?[]:allPeriods.filter(item=>String(item?.scope_id||'')===scopeId);
   const openPeriod=isLoc?null:(openByScope.get(scopeId)||null);
   const allTimePeriod=useMemo(()=>periodRange(primaryPeriods,classificationScope),[primaryPeriods,classificationScope]);
@@ -120,11 +120,11 @@ export default function CultureV2(){
 
   const sourceSnapshotQuery=useQuery({
     queryKey:['culture-period-source-snapshot',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
-    queryFn:()=>selectScopePeriodSourceSnapshot(classificationScope,{
+    queryFn:()=>selectScopePeriodSourceSnapshot(scopeData,{
       startDate:selectedWorkPeriod?.start_date,
       endDate:selectedWorkPeriod?.end_date
     }),
-    enabled:!isLoc,
+    enabled:!isLoc&&Boolean(scopeData),
     staleTime:5*60_000
   });
 
@@ -141,9 +141,9 @@ export default function CultureV2(){
       selectedCategory||'all'
     ].join('|'),
     pageSize:DEFAULT_LIST_BATCH_SIZE,
-    enabled:!isLoc&&(!selectedCategory||Boolean(selectedGroup)),
+    enabled:!isLoc&&Boolean(scopeData)&&(!selectedCategory||Boolean(selectedGroup)),
     loadPage:async(cursor,limit)=>{
-      const indexPage=await selectScopePeriodWorkIndex(classificationScope,{
+      const indexPage=await selectScopePeriodWorkIndex(scopeData,{
         startDate:selectedWorkPeriod?.start_date||'',
         endDate:selectedWorkPeriod?.end_date,
         sourceName:selectedGroup?.source_name||'',
@@ -152,7 +152,7 @@ export default function CultureV2(){
         limit,
         cursor:cursor&&typeof cursor==='object'?cursor:null
       });
-      const details=await selectScopePeriodWorkDetails(classificationScope,{items:indexPage.rows||[]});
+      const details=await selectScopePeriodWorkDetails(scopeData,{items:indexPage.rows||[]});
       return {
         rows:details.rows||[],
         totalCount:Number(indexPage.totalCount)||0,
@@ -322,7 +322,8 @@ export default function CultureV2(){
     setAnchorSaveBusy(true);setAnchorSaveMessage('');
     try{
       if(!account.canManageScopeSync(classificationScope))throw new Error('沒有建立此資料區域定錨點的權限。');
-      const {time}=await resolveScopeTables(classificationScope,{email:account.email});
+      const time=scopeData?.time;
+      if(!time)throw new Error('Scope data 未解析');
       const now=new Date().toISOString();
       const rows=selectedVirtualAnchorDates.map(date=>({
         record_type:'anchor',
@@ -349,9 +350,6 @@ export default function CultureV2(){
     }
   }
 
-  async function galaxyTable(){
-    return (await resolveScopeTables(classificationScope)).galaxy;
-  }
 
   async function startEditingWork(work){
     const uid=String(work?.uid||'').trim();
@@ -359,7 +357,8 @@ export default function CultureV2(){
     const key=String(work?.key||('galaxy:'+uid));
     setEditingWorkKey(key);setEditDraft(null);setEditError('');
     try{
-      const {data,error}=await neonAuthRelation(await galaxyTable())
+      if(!scopeData)throw new Error('Scope data 未解析');
+      const {data,error}=await neonAuthRelation(scopeData.galaxy)
         .select('uid,title,content,searchable')
         .eq('uid',uid)
         .limit(1);
@@ -383,8 +382,9 @@ export default function CultureV2(){
     setEditBusy(true);setEditError('');
     try{
       if(!account.canManageScopeSync(classificationScope))throw new Error('沒有修改此資料區域的權限。');
+      if(!scopeData)throw new Error('Scope data 未解析');
       const content=requireGalaxyContent(editDraft.body);
-      const {error}=await neonAuthRelation(await galaxyTable())
+      const {error}=await neonAuthRelation(scopeData.galaxy)
         .update({
           title:resolveGalaxyTitle(editDraft.title,content),
           content,
@@ -419,7 +419,8 @@ export default function CultureV2(){
     setFullTextError('');
     setFullTextLoading(true);
     try{
-      const row=await selectGalaxyContent(classificationScope,uid);
+      if(!scopeData)throw new Error('Scope data 未解析');
+      const row=await selectGalaxyContent(scopeData,uid);
       if(!row)throw new Error('找不到這筆作品。');
       setFullText(workDisplayText(row.content||''));
     }catch(exception){
