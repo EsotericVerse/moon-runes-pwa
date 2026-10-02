@@ -3,20 +3,21 @@
 import {UI_COPY} from '../../i18n/ui-copy';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
+import {useQuery} from '@tanstack/react-query';
 import {useSearchParams} from 'next/navigation';
-import {searchNeonRows} from '../../loc/neon-search';
+
 import {neonAuthRelation} from '../../loc/neon-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import FeaturePageV2 from '../FeaturePageV2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
 import WorkFullTextV2 from '../WorkFullTextV2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
-import {scopeHrefV2} from '../scope-registry.v2';
+import {SCOPES_V2,scopeHrefV2} from '../scope-registry.v2';
 import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation.v2';
 import {featureDataErrorMessage} from '../feature-data-state.v2';
 import ContentEditorV2 from '../ContentEditorV2';
-import {resolveGalaxyExternalLinks,selectGalaxyContent,selectGalaxyIdentity} from '../../loc/aggregate-query';
-import {selectManagedScopes} from '../../loc/scope-table-mapping';
+import {resolveGalaxyExternalLinks,searchGalaxyRows,selectGalaxyContent,selectGalaxyIdentity} from '../../loc/galaxy-query';
+import {selectManagedScopes} from '../../loc/scope-data';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model.v2';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 import IncrementalListV2 from '../IncrementalListV2';
@@ -149,6 +150,17 @@ export default function SearchV2(){
   const searchId=useRef(0);
   const matchedQueryRef=useRef('');
   const pageSize=DEFAULT_LIST_BATCH_SIZE;
+  const scopesQuery=useQuery({
+    queryKey:['managed-scopes'],
+    queryFn:selectManagedScopes,
+    staleTime:5*60_000
+  });
+  const targetScopes=useMemo(()=>{
+    const scopes=scopesQuery.data||[];
+    return scopeId==='loc'?scopes:scopes.filter(item=>item.id===scopeId);
+  },[scopeId,scopesQuery.data]);
+  const scopeById=useMemo(()=>new Map(targetScopes.map(item=>[item.id,item])),[targetScopes]);
+  const runeScopeIds=useMemo(()=>Object.values(SCOPES_V2).filter(item=>item.searchKind==='runes').map(item=>item.id),[]);
   const collectionLabel=scopeId==='loc'?UI_COPY.search.allContent:String(scope?.label||scopeId);
 
   async function executeSearch(rawQuery,cursor=null,{append=false}={}){
@@ -166,7 +178,7 @@ export default function SearchV2(){
       setStatus(searchMode==='media'?UI_COPY.search.searching:UI_COPY.format.searchScope(collectionLabel));
     }
     try{
-      const search=await searchNeonRows(scopeId,q,{limit:pageSize,cursor,mediaOnly:searchMode==='media'});
+      const search=await searchGalaxyRows(targetScopes,q,{limit:pageSize,cursor,mediaOnly:searchMode==='media',runeScopeIds});
       if(id!==searchId.current)return;
 
       const searchRows=[...(search.rows||[])];
@@ -181,7 +193,9 @@ export default function SearchV2(){
       }
       const resolvedByKey=new Map();
       await Promise.all([...textByScope.entries()].map(async([rowScope,rows])=>{
-        const resolved=await resolveGalaxyExternalLinks(rowScope,rows);
+        const scopeData=scopeById.get(rowScope);
+        if(!scopeData)return;
+        const resolved=await resolveGalaxyExternalLinks(scopeData,rows);
         for(const row of resolved)resolvedByKey.set(rowScope+':'+row.uid,row);
       }));
       const enrichedRows=searchRows.map(entry=>{
@@ -229,14 +243,9 @@ export default function SearchV2(){
     try{
       let detail=null;
       let detailScope=scopeId;
-      if(scopeId==='loc'){
-        const scopes=await selectManagedScopes();
-        for(const managedScope of scopes){
-          detail=await selectGalaxyIdentity(managedScope.id,identity);
-          if(detail){detailScope=managedScope.id;break;}
-        }
-      }else{
-        detail=await selectGalaxyIdentity(scopeId,identity);
+      for(const scopeData of targetScopes){
+        detail=await selectGalaxyIdentity(scopeData,identity);
+        if(detail){detailScope=scopeData.id;break;}
       }
       if(id!==searchId.current)return;
       if(!detail)throw new Error(UI_COPY.search.notFound);
@@ -252,12 +261,13 @@ export default function SearchV2(){
   }
 
   useEffect(()=>{
+    if(!scopesQuery.isSuccess)return;
     const identity=String(searchParams?.get('identity')||'').trim();
     const value=String(searchParams?.get('q')||'').trim();
     if(identity){setQuery('');executeIdentity(identity);return;}
     if(value){setQuery(value);executeSearch(value);}
-  },[searchParams,scopeId]);
-  useEffect(()=>{if(query.trim()&&!searchParams?.get('identity'))executeSearch(query);},[scopeId]);
+  },[searchParams,scopeId,scopesQuery.isSuccess,scopesQuery.data]);
+  useEffect(()=>{if(scopesQuery.isSuccess&&query.trim()&&!searchParams?.get('identity'))executeSearch(query);},[scopeId,scopesQuery.isSuccess,scopesQuery.data]);
 
 
 
@@ -274,7 +284,9 @@ export default function SearchV2(){
     setFullTextError('');
     setFullTextLoading(true);
     try{
-      const fullRow=await selectGalaxyContent(result.scopeId,result.editResourceId||result.resourceId);
+      const scopeData=scopeById.get(result.scopeId);
+      if(!scopeData)throw new Error(UI_COPY.search.fullTextNotFound);
+      const fullRow=await selectGalaxyContent(scopeData,result.editResourceId||result.resourceId);
       if(!fullRow)throw new Error(UI_COPY.search.fullTextNotFound);
       setFullText(workDisplayText(fullRow.content||''));
     }catch(exception){
