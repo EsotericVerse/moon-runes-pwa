@@ -29,7 +29,6 @@ const zhHant=Object.freeze({
     aria:'全站導覽',
     lunarunes:'月之符文',
     author:'作者介紹',
-    home:'回月典首頁',
     search:'搜尋',
     searchAria:'搜尋文字',
     contact:'聯絡方式'
@@ -59,9 +58,6 @@ const zhHant=Object.freeze({
   scope:Object.freeze({
     loc:Object.freeze({
       label:'月典',
-      primary:'月之符文',
-      role:'作者介紹',
-      home:'回月典首頁',
       ranking:'總排行榜',
       statics:'用圖表查看作品數量、來源比例與時間變化。',
       culture:'把作品放回時間順序，觀察不同時期的累積與變化。',
@@ -70,18 +66,11 @@ const zhHant=Object.freeze({
     }),
     author:Object.freeze({
       label:'作者簡介',
-      primary:'簡介',
-      role:'管理者介紹',
-      home:'回月典首頁',
       ranking:'作者排行榜',
       search:'從關鍵字、作品、來源或日期找到相關內容，再查看前後脈絡。'
     }),
     admin:Object.freeze({
       label:'治理管理',
-      primary:'治理管理',
-      role:'治理管理',
-      home:'回治理管理',
-      locHome:'回月典首頁',
       ranking:'排行榜'
     })
   }),
