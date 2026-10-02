@@ -276,7 +276,7 @@ export default function RuneDrawClient({drawKey='single'}){
       const queryPlan=drawKey==='daily'
         ?{staticTypes:['direction'],moonTypes:['sit_q','sit_a','daily_r','daily_g','daily_b'],currentMoon:moonPhase}
         :drawKey==='single'
-          ?{staticTypes:['direction','lots'],moonTypes:[],currentMoon:''}
+          ?{staticTypes:['direction','lots'],moonTypes:['sit_q','sit_a'],currentMoon:moonPhase}
           :(drawKey==='2card'||drawKey==='3card'||drawKey==='5card')
             ?{staticTypes:['direction'],moonTypes:['sit_q','sit_a'],currentMoon:moonPhase}
             :{staticTypes:['direction','lots'],moonTypes:[],currentMoon:''};
