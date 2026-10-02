@@ -1,6 +1,7 @@
 'use client';
 
 import RuneCardInfo from './RuneCardInfo';
+import {runeImage} from './rune-directory.mjs';
 import {RUNE_DRAW_MODES} from './rune-draw-modes.mjs';
 import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
 
@@ -35,11 +36,6 @@ function dailySections(card,direction){
   const fallback=directionText(card,direction);
   return [{label:'今日指引',text:fallback||'目前沒有這個位向與月相的每日指示。'}];
 }
-function runeCardImage(card){
-  const number=String(Number(card?.rune_id)||0).padStart(2,'0');
-  const name=String(card?.rune_name||'').replace(/之符文$/,'').trim();
-  return `/assets/lunarunes/cards/${number}_${name}.png`;
-}
 
 export default function RuneSingleDailySurface({
   modeKey,
@@ -69,7 +65,7 @@ export default function RuneSingleDailySurface({
       <div className="home-rune-layout">
         <RuneCardInfo
           card={displayCard}
-          imageSrc={runeCardImage(displayCard)}
+          imageSrc={runeImage(displayCard)}
           imageClassName={`loc-rune-card-image ${drawnCard?ROTATION_CLASSES[directionIndex]:'rune-rotate-0'}`}
           direction={displayDirection}
           realMoonPhase={moonPhase}
