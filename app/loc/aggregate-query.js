@@ -17,10 +17,6 @@ function timeFilters(column,startDate,endDate){
   if(endDate)filters.push({column,operator:'lte',value:String(endDate).slice(0,10)+'T23:59:59.999+08:00'});
   return filters;
 }
-function sourceFilters(startDate='',endDate=''){
-  return publicContentFilters(timeFilters('createtime',startDate,endDate));
-}
-
 async function selectAggregateRows(table,options={}){
   return (await selectAllNeonRows(table,options)).rows;
 }
