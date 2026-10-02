@@ -6,7 +6,7 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {useSearchParams} from 'next/navigation';
 
-import {neonAuthRelation} from '../../loc/neon-client';
+import {selectNeonAuthRow,updateNeonRows} from '../../loc/neon-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import FeaturePageV2 from '../FeaturePageV2';
 import WorkSummaryCardV2 from '../WorkSummaryCardV2';
@@ -40,17 +40,6 @@ function highlightSearchText(text='',query=''){
   });
 }
 
-async function selectNeonRowById(table,{idColumn,id,columns}={}){
-  const {data,error}=await neonAuthRelation(table).select(columns).eq(idColumn,String(id)).limit(1);
-  if(error)throw new Error(error.message||UI_COPY.search.readFailed);
-  return data?.[0]||null;
-}
-async function updateNeonRows(table,values,{filters=[]}={}){
-  let query=neonAuthRelation(table).update(values);
-  query=applyNeonFilters(query,filters);
-  const {error}=await query;
-  if(error)throw new Error(error.message||UI_COPY.search.updateFailed);
-}
 
 function rowText(row){return Object.values(row||{}).filter(value=>typeof value==='string').join(' ')}
 function toResult(row,source,scopeId){
@@ -303,7 +292,7 @@ export default function SearchV2(){
       const contentColumns=result.resourceType==='galaxy'
         ?'uid,title,content,searchable'
         :'media_id,title,meta_tags';
-      const fullRow=await selectNeonRowById(result.editableTable,{
+      const fullRow=await selectNeonAuthRow(result.editableTable,{
         idColumn:result.editableIdColumn,
         id:result.editResourceId||result.resourceId,
         columns:contentColumns
