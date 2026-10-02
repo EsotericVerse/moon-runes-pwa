@@ -10,7 +10,8 @@ const required=[
   'app/loc/model/daily-trend-engine.mjs',
   'app/loc/search-providers.js',
   'app/loc/surface-search.js',
-  'app/lrunes/RunesClient.jsx'
+  'app/lrunes/RunesClient.jsx',
+  'app/lrunes/RuneDrawClient.jsx'
 ];
 for(const path of required)if(!fs.existsSync(path)||!read(path).trim())failures.push('missing Current contract file: '+path);
 if(!failures.length){
@@ -20,8 +21,8 @@ if(!failures.length){
   for(const token of ["routeAuthority:'next-filesystem'","dataAuthority:'neon'","domain:'lrunes.lo3rwang.cc'"])if(!registry.includes(token))failures.push('registry missing '+token);
   const daily=read('app/loc/model/daily-trend-engine.mjs');
   for(const token of ['summarizeDailyRange','dailyPresetRange'])if(!daily.includes(token))failures.push('daily trend missing '+token);
-  const runes=read('app/lrunes/RunesClient.jsx');
-  for(const token of ["selectNeonRows('silver.runes'","selectNeonRows('silver.runes_etc'"])if(!runes.includes(token))failures.push('Rune runtime missing '+token);
+  const runeDraw=read('app/lrunes/RuneDrawClient.jsx');
+  for(const token of ["selectNeonRows('silver.runes'","selectNeonRows('silver.runes_etc'"])if(!runeDraw.includes(token))failures.push('Rune draw runtime missing '+token);
   const providers=read('app/loc/search-providers.js');
   const surfaceSearch=read('app/loc/surface-search.js');
   for(const token of ["count:'exact',head:true",".or(",".range("])if(!providers.includes(token))failures.push('Search provider missing '+token);
