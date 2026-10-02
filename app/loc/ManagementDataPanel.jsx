@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {UI_COPY} from '../i18n/ui-copy';
 import {deleteNeonRows,neonAuthRelation,selectNeonAuthRow,updateNeonRows} from './neon-client';
 import {useNeonAccount} from './use-neon-account';
@@ -32,8 +32,9 @@ export default function ManagementDataPanel({scopeId}){
   const [draft,setDraft]=useState(null);
   const [editorBusy,setEditorBusy]=useState(false);
   const [editorMessage,setEditorMessage]=useState('');
+  const detailRequestRef=useRef(0);
 
-  useEffect(()=>{setPage(0);setSelectedId('');setDraft(null);},[scopeId,kind,visibility]);
+  useEffect(()=>{detailRequestRef.current+=1;setPage(0);setSelectedId('');setDraft(null);},[scopeId,kind,visibility]);
 
   useEffect(()=>{
     if(!scopeId||!account.canManageScopeSync(scopeId))return;
@@ -67,6 +68,7 @@ export default function ManagementDataPanel({scopeId}){
     const scopeData=account.scopeDataFor(scopeId);
     if(!scopeData)return;
     const id=idText(row,kind);
+    const requestId=++detailRequestRef.current;
     setSelectedId(id);setEditorMessage('');
     try{
       const table=kind==='media'?scopeData.galaxyMedia:scopeData.galaxy;
@@ -77,6 +79,7 @@ export default function ManagementDataPanel({scopeId}){
           :'uid,title,content_type,content,source_name,createtime,searchable,url,source_id,target_id,ref_id,source_place'
       });
       if(!full)throw new Error('找不到這筆資料。');
+      if(requestId!==detailRequestRef.current)return;
       setDraft(kind==='media'?{
         title:String(full.title||''),body:String(full.meta_tags||''),media_type:String(full.media_type||''),
         url:String(full.url||''),galaxy_link:String(full.galaxy_link||''),source_native_id:String(full.source_native_id||''),
@@ -88,7 +91,10 @@ export default function ManagementDataPanel({scopeId}){
         ref_id:String(full.ref_id||''),source_place:String(full.source_place||''),
         createtime:localDateTime(full.createtime),hidden:full.searchable===false
       });
-    }catch(exception){setDraft(null);setEditorMessage(String(exception?.message||exception));}
+    }catch(exception){
+      if(requestId!==detailRequestRef.current)return;
+      setDraft(null);setEditorMessage(String(exception?.message||exception));
+    }
   }
 
   async function saveSelected(){
@@ -98,12 +104,14 @@ export default function ManagementDataPanel({scopeId}){
     setEditorBusy(true);setEditorMessage('');
     try{
       if(kind==='media'){
+        const galaxyLink=String(draft.galaxy_link||'').trim().toUpperCase();
+        if(galaxyLink&&galaxyLink.length!==8)throw new Error('galaxy_link 必須是 8 字 UID，或留空。');
         await updateNeonRows(scopeData.galaxyMedia,{
           title:String(draft.title||'').trim()||null,
           meta_tags:String(draft.body||'').trim()||null,
           media_type:String(draft.media_type||'').trim()||'other',
           url:String(draft.url||'').trim()||null,
-          galaxy_link:String(draft.galaxy_link||'').trim()||null,
+          galaxy_link:galaxyLink||null,
           source_native_id:String(draft.source_native_id||'').trim()||null,
           source_place:String(draft.source_place||'').trim()||null,
           createtime:draft.createtime?new Date(draft.createtime).toISOString():null
