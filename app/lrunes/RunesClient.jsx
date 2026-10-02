@@ -3,7 +3,7 @@ import {RUNE_DRAW_MODES as MODES} from './rune-draw-modes.mjs';
 
 const runeHref=path=>{
   const clean=String(path||'').split('/').filter(Boolean).join('/');
-  return `${scopeOriginV2('lunarunes')}/${clean}`;
+  return `${scopeOriginV2('lrunes')}/${clean}`;
 };
 
 export default function RunesClient(){
