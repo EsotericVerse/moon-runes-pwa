@@ -11,10 +11,10 @@ import {
 } from 'recharts';
 import {selectSourceTrendRows} from '../../loc/galaxy-query';
 import {selectManagedScopes} from '../../loc/scope-data';
-import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation.v2';
-import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
-import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
-import FeaturePageV2 from '../FeaturePageV2';
+import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation';
+import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state';
+import {useScopeRuntime} from '../use-scope-runtime';
+import FeaturePage from '../FeaturePage';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const CHART_ACCENT='var(--loc-accent)';
@@ -152,7 +152,7 @@ function SummaryList({rankingType,summary}){
   const rows=rankingType==='total'
     ?[{term:UI_COPY.statistics.totalSource,item_count:summary.total}]
     :summary.sources;
-  return <div className="scope-v2-ranking">
+  return <div className="scope-ranking">
     {rows.map(row=><div key={row.term}><strong>{row.term}</strong><span>{Number(row.item_count||0).toLocaleString()}</span></div>)}
   </div>;
 }
@@ -160,7 +160,7 @@ function SummaryChart({type='bar',rankingType,summary,height=380}){
   const data=rankingType==='total'
     ?[{term:UI_COPY.statistics.totalSource,value:summary.total}]
     :summary.sources.map(row=>({term:row.term,value:Number(row.item_count)||0}));
-  if(!data.length)return <p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>;
+  if(!data.length)return <p className="scope-status">{FEATURE_EMPTY_MESSAGE}</p>;
   if(type==='pie')return <ResponsiveContainer width="100%" height={height}>
     <PieChart><Tooltip contentStyle={CHART_TOOLTIP}/><Pie data={data} dataKey="value" nameKey="term" cx="50%" cy="50%" outerRadius={Math.min(140,height/2-26)}>
       {data.map((row,index)=><Cell key={row.term} fill={PIE_COLORS[index%PIE_COLORS.length]}/>)}
@@ -178,7 +178,7 @@ function SummaryChart({type='bar',rankingType,summary,height=380}){
 }
 function TotalTrendChart({rows=[],standard='1y',customRange={},height=420}){
   const data=useMemo(()=>buildSourceTrend(rows,standard,customRange),[rows,standard,customRange]);
-  if(!data.length)return <p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>;
+  if(!data.length)return <p className="scope-status">{FEATURE_EMPTY_MESSAGE}</p>;
   return <ResponsiveContainer width="100%" height={height}>
     <LineChart data={data} margin={{top:8,right:18,bottom:48,left:4}}>
       <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
@@ -191,7 +191,7 @@ function TotalTrendChart({rows=[],standard='1y',customRange={},height=420}){
 }
 function SourceTrendChart({rows=[],standard='1y',customRange={},height=420}){
   const data=useMemo(()=>buildSourceTrend(rows,standard,customRange),[rows,standard,customRange]);
-  if(!data.length)return <p className="scope-v2-status">{FEATURE_EMPTY_MESSAGE}</p>;
+  if(!data.length)return <p className="scope-status">{FEATURE_EMPTY_MESSAGE}</p>;
   return <ResponsiveContainer width="100%" height={height}>
     <LineChart data={data} margin={{top:8,right:18,bottom:48,left:4}}>
       <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
@@ -211,7 +211,7 @@ function StatisticTypeSelect({scopeId,navigation,types}){
   if(!types.length)return null;
   return <label>
     <span>{UI_COPY.statistics.item}</span>
-    <select id="statistics-ranking-type" className="scope-v2-select" value={active} onChange={event=>{
+    <select id="statistics-ranking-type" className="scope-select" value={active} onChange={event=>{
       const value=event.target.value;
       if(!value||value===active)return;
       router.push(featureNavigationHref(scopeId,'statics',{...navigation,rankingType:value}));
@@ -250,26 +250,26 @@ function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
   });
   const summary=useMemo(()=>buildSummary(trendQuery.data||[],timeStandard,customRange),[trendQuery.data,timeStandard,customRange]);
 
-  return <section className="scope-v2-stat-section">
-    <header className="scope-v2-stat-domain-heading"><div><h2>{UI_COPY.statistics.result}</h2></div></header>
-    <div className="scope-v2-stat-controls">
+  return <section className="scope-stat-section">
+    <header className="scope-stat-domain-heading"><div><h2>{UI_COPY.statistics.result}</h2></div></header>
+    <div className="scope-stat-controls">
       <StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/>
-      <label><span>{UI_COPY.statistics.chart}</span><select className="scope-v2-select" value={chartType} onChange={event=>setChartType(event.target.value)}>
+      <label><span>{UI_COPY.statistics.chart}</span><select className="scope-select" value={chartType} onChange={event=>setChartType(event.target.value)}>
         {CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}
       </select></label>
-      <label><span>{UI_COPY.statistics.range}</span><select className="scope-v2-select" value={timeStandard} onChange={event=>setTimeStandard(event.target.value)}>
+      <label><span>{UI_COPY.statistics.range}</span><select className="scope-select" value={timeStandard} onChange={event=>setTimeStandard(event.target.value)}>
         {TIME_STANDARDS.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
       </select></label>
       {timeStandard==='custom'?<>
-        <label><span>{UI_COPY.statistics.start}</span><input className="scope-v2-input" type="date" value={customFrom} onChange={event=>setCustomFrom(event.target.value)}/></label>
-        <label><span>{UI_COPY.statistics.end}</span><input className="scope-v2-input" type="date" value={customTo} onChange={event=>setCustomTo(event.target.value)}/></label>
+        <label><span>{UI_COPY.statistics.start}</span><input className="scope-input" type="date" value={customFrom} onChange={event=>setCustomFrom(event.target.value)}/></label>
+        <label><span>{UI_COPY.statistics.end}</span><input className="scope-input" type="date" value={customTo} onChange={event=>setCustomTo(event.target.value)}/></label>
       </>:null}
     </div>
-    {scopesQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
-    {trendQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(trendQuery.error)}</p>:null}
-    {timeStandard==='custom'&&!customReady?<p className="scope-v2-status">請設定有效的開始與結束日期。</p>:null}
+    {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
+    {trendQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(trendQuery.error)}</p>:null}
+    {timeStandard==='custom'&&!customReady?<p className="scope-status">請設定有效的開始與結束日期。</p>:null}
     {!trendQuery.isPending&&!trendQuery.error&&customReady?<>
-      <p className="scope-v2-status">{summary.startDate&&summary.endDate?summary.startDate+' ～ '+summary.endDate:''}</p>
+      <p className="scope-status">{summary.startDate&&summary.endDate?summary.startDate+' ～ '+summary.endDate:''}</p>
       <SummaryList rankingType={rankingType} summary={summary}/>
       {chartType==='line'
         ?rankingType==='total'
@@ -280,13 +280,13 @@ function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
   </section>;
 }
 
-export default function StatisticsV2(){
-  const {scopeId,scope}=useScopeRuntimeV2();
+export default function Statistics(){
+  const {scopeId,scope}=useScopeRuntime();
   const searchParams=useSearchParams();
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
-  return <FeaturePageV2 featureId="statics">
-    <section className="loc-card scope-v2-feature-card">
+  return <FeaturePage featureId="statics">
+    <section className="loc-card scope-feature-card">
       <StatisticsPanel scopeId={scopeId} aggregateScopes={Boolean(scope?.aggregateChildren)} navigation={navigation} types={STAT_TYPES}/>
     </section>
-  </FeaturePageV2>;
+  </FeaturePage>;
 }

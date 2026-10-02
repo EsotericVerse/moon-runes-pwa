@@ -54,7 +54,7 @@ function RangeCalendar({rows,startDate,endDate}){
   const months=monthsInRange(startDate,endDate);
   const low=dateMs(startDate),high=dateMs(endDate);
 
-  return <div className="scope-v2-list">
+  return <div className="scope-list">
     {months.map(monthValue=>{
       const [year,month]=monthValue.split('-').map(Number);
       const firstWeekday=new Date(Date.UTC(year,month-1,1)).getUTCDay();
@@ -62,8 +62,8 @@ function RangeCalendar({rows,startDate,endDate}){
       const cells=[...Array(firstWeekday).fill(null),...Array.from({length:dayCount},(_,index)=>index+1)];
       return <section className="loc-card" key={monthValue} aria-label={year+' 年 '+month+' 月每日符文行事曆'}>
         <h3>{year} 年 {month} 月</h3>
-        <div role="grid" className="scope-v2-daily-calendar-grid">
-          {WEEKDAYS.map((day,index)=><div role="columnheader" key={index} className="scope-v2-daily-calendar-weekday">{day}</div>)}
+        <div role="grid" className="scope-daily-calendar-grid">
+          {WEEKDAYS.map((day,index)=><div role="columnheader" key={index} className="scope-daily-calendar-weekday">{day}</div>)}
           {cells.map((day,index)=>{
             if(!day)return <div role="gridcell" aria-hidden="true" key={'blank-'+index}/>;
             const key=dateKey(year,month,day);
@@ -71,9 +71,9 @@ function RangeCalendar({rows,startDate,endDate}){
             const ms=dateMs(key);
             const selected=Number.isFinite(ms)&&ms>=low&&ms<=high;
             return <div role="gridcell" key={key} aria-label={formatDate(key)}
-              className={"scope-v2-daily-calendar-range-cell"+(selected?" is-selected":"")}>
+              className={"scope-daily-calendar-range-cell"+(selected?" is-selected":"")}>
               <strong>{day}</strong>
-              <div className="scope-v2-daily-calendar-entry-list">
+              <div className="scope-daily-calendar-entry-list">
                 {entries.map(row=><span key={row.draw_kind+'-'+row.rune_number}>
                   {roleLabel(row.draw_kind)}｜{row.rune_name}・{row.direction}
                 </span>)}
@@ -83,7 +83,7 @@ function RangeCalendar({rows,startDate,endDate}){
         </div>
       </section>;
     })}
-    {months.length>=13?<p className="scope-v2-status">區間超過 12 個月；行事曆顯示前 12 個月與結束月份，分析仍使用完整區間。</p>:null}
+    {months.length>=13?<p className="scope-status">區間超過 12 個月；行事曆顯示前 12 個月與結束月份，分析仍使用完整區間。</p>:null}
   </div>;
 }
 
@@ -170,22 +170,22 @@ export default function DailyTrendClient(){
 
     <section className="loc-card">
       <h2>分析區間</h2>
-      <div className="scope-v2-tabs" role="group" aria-label="每日趨勢分析區間">
+      <div className="scope-tabs" role="group" aria-label="每日趨勢分析區間">
         <button type="button" aria-pressed={mode==='today-tomorrow'} onClick={()=>choosePreset('today-tomorrow')}>今天＋明天</button>
         <button type="button" aria-pressed={mode==='yesterday-today-tomorrow'} onClick={()=>choosePreset('yesterday-today-tomorrow')}>昨天＋今天＋明天</button>
         <button type="button" aria-pressed={mode==='seven-days'} onClick={()=>choosePreset('seven-days')}>近七天</button>
         <button type="button" aria-pressed={mode==='custom'} onClick={()=>setMode('custom')}>自訂區間解析</button>
       </div>
-      {mode==='custom'?<div className="scope-v2-stat-controls">
-        <label><span>開始日期</span><input className="scope-v2-select" type="date" value={startDate} onChange={event=>setStartDate(event.target.value)}/></label>
-        <label><span>結束日期</span><input className="scope-v2-select" type="date" value={endDate} onChange={event=>setEndDate(event.target.value)}/></label>
+      {mode==='custom'?<div className="scope-stat-controls">
+        <label><span>開始日期</span><input className="scope-select" type="date" value={startDate} onChange={event=>setStartDate(event.target.value)}/></label>
+        <label><span>結束日期</span><input className="scope-select" type="date" value={endDate} onChange={event=>setEndDate(event.target.value)}/></label>
         <button className="loc-button" type="button" disabled={loading} onClick={analyzeCustom}>解析此區間</button>
       </div>:null}
       <p>{formatDate(analysis.start_date)} → {formatDate(analysis.end_date)}｜{analysis.total_days} 天</p>
     </section>
 
-    {error?<p role="alert" className="scope-v2-status scope-v2-error">{error}</p>:null}
-    {loading?<p className="scope-v2-status">讀取並分析每日符文…</p>:null}
+    {error?<p role="alert" className="scope-status scope-error">{error}</p>:null}
+    {loading?<p className="scope-status">讀取並分析每日符文…</p>:null}
 
     <div className="loc-grid two">
       <Card label="抽取紀錄" value={analysis.total_draws} detail={'主抽 '+analysis.role_counts.main+'｜補抽 '+analysis.role_counts.supplement}/>
@@ -197,8 +197,8 @@ export default function DailyTrendClient(){
     <section className="loc-card">
       <p className="loc-eyebrow">自動分析</p>
       <h2>自動分析建議</h2>
-      {!analysis.total_draws?<p>此區間目前沒有每日符文紀錄。</p>:<div className="scope-v2-list">
-        {analysis.suggestions.map((item,index)=><article className="scope-v2-inline-card" key={item.type+'-'+item.rune+'-'+index}>
+      {!analysis.total_draws?<p>此區間目前沒有每日符文紀錄。</p>:<div className="scope-list">
+        {analysis.suggestions.map((item,index)=><article className="scope-inline-card" key={item.type+'-'+item.rune+'-'+index}>
           <strong>{item.type==='frequency'?'出現密度':item.type==='direction'?'位向變化':'區間觀察'}</strong>
           <span>{item.text}</span>
         </article>)}
@@ -211,8 +211,8 @@ export default function DailyTrendClient(){
 
     {analysis.repeats.length?<section className="loc-card">
       <h2>重複符文明細</h2>
-      <div className="scope-v2-list">
-        {analysis.repeats.map(item=><article className="scope-v2-inline-card" key={item.name}>
+      <div className="scope-list">
+        {analysis.repeats.map(item=><article className="scope-inline-card" key={item.name}>
           <strong>{item.name}｜{item.count} 次／{item.days_count} 天</strong>
           <span>{item.entries.map(entry=>`${formatDate(entry.date)} ${roleLabel(entry.role)}・${entry.direction}`).join(' ｜ ')}</span>
         </article>)}

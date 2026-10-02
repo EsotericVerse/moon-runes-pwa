@@ -8,19 +8,19 @@ import {useSearchParams} from 'next/navigation';
 
 import {selectNeonAuthRow,updateNeonRows} from '../../loc/neon-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
-import FeaturePageV2 from '../FeaturePageV2';
-import WorkSummaryCardV2 from '../WorkSummaryCardV2';
-import WorkFullTextV2 from '../WorkFullTextV2';
-import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
-import {SCOPES_V2,scopeHrefV2} from '../scope-registry.v2';
-import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation.v2';
-import {featureDataErrorMessage} from '../feature-data-state.v2';
-import ContentEditorV2 from '../ContentEditorV2';
+import FeaturePage from '../FeaturePage';
+import WorkSummaryCard from '../WorkSummaryCard';
+import WorkFullText from '../WorkFullText';
+import {useScopeRuntime} from '../use-scope-runtime';
+import {SCOPES,scopeHref} from '../scope-registry.v2';
+import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation';
+import {featureDataErrorMessage} from '../feature-data-state';
+import ContentEditor from '../ContentEditor';
 import {resolveGalaxyExternalLinks,searchGalaxyRows,selectGalaxyContent,selectGalaxyIdentity} from '../../loc/galaxy-query';
 import {selectManagedScopes} from '../../loc/scope-data';
-import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model.v2';
+import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
-import IncrementalListV2 from '../IncrementalListV2';
+import IncrementalList from '../IncrementalList';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import {applyNeonFilters} from '../../loc/neon-query';
 
@@ -36,7 +36,7 @@ function highlightSearchText(text='',query=''){
   const normalized=new Set(terms.map(term=>term.normalize('NFKC').toLocaleLowerCase('zh-Hant')));
   return source.split(pattern).map((part,index)=>{
     const key=part.normalize('NFKC').toLocaleLowerCase('zh-Hant');
-    return normalized.has(key)?<mark className="scope-v2-search-highlight" key={index}>{part}</mark>:part;
+    return normalized.has(key)?<mark className="scope-search-highlight" key={index}>{part}</mark>:part;
   });
 }
 
@@ -72,7 +72,7 @@ function toResult(row,source,scopeId){
   const editResourceId=resourceId;
   const editableField=resourceType==='galaxy'?'content':resourceType==='galaxy_media'?'meta_tags':'';
   const isScopeCard=Boolean(row.scope_card);
-  const href=isScopeCard?scopeHrefV2(scope):(row.url||row.href||row.suno_url||'');
+  const href=isScopeCard?scopeHref(scope):(row.url||row.href||row.suno_url||'');
   return {
     key:identity?source+'-'+identity:[source,scope,title].join('-'),
     source:displaySource,title:String(title),
@@ -116,8 +116,8 @@ function mergeSummaryResults(rows=[]){
   return [...groups.values()];
 }
 
-export default function SearchV2(){
-  const {scopeId,scope}=useScopeRuntimeV2();
+export default function Search(){
+  const {scopeId,scope}=useScopeRuntime();
   const account=useNeonAccount();
   const searchParams=useSearchParams();
   const [query,setQuery]=useState('');
@@ -150,7 +150,7 @@ export default function SearchV2(){
     return aggregateScopes?scopes:scopes.filter(item=>item.id===scopeId);
   },[aggregateScopes,scopeId,scopesQuery.data]);
   const scopeById=useMemo(()=>new Map(targetScopes.map(item=>[item.id,item])),[targetScopes]);
-  const runeScopeIds=useMemo(()=>Object.values(SCOPES_V2).filter(item=>item.searchKind==='runes').map(item=>item.id),[]);
+  const runeScopeIds=useMemo(()=>Object.values(SCOPES).filter(item=>item.searchKind==='runes').map(item=>item.id),[]);
   const collectionLabel=aggregateScopes?UI_COPY.search.allContent:String(scope?.label||scopeId);
 
   async function executeSearch(rawQuery,cursor=null,{append=false}={}){
@@ -335,19 +335,19 @@ export default function SearchV2(){
   async function runSearch(event){event.preventDefault();await executeSearch(query)}
 
 
-  return <FeaturePageV2 featureId="search">
-    <div className="scope-v2-tabs" role="group" aria-label={UI_COPY.search.mode}>
+  return <FeaturePage featureId="search">
+    <div className="scope-tabs" role="group" aria-label={UI_COPY.search.mode}>
       <button type="button" aria-pressed={searchMode==='all'} onClick={()=>{setSearchMode('all');setResults([]);setHasMore(false);setNextCursor(null);setStatus(UI_COPY.search.start);}}>{UI_COPY.search.allSearch}</button>
       <button type="button" aria-pressed={searchMode==='media'} onClick={()=>{setSearchMode('media');setResults([]);setHasMore(false);setNextCursor(null);setStatus(UI_COPY.search.mediaPrompt);}}>{UI_COPY.search.mediaSearch}</button>
     </div>
-    <form className="scope-v2-search-form" onSubmit={runSearch}>
+    <form className="scope-search-form" onSubmit={runSearch}>
       <label htmlFor="scope-search-query">{searchMode==='media'?UI_COPY.search.mediaPromptLabel:UI_COPY.search.textPromptLabel}</label>
       <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder={searchMode==='media'?UI_COPY.search.mediaPlaceholder:UI_COPY.search.textPlaceholder} aria-label={searchMode==='media'?UI_COPY.search.mediaSearch:UI_COPY.search.textPromptLabel}/>
       <button type="submit">{UI_COPY.nav.search}</button>
     </form>
-    <p className="scope-v2-status">{status}</p>
-    {error?<p className="scope-v2-status scope-v2-error">{error}</p>:null}
-    <IncrementalListV2
+    <p className="scope-status">{status}</p>
+    {error?<p className="scope-status scope-error">{error}</p>:null}
+    <IncrementalList
       items={results}
       batchSize={pageSize}
       resetKey={searchMode+'|'+matchedQueryRef.current}
@@ -358,7 +358,7 @@ export default function SearchV2(){
       renderItem={row=>{
         const editable=Boolean(row.editableTable&&row.editableField&&account.canManageScopeSync(row.scopeId));
         const draft=editingKey===row.key?editDraft:null;
-        return <WorkSummaryCardV2
+        return <WorkSummaryCard
           key={row.key}
           title={row.title}
           source={row.source}
@@ -372,7 +372,7 @@ export default function SearchV2(){
           showSource
           showLinks
         >
-          {row.resourceType==='galaxy'?<WorkFullTextV2
+          {row.resourceType==='galaxy'?<WorkFullText
             open={fullTextKey===row.key}
             loading={fullTextLoading&&fullTextKey===row.key}
             error={fullTextKey===row.key?fullTextError:''}
@@ -380,7 +380,7 @@ export default function SearchV2(){
             onToggle={()=>toggleFullText(row)}
           />:null}
           {editable?<p><button type="button" onClick={()=>startEditing(row)}>{editingKey===row.key?UI_COPY.search.editing:UI_COPY.common.edit}</button></p>:null}
-          {draft?<ContentEditorV2
+          {draft?<ContentEditor
             draft={draft}
             setDraft={setEditDraft}
             busy={editBusy}
@@ -389,8 +389,8 @@ export default function SearchV2(){
             onSave={()=>saveEditing(row)}
             onCancel={()=>{setEditingKey('');setEditDraft(null);setEditError('')}}
           />:null}
-        </WorkSummaryCardV2>;
+        </WorkSummaryCard>;
       }}
     />
-  </FeaturePageV2>;
+  </FeaturePage>;
 }

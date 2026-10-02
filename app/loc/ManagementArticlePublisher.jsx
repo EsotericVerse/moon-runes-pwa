@@ -5,7 +5,7 @@ import {UI_COPY} from '../i18n/ui-copy';
 import {useState} from 'react';
 import {insertNeonRows} from './neon-client';
 import {useNeonAccount} from './use-neon-account';
-import ContentEditorV2 from '../modular-v2/ContentEditorV2';
+import ContentEditor from '../modular/ContentEditor';
 import {createUid8} from './uid';
 import {normalizeRelationIds,requireGalaxyContent,resolveGalaxyTitle} from './content-policy';
 
@@ -48,21 +48,21 @@ export default function ManagementArticlePublisher({scopeId}){
   }
 
   const extraFields=<>
-    <div className="scope-v2-stat-controls">
+    <div className="scope-stat-controls">
       <label>{UI_COPY.management.articleSource}<input value={draft.source} onChange={e=>setDraft(current=>({...current,source:e.target.value}))} placeholder="例如 threads / vocus / personal"/></label>
       <label>{UI_COPY.management.articleUrl}<input value={draft.url} onChange={e=>setDraft(current=>({...current,url:e.target.value}))}/></label>
       <label>{UI_COPY.management.articleTime}<input type="datetime-local" value={draft.createtime} onChange={e=>setDraft(current=>({...current,createtime:e.target.value}))}/></label>
     </div>
-    <div className="scope-v2-stat-controls">
+    <div className="scope-stat-controls">
       <label>source_id<input value={draft.source_id} onChange={e=>setDraft(current=>({...current,source_id:e.target.value}))} placeholder={UI_COPY.management.articleParent}/></label>
       <label>target_id<input value={draft.target_id} onChange={e=>setDraft(current=>({...current,target_id:e.target.value}))} placeholder={UI_COPY.management.articleTarget}/></label>
       <label>ref_id<input value={draft.ref_id} onChange={e=>setDraft(current=>({...current,ref_id:e.target.value}))} placeholder={UI_COPY.management.articleReference}/></label>
     </div>
   </>;
 
-  return <section className="scope-v2-inline-card">
+  return <section className="scope-inline-card">
     <h3>{UI_COPY.management.article}</h3>
-    <ContentEditorV2
+    <ContentEditor
       draft={draft}
       setDraft={setDraft}
       busy={busy}
@@ -71,6 +71,6 @@ export default function ManagementArticlePublisher({scopeId}){
       extraFields={extraFields}
       onSave={save}
     />
-    {status===UI_COPY.management.articlePublished?<p className="scope-v2-status">{status}</p>:null}
+    {status===UI_COPY.management.articlePublished?<p className="scope-status">{status}</p>:null}
   </section>;
 }

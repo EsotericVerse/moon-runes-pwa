@@ -195,14 +195,14 @@ export default function DailyLogClient({embedded=false}={}){
     {!embedded&&canWrite?<section className="loc-card">
       <p className="loc-eyebrow">手動紀錄</p>
       <h2>人工新增紀錄</h2>
-      <form className="scope-v2-stat-controls" onSubmit={addRecord}>
-        <label><span>日期</span><input className="scope-v2-select" type="date" min="2026-08-01" value={newForm.recordDate} onChange={event=>setNewForm(current=>({...current,recordDate:event.target.value}))}/></label>
-        <label><span>種類</span><select className="scope-v2-select" value={newForm.drawKind} onChange={event=>setNewForm(current=>({...current,drawKind:event.target.value}))}><option value="main">主抽</option><option value="supplement">補抽</option></select></label>
-        <label><span>符文</span><select className="scope-v2-select" value={newForm.runeNumber} onChange={event=>setNewForm(current=>({...current,runeNumber:event.target.value}))}>{runes.map(row=><option value={row.rune_id} key={row.rune_id}>{row.rune_id}｜{row.rune_name}</option>)}</select></label>
-        <label><span>方向</span><select className="scope-v2-select" value={newForm.direction} onChange={event=>setNewForm(current=>({...current,direction:event.target.value}))}>{DIRECTIONS.map(value=><option value={value} key={value}>{value}</option>)}</select></label>
+      <form className="scope-stat-controls" onSubmit={addRecord}>
+        <label><span>日期</span><input className="scope-select" type="date" min="2026-08-01" value={newForm.recordDate} onChange={event=>setNewForm(current=>({...current,recordDate:event.target.value}))}/></label>
+        <label><span>種類</span><select className="scope-select" value={newForm.drawKind} onChange={event=>setNewForm(current=>({...current,drawKind:event.target.value}))}><option value="main">主抽</option><option value="supplement">補抽</option></select></label>
+        <label><span>符文</span><select className="scope-select" value={newForm.runeNumber} onChange={event=>setNewForm(current=>({...current,runeNumber:event.target.value}))}>{runes.map(row=><option value={row.rune_id} key={row.rune_id}>{row.rune_id}｜{row.rune_name}</option>)}</select></label>
+        <label><span>方向</span><select className="scope-select" value={newForm.direction} onChange={event=>setNewForm(current=>({...current,direction:event.target.value}))}>{DIRECTIONS.map(value=><option value={value} key={value}>{value}</option>)}</select></label>
         <button className="loc-button" type="submit" disabled={saving||!runes.length}>{saving?'儲存中…':'新增紀錄'}</button>
       </form>
-      {message?<p className="scope-v2-status">{message}</p>:null}
+      {message?<p className="scope-status">{message}</p>:null}
     </section>:null}
 
     {error?<p role="alert" className="loc-status">{error}<button className="loc-button" type="button" onClick={loadMonth}>重新讀取</button></p>:null}
@@ -217,10 +217,10 @@ export default function DailyLogClient({embedded=false}={}){
         return <article className="loc-card" key={key}>
           <div className="loc-result-meta"><span>{row.draw_kind==='supplement'?'補抽':'主抽'}</span><span>{formatDate(row.record_date)}</span></div>
           {!editing?<><h3>{row.rune_name}・{row.direction}</h3>
-            {canWrite?<div className="scope-v2-tabs"><button type="button" disabled={saving} onClick={()=>beginEdit(row)}>編輯</button><button type="button" disabled={saving} onClick={()=>removeRecord(row)}>刪除</button></div>:null}
-          </>:<form className="scope-v2-stat-controls" onSubmit={saveEdit}>
-            <label><span>符文</span><select className="scope-v2-select" value={editForm.runeNumber} onChange={event=>setEditForm(current=>({...current,runeNumber:event.target.value}))}>{runes.map(item=><option value={item.rune_id} key={item.rune_id}>{item.rune_id}｜{item.rune_name}</option>)}</select></label>
-            <label><span>方向</span><select className="scope-v2-select" value={editForm.direction} onChange={event=>setEditForm(current=>({...current,direction:event.target.value}))}>{DIRECTIONS.map(value=><option value={value} key={value}>{value}</option>)}</select></label>
+            {canWrite?<div className="scope-tabs"><button type="button" disabled={saving} onClick={()=>beginEdit(row)}>編輯</button><button type="button" disabled={saving} onClick={()=>removeRecord(row)}>刪除</button></div>:null}
+          </>:<form className="scope-stat-controls" onSubmit={saveEdit}>
+            <label><span>符文</span><select className="scope-select" value={editForm.runeNumber} onChange={event=>setEditForm(current=>({...current,runeNumber:event.target.value}))}>{runes.map(item=><option value={item.rune_id} key={item.rune_id}>{item.rune_id}｜{item.rune_name}</option>)}</select></label>
+            <label><span>方向</span><select className="scope-select" value={editForm.direction} onChange={event=>setEditForm(current=>({...current,direction:event.target.value}))}>{DIRECTIONS.map(value=><option value={value} key={value}>{value}</option>)}</select></label>
             <button className="loc-button" type="submit" disabled={saving}>儲存</button>
             <button className="loc-button" type="button" disabled={saving} onClick={()=>{setEditingKey('');setEditForm(null)}}>取消</button>
           </form>}

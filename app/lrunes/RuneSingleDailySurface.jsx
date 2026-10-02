@@ -3,7 +3,7 @@
 import RuneCardInfo from './RuneCardInfo';
 import {runeImage} from './rune-directory.mjs';
 import {RUNE_DRAW_MODES} from './rune-draw-modes.mjs';
-import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
+import {scopeHref} from '../modular/scope-registry';
 
 const ROTATION_CLASSES=['rune-rotate-0','rune-rotate-90','rune-rotate-n90','rune-rotate-180'];
 
@@ -126,7 +126,7 @@ export default function RuneSingleDailySurface({
         {RUNE_DRAW_MODES.map(item=><a
           className="loc-bubble"
           key={item.key}
-          href={scopeHrefV2('lrunes',item.path)}
+          href={scopeHref('lrunes',item.path)}
           aria-current={item.key===modeKey?'page':undefined}
         >
           <strong>{item.label}</strong>

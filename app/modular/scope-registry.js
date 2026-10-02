@@ -1,14 +1,14 @@
 import {UI_COPY} from '../i18n/ui-copy.js';
 
-// Current V2 Scope registry.
-export const FEATURES_V2=Object.freeze([
+// Current Scope registry.
+export const FEATURES=Object.freeze([
   Object.freeze({id:'statics',label:UI_COPY.features.statics.title,path:'statics'}),
   Object.freeze({id:'culture',label:UI_COPY.features.culture.title,path:'culture'}),
   Object.freeze({id:'governance',label:UI_COPY.features.governance.title,path:'governance'}),
   Object.freeze({id:'search',label:UI_COPY.features.search.title,path:'search'})
 ]);
 
-export const SCOPES_V2=Object.freeze({
+export const SCOPES=Object.freeze({
   loc:Object.freeze({
     id:'loc',
     domain:'loc.lo3rwang.cc',
@@ -59,7 +59,7 @@ export const SCOPES_V2=Object.freeze({
   })
 });
 
-const DEFAULT_SCOPE_ID=Object.values(SCOPES_V2).find(scope=>scope.default)?.id||Object.keys(SCOPES_V2)[0];
+const DEFAULT_SCOPE_ID=Object.values(SCOPES).find(scope=>scope.default)?.id||Object.keys(SCOPES)[0];
 
 function cleanHost(host=''){
   return String(host||'').toLowerCase().split(':')[0];
@@ -75,9 +75,9 @@ function cleanPath(pathname='/'){
   return value==='/'?'/':value;
 }
 
-const SCOPE_BY_DOMAIN_V2=Object.freeze(
+const SCOPE_BY_DOMAIN=Object.freeze(
   Object.fromEntries(
-    Object.entries(SCOPES_V2)
+    Object.entries(SCOPES)
       .filter(([,scope])=>Boolean(scope.domain))
       .map(([id,scope])=>[scope.domain,id])
   )
@@ -91,40 +91,40 @@ function matchesMount(scope,host,pathname){
   return h===cleanHost(scope.mount.host)&&(p===base||p.startsWith(base+'/'));
 }
 
-export function resolveScopeV2(host='',pathname='/'){
+export function resolveScope(host='',pathname='/'){
   const h=cleanHost(host);
-  for(const [id,scope] of Object.entries(SCOPES_V2)){
+  for(const [id,scope] of Object.entries(SCOPES)){
     if(matchesMount(scope,h,pathname))return id;
   }
   if(!h){
     const path=cleanPath(pathname);
-    for(const [id,scope] of Object.entries(SCOPES_V2)){
+    for(const [id,scope] of Object.entries(SCOPES)){
       const base=scope.mount?cleanPath(scope.mount.path):null;
       if(base&&(path===base||path.startsWith(base+'/')))return id;
     }
   }
-  return SCOPE_BY_DOMAIN_V2[h]||DEFAULT_SCOPE_ID;
+  return SCOPE_BY_DOMAIN[h]||DEFAULT_SCOPE_ID;
 }
 
-export function getScopeV2(id){
-  return SCOPES_V2[id]||SCOPES_V2[DEFAULT_SCOPE_ID];
+export function getScope(id){
+  return SCOPES[id]||SCOPES[DEFAULT_SCOPE_ID];
 }
 
-export function scopeOriginV2(scopeId){
-  const scope=getScopeV2(scopeId);
+export function scopeOrigin(scopeId){
+  const scope=getScope(scopeId);
   const host=scope.domain||scope.mount?.host;
   return host?`https://${host}`:'';
 }
 
-function scopeBaseHrefV2(scopeId){
-  const scope=getScopeV2(scopeId);
-  if(scope.domain)return scopeOriginV2(scopeId);
+function scopeBaseHref(scopeId){
+  const scope=getScope(scopeId);
+  if(scope.domain)return scopeOrigin(scopeId);
   if(scope.mount)return `https://${scope.mount.host}${cleanPath(scope.mount.path)}`;
   return '';
 }
 
-export function scopeHrefV2(scopeId,localPath=''){
-  const base=scopeBaseHrefV2(scopeId).replace(/\/$/,'');
+export function scopeHref(scopeId,localPath=''){
+  const base=scopeBaseHref(scopeId).replace(/\/$/,'');
   const raw=String(localPath||'');
   const marker=raw.search(/[?#]/);
   const routePart=marker>=0?raw.slice(0,marker):raw;
@@ -134,17 +134,17 @@ export function scopeHrefV2(scopeId,localPath=''){
   return `${base}${pathname}${suffix}`;
 }
 
-export function featureHrefV2(scopeId,featureId){
-  const feature=FEATURES_V2.find(item=>item.id===featureId);
+export function featureHref(scopeId,featureId){
+  const feature=FEATURES.find(item=>item.id===featureId);
   if(!feature)throw new Error('Unknown feature: '+featureId);
-  return scopeHrefV2(scopeId,feature.path);
+  return scopeHref(scopeId,feature.path);
 }
 
-export function featureIdForPathV2(pathname='/'){
+export function featureIdForPath(pathname='/'){
   const segment=String(pathname||'/')
     .split('/')
     .filter(Boolean)
     .at(-1)||'';
-  return FEATURES_V2.find(item=>item.path===segment)?.id||null;
+  return FEATURES.find(item=>item.path===segment)?.id||null;
 }
 

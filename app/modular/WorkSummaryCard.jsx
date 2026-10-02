@@ -20,7 +20,7 @@ function safeRelationLinksOf(items=[]){
     });
 }
 
-export default function WorkSummaryCardV2({
+export default function WorkSummaryCard({
   title=UI_COPY.work.untitled,
   source='',
   scopeId='',
@@ -37,8 +37,8 @@ export default function WorkSummaryCardV2({
   const safeRelations=safeRelationLinksOf(relationLinks);
   const safeLinks=safeExternalLinksOf(links);
 
-  return <article className="scope-v2-inline-card scope-v2-work-summary">
-    <header className="scope-v2-culture-work-heading">
+  return <article className="scope-inline-card scope-work-summary">
+    <header className="scope-culture-work-heading">
       <div>
         {(scopeId||showSource&&source)?<p className="loc-eyebrow">{[scopeId,showSource?source:''].filter(Boolean).join(' · ')}</p>:null}
         <strong>{title}</strong>
@@ -46,18 +46,18 @@ export default function WorkSummaryCardV2({
       {date?<time>{date}</time>:null}
     </header>
 
-    {hidden?<p className="scope-v2-status">{UI_COPY.work.hidden}</p>:null}
-    {body?<p className="scope-v2-culture-work-meta-description">{body}</p>:null}
+    {hidden?<p className="scope-status">{UI_COPY.work.hidden}</p>:null}
+    {body?<p className="scope-culture-work-meta-description">{body}</p>:null}
 
-    {safeRelations.length?<div className="scope-v2-result-links scope-v2-work-relations">
+    {safeRelations.length?<div className="scope-result-links scope-work-relations">
       {safeRelations.map((link,index)=><a key={link.id||link.href||index} href={String(link.href||'').trim()}>{link.label||UI_COPY.format.relatedText(index+1)}</a>)}
     </div>:null}
 
-    {showLinks&&safeLinks.length?<div className="scope-v2-result-links">
+    {showLinks&&safeLinks.length?<div className="scope-result-links">
       {safeLinks.map((link,index)=><a key={link.id||link.href||index} href={externalLink(link)} target="_blank" rel="noreferrer">{link.label||UI_COPY.format.link(index+1)}</a>)}
     </div>:null}
 
-    {destinations?.length?<div className="scope-v2-result-links">
+    {destinations?.length?<div className="scope-result-links">
       {destinations.map(destination=><a key={destination.id||destination.href} href={destination.href}>{destination.label}</a>)}
     </div>:null}
 

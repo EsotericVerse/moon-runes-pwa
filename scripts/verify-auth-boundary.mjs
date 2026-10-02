@@ -10,8 +10,8 @@ const files={
   scopeManagement:'app/loc/GovernanceManagement.jsx',
   adminManagement:'app/loc/views/AdminHomeView.jsx',
   managementData:'app/loc/ManagementDataPanel.jsx',
-  search:'app/modular-v2/features/SearchV2.jsx',
-  culture:'app/modular-v2/features/CultureV2.jsx'
+  search:'app/modular/features/Search.jsx',
+  culture:'app/modular/features/Culture.jsx'
 };
 for(const path of Object.values(files))if(!fs.existsSync(path))failures.push('missing Current auth/data contract file: '+path);
 if(!failures.length){

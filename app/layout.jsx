@@ -1,11 +1,11 @@
 import './globals.css';
-import ScopeNavV2 from './modular-v2/ScopeNavV2';
+import ScopeNav from './modular/ScopeNav';
 import AppExperience from './AppExperience';
-import ScopeFooterV2 from './modular-v2/ScopeFooterV2';
+import ScopeFooter from './modular/ScopeFooter';
 import QueryProvider from './QueryProvider';
 import {LOC_ORIGIN} from './seo/metadata';
-import {getThemeSlotV2} from './modular-v2/theme-registry.v2';
-import {SCOPES_V2} from './modular-v2/scope-registry.v2';
+import {getThemeSlot} from './modular/theme-registry';
+import {SCOPES} from './modular/scope-registry';
 
 export const metadata = {
   metadataBase:new URL(LOC_ORIGIN),
@@ -17,7 +17,7 @@ export const metadata = {
 
 const AUTO_DAY_THEME_ID='theme-7';
 const AUTO_NIGHT_THEME_ID='theme-1';
-const INITIAL_SCOPE_THEMES=Object.values(SCOPES_V2).map(scope=>({
+const INITIAL_SCOPE_THEMES=Object.values(SCOPES).map(scope=>({
   domain:scope.domain||'',
   mount:scope.mount||null,
   theme:scope.theme||{mode:'auto'}
@@ -28,7 +28,7 @@ const INITIAL_THEME_IDS=[...new Set([
   ...INITIAL_SCOPE_THEMES.map(scope=>scope.theme?.themeId).filter(Boolean)
 ])];
 const INITIAL_THEME_SLOTS=Object.fromEntries(INITIAL_THEME_IDS.map(id=>{
-  const slot=getThemeSlotV2(id);
+  const slot=getThemeSlot(id);
   return [id,{id:slot.id,scheme:slot.scheme,tokens:slot.tokens}];
 }));
 const INITIAL_THEME_SCRIPT=`(()=>{try{
@@ -72,9 +72,9 @@ export default function RootLayout({ children }) {
       <body className="loc-app-shell">
         <QueryProvider>
           <AppExperience />
-          <header className="scope-v2-global"><ScopeNavV2/></header>
+          <header className="scope-global"><ScopeNav/></header>
           {children}
-          <ScopeFooterV2 />
+          <ScopeFooter />
         </QueryProvider>
       </body>
     </html>

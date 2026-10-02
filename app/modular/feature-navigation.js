@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {featureHrefV2} from './scope-registry.v2';
+import {featureHref} from './scope-registry';
 import {normalizeRelationIds} from '../loc/content-policy';
 
 const NAVIGATION_FIELDS=Object.freeze([
@@ -53,7 +53,7 @@ function featureNavigationQuery(navigation={}){
 }
 
 export function featureNavigationHref(scopeId,featureId,navigation={}){
-  const base=featureHrefV2(scopeId,featureId);
+  const base=featureHref(scopeId,featureId);
   const query=featureNavigationQuery(navigation);
   return query?base+'?'+query:base;
 }

@@ -9,7 +9,7 @@ import {CartesianGrid,Legend,Line,LineChart,ReferenceLine,ResponsiveContainer,To
 import {
   applyDe,draw,evaluateAlphaEvent,finishOpening,freshPlayer,loadGameData,shuffle
 } from './game-data';
-import {getThemeSlotV2,THEME_SLOTS_V2} from '../../modular-v2/theme-registry.v2';
+import {getThemeSlotV2,THEME_SLOTS_V2} from '../../modular/theme-registry.v2';
 
 const NAMES=['A','B','C','D'];
 const GAME_THEME_DEFAULT='theme-5';

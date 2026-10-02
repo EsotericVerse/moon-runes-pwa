@@ -8,7 +8,7 @@ import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {deleteNeonRows,insertNeonRows,updateNeonRows} from '../../loc/neon-client';
 import {selectNeonRows} from '../../loc/neon-query';
-import {FEATURE_LOADING_MESSAGE} from '../feature-data-state.v2';
+import {FEATURE_LOADING_MESSAGE} from '../feature-data-state';
 
 const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility';
 
@@ -229,17 +229,17 @@ export default function CultureTimelineEditor({scopeId=''}){
     finally{setBusy(false);}
   };
 
-  return <section className="loc-card scope-v2-feature-card">
+  return <section className="loc-card scope-feature-card">
     <p className="loc-eyebrow">時期與定錨</p>
     <h2>時期設定</h2>
     <p>新增或調整定錨點請在這裡處理；時間長河只呈現結果。時期與事件共用前／後兩個定錨點，沒有對應定錨時請選 0。</p>
-    {query.error?<p className="scope-v2-status scope-v2-error">{query.error.message}</p>:null}
-    {duplicateAnchorIds.length?<p className="scope-v2-status scope-v2-error">同一資料區域存在重複的定錨點識別：{duplicateAnchorIds.join('、')}。請先修正，否則無法正確呈現文化資料。</p>:null}
-    {query.isPending?<p className="scope-v2-status">{FEATURE_LOADING_MESSAGE}</p>:null}
-    <div className="scope-v2-tabs">
+    {query.error?<p className="scope-status scope-error">{query.error.message}</p>:null}
+    {duplicateAnchorIds.length?<p className="scope-status scope-error">同一資料區域存在重複的定錨點識別：{duplicateAnchorIds.join('、')}。請先修正，否則無法正確呈現文化資料。</p>:null}
+    {query.isPending?<p className="scope-status">{FEATURE_LOADING_MESSAGE}</p>:null}
+    <div className="scope-tabs">
       {EDITABLE_TYPES.map(([type,label])=><button key={type} type="button" onClick={()=>beginAdd(type)}>新增{label}</button>)}
     </div>
-    <div className="scope-v2-timeline">
+    <div className="scope-timeline">
       {rows.map(row=>{
         const pair=splitPair(row.anchor_pair);
         const range=row.record_type==='anchor'
@@ -254,35 +254,35 @@ export default function CultureTimelineEditor({scopeId=''}){
       })}
     </div>
     <form onSubmit={save}>
-      <label><span>類型</span><select className="scope-v2-select" value={draft.record_type} disabled={Boolean(selectedId)} onChange={event=>change('record_type',event.target.value)}>
+      <label><span>類型</span><select className="scope-select" value={draft.record_type} disabled={Boolean(selectedId)} onChange={event=>change('record_type',event.target.value)}>
         {EDITABLE_TYPES.map(([type,label])=><option key={type} value={type}>{label}</option>)}
       </select></label>
-      <label><span>名稱</span><input className="scope-v2-search-input" value={draft.label||''} onChange={event=>change('label',event.target.value)} required/></label>
-      <label><span>識別</span><input className="scope-v2-search-input" value={draft.resource_id||''} disabled={Boolean(selectedId)} onChange={event=>change('resource_id',event.target.value)} placeholder="留空自動產生"/></label>
-      <label><span>說明</span><textarea className="scope-v2-search-input" value={draft.note||''} onChange={event=>change('note',event.target.value)}/></label>
+      <label><span>名稱</span><input className="scope-search-input" value={draft.label||''} onChange={event=>change('label',event.target.value)} required/></label>
+      <label><span>識別</span><input className="scope-search-input" value={draft.resource_id||''} disabled={Boolean(selectedId)} onChange={event=>change('resource_id',event.target.value)} placeholder="留空自動產生"/></label>
+      <label><span>說明</span><textarea className="scope-search-input" value={draft.note||''} onChange={event=>change('note',event.target.value)}/></label>
 
-      {draft.record_type==='anchor'?<div className="scope-v2-stat-controls">
-        <label><span>日期</span><input className="scope-v2-select" type="date" value={dateText(draft.time_date)} onChange={event=>change('time_date',event.target.value)}/></label>
-        <label><span>日期未知時的年份</span><input className="scope-v2-search-input" type="number" value={draft.year_value??''} onChange={event=>change('year_value',event.target.value)}/></label>
+      {draft.record_type==='anchor'?<div className="scope-stat-controls">
+        <label><span>日期</span><input className="scope-select" type="date" value={dateText(draft.time_date)} onChange={event=>change('time_date',event.target.value)}/></label>
+        <label><span>日期未知時的年份</span><input className="scope-search-input" type="number" value={draft.year_value??''} onChange={event=>change('year_value',event.target.value)}/></label>
       </div>:null}
 
-      {draft.record_type!=='anchor'?<div className="scope-v2-stat-controls">
-        <label><span>前定錨點</span><select className="scope-v2-select" value={draft.before_id||'0'} onChange={event=>change('before_id',event.target.value)}>
+      {draft.record_type!=='anchor'?<div className="scope-stat-controls">
+        <label><span>前定錨點</span><select className="scope-select" value={draft.before_id||'0'} onChange={event=>change('before_id',event.target.value)}>
           <option value="0">0｜之前不存在</option>
           {anchorOptions.map(row=><option key={row.resource_id} value={row.resource_id}>{dateText(row.time_date)||row.year_value||'未知'}｜{row.label}</option>)}
         </select></label>
-        <label><span>後定錨點</span><select className="scope-v2-select" value={draft.after_id||'0'} onChange={event=>change('after_id',event.target.value)}>
+        <label><span>後定錨點</span><select className="scope-select" value={draft.after_id||'0'} onChange={event=>change('after_id',event.target.value)}>
           <option value="0">0｜之後不存在／Current</option>
           {anchorOptions.map(row=><option key={row.resource_id} value={row.resource_id}>{dateText(row.time_date)||row.year_value||'未知'}｜{row.label}</option>)}
         </select></label>
       </div>:null}
 
-      <div className="scope-v2-stat-controls">
-        <label><span>狀態</span><input className="scope-v2-search-input" value={draft.status||''} onChange={event=>change('status',event.target.value)}/></label>
-        {draft.record_type==='period'?<label><span>排序</span><input className="scope-v2-search-input" type="number" value={draft.display_order??''} onChange={event=>change('display_order',event.target.value)}/></label>:null}
+      <div className="scope-stat-controls">
+        <label><span>狀態</span><input className="scope-search-input" value={draft.status||''} onChange={event=>change('status',event.target.value)}/></label>
+        {draft.record_type==='period'?<label><span>排序</span><input className="scope-search-input" type="number" value={draft.display_order??''} onChange={event=>change('display_order',event.target.value)}/></label>:null}
       </div>
-      {message?<p className="scope-v2-status" role="status">{message}</p>:null}
-      <div className="scope-v2-tabs">
+      {message?<p className="scope-status" role="status">{message}</p>:null}
+      <div className="scope-tabs">
         <button type="submit" disabled={busy}>{busy?'儲存中…':'儲存'}</button>
         {selectedId?<button type="button" disabled={busy} onClick={remove}>刪除</button>:null}
       </div>

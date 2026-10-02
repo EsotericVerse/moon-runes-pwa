@@ -33,17 +33,17 @@ function IncrementalLoad({
   },[hasMore,error,onLoadMore,cooldownMs,scrollRootRef]);
 
   if(!hasMore)return null;
-  return <div ref={sentinelRef} className={'scope-v2-load-sentinel'+(loading?' is-loading':'')} aria-live="polite">
+  return <div ref={sentinelRef} className={'scope-load-sentinel'+(loading?' is-loading':'')} aria-live="polite">
     <span>{loading?'…':label}</span>
   </div>;
 }
 
-export default function IncrementalListV2({
+export default function IncrementalList({
   items=[],
   renderItem,
   batchSize=DEFAULT_LIST_BATCH_SIZE,
   resetKey='',
-  className='scope-v2-list',
+  className='scope-list',
   empty=null,
   externalHasMore=false,
   loading=false,

@@ -1,9 +1,9 @@
-import {scopeOriginV2} from '../modular-v2/scope-registry.v2';
+import {scopeOrigin} from '../modular/scope-registry';
 import {RUNE_DRAW_MODES as MODES} from './rune-draw-modes.mjs';
 
 const runeHref=path=>{
   const clean=String(path||'').split('/').filter(Boolean).join('/');
-  return `${scopeOriginV2('lrunes')}/${clean}`;
+  return `${scopeOrigin('lrunes')}/${clean}`;
 };
 
 export default function RunesClient(){

@@ -5,7 +5,7 @@ import {runeImage} from './rune-directory.mjs';
 import {selectNeonRows} from '../loc/neon-query';
 import {useNeonSetting} from '../loc/use-neon-setting';
 import {realMoonPhase} from '../loc/model/moon-phase';
-import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
+import {scopeHref} from '../modular/scope-registry';
 import RuneCardInfo from './RuneCardInfo';
 import RuneSingleDailySurface from './RuneSingleDailySurface';
 import {RUNE_RITUAL_DELAY_MS,RUNE_RITUAL_STEP_MS,runeRitualMessages} from './rune-ritual';
@@ -164,7 +164,7 @@ function DrawSelection({activeKey}){
       {DRAW_TYPES.map(item=><a
         key={item.key}
         className="loc-bubble"
-        href={scopeHrefV2('lrunes',item.path)}
+        href={scopeHref('lrunes',item.path)}
         aria-current={item.key===activeKey?'page':undefined}
       >
         <strong>{item.label}</strong>

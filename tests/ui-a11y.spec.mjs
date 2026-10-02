@@ -7,12 +7,12 @@ for(const route of ROUTES){
   test(`${route} keeps the Current visual contract`,async({page},testInfo)=>{
     await page.goto(route,{waitUntil:'domcontentloaded'});
     await expect(page.locator('body')).toBeVisible();
-    await expect(page.locator('.scope-v2-global')).toBeVisible();
+    await expect(page.locator('.scope-global')).toBeVisible();
 
     const overflow=await page.evaluate(()=>Math.max(0,document.documentElement.scrollWidth-document.documentElement.clientWidth));
     expect(overflow).toBeLessThanOrEqual(2);
 
-    const main=page.locator('.loc-next-main,.scope-v2-main').first();
+    const main=page.locator('.loc-next-main,.scope-main').first();
     await expect(main).toBeVisible();
 
     await page.screenshot({

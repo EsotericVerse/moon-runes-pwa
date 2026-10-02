@@ -2,8 +2,8 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import {UI_COPY} from '../i18n/ui-copy';
-import {applyThemeV2,getThemeSlotV2,THEME_SLOTS_V2} from './theme-registry.v2';
-import {getScopeV2} from './scope-registry.v2';
+import {applyTheme,getThemeSlot,THEME_SLOTS} from './theme-registry';
+import {getScope} from './scope-registry';
 
 const AUTO_THEME_ID='auto';
 const DAY_THEME_ID='theme-7';
@@ -30,21 +30,21 @@ function automaticThemeId(date=new Date()){
 }
 
 function scopeThemePolicy(scopeId='loc'){
-  return getScopeV2(String(scopeId||'').trim()).theme||{mode:'auto'};
+  return getScope(String(scopeId||'').trim()).theme||{mode:'auto'};
 }
 
-export default function ThemeSelectV2({scopeId='loc'}){
+export default function ThemeSelect({scopeId='loc'}){
   const policy=scopeThemePolicy(scopeId);
   const fixedThemeId=policy.mode==='fixed'?policy.themeId:'';
   const [themeId,setThemeId]=useState(AUTO_THEME_ID);
   const [now,setNow]=useState(()=>new Date());
   const effectiveThemeId=fixedThemeId||(themeId===AUTO_THEME_ID?automaticThemeId(now):themeId);
-  const slot=useMemo(()=>getThemeSlotV2(effectiveThemeId),[effectiveThemeId]);
+  const slot=useMemo(()=>getThemeSlot(effectiveThemeId),[effectiveThemeId]);
 
   useEffect(()=>{
     const root=document.documentElement;
     if(root.dataset.themeId===slot.id)return;
-    applyThemeV2(slot);
+    applyTheme(slot);
   },[slot,scopeId]);
 
   useEffect(()=>{
@@ -60,11 +60,11 @@ export default function ThemeSelectV2({scopeId='loc'}){
 
   if(fixedThemeId)return null;
 
-  return <label className="scope-v2-theme-control">
+  return <label className="scope-theme-control">
     <span>{UI_COPY.common.theme}</span>
     <select value={themeId} onChange={event=>setThemeId(event.target.value)} aria-label={UI_COPY.common.theme}>
       <option value={AUTO_THEME_ID}>{UI_COPY.common.autoTheme}</option>
-      {THEME_SLOTS_V2.map(item=><option value={item.id} key={item.id}>{item.label}</option>)}
+      {THEME_SLOTS.map(item=><option value={item.id} key={item.id}>{item.label}</option>)}
     </select>
   </label>;
 }

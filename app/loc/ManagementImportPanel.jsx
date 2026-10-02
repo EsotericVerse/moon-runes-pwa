@@ -85,14 +85,14 @@ function JsonImport({scopeId}){
     }catch(error){setStatus(error?.message||'匯入失敗。');}
     finally{setBusy(false);}
   }
-  return <div className="scope-v2-inline-card">
+  return <div className="scope-inline-card">
     <h4>{UI_COPY.management.importJson}</h4>
     <label>{UI_COPY.management.currentFile}<input type="file" accept=".json,application/json" onChange={chooseFile}/></label>
     {fileName?<p>檔案：<strong>{fileName}</strong>｜建議來源：<strong>{suggested}</strong></p>:null}
     <label>{UI_COPY.management.sourceChoice}<input value={source} onChange={e=>setSource(e.target.value)} placeholder={suggested}/></label>
     <p className="loc-subtitle">建議位置只作提示；實際來源仍由管理者決定。source_id／target_id／ref_id 若存在會一併帶入。</p>
     <button type="button" disabled={busy||!rows.length} onClick={run}>{busy?UI_COPY.management.importing:UI_COPY.management.startImport}</button>
-    {status?<p className="scope-v2-status">{status}</p>:null}
+    {status?<p className="scope-status">{status}</p>:null}
   </div>;
 }
 
@@ -155,16 +155,16 @@ function MediaRecordInsert({scopeId}){
     finally{setBusy(false);}
   }
 
-  return <div className="scope-v2-inline-card">
+  return <div className="scope-inline-card">
     <h4>{UI_COPY.management.addMedia}</h4>
     <p>只記錄外部媒體參照與文字 metadata：URL／雲端連結、檔名或標題、來源 ID、時間、地點與 Meta Tag；不接收、不暫存任何圖片／音訊／影片檔案。media_id 由資料庫自動產生，url 可留空。</p>
-    <form onSubmit={save} className="scope-v2-editor">
-      <div className="scope-v2-stat-controls">
+    <form onSubmit={save} className="scope-editor">
+      <div className="scope-stat-controls">
         <label>media_type<input value={draft.media_type} onChange={e=>change('media_type',e.target.value)} placeholder="ig_pic / facebook_pic / suno / video / url" required/></label>
         <label>galaxy_link<input value={draft.galaxy_link} onChange={e=>change('galaxy_link',e.target.value)} placeholder="8 字 UID，可留空"/></label>
         <label>createtime<input type="datetime-local" value={draft.createtime} onChange={e=>change('createtime',e.target.value)}/></label>
       </div>
-      <div className="scope-v2-stat-controls">
+      <div className="scope-stat-controls">
         <label>source_native_id<input value={draft.source_native_id} onChange={e=>change('source_native_id',e.target.value)}/></label>
         <label>source_place<input value={draft.source_place} onChange={e=>change('source_place',e.target.value)} placeholder="打卡地點／拍攝位置"/></label>
       </div>
@@ -172,7 +172,7 @@ function MediaRecordInsert({scopeId}){
       <label>url<input value={draft.url} onChange={e=>change('url',e.target.value)} placeholder="外部 URL／雲端連結，可留空，之後再補"/></label>
       <label>meta_tags<input value={draft.meta_tags} onChange={e=>change('meta_tags',e.target.value)} placeholder="建立時由資料提供者設定，逗號分隔" required/></label>
       <button type="submit" disabled={busy}>{busy?UI_COPY.common.saving:UI_COPY.management.addMedia}</button>
-      {status?<p className="scope-v2-status">{status}</p>:null}
+      {status?<p className="scope-status">{status}</p>:null}
     </form>
   </div>;
 }
@@ -223,34 +223,34 @@ function SunoImport({scopeId}){
     }catch(error){setStatus(error?.message||'Suno 儲存失敗。');}
     finally{setBusy(false);}
   }
-  return <div className="scope-v2-inline-card">
+  return <div className="scope-inline-card">
     <h4>Suno 單筆匯入</h4>
     <p>Suno 無批次匯出時使用。歌詞與 Suno Style 進 Galaxy；媒體連結與 Meta Tag 進 Galaxy Media。</p>
-    <form onSubmit={save} className="scope-v2-editor">
+    <form onSubmit={save} className="scope-editor">
       <label>{UI_COPY.management.songTitle}<input value={draft.title} onChange={e=>change('title',e.target.value)}/></label>
       <label>{UI_COPY.management.lyrics}<textarea rows={8} value={draft.lyrics} onChange={e=>change('lyrics',e.target.value)}/></label>
-      <div className="scope-v2-stat-controls">
+      <div className="scope-stat-controls">
         <label>Suno URL<input value={draft.url} onChange={e=>change('url',e.target.value)}/></label>
         <label>Suno ID<input value={draft.nativeId} onChange={e=>change('nativeId',e.target.value)} placeholder="可由 URL 自動辨識"/></label>
         <label>日期<input type="date" value={draft.createdDate} onChange={e=>change('createdDate',e.target.value)}/></label>
       </div>
-      <div className="scope-v2-stat-controls">
+      <div className="scope-stat-controls">
         <label>Suno Style<input value={draft.stylePrompt} onChange={e=>change('stylePrompt',e.target.value)}/></label>
         <label>Meta Tags<input value={draft.metaTags} onChange={e=>change('metaTags',e.target.value)} placeholder="建立時由資料提供者設定" required/></label>
       </div>
-      <div className="scope-v2-stat-controls">
+      <div className="scope-stat-controls">
         <label>source_id<input value={draft.source_id} onChange={e=>change('source_id',e.target.value)}/></label>
         <label>target_id<input value={draft.target_id} onChange={e=>change('target_id',e.target.value)}/></label>
         <label>ref_id<input value={draft.ref_id} onChange={e=>change('ref_id',e.target.value)}/></label>
       </div>
       <button type="submit" disabled={busy}>{busy?UI_COPY.common.saving:UI_COPY.management.addSuno}</button>
-      {status?<p className="scope-v2-status">{status}</p>:null}
+      {status?<p className="scope-status">{status}</p>:null}
     </form>
   </div>;
 }
 
 export default function ManagementImportPanel({scopeId}){
-  return <section className="scope-v2-inline-card">
+  return <section className="scope-inline-card">
     <h3>{UI_COPY.management.import}</h3>
     <JsonImport scopeId={scopeId}/>
     <MediaRecordInsert scopeId={scopeId}/>

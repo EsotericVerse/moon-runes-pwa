@@ -38,13 +38,13 @@ export default function DailyRuneCalendar({
   const monthLabel=year+' 年 '+month+' 月';
 
   return <section className="loc-card daily-log-calendar" aria-label="每日符文行事曆">
-    <div className="scope-v2-daily-calendar-nav">
+    <div className="scope-daily-calendar-nav">
       <button className="loc-button" type="button" disabled={!canPrevious||loading} onClick={onPrevious} aria-label="上個月">‹</button>
       <h2 aria-live="polite">{monthLabel}</h2>
       <button className="loc-button" type="button" disabled={loading} onClick={onNext} aria-label="下個月">›</button>
     </div>
-    <div role="grid" aria-label={monthLabel} className="scope-v2-daily-calendar-grid">
-      {WEEKDAYS.map((day,index)=><div role="columnheader" key={'weekday-'+index} className="scope-v2-daily-calendar-weekday">{day}</div>)}
+    <div role="grid" aria-label={monthLabel} className="scope-daily-calendar-grid">
+      {WEEKDAYS.map((day,index)=><div role="columnheader" key={'weekday-'+index} className="scope-daily-calendar-weekday">{day}</div>)}
       {cells.map((day,index)=>{
         if(!day)return <div role="gridcell" aria-hidden="true" key={'blank-'+index}/>;
         const key=dateKey(year,month,day);
@@ -59,10 +59,10 @@ export default function DailyRuneCalendar({
           aria-pressed={selected}
           aria-label={key.replaceAll('-','/')+(main?'，主抽':'')+(supplement?'，補抽':'')}
           onClick={()=>onSelectDate?.(key)}
-          className={"scope-v2-daily-calendar-cell"+(entries.length?" has-entry":"")}
+          className={"scope-daily-calendar-cell"+(entries.length?" has-entry":"")}
         >
-          <span className="scope-v2-daily-calendar-day">{day}</span>
-          <span className="scope-v2-daily-calendar-flags">
+          <span className="scope-daily-calendar-day">{day}</span>
+          <span className="scope-daily-calendar-flags">
             {main?<span>主抽</span>:null}{supplement?<span>補抽</span>:null}
           </span>
         </button>;

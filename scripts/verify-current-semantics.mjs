@@ -5,7 +5,7 @@ const read=path=>fs.readFileSync(path,'utf8');
 const required=[
   'app/loc/views/AboutView.jsx',
   'app/loc/galaxy-query.js',
-  'app/modular-v2/features/SearchV2.jsx',
+  'app/modular/features/Search.jsx',
   'app/loc/model/daily-trend-engine.mjs',
   'app/loc/scope-data.js'
 ];
