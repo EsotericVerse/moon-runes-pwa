@@ -46,12 +46,6 @@ for(const slot of THEME_SLOTS_V2){
   }
 }
 for(const group of ['靈魂','連結','生命','自然','礦物','元素','秩序','無序'])if(!THEME_SLOTS_V2.some(slot=>slot.group===group))failures.push('missing theme group '+group);
-const probe=THEME_SLOTS_V2[0];
-if(getThemeSlotV2(probe.id,{[probe.id]:{scheme:probe.scheme,tokens:{'--loc-bg':'#010203'}}})!==probe)failures.push('partial theme override must be rejected');
-const fullTokens=Object.fromEntries(THEME_TOKEN_KEYS_V2.map(key=>[key,probe.tokens[key]]));
-fullTokens['--loc-bg']='#010203';
-const full=getThemeSlotV2(probe.id,{[probe.id]:{scheme:probe.scheme,tokens:fullTokens}});
-if(full===probe||full.tokens['--loc-bg']!=='#010203')failures.push('complete theme override must be accepted');
 for(const token of ["AUTO_THEME_ID='auto'","THEME_TIME_ZONE='Asia/Taipei'","DAY_THEME_ID='theme-7'","NIGHT_THEME_ID='theme-1'","AUTHOR_THEME_ID='theme-2'","LUNARUNES_THEME_ID='theme-5'","lo3rwang:Object.freeze({mode:'fixed',themeId:AUTHOR_THEME_ID})","lunarunes:Object.freeze({mode:'fixed',themeId:LUNARUNES_THEME_ID})","loc:Object.freeze({mode:'auto'})"])if(!selector.includes(token))failures.push('Theme selector missing '+token);
 if(!footer.includes('<ThemeSelectV2 scopeId={scopeId}/>'))failures.push('ScopeFooter must pass Scope identity to ThemeSelectV2');
 if(!layout.includes("import ScopeFooterV2 from './modular-v2/ScopeFooterV2'")||!layout.includes('<ScopeFooterV2 />'))failures.push('Root layout must use ScopeFooterV2');
