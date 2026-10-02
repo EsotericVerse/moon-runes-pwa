@@ -246,7 +246,7 @@ function MultiReading({draw,mode,phase}){
       <p><strong>過去的成因：</strong>「{past1.rune_name}」{directions[0]}：{situationDetail(past1,directions[0])}；「{past2.rune_name}」{directions[1]}：{situationDetail(past2,directions[1])}。兩張牌共同描述事情形成的背景與潛因。</p>
       <p><strong>意外變化：</strong>「{unexpected.rune_name}」{directions[2]}：{situationDetail(unexpected,directions[2])}。單張只提供一個意外因素，不與雙卡拼接。</p>
       <p><strong>現在狀況：</strong>「{current1.rune_name}」{directions[3]}：{situationDetail(current1,directions[3])}；「{current2.rune_name}」{directions[4]}：{situationDetail(current2,directions[4])}。兩張牌共同描述現在以後可能形成的結論。</p>
-      <p><strong>閱讀補充：</strong>這組結構延伸雙卡與三卡的讀法；月相放在最後，只作次要的時間修飾，可能稍強也可能稍弱。本次真實月相為{phase}。</p>
+      <p><strong>閱讀補充：</strong>每張狀況文字已依實際符文、方向與當前月相精準取得；右側通用建議只用前段 x、後段 y 判斷趨勢與總和。本次真實月相為{phase}。</p>
     </div>;
   }
 
