@@ -57,9 +57,19 @@ function ScopeOverview(){
     for(const value of [row.galaxy||'galaxy',row.time||'time']){
       if(!/^[a-z][a-z0-9_]*$/.test(String(value)))throw new Error('galaxy / time mapping 只能使用小寫英數與底線。');
     }
+  };
+
+  const validateNewMapping=row=>{
+    validate(row);
     const existing=mappings.find(item=>item.id===row.id);
-    if(existing&&(String(existing.galaxy||'galaxy')!==String(row.galaxy||'galaxy')||String(existing.time||'time')!==String(row.time||'time'))){
+    if(!existing)return;
+    if(String(existing.galaxy||'galaxy')!==String(row.galaxy||'galaxy')||String(existing.time||'time')!==String(row.time||'time')){
       throw new Error('同一 Scope 的 Galaxy / Time mapping 必須一致。');
+    }
+    const existingBirthday=String(existing.birthday||'').slice(0,10);
+    const nextBirthday=String(row.birthday||'').slice(0,10);
+    if(existingBirthday&&nextBirthday&&existingBirthday!==nextBirthday){
+      throw new Error('同一 Scope 的生日設定必須一致。');
     }
   };
 
@@ -68,16 +78,19 @@ function ScopeOverview(){
     setStatus('');
     try{
       validate(row);
+      const galaxy=String(row.galaxy||'galaxy').trim()||'galaxy';
+      const time=String(row.time||'time').trim()||'time';
+      const birthday=row.birthday||null;
       await updateNeonRows('silver.manage',{
-        role:row.role,
-        galaxy:String(row.galaxy||'galaxy').trim()||'galaxy',
-        time:String(row.time||'time').trim()||'time',
-        birthday:row.birthday||null
+        role:row.role,galaxy,time,birthday
       },{filters:[
         {column:'id',operator:'eq',value:row.id},
         {column:'email',operator:'eq',value:row.email}
       ]});
-      setStatus('Mapping 已更新。');setRevision(value=>value+1);
+      await updateNeonRows('silver.manage',{
+        galaxy,time,birthday
+      },{filters:[{column:'id',operator:'eq',value:row.id}]});
+      setStatus('Scope Mapping 已同步更新。');setRevision(value=>value+1);
     }catch(error){setStatus(error.message||'Mapping 儲存失敗。');}
   };
 
@@ -94,7 +107,7 @@ function ScopeOverview(){
   const add=async()=>{
     setStatus('');
     try{
-      validate(draft);
+      validateNewMapping(draft);
       await insertNeonRows('silver.manage',[{...draft,birthday:draft.birthday||null}]);
       setDraft({...EMPTY_MAPPING});setStatus('Mapping 已新增。');setRevision(value=>value+1);
     }catch(error){setStatus(error.message||'Mapping 新增失敗。');}
