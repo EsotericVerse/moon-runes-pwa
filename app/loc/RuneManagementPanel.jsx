@@ -1,10 +1,10 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import {selectNeonRows} from '../loc/neon-query';
-import {realMoonPhase} from '../loc/model/moon-phase';
-import {listNeonRecords,listRuneDrawSlots,putDailyRuneRecord,putNeonRecord,putRuneDrawSlot} from '../loc/neon-user-storage';
-import {useNeonAccount} from '../loc/use-neon-account';
+import {selectNeonRows} from './neon-query';
+import {realMoonPhase} from './model/moon-phase';
+import {listNeonRecords,listRuneDrawSlots,putDailyRuneRecord,putNeonRecord,putRuneDrawSlot} from './neon-user-storage';
+import {useNeonAccount} from './use-neon-account';
 
 const RUNE_DIRECTIONS=Object.freeze(['正位','半正位','半逆位','逆位']);
 

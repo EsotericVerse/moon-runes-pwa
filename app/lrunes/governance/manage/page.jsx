@@ -1,4 +1,4 @@
-import LunaRunesManagement from '../../LunaRunesManagement';
+import LocApp from '../../../loc/LocApp';
 import {lunarunesMetadata} from '../../../seo/metadata';
 
 export const metadata=lunarunesMetadata({
@@ -8,4 +8,4 @@ export const metadata=lunarunesMetadata({
   noIndex:true
 });
 
-export default function Page(){return <LunaRunesManagement/>;}
+export default function Page(){return <LocApp forcedView="manage" forcedScope="lrunes"/>;}

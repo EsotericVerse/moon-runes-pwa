@@ -20,6 +20,7 @@ export default function RunesClient(){
         <nav className="runes-home-nav" aria-label="月之符文功能">
           <a className="loc-button" href={runeHref('duel/one')}>符文抽籤</a>
           <a className="loc-button" href={runeHref('list')}>符文圖鑑</a>
+          <a className="loc-button" href={runeHref('game')}>符文遊戲</a>
           <a className="loc-button" href={runeHref('duel/daily')}>每日符文抽牌</a>
           <a className="loc-button" href={runeHref('daily/log')}>每日符文紀錄</a>
           <a className="loc-button" href={runeHref('daily/trend')}>每日符文趨勢</a>

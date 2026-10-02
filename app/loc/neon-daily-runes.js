@@ -1,5 +1,5 @@
-import {neonAuthRelation} from '../loc/neon-client';
-import {selectAllNeonRows,selectNeonRows} from '../loc/neon-query';
+import {neonAuthRelation} from './neon-client';
+import {selectAllNeonRows,selectNeonRows} from './neon-query';
 
 
 async function attachRuneMeta(rows){
