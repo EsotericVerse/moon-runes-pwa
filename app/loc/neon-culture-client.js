@@ -7,7 +7,7 @@ import {workDisplayText} from '../modular-v2/work-display-model.v2';
 import {resolveGalaxyExternalLinks,selectCategoryCounts,selectDailyCategoryCounts,selectSourceCatalog,selectSourceDaily} from './aggregate-query';
 import {selectNeonCount,selectNeonRows} from './neon-query';
 import {publicContentFilters} from './content-policy';
-import {mappedScopeTable,normalizeDataScopeId,resolveScopeTables} from './scope-table-mapping';
+import {mappedScopeTable,resolveScopeTables} from './scope-table-mapping';
 import {selectManagedScopes} from './scope-table-mapping';
 
 
@@ -108,7 +108,7 @@ function openPeriodRangeFromRows(scopeId,rows=[]){
   if(!period)return null;
   return {
     ...period,
-    scope_id:normalizeDataScopeId(scopeId),
+    scope_id:runtimeScopeId(scopeId),
     display_label:period.title||period.period||'時期',
     derived_from:'anchor_pair.after=0'
   };
@@ -126,7 +126,7 @@ function locSourceCategory(value=''){
 function buildLocScopeDistribution(rows=[]){
   const combined=new Map();
   for(const row of rows){
-    const scope=normalizeDataScopeId(row?.scope_id||'');
+    const scope=runtimeScopeId(row?.scope_id||'');
     const day=String(row?.day||'').slice(0,10);
     if(!scope||!day)continue;
     const key=scope+'|'+day;
@@ -191,6 +191,8 @@ function mondayOf(value){
   date.setUTCDate(date.getUTCDate()+(day===0?-6:1-day));
   return date.toISOString().slice(0,10);
 }
+function runtimeScopeId(scopeId){return String(scopeId||'')==='lrunes'?'lunarunes':String(scopeId||'');}
+function dataScopeId(scopeId){return runtimeScopeId(scopeId)==='lunarunes'?'lrunes':runtimeScopeId(scopeId);}
 function periodRows(rows){
   return (rows||[]).map(row=>({
     era_id:row.era_id||row.entry_key,period:row.period||row.entry_key||'',name:row.entry_name||row.title||row.entry_key,
@@ -208,7 +210,7 @@ function timelineItems(rows){
     const start=row.start_date||startAnchor?.start_date||null;
     const end=row.end_date||endAnchor?.start_date||null;
     const kindLabel={anchor:'定錨點',event:'事件',period:'時期'}[row.entry_type];
-    const scopeId=normalizeDataScopeId(row.scope_id);
+    const scopeId=runtimeScopeId(row.scope_id);
     return {...row,scope_id:scopeId,id:`${scopeId}:${row.entry_key}`,entry_id:`${scopeId}:${row.entry_key}`,start_date:start,end_date:end,date:start||end,
       display_label:row.title,group_label:`${row.scope_id} · ${kindLabel}`};
   }).filter(row=>row.start_date||(row.open_start&&row.end_date))
@@ -256,8 +258,8 @@ function cultureParts(scopeContext,runtimeId){
 }
 
 export async function selectScopeCultureData(scopeId){
-  const id=normalizeDataScopeId(scopeId);
-  const dataId=normalizeDataScopeId(scopeId);
+  const id=runtimeScopeId(scopeId);
+  const dataId=dataScopeId(scopeId);
   if(!dataId)throw new Error('資料設定無效');
 
   if(dataId==='loc'){
@@ -277,7 +279,7 @@ export async function selectScopeCultureData(scopeId){
       const context=await selectCultureTimeRows(scope.id,time,scope.birthday);
       return {
         dataId:scope.id,
-        runtimeId:normalizeDataScopeId(scope.id),
+        runtimeId:runtimeScopeId(scope.id),
         galaxy,
         galaxyMedia,
         context,
@@ -347,7 +349,7 @@ export async function selectScopeCultureData(scopeId){
 
   const tables=await resolveScopeTables(dataId);
   const scopeContext=await selectCultureTimeRows(dataId,tables.time);
-  const runtimeId=normalizeDataScopeId(dataId);
+  const runtimeId=runtimeScopeId(dataId);
   const parts=cultureParts(scopeContext,runtimeId);
   const openRange=openPeriodRangeFromRows(dataId,scopeContext);
   return {
@@ -365,7 +367,7 @@ export async function selectScopeCultureData(scopeId){
 
 export async function selectScopePeriodSourceSnapshot(scopeId,{startDate='',endDate=null}={}){
   if(!scopeId)throw new Error('scopeId is required');
-  const tables=await resolveScopeTables(normalizeDataScopeId(scopeId));
+  const tables=await resolveScopeTables(dataScopeId(scopeId));
   const [catalog,daily,mediaCatalog,mediaDaily]=await Promise.all([
     selectSourceCatalog({scopeId,startDate,endDate:endDate||'',limit:NEON_QUERY_BATCH_SIZE}),
     selectSourceDaily({scopeId,startDate,endDate:endDate||''}),
@@ -490,7 +492,7 @@ async function selectLightweightIndexPage(table,{columns,filters=[],orders=[],li
 
 export async function selectScopePeriodWorkIndex(scopeId,{startDate='',endDate=null,sourceName='',sourceNames=[],mediaTypes=[],limit=10,offset=0,cursor=null}={}){
   if(!scopeId)throw new Error('scopeId is required');
-  const tables=await resolveScopeTables(normalizeDataScopeId(scopeId));
+  const tables=await resolveScopeTables(dataScopeId(scopeId));
   const rawSources=[...new Set((sourceNames||[]).map(value=>String(value||'').trim()).filter(Boolean))];
   const rawMedia=[...new Set((mediaTypes||[]).map(value=>String(value||'').trim()).filter(Boolean))];
   const pageSize=Math.max(1,Math.floor(Number(limit)||10));
@@ -581,7 +583,7 @@ export async function selectScopePeriodWorkDetails(scopeId,{items=[]}={}){
   if(!scopeId)throw new Error('scopeId is required');
   const source=Array.isArray(items)?items:[];
   if(!source.length)return {rows:[],hasMore:false};
-  const tables=await resolveScopeTables(normalizeDataScopeId(scopeId));
+  const tables=await resolveScopeTables(dataScopeId(scopeId));
   const galaxyIds=[...new Set(source.filter(row=>row?.entry_type==='work').map(row=>String(row?.uid||row?.entry_id||'').trim()).filter(Boolean))];
   const mediaIds=[...new Set(source.filter(row=>row?.entry_type==='media_metadata').map(row=>String(row?.media_id||row?.entry_id||'').trim()).filter(Boolean))];
 
@@ -614,7 +616,7 @@ export async function selectScopePeriodWorkDetails(scopeId,{items=[]}={}){
     entry_id:row.uid,
     entry_type:'work',
     group_label:String(row.source_name||''),
-    scope_id:normalizeDataScopeId(scopeId),
+    scope_id:runtimeScopeId(scopeId),
     links:Array.isArray(row.resolved_links)?row.resolved_links:[]
   }]));
   const mediaById=new Map((mediaResult.rows||[]).map(row=>[String(row.media_id),{
@@ -631,7 +633,7 @@ export async function selectScopePeriodWorkDetails(scopeId,{items=[]}={}){
     description:mediaMetadataDescription(row),
     media_metadata_text:mediaMetadataDescription(row),
     group_label:String(row.media_type||''),
-    scope_id:normalizeDataScopeId(scopeId),
+    scope_id:runtimeScopeId(scopeId),
     links:row.url&&/^https?:\/\//i.test(String(row.url))
       ?[{id:'media:'+String(row.media_id),href:row.url,label:'媒體連結'}]
       :[]
