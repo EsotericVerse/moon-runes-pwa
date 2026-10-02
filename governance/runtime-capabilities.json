@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "updated_at": "2026-10-02",
+  "purpose": "Machine-readable Current runtime capability governance. This registry governs implementation rights only; it is not a corpus, route, Scope mapping, permission or Canon data authority.",
+  "capabilities": {
+    "flexsearch_uid_cache_table": {
+      "status": "protected",
+      "owner": "FlexSearch lexical/keyword workflows",
+      "right": "FlexSearch may use a Neon cache table for transient UID working sets used by keyword, keyword-ratio, autocomplete, repeated local lexical matching and related statistics workflows.",
+      "authority": false,
+      "canonical_content_allowed": false,
+      "allowed_payload": [
+        "uid",
+        "scope_id",
+        "cache_name",
+        "working-set metadata"
+      ],
+      "must_not_be_removed_as_duplicate_authority": true,
+      "removal_requires_explicit_governance_change": true,
+      "notes": "A UID working-set cache is an execution aid, not a second corpus authority. Refactors, cleanup passes, Neon-first rules and anti-duplication rules must preserve this capability."
+    }
+  }
+}
