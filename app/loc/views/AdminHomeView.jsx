@@ -2,8 +2,7 @@
 
 import {UI_COPY} from '../../i18n/ui-copy';
 
-import {useEffect,useMemo,useState} from 'react';
-import Select from 'react-select';
+import {useEffect,useState} from 'react';
 import {SCOPES_V2} from '../../modular-v2/scope-registry.v2';
 import {THEME_SLOTS_V2} from '../../modular-v2/theme-registry.v2';
 import {useNeonAccount} from '../use-neon-account';
@@ -97,8 +96,6 @@ function ThemeOverview(){
 export default function AdminHomeView(){
   const account=useNeonAccount();
   const [section,setSection]=useState('scopes');
-  const selected=useMemo(()=>ADMIN_OPTIONS.find(option=>option.value===section)||ADMIN_OPTIONS[0],[section]);
-
   if(account.loading||account.permissionLoading)return <section className="loc-view"><div className="loc-card">{UI_COPY.admin.checking}</div></section>;
   if(!account.user)return <Login account={account}/>;
   if(!account.canManageGlobalSync())return <section className="loc-view">
@@ -113,15 +110,9 @@ export default function AdminHomeView(){
       <p>先保持簡單；Scope 的完整管理仍由各 Scope 自己負責。</p>
       <div className="scope-v2-management-select">
         <label htmlFor="admin-management-section">{UI_COPY.admin.item}</label>
-        <Select
-          inputId="admin-management-section"
-          className="scope-v2-react-select"
-          classNamePrefix="scope-v2-react-select"
-          unstyled
-          options={ADMIN_OPTIONS}
-          value={selected}
-          onChange={option=>option?.value&&setSection(option.value)}
-        />
+        <select id="admin-management-section" className="scope-v2-select" value={section} onChange={event=>setSection(event.target.value)}>
+          {ADMIN_OPTIONS.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}
+        </select>
       </div>
       <p><button type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button></p>
     </header>
