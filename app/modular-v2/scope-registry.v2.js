@@ -13,14 +13,12 @@ export const FEATURES_V2=Object.freeze([
 export const SCOPES_V2=Object.freeze({
   loc:Object.freeze({
     id:'loc',
-    scopeType:'domain',
     domain:'loc.lo3rwang.cc',
     label:UI_COPY.scope.loc.label,
   }),
 
   lunarunes:Object.freeze({
     id:'lunarunes',
-    scopeType:'domain',
     domain:'lrunes.lo3rwang.cc',
     label:'月之符文',
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'}),
@@ -28,15 +26,12 @@ export const SCOPES_V2=Object.freeze({
 
   lo3rwang:Object.freeze({
     id:'lo3rwang',
-    scopeType:'directory',
-    domain:null,
     label:UI_COPY.scope.author.label,
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'}),
   }),
 
   admin:Object.freeze({
     id:'admin',
-    scopeType:'domain',
     domain:'admin.lo3rwang.cc',
     label:UI_COPY.scope.admin.label,
   })
@@ -97,9 +92,9 @@ export function scopeOriginV2(scopeId){
   return host?`https://${host}`:'';
 }
 
-export function scopeBaseHrefV2(scopeId){
+function scopeBaseHrefV2(scopeId){
   const scope=getScopeV2(scopeId);
-  if(scope.scopeType==='directory'&&scope.mount){
+  if(scope.mount){
     return `https://${scope.mount.host}${cleanPath(scope.mount.path)}`;
   }
   return scopeOriginV2(scopeId);
