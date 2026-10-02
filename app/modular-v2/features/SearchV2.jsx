@@ -15,7 +15,6 @@ import {scopeHrefV2} from '../scope-registry.v2';
 import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation.v2';
 import {featureDataErrorMessage} from '../feature-data-state.v2';
 import ContentEditorV2 from '../ContentEditorV2';
-import SearchHighlightV2 from '../SearchHighlightV2';
 import {resolveGalaxyExternalLinks,selectGalaxyContent,selectGalaxyIdentity} from '../../loc/aggregate-query';
 import {selectManagedScopes} from '../../loc/scope-table-mapping';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model.v2';
@@ -24,6 +23,21 @@ import IncrementalListV2 from '../IncrementalListV2';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import {applyNeonFilters} from '../../loc/neon-query';
 
+
+function escapeSearchRegExp(value){
+  return String(value||'').replace(/[.*+?^\${}()|[\]\\]/g,'\\async function selectNeonRowById');
+}
+function highlightSearchText(text='',query=''){
+  const source=String(text||''),raw=String(query||'').trim();
+  if(!source||!raw)return source;
+  const terms=[...new Set([raw,...raw.split(/\s+/g)].map(item=>item.trim()).filter(Boolean))].sort((a,b)=>b.length-a.length);
+  const pattern=new RegExp('('+terms.map(escapeSearchRegExp).join('|')+')','giu');
+  const normalized=new Set(terms.map(term=>term.normalize('NFKC').toLocaleLowerCase('zh-Hant')));
+  return source.split(pattern).map((part,index)=>{
+    const key=part.normalize('NFKC').toLocaleLowerCase('zh-Hant');
+    return normalized.has(key)?<mark className="scope-v2-search-highlight" key={index}>{part}</mark>:part;
+  });
+}
 
 async function selectNeonRowById(table,{idColumn,id,columns}={}){
   const {data,error}=await neonAuthRelation(table).select(columns).eq(idColumn,String(id)).limit(1);
@@ -349,7 +363,7 @@ export default function SearchV2(){
           source={row.source}
           scopeId={row.scopeId}
           date={row.date}
-          body={<SearchHighlightV2 text={row.snippet} query={matchedQueryRef.current}/>}
+          body={highlightSearchText(row.snippet,matchedQueryRef.current)}
           hidden={false}
           relationLinks={row.relationLinks||[]}
           links={row.links||[]}
