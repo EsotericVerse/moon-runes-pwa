@@ -21,14 +21,10 @@ export function resolveGalaxyTitle(title,content){
   return Array.from(text).filter((_,index)=>index<12).join('');
 }
 
-export function isReferenceOnlyResource(row){
-  return row?.reference_only===true;
-}
 
 export function publicContentFilters(filters=[]){
   return [
     ...(Array.isArray(filters)?filters:[]),
-    {column:'reference_only',operator:'eq',value:false},
     {column:'content',operator:'neq',value:''}
   ];
 }
