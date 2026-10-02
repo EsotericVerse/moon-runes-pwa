@@ -1,7 +1,6 @@
 'use client';
 
 import RuneCardInfo from './RuneCardInfo';
-import RuneSingleReading from './RuneSingleReading';
 import {RUNE_DRAW_MODES} from './rune-draw-modes.mjs';
 import {scopeHrefV2} from '../modular-v2/scope-registry.v2';
 
@@ -15,6 +14,14 @@ function runeEtcText(card,type,direction){
 }
 function directionText(card,direction){
   return runeEtcText(card,'direction',direction)||String(card?.rune_description||'').trim();
+}
+function lotSections(card,direction){
+  const text=runeEtcText(card,'lots',direction);
+  if(!text)return [];
+  return ['愛情','事業','關係','健康'].map(label=>{
+    const match=text.match(new RegExp(label+'：\\s*([^\\n]*?)(?=(?:愛情|事業|關係|健康)：|$)'));
+    return {label,text:String(match?.[1]||'').trim().replace(/[。；]+$/,'')||'資訊不足'};
+  });
 }
 function dailySections(card,direction){
   const raw=runeEtcText(card,'daily',direction)||directionText(card,direction);
@@ -57,6 +64,7 @@ export default function RuneSingleDailySurface({
   const directionIndex=drawnCard?Number(draw?.directionIndexes?.[0]??0):0;
   const waiting=ritualStep>=0;
   const dailyItems=drawnCard&&isDaily?dailySections(drawnCard,displayDirection):[];
+  const singleItems=drawnCard&&!isDaily?lotSections(drawnCard,displayDirection):[];
 
   return <>
     <section className="loc-card runes-single-daily-stage" id="draw" data-draw-mode={modeKey}>
@@ -83,7 +91,13 @@ export default function RuneSingleDailySurface({
           {!waiting&&drawnCard&&!isDaily?<>
             <p className="loc-eyebrow">單卡籤詩</p>
             <h2>{drawnCard.rune_name} · {displayDirection}</h2>
-            <RuneSingleReading card={drawnCard} direction={displayDirection} bubbleLayout/>
+            <p className="runes-reading-lead">
+              <strong>占卜結論｜{drawnCard.rune_name}・{displayDirection}</strong>
+              <span>{directionText(drawnCard,displayDirection)||'目前沒有這個位向的符文說明。'}</span>
+            </p>
+            <div className="home-draw-bubbles" aria-label="單卡籤詩分析">
+              {singleItems.map(item=><div className="loc-bubble" key={item.label}><strong>{item.label}</strong><p>{item.text}</p></div>)}
+            </div>
           </>:null}
 
           {!waiting&&drawnCard&&isDaily?<>
