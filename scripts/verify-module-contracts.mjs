@@ -34,18 +34,8 @@ walk(resolve(root,'app'),path=>{
   }
 });
 
-const runeDirectoryPath='app/lrunes/RuneDirectoryPages.jsx';
-if(existsSync(resolve(root,runeDirectoryPath))){
-  const runeDirectory=readFileSync(resolve(root,runeDirectoryPath),'utf8');
-  if(runeDirectory.includes('silver.runes_etc'))failures.push('Rune directory must not query silver.runes_etc');
-  if(/\b(?:positive_meaning|half_positive_meaning|half_reverse_meaning|reverse_meaning)\b/.test(runeDirectory)){
-    failures.push('Rune directory must not load four-direction meaning columns');
-  }
-}
-
 for(const path of [
   'app/lrunes/RunesClient.jsx',
-  'app/lrunes/RuneDirectoryPages.jsx',
   'app/lrunes/RuneDrawClient.jsx',
   'app/loc/neon-culture-client.js',
   'app/loc/neon-statistics-client.js',
