@@ -60,7 +60,7 @@ function nextRiverDay(value){
   return date.toISOString().slice(0,10);
 }
 export default function CultureV2(){
-  const {scopeId}=useScopeRuntimeV2();
+  const {scopeId,scope}=useScopeRuntimeV2();
   const account=useNeonAccount();
   const searchParams=useSearchParams();
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
@@ -85,22 +85,22 @@ export default function CultureV2(){
   const [editBusy,setEditBusy]=useState(false);
   const [editError,setEditError]=useState('');
 
+  const isAggregateScope=Boolean(scope?.aggregateChildren);
   const openRows=useMemo(()=>(query.data?.openRanges||[])
-    .filter(item=>scopeId==='loc'||String(item?.scope_id||'')===scopeId),[scopeId,query.data]);
+    .filter(item=>isAggregateScope||String(item?.scope_id||'')===scopeId),[isAggregateScope,scopeId,query.data]);
   const openByScope=useMemo(()=>new Map(openRows.map(item=>[String(item.scope_id||''),item])),[openRows]);
 
   const allPeriods=useMemo(()=>sortPeriods(query.data?.eras?.eras||[]),[query.data]);
-  const isLoc=scopeId==='loc';
   const classificationScope=scopeId;
   const scopeData=query.data?.scope||null;
-  const primaryPeriods=isLoc?[]:allPeriods.filter(item=>String(item?.scope_id||'')===scopeId);
-  const openPeriod=isLoc?null:(openByScope.get(scopeId)||null);
+  const primaryPeriods=isAggregateScope?[]:allPeriods.filter(item=>String(item?.scope_id||'')===scopeId);
+  const openPeriod=isAggregateScope?null:(openByScope.get(scopeId)||null);
   const allTimePeriod=useMemo(()=>periodRange(primaryPeriods,classificationScope),[primaryPeriods,classificationScope]);
   useEffect(()=>{
-    if(isLoc)return;
+    if(isAggregateScope)return;
     const preferred=periodKey(openPeriod)||periodKey(primaryPeriods.at(-1))||'all';
     setSelectedPeriodKey(preferred);
-  },[scopeId,isLoc,openPeriod?.period,openPeriod?.start_date,primaryPeriods.length]);
+  },[scopeId,isAggregateScope,openPeriod?.period,openPeriod?.start_date,primaryPeriods.length]);
   const selectedWorkPeriod=selectedPeriodKey==='all'
     ?allTimePeriod
     :(primaryPeriods.find(item=>periodKey(item)===selectedPeriodKey)||openPeriod||allTimePeriod);
@@ -109,14 +109,14 @@ export default function CultureV2(){
   const requestedWindowStart=String(navigation.from||'').slice(0,10);
   const requestedWindowEnd=String(navigation.to||'').slice(0,10);
   useEffect(()=>{
-    if(isLoc||!requestedWindowStart||!primaryPeriods.length)return;
+    if(isAggregateScope||!requestedWindowStart||!primaryPeriods.length)return;
     const matched=primaryPeriods.find(item=>{
       const start=String(item?.start_date||'').slice(0,10);
       const end=String(item?.end_date||'9999-12-31').slice(0,10);
       return (!start||requestedWindowStart>=start)&&requestedWindowStart<=end;
     });
     if(matched)setSelectedPeriodKey(periodKey(matched));
-  },[isLoc,requestedWindowStart,primaryPeriods]);
+  },[isAggregateScope,requestedWindowStart,primaryPeriods]);
 
   const sourceSnapshotQuery=useQuery({
     queryKey:['culture-period-source-snapshot',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
@@ -124,7 +124,7 @@ export default function CultureV2(){
       startDate:selectedWorkPeriod?.start_date,
       endDate:selectedWorkPeriod?.end_date
     }),
-    enabled:!isLoc&&Boolean(scopeData),
+    enabled:!isAggregateScope&&Boolean(scopeData),
     staleTime:5*60_000
   });
 
@@ -141,7 +141,7 @@ export default function CultureV2(){
       selectedCategory||'all'
     ].join('|'),
     pageSize:DEFAULT_LIST_BATCH_SIZE,
-    enabled:!isLoc&&Boolean(scopeData)&&(!selectedCategory||Boolean(selectedGroup)),
+    enabled:!isAggregateScope&&Boolean(scopeData)&&(!selectedCategory||Boolean(selectedGroup)),
     loadPage:async(cursor,limit)=>{
       const indexPage=await selectScopePeriodWorkIndex(scopeData,{
         startDate:selectedWorkPeriod?.start_date||'',
@@ -186,7 +186,7 @@ export default function CultureV2(){
 
 
   const timelineItems=useMemo(()=>
-    (query.data?.timelineItems||[]).filter(item=>scopeId==='loc'||item.scope_id===scopeId)
+    (query.data?.timelineItems||[]).filter(item=>isAggregateScope||item.scope_id===scopeId)
   ,[query.data,scopeId]);
   const locSourceRiverItems=useMemo(()=>query.data?.sourceRiverItems||[],[query.data]);
   const locSourceGroups=useMemo(()=>query.data?.sourceGroups||[],[query.data]);
@@ -275,7 +275,7 @@ export default function CultureV2(){
     }
     return rows;
   },[locScopeDistributionItems,locIntersectionScopeIds,locDistributionStart]);
-  const hasTimelineSurface=isLoc?Boolean(locSourceRiverItems.length):Boolean(timelineItems.length||selectedWorkPeriod?.start_date);
+  const hasTimelineSurface=isAggregateScope?Boolean(locSourceRiverItems.length):Boolean(timelineItems.length||selectedWorkPeriod?.start_date);
 
   const classificationBuckets=sourceSnapshotQuery.data?.buckets||[];
 
@@ -439,7 +439,7 @@ export default function CultureV2(){
       {!query.isPending&&!query.error&&hasTimelineSurface?<>
 
 
-            {isLoc?<>
+            {isAggregateScope?<>
 
               <section className='scope-v2-card scope-v2-culture-classification-river scope-v2-loc-time-river'>
                 <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
