@@ -14,6 +14,13 @@ export const SCOPES_V2=Object.freeze({
     domain:'loc.lo3rwang.cc',
     label:UI_COPY.scope.loc.label,
     default:true,
+    aggregateChildren:true,
+    featureSubtitles:Object.freeze({
+      statics:UI_COPY.scope.loc.statics,
+      culture:UI_COPY.scope.loc.culture,
+      governance:UI_COPY.scope.loc.governance,
+      search:UI_COPY.scope.loc.search
+    }),
     nav:Object.freeze({position:'after',order:2,label:UI_COPY.nav.home}),
     theme:Object.freeze({mode:'auto'})
   }),
@@ -23,6 +30,12 @@ export const SCOPES_V2=Object.freeze({
     domain:'lrunes.lo3rwang.cc',
     label:'月之符文',
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'}),
+    featureSubtitles:Object.freeze({
+      statics:'查看月之符文相關資料的數量、來源與時間變化。',
+      culture:'把月之符文相關紀錄放回時間順序，觀察不同時期的變化。',
+      governance:'說明月之符文的使用原則、權利邊界與管理方式。',
+      search:'從符文名稱、關鍵字或相關文字找到對應內容。'
+    }),
     nav:Object.freeze({position:'before',order:1,label:UI_COPY.nav.lunarunes}),
     theme:Object.freeze({mode:'fixed',themeId:'theme-5'}),
     searchKind:'runes'
@@ -31,6 +44,7 @@ export const SCOPES_V2=Object.freeze({
   lo3rwang:Object.freeze({
     id:'lo3rwang',
     label:UI_COPY.scope.author.label,
+    featureSubtitles:Object.freeze({search:UI_COPY.scope.author.search}),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'}),
     nav:Object.freeze({position:'after',order:1,label:UI_COPY.nav.author}),
     theme:Object.freeze({mode:'fixed',themeId:'theme-2'})
