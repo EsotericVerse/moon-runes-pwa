@@ -8,18 +8,14 @@ import {getScope,scopeHref} from '../modular/scope-registry';
 import ManagementArticlePublisher from './ManagementArticlePublisher';
 import ManagementImportPanel from './ManagementImportPanel';
 import ManagementDataPanel from './ManagementDataPanel';
-import RuneManagementPanel from '../lrunes/RuneManagementPanel';
 import ScopeGroupManagement from './ScopeGroupManagement';
 import CultureTimelineEditor from '../modular/features/CultureTimelineEditor';
 
-const LOGIN_COPY={
-  loc:{eyebrow:'LOC Group Management',title:'LOC Scope Group 管理登入',description:'管理 LOC Scope Group 的聚合呈現；系統級設定仍在 Admin。'},
-  lrunes:{eyebrow:'LunaRunes Management',title:'LunaRunes 管理登入',description:'管理符號式語言的作品、時期、風格標籤、關鍵詞與每日符文。'},
-  lo3rwang:{eyebrow:'Personal Management',title:'lo3rwang 個人管理登入',description:'管理個人作品、來源、時期、風格標籤與匯入。'}
-};
-
-function LoginScreen({scopeId,account}){
-  const copy=LOGIN_COPY[scopeId]||LOGIN_COPY.lo3rwang;
+function LoginScreen({scope,account}){
+  const group=Boolean(scope.aggregateChildren);
+  const copy=group
+    ?{eyebrow:'Scope Group Management',title:scope.label+' Scope Group 管理登入',description:'管理聚合 Scope 的公開呈現；系統級設定仍在 Admin。'}
+    :{eyebrow:'Scope Management',title:scope.label+' 管理登入',description:'管理此 Scope 的作品、時期、風格標籤與匯入。'};
   return <section className="loc-view">
     <header className="loc-hero"><p className="loc-eyebrow">{copy.eyebrow}</p><h1>{copy.title}</h1><p>{copy.description}</p></header>
     <section className="loc-card">
@@ -44,8 +40,8 @@ function LivePreview({scopeId}){
   </section>;
 }
 
-function sectionOptions(scopeId){
-  if(scopeId==='loc')return [{value:'preview',label:'公開預覽'},{value:'group',label:'Scope Group'}];
+function sectionOptions(scope,extraSections=[]){
+  if(scope.aggregateChildren)return [{value:'preview',label:'公開預覽'},{value:'group',label:'Scope Group'},...extraSections];
   const options=[
     {value:'preview',label:'公開預覽'},
     {value:'data',label:UI_COPY.management.data},
@@ -57,20 +53,20 @@ function sectionOptions(scopeId){
   return options;
 }
 
-export default function GovernanceManagement(){
+export default function GovernanceManagement({extraSections=[]}){
   const account=useNeonAccount();
   const {scopeId}=useScopeRuntime();
   const scope=getScope(scopeId);
-  const options=useMemo(()=>sectionOptions(scopeId),[scopeId]);
+  const options=useMemo(()=>sectionOptions(scope,extraSections),[scope.id,scope.aggregateChildren,extraSections]);
   const [section,setSection]=useState('preview');
-  const canManage=scopeId==='loc'?account.canManageGlobalSync():account.canManageScopeSync(scopeId);
+  const canManage=scope.aggregateChildren?account.canManageGlobalSync():account.canManageScopeSync(scopeId);
 
   useEffect(()=>{
     if(!options.some(option=>option.value===section))setSection(options[0]?.value||'preview');
   },[scopeId,options,section]);
 
   if(account.loading||account.permissionLoading)return <section className="loc-view"><div className="loc-card">{UI_COPY.management.checking}</div></section>;
-  if(!account.user)return <LoginScreen scopeId={scopeId} account={account}/>;
+  if(!account.user)return <LoginScreen scope={scope} account={account}/>;
   if(!canManage)return <section className="loc-view">
     <header className="loc-hero"><p className="loc-eyebrow">{UI_COPY.management.eyebrow}</p><h1>{scope.label}管理</h1></header>
     <section className="loc-card"><p>{UI_COPY.management.permissionDenied}</p><button type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button></section>
@@ -79,7 +75,7 @@ export default function GovernanceManagement(){
   return <section className="loc-view scope-management-page">
     <header className="loc-hero">
       <p className="loc-eyebrow">{UI_COPY.management.eyebrow} · {scopeId}</p>
-      <h1>{scope.label}{scopeId==='loc'?' Scope Group':''}管理</h1>
+      <h1>{scope.label}{scope.aggregateChildren?' Scope Group':''}管理</h1>
       <p>{account.user.email||account.user.name||''}</p>
       <div className="scope-management-select">
         <label htmlFor="scope-management-section">{UI_COPY.management.item}</label>
@@ -88,17 +84,17 @@ export default function GovernanceManagement(){
         </select>
       </div>
       <div className="scope-preview-links">
-        {scopeId==='loc'?<a className="loc-button" href={scopeHref('admin')}>前往 Admin 系統設定</a>:null}
+        {scope.aggregateChildren?<a className="loc-button" href={scopeHref('admin')}>前往 Admin 系統設定</a>:null}
         <button className="loc-button" type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button>
       </div>
     </header>
 
     {section==='preview'?<LivePreview scopeId={scopeId}/>:null}
-    {section==='group'&&scopeId==='loc'?<ScopeGroupManagement/>:null}
-    {section==='data'&&scopeId!=='loc'?<ManagementDataPanel scopeId={scopeId}/>:null}
-    {section==='article'&&scopeId!=='loc'?<ManagementArticlePublisher scopeId={scopeId}/>:null}
-    {section==='import'&&scopeId!=='loc'?<ManagementImportPanel scopeId={scopeId}/>:null}
-    {section==='period'&&scopeId!=='loc'?<CultureTimelineEditor scopeId={scopeId}/>:null}
-    {section==='daily'&&scopeId==='lrunes'?<RuneManagementPanel/>:null}
+    {section==='group'&&scope.aggregateChildren?<ScopeGroupManagement/>:null}
+    {section==='data'&&!scope.aggregateChildren?<ManagementDataPanel scopeId={scopeId}/>:null}
+    {section==='article'&&!scope.aggregateChildren?<ManagementArticlePublisher scopeId={scopeId}/>:null}
+    {section==='import'&&!scope.aggregateChildren?<ManagementImportPanel scopeId={scopeId}/>:null}
+    {section==='period'&&!scope.aggregateChildren?<CultureTimelineEditor scopeId={scopeId}/>:null}
+    {extraSections.map(item=>{const ExtraView=item.render;return section===item.value&&ExtraView?<ExtraView key={item.value}/>:null;})}
   </section>;
 }
