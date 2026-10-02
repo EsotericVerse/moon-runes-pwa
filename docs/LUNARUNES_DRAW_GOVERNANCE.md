@@ -3,7 +3,7 @@
 ## Authority
 
 Rune identity 與 card fields：silver.runes。  
-Directional lots／daily text：silver.runes_etc。
+Directional lots、Situation 與 Daily text：silver.runes_etc。
 
 Draw UI 不保存第二份 Rune Canon。
 
@@ -38,9 +38,13 @@ DB code 1–4 僅是儲存形式；UI 可以依 locale 顯示 label，但不得�
 - selected direction
 - requested type
 
-例如 lots 只查 type=lots；Daily 只查 type=daily。不得為當次結果載入同一 Rune 其他三個方向，也不得 select all 後在 JS slice。
+例如 lots 只查 type=lots。Situation／Daily 必須再帶 current_moon，直接命中當次實際候選；不得把五個月相一次載入後再由 JS 篩選。
 
-多卡同樣逐張取得實際抽到的 direction text。
+Situation 候選固定以 (rune_id, dir, current_moon) 精準取得 sit_q／sit_a。64 Rune × 4 directions × 5 current moon = 1280 個候選組；Rune 自身 moon_phase 已隨 rune_id 固定，因此卡片月相與當前月相的交互由這個候選組承載。
+
+Daily 同樣以 (rune_id, dir, current_moon) 精準取得 sit_q／sit_a／daily_r／daily_g／daily_b。玄、命若沒有原始 Situation／Daily 母資料，不生成替代內容。
+
+多卡同樣只取得實際抽到的 Rune、direction 與當前月相資料。
 
 ## Grammar
 
@@ -60,9 +64,9 @@ A 與 B 各自只使用實際抽到的 direction data。
 
 ### Five cards
 
-**因為 1、2，但會有 3 的變化，所以 4、5。**
+結構固定為雙因 + 一個變數 + 雙果。
 
-結構是雙因 + 一個變數 + 雙果。
+1–2 是前段 x，4–5 是後段 y；第 3 張保留為變數卡，不硬塞進 x／y。五卡不強迫把五段 Situation 文字拼成一個假裝自然的長句。完整 Situation 原文保留展示，通用建議由 x／y 引擎判斷前後趨勢與總和。
 
 ### OW3gs
 
@@ -88,8 +92,23 @@ Daily 抽牌與 Daily record 分開：
 
 ## Moon phase
 
-卡片月相與真實月相分開保存。真實月相只能作次要時間情境，不覆蓋 Rune meaning、direction 或 spread Grammar。
+卡片月相與真實月相分開保存。Situation／Daily 的文字候選必須使用當次真實月相 current_moon 精準查詢；卡片月相由 Rune 本身 moon_phase 固定。月相交互不以額外生成文字替代原始母資料。
 
-## No numeric semantic score
+## X/Y guidance engine
 
-LunaRunes direction／spread reading 不以平均值、概率值或加權分數取代 Grammar。需要描述趨勢時，描述狀態變化與最後落點，不能把兩者壓成單一分數。
+x／y 只負責通用建議，不改寫 Rune Canon，也不取代 Situation 原文。
+
+每張卡的內部權重只使用已存在的 card_attr 與 direction：
+
+- card_attr：正面 = +1；中平 = 0；負面 = -1；未知 = 0。
+- direction：正位 = +1；半正位 = +0.5；半逆位 = -0.5；逆位 = -1。
+- 單卡 guidance weight = card_attr × direction。
+- 雙卡：x = card 1；y = card 2。
+- 三卡：x = card 1；card 2 是變數；y = card 3。
+- 五卡：x = cards 1–2 平均；card 3 是變數；y = cards 4–5 平均。
+- trend = y - x。
+- sum = x + y；overall = sum / 2。
+
+數值只在 runtime 內部分類成「轉強／持平／轉弱」與「偏正／中性／偏負」，UI 不需要顯示原始分數。愛情／事業／關係／健康只使用可重複的通用短建議，不假裝生成獨一無二的語意句。
+
+OW3gs 暫不套用 x／y 引擎，保留既有結構，直到其組合規則另行確認。
