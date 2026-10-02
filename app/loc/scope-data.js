@@ -1,0 +1,65 @@
+'use client';
+
+import {NEON_QUERY_BATCH_SIZE} from './query-contract.mjs';
+import {selectNeonRows} from './neon-query';
+
+export const MANAGE_TABLE='silver.manage';
+
+const SCOPE_ID_PATTERN=/^[a-z][a-z0-9]*$/;
+const TABLE_TOKEN_PATTERN=/^[a-z][a-z0-9_]*$/;
+
+function requiredToken(value,label){
+  const token=String(value||'').trim();
+  if(!TABLE_TOKEN_PATTERN.test(token))throw new Error('silver.manage '+label+' 設定無效');
+  return token;
+}
+
+export function scopeDataFromManageRows(rows=[]){
+  const scopes=new Map();
+  for(const row of Array.isArray(rows)?rows:[]){
+    const id=String(row?.id||'').trim();
+    if(!SCOPE_ID_PATTERN.test(id))continue;
+    const galaxySuffix=requiredToken(row?.galaxy,'galaxy');
+    const timeSuffix=requiredToken(row?.time,'time');
+    const next={
+      id,
+      role:String(row?.role||'').trim(),
+      birthday:String(row?.birthday||'').slice(0,10)||null,
+      galaxy:`silver.${id}_${galaxySuffix}`,
+      galaxyMedia:`silver.${id}_${galaxySuffix}_media`,
+      time:`silver.${id}_${timeSuffix}`
+    };
+    const current=scopes.get(id);
+    if(current&&(current.galaxy!==next.galaxy||current.time!==next.time)){
+      throw new Error('silver.manage Scope '+id+' 的 galaxy/time 設定不一致');
+    }
+    scopes.set(id,current
+      ?{...current,role:current.role==='admin'||next.role==='admin'?'admin':next.role,birthday:current.birthday||next.birthday}
+      :next);
+  }
+  return [...scopes.values()].sort((a,b)=>a.id.localeCompare(b.id));
+}
+
+export async function selectManagedScopes(){
+  const {rows}=await selectNeonRows(MANAGE_TABLE,{
+    columns:'id,role,galaxy,time,birthday',
+    filters:[{column:'role',operator:'in',value:['admin','scope']}],
+    orders:[{column:'id',ascending:true}],
+    limit:NEON_QUERY_BATCH_SIZE,
+    offset:0
+  });
+  return scopeDataFromManageRows(rows);
+}
+
+export async function selectManagedScope(scopeId){
+  const id=String(scopeId||'').trim();
+  if(!SCOPE_ID_PATTERN.test(id))throw new Error('Scope ID 無效');
+  const {rows}=await selectNeonRows(MANAGE_TABLE,{
+    columns:'id,role,galaxy,time,birthday',
+    filters:[{column:'id',operator:'eq',value:id},{column:'role',operator:'in',value:['admin','scope']}],
+    orders:[{column:'id',ascending:true}],
+    limit:NEON_QUERY_BATCH_SIZE,
+    offset:0
+  });
+  return scopeDataFromManageRows(rows)[0]||null;
+}
