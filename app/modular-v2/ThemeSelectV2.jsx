@@ -39,19 +39,19 @@ function scopeThemePolicy(scopeId='loc'){
   return SCOPE_THEME_POLICY[String(scopeId||'').trim()]||SCOPE_THEME_POLICY.loc;
 }
 
-export default function ThemeSelectV2({scopeId='loc',themeOverrides=null}){
+export default function ThemeSelectV2({scopeId='loc'}){
   const policy=scopeThemePolicy(scopeId);
   const fixedThemeId=policy.mode==='fixed'?policy.themeId:'';
   const [themeId,setThemeId]=useState(AUTO_THEME_ID);
   const [now,setNow]=useState(()=>new Date());
   const effectiveThemeId=fixedThemeId||(themeId===AUTO_THEME_ID?automaticThemeId(now):themeId);
-  const slot=useMemo(()=>getThemeSlotV2(effectiveThemeId,themeOverrides),[effectiveThemeId,themeOverrides]);
+  const slot=useMemo(()=>getThemeSlotV2(effectiveThemeId),[effectiveThemeId]);
 
   useEffect(()=>{
     const root=document.documentElement;
-    if(!themeOverrides&&root.dataset.themeId===slot.id)return;
+    if(root.dataset.themeId===slot.id)return;
     applyThemeV2(slot);
-  },[slot,scopeId,themeOverrides]);
+  },[slot,scopeId]);
 
   useEffect(()=>{
     if(fixedThemeId||themeId!==AUTO_THEME_ID)return undefined;
