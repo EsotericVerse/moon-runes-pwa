@@ -3,7 +3,7 @@
 import {UI_COPY} from '../i18n/ui-copy';
 
 import {useState} from 'react';
-import {neonAuthClient} from './neon-client';
+import {neonAuthRelation} from './neon-client';
 import {useNeonAccount} from './use-neon-account';
 import ContentEditorV2 from '../modular-v2/ContentEditorV2';
 import {createUid8} from './uid';
@@ -17,8 +17,7 @@ function targetIds(value){
 }
 
 async function insertNeonRows(table,rows){
-  const [schema,name]=String(table).split('.');
-  const {error}=await neonAuthClient.schema(schema).from(name).insert(rows);
+  const {error}=await neonAuthRelation(table).insert(rows);
   if(error)throw new Error(error.message||('Neon INSERT '+table+' failed'));
 }
 
