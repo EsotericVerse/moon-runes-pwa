@@ -119,6 +119,8 @@ Current Search 分成兩層：
 
 FlexSearch 不是第二份資料權威、不做 semantic rendering、不負責全 corpus 掃描，也不得取代 Neon 的精準 SQL 與分頁。
 
+FlexSearch 明確保留使用專用 Neon cache table 作為可重建暫存 working set 的權利，可用於關鍵詞分析、autocomplete、同頁重複比對與 Scope／Scope Group 的局部重用。此 cache 僅保存暫存索引／UID working set，不是 corpus、Canon、Scope mapping、ranking 或 permission authority；不得因 code review、cleanup、模組化或「禁止第二份 authority」而順手移除其 cache-table 能力。若要移除，必須是明確的架構決策。
+
 一般 Scope 不可在缺值時讀 LunaRunes keyword、positive_keywords、negative_keywords 或其他 Rune Canon 作 fallback。
 
 ## 9. LunaRunes structure
