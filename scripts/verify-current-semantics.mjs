@@ -19,7 +19,7 @@ if(!failures.length){
   for(const token of ["count:'exact',head:true",'.or(','.range(','searchGalaxyRows','selectSourceTrendRows'])if(!galaxy.includes(token))failures.push('Shared Galaxy query pipeline missing '+token);
   if(/flexsearch|new Index\(/i.test(galaxy))failures.push('Global Search must remain Neon-first.');
   const scopeData=read('app/loc/scope-data.js');
-  for(const token of ["MANAGE_TABLE='silver.manage'",'scopeDataFromManageRows','selectManagedScopes'])if(!scopeData.includes(token))failures.push('Scope data source missing '+token);
+  for(const token of ["MANAGE_TABLE='silver.manage'",'scopeDataFromManageRows','defaultScopeData','selectManagedScopes'])if(!scopeData.includes(token))failures.push('Scope data source missing '+token);
 }
 if(failures.length){
   console.error('[current-semantics] failures:\n'+failures.map(item=>'- '+item).join('\n'));
