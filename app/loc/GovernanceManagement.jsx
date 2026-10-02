@@ -5,7 +5,7 @@ import {UI_COPY} from '../i18n/ui-copy';
 import {useEffect,useMemo,useState} from 'react';
 import {useNeonAccount} from './use-neon-account';
 import {useScopeRuntimeV2} from '../modular-v2/use-scope-runtime.v2';
-import {getScopeV2} from '../modular-v2/scope-registry.v2';
+import {getScopeV2,scopeHrefV2} from '../modular-v2/scope-registry.v2';
 import ManagementArticlePublisher from './ManagementArticlePublisher';
 import ManagementImportPanel from './ManagementImportPanel';
 import ManagementDataPanel from './ManagementDataPanel';
