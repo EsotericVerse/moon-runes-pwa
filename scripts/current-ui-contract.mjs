@@ -2,7 +2,7 @@ import fs from 'node:fs';
 const read=path=>fs.readFileSync(path,'utf8');
 const sources={
   home:read('app/loc/views/AboutView.jsx'),
-  nav:read('app/GlobalNav.jsx')+read('app/modular-v2/ScopeNavV2.jsx'),
+  nav:read('app/modular-v2/ScopeNavV2.jsx'),
   registry:read('app/modular-v2/scope-registry.v2.js'),
   uiCopy:read('app/i18n/ui-copy.js'),
   layout:read('app/layout.jsx'),
