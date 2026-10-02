@@ -4,7 +4,9 @@ const EmailSchema=z.string().trim().toLowerCase().email();
 const ManageRoleSchema=z.enum(['admin','scope']);
 
 function normalizeScopeId(value){
-  return String(value||'').trim();
+  const id=String(value||'').trim();
+  if(id==='lunarunes'||id==='runes')return 'lrunes';
+  return id;
 }
 
 export function normalizeAuthEmail(value){
