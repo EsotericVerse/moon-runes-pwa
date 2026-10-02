@@ -17,7 +17,6 @@
 .scope-v2-search input{width:10rem;min-width:0;padding:.45rem .7rem;border:var(--scope-v2-border);border-radius:999px;background:var(--loc-panel);color:var(--scope-v2-text)}
 .scope-v2-management-select{display:grid;gap:.35rem;max-width:24rem;margin-top:1rem}
 .scope-v2-management-select>label{color:var(--scope-v2-muted);font-size:.82rem}
-.scope-v2-react-select__group-heading{padding:.4rem .7rem .2rem;color:var(--scope-v2-muted);font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
 .scope-v2-main{width:min(var(--scope-v2-max),calc(100% - 2rem));margin:0 auto;padding:clamp(1.2rem,4vw,3rem) 0 4rem}
 .scope-v2-page,.scope-v2-content,.scope-v2-list{display:grid;gap:var(--scope-v2-gap)}
 .scope-v2-grid-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--scope-v2-gap)}
@@ -85,23 +84,7 @@
 .scope-v2-stat-controls label{display:grid;gap:.35rem;min-width:10rem}
 .scope-v2-stat-controls label>span{color:var(--scope-v2-muted);font-size:.82rem}
 .scope-v2-select{padding:.55rem .75rem;border:var(--scope-v2-border);border-radius:999px;background:var(--loc-panel);color:var(--scope-v2-text)}
-.scope-v2-react-select-field{min-width:13rem}
-.scope-v2-react-select{position:relative;min-width:13rem}
-.scope-v2-react-select__control{min-height:2.45rem;padding:0 .3rem .05rem .75rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-sm);background:color-mix(in srgb,var(--loc-panel) 72%,transparent);color:var(--loc-text);box-shadow:inset 0 1px 0 rgb(255 255 255 / .018);cursor:pointer}
-.scope-v2-react-select__control--is-focused{outline:2px solid color-mix(in srgb,var(--loc-accent) 48%,transparent);outline-offset:2px}
-.scope-v2-react-select__value-container{padding:0;gap:.25rem}
-.scope-v2-react-select__input,.scope-v2-react-select__input:focus{min-height:0!important;width:auto!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;outline:0!important}
-.scope-v2-react-select__single-value,.scope-v2-react-select__input-container,.scope-v2-react-select__placeholder{color:var(--scope-v2-text)}
-.scope-v2-react-select__indicators{display:flex;align-items:center;color:var(--scope-v2-muted)}
-.scope-v2-react-select__indicator{display:flex;padding:.35rem}
-.scope-v2-react-select__indicator-separator{width:1px;height:1.1rem;background:color-mix(in srgb,var(--scope-v2-muted) 35%,transparent)}
-.scope-v2-react-select__menu{z-index:30;margin-top:.4rem;overflow:hidden;border:var(--scope-v2-border);border-radius:14px;background:var(--loc-panel);box-shadow:0 12px 30px rgb(0 0 0 / .18)}
-.scope-v2-react-select__menu-list{max-height:min(18rem,50vh)!important;overflow-y:auto!important;overscroll-behavior:contain;scrollbar-gutter:stable;padding:.35rem;-webkit-overflow-scrolling:touch;touch-action:pan-y}
-.scope-v2-react-select__option{padding:.55rem .7rem;border-radius:10px;color:var(--scope-v2-text);cursor:pointer}
-.scope-v2-react-select__option--is-focused{background:var(--loc-panel-2)}
-.scope-v2-react-select__option--is-selected{background:var(--loc-accent);color:var(--loc-panel);font-weight:700}
 
-@media (pointer:coarse){.scope-v2-react-select__control{min-height:44px!important}}
 
 .scope-v2-stat-tabs{margin:0 0 1rem}
 .scope-v2-stat-tabs a{padding:.45rem .8rem;border:var(--scope-v2-border);border-radius:999px;background:var(--loc-panel);color:var(--scope-v2-text);text-decoration:none}
