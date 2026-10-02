@@ -24,7 +24,7 @@ const VIEWS={
   governance:GovernanceV2,
   manage:ManagementView
 };
-const HOME_VIEWS={loc:AboutView,lunarunes:RunesHomeView,lo3rwang:AuthorHomeView,admin:AdminHomeView};
+const HOME_VIEWS={loc:AboutView,lrunes:RunesHomeView,lo3rwang:AuthorHomeView,admin:AdminHomeView};
 
 export default function LocApp({forcedView='home',forcedSection=null,forcedScope=null}){
   const {scopeId}=useScopeRuntimeV2();
