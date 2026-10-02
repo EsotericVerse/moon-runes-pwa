@@ -1,6 +1,6 @@
 # LOC Current Canon
 
-**Version:** 0.8.3.2-rc  
+**Version:** 0.8.4-rc  
 **Author:** Lucas Oscar Wang 政德
 
 ## 1. Fixed identity
