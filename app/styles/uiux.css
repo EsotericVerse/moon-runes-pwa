@@ -345,7 +345,7 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
 /* Buttons and controls */
 .loc-button,.loc-control,.scope-v2-tabs button,.scope-v2-stat-tabs button,
 .scope-v2-pagination-button,.scope-v2-search-form button,.scope-v2-keyword-batch-editor button,
-.scope-v2-media-meta-settings button,.runes-pager button{
+.scope-v2-media-meta-settings button{
   min-height:2.6rem;
   padding:.58rem .9rem;
   border:1px solid var(--loc-ui-hairline);
@@ -651,7 +651,7 @@ button,a,.loc-control,.loc-button,.scope-v2-local-menu a,
 /* Micro interaction — pointer devices only */
 @media (hover:hover) and (pointer:fine){
   .loc-button:hover,.loc-control:hover,.scope-v2-tabs button:hover,.scope-v2-stat-tabs button:hover,
-  .scope-v2-pagination-button:hover,.runes-pager button:hover{
+  .scope-v2-pagination-button:hover:hover{
     transform:translateY(-2px);
     border-color:var(--loc-accent-border);
     box-shadow:0 10px 26px rgb(0 0 0 / .12);
@@ -857,13 +857,13 @@ body{
 
 :where(.loc-button,.loc-control,.scope-v2-tabs button,.scope-v2-stat-tabs button,
 .scope-v2-pagination-button,.scope-v2-search-form button,.scope-v2-culture-source-button,
-.runes-group-choice,.runes-library-card,.runes-pager button):active{
+.runes-group-choice,.runes-library-card):active{
   transform:translateY(0) scale(.985);
 }
 
 :where(.loc-button,.loc-control,.scope-v2-tabs button,.scope-v2-stat-tabs button,
 .scope-v2-pagination-button,.scope-v2-search-form button,.scope-v2-culture-source-button,
-.runes-group-choice,.runes-library-card,.runes-pager button):disabled{
+.runes-group-choice,.runes-library-card):disabled{
   opacity:.52;
   box-shadow:none;
   transform:none;
@@ -902,7 +902,7 @@ body{
 @media (pointer:coarse){
   :where(.scope-v2-nav a,.scope-v2-nav-current,.loc-button,.loc-control,
   .scope-v2-tabs button,.scope-v2-stat-tabs button,.scope-v2-pagination-button,
-  .scope-v2-search-form button,.scope-v2-culture-source-button,.runes-pager button){
+  .scope-v2-search-form button,.scope-v2-culture-source-button){
     min-height:44px;
   }
 
