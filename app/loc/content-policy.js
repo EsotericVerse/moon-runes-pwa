@@ -10,9 +10,6 @@ export function normalizeRelationIds(value){
   return ids.length?ids:null;
 }
 
-function hasValidGalaxyContent(value){
-  return normalizeGalaxyContent(value).length>0;
-}
 
 export function requireGalaxyContent(value){
   const content=normalizeGalaxyContent(value);
