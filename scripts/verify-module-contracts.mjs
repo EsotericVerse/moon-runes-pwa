@@ -26,7 +26,7 @@ walk(resolve(root,'app'),path=>{
   if(/\bwork_count\b/.test(source))failures.push(file+': stored work_count is outside the Current live aggregate contract');
 });
 
-for(const path of ['app/lrunes/RunesClient.jsx','app/lrunes/RuneDrawClient.jsx','app/loc/model/rune-graph-core.js','app/loc/neon-culture-client.js','app/loc/neon-statistics-client.js','assets/lunarunes/cards/65_玄.png','assets/lunarunes/cards/66_命.png']){
+for(const path of ['app/lrunes/RunesClient.jsx','app/lrunes/RuneDrawClient.jsx','app/loc/neon-culture-client.js','app/loc/neon-statistics-client.js','assets/lunarunes/cards/65_玄.png','assets/lunarunes/cards/66_命.png']){
   if(!existsSync(resolve(root,path)))failures.push('missing Current module contract file: '+path);
 }
 
