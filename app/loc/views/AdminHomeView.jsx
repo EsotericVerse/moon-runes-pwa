@@ -6,7 +6,7 @@ import {SCOPES} from '../../modular/scope-registry';
 import {THEME_SLOTS} from '../../modular/theme-registry';
 import {useNeonAccount} from '../use-neon-account';
 import {
-  deleteNeonRows,insertNeonRows,neonAuthRelation,selectNeonAuthRow,updateNeonRows
+  deleteNeonRows,insertNeonRows,neonAuthRelation,selectNeonAuthRow,syncManageScopeRow,updateNeonRows
 } from '../neon-client';
 
 const ADMIN_OPTIONS=Object.freeze([
@@ -81,15 +81,10 @@ function ScopeOverview(){
       const galaxy=String(row.galaxy||'galaxy').trim()||'galaxy';
       const time=String(row.time||'time').trim()||'time';
       const birthday=row.birthday||null;
-      await updateNeonRows('silver.manage',{
-        role:row.role,galaxy,time,birthday
-      },{filters:[
-        {column:'id',operator:'eq',value:row.id},
-        {column:'email',operator:'eq',value:row.email}
-      ]});
-      await updateNeonRows('silver.manage',{
-        galaxy,time,birthday
-      },{filters:[{column:'id',operator:'eq',value:row.id}]});
+      await syncManageScopeRow(
+        {role:row.role,galaxy,time,birthday},
+        {scopeId:row.id,email:row.email}
+      );
       setStatus('Scope Mapping 已同步更新。');setRevision(value=>value+1);
     }catch(error){setStatus(error.message||'Mapping 儲存失敗。');}
   };
