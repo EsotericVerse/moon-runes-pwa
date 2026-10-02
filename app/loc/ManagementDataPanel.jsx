@@ -5,7 +5,6 @@ import {UI_COPY} from '../i18n/ui-copy';
 import {useEffect,useState} from 'react';
 import {neonAuthRelation} from './neon-client';
 import {useNeonAccount} from './use-neon-account';
-import {resolveScopeTables} from './scope-table-mapping';
 
 const PAGE_SIZE=20;
 
@@ -29,8 +28,9 @@ export default function ManagementDataPanel({scopeId}){
     (async()=>{
       setBusy(true);setError('');
       try{
-        const tables=await resolveScopeTables(scopeId,{email:account.email});
-        const table=kind==='media'?tables.galaxyMedia:tables.galaxy;
+        const scopeData=account.scopeDataFor(scopeId);
+        if(!scopeData)throw new Error('Scope data 未解析');
+        const table=kind==='media'?scopeData.galaxyMedia:scopeData.galaxy;
         let query=kind==='media'
           ?neonAuthRelation(table).select('media_id,title,media_type,createtime,galaxy_link',{count:'exact'})
           :neonAuthRelation(table).select('uid,title,source_name,createtime,UpdateTime,searchable',{count:'exact'});
@@ -45,7 +45,7 @@ export default function ManagementDataPanel({scopeId}){
       }finally{if(!cancelled)setBusy(false);}
     })();
     return()=>{cancelled=true;};
-  },[scopeId,account.email,kind,visibility,page]);
+  },[scopeId,account.email,account.scopes,kind,visibility,page]);
 
   if(!account.canManageScopeSync(scopeId))return null;
   const pageCount=Math.max(1,Math.ceil(total/PAGE_SIZE));
