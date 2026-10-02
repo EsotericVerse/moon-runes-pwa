@@ -163,7 +163,7 @@ function DrawSelection({activeKey}){
       {DRAW_TYPES.map(item=><a
         key={item.key}
         className="loc-bubble"
-        href={scopeHrefV2('lunarunes',item.path)}
+        href={scopeHrefV2('lrunes',item.path)}
         aria-current={item.key===activeKey?'page':undefined}
       >
         <strong>{item.label}</strong>
