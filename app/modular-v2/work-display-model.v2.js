@@ -9,7 +9,7 @@ export function workDisplayText(value){
   return decodeCultureText(value??'');
 }
 
-export function workDisplayTitle({
+function workDisplayTitle({
   title='',
   fallback=WORK_FALLBACK_TITLE
 }={}){
@@ -17,9 +17,6 @@ export function workDisplayTitle({
   return explicit||fallback;
 }
 
-export function workDisplaySource(row={},fallback=''){
-  return workDisplayText(row?.source_name||row?.group_label||fallback).trim();
-}
 
 
 export function workDisplayHeading(row={},{
