@@ -5,6 +5,7 @@ if(resolveScopeV2('unknown.example','/')!=='loc')failures.push('default Scope mu
 for(const [id,scope] of Object.entries(SCOPES_V2)){
   if(scope.id!==id)failures.push(id+' registry key/id mismatch');
   if(scope.domain&&resolveScopeV2(scope.domain,'/')!==id)failures.push(id+' domain resolution mismatch');
+  if(scope.domain&&!featureHrefV2(id,FEATURES_V2[0].id).startsWith('https://'+scope.domain+'/'))failures.push(id+' canonical domain mismatch');
   if(!scope.domain&&!scope.mount)failures.push(id+' route identity missing');
   if(scope.mount&&resolveScopeV2(scope.mount.host,scope.mount.path)!==id)failures.push(id+' mount resolution mismatch');
   for(const feature of FEATURES_V2){
