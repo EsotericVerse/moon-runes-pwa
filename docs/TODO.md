@@ -13,6 +13,12 @@
 - [ ] 以大型 corpus 進行 Search／Culture／Statistics stress test；維持精準 query + pagination。
 - [ ] 統一 Culture／Statistics／Search incremental loading contract。
 
+## 0.9 Scope Group
+
+- [ ] 以 Current Scope mapping 為基礎建立 Scope Group；不新增第二套 table resolver。
+- [ ] Search／Statistics／Culture 以 Scope Group 組合多 Scope，維持各 Scope 精準 query + pagination。
+- [ ] Audit 對新增 Scope／Scope Group 使用同一 resolver contract，不新增具名 Scope table 清單。
+
 ## 1.0
 
 - [ ] 整合既有來源中的 image multimedia。
