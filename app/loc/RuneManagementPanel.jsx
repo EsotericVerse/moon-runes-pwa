@@ -149,7 +149,7 @@ export default function RuneManagementPanel(){
   const [dailySupplement,setDailySupplement]=useState(null);
   const [status,setStatus]=useState('');
   const [loading,setLoading]=useState(true);
-  const canManage=account.canManageScopeSync('lunarunes');
+  const canManage=account.canManageScopeSync('lrunes');
 
   async function reloadRecords(){
     const today=todayKey();
