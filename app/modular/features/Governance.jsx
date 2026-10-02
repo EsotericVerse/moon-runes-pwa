@@ -2,7 +2,7 @@
 
 import {UI_COPY} from '../../i18n/ui-copy';
 
-import FeaturePage from '../FeaturePage';
+import {FeaturePage} from '../ui';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {getScope,scopeHref} from '../scope-registry';
 import {useNeonAccount} from '../../loc/use-neon-account';
