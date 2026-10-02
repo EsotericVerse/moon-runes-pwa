@@ -27,7 +27,7 @@ if(!failures.length){
   if(!flexCache||flexCache.status!=='protected')failures.push('FlexSearch UID cache-table capability must remain protected');
   if(flexCache?.authority!==false||flexCache?.canonical_content_allowed!==false)failures.push('FlexSearch UID cache-table must remain non-authoritative and non-canonical');
   if(flexCache?.must_not_be_removed_as_duplicate_authority!==true||flexCache?.removal_requires_explicit_governance_change!==true)failures.push('FlexSearch UID cache-table removal protection missing');
-  const runtimeContracts=JSON.parse(read('governance/runtime-contracts.json'));
+  const runtimeContracts=JSON.parse(read('governance/runtime-capabilities.json'));
   const flexCacheContract=(runtimeContracts.contracts||[]).find(item=>item.id==='flexsearch-cache-table');
   if(!flexCacheContract)failures.push('Runtime governance missing FlexSearch cache-table contract');
   else{
@@ -44,4 +44,4 @@ if(failures.length){
   console.error('[current-semantics] failures:\n'+failures.map(item=>'- '+item).join('\n'));
   process.exit(1);
 }
-console.log('[current-semantics] Current identity, daily trend, Neon-first Search and FlexSearch cache-table governance contracts verified');
+console.log('[current-semantics] Current identity, daily trend, Neon-first Search and protected FlexSearch UID cache capability verified');
