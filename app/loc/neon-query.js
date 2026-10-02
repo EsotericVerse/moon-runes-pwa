@@ -5,11 +5,11 @@ import {NEON_QUERY_BATCH_SIZE} from './query-contract.mjs';
 
 import {neonPublicClient} from './neon-client';
 
-function relation(table){
+export function neonPublicRelation(table){
   const [schema,name]=String(table).split('.');
   return neonPublicClient.schema(schema).from(name);
 }
-function applyFilters(query,filters=[]){
+export function applyNeonFilters(query,filters=[]){
   for(const filter of filters){
     query=filter.operator==='in'
       ?query.in(filter.column,filter.value)
@@ -17,7 +17,7 @@ function applyFilters(query,filters=[]){
   }
   return query;
 }
-function applyOrders(query,orders=[]){
+export function applyNeonOrders(query,orders=[]){
   for(const order of orders){
     query=query.order(order.column,{
       ascending:order.ascending??true,
@@ -28,8 +28,8 @@ function applyOrders(query,orders=[]){
 }
 
 export async function selectNeonCount(table,{filters=[],orFilter=''}={}){
-  let query=relation(table).select('item_count:count()').limit(1);
-  query=applyFilters(query,filters);
+  let query=neonPublicRelation(table).select('item_count:count()').limit(1);
+  query=applyNeonFilters(query,filters);
   if(orFilter)query=query.or(orFilter);
   const {data,error}=await query;
   if(error)throw new Error(error.message||('Neon COUNT '+table+' failed'));
@@ -50,10 +50,10 @@ export async function selectNeonRows(table,{
   const safeMaximum=Math.max(1,Math.floor(Number(maxLimit)||NEON_QUERY_BATCH_SIZE));
   const safeLimit=Math.max(1,Math.min(safeMaximum,Math.floor(Number(limit)||20)));
   const safeOffset=Math.max(0,Math.floor(Number(offset)||0));
-  let query=relation(table).select(columns,count?{count}:undefined);
-  query=applyFilters(query,filters);
+  let query=neonPublicRelation(table).select(columns,count?{count}:undefined);
+  query=applyNeonFilters(query,filters);
   if(orFilter)query=query.or(orFilter);
-  query=applyOrders(query,orders);
+  query=applyNeonOrders(query,orders);
   query=query.range(safeOffset,safeOffset+safeLimit-1);
   const {data,error,count:total}=await query;
   if(error)throw new Error(error.message||('Neon SELECT '+table+' failed'));
