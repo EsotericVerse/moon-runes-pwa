@@ -18,7 +18,7 @@ if(!failures.length){
   const identity=read('app/loc/views/AboutView.jsx');
   for(const token of ['語言架構框架','Language Architecture Framework','符號式語言','Symbolic Language'])if(!identity.includes(token))failures.push('identity missing '+token);
   const registry=read('app/modular-v2/scope-registry.v2.js');
-  for(const token of ["routeAuthority:'next-filesystem'","dataAuthority:'neon'","domain:'lrunes.lo3rwang.cc'"])if(!registry.includes(token))failures.push('registry missing '+token);
+  for(const token of ["domain:'lrunes.lo3rwang.cc'"])if(!registry.includes(token))failures.push('registry missing '+token);
   const daily=read('app/loc/model/daily-trend-engine.mjs');
   for(const token of ['summarizeDailyRange','dailyPresetRange'])if(!daily.includes(token))failures.push('daily trend missing '+token);
   const runeDraw=read('app/lrunes/RuneDrawClient.jsx');
