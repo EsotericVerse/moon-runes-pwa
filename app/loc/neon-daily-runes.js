@@ -1,9 +1,5 @@
-import {neonAuthClient} from './neon-client';
-import {selectNeonCount,selectNeonRows} from './neon-query';
-
-export const DAILY_RUNE_PAGE_SIZE=10;
-
-function silverAuth(name){return neonAuthClient.schema('silver').from(name);}
+import {neonAuthRelation} from './neon-client';
+import {selectAllNeonRows,selectNeonRows} from './neon-query';
 
 
 async function attachRuneMeta(rows){
@@ -25,50 +21,12 @@ async function attachRuneMeta(rows){
   });
 }
 
-function drawFilters(extra=[]){return extra;}
-
 async function selectDailyRangeRows(filters=[],orders=[]){
-  const total=await selectNeonCount('silver.lrunes_daily',{filters});
-  if(!total)return [];
-  const rows=[];
-  let offset=0;
-  while(offset<total){
-    const page=await selectNeonRows('silver.lrunes_daily',{
-      columns:'record_date,draw_kind,rune_number,direction',
-      filters,
-      orders,
-      limit:Math.min(1000,total-offset),
-      offset
-    });
-    if(!page.rows.length)break;
-    rows.push(...page.rows);
-    offset+=page.rows.length;
-  }
-  return rows;
-}
-
-export async function selectRecentDailyRuneDraws({limit=28}={}){
-  const safeLimit=Math.max(1,Math.min(28,Math.floor(Number(limit)||28)));
-  const count=await selectNeonCount('silver.lrunes_daily');
-  const {rows}=await selectNeonRows('silver.lrunes_daily',{
+  return (await selectAllNeonRows('silver.lrunes_daily',{
     columns:'record_date,draw_kind,rune_number,direction',
-    orders:[{column:'record_date',ascending:false},{column:'draw_kind',ascending:true}],
-    limit:safeLimit,
-    offset:0
-  });
-  return {rows:await attachRuneMeta(rows),count};
-}
-
-export async function selectDailyRuneDraws({offset=0,limit=DAILY_RUNE_PAGE_SIZE}={}){
-  const safeOffset=Math.max(0,Math.floor(Number(offset)||0));
-  const safeLimit=Math.max(1,Math.min(DAILY_RUNE_PAGE_SIZE,Math.floor(Number(limit)||DAILY_RUNE_PAGE_SIZE)));
-  const {rows}=await selectNeonRows('silver.lrunes_daily',{
-    columns:'record_date,draw_kind,rune_number,direction',
-    orders:[{column:'record_date',ascending:false},{column:'draw_kind',ascending:true}],
-    limit:safeLimit,
-    offset:safeOffset
-  });
-  return attachRuneMeta(rows);
+    filters,
+    orders
+  })).rows;
 }
 
 export async function selectDailyRuneRange({startDate,endDate}={}){
@@ -123,7 +81,7 @@ export async function insertDailyRuneRecord({recordDate,drawKind,runeNumber,dire
     rune_number:rune,
     direction:dir
   };
-  const {data,error}=await silverAuth('lrunes_daily')
+  const {data,error}=await neonAuthRelation('silver.lrunes_daily')
     .insert(row)
     .select('record_date,draw_kind,rune_number,direction');
   if(error){
@@ -144,7 +102,7 @@ export async function updateDailyRuneRecord({recordDate,drawKind,runeNumber,dire
   if(!DAILY_DRAW_KINDS.has(kind))throw new Error('紀錄類型不正確。');
   if(!Number.isInteger(rune)||rune<0||rune>66)throw new Error('符文編號不正確。');
   if(!DAILY_DIRECTIONS.has(dir))throw new Error('符文方向不正確。');
-  const {data,error}=await silverAuth('lrunes_daily')
+  const {data,error}=await neonAuthRelation('silver.lrunes_daily')
     .update({rune_number:rune,direction:dir,updated_at:new Date().toISOString()})
     .eq('record_date',date)
     .eq('draw_kind',kind)
@@ -160,7 +118,7 @@ export async function deleteDailyRuneRecord({recordDate,drawKind}={}){
   const kind=String(drawKind||'').trim();
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Error('日期格式不正確。');
   if(!DAILY_DRAW_KINDS.has(kind))throw new Error('紀錄類型不正確。');
-  const {data,error}=await silverAuth('lrunes_daily')
+  const {data,error}=await neonAuthRelation('silver.lrunes_daily')
     .delete()
     .eq('record_date',date)
     .eq('draw_kind',kind)
