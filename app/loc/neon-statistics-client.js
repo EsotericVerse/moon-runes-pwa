@@ -1,5 +1,4 @@
 import {NEON_QUERY_BATCH_SIZE} from './query-contract.mjs';
-import {ScopeRankingResponseSchema} from './scope-feature-contracts';
 import {selectCategoryCounts,selectDailyCategoryCounts,selectSourceCatalog,selectSourceDaily} from './aggregate-query';
 import {selectNeonRows} from './neon-query';
 import {resolveScopeTables} from './scope-table-mapping';
@@ -159,14 +158,7 @@ async function queryScopeRankingRows(scopeId,{rankingType='',navigation={}}={}){
   const rows=type==='total'
     ?[rankingRow('total','總來源',total,id,period)]
     :sourceRowsResult;
-  const parsed=ScopeRankingResponseSchema.parse({
-    rows,
-    offset:0,
-    limit:Math.max(1,rows.length||1),
-    hasMore:false,
-    types
-  });
-  return {id,type,rows:parsed.rows};
+  return {id,type,rows};
 }
 
 export async function selectScopeRankingRows(scopeId,{rankingType='',navigation={}}={}){
