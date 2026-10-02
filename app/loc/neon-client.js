@@ -9,23 +9,13 @@ let publicToken='';
 let publicTokenExpiresAt=0;
 let publicTokenRequest=null;
 
-export function neonDataApiUrl(){
+function neonDataApiUrl(){
   const configured=String(process.env.NEXT_PUBLIC_NEON_DATA_API_URL||process.env.NEXT_PUBLIC_NEON_DATABASE_URL||DEFAULT_NEON_DATA_API_URL).trim().replace(/\/+$/,'');
   return configured.endsWith('/rest/v1')?configured:`${configured}/rest/v1`;
 }
 
-export function neonAuthUrl(){
+function neonAuthUrl(){
   return String(process.env.NEXT_PUBLIC_NEON_AUTH_URL||process.env.NEXT_PUBLIC_LOC_AUTH_URL||DEFAULT_NEON_AUTH_URL).trim().replace(/\/+$/,'');
-}
-
-export function neonAuthConfigured(){
-  return Boolean(neonAuthUrl());
-}
-
-export function resetNeonPublicToken(){
-  publicToken='';
-  publicTokenExpiresAt=0;
-  publicTokenRequest=null;
 }
 
 function normalizeExpiry(value){
@@ -34,7 +24,7 @@ function normalizeExpiry(value){
   return n>1e12?n:n*1000;
 }
 
-export async function getNeonPublicToken(){
+async function getNeonPublicToken(){
   const now=Date.now();
   if(publicToken&&now<publicTokenExpiresAt-30_000)return publicToken;
   if(publicTokenRequest)return publicTokenRequest;
