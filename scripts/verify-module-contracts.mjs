@@ -32,6 +32,12 @@ walk(resolve(root,'app'),path=>{
   if(/\bwork_count\b/.test(source)){
     failures.push(file+': stored work_count is outside the Current live aggregate contract');
   }
+  for(const retired of ['modular-v2','scope-v2-','.v2.']){
+    if(source.includes(retired))failures.push(file+': retired architecture marker must not return: '+retired);
+  }
+  if(/\b[A-Za-z][A-Za-z0-9]*V2\b/.test(source)){
+    failures.push(file+': retired V2 identifier must not return');
+  }
 });
 
 for(const path of [
