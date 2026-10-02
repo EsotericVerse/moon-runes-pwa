@@ -17,16 +17,21 @@ function directionText(card,direction){
   return runeEtcText(card,'direction',direction)||String(card?.rune_description||'').trim();
 }
 function dailySections(card,direction){
-  const rows=[
-    ['sit_q','狀況形容'],
-    ['sit_a','狀況表達'],
-    ['daily_r','每日占卜提醒'],
-    ['daily_g','每日占卜引導'],
-    ['daily_b','每日占卜祝福']
-  ].map(([type,label])=>({label,text:runeEtcText(card,type,direction)})).filter(item=>item.text);
-  if(rows.length)return rows;
-  const fallback=directionText(card,direction);
-  return [{label:'今日指引',text:fallback||'目前沒有這個位向與月相的每日指示。'}];
+  const raw=runeEtcText(card,'daily',direction)||directionText(card,direction);
+  if(!raw)return [{label:'今日指引',text:'目前沒有這個位向的每日指示。'}];
+
+  const lines=raw.split(/\r?\n+/).map(item=>item.trim()).filter(Boolean);
+  if(lines.length>1){
+    return lines.map(line=>{
+      const match=line.match(/^([^：:]{1,12})[：:]\s*(.+)$/);
+      return match?{label:match[1].trim(),text:match[2].trim()}:{label:'',text:line};
+    });
+  }
+
+  const matches=[...raw.matchAll(/(?:^|[；;]\s*)([^：:；;]{1,12})[：:]\s*([^；;]+)(?=$|[；;])/g)];
+  if(matches.length>1)return matches.map(match=>({label:match[1].trim(),text:match[2].trim()}));
+
+  return [{label:'今日指引',text:raw}];
 }
 function runeCardImage(card){
   const number=String(Number(card?.rune_id)||0).padStart(2,'0');
