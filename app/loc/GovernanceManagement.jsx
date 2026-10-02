@@ -49,7 +49,6 @@ function sectionOptions(scope,extraSections=[]){
     {value:'import',label:UI_COPY.management.import},
     {value:'period',label:UI_COPY.management.period}
   ];
-  if(scopeId==='lrunes')options.push({value:'keywords',label:'符文66 關鍵詞'},{value:'daily',label:'每日符文管理'});
   return options;
 }
 
