@@ -280,16 +280,13 @@ function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
   </section>;
 }
 
-function StatisticsShell({scopeId,aggregateScopes,navigation}){
-  return <section className="loc-card scope-v2-feature-card">
-    <StatisticsPanel scopeId={scopeId} aggregateScopes={aggregateScopes} navigation={navigation} types={STAT_TYPES}/>
-  </section>;
-}
 export default function StatisticsV2(){
   const {scopeId,scope}=useScopeRuntimeV2();
   const searchParams=useSearchParams();
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
   return <FeaturePageV2 featureId="statics">
-    <StatisticsShell scopeId={scopeId} aggregateScopes={Boolean(scope?.aggregateChildren)} navigation={navigation}/>
+    <section className="loc-card scope-v2-feature-card">
+      <StatisticsPanel scopeId={scopeId} aggregateScopes={Boolean(scope?.aggregateChildren)} navigation={navigation} types={STAT_TYPES}/>
+    </section>
   </FeaturePageV2>;
 }
