@@ -1,9 +1,43 @@
 'use client';
 
 import {useCallback,useEffect,useState} from 'react';
+import {z} from 'zod';
 import {getNeonSession,neonAuthRelation,signInNeonWithGoogle,signOutNeon} from './neon-client';
-import {createScopeAuthorizer,normalizeAuthEmail} from './scope-authorization';
 import {scopeDataFromManageRows} from './scope-data';
+
+const EmailSchema=z.string().trim().toLowerCase().email();
+const ManageRoleSchema=z.enum(['admin','scope']);
+
+function normalizeAuthEmail(value){
+  const parsed=EmailSchema.safeParse(String(value||'').trim().toLowerCase());
+  return parsed.success?parsed.data:'';
+}
+function normalizeScopeId(value){
+  return String(value||'').trim();
+}
+function normalizeManageRole(value){
+  const parsed=ManageRoleSchema.safeParse(String(value||'').trim());
+  return parsed.success?parsed.data:'';
+}
+function createScopeAuthorizer(user,permissionRows=[]){
+  const email=normalizeAuthEmail(user?.email);
+  const permissions=(Array.isArray(permissionRows)?permissionRows:[]).flatMap(row=>{
+    const rowEmail=normalizeAuthEmail(row?.email);
+    const role=normalizeManageRole(row?.role);
+    const id=normalizeScopeId(row?.id);
+    if(!email||rowEmail!==email||!role||!id)return [];
+    return [{id,email:rowEmail,role}];
+  });
+  const admin=permissions.some(row=>row.role==='admin');
+  const scopes=new Set(permissions.filter(row=>row.role==='scope').map(row=>row.id));
+  return Object.freeze({
+    email,
+    role:admin?'admin':(scopes.size?'scope':''),
+    scopeIds:Object.freeze([...scopes].sort()),
+    canManageGlobalSync:()=>admin,
+    canManageScopeSync:scopeId=>admin||scopes.has(normalizeScopeId(scopeId))
+  });
+}
 
 const emptyState={
   loading:true,user:null,email:'',role:'',authorizer:null,
