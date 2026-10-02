@@ -78,17 +78,7 @@ requireText(
   'Motion presentation boundary'
 );
 
-// React Select is used in Current management and LunaRunes controls.
-requireText(
-  'app/loc/GovernanceManagement.jsx',
-  [/from ['"]react-select['"]/,/useNeonAccount/,/CultureTimelineEditor/],
-  'Scope management React Select/Neon Auth boundary'
-);
-requireText(
-  'app/loc/views/AdminHomeView.jsx',
-  [/from ['"]react-select['"]/,/useNeonAccount/,/canManageGlobalSync/],
-  'Admin React Select/Neon Auth boundary'
-);
+// React Select is reserved for the LunaRunes Game interaction surface.
 
 // Visualization packages each have one explicit feature owner.
 requireText(
