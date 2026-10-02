@@ -18,7 +18,7 @@ if(!failures.length){
   const client=read(files.client);
   for(const token of ['getNeonPublicToken','SupabaseAuthAdapter','signInWithOAuth','getSession'])if(!client.includes(token))failures.push('Neon client missing '+token);
   const account=read(files.account);
-  for(const token of ["neonAuthRelation('silver.manage')","select('id,email,role')",'email:authorizer.email','role:authorizer.role'])if(!account.includes(token))failures.push('account authorization missing '+token);
+  for(const token of ["neonAuthRelation('silver.manage')","select('id,email,role,galaxy,time,birthday')",'scopeDataFromManageRows','email:authorizer.email','role:authorizer.role'])if(!account.includes(token))failures.push('account authorization missing '+token);
   const authorization=read(files.authorization);
   for(const token of ["z.enum(['admin','scope'])",'permissionRows','scopes.has(normalizeScopeId(scopeId))'])if(!authorization.includes(token))failures.push('scope authorization missing '+token);
   const storage=read(files.userStorage);
@@ -26,7 +26,7 @@ if(!failures.length){
   if(!read(files.scopeManagement).includes('account.canManageScopeSync(scopeId)'))failures.push('Scope management role gate missing');
   if(!read(files.adminManagement).includes('account.canManageGlobalSync()'))failures.push('Admin management role gate missing');
   const managementData=read(files.managementData);
-  for(const token of ['resolveScopeTables(scopeId','uid,title,source_name,createtime,UpdateTime,searchable'])if(!managementData.includes(token))failures.push('Management data contract missing '+token);
+  for(const token of ['account.scopeDataFor(scopeId)','uid,title,source_name,createtime,UpdateTime,searchable'])if(!managementData.includes(token))failures.push('Management data contract missing '+token);
   for(const path of [files.search,files.culture])if(!read(path).includes('UpdateTime:new Date().toISOString()'))failures.push(path+' must refresh Galaxy UpdateTime');
 }
 if(failures.length){
