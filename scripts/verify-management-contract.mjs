@@ -21,7 +21,7 @@ must(culture.includes('visibility,style_tags'),'Culture shared Time contract mus
 must(editor.includes("style_tags:''")&&editor.includes('風格標籤'),'shared Time editor must edit style_tags');
 must(management.includes("section==='group'&&scopeId==='loc'"),'LOC Scope Group must have its own Manage');
 must(management.includes('ScopeGroupManagement')&&management.includes('RuneKeywordManagement'),'Manage must compose group and rune keyword modules');
-must(!management.includes("if(scopeId==='loc')return"),'LOC Manage must not collapse into an Admin redirect');
+must(management.includes("canManage=scopeId==='loc'?account.canManageGlobalSync():account.canManageScopeSync(scopeId)"),'LOC Scope Group Manage must use global management authority without becoming Admin');
 must(governance.includes("scopeHref(scopeId,'governance/manage')"),'Governance must link to Scope Manage');
 must(data.includes('updateNeonRows')&&data.includes('deleteNeonRows')&&data.includes('ContentEditor'),'canonical data management must expose shared CRUD');
 must(admin.includes("neonAuthRelation('silver.manage').insert")&&admin.includes(".delete().eq('id'"),'Admin must support mapping add/remove');
