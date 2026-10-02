@@ -26,7 +26,7 @@
 .loc-home>.loc-hero p{max-width:none}
 .loc-home>.loc-hero>.loc-hero-copy p{color:var(--loc-text)}
 .loc-eyebrow{margin:0!important;}
-.loc-card,.loc-panel,.loc-bubble{padding:1.15rem 1.25rem;}
+.loc-bubble{padding:1.15rem 1.25rem;}
 .loc-card h2,.loc-panel h2,.loc-bubble h2{margin:.18rem 0 .72rem;font-size:1.32rem;line-height:1.35}
 .loc-card p,.loc-panel p,.loc-bubble p{color:var(--loc-text)}
 .loc-card strong,.loc-panel strong,.loc-bubble strong{color:var(--loc-text)}
