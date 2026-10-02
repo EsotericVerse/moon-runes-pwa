@@ -11,7 +11,7 @@ const PROFILES={
 };
 const SCOPE_SUBTITLES={
   lo3rwang:{search:UI_COPY.scope.author.search},
-  lunarunes:{
+  lrunes:{
     statics:'查看月之符文相關資料的數量、來源與時間變化。',
     culture:'把月之符文相關紀錄放回時間順序，觀察不同時期的變化。',
     governance:'說明月之符文的使用原則、權利邊界與管理方式。',
