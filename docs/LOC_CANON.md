@@ -68,6 +68,14 @@ LunaRunes 專有 SSOT（例如 `silver.runes`、`silver.runes_etc`、`silver.gam
 
 此規則是 0.9 Scope Group 化的前置條件：Scope Group 組合既有 Scope mapping，不新增第二套 table resolver 或 corpus authority。
 
+### Scope copy governance
+
+一般 Scope 的延伸採「先複製、再各自編輯」：新 Scope 從既有來源建立自己的資料副本後，後續修改只屬於新 Scope，不回寫、不污染原始 Scope 的語意與 canonical data。個人化發生在副本，不發生在來源本體。
+
+LunaRunes 不屬一般可改寫模板。其 Rune 結構與 canonical semantics 不開放使用者自行更改；Current 階段僅因 canonical keyword library 整理而保留必要的作者管理修改入口。
+
+Canonical content 的固定更新流程應由網站／管理介面直接完成。AI 分析可以作為外部輔助，但不作為重複、確定性資料更新的必要 write path，也不要求為既定規則反覆消耗 API key。
+
 ## 5. Management boundary
 
 Management 必須能讀到 canonical records，即使 public feature 關閉或 searchable=false。
