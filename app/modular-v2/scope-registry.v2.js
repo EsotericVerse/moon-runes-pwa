@@ -16,9 +16,6 @@ export const SCOPES_V2=Object.freeze({
     scopeType:'domain',
     domain:'loc.lo3rwang.cc',
     label:UI_COPY.scope.loc.label,
-    primary:Object.freeze({label:UI_COPY.scope.loc.primary,href:'https://lrunes.lo3rwang.cc/'}),
-    role:Object.freeze({label:UI_COPY.scope.loc.role,href:'https://loc.lo3rwang.cc/lo3rwang/'}),
-    homes:Object.freeze([{label:UI_COPY.scope.loc.home,href:'https://loc.lo3rwang.cc/'}]),
   }),
 
   lunarunes:Object.freeze({
@@ -26,25 +23,7 @@ export const SCOPES_V2=Object.freeze({
     scopeType:'domain',
     domain:'lrunes.lo3rwang.cc',
     label:'月之符文',
-    localRoutes:Object.freeze([
-      'game',
-      'list',
-      'duel/one',
-      'duel/daily',
-      'duel/two',
-      'duel/three',
-      'duel/five',
-      'duel/ow3gs',
-      'daily/log',
-      'daily/trend'
-    ]),
-    routePatterns:Object.freeze(['list/:group','list/:group/:rune']),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'}),
-    primary:Object.freeze({label:'月之符文',href:'https://lrunes.lo3rwang.cc/'}),
-    role:Object.freeze({label:'管理者頁面',href:'https://loc.lo3rwang.cc/lo3rwang/'}),
-    homes:Object.freeze([
-      {label:'回月典首頁',href:'https://loc.lo3rwang.cc/'}
-    ]),
   }),
 
   lo3rwang:Object.freeze({
@@ -53,11 +32,6 @@ export const SCOPES_V2=Object.freeze({
     domain:null,
     label:UI_COPY.scope.author.label,
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'}),
-    primary:Object.freeze({label:UI_COPY.scope.author.primary,href:'https://loc.lo3rwang.cc/lo3rwang/'}),
-    role:Object.freeze({label:UI_COPY.scope.author.role,href:'https://loc.lo3rwang.cc/lo3rwang/'}),
-    homes:Object.freeze([
-      {label:UI_COPY.scope.author.home,href:'https://loc.lo3rwang.cc/'}
-    ]),
   }),
 
   admin:Object.freeze({
@@ -65,14 +39,6 @@ export const SCOPES_V2=Object.freeze({
     scopeType:'domain',
     domain:'admin.lo3rwang.cc',
     label:UI_COPY.scope.admin.label,
-    localRoutes:Object.freeze([]),
-    routePatterns:Object.freeze([]),
-    primary:Object.freeze({label:UI_COPY.scope.admin.primary,href:'https://admin.lo3rwang.cc/'}),
-    role:Object.freeze({label:UI_COPY.scope.admin.role,href:'https://admin.lo3rwang.cc/'}),
-    homes:Object.freeze([
-      {label:UI_COPY.scope.admin.home,href:'https://admin.lo3rwang.cc/'},
-      {label:UI_COPY.scope.admin.locHome,href:'https://loc.lo3rwang.cc/'}
-    ]),
   })
 });
 
