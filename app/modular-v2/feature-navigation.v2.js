@@ -68,7 +68,7 @@ function relationIds(value){
 export function galaxyIdentityHref(scopeId,uid){
   const id=valueOf(uid);
   if(!id)return '';
-  const targetScope=String(scopeId||'')==='lrunes'?'lunarunes':String(scopeId||'');
+  const targetScope=String(scopeId||'').trim();
   return featureNavigationHref(targetScope,'search',{identity:id});
 }
 
