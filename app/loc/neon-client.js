@@ -131,6 +131,19 @@ export async function deleteNeonRows(table,{filters=[]}={}){
   return result;
 }
 
+export async function syncManageScopeRow(values,{scopeId,email}={}){
+  return managementWrite({
+    p_table:'silver.manage',
+    p_operation:'scope_sync',
+    p_rows:null,
+    p_values:values||{},
+    p_filters:[
+      {column:'id',operator:'eq',value:String(scopeId||'')},
+      {column:'email',operator:'eq',value:String(email||'')}
+    ]
+  });
+}
+
 export async function getNeonSession(){
   const {data,error}=await neonAuthClient.auth.getSession();
   if(error)throw new Error(error.message||'Neon session failed');
