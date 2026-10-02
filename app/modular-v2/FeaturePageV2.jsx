@@ -1,7 +1,6 @@
 'use client';
 
 import {UI_COPY} from '../i18n/ui-copy';
-import PageShellV2 from './PageShellV2';
 import {useScopeRuntimeV2} from './use-scope-runtime.v2';
 
 const PROFILES={
@@ -30,10 +29,18 @@ export default function FeaturePageV2({featureId,children,subtitle=null,descript
   const {scopeId}=useScopeRuntimeV2();
   const profile=PROFILES[featureId]||{title:featureId,subtitle:'',description:''};
   const resolvedSubtitle=SCOPE_SUBTITLES[scopeId]?.[featureId]||profile.subtitle||'';
-  return <PageShellV2
-    eyebrow=""
-    title={profile.title}
-    subtitle={subtitle||resolvedSubtitle}
-    description={description??profile.description}
-  >{children}</PageShellV2>;
+  const resolvedDescription=description??profile.description;
+  const finalSubtitle=subtitle||resolvedSubtitle;
+  return <main className="scope-v2-main">
+    <section className="scope-v2-page">
+      <header className="loc-card scope-v2-hero">
+        <div className="home-title-row">
+          <h1>{profile.title}</h1>
+          {finalSubtitle?<p className="loc-subtitle scope-v2-subtitle">{finalSubtitle}</p>:null}
+        </div>
+        {resolvedDescription?<div className="scope-v2-hero-description">{resolvedDescription}</div>:null}
+      </header>
+      <div className="scope-v2-content">{children}</div>
+    </section>
+  </main>;
 }
