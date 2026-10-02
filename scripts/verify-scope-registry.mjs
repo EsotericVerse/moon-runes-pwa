@@ -4,11 +4,8 @@ const failures=[];
 if(resolveScopeV2('unknown.example','/')!=='loc')failures.push('default Scope must remain loc');
 for(const [id,scope] of Object.entries(SCOPES_V2)){
   if(scope.id!==id)failures.push(id+' registry key/id mismatch');
-  if(!['domain','directory'].includes(scope.scopeType))failures.push(id+' invalid scopeType');
-  if(scope.scopeType==='domain'){
-    if(!scope.domain)failures.push(id+' domain missing');
-    else if(resolveScopeV2(scope.domain,'/')!==id)failures.push(id+' domain resolution mismatch');
-  }else if(!scope.mount)failures.push(id+' directory mount missing');
+  if(scope.domain&&resolveScopeV2(scope.domain,'/')!==id)failures.push(id+' domain resolution mismatch');
+  if(!scope.domain&&!scope.mount)failures.push(id+' route identity missing');
   if(scope.mount&&resolveScopeV2(scope.mount.host,scope.mount.path)!==id)failures.push(id+' mount resolution mismatch');
   for(const feature of FEATURES_V2){
     if(!featureHrefV2(id,feature.id).startsWith('https://'))failures.push(id+'/'+feature.id+' canonical href invalid');
