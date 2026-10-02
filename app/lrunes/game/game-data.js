@@ -70,7 +70,7 @@ const GameRow=z.object({
   asset_title:z.string().nullable().optional()
 }).passthrough();
 
-export const PlayableEvent=z.object({
+const PlayableEvent=z.object({
   id:z.string().min(1),
   name:z.string().min(1),
   description:z.string(),
@@ -83,7 +83,7 @@ export const PlayableEvent=z.object({
   generatorVersion:z.string().nullable().default(null)
 });
 
-export function normalizePlayableEvent(input){
+function normalizePlayableEvent(input){
   const groups=Array.isArray(input?.groups)
     ?[...new Set(input.groups.map(value=>String(value||'').trim()).filter(Boolean))]
     :[input?.group,input?.group2].map(value=>String(value||'').trim()).filter(Boolean);
