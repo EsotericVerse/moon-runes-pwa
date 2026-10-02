@@ -49,6 +49,7 @@
     "refactor/full-site-modular-convergence",
     "refactor/static-pwa-cleanup",
     "release-0.9-cleanup",
+    "release/0.8.4-rc",
     "release/lunarunes-1.0-source-rebuild",
     "remove-functional-hash-routes",
     "repo-governance-phase1",
