@@ -49,6 +49,9 @@ export default function RuneSingleDailySurface({
   const drawnCard=draw?.cards?.[0]||null;
   const displayCard=drawnCard||ritualCard||{rune_id:65,rune_name:'玄'};
   const displayDirection=drawnCard?draw?.directions?.[0]||'':'';
+  const displayName=drawnCard
+    ?[drawnCard.rune_name,drawnCard.english_name?`(${drawnCard.english_name})`:''].filter(Boolean).join(' ')
+    :'';
   const directionIndex=drawnCard?Number(draw?.directionIndexes?.[0]??0):0;
   const waiting=ritualStep>=0;
   const dailyItems=drawnCard&&isDaily?dailySections(drawnCard,displayDirection):[];
@@ -77,13 +80,13 @@ export default function RuneSingleDailySurface({
 
           {!waiting&&drawnCard&&!isDaily?<>
             <p className="loc-eyebrow">單卡籤詩</p>
-            <h2>{drawnCard.rune_name} · {displayDirection}</h2>
+            <h2>{displayName} · {displayDirection}</h2>
             <RuneSingleReading card={drawnCard} direction={displayDirection} bubbleLayout/>
           </>:null}
 
           {!waiting&&drawnCard&&isDaily?<>
             <p className="loc-eyebrow">每日指示</p>
-            <h2>{drawnCard.rune_name} · {displayDirection}</h2>
+            <h2>{displayName} · {displayDirection}</h2>
             <div className="home-draw-bubbles" aria-label="每日符文建議">
               {dailyItems.map((item,index)=><div className="loc-bubble" key={item.label+'-'+index}>
                 {item.label?<strong>{item.label}</strong>:null}
