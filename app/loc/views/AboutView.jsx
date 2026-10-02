@@ -2,13 +2,13 @@ import {scopeHrefV2} from '../../modular-v2/scope-registry.v2';
 import {SITE_IMAGES} from '../../site-images';
 
 const RUNES_LINKS=Object.freeze({
-  home:scopeHrefV2('lunarunes'),
-  single:scopeHrefV2('lunarunes','duel/one'),
-  daily:scopeHrefV2('lunarunes','duel/daily'),
-  two:scopeHrefV2('lunarunes','duel/two'),
-  three:scopeHrefV2('lunarunes','duel/three'),
-  five:scopeHrefV2('lunarunes','duel/five'),
-  ow3gs:scopeHrefV2('lunarunes','duel/ow3gs')
+  home:scopeHrefV2('lrunes'),
+  single:scopeHrefV2('lrunes','duel/one'),
+  daily:scopeHrefV2('lrunes','duel/daily'),
+  two:scopeHrefV2('lrunes','duel/two'),
+  three:scopeHrefV2('lrunes','duel/three'),
+  five:scopeHrefV2('lrunes','duel/five'),
+  ow3gs:scopeHrefV2('lrunes','duel/ow3gs')
 });
 
 export default function AboutView(){
