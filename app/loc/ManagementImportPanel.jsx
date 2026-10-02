@@ -3,19 +3,11 @@
 import {UI_COPY} from '../i18n/ui-copy';
 
 import {useMemo,useState} from 'react';
-import {neonAuthRelation} from './neon-client';
+import {insertNeonRows} from './neon-client';
 import {useNeonAccount} from './use-neon-account';
 import {createUid8} from './uid';
-import {normalizeGalaxyContent,resolveGalaxyTitle} from './content-policy';
+import {normalizeGalaxyContent,normalizeRelationIds,resolveGalaxyTitle} from './content-policy';
 import {resolveScopeTables} from './scope-table-mapping';
-
-async function insertNeonRows(table,rows){
-  if(String(table).endsWith('_galaxy_media')){
-    for(const row of rows||[])if(!String(row?.meta_tags||'').trim())throw new Error('Media records require meta_tags.');
-  }
-  const {error}=await neonAuthRelation(table).insert(rows);
-  if(error)throw new Error(error.message||('Neon INSERT '+table+' failed'));
-}
 
 function sourceSuggestion(name=''){
   const value=String(name).toLowerCase();
@@ -23,11 +15,6 @@ function sourceSuggestion(name=''){
     if(value.includes(key))return key;
   }
   return String(name).replace(/\.json$/i,'').trim().toLowerCase().replace(/[^a-z0-9_-]+/g,'-')||'import';
-}
-function targetIds(value){
-  const values=Array.isArray(value)?value:String(value||'').split(/[,，]/);
-  const ids=[...new Set(values.map(item=>String(item||'').trim()).filter(Boolean))];
-  return ids.length?ids:null;
 }
 function firstValue(row,keys){
   for(const key of keys)if(row?.[key]!==undefined&&row?.[key]!==null&&String(row[key]).trim()!=='')return row[key];
@@ -84,7 +71,7 @@ function JsonImport({scopeId}){
           source_place:String(firstValue(row,['source_place','place'])||'').trim()||null,
           searchable:row?.searchable!==false&&row?.search!==false,
           source_id:String(firstValue(row,['source_id'])||'').trim()||null,
-          target_id:targetIds(firstValue(row,['target_id'])),
+          target_id:normalizeRelationIds(firstValue(row,['target_id'])),
           ref_id:String(firstValue(row,['ref_id'])||'').trim()||null,
           url:String(firstValue(row,['url','link','permalink'])||'').trim()||null,
           source_name:selected
@@ -212,7 +199,7 @@ function SunoImport({scopeId}){
         await insertNeonRows(galaxy,[{
           uid:lyricsUid,content_type:'lyrics',
           title:draft.title.trim(),content:draft.lyrics.trim(),createtime,
-          source_id:sourceId,target_id:targetIds(draft.target_id),ref_id:styleUid||draft.ref_id.trim()||null,
+          source_id:sourceId,target_id:normalizeRelationIds(draft.target_id),ref_id:styleUid||draft.ref_id.trim()||null,
           url:draft.url.trim()||null,searchable:true,source_name:'suno'
         }]);
       }
