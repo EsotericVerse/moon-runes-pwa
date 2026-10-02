@@ -80,9 +80,33 @@ export function neonAuthRelation(table){
   return neonAuthClient.schema(schema).from(name);
 }
 
+export async function selectNeonAuthRow(table,{idColumn,id,columns}={}){
+  const {data,error}=await neonAuthRelation(table).select(columns).eq(idColumn,String(id)).limit(1);
+  if(error)throw new Error(error.message||('Neon SELECT '+table+' failed'));
+  return data?.[0]||null;
+}
+
 export async function insertNeonRows(table,rows){
   const {error}=await neonAuthRelation(table).insert(rows);
   if(error)throw new Error(error.message||('Neon INSERT '+table+' failed'));
+}
+
+export async function updateNeonRows(table,values,{filters=[]}={}){
+  let query=neonAuthRelation(table).update(values);
+  for(const filter of filters)query=filter.operator==='in'
+    ?query.in(filter.column,filter.value)
+    :query[filter.operator](filter.column,filter.value);
+  const {error}=await query;
+  if(error)throw new Error(error.message||('Neon UPDATE '+table+' failed'));
+}
+
+export async function deleteNeonRows(table,{filters=[]}={}){
+  let query=neonAuthRelation(table).delete();
+  for(const filter of filters)query=filter.operator==='in'
+    ?query.in(filter.column,filter.value)
+    :query[filter.operator](filter.column,filter.value);
+  const {error}=await query;
+  if(error)throw new Error(error.message||('Neon DELETE '+table+' failed'));
 }
 
 export async function getNeonSession(){
