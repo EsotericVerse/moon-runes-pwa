@@ -80,12 +80,7 @@ requireText(
 
 // React Select is reserved for the LunaRunes Game interaction surface.
 
-// Visualization packages each have one explicit feature owner.
-requireText(
-  'app/modular-v2/modules/scope-overview/ScopeOverviewNetwork.jsx',
-  [/import\(['"]vis-network\/standalone['"]\)/,/new Network\(/],
-  'Scope overview vis-network boundary'
-);
+// Visualization package ownership is verified by active feature modules.
 requireText(
   'app/modular-v2/modules/culture-timeline/CultureTimelineV2.jsx',
   [/from ['"]vis-timeline\/standalone['"]/,/new Timeline\(/],
