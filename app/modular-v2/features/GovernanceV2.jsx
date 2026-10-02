@@ -13,7 +13,7 @@ import PersonalGovernance,{PERSONAL_GOVERNANCE_SUBTITLE} from '../governance/Per
 
 function governanceFor(scopeId){
   if(scopeId==='loc')return {View:LocGovernance,subtitle:LOC_GOVERNANCE_SUBTITLE};
-  if(scopeId==='lunarunes')return {View:LunaRunesGovernance,subtitle:LUNARUNES_GOVERNANCE_SUBTITLE};
+  if(scopeId==='lrunes')return {View:LunaRunesGovernance,subtitle:LUNARUNES_GOVERNANCE_SUBTITLE};
   return {View:PersonalGovernance,subtitle:PERSONAL_GOVERNANCE_SUBTITLE};
 }
 
