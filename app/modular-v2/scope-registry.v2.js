@@ -1,11 +1,7 @@
 import {UI_COPY} from '../i18n/ui-copy.js';
 
 // Current V2 Scope registry.
-export const SCOPE_POLICY_V2=Object.freeze({
-  defaultScopeId:'loc',
-  routeAuthority:'next-filesystem',
-  dataAuthority:'neon'
-});
+const DEFAULT_SCOPE_ID='loc';
 
 export const FEATURES_V2=Object.freeze([
   Object.freeze({id:'statics',label:UI_COPY.features.statics.title,path:'statics'}),
@@ -122,11 +118,11 @@ export function resolveScopeV2(host='',pathname='/'){
       if(base&&(path===base||path.startsWith(base+'/')))return id;
     }
   }
-  return SCOPE_BY_DOMAIN_V2[h]||SCOPE_POLICY_V2.defaultScopeId;
+  return SCOPE_BY_DOMAIN_V2[h]||DEFAULT_SCOPE_ID;
 }
 
 export function getScopeV2(id){
-  return SCOPES_V2[id]||SCOPES_V2[SCOPE_POLICY_V2.defaultScopeId];
+  return SCOPES_V2[id]||SCOPES_V2[DEFAULT_SCOPE_ID];
 }
 
 export function scopeOriginV2(scopeId){
