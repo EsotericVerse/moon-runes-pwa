@@ -18,7 +18,7 @@ if(!failures.length){
   const client=read(files.client);
   for(const token of ['getNeonPublicToken','SupabaseAuthAdapter','signInWithOAuth','getSession'])if(!client.includes(token))failures.push('Neon client missing '+token);
   const account=read(files.account);
-  for(const token of ["schema('silver').from('manage')","select('id,email,role')",'email:authorizer.email','role:authorizer.role'])if(!account.includes(token))failures.push('account authorization missing '+token);
+  for(const token of ["neonAuthRelation('silver.manage')","select('id,email,role')",'email:authorizer.email','role:authorizer.role'])if(!account.includes(token))failures.push('account authorization missing '+token);
   const authorization=read(files.authorization);
   for(const token of ["z.enum(['admin','scope'])",'permissionRows','scopes.has(normalizeScopeId(scopeId))'])if(!authorization.includes(token))failures.push('scope authorization missing '+token);
   const storage=read(files.userStorage);
