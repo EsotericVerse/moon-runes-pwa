@@ -2,6 +2,8 @@ import {FEATURES_V2,SCOPES_V2,featureHrefV2,resolveScopeV2} from '../app/modular
 
 const failures=[];
 if(resolveScopeV2('unknown.example','/')!=='loc')failures.push('default Scope must remain loc');
+if(SCOPES_V2.lunarunes)failures.push('retired lunarunes runtime Scope id must not return');
+if(!SCOPES_V2.lrunes)failures.push('canonical lrunes Scope id missing');
 for(const [id,scope] of Object.entries(SCOPES_V2)){
   if(scope.id!==id)failures.push(id+' registry key/id mismatch');
   if(scope.domain&&resolveScopeV2(scope.domain,'/')!==id)failures.push(id+' domain resolution mismatch');
