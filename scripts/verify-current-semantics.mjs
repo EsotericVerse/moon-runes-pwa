@@ -4,10 +4,10 @@ const failures=[];
 const read=path=>fs.readFileSync(path,'utf8');
 const required=[
   'app/loc/views/AboutView.jsx',
-  'app/loc/neon-search.js',
+  'app/loc/galaxy-query.js',
   'app/modular-v2/features/SearchV2.jsx',
   'app/loc/model/daily-trend-engine.mjs',
-  'app/loc/search-providers.js'
+  'app/loc/scope-data.js'
 ];
 for(const path of required)if(!fs.existsSync(path)||!read(path).trim())failures.push('missing Current contract file: '+path);
 if(!failures.length){
@@ -15,11 +15,11 @@ if(!failures.length){
   for(const token of ['語言架構框架','Language Architecture Framework','符號式語言','Symbolic Language'])if(!identity.includes(token))failures.push('identity missing '+token);
   const daily=read('app/loc/model/daily-trend-engine.mjs');
   for(const token of ['summarizeDailyRange','dailyPresetRange'])if(!daily.includes(token))failures.push('daily trend missing '+token);
-  const providers=read('app/loc/search-providers.js');
-  for(const token of ["count:'exact',head:true",".or(",".range("])if(!providers.includes(token))failures.push('Search provider missing '+token);
-  if(/flexsearch|new Index\(/i.test(providers))failures.push('Global Search must remain Neon-first.');
-  const search=read('app/loc/neon-search.js');
-  for(const token of ['getSearchProviders','getMediaSearchProviders','provider.search'])if(!search.includes(token))failures.push('Search orchestration missing '+token);
+  const galaxy=read('app/loc/galaxy-query.js');
+  for(const token of ["count:'exact',head:true",'.or(','.range(','searchGalaxyRows','selectSourceTrendRows'])if(!galaxy.includes(token))failures.push('Shared Galaxy query pipeline missing '+token);
+  if(/flexsearch|new Index\(/i.test(galaxy))failures.push('Global Search must remain Neon-first.');
+  const scopeData=read('app/loc/scope-data.js');
+  for(const token of ["MANAGE_TABLE='silver.manage'",'scopeDataFromManageRows','selectManagedScopes'])if(!scopeData.includes(token))failures.push('Scope data source missing '+token);
 }
 if(failures.length){
   console.error('[current-semantics] failures:\n'+failures.map(item=>'- '+item).join('\n'));
