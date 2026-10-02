@@ -24,7 +24,8 @@ export const SCOPES_V2=Object.freeze({
     label:'月之符文',
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'}),
     nav:Object.freeze({position:'before',order:1,label:UI_COPY.nav.lunarunes}),
-    theme:Object.freeze({mode:'fixed',themeId:'theme-5'})
+    theme:Object.freeze({mode:'fixed',themeId:'theme-5'}),
+    searchKind:'runes'
   }),
 
   lo3rwang:Object.freeze({
