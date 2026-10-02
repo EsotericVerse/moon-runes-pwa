@@ -76,6 +76,14 @@ LunaRunes 不屬一般可改寫模板。其 Rune 結構與 canonical semantics �
 
 Canonical content 的固定更新流程應由網站／管理介面直接完成。AI 分析可以作為外部輔助，但不作為重複、確定性資料更新的必要 write path，也不要求為既定規則反覆消耗 API key。
 
+### Scope presentation and copy contract
+
+一般 Scope 共用的 Culture／Statistics／Search 保持同一套功能名稱、操作方式與 query contract；建立新 Scope 不複製或改寫這些共用功能的程式邏輯，只把 Scope mapping 傳入共用模組。
+
+Scope 首頁屬於該 Scope 自己的 presentation content。首頁文字、文字框與文字泡泡可由網站編輯器更新，修改只影響該 Scope。
+
+Governance 頁在建立 Scope 時，從 Author／基準治理頁複製一份起始內容到新 Scope；之後由該 Scope 自己維護。任何個人化修改都只改副本，不回寫 Author／來源治理頁。
+
 ## 5. Management boundary
 
 Management 必須能讀到 canonical records，即使 public feature 關閉或 searchable=false。
