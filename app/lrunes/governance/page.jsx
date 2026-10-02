@@ -7,4 +7,4 @@ export const metadata=lunarunesMetadata({
   path:'/governance/'
 });
 
-export default function Page(){return <LocApp forcedView="governance" forcedScope="lunarunes"/>;}
+export default function Page(){return <LocApp forcedView="governance" forcedScope="lrunes"/>;}
