@@ -21,7 +21,7 @@ import {selectManagedScopes} from '../../loc/scope-table-mapping';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model.v2';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 import IncrementalListV2 from '../IncrementalListV2';
-import {DEFAULT_LIST_BATCH_SIZE} from '../list-loading.v2';
+import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 
 
 function authRelation(table){
