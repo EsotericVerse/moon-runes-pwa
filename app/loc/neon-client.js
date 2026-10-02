@@ -80,6 +80,11 @@ export function neonAuthRelation(table){
   return neonAuthClient.schema(schema).from(name);
 }
 
+export async function insertNeonRows(table,rows){
+  const {error}=await neonAuthRelation(table).insert(rows);
+  if(error)throw new Error(error.message||('Neon INSERT '+table+' failed'));
+}
+
 export async function getNeonSession(){
   const {data,error}=await neonAuthClient.auth.getSession();
   if(error)throw new Error(error.message||'Neon session failed');
