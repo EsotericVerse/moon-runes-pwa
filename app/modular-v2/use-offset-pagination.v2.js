@@ -21,6 +21,7 @@ export function useOffsetPagination({
   const [loading,setLoading]=useState(false);
   const [error,setError]=useState(null);
   const [hasMore,setHasMore]=useState(true);
+  const [totalCount,setTotalCount]=useState(null);
   const [reloadKey,setReloadKey]=useState(0);
   const offsetRef=useRef(0);
   const busyRef=useRef(false);
@@ -45,6 +46,7 @@ export function useOffsetPagination({
       offsetRef.current=page?.nextCursor??(Number.isFinite(Number(page?.nextOffset))?Number(page.nextOffset):Number(offset||0)+nextRows.length);
       hasMoreRef.current=typeof page?.hasMore==='boolean'?page.hasMore:nextRows.length===pageSize;
       setRows(current=>appendUnique(current,nextRows,getRowKeyRef.current));
+      if(Number.isFinite(Number(page?.totalCount)))setTotalCount(Number(page.totalCount));
       setHasMore(hasMoreRef.current);
     }catch(nextError){
       if(requestId===requestIdRef.current)setError(nextError);
@@ -63,6 +65,7 @@ export function useOffsetPagination({
     hasMoreRef.current=true;
     setRows([]);
     setHasMore(true);
+    setTotalCount(null);
     setError(null);
     if(!enabled){
       setLoading(false);
@@ -76,6 +79,7 @@ export function useOffsetPagination({
       offsetRef.current=page?.nextCursor??(Number.isFinite(Number(page?.nextOffset))?Number(page.nextOffset):firstRows.length);
       hasMoreRef.current=typeof page?.hasMore==='boolean'?page.hasMore:firstRows.length===pageSize;
       setRows(firstRows);
+      if(Number.isFinite(Number(page?.totalCount)))setTotalCount(Number(page.totalCount));
       setHasMore(hasMoreRef.current);
     }).catch(nextError=>{
       if(requestId===requestIdRef.current)setError(nextError);
@@ -89,5 +93,5 @@ export function useOffsetPagination({
   },[enabled,key,pageSize,reloadKey]);
 
   const reload=useCallback(()=>setReloadKey(value=>value+1),[]);
-  return {rows,loading,error,hasMore,loadNext,reload};
+  return {rows,loading,error,hasMore,totalCount,loadNext,reload};
 }
