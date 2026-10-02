@@ -25,15 +25,14 @@ function GovernanceHome(){
   const canEdit=account.canManageScopeSync(scopeId);
   return <FeaturePage featureId="governance" subtitle={subtitle}>
     <View canEdit={canEdit}/>
-    {canEdit?(scopeId==='loc'?<section className="loc-card governance-management-cta">
-      <h2>{UI_COPY.governance.systemManagement}</h2>
-      <p>月典的系統設定集中在獨立管理站，公開治理頁只保留原則與權利說明。</p>
-      <a className="loc-button primary" href={adminHref}>{UI_COPY.governance.enterAdmin}</a>
-    </section>:<section className="loc-card governance-management-cta">
-      <h2>{getScope(scopeId).label}管理</h2>
-      <p>時期、分類與其他可調整項目集中在管理頁，需要修改設定時可從這裡進入。</p>
-      <a className="loc-button primary" href={scopeHref(scopeId,'governance/manage')}>{UI_COPY.governance.enterManagement}</a>
-    </section>):null}
+    {canEdit?<section className="loc-card governance-management-cta">
+      <h2>{scopeId==='loc'?'LOC Scope Group 管理':getScope(scopeId).label+'管理'}</h2>
+      <p>{scopeId==='loc'?'Scope Group 的公開呈現與成員檢視在 Manage；系統級 mapping 與權限仍在 Admin。':'時期、風格標籤、作品與其他可調整項目集中在此 Scope 的 Manage。'}</p>
+      <div className="scope-preview-links">
+        <a className="loc-button primary" href={scopeHref(scopeId,'governance/manage')}>{UI_COPY.governance.enterManagement}</a>
+        {scopeId==='loc'?<a className="loc-button" href={adminHref}>{UI_COPY.governance.enterAdmin}</a>:null}
+      </div>
+    </section>:null}
   </FeaturePage>;
 }
 
