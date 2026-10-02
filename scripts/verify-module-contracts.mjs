@@ -68,7 +68,7 @@ const incremental=readFileSync(resolve(root,'app/modular-v2/IncrementalLoadV2.js
 if(!/DEFAULT_LIST_BATCH_SIZE=10/.test(loading)||!/RUNE_LIST_BATCH_SIZE=16/.test(loading))failures.push('list loading contract must remain 10 general / 16 rune');
 if(!/WHEEL_GESTURE_GAP_MS/.test(incremental)||!/readyAtRef\.current=now\+/.test(incremental))failures.push('incremental loading gesture contract missing');
 if(!/Number\.isFinite\(cursorGalaxyOffset\)/.test(cultureClient)||!/Number\.isFinite\(cursorMediaOffset\)/.test(cultureClient)||!/const baseOffset=/.test(cultureClient))failures.push('Culture merged cursor/base-offset contract missing');
-for(const token of ["selectNeonRows('silver.runes'","selectNeonRows('silver.runes_etc'"])if(!runesClient.includes(token))failures.push('Rune canonical query missing '+token);
+for(const token of ["selectNeonRows('silver.runes'","selectNeonRows('silver.runes_etc'"])if(!runeDrawClient.includes(token))failures.push('Rune canonical query missing '+token);
 
 if(failures.length){
   console.error('[module-contracts] failures:\n'+failures.map(item=>'- '+item).join('\n'));
