@@ -103,7 +103,7 @@
   .game-role-grid{grid-template-columns:1fr}
   .game-preview-hand{grid-template-columns:repeat(5,minmax(54px,1fr));overflow-x:auto}
   .game-hand{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .game-group-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}
+  
   .game-compact-hero{display:grid}
 }
 
