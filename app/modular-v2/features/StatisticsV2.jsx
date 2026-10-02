@@ -9,7 +9,8 @@ import {
   Bar,BarChart,CartesianGrid,Cell,Legend,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectScopeSourceTrendRows} from '../../loc/neon-statistics-client';
+import {selectSourceTrendRows} from '../../loc/galaxy-query';
+import {selectManagedScopes} from '../../loc/scope-data';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation.v2';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state.v2';
 import {useScopeRuntimeV2} from '../use-scope-runtime.v2';
@@ -228,14 +229,23 @@ function StatisticsPanel({scopeId,navigation,types}){
   const [customFrom,setCustomFrom]=useState('');
   const [customTo,setCustomTo]=useState('');
   const customRange=useMemo(()=>({from:customFrom,to:customTo}),[customFrom,customTo]);
+  const scopesQuery=useQuery({
+    queryKey:['managed-scopes'],
+    queryFn:selectManagedScopes,
+    staleTime:5*60_000
+  });
+  const targetScopes=useMemo(()=>{
+    const scopes=scopesQuery.data||[];
+    return scopeId==='loc'?scopes:scopes.filter(scope=>scope.id===scopeId);
+  },[scopeId,scopesQuery.data]);
   const customReady=timeStandard!=='custom'||Boolean(dateKey(customFrom)&&dateKey(customTo)&&customFrom<=customTo);
   const queryRange=useMemo(()=>timeStandard==='custom'&&customReady
     ?{startDate:customFrom,endDate:customTo}
     :{startDate:'',endDate:''},[timeStandard,customReady,customFrom,customTo]);
   const trendQuery=useQuery({
     queryKey:['statistics-source-trend',scopeId,queryRange.startDate,queryRange.endDate],
-    queryFn:()=>selectScopeSourceTrendRows(scopeId,queryRange),
-    enabled:Boolean(rankingType)&&(timeStandard!=='custom'||customReady),
+    queryFn:()=>selectSourceTrendRows(targetScopes,queryRange),
+    enabled:Boolean(rankingType)&&Boolean(targetScopes.length)&&(timeStandard!=='custom'||customReady),
     staleTime:5*60_000
   });
   const summary=useMemo(()=>buildSummary(trendQuery.data||[],timeStandard,customRange),[trendQuery.data,timeStandard,customRange]);
@@ -255,6 +265,7 @@ function StatisticsPanel({scopeId,navigation,types}){
         <label><span>{UI_COPY.statistics.end}</span><input className="scope-v2-input" type="date" value={customTo} onChange={event=>setCustomTo(event.target.value)}/></label>
       </>:null}
     </div>
+    {scopesQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
     {trendQuery.error?<p className="scope-v2-status scope-v2-error">{featureDataErrorMessage(trendQuery.error)}</p>:null}
     {timeStandard==='custom'&&!customReady?<p className="scope-v2-status">請設定有效的開始與結束日期。</p>:null}
     {!trendQuery.isPending&&!trendQuery.error&&customReady?<>
