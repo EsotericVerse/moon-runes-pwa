@@ -18,7 +18,7 @@ const LOGIN_COPY={
     title:'LOC 管理登入',
     description:'LOC 的系統管理入口位於 admin.lo3rwang.cc；Scope 內容管理請由各 Scope 的治理頁進入。'
   },
-  lunarunes:{
+  lrunes:{
     eyebrow:'LunaRunes Management',
     title:'LunaRunes 管理登入',
     description:'管理符號式語言的作品、時期與每日符文。'
@@ -77,7 +77,7 @@ function sectionOptions(scopeId){
     {value:'period',label:UI_COPY.management.period},
     {value:'keywords',label:UI_COPY.management.keywords}
   ];
-  if(scopeId==='lunarunes')options.push({value:'daily',label:'每日符文管理'});
+  if(scopeId==='lrunes')options.push({value:'daily',label:'每日符文管理'});
   return options;
 }
 
@@ -132,6 +132,6 @@ export default function GovernanceManagement(){
     {section==='import'?<ImportSettings scopeId={scopeId}/>:null}
     {section==='period'?<PeriodSettings scopeId={scopeId}/>:null}
     {section==='keywords'?<KeywordSettings/>:null}
-    {section==='daily'&&scopeId==='lunarunes'?<RuneManagementPanel/>:null}
+    {section==='daily'&&scopeId==='lrunes'?<RuneManagementPanel/>:null}
   </section>;
 }
