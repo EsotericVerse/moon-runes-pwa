@@ -8,7 +8,6 @@ import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {neonAuthRelation} from '../../loc/neon-client';
 import {applyNeonFilters,selectNeonRows} from '../../loc/neon-query';
-import {resolveScopeTables} from '../../loc/scope-table-mapping';
 import {FEATURE_LOADING_MESSAGE} from '../feature-data-state.v2';
 
 const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility';
@@ -73,9 +72,9 @@ export default function CultureTimelineEditor({scopeId=''}){
   const dataScope=runtimeScope;
   const editable=Boolean(dataScope&&dataScope!=='loc');
   const tableQuery=useQuery({
-    queryKey:['scope-table-mapping',dataScope,account.email],
+    queryKey:['scope-data',dataScope,account.email],
     enabled:editable&&Boolean(account.user),
-    queryFn:()=>resolveScopeTables(dataScope,{email:account.email}),
+    queryFn:async()=>account.scopeDataFor(dataScope),
     staleTime:5*60_000
   });
   const timeTable=tableQuery.data?.time||'';
