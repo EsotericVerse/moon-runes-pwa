@@ -85,6 +85,11 @@ export const neonAuthClient=createClient({
   }
 });
 
+export function neonAuthRelation(table){
+  const [schema,name]=String(table).split('.');
+  return neonAuthClient.schema(schema).from(name);
+}
+
 export async function getNeonSession(){
   const {data,error}=await neonAuthClient.auth.getSession();
   if(error)throw new Error(error.message||'Neon session failed');
