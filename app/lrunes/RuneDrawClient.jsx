@@ -101,6 +101,11 @@ function runeCardImage(card){
   const name=String(card?.rune_name||'').replace(/之符文$/,'').trim();
   return `/assets/lunarunes/cards/${number}_${name}.png`;
 }
+function runeDisplayName(card){
+  const chinese=String(card?.rune_name||'').trim();
+  const english=String(card?.english_name||'').trim();
+  return english?`${chinese} (${english})`:chinese;
+}
 
 function directionText(card,direction){
   return runeEtcText(card,'direction',direction)||String(card?.rune_description||'').trim();
@@ -232,9 +237,9 @@ function MultiReading({draw,mode,phase}){
     return <div className="runes-spread-explanation" data-draw-reading={mode}>
       <p className="loc-eyebrow">完整解讀</p>
       <h2>{mode==='2card'?'因 → 果':'源 → 轉 → 合'}</h2>
-      <p><strong>完整現況：</strong>{cards.map((card,index)=>`${labels[index]}「${card.rune_name}」${directions[index]}`).join('、')}。目前真實月相為{phase}。</p>
+      <p><strong>完整現況：</strong>{cards.map((card,index)=>`${labels[index]}「${runeDisplayName(card)}」${directions[index]}`).join('、')}。目前真實月相為{phase}。</p>
       <p><strong>閱讀方式：</strong>{mode==='2card'?'先看造成現況的「因」，再看它導向的「果」。':'依序閱讀「源 → 轉 → 合」，先找起點，再看轉化，最後看收束。'}</p>
-      <div className="loc-context-list">{cards.map((card,index)=><div className="loc-context-item" key={`${mode}-${card.rune_id}-${index}`}><strong>{labels[index]}：{card.rune_name}・{directions[index]}</strong><span>{situationDetail(card,directions[index])}</span></div>)}</div>
+      <div className="loc-context-list">{cards.map((card,index)=><div className="loc-context-item" key={`${mode}-${card.rune_id}-${index}`}><strong>{labels[index]}：{runeDisplayName(card)}・{directions[index]}</strong><span>{situationDetail(card,directions[index])}</span></div>)}</div>
     </div>;
   }
 
@@ -243,9 +248,9 @@ function MultiReading({draw,mode,phase}){
     return <div className="runes-spread-explanation" data-draw-reading="5card">
       <p className="loc-eyebrow">五卡完整解讀</p>
       <h2>雙卡＋單卡＋雙卡</h2>
-      <p><strong>過去的成因：</strong>「{past1.rune_name}」{directions[0]}：{situationDetail(past1,directions[0])}；「{past2.rune_name}」{directions[1]}：{situationDetail(past2,directions[1])}。兩張牌共同描述事情形成的背景與潛因。</p>
-      <p><strong>意外變化：</strong>「{unexpected.rune_name}」{directions[2]}：{situationDetail(unexpected,directions[2])}。單張只提供一個意外因素，不與雙卡拼接。</p>
-      <p><strong>現在狀況：</strong>「{current1.rune_name}」{directions[3]}：{situationDetail(current1,directions[3])}；「{current2.rune_name}」{directions[4]}：{situationDetail(current2,directions[4])}。兩張牌共同描述現在以後可能形成的結論。</p>
+      <p><strong>過去的成因：</strong>「{runeDisplayName(past1)}」{directions[0]}：{situationDetail(past1,directions[0])}；「{runeDisplayName(past2)}」{directions[1]}：{situationDetail(past2,directions[1])}。兩張牌共同描述事情形成的背景與潛因。</p>
+      <p><strong>意外變化：</strong>「{runeDisplayName(unexpected)}」{directions[2]}：{situationDetail(unexpected,directions[2])}。單張只提供一個意外因素，不與雙卡拼接。</p>
+      <p><strong>現在狀況：</strong>「{runeDisplayName(current1)}」{directions[3]}：{situationDetail(current1,directions[3])}；「{runeDisplayName(current2)}」{directions[4]}：{situationDetail(current2,directions[4])}。兩張牌共同描述現在以後可能形成的結論。</p>
       <p><strong>閱讀補充：</strong>每張狀況文字已依實際符文、方向與當前月相精準取得；右側通用建議只用前段 x、後段 y 判斷趨勢與總和。本次真實月相為{phase}。</p>
     </div>;
   }
@@ -375,7 +380,7 @@ export default function RuneDrawClient({drawKey='single'}){
                   <p>先讀成因分析，後讀判斷分析，最後套用月相交互。十一張牌不是等權並列。</p>
                   <p><strong>1–6 因的描述層：</strong>源兩張、轉兩張、合兩張，共六張；依固定卡位組合前因。</p>
                   <p><strong>7–11 果的判定層：</strong>使用五卡的基本規則，共五張；依固定五卡結構組合結果。</p>
-                  <div className="loc-context-list">{draw.cards.slice(6,11).map((card,index)=><div className="loc-context-item" key={`core-${card.rune_id}-${index}`}><strong>第 {index+7} 張 · {card.rune_name} · {draw.directions[index+6]}</strong><span>{directionText(card,draw.directions[index+6])||card.rune_description}</span></div>)}</div>
+                  <div className="loc-context-list">{draw.cards.slice(6,11).map((card,index)=><div className="loc-context-item" key={`core-${card.rune_id}-${index}`}><strong>第 {index+7} 張 · {runeDisplayName(card)} · {draw.directions[index+6]}</strong><span>{directionText(card,draw.directions[index+6])||card.rune_description}</span></div>)}</div>
                   <p>月相交互最後才套用，只作次要時間修飾；重點是模型關聯，不是增加抽牌維度的複雜化。</p>
                 </div>}
               </div>
