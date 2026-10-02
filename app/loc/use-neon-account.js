@@ -1,7 +1,7 @@
 'use client';
 
 import {useCallback,useEffect,useState} from 'react';
-import {getNeonSession,neonAuthClient,signInNeonWithGoogle,signOutNeon} from './neon-client';
+import {getNeonSession,neonAuthRelation,signInNeonWithGoogle,signOutNeon} from './neon-client';
 import {createScopeAuthorizer,normalizeAuthEmail} from './scope-authorization';
 
 const emptyState={
@@ -24,7 +24,7 @@ export function useNeonAccount(){
       const email=normalizeAuthEmail(user?.email);
       let permissions=[];
       if(email){
-        const {data,error}=await neonAuthClient.schema('silver').from('manage')
+        const {data,error}=await neonAuthRelation('silver.manage')
           .select('id,email,role')
           .eq('email',email);
         if(error)throw new Error(error.message||'Neon manage permission read failed');
