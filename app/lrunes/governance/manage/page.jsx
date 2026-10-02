@@ -8,4 +8,4 @@ export const metadata=lunarunesMetadata({
   noIndex:true
 });
 
-export default function Page(){return <LocApp forcedView="manage" forcedScope="lunarunes"/>;}
+export default function Page(){return <LocApp forcedView="manage" forcedScope="lrunes"/>;}
