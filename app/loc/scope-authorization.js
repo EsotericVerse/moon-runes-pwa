@@ -3,7 +3,7 @@ import {z} from 'zod';
 const EmailSchema=z.string().trim().toLowerCase().email();
 const ManageRoleSchema=z.enum(['admin','scope']);
 
-export function normalizeScopeId(value){
+function normalizeScopeId(value){
   const id=String(value||'').trim();
   if(id==='lunarunes'||id==='runes')return 'lrunes';
   return id;
@@ -14,7 +14,7 @@ export function normalizeAuthEmail(value){
   return parsed.success?parsed.data:'';
 }
 
-export function normalizeManageRole(value){
+function normalizeManageRole(value){
   const parsed=ManageRoleSchema.safeParse(String(value||'').trim());
   return parsed.success?parsed.data:'';
 }
