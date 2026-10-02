@@ -25,7 +25,7 @@ import {applyNeonFilters} from '../../loc/neon-query';
 
 
 function escapeSearchRegExp(value){
-  return String(value||'').replace(/[.*+?^${}()|[\]\\]/g,'\\return String(value||'').replace(/[.*+?^\${}()|[\]\\]/g,'\\async function selectNeonRowById');');
+  return String(value||'').replace(/[.*+?^\${}()|[\]\\]/g,'\\$&');
 }
 function highlightSearchText(text='',query=''){
   const source=String(text||''),raw=String(query||'').trim();
