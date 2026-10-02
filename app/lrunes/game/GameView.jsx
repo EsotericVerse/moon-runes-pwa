@@ -481,7 +481,7 @@ function phaseForRound(data,round){
 
 export default function GameView(){
   const {data,error,isLoading}=useQuery({
-    queryKey:['lunarunes','game','current'],
+    queryKey:['lrunes','game','current'],
     queryFn:loadGameData,
     staleTime:0,
     gcTime:0,
