@@ -1,5 +1,6 @@
 import {readFileSync} from 'node:fs';
 import {THEME_SLOTS_V2,THEME_TOKEN_KEYS_V2,getThemeSlotV2} from '../app/modular-v2/theme-registry.v2.js';
+import {SCOPES_V2} from '../app/modular-v2/scope-registry.v2.js';
 
 const failures=[];
 const read=path=>readFileSync(path,'utf8');
@@ -46,10 +47,15 @@ for(const slot of THEME_SLOTS_V2){
   }
 }
 for(const group of ['靈魂','連結','生命','自然','礦物','元素','秩序','無序'])if(!THEME_SLOTS_V2.some(slot=>slot.group===group))failures.push('missing theme group '+group);
-for(const token of ["AUTO_THEME_ID='auto'","THEME_TIME_ZONE='Asia/Taipei'","DAY_THEME_ID='theme-7'","NIGHT_THEME_ID='theme-1'","AUTHOR_THEME_ID='theme-2'","LUNARUNES_THEME_ID='theme-5'","lo3rwang:Object.freeze({mode:'fixed',themeId:AUTHOR_THEME_ID})","lunarunes:Object.freeze({mode:'fixed',themeId:LUNARUNES_THEME_ID})","loc:Object.freeze({mode:'auto'})"])if(!selector.includes(token))failures.push('Theme selector missing '+token);
+for(const scope of Object.values(SCOPES_V2)){
+  const policy=scope.theme||{mode:'auto'};
+  if(policy.mode==='fixed'&&getThemeSlotV2(policy.themeId).id!==policy.themeId)failures.push(scope.id+': invalid fixed theme '+policy.themeId);
+}
+for(const token of ["AUTO_THEME_ID='auto'","THEME_TIME_ZONE='Asia/Taipei'","DAY_THEME_ID='theme-7'","NIGHT_THEME_ID='theme-1'","getScopeV2"])if(!selector.includes(token))failures.push('Theme selector missing '+token);
+for(const stale of ['SCOPE_THEME_POLICY','AUTHOR_THEME_ID','LUNARUNES_THEME_ID'])if(selector.includes(stale))failures.push('Theme selector still hard-codes Scope policy: '+stale);
 if(!footer.includes('<ThemeSelectV2 scopeId={scopeId}/>'))failures.push('ScopeFooter must pass Scope identity to ThemeSelectV2');
 if(!layout.includes("import ScopeFooterV2 from './modular-v2/ScopeFooterV2'")||!layout.includes('<ScopeFooterV2 />'))failures.push('Root layout must use ScopeFooterV2');
-if(!layout.includes('id="loc-theme-bootstrap"')||!layout.includes("getThemeSlotV2"))failures.push('Root layout must apply the initial Scope theme before first paint');
+if(!layout.includes('id="loc-theme-bootstrap"')||!layout.includes('INITIAL_SCOPE_THEMES')||!layout.includes('SCOPES_V2'))failures.push('Root layout must bootstrap themes from Scope metadata before first paint');
 if(!selector.includes("root.dataset.themeId===slot.id"))failures.push('Theme selector must avoid reapplying the already bootstrapped theme');
 if(!game.includes("THEME_SLOTS_V2")||!game.includes("getThemeSlotV2")||!game.includes("GAME_THEME_DEFAULT='theme-5'")||!game.includes("GAME_THEME_AUTO='event-auto'"))failures.push('Game must consume the shared eight-group theme registry locally');
 if(game.includes('applyThemeV2(')||game.includes('document.documentElement'))failures.push('Game theme must stay scoped and must not mutate the root Scope theme');
