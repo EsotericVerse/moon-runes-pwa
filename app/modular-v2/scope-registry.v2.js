@@ -94,10 +94,9 @@ export function scopeOriginV2(scopeId){
 
 function scopeBaseHrefV2(scopeId){
   const scope=getScopeV2(scopeId);
-  if(scope.mount){
-    return `https://${scope.mount.host}${cleanPath(scope.mount.path)}`;
-  }
-  return scopeOriginV2(scopeId);
+  if(scope.domain)return scopeOriginV2(scopeId);
+  if(scope.mount)return `https://${scope.mount.host}${cleanPath(scope.mount.path)}`;
+  return '';
 }
 
 export function scopeHrefV2(scopeId,localPath=''){
