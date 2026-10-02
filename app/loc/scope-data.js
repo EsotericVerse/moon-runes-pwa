@@ -9,9 +9,28 @@ const SCOPE_ID_PATTERN=/^[a-z][a-z0-9]*$/;
 const TABLE_TOKEN_PATTERN=/^[a-z][a-z0-9_]*$/;
 
 function requiredToken(value,label){
-  const token=String(value||'').trim();
+  const token=String(value||'').trim()||label;
   if(!TABLE_TOKEN_PATTERN.test(token))throw new Error('silver.manage '+label+' 設定無效');
   return token;
+}
+
+function buildScopeData(row,id){
+  const galaxySuffix=requiredToken(row?.galaxy,'galaxy');
+  const timeSuffix=requiredToken(row?.time,'time');
+  const galaxy=`silver.${id}_${galaxySuffix}`;
+  return {
+    id,
+    role:String(row?.role||'').trim(),
+    birthday:String(row?.birthday||'').slice(0,10)||null,
+    galaxy,
+    galaxyMedia:galaxy+'_media',
+    time:`silver.${id}_${timeSuffix}`
+  };
+}
+
+export function defaultScopeData(scopeId){
+  const id=String(scopeId||'').trim();
+  return SCOPE_ID_PATTERN.test(id)?buildScopeData({},id):null;
 }
 
 export function scopeDataFromManageRows(rows=[]){
@@ -19,16 +38,7 @@ export function scopeDataFromManageRows(rows=[]){
   for(const row of Array.isArray(rows)?rows:[]){
     const id=String(row?.id||'').trim();
     if(!SCOPE_ID_PATTERN.test(id))continue;
-    const galaxySuffix=requiredToken(row?.galaxy,'galaxy');
-    const timeSuffix=requiredToken(row?.time,'time');
-    const next={
-      id,
-      role:String(row?.role||'').trim(),
-      birthday:String(row?.birthday||'').slice(0,10)||null,
-      galaxy:`silver.${id}_${galaxySuffix}`,
-      galaxyMedia:`silver.${id}_${galaxySuffix}_media`,
-      time:`silver.${id}_${timeSuffix}`
-    };
+    const next=buildScopeData(row,id);
     const current=scopes.get(id);
     if(current&&(current.galaxy!==next.galaxy||current.time!==next.time)){
       throw new Error('silver.manage Scope '+id+' 的 galaxy/time 設定不一致');
