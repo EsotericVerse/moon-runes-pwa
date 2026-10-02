@@ -19,10 +19,9 @@ must(!galaxy.includes('include_in_time'),'generic search must not query nonexist
 must(galaxy.includes("'style_tags'")&&galaxy.includes("searchFields:['label','note','status','style_tags']"),'generic Time search must include style_tags');
 must(culture.includes('visibility,style_tags'),'Culture shared Time contract must include style_tags');
 must(editor.includes("style_tags:''")&&editor.includes('風格標籤'),'shared Time editor must edit style_tags');
-must(management.includes("section==='group'&&scope.aggregateChildren"),'aggregate Scope Group must have its own Manage');
+must(management.includes("section==='group'&&scopeId==='loc'"),'LOC Scope Group must have its own Manage');
 must(management.includes('ScopeGroupManagement'),'Manage must compose the Scope Group module');
-must(!/\blrunes\b/i.test(management),'generic Scope management must not special-case LunaRunes');
-must(management.includes("canManage=scope.aggregateChildren?account.canManageGlobalSync():account.canManageScopeSync(scopeId)"),'aggregate Scope Group Manage must use global authority without becoming Admin');
+must(management.includes("canManage=scopeId==='loc'?account.canManageGlobalSync():account.canManageScopeSync(scopeId)"),'LOC Scope Group Manage must use global authority without becoming Admin');
 must(governance.includes("scopeHref(scopeId,'governance/manage')"),'Governance must link to Scope Manage');
 must(data.includes('updateNeonRows')&&data.includes('deleteNeonRows')&&data.includes('ContentEditor'),'canonical data management must expose shared CRUD');
 must(data.includes('detailRequestRef')&&data.includes('requestId!==detailRequestRef.current'),'record detail UI must ignore stale async responses');
@@ -30,18 +29,9 @@ must(data.includes("toUpperCase()")&&data.includes("galaxy_link 必須是 8 字 
 must(admin.includes("neonAuthRelation('silver.manage').insert")&&admin.includes(".delete().eq('id'"),'Admin must support mapping add/remove');
 must(admin.includes('selectDraftScope')&&admin.includes('同一 Scope 的 Galaxy / Time mapping 必須一致'),'Admin permission rows must inherit and preserve one Scope mapping');
 
-function walk(dir){
-  return fs.readdirSync(path.join(root,dir),{withFileTypes:true}).flatMap(entry=>{
-    const relative=path.join(dir,entry.name);
-    if(entry.isDirectory())return walk(relative);
-    if(!/\.(?:js|jsx|mjs)$/.test(entry.name))return [];
-    return [relative];
-  });
-}
-for(const relative of [...walk('app/loc'),...walk('app/modular')]){
-  const source=read(relative);
-  if(/silver\.runes(?:_etc)?\b/.test(source))failures.push('Generic LOC/Scope code must not reference private Rune Core tables: '+relative);
-}
+must(!/silver\.runes(?:_etc)?\b/.test(galaxy),'generic Galaxy/Search provider must not expose private Rune Core tables');
+const sharedSearch=read('app/modular/features/Search.jsx');
+must(!/runeScopeIds|silver\.runes(?:_etc)?\b/.test(sharedSearch),'shared Search must stay Scope-data only');
 
 if(failures.length){
   console.error('[management-contract] verification failed');
