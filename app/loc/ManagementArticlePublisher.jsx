@@ -8,7 +8,6 @@ import {useNeonAccount} from './use-neon-account';
 import ContentEditorV2 from '../modular-v2/ContentEditorV2';
 import {createUid8} from './uid';
 import {normalizeRelationIds,requireGalaxyContent,resolveGalaxyTitle} from './content-policy';
-import {resolveScopeTables} from './scope-table-mapping';
 
 
 const blank=()=>({
@@ -32,7 +31,8 @@ export default function ManagementArticlePublisher({scopeId}){
       const now=new Date().toISOString();
       const uid=createUid8();
 
-      const {galaxy}=await resolveScopeTables(scopeId,{email:account.email});
+      const galaxy=account.scopeDataFor(scopeId)?.galaxy;
+      if(!galaxy)throw new Error('Scope data 未解析');
       await insertNeonRows(galaxy,[{
         uid,content_type:'article',
         title:resolveGalaxyTitle(draft.title,content),content,
