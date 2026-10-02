@@ -41,6 +41,10 @@ Current 0.8.4 RC follow-up：
 
 0.8.4-rc 的一致化與去重複是 0.9 的前置工程：先把 resolver、mapping、query、audit 與概念責任收成單一路徑，再擴充 Scope Group。
 
+0.9 的一般 Scope 延伸採 copy-on-create governance：先複製來源資料，再在新 Scope 內獨立編輯；來源 Scope 保持不變。LunaRunes canonical structure 不列入可自由改寫的 Scope template。
+
+固定、可預期的 canonical 更新由網站管理流程直接處理；AI 不作為必要 write path，避免把重複指定工作轉成持續 API 成本。
+
 ## 1.0 Release
 
 1.0 之前仍需完成：
