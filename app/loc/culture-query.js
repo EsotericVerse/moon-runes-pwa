@@ -474,19 +474,6 @@ function mediaMetadataDescription(row){
   return fields.map(([label,value])=>{const text=decodeCultureText(value||'').trim();return text?`${label}：${text}`:'';}).filter(Boolean).join(' · ')||'沒有可讀的 metadata 文字';
 }
 
-async function selectLightweightIndexPage(table,{columns,filters=[],orders=[],limit=10,offset=0}={}){
-  const pageSize=Math.max(1,Math.floor(Number(limit)||10));
-  const pageOffset=Math.max(0,Math.floor(Number(offset)||0));
-  return (await selectNeonRows(table,{
-    columns,
-    filters,
-    orders,
-    limit:pageSize,
-    offset:pageOffset,
-    maxLimit:pageSize
-  })).rows;
-}
-
 export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=null,sourceName='',sourceNames=[],mediaTypes=[],limit=10,offset=0,cursor=null}={}){
   const scopeId=scopeIdOf(scope?.id);
   if(!scopeId)throw new Error('scopeId is required');
@@ -517,20 +504,22 @@ export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=nul
   const [galaxyCount,mediaCount,galaxyResult,mediaResult]=await Promise.all([
     includeGalaxy?selectNeonCount(scope.galaxy,{filters:galaxyFilters}):Promise.resolve(0),
     includeMedia?selectNeonCount(scope.galaxyMedia,{filters:mediaFilters}):Promise.resolve(0),
-    includeGalaxy?selectLightweightIndexPage(scope.galaxy,{
+    includeGalaxy?selectNeonRows(scope.galaxy,{
       columns:'uid,createtime',
       filters:galaxyFilters,
       orders:[{column:'createtime',ascending:false},{column:'uid',ascending:true}],
       limit:pageSize,
-      offset:galaxyOffset
-    }):Promise.resolve([]),
-    includeMedia?selectLightweightIndexPage(scope.galaxyMedia,{
+      offset:galaxyOffset,
+      maxLimit:pageSize
+    }).then(page=>page.rows):Promise.resolve([]),
+    includeMedia?selectNeonRows(scope.galaxyMedia,{
       columns:'media_id,createtime',
       filters:mediaFilters,
       orders:[{column:'createtime',ascending:false},{column:'media_id',ascending:true}],
       limit:pageSize,
-      offset:mediaOffset
-    }):Promise.resolve([])
+      offset:mediaOffset,
+      maxLimit:pageSize
+    }).then(page=>page.rows):Promise.resolve([])
   ]);
 
   const galaxyRows=(galaxyResult||[]).map(row=>({
@@ -616,7 +605,9 @@ export async function selectScopePeriodWorkDetails(scope,{items=[]}={}){
     scope_id:scopeId,
     links:Array.isArray(row.resolved_links)?row.resolved_links:[]
   }]));
-  const mediaById=new Map((mediaResult.rows||[]).map(row=>[String(row.media_id),{
+  const mediaById=new Map((mediaResult.rows||[]).map(row=>{
+    const metadataDescription=mediaMetadataDescription(row);
+    return [String(row.media_id),{
     ...row,
     key:'media:'+row.media_id,
     record_type:'galaxy_media',
@@ -627,14 +618,15 @@ export async function selectScopePeriodWorkDetails(scope,{items=[]}={}){
     date:row.createtime,
     display_date:formatCultureDateTime(row.createtime),
     title:decodeCultureText(row.title||'').trim()||row.media_type||'多媒體',
-    description:mediaMetadataDescription(row),
-    media_metadata_text:mediaMetadataDescription(row),
+    description:metadataDescription,
+    media_metadata_text:metadataDescription,
     group_label:String(row.media_type||''),
     scope_id:scopeId,
     links:row.url&&/^https?:\/\//i.test(String(row.url))
       ?[{id:'media:'+String(row.media_id),href:row.url,label:'媒體連結'}]
       :[]
-  }]));
+  }];
+  }));
 
   return {
     rows:source.map(row=>row.entry_type==='work'
