@@ -7,7 +7,6 @@ import {insertNeonRows} from './neon-client';
 import {useNeonAccount} from './use-neon-account';
 import {createUid8} from './uid';
 import {normalizeGalaxyContent,normalizeRelationIds,resolveGalaxyTitle} from './content-policy';
-import {resolveScopeTables} from './scope-table-mapping';
 
 function sourceSuggestion(name=''){
   const value=String(name).toLowerCase();
@@ -78,7 +77,8 @@ function JsonImport({scopeId}){
         };
       }).filter(row=>row.content);
       const skipped=Math.max(0,rows.length-payload.length);
-      const {galaxy}=await resolveScopeTables(scopeId,{email:account.email});
+      const galaxy=account.scopeDataFor(scopeId)?.galaxy;
+      if(!galaxy)throw new Error('Scope data 未解析');
       await insertNeonRows(galaxy,payload);
       setStatus(`已匯入 ${payload.length.toLocaleString()} 筆到來源「${selected}」${skipped?`；略過 ${skipped.toLocaleString()} 筆無正文資料。`:''}`);
       setRows([]);setFileName('');
@@ -137,7 +137,8 @@ function MediaRecordInsert({scopeId}){
       if(!record.title&&!record.url&&!record.meta_tags&&!record.source_native_id&&!record.source_place){
         throw new Error('至少填寫 title、url、meta_tags、source_native_id 或 source_place 其中一項。');
       }
-      const {galaxyMedia}=await resolveScopeTables(scopeId,{email:account.email});
+      const galaxyMedia=account.scopeDataFor(scopeId)?.galaxyMedia;
+      if(!galaxyMedia)throw new Error('Scope data 未解析');
       await insertNeonRows(galaxyMedia,[record]);
       setStatus('多媒體資料已直接寫入 Galaxy Media。');
       setDraft({
@@ -194,7 +195,9 @@ function SunoImport({scopeId}){
       const lyricsUid=draft.lyrics.trim()?createUid8():null;
       const styleUid=lyricsUid&&draft.stylePrompt.trim()?createUid8():null;
       const sourceId=draft.source_id.trim()||(styleUid?draft.ref_id.trim():'')||null;
-      const {galaxy,galaxyMedia}=await resolveScopeTables(scopeId,{email:account.email});
+      const scopeData=account.scopeDataFor(scopeId);
+      if(!scopeData)throw new Error('Scope data 未解析');
+      const {galaxy,galaxyMedia}=scopeData;
       if(lyricsUid){
         await insertNeonRows(galaxy,[{
           uid:lyricsUid,content_type:'lyrics',
