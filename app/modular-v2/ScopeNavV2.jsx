@@ -49,7 +49,7 @@ export default function ScopeNavV2(){
       return <NavTarget key={item.id} href={href} label={item.nav.label||item.label} current={targetIsCurrent(href,host,pathname)}/>;
     })}
     {NAV_FEATURE_ORDER.map(id=>FEATURES_V2.find(item=>item.id===id)).filter(Boolean).map(item=>
-      <NavTarget key={item.id} href={featureHrefV2(navScopeId,item.id)} label={item.label} current={scopeId!=='admin'&&currentFeature===item.id}/>
+      <NavTarget key={item.id} href={featureHrefV2(navScopeId,item.id)} label={item.label} current={!currentScope.featureScope&&currentFeature===item.id}/>
     )}
     <form onSubmit={submitSearch} role="search" className="scope-v2-search">
       <input name="q" type="search" aria-label={UI_COPY.nav.searchAria} placeholder={UI_COPY.nav.search} value={searchText} onChange={event=>setSearchText(event.target.value)}/>
