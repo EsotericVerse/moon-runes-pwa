@@ -67,7 +67,7 @@ export default function DailyLogClient({embedded=false}={}){
     direction:'正位'
   }));
   const {year,month}=monthParts(monthValue);
-  const canWrite=account.canManageScopeSync('lunarunes');
+  const canWrite=account.canManageScopeSync('lrunes');
 
   const loadMonth=useCallback(async()=>{
     setLoading(true);
