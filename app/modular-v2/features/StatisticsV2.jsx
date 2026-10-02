@@ -221,7 +221,7 @@ function StatisticTypeSelect({scopeId,navigation,types}){
   </label>;
 }
 
-function StatisticsPanel({scopeId,navigation,types}){
+function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
   const requested=String(navigation.rankingType||'');
   const rankingType=types.includes(requested)?requested:(types[0]||'');
   const [chartType,setChartType]=useState('line');
@@ -236,8 +236,8 @@ function StatisticsPanel({scopeId,navigation,types}){
   });
   const targetScopes=useMemo(()=>{
     const scopes=scopesQuery.data||[];
-    return scopeId==='loc'?scopes:scopes.filter(scope=>scope.id===scopeId);
-  },[scopeId,scopesQuery.data]);
+    return aggregateScopes?scopes:scopes.filter(scope=>scope.id===scopeId);
+  },[aggregateScopes,scopeId,scopesQuery.data]);
   const customReady=timeStandard!=='custom'||Boolean(dateKey(customFrom)&&dateKey(customTo)&&customFrom<=customTo);
   const queryRange=useMemo(()=>timeStandard==='custom'&&customReady
     ?{startDate:customFrom,endDate:customTo}
@@ -280,16 +280,16 @@ function StatisticsPanel({scopeId,navigation,types}){
   </section>;
 }
 
-function StatisticsShell({scopeId,navigation}){
+function StatisticsShell({scopeId,aggregateScopes,navigation}){
   return <section className="loc-card scope-v2-feature-card">
-    <StatisticsPanel scopeId={scopeId} navigation={navigation} types={STAT_TYPES}/>
+    <StatisticsPanel scopeId={scopeId} aggregateScopes={aggregateScopes} navigation={navigation} types={STAT_TYPES}/>
   </section>;
 }
 export default function StatisticsV2(){
-  const {scopeId}=useScopeRuntimeV2();
+  const {scopeId,scope}=useScopeRuntimeV2();
   const searchParams=useSearchParams();
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
   return <FeaturePageV2 featureId="statics">
-    <StatisticsShell scopeId={scopeId} navigation={navigation}/>
+    <StatisticsShell scopeId={scopeId} aggregateScopes={Boolean(scope?.aggregateChildren)} navigation={navigation}/>
   </FeaturePageV2>;
 }
