@@ -1,7 +1,7 @@
 'use client';
 
 import {useCallback,useEffect,useRef,useState} from 'react';
-import {DEFAULT_LIST_BATCH_SIZE} from './list-loading.v2';
+import {DEFAULT_LIST_BATCH_SIZE} from '../loc/list-loading-contract.mjs';
 
 function appendUnique(current,next,getRowKey){
   if(typeof getRowKey!=='function')return [...current,...next];
