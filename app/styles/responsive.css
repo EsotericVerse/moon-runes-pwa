@@ -12,7 +12,7 @@
   .loc-next-main{width:min(100% - 1rem,1180px)}
   .loc-next-header{padding:.65rem .55rem}
   .loc-next-brand{padding-top:0}
-  .loc-hero,.loc-card,.loc-panel,.loc-bubble,.loc-player,.loc-event{border-radius:14px}
+  .loc-hero,.loc-bubble,.loc-player,.loc-event{border-radius:14px}
   .loc-hand{grid-template-columns:1fr}
   .loc-legend,.loc-metrics{grid-template-columns:1fr}
   .loc-actions .loc-button{flex:1 1 auto}

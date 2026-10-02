@@ -54,6 +54,7 @@ for(const token of ["AUTO_THEME_ID='auto'","THEME_TIME_ZONE='Asia/Taipei'","DAY_
 for(const stale of ['SCOPE_THEME_POLICY','AUTHOR_THEME_ID','LUNARUNES_THEME_ID'])if(shell.includes(stale))failures.push('AppShell theme control still hard-codes Scope policy: '+stale);
 if(!layout.includes("import AppShell from './AppShell'")||!layout.includes('<AppShell>{children}</AppShell>'))failures.push('Root layout must use AppShell');
 if(!layout.includes('id="loc-theme-bootstrap"')||!layout.includes('INITIAL_SCOPE_THEMES')||!layout.includes('SCOPES'))failures.push('Root layout must bootstrap themes from Scope metadata before first paint');
+if(!layout.includes("if(!scope.mount)return false;")||!layout.includes("||scopes.find(scope=>scope.domain&&host==="))failures.push('Root theme bootstrap must resolve mounted Scopes before host domains');
 if(!shell.includes("root.dataset.themeId===slot.id"))failures.push('AppShell theme control must avoid reapplying the already bootstrapped theme');
 if(!game.includes("THEME_SLOTS")||!game.includes("getThemeSlot")||!game.includes("GAME_THEME_DEFAULT='theme-5'")||!game.includes("GAME_THEME_AUTO='event-auto'"))failures.push('Game must consume the shared eight-group theme registry locally');
 if(game.includes('applyTheme(')||game.includes('document.documentElement'))failures.push('Game theme must stay scoped and must not mutate the root Scope theme');

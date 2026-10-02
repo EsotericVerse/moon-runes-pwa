@@ -34,12 +34,10 @@ const INITIAL_THEME_SCRIPT=`(()=>{try{
   const host=window.location.hostname.toLowerCase();
   const pathname=(window.location.pathname||'/').toLowerCase();
   const match=scopes.find(scope=>{
-    if(scope.mount){
-      const base=String(scope.mount.path||'/').replace(/\\/+$/,'')||'/';
-      if(host===String(scope.mount.host||'').toLowerCase()&&(pathname===base||pathname.startsWith(base+'/')))return true;
-    }
-    return scope.domain&&host===String(scope.domain).toLowerCase();
-  });
+    if(!scope.mount)return false;
+    const base=String(scope.mount.path||'/').replace(/\\/+$/,'')||'/';
+    return host===String(scope.mount.host||'').toLowerCase()&&(pathname===base||pathname.startsWith(base+'/'));
+  })||scopes.find(scope=>scope.domain&&host===String(scope.domain).toLowerCase());
   const policy=match?.theme||{mode:'auto'};
   let themeId=policy.mode==='fixed'?policy.themeId:'';
   if(!themeId){
