@@ -24,7 +24,10 @@ must(management.includes('ScopeGroupManagement')&&management.includes('RuneKeywo
 must(management.includes("canManage=scopeId==='loc'?account.canManageGlobalSync():account.canManageScopeSync(scopeId)"),'LOC Scope Group Manage must use global management authority without becoming Admin');
 must(governance.includes("scopeHref(scopeId,'governance/manage')"),'Governance must link to Scope Manage');
 must(data.includes('updateNeonRows')&&data.includes('deleteNeonRows')&&data.includes('ContentEditor'),'canonical data management must expose shared CRUD');
+must(data.includes('detailRequestRef')&&data.includes('requestId!==detailRequestRef.current'),'record detail UI must ignore stale async responses');
+must(data.includes("toUpperCase()")&&data.includes("galaxy_link 必須是 8 字 UID"),'media edit must normalize and validate galaxy_link');
 must(admin.includes("neonAuthRelation('silver.manage').insert")&&admin.includes(".delete().eq('id'"),'Admin must support mapping add/remove');
+must(admin.includes('selectDraftScope')&&admin.includes('同一 Scope 的 Galaxy / Time mapping 必須一致'),'Admin permission rows must inherit and preserve one Scope mapping');
 
 if(failures.length){
   console.error('[management-contract] verification failed');
