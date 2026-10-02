@@ -111,7 +111,7 @@ export default function RuneSingleDailySurface({
         {RUNE_DRAW_MODES.map(item=><a
           className="loc-bubble"
           key={item.key}
-          href={scopeHrefV2('lunarunes',item.path)}
+          href={scopeHrefV2('lrunes',item.path)}
           aria-current={item.key===modeKey?'page':undefined}
         >
           <strong>{item.label}</strong>
