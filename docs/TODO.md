@@ -18,6 +18,8 @@
 - [ ] 以 Current Scope mapping 為基礎建立 Scope Group；不新增第二套 table resolver。
 - [ ] Search／Statistics／Culture 以 Scope Group 組合多 Scope，維持各 Scope 精準 query + pagination。
 - [ ] Audit 對新增 Scope／Scope Group 使用同一 resolver contract，不新增具名 Scope table 清單。
+- [ ] Scope 建立流程採先複製再獨立編輯，確認來源 Scope 不會被個人化修改回寫。
+- [ ] 將可預期的 canonical 更新收斂到網站管理流程；AI 不作為必要 write path。
 
 ## 1.0
 
