@@ -8,19 +8,15 @@ import {useSearchParams} from 'next/navigation';
 
 import {selectNeonAuthRow,updateNeonRows} from '../../loc/neon-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
-import FeaturePage from '../FeaturePage';
-import WorkSummaryCard from '../WorkSummaryCard';
-import WorkFullText from '../WorkFullText';
+import {ContentEditor,FeaturePage,IncrementalList,WorkFullText,WorkSummaryCard} from '../ui';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {SCOPES,scopeHref} from '../scope-registry';
 import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
-import ContentEditor from '../ContentEditor';
 import {resolveGalaxyExternalLinks,searchGalaxyRows,selectGalaxyContent,selectGalaxyIdentity} from '../../loc/galaxy-query';
 import {selectManagedScopes} from '../../loc/scope-data';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
-import IncrementalList from '../IncrementalList';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import {applyNeonFilters} from '../../loc/neon-query';
 
