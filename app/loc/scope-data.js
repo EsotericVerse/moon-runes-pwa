@@ -74,3 +74,16 @@ export async function selectManagedScope(scopeId){
   });
   return scopeDataFromManageRows(rows)[0]||null;
 }
+
+
+export async function selectScopeConfig(scopeId){
+  const scope=defaultScopeData(scopeId);
+  if(!scope)return null;
+  const {rows}=await selectNeonRows(scope.config,{
+    columns:'id,theme,search_able,statistics_able,culture_able',
+    filters:[{column:'id',operator:'eq',value:scope.id}],
+    limit:1,
+    offset:0
+  });
+  return rows[0]||null;
+}
