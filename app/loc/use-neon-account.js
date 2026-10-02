@@ -57,15 +57,6 @@ export function useNeonAccount(){
     await signOutNeon();
     setState({...emptyState,loading:false,permissionLoading:false});
   },[]);
-
-  const canManageScope=useCallback(
-    async scopeId=>Boolean(state.authorizer?.canManageScopeSync(scopeId)),
-    [state.authorizer]
-  );
-  const canManageGlobal=useCallback(
-    async()=>Boolean(state.authorizer?.canManageGlobalSync()),
-    [state.authorizer]
-  );
   const canManageScopeSync=useCallback(
     scopeId=>Boolean(state.authorizer?.canManageScopeSync(scopeId)),
     [state.authorizer]
@@ -81,6 +72,6 @@ export function useNeonAccount(){
 
   return {
     ...state,refresh,signIn,signOut,
-    canManageScope,canManageGlobal,canManageScopeSync,canManageGlobalSync,scopeDataFor
+    canManageScopeSync,canManageGlobalSync,scopeDataFor
   };
 }
