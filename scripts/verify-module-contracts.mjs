@@ -26,12 +26,12 @@ walk(resolve(root,'app'),path=>{
   if(/\bwork_count\b/.test(source))failures.push(file+': stored work_count is outside the Current live aggregate contract');
 });
 
-for(const path of ['app/lrunes/RunesClient.jsx','app/loc/model/rune-graph-core.js','app/loc/neon-culture-client.js','app/loc/neon-statistics-client.js','assets/lunarunes/cards/65_玄.png','assets/lunarunes/cards/66_命.png']){
+for(const path of ['app/lrunes/RunesClient.jsx','app/lrunes/RuneDrawClient.jsx','app/loc/model/rune-graph-core.js','app/loc/neon-culture-client.js','app/loc/neon-statistics-client.js','assets/lunarunes/cards/65_玄.png','assets/lunarunes/cards/66_命.png']){
   if(!existsSync(resolve(root,path)))failures.push('missing Current module contract file: '+path);
 }
 
-const runesClient=readFileSync(resolve(root,'app/lrunes/RunesClient.jsx'),'utf8');
-for(const token of ['data-draw-action="execute"','function executeDraw','function finishDraw'])if(!runesClient.includes(token))failures.push('RunesClient missing '+token);
+const runeDrawClient=readFileSync(resolve(root,'app/lrunes/RuneDrawClient.jsx'),'utf8');
+for(const token of ['data-draw-action="retry"','function executeDraw','function finishDraw'])if(!runeDrawClient.includes(token))failures.push('RuneDrawClient missing '+token);
 
 const cultureView=readFileSync(resolve(root,'app/modular-v2/features/CultureV2.jsx'),'utf8');
 const uiCopy=readFileSync(resolve(root,'app/i18n/ui-copy.js'),'utf8');
