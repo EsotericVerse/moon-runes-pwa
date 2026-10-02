@@ -7,7 +7,8 @@ const required=[
   'app/loc/galaxy-query.js',
   'app/modular/features/Search.jsx',
   'app/loc/model/daily-trend-engine.mjs',
-  'app/loc/scope-data.js'
+  'app/loc/scope-data.js',
+  'scripts/verify-neon-public-read.mjs'
 ];
 for(const path of required)if(!fs.existsSync(path)||!read(path).trim())failures.push('missing Current contract file: '+path);
 if(!failures.length){
@@ -20,6 +21,9 @@ if(!failures.length){
   if(/flexsearch|new Index\(/i.test(galaxy))failures.push('Global Search must remain Neon-first.');
   const scopeData=read('app/loc/scope-data.js');
   for(const token of ["MANAGE_TABLE='silver.manage'",'scopeDataFromManageRows','defaultScopeData','selectManagedScopes'])if(!scopeData.includes(token))failures.push('Scope data source missing '+token);
+  const neonAudit=read('scripts/verify-neon-public-read.mjs');
+  for(const token of ['managedScopes','scopeMapping','scopeMappings','mapping conflict','verifyManagedScope'])if(!neonAudit.includes(token))failures.push('Public Neon audit missing Scope-derived '+token);
+  for(const token of ['lo3rwang_galaxy','lrunes_galaxy','lo3rwang_time','lrunes_time'])if(neonAudit.includes(token))failures.push('Public Neon audit must not hard-code Scope table '+token);
 }
 if(failures.length){
   console.error('[current-semantics] failures:\n'+failures.map(item=>'- '+item).join('\n'));

@@ -1,6 +1,6 @@
 # LOC Current Canon
 
-**Version:** 0.8.3.2-rc  
+**Version:** 0.8.4-rc  
 **Author:** Lucas Oscar Wang 政德
 
 ## 1. Fixed identity
@@ -20,11 +20,11 @@ Current implementation 以最新 main + Current Neon 為準。
 - Data Scope mapping：silver.manage。
 - Runtime canonical content：Neon canonical tables。
 - LunaRunes runtime：silver.runes、silver.runes_etc。
-- LunaRunes mother/source data 不因 UI、KM 或 Search 被反向改寫。
+- LunaRunes mother/source data 不因 UI 或 Search 被反向改寫。
 
-文件、KM、UI copy、Search result 與 analysis output 都不能建立第二份資料權威。
+文件、UI copy、Search result、analysis output 與 audit 都不能建立第二份資料權威。
 
-KM 若重新啟用，只能作為 Current knowledge layer：保存已確認、可重複使用的知識單元。KM 不得建立 route、table mapping、permission、keyword fallback、Registry metadata 或 Canon；當 KM 與 Current main／Current Neon 衝突時，一律以 Current main／Current Neon 為準並修正或刪除 KM 內容。
+Current 不使用 KM。Current authority 僅以最新 main + Current Neon 為準；若未來重新引入 knowledge layer，也不得持有 route、table mapping、permission、keyword fallback、Registry metadata 或 Canon authority。
 
 ## 3. Shared features
 
@@ -59,6 +59,30 @@ Query：
 - 不 select all 後在 JS slice。
 - Culture／Statistics／Search 遵守相同的分頁與精準查詢原則。
 - 不建立第二份 corpus cache、ranking snapshot 或 projection 作 Current authority。
+
+### Scope mapping rule
+
+一般 Scope 的 Search／Statistics／Culture／Management／Audit 必須先解析 Scope，再由 `silver.manage` 的 mapping 取得 Galaxy／Time table responsibility。不得把 `lo3rwang_*`、`lrunes_*` 之類具名 Scope table 寫成共用流程的固定依賴。
+
+LunaRunes 專有 SSOT（例如 `silver.runes`、`silver.runes_etc`、`silver.game`）不屬一般 Scope mapping，維持其專有責任。
+
+此規則是 0.9 Scope Group 化的前置條件：Scope Group 組合既有 Scope mapping，不新增第二套 table resolver 或 corpus authority。
+
+### Scope copy governance
+
+一般 Scope 的延伸採「先複製、再各自編輯」：新 Scope 從既有來源建立自己的資料副本後，後續修改只屬於新 Scope，不回寫、不污染原始 Scope 的語意與 canonical data。個人化發生在副本，不發生在來源本體。
+
+LunaRunes 不屬一般可改寫模板。其 Rune 結構與 canonical semantics 不開放使用者自行更改；Current 階段僅因 canonical keyword library 整理而保留必要的作者管理修改入口。
+
+Canonical content 的固定更新流程應由網站／管理介面直接完成。AI 分析可以作為外部輔助，但不作為重複、確定性資料更新的必要 write path，也不要求為既定規則反覆消耗 API key。
+
+### Scope presentation and copy contract
+
+一般 Scope 共用的 Culture／Statistics／Search 保持同一套功能名稱、操作方式與 query contract；建立新 Scope 不複製或改寫這些共用功能的程式邏輯，只把 Scope mapping 傳入共用模組。
+
+Scope 首頁屬於該 Scope 自己的 presentation content。首頁文字、文字框與文字泡泡可由網站編輯器更新，修改只影響該 Scope。
+
+Governance 頁在建立 Scope 時，從 Author／基準治理頁複製一份起始內容到新 Scope；之後由該 Scope 自己維護。任何個人化修改都只改副本，不回寫 Author／來源治理頁。
 
 ## 5. Management boundary
 

@@ -1,10 +1,10 @@
 # LOC Current TODO
 
-**Current version:** 0.8.3.2-rc
+**Current version:** 0.8.4-rc
 
-## 0.8.3.2 RC backlog
+## 0.8.4 RC follow-up verification
 
-- [ ] 完成 LunaRunes interpretation sentence handling，確保 single、Daily、2／3／5／11 card 只使用實際抽到的方向資料。
+- [ ] 獨立驗收 LunaRunes interpretation sentence handling，確保 single、Daily、2／3／5／11 card 只使用實際抽到的方向資料。
 - [ ] 完成 LunaRunes canonical keyword library 與管理流程。
 - [ ] 確保 LunaRunes keyword／positive_keywords／negative_keywords 不成為一般 Scope fallback。
 - [ ] 完成 LunaRunes Game 規則呈現、互動與最終 UI。
@@ -12,6 +12,14 @@
 - [ ] 將 public Search／Statistics／Culture availability 接到 Current DB feature flags；management visibility 保持獨立。
 - [ ] 以大型 corpus 進行 Search／Culture／Statistics stress test；維持精準 query + pagination。
 - [ ] 統一 Culture／Statistics／Search incremental loading contract。
+
+## 0.9 Scope Group
+
+- [ ] 以 Current Scope mapping 為基礎建立 Scope Group；不新增第二套 table resolver。
+- [ ] Search／Statistics／Culture 以 Scope Group 組合多 Scope，維持各 Scope 精準 query + pagination。
+- [ ] Audit 對新增 Scope／Scope Group 使用同一 resolver contract，不新增具名 Scope table 清單。
+- [ ] Scope 建立流程採先複製再獨立編輯，確認來源 Scope 不會被個人化修改回寫。
+- [ ] 將可預期的 canonical 更新收斂到網站管理流程；AI 不作為必要 write path。
 
 ## 1.0
 
