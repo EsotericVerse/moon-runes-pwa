@@ -1,10 +1,9 @@
 import {existsSync} from 'node:fs';
 import {resolve} from 'node:path';
-import {FEATURES_V2,SCOPES_V2,SCOPE_POLICY_V2,featureHrefV2,resolveScopeV2} from '../app/modular-v2/scope-registry.v2.js';
+import {FEATURES_V2,SCOPES_V2,featureHrefV2,resolveScopeV2} from '../app/modular-v2/scope-registry.v2.js';
 
 const failures=[];
-if(SCOPE_POLICY_V2.routeAuthority!=='next-filesystem')failures.push('route authority must be Next filesystem');
-if(SCOPE_POLICY_V2.dataAuthority!=='neon')failures.push('data authority must be Neon');
+if(resolveScopeV2('unknown.example','/')!=='loc')failures.push('default Scope must remain loc');
 for(const [id,scope] of Object.entries(SCOPES_V2)){
   if(scope.id!==id)failures.push(id+' registry key/id mismatch');
   if(!['domain','directory'].includes(scope.scopeType))failures.push(id+' invalid scopeType');
