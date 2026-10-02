@@ -20,14 +20,10 @@ import {selectGalaxyContent} from '../../loc/galaxy-query';
 import {insertNeonRows,neonAuthRelation} from '../../loc/neon-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {useScopeRuntime} from '../use-scope-runtime';
-import FeaturePage from '../FeaturePage';
-import WorkSummaryCard from '../WorkSummaryCard';
-import WorkFullText from '../WorkFullText';
+import {ContentEditor,FeaturePage,IncrementalList,WorkFullText,WorkSummaryCard} from '../ui';
 import {workDisplayHeading,workDisplayText} from '../work-display-model';
-import IncrementalList from '../IncrementalList';
 import {useOffsetPagination} from '../use-offset-pagination';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
-import ContentEditor from '../ContentEditor';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 
 function labelOf(item,index){
