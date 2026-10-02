@@ -144,13 +144,14 @@ export default function SearchV2(){
     queryFn:selectManagedScopes,
     staleTime:5*60_000
   });
+  const aggregateScopes=Boolean(scope?.aggregateChildren);
   const targetScopes=useMemo(()=>{
     const scopes=scopesQuery.data||[];
-    return scopeId==='loc'?scopes:scopes.filter(item=>item.id===scopeId);
-  },[scopeId,scopesQuery.data]);
+    return aggregateScopes?scopes:scopes.filter(item=>item.id===scopeId);
+  },[aggregateScopes,scopeId,scopesQuery.data]);
   const scopeById=useMemo(()=>new Map(targetScopes.map(item=>[item.id,item])),[targetScopes]);
   const runeScopeIds=useMemo(()=>Object.values(SCOPES_V2).filter(item=>item.searchKind==='runes').map(item=>item.id),[]);
-  const collectionLabel=scopeId==='loc'?UI_COPY.search.allContent:String(scope?.label||scopeId);
+  const collectionLabel=aggregateScopes?UI_COPY.search.allContent:String(scope?.label||scopeId);
 
   async function executeSearch(rawQuery,cursor=null,{append=false}={}){
     const q=String(rawQuery||'').trim();
