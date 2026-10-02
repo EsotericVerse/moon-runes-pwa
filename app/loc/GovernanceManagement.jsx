@@ -5,7 +5,7 @@ import {UI_COPY} from '../i18n/ui-copy';
 import {useEffect,useMemo,useState} from 'react';
 import {useNeonAccount} from './use-neon-account';
 import {useScopeRuntime} from '../modular/use-scope-runtime';
-import {getScopeV2,scopeHref} from '../modular/scope-registry';
+import {getScope,scopeHref} from '../modular/scope-registry';
 import ManagementArticlePublisher from './ManagementArticlePublisher';
 import ManagementImportPanel from './ManagementImportPanel';
 import ManagementDataPanel from './ManagementDataPanel';
@@ -84,7 +84,7 @@ function sectionOptions(scopeId){
 export default function GovernanceManagement(){
   const account=useNeonAccount();
   const {scopeId}=useScopeRuntime();
-  const scope=getScopeV2(scopeId);
+  const scope=getScope(scopeId);
   const options=useMemo(()=>sectionOptions(scopeId),[scopeId]);
   const [section,setSection]=useState('data');
   const canManage=account.canManageScopeSync(scopeId);

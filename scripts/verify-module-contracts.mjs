@@ -47,6 +47,16 @@ for(const path of [
 }
 
 for(const path of [
+  'app/QueryProvider.jsx',
+  'app/AppExperience.jsx',
+  'app/modular/ScopeNav.jsx',
+  'app/modular/ScopeFooter.jsx',
+  'app/modular/ThemeSelect.jsx',
+  'app/modular/FeaturePage.jsx',
+  'app/modular/ContentEditor.jsx',
+  'app/modular/WorkFullText.jsx',
+  'app/modular/WorkSummaryCard.jsx',
+  'app/modular/IncrementalList.jsx',
   'app/loc/scope-table-mapping.js',
   'app/loc/aggregate-query.js',
   'app/loc/neon-search.js',
