@@ -20,7 +20,7 @@ must(galaxy.includes("'style_tags'")&&galaxy.includes("searchFields:['label','no
 must(culture.includes('visibility,style_tags'),'Culture shared Time contract must include style_tags');
 must(editor.includes("style_tags:''")&&editor.includes('風格標籤'),'shared Time editor must edit style_tags');
 must(management.includes("section==='group'&&scopeId==='loc'"),'LOC Scope Group must have its own Manage');
-must(management.includes('ScopeGroupManagement')&&management.includes('RuneKeywordManagement'),'Manage must compose group and rune keyword modules');
+must(management.includes('ScopeGroupManagement'),'Manage must compose the Scope Group module');
 must(management.includes("canManage=scopeId==='loc'?account.canManageGlobalSync():account.canManageScopeSync(scopeId)"),'LOC Scope Group Manage must use global management authority without becoming Admin');
 must(governance.includes("scopeHref(scopeId,'governance/manage')"),'Governance must link to Scope Manage');
 must(data.includes('updateNeonRows')&&data.includes('deleteNeonRows')&&data.includes('ContentEditor'),'canonical data management must expose shared CRUD');
@@ -28,6 +28,19 @@ must(data.includes('detailRequestRef')&&data.includes('requestId!==detailRequest
 must(data.includes("toUpperCase()")&&data.includes("galaxy_link 必須是 8 字 UID"),'media edit must normalize and validate galaxy_link');
 must(admin.includes("neonAuthRelation('silver.manage').insert")&&admin.includes(".delete().eq('id'"),'Admin must support mapping add/remove');
 must(admin.includes('selectDraftScope')&&admin.includes('同一 Scope 的 Galaxy / Time mapping 必須一致'),'Admin permission rows must inherit and preserve one Scope mapping');
+
+function walk(dir){
+  return fs.readdirSync(path.join(root,dir),{withFileTypes:true}).flatMap(entry=>{
+    const relative=path.join(dir,entry.name);
+    if(entry.isDirectory())return walk(relative);
+    if(!/\.(?:js|jsx|mjs)$/.test(entry.name))return [];
+    return [relative];
+  });
+}
+for(const relative of [...walk('app/loc'),...walk('app/modular')]){
+  const source=read(relative);
+  if(/silver\.runes(?:_etc)?\b/.test(source))failures.push('Generic LOC/Scope code must not reference private Rune Core tables: '+relative);
+}
 
 if(failures.length){
   console.error('[management-contract] verification failed');
