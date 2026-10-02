@@ -86,27 +86,49 @@ export async function selectNeonAuthRow(table,{idColumn,id,columns}={}){
   return data?.[0]||null;
 }
 
+async function managementWrite(payload){
+  const {data,error}=await neonAuthClient.schema('api').rpc('management_write',payload);
+  if(error)throw new Error(error.message||'Management write failed');
+  return data||{count:0};
+}
+
 export async function insertNeonRows(table,rows){
-  const {error}=await neonAuthRelation(table).insert(rows);
-  if(error)throw new Error(error.message||('Neon INSERT '+table+' failed'));
+  const list=Array.isArray(rows)?rows:[];
+  const batchSize=200;
+  let count=0;
+  for(let offset=0;offset<list.length;offset+=batchSize){
+    const result=await managementWrite({
+      p_table:table,
+      p_operation:'insert',
+      p_rows:list.slice(offset,offset+batchSize),
+      p_values:null,
+      p_filters:[]
+    });
+    count+=Number(result?.count||0);
+  }
+  return {count};
 }
 
 export async function updateNeonRows(table,values,{filters=[]}={}){
-  let query=neonAuthRelation(table).update(values);
-  for(const filter of filters)query=filter.operator==='in'
-    ?query.in(filter.column,filter.value)
-    :query[filter.operator](filter.column,filter.value);
-  const {error}=await query;
-  if(error)throw new Error(error.message||('Neon UPDATE '+table+' failed'));
+  const result=await managementWrite({
+    p_table:table,
+    p_operation:'update',
+    p_rows:null,
+    p_values:values||{},
+    p_filters:filters
+  });
+  return result;
 }
 
 export async function deleteNeonRows(table,{filters=[]}={}){
-  let query=neonAuthRelation(table).delete();
-  for(const filter of filters)query=filter.operator==='in'
-    ?query.in(filter.column,filter.value)
-    :query[filter.operator](filter.column,filter.value);
-  const {error}=await query;
-  if(error)throw new Error(error.message||('Neon DELETE '+table+' failed'));
+  const result=await managementWrite({
+    p_table:table,
+    p_operation:'delete',
+    p_rows:null,
+    p_values:null,
+    p_filters:filters
+  });
+  return result;
 }
 
 export async function getNeonSession(){
