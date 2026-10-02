@@ -6,30 +6,26 @@ import {useEffect,useMemo,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useNeonAccount} from '../../loc/use-neon-account';
-import {neonAuthClient} from '../../loc/neon-client';
-import {selectNeonRows} from '../../loc/neon-query';
+import {neonAuthRelation} from '../../loc/neon-client';
+import {applyNeonFilters,selectNeonRows} from '../../loc/neon-query';
 import {resolveScopeTables} from '../../loc/scope-table-mapping';
 import {FEATURE_LOADING_MESSAGE} from '../feature-data-state.v2';
 
 const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility';
 
-function timeRelation(client,table){
-  const [schema,name]=String(table).split('.');
-  return client.schema(schema).from(name);
-}
 async function insertNeonRows(table,rows){
-  const {error}=await timeRelation(neonAuthClient,table).insert(rows);
+  const {error}=await neonAuthRelation(table).insert(rows);
   if(error)throw new Error(error.message||'新增資料失敗');
 }
 async function updateNeonRows(table,values,{filters=[]}={}){
-  let query=timeRelation(neonAuthClient,table).update(values);
-  for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
+  let query=neonAuthRelation(table).update(values);
+  query=applyNeonFilters(query,filters);
   const {error}=await query;
   if(error)throw new Error(error.message||'更新資料失敗');
 }
 async function deleteNeonRows(table,{filters=[]}={}){
-  let query=timeRelation(neonAuthClient,table).delete();
-  for(const filter of filters)query=filter.operator==='in'?query.in(filter.column,filter.value):query[filter.operator](filter.column,filter.value);
+  let query=neonAuthRelation(table).delete();
+  query=applyNeonFilters(query,filters);
   const {error}=await query;
   if(error)throw new Error(error.message||'刪除資料失敗');
 }
