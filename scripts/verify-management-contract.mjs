@@ -36,6 +36,9 @@ must(admin.includes('syncManageScopeRow('),'Admin must update one Scope mapping 
 must(admin.includes("role:'scope'")&&!admin.includes("change(index,'role'")&&!admin.includes('value={draft.role}'),'Scope permission creation must fix role=scope and keep existing roles immutable');
 must(admin.includes('部分 Scope 設定讀取失敗')&&!admin.includes('}catch{}'),'Admin Scope config failures must be surfaced, not swallowed');
 must(data.includes("來源為必填欄位。")&&data.includes('source_name:sourceName'),'Galaxy edits must preserve a nonempty source');
+must(data.includes("setSelectedId(id);setDraft(null);setEditorMessage('');")&&!data.includes('if(!scopeData)return;'),'record selection must clear stale drafts and Scope resolution failures must not be silent');
+must(data.includes('!draft&&editorMessage'),'record-detail failures and successful deletes must remain visible without an editor draft');
+must(admin.includes("setMappings([]);setStatus(error?.message||'Mapping 讀取失敗。');"),'Admin mapping read rejections must surface in the UI');
 
 must(!/silver\.runes(?:_etc)?\b/.test(galaxy),'generic Galaxy/Search provider must not expose private Rune Core tables');
 const sharedSearch=read('app/modular/features/Search.jsx');
