@@ -34,7 +34,7 @@ export default function ManagementDataPanel({scopeId}){
   const [editorMessage,setEditorMessage]=useState('');
   const detailRequestRef=useRef(0);
 
-  useEffect(()=>{detailRequestRef.current+=1;setPage(0);setSelectedId('');setDraft(null);},[scopeId,kind,visibility]);
+  useEffect(()=>{detailRequestRef.current+=1;setPage(0);setSelectedId('');setDraft(null);setEditorMessage('');},[scopeId,kind,visibility]);
 
   useEffect(()=>{
     if(!scopeId||!account.canManageScopeSync(scopeId))return;
@@ -65,11 +65,11 @@ export default function ManagementDataPanel({scopeId}){
   const pageCount=Math.max(1,Math.ceil(total/PAGE_SIZE));
 
   async function selectRow(row){
-    const scopeData=account.scopeDataFor(scopeId);
-    if(!scopeData)return;
     const id=idText(row,kind);
     const requestId=++detailRequestRef.current;
-    setSelectedId(id);setEditorMessage('');
+    setSelectedId(id);setDraft(null);setEditorMessage('');
+    const scopeData=account.scopeDataFor(scopeId);
+    if(!scopeData){setEditorMessage('Scope data 未解析');return;}
     try{
       const table=kind==='media'?scopeData.galaxyMedia:scopeData.galaxy;
       const full=await selectNeonAuthRow(table,{
@@ -100,7 +100,7 @@ export default function ManagementDataPanel({scopeId}){
   async function saveSelected(){
     if(!selectedId||!draft)return;
     const scopeData=account.scopeDataFor(scopeId);
-    if(!scopeData)return;
+    if(!scopeData){setEditorMessage('Scope data 未解析');return;}
     setEditorBusy(true);setEditorMessage('');
     try{
       if(kind==='media'){
@@ -143,7 +143,7 @@ export default function ManagementDataPanel({scopeId}){
   async function removeSelected(){
     if(!selectedId||!window.confirm('確定刪除這筆 canonical record？此操作不能由頁面復原。'))return;
     const scopeData=account.scopeDataFor(scopeId);
-    if(!scopeData)return;
+    if(!scopeData){setEditorMessage('Scope data 未解析');return;}
     setEditorBusy(true);setEditorMessage('');
     try{
       await deleteNeonRows(kind==='media'?scopeData.galaxyMedia:scopeData.galaxy,{filters:[{
@@ -194,10 +194,11 @@ export default function ManagementDataPanel({scopeId}){
       </div>
       <div className="scope-management-editor">
         {!selectedId?<p className="scope-status">選一筆資料後，在這裡直接預覽與編輯。</p>:null}
+        {!draft&&editorMessage?<p className={editorMessage==='已刪除。'?'scope-status':'scope-status scope-error'}>{editorMessage}</p>:null}
         {draft?<>
           <WorkSummaryCard title={draft.title||selectedId} scopeId={scopeId} source={kind==='media'?draft.media_type:draft.source_name} date={draft.createtime} body={draft.body} hidden={draft.hidden}/>
           <ContentEditor draft={draft} setDraft={setDraft} onSave={saveSelected} busy={editorBusy} error={editorMessage&&editorMessage!=='已儲存。'&&editorMessage!=='已刪除。'?editorMessage:''} bodyLabel={kind==='media'?'Meta Tags':'正文'} extraFields={extraFields} showVisibility={kind==='galaxy'}/>
-          {editorMessage==='已儲存。'||editorMessage==='已刪除。'?<p className="scope-status">{editorMessage}</p>:null}
+          {editorMessage==='已儲存。'?<p className="scope-status">{editorMessage}</p>:null}
           <button type="button" className="loc-button scope-danger-button" disabled={editorBusy} onClick={removeSelected}>刪除此筆</button>
         </>:null}
       </div>
