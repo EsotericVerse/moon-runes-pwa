@@ -9,7 +9,8 @@ const required=[
   'app/loc/model/daily-trend-engine.mjs',
   'app/loc/scope-data.js',
   'scripts/verify-neon-public-read.mjs',
-  'governance/runtime-capabilities.json'
+  'governance/runtime-capabilities.json',
+  'app/loc/rune66-keyword-analysis.js'
 ];
 for(const path of required)if(!fs.existsSync(path)||!read(path).trim())failures.push('missing Current contract file: '+path);
 if(!failures.length){
@@ -28,6 +29,12 @@ if(!failures.length){
   if(flexCache?.authority!==false||flexCache?.canonical_content_allowed!==false)failures.push('FlexSearch UID cache-table must remain non-authoritative and non-canonical');
   if(flexCache?.must_not_be_removed_as_duplicate_authority!==true||flexCache?.removal_requires_explicit_governance_change!==true)failures.push('FlexSearch UID cache-table removal protection missing');
   for(const token of ['uid','scope_id','cache_name'])if(!(flexCache?.allowed_payload||[]).includes(token))failures.push('FlexSearch UID cache-table allowed payload missing '+token);
+  const keywordEngine=capabilityRegistry?.capabilities?.keyword_operations_flexsearch;
+  if(!keywordEngine||keywordEngine.status!=='protected')failures.push('Keyword operations FlexSearch capability must remain protected');
+  if(keywordEngine?.keyword_engine!=='FlexSearch'||keywordEngine?.precise_search_engine!=='Neon'||keywordEngine?.neon_keyword_matching_allowed!==false)failures.push('Keyword/Search engine boundary changed');
+  if(keywordEngine?.removal_requires_explicit_governance_change!==true)failures.push('Keyword FlexSearch removal protection missing');
+  const rune66Analysis=read('app/loc/rune66-keyword-analysis.js');
+  for(const token of ['createTextIndex','searchTextIndex','classifyRune66Documents'])if(!rune66Analysis.includes(token))failures.push('Rune66 keyword analysis missing FlexSearch runtime '+token);
   const neonAudit=read('scripts/verify-neon-public-read.mjs');
   for(const token of ['managedScopes','scopeMapping','scopeMappings','mapping conflict','verifyManagedScope'])if(!neonAudit.includes(token))failures.push('Public Neon audit missing Scope-derived '+token);
   for(const token of ['lo3rwang_galaxy','lrunes_galaxy','lo3rwang_time','lrunes_time'])if(neonAudit.includes(token))failures.push('Public Neon audit must not hard-code Scope table '+token);
