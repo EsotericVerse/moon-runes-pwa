@@ -10,7 +10,8 @@ const required=[
   'app/loc/scope-data.js',
   'scripts/verify-neon-public-read.mjs',
   'governance/runtime-capabilities.json',
-  'app/loc/rune66-keyword-analysis.js'
+  'app/loc/rune66-keyword-analysis.js',
+  'app/loc/model/rune66-keyword-engine.mjs'
 ];
 for(const path of required)if(!fs.existsSync(path)||!read(path).trim())failures.push('missing Current contract file: '+path);
 if(!failures.length){
@@ -34,7 +35,9 @@ if(!failures.length){
   if(keywordEngine?.keyword_engine!=='FlexSearch'||keywordEngine?.precise_search_engine!=='Neon'||keywordEngine?.neon_keyword_matching_allowed!==false)failures.push('Keyword/Search engine boundary changed');
   if(keywordEngine?.removal_requires_explicit_governance_change!==true)failures.push('Keyword FlexSearch removal protection missing');
   const rune66Analysis=read('app/loc/rune66-keyword-analysis.js');
-  for(const token of ['createTextIndex','searchTextIndex','classifyRune66Documents'])if(!rune66Analysis.includes(token))failures.push('Rune66 keyword analysis missing FlexSearch runtime '+token);
+  const rune66Engine=read('app/loc/model/rune66-keyword-engine.mjs');
+  if(!rune66Analysis.includes('classifyRune66Documents'))failures.push('Rune66 data loader must delegate to shared keyword classifier');
+  for(const token of ['createTextIndex','searchTextIndex','classifyRune66Documents'])if(!rune66Engine.includes(token))failures.push('Rune66 keyword engine missing FlexSearch runtime '+token);
   const neonAudit=read('scripts/verify-neon-public-read.mjs');
   for(const token of ['managedScopes','scopeMapping','scopeMappings','mapping conflict','verifyManagedScope'])if(!neonAudit.includes(token))failures.push('Public Neon audit missing Scope-derived '+token);
   for(const token of ['lo3rwang_galaxy','lrunes_galaxy','lo3rwang_time','lrunes_time'])if(neonAudit.includes(token))failures.push('Public Neon audit must not hard-code Scope table '+token);
