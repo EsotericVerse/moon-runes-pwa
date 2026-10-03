@@ -166,6 +166,11 @@ export function classifyRune66Documents(documents=[],styleRows=[],structureRows=
 
   for(const rune of runes){
     const maskedText=buildMaskedTextGetter(normalizedTexts,rune);
+    const ruleTexts=normalizedTexts.slice();
+    const orderedRules=[...rune.rules].sort((a,b)=>
+      normalizeIndexedText(b.source).length-normalizeIndexedText(a.source).length
+      ||String(a.token||'').localeCompare(String(b.token||''))
+    );
 
     for(const keyword of rune.keywords){
       const normalizedKeyword=normalizeIndexedText(keyword);
@@ -179,24 +184,31 @@ export function classifyRune66Documents(documents=[],styleRows=[],structureRows=
       }
     }
 
-    for(const rule of rune.rules){
+    for(const rule of orderedRules){
       if(rule.operator==='NOR'){
         unsupportedRules.push({rune_id:rune.runeId,rune:rune.label,rule:rule.token});
         continue;
       }
       const ruleSource=normalizeIndexedText(rule.source);
+      if(!ruleSource)continue;
       const result=searchTextIndex(engine,rule.source,{limit:engine.size});
-      if(rule.operator==='NAME')continue;
-      const targetId=nameToRune.get(String(rule.target||'').trim());
+      const targetId=rule.operator==='NAME'?null:nameToRune.get(String(rule.target||'').trim());
       const target=targetId?runeById.get(Number(targetId)):null;
-      if(!target){
+      if(rule.operator!=='NAME'&&!target){
         unsupportedRules.push({rune_id:rune.runeId,rune:rune.label,rule:rule.token});
         continue;
       }
       for(const rawId of result.ids){
         const index=Number(rawId);
         if(!Number.isInteger(index)||!states[index])continue;
-        if(!ruleSource||!normalizedTexts[index]?.includes(ruleSource))continue;
+        const remaining=ruleTexts[index]||'';
+        if(!remaining.includes(ruleSource))continue;
+
+        // One Rune row owns one rule sentence. Resolve its longest complete phrases first,
+        // consume those phrases locally, then allow shorter rules to match what remains.
+        ruleTexts[index]=replaceAllLiteral(remaining,ruleSource,' ');
+
+        if(rule.operator==='NAME')continue;
         if(rule.operator==='AND'){
           increment(states[index],rune,'rule:'+rule.token+':source');
           increment(states[index],target,'rule:'+rule.token+':target');
