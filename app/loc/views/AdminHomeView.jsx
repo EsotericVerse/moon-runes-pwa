@@ -36,15 +36,18 @@ function ScopeOverview(){
 
   useEffect(()=>{
     let active=true;
-    neonAuthRelation('silver.manage')
-      .select('id,email,role,galaxy,time,birthday')
-      .order('id',{ascending:true})
-      .order('email',{ascending:true})
-      .then(({data,error})=>{
-        if(!active)return;
-        if(error){setStatus(error.message||'Mapping 讀取失敗。');return;}
-        setMappings((data||[]).map(row=>({...row,birthday:String(row.birthday||'').slice(0,10)})));
-      });
+    (async()=>{
+      try{
+        const {data,error}=await neonAuthRelation('silver.manage')
+          .select('id,email,role,galaxy,time,birthday')
+          .order('id',{ascending:true})
+          .order('email',{ascending:true});
+        if(error)throw new Error(error.message||'Mapping 讀取失敗。');
+        if(active)setMappings((data||[]).map(row=>({...row,birthday:String(row.birthday||'').slice(0,10)})));
+      }catch(error){
+        if(active){setMappings([]);setStatus(error?.message||'Mapping 讀取失敗。');}
+      }
+    })();
     return()=>{active=false};
   },[revision]);
 
