@@ -139,7 +139,7 @@ function ScopeOverview(){
       {mappings.map((row,index)=><article className="scope-inline-card" key={row.id+':'+row.email}>
         <strong>{row.id} · {row.email}</strong>
         <div className="scope-management-fields">
-          <label><span>Role</span><span>{row.role}</span></label>
+          <label><span>Role</span><input value={row.role} readOnly aria-readonly="true"/></label>
           <label><span>Galaxy</span><input value={row.galaxy||'galaxy'} onChange={event=>change(index,'galaxy',event.target.value)}/></label>
           <label><span>Time</span><input value={row.time||'time'} onChange={event=>change(index,'time',event.target.value)}/></label>
           <label><span>Birthday</span><input type="date" value={row.birthday||''} onChange={event=>change(index,'birthday',event.target.value)}/></label>
