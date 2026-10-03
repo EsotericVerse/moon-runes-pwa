@@ -33,6 +33,7 @@ must(neonClient.includes("rpc('management_write'")&&neonClient.includes('batchSi
 must(neonClient.includes('syncManageScopeRow')&&neonClient.includes("p_operation:'scope_sync'"),'Scope mapping updates must use one atomic management write');
 must(neonClient.includes('affected 0 rows')&&neonClient.includes('affected!==batch.length'),'management write helpers must reject zero-row updates/deletes and incomplete inserts');
 must(admin.includes('syncManageScopeRow('),'Admin must update one Scope mapping atomically');
+must(admin.includes("role:'scope'")&&!admin.includes("change(index,'role'")&&!admin.includes('value={draft.role}'),'Scope permission creation must fix role=scope and keep existing roles immutable');
 must(admin.includes('部分 Scope 設定讀取失敗')&&!admin.includes('}catch{}'),'Admin Scope config failures must be surfaced, not swallowed');
 must(data.includes("來源為必填欄位。")&&data.includes('source_name:sourceName'),'Galaxy edits must preserve a nonempty source');
 
