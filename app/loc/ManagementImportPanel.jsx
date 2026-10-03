@@ -192,9 +192,6 @@ function MediaRecordInsert({scopeId}){
         meta_tags:metaTags,
         createtime:iso(draft.createtime)
       };
-      if(!record.title&&!record.url&&!record.meta_tags&&!record.source_native_id&&!record.source_place){
-        throw new Error('至少填寫 title、url、meta_tags、source_native_id 或 source_place 其中一項。');
-      }
       const galaxyMedia=account.scopeDataFor(scopeId)?.galaxyMedia;
       if(!galaxyMedia)throw new Error('Scope data 未解析');
       await insertNeonRows(galaxyMedia,[record]);

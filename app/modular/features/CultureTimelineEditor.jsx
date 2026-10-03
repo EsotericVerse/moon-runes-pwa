@@ -215,7 +215,7 @@ export default function CultureTimelineEditor({scopeId=''}){
     if(!selectedId)return;
     if(draft.record_type==='anchor'){
       const id=String(draft.resource_id||'');
-      const references=rawRows.filter(row=>row.record_type!=='anchor'&&splitPair(row.anchor_pair).before===id||row.record_type!=='anchor'&&splitPair(row.anchor_pair).after===id);
+      const references=rawRows.filter(row=>row.record_type!=='anchor'&&Object.values(splitPair(row.anchor_pair)).includes(id));
       if(references.length){setMessage('此定錨點仍被時期或事件使用，請先調整引用。');return;}
     }
     setBusy(true);setMessage('');

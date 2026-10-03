@@ -1,7 +1,7 @@
 'use client';
 
 import {UI_COPY} from '../../i18n/ui-copy';
-import {useEffect,useMemo,useState} from 'react';
+import {useEffect,useState} from 'react';
 import {SCOPES} from '../../modular/scope-registry';
 import {THEME_SLOTS} from '../../modular/theme-registry';
 import {useNeonAccount} from '../use-neon-account';
@@ -13,7 +13,7 @@ const ADMIN_OPTIONS=Object.freeze([
   {value:'scopes',label:UI_COPY.admin.overview},
   {value:'themes',label:UI_COPY.admin.theme}
 ]);
-const EMPTY_MAPPING={id:'',email:'',role:'scope',galaxy:'galaxy',time:'time',birthday:''};
+const EMPTY_MAPPING={id:'',email:'',galaxy:'galaxy',time:'time',birthday:''};
 
 function Login({account}){
   return <section className="loc-view">
@@ -28,7 +28,7 @@ function Login({account}){
 
 function ScopeOverview(){
   const scopes=Object.values(SCOPES).filter(scope=>scope.id!=='admin');
-  const dataScopeIds=useMemo(()=>new Set(scopes.filter(scope=>scope.id!=='loc').map(scope=>scope.id)),[scopes]);
+  const dataScopeIds=scopes.filter(scope=>scope.id!=='loc').map(scope=>scope.id);
   const [mappings,setMappings]=useState([]);
   const [draft,setDraft]=useState({...EMPTY_MAPPING});
   const [status,setStatus]=useState('');
@@ -36,24 +36,26 @@ function ScopeOverview(){
 
   useEffect(()=>{
     let active=true;
-    neonAuthRelation('silver.manage')
-      .select('id,email,role,galaxy,time,birthday')
-      .order('id',{ascending:true})
-      .order('email',{ascending:true})
-      .then(({data,error})=>{
-        if(!active)return;
-        if(error){setStatus(error.message||'Mapping 讀取失敗。');return;}
-        setMappings((data||[]).map(row=>({...row,birthday:String(row.birthday||'').slice(0,10)})));
-      });
+    (async()=>{
+      try{
+        const {data,error}=await neonAuthRelation('silver.manage')
+          .select('id,email,role,galaxy,time,birthday')
+          .order('id',{ascending:true})
+          .order('email',{ascending:true});
+        if(error)throw new Error(error.message||'Mapping 讀取失敗。');
+        if(active)setMappings((data||[]).map(row=>({...row,birthday:String(row.birthday||'').slice(0,10)})));
+      }catch(error){
+        if(active){setMappings([]);setStatus(error?.message||'Mapping 讀取失敗。');}
+      }
+    })();
     return()=>{active=false};
   },[revision]);
 
   const change=(index,key,value)=>setMappings(rows=>rows.map((row,rowIndex)=>rowIndex===index?{...row,[key]:value}:row));
 
   const validate=row=>{
-    if(!dataScopeIds.has(String(row.id||'')))throw new Error('目前只能管理已部署的資料 Scope。');
+    if(!dataScopeIds.includes(String(row.id||'')))throw new Error('目前只能管理已部署的資料 Scope。');
     if(!/^\S+@\S+\.\S+$/.test(String(row.email||'')))throw new Error('Email 格式不正確。');
-    if(!['admin','scope'].includes(row.role))throw new Error('Role 不正確。');
     for(const value of [row.galaxy||'galaxy',row.time||'time']){
       if(!/^[a-z][a-z0-9_]*$/.test(String(value)))throw new Error('galaxy / time mapping 只能使用小寫英數與底線。');
     }
@@ -82,7 +84,7 @@ function ScopeOverview(){
       const time=String(row.time||'time').trim()||'time';
       const birthday=row.birthday||null;
       await syncManageScopeRow(
-        {role:row.role,galaxy,time,birthday},
+        {galaxy,time,birthday},
         {scopeId:row.id,email:row.email}
       );
       setStatus('Scope Mapping 已同步更新。');setRevision(value=>value+1);
@@ -103,7 +105,7 @@ function ScopeOverview(){
     setStatus('');
     try{
       validateNewMapping(draft);
-      await insertNeonRows('silver.manage',[{...draft,birthday:draft.birthday||null}]);
+      await insertNeonRows('silver.manage',[{...draft,role:'scope',birthday:draft.birthday||null}]);
       setDraft({...EMPTY_MAPPING});setStatus('Mapping 已新增。');setRevision(value=>value+1);
     }catch(error){setStatus(error.message||'Mapping 新增失敗。');}
   };
@@ -137,7 +139,7 @@ function ScopeOverview(){
       {mappings.map((row,index)=><article className="scope-inline-card" key={row.id+':'+row.email}>
         <strong>{row.id} · {row.email}</strong>
         <div className="scope-management-fields">
-          <label><span>Role</span><select value={row.role} onChange={event=>change(index,'role',event.target.value)}><option value="scope">scope</option><option value="admin">admin</option></select></label>
+          <label><span>Role</span><input value={row.role} readOnly aria-readonly="true"/></label>
           <label><span>Galaxy</span><input value={row.galaxy||'galaxy'} onChange={event=>change(index,'galaxy',event.target.value)}/></label>
           <label><span>Time</span><input value={row.time||'time'} onChange={event=>change(index,'time',event.target.value)}/></label>
           <label><span>Birthday</span><input type="date" value={row.birthday||''} onChange={event=>change(index,'birthday',event.target.value)}/></label>
@@ -153,10 +155,9 @@ function ScopeOverview(){
       <h3>新增既有 Scope 權限</h3>
       <div className="scope-management-fields">
         <label><span>Scope</span><select value={draft.id} onChange={event=>selectDraftScope(event.target.value)}>
-          <option value="">選擇</option>{[...dataScopeIds].map(id=><option key={id} value={id}>{id}</option>)}
+          <option value="">選擇</option>{dataScopeIds.map(id=><option key={id} value={id}>{id}</option>)}
         </select></label>
         <label><span>Email</span><input type="email" value={draft.email} onChange={event=>setDraft(value=>({...value,email:event.target.value}))}/></label>
-        <label><span>Role</span><select value={draft.role} onChange={event=>setDraft(value=>({...value,role:event.target.value}))}><option value="scope">scope</option><option value="admin">admin</option></select></label>
         <label><span>Galaxy</span><input value={draft.galaxy} onChange={event=>setDraft(value=>({...value,galaxy:event.target.value}))}/></label>
         <label><span>Time</span><input value={draft.time} onChange={event=>setDraft(value=>({...value,time:event.target.value}))}/></label>
         <label><span>Birthday</span><input type="date" value={draft.birthday} onChange={event=>setDraft(value=>({...value,birthday:event.target.value}))}/></label>

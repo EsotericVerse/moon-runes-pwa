@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect,useMemo,useState} from 'react';
+import {useEffect,useState} from 'react';
 import {selectNeonRows} from './neon-query';
 import {realMoonPhase} from './model/moon-phase';
 import {listNeonRecords,listRuneDrawSlots,putDailyRuneRecord,putNeonRecord,putRuneDrawSlot} from './neon-user-storage';
@@ -170,7 +170,7 @@ export default function RuneManagementPanel(){
     return()=>{live=false};
   },[account.user?.email,canManage]);
 
-  const config=useMemo(()=>MODES.find(item=>item.key===mode)||MODES[0],[mode]);
+  const config=MODES.find(item=>item.key===mode)||MODES[0];
   const savedMain=dailyRows.find(row=>row.daily_role==='main');
   const savedSupplement=dailyRows.find(row=>row.daily_role==='supplement');
 
