@@ -28,7 +28,7 @@ function Login({account}){
 
 function ScopeOverview(){
   const scopes=Object.values(SCOPES).filter(scope=>scope.id!=='admin');
-  const dataScopeIds=new Set(scopes.filter(scope=>scope.id!=='loc').map(scope=>scope.id));
+  const dataScopeIds=scopes.filter(scope=>scope.id!=='loc').map(scope=>scope.id);
   const [mappings,setMappings]=useState([]);
   const [draft,setDraft]=useState({...EMPTY_MAPPING});
   const [status,setStatus]=useState('');
@@ -51,7 +51,7 @@ function ScopeOverview(){
   const change=(index,key,value)=>setMappings(rows=>rows.map((row,rowIndex)=>rowIndex===index?{...row,[key]:value}:row));
 
   const validate=row=>{
-    if(!dataScopeIds.has(String(row.id||'')))throw new Error('目前只能管理已部署的資料 Scope。');
+    if(!dataScopeIds.includes(String(row.id||'')))throw new Error('目前只能管理已部署的資料 Scope。');
     if(!/^\S+@\S+\.\S+$/.test(String(row.email||'')))throw new Error('Email 格式不正確。');
     for(const value of [row.galaxy||'galaxy',row.time||'time']){
       if(!/^[a-z][a-z0-9_]*$/.test(String(value)))throw new Error('galaxy / time mapping 只能使用小寫英數與底線。');
@@ -136,7 +136,7 @@ function ScopeOverview(){
       {mappings.map((row,index)=><article className="scope-inline-card" key={row.id+':'+row.email}>
         <strong>{row.id} · {row.email}</strong>
         <div className="scope-management-fields">
-          <label><span>Role</span><input value={row.role} readOnly aria-readonly="true"/></label>
+          <label><span>Role</span><span>{row.role}</span></label>
           <label><span>Galaxy</span><input value={row.galaxy||'galaxy'} onChange={event=>change(index,'galaxy',event.target.value)}/></label>
           <label><span>Time</span><input value={row.time||'time'} onChange={event=>change(index,'time',event.target.value)}/></label>
           <label><span>Birthday</span><input type="date" value={row.birthday||''} onChange={event=>change(index,'birthday',event.target.value)}/></label>
@@ -152,7 +152,7 @@ function ScopeOverview(){
       <h3>新增既有 Scope 權限</h3>
       <div className="scope-management-fields">
         <label><span>Scope</span><select value={draft.id} onChange={event=>selectDraftScope(event.target.value)}>
-          <option value="">選擇</option>{[...dataScopeIds].map(id=><option key={id} value={id}>{id}</option>)}
+          <option value="">選擇</option>{dataScopeIds.map(id=><option key={id} value={id}>{id}</option>)}
         </select></label>
         <label><span>Email</span><input type="email" value={draft.email} onChange={event=>setDraft(value=>({...value,email:event.target.value}))}/></label>
         <label><span>Galaxy</span><input value={draft.galaxy} onChange={event=>setDraft(value=>({...value,galaxy:event.target.value}))}/></label>
