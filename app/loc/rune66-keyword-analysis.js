@@ -236,6 +236,7 @@ export function classifyRune66Documents(documents=[],styleRows=[],structureRows=
         unsupportedRules.push({rune_id:rune.runeId,rune:rune.label,rule:rule.token});
         continue;
       }
+      const ruleSource=normalizeIndexedText(rule.source);
       const result=searchTextIndex(engine,rule.source,{limit:engine.size});
       if(rule.operator==='NAME')continue;
       const targetId=nameToRune.get(String(rule.target||'').trim());
@@ -247,6 +248,7 @@ export function classifyRune66Documents(documents=[],styleRows=[],structureRows=
       for(const rawId of result.ids){
         const index=Number(rawId);
         if(!Number.isInteger(index)||!states[index])continue;
+        if(!ruleSource||!normalizedTexts[index]?.includes(ruleSource))continue;
         if(rule.operator==='AND'){
           increment(states[index],rune,'rule:'+rule.token+':source');
           increment(states[index],target,'rule:'+rule.token+':target');
