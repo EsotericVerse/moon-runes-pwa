@@ -4,7 +4,7 @@ import {selectAllNeonRows} from './neon-query';
 import {selectManagedScope} from './scope-data';
 import {classifyRune66Documents} from './model/rune66-keyword-engine.mjs';
 
-const PERSONAL_STYLE_TABLE='silver.lo3rwang_style';
+const PERSONAL_KEYWORD_TABLE='silver.lo3rwang_keywords';
 const RUNE_TABLE='silver.runes';
 
 let analysisPromise=null;
@@ -58,10 +58,11 @@ function buildDocuments(textRows=[],mediaRows=[]){
 }
 
 async function loadRune66Catalog(){
-  const [styleResult,structureResult]=await Promise.all([
-    selectAllNeonRows(PERSONAL_STYLE_TABLE,{
-      columns:'style_no,node_type,representative_name,parent_group_name,basic_principle,keyword_group,keyword,order_no',
-      orders:[{column:'style_no',ascending:true},{column:'order_no',ascending:true}]
+  const [catalogResult,structureResult]=await Promise.all([
+    selectAllNeonRows(PERSONAL_KEYWORD_TABLE,{
+      columns:'keyword_id,group_name,item_no,item_name,principle,keywords,order_no',
+      filters:[{column:'group_name',operator:'eq',value:'符文66'}],
+      orders:[{column:'order_no',ascending:true},{column:'item_no',ascending:true}]
     }),
     selectAllNeonRows(RUNE_TABLE,{
       columns:'rune_id,rune_name,group_name',
@@ -72,7 +73,7 @@ async function loadRune66Catalog(){
       orders:[{column:'rune_id',ascending:true}]
     })
   ]);
-  return {styleRows:styleResult.rows||[],structureRows:structureResult.rows||[]};
+  return {catalogRows:catalogResult.rows||[],structureRows:structureResult.rows||[]};
 }
 
 async function loadAuthorDocuments(){
@@ -95,11 +96,11 @@ async function loadAuthorDocuments(){
 export async function selectRune66Classification(){
   if(analysisPromise)return analysisPromise;
   analysisPromise=(async()=>{
-    const [{styleRows,structureRows},documents]=await Promise.all([
+    const [{catalogRows,structureRows},documents]=await Promise.all([
       loadRune66Catalog(),
       loadAuthorDocuments()
     ]);
-    return classifyRune66Documents(documents,styleRows,structureRows);
+    return classifyRune66Documents(documents,catalogRows,structureRows);
   })().catch(error=>{
     analysisPromise=null;
     throw error;

@@ -16,7 +16,18 @@ function textOf(row){
     .filter(Boolean).join(' ');
 }
 
-function compileCatalog(styleRows=[],structureRows=[]){
+function keywordList(value){
+  if(Array.isArray(value))return value.map(item=>String(item||'').trim()).filter(Boolean);
+  if(typeof value==='string'){
+    try{
+      const parsed=JSON.parse(value);
+      if(Array.isArray(parsed))return parsed.map(item=>String(item||'').trim()).filter(Boolean);
+    }catch{}
+  }
+  return [];
+}
+
+function compileCatalog(catalogRows=[],structureRows=[]){
   const structures=new Map();
   const nameToRune=new Map();
   const groupOrder=new Map();
@@ -31,50 +42,42 @@ function compileCatalog(styleRows=[],structureRows=[]){
     if(group&&!groupOrder.has(group))groupOrder.set(group,runeId);
   }
 
-  const styleNodes=new Map();
-  for(const row of styleRows){
-    if(row?.node_type!=='style')continue;
-    if(String(row?.parent_group_name||'').trim()!==RUNE66_GROUP)continue;
-    const runeId=Number(row?.style_no);
+  const runes=[];
+  for(const row of catalogRows){
+    if(String(row?.group_name||'').trim()!==RUNE66_GROUP)continue;
+    const runeId=Number(row?.item_no);
     const structure=structures.get(runeId);
     if(!structure)continue;
-    const label=String(row?.representative_name||structure.name||'').trim();
-    styleNodes.set(runeId,{
+
+    const label=String(row?.item_name||structure.name||'').trim();
+    if(label)nameToRune.set(label,runeId);
+
+    const keywords=[];
+    const rules=[];
+    const notes=[];
+    for(const value of keywordList(row?.keywords)){
+      const parsed=parseRuneKeywordRuleSentence(value);
+      if(parsed.rules.length){
+        rules.push(...parsed.rules);
+        notes.push(...parsed.notes);
+      }else{
+        keywords.push(value);
+      }
+    }
+
+    runes.push({
       ...structure,
       label,
-      keywords:[],
-      rules:[],
-      notes:[]
-    });
-    if(label)nameToRune.set(label,runeId);
-  }
-
-  for(const row of styleRows){
-    if(row?.node_type!=='keyword')continue;
-    const runeId=Number(row?.style_no);
-    const rune=styleNodes.get(runeId);
-    if(!rune)continue;
-    const value=String(row?.keyword||'').trim();
-    if(!value)continue;
-    if(String(row?.keyword_group||'').trim()==='rule'){
-      const parsed=parseRuneKeywordRuleSentence(value);
-      rune.rules.push(...parsed.rules);
-      rune.notes.push(...parsed.notes);
-    }else{
-      rune.keywords.push(value);
-    }
-  }
-
-  const runes=[...styleNodes.values()]
-    .map(rune=>({
-      ...rune,
-      keywords:[...new Set(rune.keywords)],
-      rules:rune.rules.filter((rule,index,all)=>all.findIndex(other=>
+      principle:String(row?.principle||'').trim(),
+      keywords:[...new Set(keywords)],
+      rules:rules.filter((rule,index,all)=>all.findIndex(other=>
         other.operator===rule.operator&&other.source===rule.source&&other.target===rule.target
-      )===index)
-    }))
-    .sort((a,b)=>a.order-b.order);
+      )===index),
+      notes:[...new Set(notes)]
+    });
+  }
 
+  runes.sort((a,b)=>a.order-b.order);
   return {runes,nameToRune,groupOrder};
 }
 
@@ -141,9 +144,9 @@ function buildMaskedTextGetter(normalizedTexts,rune){
   };
 }
 
-export function classifyRune66Documents(documents=[],styleRows=[],structureRows=[]){
+export function classifyRune66Documents(documents=[],catalogRows=[],structureRows=[]){
   const source=Array.isArray(documents)?documents:[];
-  const {runes,nameToRune,groupOrder}=compileCatalog(styleRows,structureRows);
+  const {runes,nameToRune,groupOrder}=compileCatalog(catalogRows,structureRows);
   if(!source.length||!runes.length)return {
     documentCount:source.length,
     classifiedCount:0,
@@ -204,8 +207,6 @@ export function classifyRune66Documents(documents=[],styleRows=[],structureRows=
         const remaining=ruleTexts[index]||'';
         if(!remaining.includes(ruleSource))continue;
 
-        // One Rune row owns one rule sentence. Resolve its longest complete phrases first,
-        // consume those phrases locally, then allow shorter rules to match what remains.
         ruleTexts[index]=replaceAllLiteral(remaining,ruleSource,' ');
 
         if(rule.operator==='NAME')continue;

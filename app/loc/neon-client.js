@@ -138,6 +138,33 @@ export async function deleteNeonRows(table,{filters=[]}={}){
   return {...result,count:affected};
 }
 
+export async function writeKeywordLibraryItem(operation,item={}){
+  const op=String(operation||'').trim().toLowerCase();
+  if(!['insert','update','delete'].includes(op))throw new Error('Unsupported keyword library operation');
+  const relation=neonAuthRelation('api.lo3rwang_keywords_manage');
+  const values={
+    group_name:String(item?.group_name||'').trim(),
+    item_no:Number(item?.item_no),
+    item_name:String(item?.item_name||'').trim(),
+    principle:String(item?.principle||''),
+    keywords:Array.isArray(item?.keywords)?item.keywords:[],
+    order_no:Number(item?.order_no)||0
+  };
+  let query;
+  if(op==='insert'){
+    query=relation.insert(values).select('keyword_id');
+  }else if(op==='update'){
+    query=relation.update(values).eq('keyword_id',Number(item?.keyword_id)).select('keyword_id');
+  }else{
+    query=relation.delete().eq('keyword_id',Number(item?.keyword_id)).select('keyword_id');
+  }
+  const {data,error}=await query;
+  if(error)throw new Error(error.message||'Keyword library write failed');
+  const affected=Array.isArray(data)?data.length:0;
+  if(affected<1)throw new Error('Keyword library write affected 0 rows');
+  return {count:affected,keyword_id:data?.[0]?.keyword_id||item?.keyword_id||null};
+}
+
 export async function syncManageScopeRow(values,{scopeId,email}={}){
   const result=await managementWrite({
     p_table:'silver.manage',
