@@ -40,7 +40,7 @@ export default function KeywordLibraryPanel(){
 
   const canEdit=account.canManageScopeSync('lo3rwang');
 
-  async function load(preferredId=''){
+  async function load(preferredId='',preferredGroup=''){
     if(!canEdit)return;
     setLoading(true);setMessage('');
     try{
@@ -53,7 +53,8 @@ export default function KeywordLibraryPanel(){
       const next=data||[];
       setRows(next);
       const groups=[...new Set(next.map(row=>String(row.group_name||'').trim()).filter(Boolean))];
-      const nextGroup=groups.includes(group)?group:(groups.includes('符文66')?'符文66':(groups[0]||''));
+      const requestedGroup=String(preferredGroup||group||'').trim();
+      const nextGroup=groups.includes(requestedGroup)?requestedGroup:(groups.includes('符文66')?'符文66':(groups[0]||''));
       setGroup(nextGroup);
       const candidate=next.find(row=>String(row.keyword_id)===String(preferredId))
         ||next.find(row=>String(row.group_name)===nextGroup)
@@ -119,7 +120,7 @@ export default function KeywordLibraryPanel(){
       const result=await writeKeywordLibraryItem(draft.keyword_id?'update':'insert',payload);
       clearRune66ClassificationCache();
       setGroup(groupName);
-      await load(result.keyword_id||draft.keyword_id||'');
+      await load(result.keyword_id||draft.keyword_id||'',groupName);
       setMessage('關鍵詞設定已儲存。');
     }catch(error){
       setMessage(String(error?.message||error||'關鍵詞設定儲存失敗。'));
