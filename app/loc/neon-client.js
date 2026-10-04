@@ -141,21 +141,28 @@ export async function deleteNeonRows(table,{filters=[]}={}){
 export async function writeKeywordLibraryItem(operation,item={}){
   const op=String(operation||'').trim().toLowerCase();
   if(!['insert','update','delete'].includes(op))throw new Error('Unsupported keyword library operation');
-  const {data,error}=await neonAuthClient.schema('api').rpc('keyword_library_write',{
-    p_operation:op,
-    p_keyword_id:item?.keyword_id==null?null:Number(item.keyword_id),
-    p_group_name:item?.group_name==null?null:String(item.group_name),
-    p_item_no:item?.item_no==null?null:Number(item.item_no),
-    p_item_name:item?.item_name==null?null:String(item.item_name),
-    p_principle:item?.principle==null?'':String(item.principle),
-    p_keywords:Array.isArray(item?.keywords)?item.keywords:[],
-    p_order_no:item?.order_no==null?0:Number(item.order_no)
-  });
+  const relation=neonAuthRelation('api.lo3rwang_keywords_manage');
+  const values={
+    group_name:String(item?.group_name||'').trim(),
+    item_no:Number(item?.item_no),
+    item_name:String(item?.item_name||'').trim(),
+    principle:String(item?.principle||''),
+    keywords:Array.isArray(item?.keywords)?item.keywords:[],
+    order_no:Number(item?.order_no)||0
+  };
+  let query;
+  if(op==='insert'){
+    query=relation.insert(values).select('keyword_id');
+  }else if(op==='update'){
+    query=relation.update(values).eq('keyword_id',Number(item?.keyword_id)).select('keyword_id');
+  }else{
+    query=relation.delete().eq('keyword_id',Number(item?.keyword_id)).select('keyword_id');
+  }
+  const {data,error}=await query;
   if(error)throw new Error(error.message||'Keyword library write failed');
-  const result=data||{count:0};
-  const affected=Number(result?.count||0);
+  const affected=Array.isArray(data)?data.length:0;
   if(affected<1)throw new Error('Keyword library write affected 0 rows');
-  return {...result,count:affected};
+  return {count:affected,keyword_id:data?.[0]?.keyword_id||item?.keyword_id||null};
 }
 
 export async function syncManageScopeRow(values,{scopeId,email}={}){
