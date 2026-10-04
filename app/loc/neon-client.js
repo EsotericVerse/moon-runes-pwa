@@ -138,6 +138,26 @@ export async function deleteNeonRows(table,{filters=[]}={}){
   return {...result,count:affected};
 }
 
+export async function writeKeywordLibraryItem(operation,item={}){
+  const op=String(operation||'').trim().toLowerCase();
+  if(!['insert','update','delete'].includes(op))throw new Error('Unsupported keyword library operation');
+  const {data,error}=await neonAuthClient.schema('api').rpc('keyword_library_write',{
+    p_operation:op,
+    p_keyword_id:item?.keyword_id==null?null:Number(item.keyword_id),
+    p_group_name:item?.group_name==null?null:String(item.group_name),
+    p_item_no:item?.item_no==null?null:Number(item.item_no),
+    p_item_name:item?.item_name==null?null:String(item.item_name),
+    p_principle:item?.principle==null?'':String(item.principle),
+    p_keywords:Array.isArray(item?.keywords)?item.keywords:[],
+    p_order_no:item?.order_no==null?0:Number(item.order_no)
+  });
+  if(error)throw new Error(error.message||'Keyword library write failed');
+  const result=data||{count:0};
+  const affected=Number(result?.count||0);
+  if(affected<1)throw new Error('Keyword library write affected 0 rows');
+  return {...result,count:affected};
+}
+
 export async function syncManageScopeRow(values,{scopeId,email}={}){
   const result=await managementWrite({
     p_table:'silver.manage',
