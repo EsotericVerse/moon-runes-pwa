@@ -10,6 +10,7 @@ import ManagementImportPanel from './ManagementImportPanel';
 import ManagementDataPanel from './ManagementDataPanel';
 import RuneManagementPanel from './RuneManagementPanel';
 import ScopeGroupManagement from './ScopeGroupManagement';
+import KeywordLibraryPanel from './KeywordLibraryPanel';
 import CultureTimelineEditor from '../modular/features/CultureTimelineEditor';
 
 const LOGIN_COPY={
@@ -53,6 +54,7 @@ function sectionOptions(scopeId){
     {value:'import',label:UI_COPY.management.import},
     {value:'period',label:UI_COPY.management.period}
   ];
+  if(scopeId==='lo3rwang')options.push({value:'keywords',label:'關鍵詞庫'});
   if(scopeId==='lrunes')options.push({value:'daily',label:'每日符文管理'});
   return options;
 }
@@ -99,6 +101,7 @@ export default function GovernanceManagement(){
     {section==='article'&&scopeId!=='loc'?<ManagementArticlePublisher scopeId={scopeId}/>:null}
     {section==='import'&&scopeId!=='loc'?<ManagementImportPanel scopeId={scopeId}/>:null}
     {section==='period'&&scopeId!=='loc'?<CultureTimelineEditor scopeId={scopeId}/>:null}
+    {section==='keywords'&&scopeId==='lo3rwang'?<KeywordLibraryPanel/>:null}
     {section==='daily'&&scopeId==='lrunes'?<RuneManagementPanel/>:null}
   </section>;
 }
