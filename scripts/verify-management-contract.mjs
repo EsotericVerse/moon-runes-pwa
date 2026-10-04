@@ -15,6 +15,7 @@ const governance=read('app/modular/features/Governance.jsx');
 const data=read('app/loc/ManagementDataPanel.jsx');
 const admin=read('app/loc/views/AdminHomeView.jsx');
 const neonClient=read('app/loc/neon-client.js');
+const keywordLibrary=read('app/loc/KeywordLibraryPanel.jsx');
 
 must(!galaxy.includes('include_in_time'),'generic search must not query nonexistent include_in_time');
 must(galaxy.includes("'style_tags'")&&galaxy.includes("searchFields:['label','note','status','style_tags']"),'generic Time search must include style_tags');
@@ -22,6 +23,7 @@ must(culture.includes('visibility,style_tags'),'Culture shared Time contract mus
 must(editor.includes("style_tags:''")&&editor.includes('風格標籤'),'shared Time editor must edit style_tags');
 must(management.includes("section==='group'&&scopeId==='loc'"),'LOC Scope Group must have its own Manage');
 must(management.includes('ScopeGroupManagement'),'Manage must compose the Scope Group module');
+must(management.includes('KeywordLibraryPanel')&&management.includes("value:'keywords'"),'lo3rwang Manage must expose the generic keyword library');
 must(management.includes("canManage=scopeId==='loc'?account.canManageGlobalSync():account.canManageScopeSync(scopeId)"),'LOC Scope Group Manage must use global authority without becoming Admin');
 must(governance.includes("scopeHref(scopeId,'governance/manage')"),'Governance must link to Scope Manage');
 must(data.includes('updateNeonRows')&&data.includes('deleteNeonRows')&&data.includes('ContentEditor'),'canonical data management must expose shared CRUD');
@@ -30,6 +32,7 @@ must(data.includes("toUpperCase()")&&data.includes("galaxy_link 必須是 8 字 
 must(admin.includes("insertNeonRows('silver.manage'")&&admin.includes("deleteNeonRows('silver.manage'"),'Admin must support mapping add/remove through shared management write');
 must(admin.includes('selectDraftScope')&&admin.includes('同一 Scope 的 Galaxy / Time mapping 必須一致'),'Admin permission rows must inherit and preserve one Scope mapping');
 must(neonClient.includes("rpc('management_write'")&&neonClient.includes('batchSize=200'),'management writes must use the authorized RPC with bounded insert batches');
+must(neonClient.includes("rpc('keyword_library_write'"),'keyword library writes must use their authorized RPC');
 must(neonClient.includes('syncManageScopeRow')&&neonClient.includes("p_operation:'scope_sync'"),'Scope mapping updates must use one atomic management write');
 must(neonClient.includes('affected 0 rows')&&neonClient.includes('affected!==batch.length'),'management write helpers must reject zero-row updates/deletes and incomplete inserts');
 must(admin.includes('syncManageScopeRow('),'Admin must update one Scope mapping atomically');
@@ -39,6 +42,8 @@ must(data.includes("來源為必填欄位。")&&data.includes('source_name:sourc
 must(data.includes("setSelectedId(id);setDraft(null);setEditorMessage('');")&&!data.includes('if(!scopeData)return;'),'record selection must clear stale drafts and Scope resolution failures must not be silent');
 must(data.includes('!draft&&editorMessage'),'record-detail failures and successful deletes must remain visible without an editor draft');
 must(admin.includes("setMappings([]);setStatus(error?.message||'Mapping 讀取失敗。');"),'Admin mapping read rejections must surface in the UI');
+must(keywordLibrary.includes('group_name')&&keywordLibrary.includes('item_name')&&keywordLibrary.includes('principle')&&keywordLibrary.includes('keywords_text'),'keyword library editor must edit group, item, principle and one keyword collection together');
+must(!keywordLibrary.includes('keyword_group')&&!keywordLibrary.includes("node_type:'style'")&&!keywordLibrary.includes("node_type:'keyword'"),'keyword library editor must not recreate style/rule/node-type storage');
 
 must(!/silver\.runes(?:_etc)?\b/.test(galaxy),'generic Galaxy/Search provider must not expose private Rune Core tables');
 const sharedSearch=read('app/modular/features/Search.jsx');
