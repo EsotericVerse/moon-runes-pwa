@@ -12,24 +12,22 @@ const structureRows=[
   {rune_id:61,rune_name:'幻',group_name:'無序'}
 ];
 
-const styleNodes=structureRows.map(row=>({
-  style_no:row.rune_id,
-  node_type:'style',
-  representative_name:row.rune_name,
-  parent_group_name:'符文66',
-  keyword_group:null,
-  keyword:null,
+const catalogRows=structureRows.map((row,index)=>({
+  keyword_id:index+1,
+  group_name:'符文66',
+  item_no:row.rune_id,
+  item_name:row.rune_name,
+  principle:'',
+  keywords:[],
   order_no:row.rune_id
 }));
 
-const keywordRows=[
-  {style_no:2,node_type:'keyword',keyword_group:'style',keyword:'意識',order_no:1},
-  {style_no:2,node_type:'keyword',keyword_group:'rule',keyword:'意識TO魂、潛意識TO夢',order_no:9000},
-  {style_no:43,node_type:'keyword',keyword_group:'rule',keyword:'水土AND地',order_no:9000},
-  {style_no:46,node_type:'keyword',keyword_group:'rule',keyword:'水土TO地',order_no:9000},
-  {style_no:26,node_type:'keyword',keyword_group:'rule',keyword:'花枝NAME、花枝招展TO花',order_no:9000},
-  {style_no:7,node_type:'keyword',keyword_group:'rule',keyword:'鏡花水月AND幻',order_no:9000}
-];
+const byItem=new Map(catalogRows.map(row=>[row.item_no,row]));
+byItem.get(2).keywords=['意識','意識TO魂、潛意識TO夢'];
+byItem.get(43).keywords=['水土AND地'];
+byItem.get(46).keywords=['水土TO地'];
+byItem.get(26).keywords=['花枝NAME、花枝招展TO花'];
+byItem.get(7).keywords=['鏡花水月AND幻'];
 
 const rows=[
   {key:'a',title:'',content:'潛意識'},
@@ -40,7 +38,7 @@ const rows=[
   {key:'f',title:'',content:'鏡花水月'}
 ];
 
-const result=classifyRune66Documents(rows,[...styleNodes,...keywordRows],structureRows);
+const result=classifyRune66Documents(rows,catalogRows,structureRows);
 const byKey=new Map(result.classifications.map(row=>[row.key,row]));
 const runeMap=row=>new Map((row?.rune_counts||[]).map(item=>[item.label,item.count]));
 
@@ -65,4 +63,8 @@ assert.equal(result.documentCount,rows.length);
 assert.equal(result.unclassifiedCount,1,'only 花枝 NAME sample should remain unclassified');
 assert.ok(result.tieCount>=1);
 
-console.log('[rune66-keywords] FlexSearch Rune66 attribution and single-pass classification verified');
+assert.ok(catalogRows.every(row=>Array.isArray(row.keywords)),'keyword catalog must use one keyword collection per classification item');
+assert.equal(catalogRows.some(row=>'keyword_group' in row),false,'keyword catalog must not split keywords into style/rule groups');
+assert.equal(catalogRows.some(row=>'node_type' in row),false,'keyword catalog must not use style/keyword node types');
+
+console.log('[rune66-keywords] unified keyword items, FlexSearch attribution and single-pass classification verified');
