@@ -10,7 +10,7 @@ export default function RunesClient(){
   return <main className="loc-next-main"><section className="loc-view">
     <header className="loc-hero scope-home-hero-with-visual" id="intro">
       <div className="scope-home-hero-copy">
-        <p className="loc-eyebrow">月之符文</p>
+        <p className="loc-eyebrow">LunaRunes</p>
         <div className="home-title-row">
           <h1>月之符文</h1>
           <p className="loc-subtitle">以月的角度紀錄。</p>
