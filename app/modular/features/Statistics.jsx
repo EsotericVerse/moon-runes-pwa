@@ -214,7 +214,7 @@ function Rune66Summary({analysis}){
     <p className="scope-status">分析作品 {Number(data.documentCount||0).toLocaleString()} 項 · 已分類 {Number(data.classifiedCount||0).toLocaleString()} · 未分類 {Number(data.unclassifiedCount||0).toLocaleString()} · 第一名並列 {Number(data.tieCount||0).toLocaleString()}</p>
     <section className="scope-card">
       <h3>九組分類</h3>
-      <p className="scope-status">命中總數是該組所有符文的關鍵詞／規則命中累加；分類作品數是每篇作品完成符文計數後的最高組。</p>
+      <p className="scope-status">命中總數是該組所有符文的關鍵詞命中累加；分類作品數是每篇作品完成符文計數後的唯一最高組。</p>
       <div className="scope-ranking">
         {groups.map(row=><div key={row.group}><strong>{row.group}</strong><span>命中 {Number(row.hit_count||0).toLocaleString()} · 分類 {Number(row.document_count||0).toLocaleString()}</span></div>)}
       </div>
@@ -234,7 +234,7 @@ function Rune66Summary({analysis}){
         {runes.map(row=><div key={row.rune_id}><strong>{String(row.rune_id).padStart(2,'0')} · {row.label} · {row.group}</strong><span>{Number(row.count||0).toLocaleString()} 次 · {Number(row.document_count||0).toLocaleString()} 項作品</span></div>)}
       </div>
     </section>
-    {data.unsupportedRules?.length?<section className="scope-card"><h3>尚未套用的規則</h3><p className="scope-status scope-error">{data.unsupportedRules.map(row=>row.rune+'：'+row.rule).join('、')}</p></section>:null}
+    {data.unsupportedRules?.length?<section className="scope-card"><h3>尚未套用的語法</h3><p className="scope-status scope-error">{data.unsupportedRules.map(row=>row.rune+'：'+row.rule).join('、')}</p></section>:null}
   </div>;
 }
 

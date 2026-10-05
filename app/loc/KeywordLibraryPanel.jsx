@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
+import {useQueryClient} from '@tanstack/react-query';
 import {neonAuthRelation,writeKeywordLibraryItem} from './neon-client';
 import {useNeonAccount} from './use-neon-account';
 import {clearRune66ClassificationCache} from './rune66-keyword-analysis';
@@ -30,6 +31,7 @@ function blankDraft(groupName='',itemNo=1){
 
 export default function KeywordLibraryPanel(){
   const account=useNeonAccount();
+  const queryClient=useQueryClient();
   const [rows,setRows]=useState([]);
   const [group,setGroup]=useState('');
   const [selectedId,setSelectedId]=useState('');
@@ -119,6 +121,7 @@ export default function KeywordLibraryPanel(){
     try{
       const result=await writeKeywordLibraryItem(draft.keyword_id?'update':'insert',payload);
       clearRune66ClassificationCache();
+      await queryClient.invalidateQueries({queryKey:['statistics-rune66-classification'],refetchType:'all'});
       setGroup(groupName);
       await load(result.keyword_id||draft.keyword_id||'',groupName);
       setMessage('關鍵詞設定已儲存。');
@@ -136,6 +139,7 @@ export default function KeywordLibraryPanel(){
     try{
       await writeKeywordLibraryItem('delete',draft);
       clearRune66ClassificationCache();
+      await queryClient.invalidateQueries({queryKey:['statistics-rune66-classification'],refetchType:'all'});
       setSelectedId('');setDraft(null);
       await load();
       setMessage('分類項目已刪除。');
