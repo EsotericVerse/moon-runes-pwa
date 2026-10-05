@@ -19,7 +19,7 @@ const required=[
 for(const path of required)if(!fs.existsSync(path)||!read(path).trim())failures.push('missing Current contract file: '+path);
 if(!failures.length){
   const identity=read('app/loc/views/AboutView.jsx');
-  for(const token of ['語言架構框架','Language Architecture Framework','符號式語言','Symbolic Language'])if(!identity.includes(token))failures.push('identity missing '+token);
+  for(const token of ['語言架構框架','LANGUAGE Architecture Framework','符號式語言','Symbolic LANGUAGE'])if(!identity.includes(token))failures.push('identity missing '+token);
   const daily=read('app/loc/model/daily-trend-engine.mjs');
   for(const token of ['summarizeDailyRange','dailyPresetRange'])if(!daily.includes(token))failures.push('daily trend missing '+token);
   const galaxy=read('app/loc/galaxy-query.js');

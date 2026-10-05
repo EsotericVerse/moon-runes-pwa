@@ -15,7 +15,7 @@ export default function AboutView(){
   return <section className="loc-view loc-home">
     <header className="loc-hero loc-home-hero">
       <div className="loc-home-hero-copy">
-        <p className="loc-eyebrow">LOC (Language Architecture Framework)</p>
+        <p className="loc-eyebrow">LOC (LANGUAGE Architecture Framework)</p>
         <div className="home-title-row">
           <h1>LOC月典</h1>
           <p className="loc-subtitle">以多面向語言結構與時間維度，整理、搜尋並呈現語言建築。</p>
@@ -55,7 +55,7 @@ export default function AboutView(){
     </section>
 
     <section className="loc-card home-copy-block home-rune-section">
-      <div className="home-section-heading"><p className="loc-eyebrow">LunaRunes(Symbolic Language)</p><h2>月之符文籤詩系統</h2><p className="loc-subtitle">不涉及神秘學，為單純的指引籤詩
+      <div className="home-section-heading"><p className="loc-eyebrow">LunaRunes(Symbolic LANGUAGE)</p><h2>月之符文籤詩系統</h2><p className="loc-subtitle">不涉及神秘學，為單純的指引籤詩
 	  <br/>不保證一定就是註定，你擁有選擇權。</p></div>
       <div className="home-rune-layout">
         <div className="home-rune-preview" aria-label="命之符文示例">
