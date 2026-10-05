@@ -31,3 +31,11 @@ export function publicContentFilters(filters=[]){
     {column:'content',operator:'neq',value:''}
   ];
 }
+
+export function analysisContentFilters(filters=[]){
+  return [
+    ...(Array.isArray(filters)?filters:[]),
+    {column:'statistics_able',operator:'eq',value:true},
+    {column:'content',operator:'neq',value:''}
+  ];
+}
