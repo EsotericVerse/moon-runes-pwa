@@ -2,7 +2,7 @@
 
 import {NEON_QUERY_BATCH_SIZE} from './query-contract.mjs';
 import {DEFAULT_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
-import {publicContentFilters} from './content-policy';
+import {analysisContentFilters,publicContentFilters} from './content-policy';
 import {applyNeonFilters,applyNeonOrders,neonPublicRelation,selectAllNeonRows,selectNeonRows} from './neon-query';
 
 function unique(values=[]){
@@ -25,7 +25,7 @@ async function selectNeonRowById(table,{idColumn,id,columns}={}){
 
 export async function selectSourceCatalog(scope,{startDate='',endDate='',limit=20}={}){
   const current=scopeOf(scope);
-  const filters=publicContentFilters([
+  const filters=analysisContentFilters([
     ...timeFilters('createtime',startDate,endDate),
     {column:'source_name',operator:'neq',value:''}
   ]);
@@ -48,7 +48,7 @@ export async function selectSourceCatalog(scope,{startDate='',endDate='',limit=2
 
 export async function selectSourceDaily(scope,{startDate='',endDate=''}={}){
   const current=scopeOf(scope);
-  const filters=publicContentFilters([
+  const filters=analysisContentFilters([
     ...timeFilters('createtime',startDate,endDate),
     {column:'source_name',operator:'neq',value:''}
   ]);
