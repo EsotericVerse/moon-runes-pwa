@@ -12,8 +12,7 @@ function compareRank(a,b){
 }
 
 function textOf(row){
-  return [row?.title,row?.content,row?.meta_tags,row?.media_metadata_text]
-    .filter(Boolean).join(' ');
+  return String(row?.content||'');
 }
 
 function keywordList(value){
