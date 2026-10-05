@@ -6,7 +6,7 @@ import {decodeCultureText,formatCultureDateTime} from '../modular/modules/cultur
 import {workDisplayText} from '../modular/work-display-model';
 import {resolveGalaxyExternalLinks,selectCategoryCounts,selectDailyCategoryCounts,selectSourceCatalog,selectSourceDaily} from './galaxy-query';
 import {selectNeonCount,selectNeonRows} from './neon-query';
-import {publicContentFilters} from './content-policy';
+import {analysisContentFilters} from './content-policy';
 import {selectManagedScope,selectManagedScopes} from './scope-data';
 
 
@@ -305,7 +305,7 @@ export async function selectScopeCultureData(scopeId){
         selectDailyCategoryCounts(bundle.galaxy,'source_name',{
           startDate:intersectionStart,
           endDate:today,
-          filters:publicContentFilters([]),
+          filters:analysisContentFilters([]),
           includeEmpty:true,
           includeUndated:false
         }),
@@ -490,7 +490,7 @@ export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=nul
     ?Math.max(0,Math.floor(cursorMediaOffset))
     :baseOffset;
 
-  const galaxyFilters=publicContentFilters([
+  const galaxyFilters=analysisContentFilters([
     ...dateFilters(startDate,endDate),
     ...(rawSources.length?[{column:'source_name',operator:'in',value:rawSources}]:[])
   ]);
@@ -576,7 +576,7 @@ export async function selectScopePeriodWorkDetails(scope,{items=[]}={}){
   const [galaxyResult,mediaResult]=await Promise.all([
     galaxyIds.length?selectNeonRows(scope.galaxy,{
       columns:'uid,source_name,createtime,title,url,source_id,target_id,media_link',
-      filters:publicContentFilters([{column:'uid',operator:'in',value:galaxyIds}]),
+      filters:analysisContentFilters([{column:'uid',operator:'in',value:galaxyIds}]),
       limit:galaxyIds.length
     }):Promise.resolve({rows:[]}),
     mediaIds.length?selectNeonRows(scope.galaxyMedia,{
