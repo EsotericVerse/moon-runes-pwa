@@ -9,7 +9,7 @@ import {applyTheme,getThemeSlot,THEME_SLOTS} from './modular/theme-registry';
 import {useScopeRuntime} from './modular/use-scope-runtime';
 import {selectScopeConfig} from './loc/scope-data';
 
-const AUTO_THEME_ID='auto';
+const SYSTEM_THEME_ID='system-default';
 const DAY_THEME_ID='theme-7';
 const NIGHT_THEME_ID='theme-1';
 const THEME_TIME_ZONE='Asia/Taipei';
@@ -46,17 +46,19 @@ function automaticThemeId(date=new Date()){
 function ThemeSelect({scopeId}){
   const scope=getScope(String(scopeId||'').trim());
   const policy=scope.theme||{mode:'auto'};
+  const fixedDefaultThemeId=policy.mode==='fixed'?String(policy.themeId||'').trim():'';
   const configQuery=useQuery({
     queryKey:['scope-public-config',scopeId],
     queryFn:()=>selectScopeConfig(scopeId),
     staleTime:60_000,
-    enabled:!scope.aggregateChildren&&scope.id!=='admin'
+    enabled:!fixedDefaultThemeId&&!scope.aggregateChildren&&scope.id!=='admin'
   });
-  const configuredThemeId=String(configQuery.data?.theme||'').trim();
-  const fixedThemeId=configuredThemeId||(policy.mode==='fixed'?policy.themeId:'');
-  const [themeId,setThemeId]=useState(AUTO_THEME_ID);
+  const configuredDefaultThemeId=String(configQuery.data?.theme||'').trim();
+  const [selection,setSelection]=useState(()=>({scopeId,themeId:SYSTEM_THEME_ID}));
   const [now,setNow]=useState(()=>new Date());
-  const effectiveThemeId=fixedThemeId||(themeId===AUTO_THEME_ID?automaticThemeId(now):themeId);
+  const selectedThemeId=selection.scopeId===scopeId?selection.themeId:SYSTEM_THEME_ID;
+  const systemDefaultThemeId=fixedDefaultThemeId||configuredDefaultThemeId||automaticThemeId(now);
+  const effectiveThemeId=selectedThemeId===SYSTEM_THEME_ID?systemDefaultThemeId:selectedThemeId;
   const slot=useMemo(()=>getThemeSlot(effectiveThemeId),[effectiveThemeId]);
 
   useEffect(()=>{
@@ -66,26 +68,24 @@ function ThemeSelect({scopeId}){
   },[slot,scopeId]);
 
   useEffect(()=>{
-    if(fixedThemeId||themeId!==AUTO_THEME_ID)return undefined;
+    if(selectedThemeId!==SYSTEM_THEME_ID||fixedDefaultThemeId||configuredDefaultThemeId)return undefined;
     setNow(new Date());
     const timer=window.setInterval(()=>setNow(new Date()),30_000);
     return ()=>window.clearInterval(timer);
-  },[fixedThemeId,themeId]);
+  },[selectedThemeId,fixedDefaultThemeId,configuredDefaultThemeId]);
 
   useEffect(()=>{
-    if(!fixedThemeId)setThemeId(AUTO_THEME_ID);
-  },[scopeId,fixedThemeId]);
+    setSelection({scopeId,themeId:SYSTEM_THEME_ID});
+  },[scopeId]);
 
-  if(fixedThemeId)return null;
   return <label className="scope-theme-control">
     <span>{UI_COPY.common.theme}</span>
-    <select value={themeId} onChange={event=>setThemeId(event.target.value)} aria-label={UI_COPY.common.theme}>
-      <option value={AUTO_THEME_ID}>{UI_COPY.common.autoTheme}</option>
+    <select value={selectedThemeId} onChange={event=>setSelection({scopeId,themeId:event.target.value})} aria-label={UI_COPY.common.theme}>
+      <option value={SYSTEM_THEME_ID}>{UI_COPY.common.systemTheme}</option>
       {THEME_SLOTS.map(item=><option value={item.id} key={item.id}>{item.label}</option>)}
     </select>
   </label>;
 }
-
 function normalizePath(value='/'){
   const path=String(value||'/').replace(/\/+$/,'');
   return path||'/';
