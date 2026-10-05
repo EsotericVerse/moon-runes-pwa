@@ -72,10 +72,7 @@ for(const path of [
   'app/modular/IncrementalList.jsx',
   'app/loc/scope-table-mapping.js',
   'app/loc/aggregate-query.js',
-  'app/loc/neon-search.js',
   'app/loc/search-providers.js',
-  'app/loc/neon-statistics-client.js',
-  'app/loc/neon-culture-client.js'
 ]){
   if(existsSync(resolve(root,path)))failures.push('retired data-layer module still present: '+path);
 }

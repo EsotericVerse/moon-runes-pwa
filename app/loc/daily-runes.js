@@ -1,11 +1,11 @@
-import {neonAuthRelation} from './neon-client';
-import {selectAllNeonRows,selectNeonRows} from './neon-query';
+import {dbAuthRelation} from './db-client.mjs';
+import {selectAllRows,selectRows} from './db-query.mjs';
 
 
 async function attachRuneMeta(rows){
   const source=Array.isArray(rows)?rows:[];
   const ids=[...new Set(source.map(row=>Number(row.rune_number)).filter(number=>Number.isInteger(number)&&number>=0&&number<=66))];
-  const runes=ids.length?(await selectNeonRows('silver.runes',{
+  const runes=ids.length?(await selectRows('silver.runes',{
     columns:'rune_id,rune_name',
     filters:[{column:'rune_id',operator:'in',value:ids}],
     limit:ids.length,
@@ -22,7 +22,7 @@ async function attachRuneMeta(rows){
 }
 
 async function selectDailyRangeRows(filters=[],orders=[]){
-  return (await selectAllNeonRows('silver.lrunes_daily',{
+  return (await selectAllRows('silver.lrunes_daily',{
     columns:'record_date,draw_kind,rune_number,direction',
     filters,
     orders
@@ -81,7 +81,7 @@ export async function insertDailyRuneRecord({recordDate,drawKind,runeNumber,dire
     rune_number:rune,
     direction:dir
   };
-  const {data,error}=await neonAuthRelation('silver.lrunes_daily')
+  const {data,error}=await dbAuthRelation('silver.lrunes_daily')
     .insert(row)
     .select('record_date,draw_kind,rune_number,direction');
   if(error){
@@ -102,7 +102,7 @@ export async function updateDailyRuneRecord({recordDate,drawKind,runeNumber,dire
   if(!DAILY_DRAW_KINDS.has(kind))throw new Error('紀錄類型不正確。');
   if(!Number.isInteger(rune)||rune<0||rune>66)throw new Error('符文編號不正確。');
   if(!DAILY_DIRECTIONS.has(dir))throw new Error('符文方向不正確。');
-  const {data,error}=await neonAuthRelation('silver.lrunes_daily')
+  const {data,error}=await dbAuthRelation('silver.lrunes_daily')
     .update({rune_number:rune,direction:dir,updated_at:new Date().toISOString()})
     .eq('record_date',date)
     .eq('draw_kind',kind)
@@ -118,7 +118,7 @@ export async function deleteDailyRuneRecord({recordDate,drawKind}={}){
   const kind=String(drawKind||'').trim();
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Error('日期格式不正確。');
   if(!DAILY_DRAW_KINDS.has(kind))throw new Error('紀錄類型不正確。');
-  const {data,error}=await neonAuthRelation('silver.lrunes_daily')
+  const {data,error}=await dbAuthRelation('silver.lrunes_daily')
     .delete()
     .eq('record_date',date)
     .eq('draw_kind',kind)

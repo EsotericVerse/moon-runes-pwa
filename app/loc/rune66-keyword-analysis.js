@@ -1,6 +1,6 @@
 'use client';
 
-import {selectAllNeonRows} from './neon-query';
+import {selectAllRows} from './db-query.mjs';
 import {selectManagedScope} from './scope-data';
 import {classifyRune66Documents} from './model/rune66-keyword-engine.mjs';
 
@@ -10,28 +10,21 @@ const RUNE_TABLE='silver.runes';
 const analysisPromises=new Map();
 
 function buildDocuments(textRows=[]){
-  return textRows.map(row=>{
-    const uid=String(row?.uid||'').trim();
-    if(!uid)return null;
-    return {
-      key:'galaxy:'+uid,
-      uid,
-      kind:'galaxy',
-      title:String(row?.title||'').trim(),
-      content:String(row?.content||''),
-      date:String(row?.createtime||'').slice(0,10)
-    };
-  }).filter(Boolean);
+  return textRows.filter(row=>String(row?.uid||'').trim()).map(row=>({
+    key:'galaxy:'+row.uid,uid:String(row.uid).trim(),kind:'galaxy',
+    title:String(row.title||'').trim(),content:String(row.content||''),
+    date:String(row.createtime||'').slice(0,10)
+  }));
 }
 
 async function loadRune66Catalog(){
   const [catalogResult,structureResult]=await Promise.all([
-    selectAllNeonRows(PERSONAL_KEYWORD_TABLE,{
+    selectAllRows(PERSONAL_KEYWORD_TABLE,{
       columns:'keyword_id,group_name,item_no,item_name,principle,keywords,order_no',
       filters:[{column:'group_name',operator:'eq',value:'符文66'}],
       orders:[{column:'order_no',ascending:true},{column:'item_no',ascending:true}]
     }),
-    selectAllNeonRows(RUNE_TABLE,{
+    selectAllRows(RUNE_TABLE,{
       columns:'rune_id,rune_name,group_name',
       filters:[
         {column:'rune_id',operator:'gte',value:1},
@@ -46,16 +39,16 @@ async function loadRune66Catalog(){
 async function loadAuthorDocuments({startDate='',endDate=''}={}){
   const scope=await selectManagedScope('lo3rwang');
   if(!scope)throw new Error('找不到 lo3rwang Scope');
-  const textResult=await selectAllNeonRows(scope.galaxy,{
-    columns:'uid,title,content,createtime,statistics_able',
-    filters:[
-      {column:'statistics_able',operator:'eq',value:true},
-      {column:'content',operator:'neq',value:''},
-      ...(startDate?[{column:'createtime',operator:'gte',value:startDate+'T00:00:00+08:00'}]:[]),
-      ...(endDate?[{column:'createtime',operator:'lte',value:endDate+'T23:59:59.999+08:00'}]:[])
-    ],
-    orders:[{column:'createtime',ascending:true},{column:'uid',ascending:true}]
-  });
+  const textResult=await selectAllRows(scope.galaxy,{
+      columns:'uid,title,content,createtime,searchable,statistics_able',
+      filters:[
+        {column:'searchable',operator:'eq',value:true},
+        {column:'statistics_able',operator:'eq',value:true},
+        ...(startDate?[{column:'createtime',operator:'gte',value:startDate+'T00:00:00+08:00'}]:[]),
+        ...(endDate?[{column:'createtime',operator:'lte',value:endDate+'T23:59:59.999+08:00'}]:[])
+      ],
+      orders:[{column:'createtime',ascending:true},{column:'uid',ascending:true}]
+    });
   return buildDocuments(textResult.rows||[]);
 }
 

@@ -18,8 +18,8 @@ import {formatCultureDateTime} from '../modules/culture-timeline/culture-timelin
 import {analyzeRiverDensity} from '../modules/culture-timeline/river-density-analysis.mjs';
 import {selectGalaxyContent} from '../../loc/galaxy-query';
 import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
-import {insertNeonRows,neonAuthRelation,updateNeonRows} from '../../loc/neon-client';
-import {useNeonAccount} from '../../loc/use-neon-account';
+import {insertRows,dbAuthRelation,updateRows} from '../../loc/db-client.mjs';
+import {useAccount} from '../../loc/use-account';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {ContentEditor,FeaturePage,IncrementalList,WorkFullText,WorkSummaryCard} from '../ui';
 import {workDisplayHeading,workDisplayText} from '../work-display-model';
@@ -62,7 +62,7 @@ function nextRiverDay(value){
 }
 export default function Culture(){
   const {scopeId,scope}=useScopeRuntime();
-  const account=useNeonAccount();
+  const account=useAccount();
   const searchParams=useSearchParams();
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
   const query=useQuery({
@@ -393,7 +393,7 @@ export default function Culture(){
         year_value:null,
         updated_at:now
       }));
-      await insertNeonRows(time,rows);
+      await insertRows(time,rows);
       setSelectedVirtualAnchorDates([]);
       setAnchorSaveMessage('已一次建立 '+rows.length+' 個正式定錨點。');
       await query.refetch();
@@ -412,7 +412,7 @@ export default function Culture(){
     setEditingWorkKey(key);setEditDraft(null);setEditError('');
     try{
       if(!scopeData)throw new Error('Scope data 未解析');
-      const {data,error}=await neonAuthRelation(scopeData.galaxy)
+      const {data,error}=await dbAuthRelation(scopeData.galaxy)
         .select('uid,title,content,searchable')
         .eq('uid',uid)
         .limit(1);
@@ -438,7 +438,7 @@ export default function Culture(){
       if(!account.canManageScopeSync(classificationScope))throw new Error('沒有修改此資料區域的權限。');
       if(!scopeData)throw new Error('Scope data 未解析');
       const content=requireGalaxyContent(editDraft.body);
-      await updateNeonRows(scopeData.galaxy,{
+      await updateRows(scopeData.galaxy,{
         title:resolveGalaxyTitle(editDraft.title,content),
         content,
         searchable:editDraft.hidden!==true,

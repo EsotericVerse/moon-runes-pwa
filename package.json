@@ -9,20 +9,23 @@
     "verify:auth": "node scripts/verify-auth-boundary.mjs",
     "verify:rune-draw": "node scripts/verify-rune-draw-algorithm.mjs",
     "verify:semantics": "node scripts/verify-current-semantics.mjs",
-    "verify": "npm run verify:rune-draw && npm run verify:rune66-keywords && npm run verify:modules && npm run verify:semantics && npm run verify:scope-registry && npm run verify:directories && npm run verify:auth && npm run verify:theme && npm run verify:management",
+    "verify": "npm run verify:db-adapters && npm run verify:rune-draw && npm run verify:rune66-keywords && npm run verify:modules && npm run verify:semantics && npm run verify:scope-registry && npm run verify:directories && npm run verify:auth && npm run verify:theme && npm run verify:management",
     "build": "next build",
     "verify:theme": "node scripts/verify-theme-contract.mjs",
     "verify:scope-registry": "node scripts/verify-scope-registry.mjs",
     "postbuild": "node scripts/copy-static-assets.mjs && node scripts/verify-static-export.mjs",
-    "verify:neon-public": "node scripts/verify-neon-public-read.mjs",
+    "verify:db-public": "node scripts/verify-db-public-read.mjs",
     "test:ui": "playwright test",
     "verify:static-export": "node scripts/verify-static-export.mjs",
     "verify:management": "node scripts/verify-management-contract.mjs",
-    "verify:rune66-keywords": "node scripts/verify-rune66-keyword-engine.mjs"
+    "verify:rune66-keywords": "node scripts/verify-rune66-keyword-engine.mjs",
+    "verify:db-adapters": "node scripts/verify-db-adapters.mjs"
   },
   "dependencies": {
-    "@neondatabase/neon-js": "0.7.0-beta",
+    "@supabase/postgrest-js": "2.79.0",
+    "@supabase/supabase-js": "2.117.2",
     "@tanstack/react-query": "5.103.1",
+    "flexsearch": "0.8.212",
     "karaul": "0.1.0",
     "motion": "13.4.4",
     "next": "16.3.5",
@@ -32,8 +35,7 @@
     "recharts": "3.10.1",
     "vis-network": "10.1.0",
     "vis-timeline": "8.5.4",
-    "zod": "4.6.0",
-    "flexsearch": "0.8.212"
+    "zod": "4.6.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

@@ -21,11 +21,11 @@ LOC is the framework for organizing text, works, sources, time, relationships, s
 
 - Next.js owns application routing; React owns UI.
 - Current route authority is the Next filesystem.
-- Neon is the runtime data SSOT.
+- Supabase PostgreSQL is the runtime data SSOT.
 - The Scope registry owns deployment/navigation metadata only.
 - `silver.manage` owns data Scope and Galaxy/Time table mapping.
-- Neon remains the authoritative query layer for Scope, filters, COUNT, date ranges and pagination across Search, Statistics and Culture.
-- FlexSearch is the surface lexical/cache layer for already narrowed local data such as keyword lists, autocomplete and repeated small-range matching; it never replaces Neon or becomes corpus authority.
+- PostgreSQL remains the authoritative query layer for Scope, fixed eligibility flags, COUNT, date ranges and pagination across Search, Statistics and Culture.
+- FlexSearch is limited to small, already narrowed local data; fixed numeric filter tables and write-time validation are preferred for corpus filtering to avoid repeated full-text scans.
 - Search is lexical/metadata search, not semantic rendering.
 - Missing general-Scope configuration remains empty; LOC does not borrow LunaRunes Canon, keywords or Style as fallback.
 

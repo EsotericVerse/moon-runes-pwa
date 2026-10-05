@@ -71,4 +71,13 @@ assert.ok(catalogRows.every(row=>Array.isArray(row.keywords)),'keyword catalog m
 assert.equal(catalogRows.some(row=>'keyword_group' in row),false,'keyword catalog must not split keywords into style/rule groups');
 assert.equal(catalogRows.some(row=>'node_type' in row),false,'keyword catalog must not use style/keyword node types');
 
+const metadataOnly=classifyRune66Documents([
+  {key:'metadata',title:'',content:'',meta_tags:'意識',media_metadata_text:'水土',media_type:'花枝招展'},
+  {key:'lyrics',title:'',content:'意識',meta_tags:'潛意識'}
+],catalogRows,structureRows);
+const metadataByKey=new Map(metadataOnly.classifications.map(row=>[row.key,row]));
+assert.equal(runeMap(metadataByKey.get('metadata')).size,0,'media metadata must not enter Rune66 body classification');
+assert.equal(runeMap(metadataByKey.get('lyrics')).get('魂'),1,'lyrics body remains classifiable');
+assert.equal(runeMap(metadataByKey.get('lyrics')).has('夢'),false,'metadata must not add a Rune to lyrics');
+
 console.log('[rune66-keywords] unified keyword items, FlexSearch attribution and single-pass classification verified');

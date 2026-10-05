@@ -2,8 +2,8 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import {useQueryClient} from '@tanstack/react-query';
-import {neonAuthRelation,writeKeywordLibraryItem} from './neon-client';
-import {useNeonAccount} from './use-neon-account';
+import {dbAuthRelation,writeKeywordLibraryItem} from './db-client.mjs';
+import {useAccount} from './use-account';
 import {clearRune66ClassificationCache} from './rune66-keyword-analysis';
 
 const TABLE='silver.lo3rwang_keywords';
@@ -30,7 +30,7 @@ function blankDraft(groupName='',itemNo=1){
 }
 
 export default function KeywordLibraryPanel(){
-  const account=useNeonAccount();
+  const account=useAccount();
   const queryClient=useQueryClient();
   const [rows,setRows]=useState([]);
   const [group,setGroup]=useState('');
@@ -46,7 +46,7 @@ export default function KeywordLibraryPanel(){
     if(!canEdit)return;
     setLoading(true);setMessage('');
     try{
-      const {data,error}=await neonAuthRelation(TABLE)
+      const {data,error}=await dbAuthRelation(TABLE)
         .select('keyword_id,group_name,item_no,item_name,principle,keywords,order_no')
         .order('group_name',{ascending:true})
         .order('order_no',{ascending:true})

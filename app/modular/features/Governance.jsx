@@ -5,7 +5,7 @@ import {UI_COPY} from '../../i18n/ui-copy';
 import {FeaturePage} from '../ui';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {getScope,scopeHref} from '../scope-registry';
-import {useNeonAccount} from '../../loc/use-neon-account';
+import {useAccount} from '../../loc/use-account';
 import LocGovernance,{LOC_GOVERNANCE_SUBTITLE} from '../governance/LocGovernance';
 import LunaRunesGovernance,{LUNARUNES_GOVERNANCE_SUBTITLE} from '../governance/LunaRunesGovernance';
 import PersonalGovernance,{PERSONAL_GOVERNANCE_SUBTITLE} from '../governance/PersonalGovernance';
@@ -19,7 +19,7 @@ function governanceFor(scopeId){
 
 function GovernanceHome(){
   const {scopeId}=useScopeRuntime();
-  const account=useNeonAccount();
+  const account=useAccount();
   const {View,subtitle}=governanceFor(scopeId);
   const adminHref=scopeHref('admin');
   const canEdit=account.canManageScopeSync(scopeId);
@@ -38,7 +38,7 @@ function GovernanceHome(){
 
 function GovernanceLaw(){
   const {scopeId}=useScopeRuntime();
-  const account=useNeonAccount();
+  const account=useAccount();
   const canEdit=account.canManageScopeSync(scopeId);
   const {View}=governanceFor(scopeId);
   return <FeaturePage featureId="governance" subtitle={UI_COPY.governance.rights}><View canEdit={canEdit}/></FeaturePage>;

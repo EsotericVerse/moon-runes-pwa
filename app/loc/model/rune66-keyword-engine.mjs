@@ -12,7 +12,8 @@ function compareRank(a,b){
 }
 
 function textOf(row){
-  return String(row?.content||'');
+  return [row?.title,row?.content]
+    .filter(Boolean).join(' ');
 }
 
 function keywordList(value){

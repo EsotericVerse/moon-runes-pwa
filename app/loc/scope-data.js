@@ -1,7 +1,7 @@
 'use client';
 
-import {NEON_QUERY_BATCH_SIZE} from './query-contract.mjs';
-import {selectNeonRows} from './neon-query';
+import {DB_QUERY_BATCH_SIZE} from './query-contract.mjs';
+import {selectRows} from './db-query.mjs';
 
 export const MANAGE_TABLE='silver.manage';
 
@@ -52,11 +52,11 @@ export function scopeDataFromManageRows(rows=[]){
 }
 
 export async function selectManagedScopes(){
-  const {rows}=await selectNeonRows(MANAGE_TABLE,{
+  const {rows}=await selectRows(MANAGE_TABLE,{
     columns:'id,role,galaxy,time,birthday',
     filters:[{column:'role',operator:'in',value:['admin','scope']}],
     orders:[{column:'id',ascending:true}],
-    limit:NEON_QUERY_BATCH_SIZE,
+    limit:DB_QUERY_BATCH_SIZE,
     offset:0
   });
   return scopeDataFromManageRows(rows);
@@ -65,11 +65,11 @@ export async function selectManagedScopes(){
 export async function selectManagedScope(scopeId){
   const id=String(scopeId||'').trim();
   if(!SCOPE_ID_PATTERN.test(id))throw new Error('Scope ID 無效');
-  const {rows}=await selectNeonRows(MANAGE_TABLE,{
+  const {rows}=await selectRows(MANAGE_TABLE,{
     columns:'id,role,galaxy,time,birthday',
     filters:[{column:'id',operator:'eq',value:id},{column:'role',operator:'in',value:['admin','scope']}],
     orders:[{column:'id',ascending:true}],
-    limit:NEON_QUERY_BATCH_SIZE,
+    limit:DB_QUERY_BATCH_SIZE,
     offset:0
   });
   return scopeDataFromManageRows(rows)[0]||null;
@@ -79,7 +79,7 @@ export async function selectManagedScope(scopeId){
 export async function selectScopeConfig(scopeId){
   const scope=defaultScopeData(scopeId);
   if(!scope)return null;
-  const {rows}=await selectNeonRows(scope.config,{
+  const {rows}=await selectRows(scope.config,{
     columns:'id,theme,search_able,statistics_able,culture_able',
     filters:[{column:'id',operator:'eq',value:scope.id}],
     limit:1,

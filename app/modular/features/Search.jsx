@@ -6,8 +6,8 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {useSearchParams} from 'next/navigation';
 
-import {selectNeonAuthRow,updateNeonRows} from '../../loc/neon-client';
-import {useNeonAccount} from '../../loc/use-neon-account';
+import {selectAuthRow,updateRows} from '../../loc/db-client.mjs';
+import {useAccount} from '../../loc/use-account';
 import {ContentEditor,FeaturePage,IncrementalList,WorkFullText,WorkSummaryCard} from '../ui';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {scopeHref} from '../scope-registry';
@@ -18,7 +18,7 @@ import {selectManagedScopes} from '../../loc/scope-data';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
-import {applyNeonFilters} from '../../loc/neon-query';
+import {applyFilters} from '../../loc/db-query.mjs';
 
 
 function escapeSearchRegExp(value){
@@ -114,7 +114,7 @@ function mergeSummaryResults(rows=[]){
 
 export default function Search(){
   const {scopeId,scope}=useScopeRuntime();
-  const account=useNeonAccount();
+  const account=useAccount();
   const searchParams=useSearchParams();
   const [query,setQuery]=useState('');
   const [searchMode,setSearchMode]=useState('all');
@@ -288,7 +288,7 @@ export default function Search(){
       const contentColumns=result.resourceType==='galaxy'
         ?'uid,title,content,searchable'
         :'media_id,title,meta_tags';
-      const fullRow=await selectNeonAuthRow(result.editableTable,{
+      const fullRow=await selectAuthRow(result.editableTable,{
         idColumn:result.editableIdColumn,
         id:result.editResourceId||result.resourceId,
         columns:contentColumns
@@ -319,7 +319,7 @@ export default function Search(){
         ...(result.resourceType==='galaxy'?{searchable:!editDraft.hidden,UpdateTime:new Date().toISOString()}:{})
       };
       const contentFilters=[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId}];
-      await updateNeonRows(result.editableTable,contentPatch,{filters:contentFilters});
+      await updateRows(result.editableTable,contentPatch,{filters:contentFilters});
       setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:nextTitle,snippet:result.resourceType==='galaxy'?'':body}));
       if(fullTextKey===result.key)setFullText(editDraft.body);
       setEditingKey('');setEditDraft(null);

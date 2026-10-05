@@ -18,7 +18,7 @@ Domain/mount 是 deployment identity，不是資料表名稱。
 
 Current route authority 是 Next filesystem。`app/modular/scope-registry.js` 只保存 deployment/navigation metadata，用來解析 canonical domain、mount 與 shared feature URL。
 
-Data Scope 由 Neon 管理。Current `silver.manage` managed rows：
+Data Scope 由 Supabase PostgreSQL 管理。Current `silver.manage` managed rows：
 
 - `lo3rwang` — role admin
 - `lrunes` — role scope

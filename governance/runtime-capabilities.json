@@ -1,12 +1,12 @@
 {
   "version": 2,
-  "updated_at": "2026-10-03",
+  "updated_at": "2026-10-05",
   "purpose": "Machine-readable Current runtime capability governance. This registry governs implementation rights only; it is not a corpus, route, Scope mapping, permission or Canon data authority.",
   "capabilities": {
     "flexsearch_uid_cache_table": {
-      "status": "protected",
+      "status": "optional",
       "owner": "FlexSearch lexical/keyword workflows",
-      "right": "FlexSearch may use a Neon cache table for transient UID working sets used by keyword, keyword-ratio, autocomplete, repeated local lexical matching and related statistics workflows.",
+      "right": "FlexSearch may be used only for measured, small, already narrowed local lexical workloads. A persistent UID cache is optional and must not be introduced solely to preserve an engine.",
       "authority": false,
       "canonical_content_allowed": false,
       "allowed_payload": [
@@ -15,20 +15,20 @@
         "cache_name",
         "working-set metadata"
       ],
-      "must_not_be_removed_as_duplicate_authority": true,
-      "removal_requires_explicit_governance_change": true,
-      "notes": "A UID working-set cache is an execution aid, not a second corpus authority. Refactors, cleanup passes, Neon-first rules and anti-duplication rules must preserve this capability."
+      "must_not_be_removed_as_duplicate_authority": false,
+      "removal_requires_explicit_governance_change": false,
+      "notes": "Prefer fixed database eligibility flags, numeric summaries and write-time validation where they reduce repeated corpus reads. Keep an index/cache only when measured performance demonstrates a benefit."
     },
     "keyword_operations_flexsearch": {
-      "status": "protected",
+      "status": "optional",
       "owner": "Keyword analysis and classification",
-      "right": "Keyword matching, keyword splitting, keyword hit counts, Rune attribution, keyword ratios and keyword-driven classification use FlexSearch over an explicitly loaded working corpus. Precise Search, UID lookup, Scope/date/source filtering, COUNT and pagination remain Neon responsibilities.",
-      "corpus_source": "Neon",
+      "right": "Keyword classification may use FlexSearch or a database-backed numeric summary. Prefer compact fixed filters and validated write-time aggregates when they reduce repeated full-content reads.",
+      "corpus_source": "PostgreSQL",
       "keyword_engine": "FlexSearch",
-      "precise_search_engine": "Neon",
-      "neon_keyword_matching_allowed": false,
-      "removal_requires_explicit_governance_change": true,
-      "notes": "Neon may load the corpus and keyword catalog, but it must not replace the FlexSearch keyword-matching/classification runtime with repeated literal keyword queries."
+      "precise_search_engine": "PostgreSQL",
+      "database_keyword_matching_allowed": true,
+      "removal_requires_explicit_governance_change": false,
+      "notes": "Full corpus text should not be loaded repeatedly for page rendering. Use statistics_able and other fixed eligibility fields before any bounded analysis; migrate expensive recurring aggregates to validated numeric summaries."
     }
   }
 }

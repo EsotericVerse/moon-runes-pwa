@@ -3,8 +3,8 @@
 import {UI_COPY} from '../i18n/ui-copy';
 
 import {useMemo,useState} from 'react';
-import {insertNeonRows,neonAuthRelation} from './neon-client';
-import {useNeonAccount} from './use-neon-account';
+import {insertRows,dbAuthRelation} from './db-client.mjs';
+import {useAccount} from './use-account';
 import {createUid8} from './uid';
 import {normalizeGalaxyContent,normalizeRelationIds,resolveGalaxyTitle} from './content-policy';
 
@@ -57,7 +57,7 @@ function normalizeJsonImportEntry(entry,source){
 }
 
 function JsonImport({scopeId}){
-  const account=useNeonAccount();
+  const account=useAccount();
   const [fileName,setFileName]=useState('');
   const [rows,setRows]=useState([]);
   const [source,setSource]=useState('');
@@ -114,12 +114,12 @@ function JsonImport({scopeId}){
       const existing=new Set();
       for(let offset=0;offset<unique.length;offset+=200){
         const ids=unique.slice(offset,offset+200).map(record=>record.uid);
-        const {data,error}=await neonAuthRelation(galaxy).select('uid').in('uid',ids);
+        const {data,error}=await dbAuthRelation(galaxy).select('uid').in('uid',ids);
         if(error)throw new Error(error.message||'既有 UID 檢查失敗。');
         for(const row of data||[])existing.add(String(row.uid||'').toUpperCase());
       }
       const payload=unique.filter(record=>!existing.has(record.uid));
-      await insertNeonRows(galaxy,payload);
+      await insertRows(galaxy,payload);
       const skipped=analyzed.invalid.length+duplicateCount+existing.size;
       setStatus(`已匯入 ${payload.length.toLocaleString()} 筆到來源「${selected}」${skipped?`；略過 ${skipped.toLocaleString()} 筆無效／重複／已存在資料。`:''}`);
       setRows([]);setFileName('');
@@ -155,7 +155,7 @@ function JsonImport({scopeId}){
 }
 
 function MediaRecordInsert({scopeId}){
-  const account=useNeonAccount();
+  const account=useAccount();
   const [draft,setDraft]=useState({
     galaxy_link:'',
     source_native_id:'',
@@ -194,7 +194,7 @@ function MediaRecordInsert({scopeId}){
       };
       const galaxyMedia=account.scopeDataFor(scopeId)?.galaxyMedia;
       if(!galaxyMedia)throw new Error('Scope data 未解析');
-      await insertNeonRows(galaxyMedia,[record]);
+      await insertRows(galaxyMedia,[record]);
       setStatus('多媒體資料已直接寫入 Galaxy Media。');
       setDraft({
         galaxy_link:'',
@@ -233,7 +233,7 @@ function MediaRecordInsert({scopeId}){
 }
 
 function SunoImport({scopeId}){
-  const account=useNeonAccount();
+  const account=useAccount();
   const [draft,setDraft]=useState({title:'',lyrics:'',url:'',nativeId:'',createdDate:'',stylePrompt:'',metaTags:'',source_id:'',target_id:'',ref_id:''});
   const [status,setStatus]=useState('');const [busy,setBusy]=useState(false);
   if(!account.canManageScopeSync(scopeId))return null;
@@ -254,7 +254,7 @@ function SunoImport({scopeId}){
       if(!scopeData)throw new Error('Scope data 未解析');
       const {galaxy,galaxyMedia}=scopeData;
       if(lyricsUid){
-        await insertNeonRows(galaxy,[{
+        await insertRows(galaxy,[{
           uid:lyricsUid,content_type:'lyrics',
           title:draft.title.trim(),content:draft.lyrics.trim(),createtime,
           source_id:sourceId,target_id:normalizeRelationIds(draft.target_id),ref_id:styleUid||draft.ref_id.trim()||null,
@@ -262,13 +262,13 @@ function SunoImport({scopeId}){
         }]);
       }
       if(styleUid){
-        await insertNeonRows(galaxy,[{
+        await insertRows(galaxy,[{
           uid:styleUid,content_type:'instruction',
           title:draft.title.trim()+'｜Suno Style',content:draft.stylePrompt.trim(),createtime,
           target_id:[lyricsUid],searchable:false,source_name:'suno'
         }]);
       }
-      await insertNeonRows(galaxyMedia,[{
+      await insertRows(galaxyMedia,[{
         galaxy_link:lyricsUid,
         source_native_id:draft.nativeId.trim()||detectId(draft.url)||null,media_type:'suno',
         title:draft.title.trim(),url:draft.url.trim()||null,

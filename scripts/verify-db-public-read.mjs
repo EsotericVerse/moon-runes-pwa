@@ -1,29 +1,15 @@
-import {createClient} from '@neondatabase/neon-js';
-
-const DATA_API='https://ep-rapid-queen-b3oyboy6.apirest.c-4.ap-southeast-1.aws.neon.tech/neondb/rest/v1';
-const AUTH_API='https://ep-rapid-queen-b3oyboy6.neonauth.c-4.ap-southeast-1.aws.neon.tech/neondb/auth';
+import {createConfiguredAdapter} from '../app/loc/providers/configured.mjs';
 
 const SCOPE_ID_PATTERN=/^[a-z][a-z0-9]*$/;
 const TABLE_TOKEN_PATTERN=/^[a-z][a-z0-9_]*$/;
 
-async function anonymousToken(){
-  const response=await fetch(AUTH_API+'/token/anonymous',{headers:{accept:'application/json'}});
-  const payload=await response.json().catch(()=>null);
-  if(!response.ok||!payload?.token)throw new Error('anonymous token: '+(payload?.message||response.status));
-  return String(payload.token);
-}
-
-function runtimeClient(){
-  return createClient({
-    dataApi:{url:DATA_API,getToken:anonymousToken,options:{db:{schema:'api'}}}
-  });
-}
+function runtimeClient(){return createConfiguredAdapter().publicClient;}
 
 async function probe(client,table,columns,{filters=[]}={}){
   let query=client.schema('silver').from(table).select(columns).limit(1);
   for(const [column,operator,value] of filters)query=query[operator](column,value);
   const {data,error,status}=await query;
-  console.log(JSON.stringify({probe:'runtime-public-token',table,columns,status,rows:data?.length||0,code:error?.code||null,error:error?.message||null}));
+  console.log(JSON.stringify({probe:'runtime-public-read',table,columns,status,rows:data?.length||0,code:error?.code||null,error:error?.message||null}));
   if(error)throw new Error(table+': '+(error.code||'')+' '+error.message);
 }
 
@@ -133,4 +119,4 @@ await probe(client,'runes','rune_id,rune_name');
 await probe(client,'game','game_key,record_type,sort_order,status,is_current,event_id,event_group,event_group_2,rune_id,role_id,rule_code,macro_code,asset_code');
 await verifyGameContract(client);
 
-console.log('Public Neon runtime repository-path probe passed.');
+console.log('Public database runtime repository-path probe passed.');

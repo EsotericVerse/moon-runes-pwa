@@ -220,7 +220,7 @@ const zhHant=Object.freeze({
     eyebrow:'系統管理',
     loginTitle:'系統管理登入',
     loginIntro:'Admin 是獨立管理站，不屬於 Scope。',
-    signIn:'使用 Google 登入 Neon',
+    signIn:'使用 Google 登入',
     checking:'正在確認 Admin 權限…',
     denied:'目前登入身份沒有 Admin 權限。',
     overview:'區域總覽',

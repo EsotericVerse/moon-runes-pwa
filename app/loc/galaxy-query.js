@@ -1,9 +1,9 @@
 'use client';
 
-import {NEON_QUERY_BATCH_SIZE} from './query-contract.mjs';
+import {DB_QUERY_BATCH_SIZE} from './query-contract.mjs';
 import {DEFAULT_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
-import {analysisContentFilters,publicContentFilters} from './content-policy';
-import {applyNeonFilters,applyNeonOrders,neonPublicRelation,selectAllNeonRows,selectNeonRows} from './neon-query';
+import {publicContentFilters} from './content-policy';
+import {applyFilters,applyOrders,dbPublicRelation,selectAllRows,selectRows} from './db-query.mjs';
 
 function unique(values=[]){
   return [...new Set(values.map(value=>String(value||'').trim()).filter(Boolean))];
@@ -18,19 +18,20 @@ function timeFilters(column,startDate,endDate){
   if(endDate)filters.push({column,operator:'lte',value:String(endDate).slice(0,10)+'T23:59:59.999+08:00'});
   return filters;
 }
-async function selectNeonRowById(table,{idColumn,id,columns}={}){
-  const page=await selectNeonRows(table,{columns,filters:[{column:idColumn,operator:'eq',value:String(id)}],limit:1});
+async function selectRowById(table,{idColumn,id,columns}={}){
+  const page=await selectRows(table,{columns,filters:[{column:idColumn,operator:'eq',value:String(id)}],limit:1});
   return page.rows[0]||null;
 }
 
 export async function selectSourceCatalog(scope,{startDate='',endDate='',limit=20}={}){
   const current=scopeOf(scope);
-  const filters=analysisContentFilters([
+  const filters=publicContentFilters([
     ...timeFilters('createtime',startDate,endDate),
+    {column:'statistics_able',operator:'eq',value:true},
     {column:'source_name',operator:'neq',value:''}
   ]);
-  const safeLimit=Math.max(1,Math.min(NEON_QUERY_BATCH_SIZE,Math.floor(Number(limit)||20)));
-  const {rows}=await selectNeonRows(current.galaxy,{
+  const safeLimit=Math.max(1,Math.min(DB_QUERY_BATCH_SIZE,Math.floor(Number(limit)||20)));
+  const {rows}=await selectRows(current.galaxy,{
     columns:'source_name,item_count:count()',
     filters,
     orders:[{column:'source_name',ascending:true}],
@@ -48,11 +49,12 @@ export async function selectSourceCatalog(scope,{startDate='',endDate='',limit=2
 
 export async function selectSourceDaily(scope,{startDate='',endDate=''}={}){
   const current=scopeOf(scope);
-  const filters=analysisContentFilters([
+  const filters=publicContentFilters([
     ...timeFilters('createtime',startDate,endDate),
+    {column:'statistics_able',operator:'eq',value:true},
     {column:'source_name',operator:'neq',value:''}
   ]);
-  const rows=(await selectAllNeonRows(current.galaxy,{
+  const rows=(await selectAllRows(current.galaxy,{
     columns:'source_name,day:createtime::date,item_count:count()',
     filters
   })).rows;
@@ -70,7 +72,7 @@ export async function selectDailyCategoryCounts(table,categoryColumn,{startDate=
     ...timeFilters('createtime',startDate,endDate),
     ...(!includeEmpty?[{column:categoryColumn,operator:'neq',value:''}]:[])
   ];
-  const rows=(await selectAllNeonRows(table,{
+  const rows=(await selectAllRows(table,{
     columns:`${categoryColumn},day:createtime::date,item_count:count()`,
     filters:resolved
   })).rows;
@@ -88,8 +90,8 @@ export async function selectCategoryCounts(table,categoryColumn,{startDate='',en
     ...timeFilters('createtime',startDate,endDate),
     {column:categoryColumn,operator:'neq',value:''}
   ];
-  const safeLimit=Math.max(1,Math.min(NEON_QUERY_BATCH_SIZE,Math.floor(Number(limit)||20)));
-  const {rows}=await selectNeonRows(table,{
+  const safeLimit=Math.max(1,Math.min(DB_QUERY_BATCH_SIZE,Math.floor(Number(limit)||20)));
+  const {rows}=await selectRows(table,{
     columns:`${categoryColumn},item_count:count()`,
     filters:resolved,
     orders:[{column:categoryColumn,ascending:true}],
@@ -110,7 +112,7 @@ async function mediaRowsFor(scope,mediaIds=[]){
   const current=scopeOf(scope);
   const ids=[...new Set(mediaIds.map(String).filter(Boolean))];
   if(!ids.length)return [];
-  return (await selectNeonRows(current.galaxyMedia,{
+  return (await selectRows(current.galaxyMedia,{
     columns:'media_id,title,url,media_type',
     filters:[{column:'media_id',operator:'in',value:ids}],
     limit:ids.length
@@ -142,21 +144,21 @@ export async function selectGalaxyContent(scope,uid){
   const current=scopeOf(scope);
   const id=String(uid||'').trim();
   if(!id)return null;
-  return selectNeonRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content'});
+  return selectRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content'});
 }
 
 export async function selectGalaxyIdentity(scope,uid){
   const current=scopeOf(scope);
   const id=String(uid||'').trim();
   if(!id)return null;
-  const row=await selectNeonRowById(current.galaxy,{
+  const row=await selectRowById(current.galaxy,{
     idColumn:'uid',
     id,
     columns:'uid,title,source_name,createtime,url,source_id,target_id,media_link'
   });
   if(!row)return null;
   const [contentRow,mediaRows]=await Promise.all([
-    selectNeonRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content'}),
+    selectRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content'}),
     mediaRowsFor(current,mediaIdsOf(row.media_link))
   ]);
   const mediaById=new Map(mediaRows.map(item=>[String(item.media_id),item]));
@@ -203,21 +205,21 @@ function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filte
       const activeFilters=[...frozenFilters,...dateSearchFilters(dateColumn,startDate,endDate)];
       const orders=dateColumn?[{column:dateColumn,ascending:false},{column:idColumn,ascending:true}]:[{column:idColumn,ascending:true}];
 
-      let countQuery=neonPublicRelation(activeTable).select(idColumn,{count:'exact',head:true});
-      countQuery=applyNeonFilters(countQuery,activeFilters);
+      let countQuery=dbPublicRelation(activeTable).select(idColumn,{count:'exact',head:true});
+      countQuery=applyFilters(countQuery,activeFilters);
       countQuery=applyLiteralTerms(countQuery,frozenFields,query,and,nor);
       const {error:countError,count}=await countQuery;
-      if(countError)throw new Error(countError.message||('Neon COUNT '+activeTable+' failed'));
+      if(countError)throw new Error(countError.message||('DB COUNT '+activeTable+' failed'));
       const totalCount=Number(count)||0;
       if(!totalCount||offset>=totalCount)return {rows:[],hasMore:false,nextCursor:null,totalCount};
 
-      let dataQuery=neonPublicRelation(activeTable).select(outputColumns.join(','));
-      dataQuery=applyNeonFilters(dataQuery,activeFilters);
+      let dataQuery=dbPublicRelation(activeTable).select(outputColumns.join(','));
+      dataQuery=applyFilters(dataQuery,activeFilters);
       dataQuery=applyLiteralTerms(dataQuery,frozenFields,query,and,nor);
-      dataQuery=applyNeonOrders(dataQuery,orders);
+      dataQuery=applyOrders(dataQuery,orders);
       dataQuery=dataQuery.range(offset,offset+pageSize-1);
       const {data,error}=await dataQuery;
-      if(error)throw new Error(error.message||('Neon SELECT '+activeTable+' failed'));
+      if(error)throw new Error(error.message||('DB SELECT '+activeTable+' failed'));
       const rows=(data||[]).map(row=>recordFor(row,source,id,scope,activeTable));
       const nextOffset=offset+rows.length;
       const hasMore=nextOffset<totalCount;
@@ -288,7 +290,7 @@ export async function searchGalaxyRows(scopes,query,{
   }catch(error){
     failures.push(new Error(`${provider.id}: ${error?.message||'search failed'}`));
     const hasMore=stage<providers.length;
-    if(!hasMore)throw new AggregateError(failures,'Neon 搜尋 Provider 無法查詢');
+    if(!hasMore)throw new AggregateError(failures,'資料搜尋 Provider 無法查詢');
     return {rows:[],failures,hasMore:true,nextCursor:{stage:stage+1,offset:0}};
   }
 }

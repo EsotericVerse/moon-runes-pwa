@@ -24,7 +24,7 @@ A Current canonical source has one repository location. Do not keep duplicate do
 
 ## Runtime data
 
-Runtime content authority is Current Neon. Repository files are not a second runtime corpus, projection, cache or fallback.
+Runtime content authority is Supabase PostgreSQL. Repository files are not a second runtime corpus, projection, cache or fallback.
 
 ## Module ownership
 
