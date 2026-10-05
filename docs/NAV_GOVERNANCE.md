@@ -14,9 +14,9 @@ Page-local menu 不算第二套 NAV。
 - Next filesystem：route authority。
 - Scope registry：canonical domain、mount、shared feature URL 與 navigation metadata。
 - `silver.manage`：data Scope／table mapping。
-- Neon canonical tables：資料內容。
+- PostgreSQL canonical tables：資料內容。
 
-Registry 不管理資料表真相，也不替 Neon 再建立一份 Scope data registry。
+Registry 不管理資料表真相，也不替 PostgreSQL 再建立一份 Scope data registry。
 
 ## Current deployment scopes
 

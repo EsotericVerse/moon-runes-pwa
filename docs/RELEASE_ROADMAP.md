@@ -4,7 +4,7 @@
 
 0.8.4-rc 是目前 Current candidate。此版封存共用架構、模組化與 Ponytail code review 收尾；LunaRunes 功能／語意另行驗收，不回退已完成的共用架構。Current 已具備：
 
-- Neon SSOT。
+- Supabase PostgreSQL SSOT。
 - Search／Statistics／Culture shared features。
 - canonical management data view。
 - searchable=false 仍可管理。
@@ -20,7 +20,7 @@
 - Current 文件已移除 retired V2／parallel authority。
 - CSS／JS ownership 與重複責任已進行安全收斂，避免為了刪重複而增加新的平行實作。
 - Audit 與 runtime 使用同一套 Scope mapping 概念；一般 Scope 驗證不再硬寫 `lo3rwang_*`／`lrunes_*` table name。
-- Current 不啟用 KM；Current authority 只保留 main + Current Neon。
+- Current 不啟用 KM；Current authority 只保留 main + Supabase PostgreSQL。
 
 ## 0.8.4 RC follow-up verification
 
@@ -33,7 +33,7 @@ Current 0.8.4 RC follow-up：
 - 完成 LunaRunes Game 的規則呈現、互動與最終 UI。
 - 完成 Governance／Admin management 的最終人工檢查。
 - 把 public Search／Statistics／Culture availability 正確接到 Current DB feature flags，同時維持 management canonical visibility。
-- 整理大型 corpus stress test，維持精準 query 與分頁，不引入第二份 corpus authority。
+- 整理大型 corpus stress test；Statistics 使用 statistics_able 固定篩選，Rune66 統計評估改用數值彙總與寫入時驗證，避免頁面反覆載入全文。
 
 ## 0.9 Direction — Scope Group
 

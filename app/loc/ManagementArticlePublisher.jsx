@@ -3,8 +3,8 @@
 import {UI_COPY} from '../i18n/ui-copy';
 
 import {useState} from 'react';
-import {insertNeonRows} from './neon-client';
-import {useNeonAccount} from './use-neon-account';
+import {insertRows} from './db-client.mjs';
+import {useAccount} from './use-account';
 import {ContentEditor,WorkSummaryCard} from '../modular/ui';
 import {createUid8} from './uid';
 import {normalizeRelationIds,requireGalaxyContent,resolveGalaxyTitle} from './content-policy';
@@ -16,7 +16,7 @@ const blank=()=>({
 });
 
 export default function ManagementArticlePublisher({scopeId}){
-  const account=useNeonAccount();
+  const account=useAccount();
   const [draft,setDraft]=useState(blank());
   const [status,setStatus]=useState('');
   const [busy,setBusy]=useState(false);
@@ -33,7 +33,7 @@ export default function ManagementArticlePublisher({scopeId}){
 
       const galaxy=account.scopeDataFor(scopeId)?.galaxy;
       if(!galaxy)throw new Error('Scope data 未解析');
-      await insertNeonRows(galaxy,[{
+      await insertRows(galaxy,[{
         uid,content_type:'article',
         title:resolveGalaxyTitle(draft.title,content),content,
         source_id:draft.source_id.trim()||null,target_id:normalizeRelationIds(draft.target_id),ref_id:draft.ref_id.trim()||null,

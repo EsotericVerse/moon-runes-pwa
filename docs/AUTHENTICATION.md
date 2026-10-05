@@ -2,11 +2,11 @@
 
 ## Current boundary
 
-Management authentication 使用 Neon Managed Auth。Browser 透過 Neon client 啟動登入；登入後的 JWT 由 Neon boundary 處理，資料庫權限與 RLS 決定可讀寫範圍。
+管理登入使用 Google OAuth，由 Supabase Auth 建立可供資料 API 驗證的 JWT；PostgreSQL 權限與既有 RLS 決定可讀寫範圍。登入提供者可替換，資料庫端只要求可驗證的 JWT 身分。
 
 ## Public data
 
-公開 Search、Culture、Statistics、Rune reference 等功能以 read-only Neon query 取得允許公開的 canonical data。
+公開 Search、Culture、Statistics、Rune reference 等功能以唯讀 Supabase Data API 取得允許公開的 canonical data。
 
 公開讀取不因此取得 management write authority。
 
@@ -21,6 +21,6 @@ Management UI 只有在已登入且 Current permission check 通過後才提供�
 
 ## Credential rule
 
-Browser 不保存 Postgres owner password。Runtime 使用 Neon client／Managed Auth boundary；資料庫授權由 Neon role／RLS／Current application permission contract 控制。
+Browser 不保存 Postgres owner password 或 service role key。Runtime 使用 Supabase publishable key 與使用者 JWT；資料庫授權由 PostgreSQL role、RLS 與 application permission contract 控制。
 
 任何新增 write path 都必須沿用既有 auth boundary，不得以文件、local file、JSON 或 client-side hidden flag 取代資料庫權限。

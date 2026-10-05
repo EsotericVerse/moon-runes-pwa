@@ -1,10 +1,10 @@
 'use client';
 
 import {useEffect,useState} from 'react';
-import {selectNeonRows} from './neon-query';
+import {selectRows} from './db-query.mjs';
 import {realMoonPhase} from './model/moon-phase';
-import {listNeonRecords,listRuneDrawSlots,putDailyRuneRecord,putNeonRecord,putRuneDrawSlot} from './neon-user-storage';
-import {useNeonAccount} from './use-neon-account';
+import {listRecords,listRuneDrawSlots,putDailyRuneRecord,putRecord,putRuneDrawSlot} from './user-storage';
+import {useAccount} from './use-account';
 
 const RUNE_DIRECTIONS=Object.freeze(['正位','半正位','半逆位','逆位']);
 
@@ -41,13 +41,13 @@ function directionNo(direction){return RUNE_DIRECTIONS.indexOf(direction)+1;}
 async function loadDrawCards(pairs,types){
   const ids=[...new Set(pairs.map(item=>Number(item.runeNumber)))];
   const [runeResult,etcResult]=await Promise.all([
-    selectNeonRows('silver.runes',{
+    selectRows('silver.runes',{
       columns:RUNE_COLUMNS,
       filters:[{column:'rune_id',operator:'in',value:ids}],
       limit:ids.length,
       offset:0
     }),
-    selectNeonRows('silver.runes_etc',{
+    selectRows('silver.runes_etc',{
       columns:'rune_id,dir,type,desc',
       filters:[{column:'type',operator:'in',value:types}],
       orFilter:pairs.map(item=>`and(rune_id.eq.${Number(item.runeNumber)},dir.eq.${Number(item.dir)})`).join(','),
@@ -138,7 +138,7 @@ function cardLine(record){
 }
 
 export default function RuneManagementPanel(){
-  const account=useNeonAccount();
+  const account=useAccount();
   const [runes,setRunes]=useState([]);
   const [mode,setMode]=useState('single');
   const [draw,setDraw]=useState(null);
@@ -155,7 +155,7 @@ export default function RuneManagementPanel(){
     const today=todayKey();
     const [slotRows,records]=await Promise.all([
       listRuneDrawSlots(),
-      listNeonRecords('rune-draw',{recordKind:'daily',recordDate:today,limit:2})
+      listRecords('rune-draw',{recordKind:'daily',recordDate:today,limit:2})
     ]);
     setSlots(slotRows);
     setDailyRows(records);
@@ -163,7 +163,7 @@ export default function RuneManagementPanel(){
   useEffect(()=>{
     let live=true;
     if(!account.user||!canManage){setLoading(false);return()=>{live=false};}
-    Promise.all([selectNeonRows('silver.runes',{columns:'rune_id,rune_name,card_attr,positive_keywords,negative_keywords',orders:[{column:'rune_id',ascending:true}],limit:67,offset:0}),reloadRecords()])
+    Promise.all([selectRows('silver.runes',{columns:'rune_id,rune_name,card_attr,positive_keywords,negative_keywords',orders:[{column:'rune_id',ascending:true}],limit:67,offset:0}),reloadRecords()])
       .then(([result])=>{if(live)setRunes((result.rows||[]).filter(row=>Number(row?.rune_id)>=1&&Number(row?.rune_id)<=66));})
       .catch(error=>{if(live)setStatus(String(error?.message||error));})
       .finally(()=>{if(live)setLoading(false);});
@@ -214,7 +214,7 @@ export default function RuneManagementPanel(){
       nextCard.name=resolved.rune_name||String(nextCard.number);
       nextCard.card_attribute=cardAttrLabel(resolved.card_attr);
       nextCard.state='';
-      await putNeonRecord({...row,trend:null,result:null,guidance:dailyGuidance(resolved,nextCard.direction)||directionText(resolved,nextCard.direction),cards:[nextCard]});
+      await putRecord({...row,trend:null,result:null,guidance:dailyGuidance(resolved,nextCard.direction)||directionText(resolved,nextCard.direction),cards:[nextCard]});
       await reloadRecords();setStatus('每日符文紀錄已更新。');
     }catch(error){setStatus(error?.message||'更新失敗。');}
   }

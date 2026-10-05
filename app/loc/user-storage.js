@@ -1,10 +1,10 @@
 'use client';
 
-import {getNeonSession,neonAuthRelation} from './neon-client';
-import {applyNeonFilters} from './neon-query';
+import {getAccountSession,dbAuthRelation} from './db-client.mjs';
+import {applyFilters} from './db-query.mjs';
 
 
-function apiRelation(name){return neonAuthRelation('api.'+name);}
+function apiRelation(name){return dbAuthRelation('api.'+name);}
 
 const RECORD_COLUMNS=[
   'id','record_type','record_kind','source','record_date','scope_id',
@@ -15,8 +15,8 @@ const RECORD_COLUMNS=[
 ].join(',');
 
 async function requireUser(){
-  const session=await getNeonSession();
-  if(!session?.user)throw new Error('請先登入 Neon 帳號');
+  const session=await getAccountSession();
+  if(!session?.user)throw new Error('請先登入帳號');
   return session.user;
 }
 
@@ -114,7 +114,7 @@ function randomRecordId(prefix='record'){
   return `${prefix}:${suffix}`;
 }
 
-export async function listNeonRecords(type='',{
+export async function listRecords(type='',{
   recordKind='',
   recordDate='',
   offset=0,
@@ -129,20 +129,20 @@ export async function listNeonRecords(type='',{
   let totalCount=null;
   if(count){
     let countQuery=apiRelation('user_records').select('id',{count:'exact',head:true});
-    countQuery=applyNeonFilters(countQuery,filters);
+    countQuery=applyFilters(countQuery,filters);
     const {error:countError,count:total}=await countQuery;
     if(countError)throw new Error(countError.message||'個人紀錄筆數讀取失敗');
     totalCount=Number(total||0);
   }
   let query=apiRelation('user_records').select(RECORD_COLUMNS);
-  query=applyNeonFilters(query,filters).order('updated_at',{ascending:false}).range(offset,offset+limit-1);
+  query=applyFilters(query,filters).order('updated_at',{ascending:false}).range(offset,offset+limit-1);
   const {data,error}=await query;
   if(error)throw new Error(error.message||'個人紀錄讀取失敗');
   const rows=(data||[]).map(dbRecord);
   return count?{rows,totalCount}:rows;
 }
 
-export async function putNeonRecord(record){
+export async function putRecord(record){
   await requireUser();
   const row=normalizeRecord(record);
   if(!row.id)throw new Error('record.id is required');
@@ -192,7 +192,7 @@ function settingValue(row,key){
   return row.integer_value??row.text_value??null;
 }
 
-export async function getNeonSetting(key){
+export async function getSetting(key){
   await requireUser();
   const {data,error}=await apiRelation('user_settings')
     .select('setting_key,text_value,integer_value,updated_at')
@@ -202,7 +202,7 @@ export async function getNeonSetting(key){
   return settingValue(data?.[0]||null,String(key||'').trim());
 }
 
-export async function putNeonSetting(key,value){
+export async function putSetting(key,value){
   await requireUser();
   const row=settingRow(key,value);
   const {data,error}=await apiRelation('user_settings')
@@ -212,14 +212,14 @@ export async function putNeonSetting(key,value){
   return settingValue(data?.[0]||row,row.setting_key);
 }
 
-export async function deleteNeonSetting(key){
+export async function deleteSetting(key){
   await requireUser();
   const {error}=await apiRelation('user_settings').delete().eq('setting_key',String(key));
   if(error)throw new Error(error.message||'個人設定刪除失敗');
 }
 
 export async function listRuneDrawSlots(){
-  const rows=await listNeonRecords('rune-draw-slot',{limit:8});
+  const rows=await listRecords('rune-draw-slot',{limit:8});
   const slots=Array.from({length:8},(_,index)=>({slot:index+1,record:null}));
   for(const row of rows){
     const match=String(row.record_kind||'').match(/^slot-([1-8])$/);
@@ -232,9 +232,9 @@ export async function putRuneDrawSlot(slot,record){
   const number=Number(slot);
   if(!Number.isInteger(number)||number<1||number>8)throw new Error('抽牌儲存槽只能是 1–8。');
   const kind=`slot-${number}`;
-  const rows=await listNeonRecords('rune-draw-slot',{recordKind:kind,limit:1});
+  const rows=await listRecords('rune-draw-slot',{recordKind:kind,limit:1});
   const current=rows[0]||null;
-  return putNeonRecord({
+  return putRecord({
     ...record,
     id:current?.id||randomRecordId('rune-draw-slot'),
     type:'rune-draw-slot',
@@ -247,11 +247,11 @@ export async function putRuneDrawSlot(slot,record){
 export async function putDailyRuneRecord(record){
   const today=dateKey(record?.created_at||new Date());
   if(!today)throw new Error('每日符文紀錄日期無效。');
-  const rows=await listNeonRecords('rune-draw',{recordKind:'daily',recordDate:today,limit:2});
+  const rows=await listRecords('rune-draw',{recordKind:'daily',recordDate:today,limit:2});
   const roles=new Set(rows.map(row=>String(row.daily_role||'').toLowerCase()).filter(Boolean));
   const role=!roles.has('main')?'main':!roles.has('supplement')?'supplement':'';
   if(!role)throw new Error('今天的主符與副符都已儲存；如需調整請到管理頁編輯。');
-  return putNeonRecord({
+  return putRecord({
     ...record,
     id:randomRecordId('daily-rune'),
     type:'rune-draw',

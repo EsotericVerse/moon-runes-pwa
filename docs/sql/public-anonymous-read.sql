@@ -1,5 +1,5 @@
 -- Public read boundary for LOC / LunaRunes.
--- Public features must remain readable without Neon Auth.
+-- Public features must remain readable without an authenticated session.
 -- Authentication is only required for management/user writes.
 --
 -- This file grants SELECT only. It does not grant INSERT/UPDATE/DELETE.

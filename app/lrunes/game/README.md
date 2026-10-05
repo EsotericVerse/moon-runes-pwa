@@ -17,7 +17,7 @@ Game runtime 只讀：
 - silver.runes — Rune identity／group／必要描述欄位
 - silver.game — Game 專用規則、事件、角色、巨觀組合與素材
 
-GameView 不保存 canonical Game data；mutable Game definitions 必須來自 Neon。
+GameView 不保存 canonical Game data；mutable Game definitions 必須來自 Supabase PostgreSQL。
 
 silver.game Current record types：
 
@@ -30,7 +30,7 @@ silver.game Current record types：
 
 ## Current core rules
 
-Current Neon rule rows 定義：
+Current PostgreSQL rule rows 定義：
 
 - 2–4 players。
 - 起手抽 8 張，棄 3 張；基準手牌 5 張。

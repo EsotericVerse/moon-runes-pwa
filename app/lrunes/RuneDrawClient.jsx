@@ -2,8 +2,8 @@
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {runeImage} from './rune-directory.mjs';
-import {selectNeonRows} from '../loc/neon-query';
-import {useNeonSetting} from '../loc/use-neon-setting';
+import {selectRows} from '../loc/db-query.mjs';
+import {useSetting} from '../loc/use-setting';
 import {realMoonPhase} from '../loc/model/moon-phase';
 import {scopeHref} from '../modular/scope-registry';
 import RuneCardInfo from './RuneCardInfo';
@@ -43,14 +43,14 @@ function directionNo(direction){return RUNE_DIRECTIONS.indexOf(direction)+1;}
 async function loadDrawCards(pairs,{staticTypes=[],moonTypes=[],currentMoon=''}) {
   const ids=[...new Set(pairs.map(item=>Number(item.runeNumber)))];
   const pairFilter=pairs.map(item=>`and(rune_id.eq.${Number(item.runeNumber)},dir.eq.${Number(item.dir)})`).join(',');
-  const staticPromise=staticTypes.length?selectNeonRows('silver.runes_etc',{
+  const staticPromise=staticTypes.length?selectRows('silver.runes_etc',{
     columns:'rune_id,dir,type,current_moon,desc',
     filters:[{column:'type',operator:'in',value:staticTypes}],
     orFilter:pairFilter,
     limit:Math.max(1,pairs.length*staticTypes.length),
     offset:0
   }):Promise.resolve({rows:[]});
-  const moonPromise=moonTypes.length&&currentMoon&&currentMoon!=='未知'?selectNeonRows('silver.runes_etc',{
+  const moonPromise=moonTypes.length&&currentMoon&&currentMoon!=='未知'?selectRows('silver.runes_etc',{
     columns:'rune_id,dir,type,current_moon,desc',
     filters:[
       {column:'type',operator:'in',value:moonTypes},
@@ -61,7 +61,7 @@ async function loadDrawCards(pairs,{staticTypes=[],moonTypes=[],currentMoon=''})
     offset:0
   }):Promise.resolve({rows:[]});
   const [runeResult,staticResult,moonResult]=await Promise.all([
-    selectNeonRows('silver.runes',{
+    selectRows('silver.runes',{
       columns:RUNE_COLUMNS,
       filters:[{column:'rune_id',operator:'in',value:ids}],
       limit:ids.length,
@@ -81,7 +81,7 @@ async function loadDrawCards(pairs,{staticTypes=[],moonTypes=[],currentMoon=''})
 }
 
 async function loadRuneCard(runeId){
-  const result=await selectNeonRows('silver.runes',{
+  const result=await selectRows('silver.runes',{
     columns:RUNE_COLUMNS,
     filters:[{column:'rune_id',operator:'eq',value:Number(runeId)}],
     limit:1,
@@ -255,7 +255,7 @@ function MultiReading({draw,mode,phase}){
 }
 
 export default function RuneDrawClient({drawKey='single'}){
-  const {value:uiSettings}=useNeonSetting(UI_SETTINGS_KEY,DEFAULT_UI_SETTINGS);
+  const {value:uiSettings}=useSetting(UI_SETTINGS_KEY,DEFAULT_UI_SETTINGS);
   const [error,setError]=useState('');
   const [draw,setDraw]=useState(null);
   const [ritualStep,setRitualStep]=useState(-1);

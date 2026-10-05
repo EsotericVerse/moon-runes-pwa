@@ -4,10 +4,10 @@ import {UI_COPY} from '../../i18n/ui-copy';
 import {useEffect,useState} from 'react';
 import {SCOPES} from '../../modular/scope-registry';
 import {THEME_SLOTS} from '../../modular/theme-registry';
-import {useNeonAccount} from '../use-neon-account';
+import {useAccount} from '../use-account';
 import {
-  deleteNeonRows,insertNeonRows,neonAuthRelation,selectNeonAuthRow,syncManageScopeRow,updateNeonRows
-} from '../neon-client';
+  deleteRows,insertRows,dbAuthRelation,selectAuthRow,syncManageScopeRow,updateRows
+} from '../db-client.mjs';
 
 const ADMIN_OPTIONS=Object.freeze([
   {value:'scopes',label:UI_COPY.admin.overview},
@@ -38,7 +38,7 @@ function ScopeOverview(){
     let active=true;
     (async()=>{
       try{
-        const {data,error}=await neonAuthRelation('silver.manage')
+        const {data,error}=await dbAuthRelation('silver.manage')
           .select('id,email,role,galaxy,time,birthday')
           .order('id',{ascending:true})
           .order('email',{ascending:true});
@@ -105,7 +105,7 @@ function ScopeOverview(){
     setStatus('');
     try{
       validateNewMapping(draft);
-      await insertNeonRows('silver.manage',[{...draft,role:'scope',birthday:draft.birthday||null}]);
+      await insertRows('silver.manage',[{...draft,role:'scope',birthday:draft.birthday||null}]);
       setDraft({...EMPTY_MAPPING});setStatus('Mapping 已新增。');setRevision(value=>value+1);
     }catch(error){setStatus(error.message||'Mapping 新增失敗。');}
   };
@@ -114,7 +114,7 @@ function ScopeOverview(){
     if(!window.confirm('確定移除 '+row.id+' / '+row.email+' 的管理 Mapping？'))return;
     setStatus('');
     try{
-      await deleteNeonRows('silver.manage',{filters:[
+      await deleteRows('silver.manage',{filters:[
         {column:'id',operator:'eq',value:row.id},
         {column:'email',operator:'eq',value:row.email}
       ]});
@@ -179,7 +179,7 @@ function ThemeOverview({account}){
     (async()=>{
       setStatus('');
       try{
-        const {data,error}=await neonAuthRelation('silver.manage')
+        const {data,error}=await dbAuthRelation('silver.manage')
           .select('id')
           .order('id',{ascending:true});
         if(error)throw new Error(error.message||'Scope 設定讀取失敗。');
@@ -190,7 +190,7 @@ function ThemeOverview({account}){
           const config=account.scopeDataFor(id)?.config;
           if(!config){failures.push(id+'：Scope config 未解析');continue;}
           try{
-            const row=await selectNeonAuthRow(config,{
+            const row=await selectAuthRow(config,{
               idColumn:'id',id,
               columns:'id,theme,search_able,statistics_able,culture_able'
             });
@@ -217,7 +217,7 @@ function ThemeOverview({account}){
     const row=rows[index];
     setBusyId(row.id);setStatus('');
     try{
-      await updateNeonRows(row.config,{
+      await updateRows(row.config,{
         theme:String(row.theme||'').trim(),
         search_able:Boolean(row.search_able),
         statistics_able:Boolean(row.statistics_able),
@@ -261,7 +261,7 @@ function ThemeOverview({account}){
 }
 
 export default function AdminHomeView(){
-  const account=useNeonAccount();
+  const account=useAccount();
   const [section,setSection]=useState('scopes');
   if(account.loading||account.permissionLoading)return <section className="loc-view"><div className="loc-card">{UI_COPY.admin.checking}</div></section>;
   if(!account.user)return <Login account={account}/>;

@@ -27,8 +27,8 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Verify Current repository contracts
         run: npm run verify
-      - name: Verify public Neon Data API
-        run: npm run verify:neon-public
+      - name: Verify public database API
+        run: npm run verify:db-public
       - name: Build Current static export
         run: npm run build
       - name: Install Chromium

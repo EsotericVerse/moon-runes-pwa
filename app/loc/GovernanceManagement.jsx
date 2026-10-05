@@ -2,7 +2,7 @@
 
 import {UI_COPY} from '../i18n/ui-copy';
 import {useEffect,useMemo,useState} from 'react';
-import {useNeonAccount} from './use-neon-account';
+import {useAccount} from './use-account';
 import {useScopeRuntime} from '../modular/use-scope-runtime';
 import {getScope,scopeHref} from '../modular/scope-registry';
 import ManagementArticlePublisher from './ManagementArticlePublisher';
@@ -25,7 +25,7 @@ function LoginScreen({scopeId,account}){
     <header className="loc-hero"><p className="loc-eyebrow">{copy.eyebrow}</p><h1>{copy.title}</h1><p>{copy.description}</p></header>
     <section className="loc-card">
       <p>登入後才會顯示管理工作頁；公開頁不提供寫入功能。</p>
-      <button className="loc-button primary" type="button" onClick={account.signIn}>使用 Google 登入 Neon</button>
+      <button className="loc-button primary" type="button" onClick={account.signIn}>使用 Google 登入</button>
       {account.error?<p className="scope-status scope-error">{account.error}</p>:null}
     </section>
   </section>;
@@ -60,7 +60,7 @@ function sectionOptions(scopeId){
 }
 
 export default function GovernanceManagement(){
-  const account=useNeonAccount();
+  const account=useAccount();
   const {scopeId}=useScopeRuntime();
   const scope=getScope(scopeId);
   const options=useMemo(()=>sectionOptions(scopeId),[scopeId]);

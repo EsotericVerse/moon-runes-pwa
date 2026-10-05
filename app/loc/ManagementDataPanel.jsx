@@ -2,8 +2,8 @@
 
 import {useEffect,useRef,useState} from 'react';
 import {UI_COPY} from '../i18n/ui-copy';
-import {deleteNeonRows,neonAuthRelation,selectNeonAuthRow,updateNeonRows} from './neon-client';
-import {useNeonAccount} from './use-neon-account';
+import {deleteRows,dbAuthRelation,selectAuthRow,updateRows} from './db-client.mjs';
+import {useAccount} from './use-account';
 import {ContentEditor,WorkSummaryCard} from '../modular/ui';
 import {normalizeRelationIds,requireGalaxyContent,resolveGalaxyTitle} from './content-policy';
 
@@ -19,7 +19,7 @@ function localDateTime(value){
 function idText(row,kind){return String(kind==='media'?row?.media_id:row?.uid||'');}
 
 export default function ManagementDataPanel({scopeId}){
-  const account=useNeonAccount();
+  const account=useAccount();
   const [kind,setKind]=useState('galaxy');
   const [visibility,setVisibility]=useState('all');
   const [page,setPage]=useState(0);
@@ -46,8 +46,8 @@ export default function ManagementDataPanel({scopeId}){
         if(!scopeData)throw new Error('Scope data 未解析');
         const table=kind==='media'?scopeData.galaxyMedia:scopeData.galaxy;
         let query=kind==='media'
-          ?neonAuthRelation(table).select('media_id,title,media_type,createtime,galaxy_link,url,meta_tags',{count:'exact'})
-          :neonAuthRelation(table).select('uid,title,source_name,createtime,UpdateTime,searchable,content_type,url',{count:'exact'});
+          ?dbAuthRelation(table).select('media_id,title,media_type,createtime,galaxy_link,url,meta_tags',{count:'exact'})
+          :dbAuthRelation(table).select('uid,title,source_name,createtime,UpdateTime,searchable,content_type,url',{count:'exact'});
         if(kind==='galaxy'&&visibility==='hidden')query=query.eq('searchable',false);
         query=query.order('createtime',{ascending:false}).range(page*PAGE_SIZE,page*PAGE_SIZE+PAGE_SIZE-1);
         const {data,count,error:queryError}=await query;
@@ -72,7 +72,7 @@ export default function ManagementDataPanel({scopeId}){
     if(!scopeData){setEditorMessage('Scope data 未解析');return;}
     try{
       const table=kind==='media'?scopeData.galaxyMedia:scopeData.galaxy;
-      const full=await selectNeonAuthRow(table,{
+      const full=await selectAuthRow(table,{
         idColumn:kind==='media'?'media_id':'uid',id,
         columns:kind==='media'
           ?'media_id,title,media_type,createtime,galaxy_link,url,meta_tags,source_native_id,source_place'
@@ -108,7 +108,7 @@ export default function ManagementDataPanel({scopeId}){
         const metaTags=String(draft.body||'').trim();
         if(galaxyLink&&galaxyLink.length!==8)throw new Error('galaxy_link 必須是 8 字 UID，或留空。');
         if(!metaTags)throw new Error('Meta Tags 為必填欄位。');
-        await updateNeonRows(scopeData.galaxyMedia,{
+        await updateRows(scopeData.galaxyMedia,{
           title:String(draft.title||'').trim()||null,
           meta_tags:metaTags,
           media_type:String(draft.media_type||'').trim()||'other',
@@ -122,7 +122,7 @@ export default function ManagementDataPanel({scopeId}){
         const content=requireGalaxyContent(draft.body);
         const sourceName=String(draft.source_name||'').trim();
         if(!sourceName)throw new Error('來源為必填欄位。');
-        await updateNeonRows(scopeData.galaxy,{
+        await updateRows(scopeData.galaxy,{
           title:resolveGalaxyTitle(draft.title,content),content,
           content_type:String(draft.content_type||'article').trim()||'article',
           source_name:sourceName,
@@ -146,7 +146,7 @@ export default function ManagementDataPanel({scopeId}){
     if(!scopeData){setEditorMessage('Scope data 未解析');return;}
     setEditorBusy(true);setEditorMessage('');
     try{
-      await deleteNeonRows(kind==='media'?scopeData.galaxyMedia:scopeData.galaxy,{filters:[{
+      await deleteRows(kind==='media'?scopeData.galaxyMedia:scopeData.galaxy,{filters:[{
         column:kind==='media'?'media_id':'uid',operator:'eq',value:selectedId
       }]});
       setSelectedId('');setDraft(null);setRevision(value=>value+1);setEditorMessage('已刪除。');

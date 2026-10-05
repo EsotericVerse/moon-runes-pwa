@@ -1,13 +1,13 @@
 'use client';
 
-import {NEON_QUERY_BATCH_SIZE} from '../../loc/query-contract.mjs';
+import {DB_QUERY_BATCH_SIZE} from '../../loc/query-contract.mjs';
 
 import {useEffect,useMemo,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
-import {useNeonAccount} from '../../loc/use-neon-account';
-import {deleteNeonRows,insertNeonRows,updateNeonRows} from '../../loc/neon-client';
-import {selectNeonRows} from '../../loc/neon-query';
+import {useAccount} from '../../loc/use-account';
+import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
+import {selectRows} from '../../loc/db-query.mjs';
 import {FEATURE_LOADING_MESSAGE} from '../feature-data-state';
 
 const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility,style_tags';
@@ -48,7 +48,7 @@ function rowSortDate(row,anchors){
 }
 
 export default function CultureTimelineEditor({scopeId=''}){
-  const account=useNeonAccount();
+  const account=useAccount();
   const searchParams=useSearchParams();
   const suggestedAnchorDate=String(searchParams?.get?.('anchorDate')||'').slice(0,10);
   const queryClient=useQueryClient();
@@ -71,11 +71,11 @@ export default function CultureTimelineEditor({scopeId=''}){
     queryKey:['culture-period-settings',dataScope,timeTable],
     enabled:editable&&Boolean(account.user&&timeTable),
     queryFn:async()=>{
-      const {rows}=await selectNeonRows(timeTable,{
+      const {rows}=await selectRows(timeTable,{
         columns:TIME_COLUMNS,
         filters:[{column:'record_type',operator:'in',value:EDITABLE_TYPES.map(([type])=>type)}],
         orders:[{column:'display_order',ascending:true},{column:'record_id',ascending:true}],
-        limit:NEON_QUERY_BATCH_SIZE,
+        limit:DB_QUERY_BATCH_SIZE,
         offset:0
       });
       return rows;
@@ -196,11 +196,11 @@ export default function CultureTimelineEditor({scopeId=''}){
       }
       if(selectedId){
         const {record_type,...patch}=payload;
-        await updateNeonRows(timeTable,patch,{filters:[
+        await updateRows(timeTable,patch,{filters:[
           {column:'record_id',operator:'eq',value:selectedId}
         ]});
       }else{
-        await insertNeonRows(timeTable,[payload]);
+        await insertRows(timeTable,[payload]);
       }
       await queryClient.invalidateQueries({queryKey:['culture-period-settings',dataScope]});
       await queryClient.invalidateQueries({queryKey:['culture-timeline',scopeId]});
@@ -220,7 +220,7 @@ export default function CultureTimelineEditor({scopeId=''}){
     }
     setBusy(true);setMessage('');
     try{
-      await deleteNeonRows(timeTable,{filters:[
+      await deleteRows(timeTable,{filters:[
         {column:'record_id',operator:'eq',value:selectedId}
       ]});
       await queryClient.invalidateQueries({queryKey:['culture-period-settings',dataScope]});

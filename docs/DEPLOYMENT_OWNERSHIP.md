@@ -12,7 +12,7 @@ LOC 是 Next.js static-export application。main 是 Current source branch；Git
 
 ## Runtime data
 
-Static frontend 的 Current canonical data 來自 Neon。公開功能透過既有 Neon client/query boundary 讀取，不從 repository Markdown、JSON snapshot 或 local corpus file 載入 Current content。
+Static frontend 的 Current canonical data 來自 Supabase PostgreSQL。公開功能透過 provider-neutral Data API boundary 讀取，不從 repository Markdown、JSON snapshot 或 local corpus file 載入 Current content。
 
 ## Authority split
 
@@ -20,7 +20,7 @@ Static frontend 的 Current canonical data 來自 Neon。公開功能透過既�
 - Next filesystem：route authority。
 - Scope registry：deployment／navigation metadata。
 - silver.manage：data Scope 與 table mapping。
-- Neon canonical tables：runtime data authority。
+- PostgreSQL canonical tables：runtime data authority。
 - Management auth／RLS：write authority。
 
 ## Deployment rule

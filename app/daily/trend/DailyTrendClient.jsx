@@ -4,7 +4,7 @@ import {useCallback,useEffect,useMemo,useState} from 'react';
 import {
   Bar,BarChart,CartesianGrid,ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectDailyRuneRange} from '../../loc/neon-daily-runes';
+import {selectDailyRuneRange} from '../../loc/daily-runes';
 import {dailyPresetRange,summarizeDailyRange} from '../../loc/model/daily-trend-engine.mjs';
 
 const WEEKDAYS=['日','一','二','三','四','五','六'];

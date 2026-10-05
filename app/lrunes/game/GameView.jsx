@@ -744,7 +744,7 @@ export default function GameView(){
         </label>
         <button className="loc-button primary" onClick={start}>開始新遊戲</button>
         <p className="loc-status">{status}</p>
-        <p className="loc-note">事件牌庫由 Neon 擴充，不受實體印刷張數限制；目前 {data.events.length} 張事件卡、66 枚符文行動與八種職業。</p>
+        <p className="loc-note">事件牌庫由資料庫提供，不受實體印刷張數限制；目前 {data.events.length} 張事件卡、66 枚符文行動與八種職業。</p>
       </div>
     </>}
   </section>;

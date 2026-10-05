@@ -7,9 +7,9 @@ import {
   insertDailyRuneRecord,
   selectDailyRuneMonth,
   updateDailyRuneRecord
-} from '../../loc/neon-daily-runes';
-import {selectNeonRows} from '../../loc/neon-query';
-import {useNeonAccount} from '../../loc/use-neon-account';
+} from '../../loc/daily-runes';
+import {selectRows} from '../../loc/db-query.mjs';
+import {useAccount} from '../../loc/use-account';
 
 const FIRST_MONTH=2026*12+7;
 const DIRECTIONS=['正位','半正位','半逆位','逆位'];
@@ -48,7 +48,7 @@ function rowKey(row){
 }
 
 export default function DailyLogClient({embedded=false}={}){
-  const account=useNeonAccount();
+  const account=useAccount();
   const [monthValue,setMonthValue]=useState(()=>Math.max(FIRST_MONTH,currentMonthValue()));
   const [rows,setRows]=useState([]);
   const [selectedDate,setSelectedDate]=useState(()=>taipeiToday());
@@ -91,7 +91,7 @@ export default function DailyLogClient({embedded=false}={}){
   useEffect(()=>{
     if(!canWrite)return;
     let active=true;
-    selectNeonRows('silver.runes',{
+    selectRows('silver.runes',{
       columns:'rune_id,rune_name',
       orders:[{column:'rune_id',ascending:true}],
       limit:67,

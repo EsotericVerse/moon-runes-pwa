@@ -24,7 +24,7 @@ LOC 將下列責任分開：
 
 Current LOC Search 不做語意渲染。文字是否命中由實際欄位與字詞決定，不由 LunaRunes Canon／關鍵詞自動改寫。
 
-搜尋責任分成兩層：Neon 處理資料權威、Scope、SQL 篩選與分頁；FlexSearch 處理「表皮輕微搜尋」，只在已縮小的局部集合內建立可重建 lexical index／cache，適合關鍵詞列表、autocomplete 與同頁重複查詢。FlexSearch 不讀整個 corpus 作 authority，也不取代 Neon。
+搜尋責任分成兩層：PostgreSQL 處理資料權威、Scope、固定 eligibility/numeric filters 與分頁。FlexSearch 僅是可選的小範圍詞彙索引；全量掃描成本高時，改用資料庫數值彙總與寫入時驗證。
 
 LunaRunes 可以在自己的 Scope 進行符號式語意分類，但：
 
@@ -43,8 +43,8 @@ Governance 優先處理 authority boundary：
 
 - code routing 由 Current main / Next filesystem 決定。
 - deployment metadata 由 Scope registry 決定。
-- data mapping 由 Neon silver.manage 決定。
-- canonical content 由 Neon canonical tables 決定。
+- data mapping 由 silver.manage 決定。
+- canonical content 由 PostgreSQL canonical tables 決定。
 - LunaRunes Canon 由 LunaRunes canonical source／tables 決定。
 - KM 與文件不能反向創造 runtime authority。
 

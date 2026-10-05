@@ -2,7 +2,7 @@
 
 import {useCallback,useEffect,useState} from 'react';
 import {z} from 'zod';
-import {getNeonSession,neonAuthRelation,signInNeonWithGoogle,signOutNeon} from './neon-client';
+import {getAccountSession,dbAuthRelation,signInWithGoogle,signOutAccount} from './db-client.mjs';
 import {defaultScopeData,scopeDataFromManageRows} from './scope-data';
 
 const EmailSchema=z.string().trim().toLowerCase().email();
@@ -44,12 +44,12 @@ const emptyState={
   permissionLoading:true,error:'',scopes:[]
 };
 
-export function useNeonAccount(){
+export function useAccount(){
   const [state,setState]=useState(emptyState);
 
   const refresh=useCallback(async()=>{
     try{
-      const session=await getNeonSession();
+      const session=await getAccountSession();
       const user=session?.user||null;
       if(!user){
         setState({...emptyState,loading:false,permissionLoading:false});
@@ -59,10 +59,10 @@ export function useNeonAccount(){
       const email=normalizeAuthEmail(user?.email);
       let permissions=[];
       if(email){
-        const {data,error}=await neonAuthRelation('silver.manage')
+        const {data,error}=await dbAuthRelation('silver.manage')
           .select('id,email,role,galaxy,time,birthday')
           .eq('email',email);
-        if(error)throw new Error(error.message||'Neon manage permission read failed');
+        if(error)throw new Error(error.message||'Management permission read failed');
         permissions=data||[];
       }
       const authorizer=createScopeAuthorizer(user,permissions);
@@ -86,9 +86,9 @@ export function useNeonAccount(){
 
   useEffect(()=>{refresh()},[refresh]);
 
-  const signIn=useCallback(()=>signInNeonWithGoogle(typeof window!=='undefined'?window.location.href:'/'),[]);
+  const signIn=useCallback(()=>signInWithGoogle(typeof window!=='undefined'?window.location.href:'/'),[]);
   const signOut=useCallback(async()=>{
-    await signOutNeon();
+    await signOutAccount();
     setState({...emptyState,loading:false,permissionLoading:false});
   },[]);
   const canManageScopeSync=useCallback(

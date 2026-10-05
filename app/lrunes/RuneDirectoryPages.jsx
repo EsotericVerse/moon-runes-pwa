@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useState} from 'react';
-import {selectNeonRows} from '../loc/neon-query';
+import {selectRows} from '../loc/db-query.mjs';
 import {groupImage,localRuneId,runeImage,runeName,runeNumberForRoute,runeNumbersForGroup} from './rune-directory.mjs';
 import {scopeHref} from '../modular/scope-registry';
 import RuneCardInfo from './RuneCardInfo';
@@ -34,23 +34,23 @@ function decodeRuneText(value){
 }
 function useRuneGroups(){
   const [groups,setGroups]=useState([]),[error,setError]=useState('');
-  useEffect(()=>{let live=true;selectNeonRows('silver.runes_group',{columns:GROUP_COLUMNS,limit:9,offset:0}).then(({rows})=>{if(live){setGroups((rows||[]).map(groupView).sort((a,b)=>Number(a.id)-Number(b.id)));setError('');}}).catch(reason=>{if(live)setError(reason?.message||'符文群組讀取失敗');});return()=>{live=false};},[]);
+  useEffect(()=>{let live=true;selectRows('silver.runes_group',{columns:GROUP_COLUMNS,limit:9,offset:0}).then(({rows})=>{if(live){setGroups((rows||[]).map(groupView).sort((a,b)=>Number(a.id)-Number(b.id)));setError('');}}).catch(reason=>{if(live)setError(reason?.message||'符文群組讀取失敗');});return()=>{live=false};},[]);
   return {groups,error};
 }
 function useRuneGroup(groupId){
   const [group,setGroup]=useState(null),[error,setError]=useState('');
-  useEffect(()=>{let live=true;const id=Number(groupId);if(!Number.isInteger(id)||id<1||id>9){setGroup(null);setError('找不到符文群組。');return()=>{live=false};}const anchor=id===9?65:(id-1)*8+1;selectNeonRows('silver.runes_group',{columns:GROUP_COLUMNS,filters:[{column:'runeslist',operator:'contains',value:[anchor]}],limit:1,offset:0}).then(({rows})=>{if(live){setGroup(rows?.[0]?groupView(rows[0]):null);setError(rows?.[0]?'':'找不到符文群組。');}}).catch(reason=>{if(live)setError(reason?.message||'符文群組讀取失敗');});return()=>{live=false};},[groupId]);
+  useEffect(()=>{let live=true;const id=Number(groupId);if(!Number.isInteger(id)||id<1||id>9){setGroup(null);setError('找不到符文群組。');return()=>{live=false};}const anchor=id===9?65:(id-1)*8+1;selectRows('silver.runes_group',{columns:GROUP_COLUMNS,filters:[{column:'runeslist',operator:'contains',value:[anchor]}],limit:1,offset:0}).then(({rows})=>{if(live){setGroup(rows?.[0]?groupView(rows[0]):null);setError(rows?.[0]?'':'找不到符文群組。');}}).catch(reason=>{if(live)setError(reason?.message||'符文群組讀取失敗');});return()=>{live=false};},[groupId]);
   return {group,error};
 }
 function useRuneRows(runeNumbers){
   const key=(runeNumbers||[]).join(',');
   const [runes,setRunes]=useState([]),[error,setError]=useState('');
-  useEffect(()=>{let live=true;const ids=[...new Set((runeNumbers||[]).map(Number).filter(Number.isInteger))];if(!ids.length){setRunes([]);setError('');return()=>{live=false};}selectNeonRows('silver.runes',{columns:RUNE_COLUMNS,filters:[{column:'rune_id',operator:'in',value:ids}],orders:[{column:'rune_id',ascending:true}],limit:ids.length,offset:0}).then(({rows})=>{if(live){setRunes(rows||[]);setError('');}}).catch(reason=>{if(live)setError(reason?.message||'符文資料讀取失敗');});return()=>{live=false};},[key]);
+  useEffect(()=>{let live=true;const ids=[...new Set((runeNumbers||[]).map(Number).filter(Number.isInteger))];if(!ids.length){setRunes([]);setError('');return()=>{live=false};}selectRows('silver.runes',{columns:RUNE_COLUMNS,filters:[{column:'rune_id',operator:'in',value:ids}],orders:[{column:'rune_id',ascending:true}],limit:ids.length,offset:0}).then(({rows})=>{if(live){setRunes(rows||[]);setError('');}}).catch(reason=>{if(live)setError(reason?.message||'符文資料讀取失敗');});return()=>{live=false};},[key]);
   return {runes,error};
 }
 function useRuneDetail(runeNumber){
   const [card,setCard]=useState(null),[error,setError]=useState('');
-  useEffect(()=>{let live=true;if(runeNumber===null){setCard(null);setError('找不到對應符文。');return()=>{live=false};}selectNeonRows('silver.runes',{columns:RUNE_COLUMNS+','+RUNE_DETAIL_COLUMNS,filters:[{column:'rune_id',operator:'eq',value:Number(runeNumber)}],limit:1,offset:0}).then(({rows})=>{if(live){setCard(rows?.[0]||null);setError(rows?.[0]?'':'找不到對應符文。');}}).catch(reason=>{if(live)setError(reason?.message||'符文資料讀取失敗');});return()=>{live=false};},[runeNumber]);
+  useEffect(()=>{let live=true;if(runeNumber===null){setCard(null);setError('找不到對應符文。');return()=>{live=false};}selectRows('silver.runes',{columns:RUNE_COLUMNS+','+RUNE_DETAIL_COLUMNS,filters:[{column:'rune_id',operator:'eq',value:Number(runeNumber)}],limit:1,offset:0}).then(({rows})=>{if(live){setCard(rows?.[0]||null);setError(rows?.[0]?'':'找不到對應符文。');}}).catch(reason=>{if(live)setError(reason?.message||'符文資料讀取失敗');});return()=>{live=false};},[runeNumber]);
   return {card,error};
 }
 

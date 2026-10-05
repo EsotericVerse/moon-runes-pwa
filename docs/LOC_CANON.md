@@ -13,18 +13,18 @@ LOC 是框架；LunaRunes 是具體符號式語言。LunaRunes 的特殊規則�
 
 ## 2. Current authority
 
-Current implementation 以最新 main + Current Neon 為準。
+Current implementation 以最新 main + Supabase PostgreSQL 為準。
 
 - Route authority：Next filesystem。
 - Deployment/navigation metadata：Scope registry。
 - Data Scope mapping：silver.manage。
-- Runtime canonical content：Neon canonical tables。
+- Runtime canonical content：Supabase PostgreSQL canonical tables。
 - LunaRunes runtime：silver.runes、silver.runes_etc。
 - LunaRunes mother/source data 不因 UI 或 Search 被反向改寫。
 
 文件、UI copy、Search result、analysis output 與 audit 都不能建立第二份資料權威。
 
-Current 不使用 KM。Current authority 僅以最新 main + Current Neon 為準；若未來重新引入 knowledge layer，也不得持有 route、table mapping、permission、keyword fallback、Registry metadata 或 Canon authority。
+Current 不使用 KM。Current authority 僅以最新 main + Supabase PostgreSQL 為準；若未來重新引入 knowledge layer，也不得持有 route、table mapping、permission、keyword fallback、Registry metadata 或 Canon authority。
 
 ## 3. Shared features
 
@@ -54,7 +54,7 @@ Galaxy：
 
 Query：
 
-- 使用精準 SQL／Neon query。
+- 使用精準 PostgreSQL query。
 - 先 COUNT／filter，再 OFFSET／LIMIT。
 - 不 select all 後在 JS slice。
 - Culture／Statistics／Search 遵守相同的分頁與精準查詢原則。
@@ -114,12 +114,10 @@ Search 是精準詞／metadata query，不做 semantic rendering。
 
 Current Search 分成兩層：
 
-- **Neon 深層查詢**：負責 SSOT、Scope、SQL filter、日期、權限、COUNT 與分頁；全域／跨作品查詢不得把完整 corpus 拉到前端再切片。
-- **FlexSearch 表皮輕微搜尋**：允許建立 in-memory lexical index 與 query cache，也永久保留使用 Neon cache table 保存 transient UID working set 的權利；只接受已經被 Neon／Scope／頁面條件縮小或明確選定的識別子集合，用於 keyword list、keyword ratio、autocomplete、同頁高頻重複查詢、小範圍快速比對與相關統計。
+- **PostgreSQL 深層查詢**：負責 SSOT、Scope、固定 eligibility filter、日期、權限、COUNT 與分頁；全域／跨作品查詢不得把完整 corpus 拉到前端再切片。
+- **FlexSearch**：可選的小範圍詞彙索引；只在效能測量證明有益時使用，不要求建立 cache table。
 
-FlexSearch 的 UID cache table 只能保存 UID／Scope／cache 名稱與必要 working-set metadata，不保存第二份 canonical content。它是執行暫存層，不是第二份 corpus authority；不得因「Neon-first」、「去除重複 authority」或一般 cleanup/refactor 而取消 FlexSearch 使用 cache table 的能力。移除此能力必須先修改 `governance/runtime-capabilities.json` 的明確治理條款。
-
-FlexSearch 不是第二份資料權威、不做 semantic rendering、不負責以 cache 取代 Neon canonical corpus，也不得取代 Neon 的精準 SQL 與分頁。
+Statistics 先套用資料列的 `statistics_able` 固定布林篩選。昂貴的反覆分類應改用經寫入驗證的數值彙總，避免每次載入全文；篩選與彙總資料仍以 PostgreSQL canonical tables 為準。
 
 一般 Scope 不可在缺值時讀 LunaRunes keyword、positive_keywords、negative_keywords 或其他 Rune Canon 作 fallback。
 
