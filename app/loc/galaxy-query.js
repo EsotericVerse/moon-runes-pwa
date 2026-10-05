@@ -246,7 +246,7 @@ function genericScopeProviders(scope,{mediaOnly=false}={}){
     searchFields:['label','note','status','style_tags'],dateColumn:'time_date',
     filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}]
   });
-  return [timeline,text,media];
+  return [timeline,text];
 }
 
 function normalizeSearch(value){
