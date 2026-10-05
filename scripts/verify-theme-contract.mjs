@@ -50,6 +50,8 @@ for(const scope of Object.values(SCOPES)){
   const policy=scope.theme||{mode:'auto'};
   if(policy.mode==='fixed'&&getThemeSlot(policy.themeId).id!==policy.themeId)failures.push(scope.id+': invalid fixed theme '+policy.themeId);
 }
+if(SCOPES.lo3rwang?.theme?.themeId!=='theme-2')failures.push('author system default must remain Link / theme-2');
+if(SCOPES.lrunes?.theme?.themeId!=='theme-5')failures.push('LunaRunes system default must remain Mineral / theme-5');
 for(const token of ["SYSTEM_THEME_ID='system-default'","THEME_TIME_ZONE='Asia/Taipei'","DAY_THEME_ID='theme-7'","NIGHT_THEME_ID='theme-1'","getScope","UI_COPY.common.systemTheme"])if(!shell.includes(token))failures.push('AppShell theme control missing '+token);
 for(const stale of ['SCOPE_THEME_POLICY','AUTHOR_THEME_ID','LUNARUNES_THEME_ID'])if(shell.includes(stale))failures.push('AppShell theme control still hard-codes Scope policy: '+stale);
 if(!layout.includes("import AppShell from './AppShell'")||!layout.includes('<AppShell>{children}</AppShell>'))failures.push('Root layout must use AppShell');
