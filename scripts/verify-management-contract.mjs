@@ -44,6 +44,7 @@ must(data.includes('!draft&&editorMessage'),'record-detail failures and successf
 must(admin.includes("setMappings([]);setStatus(error?.message||'Mapping 讀取失敗。');"),'Admin mapping read rejections must surface in the UI');
 must(keywordLibrary.includes('group_name')&&keywordLibrary.includes('item_name')&&keywordLibrary.includes('principle')&&keywordLibrary.includes('keywords_text'),'keyword library editor must edit group, item, principle and one keyword collection together');
 must(!keywordLibrary.includes('keyword_group')&&!keywordLibrary.includes("node_type:'style'")&&!keywordLibrary.includes("node_type:'keyword'"),'keyword library editor must not recreate style/rule/node-type storage');
+must(keywordLibrary.includes('useQueryClient')&&keywordLibrary.includes("statistics-rune66-classification")&&keywordLibrary.includes("refetchType:'all'"),'keyword edits must invalidate and immediately refetch Rune66 classification');
 
 must(!/silver\.runes(?:_etc)?\b/.test(galaxy),'generic Galaxy/Search provider must not expose private Rune Core tables');
 const sharedSearch=read('app/modular/features/Search.jsx');
