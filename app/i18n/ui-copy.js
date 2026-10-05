@@ -23,6 +23,7 @@ const zhHant=Object.freeze({
     management:'管理',
     hiddenFromSearch:'不列入搜尋',
     theme:'主題',
+    systemTheme:'系統預設',
     autoTheme:'自動（日／夜）'
   }),
   nav:Object.freeze({
