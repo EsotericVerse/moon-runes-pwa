@@ -9,54 +9,19 @@ const RUNE_TABLE='silver.runes';
 
 const analysisPromises=new Map();
 
-function mediaLinks(value){
-  return [...new Set(String(value||'').split(',').map(item=>item.trim()).filter(Boolean))];
-}
-
-function buildDocuments(textRows=[],mediaRows=[]){
-  const docs=[];
-  const byUid=new Map();
-
-  for(const row of textRows){
+function buildDocuments(textRows=[]){
+  return textRows.map(row=>{
     const uid=String(row?.uid||'').trim();
-    if(!uid)continue;
-    const doc={
+    if(!uid)return null;
+    return {
       key:'galaxy:'+uid,
       uid,
       kind:'galaxy',
       title:String(row?.title||'').trim(),
       content:String(row?.content||''),
-      date:String(row?.createtime||'').slice(0,10),
-      media_metadata_text:''
+      date:String(row?.createtime||'').slice(0,10)
     };
-    docs.push(doc);
-    byUid.set(uid,doc);
-  }
-
-  for(const row of mediaRows){
-    const metadata=[row?.title,row?.meta_tags,row?.media_type].filter(Boolean).join(' ');
-    const links=mediaLinks(row?.galaxy_link);
-    let attached=false;
-    for(const uid of links){
-      const doc=byUid.get(uid);
-      if(!doc)continue;
-      doc.media_metadata_text=[doc.media_metadata_text,metadata].filter(Boolean).join(' ');
-      attached=true;
-    }
-    if(attached)continue;
-    const mediaId=String(row?.media_id||'').trim();
-    if(!mediaId||!metadata.trim())continue;
-    docs.push({
-      key:'media:'+mediaId,
-      uid:'',
-      kind:'media',
-      title:String(row?.title||row?.media_type||'').trim(),
-      content:'',
-      date:String(row?.createtime||'').slice(0,10),
-      media_metadata_text:metadata
-    });
-  }
-  return docs;
+  }).filter(Boolean);
 }
 
 async function loadRune66Catalog(){
@@ -81,26 +46,17 @@ async function loadRune66Catalog(){
 async function loadAuthorDocuments({startDate='',endDate=''}={}){
   const scope=await selectManagedScope('lo3rwang');
   if(!scope)throw new Error('找不到 lo3rwang Scope');
-  const [textResult,mediaResult]=await Promise.all([
-    selectAllNeonRows(scope.galaxy,{
-      columns:'uid,title,content,createtime,searchable',
-      filters:[
-        {column:'searchable',operator:'eq',value:true},
-        ...(startDate?[{column:'createtime',operator:'gte',value:startDate+'T00:00:00+08:00'}]:[]),
-        ...(endDate?[{column:'createtime',operator:'lte',value:endDate+'T23:59:59.999+08:00'}]:[])
-      ],
-      orders:[{column:'createtime',ascending:true},{column:'uid',ascending:true}]
-    }),
-    selectAllNeonRows(scope.galaxyMedia,{
-      columns:'media_id,galaxy_link,title,meta_tags,media_type,createtime',
-      filters:[
-        ...(startDate?[{column:'createtime',operator:'gte',value:startDate}]:[]),
-        ...(endDate?[{column:'createtime',operator:'lte',value:endDate+'T23:59:59.999Z'}]:[])
-      ],
-      orders:[{column:'createtime',ascending:true},{column:'media_id',ascending:true}]
-    })
-  ]);
-  return buildDocuments(textResult.rows||[],mediaResult.rows||[]);
+  const textResult=await selectAllNeonRows(scope.galaxy,{
+    columns:'uid,title,content,createtime,statistics_able',
+    filters:[
+      {column:'statistics_able',operator:'eq',value:true},
+      {column:'content',operator:'neq',value:''},
+      ...(startDate?[{column:'createtime',operator:'gte',value:startDate+'T00:00:00+08:00'}]:[]),
+      ...(endDate?[{column:'createtime',operator:'lte',value:endDate+'T23:59:59.999+08:00'}]:[])
+    ],
+    orders:[{column:'createtime',ascending:true},{column:'uid',ascending:true}]
+  });
+  return buildDocuments(textResult.rows||[]);
 }
 
 export async function selectRune66Classification({startDate='',endDate=''}={}){
