@@ -17,6 +17,7 @@ import CultureTimeline from '../modules/culture-timeline/CultureTimeline';
 import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
 import {analyzeRiverDensity} from '../modules/culture-timeline/river-density-analysis.mjs';
 import {selectGalaxyContent} from '../../loc/galaxy-query';
+import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
 import {insertNeonRows,neonAuthRelation,updateNeonRows} from '../../loc/neon-client';
 import {useNeonAccount} from '../../loc/use-neon-account';
 import {useScopeRuntime} from '../use-scope-runtime';
@@ -47,6 +48,10 @@ function periodRange(rows=[],scope=''){
 function periodKey(item){
   return String(item?.period||item?.era_id||item?.id||'').trim();
 }
+function classLabel(value){
+  const text=String(value||'').trim();
+  return !text?'':text.endsWith('群組')?text:text+'群組';
+}
 function nextRiverDay(value){
   const key=String(value||'').slice(0,10);
   if(!key)return '';
@@ -68,6 +73,7 @@ export default function Culture(){
 
   const [selectedPeriodKey,setSelectedPeriodKey]=useState('');
   const [selectedCategory,setSelectedCategory]=useState('');
+  const [styleFilter,setStyleFilter]=useState(scopeId==='lo3rwang'?'rune66':'none');
   const [selectedVirtualAnchorDates,setSelectedVirtualAnchorDates]=useState([]);
   const [anchorSaveBusy,setAnchorSaveBusy]=useState(false);
   const [anchorSaveMessage,setAnchorSaveMessage]=useState('');
@@ -80,6 +86,10 @@ export default function Culture(){
   const [editDraft,setEditDraft]=useState(null);
   const [editBusy,setEditBusy]=useState(false);
   const [editError,setEditError]=useState('');
+
+  useEffect(()=>{
+    setStyleFilter(scopeId==='lo3rwang'?'rune66':'none');
+  },[scopeId]);
 
   const isAggregateScope=Boolean(scope?.aggregateChildren);
   const openRows=useMemo(()=>(query.data?.openRanges||[])
@@ -123,6 +133,54 @@ export default function Culture(){
     enabled:!isAggregateScope&&Boolean(scopeData),
     staleTime:5*60_000
   });
+  const styleQuery=useQuery({
+    queryKey:['culture-style-filter','rune66',classificationScope,selectedWindowStart,selectedWindowEnd],
+    queryFn:()=>selectRune66Classification({startDate:selectedWindowStart,endDate:selectedWindowEnd}),
+    enabled:!isAggregateScope&&scopeId==='lo3rwang'&&styleFilter==='rune66'&&Boolean(selectedWindowStart&&selectedWindowEnd),
+    staleTime:5*60_000
+  });
+  const styleClassRows=useMemo(()=>{
+    const total=Math.max(0,Number(styleQuery.data?.classifiedCount||0));
+    return [...(styleQuery.data?.groupTotals||[])]
+      .filter(row=>Number(row.document_count||0)>0)
+      .sort((a,b)=>Number(b.document_count||0)-Number(a.document_count||0)||Number(a.order||0)-Number(b.order||0))
+      .map(row=>({
+        ...row,
+        class_label:classLabel(row.group),
+        ratio:total>0?(Number(row.document_count||0)/total)*100:0
+      }));
+  },[styleQuery.data]);
+  const styleClassRiverItems=useMemo(()=>{
+    const classifications=(styleQuery.data?.classifications||[])
+      .filter(row=>row?.status==='classified'&&row?.classification_group&&row?.date);
+    const counts=new Map();
+    const classMax=new Map();
+    for(const row of classifications){
+      const date=String(row.date||'').slice(0,10);
+      const className=String(row.classification_group||'').trim();
+      if(!date||!className)continue;
+      const key=className+'\u0000'+date;
+      const count=(counts.get(key)||0)+1;
+      counts.set(key,count);
+      classMax.set(className,Math.max(classMax.get(className)||0,count));
+    }
+    return [...counts.entries()].map(([key,count],index)=>{
+      const [className,date]=key.split('\u0000');
+      return {
+        id:'style-class:'+className+':'+date+':'+index,
+        entry_id:'style-class:'+className+':'+date+':'+index,
+        entry_type:'style_class_density',
+        group_label:classLabel(className),
+        category:className,
+        display_label:'',
+        title:date+' · '+classLabel(className)+' · '+count+' 篇',
+        start_date:date,
+        end_date:nextRiverDay(date),
+        item_count:count,
+        density_ratio:count/Math.max(1,classMax.get(className)||1)
+      };
+    }).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))||String(a.group_label).localeCompare(String(b.group_label)));
+  },[styleQuery.data]);
 
 
 
@@ -490,6 +548,13 @@ export default function Culture(){
                       {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{labelOf(item,0)}</option>)}
                     </select>
                   </label>
+                  {scopeId==='lo3rwang'?<label className='scope-culture-period-select'>
+                    <span>表現風格</span>
+                    <select className='scope-select' value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}>
+                      <option value='none'>不套用</option>
+                      <option value='rune66'>符文66</option>
+                    </select>
+                  </label>:null}
                 </div>
                 <p className='loc-eyebrow'>{UI_COPY.culture.classificationRiver}</p>
                 <h3>{labelOf(selectedWorkPeriod,0)}｜作品分類河道</h3>
@@ -520,6 +585,23 @@ export default function Culture(){
                     }
                   }}
                 />:null}
+                {styleFilter==='rune66'?<section className='scope-culture-style-filter'>
+                  <p className='loc-eyebrow'>表現風格 · 符文66</p>
+                  <h4>Class｜符文群組比例</h4>
+                  {styleQuery.isPending?<p className='scope-status'>正在套用符文66表現風格…</p>:null}
+                  {styleQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(styleQuery.error)}</p>:null}
+                  {!styleQuery.isPending&&!styleQuery.error&&styleClassRows.length?<div className='scope-ranking'>
+                    {styleClassRows.map(row=><div key={row.group}><strong>{row.class_label}</strong><span>{Number(row.document_count||0).toLocaleString()} 篇 · {Number(row.ratio||0).toFixed(1)}%</span></div>)}
+                  </div>:null}
+                  {!styleQuery.isPending&&!styleQuery.error&&styleClassRiverItems.length?<CultureTimeline
+                    items={styleClassRiverItems}
+                    labelOf={()=>''}
+                    focus={{}}
+                    mode='source'
+                    windowStart={selectedWindowStart}
+                    windowEnd={selectedWindowEnd}
+                  />:null}
+                </section>:null}
                 {riverAnalysis.suggestions.length?<section className='scope-status scope-culture-anchor-suggestions'>
                   <strong>{UI_COPY.culture.virtualAnchor}</strong>
                   <p>{UI_COPY.culture.virtualAnchorHelp}</p>
