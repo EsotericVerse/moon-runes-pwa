@@ -86,8 +86,8 @@ async function loadAuthorDocuments({startDate='',endDate=''}={}){
       columns:'uid,title,content,createtime,searchable',
       filters:[
         {column:'searchable',operator:'eq',value:true},
-        ...(startDate?[{column:'createtime',operator:'gte',value:startDate}]:[]),
-        ...(endDate?[{column:'createtime',operator:'lte',value:endDate+'T23:59:59.999Z'}]:[])
+        ...(startDate?[{column:'createtime',operator:'gte',value:startDate+'T00:00:00+08:00'}]:[]),
+        ...(endDate?[{column:'createtime',operator:'lte',value:endDate+'T23:59:59.999+08:00'}]:[])
       ],
       orders:[{column:'createtime',ascending:true},{column:'uid',ascending:true}]
     }),
