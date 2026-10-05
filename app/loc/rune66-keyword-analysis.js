@@ -7,7 +7,7 @@ import {classifyRune66Documents} from './model/rune66-keyword-engine.mjs';
 const PERSONAL_KEYWORD_TABLE='silver.lo3rwang_keywords';
 const RUNE_TABLE='silver.runes';
 
-let analysisPromise=null;
+const analysisPromises=new Map();
 
 function mediaLinks(value){
   return [...new Set(String(value||'').split(',').map(item=>item.trim()).filter(Boolean))];
@@ -26,6 +26,7 @@ function buildDocuments(textRows=[],mediaRows=[]){
       kind:'galaxy',
       title:String(row?.title||'').trim(),
       content:String(row?.content||''),
+      date:String(row?.createtime||'').slice(0,10),
       media_metadata_text:''
     };
     docs.push(doc);
@@ -51,6 +52,7 @@ function buildDocuments(textRows=[],mediaRows=[]){
       kind:'media',
       title:String(row?.title||row?.media_type||'').trim(),
       content:'',
+      date:String(row?.createtime||'').slice(0,10),
       media_metadata_text:metadata
     });
   }
@@ -76,38 +78,48 @@ async function loadRune66Catalog(){
   return {catalogRows:catalogResult.rows||[],structureRows:structureResult.rows||[]};
 }
 
-async function loadAuthorDocuments(){
+async function loadAuthorDocuments({startDate='',endDate=''}={}){
   const scope=await selectManagedScope('lo3rwang');
   if(!scope)throw new Error('找不到 lo3rwang Scope');
   const [textResult,mediaResult]=await Promise.all([
     selectAllNeonRows(scope.galaxy,{
-      columns:'uid,title,content,searchable',
-      filters:[{column:'searchable',operator:'eq',value:true}],
-      orders:[{column:'uid',ascending:true}]
+      columns:'uid,title,content,createtime,searchable',
+      filters:[
+        {column:'searchable',operator:'eq',value:true},
+        ...(startDate?[{column:'createtime',operator:'gte',value:startDate+'T00:00:00+08:00'}]:[]),
+        ...(endDate?[{column:'createtime',operator:'lte',value:endDate+'T23:59:59.999+08:00'}]:[])
+      ],
+      orders:[{column:'createtime',ascending:true},{column:'uid',ascending:true}]
     }),
     selectAllNeonRows(scope.galaxyMedia,{
-      columns:'media_id,galaxy_link,title,meta_tags,media_type',
-      orders:[{column:'media_id',ascending:true}]
+      columns:'media_id,galaxy_link,title,meta_tags,media_type,createtime',
+      filters:[
+        ...(startDate?[{column:'createtime',operator:'gte',value:startDate}]:[]),
+        ...(endDate?[{column:'createtime',operator:'lte',value:endDate+'T23:59:59.999Z'}]:[])
+      ],
+      orders:[{column:'createtime',ascending:true},{column:'media_id',ascending:true}]
     })
   ]);
   return buildDocuments(textResult.rows||[],mediaResult.rows||[]);
 }
 
-export async function selectRune66Classification(){
-  if(analysisPromise)return analysisPromise;
-  analysisPromise=(async()=>{
+export async function selectRune66Classification({startDate='',endDate=''}={}){
+  const key=[String(startDate||''),String(endDate||'')].join('|');
+  if(analysisPromises.has(key))return analysisPromises.get(key);
+  const promise=(async()=>{
     const [{catalogRows,structureRows},documents]=await Promise.all([
       loadRune66Catalog(),
-      loadAuthorDocuments()
+      loadAuthorDocuments({startDate,endDate})
     ]);
     return classifyRune66Documents(documents,catalogRows,structureRows);
   })().catch(error=>{
-    analysisPromise=null;
+    analysisPromises.delete(key);
     throw error;
   });
-  return analysisPromise;
+  analysisPromises.set(key,promise);
+  return promise;
 }
 
 export function clearRune66ClassificationCache(){
-  analysisPromise=null;
+  analysisPromises.clear();
 }

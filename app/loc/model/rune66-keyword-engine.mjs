@@ -262,13 +262,13 @@ export function classifyRune66Documents(documents=[],catalogRows=[],structureRow
 
     if(!rankedGroups.length){
       unclassifiedCount+=1;
-    }else if(topGroups.length>1){
-      status='tie';
-      tieCount+=1;
     }else{
+      // Big Class is always a single value. Equal hit counts keep a diagnostic tie list,
+      // but deterministic group order resolves the displayed Class instead of leaving it unset.
       status='classified';
       classifiedCount+=1;
-      classificationGroup=topGroups[0].label;
+      classificationGroup=rankedGroups[0].label;
+      if(topGroups.length>1)tieCount+=1;
       const winner=groupTotals.get(classificationGroup);
       if(winner)winner.document_count+=1;
     }
@@ -279,9 +279,10 @@ export function classifyRune66Documents(documents=[],catalogRows=[],structureRow
       uid:String(row.uid||''),
       kind:String(row.kind||''),
       title:String(row.title||'').trim(),
+      date:String(row.date||row.createtime||row.created_at||'').slice(0,10),
       status,
       classification_group:classificationGroup,
-      tied_groups:status==='tie'?topGroups.map(item=>item.label):[],
+      tied_groups:topGroups.length>1?topGroups.map(item=>item.label):[],
       hit_count:state.hitCount,
       top_rune:rankedRunes[0]?.label||'',
       top_rune_count:Number(rankedRunes[0]?.count)||0,

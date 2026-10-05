@@ -24,8 +24,8 @@ const CHART_GRID='var(--loc-line)';
 const CHART_TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)',borderRadius:'8px'};
 const CHART_TYPES=[['line',UI_COPY.statistics.line],['bar',UI_COPY.statistics.bar],['pie',UI_COPY.statistics.pie]];
 const STAT_TYPES=['total','source'];
-const LO3RWANG_STAT_TYPES=[...STAT_TYPES,'rune66'];
-const STAT_TYPE_LABELS=Object.freeze({total:UI_COPY.statistics.totalSource,source:UI_COPY.statistics.workSource,rune66:'符文66分類'});
+const STAT_TYPE_LABELS=Object.freeze({total:UI_COPY.statistics.totalSource,source:UI_COPY.statistics.workSource});
+const STYLE_FILTERS=Object.freeze([{value:'none',label:'不套用'},{value:'rune66',label:'符文66'}]);
 const SOURCE_TREND_ORDER=Object.freeze(['Facebook','Threads','IG','Others']);
 const TIME_STANDARDS=Object.freeze([
   {value:'1y',label:UI_COPY.statistics.year,months:12,bucket:'month'},
@@ -206,35 +206,56 @@ function SourceTrendChart({rows=[],standard='1y',customRange={},height=420}){
   </ResponsiveContainer>;
 }
 
+function classLabel(value){
+  const text=String(value||'').trim();
+  return !text?'':text.endsWith('群組')?text:text+'群組';
+}
+function groupLabel(value){
+  const text=String(value||'').trim();
+  return !text?'':text.endsWith('符文')?text:text+'之符文';
+}
 function Rune66Summary({analysis}){
   const data=analysis||{};
-  const groups=data.groupTotals||[];
-  const runes=data.runeTotals||[];
+  const classRows=[...(data.groupTotals||[])]
+    .filter(row=>Number(row.document_count||0)>0)
+    .sort((a,b)=>Number(b.document_count||0)-Number(a.document_count||0)||Number(a.order||0)-Number(b.order||0));
+  const groupRows=[...(data.runeRanking||[])]
+    .filter(row=>Number(row.count||0)>0);
+  const classifiedTotal=Math.max(0,Number(data.classifiedCount||0));
+  const groupHitTotal=groupRows.reduce((sum,row)=>sum+Number(row.count||0),0);
   return <div className="scope-rune66-summary">
-    <p className="scope-status">分析作品 {Number(data.documentCount||0).toLocaleString()} 項 · 已分類 {Number(data.classifiedCount||0).toLocaleString()} · 未分類 {Number(data.unclassifiedCount||0).toLocaleString()} · 第一名並列 {Number(data.tieCount||0).toLocaleString()}</p>
+    <p className="scope-status">表現風格：符文66 · 分析作品 {Number(data.documentCount||0).toLocaleString()} 項 · 已分類 {classifiedTotal.toLocaleString()} · 未分類 {Number(data.unclassifiedCount||0).toLocaleString()}</p>
     <section className="scope-card">
-      <h3>九組分類</h3>
-      <p className="scope-status">命中總數是該組所有符文的關鍵詞命中累加；分類作品數是每篇作品完成符文計數後的唯一最高組。</p>
+      <h3>Class｜符文群組</h3>
+      <p className="scope-status">每篇作品只保留一個唯一 Class；比例以已分類作品數計算。</p>
       <div className="scope-ranking">
-        {groups.map(row=><div key={row.group}><strong>{row.group}</strong><span>命中 {Number(row.hit_count||0).toLocaleString()} · 分類 {Number(row.document_count||0).toLocaleString()}</span></div>)}
+        {classRows.map(row=>{
+          const count=Number(row.document_count||0);
+          const ratio=classifiedTotal>0?(count/classifiedTotal)*100:0;
+          return <div key={row.group}><strong>{classLabel(row.group)}</strong><span>{count.toLocaleString()} 篇 · {ratio.toFixed(1)}%</span></div>;
+        })}
       </div>
-      {groups.length?<ResponsiveContainer width="100%" height={360}>
-        <BarChart data={groups} margin={{top:8,right:18,bottom:28,left:8}}>
+      {classRows.length?<ResponsiveContainer width="100%" height={360}>
+        <BarChart data={classRows.map(row=>({label:classLabel(row.group),value:Number(row.document_count)||0}))} margin={{top:8,right:18,bottom:28,left:8}}>
           <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
-          <XAxis dataKey="group" tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+          <XAxis dataKey="label" tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
           <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
           <Tooltip contentStyle={CHART_TOOLTIP}/>
-          <Bar dataKey="document_count" name="分類作品數" fill={CHART_ACCENT} radius={[4,4,0,0]}/>
+          <Bar dataKey="value" name="Class 作品數" fill={CHART_ACCENT} radius={[4,4,0,0]}/>
         </BarChart>
       </ResponsiveContainer>:null}
     </section>
     <section className="scope-card">
-      <h3>66 符文命中數</h3>
+      <h3>Group｜符文排行</h3>
+      <p className="scope-status">Group 是單一符文分類；數字只累計該 Group 內設定的關鍵詞與簡單規則命中，不展示基本詞列表。</p>
       <div className="scope-ranking">
-        {runes.map(row=><div key={row.rune_id}><strong>{String(row.rune_id).padStart(2,'0')} · {row.label} · {row.group}</strong><span>{Number(row.count||0).toLocaleString()} 次 · {Number(row.document_count||0).toLocaleString()} 項作品</span></div>)}
+        {groupRows.map(row=>{
+          const count=Number(row.count||0);
+          const ratio=groupHitTotal>0?(count/groupHitTotal)*100:0;
+          return <div key={row.rune_id}><strong>{String(row.rune_id).padStart(2,'0')} · {groupLabel(row.label)}</strong><span>{count.toLocaleString()} 次 · {ratio.toFixed(1)}%</span></div>;
+        })}
       </div>
     </section>
-    {data.unsupportedRules?.length?<section className="scope-card"><h3>尚未套用的語法</h3><p className="scope-status scope-error">{data.unsupportedRules.map(row=>row.rune+'：'+row.rule).join('、')}</p></section>:null}
   </div>;
 }
 
@@ -262,6 +283,7 @@ function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
   const [timeStandard,setTimeStandard]=useState('1y');
   const [customFrom,setCustomFrom]=useState('');
   const [customTo,setCustomTo]=useState('');
+  const [styleFilter,setStyleFilter]=useState(scopeId==='lo3rwang'?'rune66':'none');
   const customRange=useMemo(()=>({from:customFrom,to:customTo}),[customFrom,customTo]);
   const scopesQuery=useQuery({
     queryKey:['managed-scopes'],
@@ -276,55 +298,59 @@ function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
   const queryRange=useMemo(()=>timeStandard==='custom'&&customReady
     ?{startDate:customFrom,endDate:customTo}
     :{startDate:'',endDate:''},[timeStandard,customReady,customFrom,customTo]);
-  const runeQuery=useQuery({
-    queryKey:['statistics-rune66-classification',scopeId],
-    queryFn:selectRune66Classification,
-    enabled:scopeId==='lo3rwang'&&rankingType==='rune66',
-    staleTime:5*60_000
-  });
   const trendQuery=useQuery({
     queryKey:['statistics-source-trend',scopeId,queryRange.startDate,queryRange.endDate],
     queryFn:()=>selectSourceTrendRows(targetScopes,queryRange),
-    enabled:rankingType!=='rune66'&&Boolean(rankingType)&&Boolean(targetScopes.length)&&(timeStandard!=='custom'||customReady),
+    enabled:Boolean(rankingType)&&Boolean(targetScopes.length)&&(timeStandard!=='custom'||customReady),
     staleTime:5*60_000
   });
   const summary=useMemo(()=>buildSummary(trendQuery.data||[],timeStandard,customRange),[trendQuery.data,timeStandard,customRange]);
+  const styleRange=useMemo(()=>({
+    startDate:summary.startDate||'',
+    endDate:summary.endDate||''
+  }),[summary.startDate,summary.endDate]);
+  const runeQuery=useQuery({
+    queryKey:['statistics-style-filter','rune66',scopeId,styleRange.startDate,styleRange.endDate],
+    queryFn:()=>selectRune66Classification(styleRange),
+    enabled:scopeId==='lo3rwang'&&styleFilter==='rune66'&&Boolean(styleRange.startDate&&styleRange.endDate),
+    staleTime:5*60_000
+  });
 
   return <section className="scope-stat-section">
     <header className="scope-stat-domain-heading"><div><h2>{UI_COPY.statistics.result}</h2></div></header>
     <div className="scope-stat-controls">
       <StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/>
-      {rankingType!=='rune66'?<>
-        <label><span>{UI_COPY.statistics.chart}</span><select className="scope-select" value={chartType} onChange={event=>setChartType(event.target.value)}>
-          {CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}
-        </select></label>
-        <label><span>{UI_COPY.statistics.range}</span><select className="scope-select" value={timeStandard} onChange={event=>setTimeStandard(event.target.value)}>
-          {TIME_STANDARDS.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
-        </select></label>
-        {timeStandard==='custom'?<>
-          <label><span>{UI_COPY.statistics.start}</span><input className="scope-input" type="date" value={customFrom} onChange={event=>setCustomFrom(event.target.value)}/></label>
-          <label><span>{UI_COPY.statistics.end}</span><input className="scope-input" type="date" value={customTo} onChange={event=>setCustomTo(event.target.value)}/></label>
-        </>:null}
+      <label><span>{UI_COPY.statistics.chart}</span><select className="scope-select" value={chartType} onChange={event=>setChartType(event.target.value)}>
+        {CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}
+      </select></label>
+      <label><span>{UI_COPY.statistics.range}</span><select className="scope-select" value={timeStandard} onChange={event=>setTimeStandard(event.target.value)}>
+        {TIME_STANDARDS.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
+      </select></label>
+      {timeStandard==='custom'?<>
+        <label><span>{UI_COPY.statistics.start}</span><input className="scope-input" type="date" value={customFrom} onChange={event=>setCustomFrom(event.target.value)}/></label>
+        <label><span>{UI_COPY.statistics.end}</span><input className="scope-input" type="date" value={customTo} onChange={event=>setCustomTo(event.target.value)}/></label>
       </>:null}
+      {scopeId==='lo3rwang'?<label><span>表現風格</span><select className="scope-select" value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}>
+        {STYLE_FILTERS.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
+      </select></label>:null}
     </div>
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
-    {rankingType==='rune66'?<>
-      {runeQuery.isPending?<p className="scope-status">正在以 FlexSearch 建立作品索引並進行符文66分類…</p>:null}
+    {trendQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(trendQuery.error)}</p>:null}
+    {timeStandard==='custom'&&!customReady?<p className="scope-status">請設定有效的開始與結束日期。</p>:null}
+    {!trendQuery.isPending&&!trendQuery.error&&customReady?<>
+      <p className="scope-status">{summary.startDate&&summary.endDate?summary.startDate+' ～ '+summary.endDate:''}</p>
+      <SummaryList rankingType={rankingType} summary={summary}/>
+      {chartType==='line'
+        ?rankingType==='total'
+          ?<TotalTrendChart rows={trendQuery.data||[]} standard={timeStandard} customRange={customRange} height={420}/>
+          :<SourceTrendChart rows={trendQuery.data||[]} standard={timeStandard} customRange={customRange} height={420}/>
+        :<SummaryChart type={chartType} rankingType={rankingType} summary={summary} height={380}/>}
+    </>:null}
+    {styleFilter==='rune66'?<>
+      {runeQuery.isPending?<p className="scope-status">正在套用符文66表現風格…</p>:null}
       {runeQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(runeQuery.error)}</p>:null}
-      {!runeQuery.isPending&&!runeQuery.error?<Rune66Summary analysis={runeQuery.data}/>:null}
-    </>:<>
-      {trendQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(trendQuery.error)}</p>:null}
-      {timeStandard==='custom'&&!customReady?<p className="scope-status">請設定有效的開始與結束日期。</p>:null}
-      {!trendQuery.isPending&&!trendQuery.error&&customReady?<>
-        <p className="scope-status">{summary.startDate&&summary.endDate?summary.startDate+' ～ '+summary.endDate:''}</p>
-        <SummaryList rankingType={rankingType} summary={summary}/>
-        {chartType==='line'
-          ?rankingType==='total'
-            ?<TotalTrendChart rows={trendQuery.data||[]} standard={timeStandard} customRange={customRange} height={420}/>
-            :<SourceTrendChart rows={trendQuery.data||[]} standard={timeStandard} customRange={customRange} height={420}/>
-          :<SummaryChart type={chartType} rankingType={rankingType} summary={summary} height={380}/>}
-      </>:null}
-    </>}
+      {!runeQuery.isPending&&!runeQuery.error&&runeQuery.data?<Rune66Summary analysis={runeQuery.data}/>:null}
+    </>:null}
   </section>;
 }
 
@@ -334,7 +360,7 @@ export default function Statistics(){
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
   return <FeaturePage featureId="statics">
     <section className="loc-card scope-feature-card">
-      <StatisticsPanel scopeId={scopeId} aggregateScopes={Boolean(scope?.aggregateChildren)} navigation={navigation} types={scopeId==='lo3rwang'?LO3RWANG_STAT_TYPES:STAT_TYPES}/>
+      <StatisticsPanel scopeId={scopeId} aggregateScopes={Boolean(scope?.aggregateChildren)} navigation={navigation} types={STAT_TYPES}/>
     </section>
   </FeaturePage>;
 }

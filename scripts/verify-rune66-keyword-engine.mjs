@@ -35,7 +35,8 @@ const rows=[
   {key:'c',title:'',content:'水土'},
   {key:'d',title:'',content:'花枝'},
   {key:'e',title:'',content:'花枝招展'},
-  {key:'f',title:'',content:'鏡花水月'}
+  {key:'f',title:'',content:'鏡花水月'},
+  {key:'g',title:'',content:'魂'}
 ];
 
 const result=classifyRune66Documents(rows,catalogRows,structureRows);
@@ -57,10 +58,13 @@ assert.equal(runeMap(byKey.get('e')).get('花'),1,'longer 花枝招展 TO 花 mu
 
 assert.equal(runeMap(byKey.get('f')).get('鏡'),1,'鏡花水月 AND 幻 must preserve 鏡 attribution');
 assert.equal(runeMap(byKey.get('f')).get('幻'),1,'鏡花水月 AND 幻 must add 幻 attribution');
-assert.equal(byKey.get('f').status,'tie','equal top group counts must remain a tie instead of arbitrary classification');
+assert.equal(byKey.get('f').status,'classified','Class must remain a single displayed value even when raw hit counts tie');
+assert.equal(byKey.get('f').classification_group,'靈魂','equal Class counts must resolve deterministically by Class order');
+assert.ok(byKey.get('f').tied_groups.includes('靈魂')&&byKey.get('f').tied_groups.includes('無序'),'raw tie diagnostics must remain available');
+assert.equal(runeMap(byKey.get('g')).size,0,'Group display name must not become an implicit keyword');
 
 assert.equal(result.documentCount,rows.length);
-assert.equal(result.unclassifiedCount,1,'only 花枝 NAME sample should remain unclassified');
+assert.equal(result.unclassifiedCount,2,'NAME-only and display-name-only samples should remain unclassified');
 assert.ok(result.tieCount>=1);
 
 assert.ok(catalogRows.every(row=>Array.isArray(row.keywords)),'keyword catalog must use one keyword collection per classification item');
