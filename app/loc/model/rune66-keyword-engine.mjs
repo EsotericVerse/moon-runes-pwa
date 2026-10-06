@@ -3,7 +3,7 @@
 import {parseRuneKeywordRuleSentence} from './rune-keyword-rules.mjs';
 
 const RUNE66_GROUP='符文66';
-const EXCEPTION_GROUP='特殊';
+const SPECIAL_GROUP='特殊';
 
 function normalizeText(value){
   return String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').trim();
@@ -118,7 +118,7 @@ function increment(state,rune,signal){
   runeCount.count+=1;
   state.runeCounts.set(rune.runeId,runeCount);
 
-  if(rune.group&&rune.group!==EXCEPTION_GROUP){
+  if(rune.group&&rune.group!==SPECIAL_GROUP){
     const groupCount=state.groupCounts.get(rune.group)||{
       key:rune.group,
       label:rune.group,
