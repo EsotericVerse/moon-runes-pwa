@@ -8,7 +8,7 @@
 
 - [ ] LOC 首頁與共用 Navigation 人工 smoke test。
 - [ ] Search：一般查詢、media mode、空結果與錯誤狀態人工確認。
-- [ ] Statistics：預設一年、單 Scope 時間範圍與圖表顯示人工確認。
+- [ ] Statistics：LOC 合併總數、scope_id 占比、一年／一月／一週、折線／長條／圓餅圖，以及單 Scope 細部統計導引人工確認。
 - [ ] Culture：時間長河、分類、作品列表、Anchor 建議人工確認。
 - [ ] Governance：LOC／LunaRunes／個人 Scope 公開內容人工確認。
 - [ ] LunaRunes 首頁與 Hero／次要入口人工確認。
