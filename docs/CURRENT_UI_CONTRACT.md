@@ -1,6 +1,6 @@
 # Current UI Contract
 
-**Version:** 0.8.5-RC
+**Version:** 0.8.5.1-RC
 
 ## Identity
 
@@ -44,7 +44,7 @@ NAV URL 由 Current Scope registry 產生；實際 route 是否存在由 Next fi
 Homepage 與共用分析以 Culture、Statistics、Search 為主：
 
 - Culture 顯示時間交會、密度、來源與 Anchor。
-- Statistics 顯示即時統計與可選時間區間。
+- LOC Statistics 固定最近一年，依 `scope_id` 顯示數量與密度；單 Scope 可選時間區間。
 - Search 顯示精準文字／metadata 結果。
 - Governance 說明規則與管理責任。
 
