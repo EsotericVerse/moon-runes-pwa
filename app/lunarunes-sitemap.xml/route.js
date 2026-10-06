@@ -21,7 +21,6 @@ export function GET(){
     '/list',
     '/game',
     '/daily/log',
-    '/daily/trend',
     '/duel/one',
     '/duel/daily',
     '/duel/two',
