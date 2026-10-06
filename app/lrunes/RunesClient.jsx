@@ -43,11 +43,11 @@ export default function RunesClient(){
     <section className="loc-card rune-basics">
       <h2>命運句基本結構</h2>
       <div className="reading-ref-grid">
-        <article className="reading-ref-card"><h3>單卡</h3><p>回答當下最核心的語意或狀態。</p></article>
-        <article className="reading-ref-card"><h3>雙卡</h3><p><strong>因 → 果</strong>。第一張描述造成狀況的來源，第二張描述主要結果或落點。</p></article>
-        <article className="reading-ref-card"><h3>三卡</h3><p><strong>源 → 轉 → 合</strong>。從來源、轉折到整合結果，形成一條最基本的語意鏈。</p></article>
-        <article className="reading-ref-card"><h3>五卡</h3><p><strong>雙卡＋單卡＋雙卡</strong>。兩張過去成因＋一個意外變化＋兩張現在狀況，不是「兩卡＋三卡」的拼接。</p></article>
-        <article className="reading-ref-card"><h3>OW3gs</h3><p><strong>1–6 因的描述層＋7–11 果的判定層</strong>。先讀 7–11 的核心判定，再回看 1–6 補足造成現況的背景與條件。</p></article>
+        <a className="reading-ref-card" href={runeHref('duel/one')}><h3>單卡</h3><p>回答當下最核心的語意或狀態。</p></a>
+        <a className="reading-ref-card" href={runeHref('duel/two')}><h3>雙卡</h3><p><strong>因 → 果</strong>。第一張描述造成狀況的來源，第二張描述主要結果或落點。</p></a>
+        <a className="reading-ref-card" href={runeHref('duel/three')}><h3>三卡</h3><p><strong>源 → 轉 → 合</strong>。從來源、轉折到整合結果，形成一條最基本的語意鏈。</p></a>
+        <a className="reading-ref-card" href={runeHref('duel/five')}><h3>五卡</h3><p><strong>雙卡＋單卡＋雙卡</strong>。兩張過去成因＋一個意外變化＋兩張現在狀況，不是「兩卡＋三卡」的拼接。</p></a>
+        <a className="reading-ref-card" href={runeHref('duel/ow3gs')}><h3>OW3gs</h3><p><strong>1–6 因的描述層＋7–11 果的判定層</strong>。先讀 7–11 的核心判定，再回看 1–6 補足造成現況的背景與條件。</p></a>
       </div>
       <CustomDrawSelector options={RUNE_CUSTOM_DRAW_MODES.map(item=>({
         count:item.count,
