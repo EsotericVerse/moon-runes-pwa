@@ -6,7 +6,7 @@ import {useMemo,useState} from 'react';
 import {insertRows,dbAuthRelation} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {createUid8} from './uid';
-import {normalizeGalaxyContent,normalizeRelationIds,resolveGalaxyTitle} from './content-policy';
+import {hasIrrecoverableEncoding,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 
 function sourceSuggestion(name=''){
   const value=String(name).toLowerCase();
@@ -35,18 +35,21 @@ function iso(value){
 function normalizeJsonImportEntry(entry,source){
   const row=entry?.raw||entry||{};
   const content=normalizeGalaxyContent(firstValue(row,['content','body','text','message','description']));
+  const rawTitle=repairMojibakeText(firstValue(row,['title','name','subject'])).trim();
+  const sourcePlace=repairMojibakeText(firstValue(row,['source_place','place'])).trim();
   const uid=String(entry?.import_uid||firstValue(row,['uid'])||createUid8()).trim().toUpperCase();
   if(!content)return {record:null,error:'無正文'};
+  if([content,rawTitle,sourcePlace].some(hasIrrecoverableEncoding))return {record:null,error:'文字含不可逆編碼錯誤'};
   if(uid.length!==8)return {record:null,error:'UID 必須為 8 字'};
   const contentType=String(firstValue(row,['content_type','type'])||'other').trim()||'other';
   const record={
     uid,
     content_type:contentType,
-    title:resolveGalaxyTitle(firstValue(row,['title','name','subject']),content),
+    title:resolveGalaxyTitle(rawTitle,content),
     content,
     createtime:iso(firstValue(row,['createtime','created_at','create_time','created_time','date','published_at'])),
     source_native_id:String(firstValue(row,['source_native_id','native_id'])||'').trim()||null,
-    source_place:String(firstValue(row,['source_place','place'])||'').trim()||null,
+    source_place:sourcePlace||null,
     searchable:row?.searchable!==false&&row?.search!==false,
     statistics_able:contentType!=='instruction',
     source_id:String(firstValue(row,['source_id'])||'').trim()||null,
@@ -180,16 +183,19 @@ function MediaRecordInsert({scopeId}){
     try{
       const galaxyLink=String(draft.galaxy_link||'').trim().toUpperCase();
       if(galaxyLink&&galaxyLink.length!==8)throw new Error('galaxy_link 必須是 8 字 UID，或留空。');
-      const mediaType=String(draft.media_type||'').trim();
+      const mediaType=repairMojibakeText(draft.media_type).trim();
       if(!mediaType)throw new Error('media_type 為必填欄位。');
-      const metaTags=String(draft.meta_tags||'').trim();
+      const metaTags=repairMojibakeText(draft.meta_tags).trim();
+      const mediaTitle=repairMojibakeText(draft.title).trim();
+      const sourcePlace=repairMojibakeText(draft.source_place).trim();
+      if([mediaType,metaTags,mediaTitle,sourcePlace].some(hasIrrecoverableEncoding))throw new Error('多媒體文字 metadata 含不可逆編碼錯誤。');
       if(!metaTags)throw new Error('meta_tags 必須在建立多媒體紀錄時由資料提供者設定；LOC 不會自動分類。');
       const record={
         galaxy_link:galaxyLink||null,
         source_native_id:String(draft.source_native_id||'').trim()||null,
-        source_place:String(draft.source_place||'').trim()||null,
+        source_place:sourcePlace||null,
         media_type:mediaType,
-        title:String(draft.title||'').trim()||null,
+        title:mediaTitle||null,
         url:String(draft.url||'').trim()||null,
         meta_tags:metaTags,
         createtime:iso(draft.createtime)
@@ -246,11 +252,16 @@ function SunoImport({scopeId}){
   async function save(event){
     event.preventDefault();setBusy(true);setStatus('');
     try{
-      if(!draft.title.trim())throw new Error('請填寫歌名。');
-      if(!draft.metaTags.trim())throw new Error('Media Meta Tags 必須在建立時提供；LOC 不會自動分類。');
+      const title=repairMojibakeText(draft.title).trim();
+      const lyrics=normalizeGalaxyContent(draft.lyrics);
+      const stylePrompt=normalizeGalaxyContent(draft.stylePrompt);
+      const metaTags=repairMojibakeText(draft.metaTags).trim();
+      if([title,lyrics,stylePrompt,metaTags].some(hasIrrecoverableEncoding))throw new Error('Suno 文字資料含不可逆編碼錯誤。');
+      if(!title)throw new Error('請填寫歌名。');
+      if(!metaTags)throw new Error('Media Meta Tags 必須在建立時提供；LOC 不會自動分類。');
       const createtime=draft.createdDate?new Date(draft.createdDate+'T00:00:00+08:00').toISOString():new Date().toISOString();
-      const lyricsUid=draft.lyrics.trim()?createUid8():null;
-      const styleUid=lyricsUid&&draft.stylePrompt.trim()?createUid8():null;
+      const lyricsUid=lyrics?createUid8():null;
+      const styleUid=lyricsUid&&stylePrompt?createUid8():null;
       const sourceId=draft.source_id.trim()||(styleUid?draft.ref_id.trim():'')||null;
       const scopeData=account.scopeDataFor(scopeId);
       if(!scopeData)throw new Error('Scope data 未解析');
@@ -258,7 +269,7 @@ function SunoImport({scopeId}){
       if(lyricsUid){
         await insertRows(galaxy,[{
           uid:lyricsUid,content_type:'lyrics',
-          title:draft.title.trim(),content:draft.lyrics.trim(),createtime,
+          title,content:lyrics,createtime,
           source_id:sourceId,target_id:normalizeRelationIds(draft.target_id),ref_id:styleUid||draft.ref_id.trim()||null,
           url:draft.url.trim()||null,searchable:true,source_name:'suno'
         }]);
@@ -266,15 +277,15 @@ function SunoImport({scopeId}){
       if(styleUid){
         await insertRows(galaxy,[{
           uid:styleUid,content_type:'instruction',
-          title:draft.title.trim()+'｜Suno Style',content:draft.stylePrompt.trim(),createtime,
+          title:title+'｜Suno Style',content:stylePrompt,createtime,
           target_id:[lyricsUid],searchable:false,statistics_able:false,source_name:'suno'
         }]);
       }
       await insertRows(galaxyMedia,[{
         galaxy_link:lyricsUid,
         source_native_id:draft.nativeId.trim()||detectId(draft.url)||null,media_type:'suno',
-        title:draft.title.trim(),url:draft.url.trim()||null,
-        meta_tags:draft.metaTags.trim()||null,createtime
+        title,url:draft.url.trim()||null,
+        meta_tags:metaTags||null,createtime
       }]);
       setStatus('Suno 單筆資料已儲存。');setDraft({title:'',lyrics:'',url:'',nativeId:'',createdDate:'',stylePrompt:'',metaTags:'',source_id:'',target_id:'',ref_id:''});
     }catch(error){setStatus(error?.message||'Suno 儲存失敗。');}
