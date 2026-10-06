@@ -52,6 +52,10 @@ export default function RunesClient(){
           <strong>單卡</strong>
           <p>一個問題，一個語意起點。適合第一次抽牌、快速確認主題，或只需要一個核心提示時使用。</p>
         </a>
+        <a className="loc-bubble" href={runeHref('duel/daily')}>
+          <strong>每日抽牌</strong>
+          <p>一天一張，作為當日生活主題。依符文、方向與真實月相顯示當日狀況、提醒、引導與祝福。</p>
+        </a>
         <a className="loc-bubble" href={runeHref('duel/two')}>
           <strong>雙卡</strong>
           <p>以「因 → 果」觀看兩者關係。第一張作為起因，第二張作為結果，適合確認事件最基本的因果方向。</p>
