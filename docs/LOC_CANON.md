@@ -115,7 +115,7 @@ Search 是精準詞／metadata query，不做 semantic rendering。公開 Search
 Current Search 分成兩層：
 
 - **PostgreSQL 深層查詢**：負責 SSOT、Scope、固定 eligibility filter、日期、權限、COUNT 與分頁；全域／跨作品查詢不得把完整 corpus 拉到前端再切片。
-- **Rune66 keyword classification**：使用 `AND`、`TO`、`NOR`、`NAME` 規則。確認模擬結果後寫入文章目前的 Class／Group 屬性；關鍵詞變動時重新掃描。
+- **Keyword classification**：每套 Class 必須在 keyword library 自己保存 `class_name`、`class_group`、`class_enable`、項目、判別原理與關鍵詞；`AND`、`TO`、`NOR`、`NAME` 規則直接存在關鍵詞字串。Rune66 只是其中一套 Class，不得在 runtime 回讀 `silver.runes` 補分類結構。確認分類結果後再寫入文章目前的 Class／Group 屬性；關鍵詞變動時重新掃描。
 
 Statistics 先套用資料列的 `statistics_able` 固定布林篩選。昂貴的反覆分類應改用經寫入驗證的數值彙總，避免每次載入全文；篩選與彙總資料仍以 PostgreSQL canonical tables 為準。
 

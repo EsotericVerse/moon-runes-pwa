@@ -88,8 +88,10 @@ if(!failures.length){
   const rune66Engine=read('app/loc/model/rune66-keyword-engine.mjs');
   if(!rune66Analysis.includes('classifyRune66Documents'))failures.push('Rune66 data loader must delegate to shared keyword classifier');
   if(!rune66Analysis.includes("silver.lo3rwang_keywords")||rune66Analysis.includes('lo3rwang_style'))failures.push('Rune66 data loader must use the unified keyword library table');
+  if(/silver\.runes(?:_etc)?\b/.test(rune66Analysis))failures.push('Rune66 keyword classification must not depend on LunaRunes Canon tables');
+  for(const token of ['class_name','class_group','class_enable'])if(!rune66Analysis.includes(token))failures.push('Rune66 keyword loader missing independent keyword metadata '+token);
   for(const token of ['classifyRune66Documents'])if(!rune66Engine.includes(token))failures.push('Rune66 keyword engine missing classifier '+token);
-  for(const token of ['group_name','item_no','item_name','principle','keywords'])if(!rune66Engine.includes(token))failures.push('Rune66 unified keyword item model missing '+token);
+  for(const token of ['class_group','class_enable','item_no','item_name','principle','keywords'])if(!rune66Engine.includes(token))failures.push('Rune66 unified keyword item model missing '+token);
   if(rune66Engine.includes('keyword_group')||rune66Engine.includes("node_type==='style'")||rune66Engine.includes("node_type==='keyword'"))failures.push('Rune66 engine must not restore style/rule/node-type keyword storage');
   const statistics=read('app/modular/features/Statistics.jsx');
   const culture=read('app/modular/features/Culture.jsx');

@@ -33,6 +33,7 @@ must(admin.includes("insertRows('silver.manage'")&&admin.includes("deleteRows('s
 must(admin.includes('selectDraftScope')&&admin.includes('同一 Scope 的 Galaxy / Time mapping 必須一致'),'Admin permission rows must inherit and preserve one Scope mapping');
 must(dbContract.includes("rpc('management_write'")&&dbContract.includes('batchSize=200'),'management writes must use the authorized RPC with bounded insert batches');
 must(dbContract.includes("api.lo3rwang_keywords_manage"),'keyword library writes must use the scoped management view');
+must(dbContract.includes('copyKeywordLibraryClass')&&keywordLibrary.includes('copyKeywordLibraryClass'),'keyword library must support copying a complete independent Class');
 must(dbContract.includes('syncManageScopeRow')&&dbContract.includes("p_operation:'scope_sync'"),'Scope mapping updates must use one atomic management write');
 must(dbContract.includes('affected 0 rows')&&dbContract.includes('affected!==batch.length'),'management write helpers must reject zero-row updates/deletes and incomplete inserts');
 must(admin.includes('syncManageScopeRow('),'Admin must update one Scope mapping atomically');
@@ -42,7 +43,7 @@ must(data.includes("來源為必填欄位。")&&data.includes('source_name:sourc
 must(data.includes("setSelectedId(id);setDraft(null);setEditorMessage('');")&&!data.includes('if(!scopeData)return;'),'record selection must clear stale drafts and Scope resolution failures must not be silent');
 must(data.includes('!draft&&editorMessage'),'record-detail failures and successful deletes must remain visible without an editor draft');
 must(admin.includes("setMappings([]);setStatus(error?.message||'Mapping 讀取失敗。');"),'Admin mapping read rejections must surface in the UI');
-must(keywordLibrary.includes('group_name')&&keywordLibrary.includes('item_name')&&keywordLibrary.includes('principle')&&keywordLibrary.includes('keywords_text'),'keyword library editor must edit group, item, principle and one keyword collection together');
+must(keywordLibrary.includes('class_name')&&keywordLibrary.includes('class_group')&&keywordLibrary.includes('class_enable')&&keywordLibrary.includes('item_name')&&keywordLibrary.includes('principle')&&keywordLibrary.includes('keywords_text'),'keyword library editor must edit self-contained Class, Group, participation, item, principle and one keyword collection together');
 must(!keywordLibrary.includes('keyword_group')&&!keywordLibrary.includes("node_type:'style'")&&!keywordLibrary.includes("node_type:'keyword'"),'keyword library editor must not recreate style/rule/node-type storage');
 must(keywordLibrary.includes('useQueryClient')&&keywordLibrary.includes("statistics-rune66-classification")&&keywordLibrary.includes("refetchType:'all'"),'keyword edits must invalidate and immediately refetch Rune66 classification');
 

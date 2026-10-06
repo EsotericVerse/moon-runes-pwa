@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {classifyRune66Documents} from '../app/loc/model/rune66-keyword-engine.mjs';
 
-const structureRows=[
+const catalogStructure=[
   {rune_id:2,rune_name:'魂',group_name:'靈魂'},
   {rune_id:7,rune_name:'鏡',group_name:'靈魂'},
   {rune_id:26,rune_name:'花',group_name:'自然'},
@@ -20,9 +20,11 @@ const structureRows=[
   {rune_id:66,rune_name:'命',group_name:'特殊',class_enable:false}
 ];
 
-const catalogRows=structureRows.map((row,index)=>({
+const catalogRows=catalogStructure.map((row,index)=>({
   keyword_id:index+1,
-  group_name:'符文66',
+  class_name:'符文66',
+  class_group:row.group_name,
+  class_enable:row.class_enable!==false,
   item_no:row.rune_id,
   item_name:row.rune_name,
   principle:'',
@@ -67,7 +69,7 @@ const rows=[
   {key:'v',title:'',content:'魂 夢'}
 ];
 
-const result=classifyRune66Documents(rows,catalogRows,structureRows);
+const result=classifyRune66Documents(rows,catalogRows);
 const byKey=new Map(result.classifications.map(row=>[row.key,row]));
 const runeMap=row=>new Map((row?.rune_counts||[]).map(item=>[item.label,item.count]));
 
@@ -127,11 +129,13 @@ assert.equal(result.tieCount,1,'only signal-count and signal-character ties must
 assert.ok(catalogRows.every(row=>Array.isArray(row.keywords)),'keyword catalog must use one keyword collection per classification item');
 assert.equal(catalogRows.some(row=>'keyword_group' in row),false,'keyword catalog must not split keywords into style/rule groups');
 assert.equal(catalogRows.some(row=>'node_type' in row),false,'keyword catalog must not use style/keyword node types');
+assert.ok(catalogRows.every(row=>row.class_name==='符文66'&&row.class_group),'keyword catalog must carry its own Class and Group metadata');
+assert.ok(catalogRows.every(row=>typeof row.class_enable==='boolean'),'keyword catalog must carry its own Class participation flag');
 
 const metadataOnly=classifyRune66Documents([
   {key:'metadata',title:'',content:'',meta_tags:'意識',media_metadata_text:'水土',media_type:'花枝招展'},
   {key:'lyrics',title:'',content:'意識',meta_tags:'潛意識'}
-],catalogRows,structureRows);
+],catalogRows);
 const metadataByKey=new Map(metadataOnly.classifications.map(row=>[row.key,row]));
 assert.equal(runeMap(metadataByKey.get('metadata')).size,0,'media metadata must not enter Rune66 body classification');
 assert.equal(runeMap(metadataByKey.get('lyrics')).get('魂'),2,'lyrics body keeps cumulative distinct configured signals');

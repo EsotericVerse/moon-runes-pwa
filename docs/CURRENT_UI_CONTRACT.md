@@ -66,6 +66,10 @@ Homepage 與共用分析以 Culture、Statistics、Search 為主：
 - LunaRunes Canon 語意
 - 抽牌方向與籤詩 canonical data
 
+## Keyword Library
+
+lo3rwang Manage 的關鍵詞庫以 Class 為第一層。每個 Class 自己保存 Group、是否參與 Class 判定、項目名稱、判別原理與關鍵詞；整套 Class 可以複製成另一套獨立分類庫。Keyword Library UI 不依賴 LunaRunes Canon 才能顯示或編輯分類結構。
+
 ## Management visibility
 
 管理頁必須能看到 canonical records，即使：

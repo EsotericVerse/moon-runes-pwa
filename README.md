@@ -26,6 +26,7 @@ LOC is the framework for organizing text, works, sources, time, relationships, s
 - `silver.manage` owns data Scope and Galaxy/Time table mapping.
 - PostgreSQL remains the authoritative query layer for Scope, fixed eligibility flags, COUNT, date ranges and pagination across Search, Statistics and Culture.
 - PostgreSQL handles global search, while confirmed keyword classifications are stored as fixed article attributes. Re-run classification only when keyword rules change.
+- Keyword classes are self-contained in `silver.lo3rwang_keywords` (`class_name`, `class_group`, `class_enable`, item/principle/keywords); classification does not read LunaRunes Canon tables.
 - Search is lexical/metadata search, not semantic rendering.
 - Missing general-Scope configuration remains empty; LOC does not borrow LunaRunes Canon, keywords or Style as fallback.
 
