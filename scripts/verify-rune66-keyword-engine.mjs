@@ -62,7 +62,9 @@ const rows=[
   {key:'q',title:'',content:'2026年10月6日'},
   {key:'r',title:'',content:'六月十日'},
   {key:'s',title:'',content:'人生 意識'},
-  {key:'t',title:'',content:'玄 混沌'}
+  {key:'t',title:'',content:'玄 混沌'},
+  {key:'u',title:'',content:'日常 魂'},
+  {key:'v',title:'',content:'魂 夢'}
 ];
 
 const result=classifyRune66Documents(rows,catalogRows,structureRows);
@@ -71,7 +73,7 @@ const runeMap=row=>new Map((row?.rune_counts||[]).map(item=>[item.label,item.cou
 
 assert.equal(runeMap(byKey.get('a')).get('魂'),1,'non-day/moon Rune keyword 意識 must still match inside 潛意識');
 assert.equal(runeMap(byKey.get('a')).get('夢'),1,'潛意識 explicit rule must also TO 夢');
-assert.ok(byKey.get('a').tied_groups.includes('靈魂')&&byKey.get('a').tied_groups.includes('無序'),'equal cumulative Class scores must keep tie diagnostics');
+assert.equal(byKey.get('a').classification_group,'無序','equal signal counts must use total signal characters as the second Class discriminator');
 
 assert.equal(runeMap(byKey.get('b')).get('魂'),2,'意識 keeps its keyword hit and explicit TO hit because 魂 is not a day/moon exception');
 assert.equal(runeMap(byKey.get('b')).has('夢'),false,'standalone 意識 must not become 夢');
@@ -111,13 +113,16 @@ assert.ok((runeMap(byKey.get('s')).get('命')||0)>=1,'exception Rune 命 must ke
 assert.equal(byKey.get('s').classification_group,'靈魂','class_enable=false Runes must not compete with enabled Groups for Class');
 assert.ok((runeMap(byKey.get('t')).get('玄')||0)>=1,'exception Rune 玄 must keep its own signal count');
 assert.equal(byKey.get('t').status,'unclassified','class_enable=false-only documents must not be forced into an enabled Class');
+assert.equal(byKey.get('u').classification_group,'秩序','equal signal counts must prefer the group with more signal characters');
+assert.equal(byKey.get('v').classification_group,'特殊','equal signal counts and equal signal characters must fall back to the reserved Class group');
+assert.ok(byKey.get('v').tied_groups.includes('靈魂')&&byKey.get('v').tied_groups.includes('無序'),'final unresolved tie diagnostics must remain available');
 const specialTotal=result.groupTotals.find(row=>row.group==='特殊');
 assert.ok(Number(specialTotal?.hit_count||0)>0,'class_enable=false Rune signals must remain visible in Group totals');
-assert.equal(Number(specialTotal?.document_count||0),0,'class_enable=false Runes must never win Class totals');
+assert.equal(Number(specialTotal?.document_count||0),1,'reserved Class group must receive only unresolved enabled-group ties');
 
 assert.equal(result.documentCount,rows.length);
 assert.equal(result.unclassifiedCount,4,'NAME-only, calendar-date-only and exception-only samples must remain unclassified');
-assert.ok(result.tieCount>=1);
+assert.equal(result.tieCount,1,'only signal-count and signal-character ties must remain final ties');
 
 assert.ok(catalogRows.every(row=>Array.isArray(row.keywords)),'keyword catalog must use one keyword collection per classification item');
 assert.equal(catalogRows.some(row=>'keyword_group' in row),false,'keyword catalog must not split keywords into style/rule groups');
