@@ -5,9 +5,9 @@ import {runeImage} from './rune-directory.mjs';
 import {selectRows} from '../loc/db-query.mjs';
 import {useSetting} from '../loc/use-setting';
 import {realMoonPhase} from '../loc/model/moon-phase';
-import {scopeHref} from '../modular/scope-registry';
 import RuneCardInfo from './RuneCardInfo';
 import RuneSingleDailySurface from './RuneSingleDailySurface';
+import RuneDrawModeBubbles from './RuneDrawModeBubbles';
 import {RUNE_RITUAL_DELAY_MS,RUNE_RITUAL_STEP_MS,runeRitualMessages} from './rune-ritual';
 import {RUNE_ALL_DRAW_MODES,RUNE_DRAW_MODES} from './rune-draw-modes.mjs';
 import {buildSpreadAdvice} from './rune-guidance-engine.mjs';
@@ -180,17 +180,7 @@ function DrawSelection({activeKey}){
   return <div className="runes-spread-selection" data-draw-selection={activeKey}>
     <p className="loc-eyebrow">抽牌選擇</p>
     <h3>選擇抽牌方式</h3>
-    <div className="home-draw-bubbles" aria-label="選擇抽牌方式">
-      {RUNE_DRAW_MODES.map(item=><a
-        key={item.key}
-        className="loc-bubble"
-        href={scopeHref('lrunes',item.path)}
-        aria-current={item.key===activeKey?'page':undefined}
-      >
-        <strong>{item.label}</strong>
-        <p>{item.description}</p>
-      </a>)}
-    </div>
+    <RuneDrawModeBubbles activeKey={activeKey}/>
   </div>;
 }
 
