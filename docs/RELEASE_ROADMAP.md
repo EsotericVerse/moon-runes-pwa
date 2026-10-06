@@ -1,8 +1,8 @@
 # LOC Release Roadmap
 
-## Current — 0.8.5-RC
+## Current — 0.8.5.1-RC
 
-0.8.5-RC 是目前 Current candidate。此版在 0.8.4 共用架構基線上完成資料來源可攜性、統計查詢收斂，以及 LunaRunes 抽牌／每日功能封裝。Current 已具備：
+0.8.5.1-RC 是目前 Current candidate。此版在 0.8.4 共用架構基線上完成資料來源可攜性、統計查詢收斂，以及 LunaRunes 抽牌／每日功能封裝。Current 已具備：
 
 - Supabase PostgreSQL 為主要資料來源；Neon 保留 public-read 備援。
 - Search／Statistics／Culture 使用 PostgreSQL 精準 query、固定 eligibility filter、COUNT 與分頁。
@@ -15,12 +15,15 @@
 - 每日符文整合為單一行事曆：月相開始／結束標記、當日 `sit_q + daily_r + daily_g + daily_b`，以及上一筆同符文日期與當時 `sit_q`。
 - 舊 Daily Trend client／engine 已退役；每日頁不再做高頻或多日複雜趨勢分析。
 - Scope／Feature／Page responsibility、404 fallback、Theme、Audit 與管理例外處理維持 Current 單一路徑。
+- LOC aggregate Statistics 固定最近一年，依 `scope_id` 顯示數量與密度。
+- Search 以 `searchable` 控制公開結果；OAuth Scope 管理者可搜尋該 Scope 全部 canonical records。
+- LOC Admin 保留最近 7 天實際 Search Keywords；Scope Manage 預設進入資料匯入。
 
-## 0.8.5 RC follow-up verification
+## 0.8.5.1 RC follow-up verification
 
-0.8.5-RC 不再擴張抽牌或每日功能；下一個直接問題是 Rune66 canonical keyword library 的 literal matching 與管理流程。
+0.8.5.1-RC 不再擴張抽牌或每日功能；下一個直接問題是 Rune66 canonical keyword library 的 literal matching 與管理流程。
 
-Current 0.8.5-RC follow-up：
+Current 0.8.5.1-RC follow-up：
 
 - 修正 Rune 自身名稱未被 classifier 當成 literal signal 的問題；例如 `空` 應命中 `天空`、`空間` 等包含字串。
 - 完成 LunaRunes keyword library 與治理；Rune special semantics 只留在 LunaRunes。
@@ -33,7 +36,7 @@ Current 0.8.5-RC follow-up：
 
 0.9 的主要架構方向是 Scope／Scope Group 化。共用 Search／Statistics／Culture／Management／Audit 必須由 Scope mapping 取得資料表責任，不以指定 Scope table name 寫死流程；Scope Group 應組合 Scope，而不是建立另一份 corpus authority。
 
-0.8.5-RC 的一致化與去重複是 0.9 的前置工程：先把 resolver、mapping、query、audit 與概念責任收成單一路徑，再擴充 Scope Group。
+0.8.5.1-RC 的一致化與去重複是 0.9 的前置工程：先把 resolver、mapping、query、audit 與概念責任收成單一路徑，再擴充 Scope Group。
 
 0.9 的一般 Scope 延伸採 copy-on-create governance：先複製來源資料，再在新 Scope 內獨立編輯；來源 Scope 保持不變。LunaRunes canonical structure 不列入可自由改寫的 Scope template。
 
