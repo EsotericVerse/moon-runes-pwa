@@ -17,7 +17,14 @@ const adapter=createPostgrestAdapter({
   getPublicToken:async()=>'public-read-token',getAuthToken:async()=>'management-token',
   fetch:async(input,init)=>{
     requests.push({url:new URL(input),init});
-    const body=String(input).includes('/rpc/')?{count:affected}:[{keyword_id:1,uid:'TEST0001'}];
+    const pathname=new URL(input).pathname;
+    const body=pathname.endsWith('/rpc/provision_scope')
+      ?{scope_id:'testscope',keyword_rows:66}
+      :pathname.endsWith('/rpc/apply_keyword_classification')
+        ?affected
+        :pathname.includes('/rpc/')
+          ?{count:affected}
+          :[{keyword_id:1,uid:'TEST0001'}];
     return new Response(JSON.stringify(body),{status:200,headers:{'Content-Type':'application/json','Content-Range':'0-0/1'}});
   }
 });
@@ -45,9 +52,16 @@ affected=0;
 await assert.rejects(()=>client.updateRows('silver.any_scope_galaxy',{}),/affected 0 rows/);
 await assert.rejects(()=>client.deleteRows('silver.any_scope_galaxy'),/affected 0 rows/);
 await assert.rejects(()=>client.insertRows('silver.any_scope_galaxy',[{}]),/incomplete/);
-await client.writeKeywordLibraryItem('update',{keyword_id:1,class_id:'4c04471f-7cad-4309-9f15-0d1ddfcb5933',class_name:'符文66',class_group:'靈魂',class_enable:true,item_no:1,item_name:'靈',keywords:['one']});
-assert.equal(requests.at(-1).url.pathname.endsWith('/lo3rwang_keywords_manage'),true);
-assert.equal(requests.at(-1).init.headers.get('Content-Profile'),'api');
+await client.writeKeywordLibraryItem('lo3rwang','update',{keyword_id:1,class_id:'4c04471f-7cad-4309-9f15-0d1ddfcb5933',class_name:'符文66',class_group:'靈魂',class_enable:true,item_no:1,item_name:'靈',keywords:['one']});
+assert.equal(requests.at(-1).url.pathname.endsWith('/lo3rwang_keywords'),true);
+assert.equal(requests.at(-1).init.headers.get('Content-Profile'),'silver');
+affected=0;
+await client.applyKeywordClassification('lo3rwang',{rows:[],meta:{class_id:'4c04471f-7cad-4309-9f15-0d1ddfcb5933'}});
+assert.equal(JSON.parse(requests.at(-1).init.body).p_scope_id,'lo3rwang');
+const provisioned=await client.provisionScope({scope_id:'testscope',display_name:'Test Scope',email:'owner@example.test',directory:'/testscope',parent_scope_id:'loc',theme:'theme-7',copy_keywords:true});
+assert.equal(provisioned.scope_id,'testscope');
+assert.equal(provisioned.keyword_rows,66);
+assert.equal(requests.at(-1).url.pathname.endsWith('/rpc/provision_scope'),true);
 
 let called=false;
 const readOnly=createPostgrestAdapter({url:'https://readonly.example.test',fetch:async()=>{called=true;return new Response('[]');}});
@@ -55,6 +69,7 @@ const readOnlyClient=createDatabaseClient(readOnly);
 await assert.rejects(()=>readOnlyClient.getAccountSession(),/not configured/);
 await assert.rejects(()=>readOnlyClient.signInWithGoogle('/'),/not configured/);
 await assert.rejects(()=>readOnlyClient.insertRows('silver.any_scope_galaxy',[{}]),/not configured/);
+await assert.rejects(()=>readOnlyClient.provisionScope({scope_id:'testscope'}),/not configured/);
 assert.equal(called,false,'Unconfigured authentication must fail before contacting the database');
 
 // HEAD failures can have no JSON error body; never convert them to count=0.
