@@ -61,10 +61,21 @@ function average(values){
 }
 
 function spreadSides(mode,count){
-  if(mode==='2card'&&count>=2)return {x:[0],variable:[],y:[1]};
-  if(mode==='3card'&&count>=3)return {x:[0],variable:[1],y:[2]};
-  if(mode==='5card'&&count>=5)return {x:[0,1],variable:[2],y:[3,4]};
-  return null;
+  const layouts=Object.freeze({
+    '2card':{x:[0],variable:[],y:[1]},
+    '3card':{x:[0],variable:[1],y:[2]},
+    '4card':{x:[0],variable:[1,2],y:[3]},
+    '5card':{x:[0,1],variable:[2],y:[3,4]},
+    '6card':{x:[0,1],variable:[2,3],y:[4,5]},
+    '7card':{x:[0,1],variable:[2,3,4],y:[5,6]},
+    '8card':{x:[0,1,2],variable:[3,4],y:[5,6,7]},
+    '9card':{x:[0,1,2],variable:[3,4,5],y:[6,7,8]},
+    '10card':{x:[0,1,2,3],variable:[4,5],y:[6,7,8,9]}
+  });
+  const layout=layouts[mode];
+  if(!layout)return null;
+  const required=Math.max(...layout.x,...layout.variable,...layout.y)+1;
+  return count>=required?layout:null;
 }
 
 function trendLabel(delta){
