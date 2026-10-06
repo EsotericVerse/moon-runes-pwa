@@ -35,6 +35,15 @@ if(!failures.length){
   for(const token of ['當日狀況','前次紀錄','RuneCardInfo','runeImage','home-rune-layout','home-rune-copy home-rune-copy-plain','home-draw-bubbles','loc-bubble'])if(!dailyLog.includes(token))failures.push('daily calendar must reuse single/daily Rune presentation: '+token);
   const dailyCalendar=read('app/lrunes/DailyRuneCalendar.jsx');
   for(const token of ['realMoonPhase','phaseMarkers',"current+'開始'","current+'結束'"])if(!dailyCalendar.includes(token))failures.push('daily calendar moon markers missing '+token);
+  const runeDrawModes=read('app/lrunes/rune-draw-modes.mjs');
+  const runeDrawModeBubbles=read('app/lrunes/RuneDrawModeBubbles.jsx');
+  const runeSingleDaily=read('app/lrunes/RuneSingleDailySurface.jsx');
+  const runeDrawClient=read('app/lrunes/RuneDrawClient.jsx');
+  const runeDirectory=read('app/lrunes/RuneDirectoryPages.jsx');
+  for(const token of ['single','daily','2card','3card','5card','ow3gs','每日抽牌'])if(!runeDrawModes.includes(token))failures.push('shared fixed draw modes missing '+token);
+  for(const token of ['RUNE_DRAW_MODES.map','home-draw-bubbles','loc-bubble'])if(!runeDrawModeBubbles.includes(token))failures.push('shared fixed draw bubbles missing '+token);
+  for(const [name,source] of [['home',runeHome],['single/daily',runeSingleDaily],['spread',runeDrawClient]])if(!source.includes('RuneDrawModeBubbles'))failures.push('Rune draw selection must reuse shared component in '+name);
+  for(const token of ['home-draw-bubbles runes-rune-long-details','符文歷史','神話故事','靈魂課題','實踐挑戰','儀式建議','調和建議'])if(!runeDirectory.includes(token))failures.push('Rune directory detail bubbles missing '+token);
   const runeHome=read('app/lrunes/RunesClient.jsx');
   if(runeHome.includes('daily/trend'))failures.push('Daily Trend must remain folded into Daily Log.');
   const legacyDailyTrend=read('app/daily/trend/page.jsx');
