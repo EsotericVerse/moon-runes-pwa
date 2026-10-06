@@ -24,9 +24,9 @@ for(const [name,source] of [['RuneDrawClient',publicDraw]]){
     'buildFixedReading(',
     'composeFixedGrammar(',
     'poeticClause(',
+    'situationQuestion(card,direction)',
     'drawSegments(',
     'joinPoeticGroup(',
-    "text.replace(/^它/,rune)",
     "return {sentence,domains:[],evaluation:weighted};",
     "moonTypes:['sit_q','sit_a']",
     "moonTypes:['sit_q','sit_a','daily_r','daily_g','daily_b']",
@@ -41,6 +41,19 @@ for(const fragment of [
   "return `${groups[0]}；${groups[1]}，遂${groups[2]}。`;",
   "const rows=Array.isArray(selectedMode?.displayRows)?selectedMode.displayRows:[];"
 ])if(!publicDraw.includes(fragment))throw new Error('Rune verse grammar missing: '+fragment);
+
+for(const forbidden of [
+  'function MultiReading(',
+  '完整解讀',
+  '五卡完整解讀',
+  'OW3gs · 雙模型判讀',
+  '愛情建議',
+  '事業建議',
+  '關係建議',
+  '健康建議'
+])if(publicDraw.includes(forbidden))throw new Error('Multi-card draw must remain verse-only: '+forbidden);
+
+if(!publicDraw.includes('<RuneSingleDailySurface'))throw new Error('Single/Daily surface contract missing');
 
 const spreadContracts=[
   ["key:'2card'","segments:[1,1]"],
