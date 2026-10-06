@@ -108,6 +108,17 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return {...result,count:affected};
   }
 
+  async function logSearchKeyword(scopeId,queryText){
+    const scope=String(scopeId||'').trim().toLowerCase();
+    const query=String(queryText||'').trim();
+    if(!scope||!query)return;
+    const {error}=await publicClient.schema('api').rpc('log_search_keyword',{
+      p_scope_id:scope,
+      p_query_text:query
+    });
+    if(error)throw new Error(error.message||'Search keyword log failed');
+  }
+
   async function getAccountSession(){
     const {data,error}=await auth.getSession();
     if(error)throw new Error(error.message||'Account session failed');
@@ -126,5 +137,5 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
-  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,writeKeywordLibraryItem,syncManageScopeRow,getAccountSession,signInWithGoogle,signOutAccount};
+  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,writeKeywordLibraryItem,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
 }
