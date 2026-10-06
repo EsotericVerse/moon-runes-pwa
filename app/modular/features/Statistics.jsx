@@ -248,10 +248,9 @@ function Rune66Summary({analysis}){
     .filter(row=>Number(row.document_count||0)>0)
     .sort((a,b)=>Number(b.document_count||0)-Number(a.document_count||0)||Number(a.order||0)-Number(b.order||0));
   const groupRows=[...(data.runeRanking||[])]
-    .filter(row=>Number(row.document_count||0)>0)
-    .sort((a,b)=>Number(b.document_count||0)-Number(a.document_count||0)||Number(a.rune_id||0)-Number(b.rune_id||0));
+    .filter(row=>Number(row.count||0)>0);
   const classifiedTotal=Math.max(0,Number(data.classifiedCount||0));
-  const groupHitTotal=groupRows.reduce((sum,row)=>sum+Number(row.document_count||0),0);
+  const groupHitTotal=groupRows.reduce((sum,row)=>sum+Number(row.count||0),0);
   return <div className="scope-rune66-summary">
     <p className="scope-status">表現風格：符文66 · 分析作品 {Number(data.documentCount||0).toLocaleString()} 項 · 已分類 {classifiedTotal.toLocaleString()} · 未分類 {Number(data.unclassifiedCount||0).toLocaleString()}</p>
     <section className="scope-card">
@@ -276,10 +275,10 @@ function Rune66Summary({analysis}){
     </section>
     <section className="scope-card">
       <h3>Group｜符文排行</h3>
-      <p className="scope-status">同篇作品的同一符文只計 1 次。</p>
+      <p className="scope-status">同一作品內，相同 signal 重複出現只計 1 次；不同 signal 可累積。</p>
       <div className="scope-ranking">
         {groupRows.map(row=>{
-          const count=Number(row.document_count||0);
+          const count=Number(row.count||0);
           const ratio=groupHitTotal>0?(count/groupHitTotal)*100:0;
           return <div key={row.rune_id}><strong>{String(row.rune_id).padStart(2,'0')} · {groupLabel(row.label)}</strong><span>{count.toLocaleString()} 次 · {ratio.toFixed(1)}%</span></div>;
         })}
