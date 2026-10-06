@@ -2,5 +2,30 @@
   "version": 2,
   "updated_at": "2026-10-06",
   "purpose": "Machine-readable Current runtime capability governance. This registry governs implementation rights only; it is not a corpus, route, Scope mapping, permission or Canon data authority.",
-  "capabilities": {}
+  "capabilities": {
+    "public_read_failover": {
+      "status": "required",
+      "primary_source": "Supabase",
+      "backup_source": "Neon",
+      "read_scope": "anonymous public SELECT only",
+      "automatic_failover": true,
+      "write_failover": false,
+      "ui_source_disclosure_required": true,
+      "backup_staleness_warning_required": true,
+      "page_chain_source_pinning_required": true,
+      "purpose": "Portable read continuity and explicit degraded-mode visibility across PostgreSQL providers."
+    },
+    "provider_neutral_public_queries": {
+      "status": "required",
+      "required_capabilities": [
+        "SELECT",
+        "filters",
+        "ordering",
+        "exact_count",
+        "range_pagination"
+      ],
+      "optional_provider_aggregate_dependency_allowed": false,
+      "purpose": "Public features must not require provider-specific optional PostgREST aggregate settings."
+    }
+  }
 }
