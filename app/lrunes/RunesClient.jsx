@@ -46,10 +46,9 @@ export default function RunesClient(){
       <div className="home-section-heading">
         <p className="loc-eyebrow">Draw a Rune</p>
         <h2>選擇抽牌</h2>
-        <p className="loc-subtitle">先從你想看的問題範圍開始。張數越多，語意結構越完整；不是越多越準，而是用不同結構看不同層次。</p>
       </div>
       <RuneDrawModeBubbles />
-      <p className="loc-subtitle">需要其他張數時，可使用下方指定抽牌數量；4、6、7、8、9、10 張會依各自的模組結構進行判讀。</p>
+      <h3>其他張數</h3>
       <CustomDrawSelector options={RUNE_CUSTOM_DRAW_MODES.map(item=>({
         count:item.count,
         description:item.description,
