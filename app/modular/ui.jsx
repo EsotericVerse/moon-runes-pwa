@@ -1,9 +1,21 @@
 'use client';
 
-import {useEffect,useMemo,useRef,useState} from 'react';
+import {useEffect,useMemo,useRef,useState,useSyncExternalStore} from 'react';
 import {UI_COPY} from '../i18n/ui-copy';
 import {DEFAULT_LIST_BATCH_SIZE,LIST_LOAD_COOLDOWN_MS} from '../loc/list-loading-contract.mjs';
 import {useScopeRuntime} from './use-scope-runtime';
+import {getDbSourceStatus,subscribeDbSourceStatus} from '../loc/db-source-status.mjs';
+
+function DataSourceStatus(){
+  const status=useSyncExternalStore(subscribeDbSourceStatus,getDbSourceStatus,getDbSourceStatus);
+  const current=status.degraded
+    ?`備援資料（${status.backupLabel}）`
+    :`主要資料（${status.primaryLabel}）`;
+  return <p className={'scope-status'+(status.degraded?' scope-data-backup':'')} role="status">
+    主要資料來源：{status.primaryLabel} · 備用資料來源：{status.backupLabel} · 目前使用：{current}
+    {status.degraded?' · 備援資料可能有同步時間差。':''}
+  </p>;
+}
 
 export function FeaturePage({featureId,children,subtitle=null,description=null}){
   const {scope}=useScopeRuntime();
@@ -19,6 +31,7 @@ export function FeaturePage({featureId,children,subtitle=null,description=null})
           {finalSubtitle?<p className="loc-subtitle scope-subtitle">{finalSubtitle}</p>:null}
         </div>
         {resolvedDescription?<div className="scope-hero-description">{resolvedDescription}</div>:null}
+        <DataSourceStatus/>
       </header>
       <div className="scope-content">{children}</div>
     </section>
