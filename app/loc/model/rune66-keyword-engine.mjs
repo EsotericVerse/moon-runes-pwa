@@ -204,8 +204,20 @@ export function classifyRune66Documents(documents=[],catalogRows=[],structureRow
     for(const keyword of rune.keywords){
       const normalizedKeyword=normalizeText(keyword);
       if(!normalizedKeyword)continue;
+      const isDayMoonName=(rune.label==='日'||rune.label==='月')&&normalizedKeyword===normalizeText(rune.label);
+      const ownSpecificSources=isDayMoonName
+        ?rune.keywords
+          .map(normalizeText)
+          .filter(source=>source&&source!==normalizedKeyword&&source.includes(normalizedKeyword))
+          .sort((a,b)=>b.length-a.length)
+        :[];
       for(let index=0;index<normalizedTexts.length;index+=1){
-        if(!states[index]||!keywordTexts[index].includes(normalizedKeyword))continue;
+        if(!states[index])continue;
+        let text=keywordTexts[index]||'';
+        if(isDayMoonName){
+          for(const source of ownSpecificSources)text=replaceAllLiteral(text,source,' ');
+        }
+        if(!text.includes(normalizedKeyword))continue;
         increment(states[index],rune,'keyword:'+normalizedKeyword);
       }
     }
