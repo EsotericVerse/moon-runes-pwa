@@ -6,6 +6,21 @@
   --scope-muted:var(--loc-muted);
 }
 .scope-global{border-bottom:var(--scope-border)}
+.scope-data-source-global{
+  display:flex;
+  justify-content:center;
+  gap:.5rem 1rem;
+  flex-wrap:wrap;
+  margin:0 auto;
+  padding:.45rem clamp(1rem,4vw,4rem);
+  border-bottom:var(--scope-border);
+  color:var(--scope-muted);
+  font-size:.78rem;
+}
+.scope-data-source-global.is-backup{
+  color:var(--scope-text);
+  font-weight:700;
+}
 .scope-nav{display:flex;align-items:center;margin:0 auto;overflow-x:auto}
 .scope-nav a,.scope-nav-current{text-decoration:none;white-space:nowrap;border-radius:999px}
 .scope-nav-current{font-weight:700;}
