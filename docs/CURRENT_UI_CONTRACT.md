@@ -19,6 +19,15 @@ Current 共用功能固定為：
 - Governance
 - Search
 
+LunaRunes 首頁主入口固定為四個：
+
+- 單卡抽籤
+- 符文圖鑑
+- 符文遊戲
+- 每日符文紀錄
+
+每日／雙卡／三卡／五卡／11 卡等標準抽牌模式由單卡抽籤頁內切換，不在 LunaRunes 首頁重複建立入口。4／6／7／8／9／10 張仍使用首頁既有的指定抽牌數量 select。
+
 NAV URL 由 Current Scope registry 產生；實際 route 是否存在由 Next filesystem 決定。
 
 ## Scope presentation
