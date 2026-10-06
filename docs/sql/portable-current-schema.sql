@@ -768,51 +768,82 @@ CREATE OR REPLACE FUNCTION api.apply_keyword_classification(p_rows jsonb)
  SET search_path TO ''
 AS $function$
 DECLARE
- v_rows jsonb;
- v_meta jsonb := '{}'::jsonb;
+ v_mode text := lower(coalesce(p_rows->>'mode',''));
+ v_rows jsonb := p_rows->'rows';
+ v_meta jsonb := coalesce(p_rows->'meta','{}'::jsonb);
  v_affected integer := 0;
  v_document_count integer := 0;
  v_expected integer := 0;
  v_meta_class_id text := '';
 BEGIN
- IF jsonb_typeof(p_rows)='object' THEN
-   v_rows := p_rows->'rows';
-   v_meta := coalesce(p_rows->'meta','{}'::jsonb);
- ELSE
-   v_rows := p_rows;
+ IF v_mode='begin' THEN
+   UPDATE silver.lo3rwang_galaxy
+   SET class_id=NULL,
+       group_lists='false'::jsonb;
+   GET DIAGNOSTICS v_affected = ROW_COUNT;
+
+   UPDATE silver.lo3rwang
+   SET staticstime=NULL,
+       keyword_document_count=0,
+       keyword_meta='{}'::jsonb,
+       updated_at=now()
+   WHERE id='lo3rwang';
+
+   IF NOT FOUND THEN RAISE EXCEPTION 'lo3rwang config row not found'; END IF;
+   RETURN v_affected;
  END IF;
- IF jsonb_typeof(v_rows) <> 'array' THEN RAISE EXCEPTION 'rows must be an array'; END IF;
- v_expected := jsonb_array_length(v_rows);
- v_meta_class_id := coalesce(v_meta->>'class_id','');
- IF v_meta_class_id<>'' AND NOT EXISTS(
-   SELECT 1 FROM silver.lo3rwang
-   WHERE id='lo3rwang' AND current_keyword_class_id::text=v_meta_class_id
- ) THEN
-   RAISE EXCEPTION 'current keyword Class changed before batch write';
+
+ IF v_mode='chunk' THEN
+   IF jsonb_typeof(v_rows) <> 'array' THEN RAISE EXCEPTION 'rows must be an array'; END IF;
+   v_expected := jsonb_array_length(v_rows);
+
+   WITH payload AS (
+     SELECT upper(btrim(x.uid))::character(8) AS uid,
+            x.class_id,
+            coalesce(x.group_lists,'{}'::jsonb) AS group_lists
+     FROM jsonb_to_recordset(v_rows) AS x(uid text,class_id smallint,group_lists jsonb)
+     WHERE btrim(coalesce(x.uid,'')) <> ''
+   )
+   UPDATE silver.lo3rwang_galaxy g
+   SET class_id=p.class_id,
+       group_lists=p.group_lists
+   FROM payload p
+   WHERE g.uid=p.uid;
+
+   GET DIAGNOSTICS v_affected = ROW_COUNT;
+   IF v_affected <> v_expected THEN
+     RAISE EXCEPTION 'keyword classification chunk incomplete: expected %, affected %',v_expected,v_affected;
+   END IF;
+   RETURN v_affected;
  END IF;
- SELECT count(*) INTO v_document_count
- FROM jsonb_array_elements(v_rows) item
- WHERE coalesce(item->'group_lists','false'::jsonb) <> 'false'::jsonb;
- WITH payload AS (
-   SELECT upper(btrim(x.uid))::character(8) AS uid,
-          x.class_id,
-          coalesce(x.group_lists,'false'::jsonb) AS group_lists
-   FROM jsonb_to_recordset(v_rows) AS x(uid text,class_id smallint,group_lists jsonb)
-   WHERE btrim(coalesce(x.uid,'')) <> ''
- )
- UPDATE silver.lo3rwang_galaxy g
- SET class_id=p.class_id,group_lists=p.group_lists
- FROM payload p
- WHERE g.uid=p.uid;
- GET DIAGNOSTICS v_affected = ROW_COUNT;
- IF v_affected <> v_expected THEN
-   RAISE EXCEPTION 'keyword classification incomplete: expected %, affected %',v_expected,v_affected;
+
+ IF v_mode='finalize' THEN
+   v_meta_class_id := coalesce(v_meta->>'class_id','');
+   IF v_meta_class_id='' OR NOT EXISTS(
+     SELECT 1 FROM silver.lo3rwang
+     WHERE id='lo3rwang'
+       AND current_keyword_class_id::text=v_meta_class_id
+   ) THEN
+     RAISE EXCEPTION 'current keyword Class changed before finalize';
+   END IF;
+
+   SELECT count(*)
+   INTO v_document_count
+   FROM silver.lo3rwang_galaxy
+   WHERE group_lists <> 'false'::jsonb;
+
+   UPDATE silver.lo3rwang
+   SET staticstime=now(),
+       keyword_document_count=v_document_count,
+       keyword_meta=v_meta,
+       updated_at=now()
+   WHERE id='lo3rwang';
+
+   IF NOT FOUND THEN RAISE EXCEPTION 'lo3rwang config row not found'; END IF;
+   RETURN v_document_count;
  END IF;
- UPDATE silver.lo3rwang
- SET staticstime=now(),keyword_document_count=v_document_count,keyword_meta=v_meta,updated_at=now()
- WHERE id='lo3rwang';
- IF NOT FOUND THEN RAISE EXCEPTION 'lo3rwang config row not found'; END IF;
- RETURN v_affected;
+
+ RAISE EXCEPTION 'unsupported keyword classification mode';
 END;
 $function$
 ;
@@ -831,7 +862,49 @@ DECLARE
  v_allowed boolean := false;
  v_result jsonb := '[]'::jsonb;
 BEGIN
- IF v_scope !~ '^[a-z][a-z0-9]*
+ IF v_scope !~ '^[a-z][a-z0-9]*$' THEN RETURN NULL; END IF;
+
+ IF NOT EXISTS(
+   SELECT 1 FROM silver.keyword_classes
+   WHERE class_id=p_class_id AND scope_id=v_scope
+ ) THEN
+   RETURN NULL;
+ END IF;
+
+ v_config := to_regclass(format('silver.%I',v_scope));
+ v_keywords := to_regclass(format('silver.%I_keywords',v_scope));
+ IF v_config IS NULL OR v_keywords IS NULL THEN RETURN NULL; END IF;
+
+ v_allowed := silver.can_manage_scope(v_scope);
+ IF NOT v_allowed THEN
+   BEGIN
+     EXECUTE format(
+       'select coalesce(keyword_class_share_enabled,false) from %s where id=$1',
+       v_config
+     )
+     INTO v_share
+     USING v_scope;
+   EXCEPTION WHEN undefined_column THEN
+     v_share := false;
+   END;
+   v_allowed := v_share;
+ END IF;
+
+ IF NOT v_allowed THEN RETURN NULL; END IF;
+
+ EXECUTE format(
+   'select coalesce(jsonb_agg(to_jsonb(k) order by k.order_no,k.item_no),''[]''::jsonb) from %s k where k.class_id=$1',
+   v_keywords
+ )
+ INTO v_result
+ USING p_class_id;
+
+ RETURN coalesce(v_result,'[]'::jsonb);
+END;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION silver.normalize_galaxy_content_validity()
  RETURNS trigger
  LANGUAGE plpgsql
 AS $function$
@@ -842,7 +915,7 @@ AS $function$
  END IF;
  RETURN NEW;
  END;
- $function$
+$function$
 ;
 
 CREATE VIEW "api"."lo3rwang_keywords_manage" WITH (security_invoker=true, check_option=local) AS  SELECT keyword_id,
