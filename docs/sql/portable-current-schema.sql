@@ -123,6 +123,8 @@ CREATE TABLE "silver"."lo3rwang" (
   "updated_at" timestamp with time zone DEFAULT now() NOT NULL,
   "media_count" integer DEFAULT 0 NOT NULL,
   "media_counts" jsonb DEFAULT '{}'::jsonb NOT NULL,
+  "keyword_min_chars" integer DEFAULT 32 NOT NULL,
+  CONSTRAINT "lo3rwang_keyword_min_chars_check" CHECK (keyword_min_chars >= 0 AND keyword_min_chars <= 10000),
   CONSTRAINT "lo3rwang_pkey" PRIMARY KEY (id)
 );
 
