@@ -18,6 +18,12 @@ for(const route of [
   'culture/index.html',
   'search/index.html',
   'governance/index.html',
+  'scope/index.html',
+  'scope/search/index.html',
+  'scope/statics/index.html',
+  'scope/culture/index.html',
+  'scope/governance/index.html',
+  'scope/governance/manage/index.html',
   '404.html'
 ])requireFile(route);
 
