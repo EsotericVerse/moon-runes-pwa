@@ -42,7 +42,7 @@ Manage／Admin 已有 automated contract、權限與 build 驗證，但尚未完
 - 完成 Governance／Admin／Scope Manage 的實際操作驗收，包括 CRUD、例外處理、searchable=false canonical visibility、Theme 與 Scope 設定。
 - 以大型 corpus 進行 Search／Culture／Statistics stress test，確認 bounded query + pagination 在實際資料量下仍符合預期。
 - 檢查 Culture／Search 的 incremental loading 與 Statistics 查詢在實際瀏覽流程中的速度與狀態回饋。
-- Source Refresh：OAuth 後的小量來源更新，從可用來源逐步接入。
+- Source Refresh core 已採 `source_name + source_native_id` 的 bounded delta preview／write；OAuth 或其他 provider 只需提供相同 payload contract。
 
 ## 0.9 Direction — Scope Group
 
@@ -50,9 +50,9 @@ Manage／Admin 已有 automated contract、權限與 build 驗證，但尚未完
 
 0.8.6-RC 的公開功能與 LunaRunes 基線是 0.9 的前置條件：先確認 Current 使用流程穩定，再擴充 Scope Group。
 
-0.9 的一般 Scope 延伸採 copy-on-create governance：先複製來源資料，再在新 Scope 內獨立編輯；來源 Scope 保持不變。LunaRunes canonical structure 不列入可自由改寫的 Scope template。
+0.9 的一般 Scope 延伸採 copy-on-create governance：建立固定 DB 五件套並以獨立 UUID 複製預設 Rune66 Class；新 Scope 透過固定 `/scope/.../?scope=<id>` static shell 即時掛載，不需要為每個 Scope 新增 Next route。來源 Scope 保持不變。LunaRunes canonical structure 不列入可自由改寫的 Scope template。
 
-固定、可預期的 canonical 更新由網站管理流程直接處理；AI 不作為必要 write path。
+固定、可預期的 canonical 更新由網站管理流程直接處理；Admin 可建立／編輯 Scope Group、調整 Parent／Route／排序／Active，Scope Manage 負責內容、關鍵詞與增量 Source Refresh；AI 不作為必要 write path。
 
 ## 1.0 Release
 

@@ -217,6 +217,19 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return data||{};
   }
 
+  async function manageScopeRegistry(operation,scopeId,values={}){
+    const scope=normalizeScopeId(scopeId);
+    const op=String(operation||'').trim().toLowerCase();
+    if(!['create_group','update'].includes(op))throw new Error('Unsupported Scope Registry operation');
+    const {data,error}=await authClient.schema('api').rpc('manage_scope_registry',{
+      p_operation:op,
+      p_scope_id:scope,
+      p_values:values&&typeof values==='object'?values:{}
+    });
+    if(error)throw new Error(error.message||'Scope Registry management failed');
+    return data||{};
+  }
+
   async function syncManageScopeRow(values,{scopeId,email}={}){
     const result=await managementWrite({
       p_table:'silver.manage',
@@ -262,5 +275,5 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
-  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,writeKeywordLibraryItem,copyKeywordLibraryClass,provisionScope,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
+  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,writeKeywordLibraryItem,copyKeywordLibraryClass,provisionScope,manageScopeRegistry,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
 }

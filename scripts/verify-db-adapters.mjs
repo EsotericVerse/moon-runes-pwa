@@ -62,6 +62,10 @@ const provisioned=await client.provisionScope({scope_id:'testscope',display_name
 assert.equal(provisioned.scope_id,'testscope');
 assert.equal(provisioned.keyword_rows,66);
 assert.equal(requests.at(-1).url.pathname.endsWith('/rpc/provision_scope'),true);
+await client.manageScopeRegistry('update','testscope',{display_name:'Changed'});
+assert.equal(requests.at(-1).url.pathname.endsWith('/rpc/manage_scope_registry'),true);
+assert.equal(JSON.parse(requests.at(-1).init.body).p_scope_id,'testscope');
+assert.equal(JSON.parse(requests.at(-1).init.body).p_operation,'update');
 
 let called=false;
 const readOnly=createPostgrestAdapter({url:'https://readonly.example.test',fetch:async()=>{called=true;return new Response('[]');}});
@@ -70,6 +74,7 @@ await assert.rejects(()=>readOnlyClient.getAccountSession(),/not configured/);
 await assert.rejects(()=>readOnlyClient.signInWithGoogle('/'),/not configured/);
 await assert.rejects(()=>readOnlyClient.insertRows('silver.any_scope_galaxy',[{}]),/not configured/);
 await assert.rejects(()=>readOnlyClient.provisionScope({scope_id:'testscope'}),/not configured/);
+await assert.rejects(()=>readOnlyClient.manageScopeRegistry('update','testscope',{}),/not configured/);
 assert.equal(called,false,'Unconfigured authentication must fail before contacting the database');
 
 // HEAD failures can have no JSON error body; never convert them to count=0.

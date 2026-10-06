@@ -57,8 +57,8 @@ function automaticThemeId(date=new Date()){
   return hour>=6&&hour<18?DAY_THEME_ID:NIGHT_THEME_ID;
 }
 
-function ThemeSelect({scopeId}){
-  const scope=getScope(String(scopeId||'').trim());
+function ThemeSelect({scopeId,scopeMeta=null}){
+  const scope=scopeMeta||getScope(String(scopeId||'').trim());
   const policy=scope.theme||{mode:'auto'};
   const fixedDefaultThemeId=policy.mode==='fixed'?String(policy.themeId||'').trim():'';
   const configQuery=useQuery({
@@ -123,10 +123,10 @@ export default function AppShell({children}){
   }));
   const {scrollYProgress}=useScroll();
   const scaleX=useSpring(scrollYProgress,{stiffness:220,damping:34,mass:.28});
-  const {scopeId,host,pathname}=useScopeRuntime();
+  const {scopeId,scope,host,pathname}=useScopeRuntime();
   const currentFeature=featureIdForPath(pathname);
   const [searchText,setSearchText]=useState('');
-  const currentScope=getScope(scopeId);
+  const currentScope=scope||getScope(scopeId);
   const navScopeId=currentScope.featureScope||scopeId;
   const beforeScopes=NAV_SCOPES.filter(item=>item.nav.position==='before');
   const afterScopes=NAV_SCOPES.filter(item=>item.nav.position!=='before');
@@ -164,7 +164,7 @@ export default function AppShell({children}){
     <footer className="scope-footer" data-scope={scopeId}>
       <div className="scope-footer-row">
         <a href="mailto:sopa2306@gmail.com">{UI_COPY.nav.contact}</a>
-        <ThemeSelect scopeId={scopeId}/>
+        <ThemeSelect scopeId={scopeId} scopeMeta={currentScope}/>
       </div>
       <DataSourceStatus/>
     </footer>

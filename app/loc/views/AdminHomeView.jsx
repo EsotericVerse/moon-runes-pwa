@@ -2,11 +2,11 @@
 
 import {UI_COPY} from '../../i18n/ui-copy';
 import {useEffect,useState} from 'react';
-import {SCOPES} from '../../modular/scope-registry';
+import {SCOPES,scopeHref} from '../../modular/scope-registry';
 import {THEME_SLOTS} from '../../modular/theme-registry';
 import {useAccount} from '../use-account';
 import {
-  deleteRows,insertRows,dbAuthRelation,provisionScope,selectAuthRow,syncManageScopeRow,updateRows
+  deleteRows,insertRows,dbAuthRelation,manageScopeRegistry,provisionScope,selectAuthRow,syncManageScopeRow,updateRows
 } from '../db-client.mjs';
 
 const ADMIN_OPTIONS=Object.freeze([
@@ -16,6 +16,7 @@ const ADMIN_OPTIONS=Object.freeze([
 ]);
 const EMPTY_MAPPING={id:'',email:'',galaxy:'galaxy',time:'time',birthday:''};
 const EMPTY_SCOPE_CREATE={scope_id:'',display_name:'',email:'',birthday:'',domain:'',directory:'',parent_scope_id:'loc',theme:'theme-7',copy_keywords:true};
+const EMPTY_GROUP_CREATE={scope_id:'',display_name:'',domain:'',directory:'',parent_scope_id:'loc',sort_order:''};
 
 function Login({account}){
   return <section className="loc-view">
@@ -36,6 +37,7 @@ function ScopeOverview(){
   const [mappings,setMappings]=useState([]);
   const [draft,setDraft]=useState({...EMPTY_MAPPING});
   const [createDraft,setCreateDraft]=useState({...EMPTY_SCOPE_CREATE});
+  const [groupDraft,setGroupDraft]=useState({...EMPTY_GROUP_CREATE});
   const [status,setStatus]=useState('');
   const [revision,setRevision]=useState(0);
 
@@ -67,6 +69,7 @@ function ScopeOverview(){
   },[revision]);
 
   const change=(index,key,value)=>setMappings(rows=>rows.map((row,rowIndex)=>rowIndex===index?{...row,[key]:value}:row));
+  const registryChange=(index,key,value)=>setRegistry(rows=>rows.map((row,rowIndex)=>rowIndex===index?{...row,[key]:value}:row));
 
   const validate=row=>{
     if(!dataScopeIds.includes(String(row.id||'')))throw new Error('目前只能管理 DB Scope Registry 中已建立的資料 Scope。');
@@ -122,6 +125,51 @@ function ScopeOverview(){
       );
       setRevision(value=>value+1);
     }catch(error){setStatus(error.message||'Scope 建立失敗。');}
+  };
+
+  const validateRegistryRoute=row=>{
+    const hasDomain=Boolean(String(row.domain||'').trim());
+    const hasDirectory=Boolean(String(row.directory||'').trim());
+    if(hasDomain===hasDirectory)throw new Error('Domain / Directory 必須二選一。');
+    if(!String(row.display_name||'').trim())throw new Error('顯示名稱不可為空。');
+  };
+
+  const createGroup=async()=>{
+    setStatus('');
+    try{
+      const id=String(groupDraft.scope_id||'').trim().toLowerCase();
+      if(!/^[a-z][a-z0-9]{0,14}$/.test(id))throw new Error('Scope Group ID 必須是 1–15 字小寫英數，且以英文字母開頭。');
+      validateRegistryRoute(groupDraft);
+      await manageScopeRegistry('create_group',id,{
+        display_name:String(groupDraft.display_name||'').trim(),
+        domain:String(groupDraft.domain||'').trim()||null,
+        directory:String(groupDraft.directory||'').trim()||null,
+        parent_scope_id:String(groupDraft.parent_scope_id||'loc').trim()||'loc',
+        ...(String(groupDraft.sort_order||'').trim()?{sort_order:Number(groupDraft.sort_order)}:{})
+      });
+      setGroupDraft({...EMPTY_GROUP_CREATE});
+      setStatus('Scope Group '+id+' 已建立。');
+      setRevision(value=>value+1);
+    }catch(error){setStatus(error.message||'Scope Group 建立失敗。');}
+  };
+
+  const saveRegistry=async index=>{
+    const row=registry[index];
+    setStatus('');
+    try{
+      validateRegistryRoute(row);
+      if(row.scope_kind==='system')throw new Error('System Registry 不可修改。');
+      await manageScopeRegistry('update',row.scope_id,{
+        display_name:String(row.display_name||'').trim(),
+        domain:String(row.domain||'').trim()||null,
+        directory:String(row.directory||'').trim()||null,
+        parent_scope_id:row.scope_id==='loc'?null:(String(row.parent_scope_id||'').trim()||null),
+        active:row.scope_id==='loc'?true:row.active!==false,
+        sort_order:Number(row.sort_order)||0
+      });
+      setStatus(row.scope_id+' Registry 已更新。');
+      setRevision(value=>value+1);
+    }catch(error){setStatus(error.message||'Scope Registry 更新失敗。');}
   };
 
   const save=async index=>{
@@ -185,12 +233,43 @@ function ScopeOverview(){
     </div>
 
     <h3>DB Scope Registry</h3>
-    <div className="scope-list">
-      {registry.map(scope=><article className="scope-inline-card" key={scope.scope_id}>
-        <strong>{scope.display_name||scope.scope_id}</strong>
-        <span>{scope.scope_id} · {scope.scope_kind} · {scope.domain||scope.directory||'—'}{scope.parent_scope_id?' · parent: '+scope.parent_scope_id:''}</span>
+    <p>Scope ID 與 Kind 建立後固定；可調整名稱、Route、Parent、排序與啟用狀態。停用 Group 前必須先處理 active 子 Scope。</p>
+    <div className="scope-management-records">
+      {registry.map((scope,index)=><article className="scope-inline-card" key={scope.scope_id}>
+        <strong>{scope.scope_id} · {scope.scope_kind}</strong>
+        <div className="scope-management-fields">
+          <label><span>顯示名稱</span><input value={scope.display_name||''} disabled={scope.scope_kind==='system'} onChange={event=>registryChange(index,'display_name',event.target.value)}/></label>
+          <label><span>Domain</span><input value={scope.domain||''} disabled={scope.scope_kind==='system'} onChange={event=>registryChange(index,'domain',event.target.value)}/></label>
+          <label><span>Directory</span><input value={scope.directory||''} disabled={scope.scope_kind==='system'} onChange={event=>registryChange(index,'directory',event.target.value)}/></label>
+          <label><span>Parent</span><select value={scope.parent_scope_id||''} disabled={scope.scope_kind==='system'||scope.scope_id==='loc'} onChange={event=>registryChange(index,'parent_scope_id',event.target.value)}>
+            <option value="">—</option>
+            {scopeGroups.filter(group=>group.scope_id!==scope.scope_id).map(group=><option key={group.scope_id} value={group.scope_id}>{group.display_name||group.scope_id} · {group.scope_id}</option>)}
+          </select></label>
+          <label><span>排序</span><input type="number" value={scope.sort_order||0} disabled={scope.scope_kind==='system'} onChange={event=>registryChange(index,'sort_order',event.target.value)}/></label>
+          <label className="scope-setting-toggle"><input type="checkbox" checked={scope.active!==false} disabled={scope.scope_kind==='system'||scope.scope_id==='loc'} onChange={event=>registryChange(index,'active',event.target.checked)}/><span>Active</span></label>
+        </div>
+        <div className="scope-tabs">
+          {scope.scope_kind!=='system'?<button type="button" onClick={()=>saveRegistry(index)}>儲存 Registry</button>:null}
+          {scope.scope_kind!=='system'?<a className="loc-button" href={scopeHref(scope.scope_id)} target="_blank" rel="noreferrer">開啟 UI</a>:null}
+        </div>
       </article>)}
     </div>
+
+    <section className="scope-inline-card">
+      <h3>建立 Scope Group</h3>
+      <div className="scope-management-fields">
+        <label><span>Group ID</span><input maxLength="15" value={groupDraft.scope_id} onChange={event=>setGroupDraft(value=>({...value,scope_id:event.target.value.toLowerCase()}))}/></label>
+        <label><span>顯示名稱</span><input value={groupDraft.display_name} onChange={event=>setGroupDraft(value=>({...value,display_name:event.target.value}))}/></label>
+        <label><span>Domain</span><input value={groupDraft.domain} onChange={event=>setGroupDraft(value=>({...value,domain:event.target.value}))}/></label>
+        <label><span>Directory</span><input value={groupDraft.directory} placeholder="/group" onChange={event=>setGroupDraft(value=>({...value,directory:event.target.value}))}/></label>
+        <label><span>Parent Group</span><select value={groupDraft.parent_scope_id} onChange={event=>setGroupDraft(value=>({...value,parent_scope_id:event.target.value}))}>
+          {scopeGroups.map(group=><option key={group.scope_id} value={group.scope_id}>{group.display_name||group.scope_id} · {group.scope_id}</option>)}
+        </select></label>
+        <label><span>排序（可空）</span><input type="number" value={groupDraft.sort_order} onChange={event=>setGroupDraft(value=>({...value,sort_order:event.target.value}))}/></label>
+      </div>
+      <p className="scope-status">Group 只存在 Scope Registry，不建立 Galaxy／Time／Keywords；資料仍屬於子 Scope。</p>
+      <button type="button" className="loc-button" onClick={createGroup}>建立 Scope Group</button>
+    </section>
 
     <section className="scope-inline-card">
       <h3>建立 Scope</h3>

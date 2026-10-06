@@ -45,8 +45,8 @@ function LivePreview({scopeId}){
   </section>;
 }
 
-function sectionOptions(scopeId){
-  if(scopeId==='loc')return [{value:'preview',label:'公開預覽'},{value:'group',label:'Scope Group'}];
+function sectionOptions(scopeId,scope){
+  if(scope?.aggregateChildren)return [{value:'preview',label:'公開預覽'},{value:'group',label:'Scope Group'}];
   const options=[
     {value:'import',label:UI_COPY.management.import},
     {value:'data',label:UI_COPY.management.data},
@@ -61,15 +61,14 @@ function sectionOptions(scopeId){
 
 export default function GovernanceManagement(){
   const account=useAccount();
-  const {scopeId}=useScopeRuntime();
-  const scope=getScope(scopeId);
-  const options=useMemo(()=>sectionOptions(scopeId),[scopeId]);
-  const [section,setSection]=useState(scopeId==='loc'?'preview':'import');
-  const canManage=scopeId==='loc'?account.canManageGlobalSync():account.canManageScopeSync(scopeId);
+  const {scopeId,scope}=useScopeRuntime();
+  const options=useMemo(()=>sectionOptions(scopeId,scope),[scopeId,scope?.aggregateChildren]);
+  const [section,setSection]=useState(scope?.aggregateChildren?'preview':'import');
+  const canManage=scope?.aggregateChildren?account.canManageGlobalSync():account.canManageScopeSync(scopeId);
 
   useEffect(()=>{
-    setSection(scopeId==='loc'?'preview':'import');
-  },[scopeId]);
+    setSection(scope?.aggregateChildren?'preview':'import');
+  },[scopeId,scope?.aggregateChildren]);
   useEffect(()=>{
     if(!options.some(option=>option.value===section))setSection(options[0]?.value||'preview');
   },[options,section]);
@@ -99,12 +98,12 @@ export default function GovernanceManagement(){
     </header>
 
     {section==='preview'?<LivePreview scopeId={scopeId}/>:null}
-    {section==='group'&&scopeId==='loc'?<ScopeGroupManagement/>:null}
-    {section==='data'&&scopeId!=='loc'?<ManagementDataPanel scopeId={scopeId}/>:null}
-    {section==='article'&&scopeId!=='loc'?<ManagementArticlePublisher scopeId={scopeId}/>:null}
-    {section==='import'&&scopeId!=='loc'?<ManagementImportPanel scopeId={scopeId}/>:null}
-    {section==='period'&&scopeId!=='loc'?<CultureTimelineEditor scopeId={scopeId}/>:null}
-    {section==='keywords'&&scopeId!=='loc'&&scopeId!=='lrunes'?<KeywordLibraryPanel scopeId={scopeId}/>:null}
+    {section==='group'&&scope?.aggregateChildren?<ScopeGroupManagement scopeId={scopeId}/>:null}
+    {section==='data'&&!scope?.aggregateChildren?<ManagementDataPanel scopeId={scopeId}/>:null}
+    {section==='article'&&!scope?.aggregateChildren?<ManagementArticlePublisher scopeId={scopeId}/>:null}
+    {section==='import'&&!scope?.aggregateChildren?<ManagementImportPanel scopeId={scopeId}/>:null}
+    {section==='period'&&!scope?.aggregateChildren?<CultureTimelineEditor scopeId={scopeId}/>:null}
+    {section==='keywords'&&!scope?.aggregateChildren&&scopeId!=='lrunes'?<KeywordLibraryPanel scopeId={scopeId}/>:null}
     {section==='daily'&&scopeId==='lrunes'?<RuneManagementPanel/>:null}
   </section>;
 }

@@ -2,19 +2,10 @@
 
 import {useQuery} from '@tanstack/react-query';
 import {selectScopeGroupChildren} from './scope-data';
-import {scopeOrigin} from '../modular/scope-registry';
+import {scopeHref} from '../modular/scope-registry';
 
 const FEATURE_PATH=Object.freeze({search:'search',statics:'statics',culture:'culture',governance:'governance'});
 const FEATURE_LABEL=Object.freeze({search:'搜尋',statics:'統計',culture:'文化',governance:'治理'});
-
-function childHref(groupScopeId,row,localPath=''){
-  const path=String(localPath||'').split('/').filter(Boolean).join('/');
-  const suffix=path?'/'+path+'/':'/';
-  if(row.domain)return 'https://'+row.domain+suffix;
-  const directory='/' + String(row.directory||'').split('/').filter(Boolean).join('/');
-  const base=scopeOrigin(groupScopeId).replace(/\/$/,'');
-  return base+(directory==='/'?'':directory)+suffix;
-}
 
 export default function ScopeGroupOverview({scopeId='loc',featureId='search',title='Scope Group Overview',description=''}){
   const query=useQuery({
@@ -38,8 +29,8 @@ export default function ScopeGroupOverview({scopeId='loc',featureId='search',tit
         <strong>{row.display_name||row.scope_id}</strong>
         <span>{row.scope_id} · {row.domain||row.directory||'—'}</span>
         <div className="scope-result-links">
-          <a href={childHref(scopeId,row)}>Scope 首頁</a>
-          {featurePath?<a href={childHref(scopeId,row,featurePath)}>前往此 Scope 的{featureLabel}</a>:null}
+          <a href={scopeHref(row.scope_id)}>Scope 首頁</a>
+          {featurePath?<a href={scopeHref(row.scope_id,featurePath)}>前往此 Scope 的{featureLabel}</a>:null}
         </div>
       </article>)}
       {!query.isPending&&!query.error&&!scopes.length?<p className="scope-status">目前沒有可導引的子 Scope。</p>:null}
