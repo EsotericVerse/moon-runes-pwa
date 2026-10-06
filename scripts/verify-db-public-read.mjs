@@ -60,7 +60,7 @@ async function managedScopes(client){
 
 async function verifyManagedScope(client,scope){
   await probe(client,scope.metadata,'id,period,period_start,period_end,theme,search_able,statistics_able,culture_able,sources,source_counts,media_count,media_counts,updated_at');
-  await probe(client,scope.time,'record_id,record_type,resource_id,label,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility');
+  await probe(client,scope.time,'record_id,record_type,resource_id,label,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility,style_tags,style_tag_descriptions');
   await probe(client,scope.galaxy,'uid,title,content,source_name,createtime');
   await probe(client,scope.galaxyMedia,'media_id,galaxy_link,source_native_id,media_type,title,url,meta_tags,createtime');
 }

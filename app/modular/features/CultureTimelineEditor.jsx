@@ -10,7 +10,7 @@ import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
 import {selectRows} from '../../loc/db-query.mjs';
 import {FEATURE_LOADING_MESSAGE} from '../feature-data-state';
 
-const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility,style_tags';
+const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility,style_tags,style_tag_descriptions';
 
 
 const EDITABLE_TYPES=Object.freeze([
@@ -19,10 +19,23 @@ const EDITABLE_TYPES=Object.freeze([
 const TYPE_LABEL=Object.freeze(Object.fromEntries(EDITABLE_TYPES));
 const BLANK=Object.freeze({
   record_id:'',record_type:'anchor',label:'',resource_id:'',note:'',time_date:'',
-  before_id:'0',after_id:'0',status:'',display_order:'',date_status:'exact',year_value:'',visibility:'',style_tags:''
+  before_id:'0',after_id:'0',status:'',display_order:'',date_status:'exact',year_value:'',visibility:'',style_tags:'',style_tag_descriptions:{}
 });
 
 function dateText(value){return value?String(value).slice(0,10):'';}
+function styleTagList(value){
+  return [...new Set(String(value||'').split(/[,，]/g).map(item=>String(item||'').trim()).filter(Boolean))];
+}
+function styleDescriptionMap(value){
+  return value&&typeof value==='object'&&!Array.isArray(value)?{...value}:{};
+}
+function styleDescriptionOf(value,tag){
+  const source=styleDescriptionMap(value);
+  if(typeof source[tag]==='string')return source[tag];
+  const normalized=String(tag||'').normalize('NFKC').trim().toLocaleLowerCase('zh-Hant');
+  const entry=Object.entries(source).find(([key])=>String(key||'').normalize('NFKC').trim().toLocaleLowerCase('zh-Hant')===normalized);
+  return typeof entry?.[1]==='string'?entry[1]:'';
+}
 function splitPair(value){
   const [before='0',after='0']=String(value||'0,0').split(',',2).map(item=>String(item||'0').trim()||'0');
   return {before,after};
@@ -35,7 +48,8 @@ function rowDraft(row){
     before_id:pair.before,
     after_id:pair.after,
     time_date:dateText(row.time_date),
-    year_value:row.year_value??''
+    year_value:row.year_value??'',
+    style_tag_descriptions:styleDescriptionMap(row.style_tag_descriptions)
   };
 }
 function newResourceId(type){
@@ -142,6 +156,10 @@ export default function CultureTimelineEditor({scopeId=''}){
     setMessage('');
   };
   const change=(key,value)=>setDraft(current=>({...current,[key]:value}));
+  const changeStyleDescription=(tag,value)=>setDraft(current=>({
+    ...current,
+    style_tag_descriptions:{...styleDescriptionMap(current.style_tag_descriptions),[tag]:value}
+  }));
 
   const save=async event=>{
     event.preventDefault();
@@ -159,6 +177,12 @@ export default function CultureTimelineEditor({scopeId=''}){
         );
         if(duplicate)throw new Error('同一資料區域已存在相同定錨點識別：'+resourceId);
       }
+      const activeStyleTags=type==='anchor'?[]:styleTagList(draft.style_tags);
+      const styleDescriptions=Object.fromEntries(activeStyleTags.map(tag=>[
+        tag,String(styleDescriptionOf(draft.style_tag_descriptions,tag)||'').trim()
+      ]));
+      const missingStyleDescription=activeStyleTags.find(tag=>!styleDescriptions[tag]);
+      if(missingStyleDescription)throw new Error('請為風格標籤「'+missingStyleDescription+'」填寫搜尋時顯示的簡短介紹。');
       const payload={
         record_type:type,
         label,
@@ -167,7 +191,8 @@ export default function CultureTimelineEditor({scopeId=''}){
         status:String(draft.status||'').trim()||null,
         display_order:draft.display_order===''?null:Number(draft.display_order),
         visibility:String(draft.visibility||'').trim()||null,
-        style_tags:String(draft.style_tags||'').trim()||null,
+        style_tags:activeStyleTags.length?activeStyleTags.join(','):null,
+        style_tag_descriptions:styleDescriptions,
         time_date:null,
         anchor_pair:null,
         date_status:null,
@@ -278,7 +303,16 @@ export default function CultureTimelineEditor({scopeId=''}){
         </select></label>
       </div>:null}
 
-      {draft.record_type!=='anchor'?<label className="scope-management-wide-field"><span>風格標籤</span><input className="scope-search-input" value={draft.style_tags||''} onChange={event=>change('style_tags',event.target.value)} placeholder="以逗號分隔；時間長河與搜尋共用"/></label>:null}
+      {draft.record_type!=='anchor'?<>
+        <label className="scope-management-wide-field"><span>風格標籤</span><input className="scope-search-input" value={draft.style_tags||''} onChange={event=>change('style_tags',event.target.value)} placeholder="以逗號分隔；時間長河與搜尋共用"/></label>
+        {styleTagList(draft.style_tags).length?<div className="scope-management-wide-field">
+          <h3>風格關鍵詞說明</h3>
+          <p className="scope-status">搜尋精確命中風格詞時，先顯示這段簡短介紹，再列出相關搜尋結果。</p>
+          <div className="scope-management-fields">
+            {styleTagList(draft.style_tags).map(tag=><label key={tag}><span>{tag}</span><textarea className="scope-search-input" value={styleDescriptionOf(draft.style_tag_descriptions,tag)} onChange={event=>changeStyleDescription(tag,event.target.value)} placeholder={'搜尋「'+tag+'」時顯示的簡短介紹'}/></label>)}
+          </div>
+        </div>:null}
+      </>:null}
 
       <div className="scope-stat-controls">
         <label><span>狀態</span><input className="scope-search-input" value={draft.status||''} onChange={event=>change('status',event.target.value)}/></label>

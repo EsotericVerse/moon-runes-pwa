@@ -10,10 +10,10 @@ import {logSearchKeyword,selectAuthRow,updateRows} from '../../loc/db-client.mjs
 import {useAccount} from '../../loc/use-account';
 import {ContentEditor,FeaturePage,IncrementalList,WorkFullText,WorkSummaryCard} from '../ui';
 import {useScopeRuntime} from '../use-scope-runtime';
-import {scopeHref} from '../scope-registry';
+import {resolveScopeSearchAlias,scopeHref} from '../scope-registry';
 import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
-import {resolveGalaxyExternalLinks,searchGalaxyRows,selectGalaxyContent,selectGalaxyIdentity} from '../../loc/galaxy-query';
+import {resolveGalaxyExternalLinks,searchGalaxyRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordIntroductions} from '../../loc/galaxy-query';
 import {selectManagedScopes} from '../../loc/scope-data';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
@@ -167,7 +167,40 @@ export default function Search(){
       setStatus(searchMode==='media'?UI_COPY.search.searching:UI_COPY.format.searchScope(collectionLabel));
     }
     try{
-      if(!append)logSearchKeyword(scopeId,q).catch(()=>{});
+      if(!append){
+        const scopeShortcut=resolveScopeSearchAlias(q);
+        if(scopeShortcut){
+          matchedQueryRef.current=q;
+          setResults([{
+            key:'scope:'+scopeShortcut.id,
+            source:'Scope',
+            title:scopeShortcut.searchTitle||scopeShortcut.label||scopeShortcut.id,
+            date:'',
+            snippet:'',
+            scopeId:scopeShortcut.id,
+            resourceType:'',
+            resourceId:'',
+            editableTable:'',
+            editableIdColumn:'',
+            editResourceId:'',
+            editableField:'',
+            isScopeCard:true,
+            href:scopeHref(scopeShortcut.id),
+            relationLinks:[],
+            groupKey:'scope:'+scopeShortcut.id,
+            links:[{id:'scope-home',href:scopeHref(scopeShortcut.id),label:'前往 Scope 首頁'}],
+            destinations:[]
+          }]);
+          setHasMore(false);
+          setNextCursor(null);
+          setStatus('');
+          return;
+        }
+        logSearchKeyword(scopeId,q).catch(()=>{});
+      }
+      const styleIntroductions=(!append&&searchMode!=='media')
+        ?await selectStyleKeywordIntroductions(targetScopes,q)
+        :[];
       const search=await searchGalaxyRows(targetScopes,q,{limit:pageSize,cursor,mediaOnly:searchMode==='media',hiddenScopeIds});
       if(id!==searchId.current)return;
 
@@ -197,7 +230,7 @@ export default function Search(){
 
       if(!append)matchedQueryRef.current=q;
       const converted=[];const seen=new Set();
-      for(const {row,source} of enrichedRows){
+      for(const {row,source} of [...styleIntroductions,...enrichedRows]){
         const result=toResult(row,source,scopeId);
         if(!result||seen.has(result.key))continue;
         seen.add(result.key);converted.push(result);
