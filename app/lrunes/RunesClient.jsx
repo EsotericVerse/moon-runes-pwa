@@ -92,7 +92,7 @@ export default function RunesClient(){
         </article>
         <article className="runes-review-item">
           <strong>符文不是神秘學權威</strong>
-          <p>符文並不是神秘學權威，而你依然擁有自己的人生。這是毫無矛盾的。</p>
+          <p>月之符文不是神秘學權威，也不要求你把抽牌結果當成不可質疑的真理。它是一套以符文本義、卡牌方向與月相交互提供解析角度的指引籤詩；你可以把結果當作參考、提示，或重新整理問題的起點。接受或不接受、採取什麼行動，仍然是你的選擇。</p>
         </article>
       </div>
     </section>
