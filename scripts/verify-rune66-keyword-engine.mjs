@@ -112,7 +112,7 @@ assert.equal(byKey.get('s').classification_group,'靈魂','class_enable=false Ru
 assert.ok((runeMap(byKey.get('t')).get('玄')||0)>=1,'exception Rune 玄 must keep its own signal count');
 assert.equal(byKey.get('t').status,'unclassified','class_enable=false-only documents must not be forced into an enabled Class');
 const specialTotal=result.groupTotals.find(row=>row.group==='特殊');
-assert.equal(Number(specialTotal?.hit_count||0),0,'class_enable=false Rune signals must be excluded from Class-group totals');
+assert.ok(Number(specialTotal?.hit_count||0)>0,'class_enable=false Rune signals must remain visible in Group totals');
 assert.equal(Number(specialTotal?.document_count||0),0,'class_enable=false Runes must never win Class totals');
 
 assert.equal(result.documentCount,rows.length);
