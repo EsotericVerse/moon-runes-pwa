@@ -9,7 +9,7 @@ import {
   Bar,BarChart,CartesianGrid,Cell,Legend,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectSourceTrendRows} from '../../loc/galaxy-query';
+import {selectScopeDensityRows,selectSourceTrendRows} from '../../loc/galaxy-query';
 import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
 import {selectManagedScopes} from '../../loc/scope-data';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation';
@@ -304,7 +304,59 @@ function StatisticTypeSelect({scopeId,navigation,types}){
   </label>;
 }
 
-function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
+function ScopeGroupStatistics(){
+  const scopesQuery=useQuery({
+    queryKey:['managed-scopes'],
+    queryFn:selectManagedScopes,
+    staleTime:5*60_000
+  });
+  const scopes=scopesQuery.data||[];
+  const endDate=useMemo(()=>taipeiDateKey(),[]);
+  const startDate=useMemo(()=>shiftDate(endDate,{months:-12}),[endDate]);
+  const densityQuery=useQuery({
+    queryKey:['scope-density','loc',startDate,endDate],
+    queryFn:()=>selectScopeDensityRows(scopes,{startDate,endDate}),
+    enabled:Boolean(scopes.length),
+    staleTime:5*60_000
+  });
+  const scopeIds=useMemo(()=>[...new Set((densityQuery.data||[]).map(row=>row.scope_id))].sort(),[densityQuery.data]);
+  const totals=useMemo(()=>{
+    const map=new Map(scopeIds.map(id=>[id,0]));
+    for(const row of densityQuery.data||[])map.set(row.scope_id,(map.get(row.scope_id)||0)+(Number(row.item_count)||0));
+    return scopeIds.map(id=>({scope_id:id,total:map.get(id)||0}));
+  },[densityQuery.data,scopeIds]);
+  const monthly=useMemo(()=>{
+    const map=new Map();
+    for(const row of densityQuery.data||[]){
+      const month=String(row.day||'').slice(0,7);
+      if(!month)continue;
+      if(!map.has(month))map.set(month,{period:month});
+      const item=map.get(month);
+      item[row.scope_id]=(Number(item[row.scope_id])||0)+(Number(row.item_count)||0);
+    }
+    return [...map.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([,row])=>row);
+  },[densityQuery.data]);
+
+  return <section className="scope-stat-section">
+    <div className="scope-ranking">
+      {totals.map(row=><div key={row.scope_id}><strong>{row.scope_id}</strong><span>{row.total.toLocaleString()}</span></div>)}
+    </div>
+    {monthly.length?<ResponsiveContainer width="100%" height={420}>
+      <LineChart data={monthly} margin={{top:8,right:18,bottom:48,left:4}}>
+        <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
+        <XAxis dataKey="period" angle={-24} textAnchor="end" interval="preserveStartEnd" height={72} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+        <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+        <Tooltip contentStyle={CHART_TOOLTIP}/>
+        <Legend/>
+        {scopeIds.map((id,index)=><Line key={id} type="monotone" dataKey={id} name={id} stroke={PIE_COLORS[index%PIE_COLORS.length]} strokeWidth={2} dot={false} connectNulls/>)}
+      </LineChart>
+    </ResponsiveContainer>:null}
+    {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
+    {densityQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(densityQuery.error)}</p>:null}
+  </section>;
+}
+
+function ScopeStatisticsPanel({scopeId,navigation,types}){
   const requested=String(navigation.rankingType||'');
   const rankingType=types.includes(requested)?requested:(types[0]||'');
   const [chartType,setChartType]=useState('line');
@@ -314,7 +366,7 @@ function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
   const [styleFilter,setStyleFilter]=useState(scopeId==='lo3rwang'?'rune66':'none');
   const customRange=useMemo(()=>({from:customFrom,to:customTo}),[customFrom,customTo]);
   const queryEndDate=useMemo(()=>taipeiDateKey(),[]);
-  const effectiveTimeStandard=aggregateScopes?'1y':timeStandard;
+  const effectiveTimeStandard=timeStandard;
   const scopesQuery=useQuery({
     queryKey:['managed-scopes'],
     queryFn:selectManagedScopes,
@@ -322,8 +374,8 @@ function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
   });
   const targetScopes=useMemo(()=>{
     const scopes=scopesQuery.data||[];
-    return aggregateScopes?scopes:scopes.filter(scope=>scope.id===scopeId);
-  },[aggregateScopes,scopeId,scopesQuery.data]);
+    return scopes.filter(scope=>scope.id===scopeId);
+  },[scopeId,scopesQuery.data]);
   const customReady=effectiveTimeStandard!=='custom'||Boolean(dateKey(customFrom)&&dateKey(customTo)&&customFrom<=customTo);
   const queryRange=useMemo(
     ()=>statisticsQueryRange(effectiveTimeStandard,customRange,queryEndDate),
@@ -354,10 +406,10 @@ function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
       <label><span>{UI_COPY.statistics.chart}</span><select className="scope-select" value={chartType} onChange={event=>setChartType(event.target.value)}>
         {CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}
       </select></label>
-      {!aggregateScopes?<label><span>{UI_COPY.statistics.range}</span><select className="scope-select" value={timeStandard} onChange={event=>setTimeStandard(event.target.value)}>
+      <label><span>{UI_COPY.statistics.range}</span><select className="scope-select" value={timeStandard} onChange={event=>setTimeStandard(event.target.value)}>
         {TIME_STANDARDS.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
-      </select></label>:null}
-      {!aggregateScopes&&timeStandard==='custom'?<>
+      </select></label>
+      {timeStandard==='custom'?<>
         <label><span>{UI_COPY.statistics.start}</span><input className="scope-input" type="date" value={customFrom} onChange={event=>setCustomFrom(event.target.value)}/></label>
         <label><span>{UI_COPY.statistics.end}</span><input className="scope-input" type="date" value={customTo} onChange={event=>setCustomTo(event.target.value)}/></label>
       </>:null}
@@ -367,7 +419,7 @@ function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
     </div>
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
     {trendQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(trendQuery.error)}</p>:null}
-    {!aggregateScopes&&timeStandard==='custom'&&!customReady?<p className="scope-status">請設定有效的開始與結束日期。</p>:null}
+    {timeStandard==='custom'&&!customReady?<p className="scope-status">請設定有效的開始與結束日期。</p>:null}
     {!trendQuery.isPending&&!trendQuery.error&&customReady?<>
       <p className="scope-status">{summary.startDate&&summary.endDate?summary.startDate+' ～ '+summary.endDate:''}</p>
       <SummaryList rankingType={rankingType} summary={summary}/>
@@ -383,6 +435,12 @@ function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
       {!runeQuery.isPending&&!runeQuery.error&&runeQuery.data?<Rune66Summary analysis={runeQuery.data}/>:null}
     </>:null}
   </section>;
+}
+
+function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
+  return aggregateScopes
+    ?<ScopeGroupStatistics/>
+    :<ScopeStatisticsPanel scopeId={scopeId} navigation={navigation} types={types}/>;
 }
 
 export default function Statistics(){

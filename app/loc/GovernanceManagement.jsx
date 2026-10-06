@@ -48,11 +48,11 @@ function LivePreview({scopeId}){
 function sectionOptions(scopeId){
   if(scopeId==='loc')return [{value:'preview',label:'公開預覽'},{value:'group',label:'Scope Group'}];
   const options=[
-    {value:'preview',label:'公開預覽'},
+    {value:'import',label:UI_COPY.management.import},
     {value:'data',label:UI_COPY.management.data},
     {value:'article',label:UI_COPY.management.article},
-    {value:'import',label:UI_COPY.management.import},
-    {value:'period',label:UI_COPY.management.period}
+    {value:'period',label:UI_COPY.management.period},
+    {value:'preview',label:'公開預覽'}
   ];
   if(scopeId==='lo3rwang')options.push({value:'keywords',label:'關鍵詞庫'});
   if(scopeId==='lrunes')options.push({value:'daily',label:'每日符文管理'});
@@ -64,12 +64,15 @@ export default function GovernanceManagement(){
   const {scopeId}=useScopeRuntime();
   const scope=getScope(scopeId);
   const options=useMemo(()=>sectionOptions(scopeId),[scopeId]);
-  const [section,setSection]=useState('preview');
+  const [section,setSection]=useState(scopeId==='loc'?'preview':'import');
   const canManage=scopeId==='loc'?account.canManageGlobalSync():account.canManageScopeSync(scopeId);
 
   useEffect(()=>{
+    setSection(scopeId==='loc'?'preview':'import');
+  },[scopeId]);
+  useEffect(()=>{
     if(!options.some(option=>option.value===section))setSection(options[0]?.value||'preview');
-  },[scopeId,options,section]);
+  },[options,section]);
 
   if(account.loading||account.permissionLoading)return <section className="loc-view"><div className="loc-card">{UI_COPY.management.checking}</div></section>;
   if(!account.user)return <LoginScreen scopeId={scopeId} account={account}/>;

@@ -8,6 +8,8 @@ const structureRows=[
   {rune_id:36,rune_name:'地',group_name:'礦物'},
   {rune_id:43,rune_name:'水',group_name:'元素'},
   {rune_id:46,rune_name:'土',group_name:'元素'},
+  {rune_id:48,rune_name:'氣',group_name:'元素'},
+  {rune_id:55,rune_name:'空',group_name:'空間'},
   {rune_id:60,rune_name:'夢',group_name:'無序'},
   {rune_id:61,rune_name:'幻',group_name:'無序'}
 ];
@@ -26,6 +28,7 @@ const byItem=new Map(catalogRows.map(row=>[row.item_no,row]));
 byItem.get(2).keywords=['意識','意識TO魂、潛意識TO夢'];
 byItem.get(43).keywords=['水土AND地'];
 byItem.get(46).keywords=['水土TO地'];
+byItem.get(48).keywords=['空氣TO氣'];
 byItem.get(26).keywords=['花枝NAME、花枝招展TO花'];
 byItem.get(7).keywords=['鏡花水月AND幻'];
 
@@ -36,7 +39,10 @@ const rows=[
   {key:'d',title:'',content:'花枝'},
   {key:'e',title:'',content:'花枝招展'},
   {key:'f',title:'',content:'鏡花水月'},
-  {key:'g',title:'',content:'魂'}
+  {key:'g',title:'',content:'魂'},
+  {key:'h',title:'',content:'天空'},
+  {key:'i',title:'',content:'空間'},
+  {key:'j',title:'',content:'空氣'}
 ];
 
 const result=classifyRune66Documents(rows,catalogRows,structureRows);
@@ -61,10 +67,14 @@ assert.equal(runeMap(byKey.get('f')).get('幻'),1,'鏡花水月 AND 幻 must add
 assert.equal(byKey.get('f').status,'classified','Class must remain a single displayed value even when raw hit counts tie');
 assert.equal(byKey.get('f').classification_group,'靈魂','equal Class counts must resolve deterministically by Class order');
 assert.ok(byKey.get('f').tied_groups.includes('靈魂')&&byKey.get('f').tied_groups.includes('無序'),'raw tie diagnostics must remain available');
-assert.equal(runeMap(byKey.get('g')).size,0,'Group display name must not become an implicit keyword');
+assert.equal(runeMap(byKey.get('g')).get('魂'),1,'Rune display name must be an implicit literal keyword');
+assert.equal(runeMap(byKey.get('h')).get('空'),1,'suffix literal 天空 must match 空');
+assert.equal(runeMap(byKey.get('i')).get('空'),1,'prefix literal 空間 must match 空');
+assert.equal(runeMap(byKey.get('j')).has('空'),false,'compound 空氣 TO 氣 must mask 空 literal attribution');
+assert.equal(runeMap(byKey.get('j')).get('氣'),1,'compound 空氣 TO 氣 must attribute 氣');
 
 assert.equal(result.documentCount,rows.length);
-assert.equal(result.unclassifiedCount,2,'NAME-only and display-name-only samples should remain unclassified');
+assert.equal(result.unclassifiedCount,1,'NAME-only sample should remain unclassified');
 assert.ok(result.tieCount>=1);
 
 assert.ok(catalogRows.every(row=>Array.isArray(row.keywords)),'keyword catalog must use one keyword collection per classification item');
