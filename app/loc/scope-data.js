@@ -5,7 +5,7 @@ import {selectRows} from './db-query.mjs';
 
 export const MANAGE_TABLE='silver.manage';
 
-const SCOPE_ID_PATTERN=/^[a-z][a-z0-9]*$/;
+const SCOPE_ID_PATTERN=/^[a-z][a-z0-9]{0,14}$/;
 const TABLE_TOKEN_PATTERN=/^[a-z][a-z0-9_]*$/;
 
 function requiredToken(value,label){
@@ -86,8 +86,31 @@ export async function selectScopeRegistry({parentScopeId=null,scopeKind=null}={}
   }));
 }
 
+export async function selectScopeRegistryEntry(scopeId){
+  const id=String(scopeId||'').trim().toLowerCase();
+  if(!SCOPE_ID_PATTERN.test(id))return null;
+  const {rows}=await selectRows('silver.scope_registry',{
+    columns:'scope_id,display_name,scope_kind,domain,directory,parent_scope_id,active,sort_order',
+    filters:[{column:'scope_id',operator:'eq',value:id},{column:'active',operator:'eq',value:true}],
+    limit:1,
+    offset:0
+  });
+  const row=rows?.[0];
+  if(!row)return null;
+  return {
+    scope_id:String(row.scope_id||'').trim(),
+    display_name:String(row.display_name||'').trim(),
+    scope_kind:String(row.scope_kind||'').trim(),
+    domain:String(row.domain||'').trim()||null,
+    directory:String(row.directory||'').trim()||null,
+    parent_scope_id:String(row.parent_scope_id||'').trim()||null,
+    active:row.active!==false,
+    sort_order:Number(row.sort_order)||0
+  };
+}
+
 export async function selectScopeGroupChildren(scopeId='loc'){
-  return selectScopeRegistry({parentScopeId:scopeId,scopeKind:'scope'});
+  return selectScopeRegistry({parentScopeId:scopeId});
 }
 
 export async function selectManagedScope(scopeId){
