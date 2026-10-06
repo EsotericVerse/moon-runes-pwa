@@ -1,16 +1,33 @@
 # LOC Current TODO
 
-**Current version:** 0.8.5.1-RC
+**Current version:** 0.8.6-RC
 
-## 0.8.5.1 RC follow-up verification
+## 0.8.6 RC acceptance
 
-- [ ] 完成 LunaRunes canonical keyword library 與管理流程。
-- [ ] 確保 LunaRunes keyword／positive_keywords／negative_keywords 不成為一般 Scope fallback。
-- [ ] 完成 LunaRunes Game 規則呈現、互動與最終 UI。
-- [ ] 完成 Governance／Admin management 頁面的最終人工檢查。
-- [ ] 將 public Search／Statistics／Culture availability 接到 Current DB feature flags；management visibility 保持獨立。
-- [ ] 以大型 corpus 進行 Search／Culture／Statistics stress test；維持精準 query + pagination。
-- [ ] 統一 Culture／Statistics／Search incremental loading contract。
+### Public basic functions
+
+- [ ] LOC 首頁與共用 Navigation 人工 smoke test。
+- [ ] Search：一般查詢、media mode、空結果與錯誤狀態人工確認。
+- [ ] Statistics：預設一年、單 Scope 時間範圍與圖表顯示人工確認。
+- [ ] Culture：時間長河、分類、作品列表、Anchor 建議人工確認。
+- [ ] Governance：LOC／LunaRunes／個人 Scope 公開內容人工確認。
+- [ ] LunaRunes 首頁與 Hero／次要入口人工確認。
+- [ ] LunaRunes 單卡／每日／雙卡／三卡／五卡／指定張數／OW3gs 人工 smoke test。
+- [ ] 每日符文紀錄：Calendar、主抽／補抽、前次同符文比較人工確認。
+- [ ] 符文圖鑑：總覽、九組、單符與長文字閱讀人工確認。
+- [ ] LunaRunes Game：首頁、遊戲文件、開始新遊戲與基本回合流程人工確認。
+- [ ] Author 公開頁與主要 desktop／mobile responsive 人工確認。
+
+### Management / Admin
+
+- [ ] 在公開基本功能確認後，再開始 Governance／Admin／Scope Manage 的實際操作驗收。
+- [ ] 驗證 CRUD、0-row 例外處理、searchable=false canonical visibility、Theme、Scope config 與權限行為。
+- [ ] 驗證管理預覽、Import、Data、Period、Keyword 等工作區的實際使用流程。
+
+### Performance / data scale
+
+- [ ] 以大型 corpus 進行 Search／Culture／Statistics stress test；維持精準 query + bounded pagination。
+- [ ] 實際確認 Culture／Search incremental loading 與 Statistics 查詢速度、loading、empty、failure state。
 - [ ] Source Refresh：OAuth 後的小量來源更新；先從可用來源逐步接入。
 
 ## 0.9 Scope Group
@@ -28,7 +45,7 @@
 - [ ] 完成 governed import workflow 與來源 provenance。
 - [ ] 驗證普通 Scope extension 不需要新增 bespoke core architecture。
 - [ ] 完成 responsive、loading、failure-state 與 deployment regression。
-- [ ] 讓 Current Canon、KM、README 與 runtime verifier 保持一致。
+- [ ] 讓 Current Canon、README 與 runtime verifier 保持一致。
 
 ## Guardrails
 
