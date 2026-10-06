@@ -26,6 +26,7 @@ import {workDisplayHeading,workDisplayText} from '../work-display-model';
 import {useOffsetPagination} from '../use-offset-pagination';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
+import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
 
 function labelOf(item,index){
   return item?.display_label||item?.name||item?.title||item?.period||UI_COPY.format.period(index+1);
@@ -65,9 +66,11 @@ export default function Culture(){
   const account=useAccount();
   const searchParams=useSearchParams();
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
+  const isAggregateScope=Boolean(scope?.aggregateChildren);
   const query=useQuery({
     queryKey:['culture-timeline',scopeId],
     queryFn:()=>selectScopeCultureData(scopeId),
+    enabled:!isAggregateScope,
     staleTime:5*60_000
   });
 
@@ -91,7 +94,6 @@ export default function Culture(){
     setStyleFilter(scopeId==='lo3rwang'?'rune66':'none');
   },[scopeId]);
 
-  const isAggregateScope=Boolean(scope?.aggregateChildren);
   const openRows=useMemo(()=>(query.data?.openRanges||[])
     .filter(item=>isAggregateScope||String(item?.scope_id||'')===scopeId),[isAggregateScope,scopeId,query.data]);
   const openByScope=useMemo(()=>new Map(openRows.map(item=>[String(item.scope_id||''),item])),[openRows]);
@@ -495,6 +497,17 @@ export default function Culture(){
       setFullTextLoading(false);
     }
   }
+
+  if(isAggregateScope)return <FeaturePage featureId="culture">
+    <section className='loc-card scope-feature-card scope-feature-card-wide'>
+      <ScopeGroupOverview
+        scopeId={scopeId}
+        featureId="culture"
+        title="Scope Group 文化導引"
+        description="Group 不建立跨 Scope 時間長河；請進入個別 Scope 查看自己的 Period、Anchor、來源分布與作品列表。"
+      />
+    </section>
+  </FeaturePage>;
 
   return <FeaturePage featureId="culture">
     <section className='loc-card scope-feature-card scope-feature-card-wide'>
