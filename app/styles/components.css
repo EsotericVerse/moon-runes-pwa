@@ -219,7 +219,6 @@
 @media (max-width:900px){
   .loc-hero-with-note{grid-template-columns:1fr}
   .loc-hero .hero-note{min-height:auto}
-  .home-rune-layout{grid-template-columns:1fr}
 }
 @media (max-width:680px){
   .loc-card>h1,.loc-card>h2,.loc-card>h3,

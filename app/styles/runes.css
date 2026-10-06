@@ -1,18 +1,53 @@
-.runes-home-nav{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.55rem;margin-top:1rem}
-.runes-home-nav .loc-button{display:flex;align-items:center;justify-content:center;min-height:2.75rem;padding:.5rem .65rem;text-align:center;white-space:nowrap}
-.rune-basics{display:grid;gap:1rem}
-.rune-basics h2{margin:0}
-.basic-grid,.reading-ref-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.75rem}
-.basic-item,.reading-ref-card{display:grid;gap:.35rem;padding:1rem;border:1px solid var(--loc-line);}
-.basic-item span,.reading-ref-card p{margin:0;color:var(--loc-muted);font-size:.9rem;line-height:1.65}
-.reading-ref-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
-.reading-ref-card h3{margin:0;color:var(--loc-text);font-size:1rem}
-.runes-retry{margin-top:.85rem}
-.runes-draw-surface .loc-hero{display:none}
-.runes-draw-surface .runes-retry button:not([data-draw-action="retry"]){display:none!important}
-@media(max-width:900px){.basic-grid,.reading-ref-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+/* Rune reading-reference cards. */
+.reading-ref-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:.75rem;
 }
-@media(max-width:620px){.runes-home-nav{display:flex;overflow-x:auto;padding-bottom:.25rem;scrollbar-width:thin}.runes-home-nav .loc-button{flex:0 0 auto}.basic-grid,.reading-ref-grid{grid-template-columns:1fr}}
+
+.reading-ref-card{
+  display:grid;
+  gap:.35rem;
+  padding:1rem;
+  border:1px solid var(--loc-line);
+}
+
+.reading-ref-card h3{
+  margin:0;
+  color:var(--loc-text);
+  font-size:1rem;
+}
+
+.reading-ref-card p{
+  margin:0;
+  color:var(--loc-muted);
+  font-size:.9rem;
+  line-height:1.65;
+}
+
+.runes-retry{
+  margin-top:.85rem;
+}
+
+.runes-draw-surface .loc-hero{
+  display:none;
+}
+
+.runes-draw-surface .runes-retry button:not([data-draw-action="retry"]){
+  display:none!important;
+}
+
+@media(max-width:900px){
+  .reading-ref-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+
+@media(max-width:620px){
+  .reading-ref-grid{
+    grid-template-columns:1fr;
+  }
+}
 
 .loc-draw-grid[data-draw-layout="single"],.loc-draw-grid[data-draw-layout="daily"]{grid-template-columns:minmax(0,1fr);max-width:360px;margin-inline:auto}
 .loc-draw-grid[data-draw-layout="2card"]{grid-template-columns:repeat(2,minmax(0,1fr));max-width:760px;margin-inline:auto}
