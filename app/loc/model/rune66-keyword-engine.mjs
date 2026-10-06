@@ -130,27 +130,44 @@ function increment(state,rune,signal){
   }
 }
 
+function maskCalendarDateLiterals(source){
+  return String(source||'')
+    .replace(/(?:\d{2,4}年)?\d{1,2}月\d{1,2}日/gu,' ')
+    .replace(/(?:[〇零一二三四五六七八九十百]{2,4}年)?[〇零一二三四五六七八九十]{1,3}月[〇零一二三四五六七八九十廿卅]{1,3}日/gu,' ');
+}
+
 function specialRuneKeywordTexts(normalizedTexts,runes,rune){
-  const nameSources=runes
-    .flatMap(item=>item.rules)
-    .filter(rule=>rule.operator==='NAME')
-    .map(rule=>normalizeText(rule.source))
+  const ruleEntries=runes.flatMap(item=>item.rules.map(rule=>({item,rule})));
+
+  const nameSources=ruleEntries
+    .filter(({rule})=>rule.operator==='NAME')
+    .map(({rule})=>normalizeText(rule.source))
     .filter(Boolean);
 
-  const specialSources=(rune.label==='日'||rune.label==='月')
-    ?runes
-      .flatMap(item=>item.rules)
-      .filter(rule=>rule.operator==='AND'||rule.operator==='TO')
-      .map(rule=>normalizeText(rule.source))
+  const sameSignalSources=ruleEntries
+    .filter(({item,rule})=>{
+      const source=normalizeText(rule.source);
+      if(!source||!source.includes(normalizeText(rune.label)))return false;
+      if(rule.operator==='TO')return normalizeText(rule.target)===normalizeText(rune.label);
+      if(rule.operator==='AND')return item.runeId===rune.runeId;
+      return false;
+    })
+    .map(({rule})=>normalizeText(rule.source))
+    .filter(Boolean);
+
+  const dayMoonSources=(rune.label==='日'||rune.label==='月')
+    ?ruleEntries
+      .filter(({rule})=>rule.operator==='AND'||rule.operator==='TO')
+      .map(({rule})=>normalizeText(rule.source))
       .filter(source=>source&&source.includes(normalizeText(rune.label)))
     :[];
 
-  const sources=[...new Set([...nameSources,...specialSources])]
+  const sources=[...new Set([...nameSources,...sameSignalSources,...dayMoonSources])]
     .sort((a,b)=>b.length-a.length);
 
-  if(!sources.length)return normalizedTexts;
   return normalizedTexts.map(source=>{
     let text=source||'';
+    if(rune.label==='日'||rune.label==='月')text=maskCalendarDateLiterals(text);
     for(const ruleSource of sources)text=replaceAllLiteral(text,ruleSource,' ');
     return text;
   });
