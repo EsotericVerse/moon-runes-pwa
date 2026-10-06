@@ -107,6 +107,13 @@ CREATE TABLE "silver"."game" (
   CONSTRAINT "game_status_check" CHECK (status = ANY (ARRAY['current'::text, 'alpha'::text, 'historical'::text]))
 );
 
+CREATE TABLE "silver"."keyword_classes" (
+  "class_id" uuid NOT NULL,
+  "scope_id" text NOT NULL,
+  "created_at" timestamp with time zone DEFAULT now() NOT NULL,
+  CONSTRAINT "keyword_classes_pkey" PRIMARY KEY (class_id)
+);
+
 CREATE TABLE "silver"."lo3rwang" (
   "id" text NOT NULL,
   "email" text,
@@ -124,8 +131,17 @@ CREATE TABLE "silver"."lo3rwang" (
   "media_count" integer DEFAULT 0 NOT NULL,
   "media_counts" jsonb DEFAULT '{}'::jsonb NOT NULL,
   "keyword_min_chars" integer DEFAULT 32 NOT NULL,
+  "keyword_min_documents" integer DEFAULT 100 NOT NULL,
+  "staticstime" timestamp with time zone,
+  "current_keyword_class_id" uuid,
+  "keyword_class_share_enabled" boolean DEFAULT false NOT NULL,
+  "keyword_document_count" integer DEFAULT 0 NOT NULL,
+  "keyword_meta" jsonb DEFAULT '{}'::jsonb NOT NULL,
   CONSTRAINT "lo3rwang_keyword_min_chars_check" CHECK (keyword_min_chars >= 0 AND keyword_min_chars <= 10000),
-  CONSTRAINT "lo3rwang_pkey" PRIMARY KEY (id)
+  CONSTRAINT "lo3rwang_keyword_min_documents_check" CHECK (keyword_min_documents >= 0 AND keyword_min_documents <= 1000000),
+  CONSTRAINT "lo3rwang_keyword_document_count_check" CHECK (keyword_document_count >= 0),
+  CONSTRAINT "lo3rwang_pkey" PRIMARY KEY (id),
+  CONSTRAINT "lo3rwang_current_keyword_class_fk" FOREIGN KEY (current_keyword_class_id) REFERENCES silver.keyword_classes(class_id)
 );
 
 CREATE TABLE "silver"."lo3rwang_galaxy" (
@@ -145,6 +161,10 @@ CREATE TABLE "silver"."lo3rwang_galaxy" (
   "source_name" text,
   "media_link" uuid[],
   "statistics_able" boolean DEFAULT true NOT NULL,
+  "class_id" smallint,
+  "group_lists" jsonb DEFAULT 'false'::jsonb NOT NULL,
+  CONSTRAINT "lo3rwang_galaxy_class_id_check" CHECK (class_id IS NULL OR class_id >= 1 AND class_id <= 8),
+  CONSTRAINT "lo3rwang_galaxy_group_lists_shape_check" CHECK (group_lists = 'false'::jsonb OR jsonb_typeof(group_lists) = 'object'::text),
   CONSTRAINT "lo3rwang_galaxy_content_nonblank" CHECK (content IS NULL OR btrim(content) <> ''::text),
   CONSTRAINT "lo3rwang_galaxy_content_required_current" CHECK (content IS NOT NULL AND btrim(content) <> ''::text),
   CONSTRAINT "lo3rwang_galaxy_pkey" PRIMARY KEY (uid),
@@ -175,6 +195,8 @@ CREATE TABLE "silver"."lo3rwang_keywords" (
   "class_name" text NOT NULL,
   "class_group" text NOT NULL,
   "class_enable" boolean DEFAULT true NOT NULL,
+  "class_id" uuid NOT NULL,
+  CONSTRAINT "lo3rwang_keywords_class_fk" FOREIGN KEY (class_id) REFERENCES silver.keyword_classes(class_id),
   CONSTRAINT "lo3rwang_keywords_array_check" CHECK (jsonb_typeof(keywords) = 'array'::text),
   CONSTRAINT "lo3rwang_keywords_group_nonempty" CHECK (length(btrim(group_name)) > 0),
   CONSTRAINT "lo3rwang_keywords_class_name_nonempty" CHECK (length(btrim(class_name)) > 0),
@@ -412,6 +434,8 @@ CREATE UNIQUE INDEX lo3rwang_keywords_class_item_name_idx ON silver.lo3rwang_key
 CREATE UNIQUE INDEX lo3rwang_keywords_class_item_no_idx ON silver.lo3rwang_keywords USING btree (class_name, item_no);
 
 CREATE INDEX lo3rwang_keywords_class_group_order_idx ON silver.lo3rwang_keywords USING btree (class_name, class_group, order_no, item_no);
+
+CREATE INDEX lo3rwang_keywords_class_id_idx ON silver.lo3rwang_keywords USING btree (class_id, order_no, item_no);
 
 CREATE INDEX lo3rwang_time_date_idx ON silver.lo3rwang_time USING btree (time_date);
 
@@ -738,6 +762,61 @@ END;
 $function$
 ;
 
+CREATE OR REPLACE FUNCTION api.apply_keyword_classification(p_rows jsonb)
+ RETURNS integer
+ LANGUAGE plpgsql
+ SET search_path TO ''
+AS $function$
+DECLARE
+ v_rows jsonb;
+ v_meta jsonb := '{}'::jsonb;
+ v_affected integer := 0;
+ v_document_count integer := 0;
+ v_expected integer := 0;
+ v_meta_class_id text := '';
+BEGIN
+ IF jsonb_typeof(p_rows)='object' THEN
+   v_rows := p_rows->'rows';
+   v_meta := coalesce(p_rows->'meta','{}'::jsonb);
+ ELSE
+   v_rows := p_rows;
+ END IF;
+ IF jsonb_typeof(v_rows) <> 'array' THEN RAISE EXCEPTION 'rows must be an array'; END IF;
+ v_expected := jsonb_array_length(v_rows);
+ v_meta_class_id := coalesce(v_meta->>'class_id','');
+ IF v_meta_class_id<>'' AND NOT EXISTS(
+   SELECT 1 FROM silver.lo3rwang
+   WHERE id='lo3rwang' AND current_keyword_class_id::text=v_meta_class_id
+ ) THEN
+   RAISE EXCEPTION 'current keyword Class changed before batch write';
+ END IF;
+ SELECT count(*) INTO v_document_count
+ FROM jsonb_array_elements(v_rows) item
+ WHERE coalesce(item->'group_lists','false'::jsonb) <> 'false'::jsonb;
+ WITH payload AS (
+   SELECT upper(btrim(x.uid))::character(8) AS uid,
+          x.class_id,
+          coalesce(x.group_lists,'false'::jsonb) AS group_lists
+   FROM jsonb_to_recordset(v_rows) AS x(uid text,class_id smallint,group_lists jsonb)
+   WHERE btrim(coalesce(x.uid,'')) <> ''
+ )
+ UPDATE silver.lo3rwang_galaxy g
+ SET class_id=p.class_id,group_lists=p.group_lists
+ FROM payload p
+ WHERE g.uid=p.uid;
+ GET DIAGNOSTICS v_affected = ROW_COUNT;
+ IF v_affected <> v_expected THEN
+   RAISE EXCEPTION 'keyword classification incomplete: expected %, affected %',v_expected,v_affected;
+ END IF;
+ UPDATE silver.lo3rwang
+ SET staticstime=now(),keyword_document_count=v_document_count,keyword_meta=v_meta,updated_at=now()
+ WHERE id='lo3rwang';
+ IF NOT FOUND THEN RAISE EXCEPTION 'lo3rwang config row not found'; END IF;
+ RETURN v_affected;
+END;
+$function$
+;
+
 CREATE OR REPLACE FUNCTION silver.normalize_galaxy_content_validity()
  RETURNS trigger
  LANGUAGE plpgsql
@@ -752,7 +831,8 @@ AS $function$
  $function$
 ;
 
-CREATE VIEW "api"."lo3rwang_keywords_manage" WITH (check_option=local) AS  SELECT keyword_id,
+CREATE VIEW "api"."lo3rwang_keywords_manage" WITH (security_invoker=true, check_option=local) AS  SELECT keyword_id,
+    class_id,
     group_name,
     item_no,
     item_name,
@@ -773,7 +853,11 @@ ALTER TABLE "api"."user_records" ENABLE ROW LEVEL SECURITY;
 
 ALTER TABLE "api"."user_settings" ENABLE ROW LEVEL SECURITY;
 
+ALTER TABLE "silver"."keyword_classes" ENABLE ROW LEVEL SECURITY;
+
 ALTER TABLE "silver"."lo3rwang" ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE "silver"."lo3rwang_keywords" ENABLE ROW LEVEL SECURITY;
 
 ALTER TABLE "silver"."lo3rwang_galaxy" ENABLE ROW LEVEL SECURITY;
 
@@ -792,6 +876,14 @@ ALTER TABLE "silver"."runes" ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "user_records_owner_all" ON "api"."user_records" AS PERMISSIVE FOR ALL TO "authenticated" USING ((owner_id = api.current_user_id())) WITH CHECK ((owner_id = api.current_user_id()));
 
 CREATE POLICY "user_settings_owner_all" ON "api"."user_settings" AS PERMISSIVE FOR ALL TO "authenticated" USING ((owner_id = api.current_user_id())) WITH CHECK ((owner_id = api.current_user_id()));
+
+CREATE POLICY "keyword_classes_scope_select" ON "silver"."keyword_classes" AS PERMISSIVE FOR SELECT TO "authenticated" USING (silver.can_manage_scope(scope_id));
+
+CREATE POLICY "keyword_classes_scope_insert" ON "silver"."keyword_classes" AS PERMISSIVE FOR INSERT TO "authenticated" WITH CHECK (silver.can_manage_scope(scope_id));
+
+CREATE POLICY "keyword_classes_scope_delete" ON "silver"."keyword_classes" AS PERMISSIVE FOR DELETE TO "authenticated" USING (silver.can_manage_scope(scope_id));
+
+CREATE POLICY "lo3rwang_keywords_scope_all" ON "silver"."lo3rwang_keywords" AS PERMISSIVE FOR ALL TO "authenticated" USING (silver.can_manage_scope('lo3rwang'::text)) WITH CHECK (silver.can_manage_scope('lo3rwang'::text));
 
 CREATE POLICY "lo3rwang_public_read" ON "silver"."lo3rwang" AS PERMISSIVE FOR SELECT TO "anonymous","authenticated" USING (true);
 
@@ -836,6 +928,8 @@ REVOKE ALL ON ALL FUNCTIONS IN SCHEMA silver,api FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION api.request_claims(),api.current_user_id(),silver.current_auth_email(),silver.can_manage_global(),silver.can_manage_scope(text) TO authenticated;
 
 GRANT EXECUTE ON FUNCTION api.management_write(text,text,jsonb,jsonb,jsonb) TO authenticated;
+
+GRANT EXECUTE ON FUNCTION api.apply_keyword_classification(jsonb) TO authenticated;
 
 GRANT DELETE ON "api"."lo3rwang_keywords_manage" TO "authenticated";
 
@@ -883,9 +977,9 @@ GRANT SELECT ON "silver"."lo3rwang_galaxy_media" TO "authenticated";
 
 GRANT UPDATE ON "silver"."lo3rwang_galaxy_media" TO "authenticated";
 
-GRANT SELECT ON "silver"."lo3rwang_keywords" TO "anonymous";
+GRANT SELECT,INSERT,UPDATE,DELETE ON "silver"."lo3rwang_keywords" TO "authenticated";
 
-GRANT SELECT ON "silver"."lo3rwang_keywords" TO "authenticated";
+GRANT SELECT,INSERT,DELETE ON "silver"."keyword_classes" TO "authenticated";
 
 GRANT SELECT ON "silver"."lo3rwang_time" TO "anonymous";
 
