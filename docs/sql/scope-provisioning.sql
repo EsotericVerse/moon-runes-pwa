@@ -31,14 +31,19 @@ create unique index if not exists scope_registry_domain_unique
 create unique index if not exists scope_registry_directory_unique
   on silver.scope_registry (lower(directory))
   where directory is not null and btrim(directory)<>'';
+create index if not exists scope_registry_parent_idx
+  on silver.scope_registry(parent_scope_id)
+  where parent_scope_id is not null;
 
 alter table silver.scope_registry enable row level security;
 drop policy if exists scope_registry_public_read on silver.scope_registry;
-create policy scope_registry_public_read on silver.scope_registry
-  for select to anonymous, authenticated using (active);
 drop policy if exists scope_registry_admin_read on silver.scope_registry;
-create policy scope_registry_admin_read on silver.scope_registry
-  for select to authenticated using (silver.can_manage_global());
+drop policy if exists scope_registry_anonymous_read on silver.scope_registry;
+drop policy if exists scope_registry_authenticated_read on silver.scope_registry;
+create policy scope_registry_anonymous_read on silver.scope_registry
+  for select to anonymous using (active);
+create policy scope_registry_authenticated_read on silver.scope_registry
+  for select to authenticated using (active or silver.can_manage_global());
 grant select on silver.scope_registry to anonymous, authenticated;
 
 insert into silver.scope_registry
