@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect,useMemo,useState} from 'react';
+import {useEffect,useMemo,useState,useSyncExternalStore} from 'react';
 import {motion,useScroll,useSpring} from 'motion/react';
 import {QueryClient,QueryClientProvider,useQuery} from '@tanstack/react-query';
 import {UI_COPY} from './i18n/ui-copy';
@@ -8,6 +8,7 @@ import {FEATURES,SCOPES,featureHref,featureIdForPath,getScope,scopeHref} from '.
 import {applyTheme,getThemeSlot,THEME_SLOTS} from './modular/theme-registry';
 import {useScopeRuntime} from './modular/use-scope-runtime';
 import {selectScopeConfig} from './loc/scope-data';
+import {getDbSourceStatus,subscribeDbSourceStatus} from './loc/db-source-status.mjs';
 
 const SYSTEM_THEME_ID='system-default';
 const DAY_THEME_ID='theme-7';
@@ -17,6 +18,19 @@ const NAV_FEATURE_ORDER=['culture','statics','governance'];
 const NAV_SCOPES=Object.values(SCOPES)
   .filter(scope=>scope.nav)
   .sort((a,b)=>String(a.nav.position).localeCompare(String(b.nav.position))||Number(a.nav.order||0)-Number(b.nav.order||0));
+
+function DataSourceStatus(){
+  const status=useSyncExternalStore(subscribeDbSourceStatus,getDbSourceStatus,getDbSourceStatus);
+  const current=status.degraded
+    ?`備援資料（${status.backupLabel}）`
+    :`主要資料（${status.primaryLabel}）`;
+  return <div className={'scope-data-source-global'+(status.degraded?' is-backup':'')} role="status">
+    <span>主要資料來源：{status.primaryLabel}</span>
+    <span>備用資料來源：{status.backupLabel}</span>
+    <span>目前使用：{current}</span>
+    {status.degraded?<span>備援資料可能有同步時間差。</span>:null}
+  </div>;
+}
 
 function shouldRetryQuery(failureCount,error){
   const cause=error?.cause||error;
@@ -146,6 +160,7 @@ export default function AppShell({children}){
         })}
       </nav>
     </header>
+    <DataSourceStatus/>
     {children}
     <footer className="scope-footer" data-scope={scopeId}>
       <div className="scope-footer-row">
