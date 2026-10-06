@@ -19,6 +19,24 @@ function roleLabel(role){
   return role==='supplement'?'補抽':'主抽';
 }
 
+const DIRECTION_SCORE=Object.freeze({
+  '正位':1,
+  '半正位':0.5,
+  '半逆位':-0.5,
+  '逆位':-1
+});
+
+function directionTrend(from,to){
+  const previous=DIRECTION_SCORE[from];
+  const current=DIRECTION_SCORE[to];
+  if(!Number.isFinite(previous)||!Number.isFinite(current))return '方向資料不足，先保留觀察。';
+  if(previous===current)return '前後方向相同，這個狀態仍在延續。';
+  if(previous<0&&current>0)return '本來的不順利會慢慢變成順利。';
+  if(previous>0&&current<0)return '原本較順利的狀態正在轉為不順。';
+  if(current>previous)return '方向正在轉好，狀態比上一次更順。';
+  return '方向正在轉弱，狀態比上一次更不順。';
+}
+
 export default function DailyTrendClient(){
   const today=useMemo(()=>localToday(),[]);
   const [items,setItems]=useState([]);
@@ -68,9 +86,10 @@ export default function DailyTrendClient(){
         <p className="loc-eyebrow">{roleLabel(current.draw_kind)}</p>
         <h2>今天抽到「{current.rune_name}」</h2>
         <p>{previous
-          ?<>上次抽到「{current.rune_name}」是 <strong>{formatDate(previous.record_date)}</strong>。</>
+          ?<>上次抽到「{current.rune_name}」是 <strong>{formatDate(previous.record_date)}</strong>，方向為 <strong>{previous.direction}</strong>；這次是 <strong>{current.direction}</strong>。</>
           :<>此前沒有抽到「{current.rune_name}」的紀錄。</>
         }</p>
+        {previous?<p><strong>{previous.direction} → {current.direction}</strong>｜{directionTrend(previous.direction,current.direction)}</p>:null}
       </article>)}
     </div>
 
