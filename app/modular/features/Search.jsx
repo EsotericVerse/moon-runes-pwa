@@ -13,7 +13,7 @@ import {useScopeRuntime} from '../use-scope-runtime';
 import {resolveScopeSearchAlias,scopeHref} from '../scope-registry';
 import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
-import {resolveGalaxyExternalLinks,searchGalaxyRows,selectGalaxyContent,selectGalaxyIdentity} from '../../loc/galaxy-query';
+import {resolveGalaxyExternalLinks,searchGalaxyRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordIntroductions} from '../../loc/galaxy-query';
 import {selectManagedScopes} from '../../loc/scope-data';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
@@ -174,7 +174,7 @@ export default function Search(){
           setResults([{
             key:'scope:'+scopeShortcut.id,
             source:'Scope',
-            title:scopeShortcut.label||scopeShortcut.id,
+            title:scopeShortcut.searchTitle||scopeShortcut.label||scopeShortcut.id,
             date:'',
             snippet:'',
             scopeId:scopeShortcut.id,
@@ -198,6 +198,9 @@ export default function Search(){
         }
         logSearchKeyword(scopeId,q).catch(()=>{});
       }
+      const styleIntroductions=(!append&&searchMode!=='media')
+        ?await selectStyleKeywordIntroductions(targetScopes,q)
+        :[];
       const search=await searchGalaxyRows(targetScopes,q,{limit:pageSize,cursor,mediaOnly:searchMode==='media',hiddenScopeIds});
       if(id!==searchId.current)return;
 
@@ -227,7 +230,7 @@ export default function Search(){
 
       if(!append)matchedQueryRef.current=q;
       const converted=[];const seen=new Set();
-      for(const {row,source} of enrichedRows){
+      for(const {row,source} of [...styleIntroductions,...enrichedRows]){
         const result=toResult(row,source,scopeId);
         if(!result||seen.has(result.key))continue;
         seen.add(result.key);converted.push(result);
