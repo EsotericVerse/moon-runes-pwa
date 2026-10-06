@@ -17,11 +17,7 @@ function genericRouteScope(pathname,search){
 export function useScopeRuntime(){
   const pathname=usePathname()||'/';
   const genericShell=pathname==='/scope'||pathname.startsWith('/scope/');
-  const [location,setLocation]=useState(()=>({
-    host:typeof window==='undefined'?'':window.location.hostname,
-    search:typeof window==='undefined'?'':window.location.search,
-    mounted:typeof window!=='undefined'
-  }));
+  const [location,setLocation]=useState({host:'',search:'',mounted:false});
 
   useEffect(()=>{
     const sync=()=>setLocation({
