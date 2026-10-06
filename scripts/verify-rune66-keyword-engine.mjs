@@ -15,7 +15,9 @@ const structureRows=[
   {rune_id:52,rune_name:'時',group_name:'秩序'},
   {rune_id:55,rune_name:'空',group_name:'空間'},
   {rune_id:60,rune_name:'夢',group_name:'無序'},
-  {rune_id:61,rune_name:'幻',group_name:'無序'}
+  {rune_id:61,rune_name:'幻',group_name:'無序'},
+  {rune_id:65,rune_name:'玄',group_name:'特殊'},
+  {rune_id:66,rune_name:'命',group_name:'特殊'}
 ];
 
 const catalogRows=structureRows.map((row,index)=>({
@@ -37,6 +39,8 @@ byItem.get(49).keywords=['日常','日光TO光','日月TO時'];
 byItem.get(50).keywords=['日月TO時'];
 byItem.get(26).keywords=['花枝NAME、花枝招展TO花'];
 byItem.get(7).keywords=['鏡花水月AND幻'];
+byItem.get(65).keywords=['混沌'];
+byItem.get(66).keywords=['人生'];
 
 const rows=[
   {key:'a',title:'',content:'潛意識'},
@@ -56,7 +60,9 @@ const rows=[
   {key:'o',title:'',content:'意識 潛意識 水 空氣'},
   {key:'p',title:'',content:'意識 意識 意識'},
   {key:'q',title:'',content:'2026年10月6日'},
-  {key:'r',title:'',content:'六月十日'}
+  {key:'r',title:'',content:'六月十日'},
+  {key:'s',title:'',content:'人生 意識'},
+  {key:'t',title:'',content:'玄 混沌'}
 ];
 
 const result=classifyRune66Documents(rows,catalogRows,structureRows);
@@ -101,9 +107,16 @@ assert.equal(runeMap(byKey.get('q')).has('日'),false,'numeric calendar dates mu
 assert.equal(runeMap(byKey.get('q')).has('月'),false,'numeric calendar dates must not count 月');
 assert.equal(runeMap(byKey.get('r')).has('日'),false,'Chinese calendar dates must not count 日');
 assert.equal(runeMap(byKey.get('r')).has('月'),false,'Chinese calendar dates must not count 月');
+assert.ok((runeMap(byKey.get('s')).get('命')||0)>=1,'exception Rune 命 must keep its own signal count');
+assert.equal(byKey.get('s').classification_group,'靈魂','exception Runes must not compete with normal Groups for Class');
+assert.ok((runeMap(byKey.get('t')).get('玄')||0)>=1,'exception Rune 玄 must keep its own signal count');
+assert.equal(byKey.get('t').status,'unclassified','exception-only documents must not be forced into a normal Group');
+const specialTotal=result.groupTotals.find(row=>row.group==='特殊');
+assert.equal(Number(specialTotal?.hit_count||0),0,'exception Rune signals must be excluded from Group totals');
+assert.equal(Number(specialTotal?.document_count||0),0,'exception Runes must never win normal Class totals');
 
 assert.equal(result.documentCount,rows.length);
-assert.equal(result.unclassifiedCount,3,'NAME-only and calendar-date-only samples must remain unclassified');
+assert.equal(result.unclassifiedCount,4,'NAME-only, calendar-date-only and exception-only samples must remain unclassified');
 assert.ok(result.tieCount>=1);
 
 assert.ok(catalogRows.every(row=>Array.isArray(row.keywords)),'keyword catalog must use one keyword collection per classification item');
