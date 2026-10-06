@@ -41,7 +41,11 @@ for(const [name,source] of [['RuneDrawClient',publicDraw]]){
 
 for(const fragment of [
   "return `${groups[0]}，故${groups[1]}。`;",
-  "return `${groups[0]}；${groups[1]}，遂${groups[2]}。`;",
+  "function trendConnector(trend)",
+  "if(trend==='轉強')return '遂';",
+  "if(trend==='轉弱')return '然';",
+  "return '而';",
+  "trendConnector(trend)",
   "const rows=Array.isArray(selectedMode?.displayRows)?selectedMode.displayRows:[];"
 ])if(!publicDraw.includes(fragment))throw new Error('Rune verse grammar missing: '+fragment);
 
@@ -112,6 +116,7 @@ for(const fragment of [
   '## Draw pool',
   '## Precise directional query',
   '## Draw entry points',
+  '抽牌張數上限固定為 11',
   '### Two cards',
   '### Four cards',
   '### Six cards',
