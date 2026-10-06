@@ -159,10 +159,13 @@ function composeFixedGrammar(values,mode){
 }
 
 function poeticClause(card,direction){
-  const rune=String(card?.rune_name||'').trim();
-  const text=cleanGrammarPart(situationAnswer(card,direction)||card?.rune_description||'資訊不足');
-  if(text==='資訊不足')return rune?`${rune}意未明`:'資訊不足';
-  return rune?text.replace(/^它/,rune):text;
+  const text=cleanGrammarPart(
+    situationQuestion(card,direction)
+    ||situationAnswer(card,direction)
+    ||card?.rune_description
+    ||'資訊不足'
+  );
+  return text;
 }
 
 function buildFixedReading(cards,directions,mode){
@@ -251,46 +254,6 @@ function SpreadCards({draw,mode,selectedMode,moonPhase}){
       })}
     </div>;
   }
-  return null;
-}
-
-function MultiReading({draw,mode,phase,selectedMode}){
-  if(!draw)return null;
-  const cards=draw.cards;
-  const directions=draw.directions;
-
-  if(mode==='2card'||mode==='3card'){
-    const labels=mode==='2card'?['因','果']:['源','轉','合'];
-    return <div className="runes-spread-explanation" data-draw-reading={mode}>
-      <p className="loc-eyebrow">完整解讀</p>
-      <h2>{mode==='2card'?'因 → 果':'源 → 轉 → 合'}</h2>
-      <p><strong>完整現況：</strong>{cards.map((card,index)=>`${labels[index]}「${runeDisplayName(card)}」${directions[index]}`).join('、')}。目前真實月相為{phase}。</p>
-      <p><strong>閱讀方式：</strong>{mode==='2card'?'先看造成現況的「因」，再看它導向的「果」。':'依序閱讀「源 → 轉 → 合」，先找起點，再看轉化，最後看收束。'}</p>
-      <div className="loc-context-list">{cards.map((card,index)=><div className="loc-context-item" key={`${mode}-${card.rune_id}-${index}`}><strong>{labels[index]}：{runeDisplayName(card)}・{directions[index]}</strong><span>{situationDetail(card,directions[index])}</span></div>)}</div>
-    </div>;
-  }
-
-  if(mode==='5card'){
-    const [past1,past2,unexpected,current1,current2]=cards;
-    return <div className="runes-spread-explanation" data-draw-reading="5card">
-      <p className="loc-eyebrow">五卡完整解讀</p>
-      <h2>雙卡＋單卡＋雙卡</h2>
-      <p><strong>過去的成因：</strong>「{runeDisplayName(past1)}」{directions[0]}：{situationDetail(past1,directions[0])}；「{runeDisplayName(past2)}」{directions[1]}：{situationDetail(past2,directions[1])}。兩張牌共同描述事情形成的背景與潛因。</p>
-      <p><strong>意外變化：</strong>「{runeDisplayName(unexpected)}」{directions[2]}：{situationDetail(unexpected,directions[2])}。單張只提供一個意外因素，不與雙卡拼接。</p>
-      <p><strong>現在狀況：</strong>「{runeDisplayName(current1)}」{directions[3]}：{situationDetail(current1,directions[3])}；「{runeDisplayName(current2)}」{directions[4]}：{situationDetail(current2,directions[4])}。兩張牌共同描述現在以後可能形成的結論。</p>
-      <p><strong>閱讀補充：</strong>每張狀況文字已依實際符文、方向與當前月相精準取得；x/y 只保留為 runtime 趨勢資料，不覆蓋右側籤詩。本次真實月相為{phase}。</p>
-    </div>;
-  }
-
-  if(Array.isArray(selectedMode?.segments)&&selectedMode.segments.length){
-    return <div className="runes-spread-explanation" data-draw-reading={mode}>
-      <p className="loc-eyebrow">組合結構</p>
-      <h2>{selectedMode.segments.join(' / ')}</h2>
-      <p>本次真實月相為{phase}。以下只列卡位、符文與方向；籤詩由右側依原始狀況句薄連接。</p>
-      <div className="loc-context-list">{cards.map((card,index)=><div className="loc-context-item" key={`structure-${card.rune_id}-${index}`}><strong>{selectedMode.positions[index]||`第 ${index+1} 張`} · {runeDisplayName(card)} · {directions[index]}</strong></div>)}</div>
-    </div>;
-  }
-
   return null;
 }
 
@@ -406,32 +369,13 @@ export default function RuneDrawClient({drawKey='single'}){
               </div>
             </section>
 
-            <section className="loc-card runes-spread-reading-layout">
-              <div className="runes-spread-reading-left">
-                <MultiReading draw={draw} mode={drawKey} phase={moonPhase} selectedMode={selectedMode}/>
-                {drawKey==='ow3gs'&&<div className="runes-ow3gs-core" data-draw-reading="ow3gs">
-                  <p className="loc-eyebrow">OW3gs · 雙模型判讀</p>
-                  <h2>1–6 因的描述層 → 7–11 果的判定層</h2>
-                  <p>第 7–11 張為核心判定。</p>
-                  <p>先讀成因分析，後讀判斷分析，最後套用月相交互。十一張牌不是等權並列。</p>
-                  <p><strong>1–6 因的描述層：</strong>源兩張、轉兩張、合兩張，共六張；依固定卡位組合前因。</p>
-                  <p><strong>7–11 果的判定層：</strong>使用五卡的基本規則，共五張；依固定五卡結構組合結果。</p>
-                  <div className="loc-context-list">{draw.cards.slice(6,11).map((card,index)=><div className="loc-context-item" key={`core-${card.rune_id}-${index}`}><strong>第 {index+7} 張 · {runeDisplayName(card)} · {draw.directions[index+6]}</strong><span>{directionText(card,draw.directions[index+6])||card.rune_description}</span></div>)}</div>
-                  <p>月相交互最後才套用，只作次要時間修飾；重點是模型關聯，不是增加抽牌維度的複雜化。</p>
-                </div>}
+            <section className="loc-card runes-spread-verse" data-draw-stage="reading">
+              <div data-draw-stage="lots">
+                <p className="loc-eyebrow">籤詩</p>
+                <h2>占卜結果</h2>
+                <p>{draw.reading?.sentence||'資訊不足。'}</p>
               </div>
-
-              <div className="runes-spread-reading-right">
-                <div data-draw-stage="lots">
-                  <p className="loc-eyebrow">籤詩</p>
-                  <h2>占卜結果</h2>
-                  <p>{draw.reading?.sentence||'資訊不足。'}</p>
-                  {Array.isArray(draw.reading?.domains)&&draw.reading.domains.length?<div className="runes-advice-grid">
-                    {draw.reading.domains.map(item=><article key={item.label}><strong>{item.label}</strong><span>{item.text}</span></article>)}
-                  </div>:null}
-                </div>
-                <DrawSelection activeKey={drawKey}/>
-              </div>
+              <DrawSelection activeKey={drawKey}/>
             </section>
           </>}
         </>
