@@ -25,9 +25,9 @@ LOC is the framework for organizing text, works, sources, time, relationships, s
 - The Scope registry owns deployment/navigation metadata only.
 - `silver.manage` owns data Scope and Galaxy/Time table mapping.
 - PostgreSQL remains the authoritative query layer for Scope, fixed eligibility flags, COUNT, date ranges and pagination across Search, Statistics and Culture.
-- PostgreSQL handles global search, while confirmed keyword classifications are stored as fixed article attributes. Re-run classification only when keyword rules change.
-- Keyword classes are self-contained in `silver.lo3rwang_keywords` (`class_name`, `class_group`, `class_enable`, item/principle/keywords); classification does not read LunaRunes Canon tables.
-- Search is lexical/metadata search, not semantic rendering.
+- PostgreSQL handles global search, while confirmed keyword classifications are stored as fixed Galaxy attributes. Re-run the explicit batch only when the active Keyword Class or its rules change.
+- Keyword classes are self-contained, UUID-addressable Scope resources. The active Class is selected by `current_keyword_class_id`; article results are stored as `class_id` + `group_lists`, and public Statistics/Culture read those attrs without live reclassification.
+- Search is lexical/metadata search. Exact Scope aliases terminate with the Scope homepage entry; exact period style keywords prepend their configured short description and then continue normal related results.
 - Missing general-Scope configuration remains empty; LOC does not borrow LunaRunes Canon, keywords or Style as fallback.
 
 ### Shared LOC features
@@ -46,7 +46,7 @@ LOC is the framework for organizing text, works, sources, time, relationships, s
 - Media without body text remains media; no blank Galaxy body is invented.
 - Media metadata and `meta_tags` may participate in Search, Culture and Statistics.
 - `source_id`, `target_id`, `ref_id` and `galaxy_link` keep relationships explicit.
-- Statistics are calculated live; no second corpus authority or ranking snapshot is created.
+- General Statistics are calculated live from canonical data. Keyword classification is the exception: a confirmed batch writes fixed article attrs so repeated Statistics/Culture views stay lightweight and deterministic.
 - Management reads canonical data even when public feature flags are off or `searchable=false`.
 
 ### LOC deployment
