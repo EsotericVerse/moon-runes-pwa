@@ -1,7 +1,7 @@
 import {scopeOrigin} from '../modular/scope-registry';
 import {RUNE_CUSTOM_DRAW_MODES} from './rune-draw-modes.mjs';
 import CustomDrawSelector from './CustomDrawSelector';
-import RuneDrawModeBubbles from './RuneDrawModeBubbles';
+import RuneIntroSection from './RuneIntroSection';
 
 const runeHref=path=>{
   const clean=String(path||'').split('/').filter(Boolean).join('/');
@@ -42,13 +42,10 @@ export default function RunesClient(){
       </div>
     </section>
 
+    <RuneIntroSection />
+
     <section className="loc-card rune-basics">
-      <div className="home-section-heading">
-        <p className="loc-eyebrow">Draw a Rune</p>
-        <h2>選擇抽牌</h2>
-      </div>
-      <RuneDrawModeBubbles />
-      <h3>其他張數</h3>
+      <h2>其他張數</h2>
       <CustomDrawSelector options={RUNE_CUSTOM_DRAW_MODES.map(item=>({
         count:item.count,
         description:item.description,
