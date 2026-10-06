@@ -15,6 +15,7 @@ export const SCOPES=Object.freeze({
     label:UI_COPY.scope.loc.label,
     default:true,
     aggregateChildren:true,
+    searchTitle:'LOC月典',
     searchAliases:Object.freeze(['loc','LOC','LunaCodex','月典']),
     featureSubtitles:Object.freeze({
       statics:UI_COPY.scope.loc.statics,
@@ -30,6 +31,7 @@ export const SCOPES=Object.freeze({
     id:'lrunes',
     domain:'lrunes.lo3rwang.cc',
     label:'月之符文',
+    searchTitle:'月之符文 LunaRunes',
     searchAliases:Object.freeze(['lrunes','LunaRunes','月之符文']),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'}),
     featureSubtitles:Object.freeze({
@@ -46,7 +48,8 @@ export const SCOPES=Object.freeze({
   lo3rwang:Object.freeze({
     id:'lo3rwang',
     label:UI_COPY.scope.author.label,
-    searchAliases:Object.freeze(['lo3rwang']),
+    searchTitle:'Lucas Oscar Wang 政德',
+    searchAliases:Object.freeze(['lo3rwang','Lucas Oscar Wang','政德']),
     featureSubtitles:Object.freeze({search:UI_COPY.scope.author.search}),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'}),
     nav:Object.freeze({position:'after',order:1,label:UI_COPY.nav.author}),
