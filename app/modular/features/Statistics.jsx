@@ -9,7 +9,7 @@ import {
   Bar,BarChart,CartesianGrid,Cell,Legend,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectSourceTrendRows} from '../../loc/galaxy-query';
+import {selectScopeDensityRows,selectSourceTrendRows} from '../../loc/galaxy-query';
 import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
 import {selectManagedScopes} from '../../loc/scope-data';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation';
@@ -304,7 +304,60 @@ function StatisticTypeSelect({scopeId,navigation,types}){
   </label>;
 }
 
+function ScopeGroupStatistics(){
+  const scopesQuery=useQuery({
+    queryKey:['managed-scopes'],
+    queryFn:selectManagedScopes,
+    staleTime:5*60_000
+  });
+  const scopes=scopesQuery.data||[];
+  const endDate=useMemo(()=>taipeiDateKey(),[]);
+  const startDate=useMemo(()=>shiftDate(endDate,{months:-12}),[endDate]);
+  const densityQuery=useQuery({
+    queryKey:['scope-density','loc',startDate,endDate],
+    queryFn:()=>selectScopeDensityRows(scopes,{startDate,endDate}),
+    enabled:Boolean(scopes.length),
+    staleTime:5*60_000
+  });
+  const scopeIds=useMemo(()=>[...new Set((densityQuery.data||[]).map(row=>row.scope_id))].sort(),[densityQuery.data]);
+  const totals=useMemo(()=>{
+    const map=new Map(scopeIds.map(id=>[id,0]));
+    for(const row of densityQuery.data||[])map.set(row.scope_id,(map.get(row.scope_id)||0)+(Number(row.item_count)||0));
+    return scopeIds.map(id=>({scope_id:id,total:map.get(id)||0}));
+  },[densityQuery.data,scopeIds]);
+  const monthly=useMemo(()=>{
+    const map=new Map();
+    for(const row of densityQuery.data||[]){
+      const month=String(row.day||'').slice(0,7);
+      if(!month)continue;
+      if(!map.has(month))map.set(month,{period:month});
+      const item=map.get(month);
+      item[row.scope_id]=(Number(item[row.scope_id])||0)+(Number(row.item_count)||0);
+    }
+    return [...map.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([,row])=>row);
+  },[densityQuery.data]);
+
+  return <section className="scope-stat-section">
+    <div className="scope-ranking">
+      {totals.map(row=><div key={row.scope_id}><strong>{row.scope_id}</strong><span>{row.total.toLocaleString()}</span></div>)}
+    </div>
+    {monthly.length?<ResponsiveContainer width="100%" height={420}>
+      <LineChart data={monthly} margin={{top:8,right:18,bottom:48,left:4}}>
+        <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
+        <XAxis dataKey="period" angle={-24} textAnchor="end" interval="preserveStartEnd" height={72} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+        <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+        <Tooltip contentStyle={CHART_TOOLTIP}/>
+        <Legend/>
+        {scopeIds.map((id,index)=><Line key={id} type="monotone" dataKey={id} name={id} stroke={PIE_COLORS[index%PIE_COLORS.length]} strokeWidth={2} dot={false} connectNulls/>)}
+      </LineChart>
+    </ResponsiveContainer>:null}
+    {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
+    {densityQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(densityQuery.error)}</p>:null}
+  </section>;
+}
+
 function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
+  if(aggregateScopes)return <ScopeGroupStatistics/>;
   const requested=String(navigation.rankingType||'');
   const rankingType=types.includes(requested)?requested:(types[0]||'');
   const [chartType,setChartType]=useState('line');
