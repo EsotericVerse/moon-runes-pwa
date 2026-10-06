@@ -1,5 +1,6 @@
 import {scopeOrigin} from '../modular/scope-registry';
-import {RUNE_DRAW_MODES as MODES} from './rune-draw-modes.mjs';
+import {RUNE_CUSTOM_DRAW_MODES,RUNE_DRAW_MODES as MODES} from './rune-draw-modes.mjs';
+import CustomDrawSelector from './CustomDrawSelector';
 
 const runeHref=path=>{
   const clean=String(path||'').split('/').filter(Boolean).join('/');
@@ -53,6 +54,11 @@ export default function RunesClient(){
       <div className="home-draw-bubbles" aria-label="選擇抽牌方式">
         {MODES.map(item=><a key={item.key} href={runeHref(item.path)} data-draw-mode={item.key} className="loc-bubble"><strong>{item.label}</strong><p>{item.description}</p></a>)}
       </div>
+      <CustomDrawSelector options={RUNE_CUSTOM_DRAW_MODES.map(item=>({
+        count:item.count,
+        description:item.description,
+        href:runeHref(item.path)
+      }))}/>
     </section>
 
     <section className="loc-card rune-basics">
