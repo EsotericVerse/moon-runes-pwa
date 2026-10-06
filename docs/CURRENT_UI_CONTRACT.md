@@ -70,6 +70,8 @@ Homepage 與共用分析以 Culture、Statistics、Search 為主：
 
 lo3rwang Manage 的關鍵詞庫以 Class 為第一層。每個 Class 自己保存 Group、是否參與 Class 判定、項目名稱、判別原理與關鍵詞；整套 Class 可以複製成另一套獨立分類庫。Keyword Library UI 不依賴 LunaRunes Canon 才能顯示或編輯分類結構。
 
+關鍵詞分析門檻屬於 Scope 自己的設定，不是 Admin 全域設定。lo3rwang 的 `keyword_min_chars` 預設為 32；正文去除空白後必須 **大於** 此值才進入關鍵詞分析。小於等於門檻的作品不分析，也不列入未分類母數。Scope 管理者可在自己的關鍵詞庫頁修改此值。
+
 ## Management visibility
 
 管理頁必須能看到 canonical records，即使：
