@@ -2,8 +2,7 @@
 
 import RuneCardInfo from './RuneCardInfo';
 import {runeImage} from './rune-directory.mjs';
-import {RUNE_DRAW_MODES} from './rune-draw-modes.mjs';
-import {scopeHref} from '../modular/scope-registry';
+import RuneDrawModeBubbles from './RuneDrawModeBubbles';
 
 const ROTATION_CLASSES=['rune-rotate-0','rune-rotate-90','rune-rotate-n90','rune-rotate-180'];
 
@@ -122,17 +121,7 @@ export default function RuneSingleDailySurface({
     <section className="loc-card" data-draw-selection={modeKey}>
       <p className="loc-eyebrow">抽牌選擇</p>
       <h2>選擇抽牌方式</h2>
-      <div className="home-draw-bubbles" aria-label="選擇抽牌方式">
-        {RUNE_DRAW_MODES.map(item=><a
-          className="loc-bubble"
-          key={item.key}
-          href={scopeHref('lrunes',item.path)}
-          aria-current={item.key===modeKey?'page':undefined}
-        >
-          <strong>{item.label}</strong>
-          <p>{item.description}</p>
-        </a>)}
-      </div>
+      <RuneDrawModeBubbles activeKey={modeKey}/>
     </section>
   </>;
 }

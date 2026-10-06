@@ -1,5 +1,6 @@
 import {scopeHref} from '../../modular/scope-registry';
 import {SITE_IMAGES} from '../../site-images';
+import RuneIntroSection from '../../lrunes/RuneIntroSection';
 
 const RUNES_LINKS=Object.freeze({
   home:scopeHref('lrunes'),
@@ -54,27 +55,7 @@ export default function AboutView(){
       </div>
     </section>
 
-    <section className="loc-card home-copy-block home-rune-section">
-      <div className="home-section-heading"><p className="loc-eyebrow">LunaRunes(Symbolic Language)</p><h2>月之符文籤詩系統</h2><p className="loc-subtitle">不涉及神秘學，為單純的指引籤詩
-	  <br/>不保證一定就是註定，你擁有選擇權。</p></div>
-      <div className="home-rune-layout">
-        <div className="home-rune-preview" aria-label="命之符文示例">
-          <img src="/assets/lunarunes/cards/66_命.png" alt="命之符文" loading="lazy" decoding="async" />
-          <div className="home-rune-card-data"><div className="home-rune-card-title"><strong>命之符文</strong><span className="home-rune-glyph">⟁</span><span>(Fate)</span></div><p>定論的所有可能 / 命定者</p><details className="home-rune-keywords"><summary>關鍵詞（點擊展開）</summary><p>正面：定論、必然、法則</p><p>負面：—</p></details><p>所屬分組：特殊 / 卡片屬性：未知</p><p>卡片月相：無 / 真實月相：空亡</p><p className="home-rune-direction">卡片面向：<strong>正位</strong></p></div>
-        </div>
-        <div className="home-rune-copy home-rune-copy-plain">
-          <p>不知道怎麼說的話，往下抽牌就對了！</p><p>沒什麼想問的，抽個每日符文看看吧！</p><p>月之符文的特有66符文字會給你提示籤詩，指引你的可能未來，</p><p>能是祝福可能是警告，你當然擁有選擇權。</p><p>抽牌讓這符文成語意種子，成為語意起點，<br/>用你想要的方式，成長成為完整語意的成熟果實。</p><p>最後的選擇權仍然在你的手上！</p>
-          <div className="home-draw-bubbles" aria-label="選擇抽牌方式">
-            <a className="loc-bubble" href={RUNES_LINKS.single}>單卡<p>一個問題，一個語意起點。</p></a>
-            <a className="loc-bubble" href={RUNES_LINKS.daily}>抽每日指示<p>一天一張，觀看當日提示。</p></a>
-            <a className="loc-bubble" href={RUNES_LINKS.two}>抽兩張<p>以「因 → 果」觀看兩者關係。</p></a>
-            <a className="loc-bubble" href={RUNES_LINKS.three}>抽三張<p>以「源 → 轉 → 合」形成語意路徑。</p></a>
-            <a className="loc-bubble" href={RUNES_LINKS.five}>抽五張<p>以兩個因果為基礎，加上一個變數。</p></a>
-            <a className="loc-bubble" href={RUNES_LINKS.ow3gs}>抽11張<p>OW3gs：兩個因果模組綜合的演算法。</p></a>
-          </div>
-        </div>
-      </div>
-    </section>
+    <RuneIntroSection />
 
     <section className="loc-card home-framework home-architecture-presentation" id="framework-map">
       <div className="home-architecture-layout">
