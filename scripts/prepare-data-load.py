@@ -32,13 +32,7 @@ def prepare(table, rows, columns):
     if name.endswith('_galaxy'):
         columns = columns + ['statistics_able']
         for row in rows:
-            title = str(row.get('title', '')).strip().lower()
-            is_suno_style = (
-                str(row.get('source_name', '')).strip().lower() == 'suno'
-                and row.get('content_type') == 'instruction'
-                and title.endswith('｜suno style')
-            )
-            row['statistics_able'] = not is_suno_style
+            row['statistics_able'] = row.get('content_type') != 'instruction'
             if not isinstance(row['statistics_able'], bool):
                 raise ValueError('statistics_able must be a validated boolean for ' + table + ' uid=' + str(row.get('uid')))
     pk = next(c for c in inventory['constraints'] if c['schema_name'] == schema and c['relname'] == name and c['contype'] == 'p')
