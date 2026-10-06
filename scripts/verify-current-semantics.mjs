@@ -32,6 +32,7 @@ if(!failures.length){
   for(const token of ['selectPreviousDailyRuneOccurrence','selectDailyRuneSituation','selectDailyRuneContext',"types:['sit_q','daily_r','daily_g','daily_b']","column:'current_moon'"])if(!dailyData.includes(token))failures.push('daily rune context missing '+token);
   const dailyLog=read('app/daily/log/DailyLogClient.jsx');
   for(const token of ['每日占卜提醒','每日占卜引導','每日占卜祝福','上次抽到','之前的狀況','當日真實月相'])if(!dailyLog.includes(token))failures.push('daily calendar context missing '+token);
+  for(const token of ['當日狀況','前次紀錄','RuneCardInfo','runeImage','home-rune-layout','home-rune-copy home-rune-copy-plain','home-draw-bubbles','loc-bubble'])if(!dailyLog.includes(token))failures.push('daily calendar must reuse single/daily Rune presentation: '+token);
   const dailyCalendar=read('app/lrunes/DailyRuneCalendar.jsx');
   for(const token of ['realMoonPhase','phaseMarkers',"current+'開始'","current+'結束'"])if(!dailyCalendar.includes(token))failures.push('daily calendar moon markers missing '+token);
   const runeHome=read('app/lrunes/RunesClient.jsx');

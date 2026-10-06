@@ -2,6 +2,8 @@
 
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import DailyRuneCalendar from '../../lrunes/DailyRuneCalendar';
+import RuneCardInfo from '../../lrunes/RuneCardInfo';
+import {runeImage} from '../../lrunes/rune-directory.mjs';
 import {
   deleteDailyRuneRecord,
   insertDailyRuneRecord,
@@ -16,6 +18,12 @@ import {useAccount} from '../../loc/use-account';
 
 const FIRST_MONTH=2026*12+7;
 const DIRECTIONS=['正位','半正位','半逆位','逆位'];
+const DIRECTION_ROTATION=Object.freeze({
+  '正位':'rune-rotate-0',
+  '半正位':'rune-rotate-90',
+  '半逆位':'rune-rotate-n90',
+  '逆位':'rune-rotate-180'
+});
 
 function taipeiParts(date=new Date()){
   try{
@@ -240,17 +248,53 @@ export default function DailyLogClient({embedded=false}={}){
       <h2>{formatDate(selectedDate)} 的當日指引與前次紀錄</h2>
       {comparisonLoading?<p className="loc-status">讀取前次同符文紀錄…</p>:null}
       {!comparisonLoading?<div className="scope-list">
-        {comparisons.map(({key,current,previous,currentContext,previousSituation})=><article className="scope-inline-card" key={'compare-'+key}>
-          <strong>{current.draw_kind==='supplement'?'補抽':'主抽'}｜{current.rune_name}・{current.direction}</strong>
-          <span>當日真實月相：{currentContext?.moonPhase||'未知'}</span>
-          <span>狀況形容：{currentContext?.situation||'目前沒有對應的狀況形容。'}</span>
-          {currentContext?.reminder?<span>每日占卜提醒：{currentContext.reminder}</span>:null}
-          {currentContext?.guidance?<span>每日占卜引導：{currentContext.guidance}</span>:null}
-          {currentContext?.blessing?<span>每日占卜祝福：{currentContext.blessing}</span>:null}
-          {previous?<>
-            <span>上次抽到「{current.rune_name}」是 {formatDate(previous.record_date)}，方向為 {previous.direction}，當日真實月相為 {previousSituation?.moonPhase||'未知'}。</span>
-            <span>之前的狀況：{previousSituation?.text||'目前沒有對應的狀況形容。'}</span>
-          </>:<span>此前沒有抽到「{current.rune_name}」的紀錄。</span>}
+        {comparisons.map(({key,current,previous,currentContext,previousSituation})=><article className="scope-inline-card runes-single-daily-stage" key={'compare-'+key}>
+          <div className="home-rune-layout">
+            <RuneCardInfo
+              card={current}
+              imageSrc={runeImage(current)}
+              imageClassName={`loc-rune-card-image ${DIRECTION_ROTATION[current.direction]||'rune-rotate-0'}`}
+              positionLabel={current.draw_kind==='supplement'?'補抽':'主抽'}
+              direction={current.direction}
+              realMoonPhase={currentContext?.moonPhase||'未知'}
+              layout="home"
+            />
+
+            <div className="home-rune-copy home-rune-copy-plain">
+              <p className="loc-eyebrow">{current.draw_kind==='supplement'?'每日補抽':'每日主抽'}</p>
+              <h2>{current.rune_name} · {current.direction}</h2>
+              <div className="home-draw-bubbles" aria-label="每日符文建議">
+                <div className="loc-bubble">
+                  <strong>當日狀況</strong>
+                  <p>真實月相：{currentContext?.moonPhase||'未知'}。</p>
+                  <p>{currentContext?.situation||'目前沒有對應的狀況形容。'}</p>
+                </div>
+
+                {currentContext?.reminder?<div className="loc-bubble">
+                  <strong>每日占卜提醒</strong>
+                  <p>{currentContext.reminder}</p>
+                </div>:null}
+
+                {currentContext?.guidance?<div className="loc-bubble">
+                  <strong>每日占卜引導</strong>
+                  <p>{currentContext.guidance}</p>
+                </div>:null}
+
+                {currentContext?.blessing?<div className="loc-bubble">
+                  <strong>每日占卜祝福</strong>
+                  <p>{currentContext.blessing}</p>
+                </div>:null}
+
+                <div className="loc-bubble">
+                  <strong>前次紀錄</strong>
+                  {previous?<>
+                    <p>上次抽到「{current.rune_name}」是 {formatDate(previous.record_date)}，方向為 {previous.direction}，當日真實月相為 {previousSituation?.moonPhase||'未知'}。</p>
+                    <p>之前的狀況：{previousSituation?.text||'目前沒有對應的狀況形容。'}</p>
+                  </>:<p>此前沒有抽到「{current.rune_name}」的紀錄。</p>}
+                </div>
+              </div>
+            </div>
+          </div>
         </article>)}
       </div>:null}
     </section>:null}

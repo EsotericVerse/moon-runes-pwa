@@ -7,7 +7,7 @@ async function attachRuneMeta(rows){
   const source=Array.isArray(rows)?rows:[];
   const ids=[...new Set(source.map(row=>Number(row.rune_number)).filter(number=>Number.isInteger(number)&&number>=0&&number<=66))];
   const runes=ids.length?(await selectRows('silver.runes',{
-    columns:'rune_id,rune_name',
+    columns:'rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,positive_keywords,negative_keywords',
     filters:[{column:'rune_id',operator:'in',value:ids}],
     limit:ids.length,
     offset:0
@@ -17,6 +17,8 @@ async function attachRuneMeta(rows){
     const rune=meta.get(Number(row.rune_number))||{};
     return {
       ...row,
+      ...rune,
+      rune_id:rune.rune_id??row.rune_number,
       rune_name:rune.rune_name||String(row.rune_number)
     };
   });
