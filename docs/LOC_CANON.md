@@ -15,7 +15,7 @@ LOC 是框架；LunaRunes 是具體符號式語言。LunaRunes 的特殊規則�
 
 Current implementation 以最新 main + Supabase PostgreSQL 為準。
 
-- Route authority：Next filesystem。
+- Route authority：Next filesystem 提供既有具名 routes 與固定 `/scope/.../` generic shell；DB Scope ID 由 Scope Registry 在 runtime 解析。
 - Deployment/navigation metadata：Scope registry。
 - Data Scope mapping：silver.manage。
 - Runtime canonical content：Supabase PostgreSQL canonical tables。
@@ -66,11 +66,11 @@ Query：
 
 LunaRunes 專有 SSOT（例如 `silver.runes`、`silver.runes_etc`、`silver.game`）不屬一般 Scope mapping，維持其專有責任。
 
-此規則是 0.9 Scope Group 化的前置條件：Scope Group 組合既有 Scope mapping，不新增第二套 table resolver 或 corpus authority。
+Scope Group 成員關係以 `silver.scope_registry.parent_scope_id` 為 authority。Group 只做 Overview／導引，不跨 Scope 查 Galaxy／Galaxy Media／Time，也不新增第二套 table resolver 或 corpus authority。
 
 ### Scope copy governance
 
-一般 Scope 的延伸採「先複製、再各自編輯」：新 Scope 從既有來源建立自己的資料副本後，後續修改只屬於新 Scope，不回寫、不污染原始 Scope 的語意與 canonical data。個人化發生在副本，不發生在來源本體。
+一般 Scope 的延伸採「先複製、再各自編輯」：建立固定 Config／Galaxy／Galaxy Media／Time／Keywords 五件套，預設 Keyword Class 以新的 UUID 複製成獨立副本；後續修改只屬於新 Scope，不回寫、不污染原始 Scope 的語意與 canonical data。個人化發生在副本，不發生在來源本體。
 
 LunaRunes 不屬一般可改寫模板。其 Rune 結構與 canonical semantics 不開放使用者自行更改；Current 階段僅因 canonical keyword library 整理而保留必要的作者管理修改入口。
 
@@ -78,7 +78,7 @@ Canonical content 的固定更新流程應由網站／管理介面直接完成�
 
 ### Scope presentation and copy contract
 
-一般 Scope 共用的 Culture／Statistics／Search 保持同一套功能名稱、操作方式與 query contract；建立新 Scope 不複製或改寫這些共用功能的程式邏輯，只把 Scope mapping 傳入共用模組。
+一般 Scope 共用的 Culture／Statistics／Search 保持同一套功能名稱、操作方式與 query contract；建立新 Scope 不複製或改寫這些共用功能的程式邏輯，只把 Scope mapping 傳入共用模組。DB 新建 Scope 立即透過固定 `/scope/.../?scope=<id>` static shell 使用共用頁面，不要求新增 Next filesystem route。
 
 Scope 首頁屬於該 Scope 自己的 presentation content。首頁文字、文字框與文字泡泡可由網站編輯器更新，修改只影響該 Scope。
 
@@ -94,9 +94,9 @@ Galaxy 編輯後 UpdateTime 必須更新。
 
 ## 6. Culture
 
-Culture 先用 Time data 找共同時間；多 Scope 比較使用 intersection，不使用 union。
+Culture 只分析目前選定的單一資料 Scope。Scope Group Culture 僅讀取 Registry 成員並導向各子 Scope，不建立跨 Scope intersection／union，也不對多個 Galaxy／Time 做 fan-out 聚合。
 
-取得交會範圍後，再對 Galaxy 做一次範圍聚合，形成來源分群與作品 uid list。作品內容以 incremental page 載入，不在建圖階段載全文。
+單 Scope 先依 Time 的 Period／Anchor 決定範圍，再對自己的 Galaxy／Galaxy Media 做 bounded query；作品內容以 incremental page 載入，不在建圖階段載全文。
 
 Current general page size 為 10；Rune list contract 為 16。
 
