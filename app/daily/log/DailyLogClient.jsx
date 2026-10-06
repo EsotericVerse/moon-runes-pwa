@@ -248,7 +248,9 @@ export default function DailyLogClient({embedded=false}={}){
       <h2>{formatDate(selectedDate)} 的當日指引與前次紀錄</h2>
       {comparisonLoading?<p className="loc-status">讀取前次同符文紀錄…</p>:null}
       {!comparisonLoading?<div className="scope-list">
-        {comparisons.map(({key,current,previous,currentContext,previousSituation})=><article className="scope-inline-card runes-single-daily-stage" key={'compare-'+key}>
+        {comparisons.map(({key,current,previous,currentContext,previousSituation})=>{
+          const editing=canWrite&&editingKey===key&&editForm;
+          return <article className="scope-inline-card runes-single-daily-stage" key={'compare-'+key}>
           <div className="home-rune-layout">
             <RuneCardInfo
               card={current}
@@ -293,9 +295,21 @@ export default function DailyLogClient({embedded=false}={}){
                   </>:<p>此前沒有抽到「{current.rune_name}」的紀錄。</p>}
                 </div>
               </div>
+              {canWrite&&!editing?<div className="scope-tabs">
+                <button type="button" disabled={saving} onClick={()=>beginEdit(current)}>編輯</button>
+                <button type="button" disabled={saving} onClick={()=>removeRecord(current)}>刪除</button>
+              </div>:null}
+
+              {editing?<form className="scope-stat-controls" onSubmit={saveEdit}>
+                <label><span>符文</span><select className="scope-select" value={editForm.runeNumber} onChange={event=>setEditForm(value=>({...value,runeNumber:event.target.value}))}>{runes.map(item=><option value={item.rune_id} key={item.rune_id}>{item.rune_id}｜{item.rune_name}</option>)}</select></label>
+                <label><span>方向</span><select className="scope-select" value={editForm.direction} onChange={event=>setEditForm(value=>({...value,direction:event.target.value}))}>{DIRECTIONS.map(value=><option value={value} key={value}>{value}</option>)}</select></label>
+                <button className="loc-button" type="submit" disabled={saving}>儲存</button>
+                <button className="loc-button" type="button" disabled={saving} onClick={()=>{setEditingKey('');setEditForm(null)}}>取消</button>
+              </form>:null}
             </div>
           </div>
-        </article>)}
+        </article>;
+        })}
       </div>:null}
     </section>:null}
 
@@ -315,24 +329,6 @@ export default function DailyLogClient({embedded=false}={}){
     {error?<p role="alert" className="loc-status">{error}<button className="loc-button" type="button" onClick={loadMonth}>重新讀取</button></p>:null}
     {loading?<p className="loc-status" aria-live="polite">讀取每日符文紀錄…</p>:null}
     {!loading&&!error&&!rows.length?<article className="loc-card">目前沒有每日符文紀錄。</article>:null}
-    {selectedDate?<section className="loc-context-list" aria-live="polite">
-      <h2>{formatDate(selectedDate)}</h2>
-      {!selectedRows.length?<article className="loc-card">這一天沒有每日符文紀錄。</article>:null}
-      {selectedRows.map(row=>{
-        const key=rowKey(row);
-        const editing=canWrite&&editingKey===key&&editForm;
-        return <article className="loc-card" key={key}>
-          <div className="loc-result-meta"><span>{row.draw_kind==='supplement'?'補抽':'主抽'}</span><span>{formatDate(row.record_date)}</span></div>
-          {!editing?<><h3>{row.rune_name}・{row.direction}</h3>
-            {canWrite?<div className="scope-tabs"><button type="button" disabled={saving} onClick={()=>beginEdit(row)}>編輯</button><button type="button" disabled={saving} onClick={()=>removeRecord(row)}>刪除</button></div>:null}
-          </>:<form className="scope-stat-controls" onSubmit={saveEdit}>
-            <label><span>符文</span><select className="scope-select" value={editForm.runeNumber} onChange={event=>setEditForm(current=>({...current,runeNumber:event.target.value}))}>{runes.map(item=><option value={item.rune_id} key={item.rune_id}>{item.rune_id}｜{item.rune_name}</option>)}</select></label>
-            <label><span>方向</span><select className="scope-select" value={editForm.direction} onChange={event=>setEditForm(current=>({...current,direction:event.target.value}))}>{DIRECTIONS.map(value=><option value={value} key={value}>{value}</option>)}</select></label>
-            <button className="loc-button" type="submit" disabled={saving}>儲存</button>
-            <button className="loc-button" type="button" disabled={saving} onClick={()=>{setEditingKey('');setEditForm(null)}}>取消</button>
-          </form>}
-        </article>;
-      })}
-    </section>:null}
+    {selectedDate&&!selectedRows.length?<article className="loc-card" aria-live="polite">這一天沒有每日符文紀錄。</article>:null}
   </section>;
 }
