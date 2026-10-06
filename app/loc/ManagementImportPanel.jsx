@@ -38,15 +38,17 @@ function normalizeJsonImportEntry(entry,source){
   const uid=String(entry?.import_uid||firstValue(row,['uid'])||createUid8()).trim().toUpperCase();
   if(!content)return {record:null,error:'無正文'};
   if(uid.length!==8)return {record:null,error:'UID 必須為 8 字'};
+  const contentType=String(firstValue(row,['content_type','type'])||'other').trim()||'other';
   const record={
     uid,
-    content_type:String(firstValue(row,['content_type','type'])||'other').trim()||'other',
+    content_type:contentType,
     title:resolveGalaxyTitle(firstValue(row,['title','name','subject']),content),
     content,
     createtime:iso(firstValue(row,['createtime','created_at','create_time','created_time','date','published_at'])),
     source_native_id:String(firstValue(row,['source_native_id','native_id'])||'').trim()||null,
     source_place:String(firstValue(row,['source_place','place'])||'').trim()||null,
     searchable:row?.searchable!==false&&row?.search!==false,
+    statistics_able:contentType!=='instruction',
     source_id:String(firstValue(row,['source_id'])||'').trim()||null,
     target_id:normalizeRelationIds(firstValue(row,['target_id'])),
     ref_id:String(firstValue(row,['ref_id'])||'').trim()||null,
