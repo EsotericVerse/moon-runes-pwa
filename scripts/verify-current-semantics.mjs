@@ -27,7 +27,9 @@ const required=[
 for(const path of required)if(!fs.existsSync(path)||!read(path).trim())failures.push('missing Current contract file: '+path);
 if(!failures.length){
   const identity=read('app/loc/views/AboutView.jsx');
-  for(const token of ['語言架構框架','Language Architecture Framework','符號式語言','Symbolic Language'])if(!identity.includes(token))failures.push('identity missing '+token);
+  const runeIntro=read('app/lrunes/RuneIntroSection.jsx');
+  for(const token of ['語言架構框架','Language Architecture Framework','符號式語言'])if(!identity.includes(token))failures.push('identity missing '+token);
+  if(!runeIntro.includes('Symbolic Language'))failures.push('Rune intro identity missing Symbolic Language');
   const dailyData=read('app/loc/daily-runes.js');
   for(const token of ['selectPreviousDailyRuneOccurrence','selectDailyRuneSituation','selectDailyRuneContext',"types:['sit_q','daily_r','daily_g','daily_b']","column:'current_moon'"])if(!dailyData.includes(token))failures.push('daily rune context missing '+token);
   const dailyLog=read('app/daily/log/DailyLogClient.jsx');
@@ -35,16 +37,19 @@ if(!failures.length){
   for(const token of ['當日狀況','前次紀錄','RuneCardInfo','runeImage','home-rune-layout','home-rune-copy home-rune-copy-plain','home-draw-bubbles','loc-bubble'])if(!dailyLog.includes(token))failures.push('daily calendar must reuse single/daily Rune presentation: '+token);
   const dailyCalendar=read('app/lrunes/DailyRuneCalendar.jsx');
   for(const token of ['realMoonPhase','phaseMarkers',"current+'開始'","current+'結束'"])if(!dailyCalendar.includes(token))failures.push('daily calendar moon markers missing '+token);
+  const runeHome=read('app/lrunes/RunesClient.jsx');
   const runeDrawModes=read('app/lrunes/rune-draw-modes.mjs');
   const runeDrawModeBubbles=read('app/lrunes/RuneDrawModeBubbles.jsx');
   const runeSingleDaily=read('app/lrunes/RuneSingleDailySurface.jsx');
   const runeDrawClient=read('app/lrunes/RuneDrawClient.jsx');
   const runeDirectory=read('app/lrunes/RuneDirectoryPages.jsx');
-  for(const token of ['single','daily','2card','3card','5card','ow3gs','每日抽牌'])if(!runeDrawModes.includes(token))failures.push('shared fixed draw modes missing '+token);
+  for(const token of ['single','daily','2card','3card','5card','ow3gs','抽每日指示'])if(!runeDrawModes.includes(token))failures.push('shared fixed draw modes missing '+token);
   for(const token of ['RUNE_DRAW_MODES.map','home-draw-bubbles','loc-bubble'])if(!runeDrawModeBubbles.includes(token))failures.push('shared fixed draw bubbles missing '+token);
-  for(const [name,source] of [['home',runeHome],['single/daily',runeSingleDaily],['spread',runeDrawClient]])if(!source.includes('RuneDrawModeBubbles'))failures.push('Rune draw selection must reuse shared component in '+name);
+  for(const [name,source] of [['single/daily',runeSingleDaily],['spread',runeDrawClient]])if(!source.includes('RuneDrawModeBubbles'))failures.push('Rune draw selection must reuse shared component in '+name);
+  for(const token of ['命之符文示例','月之符文籤詩系統','RuneDrawModeBubbles'])if(!runeIntro.includes(token))failures.push('shared complete Rune intro missing '+token);
+  if(!runeHome.includes('RuneIntroSection'))failures.push('LunaRunes home must reuse complete LOC Rune intro section');
+  if(!identity.includes('RuneIntroSection'))failures.push('LOC home must reuse complete Rune intro section');
   for(const token of ['home-draw-bubbles runes-rune-long-details','符文歷史','神話故事','靈魂課題','實踐挑戰','儀式建議','調和建議'])if(!runeDirectory.includes(token))failures.push('Rune directory detail bubbles missing '+token);
-  const runeHome=read('app/lrunes/RunesClient.jsx');
   if(runeHome.includes('daily/trend'))failures.push('Daily Trend must remain folded into Daily Log.');
   const legacyDailyTrend=read('app/daily/trend/page.jsx');
   if(!legacyDailyTrend.includes("from '../log/page'"))failures.push('Legacy Daily Trend route must reuse Daily Log.');
