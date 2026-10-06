@@ -1,6 +1,6 @@
 # LOC Current Canon
 
-**Version:** 0.8.4-rc  
+**Version:** 0.8.5-RC  
 **Author:** Lucas Oscar Wang 政德
 
 ## 1. Fixed identity
@@ -163,16 +163,15 @@ silver.runes_etc 保存 lots／daily／history／harmony 等延伸資料。
 
 ## 11. Draw grammar
 
-- 單卡：當張 Rune + 當次方向。
-- 雙卡：因為 A，所以 B。
-- 三卡：因為 1，但會有 2 的改變，所以 3。
-- 五卡：因為 1、2，但會有 3 的變化，所以 4、5。
-- OW3gs：
-  因為（因為 1、2，變數 3、4，所以 5、6），所以（因為 7、8，變數 9，所以 10、11）。
-
-OW3gs 第 7–11 張是核心判定層；1–6 提供造成現況的因與背景。
-
-Draw Session 使用逐張 random；同一 session 內 Rune 不重複。抽牌 ritual 5 秒與逐次 random 是刻意保留的 Current 行為。
+- 單卡、每日與符文圖鑑維持既有 canonical 字串與顯示。
+- 雙卡以上的組合籤詩只使用實際抽到 Rune、direction 與該次真實月相精準命中的 `sit_q`；不得以 `sit_a`、direction text 或 rune_description 補句。
+- 組句層只做薄連接，不建立第二套語意解釋；兩段可用「故」，三段末段依既有 x／y 趨勢只調整「遂／而／然」等轉接語氣。
+- 雙卡以上不另輸出愛情／事業／關係／健康判語。
+- 原有抽牌入口固定維持單卡、每日、雙卡、三卡、五卡、11 卡 OW3gs。
+- 4／6／7／8／9／10 張由符文首頁的指定抽牌數量入口進入；抽牌上限固定 11 張。
+- OW3gs 第 7–11 張仍是核心判定層；1–6 提供造成現況的因與背景。
+- Draw Session 使用逐張 random；同一 session 內 Rune 不重複。抽牌 ritual 5 秒與逐次 random 是刻意保留的 Current 行為。
+- 每日符文紀錄以 record_date 自己的真實月相取得當日 `sit_q／daily_r／daily_g／daily_b`；回看上一筆同符文時，也必須使用上一筆 record_date 的真實月相，不使用開頁當天月相替代。
 
 ## 12. Neutrality
 

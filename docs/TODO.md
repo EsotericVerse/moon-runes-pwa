@@ -1,11 +1,11 @@
 # LOC Current TODO
 
-**Current version:** 0.8.4-rc
+**Current version:** 0.8.5-RC
 
-## 0.8.4 RC follow-up verification
+## 0.8.5 RC follow-up verification
 
-- [ ] 獨立驗收 LunaRunes interpretation sentence handling，確保 single、Daily、2／3／5／11 card 只使用實際抽到的方向資料。
 - [ ] 完成 LunaRunes canonical keyword library 與管理流程。
+- [ ] 修正 Rune66 自身名稱未參與 literal match：例如 `空` 必須可命中 `天空`、`空間` 等包含字串，不可只掃 keywords 陣列。
 - [ ] 確保 LunaRunes keyword／positive_keywords／negative_keywords 不成為一般 Scope fallback。
 - [ ] 完成 LunaRunes Game 規則呈現、互動與最終 UI。
 - [ ] 完成 Governance／Admin management 頁面的最終人工檢查。

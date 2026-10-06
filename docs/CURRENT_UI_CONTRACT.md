@@ -1,6 +1,6 @@
 # Current UI Contract
 
-**Version:** 0.8.4-rc
+**Version:** 0.8.5-RC
 
 ## Identity
 
@@ -18,6 +18,15 @@ Current 共用功能固定為：
 - Culture
 - Governance
 - Search
+
+LunaRunes 首頁主入口固定為四個：
+
+- 單卡抽籤
+- 符文圖鑑
+- 符文遊戲
+- 每日符文紀錄
+
+雙卡／三卡／五卡／11 卡的「命運句基本結構」卡片本身就是可點抽牌入口，不再另印一排重複選項；每日仍由單卡抽籤頁內切換。4／6／7／8／9／10 張使用首頁既有的指定抽牌數量 select。
 
 NAV URL 由 Current Scope registry 產生；實際 route 是否存在由 Next filesystem 決定。
 
