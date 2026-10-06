@@ -20,9 +20,9 @@ LOC is the framework for organizing text, works, sources, time, relationships, s
 ### Current architecture
 
 - Next.js owns application routing; React owns UI.
-- Current route authority is the Next filesystem.
+- Next filesystem owns existing named routes plus one fixed `/scope/.../` generic shell; DB-created Scope IDs are resolved from the Scope registry at runtime.
 - Supabase PostgreSQL is the runtime data SSOT.
-- The Scope registry owns deployment/navigation metadata only.
+- The Scope registry owns hierarchy and deployment/navigation metadata; it does not own corpus data.
 - `silver.manage` owns data Scope and Galaxy/Time table mapping.
 - PostgreSQL remains the authoritative query layer for Scope, fixed eligibility flags, COUNT, date ranges and pagination across Search, Statistics and Culture.
 - PostgreSQL handles global search, while confirmed keyword classifications are stored as fixed Galaxy attributes. Re-run the explicit batch only when the active Keyword Class or its rules change.
@@ -35,7 +35,7 @@ LOC is the framework for organizing text, works, sources, time, relationships, s
 | Feature | Responsibility |
 | --- | --- |
 | Statistics | Live distribution and time-range statistics |
-| Culture | Time intersection, density, source grouping and Anchor analysis |
+| Culture | Single-Scope time density, source grouping and Anchor analysis; Group pages are overview/navigation only |
 | Governance | Public governance and management boundaries |
 | Search | Scope-aware lexical, metadata and relation search |
 
@@ -48,6 +48,8 @@ LOC is the framework for organizing text, works, sources, time, relationships, s
 - `source_id`, `target_id`, `ref_id` and `galaxy_link` keep relationships explicit.
 - General Statistics are calculated live from canonical data. Keyword classification is the exception: a confirmed batch writes fixed article attrs so repeated Statistics/Culture views stay lightweight and deterministic.
 - Management reads canonical data even when public feature flags are off or `searchable=false`.
+- Admin can provision Scopes, create/edit Scope Groups and move registry membership without adding bespoke Next routes.
+- Source Refresh compares only incoming `source_name + source_native_id` values in bounded batches, then previews create/update/unchanged counts before writing.
 
 ### LOC deployment
 
