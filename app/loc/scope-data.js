@@ -25,7 +25,8 @@ function buildScopeData(row,id){
     birthday:String(row?.birthday||'').slice(0,10)||null,
     galaxy,
     galaxyMedia:galaxy+'_media',
-    time:`silver.${id}_${timeSuffix}`
+    time:`silver.${id}_${timeSuffix}`,
+    keywords:`silver.${id}_keywords`
   };
 }
 
@@ -60,6 +61,33 @@ export async function selectManagedScopes(){
     offset:0
   });
   return scopeDataFromManageRows(rows);
+}
+
+export async function selectScopeRegistry({parentScopeId=null,scopeKind=null}={}){
+  const filters=[{column:'active',operator:'eq',value:true}];
+  if(parentScopeId)filters.push({column:'parent_scope_id',operator:'eq',value:String(parentScopeId).trim()});
+  if(scopeKind)filters.push({column:'scope_kind',operator:'eq',value:String(scopeKind).trim()});
+  const {rows}=await selectRows('silver.scope_registry',{
+    columns:'scope_id,display_name,scope_kind,domain,directory,parent_scope_id,active,sort_order',
+    filters,
+    orders:[{column:'sort_order',ascending:true},{column:'scope_id',ascending:true}],
+    limit:DB_QUERY_BATCH_SIZE,
+    offset:0
+  });
+  return (rows||[]).map(row=>({
+    scope_id:String(row.scope_id||'').trim(),
+    display_name:String(row.display_name||'').trim(),
+    scope_kind:String(row.scope_kind||'').trim(),
+    domain:String(row.domain||'').trim()||null,
+    directory:String(row.directory||'').trim()||null,
+    parent_scope_id:String(row.parent_scope_id||'').trim()||null,
+    active:row.active!==false,
+    sort_order:Number(row.sort_order)||0
+  }));
+}
+
+export async function selectScopeGroupChildren(scopeId='loc'){
+  return selectScopeRegistry({parentScopeId:scopeId,scopeKind:'scope'});
 }
 
 export async function selectManagedScope(scopeId){

@@ -87,7 +87,7 @@ if(!failures.length){
   for(const token of ["column:'statistics_able',operator:'eq',value:true"])if(!galaxy.includes(token)||!rune66Analysis.includes(token))failures.push('Statistics and Rune66 analysis must use fixed statistics_able filters');
   const rune66Engine=read('app/loc/model/rune66-keyword-engine.mjs');
   if(!rune66Analysis.includes('classifyRune66Documents'))failures.push('Rune66 data loader must delegate to shared keyword classifier');
-  if(!rune66Analysis.includes("silver.lo3rwang_keywords")||rune66Analysis.includes('lo3rwang_style'))failures.push('Rune66 data loader must use the unified keyword library table');
+  if(!rune66Analysis.includes("`silver.${scope}_keywords`")||rune66Analysis.includes('lo3rwang_style'))failures.push('Rune66 data loader must use the current Scope unified keyword library table');
   if(/silver\.runes(?:_etc)?\b/.test(rune66Analysis))failures.push('Rune66 keyword classification must not depend on LunaRunes Canon tables');
   for(const token of ['class_name','class_group','class_enable'])if(!rune66Analysis.includes(token))failures.push('Rune66 keyword loader missing independent keyword metadata '+token);
   for(const token of ['classifyRune66Documents'])if(!rune66Engine.includes(token))failures.push('Rune66 keyword engine missing classifier '+token);

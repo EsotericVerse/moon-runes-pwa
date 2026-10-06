@@ -5,12 +5,16 @@ import {selectAllRows} from './db-query.mjs';
 import {selectManagedScope} from './scope-data';
 import {classifyRune66Documents} from './model/rune66-keyword-engine.mjs';
 
-const SCOPE_ID='lo3rwang';
-const PERSONAL_KEYWORD_TABLE='silver.lo3rwang_keywords';
 const DEFAULT_KEYWORD_MIN_CHARS=32;
 const DEFAULT_KEYWORD_MIN_DOCUMENTS=100;
 
 const analysisPromises=new Map();
+
+function normalizeScopeId(value){
+  const scope=String(value||'lo3rwang').trim().toLowerCase();
+  if(!/^[a-z][a-z0-9]{0,14}$/.test(scope))throw new Error('Scope ID 格式無效');
+  return scope;
+}
 
 function normalizeKeywordMinChars(value){
   const parsed=Number(value);
@@ -153,21 +157,23 @@ function resolveDynamicClassifications(documents,catalogRows){
     groupTotals
   };
 }
-async function scopeAndConfig(){
-  const scope=await selectManagedScope(SCOPE_ID);
-  if(!scope)throw new Error('找不到 lo3rwang Scope');
+async function scopeAndConfig(scopeId='lo3rwang'){
+  const id=normalizeScopeId(scopeId);
+  const scope=await selectManagedScope(id);
+  if(!scope)throw new Error('找不到 '+id+' Scope');
   const result=await selectAllRows(scope.config,{
     columns:'id,keyword_min_chars,keyword_min_documents,current_keyword_class_id,keyword_class_share_enabled,keyword_document_count,keyword_meta,staticstime',
-    filters:[{column:'id',operator:'eq',value:SCOPE_ID}]
+    filters:[{column:'id',operator:'eq',value:id}]
   });
   const config=result.rows?.[0]||null;
-  if(!config)throw new Error('找不到 lo3rwang 關鍵詞設定');
-  return {scope,config};
+  if(!config)throw new Error('找不到 '+id+' 關鍵詞設定');
+  return {scope,config,scopeId:id};
 }
-async function loadCurrentCatalog(currentClassId){
+async function loadCurrentCatalog(scopeId,currentClassId){
+  const scope=normalizeScopeId(scopeId);
   const id=String(currentClassId||'').trim();
   if(!id)throw new Error('尚未指定目前使用的關鍵詞 Class');
-  const {data,error}=await dbAuthRelation(PERSONAL_KEYWORD_TABLE)
+  const {data,error}=await dbAuthRelation(`silver.${scope}_keywords`)
     .select('keyword_id,class_id,class_name,class_group,class_enable,item_no,item_name,principle,keywords,order_no')
     .eq('class_id',id)
     .order('order_no',{ascending:true})
@@ -177,13 +183,14 @@ async function loadCurrentCatalog(currentClassId){
   return data;
 }
 
-export async function runRune66ClassificationBatch(){
-  const {scope,config}=await scopeAndConfig();
+export async function runRune66ClassificationBatch(scopeId='lo3rwang'){
+  const normalizedScopeId=normalizeScopeId(scopeId);
+  const {scope,config}=await scopeAndConfig(normalizedScopeId);
   const minChars=normalizeKeywordMinChars(config.keyword_min_chars);
   const minDocuments=normalizeKeywordMinDocuments(config.keyword_min_documents);
   const currentClassId=String(config.current_keyword_class_id||'').trim();
   const [catalogRows,textResult]=await Promise.all([
-    loadCurrentCatalog(currentClassId),
+    loadCurrentCatalog(normalizedScopeId,currentClassId),
     selectAllRows(scope.galaxy,{
       columns:'uid,title,content,createtime,searchable,statistics_able',
       orders:[{column:'createtime',ascending:true},{column:'uid',ascending:true}]
@@ -204,14 +211,14 @@ export async function runRune66ClassificationBatch(){
     };
   });
   const keywordMeta=metaOf(catalogRows,resolved.classMap,currentClassId);
-  const written=await applyKeywordClassification({rows:payloadRows,meta:keywordMeta});
+  const written=await applyKeywordClassification(normalizedScopeId,{rows:payloadRows,meta:keywordMeta});
   if(written.count!==payloadRows.length||written.documentCount!==payloadRows.length){
     throw new Error('關鍵詞批次寫回不完整：預期 '+payloadRows.length+'，實際 '+written.count);
   }
   clearRune66ClassificationCache();
   const refreshed=await selectAllRows(scope.config,{
     columns:'keyword_document_count,staticstime',
-    filters:[{column:'id',operator:'eq',value:SCOPE_ID}]
+    filters:[{column:'id',operator:'eq',value:normalizedScopeId}]
   });
   return {
     ...resolved,
@@ -317,11 +324,12 @@ function storedSummary(rows,config){
   };
 }
 
-export async function selectRune66Classification({startDate='',endDate=''}={}){
-  const key=[String(startDate||''),String(endDate||'')].join('|');
+export async function selectRune66Classification({scopeId='lo3rwang',startDate='',endDate=''}={}){
+  const normalizedScopeId=normalizeScopeId(scopeId);
+  const key=[normalizedScopeId,String(startDate||''),String(endDate||'')].join('|');
   if(analysisPromises.has(key))return analysisPromises.get(key);
   const promise=(async()=>{
-    const {scope,config}=await scopeAndConfig();
+    const {scope,config}=await scopeAndConfig(normalizedScopeId);
     if(!config.staticstime)return emptyStored(config);
     const rows=await selectAllRows(scope.galaxy,{
       columns:'uid,createtime,class_id,group_lists',

@@ -6,8 +6,6 @@ import {copyKeywordLibraryClass,dbAuthRelation,updateRows,writeKeywordLibraryIte
 import {useAccount} from './use-account';
 import {clearRune66ClassificationCache,runRune66ClassificationBatch} from './rune66-keyword-analysis';
 
-const TABLE='silver.lo3rwang_keywords';
-const CONFIG_TABLE='silver.lo3rwang';
 const DEFAULT_KEYWORD_MIN_CHARS=32;
 const DEFAULT_KEYWORD_MIN_DOCUMENTS=100;
 
@@ -38,9 +36,12 @@ function formatStaticTime(value){
   return Number.isNaN(date.getTime())?String(value):date.toLocaleString('zh-TW',{hour12:false});
 }
 
-export default function KeywordLibraryPanel(){
+export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
   const account=useAccount();
   const queryClient=useQueryClient();
+  const scopeData=account.scopeDataFor(scopeId);
+  const TABLE=scopeData?.keywords||'';
+  const CONFIG_TABLE=scopeData?.config||'';
   const [rows,setRows]=useState([]);
   const [selectedClass,setSelectedClass]=useState('');
   const [selectedId,setSelectedId]=useState('');
@@ -57,7 +58,7 @@ export default function KeywordLibraryPanel(){
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
 
-  const canEdit=account.canManageScopeSync('lo3rwang');
+  const canEdit=account.canManageScopeSync(scopeId)&&Boolean(TABLE&&CONFIG_TABLE);
 
   async function invalidateClassification(){
     clearRune66ClassificationCache();
@@ -74,7 +75,7 @@ export default function KeywordLibraryPanel(){
       keyword_document_count:0,
       keyword_meta:{},
       updated_at:new Date().toISOString()
-    },{filters:[{column:'id',operator:'eq',value:'lo3rwang'}]});
+    },{filters:[{column:'id',operator:'eq',value:scopeId}]});
     await invalidateClassification();
   }
 
@@ -90,7 +91,7 @@ export default function KeywordLibraryPanel(){
           .order('item_no',{ascending:true}),
         dbAuthRelation(CONFIG_TABLE)
           .select('keyword_min_chars,keyword_min_documents,current_keyword_class_id,keyword_class_share_enabled,keyword_document_count,staticstime')
-          .eq('id','lo3rwang')
+          .eq('id',scopeId)
           .limit(1)
       ]);
       if(keywordResult.error)throw new Error(keywordResult.error.message||'關鍵詞庫讀取失敗');
@@ -143,7 +144,7 @@ export default function KeywordLibraryPanel(){
     }
   }
 
-  useEffect(()=>{if(canEdit)load();},[canEdit,account.email]);
+  useEffect(()=>{if(canEdit)load();},[canEdit,account.email,scopeId,TABLE,CONFIG_TABLE]);
 
   const classes=useMemo(()=>{
     const map=new Map();
@@ -205,7 +206,7 @@ export default function KeywordLibraryPanel(){
 
     setBusy(true);setMessage('');
     try{
-      const result=await writeKeywordLibraryItem(draft.keyword_id?'update':'insert',payload);
+      const result=await writeKeywordLibraryItem(scopeId,draft.keyword_id?'update':'insert',payload);
       await markCurrentClassificationStale(classId);
       setSelectedClass(className);
       await load(result.keyword_id||draft.keyword_id||'',className);
@@ -239,7 +240,7 @@ export default function KeywordLibraryPanel(){
         keyword_class_share_enabled:Boolean(shareEnabled),
         ...(classificationChanged?{staticstime:null,keyword_document_count:0,keyword_meta:{}}:{}),
         updated_at:new Date().toISOString()
-      },{filters:[{column:'id',operator:'eq',value:'lo3rwang'}]});
+      },{filters:[{column:'id',operator:'eq',value:scopeId}]});
       if(classificationChanged)await invalidateClassification();
       await load('',selectedClass);
       setMessage(classificationChanged?'分析設定已更新；請重新分析文章。':'分析設定已更新。');
@@ -254,7 +255,7 @@ export default function KeywordLibraryPanel(){
     if(configDirty){setMessage('分析設定尚未儲存，請先儲存分析設定。');return;}
     setBusy(true);setMessage('');
     try{
-      const result=await runRune66ClassificationBatch();
+      const result=await runRune66ClassificationBatch(scopeId);
       await invalidateClassification();
       await load('',selectedClass);
       setMessage(
@@ -275,7 +276,7 @@ export default function KeywordLibraryPanel(){
     const classId=String(draft.class_id||'');
     setBusy(true);setMessage('');
     try{
-      await writeKeywordLibraryItem('delete',draft);
+      await writeKeywordLibraryItem(scopeId,'delete',draft);
       await markCurrentClassificationStale(classId);
       setSelectedId('');setDraft(null);
       await load('',selectedClass);
@@ -293,7 +294,7 @@ export default function KeywordLibraryPanel(){
     if(!target){setMessage('請輸入新 Class 名稱。');return;}
     setBusy(true);setMessage('');
     try{
-      const result=await copyKeywordLibraryClass(selectedClass,target);
+      const result=await copyKeywordLibraryClass(scopeId,selectedClass,target);
       setCopyName('');
       await load('',target);
       setMessage('已複製 '+result.count+' 個分類項目到「'+target+'」；新 Class UUID：'+result.class_id);
@@ -308,7 +309,7 @@ export default function KeywordLibraryPanel(){
     if(!selectedClassId)return;
     try{
       await navigator.clipboard.writeText(selectedClassId);
-      setMessage('Class UUID 已複製。分享時請同時提供 scope_id：lo3rwang。');
+      setMessage('Class UUID 已複製。分享時請同時提供 scope_id：'+scopeId+'。');
     }catch{
       setMessage('無法自動複製；請手動複製 Class UUID。');
     }
@@ -351,7 +352,7 @@ export default function KeywordLibraryPanel(){
     {selectedClassId?<div className="scope-stat-controls">
       <label><span>Class UUID</span><input value={selectedClassId} readOnly aria-readonly="true"/></label>
       <button type="button" className="loc-button" onClick={copyClassUuid}>複製 UUID</button>
-      <span className="scope-status">scope_id: lo3rwang</span>
+      <span className="scope-status">scope_id: {scopeId}</span>
     </div>:null}
 
     <div className="scope-stat-controls">
