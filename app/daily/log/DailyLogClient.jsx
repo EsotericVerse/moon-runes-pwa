@@ -121,7 +121,7 @@ export default function DailyLogClient({embedded=false}={}){
     return grouped;
   },[rows]);
 
-  const selectedRows=byDate.get(selectedDate)||[];
+  const selectedRows=useMemo(()=>byDate.get(selectedDate)||[],[byDate,selectedDate]);
 
   useEffect(()=>{
     let active=true;
