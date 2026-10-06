@@ -1,6 +1,6 @@
 # LOC Current Canon
 
-**Version:** 0.8.5-RC  
+**Version:** 0.8.5.1-RC  
 **Author:** Lucas Oscar Wang 政德
 
 ## 1. Fixed identity
@@ -104,13 +104,13 @@ Anchor suggestion 需要足夠資料；Current threshold 為至少 20 筆 eligib
 
 ## 7. Statistics
 
-Statistics 即時計算 canonical data，可指定時間區間。work_count 不作為第二份 stored authority；排名與分布由 Current query 即時計算。
+Statistics 即時計算 canonical data。LOC Scope Group 固定最近一年並依 scope_id 顯示數量與密度；單 Scope 可指定時間區間。work_count 不作為第二份 stored authority；排名與分布由 Current query 即時計算。
 
 Multimedia 併入來源統計；無文字媒體與 YouTube 等可落入 Others 等來源分類，不另外製造一套媒體統計權威。
 
 ## 8. Search
 
-Search 是精準詞／metadata query，不做 semantic rendering。
+Search 是精準詞／metadata query，不做 semantic rendering。公開 Search 套用 searchable=true；OAuth 且具 Scope 管理權限時，該 Scope Search 不套 searchable filter。
 
 Current Search 分成兩層：
 
