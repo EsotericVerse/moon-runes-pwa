@@ -22,17 +22,17 @@ async function selectRowById(table,{idColumn,id,columns}={}){
   const page=await selectRows(table,{columns,filters:[{column:idColumn,operator:'eq',value:String(id)}],limit:1});
   return page.rows[0]||null;
 }
-function countBy(rows,keyOf){
+function countBy(rows,keyOf,{includeEmpty=false}={}){
   const counts=new Map();
   for(const row of Array.isArray(rows)?rows:[]){
     const key=keyOf(row);
-    if(!key)continue;
+    if(!includeEmpty&&!key)continue;
     counts.set(key,(counts.get(key)||0)+1);
   }
   return counts;
 }
-function categoryCountRows(rows,column,{limit=Infinity}={}){
-  return [...countBy(rows,row=>String(row?.[column]||'').trim()).entries()]
+function categoryCountRows(rows,column,{limit=Infinity,includeEmpty=false}={}){
+  return [...countBy(rows,row=>String(row?.[column]||'').trim(),{includeEmpty}).entries()]
     .map(([term,item_count])=>({term,item_count}))
     .sort((a,b)=>b.item_count-a.item_count||a.term.localeCompare(b.term))
     .slice(0,limit);
@@ -43,7 +43,7 @@ function dailyCountRows(rows,column,{includeEmpty=false,includeUndated=false}={}
     const day=String(row?.createtime||'').slice(0,10);
     if((!includeEmpty&&!category)||(!includeUndated&&!day))return '';
     return day+'\u0000'+category;
-  });
+  },{includeEmpty:true});
   return [...counts.entries()].map(([key,item_count])=>{
     const split=key.indexOf('\u0000');
     return {day:key.slice(0,split),category:key.slice(split+1),item_count};
@@ -54,15 +54,14 @@ export async function selectSourceCatalog(scope,{startDate='',endDate='',limit=2
   const current=scopeOf(scope);
   const filters=publicContentFilters([
     ...timeFilters('createtime',startDate,endDate),
-    {column:'statistics_able',operator:'eq',value:true},
-    {column:'source_name',operator:'neq',value:''}
+    {column:'statistics_able',operator:'eq',value:true}
   ]);
   const safeLimit=Math.max(1,Math.min(DB_QUERY_BATCH_SIZE,Math.floor(Number(limit)||20)));
   const rows=(await selectAllRows(current.galaxy,{
     columns:'source_name',
     filters
   })).rows;
-  const normalized=categoryCountRows(rows,'source_name',{limit:safeLimit}).map(row=>({
+  const normalized=categoryCountRows(rows,'source_name',{limit:safeLimit,includeEmpty:true}).map(row=>({
     scope_id:current.id,
     source_name:row.term,
     item_count:row.item_count
@@ -74,14 +73,13 @@ export async function selectSourceDaily(scope,{startDate='',endDate=''}={}){
   const current=scopeOf(scope);
   const filters=publicContentFilters([
     ...timeFilters('createtime',startDate,endDate),
-    {column:'statistics_able',operator:'eq',value:true},
-    {column:'source_name',operator:'neq',value:''}
+    {column:'statistics_able',operator:'eq',value:true}
   ]);
   const rows=(await selectAllRows(current.galaxy,{
     columns:'source_name,createtime',
     filters
   })).rows;
-  return dailyCountRows(rows,'source_name').map(row=>({
+  return dailyCountRows(rows,'source_name',{includeEmpty:true}).map(row=>({
     scope_id:current.id,
     source_name:row.category,
     day:row.day,
