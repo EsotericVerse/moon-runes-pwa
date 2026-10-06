@@ -59,17 +59,17 @@ const result=classifyRune66Documents(rows,catalogRows,structureRows);
 const byKey=new Map(result.classifications.map(row=>[row.key,row]));
 const runeMap=row=>new Map((row?.rune_counts||[]).map(item=>[item.label,item.count]));
 
-assert.equal(runeMap(byKey.get('a')).has('魂'),false,'潛意識 must not fall through to shorter 意識→魂 rule');
-assert.equal(runeMap(byKey.get('a')).get('夢'),1,'潛意識 must TO 夢');
+assert.equal(runeMap(byKey.get('a')).get('魂'),1,'non-day/moon Rune keyword 意識 must still match inside 潛意識');
+assert.equal(runeMap(byKey.get('a')).get('夢'),1,'潛意識 explicit rule must also TO 夢');
 
-assert.equal(runeMap(byKey.get('b')).get('魂'),1,'standalone 意識 must TO 魂');
+assert.equal(runeMap(byKey.get('b')).get('魂'),2,'意識 keeps its keyword hit and explicit TO hit because 魂 is not a day/moon exception');
 assert.equal(runeMap(byKey.get('b')).has('夢'),false,'standalone 意識 must not become 夢');
 
-assert.equal(runeMap(byKey.get('c')).get('水'),1,'水土 AND 地 must preserve 水 attribution');
-assert.equal(runeMap(byKey.get('c')).has('土'),false,'水土 TO 地 must not preserve 土 attribution');
-assert.ok((runeMap(byKey.get('c')).get('地')||0)>=1,'水土 rules must attribute 地');
+assert.ok((runeMap(byKey.get('c')).get('水')||0)>=1,'水土 must keep normal 水 literal attribution');
+assert.ok((runeMap(byKey.get('c')).get('土')||0)>=1,'水土 must keep normal 土 literal attribution');
+assert.ok((runeMap(byKey.get('c')).get('地')||0)>=1,'水土 explicit rules may additionally attribute 地');
 
-assert.equal(runeMap(byKey.get('d')).size,0,'花枝 NAME must not create Rune attribution');
+assert.ok((runeMap(byKey.get('d')).get('花')||0)>=1,'花枝 keeps normal 花 literal attribution; NAME does not suppress non-day/moon Rune names');
 assert.equal(runeMap(byKey.get('e')).get('花'),1,'longer 花枝招展 TO 花 must win before 花枝 NAME');
 
 assert.equal(runeMap(byKey.get('f')).get('鏡'),1,'鏡花水月 AND 幻 must preserve 鏡 attribution');
@@ -91,7 +91,7 @@ assert.equal(runeMap(byKey.get('m')).get('日'),1,'ordinary 日 keyword text mus
 assert.equal(runeMap(byKey.get('n')).get('月'),1,'ordinary 月 keyword text must still match 月');
 
 assert.equal(result.documentCount,rows.length);
-assert.equal(result.unclassifiedCount,1,'NAME-only sample should remain unclassified');
+assert.equal(result.unclassifiedCount,0,'non-day/moon literal matching keeps these samples classifiable');
 assert.ok(result.tieCount>=1);
 
 assert.ok(catalogRows.every(row=>Array.isArray(row.keywords)),'keyword catalog must use one keyword collection per classification item');
