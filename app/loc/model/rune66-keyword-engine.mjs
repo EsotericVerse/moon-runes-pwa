@@ -331,7 +331,7 @@ export function classifyRune66Documents(documents=[],catalogRows=[],structureRow
     tieCount,
     classifications,
     runeTotals:[...runeTotals.values()].sort((a,b)=>a.rune_id-b.rune_id),
-    runeRanking:[...runeTotals.values()].sort((a,b)=>b.document_count-a.document_count||b.count-a.count||a.rune_id-b.rune_id),
+    runeRanking:[...runeTotals.values()].sort((a,b)=>b.count-a.count||b.document_count-a.document_count||a.rune_id-b.rune_id),
     groupTotals:[...groupTotals.values()].sort((a,b)=>a.order-b.order||a.group.localeCompare(b.group)),
     unsupportedRules
   };
