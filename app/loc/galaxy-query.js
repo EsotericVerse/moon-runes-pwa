@@ -356,11 +356,56 @@ async function scopeDensityRows(scope,{startDate='',endDate=''}={}){
     .sort((a,b)=>a.day.localeCompare(b.day));
 }
 
+async function tableDateBounds(table,{filters=[]}={}){
+  const [first,last]=await Promise.all([
+    selectRows(table,{
+      columns:'createtime',
+      filters,
+      orders:[{column:'createtime',ascending:true,nullsFirst:false}],
+      limit:1,
+      offset:0
+    }),
+    selectRows(table,{
+      columns:'createtime',
+      filters,
+      orders:[{column:'createtime',ascending:false,nullsFirst:false}],
+      limit:1,
+      offset:0
+    })
+  ]);
+  return {
+    startDate:dateOnly(first.rows?.[0]?.createtime),
+    endDate:dateOnly(last.rows?.[0]?.createtime)
+  };
+}
+
+async function scopeStatisticsBounds(scope){
+  const current=scopeOf(scope);
+  const [textBounds,mediaBounds]=await Promise.all([
+    tableDateBounds(current.galaxy,{
+      filters:publicContentFilters([{column:'statistics_able',operator:'eq',value:true}])
+    }),
+    tableDateBounds(current.galaxyMedia,{
+      filters:[{column:'media_type',operator:'neq',value:''}]
+    })
+  ]);
+  const starts=[textBounds.startDate,mediaBounds.startDate].filter(Boolean).sort();
+  const ends=[textBounds.endDate,mediaBounds.endDate].filter(Boolean).sort();
+  return {scope_id:current.id,startDate:starts[0]||'',endDate:ends.at(-1)||''};
+}
+
 export async function selectScopeDensityRows(scopes,{startDate='',endDate=''}={}){
   const range={startDate:dateOnly(startDate),endDate:dateOnly(endDate)};
   return (await Promise.all((Array.isArray(scopes)?scopes:[]).map(scope=>scopeDensityRows(scope,range))))
     .flat()
     .sort((a,b)=>a.day.localeCompare(b.day)||a.scope_id.localeCompare(b.scope_id));
+}
+
+export async function selectScopeStatisticsBounds(scopes){
+  const rows=await Promise.all((Array.isArray(scopes)?scopes:[]).map(scope=>scopeStatisticsBounds(scope)));
+  const starts=rows.map(row=>row.startDate).filter(Boolean).sort();
+  const ends=rows.map(row=>row.endDate).filter(Boolean).sort();
+  return {startDate:starts[0]||'',endDate:ends.at(-1)||'',scopes:rows};
 }
 
 export async function selectSourceTrendRows(scopes,{startDate='',endDate=''}={}){
