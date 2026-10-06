@@ -305,6 +305,7 @@ function StatisticTypeSelect({scopeId,navigation,types}){
 }
 
 function ScopeGroupStatistics(){
+  const [aggregateType,setAggregateType]=useState('total');
   const [chartType,setChartType]=useState('line');
   const [timeStandard,setTimeStandard]=useState('1y');
   const scopesQuery=useQuery({
@@ -380,8 +381,9 @@ function ScopeGroupStatistics(){
     <div className="scope-stat-controls">
       <label>
         <span>{UI_COPY.statistics.item}</span>
-        <select className="scope-select" value="scope" disabled>
-          <option value="scope">統計來源 · scope_id</option>
+        <select className="scope-select" value={aggregateType} onChange={event=>setAggregateType(event.target.value)}>
+          <option value="total">LOC 合併總數</option>
+          <option value="scope">Scope 分布（scope_id）</option>
         </select>
       </label>
       <label>
@@ -420,17 +422,22 @@ function ScopeGroupStatistics(){
         <XAxis dataKey="period" angle={-24} textAnchor="end" interval="preserveStartEnd" height={72} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
         <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
         <Tooltip contentStyle={CHART_TOOLTIP}/>
-        <Line type="monotone" dataKey="total" name="LOC 合併總數" stroke={CHART_ACCENT} strokeWidth={3} dot={false}/>
+        {aggregateType==='total'
+          ?<Line type="monotone" dataKey="total" name="LOC 合併總數" stroke={CHART_ACCENT} strokeWidth={3} dot={false}/>
+          :<>
+            <Legend/>
+            {scopeIds.map((id,index)=><Line key={id} type="monotone" dataKey={id} name={'scope_id: '+id} stroke={PIE_COLORS[index%PIE_COLORS.length]} strokeWidth={2} dot={false} connectNulls/>)}
+          </>}
       </LineChart>
     </ResponsiveContainer>:null}
 
     {!densityQuery.isPending&&!densityQuery.error&&chartType==='bar'&&distributionData.length?<ResponsiveContainer width="100%" height={380}>
-      <BarChart data={distributionData} margin={{top:8,right:18,bottom:32,left:8}}>
+      <BarChart data={aggregateType==='total'?[{term:'LOC 合併總數',value:overallTotal}]:distributionData} margin={{top:8,right:18,bottom:32,left:8}}>
         <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
         <XAxis dataKey="term" tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
         <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
         <Tooltip contentStyle={CHART_TOOLTIP}/>
-        <Bar dataKey="value" name="Scope 作品數" fill={CHART_ACCENT} radius={[4,4,0,0]}/>
+        <Bar dataKey="value" name={aggregateType==='total'?'LOC 合併總數':'Scope 作品數'} fill={CHART_ACCENT} radius={[4,4,0,0]}/>
       </BarChart>
     </ResponsiveContainer>:null}
 
@@ -438,8 +445,8 @@ function ScopeGroupStatistics(){
       <PieChart>
         <Tooltip contentStyle={CHART_TOOLTIP}/>
         <Legend/>
-        <Pie data={distributionData} dataKey="value" nameKey="term" cx="50%" cy="50%" outerRadius={140}>
-          {distributionData.map((row,index)=><Cell key={row.term} fill={PIE_COLORS[index%PIE_COLORS.length]}/>)}
+        <Pie data={aggregateType==='total'?[{term:'LOC 合併總數',value:overallTotal}]:distributionData} dataKey="value" nameKey="term" cx="50%" cy="50%" outerRadius={140}>
+          {(aggregateType==='total'?[{term:'LOC 合併總數'}]:distributionData).map((row,index)=><Cell key={row.term} fill={PIE_COLORS[index%PIE_COLORS.length]}/>)}
         </Pie>
       </PieChart>
     </ResponsiveContainer>:null}
