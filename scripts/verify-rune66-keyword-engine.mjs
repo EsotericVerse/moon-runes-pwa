@@ -16,8 +16,8 @@ const structureRows=[
   {rune_id:55,rune_name:'空',group_name:'空間'},
   {rune_id:60,rune_name:'夢',group_name:'無序'},
   {rune_id:61,rune_name:'幻',group_name:'無序'},
-  {rune_id:65,rune_name:'玄',group_name:'特殊'},
-  {rune_id:66,rune_name:'命',group_name:'特殊'}
+  {rune_id:65,rune_name:'玄',group_name:'特殊',class_enable:false},
+  {rune_id:66,rune_name:'命',group_name:'特殊',class_enable:false}
 ];
 
 const catalogRows=structureRows.map((row,index)=>({
@@ -108,12 +108,12 @@ assert.equal(runeMap(byKey.get('q')).has('月'),false,'numeric calendar dates mu
 assert.equal(runeMap(byKey.get('r')).has('日'),false,'Chinese calendar dates must not count 日');
 assert.equal(runeMap(byKey.get('r')).has('月'),false,'Chinese calendar dates must not count 月');
 assert.ok((runeMap(byKey.get('s')).get('命')||0)>=1,'exception Rune 命 must keep its own signal count');
-assert.equal(byKey.get('s').classification_group,'靈魂','exception Runes must not compete with normal Groups for Class');
+assert.equal(byKey.get('s').classification_group,'靈魂','class_enable=false Runes must not compete with enabled Groups for Class');
 assert.ok((runeMap(byKey.get('t')).get('玄')||0)>=1,'exception Rune 玄 must keep its own signal count');
-assert.equal(byKey.get('t').status,'unclassified','exception-only documents must not be forced into a normal Group');
+assert.equal(byKey.get('t').status,'unclassified','class_enable=false-only documents must not be forced into an enabled Class');
 const specialTotal=result.groupTotals.find(row=>row.group==='特殊');
-assert.equal(Number(specialTotal?.hit_count||0),0,'exception Rune signals must be excluded from Group totals');
-assert.equal(Number(specialTotal?.document_count||0),0,'exception Runes must never win normal Class totals');
+assert.equal(Number(specialTotal?.hit_count||0),0,'class_enable=false Rune signals must be excluded from Class-group totals');
+assert.equal(Number(specialTotal?.document_count||0),0,'class_enable=false Runes must never win Class totals');
 
 assert.equal(result.documentCount,rows.length);
 assert.equal(result.unclassifiedCount,4,'NAME-only, calendar-date-only and exception-only samples must remain unclassified');
