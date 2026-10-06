@@ -25,6 +25,7 @@ const scopeRuntime=read('app/modular/use-scope-runtime.js');
 const scopeRegistry=read('app/modular/scope-registry.js');
 const importPanel=read('app/loc/ManagementImportPanel.jsx');
 const registrySql=read('docs/sql/scope-registry-management.sql');
+const sourceRefreshIndex=read('docs/sql/source-refresh-index.sql');
 
 must(!galaxy.includes('include_in_time'),'generic search must not query nonexistent include_in_time');
 must(galaxy.includes("'style_tags'")&&galaxy.includes("searchFields:['label','note','status','style_tags']"),'generic Time search must include style_tags');
@@ -85,6 +86,8 @@ must(registrySql.includes('create or replace function api.manage_scope_registry'
 must(scopeRuntime.includes("pathname==='/scope'||pathname.startsWith('/scope/')")&&scopeRuntime.includes('selectScopeRegistryEntry'),'generic Scope runtime must resolve DB registry entries through the fixed static shell');
 must(scopeRegistry.includes("GENERIC_SCOPE_PATH='/scope'")&&scopeRegistry.includes("params.set('scope',id)"),'unknown DB Scope links must route through the generic static shell');
 must(importPanel.includes('function SourceRefresh')&&importPanel.includes("source_native_id")&&importPanel.includes(".eq('source_name',selected)")&&importPanel.includes("offset+=200"),'Source Refresh must use bounded source_name + source_native_id delta queries instead of full-table scans');
+must(sourceRefreshIndex.includes('(source_name,source_native_id)')&&sourceRefreshIndex.includes('where source_name is not null and source_native_id is not null'),'Source Refresh lookup must keep the composite partial index contract');
+must(importPanel.includes('record.createtime||current.createtime||null')&&importPanel.includes('record.source_place||current.source_place||null')&&importPanel.includes('record.url||current.url||null'),'Source Refresh must preserve optional existing metadata when the payload omits it');
 
 must(!/silver\.runes(?:_etc)?\b/.test(galaxy),'generic Galaxy/Search provider must not expose private Rune Core tables');
 const sharedSearch=read('app/modular/features/Search.jsx');
