@@ -135,7 +135,13 @@ function joinPoeticGroup(values=[]){
   return parts.join('，');
 }
 
-function composeFixedGrammar(values,mode){
+function trendConnector(trend){
+  if(trend==='轉強')return '遂';
+  if(trend==='轉弱')return '然';
+  return '而';
+}
+
+function composeFixedGrammar(values,mode,trend='持平'){
   const parts=(values||[]).map(cleanGrammarPart);
   if(mode==='ow3gs'&&parts.length>=11){
     const cause=`${joinPoeticGroup(parts.slice(0,2))}；${joinPoeticGroup(parts.slice(2,4))}，遂${joinPoeticGroup(parts.slice(4,6))}`;
@@ -151,7 +157,7 @@ function composeFixedGrammar(values,mode){
       offset+=size;
     }
     if(groups.length===2)return `${groups[0]}，故${groups[1]}。`;
-    if(groups.length===3)return `${groups[0]}；${groups[1]}，遂${groups[2]}。`;
+    if(groups.length===3)return `${groups[0]}；${groups[1]}，${trendConnector(trend)}${groups[2]}。`;
     return `${groups.join('；')}。`;
   }
   if(parts.length===1)return `${parts[0]}。`;
@@ -166,7 +172,7 @@ function buildFixedReading(cards,directions,mode){
   const source=Array.isArray(cards)?cards:[];
   const poeticParts=source.map((card,index)=>poeticClause(card,directions[index]));
   const weighted=buildSpreadAdvice(source,directions,mode);
-  const sentence=composeFixedGrammar(poeticParts,mode);
+  const sentence=composeFixedGrammar(poeticParts,mode,weighted?.trend||'持平');
   return {sentence,domains:[],evaluation:weighted};
 }
 
