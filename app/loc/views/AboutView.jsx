@@ -30,7 +30,7 @@ export default function AboutView(){
       <figure className="home-hero-visual">
         <picture>
           <source media="(max-width: 900px)" srcSet={SITE_IMAGES.locHeroSmall.src} />
-          <img src={SITE_IMAGES.locHero.src} width={SITE_IMAGES.locHero.width} height={SITE_IMAGES.locHero.height} alt="LOC 月典語言架構框架視覺理念圖" loading="lazy" decoding="async" />
+          <img src={SITE_IMAGES.locHero.src} width={SITE_IMAGES.locHero.width} height={SITE_IMAGES.locHero.height} alt="LOC 月典語言架構框架視覺理念圖" loading="eager" fetchPriority="high" decoding="async" />
         </picture>
       </figure>
     </header>
