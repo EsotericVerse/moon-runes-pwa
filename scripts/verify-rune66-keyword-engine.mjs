@@ -116,14 +116,15 @@ assert.equal(byKey.get('s').classification_group,'靈魂','class_enable=false Ru
 assert.ok((runeMap(byKey.get('t')).get('玄')||0)>=1,'exception Rune 玄 must keep its own signal count');
 assert.equal(byKey.get('t').status,'unclassified','class_enable=false-only documents must not be forced into an enabled Class');
 assert.equal(byKey.get('u').classification_group,'秩序','equal signal counts must prefer the group with more signal characters');
-assert.equal(byKey.get('v').classification_group,'特殊','equal signal counts and equal signal characters must fall back to the reserved Class group');
+assert.equal(byKey.get('v').classification_group,'','equal signal counts and equal signal characters must remain unresolved instead of becoming Special');
+assert.equal(byKey.get('v').status,'unclassified','unresolved Class ties must stay unclassified');
 assert.ok(byKey.get('v').tied_groups.includes('靈魂')&&byKey.get('v').tied_groups.includes('無序'),'final unresolved tie diagnostics must remain available');
 const specialTotal=result.groupTotals.find(row=>row.group==='特殊');
 assert.ok(Number(specialTotal?.hit_count||0)>0,'class_enable=false Rune signals must remain visible in Group totals');
-assert.equal(Number(specialTotal?.document_count||0),1,'reserved Class group must receive only unresolved enabled-group ties');
+assert.equal(Number(specialTotal?.document_count||0),0,'class_enable=false Special group must never receive Class fallback documents');
 
 assert.equal(result.documentCount,rows.length);
-assert.equal(result.unclassifiedCount,4,'NAME-only, calendar-date-only and exception-only samples must remain unclassified');
+assert.equal(result.unclassifiedCount,5,'NAME-only, calendar-date-only, exception-only and unresolved-tie samples must remain unclassified');
 assert.equal(result.tieCount,1,'only signal-count and signal-character ties must remain final ties');
 
 assert.ok(catalogRows.every(row=>Array.isArray(row.keywords)),'keyword catalog must use one keyword collection per classification item');
