@@ -80,7 +80,7 @@ if(!failures.length){
   const culture=read('app/modular/features/Culture.jsx');
   const queryContract=read('app/loc/query-contract.mjs');
   if(!queryContract.includes('DB_QUERY_BATCH_SIZE=1000'))failures.push('Portable Data API batch size must remain 1000.');
-  for(const token of ["effectiveTimeStandard=aggregateScopes?'1y':timeStandard",'statisticsQueryRange','selectSourceTrendRows(targetScopes,queryRange)'])if(!statistics.includes(token))failures.push('Statistics query-window contract missing '+token);
+  for(const token of ['ScopeGroupStatistics','selectScopeDensityRows(scopes,{startDate,endDate})',"shiftDate(endDate,{months:-12})",'ScopeStatisticsPanel','statisticsQueryRange','selectSourceTrendRows(targetScopes,queryRange)'])if(!statistics.includes(token))failures.push('Statistics query-window contract missing '+token);
   if(statistics.includes("?{startDate:customFrom,endDate:customTo}\n    :{startDate:'',endDate:''}"))failures.push('Preset Statistics ranges must not fall back to an unbounded database query.');
   if(galaxy.includes("{column:'source_name',operator:'neq',value:''}"))failures.push('Unknown source rows must reach Statistics and map to Others instead of being discarded.');
   for(const token of ['表現風格','Class｜符文群組','Group｜符文排行'])if(!statistics.includes(token))failures.push('Statistics style-filter presentation missing '+token);
