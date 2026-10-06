@@ -133,13 +133,21 @@ function increment(state,rune,signal){
 }
 
 function specialRuneKeywordTexts(normalizedTexts,runes,rune){
-  if(rune.label!=='日'&&rune.label!=='月')return normalizedTexts;
-
-  const sources=[...new Set(runes
+  const nameSources=runes
     .flatMap(item=>item.rules)
-    .filter(rule=>rule.operator==='AND'||rule.operator==='TO'||rule.operator==='NAME')
+    .filter(rule=>rule.operator==='NAME')
     .map(rule=>normalizeText(rule.source))
-    .filter(source=>source&&source.includes(normalizeText(rune.label))))]
+    .filter(Boolean);
+
+  const specialSources=(rune.label==='日'||rune.label==='月')
+    ?runes
+      .flatMap(item=>item.rules)
+      .filter(rule=>rule.operator==='AND'||rule.operator==='TO')
+      .map(rule=>normalizeText(rule.source))
+      .filter(source=>source&&source.includes(normalizeText(rune.label)))
+    :[];
+
+  const sources=[...new Set([...nameSources,...specialSources])]
     .sort((a,b)=>b.length-a.length);
 
   if(!sources.length)return normalizedTexts;
