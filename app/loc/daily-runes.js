@@ -1,5 +1,6 @@
 import {dbAuthRelation} from './db-client.mjs';
 import {selectAllRows,selectRows} from './db-query.mjs';
+import {realMoonPhase} from './model/moon-phase';
 
 
 async function attachRuneMeta(rows){
@@ -66,6 +67,35 @@ export async function selectPreviousDailyRuneOccurrence({runeNumber,beforeDate}=
   if(!rows?.length)return null;
   const attached=await attachRuneMeta(rows);
   return attached[0]||null;
+}
+
+const DIRECTION_CODE=Object.freeze({
+  '正位':1,
+  '半正位':2,
+  '半逆位':3,
+  '逆位':4
+});
+
+export async function selectDailyRuneSituation({runeNumber,direction,recordDate}={}){
+  const rune=Number(runeNumber);
+  const dir=DIRECTION_CODE[String(direction||'').trim()];
+  const date=String(recordDate||'').slice(0,10);
+  if(!Number.isInteger(rune)||rune<0||rune>66||!dir)return {text:'',moonPhase:'未知'};
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return {text:'',moonPhase:'未知'};
+  const moonPhase=realMoonPhase(new Date(date+'T12:00:00+08:00'));
+  if(!moonPhase||moonPhase==='未知')return {text:'',moonPhase:'未知'};
+  const {rows}=await selectRows('silver.runes_etc',{
+    columns:'desc',
+    filters:[
+      {column:'rune_id',operator:'eq',value:rune},
+      {column:'dir',operator:'eq',value:dir},
+      {column:'type',operator:'eq',value:'sit_q'},
+      {column:'current_moon',operator:'eq',value:moonPhase}
+    ],
+    limit:1,
+    offset:0
+  });
+  return {text:String(rows?.[0]?.desc||'').trim(),moonPhase};
 }
 
 export async function selectDailyRuneMonth({year,month}={}){
