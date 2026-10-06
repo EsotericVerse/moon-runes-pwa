@@ -26,6 +26,7 @@ function countBy(rows,keyOf,{includeEmpty=false}={}){
   const counts=new Map();
   for(const row of Array.isArray(rows)?rows:[]){
     const key=keyOf(row);
+    if(key===null||key===undefined)continue;
     if(!includeEmpty&&!key)continue;
     counts.set(key,(counts.get(key)||0)+1);
   }
@@ -41,7 +42,7 @@ function dailyCountRows(rows,column,{includeEmpty=false,includeUndated=false}={}
   const counts=countBy(rows,row=>{
     const category=String(row?.[column]||'').trim();
     const day=String(row?.createtime||'').slice(0,10);
-    if((!includeEmpty&&!category)||(!includeUndated&&!day))return '';
+    if((!includeEmpty&&!category)||(!includeUndated&&!day))return null;
     return day+'\u0000'+category;
   },{includeEmpty:true});
   return [...counts.entries()].map(([key,item_count])=>{
