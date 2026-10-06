@@ -69,8 +69,12 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const op=String(operation||'').trim().toLowerCase();
     if(!['insert','update','delete'].includes(op))throw new Error('Unsupported keyword library operation');
     const relation=dbAuthRelation('api.lo3rwang_keywords_manage');
+    const className=String(item?.class_name||'').trim();
     const values={
-      group_name:String(item?.group_name||'').trim(),
+      group_name:className,
+      class_name:className,
+      class_group:String(item?.class_group||'').trim(),
+      class_enable:item?.class_enable!==false,
       item_no:Number(item?.item_no),
       item_name:String(item?.item_name||'').trim(),
       principle:String(item?.principle||''),
@@ -90,6 +94,39 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const affected=Array.isArray(data)?data.length:0;
     if(affected<1)throw new Error('Keyword library write affected 0 rows');
     return {count:affected,keyword_id:data?.[0]?.keyword_id||item?.keyword_id||null};
+  }
+
+  async function copyKeywordLibraryClass(sourceClassName,targetClassName){
+    const source=String(sourceClassName||'').trim();
+    const target=String(targetClassName||'').trim();
+    if(!source||!target)throw new Error('Class 名稱不可為空');
+    if(source===target)throw new Error('新 Class 名稱必須不同');
+    const relation=dbAuthRelation('api.lo3rwang_keywords_manage');
+    const {data:existing,error:existingError}=await relation.select('keyword_id').eq('class_name',target).limit(1);
+    if(existingError)throw new Error(existingError.message||'Keyword class check failed');
+    if(existing?.length)throw new Error('這個 Class 已經存在');
+    const {data:rows,error:readError}=await relation
+      .select('class_name,class_group,class_enable,item_no,item_name,principle,keywords,order_no')
+      .eq('class_name',source)
+      .order('order_no',{ascending:true})
+      .order('item_no',{ascending:true});
+    if(readError)throw new Error(readError.message||'Keyword class read failed');
+    if(!rows?.length)throw new Error('找不到要複製的 Class');
+    const copies=rows.map(row=>({
+      group_name:target,
+      class_name:target,
+      class_group:String(row.class_group||'').trim(),
+      class_enable:row.class_enable!==false,
+      item_no:Number(row.item_no),
+      item_name:String(row.item_name||'').trim(),
+      principle:String(row.principle||''),
+      keywords:Array.isArray(row.keywords)?row.keywords:[],
+      order_no:Number(row.order_no)||0
+    }));
+    const {data,error}=await relation.insert(copies).select('keyword_id');
+    if(error)throw new Error(error.message||'Keyword class copy failed');
+    if((data?.length||0)!==copies.length)throw new Error('Keyword class copy incomplete');
+    return {count:data.length};
   }
 
   async function syncManageScopeRow(values,{scopeId,email}={}){
@@ -137,5 +174,5 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
-  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,writeKeywordLibraryItem,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
+  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,writeKeywordLibraryItem,copyKeywordLibraryClass,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
 }
