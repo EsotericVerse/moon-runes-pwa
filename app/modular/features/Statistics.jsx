@@ -247,8 +247,10 @@ function Rune66Summary({analysis}){
   const classRows=[...(data.groupTotals||[])]
     .filter(row=>Number(row.document_count||0)>0)
     .sort((a,b)=>Number(b.document_count||0)-Number(a.document_count||0)||Number(a.order||0)-Number(b.order||0));
-  const groupRows=[...(data.runeRanking||[])]
+  const runeRows=[...(data.runeRanking||[])]
     .filter(row=>Number(row.count||0)>0);
+  const groupRows=runeRows.filter(row=>String(row.group||'')!=='特殊');
+  const exceptionRows=runeRows.filter(row=>String(row.group||'')==='特殊');
   const classifiedTotal=Math.max(0,Number(data.classifiedCount||0));
   const groupHitTotal=groupRows.reduce((sum,row)=>sum+Number(row.count||0),0);
   return <div className="scope-rune66-summary">
@@ -283,6 +285,9 @@ function Rune66Summary({analysis}){
           return <div key={row.rune_id}><strong>{String(row.rune_id).padStart(2,'0')} · {groupLabel(row.label)}</strong><span>{count.toLocaleString()} 次 · {ratio.toFixed(1)}%</span></div>;
         })}
       </div>
+      {exceptionRows.length?<div className="scope-ranking">
+        {exceptionRows.map(row=><div key={row.rune_id}><strong>{String(row.rune_id).padStart(2,'0')} · {groupLabel(row.label)}</strong><span>{Number(row.count||0).toLocaleString()} 次 · 例外</span></div>)}
+      </div>:null}
     </section>
   </div>;
 }
