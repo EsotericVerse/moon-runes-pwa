@@ -575,7 +575,7 @@ export default function Culture(){
                     <span>表現風格</span>
                     <select className='scope-select' value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}>
                       <option value='none'>不套用</option>
-                      <option value='rune66'>符文66</option>
+                      <option value='rune66'>關鍵詞 Class</option>
                     </select>
                   </label>:null}
                 </div>
@@ -609,14 +609,16 @@ export default function Culture(){
                   }}
                 />:null}
                 {styleFilter==='rune66'?<section className='scope-culture-style-filter'>
-                  <p className='loc-eyebrow'>表現風格 · 符文66</p>
+                  <p className='loc-eyebrow'>表現風格 · {String(styleQuery.data?.keywordMeta?.class_name||'關鍵詞 Class')}</p>
                   <h4>Class｜符文群組比例</h4>
-                  {styleQuery.isPending?<p className='scope-status'>正在套用符文66表現風格…</p>:null}
+                  {styleQuery.isPending?<p className='scope-status'>正在讀取已定錨的關鍵詞 Attr…</p>:null}
                   {styleQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(styleQuery.error)}</p>:null}
-                  {!styleQuery.isPending&&!styleQuery.error&&styleClassRows.length?<div className='scope-ranking'>
+                  {!styleQuery.isPending&&!styleQuery.error&&!styleQuery.data?.staticstime?<p className='scope-status'>關鍵詞尚未定錨；請先到 Scope 管理的關鍵詞庫重新分析文章。</p>:null}
+                  {!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.staticstime&&!styleQuery.data?.statisticsEnabled?<p className='scope-status'>目前有效文章 {Number(styleQuery.data?.keywordDocumentCount||0).toLocaleString()} 篇；必須大於 {Number(styleQuery.data?.keywordMinDocuments||0).toLocaleString()} 篇才啟用關鍵詞統計。</p>:null}
+                  {!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.statisticsEnabled&&styleClassRows.length?<div className='scope-ranking'>
                     {styleClassRows.map(row=><div key={row.group}><strong>{row.class_label}</strong><span>{Number(row.document_count||0).toLocaleString()} 篇 · {Number(row.ratio||0).toFixed(1)}%</span></div>)}
                   </div>:null}
-                  {!styleQuery.isPending&&!styleQuery.error&&styleClassRiverItems.length?<CultureTimeline
+                  {!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.statisticsEnabled&&styleClassRiverItems.length?<CultureTimeline
                     items={styleClassRiverItems}
                     labelOf={()=>''}
                     focus={{}}

@@ -2,7 +2,7 @@ import {createConfiguredAdapter} from '../app/loc/providers/configured.mjs';
 const client=createConfiguredAdapter().publicClient;
 const {data,error}=await client.schema('silver').from('manage').select('id,galaxy,time').order('id');
 if(error)throw error;
-const tables=new Set(['manage','runes','runes_etc','runes_group','game','lrunes_daily','lo3rwang_keywords']);
+const tables=new Set(['manage','runes','runes_etc','runes_group','game','lrunes_daily']);
 for(const row of data){
   if(!/^[a-z][a-z0-9]*$/.test(row.id))throw new Error('Invalid Scope ID');
   const galaxy=row.galaxy||'galaxy',time=row.time||'time';

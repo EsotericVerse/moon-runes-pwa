@@ -17,6 +17,7 @@ const admin=read('app/loc/views/AdminHomeView.jsx');
 const dbContract=read('app/loc/db-contract.mjs');
 const keywordLibrary=read('app/loc/KeywordLibraryPanel.jsx');
 const keywordAnalysis=read('app/loc/rune66-keyword-analysis.js');
+const portableSchema=read('docs/sql/portable-current-schema.sql');
 
 must(!galaxy.includes('include_in_time'),'generic search must not query nonexistent include_in_time');
 must(galaxy.includes("'style_tags'")&&galaxy.includes("searchFields:['label','note','status','style_tags']"),'generic Time search must include style_tags');
@@ -48,14 +49,25 @@ must(data.includes('!draft&&editorMessage'),'record-detail failures and successf
 must(admin.includes("setMappings([]);setStatus(error?.message||'Mapping 讀取失敗。');"),'Admin mapping read rejections must surface in the UI');
 must(keywordLibrary.includes('class_name')&&keywordLibrary.includes('class_group')&&keywordLibrary.includes('class_enable')&&keywordLibrary.includes('item_name')&&keywordLibrary.includes('principle')&&keywordLibrary.includes('keywords_text'),'keyword library editor must edit self-contained Class, Group, participation, item, principle and one keyword collection together');
 must(!keywordLibrary.includes('keyword_group')&&!keywordLibrary.includes("node_type:'style'")&&!keywordLibrary.includes("node_type:'keyword'"),'keyword library editor must not recreate style/rule/node-type storage');
-must(keywordLibrary.includes('useQueryClient')&&keywordLibrary.includes("statistics-rune66-classification")&&keywordLibrary.includes("refetchType:'all'"),'keyword edits must invalidate and immediately refetch Rune66 classification');
-must(keywordLibrary.includes("CONFIG_TABLE='silver.lo3rwang'")&&keywordLibrary.includes('keyword_min_chars')&&keywordLibrary.includes('儲存分析門檻'),'keyword analysis minimum length must be owned and editable by the Scope keyword management page');
-must(keywordAnalysis.includes('DEFAULT_KEYWORD_MIN_CHARS=32')&&keywordAnalysis.includes("analysisCharacterCount(row?.content)>threshold"),'keyword classification must default to >32 non-whitespace body characters and exclude shorter documents before analysis');
-must(keywordAnalysis.includes("columns:'id,keyword_min_chars'"),'keyword analysis must read the Scope-owned minimum length attribute');
+must(keywordLibrary.includes("CONFIG_TABLE='silver.lo3rwang'")&&keywordLibrary.includes('keyword_min_chars')&&keywordLibrary.includes('keyword_min_documents'),'keyword analysis thresholds must be Scope-owned');
+must(keywordLibrary.includes('current_keyword_class_id')&&keywordLibrary.includes('keyword_class_share_enabled')&&keywordLibrary.includes('Class UUID'),'keyword library must expose current Class UUID and Scope sharing control');
+must(keywordLibrary.includes('重新分析並寫入文章 Attr')&&keywordLibrary.includes('runRune66ClassificationBatch'),'keyword management must expose explicit batch classification instead of live recalculation');
+must(dbContract.includes("rpc('apply_keyword_classification'")&&dbContract.includes('silver.keyword_classes')&&dbContract.includes('randomUUID'),'keyword classification writes and copied Classes must use the UUID registry');
+must(dbContract.includes("rpc('read_keyword_class'")&&portableSchema.includes('api.read_keyword_class')&&portableSchema.includes('keyword_class_share_enabled'),'shared Keyword Class resolution must require scope + UUID and obey Scope sharing authorization');
+must(!portableSchema.includes('GRANT SELECT ON "silver"."lo3rwang_keywords" TO "anonymous"'),'private keyword contents must not be anonymously enumerable');
+must(keywordAnalysis.includes('DEFAULT_KEYWORD_MIN_CHARS=32')&&keywordAnalysis.includes('DEFAULT_KEYWORD_MIN_DOCUMENTS=100'),'keyword batch must retain >32 article and >100 statistics thresholds');
+must(keywordAnalysis.includes('analysisCharacterCount(row?.content)>minChars'),'keyword classification must gate on non-whitespace body characters');
+must(keywordAnalysis.includes("columns:'uid,createtime,class_id,group_lists'"),'public keyword Statistics/Culture must read stored article attrs');
+must(keywordAnalysis.includes('dynamicTieCount')&&keywordAnalysis.includes('counts.get(candidate)'),'complete keyword ties must use dynamic current Class counts');
+must(portableSchema.includes("group_lists='false'::jsonb")&&keywordAnalysis.includes('group_lists:result?.group_lists||{}'),'keyword attrs must reset excluded rows to false and store eligible no-hit rows as objects');
+must(dbContract.includes("mode:'begin'")&&dbContract.includes("mode:'chunk'")&&dbContract.includes("mode:'finalize'")&&dbContract.includes('batchSize=500'),'keyword attr writes must reset, write bounded chunks, then finalize staticstime');
+must(!keywordAnalysis.includes("selectAllRows(PERSONAL_KEYWORD_TABLE"),'public keyword classification must not read the private keyword library');
 
 must(!/silver\.runes(?:_etc)?\b/.test(galaxy),'generic Galaxy/Search provider must not expose private Rune Core tables');
 const sharedSearch=read('app/modular/features/Search.jsx');
 must(!/runeScopeIds|silver\.runes(?:_etc)?\b/.test(sharedSearch),'shared Search must stay Scope-data only');
+must(sharedSearch.includes('resolveScopeSearchAlias')&&sharedSearch.includes("label:'前往 Scope 首頁'")&&sharedSearch.includes('return;'),'exact Scope aliases must return one homepage shortcut and stop the search');
+must(sharedSearch.includes('selectStyleKeywordIntroductions')&&sharedSearch.includes('[...styleIntroductions,...enrichedRows]'),'style keyword descriptions must precede ordinary related results');
 
 if(failures.length){
   console.error('[management-contract] verification failed');

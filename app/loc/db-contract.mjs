@@ -65,12 +65,56 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return {...result,count:affected};
   }
 
+  async function keywordClassificationWrite(payload){
+    const {data,error}=await authClient.schema('api').rpc('apply_keyword_classification',{p_rows:payload});
+    if(error)throw new Error(error.message||'Keyword classification write failed');
+    return Number(data||0);
+  }
+
+  async function applyKeywordClassification(payload={}){
+    const rows=Array.isArray(payload?.rows)?payload.rows:[];
+    const meta=payload?.meta&&typeof payload.meta==='object'?payload.meta:{};
+    await keywordClassificationWrite({mode:'begin'});
+
+    const batchSize=500;
+    let count=0;
+    for(let offset=0;offset<rows.length;offset+=batchSize){
+      const batch=rows.slice(offset,offset+batchSize);
+      const affected=await keywordClassificationWrite({mode:'chunk',rows:batch});
+      if(affected!==batch.length){
+        throw new Error(`Keyword classification chunk incomplete: expected ${batch.length}, affected ${affected}`);
+      }
+      count+=affected;
+    }
+
+    const documentCount=await keywordClassificationWrite({mode:'finalize',meta});
+    if(documentCount!==rows.length){
+      throw new Error(`Keyword classification finalize mismatch: expected ${rows.length}, counted ${documentCount}`);
+    }
+    return {count,documentCount};
+  }
+
+  async function readKeywordClass(scopeId,classId){
+    const scope=String(scopeId||'').trim().toLowerCase();
+    const id=String(classId||'').trim();
+    if(!scope||!id)return null;
+    const {data,error}=await publicClient.schema('api').rpc('read_keyword_class',{
+      p_scope_id:scope,
+      p_class_id:id
+    });
+    if(error)throw new Error(error.message||'Keyword Class read failed');
+    return data;
+  }
+
   async function writeKeywordLibraryItem(operation,item={}){
     const op=String(operation||'').trim().toLowerCase();
     if(!['insert','update','delete'].includes(op))throw new Error('Unsupported keyword library operation');
     const relation=dbAuthRelation('api.lo3rwang_keywords_manage');
     const className=String(item?.class_name||'').trim();
+    const classId=String(item?.class_id||'').trim();
+    if(!classId)throw new Error('Class UUID 不可為空');
     const values={
+      class_id:classId,
       group_name:className,
       class_name:className,
       class_group:String(item?.class_group||'').trim(),
@@ -106,13 +150,19 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(existingError)throw new Error(existingError.message||'Keyword class check failed');
     if(existing?.length)throw new Error('這個 Class 已經存在');
     const {data:rows,error:readError}=await relation
-      .select('class_name,class_group,class_enable,item_no,item_name,principle,keywords,order_no')
+      .select('class_id,class_name,class_group,class_enable,item_no,item_name,principle,keywords,order_no')
       .eq('class_name',source)
       .order('order_no',{ascending:true})
       .order('item_no',{ascending:true});
     if(readError)throw new Error(readError.message||'Keyword class read failed');
     if(!rows?.length)throw new Error('找不到要複製的 Class');
+    const newClassId=globalThis.crypto?.randomUUID?.();
+    if(!newClassId)throw new Error('無法產生 Class UUID');
+    const registry=dbAuthRelation('silver.keyword_classes');
+    const {error:registryError}=await registry.insert({class_id:newClassId,scope_id:'lo3rwang'});
+    if(registryError)throw new Error(registryError.message||'Keyword Class registry create failed');
     const copies=rows.map(row=>({
+      class_id:newClassId,
       group_name:target,
       class_name:target,
       class_group:String(row.class_group||'').trim(),
@@ -124,9 +174,16 @@ export function createDatabaseClient({publicClient,authClient,auth}){
       order_no:Number(row.order_no)||0
     }));
     const {data,error}=await relation.insert(copies).select('keyword_id');
-    if(error)throw new Error(error.message||'Keyword class copy failed');
-    if((data?.length||0)!==copies.length)throw new Error('Keyword class copy incomplete');
-    return {count:data.length};
+    if(error){
+      await registry.delete().eq('class_id',newClassId);
+      throw new Error(error.message||'Keyword class copy failed');
+    }
+    if((data?.length||0)!==copies.length){
+      await relation.delete().eq('class_id',newClassId);
+      await registry.delete().eq('class_id',newClassId);
+      throw new Error('Keyword class copy incomplete');
+    }
+    return {count:data.length,class_id:newClassId};
   }
 
   async function syncManageScopeRow(values,{scopeId,email}={}){
@@ -174,5 +231,5 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
-  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,writeKeywordLibraryItem,copyKeywordLibraryClass,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
+  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,writeKeywordLibraryItem,copyKeywordLibraryClass,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
 }
