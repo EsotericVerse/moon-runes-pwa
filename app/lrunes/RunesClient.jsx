@@ -18,6 +18,7 @@ export default function RunesClient(){
         alt=""
         aria-hidden="true"
         loading="eager"
+        fetchPriority="high"
         decoding="async"
       />
       <div className="runes-home-hero-overlay" aria-hidden="true"/>

@@ -118,6 +118,36 @@
 .runes-rune-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.65rem}
 .runes-rune-detail-grid>span{display:grid;gap:.2rem;padding:.75rem .8rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-surface-soft);color:var(--loc-text);line-height:1.55}
 .runes-rune-detail-grid>span strong{color:var(--loc-gold);font-size:.78rem}
+
+.runes-rune-long-details{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  margin-top:.35rem;
+  border-top:1px solid var(--loc-line);
+}
+.runes-rune-long-detail{
+  min-width:0;
+  padding:1.25rem 1.2rem 1.35rem;
+  border-bottom:1px solid var(--loc-line);
+}
+.runes-rune-long-detail:nth-child(odd){
+  border-right:1px solid var(--loc-line);
+}
+.runes-rune-long-detail strong{
+  display:block;
+  margin-bottom:.55rem;
+  color:var(--loc-gold);
+  font-size:.95rem;
+  line-height:1.45;
+}
+.runes-rune-long-detail p{
+  max-width:none;
+  margin:0;
+  color:var(--loc-text);
+  font-size:.95rem;
+  line-height:1.82;
+  text-wrap:pretty;
+}
 .runes-library-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.85rem}
 .runes-library-card{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:start;gap:.4rem;min-width:0;padding:.85rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-md);background:var(--loc-ui-panel-soft)}
 .runes-library-thumb{display:block;width:72px;height:72px;object-fit:contain;border-radius:var(--loc-radius-sm);background:var(--loc-surface-soft)}
@@ -131,6 +161,8 @@
   .runes-spread-reading-layout{grid-template-columns:1fr}
   .runes-rune-profile{grid-template-columns:1fr}
   .runes-rune-detail-grid{grid-template-columns:1fr}
+  .runes-rune-long-details{grid-template-columns:1fr}
+  .runes-rune-long-detail:nth-child(odd){border-right:0}
   .loc-draw-grid{grid-template-columns:repeat(2,minmax(0,1fr));max-width:none;margin-inline:0}
   .loc-draw-grid[data-draw-layout="single"],.loc-draw-grid[data-draw-layout="daily"]{grid-template-columns:1fr;max-width:none}
   .loc-draw-grid[data-draw-layout="2card"]{grid-template-columns:repeat(2,minmax(0,1fr));max-width:none}

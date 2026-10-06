@@ -320,7 +320,7 @@ export default function AdminHomeView(){
   </section>;
 
   return <section className="loc-view scope-management-page">
-    <header className="loc-hero">
+    <header className="loc-hero loc-hero-context">
       <p className="loc-eyebrow">{UI_COPY.admin.eyebrow}</p>
       <h1>{UI_COPY.admin.eyebrow}</h1>
       <p>系統級設定與 Scope Manage 分離；這裡只處理全域責任。</p>

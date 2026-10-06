@@ -13,7 +13,7 @@ export function FeaturePage({featureId,children,subtitle=null,description=null})
   const finalSubtitle=subtitle||resolvedSubtitle;
   return <main className="scope-main">
     <section className="scope-page">
-      <header className="loc-card scope-hero">
+      <header className="loc-card scope-hero scope-feature-hero">
         <div className="home-title-row">
           <h1>{profile.title}</h1>
           {finalSubtitle?<p className="loc-subtitle scope-subtitle">{finalSubtitle}</p>:null}

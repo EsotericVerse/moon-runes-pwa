@@ -49,7 +49,7 @@ if(!failures.length){
   for(const token of ['命之符文示例','月之符文籤詩系統','RuneDrawModeBubbles'])if(!runeIntro.includes(token))failures.push('shared complete Rune intro missing '+token);
   if(!runeHome.includes('RuneIntroSection'))failures.push('LunaRunes home must reuse complete LOC Rune intro section');
   if(!identity.includes('RuneIntroSection'))failures.push('LOC home must reuse complete Rune intro section');
-  for(const token of ['home-draw-bubbles runes-rune-long-details','符文歷史','神話故事','靈魂課題','實踐挑戰','儀式建議','調和建議'])if(!runeDirectory.includes(token))failures.push('Rune directory detail bubbles missing '+token);
+  for(const token of ['runes-rune-long-details','runes-rune-long-detail','符文歷史','神話故事','靈魂課題','實踐挑戰','儀式建議','調和建議'])if(!runeDirectory.includes(token))failures.push('Rune directory long detail layout missing '+token);
   if(runeHome.includes('daily/trend'))failures.push('Daily Trend must remain folded into Daily Log.');
   const legacyDailyTrend=read('app/daily/trend/page.jsx');
   if(!legacyDailyTrend.includes("from '../log/page'"))failures.push('Legacy Daily Trend route must reuse Daily Log.');
