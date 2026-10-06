@@ -10,7 +10,7 @@ Current 已具備：
 - Search／Statistics／Culture／Governance 維持同一套 FeaturePage 與 Page Composition；功能名稱與共用視覺系統不因 Scope 任意改寫。
 - public Search／Statistics／Culture availability 已由 Current DB feature flags 控制；management canonical visibility 保持獨立。
 - Search／Statistics／Culture 使用 PostgreSQL 精準 query、固定 eligibility filter、COUNT 與 bounded pagination。
-- LOC aggregate Statistics 顯示 LOC 合併總數與各 scope_id 占比，支援一年／一月／一週及折線／長條／圓餅圖；細部統計導向各 Scope。
+- LOC Scope Group 的 Search／Statistics／Culture 僅讀取 Scope Registry 做成員總覽與導引；不跨 Scope 執行 corpus 搜尋、COUNT 或時間河。細部分析由各 Scope 自己執行。
 - FlexSearch runtime 已移除；Rune66 使用統一 canonical keyword library、literal classifier 與 Current 管理流程。
 - 一般 Scope 不以 LunaRunes keyword、positive_keywords、negative_keywords 或 Rune Canon 作 fallback。
 - LunaRunes 66 符＋第零符德、四方向、九組責任維持 Current Canon。
@@ -46,7 +46,7 @@ Manage／Admin 已有 automated contract、權限與 build 驗證，但尚未完
 
 ## 0.9 Direction — Scope Group
 
-0.9 的主要架構方向是 Scope／Scope Group 化。共用 Search／Statistics／Culture／Management／Audit 必須由 Scope mapping 取得資料表責任，不以指定 Scope table name 寫死流程；Scope Group 應組合 Scope，而不是建立另一份 corpus authority。
+0.9 的主要架構方向是 Scope／Scope Group 化。各 Scope 的 Search／Statistics／Culture／Management／Audit 由 Scope resolver 取得資料表責任，不以指定 Scope table name 寫死流程；Scope Group 只以 `scope_registry.parent_scope_id` 管理成員、Overview 與導引，不建立跨 Scope corpus 聚合層。
 
 0.8.6-RC 的公開功能與 LunaRunes 基線是 0.9 的前置條件：先確認 Current 使用流程穩定，再擴充 Scope Group。
 
