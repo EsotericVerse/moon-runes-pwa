@@ -9,6 +9,7 @@ import {
   applyDe,draw,evaluateAlphaEvent,finishOpening,freshPlayer,loadGameData,shuffle
 } from './game-data';
 import {getThemeSlot,THEME_SLOTS} from '../../modular/theme-registry';
+import gameHeroAsset from '../../../pics/LunaRunesGame.jpg';
 
 const NAMES=['A','B','C','D'];
 const GAME_THEME_DEFAULT='theme-5';
@@ -687,22 +688,34 @@ export default function GameView(){
     });
   }
 
-  const authorAsset=data.authorAsset;
   const roundBadge=data.rounds.map(item=>phaseMark(item.phase)).join('-');
 
   if(!state)return <section className="loc-view loc-game game-shell" data-game-theme={gameTheme.id} data-game-scheme={gameTheme.scheme} style={gameThemeStyle}>
-    <header className="loc-hero game-hero">
-      <div>
-        <p className="loc-eyebrow">月之符文遊戲</p>
+    <header
+      className="loc-hero game-hero game-home-hero"
+      style={{'--game-hero-image':`url("${gameHeroAsset.src}")`}}
+    >
+      <div className="game-home-hero-copy">
+        <p className="loc-eyebrow">LunaRunes · Game</p>
         <h1>月之符文遊戲</h1>
-        <p>這是一套以符文、事件、角色與 De 值變化為核心的卡牌遊戲。選擇玩家人數後即可開始，完整規則與角色資料可從「遊戲文件」查看。</p>
-        <div className="game-hero-badges">
+        <p className="game-hero-lead">這是一套以符文、事件、角色與 De 值變化為核心的卡牌遊戲。選擇玩家人數即可直接開始；完整規則、事件卡、八職與符文行動可從「遊戲文件」查看。</p>
+        <div className="game-hero-badges" aria-label="遊戲摘要">
           <span>{data.cards.length} 張符文卡</span>
+          <span>{data.config.playerMin}–{data.config.playerMax} 人</span>
           <span>De {data.config.deMin}–{data.config.deMax}</span>
-          <span>{roundBadge}</span>
+          <span>回合 {roundBadge}</span>
         </div>
+        <div className="game-hero-start">
+          <label className="game-hero-player-count">
+            <span>玩家人數</span>
+            <select value={playerCount} onChange={event=>setPlayerCount(Number(event.target.value))}>
+              {playerOptions.map(count=><option key={count} value={count}>{count} 人</option>)}
+            </select>
+          </label>
+          <button className="loc-button primary game-hero-start-button" onClick={start}>開始新遊戲</button>
+        </div>
+        <p className="game-hero-status">{status}｜{data.events.length} 張事件卡 · 66 枚符文行動 · 八種職業</p>
       </div>
-      {authorAsset?<figure className="game-author-visual"><img src={authorAsset.path} alt={authorAsset.title||'月之符文作者圖'} loading="eager"/></figure>:null}
     </header>
 
     <div className="game-theme-row">
@@ -730,16 +743,6 @@ export default function GameView(){
           {data.groupAssets.map(group=><figure key={group.code}><img src={group.path} alt={(group.title||group.group)+'代表圖'} loading="lazy"/><figcaption><b>{group.title||group.group}</b></figcaption></figure>)}
         </div>
       </section>
-      <div className="loc-card game-start-panel">
-        <label>玩家人數
-          <select value={playerCount} onChange={event=>setPlayerCount(Number(event.target.value))}>
-            {playerOptions.map(count=><option key={count} value={count}>{count} 人</option>)}
-          </select>
-        </label>
-        <button className="loc-button primary" onClick={start}>開始新遊戲</button>
-        <p className="loc-status">{status}</p>
-        <p className="loc-note">事件牌庫由資料庫提供，不受實體印刷張數限制；目前 {data.events.length} 張事件卡、66 枚符文行動與八種職業。</p>
-      </div>
     </>}
   </section>;
 
