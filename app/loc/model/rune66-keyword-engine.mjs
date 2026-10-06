@@ -72,7 +72,7 @@ function compileCatalog(catalogRows=[],structureRows=[]){
       ...structure,
       label,
       principle:String(row?.principle||'').trim(),
-      keywords:[...new Set(keywords)],
+      keywords:[...new Set([label,...keywords].filter(Boolean))],
       rules:rules.filter((rule,index,all)=>all.findIndex(other=>
         other.operator===rule.operator&&other.source===rule.source&&other.target===rule.target
       )===index),
@@ -129,22 +129,19 @@ function increment(state,rune,signal){
   }
 }
 
-function buildMaskedTextGetter(normalizedTexts,rune){
-  const sources=[...new Set(rune.rules
-    .filter(rule=>rule.operator==='TO'||rule.operator==='NAME')
+function maskRuleSources(normalizedTexts,runes){
+  const sources=[...new Set(runes
+    .flatMap(rune=>rune.rules)
+    .filter(rule=>rule.operator==='AND'||rule.operator==='TO'||rule.operator==='NAME')
     .map(rule=>normalizeText(rule.source))
     .filter(Boolean))]
     .sort((a,b)=>b.length-a.length);
-  if(!sources.length)return index=>normalizedTexts[index]||'';
 
-  const cache=new Map();
-  return index=>{
-    if(cache.has(index))return cache.get(index);
-    let text=normalizedTexts[index]||'';
-    for(const source of sources)text=replaceAllLiteral(text,source,' ');
-    cache.set(index,text);
+  return normalizedTexts.map(source=>{
+    let text=source||'';
+    for(const ruleSource of sources)text=replaceAllLiteral(text,ruleSource,' ');
     return text;
-  };
+  });
 }
 
 export function classifyRune66Documents(documents=[],catalogRows=[],structureRows=[]){
@@ -163,13 +160,13 @@ export function classifyRune66Documents(documents=[],catalogRows=[],structureRow
   };
 
   const normalizedTexts=source.map(row=>normalizeText(textOf(row)));
+  const keywordTexts=maskRuleSources(normalizedTexts,runes);
 
   const states=source.map(()=>createState());
   const runeById=new Map(runes.map(rune=>[rune.runeId,rune]));
   const unsupportedRules=[];
 
   for(const rune of runes){
-    const maskedText=buildMaskedTextGetter(normalizedTexts,rune);
     const ruleTexts=normalizedTexts.slice();
     const orderedRules=[...rune.rules].sort((a,b)=>
       normalizeText(b.source).length-normalizeText(a.source).length
@@ -180,7 +177,7 @@ export function classifyRune66Documents(documents=[],catalogRows=[],structureRow
       const normalizedKeyword=normalizeText(keyword);
       if(!normalizedKeyword)continue;
       for(let index=0;index<normalizedTexts.length;index+=1){
-        if(!states[index]||!maskedText(index).includes(normalizedKeyword))continue;
+        if(!states[index]||!keywordTexts[index].includes(normalizedKeyword))continue;
         increment(states[index],rune,'keyword:'+normalizedKeyword);
       }
     }
