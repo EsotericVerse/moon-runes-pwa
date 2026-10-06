@@ -1,14 +1,14 @@
 import RuneDrawModeBubbles from './RuneDrawModeBubbles';
 
 export default function RuneIntroSection(){
-  return <section className="loc-card home-copy-block home-rune-section">
-    <div className="home-section-heading">
+  return <section className="loc-card home-copy-block home-rune-section runes-home-intro">
+    <div className="home-section-heading runes-home-intro-heading">
       <p className="loc-eyebrow">LunaRunes(Symbolic Language)</p>
       <h2>月之符文籤詩系統</h2>
       <p className="loc-subtitle">不涉及神秘學，為單純的指引籤詩<br/>不保證一定就是註定，你擁有選擇權。</p>
     </div>
-    <div className="home-rune-layout">
-      <div className="home-rune-preview" aria-label="命之符文示例">
+    <div className="home-rune-layout runes-home-intro-layout">
+      <div className="home-rune-preview runes-home-intro-preview" aria-label="命之符文示例">
         <img src="/assets/lunarunes/cards/66_命.png" alt="命之符文" loading="lazy" decoding="async" />
         <div className="home-rune-card-data">
           <div className="home-rune-card-title">
@@ -27,7 +27,7 @@ export default function RuneIntroSection(){
           <p className="home-rune-direction">卡片面向：<strong>正位</strong></p>
         </div>
       </div>
-      <div className="home-rune-copy home-rune-copy-plain">
+      <div className="home-rune-copy home-rune-copy-plain runes-home-intro-copy">
         <p className="runes-hint-kicker">不知道怎麼說的話，往下抽牌就對了！</p>
         <p>沒什麼想問的，抽個每日符文看看吧！</p>
         <p className="runes-hint-lead">月之符文的特有66符文字會給你提示籤詩，指引你的可能未來；能是祝福可能是警告，你當然擁有選擇權。</p>
