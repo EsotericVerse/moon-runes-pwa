@@ -551,7 +551,7 @@ button,a,.loc-control,.loc-button,
   gap:clamp(.8rem,2vw,1.35rem);
 }
 
-.loc-draw-card,.runes-advice-grid article,.basic-item,.reading-ref-card{
+.loc-draw-card,.runes-advice-grid article,.reading-ref-card{
   border-color:var(--loc-ui-hairline);
   border-radius:var(--loc-ui-radius-md);
   background:var(--loc-ui-panel-soft);
