@@ -7,6 +7,7 @@ import {
   insertDailyRuneRecord,
   selectDailyRuneMonth,
   selectPreviousDailyRuneOccurrence,
+  selectDailyRuneContext,
   selectDailyRuneSituation,
   updateDailyRuneRecord
 } from '../../loc/daily-runes';
@@ -136,7 +137,7 @@ export default function DailyLogClient({embedded=false}={}){
             runeNumber:row.rune_number,
             beforeDate:selectedDate
           });
-          const currentSituation=await selectDailyRuneSituation({
+          const currentContext=await selectDailyRuneContext({
             runeNumber:row.rune_number,
             direction:row.direction,
             recordDate:selectedDate
@@ -146,7 +147,7 @@ export default function DailyLogClient({embedded=false}={}){
             direction:previous.direction,
             recordDate:previous.record_date
           }):null;
-          return {key:rowKey(row),current:row,previous,currentSituation,previousSituation};
+          return {key:rowKey(row),current:row,previous,currentContext,previousSituation};
         }));
         if(active)setComparisons(next);
       }catch{
@@ -235,15 +236,19 @@ export default function DailyLogClient({embedded=false}={}){
     />
 
     {selectedRows.length?<section className="loc-card" aria-live="polite">
-      <p className="loc-eyebrow">同符文前次紀錄</p>
-      <h2>{formatDate(selectedDate)} 的符文說明</h2>
+      <p className="loc-eyebrow">每日符文說明</p>
+      <h2>{formatDate(selectedDate)} 的當日指引與前次紀錄</h2>
       {comparisonLoading?<p className="loc-status">讀取前次同符文紀錄…</p>:null}
       {!comparisonLoading?<div className="scope-list">
-        {comparisons.map(({key,current,previous,currentSituation,previousSituation})=><article className="scope-inline-card" key={'compare-'+key}>
+        {comparisons.map(({key,current,previous,currentContext,previousSituation})=><article className="scope-inline-card" key={'compare-'+key}>
           <strong>{current.draw_kind==='supplement'?'補抽':'主抽'}｜{current.rune_name}・{current.direction}</strong>
-          <span>本次狀況：{currentSituation?.text||'目前沒有對應的狀況形容。'}</span>
+          <span>當日真實月相：{currentContext?.moonPhase||'未知'}</span>
+          <span>狀況形容：{currentContext?.situation||'目前沒有對應的狀況形容。'}</span>
+          {currentContext?.reminder?<span>每日占卜提醒：{currentContext.reminder}</span>:null}
+          {currentContext?.guidance?<span>每日占卜引導：{currentContext.guidance}</span>:null}
+          {currentContext?.blessing?<span>每日占卜祝福：{currentContext.blessing}</span>:null}
           {previous?<>
-            <span>上次抽到「{current.rune_name}」是 {formatDate(previous.record_date)}，方向為 {previous.direction}。</span>
+            <span>上次抽到「{current.rune_name}」是 {formatDate(previous.record_date)}，方向為 {previous.direction}，當日真實月相為 {previousSituation?.moonPhase||'未知'}。</span>
             <span>之前的狀況：{previousSituation?.text||'目前沒有對應的狀況形容。'}</span>
           </>:<span>此前沒有抽到「{current.rune_name}」的紀錄。</span>}
         </article>)}
