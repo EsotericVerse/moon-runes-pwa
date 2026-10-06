@@ -2,8 +2,6 @@
 
 import {parseRuneKeywordRuleSentence} from './rune-keyword-rules.mjs';
 
-const RUNE66_GROUP='符文66';
-
 function normalizeText(value){
   return String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').trim();
 }
@@ -30,30 +28,22 @@ function keywordList(value){
   return [];
 }
 
-function compileCatalog(catalogRows=[],structureRows=[]){
-  const structures=new Map();
+function compileCatalog(catalogRows=[]){
   const nameToRune=new Map();
   const groupOrder=new Map();
-
-  for(const row of structureRows){
-    const runeId=Number(row?.rune_id);
-    if(!Number.isInteger(runeId)||runeId<1||runeId>66)continue;
-    const name=String(row?.rune_name||'').trim();
-    const group=String(row?.group_name||'').trim();
-    structures.set(runeId,{runeId,name,group,order:runeId,classEnable:row?.class_enable!==false});
-    if(name)nameToRune.set(name,runeId);
-    if(group&&!groupOrder.has(group))groupOrder.set(group,runeId);
-  }
-
   const runes=[];
-  for(const row of catalogRows){
-    if(String(row?.group_name||'').trim()!==RUNE66_GROUP)continue;
-    const runeId=Number(row?.item_no);
-    const structure=structures.get(runeId);
-    if(!structure)continue;
 
-    const label=String(row?.item_name||structure.name||'').trim();
-    if(label)nameToRune.set(label,runeId);
+  for(const row of catalogRows){
+    const runeId=Number(row?.item_no);
+    if(!Number.isInteger(runeId)||runeId<1||runeId>66)continue;
+    const label=String(row?.item_name||'').trim();
+    const group=String(row?.class_group||'').trim();
+    if(!label||!group)continue;
+    const order=Number.isFinite(Number(row?.order_no))?Number(row.order_no):runeId;
+    const classEnable=row?.class_enable!==false;
+    nameToRune.set(label,runeId);
+    if(!groupOrder.has(group))groupOrder.set(group,order);
+    else groupOrder.set(group,Math.min(groupOrder.get(group),order));
 
     const keywords=[];
     const rules=[];
@@ -69,8 +59,12 @@ function compileCatalog(catalogRows=[],structureRows=[]){
     }
 
     runes.push({
-      ...structure,
+      runeId,
+      name:label,
       label,
+      group,
+      order,
+      classEnable,
       principle:String(row?.principle||'').trim(),
       keywords:[...new Set([label,...keywords].filter(Boolean))],
       rules:rules.filter((rule,index,all)=>all.findIndex(other=>
@@ -80,7 +74,7 @@ function compileCatalog(catalogRows=[],structureRows=[]){
     });
   }
 
-  runes.sort((a,b)=>a.order-b.order);
+  runes.sort((a,b)=>a.order-b.order||a.runeId-b.runeId);
   const disabledGroups=[...new Set(runes.filter(rune=>rune.classEnable===false).map(rune=>rune.group).filter(Boolean))];
   const fallbackGroup=disabledGroups.length===1?disabledGroups[0]:'';
   return {runes,nameToRune,groupOrder,fallbackGroup};
@@ -197,9 +191,9 @@ function specialRuneKeywordTexts(normalizedTexts,runes,rune){
   });
 }
 
-export function classifyRune66Documents(documents=[],catalogRows=[],structureRows=[]){
+export function classifyRune66Documents(documents=[],catalogRows=[]){
   const source=Array.isArray(documents)?documents:[];
-  const {runes,nameToRune,groupOrder,fallbackGroup}=compileCatalog(catalogRows,structureRows);
+  const {runes,nameToRune,groupOrder,fallbackGroup}=compileCatalog(catalogRows);
   if(!source.length||!runes.length)return {
     documentCount:source.length,
     classifiedCount:0,
