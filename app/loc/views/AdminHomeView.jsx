@@ -6,7 +6,7 @@ import {SCOPES} from '../../modular/scope-registry';
 import {THEME_SLOTS} from '../../modular/theme-registry';
 import {useAccount} from '../use-account';
 import {
-  deleteRows,insertRows,dbAuthRelation,selectAuthRow,syncManageScopeRow,updateRows
+  deleteRows,insertRows,dbAuthRelation,provisionScope,selectAuthRow,syncManageScopeRow,updateRows
 } from '../db-client.mjs';
 
 const ADMIN_OPTIONS=Object.freeze([
@@ -15,6 +15,7 @@ const ADMIN_OPTIONS=Object.freeze([
   {value:'themes',label:UI_COPY.admin.theme}
 ]);
 const EMPTY_MAPPING={id:'',email:'',galaxy:'galaxy',time:'time',birthday:''};
+const EMPTY_SCOPE_CREATE={scope_id:'',display_name:'',email:'',birthday:'',domain:'',directory:'',parent_scope_id:'loc',theme:'theme-7',copy_keywords:true};
 
 function Login({account}){
   return <section className="loc-view">
@@ -28,10 +29,13 @@ function Login({account}){
 }
 
 function ScopeOverview(){
-  const scopes=Object.values(SCOPES).filter(scope=>scope.id!=='admin');
-  const dataScopeIds=scopes.filter(scope=>scope.id!=='loc').map(scope=>scope.id);
+  const deployedScopes=Object.values(SCOPES).filter(scope=>scope.id!=='admin');
+  const [registry,setRegistry]=useState([]);
+  const dataScopeIds=registry.filter(scope=>scope.active!==false&&scope.scope_kind==='scope').map(scope=>scope.scope_id);
+  const scopeGroups=registry.filter(scope=>scope.active!==false&&scope.scope_kind==='group');
   const [mappings,setMappings]=useState([]);
   const [draft,setDraft]=useState({...EMPTY_MAPPING});
+  const [createDraft,setCreateDraft]=useState({...EMPTY_SCOPE_CREATE});
   const [status,setStatus]=useState('');
   const [revision,setRevision]=useState(0);
 
@@ -39,14 +43,24 @@ function ScopeOverview(){
     let active=true;
     (async()=>{
       try{
-        const {data,error}=await dbAuthRelation('silver.manage')
-          .select('id,email,role,galaxy,time,birthday')
-          .order('id',{ascending:true})
-          .order('email',{ascending:true});
-        if(error)throw new Error(error.message||'Mapping 讀取失敗。');
-        if(active)setMappings((data||[]).map(row=>({...row,birthday:String(row.birthday||'').slice(0,10)})));
+        const [mappingResult,registryResult]=await Promise.all([
+          dbAuthRelation('silver.manage')
+            .select('id,email,role,galaxy,time,birthday')
+            .order('id',{ascending:true})
+            .order('email',{ascending:true}),
+          dbAuthRelation('silver.scope_registry')
+            .select('scope_id,display_name,scope_kind,domain,directory,parent_scope_id,active,sort_order')
+            .order('sort_order',{ascending:true})
+            .order('scope_id',{ascending:true})
+        ]);
+        if(mappingResult.error)throw new Error(mappingResult.error.message||'Mapping 讀取失敗。');
+        if(registryResult.error)throw new Error(registryResult.error.message||'Scope Registry 讀取失敗。');
+        if(active){
+          setMappings((mappingResult.data||[]).map(row=>({...row,birthday:String(row.birthday||'').slice(0,10)})));
+          setRegistry(registryResult.data||[]);
+        }
       }catch(error){
-        if(active){setMappings([]);setStatus(error?.message||'Mapping 讀取失敗。');}
+        if(active){setMappings([]);setRegistry([]);setStatus(error?.message||'Scope 設定讀取失敗。');}
       }
     })();
     return()=>{active=false};
@@ -55,7 +69,7 @@ function ScopeOverview(){
   const change=(index,key,value)=>setMappings(rows=>rows.map((row,rowIndex)=>rowIndex===index?{...row,[key]:value}:row));
 
   const validate=row=>{
-    if(!dataScopeIds.includes(String(row.id||'')))throw new Error('目前只能管理已部署的資料 Scope。');
+    if(!dataScopeIds.includes(String(row.id||'')))throw new Error('目前只能管理 DB Scope Registry 中已建立的資料 Scope。');
     if(!/^\S+@\S+\.\S+$/.test(String(row.email||'')))throw new Error('Email 格式不正確。');
     for(const value of [row.galaxy||'galaxy',row.time||'time']){
       if(!/^[a-z][a-z0-9_]*$/.test(String(value)))throw new Error('galaxy / time mapping 只能使用小寫英數與底線。');
@@ -74,6 +88,40 @@ function ScopeOverview(){
     if(existingBirthday&&nextBirthday&&existingBirthday!==nextBirthday){
       throw new Error('同一 Scope 的生日設定必須一致。');
     }
+  };
+
+  const validateCreate=row=>{
+    const id=String(row.scope_id||'').trim().toLowerCase();
+    if(!/^[a-z][a-z0-9]{0,14}$/.test(id))throw new Error('Scope ID 必須是 1–15 字小寫英數，且以英文字母開頭。');
+    if(!String(row.display_name||'').trim())throw new Error('顯示名稱不可為空。');
+    if(!/^\S+@\S+\.\S+$/.test(String(row.email||'')))throw new Error('Email 格式不正確。');
+    const hasDomain=Boolean(String(row.domain||'').trim());
+    const hasDirectory=Boolean(String(row.directory||'').trim());
+    if(hasDomain===hasDirectory)throw new Error('Domain / Directory 必須二選一。');
+    if(!scopeGroups.some(group=>group.scope_id===row.parent_scope_id))throw new Error('Parent Scope Group 無效。');
+    return id;
+  };
+
+  const createScope=async()=>{
+    setStatus('');
+    try{
+      const id=validateCreate(createDraft);
+      const result=await provisionScope({
+        ...createDraft,
+        scope_id:id,
+        display_name:String(createDraft.display_name||'').trim(),
+        email:String(createDraft.email||'').trim().toLowerCase(),
+        domain:String(createDraft.domain||'').trim()||null,
+        directory:String(createDraft.directory||'').trim()||null,
+        birthday:createDraft.birthday||null
+      });
+      setCreateDraft({...EMPTY_SCOPE_CREATE});
+      setStatus(
+        'Scope '+String(result.scope_id||id)+' 已建立；'
+        +(createDraft.copy_keywords!==false?'預設 Rune66 關鍵詞 '+Number(result.keyword_rows||0).toLocaleString()+' 筆已獨立複製。':'未複製預設關鍵詞。')
+      );
+      setRevision(value=>value+1);
+    }catch(error){setStatus(error.message||'Scope 建立失敗。');}
   };
 
   const save=async index=>{
@@ -126,14 +174,45 @@ function ScopeOverview(){
   return <section className="loc-card scope-management-workspace">
     <p className="loc-eyebrow">Current Scope Registry</p>
     <h2>{UI_COPY.admin.overview}</h2>
-    <p>Admin 管理系統身份、權限與資料表 Mapping；各 Scope 的內容請回到各自 Manage。</p>
+    <p>Admin 負責 Scope 建立、上下層 Registry、身份權限與資料表 Mapping；各 Scope 的內容與關鍵詞請回到各自 Manage。</p>
 
+    <h3>目前 UI 部署</h3>
     <div className="scope-list">
-      {scopes.map(scope=><article className="scope-inline-card" key={scope.id}>
+      {deployedScopes.map(scope=><article className="scope-inline-card" key={scope.id}>
         <strong>{scope.label}</strong>
         <span>{scope.id} · {scope.domain||scope.mount?.path} · {scope.aggregateChildren?'Scope Group':'Scope'}</span>
       </article>)}
     </div>
+
+    <h3>DB Scope Registry</h3>
+    <div className="scope-list">
+      {registry.map(scope=><article className="scope-inline-card" key={scope.scope_id}>
+        <strong>{scope.display_name||scope.scope_id}</strong>
+        <span>{scope.scope_id} · {scope.scope_kind} · {scope.domain||scope.directory||'—'}{scope.parent_scope_id?' · parent: '+scope.parent_scope_id:''}</span>
+      </article>)}
+    </div>
+
+    <section className="scope-inline-card">
+      <h3>建立 Scope</h3>
+      <p>一次建立固定 Config / Galaxy / Galaxy Media / Time / Keywords 五件套、Scope Registry、第一筆管理權限與預設 Keyword Class。</p>
+      <div className="scope-management-fields">
+        <label><span>Scope ID</span><input maxLength="15" value={createDraft.scope_id} placeholder="newscope" onChange={event=>setCreateDraft(value=>({...value,scope_id:event.target.value.toLowerCase()}))}/></label>
+        <label><span>顯示名稱</span><input value={createDraft.display_name} onChange={event=>setCreateDraft(value=>({...value,display_name:event.target.value}))}/></label>
+        <label><span>Email</span><input type="email" value={createDraft.email} onChange={event=>setCreateDraft(value=>({...value,email:event.target.value}))}/></label>
+        <label><span>Birthday</span><input type="date" value={createDraft.birthday} onChange={event=>setCreateDraft(value=>({...value,birthday:event.target.value}))}/></label>
+        <label><span>Domain</span><input value={createDraft.domain} placeholder="scope.example.com" onChange={event=>setCreateDraft(value=>({...value,domain:event.target.value}))}/></label>
+        <label><span>Directory</span><input value={createDraft.directory} placeholder="/newscope" onChange={event=>setCreateDraft(value=>({...value,directory:event.target.value}))}/></label>
+        <label><span>Parent Scope Group</span><select value={createDraft.parent_scope_id} onChange={event=>setCreateDraft(value=>({...value,parent_scope_id:event.target.value}))}>
+          {scopeGroups.map(group=><option key={group.scope_id} value={group.scope_id}>{group.display_name||group.scope_id} · {group.scope_id}</option>)}
+        </select></label>
+        <label><span>Theme</span><select value={createDraft.theme} onChange={event=>setCreateDraft(value=>({...value,theme:event.target.value}))}>
+          {THEME_SLOTS.map(theme=><option key={theme.id} value={theme.id}>{theme.label} · {theme.id}</option>)}
+        </select></label>
+      </div>
+      <label className="scope-setting-toggle"><input type="checkbox" checked={createDraft.copy_keywords!==false} onChange={event=>setCreateDraft(value=>({...value,copy_keywords:event.target.checked}))}/><span>預設複製目前 Rune66 Keyword Class（獨立 UUID / 66 筆）</span></label>
+      <p className="scope-status">Domain / Directory 二選一；新 Scope 預設掛在選定的 Scope Group 下。</p>
+      <button type="button" className="loc-button primary" onClick={createScope}>建立 Scope</button>
+    </section>
 
     <h3>資料 Scope Mapping</h3>
     <div className="scope-management-records">
