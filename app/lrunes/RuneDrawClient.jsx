@@ -9,7 +9,7 @@ import {scopeHref} from '../modular/scope-registry';
 import RuneCardInfo from './RuneCardInfo';
 import RuneSingleDailySurface from './RuneSingleDailySurface';
 import {RUNE_RITUAL_DELAY_MS,RUNE_RITUAL_STEP_MS,runeRitualMessages} from './rune-ritual';
-import {RUNE_DRAW_MODES as DRAW_TYPES} from './rune-draw-modes.mjs';
+import {RUNE_ALL_DRAW_MODES,RUNE_DRAW_MODES} from './rune-draw-modes.mjs';
 import {buildSpreadAdvice} from './rune-guidance-engine.mjs';
 
 const ROTATION_CLASSES=['rune-rotate-0','rune-rotate-90','rune-rotate-n90','rune-rotate-180'];
@@ -125,7 +125,7 @@ function cleanGrammarPart(value){
 }
 
 function drawSegments(mode){
-  const spec=DRAW_TYPES.find(item=>item.key===mode);
+  const spec=RUNE_ALL_DRAW_MODES.find(item=>item.key===mode);
   return Array.isArray(spec?.segments)?spec.segments:[];
 }
 
@@ -159,13 +159,7 @@ function composeFixedGrammar(values,mode){
 }
 
 function poeticClause(card,direction){
-  const text=cleanGrammarPart(
-    situationQuestion(card,direction)
-    ||situationAnswer(card,direction)
-    ||card?.rune_description
-    ||'資訊不足'
-  );
-  return text;
+  return cleanGrammarPart(situationQuestion(card,direction));
 }
 
 function buildFixedReading(cards,directions,mode){
@@ -181,7 +175,7 @@ function DrawSelection({activeKey}){
     <p className="loc-eyebrow">抽牌選擇</p>
     <h3>選擇抽牌方式</h3>
     <div className="home-draw-bubbles" aria-label="選擇抽牌方式">
-      {DRAW_TYPES.map(item=><a
+      {RUNE_DRAW_MODES.map(item=><a
         key={item.key}
         className="loc-bubble"
         href={scopeHref('lrunes',item.path)}
@@ -266,7 +260,7 @@ export default function RuneDrawClient({drawKey='single'}){
   const timers=useRef([]);
   const autoStarted=useRef(false);
 
-  const selectedMode=useMemo(()=>DRAW_TYPES.find(item=>item.key===drawKey)||DRAW_TYPES[0],[drawKey]);
+  const selectedMode=useMemo(()=>RUNE_ALL_DRAW_MODES.find(item=>item.key===drawKey)||RUNE_DRAW_MODES[0],[drawKey]);
   const instantDraw=uiSettings?.draw_response==='instant';
   const moonPhase=useMemo(()=>realMoonPhase(),[]);
   const ritualMessages=runeRitualMessages(drawKey);
@@ -281,9 +275,7 @@ export default function RuneDrawClient({drawKey='single'}){
         ?{staticTypes:['direction'],moonTypes:['sit_q','sit_a','daily_r','daily_g','daily_b'],currentMoon:moonPhase}
         :drawKey==='single'
           ?{staticTypes:['direction','lots'],moonTypes:['sit_q','sit_a'],currentMoon:moonPhase}
-          :drawKey==='ow3gs'
-            ?{staticTypes:['direction','lots'],moonTypes:[],currentMoon:''}
-            :{staticTypes:['direction'],moonTypes:['sit_q','sit_a'],currentMoon:moonPhase};
+          :{staticTypes:['direction'],moonTypes:['sit_q'],currentMoon:moonPhase};
       const rows=await loadDrawCards(pairs,queryPlan);
       const byNumber=new Map(rows.map(row=>[Number(row.rune_id),row]));
       const cards=runeNumbers.map(number=>byNumber.get(Number(number))).filter(Boolean);
