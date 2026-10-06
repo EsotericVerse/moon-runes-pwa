@@ -3,7 +3,6 @@
 import {parseRuneKeywordRuleSentence} from './rune-keyword-rules.mjs';
 
 const RUNE66_GROUP='符文66';
-const SPECIAL_GROUP='特殊';
 
 function normalizeText(value){
   return String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').trim();
@@ -41,7 +40,7 @@ function compileCatalog(catalogRows=[],structureRows=[]){
     if(!Number.isInteger(runeId)||runeId<1||runeId>66)continue;
     const name=String(row?.rune_name||'').trim();
     const group=String(row?.group_name||'').trim();
-    structures.set(runeId,{runeId,name,group,order:runeId});
+    structures.set(runeId,{runeId,name,group,order:runeId,classEnable:row?.class_enable!==false});
     if(name)nameToRune.set(name,runeId);
     if(group&&!groupOrder.has(group))groupOrder.set(group,runeId);
   }
@@ -118,7 +117,7 @@ function increment(state,rune,signal){
   runeCount.count+=1;
   state.runeCounts.set(rune.runeId,runeCount);
 
-  if(rune.group&&rune.group!==SPECIAL_GROUP){
+  if(rune.group&&rune.classEnable!==false){
     const groupCount=state.groupCounts.get(rune.group)||{
       key:rune.group,
       label:rune.group,
