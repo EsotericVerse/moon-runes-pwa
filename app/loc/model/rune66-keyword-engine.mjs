@@ -75,9 +75,7 @@ function compileCatalog(catalogRows=[]){
   }
 
   runes.sort((a,b)=>a.order-b.order||a.runeId-b.runeId);
-  const disabledGroups=[...new Set(runes.filter(rune=>rune.classEnable===false).map(rune=>rune.group).filter(Boolean))];
-  const fallbackGroup=disabledGroups.length===1?disabledGroups[0]:'';
-  return {runes,nameToRune,groupOrder,fallbackGroup};
+  return {runes,nameToRune,groupOrder};
 }
 
 function replaceAllLiteral(source,needle,replacement=' '){
@@ -193,7 +191,7 @@ function specialRuneKeywordTexts(normalizedTexts,runes,rune){
 
 export function classifyRune66Documents(documents=[],catalogRows=[]){
   const source=Array.isArray(documents)?documents:[];
-  const {runes,nameToRune,groupOrder,fallbackGroup}=compileCatalog(catalogRows);
+  const {runes,nameToRune,groupOrder}=compileCatalog(catalogRows);
   if(!source.length||!runes.length)return {
     documentCount:source.length,
     classifiedCount:0,
@@ -317,15 +315,13 @@ export function classifyRune66Documents(documents=[],catalogRows=[]){
 
     if(!rankedClassGroups.length){
       unclassifiedCount+=1;
+    }else if(topGroups.length>1){
+      tieCount+=1;
+      unclassifiedCount+=1;
     }else{
       status='classified';
       classifiedCount+=1;
-      if(topGroups.length>1&&fallbackGroup){
-        classificationGroup=fallbackGroup;
-        tieCount+=1;
-      }else{
-        classificationGroup=topGroups[0]?.label||rankedClassGroups[0].label;
-      }
+      classificationGroup=topGroups[0]?.label||rankedClassGroups[0].label;
       const winner=groupTotals.get(classificationGroup);
       if(winner)winner.document_count+=1;
     }
