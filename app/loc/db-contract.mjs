@@ -65,12 +65,33 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return {...result,count:affected};
   }
 
-  async function applyKeywordClassification(payload){
+  async function keywordClassificationWrite(payload){
     const {data,error}=await authClient.schema('api').rpc('apply_keyword_classification',{p_rows:payload});
     if(error)throw new Error(error.message||'Keyword classification write failed');
-    const affected=Number(data||0);
-    if(affected<1)throw new Error('Keyword classification write affected 0 rows');
-    return {count:affected};
+    return Number(data||0);
+  }
+
+  async function applyKeywordClassification(payload={}){
+    const rows=Array.isArray(payload?.rows)?payload.rows:[];
+    const meta=payload?.meta&&typeof payload.meta==='object'?payload.meta:{};
+    await keywordClassificationWrite({mode:'begin'});
+
+    const batchSize=500;
+    let count=0;
+    for(let offset=0;offset<rows.length;offset+=batchSize){
+      const batch=rows.slice(offset,offset+batchSize);
+      const affected=await keywordClassificationWrite({mode:'chunk',rows:batch});
+      if(affected!==batch.length){
+        throw new Error(`Keyword classification chunk incomplete: expected ${batch.length}, affected ${affected}`);
+      }
+      count+=affected;
+    }
+
+    const documentCount=await keywordClassificationWrite({mode:'finalize',meta});
+    if(documentCount!==rows.length){
+      throw new Error(`Keyword classification finalize mismatch: expected ${rows.length}, counted ${documentCount}`);
+    }
+    return {count,documentCount};
   }
 
   async function readKeywordClass(scopeId,classId){
