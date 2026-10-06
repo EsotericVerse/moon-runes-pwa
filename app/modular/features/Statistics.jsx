@@ -46,6 +46,34 @@ function shiftDate(value,{months=0,days=0}={}){
   if(days)date.setUTCDate(date.getUTCDate()+days);
   return date.toISOString().slice(0,10);
 }
+function taipeiDateKey(date=new Date()){
+  try{
+    const parts=new Intl.DateTimeFormat('en-US',{
+      timeZone:'Asia/Taipei',
+      year:'numeric',
+      month:'2-digit',
+      day:'2-digit'
+    }).formatToParts(date);
+    const value=Object.fromEntries(parts.map(part=>[part.type,part.value]));
+    return `${value.year}-${value.month}-${value.day}`;
+  }catch{
+    return date.toISOString().slice(0,10);
+  }
+}
+function statisticsQueryRange(standard='1y',customRange={},endDate=taipeiDateKey()){
+  if(standard==='custom'){
+    const startDate=dateKey(customRange.from);
+    const customEnd=dateKey(customRange.to);
+    return startDate&&customEnd&&startDate<=customEnd
+      ?{startDate,endDate:customEnd}
+      :{startDate:'',endDate:''};
+  }
+  const config=TIME_STANDARDS.find(item=>item.value===standard)||TIME_STANDARDS[0];
+  const startDate=Number.isFinite(config.days)
+    ?shiftDate(endDate,{days:-config.days})
+    :shiftDate(endDate,{months:-config.months});
+  return {startDate,endDate};
+}
 function dayDistance(from,to){
   const a=new Date(from+'T00:00:00Z').getTime();
   const b=new Date(to+'T00:00:00Z').getTime();
@@ -285,6 +313,8 @@ function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
   const [customTo,setCustomTo]=useState('');
   const [styleFilter,setStyleFilter]=useState(scopeId==='lo3rwang'?'rune66':'none');
   const customRange=useMemo(()=>({from:customFrom,to:customTo}),[customFrom,customTo]);
+  const queryEndDate=useMemo(()=>taipeiDateKey(),[]);
+  const effectiveTimeStandard=aggregateScopes?'1y':timeStandard;
   const scopesQuery=useQuery({
     queryKey:['managed-scopes'],
     queryFn:selectManagedScopes,
@@ -294,17 +324,18 @@ function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
     const scopes=scopesQuery.data||[];
     return aggregateScopes?scopes:scopes.filter(scope=>scope.id===scopeId);
   },[aggregateScopes,scopeId,scopesQuery.data]);
-  const customReady=timeStandard!=='custom'||Boolean(dateKey(customFrom)&&dateKey(customTo)&&customFrom<=customTo);
-  const queryRange=useMemo(()=>timeStandard==='custom'&&customReady
-    ?{startDate:customFrom,endDate:customTo}
-    :{startDate:'',endDate:''},[timeStandard,customReady,customFrom,customTo]);
+  const customReady=effectiveTimeStandard!=='custom'||Boolean(dateKey(customFrom)&&dateKey(customTo)&&customFrom<=customTo);
+  const queryRange=useMemo(
+    ()=>statisticsQueryRange(effectiveTimeStandard,customRange,queryEndDate),
+    [effectiveTimeStandard,customRange,queryEndDate]
+  );
   const trendQuery=useQuery({
-    queryKey:['statistics-source-trend',scopeId,queryRange.startDate,queryRange.endDate],
+    queryKey:['statistics-source-trend',scopeId,effectiveTimeStandard,queryRange.startDate,queryRange.endDate],
     queryFn:()=>selectSourceTrendRows(targetScopes,queryRange),
-    enabled:Boolean(rankingType)&&Boolean(targetScopes.length)&&(timeStandard!=='custom'||customReady),
+    enabled:Boolean(rankingType)&&Boolean(targetScopes.length)&&customReady&&Boolean(queryRange.startDate&&queryRange.endDate),
     staleTime:5*60_000
   });
-  const summary=useMemo(()=>buildSummary(trendQuery.data||[],timeStandard,customRange),[trendQuery.data,timeStandard,customRange]);
+  const summary=useMemo(()=>buildSummary(trendQuery.data||[],effectiveTimeStandard,customRange),[trendQuery.data,effectiveTimeStandard,customRange]);
   const styleRange=useMemo(()=>({
     startDate:summary.startDate||'',
     endDate:summary.endDate||''
@@ -323,10 +354,10 @@ function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
       <label><span>{UI_COPY.statistics.chart}</span><select className="scope-select" value={chartType} onChange={event=>setChartType(event.target.value)}>
         {CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}
       </select></label>
-      <label><span>{UI_COPY.statistics.range}</span><select className="scope-select" value={timeStandard} onChange={event=>setTimeStandard(event.target.value)}>
+      {!aggregateScopes?<label><span>{UI_COPY.statistics.range}</span><select className="scope-select" value={timeStandard} onChange={event=>setTimeStandard(event.target.value)}>
         {TIME_STANDARDS.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
-      </select></label>
-      {timeStandard==='custom'?<>
+      </select></label>:null}
+      {!aggregateScopes&&timeStandard==='custom'?<>
         <label><span>{UI_COPY.statistics.start}</span><input className="scope-input" type="date" value={customFrom} onChange={event=>setCustomFrom(event.target.value)}/></label>
         <label><span>{UI_COPY.statistics.end}</span><input className="scope-input" type="date" value={customTo} onChange={event=>setCustomTo(event.target.value)}/></label>
       </>:null}
@@ -336,14 +367,14 @@ function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
     </div>
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
     {trendQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(trendQuery.error)}</p>:null}
-    {timeStandard==='custom'&&!customReady?<p className="scope-status">請設定有效的開始與結束日期。</p>:null}
+    {!aggregateScopes&&timeStandard==='custom'&&!customReady?<p className="scope-status">請設定有效的開始與結束日期。</p>:null}
     {!trendQuery.isPending&&!trendQuery.error&&customReady?<>
       <p className="scope-status">{summary.startDate&&summary.endDate?summary.startDate+' ～ '+summary.endDate:''}</p>
       <SummaryList rankingType={rankingType} summary={summary}/>
       {chartType==='line'
         ?rankingType==='total'
-          ?<TotalTrendChart rows={trendQuery.data||[]} standard={timeStandard} customRange={customRange} height={420}/>
-          :<SourceTrendChart rows={trendQuery.data||[]} standard={timeStandard} customRange={customRange} height={420}/>
+          ?<TotalTrendChart rows={trendQuery.data||[]} standard={effectiveTimeStandard} customRange={customRange} height={420}/>
+          :<SourceTrendChart rows={trendQuery.data||[]} standard={effectiveTimeStandard} customRange={customRange} height={420}/>
         :<SummaryChart type={chartType} rankingType={rankingType} summary={summary} height={380}/>}
     </>:null}
     {styleFilter==='rune66'?<>
