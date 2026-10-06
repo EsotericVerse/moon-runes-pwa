@@ -54,12 +54,17 @@ export default function RunesClient(){
     </section>
 
     <section className="loc-card rune-basics">
-      <h2>判讀與回測原則</h2>
-      <div className="reading-ref-grid">
-        <article className="reading-ref-card"><h3>過程不等於結果</h3><p>過程順利、互動正向或局部條件成立，不代表最後一定形成預期結果。</p></article>
-        <article className="reading-ref-card"><h3>多個結果可以並存</h3><p>成果、延遲、成本、補償與限制可以同時成立，不把複合事件壓成單一吉凶。</p></article>
-        <article className="reading-ref-card"><h3>主結果與代價分開</h3><p>是否完成、完成品質、時間、金錢、情緒與體力成本應分開判讀。</p></article>
-        <article className="reading-ref-card"><h3>不知道就保留未知</h3><p>尚未走完的時間跨度、證據不足或原始解析遺失時，不事後補造答案。</p></article>
+      <div className="home-section-heading">
+        <p className="loc-eyebrow">Reading & Review</p>
+        <h2>判讀與回測結果</h2>
+      </div>
+      <div className="home-author-copy">
+        <p>月之符文由於有天時設定（當前月相與卡片月相的交互作用），所以每次的判讀跟回測結果都可能會有差異。這是因為外在的時機一直在改變，符文的解析方式必須跟隨時機而動，才不會有跟不上時代的結果狀況。</p>
+        <p>而符文只是推演出未來的可能性，將一片完全未知的未來，設定好一個風格濾鏡，方便你作不同解讀的切入解析。命運的掌控始終在你手上。符文並不會替你做下決定，也不會武斷認為一定可以或一定不可以。</p>
+        <p>它只是提供一個解析方向，方便你在完全沒有頭緒的迷霧中，慢慢找到適合自己的方式去處理跟面對。</p>
+        <p>當然可以一直回測。如果你只是想要回測直到結果滿意，當然可以，但真正的命運並不會讓你滿意。命運即是如此。</p>
+        <p>如果你選擇裝睡不肯醒來，符文也沒有義務要提醒你鬧鐘設定，也不會武斷地叫你放棄或選擇繼續，只是提供一個解析的方式來做參考。</p>
+        <p>符文並不是神秘學權威，而你依然擁有自己的人生。這是毫無矛盾的。</p>
       </div>
     </section>
   </section></main>;
