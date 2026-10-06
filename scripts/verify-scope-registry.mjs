@@ -4,7 +4,7 @@ const failures=[];
 if(resolveScope('unknown.example','/')!=='loc')failures.push('default Scope must remain loc');
 if(SCOPES.lunarunes)failures.push('retired lunarunes runtime Scope id must not return');
 if(!SCOPES.lrunes)failures.push('canonical lrunes Scope id missing');
-for(const [query,id] of [['月典','loc'],['LunaCodex','loc'],['LOC','loc'],['月之符文','lrunes'],['LunaRunes','lrunes'],['lrunes','lrunes'],['lo3rwang','lo3rwang']]){
+for(const [query,id] of [['月典','loc'],['LunaCodex','loc'],['LOC','loc'],['月之符文','lrunes'],['LunaRunes','lrunes'],['lrunes','lrunes'],['lo3rwang','lo3rwang'],['政德','lo3rwang'],['Lucas Oscar Wang','lo3rwang']]){
   if(resolveScopeSearchAlias(query)?.id!==id)failures.push('Scope search alias mismatch: '+query+' -> '+id);
 }
 if(resolveScopeSearchAlias('月')!==null)failures.push('Scope search aliases must require exact matches');
