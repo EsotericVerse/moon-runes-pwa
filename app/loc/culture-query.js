@@ -7,7 +7,7 @@ import {workDisplayText} from '../modular/work-display-model';
 import {resolveGalaxyExternalLinks,selectCategoryCounts,selectDailyCategoryCounts,selectSourceCatalog,selectSourceDaily} from './galaxy-query';
 import {selectCount,selectRows} from './db-query.mjs';
 import {publicContentFilters} from './content-policy';
-import {selectManagedScope,selectManagedScopes} from './scope-data';
+import {selectManagedScope} from './scope-data';
 
 
 
@@ -262,84 +262,10 @@ export async function selectScopeCultureData(scopeId){
   if(!id)throw new Error('資料設定無效');
 
   if(id==='loc'){
-    const managedScopes=(await selectManagedScopes()).filter(scope=>scope.id!=='loc');
-    if(!managedScopes.length){
-      return {
-        scopeId:id,scope:null,eras:{eras:[]},periods:[],openRanges:[],scopeRanges:[],
-        timelineItems:[],sourceRiverItems:[],sourceGroups:[],events:[],trajectories:[],
-        works:[],intersectionStart:''
-      };
-    }
-
-    const bundles=await Promise.all(managedScopes.map(async scope=>{
-      const context=await selectCultureTimeRows(scope,scope.birthday);
-      return {
-        scope,
-        dataId:scope.id,
-        runtimeId:scope.id,
-        galaxy:scope.galaxy,
-        galaxyMedia:scope.galaxyMedia,
-        time:scope.time,
-        context,
-        openRange:openPeriodRangeFromRows(scope.id,context)
-      };
-    }));
-
-    const validBundles=bundles.filter(bundle=>Boolean(bundle.openRange?.start_date));
-    const openRanges=validBundles.map(bundle=>bundle.openRange);
-    const starts=openRanges.map(row=>String(row.start_date||'')).filter(Boolean).sort();
-    const intersectionStart=starts.at(-1)||'';
-    const today=new Date().toISOString().slice(0,10);
-
-    if(!intersectionStart){
-      return {
-        scopeId:id,scope:null,eras:{eras:[]},periods:[],openRanges:[],scopeRanges:[],
-        timelineItems:[],sourceRiverItems:[],sourceGroups:[],events:[],trajectories:[],
-        works:[],intersectionStart:'',intersectionEnd:today,intersectionScopeIds:[]
-      };
-    }
-
-    const intersectionScopeIds=validBundles.map(bundle=>bundle.runtimeId);
-    const aggregateRows=(await Promise.all(validBundles.map(async bundle=>{
-      const [textDaily,mediaDaily]=await Promise.all([
-        selectDailyCategoryCounts(bundle.galaxy,'source_name',{
-          startDate:intersectionStart,
-          endDate:today,
-          filters:publicContentFilters([]),
-          includeEmpty:true,
-          includeUndated:false
-        }),
-        selectDailyCategoryCounts(bundle.galaxyMedia,'media_type',{
-          startDate:intersectionStart,
-          endDate:today,
-          includeEmpty:true,
-          includeUndated:false
-        })
-      ]);
-      return [
-        ...textDaily.map(row=>({...row,scope_id:bundle.runtimeId})),
-        ...mediaDaily.map(row=>({...row,scope_id:bundle.runtimeId}))
-      ];
-    }))).flat();
-
-    const built=buildLocSourceRiver(aggregateRows);
     return {
-      scopeId:id,
-      scope:null,
-      scopes:validBundles.map(bundle=>bundle.scope),
-      eras:{eras:[]},
-      periods:[],
-      openRanges,
-      scopeRanges:buildLocScopeDistribution(aggregateRows),
-      timelineItems:[],
-      sourceRiverItems:built.sourceRiverItems,
-      sourceGroups:built.sourceGroups,
-      events:[],
-      trajectories:[],
-      works:[],
-      intersectionStart,
-      intersectionEnd:today,
-      intersectionScopeIds
+      scopeId:id,scope:null,eras:{eras:[]},periods:[],openRanges:[],scopeRanges:[],
+      timelineItems:[],sourceRiverItems:[],sourceGroups:[],events:[],trajectories:[],
+      works:[],intersectionStart:'',intersectionEnd:'',intersectionScopeIds:[]
     };
   }
 

@@ -17,7 +17,7 @@ export default function ScopeGroupManagement(){
   return <section className="loc-card scope-feature-card">
     <p className="loc-eyebrow">Scope Group · LOC</p>
     <h2>LOC Scope Group</h2>
-    <p>LOC 直接讀取 DB Scope Registry 的上下層關係；Search、Statistics、Culture 仍共用同一份 Scope 資料契約，不建立第二套 corpus authority。</p>
+    <p>LOC 直接讀取 DB Scope Registry 的上下層關係；Group 只負責總覽與導引，不跨 Scope 聚合 Galaxy／Time。Search、Statistics、Culture 的實際查詢回到各 Scope 執行。</p>
     {query.error?<p className="scope-status scope-error">{query.error.message}</p>:null}
     <div className="scope-list">
       {scopes.map(scope=><article className="scope-inline-card" key={scope.scope_id}>

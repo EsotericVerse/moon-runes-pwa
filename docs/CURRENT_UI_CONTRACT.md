@@ -45,9 +45,9 @@ NAV URL 由 Current Scope registry 產生；實際 route 是否存在由 Next fi
 
 Homepage 與共用分析以 Culture、Statistics、Search 為主：
 
-- Culture 顯示時間交會、密度、來源與 Anchor。
-- LOC Statistics 以合併總數為主，顯示各 `scope_id` 的數量與占比，並提供一年／一月／一週與折線／長條／圓餅圖切換；細部統計導向各 Scope。
-- Search 顯示精準文字／metadata 結果。Scope ID／中文名／英文名精確命中時只顯示對應 Scope 首頁入口並停止；風格關鍵詞精確命中時，先顯示時期設定中的短介紹，再列出一般相關結果。
+- 單 Scope Culture 顯示時間、密度、來源與 Anchor；Scope Group Culture 只顯示 Registry Overview 與各 Scope 文化入口。
+- 單 Scope Statistics 顯示自己的數量、來源、時間趨勢與圖表；LOC Scope Group Statistics 只做 Overview／導引，不跨 Scope 計算合併總數或占比。
+- 單 Scope Search 顯示精準文字／metadata 結果；Scope Group Search 只做 Scope Overview／導引，不同時搜尋所有子 Scope。Scope ID／中文名／英文名精確命中時只顯示對應 Scope 首頁入口並停止；風格關鍵詞精確命中時，先顯示時期設定中的短介紹，再列出一般相關結果。
 - Governance 說明規則與管理責任。
 
 不再以固定八模組圖作為 Current UI 架構定義。

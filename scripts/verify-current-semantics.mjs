@@ -22,7 +22,9 @@ const required=[
   'app/loc/db-query.mjs',
   'app/modular/feature-data-state.js',
   'app/AppShell.jsx',
-  'app/loc/query-contract.mjs'
+  'app/loc/query-contract.mjs',
+  'app/loc/ScopeGroupOverview.jsx',
+  'app/loc/culture-query.js'
 ];
 for(const path of required)if(!fs.existsSync(path)||!read(path).trim())failures.push('missing Current contract file: '+path);
 if(!failures.length){
@@ -95,15 +97,22 @@ if(!failures.length){
   if(rune66Engine.includes('keyword_group')||rune66Engine.includes("node_type==='style'")||rune66Engine.includes("node_type==='keyword'"))failures.push('Rune66 engine must not restore style/rule/node-type keyword storage');
   const statistics=read('app/modular/features/Statistics.jsx');
   const culture=read('app/modular/features/Culture.jsx');
+  const search=read('app/modular/features/Search.jsx');
+  const scopeGroupOverview=read('app/loc/ScopeGroupOverview.jsx');
+  const cultureQuery=read('app/loc/culture-query.js');
   const queryContract=read('app/loc/query-contract.mjs');
   if(!queryContract.includes('DB_QUERY_BATCH_SIZE=1000'))failures.push('Portable Data API batch size must remain 1000.');
-  for(const token of ['ScopeGroupStatistics','selectScopeDensityRows(scopes,{startDate,endDate})',"timeStandard==='1m'","timeStandard==='1w'",'aggregateType','LOC 合併總數','統計來源（scope_id）','ScopeStatisticsPanel','statisticsQueryRange','selectSourceTrendRows(targetScopes,queryRange)'])if(!statistics.includes(token))failures.push('Statistics query-window contract missing '+token);
+  for(const token of ['ScopeGroupStatistics','ScopeGroupOverview','ScopeStatisticsPanel','statisticsQueryRange','selectSourceTrendRows(targetScopes,queryRange)'])if(!statistics.includes(token))failures.push('Statistics query-window contract missing '+token);
+  if(statistics.includes('selectScopeDensityRows(scopes')||statistics.includes('LOC 合併總數')||statistics.includes('統計來源（scope_id）'))failures.push('Scope Group Statistics must stay overview-only and must not fan out corpus aggregation.');
   if(statistics.includes("?{startDate:customFrom,endDate:customTo}\n    :{startDate:'',endDate:''}"))failures.push('Preset Statistics ranges must not fall back to an unbounded database query.');
   if(galaxy.includes("{column:'source_name',operator:'neq',value:''}"))failures.push('Unknown source rows must reach Statistics and map to Others instead of being discarded.');
   for(const token of ['表現風格','Class｜符文群組','Group｜符文排行'])if(!statistics.includes(token))failures.push('Statistics style-filter presentation missing '+token);
   for(const token of ['表現風格','Class｜符文群組比例','culture-style-filter'])if(!culture.includes(token))failures.push('Culture style-filter presentation missing '+token);
   for(const token of ['currentStructurePeriod','currentTimelineItems','fixedMin={currentStructureStart}','fixedMax={currentStructureEnd}'])if(!culture.includes(token))failures.push('Culture first river must stay constrained to the current period: '+token);
-  for(const token of ['個別文章列表','個人時間長河',"featureNavigationHref(id,'culture')"])if(!culture.includes(token))failures.push('LOC aggregate Culture guidance missing '+token);
+  for(const token of ['enabled:!isAggregateScope','ScopeGroupOverview','Scope Group 文化導引'])if(!culture.includes(token))failures.push('Scope Group Culture overview contract missing '+token);
+  if(cultureQuery.includes('selectManagedScopes')||cultureQuery.includes('Promise.all(managedScopes'))failures.push('Scope Group Culture data loader must not fan out across child Scope corpus tables.');
+  for(const token of ['selectScopeGroupChildren','不跨 Scope 聚合 Galaxy／Galaxy Media／Time','前往此 Scope'])if(!scopeGroupOverview.includes(token))failures.push('Scope Group overview navigation contract missing '+token);
+  if(!search.includes('enabled:!aggregateScopes')||!search.includes('Scope Group 搜尋導引')||!search.includes('ScopeGroupOverview'))failures.push('Scope Group Search must use registry overview instead of multi-Scope search.');
   if(statistics.includes('關鍵詞排行')||culture.includes('關鍵詞排行'))failures.push('Keyword-level ranking must remain hidden behind Class / Group presentation');
   const dbAudit=read('scripts/verify-db-public-read.mjs');
   for(const token of ['managedScopes','scopeMapping','scopeMappings','mapping conflict','verifyManagedScope'])if(!dbAudit.includes(token))failures.push('Public database audit missing Scope-derived '+token);
