@@ -157,16 +157,16 @@ export async function selectGalaxyContent(scope,uid){
   return selectRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content'});
 }
 
-export async function selectGalaxyIdentity(scope,uid){
+export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
   const current=scopeOf(scope);
   const id=String(uid||'').trim();
   if(!id)return null;
   const row=await selectRowById(current.galaxy,{
     idColumn:'uid',
     id,
-    columns:'uid,title,source_name,createtime,url,source_id,target_id,media_link'
+    columns:'uid,title,source_name,createtime,url,source_id,target_id,media_link,searchable'
   });
-  if(!row)return null;
+  if(!row||(!includeHidden&&row.searchable===false))return null;
   const [contentRow,mediaRows]=await Promise.all([
     selectRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content'}),
     mediaRowsFor(current,mediaIdsOf(row.media_link))
@@ -239,13 +239,13 @@ function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filte
   });
 }
 
-function genericScopeProviders(scope,{mediaOnly=false}={}){
+function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false}={}){
   const current=scopeOf(scope);
   const text=makeProvider({
     id:current.id+':text',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
     columns:['uid','content_type','title','source_name','source_id','target_id','url','media_link','createtime'],
     searchFields:['title','content','source_name'],dateColumn:'createtime',
-    filters:publicContentFilters([{column:'searchable',operator:'eq',value:true}])
+    filters:publicContentFilters(includeHiddenText?[]:[{column:'searchable',operator:'eq',value:true}])
   });
   const media=makeProvider({
     id:current.id+':media',table:current.galaxyMedia,source:current.id+' 多媒體',scope:current,idColumn:'media_id',
@@ -276,13 +276,14 @@ function scopeCards(query,scopes=[]){
 }
 
 export async function searchGalaxyRows(scopes,query,{
-  limit=DEFAULT_LIST_BATCH_SIZE,cursor=null,startDate='',endDate='',and=[],nor=[],mediaOnly=false
+  limit=DEFAULT_LIST_BATCH_SIZE,cursor=null,startDate='',endDate='',and=[],nor=[],mediaOnly=false,hiddenScopeIds=[]
 }={}){
   const q=String(query||'').trim();
   if(!q)return {rows:[],failures:[],hasMore:false,nextCursor:null};
   const safeLimit=Math.max(1,Math.min(DEFAULT_LIST_BATCH_SIZE,Math.floor(Number(limit)||DEFAULT_LIST_BATCH_SIZE)));
   const scopeList=(Array.isArray(scopes)?scopes:[]).filter(scope=>scope?.id);
-  const providers=scopeList.flatMap(scope=>genericScopeProviders(scope,{mediaOnly}));
+  const hiddenScopes=new Set((Array.isArray(hiddenScopeIds)?hiddenScopeIds:[]).map(value=>String(value||'').trim()).filter(Boolean));
+  const providers=scopeList.flatMap(scope=>genericScopeProviders(scope,{mediaOnly,includeHiddenText:hiddenScopes.has(scope.id)}));
   const cards=mediaOnly?[]:scopeCards(q,scopeList);
   const failures=[];
 
@@ -336,6 +337,30 @@ async function scopeSourceTrendRows(scope,{startDate='',endDate=''}={}){
     const split=key.indexOf('|');
     return {day:key.slice(0,split),source:key.slice(split+1),item_count:Number(item_count)||0};
   }).sort((a,b)=>a.day.localeCompare(b.day)||SOURCE_BUCKET_ORDER.indexOf(a.source)-SOURCE_BUCKET_ORDER.indexOf(b.source));
+}
+
+async function scopeDensityRows(scope,{startDate='',endDate=''}={}){
+  const current=scopeOf(scope);
+  const [textDaily,mediaDaily]=await Promise.all([
+    selectSourceDaily(current,{startDate,endDate}),
+    selectDailyCategoryCounts(current.galaxyMedia,'media_type',{startDate,endDate})
+  ]);
+  const daily=new Map();
+  for(const row of [...textDaily,...mediaDaily]){
+    const day=dateOnly(row.day);
+    if(!day)continue;
+    daily.set(day,(daily.get(day)||0)+(Number(row.item_count)||0));
+  }
+  return [...daily.entries()]
+    .map(([day,item_count])=>({scope_id:current.id,day,item_count}))
+    .sort((a,b)=>a.day.localeCompare(b.day));
+}
+
+export async function selectScopeDensityRows(scopes,{startDate='',endDate=''}={}){
+  const range={startDate:dateOnly(startDate),endDate:dateOnly(endDate)};
+  return (await Promise.all((Array.isArray(scopes)?scopes:[]).map(scope=>scopeDensityRows(scope,range))))
+    .flat()
+    .sort((a,b)=>a.day.localeCompare(b.day)||a.scope_id.localeCompare(b.scope_id));
 }
 
 export async function selectSourceTrendRows(scopes,{startDate='',endDate=''}={}){
