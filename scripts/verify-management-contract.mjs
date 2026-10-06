@@ -22,6 +22,8 @@ must(!galaxy.includes('include_in_time'),'generic search must not query nonexist
 must(galaxy.includes("'style_tags'")&&galaxy.includes("searchFields:['label','note','status','style_tags']"),'generic Time search must include style_tags');
 must(culture.includes('visibility,style_tags'),'Culture shared Time contract must include style_tags');
 must(editor.includes("style_tags:''")&&editor.includes('風格標籤'),'shared Time editor must edit style_tags');
+must(editor.includes('style_tag_descriptions')&&editor.includes('風格關鍵詞說明')&&editor.includes('搜尋精確命中風格詞時'),'Time editor must require per-style-keyword search descriptions');
+must(galaxy.includes('selectStyleKeywordIntroductions')&&!galaxy.includes('scopeCards('),'Search must prepend exact style-keyword introductions and must not use partial Scope-ID cards');
 must(management.includes("section==='group'&&scopeId==='loc'"),'LOC Scope Group must have its own Manage');
 must(management.includes('ScopeGroupManagement'),'Manage must compose the Scope Group module');
 must(management.includes('KeywordLibraryPanel')&&management.includes("value:'keywords'"),'lo3rwang Manage must expose the generic keyword library');
