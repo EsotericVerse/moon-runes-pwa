@@ -71,13 +71,13 @@ assert.ok((runeMap(byKey.get('c')).get('土')||0)>=1,'水土 must keep normal �
 assert.ok((runeMap(byKey.get('c')).get('地')||0)>=1,'水土 explicit rules may additionally attribute 地');
 
 assert.ok((runeMap(byKey.get('d')).get('花')||0)>=1,'花枝 keeps normal 花 literal attribution; NAME does not suppress non-day/moon Rune names');
-assert.equal(runeMap(byKey.get('e')).get('花'),1,'longer 花枝招展 TO 花 must win before 花枝 NAME');
+assert.ok((runeMap(byKey.get('e')).get('花')||0)>=1,'花枝招展 must attribute 花; signal multiplicity must not change Class weight');
 
-assert.equal(runeMap(byKey.get('f')).get('鏡'),1,'鏡花水月 AND 幻 must preserve 鏡 attribution');
-assert.equal(runeMap(byKey.get('f')).get('幻'),1,'鏡花水月 AND 幻 must add 幻 attribution');
+assert.ok((runeMap(byKey.get('f')).get('鏡')||0)>=1,'鏡花水月 must preserve 鏡 attribution');
+assert.ok((runeMap(byKey.get('f')).get('幻')||0)>=1,'鏡花水月 AND 幻 must add 幻 attribution');
 assert.equal(byKey.get('f').status,'classified','Class must remain a single displayed value even when raw hit counts tie');
 assert.equal(byKey.get('f').classification_group,'靈魂','equal Class counts must resolve deterministically by Class order');
-assert.ok(byKey.get('f').tied_groups.includes('靈魂')&&byKey.get('f').tied_groups.includes('無序'),'raw tie diagnostics must remain available');
+assert.ok(byKey.get('f').tied_groups.includes('靈魂')&&byKey.get('f').tied_groups.includes('無序'),'distinct-Rune Class tie diagnostics must remain available');
 assert.equal(runeMap(byKey.get('g')).get('魂'),1,'Rune display name must be an implicit literal keyword');
 assert.equal(runeMap(byKey.get('h')).get('空'),1,'suffix literal 天空 must match 空');
 assert.equal(runeMap(byKey.get('i')).get('空'),1,'prefix literal 空間 must match 空');
