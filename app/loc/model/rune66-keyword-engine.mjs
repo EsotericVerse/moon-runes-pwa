@@ -117,9 +117,7 @@ function increment(state,rune,signal){
   runeCount.count+=1;
   state.runeCounts.set(rune.runeId,runeCount);
 
-  // Class is based on distinct Rune presence, never raw keyword frequency.
-  // One Rune contributes at most one point to its Class in each document.
-  if(rune.group&&!existingRune){
+  if(rune.group){
     const groupCount=state.groupCounts.get(rune.group)||{
       key:rune.group,
       label:rune.group,
