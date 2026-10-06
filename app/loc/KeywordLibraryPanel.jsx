@@ -4,24 +4,24 @@ import {useEffect,useMemo,useState} from 'react';
 import {useQueryClient} from '@tanstack/react-query';
 import {copyKeywordLibraryClass,dbAuthRelation,updateRows,writeKeywordLibraryItem} from './db-client.mjs';
 import {useAccount} from './use-account';
-import {clearRune66ClassificationCache} from './rune66-keyword-analysis';
+import {clearRune66ClassificationCache,runRune66ClassificationBatch} from './rune66-keyword-analysis';
 
 const TABLE='silver.lo3rwang_keywords';
 const CONFIG_TABLE='silver.lo3rwang';
 const DEFAULT_KEYWORD_MIN_CHARS=32;
+const DEFAULT_KEYWORD_MIN_DOCUMENTS=100;
 
 function normalizeKeywordLines(value){
   const lines=String(value||'').split(/\r?\n/).map(item=>item.trim()).filter(Boolean);
   return [...new Set(lines)];
 }
-
 function keywordText(value){
   return Array.isArray(value)?value.map(item=>String(item||'').trim()).filter(Boolean).join('\n'):'';
 }
-
-function blankDraft(className='',itemNo=1){
+function blankDraft(className='',classId='',itemNo=1){
   return {
     keyword_id:null,
+    class_id:classId,
     class_name:className,
     class_group:'',
     class_enable:true,
@@ -31,6 +31,11 @@ function blankDraft(className='',itemNo=1){
     keywords_text:'',
     order_no:itemNo
   };
+}
+function formatStaticTime(value){
+  if(!value)return '尚未定錨';
+  const date=new Date(value);
+  return Number.isNaN(date.getTime())?String(value):date.toLocaleString('zh-TW',{hour12:false});
 }
 
 export default function KeywordLibraryPanel(){
@@ -42,6 +47,12 @@ export default function KeywordLibraryPanel(){
   const [draft,setDraft]=useState(null);
   const [copyName,setCopyName]=useState('');
   const [minChars,setMinChars]=useState(DEFAULT_KEYWORD_MIN_CHARS);
+  const [minDocuments,setMinDocuments]=useState(DEFAULT_KEYWORD_MIN_DOCUMENTS);
+  const [currentClassId,setCurrentClassId]=useState('');
+  const [shareEnabled,setShareEnabled]=useState(false);
+  const [keywordDocumentCount,setKeywordDocumentCount]=useState(0);
+  const [staticstime,setStaticstime]=useState('');
+  const [configSnapshot,setConfigSnapshot]=useState(null);
   const [loading,setLoading]=useState(true);
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
@@ -50,7 +61,21 @@ export default function KeywordLibraryPanel(){
 
   async function invalidateClassification(){
     clearRune66ClassificationCache();
-    await queryClient.invalidateQueries({queryKey:['statistics-rune66-classification'],refetchType:'all'});
+    await Promise.all([
+      queryClient.invalidateQueries({queryKey:['statistics-style-filter'],refetchType:'all'}),
+      queryClient.invalidateQueries({queryKey:['culture-style-filter'],refetchType:'all'})
+    ]);
+  }
+
+  async function markCurrentClassificationStale(classId){
+    if(!classId||String(classId)!==String(currentClassId))return;
+    await updateRows(CONFIG_TABLE,{
+      staticstime:null,
+      keyword_document_count:0,
+      keyword_meta:{},
+      updated_at:new Date().toISOString()
+    },{filters:[{column:'id',operator:'eq',value:'lo3rwang'}]});
+    await invalidateClassification();
   }
 
   async function load(preferredId='',preferredClass=''){
@@ -59,23 +84,46 @@ export default function KeywordLibraryPanel(){
     try{
       const [keywordResult,configResult]=await Promise.all([
         dbAuthRelation(TABLE)
-          .select('keyword_id,class_name,class_group,class_enable,item_no,item_name,principle,keywords,order_no')
+          .select('keyword_id,class_id,class_name,class_group,class_enable,item_no,item_name,principle,keywords,order_no')
           .order('class_name',{ascending:true})
           .order('order_no',{ascending:true})
           .order('item_no',{ascending:true}),
         dbAuthRelation(CONFIG_TABLE)
-          .select('keyword_min_chars')
+          .select('keyword_min_chars,keyword_min_documents,current_keyword_class_id,keyword_class_share_enabled,keyword_document_count,staticstime')
           .eq('id','lo3rwang')
           .limit(1)
       ]);
       if(keywordResult.error)throw new Error(keywordResult.error.message||'關鍵詞庫讀取失敗');
       if(configResult.error)throw new Error(configResult.error.message||'關鍵詞分析設定讀取失敗');
-      const configured=Number(configResult.data?.[0]?.keyword_min_chars);
-      setMinChars(Number.isInteger(configured)&&configured>=0?configured:DEFAULT_KEYWORD_MIN_CHARS);
+
+      const config=configResult.data?.[0]||{};
+      const configuredChars=Number(config.keyword_min_chars);
+      const configuredDocuments=Number(config.keyword_min_documents);
+      const nextMinChars=Number.isInteger(configuredChars)&&configuredChars>=0?configuredChars:DEFAULT_KEYWORD_MIN_CHARS;
+      const nextMinDocuments=Number.isInteger(configuredDocuments)&&configuredDocuments>=0?configuredDocuments:DEFAULT_KEYWORD_MIN_DOCUMENTS;
+      const nextCurrentClassId=String(config.current_keyword_class_id||'');
+      const nextShareEnabled=Boolean(config.keyword_class_share_enabled);
+      const nextDocumentCount=Math.max(0,Number(config.keyword_document_count)||0);
+      const nextStaticstime=String(config.staticstime||'');
+
+      setMinChars(nextMinChars);
+      setMinDocuments(nextMinDocuments);
+      setCurrentClassId(nextCurrentClassId);
+      setShareEnabled(nextShareEnabled);
+      setKeywordDocumentCount(nextDocumentCount);
+      setStaticstime(nextStaticstime);
+      setConfigSnapshot({
+        minChars:nextMinChars,
+        minDocuments:nextMinDocuments,
+        currentClassId:nextCurrentClassId,
+        shareEnabled:nextShareEnabled
+      });
+
       const next=keywordResult.data||[];
       setRows(next);
       const classNames=[...new Set(next.map(row=>String(row.class_name||'').trim()).filter(Boolean))];
-      const requested=String(preferredClass||selectedClass||'').trim();
+      const currentClassName=next.find(row=>String(row.class_id||'')===nextCurrentClassId)?.class_name||'';
+      const requested=String(preferredClass||selectedClass||currentClassName||'').trim();
       const nextClass=classNames.includes(requested)?requested:(classNames.includes('符文66')?'符文66':(classNames[0]||''));
       setSelectedClass(nextClass);
       const candidate=next.find(row=>String(row.keyword_id)===String(preferredId))
@@ -97,30 +145,46 @@ export default function KeywordLibraryPanel(){
 
   useEffect(()=>{if(canEdit)load();},[canEdit,account.email]);
 
-  const classes=useMemo(()=>[...new Set(rows.map(row=>String(row.class_name||'').trim()).filter(Boolean))],[rows]);
+  const classes=useMemo(()=>{
+    const map=new Map();
+    for(const row of rows){
+      const id=String(row.class_id||'').trim();
+      const name=String(row.class_name||'').trim();
+      if(id&&name&&!map.has(id))map.set(id,name);
+    }
+    return [...map.entries()].map(([class_id,class_name])=>({class_id,class_name}));
+  },[rows]);
   const items=useMemo(()=>rows
     .filter(row=>String(row.class_name)===selectedClass)
     .sort((a,b)=>Number(a.order_no||0)-Number(b.order_no||0)||Number(a.item_no||0)-Number(b.item_no||0)),[rows,selectedClass]);
+  const selectedClassId=String(items[0]?.class_id||'');
+  const configDirty=Boolean(configSnapshot)&&(
+    Number(minChars)!==Number(configSnapshot.minChars)
+    ||Number(minDocuments)!==Number(configSnapshot.minDocuments)
+    ||String(currentClassId)!==String(configSnapshot.currentClassId)
+    ||Boolean(shareEnabled)!==Boolean(configSnapshot.shareEnabled)
+  );
 
   function selectItem(row){
     setSelectedId(String(row.keyword_id));
     setDraft({...row,keywords_text:keywordText(row.keywords)});
     setMessage('');
   }
-
   function newItem(){
     const next=Math.max(0,...items.map(row=>Number(row.item_no)||0))+1;
     setSelectedId('');
-    setDraft(blankDraft(selectedClass,next));
+    setDraft(blankDraft(selectedClass,selectedClassId,next));
     setMessage('');
   }
 
   async function save(){
     if(!draft)return;
+    const classId=String(draft.class_id||'').trim();
     const className=String(draft.class_name||'').trim();
     const classGroup=String(draft.class_group||'').trim();
     const itemName=String(draft.item_name||'').trim();
     const itemNo=Number(draft.item_no);
+    if(!classId){setMessage('Class UUID 不可為空。');return;}
     if(!className){setMessage('Class 不可為空。');return;}
     if(!classGroup){setMessage('Group 不可為空。');return;}
     if(!itemName){setMessage('項目名稱不可為空。');return;}
@@ -128,6 +192,7 @@ export default function KeywordLibraryPanel(){
 
     const payload={
       keyword_id:draft.keyword_id,
+      class_id:classId,
       class_name:className,
       class_group:classGroup,
       class_enable:draft.class_enable!==false,
@@ -141,10 +206,10 @@ export default function KeywordLibraryPanel(){
     setBusy(true);setMessage('');
     try{
       const result=await writeKeywordLibraryItem(draft.keyword_id?'update':'insert',payload);
-      await invalidateClassification();
+      await markCurrentClassificationStale(classId);
       setSelectedClass(className);
       await load(result.keyword_id||draft.keyword_id||'',className);
-      setMessage('關鍵詞設定已儲存。');
+      setMessage(classId===currentClassId?'關鍵詞設定已儲存；目前 Class 已變更，請重新分析文章。':'關鍵詞設定已儲存。');
     }catch(error){
       setMessage(String(error?.message||error||'關鍵詞設定儲存失敗。'));
     }finally{
@@ -152,23 +217,53 @@ export default function KeywordLibraryPanel(){
     }
   }
 
-  async function saveMinChars(){
-    const value=Number(minChars);
-    if(!Number.isInteger(value)||value<0||value>10000){
-      setMessage('最小分析字數必須是 0 到 10000 的整數。');
-      return;
+  async function saveAnalysisSettings(){
+    const chars=Number(minChars);
+    const documents=Number(minDocuments);
+    if(!Number.isInteger(chars)||chars<0||chars>10000){
+      setMessage('最小分析字數必須是 0 到 10000 的整數。');return;
     }
+    if(!Number.isInteger(documents)||documents<0||documents>1000000){
+      setMessage('最小統計文章數必須是 0 到 1000000 的整數。');return;
+    }
+    if(!classes.some(item=>item.class_id===currentClassId)){
+      setMessage('請選擇目前使用的 Class。');return;
+    }
+    const classificationChanged=chars!==Number(configSnapshot?.minChars)||currentClassId!==String(configSnapshot?.currentClassId||'');
     setBusy(true);setMessage('');
     try{
       await updateRows(CONFIG_TABLE,{
-        keyword_min_chars:value,
+        keyword_min_chars:chars,
+        keyword_min_documents:documents,
+        current_keyword_class_id:currentClassId,
+        keyword_class_share_enabled:Boolean(shareEnabled),
+        ...(classificationChanged?{staticstime:null,keyword_document_count:0,keyword_meta:{}}:{}),
         updated_at:new Date().toISOString()
       },{filters:[{column:'id',operator:'eq',value:'lo3rwang'}]});
-      await invalidateClassification();
-      setMinChars(value);
-      setMessage(`最小分析字數已更新為 ${value}；正文必須大於此字數才會進入關鍵詞分析。`);
+      if(classificationChanged)await invalidateClassification();
+      await load('',selectedClass);
+      setMessage(classificationChanged?'分析設定已更新；請重新分析文章。':'分析設定已更新。');
     }catch(error){
       setMessage(String(error?.message||error||'關鍵詞分析設定儲存失敗。'));
+    }finally{
+      setBusy(false);
+    }
+  }
+
+  async function runBatch(){
+    if(configDirty){setMessage('分析設定尚未儲存，請先儲存分析設定。');return;}
+    setBusy(true);setMessage('');
+    try{
+      const result=await runRune66ClassificationBatch();
+      await invalidateClassification();
+      await load('',selectedClass);
+      setMessage(
+        '已完成 '+Number(result.documentCount||0).toLocaleString()+
+        ' 篇文章分析；其中 '+Number(result.dynamicTieCount||0).toLocaleString()+
+        ' 篇完全平手以當下 Class 累積數動態分配。'
+      );
+    }catch(error){
+      setMessage(String(error?.message||error||'關鍵詞批次分析失敗。'));
     }finally{
       setBusy(false);
     }
@@ -177,13 +272,14 @@ export default function KeywordLibraryPanel(){
   async function remove(){
     if(!draft?.keyword_id)return;
     if(!window.confirm('確定刪除這個分類項目？'))return;
+    const classId=String(draft.class_id||'');
     setBusy(true);setMessage('');
     try{
       await writeKeywordLibraryItem('delete',draft);
-      await invalidateClassification();
+      await markCurrentClassificationStale(classId);
       setSelectedId('');setDraft(null);
       await load('',selectedClass);
-      setMessage('分類項目已刪除。');
+      setMessage(classId===currentClassId?'分類項目已刪除；目前 Class 已變更，請重新分析文章。':'分類項目已刪除。');
     }catch(error){
       setMessage(String(error?.message||error||'分類項目刪除失敗。'));
     }finally{
@@ -198,14 +294,23 @@ export default function KeywordLibraryPanel(){
     setBusy(true);setMessage('');
     try{
       const result=await copyKeywordLibraryClass(selectedClass,target);
-      await invalidateClassification();
       setCopyName('');
       await load('',target);
-      setMessage(`已複製 ${result.count} 個分類項目到「${target}」。`);
+      setMessage('已複製 '+result.count+' 個分類項目到「'+target+'」；新 Class UUID：'+result.class_id);
     }catch(error){
       setMessage(String(error?.message||error||'Class 複製失敗。'));
     }finally{
       setBusy(false);
+    }
+  }
+
+  async function copyClassUuid(){
+    if(!selectedClassId)return;
+    try{
+      await navigator.clipboard.writeText(selectedClassId);
+      setMessage('Class UUID 已複製。分享時請同時提供 scope_id：lo3rwang。');
+    }catch{
+      setMessage('無法自動複製；請手動複製 Class UUID。');
     }
   }
 
@@ -214,20 +319,40 @@ export default function KeywordLibraryPanel(){
   return <section className="loc-card scope-feature-card scope-management-workspace">
     <p className="loc-eyebrow">Keyword Library</p>
     <h2>關鍵詞庫</h2>
-    <p>每套 Class 自己保存 Group、項目、是否參與 Class 判定、判別原理與關鍵詞集合；TO／AND／NAME／NOR 直接保留在關鍵詞字串中。整套 Class 可獨立複製，不依賴 LunaRunes Canon。</p>
+    <p>每套 Class 以 UUID 獨立識別，可複製與分享；文章只保存分析後的 class_id 與 group_lists。公開統計直接讀文章 Attr，不會重新跑關鍵詞。</p>
 
-    <div className="scope-stat-controls">
-      <label><span>最小分析字數</span><input type="number" min="0" max="10000" step="1" value={minChars} onChange={event=>setMinChars(event.target.value)}/></label>
-      <button type="button" className="loc-button" disabled={busy} onClick={saveMinChars}>儲存分析門檻</button>
-    </div>
-    <p className="scope-status">正文去除空白後必須大於 {minChars} 字才進入關鍵詞分析；小於等於門檻的作品不分析，也不列入未分類。</p>
+    <section className="scope-inline-card">
+      <h3>分析設定</h3>
+      <div className="scope-management-fields">
+        <label><span>目前使用 Class</span><select className="scope-select" value={currentClassId} onChange={event=>setCurrentClassId(event.target.value)}>
+          {classes.map(item=><option key={item.class_id} value={item.class_id}>{item.class_name}</option>)}
+        </select></label>
+        <label><span>最小分析字數</span><input type="number" min="0" max="10000" step="1" value={minChars} onChange={event=>setMinChars(event.target.value)}/></label>
+        <label><span>最小統計文章數</span><input type="number" min="0" max="1000000" step="1" value={minDocuments} onChange={event=>setMinDocuments(event.target.value)}/></label>
+        <label><span>Class 分享授權</span><select className="scope-select" value={shareEnabled?'open':'closed'} onChange={event=>setShareEnabled(event.target.value==='open')}>
+          <option value="closed">關閉</option>
+          <option value="open">開放</option>
+        </select></label>
+      </div>
+      <p className="scope-status">正文去除空白後必須大於 {minChars} 字才分析；符合資格文章必須大於 {minDocuments} 篇才啟用關鍵詞統計。</p>
+      <p className="scope-status">目前定錨：{formatStaticTime(staticstime)} · 有效文章 {Number(keywordDocumentCount||0).toLocaleString()} 篇{staticstime?'':' · 需要重新分析'}</p>
+      <div className="scope-preview-links">
+        <button type="button" className="loc-button" disabled={busy||!configDirty} onClick={saveAnalysisSettings}>儲存分析設定</button>
+        <button type="button" className="loc-button primary" disabled={busy||configDirty||!currentClassId} onClick={runBatch}>{busy?'處理中…':'重新分析並寫入文章 Attr'}</button>
+      </div>
+    </section>
 
     <div className="scope-stat-controls">
       <label><span>Class</span><select className="scope-select" value={selectedClass} onChange={event=>{const name=event.target.value;setSelectedClass(name);const first=rows.find(row=>String(row.class_name)===name);if(first)selectItem(first);}}>
-        {classes.map(name=><option key={name} value={name}>{name}</option>)}
+        {[...new Set(classes.map(item=>item.class_name))].map(name=><option key={name} value={name}>{name}</option>)}
       </select></label>
       <button type="button" className="loc-button" onClick={newItem}>新增分類項目</button>
     </div>
+    {selectedClassId?<div className="scope-stat-controls">
+      <label><span>Class UUID</span><input value={selectedClassId} readOnly aria-readonly="true"/></label>
+      <button type="button" className="loc-button" onClick={copyClassUuid}>複製 UUID</button>
+      <span className="scope-status">scope_id: lo3rwang</span>
+    </div>:null}
 
     <div className="scope-stat-controls">
       <label><span>複製目前 Class</span><input value={copyName} placeholder="新 Class 名稱" onChange={event=>setCopyName(event.target.value)}/></label>
@@ -253,7 +378,7 @@ export default function KeywordLibraryPanel(){
       <div className="scope-management-editor">
         {!draft?<p className="scope-status">選一個分類項目，或新增一個項目。</p>:<>
           <div className="scope-management-fields">
-            <label><span>Class</span><input value={draft.class_name||''} onChange={event=>setDraft(current=>({...current,class_name:event.target.value}))}/></label>
+            <label><span>Class</span><input value={draft.class_name||''} readOnly aria-readonly="true"/></label>
             <label><span>Group</span><input value={draft.class_group||''} onChange={event=>setDraft(current=>({...current,class_group:event.target.value}))}/></label>
             <label><span>參與 Class 判定</span><select className="scope-select" value={draft.class_enable===false?'false':'true'} onChange={event=>setDraft(current=>({...current,class_enable:event.target.value==='true'}))}><option value="true">是</option><option value="false">否</option></select></label>
             <label><span>項目編號</span><input type="number" min="1" value={draft.item_no||''} onChange={event=>setDraft(current=>({...current,item_no:event.target.value}))}/></label>
