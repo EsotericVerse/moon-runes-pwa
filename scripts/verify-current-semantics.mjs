@@ -6,7 +6,9 @@ const required=[
   'app/loc/views/AboutView.jsx',
   'app/loc/galaxy-query.js',
   'app/modular/features/Search.jsx',
-  'app/loc/model/daily-trend-engine.mjs',
+  'app/loc/daily-runes.js',
+  'app/daily/log/DailyLogClient.jsx',
+  'app/lrunes/DailyRuneCalendar.jsx',
   'app/loc/scope-data.js',
   'scripts/verify-db-public-read.mjs',
   'governance/runtime-capabilities.json',
@@ -26,8 +28,18 @@ for(const path of required)if(!fs.existsSync(path)||!read(path).trim())failures.
 if(!failures.length){
   const identity=read('app/loc/views/AboutView.jsx');
   for(const token of ['語言架構框架','Language Architecture Framework','符號式語言','Symbolic Language'])if(!identity.includes(token))failures.push('identity missing '+token);
-  const daily=read('app/loc/model/daily-trend-engine.mjs');
-  for(const token of ['summarizeDailyRange','dailyPresetRange'])if(!daily.includes(token))failures.push('daily trend missing '+token);
+  const dailyData=read('app/loc/daily-runes.js');
+  for(const token of ['selectPreviousDailyRuneOccurrence','selectDailyRuneSituation','selectDailyRuneContext',"types:['sit_q','daily_r','daily_g','daily_b']","column:'current_moon'"])if(!dailyData.includes(token))failures.push('daily rune context missing '+token);
+  const dailyLog=read('app/daily/log/DailyLogClient.jsx');
+  for(const token of ['每日占卜提醒','每日占卜引導','每日占卜祝福','上次抽到','之前的狀況','當日真實月相'])if(!dailyLog.includes(token))failures.push('daily calendar context missing '+token);
+  const dailyCalendar=read('app/lrunes/DailyRuneCalendar.jsx');
+  for(const token of ['realMoonPhase','phaseMarkers',"current+'開始'","current+'結束'"])if(!dailyCalendar.includes(token))failures.push('daily calendar moon markers missing '+token);
+  const runeHome=read('app/lrunes/RunesClient.jsx');
+  if(runeHome.includes('daily/trend'))failures.push('Daily Trend must remain folded into Daily Log.');
+  const legacyDailyTrend=read('app/daily/trend/page.jsx');
+  if(!legacyDailyTrend.includes("from '../log/page'"))failures.push('Legacy Daily Trend route must reuse Daily Log.');
+  const lunarunesSitemap=read('app/lunarunes-sitemap.xml/route.js');
+  if(lunarunesSitemap.includes("'/daily/trend'"))failures.push('Retired Daily Trend route must not be advertised in sitemap.');
   const galaxy=read('app/loc/galaxy-query.js');
   for(const token of ["count:'exact',head:true",'.or(','.range(','searchGalaxyRows','selectSourceTrendRows'])if(!galaxy.includes(token))failures.push('Shared Galaxy query pipeline missing '+token);
   if(/flexsearch|new Index\(/i.test(galaxy))failures.push('Global Search must remain Database-first.');
@@ -82,4 +94,4 @@ if(failures.length){
   console.error('[current-semantics] failures:\n'+failures.map(item=>'- '+item).join('\n'));
   process.exit(1);
 }
-console.log('[current-semantics] Current identity, daily trend, fixed Statistics eligibility filters, Database-first Search and dependency-free text matching verified');
+console.log('[current-semantics] Current identity, daily calendar context, fixed Statistics eligibility filters, Database-first Search and dependency-free text matching verified');

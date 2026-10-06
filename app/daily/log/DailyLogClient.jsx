@@ -6,6 +6,9 @@ import {
   deleteDailyRuneRecord,
   insertDailyRuneRecord,
   selectDailyRuneMonth,
+  selectPreviousDailyRuneOccurrence,
+  selectDailyRuneContext,
+  selectDailyRuneSituation,
   updateDailyRuneRecord
 } from '../../loc/daily-runes';
 import {selectRows} from '../../loc/db-query.mjs';
@@ -59,6 +62,8 @@ export default function DailyLogClient({embedded=false}={}){
   const [saving,setSaving]=useState(false);
   const [editingKey,setEditingKey]=useState('');
   const [editForm,setEditForm]=useState(null);
+  const [comparisons,setComparisons]=useState([]);
+  const [comparisonLoading,setComparisonLoading]=useState(false);
   const [newForm,setNewForm]=useState(()=>({
     recordDate:taipeiToday(),
     drawKind:'main',
@@ -116,7 +121,45 @@ export default function DailyLogClient({embedded=false}={}){
     return grouped;
   },[rows]);
 
-  const selectedRows=byDate.get(selectedDate)||[];
+  const selectedRows=useMemo(()=>byDate.get(selectedDate)||[],[byDate,selectedDate]);
+
+  useEffect(()=>{
+    let active=true;
+    async function loadComparisons(){
+      if(!selectedDate||!selectedRows.length){
+        setComparisons([]);
+        return;
+      }
+      setComparisonLoading(true);
+      try{
+        const next=await Promise.all(selectedRows.map(async row=>{
+          const previous=await selectPreviousDailyRuneOccurrence({
+            runeNumber:row.rune_number,
+            beforeDate:selectedDate
+          });
+          const currentContext=await selectDailyRuneContext({
+            runeNumber:row.rune_number,
+            direction:row.direction,
+            recordDate:selectedDate
+          });
+          const previousSituation=previous?await selectDailyRuneSituation({
+            runeNumber:previous.rune_number,
+            direction:previous.direction,
+            recordDate:previous.record_date
+          }):null;
+          return {key:rowKey(row),current:row,previous,currentContext,previousSituation};
+        }));
+        if(active)setComparisons(next);
+      }catch{
+        if(active)setComparisons([]);
+      }finally{
+        if(active)setComparisonLoading(false);
+      }
+    }
+    loadComparisons();
+    return()=>{active=false;};
+  },[selectedDate,selectedRows]);
+
 
   async function addRecord(event){
     event.preventDefault();
@@ -177,7 +220,7 @@ export default function DailyLogClient({embedded=false}={}){
     {!embedded?<header className="loc-hero">
       <p className="loc-eyebrow">每日抽籤紀錄</p>
       <h1>每日符文抽籤紀錄</h1>
-      <p>依日期保存每日符文的主抽與補抽，方便回看當天結果，也可作為每日趨勢分析的紀錄來源。</p>
+      <p>依日期保存每日符文的主抽與補抽，並在行事曆下方比較同一符文上一次出現的日期與當時狀況。</p>
     </header>:null}
 
     <DailyRuneCalendar
@@ -191,6 +234,26 @@ export default function DailyLogClient({embedded=false}={}){
       onNext={()=>setMonthValue(value=>value+1)}
       onSelectDate={setSelectedDate}
     />
+
+    {selectedRows.length?<section className="loc-card" aria-live="polite">
+      <p className="loc-eyebrow">每日符文說明</p>
+      <h2>{formatDate(selectedDate)} 的當日指引與前次紀錄</h2>
+      {comparisonLoading?<p className="loc-status">讀取前次同符文紀錄…</p>:null}
+      {!comparisonLoading?<div className="scope-list">
+        {comparisons.map(({key,current,previous,currentContext,previousSituation})=><article className="scope-inline-card" key={'compare-'+key}>
+          <strong>{current.draw_kind==='supplement'?'補抽':'主抽'}｜{current.rune_name}・{current.direction}</strong>
+          <span>當日真實月相：{currentContext?.moonPhase||'未知'}</span>
+          <span>狀況形容：{currentContext?.situation||'目前沒有對應的狀況形容。'}</span>
+          {currentContext?.reminder?<span>每日占卜提醒：{currentContext.reminder}</span>:null}
+          {currentContext?.guidance?<span>每日占卜引導：{currentContext.guidance}</span>:null}
+          {currentContext?.blessing?<span>每日占卜祝福：{currentContext.blessing}</span>:null}
+          {previous?<>
+            <span>上次抽到「{current.rune_name}」是 {formatDate(previous.record_date)}，方向為 {previous.direction}，當日真實月相為 {previousSituation?.moonPhase||'未知'}。</span>
+            <span>之前的狀況：{previousSituation?.text||'目前沒有對應的狀況形容。'}</span>
+          </>:<span>此前沒有抽到「{current.rune_name}」的紀錄。</span>}
+        </article>)}
+      </div>:null}
+    </section>:null}
 
     {!embedded&&canWrite?<section className="loc-card">
       <p className="loc-eyebrow">手動紀錄</p>

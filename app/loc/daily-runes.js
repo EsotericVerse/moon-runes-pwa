@@ -1,5 +1,6 @@
 import {dbAuthRelation} from './db-client.mjs';
 import {selectAllRows,selectRows} from './db-query.mjs';
+import {realMoonPhase} from './model/moon-phase';
 
 
 async function attachRuneMeta(rows){
@@ -43,6 +44,79 @@ export async function selectDailyRuneRange({startDate,endDate}={}){
     {column:'draw_kind',ascending:true}
   ]);
   return attachRuneMeta(rows);
+}
+
+export async function selectPreviousDailyRuneOccurrence({runeNumber,beforeDate}={}){
+  const rune=Number(runeNumber);
+  const before=String(beforeDate||'').slice(0,10);
+  if(!Number.isInteger(rune)||rune<0||rune>66)return null;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(before))return null;
+  const {rows}=await selectRows('silver.lrunes_daily',{
+    columns:'record_date,draw_kind,rune_number,direction',
+    filters:[
+      {column:'rune_number',operator:'eq',value:rune},
+      {column:'record_date',operator:'lt',value:before}
+    ],
+    orders:[
+      {column:'record_date',ascending:false},
+      {column:'draw_kind',ascending:true}
+    ],
+    limit:1,
+    offset:0
+  });
+  if(!rows?.length)return null;
+  const attached=await attachRuneMeta(rows);
+  return attached[0]||null;
+}
+
+const DIRECTION_CODE=Object.freeze({
+  '正位':1,
+  '半正位':2,
+  '半逆位':3,
+  '逆位':4
+});
+
+async function selectDailyRuneTexts({runeNumber,direction,recordDate,types=[]}={}){
+  const rune=Number(runeNumber);
+  const dir=DIRECTION_CODE[String(direction||'').trim()];
+  const date=String(recordDate||'').slice(0,10);
+  if(!Number.isInteger(rune)||rune<0||rune>66||!dir)return {moonPhase:'未知',texts:{}};
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return {moonPhase:'未知',texts:{}};
+  const moonPhase=realMoonPhase(new Date(date+'T12:00:00+08:00'));
+  if(!moonPhase||moonPhase==='未知')return {moonPhase:'未知',texts:{}};
+  const wanted=[...new Set((types||[]).map(String).filter(Boolean))];
+  if(!wanted.length)return {moonPhase,texts:{}};
+  const {rows}=await selectRows('silver.runes_etc',{
+    columns:'type,desc',
+    filters:[
+      {column:'rune_id',operator:'eq',value:rune},
+      {column:'dir',operator:'eq',value:dir},
+      {column:'type',operator:'in',value:wanted},
+      {column:'current_moon',operator:'eq',value:moonPhase}
+    ],
+    limit:wanted.length,
+    offset:0
+  });
+  return {
+    moonPhase,
+    texts:Object.fromEntries((rows||[]).map(row=>[String(row.type),String(row.desc||'').trim()]))
+  };
+}
+
+export async function selectDailyRuneSituation(args={}){
+  const result=await selectDailyRuneTexts({...args,types:['sit_q']});
+  return {text:result.texts.sit_q||'',moonPhase:result.moonPhase};
+}
+
+export async function selectDailyRuneContext(args={}){
+  const result=await selectDailyRuneTexts({...args,types:['sit_q','daily_r','daily_g','daily_b']});
+  return {
+    moonPhase:result.moonPhase,
+    situation:result.texts.sit_q||'',
+    reminder:result.texts.daily_r||'',
+    guidance:result.texts.daily_g||'',
+    blessing:result.texts.daily_b||''
+  };
 }
 
 export async function selectDailyRuneMonth({year,month}={}){

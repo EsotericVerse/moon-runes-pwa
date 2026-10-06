@@ -1,11 +1,33 @@
 'use client';
 
 import {useMemo} from 'react';
+import {realMoonPhase} from '../loc/model/moon-phase';
 
 const WEEKDAYS=['日','一','二','三','四','五','六'];
 
 function dateKey(year,month,day){
   return year+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+}
+
+function phaseAt(date){
+  return realMoonPhase(new Date(date+'T12:00:00+08:00'));
+}
+
+function offsetDate(date,days){
+  const value=new Date(date+'T12:00:00+08:00');
+  value.setDate(value.getDate()+days);
+  return value.toLocaleDateString('sv-SE',{timeZone:'Asia/Taipei'});
+}
+
+function phaseMarkers(date){
+  const current=phaseAt(date);
+  if(!current||current==='未知')return [];
+  const previous=phaseAt(offsetDate(date,-1));
+  const next=phaseAt(offsetDate(date,1));
+  const markers=[];
+  if(previous!==current)markers.push(current+'開始');
+  if(next!==current)markers.push(current+'結束');
+  return markers;
 }
 
 export default function DailyRuneCalendar({
@@ -52,17 +74,19 @@ export default function DailyRuneCalendar({
         const main=entries.some(row=>row.draw_kind==='main');
         const supplement=entries.some(row=>row.draw_kind==='supplement');
         const selected=selectedDate===key;
+        const moonMarkers=phaseMarkers(key);
         return <button
           role="gridcell"
           key={key}
           type="button"
           aria-pressed={selected}
-          aria-label={key.replaceAll('-','/')+(main?'，主抽':'')+(supplement?'，補抽':'')}
+          aria-label={key.replaceAll('-','/')+(moonMarkers.length?'，'+moonMarkers.join('，'):'')+(main?'，主抽':'')+(supplement?'，補抽':'')}
           onClick={()=>onSelectDate?.(key)}
           className={"scope-daily-calendar-cell"+(entries.length?" has-entry":"")}
         >
           <span className="scope-daily-calendar-day">{day}</span>
           <span className="scope-daily-calendar-flags">
+            {moonMarkers.map(marker=><span key={marker}>{marker}</span>)}
             {main?<span>主抽</span>:null}{supplement?<span>補抽</span>:null}
           </span>
         </button>;
