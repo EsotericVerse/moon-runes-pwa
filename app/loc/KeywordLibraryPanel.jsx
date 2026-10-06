@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import {useQueryClient} from '@tanstack/react-query';
-import {dbAuthRelation,writeKeywordLibraryItem} from './db-client.mjs';
+import {copyKeywordLibraryClass,dbAuthRelation,writeKeywordLibraryItem} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {clearRune66ClassificationCache} from './rune66-keyword-analysis';
 
@@ -17,10 +17,12 @@ function keywordText(value){
   return Array.isArray(value)?value.map(item=>String(item||'').trim()).filter(Boolean).join('\n'):'';
 }
 
-function blankDraft(groupName='',itemNo=1){
+function blankDraft(className='',itemNo=1){
   return {
     keyword_id:null,
-    group_name:groupName,
+    class_name:className,
+    class_group:'',
+    class_enable:true,
     item_no:itemNo,
     item_name:'',
     principle:'',
@@ -33,40 +35,43 @@ export default function KeywordLibraryPanel(){
   const account=useAccount();
   const queryClient=useQueryClient();
   const [rows,setRows]=useState([]);
-  const [group,setGroup]=useState('');
+  const [selectedClass,setSelectedClass]=useState('');
   const [selectedId,setSelectedId]=useState('');
   const [draft,setDraft]=useState(null);
+  const [copyName,setCopyName]=useState('');
   const [loading,setLoading]=useState(true);
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
 
   const canEdit=account.canManageScopeSync('lo3rwang');
 
-  async function load(preferredId='',preferredGroup=''){
+  async function invalidateClassification(){
+    clearRune66ClassificationCache();
+    await queryClient.invalidateQueries({queryKey:['statistics-rune66-classification'],refetchType:'all'});
+  }
+
+  async function load(preferredId='',preferredClass=''){
     if(!canEdit)return;
     setLoading(true);setMessage('');
     try{
       const {data,error}=await dbAuthRelation(TABLE)
-        .select('keyword_id,group_name,item_no,item_name,principle,keywords,order_no')
-        .order('group_name',{ascending:true})
+        .select('keyword_id,class_name,class_group,class_enable,item_no,item_name,principle,keywords,order_no')
+        .order('class_name',{ascending:true})
         .order('order_no',{ascending:true})
         .order('item_no',{ascending:true});
       if(error)throw new Error(error.message||'關鍵詞庫讀取失敗');
       const next=data||[];
       setRows(next);
-      const groups=[...new Set(next.map(row=>String(row.group_name||'').trim()).filter(Boolean))];
-      const requestedGroup=String(preferredGroup||group||'').trim();
-      const nextGroup=groups.includes(requestedGroup)?requestedGroup:(groups.includes('符文66')?'符文66':(groups[0]||''));
-      setGroup(nextGroup);
+      const classNames=[...new Set(next.map(row=>String(row.class_name||'').trim()).filter(Boolean))];
+      const requested=String(preferredClass||selectedClass||'').trim();
+      const nextClass=classNames.includes(requested)?requested:(classNames.includes('符文66')?'符文66':(classNames[0]||''));
+      setSelectedClass(nextClass);
       const candidate=next.find(row=>String(row.keyword_id)===String(preferredId))
-        ||next.find(row=>String(row.group_name)===nextGroup)
+        ||next.find(row=>String(row.class_name)===nextClass)
         ||null;
       if(candidate){
         setSelectedId(String(candidate.keyword_id));
-        setDraft({
-          ...candidate,
-          keywords_text:keywordText(candidate.keywords)
-        });
+        setDraft({...candidate,keywords_text:keywordText(candidate.keywords)});
       }else{
         setSelectedId('');
         setDraft(null);
@@ -80,10 +85,10 @@ export default function KeywordLibraryPanel(){
 
   useEffect(()=>{if(canEdit)load();},[canEdit,account.email]);
 
-  const groups=useMemo(()=>[...new Set(rows.map(row=>String(row.group_name||'').trim()).filter(Boolean))],[rows]);
+  const classes=useMemo(()=>[...new Set(rows.map(row=>String(row.class_name||'').trim()).filter(Boolean))],[rows]);
   const items=useMemo(()=>rows
-    .filter(row=>String(row.group_name)===group)
-    .sort((a,b)=>Number(a.order_no||0)-Number(b.order_no||0)||Number(a.item_no||0)-Number(b.item_no||0)),[rows,group]);
+    .filter(row=>String(row.class_name)===selectedClass)
+    .sort((a,b)=>Number(a.order_no||0)-Number(b.order_no||0)||Number(a.item_no||0)-Number(b.item_no||0)),[rows,selectedClass]);
 
   function selectItem(row){
     setSelectedId(String(row.keyword_id));
@@ -94,22 +99,26 @@ export default function KeywordLibraryPanel(){
   function newItem(){
     const next=Math.max(0,...items.map(row=>Number(row.item_no)||0))+1;
     setSelectedId('');
-    setDraft(blankDraft(group||'',next));
+    setDraft(blankDraft(selectedClass,next));
     setMessage('');
   }
 
   async function save(){
     if(!draft)return;
-    const groupName=String(draft.group_name||'').trim();
+    const className=String(draft.class_name||'').trim();
+    const classGroup=String(draft.class_group||'').trim();
     const itemName=String(draft.item_name||'').trim();
     const itemNo=Number(draft.item_no);
-    if(!groupName){setMessage('群組不可為空。');return;}
+    if(!className){setMessage('Class 不可為空。');return;}
+    if(!classGroup){setMessage('Group 不可為空。');return;}
     if(!itemName){setMessage('項目名稱不可為空。');return;}
     if(!Number.isInteger(itemNo)||itemNo<1){setMessage('項目編號必須是正整數。');return;}
 
     const payload={
       keyword_id:draft.keyword_id,
-      group_name:groupName,
+      class_name:className,
+      class_group:classGroup,
+      class_enable:draft.class_enable!==false,
       item_no:itemNo,
       item_name:itemName,
       principle:String(draft.principle||'').trim(),
@@ -120,10 +129,9 @@ export default function KeywordLibraryPanel(){
     setBusy(true);setMessage('');
     try{
       const result=await writeKeywordLibraryItem(draft.keyword_id?'update':'insert',payload);
-      clearRune66ClassificationCache();
-      await queryClient.invalidateQueries({queryKey:['statistics-rune66-classification'],refetchType:'all'});
-      setGroup(groupName);
-      await load(result.keyword_id||draft.keyword_id||'',groupName);
+      await invalidateClassification();
+      setSelectedClass(className);
+      await load(result.keyword_id||draft.keyword_id||'',className);
       setMessage('關鍵詞設定已儲存。');
     }catch(error){
       setMessage(String(error?.message||error||'關鍵詞設定儲存失敗。'));
@@ -138,13 +146,30 @@ export default function KeywordLibraryPanel(){
     setBusy(true);setMessage('');
     try{
       await writeKeywordLibraryItem('delete',draft);
-      clearRune66ClassificationCache();
-      await queryClient.invalidateQueries({queryKey:['statistics-rune66-classification'],refetchType:'all'});
+      await invalidateClassification();
       setSelectedId('');setDraft(null);
-      await load();
+      await load('',selectedClass);
       setMessage('分類項目已刪除。');
     }catch(error){
       setMessage(String(error?.message||error||'分類項目刪除失敗。'));
+    }finally{
+      setBusy(false);
+    }
+  }
+
+  async function copyClass(){
+    const target=String(copyName||'').trim();
+    if(!selectedClass){setMessage('請先選擇要複製的 Class。');return;}
+    if(!target){setMessage('請輸入新 Class 名稱。');return;}
+    setBusy(true);setMessage('');
+    try{
+      const result=await copyKeywordLibraryClass(selectedClass,target);
+      await invalidateClassification();
+      setCopyName('');
+      await load('',target);
+      setMessage(`已複製 ${result.count} 個分類項目到「${target}」。`);
+    }catch(error){
+      setMessage(String(error?.message||error||'Class 複製失敗。'));
     }finally{
       setBusy(false);
     }
@@ -155,13 +180,18 @@ export default function KeywordLibraryPanel(){
   return <section className="loc-card scope-feature-card scope-management-workspace">
     <p className="loc-eyebrow">Keyword Library</p>
     <h2>關鍵詞庫</h2>
-    <p>每個分類項目直接保存「群組、項目名稱、判別原理、關鍵詞集合」。TO／AND／NAME／NOR 若出現在關鍵詞字串內，由分析器自行解讀，不另設規則類型。</p>
+    <p>每套 Class 自己保存 Group、項目、是否參與 Class 判定、判別原理與關鍵詞集合；TO／AND／NAME／NOR 直接保留在關鍵詞字串中。整套 Class 可獨立複製，不依賴 LunaRunes Canon。</p>
 
     <div className="scope-stat-controls">
-      <label><span>群組</span><select className="scope-select" value={group} onChange={event=>{setGroup(event.target.value);const first=rows.find(row=>String(row.group_name)===event.target.value);if(first)selectItem(first);}}>
-        {groups.map(name=><option key={name} value={name}>{name}</option>)}
+      <label><span>Class</span><select className="scope-select" value={selectedClass} onChange={event=>{const name=event.target.value;setSelectedClass(name);const first=rows.find(row=>String(row.class_name)===name);if(first)selectItem(first);}}>
+        {classes.map(name=><option key={name} value={name}>{name}</option>)}
       </select></label>
       <button type="button" className="loc-button" onClick={newItem}>新增分類項目</button>
+    </div>
+
+    <div className="scope-stat-controls">
+      <label><span>複製目前 Class</span><input value={copyName} placeholder="新 Class 名稱" onChange={event=>setCopyName(event.target.value)}/></label>
+      <button type="button" className="loc-button" disabled={busy||!selectedClass} onClick={copyClass}>複製整套 Class</button>
     </div>
 
     {loading?<p className="scope-status">讀取中…</p>:null}
@@ -175,15 +205,17 @@ export default function KeywordLibraryPanel(){
           onClick={()=>selectItem(row)}
         >
           <strong>{row.item_no} · {row.item_name}</strong>
-          <span>{Array.isArray(row.keywords)?row.keywords.length:0} 個關鍵詞</span>
+          <span>{row.class_group} · {row.class_enable===false?'不參與 Class':'參與 Class'} · {Array.isArray(row.keywords)?row.keywords.length:0} 個關鍵詞</span>
         </button>)}
-        {!loading&&!items.length?<p className="scope-status">這個群組目前沒有分類項目。</p>:null}
+        {!loading&&!items.length?<p className="scope-status">這個 Class 目前沒有分類項目。</p>:null}
       </div>
 
       <div className="scope-management-editor">
         {!draft?<p className="scope-status">選一個分類項目，或新增一個項目。</p>:<>
           <div className="scope-management-fields">
-            <label><span>群組</span><input value={draft.group_name||''} onChange={event=>setDraft(current=>({...current,group_name:event.target.value}))}/></label>
+            <label><span>Class</span><input value={draft.class_name||''} onChange={event=>setDraft(current=>({...current,class_name:event.target.value}))}/></label>
+            <label><span>Group</span><input value={draft.class_group||''} onChange={event=>setDraft(current=>({...current,class_group:event.target.value}))}/></label>
+            <label><span>參與 Class 判定</span><select className="scope-select" value={draft.class_enable===false?'false':'true'} onChange={event=>setDraft(current=>({...current,class_enable:event.target.value==='true'}))}><option value="true">是</option><option value="false">否</option></select></label>
             <label><span>項目編號</span><input type="number" min="1" value={draft.item_no||''} onChange={event=>setDraft(current=>({...current,item_no:event.target.value}))}/></label>
             <label><span>項目名稱</span><input value={draft.item_name||''} onChange={event=>setDraft(current=>({...current,item_name:event.target.value}))}/></label>
             <label><span>排序</span><input type="number" value={draft.order_no??''} onChange={event=>setDraft(current=>({...current,order_no:event.target.value}))}/></label>
@@ -195,7 +227,7 @@ export default function KeywordLibraryPanel(){
             {draft.keyword_id?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={remove}>刪除此項目</button>:null}
           </div>
         </>}
-        {message?<p className={message.includes('失敗')||message.includes('不可')||message.includes('0 rows')?'scope-status scope-error':'scope-status'}>{message}</p>:null}
+        {message?<p className={message.includes('失敗')||message.includes('不可')||message.includes('0 rows')||message.includes('已經存在')?'scope-status scope-error':'scope-status'}>{message}</p>:null}
       </div>
     </div>
   </section>;
