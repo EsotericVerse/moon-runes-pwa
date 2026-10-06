@@ -10,7 +10,7 @@ Current 已具備：
 - Search／Statistics／Culture／Governance 維持同一套 FeaturePage 與 Page Composition；功能名稱與共用視覺系統不因 Scope 任意改寫。
 - public Search／Statistics／Culture availability 已由 Current DB feature flags 控制；management canonical visibility 保持獨立。
 - Search／Statistics／Culture 使用 PostgreSQL 精準 query、固定 eligibility filter、COUNT 與 bounded pagination。
-- LOC aggregate Statistics 預設最近一年；單 Scope 可使用自身時間範圍控制。
+- LOC aggregate Statistics 預設目前年份，可選年份、全年／月份與圖表類型；單 Scope 可使用自身時間範圍控制。
 - FlexSearch runtime 已移除；Rune66 使用統一 canonical keyword library、literal classifier 與 Current 管理流程。
 - 一般 Scope 不以 LunaRunes keyword、positive_keywords、negative_keywords 或 Rune Canon 作 fallback。
 - LunaRunes 66 符＋第零符德、四方向、九組責任維持 Current Canon。
