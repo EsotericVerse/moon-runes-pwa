@@ -1,4 +1,4 @@
-import {FEATURES,SCOPES,featureHref,resolveScope,resolveScopeSearchAlias} from '../app/modular/scope-registry.js';
+import {FEATURES,SCOPES,featureHref,resolveScope,resolveScopeSearchAlias,scopeHref} from '../app/modular/scope-registry.js';
 
 const failures=[];
 if(resolveScope('unknown.example','/')!=='loc')failures.push('default Scope must remain loc');
@@ -8,6 +8,8 @@ for(const [query,id] of [['月典','loc'],['LunaCodex','loc'],['LOC','loc'],['�
   if(resolveScopeSearchAlias(query)?.id!==id)failures.push('Scope search alias mismatch: '+query+' -> '+id);
 }
 if(resolveScopeSearchAlias('月')!==null)failures.push('Scope search aliases must require exact matches');
+if(scopeHref('newscope')!=='https://loc.lo3rwang.cc/scope/?scope=newscope')failures.push('dynamic Scope homepage must use the generic static shell');
+if(featureHref('newscope','search')!=='https://loc.lo3rwang.cc/scope/search/?scope=newscope')failures.push('dynamic Scope features must preserve Scope ID in the generic shell query');
 for(const [id,scope] of Object.entries(SCOPES)){
   if(scope.id!==id)failures.push(id+' registry key/id mismatch');
   if(scope.domain&&resolveScope(scope.domain,'/')!==id)failures.push(id+' domain resolution mismatch');
