@@ -7,7 +7,7 @@ function AuthorPage({eyebrow,title,subtitle,intro,heroVisual=null,sections=[]}){
         {intro}
       </div>
       <figure className="home-hero-visual scope-home-hero-visual">{heroVisual}</figure>
-    </header>:<header className="loc-hero" id="top">
+    </header>:<header className="loc-hero loc-hero-feature" id="top">
       {eyebrow?<p className="loc-eyebrow">{eyebrow}</p>:null}
       <div className="home-title-row"><h1>{title}</h1>{subtitle?<p className="loc-subtitle">{subtitle}</p>:null}</div>
       {intro}
