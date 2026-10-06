@@ -1,5 +1,5 @@
 {
-  "frozen_at": "2026-10-02",
+  "frozen_at": "2026-10-06",
   "policy": "Frozen branches are historical only. Do not add new work or open new PRs from them. Start new work from the latest main.",
   "active": [
     "main"
@@ -50,6 +50,7 @@
     "refactor/static-pwa-cleanup",
     "release-0.9-cleanup",
     "release/0.8.4-rc",
+    "release/0.8.5-rc",
     "release/lunarunes-1.0-source-rebuild",
     "remove-functional-hash-routes",
     "repo-governance-phase1",
