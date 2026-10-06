@@ -3,7 +3,7 @@
 import {DB_QUERY_BATCH_SIZE} from './query-contract.mjs';
 import {DEFAULT_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
 import {publicContentFilters} from './content-policy';
-import {applyFilters,applyOrders,dbPublicRelation,selectAllRows,selectRows} from './db-query.mjs';
+import {applyFilters,applyOrders,executePublicRead,selectAllRows,selectRows} from './db-query.mjs';
 
 function unique(values=[]){
   return [...new Set(values.map(value=>String(value||'').trim()).filter(Boolean))];
@@ -216,21 +216,21 @@ function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filte
       const activeFilters=[...frozenFilters,...dateSearchFilters(dateColumn,startDate,endDate)];
       const orders=dateColumn?[{column:dateColumn,ascending:false},{column:idColumn,ascending:true}]:[{column:idColumn,ascending:true}];
 
-      let countQuery=dbPublicRelation(activeTable).select(idColumn,{count:'exact',head:true});
-      countQuery=applyFilters(countQuery,activeFilters);
-      countQuery=applyLiteralTerms(countQuery,frozenFields,query,and,nor);
-      const {error:countError,count}=await countQuery;
-      if(countError)throw new Error(countError.message||('DB COUNT '+activeTable+' failed'));
+      const {count}=await executePublicRead(activeTable,relation=>{
+        let countQuery=relation.select(idColumn,{count:'exact',head:true});
+        countQuery=applyFilters(countQuery,activeFilters);
+        return applyLiteralTerms(countQuery,frozenFields,query,and,nor);
+      });
       const totalCount=Number(count)||0;
       if(!totalCount||offset>=totalCount)return {rows:[],hasMore:false,nextCursor:null,totalCount};
 
-      let dataQuery=dbPublicRelation(activeTable).select(outputColumns.join(','));
-      dataQuery=applyFilters(dataQuery,activeFilters);
-      dataQuery=applyLiteralTerms(dataQuery,frozenFields,query,and,nor);
-      dataQuery=applyOrders(dataQuery,orders);
-      dataQuery=dataQuery.range(offset,offset+pageSize-1);
-      const {data,error}=await dataQuery;
-      if(error)throw new Error(error.message||('DB SELECT '+activeTable+' failed'));
+      const {data}=await executePublicRead(activeTable,relation=>{
+        let dataQuery=relation.select(outputColumns.join(','));
+        dataQuery=applyFilters(dataQuery,activeFilters);
+        dataQuery=applyLiteralTerms(dataQuery,frozenFields,query,and,nor);
+        dataQuery=applyOrders(dataQuery,orders);
+        return dataQuery.range(offset,offset+pageSize-1);
+      });
       const rows=(data||[]).map(row=>recordFor(row,source,id,scope,activeTable));
       const nextOffset=offset+rows.length;
       const hasMore=nextOffset<totalCount;
