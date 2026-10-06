@@ -11,6 +11,7 @@ import {
 
 const ADMIN_OPTIONS=Object.freeze([
   {value:'scopes',label:UI_COPY.admin.overview},
+  {value:'search',label:'搜尋關鍵詞'},
   {value:'themes',label:UI_COPY.admin.theme}
 ]);
 const EMPTY_MAPPING={id:'',email:'',galaxy:'galaxy',time:'time',birthday:''};
@@ -168,6 +169,54 @@ function ScopeOverview(){
   </section>;
 }
 
+function SearchKeywordReport(){
+  const [rows,setRows]=useState([]);
+  const [status,setStatus]=useState('');
+
+  useEffect(()=>{
+    let active=true;
+    (async()=>{
+      setStatus('');
+      try{
+        const since=new Date(Date.now()-7*24*60*60*1000).toISOString();
+        const {data,error}=await dbAuthRelation('silver.loc_search_keywords')
+          .select('searched_at,scope_id,query_text')
+          .gte('searched_at',since)
+          .order('searched_at',{ascending:false});
+        if(error)throw new Error(error.message||'搜尋關鍵詞讀取失敗。');
+        if(active)setRows(data||[]);
+      }catch(error){
+        if(active){setRows([]);setStatus(error?.message||'搜尋關鍵詞讀取失敗。');}
+      }
+    })();
+    return()=>{active=false};
+  },[]);
+
+  const keywordCounts=new Map();
+  const scopeCounts=new Map();
+  for(const row of rows){
+    const keyword=String(row.query_text||'').trim();
+    const scope=String(row.scope_id||'').trim();
+    if(keyword)keywordCounts.set(keyword,(keywordCounts.get(keyword)||0)+1);
+    if(scope)scopeCounts.set(scope,(scopeCounts.get(scope)||0)+1);
+  }
+  const keywords=[...keywordCounts.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,30);
+  const scopes=[...scopeCounts.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
+
+  return <section className="loc-card scope-management-workspace">
+    <h2>搜尋關鍵詞</h2>
+    <div className="scope-ranking">
+      <div><strong>7 天搜尋</strong><span>{rows.length.toLocaleString()}</span></div>
+      {scopes.map(([scope,count])=><div key={scope}><strong>{scope}</strong><span>{count.toLocaleString()}</span></div>)}
+    </div>
+    <h3>關鍵詞</h3>
+    <div className="scope-ranking">
+      {keywords.map(([keyword,count])=><div key={keyword}><strong>{keyword}</strong><span>{count.toLocaleString()}</span></div>)}
+    </div>
+    {status?<p className="scope-status scope-error">{status}</p>:null}
+  </section>;
+}
+
 function ThemeOverview({account}){
   const [rows,setRows]=useState([]);
   const [status,setStatus]=useState('');
@@ -283,6 +332,6 @@ export default function AdminHomeView(){
       </div>
       <p><button type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button></p>
     </header>
-    {section==='scopes'?<ScopeOverview/>:<ThemeOverview account={account}/>}
+    {section==='scopes'?<ScopeOverview/>:section==='search'?<SearchKeywordReport/>:<ThemeOverview account={account}/>} 
   </section>;
 }
