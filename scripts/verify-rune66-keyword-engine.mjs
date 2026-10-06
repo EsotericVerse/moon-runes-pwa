@@ -53,7 +53,8 @@ const rows=[
   {key:'l',title:'',content:'日月'},
   {key:'m',title:'',content:'日常'},
   {key:'n',title:'',content:'月蝕'},
-  {key:'o',title:'',content:'意識 潛意識 水 空氣'}
+  {key:'o',title:'',content:'意識 潛意識 水 空氣'},
+  {key:'p',title:'',content:'意識 意識 意識'}
 ];
 
 const result=classifyRune66Documents(rows,catalogRows,structureRows);
@@ -62,6 +63,7 @@ const runeMap=row=>new Map((row?.rune_counts||[]).map(item=>[item.label,item.cou
 
 assert.equal(runeMap(byKey.get('a')).get('魂'),1,'non-day/moon Rune keyword 意識 must still match inside 潛意識');
 assert.equal(runeMap(byKey.get('a')).get('夢'),1,'潛意識 explicit rule must also TO 夢');
+assert.ok(byKey.get('a').tied_groups.includes('靈魂')&&byKey.get('a').tied_groups.includes('無序'),'equal cumulative Class scores must keep tie diagnostics');
 
 assert.equal(runeMap(byKey.get('b')).get('魂'),2,'意識 keeps its keyword hit and explicit TO hit because 魂 is not a day/moon exception');
 assert.equal(runeMap(byKey.get('b')).has('夢'),false,'standalone 意識 must not become 夢');
@@ -70,14 +72,13 @@ assert.ok((runeMap(byKey.get('c')).get('水')||0)>=1,'水土 must keep normal �
 assert.ok((runeMap(byKey.get('c')).get('土')||0)>=1,'水土 must keep normal 土 literal attribution');
 assert.ok((runeMap(byKey.get('c')).get('地')||0)>=1,'水土 explicit rules may additionally attribute 地');
 
-assert.ok((runeMap(byKey.get('d')).get('花')||0)>=1,'花枝 keeps normal 花 literal attribution; NAME does not suppress non-day/moon Rune names');
-assert.ok((runeMap(byKey.get('e')).get('花')||0)>=1,'花枝招展 must attribute 花; signal multiplicity must not change Class weight');
+assert.equal(runeMap(byKey.get('d')).size,0,'花枝 NAME must exclude the complete NAME phrase from Rune attribution');
+assert.equal(runeMap(byKey.get('e')).get('花'),1,'花枝招展 TO 花 must attribute 花 while 花枝 NAME remains excluded');
 
 assert.ok((runeMap(byKey.get('f')).get('鏡')||0)>=1,'鏡花水月 must preserve 鏡 attribution');
 assert.ok((runeMap(byKey.get('f')).get('幻')||0)>=1,'鏡花水月 AND 幻 must add 幻 attribution');
-assert.equal(byKey.get('f').status,'classified','Class must remain a single displayed value even when raw hit counts tie');
-assert.equal(byKey.get('f').classification_group,'靈魂','equal Class counts must resolve deterministically by Class order');
-assert.ok(byKey.get('f').tied_groups.includes('靈魂')&&byKey.get('f').tied_groups.includes('無序'),'distinct-Rune Class tie diagnostics must remain available');
+assert.equal(byKey.get('f').status,'classified','Class must remain a single displayed value');
+assert.equal(byKey.get('f').classification_group,'靈魂','cumulative configured signals must determine the displayed Class');
 assert.equal(runeMap(byKey.get('g')).get('魂'),1,'Rune display name must be an implicit literal keyword');
 assert.equal(runeMap(byKey.get('h')).get('空'),1,'suffix literal 天空 must match 空');
 assert.equal(runeMap(byKey.get('i')).get('空'),1,'prefix literal 空間 must match 空');
@@ -91,11 +92,12 @@ assert.equal(runeMap(byKey.get('l')).get('時'),1,'日月 must TO 時');
 assert.equal(runeMap(byKey.get('m')).get('日'),1,'ordinary 日 keyword text must still match 日');
 assert.equal(runeMap(byKey.get('n')).get('月'),1,'ordinary 月 keyword text must still match 月');
 
-assert.ok((runeMap(byKey.get('o')).get('魂')||0)>=2,'one Rune may keep multiple diagnostic signal hits');
-assert.equal(byKey.get('o').classification_group,'元素','Class must count distinct Rune presence, so one Rune cannot outvote multiple different Runes');
+assert.ok((runeMap(byKey.get('o')).get('魂')||0)>=2,'one Rune may keep multiple distinct configured signal hits');
+assert.equal(byKey.get('o').classification_group,'元素','Class must use cumulative distinct signal scores');
+assert.equal(runeMap(byKey.get('p')).get('魂'),2,'repeating the same text must not duplicate the same keyword or rule signal');
 
 assert.equal(result.documentCount,rows.length);
-assert.equal(result.unclassifiedCount,0,'non-day/moon literal matching keeps these samples classifiable');
+assert.equal(result.unclassifiedCount,1,'NAME-only sample must remain unclassified');
 assert.ok(result.tieCount>=1);
 
 assert.ok(catalogRows.every(row=>Array.isArray(row.keywords)),'keyword catalog must use one keyword collection per classification item');
