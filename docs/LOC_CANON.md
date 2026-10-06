@@ -104,7 +104,7 @@ Anchor suggestion 需要足夠資料；Current threshold 為至少 20 筆 eligib
 
 ## 7. Statistics
 
-Statistics 即時計算 canonical data。LOC Scope Group 固定最近一年並依 scope_id 顯示數量與密度；單 Scope 可指定時間區間。work_count 不作為第二份 stored authority；排名與分布由 Current query 即時計算。
+Statistics 即時計算 canonical data。LOC Scope Group 依 scope_id 顯示數量與密度，預設目前年份，並可選年份、全年／月份與圖表類型；單 Scope 可指定自身時間區間。work_count 不作為第二份 stored authority；排名與分布由 Current query 即時計算。
 
 Multimedia 併入來源統計；無文字媒體與 YouTube 等可落入 Others 等來源分類，不另外製造一套媒體統計權威。
 
