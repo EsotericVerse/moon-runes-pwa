@@ -52,7 +52,8 @@ const rows=[
   {key:'k',title:'',content:'日光'},
   {key:'l',title:'',content:'日月'},
   {key:'m',title:'',content:'日常'},
-  {key:'n',title:'',content:'月蝕'}
+  {key:'n',title:'',content:'月蝕'},
+  {key:'o',title:'',content:'意識 潛意識 水 空氣'}
 ];
 
 const result=classifyRune66Documents(rows,catalogRows,structureRows);
@@ -89,6 +90,9 @@ assert.equal(runeMap(byKey.get('l')).has('月'),false,'日月 must not fall thro
 assert.equal(runeMap(byKey.get('l')).get('時'),1,'日月 must TO 時');
 assert.equal(runeMap(byKey.get('m')).get('日'),1,'ordinary 日 keyword text must still match 日');
 assert.equal(runeMap(byKey.get('n')).get('月'),1,'ordinary 月 keyword text must still match 月');
+
+assert.ok((runeMap(byKey.get('o')).get('魂')||0)>=2,'one Rune may keep multiple diagnostic signal hits');
+assert.equal(byKey.get('o').classification_group,'元素','Class must count distinct Rune presence, so one Rune cannot outvote multiple different Runes');
 
 assert.equal(result.documentCount,rows.length);
 assert.equal(result.unclassifiedCount,0,'non-day/moon literal matching keeps these samples classifiable');
