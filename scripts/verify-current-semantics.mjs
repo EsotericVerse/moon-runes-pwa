@@ -7,7 +7,8 @@ const required=[
   'app/loc/galaxy-query.js',
   'app/modular/features/Search.jsx',
   'app/loc/daily-runes.js',
-  'app/daily/trend/DailyTrendClient.jsx',
+  'app/daily/log/DailyLogClient.jsx',
+  'app/lrunes/DailyRuneCalendar.jsx',
   'app/loc/scope-data.js',
   'scripts/verify-db-public-read.mjs',
   'governance/runtime-capabilities.json',
@@ -28,9 +29,11 @@ if(!failures.length){
   const identity=read('app/loc/views/AboutView.jsx');
   for(const token of ['語言架構框架','Language Architecture Framework','符號式語言','Symbolic Language'])if(!identity.includes(token))failures.push('identity missing '+token);
   const dailyData=read('app/loc/daily-runes.js');
-  for(const token of ['selectPreviousDailyRuneOccurrence','selectDailyRuneSituation',"type:'sit_q'","column:'current_moon'"])if(!dailyData.includes(token))failures.push('daily trend data missing '+token);
-  const dailyTrend=read('app/daily/trend/DailyTrendClient.jsx');
-  for(const token of ['上一筆相同符文','previousSituation','currentSituation','joinMeaning','語意路徑'])if(!dailyTrend.includes(token))failures.push('daily trend UI missing '+token);
+  for(const token of ['selectPreviousDailyRuneOccurrence','selectDailyRuneSituation','selectDailyRuneContext',"types:['sit_q','daily_r','daily_g','daily_b']","column:'current_moon'"])if(!dailyData.includes(token))failures.push('daily rune context missing '+token);
+  const dailyLog=read('app/daily/log/DailyLogClient.jsx');
+  for(const token of ['每日占卜提醒','每日占卜引導','每日占卜祝福','上次抽到','之前的狀況','當日真實月相'])if(!dailyLog.includes(token))failures.push('daily calendar context missing '+token);
+  const dailyCalendar=read('app/lrunes/DailyRuneCalendar.jsx');
+  for(const token of ['realMoonPhase','phaseMarkers',"current+'開始'","current+'結束'"])if(!dailyCalendar.includes(token))failures.push('daily calendar moon markers missing '+token);
   const galaxy=read('app/loc/galaxy-query.js');
   for(const token of ["count:'exact',head:true",'.or(','.range(','searchGalaxyRows','selectSourceTrendRows'])if(!galaxy.includes(token))failures.push('Shared Galaxy query pipeline missing '+token);
   if(/flexsearch|new Index\(/i.test(galaxy))failures.push('Global Search must remain Database-first.');
@@ -85,4 +88,4 @@ if(failures.length){
   console.error('[current-semantics] failures:\n'+failures.map(item=>'- '+item).join('\n'));
   process.exit(1);
 }
-console.log('[current-semantics] Current identity, previous-occurrence daily trend, fixed Statistics eligibility filters, Database-first Search and dependency-free text matching verified');
+console.log('[current-semantics] Current identity, daily calendar context, fixed Statistics eligibility filters, Database-first Search and dependency-free text matching verified');
