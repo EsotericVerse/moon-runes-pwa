@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
+import {usePathname} from 'next/navigation';
 import {getScope,isKnownScope,normalizeScopeId,resolveScope} from './scope-registry';
 import {selectScopeRegistryEntry} from '../loc/scope-data';
 
@@ -14,35 +15,45 @@ function genericRouteScope(pathname,search){
 }
 
 export function useScopeRuntime(){
+  const pathname=usePathname()||'/';
+  const genericShell=pathname==='/scope'||pathname.startsWith('/scope/');
   const [location,setLocation]=useState(()=>({
     host:typeof window==='undefined'?'':window.location.hostname,
-    pathname:typeof window==='undefined'?'/':window.location.pathname||'/',
-    search:typeof window==='undefined'?'':window.location.search
+    search:typeof window==='undefined'?'':window.location.search,
+    mounted:typeof window!=='undefined'
   }));
 
   useEffect(()=>{
     const sync=()=>setLocation({
       host:window.location.hostname,
-      pathname:window.location.pathname||'/',
-      search:window.location.search
+      search:window.location.search,
+      mounted:true
     });
     sync();
     window.addEventListener('popstate',sync);
     return()=>window.removeEventListener('popstate',sync);
   },[]);
 
-  const genericId=useMemo(()=>genericRouteScope(location.pathname,location.search),[location.pathname,location.search]);
-  const scopeId=genericId||resolveScope(location.host,location.pathname);
-  const dynamic=Boolean(genericId&&!isKnownScope(genericId));
+  const genericId=useMemo(()=>genericRouteScope(pathname,location.search),[pathname,location.search]);
+  const scopeId=genericId||(genericShell?'':resolveScope(location.host,pathname));
+  const dynamic=Boolean(genericShell&&(!genericId||!isKnownScope(genericId)));
   const cached=dynamic?registryCache.get(scopeId):null;
   const [registryRow,setRegistryRow]=useState(cached||null);
-  const [registryResolved,setRegistryResolved]=useState(!dynamic||registryCache.has(scopeId));
+  const [registryResolved,setRegistryResolved]=useState(!dynamic||(Boolean(scopeId)&&registryCache.has(scopeId)));
   const [registryError,setRegistryError]=useState('');
 
   useEffect(()=>{
     let active=true;
     if(!dynamic){
       setRegistryRow(null);setRegistryResolved(true);setRegistryError('');
+      return()=>{active=false};
+    }
+    if(!location.mounted){
+      setRegistryResolved(false);
+      return()=>{active=false};
+    }
+    if(!scopeId){
+      setRegistryRow(null);setRegistryResolved(true);setRegistryError('缺少 Scope ID。');
       return()=>{active=false};
     }
     if(registryCache.has(scopeId)){
@@ -59,7 +70,7 @@ export function useScopeRuntime(){
       setRegistryRow(null);setRegistryResolved(true);setRegistryError(String(error?.message||error||'Scope Registry 讀取失敗'));
     });
     return()=>{active=false};
-  },[dynamic,scopeId]);
+  },[dynamic,scopeId,location.mounted]);
 
   const base=getScope(scopeId);
   const scope=registryRow?{
@@ -72,7 +83,7 @@ export function useScopeRuntime(){
 
   return {
     scopeId,scope,
-    host:location.host,pathname:location.pathname,
+    host:location.host,pathname,
     dynamic,registryRow,registryResolved,registryError
   };
 }
