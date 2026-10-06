@@ -18,7 +18,8 @@ const required=[
   'app/loc/db-source-status.mjs',
   'app/loc/providers/neon-public.mjs',
   'app/loc/db-query.mjs',
-  'app/modular/feature-data-state.js'
+  'app/modular/feature-data-state.js',
+  'app/AppShell.jsx'
 ];
 for(const path of required)if(!fs.existsSync(path)||!read(path).trim())failures.push('missing Current contract file: '+path);
 if(!failures.length){
@@ -34,8 +35,8 @@ if(!failures.length){
   for(const token of ['executePublicRead','dbBackupPublicClient','markPrimaryReadFailed','source=\'auto\''])if(!dbQuery.includes(token))failures.push('Public read failover contract missing '+token);
   const configured=read('app/loc/providers/configured.mjs');
   for(const token of ['createNeonPublicAdapter','backupPublicClient','primarySourceLabel:\'Supabase\'','backupSourceLabel:\'Neon\''])if(!configured.includes(token))failures.push('Configured dual-source public read missing '+token);
-  const ui=read('app/modular/ui.jsx');
-  for(const token of ['主要資料來源：','備用資料來源：','目前使用：','備援資料可能有同步時間差'])if(!ui.includes(token))failures.push('Data source disclosure missing '+token);
+  const appShell=read('app/AppShell.jsx');
+  for(const token of ['主要資料來源：','備用資料來源：','目前使用：','備援資料可能有同步時間差'])if(!appShell.includes(token))failures.push('Global data source disclosure missing '+token);
   const featureState=read('app/modular/feature-data-state.js');
   if(!featureState.includes('pgrst123')||!featureState.includes('資料查詢功能與資料庫介面不相容'))failures.push('Provider capability errors must not be mislabeled as read permissions.');
   const scopeData=read('app/loc/scope-data.js');
