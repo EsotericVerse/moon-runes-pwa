@@ -15,6 +15,7 @@ export const SCOPES=Object.freeze({
     label:UI_COPY.scope.loc.label,
     default:true,
     aggregateChildren:true,
+    searchAliases:Object.freeze(['loc','LOC','LunaCodex','月典']),
     featureSubtitles:Object.freeze({
       statics:UI_COPY.scope.loc.statics,
       culture:UI_COPY.scope.loc.culture,
@@ -29,6 +30,7 @@ export const SCOPES=Object.freeze({
     id:'lrunes',
     domain:'lrunes.lo3rwang.cc',
     label:'月之符文',
+    searchAliases:Object.freeze(['lrunes','LunaRunes','月之符文']),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'}),
     featureSubtitles:Object.freeze({
       statics:'查看月之符文相關資料的數量、來源與時間變化。',
@@ -44,6 +46,7 @@ export const SCOPES=Object.freeze({
   lo3rwang:Object.freeze({
     id:'lo3rwang',
     label:UI_COPY.scope.author.label,
+    searchAliases:Object.freeze(['lo3rwang']),
     featureSubtitles:Object.freeze({search:UI_COPY.scope.author.search}),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'}),
     nav:Object.freeze({position:'after',order:1,label:UI_COPY.nav.author}),
@@ -104,6 +107,20 @@ export function resolveScope(host='',pathname='/'){
     }
   }
   return SCOPE_BY_DOMAIN[h]||DEFAULT_SCOPE_ID;
+}
+
+function normalizeScopeSearchAlias(value=''){
+  return String(value||'').normalize('NFKC').trim().toLocaleLowerCase('en-US');
+}
+
+export function resolveScopeSearchAlias(query=''){
+  const token=normalizeScopeSearchAlias(query);
+  if(!token)return null;
+  for(const scope of Object.values(SCOPES)){
+    const aliases=Array.isArray(scope.searchAliases)?scope.searchAliases:[];
+    if(aliases.some(alias=>normalizeScopeSearchAlias(alias)===token))return scope;
+  }
+  return null;
 }
 
 export function getScope(id){
