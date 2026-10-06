@@ -379,7 +379,7 @@ function ScopeGroupStatistics(){
       <label>
         <span>{UI_COPY.statistics.item}</span>
         <select className="scope-select" value="scope" disabled>
-          <option value="scope">Scope 分布</option>
+          <option value="scope">統計來源 · scope_id</option>
         </select>
       </label>
       <label>
@@ -399,14 +399,14 @@ function ScopeGroupStatistics(){
     <p className="scope-status">{startDate&&endDate?startDate+' ～ '+endDate:''}</p>
     <div className="scope-ranking">
       {totals.map(row=><div key={row.scope_id}>
-        <strong>{row.scope_id}</strong>
+        <strong>scope_id: {row.scope_id}</strong>
         <span>{row.total.toLocaleString()} 項 · {row.ratio.toFixed(1)}%</span>
       </div>)}
     </div>
 
     <p className="scope-status">需要查看來源、Class、Group 或其他細部統計，請前往各 Scope／作者自己的統計頁。</p>
     <div className="scope-result-links">
-      {scopeIds.map(id=><a key={id} href={featureNavigationHref(id,'statics')}>{id} 統計</a>)}
+      {scopeIds.map(id=><a key={id} href={featureNavigationHref(id,'statics')}>scope_id: {id} · 細部統計</a>)}
     </div>
 
     {!densityQuery.isPending&&!densityQuery.error&&chartType==='line'&&trendData.length?<ResponsiveContainer width="100%" height={420}>
