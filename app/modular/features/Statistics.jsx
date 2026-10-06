@@ -25,7 +25,7 @@ const CHART_TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-l
 const CHART_TYPES=[['line',UI_COPY.statistics.line],['bar',UI_COPY.statistics.bar],['pie',UI_COPY.statistics.pie]];
 const STAT_TYPES=['total','source'];
 const STAT_TYPE_LABELS=Object.freeze({total:UI_COPY.statistics.totalSource,source:UI_COPY.statistics.workSource});
-const STYLE_FILTERS=Object.freeze([{value:'none',label:'不套用'},{value:'rune66',label:'符文66'}]);
+const STYLE_FILTERS=Object.freeze([{value:'none',label:'不套用'},{value:'rune66',label:'關鍵詞 Class'}]);
 const SOURCE_TREND_ORDER=Object.freeze(['Facebook','Threads','IG','Others']);
 const TIME_STANDARDS=Object.freeze([
   {value:'1y',label:UI_COPY.statistics.year,months:12,bucket:'month'},
@@ -244,6 +244,15 @@ function groupLabel(value){
 }
 function Rune66Summary({analysis}){
   const data=analysis||{};
+  const className=String(data.keywordMeta?.class_name||'關鍵詞 Class');
+  const globalCount=Math.max(0,Number(data.keywordDocumentCount||0));
+  const minDocuments=Math.max(0,Number(data.keywordMinDocuments||0));
+  if(!data.staticstime)return <div className="scope-rune66-summary">
+    <p className="scope-status">關鍵詞尚未定錨。請先在 Scope 管理的關鍵詞庫完成「重新分析並寫入文章 Attr」。</p>
+  </div>;
+  if(!data.statisticsEnabled)return <div className="scope-rune66-summary">
+    <p className="scope-status">{className} 已定錨，但目前有效文章 {globalCount.toLocaleString()} 篇；必須大於 {minDocuments.toLocaleString()} 篇才啟用關鍵詞統計。</p>
+  </div>;
   const classRows=[...(data.groupTotals||[])]
     .filter(row=>Number(row.document_count||0)>0)
     .sort((a,b)=>Number(b.document_count||0)-Number(a.document_count||0)||Number(a.order||0)-Number(b.order||0));
@@ -252,7 +261,7 @@ function Rune66Summary({analysis}){
   const classifiedTotal=Math.max(0,Number(data.classifiedCount||0));
   const groupHitTotal=groupRows.reduce((sum,row)=>sum+Number(row.count||0),0);
   return <div className="scope-rune66-summary">
-    <p className="scope-status">表現風格：符文66 · 分析作品 {Number(data.documentCount||0).toLocaleString()} 項 · 已分類 {classifiedTotal.toLocaleString()} · 未分類 {Number(data.unclassifiedCount||0).toLocaleString()}</p>
+    <p className="scope-status">表現風格：{className} · 此區間有效作品 {Number(data.documentCount||0).toLocaleString()} 項 · 已分類 {classifiedTotal.toLocaleString()} · 未分類 {Number(data.unclassifiedCount||0).toLocaleString()} · 定錨時間 {new Date(data.staticstime).toLocaleString('zh-TW',{hour12:false})}</p>
     <section className="scope-card">
       <h3>Class｜符文群組</h3>
       <p className="scope-status">每篇作品只保留一個唯一 Class；比例以已分類作品數計算。</p>
@@ -530,7 +539,7 @@ function ScopeStatisticsPanel({scopeId,navigation,types}){
         :<SummaryChart type={chartType} rankingType={rankingType} summary={summary} height={380}/>}
     </>:null}
     {styleFilter==='rune66'?<>
-      {runeQuery.isPending?<p className="scope-status">正在套用符文66表現風格…</p>:null}
+      {runeQuery.isPending?<p className="scope-status">正在讀取已定錨的關鍵詞 Attr…</p>:null}
       {runeQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(runeQuery.error)}</p>:null}
       {!runeQuery.isPending&&!runeQuery.error&&runeQuery.data?<Rune66Summary analysis={runeQuery.data}/>:null}
     </>:null}
