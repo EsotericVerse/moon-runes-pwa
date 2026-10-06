@@ -2,11 +2,13 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import {useQueryClient} from '@tanstack/react-query';
-import {copyKeywordLibraryClass,dbAuthRelation,writeKeywordLibraryItem} from './db-client.mjs';
+import {copyKeywordLibraryClass,dbAuthRelation,updateRows,writeKeywordLibraryItem} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {clearRune66ClassificationCache} from './rune66-keyword-analysis';
 
 const TABLE='silver.lo3rwang_keywords';
+const CONFIG_TABLE='silver.lo3rwang';
+const DEFAULT_KEYWORD_MIN_CHARS=32;
 
 function normalizeKeywordLines(value){
   const lines=String(value||'').split(/\r?\n/).map(item=>item.trim()).filter(Boolean);
@@ -39,6 +41,7 @@ export default function KeywordLibraryPanel(){
   const [selectedId,setSelectedId]=useState('');
   const [draft,setDraft]=useState(null);
   const [copyName,setCopyName]=useState('');
+  const [minChars,setMinChars]=useState(DEFAULT_KEYWORD_MIN_CHARS);
   const [loading,setLoading]=useState(true);
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
@@ -54,13 +57,22 @@ export default function KeywordLibraryPanel(){
     if(!canEdit)return;
     setLoading(true);setMessage('');
     try{
-      const {data,error}=await dbAuthRelation(TABLE)
-        .select('keyword_id,class_name,class_group,class_enable,item_no,item_name,principle,keywords,order_no')
-        .order('class_name',{ascending:true})
-        .order('order_no',{ascending:true})
-        .order('item_no',{ascending:true});
-      if(error)throw new Error(error.message||'關鍵詞庫讀取失敗');
-      const next=data||[];
+      const [keywordResult,configResult]=await Promise.all([
+        dbAuthRelation(TABLE)
+          .select('keyword_id,class_name,class_group,class_enable,item_no,item_name,principle,keywords,order_no')
+          .order('class_name',{ascending:true})
+          .order('order_no',{ascending:true})
+          .order('item_no',{ascending:true}),
+        dbAuthRelation(CONFIG_TABLE)
+          .select('keyword_min_chars')
+          .eq('id','lo3rwang')
+          .limit(1)
+      ]);
+      if(keywordResult.error)throw new Error(keywordResult.error.message||'關鍵詞庫讀取失敗');
+      if(configResult.error)throw new Error(configResult.error.message||'關鍵詞分析設定讀取失敗');
+      const configured=Number(configResult.data?.[0]?.keyword_min_chars);
+      setMinChars(Number.isInteger(configured)&&configured>=0?configured:DEFAULT_KEYWORD_MIN_CHARS);
+      const next=keywordResult.data||[];
       setRows(next);
       const classNames=[...new Set(next.map(row=>String(row.class_name||'').trim()).filter(Boolean))];
       const requested=String(preferredClass||selectedClass||'').trim();
@@ -140,6 +152,28 @@ export default function KeywordLibraryPanel(){
     }
   }
 
+  async function saveMinChars(){
+    const value=Number(minChars);
+    if(!Number.isInteger(value)||value<0||value>10000){
+      setMessage('最小分析字數必須是 0 到 10000 的整數。');
+      return;
+    }
+    setBusy(true);setMessage('');
+    try{
+      await updateRows(CONFIG_TABLE,{
+        keyword_min_chars:value,
+        updated_at:new Date().toISOString()
+      },{filters:[{column:'id',operator:'eq',value:'lo3rwang'}]});
+      await invalidateClassification();
+      setMinChars(value);
+      setMessage(`最小分析字數已更新為 ${value}；正文必須大於此字數才會進入關鍵詞分析。`);
+    }catch(error){
+      setMessage(String(error?.message||error||'關鍵詞分析設定儲存失敗。'));
+    }finally{
+      setBusy(false);
+    }
+  }
+
   async function remove(){
     if(!draft?.keyword_id)return;
     if(!window.confirm('確定刪除這個分類項目？'))return;
@@ -181,6 +215,12 @@ export default function KeywordLibraryPanel(){
     <p className="loc-eyebrow">Keyword Library</p>
     <h2>關鍵詞庫</h2>
     <p>每套 Class 自己保存 Group、項目、是否參與 Class 判定、判別原理與關鍵詞集合；TO／AND／NAME／NOR 直接保留在關鍵詞字串中。整套 Class 可獨立複製，不依賴 LunaRunes Canon。</p>
+
+    <div className="scope-stat-controls">
+      <label><span>最小分析字數</span><input type="number" min="0" max="10000" step="1" value={minChars} onChange={event=>setMinChars(event.target.value)}/></label>
+      <button type="button" className="loc-button" disabled={busy} onClick={saveMinChars}>儲存分析門檻</button>
+    </div>
+    <p className="scope-status">正文去除空白後必須大於 {minChars} 字才進入關鍵詞分析；小於等於門檻的作品不分析，也不列入未分類。</p>
 
     <div className="scope-stat-controls">
       <label><span>Class</span><select className="scope-select" value={selectedClass} onChange={event=>{const name=event.target.value;setSelectedClass(name);const first=rows.find(row=>String(row.class_name)===name);if(first)selectItem(first);}}>
