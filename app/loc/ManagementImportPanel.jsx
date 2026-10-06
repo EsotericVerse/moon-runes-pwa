@@ -6,7 +6,7 @@ import {useMemo,useState} from 'react';
 import {insertRows,dbAuthRelation} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {createUid8} from './uid';
-import {hasIrrecoverableEncoding,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
+import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 
 function sourceSuggestion(name=''){
   const value=String(name).toLowerCase();
@@ -51,7 +51,7 @@ function normalizeJsonImportEntry(entry,source){
     source_native_id:String(firstValue(row,['source_native_id','native_id'])||'').trim()||null,
     source_place:sourcePlace||null,
     searchable:row?.searchable!==false&&row?.search!==false,
-    statistics_able:contentType!=='instruction',
+    statistics_able:contentType!=='instruction'&&!isPureUrlContent(content),
     source_id:String(firstValue(row,['source_id'])||'').trim()||null,
     target_id:normalizeRelationIds(firstValue(row,['target_id'])),
     ref_id:String(firstValue(row,['ref_id'])||'').trim()||null,
