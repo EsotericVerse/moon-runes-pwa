@@ -233,7 +233,14 @@ function SourceRefresh({scopeId}){
         seen.add(nativeId);
         const current=byNative.get(nativeId);
         if(!current){creates.push(record);continue;}
-        const next={...record,uid:current.uid,source_name:selected};
+        const next={
+          ...record,
+          uid:current.uid,
+          source_name:selected,
+          createtime:record.createtime||current.createtime||null,
+          source_place:record.source_place||current.source_place||null,
+          url:record.url||current.url||null
+        };
         if(sameRefreshRecord(current,next))unchanged.push(next);
         else updates.push(next);
       }
