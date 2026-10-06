@@ -94,6 +94,7 @@ function createState(){
     hitCount:0,
     runeCounts:new Map(),
     groupCounts:new Map(),
+    classGroupCounts:new Map(),
     seen:new Set()
   };
 }
@@ -117,7 +118,7 @@ function increment(state,rune,signal){
   runeCount.count+=1;
   state.runeCounts.set(rune.runeId,runeCount);
 
-  if(rune.group&&rune.classEnable!==false){
+  if(rune.group){
     const groupCount=state.groupCounts.get(rune.group)||{
       key:rune.group,
       label:rune.group,
@@ -127,6 +128,18 @@ function increment(state,rune,signal){
     groupCount.count+=1;
     groupCount.order=Math.min(groupCount.order,rune.order);
     state.groupCounts.set(rune.group,groupCount);
+
+    if(rune.classEnable!==false){
+      const classGroupCount=state.classGroupCounts.get(rune.group)||{
+        key:rune.group,
+        label:rune.group,
+        order:rune.order,
+        count:0
+      };
+      classGroupCount.count+=1;
+      classGroupCount.order=Math.min(classGroupCount.order,rune.order);
+      state.classGroupCounts.set(rune.group,classGroupCount);
+    }
   }
 }
 
@@ -288,19 +301,20 @@ export function classifyRune66Documents(documents=[],catalogRows=[],structureRow
 
     const rankedRunes=[...state.runeCounts.values()].sort(compareRank);
     const rankedGroups=[...state.groupCounts.values()].sort(compareRank);
-    const topCount=Number(rankedGroups[0]?.count)||0;
-    const topGroups=topCount?rankedGroups.filter(item=>Number(item.count)===topCount):[];
+    const rankedClassGroups=[...state.classGroupCounts.values()].sort(compareRank);
+    const topCount=Number(rankedClassGroups[0]?.count)||0;
+    const topGroups=topCount?rankedClassGroups.filter(item=>Number(item.count)===topCount):[];
     let status='unclassified';
     let classificationGroup='';
 
-    if(!rankedGroups.length){
+    if(!rankedClassGroups.length){
       unclassifiedCount+=1;
     }else{
       // Big Class is always a single value. Equal hit counts keep a diagnostic tie list,
       // but deterministic group order resolves the displayed Class instead of leaving it unset.
       status='classified';
       classifiedCount+=1;
-      classificationGroup=rankedGroups[0].label;
+      classificationGroup=rankedClassGroups[0].label;
       if(topGroups.length>1)tieCount+=1;
       const winner=groupTotals.get(classificationGroup);
       if(winner)winner.document_count+=1;
