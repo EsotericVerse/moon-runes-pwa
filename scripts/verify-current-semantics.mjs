@@ -97,12 +97,13 @@ if(!failures.length){
   const culture=read('app/modular/features/Culture.jsx');
   const queryContract=read('app/loc/query-contract.mjs');
   if(!queryContract.includes('DB_QUERY_BATCH_SIZE=1000'))failures.push('Portable Data API batch size must remain 1000.');
-  for(const token of ['ScopeGroupStatistics','selectScopeDensityRows(scopes,{startDate,endDate})',"shiftDate(endDate,{months:-12})",'ScopeStatisticsPanel','statisticsQueryRange','selectSourceTrendRows(targetScopes,queryRange)'])if(!statistics.includes(token))failures.push('Statistics query-window contract missing '+token);
+  for(const token of ['ScopeGroupStatistics','selectScopeDensityRows(scopes,{startDate,endDate})',"timeStandard==='1m'","timeStandard==='1w'",'aggregateType','LOC 合併總數','統計來源（scope_id）','ScopeStatisticsPanel','statisticsQueryRange','selectSourceTrendRows(targetScopes,queryRange)'])if(!statistics.includes(token))failures.push('Statistics query-window contract missing '+token);
   if(statistics.includes("?{startDate:customFrom,endDate:customTo}\n    :{startDate:'',endDate:''}"))failures.push('Preset Statistics ranges must not fall back to an unbounded database query.');
   if(galaxy.includes("{column:'source_name',operator:'neq',value:''}"))failures.push('Unknown source rows must reach Statistics and map to Others instead of being discarded.');
   for(const token of ['表現風格','Class｜符文群組','Group｜符文排行'])if(!statistics.includes(token))failures.push('Statistics style-filter presentation missing '+token);
   for(const token of ['表現風格','Class｜符文群組比例','culture-style-filter'])if(!culture.includes(token))failures.push('Culture style-filter presentation missing '+token);
   for(const token of ['currentStructurePeriod','currentTimelineItems','fixedMin={currentStructureStart}','fixedMax={currentStructureEnd}'])if(!culture.includes(token))failures.push('Culture first river must stay constrained to the current period: '+token);
+  for(const token of ['個別文章列表','個人時間長河',"featureNavigationHref(id,'culture')"])if(!culture.includes(token))failures.push('LOC aggregate Culture guidance missing '+token);
   if(statistics.includes('關鍵詞排行')||culture.includes('關鍵詞排行'))failures.push('Keyword-level ranking must remain hidden behind Class / Group presentation');
   const dbAudit=read('scripts/verify-db-public-read.mjs');
   for(const token of ['managedScopes','scopeMapping','scopeMappings','mapping conflict','verifyManagedScope'])if(!dbAudit.includes(token))failures.push('Public database audit missing Scope-derived '+token);
