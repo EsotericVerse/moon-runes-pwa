@@ -44,6 +44,9 @@ export function featureDataErrorMessage(error){
     return '目前有資料表或 Schema 無法讀取或不存在。';
   }
 
+  if(/pgrst123|aggregate functions? (?:are )?(?:disabled|not allowed)|db_aggregates_enabled/.test(message)){
+    return '目前資料查詢功能與資料庫介面不相容。';
+  }
   if(/permission denied|insufficient privilege|not allowed|42501/.test(message)){
     return '目前資料讀取權限不足。';
   }
