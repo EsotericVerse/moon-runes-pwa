@@ -27,6 +27,10 @@ export function hasIrrecoverableEncoding(value){
   return String(value??'').includes('�');
 }
 
+export function isPureUrlContent(value){
+  return /^https?:\/\/\S+$/iu.test(String(value??'').trim());
+}
+
 export function normalizeGalaxyContent(value){
   return repairMojibakeText(value).trim();
 }
@@ -42,6 +46,7 @@ export function requireGalaxyContent(value){
   const content=normalizeGalaxyContent(value);
   if(!content)throw new Error('Galaxy 文字作品必須有正文；純媒體請寫入 Galaxy Media。');
   if(hasIrrecoverableEncoding(content))throw new Error('正文含不可逆的編碼錯誤字元，請先還原原始文字再寫入。');
+  if(isPureUrlContent(content))throw new Error('純 URL 不算文字正文；請寫入 Galaxy Media。');
   return content;
 }
 
