@@ -119,7 +119,6 @@ function situationDetail(card,direction){
   return answer||question||'資訊不足';
 }
 
-const LOT_DOMAINS=Object.freeze(['愛情','事業','關係','健康']);
 
 function cleanGrammarPart(value){
   return String(value||'').trim().replace(/[。；;，,\s]+$/g,'')||'資訊不足';
@@ -164,13 +163,6 @@ function poeticClause(card,direction){
   const text=cleanGrammarPart(situationAnswer(card,direction)||card?.rune_description||'資訊不足');
   if(text==='資訊不足')return rune?`${rune}意未明`:'資訊不足';
   return rune?text.replace(/^它/,rune):text;
-}
-
-function lotDomainText(card,direction,label){
-  const text=runeEtcText(card,'lots',direction);
-  if(!text)return '資訊不足';
-  const match=text.match(new RegExp(label+'：\\s*([^\\n]*?)(?=(?:愛情|事業|關係|健康)：|$)'));
-  return cleanGrammarPart(match?.[1]||'資訊不足');
 }
 
 function buildFixedReading(cards,directions,mode){
@@ -262,7 +254,7 @@ function SpreadCards({draw,mode,selectedMode,moonPhase}){
   return null;
 }
 
-function MultiReading({draw,mode,phase}){
+function MultiReading({draw,mode,phase,selectedMode}){
   if(!draw)return null;
   const cards=draw.cards;
   const directions=draw.directions;
@@ -286,7 +278,16 @@ function MultiReading({draw,mode,phase}){
       <p><strong>過去的成因：</strong>「{runeDisplayName(past1)}」{directions[0]}：{situationDetail(past1,directions[0])}；「{runeDisplayName(past2)}」{directions[1]}：{situationDetail(past2,directions[1])}。兩張牌共同描述事情形成的背景與潛因。</p>
       <p><strong>意外變化：</strong>「{runeDisplayName(unexpected)}」{directions[2]}：{situationDetail(unexpected,directions[2])}。單張只提供一個意外因素，不與雙卡拼接。</p>
       <p><strong>現在狀況：</strong>「{runeDisplayName(current1)}」{directions[3]}：{situationDetail(current1,directions[3])}；「{runeDisplayName(current2)}」{directions[4]}：{situationDetail(current2,directions[4])}。兩張牌共同描述現在以後可能形成的結論。</p>
-      <p><strong>閱讀補充：</strong>每張狀況文字已依實際符文、方向與當前月相精準取得；右側通用建議只用前段 x、後段 y 判斷趨勢與總和。本次真實月相為{phase}。</p>
+      <p><strong>閱讀補充：</strong>每張狀況文字已依實際符文、方向與當前月相精準取得；x/y 只保留為 runtime 趨勢資料，不覆蓋右側籤詩。本次真實月相為{phase}。</p>
+    </div>;
+  }
+
+  if(Array.isArray(selectedMode?.segments)&&selectedMode.segments.length){
+    return <div className="runes-spread-explanation" data-draw-reading={mode}>
+      <p className="loc-eyebrow">組合結構</p>
+      <h2>{selectedMode.segments.join(' / ')}</h2>
+      <p>本次真實月相為{phase}。以下只列卡位、符文與方向；籤詩由右側依原始狀況句薄連接。</p>
+      <div className="loc-context-list">{cards.map((card,index)=><div className="loc-context-item" key={`structure-${card.rune_id}-${index}`}><strong>{selectedMode.positions[index]||`第 ${index+1} 張`} · {runeDisplayName(card)} · {directions[index]}</strong></div>)}</div>
     </div>;
   }
 
@@ -407,7 +408,7 @@ export default function RuneDrawClient({drawKey='single'}){
 
             <section className="loc-card runes-spread-reading-layout">
               <div className="runes-spread-reading-left">
-                <MultiReading draw={draw} mode={drawKey} phase={moonPhase}/>
+                <MultiReading draw={draw} mode={drawKey} phase={moonPhase} selectedMode={selectedMode}/>
                 {drawKey==='ow3gs'&&<div className="runes-ow3gs-core" data-draw-reading="ow3gs">
                   <p className="loc-eyebrow">OW3gs · 雙模型判讀</p>
                   <h2>1–6 因的描述層 → 7–11 果的判定層</h2>
