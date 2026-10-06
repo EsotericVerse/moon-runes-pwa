@@ -8,6 +8,8 @@ const governance=readFileSync(resolve(root,'docs/LUNARUNES_DRAW_GOVERNANCE.md'),
 const ritual=readFileSync(resolve(root,'app/lrunes/rune-ritual.js'),'utf8');
 const guidance=readFileSync(resolve(root,'app/lrunes/rune-guidance-engine.mjs'),'utf8');
 const dailySurface=readFileSync(resolve(root,'app/lrunes/RuneSingleDailySurface.jsx'),'utf8');
+const runeHome=readFileSync(resolve(root,'app/lrunes/RunesClient.jsx'),'utf8');
+const customSelector=readFileSync(resolve(root,'app/lrunes/CustomDrawSelector.jsx'),'utf8');
 
 for(const [name,source] of [['RuneDrawClient',publicDraw]]){
   for(const fragment of [
@@ -24,12 +26,13 @@ for(const [name,source] of [['RuneDrawClient',publicDraw]]){
     'buildFixedReading(',
     'composeFixedGrammar(',
     'poeticClause(',
-    'situationQuestion(card,direction)',
+    'return cleanGrammarPart(situationQuestion(card,direction));',
     'drawSegments(',
     'joinPoeticGroup(',
     "return {sentence,domains:[],evaluation:weighted};",
     "moonTypes:['sit_q','sit_a']",
     "moonTypes:['sit_q','sit_a','daily_r','daily_g','daily_b']",
+    ":{staticTypes:['direction'],moonTypes:['sit_q'],currentMoon:moonPhase};",
     "{column:'current_moon',operator:'eq',value:currentMoon}",
     'RUNE_RITUAL_DELAY_MS',
     'runeRitualMessages'
@@ -54,6 +57,21 @@ for(const forbidden of [
 ])if(publicDraw.includes(forbidden))throw new Error('Multi-card draw must remain verse-only: '+forbidden);
 
 if(!publicDraw.includes('<RuneSingleDailySurface'))throw new Error('Single/Daily surface contract missing');
+
+const standardStart=drawModes.indexOf('export const RUNE_DRAW_MODES=');
+const customStart=drawModes.indexOf('export const RUNE_CUSTOM_DRAW_MODES=');
+if(standardStart<0||customStart<0||customStart<=standardStart)throw new Error('Rune draw mode partitions missing');
+const standardModes=drawModes.slice(standardStart,customStart);
+const customModes=drawModes.slice(customStart);
+for(const key of ["key:'single'","key:'daily'","key:'2card'","key:'3card'","key:'5card'","key:'ow3gs'"]){
+  if(!standardModes.includes(key))throw new Error('Standard draw choice missing: '+key);
+}
+for(const key of ["key:'4card'","key:'6card'","key:'7card'","key:'8card'","key:'9card'","key:'10card'"]){
+  if(standardModes.includes(key))throw new Error('Custom draw count leaked into standard choices: '+key);
+  if(!customModes.includes(key))throw new Error('Custom draw count missing: '+key);
+}
+if(!runeHome.includes('<CustomDrawSelector'))throw new Error('Rune home custom count selector missing');
+if(!customSelector.includes('指定抽牌數量')||!customSelector.includes('window.location.assign'))throw new Error('Custom count selector navigation missing');
 
 const spreadContracts=[
   ["key:'2card'","segments:[1,1]"],
@@ -93,6 +111,7 @@ for(const fragment of ['狀況形容','狀況表達','每日占卜提醒','每�
 for(const fragment of [
   '## Draw pool',
   '## Precise directional query',
+  '## Draw entry points',
   '### Two cards',
   '### Four cards',
   '### Six cards',
