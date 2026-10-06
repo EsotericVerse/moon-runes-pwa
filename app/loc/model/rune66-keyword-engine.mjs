@@ -40,7 +40,7 @@ function compileCatalog(catalogRows=[],structureRows=[]){
     if(!Number.isInteger(runeId)||runeId<1||runeId>66)continue;
     const name=String(row?.rune_name||'').trim();
     const group=String(row?.group_name||'').trim();
-    structures.set(runeId,{runeId,name,group,order:runeId});
+    structures.set(runeId,{runeId,name,group,order:runeId,classEnable:row?.class_enable!==false});
     if(name)nameToRune.set(name,runeId);
     if(group&&!groupOrder.has(group))groupOrder.set(group,runeId);
   }
@@ -94,6 +94,7 @@ function createState(){
     hitCount:0,
     runeCounts:new Map(),
     groupCounts:new Map(),
+    classGroupCounts:new Map(),
     seen:new Set()
   };
 }
@@ -105,7 +106,8 @@ function increment(state,rune,signal){
   state.seen.add(key);
   state.hitCount+=1;
 
-  const runeCount=state.runeCounts.get(rune.runeId)||{
+  const existingRune=state.runeCounts.get(rune.runeId);
+  const runeCount=existingRune||{
     key:String(rune.runeId),
     rune_id:rune.runeId,
     label:rune.label||rune.name,
@@ -126,19 +128,58 @@ function increment(state,rune,signal){
     groupCount.count+=1;
     groupCount.order=Math.min(groupCount.order,rune.order);
     state.groupCounts.set(rune.group,groupCount);
+
+    if(rune.classEnable!==false){
+      const classGroupCount=state.classGroupCounts.get(rune.group)||{
+        key:rune.group,
+        label:rune.group,
+        order:rune.order,
+        count:0
+      };
+      classGroupCount.count+=1;
+      classGroupCount.order=Math.min(classGroupCount.order,rune.order);
+      state.classGroupCounts.set(rune.group,classGroupCount);
+    }
   }
 }
 
-function maskRuleSources(normalizedTexts,runes){
-  const sources=[...new Set(runes
-    .flatMap(rune=>rune.rules)
-    .filter(rule=>rule.operator==='AND'||rule.operator==='TO'||rule.operator==='NAME')
-    .map(rule=>normalizeText(rule.source))
-    .filter(Boolean))]
+function maskCalendarDateLiterals(source){
+  return String(source||'')
+    .replace(/(?:\d{2,4}年)?\d{1,2}月\d{1,2}日/gu,' ')
+    .replace(/(?:[〇零一二三四五六七八九十百]{2,4}年)?[〇零一二三四五六七八九十]{1,3}月[〇零一二三四五六七八九十廿卅]{1,3}日/gu,' ');
+}
+
+function specialRuneKeywordTexts(normalizedTexts,runes,rune){
+  const ruleEntries=runes.flatMap(item=>item.rules.map(rule=>({item,rule})));
+
+  const nameSources=ruleEntries
+    .filter(({rule})=>rule.operator==='NAME')
+    .map(({rule})=>normalizeText(rule.source))
+    .filter(Boolean);
+
+  const dayMoonTargetSources=ruleEntries
+    .filter(({rule})=>{
+      const source=normalizeText(rule.source);
+      if(!source||!(source.includes('日')||source.includes('月')))return false;
+      return (rule.operator==='TO'||rule.operator==='AND')
+        &&normalizeText(rule.target)===normalizeText(rune.label);
+    })
+    .map(({rule})=>normalizeText(rule.source))
+    .filter(Boolean);
+
+  const dayMoonSources=(rune.label==='日'||rune.label==='月')
+    ?ruleEntries
+      .filter(({rule})=>rule.operator==='AND'||rule.operator==='TO')
+      .map(({rule})=>normalizeText(rule.source))
+      .filter(source=>source&&source.includes(normalizeText(rune.label)))
+    :[];
+
+  const sources=[...new Set([...nameSources,...dayMoonTargetSources,...dayMoonSources])]
     .sort((a,b)=>b.length-a.length);
 
   return normalizedTexts.map(source=>{
     let text=source||'';
+    if(rune.label==='日'||rune.label==='月')text=maskCalendarDateLiterals(text);
     for(const ruleSource of sources)text=replaceAllLiteral(text,ruleSource,' ');
     return text;
   });
@@ -160,13 +201,13 @@ export function classifyRune66Documents(documents=[],catalogRows=[],structureRow
   };
 
   const normalizedTexts=source.map(row=>normalizeText(textOf(row)));
-  const keywordTexts=maskRuleSources(normalizedTexts,runes);
 
   const states=source.map(()=>createState());
   const runeById=new Map(runes.map(rune=>[rune.runeId,rune]));
   const unsupportedRules=[];
 
   for(const rune of runes){
+    const keywordTexts=specialRuneKeywordTexts(normalizedTexts,runes,rune);
     const ruleTexts=normalizedTexts.slice();
     const orderedRules=[...rune.rules].sort((a,b)=>
       normalizeText(b.source).length-normalizeText(a.source).length
@@ -176,8 +217,20 @@ export function classifyRune66Documents(documents=[],catalogRows=[],structureRow
     for(const keyword of rune.keywords){
       const normalizedKeyword=normalizeText(keyword);
       if(!normalizedKeyword)continue;
+      const isDayMoonName=(rune.label==='日'||rune.label==='月')&&normalizedKeyword===normalizeText(rune.label);
+      const ownSpecificSources=isDayMoonName
+        ?rune.keywords
+          .map(normalizeText)
+          .filter(source=>source&&source!==normalizedKeyword&&source.includes(normalizedKeyword))
+          .sort((a,b)=>b.length-a.length)
+        :[];
       for(let index=0;index<normalizedTexts.length;index+=1){
-        if(!states[index]||!keywordTexts[index].includes(normalizedKeyword))continue;
+        if(!states[index])continue;
+        let text=keywordTexts[index]||'';
+        if(isDayMoonName){
+          for(const source of ownSpecificSources)text=replaceAllLiteral(text,source,' ');
+        }
+        if(!text.includes(normalizedKeyword))continue;
         increment(states[index],rune,'keyword:'+normalizedKeyword);
       }
     }
@@ -248,19 +301,20 @@ export function classifyRune66Documents(documents=[],catalogRows=[],structureRow
 
     const rankedRunes=[...state.runeCounts.values()].sort(compareRank);
     const rankedGroups=[...state.groupCounts.values()].sort(compareRank);
-    const topCount=Number(rankedGroups[0]?.count)||0;
-    const topGroups=topCount?rankedGroups.filter(item=>Number(item.count)===topCount):[];
+    const rankedClassGroups=[...state.classGroupCounts.values()].sort(compareRank);
+    const topCount=Number(rankedClassGroups[0]?.count)||0;
+    const topGroups=topCount?rankedClassGroups.filter(item=>Number(item.count)===topCount):[];
     let status='unclassified';
     let classificationGroup='';
 
-    if(!rankedGroups.length){
+    if(!rankedClassGroups.length){
       unclassifiedCount+=1;
     }else{
       // Big Class is always a single value. Equal hit counts keep a diagnostic tie list,
       // but deterministic group order resolves the displayed Class instead of leaving it unset.
       status='classified';
       classifiedCount+=1;
-      classificationGroup=rankedGroups[0].label;
+      classificationGroup=rankedClassGroups[0].label;
       if(topGroups.length>1)tieCount+=1;
       const winner=groupTotals.get(classificationGroup);
       if(winner)winner.document_count+=1;
@@ -291,7 +345,7 @@ export function classifyRune66Documents(documents=[],catalogRows=[],structureRow
     tieCount,
     classifications,
     runeTotals:[...runeTotals.values()].sort((a,b)=>a.rune_id-b.rune_id),
-    runeRanking:[...runeTotals.values()].sort((a,b)=>b.count-a.count||a.rune_id-b.rune_id),
+    runeRanking:[...runeTotals.values()].sort((a,b)=>b.count-a.count||b.document_count-a.document_count||a.rune_id-b.rune_id),
     groupTotals:[...groupTotals.values()].sort((a,b)=>a.order-b.order||a.group.localeCompare(b.group)),
     unsupportedRules
   };

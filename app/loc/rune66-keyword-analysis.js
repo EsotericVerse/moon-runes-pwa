@@ -25,7 +25,7 @@ async function loadRune66Catalog(){
       orders:[{column:'order_no',ascending:true},{column:'item_no',ascending:true}]
     }),
     selectAllRows(RUNE_TABLE,{
-      columns:'rune_id,rune_name,group_name',
+      columns:'rune_id,rune_name,group_name,class_enable',
       filters:[
         {column:'rune_id',operator:'gte',value:1},
         {column:'rune_id',operator:'lte',value:66}

@@ -275,7 +275,7 @@ function Rune66Summary({analysis}){
     </section>
     <section className="scope-card">
       <h3>Group｜符文排行</h3>
-      <p className="scope-status">Group 是單一符文分類；數字只累計該 Group 內設定的關鍵詞與簡單規則命中，不展示基本詞列表。</p>
+      <p className="scope-status">同一作品內，相同 signal 重複出現只計 1 次；不同 signal 可累積。</p>
       <div className="scope-ranking">
         {groupRows.map(row=>{
           const count=Number(row.count||0);

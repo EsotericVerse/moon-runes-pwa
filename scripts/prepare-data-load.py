@@ -11,6 +11,28 @@ manifest = json.loads(manifest_file.read_text())
 output_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
 batches = []
 
+MOJIBAKE_HINTS = ('Ã','Â','â','æ','å','ç','è','é','ï','ð')
+
+def mojibake_score(value):
+    text = str(value or '')
+    return sum(text.count(char) for char in MOJIBAKE_HINTS) + sum(2 for char in text if 0x80 <= ord(char) <= 0x9F) + text.count('�') * 4
+
+def repair_mojibake(value):
+    if not isinstance(value, str) or not value or not any(char in value for char in MOJIBAKE_HINTS) and not any(0x80 <= ord(char) <= 0x9F for char in value):
+        return value
+    try:
+        repaired = value.encode('latin1').decode('utf-8')
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        return value
+    return repaired if repaired != value and mojibake_score(repaired) < mojibake_score(value) else value
+
+def normalize_text_integrity(row, table):
+    for field in ('title','content','source_place','meta_tags'):
+        if isinstance(row.get(field), str):
+            row[field] = repair_mojibake(row[field])
+            if '�' in row[field]:
+                raise ValueError('irrecoverable encoding error in ' + table + ' field=' + field + ' key=' + str(row.get('uid') or row.get('media_id') or 'unknown'))
+
 def ident(value):
     return '"' + value.replace('"', '""') + '"'
 
@@ -29,10 +51,14 @@ def save_batch(table, columns, keys, rows):
 
 def prepare(table, rows, columns):
     schema, name = table.split('.')
+    for row in rows:
+        normalize_text_integrity(row, table)
     if name.endswith('_galaxy'):
         columns = columns + ['statistics_able']
         for row in rows:
-            row['statistics_able'] = not (str(row.get('source_name', '')).strip().lower() == 'suno' and row.get('content_type') == 'instruction')
+            content = str(row.get('content') or '').strip()
+            pure_url = (content.startswith('http://') or content.startswith('https://')) and not any(ch.isspace() for ch in content)
+            row['statistics_able'] = row.get('content_type') != 'instruction' and not pure_url
             if not isinstance(row['statistics_able'], bool):
                 raise ValueError('statistics_able must be a validated boolean for ' + table + ' uid=' + str(row.get('uid')))
     pk = next(c for c in inventory['constraints'] if c['schema_name'] == schema and c['relname'] == name and c['contype'] == 'p')
