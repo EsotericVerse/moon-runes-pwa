@@ -56,7 +56,9 @@ def prepare(table, rows, columns):
     if name.endswith('_galaxy'):
         columns = columns + ['statistics_able']
         for row in rows:
-            row['statistics_able'] = row.get('content_type') != 'instruction'
+            content = str(row.get('content') or '').strip()
+            pure_url = (content.startswith('http://') or content.startswith('https://')) and not any(ch.isspace() for ch in content)
+            row['statistics_able'] = row.get('content_type') != 'instruction' and not pure_url
             if not isinstance(row['statistics_able'], bool):
                 raise ValueError('statistics_able must be a validated boolean for ' + table + ' uid=' + str(row.get('uid')))
     pk = next(c for c in inventory['constraints'] if c['schema_name'] == schema and c['relname'] == name and c['contype'] == 'p')
