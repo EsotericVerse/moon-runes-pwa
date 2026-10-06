@@ -225,7 +225,7 @@ export default function DailyLogClient({embedded=false}={}){
   }
 
   return <section className="loc-view">
-    {!embedded?<header className="loc-hero">
+    {!embedded?<header className="loc-hero loc-hero-feature">
       <p className="loc-eyebrow">每日抽籤紀錄</p>
       <h1>每日符文抽籤紀錄</h1>
       <p>依日期保存每日符文的主抽與補抽，並在行事曆下方比較同一符文上一次出現的日期與當時狀況。</p>
