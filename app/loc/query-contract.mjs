@@ -1,1 +1,1 @@
-export const DB_QUERY_BATCH_SIZE=65535;
+export const DB_QUERY_BATCH_SIZE=1000;
