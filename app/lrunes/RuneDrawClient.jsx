@@ -125,14 +125,45 @@ function cleanGrammarPart(value){
   return String(value||'').trim().replace(/[。；;，,\s]+$/g,'')||'資訊不足';
 }
 
+function drawSegments(mode){
+  const spec=DRAW_TYPES.find(item=>item.key===mode);
+  return Array.isArray(spec?.segments)?spec.segments:[];
+}
+
+function joinPoeticGroup(values=[]){
+  const parts=values.map(cleanGrammarPart).filter(Boolean);
+  if(parts.length<=1)return parts[0]||'資訊不足';
+  return parts.join('，');
+}
+
 function composeFixedGrammar(values,mode){
   const parts=(values||[]).map(cleanGrammarPart);
-  if(mode==='2card'&&parts.length>=2)return `因為${parts[0]}，所以${parts[1]}。`;
-  if(mode==='3card'&&parts.length>=3)return `因為${parts[0]}，但會有${parts[1]}的改變，所以${parts[2]}。`;
-  if(mode==='5card'&&parts.length>=5)return `因為${parts[0]}、${parts[1]}，但會有${parts[2]}的變化，所以${parts[3]}、${parts[4]}。`;
-  if(mode==='ow3gs'&&parts.length>=11)return `因為（因為${parts[0]}、${parts[1]}，但會有${parts[2]}、${parts[3]}的變化，所以${parts[4]}、${parts[5]}），所以（因為${parts[6]}、${parts[7]}，但會有${parts[8]}的變化，所以${parts[9]}、${parts[10]}）。`;
+  if(mode==='ow3gs'&&parts.length>=11){
+    const cause=`${joinPoeticGroup(parts.slice(0,2))}；${joinPoeticGroup(parts.slice(2,4))}，遂${joinPoeticGroup(parts.slice(4,6))}`;
+    const result=`${joinPoeticGroup(parts.slice(6,8))}；${parts[8]}，遂${joinPoeticGroup(parts.slice(9,11))}`;
+    return `${cause}；${result}。`;
+  }
+  const segments=drawSegments(mode);
+  if(segments.length){
+    const groups=[];
+    let offset=0;
+    for(const size of segments){
+      groups.push(joinPoeticGroup(parts.slice(offset,offset+size)));
+      offset+=size;
+    }
+    if(groups.length===2)return `${groups[0]}，故${groups[1]}。`;
+    if(groups.length===3)return `${groups[0]}；${groups[1]}，遂${groups[2]}。`;
+    return `${groups.join('；')}。`;
+  }
   if(parts.length===1)return `${parts[0]}。`;
-  return parts.length?`${parts.join('、')}。`:'資訊不足。';
+  return parts.length?`${parts.join('；')}。`:'資訊不足。';
+}
+
+function poeticClause(card,direction){
+  const rune=String(card?.rune_name||'').trim();
+  const text=cleanGrammarPart(situationAnswer(card,direction)||card?.rune_description||'資訊不足');
+  if(text==='資訊不足')return rune?`${rune}意未明`:'資訊不足';
+  return rune?text.replace(/^它/,rune):text;
 }
 
 function lotDomainText(card,direction,label){
@@ -144,16 +175,10 @@ function lotDomainText(card,direction,label){
 
 function buildFixedReading(cards,directions,mode){
   const source=Array.isArray(cards)?cards:[];
-  const situationParts=source.map((card,index)=>situationAnswer(card,directions[index])||card?.rune_description||'資訊不足');
+  const poeticParts=source.map((card,index)=>poeticClause(card,directions[index]));
   const weighted=buildSpreadAdvice(source,directions,mode);
-  const sentence=mode==='5card'&&weighted
-    ?weighted.summary
-    :composeFixedGrammar(situationParts,mode);
-  const domains=weighted?.domains||((mode==='single'||mode==='daily')?[]:LOT_DOMAINS.map(label=>({
-    label:label+'建議',
-    text:composeFixedGrammar(source.map((card,index)=>lotDomainText(card,directions[index],label)),mode)
-  })));
-  return {sentence,domains,evaluation:weighted};
+  const sentence=composeFixedGrammar(poeticParts,mode);
+  return {sentence,domains:[],evaluation:weighted};
 }
 
 function DrawSelection({activeKey}){
@@ -220,6 +245,20 @@ function SpreadCards({draw,mode,selectedMode,moonPhase}){
       </div>
     </div>;
   }
+  const rows=Array.isArray(selectedMode?.displayRows)?selectedMode.displayRows:[];
+  if(rows.length&&rows.reduce((sum,size)=>sum+size,0)===draw.cards.length){
+    let offset=0;
+    return <div className="runes-spread-cards" data-spread-rows={rows.join('-')}>
+      {rows.map((size,rowIndex)=>{
+        const indexes=Array.from({length:size},(_,index)=>offset+index);
+        offset+=size;
+        const rowClass=size===3?'runes-spread-row runes-spread-row-three':size===2?'runes-spread-row runes-spread-row-two':'runes-spread-row';
+        return <div className={rowClass} key={`row-${rowIndex}-${size}`}>
+          {size===1?<div className="runes-spread-single-center">{card(indexes[0])}</div>:indexes.map(index=>card(index))}
+        </div>;
+      })}
+    </div>;
+  }
   return null;
 }
 
@@ -278,9 +317,9 @@ export default function RuneDrawClient({drawKey='single'}){
         ?{staticTypes:['direction'],moonTypes:['sit_q','sit_a','daily_r','daily_g','daily_b'],currentMoon:moonPhase}
         :drawKey==='single'
           ?{staticTypes:['direction','lots'],moonTypes:['sit_q','sit_a'],currentMoon:moonPhase}
-          :(drawKey==='2card'||drawKey==='3card'||drawKey==='5card')
-            ?{staticTypes:['direction'],moonTypes:['sit_q','sit_a'],currentMoon:moonPhase}
-            :{staticTypes:['direction','lots'],moonTypes:[],currentMoon:''};
+          :drawKey==='ow3gs'
+            ?{staticTypes:['direction','lots'],moonTypes:[],currentMoon:''}
+            :{staticTypes:['direction'],moonTypes:['sit_q','sit_a'],currentMoon:moonPhase};
       const rows=await loadDrawCards(pairs,queryPlan);
       const byNumber=new Map(rows.map(row=>[Number(row.rune_id),row]));
       const cards=runeNumbers.map(number=>byNumber.get(Number(number))).filter(Boolean);
@@ -386,7 +425,7 @@ export default function RuneDrawClient({drawKey='single'}){
                   <p className="loc-eyebrow">籤詩</p>
                   <h2>占卜結果</h2>
                   <p>{draw.reading?.sentence||'資訊不足。'}</p>
-                  {Array.isArray(draw.reading?.domains)?<div className="runes-advice-grid">
+                  {Array.isArray(draw.reading?.domains)&&draw.reading.domains.length?<div className="runes-advice-grid">
                     {draw.reading.domains.map(item=><article key={item.label}><strong>{item.label}</strong><span>{item.text}</span></article>)}
                   </div>:null}
                 </div>
