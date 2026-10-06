@@ -43,7 +43,7 @@ if(!failures.length){
   const runeSingleDaily=read('app/lrunes/RuneSingleDailySurface.jsx');
   const runeDrawClient=read('app/lrunes/RuneDrawClient.jsx');
   const runeDirectory=read('app/lrunes/RuneDirectoryPages.jsx');
-  for(const token of ['single','daily','2card','3card','5card','ow3gs','抽每日指示'])if(!runeDrawModes.includes(token))failures.push('shared fixed draw modes missing '+token);
+  for(const token of ['single','daily','2card','3card','5card','ow3gs','每日抽牌'])if(!runeDrawModes.includes(token))failures.push('shared fixed draw modes missing '+token);
   for(const token of ['RUNE_DRAW_MODES.map','home-draw-bubbles','loc-bubble'])if(!runeDrawModeBubbles.includes(token))failures.push('shared fixed draw bubbles missing '+token);
   for(const [name,source] of [['single/daily',runeSingleDaily],['spread',runeDrawClient]])if(!source.includes('RuneDrawModeBubbles'))failures.push('Rune draw selection must reuse shared component in '+name);
   for(const token of ['命之符文示例','月之符文籤詩系統','RuneDrawModeBubbles'])if(!runeIntro.includes(token))failures.push('shared complete Rune intro missing '+token);
