@@ -8,18 +8,20 @@
 .scope-global{border-bottom:var(--scope-border)}
 .scope-data-source-global{
   display:flex;
-  justify-content:center;
-  gap:.5rem 1rem;
+  justify-content:flex-start;
+  gap:.35rem .8rem;
   flex-wrap:wrap;
-  margin:0 auto;
-  padding:.45rem clamp(1rem,4vw,4rem);
-  border-bottom:var(--scope-border);
+  margin:.45rem 0 0;
+  padding:.45rem 0 0;
+  border-top:var(--scope-border);
   color:var(--scope-muted);
-  font-size:.78rem;
+  font-size:.72rem;
+  opacity:.82;
 }
 .scope-data-source-global.is-backup{
   color:var(--scope-text);
-  font-weight:700;
+  font-weight:650;
+  opacity:1;
 }
 .scope-nav{display:flex;align-items:center;margin:0 auto;overflow-x:auto}
 .scope-nav a,.scope-nav-current{text-decoration:none;white-space:nowrap;border-radius:999px}
