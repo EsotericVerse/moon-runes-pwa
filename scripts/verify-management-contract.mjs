@@ -21,6 +21,10 @@ const portableSchema=read('docs/sql/portable-current-schema.sql');
 const scopeProvisioning=read('docs/sql/scope-provisioning.sql');
 const scopeData=read('app/loc/scope-data.js');
 const scopeGroup=read('app/loc/ScopeGroupManagement.jsx');
+const scopeRuntime=read('app/modular/use-scope-runtime.js');
+const scopeRegistry=read('app/modular/scope-registry.js');
+const importPanel=read('app/loc/ManagementImportPanel.jsx');
+const registrySql=read('docs/sql/scope-registry-management.sql');
 
 must(!galaxy.includes('include_in_time'),'generic search must not query nonexistent include_in_time');
 must(galaxy.includes("'style_tags'")&&galaxy.includes("searchFields:['label','note','status','style_tags']"),'generic Time search must include style_tags');
@@ -28,10 +32,10 @@ must(culture.includes('visibility,style_tags'),'Culture shared Time contract mus
 must(editor.includes("style_tags:''")&&editor.includes('風格標籤'),'shared Time editor must edit style_tags');
 must(editor.includes('style_tag_descriptions')&&editor.includes('風格關鍵詞說明')&&editor.includes('搜尋精確命中風格詞時'),'Time editor must require per-style-keyword search descriptions');
 must(galaxy.includes('selectStyleKeywordIntroductions')&&!galaxy.includes('scopeCards('),'Search must prepend exact style-keyword introductions and must not use partial Scope-ID cards');
-must(management.includes("section==='group'&&scopeId==='loc'"),'LOC Scope Group must have its own Manage');
+must(management.includes("section==='group'&&scope?.aggregateChildren"),'every DB Scope Group must have its own Manage');
 must(management.includes('ScopeGroupManagement'),'Manage must compose the Scope Group module');
 must(management.includes('KeywordLibraryPanel')&&management.includes("scopeId!=='lrunes'")&&management.includes('scopeId={scopeId}'),'general Scope Manage must expose the scope-owned keyword library');
-must(management.includes("canManage=scopeId==='loc'?account.canManageGlobalSync():account.canManageScopeSync(scopeId)"),'LOC Scope Group Manage must use global authority without becoming Admin');
+must(management.includes("canManage=scope?.aggregateChildren?account.canManageGlobalSync():account.canManageScopeSync(scopeId)"),'Scope Group Manage must use global authority without becoming Admin');
 must(governance.includes("scopeHref(scopeId,'governance/manage')"),'Governance must link to Scope Manage');
 must(data.includes('updateRows')&&data.includes('deleteRows')&&data.includes('ContentEditor'),'canonical data management must expose shared CRUD');
 must(data.includes('detailRequestRef')&&data.includes('requestId!==detailRequestRef.current'),'record detail UI must ignore stale async responses');
@@ -49,7 +53,7 @@ must(admin.includes('部分 Scope 設定讀取失敗')&&!admin.includes('}catch{
 must(admin.includes('provisionScope(')&&admin.includes('建立 Scope')&&admin.includes('Domain / Directory 必須二選一'),'Admin must expose transactional Scope creation separately from permission mapping');
 must(admin.includes("dbAuthRelation('silver.scope_registry')")&&admin.includes('parent_scope_id'),'Admin must read the DB Scope Registry hierarchy');
 must(scopeData.includes("keywords:`silver.${id}_keywords`")&&scopeData.includes('selectScopeGroupChildren'),'Scope data must resolve Keywords and DB hierarchy');
-must(scopeGroup.includes("selectScopeGroupChildren('loc')")&&scopeGroup.includes('parent_scope_id'),'LOC Scope Group management must read DB parent/child membership');
+must(scopeGroup.includes('selectScopeGroupChildren(scopeId)')&&scopeGroup.includes('parent_scope_id'),'Scope Group management must read DB parent/child membership');
 must(data.includes("來源為必填欄位。")&&data.includes('source_name:sourceName'),'Galaxy edits must preserve a nonempty source');
 must(data.includes("setSelectedId(id);setDraft(null);setEditorMessage('');")&&!data.includes('if(!scopeData)return;'),'record selection must clear stale drafts and Scope resolution failures must not be silent');
 must(data.includes('!draft&&editorMessage'),'record-detail failures and successful deletes must remain visible without an editor draft');
@@ -74,6 +78,13 @@ must(dbContract.includes("rpc('provision_scope'")&&dbContract.includes('provisio
 must(scopeProvisioning.includes('create table if not exists silver.scope_registry')&&scopeProvisioning.includes('create or replace function api.provision_scope'),'Scope provisioning SQL must define the DB registry and provisioning RPC');
 for(const suffix of ["_galaxy'","_galaxy_media'","_time'","_keywords'"])must(scopeProvisioning.includes(suffix),'Scope provisioning SQL missing fixed table suffix '+suffix);
 must(scopeProvisioning.includes('v_keyword_count<>66')&&scopeProvisioning.includes('p_parent_scope_id'),'Scope provisioning must lock the Rune66 default copy and parent Scope Group');
+
+must(dbContract.includes("rpc('manage_scope_registry'")&&dbContract.includes('manageScopeRegistry'),'DB client must expose authorized Scope Registry management');
+must(admin.includes('建立 Scope Group')&&admin.includes('saveRegistry')&&admin.includes("manageScopeRegistry('update'"),'Admin must edit Scope Registry hierarchy and create Scope Groups');
+must(registrySql.includes('create or replace function api.manage_scope_registry')&&registrySql.includes('Scope Group parent would create a cycle'),'Scope Registry SQL must enforce global authorization and cycle-safe hierarchy');
+must(scopeRuntime.includes("pathname==='/scope'||pathname.startsWith('/scope/')")&&scopeRuntime.includes('selectScopeRegistryEntry'),'generic Scope runtime must resolve DB registry entries through the fixed static shell');
+must(scopeRegistry.includes("GENERIC_SCOPE_PATH='/scope'")&&scopeRegistry.includes("params.set('scope',id)"),'unknown DB Scope links must route through the generic static shell');
+must(importPanel.includes('function SourceRefresh')&&importPanel.includes("source_native_id")&&importPanel.includes(".eq('source_name',selected)")&&importPanel.includes("offset+=200"),'Source Refresh must use bounded source_name + source_native_id delta queries instead of full-table scans');
 
 must(!/silver\.runes(?:_etc)?\b/.test(galaxy),'generic Galaxy/Search provider must not expose private Rune Core tables');
 const sharedSearch=read('app/modular/features/Search.jsx');
