@@ -753,7 +753,7 @@ export default function GameView(){
   </section>;
 
   return <section className="loc-view loc-game game-shell" data-game-theme={gameTheme.id} data-game-scheme={gameTheme.scheme} style={gameThemeStyle}>
-    <header className="loc-hero game-compact-hero">
+    <header className="loc-hero loc-hero-context game-compact-hero">
       <div><p className="loc-eyebrow">月之符文遊戲</p><h1>月之符文遊戲</h1><p>{status}｜{state.result}</p></div>
       <DeMeter value={Math.max(...state.players.map(player=>player.de))} max={data.config.deMax}/>
     </header>
