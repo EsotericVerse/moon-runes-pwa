@@ -68,13 +68,13 @@ function RuneDetails({card}){
       {card.extra_rules?<span><strong>額外規則</strong>{decodeRuneText(card.extra_rules)}</span>:null}
       {card.extra_notes?<span><strong>額外留意</strong>{decodeRuneText(card.extra_notes)}</span>:null}
     </div>
-    <div className="loc-context-list runes-rune-long-details">
-      {card.rune_evolution_history?<section className="loc-context-item"><strong>符文歷史</strong><span>{decodeRuneText(card.rune_evolution_history)}</span></section>:null}
-      {card.myth_story?<section className="loc-context-item"><strong>神話故事</strong><span>{decodeRuneText(card.myth_story)}</span></section>:null}
-      {card.soul_question?<section className="loc-context-item"><strong>靈魂課題</strong><span>{decodeRuneText(card.soul_question)}</span></section>:null}
-      {card.practice_challenge?<section className="loc-context-item"><strong>實踐挑戰</strong><span>{decodeRuneText(card.practice_challenge)}</span></section>:null}
-      {card.ritual_advice?<section className="loc-context-item"><strong>儀式建議</strong><span>{decodeRuneText(card.ritual_advice)}</span></section>:null}
-      {card.harmony_advice?<section className="loc-context-item"><strong>調和建議</strong><span>{decodeRuneText(card.harmony_advice)}</span></section>:null}
+    <div className="home-draw-bubbles runes-rune-long-details" aria-label="符文延伸說明">
+      {card.rune_evolution_history?<section className="loc-bubble"><strong>符文歷史</strong><p className="scope-prewrap">{decodeRuneText(card.rune_evolution_history)}</p></section>:null}
+      {card.myth_story?<section className="loc-bubble"><strong>神話故事</strong><p className="scope-prewrap">{decodeRuneText(card.myth_story)}</p></section>:null}
+      {card.soul_question?<section className="loc-bubble"><strong>靈魂課題</strong><p className="scope-prewrap">{decodeRuneText(card.soul_question)}</p></section>:null}
+      {card.practice_challenge?<section className="loc-bubble"><strong>實踐挑戰</strong><p className="scope-prewrap">{decodeRuneText(card.practice_challenge)}</p></section>:null}
+      {card.ritual_advice?<section className="loc-bubble"><strong>儀式建議</strong><p className="scope-prewrap">{decodeRuneText(card.ritual_advice)}</p></section>:null}
+      {card.harmony_advice?<section className="loc-bubble"><strong>調和建議</strong><p className="scope-prewrap">{decodeRuneText(card.harmony_advice)}</p></section>:null}
     </div>
   </article>;
 }
