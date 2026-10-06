@@ -135,6 +135,13 @@ Daily 抽牌與 Daily record 分開：
 - Main + Supplement 若屬同一 session，兩張 Rune 不重複。
 - 是否保存 record 由使用者決定。
 
+## Daily TODO
+
+- 每日抽牌完成後，若使用者已完成 OAuth 登入，且目前帳號具備 `lrunes` Scope 權限，於每日抽牌結果顯示「新增」按鈕。
+- 「新增」只負責把當次每日抽牌寫入既有 `silver.lrunes_daily`，不得改變抽牌結果、每日字串或月相查詢。
+- UI 可見性使用現有 `account.canManageScopeSync('lrunes')`；資料庫授權仍以 `silver.lrunes_daily` 的 RLS 與 `silver.can_manage_scope('lrunes')` 為最終權限判定。
+- 此 TODO 不新增另一套權限模型，也不因按鈕本身修改 RLS policy。
+
 ## Moon phase
 
 卡片月相與真實月相分開保存。Situation／Daily 的文字候選必須使用當次真實月相 current_moon 精準查詢；卡片月相由 Rune 本身 moon_phase 固定。月相交互不以額外生成文字替代原始母資料。
