@@ -356,8 +356,7 @@ function ScopeGroupStatistics(){
   </section>;
 }
 
-function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
-  if(aggregateScopes)return <ScopeGroupStatistics/>;
+function ScopeStatisticsPanel({scopeId,navigation,types}){
   const requested=String(navigation.rankingType||'');
   const rankingType=types.includes(requested)?requested:(types[0]||'');
   const [chartType,setChartType]=useState('line');
@@ -367,7 +366,7 @@ function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
   const [styleFilter,setStyleFilter]=useState(scopeId==='lo3rwang'?'rune66':'none');
   const customRange=useMemo(()=>({from:customFrom,to:customTo}),[customFrom,customTo]);
   const queryEndDate=useMemo(()=>taipeiDateKey(),[]);
-  const effectiveTimeStandard=aggregateScopes?'1y':timeStandard;
+  const effectiveTimeStandard=timeStandard;
   const scopesQuery=useQuery({
     queryKey:['managed-scopes'],
     queryFn:selectManagedScopes,
@@ -375,8 +374,8 @@ function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
   });
   const targetScopes=useMemo(()=>{
     const scopes=scopesQuery.data||[];
-    return aggregateScopes?scopes:scopes.filter(scope=>scope.id===scopeId);
-  },[aggregateScopes,scopeId,scopesQuery.data]);
+    return scopes.filter(scope=>scope.id===scopeId);
+  },[scopeId,scopesQuery.data]);
   const customReady=effectiveTimeStandard!=='custom'||Boolean(dateKey(customFrom)&&dateKey(customTo)&&customFrom<=customTo);
   const queryRange=useMemo(
     ()=>statisticsQueryRange(effectiveTimeStandard,customRange,queryEndDate),
@@ -407,10 +406,10 @@ function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
       <label><span>{UI_COPY.statistics.chart}</span><select className="scope-select" value={chartType} onChange={event=>setChartType(event.target.value)}>
         {CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}
       </select></label>
-      {!aggregateScopes?<label><span>{UI_COPY.statistics.range}</span><select className="scope-select" value={timeStandard} onChange={event=>setTimeStandard(event.target.value)}>
+      {<label><span>{UI_COPY.statistics.range}</span><select className="scope-select" value={timeStandard} onChange={event=>setTimeStandard(event.target.value)}>
         {TIME_STANDARDS.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
       </select></label>:null}
-      {!aggregateScopes&&timeStandard==='custom'?<>
+      {timeStandard==='custom'?<>
         <label><span>{UI_COPY.statistics.start}</span><input className="scope-input" type="date" value={customFrom} onChange={event=>setCustomFrom(event.target.value)}/></label>
         <label><span>{UI_COPY.statistics.end}</span><input className="scope-input" type="date" value={customTo} onChange={event=>setCustomTo(event.target.value)}/></label>
       </>:null}
@@ -420,7 +419,7 @@ function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
     </div>
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
     {trendQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(trendQuery.error)}</p>:null}
-    {!aggregateScopes&&timeStandard==='custom'&&!customReady?<p className="scope-status">請設定有效的開始與結束日期。</p>:null}
+    {timeStandard==='custom'&&!customReady?<p className="scope-status">請設定有效的開始與結束日期。</p>:null}
     {!trendQuery.isPending&&!trendQuery.error&&customReady?<>
       <p className="scope-status">{summary.startDate&&summary.endDate?summary.startDate+' ～ '+summary.endDate:''}</p>
       <SummaryList rankingType={rankingType} summary={summary}/>
@@ -436,6 +435,12 @@ function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
       {!runeQuery.isPending&&!runeQuery.error&&runeQuery.data?<Rune66Summary analysis={runeQuery.data}/>:null}
     </>:null}
   </section>;
+}
+
+function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
+  return aggregateScopes
+    ?<ScopeGroupStatistics/>
+    :<ScopeStatisticsPanel scopeId={scopeId} navigation={navigation} types={types}/>;
 }
 
 export default function Statistics(){
