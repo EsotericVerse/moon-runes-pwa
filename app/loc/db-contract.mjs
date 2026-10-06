@@ -65,29 +65,40 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return {...result,count:affected};
   }
 
-  async function keywordClassificationWrite(payload){
-    const {data,error}=await authClient.schema('api').rpc('apply_keyword_classification',{p_rows:payload});
+  function normalizeScopeId(value){
+    const scope=String(value||'').trim().toLowerCase();
+    if(!/^[a-z][a-z0-9]{0,14}$/.test(scope))throw new Error('Scope ID 格式無效');
+    return scope;
+  }
+
+  async function keywordClassificationWrite(scopeId,payload){
+    const scope=normalizeScopeId(scopeId);
+    const {data,error}=await authClient.schema('api').rpc('apply_keyword_classification',{
+      p_scope_id:scope,
+      p_rows:payload
+    });
     if(error)throw new Error(error.message||'Keyword classification write failed');
     return Number(data||0);
   }
 
-  async function applyKeywordClassification(payload={}){
+  async function applyKeywordClassification(scopeId,payload={}){
+    const scope=normalizeScopeId(scopeId);
     const rows=Array.isArray(payload?.rows)?payload.rows:[];
     const meta=payload?.meta&&typeof payload.meta==='object'?payload.meta:{};
-    await keywordClassificationWrite({mode:'begin'});
+    await keywordClassificationWrite(scope,{mode:'begin'});
 
     const batchSize=500;
     let count=0;
     for(let offset=0;offset<rows.length;offset+=batchSize){
       const batch=rows.slice(offset,offset+batchSize);
-      const affected=await keywordClassificationWrite({mode:'chunk',rows:batch});
+      const affected=await keywordClassificationWrite(scope,{mode:'chunk',rows:batch});
       if(affected!==batch.length){
         throw new Error(`Keyword classification chunk incomplete: expected ${batch.length}, affected ${affected}`);
       }
       count+=affected;
     }
 
-    const documentCount=await keywordClassificationWrite({mode:'finalize',meta});
+    const documentCount=await keywordClassificationWrite(scope,{mode:'finalize',meta});
     if(documentCount!==rows.length){
       throw new Error(`Keyword classification finalize mismatch: expected ${rows.length}, counted ${documentCount}`);
     }
@@ -106,10 +117,11 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return data;
   }
 
-  async function writeKeywordLibraryItem(operation,item={}){
+  async function writeKeywordLibraryItem(scopeId,operation,item={}){
+    const scope=normalizeScopeId(scopeId);
     const op=String(operation||'').trim().toLowerCase();
     if(!['insert','update','delete'].includes(op))throw new Error('Unsupported keyword library operation');
-    const relation=dbAuthRelation('api.lo3rwang_keywords_manage');
+    const relation=dbAuthRelation(`silver.${scope}_keywords`);
     const className=String(item?.class_name||'').trim();
     const classId=String(item?.class_id||'').trim();
     if(!classId)throw new Error('Class UUID 不可為空');
@@ -140,12 +152,13 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return {count:affected,keyword_id:data?.[0]?.keyword_id||item?.keyword_id||null};
   }
 
-  async function copyKeywordLibraryClass(sourceClassName,targetClassName){
+  async function copyKeywordLibraryClass(scopeId,sourceClassName,targetClassName){
+    const scope=normalizeScopeId(scopeId);
     const source=String(sourceClassName||'').trim();
     const target=String(targetClassName||'').trim();
     if(!source||!target)throw new Error('Class 名稱不可為空');
     if(source===target)throw new Error('新 Class 名稱必須不同');
-    const relation=dbAuthRelation('api.lo3rwang_keywords_manage');
+    const relation=dbAuthRelation(`silver.${scope}_keywords`);
     const {data:existing,error:existingError}=await relation.select('keyword_id').eq('class_name',target).limit(1);
     if(existingError)throw new Error(existingError.message||'Keyword class check failed');
     if(existing?.length)throw new Error('這個 Class 已經存在');
@@ -159,7 +172,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const newClassId=globalThis.crypto?.randomUUID?.();
     if(!newClassId)throw new Error('無法產生 Class UUID');
     const registry=dbAuthRelation('silver.keyword_classes');
-    const {error:registryError}=await registry.insert({class_id:newClassId,scope_id:'lo3rwang'});
+    const {error:registryError}=await registry.insert({class_id:newClassId,scope_id:scope});
     if(registryError)throw new Error(registryError.message||'Keyword Class registry create failed');
     const copies=rows.map(row=>({
       class_id:newClassId,
@@ -184,6 +197,24 @@ export function createDatabaseClient({publicClient,authClient,auth}){
       throw new Error('Keyword class copy incomplete');
     }
     return {count:data.length,class_id:newClassId};
+  }
+
+  async function provisionScope(values={}){
+    const scopeId=normalizeScopeId(values.scope_id);
+    const payload={
+      p_scope_id:scopeId,
+      p_display_name:String(values.display_name||'').trim(),
+      p_email:String(values.email||'').trim().toLowerCase(),
+      p_birthday:values.birthday||null,
+      p_domain:String(values.domain||'').trim()||null,
+      p_directory:String(values.directory||'').trim()||null,
+      p_parent_scope_id:String(values.parent_scope_id||'loc').trim()||'loc',
+      p_theme:String(values.theme||'theme-7').trim()||'theme-7',
+      p_copy_keywords:values.copy_keywords!==false
+    };
+    const {data,error}=await authClient.schema('api').rpc('provision_scope',payload);
+    if(error)throw new Error(error.message||'Scope provisioning failed');
+    return data||{};
   }
 
   async function syncManageScopeRow(values,{scopeId,email}={}){
@@ -231,5 +262,5 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
-  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,writeKeywordLibraryItem,copyKeywordLibraryClass,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
+  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,writeKeywordLibraryItem,copyKeywordLibraryClass,provisionScope,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
 }
