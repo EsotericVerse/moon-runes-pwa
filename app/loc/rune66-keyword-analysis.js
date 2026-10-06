@@ -5,7 +5,7 @@ import {selectManagedScope} from './scope-data';
 import {classifyRune66Documents} from './model/rune66-keyword-engine.mjs';
 
 const PERSONAL_KEYWORD_TABLE='silver.lo3rwang_keywords';
-const RUNE_TABLE='silver.runes';
+const RUNE66_CLASS='符文66';
 
 const analysisPromises=new Map();
 
@@ -18,22 +18,12 @@ function buildDocuments(textRows=[]){
 }
 
 async function loadRune66Catalog(){
-  const [catalogResult,structureResult]=await Promise.all([
-    selectAllRows(PERSONAL_KEYWORD_TABLE,{
-      columns:'keyword_id,group_name,item_no,item_name,principle,keywords,order_no',
-      filters:[{column:'group_name',operator:'eq',value:'符文66'}],
-      orders:[{column:'order_no',ascending:true},{column:'item_no',ascending:true}]
-    }),
-    selectAllRows(RUNE_TABLE,{
-      columns:'rune_id,rune_name,group_name,class_enable',
-      filters:[
-        {column:'rune_id',operator:'gte',value:1},
-        {column:'rune_id',operator:'lte',value:66}
-      ],
-      orders:[{column:'rune_id',ascending:true}]
-    })
-  ]);
-  return {catalogRows:catalogResult.rows||[],structureRows:structureResult.rows||[]};
+  const result=await selectAllRows(PERSONAL_KEYWORD_TABLE,{
+    columns:'keyword_id,class_name,class_group,class_enable,item_no,item_name,principle,keywords,order_no',
+    filters:[{column:'class_name',operator:'eq',value:RUNE66_CLASS}],
+    orders:[{column:'order_no',ascending:true},{column:'item_no',ascending:true}]
+  });
+  return result.rows||[];
 }
 
 async function loadAuthorDocuments({startDate='',endDate=''}={}){
@@ -56,11 +46,11 @@ export async function selectRune66Classification({startDate='',endDate=''}={}){
   const key=[String(startDate||''),String(endDate||'')].join('|');
   if(analysisPromises.has(key))return analysisPromises.get(key);
   const promise=(async()=>{
-    const [{catalogRows,structureRows},documents]=await Promise.all([
+    const [catalogRows,documents]=await Promise.all([
       loadRune66Catalog(),
       loadAuthorDocuments({startDate,endDate})
     ]);
-    return classifyRune66Documents(documents,catalogRows,structureRows);
+    return classifyRune66Documents(documents,catalogRows);
   })().catch(error=>{
     analysisPromises.delete(key);
     throw error;
