@@ -144,13 +144,12 @@ function specialRuneKeywordTexts(normalizedTexts,runes,rune){
     .map(({rule})=>normalizeText(rule.source))
     .filter(Boolean);
 
-  const sameSignalSources=ruleEntries
-    .filter(({item,rule})=>{
+  const dayMoonTargetSources=ruleEntries
+    .filter(({rule})=>{
       const source=normalizeText(rule.source);
-      if(!source||!source.includes(normalizeText(rune.label)))return false;
-      if(rule.operator==='TO')return normalizeText(rule.target)===normalizeText(rune.label);
-      if(rule.operator==='AND')return item.runeId===rune.runeId;
-      return false;
+      if(!source||!(source.includes('日')||source.includes('月')))return false;
+      return (rule.operator==='TO'||rule.operator==='AND')
+        &&normalizeText(rule.target)===normalizeText(rune.label);
     })
     .map(({rule})=>normalizeText(rule.source))
     .filter(Boolean);
@@ -162,7 +161,7 @@ function specialRuneKeywordTexts(normalizedTexts,runes,rune){
       .filter(source=>source&&source.includes(normalizeText(rune.label)))
     :[];
 
-  const sources=[...new Set([...nameSources,...sameSignalSources,...dayMoonSources])]
+  const sources=[...new Set([...nameSources,...dayMoonTargetSources,...dayMoonSources])]
     .sort((a,b)=>b.length-a.length);
 
   return normalizedTexts.map(source=>{
