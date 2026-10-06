@@ -350,17 +350,19 @@ function ScopeGroupStatistics(){
       const day=cursor.toISOString().slice(0,10);
       const bucket=trendBucket(day,bucketUnit);
       if(!bucket||buckets.has(bucket.key))continue;
-      const row={period:bucket.label,_sort:bucket.key};
+      const row={period:bucket.label,_sort:bucket.key,total:0};
       for(const id of scopeIds)row[id]=0;
       buckets.set(bucket.key,row);
     }
     for(const sourceRow of densityQuery.data||[]){
       const bucket=trendBucket(sourceRow.day,bucketUnit);
       if(!bucket)continue;
-      const row=buckets.get(bucket.key)||{period:bucket.label,_sort:bucket.key};
+      const row=buckets.get(bucket.key)||{period:bucket.label,_sort:bucket.key,total:0};
       for(const id of scopeIds)if(row[id]===undefined)row[id]=0;
       const id=String(sourceRow.scope_id||'').trim();
-      if(scopeIds.includes(id))row[id]=(Number(row[id])||0)+(Number(sourceRow.item_count)||0);
+      const count=Number(sourceRow.item_count)||0;
+      if(scopeIds.includes(id))row[id]=(Number(row[id])||0)+count;
+      row.total=(Number(row.total)||0)+count;
       buckets.set(bucket.key,row);
     }
     return [...buckets.values()].sort((a,b)=>a._sort.localeCompare(b._sort));
@@ -398,11 +400,14 @@ function ScopeGroupStatistics(){
 
     <p className="scope-status">{startDate&&endDate?startDate+' ～ '+endDate:''}</p>
     <div className="scope-ranking">
-      {totals.map(row=><div key={row.scope_id}>
-        <strong>scope_id: {row.scope_id}</strong>
-        <span>{row.total.toLocaleString()} 項 · {row.ratio.toFixed(1)}%</span>
-      </div>)}
+      <div>
+        <strong>LOC 合併總數</strong>
+        <span>{overallTotal.toLocaleString()} 項</span>
+      </div>
     </div>
+    <p className="scope-status">
+      統計來源（scope_id）：{totals.map(row=>row.scope_id+' '+row.total.toLocaleString()+' 項 · '+row.ratio.toFixed(1)+'%').join('；')}
+    </p>
 
     <p className="scope-status">需要查看來源、Class、Group 或其他細部統計，請前往各 Scope／作者自己的統計頁。</p>
     <div className="scope-result-links">
@@ -415,8 +420,7 @@ function ScopeGroupStatistics(){
         <XAxis dataKey="period" angle={-24} textAnchor="end" interval="preserveStartEnd" height={72} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
         <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
         <Tooltip contentStyle={CHART_TOOLTIP}/>
-        <Legend/>
-        {scopeIds.map((id,index)=><Line key={id} type="monotone" dataKey={id} name={id} stroke={PIE_COLORS[index%PIE_COLORS.length]} strokeWidth={2} dot={false} connectNulls/>)}
+        <Line type="monotone" dataKey="total" name="LOC 合併總數" stroke={CHART_ACCENT} strokeWidth={3} dot={false}/>
       </LineChart>
     </ResponsiveContainer>:null}
 
