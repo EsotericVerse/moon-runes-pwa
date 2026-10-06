@@ -33,7 +33,7 @@ byItem.get(2).keywords=['意識','意識TO魂、潛意識TO夢'];
 byItem.get(43).keywords=['水土AND地'];
 byItem.get(46).keywords=['水土TO地'];
 byItem.get(48).keywords=['空氣TO氣'];
-byItem.get(49).keywords=['日光TO光','日月TO時'];
+byItem.get(49).keywords=['日常','日光TO光','日月TO時'];
 byItem.get(50).keywords=['日月TO時'];
 byItem.get(26).keywords=['花枝NAME、花枝招展TO花'];
 byItem.get(7).keywords=['鏡花水月AND幻'];
@@ -54,7 +54,9 @@ const rows=[
   {key:'m',title:'',content:'日常'},
   {key:'n',title:'',content:'月蝕'},
   {key:'o',title:'',content:'意識 潛意識 水 空氣'},
-  {key:'p',title:'',content:'意識 意識 意識'}
+  {key:'p',title:'',content:'意識 意識 意識'},
+  {key:'q',title:'',content:'2026年10月6日'},
+  {key:'r',title:'',content:'六月十日'}
 ];
 
 const result=classifyRune66Documents(rows,catalogRows,structureRows);
@@ -95,9 +97,13 @@ assert.equal(runeMap(byKey.get('n')).get('月'),1,'ordinary 月 keyword text mus
 assert.ok((runeMap(byKey.get('o')).get('魂')||0)>=2,'one Rune may keep multiple distinct configured signal hits');
 assert.equal(byKey.get('o').classification_group,'元素','Class must use cumulative distinct signal scores');
 assert.equal(runeMap(byKey.get('p')).get('魂'),2,'repeating the same text must not duplicate the same keyword or rule signal');
+assert.equal(runeMap(byKey.get('q')).has('日'),false,'numeric calendar dates must not count 日');
+assert.equal(runeMap(byKey.get('q')).has('月'),false,'numeric calendar dates must not count 月');
+assert.equal(runeMap(byKey.get('r')).has('日'),false,'Chinese calendar dates must not count 日');
+assert.equal(runeMap(byKey.get('r')).has('月'),false,'Chinese calendar dates must not count 月');
 
 assert.equal(result.documentCount,rows.length);
-assert.equal(result.unclassifiedCount,1,'NAME-only sample must remain unclassified');
+assert.equal(result.unclassifiedCount,3,'NAME-only and calendar-date-only samples must remain unclassified');
 assert.ok(result.tieCount>=1);
 
 assert.ok(catalogRows.every(row=>Array.isArray(row.keywords)),'keyword catalog must use one keyword collection per classification item');
