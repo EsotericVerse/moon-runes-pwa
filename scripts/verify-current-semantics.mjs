@@ -19,7 +19,8 @@ const required=[
   'app/loc/providers/neon-public.mjs',
   'app/loc/db-query.mjs',
   'app/modular/feature-data-state.js',
-  'app/AppShell.jsx'
+  'app/AppShell.jsx',
+  'app/loc/query-contract.mjs'
 ];
 for(const path of required)if(!fs.existsSync(path)||!read(path).trim())failures.push('missing Current contract file: '+path);
 if(!failures.length){
@@ -37,6 +38,7 @@ if(!failures.length){
   for(const token of ['createNeonPublicAdapter','backupPublicClient','primarySourceLabel:\'Supabase\'','backupSourceLabel:\'Neon\''])if(!configured.includes(token))failures.push('Configured dual-source public read missing '+token);
   const appShell=read('app/AppShell.jsx');
   for(const token of ['主要資料來源：','備用資料來源：','目前使用：','備援資料可能有同步時間差'])if(!appShell.includes(token))failures.push('Global data source disclosure missing '+token);
+  if(appShell.indexOf('<DataSourceStatus/>')<appShell.indexOf('<footer'))failures.push('Data source status must remain in the footer, not above page content.');
   const featureState=read('app/modular/feature-data-state.js');
   if(!featureState.includes('pgrst123')||!featureState.includes('資料查詢功能與資料庫介面不相容'))failures.push('Provider capability errors must not be mislabeled as read permissions.');
   const scopeData=read('app/loc/scope-data.js');
@@ -64,6 +66,11 @@ if(!failures.length){
   if(rune66Engine.includes('keyword_group')||rune66Engine.includes("node_type==='style'")||rune66Engine.includes("node_type==='keyword'"))failures.push('Rune66 engine must not restore style/rule/node-type keyword storage');
   const statistics=read('app/modular/features/Statistics.jsx');
   const culture=read('app/modular/features/Culture.jsx');
+  const queryContract=read('app/loc/query-contract.mjs');
+  if(!queryContract.includes('DB_QUERY_BATCH_SIZE=1000'))failures.push('Portable Data API batch size must remain 1000.');
+  for(const token of ["effectiveTimeStandard=aggregateScopes?'1y':timeStandard",'statisticsQueryRange','selectSourceTrendRows(targetScopes,queryRange)'])if(!statistics.includes(token))failures.push('Statistics query-window contract missing '+token);
+  if(statistics.includes("?{startDate:customFrom,endDate:customTo}\n    :{startDate:'',endDate:''}"))failures.push('Preset Statistics ranges must not fall back to an unbounded database query.');
+  if(galaxy.includes("{column:'source_name',operator:'neq',value:''}"))failures.push('Unknown source rows must reach Statistics and map to Others instead of being discarded.');
   for(const token of ['表現風格','Class｜符文群組','Group｜符文排行'])if(!statistics.includes(token))failures.push('Statistics style-filter presentation missing '+token);
   for(const token of ['表現風格','Class｜符文群組比例','culture-style-filter'])if(!culture.includes(token))failures.push('Culture style-filter presentation missing '+token);
   if(statistics.includes('關鍵詞排行')||culture.includes('關鍵詞排行'))failures.push('Keyword-level ranking must remain hidden behind Class / Group presentation');
