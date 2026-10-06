@@ -17,20 +17,28 @@ export default function RunesClient(){
           <h1>月之符文</h1>
           <p className="loc-subtitle">以月的角度紀錄。</p>
         </div>
-        <p>66個單一中文字 × 九組符文分組 × 四卡牌方向 × 月相交互</p>
+        <p className="runes-home-lead">抽牌先給你一個籤詩提示，再從符文本義、卡牌方向與月相交互往下判讀。</p>
+        <p className="runes-home-system">66個單一中文字 × 九組符文分組 × 四卡牌方向 × 月相交互</p>
         <p>可以問一件事，也可以沒有問題直接抽取。</p>
+        <div className="runes-home-primary-actions" aria-label="開始抽牌">
+          <a className="loc-button runes-home-primary-action" href={runeHref('duel/one')}>抽一張符文</a>
+          <a className="loc-button" href={runeHref('duel/daily')}>每日符文</a>
+        </div>
       </div>
       <figure className="home-hero-visual scope-home-hero-visual">
-        <iframe src="https://www.instagram.com/reel/DMA-ZxLTINw/embed" title="月之符文說明" loading="eager" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" />
+        <iframe src="https://www.instagram.com/reel/DMA-ZxLTINw/embed" title="月之符文說明" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" />
       </figure>
     </header>
 
     <nav className="runes-home-nav" aria-label="月之符文功能">
       <a className="loc-button" href={runeHref('duel/one')}>單卡抽籤</a>
+      <a className="loc-button" href={runeHref('duel/daily')}>每日符文</a>
       <a className="loc-button" href={runeHref('list')}>符文圖鑑</a>
       <a className="loc-button" href={runeHref('game')}>符文遊戲</a>
       <a className="loc-button" href={runeHref('daily/log')}>每日符文紀錄</a>
     </nav>
+
+    <RuneIntroSection />
 
     <section className="loc-card rune-basics">
       <h2>基本判讀順序</h2>
@@ -41,8 +49,6 @@ export default function RunesClient(){
         <div className="basic-item"><strong>4. 多張再看模組</strong><span>若為多張抽牌，再依雙卡、三卡、五卡、指定張數或 OW3gs 各自的模組結構進行組合判讀。</span></div>
       </div>
     </section>
-
-    <RuneIntroSection />
 
     <section className="loc-card rune-basics">
       <h2>其他張數</h2>
