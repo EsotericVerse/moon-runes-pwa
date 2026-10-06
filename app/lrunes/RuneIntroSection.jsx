@@ -28,11 +28,10 @@ export default function RuneIntroSection(){
         </div>
       </div>
       <div className="home-rune-copy home-rune-copy-plain">
-        <p>不知道怎麼說的話，往下抽牌就對了！</p>
+        <p className="runes-hint-kicker">不知道怎麼說的話，往下抽牌就對了！</p>
         <p>沒什麼想問的，抽個每日符文看看吧！</p>
-        <p>月之符文的特有66符文字會給你提示籤詩，指引你的可能未來，</p>
-        <p>能是祝福可能是警告，你當然擁有選擇權。</p>
-        <p>抽牌讓這符文成語意種子，成為語意起點，<br/>用你想要的方式，成長成為完整語意的成熟果實。</p>
+        <p className="runes-hint-lead">月之符文的特有66符文字會給你提示籤詩，指引你的可能未來；能是祝福可能是警告，你當然擁有選擇權。</p>
+        <p className="runes-hint-seed">抽牌讓這符文成語意種子，成為語意起點，<br/>用你想要的方式，成長成為完整語意的成熟果實。</p>
         <p>最後的選擇權仍然在你的手上！</p>
         <RuneDrawModeBubbles />
       </div>
