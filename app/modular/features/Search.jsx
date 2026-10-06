@@ -19,6 +19,7 @@ import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayT
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import {applyFilters} from '../../loc/db-query.mjs';
+import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
 
 
 function escapeSearchRegExp(value){
@@ -135,16 +136,17 @@ export default function Search(){
   const searchId=useRef(0);
   const matchedQueryRef=useRef('');
   const pageSize=DEFAULT_LIST_BATCH_SIZE;
+  const aggregateScopes=Boolean(scope?.aggregateChildren);
   const scopesQuery=useQuery({
-    queryKey:['managed-scopes'],
+    queryKey:['managed-scopes',scopeId],
     queryFn:selectManagedScopes,
+    enabled:!aggregateScopes,
     staleTime:5*60_000
   });
-  const aggregateScopes=Boolean(scope?.aggregateChildren);
   const targetScopes=useMemo(()=>{
     const scopes=scopesQuery.data||[];
-    return aggregateScopes?scopes:scopes.filter(item=>item.id===scopeId);
-  },[aggregateScopes,scopeId,scopesQuery.data]);
+    return scopes.filter(item=>item.id===scopeId);
+  },[scopeId,scopesQuery.data]);
   const scopeById=useMemo(()=>new Map(targetScopes.map(item=>[item.id,item])),[targetScopes]);
   const hiddenScopeIds=useMemo(
     ()=>targetScopes.filter(item=>account.canManageScopeSync(item.id)).map(item=>item.id),
@@ -367,6 +369,14 @@ export default function Search(){
 
   async function runSearch(event){event.preventDefault();await executeSearch(query)}
 
+  if(aggregateScopes)return <FeaturePage featureId="search">
+    <ScopeGroupOverview
+      scopeId={scopeId}
+      featureId="search"
+      title="Scope Group 搜尋導引"
+      description="請先選擇要搜尋的 Scope；Group 本身不對所有子 Scope 同時執行全文搜尋。"
+    />
+  </FeaturePage>;
 
   return <FeaturePage featureId="search">
     <div className="scope-tabs" role="group" aria-label={UI_COPY.search.mode}>
