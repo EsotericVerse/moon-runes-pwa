@@ -242,6 +242,21 @@ export default function Culture(){
   const timelineItems=useMemo(()=>
     (query.data?.timelineItems||[]).filter(item=>isAggregateScope||item.scope_id===scopeId)
   ,[query.data,scopeId]);
+  const currentStructurePeriod=openPeriod||primaryPeriods.find(item=>String(item?.status||'').toLowerCase()==='current')||primaryPeriods.at(-1)||null;
+  const currentStructureStart=String(currentStructurePeriod?.start_date||'').slice(0,10);
+  const currentStructureEnd=String(currentStructurePeriod?.end_date||new Date().toISOString().slice(0,10)).slice(0,10);
+  const currentTimelineItems=useMemo(()=>{
+    if(isAggregateScope||!currentStructurePeriod)return [];
+    const currentKey=periodKey(currentStructurePeriod);
+    return timelineItems.filter(item=>{
+      if(String(item?.entry_type||'')==='period')return periodKey(item)===currentKey;
+      const start=String(item?.start_date||item?.date||'').slice(0,10);
+      const end=String(item?.end_date||start||'').slice(0,10);
+      if(!start&&!end)return false;
+      return (!currentStructureStart||end>=currentStructureStart)
+        &&(!currentStructureEnd||start<=currentStructureEnd);
+    });
+  },[isAggregateScope,timelineItems,currentStructurePeriod?.period,currentStructurePeriod?.start_date,currentStructurePeriod?.end_date,currentStructureStart,currentStructureEnd]);
   const locSourceRiverItems=useMemo(()=>query.data?.sourceRiverItems||[],[query.data]);
   const locSourceGroups=useMemo(()=>query.data?.sourceGroups||[],[query.data]);
   const locCombinedSourceTotal=useMemo(()=>locSourceGroups.reduce((sum,item)=>sum+Number(item?.item_count||0),0),[locSourceGroups]);
@@ -532,11 +547,15 @@ export default function Culture(){
               <section className='scope-card scope-culture-structure-river'>
                 <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
                 <h3>{UI_COPY.culture.structure}</h3>
-                {timelineItems.length?<CultureTimeline
-                  items={timelineItems}
+                {currentTimelineItems.length?<CultureTimeline
+                  items={currentTimelineItems}
                   labelOf={item=>item.display_label||item.title}
                   focus={navigation}
                   mode='overview'
+                  windowStart={currentStructureStart}
+                  windowEnd={currentStructureEnd}
+                  fixedMin={currentStructureStart}
+                  fixedMax={currentStructureEnd}
                 />:<p className='scope-status'>{FEATURE_EMPTY_MESSAGE}</p>}
               </section>
 
