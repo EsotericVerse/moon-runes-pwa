@@ -241,16 +241,40 @@ export default function DailyLogClient({embedded=false}={}){
       {comparisonLoading?<p className="loc-status">讀取前次同符文紀錄…</p>:null}
       {!comparisonLoading?<div className="scope-list">
         {comparisons.map(({key,current,previous,currentContext,previousSituation})=><article className="scope-inline-card" key={'compare-'+key}>
-          <strong>{current.draw_kind==='supplement'?'補抽':'主抽'}｜{current.rune_name}・{current.direction}</strong>
-          <span>當日真實月相：{currentContext?.moonPhase||'未知'}</span>
-          <span>狀況形容：{currentContext?.situation||'目前沒有對應的狀況形容。'}</span>
-          {currentContext?.reminder?<span>每日占卜提醒：{currentContext.reminder}</span>:null}
-          {currentContext?.guidance?<span>每日占卜引導：{currentContext.guidance}</span>:null}
-          {currentContext?.blessing?<span>每日占卜祝福：{currentContext.blessing}</span>:null}
-          {previous?<>
-            <span>上次抽到「{current.rune_name}」是 {formatDate(previous.record_date)}，方向為 {previous.direction}，當日真實月相為 {previousSituation?.moonPhase||'未知'}。</span>
-            <span>之前的狀況：{previousSituation?.text||'目前沒有對應的狀況形容。'}</span>
-          </>:<span>此前沒有抽到「{current.rune_name}」的紀錄。</span>}
+          <header>
+            <strong>{current.draw_kind==='supplement'?'補抽':'主抽'}｜{current.rune_name}・{current.direction}</strong>
+          </header>
+
+          <div className="loc-context-list">
+            <section className="loc-context-item">
+              <strong>當日狀況</strong>
+              <p>真實月相：{currentContext?.moonPhase||'未知'}。</p>
+              <p>{currentContext?.situation||'目前沒有對應的狀況形容。'}</p>
+            </section>
+
+            {currentContext?.reminder?<section className="loc-context-item">
+              <strong>每日占卜提醒</strong>
+              <p>{currentContext.reminder}</p>
+            </section>:null}
+
+            {currentContext?.guidance?<section className="loc-context-item">
+              <strong>每日占卜引導</strong>
+              <p>{currentContext.guidance}</p>
+            </section>:null}
+
+            {currentContext?.blessing?<section className="loc-context-item">
+              <strong>每日占卜祝福</strong>
+              <p>{currentContext.blessing}</p>
+            </section>:null}
+
+            <section className="loc-context-item">
+              <strong>前次紀錄</strong>
+              {previous?<>
+                <p>上次抽到「{current.rune_name}」是 {formatDate(previous.record_date)}，方向為 {previous.direction}，當日真實月相為 {previousSituation?.moonPhase||'未知'}。</p>
+                <p>之前的狀況：{previousSituation?.text||'目前沒有對應的狀況形容。'}</p>
+              </>:<p>此前沒有抽到「{current.rune_name}」的紀錄。</p>}
+            </section>
+          </div>
         </article>)}
       </div>:null}
     </section>:null}
