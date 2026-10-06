@@ -62,9 +62,7 @@ async function verifyManagedScope(client,scope){
   const metadataColumns=scope.id==='lo3rwang'
     ?'id,period,period_start,period_end,theme,search_able,statistics_able,culture_able,sources,source_counts,media_count,media_counts,updated_at,keyword_min_chars,keyword_min_documents,current_keyword_class_id,keyword_class_share_enabled,keyword_document_count,keyword_meta,staticstime'
     :'id,period,period_start,period_end,theme,search_able,statistics_able,culture_able,sources,source_counts,media_count,media_counts,updated_at';
-  const galaxyColumns=scope.id==='lo3rwang'
-    ?'uid,title,content,source_name,createtime,class_id,group_lists'
-    :'uid,title,content,source_name,createtime';
+  const galaxyColumns='uid,title,content,source_name,createtime,class_id,group_lists';
   await probe(client,scope.metadata,metadataColumns);
   await probe(client,scope.time,'record_id,record_type,resource_id,label,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility,style_tags,style_tag_descriptions');
   await probe(client,scope.galaxy,galaxyColumns);
