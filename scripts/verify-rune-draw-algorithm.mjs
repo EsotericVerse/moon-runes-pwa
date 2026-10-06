@@ -68,9 +68,13 @@ for(const fragment of [
   'export function evaluateSpreadXY',
   'const delta=y-x;',
   'const sum=x+y;',
-  "mode==='5card'",
-  "x:[0,1]",
-  "y:[3,4]"
+  "'4card':{x:[0],variable:[1,2],y:[3]}",
+  "'5card':{x:[0,1],variable:[2],y:[3,4]}",
+  "'6card':{x:[0,1],variable:[2,3],y:[4,5]}",
+  "'7card':{x:[0,1],variable:[2,3,4],y:[5,6]}",
+  "'8card':{x:[0,1,2],variable:[3,4],y:[5,6,7]}",
+  "'9card':{x:[0,1,2],variable:[3,4,5],y:[6,7,8]}",
+  "'10card':{x:[0,1,2,3],variable:[4,5],y:[6,7,8,9]}"
 ])if(!guidance.includes(fragment))throw new Error('Rune x/y guidance missing: '+fragment);
 for(const fragment of ['狀況形容','狀況表達','每日占卜提醒','每日占卜引導','每日占卜祝福'])if(!dailySurface.includes(fragment))throw new Error('Daily moon-aware layer missing: '+fragment);
 for(const fragment of [
