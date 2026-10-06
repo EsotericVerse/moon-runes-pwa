@@ -9,7 +9,7 @@ import {
   Bar,BarChart,CartesianGrid,Cell,Legend,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectScopeDensityRows,selectSourceTrendRows} from '../../loc/galaxy-query';
+import {selectScopeDensityRows,selectScopeStatisticsBounds,selectSourceTrendRows} from '../../loc/galaxy-query';
 import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
 import {selectManagedScopes} from '../../loc/scope-data';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation';
@@ -304,54 +304,112 @@ function StatisticTypeSelect({scopeId,navigation,types}){
   </label>;
 }
 
+function scopeRangeForYearMonth(yearValue,monthValue='all'){
+  const year=Number(yearValue);
+  if(!Number.isInteger(year)||year<1)return {startDate:'',endDate:''};
+  if(monthValue==='all')return {startDate:`${year}-01-01`,endDate:`${year}-12-31`};
+  const month=Number(monthValue);
+  if(!Number.isInteger(month)||month<1||month>12)return {startDate:'',endDate:''};
+  const monthText=String(month).padStart(2,'0');
+  const end=new Date(Date.UTC(year,month,0)).toISOString().slice(0,10);
+  return {startDate:`${year}-${monthText}-01`,endDate:end};
+}
+
 function ScopeGroupStatistics(){
+  const today=useMemo(()=>taipeiDateKey(),[]);
+  const currentYear=Number(today.slice(0,4));
+  const [chartType,setChartType]=useState('line');
+  const [selectedYear,setSelectedYear]=useState(String(currentYear));
+  const [selectedMonth,setSelectedMonth]=useState('all');
   const scopesQuery=useQuery({
     queryKey:['managed-scopes'],
     queryFn:selectManagedScopes,
     staleTime:5*60_000
   });
   const scopes=scopesQuery.data||[];
-  const endDate=useMemo(()=>taipeiDateKey(),[]);
-  const startDate=useMemo(()=>shiftDate(endDate,{months:-12}),[endDate]);
-  const densityQuery=useQuery({
-    queryKey:['scope-density','loc',startDate,endDate],
-    queryFn:()=>selectScopeDensityRows(scopes,{startDate,endDate}),
+  const boundsQuery=useQuery({
+    queryKey:['scope-statistics-bounds','loc'],
+    queryFn:()=>selectScopeStatisticsBounds(scopes),
     enabled:Boolean(scopes.length),
+    staleTime:30*60_000
+  });
+  const yearOptions=useMemo(()=>{
+    const dataStart=String(boundsQuery.data?.startDate||'');
+    const dataEnd=String(boundsQuery.data?.endDate||'');
+    const minYear=Number(dataStart.slice(0,4))||currentYear;
+    const maxYear=Math.max(currentYear,Number(dataEnd.slice(0,4))||currentYear);
+    const output=[];
+    for(let year=maxYear;year>=minYear;year-=1)output.push(year);
+    return output;
+  },[boundsQuery.data,currentYear]);
+  const queryRange=useMemo(()=>scopeRangeForYearMonth(selectedYear,selectedMonth),[selectedYear,selectedMonth]);
+  const densityQuery=useQuery({
+    queryKey:['scope-density','loc',queryRange.startDate,queryRange.endDate],
+    queryFn:()=>selectScopeDensityRows(scopes,queryRange),
+    enabled:Boolean(scopes.length&&queryRange.startDate&&queryRange.endDate),
     staleTime:5*60_000
   });
-  const scopeIds=useMemo(()=>[...new Set((densityQuery.data||[]).map(row=>row.scope_id))].sort(),[densityQuery.data]);
+  const scopeIds=useMemo(()=>scopes.map(scope=>scope.id).filter(Boolean).sort(),[scopes]);
   const totals=useMemo(()=>{
     const map=new Map(scopeIds.map(id=>[id,0]));
     for(const row of densityQuery.data||[])map.set(row.scope_id,(map.get(row.scope_id)||0)+(Number(row.item_count)||0));
     return scopeIds.map(id=>({scope_id:id,total:map.get(id)||0}));
   },[densityQuery.data,scopeIds]);
-  const monthly=useMemo(()=>{
+  const timeline=useMemo(()=>{
+    const byMonth=selectedMonth==='all';
     const map=new Map();
     for(const row of densityQuery.data||[]){
-      const month=String(row.day||'').slice(0,7);
-      if(!month)continue;
-      if(!map.has(month))map.set(month,{period:month});
-      const item=map.get(month);
+      const key=String(row.day||'').slice(0,byMonth?7:10);
+      if(!key)continue;
+      if(!map.has(key))map.set(key,{period:byMonth?key.replace('-','/'):key.slice(5).replace('-','/')});
+      const item=map.get(key);
       item[row.scope_id]=(Number(item[row.scope_id])||0)+(Number(row.item_count)||0);
     }
     return [...map.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([,row])=>row);
-  },[densityQuery.data]);
+  },[densityQuery.data,selectedMonth]);
+  const rangeLabel=queryRange.startDate&&queryRange.endDate?queryRange.startDate+' ～ '+queryRange.endDate:'';
 
   return <section className="scope-stat-section">
+    <header className="scope-stat-domain-heading"><div><h2>{UI_COPY.statistics.result}</h2></div></header>
+    <div className="scope-stat-controls">
+      <label><span>{UI_COPY.statistics.chart}</span><select className="scope-select" value={chartType} onChange={event=>setChartType(event.target.value)}>
+        {CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}
+      </select></label>
+      <label><span>年份</span><select className="scope-select" value={selectedYear} onChange={event=>setSelectedYear(event.target.value)}>
+        {yearOptions.map(year=><option key={year} value={String(year)}>{year}</option>)}
+      </select></label>
+      <label><span>月份</span><select className="scope-select" value={selectedMonth} onChange={event=>setSelectedMonth(event.target.value)}>
+        <option value="all">全年</option>
+        {Array.from({length:12},(_,index)=>index+1).map(month=><option key={month} value={String(month)}>{month} 月</option>)}
+      </select></label>
+    </div>
+    {rangeLabel?<p className="scope-status">{rangeLabel}</p>:null}
     <div className="scope-ranking">
       {totals.map(row=><div key={row.scope_id}><strong>{row.scope_id}</strong><span>{row.total.toLocaleString()}</span></div>)}
     </div>
-    {monthly.length?<ResponsiveContainer width="100%" height={420}>
-      <LineChart data={monthly} margin={{top:8,right:18,bottom:48,left:4}}>
-        <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
-        <XAxis dataKey="period" angle={-24} textAnchor="end" interval="preserveStartEnd" height={72} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
-        <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
-        <Tooltip contentStyle={CHART_TOOLTIP}/>
-        <Legend/>
-        {scopeIds.map((id,index)=><Line key={id} type="monotone" dataKey={id} name={id} stroke={PIE_COLORS[index%PIE_COLORS.length]} strokeWidth={2} dot={false} connectNulls/>)}
-      </LineChart>
-    </ResponsiveContainer>:null}
+    {chartType==='pie'
+      ?totals.some(row=>row.total>0)?<ResponsiveContainer width="100%" height={380}>
+        <PieChart><Tooltip contentStyle={CHART_TOOLTIP}/><Pie data={totals.map(row=>({term:row.scope_id,value:row.total}))} dataKey="value" nameKey="term" cx="50%" cy="50%" outerRadius={140}>
+          {totals.map((row,index)=><Cell key={row.scope_id} fill={PIE_COLORS[index%PIE_COLORS.length]}/>)}
+        </Pie></PieChart>
+      </ResponsiveContainer>:<p className="scope-status">{FEATURE_EMPTY_MESSAGE}</p>
+      :timeline.length?<ResponsiveContainer width="100%" height={420}>
+        {chartType==='bar'?<BarChart data={timeline} margin={{top:8,right:18,bottom:48,left:4}}>
+          <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
+          <XAxis dataKey="period" angle={-24} textAnchor="end" interval="preserveStartEnd" height={72} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+          <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+          <Tooltip contentStyle={CHART_TOOLTIP}/><Legend/>
+          {scopeIds.map((id,index)=><Bar key={id} dataKey={id} name={id} fill={PIE_COLORS[index%PIE_COLORS.length]}/>)}
+        </BarChart>:<LineChart data={timeline} margin={{top:8,right:18,bottom:48,left:4}}>
+          <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
+          <XAxis dataKey="period" angle={-24} textAnchor="end" interval="preserveStartEnd" height={72} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+          <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+          <Tooltip contentStyle={CHART_TOOLTIP}/><Legend/>
+          {scopeIds.map((id,index)=><Line key={id} type="monotone" dataKey={id} name={id} stroke={PIE_COLORS[index%PIE_COLORS.length]} strokeWidth={2} dot={false} connectNulls/>)}
+        </LineChart>}
+      </ResponsiveContainer>:<p className="scope-status">{FEATURE_EMPTY_MESSAGE}</p>}
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
+    {boundsQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(boundsQuery.error)}</p>:null}
     {densityQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(densityQuery.error)}</p>:null}
   </section>;
 }
