@@ -90,6 +90,7 @@ if(!failures.length){
   if(!rune66Analysis.includes("silver.lo3rwang_keywords")||rune66Analysis.includes('lo3rwang_style'))failures.push('Rune66 data loader must use the unified keyword library table');
   if(/silver\.runes(?:_etc)?\b/.test(rune66Analysis))failures.push('Rune66 keyword classification must not depend on LunaRunes Canon tables');
   for(const token of ['class_name','class_group','class_enable'])if(!rune66Analysis.includes(token))failures.push('Rune66 keyword loader missing independent keyword metadata '+token);
+  if(rune66Engine.includes('fallbackGroup'))failures.push('Unresolved Class ties must not be forced into Special or any fallback Class');
   for(const token of ['classifyRune66Documents'])if(!rune66Engine.includes(token))failures.push('Rune66 keyword engine missing classifier '+token);
   for(const token of ['class_group','class_enable','item_no','item_name','principle','keywords'])if(!rune66Engine.includes(token))failures.push('Rune66 unified keyword item model missing '+token);
   if(rune66Engine.includes('keyword_group')||rune66Engine.includes("node_type==='style'")||rune66Engine.includes("node_type==='keyword'"))failures.push('Rune66 engine must not restore style/rule/node-type keyword storage');
@@ -97,7 +98,7 @@ if(!failures.length){
   const culture=read('app/modular/features/Culture.jsx');
   const queryContract=read('app/loc/query-contract.mjs');
   if(!queryContract.includes('DB_QUERY_BATCH_SIZE=1000'))failures.push('Portable Data API batch size must remain 1000.');
-  for(const token of ['ScopeGroupStatistics','selectScopeDensityRows(scopes,{startDate,endDate})',"shiftDate(endDate,{months:-12})",'ScopeStatisticsPanel','statisticsQueryRange','selectSourceTrendRows(targetScopes,queryRange)'])if(!statistics.includes(token))failures.push('Statistics query-window contract missing '+token);
+  for(const token of ['ScopeGroupStatistics','selectScopeStatisticsBounds','scopeRangeForYearMonth','年份','月份','CHART_TYPES','selectScopeDensityRows(scopes,queryRange)','ScopeStatisticsPanel','statisticsQueryRange','selectSourceTrendRows(targetScopes,queryRange)'])if(!statistics.includes(token))failures.push('Statistics query-window contract missing '+token);
   if(statistics.includes("?{startDate:customFrom,endDate:customTo}\n    :{startDate:'',endDate:''}"))failures.push('Preset Statistics ranges must not fall back to an unbounded database query.');
   if(galaxy.includes("{column:'source_name',operator:'neq',value:''}"))failures.push('Unknown source rows must reach Statistics and map to Others instead of being discarded.');
   for(const token of ['表現風格','Class｜符文群組','Group｜符文排行'])if(!statistics.includes(token))failures.push('Statistics style-filter presentation missing '+token);
