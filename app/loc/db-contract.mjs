@@ -73,6 +73,18 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return {count:affected};
   }
 
+  async function readKeywordClass(scopeId,classId){
+    const scope=String(scopeId||'').trim().toLowerCase();
+    const id=String(classId||'').trim();
+    if(!scope||!id)return null;
+    const {data,error}=await publicClient.schema('api').rpc('read_keyword_class',{
+      p_scope_id:scope,
+      p_class_id:id
+    });
+    if(error)throw new Error(error.message||'Keyword Class read failed');
+    return data;
+  }
+
   async function writeKeywordLibraryItem(operation,item={}){
     const op=String(operation||'').trim().toLowerCase();
     if(!['insert','update','delete'].includes(op))throw new Error('Unsupported keyword library operation');
@@ -198,5 +210,5 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
-  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,writeKeywordLibraryItem,copyKeywordLibraryClass,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
+  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,writeKeywordLibraryItem,copyKeywordLibraryClass,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
 }
