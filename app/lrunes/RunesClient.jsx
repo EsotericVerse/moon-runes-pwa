@@ -2,6 +2,7 @@ import {scopeOrigin} from '../modular/scope-registry';
 import {RUNE_CUSTOM_DRAW_MODES} from './rune-draw-modes.mjs';
 import CustomDrawSelector from './CustomDrawSelector';
 import RuneIntroSection from './RuneIntroSection';
+import runesHeroAsset from '../../pics/LunaRunes-hero.jpg';
 
 const runeHref=path=>{
   const clean=String(path||'').split('/').filter(Boolean).join('/');
@@ -10,8 +11,17 @@ const runeHref=path=>{
 
 export default function RunesClient(){
   return <main className="loc-next-main"><section className="loc-view">
-    <header className="loc-hero scope-home-hero-with-visual" id="intro">
-      <div className="scope-home-hero-copy">
+    <header className="loc-hero runes-home-hero" id="intro">
+      <img
+        className="runes-home-hero-image"
+        src={runesHeroAsset.src}
+        alt=""
+        aria-hidden="true"
+        loading="eager"
+        decoding="async"
+      />
+      <div className="runes-home-hero-overlay" aria-hidden="true"/>
+      <div className="runes-home-hero-copy">
         <p className="loc-eyebrow">LunaRunes</p>
         <div className="home-title-row">
           <h1>月之符文</h1>
@@ -25,9 +35,6 @@ export default function RunesClient(){
           <a className="loc-button" href={runeHref('duel/daily')}>每日符文</a>
         </div>
       </div>
-      <figure className="home-hero-visual scope-home-hero-visual">
-        <iframe src="https://www.instagram.com/reel/DMA-ZxLTINw/embed" title="月之符文說明" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" />
-      </figure>
     </header>
 
     <nav className="runes-home-nav" aria-label="月之符文功能">
