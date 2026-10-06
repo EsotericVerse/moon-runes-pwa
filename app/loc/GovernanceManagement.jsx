@@ -41,7 +41,7 @@ function LivePreview({scopeId}){
       <a className="loc-button" href={home} target="_blank" rel="noreferrer">開啟首頁</a>
       <a className="loc-button" href={governance} target="_blank" rel="noreferrer">開啟治理頁</a>
     </div>
-    <div className="scope-management-preview"><iframe src={home} title={getScope(scopeId).label+' 公開首頁預覽'}/></div>
+    <div className="scope-management-preview"><iframe src={home} title={getScope(scopeId).label+' 公開首頁預覽'} loading="lazy"/></div>
   </section>;
 }
 
