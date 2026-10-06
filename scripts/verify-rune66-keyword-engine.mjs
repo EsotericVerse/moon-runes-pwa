@@ -6,9 +6,13 @@ const structureRows=[
   {rune_id:7,rune_name:'鏡',group_name:'靈魂'},
   {rune_id:26,rune_name:'花',group_name:'自然'},
   {rune_id:36,rune_name:'地',group_name:'礦物'},
+  {rune_id:41,rune_name:'光',group_name:'元素'},
   {rune_id:43,rune_name:'水',group_name:'元素'},
   {rune_id:46,rune_name:'土',group_name:'元素'},
   {rune_id:48,rune_name:'氣',group_name:'元素'},
+  {rune_id:49,rune_name:'日',group_name:'秩序'},
+  {rune_id:50,rune_name:'月',group_name:'秩序'},
+  {rune_id:52,rune_name:'時',group_name:'秩序'},
   {rune_id:55,rune_name:'空',group_name:'空間'},
   {rune_id:60,rune_name:'夢',group_name:'無序'},
   {rune_id:61,rune_name:'幻',group_name:'無序'}
@@ -29,6 +33,8 @@ byItem.get(2).keywords=['意識','意識TO魂、潛意識TO夢'];
 byItem.get(43).keywords=['水土AND地'];
 byItem.get(46).keywords=['水土TO地'];
 byItem.get(48).keywords=['空氣TO氣'];
+byItem.get(49).keywords=['日光TO光','日月TO時'];
+byItem.get(50).keywords=['日月TO時'];
 byItem.get(26).keywords=['花枝NAME、花枝招展TO花'];
 byItem.get(7).keywords=['鏡花水月AND幻'];
 
@@ -42,7 +48,11 @@ const rows=[
   {key:'g',title:'',content:'魂'},
   {key:'h',title:'',content:'天空'},
   {key:'i',title:'',content:'空間'},
-  {key:'j',title:'',content:'空氣'}
+  {key:'j',title:'',content:'空氣'},
+  {key:'k',title:'',content:'日光'},
+  {key:'l',title:'',content:'日月'},
+  {key:'m',title:'',content:'日常'},
+  {key:'n',title:'',content:'月蝕'}
 ];
 
 const result=classifyRune66Documents(rows,catalogRows,structureRows);
@@ -70,8 +80,15 @@ assert.ok(byKey.get('f').tied_groups.includes('靈魂')&&byKey.get('f').tied_gro
 assert.equal(runeMap(byKey.get('g')).get('魂'),1,'Rune display name must be an implicit literal keyword');
 assert.equal(runeMap(byKey.get('h')).get('空'),1,'suffix literal 天空 must match 空');
 assert.equal(runeMap(byKey.get('i')).get('空'),1,'prefix literal 空間 must match 空');
-assert.equal(runeMap(byKey.get('j')).has('空'),false,'compound 空氣 TO 氣 must mask 空 literal attribution');
-assert.equal(runeMap(byKey.get('j')).get('氣'),1,'compound 空氣 TO 氣 must attribute 氣');
+assert.equal(runeMap(byKey.get('j')).get('空'),1,'non-day/moon Rune names must keep normal literal matching inside compounds');
+assert.equal(runeMap(byKey.get('j')).get('氣'),2,'空氣 must keep 氣 literal hit and explicit TO attribution as separate configured signals');
+assert.equal(runeMap(byKey.get('k')).has('日'),false,'日光 must resolve the 日 exception before 日 literal matching');
+assert.equal(runeMap(byKey.get('k')).get('光'),1,'日光 must TO 光');
+assert.equal(runeMap(byKey.get('l')).has('日'),false,'日月 must not fall through to 日');
+assert.equal(runeMap(byKey.get('l')).has('月'),false,'日月 must not fall through to 月');
+assert.equal(runeMap(byKey.get('l')).get('時'),1,'日月 must TO 時');
+assert.equal(runeMap(byKey.get('m')).get('日'),1,'ordinary 日 keyword text must still match 日');
+assert.equal(runeMap(byKey.get('n')).get('月'),1,'ordinary 月 keyword text must still match 月');
 
 assert.equal(result.documentCount,rows.length);
 assert.equal(result.unclassifiedCount,1,'NAME-only sample should remain unclassified');
