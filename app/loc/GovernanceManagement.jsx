@@ -82,7 +82,7 @@ export default function GovernanceManagement(){
   </section>;
 
   return <section className="loc-view scope-management-page">
-    <header className="loc-hero">
+    <header className="loc-hero loc-hero-context">
       <p className="loc-eyebrow">{UI_COPY.management.eyebrow} · {scopeId}</p>
       <h1>{scope.label}{scopeId==='loc'?' Scope Group':''}管理</h1>
       <p>{account.user.email||account.user.name||''}</p>
