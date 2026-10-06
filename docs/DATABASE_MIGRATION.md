@@ -6,6 +6,13 @@ The runtime target is Supabase PostgreSQL. Application queries pass through a da
 
 This is PostgreSQL-to-PostgreSQL portability. Feature code uses the shared client/query boundary; vendor SDK imports are restricted to `app/loc/providers/` and checked by `npm run verify:db-adapters`. The provider contract covers schema/table reads, filters, OR filters, ordering, exact counts, ranges, authenticated CRUD, keyword writes, management writes and account sessions.
 
+
+Public-read continuity is a default portability capability. Supabase is the primary public data source and Neon is the backup public data source. Anonymous public SELECTs automatically retry against Neon when the primary read fails. Authenticated writes, management operations and account actions never fail over automatically. The UI must always disclose both sources and must label backup reads as 備援資料 because the two PostgreSQL copies can have synchronization delay.
+
+A single paged read chain is pinned to one source after its first successful page so a result set never mixes Supabase and Neon rows. A new query starts by trying the primary source again.
+
+Public feature queries may rely only on the common Data API contract: SELECT, filters, ordering, exact count and range pagination. Optional PostgREST grouped aggregate features are not part of the portable contract and must not be required by Search, Statistics, Culture or other public features.
+
 For Google Cloud SQL PostgreSQL, keep pages and features unchanged: provide a secure Data API gateway that implements this contract, add one adapter under `app/loc/providers/`, and register it in `configured.mjs`. Do not connect a browser directly to Cloud SQL or expose database credentials. If the gateway speaks PostgREST, the existing generic adapter can be configured.
 
 Moving to a database without the PostgreSQL/PostgREST contract requires translating the same adapter contract and schema. The checked-in schema generator emits PostgreSQL DDL; MySQL and SQLite are not configuration-only targets.

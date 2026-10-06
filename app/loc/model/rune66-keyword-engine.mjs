@@ -1,9 +1,12 @@
 'use client';
 
-import {createTextIndex,normalizeIndexedText,searchTextIndex} from '../text-engine.mjs';
 import {parseRuneKeywordRuleSentence} from './rune-keyword-rules.mjs';
 
 const RUNE66_GROUP='符文66';
+
+function normalizeText(value){
+  return String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').trim();
+}
 
 function compareRank(a,b){
   return Number(b.count||0)-Number(a.count||0)
@@ -129,7 +132,7 @@ function increment(state,rune,signal){
 function buildMaskedTextGetter(normalizedTexts,rune){
   const sources=[...new Set(rune.rules
     .filter(rule=>rule.operator==='TO'||rule.operator==='NAME')
-    .map(rule=>normalizeIndexedText(rule.source))
+    .map(rule=>normalizeText(rule.source))
     .filter(Boolean))]
     .sort((a,b)=>b.length-a.length);
   if(!sources.length)return index=>normalizedTexts[index]||'';
@@ -159,9 +162,7 @@ export function classifyRune66Documents(documents=[],catalogRows=[],structureRow
     unsupportedRules:[]
   };
 
-  const engine=createTextIndex();
-  const normalizedTexts=source.map(row=>normalizeIndexedText(textOf(row)));
-  normalizedTexts.forEach((text,index)=>engine.add(String(index),text));
+  const normalizedTexts=source.map(row=>normalizeText(textOf(row)));
 
   const states=source.map(()=>createState());
   const runeById=new Map(runes.map(rune=>[rune.runeId,rune]));
@@ -171,18 +172,15 @@ export function classifyRune66Documents(documents=[],catalogRows=[],structureRow
     const maskedText=buildMaskedTextGetter(normalizedTexts,rune);
     const ruleTexts=normalizedTexts.slice();
     const orderedRules=[...rune.rules].sort((a,b)=>
-      normalizeIndexedText(b.source).length-normalizeIndexedText(a.source).length
+      normalizeText(b.source).length-normalizeText(a.source).length
       ||String(a.token||'').localeCompare(String(b.token||''))
     );
 
     for(const keyword of rune.keywords){
-      const normalizedKeyword=normalizeIndexedText(keyword);
+      const normalizedKeyword=normalizeText(keyword);
       if(!normalizedKeyword)continue;
-      const result=searchTextIndex(engine,keyword,{limit:engine.size});
-      for(const rawId of result.ids){
-        const index=Number(rawId);
-        if(!Number.isInteger(index)||!states[index])continue;
-        if(!maskedText(index).includes(normalizedKeyword))continue;
+      for(let index=0;index<normalizedTexts.length;index+=1){
+        if(!states[index]||!maskedText(index).includes(normalizedKeyword))continue;
         increment(states[index],rune,'keyword:'+normalizedKeyword);
       }
     }
@@ -192,18 +190,16 @@ export function classifyRune66Documents(documents=[],catalogRows=[],structureRow
         unsupportedRules.push({rune_id:rune.runeId,rune:rune.label,rule:rule.token});
         continue;
       }
-      const ruleSource=normalizeIndexedText(rule.source);
+      const ruleSource=normalizeText(rule.source);
       if(!ruleSource)continue;
-      const result=searchTextIndex(engine,rule.source,{limit:engine.size});
       const targetId=rule.operator==='NAME'?null:nameToRune.get(String(rule.target||'').trim());
       const target=targetId?runeById.get(Number(targetId)):null;
       if(rule.operator!=='NAME'&&!target){
         unsupportedRules.push({rune_id:rune.runeId,rune:rune.label,rule:rule.token});
         continue;
       }
-      for(const rawId of result.ids){
-        const index=Number(rawId);
-        if(!Number.isInteger(index)||!states[index])continue;
+      for(let index=0;index<normalizedTexts.length;index+=1){
+        if(!states[index])continue;
         const remaining=ruleTexts[index]||'';
         if(!remaining.includes(ruleSource))continue;
 

@@ -3,7 +3,7 @@
 import {DB_QUERY_BATCH_SIZE} from './query-contract.mjs';
 import {DEFAULT_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
 import {publicContentFilters} from './content-policy';
-import {applyFilters,applyOrders,dbPublicRelation,selectAllRows,selectRows} from './db-query.mjs';
+import {applyFilters,applyOrders,executePublicRead,selectAllRows,selectRows} from './db-query.mjs';
 
 function unique(values=[]){
   return [...new Set(values.map(value=>String(value||'').trim()).filter(Boolean))];
@@ -22,6 +22,33 @@ async function selectRowById(table,{idColumn,id,columns}={}){
   const page=await selectRows(table,{columns,filters:[{column:idColumn,operator:'eq',value:String(id)}],limit:1});
   return page.rows[0]||null;
 }
+function countBy(rows,keyOf){
+  const counts=new Map();
+  for(const row of Array.isArray(rows)?rows:[]){
+    const key=keyOf(row);
+    if(!key)continue;
+    counts.set(key,(counts.get(key)||0)+1);
+  }
+  return counts;
+}
+function categoryCountRows(rows,column,{limit=Infinity}={}){
+  return [...countBy(rows,row=>String(row?.[column]||'').trim()).entries()]
+    .map(([term,item_count])=>({term,item_count}))
+    .sort((a,b)=>b.item_count-a.item_count||a.term.localeCompare(b.term))
+    .slice(0,limit);
+}
+function dailyCountRows(rows,column,{includeEmpty=false,includeUndated=false}={}){
+  const counts=countBy(rows,row=>{
+    const category=String(row?.[column]||'').trim();
+    const day=String(row?.createtime||'').slice(0,10);
+    if((!includeEmpty&&!category)||(!includeUndated&&!day))return '';
+    return day+'\u0000'+category;
+  });
+  return [...counts.entries()].map(([key,item_count])=>{
+    const split=key.indexOf('\u0000');
+    return {day:key.slice(0,split),category:key.slice(split+1),item_count};
+  }).sort((a,b)=>a.day.localeCompare(b.day)||a.category.localeCompare(b.category));
+}
 
 export async function selectSourceCatalog(scope,{startDate='',endDate='',limit=20}={}){
   const current=scopeOf(scope);
@@ -31,19 +58,15 @@ export async function selectSourceCatalog(scope,{startDate='',endDate='',limit=2
     {column:'source_name',operator:'neq',value:''}
   ]);
   const safeLimit=Math.max(1,Math.min(DB_QUERY_BATCH_SIZE,Math.floor(Number(limit)||20)));
-  const {rows}=await selectRows(current.galaxy,{
-    columns:'source_name,item_count:count()',
-    filters,
-    orders:[{column:'source_name',ascending:true}],
-    limit:safeLimit,
-    offset:0
-  });
-  const normalized=rows.map(row=>({
+  const rows=(await selectAllRows(current.galaxy,{
+    columns:'source_name',
+    filters
+  })).rows;
+  const normalized=categoryCountRows(rows,'source_name',{limit:safeLimit}).map(row=>({
     scope_id:current.id,
-    source_name:String(row.source_name||'').trim(),
-    item_count:Number(row.item_count)||0
-  })).filter(row=>row.source_name)
-    .sort((a,b)=>b.item_count-a.item_count||a.source_name.localeCompare(b.source_name));
+    source_name:row.term,
+    item_count:row.item_count
+  }));
   return {rows:normalized,totalCount:normalized.length};
 }
 
@@ -55,15 +78,15 @@ export async function selectSourceDaily(scope,{startDate='',endDate=''}={}){
     {column:'source_name',operator:'neq',value:''}
   ]);
   const rows=(await selectAllRows(current.galaxy,{
-    columns:'source_name,day:createtime::date,item_count:count()',
+    columns:'source_name,createtime',
     filters
   })).rows;
-  return rows.map(row=>({
+  return dailyCountRows(rows,'source_name').map(row=>({
     scope_id:current.id,
-    source_name:String(row.source_name||'').trim(),
-    day:String(row.day||''),
-    item_count:Number(row.item_count)||0
-  })).sort((a,b)=>a.day.localeCompare(b.day)||a.source_name.localeCompare(b.source_name));
+    source_name:row.category,
+    day:row.day,
+    item_count:row.item_count
+  }));
 }
 
 export async function selectDailyCategoryCounts(table,categoryColumn,{startDate='',endDate='',filters=[],includeEmpty=false,includeUndated=false}={}){
@@ -73,15 +96,10 @@ export async function selectDailyCategoryCounts(table,categoryColumn,{startDate=
     ...(!includeEmpty?[{column:categoryColumn,operator:'neq',value:''}]:[])
   ];
   const rows=(await selectAllRows(table,{
-    columns:`${categoryColumn},day:createtime::date,item_count:count()`,
+    columns:`${categoryColumn},createtime`,
     filters:resolved
   })).rows;
-  return rows.map(row=>({
-    category:String(row?.[categoryColumn]||'').trim(),
-    day:String(row.day||''),
-    item_count:Number(row.item_count)||0
-  })).filter(row=>(includeUndated||row.day)&&(includeEmpty||row.category))
-    .sort((a,b)=>a.day.localeCompare(b.day)||a.category.localeCompare(b.category));
+  return dailyCountRows(rows,categoryColumn,{includeEmpty,includeUndated});
 }
 
 export async function selectCategoryCounts(table,categoryColumn,{startDate='',endDate='',filters=[],limit=20}={}){
@@ -91,18 +109,11 @@ export async function selectCategoryCounts(table,categoryColumn,{startDate='',en
     {column:categoryColumn,operator:'neq',value:''}
   ];
   const safeLimit=Math.max(1,Math.min(DB_QUERY_BATCH_SIZE,Math.floor(Number(limit)||20)));
-  const {rows}=await selectRows(table,{
-    columns:`${categoryColumn},item_count:count()`,
-    filters:resolved,
-    orders:[{column:categoryColumn,ascending:true}],
-    limit:safeLimit,
-    offset:0
-  });
-  return rows.map(row=>({
-    term:String(row?.[categoryColumn]||'').trim(),
-    item_count:Number(row.item_count)||0
-  })).filter(row=>row.term)
-    .sort((a,b)=>b.item_count-a.item_count||a.term.localeCompare(b.term));
+  const rows=(await selectAllRows(table,{
+    columns:categoryColumn,
+    filters:resolved
+  })).rows;
+  return categoryCountRows(rows,categoryColumn,{limit:safeLimit});
 }
 
 function mediaIdsOf(value){
@@ -199,31 +210,32 @@ function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filte
   const pageSize=Math.max(1,Math.floor(Number(batchSize)||DEFAULT_LIST_BATCH_SIZE));
   return Object.freeze({
     id,table,source,scope,idColumn,columns:outputColumns,searchFields:frozenFields,filters:frozenFilters,
-    async search(query,{cursor=0,startDate='',endDate='',and=[],nor=[]}={}){
+    async search(query,{cursor=0,startDate='',endDate='',and=[],nor=[],source='auto'}={}){
       const offset=Math.max(0,Math.floor(Number(cursor)||0));
       const activeTable=table;
       const activeFilters=[...frozenFilters,...dateSearchFilters(dateColumn,startDate,endDate)];
       const orders=dateColumn?[{column:dateColumn,ascending:false},{column:idColumn,ascending:true}]:[{column:idColumn,ascending:true}];
 
-      let countQuery=dbPublicRelation(activeTable).select(idColumn,{count:'exact',head:true});
-      countQuery=applyFilters(countQuery,activeFilters);
-      countQuery=applyLiteralTerms(countQuery,frozenFields,query,and,nor);
-      const {error:countError,count}=await countQuery;
-      if(countError)throw new Error(countError.message||('DB COUNT '+activeTable+' failed'));
-      const totalCount=Number(count)||0;
-      if(!totalCount||offset>=totalCount)return {rows:[],hasMore:false,nextCursor:null,totalCount};
+      const countResult=await executePublicRead(activeTable,relation=>{
+        let countQuery=relation.select(idColumn,{count:'exact',head:true});
+        countQuery=applyFilters(countQuery,activeFilters);
+        return applyLiteralTerms(countQuery,frozenFields,query,and,nor);
+      },{source});
+      const totalCount=Number(countResult.count)||0;
+      const dataSource=countResult.__dataSource||source||'auto';
+      if(!totalCount||offset>=totalCount)return {rows:[],hasMore:false,nextCursor:null,totalCount,dataSource};
 
-      let dataQuery=dbPublicRelation(activeTable).select(outputColumns.join(','));
-      dataQuery=applyFilters(dataQuery,activeFilters);
-      dataQuery=applyLiteralTerms(dataQuery,frozenFields,query,and,nor);
-      dataQuery=applyOrders(dataQuery,orders);
-      dataQuery=dataQuery.range(offset,offset+pageSize-1);
-      const {data,error}=await dataQuery;
-      if(error)throw new Error(error.message||('DB SELECT '+activeTable+' failed'));
-      const rows=(data||[]).map(row=>recordFor(row,source,id,scope,activeTable));
+      const dataResult=await executePublicRead(activeTable,relation=>{
+        let dataQuery=relation.select(outputColumns.join(','));
+        dataQuery=applyFilters(dataQuery,activeFilters);
+        dataQuery=applyLiteralTerms(dataQuery,frozenFields,query,and,nor);
+        dataQuery=applyOrders(dataQuery,orders);
+        return dataQuery.range(offset,offset+pageSize-1);
+      },{source:dataSource});
+      const rows=(dataResult.data||[]).map(row=>recordFor(row,source,id,scope,activeTable));
       const nextOffset=offset+rows.length;
       const hasMore=nextOffset<totalCount;
-      return {rows,hasMore,nextCursor:hasMore?nextOffset:null,totalCount};
+      return {rows,hasMore,nextCursor:hasMore?nextOffset:null,totalCount,dataSource};
     }
   });
 }
@@ -283,15 +295,15 @@ export async function searchGalaxyRows(scopes,query,{
   const provider=providers[stage-1];
   if(!provider)return {rows:[],failures,hasMore:false,nextCursor:null};
   try{
-    const result=await provider.search(q,{cursor:sourceOffset,startDate,endDate,and,nor,limit:safeLimit});
-    if(result.hasMore)return {rows:result.rows||[],failures,hasMore:true,nextCursor:{stage,offset:result.nextCursor}};
+    const result=await provider.search(q,{cursor:sourceOffset,startDate,endDate,and,nor,limit:safeLimit,source:cursor?.source||'auto'});
+    if(result.hasMore)return {rows:result.rows||[],failures,hasMore:true,nextCursor:{stage,offset:result.nextCursor,source:result.dataSource||cursor?.source||'auto'}};
     const hasMore=stage<providers.length;
-    return {rows:result.rows||[],failures,hasMore,nextCursor:hasMore?{stage:stage+1,offset:0}:null};
+    return {rows:result.rows||[],failures,hasMore,nextCursor:hasMore?{stage:stage+1,offset:0,source:'auto'}:null};
   }catch(error){
     failures.push(new Error(`${provider.id}: ${error?.message||'search failed'}`));
     const hasMore=stage<providers.length;
     if(!hasMore)throw new AggregateError(failures,'資料搜尋 Provider 無法查詢');
-    return {rows:[],failures,hasMore:true,nextCursor:{stage:stage+1,offset:0}};
+    return {rows:[],failures,hasMore:true,nextCursor:{stage:stage+1,offset:0,source:'auto'}};
   }
 }
 

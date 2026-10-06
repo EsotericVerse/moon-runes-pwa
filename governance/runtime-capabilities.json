@@ -1,34 +1,31 @@
 {
   "version": 2,
-  "updated_at": "2026-10-05",
+  "updated_at": "2026-10-06",
   "purpose": "Machine-readable Current runtime capability governance. This registry governs implementation rights only; it is not a corpus, route, Scope mapping, permission or Canon data authority.",
   "capabilities": {
-    "flexsearch_uid_cache_table": {
-      "status": "optional",
-      "owner": "FlexSearch lexical/keyword workflows",
-      "right": "FlexSearch may be used only for measured, small, already narrowed local lexical workloads. A persistent UID cache is optional and must not be introduced solely to preserve an engine.",
-      "authority": false,
-      "canonical_content_allowed": false,
-      "allowed_payload": [
-        "uid",
-        "scope_id",
-        "cache_name",
-        "working-set metadata"
-      ],
-      "must_not_be_removed_as_duplicate_authority": false,
-      "removal_requires_explicit_governance_change": false,
-      "notes": "Prefer fixed database eligibility flags, numeric summaries and write-time validation where they reduce repeated corpus reads. Keep an index/cache only when measured performance demonstrates a benefit."
+    "public_read_failover": {
+      "status": "required",
+      "primary_source": "Supabase",
+      "backup_source": "Neon",
+      "read_scope": "anonymous public SELECT only",
+      "automatic_failover": true,
+      "write_failover": false,
+      "ui_source_disclosure_required": true,
+      "backup_staleness_warning_required": true,
+      "page_chain_source_pinning_required": true,
+      "purpose": "Portable read continuity and explicit degraded-mode visibility across PostgreSQL providers."
     },
-    "keyword_operations_flexsearch": {
-      "status": "optional",
-      "owner": "Keyword analysis and classification",
-      "right": "Keyword classification may use FlexSearch or a database-backed numeric summary. Prefer compact fixed filters and validated write-time aggregates when they reduce repeated full-content reads.",
-      "corpus_source": "PostgreSQL",
-      "keyword_engine": "FlexSearch",
-      "precise_search_engine": "PostgreSQL",
-      "database_keyword_matching_allowed": true,
-      "removal_requires_explicit_governance_change": false,
-      "notes": "Full corpus text should not be loaded repeatedly for page rendering. Use statistics_able and other fixed eligibility fields before any bounded analysis; migrate expensive recurring aggregates to validated numeric summaries."
+    "provider_neutral_public_queries": {
+      "status": "required",
+      "required_capabilities": [
+        "SELECT",
+        "filters",
+        "ordering",
+        "exact_count",
+        "range_pagination"
+      ],
+      "optional_provider_aggregate_dependency_allowed": false,
+      "purpose": "Public features must not require provider-specific optional PostgREST aggregate settings."
     }
   }
 }

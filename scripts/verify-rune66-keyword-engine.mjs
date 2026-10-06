@@ -80,4 +80,4 @@ assert.equal(runeMap(metadataByKey.get('metadata')).size,0,'media metadata must 
 assert.equal(runeMap(metadataByKey.get('lyrics')).get('魂'),1,'lyrics body remains classifiable');
 assert.equal(runeMap(metadataByKey.get('lyrics')).has('夢'),false,'metadata must not add a Rune to lyrics');
 
-console.log('[rune66-keywords] unified keyword items, FlexSearch attribution and single-pass classification verified');
+console.log('[rune66-keywords] unified keyword items, literal matching and single-pass classification verified');
