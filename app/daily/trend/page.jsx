@@ -3,7 +3,7 @@ import {lunarunesMetadata} from '../../seo/metadata';
 
 export const metadata=lunarunesMetadata({
   title:'每日符文趨勢｜月之符文',
-  description:'依一段時間內的每日抽籤紀錄，觀察符文出現密度與同一符文方向的變化。',
+  description:'比較今日抽到的符文與上一筆相同符文，顯示前次日期、方向與兩次真實月相下的狀況形容。',
   path:'/daily/trend/'
 });
 
