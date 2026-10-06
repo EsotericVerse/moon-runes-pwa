@@ -255,7 +255,7 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false}={
   if(mediaOnly)return [media];
   const timeline=makeProvider({
     id:current.id+':timeline',table:current.time,source:current.id+' 時期',scope:current,idColumn:'record_id',
-    columns:['record_id','record_type','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility','style_tags'],
+    columns:['record_id','record_type','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility','style_tags','style_tag_descriptions'],
     searchFields:['label','note','status','style_tags'],dateColumn:'time_date',
     filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}]
   });
@@ -265,13 +265,54 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false}={
 function normalizeSearch(value){
   return String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
 }
-function scopeCards(query,scopes=[]){
-  const q=normalizeSearch(query);
-  if(!q)return [];
-  return scopes.flatMap(scope=>{
-    const id=String(scope?.id||'').trim();
-    if(!id||!normalizeSearch(id).includes(q))return [];
-    return [{row:{scope_card:true,scope_id:id,title:id,search_terms:id,summary:''},source:'Scope',providerId:'scope-card'}];
+function styleTagList(value){
+  return [...new Set(String(value||'').split(/[,，]/g).map(item=>String(item||'').trim()).filter(Boolean))];
+}
+function styleTagDescription(value,tag){
+  const source=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+  if(typeof source[tag]==='string'&&source[tag].trim())return source[tag].trim();
+  const normalized=normalizeSearch(tag);
+  for(const [key,description] of Object.entries(source)){
+    if(normalizeSearch(key)===normalized&&typeof description==='string'&&description.trim())return description.trim();
+  }
+  return '';
+}
+
+export async function selectStyleKeywordIntroductions(scopes,query){
+  const token=normalizeSearch(query);
+  if(!token)return [];
+  const scopeList=(Array.isArray(scopes)?scopes:[]).filter(scope=>scope?.id&&scope?.time);
+  const grouped=await Promise.all(scopeList.map(async scope=>{
+    const current=scopeOf(scope);
+    const result=await selectAllRows(current.time,{
+      columns:'record_id,record_type,label,resource_id,display_order,style_tags,style_tag_descriptions',
+      filters:[{column:'record_type',operator:'in',value:['period','event']}],
+      orders:[{column:'display_order',ascending:true},{column:'record_id',ascending:true}]
+    });
+    return (result.rows||[]).flatMap(row=>{
+      const matched=styleTagList(row.style_tags).find(tag=>normalizeSearch(tag)===token);
+      if(!matched)return [];
+      const description=styleTagDescription(row.style_tag_descriptions,matched);
+      if(!description)return [];
+      return [{
+        row:{
+          id:'style-keyword:'+current.id+':'+String(row.record_id||row.resource_id||matched),
+          scope_id:current.id,
+          style_keyword_intro:true,
+          title:matched,
+          summary:description,
+          period_label:String(row.label||'').trim()
+        },
+        source:String(row.label||'').trim()?('風格關鍵詞 · '+String(row.label).trim()):'風格關鍵詞',
+        providerId:current.id+':style-keyword'
+      }];
+    });
+  }));
+  const seen=new Set();
+  return grouped.flat().filter(entry=>{
+    const key=entry.row.scope_id+'|'+normalizeSearch(entry.row.title)+'|'+entry.row.summary;
+    if(seen.has(key))return false;
+    seen.add(key);return true;
   });
 }
 
@@ -284,14 +325,10 @@ export async function searchGalaxyRows(scopes,query,{
   const scopeList=(Array.isArray(scopes)?scopes:[]).filter(scope=>scope?.id);
   const hiddenScopes=new Set((Array.isArray(hiddenScopeIds)?hiddenScopeIds:[]).map(value=>String(value||'').trim()).filter(Boolean));
   const providers=scopeList.flatMap(scope=>genericScopeProviders(scope,{mediaOnly,includeHiddenText:hiddenScopes.has(scope.id)}));
-  const cards=mediaOnly?[]:scopeCards(q,scopeList);
   const failures=[];
 
-  let stage=Number.isInteger(cursor?.stage)?cursor.stage:(cards.length?0:1);
+  let stage=Number.isInteger(cursor?.stage)?cursor.stage:1;
   const sourceOffset=Math.max(0,Math.floor(Number(cursor?.offset)||0));
-  if(stage===0){
-    return {rows:cards,failures,hasMore:providers.length>0,nextCursor:providers.length?{stage:1,offset:0}:null};
-  }
   const provider=providers[stage-1];
   if(!provider)return {rows:[],failures,hasMore:false,nextCursor:null};
   try{
