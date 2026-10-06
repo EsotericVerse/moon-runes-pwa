@@ -19,22 +19,27 @@ function roleLabel(role){
   return role==='supplement'?'補抽':'主抽';
 }
 
-const DIRECTION_SCORE=Object.freeze({
-  '正位':1,
-  '半正位':0.5,
-  '半逆位':-0.5,
-  '逆位':-1
+const DIRECTION_PATH_TEXT=Object.freeze({
+  '正位→正位':'順利的狀態仍在延續。',
+  '正位→半正位':'原本順利，現在稍微放緩，但仍偏向順利。',
+  '正位→半逆位':'原本順利，現在開始出現一些阻力。',
+  '正位→逆位':'原本順利，現在轉為明顯不順。',
+  '半正位→正位':'原本正在轉順，現在已走向順利。',
+  '半正位→半正位':'慢慢變順的狀態仍在延續。',
+  '半正位→半逆位':'原本偏向順利，現在開始轉弱。',
+  '半正位→逆位':'原本偏向順利，現在轉為不順。',
+  '半逆位→正位':'原本有些不順，現在已明顯轉好。',
+  '半逆位→半正位':'原本有些不順，現在正在慢慢變順。',
+  '半逆位→半逆位':'目前的阻力仍在延續。',
+  '半逆位→逆位':'原本已有阻力，現在變得更不順。',
+  '逆位→正位':'原本不順利，現在已轉為順利。',
+  '逆位→半正位':'本來的不順利會慢慢變成順利。',
+  '逆位→半逆位':'原本不順利，現在阻力正在減輕。',
+  '逆位→逆位':'不順利的狀態仍在延續。'
 });
 
 function directionTrend(from,to){
-  const previous=DIRECTION_SCORE[from];
-  const current=DIRECTION_SCORE[to];
-  if(!Number.isFinite(previous)||!Number.isFinite(current))return '方向資料不足，先保留觀察。';
-  if(previous===current)return '前後方向相同，這個狀態仍在延續。';
-  if(previous<0&&current>0)return '本來的不順利會慢慢變成順利。';
-  if(previous>0&&current<0)return '原本較順利的狀態正在轉為不順。';
-  if(current>previous)return '方向正在轉好，狀態比上一次更順。';
-  return '方向正在轉弱，狀態比上一次更不順。';
+  return DIRECTION_PATH_TEXT[`${from}→${to}`]||'方向資料不足，先保留觀察。';
 }
 
 export default function DailyTrendClient(){
