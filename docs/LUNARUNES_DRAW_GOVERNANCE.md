@@ -138,9 +138,15 @@ x／y 只保留為 runtime 的趨勢／統計判定，不改寫 Rune Canon、不
 - card_attr：正面 = +1；中平 = 0；負面 = -1；未知 = 0。
 - direction：正位 = +1；半正位 = +0.5；半逆位 = -0.5；逆位 = -1。
 - 單卡 guidance weight = card_attr × direction。
-- 雙卡：x = card 1；y = card 2。
-- 三卡：x = card 1；card 2 是變數；y = card 3。
-- 五卡：x = cards 1–2 平均；card 3 是變數；y = cards 4–5 平均。
+- 雙卡：1 / 1 → x = card 1；y = card 2。
+- 三卡：1 / 1 / 1 → x = card 1；card 2 是變數；y = card 3。
+- 四卡：1 / 2 / 1 → x = card 1；cards 2–3 是變數；y = card 4。
+- 五卡：2 / 1 / 2 → x = cards 1–2 平均；card 3 是變數；y = cards 4–5 平均。
+- 六卡：2 / 2 / 2 → x = cards 1–2 平均；cards 3–4 是變數；y = cards 5–6 平均。
+- 七卡：2 / 3 / 2 → x = cards 1–2 平均；cards 3–5 是變數；y = cards 6–7 平均。
+- 八卡：3 / 2 / 3 → x = cards 1–3 平均；cards 4–5 是變數；y = cards 6–8 平均。
+- 九卡：3 / 3 / 3 → x = cards 1–3 平均；cards 4–6 是變數；y = cards 7–9 平均。
+- 十卡：4 / 2 / 4 → x = cards 1–4 平均；cards 5–6 是變數；y = cards 7–10 平均。
 - trend = y - x。
 - sum = x + y；overall = sum / 2。
 
