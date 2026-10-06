@@ -1,17 +1,17 @@
 # LOC Current TODO
 
-**Current version:** 0.8.5-RC
+**Current version:** 0.8.5.1-RC
 
-## 0.8.5 RC follow-up verification
+## 0.8.5.1 RC follow-up verification
 
 - [ ] 完成 LunaRunes canonical keyword library 與管理流程。
-- [ ] 修正 Rune66 自身名稱未參與 literal match：例如 `空` 必須可命中 `天空`、`空間` 等包含字串，不可只掃 keywords 陣列。
 - [ ] 確保 LunaRunes keyword／positive_keywords／negative_keywords 不成為一般 Scope fallback。
 - [ ] 完成 LunaRunes Game 規則呈現、互動與最終 UI。
 - [ ] 完成 Governance／Admin management 頁面的最終人工檢查。
 - [ ] 將 public Search／Statistics／Culture availability 接到 Current DB feature flags；management visibility 保持獨立。
 - [ ] 以大型 corpus 進行 Search／Culture／Statistics stress test；維持精準 query + pagination。
 - [ ] 統一 Culture／Statistics／Search incremental loading contract。
+- [ ] Source Refresh：OAuth 後的小量來源更新；先從可用來源逐步接入。
 
 ## 0.9 Scope Group
 
