@@ -3,7 +3,7 @@
 import {UI_COPY} from '../i18n/ui-copy';
 
 import {useMemo,useState} from 'react';
-import {insertRows,dbAuthRelation} from './db-client.mjs';
+import {insertRows,dbAuthRelation,updateRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {createUid8} from './uid';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
@@ -155,6 +155,137 @@ function JsonImport({scopeId}){
     </section>:null}
 
     <button type="button" disabled={busy||!analyzed.valid.length} onClick={run}>{busy?UI_COPY.management.importing:UI_COPY.management.startImport}</button>
+    {status?<p className="scope-status">{status}</p>:null}
+  </div>;
+}
+
+
+function refreshComparable(record={}){
+  return {
+    title:String(record.title||''),
+    content:String(record.content||''),
+    createtime:String(record.createtime||''),
+    source_place:String(record.source_place||''),
+    url:String(record.url||''),
+    searchable:record.searchable!==false,
+    statistics_able:record.statistics_able!==false
+  };
+}
+
+function sameRefreshRecord(current,next){
+  const a=refreshComparable(current),b=refreshComparable(next);
+  return Object.keys(a).every(key=>a[key]===b[key]);
+}
+
+function SourceRefresh({scopeId}){
+  const account=useAccount();
+  const [fileName,setFileName]=useState('');
+  const [rows,setRows]=useState([]);
+  const [source,setSource]=useState('');
+  const [plan,setPlan]=useState(null);
+  const [status,setStatus]=useState('');
+  const [busy,setBusy]=useState(false);
+  if(!account.canManageScopeSync(scopeId))return null;
+
+  async function chooseFile(event){
+    const file=event.target.files?.[0];
+    if(!file)return;
+    setFileName(file.name);setStatus('');setPlan(null);
+    try{
+      const parsed=JSON.parse(await file.text());
+      const list=asRows(parsed);
+      setRows(list.map(row=>({raw:row,import_uid:String(firstValue(row,['uid'])||createUid8()).trim().toUpperCase()})));
+      setSource(sourceSuggestion(file.name));
+      setStatus(`已載入 ${list.length.toLocaleString()} 筆 Refresh payload；先分析差異，不會直接寫入。`);
+    }catch(error){
+      setRows([]);setPlan(null);setStatus('Refresh JSON 解析失敗：'+(error?.message||error));
+    }
+  }
+
+  async function analyze(){
+    const selected=source.trim();
+    if(!selected){setStatus('請先指定來源。');return;}
+    const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,selected));
+    const valid=normalized.filter(item=>item.record&&item.record.source_native_id).map(item=>item.record);
+    const invalid=normalized.length-valid.length;
+    if(!valid.length){setPlan({creates:[],updates:[],unchanged:[],invalid});setStatus('沒有帶 source_native_id 的有效資料。');return;}
+    setBusy(true);setStatus('');
+    try{
+      const galaxy=account.scopeDataFor(scopeId)?.galaxy;
+      if(!galaxy)throw new Error('Scope data 未解析');
+      const existing=[];
+      const ids=[...new Set(valid.map(row=>String(row.source_native_id||'').trim()).filter(Boolean))];
+      for(let offset=0;offset<ids.length;offset+=200){
+        const batch=ids.slice(offset,offset+200);
+        const {data,error}=await dbAuthRelation(galaxy)
+          .select('uid,title,content,createtime,source_native_id,source_place,url,searchable,statistics_able,source_name')
+          .eq('source_name',selected)
+          .in('source_native_id',batch);
+        if(error)throw new Error(error.message||'Source Refresh 既有資料比對失敗。');
+        existing.push(...(data||[]));
+      }
+      const byNative=new Map(existing.map(row=>[String(row.source_native_id||'').trim(),row]));
+      const creates=[],updates=[],unchanged=[];
+      const seen=new Set();
+      for(const record of valid){
+        const nativeId=String(record.source_native_id||'').trim();
+        if(!nativeId||seen.has(nativeId))continue;
+        seen.add(nativeId);
+        const current=byNative.get(nativeId);
+        if(!current){creates.push(record);continue;}
+        const next={...record,uid:current.uid,source_name:selected};
+        if(sameRefreshRecord(current,next))unchanged.push(next);
+        else updates.push(next);
+      }
+      const nextPlan={creates,updates,unchanged,invalid:invalid+(valid.length-seen.size)};
+      setPlan(nextPlan);
+      setStatus(`差異完成：新增 ${creates.length.toLocaleString()}、更新 ${updates.length.toLocaleString()}、不變 ${unchanged.length.toLocaleString()}、略過 ${nextPlan.invalid.toLocaleString()}。`);
+    }catch(error){setPlan(null);setStatus(error?.message||'Source Refresh 分析失敗。');}
+    finally{setBusy(false);}
+  }
+
+  async function applyRefresh(){
+    if(!plan)return;
+    const selected=source.trim();
+    setBusy(true);setStatus('');
+    try{
+      const galaxy=account.scopeDataFor(scopeId)?.galaxy;
+      if(!galaxy)throw new Error('Scope data 未解析');
+      if(plan.creates.length)await insertRows(galaxy,plan.creates);
+      for(const row of plan.updates){
+        await updateRows(galaxy,{
+          title:row.title,
+          content:row.content,
+          createtime:row.createtime,
+          source_place:row.source_place,
+          url:row.url,
+          searchable:row.searchable!==false,
+          statistics_able:row.statistics_able!==false,
+          UpdateTime:new Date().toISOString()
+        },{filters:[{column:'uid',operator:'eq',value:row.uid}]});
+      }
+      setStatus(`Source Refresh 完成：新增 ${plan.creates.length.toLocaleString()}、更新 ${plan.updates.length.toLocaleString()}；不變資料未重寫。`);
+      setPlan(null);setRows([]);setFileName('');
+    }catch(error){setStatus(error?.message||'Source Refresh 寫入失敗。');}
+    finally{setBusy(false);}
+  }
+
+  return <div className="scope-inline-card">
+    <h4>Source Refresh</h4>
+    <p>用 source_name + source_native_id 做增量刷新；只查本次 payload 出現的來源 ID，不掃整張 Galaxy。OAuth 或其他來源取得資料後，都可以轉成同一 JSON payload 進這個流程。</p>
+    <label>Refresh JSON<input type="file" accept=".json,application/json" onChange={chooseFile}/></label>
+    {fileName?<p>檔案：<strong>{fileName}</strong></p>:null}
+    <label>來源<input value={source} onChange={event=>{setSource(event.target.value);setPlan(null)}} placeholder={sourceSuggestion(fileName)}/></label>
+    <div className="scope-tabs">
+      <button type="button" disabled={busy||!rows.length} onClick={analyze}>{busy?'分析中…':'分析差異'}</button>
+      <button type="button" disabled={busy||!plan||(!plan.creates.length&&!plan.updates.length)} onClick={applyRefresh}>套用 Refresh</button>
+    </div>
+    {plan?<div className="scope-ranking">
+      <div><strong>新增</strong><span>{plan.creates.length.toLocaleString()}</span></div>
+      <div><strong>更新</strong><span>{plan.updates.length.toLocaleString()}</span></div>
+      <div><strong>不變</strong><span>{plan.unchanged.length.toLocaleString()}</span></div>
+      <div><strong>略過</strong><span>{plan.invalid.toLocaleString()}</span></div>
+    </div>:null}
     {status?<p className="scope-status">{status}</p>:null}
   </div>;
 }
@@ -321,6 +452,7 @@ export default function ManagementImportPanel({scopeId}){
   return <section className="scope-inline-card">
     <h3>{UI_COPY.management.import}</h3>
     <JsonImport scopeId={scopeId}/>
+    <SourceRefresh scopeId={scopeId}/>
     <MediaRecordInsert scopeId={scopeId}/>
     <SunoImport scopeId={scopeId}/>
   </section>;
