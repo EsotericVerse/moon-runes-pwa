@@ -170,8 +170,13 @@ CREATE TABLE "silver"."lo3rwang_keywords" (
   "principle" text DEFAULT ''::text NOT NULL,
   "keywords" jsonb DEFAULT '[]'::jsonb NOT NULL,
   "order_no" integer DEFAULT 0 NOT NULL,
+  "class_name" text NOT NULL,
+  "class_group" text NOT NULL,
+  "class_enable" boolean DEFAULT true NOT NULL,
   CONSTRAINT "lo3rwang_keywords_array_check" CHECK (jsonb_typeof(keywords) = 'array'::text),
   CONSTRAINT "lo3rwang_keywords_group_nonempty" CHECK (length(btrim(group_name)) > 0),
+  CONSTRAINT "lo3rwang_keywords_class_name_nonempty" CHECK (length(btrim(class_name)) > 0),
+  CONSTRAINT "lo3rwang_keywords_class_group_nonempty" CHECK (length(btrim(class_group)) > 0),
   CONSTRAINT "lo3rwang_keywords_item_no_positive" CHECK (item_no > 0),
   CONSTRAINT "lo3rwang_keywords_item_nonempty" CHECK (length(btrim(item_name)) > 0),
   CONSTRAINT "lo3rwang_keywords_pkey" PRIMARY KEY (keyword_id)
@@ -397,6 +402,12 @@ CREATE UNIQUE INDEX lo3rwang_keywords_group_item_name_idx ON silver.lo3rwang_key
 CREATE UNIQUE INDEX lo3rwang_keywords_group_item_no_idx ON silver.lo3rwang_keywords USING btree (group_name, item_no);
 
 CREATE INDEX lo3rwang_keywords_order_idx ON silver.lo3rwang_keywords USING btree (group_name, order_no, item_no);
+
+CREATE UNIQUE INDEX lo3rwang_keywords_class_item_name_idx ON silver.lo3rwang_keywords USING btree (class_name, lower(item_name));
+
+CREATE UNIQUE INDEX lo3rwang_keywords_class_item_no_idx ON silver.lo3rwang_keywords USING btree (class_name, item_no);
+
+CREATE INDEX lo3rwang_keywords_class_group_order_idx ON silver.lo3rwang_keywords USING btree (class_name, class_group, order_no, item_no);
 
 CREATE INDEX lo3rwang_time_date_idx ON silver.lo3rwang_time USING btree (time_date);
 
@@ -743,7 +754,10 @@ CREATE VIEW "api"."lo3rwang_keywords_manage" WITH (check_option=local) AS  SELEC
     item_name,
     principle,
     keywords,
-    order_no
+    order_no,
+    class_name,
+    class_group,
+    class_enable
    FROM silver.lo3rwang_keywords
   WHERE silver.can_manage_scope('lo3rwang'::text);
 
