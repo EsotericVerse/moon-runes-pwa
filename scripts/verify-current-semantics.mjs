@@ -6,7 +6,8 @@ const required=[
   'app/loc/views/AboutView.jsx',
   'app/loc/galaxy-query.js',
   'app/modular/features/Search.jsx',
-  'app/loc/model/daily-trend-engine.mjs',
+  'app/loc/daily-runes.js',
+  'app/daily/trend/DailyTrendClient.jsx',
   'app/loc/scope-data.js',
   'scripts/verify-db-public-read.mjs',
   'governance/runtime-capabilities.json',
@@ -26,8 +27,10 @@ for(const path of required)if(!fs.existsSync(path)||!read(path).trim())failures.
 if(!failures.length){
   const identity=read('app/loc/views/AboutView.jsx');
   for(const token of ['語言架構框架','Language Architecture Framework','符號式語言','Symbolic Language'])if(!identity.includes(token))failures.push('identity missing '+token);
-  const daily=read('app/loc/model/daily-trend-engine.mjs');
-  for(const token of ['summarizeDailyRange','dailyPresetRange'])if(!daily.includes(token))failures.push('daily trend missing '+token);
+  const dailyData=read('app/loc/daily-runes.js');
+  for(const token of ['selectPreviousDailyRuneOccurrence','selectDailyRuneSituation',"type:'sit_q'","column:'current_moon'"])if(!dailyData.includes(token))failures.push('daily trend data missing '+token);
+  const dailyTrend=read('app/daily/trend/DailyTrendClient.jsx');
+  for(const token of ['上一筆相同符文','previousSituation','currentSituation','joinMeaning','語意路徑'])if(!dailyTrend.includes(token))failures.push('daily trend UI missing '+token);
   const galaxy=read('app/loc/galaxy-query.js');
   for(const token of ["count:'exact',head:true",'.or(','.range(','searchGalaxyRows','selectSourceTrendRows'])if(!galaxy.includes(token))failures.push('Shared Galaxy query pipeline missing '+token);
   if(/flexsearch|new Index\(/i.test(galaxy))failures.push('Global Search must remain Database-first.');
@@ -82,4 +85,4 @@ if(failures.length){
   console.error('[current-semantics] failures:\n'+failures.map(item=>'- '+item).join('\n'));
   process.exit(1);
 }
-console.log('[current-semantics] Current identity, daily trend, fixed Statistics eligibility filters, Database-first Search and dependency-free text matching verified');
+console.log('[current-semantics] Current identity, previous-occurrence daily trend, fixed Statistics eligibility filters, Database-first Search and dependency-free text matching verified');
