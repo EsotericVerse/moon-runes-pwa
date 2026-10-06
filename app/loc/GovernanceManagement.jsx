@@ -54,7 +54,7 @@ function sectionOptions(scopeId){
     {value:'period',label:UI_COPY.management.period},
     {value:'preview',label:'公開預覽'}
   ];
-  if(scopeId==='lo3rwang')options.push({value:'keywords',label:'關鍵詞庫'});
+  if(scopeId!=='lrunes')options.push({value:'keywords',label:'關鍵詞庫'});
   if(scopeId==='lrunes')options.push({value:'daily',label:'每日符文管理'});
   return options;
 }
@@ -104,7 +104,7 @@ export default function GovernanceManagement(){
     {section==='article'&&scopeId!=='loc'?<ManagementArticlePublisher scopeId={scopeId}/>:null}
     {section==='import'&&scopeId!=='loc'?<ManagementImportPanel scopeId={scopeId}/>:null}
     {section==='period'&&scopeId!=='loc'?<CultureTimelineEditor scopeId={scopeId}/>:null}
-    {section==='keywords'&&scopeId==='lo3rwang'?<KeywordLibraryPanel/>:null}
+    {section==='keywords'&&scopeId!=='loc'&&scopeId!=='lrunes'?<KeywordLibraryPanel scopeId={scopeId}/>:null}
     {section==='daily'&&scopeId==='lrunes'?<RuneManagementPanel/>:null}
   </section>;
 }
