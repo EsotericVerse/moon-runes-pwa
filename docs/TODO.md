@@ -28,22 +28,22 @@
 
 - [ ] 以大型 corpus 進行 Search／Culture／Statistics stress test；維持精準 query + bounded pagination。
 - [ ] 實際確認 Culture／Search incremental loading 與 Statistics 查詢速度、loading、empty、failure state。
-- [ ] Source Refresh：OAuth 後的小量來源更新；先從可用來源逐步接入。
+- [x] Source Refresh core：以 `source_name + source_native_id` 做 bounded delta preview／新增／更新；OAuth 只作來源 adapter，不改 Refresh contract。
 
 ## 0.9 Scope Group
 
 - [x] Scope Group 成員以 `scope_registry.parent_scope_id` 為 authority；不新增第二套 table resolver。
 - [x] Search／Statistics／Culture 的 Group 頁只做 Registry Overview＋導引；不 fan-out 查詢多 Scope corpus，各 Scope 維持自己的精準 query + pagination。
-- [ ] Audit 對新增 Scope／Scope Group 使用同一 resolver contract，不新增具名 Scope table 清單。
-- [ ] Scope 建立流程採先複製再獨立編輯，確認來源 Scope 不會被個人化修改回寫。
-- [ ] 將可預期的 canonical 更新收斂到網站管理流程；AI 不作為必要 write path。
+- [x] Audit／Runtime 對新增 Scope 使用通用 `/scope/.../?scope=<id>` resolver contract，不新增具名 Scope route/table 清單。
+- [x] Scope 建立流程採先複製再獨立編輯；Rune66 預設 Class 以新 UUID／66 筆獨立複製，不回寫來源 Scope。
+- [x] Scope Registry／Group hierarchy／固定 canonical 更新已收斂到網站 Admin／Manage；AI 不作為必要 write path。
 
 ## 1.0
 
 - [ ] 整合既有來源中的 image multimedia。
 - [ ] 保持 image/media 為 first-class media data，不製造空白 Galaxy text。
 - [ ] 完成 governed import workflow 與來源 provenance。
-- [ ] 驗證普通 Scope extension 不需要新增 bespoke core architecture。
+- [x] 普通 Scope extension 使用固定 DB 五件套＋通用 static shell，不需要新增 bespoke core architecture。
 - [ ] 完成 responsive、loading、failure-state 與 deployment regression。
 - [ ] 讓 Current Canon、README 與 runtime verifier 保持一致。
 
