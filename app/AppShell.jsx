@@ -160,13 +160,13 @@ export default function AppShell({children}){
         })}
       </nav>
     </header>
-    <DataSourceStatus/>
     {children}
     <footer className="scope-footer" data-scope={scopeId}>
       <div className="scope-footer-row">
         <a href="mailto:sopa2306@gmail.com">{UI_COPY.nav.contact}</a>
         <ThemeSelect scopeId={scopeId}/>
       </div>
+      <DataSourceStatus/>
     </footer>
   </QueryClientProvider>;
 }
