@@ -129,14 +129,17 @@ function increment(state,rune,signal){
   }
 }
 
-function maskRuleSources(normalizedTexts,runes){
+function specialRuneKeywordTexts(normalizedTexts,runes,rune){
+  if(rune.label!=='日'&&rune.label!=='月')return normalizedTexts;
+
   const sources=[...new Set(runes
-    .flatMap(rune=>rune.rules)
+    .flatMap(item=>item.rules)
     .filter(rule=>rule.operator==='AND'||rule.operator==='TO'||rule.operator==='NAME')
     .map(rule=>normalizeText(rule.source))
-    .filter(Boolean))]
+    .filter(source=>source&&source.includes(normalizeText(rune.label))))]
     .sort((a,b)=>b.length-a.length);
 
+  if(!sources.length)return normalizedTexts;
   return normalizedTexts.map(source=>{
     let text=source||'';
     for(const ruleSource of sources)text=replaceAllLiteral(text,ruleSource,' ');
@@ -160,13 +163,13 @@ export function classifyRune66Documents(documents=[],catalogRows=[],structureRow
   };
 
   const normalizedTexts=source.map(row=>normalizeText(textOf(row)));
-  const keywordTexts=maskRuleSources(normalizedTexts,runes);
 
   const states=source.map(()=>createState());
   const runeById=new Map(runes.map(rune=>[rune.runeId,rune]));
   const unsupportedRules=[];
 
   for(const rune of runes){
+    const keywordTexts=specialRuneKeywordTexts(normalizedTexts,runes,rune);
     const ruleTexts=normalizedTexts.slice();
     const orderedRules=[...rune.rules].sort((a,b)=>
       normalizeText(b.source).length-normalizeText(a.source).length
