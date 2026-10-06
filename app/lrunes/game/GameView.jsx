@@ -698,6 +698,7 @@ export default function GameView(){
         alt=""
         aria-hidden="true"
         loading="eager"
+        fetchPriority="high"
         decoding="async"
       />
       <div className="game-home-hero-overlay" aria-hidden="true"/>
