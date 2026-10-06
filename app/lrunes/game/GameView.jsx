@@ -691,10 +691,16 @@ export default function GameView(){
   const roundBadge=data.rounds.map(item=>phaseMark(item.phase)).join('-');
 
   if(!state)return <section className="loc-view loc-game game-shell" data-game-theme={gameTheme.id} data-game-scheme={gameTheme.scheme} style={gameThemeStyle}>
-    <header
-      className="loc-hero game-hero game-home-hero"
-      style={{'--game-hero-image':`url("${gameHeroAsset.src}")`}}
-    >
+    <header className="loc-hero game-hero game-home-hero">
+      <img
+        className="game-home-hero-image"
+        src={gameHeroAsset.src}
+        alt=""
+        aria-hidden="true"
+        loading="eager"
+        decoding="async"
+      />
+      <div className="game-home-hero-overlay" aria-hidden="true"/>
       <div className="game-home-hero-copy">
         <p className="loc-eyebrow">LunaRunes · Game</p>
         <h1>月之符文遊戲</h1>

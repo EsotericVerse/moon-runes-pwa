@@ -16,27 +16,34 @@
   overflow:hidden;
   isolation:isolate;
   border:1px solid color-mix(in srgb,var(--loc-accent) 22%,var(--loc-line));
-  background-image:
-    linear-gradient(90deg,rgba(3,6,16,.97) 0%,rgba(3,6,16,.90) 34%,rgba(3,6,16,.58) 58%,rgba(3,6,16,.14) 82%,rgba(3,6,16,.08) 100%),
-    linear-gradient(180deg,rgba(4,8,18,.08) 0%,rgba(4,8,18,.08) 62%,rgba(4,8,18,.54) 100%),
-    var(--game-hero-image);
-  background-position:center,center,center;
-  background-size:auto,auto,cover;
-  background-repeat:no-repeat;
+  background:var(--loc-bg);
   box-shadow:0 24px 80px rgba(0,0,0,.28),inset 0 0 0 1px rgba(255,255,255,.025);
 }
-.game-hero::after{
-  content:"";
+.game-home-hero-image{
   position:absolute;
-  inset:auto 0 0 0;
-  height:38%;
-  z-index:-1;
+  inset:0;
+  z-index:0;
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center;
   pointer-events:none;
-  background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--loc-bg) 32%,transparent));
+  user-select:none;
 }
+.game-home-hero-overlay{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  background:
+    linear-gradient(90deg,rgba(3,6,16,.97) 0%,rgba(3,6,16,.90) 34%,rgba(3,6,16,.58) 58%,rgba(3,6,16,.14) 82%,rgba(3,6,16,.08) 100%),
+    linear-gradient(180deg,rgba(4,8,18,.08) 0%,rgba(4,8,18,.08) 62%,rgba(4,8,18,.54) 100%);
+}
+.game-home-hero::after{content:none!important;display:none!important}
 .game-home-hero-copy{
   position:relative;
-  z-index:1;
+  z-index:2;
   display:grid;
   gap:.85rem;
   width:min(100%,42rem);
@@ -187,7 +194,8 @@
 .game-log p span{color:var(--loc-gold)}
 
 @media(max-width:900px){
-  .game-hero{min-height:460px;background-position:center,center,62% center}
+  .game-hero{min-height:460px}
+  .game-home-hero-image{object-position:62% center}
   .game-home-hero-copy{width:min(100%,38rem)}
   .game-preview-board{grid-template-columns:1fr}
   .game-group-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -200,8 +208,8 @@
     min-height:500px;
     padding:1.25rem;
     align-items:end;
-    background-position:center,center,70% center;
   }
+  .game-home-hero-image{object-position:70% center}
   .game-home-hero-copy{
     width:100%;
     gap:.72rem;
