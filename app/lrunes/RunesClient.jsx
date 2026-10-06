@@ -37,9 +37,7 @@ export default function RunesClient(){
       </div>
     </header>
 
-    <nav className="runes-home-nav" aria-label="月之符文功能">
-      <a className="loc-button" href={runeHref('duel/one')}>單卡抽籤</a>
-      <a className="loc-button" href={runeHref('duel/daily')}>每日符文</a>
+    <nav className="runes-home-nav runes-home-secondary-nav" aria-label="月之符文延伸功能">
       <a className="loc-button" href={runeHref('list')}>符文圖鑑</a>
       <a className="loc-button" href={runeHref('game')}>符文遊戲</a>
       <a className="loc-button" href={runeHref('daily/log')}>每日符文紀錄</a>
@@ -47,7 +45,7 @@ export default function RunesClient(){
 
     <RuneIntroSection />
 
-    <section className="loc-card rune-basics">
+    <section className="loc-card rune-basics runes-reading-flow">
       <h2>基本判讀順序</h2>
       <div className="basic-grid">
         <div className="basic-item"><strong>1. 先看符文本義</strong><span>先確認每張符文最基本的語意，作為整體判讀的核心。</span></div>
@@ -57,7 +55,7 @@ export default function RunesClient(){
       </div>
     </section>
 
-    <section className="loc-card rune-basics">
+    <section className="loc-card rune-basics runes-custom-draw-section">
       <h2>其他張數</h2>
       <CustomDrawSelector options={RUNE_CUSTOM_DRAW_MODES.map(item=>({
         count:item.count,
@@ -66,36 +64,36 @@ export default function RunesClient(){
       }))}/>
     </section>
 
-    <section className="loc-card rune-basics">
+    <section className="loc-card rune-basics runes-review-section">
       <div className="home-section-heading">
         <p className="loc-eyebrow">Reading & Review</p>
         <h2>判讀與回測結果</h2>
       </div>
-      <div className="home-draw-bubbles" aria-label="判讀與回測結果說明">
-        <div className="loc-bubble">
+      <div className="runes-review-grid" aria-label="判讀與回測結果說明">
+        <article className="runes-review-item">
           <strong>天時一直在改變</strong>
           <p>月之符文由於有天時設定（當前月相與卡片月相的交互作用），所以每次的判讀跟回測結果都可能會有差異。這是因為外在的時機一直在改變，符文的解析方式必須跟隨時機而動，才不會有跟不上時代的結果狀況。</p>
-        </div>
-        <div className="loc-bubble">
+        </article>
+        <article className="runes-review-item">
           <strong>符文推演的是可能性</strong>
           <p>而符文只是推演出未來的可能性，將一片完全未知的未來，設定好一個風格濾鏡，方便你作不同解度的切入解析。</p>
-        </div>
-        <div className="loc-bubble">
+        </article>
+        <article className="runes-review-item">
           <strong>命運仍然在你手上</strong>
           <p>命運的掌控始終在你手上。符文並不會替你做下決定，也不會武斷認為一定可以或一定不可以。只是提供一個解析方向，方便你在完全沒有頭緒的迷霧中，慢慢找到適合自己的方式去處理跟面對。</p>
-        </div>
-        <div className="loc-bubble">
+        </article>
+        <article className="runes-review-item">
           <strong>回測不是把結果刷到滿意</strong>
           <p>當然可以一直回測，如果你只是想要回測直到結果滿意，當然可以，但真正的命運並不會讓你滿意。命運即是如此。</p>
-        </div>
-        <div className="loc-bubble">
+        </article>
+        <article className="runes-review-item">
           <strong>符文不替你叫醒自己</strong>
           <p>如果你選擇裝睡不肯醒來，符文也沒有義務要提醒你鬧鐘設定，也不會武斷的叫你放棄或選擇繼續，只是提供一個解析的方式來做參考。</p>
-        </div>
-        <div className="loc-bubble">
+        </article>
+        <article className="runes-review-item">
           <strong>符文不是神秘學權威</strong>
           <p>符文並不是神秘學權威，而你依然擁有自己的人生。這是毫無矛盾的。</p>
-        </div>
+        </article>
       </div>
     </section>
   </section></main>;
