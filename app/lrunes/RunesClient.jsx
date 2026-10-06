@@ -42,14 +42,34 @@ export default function RunesClient(){
     </section>
 
     <section className="loc-card rune-basics">
-      <h2>選擇抽牌</h2>
-      <div className="reading-ref-grid">
-        <a className="reading-ref-card" href={runeHref('duel/one')}><h3>單卡</h3></a>
-        <a className="reading-ref-card" href={runeHref('duel/two')}><h3>雙卡</h3><p>1 / 1</p></a>
-        <a className="reading-ref-card" href={runeHref('duel/three')}><h3>三卡</h3><p>1 / 1 / 1</p></a>
-        <a className="reading-ref-card" href={runeHref('duel/five')}><h3>五卡</h3><p>2 / 1 / 2</p></a>
-        <a className="reading-ref-card" href={runeHref('duel/ow3gs')}><h3>11 卡 OW3gs</h3></a>
+      <div className="home-section-heading">
+        <p className="loc-eyebrow">Draw a Rune</p>
+        <h2>選擇抽牌</h2>
+        <p className="loc-subtitle">先從你想看的問題範圍開始。張數越多，語意結構越完整；不是越多越準，而是用不同結構看不同層次。</p>
       </div>
+      <div className="home-draw-bubbles" aria-label="選擇抽牌方式">
+        <a className="loc-bubble" href={runeHref('duel/one')}>
+          <strong>單卡</strong>
+          <p>一個問題，一個語意起點。適合第一次抽牌、快速確認主題，或只需要一個核心提示時使用。</p>
+        </a>
+        <a className="loc-bubble" href={runeHref('duel/two')}>
+          <strong>雙卡</strong>
+          <p>以「因 → 果」觀看兩者關係。第一張作為起因，第二張作為結果，適合確認事件最基本的因果方向。</p>
+        </a>
+        <a className="loc-bubble" href={runeHref('duel/three')}>
+          <strong>三卡</strong>
+          <p>以「源 → 轉 → 合」形成語意路徑。從起點、變化到收束，適合觀察事情如何發展與轉折。</p>
+        </a>
+        <a className="loc-bubble" href={runeHref('duel/five')}>
+          <strong>五卡</strong>
+          <p>以「2 / 1 / 2」組成兩個因果模組，中間加入一個變數。適合看兩側條件如何透過核心因素彼此影響。</p>
+        </a>
+        <a className="loc-bubble" href={runeHref('duel/ow3gs')}>
+          <strong>11 卡 OW3gs</strong>
+          <p>以兩個因果模組進行綜合判讀。適合因素較多、關係較複雜，需要把多個條件放在同一個結構裡一起看的問題。</p>
+        </a>
+      </div>
+      <p className="loc-subtitle">需要其他張數時，可使用下方指定抽牌數量；4、6、7、8、9、10 張會依各自的模組結構進行判讀。</p>
       <CustomDrawSelector options={RUNE_CUSTOM_DRAW_MODES.map(item=>({
         count:item.count,
         description:item.description,
