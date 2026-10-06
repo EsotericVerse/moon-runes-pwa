@@ -30,7 +30,7 @@ LunaRunes 首頁主流程固定為：
 
 Hero、功能列與內容段落依層級分工，不重複建立同一組主入口。雙卡／三卡／五卡保留既有牌陣結構；4／6／7／8／9／10 張使用指定抽牌數量 select；11 張維持 OW3gs。
 
-NAV URL 由 Current Scope registry 產生；實際 route 是否存在由 Next filesystem 決定。
+NAV URL 由 Current Scope registry 產生。既有具名 Scope 維持 Next filesystem route；DB 新建的一般 Scope／Scope Group 使用固定 `/scope/.../?scope=<id>` static shell，因此新增 Scope 不需要新增 filesystem route。
 
 ## Scope presentation
 
@@ -38,6 +38,7 @@ NAV URL 由 Current Scope registry 產生；實際 route 是否存在由 Next fi
 - LunaRunes canonical domain 為 lrunes.lo3rwang.cc，並可由 loc.lo3rwang.cc/lrunes 進入。
 - Author canonical mount 為 loc.lo3rwang.cc/lo3rwang。
 - Admin 使用 admin.lo3rwang.cc。
+- DB 新建的一般 Scope／Scope Group 立即使用 `loc.lo3rwang.cc/scope/?scope=<id>` 與同一組 Search／Statistics／Culture／Governance／Manage static shell；Registry 的 Domain／Directory 仍保存其部署／導引 metadata。
 
 一般 Scope 不因缺少設定而繼承 LunaRunes 的關鍵詞、Style、Canon 或特殊 route 定義。
 
@@ -84,3 +85,5 @@ lo3rwang Manage 的關鍵詞庫以 Class 為第一層。每個 Class 自己保�
 - Galaxy searchable=false。
 
 Public visibility 與 management visibility 是不同責任。
+
+Admin 可建立 Scope、建立 Scope Group，以及修改 Registry 的顯示名稱、Domain／Directory、Parent、排序與 Active；Scope ID 與 Kind 建立後固定。Scope Group 不建立 corpus tables。Source Refresh 以 `source_name + source_native_id` 做 bounded delta preview／新增／更新，不掃描整張 Galaxy。
