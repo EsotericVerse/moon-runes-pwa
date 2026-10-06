@@ -34,6 +34,12 @@ if(!failures.length){
   for(const token of ['每日占卜提醒','每日占卜引導','每日占卜祝福','上次抽到','之前的狀況','當日真實月相'])if(!dailyLog.includes(token))failures.push('daily calendar context missing '+token);
   const dailyCalendar=read('app/lrunes/DailyRuneCalendar.jsx');
   for(const token of ['realMoonPhase','phaseMarkers',"current+'開始'","current+'結束'"])if(!dailyCalendar.includes(token))failures.push('daily calendar moon markers missing '+token);
+  const runeHome=read('app/lrunes/RunesClient.jsx');
+  if(runeHome.includes('daily/trend'))failures.push('Daily Trend must remain folded into Daily Log.');
+  const legacyDailyTrend=read('app/daily/trend/page.jsx');
+  if(!legacyDailyTrend.includes("from '../log/page'"))failures.push('Legacy Daily Trend route must reuse Daily Log.');
+  const lunarunesSitemap=read('app/lunarunes-sitemap.xml/route.js');
+  if(lunarunesSitemap.includes("'/daily/trend'"))failures.push('Retired Daily Trend route must not be advertised in sitemap.');
   const galaxy=read('app/loc/galaxy-query.js');
   for(const token of ["count:'exact',head:true",'.or(','.range(','searchGalaxyRows','selectSourceTrendRows'])if(!galaxy.includes(token))failures.push('Shared Galaxy query pipeline missing '+token);
   if(/flexsearch|new Index\(/i.test(galaxy))failures.push('Global Search must remain Database-first.');
