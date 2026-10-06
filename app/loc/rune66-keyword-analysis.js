@@ -194,9 +194,8 @@ export async function runRune66ClassificationBatch(){
   const documents=eligibleRows.map(documentOf);
   const resolved=resolveDynamicClassifications(documents,catalogRows);
   const eligibleByUid=resolved.byUid;
-  const payloadRows=rawRows.map(row=>{
+  const payloadRows=eligibleRows.map(row=>{
     const uid=String(row?.uid||'').trim();
-    if(!isEligibleRow(row,minChars))return {uid,class_id:null,group_lists:false};
     const result=eligibleByUid.get(uid);
     return {
       uid,
@@ -206,7 +205,7 @@ export async function runRune66ClassificationBatch(){
   });
   const keywordMeta=metaOf(catalogRows,resolved.classMap,currentClassId);
   const written=await applyKeywordClassification({rows:payloadRows,meta:keywordMeta});
-  if(written.count!==payloadRows.length){
+  if(written.count!==payloadRows.length||written.documentCount!==payloadRows.length){
     throw new Error('關鍵詞批次寫回不完整：預期 '+payloadRows.length+'，實際 '+written.count);
   }
   clearRune66ClassificationCache();
