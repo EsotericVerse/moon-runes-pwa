@@ -45,7 +45,7 @@ affected=0;
 await assert.rejects(()=>client.updateRows('silver.any_scope_galaxy',{}),/affected 0 rows/);
 await assert.rejects(()=>client.deleteRows('silver.any_scope_galaxy'),/affected 0 rows/);
 await assert.rejects(()=>client.insertRows('silver.any_scope_galaxy',[{}]),/incomplete/);
-await client.writeKeywordLibraryItem('update',{keyword_id:1,keywords:['one']});
+await client.writeKeywordLibraryItem('update',{keyword_id:1,class_name:'符文66',class_group:'靈魂',class_enable:true,item_no:1,item_name:'靈',keywords:['one']});
 assert.equal(requests.at(-1).url.pathname.endsWith('/lo3rwang_keywords_manage'),true);
 assert.equal(requests.at(-1).init.headers.get('Content-Profile'),'api');
 
