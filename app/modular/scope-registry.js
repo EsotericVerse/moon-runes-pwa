@@ -66,6 +66,29 @@ export const SCOPES=Object.freeze({
 });
 
 const DEFAULT_SCOPE_ID=Object.values(SCOPES).find(scope=>scope.default)?.id||Object.keys(SCOPES)[0];
+const GENERIC_SCOPE_HOST='loc.lo3rwang.cc';
+const GENERIC_SCOPE_PATH='/scope';
+const SCOPE_ID_PATTERN=/^[a-z][a-z0-9]{0,14}$/;
+
+export function normalizeScopeId(value=''){
+  const id=String(value||'').trim().toLowerCase();
+  return SCOPE_ID_PATTERN.test(id)?id:'';
+}
+
+export function isKnownScope(id){
+  return Boolean(SCOPES[normalizeScopeId(id)]);
+}
+
+function genericScope(id){
+  return Object.freeze({
+    id,
+    label:id,
+    searchTitle:id,
+    dynamic:true,
+    featureSubtitles:Object.freeze({}),
+    theme:Object.freeze({mode:'auto'})
+  });
+}
 
 function cleanHost(host=''){
   return String(host||'').toLowerCase().split(':')[0];
@@ -127,31 +150,44 @@ export function resolveScopeSearchAlias(query=''){
 }
 
 export function getScope(id){
-  return SCOPES[id]||SCOPES[DEFAULT_SCOPE_ID];
+  const scopeId=normalizeScopeId(id);
+  if(scopeId&&SCOPES[scopeId])return SCOPES[scopeId];
+  if(scopeId)return genericScope(scopeId);
+  return SCOPES[DEFAULT_SCOPE_ID];
 }
 
 export function scopeOrigin(scopeId){
-  const scope=getScope(scopeId);
-  const host=scope.domain||scope.mount?.host;
+  const id=normalizeScopeId(scopeId);
+  const scope=getScope(id);
+  const host=scope.domain||scope.mount?.host||(id&&!SCOPES[id]?GENERIC_SCOPE_HOST:'');
   return host?`https://${host}`:'';
 }
 
 function scopeBaseHref(scopeId){
-  const scope=getScope(scopeId);
-  if(scope.domain)return scopeOrigin(scopeId);
+  const id=normalizeScopeId(scopeId);
+  const scope=getScope(id);
+  if(id&&!SCOPES[id])return `https://${GENERIC_SCOPE_HOST}${GENERIC_SCOPE_PATH}`;
+  if(scope.domain)return scopeOrigin(id);
   if(scope.mount)return `https://${scope.mount.host}${cleanPath(scope.mount.path)}`;
   return '';
 }
 
 export function scopeHref(scopeId,localPath=''){
-  const base=scopeBaseHref(scopeId).replace(/\/$/,'');
+  const id=normalizeScopeId(scopeId)||DEFAULT_SCOPE_ID;
+  const base=scopeBaseHref(id).replace(/\/$/,'');
   const raw=String(localPath||'');
-  const marker=raw.search(/[?#]/);
-  const routePart=marker>=0?raw.slice(0,marker):raw;
-  const suffix=marker>=0?raw.slice(marker):'';
+  const hashIndex=raw.indexOf('#');
+  const hash=hashIndex>=0?raw.slice(hashIndex):'';
+  const withoutHash=hashIndex>=0?raw.slice(0,hashIndex):raw;
+  const queryIndex=withoutHash.indexOf('?');
+  const routePart=queryIndex>=0?withoutHash.slice(0,queryIndex):withoutHash;
+  const query=queryIndex>=0?withoutHash.slice(queryIndex+1):'';
   const path=routePart.split('/').filter(Boolean).join('/');
   const pathname=path?`/${path}/`:'/';
-  return `${base}${pathname}${suffix}`;
+  if(SCOPES[id])return `${base}${pathname}${query?'?'+query:''}${hash}`;
+  const params=new URLSearchParams(query);
+  params.set('scope',id);
+  return `${base}${pathname}?${params.toString()}${hash}`;
 }
 
 export function featureHref(scopeId,featureId){
