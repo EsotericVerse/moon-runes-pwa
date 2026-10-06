@@ -6,7 +6,7 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {useSearchParams} from 'next/navigation';
 
-import {selectAuthRow,updateRows} from '../../loc/db-client.mjs';
+import {logSearchKeyword,selectAuthRow,updateRows} from '../../loc/db-client.mjs';
 import {useAccount} from '../../loc/use-account';
 import {ContentEditor,FeaturePage,IncrementalList,WorkFullText,WorkSummaryCard} from '../ui';
 import {useScopeRuntime} from '../use-scope-runtime';
@@ -146,6 +146,10 @@ export default function Search(){
     return aggregateScopes?scopes:scopes.filter(item=>item.id===scopeId);
   },[aggregateScopes,scopeId,scopesQuery.data]);
   const scopeById=useMemo(()=>new Map(targetScopes.map(item=>[item.id,item])),[targetScopes]);
+  const hiddenScopeIds=useMemo(
+    ()=>targetScopes.filter(item=>account.canManageScopeSync(item.id)).map(item=>item.id),
+    [targetScopes,account.authorizer]
+  );
   const collectionLabel=aggregateScopes?UI_COPY.search.allContent:String(scope?.label||scopeId);
 
   async function executeSearch(rawQuery,cursor=null,{append=false}={}){
@@ -163,7 +167,8 @@ export default function Search(){
       setStatus(searchMode==='media'?UI_COPY.search.searching:UI_COPY.format.searchScope(collectionLabel));
     }
     try{
-      const search=await searchGalaxyRows(targetScopes,q,{limit:pageSize,cursor,mediaOnly:searchMode==='media'});
+      if(!append)logSearchKeyword(scopeId,q).catch(()=>{});
+      const search=await searchGalaxyRows(targetScopes,q,{limit:pageSize,cursor,mediaOnly:searchMode==='media',hiddenScopeIds});
       if(id!==searchId.current)return;
 
       const searchRows=[...(search.rows||[])];
@@ -229,7 +234,7 @@ export default function Search(){
       let detail=null;
       let detailScope=scopeId;
       for(const scopeData of targetScopes){
-        detail=await selectGalaxyIdentity(scopeData,identity);
+        detail=await selectGalaxyIdentity(scopeData,identity,{includeHidden:account.canManageScopeSync(scopeData.id)});
         if(detail){detailScope=scopeData.id;break;}
       }
       if(id!==searchId.current)return;
