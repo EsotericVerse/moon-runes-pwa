@@ -246,6 +246,41 @@ button,a,.loc-control,.loc-button,
   opacity:.45;
 }
 
+/* Hero hierarchy: showcase homepages keep their existing large treatment.
+   Functional pages use the middle tier; detail and management pages stay compact. */
+.scope-feature-hero,
+.loc-hero-feature{
+  padding:clamp(1.3rem,3vw,2.25rem);
+  border-radius:var(--loc-ui-radius-lg);
+}
+
+.scope-feature-hero>.home-title-row>h1,
+.loc-hero-feature h1{
+  font-size:clamp(2.25rem,4.8vw,3.8rem)!important;
+  line-height:1!important;
+  letter-spacing:-.045em;
+}
+
+.scope-feature-hero .scope-hero-description{
+  margin-top:clamp(.65rem,1.4vw,1rem);
+}
+
+.loc-hero-context{
+  padding:clamp(.95rem,2vw,1.45rem);
+  border-radius:var(--loc-ui-radius-md);
+}
+
+.loc-hero-context h1{
+  font-size:clamp(1.8rem,3.6vw,2.7rem)!important;
+  line-height:1.05!important;
+  letter-spacing:-.035em;
+}
+
+.loc-hero-context p{
+  margin:.35rem 0;
+}
+
+
 .loc-eyebrow,.scope-eyebrow{
   color:var(--loc-gold)!important;
   font-size:var(--loc-type-eyebrow)!important;
