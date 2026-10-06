@@ -3,11 +3,52 @@
 import {DB_QUERY_BATCH_SIZE} from './query-contract.mjs';
 
 
-import {dbPublicClient} from './db-client.mjs';
+import {dbBackupPublicClient,dbPublicClient} from './db-client.mjs';
+import {markPrimaryReadFailed,markPrimaryReadSucceeded} from './db-source-status.mjs';
 
-export function dbPublicRelation(table){
+function publicRelation(client,table){
   const [schema,name]=String(table).split('.');
-  return dbPublicClient.schema(schema).from(name);
+  return client.schema(schema).from(name);
+}
+export function dbPublicRelation(table){
+  return publicRelation(dbPublicClient,table);
+}
+function resultError(result,table,source){
+  if(!result?.error&&!(Number(result?.status)>=400))return null;
+  const cause=result?.error||null;
+  const error=new Error(cause?.message||('DB SELECT '+table+' failed on '+source+(result?.status?' HTTP '+result.status:'')));
+  if(cause?.code)error.code=cause.code;
+  if(cause?.details)error.details=cause.details;
+  if(cause?.hint)error.hint=cause.hint;
+  if(result?.status)error.status=result.status;
+  error.cause=cause||undefined;
+  return error;
+}
+export async function executePublicRead(table,buildQuery){
+  let primaryError=null;
+  try{
+    const result=await buildQuery(publicRelation(dbPublicClient,table));
+    const failure=resultError(result,table,'primary');
+    if(failure)throw failure;
+    markPrimaryReadSucceeded(table);
+    return {...result,__dataSource:'primary'};
+  }catch(error){
+    primaryError=error instanceof Error?error:new Error(String(error||'Primary public read failed'));
+    markPrimaryReadFailed(table,primaryError);
+  }
+  if(!dbBackupPublicClient)throw primaryError;
+  try{
+    const result=await buildQuery(publicRelation(dbBackupPublicClient,table));
+    const failure=resultError(result,table,'backup');
+    if(failure)throw failure;
+    return {...result,__dataSource:'backup'};
+  }catch(backupError){
+    const secondary=backupError instanceof Error?backupError:new Error(String(backupError||'Backup public read failed'));
+    const aggregate=new AggregateError([primaryError,secondary],'Public read failed on primary and backup for '+table);
+    aggregate.primaryError=primaryError;
+    aggregate.backupError=secondary;
+    throw aggregate;
+  }
 }
 export function applyFilters(query,filters=[]){
   for(const filter of filters){
@@ -30,11 +71,12 @@ export function applyOrders(query,orders=[]){
 export async function selectCount(table,{idColumn,filters=[],orFilter=''}={}){
   if(!/^[a-z][a-z0-9_]*$/i.test(String(idColumn||'')))throw new Error('DB COUNT requires an explicit ID column');
   // HEAD returns a SQL count without loading rows, including tables without uid.
-  let query=dbPublicRelation(table).select(idColumn,{count:'exact',head:true});
-  query=applyFilters(query,filters);
-  if(orFilter)query=query.or(orFilter);
-  const {count,error,status}=await query;
-  if(error||status>=400)throw new Error(error?.message||('DB COUNT '+table+' failed: HTTP '+status));
+  const {count}=await executePublicRead(table,relation=>{
+    let query=relation.select(idColumn,{count:'exact',head:true});
+    query=applyFilters(query,filters);
+    if(orFilter)query=query.or(orFilter);
+    return query;
+  });
   return Number(count)||0;
 }
 
@@ -52,14 +94,14 @@ export async function selectRows(table,{
   const safeMaximum=Math.max(1,Math.floor(Number(maxLimit)||DB_QUERY_BATCH_SIZE));
   const safeLimit=Math.max(1,Math.min(safeMaximum,Math.floor(Number(limit)||20)));
   const safeOffset=Math.max(0,Math.floor(Number(offset)||0));
-  let query=dbPublicRelation(table).select(columns,count?{count}:undefined);
-  query=applyFilters(query,filters);
-  if(orFilter)query=query.or(orFilter);
-  query=applyOrders(query,orders);
-  query=query.range(safeOffset,safeOffset+safeLimit-1);
-  const {data,error,count:total}=await query;
-  if(error)throw new Error(error.message||('DB SELECT '+table+' failed'));
-  return {rows:data||[],count:total};
+  const {data,count:total,__dataSource}=await executePublicRead(table,relation=>{
+    let query=relation.select(columns,count?{count}:undefined);
+    query=applyFilters(query,filters);
+    if(orFilter)query=query.or(orFilter);
+    query=applyOrders(query,orders);
+    return query.range(safeOffset,safeOffset+safeLimit-1);
+  });
+  return {rows:data||[],count:total,dataSource:__dataSource};
 }
 
 export async function selectAllRows(table,{
