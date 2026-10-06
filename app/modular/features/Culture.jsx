@@ -11,7 +11,7 @@ import {
   selectScopePeriodWorkDetails,
   selectScopeCultureData
 } from '../../loc/culture-query';
-import {galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
+import {featureNavigationHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state';
 import CultureTimeline from '../modules/culture-timeline/CultureTimeline';
 import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
@@ -524,6 +524,10 @@ export default function Culture(){
                   fixedMax={locDistributionEnd}
                   hiddenDates={locRiverAnalysis.hiddenDates}
                 />:null}
+                <p className='scope-status'>LOC 文化頁顯示 Scope Group 的時間分布與交會；需要查詢個別文章列表，請前往各 Scope／作者自己的時間長河。</p>
+                <div className='scope-result-links'>
+                  {locIntersectionScopeIds.map(id=><a key={id} href={featureNavigationHref(id,'culture')}>scope_id: {id} · 個人時間長河</a>)}
+                </div>
                 {locCombinedSourceRiverItems.length?<section className='scope-culture-combined-source-river'>
                   <p className='loc-eyebrow'>{UI_COPY.culture.combinedSources}</p>
                   <h4>{UI_COPY.culture.combinedRiver}</h4>
