@@ -45,6 +45,29 @@ export async function selectDailyRuneRange({startDate,endDate}={}){
   return attachRuneMeta(rows);
 }
 
+export async function selectPreviousDailyRuneOccurrence({runeNumber,beforeDate}={}){
+  const rune=Number(runeNumber);
+  const before=String(beforeDate||'').slice(0,10);
+  if(!Number.isInteger(rune)||rune<0||rune>66)return null;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(before))return null;
+  const {rows}=await selectRows('silver.lrunes_daily',{
+    columns:'record_date,draw_kind,rune_number,direction',
+    filters:[
+      {column:'rune_number',operator:'eq',value:rune},
+      {column:'record_date',operator:'lt',value:before}
+    ],
+    orders:[
+      {column:'record_date',ascending:false},
+      {column:'draw_kind',ascending:true}
+    ],
+    limit:1,
+    offset:0
+  });
+  if(!rows?.length)return null;
+  const attached=await attachRuneMeta(rows);
+  return attached[0]||null;
+}
+
 export async function selectDailyRuneMonth({year,month}={}){
   const safeYear=Math.max(2000,Math.min(9999,Math.floor(Number(year)||2026)));
   const safeMonth=Math.max(1,Math.min(12,Math.floor(Number(month)||8)));
