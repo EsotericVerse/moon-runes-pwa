@@ -24,7 +24,7 @@ LOC 將下列責任分開：
 
 Current LOC Search 不做語意渲染。文字是否命中由實際欄位與字詞決定，不由 LunaRunes Canon／關鍵詞自動改寫。
 
-搜尋責任分成兩層：PostgreSQL 處理資料權威、Scope、固定 eligibility/numeric filters 與分頁。FlexSearch 僅是可選的小範圍詞彙索引；全量掃描成本高時，改用資料庫數值彙總與寫入時驗證。
+搜尋、Scope、eligibility/numeric filters 與分頁均由 PostgreSQL 負責。符文關鍵詞分類依明確規則模擬；確認後將目前分類寫入文章屬性，關鍵詞變動時再重新掃描。
 
 LunaRunes 可以在自己的 Scope 進行符號式語意分類，但：
 

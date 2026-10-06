@@ -25,7 +25,7 @@ LOC is the framework for organizing text, works, sources, time, relationships, s
 - The Scope registry owns deployment/navigation metadata only.
 - `silver.manage` owns data Scope and Galaxy/Time table mapping.
 - PostgreSQL remains the authoritative query layer for Scope, fixed eligibility flags, COUNT, date ranges and pagination across Search, Statistics and Culture.
-- FlexSearch is limited to small, already narrowed local data; fixed numeric filter tables and write-time validation are preferred for corpus filtering to avoid repeated full-text scans.
+- PostgreSQL handles global search, while confirmed keyword classifications are stored as fixed article attributes. Re-run classification only when keyword rules change.
 - Search is lexical/metadata search, not semantic rendering.
 - Missing general-Scope configuration remains empty; LOC does not borrow LunaRunes Canon, keywords or Style as fallback.
 

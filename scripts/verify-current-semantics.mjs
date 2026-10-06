@@ -27,16 +27,14 @@ if(!failures.length){
   if(/flexsearch|new Index\(/i.test(galaxy))failures.push('Global Search must remain Database-first.');
   const scopeData=read('app/loc/scope-data.js');
   for(const token of ["MANAGE_TABLE='silver.manage'",'scopeDataFromManageRows','defaultScopeData','selectManagedScopes'])if(!scopeData.includes(token))failures.push('Scope data source missing '+token);
+  const packageJson=JSON.parse(read('package.json'));
+  const packageLock=JSON.parse(read('package-lock.json'));
+  if(packageJson.dependencies?.flexsearch||packageLock.packages?.['node_modules/flexsearch'])failures.push('FlexSearch must be removed from runtime dependencies and lockfile');
+  const game=read('app/lrunes/game/GameView.jsx');
+  const keywordEngine=read('app/loc/model/rune66-keyword-engine.mjs');
+  if(/from ['"]flexsearch['"]|new Index\(/i.test(game+'\n'+keywordEngine))failures.push('Runtime text matching must not depend on FlexSearch');
   const capabilityRegistry=JSON.parse(read('governance/runtime-capabilities.json'));
-  const flexCache=capabilityRegistry?.capabilities?.flexsearch_uid_cache_table;
-  if(!flexCache||flexCache.status!=='optional')failures.push('FlexSearch UID cache table must remain optional');
-  if(flexCache?.authority!==false||flexCache?.canonical_content_allowed!==false)failures.push('FlexSearch UID cache-table must remain non-authoritative and non-canonical');
-  if(flexCache?.removal_requires_explicit_governance_change!==false)failures.push('FlexSearch UID cache table must not be a protected requirement');
-  for(const token of ['uid','scope_id','cache_name'])if(!(flexCache?.allowed_payload||[]).includes(token))failures.push('FlexSearch UID cache-table allowed payload missing '+token);
-  const keywordEngine=capabilityRegistry?.capabilities?.keyword_operations_flexsearch;
-  if(!keywordEngine||keywordEngine.status!=='optional')failures.push('Keyword FlexSearch must remain optional');
-  if(keywordEngine?.precise_search_engine!=='PostgreSQL'||keywordEngine?.database_keyword_matching_allowed!==true)failures.push('Keyword engine must allow measured database-backed summaries');
-  if(keywordEngine?.removal_requires_explicit_governance_change!==false)failures.push('Keyword FlexSearch must not be a protected requirement');
+  if(Object.keys(capabilityRegistry?.capabilities||{}).some(name=>/flexsearch/i.test(name)))failures.push('Retired FlexSearch capabilities must be removed from governance');
   const rune66Analysis=read('app/loc/rune66-keyword-analysis.js');
   for(const token of ["column:'statistics_able',operator:'eq',value:true"])if(!galaxy.includes(token)||!rune66Analysis.includes(token))failures.push('Statistics and Rune66 analysis must use fixed statistics_able filters');
   const rune66Engine=read('app/loc/model/rune66-keyword-engine.mjs');
@@ -58,4 +56,4 @@ if(failures.length){
   console.error('[current-semantics] failures:\n'+failures.map(item=>'- '+item).join('\n'));
   process.exit(1);
 }
-console.log('[current-semantics] Current identity, daily trend, fixed Statistics eligibility filters, Database-first Search and optional FlexSearch verified');
+console.log('[current-semantics] Current identity, daily trend, fixed Statistics eligibility filters, Database-first Search and dependency-free text matching verified');

@@ -3,7 +3,6 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import Select from 'react-select';
-import {Index} from 'flexsearch';
 import {AnimatePresence,motion} from 'motion/react';
 import {CartesianGrid,Legend,Line,LineChart,ReferenceLine,ResponsiveContainer,Tooltip,XAxis,YAxis} from 'recharts';
 import {
@@ -310,7 +309,7 @@ function GameDocs({data}){
   const [query,setQuery]=useState('');
   const [groupFilter,setGroupFilter]=useState(null);
 
-  const searchState=useMemo(()=>{
+  const searchRows=useMemo(()=>{
     const rows=[];
     const add=(sectionName,row,title,body,groups=[])=>{
       rows.push({
@@ -326,25 +325,20 @@ function GameDocs({data}){
     data.events.forEach(row=>add('events',row,row.name,[row.requirement,row.description].filter(Boolean).join(' '),row.groups));
     data.roles.forEach(row=>add('roles',row,row.name,[row.focus,row.mode,row.intervention,row.tool,row.tagline].filter(Boolean).join(' '),[row.group]));
     data.runeActions.forEach(row=>add('actions',row,row.name,[row.text,row.kind,row.value].filter(value=>value!==null&&value!==undefined).join(' '),[row.group]));
-    const index=new Index({tokenize:'forward',cache:100});
-    rows.forEach(item=>index.add(Number(item.key),item.text));
-    return {rows,index};
+    return rows;
   },[data]);
 
   const groupOptions=useMemo(()=>[...new Set(data.cards.map(card=>card.group).filter(Boolean))]
     .map(group=>({value:group,label:group})),[data.cards]);
 
   const visibleRows=useMemo(()=>{
-    const normalized=String(query||'').normalize('NFKC').trim();
-    const hits=normalized
-      ?new Set(searchState.index.search(normalized,{limit:200,cache:true}).map(String))
-      :null;
-    return searchState.rows.filter(item=>
+    const normalized=String(query||'').normalize('NFKC').toLocaleLowerCase('zh-Hant').trim();
+    return searchRows.filter(item=>
       item.section===section
       &&(!groupFilter?.value||item.groups.includes(groupFilter.value))
-      &&(!hits||hits.has(item.key))
+      &&(!normalized||item.text.normalize('NFKC').toLocaleLowerCase('zh-Hant').includes(normalized))
     );
-  },[searchState,section,query,groupFilter]);
+  },[searchRows,section,query,groupFilter]);
 
   const currentRules=visibleRows.filter(item=>item.section==='rules').map(item=>item.row);
   const events=visibleRows.filter(item=>item.section==='events').map(item=>item.row);
