@@ -129,7 +129,7 @@ const metadataOnly=classifyRune66Documents([
 ],catalogRows,structureRows);
 const metadataByKey=new Map(metadataOnly.classifications.map(row=>[row.key,row]));
 assert.equal(runeMap(metadataByKey.get('metadata')).size,0,'media metadata must not enter Rune66 body classification');
-assert.equal(runeMap(metadataByKey.get('lyrics')).get('魂'),1,'lyrics body remains classifiable');
+assert.equal(runeMap(metadataByKey.get('lyrics')).get('魂'),2,'lyrics body keeps cumulative distinct configured signals');
 assert.equal(runeMap(metadataByKey.get('lyrics')).has('夢'),false,'metadata must not add a Rune to lyrics');
 
 console.log('[rune66-keywords] unified keyword items, literal matching and single-pass classification verified');
