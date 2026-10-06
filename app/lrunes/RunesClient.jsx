@@ -33,10 +33,10 @@ export default function RunesClient(){
     <section className="loc-card rune-basics">
       <h2>基本判讀順序</h2>
       <div className="basic-grid">
-        <div className="basic-item"><strong>先看符文本義</strong><span>先確認每張符文最基本的語意，不先被吉凶或結論帶走。</span></div>
-        <div className="basic-item"><strong>再看卡牌方向</strong><span>正位、半正位、半逆位、逆位描述同一語彙在當下狀態中的不同表現。</span></div>
-        <div className="basic-item"><strong>依卡位讀結構</strong><span>雙卡、三卡、五卡與 OW3gs 都有自己的位置責任，不能混成同一種讀法。</span></div>
-        <div className="basic-item"><strong>最後才看月相</strong><span>真實月相是次要的時間修飾，不應推翻符文本義、方向與主要卡位。</span></div>
+        <div className="basic-item"><strong>1. 先看符文本義</strong><span>先確認每張符文最基本的語意，作為整體判讀的核心。</span></div>
+        <div className="basic-item"><strong>2. 再看卡牌方向</strong><span>正位、半正位、半逆位、逆位描述同一符文在當下狀態中的不同表現。</span></div>
+        <div className="basic-item"><strong>3. 看月相交互</strong><span>以當日真實月相與該符文本身的卡牌月相交互，取得當下情境中的對應狀況。</span></div>
+        <div className="basic-item"><strong>4. 多張再看模組</strong><span>若為多張抽牌，再依雙卡、三卡、五卡、指定張數或 OW3gs 各自的模組結構進行組合判讀。</span></div>
       </div>
     </section>
 
