@@ -3,7 +3,7 @@ import {lunarunesMetadata} from '../../seo/metadata';
 
 export const metadata=lunarunesMetadata({
   title:'每日符文紀錄｜月之符文',
-  description:'依日期保存與回看每日符文抽籤結果，包括符文、方向與相關紀錄。',
+  description:'以行事曆保存每日符文，顯示真實月相邊界、當日指引，以及上一筆相同符文的日期與狀況形容。',
   path:'/daily/log/'
 });
 
