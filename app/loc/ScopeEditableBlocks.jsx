@@ -113,15 +113,13 @@ export default function ScopeEditableBlocks({
     }
   }
 
-  if(query.isPending)return null;
-
   return <div className={'scope-editable-block-grid '+className}>
     {slots.map((slot,index)=>{
       if(visibleOrders&&!visibleOrders.has(slot.order))return null;
       const active=editing===index+1;
       const empty=!blocksToPlainText(slot.blocks)&&!slot.title;
       if(empty&&!canEdit)return null;
-      return <section className={slotClassName+' scope-editable-block'} key={slot.order}>
+      return <section className={slotClassName+' scope-editable-block'+(active?' is-editing':'')} key={slot.order}>
         {canEdit?<div className="scope-inline-editbar">
           {!active?<button type="button" className="loc-button" onClick={()=>begin(index)}>編輯</button>:<>
             <button type="button" className="loc-button primary" disabled={busy} onClick={()=>save(index)}>{busy?'儲存中…':'儲存'}</button>
