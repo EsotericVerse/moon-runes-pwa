@@ -49,8 +49,8 @@ if(!failures.length){
   for(const token of ['RUNE_DRAW_MODES.map','home-draw-bubbles','loc-bubble'])if(!runeDrawModeBubbles.includes(token))failures.push('shared fixed draw bubbles missing '+token);
   for(const [name,source] of [['single/daily',runeSingleDaily],['spread',runeDrawClient]])if(!source.includes('RuneDrawModeBubbles'))failures.push('Rune draw selection must reuse shared component in '+name);
   for(const token of ['命之符文示例','月之符文籤詩系統','RuneDrawModeBubbles'])if(!runeIntro.includes(token))failures.push('shared complete Rune intro missing '+token);
-  if(!runeHome.includes('RuneIntroSection'))failures.push('LunaRunes home must reuse complete LOC Rune intro section');
-  if(!identity.includes('RuneIntroSection'))failures.push('LOC home must reuse complete Rune intro section');
+  if(!runeHome.includes('RuneIntroSection'))failures.push('LunaRunes home must keep the complete Rune intro section');
+  if(identity.includes('RuneIntroSection'))failures.push('LOC home must not duplicate the LunaRunes Rune intro section');
   for(const token of ['runes-rune-long-details','runes-rune-long-detail','符文歷史','神話故事','靈魂課題','實踐挑戰','儀式建議','調和建議'])if(!runeDirectory.includes(token))failures.push('Rune directory long detail layout missing '+token);
   if(runeHome.includes('daily/trend'))failures.push('Daily Trend must remain folded into Daily Log.');
   const legacyDailyTrend=read('app/daily/trend/page.jsx');
