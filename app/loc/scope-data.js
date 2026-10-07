@@ -155,17 +155,18 @@ export async function selectScopeConfig(scopeId){
 }
 
 
-export async function selectScopeBlocks(scopeId,page='home'){
+export async function selectScopeBlocks(scopeId,page='index'){
   const id=String(scopeId||'').trim().toLowerCase();
   if(!SCOPE_ID_PATTERN.test(id))return [];
-  const blockPage=String(page||'home').trim().toLowerCase();
-  if(!['home','governance'].includes(blockPage))throw new Error('Block page 無效');
+  const requested=String(page||'index').trim().toLowerCase();
+  const pageName=requested==='home'?'index':requested;
+  if(!/^[a-z0-9_-]+$/.test(pageName))throw new Error('Page name 無效');
   const table=`silver.${id}_blocks`;
   const {rows}=await selectRows(table,{
-    columns:'block_page,block_title,block_text,block_order',
-    filters:[{column:'block_page',operator:'eq',value:blockPage}],
+    columns:'uid,page_name,block_title,block_text,block_order,block_entity',
+    filters:[{column:'page_name',operator:'eq',value:pageName}],
     orders:[{column:'block_order',ascending:true}],
-    limit:4,
+    limit:DB_QUERY_BATCH_SIZE,
     offset:0
   });
   return rows||[];
