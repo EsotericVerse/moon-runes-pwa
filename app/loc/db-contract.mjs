@@ -14,7 +14,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   }
 
   async function managementWrite(payload){
-    const {data,error}=await authClient.schema('api').rpc('management_write',payload);
+    const {data,error}=await authClient.schema('silver').rpc('management_write',payload);
     if(error)throw new Error(error.message||'Management write failed');
     return data||{count:0};
   }
@@ -73,7 +73,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
 
   async function keywordClassificationWrite(scopeId,payload){
     const scope=normalizeScopeId(scopeId);
-    const {data,error}=await authClient.schema('api').rpc('apply_keyword_classification',{
+    const {data,error}=await authClient.schema('silver').rpc('apply_keyword_classification',{
       p_scope_id:scope,
       p_rows:payload
     });
@@ -109,7 +109,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const scope=String(scopeId||'').trim().toLowerCase();
     const id=String(classId||'').trim();
     if(!scope||!id)return null;
-    const {data,error}=await publicClient.schema('api').rpc('read_keyword_class',{
+    const {data,error}=await publicClient.schema('silver').rpc('read_keyword_class',{
       p_scope_id:scope,
       p_class_id:id
     });
@@ -212,7 +212,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
       p_theme:String(values.theme||'theme-7').trim()||'theme-7',
       p_copy_keywords:values.copy_keywords!==false
     };
-    const {data,error}=await authClient.schema('api').rpc('provision_scope',payload);
+    const {data,error}=await authClient.schema('silver').rpc('provision_scope',payload);
     if(error)throw new Error(error.message||'Scope provisioning failed');
     return data||{};
   }
@@ -221,7 +221,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const scope=normalizeScopeId(scopeId);
     const op=String(operation||'').trim().toLowerCase();
     if(!['create_group','update'].includes(op))throw new Error('Unsupported Scope Registry operation');
-    const {data,error}=await authClient.schema('api').rpc('manage_scope_registry',{
+    const {data,error}=await authClient.schema('silver').rpc('manage_scope_registry',{
       p_operation:op,
       p_scope_id:scope,
       p_values:values&&typeof values==='object'?values:{}
@@ -250,7 +250,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const scope=String(scopeId||'').trim().toLowerCase();
     const query=String(queryText||'').trim();
     if(!scope||!query)return;
-    const {error}=await publicClient.schema('api').rpc('log_search_keyword',{
+    const {error}=await publicClient.schema('silver').rpc('log_search_keyword',{
       p_scope_id:scope,
       p_query_text:query
     });
