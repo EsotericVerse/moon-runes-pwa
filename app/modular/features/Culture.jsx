@@ -22,6 +22,7 @@ import {deleteRows,insertRows,dbAuthRelation,updateRows} from '../../loc/db-clie
 import {useAccount} from '../../loc/use-account';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {ContentEditor,FeaturePage,IncrementalList,WorkFullText,WorkSummaryCard} from '../ui';
+import {plainTextToBlocks} from '../../loc/RichBlockEditor';
 import CultureTimelineEditor from './CultureTimelineEditor';
 import {workDisplayHeading,workDisplayText} from '../work-display-model';
 import {useOffsetPagination} from '../use-offset-pagination';
@@ -515,7 +516,7 @@ export default function Culture(){
     try{
       if(!scopeData)throw new Error('Scope data 未解析');
       const {data,error}=await dbAuthRelation(scopeData.galaxy)
-        .select('uid,title,content,searchable')
+        .select('uid,title,content,content_blocks,searchable')
         .eq('uid',uid)
         .limit(1);
       if(error)throw new Error(error.message||'作品內容讀取失敗');
@@ -524,6 +525,10 @@ export default function Culture(){
       setEditDraft({
         title:String(row.title||work.title||''),
         body:String(row.content||''),
+        bodyBlocks:Array.isArray(row.content_blocks)&&row.content_blocks.length
+          ?row.content_blocks
+          :plainTextToBlocks(String(row.content||'')),
+        editorKey:uid,
         hidden:row.searchable===false
       });
     }catch(exception){
@@ -543,6 +548,7 @@ export default function Culture(){
       await updateRows(scopeData.galaxy,{
         title:resolveGalaxyTitle(editDraft.title,content),
         content,
+        content_blocks:Array.isArray(editDraft.bodyBlocks)?editDraft.bodyBlocks:null,
         searchable:editDraft.hidden!==true,
         UpdateTime:new Date().toISOString()
       },{filters:[{column:'uid',operator:'eq',value:uid}]});
