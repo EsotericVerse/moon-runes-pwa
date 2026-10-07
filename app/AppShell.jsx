@@ -155,7 +155,7 @@ export default function AppShell({children}){
   const activeLocale=localeSelection.scopeId===scopeId?normalizeUiLocale(localeSelection.locale):'zh-Hant';
   const copy=useMemo(()=>uiCopy(activeLocale),[activeLocale]);
   const navScopeId=currentScope.featureScope||scopeId;
-  const gameThemeDefault=scopeId==='lrunes'&&/\/game\/?$/.test(String(pathname||''))?'theme-4':'';
+  const gameThemeDefault=/(^|\/)game\/?$/.test(String(pathname||''))?'theme-4':'';
 
   useEffect(()=>{
     let active=true;
