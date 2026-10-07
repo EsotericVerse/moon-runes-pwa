@@ -22,23 +22,11 @@ const LOGIN_COPY={
 function LoginScreen({scopeId,account}){
   const copy=LOGIN_COPY[scopeId]||LOGIN_COPY.lo3rwang;
   const callbackURL=scopeId==='loc'?scopeHref('admin'):scopeHref(scopeId,'governance/manage');
-  const [email,setEmail]=useState('');
-  const [status,setStatus]=useState('');
-  const submit=async event=>{
-    event.preventDefault();
-    setStatus('');
-    const result=await account.signIn(email,callbackURL);
-    if(result)setStatus('登入連結已寄出，請到信箱開啟後回到這個管理頁。');
-  };
   return <section className="loc-view">
     <header className="loc-hero"><p className="loc-eyebrow">{copy.eyebrow}</p><h1>{copy.title}</h1><p>{copy.description}</p></header>
     <section className="loc-card">
       <p>登入後才會顯示管理工作頁；公開頁不提供寫入功能。</p>
-      <form className="scope-management-fields" onSubmit={submit}>
-        <label><span>Email</span><input type="email" autoComplete="email" required value={email} onChange={event=>setEmail(event.target.value)}/></label>
-        <button className="loc-button primary" type="submit">寄送登入連結</button>
-      </form>
-      {status?<p className="scope-status" role="status">{status}</p>:null}
+      <button className="loc-button primary" type="button" onClick={()=>account.signIn(callbackURL)}>使用 Google 登入</button>
       {account.error?<p className="scope-status scope-error">{account.error}</p>:null}
     </section>
   </section>;
