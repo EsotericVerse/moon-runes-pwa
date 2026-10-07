@@ -88,6 +88,19 @@ function eventVisual(data,event){
   return data.groupAssets.find(item=>groups.includes(item.group))||null;
 }
 
+function fullRequirement(data,requirement=''){
+  const macroMap=new Map((data.macros||[]).map(item=>[
+    item.code,
+    item.description||[item.groupA,item.groupB].filter(Boolean).join('＋')||item.title||item.code
+  ]));
+  return String(requirement||'')
+    .split('+')
+    .map(code=>macroMap.get(code.trim())||code.trim())
+    .filter(Boolean)
+    .join('／');
+}
+
+
 function RuneCard({card,selected,disabled,onClick,playerIndex}){
   const {attributes,listeners,setNodeRef,transform,isDragging}=useDraggable({
     id:'rune-'+playerIndex+'-'+card.id,
@@ -243,7 +256,7 @@ function DocsPanel({data}){
 
     {section==='rules'?<RuleSections data={data} query={query}/>:null}
 
-    {section==='events'?<div className="lrg-doc-grid">{events.map(row=><Paper variant="outlined" className="lrg-doc-item" key={row.id}><Stack direction="row" spacing={1} flexWrap="wrap"><Chip size="small" label={row.id}/>{row.groups.map(group=><Chip size="small" variant="outlined" key={group} label={group}/>)}</Stack><Typography fontWeight={800} sx={{mt:1}}>{row.name}</Typography><Typography variant="body2">{row.description}</Typography><Typography variant="caption" color="text.secondary">條件：{row.requirement}</Typography></Paper>)}</div>:null}
+    {section==='events'?<div className="lrg-doc-grid">{events.map(row=><Paper variant="outlined" className="lrg-doc-item" key={row.id}><Stack direction="row" spacing={1} flexWrap="wrap"><Chip size="small" label={row.id}/>{row.groups.map(group=><Chip size="small" variant="outlined" key={group} label={group}/>)}</Stack><Typography fontWeight={800} sx={{mt:1}}>{row.name}</Typography><Typography variant="body2">{row.description}</Typography><Typography variant="caption" color="text.secondary">條件：{fullRequirement(data,row.requirement)}</Typography></Paper>)}</div>:null}
 
     {section==='roles'?<div className="lrg-doc-grid">{roles.map(role=><Paper variant="outlined" className="lrg-doc-item" key={role.id}><Chip size="small" label={role.group}/><Typography fontWeight={800} sx={{mt:1}}>{role.name}</Typography><Typography variant="body2">{role.focus}</Typography><Typography variant="body2" color="text.secondary">{[role.mode,role.intervention,role.tool].filter(Boolean).join('｜')}</Typography><Typography variant="caption">{role.tagline}</Typography></Paper>)}</div>:null}
 
@@ -322,7 +335,7 @@ function Board({G,moves,rules,onRestart}){
                     <Typography variant="overline" color="primary">EVENT · {event.id}</Typography>
                     <Typography variant="h5" component="h2">{event.name}</Typography>
                     <Typography sx={{mt:1}}>{event.description}</Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{mt:1}}>條件：{event.requirement}</Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{mt:1}}>條件：{fullRequirement(rules,event.requirement)}</Typography>
                     <Typography variant="body2" sx={{mt:1}}>每位玩家選擇 {rules.config.eventResponseCards} 張回應卡。</Typography>
                   </Box>
                 </Stack>
