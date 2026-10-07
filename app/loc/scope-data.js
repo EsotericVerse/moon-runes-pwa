@@ -110,7 +110,21 @@ export async function selectScopeRegistryEntry(scopeId){
 }
 
 export async function selectScopeGroupChildren(scopeId='loc'){
-  return selectScopeRegistry({parentScopeId:scopeId});
+  const rows=await selectScopeRegistry({parentScopeId:scopeId});
+  return Promise.all(rows.map(async row=>{
+    if(row.scope_kind!=='scope')return row;
+    try{
+      const config=await selectScopeConfig(row.scope_id);
+      return {
+        ...row,
+        display_name:String(config?.display_name||row.display_name||row.scope_id).trim(),
+        search_intro:String(config?.search_intro||'').trim(),
+        search_aliases:Array.isArray(config?.search_aliases)?config.search_aliases:[]
+      };
+    }catch{
+      return row;
+    }
+  }));
 }
 
 export async function selectManagedScope(scopeId){
@@ -131,7 +145,7 @@ export async function selectScopeConfig(scopeId){
   const scope=defaultScopeData(scopeId);
   if(!scope)return null;
   const {rows}=await selectRows(scope.config,{
-    columns:'id,theme,search_able,statistics_able,culture_able',
+    columns:'id,display_name,search_intro,search_aliases,theme,search_able,statistics_able,culture_able',
     filters:[{column:'id',operator:'eq',value:scope.id}],
     limit:1,
     offset:0
