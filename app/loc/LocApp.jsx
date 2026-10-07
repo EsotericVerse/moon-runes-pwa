@@ -17,7 +17,7 @@ import Governance from '../modular/features/Governance';
 
 const loading=()=> <div className="loc-loading">載入功能模組…</div>;
 const RunesHomeView=dynamic(()=>import('../lrunes/RunesClient'),{loading});
-const GameView=dynamic(()=>import('../lrunes/game/GameView'),{ssr:false,loading});
+const GameView=dynamic(()=>import('../lrunes/game/GameBoard'),{ssr:false,loading});
 const ManagementView=dynamic(()=>import('./GovernanceManagement'),{loading});
 
 const VIEWS={
