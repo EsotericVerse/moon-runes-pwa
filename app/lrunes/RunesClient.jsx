@@ -2,7 +2,6 @@ import {scopeOrigin} from '../modular/scope-registry';
 import {RUNE_CUSTOM_DRAW_MODES} from './rune-draw-modes.mjs';
 import CustomDrawSelector from './CustomDrawSelector';
 import RuneIntroSection from './RuneIntroSection';
-import ScopeEditableBlocks from '../loc/ScopeEditableBlocks';
 import runesHeroAsset from '../../pics/LunaRunes-hero.jpg';
 
 const runeHref=path=>{
@@ -49,18 +48,12 @@ export default function RunesClient(){
 
     <section className="loc-card rune-basics runes-reading-flow">
       <h2>基本判讀順序</h2>
-      <ScopeEditableBlocks
-        scopeId="lrunes"
-        page="home"
-        className="basic-grid"
-        slotClassName="basic-item"
-        fallbackDocuments={[
-          [{type:'heading',props:{level:3},content:'1. 先看符文本義'},{type:'paragraph',content:'先確認每張符文最基本的語意，作為整體判讀的核心。'}],
-          [{type:'heading',props:{level:3},content:'2. 再看卡牌方向'},{type:'paragraph',content:'正位、半正位、半逆位、逆位描述同一符文在當下狀態中的不同表現。'}],
-          [{type:'heading',props:{level:3},content:'3. 看月相交互'},{type:'paragraph',content:'以當日真實月相與該符文本身的卡牌月相交互，取得當下情境中的對應狀況。'}],
-          [{type:'heading',props:{level:3},content:'4. 多張再看模組'},{type:'paragraph',content:'若為多張抽牌，再依雙卡、三卡、五卡、指定張數或 OW3gs 各自的模組結構進行組合判讀。'}]
-        ]}
-      />
+      <div className="basic-grid">
+        <article className="basic-item"><h3>1. 先看符文本義</h3><p>先確認每張符文最基本的語意，作為整體判讀的核心。</p></article>
+        <article className="basic-item"><h3>2. 再看卡牌方向</h3><p>正位、半正位、半逆位、逆位描述同一符文在當下狀態中的不同表現。</p></article>
+        <article className="basic-item"><h3>3. 看月相交互</h3><p>以當日真實月相與該符文本身的卡牌月相交互，取得當下情境中的對應狀況。</p></article>
+        <article className="basic-item"><h3>4. 多張再看模組</h3><p>若為多張抽牌，再依雙卡、三卡、五卡、指定張數或 OW3gs 各自的模組結構進行組合判讀。</p></article>
+      </div>
     </section>
 
     <section className="loc-card rune-basics runes-custom-draw-section">
