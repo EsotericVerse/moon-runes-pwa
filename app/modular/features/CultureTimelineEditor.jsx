@@ -62,7 +62,7 @@ function rowSortDate(row,anchors){
   return dateText(anchors.get(first)?.time_date)||dateText(anchors.get(last)?.time_date)||'9999-12-31';
 }
 
-export default function CultureTimelineEditor({scopeId='',selectedRecordId='',suggestedAnchorDate=''}){
+export default function CultureTimelineEditor({scopeId='',selectedRecordId='',suggestedAnchorDate='',onClose=null}){
   const account=useAccount();
   const searchParams=useSearchParams();
   const routeSuggestedAnchorDate=String(searchParams?.get?.('anchorDate')||'').slice(0,10);
@@ -166,17 +166,12 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
     setDraft(rowDraft(row));
     setMessage('');
   };
-  const beginAdd=()=>{
-    setSelectedId('');
-    setDraft({...BLANK,record_type:'anchor',resource_id:''});
-    setMessage('');
-    setFormOpen(true);
-  };
   const cancelEdit=()=>{
     setSelectedId('');
     setDraft({...BLANK});
     setMessage('');
     setFormOpen(false);
+    onClose?.();
   };
   const change=(key,value)=>setDraft(current=>({...current,[key]:value}));
   const changeAnchor=(index,value)=>setDraft(current=>{
@@ -275,6 +270,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       setDraft({...BLANK});
       setMessage('');
       setFormOpen(false);
+      onClose?.();
     }catch(error){setMessage(error?.message||'儲存失敗。');}
     finally{setBusy(false);}
   };
@@ -293,16 +289,15 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       ]});
       await queryClient.invalidateQueries({queryKey:['culture-period-settings',dataScope]});
       await queryClient.invalidateQueries({queryKey:['culture-timeline',scopeId]});
-      setSelectedId('');setDraft({...BLANK});setMessage('');setFormOpen(false);
+      setSelectedId('');setDraft({...BLANK});setMessage('');setFormOpen(false);onClose?.();
     }catch(error){setMessage(error?.message||'刪除失敗。');}
     finally{setBusy(false);}
   };
 
-  if(!formOpen)return <div className="scope-culture-inline-management">
-    <button type="button" className="loc-button" onClick={beginAdd}>＋ 新增</button>
-  </div>;
+  if(!formOpen)return null;
 
-  return <section className="loc-card scope-feature-card scope-culture-inline-editor">
+  return <dialog open className="scope-culture-timeline-dialog">
+    <section className="loc-card scope-feature-card scope-culture-inline-editor">
     {query.error?<p className="scope-status scope-error">{query.error.message}</p>:null}
     {duplicateAnchorIds.length?<p className="scope-status scope-error">同一資料區域存在重複的定錨點識別：{duplicateAnchorIds.join('、')}。請先修正，否則無法正確呈現文化資料。</p>:null}
     {query.isPending?<p className="scope-status">{FEATURE_LOADING_MESSAGE}</p>:null}
@@ -359,5 +354,6 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
         {selectedId?<button type="button" disabled={busy} onClick={remove}>刪除</button>:null}
       </div>
     </form>
-  </section>;
+    </section>
+  </dialog>;
 }
