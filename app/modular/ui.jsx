@@ -4,6 +4,7 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {UI_COPY} from '../i18n/ui-copy';
 import {DEFAULT_LIST_BATCH_SIZE,LIST_LOAD_COOLDOWN_MS} from '../loc/list-loading-contract.mjs';
 import {useScopeRuntime} from './use-scope-runtime';
+import RichBlockEditor from '../loc/RichBlockEditor';
 
 export function FeaturePage({featureId,children,subtitle=null,description=null}){
   const {scope}=useScopeRuntime();
@@ -60,6 +61,7 @@ export function WorkFullText({
   loading=false,
   error='',
   content='',
+  blocks=null,
   onToggle,
   emptyText=UI_COPY.work.noBody
 }){
@@ -69,7 +71,9 @@ export function WorkFullText({
     </button>
     {open&&error?<p className="scope-status scope-error">{error}</p>:null}
     {open&&!loading&&!error?<div className="scope-inline-card">
-      <p className="scope-prewrap">{content||emptyText}</p>
+      {Array.isArray(blocks)&&blocks.length
+        ?<RichBlockEditor key={'full:'+JSON.stringify(blocks)} initialContent={blocks} editable={false}/>
+        :<p className="scope-prewrap">{content||emptyText}</p>}
     </div>:null}
   </div>;
 }

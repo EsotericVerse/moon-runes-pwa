@@ -48,6 +48,7 @@ function timelineRows(items,labelOf,focus){
         item?.is_primary_anchor?'主要錨點':'',item?.is_rc_zone?'RC 區':''
       ].filter(Boolean).join(' · '),
       start,
+      recordId:String(item?.record_id||item?.recordId||''),
       scopeId:String(item?.scope_id||''),
       entryType:String(item?.entry_type||''),
       period:String(item?.period||''),
@@ -74,9 +75,10 @@ function dateLabel(value){
   return formatted.length>=10?formatted.slice(0,10):formatted;
 }
 
-export default function CultureTimeline({items=[],labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),focus={},mode='period',onSelect=null,windowStart='',windowEnd='',boundaryStart='',boundaryEnd='',onBoundaryNavigate=null,fixedMin='',fixedMax='',hiddenDates=[]}){
+export default function CultureTimeline({items=[],labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),focus={},mode='period',onSelect=null,onTimeClick=null,windowStart='',windowEnd='',boundaryStart='',boundaryEnd='',onBoundaryNavigate=null,fixedMin='',fixedMax='',hiddenDates=[]}){
   const containerRef=useRef(null);
   const onSelectRef=useRef(onSelect);
+  const onTimeClickRef=useRef(onTimeClick);
   const onBoundaryNavigateRef=useRef(onBoundaryNavigate);
   const [ready,setReady]=useState(false);
   const [chartError,setChartError]=useState(false);
@@ -88,6 +90,7 @@ export default function CultureTimeline({items=[],labelOf=(item,index)=>item?.di
   const timelineMaxHeight=Math.max(360,Math.min(760,180+compactGroupCount*92));
 
   useEffect(()=>{onSelectRef.current=onSelect},[onSelect]);
+  useEffect(()=>{onTimeClickRef.current=onTimeClick},[onTimeClick]);
   useEffect(()=>{onBoundaryNavigateRef.current=onBoundaryNavigate},[onBoundaryNavigate]);
 
   useEffect(()=>{
@@ -169,6 +172,15 @@ export default function CultureTimeline({items=[],labelOf=(item,index)=>item?.di
         else if(visibleEnd>endMs+threshold)onBoundaryNavigateRef.current('next');
       });
       instance.on('click',properties=>{
+        if(properties?.what!=='item'&&onTimeClickRef.current&&properties?.time){
+          const time=properties.time instanceof Date?properties.time:new Date(properties.time);
+          if(!Number.isNaN(time.getTime())){
+            const year=time.getFullYear();
+            const month=String(time.getMonth()+1).padStart(2,'0');
+            const day=String(time.getDate()).padStart(2,'0');
+            onTimeClickRef.current(year+'-'+month+'-'+day);
+          }
+        }
         if(!onBoundaryNavigateRef.current||properties?.what==='item')return;
         const startMs=Date.parse(boundaryStart||windowStart||'');
         const endMs=Date.parse(boundaryEnd||windowEnd||'');

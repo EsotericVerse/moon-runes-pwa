@@ -62,10 +62,11 @@ function rowSortDate(row,anchors){
   return dateText(anchors.get(first)?.time_date)||dateText(anchors.get(last)?.time_date)||'9999-12-31';
 }
 
-export default function CultureTimelineEditor({scopeId=''}){
+export default function CultureTimelineEditor({scopeId='',selectedRecordId='',suggestedAnchorDate=''}){
   const account=useAccount();
   const searchParams=useSearchParams();
-  const suggestedAnchorDate=String(searchParams?.get?.('anchorDate')||'').slice(0,10);
+  const routeSuggestedAnchorDate=String(searchParams?.get?.('anchorDate')||'').slice(0,10);
+  const effectiveSuggestedAnchorDate=String(suggestedAnchorDate||routeSuggestedAnchorDate||'').slice(0,10);
   const queryClient=useQueryClient();
   const runtimeScope=String(scopeId||'').trim();
   const dataScope=runtimeScope;
@@ -133,16 +134,27 @@ export default function CultureTimelineEditor({scopeId=''}){
   ),[rawRows,anchors]);
 
   useEffect(()=>{
-    if(!/^\d{4}-\d{2}-\d{2}$/.test(suggestedAnchorDate))return;
+    const id=String(selectedRecordId||'').trim();
+    if(!id||!rawRows.length)return;
+    const row=rawRows.find(item=>String(item.record_id)===id);
+    if(row){
+      setSelectedId(id);
+      setDraft(rowDraft(row));
+      setMessage('');
+    }
+  },[selectedRecordId,rawRows]);
+
+  useEffect(()=>{
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(effectiveSuggestedAnchorDate))return;
     setSelectedId('');
     setDraft({
       ...BLANK,
       record_type:'anchor',
-      time_date:suggestedAnchorDate,
-      note:'系統依時間分布建議回看；請確認這段時間的實際脈絡後，再自行命名與儲存。'
+      time_date:effectiveSuggestedAnchorDate,
+      note:''
     });
-    setMessage('已帶入建議日期；系統不會自動建立定錨點。');
-  },[suggestedAnchorDate]);
+    setMessage('已帶入河道日期。');
+  },[effectiveSuggestedAnchorDate]);
 
   if(!editable||account.loading||account.permissionLoading||!account.canManageScopeSync(dataScope))return null;
 
@@ -276,28 +288,14 @@ export default function CultureTimelineEditor({scopeId=''}){
   };
 
   return <section className="loc-card scope-feature-card">
-    <p className="loc-eyebrow">時期與定錨</p>
-    <h2>時期設定</h2>
-    <p>新增或調整定錨點請在這裡處理；時間長河只呈現結果。時期與事件使用有順序的定錨點陣列：第一個是起點、最後一個是終點，中間可加入任意數量的里程碑；開放端使用 0。</p>
+    <p className="loc-eyebrow">登入編輯</p>
+    <h2>目前時期／定錨</h2>
+    <p>點河道空白位置新增定錨；點既有節點修改或刪除。新增時期／事件則直接使用下方按鈕。</p>
     {query.error?<p className="scope-status scope-error">{query.error.message}</p>:null}
     {duplicateAnchorIds.length?<p className="scope-status scope-error">同一資料區域存在重複的定錨點識別：{duplicateAnchorIds.join('、')}。請先修正，否則無法正確呈現文化資料。</p>:null}
     {query.isPending?<p className="scope-status">{FEATURE_LOADING_MESSAGE}</p>:null}
     <div className="scope-tabs">
       {EDITABLE_TYPES.map(([type,label])=><button key={type} type="button" onClick={()=>beginAdd(type)}>新增{label}</button>)}
-    </div>
-    <div className="scope-timeline">
-      {rows.map(row=>{
-        const ids=normalizeAnchorIds(row.anchor_ids);
-        const range=row.record_type==='anchor'
-          ?(dateText(row.time_date)||String(row.year_value||'日期未定'))
-          :ids.join(' → ');
-        return <article key={row.record_id}>
-          <button type="button" onClick={()=>selectRow(row)} aria-pressed={selectedId===String(row.record_id)}>
-            {TYPE_LABEL[row.record_type]||row.record_type}｜{row.label||row.resource_id}
-          </button>
-          <small>{range}</small>
-        </article>;
-      })}
     </div>
     <form onSubmit={save}>
       <label><span>類型</span><select className="scope-select" value={draft.record_type} disabled={Boolean(selectedId)} onChange={event=>change('record_type',event.target.value)}>

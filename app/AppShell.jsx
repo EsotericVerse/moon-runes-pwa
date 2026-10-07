@@ -6,6 +6,7 @@ import {QueryClient,QueryClientProvider,useQuery} from '@tanstack/react-query';
 import {UI_COPY} from './i18n/ui-copy';
 import {FEATURES,SCOPES,featureHref,featureIdForPath,getScope,scopeHref} from './modular/scope-registry';
 import {applyTheme,getThemeSlot,THEME_SLOTS} from './modular/theme-registry';
+import {mergeThemeSlot,selectThemeOverride} from './loc/theme-data';
 import {useScopeRuntime} from './modular/use-scope-runtime';
 import {selectScopeConfig} from './loc/scope-data';
 import {getDbSourceStatus,subscribeDbSourceStatus} from './loc/db-source-status.mjs';
@@ -73,7 +74,15 @@ function ThemeSelect({scopeId,scopeMeta=null}){
   const selectedThemeId=selection.scopeId===scopeId?selection.themeId:SYSTEM_THEME_ID;
   const systemDefaultThemeId=fixedDefaultThemeId||configuredDefaultThemeId||automaticThemeId(now);
   const effectiveThemeId=selectedThemeId===SYSTEM_THEME_ID?systemDefaultThemeId:selectedThemeId;
-  const slot=useMemo(()=>getThemeSlot(effectiveThemeId),[effectiveThemeId]);
+  const themeOverrideQuery=useQuery({
+    queryKey:['theme-override',effectiveThemeId],
+    queryFn:()=>selectThemeOverride(effectiveThemeId),
+    staleTime:60_000
+  });
+  const slot=useMemo(
+    ()=>mergeThemeSlot(effectiveThemeId,themeOverrideQuery.data||null),
+    [effectiveThemeId,themeOverrideQuery.data]
+  );
 
   useEffect(()=>{
     const root=document.documentElement;

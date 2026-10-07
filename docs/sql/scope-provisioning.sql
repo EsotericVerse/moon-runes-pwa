@@ -194,12 +194,12 @@ begin
 
   execute format(
     'insert into silver.%I
-      (id,email,theme,search_able,statistics_able,culture_able,
+      (id,email,display_name,search_intro,home_blocks,governance_blocks,search_aliases,theme,search_able,statistics_able,culture_able,
        keyword_min_chars,keyword_min_documents,current_keyword_class_id,
        keyword_class_share_enabled,keyword_document_count,keyword_meta,staticstime,updated_at)
-     values($1,$2,$3,true,true,true,32,100,$4,false,0,''{}''::jsonb,null,now())',
+     values($1,$2,$3,'''',''[]''::jsonb,''[]''::jsonb,array[$1,$3]::text[],$4,true,true,true,32,100,$5,false,0,''{}''::jsonb,null,now())',
     v_config_name
-  ) using v_scope,v_email,v_theme,v_new_class;
+  ) using v_scope,v_email,v_name,v_theme,v_new_class;
 
   return jsonb_build_object(
     'scope_id',v_scope,'display_name',v_name,'parent_scope_id',v_parent,

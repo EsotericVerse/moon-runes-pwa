@@ -3,9 +3,10 @@
 import {useEffect,useMemo,useState} from 'react';
 import {usePathname} from 'next/navigation';
 import {getScope,isKnownScope,normalizeScopeId,resolveScope} from './scope-registry';
-import {selectScopeRegistryEntry} from '../loc/scope-data';
+import {selectScopeConfig,selectScopeRegistryEntry} from '../loc/scope-data';
 
 const registryCache=new Map();
+const configCache=new Map();
 
 function genericRouteScope(pathname,search){
   const path=String(pathname||'/');
@@ -69,17 +70,52 @@ export function useScopeRuntime(){
   },[dynamic,scopeId,location.mounted]);
 
   const base=getScope(scopeId);
-  const scope=registryRow?{
+  const configEnabled=Boolean(
+    scopeId&&scopeId!=='admin'&&!base.aggregateChildren&&(!dynamic||registryRow?.scope_kind==='scope')
+  );
+  const [configRow,setConfigRow]=useState(()=>configEnabled?(configCache.get(scopeId)||null):null);
+
+  useEffect(()=>{
+    let active=true;
+    if(!configEnabled){
+      setConfigRow(null);
+      return()=>{active=false};
+    }
+    if(configCache.has(scopeId)){
+      setConfigRow(configCache.get(scopeId));
+      return()=>{active=false};
+    }
+    selectScopeConfig(scopeId).then(row=>{
+      if(!active)return;
+      configCache.set(scopeId,row||null);
+      setConfigRow(row||null);
+    }).catch(()=>{
+      if(!active)return;
+      setConfigRow(null);
+    });
+    return()=>{active=false};
+  },[scopeId,configEnabled]);
+
+  const structural=registryRow?{
     ...base,
     label:registryRow.display_name||scopeId,
     searchTitle:registryRow.display_name||scopeId,
     aggregateChildren:registryRow.scope_kind==='group',
     registry:registryRow
   }:base;
+  const scope=configRow?{
+    ...structural,
+    label:String(configRow.display_name||structural.label||scopeId).trim(),
+    searchTitle:String(configRow.display_name||structural.searchTitle||structural.label||scopeId).trim(),
+    searchAliases:Array.isArray(configRow.search_aliases)?configRow.search_aliases:structural.searchAliases,
+    searchIntro:String(configRow.search_intro||'').trim(),
+    config:configRow
+  }:structural;
 
   return {
     scopeId,scope,
     host:location.host,pathname,
-    dynamic,registryRow,registryResolved,registryError
+    dynamic,registryRow,registryResolved,registryError,
+    configRow
   };
 }

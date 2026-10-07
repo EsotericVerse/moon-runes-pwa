@@ -154,7 +154,7 @@ export async function selectGalaxyContent(scope,uid){
   const current=scopeOf(scope);
   const id=String(uid||'').trim();
   if(!id)return null;
-  return selectRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content'});
+  return selectRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content,content_blocks'});
 }
 
 export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
@@ -168,11 +168,11 @@ export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
   });
   if(!row||(!includeHidden&&row.searchable===false))return null;
   const [contentRow,mediaRows]=await Promise.all([
-    selectRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content'}),
+    selectRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content,content_blocks'}),
     mediaRowsFor(current,mediaIdsOf(row.media_link))
   ]);
   const mediaById=new Map(mediaRows.map(item=>[String(item.media_id),item]));
-  return {...row,scope_id:current.id,__table:current.galaxy,content:contentRow?.content||'',links:resolvedLinks(row,mediaById)};
+  return {...row,scope_id:current.id,__table:current.galaxy,content:contentRow?.content||'',content_blocks:contentRow?.content_blocks||null,links:resolvedLinks(row,mediaById)};
 }
 
 function literalPattern(value){
