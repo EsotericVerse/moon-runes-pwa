@@ -236,10 +236,70 @@ const zhHant=Object.freeze({
   })
 });
 
+const zhHans=Object.freeze({
+  ...zhHant,
+  common:Object.freeze({...zhHant.common,save:'保存',saving:'保存中…',add:'新增',edit:'编辑',delete:'删除',cancel:'取消',retry:'重新读取',refresh:'刷新',loading:'读取中…',none:'目前没有资料。',title:'标题',body:'全文',date:'日期',type:'类型',source:'来源',result:'结果',settings:'设置',management:'管理',hiddenFromSearch:'不列入搜索',theme:'主题',systemTheme:'系统默认',autoTheme:'自动（日／夜）',language:'语言'}),
+  nav:Object.freeze({...zhHant.nav,aria:'全站导航',lunarunes:'月之符文',author:'作者介绍',home:'回月典首页',search:'搜索',searchAria:'搜索文字',contact:'联系方式'}),
+  features:Object.freeze({
+    statics:Object.freeze({title:'统计',subtitle:'用图表查看作品数量、来源比例与时间变化。',description:'选择统计项目、图形与时间范围，比较资料在不同时期的分布与变化。'}),
+    culture:Object.freeze({title:'文化',subtitle:'把作品放回时间顺序，观察不同时期的累积与变化。',description:'时间长河依日期呈现作品与来源；定锚点用来切分时期，方便比较前后差异。'}),
+    governance:Object.freeze({title:'治理',subtitle:'说明使用原则、权利边界与管理方式。',description:'治理页整理这个区域的基本原则、著作权与授权方式。'}),
+    search:Object.freeze({title:'搜索',subtitle:'输入关键字，从文字、作品、多媒体与符文中找到相关内容。',description:'搜索结果会保留原本的来源与关系，方便回到完整内容或延伸查看前后脉络。'})
+  }),
+  statistics:Object.freeze({...zhHant.statistics,line:'折线图',bar:'柱状图',pie:'饼图',totalSource:'总来源',workSource:'作品来源',year:'一年',month:'一月',week:'一周',custom:'自定义范围',item:'统计项目',result:'统计结果',chart:'图形',range:'时间范围',start:'开始',end:'结束'}),
+  governance:Object.freeze({...zhHant.governance,rights:'权利与授权',systemManagement:'系统管理',enterAdmin:'进入独立管理站',enterManagement:'进入管理'}),
+  management:Object.freeze({...zhHant.management,article:'发表文章',import:'资料导入',keywords:'关键词管理',checking:'正在确认登录与管理权限…',signOut:'登出',item:'管理项目',permissionDenied:'目前登录身份没有此区域的管理权限。',eyebrow:'管理'}),
+  admin:Object.freeze({...zhHant.admin,eyebrow:'系统管理',loginTitle:'系统管理登录',signIn:'使用 Google 登录',checking:'正在确认 Admin 权限…',denied:'目前登录身份没有 Admin 权限。',theme:'默认 Theme',item:'管理项目'})
+});
+
+const en=Object.freeze({
+  ...zhHant,
+  common:Object.freeze({...zhHant.common,save:'Save',saving:'Saving…',add:'Add',edit:'Edit',delete:'Delete',cancel:'Cancel',retry:'Retry',refresh:'Refresh',loading:'Loading…',none:'No data.',title:'Title',body:'Full text',date:'Date',type:'Type',source:'Source',result:'Result',settings:'Settings',management:'Management',hiddenFromSearch:'Hide from search',theme:'Theme',systemTheme:'System default',autoTheme:'Auto (day/night)',language:'Language'}),
+  nav:Object.freeze({...zhHant.nav,aria:'Site navigation',lunarunes:'LunaRunes',author:'Author',home:'LOC Home',search:'Search',searchAria:'Search text',contact:'Contact'}),
+  features:Object.freeze({
+    statics:Object.freeze({title:'Statistics',subtitle:'View work counts, source ratios, and changes over time.',description:'Choose a statistic, chart, and time range to compare distributions and changes.'}),
+    culture:Object.freeze({title:'Culture',subtitle:'Place works back on the timeline to observe accumulation and change.',description:'The time river shows works and sources by date; anchors divide periods for comparison.'}),
+    governance:Object.freeze({title:'Governance',subtitle:'Usage principles, rights boundaries, and management.',description:'Governance documents the basic rules, copyright, and licensing for this scope.'}),
+    search:Object.freeze({title:'Search',subtitle:'Find text, works, media, and runes by keyword.',description:'Results preserve source and relationships so you can return to the full context.'})
+  }),
+  scope:Object.freeze({
+    ...zhHant.scope,
+    loc:Object.freeze({...zhHant.scope.loc,label:'LOC',ranking:'Overall ranking',statics:'View work counts, source ratios, and changes over time.',culture:'Place works back on the timeline and compare periods.',governance:'LOC usage principles, rights boundaries, and management.',search:'Search LOC text, works, media, and related content.'}),
+    author:Object.freeze({...zhHant.scope.author,label:'Author',ranking:'Author ranking',search:'Find related content by keyword, work, source, or date.'}),
+    admin:Object.freeze({...zhHant.scope.admin,label:'Administration',ranking:'Ranking'})
+  }),
+  search:Object.freeze({...zhHant.search,start:'Enter a keyword to search.',allContent:'All content',mode:'Search mode',media:'Media',mediaSearch:'Media search',allSearch:'All search',mediaPromptLabel:'Find media',textPromptLabel:'What are you looking for?',searching:'Searching…',failed:'Search failed.',empty:'No matching results.'}),
+  statistics:Object.freeze({...zhHant.statistics,line:'Line',bar:'Bar',pie:'Pie',totalSource:'Total sources',workSource:'Work sources',year:'1 year',month:'1 month',week:'1 week',custom:'Custom range',noOptions:'No statistics available',item:'Statistic',result:'Statistics',chart:'Chart',range:'Time range',start:'Start',end:'End',invalidRange:'Set a valid start and end date.',itemSuffix:' items'}),
+  culture:Object.freeze({...zhHant.culture,distribution:'Time distribution',river:'Time river',intersectionRiver:'Intersection river',combinedSources:'Combined sources',combinedRiver:'Combined source river',classificationRiver:'Work classification river',structure:'Periods · Events · Anchors',period:'Period',allTime:'All time',allWorks:'All works',list:'List',virtualAnchor:'Virtual anchor',showAllWorks:'Show all works',editing:'Editing',selectedPrefix:'Selected | ',creating:'Creating…'}),
+  governance:Object.freeze({...zhHant.governance,rights:'Rights & Licensing',systemManagement:'System management',enterAdmin:'Open Admin',enterManagement:'Open Management'}),
+  work:Object.freeze({...zhHant.work,viewLinks:'View links',relatedText:'Related text',untitled:'Untitled work',hidden:'This item is hidden (managers only)',link:'Link',noBody:'No body text.',loadingBody:'Loading full text…',collapseBody:'Collapse',viewBody:'View full text'}),
+  management:Object.freeze({...zhHant.management,article:'Publish article',import:'Data import',keywords:'Keyword management',checking:'Checking login and permissions…',signOut:'Sign out',item:'Management item',noOptions:'No management options',permissionDenied:'This account does not have management permission for this scope.',eyebrow:'Management',locTitle:'LOC System Management',locDescription:'LOC system management is centralized in the Admin site.',dataType:'Data type',searchStatus:'Search status',previous:'Previous',next:'Next',articleSource:'Source',articleParent:'Parent / Source',articleTarget:'Target',articleReference:'Reference',articleBody:'Body',articleUrl:'Original URL',articleTime:'Published time',sourceRequired:'Source is required.',articlePublished:'Article published to Galaxy.',articlePublishFailed:'Article publication failed.',importJson:'JSON import',sourceChoice:'Source',currentFile:'File',startImport:'Start import',importing:'Importing…',songTitle:'Song title',lyrics:'Lyrics'}),
+  admin:Object.freeze({...zhHant.admin,eyebrow:'System Administration',loginTitle:'Admin Login',loginIntro:'Admin is a separate management site, not a Scope.',signIn:'Sign in with Google',checking:'Checking Admin permission…',denied:'This account does not have Admin permission.',overview:'Overview',theme:'Default Theme',item:'Management item'}),
+  format:Object.freeze({
+    searchScope:label=>`Search “${label}”…`,
+    searchResult:({label,query,hasMore,partial=''})=>`${label}: “${query}”${hasMore?' · more results available':''}${partial}`,
+    relatedText:index=>`Related text ${index}`,
+    link:index=>`Link ${index}`,
+    songLink:index=>`Song link ${index}`,
+    period:index=>`Period ${index}`,
+    selected:value=>`Selected | ${value}`
+  })
+});
+
 export const UI_LOCALE='zh-Hant';
+export const UI_LOCALE_OPTIONS=Object.freeze([
+  Object.freeze({value:'zh-Hant',label:'繁體中文'}),
+  Object.freeze({value:'zh-Hans',label:'简体中文'}),
+  Object.freeze({value:'en',label:'English'})
+]);
 export const UI_COPY=zhHant;
-export const UI_DICTIONARIES=Object.freeze({'zh-Hant':zhHant});
+export const UI_DICTIONARIES=Object.freeze({'zh-Hant':zhHant,'zh-Hans':zhHans,en});
+
+export function normalizeUiLocale(locale){
+  const value=String(locale||'').trim();
+  return UI_DICTIONARIES[value]?value:UI_LOCALE;
+}
 
 export function uiCopy(locale=UI_LOCALE){
-  return UI_DICTIONARIES[locale]||UI_DICTIONARIES[UI_LOCALE];
+  return UI_DICTIONARIES[normalizeUiLocale(locale)];
 }
