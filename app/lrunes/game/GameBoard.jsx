@@ -1,6 +1,6 @@
 'use client';
 
-import {useMemo,useState} from 'react';
+import {useEffect,useMemo,useState} from 'react';
 import {Client} from 'boardgame.io/react';
 import {useQuery} from '@tanstack/react-query';
 import {
@@ -15,22 +15,65 @@ import gameHeroAsset from '../../../pics/LunaRunesGame.jpg';
 import './game-board.css';
 
 const LABELS=['A','B','C','D'];
-const gameTheme=createTheme({
-  palette:{
-    mode:'dark',
-    primary:{main:'#e4bf7c'},
-    secondary:{main:'#8fb6a3'},
-    background:{default:'#101623',paper:'#1a2434'},
-    text:{primary:'#f4f1e9',secondary:'#c1ccdd'},
-    divider:'#34435b'
-  },
-  shape:{borderRadius:12},
-  typography:{fontFamily:'system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif'},
-  components:{
-    MuiButton:{defaultProps:{disableElevation:true}},
-    MuiPaper:{defaultProps:{elevation:0}}
-  }
-});
+const FALLBACK_THEME={
+  mode:'dark',bg:'#101623',panel:'#1a2434',panel2:'#25334a',
+  text:'#f4f1e9',muted:'#c1ccdd',heading:'#f4f1e9',
+  accent:'#e4bf7c',gold:'#e4bf7c',line:'#34435b',danger:'#c66f7e'
+};
+
+function readLocTheme(){
+  if(typeof document==='undefined')return FALLBACK_THEME;
+  const root=document.documentElement;
+  const css=getComputedStyle(root);
+  const token=(name,fallback)=>css.getPropertyValue(name).trim()||fallback;
+  return {
+    mode:root.dataset.theme==='light'?'light':'dark',
+    bg:token('--loc-bg',FALLBACK_THEME.bg),
+    panel:token('--loc-panel',FALLBACK_THEME.panel),
+    panel2:token('--loc-panel-2',FALLBACK_THEME.panel2),
+    text:token('--loc-text',FALLBACK_THEME.text),
+    muted:token('--loc-muted',FALLBACK_THEME.muted),
+    heading:token('--loc-heading',FALLBACK_THEME.heading),
+    accent:token('--loc-accent',FALLBACK_THEME.accent),
+    gold:token('--loc-gold',FALLBACK_THEME.gold),
+    line:token('--loc-line',FALLBACK_THEME.line),
+    danger:token('--loc-danger',FALLBACK_THEME.danger)
+  };
+}
+
+function buildGameTheme(tokens){
+  return createTheme({
+    palette:{
+      mode:tokens.mode,
+      primary:{main:tokens.accent},
+      secondary:{main:tokens.gold},
+      error:{main:tokens.danger},
+      background:{default:tokens.bg,paper:tokens.panel},
+      text:{primary:tokens.text,secondary:tokens.muted},
+      divider:tokens.line
+    },
+    shape:{borderRadius:12},
+    typography:{fontFamily:'system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif'},
+    components:{
+      MuiButton:{defaultProps:{disableElevation:true}},
+      MuiPaper:{defaultProps:{elevation:0},styleOverrides:{root:{backgroundImage:'none'}}},
+      MuiChip:{styleOverrides:{root:{fontWeight:650}}}
+    }
+  });
+}
+
+function useLocGameTheme(){
+  const [tokens,setTokens]=useState(FALLBACK_THEME);
+  useEffect(()=>{
+    const root=document.documentElement;
+    const sync=()=>setTokens(readLocTheme());
+    sync();
+    const observer=new MutationObserver(sync);
+    observer.observe(root,{attributes:true,attributeFilter:['style','data-theme','data-theme-id']});
+    return()=>observer.disconnect();
+  },[]);
+  return useMemo(()=>buildGameTheme(tokens),[tokens]);
+}
 
 const cardSrc=card=>'/assets/lunarunes/cards/'+String(card.id).padStart(2,'0')+'_'+String(card.name).replace(/之符文$/,'').trim()+'.png';
 const labelStage=s=>s==='opening'?'起手棄牌':s==='event'?'事件':s==='duel'?'決鬥':s==='finished'?'結算':String(s||'').includes('resonance')?'共鳴':s||'—';
@@ -81,7 +124,7 @@ function SelectionZone({count,limit,playerIndex}){
     sx={{
       p:1.25,mt:1,borderStyle:'dashed',
       borderColor:isOver?'primary.main':'divider',
-      bgcolor:isOver?'rgba(228,191,124,.10)':'transparent'
+      bgcolor:isOver?'var(--loc-accent-surface,rgba(228,191,124,.10))':'transparent'
     }}
   >
     <Typography variant="body2">已選 {count} / {limit} 張 · 點擊卡牌，或拖曳至此選取</Typography>
@@ -95,12 +138,12 @@ function DeTrend({history,players}){
     <div className="lrg-trend">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={history} margin={{top:12,right:16,bottom:8,left:-12}}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#34435b"/>
-          <XAxis dataKey="step" tick={{fill:'#c1ccdd'}} stroke="#34435b"/>
-          <YAxis allowDecimals={false} tick={{fill:'#c1ccdd'}} stroke="#34435b"/>
-          <Tooltip contentStyle={{background:'#1a2434',border:'1px solid #34435b',borderRadius:8}}/>
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--loc-line,#34435b)"/>
+          <XAxis dataKey="step" tick={{fill:'var(--loc-muted,#c1ccdd)'}} stroke="var(--loc-line,#34435b)"/>
+          <YAxis allowDecimals={false} tick={{fill:'var(--loc-muted,#c1ccdd)'}} stroke="var(--loc-line,#34435b)"/>
+          <Tooltip contentStyle={{background:'var(--loc-panel,#1a2434)',border:'1px solid var(--loc-line,#34435b)',color:'var(--loc-text,#f4f1e9)',borderRadius:8}}/>
           <Legend/>
-          {players.map((player,index)=><Line key={player.name} type="monotone" dataKey={LABELS[index]} name={player.name} stroke={['#e4bf7c','#8fb6a3','#9eb6dc','#d5a7be'][index]} strokeWidth={2.5} dot={{r:3}} isAnimationActive={false}/>)}
+          {players.map((player,index)=><Line key={player.name} type="monotone" dataKey={LABELS[index]} name={player.name} stroke={['var(--loc-accent,#e4bf7c)','var(--loc-gold,#e4bf7c)','var(--loc-heading,#f4f1e9)','var(--loc-danger,#c66f7e)'][index]} strokeWidth={2.5} dot={{r:3}} isAnimationActive={false}/>)}
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -163,8 +206,7 @@ function Board({G,moves,rules,onRestart}){
   const selectable=!done&&!isResonance;
   const players=opening?[{p:active,i:G.active}]:G.players.map((p,i)=>({p,i}));
 
-  return <ThemeProvider theme={gameTheme}>
-    <DndContext sensors={sensors} onDragEnd={({active:drag,over})=>{
+  return <DndContext sensors={sensors} onDragEnd={({active:drag,over})=>{
       if(over?.data.current?.playerIndex===drag.data.current?.playerIndex&&drag.data.current){
         moves.toggleCard(drag.data.current.playerIndex,drag.data.current.cardId);
       }
@@ -287,11 +329,11 @@ function Board({G,moves,rules,onRestart}){
           </Paper>
         </div>:null}
       </main>
-    </DndContext>
-  </ThemeProvider>;
+    </DndContext>;
 }
 
 export default function GameBoard(){
+  const uiTheme=useLocGameTheme();
   const {data,error,isLoading}=useQuery({queryKey:['lrunes','game','current'],queryFn:loadGameData,staleTime:60000});
   const [count,setCount]=useState(2);
   const [match,setMatch]=useState(0);
@@ -301,11 +343,11 @@ export default function GameBoard(){
     debug:false
   }):null,[data,count,match]);
 
-  if(isLoading)return <main className="lrg"><Alert severity="info">載入遊戲資料…</Alert></main>;
-  if(error||!data)return <main className="lrg"><Alert severity="error" role="alert">遊戲資料載入失敗：{error?.message||'無資料'}</Alert></main>;
-  if(Engine)return <Engine key={match}/>;
+  if(isLoading)return <ThemeProvider theme={uiTheme}><main className="lrg"><Alert severity="info">載入遊戲資料…</Alert></main></ThemeProvider>;
+  if(error||!data)return <ThemeProvider theme={uiTheme}><main className="lrg"><Alert severity="error" role="alert">遊戲資料載入失敗：{error?.message||'無資料'}</Alert></main></ThemeProvider>;
+  if(Engine)return <ThemeProvider theme={uiTheme}><Engine key={match}/></ThemeProvider>;
 
-  return <ThemeProvider theme={gameTheme}>
+  return <ThemeProvider theme={uiTheme}>
     <main className="lrg lrg-home">
       <Paper className="lrg-home-hero">
         <div className="lrg-home-copy">
