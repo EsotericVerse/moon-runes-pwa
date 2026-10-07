@@ -7,7 +7,6 @@ import {useAccount} from './use-account';
 
 const EMPTY={
   display_name:'',
-  search_intro:'',
   search_aliases:[],
   theme:'theme-7',
   search_able:true,
@@ -58,7 +57,6 @@ export default function ScopeSettingsPanel({scopeId}){
       const searchAliases=aliasList(aliases);
       await updateRows(table,{
         display_name:displayName,
-        search_intro:String(draft.search_intro||'').trim(),
         search_aliases:searchAliases,
         theme:String(draft.theme||'theme-7'),
         search_able:draft.search_able!==false,
@@ -93,11 +91,6 @@ export default function ScopeSettingsPanel({scopeId}){
           </select>
         </label>
       </div>
-
-      <label className="scope-management-wide-field">
-        <span>搜尋頁 Scope 介紹</span>
-        <textarea className="scope-search-input" rows={4} value={draft.search_intro||''} onChange={event=>change('search_intro',event.target.value)} placeholder="精確搜尋 Scope 名稱或別名時顯示的簡短介紹。"/>
-      </label>
 
       <label className="scope-management-wide-field">
         <span>搜尋別名</span>
