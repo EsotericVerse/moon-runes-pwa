@@ -8,7 +8,8 @@ const files={
   userStorage:'app/loc/user-storage.js',
   scopeManagement:'app/loc/GovernanceManagement.jsx',
   adminManagement:'app/loc/views/AdminHomeView.jsx',
-  managementData:'app/loc/ManagementDataPanel.jsx',
+  scopeSettings:'app/loc/ScopeSettingsPanel.jsx',
+  publisher:'app/loc/ManagementArticlePublisher.jsx',
   search:'app/modular/features/Search.jsx',
   culture:'app/modular/features/Culture.jsx'
 };
@@ -28,8 +29,10 @@ if(!failures.length){
   for(const token of ["apiRelation('user_records')","apiRelation('user_settings')","onConflict:'owner_id,id'","onConflict:'owner_id,setting_key'"])if(!storage.includes(token))failures.push('user storage missing '+token);
   if(!read(files.scopeManagement).includes('account.canManageScopeSync(scopeId)'))failures.push('Scope management role gate missing');
   if(!read(files.adminManagement).includes('account.canManageGlobalSync()'))failures.push('Admin management role gate missing');
-  const managementData=read(files.managementData);
-  for(const token of ['account.scopeDataFor(scopeId)','uid,title,source_name,createtime,UpdateTime,searchable'])if(!managementData.includes(token))failures.push('Management data contract missing '+token);
+  const scopeSettings=read(files.scopeSettings);
+  for(const token of ['account.canManageScopeSync(scopeId)','display_name','search_intro','search_aliases','updateRows'])if(!scopeSettings.includes(token))failures.push('Scope settings authorization missing '+token);
+  const publisher=read(files.publisher);
+  for(const token of ['account.canManageScopeSync(scopeId)','insertRows','source_name','content_type'])if(!publisher.includes(token))failures.push('Publisher authorization missing '+token);
   for(const path of [files.search,files.culture])if(!read(path).includes('UpdateTime:new Date().toISOString()'))failures.push(path+' must refresh Galaxy UpdateTime');
 }
 if(failures.length){
