@@ -11,7 +11,7 @@ const labelStage=s=>s==='opening'?'起手棄牌':s==='event'?'事件':s==='duel'
 function Board({G,moves,rules,onRestart}){
   const [target,setTarget]=useState(null);
   const [tab,setTab]=useState('board');
-  const active=G.players[G.active];
+  const active=G.players[G.active]||G.players[0];
   const event=G.eventDeck[G.eventIndex%G.eventDeck.length];
   const opening=G.stage==='opening',isEvent=G.stage==='event',isResonance=G.stage?.includes('resonance')||G.stage==='duel';
   const done=G.stage==='finished';
