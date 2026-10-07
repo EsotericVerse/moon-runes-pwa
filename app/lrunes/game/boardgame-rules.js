@@ -103,7 +103,7 @@ export function createLunaRunesGame(rules,count){
         nextStage(G,rules);
       },
       toggleCooperation({G},target){
-        if(G.stage!=='resonance'||!Number.isInteger(target)||target===G.active||target<0||target>=G.players.length)return;
+        if(!G.stage?.includes('resonance')||!Number.isInteger(target)||target===G.active||target<0||target>=G.players.length)return;
         const actor=G.active;
         const exists=G.cooperations.some(x=>(x.a===actor&&x.b===target)||(x.a===target&&x.b===actor));
         G.cooperations=exists?G.cooperations.filter(x=>!((x.a===actor&&x.b===target)||(x.a===target&&x.b===actor))):
