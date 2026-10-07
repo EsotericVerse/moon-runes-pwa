@@ -27,10 +27,11 @@ export function createLunaRunesGame(rules,count){
   if(count<rules.config.playerMin||count>rules.config.playerMax)throw new Error('玩家人數不合法');
   return {
     name:'lunarunes',
-    setup:()=> {
-      const players=Array.from({length:count},(_,i)=>freshPlayer(rules.cards,'玩家 '+LABELS[i],rules.config));
+    setup:({random}={})=> {
+      const shuffleFn=list=>random?.Shuffle?random.Shuffle(list):shuffle(list);
+      const players=Array.from({length:count},(_,i)=>freshPlayer(rules.cards,'玩家 '+LABELS[i],rules.config,shuffleFn));
       return {
-        players,eventDeck:shuffle(rules.events),eventIndex:0,round:1,
+        players,eventDeck:shuffleFn(rules.events),eventIndex:0,round:1,
         stage:'opening',active:0,actions:0,winner:null,draw:false,
         duelists:[],cooperations:[],lastInteraction:null,
         history:[snapshot(players,'開始')],logs:['新遊戲開始。'],
