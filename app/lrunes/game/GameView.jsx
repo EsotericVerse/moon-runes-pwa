@@ -458,7 +458,7 @@ function freshGame(data,count){
     eventDeck,
     eventIndex:0,
     round:1,
-    phase:data.rounds[0]?.phase||'event',
+    phase:'opening',
     active:0,
     actions:0,
     winner:null,
@@ -570,22 +570,26 @@ export default function GameView(){
   }
 
   function confirmOpening(pi){
-    setState(current=>{
-      if(!current||!current.players[pi]?.opening)return current;
-      try{
-        const players=current.players.map((player,index)=>index===pi?finishOpening(player,player.selected,data.config):player);
-        const nextPlayer=players.find(player=>player.opening);
-        return {
-          ...current,
-          players,
-          result:nextPlayer
-            ?current.players[pi].name+' 已完成起手棄牌。請繼續操作 '+nextPlayer.name+'，選擇 '+data.config.openingDiscard+' 張棄牌。'
-            :'所有玩家已完成起手，現在進入第 1 回合事件。'
-        };
-      }catch(problem){
-        return {...current,result:problem.message};
-      }
-    });
+    if(!state||!data)return;
+    const player=state.players[pi];
+    if(!player?.opening)return;
+    try{
+      const finished=finishOpening(player,player.selected,data.config);
+      const players=state.players.map((item,index)=>index===pi?finished:item);
+      const nextPlayer=players.find(item=>item.opening);
+      setState({
+        ...state,
+        players,
+        active:nextPlayer?players.indexOf(nextPlayer):0,
+        phase:nextPlayer?'opening':(phaseForRound(data,1)||'event'),
+        result:nextPlayer
+          ?player.name+' 已完成起手。請操作 '+nextPlayer.name+'，選 '+data.config.openingDiscard+' 張棄牌。'
+          :'雙方起手完成，進入第 1 回合事件。'
+      });
+      setFocusPlayer(nextPlayer?players.indexOf(nextPlayer):null);
+    }catch(problem){
+      setState(current=>current?{...current,result:'起手棄牌失敗：'+problem.message}:current);
+    }
   }
 
   function settleIfFinal(current){
@@ -783,6 +787,7 @@ export default function GameView(){
     <div className="game-round-wrap"><RoundRail round={state.round} rounds={data.rounds}/></div>
 
     {!allOpened?<p className="loc-status">單人試玩可輪流操作所有玩家。起手設定：每位玩家從 {data.config.openingDraw} 張棄 {data.config.openingDiscard} 張，保留 {data.config.handBase} 張。{state.players.some(player=>player.opening)?'目前待完成：'+state.players.filter(player=>player.opening).map(player=>player.name).join('、')+'。':''}</p>:null}
+    {!allOpened?<p className="loc-status" role="status">{state.result}</p>:null}
 
     <div className={'game-live-board players-'+state.players.length}>
       {state.players.map((player,pi)=><motion.section layout animate={{scale:focusPlayer===pi?1.012:1,opacity:focusPlayer===null||focusPlayer===pi?1:.72}} transition={{duration:.18}} className={'loc-player game-player '+(state.active===pi?'is-turn ':'')+(focusPlayer===pi?'is-focused':'')} key={player.name}>
@@ -794,7 +799,7 @@ export default function GameView(){
         <div className="game-hand">
           {player.hand.map(card=><RuneCard key={card.id} card={card} selected={player.selected.includes(card.id)} onClick={()=>toggle(pi,card.id)}/>)}
         </div>
-        {player.opening?<button className="loc-button primary" onClick={()=>confirmOpening(pi)} disabled={player.selected.length!==data.config.openingDiscard}>確認 {player.name} 棄 {data.config.openingDiscard} 張，保留 {data.config.handBase} 張</button>:!allOpened?<p className="game-player-meta">{player.name} 已完成起手，等待其他玩家。</p>:null}
+        {player.opening?<button type="button" className="loc-button primary" onClick={()=>confirmOpening(pi)} disabled={player.selected.length!==data.config.openingDiscard}>確認 {player.name} 棄 {data.config.openingDiscard} 張，保留 {data.config.handBase} 張</button>:!allOpened?<p className="game-player-meta">{player.name} 已完成起手，等待其他玩家。</p>:null}
       </motion.section>)}
 
       <AnimatePresence mode="wait">
