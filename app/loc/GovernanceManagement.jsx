@@ -8,7 +8,6 @@ import {scopeHref} from '../modular/scope-registry';
 import ScopeSettingsPanel from './ScopeSettingsPanel';
 import ManagementImportPanel from './ManagementImportPanel';
 import ScopeGroupManagement from './ScopeGroupManagement';
-import KeywordLibraryPanel from './KeywordLibraryPanel';
 
 const LOGIN_COPY={
   loc:{eyebrow:'LOC Group Management',title:'LOC Scope Group 管理登入',description:'登入後管理 LOC Scope Group 結構；個別 Scope 的內容仍回到各自頁面編輯。'},
@@ -30,12 +29,10 @@ function LoginScreen({scopeId,account}){
 
 function sectionOptions(scopeId,scope){
   if(scope?.aggregateChildren)return [{value:'group',label:'Scope Group'}];
-  const options=[
+  return [
     {value:'settings',label:'雜項設定'},
     {value:'import',label:'資料匯入'}
   ];
-  if(scopeId!=='lrunes')options.push({value:'keywords',label:'關鍵詞庫'});
-  return options;
 }
 
 export default function GovernanceManagement(){
@@ -79,6 +76,5 @@ export default function GovernanceManagement(){
     {section==='group'&&scope?.aggregateChildren?<ScopeGroupManagement scopeId={scopeId}/>:null}
     {section==='settings'&&!scope?.aggregateChildren?<ScopeSettingsPanel scopeId={scopeId}/>:null}
     {section==='import'&&!scope?.aggregateChildren?<ManagementImportPanel scopeId={scopeId}/>:null}
-    {section==='keywords'&&!scope?.aggregateChildren&&scopeId!=='lrunes'?<KeywordLibraryPanel scopeId={scopeId}/>:null}
   </section>;
 }
