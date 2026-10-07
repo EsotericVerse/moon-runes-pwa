@@ -82,7 +82,7 @@ export function createLunaRunesGame(rules,count){
         nextStage(G,rules);
       },
       resonance({G},kind,targetIndex){
-        if(!['resonance','duel'].includes(G.stage)||finished(G))return;
+        if(!(G.stage==='resonance'||G.stage?.includes('resonance')||G.stage==='duel')||finished(G))return;
         const members=participants(G),actor=G.active;
         const target=kind==='self'?actor:targetIndex;
         if(!members.includes(actor)||!members.includes(target)||(kind!=='self'&&target===actor))return;
