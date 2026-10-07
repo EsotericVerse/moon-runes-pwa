@@ -12,6 +12,7 @@ const SLOT_COUNT=4;
 function fallbackDocument(value){
   if(Array.isArray(value))return normalizeBlocks(value);
   if(value&&typeof value==='object'&&Array.isArray(value.blocks))return normalizeBlocks(value.blocks);
+  if(typeof value==='string'&&value.trim().startsWith('<'))return {html:value};
   return normalizeBlocks(value??'');
 }
 
@@ -21,12 +22,14 @@ function slotRows(rows=[],fallbackDocuments=[]){
     const order=index+1;
     const stored=byOrder.get(order)||null;
     const storedText=String(stored?.block_text||'');
-    const blocks=storedText.trim()?normalizeBlocks({html:storedText}):fallbackDocument(fallbackDocuments[index]);
+    const fallback=fallbackDocument(fallbackDocuments[index]);
+    const blocks=storedText.trim()?{html:storedText}:fallback;
     return {
       order,
       stored:Boolean(stored),
       title:String(stored?.block_title||''),
-      blocks
+      blocks,
+      html:storedText.trim()?storedText:(typeof fallback?.html==='string'?fallback.html:'')
     };
   });
 }
@@ -61,6 +64,7 @@ export default function ScopeEditableBlocks({
     :null;
   const [editing,setEditing]=useState(0);
   const [draft,setDraft]=useState(null);
+  const [draftHtml,setDraftHtml]=useState('');
   const [draftTitle,setDraftTitle]=useState('');
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
@@ -70,6 +74,7 @@ export default function ScopeEditableBlocks({
     const slot=slots[editing-1];
     if(slot){
       setDraft(slot.blocks);
+      setDraftHtml(slot.html||'');
       setDraftTitle(slot.title);
     }
   },[editing,query.data]);
@@ -78,9 +83,11 @@ export default function ScopeEditableBlocks({
   const table=`silver.${scopeId}_blocks`;
 
   function begin(index){
+    const slot=slots[index];
     setEditing(index+1);
-    setDraft(slots[index]?.blocks||plainTextToBlocks(''));
-    setDraftTitle(slots[index]?.title||'');
+    setDraft(slot?.blocks||plainTextToBlocks(''));
+    setDraftHtml(slot?.html||'');
+    setDraftTitle(slot?.title||'');
     setMessage('');
   }
 
@@ -88,10 +95,9 @@ export default function ScopeEditableBlocks({
     setBusy(true);setMessage('');
     try{
       const slot=slots[index];
-      const doc=normalizeBlocks(draft);
       const values={
         block_title:String(draftTitle||'').trim(),
-        block_text:String(doc.html||'')
+        block_text:String(draftHtml||'').trim()
       };
       if(slot?.stored){
         await updateRows(table,values,{filters:[
@@ -109,6 +115,7 @@ export default function ScopeEditableBlocks({
       await queryClient.invalidateQueries({queryKey:['scope-blocks',scopeId,page]});
       setEditing(0);
       setDraft(null);
+      setDraftHtml('');
       setDraftTitle('');
       setMessage('已更新。');
     }catch(error){
@@ -132,7 +139,7 @@ export default function ScopeEditableBlocks({
       >
         {canEdit&&active?<div className="scope-inline-editbar">
           <button type="button" className="loc-button primary" disabled={busy} onClick={()=>save(index)}>{busy?'儲存中…':'儲存'}</button>
-          <button type="button" className="loc-button" disabled={busy} onClick={()=>{setEditing(0);setDraft(null);setDraftTitle('');setMessage('')}}>取消</button>
+          <button type="button" className="loc-button" disabled={busy} onClick={()=>{setEditing(0);setDraft(null);setDraftHtml('');setDraftTitle('');setMessage('')}}>取消</button>
         </div>:null}
         {active?<>
           <label className="scope-management-wide-field"><span>標題</span><input className="scope-search-input" value={draftTitle} onChange={event=>setDraftTitle(event.target.value)}/></label>
@@ -140,6 +147,7 @@ export default function ScopeEditableBlocks({
             key={scopeId+':'+page+':'+index+':edit'}
             initialContent={draft}
             onChange={setDraft}
+            onHtmlChange={setDraftHtml}
           />
         </>:<>
           {slot.title?<Heading>{slot.title}</Heading>:null}
