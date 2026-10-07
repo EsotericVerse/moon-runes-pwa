@@ -98,6 +98,7 @@ function useAdminScopeData(){
 
 function DeploymentTree({registry=[],presentationNames={},selectedId='',onSelect}){
   const containerRef=useRef(null);
+  const networkRef=useRef(null);
 
   useEffect(()=>{
     let cancelled=false;
@@ -135,6 +136,7 @@ function DeploymentTree({registry=[],presentationNames={},selectedId='',onSelect
         nodes:{borderWidth:1,margin:10,font:{multi:false}},
         edges:{smooth:{enabled:true,type:'cubicBezier',forceDirection:'vertical',roundness:.35}}
       });
+      networkRef.current=network;
       network.on('selectNode',params=>{
         const id=String(params?.nodes?.[0]||'');
         if(id&&id!=='__admin__')onSelect?.(id);
@@ -144,10 +146,17 @@ function DeploymentTree({registry=[],presentationNames={},selectedId='',onSelect
         network.focus(selectedId,{scale:1,animation:false});
       }
     }).catch(()=>{});
-    return()=>{cancelled=true;network?.destroy();};
+    return()=>{cancelled=true;network?.destroy();if(networkRef.current===network)networkRef.current=null;};
   },[registry,presentationNames,onSelect]);
 
-  useEffect(()=>{},[selectedId]);
+  useEffect(()=>{
+    const network=networkRef.current;
+    if(!network||!selectedId)return;
+    try{
+      network.selectNodes([selectedId]);
+      network.focus(selectedId,{scale:1,animation:{duration:220,easingFunction:'easeInOutQuad'}});
+    }catch{}
+  },[selectedId]);
 
   return <div ref={containerRef} className="admin-deployment-tree" role="region" aria-label="Scope UI 部署階層"/>;
 }
