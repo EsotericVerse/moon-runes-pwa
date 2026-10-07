@@ -12,4 +12,4 @@ const client=createDatabaseClient(adapter);
 export const dbBackupPublicClient=adapter.backupPublicClient||null;
 export const dbPrimarySourceLabel=adapter.primarySourceLabel||'Primary';
 export const dbBackupSourceLabel=adapter.backupSourceLabel||'Backup';
-export const {publicClient:dbPublicClient,authClient:dbAuthClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,writeKeywordLibraryItem,copyKeywordLibraryClass,provisionScope,manageScopeRegistry,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithEmail,signOutAccount}=client;
+export const {publicClient:dbPublicClient,authClient:dbAuthClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,writeKeywordLibraryItem,copyKeywordLibraryClass,provisionScope,manageScopeRegistry,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount}=client;
