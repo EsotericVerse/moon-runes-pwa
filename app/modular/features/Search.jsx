@@ -23,6 +23,127 @@ import RichBlockEditor,{blocksToPlainText,plainTextToBlocks} from '../../loc/Ric
 import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
 
 
+const GALAXY_EDITOR_COLUMNS='uid,content_type,title,content,createtime,source_native_id,source_place,searchable,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link,statistics_able,class_id,group_lists,content_blocks';
+
+const GALAXY_ATTR_ORDER=Object.freeze([
+  'uid','content_type','title','content','createtime','source_native_id','source_place',
+  'searchable','UpdateTime','url','source_id','target_id','ref_id','source_name',
+  'media_link','statistics_able','class_id','group_lists','content_blocks'
+]);
+
+function nullableText(value){
+  const text=String(value??'').trim();
+  return text||null;
+}
+function listText(value){
+  return Array.isArray(value)?value.join('\n'):'';
+}
+function parseListText(value){
+  return [...new Set(String(value||'').split(/[\n,]+/g).map(item=>item.trim()).filter(Boolean))];
+}
+function datetimeLocalValue(value){
+  if(!value)return '';
+  const date=new Date(value);
+  if(Number.isNaN(date.getTime()))return '';
+  const local=new Date(date.getTime()-date.getTimezoneOffset()*60_000);
+  return local.toISOString().slice(0,16);
+}
+function isoOrNull(value){
+  const text=String(value||'').trim();
+  if(!text)return null;
+  const date=new Date(text);
+  if(Number.isNaN(date.getTime()))throw new Error('文章時間格式無效。');
+  return date.toISOString();
+}
+function jsonText(value){
+  try{return JSON.stringify(value??false,null,2)}catch{return String(value??'')}
+}
+function parseJsonAttr(value){
+  const text=String(value??'').trim();
+  if(!text)return false;
+  try{return JSON.parse(text)}catch{throw new Error('group_lists 必須是有效 JSON。')}
+}
+function attrDisplayValue(key,value){
+  if(key==='content')return '全文已顯示於上方';
+  if(key==='content_blocks'){
+    if(value===null||value===undefined)return 'null';
+    const raw=jsonText(value);
+    return 'WYSIWYG 結構 · '+raw.length+' chars';
+  }
+  if(Array.isArray(value))return value.length?value.join(', '):'[]';
+  if(value&&typeof value==='object')return jsonText(value);
+  if(value===null||value===undefined||value==='')return 'null';
+  if(typeof value==='boolean')return value?'true':'false';
+  return String(value).trim();
+}
+function galaxyDraftFromRow(row={},fallbackTitle=''){
+  return {
+    title:String(row.title??fallbackTitle??''),
+    bodyBlocks:Array.isArray(row.content_blocks)&&row.content_blocks.length
+      ?row.content_blocks
+      :plainTextToBlocks(String(row.content??'')),
+    attrs:{
+      uid:String(row.uid||'').trim(),
+      content_type:String(row.content_type||'').trim(),
+      createtime:datetimeLocalValue(row.createtime),
+      source_native_id:String(row.source_native_id||''),
+      source_place:String(row.source_place||''),
+      searchable:row.searchable!==false,
+      UpdateTime:String(row.UpdateTime||''),
+      url:String(row.url||''),
+      source_id:String(row.source_id||'').trim(),
+      target_id:listText(row.target_id),
+      ref_id:String(row.ref_id||'').trim(),
+      source_name:String(row.source_name||''),
+      media_link:listText(row.media_link),
+      statistics_able:row.statistics_able!==false,
+      class_id:row.class_id===null||row.class_id===undefined?'':String(row.class_id),
+      group_lists:jsonText(row.group_lists)
+    }
+  };
+}
+
+function GalaxyAttrSummary({row}){
+  if(!row)return null;
+  return <details className="scope-search-attr-panel">
+    <summary>文章 Attr</summary>
+    <dl className="scope-search-attr-grid">
+      {GALAXY_ATTR_ORDER.map(key=><div key={key}>
+        <dt>{key}</dt>
+        <dd>{attrDisplayValue(key,row[key])}</dd>
+      </div>)}
+    </dl>
+  </details>;
+}
+
+function GalaxyAttrEditor({draft,setDraft}){
+  const attrs=draft?.attrs||{};
+  const change=(key,value)=>setDraft(current=>({...current,attrs:{...(current?.attrs||{}),[key]:value}}));
+  return <details className="scope-search-attr-panel" open>
+    <summary>文章 Attr</summary>
+    <div className="scope-management-fields scope-search-attr-editor">
+      <label><span>uid</span><input value={attrs.uid||''} readOnly/></label>
+      <label><span>content_type</span><input value={attrs.content_type||''} onChange={event=>change('content_type',event.target.value)}/></label>
+      <label><span>createtime</span><input type="datetime-local" value={attrs.createtime||''} onChange={event=>change('createtime',event.target.value)}/></label>
+      <label><span>source_native_id</span><input value={attrs.source_native_id||''} onChange={event=>change('source_native_id',event.target.value)}/></label>
+      <label><span>source_place</span><input value={attrs.source_place||''} onChange={event=>change('source_place',event.target.value)}/></label>
+      <label><span>url</span><input value={attrs.url||''} onChange={event=>change('url',event.target.value)}/></label>
+      <label><span>source_id</span><input value={attrs.source_id||''} onChange={event=>change('source_id',event.target.value)}/></label>
+      <label><span>ref_id</span><input value={attrs.ref_id||''} onChange={event=>change('ref_id',event.target.value)}/></label>
+      <label><span>source_name</span><input value={attrs.source_name||''} onChange={event=>change('source_name',event.target.value)}/></label>
+      <label><span>class_id</span><input type="number" value={attrs.class_id??''} onChange={event=>change('class_id',event.target.value)}/></label>
+      <label className="scope-setting-toggle"><input type="checkbox" checked={attrs.searchable!==false} onChange={event=>change('searchable',event.target.checked)}/><span>searchable</span></label>
+      <label className="scope-setting-toggle"><input type="checkbox" checked={attrs.statistics_able!==false} onChange={event=>change('statistics_able',event.target.checked)}/><span>statistics_able</span></label>
+      <label className="scope-management-wide-field"><span>target_id[]</span><textarea rows={3} value={attrs.target_id||''} onChange={event=>change('target_id',event.target.value)} placeholder="一行一個 UUID／ID"/></label>
+      <label className="scope-management-wide-field"><span>media_link[]</span><textarea rows={3} value={attrs.media_link||''} onChange={event=>change('media_link',event.target.value)} placeholder="一行一個 media UUID"/></label>
+      <label className="scope-management-wide-field"><span>group_lists (JSON)</span><textarea rows={5} value={attrs.group_lists||''} onChange={event=>change('group_lists',event.target.value)}/></label>
+      <label><span>UpdateTime</span><input value={attrs.UpdateTime||''} readOnly/></label>
+      <label><span>content</span><input value="由上方全文編輯器管理" readOnly/></label>
+      <label><span>content_blocks</span><input value="由上方 WYSIWYG 編輯器管理" readOnly/></label>
+    </div>
+  </details>;
+}
+
 function normalizeScopeAlias(value=''){
   return String(value||'').normalize('NFKC').trim().toLocaleLowerCase('zh-Hant');
 }
@@ -146,6 +267,7 @@ export default function Search(){
   const [fullTextKey,setFullTextKey]=useState('');
   const [fullText,setFullText]=useState('');
   const [fullTextBlocks,setFullTextBlocks]=useState(null);
+  const [fullTextRow,setFullTextRow]=useState(null);
   const [fullTextError,setFullTextError]=useState('');
   const [fullTextLoading,setFullTextLoading]=useState(false);
   const searchId=useRef(0);
@@ -168,6 +290,22 @@ export default function Search(){
     [targetScopes,account.authorizer]
   );
   const collectionLabel=aggregateScopes?UI_COPY.search.allContent:String(scope?.label||scopeId);
+
+  async function loadGalaxyDetail(result){
+    const scopeData=scopeById.get(result.scopeId);
+    if(!scopeData)throw new Error(UI_COPY.search.fullTextNotFound);
+    const id=result.editResourceId||result.resourceId;
+    if(account.canManageScopeSync(result.scopeId)&&result.editableTable){
+      const row=await selectAuthRow(result.editableTable,{
+        idColumn:result.editableIdColumn||'uid',
+        id,
+        columns:GALAXY_EDITOR_COLUMNS
+      });
+      if(!row)throw new Error(UI_COPY.search.fullTextNotFound);
+      return row;
+    }
+    return selectGalaxyContent(scopeData,id);
+  }
 
   async function executeSearch(rawQuery,cursor=null,{append=false}={}){
     const q=String(rawQuery||'').trim();
@@ -291,8 +429,10 @@ export default function Search(){
       const result=toResult({...detail,resolved_links:detail.links||[]},detail.source_name||UI_COPY.search.displaySource,detailScope);
       setResults([result]);
       setFullTextKey(result.key);
-      setFullText(workDisplayText(detail.content||''));
-      setFullTextBlocks(Array.isArray(detail.content_blocks)?detail.content_blocks:null);
+      const fullRow=await loadGalaxyDetail(result);
+      setFullText(workDisplayText(fullRow?.content||detail.content||''));
+      setFullTextBlocks(Array.isArray(fullRow?.content_blocks)?fullRow.content_blocks:(Array.isArray(detail.content_blocks)?detail.content_blocks:null));
+      setFullTextRow(account.canManageScopeSync(detailScope)?fullRow:null);
       setStatus(UI_COPY.search.relationLoaded);
     }catch(exception){
       if(id!==searchId.current)return;
@@ -316,6 +456,7 @@ export default function Search(){
       setFullTextKey('');
       setFullText('');
       setFullTextBlocks(null);
+      setFullTextRow(null);
       setFullTextError('');
       return;
     }
@@ -323,15 +464,15 @@ export default function Search(){
     setFullTextKey(result.key);
     setFullText('');
     setFullTextBlocks(null);
+    setFullTextRow(null);
     setFullTextError('');
     setFullTextLoading(true);
     try{
-      const scopeData=scopeById.get(result.scopeId);
-      if(!scopeData)throw new Error(UI_COPY.search.fullTextNotFound);
-      const fullRow=await selectGalaxyContent(scopeData,result.editResourceId||result.resourceId);
+      const fullRow=await loadGalaxyDetail(result);
       if(!fullRow)throw new Error(UI_COPY.search.fullTextNotFound);
       setFullText(workDisplayText(fullRow.content||''));
       setFullTextBlocks(Array.isArray(fullRow.content_blocks)?fullRow.content_blocks:null);
+      setFullTextRow(account.canManageScopeSync(result.scopeId)?fullRow:null);
     }catch(exception){
       setFullTextError(String(exception?.message||exception||UI_COPY.search.fullTextFailed));
     }finally{
@@ -344,25 +485,24 @@ export default function Search(){
     setEditDraft(null);
     try{
       const contentColumns=result.resourceType==='galaxy'
-        ?'uid,title,content,content_blocks,searchable'
+        ?GALAXY_EDITOR_COLUMNS
         :'media_id,title,meta_tags';
-      const fullRow=await selectAuthRow(result.editableTable,{
+      const cached=result.resourceType==='galaxy'&&fullTextKey===result.key&&fullTextRow?.uid
+        ?fullTextRow
+        :null;
+      const fullRow=cached||await selectAuthRow(result.editableTable,{
         idColumn:result.editableIdColumn,
         id:result.editResourceId||result.resourceId,
         columns:contentColumns
       });
       if(!fullRow)throw new Error(UI_COPY.search.editNotFound);
-      setEditDraft(result.resourceType==='galaxy'?{
-        title:String(fullRow.title??result.title??''),
-        bodyBlocks:Array.isArray(fullRow.content_blocks)&&fullRow.content_blocks.length
-          ?fullRow.content_blocks
-          :plainTextToBlocks(String(fullRow.content??'')),
-        hidden:fullRow.searchable===false
-      }:{
-        title:String(fullRow.title??result.title??''),
-        body:String(fullRow[result.editableField]??''),
-        hidden:false
-      });
+      setEditDraft(result.resourceType==='galaxy'
+        ?galaxyDraftFromRow(fullRow,result.title)
+        :{
+          title:String(fullRow.title??result.title??''),
+          body:String(fullRow[result.editableField]??''),
+          hidden:false
+        });
     }catch(exception){
       setEditingKey('');
       setEditError(String(exception?.message||exception||UI_COPY.search.editLoadFailed));
@@ -379,22 +519,45 @@ export default function Search(){
       const nextTitle=result.resourceType==='galaxy'
         ?resolveGalaxyTitle(editDraft.title,body)
         :(String(editDraft.title||'').trim()||null);
+      const attrs=editDraft.attrs||{};
+      const classText=String(attrs.class_id??'').trim();
       const contentPatch=result.resourceType==='galaxy'?{
+        content_type:String(attrs.content_type||'').trim()||'article',
         title:nextTitle,
         content:body,
         content_blocks:editDraft.bodyBlocks,
-        searchable:!editDraft.hidden,
-        UpdateTime:new Date().toISOString()
+        createtime:isoOrNull(attrs.createtime),
+        source_native_id:nullableText(attrs.source_native_id),
+        source_place:nullableText(attrs.source_place),
+        searchable:attrs.searchable!==false,
+        UpdateTime:new Date().toISOString(),
+        url:nullableText(attrs.url),
+        source_id:nullableText(attrs.source_id),
+        target_id:parseListText(attrs.target_id),
+        ref_id:nullableText(attrs.ref_id),
+        source_name:nullableText(attrs.source_name),
+        media_link:parseListText(attrs.media_link),
+        statistics_able:attrs.statistics_able!==false,
+        class_id:classText===''?null:Number(classText),
+        group_lists:parseJsonAttr(attrs.group_lists)
       }:{
         title:nextTitle,
         [result.editableField]:body
       };
+      if(result.resourceType==='galaxy'&&classText!==''&&!Number.isFinite(contentPatch.class_id))throw new Error('class_id 必須是數字。');
       const contentFilters=[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId}];
       await updateRows(result.editableTable,contentPatch,{filters:contentFilters});
       setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:nextTitle,snippet:result.resourceType==='galaxy'?'':body}));
       if(fullTextKey===result.key){
         setFullText(body);
         setFullTextBlocks(result.resourceType==='galaxy'?editDraft.bodyBlocks:null);
+        if(result.resourceType==='galaxy'){
+          setFullTextRow(current=>({
+            ...(current||{}),
+            ...contentPatch,
+            uid:current?.uid||result.editResourceId||result.resourceId
+          }));
+        }
       }
       setEditingKey('');setEditDraft(null);
     }catch(exception){setEditError(String(exception?.message||exception||UI_COPY.search.saveFailed))}
@@ -457,17 +620,16 @@ export default function Search(){
             blocks={fullTextKey===row.key?fullTextBlocks:null}
             onToggle={()=>toggleFullText(row)}
           />:null}
-          {editable?<p><button type="button" onClick={()=>startEditing(row)}>{editingKey===row.key?UI_COPY.search.editing:UI_COPY.common.edit}</button></p>:null}
-          {draft?(row.resourceType==='galaxy'?<div className="scope-editor">
+          {row.resourceType==='galaxy'&&editable&&fullTextKey===row.key&&!fullTextLoading?<GalaxyAttrSummary row={fullTextRow}/>:null}
+          {editable&&(row.resourceType!=='galaxy'||fullTextKey===row.key)?<div className="scope-search-edit-action"><button type="button" className="loc-button" onClick={()=>startEditing(row)}>{editingKey===row.key?UI_COPY.search.editing:UI_COPY.common.edit}</button></div>:null}
+          {draft?(row.resourceType==='galaxy'?<div className="scope-editor scope-search-article-editor">
             <label>{UI_COPY.common.title}<input value={draft.title||''} onChange={event=>setEditDraft(current=>({...current,title:event.target.value}))}/></label>
             <RichBlockEditor
               key={'search-edit:'+row.key}
               initialContent={draft.bodyBlocks}
               onChange={blocks=>setEditDraft(current=>({...current,bodyBlocks:blocks}))}
             />
-            <div className="scope-editor-options">
-              <label><input type="checkbox" checked={draft.hidden===true} onChange={event=>setEditDraft(current=>({...current,hidden:event.target.checked}))}/>{UI_COPY.common.hiddenFromSearch}</label>
-            </div>
+            <GalaxyAttrEditor draft={draft} setDraft={setEditDraft}/>
             {editError?<p role="alert" className="scope-error">{editError}</p>:null}
             <div className="scope-tabs">
               <button type="button" disabled={editBusy} onClick={()=>saveEditing(row)}>{editBusy?UI_COPY.common.saving:UI_COPY.common.save}</button>
