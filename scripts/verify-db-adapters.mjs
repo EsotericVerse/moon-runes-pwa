@@ -9,7 +9,7 @@ let affected=1;
 const session={user:{id:'test-owner',email:'owner@example.test'}};
 const auth={
   getSession:async()=>({data:{session},error:null}),
-  signInWithOtp:async()=>({error:null}),
+  signInWithOAuth:async()=>({error:null}),
   signOut:async()=>({error:null})
 };
 const adapter=createPostgrestAdapter({
@@ -71,7 +71,7 @@ let called=false;
 const readOnly=createPostgrestAdapter({url:'https://readonly.example.test',fetch:async()=>{called=true;return new Response('[]');}});
 const readOnlyClient=createDatabaseClient(readOnly);
 await assert.rejects(()=>readOnlyClient.getAccountSession(),/not configured/);
-await assert.rejects(()=>readOnlyClient.signInWithEmail('owner@example.test','/'),/not configured/);
+await assert.rejects(()=>readOnlyClient.signInWithGoogle('/'),/not configured/);
 await assert.rejects(()=>readOnlyClient.insertRows('silver.any_scope_galaxy',[{}]),/not configured/);
 await assert.rejects(()=>readOnlyClient.provisionScope({scope_id:'testscope'}),/not configured/);
 await assert.rejects(()=>readOnlyClient.manageScopeRegistry('update','testscope',{}),/not configured/);
