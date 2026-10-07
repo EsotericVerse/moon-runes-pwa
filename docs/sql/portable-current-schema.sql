@@ -121,7 +121,7 @@ CREATE TABLE "silver"."loc_blocks" (
   "block_order" integer NOT NULL,
   CONSTRAINT "loc_blocks_pkey" PRIMARY KEY (block_page, block_order),
   CONSTRAINT "loc_blocks_page_check" CHECK (block_page = ANY (ARRAY['home'::text,'governance'::text])),
-  CONSTRAINT "loc_blocks_order_check" CHECK (block_order >= 1 AND block_order <= 4)
+  CONSTRAINT "loc_blocks_order_check" CHECK (block_order >= 1 AND block_order <= 32)
 );
 
 CREATE TABLE "silver"."lo3rwang_blocks" (
@@ -131,7 +131,7 @@ CREATE TABLE "silver"."lo3rwang_blocks" (
   "block_order" integer NOT NULL,
   CONSTRAINT "lo3rwang_blocks_pkey" PRIMARY KEY (block_page, block_order),
   CONSTRAINT "lo3rwang_blocks_page_check" CHECK (block_page = ANY (ARRAY['home'::text,'governance'::text])),
-  CONSTRAINT "lo3rwang_blocks_order_check" CHECK (block_order >= 1 AND block_order <= 4)
+  CONSTRAINT "lo3rwang_blocks_order_check" CHECK (block_order >= 1 AND block_order <= 32)
 );
 
 CREATE TABLE "silver"."lrunes_blocks" (
@@ -141,7 +141,7 @@ CREATE TABLE "silver"."lrunes_blocks" (
   "block_order" integer NOT NULL,
   CONSTRAINT "lrunes_blocks_pkey" PRIMARY KEY (block_page, block_order),
   CONSTRAINT "lrunes_blocks_page_check" CHECK (block_page = ANY (ARRAY['home'::text,'governance'::text])),
-  CONSTRAINT "lrunes_blocks_order_check" CHECK (block_order >= 1 AND block_order <= 4)
+  CONSTRAINT "lrunes_blocks_order_check" CHECK (block_order >= 1 AND block_order <= 32)
 );
 
 CREATE TABLE "silver"."lo3rwang" (
