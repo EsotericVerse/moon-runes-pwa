@@ -442,19 +442,17 @@ function DatabaseTarget(){
     if(!row)return;
     setStatus('');
     try{
+      const clear=await dbAuthRelation('silver.database_targets').update({selected:false,updated_at:new Date().toISOString()}).neq('target_id','');
+      if(clear.error)throw new Error(clear.error.message||'Database Target 清除失敗。');
       for(const item of rows){
-        await updateRows('silver.database_targets',{
-          selected:false,updated_at:new Date().toISOString()
-        },{filters:[{column:'target_id',operator:'eq',value:item.target_id}]});
-      }
-      for(const item of rows){
-        await updateRows('silver.database_targets',{
+        const result=await dbAuthRelation('silver.database_targets').update({
           provider:item.provider,label:String(item.label||item.target_id).trim(),
           project_id:String(item.project_id||'').trim()||null,
           project_url:String(item.project_url||'').trim(),
           selected:item.target_id===row.target_id,
           updated_at:new Date().toISOString()
-        },{filters:[{column:'target_id',operator:'eq',value:item.target_id}]});
+        }).eq('target_id',item.target_id);
+        if(result.error)throw new Error(result.error.message||'Database Target 更新失敗。');
       }
       setStatus('Database Target 已更新。');setRevision(v=>v+1);
     }catch(error){setStatus(error?.message||'Database Target 儲存失敗。');}
