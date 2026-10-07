@@ -11,16 +11,17 @@ import {selectManagedScope,selectManagedScopes} from './scope-data';
 
 
 
-const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility,style_tags';
+const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_ids,date_status,year_value,visibility,style_tags';
 function scopeIdOf(value){return String(value||'').trim();}
 function timeDate(row){
   if(row?.time_date)return String(row.time_date).slice(0,10);
   const year=Number(row?.year_value);
   return String(row?.date_status||'')==='year_only'&&Number.isInteger(year)&&year>0?`${year}-01-01`:null;
 }
-function anchorPair(value){
-  const [before='0',after='0']=String(value||'0,0').split(',',2).map(item=>String(item||'0').trim()||'0');
-  return {before,after};
+function anchorIds(value){
+  const source=Array.isArray(value)?value:String(value||'').split(',');
+  const ids=source.map(item=>String(item||'0').trim()||'0').filter(Boolean);
+  return ids.length?ids:['0','0'];
 }
 function previousDay(value){
   if(!value)return null;
@@ -66,15 +67,18 @@ async function selectCultureTimeRows(scope,birthday=''){
   }
   const normalize=(row,type)=>{
     const id=String(row.resource_id||row.record_id||'');
-    const pair=anchorPair(row.anchor_pair);
-    const startAnchor=pair.before==='0'?null:anchorMap.get(pair.before);
-    const endAnchor=pair.after==='0'?null:anchorMap.get(pair.after);
+    const ids=anchorIds(row.anchor_ids);
+    const firstId=ids[0]||'0';
+    const lastId=ids.at(-1)||'0';
+    const milestoneIds=type==='event'?ids.slice(1,-1).filter(anchorId=>anchorId!=='0'):[];
+    const startAnchor=firstId==='0'?null:anchorMap.get(firstId);
+    const endAnchor=lastId==='0'?null:anchorMap.get(lastId);
     const startDate=type==='anchor'
       ?timeDate(row)
-      :(pair.before==='0'?scopeBirthday:timeDate(startAnchor));
+      :(firstId==='0'?scopeBirthday:timeDate(startAnchor));
     const endBoundary=type==='anchor'
       ?null
-      :(pair.after==='0'?null:timeDate(endAnchor));
+      :(lastId==='0'?null:timeDate(endAnchor));
     return {
       ...row,
       scope_id:scopeId,
@@ -87,11 +91,14 @@ async function selectCultureTimeRows(scope,birthday=''){
       entry_name:type==='period'?String(row.label||'').replace(/^P\d+\s*[｜|]\s*/,''):null,
       order_no:row.display_order,
       anchor_id:type==='anchor'?id:null,
-      start_anchor_id:pair.before==='0'?null:pair.before,
-      end_anchor_id:pair.after==='0'?null:pair.after,
+      anchor_ids:type==='anchor'?[]:ids,
+      start_anchor_id:firstId==='0'?null:firstId,
+      milestone_anchor_ids:milestoneIds,
+      milestone_dates:milestoneIds.map(anchorId=>timeDate(anchorMap.get(anchorId))).filter(Boolean),
+      end_anchor_id:lastId==='0'?null:lastId,
       event_id:type==='event'?id:null,
-      open_start:type!=='anchor'&&pair.before==='0',
-      open_end:type!=='anchor'&&pair.after==='0',
+      open_start:type!=='anchor'&&firstId==='0',
+      open_end:type!=='anchor'&&lastId==='0',
       start_date:startDate,
       end_date:type==='period'?previousDay(endBoundary):endBoundary
     };
@@ -112,7 +119,7 @@ function openPeriodRangeFromRows(scopeId,rows=[]){
     ...period,
     scope_id:scopeId,
     display_label:period.title||period.period||'時期',
-    derived_from:'anchor_pair.after=0'
+    derived_from:'anchor_ids[last]=0'
   };
 }
 
@@ -198,7 +205,7 @@ function periodRows(rows){
     era_id:row.era_id||row.entry_key,period:row.period||row.entry_key||'',name:row.entry_name||row.title||row.entry_key,
     title:row.title||row.entry_key,description:row.summary||'',start_date:row.start_date||null,end_date:row.end_date||null,
     order:Number(row.order_no||0),status:row.status||'',anchor_id:row.anchor_id||null,start_anchor_id:row.start_anchor_id||null,
-    end_anchor_id:row.end_anchor_id||null,date_status:row.date_status||'',style_tags:row.style_tags||'',open_start:Boolean(row.open_start),open_end:Boolean(row.open_end)
+    end_anchor_id:row.end_anchor_id||null,anchor_ids:Array.isArray(row.anchor_ids)?row.anchor_ids:[],date_status:row.date_status||'',style_tags:row.style_tags||'',open_start:Boolean(row.open_start),open_end:Boolean(row.open_end)
   })).sort((a,b)=>a.order-b.order||String(a.period).localeCompare(String(b.period)));
 }
 function timelineItems(rows){
@@ -239,6 +246,9 @@ function cultureParts(scopeContext,runtimeId){
     date:row.start_date||null,
     start_date:row.start_date||null,
     end_date:row.end_date||null,
+    anchor_ids:Array.isArray(row.anchor_ids)?row.anchor_ids:[],
+    milestone_anchor_ids:Array.isArray(row.milestone_anchor_ids)?row.milestone_anchor_ids:[],
+    milestone_dates:Array.isArray(row.milestone_dates)?row.milestone_dates:[],
     status:row.status||'',
     visibility:row.visibility||'public'
   }));
