@@ -54,22 +54,25 @@ test.describe('LunaRunes tabletop UI',()=>{
     expect(overflow).toBeLessThanOrEqual(2);
   });
 
-  test('game follows the shared theme selector without resetting the page',async({page})=>{
+  test('LunaRunes home stays mineral while game defaults to nature and still accepts theme changes',async({page})=>{
+    await page.goto('/lrunes/',{waitUntil:'domcontentloaded'});
+    await expect(page.locator('html')).toHaveAttribute('data-theme-id','theme-5',{timeout:15_000});
+
     await page.goto('/game/',{waitUntil:'domcontentloaded'});
+    await expect(page.locator('html')).toHaveAttribute('data-theme-id','theme-4',{timeout:15_000});
     const themeSelect=page.locator('.scope-theme-control select').first();
-    await expect(themeSelect).toBeVisible({timeout:15_000});
+    await expect(themeSelect).toBeVisible();
     const start=page.getByRole('button',{name:'開始遊戲'});
     await expect(start).toBeVisible();
 
-    await themeSelect.selectOption('theme-7');
-    await expect(page.locator('html')).toHaveAttribute('data-theme-id','theme-7');
-    const lightButton=await start.evaluate(el=>getComputedStyle(el).backgroundColor);
-
+    const natureButton=await start.evaluate(el=>getComputedStyle(el).backgroundColor);
     await themeSelect.selectOption('theme-1');
     await expect(page.locator('html')).toHaveAttribute('data-theme-id','theme-1');
-    const darkButton=await start.evaluate(el=>getComputedStyle(el).backgroundColor);
+    const soulButton=await start.evaluate(el=>getComputedStyle(el).backgroundColor);
 
-    expect(darkButton).not.toBe(lightButton);
+    expect(soulButton).not.toBe(natureButton);
+    await themeSelect.selectOption('system-default');
+    await expect(page.locator('html')).toHaveAttribute('data-theme-id','theme-4');
     await expect(page.getByRole('heading',{name:'月之符文'})).toBeVisible();
   });
 });
