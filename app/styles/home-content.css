@@ -558,17 +558,3 @@
 @media(max-width:520px){
   .author-official-links{grid-template-columns:1fr}
 }
-
-
-/* LOC homepage display remains presentation-first; BlockNote appears only while editing. */
-.loc-home-editable-slot{display:contents}
-.loc-home-edit-anchor:not(.is-editing){display:contents}
-.loc-home-edit-anchor.is-editing{
-  display:block;
-  width:100%;
-  min-width:0;
-  padding:.8rem;
-  border:1px solid var(--loc-accent-border);
-  border-radius:var(--loc-radius-sm);
-  background:var(--loc-panel);
-}
