@@ -1,14 +1,24 @@
 import ScopeEditableBlocks from '../ScopeEditableBlocks';
+import authorHeroAsset from '../../../pics/lo3rwang-hero.jpg';
 
-function AuthorPage({eyebrow,title,subtitle,intro,heroVisual=null,sections=[]}){
+function AuthorPage({eyebrow,title,subtitle,intro,heroImage=null,sections=[]}){
   return <section className="loc-view scope-home-composition">
-    {heroVisual?<header className="loc-hero scope-home-hero-with-visual" id="top">
-      <div className="scope-home-hero-copy">
+    {heroImage?<header className="loc-hero author-home-hero" id="top">
+      <img
+        className="author-home-hero-image"
+        src={heroImage.src}
+        alt=""
+        aria-hidden="true"
+        loading="eager"
+        fetchPriority="high"
+        decoding="async"
+      />
+      <div className="author-home-hero-overlay" aria-hidden="true"/>
+      <div className="author-home-hero-copy">
         {eyebrow?<p className="loc-eyebrow">{eyebrow}</p>:null}
         <div className="home-title-row"><h1>{title}</h1>{subtitle?<p className="loc-subtitle">{subtitle}</p>:null}</div>
         {intro}
       </div>
-      <figure className="home-hero-visual scope-home-hero-visual">{heroVisual}</figure>
     </header>:<header className="loc-hero loc-hero-feature" id="top">
       {eyebrow?<p className="loc-eyebrow">{eyebrow}</p>:null}
       <div className="home-title-row"><h1>{title}</h1>{subtitle?<p className="loc-subtitle">{subtitle}</p>:null}</div>
@@ -197,7 +207,7 @@ export default function AuthorHomeView({section=null}){
       <p>Wordsmith · Chaos Calibrator · Language Architect</p>
       <p>Creator of LOC and LunaRunes · <a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽〈這就是我〉 →</a></p>
     </>}
-    heroVisual={<iframe src="https://www.instagram.com/p/DdX5ki-oZY6/embed" title="這就是我｜Lucas Oscar Wang 政德自我介紹" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" frameBorder="0" scrolling="no"/>}
+    heroImage={authorHeroAsset}
     sections={[
       {
         id:'about',
