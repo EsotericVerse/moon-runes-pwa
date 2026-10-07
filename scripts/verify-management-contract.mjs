@@ -29,6 +29,7 @@ const importPanel=read('app/loc/ManagementImportPanel.jsx');
 const scopeSettings=read('app/loc/ScopeSettingsPanel.jsx');
 const publisher=read('app/loc/ManagementArticlePublisher.jsx');
 const richEditor=read('app/loc/RichBlockEditor.jsx');
+const blockNoteEditor=read('app/loc/BlockNoteEditorClient.jsx');
 const editableBlocks=read('app/loc/ScopeEditableBlocks.jsx');
 const authorHome=read('app/loc/views/AuthorHomeView.jsx');
 const runesHome=read('app/lrunes/RunesClient.jsx');
@@ -55,9 +56,10 @@ must(governance.includes("scopeHref(scopeId,'governance/manage')"),'Governance m
 must(!importPanel.includes('ManagementArticlePublisher')&&!importPanel.includes('role="tablist"')&&importPanel.includes('JsonImport')&&importPanel.includes('SourceRefresh'),'Data Import must contain import tools only');
 must(scopeSettings.includes('display_name')&&scopeSettings.includes('search_intro')&&scopeSettings.includes('search_aliases')&&scopeSettings.includes('updateRows'),'misc settings must edit Scope-owned presentation config');
 must(publisher.includes('scope-publisher-main')&&publisher.includes('scope-publisher-sidebar')&&publisher.includes('RichBlockEditor')&&publisher.includes('content_blocks'),'article publisher must use the shared rich editor while preserving plain content');
-must(richEditor.includes('contentEditable={editable}')&&richEditor.includes('文字泡泡')&&richEditor.includes('文字框'),'shared web editor must support basic rich text plus bubble/box insertion');
-must(editableBlocks.includes('SLOT_COUNT=4')&&editableBlocks.includes("page='home'")&&editableBlocks.includes('block_page')&&editableBlocks.includes('block_text')&&editableBlocks.includes('_blocks')&&editableBlocks.includes('isInteractiveTarget')&&!editableBlocks.includes('>編輯</button>'),'Scope editable surfaces must use block rows and enter editing from content without idle layout buttons');
-must(authorHome.includes('ScopeEditableBlocks')&&authorHome.includes('page="home"'),'author homepage must use page-based WYSIWYG blocks');
+must(richEditor.includes("dynamic(()=>import('./BlockNoteEditorClient')")&&!richEditor.includes('contentEditable')&&!richEditor.includes('execCommand'),'shared web editor must use BlockNote instead of bespoke contentEditable');
+must(blockNoteEditor.includes("from '@blocknote/react'")&&blockNoteEditor.includes("from '@blocknote/mantine'")&&blockNoteEditor.includes('BlockNoteView')&&!blockNoteEditor.includes('uploadFile'),'BlockNote must be the shared URL-only text/media authoring surface');
+must(editableBlocks.includes('ENTITY_LIMIT=6')&&editableBlocks.includes("page='index'")&&editableBlocks.includes('page_name')&&editableBlocks.includes('block_entity')&&editableBlocks.includes("column:'uid'")&&editableBlocks.includes('isInteractiveTarget'),'Scope page editing must use stable block uid plus up to six child entities');
+must(authorHome.includes('ScopeEditableBlocks')&&authorHome.includes('page="index"'),'author homepage must use canonical index page blocks');
 must(!runesHome.includes('ScopeEditableBlocks')&&runesHome.includes('className="basic-grid"'),'LunaRunes homepage must remain a fixed special presentation without inline management editing');
 must(personalGovernance.includes('ScopeEditableBlocks')&&personalGovernance.includes('page="governance"'),'personal governance must use governance block rows');
 must(runesGovernance.includes('ScopeEditableBlocks')&&runesGovernance.includes('page="governance"'),'LunaRunes governance must use governance block rows');
@@ -100,8 +102,9 @@ must(dbContract.includes("rpc('provision_scope'")&&dbContract.includes('provisio
 must(scopeProvisioning.includes('create table if not exists silver.scope_registry')&&scopeProvisioning.includes('create or replace function api.provision_scope'),'Scope provisioning SQL must define the DB registry and provisioning RPC');
 for(const suffix of ["_galaxy'","_galaxy_media'","_time'","_keywords'"])must(scopeProvisioning.includes(suffix),'Scope provisioning SQL missing fixed table suffix '+suffix);
 must(scopeProvisioning.includes('v_keyword_count<>66')&&scopeProvisioning.includes('p_parent_scope_id'),'Scope provisioning must lock the Rune66 default copy and parent Scope Group');
-must(scopeProvisioning.includes("v_blocks_name := v_scope||'_blocks'")&&scopeProvisioning.includes('block_page text not null')&&portableSchema.includes('"loc_blocks"')&&portableSchema.includes('"lo3rwang_blocks"')&&portableSchema.includes('"lrunes_blocks"'),'Scope provisioning/schema must store homepage/governance content in dedicated block tables');
+must(scopeProvisioning.includes("v_blocks_name := v_scope||'_blocks'")&&scopeProvisioning.includes('page_name text not null')&&scopeProvisioning.includes('block_entity jsonb')&&portableSchema.includes('"loc_blocks"')&&portableSchema.includes('"lo3rwang_blocks"')&&portableSchema.includes('"lrunes_blocks"'),'Scope provisioning/schema must store page blocks by uid with nested entities');
 must(portableSchema.includes('"content_blocks" jsonb'),'Galaxy schema must preserve optional rich-editor layout separately from plain content');
+must((portableSchema.match(/"content_blocks" jsonb/g)||[]).length>=4,'Galaxy and Galaxy Media schemas must both persist BlockNote structure');
 must(portableSchema.includes('"loc_theme"')&&portableSchema.includes('"theme_attr" jsonb')&&portableSchema.includes('"database_targets"'),'portable schema must include loc_theme attributes and database targets');
 
 must(dbContract.includes("rpc('manage_scope_registry'")&&dbContract.includes('manageScopeRegistry'),'DB client must expose authorized Scope Registry management');
