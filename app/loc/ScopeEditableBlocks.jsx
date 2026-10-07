@@ -5,7 +5,7 @@ import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {selectScopeConfig} from './scope-data';
 import {updateRows} from './db-client.mjs';
 import {useAccount} from './use-account';
-import RichBlockEditor,{normalizeBlocks,plainTextToBlocks} from './RichBlockEditor';
+import RichBlockEditor,{blocksToPlainText,normalizeBlocks,plainTextToBlocks} from './RichBlockEditor';
 
 const SLOT_COUNT=4;
 
@@ -93,11 +93,7 @@ export default function ScopeEditableBlocks({
   return <div className={'scope-editable-block-grid '+className}>
     {slots.map((slot,index)=>{
       const active=editing===index+1;
-      const empty=!slot.blocks?.some(block=>{
-        const content=block?.content;
-        if(typeof content==='string')return content.trim();
-        return Array.isArray(content)&&content.length;
-      });
+      const empty=!blocksToPlainText(slot.blocks);
       if(empty&&!canEdit)return null;
       return <section className={slotClassName+' scope-editable-block'} key={slot.slot}>
         {canEdit?<div className="scope-inline-editbar">
