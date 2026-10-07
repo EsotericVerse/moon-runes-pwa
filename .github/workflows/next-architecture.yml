@@ -14,6 +14,10 @@ on:
       - ".github/workflows/next-architecture.yml"
   workflow_dispatch:
 
+concurrency:
+  group: next-architecture-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-next-architecture:
     runs-on: ubuntu-latest
