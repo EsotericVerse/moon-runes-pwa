@@ -58,8 +58,6 @@ export default function ManagementArticlePublisher({scopeId}){
   return <section className="loc-card scope-feature-card">
     <p className="loc-eyebrow">Publish</p>
     <h2>{UI_COPY.management.article}</h2>
-    <p>主編輯區只處理標題與正文；來源、時間、公開狀態與關聯放在右側發佈設定。少用欄位收進進階設定，不干擾寫作。</p>
-
     <form className="scope-publisher" onSubmit={save}>
       <div className="scope-publisher-main">
         <input
