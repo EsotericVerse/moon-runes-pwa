@@ -1,7 +1,8 @@
 'use client';
 
 import {UI_COPY} from '../../i18n/ui-copy';
-import {useEffect,useState} from 'react';
+import {useEffect,useMemo,useRef,useState} from 'react';
+import Select from 'react-select';
 import {SCOPES,scopeHref} from '../../modular/scope-registry';
 import {THEME_SLOTS} from '../../modular/theme-registry';
 import {useAccount} from '../use-account';
@@ -10,9 +11,14 @@ import {
 } from '../db-client.mjs';
 
 const ADMIN_OPTIONS=Object.freeze([
-  {value:'scopes',label:UI_COPY.admin.overview},
-  {value:'search',label:'搜尋關鍵詞'},
-  {value:'themes',label:UI_COPY.admin.theme}
+  {value:'deployment',label:'UI 部署'},
+  {value:'create',label:'建立 Scope'},
+  {value:'permissions',label:'權限 Mapping'},
+  {value:'search',label:'搜尋關鍵詞'}
+]);
+const CREATE_OPTIONS=Object.freeze([
+  {value:'scope',label:'建立 Scope'},
+  {value:'group',label:'建立 Scope Group'}
 ]);
 const EMPTY_MAPPING={id:'',email:'',galaxy:'galaxy',time:'time',birthday:''};
 const EMPTY_SCOPE_CREATE={scope_id:'',display_name:'',email:'',birthday:'',domain:'',directory:'',parent_scope_id:'loc',theme:'theme-7',copy_keywords:true};
@@ -29,15 +35,11 @@ function Login({account}){
   </section>;
 }
 
-function ScopeOverview(){
-  const deployedScopes=Object.values(SCOPES).filter(scope=>scope.id!=='admin');
+
+function useAdminScopeData(){
   const [registry,setRegistry]=useState([]);
-  const dataScopeIds=registry.filter(scope=>scope.active!==false&&scope.scope_kind==='scope').map(scope=>scope.scope_id);
-  const scopeGroups=registry.filter(scope=>scope.active!==false&&scope.scope_kind==='group');
   const [mappings,setMappings]=useState([]);
-  const [draft,setDraft]=useState({...EMPTY_MAPPING});
-  const [createDraft,setCreateDraft]=useState({...EMPTY_SCOPE_CREATE});
-  const [groupDraft,setGroupDraft]=useState({...EMPTY_GROUP_CREATE});
+  const [presentationNames,setPresentationNames]=useState({});
   const [status,setStatus]=useState('');
   const [revision,setRevision]=useState(0);
 
@@ -57,89 +59,245 @@ function ScopeOverview(){
         ]);
         if(mappingResult.error)throw new Error(mappingResult.error.message||'Mapping 讀取失敗。');
         if(registryResult.error)throw new Error(registryResult.error.message||'Scope Registry 讀取失敗。');
+
+        const registryRows=registryResult.data||[];
+        const names={};
+        await Promise.all(registryRows.filter(row=>row.scope_kind==='scope').map(async row=>{
+          try{
+            const {data,error}=await dbAuthRelation('silver.'+row.scope_id)
+              .select('display_name')
+              .eq('id',row.scope_id)
+              .limit(1);
+            if(!error&&data?.[0]?.display_name)names[row.scope_id]=String(data[0].display_name);
+          }catch{}
+        }));
+
         if(active){
           setMappings((mappingResult.data||[]).map(row=>({...row,birthday:String(row.birthday||'').slice(0,10)})));
-          setRegistry(registryResult.data||[]);
+          setRegistry(registryRows);
+          setPresentationNames(names);
+          setStatus('');
         }
       }catch(error){
-        if(active){setMappings([]);setRegistry([]);setStatus(error?.message||'Scope 設定讀取失敗。');}
+        if(active){
+          setMappings([]);
+          setRegistry([]);
+          setPresentationNames({});
+          setStatus(error?.message||'Admin 資料讀取失敗。');
+        }
       }
     })();
     return()=>{active=false};
   },[revision]);
 
-  const change=(index,key,value)=>setMappings(rows=>rows.map((row,rowIndex)=>rowIndex===index?{...row,[key]:value}:row));
-  const registryChange=(index,key,value)=>setRegistry(rows=>rows.map((row,rowIndex)=>rowIndex===index?{...row,[key]:value}:row));
-
-  const validate=row=>{
-    if(!dataScopeIds.includes(String(row.id||'')))throw new Error('目前只能管理 DB Scope Registry 中已建立的資料 Scope。');
-    if(!/^\S+@\S+\.\S+$/.test(String(row.email||'')))throw new Error('Email 格式不正確。');
-    for(const value of [row.galaxy||'galaxy',row.time||'time']){
-      if(!/^[a-z][a-z0-9_]*$/.test(String(value)))throw new Error('galaxy / time mapping 只能使用小寫英數與底線。');
-    }
+  return {
+    registry,setRegistry,mappings,setMappings,presentationNames,status,setStatus,
+    refresh:()=>setRevision(value=>value+1)
   };
+}
 
-  const validateNewMapping=row=>{
-    validate(row);
-    const existing=mappings.find(item=>item.id===row.id);
-    if(!existing)return;
-    if(String(existing.galaxy||'galaxy')!==String(row.galaxy||'galaxy')||String(existing.time||'time')!==String(row.time||'time')){
-      throw new Error('同一 Scope 的 Galaxy / Time mapping 必須一致。');
-    }
-    const existingBirthday=String(existing.birthday||'').slice(0,10);
-    const nextBirthday=String(row.birthday||'').slice(0,10);
-    if(existingBirthday&&nextBirthday&&existingBirthday!==nextBirthday){
-      throw new Error('同一 Scope 的生日設定必須一致。');
-    }
-  };
+function DeploymentTree({registry=[],presentationNames={},selectedId='',onSelect}){
+  const containerRef=useRef(null);
 
-  const validateCreate=row=>{
-    const id=String(row.scope_id||'').trim().toLowerCase();
-    if(!/^[a-z][a-z0-9]{0,14}$/.test(id))throw new Error('Scope ID 必須是 1–15 字小寫英數，且以英文字母開頭。');
-    if(!String(row.display_name||'').trim())throw new Error('顯示名稱不可為空。');
-    if(!/^\S+@\S+\.\S+$/.test(String(row.email||'')))throw new Error('Email 格式不正確。');
-    const hasDomain=Boolean(String(row.domain||'').trim());
-    const hasDirectory=Boolean(String(row.directory||'').trim());
-    if(hasDomain===hasDirectory)throw new Error('Domain / Directory 必須二選一。');
-    if(!scopeGroups.some(group=>group.scope_id===row.parent_scope_id))throw new Error('Parent Scope Group 無效。');
-    return id;
-  };
+  useEffect(()=>{
+    let cancelled=false;
+    let network=null;
+    const roots=registry.filter(row=>!row.parent_scope_id);
+    const nodes=[
+      {id:'__admin__',label:'Admin\nadmin.lo3rwang.cc',shape:'box',level:0},
+      ...registry.map(row=>({
+        id:row.scope_id,
+        label:(presentationNames[row.scope_id]||row.display_name||row.scope_id)+'\n'+row.scope_id+(row.active===false?' · 停用':''),
+        shape:row.scope_kind==='group'?'box':'ellipse'
+      }))
+    ];
+    const edges=[
+      ...roots.map(row=>({from:'__admin__',to:row.scope_id,arrows:'to'})),
+      ...registry.filter(row=>row.parent_scope_id).map(row=>({from:row.parent_scope_id,to:row.scope_id,arrows:'to'}))
+    ];
 
-  const createScope=async()=>{
+    import('vis-network/standalone').then(({Network})=>{
+      if(cancelled||!containerRef.current)return;
+      network=new Network(containerRef.current,{nodes,edges},{
+        autoResize:true,
+        physics:{enabled:false},
+        layout:{
+          hierarchical:{
+            enabled:true,
+            direction:'UD',
+            sortMethod:'directed',
+            levelSeparation:110,
+            nodeSpacing:170,
+            treeSpacing:190
+          }
+        },
+        interaction:{hover:true,dragNodes:false,dragView:true,zoomView:true,selectable:true},
+        nodes:{borderWidth:1,margin:10,font:{multi:false}},
+        edges:{smooth:{enabled:true,type:'cubicBezier',forceDirection:'vertical',roundness:.35}}
+      });
+      network.on('selectNode',params=>{
+        const id=String(params?.nodes?.[0]||'');
+        if(id&&id!=='__admin__')onSelect?.(id);
+      });
+      if(selectedId&&registry.some(row=>row.scope_id===selectedId)){
+        network.selectNodes([selectedId]);
+        network.focus(selectedId,{scale:1,animation:false});
+      }
+    }).catch(()=>{});
+    return()=>{cancelled=true;network?.destroy();};
+  },[registry,presentationNames,onSelect]);
+
+  useEffect(()=>{},[selectedId]);
+
+  return <div ref={containerRef} className="admin-deployment-tree" role="region" aria-label="Scope UI 部署階層"/>;
+}
+
+function AdminDeployment(){
+  const data=useAdminScopeData();
+  const {registry,setRegistry,presentationNames,status,setStatus,refresh}=data;
+  const [selectedId,setSelectedId]=useState('');
+
+  useEffect(()=>{
+    if(selectedId&&registry.some(row=>row.scope_id===selectedId))return;
+    setSelectedId(registry.find(row=>row.scope_id==='loc')?.scope_id||registry[0]?.scope_id||'');
+  },[registry,selectedId]);
+
+  const selectedIndex=registry.findIndex(row=>row.scope_id===selectedId);
+  const selected=selectedIndex>=0?registry[selectedIndex]:null;
+  const groups=registry.filter(row=>row.scope_kind==='group'&&row.active!==false&&row.scope_id!==selectedId);
+  const parentOptions=[
+    {value:'',label:'—'},
+    ...groups.map(row=>({value:row.scope_id,label:(row.display_name||row.scope_id)+' · '+row.scope_id}))
+  ];
+  const parentValue=parentOptions.find(option=>option.value===String(selected?.parent_scope_id||''))||parentOptions[0];
+
+  const change=(key,value)=>setRegistry(rows=>rows.map((row,index)=>index===selectedIndex?{...row,[key]:value}:row));
+
+  async function save(){
+    if(!selected||selected.scope_kind==='system')return;
     setStatus('');
     try{
-      const id=validateCreate(createDraft);
-      const result=await provisionScope({
-        ...createDraft,
-        scope_id:id,
-        display_name:String(createDraft.display_name||'').trim(),
-        email:String(createDraft.email||'').trim().toLowerCase(),
-        domain:String(createDraft.domain||'').trim()||null,
-        directory:String(createDraft.directory||'').trim()||null,
-        birthday:createDraft.birthday||null
+      const hasDomain=Boolean(String(selected.domain||'').trim());
+      const hasDirectory=Boolean(String(selected.directory||'').trim());
+      if(hasDomain===hasDirectory)throw new Error('Domain / Directory 必須二選一。');
+      if(selected.scope_kind==='group'&&!String(selected.display_name||'').trim())throw new Error('Group 名稱不可為空。');
+      await manageScopeRegistry('update',selected.scope_id,{
+        display_name:String(selected.display_name||selected.scope_id).trim(),
+        domain:String(selected.domain||'').trim()||null,
+        directory:String(selected.directory||'').trim()||null,
+        parent_scope_id:selected.scope_id==='loc'?null:(String(selected.parent_scope_id||'').trim()||null),
+        active:selected.scope_id==='loc'?true:selected.active!==false,
+        sort_order:Number(selected.sort_order)||0
       });
-      setCreateDraft({...EMPTY_SCOPE_CREATE});
-      setStatus(
-        'Scope '+String(result.scope_id||id)+' 已建立；'
-        +(createDraft.copy_keywords!==false?'預設 Rune66 關鍵詞 '+Number(result.keyword_rows||0).toLocaleString()+' 筆已獨立複製。':'未複製預設關鍵詞。')
-      );
-      setRevision(value=>value+1);
-    }catch(error){setStatus(error.message||'Scope 建立失敗。');}
-  };
+      setStatus(selected.scope_id+' 已更新。');
+      refresh();
+    }catch(error){
+      setStatus(error?.message||'UI 部署更新失敗。');
+    }
+  }
 
-  const validateRegistryRoute=row=>{
-    const hasDomain=Boolean(String(row.domain||'').trim());
-    const hasDirectory=Boolean(String(row.directory||'').trim());
-    if(hasDomain===hasDirectory)throw new Error('Domain / Directory 必須二選一。');
-    if(!String(row.display_name||'').trim())throw new Error('顯示名稱不可為空。');
-  };
+  return <section className="loc-card admin-workspace">
+    <div className="admin-deployment-layout">
+      <DeploymentTree
+        registry={registry}
+        presentationNames={presentationNames}
+        selectedId={selectedId}
+        onSelect={setSelectedId}
+      />
+      <aside className="admin-context-panel">
+        {selected?<>
+          <p className="loc-eyebrow">{selected.scope_kind==='group'?'Scope Group':'Scope'}</p>
+          <h2>{presentationNames[selected.scope_id]||selected.display_name||selected.scope_id}</h2>
+          <p className="scope-status">{selected.scope_id}</p>
 
-  const createGroup=async()=>{
+          {selected.scope_kind==='group'?<label>
+            <span>Group 名稱</span>
+            <input value={selected.display_name||''} onChange={event=>change('display_name',event.target.value)}/>
+          </label>:null}
+
+          <label><span>Domain</span><input value={selected.domain||''} onChange={event=>change('domain',event.target.value)}/></label>
+          <label><span>Directory</span><input value={selected.directory||''} onChange={event=>change('directory',event.target.value)}/></label>
+
+          {selected.scope_id!=='loc'?<label>
+            <span>Parent</span>
+            <Select
+              className="admin-react-select"
+              classNamePrefix="admin-react-select"
+              unstyled
+              isSearchable={false}
+              options={parentOptions}
+              value={parentValue}
+              onChange={option=>change('parent_scope_id',option?.value||'')}
+              aria-label="Parent Scope Group"
+            />
+          </label>:null}
+
+          <label><span>排序</span><input type="number" value={selected.sort_order||0} onChange={event=>change('sort_order',event.target.value)}/></label>
+          {selected.scope_id!=='loc'?<label className="scope-setting-toggle">
+            <input type="checkbox" checked={selected.active!==false} onChange={event=>change('active',event.target.checked)}/>
+            Active
+          </label>:null}
+
+          <div className="scope-tabs">
+            <button type="button" onClick={save}>儲存</button>
+            <a className="loc-button" href={scopeHref(selected.scope_id)} target="_blank" rel="noreferrer">開啟 UI</a>
+          </div>
+        </>:<p className="scope-status">選擇一個節點。</p>}
+        {status?<p className="scope-status" role="status">{status}</p>:null}
+      </aside>
+    </div>
+  </section>;
+}
+
+function AdminCreateScope(){
+  const data=useAdminScopeData();
+  const {registry,status,setStatus,refresh}=data;
+  const groups=registry.filter(row=>row.scope_kind==='group'&&row.active!==false);
+  const [kind,setKind]=useState('scope');
+  const [scopeDraft,setScopeDraft]=useState({...EMPTY_SCOPE_CREATE});
+  const [groupDraft,setGroupDraft]=useState({...EMPTY_GROUP_CREATE});
+
+  const parentOptions=groups.map(group=>({value:group.scope_id,label:(group.display_name||group.scope_id)+' · '+group.scope_id}));
+  const scopeParent=parentOptions.find(option=>option.value===scopeDraft.parent_scope_id)||parentOptions[0]||null;
+  const groupParent=parentOptions.find(option=>option.value===groupDraft.parent_scope_id)||parentOptions[0]||null;
+  const themeOptions=THEME_SLOTS.map(theme=>({value:theme.id,label:theme.label+' · '+theme.id}));
+
+  async function createScope(){
+    setStatus('');
+    try{
+      const id=String(scopeDraft.scope_id||'').trim().toLowerCase();
+      if(!/^[a-z][a-z0-9]{0,14}$/.test(id))throw new Error('Scope ID 必須是 1–15 字小寫英數，且以英文字母開頭。');
+      if(!String(scopeDraft.display_name||'').trim())throw new Error('顯示名稱不可為空。');
+      if(!/^\S+@\S+\.\S+$/.test(String(scopeDraft.email||'')))throw new Error('Email 格式不正確。');
+      const hasDomain=Boolean(String(scopeDraft.domain||'').trim());
+      const hasDirectory=Boolean(String(scopeDraft.directory||'').trim());
+      if(hasDomain===hasDirectory)throw new Error('Domain / Directory 必須二選一。');
+
+      await provisionScope({
+        ...scopeDraft,
+        scope_id:id,
+        display_name:String(scopeDraft.display_name||'').trim(),
+        email:String(scopeDraft.email||'').trim().toLowerCase(),
+        domain:String(scopeDraft.domain||'').trim()||null,
+        directory:String(scopeDraft.directory||'').trim()||null,
+        birthday:scopeDraft.birthday||null
+      });
+      setScopeDraft({...EMPTY_SCOPE_CREATE});
+      setStatus('Scope '+id+' 已建立。');
+      refresh();
+    }catch(error){setStatus(error?.message||'Scope 建立失敗。');}
+  }
+
+  async function createGroup(){
     setStatus('');
     try{
       const id=String(groupDraft.scope_id||'').trim().toLowerCase();
       if(!/^[a-z][a-z0-9]{0,14}$/.test(id))throw new Error('Scope Group ID 必須是 1–15 字小寫英數，且以英文字母開頭。');
-      validateRegistryRoute(groupDraft);
+      if(!String(groupDraft.display_name||'').trim())throw new Error('Group 名稱不可為空。');
+      const hasDomain=Boolean(String(groupDraft.domain||'').trim());
+      const hasDirectory=Boolean(String(groupDraft.directory||'').trim());
+      if(hasDomain===hasDirectory)throw new Error('Domain / Directory 必須二選一。');
+
       await manageScopeRegistry('create_group',id,{
         display_name:String(groupDraft.display_name||'').trim(),
         domain:String(groupDraft.domain||'').trim()||null,
@@ -149,180 +307,160 @@ function ScopeOverview(){
       });
       setGroupDraft({...EMPTY_GROUP_CREATE});
       setStatus('Scope Group '+id+' 已建立。');
-      setRevision(value=>value+1);
-    }catch(error){setStatus(error.message||'Scope Group 建立失敗。');}
-  };
+      refresh();
+    }catch(error){setStatus(error?.message||'Scope Group 建立失敗。');}
+  }
 
-  const saveRegistry=async index=>{
-    const row=registry[index];
-    setStatus('');
-    try{
-      validateRegistryRoute(row);
-      if(row.scope_kind==='system')throw new Error('System Registry 不可修改。');
-      await manageScopeRegistry('update',row.scope_id,{
-        display_name:String(row.display_name||'').trim(),
-        domain:String(row.domain||'').trim()||null,
-        directory:String(row.directory||'').trim()||null,
-        parent_scope_id:row.scope_id==='loc'?null:(String(row.parent_scope_id||'').trim()||null),
-        active:row.scope_id==='loc'?true:row.active!==false,
-        sort_order:Number(row.sort_order)||0
-      });
-      setStatus(row.scope_id+' Registry 已更新。');
-      setRevision(value=>value+1);
-    }catch(error){setStatus(error.message||'Scope Registry 更新失敗。');}
-  };
+  return <section className="loc-card admin-workspace">
+    <div className="admin-inline-select">
+      <Select
+        className="admin-react-select"
+        classNamePrefix="admin-react-select"
+        unstyled
+        isSearchable={false}
+        options={CREATE_OPTIONS}
+        value={CREATE_OPTIONS.find(option=>option.value===kind)}
+        onChange={option=>setKind(option?.value||'scope')}
+        aria-label="建立類型"
+      />
+    </div>
 
-  const save=async index=>{
-    const row=mappings[index];
-    setStatus('');
-    try{
-      validate(row);
-      const galaxy=String(row.galaxy||'galaxy').trim()||'galaxy';
-      const time=String(row.time||'time').trim()||'time';
-      const birthday=row.birthday||null;
-      await syncManageScopeRow(
-        {galaxy,time,birthday},
-        {scopeId:row.id,email:row.email}
-      );
-      setStatus('Scope Mapping 已同步更新。');setRevision(value=>value+1);
-    }catch(error){setStatus(error.message||'Mapping 儲存失敗。');}
-  };
+    {kind==='scope'?<div className="scope-management-fields">
+      <label><span>Scope ID</span><input maxLength="15" value={scopeDraft.scope_id} onChange={event=>setScopeDraft(value=>({...value,scope_id:event.target.value.toLowerCase()}))}/></label>
+      <label><span>顯示名稱</span><input value={scopeDraft.display_name} onChange={event=>setScopeDraft(value=>({...value,display_name:event.target.value}))}/></label>
+      <label><span>Email</span><input type="email" value={scopeDraft.email} onChange={event=>setScopeDraft(value=>({...value,email:event.target.value}))}/></label>
+      <label><span>Birthday</span><input type="date" value={scopeDraft.birthday} onChange={event=>setScopeDraft(value=>({...value,birthday:event.target.value}))}/></label>
+      <label><span>Domain</span><input value={scopeDraft.domain} onChange={event=>setScopeDraft(value=>({...value,domain:event.target.value}))}/></label>
+      <label><span>Directory</span><input value={scopeDraft.directory} onChange={event=>setScopeDraft(value=>({...value,directory:event.target.value}))}/></label>
+      <label><span>Parent</span><Select className="admin-react-select" classNamePrefix="admin-react-select" unstyled isSearchable={false} options={parentOptions} value={scopeParent} onChange={option=>setScopeDraft(value=>({...value,parent_scope_id:option?.value||'loc'}))}/></label>
+      <label><span>Theme</span><Select className="admin-react-select" classNamePrefix="admin-react-select" unstyled isSearchable={false} options={themeOptions} value={themeOptions.find(option=>option.value===scopeDraft.theme)} onChange={option=>setScopeDraft(value=>({...value,theme:option?.value||'theme-7'}))}/></label>
+      <label className="scope-setting-toggle"><input type="checkbox" checked={scopeDraft.copy_keywords!==false} onChange={event=>setScopeDraft(value=>({...value,copy_keywords:event.target.checked}))}/>複製目前 Rune66 Keyword Class</label>
+      <div className="scope-management-wide-field"><button type="button" className="loc-button primary" onClick={createScope}>建立 Scope</button></div>
+    </div>:<div className="scope-management-fields">
+      <label><span>Group ID</span><input maxLength="15" value={groupDraft.scope_id} onChange={event=>setGroupDraft(value=>({...value,scope_id:event.target.value.toLowerCase()}))}/></label>
+      <label><span>Group 名稱</span><input value={groupDraft.display_name} onChange={event=>setGroupDraft(value=>({...value,display_name:event.target.value}))}/></label>
+      <label><span>Domain</span><input value={groupDraft.domain} onChange={event=>setGroupDraft(value=>({...value,domain:event.target.value}))}/></label>
+      <label><span>Directory</span><input value={groupDraft.directory} onChange={event=>setGroupDraft(value=>({...value,directory:event.target.value}))}/></label>
+      <label><span>Parent</span><Select className="admin-react-select" classNamePrefix="admin-react-select" unstyled isSearchable={false} options={parentOptions} value={groupParent} onChange={option=>setGroupDraft(value=>({...value,parent_scope_id:option?.value||'loc'}))}/></label>
+      <label><span>排序</span><input type="number" value={groupDraft.sort_order} onChange={event=>setGroupDraft(value=>({...value,sort_order:event.target.value}))}/></label>
+      <div className="scope-management-wide-field"><button type="button" className="loc-button primary" onClick={createGroup}>建立 Scope Group</button></div>
+    </div>}
 
-  const selectDraftScope=id=>{
-    const existing=mappings.find(row=>row.id===id);
+    {status?<p className="scope-status" role="status">{status}</p>:null}
+  </section>;
+}
+
+function AdminPermissions(){
+  const data=useAdminScopeData();
+  const {registry,mappings,setMappings,status,setStatus,refresh}=data;
+  const dataScopes=registry.filter(row=>row.scope_kind==='scope'&&row.active!==false);
+  const scopeOptions=dataScopes.map(row=>({value:row.scope_id,label:(row.display_name||row.scope_id)+' · '+row.scope_id}));
+  const [scopeId,setScopeId]=useState('');
+  const [draft,setDraft]=useState({...EMPTY_MAPPING});
+
+  useEffect(()=>{
+    if(scopeId&&dataScopes.some(row=>row.scope_id===scopeId))return;
+    setScopeId(dataScopes[0]?.scope_id||'');
+  },[dataScopes,scopeId]);
+
+  useEffect(()=>{
+    if(!scopeId)return;
+    const existing=mappings.find(row=>row.id===scopeId);
     setDraft(value=>({
-      ...value,id,
+      ...value,
+      id:scopeId,
       galaxy:String(existing?.galaxy||'galaxy'),
       time:String(existing?.time||'time'),
       birthday:String(existing?.birthday||'').slice(0,10)
     }));
-  };
+  },[scopeId,mappings]);
 
-  const add=async()=>{
+  const visible=mappings.filter(row=>row.id===scopeId);
+  const selectedScope=scopeOptions.find(option=>option.value===scopeId)||null;
+
+  const changeMapping=(email,key,value)=>setMappings(rows=>rows.map(row=>row.id===scopeId&&row.email===email?{...row,[key]:value}:row));
+
+  async function save(row){
     setStatus('');
     try{
-      validateNewMapping(draft);
-      await insertRows('silver.manage',[{...draft,role:'scope',birthday:draft.birthday||null}]);
-      setDraft({...EMPTY_MAPPING});setStatus('Mapping 已新增。');setRevision(value=>value+1);
-    }catch(error){setStatus(error.message||'Mapping 新增失敗。');}
-  };
+      await syncManageScopeRow(
+        {galaxy:String(row.galaxy||'galaxy').trim()||'galaxy',time:String(row.time||'time').trim()||'time',birthday:row.birthday||null},
+        {scopeId:row.id,email:row.email}
+      );
+      setStatus('Mapping 已更新。');
+      refresh();
+    }catch(error){setStatus(error?.message||'Mapping 更新失敗。');}
+  }
 
-  const remove=async row=>{
-    if(!window.confirm('確定移除 '+row.id+' / '+row.email+' 的管理 Mapping？'))return;
+  async function remove(row){
+    if(!window.confirm('確定移除 '+row.email+'？'))return;
     setStatus('');
     try{
       await deleteRows('silver.manage',{filters:[
         {column:'id',operator:'eq',value:row.id},
         {column:'email',operator:'eq',value:row.email}
       ]});
-      setStatus('Mapping 已移除。');setRevision(value=>value+1);
-    }catch(error){setStatus(error.message||'Mapping 刪除失敗。');}
-  };
+      setStatus('Mapping 已移除。');
+      refresh();
+    }catch(error){setStatus(error?.message||'Mapping 刪除失敗。');}
+  }
 
-  return <section className="loc-card scope-management-workspace">
-    <p className="loc-eyebrow">Current Scope Registry</p>
-    <h2>{UI_COPY.admin.overview}</h2>
-    <p>Admin 負責 Scope 建立、上下層 Registry、身份權限與資料表 Mapping；各 Scope 的內容與關鍵詞請回到各自 Manage。</p>
+  async function add(){
+    setStatus('');
+    try{
+      if(!scopeId)throw new Error('請選擇 Scope。');
+      if(!/^\S+@\S+\.\S+$/.test(String(draft.email||'')))throw new Error('Email 格式不正確。');
+      const existing=mappings.find(row=>row.id===scopeId);
+      const galaxy=String(existing?.galaxy||draft.galaxy||'galaxy');
+      const time=String(existing?.time||draft.time||'time');
+      const birthday=String(existing?.birthday||draft.birthday||'').slice(0,10)||null;
+      await insertRows('silver.manage',[{
+        id:scopeId,email:String(draft.email||'').trim().toLowerCase(),role:'scope',galaxy,time,birthday
+      }]);
+      setDraft(value=>({...EMPTY_MAPPING,id:scopeId,galaxy,time,birthday:birthday||''}));
+      setStatus('Mapping 已新增。');
+      refresh();
+    }catch(error){setStatus(error?.message||'Mapping 新增失敗。');}
+  }
 
-    <h3>目前 UI 部署</h3>
-    <div className="scope-list">
-      {deployedScopes.map(scope=><article className="scope-inline-card" key={scope.id}>
-        <strong>{scope.label}</strong>
-        <span>{scope.id} · {scope.domain||scope.mount?.path} · {scope.aggregateChildren?'Scope Group':'Scope'}</span>
-      </article>)}
+  return <section className="loc-card admin-workspace">
+    <div className="admin-inline-select">
+      <Select
+        className="admin-react-select"
+        classNamePrefix="admin-react-select"
+        unstyled
+        isSearchable
+        options={scopeOptions}
+        value={selectedScope}
+        onChange={option=>setScopeId(option?.value||'')}
+        placeholder="選擇 Scope"
+        aria-label="權限 Scope"
+      />
     </div>
 
-    <h3>DB Scope Registry</h3>
-    <p>Scope ID 與 Kind 建立後固定；可調整名稱、Route、Parent、排序與啟用狀態。停用 Group 前必須先處理 active 子 Scope。</p>
-    <div className="scope-management-records">
-      {registry.map((scope,index)=><article className="scope-inline-card" key={scope.scope_id}>
-        <strong>{scope.scope_id} · {scope.scope_kind}</strong>
+    <div className="admin-permission-list">
+      {visible.map(row=><article className="scope-inline-card" key={row.id+':'+row.email}>
+        <strong>{row.email}</strong>
         <div className="scope-management-fields">
-          <label><span>顯示名稱</span><input value={scope.display_name||''} disabled={scope.scope_kind==='system'} onChange={event=>registryChange(index,'display_name',event.target.value)}/></label>
-          <label><span>Domain</span><input value={scope.domain||''} disabled={scope.scope_kind==='system'} onChange={event=>registryChange(index,'domain',event.target.value)}/></label>
-          <label><span>Directory</span><input value={scope.directory||''} disabled={scope.scope_kind==='system'} onChange={event=>registryChange(index,'directory',event.target.value)}/></label>
-          <label><span>Parent</span><select value={scope.parent_scope_id||''} disabled={scope.scope_kind==='system'||scope.scope_id==='loc'} onChange={event=>registryChange(index,'parent_scope_id',event.target.value)}>
-            <option value="">—</option>
-            {scopeGroups.filter(group=>group.scope_id!==scope.scope_id).map(group=><option key={group.scope_id} value={group.scope_id}>{group.display_name||group.scope_id} · {group.scope_id}</option>)}
-          </select></label>
-          <label><span>排序</span><input type="number" value={scope.sort_order||0} disabled={scope.scope_kind==='system'} onChange={event=>registryChange(index,'sort_order',event.target.value)}/></label>
-          <label className="scope-setting-toggle"><input type="checkbox" checked={scope.active!==false} disabled={scope.scope_kind==='system'||scope.scope_id==='loc'} onChange={event=>registryChange(index,'active',event.target.checked)}/><span>Active</span></label>
+          <label><span>Role</span><input value={row.role} readOnly/></label>
+          <label><span>Galaxy</span><input value={row.galaxy||'galaxy'} onChange={event=>changeMapping(row.email,'galaxy',event.target.value)}/></label>
+          <label><span>Time</span><input value={row.time||'time'} onChange={event=>changeMapping(row.email,'time',event.target.value)}/></label>
+          <label><span>Birthday</span><input type="date" value={row.birthday||''} onChange={event=>changeMapping(row.email,'birthday',event.target.value)}/></label>
         </div>
         <div className="scope-tabs">
-          {scope.scope_kind!=='system'?<button type="button" onClick={()=>saveRegistry(index)}>儲存 Registry</button>:null}
-          {scope.scope_kind!=='system'?<a className="loc-button" href={scopeHref(scope.scope_id)} target="_blank" rel="noreferrer">開啟 UI</a>:null}
-        </div>
-      </article>)}
-    </div>
-
-    <section className="scope-inline-card">
-      <h3>建立 Scope Group</h3>
-      <div className="scope-management-fields">
-        <label><span>Group ID</span><input maxLength="15" value={groupDraft.scope_id} onChange={event=>setGroupDraft(value=>({...value,scope_id:event.target.value.toLowerCase()}))}/></label>
-        <label><span>顯示名稱</span><input value={groupDraft.display_name} onChange={event=>setGroupDraft(value=>({...value,display_name:event.target.value}))}/></label>
-        <label><span>Domain</span><input value={groupDraft.domain} onChange={event=>setGroupDraft(value=>({...value,domain:event.target.value}))}/></label>
-        <label><span>Directory</span><input value={groupDraft.directory} placeholder="/group" onChange={event=>setGroupDraft(value=>({...value,directory:event.target.value}))}/></label>
-        <label><span>Parent Group</span><select value={groupDraft.parent_scope_id} onChange={event=>setGroupDraft(value=>({...value,parent_scope_id:event.target.value}))}>
-          {scopeGroups.map(group=><option key={group.scope_id} value={group.scope_id}>{group.display_name||group.scope_id} · {group.scope_id}</option>)}
-        </select></label>
-        <label><span>排序（可空）</span><input type="number" value={groupDraft.sort_order} onChange={event=>setGroupDraft(value=>({...value,sort_order:event.target.value}))}/></label>
-      </div>
-      <p className="scope-status">Group 只存在 Scope Registry，不建立 Galaxy／Time／Keywords；資料仍屬於子 Scope。</p>
-      <button type="button" className="loc-button" onClick={createGroup}>建立 Scope Group</button>
-    </section>
-
-    <section className="scope-inline-card">
-      <h3>建立 Scope</h3>
-      <p>一次建立固定 Config / Galaxy / Galaxy Media / Time / Keywords 五件套、Scope Registry、第一筆管理權限與預設 Keyword Class。</p>
-      <div className="scope-management-fields">
-        <label><span>Scope ID</span><input maxLength="15" value={createDraft.scope_id} placeholder="newscope" onChange={event=>setCreateDraft(value=>({...value,scope_id:event.target.value.toLowerCase()}))}/></label>
-        <label><span>顯示名稱</span><input value={createDraft.display_name} onChange={event=>setCreateDraft(value=>({...value,display_name:event.target.value}))}/></label>
-        <label><span>Email</span><input type="email" value={createDraft.email} onChange={event=>setCreateDraft(value=>({...value,email:event.target.value}))}/></label>
-        <label><span>Birthday</span><input type="date" value={createDraft.birthday} onChange={event=>setCreateDraft(value=>({...value,birthday:event.target.value}))}/></label>
-        <label><span>Domain</span><input value={createDraft.domain} placeholder="scope.example.com" onChange={event=>setCreateDraft(value=>({...value,domain:event.target.value}))}/></label>
-        <label><span>Directory</span><input value={createDraft.directory} placeholder="/newscope" onChange={event=>setCreateDraft(value=>({...value,directory:event.target.value}))}/></label>
-        <label><span>Parent Scope Group</span><select value={createDraft.parent_scope_id} onChange={event=>setCreateDraft(value=>({...value,parent_scope_id:event.target.value}))}>
-          {scopeGroups.map(group=><option key={group.scope_id} value={group.scope_id}>{group.display_name||group.scope_id} · {group.scope_id}</option>)}
-        </select></label>
-        <label><span>Theme</span><select value={createDraft.theme} onChange={event=>setCreateDraft(value=>({...value,theme:event.target.value}))}>
-          {THEME_SLOTS.map(theme=><option key={theme.id} value={theme.id}>{theme.label} · {theme.id}</option>)}
-        </select></label>
-      </div>
-      <label className="scope-setting-toggle"><input type="checkbox" checked={createDraft.copy_keywords!==false} onChange={event=>setCreateDraft(value=>({...value,copy_keywords:event.target.checked}))}/><span>預設複製目前 Rune66 Keyword Class（獨立 UUID / 66 筆）</span></label>
-      <p className="scope-status">Domain / Directory 二選一；新 Scope 預設掛在選定的 Scope Group 下。</p>
-      <button type="button" className="loc-button primary" onClick={createScope}>建立 Scope</button>
-    </section>
-
-    <h3>資料 Scope Mapping</h3>
-    <div className="scope-management-records">
-      {mappings.map((row,index)=><article className="scope-inline-card" key={row.id+':'+row.email}>
-        <strong>{row.id} · {row.email}</strong>
-        <div className="scope-management-fields">
-          <label><span>Role</span><input value={row.role} readOnly aria-readonly="true"/></label>
-          <label><span>Galaxy</span><input value={row.galaxy||'galaxy'} onChange={event=>change(index,'galaxy',event.target.value)}/></label>
-          <label><span>Time</span><input value={row.time||'time'} onChange={event=>change(index,'time',event.target.value)}/></label>
-          <label><span>Birthday</span><input type="date" value={row.birthday||''} onChange={event=>change(index,'birthday',event.target.value)}/></label>
-        </div>
-        <div className="scope-tabs">
-          <button type="button" onClick={()=>save(index)}>儲存</button>
+          <button type="button" onClick={()=>save(row)}>儲存</button>
           <button type="button" onClick={()=>remove(row)}>移除</button>
         </div>
       </article>)}
+      {!visible.length?<p className="scope-status">此 Scope 尚無 Mapping。</p>:null}
     </div>
 
     <section className="scope-inline-card">
-      <h3>新增既有 Scope 權限</h3>
-      <div className="scope-management-fields">
-        <label><span>Scope</span><select value={draft.id} onChange={event=>selectDraftScope(event.target.value)}>
-          <option value="">選擇</option>{dataScopeIds.map(id=><option key={id} value={id}>{id}</option>)}
-        </select></label>
-        <label><span>Email</span><input type="email" value={draft.email} onChange={event=>setDraft(value=>({...value,email:event.target.value}))}/></label>
-        <label><span>Galaxy</span><input value={draft.galaxy} onChange={event=>setDraft(value=>({...value,galaxy:event.target.value}))}/></label>
-        <label><span>Time</span><input value={draft.time} onChange={event=>setDraft(value=>({...value,time:event.target.value}))}/></label>
-        <label><span>Birthday</span><input type="date" value={draft.birthday} onChange={event=>setDraft(value=>({...value,birthday:event.target.value}))}/></label>
-      </div>
+      <h3>新增管理者</h3>
+      <label><span>Email</span><input type="email" value={draft.email} onChange={event=>setDraft(value=>({...value,email:event.target.value}))}/></label>
       <button type="button" className="loc-button" onClick={add}>新增 Mapping</button>
     </section>
+
     {status?<p className="scope-status" role="status">{status}</p>:null}
   </section>;
 }
@@ -469,7 +607,9 @@ function ThemeOverview({account}){
 
 export default function AdminHomeView(){
   const account=useAccount();
-  const [section,setSection]=useState('scopes');
+  const [section,setSection]=useState('deployment');
+  const selectedOption=ADMIN_OPTIONS.find(option=>option.value===section)||ADMIN_OPTIONS[0];
+
   if(account.loading||account.permissionLoading)return <section className="loc-view"><div className="loc-card">{UI_COPY.admin.checking}</div></section>;
   if(!account.user)return <Login account={account}/>;
   if(!account.canManageGlobalSync())return <section className="loc-view">
@@ -478,18 +618,29 @@ export default function AdminHomeView(){
   </section>;
 
   return <section className="loc-view scope-management-page">
-    <header className="loc-hero loc-hero-context">
+    <header className="loc-hero loc-hero-context admin-hero">
       <p className="loc-eyebrow">{UI_COPY.admin.eyebrow}</p>
-      <h1>{UI_COPY.admin.eyebrow}</h1>
-      <p>系統級設定與 Scope Manage 分離；這裡只處理全域責任。</p>
-      <div className="scope-management-select">
-        <label htmlFor="admin-management-section">{UI_COPY.admin.item}</label>
-        <select id="admin-management-section" className="scope-select" value={section} onChange={event=>setSection(event.target.value)}>
-          {ADMIN_OPTIONS.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}
-        </select>
+      <div className="admin-hero-row">
+        <h1>{UI_COPY.admin.eyebrow}</h1>
+        <button className="loc-button" type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button>
       </div>
-      <p><button type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button></p>
+      <div className="admin-main-select">
+        <Select
+          className="admin-react-select"
+          classNamePrefix="admin-react-select"
+          unstyled
+          isSearchable={false}
+          options={ADMIN_OPTIONS}
+          value={selectedOption}
+          onChange={option=>setSection(option?.value||'deployment')}
+          aria-label="Admin 管理功能"
+        />
+      </div>
     </header>
-    {section==='scopes'?<ScopeOverview/>:section==='search'?<SearchKeywordReport/>:<ThemeOverview account={account}/>} 
+
+    {section==='deployment'?<AdminDeployment/>:null}
+    {section==='create'?<AdminCreateScope/>:null}
+    {section==='permissions'?<AdminPermissions/>:null}
+    {section==='search'?<SearchKeywordReport/>:null}
   </section>;
 }
