@@ -227,8 +227,15 @@
   .lrg-layout{grid-template-columns:minmax(0,1fr)}
   .lrg-side{position:static;order:2}
   .lrg-players{grid-template-columns:minmax(0,1fr)}
-  .lrg-home-hero{grid-template-columns:minmax(0,1fr)}
-  .lrg-hero-image{min-height:220px;max-height:340px}
+  .lrg-home-hero{grid-template-columns:minmax(0,1fr);gap:0}
+  .lrg-hero-image{
+    height:auto;
+    min-height:0;
+    max-height:none;
+    aspect-ratio:16/10;
+    object-fit:cover;
+    object-position:center 45%;
+  }
 }
 @media(max-width:600px){
   .lrg-rule-row{grid-template-columns:minmax(0,1fr);align-items:start}
