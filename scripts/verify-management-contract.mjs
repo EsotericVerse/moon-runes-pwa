@@ -12,7 +12,6 @@ const culture=read('app/loc/culture-query.js');
 const editor=read('app/modular/features/CultureTimelineEditor.jsx');
 const management=read('app/loc/GovernanceManagement.jsx');
 const governance=read('app/modular/features/Governance.jsx');
-const data=read('app/loc/ManagementDataPanel.jsx');
 const admin=read('app/loc/views/AdminHomeView.jsx');
 const dbContract=read('app/loc/db-contract.mjs');
 const keywordLibrary=read('app/loc/KeywordLibraryPanel.jsx');
@@ -24,6 +23,9 @@ const scopeGroup=read('app/loc/ScopeGroupManagement.jsx');
 const scopeRuntime=read('app/modular/use-scope-runtime.js');
 const scopeRegistry=read('app/modular/scope-registry.js');
 const importPanel=read('app/loc/ManagementImportPanel.jsx');
+const scopeSettings=read('app/loc/ScopeSettingsPanel.jsx');
+const publisher=read('app/loc/ManagementArticlePublisher.jsx');
+const sharedSearch=read('app/modular/features/Search.jsx');
 const registrySql=read('docs/sql/scope-registry-management.sql');
 const sourceRefreshIndex=read('docs/sql/source-refresh-index.sql');
 
@@ -35,12 +37,15 @@ must(editor.includes('style_tag_descriptions')&&editor.includes('風格關鍵詞
 must(galaxy.includes('selectStyleKeywordIntroductions')&&!galaxy.includes('scopeCards('),'Search must prepend exact style-keyword introductions and must not use partial Scope-ID cards');
 must(management.includes("section==='group'&&scope?.aggregateChildren"),'every DB Scope Group must have its own Manage');
 must(management.includes('ScopeGroupManagement'),'Manage must compose the Scope Group module');
-must(management.includes('KeywordLibraryPanel')&&management.includes("scopeId!=='lrunes'")&&management.includes('scopeId={scopeId}'),'general Scope Manage must expose the scope-owned keyword library');
+must(management.includes("{value:'settings',label:'雜項設定'}")&&management.includes("{value:'import',label:'資料匯入'}")&&management.includes("{value:'keywords',label:'關鍵詞庫'}"),'Scope Manage must expose only misc settings, import and keyword options');
+must(!management.includes('ManagementDataPanel')&&!management.includes('LivePreview')&&!management.includes("value:'period'"),'Scope Manage must not recreate data browser, preview or period pages');
 must(management.includes("canManage=scope?.aggregateChildren?account.canManageGlobalSync():account.canManageScopeSync(scopeId)"),'Scope Group Manage must use global authority without becoming Admin');
 must(governance.includes("scopeHref(scopeId,'governance/manage')"),'Governance must link to Scope Manage');
-must(data.includes('updateRows')&&data.includes('deleteRows')&&data.includes('ContentEditor'),'canonical data management must expose shared CRUD');
-must(data.includes('detailRequestRef')&&data.includes('requestId!==detailRequestRef.current'),'record detail UI must ignore stale async responses');
-must(data.includes("toUpperCase()")&&data.includes("galaxy_link 必須是 8 字 UID"),'media edit must normalize and validate galaxy_link');
+must(importPanel.includes("role=\"tablist\"")&&importPanel.includes("tab==='article'")&&importPanel.includes('ManagementArticlePublisher'),'article publishing must be a tab inside Data Import');
+must(scopeSettings.includes('display_name')&&scopeSettings.includes('search_intro')&&scopeSettings.includes('search_aliases')&&scopeSettings.includes('updateRows'),'misc settings must edit Scope-owned presentation config');
+must(publisher.includes('scope-publisher-main')&&publisher.includes('scope-publisher-sidebar')&&publisher.includes('發佈文章'),'article publisher must use a focused writing + publish-settings workspace');
+must(sharedSearch.includes('startEditing')&&sharedSearch.includes('ContentEditor')&&sharedSearch.includes('updateRows'),'Search must provide authenticated in-place record editing');
+must(culture.includes('CultureTimelineEditor')&&culture.includes('selectedTimelineRecordId'),'Culture first timeline must provide authenticated in-place period/anchor editing');
 must(admin.includes("insertRows('silver.manage'")&&admin.includes("deleteRows('silver.manage'"),'Admin must support mapping add/remove through shared management write');
 must(admin.includes('selectDraftScope')&&admin.includes('同一 Scope 的 Galaxy / Time mapping 必須一致'),'Admin permission rows must inherit and preserve one Scope mapping');
 must(dbContract.includes("rpc('management_write'")&&dbContract.includes('batchSize=200'),'management writes must use the authorized RPC with bounded insert batches');
@@ -53,11 +58,8 @@ must(admin.includes("role:'scope'")&&!admin.includes("change(index,'role'")&&!ad
 must(admin.includes('部分 Scope 設定讀取失敗')&&!admin.includes('}catch{}'),'Admin Scope config failures must be surfaced, not swallowed');
 must(admin.includes('provisionScope(')&&admin.includes('建立 Scope')&&admin.includes('Domain / Directory 必須二選一'),'Admin must expose transactional Scope creation separately from permission mapping');
 must(admin.includes("dbAuthRelation('silver.scope_registry')")&&admin.includes('parent_scope_id'),'Admin must read the DB Scope Registry hierarchy');
-must(scopeData.includes("keywords:`silver.${id}_keywords`")&&scopeData.includes('selectScopeGroupChildren'),'Scope data must resolve Keywords and DB hierarchy');
+must(scopeData.includes("keywords:`silver.${id}_keywords`")&&scopeData.includes('selectScopeGroupChildren')&&scopeData.includes('display_name,search_intro,search_aliases'),'Scope data must resolve Keywords, DB hierarchy and Scope-owned presentation');
 must(scopeGroup.includes('selectScopeGroupChildren(scopeId)')&&scopeGroup.includes('parent_scope_id'),'Scope Group management must read DB parent/child membership');
-must(data.includes("來源為必填欄位。")&&data.includes('source_name:sourceName'),'Galaxy edits must preserve a nonempty source');
-must(data.includes("setSelectedId(id);setDraft(null);setEditorMessage('');")&&!data.includes('if(!scopeData)return;'),'record selection must clear stale drafts and Scope resolution failures must not be silent');
-must(data.includes('!draft&&editorMessage'),'record-detail failures and successful deletes must remain visible without an editor draft');
 must(admin.includes("setMappings([]);setRegistry([]);setStatus(error?.message||'Scope 設定讀取失敗。');"),'Admin mapping/registry read rejections must surface in the UI');
 must(keywordLibrary.includes('class_name')&&keywordLibrary.includes('class_group')&&keywordLibrary.includes('class_enable')&&keywordLibrary.includes('item_name')&&keywordLibrary.includes('principle')&&keywordLibrary.includes('keywords_text'),'keyword library editor must edit self-contained Class, Group, participation, item, principle and one keyword collection together');
 must(!keywordLibrary.includes('keyword_group')&&!keywordLibrary.includes("node_type:'style'")&&!keywordLibrary.includes("node_type:'keyword'"),'keyword library editor must not recreate style/rule/node-type storage');
@@ -79,6 +81,7 @@ must(dbContract.includes("rpc('provision_scope'")&&dbContract.includes('provisio
 must(scopeProvisioning.includes('create table if not exists silver.scope_registry')&&scopeProvisioning.includes('create or replace function api.provision_scope'),'Scope provisioning SQL must define the DB registry and provisioning RPC');
 for(const suffix of ["_galaxy'","_galaxy_media'","_time'","_keywords'"])must(scopeProvisioning.includes(suffix),'Scope provisioning SQL missing fixed table suffix '+suffix);
 must(scopeProvisioning.includes('v_keyword_count<>66')&&scopeProvisioning.includes('p_parent_scope_id'),'Scope provisioning must lock the Rune66 default copy and parent Scope Group');
+must(scopeProvisioning.includes('display_name,search_intro,search_aliases')&&portableSchema.includes('"search_intro" text')&&portableSchema.includes('"search_aliases" text[]'),'Scope provisioning/schema must persist Scope-owned presentation fields');
 
 must(dbContract.includes("rpc('manage_scope_registry'")&&dbContract.includes('manageScopeRegistry'),'DB client must expose authorized Scope Registry management');
 must(admin.includes('建立 Scope Group')&&admin.includes('saveRegistry')&&admin.includes("manageScopeRegistry('update'"),'Admin must edit Scope Registry hierarchy and create Scope Groups');
@@ -90,9 +93,8 @@ must(sourceRefreshIndex.includes('(source_name,source_native_id)')&&sourceRefres
 must(importPanel.includes('record.createtime||current.createtime||null')&&importPanel.includes('record.source_place||current.source_place||null')&&importPanel.includes('record.url||current.url||null'),'Source Refresh must preserve optional existing metadata when the payload omits it');
 
 must(!/silver\.runes(?:_etc)?\b/.test(galaxy),'generic Galaxy/Search provider must not expose private Rune Core tables');
-const sharedSearch=read('app/modular/features/Search.jsx');
 must(!/runeScopeIds|silver\.runes(?:_etc)?\b/.test(sharedSearch),'shared Search must stay Scope-data only');
-must(sharedSearch.includes('resolveScopeSearchAlias')&&sharedSearch.includes("label:'前往 Scope 首頁'")&&sharedSearch.includes('return;'),'exact Scope aliases must return one homepage shortcut and stop the search');
+must(sharedSearch.includes('matchesScopeAlias')&&sharedSearch.includes('scope.searchIntro')&&sharedSearch.includes("label:'前往 Scope 首頁'")&&sharedSearch.includes('return;'),'exact Scope aliases must use Scope-owned presentation and stop the search');
 must(sharedSearch.includes('selectStyleKeywordIntroductions')&&sharedSearch.includes('[...styleIntroductions,...enrichedRows]'),'style keyword descriptions must precede ordinary related results');
 
 if(failures.length){
