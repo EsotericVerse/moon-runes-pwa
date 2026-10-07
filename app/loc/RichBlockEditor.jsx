@@ -2,8 +2,8 @@
 
 import {useEffect,useRef} from 'react';
 
-const ALLOWED_TAGS=new Set(['P','BR','STRONG','B','EM','I','U','S','H2','H3','UL','OL','LI','BLOCKQUOTE','DIV','SPAN','A']);
-const ALLOWED_CLASSES=new Set(['loc-rich-bubble','loc-rich-box']);
+const ALLOWED_TAGS=new Set(['P','BR','STRONG','B','EM','I','U','S','H2','H3','UL','OL','LI','BLOCKQUOTE','DIV','SPAN','A','DETAILS','SUMMARY']);
+const ALLOWED_CLASSES=new Set(['loc-rich-bubble','loc-rich-box','home-status-details','home-status-reference']);
 
 function escapeHtml(value=''){
   return String(value)
