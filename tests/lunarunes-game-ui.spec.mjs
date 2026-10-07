@@ -19,6 +19,26 @@ test.describe('LunaRunes tabletop UI',()=>{
     await page.getByRole('button',{name:/確認棄牌/}).click();
     await expect(page.getByText(/EVENT/)).toBeVisible();
     await expect(page.getByText(/第 1 回合/).first()).toBeVisible();
+
+    const players=page.locator('.lrg-player');
+    await expect(players).toHaveCount(2);
+    for(let player=0;player<2;player++){
+      const hand=players.nth(player).locator('.lrg-card');
+      await hand.nth(0).click();
+      await hand.nth(1).click();
+    }
+    const resolve=page.getByRole('button',{name:'結算事件'});
+    await expect(resolve).toBeEnabled();
+    await resolve.click();
+    await expect(page.getByText(/第 2 回合/).first()).toBeVisible();
+  });
+
+  test('reference tabs expose the eight roles from the current database',async({page})=>{
+    await page.goto('/game/',{waitUntil:'domcontentloaded'});
+    const rolesTab=page.getByRole('tab',{name:/八職 8/});
+    await expect(rolesTab).toBeVisible({timeout:15_000});
+    await rolesTab.click();
+    await expect(page.locator('.lrg-doc-grid .lrg-doc-item')).toHaveCount(8);
   });
 
   test('mobile keeps four rune cards per row without horizontal overflow',async({page},testInfo)=>{
