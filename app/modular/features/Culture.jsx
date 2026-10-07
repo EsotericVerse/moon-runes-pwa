@@ -553,15 +553,13 @@ export default function Culture(){
               <section className='scope-card scope-culture-structure-river'>
                 <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
                 <h3>{UI_COPY.culture.structure}</h3>
-                {currentTimelineItems.length?<CultureTimeline
-                  items={currentTimelineItems}
+                {timelineItems.length?<CultureTimeline
+                  items={timelineItems}
                   labelOf={item=>item.display_label||item.title}
                   focus={navigation}
                   mode='overview'
                   windowStart={currentStructureStart}
                   windowEnd={currentStructureEnd}
-                  fixedMin={currentStructureStart}
-                  fixedMax={currentStructureEnd}
                   onSelect={item=>{
                     const recordId=String(item?.record_id||item?.recordId||'').trim();
                     if(recordId)setSelectedTimelineRecordId(recordId);
