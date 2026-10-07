@@ -1,5 +1,36 @@
+'use client';
+
+import {scopeHref} from '../../modular/scope-registry';
 import {SITE_IMAGES} from '../../site-images';
 import ScopeEditableBlocks from '../ScopeEditableBlocks';
+
+function entity(slot,title){
+  return (slot?.entities||[]).find(item=>item.title===title)||null;
+}
+
+function unwrapParagraph(value=''){
+  const html=String(value||'').trim();
+  const match=html.match(/^<p>([\s\S]*)<\/p>$/i);
+  return match?match[1]:html;
+}
+
+function InlineHtml({html,className=''}) {
+  return <span className={className} dangerouslySetInnerHTML={{__html:unwrapParagraph(html)}}/>;
+}
+
+function BlockHtml({html,className=''}) {
+  if(!html)return null;
+  return <div className={className} dangerouslySetInnerHTML={{__html:html}}/>;
+}
+
+function paragraphs(value=''){
+  return [...String(value||'').matchAll(/<p(?:\s[^>]*)?>([\s\S]*?)<\/p>/gi)].map(match=>match[1]);
+}
+
+function ParagraphHtml({html,className=''}) {
+  if(!html)return null;
+  return <p className={className} dangerouslySetInnerHTML={{__html:html}}/>;
+}
 
 export default function AboutView(){
   return <section className="loc-view loc-home">
@@ -9,8 +40,20 @@ export default function AboutView(){
           scopeId="loc"
           page="index"
           orders={[1]}
-          slotClassName="loc-home-hero-copy"
-          headingLevel={1}
+          slotClassName="scope-display-contents"
+          renderDisplay={slot=>{
+            const english=entity(slot,'English');
+            const explanation=entity(slot,'解釋');
+            const description=entity(slot,'說明');
+            return <>
+              {english?.text?<p className="loc-eyebrow"><InlineHtml html={english.text}/></p>:null}
+              <div className="home-title-row">
+                {slot.title?<h1>{slot.title}</h1>:null}
+                {explanation?.text?<p className="loc-subtitle"><InlineHtml html={explanation.text}/></p>:null}
+              </div>
+              {description?.text?<div className="loc-hero-copy" dangerouslySetInnerHTML={{__html:description.text}}/>:null}
+            </>;
+          }}
         />
       </div>
       <figure className="home-hero-visual">
@@ -22,18 +65,28 @@ export default function AboutView(){
     </header>
 
     <section className="loc-card home-copy-block home-beginner" id="beginner">
-      <div className="home-rune-layout">
-        <ScopeEditableBlocks
-          scopeId="loc"
-          page="index"
-          orders={[2]}
-          slotClassName="home-author-copy"
-          headingLevel={2}
-        />
-        <figure className="home-framework-figure">
-          <img src={SITE_IMAGES.lunarunes.src} width={SITE_IMAGES.lunarunes.width} height={SITE_IMAGES.lunarunes.height} alt="LunaRunes 月之符文" loading="lazy" decoding="async" />
-        </figure>
-      </div>
+      <ScopeEditableBlocks
+        scopeId="loc"
+        page="index"
+        orders={[2]}
+        slotClassName="scope-display-contents"
+        renderDisplay={slot=>{
+          const start=entity(slot,'Start here');
+          return <>
+            <div className="home-section-heading">
+              {start?.title?<p className="loc-eyebrow">{start.title}</p>:null}
+              {slot.title?<h2>{slot.title}</h2>:null}
+              {start?.text?<p className="loc-subtitle"><InlineHtml html={start.text}/></p>:null}
+            </div>
+            <div className="home-rune-layout">
+              <div className="home-author-copy"><BlockHtml html={slot.text}/></div>
+              <figure className="home-framework-figure">
+                <img src={SITE_IMAGES.lunarunes.src} width={SITE_IMAGES.lunarunes.width} height={SITE_IMAGES.lunarunes.height} alt="LunaRunes 月之符文" loading="lazy" decoding="async" />
+              </figure>
+            </div>
+          </>;
+        }}
+      />
     </section>
 
     <section className="loc-card home-framework home-architecture-presentation" id="framework-map">
@@ -43,8 +96,17 @@ export default function AboutView(){
             scopeId="loc"
             page="index"
             orders={[3]}
-            slotClassName="home-author-copy"
-            headingLevel={2}
+            slotClassName="scope-display-contents"
+            renderDisplay={slot=>{
+              const english=entity(slot,'LOC Architecture');
+              return <>
+                <div className="home-section-heading">
+                  {english?.title?<p className="loc-eyebrow">{english.title}</p>:null}
+                  {slot.title?<h2>{slot.title}</h2>:null}
+                </div>
+                <div className="home-author-copy"><BlockHtml html={slot.text}/></div>
+              </>;
+            }}
           />
         </div>
         <figure className="home-architecture-figure">
@@ -58,8 +120,36 @@ export default function AboutView(){
         scopeId="loc"
         page="index"
         orders={[4]}
-        slotClassName="home-author-copy"
-        headingLevel={2}
+        slotClassName="scope-display-contents"
+        renderDisplay={slot=>{
+          const textSystem=entity(slot,'文字系統');
+          const modules=entity(slot,'系統模組');
+          return <>
+            <div className="home-section-heading">
+              <p className="loc-eyebrow">System Status</p>
+              {slot.title?<h2>{slot.title}</h2>:null}
+              {slot.text?<p className="loc-subtitle"><InlineHtml html={slot.text}/></p>:null}
+            </div>
+            <div className="home-draw-bubbles home-status-bubbles" aria-label="LOC 系統狀態">
+              {textSystem?<div className="loc-bubble">
+                <strong>{textSystem.title}</strong>
+                {paragraphs(textSystem.text).map((html,index)=><ParagraphHtml key={index} html={html} className={index===1?'home-status-reference':''}/>)}
+              </div>:null}
+              {modules?<div className="loc-bubble">
+                <strong>{modules.title}</strong>
+                {paragraphs(modules.text)[0]?<ParagraphHtml html={paragraphs(modules.text)[0]}/>:null}
+                {paragraphs(modules.text)[1]?<details className="home-status-details">
+                  <summary>架構</summary>
+                  <ParagraphHtml html={paragraphs(modules.text)[1]}/>
+                </details>:null}
+                {paragraphs(modules.text)[2]?<details className="home-status-details">
+                  <summary>模組</summary>
+                  <ParagraphHtml html={paragraphs(modules.text)[2]}/>
+                </details>:null}
+              </div>:null}
+            </div>
+          </>;
+        }}
       />
     </section>
 
@@ -68,27 +158,49 @@ export default function AboutView(){
         scopeId="loc"
         page="index"
         orders={[5]}
-        slotClassName="home-author-copy"
-        headingLevel={2}
+        slotClassName="scope-display-contents"
+        renderDisplay={slot=>{
+          const governance=entity(slot,'loc-km-governance');
+          const health=entity(slot,'loc-repo-health-check');
+          return <>
+            <div className="home-section-heading">
+              <p className="loc-eyebrow">LOC GPT Skills</p>
+              {slot.title?<h2>{slot.title}</h2>:null}
+              {paragraphs(slot.text)[0]?<p className="loc-subtitle"><InlineHtml html={paragraphs(slot.text)[0]}/></p>:null}
+            </div>
+            <div className="home-author-copy">
+              {governance?<p><strong>{governance.title}</strong>：<InlineHtml html={governance.text}/></p>:null}
+              {health?<p><strong>{health.title}</strong>：<InlineHtml html={health.text}/></p>:null}
+              {paragraphs(slot.text)[1]?<ParagraphHtml html={paragraphs(slot.text)[1]}/>:null}
+              <div className="loc-actions"><a className="loc-button primary" href="/LOC-GPT-Skills-v2.0-bundle.zip">下載 LOC GPT Skills v2.0</a></div>
+            </div>
+          </>;
+        }}
       />
-      <div className="loc-actions">
-        <a className="loc-button primary" href="/LOC-GPT-Skills-v2.0-bundle.zip">下載 LOC GPT Skills v2.0</a>
-      </div>
     </section>
 
     <section className="loc-card home-author-words" id="author-words">
-      <div className="home-about-layout">
-        <ScopeEditableBlocks
-          scopeId="loc"
-          page="index"
-          orders={[6]}
-          slotClassName="home-author-copy"
-          headingLevel={2}
-        />
-        <figure className="home-about-figure">
-          <img src={SITE_IMAGES.author.src} width={SITE_IMAGES.author.width} height={SITE_IMAGES.author.height} alt="作者 Lucas Oscar Wang 政德" loading="lazy" decoding="async" />
-        </figure>
-      </div>
+      <ScopeEditableBlocks
+        scopeId="loc"
+        page="index"
+        orders={[6]}
+        slotClassName="scope-display-contents"
+        renderDisplay={slot=><>
+          <div className="home-section-heading">
+            <p className="loc-eyebrow">About me</p>
+            {slot.title?<h2>{slot.title}</h2>:null}
+            {paragraphs(slot.text)[0]?<p className="loc-subtitle"><InlineHtml html={paragraphs(slot.text)[0]}/></p>:null}
+          </div>
+          <div className="home-about-layout">
+            <div className="home-author-copy">
+              {paragraphs(slot.text).slice(1).map((html,index)=><ParagraphHtml key={index} html={html}/>)}
+            </div>
+            <figure className="home-about-figure">
+              <img src={SITE_IMAGES.author.src} width={SITE_IMAGES.author.width} height={SITE_IMAGES.author.height} alt="作者 Lucas Oscar Wang 政德" loading="lazy" decoding="async" />
+            </figure>
+          </div>
+        </>}
+      />
     </section>
   </section>;
 }

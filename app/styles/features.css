@@ -170,6 +170,12 @@
   .scope-editable-block-grid.governance-grid{grid-template-columns:1fr}
 }
 .scope-editable-block{position:relative;min-width:0}
+.scope-editable-block.scope-display-contents:not(.is-editing){display:contents}
+.scope-editable-block.scope-display-contents.is-editing{
+  display:block;
+  width:100%;
+  padding:2.7rem 0 0;
+}
 .scope-work-summary.is-editable-idle{cursor:text}
 .scope-work-summary.is-editable-idle:hover{
   border-color:color-mix(in srgb,var(--loc-accent) 28%,var(--loc-ui-hairline));

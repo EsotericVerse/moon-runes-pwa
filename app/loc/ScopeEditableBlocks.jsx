@@ -57,7 +57,9 @@ export default function ScopeEditableBlocks({
   orders=null,
   className='',
   slotClassName='loc-card',
-  headingLevel=3
+  editSlotClassName='',
+  headingLevel=3,
+  renderDisplay=null
 }){
   const account=useAccount();
   const queryClient=useQueryClient();
@@ -237,7 +239,7 @@ export default function ScopeEditableBlocks({
       const level=Number(headingLevel);
       const Heading=level===1?'h1':level===2?'h2':level===4?'h4':'h3';
       return <section
-        className={slotClassName+' scope-editable-block'+(active?' is-editing':'')+(canEdit&&!active?' is-editable-idle':'')+(empty?' is-empty':'')}
+        className={((active&&editSlotClassName)?editSlotClassName:slotClassName)+' scope-editable-block'+(active?' is-editing':'')+(canEdit&&!active?' is-editable-idle':'')+(empty?' is-empty':'')}
         key={slot.uid||'order:'+slot.order}
         onClickCapture={canEdit&&!active?event=>{if(!isInteractiveTarget(event.target))begin(slot)}:undefined}
       >
@@ -262,13 +264,18 @@ export default function ScopeEditableBlocks({
           />
           {renderEntities(draft.entities,true)}
         </>:<>
-          {slot.title?<Heading>{slot.title}</Heading>:null}
-          {slot.text?<RichBlockEditor
-            key={(slot.uid||slot.order)+':body:view'}
-            initialContent={{html:slot.text}}
-            editable={false}
-          />:null}
-          {renderEntities(slot.entities,false)}
+          {typeof renderDisplay==='function'
+            ?renderDisplay(slot)
+            :<>
+              {slot.title?<Heading>{slot.title}</Heading>:null}
+              {slot.text?<div className="scope-block-static-html" dangerouslySetInnerHTML={{__html:slot.text}}/>:null}
+              {slot.entities.length?<div className="scope-block-entity-grid">
+                {slot.entities.map(entity=><article className="scope-block-entity" key={entity.uid}>
+                  {entity.title?<h4>{entity.title}</h4>:null}
+                  {entity.text?<div className="scope-block-static-html" dangerouslySetInnerHTML={{__html:entity.text}}/>:null}
+                </article>)}
+              </div>:null}
+            </>}
           {empty&&canEdit?<p className="scope-status">點此建立文字框。</p>:null}
         </>}
       </section>;
