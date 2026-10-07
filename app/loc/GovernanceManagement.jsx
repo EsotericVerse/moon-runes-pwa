@@ -21,11 +21,12 @@ const LOGIN_COPY={
 
 function LoginScreen({scopeId,account}){
   const copy=LOGIN_COPY[scopeId]||LOGIN_COPY.lo3rwang;
+  const callbackURL=scopeId==='loc'?scopeHref('admin'):scopeHref(scopeId,'governance/manage');
   return <section className="loc-view">
     <header className="loc-hero"><p className="loc-eyebrow">{copy.eyebrow}</p><h1>{copy.title}</h1><p>{copy.description}</p></header>
     <section className="loc-card">
       <p>登入後才會顯示管理工作頁；公開頁不提供寫入功能。</p>
-      <button className="loc-button primary" type="button" onClick={account.signIn}>使用 Google 登入</button>
+      <button className="loc-button primary" type="button" onClick={()=>account.signIn(callbackURL)}>使用 Google 登入</button>
       {account.error?<p className="scope-status scope-error">{account.error}</p>:null}
     </section>
   </section>;

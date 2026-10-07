@@ -265,7 +265,8 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   }
 
   async function signInWithGoogle(callbackURL){
-    const target=callbackURL||(typeof window!=='undefined'?window.location.href:'/');
+    const target=String(callbackURL||'').trim();
+    if(!target)throw new Error('Google sign-in callback URL is required');
     const {error}=await auth.signInWithOAuth({provider:'google',options:{redirectTo:target}});
     if(error)throw new Error(error.message||'Google sign-in failed');
   }

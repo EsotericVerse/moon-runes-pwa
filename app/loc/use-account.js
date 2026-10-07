@@ -86,7 +86,7 @@ export function useAccount(){
 
   useEffect(()=>{refresh()},[refresh]);
 
-  const signIn=useCallback(()=>signInWithGoogle(typeof window!=='undefined'?window.location.href:'/'),[]);
+  const signIn=useCallback(callbackURL=>signInWithGoogle(String(callbackURL||'').trim()),[]);
   const signOut=useCallback(async()=>{
     await signOutAccount();
     setState({...emptyState,loading:false,permissionLoading:false});
