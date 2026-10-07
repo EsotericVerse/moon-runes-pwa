@@ -50,7 +50,7 @@ must(statistics.includes('KeywordLibraryPanel')&&statistics.includes('canManageK
 must(!management.includes('ManagementDataPanel')&&!management.includes('LivePreview')&&!management.includes("value:'period'"),'Scope Manage must not recreate data browser, preview or period pages');
 must(management.includes("canManage=scope?.aggregateChildren?account.canManageGlobalSync():account.canManageScopeSync(scopeId)"),'Scope Group Manage must use global authority without becoming Admin');
 must(governance.includes("scopeHref(scopeId,'governance/manage')"),'Governance must link to Scope Manage');
-must(importPanel.includes("role=\"tablist\"")&&importPanel.includes("tab==='article'")&&importPanel.includes('ManagementArticlePublisher'),'article publishing must be a tab inside Data Import');
+must(!importPanel.includes('ManagementArticlePublisher')&&!importPanel.includes('role="tablist"')&&importPanel.includes('JsonImport')&&importPanel.includes('SourceRefresh'),'Data Import must contain import tools only');
 must(scopeSettings.includes('display_name')&&scopeSettings.includes('search_intro')&&scopeSettings.includes('search_aliases')&&scopeSettings.includes('updateRows'),'misc settings must edit Scope-owned presentation config');
 must(publisher.includes('scope-publisher-main')&&publisher.includes('scope-publisher-sidebar')&&publisher.includes('RichBlockEditor')&&publisher.includes('content_blocks'),'article publisher must use the shared rich editor while preserving plain content');
 must(richEditor.includes('contentEditable={editable}')&&richEditor.includes('文字泡泡')&&richEditor.includes('文字框'),'shared web editor must support basic rich text plus bubble/box insertion');
