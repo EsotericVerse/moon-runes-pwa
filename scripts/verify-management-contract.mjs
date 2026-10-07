@@ -13,6 +13,7 @@ const cultureUi=read('app/modular/features/Culture.jsx');
 const editor=read('app/modular/features/CultureTimelineEditor.jsx');
 const management=read('app/loc/GovernanceManagement.jsx');
 const governance=read('app/modular/features/Governance.jsx');
+const statistics=read('app/modular/features/Statistics.jsx');
 const admin=read('app/loc/views/AdminHomeView.jsx');
 const dbContract=read('app/loc/db-contract.mjs');
 const keywordLibrary=read('app/loc/KeywordLibraryPanel.jsx');
@@ -44,7 +45,8 @@ must(editor.includes('style_tag_descriptions')&&editor.includes('風格關鍵詞
 must(galaxy.includes('selectStyleKeywordIntroductions')&&!galaxy.includes('scopeCards('),'Search must prepend exact style-keyword introductions and must not use partial Scope-ID cards');
 must(management.includes("section==='group'&&scope?.aggregateChildren"),'every DB Scope Group must have its own Manage');
 must(management.includes('ScopeGroupManagement'),'Manage must compose the Scope Group module');
-must(management.includes("{value:'settings',label:'雜項設定'}")&&management.includes("{value:'import',label:'資料匯入'}")&&management.includes("{value:'keywords',label:'關鍵詞庫'}"),'Scope Manage must expose only misc settings, import and keyword options');
+must(management.includes("{value:'settings',label:'雜項設定'}")&&management.includes("{value:'import',label:'資料匯入'}")&&!management.includes("value:'keywords'")&&!management.includes('KeywordLibraryPanel'),'Scope Manage must expose only misc settings and import/publishing');
+must(statistics.includes('KeywordLibraryPanel')&&statistics.includes('canManageKeywords')&&statistics.includes("showKeywordSettings?'收起關鍵詞設定':'關鍵詞設定'"),'authenticated keyword settings must live inside Statistics');
 must(!management.includes('ManagementDataPanel')&&!management.includes('LivePreview')&&!management.includes("value:'period'"),'Scope Manage must not recreate data browser, preview or period pages');
 must(management.includes("canManage=scope?.aggregateChildren?account.canManageGlobalSync():account.canManageScopeSync(scopeId)"),'Scope Group Manage must use global authority without becoming Admin');
 must(governance.includes("scopeHref(scopeId,'governance/manage')"),'Governance must link to Scope Manage');
