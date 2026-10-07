@@ -60,20 +60,25 @@ function useAdminScopeData(){
 
         const registryRows=registryResult.data||[];
         const configRows={};
+        const configFailures=[];
         await Promise.all(registryRows.filter(row=>row.scope_kind==='scope').map(async row=>{
           try{
             const {data,error}=await dbAuthRelation('silver.'+row.scope_id)
               .select('id,display_name,search_intro,search_aliases,theme,search_able,statistics_able,culture_able')
               .eq('id',row.scope_id).limit(1);
-            if(!error&&data?.[0])configRows[row.scope_id]=data[0];
-          }catch{}
+            if(error)throw new Error(error.message||'Scope config 讀取失敗。');
+            if(data?.[0])configRows[row.scope_id]=data[0];
+            else configFailures.push(row.scope_id+'：找不到 Scope config');
+          }catch(error){
+            configFailures.push(row.scope_id+'：'+String(error?.message||error||'Scope config 讀取失敗。'));
+          }
         }));
 
         if(!active)return;
         setRegistry(registryRows);
         setMappings((mappingResult.data||[]).map(row=>({...row,birthday:String(row.birthday||'').slice(0,10)})));
         setConfigs(configRows);
-        setStatus('');
+        setStatus(configFailures.length?'部分 Scope 設定讀取失敗：'+configFailures.join('；'):'');
       }catch(error){
         if(active)setStatus(error?.message||'Admin 資料讀取失敗。');
       }
