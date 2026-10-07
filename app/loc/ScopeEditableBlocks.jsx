@@ -19,7 +19,7 @@ function normalizeSlots(value,fallbackDocuments=[]){
   const rows=Array.isArray(value)?value:[];
   return Array.from({length:SLOT_COUNT},(_,index)=>{
     const stored=rows[index];
-    const blocks=stored&&typeof stored==='object'&&Array.isArray(stored.blocks)
+    const blocks=stored&&typeof stored==='object'&&stored.blocks
       ?normalizeBlocks(stored.blocks)
       :fallbackDocument(fallbackDocuments[index]);
     return {slot:index+1,blocks};
