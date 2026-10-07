@@ -33,6 +33,39 @@ test.describe('LunaRunes tabletop UI',()=>{
     await expect(page.getByText(/第 2 回合/).first()).toBeVisible();
   });
 
+  test('event conditions render full macro names instead of storage abbreviations',async({page})=>{
+    await page.goto('/game/',{waitUntil:'domcontentloaded'});
+    const eventsTab=page.getByRole('tab',{name:/事件 64/});
+    await expect(eventsTab).toBeVisible({timeout:15_000});
+    await eventsTab.click();
+    const eventCards=page.locator('.lrg-doc-grid .lrg-doc-item');
+    await expect(eventCards.first()).toBeVisible();
+    const text=await eventCards.allTextContents();
+    const joined=text.join('\n');
+    expect(joined).toMatch(/靈魂＋連結|礦物＋生命|自然＋元素|秩序＋無序/);
+    expect(joined).not.toMatch(/條件：\s*(?:SL|ML|NE|OD)(?:\s*[+/]\s*(?:SL|ML|NE|OD))*/);
+  });
+
+  test('Event scoring help explains all four scoring points',async({page})=>{
+    await page.goto('/game/',{waitUntil:'domcontentloaded'});
+    await page.getByRole('button',{name:'開始遊戲'}).click();
+    let cards=page.locator('.lrg-player.active .lrg-card');
+    for(let i=0;i<3;i++)await cards.nth(i).click();
+    await page.getByRole('button',{name:/確認棄牌/}).click();
+    cards=page.locator('.lrg-player.active .lrg-card');
+    for(let i=0;i<3;i++)await cards.nth(i).click();
+    await page.getByRole('button',{name:/確認棄牌/}).click();
+
+    const help=page.getByRole('button',{name:'查看 Event 得分計算'});
+    await expect(help).toBeVisible();
+    await help.click();
+    await expect(page.getByText('Event 最高 4 分，這樣計算：')).toBeVisible();
+    await expect(page.getByText('第一張符文的群組符合事件條件：+1')).toBeVisible();
+    await expect(page.getByText('第二張符文的群組符合事件條件：+1')).toBeVisible();
+    await expect(page.getByText('兩張回應牌中至少出現 1 種符文群組：+1')).toBeVisible();
+    await expect(page.getByText('兩張符文來自不同群組：再 +1')).toBeVisible();
+  });
+
   test('reference tabs expose the eight roles from the current database',async({page})=>{
     await page.goto('/game/',{waitUntil:'domcontentloaded'});
     const rolesTab=page.getByRole('tab',{name:/八職 8/});
