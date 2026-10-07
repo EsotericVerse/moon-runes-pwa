@@ -4,7 +4,7 @@ test.describe('LunaRunes tabletop UI',()=>{
   test('desktop can start a two-player game and finish opening setup',async({page})=>{
     await page.goto('/game/',{waitUntil:'domcontentloaded'});
     await expect(page.getByRole('heading',{name:'月之符文'})).toBeVisible({timeout:15_000});
-    await expect(page.getByText(/66 枚符文/)).toBeVisible({timeout:15_000});
+    await expect(page.getByText('66 枚符文',{exact:true})).toBeVisible({timeout:15_000});
     await page.getByRole('button',{name:'開始遊戲'}).click();
     await expect(page.getByText(/玩家 A 起手設定/)).toBeVisible();
     let cards=page.locator('.lrg-player.active .lrg-card');
