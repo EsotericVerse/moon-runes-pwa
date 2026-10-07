@@ -316,3 +316,14 @@
 .scope-blocknote.is-readonly .bn-editor{min-height:0;padding:0;border:0;background:transparent}
 .scope-blocknote .bn-editor:focus-within{border-color:var(--loc-accent-border);box-shadow:0 0 0 2px color-mix(in srgb,var(--loc-accent) 16%,transparent)}
 .scope-blocknote .bn-side-menu,.scope-blocknote .bn-formatting-toolbar,.scope-blocknote .bn-link-toolbar,.scope-blocknote .bn-file-panel{font-family:inherit}
+
+
+/* vis-timeline is the primary Time CRUD surface; the dialog only edits metadata the timeline cannot encode. */
+.scope-culture-timeline-dialog{position:fixed;inset:auto clamp(.75rem,4vw,3rem) clamp(.75rem,4vw,3rem) auto;z-index:1200;width:min(44rem,calc(100vw - 1.5rem));max-height:min(78vh,48rem);margin:0;padding:0;border:0;background:transparent;color:inherit;overflow:auto}
+.scope-culture-timeline-dialog::backdrop{background:rgb(0 0 0 / .35);backdrop-filter:blur(2px)}
+.scope-culture-timeline-dialog .scope-culture-inline-editor{margin:0;box-shadow:0 24px 80px rgb(0 0 0 / .35)}
+.scope-culture-anchor-actions{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;margin:.65rem 0;padding:.65rem .8rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:color-mix(in srgb,var(--loc-panel) 76%,transparent);color:var(--loc-muted);font-size:.9rem}
+.scope-period-timeline .vis-item.scope-virtual-anchor{overflow:visible;border:0!important;background:transparent!important;color:color-mix(in srgb,var(--loc-accent) calc(55% + var(--virtual-anchor-strength,0)*45%),var(--loc-text))!important;font-weight:800;line-height:1;filter:drop-shadow(0 0 calc(4px + var(--virtual-anchor-strength,0)*10px) color-mix(in srgb,var(--loc-accent) 55%,transparent))}
+.scope-period-timeline .vis-item.scope-virtual-anchor .vis-item-content{display:block!important;overflow:visible!important;padding:0!important;transform:translate(-50%,-10%)}
+.scope-period-timeline .vis-item.scope-virtual-anchor.is-selected{color:var(--loc-gold)!important;filter:drop-shadow(0 0 12px color-mix(in srgb,var(--loc-gold) 72%,transparent))}
+@media(max-width:760px){.scope-culture-timeline-dialog{inset:auto .5rem .5rem .5rem;width:auto;max-height:82vh}}

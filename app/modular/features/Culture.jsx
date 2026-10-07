@@ -4,7 +4,7 @@ import {UI_COPY} from '../../i18n/ui-copy';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
-import {useQuery} from '@tanstack/react-query';
+import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {
   selectScopePeriodSourceSnapshot,
   selectScopePeriodWorkIndex,
@@ -18,7 +18,7 @@ import {formatCultureDateTime} from '../modules/culture-timeline/culture-timelin
 import {analyzeRiverDensity} from '../modules/culture-timeline/river-density-analysis.mjs';
 import {selectGalaxyContent} from '../../loc/galaxy-query';
 import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
-import {insertRows,dbAuthRelation,updateRows} from '../../loc/db-client.mjs';
+import {deleteRows,insertRows,dbAuthRelation,updateRows} from '../../loc/db-client.mjs';
 import {useAccount} from '../../loc/use-account';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {ContentEditor,FeaturePage,IncrementalList,WorkFullText,WorkSummaryCard} from '../ui';
@@ -65,9 +65,22 @@ function nextRiverDay(value){
   date.setUTCDate(date.getUTCDate()+1);
   return date.toISOString().slice(0,10);
 }
+function dayKeyFromTimelineValue(value){
+  const date=value instanceof Date?value:new Date(value);
+  if(Number.isNaN(date.getTime()))return '';
+  return date.toISOString().slice(0,10);
+}
+function periodPositionRatio(date,start,end){
+  const a=Date.parse(String(start||'').slice(0,10));
+  const b=Date.parse(String(end||'').slice(0,10));
+  const x=Date.parse(String(date||'').slice(0,10));
+  if(!Number.isFinite(a)||!Number.isFinite(b)||!Number.isFinite(x)||b<=a)return 0;
+  return Math.max(0,Math.min(1,(x-a)/(b-a)));
+}
 export default function Culture(){
   const {scopeId,scope}=useScopeRuntime();
   const account=useAccount();
+  const queryClient=useQueryClient();
   const searchParams=useSearchParams();
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
   const query=useQuery({
@@ -356,6 +369,58 @@ export default function Culture(){
   },[locScopeDistributionItems,locIntersectionScopeIds,locDistributionStart]);
   const hasTimelineSurface=isAggregateScope?Boolean(locSourceRiverItems.length):Boolean(timelineItems.length||selectedWorkPeriod?.start_date);
 
+  async function refreshTimelineData(){
+    await Promise.all([
+      queryClient.invalidateQueries({queryKey:['culture-timeline',scopeId]}),
+      queryClient.invalidateQueries({queryKey:['culture-period-settings',scopeId]})
+    ]);
+  }
+  async function moveTimelineRecord(item,row){
+    if(row?.entryType!=='anchor'||!row?.recordId||!scopeData?.time)return null;
+    const date=dayKeyFromTimelineValue(item?.start);
+    if(!date)return null;
+    try{
+      await updateRows(scopeData.time,{
+        time_date:date,
+        date_status:'exact',
+        year_value:null,
+        updated_at:new Date().toISOString()
+      },{filters:[{column:'record_id',operator:'eq',value:row.recordId}]});
+      await refreshTimelineData();
+      setEditError('');
+      return item;
+    }catch(error){
+      setEditError(error?.message||'定錨點移動失敗。');
+      return null;
+    }
+  }
+  async function removeTimelineRecord(item,row){
+    if(!row?.recordId||!scopeData?.time)return null;
+    const source=row?.raw||{};
+    if(row.entryType==='anchor'){
+      const anchorId=String(source?.resource_id||row.resourceId||'').trim();
+      const referenced=timelineItems.some(candidate=>
+        String(candidate?.entry_type||'')!=='anchor'&&
+        Array.isArray(candidate?.anchor_ids)&&candidate.anchor_ids.map(String).includes(anchorId)
+      );
+      if(referenced){
+        setEditError('此定錨點仍被時期或事件使用，請先調整引用。');
+        return null;
+      }
+    }
+    try{
+      await deleteRows(scopeData.time,{filters:[{column:'record_id',operator:'eq',value:row.recordId}]});
+      setSelectedTimelineRecordId('');
+      setSelectedTimelineDate('');
+      setEditError('');
+      await refreshTimelineData();
+      return item;
+    }catch(error){
+      setEditError(error?.message||'刪除失敗。');
+      return null;
+    }
+  }
+
   const classificationBuckets=sourceSnapshotQuery.data?.buckets||[];
 
   const existingAnchorDates=useMemo(()=>
@@ -372,17 +437,29 @@ export default function Culture(){
     ()=>analyzeRiverDensity(locCombinedSourceRiverItems,[]),
     [locCombinedSourceRiverItems]
   );
-  const virtualAnchorItems=useMemo(()=>riverAnalysis.suggestions.map(item=>({
-    id:'virtual-anchor:'+item.date,
-    entry_id:'virtual-anchor:'+item.date,
-    entry_type:'virtual_anchor',
-    start_date:item.date,
-    title:'建議定錨 '+item.date+'｜前 3 日 '+Number(item.beforeCount||0).toLocaleString()+' 項／後 3 日 '+Number(item.afterCount||0).toLocaleString()+' 項',
-    display_label:'◇',
-    group_label:'建議定錨',
-    item_count:0,
-    virtual_anchor:item
-  })),[riverAnalysis.suggestions]);
+  const virtualAnchorItems=useMemo(()=>{
+    const total=Math.max(1,Number(riverAnalysis.totalCount)||0);
+    return riverAnalysis.suggestions.map(item=>{
+      const selected=selectedVirtualAnchorDates.includes(item.date);
+      const beforeCount=Number(item.beforeCount||0);
+      const afterCount=Number(item.afterCount||0);
+      const strength=Math.min(1,Math.abs(Number(item.afterMean||0)-Number(item.beforeMean||0))/Math.max(1,Number(item.afterMean||0),Number(item.beforeMean||0)));
+      const position=periodPositionRatio(item.date,selectedWindowStart,selectedWindowEnd);
+      return {
+        id:'virtual-anchor:'+item.date,
+        entry_id:'virtual-anchor:'+item.date,
+        entry_type:'virtual_anchor',
+        start_date:item.date,
+        title:'建議定錨 '+item.date+'｜時期位置 '+(position*100).toFixed(1)+'%｜前 3 日 '+beforeCount.toLocaleString()+' 項 ('+((beforeCount/total)*100).toFixed(1)+'%)／後 3 日 '+afterCount.toLocaleString()+' 項 ('+((afterCount/total)*100).toFixed(1)+'%)｜'+(item.analysis||[]).join(' '),
+        display_label:selected?'◆':'◇',
+        group_label:'建議定錨',
+        item_count:0,
+        className:'scope-virtual-anchor'+(selected?' is-selected':''),
+        style:'--virtual-anchor-strength:'+strength+';font-size:'+(16+Math.round(strength*12))+'px;',
+        virtual_anchor:{...item,position_ratio:position,before_ratio:beforeCount/total,after_ratio:afterCount/total,strength_ratio:strength}
+      };
+    });
+  },[riverAnalysis.suggestions,riverAnalysis.totalCount,selectedVirtualAnchorDates,selectedWindowStart,selectedWindowEnd]);
   const classificationRiverItems=useMemo(
     ()=>[...classificationBuckets,...virtualAnchorItems],
     [classificationBuckets,virtualAnchorItems]
@@ -577,21 +654,36 @@ export default function Culture(){
                     if(next)setSelectedPeriodKey(periodKey(next));
                   }}
                   onSelect={item=>{
-                    const recordId=String(item?.record_id||item?.recordId||'').trim();
+                    const recordId=String(item?.recordId||'').trim();
                     if(recordId){
                       setSelectedTimelineRecordId(recordId);
                       setSelectedTimelineDate('');
                     }
                   }}
-                  onTimeClick={account.canManageScopeSync(scopeId)?date=>{
-                    setSelectedTimelineRecordId('');
-                    setSelectedTimelineDate(date);
+                  editable={account.canManageScopeSync(scopeId)}
+                  onAdd={account.canManageScopeSync(scopeId)?item=>{
+                    const date=dayKeyFromTimelineValue(item?.start);
+                    if(date){
+                      setSelectedTimelineRecordId('');
+                      setSelectedTimelineDate(date);
+                    }
+                    return null;
                   }:null}
+                  onMove={account.canManageScopeSync(scopeId)?moveTimelineRecord:null}
+                  onUpdate={account.canManageScopeSync(scopeId)?(item,row)=>{
+                    if(row?.recordId){
+                      setSelectedTimelineRecordId(row.recordId);
+                      setSelectedTimelineDate('');
+                    }
+                    return null;
+                  }:null}
+                  onRemove={account.canManageScopeSync(scopeId)?removeTimelineRecord:null}
                 />:<p className='scope-status'>{FEATURE_EMPTY_MESSAGE}</p>}
                 {account.canManageScopeSync(scopeId)?<CultureTimelineEditor
                   scopeId={scopeId}
                   selectedRecordId={selectedTimelineRecordId}
                   suggestedAnchorDate={selectedTimelineDate}
+                  onClose={()=>{setSelectedTimelineRecordId('');setSelectedTimelineDate('')}}
                 />:null}
               </section>
 
@@ -621,7 +713,7 @@ export default function Culture(){
                   ?<p className='scope-status'>{UI_COPY.culture.noPeriodClassification}</p>:null}
                 {classificationRiverItems.length?<CultureTimeline
                   items={classificationRiverItems}
-                  labelOf={item=>item?.entry_type==='virtual_anchor'?'◇':''}
+                  labelOf={item=>item?.entry_type==='virtual_anchor'?(item.display_label||'◇'):''}
                   focus={{}}
                   mode='source'
                   windowStart={selectedWindowStart}
@@ -659,25 +751,13 @@ export default function Culture(){
                     windowEnd={selectedWindowEnd}
                   />:null}
                 </section>:null}
-                {riverAnalysis.suggestions.length?<section className='scope-status scope-culture-anchor-suggestions'>
-                  <strong>{UI_COPY.culture.virtualAnchor}</strong>
-                  <p>{UI_COPY.culture.virtualAnchorHelp}</p>
-                  {riverAnalysis.suggestions.map(item=><article key={item.date}>
-                    <button type='button' onClick={()=>toggleVirtualAnchor(item.date)} aria-pressed={selectedVirtualAnchorDates.includes(item.date)}>
-                      {selectedVirtualAnchorDates.includes(item.date)?UI_COPY.culture.selectedPrefix:''}{item.date}
-                    </button>
-                    <p>切點前 3 日 {Number(item.beforeCount||0).toLocaleString()} 項｜後 3 日 {Number(item.afterCount||0).toLocaleString()} 項</p>
-                    <ul>
-                      {(item.analysis||[]).map((line,index)=><li key={item.date+':'+index}>{line}</li>)}
-                    </ul>
-                  </article>)}
-                  {account.canManageScopeSync(classificationScope)&&selectedVirtualAnchorDates.length?<div className='scope-tabs'>
-                    <button type='button' disabled={anchorSaveBusy} onClick={saveSelectedVirtualAnchors}>
-                      {anchorSaveBusy?UI_COPY.culture.creating:'一次建立 '+selectedVirtualAnchorDates.length+' 個定錨點'}
-                    </button>
-                  </div>:null}
-                  {anchorSaveMessage?<p role='status'>{anchorSaveMessage}</p>:null}
-                </section>:null}
+                {riverAnalysis.suggestions.length?<div className='scope-culture-anchor-actions'>
+                  <span>◇ 虛擬定錨點 {riverAnalysis.suggestions.length} 個｜位置即時落在河道比例；大小與亮度代表切點前後密度差，滑過可看前後占比。</span>
+                  {account.canManageScopeSync(classificationScope)&&selectedVirtualAnchorDates.length?<button type='button' className='loc-button primary' disabled={anchorSaveBusy} onClick={saveSelectedVirtualAnchors}>
+                    {anchorSaveBusy?UI_COPY.culture.creating:'建立 '+selectedVirtualAnchorDates.length+' 個正式定錨點'}
+                  </button>:null}
+                  {anchorSaveMessage?<span role='status'>{anchorSaveMessage}</span>:null}
+                </div>:null}
 
                 <p className='scope-status'>該時期總作品數：{Number(sourceSnapshotQuery.data?.totalCount||0).toLocaleString()} 項。</p>
 
