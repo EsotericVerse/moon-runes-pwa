@@ -11,7 +11,10 @@ export default function BlockNoteEditorClient({
   onChange=null,
   onHtmlChange=null
 }){
-  const editor=useCreateBlockNote({initialContent:initialBlocks});
+  const editor=useCreateBlockNote({
+    initialContent:initialBlocks,
+    domAttributes:{editor:{'aria-label':editable?'文字編輯器':'文字內容'}}
+  });
   const hydratedLegacyHtml=useRef(false);
 
   useEffect(()=>{
