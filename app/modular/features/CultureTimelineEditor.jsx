@@ -62,7 +62,7 @@ function rowSortDate(row,anchors){
   return dateText(anchors.get(first)?.time_date)||dateText(anchors.get(last)?.time_date)||'9999-12-31';
 }
 
-export default function CultureTimelineEditor({scopeId=''}){
+export default function CultureTimelineEditor({scopeId='',selectedRecordId=''}){
   const account=useAccount();
   const searchParams=useSearchParams();
   const suggestedAnchorDate=String(searchParams?.get?.('anchorDate')||'').slice(0,10);
@@ -131,6 +131,17 @@ export default function CultureTimelineEditor({scopeId=''}){
     Number(a.display_order||0)-Number(b.display_order||0)||
     String(a.label||'').localeCompare(String(b.label||''))
   ),[rawRows,anchors]);
+
+  useEffect(()=>{
+    const id=String(selectedRecordId||'').trim();
+    if(!id||!rawRows.length)return;
+    const row=rawRows.find(item=>String(item.record_id)===id);
+    if(row){
+      setSelectedId(id);
+      setDraft(rowDraft(row));
+      setMessage('');
+    }
+  },[selectedRecordId,rawRows]);
 
   useEffect(()=>{
     if(!/^\d{4}-\d{2}-\d{2}$/.test(suggestedAnchorDate))return;
@@ -276,9 +287,9 @@ export default function CultureTimelineEditor({scopeId=''}){
   };
 
   return <section className="loc-card scope-feature-card">
-    <p className="loc-eyebrow">時期與定錨</p>
-    <h2>時期設定</h2>
-    <p>新增或調整定錨點請在這裡處理；時間長河只呈現結果。時期與事件使用有順序的定錨點陣列：第一個是起點、最後一個是終點，中間可加入任意數量的里程碑；開放端使用 0。</p>
+    <p className="loc-eyebrow">登入編輯</p>
+    <h2>目前時期／定錨</h2>
+    <p>這個編輯器就是上方第一條時間長河的管理層。點選河道上的既有定錨、時期或事件可直接載入；新增後也會立即回到同一條河道。時期與事件使用有順序的定錨點陣列：第一個是起點、最後一個是終點，中間可加入里程碑；開放端使用 0。</p>
     {query.error?<p className="scope-status scope-error">{query.error.message}</p>:null}
     {duplicateAnchorIds.length?<p className="scope-status scope-error">同一資料區域存在重複的定錨點識別：{duplicateAnchorIds.join('、')}。請先修正，否則無法正確呈現文化資料。</p>:null}
     {query.isPending?<p className="scope-status">{FEATURE_LOADING_MESSAGE}</p>:null}
