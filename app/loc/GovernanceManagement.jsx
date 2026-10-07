@@ -15,6 +15,13 @@ const LOGIN_COPY={
   lo3rwang:{eyebrow:'Personal Management',title:'lo3rwang 個人管理登入',description:'登入後開啟 Scope 設定、匯入與發表功能；既有內容直接回公開頁面編輯。'}
 };
 
+function ManagementDisclosure({label,children}){
+  return <details className="loc-card scope-management-disclosure">
+    <summary>{label}</summary>
+    <div className="scope-management-disclosure-body">{children}</div>
+  </details>;
+}
+
 function LoginScreen({scopeId,account}){
   const copy=LOGIN_COPY[scopeId]||LOGIN_COPY.lo3rwang;
   const callbackURL=scopeId==='loc'?scopeHref('admin'):scopeHref(scopeId,'governance/manage');
@@ -50,10 +57,10 @@ export default function GovernanceManagement(){
       </div>
     </header>
 
-    {scope?.aggregateChildren?<ScopeGroupManagement scopeId={scopeId}/>:<>
-      <ScopeSettingsPanel scopeId={scopeId}/>
-      <ManagementArticlePublisher scopeId={scopeId}/>
-      <ManagementImportPanel scopeId={scopeId}/>
+    {scope?.aggregateChildren?<ManagementDisclosure label="Scope Group 管理"><ScopeGroupManagement scopeId={scopeId}/></ManagementDisclosure>:<>
+      <ManagementDisclosure label="Scope 設定"><ScopeSettingsPanel scopeId={scopeId}/></ManagementDisclosure>
+      <ManagementDisclosure label="發表文章"><ManagementArticlePublisher scopeId={scopeId}/></ManagementDisclosure>
+      <ManagementDisclosure label="資料匯入"><ManagementImportPanel scopeId={scopeId}/></ManagementDisclosure>
     </>}
   </section>;
 }

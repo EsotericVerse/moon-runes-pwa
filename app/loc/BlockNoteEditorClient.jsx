@@ -33,9 +33,35 @@ export default function BlockNoteEditorClient({
     onHtmlChange?.(editor.blocksToHTMLLossy(blocks));
   };
 
-  return <BlockNoteView
-    editor={editor}
-    editable={editable}
-    onChange={editable?emit:undefined}
-  />;
+  function editLink(event){
+    event?.preventDefault?.();
+    const current=editor.getSelectedLinkUrl?.()||'';
+    const selected=editor.getSelectedText?.()||'';
+    if(!selected&&!current){
+      globalThis.alert?.('請先選取要加上超連結的文字。');
+      return;
+    }
+    const next=globalThis.prompt?.('超連結網址',current||'https://');
+    if(next===null||next===undefined)return;
+    editor.createLink(String(next).trim());
+    emit();
+  }
+
+  function removeLink(event){
+    event?.preventDefault?.();
+    editor.createLink('');
+    emit();
+  }
+
+  return <>
+    {editable?<div className="scope-blocknote-linkbar">
+      <button type="button" className="loc-button" onMouseDown={event=>event.preventDefault()} onClick={editLink}>連結</button>
+      <button type="button" className="loc-button" onMouseDown={event=>event.preventDefault()} onClick={removeLink}>移除連結</button>
+    </div>:null}
+    <BlockNoteView
+      editor={editor}
+      editable={editable}
+      onChange={editable?emit:undefined}
+    />
+  </>;
 }

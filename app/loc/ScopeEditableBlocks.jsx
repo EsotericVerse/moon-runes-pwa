@@ -146,7 +146,7 @@ export default function ScopeEditableBlocks({
 
   async function save(){
     if(!draft)return;
-    setBusy(true);setMessage('');
+    setBusy(true);setMessage('儲存中…');
     try{
       const values={
         page_name:pageName,
@@ -165,10 +165,11 @@ export default function ScopeEditableBlocks({
         await insertRows(table,[{uid:draft.uid,...values}]);
       }
       await queryClient.invalidateQueries({queryKey:['scope-blocks',scopeId,pageName]});
+      await queryClient.refetchQueries({queryKey:['scope-blocks',scopeId,pageName],type:'active'});
       setDraft(null);
-      setMessage('已更新。');
+      setMessage('已儲存。');
     }catch(error){
-      setMessage(error?.message||'儲存失敗。');
+      setMessage('儲存失敗：'+String(error?.message||error||'未知錯誤'));
     }finally{
       setBusy(false);
     }
@@ -244,6 +245,7 @@ export default function ScopeEditableBlocks({
             <button type="button" className="loc-button primary" disabled={busy} onClick={save}>{busy?'儲存中…':'儲存'}</button>
             <button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={remove}>刪除</button>
             <button type="button" className="loc-button" disabled={busy} onClick={cancel}>取消</button>
+            {message?<span className={'scope-inline-save-status'+(message.startsWith('儲存失敗')?' scope-error':'')} role="status" aria-live="polite">{message}</span>:null}
           </div>
           <label className="scope-management-wide-field">
             <span>標題</span>

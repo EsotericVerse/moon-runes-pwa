@@ -48,9 +48,9 @@ must(editor.includes("style_tags:''")&&editor.includes('風格說明'),'shared T
 must(editor.includes('style_tag_descriptions')&&editor.includes('搜尋顯示說明')&&editor.includes('搜尋精確命中風格詞時'),'Time editor must preserve searchable style comment descriptions');
 must(cultureUi.includes('onClick={canEditWork')&&cultureUi.includes('isInteractiveTarget')&&!cultureUi.includes("UI_COPY.culture.editing:'編輯'"),'Culture existing works must enter editing by direct non-interactive card click without an Edit button');
 must(galaxy.includes('selectStyleKeywordIntroductions')&&!galaxy.includes('scopeCards('),'Search must prepend exact style-keyword introductions and must not use partial Scope-ID cards');
-must(management.includes('scope?.aggregateChildren?<ScopeGroupManagement'),'every DB Scope Group must have its own Manage');
+must(management.includes('scope?.aggregateChildren?<ManagementDisclosure')&&management.includes('<ScopeGroupManagement scopeId={scopeId}/>'),'every DB Scope Group must have its own collapsed Manage entry');
 must(management.includes('ScopeGroupManagement'),'Manage must compose the Scope Group module');
-must(management.includes('<ScopeSettingsPanel')&&management.includes('<ManagementArticlePublisher')&&management.includes('<ManagementImportPanel')&&!management.includes('scope-management-section')&&!management.includes('KeywordLibraryPanel'),'Scope Manage must be one flat settings + publishing + import page');
+must(management.includes('<ScopeSettingsPanel')&&management.includes('<ManagementArticlePublisher')&&management.includes('<ManagementImportPanel')&&management.includes('ManagementDisclosure')&&management.includes('label="發表文章"')&&!management.includes('KeywordLibraryPanel'),'Scope Manage must keep settings, publishing and import as collapsed one-line disclosures');
 must(statistics.includes('KeywordLibraryPanel')&&statistics.includes('canManageKeywords')&&statistics.includes("showKeywordSettings?'收起關鍵詞設定':'關鍵詞設定'"),'authenticated keyword settings must live inside Statistics');
 must(!management.includes('ManagementDataPanel')&&!management.includes('LivePreview')&&!management.includes("value:'period'"),'Scope Manage must not recreate data browser, preview or period pages');
 must(management.includes("canManage=scope?.aggregateChildren?account.canManageGlobalSync():account.canManageScopeSync(scopeId)"),'Scope Group Manage must use global authority without becoming Admin');
@@ -60,7 +60,9 @@ must(scopeSettings.includes('display_name')&&scopeSettings.includes('search_intr
 must(publisher.includes('scope-publisher-main')&&publisher.includes('scope-publisher-sidebar')&&publisher.includes('RichBlockEditor')&&publisher.includes('content_blocks'),'article publisher must use the shared rich editor while preserving plain content');
 must(richEditor.includes("dynamic(()=>import('./BlockNoteEditorClient')")&&!richEditor.includes('contentEditable')&&!richEditor.includes('execCommand'),'shared web editor must use BlockNote instead of bespoke contentEditable');
 must(blockNoteEditor.includes("from '@blocknote/react'")&&blockNoteEditor.includes("from '@blocknote/mantine'")&&blockNoteEditor.includes('BlockNoteView')&&!blockNoteEditor.includes('uploadFile'),'BlockNote must be the shared URL-only text/media authoring surface');
+must(blockNoteEditor.includes('getSelectedLinkUrl')&&blockNoteEditor.includes('createLink')&&blockNoteEditor.includes('移除連結'),'BlockNote must expose explicit hyperlink editing controls');
 must(editableBlocks.includes('ENTITY_LIMIT=6')&&editableBlocks.includes("page='index'")&&editableBlocks.includes('page_name')&&editableBlocks.includes('block_entity')&&editableBlocks.includes("column:'uid'")&&editableBlocks.includes('isInteractiveTarget'),'Scope page editing must use stable block uid plus up to six child entities');
+must(editableBlocks.includes('儲存失敗：')&&editableBlocks.includes('scope-inline-save-status')&&editableBlocks.includes('refetchQueries'),'page block saves must visibly report success/failure and refetch saved data');
 must(editableBlocks.includes('dangerouslySetInnerHTML')&&!editableBlocks.includes('editable={false}'),'public page display must use static site markup; BlockNote is edit-only');
 must(authorHome.includes('AuthorHomeEditableBlock')&&authorHomeEditable.includes('author-role-grid')&&authorHomeEditable.includes('author-professional-grid')&&authorHomeEditable.includes('author-system-grid')&&authorHomeEditable.includes('author-trinity-layout')&&authorHomeEditable.includes('author-contact-layout'),'author homepage must preserve the original editorial presentation while editing data-backed blocks');
 must(locHomeEditable.includes('home-title-row')&&locHomeEditable.includes('home-status-bubbles')&&locHomeEditable.includes('loc-bubble'),'LOC homepage must preserve its original presentation while editing data-backed blocks');
@@ -77,7 +79,7 @@ must(admin.includes('provisionScope(')&&admin.includes('＋ Scope')&&admin.inclu
 must(admin.includes("dbAuthRelation('silver.scope_registry')")&&admin.includes('parent_scope_id'),'Admin must read the DB Scope Registry hierarchy');
 must(admin.includes("silver.database_targets")&&admin.includes('Database Target')&&admin.includes('Project ID'),'Admin must persist explicit Supabase/Neon migration targets');
 must(admin.includes("silver.loc_theme")&&admin.includes('theme_attr')&&admin.includes('THEME_TOKEN_KEYS')&&admin.includes('type="color"'),'Admin Theme editor must persist all editable theme attrs in loc_theme');
-must(dbContract.includes("rpc('management_write'")&&dbContract.includes('batchSize=200'),'management writes must use the authorized RPC with bounded insert batches');
+must(dbContract.includes("schema('silver').rpc('management_write'")&&dbContract.includes('batchSize=200')&&!dbContract.includes("schema('api').rpc("),'client RPC calls must use exposed silver wrappers with bounded insert batches');
 must(dbContract.includes('`silver.${scope}_keywords`')&&!dbContract.includes("api.lo3rwang_keywords_manage"),'keyword library writes must resolve the current Scope keyword table');
 must(dbContract.includes('copyKeywordLibraryClass')&&keywordLibrary.includes('copyKeywordLibraryClass'),'keyword library must support copying a complete independent Class');
 must(dbContract.includes('syncManageScopeRow')&&dbContract.includes("p_operation:'scope_sync'"),'Scope mapping updates must use one atomic management write');
@@ -110,6 +112,7 @@ must(scopeProvisioning.includes("v_blocks_name := v_scope||'_blocks'")&&scopePro
 must(portableSchema.includes('"content_blocks" jsonb'),'Galaxy schema must preserve optional rich-editor layout separately from plain content');
 must((portableSchema.match(/"content_blocks" jsonb/g)||[]).length>=4,'Galaxy and Galaxy Media schemas must both persist BlockNote structure');
 must(portableSchema.includes('"loc_theme"')&&portableSchema.includes('"theme_attr" jsonb')&&portableSchema.includes('"database_targets"'),'portable schema must include loc_theme attributes and database targets');
+must(portableSchema.includes('FUNCTION silver.management_write')&&portableSchema.includes('FUNCTION silver.provision_scope')&&portableSchema.includes('FUNCTION silver.manage_scope_registry'),'portable schema must expose application RPC wrappers through silver');
 
 must(dbContract.includes("rpc('manage_scope_registry'")&&dbContract.includes('manageScopeRegistry'),'DB client must expose authorized Scope Registry management');
 must(admin.includes('CreateNodePanel')&&admin.includes("manageScopeRegistry('update'")&&admin.includes("manageScopeRegistry('create_group'"),'Admin tree workspace must edit Registry hierarchy and create Scope Groups');
