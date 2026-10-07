@@ -5,6 +5,7 @@ import {useQueryClient} from '@tanstack/react-query';
 import {copyKeywordLibraryClass,dbAuthRelation,updateRows,writeKeywordLibraryItem} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {clearRune66ClassificationCache,runRune66ClassificationBatch} from './rune66-keyword-analysis';
+import KeywordNetworkEditor from './KeywordNetworkEditor';
 
 const DEFAULT_KEYWORD_MIN_CHARS=32;
 const DEFAULT_KEYWORD_MIN_DOCUMENTS=100;
@@ -171,10 +172,10 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     setDraft({...row,keywords_text:keywordText(row.keywords)});
     setMessage('');
   }
-  function newItem(){
+  function newItem(group=''){
     const next=Math.max(0,...items.map(row=>Number(row.item_no)||0))+1;
     setSelectedId('');
-    setDraft(blankDraft(selectedClass,selectedClassId,next));
+    setDraft({...blankDraft(selectedClass,selectedClassId,next),class_group:String(group||'')});
     setMessage('');
   }
 
@@ -288,6 +289,58 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     }
   }
 
+  async function removeItemRow(row){
+    if(!row?.keyword_id)return false;
+    if(!window.confirm('確定刪除「'+String(row.item_name||'這個分類項目')+'」？'))return false;
+    const classId=String(row.class_id||'');
+    setBusy(true);setMessage('');
+    try{
+      await writeKeywordLibraryItem(scopeId,'delete',row);
+      await markCurrentClassificationStale(classId);
+      if(String(selectedId)===String(row.keyword_id)){setSelectedId('');setDraft(null);}
+      await load('',selectedClass);
+      setMessage('分類項目已刪除；目前 Class 已標記為待重新分析。');
+      return true;
+    }catch(error){
+      setMessage(String(error?.message||error||'分類項目刪除失敗。'));
+      return false;
+    }finally{setBusy(false);}
+  }
+
+  async function removeKeyword(row,keyword){
+    if(!row?.keyword_id||!keyword)return false;
+    const next=(Array.isArray(row.keywords)?row.keywords:[]).filter(item=>String(item)!==String(keyword));
+    setBusy(true);setMessage('');
+    try{
+      await writeKeywordLibraryItem(scopeId,'update',{...row,keywords:next});
+      await markCurrentClassificationStale(String(row.class_id||''));
+      await load(row.keyword_id,selectedClass);
+      setMessage('關鍵詞「'+keyword+'」已從圖上刪除；目前 Class 已標記為待重新分析。');
+      return true;
+    }catch(error){
+      setMessage(String(error?.message||error||'關鍵詞刪除失敗。'));
+      return false;
+    }finally{setBusy(false);}
+  }
+
+  async function removeGroup(group){
+    const targets=items.filter(row=>String(row.class_group||'')===String(group||''));
+    if(!targets.length)return false;
+    if(!window.confirm('確定刪除 Group「'+group+'」與其中 '+targets.length+' 個分類項目？'))return false;
+    setBusy(true);setMessage('');
+    try{
+      for(const row of targets)await writeKeywordLibraryItem(scopeId,'delete',row);
+      await markCurrentClassificationStale(selectedClassId);
+      setSelectedId('');setDraft(null);
+      await load('',selectedClass);
+      setMessage('Group「'+group+'」已刪除；目前 Class 已標記為待重新分析。');
+      return true;
+    }catch(error){
+      setMessage(String(error?.message||error||'Group 刪除失敗。'));
+      return false;
+    }finally{setBusy(false);}
+  }
+
   async function copyClass(){
     const target=String(copyName||'').trim();
     if(!selectedClass){setMessage('請先選擇要複製的 Class。');return;}
@@ -347,7 +400,6 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
       <label><span>Class</span><select className="scope-select" value={selectedClass} onChange={event=>{const name=event.target.value;setSelectedClass(name);const first=rows.find(row=>String(row.class_name)===name);if(first)selectItem(first);}}>
         {[...new Set(classes.map(item=>item.class_name))].map(name=><option key={name} value={name}>{name}</option>)}
       </select></label>
-      <button type="button" className="loc-button" onClick={newItem}>新增分類項目</button>
     </div>
     {selectedClassId?<div className="scope-stat-controls">
       <label><span>Class UUID</span><input value={selectedClassId} readOnly aria-readonly="true"/></label>
@@ -361,23 +413,21 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     </div>
 
     {loading?<p className="scope-status">讀取中…</p>:null}
-    <div className="scope-management-split">
-      <div className="scope-management-records">
-        {items.map(row=><button
-          type="button"
-          key={row.keyword_id}
-          aria-pressed={selectedId===String(row.keyword_id)}
-          className="scope-inline-card scope-management-record"
-          onClick={()=>selectItem(row)}
-        >
-          <strong>{row.item_no} · {row.item_name}</strong>
-          <span>{row.class_group} · {row.class_enable===false?'不參與 Class':'參與 Class'} · {Array.isArray(row.keywords)?row.keywords.length:0} 個關鍵詞</span>
-        </button>)}
-        {!loading&&!items.length?<p className="scope-status">這個 Class 目前沒有分類項目。</p>:null}
-      </div>
-
-      <div className="scope-management-editor">
-        {!draft?<p className="scope-status">選一個分類項目，或新增一個項目。</p>:<>
+    {!loading&&items.length?<div className="scope-keyword-network-layout">
+      <KeywordNetworkEditor
+        items={items}
+        className={selectedClass}
+        classId={selectedClassId}
+        selectedId={selectedId}
+        onSelectItem={selectItem}
+        onNewItem={newItem}
+        onDeleteItem={removeItemRow}
+        onDeleteKeyword={removeKeyword}
+        onDeleteGroup={removeGroup}
+        onMessage={setMessage}
+      />
+      <aside className="scope-management-editor scope-keyword-network-inspector">
+        {!draft?<p className="scope-status">從圖上選擇 Item／Keyword；使用 vis-network 工具列新增、編輯或刪除節點。</p>:<>
           <div className="scope-management-fields">
             <label><span>Class</span><input value={draft.class_name||''} readOnly aria-readonly="true"/></label>
             <label><span>Group</span><input value={draft.class_group||''} onChange={event=>setDraft(current=>({...current,class_group:event.target.value}))}/></label>
@@ -387,14 +437,18 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
             <label><span>排序</span><input type="number" value={draft.order_no??''} onChange={event=>setDraft(current=>({...current,order_no:event.target.value}))}/></label>
           </div>
           <label><span>判別原理</span><textarea rows="4" value={draft.principle||''} onChange={event=>setDraft(current=>({...current,principle:event.target.value}))}/></label>
-          <label><span>關鍵詞（每行一筆）</span><textarea rows="16" value={draft.keywords_text||''} onChange={event=>setDraft(current=>({...current,keywords_text:event.target.value}))}/></label>
+          <label><span>關鍵詞（每行一筆）</span><textarea rows="12" value={draft.keywords_text||''} onChange={event=>setDraft(current=>({...current,keywords_text:event.target.value}))}/></label>
           <div className="scope-preview-links">
             <button type="button" className="loc-button primary" disabled={busy} onClick={save}>{busy?'儲存中…':'儲存'}</button>
-            {draft.keyword_id?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={remove}>刪除此項目</button>:null}
+            {draft.keyword_id?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={remove}>刪除此 Item</button>:null}
           </div>
         </>}
         {message?<p className={message.includes('失敗')||message.includes('不可')||message.includes('0 rows')||message.includes('已經存在')?'scope-status scope-error':'scope-status'}>{message}</p>:null}
-      </div>
-    </div>
+      </aside>
+    </div>:null}
+    {!loading&&!items.length?<div className="scope-keyword-empty">
+      <p className="scope-status">這個 Class 目前沒有分類項目。</p>
+      <button type="button" className="loc-button" onClick={()=>newItem('')}>建立第一個分類項目</button>
+    </div>:null}
   </section>;
 }
