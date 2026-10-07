@@ -2,7 +2,7 @@
 
 import {useCallback,useEffect,useState} from 'react';
 import {z} from 'zod';
-import {getAccountSession,dbAuthRelation,signInWithGoogle,signOutAccount} from './db-client.mjs';
+import {getAccountSession,dbAuthRelation,signInWithEmail,signOutAccount} from './db-client.mjs';
 import {defaultScopeData,scopeDataFromManageRows} from './scope-data';
 
 const EmailSchema=z.string().trim().toLowerCase().email();
@@ -86,7 +86,18 @@ export function useAccount(){
 
   useEffect(()=>{refresh()},[refresh]);
 
-  const signIn=useCallback(callbackURL=>signInWithGoogle(String(callbackURL||'').trim()),[]);
+  const signIn=useCallback(async(email,callbackURL)=>{
+    try{
+      setState(current=>({...current,error:''}));
+      return await signInWithEmail(
+        String(email||'').trim().toLowerCase(),
+        String(callbackURL||'').trim()
+      );
+    }catch(error){
+      setState(current=>({...current,error:String(error?.message||error)}));
+      return null;
+    }
+  },[]);
   const signOut=useCallback(async()=>{
     await signOutAccount();
     setState({...emptyState,loading:false,permissionLoading:false});
