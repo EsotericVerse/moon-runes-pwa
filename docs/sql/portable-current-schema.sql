@@ -117,6 +117,9 @@ CREATE TABLE "silver"."keyword_classes" (
 CREATE TABLE "silver"."lo3rwang" (
   "id" text NOT NULL,
   "email" text,
+  "display_name" text NOT NULL,
+  "search_intro" text DEFAULT ''::text NOT NULL,
+  "search_aliases" text[] DEFAULT '{}'::text[] NOT NULL,
   "period" text,
   "period_start" date,
   "period_end" date,
@@ -231,6 +234,9 @@ CREATE TABLE "silver"."lo3rwang_time" (
 CREATE TABLE "silver"."lrunes" (
   "id" text NOT NULL,
   "email" text,
+  "display_name" text NOT NULL,
+  "search_intro" text DEFAULT ''::text NOT NULL,
+  "search_aliases" text[] DEFAULT '{}'::text[] NOT NULL,
   "period" text,
   "period_start" date,
   "period_end" date,
