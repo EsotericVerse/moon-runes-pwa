@@ -156,6 +156,34 @@
 .lrg-history-panel{margin-top:14px}
 .lrg-trend{height:300px;margin-top:12px}
 .lrg-docs{margin-top:14px}
+
+.lrg-rule-sections{
+  display:grid;
+  gap:14px;
+}
+.lrg-rule-section{
+  display:grid;
+  gap:12px;
+  padding:14px;
+}
+.lrg-rule-list{
+  display:grid;
+}
+.lrg-rule-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:12px;
+  align-items:center;
+  padding:11px 0;
+  border-bottom:1px solid var(--lrg-line);
+}
+.lrg-rule-row:last-child{border-bottom:0}
+.lrg-rule-row-main{
+  display:grid;
+  gap:3px;
+  min-width:0;
+}
+
 .lrg-doc-grid{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
@@ -203,6 +231,7 @@
   .lrg-hero-image{min-height:220px;max-height:340px}
 }
 @media(max-width:600px){
+  .lrg-rule-row{grid-template-columns:minmax(0,1fr);align-items:start}
   .lrg{
     padding:10px;
     border-radius:0;
