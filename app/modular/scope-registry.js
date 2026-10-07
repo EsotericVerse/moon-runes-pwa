@@ -125,7 +125,7 @@ export function resolveScope(host='',pathname='/'){
   for(const [id,scope] of Object.entries(SCOPES)){
     if(matchesMount(scope,h,pathname))return id;
   }
-  if(!h){
+  if(!h||h==='localhost'||h==='127.0.0.1'){
     const path=cleanPath(pathname);
     for(const [id,scope] of Object.entries(SCOPES)){
       const base=scope.mount?cleanPath(scope.mount.path):null;

@@ -2,6 +2,7 @@ import {FEATURES,SCOPES,featureHref,resolveScope,resolveScopeSearchAlias,scopeHr
 
 const failures=[];
 if(resolveScope('unknown.example','/')!=='loc')failures.push('default Scope must remain loc');
+if(resolveScope('127.0.0.1','/lrunes/')!=='lrunes')failures.push('local static runtime must resolve mounted LunaRunes path');
 if(SCOPES.lunarunes)failures.push('retired lunarunes runtime Scope id must not return');
 if(!SCOPES.lrunes)failures.push('canonical lrunes Scope id missing');
 for(const [query,id] of [['月典','loc'],['LunaCodex','loc'],['LOC','loc'],['月之符文','lrunes'],['LunaRunes','lrunes'],['lrunes','lrunes'],['lo3rwang','lo3rwang'],['政德','lo3rwang'],['Lucas Oscar Wang','lo3rwang']]){
