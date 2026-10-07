@@ -154,6 +154,20 @@
 
 .scope-editable-block-grid{min-width:0}
 .scope-editable-block{position:relative;min-width:0}
+.scope-editable-block.is-editable-idle{cursor:text}
+.scope-editable-block.is-editable-idle::after{
+  content:"";
+  position:absolute;
+  inset:-.22rem;
+  pointer-events:none;
+  border:1px dashed transparent;
+  border-radius:inherit;
+  transition:border-color .15s ease,background .15s ease;
+}
+.scope-editable-block.is-editable-idle:hover::after{
+  border-color:color-mix(in srgb,var(--loc-accent) 35%,transparent);
+  background:color-mix(in srgb,var(--loc-accent) 2%,transparent);
+}
 .scope-inline-editbar{
   position:absolute;
   z-index:6;
@@ -167,12 +181,8 @@
   min-height:2rem;
   padding:.28rem .58rem;
   font-size:.78rem;
-  opacity:.82;
-  backdrop-filter:blur(8px);
 }
-.scope-editable-block:not(.is-editing)>.scope-inline-editbar{pointer-events:auto}
 .scope-editable-block.is-editing{padding-top:2.7rem}
-.scope-editable-block.is-editing>.scope-inline-editbar{top:.35rem;right:.35rem}
 
 .scope-rich-editor{min-width:0}
 .scope-rich-editor.is-readonly,
