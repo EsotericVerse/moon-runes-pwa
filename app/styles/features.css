@@ -215,6 +215,14 @@
 .scope-rich-editor.is-editable .scope-rich-surface h2,.scope-rich-editor.is-editable .scope-rich-surface h3{margin:.5rem 0 .35rem}
 .scope-rich-editor.is-editable .scope-rich-surface p{margin:.35rem 0}
 .scope-rich-editor.is-editable .scope-rich-surface ul,.scope-rich-editor.is-editable .scope-rich-surface ol{padding-left:1.4rem}
+.scope-rich-surface a{
+  color:var(--loc-accent);
+  font-weight:700;
+  text-decoration:underline;
+  text-decoration-thickness:.08em;
+  text-underline-offset:.16em;
+}
+.scope-rich-surface a:hover{color:var(--loc-heading)}
 .loc-rich-bubble{padding:.75rem 1rem;border-radius:999px;background:var(--loc-ui-accent-soft);border:1px solid var(--loc-accent-border);margin:.6rem 0}
 .loc-rich-box{padding:.8rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-md);background:var(--loc-surface-soft);margin:.6rem 0}
 .scope-publisher-main .scope-rich-editor{min-height:32rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-lg);background:var(--loc-panel);padding:1rem}
