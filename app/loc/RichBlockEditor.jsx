@@ -9,15 +9,14 @@ const BlockNoteEditorClient=dynamic(()=>import('./BlockNoteEditorClient'),{
 
 function textFromInline(content){
   if(typeof content==='string')return content;
-  if(!Array.isArray(content))return '';
-  return content.map(item=>{
-    if(typeof item==='string')return item;
-    if(item&&typeof item==='object'){
-      if(typeof item.text==='string')return item.text;
-      if(typeof item.content==='string')return item.content;
-    }
-    return '';
-  }).join('');
+  if(Array.isArray(content))return content.map(textFromInline).filter(Boolean).join(' ');
+  if(!content||typeof content!=='object')return '';
+  if(typeof content.text==='string')return content.text;
+  const parts=[];
+  if(content.content!==undefined)parts.push(textFromInline(content.content));
+  if(Array.isArray(content.rows))parts.push(textFromInline(content.rows));
+  if(Array.isArray(content.cells))parts.push(textFromInline(content.cells));
+  return parts.filter(Boolean).join(' ');
 }
 
 export function plainTextToBlocks(value=''){
@@ -26,8 +25,8 @@ export function plainTextToBlocks(value=''){
 }
 
 export function normalizeBlocks(value,fallback=''){
-  if(Array.isArray(value)&&value.length)return value;
-  if(value&&typeof value==='object'&&Array.isArray(value.blocks)&&value.blocks.length)return value.blocks;
+  if(Array.isArray(value))return value.length?value:plainTextToBlocks(fallback);
+  if(value&&typeof value==='object'&&Array.isArray(value.blocks))return value.blocks.length?value.blocks:plainTextToBlocks(fallback);
   if(value&&typeof value==='object'&&typeof value.html==='string')return {html:value.html};
   if(typeof value==='string'&&value.trim().startsWith('<'))return {html:value};
   return plainTextToBlocks(value||fallback||'');
@@ -44,7 +43,7 @@ export function blocksToPlainText(value){
   const out=[];
   const walk=items=>{
     for(const block of Array.isArray(items)?items:[]){
-      const text=textFromInline(block?.content).trimEnd();
+      const text=textFromInline(block?.content).replace(/\s+/g,' ').trim();
       if(text)out.push(text);
       const caption=String(block?.props?.caption||block?.props?.name||'').trim();
       if(caption)out.push(caption);
