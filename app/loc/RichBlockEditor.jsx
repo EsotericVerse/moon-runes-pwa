@@ -115,6 +115,34 @@ export default function RichBlockEditor({
     emit();
   };
 
+  const activeRichContainer=()=>{
+    const selection=window.getSelection?.();
+    let node=selection?.anchorNode||null;
+    if(node?.nodeType===Node.TEXT_NODE)node=node.parentElement;
+    if(!(node instanceof Element)||!editorRef.current?.contains(node))return null;
+    return node.closest('.loc-rich-bubble,.loc-rich-box');
+  };
+
+  const removeRichContainer=()=>{
+    const container=activeRichContainer();
+    if(!container)return;
+    const editor=editorRef.current;
+    const next=container.nextElementSibling;
+    container.remove();
+    if(editor&&!editor.childNodes.length)editor.innerHTML='<p><br></p>';
+    const target=next&&editor?.contains(next)?next:editor?.lastElementChild;
+    if(target){
+      const range=document.createRange();
+      range.selectNodeContents(target);
+      range.collapse(true);
+      const selection=window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+    editor?.focus();
+    emit();
+  };
+
   return <div className={'scope-rich-editor '+(editable?'is-editable ':'is-readonly ')+className}>
     {editable?<div className="scope-rich-toolbar" role="toolbar" aria-label="文字編輯工具">
       <button type="button" onClick={()=>command('bold')}><strong>B</strong></button>
@@ -123,6 +151,7 @@ export default function RichBlockEditor({
       <button type="button" onClick={()=>command('insertUnorderedList')}>• List</button>
       <button type="button" onClick={()=>insertBox('bubble')}>文字泡泡</button>
       <button type="button" onClick={()=>insertBox('box')}>文字框</button>
+      <button type="button" onMouseDown={event=>event.preventDefault()} onClick={removeRichContainer}>刪除框／泡泡</button>
     </div>:null}
     <div
       ref={editorRef}
