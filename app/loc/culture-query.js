@@ -70,7 +70,6 @@ async function selectCultureTimeRows(scope,birthday=''){
     const ids=anchorIds(row.anchor_ids);
     const firstId=ids[0]||'0';
     const lastId=ids.at(-1)||'0';
-    const milestoneIds=type==='event'?ids.slice(1,-1).filter(anchorId=>anchorId!=='0'):[];
     const startAnchor=firstId==='0'?null:anchorMap.get(firstId);
     const endAnchor=lastId==='0'?null:anchorMap.get(lastId);
     const startDate=type==='anchor'
@@ -93,8 +92,6 @@ async function selectCultureTimeRows(scope,birthday=''){
       anchor_id:type==='anchor'?id:null,
       anchor_ids:type==='anchor'?[]:ids,
       start_anchor_id:firstId==='0'?null:firstId,
-      milestone_anchor_ids:milestoneIds,
-      milestone_dates:milestoneIds.map(anchorId=>timeDate(anchorMap.get(anchorId))).filter(Boolean),
       end_anchor_id:lastId==='0'?null:lastId,
       event_id:type==='event'?id:null,
       open_start:type!=='anchor'&&firstId==='0',
@@ -251,8 +248,6 @@ function cultureParts(scopeContext,runtimeId){
     start_date:row.start_date||null,
     end_date:row.end_date||null,
     anchor_ids:Array.isArray(row.anchor_ids)?row.anchor_ids:[],
-    milestone_anchor_ids:Array.isArray(row.milestone_anchor_ids)?row.milestone_anchor_ids:[],
-    milestone_dates:Array.isArray(row.milestone_dates)?row.milestone_dates:[],
     status:row.status||'',
     visibility:row.visibility||'public'
   }));
