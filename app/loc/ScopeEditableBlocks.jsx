@@ -105,7 +105,7 @@ export default function ScopeEditableBlocks({
       const slot=slots[index];
       const doc=normalizeBlocks(draft);
       const values={
-        block_title:String(draftTitle||'').trim(),
+        block_title:showTitleField?String(draftTitle||'').trim():'',
         block_text:String(doc.html||'')
       };
       if(slot?.stored){
@@ -167,7 +167,7 @@ export default function ScopeEditableBlocks({
     {slots.map((slot,index)=>{
       if(visibleOrders&&!visibleOrders.has(slot.order))return null;
       const active=editing===index+1;
-      const empty=!blocksToPlainText(slot.blocks)&&!slot.title;
+      const empty=!blocksToPlainText(slot.blocks)&&(!showTitleField||!slot.title);
       if(empty&&!canEdit)return null;
       const Heading=Number(headingLevel)===2?'h2':'h3';
       return <section
@@ -188,7 +188,7 @@ export default function ScopeEditableBlocks({
             onChange={setDraft}
           />
         </>:<>
-          {slot.title?<Heading>{slot.title}</Heading>:null}
+          {showTitleField&&slot.title?<Heading>{slot.title}</Heading>:null}
           <RichBlockEditor
             key={scopeId+':'+page+':'+index+':view:'+JSON.stringify(slot.blocks)}
             initialContent={slot.blocks}
