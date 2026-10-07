@@ -151,3 +151,14 @@
   .scope-publisher-sidebar{position:static}
   .scope-publisher-body{min-height:24rem}
 }
+
+.scope-editable-block-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.85rem}
+.scope-editable-block{position:relative;min-width:0}
+.scope-inline-editbar{display:flex;justify-content:flex-end;gap:.45rem;margin-bottom:.55rem}
+.scope-blocknote{min-width:0}
+.scope-blocknote .bn-container{--bn-colors-editor-background:transparent;--bn-colors-editor-text:var(--loc-text);--bn-colors-menu-background:var(--loc-panel);--bn-colors-menu-text:var(--loc-text);--bn-colors-tooltip-background:var(--loc-panel-strong);--bn-colors-tooltip-text:var(--loc-text);--bn-colors-hovered-background:var(--loc-surface-soft);--bn-colors-selected-background:var(--loc-ui-accent-soft);--bn-colors-disabled-background:var(--loc-surface-faint);--bn-colors-disabled-text:var(--loc-muted);background:transparent;color:var(--loc-text)}
+.scope-blocknote .bn-editor{padding-inline:0;background:transparent}
+.scope-editable-block .bn-editor{min-height:7rem}
+.scope-publisher-main .scope-blocknote{min-height:32rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-lg);background:var(--loc-panel);overflow:hidden}
+.scope-publisher-main .scope-blocknote .bn-editor{min-height:30rem;padding:1rem}
+@media(max-width:780px){.scope-editable-block-grid{grid-template-columns:1fr}}
