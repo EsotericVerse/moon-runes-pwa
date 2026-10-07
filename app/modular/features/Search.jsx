@@ -19,6 +19,7 @@ import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayT
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import {applyFilters} from '../../loc/db-query.mjs';
+import RichBlockEditor,{blocksToPlainText,plainTextToBlocks} from '../../loc/RichBlockEditor';
 import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
 
 
@@ -144,6 +145,7 @@ export default function Search(){
   const [editError,setEditError]=useState('');
   const [fullTextKey,setFullTextKey]=useState('');
   const [fullText,setFullText]=useState('');
+  const [fullTextBlocks,setFullTextBlocks]=useState(null);
   const [fullTextError,setFullTextError]=useState('');
   const [fullTextLoading,setFullTextLoading]=useState(false);
   const searchId=useRef(0);
@@ -290,7 +292,8 @@ export default function Search(){
       setResults([result]);
       setFullTextKey(result.key);
       setFullText(workDisplayText(detail.content||''));
-            setStatus(UI_COPY.search.relationLoaded);
+      setFullTextBlocks(Array.isArray(detail.content_blocks)?detail.content_blocks:null);
+      setStatus(UI_COPY.search.relationLoaded);
     }catch(exception){
       if(id!==searchId.current)return;
       setResults([]);setError(featureDataErrorMessage(exception));setStatus(UI_COPY.search.relationFailed);
@@ -312,12 +315,14 @@ export default function Search(){
     if(fullTextKey===result.key){
       setFullTextKey('');
       setFullText('');
+      setFullTextBlocks(null);
       setFullTextError('');
       return;
     }
     if(result.resourceType!=='galaxy'||!result.editableTable)return;
     setFullTextKey(result.key);
     setFullText('');
+    setFullTextBlocks(null);
     setFullTextError('');
     setFullTextLoading(true);
     try{
@@ -326,6 +331,7 @@ export default function Search(){
       const fullRow=await selectGalaxyContent(scopeData,result.editResourceId||result.resourceId);
       if(!fullRow)throw new Error(UI_COPY.search.fullTextNotFound);
       setFullText(workDisplayText(fullRow.content||''));
+      setFullTextBlocks(Array.isArray(fullRow.content_blocks)?fullRow.content_blocks:null);
     }catch(exception){
       setFullTextError(String(exception?.message||exception||UI_COPY.search.fullTextFailed));
     }finally{
@@ -338,7 +344,7 @@ export default function Search(){
     setEditDraft(null);
     try{
       const contentColumns=result.resourceType==='galaxy'
-        ?'uid,title,content,searchable'
+        ?'uid,title,content,content_blocks,searchable'
         :'media_id,title,meta_tags';
       const fullRow=await selectAuthRow(result.editableTable,{
         idColumn:result.editableIdColumn,
@@ -346,10 +352,16 @@ export default function Search(){
         columns:contentColumns
       });
       if(!fullRow)throw new Error(UI_COPY.search.editNotFound);
-      setEditDraft({
+      setEditDraft(result.resourceType==='galaxy'?{
+        title:String(fullRow.title??result.title??''),
+        bodyBlocks:Array.isArray(fullRow.content_blocks)&&fullRow.content_blocks.length
+          ?fullRow.content_blocks
+          :plainTextToBlocks(String(fullRow.content??'')),
+        hidden:fullRow.searchable===false
+      }:{
         title:String(fullRow.title??result.title??''),
         body:String(fullRow[result.editableField]??''),
-        hidden:result.resourceType==='galaxy'&&fullRow.searchable===false
+        hidden:false
       });
     }catch(exception){
       setEditingKey('');
@@ -361,19 +373,29 @@ export default function Search(){
     setEditBusy(true);setEditError('');
     try{
       if(!account.canManageScopeSync(result.scopeId))throw new Error(UI_COPY.search.editDenied);
-      const body=result.resourceType==='galaxy'?requireGalaxyContent(editDraft.body):editDraft.body;
+      const body=result.resourceType==='galaxy'
+        ?requireGalaxyContent(blocksToPlainText(editDraft.bodyBlocks))
+        :editDraft.body;
       const nextTitle=result.resourceType==='galaxy'
         ?resolveGalaxyTitle(editDraft.title,body)
         :(String(editDraft.title||'').trim()||null);
-      const contentPatch={
+      const contentPatch=result.resourceType==='galaxy'?{
         title:nextTitle,
-        [result.editableField]:body,
-        ...(result.resourceType==='galaxy'?{searchable:!editDraft.hidden,UpdateTime:new Date().toISOString()}:{})
+        content:body,
+        content_blocks:editDraft.bodyBlocks,
+        searchable:!editDraft.hidden,
+        UpdateTime:new Date().toISOString()
+      }:{
+        title:nextTitle,
+        [result.editableField]:body
       };
       const contentFilters=[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId}];
       await updateRows(result.editableTable,contentPatch,{filters:contentFilters});
       setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:nextTitle,snippet:result.resourceType==='galaxy'?'':body}));
-      if(fullTextKey===result.key)setFullText(editDraft.body);
+      if(fullTextKey===result.key){
+        setFullText(body);
+        setFullTextBlocks(result.resourceType==='galaxy'?editDraft.bodyBlocks:null);
+      }
       setEditingKey('');setEditDraft(null);
     }catch(exception){setEditError(String(exception?.message||exception||UI_COPY.search.saveFailed))}
     finally{setEditBusy(false)}
@@ -432,18 +454,34 @@ export default function Search(){
             loading={fullTextLoading&&fullTextKey===row.key}
             error={fullTextKey===row.key?fullTextError:''}
             content={fullTextKey===row.key?fullText:''}
+            blocks={fullTextKey===row.key?fullTextBlocks:null}
             onToggle={()=>toggleFullText(row)}
           />:null}
           {editable?<p><button type="button" onClick={()=>startEditing(row)}>{editingKey===row.key?UI_COPY.search.editing:UI_COPY.common.edit}</button></p>:null}
-          {draft?<ContentEditor
+          {draft?(row.resourceType==='galaxy'?<div className="scope-editor">
+            <label>{UI_COPY.common.title}<input value={draft.title||''} onChange={event=>setEditDraft(current=>({...current,title:event.target.value}))}/></label>
+            <RichBlockEditor
+              key={'search-edit:'+row.key}
+              initialContent={draft.bodyBlocks}
+              onChange={blocks=>setEditDraft(current=>({...current,bodyBlocks:blocks}))}
+            />
+            <div className="scope-editor-options">
+              <label><input type="checkbox" checked={draft.hidden===true} onChange={event=>setEditDraft(current=>({...current,hidden:event.target.checked}))}/>{UI_COPY.common.hiddenFromSearch}</label>
+            </div>
+            {editError?<p role="alert" className="scope-error">{editError}</p>:null}
+            <div className="scope-tabs">
+              <button type="button" disabled={editBusy} onClick={()=>saveEditing(row)}>{editBusy?UI_COPY.common.saving:UI_COPY.common.save}</button>
+              <button type="button" disabled={editBusy} onClick={()=>{setEditingKey('');setEditDraft(null);setEditError('')}}>{UI_COPY.common.cancel}</button>
+            </div>
+          </div>:<ContentEditor
             draft={draft}
             setDraft={setEditDraft}
             busy={editBusy}
             error={editError}
-            showVisibility={row.resourceType==='galaxy'}
+            showVisibility={false}
             onSave={()=>saveEditing(row)}
             onCancel={()=>{setEditingKey('');setEditDraft(null);setEditError('')}}
-          />:null}
+          />):null}
         </WorkSummaryCard>;
       }}
     />
