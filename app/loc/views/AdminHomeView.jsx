@@ -19,23 +19,11 @@ const EMPTY_SCOPE_CREATE={scope_id:'',display_name:'',email:'',birthday:'',domai
 const EMPTY_GROUP_CREATE={scope_id:'',display_name:'',domain:'',directory:'',parent_scope_id:'loc',sort_order:''};
 
 function Login({account}){
-  const [email,setEmail]=useState('');
-  const [status,setStatus]=useState('');
-  const submit=async event=>{
-    event.preventDefault();
-    setStatus('');
-    const result=await account.signIn(email,scopeHref('admin'));
-    if(result)setStatus('登入連結已寄出，請到信箱開啟後回到 Admin。');
-  };
   return <section className="loc-view">
     <header className="loc-hero"><p className="loc-eyebrow">{UI_COPY.admin.eyebrow}</p><h1>{UI_COPY.admin.loginTitle}</h1></header>
     <section className="loc-card">
       <p>{UI_COPY.admin.loginIntro}</p>
-      <form className="scope-management-fields" onSubmit={submit}>
-        <label><span>Email</span><input type="email" autoComplete="email" required value={email} onChange={event=>setEmail(event.target.value)}/></label>
-        <button className="loc-button primary" type="submit">{UI_COPY.admin.signIn}</button>
-      </form>
-      {status?<p className="scope-status" role="status">{status}</p>:null}
+      <button className="loc-button primary" type="button" onClick={()=>account.signIn(scopeHref('admin'))}>{UI_COPY.admin.signIn}</button>
       {account.error?<p className="scope-status scope-error">{account.error}</p>:null}
     </section>
   </section>;
