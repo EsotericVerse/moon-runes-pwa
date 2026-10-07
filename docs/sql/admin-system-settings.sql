@@ -1,29 +1,23 @@
--- Admin system settings: editable Theme Registry and explicit database migration/deployment targets.
+-- Admin system settings: canonical LOC Theme Registry and explicit database migration/deployment targets.
 
-create table if not exists silver.theme_registry (
+create table if not exists silver.loc_theme (
   theme_id text primary key,
-  label text not null,
-  scheme text not null check (scheme in ('light','dark')),
-  tokens jsonb not null default '{}'::jsonb,
-  updated_at timestamptz not null default now(),
-  constraint theme_registry_id_check check (theme_id ~ '^theme-[1-8]$')
+  theme_name text not null,
+  theme_attr jsonb not null default '{}'::jsonb,
+  theme_order integer not null,
+  constraint loc_theme_id_check check (theme_id ~ '^theme-[1-8]$'),
+  constraint loc_theme_order_check check (theme_order between 1 and 8)
 );
 
-alter table silver.theme_registry enable row level security;
-drop policy if exists theme_registry_public_read on silver.theme_registry;
-drop policy if exists theme_registry_admin_write on silver.theme_registry;
-create policy theme_registry_public_read on silver.theme_registry
+alter table silver.loc_theme enable row level security;
+drop policy if exists loc_theme_public_read on silver.loc_theme;
+drop policy if exists loc_theme_admin_write on silver.loc_theme;
+create policy loc_theme_public_read on silver.loc_theme
   for select to anonymous,authenticated using (true);
-create policy theme_registry_admin_write on silver.theme_registry
+create policy loc_theme_admin_write on silver.loc_theme
   for all to authenticated using (silver.can_manage_global()) with check (silver.can_manage_global());
-grant select on silver.theme_registry to anonymous,authenticated;
-grant insert,update,delete on silver.theme_registry to authenticated;
-
-insert into silver.theme_registry(theme_id,label,scheme)
-values
- ('theme-1','靈魂','dark'),('theme-2','連結','light'),('theme-3','生命','light'),('theme-4','自然','light'),
- ('theme-5','礦物','light'),('theme-6','元素','dark'),('theme-7','秩序','light'),('theme-8','無序','dark')
-on conflict(theme_id) do nothing;
+grant select on silver.loc_theme to anonymous,authenticated;
+grant insert,update,delete on silver.loc_theme to authenticated;
 
 create table if not exists silver.database_targets (
   target_id text primary key,
