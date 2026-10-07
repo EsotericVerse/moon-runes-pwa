@@ -29,6 +29,7 @@ const importPanel=read('app/loc/ManagementImportPanel.jsx');
 const scopeSettings=read('app/loc/ScopeSettingsPanel.jsx');
 const publisher=read('app/loc/ManagementArticlePublisher.jsx');
 const richEditor=read('app/loc/RichBlockEditor.jsx');
+const blockNoteEditor=read('app/loc/BlockNoteEditorClient.jsx');
 const editableBlocks=read('app/loc/ScopeEditableBlocks.jsx');
 const authorHome=read('app/loc/views/AuthorHomeView.jsx');
 const runesHome=read('app/lrunes/RunesClient.jsx');
@@ -55,7 +56,8 @@ must(governance.includes("scopeHref(scopeId,'governance/manage')"),'Governance m
 must(!importPanel.includes('ManagementArticlePublisher')&&!importPanel.includes('role="tablist"')&&importPanel.includes('JsonImport')&&importPanel.includes('SourceRefresh'),'Data Import must contain import tools only');
 must(scopeSettings.includes('display_name')&&scopeSettings.includes('search_intro')&&scopeSettings.includes('search_aliases')&&scopeSettings.includes('updateRows'),'misc settings must edit Scope-owned presentation config');
 must(publisher.includes('scope-publisher-main')&&publisher.includes('scope-publisher-sidebar')&&publisher.includes('RichBlockEditor')&&publisher.includes('content_blocks'),'article publisher must use the shared rich editor while preserving plain content');
-must(richEditor.includes("from '@blocknote/react'")&&richEditor.includes("from '@blocknote/mantine'")&&richEditor.includes('BlockNoteView')&&!richEditor.includes('uploadFile'),'shared web editor must use BlockNote with URL-only media authoring instead of a custom contentEditable surface');
+must(richEditor.includes("dynamic(()=>import('./BlockNoteEditorClient')")&&!richEditor.includes('contentEditable')&&!richEditor.includes('execCommand')&&!richEditor.includes('uploadFile'),'shared web editor must lazy-load BlockNote client-side with URL-only media authoring and no custom contentEditable implementation');
+must(blockNoteEditor.includes("from '@blocknote/react'")&&blockNoteEditor.includes("from '@blocknote/mantine'")&&blockNoteEditor.includes('BlockNoteView')&&!blockNoteEditor.includes('uploadFile'),'BlockNoteEditorClient must own the real BlockNote surface and keep media URL-only');
 must(editableBlocks.includes('SLOT_COUNT=4')&&editableBlocks.includes("page='home'")&&editableBlocks.includes('block_page')&&editableBlocks.includes('block_text')&&editableBlocks.includes('_blocks')&&editableBlocks.includes('isInteractiveTarget')&&!editableBlocks.includes('>編輯</button>'),'Scope editable surfaces must use block rows and enter editing from content without idle layout buttons');
 must(authorHome.includes('ScopeEditableBlocks')&&authorHome.includes('page="home"'),'author homepage must use page-based WYSIWYG blocks');
 must(!runesHome.includes('ScopeEditableBlocks')&&runesHome.includes('className="basic-grid"'),'LunaRunes homepage must remain a fixed special presentation without inline management editing');

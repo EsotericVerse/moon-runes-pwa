@@ -235,20 +235,6 @@
 
 
 .scope-governance-editable{display:grid;gap:1rem}
-.scope-governance-wysiwyg{
-  min-height:24rem;
-  padding:1rem;
-  border:var(--scope-border);
-  border-radius:var(--scope-radius);
-  background:var(--loc-panel);
-  color:var(--scope-text);
-  line-height:1.75;
-  outline:none;
-}
-.scope-governance-wysiwyg:focus{border-color:var(--loc-accent-border);box-shadow:0 0 0 2px color-mix(in srgb,var(--loc-accent) 18%,transparent)}
-.scope-governance-wysiwyg h1,.scope-governance-wysiwyg h2,.scope-governance-wysiwyg h3{margin:1rem 0 .5rem}
-.scope-governance-wysiwyg p{margin:.5rem 0}
-
 /* Static presentation belongs in CSS; JS only supplies state or runtime configuration. */
 .scope-prewrap{white-space:pre-wrap}
 .scope-daily-calendar-nav{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin-bottom:1rem}

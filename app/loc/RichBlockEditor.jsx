@@ -1,8 +1,11 @@
 'use client';
 
-import {useEffect,useMemo} from 'react';
-import {useCreateBlockNote} from '@blocknote/react';
-import {BlockNoteView} from '@blocknote/mantine';
+import dynamic from 'next/dynamic';
+
+const BlockNoteEditorClient=dynamic(()=>import('./BlockNoteEditorClient'),{
+  ssr:false,
+  loading:()=>null
+});
 
 function textFromInline(content){
   if(typeof content==='string')return content;
@@ -59,29 +62,16 @@ export default function RichBlockEditor({
   onHtmlChange=null,
   className=''
 }){
-  const normalized=useMemo(()=>normalizeBlocks(initialContent),[]);
+  const normalized=normalizeBlocks(initialContent);
   const initialBlocks=Array.isArray(normalized)?normalized:plainTextToBlocks('');
-  const editor=useCreateBlockNote({initialContent:initialBlocks});
-
-  useEffect(()=>{
-    if(Array.isArray(normalized))return;
-    const html=String(normalized?.html||'').trim();
-    if(!html)return;
-    const blocks=editor.tryParseHTMLToBlocks(html);
-    editor.replaceBlocks(editor.document,blocks);
-  },[editor]);
-
-  const emit=()=>{
-    const blocks=editor.document;
-    onChange?.(blocks);
-    onHtmlChange?.(editor.blocksToHTMLLossy(blocks));
-  };
-
+  const initialHtml=Array.isArray(normalized)?'':String(normalized?.html||'');
   return <div className={'scope-blocknote '+(editable?'is-editable ':'is-readonly ')+className}>
-    <BlockNoteView
-      editor={editor}
+    <BlockNoteEditorClient
+      initialBlocks={initialBlocks}
+      initialHtml={initialHtml}
       editable={editable}
-      onChange={editable?emit:undefined}
+      onChange={onChange}
+      onHtmlChange={onHtmlChange}
     />
   </div>;
 }
