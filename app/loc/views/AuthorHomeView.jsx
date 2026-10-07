@@ -1,7 +1,26 @@
 import ScopeEditableBlocks from '../ScopeEditableBlocks';
 import authorHeroAsset from '../../../pics/lo3rwang-hero.jpg';
 
-function AuthorPage({eyebrow,title,subtitle,intro,heroImage=null,sections=[]}){
+const AUTHOR_HOME_BLOCKS=Object.freeze([
+  'Lucas Oscar Wang 政德，日常叫我 Oscar。寫作、音樂、系統整理與到處看看，都是我長期沒有放下的事情。',
+  '人生觀：鑑古知今，求同存異。不在其位，不謀其政。隨心所欲，而不逾己。',
+  '原則態度：敬畏未知，尊重異者，專業為先。',
+  '擅長能力：歸納、整理與系統化；習慣把複雜原理收斂成可以理解與重複使用的結構。',
+  '<p class="loc-eyebrow">Lucas Oscar Wang</p><div class="home-title-row"><h1>政德</h1><p class="loc-subtitle">語言建築師</p></div><p>Hello！你好！你可以叫我 Oscar。</p><p>Wordsmith · Chaos Calibrator · Language Architect</p><p>Creator of LOC and LunaRunes · <a href="https://suno.com/album/16130013-09f2-4be3-b2f6-05ce171ba7d5" target="_blank">聽《微月光，上場》 →</a></p>'
+]);
+
+function EditableAuthorHero(){
+  return <ScopeEditableBlocks
+    scopeId="lo3rwang"
+    page="home"
+    orders={[5]}
+    fallbackDocuments={AUTHOR_HOME_BLOCKS}
+    slotClassName="author-home-hero-copy"
+    showTitleField={false}
+  />;
+}
+
+function AuthorPage({eyebrow,title,subtitle,intro,heroImage=null,heroContent=null,sections=[]}){
   return <section className="loc-view scope-home-composition">
     {heroImage?<header className="loc-hero author-home-hero" id="top">
       <img
@@ -14,11 +33,11 @@ function AuthorPage({eyebrow,title,subtitle,intro,heroImage=null,sections=[]}){
         decoding="async"
       />
       <div className="author-home-hero-overlay" aria-hidden="true"/>
-      <div className="author-home-hero-copy">
+      {heroContent||<div className="author-home-hero-copy">
         {eyebrow?<p className="loc-eyebrow">{eyebrow}</p>:null}
         <div className="home-title-row"><h1>{title}</h1>{subtitle?<p className="loc-subtitle">{subtitle}</p>:null}</div>
         {intro}
-      </div>
+      </div>}
     </header>:<header className="loc-hero loc-hero-feature" id="top">
       {eyebrow?<p className="loc-eyebrow">{eyebrow}</p>:null}
       <div className="home-title-row"><h1>{title}</h1>{subtitle?<p className="loc-subtitle">{subtitle}</p>:null}</div>
@@ -202,12 +221,9 @@ export default function AuthorHomeView({section=null}){
     eyebrow="Lucas Oscar Wang"
     title="政德"
     subtitle="語言建築師"
-    intro={<>
-      <p>Hello！你好！你可以叫我 Oscar。</p>
-      <p>Wordsmith · Chaos Calibrator · Language Architect</p>
-      <p>Creator of LOC and LunaRunes · <a href="https://suno.com/album/16130013-09f2-4be3-b2f6-05ce171ba7d5" target="_blank" rel="noopener noreferrer">聽《微月光，上場》 →</a></p>
-    </>}
+    intro={null}
     heroImage={authorHeroAsset}
+    heroContent={<EditableAuthorHero/>}
     sections={[
       {
         id:'about',
@@ -219,12 +235,8 @@ export default function AuthorHomeView({section=null}){
               scopeId="lo3rwang"
               page="home"
               slotClassName="author-editorial-block"
-              fallbackDocuments={[
-                'Lucas Oscar Wang 政德，日常叫我 Oscar。寫作、音樂、系統整理與到處看看，都是我長期沒有放下的事情。',
-                '人生觀：鑑古知今，求同存異。不在其位，不謀其政。隨心所欲，而不逾己。',
-                '原則態度：敬畏未知，尊重異者，專業為先。',
-                '擅長能力：歸納、整理與系統化；習慣把複雜原理收斂成可以理解與重複使用的結構。'
-              ]}
+              orders={[1,2,3,4]}
+              fallbackDocuments={AUTHOR_HOME_BLOCKS}
             />
           </div>
           <aside className="author-about-side">
