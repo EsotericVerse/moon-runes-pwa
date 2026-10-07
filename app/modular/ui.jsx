@@ -5,7 +5,7 @@ import {UI_COPY} from '../i18n/ui-copy';
 import {useUiCopy} from '../i18n/ui-locale';
 import {DEFAULT_LIST_BATCH_SIZE,LIST_LOAD_COOLDOWN_MS} from '../loc/list-loading-contract.mjs';
 import {useScopeRuntime} from './use-scope-runtime';
-import RichBlockEditor from '../loc/RichBlockEditor';
+import RichBlockEditor,{blocksToPlainText,plainTextToBlocks} from '../loc/RichBlockEditor';
 
 export function FeaturePage({featureId,children,subtitle=null,description=null}){
   const {scope}=useScopeRuntime();
@@ -47,7 +47,14 @@ export function ContentEditor({
   const change=(key,value)=>setDraft(current=>({...current,[key]:value}));
   return <div className="scope-editor">
     {showTitle?<label>{UI_COPY.common.title}<input value={draft.title||''} onChange={event=>change('title',event.target.value)}/></label>:null}
-    {showBody?<label>{bodyLabel}<textarea rows={10} value={draft.body||''} onChange={event=>change('body',event.target.value)}/></label>:null}
+    {showBody?<div className="scope-editor-blocknote">
+      <span>{bodyLabel}</span>
+      <RichBlockEditor
+        key={'content-editor:'+(draft.editorKey||'body')}
+        initialContent={Array.isArray(draft.bodyBlocks)&&draft.bodyBlocks.length?draft.bodyBlocks:plainTextToBlocks(draft.body||'')}
+        onChange={blocks=>setDraft(current=>({...current,bodyBlocks:blocks,body:blocksToPlainText(blocks)}))}
+      />
+    </div>:null}
     {extraFields}
     {showVisibility?<div className="scope-editor-options">
       <label><input type="checkbox" checked={draft.hidden===true} onChange={event=>change('hidden',event.target.checked)}/>{UI_COPY.common.hiddenFromSearch}</label>
