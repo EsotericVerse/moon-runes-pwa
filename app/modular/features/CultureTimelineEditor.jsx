@@ -82,6 +82,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
   const [selectedId,setSelectedId]=useState('');
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
+  const [formOpen,setFormOpen]=useState(false);
 
   const query=useQuery({
     queryKey:['culture-period-settings',dataScope,timeTable],
@@ -141,6 +142,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       setSelectedId(id);
       setDraft(rowDraft(row));
       setMessage('');
+      setFormOpen(true);
     }
   },[selectedRecordId,rawRows]);
 
@@ -154,6 +156,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       note:''
     });
     setMessage('已帶入河道日期。');
+    setFormOpen(true);
   },[effectiveSuggestedAnchorDate]);
 
   if(!editable||account.loading||account.permissionLoading||!account.canManageScopeSync(dataScope))return null;
@@ -163,10 +166,17 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
     setDraft(rowDraft(row));
     setMessage('');
   };
-  const beginAdd=type=>{
+  const beginAdd=()=>{
     setSelectedId('');
-    setDraft({...BLANK,record_type:type,resource_id:''});
+    setDraft({...BLANK,record_type:'anchor',resource_id:''});
     setMessage('');
+    setFormOpen(true);
+  };
+  const cancelEdit=()=>{
+    setSelectedId('');
+    setDraft({...BLANK});
+    setMessage('');
+    setFormOpen(false);
   };
   const change=(key,value)=>setDraft(current=>({...current,[key]:value}));
   const changeAnchor=(index,value)=>setDraft(current=>{
@@ -263,7 +273,8 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       await queryClient.invalidateQueries({queryKey:['culture-timeline',scopeId]});
       setSelectedId('');
       setDraft({...BLANK});
-      setMessage('已儲存。');
+      setMessage('');
+      setFormOpen(false);
     }catch(error){setMessage(error?.message||'儲存失敗。');}
     finally{setBusy(false);}
   };
@@ -282,21 +293,19 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       ]});
       await queryClient.invalidateQueries({queryKey:['culture-period-settings',dataScope]});
       await queryClient.invalidateQueries({queryKey:['culture-timeline',scopeId]});
-      setSelectedId('');setDraft({...BLANK});setMessage('已刪除。');
+      setSelectedId('');setDraft({...BLANK});setMessage('');setFormOpen(false);
     }catch(error){setMessage(error?.message||'刪除失敗。');}
     finally{setBusy(false);}
   };
 
-  return <section className="loc-card scope-feature-card">
-    <p className="loc-eyebrow">登入編輯</p>
-    <h2>目前時期／定錨</h2>
-    <p>點河道空白位置新增定錨；點既有節點修改或刪除。新增時期／事件則直接使用下方按鈕。</p>
+  if(!formOpen)return <div className="scope-culture-inline-management">
+    <button type="button" className="loc-button" onClick={beginAdd}>＋ 新增</button>
+  </div>;
+
+  return <section className="loc-card scope-feature-card scope-culture-inline-editor">
     {query.error?<p className="scope-status scope-error">{query.error.message}</p>:null}
     {duplicateAnchorIds.length?<p className="scope-status scope-error">同一資料區域存在重複的定錨點識別：{duplicateAnchorIds.join('、')}。請先修正，否則無法正確呈現文化資料。</p>:null}
     {query.isPending?<p className="scope-status">{FEATURE_LOADING_MESSAGE}</p>:null}
-    <div className="scope-tabs">
-      {EDITABLE_TYPES.map(([type,label])=><button key={type} type="button" onClick={()=>beginAdd(type)}>新增{label}</button>)}
-    </div>
     <form onSubmit={save}>
       <label><span>類型</span><select className="scope-select" value={draft.record_type} disabled={Boolean(selectedId)} onChange={event=>change('record_type',event.target.value)}>
         {EDITABLE_TYPES.map(([type,label])=><option key={type} value={type}>{label}</option>)}
@@ -311,27 +320,27 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       </div>:null}
 
       {draft.record_type!=='anchor'?<div className="scope-management-wide-field">
-        <h3>定錨點序列</h3>
-        <p className="scope-status">依時間順序排列；第一個與最後一個是範圍邊界，中間項目是事件／時期內的里程碑。</p>
+        <h3>定錨點</h3>
+        <p className="scope-status">依時間順序選擇；第一個與最後一個是範圍邊界，中間仍是同一事件／時期內的定錨點。</p>
         <div className="scope-management-fields">
           {normalizeAnchorIds(draft.anchor_ids).map((anchorId,index,ids)=><label key={index}>
-            <span>{index===0?'起點':index===ids.length-1?'終點':'里程碑 '+index}</span>
+            <span>{index===0?'起點':index===ids.length-1?'終點':'定錨點 '+(index+1)}</span>
             <select className="scope-select" value={anchorId} onChange={event=>changeAnchor(index,event.target.value)}>
               {(index===0||index===ids.length-1)
                 ?<option value="0">0｜開放端</option>
-                :<option value="0" disabled>請選擇里程碑</option>}
+                :<option value="0" disabled>請選擇定錨點</option>}
               {anchorOptions.map(row=><option key={row.resource_id} value={row.resource_id}>{dateText(row.time_date)||row.year_value||'未知'}｜{row.label}</option>)}
             </select>
-            {ids.length>2&&index>0&&index<ids.length-1?<button type="button" onClick={()=>removeAnchor(index)}>移除此里程碑</button>:null}
+            {ids.length>2&&index>0&&index<ids.length-1?<button type="button" onClick={()=>removeAnchor(index)}>移除此定錨點</button>:null}
           </label>)}
         </div>
-        <button type="button" onClick={addAnchor}>新增里程碑</button>
+        <button type="button" onClick={addAnchor}>新增定錨點</button>
       </div>:null}
 
       {draft.record_type!=='anchor'?<>
-        <label className="scope-management-wide-field"><span>風格標籤</span><input className="scope-search-input" value={draft.style_tags||''} onChange={event=>change('style_tags',event.target.value)} placeholder="以逗號分隔；時間長河與搜尋共用"/></label>
+        <label className="scope-management-wide-field"><span>風格說明</span><input className="scope-search-input" value={draft.style_tags||''} onChange={event=>change('style_tags',event.target.value)} placeholder="以逗號分隔；搜尋時可使用"/></label>
         {styleTagList(draft.style_tags).length?<div className="scope-management-wide-field">
-          <h3>風格關鍵詞說明</h3>
+          <h3>搜尋顯示說明</h3>
           <p className="scope-status">搜尋精確命中風格詞時，先顯示這段簡短介紹，再列出相關搜尋結果。</p>
           <div className="scope-management-fields">
             {styleTagList(draft.style_tags).map(tag=><label key={tag}><span>{tag}</span><textarea className="scope-search-input" value={styleDescriptionOf(draft.style_tag_descriptions,tag)} onChange={event=>changeStyleDescription(tag,event.target.value)} placeholder={'搜尋「'+tag+'」時顯示的簡短介紹'}/></label>)}
@@ -346,8 +355,10 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       {message?<p className="scope-status" role="status">{message}</p>:null}
       <div className="scope-tabs">
         <button type="submit" disabled={busy}>{busy?'儲存中…':'儲存'}</button>
+        <button type="button" disabled={busy} onClick={cancelEdit}>取消</button>
         {selectedId?<button type="button" disabled={busy} onClick={remove}>刪除</button>:null}
       </div>
     </form>
   </section>;
+}
 }
