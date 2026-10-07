@@ -1,8 +1,8 @@
 'use client';
 import {useMemo,useState} from 'react';
 import {Client} from 'boardgame.io/react';
-import {createLunaRunesGame} from './boardgame-rules';
-import {loadGameData} from './game-data';
+import {createLunaRunesGame} from './boardgame-rules.js';
+import {loadGameData} from './game-data.js';
 import {useQuery} from '@tanstack/react-query';
 import './game-board.css';
 import {ThemeProvider,createTheme,Paper,Alert,Tabs,Tab,LinearProgress} from '@mui/material';

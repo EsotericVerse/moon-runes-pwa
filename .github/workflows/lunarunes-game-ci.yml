@@ -1,11 +1,14 @@
 name: LunaRunes game integration checks
 on:
+  push:
+    branches: [main]
   pull_request:
     paths:
       - 'app/lrunes/game/**'
       - 'app/loc/LocApp.jsx'
       - 'package.json'
       - 'package-lock.json'
+      - 'tests/lunarunes-boardgame.test.mjs'
       - '.github/workflows/lunarunes-game-ci.yml'
 permissions:
   contents: read
@@ -19,7 +22,8 @@ jobs:
           node-version: '22'
       - name: Install dependencies and verify lockfile
         run: |
-          npm install --no-audit --no-fund
-          git diff --exit-code package-lock.json
+          npm ci --no-audit --no-fund
+      - name: Test game rules
+        run: npm run test:game
       - name: Verify application build
         run: npm run build
