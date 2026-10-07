@@ -85,6 +85,7 @@ export default function Culture(){
   const [fullTextError,setFullTextError]=useState('');
   const [editingWorkKey,setEditingWorkKey]=useState('');
   const [selectedTimelineRecordId,setSelectedTimelineRecordId]=useState('');
+  const [selectedTimelineDate,setSelectedTimelineDate]=useState('');
   const [editDraft,setEditDraft]=useState(null);
   const [editBusy,setEditBusy]=useState(false);
   const [editError,setEditError]=useState('');
@@ -562,10 +563,21 @@ export default function Culture(){
                   windowEnd={currentStructureEnd}
                   onSelect={item=>{
                     const recordId=String(item?.record_id||item?.recordId||'').trim();
-                    if(recordId)setSelectedTimelineRecordId(recordId);
+                    if(recordId){
+                      setSelectedTimelineRecordId(recordId);
+                      setSelectedTimelineDate('');
+                    }
                   }}
+                  onTimeClick={account.canManageScopeSync(scopeId)?date=>{
+                    setSelectedTimelineRecordId('');
+                    setSelectedTimelineDate(date);
+                  }:null}
                 />:<p className='scope-status'>{FEATURE_EMPTY_MESSAGE}</p>}
-                {account.canManageScopeSync(scopeId)?<CultureTimelineEditor scopeId={scopeId} selectedRecordId={selectedTimelineRecordId}/>:null}
+                {account.canManageScopeSync(scopeId)?<CultureTimelineEditor
+                  scopeId={scopeId}
+                  selectedRecordId={selectedTimelineRecordId}
+                  suggestedAnchorDate={selectedTimelineDate}
+                />:null}
               </section>
 
               {selectedWorkPeriod?<section className='scope-card scope-culture-classification-river'>
