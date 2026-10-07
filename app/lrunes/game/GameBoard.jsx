@@ -1,66 +1,342 @@
 'use client';
+
 import {useMemo,useState} from 'react';
 import {Client} from 'boardgame.io/react';
+import {useQuery} from '@tanstack/react-query';
+import {
+  Alert,Box,Button,Chip,Divider,FormControl,InputLabel,LinearProgress,MenuItem,
+  Paper,Select,Stack,Tab,Tabs,TextField,ThemeProvider,Typography,createTheme
+} from '@mui/material';
+import {DndContext,PointerSensor,TouchSensor,useDraggable,useDroppable,useSensor,useSensors} from '@dnd-kit/core';
+import {CartesianGrid,Legend,Line,LineChart,ResponsiveContainer,Tooltip,XAxis,YAxis} from 'recharts';
 import {createLunaRunesGame} from './boardgame-rules.js';
 import {loadGameData} from './game-data.js';
-import {useQuery} from '@tanstack/react-query';
+import gameHeroAsset from '../../../pics/LunaRunesGame.jpg';
 import './game-board.css';
-import {ThemeProvider,createTheme,Paper,Alert,Tabs,Tab,LinearProgress} from '@mui/material';
-import {DndContext,useDraggable,useDroppable,PointerSensor,TouchSensor,useSensor,useSensors} from '@dnd-kit/core';
-const gameTheme=createTheme({palette:{mode:'dark',primary:{main:'#e4bf7c'},background:{paper:'#1a2434'},text:{primary:'#f4f1e9'}},shape:{borderRadius:12}});
-function RuneCard({card,selected,disabled,onClick,playerIndex}){
-  const {attributes,listeners,setNodeRef,transform,isDragging}=useDraggable({id:'rune-'+playerIndex+'-'+card.id,disabled,data:{playerIndex,cardId:card.id}});
-  return <button ref={setNodeRef} type="button" {...attributes} {...listeners} className={'lrg-card'+(selected?' picked':'')} aria-pressed={selected} disabled={disabled} onClick={onClick} title={card.name+'｜'+card.group} style={{transform:transform?'translate3d('+transform.x+'px,'+transform.y+'px,0)':undefined,opacity:isDragging?.6:1,touchAction:'manipulation',zIndex:isDragging?10:undefined}}><img src={cardSrc(card)} alt={card.name} loading="lazy"/><span>{card.name}</span></button>;
-}
-function SelectionZone({count,limit,playerIndex}){const {setNodeRef,isOver}=useDroppable({id:'selected-zone-'+playerIndex,data:{playerIndex}});return <Paper ref={setNodeRef} variant="outlined" sx={{p:1.5,mt:1,borderStyle:'dashed',borderColor:isOver?'primary.main':'divider',textAlign:'center'}}>{'已選 '+count+' / '+limit+' 張 · 點擊卡牌或拖曳至此選取'}</Paper>}
 
+const LABELS=['A','B','C','D'];
+const gameTheme=createTheme({
+  palette:{
+    mode:'dark',
+    primary:{main:'#e4bf7c'},
+    secondary:{main:'#8fb6a3'},
+    background:{default:'#101623',paper:'#1a2434'},
+    text:{primary:'#f4f1e9',secondary:'#c1ccdd'},
+    divider:'#34435b'
+  },
+  shape:{borderRadius:12},
+  typography:{fontFamily:'system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif'},
+  components:{
+    MuiButton:{defaultProps:{disableElevation:true}},
+    MuiPaper:{defaultProps:{elevation:0}}
+  }
+});
 
 const cardSrc=card=>'/assets/lunarunes/cards/'+String(card.id).padStart(2,'0')+'_'+String(card.name).replace(/之符文$/,'').trim()+'.png';
-const labelStage=s=>s==='opening'?'起手棄牌':s==='event'?'事件':s==='duel'?'決鬥':s==='finished'?'結算':'共鳴';
+const labelStage=s=>s==='opening'?'起手棄牌':s==='event'?'事件':s==='duel'?'決鬥':s==='finished'?'結算':String(s||'').includes('resonance')?'共鳴':s||'—';
+const samePair=(a,b,x,y)=>(a===x&&b===y)||(a===y&&b===x);
+
+function eventVisual(data,event){
+  const groups=event?.groups||[];
+  if(groups.length===2){
+    const pair=data.eventVisuals.find(item=>samePair(item.group,item.group2,groups[0],groups[1]));
+    if(pair)return pair;
+  }
+  return data.groupAssets.find(item=>groups.includes(item.group))||null;
+}
+
+function RuneCard({card,selected,disabled,onClick,playerIndex}){
+  const {attributes,listeners,setNodeRef,transform,isDragging}=useDraggable({
+    id:'rune-'+playerIndex+'-'+card.id,
+    disabled,
+    data:{playerIndex,cardId:card.id}
+  });
+  return <button
+    ref={setNodeRef}
+    type="button"
+    {...attributes}
+    {...listeners}
+    className={'lrg-card'+(selected?' picked':'')}
+    aria-pressed={selected}
+    disabled={disabled}
+    onClick={onClick}
+    title={card.name+'｜'+card.group+(card.action?'｜'+card.action:'')}
+    style={{
+      transform:transform?'translate3d('+transform.x+'px,'+transform.y+'px,0)':undefined,
+      opacity:isDragging?.58:1,
+      zIndex:isDragging?10:undefined
+    }}
+  >
+    <img src={cardSrc(card)} alt={card.name+'符文卡'} loading="lazy"/>
+    <span><b>{String(card.id).padStart(2,'0')} {card.name}</b><small>{card.group}</small></span>
+  </button>;
+}
+
+function SelectionZone({count,limit,playerIndex}){
+  const {setNodeRef,isOver}=useDroppable({id:'selected-zone-'+playerIndex,data:{playerIndex}});
+  return <Paper
+    ref={setNodeRef}
+    variant="outlined"
+    className="lrg-dropzone"
+    sx={{
+      p:1.25,mt:1,borderStyle:'dashed',
+      borderColor:isOver?'primary.main':'divider',
+      bgcolor:isOver?'rgba(228,191,124,.10)':'transparent'
+    }}
+  >
+    <Typography variant="body2">已選 {count} / {limit} 張 · 點擊卡牌，或拖曳至此選取</Typography>
+  </Paper>;
+}
+
+function DeTrend({history,players}){
+  if((history||[]).length<2)return <Alert severity="info">完成第一個遊戲行動後會開始顯示 De 軌跡。</Alert>;
+  return <Paper className="lrg-history-panel">
+    <Typography variant="h6" component="h2">De 軌跡</Typography>
+    <div className="lrg-trend">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={history} margin={{top:12,right:16,bottom:8,left:-12}}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#34435b"/>
+          <XAxis dataKey="step" tick={{fill:'#c1ccdd'}} stroke="#34435b"/>
+          <YAxis allowDecimals={false} tick={{fill:'#c1ccdd'}} stroke="#34435b"/>
+          <Tooltip contentStyle={{background:'#1a2434',border:'1px solid #34435b',borderRadius:8}}/>
+          <Legend/>
+          {players.map((player,index)=><Line key={player.name} type="monotone" dataKey={LABELS[index]} name={player.name} stroke={['#e4bf7c','#8fb6a3','#9eb6dc','#d5a7be'][index]} strokeWidth={2.5} dot={{r:3}} isAnimationActive={false}/>)}
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  </Paper>;
+}
+
+function DocsPanel({data}){
+  const [section,setSection]=useState('rules');
+  const [query,setQuery]=useState('');
+  const normalized=query.trim().toLocaleLowerCase('zh-Hant');
+  const matches=(...parts)=>!normalized||parts.filter(Boolean).join(' ').toLocaleLowerCase('zh-Hant').includes(normalized);
+
+  const rules=data.rules.filter(row=>!['ROUND_PHASE','EVENT_RESULT'].includes(row.rule_code)).filter(row=>matches(row.rule_title,row.rule_text,row.rule_code));
+  const events=data.events.filter(row=>matches(row.id,row.name,row.description,row.requirement,...row.groups));
+  const roles=data.roles.filter(row=>matches(row.group,row.name,row.focus,row.mode,row.intervention,row.tool,row.tagline));
+  const actions=data.runeActions.filter(row=>matches(row.name,row.group,row.text,row.kind,row.value));
+
+  return <Paper className="lrg-docs">
+    <Stack direction={{xs:'column',sm:'row'}} spacing={1.5} justifyContent="space-between" alignItems={{sm:'center'}}>
+      <Tabs value={section} onChange={(_,value)=>setSection(value)} variant="scrollable" scrollButtons="auto" aria-label="遊戲資料">
+        <Tab value="rules" label="規則"/>
+        <Tab value="events" label={'事件 '+data.events.length}/>
+        <Tab value="roles" label={'八職 '+data.roles.length}/>
+        <Tab value="actions" label={'符文行動 '+data.runeActions.length}/>
+      </Tabs>
+      <TextField size="small" label="搜尋遊戲資料" value={query} onChange={event=>setQuery(event.target.value)} sx={{minWidth:{sm:220}}}/>
+    </Stack>
+    <Divider sx={{my:2}}/>
+
+    {section==='rules'?<div className="lrg-doc-grid">
+      {rules.map(row=><Paper variant="outlined" className="lrg-doc-item" key={row.game_key}><Typography fontWeight={800}>{row.rule_title}</Typography><Typography variant="body2" color="text.secondary">{row.rule_text}</Typography></Paper>)}
+      {data.rounds.map(row=><Paper variant="outlined" className="lrg-doc-item" key={'round-'+row.round}><Chip size="small" label={'第 '+row.round+' 回合 · '+labelStage(row.phase)}/><Typography variant="body2" sx={{mt:1}}>{row.text}</Typography></Paper>)}
+      {data.macros.map(row=><Paper variant="outlined" className="lrg-doc-item" key={row.code}><Typography fontWeight={800}>{row.code}｜{row.title}</Typography><Typography variant="body2">{row.description}</Typography><Typography variant="caption" color="text.secondary">{row.groupA}＋{row.groupB}</Typography></Paper>)}
+    </div>:null}
+
+    {section==='events'?<div className="lrg-doc-grid">{events.map(row=><Paper variant="outlined" className="lrg-doc-item" key={row.id}><Stack direction="row" spacing={1} flexWrap="wrap"><Chip size="small" label={row.id}/>{row.groups.map(group=><Chip size="small" variant="outlined" key={group} label={group}/>)}</Stack><Typography fontWeight={800} sx={{mt:1}}>{row.name}</Typography><Typography variant="body2">{row.description}</Typography><Typography variant="caption" color="text.secondary">條件：{row.requirement}</Typography></Paper>)}</div>:null}
+
+    {section==='roles'?<div className="lrg-doc-grid">{roles.map(role=><Paper variant="outlined" className="lrg-doc-item" key={role.id}><Chip size="small" label={role.group}/><Typography fontWeight={800} sx={{mt:1}}>{role.name}</Typography><Typography variant="body2">{role.focus}</Typography><Typography variant="body2" color="text.secondary">{[role.mode,role.intervention,role.tool].filter(Boolean).join('｜')}</Typography><Typography variant="caption">{role.tagline}</Typography></Paper>)}</div>:null}
+
+    {section==='actions'?<div className="lrg-doc-grid">{actions.map(action=><Paper variant="outlined" className="lrg-doc-item" key={action.runeId}><Stack direction="row" spacing={1}><Chip size="small" label={String(action.runeId).padStart(2,'0')}/><Chip size="small" variant="outlined" label={action.group}/></Stack><Typography fontWeight={800} sx={{mt:1}}>{action.name}</Typography><Typography variant="body2">{action.text}</Typography>{action.kind?<Typography variant="caption" color="text.secondary">{action.kind}{action.value!==null?' '+action.value:''}</Typography>:null}</Paper>)}</div>:null}
+
+    {((section==='rules'&&!rules.length)||(section==='events'&&!events.length)||(section==='roles'&&!roles.length)||(section==='actions'&&!actions.length))?<Alert severity="info" sx={{mt:2}}>沒有符合的資料。</Alert>:null}
+  </Paper>;
+}
+
 function Board({G,moves,rules,onRestart}){
-  const [target,setTarget]=useState(null);
-  const sensors=useSensors(useSensor(PointerSensor,{activationConstraint:{distance:8}}),useSensor(TouchSensor,{activationConstraint:{delay:180,tolerance:8}}));
+  const [target,setTarget]=useState('');
   const [tab,setTab]=useState('board');
+  const sensors=useSensors(
+    useSensor(PointerSensor,{activationConstraint:{distance:8}}),
+    useSensor(TouchSensor,{activationConstraint:{delay:180,tolerance:8}})
+  );
   const active=G.players[G.active]||G.players[0];
   const event=G.eventDeck[G.eventIndex%G.eventDeck.length];
-  const opening=G.stage==='opening',isEvent=G.stage==='event',isResonance=G.stage?.includes('resonance')||G.stage==='duel';
+  const visual=eventVisual(rules,event);
+  const opening=G.stage==='opening';
+  const isEvent=G.stage==='event';
+  const isResonance=String(G.stage||'').includes('resonance')||G.stage==='duel';
   const done=G.stage==='finished';
   const selectable=!done&&!isResonance;
   const players=opening?[{p:active,i:G.active}]:G.players.map((p,i)=>({p,i}));
-  return <ThemeProvider theme={gameTheme}><DndContext sensors={sensors} onDragEnd={({active:drag,over})=>{if(over?.data.current?.playerIndex===drag.data.current?.playerIndex&&drag.data.current)moves.toggleCard(drag.data.current.playerIndex,drag.data.current.cardId);}}><main className="lrg">
-    <header className="lrg-top">
-      <div><small>LUNARUNES · TABLETOP</small><h1>月之符文</h1></div>
-      <div className="lrg-top-actions"><span>第 {G.round} 回合 · {labelStage(G.stage)}</span><button onClick={onRestart}>新遊戲</button></div>
-    </header>
-    <nav className="lrg-steps" aria-label="回合進度">{rules.rounds.map(r=><span key={r.round} className={r.round===G.round?'current':r.round<G.round?'past':''}>{r.round}</span>)}{G.round===9?<span className="current">9</span>:null}</nav>
-    <Alert severity="info" role="status" sx={{mb:1}}>{G.result}</Alert>
-    <Tabs value={tab} onChange={(_,value)=>setTab(value)} aria-label="遊戲檢視"><Tab value="board" label="遊戲盤面"/><Tab value="history" label="對局紀錄"/></Tabs>
-    {tab==='history'?<section className="lrg-history">{G.logs.map((line,i)=><p key={i}>{line}</p>)}</section>:
-    <div className="lrg-layout">
-      <section className="lrg-table">
-        <Paper className="lrg-field">
-          {isEvent?<><small>EVENT · {event.id}</small><h2>{event.name}</h2><p>{event.description}</p><p>條件：{event.requirement}</p><p>每位玩家選擇 {rules.config.eventResponseCards} 張回應卡</p><button className="lrg-primary" disabled={G.players.some(p=>p.selected.length!==rules.config.eventResponseCards)} onClick={()=>moves.resolveEvent()}>結算事件</button></>:null}
-          {isResonance?<><small>RESONANCE</small><h2>{G.stage==='duel'?'最終決鬥':'共鳴階段'}</h2><p>輪到 {active.name} 行動</p><div className="lrg-actions"><button className="lrg-primary" onClick={()=>{moves.resonance('self');setTarget(null);}}>自我共振 {rules.config.resonanceSelf>0?'+':''}{rules.config.resonanceSelf}</button><select aria-label="選擇目標" value={target??''} onChange={e=>setTarget(e.target.value===''?null:Number(e.target.value))}><option value="">選擇其他玩家</option>{G.players.map((p,i)=>i!==G.active?<option value={i} key={i}>{p.name}</option>:null)}</select><button disabled={target===null||(G.stage==='duel'&&!G.duelists.includes(target))} onClick={()=>{moves.resonance('attack',target);setTarget(null);}}>干擾 {rules.config.resonanceAttack}</button>{G.stage!=='duel'?<button disabled={target===null} onClick={()=>moves.toggleCooperation(target)}>建立／解除合作</button>:null}</div></>:null}
-          {opening?<><small>SETUP</small><h2>{active.name} 起手設定</h2><p>選擇 {rules.config.openingDiscard} 張棄牌，保留 {rules.config.handBase} 張。</p><button className="lrg-primary" disabled={active.selected.length!==rules.config.openingDiscard} onClick={()=>moves.confirmOpening(G.active)}>確認棄牌（{active.selected.length}/{rules.config.openingDiscard}）</button></>:null}
-          {done?<><small>GAME OVER</small><h2>{G.winner!==null?G.players[G.winner].name+' 勝出':'平局'}</h2><button className="lrg-primary" onClick={onRestart}>再玩一次</button></>:null}
+
+  return <ThemeProvider theme={gameTheme}>
+    <DndContext sensors={sensors} onDragEnd={({active:drag,over})=>{
+      if(over?.data.current?.playerIndex===drag.data.current?.playerIndex&&drag.data.current){
+        moves.toggleCard(drag.data.current.playerIndex,drag.data.current.cardId);
+      }
+    }}>
+      <main className="lrg">
+        <Paper component="header" className="lrg-top">
+          <div>
+            <Typography variant="overline" color="primary">LUNARUNES · TABLETOP</Typography>
+            <Typography variant="h4" component="h1">月之符文</Typography>
+          </div>
+          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+            <Chip color="primary" label={'第 '+G.round+' 回合 · '+labelStage(G.stage)}/>
+            <Button variant="outlined" onClick={onRestart}>新遊戲</Button>
+          </Stack>
         </Paper>
-        <div className="lrg-players">{players.map(({p,i})=><Paper component="section" key={i} className={'lrg-player'+(G.active===i?' active':'')}>
-          <div className="lrg-player-title"><h3>{p.name}</h3><strong>De {p.de} / {rules.config.deMax}</strong></div>
-          <LinearProgress variant="determinate" value={Math.max(0,Math.min(100,p.de/rules.config.deMax*100))} sx={{my:1,height:8,borderRadius:2}}/>
-          <p className="lrg-counts">手牌 {p.hand.length} · 牌庫 {p.deck.length} · 棄牌 {p.discard.length} · 已選 {p.selected.length}</p>
-          <div className="lrg-hand">{p.hand.map(card=><RuneCard key={card.id} card={card} playerIndex={i} selected={p.selected.includes(card.id)} disabled={!selectable||(opening&&i!==G.active)} onClick={()=>moves.toggleCard(i,card.id)}/>)}</div>{!done&&!isResonance&&((opening&&i===G.active)||isEvent)?<SelectionZone playerIndex={i} count={p.selected.length} limit={opening?rules.config.openingDiscard:rules.config.eventResponseCards}/>:null}
-        </Paper>)}</div>
-      </section>
-      <Paper component="aside" className="lrg-side"><h2>對局資訊</h2><p>玩家 {G.players.length} 人</p><p>階段：{labelStage(G.stage)}</p><p>目前行動：{active.name}</p><details><summary>最新紀錄</summary>{G.logs.slice(0,8).map((line,i)=><p key={i}>{line}</p>)}</details></Paper>
-    </div>}
-  </main></DndContext></ThemeProvider>;
+
+        <nav className="lrg-steps" aria-label="回合進度">
+          {rules.rounds.map(r=><span key={r.round} className={r.round===G.round?'current':r.round<G.round?'past':''}>{r.round}</span>)}
+          {G.round===9?<span className="current">9</span>:null}
+        </nav>
+
+        <Alert severity={done?'success':'info'} role="status" sx={{mb:1.5}}>{G.result}</Alert>
+
+        <Tabs value={tab} onChange={(_,value)=>setTab(value)} variant="scrollable" scrollButtons="auto" aria-label="遊戲檢視">
+          <Tab value="board" label="遊戲盤面"/>
+          <Tab value="history" label="對局紀錄"/>
+          <Tab value="docs" label="規則資料"/>
+        </Tabs>
+
+        {tab==='docs'?<DocsPanel data={rules}/>:null}
+
+        {tab==='history'?<Stack spacing={1.5}>
+          <DeTrend history={G.history} players={G.players}/>
+          <Paper className="lrg-history-panel">
+            <Typography variant="h6" component="h2">操作紀錄</Typography>
+            <Stack divider={<Divider flexItem/>} sx={{mt:1}}>
+              {G.logs.map((line,i)=><Typography key={i} variant="body2" sx={{py:.75}}>{line}</Typography>)}
+            </Stack>
+          </Paper>
+        </Stack>:null}
+
+        {tab==='board'?<div className="lrg-layout">
+          <section className="lrg-table">
+            <Paper className="lrg-field">
+              {isEvent?<>
+                <Stack direction={{xs:'column',sm:'row'}} spacing={2} alignItems={{sm:'center'}}>
+                  {visual?.path?<figure className="lrg-event-visual"><img src={visual.path} alt={visual.title||event.name}/><figcaption>{visual.title}</figcaption></figure>:null}
+                  <Box sx={{flex:1}}>
+                    <Typography variant="overline" color="primary">EVENT · {event.id}</Typography>
+                    <Typography variant="h5" component="h2">{event.name}</Typography>
+                    <Typography sx={{mt:1}}>{event.description}</Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{mt:1}}>條件：{event.requirement}</Typography>
+                    <Typography variant="body2" sx={{mt:1}}>每位玩家選擇 {rules.config.eventResponseCards} 張回應卡。</Typography>
+                  </Box>
+                </Stack>
+                <Button variant="contained" disabled={G.players.some(p=>p.selected.length!==rules.config.eventResponseCards)} onClick={()=>moves.resolveEvent()}>結算事件</Button>
+              </>:null}
+
+              {isResonance?<>
+                <Typography variant="overline" color="primary">RESONANCE</Typography>
+                <Typography variant="h5" component="h2">{G.stage==='duel'?'最終決鬥':'共鳴階段'}</Typography>
+                <Typography>輪到 {active.name} 行動。</Typography>
+                <Stack direction={{xs:'column',md:'row'}} spacing={1.25} alignItems={{md:'center'}}>
+                  <Button variant="contained" onClick={()=>{moves.resonance('self');setTarget('');}}>自我共振 {rules.config.resonanceSelf>0?'+':''}{rules.config.resonanceSelf}</Button>
+                  <FormControl size="small" sx={{minWidth:180}}>
+                    <InputLabel id="resonance-target-label">目標玩家</InputLabel>
+                    <Select labelId="resonance-target-label" label="目標玩家" value={target} onChange={e=>setTarget(e.target.value)}>
+                      {G.players.map((p,i)=>i!==G.active?<MenuItem value={i} key={i} disabled={G.stage==='duel'&&!G.duelists.includes(i)}>{p.name}</MenuItem>:null)}
+                    </Select>
+                  </FormControl>
+                  <Button disabled={target===''||(G.stage==='duel'&&!G.duelists.includes(Number(target)))} onClick={()=>{moves.resonance('attack',Number(target));setTarget('');}}>干擾 {rules.config.resonanceAttack}</Button>
+                  {G.stage!=='duel'?<Button disabled={target===''} onClick={()=>moves.toggleCooperation(Number(target))}>建立／解除合作</Button>:null}
+                </Stack>
+              </>:null}
+
+              {opening?<>
+                <Typography variant="overline" color="primary">SETUP</Typography>
+                <Typography variant="h5" component="h2">{active.name} 起手設定</Typography>
+                <Typography>選擇 {rules.config.openingDiscard} 張棄牌，保留 {rules.config.handBase} 張。</Typography>
+                <Button variant="contained" disabled={active.selected.length!==rules.config.openingDiscard} onClick={()=>moves.confirmOpening(G.active)}>確認棄牌（{active.selected.length}/{rules.config.openingDiscard}）</Button>
+              </>:null}
+
+              {done?<>
+                <Typography variant="overline" color="primary">GAME OVER</Typography>
+                <Typography variant="h4" component="h2">{G.winner!==null?G.players[G.winner].name+' 勝出':'平局'}</Typography>
+                <Button variant="contained" onClick={onRestart}>再玩一次</Button>
+              </>:null}
+            </Paper>
+
+            <div className="lrg-players">
+              {players.map(({p,i})=><Paper component="section" key={i} className={'lrg-player'+(G.active===i?' active':'')}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1}>
+                  <div><Typography variant="overline">PLAYER {LABELS[i]}</Typography><Typography variant="h6" component="h3">{p.name}</Typography></div>
+                  <Chip color={G.active===i?'primary':'default'} label={'De '+p.de+' / '+rules.config.deMax}/>
+                </Stack>
+                <LinearProgress variant="determinate" value={Math.max(0,Math.min(100,p.de/rules.config.deMax*100))} sx={{my:1.25,height:8,borderRadius:2}}/>
+                <Typography variant="caption" color="text.secondary">手牌 {p.hand.length} · 牌庫 {p.deck.length} · 棄牌 {p.discard.length} · 已選 {p.selected.length}</Typography>
+                <div className="lrg-hand">
+                  {p.hand.map(card=><RuneCard key={card.id} card={card} playerIndex={i} selected={p.selected.includes(card.id)} disabled={!selectable||(opening&&i!==G.active)} onClick={()=>moves.toggleCard(i,card.id)}/>)}
+                </div>
+                {!done&&!isResonance&&((opening&&i===G.active)||isEvent)?<SelectionZone playerIndex={i} count={p.selected.length} limit={opening?rules.config.openingDiscard:rules.config.eventResponseCards}/>:null}
+              </Paper>)}
+            </div>
+          </section>
+
+          <Paper component="aside" className="lrg-side">
+            <Typography variant="h6" component="h2">對局資訊</Typography>
+            <Stack direction="row" flexWrap="wrap" gap={1}>
+              <Chip size="small" label={G.players.length+' 人'}/>
+              <Chip size="small" label={labelStage(G.stage)}/>
+              <Chip size="small" label={'行動：'+active.name}/>
+            </Stack>
+            <Divider/>
+            <Typography variant="body2">事件牌：{Math.min(G.eventIndex+1,G.eventDeck.length)} / {G.eventDeck.length}</Typography>
+            <Typography variant="body2">合作關係：{G.cooperations.length}</Typography>
+            {G.lastInteraction?<Typography variant="body2">最近互動：{G.players[G.lastInteraction.from]?.name} → {G.players[G.lastInteraction.to]?.name}</Typography>:null}
+            <Divider/>
+            <Typography variant="subtitle2">最新紀錄</Typography>
+            {G.logs.slice(0,6).map((line,i)=><Typography variant="caption" color="text.secondary" key={i}>{line}</Typography>)}
+          </Paper>
+        </div>:null}
+      </main>
+    </DndContext>
+  </ThemeProvider>;
 }
+
 export default function GameBoard(){
   const {data,error,isLoading}=useQuery({queryKey:['lrunes','game','current'],queryFn:loadGameData,staleTime:60000});
-  const [count,setCount]=useState(2),[match,setMatch]=useState(0);
-  const Engine=useMemo(()=>data&&match?Client({game:createLunaRunesGame(data,count),board:props=><Board {...props} rules={data} onRestart={()=>setMatch(0)}/>,debug:false}):null,[data,count,match]);
-  if(isLoading)return <main className="lrg"><p>載入遊戲資料…</p></main>;
-  if(error||!data)return <main className="lrg"><p role="alert">遊戲資料載入失敗：{error?.message||'無資料'}</p></main>;
+  const [count,setCount]=useState(2);
+  const [match,setMatch]=useState(0);
+  const Engine=useMemo(()=>data&&match?Client({
+    game:createLunaRunesGame(data,count),
+    board:props=><Board {...props} rules={data} onRestart={()=>setMatch(0)}/>,
+    debug:false
+  }):null,[data,count,match]);
+
+  if(isLoading)return <main className="lrg"><Alert severity="info">載入遊戲資料…</Alert></main>;
+  if(error||!data)return <main className="lrg"><Alert severity="error" role="alert">遊戲資料載入失敗：{error?.message||'無資料'}</Alert></main>;
   if(Engine)return <Engine key={match}/>;
-  return <ThemeProvider theme={gameTheme}><main className="lrg lrg-home"><header><small>LUNARUNES · TABLETOP</small><h1>月之符文</h1><p>66 枚符文 · {data.events.length} 張事件卡 · {data.rounds.length} 回合</p></header><div className="lrg-setup"><label>玩家人數 <select value={count} onChange={e=>setCount(Number(e.target.value))}>{Array.from({length:data.config.playerMax-data.config.playerMin+1},(_,i)=>i+data.config.playerMin).map(n=><option key={n} value={n}>{n} 人</option>)}</select></label><button className="lrg-primary" onClick={()=>setMatch(x=>x+1)}>開始遊戲</button></div><details><summary>回合規則</summary>{data.rounds.map(r=><p key={r.round}>第 {r.round} 回合：{r.text}</p>)}</details></main></ThemeProvider>;
+
+  return <ThemeProvider theme={gameTheme}>
+    <main className="lrg lrg-home">
+      <Paper className="lrg-home-hero">
+        <div className="lrg-home-copy">
+          <Typography variant="overline" color="primary">LUNARUNES · TABLETOP</Typography>
+          <Typography variant="h3" component="h1">月之符文</Typography>
+          <Typography color="text.secondary">以 66 枚符文、事件回應、De 與共鳴互動構成的本機多人桌遊。</Typography>
+          <Stack direction="row" flexWrap="wrap" gap={1} sx={{mt:1.5}}>
+            <Chip label={data.cards.length+' 枚符文'}/>
+            <Chip label={data.events.length+' 張事件'}/>
+            <Chip label={data.roles.length+' 職'}/>
+            <Chip label={data.rounds.length+' 個正式回合＋平手決鬥'}/>
+          </Stack>
+        </div>
+        <img className="lrg-hero-image" src={gameHeroAsset.src} alt="月之符文桌遊主視覺"/>
+      </Paper>
+
+      <Paper className="lrg-setup">
+        <Typography variant="h6" component="h2">建立本機對局</Typography>
+        <Typography variant="body2" color="text.secondary">同一裝置依序操作 A–D 玩家，不需要登入，也不寫入私人對局資料。</Typography>
+        <Stack direction={{xs:'column',sm:'row'}} spacing={1.5} alignItems={{sm:'center'}} sx={{mt:2}}>
+          <FormControl size="small" sx={{minWidth:160}}>
+            <InputLabel id="player-count-label">玩家人數</InputLabel>
+            <Select labelId="player-count-label" label="玩家人數" value={count} onChange={e=>setCount(Number(e.target.value))}>
+              {Array.from({length:data.config.playerMax-data.config.playerMin+1},(_,i)=>i+data.config.playerMin).map(n=><MenuItem key={n} value={n}>{n} 人</MenuItem>)}
+            </Select>
+          </FormControl>
+          <Button variant="contained" size="large" onClick={()=>setMatch(x=>x+1)}>開始遊戲</Button>
+        </Stack>
+      </Paper>
+
+      <DocsPanel data={data}/>
+    </main>
+  </ThemeProvider>;
 }
