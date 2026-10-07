@@ -171,10 +171,8 @@ const zhHant=Object.freeze({
     viewBody:'查看全文'
   }),
   management:Object.freeze({
-    data:'資料管理',
-    article:'文章發表',
+    article:'發表文章',
     import:'資料匯入',
-    period:'時期設定',
     keywords:'關鍵詞管理',
     checking:'正在確認登入與管理權限…',
     signOut:'登出',
