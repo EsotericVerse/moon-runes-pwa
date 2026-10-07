@@ -207,7 +207,7 @@ export default function AuthorHomeView({section=null}){
           <div className="author-about-primary">
             <ScopeEditableBlocks
               scopeId="lo3rwang"
-              field="home_blocks"
+              page="home"
               slotClassName="author-editorial-block"
               fallbackDocuments={[
                 'Lucas Oscar Wang 政德，日常叫我 Oscar。寫作、音樂、系統整理與到處看看，都是我長期沒有放下的事情。',
