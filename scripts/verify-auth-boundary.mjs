@@ -18,6 +18,8 @@ if(!failures.length){
   for(const token of ['createDatabaseClient','signInWithOtp','getSession'])if(!client.includes(token))failures.push('DB/auth boundary missing '+token);
   const adapter=read('app/loc/providers/supabase.mjs');
   for(const token of ['createClient','NEXT_PUBLIC_SUPABASE_URL','NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY','persistSession:true'])if(!adapter.includes(token))failures.push('Supabase adapter missing '+token);
+  const portableSchema=read('docs/sql/portable-current-schema.sql');
+  for(const token of ['ALTER TABLE "silver"."manage" ENABLE ROW LEVEL SECURITY','manage_authenticated_read','manage_public_mapping_read'])if(!portableSchema.includes(token))failures.push('manage RLS boundary missing '+token);
   if(!read('app/loc/providers/configured.mjs').includes("||'supabase'"))failures.push('Supabase must be the default database provider');
   const account=read(files.account);
   for(const token of ["dbAuthRelation('silver.manage')","select('id,email,role,galaxy,time,birthday')",'scopeDataFromManageRows','defaultScopeData','email:authorizer.email','role:authorizer.role'])if(!account.includes(token))failures.push('account authorization missing '+token);
