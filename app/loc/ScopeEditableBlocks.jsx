@@ -31,6 +31,10 @@ function slotRows(rows=[],fallbackDocuments=[]){
   });
 }
 
+function isInteractiveTarget(target){
+  return Boolean(target?.closest?.('a,button,input,select,textarea,summary,[role="button"],[contenteditable="true"]'));
+}
+
 export default function ScopeEditableBlocks({
   scopeId,
   page='home',
@@ -119,12 +123,14 @@ export default function ScopeEditableBlocks({
       const active=editing===index+1;
       const empty=!blocksToPlainText(slot.blocks)&&!slot.title;
       if(empty&&!canEdit)return null;
-      return <section className={slotClassName+' scope-editable-block'+(active?' is-editing':'')} key={slot.order}>
-        {canEdit?<div className="scope-inline-editbar">
-          {!active?<button type="button" className="loc-button" onClick={()=>begin(index)}>編輯</button>:<>
-            <button type="button" className="loc-button primary" disabled={busy} onClick={()=>save(index)}>{busy?'儲存中…':'儲存'}</button>
-            <button type="button" className="loc-button" disabled={busy} onClick={()=>{setEditing(0);setDraft(null);setDraftTitle('');setMessage('')}}>取消</button>
-          </>}
+      return <section
+        className={slotClassName+' scope-editable-block'+(active?' is-editing':'')+(canEdit&&!active?' is-editable-idle':'')}
+        key={slot.order}
+        onClick={canEdit&&!active?event=>{if(!isInteractiveTarget(event.target))begin(index)}:undefined}
+      >
+        {canEdit&&active?<div className="scope-inline-editbar">
+          <button type="button" className="loc-button primary" disabled={busy} onClick={()=>save(index)}>{busy?'儲存中…':'儲存'}</button>
+          <button type="button" className="loc-button" disabled={busy} onClick={()=>{setEditing(0);setDraft(null);setDraftTitle('');setMessage('')}}>取消</button>
         </div>:null}
         {active?<>
           <label className="scope-management-wide-field"><span>標題</span><input className="scope-search-input" value={draftTitle} onChange={event=>setDraftTitle(event.target.value)}/></label>
