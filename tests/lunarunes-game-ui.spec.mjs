@@ -35,7 +35,7 @@ test.describe('LunaRunes tabletop UI',()=>{
 
   test('event conditions render full macro names instead of storage abbreviations',async({page})=>{
     await page.goto('/game/',{waitUntil:'domcontentloaded'});
-    const eventsTab=page.getByRole('tab',{name:/事件 32/});
+    const eventsTab=page.getByRole('tab',{name:/事件 64/});
     await expect(eventsTab).toBeVisible({timeout:15_000});
     await eventsTab.click();
     const eventCards=page.locator('.lrg-doc-grid .lrg-doc-item');
