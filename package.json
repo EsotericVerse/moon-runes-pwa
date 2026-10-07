@@ -34,7 +34,8 @@
     "recharts": "3.10.1",
     "vis-network": "10.1.0",
     "vis-timeline": "8.5.4",
-    "zod": "4.6.0"
+    "zod": "4.6.0",
+    "boardgame.io": "0.50.2"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
