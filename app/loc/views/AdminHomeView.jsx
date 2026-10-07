@@ -23,7 +23,7 @@ function Login({account}){
     <header className="loc-hero"><p className="loc-eyebrow">{UI_COPY.admin.eyebrow}</p><h1>{UI_COPY.admin.loginTitle}</h1></header>
     <section className="loc-card">
       <p>{UI_COPY.admin.loginIntro}</p>
-      <button className="loc-button primary" type="button" onClick={account.signIn}>{UI_COPY.admin.signIn}</button>
+      <button className="loc-button primary" type="button" onClick={()=>account.signIn(scopeHref('admin'))}>{UI_COPY.admin.signIn}</button>
       {account.error?<p className="scope-status scope-error">{account.error}</p>:null}
     </section>
   </section>;
