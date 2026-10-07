@@ -20,7 +20,7 @@
     "verify:management": "node scripts/verify-management-contract.mjs",
     "verify:rune66-keywords": "node scripts/verify-rune66-keyword-engine.mjs",
     "verify:db-adapters": "node scripts/verify-db-adapters.mjs",
-    "test:game": "node --experimental-default-type=module --test tests/lunarunes-boardgame.test.mjs"
+    "test:game": "node --experimental-default-type=module --test scripts/test-lunarunes-boardgame.mjs"
   },
   "dependencies": {
     "@supabase/postgrest-js": "2.79.0",
