@@ -335,8 +335,8 @@ export function draw(player,count,config){
   return {...player,hand:[...player.hand,...player.deck.slice(0,n)],deck:player.deck.slice(n)};
 }
 
-export function freshPlayer(cards,name,config){
-  const deck=shuffle(cards);
+export function freshPlayer(cards,name,config,shuffleFn=shuffle){
+  const deck=shuffleFn(cards);
   return {
     name,
     de:config.deMin,
