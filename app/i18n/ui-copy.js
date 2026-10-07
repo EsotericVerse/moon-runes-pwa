@@ -24,7 +24,8 @@ const zhHant=Object.freeze({
     hiddenFromSearch:'不列入搜尋',
     theme:'主題',
     systemTheme:'系統預設',
-    autoTheme:'自動（日／夜）'
+    autoTheme:'自動（日／夜）',
+    language:'語系'
   }),
   nav:Object.freeze({
     aria:'全站導覽',
