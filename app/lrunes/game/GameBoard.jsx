@@ -13,7 +13,7 @@ function Board({G,moves,rules,onRestart}){
   const [tab,setTab]=useState('board');
   const active=G.players[G.active];
   const event=G.eventDeck[G.eventIndex%G.eventDeck.length];
-  const opening=G.stage==='opening',isEvent=G.stage==='event',isResonance=G.stage==='resonance'||G.stage==='duel';
+  const opening=G.stage==='opening',isEvent=G.stage==='event',isResonance=G.stage?.includes('resonance')||G.stage==='duel';
   const done=G.stage==='finished';
   const players=opening?[{p:active,i:G.active}]:G.players.map((p,i)=>({p,i}));
   return <main className="lrg">
