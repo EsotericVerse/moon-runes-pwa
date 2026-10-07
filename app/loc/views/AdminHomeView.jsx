@@ -400,6 +400,7 @@ function AdminRegistry(){
     }catch(error){setStatus(error?.message||'移動失敗。');refresh();}
   },[registry,setRegistry,setStatus,refresh]);
 
+  const selectNode=useCallback(id=>{setCreateKind('');setSelectedId(id);},[]);
   return <section className="loc-card admin-workspace">
     <div className="admin-deployment-layout">
       <div>
@@ -407,7 +408,7 @@ function AdminRegistry(){
           <button type="button" className="loc-button" onClick={()=>setCreateKind('scope')}>＋ Scope</button>
           <button type="button" className="loc-button" onClick={()=>setCreateKind('group')}>＋ Group</button>
         </div>
-        <DeploymentTree registry={registry} configs={configs} selectedId={selectedId} onSelect={id=>{setCreateKind('');setSelectedId(id);}} onMoveParent={moveParent}/>
+        <DeploymentTree registry={registry} configs={configs} selectedId={selectedId} onSelect={selectNode} onMoveParent={moveParent}/>
       </div>
       {createKind?<CreateNodePanel data={data} kind={createKind} onClose={()=>setCreateKind('')}/>:<RegistryNodePanel data={data} selectedId={selectedId} onCreateMode={setCreateKind}/>}
     </div>
@@ -442,12 +443,17 @@ function DatabaseTarget(){
     setStatus('');
     try{
       for(const item of rows){
-        const selected=item.target_id===row.target_id;
+        await updateRows('silver.database_targets',{
+          selected:false,updated_at:new Date().toISOString()
+        },{filters:[{column:'target_id',operator:'eq',value:item.target_id}]});
+      }
+      for(const item of rows){
         await updateRows('silver.database_targets',{
           provider:item.provider,label:String(item.label||item.target_id).trim(),
           project_id:String(item.project_id||'').trim()||null,
           project_url:String(item.project_url||'').trim(),
-          selected,updated_at:new Date().toISOString()
+          selected:item.target_id===row.target_id,
+          updated_at:new Date().toISOString()
         },{filters:[{column:'target_id',operator:'eq',value:item.target_id}]});
       }
       setStatus('Database Target 已更新。');setRevision(v=>v+1);
