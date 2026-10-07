@@ -1,5 +1,5 @@
 export function createDatabaseClient({publicClient,authClient,auth}){
-    if(!publicClient?.schema||!authClient?.schema||!auth?.getSession||!auth?.signInWithOAuth||!auth?.signOut){
+    if(!publicClient?.schema||!authClient?.schema||!auth?.getSession||!auth?.signInWithOtp||!auth?.signOut){
       throw new Error('Database adapter must implement public/authenticated clients and the account boundary');
     }
   function dbAuthRelation(table){
@@ -264,11 +264,17 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return session?.user?{session,user:session.user}:null;
   }
 
-  async function signInWithGoogle(callbackURL){
+  async function signInWithEmail(email,callbackURL){
+    const address=String(email||'').trim().toLowerCase();
     const target=String(callbackURL||'').trim();
-    if(!target)throw new Error('Google sign-in callback URL is required');
-    const {error}=await auth.signInWithOAuth({provider:'google',options:{redirectTo:target}});
-    if(error)throw new Error(error.message||'Google sign-in failed');
+    if(!address)throw new Error('Email is required');
+    if(!target)throw new Error('Email sign-in callback URL is required');
+    const {error}=await auth.signInWithOtp({
+      email:address,
+      options:{emailRedirectTo:target,shouldCreateUser:true}
+    });
+    if(error)throw new Error(error.message||'Email sign-in failed');
+    return {email:address};
   }
 
   async function signOutAccount(){
@@ -276,5 +282,5 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
-  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,writeKeywordLibraryItem,copyKeywordLibraryClass,provisionScope,manageScopeRegistry,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
+  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,writeKeywordLibraryItem,copyKeywordLibraryClass,provisionScope,manageScopeRegistry,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithEmail,signOutAccount};
 }
