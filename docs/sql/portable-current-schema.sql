@@ -1210,3 +1210,29 @@ GRANT USAGE,SELECT ON SEQUENCE silver.lo3rwang_keywords_keyword_id_seq TO authen
 GRANT SELECT,INSERT,UPDATE,DELETE ON TABLE silver.database_targets TO authenticated;
 GRANT SELECT ON TABLE silver.theme_registry TO anonymous,authenticated;
 GRANT INSERT,UPDATE,DELETE ON TABLE silver.theme_registry TO authenticated;
+
+-- Data API exposed wrappers. Internal implementations remain under api.*
+CREATE OR REPLACE FUNCTION silver.management_write(p_table text,p_operation text,p_rows jsonb DEFAULT NULL::jsonb,p_values jsonb DEFAULT NULL::jsonb,p_filters jsonb DEFAULT '[]'::jsonb)
+RETURNS jsonb LANGUAGE sql SECURITY DEFINER SET search_path TO '' AS $$ SELECT api.management_write(p_table,p_operation,p_rows,p_values,p_filters) $$;
+CREATE OR REPLACE FUNCTION silver.apply_keyword_classification(p_scope_id text,p_rows jsonb)
+RETURNS integer LANGUAGE sql SECURITY DEFINER SET search_path TO '' AS $$ SELECT api.apply_keyword_classification(p_scope_id,p_rows) $$;
+CREATE OR REPLACE FUNCTION silver.read_keyword_class(p_scope_id text,p_class_id uuid)
+RETURNS jsonb LANGUAGE sql SECURITY DEFINER SET search_path TO '' AS $$ SELECT api.read_keyword_class(p_scope_id,p_class_id) $$;
+CREATE OR REPLACE FUNCTION silver.provision_scope(p_scope_id text,p_display_name text,p_email text,p_birthday date DEFAULT NULL::date,p_domain text DEFAULT NULL::text,p_directory text DEFAULT NULL::text,p_parent_scope_id text DEFAULT 'loc'::text,p_theme text DEFAULT 'theme-7'::text,p_copy_keywords boolean DEFAULT true)
+RETURNS jsonb LANGUAGE sql SECURITY DEFINER SET search_path TO '' AS $$ SELECT api.provision_scope(p_scope_id,p_display_name,p_email,p_birthday,p_domain,p_directory,p_parent_scope_id,p_theme,p_copy_keywords) $$;
+CREATE OR REPLACE FUNCTION silver.manage_scope_registry(p_operation text,p_scope_id text,p_values jsonb DEFAULT '{}'::jsonb)
+RETURNS jsonb LANGUAGE sql SECURITY DEFINER SET search_path TO '' AS $$ SELECT api.manage_scope_registry(p_operation,p_scope_id,p_values) $$;
+CREATE OR REPLACE FUNCTION silver.log_search_keyword(p_scope_id text,p_query_text text)
+RETURNS void LANGUAGE sql SECURITY DEFINER SET search_path TO '' AS $$ SELECT api.log_search_keyword(p_scope_id,p_query_text) $$;
+REVOKE ALL ON FUNCTION silver.management_write(text,text,jsonb,jsonb,jsonb) FROM PUBLIC;
+REVOKE ALL ON FUNCTION silver.apply_keyword_classification(text,jsonb) FROM PUBLIC;
+REVOKE ALL ON FUNCTION silver.read_keyword_class(text,uuid) FROM PUBLIC;
+REVOKE ALL ON FUNCTION silver.provision_scope(text,text,text,date,text,text,text,text,boolean) FROM PUBLIC;
+REVOKE ALL ON FUNCTION silver.manage_scope_registry(text,text,jsonb) FROM PUBLIC;
+REVOKE ALL ON FUNCTION silver.log_search_keyword(text,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION silver.management_write(text,text,jsonb,jsonb,jsonb) TO authenticated;
+GRANT EXECUTE ON FUNCTION silver.apply_keyword_classification(text,jsonb) TO authenticated;
+GRANT EXECUTE ON FUNCTION silver.provision_scope(text,text,text,date,text,text,text,text,boolean) TO authenticated;
+GRANT EXECUTE ON FUNCTION silver.manage_scope_registry(text,text,jsonb) TO authenticated;
+GRANT EXECUTE ON FUNCTION silver.read_keyword_class(text,uuid) TO anonymous,authenticated;
+GRANT EXECUTE ON FUNCTION silver.log_search_keyword(text,text) TO anonymous,authenticated;
