@@ -92,14 +92,16 @@ export default function AboutView(){
     <section className="loc-card home-copy-block home-skills" id="skills">
       <div className="home-section-heading"><p className="loc-eyebrow">LOC GPT Skills</p><h2>Skills</h2>
 	  <p className="loc-subtitle">把月典延伸可以重複使用的工作流程。<br/>把語言治理與治理資料儲存庫，封裝成可直接調用的 AI Skills。</p></div>
-      <ScopeEditableBlocks
-        scopeId="loc"
-        page="home"
-        orders={[7]}
-        fallbackDocuments={LOC_HOME_BLOCKS}
-        slotClassName="home-author-copy"
-      />
-	  <div className="loc-actions"><a className="loc-button primary" href="/LOC-GPT-Skills-v2.0-bundle.zip">下載 LOC GPT Skills v2.0</a></div>
+      <div className="home-author-copy">
+        <ScopeEditableBlocks
+          scopeId="loc"
+          page="home"
+          orders={[7]}
+          fallbackDocuments={LOC_HOME_BLOCKS}
+          slotClassName="home-skills-copy"
+        />
+	    <div className="loc-actions"><a className="loc-button primary" href="/LOC-GPT-Skills-v2.0-bundle.zip">下載 LOC GPT Skills v2.0</a></div>
+      </div>
 
     </section>
 
