@@ -125,7 +125,7 @@ function EventScoringHelp({data}){
 
 
 
-function RuneCard({card,selected,disabled,onClick,playerIndex}){
+function RuneCard({card,selected,disabled,onClick,playerIndex,roleName=''}){
   const {attributes,listeners,setNodeRef,transform,isDragging}=useDraggable({
     id:'rune-'+playerIndex+'-'+card.id,
     disabled,
@@ -148,7 +148,11 @@ function RuneCard({card,selected,disabled,onClick,playerIndex}){
     }}
   >
     <img src={cardSrc(card)} alt={card.name+'符文卡'} loading="lazy"/>
-    <span><b>{String(card.id).padStart(2,'0')} {card.name}</b><small>{card.group}</small></span>
+    <span>
+      <b>{String(card.id).padStart(2,'0')} {card.name}</b>
+      <small>{card.group}{roleName?' · '+roleName:''}</small>
+      {card.action?<em className="lrg-card-action">{card.action}</em>:null}
+    </span>
   </button>;
 }
 
@@ -307,6 +311,7 @@ function Board({G,moves,rules,onRestart}){
   const done=G.stage==='finished';
   const selectable=!done&&!isResonance;
   const players=opening?[{p:active,i:G.active}]:G.players.map((p,i)=>({p,i}));
+  const roleByGroup=new Map((rules.roles||[]).map(role=>[role.group,role.formalName||role.publicName||role.name]));
 
   return <DndContext sensors={sensors} onDragEnd={({active:drag,over})=>{
       if(over?.data.current?.playerIndex===drag.data.current?.playerIndex&&drag.data.current){
@@ -418,7 +423,7 @@ function Board({G,moves,rules,onRestart}){
                 <LinearProgress variant="determinate" value={Math.max(0,Math.min(100,p.de/rules.config.deMax*100))} sx={{my:1.25,height:8,borderRadius:2}}/>
                 <Typography variant="caption" color="text.secondary">手牌 {p.hand.length} · 牌庫 {p.deck.length} · 棄牌 {p.discard.length} · 已選 {p.selected.length}</Typography>
                 <div className="lrg-hand">
-                  {p.hand.map(card=><RuneCard key={card.id} card={card} playerIndex={i} selected={p.selected.includes(card.id)} disabled={!selectable||(opening&&i!==G.active)} onClick={()=>moves.toggleCard(i,card.id)}/>)}
+                  {p.hand.map(card=><RuneCard key={card.id} card={card} playerIndex={i} roleName={roleByGroup.get(card.group)||''} selected={p.selected.includes(card.id)} disabled={!selectable||(opening&&i!==G.active)} onClick={()=>moves.toggleCard(i,card.id)}/>)}
                 </div>
                 {!done&&!isResonance&&((opening&&i===G.active)||isEvent)?<SelectionZone playerIndex={i} count={p.selected.length} limit={opening?rules.config.openingDiscard:rules.config.eventResponseCards}/>:null}
               </Paper>)}
