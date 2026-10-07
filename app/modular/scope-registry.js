@@ -112,6 +112,11 @@ const SCOPE_BY_DOMAIN=Object.freeze(
   )
 );
 
+function isPreviewHost(host=''){
+  const h=cleanHost(host);
+  return !h||h==='localhost'||h==='127.0.0.1'||h==='::1';
+}
+
 function matchesMount(scope,host,pathname){
   if(!scope.mount)return false;
   const h=cleanHost(host);
@@ -125,7 +130,7 @@ export function resolveScope(host='',pathname='/'){
   for(const [id,scope] of Object.entries(SCOPES)){
     if(matchesMount(scope,h,pathname))return id;
   }
-  if(!h){
+  if(isPreviewHost(h)){
     const path=cleanPath(pathname);
     for(const [id,scope] of Object.entries(SCOPES)){
       const base=scope.mount?cleanPath(scope.mount.path):null;
