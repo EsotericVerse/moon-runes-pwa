@@ -92,6 +92,7 @@ declare
   v_media_name text;
   v_time_name text;
   v_keywords_name text;
+  v_blocks_name text;
   v_source_class uuid;
   v_new_class uuid;
   v_keyword_count integer := 0;
@@ -124,15 +125,20 @@ begin
   v_media_name := v_scope||'_galaxy_media';
   v_time_name := v_scope||'_time';
   v_keywords_name := v_scope||'_keywords';
+  v_blocks_name := v_scope||'_blocks';
 
   if to_regclass(format('silver.%I',v_config_name)) is not null
     or to_regclass(format('silver.%I',v_galaxy_name)) is not null
     or to_regclass(format('silver.%I',v_media_name)) is not null
     or to_regclass(format('silver.%I',v_time_name)) is not null
     or to_regclass(format('silver.%I',v_keywords_name)) is not null
+    or to_regclass(format('silver.%I',v_blocks_name)) is not null
   then raise exception 'one or more Scope relations already exist'; end if;
 
   execute format('create table silver.%I (like silver.lo3rwang including all)',v_config_name);
+  execute format('alter table silver.%I drop column if exists home_blocks',v_config_name);
+  execute format('alter table silver.%I drop column if exists governance_blocks',v_config_name);
+  execute format('create table silver.%I (block_page text not null, block_title text not null default '''', block_text text not null default '''', block_order integer not null, primary key(block_page,block_order), check(block_page in (''home'',''governance'')), check(block_order between 1 and 4))',v_blocks_name);
   execute format('create table silver.%I (like silver.lo3rwang_galaxy including all)',v_galaxy_name);
   execute format('create table silver.%I (like silver.lo3rwang_galaxy_media including all)',v_media_name);
   execute format('create table silver.%I (like silver.lo3rwang_time including all)',v_time_name);
@@ -147,6 +153,7 @@ begin
   execute format('alter table silver.%I enable row level security',v_media_name);
   execute format('alter table silver.%I enable row level security',v_time_name);
   execute format('alter table silver.%I enable row level security',v_keywords_name);
+  execute format('alter table silver.%I enable row level security',v_blocks_name);
 
   execute format('create policy %I on silver.%I for select to anonymous,authenticated using (true)',v_scope||'_config_public_read',v_config_name);
   execute format('create policy %I on silver.%I for update to authenticated using (silver.can_manage_scope(%L)) with check (silver.can_manage_scope(%L))',v_scope||'_config_scope_update',v_config_name,v_scope,v_scope);
@@ -157,6 +164,8 @@ begin
   execute format('create policy %I on silver.%I for select to anonymous,authenticated using (true)',v_scope||'_time_public_read',v_time_name);
   execute format('create policy %I on silver.%I for all to authenticated using (silver.can_manage_scope(%L)) with check (silver.can_manage_scope(%L))',v_scope||'_time_scope_all',v_time_name,v_scope,v_scope);
   execute format('create policy %I on silver.%I for all to authenticated using (silver.can_manage_scope(%L)) with check (silver.can_manage_scope(%L))',v_scope||'_keywords_scope_all',v_keywords_name,v_scope,v_scope);
+  execute format('create policy %I on silver.%I for select to anonymous,authenticated using (true)',v_scope||'_blocks_public_read',v_blocks_name);
+  execute format('create policy %I on silver.%I for all to authenticated using (silver.can_manage_scope(%L)) with check (silver.can_manage_scope(%L))',v_scope||'_blocks_scope_all',v_blocks_name,v_scope,v_scope);
 
   execute format('grant select on silver.%I to anonymous,authenticated',v_config_name);
   execute format('grant update on silver.%I to authenticated',v_config_name);
@@ -166,6 +175,8 @@ begin
   execute format('grant update on silver.%I to authenticated',v_media_name);
   execute format('grant select on silver.%I to anonymous,authenticated',v_time_name);
   execute format('grant select,insert,update,delete on silver.%I to authenticated',v_keywords_name);
+  execute format('grant select on silver.%I to anonymous,authenticated',v_blocks_name);
+  execute format('grant insert,update,delete on silver.%I to authenticated',v_blocks_name);
   v_keyword_sequence := pg_get_serial_sequence(format('silver.%I',v_keywords_name),'keyword_id');
   if v_keyword_sequence is not null then execute format('grant usage,select on sequence %s to authenticated',v_keyword_sequence); end if;
 
@@ -194,12 +205,20 @@ begin
 
   execute format(
     'insert into silver.%I
-      (id,email,display_name,search_intro,home_blocks,governance_blocks,search_aliases,theme,search_able,statistics_able,culture_able,
+      (id,email,display_name,search_intro,search_aliases,theme,locale,search_able,statistics_able,culture_able,
        keyword_min_chars,keyword_min_documents,current_keyword_class_id,
        keyword_class_share_enabled,keyword_document_count,keyword_meta,staticstime,updated_at)
-     values($1,$2,$3,'''',''[]''::jsonb,''[]''::jsonb,array[$1,$3]::text[],$4,true,true,true,32,100,$5,false,0,''{}''::jsonb,null,now())',
+     values($1,$2,$3,'''',array[$1,$3]::text[],$4,''zh-Hant'',true,true,true,32,100,$5,false,0,''{}''::jsonb,null,now())',
     v_config_name
   ) using v_scope,v_email,v_name,v_theme,v_new_class;
+
+  execute format(
+    'insert into silver.%I(block_page,block_title,block_text,block_order)
+     select p.page,'''','''',o.n
+     from (values (''home''),(''governance'')) as p(page)
+     cross join generate_series(1,4) as o(n)',
+    v_blocks_name
+  );
 
   return jsonb_build_object(
     'scope_id',v_scope,'display_name',v_name,'parent_scope_id',v_parent,
