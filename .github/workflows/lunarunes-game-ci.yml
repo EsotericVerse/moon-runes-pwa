@@ -8,7 +8,7 @@ on:
       - 'app/loc/LocApp.jsx'
       - 'package.json'
       - 'package-lock.json'
-      - 'tests/lunarunes-boardgame.test.mjs'
+      - 'scripts/test-lunarunes-boardgame.mjs'
       - '.github/workflows/lunarunes-game-ci.yml'
 permissions:
   contents: read
