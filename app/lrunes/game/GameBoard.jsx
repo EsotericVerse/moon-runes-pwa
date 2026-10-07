@@ -336,7 +336,7 @@ function Board({G,moves,rules,onRestart}){
                     <Typography variant="h5" component="h2">{event.name}</Typography>
                     <Typography sx={{mt:1}}>{event.description}</Typography>
                     <Typography variant="body2" color="text.secondary" sx={{mt:1}}>條件：{fullRequirement(rules,event.requirement)}</Typography>
-                    <Typography variant="body2" sx={{mt:1}}>每位玩家選擇 {rules.config.eventResponseCards} 張回應卡。</Typography>
+                    <Typography variant="body2" sx={{mt:1}}>每位玩家選擇 {rules.config.eventResponseCards} 張符文卡回應；依符文群組是否符合事件條件判定結果。</Typography>
                   </Box>
                 </Stack>
                 <Button variant="contained" disabled={G.players.some(p=>p.selected.length!==rules.config.eventResponseCards)} onClick={()=>moves.resolveEvent()}>結算事件</Button>
