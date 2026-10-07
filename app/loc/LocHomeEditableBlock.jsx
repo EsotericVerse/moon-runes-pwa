@@ -84,7 +84,6 @@ function StatusBubbles(slot){
           </details>:null}
         </div>;
       }
-      const parts=paragraphParts(entity.text);
       return <div className="loc-bubble" key={entity.uid}>
         <strong>{entity.title}</strong>
         <Html tag="p" html={parts[0]||''}/>
