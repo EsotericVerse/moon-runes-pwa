@@ -6,7 +6,7 @@ import {QueryClient,QueryClientProvider,useQuery} from '@tanstack/react-query';
 import {UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale,uiCopy} from './i18n/ui-copy';
 import {UiLocaleProvider} from './i18n/ui-locale';
 import {FEATURES,SCOPES,featureHref,featureIdForPath,getScope,scopeHref} from './modular/scope-registry';
-import {applyTheme,getThemeSlot,THEME_SLOTS} from './modular/theme-registry';
+import {applyTheme,getThemeSlot,themeSignature,THEME_SLOTS} from './modular/theme-registry';
 import {mergeThemeSlot,selectThemeRegistry} from './loc/theme-data';
 import {useScopeRuntime} from './modular/use-scope-runtime';
 import {selectScopeConfig} from './loc/scope-data';
@@ -91,6 +91,8 @@ function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride
     :THEME_SLOTS.map(item=>({id:item.id,label:item.label}));
 
   useEffect(()=>{
+    const root=document.documentElement;
+    if(root.dataset.themeSignature===themeSignature(slot))return;
     applyTheme(slot);
   },[slot,scopeId]);
 
