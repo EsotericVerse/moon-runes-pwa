@@ -42,7 +42,7 @@ assert.equal(requests.at(-1).url.searchParams.get('limit'),'10');
 assert.equal((await client.getAccountSession()).user.id,'test-owner');
 assert.equal((await client.insertRows('silver.any_scope_galaxy',[{uid:'TEST0001'}])).count,1);
 assert.equal(requests.at(-1).init.headers.get('Authorization'),'Bearer management-token');
-assert.equal(requests.at(-1).init.headers.get('Content-Profile'),'api');
+assert.equal(requests.at(-1).init.headers.get('Content-Profile'),'silver');
 assert.equal(JSON.parse(requests.at(-1).init.body).p_operation,'insert');
 await client.updateRows('silver.any_scope_galaxy',{title:'changed'},{filters:[{column:'uid',operator:'eq',value:'TEST0001'}]});
 assert.equal(JSON.parse(requests.at(-1).init.body).p_operation,'update');
