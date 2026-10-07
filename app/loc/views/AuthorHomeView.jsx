@@ -1,53 +1,24 @@
-import AuthorHomeEditableBlock from '../AuthorHomeEditableBlock';
-import authorHeroAsset from '../../../pics/lo3rwang-hero.jpg';
-
-function AuthorPage({eyebrow,title,subtitle,intro,heroImage=null,heroContent=null,sections=[]}){
-  return <section className="loc-view scope-home-composition">
-    {heroImage?<header className="loc-hero author-home-hero" id="top">
-      <img
-        className="author-home-hero-image"
-        src={heroImage.src}
-        alt=""
-        aria-hidden="true"
-        loading="eager"
-        fetchPriority="high"
-        decoding="async"
-      />
-      <div className="author-home-hero-overlay" aria-hidden="true"/>
-      {heroContent||<div className="author-home-hero-copy">
-        {eyebrow?<p className="loc-eyebrow">{eyebrow}</p>:null}
-        <div className="home-title-row"><h1>{title}</h1>{subtitle?<p className="loc-subtitle">{subtitle}</p>:null}</div>
-        {intro}
-      </div>}
-    </header>:<header className="loc-hero loc-hero-feature" id="top">
-      {eyebrow?<p className="loc-eyebrow">{eyebrow}</p>:null}
-      <div className="home-title-row"><h1>{title}</h1>{subtitle?<p className="loc-subtitle">{subtitle}</p>:null}</div>
-      {intro}
-    </header>}
-    {sections.map((section,index)=><section className="loc-card scope-home-section" id={section.id} key={section.id} data-composition-slot={index+1}>
-      {section.eyebrow?<p className="loc-eyebrow">{section.eyebrow}</p>:null}
-      {section.title?<h2>{section.title}</h2>:null}
-      {section.content}
-    </section>)}
-  </section>;
-}
+import { PageComposition } from '../../PageComposition';
 
 const PROFESSIONAL_ROLES=Object.freeze([
   Object.freeze({
     title:'文字工匠 · Wordsmith',
-    text:'針對單一語彙與單詞，會很執著於找出它在句中的本義。因為本義要先確認，才能知道句子的整體解釋。'
+    text:'從詞、句子與語意關係出發，整理文字如何形成脈絡、節奏與可辨識的表達。'
   }),
   Object.freeze({
-    title:'混沌辨律者 · Chaos Discerner',
-    text:'針對一團混亂的狀態，會以系統性的方式找尋規則性，進而拆解與破解；也延伸到對未來的風險管理。'
+    title:'混沌校對者 · Chaos Calibrator',
+    text:'把文字放回來源、時間與歷史裡比較，觀察延續、改變、矛盾與可能的污染，不急著替結果下定論。'
   }),
   Object.freeze({
     title:'語言建築師 · Language Architect',
-    text:'對語言使用的綜合應用。例：良心，若是涼心又何必量心。不好意思，若不好就意思意思一下就好。這就是文字建築學。'
+    text:'把語彙、脈絡、時間、資料責任與治理組織成可以持續使用與維護的語言結構。'
   })
 ]);
 
 const OFFICIAL_LINKS=Object.freeze([
+  Object.freeze({label:'個人網站',href:'https://lo3rwang.cc/'}),
+  Object.freeze({label:'GitHub 個人',href:'https://github.com/lo3rwang'}),
+  Object.freeze({label:'LOC 專案 GitHub',href:'https://github.com/EsotericVerse/moon-runes-pwa'}),
   Object.freeze({label:'LinkedIn',href:'https://www.linkedin.com/in/lo3rwang/'}),
   Object.freeze({label:'Instagram',href:'https://www.instagram.com/lo3rwang/'}),
   Object.freeze({label:'Threads',href:'https://www.threads.com/@lo3rwang'})
@@ -65,13 +36,15 @@ function ProfessionalRoles(){
 function WorkCopy(){
   return <>
     <p>目前以 <strong>Language Architect</strong> 為主要專業定位；對外合作可依個案採語言顧問、系統設計或專案實作方式進行。</p>
-    <p>工作內容包括命名與正名、語意與分類設計、知識與資料架構、規則整理、版本與關係設計，以及既有系統裡的語意衝突與結構問題。</p>
+    <p>工作內容聚焦於命名與正名、語意治理、資料分類、知識與資料架構、搜尋與解析、版本治理、文本關係、長期演化，以及既有系統中的語意污染與資料責任問題。</p>
+    <p>目標不是把每個個案套進 LOC，而是先理解對方原本的語言與資料，再依實際需求建立適合自己的結構。</p>
   </>;
 }
 
 function DigitalAssetCopy(){
   return <>
-    <p>另一個長期方向是數位資產管理：整理個人、創作者或組織長期累積的文字、照片、影音、作品、帳號資料、版本與歷史紀錄，讓散落內容重新形成可搜尋、可追溯、可持續管理的資料脈絡。</p>
+    <p>另一個長期方向是數位資產管理：整理個人、創作者或組織長期累積的文字、照片、影音、作品、帳號資料、版本與歷史紀錄，使散落資料變成可搜尋、可理解、可追溯來源並能長期維護的資產。</p>
+    <p>這不只是備份，也包含沿革整理、時間校準、身份與名稱治理、資料關聯，以及未來如何被理解與再次使用。</p>
   </>;
 }
 
@@ -102,13 +75,33 @@ function SystemsCopy(){
   return <div className="author-system-grid">
     <article className="author-editorial-block">
       <h3>LOC／月典</h3>
-      <p>LOC／月典本來就是為文化分析而設計，尤其關注尚未被主流充分理解、仍處在社會與法律分類灰區的次文化。它會先把現象、語言、時間與關係整理清楚，讓這些灰色地帶能更快被看見與理解，並為之後更合適的法律定位提供脈絡與材料。</p>
+      <p>LOC 是我從長期文字、作品與時間整理需求中逐步形成的語言架構框架。它把原本只能靠直覺掌握的脈絡，整理成可以回看、搜尋與比較的結構。</p>
       <p><a href="https://loc.lo3rwang.cc/">查看 LOC／月典 →</a></p>
     </article>
     <article className="author-editorial-block">
       <h3>LunaRunes／月之符文</h3>
-      <p>LunaRunes／月之符文最早從認字學習卡的設計開始，後來逐步發展成一套獨特的符號式語言宇宙，並延伸出「玄宇宙」理論。接下來也準備分別從語言學與工程學整理成論文送審。</p>
+      <p>LunaRunes 是我建立的另一套符號式語言與原創系統。它與 LOC 可以互相參照，但兩者有各自的定義、用途與發展脈絡。</p>
       <p><a href="https://lrunes.lo3rwang.cc/">查看 LunaRunes／月之符文 →</a></p>
+    </article>
+  </div>;
+}
+
+function ArchiveTools(){
+  return <div className="author-role-grid">
+    <article className="author-editorial-block">
+      <h3>文化 · Culture</h3>
+      <p>把作品放回時間長河與來源分布，先看不同時期如何出現、集中、稀疏與交會，再回到原始內容理解脈絡。</p>
+      <p><a href="/lo3rwang/culture/">查看文化 →</a></p>
+    </article>
+    <article className="author-editorial-block">
+      <h3>統計 · Statistics</h3>
+      <p>把作品數量、來源與其他可計算資料整理成分布與比較。數字用來看結構，不直接代替內容判讀。</p>
+      <p><a href="/lo3rwang/statics/">查看統計 →</a></p>
+    </article>
+    <article className="author-editorial-block">
+      <h3>搜尋 · Search</h3>
+      <p>從累積的文字、作品與多媒體描述中找回原文、標題、來源與相關紀錄；搜尋負責找到資料，不替資料生成新的語意。</p>
+      <p><a href="/lo3rwang/search/">開始搜尋 →</a></p>
     </article>
   </div>;
 }
@@ -189,7 +182,7 @@ export default function AuthorHomeView({section=null}){
     });
     const ids=sectionGroups[section]||[];
     const activeSections=ids.length?detailedSections.filter(item=>ids.includes(item.id)):detailedSections;
-    return <AuthorPage
+    return <PageComposition
       eyebrow="Author"
       title="Lucas Oscar Wang 政德"
       subtitle="lo3rwang"
@@ -198,43 +191,87 @@ export default function AuthorHomeView({section=null}){
     />;
   }
 
-  return <AuthorPage
-    eyebrow={null}
-    title=""
-    subtitle=""
-    intro={null}
-    heroImage={authorHeroAsset}
-    heroContent={<AuthorHomeEditableBlock order={1} variant="hero"/>}
+  return <PageComposition
+    eyebrow="Lucas Oscar Wang"
+    title="政德"
+    subtitle="語言建築師"
+    intro={<>
+      <p>Hello！你好！你可以叫我 Oscar。</p>
+      <p>Wordsmith · Chaos Calibrator · Language Architect</p>
+      <p>Creator of LOC and LunaRunes · <a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽〈這就是我〉 →</a></p>
+    </>}
+    heroVisual={<iframe src="https://www.instagram.com/p/DdX5ki-oZY6/embed" title="這就是我｜Lucas Oscar Wang 政德自我介紹" loading="eager" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" frameBorder="0" scrolling="no"/>}
     sections={[
       {
         id:'about',
-        eyebrow:null,
-        title:null,
-        content:<AuthorHomeEditableBlock order={2} variant="about"/>
+        eyebrow:'About',
+        title:'關於我',
+        content:<div className="author-about-grid">
+          <div className="author-about-primary">
+            <p>Lucas Oscar Wang 政德，日常叫我 Oscar。寫作、音樂、系統整理與到處看看，都是我長期沒有放下的事情。</p>
+            <p><strong>人生觀：</strong>鑑古知今，求同存異。不在其位，不謀其政。隨心所欲，而不逾己。</p>
+            <p><strong>原則態度：</strong>敬畏未知，尊重異者，專業為先。</p>
+            <p><strong>擅長能力：</strong>歸納、整理與系統化；習慣把複雜原理收斂成可以理解與重複使用的結構。</p>
+          </div>
+          <aside className="author-about-side">
+            <h3>名字與識別</h3>
+            <p>完整署名是 Lucas Oscar Wang 政德，公開識別為 lo3rwang；日常稱呼仍是 Oscar。</p>
+            <h3>思想底色</h3>
+            <p>偏向老子體系的道與德，也重視自然、觀察與不以控制取代理解。</p>
+          </aside>
+        </div>
       },
       {
         id:'professional',
-        eyebrow:null,
-        title:null,
-        content:<AuthorHomeEditableBlock order={3} variant="professional"/>
+        eyebrow:'Professional',
+        title:'我在做什麼',
+        content:<>
+          <p className="author-section-lead">我的工作重心是處理語言、資料、脈絡與時間之間的關係，讓分散的文字、規則、版本與歷史紀錄形成可理解、可維護的結構。</p>
+          <ProfessionalRoles/>
+          <div className="author-professional-grid">
+            <article className="author-editorial-block">
+              <h3>語言顧問與系統設計</h3>
+              <WorkCopy/>
+            </article>
+            <article className="author-editorial-block">
+              <h3>數位資產管理</h3>
+              <DigitalAssetCopy/>
+            </article>
+          </div>
+        </>
+      },
+      {
+        id:'archive-tools',
+        eyebrow:'Explore',
+        title:'文化、統計與搜尋',
+        content:<>
+          <p className="author-section-lead">同一批作品可以從時間、數量與文字三個方向重新閱讀；三個功能都回到原始資料，不替作品增加新的判定。</p>
+          <ArchiveTools/>
+        </>
       },
       {
         id:'systems',
-        eyebrow:null,
-        title:null,
-        content:<AuthorHomeEditableBlock order={4} variant="systems"/>
+        eyebrow:'Systems',
+        title:'從自己的問題長出的系統',
+        content:<SystemsCopy/>
       },
       {
         id:'three-souls',
-        eyebrow:null,
-        title:null,
-        content:<AuthorHomeEditableBlock order={5} variant="souls"/>
+        eyebrow:'Three Souls',
+        title:'三魂',
+        content:<ThreeSouls/>
       },
       {
         id:'contact',
-        eyebrow:null,
-        title:null,
-        content:<AuthorHomeEditableBlock order={6} variant="contact"/>
+        eyebrow:'Contact',
+        title:'聯絡與官方連結',
+        content:<div className="author-contact-layout">
+          <div>
+            <p>合作、顧問、系統設計、數位資產管理或其他公開內容相關事項，可透過電子郵件聯絡。</p>
+            <p><a href="mailto:sopa2306@gmail.com">sopa2306@gmail.com</a></p>
+          </div>
+          <OfficialLinks/>
+        </div>
       }
     ]}
   />;
