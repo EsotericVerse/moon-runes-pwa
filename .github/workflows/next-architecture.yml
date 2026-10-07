@@ -1,6 +1,8 @@
 name: Next Architecture Build
 
 on:
+  push:
+    branches: [main]
   pull_request:
     paths:
       - "app/**"
