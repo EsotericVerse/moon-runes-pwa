@@ -8,7 +8,7 @@ import {useSearchParams} from 'next/navigation';
 
 import {logSearchKeyword,selectAuthRow,updateRows} from '../../loc/db-client.mjs';
 import {useAccount} from '../../loc/use-account';
-import {ContentEditor,FeaturePage,IncrementalList,WorkFullText,WorkSummaryCard} from '../ui';
+import {FeaturePage,IncrementalList,WorkFullText,WorkSummaryCard} from '../ui';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {scopeHref} from '../scope-registry';
 import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation';
@@ -486,7 +486,7 @@ export default function Search(){
     try{
       const contentColumns=result.resourceType==='galaxy'
         ?GALAXY_EDITOR_COLUMNS
-        :'media_id,title,meta_tags';
+        :'media_id,title,meta_tags,content_blocks';
       const cached=result.resourceType==='galaxy'&&fullTextKey===result.key&&fullTextRow?.uid
         ?fullTextRow
         :null;
@@ -501,6 +501,10 @@ export default function Search(){
         :{
           title:String(fullRow.title??result.title??''),
           body:String(fullRow[result.editableField]??''),
+          bodyBlocks:Array.isArray(fullRow.content_blocks)&&fullRow.content_blocks.length
+            ?fullRow.content_blocks
+            :plainTextToBlocks(String(fullRow[result.editableField]??'')),
+          editorKey:String(fullRow.media_id||result.resourceId||'media'),
           hidden:false
         });
     }catch(exception){
@@ -515,7 +519,7 @@ export default function Search(){
       if(!account.canManageScopeSync(result.scopeId))throw new Error(UI_COPY.search.editDenied);
       const body=result.resourceType==='galaxy'
         ?requireGalaxyContent(blocksToPlainText(editDraft.bodyBlocks))
-        :editDraft.body;
+        :blocksToPlainText(editDraft.bodyBlocks);
       const nextTitle=result.resourceType==='galaxy'
         ?resolveGalaxyTitle(editDraft.title,body)
         :(String(editDraft.title||'').trim()||null);
@@ -542,7 +546,8 @@ export default function Search(){
         group_lists:parseJsonAttr(attrs.group_lists)
       }:{
         title:nextTitle,
-        [result.editableField]:body
+        [result.editableField]:body,
+        content_blocks:Array.isArray(editDraft.bodyBlocks)?editDraft.bodyBlocks:null
       };
       if(result.resourceType==='galaxy'&&classText!==''&&!Number.isFinite(contentPatch.class_id))throw new Error('class_id 必須是數字。');
       const contentFilters=[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId}];
@@ -635,15 +640,19 @@ export default function Search(){
               <button type="button" disabled={editBusy} onClick={()=>saveEditing(row)}>{editBusy?UI_COPY.common.saving:UI_COPY.common.save}</button>
               <button type="button" disabled={editBusy} onClick={()=>{setEditingKey('');setEditDraft(null);setEditError('')}}>{UI_COPY.common.cancel}</button>
             </div>
-          </div>:<ContentEditor
-            draft={draft}
-            setDraft={setEditDraft}
-            busy={editBusy}
-            error={editError}
-            showVisibility={false}
-            onSave={()=>saveEditing(row)}
-            onCancel={()=>{setEditingKey('');setEditDraft(null);setEditError('')}}
-          />):null}
+          </div>:<div className="scope-editor scope-search-media-editor">
+            <label>{UI_COPY.common.title}<input value={draft.title||''} onChange={event=>setEditDraft(current=>({...current,title:event.target.value}))}/></label>
+            <RichBlockEditor
+              key={'search-media-edit:'+row.key}
+              initialContent={draft.bodyBlocks}
+              onChange={blocks=>setEditDraft(current=>({...current,bodyBlocks:blocks,body:blocksToPlainText(blocks)}))}
+            />
+            {editError?<p role="alert" className="scope-error">{editError}</p>:null}
+            <div className="scope-tabs">
+              <button type="button" disabled={editBusy} onClick={()=>saveEditing(row)}>{editBusy?UI_COPY.common.saving:UI_COPY.common.save}</button>
+              <button type="button" disabled={editBusy} onClick={()=>{setEditingKey('');setEditDraft(null);setEditError('')}}>{UI_COPY.common.cancel}</button>
+            </div>
+          </div>):null}
         </WorkSummaryCard>;
       }}
     />

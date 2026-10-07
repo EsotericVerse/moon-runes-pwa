@@ -115,33 +115,42 @@ CREATE TABLE "silver"."keyword_classes" (
 );
 
 CREATE TABLE "silver"."loc_blocks" (
-  "block_page" text NOT NULL,
+  "uid" character(8) DEFAULT upper(substr(replace(gen_random_uuid()::text, '-'::text, ''::text), 1, 8)) NOT NULL,
+  "page_name" text NOT NULL,
   "block_title" text DEFAULT ''::text NOT NULL,
   "block_text" text DEFAULT ''::text NOT NULL,
   "block_order" integer NOT NULL,
-  CONSTRAINT "loc_blocks_pkey" PRIMARY KEY (block_page, block_order),
-  CONSTRAINT "loc_blocks_page_check" CHECK (block_page = ANY (ARRAY['home'::text,'governance'::text])),
-  CONSTRAINT "loc_blocks_order_check" CHECK (block_order >= 1 AND block_order <= 4)
+  "block_entity" jsonb DEFAULT '[]'::jsonb NOT NULL,
+  CONSTRAINT "loc_blocks_pkey" PRIMARY KEY (uid),
+  CONSTRAINT "loc_blocks_uid_format_check" CHECK (uid ~ '^[A-Za-z0-9]{8}$'::text),
+  CONSTRAINT "loc_blocks_order_check" CHECK (block_order >= 1),
+  CONSTRAINT "loc_blocks_entity_check" CHECK (jsonb_typeof(block_entity) = 'array'::text AND jsonb_array_length(block_entity) <= 6)
 );
 
 CREATE TABLE "silver"."lo3rwang_blocks" (
-  "block_page" text NOT NULL,
+  "uid" character(8) DEFAULT upper(substr(replace(gen_random_uuid()::text, '-'::text, ''::text), 1, 8)) NOT NULL,
+  "page_name" text NOT NULL,
   "block_title" text DEFAULT ''::text NOT NULL,
   "block_text" text DEFAULT ''::text NOT NULL,
   "block_order" integer NOT NULL,
-  CONSTRAINT "lo3rwang_blocks_pkey" PRIMARY KEY (block_page, block_order),
-  CONSTRAINT "lo3rwang_blocks_page_check" CHECK (block_page = ANY (ARRAY['home'::text,'governance'::text])),
-  CONSTRAINT "lo3rwang_blocks_order_check" CHECK (block_order >= 1 AND block_order <= 4)
+  "block_entity" jsonb DEFAULT '[]'::jsonb NOT NULL,
+  CONSTRAINT "lo3rwang_blocks_pkey" PRIMARY KEY (uid),
+  CONSTRAINT "lo3rwang_blocks_uid_format_check" CHECK (uid ~ '^[A-Za-z0-9]{8}$'::text),
+  CONSTRAINT "lo3rwang_blocks_order_check" CHECK (block_order >= 1),
+  CONSTRAINT "lo3rwang_blocks_entity_check" CHECK (jsonb_typeof(block_entity) = 'array'::text AND jsonb_array_length(block_entity) <= 6)
 );
 
 CREATE TABLE "silver"."lrunes_blocks" (
-  "block_page" text NOT NULL,
+  "uid" character(8) DEFAULT upper(substr(replace(gen_random_uuid()::text, '-'::text, ''::text), 1, 8)) NOT NULL,
+  "page_name" text NOT NULL,
   "block_title" text DEFAULT ''::text NOT NULL,
   "block_text" text DEFAULT ''::text NOT NULL,
   "block_order" integer NOT NULL,
-  CONSTRAINT "lrunes_blocks_pkey" PRIMARY KEY (block_page, block_order),
-  CONSTRAINT "lrunes_blocks_page_check" CHECK (block_page = ANY (ARRAY['home'::text,'governance'::text])),
-  CONSTRAINT "lrunes_blocks_order_check" CHECK (block_order >= 1 AND block_order <= 4)
+  "block_entity" jsonb DEFAULT '[]'::jsonb NOT NULL,
+  CONSTRAINT "lrunes_blocks_pkey" PRIMARY KEY (uid),
+  CONSTRAINT "lrunes_blocks_uid_format_check" CHECK (uid ~ '^[A-Za-z0-9]{8}$'::text),
+  CONSTRAINT "lrunes_blocks_order_check" CHECK (block_order >= 1),
+  CONSTRAINT "lrunes_blocks_entity_check" CHECK (jsonb_typeof(block_entity) = 'array'::text AND jsonb_array_length(block_entity) <= 6)
 );
 
 CREATE TABLE "silver"."lo3rwang" (
@@ -215,6 +224,7 @@ CREATE TABLE "silver"."lo3rwang_galaxy_media" (
   "title" text,
   "url" text,
   "meta_tags" text,
+  "content_blocks" jsonb,
   "createtime" timestamp with time zone,
   "source_place" text,
   CONSTRAINT "lo3rwang_galaxy_media_pkey" PRIMARY KEY (media_id)
@@ -336,6 +346,7 @@ CREATE TABLE "silver"."lrunes_galaxy_media" (
   "title" text,
   "url" text,
   "meta_tags" text,
+  "content_blocks" jsonb,
   "createtime" timestamp with time zone,
   "source_place" text,
   CONSTRAINT "lrunes_galaxy_media_pkey" PRIMARY KEY (media_id)

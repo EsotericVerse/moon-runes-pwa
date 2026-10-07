@@ -21,7 +21,7 @@ export default function GenericScopeHomeView(){
   return <main className="scope-main"><section className="scope-page">
     <header className="loc-card scope-hero"><p className="loc-eyebrow">Scope</p><h1>{scope.label}</h1><p>{scopeId}</p></header>
     <section className="loc-card">
-      <ScopeEditableBlocks scopeId={scopeId} page="home"/>
+      <ScopeEditableBlocks scopeId={scopeId} page="index"/>
       <p className="scope-status">{registryRow?.domain||registryRow?.directory||''}</p>
       <div className="scope-result-links">
         <a href={featureHref(scopeId,'search')}>搜尋</a>

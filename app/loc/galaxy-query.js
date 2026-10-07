@@ -249,7 +249,7 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false}={
   });
   const media=makeProvider({
     id:current.id+':media',table:current.galaxyMedia,source:current.id+' 多媒體',scope:current,idColumn:'media_id',
-    columns:['media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','createtime'],
+    columns:['media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','content_blocks','createtime'],
     searchFields:['title','meta_tags','media_type','url','source_native_id'],dateColumn:'createtime'
   });
   if(mediaOnly)return [media];

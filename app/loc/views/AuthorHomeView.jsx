@@ -1,7 +1,7 @@
 import ScopeEditableBlocks from '../ScopeEditableBlocks';
 import authorHeroAsset from '../../../pics/lo3rwang-hero.jpg';
 
-function AuthorPage({eyebrow,title,subtitle,intro,heroImage=null,sections=[]}){
+function AuthorPage({eyebrow,title,subtitle,intro,heroImage=null,heroContent=null,sections=[]}){
   return <section className="loc-view scope-home-composition">
     {heroImage?<header className="loc-hero author-home-hero" id="top">
       <img
@@ -14,11 +14,11 @@ function AuthorPage({eyebrow,title,subtitle,intro,heroImage=null,sections=[]}){
         decoding="async"
       />
       <div className="author-home-hero-overlay" aria-hidden="true"/>
-      <div className="author-home-hero-copy">
+      {heroContent||<div className="author-home-hero-copy">
         {eyebrow?<p className="loc-eyebrow">{eyebrow}</p>:null}
         <div className="home-title-row"><h1>{title}</h1>{subtitle?<p className="loc-subtitle">{subtitle}</p>:null}</div>
         {intro}
-      </div>
+      </div>}
     </header>:<header className="loc-hero loc-hero-feature" id="top">
       {eyebrow?<p className="loc-eyebrow">{eyebrow}</p>:null}
       <div className="home-title-row"><h1>{title}</h1>{subtitle?<p className="loc-subtitle">{subtitle}</p>:null}</div>
@@ -26,7 +26,7 @@ function AuthorPage({eyebrow,title,subtitle,intro,heroImage=null,sections=[]}){
     </header>}
     {sections.map((section,index)=><section className="loc-card scope-home-section" id={section.id} key={section.id} data-composition-slot={index+1}>
       {section.eyebrow?<p className="loc-eyebrow">{section.eyebrow}</p>:null}
-      <h2>{section.title}</h2>
+      {section.title?<h2>{section.title}</h2>:null}
       {section.content}
     </section>)}
   </section>;
@@ -38,7 +38,7 @@ const PROFESSIONAL_ROLES=Object.freeze([
     text:'針對單一語彙與單詞，會很執著於找出它在句中的本義。因為本義要先確認，才能知道句子的整體解釋。'
   }),
   Object.freeze({
-    title:'混沌校對者 · Chaos Calibrator',
+    title:'混沌辨律者 · Chaos Discerner',
     text:'針對一團混亂的狀態，會以系統性的方式找尋規則性，進而拆解與破解；也延伸到對未來的風險管理。'
   }),
   Object.freeze({
@@ -199,84 +199,83 @@ export default function AuthorHomeView({section=null}){
   }
 
   return <AuthorPage
-    eyebrow="Lucas Oscar Wang"
-    title="政德"
-    subtitle="語言建築師"
-    intro={<>
-      <p>Hello！你好！你可以叫我 Oscar。</p>
-      <p>Wordsmith · Chaos Calibrator · Language Architect</p>
-      <p>Creator of LOC and LunaRunes · <a href="https://suno.com/album/16130013-09f2-4be3-b2f6-05ce171ba7d5" target="_blank" rel="noopener noreferrer">聽《微月光，上場》 →</a></p>
-    </>}
+    eyebrow={null}
+    title=""
+    subtitle=""
+    intro={null}
     heroImage={authorHeroAsset}
+    heroContent={<ScopeEditableBlocks
+      scopeId="lo3rwang"
+      page="index"
+      orders={[1]}
+      slotClassName="author-home-hero-copy"
+      headingLevel={1}
+    />}
     sections={[
       {
         id:'about',
-        eyebrow:'About',
-        title:'關於我',
-        content:<div className="author-about-grid">
-          <div className="author-about-primary">
-            <ScopeEditableBlocks
-              scopeId="lo3rwang"
-              page="home"
-              slotClassName="author-editorial-block"
-              fallbackDocuments={[
-                'Lucas Oscar Wang 政德，日常叫我 Oscar。寫作、音樂、系統整理與到處看看，都是我長期沒有放下的事情。',
-                '人生觀：鑑古知今，求同存異。不在其位，不謀其政。隨心所欲，而不逾己。',
-                '原則態度：敬畏未知，尊重異者，專業為先。',
-                '擅長能力：歸納、整理與系統化；習慣把複雜原理收斂成可以理解與重複使用的結構。'
-              ]}
-            />
-          </div>
-          <aside className="author-about-side">
-            <h3>名字與識別</h3>
-            <p>完整署名是 Lucas Oscar Wang 政德，公開識別為 lo3rwang；日常稱呼仍是 Oscar。</p>
-            <h3>思想底色</h3>
-            <p>偏向老子體系的道與德，也重視自然、觀察與不以控制取代理解。</p>
-          </aside>
-        </div>
+        eyebrow:null,
+        title:null,
+        content:<ScopeEditableBlocks
+          scopeId="lo3rwang"
+          page="index"
+          orders={[2]}
+          slotClassName="author-home-section-block"
+          headingLevel={2}
+        />
       },
       {
         id:'professional',
-        eyebrow:'Professional',
-        title:'我在做什麼',
-        content:<>
-          <p className="author-section-lead">資訊工程出身。長期程式設計養成的習慣，應用在語言上，就是「物件導向（OOP）」。</p>
-          <ProfessionalRoles/>
-          <div className="author-professional-grid">
-            <article className="author-editorial-block">
-              <h3>語言顧問與系統設計</h3>
-              <WorkCopy/>
-            </article>
-            <article className="author-editorial-block">
-              <h3>數位資產管理</h3>
-              <DigitalAssetCopy/>
-            </article>
-          </div>
-        </>
+        eyebrow:null,
+        title:null,
+        content:<ScopeEditableBlocks
+          scopeId="lo3rwang"
+          page="index"
+          orders={[3]}
+          slotClassName="author-home-section-block"
+          headingLevel={2}
+        />
       },
       {
         id:'systems',
-        eyebrow:'Systems',
-        title:'LOC 與 LunaRunes',
-        content:<SystemsCopy/>
+        eyebrow:null,
+        title:null,
+        content:<ScopeEditableBlocks
+          scopeId="lo3rwang"
+          page="index"
+          orders={[4]}
+          slotClassName="author-home-section-block"
+          headingLevel={2}
+        />
       },
       {
         id:'three-souls',
-        eyebrow:'Three Souls',
-        title:'三魂',
-        content:<ThreeSouls/>
+        eyebrow:null,
+        title:null,
+        content:<div className="author-trinity-layout">
+          <figure className="home-architecture-figure author-trinity-figure">
+            <img src="/pics/lo3rwang-3.png" alt="Oscar 政德、玄鑒 Lucas、符韻 Rune，以及柏隆 Bruno、睿汶 Raven 的關係圖" loading="lazy"/>
+          </figure>
+          <ScopeEditableBlocks
+            scopeId="lo3rwang"
+            page="index"
+            orders={[5]}
+            slotClassName="author-home-section-block"
+            headingLevel={2}
+          />
+        </div>
       },
       {
         id:'contact',
-        eyebrow:'Contact',
-        title:'聯絡與官方連結',
-        content:<div className="author-contact-layout">
-          <div>
-            <p>合作、顧問、系統設計、數位資產管理或其他公開內容相關事項，可透過電子郵件聯絡。</p>
-            <p><a href="mailto:sopa2306@gmail.com">sopa2306@gmail.com</a></p>
-          </div>
-          <OfficialLinks/>
-        </div>
+        eyebrow:null,
+        title:null,
+        content:<ScopeEditableBlocks
+          scopeId="lo3rwang"
+          page="index"
+          orders={[6]}
+          slotClassName="author-home-section-block"
+          headingLevel={2}
+        />
       }
     ]}
   />;

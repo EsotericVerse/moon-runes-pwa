@@ -1,34 +1,50 @@
 'use client';
 
-import {useEffect,useMemo,useState} from 'react';
+import {useMemo,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
-import {insertRows,updateRows} from './db-client.mjs';
+import {deleteRows,insertRows,updateRows} from './db-client.mjs';
 import {selectScopeBlocks} from './scope-data';
 import {useAccount} from './use-account';
-import RichBlockEditor,{blocksToPlainText,normalizeBlocks,plainTextToBlocks} from './RichBlockEditor';
+import RichBlockEditor from './RichBlockEditor';
 
-const SLOT_COUNT=4;
+const ENTITY_LIMIT=6;
+const UID_ALPHABET='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
-function fallbackDocument(value){
-  if(Array.isArray(value))return normalizeBlocks(value);
-  if(value&&typeof value==='object'&&Array.isArray(value.blocks))return normalizeBlocks(value.blocks);
-  return normalizeBlocks(value??'');
+function makeUid(){
+  const bytes=new Uint8Array(8);
+  globalThis.crypto?.getRandomValues?.(bytes);
+  let uid='';
+  for(let index=0;index<8;index+=1){
+    const value=bytes[index]??Math.floor(Math.random()*UID_ALPHABET.length);
+    uid+=UID_ALPHABET[value%UID_ALPHABET.length];
+  }
+  return uid;
 }
 
-function slotRows(rows=[],fallbackDocuments=[]){
-  const byOrder=new Map((Array.isArray(rows)?rows:[]).map(row=>[Number(row.block_order),row]));
-  return Array.from({length:SLOT_COUNT},(_,index)=>{
-    const order=index+1;
-    const stored=byOrder.get(order)||null;
-    const storedText=String(stored?.block_text||'');
-    const blocks=storedText.trim()?normalizeBlocks({html:storedText}):fallbackDocument(fallbackDocuments[index]);
-    return {
-      order,
-      stored:Boolean(stored),
-      title:String(stored?.block_title||''),
-      blocks
-    };
-  });
+function pageNameOf(value='index'){
+  const page=String(value||'index').trim().toLowerCase();
+  return page==='home'?'index':page;
+}
+
+function normalizeEntities(value){
+  const rows=Array.isArray(value)?value:[];
+  return rows.slice(0,ENTITY_LIMIT).map((entity,index)=>({
+    uid:/^[A-Za-z0-9]{8}$/.test(String(entity?.uid||''))?String(entity.uid):makeUid(),
+    title:String(entity?.title||''),
+    text:String(entity?.text||''),
+    order:index+1
+  }));
+}
+
+function normalizeRow(row,order){
+  return {
+    uid:String(row?.uid||''),
+    stored:Boolean(row?.uid),
+    order:Number(row?.block_order||order||1),
+    title:String(row?.block_title||''),
+    text:String(row?.block_text||''),
+    entities:normalizeEntities(row?.block_entity)
+  };
 }
 
 function isInteractiveTarget(target){
@@ -37,79 +53,117 @@ function isInteractiveTarget(target){
 
 export default function ScopeEditableBlocks({
   scopeId,
-  page='home',
+  page='index',
   orders=null,
-  fallbackDocuments=[],
   className='',
   slotClassName='loc-card',
   headingLevel=3
 }){
   const account=useAccount();
   const queryClient=useQueryClient();
+  const pageName=pageNameOf(page);
   const query=useQuery({
-    queryKey:['scope-blocks',scopeId,page],
-    queryFn:()=>selectScopeBlocks(scopeId,page),
+    queryKey:['scope-blocks',scopeId,pageName],
+    queryFn:()=>selectScopeBlocks(scopeId,pageName),
     staleTime:60_000
   });
-  const fallbackKey=useMemo(()=>JSON.stringify(fallbackDocuments),[fallbackDocuments]);
-  const slots=useMemo(
-    ()=>slotRows(query.data||[],fallbackDocuments),
-    [query.data,fallbackKey]
+  const canEdit=scopeId==='loc'?account.canManageGlobalSync():account.canManageScopeSync(scopeId);
+  const table=`silver.${scopeId}_blocks`;
+  const normalizedOrders=useMemo(
+    ()=>Array.isArray(orders)?orders.map(Number).filter(value=>Number.isInteger(value)&&value>0):[],
+    [orders]
   );
-  const visibleOrders=Array.isArray(orders)&&orders.length
-    ?new Set(orders.map(Number).filter(value=>value>=1&&value<=SLOT_COUNT))
-    :null;
-  const [editing,setEditing]=useState(0);
+  const slots=useMemo(()=>{
+    const rows=Array.isArray(query.data)?query.data:[];
+    if(!normalizedOrders.length)return rows.map(row=>normalizeRow(row,row.block_order));
+    const byOrder=new Map(rows.map(row=>[Number(row.block_order),row]));
+    return normalizedOrders.map(order=>normalizeRow(byOrder.get(order),order));
+  },[query.data,normalizedOrders]);
+  const nextOrder=useMemo(()=>{
+    const rows=Array.isArray(query.data)?query.data:[];
+    return Math.max(0,...rows.map(row=>Number(row.block_order)||0))+1;
+  },[query.data]);
+
   const [draft,setDraft]=useState(null);
-  const [draftTitle,setDraftTitle]=useState('');
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
 
-  useEffect(()=>{
-    if(!editing)return;
-    const slot=slots[editing-1];
-    if(slot){
-      setDraft(slot.blocks);
-      setDraftTitle(slot.title);
-    }
-  },[editing,query.data]);
-
-  const canEdit=scopeId==='loc'?account.canManageGlobalSync():account.canManageScopeSync(scopeId);
-  const table=`silver.${scopeId}_blocks`;
-
-  function begin(index){
-    setEditing(index+1);
-    setDraft(slots[index]?.blocks||plainTextToBlocks(''));
-    setDraftTitle(slots[index]?.title||'');
+  function begin(slot){
+    if(!canEdit)return;
+    setDraft({
+      ...slot,
+      uid:slot.uid||makeUid(),
+      entities:normalizeEntities(slot.entities)
+    });
     setMessage('');
   }
 
-  async function save(index){
+  function cancel(){
+    setDraft(null);
+    setMessage('');
+  }
+
+  function updateEntity(index,patch){
+    setDraft(current=>{
+      if(!current)return current;
+      const entities=current.entities.map((entity,entityIndex)=>entityIndex===index?{...entity,...patch}:entity);
+      return {...current,entities};
+    });
+  }
+
+  function addEntity(){
+    setDraft(current=>{
+      if(!current||current.entities.length>=ENTITY_LIMIT)return current;
+      return {
+        ...current,
+        entities:[...current.entities,{uid:makeUid(),title:'',text:'',order:current.entities.length+1}]
+      };
+    });
+  }
+
+  function removeEntity(index){
+    setDraft(current=>{
+      if(!current)return current;
+      const entities=current.entities
+        .filter((_,entityIndex)=>entityIndex!==index)
+        .map((entity,entityIndex)=>({...entity,order:entityIndex+1}));
+      return {...current,entities};
+    });
+  }
+
+  function moveEntity(index,direction){
+    setDraft(current=>{
+      if(!current)return current;
+      const target=index+direction;
+      if(target<0||target>=current.entities.length)return current;
+      const entities=[...current.entities];
+      [entities[index],entities[target]]=[entities[target],entities[index]];
+      return {...current,entities:entities.map((entity,entityIndex)=>({...entity,order:entityIndex+1}))};
+    });
+  }
+
+  async function save(){
+    if(!draft)return;
     setBusy(true);setMessage('');
     try{
-      const slot=slots[index];
-      const doc=normalizeBlocks(draft);
       const values={
-        block_title:String(draftTitle||'').trim(),
-        block_text:String(doc.html||'')
+        page_name:pageName,
+        block_title:String(draft.title||'').trim(),
+        block_text:String(draft.text||''),
+        block_order:Number(draft.order)||1,
+        block_entity:normalizeEntities(draft.entities).map(({uid,title,text})=>({
+          uid,
+          title:String(title||'').trim(),
+          text:String(text||'')
+        }))
       };
-      if(slot?.stored){
-        await updateRows(table,values,{filters:[
-          {column:'block_page',operator:'eq',value:page},
-          {column:'block_order',operator:'eq',value:index+1}
-        ]});
+      if(draft.stored){
+        await updateRows(table,values,{filters:[{column:'uid',operator:'eq',value:draft.uid}]});
       }else{
-        await insertRows(table,[{
-          block_page:page,
-          block_title:values.block_title,
-          block_text:values.block_text,
-          block_order:index+1
-        }]);
+        await insertRows(table,[{uid:draft.uid,...values}]);
       }
-      await queryClient.invalidateQueries({queryKey:['scope-blocks',scopeId,page]});
-      setEditing(0);
+      await queryClient.invalidateQueries({queryKey:['scope-blocks',scopeId,pageName]});
       setDraft(null);
-      setDraftTitle('');
       setMessage('已更新。');
     }catch(error){
       setMessage(error?.message||'儲存失敗。');
@@ -118,39 +172,113 @@ export default function ScopeEditableBlocks({
     }
   }
 
-  return <div className={'scope-editable-block-grid '+className}>
-    {slots.map((slot,index)=>{
-      if(visibleOrders&&!visibleOrders.has(slot.order))return null;
-      const active=editing===index+1;
-      const empty=!blocksToPlainText(slot.blocks)&&!slot.title;
-      if(empty&&!canEdit)return null;
-      const Heading=Number(headingLevel)===2?'h2':'h3';
-      return <section
-        className={slotClassName+' scope-editable-block'+(active?' is-editing':'')+(canEdit&&!active?' is-editable-idle':'')}
-        key={slot.order}
-        onClickCapture={canEdit&&!active?event=>{if(!isInteractiveTarget(event.target))begin(index)}:undefined}
-      >
-        {canEdit&&active?<div className="scope-inline-editbar">
-          <button type="button" className="loc-button primary" disabled={busy} onClick={()=>save(index)}>{busy?'儲存中…':'儲存'}</button>
-          <button type="button" className="loc-button" disabled={busy} onClick={()=>{setEditing(0);setDraft(null);setDraftTitle('');setMessage('')}}>取消</button>
-        </div>:null}
-        {active?<>
-          <label className="scope-management-wide-field"><span>標題</span><input className="scope-search-input" value={draftTitle} onChange={event=>setDraftTitle(event.target.value)}/></label>
+  async function remove(){
+    if(!draft)return;
+    if(!draft.stored){
+      setDraft(null);
+      return;
+    }
+    setBusy(true);setMessage('');
+    try{
+      await deleteRows(table,{filters:[{column:'uid',operator:'eq',value:draft.uid}]});
+      await queryClient.invalidateQueries({queryKey:['scope-blocks',scopeId,pageName]});
+      setDraft(null);
+      setMessage('已刪除。');
+    }catch(error){
+      setMessage(error?.message||'刪除失敗。');
+    }finally{
+      setBusy(false);
+    }
+  }
+
+  function renderEntities(entities,editable=false){
+    if(!entities.length&&!editable)return null;
+    return <div className="scope-block-entity-grid">
+      {entities.map((entity,index)=><article className="scope-block-entity" key={entity.uid}>
+        {editable?<>
+          <div className="scope-block-entity-actions">
+            <button type="button" className="loc-button" disabled={index===0||busy} onClick={()=>moveEntity(index,-1)}>←</button>
+            <button type="button" className="loc-button" disabled={index===entities.length-1||busy} onClick={()=>moveEntity(index,1)}>→</button>
+            <button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={()=>removeEntity(index)}>刪除</button>
+          </div>
+          <label className="scope-management-wide-field">
+            <span>子文字框標題</span>
+            <input
+              className="scope-search-input"
+              value={entity.title}
+              onChange={event=>updateEntity(index,{title:event.target.value})}
+            />
+          </label>
           <RichBlockEditor
-            key={scopeId+':'+page+':'+index+':edit'}
-            initialContent={draft}
-            onChange={setDraft}
+            key={entity.uid+':edit'}
+            initialContent={entity.text?{html:entity.text}:''}
+            onHtmlChange={html=>updateEntity(index,{text:html})}
           />
         </>:<>
-          {slot.title?<Heading>{slot.title}</Heading>:null}
-          <RichBlockEditor
-            key={scopeId+':'+page+':'+index+':view:'+JSON.stringify(slot.blocks)}
-            initialContent={slot.blocks}
+          {entity.title?<h4>{entity.title}</h4>:null}
+          {entity.text?<RichBlockEditor
+            key={entity.uid+':view'}
+            initialContent={{html:entity.text}}
             editable={false}
+          />:null}
+        </>}
+      </article>)}
+      {editable&&entities.length<ENTITY_LIMIT?<button type="button" className="scope-block-entity-add" onClick={addEntity} disabled={busy}>
+        ＋ 子文字框
+      </button>:null}
+    </div>;
+  }
+
+  return <div className={'scope-editable-block-grid '+className}>
+    {slots.map(slot=>{
+      const active=draft?.uid&&(draft.uid===slot.uid||(!slot.stored&&draft.order===slot.order));
+      const empty=!slot.title&&!slot.text&&!slot.entities.length;
+      if(empty&&!canEdit)return null;
+      const level=Number(headingLevel);
+      const Heading=level===1?'h1':level===2?'h2':level===4?'h4':'h3';
+      return <section
+        className={slotClassName+' scope-editable-block'+(active?' is-editing':'')+(canEdit&&!active?' is-editable-idle':'')+(empty?' is-empty':'')}
+        key={slot.uid||'order:'+slot.order}
+        onClickCapture={canEdit&&!active?event=>{if(!isInteractiveTarget(event.target))begin(slot)}:undefined}
+      >
+        {active?<>
+          <div className="scope-inline-editbar">
+            <button type="button" className="loc-button primary" disabled={busy} onClick={save}>{busy?'儲存中…':'儲存'}</button>
+            <button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={remove}>刪除</button>
+            <button type="button" className="loc-button" disabled={busy} onClick={cancel}>取消</button>
+          </div>
+          <label className="scope-management-wide-field">
+            <span>標題</span>
+            <input
+              className="scope-search-input"
+              value={draft.title}
+              onChange={event=>setDraft(current=>({...current,title:event.target.value}))}
+            />
+          </label>
+          <RichBlockEditor
+            key={draft.uid+':body:edit'}
+            initialContent={draft.text?{html:draft.text}:''}
+            onHtmlChange={html=>setDraft(current=>({...current,text:html}))}
           />
+          {renderEntities(draft.entities,true)}
+        </>:<>
+          {slot.title?<Heading>{slot.title}</Heading>:null}
+          {slot.text?<RichBlockEditor
+            key={(slot.uid||slot.order)+':body:view'}
+            initialContent={{html:slot.text}}
+            editable={false}
+          />:null}
+          {renderEntities(slot.entities,false)}
+          {empty&&canEdit?<p className="scope-status">點此建立文字框。</p>:null}
         </>}
       </section>;
     })}
+    {canEdit&&!normalizedOrders.length?<button
+      type="button"
+      className="loc-button scope-add-page-block"
+      onClick={()=>begin(normalizeRow(null,nextOrder))}
+      disabled={busy}
+    >＋ 新增文字框</button>:null}
     {message?<p className="scope-status" role="status">{message}</p>:null}
   </div>;
 }

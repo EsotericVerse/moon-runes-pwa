@@ -4,6 +4,7 @@ const failures=[];
 const read=path=>fs.readFileSync(path,'utf8');
 const required=[
   'app/loc/views/AboutView.jsx',
+  'docs/sql/page-block-entities-blocknote.sql',
   'app/loc/galaxy-query.js',
   'app/modular/features/Search.jsx',
   'app/loc/daily-runes.js',
@@ -29,8 +30,10 @@ const required=[
 for(const path of required)if(!fs.existsSync(path)||!read(path).trim())failures.push('missing Current contract file: '+path);
 if(!failures.length){
   const identity=read('app/loc/views/AboutView.jsx');
+  const pageBlockSeed=read('docs/sql/page-block-entities-blocknote.sql');
+  const identitySource=identity+'\n'+pageBlockSeed;
   const runeIntro=read('app/lrunes/RuneIntroSection.jsx');
-  for(const token of ['語言架構框架','Language Architecture Framework','符號式語言'])if(!identity.includes(token))failures.push('identity missing '+token);
+  for(const token of ['語言架構框架','Language Architecture Framework','符號式語言'])if(!identitySource.includes(token))failures.push('identity missing '+token);
   if(!runeIntro.includes('Symbolic Language'))failures.push('Rune intro identity missing Symbolic Language');
   const dailyData=read('app/loc/daily-runes.js');
   for(const token of ['selectPreviousDailyRuneOccurrence','selectDailyRuneSituation','selectDailyRuneContext',"types:['sit_q','daily_r','daily_g','daily_b']","column:'current_moon'"])if(!dailyData.includes(token))failures.push('daily rune context missing '+token);
