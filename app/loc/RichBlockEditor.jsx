@@ -2,8 +2,8 @@
 
 import {useEffect,useRef} from 'react';
 
-const ALLOWED_TAGS=new Set(['P','BR','STRONG','B','EM','I','U','S','H2','H3','UL','OL','LI','BLOCKQUOTE','DIV','SPAN','A','DETAILS','SUMMARY']);
-const ALLOWED_CLASSES=new Set(['loc-rich-bubble','loc-rich-box','home-status-details','home-status-reference']);
+const ALLOWED_TAGS=new Set(['P','BR','STRONG','B','EM','I','U','S','H1','H2','H3','UL','OL','LI','BLOCKQUOTE','DIV','SPAN','A','DETAILS','SUMMARY']);
+const ALLOWED_CLASSES=new Set(['loc-rich-bubble','loc-rich-box','home-status-details','home-status-reference','loc-eyebrow','home-title-row','loc-subtitle']);
 
 function escapeHtml(value=''){
   return String(value)
@@ -64,9 +64,10 @@ function sanitizeHtml(value=''){
         const name=attr.name.toLowerCase();
         const keepClass=name==='class'&&attr.value.split(/\s+/).every(cls=>ALLOWED_CLASSES.has(cls));
         const keepHref=child.tagName==='A'&&name==='href'&&/^(?:https?:|mailto:|#|\?|\/(?!\/))/i.test(attr.value);
-        if(!keepClass&&!keepHref)child.removeAttribute(attr.name);
+        const keepTarget=child.tagName==='A'&&name==='target'&&attr.value==='_blank';
+        if(!keepClass&&!keepHref&&!keepTarget)child.removeAttribute(attr.name);
       }
-      if(child.tagName==='A')child.setAttribute('rel','noreferrer');
+      if(child.tagName==='A')child.setAttribute('rel','noopener noreferrer');
       clean(child);
     }
   };
