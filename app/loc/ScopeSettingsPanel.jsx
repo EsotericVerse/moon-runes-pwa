@@ -79,7 +79,6 @@ export default function ScopeSettingsPanel({scopeId}){
   return <section className="loc-card scope-feature-card">
     <p className="loc-eyebrow">Scope Settings</p>
     <h2>基本與雜項設定</h2>
-    <p>這些是此 Scope 自己的 presentation 設定，不屬於 Admin Registry，也不寫入 silver.manage。</p>
     {loading?<p className="scope-status">讀取中…</p>:null}
     {!loading?<form onSubmit={save}>
       <div className="scope-management-fields">
