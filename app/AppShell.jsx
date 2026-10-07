@@ -59,10 +59,10 @@ function automaticThemeId(date=new Date()){
   return hour>=6&&hour<18?DAY_THEME_ID:NIGHT_THEME_ID;
 }
 
-function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY}){
+function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride=''}){
   const scope=scopeMeta||getScope(String(scopeId||'').trim());
   const policy=scope.theme||{mode:'auto'};
-  const fixedDefaultThemeId=policy.mode==='fixed'?String(policy.themeId||'').trim():'';
+  const fixedDefaultThemeId=String(defaultThemeIdOverride||'').trim()||(policy.mode==='fixed'?String(policy.themeId||'').trim():'');
   const configQuery=useQuery({
     queryKey:['scope-public-config',scopeId],
     queryFn:()=>selectScopeConfig(scopeId),
@@ -155,6 +155,7 @@ export default function AppShell({children}){
   const activeLocale=localeSelection.scopeId===scopeId?normalizeUiLocale(localeSelection.locale):'zh-Hant';
   const copy=useMemo(()=>uiCopy(activeLocale),[activeLocale]);
   const navScopeId=currentScope.featureScope||scopeId;
+  const gameThemeDefault=scopeId==='lrunes'&&/\/game\/?$/.test(String(pathname||''))?'theme-4':'';
 
   useEffect(()=>{
     let active=true;
@@ -218,7 +219,7 @@ export default function AppShell({children}){
     <footer className="scope-footer" data-scope={scopeId}>
       <div className="scope-footer-row">
         <a href="mailto:sopa2306@gmail.com">{copy.nav.contact}</a>
-        <ThemeSelect scopeId={scopeId} scopeMeta={currentScope} copy={copy}/>
+        <ThemeSelect scopeId={scopeId} scopeMeta={currentScope} copy={copy} defaultThemeIdOverride={gameThemeDefault}/>
         <LanguageSelect
           locale={activeLocale}
           copy={copy}
