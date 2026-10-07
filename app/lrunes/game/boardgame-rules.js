@@ -3,7 +3,7 @@
  * Pure rules: no LOC components, CSS, navigation or database writes.
  * Supabase game rows are loaded before constructing the match.
  */
-import {applyDe,draw,evaluateAlphaEvent,finishOpening,freshPlayer,shuffle} from './game-data';
+import {applyDe,draw,evaluateAlphaEvent,finishOpening,freshPlayer,shuffle} from './game-data.js';
 
 const LABELS=['A','B','C','D'];
 const snapshot=(players,step)=>Object.fromEntries([['step',step],...players.map((p,i)=>[LABELS[i],p.de])]);
