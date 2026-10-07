@@ -5,14 +5,14 @@ import {createLunaRunesGame} from './boardgame-rules';
 import {loadGameData} from './game-data';
 import {useQuery} from '@tanstack/react-query';
 import './game-board.css';
-import {ThemeProvider,createTheme,Paper,Button,Alert,Tabs,Tab,LinearProgress} from '@mui/material';
+import {ThemeProvider,createTheme,Paper,Alert,Tabs,Tab,LinearProgress} from '@mui/material';
 import {DndContext,useDraggable,useDroppable,PointerSensor,TouchSensor,useSensor,useSensors} from '@dnd-kit/core';
 const gameTheme=createTheme({palette:{mode:'dark',primary:{main:'#e4bf7c'},background:{paper:'#1a2434'},text:{primary:'#f4f1e9'}},shape:{borderRadius:12}});
 function RuneCard({card,selected,disabled,onClick,playerIndex}){
   const {attributes,listeners,setNodeRef,transform,isDragging}=useDraggable({id:'rune-'+playerIndex+'-'+card.id,disabled,data:{playerIndex,cardId:card.id}});
   return <button ref={setNodeRef} type="button" {...attributes} {...listeners} className={'lrg-card'+(selected?' picked':'')} aria-pressed={selected} disabled={disabled} onClick={onClick} title={card.name+'｜'+card.group} style={{transform:transform?'translate3d('+transform.x+'px,'+transform.y+'px,0)':undefined,opacity:isDragging?.6:1,touchAction:'manipulation',zIndex:isDragging?10:undefined}}><img src={cardSrc(card)} alt={card.name} loading="lazy"/><span>{card.name}</span></button>;
 }
-function SelectionZone({count,limit}){const {setNodeRef,isOver}=useDroppable({id:'selected-zone'});return <Paper ref={setNodeRef} variant="outlined" sx={{p:1.5,mt:1,borderStyle:'dashed',borderColor:isOver?'primary.main':'divider',textAlign:'center'}}>{'已選 '+count+' / '+limit+' 張 · 點擊卡牌或拖曳至此選取'}</Paper>}
+function SelectionZone({count,limit,playerIndex}){const {setNodeRef,isOver}=useDroppable({id:'selected-zone-'+playerIndex,data:{playerIndex}});return <Paper ref={setNodeRef} variant="outlined" sx={{p:1.5,mt:1,borderStyle:'dashed',borderColor:isOver?'primary.main':'divider',textAlign:'center'}}>{'已選 '+count+' / '+limit+' 張 · 點擊卡牌或拖曳至此選取'}</Paper>}
 
 
 const cardSrc=card=>'/assets/lunarunes/cards/'+String(card.id).padStart(2,'0')+'_'+String(card.name).replace(/之符文$/,'').trim()+'.png';
@@ -25,8 +25,9 @@ function Board({G,moves,rules,onRestart}){
   const event=G.eventDeck[G.eventIndex%G.eventDeck.length];
   const opening=G.stage==='opening',isEvent=G.stage==='event',isResonance=G.stage?.includes('resonance')||G.stage==='duel';
   const done=G.stage==='finished';
+  const selectable=!done&&!isResonance;
   const players=opening?[{p:active,i:G.active}]:G.players.map((p,i)=>({p,i}));
-  return <ThemeProvider theme={gameTheme}><DndContext sensors={sensors} onDragEnd={({active:drag,over})=>{if(over?.id==='selected-zone'&&drag.data.current)moves.toggleCard(drag.data.current.playerIndex,drag.data.current.cardId);}}><main className="lrg">
+  return <ThemeProvider theme={gameTheme}><DndContext sensors={sensors} onDragEnd={({active:drag,over})=>{if(over?.data.current?.playerIndex===drag.data.current?.playerIndex&&drag.data.current)moves.toggleCard(drag.data.current.playerIndex,drag.data.current.cardId);}}><main className="lrg">
     <header className="lrg-top">
       <div><small>LUNARUNES · TABLETOP</small><h1>月之符文</h1></div>
       <div className="lrg-top-actions"><span>第 {G.round} 回合 · {labelStage(G.stage)}</span><button onClick={onRestart}>新遊戲</button></div>
@@ -47,7 +48,7 @@ function Board({G,moves,rules,onRestart}){
           <div className="lrg-player-title"><h3>{p.name}</h3><strong>De {p.de} / {rules.config.deMax}</strong></div>
           <LinearProgress variant="determinate" value={Math.max(0,Math.min(100,p.de/rules.config.deMax*100))} sx={{my:1,height:8,borderRadius:2}}/>
           <p className="lrg-counts">手牌 {p.hand.length} · 牌庫 {p.deck.length} · 棄牌 {p.discard.length} · 已選 {p.selected.length}</p>
-          <div className="lrg-hand">{p.hand.map(card=><RuneCard key={card.id} card={card} playerIndex={i} selected={p.selected.includes(card.id)} disabled={done||isResonance||opening&&i!==G.active} onClick={()=>moves.toggleCard(i,card.id)}/>)}</div>{!done&&!isResonance&&((opening&&i===G.active)||isEvent)?<SelectionZone count={p.selected.length} limit={opening?rules.config.openingDiscard:rules.config.eventResponseCards}/>:null}
+          <div className="lrg-hand">{p.hand.map(card=><RuneCard key={card.id} card={card} playerIndex={i} selected={p.selected.includes(card.id)} disabled={!selectable||(opening&&i!==G.active)} onClick={()=>moves.toggleCard(i,card.id)}/>)}</div>{!done&&!isResonance&&((opening&&i===G.active)||isEvent)?<SelectionZone playerIndex={i} count={p.selected.length} limit={opening?rules.config.openingDiscard:rules.config.eventResponseCards}/>:null}
         </Paper>)}</div>
       </section>
       <Paper component="aside" className="lrg-side"><h2>對局資訊</h2><p>玩家 {G.players.length} 人</p><p>階段：{labelStage(G.stage)}</p><p>目前行動：{active.name}</p><details><summary>最新紀錄</summary>{G.logs.slice(0,8).map((line,i)=><p key={i}>{line}</p>)}</details></Paper>
