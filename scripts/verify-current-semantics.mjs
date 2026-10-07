@@ -107,7 +107,9 @@ if(!failures.length){
   if(galaxy.includes("{column:'source_name',operator:'neq',value:''}"))failures.push('Unknown source rows must reach Statistics and map to Others instead of being discarded.');
   for(const token of ['表現風格','Class｜符文群組','Group｜符文排行'])if(!statistics.includes(token))failures.push('Statistics style-filter presentation missing '+token);
   for(const token of ['表現風格','Class｜符文群組比例','culture-style-filter'])if(!culture.includes(token))failures.push('Culture style-filter presentation missing '+token);
-  for(const token of ['currentStructurePeriod','currentTimelineItems','fixedMin={currentStructureStart}','fixedMax={currentStructureEnd}'])if(!culture.includes(token))failures.push('Culture first river must stay constrained to the current period: '+token);
+  for(const token of ['currentStructurePeriod','items={timelineItems}','windowStart={currentStructureStart}','windowEnd={currentStructureEnd}'])if(!culture.includes(token))failures.push('Culture first river must use the full Scope timeline with the current period only as its initial viewport: '+token);
+  const structureRiver=culture.slice(culture.indexOf("scope-culture-structure-river"),culture.indexOf("scope-culture-classification-river",culture.indexOf("scope-culture-structure-river")));
+  if(structureRiver.includes('fixedMin={currentStructureStart}')||structureRiver.includes('fixedMax={currentStructureEnd}'))failures.push('Culture first river must remain horizontally navigable beyond the current period.');
   for(const token of ['isAggregateScope','locCombinedSourceRiverItems','locScopeDistributionItems'])if(!culture.includes(token))failures.push('LOC aggregate Culture contract missing '+token);
   for(const token of ['selectManagedScopes','Promise.all(managedScopes','buildLocSourceRiver','buildLocScopeDistribution'])if(!cultureQuery.includes(token))failures.push('LOC Culture aggregate data loader missing '+token);
   for(const token of ['selectScopeGroupChildren','不跨 Scope 聚合 Galaxy／Galaxy Media／Time','前往此 Scope'])if(!scopeGroupOverview.includes(token))failures.push('Scope Group overview navigation contract missing '+token);
