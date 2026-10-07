@@ -19,7 +19,7 @@ import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayT
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import {applyFilters} from '../../loc/db-query.mjs';
-import RichBlockEditor,{blocksToPlainText,plainTextToBlocks} from '../../loc/RichBlockEditor';
+import RichBlockEditor,{blocksToPlainText,normalizeBlocks,plainTextToBlocks} from '../../loc/RichBlockEditor';
 import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
 
 
@@ -79,9 +79,7 @@ function attrDisplayValue(key,value){
 function galaxyDraftFromRow(row={},fallbackTitle=''){
   return {
     title:String(row.title??fallbackTitle??''),
-    bodyBlocks:Array.isArray(row.content_blocks)&&row.content_blocks.length
-      ?row.content_blocks
-      :plainTextToBlocks(String(row.content??'')),
+    bodyBlocks:normalizeBlocks(row.content_blocks,String(row.content??'')),
     attrs:{
       uid:String(row.uid||'').trim(),
       content_type:String(row.content_type||'').trim(),

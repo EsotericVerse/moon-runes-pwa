@@ -235,20 +235,6 @@
 
 
 .scope-governance-editable{display:grid;gap:1rem}
-.scope-governance-wysiwyg{
-  min-height:24rem;
-  padding:1rem;
-  border:var(--scope-border);
-  border-radius:var(--scope-radius);
-  background:var(--loc-panel);
-  color:var(--scope-text);
-  line-height:1.75;
-  outline:none;
-}
-.scope-governance-wysiwyg:focus{border-color:var(--loc-accent-border);box-shadow:0 0 0 2px color-mix(in srgb,var(--loc-accent) 18%,transparent)}
-.scope-governance-wysiwyg h1,.scope-governance-wysiwyg h2,.scope-governance-wysiwyg h3{margin:1rem 0 .5rem}
-.scope-governance-wysiwyg p{margin:.5rem 0}
-
 /* Static presentation belongs in CSS; JS only supplies state or runtime configuration. */
 .scope-prewrap{white-space:pre-wrap}
 .scope-daily-calendar-nav{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin-bottom:1rem}
@@ -312,3 +298,15 @@
 .scope-stat-suggestions button:hover{border-color:var(--loc-accent-border);background:var(--loc-gold-surface)}
 .scope-stat-suggestions button span{color:var(--scope-muted)}
 @media(max-width:680px){.scope-stat-suggestions button{grid-template-columns:1fr}}
+
+
+/* Keyword management uses vis-network as the primary Class → Group → Item → Keyword editing surface. */
+.scope-keyword-network-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(18rem,.85fr);gap:1rem;align-items:start}
+.scope-keyword-network{display:grid;gap:.7rem;min-width:0}
+.scope-keyword-network-help{display:flex;justify-content:space-between;gap:.75rem;flex-wrap:wrap;color:var(--scope-muted);font-size:.88rem}
+.scope-keyword-network-help strong{color:var(--scope-text)}
+.scope-keyword-network-canvas{min-height:clamp(480px,62vh,760px);background:color-mix(in srgb,var(--loc-bg) 48%,transparent)}
+.scope-keyword-network-inspector{position:sticky;top:5rem;display:grid;gap:.75rem;max-height:calc(100vh - 6rem);overflow:auto;padding:1rem;border:var(--scope-border);border-radius:var(--scope-radius);background:var(--loc-panel)}
+.scope-keyword-network-inspector>label{display:grid;gap:.35rem}
+.scope-keyword-empty{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+@media(max-width:980px){.scope-keyword-network-layout{grid-template-columns:1fr}.scope-keyword-network-inspector{position:static;max-height:none}}
