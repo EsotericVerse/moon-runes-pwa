@@ -6,7 +6,8 @@ export default function LunaRunesGovernance({scopeId='lrunes'}){
   return <ScopeEditableBlocks
     scopeId={scopeId}
     page="governance"
-    className="governance-grid"
+    className="loc-grid two governance-grid"
+    headingLevel={2}
     fallbackDocuments={[
       [
         {type:'heading',props:{level:2},content:'使用原則與邊界'},

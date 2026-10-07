@@ -6,7 +6,8 @@ export default function LocGovernance(){
   return <ScopeEditableBlocks
     scopeId="loc"
     page="governance"
-    className="governance-grid governance-grid-loc"
+    className="loc-grid two governance-grid governance-grid-loc"
+    headingLevel={2}
     fallbackDocuments={[
       [
         {type:'heading',props:{level:2},content:'治理原則'},

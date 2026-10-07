@@ -41,7 +41,8 @@ export default function ScopeEditableBlocks({
   orders=null,
   fallbackDocuments=[],
   className='',
-  slotClassName='loc-card'
+  slotClassName='loc-card',
+  headingLevel=3
 }){
   const account=useAccount();
   const queryClient=useQueryClient();
@@ -123,6 +124,7 @@ export default function ScopeEditableBlocks({
       const active=editing===index+1;
       const empty=!blocksToPlainText(slot.blocks)&&!slot.title;
       if(empty&&!canEdit)return null;
+      const Heading=Number(headingLevel)===2?'h2':'h3';
       return <section
         className={slotClassName+' scope-editable-block'+(active?' is-editing':'')+(canEdit&&!active?' is-editable-idle':'')}
         key={slot.order}
@@ -140,7 +142,7 @@ export default function ScopeEditableBlocks({
             onChange={setDraft}
           />
         </>:<>
-          {slot.title?<h3>{slot.title}</h3>:null}
+          {slot.title?<Heading>{slot.title}</Heading>:null}
           <RichBlockEditor
             key={scopeId+':'+page+':'+index+':view:'+JSON.stringify(slot.blocks)}
             initialContent={slot.blocks}
