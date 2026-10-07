@@ -53,4 +53,23 @@ test.describe('LunaRunes tabletop UI',()=>{
     const overflow=await page.evaluate(()=>Math.max(0,document.documentElement.scrollWidth-document.documentElement.clientWidth));
     expect(overflow).toBeLessThanOrEqual(2);
   });
+
+  test('game follows the shared theme selector without resetting the page',async({page})=>{
+    await page.goto('/game/',{waitUntil:'domcontentloaded'});
+    const themeSelect=page.locator('.scope-theme-control select').first();
+    await expect(themeSelect).toBeVisible({timeout:15_000});
+    const start=page.getByRole('button',{name:'開始遊戲'});
+    await expect(start).toBeVisible();
+
+    await themeSelect.selectOption('theme-7');
+    await expect(page.locator('html')).toHaveAttribute('data-theme-id','theme-7');
+    const lightButton=await start.evaluate(el=>getComputedStyle(el).backgroundColor);
+
+    await themeSelect.selectOption('theme-1');
+    await expect(page.locator('html')).toHaveAttribute('data-theme-id','theme-1');
+    const darkButton=await start.evaluate(el=>getComputedStyle(el).backgroundColor);
+
+    expect(darkButton).not.toBe(lightButton);
+    await expect(page.getByRole('heading',{name:'月之符文'})).toBeVisible();
+  });
 });
