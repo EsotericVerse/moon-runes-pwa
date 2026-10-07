@@ -268,17 +268,13 @@ function DeMeter({value=0,max=8}){
 
 function RuneCard({card,selected=false,onClick=null,compact=false}){
   if(!card)return null;
-  const Tag=onClick?motion.button:motion.div;
+  const Tag=onClick?'button':'div';
   return <Tag
-    layout
     type={onClick?'button':undefined}
     className={'game-rune-card'+(selected?' is-selected':'')+(compact?' is-compact':'')}
     onClick={onClick||undefined}
     aria-pressed={onClick?selected:undefined}
     title={card.name+'｜'+card.group+(card.action?'｜'+card.action:'')}
-    animate={{y:selected?-8:0,scale:selected?1.025:1}}
-    whileHover={onClick?{y:-5,scale:1.015}:undefined}
-    transition={{type:'spring',stiffness:340,damping:26}}
   >
     <img src={runeCardImage(card)} alt={card.name+'符文卡'} loading="lazy"/>
     <span><b>{String(card.id).padStart(2,'0')} {card.name}</b><small>{card.group}</small></span>
@@ -794,7 +790,7 @@ export default function GameView(){
     {!allOpened?<p className="loc-status" role="status">{state.result}</p>:null}
 
     <div className={'game-live-board players-'+state.players.length}>
-      {state.players.map((player,pi)=>({player,pi})).filter(({player})=>allOpened||player.opening).map(({player,pi})=><motion.section layout={allOpened} animate={{scale:allOpened&&focusPlayer===pi?1.012:1,opacity:allOpened&&focusPlayer!==null&&focusPlayer!==pi?.72:1}} transition={{duration:.18}} className={'loc-player game-player '+(state.active===pi?'is-turn ':'')+(focusPlayer===pi?'is-focused':'')} key={(allOpened?'play-':'opening-')+player.name}>
+      {state.players.map((player,pi)=>({player,pi})).filter(({player})=>allOpened||player.opening).map(({player,pi})=><section className={'loc-player game-player '+(state.active===pi?'is-turn ':'')+(focusPlayer===pi?'is-focused':'')} key={(allOpened?'play-':'opening-')+player.name}>
         <div className="game-player-head">
           <div><p className="loc-eyebrow">{player.name}</p><strong>{player.de} / {data.config.deMax} De</strong></div>
           <DeMeter value={player.de} max={data.config.deMax}/>
@@ -804,7 +800,7 @@ export default function GameView(){
           {player.hand.map(card=><RuneCard key={card.id} card={card} selected={player.selected.includes(card.id)} onClick={()=>toggle(pi,card.id)}/>)}
         </div>
         {player.opening?<button type="button" className="loc-button primary" onClick={()=>confirmOpening(pi)} aria-disabled={player.selected.length!==data.config.openingDiscard}>確認 {player.name} 棄 {data.config.openingDiscard} 張（已選 {player.selected.length} 張），保留 {data.config.handBase} 張</button>:null}
-      </motion.section>)}
+      </section>)}
 
       <AnimatePresence mode="wait">
         {allOpened&&state.phase==='event'?<motion.section key={'event-'+state.round} initial={{opacity:0,y:18}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-18}} className="loc-event game-event-field">
