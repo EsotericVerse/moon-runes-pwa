@@ -70,7 +70,7 @@ export default function ManagementArticlePublisher({scopeId}){
           aria-label="文章標題"
         />
         <RichBlockEditor
-          key={'publisher:'+scopeId+':'+JSON.stringify(draft.bodyBlocks)}
+          key={'publisher:'+scopeId}
           initialContent={draft.bodyBlocks}
           onChange={blocks=>change('bodyBlocks',blocks)}
         />
