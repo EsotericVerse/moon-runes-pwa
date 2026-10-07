@@ -128,7 +128,7 @@ export default function ScopeEditableBlocks({
       return <section
         className={slotClassName+' scope-editable-block'+(active?' is-editing':'')+(canEdit&&!active?' is-editable-idle':'')}
         key={slot.order}
-        onClick={canEdit&&!active?event=>{if(!isInteractiveTarget(event.target))begin(index)}:undefined}
+        onClickCapture={canEdit&&!active?event=>{if(!isInteractiveTarget(event.target))begin(index)}:undefined}
       >
         {canEdit&&active?<div className="scope-inline-editbar">
           <button type="button" className="loc-button primary" disabled={busy} onClick={()=>save(index)}>{busy?'儲存中…':'儲存'}</button>
