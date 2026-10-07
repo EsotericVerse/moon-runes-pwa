@@ -57,6 +57,7 @@ test.describe('LunaRunes tabletop UI',()=>{
   test('LunaRunes home stays mineral while game defaults to nature and still accepts theme changes',async({page})=>{
     await page.goto('/lrunes/',{waitUntil:'domcontentloaded'});
     await expect(page.locator('html')).toHaveAttribute('data-theme-id','theme-5',{timeout:15_000});
+    await expect.poll(()=>page.locator('html').evaluate(el=>getComputedStyle(el).getPropertyValue('--loc-bg').trim().toLowerCase())).toBe('#d9c878');
 
     await page.goto('/game/',{waitUntil:'domcontentloaded'});
     await expect(page.locator('html')).toHaveAttribute('data-theme-id','theme-4',{timeout:15_000});
