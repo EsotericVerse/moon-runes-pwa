@@ -33,6 +33,19 @@ test.describe('LunaRunes tabletop UI',()=>{
     await expect(page.getByText(/第 2 回合/).first()).toBeVisible();
   });
 
+  test('event conditions render full macro names instead of storage abbreviations',async({page})=>{
+    await page.goto('/game/',{waitUntil:'domcontentloaded'});
+    const eventsTab=page.getByRole('tab',{name:/事件 32/});
+    await expect(eventsTab).toBeVisible({timeout:15_000});
+    await eventsTab.click();
+    const eventCards=page.locator('.lrg-doc-grid .lrg-doc-item');
+    await expect(eventCards.first()).toBeVisible();
+    const text=await eventCards.allTextContents();
+    const joined=text.join('\n');
+    expect(joined).toMatch(/靈魂＋連結|礦物＋生命|自然＋元素|秩序＋無序/);
+    expect(joined).not.toMatch(/條件：\s*(?:SL|ML|NE|OD)(?:\s*[+/]\s*(?:SL|ML|NE|OD))*/);
+  });
+
   test('reference tabs expose the eight roles from the current database',async({page})=>{
     await page.goto('/game/',{waitUntil:'domcontentloaded'});
     const rolesTab=page.getByRole('tab',{name:/八職 8/});
