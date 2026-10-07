@@ -48,7 +48,7 @@ must(editor.includes("style_tags:''")&&editor.includes('風格說明'),'shared T
 must(editor.includes('style_tag_descriptions')&&editor.includes('搜尋顯示說明')&&editor.includes('搜尋精確命中風格詞時'),'Time editor must preserve searchable style comment descriptions');
 must(cultureUi.includes('onClick={canEditWork')&&cultureUi.includes('isInteractiveTarget')&&!cultureUi.includes("UI_COPY.culture.editing:'編輯'"),'Culture existing works must enter editing by direct non-interactive card click without an Edit button');
 must(galaxy.includes('selectStyleKeywordIntroductions')&&!galaxy.includes('scopeCards('),'Search must prepend exact style-keyword introductions and must not use partial Scope-ID cards');
-must(management.includes('scope?.aggregateChildren?<ScopeGroupManagement'),'every DB Scope Group must have its own Manage');
+must(management.includes('scope?.aggregateChildren?<ManagementDisclosure')&&management.includes('<ScopeGroupManagement scopeId={scopeId}/>'),'every DB Scope Group must have its own collapsed Manage entry');
 must(management.includes('ScopeGroupManagement'),'Manage must compose the Scope Group module');
 must(management.includes('<ScopeSettingsPanel')&&management.includes('<ManagementArticlePublisher')&&management.includes('<ManagementImportPanel')&&management.includes('ManagementDisclosure')&&management.includes('label="發表文章"')&&!management.includes('KeywordLibraryPanel'),'Scope Manage must keep settings, publishing and import as collapsed one-line disclosures');
 must(statistics.includes('KeywordLibraryPanel')&&statistics.includes('canManageKeywords')&&statistics.includes("showKeywordSettings?'收起關鍵詞設定':'關鍵詞設定'"),'authenticated keyword settings must live inside Statistics');
