@@ -4,6 +4,7 @@ import {FeaturePage} from '../../modular/ui';
 import {featureHref,scopeHref} from '../../modular/scope-registry';
 import {useScopeRuntime} from '../../modular/use-scope-runtime';
 import ScopeGroupOverview from '../ScopeGroupOverview';
+import ScopeIntroduction from '../ScopeIntroduction';
 
 export default function GenericScopeHomeView(){
   const {scopeId,scope,registryRow}=useScopeRuntime();
@@ -20,7 +21,7 @@ export default function GenericScopeHomeView(){
   return <main className="scope-main"><section className="scope-page">
     <header className="loc-card scope-hero"><p className="loc-eyebrow">Scope</p><h1>{scope.label}</h1><p>{scopeId}</p></header>
     <section className="loc-card">
-      <p>這是由 DB Scope Registry 即時掛載的通用 Scope 入口；不需要為每個新 Scope 重新建立一組靜態頁。</p>
+      <ScopeIntroduction scopeId={scopeId}/>
       <p className="scope-status">{registryRow?.domain||registryRow?.directory||''}</p>
       <div className="scope-result-links">
         <a href={featureHref(scopeId,'search')}>搜尋</a>
