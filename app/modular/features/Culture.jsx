@@ -28,6 +28,10 @@ import {useOffsetPagination} from '../use-offset-pagination';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 
+function isInteractiveTarget(target){
+  return Boolean(target?.closest?.('a,button,input,select,textarea,summary,[role="button"],[contenteditable="true"]'));
+}
+
 function labelOf(item,index){
   return item?.display_label||item?.name||item?.title||item?.period||UI_COPY.format.period(index+1);
 }
@@ -709,7 +713,10 @@ export default function Culture(){
                     error={periodWorksPage.error}
                     onLoadMore={periodWorksPage.loadNext}
                     scrollRootRef={workScrollRef}
-                    renderItem={(work,index)=><WorkSummaryCard
+                    renderItem={(work,index)=>{
+                      const canEditWork=Boolean(work.uid&&account.canManageScopeSync(classificationScope));
+                      const workKey=String(work.key||('galaxy:'+work.uid));
+                      return <WorkSummaryCard
                       key={work.key||work.uid||work.entry_id||String(work.createtime||work.created_at)+'-'+index}
                       title={workDisplayHeading(work,{media:false,limit:80})}
                       source={work.source_name||work.group_label||''}
@@ -718,6 +725,8 @@ export default function Culture(){
                       body={work.description||work.media_metadata_text||''}
                       relationLinks={galaxyRelationLinks(classificationScope,work)}
                       links={work.links||[]}
+                      className={canEditWork&&editingWorkKey!==workKey?'is-editable-idle':''}
+                      onClick={canEditWork&&editingWorkKey!==workKey?event=>{if(!isInteractiveTarget(event.target))startEditingWork(work)}:null}
                     >
                       {work.uid?<WorkFullText
                         open={fullTextKey===work.key}
@@ -726,8 +735,7 @@ export default function Culture(){
                         content={fullTextKey===work.key?fullText:''}
                         onToggle={()=>toggleWorkContent(work)}
                       />:null}
-                      {work.uid&&account.canManageScopeSync(classificationScope)?<p><button type="button" onClick={()=>startEditingWork(work)}>{editingWorkKey===String(work.key||('galaxy:'+work.uid))?UI_COPY.culture.editing:'編輯'}</button></p>:null}
-                      {editingWorkKey===String(work.key||('galaxy:'+work.uid))&&editDraft?<ContentEditor
+                      {editingWorkKey===workKey&&editDraft?<ContentEditor
                         draft={editDraft}
                         setDraft={setEditDraft}
                         busy={editBusy}
@@ -736,7 +744,8 @@ export default function Culture(){
                         onSave={()=>saveEditingWork(work)}
                         onCancel={()=>{setEditingWorkKey('');setEditDraft(null);setEditError('')}}
                       />:null}
-                    </WorkSummaryCard>}
+                    </WorkSummaryCard>;
+                    }}
                   />
                   {!periodWorksPage.loading&&!periodWorksPage.error&&!visibleWorkRows.length?<p className='scope-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
                 </section>

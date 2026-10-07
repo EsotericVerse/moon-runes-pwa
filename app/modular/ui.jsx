@@ -112,11 +112,13 @@ export function WorkSummaryCard({
   destinations=[],
   showSource=true,
   showLinks=true,
-  children=null
+  children=null,
+  className='',
+  onClick=null
 }){
   const safeRelations=safeRelationLinksOf(relationLinks);
   const safeLinks=safeExternalLinksOf(links);
-  return <article className="scope-inline-card scope-work-summary">
+  return <article className={'scope-inline-card scope-work-summary '+className} onClick={onClick||undefined}>
     <header className="scope-culture-work-heading">
       <div>
         {(scopeId||showSource&&source)?<p className="loc-eyebrow">{[scopeId,showSource?source:''].filter(Boolean).join(' · ')}</p>:null}

@@ -154,6 +154,11 @@
 
 .scope-editable-block-grid{min-width:0}
 .scope-editable-block{position:relative;min-width:0}
+.scope-work-summary.is-editable-idle{cursor:text}
+.scope-work-summary.is-editable-idle:hover{
+  border-color:color-mix(in srgb,var(--loc-accent) 28%,var(--loc-ui-hairline));
+}
+
 .scope-editable-block.is-editable-idle{cursor:text}
 .scope-editable-block.is-editable-idle::after{
   content:"";
