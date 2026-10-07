@@ -2,7 +2,7 @@
 
 ## Current boundary
 
-管理登入使用 Google OAuth，由 Supabase Auth 建立可供資料 API 驗證的 JWT；PostgreSQL 權限與既有 RLS 決定可讀寫範圍。登入提供者可替換，資料庫端只要求可驗證的 JWT 身分。
+管理登入使用 Supabase Email Magic Link，由 Supabase Auth 建立可供資料 API 驗證的 JWT；PostgreSQL 權限與既有 RLS 決定可讀寫範圍。管理權限仍以登入 email 對照 `silver.manage`，登入本身不授予任何 Scope 或 Admin 權限。
 
 ## Public data
 

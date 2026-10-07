@@ -962,6 +962,8 @@ ALTER TABLE "silver"."lrunes_galaxy" ENABLE ROW LEVEL SECURITY;
 
 ALTER TABLE "silver"."lrunes_galaxy_media" ENABLE ROW LEVEL SECURITY;
 
+ALTER TABLE "silver"."manage" ENABLE ROW LEVEL SECURITY;
+
 ALTER TABLE "silver"."runes" ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "user_records_owner_all" ON "api"."user_records" AS PERMISSIVE FOR ALL TO "authenticated" USING ((owner_id = api.current_user_id())) WITH CHECK ((owner_id = api.current_user_id()));
@@ -1007,6 +1009,10 @@ CREATE POLICY "lrunes_galaxy_scope_update" ON "silver"."lrunes_galaxy" AS PERMIS
 CREATE POLICY "lrunes_galaxy_media_public_read" ON "silver"."lrunes_galaxy_media" AS PERMISSIVE FOR SELECT TO "anonymous","authenticated" USING (true);
 
 CREATE POLICY "lrunes_galaxy_media_scope_update" ON "silver"."lrunes_galaxy_media" AS PERMISSIVE FOR UPDATE TO "authenticated" USING (silver.can_manage_scope('lrunes'::text)) WITH CHECK (silver.can_manage_scope('lrunes'::text));
+
+CREATE POLICY "manage_authenticated_read" ON "silver"."manage" AS PERMISSIVE FOR SELECT TO "authenticated" USING (((lower(email) = lower(silver.current_auth_email())) OR silver.can_manage_global()));
+
+CREATE POLICY "manage_public_mapping_read" ON "silver"."manage" AS PERMISSIVE FOR SELECT TO "anonymous" USING (true);
 
 CREATE POLICY "runes_public_read" ON "silver"."runes" AS PERMISSIVE FOR SELECT TO "anonymous","authenticated" USING (true);
 
