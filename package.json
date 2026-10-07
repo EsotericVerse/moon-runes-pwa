@@ -34,13 +34,7 @@
     "recharts": "3.10.1",
     "vis-network": "10.1.0",
     "vis-timeline": "8.5.4",
-    "zod": "4.6.0",
-    "@blocknote/core": "0.55.0",
-    "@blocknote/mantine": "0.55.0",
-    "@blocknote/react": "0.55.0",
-    "@mantine/core": "9.7.1",
-    "@mantine/hooks": "9.7.1",
-    "@mantine/utils": "9.7.1"
+    "zod": "4.6.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
