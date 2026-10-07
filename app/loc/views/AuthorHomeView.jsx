@@ -237,6 +237,7 @@ export default function AuthorHomeView({section=null}){
               slotClassName="author-editorial-block"
               orders={[1,2,3,4]}
               fallbackDocuments={AUTHOR_HOME_BLOCKS}
+              showTitleField={false}
             />
           </div>
           <aside className="author-about-side">
