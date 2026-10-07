@@ -10,7 +10,7 @@ import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
 import {selectRows} from '../../loc/db-query.mjs';
 import {FEATURE_LOADING_MESSAGE} from '../feature-data-state';
 
-const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_pair,date_status,year_value,visibility,style_tags,style_tag_descriptions';
+const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_ids,date_status,year_value,visibility,style_tags,style_tag_descriptions';
 
 
 const EDITABLE_TYPES=Object.freeze([
@@ -19,7 +19,7 @@ const EDITABLE_TYPES=Object.freeze([
 const TYPE_LABEL=Object.freeze(Object.fromEntries(EDITABLE_TYPES));
 const BLANK=Object.freeze({
   record_id:'',record_type:'anchor',label:'',resource_id:'',note:'',time_date:'',
-  before_id:'0',after_id:'0',status:'',display_order:'',date_status:'exact',year_value:'',visibility:'',style_tags:'',style_tag_descriptions:{}
+  anchor_ids:['0','0'],status:'',display_order:'',date_status:'exact',year_value:'',visibility:'',style_tags:'',style_tag_descriptions:{}
 });
 
 function dateText(value){return value?String(value).slice(0,10):'';}
@@ -36,17 +36,16 @@ function styleDescriptionOf(value,tag){
   const entry=Object.entries(source).find(([key])=>String(key||'').normalize('NFKC').trim().toLocaleLowerCase('zh-Hant')===normalized);
   return typeof entry?.[1]==='string'?entry[1]:'';
 }
-function splitPair(value){
-  const [before='0',after='0']=String(value||'0,0').split(',',2).map(item=>String(item||'0').trim()||'0');
-  return {before,after};
+function normalizeAnchorIds(value){
+  const source=Array.isArray(value)?value:String(value||'').split(',');
+  const ids=source.map(item=>String(item||'0').trim()||'0').filter(Boolean);
+  return ids.length?ids:['0','0'];
 }
 function rowDraft(row){
   if(!row)return {...BLANK};
-  const pair=splitPair(row.anchor_pair);
   return {
     ...BLANK,...row,
-    before_id:pair.before,
-    after_id:pair.after,
+    anchor_ids:normalizeAnchorIds(row.anchor_ids),
     time_date:dateText(row.time_date),
     year_value:row.year_value??'',
     style_tag_descriptions:styleDescriptionMap(row.style_tag_descriptions)
@@ -57,8 +56,10 @@ function newResourceId(type){
 }
 function rowSortDate(row,anchors){
   if(row.record_type==='anchor')return dateText(row.time_date)||String(row.year_value||'9999');
-  const pair=splitPair(row.anchor_pair);
-  return dateText(anchors.get(pair.before)?.time_date)||dateText(anchors.get(pair.after)?.time_date)||'9999-12-31';
+  const ids=normalizeAnchorIds(row.anchor_ids);
+  const first=ids[0]||'0';
+  const last=ids.at(-1)||'0';
+  return dateText(anchors.get(first)?.time_date)||dateText(anchors.get(last)?.time_date)||'9999-12-31';
 }
 
 export default function CultureTimelineEditor({scopeId=''}){
@@ -156,6 +157,20 @@ export default function CultureTimelineEditor({scopeId=''}){
     setMessage('');
   };
   const change=(key,value)=>setDraft(current=>({...current,[key]:value}));
+  const changeAnchor=(index,value)=>setDraft(current=>{
+    const ids=normalizeAnchorIds(current.anchor_ids);
+    return {...current,anchor_ids:ids.map((id,idIndex)=>idIndex===index?value:id)};
+  });
+  const addAnchor=()=>setDraft(current=>{
+    const ids=normalizeAnchorIds(current.anchor_ids);
+    const last=ids.at(-1)||'0';
+    return {...current,anchor_ids:[...ids.slice(0,-1),'0',last]};
+  });
+  const removeAnchor=index=>setDraft(current=>{
+    const ids=normalizeAnchorIds(current.anchor_ids);
+    if(ids.length<=2)return current;
+    return {...current,anchor_ids:ids.filter((_,idIndex)=>idIndex!==index)};
+  });
   const changeStyleDescription=(tag,value)=>setDraft(current=>({
     ...current,
     style_tag_descriptions:{...styleDescriptionMap(current.style_tag_descriptions),[tag]:value}
@@ -194,7 +209,7 @@ export default function CultureTimelineEditor({scopeId=''}){
         style_tags:activeStyleTags.length?activeStyleTags.join(','):null,
         style_tag_descriptions:styleDescriptions,
         time_date:null,
-        anchor_pair:null,
+        anchor_ids:null,
         date_status:null,
         year_value:null,
         updated_at:new Date().toISOString()
@@ -207,17 +222,22 @@ export default function CultureTimelineEditor({scopeId=''}){
         payload.date_status=exact?'exact':'year_only';
         payload.year_value=exact?null:year;
       }else{
-        const before=String(draft.before_id||'0');
-        const after=String(draft.after_id||'0');
-        if(before==='0'&&after==='0')throw new Error('時期／事件至少需要一個定錨點。');
-        const beforeRow=before==='0'?null:anchors.get(before);
-        const afterRow=after==='0'?null:anchors.get(after);
-        if(before!=='0'&&!beforeRow)throw new Error('前定錨點不存在。');
-        if(after!=='0'&&!afterRow)throw new Error('後定錨點不存在。');
-        const beforeDate=dateText(beforeRow?.time_date);
-        const afterDate=dateText(afterRow?.time_date);
-        if(beforeDate&&afterDate&&beforeDate>=afterDate)throw new Error('後定錨點必須晚於前定錨點。');
-        payload.anchor_pair=before+','+after;
+        const ids=normalizeAnchorIds(draft.anchor_ids);
+        if(ids.every(id=>id==='0'))throw new Error('時期／事件至少需要一個定錨點。');
+        if(ids.slice(1,-1).includes('0'))throw new Error('0 只能用在第一或最後一個位置，表示開放端。');
+        for(const id of ids){
+          if(id!=='0'&&!anchors.has(id))throw new Error('定錨點不存在：'+id);
+        }
+        const dated=ids
+          .filter(id=>id!=='0')
+          .map(id=>({id,date:dateText(anchors.get(id)?.time_date)}))
+          .filter(item=>item.date);
+        for(let index=1;index<dated.length;index+=1){
+          if(dated[index-1].date>=dated[index].date){
+            throw new Error('定錨點必須依時間先後排列。');
+          }
+        }
+        payload.anchor_ids=ids;
       }
       if(selectedId){
         const {record_type,...patch}=payload;
@@ -240,7 +260,7 @@ export default function CultureTimelineEditor({scopeId=''}){
     if(!selectedId)return;
     if(draft.record_type==='anchor'){
       const id=String(draft.resource_id||'');
-      const references=rawRows.filter(row=>row.record_type!=='anchor'&&Object.values(splitPair(row.anchor_pair)).includes(id));
+      const references=rawRows.filter(row=>row.record_type!=='anchor'&&normalizeAnchorIds(row.anchor_ids).includes(id));
       if(references.length){setMessage('此定錨點仍被時期或事件使用，請先調整引用。');return;}
     }
     setBusy(true);setMessage('');
@@ -258,7 +278,7 @@ export default function CultureTimelineEditor({scopeId=''}){
   return <section className="loc-card scope-feature-card">
     <p className="loc-eyebrow">時期與定錨</p>
     <h2>時期設定</h2>
-    <p>新增或調整定錨點請在這裡處理；時間長河只呈現結果。時期與事件共用前／後兩個定錨點，沒有對應定錨時請選 0。</p>
+    <p>新增或調整定錨點請在這裡處理；時間長河只呈現結果。時期與事件使用有順序的定錨點陣列：第一個是起點、最後一個是終點，中間可加入任意數量的里程碑；開放端使用 0。</p>
     {query.error?<p className="scope-status scope-error">{query.error.message}</p>:null}
     {duplicateAnchorIds.length?<p className="scope-status scope-error">同一資料區域存在重複的定錨點識別：{duplicateAnchorIds.join('、')}。請先修正，否則無法正確呈現文化資料。</p>:null}
     {query.isPending?<p className="scope-status">{FEATURE_LOADING_MESSAGE}</p>:null}
@@ -267,10 +287,10 @@ export default function CultureTimelineEditor({scopeId=''}){
     </div>
     <div className="scope-timeline">
       {rows.map(row=>{
-        const pair=splitPair(row.anchor_pair);
+        const ids=normalizeAnchorIds(row.anchor_ids);
         const range=row.record_type==='anchor'
           ?(dateText(row.time_date)||String(row.year_value||'日期未定'))
-          :pair.before+','+pair.after;
+          :ids.join(' → ');
         return <article key={row.record_id}>
           <button type="button" onClick={()=>selectRow(row)} aria-pressed={selectedId===String(row.record_id)}>
             {TYPE_LABEL[row.record_type]||row.record_type}｜{row.label||row.resource_id}
@@ -292,15 +312,20 @@ export default function CultureTimelineEditor({scopeId=''}){
         <label><span>日期未知時的年份</span><input className="scope-search-input" type="number" value={draft.year_value??''} onChange={event=>change('year_value',event.target.value)}/></label>
       </div>:null}
 
-      {draft.record_type!=='anchor'?<div className="scope-stat-controls">
-        <label><span>前定錨點</span><select className="scope-select" value={draft.before_id||'0'} onChange={event=>change('before_id',event.target.value)}>
-          <option value="0">0｜之前不存在</option>
-          {anchorOptions.map(row=><option key={row.resource_id} value={row.resource_id}>{dateText(row.time_date)||row.year_value||'未知'}｜{row.label}</option>)}
-        </select></label>
-        <label><span>後定錨點</span><select className="scope-select" value={draft.after_id||'0'} onChange={event=>change('after_id',event.target.value)}>
-          <option value="0">0｜之後不存在／Current</option>
-          {anchorOptions.map(row=><option key={row.resource_id} value={row.resource_id}>{dateText(row.time_date)||row.year_value||'未知'}｜{row.label}</option>)}
-        </select></label>
+      {draft.record_type!=='anchor'?<div className="scope-management-wide-field">
+        <h3>定錨點序列</h3>
+        <p className="scope-status">依時間順序排列；第一個與最後一個是範圍邊界，中間項目是事件／時期內的里程碑。</p>
+        <div className="scope-management-fields">
+          {normalizeAnchorIds(draft.anchor_ids).map((anchorId,index,ids)=><label key={index}>
+            <span>{index===0?'起點':index===ids.length-1?'終點':'里程碑 '+index}</span>
+            <select className="scope-select" value={anchorId} onChange={event=>changeAnchor(index,event.target.value)}>
+              {(index===0||index===ids.length-1)?<option value="0">0｜開放端</option>:null}
+              {anchorOptions.map(row=><option key={row.resource_id} value={row.resource_id}>{dateText(row.time_date)||row.year_value||'未知'}｜{row.label}</option>)}
+            </select>
+            {ids.length>2&&index>0&&index<ids.length-1?<button type="button" onClick={()=>removeAnchor(index)}>移除此里程碑</button>:null}
+          </label>)}
+        </div>
+        <button type="button" onClick={addAnchor}>新增里程碑</button>
       </div>:null}
 
       {draft.record_type!=='anchor'?<>
