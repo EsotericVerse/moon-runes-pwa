@@ -573,6 +573,10 @@ export default function GameView(){
     if(!state||!data)return;
     const player=state.players[pi];
     if(!player?.opening)return;
+    if(player.selected.length!==data.config.openingDiscard){
+      setState(current=>current?{...current,result:player.name+' 尚需選滿 '+data.config.openingDiscard+' 張棄牌（目前 '+player.selected.length+' 張）。'}:current);
+      return;
+    }
     try{
       const finished=finishOpening(player,player.selected,data.config);
       const players=state.players.map((item,index)=>index===pi?finished:item);
@@ -799,7 +803,7 @@ export default function GameView(){
         <div className="game-hand">
           {player.hand.map(card=><RuneCard key={card.id} card={card} selected={player.selected.includes(card.id)} onClick={()=>toggle(pi,card.id)}/>)}
         </div>
-        {player.opening?<button type="button" className="loc-button primary" onClick={()=>confirmOpening(pi)} disabled={player.selected.length!==data.config.openingDiscard}>確認 {player.name} 棄 {data.config.openingDiscard} 張，保留 {data.config.handBase} 張</button>:!allOpened?<p className="game-player-meta">{player.name} 已完成起手，等待其他玩家。</p>:null}
+        {player.opening?<button type="button" className="loc-button primary" onClick={()=>confirmOpening(pi)} aria-disabled={player.selected.length!==data.config.openingDiscard}>確認 {player.name} 棄 {data.config.openingDiscard} 張（已選 {player.selected.length} 張），保留 {data.config.handBase} 張</button>:!allOpened?<p className="game-player-meta">{player.name} 已完成起手，等待其他玩家。</p>:null}
       </motion.section>)}
 
       <AnimatePresence mode="wait">
