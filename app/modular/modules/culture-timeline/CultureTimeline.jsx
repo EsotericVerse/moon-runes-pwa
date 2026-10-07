@@ -179,6 +179,7 @@ export default function CultureTimeline({items=[],labelOf=(item,index)=>item?.di
             const month=String(time.getMonth()+1).padStart(2,'0');
             const day=String(time.getDate()).padStart(2,'0');
             onTimeClickRef.current(year+'-'+month+'-'+day);
+            return;
           }
         }
         if(!onBoundaryNavigateRef.current||properties?.what==='item')return;

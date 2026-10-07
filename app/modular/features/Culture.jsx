@@ -245,7 +245,10 @@ export default function Culture(){
   const timelineItems=useMemo(()=>
     (query.data?.timelineItems||[]).filter(item=>isAggregateScope||item.scope_id===scopeId)
   ,[query.data,scopeId]);
-  const currentStructurePeriod=openPeriod||primaryPeriods.find(item=>String(item?.status||'').toLowerCase()==='current')||primaryPeriods.at(-1)||null;
+  const currentStructurePeriod=(!isAggregateScope&&selectedWorkPeriod&&selectedWorkPeriod.period!=='all')
+    ?selectedWorkPeriod
+    :(openPeriod||primaryPeriods.find(item=>String(item?.status||'').toLowerCase()==='current')||primaryPeriods.at(-1)||null);
+  const currentStructureIndex=primaryPeriods.findIndex(item=>periodKey(item)===periodKey(currentStructurePeriod));
   const currentStructureStart=String(currentStructurePeriod?.start_date||'').slice(0,10);
   const currentStructureEnd=String(currentStructurePeriod?.end_date||new Date().toISOString().slice(0,10)).slice(0,10);
   const currentTimelineItems=useMemo(()=>{
@@ -554,13 +557,21 @@ export default function Culture(){
               <section className='scope-card scope-culture-structure-river'>
                 <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
                 <h3>{UI_COPY.culture.structure}</h3>
-                {timelineItems.length?<CultureTimeline
-                  items={timelineItems}
+                {currentTimelineItems.length?<CultureTimeline
+                  items={currentTimelineItems}
                   labelOf={item=>item.display_label||item.title}
                   focus={navigation}
                   mode='overview'
                   windowStart={currentStructureStart}
                   windowEnd={currentStructureEnd}
+                  boundaryStart={currentStructureStart}
+                  boundaryEnd={currentStructureEnd}
+                  onBoundaryNavigate={direction=>{
+                    if(currentStructureIndex<0)return;
+                    const nextIndex=direction==='previous'?currentStructureIndex-1:currentStructureIndex+1;
+                    const next=primaryPeriods[nextIndex];
+                    if(next)setSelectedPeriodKey(periodKey(next));
+                  }}
                   onSelect={item=>{
                     const recordId=String(item?.record_id||item?.recordId||'').trim();
                     if(recordId){

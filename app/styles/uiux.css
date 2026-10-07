@@ -461,6 +461,13 @@ button,a,.loc-control,.loc-button,
   overflow:hidden;
 }
 
+.scope-culture-structure-river{
+  overflow:visible;
+}
+.scope-culture-structure-river .scope-period-timeline{
+  overflow:visible;
+}
+
 .scope-period-timeline .vis-timeline{
   border:1px solid var(--loc-ui-hairline);
   border-radius:var(--loc-ui-radius-md);
