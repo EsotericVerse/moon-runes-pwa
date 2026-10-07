@@ -255,7 +255,7 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false}={
   if(mediaOnly)return [media];
   const timeline=makeProvider({
     id:current.id+':timeline',table:current.time,source:current.id+' 時期',scope:current,idColumn:'record_id',
-    columns:['record_id','record_type','label','resource_id','note','time_date','anchor_pair','status','date_status','year_value','visibility','style_tags','style_tag_descriptions'],
+    columns:['record_id','record_type','label','resource_id','note','time_date','anchor_ids','status','date_status','year_value','visibility','style_tags','style_tag_descriptions'],
     searchFields:['label','note','status','style_tags'],dateColumn:'time_date',
     filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}]
   });
