@@ -51,7 +51,7 @@ export default function RunesClient(){
       <h2>基本判讀順序</h2>
       <ScopeEditableBlocks
         scopeId="lrunes"
-        field="home_blocks"
+        page="home"
         className="basic-grid"
         slotClassName="basic-item"
         fallbackDocuments={[
