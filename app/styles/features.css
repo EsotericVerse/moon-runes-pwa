@@ -155,7 +155,7 @@
 .scope-editable-block-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.85rem}
 .scope-editable-block{position:relative;min-width:0}
 .scope-inline-editbar{display:flex;justify-content:flex-end;gap:.45rem;margin-bottom:.55rem}
-.scope-publisher-main .scope-publisher-main @media(max-width:780px){.scope-editable-block-grid{grid-template-columns:1fr}}
+@media(max-width:780px){.scope-editable-block-grid{grid-template-columns:1fr}}
 
 .scope-rich-editor{min-width:0}
 .scope-rich-toolbar{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.45rem}
