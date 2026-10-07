@@ -17,6 +17,7 @@ const statistics=read('app/modular/features/Statistics.jsx');
 const admin=read('app/loc/views/AdminHomeView.jsx');
 const dbContract=read('app/loc/db-contract.mjs');
 const keywordLibrary=read('app/loc/KeywordLibraryPanel.jsx');
+const keywordNetwork=read('app/loc/KeywordNetworkEditor.jsx');
 const keywordAnalysis=read('app/loc/rune66-keyword-analysis.js');
 const portableSchema=read('docs/sql/portable-current-schema.sql');
 const scopeProvisioning=read('docs/sql/scope-provisioning.sql');
@@ -61,7 +62,7 @@ must(!runesHome.includes('ScopeEditableBlocks')&&runesHome.includes('className="
 must(personalGovernance.includes('ScopeEditableBlocks')&&personalGovernance.includes('page="governance"'),'personal governance must use governance block rows');
 must(runesGovernance.includes('ScopeEditableBlocks')&&runesGovernance.includes('page="governance"'),'LunaRunes governance must use governance block rows');
 must(sharedSearch.includes('startEditing')&&sharedSearch.includes('RichBlockEditor')&&sharedSearch.includes('GALAXY_EDITOR_COLUMNS')&&sharedSearch.includes('GalaxyAttrSummary')&&sharedSearch.includes('GalaxyAttrEditor')&&sharedSearch.includes("fullTextKey===row.key")&&sharedSearch.includes('updateRows'),'Search must open full Galaxy articles first, then expose permission-gated full Attr editing');
-must(cultureUi.includes('CultureTimelineEditor')&&cultureUi.includes('selectedTimelineRecordId')&&cultureUi.includes('onTimeClick={account.canManageScopeSync(scopeId)'),'Culture first timeline must provide authenticated in-place period/anchor editing');
+must(cultureUi.includes('CultureTimelineEditor')&&cultureUi.includes('selectedTimelineRecordId')&&cultureUi.includes('editable={account.canManageScopeSync(scopeId)}')&&cultureUi.includes('onMove={account.canManageScopeSync(scopeId)?moveTimelineRecord:null}')&&cultureUi.includes('onRemove={account.canManageScopeSync(scopeId)?removeTimelineRecord:null}'),'Culture first timeline must use native vis-timeline manipulation for authenticated period/anchor CRUD');
 must(admin.includes("insertRows('silver.manage'")&&admin.includes("deleteRows('silver.manage'"),'Admin Registry node panel must add/remove Manage mappings');
 must(admin.includes('DeploymentTree')&&admin.includes('vis-network/standalone')&&admin.includes("onMoveParent"),'Admin must manage Scope Registry through a draggable vis-network tree');
 must(admin.includes('syncManageScopeRow(')&&admin.includes("role:'scope'"),'Admin Scope node must edit Manage mapping atomically and keep role=scope fixed');
@@ -79,6 +80,7 @@ must(scopeData.includes("keywords:`silver.${id}_keywords`")&&scopeData.includes(
 must(scopeGroup.includes('selectScopeGroupChildren(scopeId)')&&scopeGroup.includes('parent_scope_id'),'Scope Group management must read DB parent/child membership');
 must(admin.includes("if(mappingResult.error)throw new Error(mappingResult.error.message||'Mapping 讀取失敗。')")&&admin.includes("if(registryResult.error)throw new Error(registryResult.error.message||'Scope Registry 讀取失敗。')")&&admin.includes("setStatus(error?.message||'Admin 資料讀取失敗。')"),'Admin mapping/registry read rejections must surface in the UI');
 must(keywordLibrary.includes('class_name')&&keywordLibrary.includes('class_group')&&keywordLibrary.includes('class_enable')&&keywordLibrary.includes('item_name')&&keywordLibrary.includes('principle')&&keywordLibrary.includes('keywords_text'),'keyword library editor must edit self-contained Class, Group, participation, item, principle and one keyword collection together');
+must(keywordLibrary.includes('KeywordNetworkEditor')&&keywordNetwork.includes("import('vis-network/standalone')")&&keywordNetwork.includes('manipulation:')&&keywordNetwork.includes('addNode:')&&keywordNetwork.includes('editNode:')&&keywordNetwork.includes('deleteNode:'),'keyword library must use vis-network manipulation as the primary WYSIWYG Class/Group/Item/Keyword editing surface');
 must(!keywordLibrary.includes('keyword_group')&&!keywordLibrary.includes("node_type:'style'")&&!keywordLibrary.includes("node_type:'keyword'"),'keyword library editor must not recreate style/rule/node-type storage');
 must(keywordLibrary.includes('scopeData=account.scopeDataFor(scopeId)')&&keywordLibrary.includes('keyword_min_chars')&&keywordLibrary.includes('keyword_min_documents'),'keyword analysis thresholds must resolve from the current Scope');
 must(keywordLibrary.includes('current_keyword_class_id')&&keywordLibrary.includes('keyword_class_share_enabled')&&keywordLibrary.includes('Class UUID'),'keyword library must expose current Class UUID and Scope sharing control');
