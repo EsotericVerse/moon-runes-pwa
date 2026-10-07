@@ -35,7 +35,7 @@ for(const scope of Object.values(SCOPES)){
 if(SCOPES.lo3rwang?.theme?.themeId!=='theme-2')failures.push('author system default must remain Link / theme-2');
 if(SCOPES.lrunes?.theme?.themeId!=='theme-5')failures.push('LunaRunes system default must remain Mineral / theme-5');
 
-for(const token of ["SYSTEM_THEME_ID='system-default'","THEME_TIME_ZONE='Asia/Taipei'","DAY_THEME_ID='theme-7'","NIGHT_THEME_ID='theme-1'",'UI_COPY.common.systemTheme'])if(!shell.includes(token))failures.push('AppShell theme control missing '+token);
+for(const token of ["SYSTEM_THEME_ID='system-default'","THEME_TIME_ZONE='Asia/Taipei'","DAY_THEME_ID='theme-7'","NIGHT_THEME_ID='theme-1'",'copy.common.systemTheme'])if(!shell.includes(token))failures.push('AppShell theme control missing '+token);
 if(!layout.includes("import AppShell from './AppShell'")||!layout.includes('<AppShell>{children}</AppShell>'))failures.push('Root layout must use AppShell');
 if(!layout.includes('id="loc-theme-bootstrap"')||!layout.includes('INITIAL_SCOPE_THEMES')||!layout.includes('SCOPES'))failures.push('Root layout must bootstrap a safe initial theme before first paint');
 if(!shell.includes('root.dataset.themeId===slot.id'))failures.push('AppShell theme control must avoid needless root reapply');
