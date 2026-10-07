@@ -361,4 +361,3 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
     </form>
   </section>;
 }
-}
