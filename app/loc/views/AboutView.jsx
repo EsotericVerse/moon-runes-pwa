@@ -1,6 +1,5 @@
 import {scopeHref} from '../../modular/scope-registry';
 import {SITE_IMAGES} from '../../site-images';
-import RuneIntroSection from '../../lrunes/RuneIntroSection';
 import ScopeEditableBlocks from '../ScopeEditableBlocks';
 
 const RUNES_LINKS=Object.freeze({
@@ -49,8 +48,6 @@ export default function AboutView(){
         <figure className="home-framework-figure"><img src={SITE_IMAGES.lunarunes.src} width={SITE_IMAGES.lunarunes.width} height={SITE_IMAGES.lunarunes.height} alt="LunaRunes 月之符文" loading="lazy" decoding="async" /></figure>
       </div>
     </section>
-
-    <RuneIntroSection />
 
     <section className="loc-card home-framework home-architecture-presentation" id="framework-map">
       <div className="home-architecture-layout">
