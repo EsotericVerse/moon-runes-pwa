@@ -13,7 +13,7 @@ import {mergeThemeSlot,selectThemeRegistry} from '../../loc/theme-data';
 import gameHeroAsset from '../../../pics/LunaRunesGame.jpg';
 
 const NAMES=['A','B','C','D'];
-const GAME_THEME_DEFAULT='theme-5';
+const GAME_THEME_DEFAULT='theme-4';
 const GAME_THEME_AUTO='event-auto';
 const GAME_THEME_BY_GROUP=Object.freeze(Object.fromEntries(THEME_SLOTS.map(slot=>[slot.label,slot.id])));
 const CHART_STROKES=['var(--loc-accent)','var(--loc-gold)','var(--loc-text)','var(--loc-muted)'];
