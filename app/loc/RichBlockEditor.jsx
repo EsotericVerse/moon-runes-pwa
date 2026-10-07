@@ -38,7 +38,7 @@ export function plainTextToBlocks(value=''){
   const html=String(value??'')
     .replace(/\r/g,'')
     .split('\n')
-    .map(line=>'<p>'+escapeHtml(line||'<br>')+'</p>')
+    .map(line=>line?'<p>'+escapeHtml(line)+'</p>':'<p><br></p>')
     .join('');
   return {html};
 }
