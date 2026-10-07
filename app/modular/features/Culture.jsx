@@ -22,6 +22,7 @@ import {insertRows,dbAuthRelation,updateRows} from '../../loc/db-client.mjs';
 import {useAccount} from '../../loc/use-account';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {ContentEditor,FeaturePage,IncrementalList,WorkFullText,WorkSummaryCard} from '../ui';
+import CultureTimelineEditor from './CultureTimelineEditor';
 import {workDisplayHeading,workDisplayText} from '../work-display-model';
 import {useOffsetPagination} from '../use-offset-pagination';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
@@ -83,6 +84,7 @@ export default function Culture(){
   const [fullTextLoading,setFullTextLoading]=useState(false);
   const [fullTextError,setFullTextError]=useState('');
   const [editingWorkKey,setEditingWorkKey]=useState('');
+  const [selectedTimelineRecordId,setSelectedTimelineRecordId]=useState('');
   const [editDraft,setEditDraft]=useState(null);
   const [editBusy,setEditBusy]=useState(false);
   const [editError,setEditError]=useState('');
@@ -560,7 +562,12 @@ export default function Culture(){
                   windowEnd={currentStructureEnd}
                   fixedMin={currentStructureStart}
                   fixedMax={currentStructureEnd}
+                  onSelect={item=>{
+                    const recordId=String(item?.record_id||item?.recordId||'').trim();
+                    if(recordId)setSelectedTimelineRecordId(recordId);
+                  }}
                 />:<p className='scope-status'>{FEATURE_EMPTY_MESSAGE}</p>}
+                {account.canManageScopeSync(scopeId)?<CultureTimelineEditor scopeId={scopeId} selectedRecordId={selectedTimelineRecordId}/>:null}
               </section>
 
               {selectedWorkPeriod?<section className='scope-card scope-culture-classification-river'>
