@@ -37,8 +37,10 @@ if(SCOPES.lrunes?.theme?.themeId!=='theme-5')failures.push('LunaRunes system def
 
 for(const token of ["SYSTEM_THEME_ID='system-default'","THEME_TIME_ZONE='Asia/Taipei'","DAY_THEME_ID='theme-7'","NIGHT_THEME_ID='theme-1'",'copy.common.systemTheme'])if(!shell.includes(token))failures.push('AppShell theme control missing '+token);
 if(!layout.includes("import AppShell from './AppShell'")||!layout.includes('<AppShell>{children}</AppShell>'))failures.push('Root layout must use AppShell');
-if(!layout.includes('id="loc-theme-bootstrap"')||!layout.includes('INITIAL_SCOPE_THEMES')||!layout.includes('SCOPES'))failures.push('Root layout must bootstrap a safe initial theme before first paint');
-if(!shell.includes('root.dataset.themeId===slot.id'))failures.push('AppShell theme control must avoid needless root reapply');
+if(!layout.includes('id="loc-theme-bootstrap"')||!layout.includes('INITIAL_SCOPE_THEMES')||!layout.includes('INITIAL_THEME_SCHEMES')||!layout.includes("themeBootstrap='scheme-only'"))failures.push('Root layout must bootstrap only a safe scheme placeholder before DB theme hydration');
+if(shell.includes('root.dataset.themeId===slot.id'))failures.push('AppShell must not suppress DB palette refresh merely because the theme ID is unchanged');
+if(!shell.includes("if(!override&&effectiveThemeId!=='theme-7')return")||!shell.includes('applyTheme(slot)'))failures.push('AppShell must wait for the DB palette before applying non-order themes');
+if(!registry.includes('delete root.dataset.themeBootstrap'))failures.push('Applying a resolved palette must clear the scheme-only bootstrap marker');
 if(shell.includes('if(fixedThemeId)return null')||shell.includes('if(fixedDefaultThemeId)return null'))failures.push('fixed Scope defaults must not hide the footer theme selector');
 for(const token of ["selection.scopeId===scopeId","setSelection({scopeId,themeId:SYSTEM_THEME_ID})","fixedDefaultThemeId||configuredDefaultThemeId||automaticThemeId(now)"])if(!shell.includes(token))failures.push('Scope-local system-default theme behavior missing '+token);
 
