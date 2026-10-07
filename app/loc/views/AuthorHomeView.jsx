@@ -1,4 +1,4 @@
-import ScopeIntroduction from '../ScopeIntroduction';
+import ScopeHomeIntroduction from '../ScopeHomeIntroduction';
 
 function AuthorPage({eyebrow,title,subtitle,intro,heroVisual=null,sections=[]}){
   return <section className="loc-view scope-home-composition">
@@ -205,7 +205,7 @@ export default function AuthorHomeView({section=null}){
         title:'關於我',
         content:<div className="author-about-grid">
           <div className="author-about-primary">
-            <ScopeIntroduction
+            <ScopeHomeIntroduction
               scopeId="lo3rwang"
               fallback="Lucas Oscar Wang 政德，日常叫我 Oscar。寫作、音樂、系統整理與到處看看，都是我長期沒有放下的事情。"
             />
