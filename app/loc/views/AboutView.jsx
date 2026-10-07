@@ -51,7 +51,7 @@ export default function AboutView(){
                 {slot.title?<h1>{slot.title}</h1>:null}
                 {explanation?.text?<p className="loc-subtitle"><InlineHtml html={explanation.text}/></p>:null}
               </div>
-              {description?.text?<div className="loc-hero-copy"><BlockHtml html={description.text}/></div>:null}
+              {description?.text?<div className="loc-hero-copy" dangerouslySetInnerHTML={{__html:description.text}}/>:null}
             </>;
           }}
         />
