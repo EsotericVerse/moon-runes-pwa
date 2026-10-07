@@ -6,9 +6,10 @@ import {insertRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {createUid8} from './uid';
 import {normalizeRelationIds,requireGalaxyContent,resolveGalaxyTitle} from './content-policy';
+import RichBlockEditor,{blocksToPlainText,plainTextToBlocks} from './RichBlockEditor';
 
 const blank=()=>({
-  title:'',body:'',source:'',url:'',source_id:'',target_id:'',ref_id:'',createtime:'',
+  title:'',bodyBlocks:plainTextToBlocks(''),source:'',url:'',source_id:'',target_id:'',ref_id:'',createtime:'',
   hidden:false
 });
 
@@ -25,7 +26,7 @@ export default function ManagementArticlePublisher({scopeId}){
     event?.preventDefault?.();
     setBusy(true);setStatus('');
     try{
-      const content=requireGalaxyContent(draft.body);
+      const content=requireGalaxyContent(blocksToPlainText(draft.bodyBlocks));
       if(!draft.source.trim())throw new Error(UI_COPY.management.sourceRequired);
       const now=new Date().toISOString();
       const uid=createUid8();
@@ -37,6 +38,7 @@ export default function ManagementArticlePublisher({scopeId}){
         content_type:'article',
         title:resolveGalaxyTitle(draft.title,content),
         content,
+        content_blocks:draft.bodyBlocks,
         source_id:draft.source_id.trim()||null,
         target_id:normalizeRelationIds(draft.target_id),
         ref_id:draft.ref_id.trim()||null,
@@ -67,14 +69,10 @@ export default function ManagementArticlePublisher({scopeId}){
           placeholder="新增標題"
           aria-label="文章標題"
         />
-        <textarea
-          className="scope-publisher-body"
-          rows={24}
-          value={draft.body}
-          onChange={event=>change('body',event.target.value)}
-          placeholder="開始寫作…"
-          aria-label={UI_COPY.management.articleBody}
-          required
+        <RichBlockEditor
+          key={'publisher:'+scopeId+':'+JSON.stringify(draft.bodyBlocks)}
+          initialContent={draft.bodyBlocks}
+          onChange={blocks=>change('bodyBlocks',blocks)}
         />
       </div>
 
