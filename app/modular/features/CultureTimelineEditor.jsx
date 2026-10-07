@@ -319,7 +319,9 @@ export default function CultureTimelineEditor({scopeId=''}){
           {normalizeAnchorIds(draft.anchor_ids).map((anchorId,index,ids)=><label key={index}>
             <span>{index===0?'起點':index===ids.length-1?'終點':'里程碑 '+index}</span>
             <select className="scope-select" value={anchorId} onChange={event=>changeAnchor(index,event.target.value)}>
-              {(index===0||index===ids.length-1)?<option value="0">0｜開放端</option>:null}
+              {(index===0||index===ids.length-1)
+                ?<option value="0">0｜開放端</option>
+                :<option value="0" disabled>請選擇里程碑</option>}
               {anchorOptions.map(row=><option key={row.resource_id} value={row.resource_id}>{dateText(row.time_date)||row.year_value||'未知'}｜{row.label}</option>)}
             </select>
             {ids.length>2&&index>0&&index<ids.length-1?<button type="button" onClick={()=>removeAnchor(index)}>移除此里程碑</button>:null}
