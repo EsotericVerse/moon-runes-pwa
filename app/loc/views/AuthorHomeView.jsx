@@ -1,3 +1,5 @@
+import ScopeIntroduction from '../ScopeIntroduction';
+
 function AuthorPage({eyebrow,title,subtitle,intro,heroVisual=null,sections=[]}){
   return <section className="loc-view scope-home-composition">
     {heroVisual?<header className="loc-hero scope-home-hero-with-visual" id="top">
@@ -203,7 +205,10 @@ export default function AuthorHomeView({section=null}){
         title:'關於我',
         content:<div className="author-about-grid">
           <div className="author-about-primary">
-            <p>Lucas Oscar Wang 政德，日常叫我 Oscar。寫作、音樂、系統整理與到處看看，都是我長期沒有放下的事情。</p>
+            <ScopeIntroduction
+              scopeId="lo3rwang"
+              fallback="Lucas Oscar Wang 政德，日常叫我 Oscar。寫作、音樂、系統整理與到處看看，都是我長期沒有放下的事情。"
+            />
             <p><strong>人生觀：</strong>鑑古知今，求同存異。不在其位，不謀其政。隨心所欲，而不逾己。</p>
             <p><strong>原則態度：</strong>敬畏未知，尊重異者，專業為先。</p>
             <p><strong>擅長能力：</strong>歸納、整理與系統化；習慣把複雜原理收斂成可以理解與重複使用的結構。</p>
