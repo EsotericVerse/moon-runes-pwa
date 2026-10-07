@@ -84,9 +84,16 @@ function StatusBubbles(slot){
           </details>:null}
         </div>;
       }
+      const parts=paragraphParts(entity.text);
       return <div className="loc-bubble" key={entity.uid}>
         <strong>{entity.title}</strong>
-        <Html html={entity.text}/>
+        <Html tag="p" html={parts[0]||''}/>
+        {parts.slice(1).map((part,partIndex)=><Html
+          tag="p"
+          className="home-status-reference"
+          html={part}
+          key={entity.uid+':'+partIndex}
+        />)}
       </div>;
     })}
   </div>;
