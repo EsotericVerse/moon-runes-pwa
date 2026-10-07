@@ -71,12 +71,9 @@ export default function GovernanceManagement(){
       <p className="loc-eyebrow">{UI_COPY.management.eyebrow} · {scopeId}</p>
       <h1>{scope.label}{scopeId==='loc'?' Scope Group':''}管理</h1>
       <p>{account.user.email||account.user.name||''}</p>
-      <div className="scope-management-select">
-        <label htmlFor="scope-management-section">{UI_COPY.management.item}</label>
-        <select id="scope-management-section" className="scope-select" value={section} onChange={event=>setSection(event.target.value)}>
-          {options.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}
-        </select>
-      </div>
+      {!scope?.aggregateChildren?<nav className="scope-tabs" aria-label="管理頁">
+        {options.map(option=><button type="button" key={option.value} aria-pressed={section===option.value} onClick={()=>setSection(option.value)}>{option.label}</button>)}
+      </nav>:null}
       <div className="scope-preview-links">
         {scopeId==='loc'?<a className="loc-button" href={scopeHref('admin')}>前往 Admin 系統設定</a>:<a className="loc-button" href={scopeHref(scopeId)}>返回 Scope</a>}
         <button className="loc-button" type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button>
