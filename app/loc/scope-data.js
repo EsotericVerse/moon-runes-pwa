@@ -145,7 +145,7 @@ export async function selectScopeConfig(scopeId){
   const scope=defaultScopeData(scopeId);
   if(!scope)return null;
   const {rows}=await selectRows(scope.config,{
-    columns:'id,display_name,search_intro,home_intro,search_aliases,theme,search_able,statistics_able,culture_able',
+    columns:'id,display_name,search_intro,home_blocks,governance_blocks,search_aliases,theme,search_able,statistics_able,culture_able',
     filters:[{column:'id',operator:'eq',value:scope.id}],
     limit:1,
     offset:0
