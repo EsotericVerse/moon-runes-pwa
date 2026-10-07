@@ -130,6 +130,22 @@
 .lrg-card b{font-size:clamp(10px,1vw,13px)}
 .lrg-card small{font-size:10px;color:var(--loc-muted,#c1ccdd)}
 .lrg-dropzone{text-align:center}
+.lrg-help-button{
+  min-width:0!important;
+  padding:1px 5px!important;
+  font-weight:800!important;
+  line-height:1.2!important;
+}
+.lrg-scoring-help{
+  margin-top:8px;
+  padding:12px;
+  background:var(--loc-surface-soft,transparent);
+}
+.lrg-scoring-help ol{
+  margin:8px 0 10px;
+  padding-left:1.35rem;
+}
+.lrg-scoring-help li+li{margin-top:4px}
 .lrg-side{
   display:grid;
   gap:12px;
