@@ -15,11 +15,14 @@ export default function BlockNoteEditorClient({
   const hydratedLegacyHtml=useRef(false);
 
   useEffect(()=>{
-    if(hydratedLegacyHtml.current||!initialHtml)return;
+    if(hydratedLegacyHtml.current)return;
     hydratedLegacyHtml.current=true;
-    const blocks=editor.tryParseHTMLToBlocks(initialHtml);
-    editor.replaceBlocks(editor.document,blocks);
-  },[editor,initialHtml]);
+    if(initialHtml){
+      const blocks=editor.tryParseHTMLToBlocks(initialHtml);
+      editor.replaceBlocks(editor.document,blocks);
+    }
+    onHtmlChange?.(editor.blocksToHTMLLossy(editor.document));
+  },[editor,initialHtml,onHtmlChange]);
 
   const emit=()=>{
     const blocks=editor.document;
