@@ -4,7 +4,7 @@ import {PostgrestClient} from '@supabase/postgrest-js';
 export function createPostgrestAdapter({url,auth,getPublicToken=async()=>'',getAuthToken,headers={},fetch:fetchImpl=globalThis.fetch}={}){
   if(!url)throw new Error('PostgREST adapter requires a data API URL');
   const unavailable=async()=>{throw new Error('Authenticated database adapter is not configured');};
-  const authBoundary=auth||{getSession:unavailable,signInWithOtp:unavailable,signOut:unavailable};
+  const authBoundary=auth||{getSession:unavailable,signInWithOAuth:unavailable,signOut:unavailable};
   function client(getToken){
     return new PostgrestClient(String(url).replace(/\/+$/,''),{
       schema:'api',headers,
