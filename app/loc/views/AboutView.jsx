@@ -23,6 +23,15 @@ function BlockHtml({html,className=''}) {
   return <div className={className} dangerouslySetInnerHTML={{__html:html}}/>;
 }
 
+function paragraphs(value=''){
+  return [...String(value||'').matchAll(/<p(?:\s[^>]*)?>([\s\S]*?)<\/p>/gi)].map(match=>match[1]);
+}
+
+function ParagraphHtml({html,className=''}) {
+  if(!html)return null;
+  return <p className={className} dangerouslySetInnerHTML={{__html:html}}/>;
+}
+
 export default function AboutView(){
   return <section className="loc-view loc-home">
     <header className="loc-hero loc-home-hero">
@@ -124,11 +133,19 @@ export default function AboutView(){
             <div className="home-draw-bubbles home-status-bubbles" aria-label="LOC 系統狀態">
               {textSystem?<div className="loc-bubble">
                 <strong>{textSystem.title}</strong>
-                <BlockHtml html={textSystem.text}/>
+                {paragraphs(textSystem.text).map((html,index)=><ParagraphHtml key={index} html={html} className={index===1?'home-status-reference':''}/>)}
               </div>:null}
               {modules?<div className="loc-bubble">
                 <strong>{modules.title}</strong>
-                <BlockHtml html={modules.text}/>
+                {paragraphs(modules.text)[0]?<ParagraphHtml html={paragraphs(modules.text)[0]}/>:null}
+                {paragraphs(modules.text)[1]?<details className="home-status-details">
+                  <summary>架構</summary>
+                  <ParagraphHtml html={paragraphs(modules.text)[1]}/>
+                </details>:null}
+                {paragraphs(modules.text)[2]?<details className="home-status-details">
+                  <summary>模組</summary>
+                  <ParagraphHtml html={paragraphs(modules.text)[2]}/>
+                </details>:null}
               </div>:null}
             </div>
           </>;
@@ -149,11 +166,12 @@ export default function AboutView(){
             <div className="home-section-heading">
               <p className="loc-eyebrow">LOC GPT Skills</p>
               {slot.title?<h2>{slot.title}</h2>:null}
-              {slot.text?<div className="loc-subtitle"><BlockHtml html={slot.text}/></div>:null}
+              {paragraphs(slot.text)[0]?<p className="loc-subtitle"><InlineHtml html={paragraphs(slot.text)[0]}/></p>:null}
             </div>
             <div className="home-author-copy">
               {governance?<p><strong>{governance.title}</strong>：<InlineHtml html={governance.text}/></p>:null}
               {health?<p><strong>{health.title}</strong>：<InlineHtml html={health.text}/></p>:null}
+              {paragraphs(slot.text)[1]?<ParagraphHtml html={paragraphs(slot.text)[1]}/>:null}
               <div className="loc-actions"><a className="loc-button primary" href="/LOC-GPT-Skills-v2.0-bundle.zip">下載 LOC GPT Skills v2.0</a></div>
             </div>
           </>;
@@ -171,9 +189,12 @@ export default function AboutView(){
           <div className="home-section-heading">
             <p className="loc-eyebrow">About me</p>
             {slot.title?<h2>{slot.title}</h2>:null}
+            {paragraphs(slot.text)[0]?<p className="loc-subtitle"><InlineHtml html={paragraphs(slot.text)[0]}/></p>:null}
           </div>
           <div className="home-about-layout">
-            <div className="home-author-copy"><BlockHtml html={slot.text}/></div>
+            <div className="home-author-copy">
+              {paragraphs(slot.text).slice(1).map((html,index)=><ParagraphHtml key={index} html={html}/>)}
+            </div>
             <figure className="home-about-figure">
               <img src={SITE_IMAGES.author.src} width={SITE_IMAGES.author.width} height={SITE_IMAGES.author.height} alt="作者 Lucas Oscar Wang 政德" loading="lazy" decoding="async" />
             </figure>
