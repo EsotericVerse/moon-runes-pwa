@@ -9,12 +9,13 @@ import {
   applyDe,draw,evaluateAlphaEvent,finishOpening,freshPlayer,loadGameData,shuffle
 } from './game-data';
 import {getThemeSlot,THEME_SLOTS} from '../../modular/theme-registry';
+import {mergeThemeSlot,selectThemeRegistry} from '../../loc/theme-data';
 import gameHeroAsset from '../../../pics/LunaRunesGame.jpg';
 
 const NAMES=['A','B','C','D'];
 const GAME_THEME_DEFAULT='theme-5';
 const GAME_THEME_AUTO='event-auto';
-const GAME_THEME_BY_GROUP=Object.freeze(Object.fromEntries(THEME_SLOTS.map(slot=>[slot.group,slot.id])));
+const GAME_THEME_BY_GROUP=Object.freeze(Object.fromEntries(THEME_SLOTS.map(slot=>[slot.label,slot.id])));
 const CHART_STROKES=['var(--loc-accent)','var(--loc-gold)','var(--loc-text)','var(--loc-muted)'];
 const CHART_TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)',borderRadius:'8px'};
 
@@ -483,6 +484,12 @@ export default function GameView(){
     refetchOnMount:'always'
   });
 
+  const {data:themeRows=[]}=useQuery({
+    queryKey:['theme-registry'],
+    queryFn:selectThemeRegistry,
+    staleTime:60_000
+  });
+
   const [state,setState]=useState(null);
   const [playerCount,setPlayerCount]=useState(2);
   const [homeView,setHomeView]=useState('play');
@@ -494,7 +501,10 @@ export default function GameView(){
   const event=state?.eventDeck?.length?state.eventDeck[state.eventIndex%state.eventDeck.length]:null;
   const eventThemeId=GAME_THEME_BY_GROUP[event?.groups?.[0]]||GAME_THEME_DEFAULT;
   const effectiveGameThemeId=gameThemeId===GAME_THEME_AUTO?eventThemeId:gameThemeId;
-  const gameTheme=useMemo(()=>getThemeSlot(effectiveGameThemeId),[effectiveGameThemeId]);
+  const gameTheme=useMemo(()=>{
+    const override=(Array.isArray(themeRows)?themeRows:[]).find(row=>row.theme_id===effectiveGameThemeId)||null;
+    return override?mergeThemeSlot(effectiveGameThemeId,override):getThemeSlot(effectiveGameThemeId);
+  },[effectiveGameThemeId,themeRows]);
   const gameThemeStyle=useMemo(()=>({...gameTheme.tokens,colorScheme:gameTheme.scheme}),[gameTheme]);
   const allOpened=state?.players.every(player=>!player.opening);
   const phaseLabel=state?.phase==='event'?'事件':state?.phase==='duel'?'決鬥':'共鳴';
