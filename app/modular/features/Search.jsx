@@ -10,7 +10,7 @@ import {logSearchKeyword,selectAuthRow,updateRows} from '../../loc/db-client.mjs
 import {useAccount} from '../../loc/use-account';
 import {ContentEditor,FeaturePage,IncrementalList,WorkFullText,WorkSummaryCard} from '../ui';
 import {useScopeRuntime} from '../use-scope-runtime';
-import {resolveScopeSearchAlias,scopeHref} from '../scope-registry';
+import {scopeHref} from '../scope-registry';
 import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
 import {resolveGalaxyExternalLinks,searchGalaxyRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordIntroductions} from '../../loc/galaxy-query';
@@ -21,6 +21,19 @@ import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import {applyFilters} from '../../loc/db-query.mjs';
 import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
 
+
+function normalizeScopeAlias(value=''){
+  return String(value||'').normalize('NFKC').trim().toLocaleLowerCase('zh-Hant');
+}
+function matchesScopeAlias(scope,query){
+  const token=normalizeScopeAlias(query);
+  if(!token)return false;
+  const aliases=[
+    scope?.id,scope?.label,scope?.searchTitle,
+    ...(Array.isArray(scope?.searchAliases)?scope.searchAliases:[])
+  ].filter(Boolean);
+  return aliases.some(alias=>normalizeScopeAlias(alias)===token);
+}
 
 function escapeSearchRegExp(value){
   return String(value||'').replace(/[.*+?^\${}()|[\]\\]/g,'\\$&');
@@ -170,16 +183,15 @@ export default function Search(){
     }
     try{
       if(!append){
-        const scopeShortcut=resolveScopeSearchAlias(q);
-        if(scopeShortcut){
+        if(matchesScopeAlias(scope,q)){
           matchedQueryRef.current=q;
           setResults([{
-            key:'scope:'+scopeShortcut.id,
+            key:'scope:'+scopeId,
             source:'Scope',
-            title:scopeShortcut.searchTitle||scopeShortcut.label||scopeShortcut.id,
+            title:scope.searchTitle||scope.label||scopeId,
             date:'',
-            snippet:'',
-            scopeId:scopeShortcut.id,
+            snippet:scope.searchIntro||'',
+            scopeId,
             resourceType:'',
             resourceId:'',
             editableTable:'',
@@ -187,10 +199,10 @@ export default function Search(){
             editResourceId:'',
             editableField:'',
             isScopeCard:true,
-            href:scopeHref(scopeShortcut.id),
+            href:scopeHref(scopeId),
             relationLinks:[],
-            groupKey:'scope:'+scopeShortcut.id,
-            links:[{id:'scope-home',href:scopeHref(scopeShortcut.id),label:'前往 Scope 首頁'}],
+            groupKey:'scope:'+scopeId,
+            links:[{id:'scope-home',href:scopeHref(scopeId),label:'前往 Scope 首頁'}],
             destinations:[]
           }]);
           setHasMore(false);
