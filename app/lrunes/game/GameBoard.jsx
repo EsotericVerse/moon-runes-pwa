@@ -100,6 +100,30 @@ function fullRequirement(data,requirement=''){
     .join('／');
 }
 
+function EventScoringHelp({data}){
+  const results=Array.from(data.resultByCoverage?.entries?.()||[])
+    .sort((a,b)=>b[0]-a[0]);
+  return <Paper variant="outlined" className="lrg-scoring-help">
+    <Typography fontWeight={800}>Event 最高 4 分，這樣計算：</Typography>
+    <ol>
+      <li>第一張符文的群組符合事件條件：+1</li>
+      <li>第二張符文的群組符合事件條件：+1</li>
+      <li>兩張回應牌中至少出現 1 種符文群組：+1</li>
+      <li>兩張符文來自不同群組：再 +1</li>
+    </ol>
+    <Typography variant="caption" color="text.secondary">結果依目前規則資料：</Typography>
+    <Stack direction="row" gap={.75} flexWrap="wrap" sx={{mt:.75}}>
+      {results.map(([score,result])=><Chip
+        key={score}
+        size="small"
+        variant="outlined"
+        label={score+'/4 '+result.label+' · De '+(result.delta>0?'+':'')+result.delta+' · 補 '+result.drawCount+' 張'}
+      />)}
+    </Stack>
+  </Paper>;
+}
+
+
 
 function RuneCard({card,selected,disabled,onClick,playerIndex}){
   const {attributes,listeners,setNodeRef,transform,isDragging}=useDraggable({
@@ -269,6 +293,7 @@ function DocsPanel({data}){
 function Board({G,moves,rules,onRestart}){
   const [target,setTarget]=useState('');
   const [tab,setTab]=useState('board');
+  const [showScoringHelp,setShowScoringHelp]=useState(false);
   const sensors=useSensors(
     useSensor(PointerSensor,{activationConstraint:{distance:8}}),
     useSensor(TouchSensor,{activationConstraint:{delay:180,tolerance:8}})
@@ -336,7 +361,18 @@ function Board({G,moves,rules,onRestart}){
                     <Typography variant="h5" component="h2">{event.name}</Typography>
                     <Typography sx={{mt:1}}>{event.description}</Typography>
                     <Typography variant="body2" color="text.secondary" sx={{mt:1}}>條件：{fullRequirement(rules,event.requirement)}</Typography>
-                    <Typography variant="body2" sx={{mt:1}}>每位玩家選擇 {rules.config.eventResponseCards} 張回應卡。</Typography>
+                    <Stack direction="row" spacing={.5} alignItems="center" flexWrap="wrap" sx={{mt:1}}>
+                      <Typography variant="body2">每位玩家選擇 {rules.config.eventResponseCards} 張符文卡回應；依符文群組是否符合事件條件判定結果。</Typography>
+                      <Button
+                        size="small"
+                        variant="text"
+                        className="lrg-help-button"
+                        aria-label="查看 Event 得分計算"
+                        aria-expanded={showScoringHelp}
+                        onClick={()=>setShowScoringHelp(value=>!value)}
+                      >(?)</Button>
+                    </Stack>
+                    {showScoringHelp?<EventScoringHelp data={rules}/>:null}
                   </Box>
                 </Stack>
                 <Button variant="contained" disabled={G.players.some(p=>p.selected.length!==rules.config.eventResponseCards)} onClick={()=>moves.resolveEvent()}>結算事件</Button>
