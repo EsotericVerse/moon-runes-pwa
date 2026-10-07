@@ -25,14 +25,14 @@ function GovernanceHome(){
   const canEdit=account.canManageScopeSync(scopeId);
   return <FeaturePage featureId="governance" subtitle={subtitle}>
     <View canEdit={canEdit}/>
-    {canEdit?<section className="loc-card governance-management-cta">
+    <section className="loc-card governance-management-cta">
       <h2>{scopeId==='loc'?'LOC Scope Group 管理':getScope(scopeId).label+'管理'}</h2>
       <p>{scopeId==='loc'?'Scope Group 的公開呈現與成員檢視在 Manage；系統級 mapping 與權限仍在 Admin。':'時期、風格標籤、作品與其他可調整項目集中在此 Scope 的 Manage。'}</p>
       <div className="scope-preview-links">
         <a className="loc-button primary" href={scopeHref(scopeId,'governance/manage')}>{UI_COPY.governance.enterManagement}</a>
-        {scopeId==='loc'?<a className="loc-button" href={adminHref}>{UI_COPY.governance.enterAdmin}</a>:null}
+        {scopeId==='loc'&&canEdit?<a className="loc-button" href={adminHref}>{UI_COPY.governance.enterAdmin}</a>:null}
       </div>
-    </section>:null}
+    </section>
   </FeaturePage>;
 }
 
