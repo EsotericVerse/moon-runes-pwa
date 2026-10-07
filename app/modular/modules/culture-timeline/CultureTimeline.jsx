@@ -48,6 +48,7 @@ function timelineRows(items,labelOf,focus){
         item?.is_primary_anchor?'主要錨點':'',item?.is_rc_zone?'RC 區':''
       ].filter(Boolean).join(' · '),
       start,
+      recordId:String(item?.record_id||item?.recordId||''),
       scopeId:String(item?.scope_id||''),
       entryType:String(item?.entry_type||''),
       period:String(item?.period||''),
