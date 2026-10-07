@@ -318,3 +318,45 @@
 .scope-period-timeline .vis-item.scope-virtual-anchor .vis-item-content{display:block!important;overflow:visible!important;padding:0!important;transform:translate(-50%,-10%)}
 .scope-period-timeline .vis-item.scope-virtual-anchor.is-selected{color:var(--loc-gold)!important;filter:drop-shadow(0 0 12px color-mix(in srgb,var(--loc-gold) 72%,transparent))}
 @media(max-width:760px){.scope-culture-timeline-dialog{inset:auto .5rem .5rem .5rem;width:auto;max-height:82vh}}
+
+
+/* BlockNote is the single text/media authoring surface. Media remains URL-backed; rich structure is stored separately. */
+.scope-blocknote{min-width:0}
+.scope-blocknote .bn-container{background:transparent;color:var(--loc-text);font-family:inherit}
+.scope-blocknote .bn-editor{min-height:10rem;padding:1rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius);background:color-mix(in srgb,var(--loc-panel) 86%,transparent);color:var(--loc-text);font-family:inherit}
+.scope-blocknote.is-readonly .bn-editor{min-height:0;padding:0;border:0;background:transparent}
+.scope-blocknote .bn-editor:focus-within{border-color:var(--loc-accent-border);box-shadow:0 0 0 2px color-mix(in srgb,var(--loc-accent) 16%,transparent)}
+.scope-blocknote .bn-side-menu,.scope-blocknote .bn-formatting-toolbar,.scope-blocknote .bn-link-toolbar,.scope-blocknote .bn-file-panel{font-family:inherit}
+.scope-blocknote a{color:var(--loc-accent);font-weight:700;text-decoration:underline;text-underline-offset:.16em}
+.scope-blocknote a:hover{color:var(--loc-heading)}
+.scope-publisher-main .scope-blocknote .bn-editor{min-height:28rem}
+.scope-editor-blocknote{display:grid;gap:.35rem}
+.scope-editor-blocknote>span{color:var(--loc-muted);font-size:.82rem}
+
+.scope-block-entity-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:.75rem;
+  margin-top:.85rem;
+}
+.scope-block-entity{
+  position:relative;
+  min-width:0;
+  padding:.8rem;
+  border:1px solid var(--loc-ui-hairline);
+  border-radius:var(--loc-ui-radius-md);
+  background:var(--loc-surface-soft);
+}
+.scope-block-entity h4{margin:.05rem 0 .5rem}
+.scope-block-entity-actions{display:flex;justify-content:flex-end;gap:.35rem;flex-wrap:wrap;margin-bottom:.45rem}
+.scope-block-entity-actions .loc-button{min-height:1.9rem;padding:.25rem .5rem;font-size:.76rem}
+.scope-block-entity-add{
+  min-height:7rem;
+  border:1px dashed var(--loc-accent-border);
+  border-radius:var(--loc-ui-radius-md);
+  background:color-mix(in srgb,var(--loc-accent) 4%,transparent);
+  color:var(--loc-muted);
+  cursor:pointer;
+}
+.scope-add-page-block{margin-top:.8rem}
+@media(max-width:680px){.scope-block-entity-grid{grid-template-columns:1fr}}
