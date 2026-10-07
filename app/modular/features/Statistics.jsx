@@ -9,14 +9,13 @@ import {
   Bar,BarChart,CartesianGrid,Cell,Legend,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectSourceTrendRows} from '../../loc/galaxy-query';
+import {selectScopeDensityRows,selectSourceTrendRows} from '../../loc/galaxy-query';
 import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
 import {selectManagedScopes} from '../../loc/scope-data';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {FeaturePage} from '../ui';
-import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const CHART_ACCENT='var(--loc-accent)';
@@ -314,14 +313,158 @@ function StatisticTypeSelect({scopeId,navigation,types}){
   </label>;
 }
 
-function ScopeGroupStatistics({scopeId='loc'}){
-  return <ScopeGroupOverview
-    scopeId={scopeId}
-    featureId="statics"
-    title="Scope Group 統計導引"
-    description="Group 只列出子 Scope 與統計入口；數量、來源、時間趨勢與 Class／Group 統計都在各 Scope 內執行。"
-  />;
+function ScopeGroupStatistics(){
+  const [aggregateType,setAggregateType]=useState('total');
+  const [chartType,setChartType]=useState('line');
+  const [timeStandard,setTimeStandard]=useState('1y');
+  const scopesQuery=useQuery({
+    queryKey:['managed-scopes'],
+    queryFn:selectManagedScopes,
+    staleTime:5*60_000
+  });
+  const scopes=scopesQuery.data||[];
+  const scopeIds=useMemo(()=>scopes.map(scope=>String(scope.id||'').trim()).filter(Boolean),[scopes]);
+  const endDate=useMemo(()=>taipeiDateKey(),[]);
+  const startDate=useMemo(()=>{
+    if(timeStandard==='1w')return shiftDate(endDate,{days:-6});
+    if(timeStandard==='1m')return shiftDate(endDate,{months:-1});
+    return shiftDate(endDate,{months:-12});
+  },[timeStandard,endDate]);
+  const densityQuery=useQuery({
+    queryKey:['scope-density','loc',timeStandard,startDate,endDate,scopeIds.join('|')],
+    queryFn:()=>selectScopeDensityRows(scopes,{startDate,endDate}),
+    enabled:Boolean(scopes.length&&startDate&&endDate),
+    staleTime:5*60_000
+  });
+  const overallTotal=useMemo(
+    ()=>(densityQuery.data||[]).reduce((sum,row)=>sum+(Number(row.item_count)||0),0),
+    [densityQuery.data]
+  );
+  const totals=useMemo(()=>{
+    const map=new Map(scopeIds.map(id=>[id,0]));
+    for(const row of densityQuery.data||[]){
+      const id=String(row.scope_id||'').trim();
+      if(!map.has(id))continue;
+      map.set(id,(map.get(id)||0)+(Number(row.item_count)||0));
+    }
+    return scopeIds.map(id=>{
+      const total=map.get(id)||0;
+      return {scope_id:id,total,ratio:overallTotal>0?(total/overallTotal)*100:0};
+    });
+  },[densityQuery.data,scopeIds,overallTotal]);
+  const trendData=useMemo(()=>{
+    if(!startDate||!endDate)return [];
+    const bucketUnit=timeStandard==='1y'?'month':'day';
+    const buckets=new Map();
+    for(let cursor=new Date(startDate+'T00:00:00Z'),end=new Date(endDate+'T00:00:00Z');cursor<=end;cursor.setUTCDate(cursor.getUTCDate()+1)){
+      const day=cursor.toISOString().slice(0,10);
+      const bucket=trendBucket(day,bucketUnit);
+      if(!bucket||buckets.has(bucket.key))continue;
+      const row={period:bucket.label,_sort:bucket.key,total:0};
+      for(const id of scopeIds)row[id]=0;
+      buckets.set(bucket.key,row);
+    }
+    for(const sourceRow of densityQuery.data||[]){
+      const bucket=trendBucket(sourceRow.day,bucketUnit);
+      if(!bucket)continue;
+      const row=buckets.get(bucket.key)||{period:bucket.label,_sort:bucket.key,total:0};
+      for(const id of scopeIds)if(row[id]===undefined)row[id]=0;
+      const id=String(sourceRow.scope_id||'').trim();
+      const count=Number(sourceRow.item_count)||0;
+      if(scopeIds.includes(id))row[id]=(Number(row[id])||0)+count;
+      row.total=(Number(row.total)||0)+count;
+      buckets.set(bucket.key,row);
+    }
+    return [...buckets.values()].sort((a,b)=>a._sort.localeCompare(b._sort));
+  },[densityQuery.data,startDate,endDate,scopeIds,timeStandard]);
+  const aggregateTimeStandards=TIME_STANDARDS.filter(item=>item.value!=='custom');
+  const distributionData=totals.map(row=>({term:row.scope_id,value:row.total}));
+
+  return <section className="scope-stat-section">
+    <header className="scope-stat-domain-heading">
+      <div>
+        <h2>{UI_COPY.statistics.result}</h2>
+        <p className="scope-status">LOC 顯示各 Scope 的整體分布與時間變化。</p>
+      </div>
+    </header>
+    <div className="scope-stat-controls">
+      <label>
+        <span>{UI_COPY.statistics.item}</span>
+        <select className="scope-select" value={aggregateType} onChange={event=>setAggregateType(event.target.value)}>
+          <option value="total">LOC 合併總數</option>
+          <option value="scope">Scope 分布（scope_id）</option>
+        </select>
+      </label>
+      <label>
+        <span>{UI_COPY.statistics.chart}</span>
+        <select className="scope-select" value={chartType} onChange={event=>setChartType(event.target.value)}>
+          {CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}
+        </select>
+      </label>
+      <label>
+        <span>{UI_COPY.statistics.range}</span>
+        <select className="scope-select" value={timeStandard} onChange={event=>setTimeStandard(event.target.value)}>
+          {aggregateTimeStandards.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
+        </select>
+      </label>
+    </div>
+
+    <p className="scope-status">{startDate&&endDate?startDate+' ～ '+endDate:''}</p>
+    <div className="scope-ranking">
+      <div>
+        <strong>LOC 合併總數</strong>
+        <span>{overallTotal.toLocaleString()} 項</span>
+      </div>
+    </div>
+    <p className="scope-status">
+      統計來源（scope_id）：{totals.map(row=>row.scope_id+' '+row.total.toLocaleString()+' 項 · '+row.ratio.toFixed(1)+'%').join('；')}
+    </p>
+
+    <p className="scope-status">需要查看來源、Class、Group 或其他細部統計，請前往各 Scope／作者自己的統計頁。</p>
+    <div className="scope-result-links">
+      {scopeIds.map(id=><a key={id} href={featureNavigationHref(id,'statics')}>scope_id: {id} · 細部統計</a>)}
+    </div>
+
+    {!densityQuery.isPending&&!densityQuery.error&&chartType==='line'&&trendData.length?<ResponsiveContainer width="100%" height={420}>
+      <LineChart data={trendData} margin={{top:8,right:18,bottom:48,left:4}}>
+        <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
+        <XAxis dataKey="period" angle={-24} textAnchor="end" interval="preserveStartEnd" height={72} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+        <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+        <Tooltip contentStyle={CHART_TOOLTIP}/>
+        {aggregateType==='total'
+          ?<Line type="monotone" dataKey="total" name="LOC 合併總數" stroke={CHART_ACCENT} strokeWidth={3} dot={false}/>
+          :<>
+            <Legend/>
+            {scopeIds.map((id,index)=><Line key={id} type="monotone" dataKey={id} name={'scope_id: '+id} stroke={PIE_COLORS[index%PIE_COLORS.length]} strokeWidth={2} dot={false} connectNulls/>)}
+          </>}
+      </LineChart>
+    </ResponsiveContainer>:null}
+
+    {!densityQuery.isPending&&!densityQuery.error&&chartType==='bar'&&distributionData.length?<ResponsiveContainer width="100%" height={380}>
+      <BarChart data={aggregateType==='total'?[{term:'LOC 合併總數',value:overallTotal}]:distributionData} margin={{top:8,right:18,bottom:32,left:8}}>
+        <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
+        <XAxis dataKey="term" tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+        <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+        <Tooltip contentStyle={CHART_TOOLTIP}/>
+        <Bar dataKey="value" name={aggregateType==='total'?'LOC 合併總數':'Scope 作品數'} fill={CHART_ACCENT} radius={[4,4,0,0]}/>
+      </BarChart>
+    </ResponsiveContainer>:null}
+
+    {!densityQuery.isPending&&!densityQuery.error&&chartType==='pie'&&distributionData.length?<ResponsiveContainer width="100%" height={380}>
+      <PieChart>
+        <Tooltip contentStyle={CHART_TOOLTIP}/>
+        <Legend/>
+        <Pie data={aggregateType==='total'?[{term:'LOC 合併總數',value:overallTotal}]:distributionData} dataKey="value" nameKey="term" cx="50%" cy="50%" outerRadius={140}>
+          {(aggregateType==='total'?[{term:'LOC 合併總數'}]:distributionData).map((row,index)=><Cell key={row.term} fill={PIE_COLORS[index%PIE_COLORS.length]}/>)}
+        </Pie>
+      </PieChart>
+    </ResponsiveContainer>:null}
+
+    {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
+    {densityQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(densityQuery.error)}</p>:null}
+  </section>;
 }
+
 function ScopeStatisticsPanel({scopeId,navigation,types}){
   const requested=String(navigation.rankingType||'');
   const rankingType=types.includes(requested)?requested:(types[0]||'');
@@ -405,7 +548,7 @@ function ScopeStatisticsPanel({scopeId,navigation,types}){
 
 function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types}){
   return aggregateScopes
-    ?<ScopeGroupStatistics scopeId={scopeId}/>
+    ?<ScopeGroupStatistics/>
     :<ScopeStatisticsPanel scopeId={scopeId} navigation={navigation} types={types}/>;
 }
 
