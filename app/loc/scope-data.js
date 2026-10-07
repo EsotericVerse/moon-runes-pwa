@@ -165,7 +165,7 @@ export async function selectScopeBlocks(scopeId,page='home'){
     columns:'block_page,block_title,block_text,block_order',
     filters:[{column:'block_page',operator:'eq',value:blockPage}],
     orders:[{column:'block_order',ascending:true}],
-    limit:4,
+    limit:32,
     offset:0
   });
   return rows||[];
