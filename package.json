@@ -22,6 +22,9 @@
     "verify:db-adapters": "node scripts/verify-db-adapters.mjs"
   },
   "dependencies": {
+    "@blocknote/core": "0.55.0",
+    "@blocknote/mantine": "0.55.0",
+    "@blocknote/react": "0.55.0",
     "@supabase/postgrest-js": "2.79.0",
     "@supabase/supabase-js": "2.117.2",
     "@tanstack/react-query": "5.103.1",
