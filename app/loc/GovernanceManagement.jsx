@@ -22,7 +22,6 @@ function LoginScreen({scopeId,account}){
   return <section className="loc-view">
     <header className="loc-hero"><p className="loc-eyebrow">{copy.eyebrow}</p><h1>{copy.title}</h1><p>{copy.description}</p></header>
     <section className="loc-card">
-      <p>登入只負責解鎖管理權限；搜尋、文化與其他公開頁會在登入後直接顯示可用的編輯功能。</p>
       <button className="loc-button primary" type="button" onClick={()=>account.signIn(callbackURL)}>使用 Google 登入</button>
       {account.error?<p className="scope-status scope-error">{account.error}</p>:null}
     </section>
@@ -79,7 +78,7 @@ export default function GovernanceManagement(){
 
     {section==='group'&&scope?.aggregateChildren?<ScopeGroupManagement scopeId={scopeId}/>:null}
     {section==='settings'&&!scope?.aggregateChildren?<ScopeSettingsPanel scopeId={scopeId}/>:null}
-    {section==='import'&&!scope?.aggregateChildren?<ManagementImportPanel scopeId={scopeId} showArticlePublisher/>:null}
+    {section==='import'&&!scope?.aggregateChildren?<ManagementImportPanel scopeId={scopeId}/>:null}
     {section==='keywords'&&!scope?.aggregateChildren&&scopeId!=='lrunes'?<KeywordLibraryPanel scopeId={scopeId}/>:null}
   </section>;
 }
