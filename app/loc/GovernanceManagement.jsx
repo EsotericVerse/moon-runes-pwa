@@ -1,12 +1,12 @@
 'use client';
 
 import {UI_COPY} from '../i18n/ui-copy';
-import {useEffect,useMemo,useState} from 'react';
 import {useAccount} from './use-account';
 import {useScopeRuntime} from '../modular/use-scope-runtime';
 import {scopeHref} from '../modular/scope-registry';
 import ScopeSettingsPanel from './ScopeSettingsPanel';
 import ManagementImportPanel from './ManagementImportPanel';
+import ManagementArticlePublisher from './ManagementArticlePublisher';
 import ScopeGroupManagement from './ScopeGroupManagement';
 
 const LOGIN_COPY={
@@ -27,27 +27,10 @@ function LoginScreen({scopeId,account}){
   </section>;
 }
 
-function sectionOptions(scopeId,scope){
-  if(scope?.aggregateChildren)return [{value:'group',label:'Scope Group'}];
-  return [
-    {value:'settings',label:'雜項設定'},
-    {value:'import',label:'資料匯入'}
-  ];
-}
-
 export default function GovernanceManagement(){
   const account=useAccount();
   const {scopeId,scope}=useScopeRuntime();
-  const options=useMemo(()=>sectionOptions(scopeId,scope),[scopeId,scope?.aggregateChildren]);
-  const [section,setSection]=useState(scope?.aggregateChildren?'group':'settings');
   const canManage=scope?.aggregateChildren?account.canManageGlobalSync():account.canManageScopeSync(scopeId);
-
-  useEffect(()=>{
-    setSection(scope?.aggregateChildren?'group':'settings');
-  },[scopeId,scope?.aggregateChildren]);
-  useEffect(()=>{
-    if(!options.some(option=>option.value===section))setSection(options[0]?.value||'settings');
-  },[options,section]);
 
   if(account.loading||account.permissionLoading)return <section className="loc-view"><div className="loc-card">{UI_COPY.management.checking}</div></section>;
   if(!account.user)return <LoginScreen scopeId={scopeId} account={account}/>;
@@ -61,20 +44,16 @@ export default function GovernanceManagement(){
       <p className="loc-eyebrow">{UI_COPY.management.eyebrow} · {scopeId}</p>
       <h1>{scope.label}{scopeId==='loc'?' Scope Group':''}管理</h1>
       <p>{account.user.email||account.user.name||''}</p>
-      {!scope?.aggregateChildren?<div className="scope-management-select">
-        <label htmlFor="scope-management-section">管理選單</label>
-        <select id="scope-management-section" className="scope-select" value={section} onChange={event=>setSection(event.target.value)}>
-          {options.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}
-        </select>
-      </div>:null}
       <div className="scope-preview-links">
         {scopeId==='loc'?<a className="loc-button" href={scopeHref('admin')}>前往 Admin 系統設定</a>:<a className="loc-button" href={scopeHref(scopeId)}>返回 Scope</a>}
         <button className="loc-button" type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button>
       </div>
     </header>
 
-    {section==='group'&&scope?.aggregateChildren?<ScopeGroupManagement scopeId={scopeId}/>:null}
-    {section==='settings'&&!scope?.aggregateChildren?<ScopeSettingsPanel scopeId={scopeId}/>:null}
-    {section==='import'&&!scope?.aggregateChildren?<ManagementImportPanel scopeId={scopeId}/>:null}
+    {scope?.aggregateChildren?<ScopeGroupManagement scopeId={scopeId}/>:<>
+      <ScopeSettingsPanel scopeId={scopeId}/>
+      <ManagementArticlePublisher scopeId={scopeId}/>
+      <ManagementImportPanel scopeId={scopeId}/>
+    </>}
   </section>;
 }

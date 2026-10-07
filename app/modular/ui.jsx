@@ -2,14 +2,18 @@
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {UI_COPY} from '../i18n/ui-copy';
+import {useUiCopy} from '../i18n/ui-locale';
 import {DEFAULT_LIST_BATCH_SIZE,LIST_LOAD_COOLDOWN_MS} from '../loc/list-loading-contract.mjs';
 import {useScopeRuntime} from './use-scope-runtime';
 import RichBlockEditor from '../loc/RichBlockEditor';
 
 export function FeaturePage({featureId,children,subtitle=null,description=null}){
   const {scope}=useScopeRuntime();
-  const profile=UI_COPY.features?.[featureId]||{title:featureId,subtitle:'',description:''};
-  const resolvedSubtitle=scope?.featureSubtitles?.[featureId]||profile.subtitle||'';
+  const copy=useUiCopy();
+  const profile=copy.features?.[featureId]||UI_COPY.features?.[featureId]||{title:featureId,subtitle:'',description:''};
+  const scopeCopyKey=scope?.id==='lo3rwang'?'author':scope?.id;
+  const localizedScope=copy.scope?.[scopeCopyKey]||null;
+  const resolvedSubtitle=localizedScope?.[featureId]||scope?.featureSubtitles?.[featureId]||profile.subtitle||'';
   const resolvedDescription=description??profile.description;
   const finalSubtitle=subtitle||resolvedSubtitle;
   return <main className="scope-main">

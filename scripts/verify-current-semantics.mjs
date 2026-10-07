@@ -107,7 +107,7 @@ if(!failures.length){
   if(galaxy.includes("{column:'source_name',operator:'neq',value:''}"))failures.push('Unknown source rows must reach Statistics and map to Others instead of being discarded.');
   for(const token of ['表現風格','Class｜符文群組','Group｜符文排行'])if(!statistics.includes(token))failures.push('Statistics style-filter presentation missing '+token);
   for(const token of ['表現風格','Class｜符文群組比例','culture-style-filter'])if(!culture.includes(token))failures.push('Culture style-filter presentation missing '+token);
-  for(const token of ['currentStructurePeriod','items={timelineItems}','windowStart={currentStructureStart}','windowEnd={currentStructureEnd}'])if(!culture.includes(token))failures.push('Culture first river must use the full Scope timeline with the current period only as its initial viewport: '+token);
+  for(const token of ['currentStructurePeriod','items={currentTimelineItems}','windowStart={currentStructureStart}','windowEnd={currentStructureEnd}','onBoundaryNavigate'])if(!culture.includes(token))failures.push('Culture first river must show one current/selected period and navigate period-by-period: '+token);
   const structureRiver=culture.slice(culture.indexOf("scope-culture-structure-river"),culture.indexOf("scope-culture-classification-river",culture.indexOf("scope-culture-structure-river")));
   if(structureRiver.includes('fixedMin={currentStructureStart}')||structureRiver.includes('fixedMax={currentStructureEnd}'))failures.push('Culture first river must remain horizontally navigable beyond the current period.');
   for(const token of ['isAggregateScope','locCombinedSourceRiverItems','locScopeDistributionItems'])if(!culture.includes(token))failures.push('LOC aggregate Culture contract missing '+token);
@@ -116,8 +116,9 @@ if(!failures.length){
   if(!search.includes('enabled:!aggregateScopes')||!search.includes('Scope Group 搜尋導引')||!search.includes('ScopeGroupOverview'))failures.push('Scope Group Search must use registry overview instead of multi-Scope search.');
   const timelineEditor=read('app/modular/features/CultureTimelineEditor.jsx');
   if(cultureQuery.includes('anchor_pair')||timelineEditor.includes('anchor_pair'))failures.push('Timeline code must not restore legacy anchor_pair storage.');
-  for(const token of ['anchor_ids','milestone_anchor_ids'])if(!cultureQuery.includes(token))failures.push('Culture timeline ordered-anchor contract missing '+token);
-  for(const token of ['anchor_ids','normalizeAnchorIds','新增里程碑'])if(!timelineEditor.includes(token))failures.push('Timeline editor ordered-anchor contract missing '+token);
+  if(!cultureQuery.includes('anchor_ids'))failures.push('Culture timeline ordered-anchor contract missing anchor_ids');
+  for(const token of ['anchor_ids','normalizeAnchorIds','新增定錨點'])if(!timelineEditor.includes(token))failures.push('Timeline editor ordered-anchor contract missing '+token);
+  if(timelineEditor.includes('里程碑'))failures.push('Timeline editor must not expose milestone as a separate concept.');
   if(statistics.includes('關鍵詞排行')||culture.includes('關鍵詞排行'))failures.push('Keyword-level ranking must remain hidden behind Class / Group presentation');
   const dbAudit=read('scripts/verify-db-public-read.mjs');
   for(const token of ['managedScopes','scopeMapping','scopeMappings','mapping conflict','verifyManagedScope'])if(!dbAudit.includes(token))failures.push('Public database audit missing Scope-derived '+token);

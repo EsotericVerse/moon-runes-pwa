@@ -70,7 +70,6 @@ async function selectCultureTimeRows(scope,birthday=''){
     const ids=anchorIds(row.anchor_ids);
     const firstId=ids[0]||'0';
     const lastId=ids.at(-1)||'0';
-    const milestoneIds=type==='event'?ids.slice(1,-1).filter(anchorId=>anchorId!=='0'):[];
     const startAnchor=firstId==='0'?null:anchorMap.get(firstId);
     const endAnchor=lastId==='0'?null:anchorMap.get(lastId);
     const startDate=type==='anchor'
@@ -93,8 +92,6 @@ async function selectCultureTimeRows(scope,birthday=''){
       anchor_id:type==='anchor'?id:null,
       anchor_ids:type==='anchor'?[]:ids,
       start_anchor_id:firstId==='0'?null:firstId,
-      milestone_anchor_ids:milestoneIds,
-      milestone_dates:milestoneIds.map(anchorId=>timeDate(anchorMap.get(anchorId))).filter(Boolean),
       end_anchor_id:lastId==='0'?null:lastId,
       event_id:type==='event'?id:null,
       open_start:type!=='anchor'&&firstId==='0',
@@ -208,7 +205,7 @@ function periodRows(rows){
     end_anchor_id:row.end_anchor_id||null,anchor_ids:Array.isArray(row.anchor_ids)?row.anchor_ids:[],date_status:row.date_status||'',style_tags:row.style_tags||'',open_start:Boolean(row.open_start),open_end:Boolean(row.open_end)
   })).sort((a,b)=>a.order-b.order||String(a.period).localeCompare(String(b.period)));
 }
-function timelineItems(rows){
+function timelineItems(rows,{includeScope=false}={}){
   const all=Array.isArray(rows)?rows:[];
   const anchors=new Map(all.filter(row=>row.entry_type==='anchor').map(row=>[`${row.scope_id}:${row.anchor_id}`,row]));
   return all.filter(row=>['anchor','event','period'].includes(row.entry_type)).map(row=>{
@@ -217,9 +214,13 @@ function timelineItems(rows){
     const start=row.start_date||startAnchor?.start_date||null;
     const end=row.end_date||endAnchor?.start_date||null;
     const kindLabel={anchor:'定錨點',event:'事件',period:'時期'}[row.entry_type];
+    const groupOrder={anchor:0,event:1,period:2}[row.entry_type]??99;
     const scopeId=scopeIdOf(row.scope_id);
     return {...row,scope_id:scopeId,id:`${scopeId}:${row.entry_key}`,entry_id:`${scopeId}:${row.entry_key}`,start_date:start,end_date:end,date:start||end,
-      display_label:row.title,group_label:`${row.scope_id} · ${kindLabel}`};
+      display_label:row.title,
+      group_key:includeScope?`${scopeId}:${row.entry_type}`:`kind:${row.entry_type}`,
+      group_label:includeScope?`${scopeId} · ${kindLabel}`:kindLabel,
+      group_order:groupOrder};
   }).filter(row=>row.start_date||(row.open_start&&row.end_date))
     .sort((a,b)=>String(a.start_date||a.end_date).localeCompare(String(b.start_date||b.end_date)));
 }
@@ -247,8 +248,6 @@ function cultureParts(scopeContext,runtimeId){
     start_date:row.start_date||null,
     end_date:row.end_date||null,
     anchor_ids:Array.isArray(row.anchor_ids)?row.anchor_ids:[],
-    milestone_anchor_ids:Array.isArray(row.milestone_anchor_ids)?row.milestone_anchor_ids:[],
-    milestone_dates:Array.isArray(row.milestone_dates)?row.milestone_dates:[],
     status:row.status||'',
     visibility:row.visibility||'public'
   }));

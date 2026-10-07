@@ -35,7 +35,9 @@ function timelineRows(items,labelOf,focus){
       item?.anchor_id,item?.anchor_role,item?.anchor_type
     ].filter(Boolean).map(String);
     const focused=focusTerms.some(term=>candidateValues.includes(term));
-    const group=item?.group_label||item?.scope_id||'';
+    const group=item?.group_key||item?.group_label||item?.scope_id||'';
+    const groupContent=item?.group_label||group;
+    const groupOrder=Number.isFinite(Number(item?.group_order))?Number(item.group_order):null;
     const ratio=densityRatio;
     const density=ratio>0?densityStyleForRatio(ratio):densityStyleForCount(item?.item_count);
     return [{
@@ -56,7 +58,7 @@ function timelineRows(items,labelOf,focus){
       workCount:Number(item?.item_count||0),
       status:String(item?.status||''),
       openStart,openEnd,
-      ...(group?{group:String(group)}:{}),
+      ...(group?{group:String(group),groupContent:String(groupContent),groupOrder}:{}),
       ...(end?{end,type:'range'}:{type:'point'}),
       ...(focused?{className:'scope-period-timeline-focus'}:{}),
       ...(density?{
@@ -103,12 +105,21 @@ export default function CultureTimeline({items=[],labelOf=(item,index)=>item?.di
       if(cancelled||!containerRef.current)return()=>{cancelled=true};
       const data=new DataSet(rows);
       const groupIds=[...new Set(rows.map(row=>row.group).filter(Boolean))];
-      const groups=groupIds.length?new DataSet(groupIds.map(id=>({id,content:groupLabel(id)}))):null;
+      const groups=groupIds.length?new DataSet(groupIds.map((id,index)=>{
+        const members=rows.filter(row=>row.group===id);
+        const explicit=members.map(row=>row.groupOrder).filter(Number.isFinite);
+        return {
+          id,
+          content:members.find(row=>row.groupContent)?.groupContent||groupLabel(id),
+          order:explicit.length?Math.min(...explicit):100+index
+        };
+      })):null;
       instance=new Timeline(containerRef.current,data,groups,{
         autoResize:true,
         minHeight:timelineMinHeight+'px',
         maxHeight:timelineMaxHeight+'px',
         verticalScroll:true,
+        groupOrder:'order',
         locale:'zh-tw',
         locales:{
           'zh-tw':{

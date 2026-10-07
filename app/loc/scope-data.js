@@ -26,7 +26,8 @@ function buildScopeData(row,id){
     galaxy,
     galaxyMedia:galaxy+'_media',
     time:`silver.${id}_${timeSuffix}`,
-    keywords:`silver.${id}_keywords`
+    keywords:`silver.${id}_keywords`,
+    blocks:`silver.${id}_blocks`
   };
 }
 
@@ -145,10 +146,27 @@ export async function selectScopeConfig(scopeId){
   const scope=defaultScopeData(scopeId);
   if(!scope)return null;
   const {rows}=await selectRows(scope.config,{
-    columns:'id,display_name,search_intro,home_blocks,governance_blocks,search_aliases,theme,search_able,statistics_able,culture_able',
+    columns:'id,display_name,search_intro,search_aliases,theme,locale,search_able,statistics_able,culture_able',
     filters:[{column:'id',operator:'eq',value:scope.id}],
     limit:1,
     offset:0
   });
   return rows[0]||null;
+}
+
+
+export async function selectScopeBlocks(scopeId,page='home'){
+  const id=String(scopeId||'').trim().toLowerCase();
+  if(!SCOPE_ID_PATTERN.test(id))return [];
+  const blockPage=String(page||'home').trim().toLowerCase();
+  if(!['home','governance'].includes(blockPage))throw new Error('Block page 無效');
+  const table=`silver.${id}_blocks`;
+  const {rows}=await selectRows(table,{
+    columns:'block_page,block_title,block_text,block_order',
+    filters:[{column:'block_page',operator:'eq',value:blockPage}],
+    orders:[{column:'block_order',ascending:true}],
+    limit:4,
+    offset:0
+  });
+  return rows||[];
 }

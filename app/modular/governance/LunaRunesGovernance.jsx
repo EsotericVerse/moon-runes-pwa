@@ -5,7 +5,7 @@ export const LUNARUNES_GOVERNANCE_SUBTITLE='說明月之符文的使用原則、
 export default function LunaRunesGovernance({scopeId='lrunes'}){
   return <ScopeEditableBlocks
     scopeId={scopeId}
-    field="governance_blocks"
+    page="governance"
     className="governance-grid"
     fallbackDocuments={[
       [

@@ -1,6 +1,6 @@
 'use client';
 
-import {UI_COPY} from '../../i18n/ui-copy';
+import {UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale} from '../../i18n/ui-copy';
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import Select from 'react-select';
 import {scopeHref} from '../../modular/scope-registry';
@@ -21,7 +21,7 @@ const CREATE_OPTIONS=Object.freeze([
   {value:'scope',label:'新增 Scope'},
   {value:'group',label:'新增 Scope Group'}
 ]);
-const EMPTY_SCOPE_CREATE={scope_id:'',display_name:'',email:'',birthday:'',domain:'',directory:'',parent_scope_id:'loc',theme:'theme-7',copy_keywords:true};
+const EMPTY_SCOPE_CREATE={scope_id:'',display_name:'',email:'',birthday:'',domain:'',directory:'',parent_scope_id:'loc',theme:'theme-7',locale:'zh-Hant',copy_keywords:true};
 const EMPTY_GROUP_CREATE={scope_id:'',display_name:'',domain:'',directory:'',parent_scope_id:'loc',sort_order:''};
 const EMPTY_MAPPING={email:'',galaxy:'galaxy',time:'time',birthday:''};
 
@@ -64,7 +64,7 @@ function useAdminScopeData(){
         await Promise.all(registryRows.filter(row=>row.scope_kind==='scope').map(async row=>{
           try{
             const {data,error}=await dbAuthRelation('silver.'+row.scope_id)
-              .select('id,display_name,search_intro,search_aliases,theme,search_able,statistics_able,culture_able')
+              .select('id,display_name,search_intro,search_aliases,theme,locale,search_able,statistics_able,culture_able')
               .eq('id',row.scope_id).limit(1);
             if(error)throw new Error(error.message||'Scope config 讀取失敗。');
             if(data?.[0])configRows[row.scope_id]=data[0];
@@ -206,6 +206,7 @@ function RegistryNodePanel({data,selectedId,onCreateMode}){
           search_intro:String(config.search_intro||'').trim(),
           search_aliases:normalizeAliases(config.search_aliases),
           theme:String(config.theme||'theme-7'),
+          locale:normalizeUiLocale(config.locale),
           search_able:config.search_able!==false,
           statistics_able:config.statistics_able!==false,
           culture_able:config.culture_able!==false,
@@ -273,6 +274,7 @@ function RegistryNodePanel({data,selectedId,onCreateMode}){
         <label><span>搜尋介紹</span><textarea rows={3} value={config.search_intro||''} onChange={e=>patchConfig('search_intro',e.target.value)}/></label>
         <label><span>搜尋別名</span><textarea rows={3} value={normalizeAliases(config.search_aliases).join('\n')} onChange={e=>patchConfig('search_aliases',e.target.value.split('\n'))}/></label>
         <label><span>Theme</span><Select className="admin-react-select" classNamePrefix="admin-react-select" unstyled isSearchable={false} options={themeOptions} value={themeOptions.find(o=>o.value===config.theme)||themeOptions[6]} onChange={o=>patchConfig('theme',o?.value||'theme-7')}/></label>
+        <label><span>預設語系</span><Select className="admin-react-select" classNamePrefix="admin-react-select" unstyled isSearchable={false} options={UI_LOCALE_OPTIONS} value={UI_LOCALE_OPTIONS.find(o=>o.value===normalizeUiLocale(config.locale))||UI_LOCALE_OPTIONS[0]} onChange={o=>patchConfig('locale',normalizeUiLocale(o?.value))}/></label>
         <div className="admin-inline-flags">
           <label><input type="checkbox" checked={config.search_able!==false} onChange={e=>patchConfig('search_able',e.target.checked)}/> Search</label>
           <label><input type="checkbox" checked={config.statistics_able!==false} onChange={e=>patchConfig('statistics_able',e.target.checked)}/> Statistics</label>
@@ -334,6 +336,7 @@ function CreateNodePanel({data,kind='scope',onClose}){
         directory:String(scopeDraft.directory||'').trim()||null,
         birthday:scopeDraft.birthday||null
       });
+      await updateRows('silver.'+id,{locale:normalizeUiLocale(scopeDraft.locale),updated_at:new Date().toISOString()},{filters:[{column:'id',operator:'eq',value:id}]});
       setStatus('Scope '+id+' 已建立。');refresh();onClose?.();
     }catch(error){setStatus(error?.message||'Scope 建立失敗。');}
   }
@@ -365,6 +368,7 @@ function CreateNodePanel({data,kind='scope',onClose}){
       <label><span>Directory</span><input value={scopeDraft.directory} onChange={e=>setScopeDraft(v=>({...v,directory:e.target.value}))}/></label>
       <label><span>Parent</span><Select className="admin-react-select" classNamePrefix="admin-react-select" unstyled isSearchable={false} options={parentOptions} value={parentValue(scopeDraft.parent_scope_id)} onChange={o=>setScopeDraft(v=>({...v,parent_scope_id:o?.value||'loc'}))}/></label>
       <label><span>Theme</span><Select className="admin-react-select" classNamePrefix="admin-react-select" unstyled isSearchable={false} options={themeOptions} value={themeOptions.find(o=>o.value===scopeDraft.theme)} onChange={o=>setScopeDraft(v=>({...v,theme:o?.value||'theme-7'}))}/></label>
+      <label><span>預設語系</span><Select className="admin-react-select" classNamePrefix="admin-react-select" unstyled isSearchable={false} options={UI_LOCALE_OPTIONS} value={UI_LOCALE_OPTIONS.find(o=>o.value===scopeDraft.locale)||UI_LOCALE_OPTIONS[0]} onChange={o=>setScopeDraft(v=>({...v,locale:normalizeUiLocale(o?.value)}))}/></label>
       <label className="scope-setting-toggle"><input type="checkbox" checked={scopeDraft.copy_keywords!==false} onChange={e=>setScopeDraft(v=>({...v,copy_keywords:e.target.checked}))}/>複製 Rune66 Keyword Class</label>
       <button type="button" className="loc-button primary" onClick={createScope}>建立</button>
     </>:<>
@@ -488,7 +492,7 @@ function ThemeEditor(){
   useEffect(()=>{
     let active=true;
     (async()=>{
-      const {data,error}=await dbAuthRelation('silver.theme_registry').select('theme_id,label,scheme,tokens').order('theme_id');
+      const {data,error}=await dbAuthRelation('silver.loc_theme').select('theme_id,theme_name,theme_attr,theme_order').order('theme_order');
       if(!active)return;
       if(error){setStatus(error.message||'Theme 讀取失敗。');return;}
       setRows(data||[]);
@@ -497,12 +501,14 @@ function ThemeEditor(){
   },[revision]);
 
   useEffect(()=>{
-    const base=getThemeSlot(themeId);
     const override=rows.find(row=>row.theme_id===themeId)||null;
     setDraft(mergeThemeSlot(themeId,override));
   },[themeId,rows]);
 
-  const options=THEME_SLOTS.map(theme=>({value:theme.id,label:theme.label+' · '+theme.id}));
+  const options=(rows.length?rows:THEME_SLOTS).map(theme=>({
+    value:theme.theme_id||theme.id,
+    label:(theme.theme_name||theme.label||theme.theme_id||theme.id)+' · '+(theme.theme_id||theme.id)
+  }));
   const setToken=(key,value)=>setDraft(current=>({...current,tokens:{...current.tokens,[key]:value}}));
 
   useEffect(()=>{
@@ -513,23 +519,34 @@ function ThemeEditor(){
     if(!draft)return;
     setStatus('');
     try{
+      const existing=rows.find(row=>row.theme_id===themeId)||null;
       const payload={
-        theme_id:themeId,label:String(draft.label||themeId).trim(),scheme:draft.scheme==='dark'?'dark':'light',
-        tokens:Object.fromEntries(THEME_TOKEN_KEYS.map(key=>[key,String(draft.tokens?.[key]||'').trim()])),
-        updated_at:new Date().toISOString()
+        theme_id:themeId,
+        theme_name:String(draft.label||themeId).trim(),
+        theme_order:Number(existing?.theme_order)||Number(String(themeId).split('-')[1])||1,
+        theme_attr:{
+          scheme:draft.scheme==='dark'?'dark':'light',
+          style_key:String(draft.styleKey||''),
+          group:String(draft.group||''),
+          identity_color:String(draft.identityColor||''),
+          tokens:Object.fromEntries(THEME_TOKEN_KEYS.map(key=>[key,String(draft.tokens?.[key]||'').trim()]))
+        }
       };
-      const {error}=await dbAuthRelation('silver.theme_registry').upsert(payload,{onConflict:'theme_id'});
+      const {error}=await dbAuthRelation('silver.loc_theme').upsert(payload,{onConflict:'theme_id'});
       if(error)throw new Error(error.message||'Theme 儲存失敗。');
       setStatus(themeId+' 已更新。');setRevision(v=>v+1);
     }catch(error){setStatus(error?.message||'Theme 儲存失敗。');}
   }
 
   return <section className="loc-card admin-workspace">
-    <div className="admin-inline-select"><Select className="admin-react-select" classNamePrefix="admin-react-select" unstyled isSearchable={false} options={options} value={options.find(o=>o.value===themeId)} onChange={o=>setThemeId(o?.value||'theme-1')}/></div>
+    <div className="admin-inline-select"><Select className="admin-react-select" classNamePrefix="admin-react-select" unstyled isSearchable={false} options={options} value={options.find(o=>o.value===themeId)||options[0]||null} onChange={o=>setThemeId(o?.value||'theme-1')}/></div>
     {draft?<>
       <div className="scope-management-fields">
         <label><span>名稱</span><input value={draft.label||''} onChange={e=>setDraft(v=>({...v,label:e.target.value}))}/></label>
         <label><span>Scheme</span><Select className="admin-react-select" classNamePrefix="admin-react-select" unstyled isSearchable={false} options={[{value:'light',label:'light'},{value:'dark',label:'dark'}]} value={{value:draft.scheme,label:draft.scheme}} onChange={o=>setDraft(v=>({...v,scheme:o?.value||'light'}))}/></label>
+        <label><span>Group</span><input value={draft.group||''} onChange={e=>setDraft(v=>({...v,group:e.target.value}))}/></label>
+        <label><span>Style Key</span><input value={draft.styleKey||''} onChange={e=>setDraft(v=>({...v,styleKey:e.target.value}))}/></label>
+        <label><span>Identity Color</span><input value={draft.identityColor||''} onChange={e=>setDraft(v=>({...v,identityColor:e.target.value}))}/></label>
       </div>
       <div className="admin-theme-token-grid">
         {THEME_TOKEN_KEYS.map(key=>{

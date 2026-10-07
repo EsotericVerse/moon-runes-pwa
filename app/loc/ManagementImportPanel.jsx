@@ -7,7 +7,6 @@ import {insertRows,dbAuthRelation,updateRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {createUid8} from './uid';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
-import ManagementArticlePublisher from './ManagementArticlePublisher';
 
 function sourceSuggestion(name=''){
   const value=String(name).toLowerCase();
@@ -457,17 +456,11 @@ function SunoImport({scopeId}){
 }
 
 export default function ManagementImportPanel({scopeId}){
-  const [tab,setTab]=useState('import');
-  return <section className="scope-inline-card">
-    <div className="scope-tabs" role="tablist" aria-label="資料匯入功能">
-      <button type="button" role="tab" aria-selected={tab==='import'} onClick={()=>setTab('import')}>資料匯入</button>
-      <button type="button" role="tab" aria-selected={tab==='article'} onClick={()=>setTab('article')}>發表文章</button>
-    </div>
-    {tab==='import'?<>
-      <JsonImport scopeId={scopeId}/>
-      <SourceRefresh scopeId={scopeId}/>
-      <MediaRecordInsert scopeId={scopeId}/>
-      <SunoImport scopeId={scopeId}/>
-    </>:<ManagementArticlePublisher scopeId={scopeId}/>}
+  return <section className="scope-inline-card scope-management-imports">
+    <h2>資料匯入</h2>
+    <JsonImport scopeId={scopeId}/>
+    <SourceRefresh scopeId={scopeId}/>
+    <MediaRecordInsert scopeId={scopeId}/>
+    <SunoImport scopeId={scopeId}/>
   </section>;
 }
