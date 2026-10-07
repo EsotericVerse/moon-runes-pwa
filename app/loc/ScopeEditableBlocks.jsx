@@ -44,7 +44,8 @@ export default function ScopeEditableBlocks({
   className='',
   slotClassName='loc-card',
   headingLevel=3,
-  slotCount=null
+  slotCount=null,
+  showTitleField=true
 }){
   const account=useAccount();
   const queryClient=useQueryClient();
@@ -149,7 +150,7 @@ export default function ScopeEditableBlocks({
           <button type="button" className="loc-button" disabled={busy} onClick={()=>{setEditing(0);setDraft(null);setDraftTitle('');setMessage('')}}>取消</button>
         </div>:null}
         {active?<>
-          <label className="scope-management-wide-field"><span>標題</span><input className="scope-search-input" value={draftTitle} onChange={event=>setDraftTitle(event.target.value)}/></label>
+          {showTitleField?<label className="scope-management-wide-field"><span>標題</span><input className="scope-search-input" value={draftTitle} onChange={event=>setDraftTitle(event.target.value)}/></label>:null}
           <RichBlockEditor
             key={scopeId+':'+page+':'+index+':edit'}
             initialContent={draft}
