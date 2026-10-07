@@ -15,7 +15,7 @@ const files={
 for(const path of Object.values(files))if(!fs.existsSync(path))failures.push('missing Current auth/data contract file: '+path);
 if(!failures.length){
   const client=read('app/loc/db-contract.mjs');
-  for(const token of ['createDatabaseClient','signInWithOtp','getSession'])if(!client.includes(token))failures.push('DB/auth boundary missing '+token);
+  for(const token of ['createDatabaseClient','signInWithOAuth','getSession'])if(!client.includes(token))failures.push('DB/auth boundary missing '+token);
   const adapter=read('app/loc/providers/supabase.mjs');
   for(const token of ['createClient','NEXT_PUBLIC_SUPABASE_URL','NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY','persistSession:true'])if(!adapter.includes(token))failures.push('Supabase adapter missing '+token);
   const portableSchema=read('docs/sql/portable-current-schema.sql');
