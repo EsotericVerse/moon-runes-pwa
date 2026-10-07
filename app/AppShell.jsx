@@ -91,8 +91,6 @@ function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride
     :THEME_SLOTS.map(item=>({id:item.id,label:item.label}));
 
   useEffect(()=>{
-    const root=document.documentElement;
-    if(root.dataset.themeId===slot.id)return;
     applyTheme(slot);
   },[slot,scopeId]);
 
