@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect,useState} from 'react';
+import {UI_LOCALE_OPTIONS,normalizeUiLocale} from '../i18n/ui-copy';
 import {selectScopeConfig} from './scope-data';
 import {updateRows} from './db-client.mjs';
 import {useAccount} from './use-account';
@@ -10,6 +11,7 @@ const EMPTY={
   search_intro:'',
   search_aliases:[],
   theme:'theme-7',
+  locale:'zh-Hant',
   search_able:true,
   statistics_able:true,
   culture_able:true
@@ -61,6 +63,7 @@ export default function ScopeSettingsPanel({scopeId}){
         search_intro:String(draft.search_intro||'').trim(),
         search_aliases:searchAliases,
         theme:String(draft.theme||'theme-7'),
+        locale:normalizeUiLocale(draft.locale),
         search_able:draft.search_able!==false,
         statistics_able:draft.statistics_able!==false,
         culture_able:draft.culture_able!==false,
@@ -90,6 +93,12 @@ export default function ScopeSettingsPanel({scopeId}){
           <span>Theme</span>
           <select className="scope-select" value={draft.theme||'theme-7'} onChange={event=>change('theme',event.target.value)}>
             {Array.from({length:8},(_,index)=>'theme-'+(index+1)).map(theme=><option value={theme} key={theme}>{theme}</option>)}
+          </select>
+        </label>
+        <label>
+          <span>預設語系</span>
+          <select className="scope-select" value={normalizeUiLocale(draft.locale)} onChange={event=>change('locale',normalizeUiLocale(event.target.value))}>
+            {UI_LOCALE_OPTIONS.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}
           </select>
         </label>
       </div>
