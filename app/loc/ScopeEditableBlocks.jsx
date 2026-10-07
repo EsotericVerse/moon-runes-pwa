@@ -218,11 +218,7 @@ export default function ScopeEditableBlocks({
           />
         </>:<>
           {entity.title?<h4>{entity.title}</h4>:null}
-          {entity.text?<RichBlockEditor
-            key={entity.uid+':view'}
-            initialContent={{html:entity.text}}
-            editable={false}
-          />:null}
+          {entity.text?<div className="scope-rich-surface" dangerouslySetInnerHTML={{__html:entity.text}}/>:null}
         </>}
       </article>)}
       {editable&&entities.length<ENTITY_LIMIT?<button type="button" className="scope-block-entity-add" onClick={addEntity} disabled={busy}>
@@ -268,11 +264,7 @@ export default function ScopeEditableBlocks({
             ?renderDisplay(slot)
             :<>
               {slot.title?<Heading>{slot.title}</Heading>:null}
-              {slot.text?<RichBlockEditor
-                key={(slot.uid||slot.order)+':body:view'}
-                initialContent={{html:slot.text}}
-                editable={false}
-              />:null}
+              {slot.text?<div className="scope-rich-surface" dangerouslySetInnerHTML={{__html:slot.text}}/>:null}
               {renderEntities(slot.entities,false)}
             </>}
           {empty&&canEdit?<p className="scope-status">點此建立文字框。</p>:null}

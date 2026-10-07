@@ -1,4 +1,4 @@
-import ScopeEditableBlocks from '../ScopeEditableBlocks';
+import AuthorHomeEditableBlock from '../AuthorHomeEditableBlock';
 import authorHeroAsset from '../../../pics/lo3rwang-hero.jpg';
 
 function AuthorPage({eyebrow,title,subtitle,intro,heroImage=null,heroContent=null,sections=[]}){
@@ -204,78 +204,37 @@ export default function AuthorHomeView({section=null}){
     subtitle=""
     intro={null}
     heroImage={authorHeroAsset}
-    heroContent={<ScopeEditableBlocks
-      scopeId="lo3rwang"
-      page="index"
-      orders={[1]}
-      slotClassName="author-home-hero-copy"
-      headingLevel={1}
-    />}
+    heroContent={<AuthorHomeEditableBlock order={1} variant="hero"/>}
     sections={[
       {
         id:'about',
         eyebrow:null,
         title:null,
-        content:<ScopeEditableBlocks
-          scopeId="lo3rwang"
-          page="index"
-          orders={[2]}
-          slotClassName="author-home-section-block"
-          headingLevel={2}
-        />
+        content:<AuthorHomeEditableBlock order={2} variant="about"/>
       },
       {
         id:'professional',
         eyebrow:null,
         title:null,
-        content:<ScopeEditableBlocks
-          scopeId="lo3rwang"
-          page="index"
-          orders={[3]}
-          slotClassName="author-home-section-block"
-          headingLevel={2}
-        />
+        content:<AuthorHomeEditableBlock order={3} variant="professional"/>
       },
       {
         id:'systems',
         eyebrow:null,
         title:null,
-        content:<ScopeEditableBlocks
-          scopeId="lo3rwang"
-          page="index"
-          orders={[4]}
-          slotClassName="author-home-section-block"
-          headingLevel={2}
-        />
+        content:<AuthorHomeEditableBlock order={4} variant="systems"/>
       },
       {
         id:'three-souls',
         eyebrow:null,
         title:null,
-        content:<div className="author-trinity-layout">
-          <figure className="home-architecture-figure author-trinity-figure">
-            <img src="/pics/lo3rwang-3.png" alt="Oscar 政德、玄鑒 Lucas、符韻 Rune，以及柏隆 Bruno、睿汶 Raven 的關係圖" loading="lazy"/>
-          </figure>
-          <ScopeEditableBlocks
-            scopeId="lo3rwang"
-            page="index"
-            orders={[5]}
-            slotClassName="author-home-section-block"
-            headingLevel={2}
-          />
-        </div>
+        content:<AuthorHomeEditableBlock order={5} variant="souls"/>
       },
       {
         id:'contact',
         eyebrow:null,
         title:null,
-        content:<ScopeEditableBlocks
-          scopeId="lo3rwang"
-          page="index"
-          orders={[6]}
-          slotClassName="author-home-section-block"
-          headingLevel={2}
-        />
+        content:<AuthorHomeEditableBlock order={6} variant="contact"/>
       }
     ]}
   />;
