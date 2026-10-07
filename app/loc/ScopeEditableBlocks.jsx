@@ -7,7 +7,8 @@ import {selectScopeBlocks} from './scope-data';
 import {useAccount} from './use-account';
 import RichBlockEditor,{blocksToPlainText,normalizeBlocks,plainTextToBlocks} from './RichBlockEditor';
 
-const SLOT_COUNT=4;
+const DEFAULT_SLOT_COUNT=4;
+const MAX_SLOT_COUNT=32;
 
 function fallbackDocument(value){
   if(Array.isArray(value))return normalizeBlocks(value);
@@ -15,9 +16,9 @@ function fallbackDocument(value){
   return normalizeBlocks(value??'');
 }
 
-function slotRows(rows=[],fallbackDocuments=[]){
+function slotRows(rows=[],fallbackDocuments=[],slotCount=DEFAULT_SLOT_COUNT){
   const byOrder=new Map((Array.isArray(rows)?rows:[]).map(row=>[Number(row.block_order),row]));
-  return Array.from({length:SLOT_COUNT},(_,index)=>{
+  return Array.from({length:slotCount},(_,index)=>{
     const order=index+1;
     const stored=byOrder.get(order)||null;
     const storedText=String(stored?.block_text||'');
@@ -42,7 +43,8 @@ export default function ScopeEditableBlocks({
   fallbackDocuments=[],
   className='',
   slotClassName='loc-card',
-  headingLevel=3
+  headingLevel=3,
+  slotCount=null
 }){
   const account=useAccount();
   const queryClient=useQueryClient();
@@ -52,12 +54,24 @@ export default function ScopeEditableBlocks({
     staleTime:60_000
   });
   const fallbackKey=useMemo(()=>JSON.stringify(fallbackDocuments),[fallbackDocuments]);
-  const slots=useMemo(
-    ()=>slotRows(query.data||[],fallbackDocuments),
-    [query.data,fallbackKey]
+  const normalizedOrders=Array.isArray(orders)?orders.map(Number).filter(Number.isFinite):[];
+  const maxRequestedOrder=normalizedOrders.length?Math.max(...normalizedOrders):0;
+  const requestedSlotCount=Number(slotCount);
+  const resolvedSlotCount=Math.min(
+    MAX_SLOT_COUNT,
+    Math.max(
+      DEFAULT_SLOT_COUNT,
+      fallbackDocuments.length,
+      maxRequestedOrder,
+      Number.isFinite(requestedSlotCount)?Math.floor(requestedSlotCount):0
+    )
   );
-  const visibleOrders=Array.isArray(orders)&&orders.length
-    ?new Set(orders.map(Number).filter(value=>value>=1&&value<=SLOT_COUNT))
+  const slots=useMemo(
+    ()=>slotRows(query.data||[],fallbackDocuments,resolvedSlotCount),
+    [query.data,fallbackKey,resolvedSlotCount]
+  );
+  const visibleOrders=normalizedOrders.length
+    ?new Set(normalizedOrders.filter(value=>value>=1&&value<=resolvedSlotCount))
     :null;
   const [editing,setEditing]=useState(0);
   const [draft,setDraft]=useState(null);
