@@ -138,7 +138,7 @@ begin
   execute format('create table silver.%I (like silver.lo3rwang including all)',v_config_name);
   execute format('alter table silver.%I drop column if exists home_blocks',v_config_name);
   execute format('alter table silver.%I drop column if exists governance_blocks',v_config_name);
-  execute format('create table silver.%I (block_page text not null, block_title text not null default '''', block_text text not null default '''', block_order integer not null, primary key(block_page,block_order), check(block_page in (''home'',''governance'')), check(block_order between 1 and 4))',v_blocks_name);
+  execute format('create table silver.%I (block_page text not null, block_title text not null default '''', block_text text not null default '''', block_order integer not null, primary key(block_page,block_order), check(block_page in (''home'',''governance'')), check(block_order between 1 and 32))',v_blocks_name);
   execute format('create table silver.%I (like silver.lo3rwang_galaxy including all)',v_galaxy_name);
   execute format('create table silver.%I (like silver.lo3rwang_galaxy_media including all)',v_media_name);
   execute format('create table silver.%I (like silver.lo3rwang_time including all)',v_time_name);
