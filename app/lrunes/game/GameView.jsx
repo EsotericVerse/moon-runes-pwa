@@ -794,7 +794,7 @@ export default function GameView(){
     {!allOpened?<p className="loc-status" role="status">{state.result}</p>:null}
 
     <div className={'game-live-board players-'+state.players.length}>
-      {state.players.map((player,pi)=><motion.section layout animate={{scale:focusPlayer===pi?1.012:1,opacity:focusPlayer===null||focusPlayer===pi?1:.72}} transition={{duration:.18}} className={'loc-player game-player '+(state.active===pi?'is-turn ':'')+(focusPlayer===pi?'is-focused':'')} key={player.name}>
+      {state.players.map((player,pi)=>({player,pi})).filter(({player})=>allOpened||player.opening).map(({player,pi})=><motion.section layout={allOpened} animate={{scale:allOpened&&focusPlayer===pi?1.012:1,opacity:allOpened&&focusPlayer!==null&&focusPlayer!==pi?.72:1}} transition={{duration:.18}} className={'loc-player game-player '+(state.active===pi?'is-turn ':'')+(focusPlayer===pi?'is-focused':'')} key={(allOpened?'play-':'opening-')+player.name}>
         <div className="game-player-head">
           <div><p className="loc-eyebrow">{player.name}</p><strong>{player.de} / {data.config.deMax} De</strong></div>
           <DeMeter value={player.de} max={data.config.deMax}/>
@@ -803,7 +803,7 @@ export default function GameView(){
         <div className="game-hand">
           {player.hand.map(card=><RuneCard key={card.id} card={card} selected={player.selected.includes(card.id)} onClick={()=>toggle(pi,card.id)}/>)}
         </div>
-        {player.opening?<button type="button" className="loc-button primary" onClick={()=>confirmOpening(pi)} aria-disabled={player.selected.length!==data.config.openingDiscard}>確認 {player.name} 棄 {data.config.openingDiscard} 張（已選 {player.selected.length} 張），保留 {data.config.handBase} 張</button>:!allOpened?<p className="game-player-meta">{player.name} 已完成起手，等待其他玩家。</p>:null}
+        {player.opening?<button type="button" className="loc-button primary" onClick={()=>confirmOpening(pi)} aria-disabled={player.selected.length!==data.config.openingDiscard}>確認 {player.name} 棄 {data.config.openingDiscard} 張（已選 {player.selected.length} 張），保留 {data.config.handBase} 張</button>:null}
       </motion.section>)}
 
       <AnimatePresence mode="wait">
