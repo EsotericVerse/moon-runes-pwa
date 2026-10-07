@@ -3,7 +3,46 @@
  * Pure rules: no LOC components, CSS, navigation or database writes.
  * Supabase game rows are loaded before constructing the match.
  */
-import {applyDe,draw,evaluateAlphaEvent,finishOpening,freshPlayer,shuffle} from './game-data.js';
+const shuffle=list=>{
+  const next=[...(list||[])];
+  for(let i=next.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [next[i],next[j]]=[next[j],next[i]];
+  }
+  return next;
+};
+const draw=(player,count,config)=>{
+  const room=Math.max(0,config.handTempCap-player.hand.length);
+  const n=Math.min(count,room,player.deck.length);
+  return {...player,hand:[...player.hand,...player.deck.slice(0,n)],deck:player.deck.slice(n)};
+};
+const freshPlayer=(cards,name,config)=>{
+  const deck=shuffle(cards);
+  return {name,de:config.deMin,deck:deck.slice(config.openingDraw),hand:deck.slice(0,config.openingDraw),discard:[],selected:[],opening:true};
+};
+const finishOpening=(player,ids,config)=>{
+  if(ids.length!==config.openingDiscard)throw new Error('起手棄牌數量不正確。');
+  const selected=new Set(ids);
+  if(selected.size!==config.openingDiscard)throw new Error('起手棄牌不可重複。');
+  const discarded=player.hand.filter(card=>selected.has(card.id));
+  if(discarded.length!==config.openingDiscard)throw new Error('起手棄牌不合法。');
+  return {...player,hand:player.hand.filter(card=>!selected.has(card.id)),discard:[...player.discard,...discarded],selected:[],opening:false};
+};
+const applyDe=(player,delta,config)=>({...player,de:Math.max(config.deMin,Math.min(config.deMax,player.de+delta))});
+const evaluateAlphaEvent=(cards,event,resultByCoverage,config)=>{
+  if(cards.length!==config.eventResponseCards)throw new Error('Event 回應張數不正確。');
+  const pool=[...(event?.req||[])];
+  let macroHits=0;
+  for(const card of cards){
+    const index=pool.indexOf(card.alphaCompatMacro);
+    if(index>=0){macroHits++;pool.splice(index,1);}
+  }
+  const diversity=new Set(cards.map(card=>card.group)).size;
+  const coverage=Math.min(4,macroHits+Math.min(2,diversity));
+  const result=resultByCoverage.get(coverage);
+  if(!result)throw new Error('silver.game 缺少 Event Result：'+coverage+'/4');
+  return {coverage,result:result.code,label:result.label,coverageText:result.coverageText,delta:result.delta,drawCount:result.drawCount};
+};
 
 const LABELS=['A','B','C','D'];
 const snapshot=(players,step)=>Object.fromEntries([['step',step],...players.map((p,i)=>[LABELS[i],p.de])]);
