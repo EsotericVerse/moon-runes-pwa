@@ -57,6 +57,7 @@ export default function ScopeEditableBlocks({
   orders=null,
   className='',
   slotClassName='loc-card',
+  editSlotClassName='',
   headingLevel=3,
   renderDisplay=null
 }){
@@ -238,7 +239,7 @@ export default function ScopeEditableBlocks({
       const level=Number(headingLevel);
       const Heading=level===1?'h1':level===2?'h2':level===4?'h4':'h3';
       return <section
-        className={slotClassName+' scope-editable-block'+(active?' is-editing':'')+(canEdit&&!active?' is-editable-idle':'')+(empty?' is-empty':'')}
+        className={((active&&editSlotClassName)?editSlotClassName:slotClassName)+' scope-editable-block'+(active?' is-editing':'')+(canEdit&&!active?' is-editable-idle':'')+(empty?' is-empty':'')}
         key={slot.uid||'order:'+slot.order}
         onClickCapture={canEdit&&!active?event=>{if(!isInteractiveTarget(event.target))begin(slot)}:undefined}
       >
