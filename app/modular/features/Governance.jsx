@@ -22,15 +22,15 @@ function GovernanceHome(){
   const account=useAccount();
   const {View,subtitle}=governanceFor(scopeId);
   const adminHref=scopeHref('admin');
+  const manageHref=scopeId==='loc'?adminHref:scopeHref(scopeId,'governance/manage');
   const canEdit=account.canManageScopeSync(scopeId);
   return <FeaturePage featureId="governance" subtitle={subtitle}>
     <View canEdit={canEdit}/>
     <section className="loc-card governance-management-cta">
-      <h2>{scopeId==='loc'?'LOC Scope Group 管理':getScope(scopeId).label+'管理'}</h2>
-      <p>{scopeId==='loc'?'Scope Group 的公開呈現與成員檢視在 Manage；系統級 mapping 與權限仍在 Admin。':'時期、風格標籤、作品與其他可調整項目集中在此 Scope 的 Manage。'}</p>
+      <h2>{scopeId==='loc'?'LOC 系統管理':getScope(scopeId).label+'管理'}</h2>
+      <p>{scopeId==='loc'?'LOC 的管理入口進入 Admin；Scope 建立、上下層 Registry、身份權限與資料表 Mapping 都集中在 Admin。':'時期、風格標籤、作品與其他可調整項目集中在此 Scope 的 Manage。'}</p>
       <div className="scope-preview-links">
-        <a className="loc-button primary" href={scopeHref(scopeId,'governance/manage')}>{UI_COPY.governance.enterManagement}</a>
-        {scopeId==='loc'&&canEdit?<a className="loc-button" href={adminHref}>{UI_COPY.governance.enterAdmin}</a>:null}
+        <a className="loc-button primary" href={manageHref}>{UI_COPY.governance.enterManagement}</a>
       </div>
     </section>
   </FeaturePage>;
