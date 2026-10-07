@@ -43,31 +43,31 @@ function HeroDisplay(slot){
 
 function BeginnerHeading(slot){
   const meta=entityAt(slot,0);
-  return <div className="home-section-heading">
+  return <>
     <p className="loc-eyebrow">{meta.title||'Start here'}</p>
     <h2>{slot.title}</h2>
     <Html tag="p" className="loc-subtitle" html={stripOuterParagraph(meta.text)}/>
-  </div>;
+  </>;
 }
 
 function ArchitectureHeading(slot){
   const meta=entityAt(slot,0);
-  return <div className="home-section-heading">
+  return <>
     <p className="loc-eyebrow">{meta.title||'LOC Architecture'}</p>
     <h2>{slot.title}</h2>
-  </div>;
+  </>;
 }
 
 function StatusHeading(slot){
-  return <div className="home-section-heading">
+  return <>
     <p className="loc-eyebrow">System Status</p>
     <h2>{slot.title}</h2>
     <Html tag="p" className="loc-subtitle" html={stripOuterParagraph(slot.text)}/>
-  </div>;
+  </>;
 }
 
 function StatusBubbles(slot){
-  return <div className="home-draw-bubbles home-status-bubbles" aria-label="LOC 系統狀態">
+  return <>
     {slot.entities.map((entity,index)=>{
       const parts=paragraphParts(entity.text);
       if(index===1){
@@ -95,72 +95,69 @@ function StatusBubbles(slot){
         />)}
       </div>;
     })}
-  </div>;
+  </>;
 }
 
 function SkillsHeading(slot){
   const parts=paragraphParts(slot.text);
-  return <div className="home-section-heading">
+  return <>
     <p className="loc-eyebrow">LOC GPT Skills</p>
     <h2>{slot.title}</h2>
     <Html tag="p" className="loc-subtitle" html={parts[0]||''}/>
-  </div>;
+  </>;
 }
 
 function SkillsBody(slot){
   const parts=paragraphParts(slot.text);
-  return <div className="home-author-copy">
+  return <>
     {slot.entities.map(entity=><p key={entity.uid}>
       <strong>{entity.title}</strong>：
       <span dangerouslySetInnerHTML={{__html:stripOuterParagraph(entity.text)}}/>
     </p>)}
     {parts.slice(1).map((part,index)=><Html tag="p" html={part} key={'skill-body-'+index}/>)}
-  </div>;
+  </>;
 }
 
 function AuthorHeading(slot){
   const parts=paragraphParts(slot.text);
-  return <div className="home-section-heading">
+  return <>
     <p className="loc-eyebrow">About me</p>
     <h2>{slot.title}</h2>
     <Html tag="p" className="loc-subtitle" html={parts[0]||''}/>
-  </div>;
+  </>;
 }
 
 function AuthorBody(slot){
   const parts=paragraphParts(slot.text);
-  return <div className="home-author-copy">
+  return <>
     {parts.slice(1).map((part,index)=><Html tag="p" html={part} key={'author-body-'+index}/>)}
-  </div>;
+  </>;
 }
 
 function BodyDisplay(slot){
-  return <div className="home-author-copy">
-    <Html html={slot.text}/>
-  </div>;
+  return <Html html={slot.text}/>;
 }
 
-const RENDERERS={
-  hero:HeroDisplay,
-  beginnerHeading:BeginnerHeading,
-  architectureHeading:ArchitectureHeading,
-  statusHeading:StatusHeading,
-  statusBubbles:StatusBubbles,
-  skillsHeading:SkillsHeading,
-  skillsBody:SkillsBody,
-  authorHeading:AuthorHeading,
-  authorBody:AuthorBody,
-  body:BodyDisplay
+const CONFIG={
+  hero:{render:HeroDisplay,slotClassName:'loc-home-hero-copy'},
+  beginnerHeading:{render:BeginnerHeading,slotClassName:'home-section-heading'},
+  architectureHeading:{render:ArchitectureHeading,slotClassName:'home-section-heading'},
+  statusHeading:{render:StatusHeading,slotClassName:'home-section-heading'},
+  statusBubbles:{render:StatusBubbles,slotClassName:'home-draw-bubbles home-status-bubbles'},
+  skillsHeading:{render:SkillsHeading,slotClassName:'home-section-heading'},
+  skillsBody:{render:SkillsBody,slotClassName:'home-author-copy'},
+  authorHeading:{render:AuthorHeading,slotClassName:'home-section-heading'},
+  authorBody:{render:AuthorBody,slotClassName:'home-author-copy'},
+  body:{render:BodyDisplay,slotClassName:'home-author-copy'}
 };
 
 export default function LocHomeEditableBlock({order,variant}){
-  const render=RENDERERS[variant]||BodyDisplay;
+  const config=CONFIG[variant]||CONFIG.body;
   return <ScopeEditableBlocks
     scopeId="loc"
     page="index"
     orders={[order]}
-    className="loc-home-editable-slot"
-    slotClassName="loc-home-edit-anchor"
-    renderDisplay={render}
+    slotClassName={config.slotClassName}
+    renderDisplay={config.render}
   />;
 }
