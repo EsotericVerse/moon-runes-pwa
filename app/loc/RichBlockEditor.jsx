@@ -114,7 +114,7 @@ export default function RichBlockEditor({
     emit();
   };
 
-  return <div className={'scope-rich-editor '+className}>
+  return <div className={'scope-rich-editor '+(editable?'is-editable ':'is-readonly ')+className}>
     {editable?<div className="scope-rich-toolbar" role="toolbar" aria-label="文字編輯工具">
       <button type="button" onClick={()=>command('bold')}><strong>B</strong></button>
       <button type="button" onClick={()=>command('italic')}><em>I</em></button>
@@ -125,7 +125,7 @@ export default function RichBlockEditor({
     </div>:null}
     <div
       ref={editorRef}
-      className="scope-rich-surface"
+      className={'scope-rich-surface '+(editable?'is-editable':'is-readonly')}
       contentEditable={editable}
       suppressContentEditableWarning
       onInput={emit}

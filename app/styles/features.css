@@ -152,19 +152,48 @@
   .scope-publisher-body{min-height:24rem}
 }
 
-.scope-editable-block-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.85rem}
+.scope-editable-block-grid{min-width:0}
 .scope-editable-block{position:relative;min-width:0}
-.scope-inline-editbar{display:flex;justify-content:flex-end;gap:.45rem;margin-bottom:.55rem}
-@media(max-width:780px){.scope-editable-block-grid{grid-template-columns:1fr}}
+.scope-editable-block.is-editable-idle{cursor:text}
+.scope-editable-block.is-editable-idle::after{
+  content:"";
+  position:absolute;
+  inset:-.22rem;
+  pointer-events:none;
+  border:1px dashed transparent;
+  border-radius:inherit;
+  transition:border-color .15s ease,background .15s ease;
+}
+.scope-editable-block.is-editable-idle:hover::after{
+  border-color:color-mix(in srgb,var(--loc-accent) 35%,transparent);
+  background:color-mix(in srgb,var(--loc-accent) 2%,transparent);
+}
+.scope-inline-editbar{
+  position:absolute;
+  z-index:6;
+  top:.35rem;
+  right:.35rem;
+  display:flex;
+  gap:.35rem;
+  margin:0;
+}
+.scope-inline-editbar .loc-button{
+  min-height:2rem;
+  padding:.28rem .58rem;
+  font-size:.78rem;
+}
+.scope-editable-block.is-editing{padding-top:2.7rem}
 
 .scope-rich-editor{min-width:0}
+.scope-rich-editor.is-readonly,
+.scope-rich-editor.is-readonly .scope-rich-surface{display:contents}
 .scope-rich-toolbar{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.45rem}
 .scope-rich-toolbar button{padding:.38rem .58rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-sm);background:var(--loc-panel);color:var(--loc-text);cursor:pointer}
-.scope-rich-surface{min-height:7rem;outline:none;line-height:1.75;color:var(--loc-text)}
-.scope-rich-surface:focus{box-shadow:0 0 0 2px var(--loc-ui-accent-soft);border-radius:var(--loc-ui-radius-sm)}
-.scope-rich-surface h2,.scope-rich-surface h3{margin:.5rem 0 .35rem}
-.scope-rich-surface p{margin:.35rem 0}
-.scope-rich-surface ul,.scope-rich-surface ol{padding-left:1.4rem}
+.scope-rich-editor.is-editable .scope-rich-surface{min-height:7rem;outline:none;line-height:1.75;color:var(--loc-text)}
+.scope-rich-editor.is-editable .scope-rich-surface:focus{box-shadow:0 0 0 2px var(--loc-ui-accent-soft);border-radius:var(--loc-ui-radius-sm)}
+.scope-rich-editor.is-editable .scope-rich-surface h2,.scope-rich-editor.is-editable .scope-rich-surface h3{margin:.5rem 0 .35rem}
+.scope-rich-editor.is-editable .scope-rich-surface p{margin:.35rem 0}
+.scope-rich-editor.is-editable .scope-rich-surface ul,.scope-rich-editor.is-editable .scope-rich-surface ol{padding-left:1.4rem}
 .loc-rich-bubble{padding:.75rem 1rem;border-radius:999px;background:var(--loc-ui-accent-soft);border:1px solid var(--loc-accent-border);margin:.6rem 0}
 .loc-rich-box{padding:.8rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-md);background:var(--loc-surface-soft);margin:.6rem 0}
 .scope-publisher-main .scope-rich-editor{min-height:32rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-lg);background:var(--loc-panel);padding:1rem}
