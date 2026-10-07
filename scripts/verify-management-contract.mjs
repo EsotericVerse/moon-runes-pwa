@@ -9,6 +9,7 @@ const must=(condition,message)=>{if(!condition)failures.push(message);};
 
 const galaxy=read('app/loc/galaxy-query.js');
 const culture=read('app/loc/culture-query.js');
+const cultureUi=read('app/modular/features/Culture.jsx');
 const editor=read('app/modular/features/CultureTimelineEditor.jsx');
 const management=read('app/loc/GovernanceManagement.jsx');
 const governance=read('app/modular/features/Governance.jsx');
@@ -57,11 +58,11 @@ must(runesHome.includes('ScopeEditableBlocks')&&runesHome.includes('field="home_
 must(personalGovernance.includes('ScopeEditableBlocks')&&personalGovernance.includes('governance_blocks'),'personal governance must be WYSIWYG');
 must(runesGovernance.includes('ScopeEditableBlocks')&&runesGovernance.includes('governance_blocks'),'LunaRunes governance must be WYSIWYG');
 must(sharedSearch.includes('startEditing')&&sharedSearch.includes('RichBlockEditor')&&sharedSearch.includes('content_blocks')&&sharedSearch.includes('updateRows'),'Search must edit individual Galaxy articles in place with the shared rich editor');
-must(culture.includes('CultureTimelineEditor')&&culture.includes('selectedTimelineRecordId'),'Culture first timeline must provide authenticated in-place period/anchor editing');
+must(cultureUi.includes('CultureTimelineEditor')&&cultureUi.includes('selectedTimelineRecordId')&&cultureUi.includes('onTimeClick={account.canManageScopeSync(scopeId)'),'Culture first timeline must provide authenticated in-place period/anchor editing');
 must(admin.includes("insertRows('silver.manage'")&&admin.includes("deleteRows('silver.manage'"),'Admin Registry node panel must add/remove Manage mappings');
 must(admin.includes('DeploymentTree')&&admin.includes('vis-network/standalone')&&admin.includes("onMoveParent"),'Admin must manage Scope Registry through a draggable vis-network tree');
 must(admin.includes('syncManageScopeRow(')&&admin.includes("role:'scope'"),'Admin Scope node must edit Manage mapping atomically and keep role=scope fixed');
-must(admin.includes('部分 Scope 設定讀取失敗')&&!admin.includes('catch{}'),'Admin Scope config failures must be surfaced, not swallowed');
+must(admin.includes('部分 Scope 設定讀取失敗')&&admin.includes('configFailures.push')&&admin.includes("if(error)throw new Error(error.message||'Scope config 讀取失敗。')"),'Admin Scope config failures must be surfaced, not swallowed');
 must(admin.includes('provisionScope(')&&admin.includes('＋ Scope')&&admin.includes('＋ Group'),'Admin Registry must create Scope and Scope Group from the tree workspace');
 must(admin.includes("dbAuthRelation('silver.scope_registry')")&&admin.includes('parent_scope_id'),'Admin must read the DB Scope Registry hierarchy');
 must(admin.includes("silver.database_targets")&&admin.includes('Database Target')&&admin.includes('Project ID'),'Admin must persist explicit Supabase/Neon migration targets');
@@ -71,9 +72,9 @@ must(dbContract.includes('`silver.${scope}_keywords`')&&!dbContract.includes("ap
 must(dbContract.includes('copyKeywordLibraryClass')&&keywordLibrary.includes('copyKeywordLibraryClass'),'keyword library must support copying a complete independent Class');
 must(dbContract.includes('syncManageScopeRow')&&dbContract.includes("p_operation:'scope_sync'"),'Scope mapping updates must use one atomic management write');
 must(dbContract.includes('affected 0 rows')&&dbContract.includes('affected!==batch.length'),'management write helpers must reject zero-row updates/deletes and incomplete inserts');
-must(scopeData.includes("keywords:`silver.${id}_keywords`")&&scopeData.includes('selectScopeGroupChildren')&&scopeData.includes('display_name,search_intro,search_aliases'),'Scope data must resolve Keywords, DB hierarchy and Scope-owned presentation');
+must(scopeData.includes("keywords:`silver.${id}_keywords`")&&scopeData.includes('selectScopeGroupChildren')&&scopeData.includes('display_name,search_intro,home_blocks,governance_blocks,search_aliases'),'Scope data must resolve Keywords, DB hierarchy and Scope-owned presentation');
 must(scopeGroup.includes('selectScopeGroupChildren(scopeId)')&&scopeGroup.includes('parent_scope_id'),'Scope Group management must read DB parent/child membership');
-must(admin.includes("setMappings([]);setRegistry([]);setStatus(error?.message||'Scope 設定讀取失敗。');"),'Admin mapping/registry read rejections must surface in the UI');
+must(admin.includes("if(mappingResult.error)throw new Error(mappingResult.error.message||'Mapping 讀取失敗。')")&&admin.includes("if(registryResult.error)throw new Error(registryResult.error.message||'Scope Registry 讀取失敗。')")&&admin.includes("setStatus(error?.message||'Admin 資料讀取失敗。')"),'Admin mapping/registry read rejections must surface in the UI');
 must(keywordLibrary.includes('class_name')&&keywordLibrary.includes('class_group')&&keywordLibrary.includes('class_enable')&&keywordLibrary.includes('item_name')&&keywordLibrary.includes('principle')&&keywordLibrary.includes('keywords_text'),'keyword library editor must edit self-contained Class, Group, participation, item, principle and one keyword collection together');
 must(!keywordLibrary.includes('keyword_group')&&!keywordLibrary.includes("node_type:'style'")&&!keywordLibrary.includes("node_type:'keyword'"),'keyword library editor must not recreate style/rule/node-type storage');
 must(keywordLibrary.includes('scopeData=account.scopeDataFor(scopeId)')&&keywordLibrary.includes('keyword_min_chars')&&keywordLibrary.includes('keyword_min_documents'),'keyword analysis thresholds must resolve from the current Scope');
