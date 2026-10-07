@@ -8,7 +8,6 @@ import {scopeHref} from '../modular/scope-registry';
 import ScopeSettingsPanel from './ScopeSettingsPanel';
 import ManagementArticlePublisher from './ManagementArticlePublisher';
 import ManagementImportPanel from './ManagementImportPanel';
-import RuneManagementPanel from './RuneManagementPanel';
 import ScopeGroupManagement from './ScopeGroupManagement';
 import KeywordLibraryPanel from './KeywordLibraryPanel';
 
@@ -33,14 +32,17 @@ function LoginScreen({scopeId,account}){
 
 function sectionOptions(scopeId,scope){
   if(scope?.aggregateChildren)return [{value:'group',label:'Scope Group'}];
-  const options=[
-    {value:'settings',label:'基本設定'},
-    {value:'import',label:UI_COPY.management.import},
-    {value:'article',label:UI_COPY.management.article}
-  ];
+  const options=[{value:'settings',label:'設定'}];
   if(scopeId!=='lrunes')options.push({value:'keywords',label:'關鍵詞庫'});
-  if(scopeId==='lrunes')options.push({value:'daily',label:'每日符文管理'});
   return options;
+}
+
+function SettingsPage({scopeId}){
+  return <>
+    <ScopeSettingsPanel scopeId={scopeId}/>
+    <ManagementImportPanel scopeId={scopeId}/>
+    <ManagementArticlePublisher scopeId={scopeId}/>
+  </>;
 }
 
 export default function GovernanceManagement(){
@@ -82,10 +84,7 @@ export default function GovernanceManagement(){
     </header>
 
     {section==='group'&&scope?.aggregateChildren?<ScopeGroupManagement scopeId={scopeId}/>:null}
-    {section==='settings'&&!scope?.aggregateChildren?<ScopeSettingsPanel scopeId={scopeId}/>:null}
-    {section==='article'&&!scope?.aggregateChildren?<ManagementArticlePublisher scopeId={scopeId}/>:null}
-    {section==='import'&&!scope?.aggregateChildren?<ManagementImportPanel scopeId={scopeId}/>:null}
+    {section==='settings'&&!scope?.aggregateChildren?<SettingsPage scopeId={scopeId}/>:null}
     {section==='keywords'&&!scope?.aggregateChildren&&scopeId!=='lrunes'?<KeywordLibraryPanel scopeId={scopeId}/>:null}
-    {section==='daily'&&scopeId==='lrunes'?<RuneManagementPanel/>:null}
   </section>;
 }
