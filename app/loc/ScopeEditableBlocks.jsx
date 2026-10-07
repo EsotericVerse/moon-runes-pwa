@@ -267,12 +267,13 @@ export default function ScopeEditableBlocks({
             ?renderDisplay(slot)
             :<>
               {slot.title?<Heading>{slot.title}</Heading>:null}
-              {slot.text?<RichBlockEditor
-                key={(slot.uid||slot.order)+':body:view'}
-                initialContent={{html:slot.text}}
-                editable={false}
-              />:null}
-              {renderEntities(slot.entities,false)}
+              {slot.text?<div className="scope-block-static-html" dangerouslySetInnerHTML={{__html:slot.text}}/>:null}
+              {slot.entities.length?<div className="scope-block-entity-grid">
+                {slot.entities.map(entity=><article className="scope-block-entity" key={entity.uid}>
+                  {entity.title?<h4>{entity.title}</h4>:null}
+                  {entity.text?<div className="scope-block-static-html" dangerouslySetInnerHTML={{__html:entity.text}}/>:null}
+                </article>)}
+              </div>:null}
             </>}
           {empty&&canEdit?<p className="scope-status">點此建立文字框。</p>:null}
         </>}
