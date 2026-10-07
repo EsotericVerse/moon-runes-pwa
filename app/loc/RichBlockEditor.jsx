@@ -63,7 +63,7 @@ function sanitizeHtml(value=''){
       for(const attr of [...child.attributes]){
         const name=attr.name.toLowerCase();
         const keepClass=name==='class'&&attr.value.split(/\s+/).every(cls=>ALLOWED_CLASSES.has(cls));
-        const keepHref=child.tagName==='A'&&name==='href'&&/^(https?:|mailto:)/i.test(attr.value);
+        const keepHref=child.tagName==='A'&&name==='href'&&/^(?:https?:|mailto:|#|\?|\/(?!\/))/i.test(attr.value);
         if(!keepClass&&!keepHref)child.removeAttribute(attr.name);
       }
       if(child.tagName==='A')child.setAttribute('rel','noreferrer');
