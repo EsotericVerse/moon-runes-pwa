@@ -6,7 +6,6 @@ import {useAccount} from './use-account';
 import {useScopeRuntime} from '../modular/use-scope-runtime';
 import {scopeHref} from '../modular/scope-registry';
 import ScopeSettingsPanel from './ScopeSettingsPanel';
-import ManagementArticlePublisher from './ManagementArticlePublisher';
 import ManagementImportPanel from './ManagementImportPanel';
 import ScopeGroupManagement from './ScopeGroupManagement';
 import KeywordLibraryPanel from './KeywordLibraryPanel';
@@ -32,17 +31,12 @@ function LoginScreen({scopeId,account}){
 
 function sectionOptions(scopeId,scope){
   if(scope?.aggregateChildren)return [{value:'group',label:'Scope Group'}];
-  const options=[{value:'settings',label:'設定'}];
+  const options=[
+    {value:'settings',label:'雜項設定'},
+    {value:'import',label:'資料匯入'}
+  ];
   if(scopeId!=='lrunes')options.push({value:'keywords',label:'關鍵詞庫'});
   return options;
-}
-
-function SettingsPage({scopeId}){
-  return <>
-    <ScopeSettingsPanel scopeId={scopeId}/>
-    <ManagementImportPanel scopeId={scopeId}/>
-    <ManagementArticlePublisher scopeId={scopeId}/>
-  </>;
 }
 
 export default function GovernanceManagement(){
@@ -71,9 +65,12 @@ export default function GovernanceManagement(){
       <p className="loc-eyebrow">{UI_COPY.management.eyebrow} · {scopeId}</p>
       <h1>{scope.label}{scopeId==='loc'?' Scope Group':''}管理</h1>
       <p>{account.user.email||account.user.name||''}</p>
-      {!scope?.aggregateChildren?<nav className="scope-tabs" aria-label="管理頁">
-        {options.map(option=><button type="button" key={option.value} aria-pressed={section===option.value} onClick={()=>setSection(option.value)}>{option.label}</button>)}
-      </nav>:null}
+      {!scope?.aggregateChildren?<div className="scope-management-select">
+        <label htmlFor="scope-management-section">管理選單</label>
+        <select id="scope-management-section" className="scope-select" value={section} onChange={event=>setSection(event.target.value)}>
+          {options.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}
+        </select>
+      </div>:null}
       <div className="scope-preview-links">
         {scopeId==='loc'?<a className="loc-button" href={scopeHref('admin')}>前往 Admin 系統設定</a>:<a className="loc-button" href={scopeHref(scopeId)}>返回 Scope</a>}
         <button className="loc-button" type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button>
@@ -81,7 +78,8 @@ export default function GovernanceManagement(){
     </header>
 
     {section==='group'&&scope?.aggregateChildren?<ScopeGroupManagement scopeId={scopeId}/>:null}
-    {section==='settings'&&!scope?.aggregateChildren?<SettingsPage scopeId={scopeId}/>:null}
+    {section==='settings'&&!scope?.aggregateChildren?<ScopeSettingsPanel scopeId={scopeId}/>:null}
+    {section==='import'&&!scope?.aggregateChildren?<ManagementImportPanel scopeId={scopeId} showArticlePublisher/>:null}
     {section==='keywords'&&!scope?.aggregateChildren&&scopeId!=='lrunes'?<KeywordLibraryPanel scopeId={scopeId}/>:null}
   </section>;
 }
