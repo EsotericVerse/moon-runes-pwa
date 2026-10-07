@@ -205,7 +205,7 @@ export default function AuthorHomeView({section=null}){
     intro={<>
       <p>Hello！你好！你可以叫我 Oscar。</p>
       <p>Wordsmith · Chaos Calibrator · Language Architect</p>
-      <p>Creator of LOC and LunaRunes · <a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽〈這就是我〉 →</a></p>
+      <p>Creator of LOC and LunaRunes · <a href="https://suno.com/album/16130013-09f2-4be3-b2f6-05ce171ba7d5" target="_blank" rel="noopener noreferrer">聽《微月光，上場》 →</a></p>
     </>}
     heroImage={authorHeroAsset}
     sections={[
