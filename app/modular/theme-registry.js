@@ -41,12 +41,18 @@ export function getThemeSlot(id){
   };
 }
 
+export function themeSignature(slot){
+  if(!slot)return '';
+  return [slot.id||'',slot.scheme||'',...THEME_TOKEN_KEYS.map(key=>String(slot.tokens?.[key]||''))].join('|');
+}
+
 export function applyTheme(slot){
   if(typeof document==='undefined'||!slot)return;
   const root=document.documentElement;
   THEME_TOKEN_KEYS.forEach(key=>root.style.removeProperty(key));
   root.dataset.theme=slot.scheme;
   root.dataset.themeId=slot.id;
+  root.dataset.themeSignature=themeSignature(slot);
   root.style.colorScheme=slot.scheme;
   Object.entries(slot.tokens||{}).forEach(([key,value])=>{if(value)root.style.setProperty(key,value);});
 }
