@@ -344,3 +344,32 @@
   .game-theme-control>small{grid-column:1}
   .game-theme-select{min-width:0}
 }
+
+/* Mobile game board: force full-width tracks inside nested LOC layouts. */
+@media(max-width:900px){
+  .game-shell .game-live-board,
+  .game-shell .game-live-board.players-3,
+  .game-shell .game-live-board.players-4{
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    width:100%;
+    min-width:0;
+  }
+  .game-shell .game-player,
+  .game-shell .game-event-field{
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    box-sizing:border-box;
+  }
+  .game-shell .game-player-head{min-width:0;flex-wrap:wrap}
+  .game-shell .game-hand{min-width:0;grid-template-columns:repeat(4,minmax(0,1fr))}
+  .game-shell .game-rune-card{min-width:0;overflow-wrap:normal;word-break:normal}
+  .game-shell .game-rune-card img{width:100%;min-width:0;aspect-ratio:3/4;object-fit:cover}
+  .game-shell .game-rune-card>span{min-width:0}
+}
+@media(max-width:620px){
+  .game-shell .game-hand{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .game-shell .game-player{padding:.75rem}
+  .game-shell .game-rune-card>span b{font-size:.82rem}
+}
