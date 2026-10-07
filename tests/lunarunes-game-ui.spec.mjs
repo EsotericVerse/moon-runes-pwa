@@ -46,6 +46,16 @@ test.describe('LunaRunes tabletop UI',()=>{
     expect(joined).not.toMatch(/條件：\s*(?:SL|ML|NE|OD)(?:\s*[+/]\s*(?:SL|ML|NE|OD))*/);
   });
 
+  test('rune cards surface action text and group visual',async({page})=>{
+    await page.goto('/game/',{waitUntil:'domcontentloaded'});
+    await page.getByRole('button',{name:'開始遊戲'}).click();
+    const card=page.locator('.lrg-card').first();
+    await expect(card).toBeVisible();
+    await expect(card.locator('.lrg-rune-art')).toBeVisible();
+    await expect(card.locator('.lrg-card-action')).toBeVisible();
+    await expect(card.locator('.lrg-group-mark')).toBeVisible();
+  });
+
   test('Event scoring help explains all four scoring points',async({page})=>{
     await page.goto('/game/',{waitUntil:'domcontentloaded'});
     await page.getByRole('button',{name:'開始遊戲'}).click();
