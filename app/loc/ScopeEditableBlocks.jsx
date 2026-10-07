@@ -22,7 +22,7 @@ function slotRows(rows=[],fallbackDocuments=[],slotCount=DEFAULT_SLOT_COUNT){
     const order=index+1;
     const stored=byOrder.get(order)||null;
     const storedText=String(stored?.block_text||'');
-    const blocks=storedText.trim()?normalizeBlocks({html:storedText}):fallbackDocument(fallbackDocuments[index]);
+    const blocks=stored?normalizeBlocks({html:storedText}):fallbackDocument(fallbackDocuments[index]);
     return {
       order,
       stored:Boolean(stored),
@@ -133,6 +133,36 @@ export default function ScopeEditableBlocks({
     }
   }
 
+  async function remove(index){
+    setBusy(true);setMessage('');
+    try{
+      const slot=slots[index];
+      const values={block_title:'',block_text:''};
+      if(slot?.stored){
+        await updateRows(table,values,{filters:[
+          {column:'block_page',operator:'eq',value:page},
+          {column:'block_order',operator:'eq',value:index+1}
+        ]});
+      }else{
+        await insertRows(table,[{
+          block_page:page,
+          block_title:'',
+          block_text:'',
+          block_order:index+1
+        }]);
+      }
+      await queryClient.invalidateQueries({queryKey:['scope-blocks',scopeId,page]});
+      setEditing(0);
+      setDraft(null);
+      setDraftTitle('');
+      setMessage('已刪除。');
+    }catch(error){
+      setMessage(error?.message||'刪除失敗。');
+    }finally{
+      setBusy(false);
+    }
+  }
+
   return <div className={'scope-editable-block-grid '+className}>
     {slots.map((slot,index)=>{
       if(visibleOrders&&!visibleOrders.has(slot.order))return null;
@@ -147,6 +177,7 @@ export default function ScopeEditableBlocks({
       >
         {canEdit&&active?<div className="scope-inline-editbar">
           <button type="button" className="loc-button primary" disabled={busy} onClick={()=>save(index)}>{busy?'儲存中…':'儲存'}</button>
+          <button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={()=>remove(index)}>{busy?'處理中…':'刪除'}</button>
           <button type="button" className="loc-button" disabled={busy} onClick={()=>{setEditing(0);setDraft(null);setDraftTitle('');setMessage('')}}>取消</button>
         </div>:null}
         {active?<>
