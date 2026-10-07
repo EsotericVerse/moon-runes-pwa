@@ -1,0 +1,36 @@
+import {test,expect} from '@playwright/test';
+
+test.describe('LunaRunes tabletop UI',()=>{
+  test('desktop can start a two-player game and finish opening setup',async({page})=>{
+    await page.goto('/game/',{waitUntil:'domcontentloaded'});
+    await expect(page.getByRole('heading',{name:'月之符文'})).toBeVisible({timeout:15_000});
+    await expect(page.getByText(/66 枚符文/)).toBeVisible({timeout:15_000});
+    await page.getByRole('button',{name:'開始遊戲'}).click();
+    await expect(page.getByText(/玩家 A 起手設定/)).toBeVisible();
+    let cards=page.locator('.lrg-player.active .lrg-card');
+    await expect(cards).toHaveCount(8);
+    for(let i=0;i<3;i++)await cards.nth(i).click();
+    const confirm=page.getByRole('button',{name:/確認棄牌/});
+    await expect(confirm).toBeEnabled();
+    await confirm.click();
+    await expect(page.getByText(/玩家 B 起手設定/)).toBeVisible();
+    cards=page.locator('.lrg-player.active .lrg-card');
+    for(let i=0;i<3;i++)await cards.nth(i).click();
+    await page.getByRole('button',{name:/確認棄牌/}).click();
+    await expect(page.getByText(/EVENT/)).toBeVisible();
+    await expect(page.getByText(/第 1 回合/).first()).toBeVisible();
+  });
+
+  test('mobile keeps four rune cards per row without horizontal overflow',async({page},testInfo)=>{
+    test.skip(!testInfo.project.name.includes('mobile'),'mobile-only layout contract');
+    await page.goto('/game/',{waitUntil:'domcontentloaded'});
+    await expect(page.getByRole('button',{name:'開始遊戲'})).toBeVisible({timeout:15_000});
+    await page.getByRole('button',{name:'開始遊戲'}).click();
+    const hand=page.locator('.lrg-player.active .lrg-hand');
+    await expect(hand).toBeVisible();
+    const columns=await hand.evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length);
+    expect(columns).toBe(4);
+    const overflow=await page.evaluate(()=>Math.max(0,document.documentElement.scrollWidth-document.documentElement.clientWidth));
+    expect(overflow).toBeLessThanOrEqual(2);
+  });
+});
