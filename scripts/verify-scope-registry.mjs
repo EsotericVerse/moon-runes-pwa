@@ -8,6 +8,8 @@ for(const [query,id] of [['月典','loc'],['LunaCodex','loc'],['LOC','loc'],['�
   if(resolveScopeSearchAlias(query)?.id!==id)failures.push('Scope search alias mismatch: '+query+' -> '+id);
 }
 if(resolveScopeSearchAlias('月')!==null)failures.push('Scope search aliases must require exact matches');
+if(resolveScope('127.0.0.1','/lrunes/')!=='lrunes')failures.push('local static preview must resolve /lrunes/ as LunaRunes');
+if(resolveScope('localhost','/lrunes/game/')!=='lrunes')failures.push('local static preview must resolve mounted LunaRunes feature paths');
 if(scopeHref('newscope')!=='https://loc.lo3rwang.cc/scope/?scope=newscope')failures.push('dynamic Scope homepage must use the generic static shell');
 if(featureHref('newscope','search')!=='https://loc.lo3rwang.cc/scope/search/?scope=newscope')failures.push('dynamic Scope features must preserve Scope ID in the generic shell query');
 for(const [id,scope] of Object.entries(SCOPES)){
