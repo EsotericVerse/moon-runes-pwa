@@ -4,9 +4,7 @@ import LocHomeEditableBlock from '../LocHomeEditableBlock';
 export default function AboutView(){
   return <section className="loc-view loc-home">
     <header className="loc-hero loc-home-hero">
-      <div className="loc-home-hero-copy">
-        <LocHomeEditableBlock order={1} variant="hero"/>
-      </div>
+      <LocHomeEditableBlock order={1} variant="hero"/>
       <figure className="home-hero-visual">
         <picture>
           <source media="(max-width: 900px)" srcSet={SITE_IMAGES.locHeroSmall.src} />
