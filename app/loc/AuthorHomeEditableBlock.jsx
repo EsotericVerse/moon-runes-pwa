@@ -163,6 +163,7 @@ export default function AuthorHomeEditableBlock({order,variant}){
   const config=CONFIG[variant]||CONFIG.about;
   return <ScopeEditableBlocks
     scopeId="lo3rwang"
+    allowEditing={false}
     page="index"
     orders={[order]}
     slotClassName={config.slotClassName}
