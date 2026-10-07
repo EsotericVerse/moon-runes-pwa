@@ -40,6 +40,14 @@ function timelineRows(items,labelOf,focus){
     const groupOrder=Number.isFinite(Number(item?.group_order))?Number(item.group_order):null;
     const ratio=densityRatio;
     const density=ratio>0?densityStyleForRatio(ratio):densityStyleForCount(item?.item_count);
+    const classes=[
+      String(item?.className||item?.class_name||'').trim(),
+      focused?'scope-period-timeline-focus':'',
+      density?'scope-period-density':''
+    ].filter(Boolean).join(' ');
+    const densityStyle=density
+      ?'--culture-density:'+Math.max(.08,Math.min(1,ratio||Math.min(1,Number(item?.item_count||0)/100)))+';height:'+(8+Math.round(Math.max(.08,Math.min(1,ratio||0))*20))+'px;background:color-mix(in srgb,var(--loc-accent) '+Math.round((.12+density.glow*.72)*100)+'%,var(--loc-panel));border-color:color-mix(in srgb,var(--loc-accent) '+Math.round((.36+density.glow*.56)*100)+'%,var(--loc-line));color:var(--loc-text);filter:brightness('+density.brightness+');box-shadow:0 0 '+density.blur+' color-mix(in srgb,var(--loc-accent) '+Math.round(density.glow*100)+'%,transparent);'
+      :'';
     return [{
       id:String(item?.id||item?.entry_id||item?.era_id||item?.period_id||item?.version||index),
       content:labelOf(item,index),
@@ -51,6 +59,7 @@ function timelineRows(items,labelOf,focus){
       ].filter(Boolean).join(' · '),
       start,
       recordId:String(item?.record_id||item?.recordId||''),
+      resourceId:String(item?.resource_id||''),
       scopeId:String(item?.scope_id||''),
       entryType:String(item?.entry_type||''),
       period:String(item?.period||''),
@@ -58,30 +67,57 @@ function timelineRows(items,labelOf,focus){
       workCount:Number(item?.item_count||0),
       status:String(item?.status||''),
       openStart,openEnd,
+      raw:item,
       ...(group?{group:String(group),groupContent:String(groupContent),groupOrder}:{}),
       ...(end?{end,type:'range'}:{type:'point'}),
-      ...(focused?{className:'scope-period-timeline-focus'}:{}),
-      ...(density?{
-        className:[focused?'scope-period-timeline-focus':'','scope-period-density'].filter(Boolean).join(' '),
-        style:'--culture-density:'+Math.max(.08,Math.min(1,ratio||Math.min(1,Number(item?.item_count||0)/100)))+';height:'+(8+Math.round(Math.max(.08,Math.min(1,ratio||0))*20))+'px;background:color-mix(in srgb,var(--loc-accent) '+Math.round((.12+density.glow*.72)*100)+'%,var(--loc-panel));border-color:color-mix(in srgb,var(--loc-accent) '+Math.round((.36+density.glow*.56)*100)+'%,var(--loc-line));color:var(--loc-text);filter:brightness('+density.brightness+');box-shadow:0 0 '+density.blur+' color-mix(in srgb,var(--loc-accent) '+Math.round(density.glow*100)+'%,transparent);'
-      }:{})
+      ...(classes?{className:classes}:{}),
+      ...((densityStyle||item?.style)?{style:String(item?.style||'')+densityStyle}:{})
     }];
   });
 }
 
-function groupLabel(id){
-  return String(id||'');
-}
+function groupLabel(id){return String(id||'');}
 function dateLabel(value){
   const formatted=formatCultureDateTime(value);
   return formatted.length>=10?formatted.slice(0,10):formatted;
 }
+function settle(handler,item,row,callback,defaultValue=null){
+  if(!handler){callback(defaultValue);return;}
+  Promise.resolve(handler(item,row)).then(result=>{
+    if(result===true)callback(item);
+    else callback(result||null);
+  }).catch(()=>callback(null));
+}
 
-export default function CultureTimeline({items=[],labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),focus={},mode='period',onSelect=null,onTimeClick=null,windowStart='',windowEnd='',boundaryStart='',boundaryEnd='',onBoundaryNavigate=null,fixedMin='',fixedMax='',hiddenDates=[]}){
+export default function CultureTimeline({
+  items=[],
+  labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),
+  focus={},
+  mode='period',
+  onSelect=null,
+  onTimeClick=null,
+  editable=false,
+  onAdd=null,
+  onMove=null,
+  onUpdate=null,
+  onRemove=null,
+  windowStart='',
+  windowEnd='',
+  boundaryStart='',
+  boundaryEnd='',
+  onBoundaryNavigate=null,
+  fixedMin='',
+  fixedMax='',
+  hiddenDates=[]
+}){
   const containerRef=useRef(null);
   const onSelectRef=useRef(onSelect);
   const onTimeClickRef=useRef(onTimeClick);
   const onBoundaryNavigateRef=useRef(onBoundaryNavigate);
+  const onAddRef=useRef(onAdd);
+  const onMoveRef=useRef(onMove);
+  const onUpdateRef=useRef(onUpdate);
+  const onRemoveRef=useRef(onRemove);
   const [ready,setReady]=useState(false);
   const [chartError,setChartError]=useState(false);
   const rows=useMemo(()=>timelineRows(items,labelOf,focus),[items,labelOf,focus]);
@@ -94,6 +130,10 @@ export default function CultureTimeline({items=[],labelOf=(item,index)=>item?.di
   useEffect(()=>{onSelectRef.current=onSelect},[onSelect]);
   useEffect(()=>{onTimeClickRef.current=onTimeClick},[onTimeClick]);
   useEffect(()=>{onBoundaryNavigateRef.current=onBoundaryNavigate},[onBoundaryNavigate]);
+  useEffect(()=>{onAddRef.current=onAdd},[onAdd]);
+  useEffect(()=>{onMoveRef.current=onMove},[onMove]);
+  useEffect(()=>{onUpdateRef.current=onUpdate},[onUpdate]);
+  useEffect(()=>{onRemoveRef.current=onRemove},[onRemove]);
 
   useEffect(()=>{
     let cancelled=false;
@@ -103,7 +143,15 @@ export default function CultureTimeline({items=[],labelOf=(item,index)=>item?.di
     setReady(false);
     try{
       if(cancelled||!containerRef.current)return()=>{cancelled=true};
-      const data=new DataSet(rows);
+      const dataRows=rows.map(row=>editable?{
+        ...row,
+        editable:{
+          updateTime:row.entryType==='anchor',
+          updateGroup:false,
+          remove:Boolean(row.recordId)
+        }
+      }:row);
+      const data=new DataSet(dataRows);
       const groupIds=[...new Set(rows.map(row=>row.group).filter(Boolean))];
       const groups=groupIds.length?new DataSet(groupIds.map((id,index)=>{
         const members=rows.filter(row=>row.group===id);
@@ -114,6 +162,7 @@ export default function CultureTimeline({items=[],labelOf=(item,index)=>item?.di
           order:explicit.length?Math.min(...explicit):100+index
         };
       })):null;
+      const rowById=id=>dataRows.find(row=>row.id===String(id))||null;
       instance=new Timeline(containerRef.current,data,groups,{
         autoResize:true,
         minHeight:timelineMinHeight+'px',
@@ -130,26 +179,10 @@ export default function CultureTimeline({items=[],labelOf=(item,index)=>item?.di
         },
         format:{
           minorLabels:{
-            millisecond:'SSS',
-            second:'s秒',
-            minute:'HH:mm',
-            hour:'HH:mm',
-            weekday:'M/D',
-            day:'M/D',
-            week:'M/D',
-            month:'M月',
-            year:'YYYY'
+            millisecond:'SSS',second:'s秒',minute:'HH:mm',hour:'HH:mm',weekday:'M/D',day:'M/D',week:'M/D',month:'M月',year:'YYYY'
           },
           majorLabels:{
-            millisecond:'YYYY/M/D HH:mm:ss',
-            second:'YYYY/M/D HH:mm',
-            minute:'YYYY/M/D',
-            hour:'YYYY/M/D',
-            weekday:'YYYY/M',
-            day:'YYYY/M',
-            week:'YYYY/M',
-            month:'YYYY年',
-            year:''
+            millisecond:'YYYY/M/D HH:mm:ss',second:'YYYY/M/D HH:mm',minute:'YYYY/M/D',hour:'YYYY/M/D',weekday:'YYYY/M',day:'YYYY/M',week:'YYYY/M',month:'YYYY年',year:''
           }
         },
         horizontalScroll:true,
@@ -161,6 +194,13 @@ export default function CultureTimeline({items=[],labelOf=(item,index)=>item?.di
         ...(fixedMax&&Number.isFinite(Date.parse(fixedMax))?{max:fixedMax}:{}),
         selectable:true,
         moveable:true,
+        editable:editable?{add:true,updateTime:true,updateGroup:false,remove:true,overrideItems:false}:false,
+        ...(editable?{
+          onAdd:(item,callback)=>settle(onAddRef.current,item,null,callback,null),
+          onMove:(item,callback)=>settle(onMoveRef.current,item,rowById(item.id),callback,null),
+          onUpdate:(item,callback)=>settle(onUpdateRef.current,item,rowById(item.id),callback,null),
+          onRemove:(item,callback)=>settle(onRemoveRef.current,item,rowById(item.id),callback,null)
+        }:{}),
         showCurrentTime:false,
         stack:mode!=='source',
         margin:mode==='source'
@@ -169,7 +209,7 @@ export default function CultureTimeline({items=[],labelOf=(item,index)=>item?.di
       });
       instance.on('select',({items:selectedItems=[]})=>{
         const selectedId=selectedItems[0];
-        onSelectRef.current?.(rows.find(row=>row.id===selectedId)||null);
+        onSelectRef.current?.(rowById(selectedId)||null);
       });
       instance.on('rangechanged',properties=>{
         if(!onBoundaryNavigateRef.current||fixedMin||fixedMax||properties?.byUser!==true)return;
@@ -212,7 +252,7 @@ export default function CultureTimeline({items=[],labelOf=(item,index)=>item?.di
       if(!cancelled){setReady(false);setChartError(true);}
     }
     return()=>{cancelled=true;if(instance)instance.destroy();};
-  },[rows,timelineMinHeight,timelineMaxHeight,mode,windowStart,windowEnd,boundaryStart,boundaryEnd,fixedMin,fixedMax,hiddenDates]);
+  },[rows,timelineMinHeight,timelineMaxHeight,mode,windowStart,windowEnd,boundaryStart,boundaryEnd,fixedMin,fixedMax,hiddenDates,editable]);
 
   if(!rows.length)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><div className='scope-period-timeline scope-period-timeline-empty-line' role='region' aria-label='時間長河'/><p>{mode==='overview'?'尚未設定時期，目前以「所有」總覽顯示。':'目前時期尚無可顯示的時間資料。'}</p></div>;
 
