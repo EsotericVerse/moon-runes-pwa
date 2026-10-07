@@ -152,7 +152,23 @@
   .scope-publisher-body{min-height:24rem}
 }
 
-.scope-editable-block-grid{min-width:0}
+.scope-editable-block-grid{display:contents;min-width:0}
+.scope-editable-block-grid.governance-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:1rem;
+  align-items:stretch;
+}
+.scope-editable-block-grid.governance-grid>.scope-editable-block{height:100%}
+.governance-grid-loc>.scope-editable-block:first-child .scope-rich-surface>p:first-child{
+  font-size:1.15rem;
+  color:var(--loc-accent)!important;
+  font-weight:750;
+  line-height:1.7;
+}
+@media(max-width:680px){
+  .scope-editable-block-grid.governance-grid{grid-template-columns:1fr}
+}
 .scope-editable-block{position:relative;min-width:0}
 .scope-work-summary.is-editable-idle{cursor:text}
 .scope-work-summary.is-editable-idle:hover{
