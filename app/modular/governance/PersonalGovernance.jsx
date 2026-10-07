@@ -6,7 +6,8 @@ export default function PersonalGovernance({scopeId='lo3rwang'}){
   return <ScopeEditableBlocks
     scopeId={scopeId}
     page="governance"
-    className="governance-grid"
+    className="loc-grid two governance-grid"
+    headingLevel={2}
     fallbackDocuments={[
       [
         {type:'heading',props:{level:2},content:'來源與版本'},
