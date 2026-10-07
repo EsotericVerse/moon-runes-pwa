@@ -641,7 +641,7 @@ export default function Culture(){
                   <h4>Class｜符文群組比例</h4>
                   {styleQuery.isPending?<p className='scope-status'>正在讀取已定錨的關鍵詞 Attr…</p>:null}
                   {styleQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(styleQuery.error)}</p>:null}
-                  {!styleQuery.isPending&&!styleQuery.error&&!styleQuery.data?.staticstime?<p className='scope-status'>關鍵詞尚未定錨；請先到 Scope 管理的關鍵詞庫重新分析文章。</p>:null}
+                  {!styleQuery.isPending&&!styleQuery.error&&!styleQuery.data?.staticstime?<p className='scope-status'>關鍵詞尚未定錨；請登入 Statistics 的「關鍵詞設定」重新分析文章。</p>:null}
                   {!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.staticstime&&!styleQuery.data?.statisticsEnabled?<p className='scope-status'>目前有效文章 {Number(styleQuery.data?.keywordDocumentCount||0).toLocaleString()} 篇；必須大於 {Number(styleQuery.data?.keywordMinDocuments||0).toLocaleString()} 篇才啟用關鍵詞統計。</p>:null}
                   {!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.statisticsEnabled&&styleClassRows.length?<div className='scope-ranking'>
                     {styleClassRows.map(row=><div key={row.group}><strong>{row.class_label}</strong><span>{Number(row.document_count||0).toLocaleString()} 篇 · {Number(row.ratio||0).toFixed(1)}%</span></div>)}
