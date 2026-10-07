@@ -3,10 +3,11 @@
 import {useEffect,useMemo,useState,useSyncExternalStore} from 'react';
 import {motion,useScroll,useSpring} from 'motion/react';
 import {QueryClient,QueryClientProvider,useQuery} from '@tanstack/react-query';
-import {UI_COPY} from './i18n/ui-copy';
+import {UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale,uiCopy} from './i18n/ui-copy';
+import {UiLocaleProvider} from './i18n/ui-locale';
 import {FEATURES,SCOPES,featureHref,featureIdForPath,getScope,scopeHref} from './modular/scope-registry';
 import {applyTheme,getThemeSlot,THEME_SLOTS} from './modular/theme-registry';
-import {mergeThemeSlot,selectThemeOverride} from './loc/theme-data';
+import {mergeThemeSlot,selectThemeRegistry} from './loc/theme-data';
 import {useScopeRuntime} from './modular/use-scope-runtime';
 import {selectScopeConfig} from './loc/scope-data';
 import {getDbSourceStatus,subscribeDbSourceStatus} from './loc/db-source-status.mjs';
@@ -58,7 +59,7 @@ function automaticThemeId(date=new Date()){
   return hour>=6&&hour<18?DAY_THEME_ID:NIGHT_THEME_ID;
 }
 
-function ThemeSelect({scopeId,scopeMeta=null}){
+function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY}){
   const scope=scopeMeta||getScope(String(scopeId||'').trim());
   const policy=scope.theme||{mode:'auto'};
   const fixedDefaultThemeId=policy.mode==='fixed'?String(policy.themeId||'').trim():'';
@@ -74,15 +75,20 @@ function ThemeSelect({scopeId,scopeMeta=null}){
   const selectedThemeId=selection.scopeId===scopeId?selection.themeId:SYSTEM_THEME_ID;
   const systemDefaultThemeId=fixedDefaultThemeId||configuredDefaultThemeId||automaticThemeId(now);
   const effectiveThemeId=selectedThemeId===SYSTEM_THEME_ID?systemDefaultThemeId:selectedThemeId;
-  const themeOverrideQuery=useQuery({
-    queryKey:['theme-override',effectiveThemeId],
-    queryFn:()=>selectThemeOverride(effectiveThemeId),
+  const themeRegistryQuery=useQuery({
+    queryKey:['theme-registry'],
+    queryFn:selectThemeRegistry,
     staleTime:60_000
   });
+  const themeRows=Array.isArray(themeRegistryQuery.data)?themeRegistryQuery.data:[];
+  const override=themeRows.find(row=>row.theme_id===effectiveThemeId)||null;
   const slot=useMemo(
-    ()=>mergeThemeSlot(effectiveThemeId,themeOverrideQuery.data||null),
-    [effectiveThemeId,themeOverrideQuery.data]
+    ()=>mergeThemeSlot(effectiveThemeId,override),
+    [effectiveThemeId,override]
   );
+  const themeChoices=themeRows.length
+    ?themeRows.map(row=>({id:row.theme_id,label:row.theme_name||row.theme_id}))
+    :THEME_SLOTS.map(item=>({id:item.id,label:item.label}));
 
   useEffect(()=>{
     const root=document.documentElement;
@@ -102,13 +108,22 @@ function ThemeSelect({scopeId,scopeMeta=null}){
   },[scopeId]);
 
   return <label className="scope-theme-control">
-    <span>{UI_COPY.common.theme}</span>
-    <select value={selectedThemeId} onChange={event=>setSelection({scopeId,themeId:event.target.value})} aria-label={UI_COPY.common.theme}>
-      <option value={SYSTEM_THEME_ID}>{UI_COPY.common.systemTheme}</option>
-      {THEME_SLOTS.map(item=><option value={item.id} key={item.id}>{item.label}</option>)}
+    <span>{copy.common.theme}</span>
+    <select value={selectedThemeId} onChange={event=>setSelection({scopeId,themeId:event.target.value})} aria-label={copy.common.theme}>
+      <option value={SYSTEM_THEME_ID}>{copy.common.systemTheme}</option>
+      {themeChoices.map(item=><option value={item.id} key={item.id}>{item.label}</option>)}
     </select>
   </label>;
 }
+function LanguageSelect({locale,onChange,copy=UI_COPY}){
+  return <label className="scope-theme-control scope-language-control">
+    <span>{copy.common.language||'語系'}</span>
+    <select value={locale} onChange={event=>onChange?.(event.target.value)} aria-label={copy.common.language||'語系'}>
+      {UI_LOCALE_OPTIONS.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}
+    </select>
+  </label>;
+}
+
 function normalizePath(value='/'){
   const path=String(value||'/').replace(/\/+$/,'');
   return path||'/';
@@ -136,7 +151,29 @@ export default function AppShell({children}){
   const currentFeature=featureIdForPath(pathname);
   const [searchText,setSearchText]=useState('');
   const currentScope=scope||getScope(scopeId);
+  const [localeSelection,setLocaleSelection]=useState(()=>({scopeId:'',locale:'zh-Hant',manual:false}));
+  const activeLocale=localeSelection.scopeId===scopeId?normalizeUiLocale(localeSelection.locale):'zh-Hant';
+  const copy=useMemo(()=>uiCopy(activeLocale),[activeLocale]);
   const navScopeId=currentScope.featureScope||scopeId;
+
+  useEffect(()=>{
+    let active=true;
+    setLocaleSelection({scopeId,locale:'zh-Hant',manual:false});
+    if(!scopeId||currentScope.aggregateChildren||scopeId==='admin')return()=>{active=false};
+    selectScopeConfig(scopeId).then(row=>{
+      if(!active)return;
+      const locale=normalizeUiLocale(row?.locale);
+      setLocaleSelection(current=>{
+        if(current.scopeId===scopeId&&current.manual)return current;
+        return {scopeId,locale,manual:false};
+      });
+    }).catch(()=>{});
+    return()=>{active=false};
+  },[scopeId,currentScope.aggregateChildren]);
+
+  useEffect(()=>{
+    if(typeof document!=='undefined')document.documentElement.lang=activeLocale;
+  },[activeLocale]);
   const beforeScopes=NAV_SCOPES.filter(item=>item.nav.position==='before');
   const afterScopes=NAV_SCOPES.filter(item=>item.nav.position!=='before');
 
@@ -149,33 +186,46 @@ export default function AppShell({children}){
     window.location.assign(url.toString());
   }
 
-  return <QueryClientProvider client={client}>
+  const featureLabel=item=>copy.features?.[item.id]?.title||item.label;
+  const scopeNavLabel=item=>{
+    if(item.id==='lrunes')return copy.nav.lunarunes;
+    if(item.id==='lo3rwang')return copy.nav.author;
+    if(item.id==='loc')return copy.nav.home;
+    return item.nav?.label||item.label;
+  };
+
+  return <QueryClientProvider client={client}><UiLocaleProvider locale={activeLocale}>
     <motion.div className="loc-scroll-progress" style={{scaleX}} aria-hidden="true"/>
     <header className="scope-global">
-      <nav className="scope-nav" aria-label={UI_COPY.nav.aria}>
+      <nav className="scope-nav" aria-label={copy.nav.aria}>
         {beforeScopes.map(item=>{
           const href=scopeHref(item.id);
-          return <NavTarget key={item.id} href={href} label={item.nav.label||item.label} current={targetIsCurrent(href,host,pathname)}/>;
+          return <NavTarget key={item.id} href={href} label={scopeNavLabel(item)} current={targetIsCurrent(href,host,pathname)}/>;
         })}
         {NAV_FEATURE_ORDER.map(id=>FEATURES.find(item=>item.id===id)).filter(Boolean).map(item=>
-          <NavTarget key={item.id} href={featureHref(navScopeId,item.id)} label={item.label} current={!currentScope.featureScope&&currentFeature===item.id}/>
+          <NavTarget key={item.id} href={featureHref(navScopeId,item.id)} label={featureLabel(item)} current={!currentScope.featureScope&&currentFeature===item.id}/>
         )}
         <form onSubmit={submitSearch} role="search" className="scope-search">
-          <input name="q" type="search" aria-label={UI_COPY.nav.searchAria} placeholder={UI_COPY.nav.search} value={searchText} onChange={event=>setSearchText(event.target.value)}/>
+          <input name="q" type="search" aria-label={copy.nav.searchAria} placeholder={copy.nav.search} value={searchText} onChange={event=>setSearchText(event.target.value)}/>
         </form>
         {afterScopes.map(item=>{
           const href=scopeHref(item.id);
-          return <NavTarget key={item.id} href={href} label={item.nav.label||item.label} current={targetIsCurrent(href,host,pathname)}/>;
+          return <NavTarget key={item.id} href={href} label={scopeNavLabel(item)} current={targetIsCurrent(href,host,pathname)}/>;
         })}
       </nav>
     </header>
     {children}
     <footer className="scope-footer" data-scope={scopeId}>
       <div className="scope-footer-row">
-        <a href="mailto:sopa2306@gmail.com">{UI_COPY.nav.contact}</a>
-        <ThemeSelect scopeId={scopeId} scopeMeta={currentScope}/>
+        <a href="mailto:sopa2306@gmail.com">{copy.nav.contact}</a>
+        <ThemeSelect scopeId={scopeId} scopeMeta={currentScope} copy={copy}/>
+        <LanguageSelect
+          locale={activeLocale}
+          copy={copy}
+          onChange={locale=>setLocaleSelection({scopeId,locale:normalizeUiLocale(locale),manual:true})}
+        />
       </div>
       <DataSourceStatus/>
     </footer>
-  </QueryClientProvider>;
+  </UiLocaleProvider></QueryClientProvider>;
 }
