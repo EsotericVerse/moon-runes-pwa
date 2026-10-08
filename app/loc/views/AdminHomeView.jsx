@@ -1,9 +1,9 @@
 'use client';
 
 import {UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale} from '../../i18n/ui-copy';
-import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
+import {useCallback,useEffect,useRef,useState} from 'react';
 import {scopeHref} from '../../modular/scope-registry';
-import {THEME_SLOTS,THEME_TOKEN_KEYS,applyTheme,getThemeSlot} from '../../modular/theme-registry';
+import {THEME_SLOTS,THEME_TOKEN_KEYS} from '../../modular/theme-registry';
 import {mergeThemeSlot} from '../theme-data';
 import {useAccount} from '../use-account';
 import {
@@ -11,10 +11,9 @@ import {
 } from '../db-client.mjs';
 
 const ADMIN_OPTIONS=Object.freeze([
-  {value:'registry',label:'Scope Registry'},
-  {value:'database',label:'Database Target'},
-  {value:'themes',label:'Theme'},
-  {value:'search',label:'搜尋關鍵詞'}
+  {value:'registry',label:'群組人員管理'},
+  {value:'database',label:'資料庫設定'},
+  {value:'themes',label:'主題設定'}
 ]);
 const CREATE_OPTIONS=Object.freeze([
   {value:'scope',label:'新增 Scope'},
@@ -504,7 +503,10 @@ function DatabaseTarget(){
 
 function ThemeEditor(){
   const [rows,setRows]=useState([]);
-  const [themeId,setThemeId]=useState('theme-1');
+  const [themeId,setThemeId]=useState(()=>{
+    const current=typeof document==='undefined'?'':String(document.documentElement.dataset.themeId||'');
+    return THEME_SLOTS.some(item=>item.id===current)?current:'theme-7';
+  });
   const [draft,setDraft]=useState(null);
   const [status,setStatus]=useState('');
   const [revision,setRevision]=useState(0);
@@ -531,10 +533,6 @@ function ThemeEditor(){
   }));
   const setToken=(key,value)=>setDraft(current=>({...current,tokens:{...current.tokens,[key]:value}}));
 
-  useEffect(()=>{
-    if(draft)applyTheme(draft);
-  },[draft]);
-
   async function save(){
     if(!draft)return;
     setStatus('');
@@ -559,7 +557,7 @@ function ThemeEditor(){
   }
 
   return <section className="loc-card admin-workspace">
-    <div className="admin-inline-select"><select className="admin-native-select" value={themeId} onChange={e=>setThemeId(e.target.value||'theme-1')}>{options.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></div>
+    <div className="admin-inline-select"><label><span>正在編輯的主題（只修改草稿，不影響網站配色）</span><select className="admin-native-select" value={themeId} onChange={e=>setThemeId(e.target.value||'theme-7')}>{options.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label></div>
     {draft?<>
       <div className="scope-management-fields">
         <label><span>名稱</span><input value={draft.label||''} onChange={e=>setDraft(v=>({...v,label:e.target.value}))}/></label>
@@ -568,6 +566,11 @@ function ThemeEditor(){
         <label><span>Style Key</span><input value={draft.styleKey||''} onChange={e=>setDraft(v=>({...v,styleKey:e.target.value}))}/></label>
         <label><span>Identity Color</span><input value={draft.identityColor||''} onChange={e=>setDraft(v=>({...v,identityColor:e.target.value}))}/></label>
       </div>
+      <section className="scope-inline-card admin-theme-local-preview" aria-label="主題局部預覽" style={{background:draft.tokens?.['--loc-bg']||'transparent',color:draft.tokens?.['--loc-text']||'inherit',borderColor:draft.tokens?.['--loc-line']||'currentColor'}}>
+        <strong>局部預覽：{draft.label||themeId}</strong>
+        <p>這裡只預覽目前草稿，不會套用到網站。按下儲存只會更新主題資料，不會改變當前選用的主題。</p>
+        <span style={{color:draft.tokens?.['--loc-accent']||'inherit'}}>主題強調文字</span>
+      </section>
       <div className="admin-theme-token-grid">
         {THEME_TOKEN_KEYS.map(key=>{
           const value=String(draft.tokens?.[key]||'');
@@ -575,31 +578,10 @@ function ThemeEditor(){
           return <label key={key}><span>{key}</span><div className="admin-theme-token-input">{color?<input type="color" value={value} onChange={e=>setToken(key,e.target.value)}/>:null}<input value={value} onChange={e=>setToken(key,e.target.value)}/></div></label>;
         })}
       </div>
-      <button type="button" className="loc-button primary" onClick={save}>儲存 Theme</button>
+      <button type="button" className="loc-button primary" onClick={save}>儲存主題設定</button>
     </>:null}
     {status?<p className="scope-status" role="status">{status}</p>:null}
   </section>;
-}
-
-function SearchKeywordReport(){
-  const [rows,setRows]=useState([]);
-  const [status,setStatus]=useState('');
-  useEffect(()=>{
-    let active=true;
-    (async()=>{
-      try{
-        const since=new Date(Date.now()-7*24*60*60*1000).toISOString();
-        const {data,error}=await dbAuthRelation('silver.loc_search_keywords').select('searched_at,scope_id,query_text').gte('searched_at',since).order('searched_at',{ascending:false});
-        if(error)throw new Error(error.message||'搜尋關鍵詞讀取失敗。');
-        if(active)setRows(data||[]);
-      }catch(error){if(active)setStatus(error?.message||'搜尋關鍵詞讀取失敗。');}
-    })();
-    return()=>{active=false};
-  },[]);
-  const counts=new Map();
-  for(const row of rows){const key=String(row.query_text||'').trim();if(key)counts.set(key,(counts.get(key)||0)+1);}
-  const keywords=[...counts.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,30);
-  return <section className="loc-card admin-workspace"><h2>搜尋關鍵詞</h2><div className="scope-ranking">{keywords.map(([keyword,count])=><div key={keyword}><strong>{keyword}</strong><span>{count.toLocaleString()}</span></div>)}</div>{status?<p className="scope-status scope-error">{status}</p>:null}</section>;
 }
 
 export default function AdminHomeView(){
@@ -621,6 +603,5 @@ export default function AdminHomeView(){
     {section==='registry'?<AdminRegistry/>:null}
     {section==='database'?<DatabaseTarget/>:null}
     {section==='themes'?<ThemeEditor/>:null}
-    {section==='search'?<SearchKeywordReport/>:null}
   </section>;
 }
