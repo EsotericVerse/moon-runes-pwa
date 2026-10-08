@@ -6,6 +6,7 @@ import {useMemo,useState} from 'react';
 import {insertRows,dbAuthRelation,updateRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {createUid8} from './uid';
+import {IMPORT_FIELD_ALIASES,importRowsFromJson,mappedImportValue,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 
 function sourceSuggestion(name=''){
@@ -32,90 +33,138 @@ function iso(value){
   return Number.isNaN(date.getTime())?null:date.toISOString();
 }
 
-function normalizeJsonImportEntry(entry,source){
+function normalizeJsonImportEntry(entry,source,fieldMap={}){
   const row=entry?.raw||entry||{};
-  const content=normalizeGalaxyContent(firstValue(row,['content','body','text','message','description']));
-  const rawTitle=repairMojibakeText(firstValue(row,['title','name','subject'])).trim();
-  const sourcePlace=repairMojibakeText(firstValue(row,['source_place','place'])).trim();
-  const uid=String(entry?.import_uid||firstValue(row,['uid'])||createUid8()).trim().toUpperCase();
+  const value=field=>mappedImportValue(row,field,fieldMap);
+  const content=normalizeGalaxyContent(value('content'));
+  const rawTitle=repairMojibakeText(value('title')).trim();
+  const sourcePlace=repairMojibakeText(value('source_place')).trim();
+  const uid=String(value('uid')||entry?.import_uid||createUid8()).trim().toUpperCase();
   if(!content)return {record:null,error:'無正文'};
   if([content,rawTitle,sourcePlace].some(hasIrrecoverableEncoding))return {record:null,error:'文字含不可逆編碼錯誤'};
   if(uid.length!==8)return {record:null,error:'UID 必須為 8 字'};
-  const contentType=String(firstValue(row,['content_type','type'])||'other').trim()||'other';
+  const contentType=String(value('content_type')||'other').trim()||'other';
+  const visibility=value('searchable');
+  const searchable=!(visibility===false||visibility===0||String(visibility).toLowerCase()==='false'||String(visibility)==='0');
   const record={
     uid,
     content_type:contentType,
     title:resolveGalaxyTitle(rawTitle,content),
     content,
-    createtime:iso(firstValue(row,['createtime','created_at','create_time','created_time','date','published_at'])),
-    source_native_id:String(firstValue(row,['source_native_id','native_id'])||'').trim()||null,
+    createtime:iso(value('createtime')),
+    source_native_id:String(value('source_native_id')||'').trim()||null,
     source_place:sourcePlace||null,
-    searchable:row?.searchable!==false&&row?.search!==false,
+    searchable,
     statistics_able:contentType!=='instruction'&&!isPureUrlContent(content),
-    source_id:String(firstValue(row,['source_id'])||'').trim()||null,
-    target_id:normalizeRelationIds(firstValue(row,['target_id'])),
-    ref_id:String(firstValue(row,['ref_id'])||'').trim()||null,
-    url:String(firstValue(row,['url','link','permalink'])||'').trim()||null,
+    source_id:String(value('source_id')||'').trim()||null,
+    target_id:normalizeRelationIds(value('target_id')),
+    ref_id:String(value('ref_id')||'').trim()||null,
+    url:String(value('url')||'').trim()||null,
     source_name:String(source||'').trim()
   };
   return {record,error:''};
 }
 
-function JsonImport({scopeId}){
+const IMPORT_FORMAT_FIELDS=Object.freeze([
+  ['uid','UID'],['content','正文'],['title','標題'],['createtime','日期時間'],
+  ['source_native_id','平台原生 ID'],['content_type','內容類型'],['source_place','地點'],
+  ['url','外部 URL'],['source_id','來源關聯'],['target_id','目標關聯'],
+  ['ref_id','參照關聯'],['searchable','公開搜尋']
+]);
+
+function ImportFormatSettings({format,onChange,disabled=false}){
+  const update=(key,value)=>onChange({...format,[key]:value});
+  const updateField=(key,value)=>onChange({...format,fields:{...format.fields,[key]:value}});
+  return <details className="scope-inline-card scope-import-format">
+    <summary>匯入格式設定（共用於 JSON Import／Source Refresh）</summary>
+    <p className="scope-status">先設定格式再選檔。欄位留空即使用既有名稱自動對應；可輸入單一欄位名稱、巢狀路徑（如 post.body），或逗號分隔的候選名稱。修改格式後，本次檔案預覽需重新選擇。</p>
+    <div className="scope-management-fields">
+      <label>資料陣列路徑（預設支援根陣列／items／posts／data／records）
+        <input disabled={disabled} value={format.recordPath} onChange={e=>update('recordPath',e.target.value)} placeholder="例如 result.entries；留空自動辨識"/>
+      </label>
+      <label>每批寫入筆數
+        <select disabled={disabled} value={format.batchSize} onChange={e=>update('batchSize',Number(e.target.value))}>
+          {[25,50,100,200].map(size=><option key={size} value={size}>{size} 筆／批</option>)}
+        </select>
+      </label>
+    </div>
+    <div className="scope-management-fields">
+      {IMPORT_FORMAT_FIELDS.map(([key,label])=><label key={key}>{label}
+        <input disabled={disabled} value={format.fields[key]||''}
+          onChange={e=>updateField(key,e.target.value)}
+          placeholder={IMPORT_FIELD_ALIASES[key].join(', ')}/>
+      </label>)}
+    </div>
+  </details>;
+}
+
+function JsonImport({scopeId,format,onBusyChange}) {
   const account=useAccount();
   const [fileName,setFileName]=useState('');
   const [rows,setRows]=useState([]);
+  const [queue,setQueue]=useState([]);
+  const [queueIndex,setQueueIndex]=useState(0);
   const [source,setSource]=useState('');
   const [status,setStatus]=useState('');
   const [busy,setBusy]=useState(false);
+  const [progress,setProgress]=useState(null);
   const suggested=useMemo(()=>sourceSuggestion(fileName),[fileName]);
   const analyzed=useMemo(()=>{
     const selected=source.trim();
-    const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,selected));
+    const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,selected,format.fields));
     return {
       valid:normalized.filter(item=>item.record).map(item=>item.record),
       invalid:normalized.filter(item=>!item.record)
     };
-  },[rows,source]);
+  },[rows,source,format.fields]);
   if(!account.canManageScopeSync(scopeId))return null;
 
-  async function chooseFile(event){
-    const file=event.target.files?.[0];
-    if(!file)return;
-    setFileName(file.name);setStatus('');
+  async function loadQueuedFile(file,index,total){
+    setFileName(file.name);setRows([]);setProgress(null);setStatus('');
     try{
       const parsed=JSON.parse(await file.text());
-      const list=asRows(parsed);
+      const list=importRowsFromJson(parsed,format.recordPath);
       const prepared=list.map(row=>({
         raw:row,
-        import_uid:String(firstValue(row,['uid'])||createUid8()).trim().toUpperCase()
+        import_uid:createUid8()
       }));
       setRows(prepared);
       setSource(sourceSuggestion(file.name));
-      setStatus(`已解析 ${list.length.toLocaleString()} 筆；請先確認預覽，再執行匯入。`);
+      setStatus('第 '+(index+1)+'／'+total+' 檔已解析 '+list.length.toLocaleString()+' 筆；請檢查來源與預覽後再寫入。');
     }catch(error){
       setRows([]);
-      setStatus('JSON 解析失敗：'+(error?.message||error));
+      setStatus('第 '+(index+1)+' 檔 JSON／格式解析失敗：'+(error?.message||error));
     }
   }
-
+  async function chooseFile(event){
+    if(busy)return;
+    const files=Array.from(event.target.files||[]);
+    if(!files.length)return;
+    setQueue(files);setQueueIndex(0);
+    await loadQueuedFile(files[0],0,files.length);
+  }
+  async function nextFile(){
+    const next=queueIndex+1;
+    if(busy||next>=queue.length)return;
+    setQueueIndex(next);
+    await loadQueuedFile(queue[next],next,queue.length);
+  }
   async function run(){
-    if(!rows.length)return;
+    if(busy||!rows.length)return;
     const selected=source.trim();
-    if(!selected){setStatus('請先選擇來源。');return;}
+    if(!selected){setStatus('請先指定來源。');return;}
     if(!analyzed.valid.length){setStatus('沒有可匯入的有效資料。');return;}
-    setBusy(true);setStatus('');
+    setBusy(true);onBusyChange?.(true);setStatus('核對現有 UID…');
+    setProgress({completed:0,total:analyzed.valid.length,percent:0});
     try{
       const galaxy=account.scopeDataFor(scopeId)?.galaxy;
       if(!galaxy)throw new Error('Scope data 未解析');
-      const unique=[];
-      const seen=new Set();
+      const unique=[],seen=new Set();
       let duplicateCount=0;
       for(const record of analyzed.valid){
-        if(seen.has(record.uid)){duplicateCount+=1;continue;}
+        if(seen.has(record.uid)){duplicateCount++;continue;}
         seen.add(record.uid);unique.push(record);
       }
-
       const existing=new Set();
       for(let offset=0;offset<unique.length;offset+=200){
         const ids=unique.slice(offset,offset+200).map(record=>record.uid);
@@ -124,24 +173,26 @@ function JsonImport({scopeId}){
         for(const row of data||[])existing.add(String(row.uid||'').toUpperCase());
       }
       const payload=unique.filter(record=>!existing.has(record.uid));
-      await insertRows(galaxy,payload);
+      setProgress({completed:0,total:payload.length,percent:payload.length?0:100});
+      await writeImportBatches(payload,{
+        batchSize:validImportBatchSize(format.batchSize),
+        writeBatch:batch=>insertRows(galaxy,batch),
+        onProgress:progress=>setProgress(progress)
+      });
       const skipped=analyzed.invalid.length+duplicateCount+existing.size;
-      setStatus(`已匯入 ${payload.length.toLocaleString()} 筆到來源「${selected}」${skipped?`；略過 ${skipped.toLocaleString()} 筆無效／重複／已存在資料。`:''}`);
-      setRows([]);setFileName('');
+      setStatus('第 '+(queueIndex+1)+'／'+queue.length+' 檔完成：新增 '+payload.length.toLocaleString()+' 筆'+(skipped?'；略過 '+skipped.toLocaleString()+' 筆（無效／重複／已存在）':'')+'。'+(queueIndex+1<queue.length?'請選擇下一檔繼續。':'本次檔案全部處理完成。'));
+      setRows([]);
     }catch(error){
-      setStatus(error?.message||'匯入失敗。');
-    }finally{
-      setBusy(false);
-    }
+      setStatus(String(error?.message||error||'匯入失敗。')+' 可保留本檔並重新執行；系統會重新核對已存在 UID。');
+    }finally{setBusy(false);onBusyChange?.(false);}
   }
-
+  const pending=queue.length>queueIndex+1;
   return <div className="scope-inline-card">
     <h4>{UI_COPY.management.importJson}</h4>
-    <label>{UI_COPY.management.currentFile}<input type="file" accept=".json,application/json" onChange={chooseFile}/></label>
-    {fileName?<p>檔案：<strong>{fileName}</strong>｜建議來源：<strong>{suggested}</strong></p>:null}
-    <label>{UI_COPY.management.sourceChoice}<input value={source} onChange={event=>setSource(event.target.value)} placeholder={suggested}/></label>
-    <p className="loc-subtitle">JSON 只作本次匯入載體。會解析正文、標題、時間、URL、來源 ID、關聯欄位與搜尋狀態，再寫入此 Scope 的 Galaxy。</p>
-
+    <label>{UI_COPY.management.currentFile}<input type="file" accept=".json,application/json" multiple disabled={busy} onChange={chooseFile}/></label>
+    {fileName?<p>檔案：<strong>{fileName}</strong>（第 {queueIndex+1}／{queue.length} 檔）｜建議來源：<strong>{suggested}</strong></p>:null}
+    <label>{UI_COPY.management.sourceChoice}<input disabled={busy||!rows.length} value={source} onChange={event=>setSource(event.target.value)} placeholder={suggested}/></label>
+    <p className="loc-subtitle">每次只讀取與確認一個 JSON 檔案；檔內資料再依設定筆數分批寫入此 Scope 的 Galaxy，不會一次送出全部有效資料。所有檔案共用上方格式設定。</p>
     {rows.length?<section className="scope-import-preview" aria-label="JSON 匯入預覽">
       <p className="scope-status">有效 {analyzed.valid.length.toLocaleString()} 筆｜略過 {analyzed.invalid.length.toLocaleString()} 筆</p>
       <div className="scope-management-records">
@@ -153,12 +204,17 @@ function JsonImport({scopeId}){
       </div>
       {analyzed.invalid.length?<p className="scope-status">前幾筆略過原因：{analyzed.invalid.slice(0,5).map(item=>item.error).join('、')}</p>:null}
     </section>:null}
-
-    <button type="button" disabled={busy||!analyzed.valid.length} onClick={run}>{busy?UI_COPY.management.importing:UI_COPY.management.startImport}</button>
-    {status?<p className="scope-status">{status}</p>:null}
+    {progress?<div role="status" className="scope-import-progress">
+      <progress value={progress.percent||0} max="100"/>
+      <p>已確認寫入 {Number(progress.completed||0).toLocaleString()}／{Number(progress.total||0).toLocaleString()} 筆 · {progress.percent||0}%</p>
+    </div>:null}
+    <div className="scope-tabs">
+      <button type="button" disabled={busy||!analyzed.valid.length} onClick={run}>{busy?UI_COPY.management.importing:'分批匯入目前檔案'}</button>
+      {pending&&!rows.length?<button type="button" disabled={busy} onClick={nextFile}>下一個 JSON 檔案</button>:null}
+    </div>
+    {status?<p className="scope-status" role="status">{status}</p>:null}
   </div>;
 }
-
 
 function refreshComparable(record={}){
   return {
@@ -177,7 +233,7 @@ function sameRefreshRecord(current,next){
   return Object.keys(a).every(key=>a[key]===b[key]);
 }
 
-function SourceRefresh({scopeId}){
+function SourceRefresh({scopeId,format,onBusyChange}){
   const account=useAccount();
   const [fileName,setFileName]=useState('');
   const [rows,setRows]=useState([]);
@@ -185,31 +241,32 @@ function SourceRefresh({scopeId}){
   const [plan,setPlan]=useState(null);
   const [status,setStatus]=useState('');
   const [busy,setBusy]=useState(false);
+  const [progress,setProgress]=useState(null);
   if(!account.canManageScopeSync(scopeId))return null;
 
   async function chooseFile(event){
     const file=event.target.files?.[0];
-    if(!file)return;
-    setFileName(file.name);setStatus('');setPlan(null);
+    if(!file||busy)return;
+    setFileName(file.name);setRows([]);setStatus('');setPlan(null);setProgress(null);
     try{
       const parsed=JSON.parse(await file.text());
-      const list=asRows(parsed);
-      setRows(list.map(row=>({raw:row,import_uid:String(firstValue(row,['uid'])||createUid8()).trim().toUpperCase()})));
+      const list=importRowsFromJson(parsed,format.recordPath);
+      setRows(list.map(row=>({raw:row,import_uid:createUid8()})));
       setSource(sourceSuggestion(file.name));
-      setStatus(`已載入 ${list.length.toLocaleString()} 筆 Refresh payload；先分析差異，不會直接寫入。`);
+      setStatus('已載入 '+list.length.toLocaleString()+' 筆 Refresh payload；先分析差異，不會直接寫入。');
     }catch(error){
-      setRows([]);setPlan(null);setStatus('Refresh JSON 解析失敗：'+(error?.message||error));
+      setRows([]);setPlan(null);setStatus('Refresh JSON／格式解析失敗：'+(error?.message||error));
     }
   }
 
   async function analyze(){
     const selected=source.trim();
     if(!selected){setStatus('請先指定來源。');return;}
-    const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,selected));
+    const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,selected,format.fields));
     const valid=normalized.filter(item=>item.record&&item.record.source_native_id).map(item=>item.record);
     const invalid=normalized.length-valid.length;
     if(!valid.length){setPlan({creates:[],updates:[],unchanged:[],invalid});setStatus('沒有帶 source_native_id 的有效資料。');return;}
-    setBusy(true);setStatus('');
+    setBusy(true);onBusyChange?.(true);setStatus('分析差異中…');setProgress(null);
     try{
       const galaxy=account.scopeDataFor(scopeId)?.galaxy;
       if(!galaxy)throw new Error('Scope data 未解析');
@@ -225,8 +282,7 @@ function SourceRefresh({scopeId}){
         existing.push(...(data||[]));
       }
       const byNative=new Map(existing.map(row=>[String(row.source_native_id||'').trim(),row]));
-      const creates=[],updates=[],unchanged=[];
-      const seen=new Set();
+      const creates=[],updates=[],unchanged=[],seen=new Set();
       for(const record of valid){
         const nativeId=String(record.source_native_id||'').trim();
         if(!nativeId||seen.has(nativeId))continue;
@@ -246,19 +302,29 @@ function SourceRefresh({scopeId}){
       }
       const nextPlan={creates,updates,unchanged,invalid:invalid+(valid.length-seen.size)};
       setPlan(nextPlan);
-      setStatus(`差異完成：新增 ${creates.length.toLocaleString()}、更新 ${updates.length.toLocaleString()}、不變 ${unchanged.length.toLocaleString()}、略過 ${nextPlan.invalid.toLocaleString()}。`);
+      setStatus('差異完成：新增 '+creates.length.toLocaleString()+'、更新 '+updates.length.toLocaleString()+'、不變 '+unchanged.length.toLocaleString()+'、略過 '+nextPlan.invalid.toLocaleString()+'。');
     }catch(error){setPlan(null);setStatus(error?.message||'Source Refresh 分析失敗。');}
-    finally{setBusy(false);}
+    finally{setBusy(false);onBusyChange?.(false);}
   }
 
   async function applyRefresh(){
-    if(!plan)return;
+    if(!plan||busy)return;
     const selected=source.trim();
-    setBusy(true);setStatus('');
+    setBusy(true);onBusyChange?.(true);setStatus('');
+    const total=plan.creates.length+plan.updates.length;
+    let completed=0;
+    setProgress({completed:0,total,percent:total?0:100});
     try{
       const galaxy=account.scopeDataFor(scopeId)?.galaxy;
       if(!galaxy)throw new Error('Scope data 未解析');
-      if(plan.creates.length)await insertRows(galaxy,plan.creates);
+      await writeImportBatches(plan.creates,{
+        batchSize:validImportBatchSize(format.batchSize),
+        writeBatch:batch=>insertRows(galaxy,batch),
+        onProgress:p=>{
+          completed=p.completed;
+          setProgress({completed,total,percent:Math.round(completed/Math.max(1,total)*100)});
+        }
+      });
       for(const row of plan.updates){
         await updateRows(galaxy,{
           title:row.title,
@@ -270,22 +336,26 @@ function SourceRefresh({scopeId}){
           statistics_able:row.statistics_able!==false,
           UpdateTime:new Date().toISOString()
         },{filters:[{column:'uid',operator:'eq',value:row.uid}]});
+        completed++;
+        if(completed%10===0||completed===total)setProgress({completed,total,percent:Math.round(completed/Math.max(1,total)*100)});
       }
-      setStatus(`Source Refresh 完成：新增 ${plan.creates.length.toLocaleString()}、更新 ${plan.updates.length.toLocaleString()}；不變資料未重寫。`);
+      setStatus('Source Refresh 完成：新增 '+plan.creates.length.toLocaleString()+'、更新 '+plan.updates.length.toLocaleString()+'；不變資料未重寫。');
       setPlan(null);setRows([]);setFileName('');
-    }catch(error){setStatus(error?.message||'Source Refresh 寫入失敗。');}
-    finally{setBusy(false);}
+    }catch(error){
+      setPlan(null);
+      setStatus(String(error?.message||error||'Source Refresh 寫入失敗。')+'。可能已有部分批次成功，請重新「分析差異」後再套用，避免重複寫入。');
+    }finally{setBusy(false);onBusyChange?.(false);}
   }
 
   return <div className="scope-inline-card">
     <h4>Source Refresh</h4>
-    <p>用 source_name + source_native_id 做增量刷新；只查本次 payload 出現的來源 ID，不掃整張 Galaxy。OAuth 或其他來源取得資料後，都可以轉成同一 JSON payload 進這個流程。</p>
-    <label>Refresh JSON<input type="file" accept=".json,application/json" onChange={chooseFile}/></label>
+    <p>以 source_name + source_native_id 進行增量更新；沿用上方格式設定，先查本檔資料涉及的來源 ID。先預覽差異，再逐批新增、逐筆更新。若中途失敗，必須重新分析差異。</p>
+    <label>Refresh JSON<input type="file" accept=".json,application/json" disabled={busy} onChange={chooseFile}/></label>
     {fileName?<p>檔案：<strong>{fileName}</strong></p>:null}
-    <label>來源<input value={source} onChange={event=>{setSource(event.target.value);setPlan(null)}} placeholder={sourceSuggestion(fileName)}/></label>
+    <label>來源<input disabled={busy} value={source} onChange={event=>{setSource(event.target.value);setPlan(null);setProgress(null);}} placeholder={sourceSuggestion(fileName)}/></label>
     <div className="scope-tabs">
-      <button type="button" disabled={busy||!rows.length} onClick={analyze}>{busy?'分析中…':'分析差異'}</button>
-      <button type="button" disabled={busy||!plan||(!plan.creates.length&&!plan.updates.length)} onClick={applyRefresh}>套用 Refresh</button>
+      <button type="button" disabled={busy||!rows.length} onClick={analyze}>{busy?'處理中…':'分析差異'}</button>
+      <button type="button" disabled={busy||!plan||(!plan.creates.length&&!plan.updates.length)} onClick={applyRefresh}>分批套用 Refresh</button>
     </div>
     {plan?<div className="scope-ranking">
       <div><strong>新增</strong><span>{plan.creates.length.toLocaleString()}</span></div>
@@ -293,7 +363,11 @@ function SourceRefresh({scopeId}){
       <div><strong>不變</strong><span>{plan.unchanged.length.toLocaleString()}</span></div>
       <div><strong>略過</strong><span>{plan.invalid.toLocaleString()}</span></div>
     </div>:null}
-    {status?<p className="scope-status">{status}</p>:null}
+    {progress?<div role="status" className="scope-import-progress">
+      <progress value={progress.percent||0} max="100"/>
+      <p>已確認寫入 {Number(progress.completed||0).toLocaleString()}／{Number(progress.total||0).toLocaleString()} 筆 · {progress.percent||0}%</p>
+    </div>:null}
+    {status?<p className="scope-status" role="status">{status}</p>:null}
   </div>;
 }
 
@@ -456,10 +530,21 @@ function SunoImport({scopeId}){
 }
 
 export default function ManagementImportPanel({scopeId}){
+  const [format,setFormat]=useState({recordPath:'',batchSize:100,fields:{}});
+  const [revision,setRevision]=useState(0);
+  const [busyCount,setBusyCount]=useState(0);
+  const setBusy=flag=>setBusyCount(value=>Math.max(0,value+(flag?1:-1)));
+  function changeFormat(next){
+    if(busyCount)return;
+    setFormat(next);
+    setRevision(value=>value+1);
+  }
   return <section className="scope-inline-card scope-management-imports">
     <h2>資料匯入</h2>
-    <JsonImport scopeId={scopeId}/>
-    <SourceRefresh scopeId={scopeId}/>
+    <p>Import 是進階資料操作：先選擇共用 JSON 格式，再逐檔預覽、按批寫入並核對筆數。Scope 與 Admin 是唯一兩種管理 role；匯入不是第三種權限。</p>
+    <ImportFormatSettings format={format} onChange={changeFormat} disabled={busyCount>0}/>
+    <JsonImport key={'json-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/>
+    <SourceRefresh key={'refresh-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/>
     <MediaRecordInsert scopeId={scopeId}/>
     <SunoImport scopeId={scopeId}/>
   </section>;
