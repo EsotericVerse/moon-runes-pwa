@@ -4,7 +4,7 @@ import {UI_COPY} from '../../i18n/ui-copy';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
-import {useSearchParams} from 'next/navigation';
+import {useRouter,useSearchParams} from 'next/navigation';
 
 import {logSearchKeyword,selectAuthRow,updateRows} from '../../loc/db-client.mjs';
 import {useAccount} from '../../loc/use-account';
@@ -258,6 +258,7 @@ export default function Search(){
   const {scopeId,scope}=useScopeRuntime();
   const account=useAccount();
   const searchParams=useSearchParams();
+  const router=useRouter();
   const [query,setQuery]=useState('');
   const [searchMode,setSearchMode]=useState('all');
   const [results,setResults]=useState([]);
@@ -581,7 +582,18 @@ export default function Search(){
     finally{setEditBusy(false)}
   }
 
-  async function runSearch(event){event.preventDefault();await executeSearch(query)}
+  async function runSearch(event){
+    event.preventDefault();
+    const term=String(query||'').trim();
+    if(!term)return;
+    // Keep the keyword in the URL and input so a style-to-style link is a
+    // reproducible next search, not a transient single-page interaction.
+    if(String(searchParams?.get('q')||'').trim()!==term||searchParams?.get('identity')){
+      router.push(featureNavigationHref(scopeId,'search',{q:term}));
+      return;
+    }
+    await executeSearch(term);
+  }
 
   if(aggregateScopes)return <FeaturePage featureId="search">
     <ScopeGroupOverview
