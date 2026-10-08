@@ -74,7 +74,8 @@ export default function ScopeEditableBlocks({
   allowEditing=true,
   allowDelete=true,
   allowEntities=true,
-  editEyebrow=true
+  editEyebrow=true,
+  slotTag='section'
 }){
   const account=useAccount();
   const queryClient=useQueryClient();
@@ -298,6 +299,7 @@ export default function ScopeEditableBlocks({
     </div>;
   }
 
+  const SlotTag=slotTag==='header'?'header':'section';
   const contents=<>
     {slots.map(slot=>{
       const active=draft?.uid&&(draft.uid===slot.uid||(!slot.stored&&draft.order===slot.order));
@@ -305,7 +307,7 @@ export default function ScopeEditableBlocks({
       if(empty&&!canEdit&&slot.order!==placeholderFirstOrder)return null;
       const level=Number(headingLevel);
       const Heading=level===1?'h1':level===2?'h2':level===4?'h4':'h3';
-      return <section
+      return <SlotTag
         className={((active&&editSlotClassName)?editSlotClassName:(typeof resolveSlotClassName==='function'?resolveSlotClassName(slot):slotClassName))+' scope-editable-block'+(active?' is-editing':'')+(canEdit&&!active?' is-editable-idle':'')+(empty?' is-empty':'')}
         key={slot.uid||'order:'+slot.order}
         data-page-name={pageName}
@@ -371,7 +373,7 @@ export default function ScopeEditableBlocks({
             </>}
           {empty&&canEdit?<p className="scope-status">點此建立文字框。</p>:null}
         </>}
-      </section>;
+      </SlotTag>;
     })}
     {canEdit&&!normalizedOrders.length&&(!maxBlocks||nextOrder<=maxBlocks)?<button
       type="button"
