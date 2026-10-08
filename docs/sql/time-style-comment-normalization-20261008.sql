@@ -64,8 +64,12 @@ BEGIN
       ON CONFLICT (record_type,resource_id) DO NOTHING
     $query$,tbl,tbl);
 
-    -- Legacy tags/description on periods/events were duplicated storage.
-    -- After the migration each canonical style record owns its description.
+    -- Move the author text into each individual style_comment row, rather
+    -- than keeping another competing narrative on the source period/event.
+    EXECUTE format($clear$
+      UPDATE silver.%I SET style_description=NULL
+      WHERE record_type IN ('period','event') AND nullif(btrim(style_tags),'') IS NOT NULL
+    $clear$,tbl);
     EXECUTE format('ALTER TABLE silver.%I DROP COLUMN IF EXISTS style_tags',tbl);
     EXECUTE format('CREATE INDEX IF NOT EXISTS %I ON silver.%I (record_type,label)',tbl||'_style_comment_lookup_idx',tbl);
   END LOOP;
