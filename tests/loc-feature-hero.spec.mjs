@@ -196,10 +196,10 @@ test('Eight feature JPGs map by Scope while keeping the same title and readable 
       await expect(hero.locator(':scope > .home-hero-identity--'+mark)).toHaveCount(1);
       const imageUrl=await hero.evaluate(el=>{
         const background=getComputedStyle(el).backgroundImage;
-        return background.match(/url\\(["']?([^"'\\)]+)["']?\\)/)?.[1]||'';
+        return background.match(/url\(["']?([^"')]+)["']?\)/)?.[1]||'';
       });
       expect(imageUrl).toContain(filename+'-'+asset);
-      expect(imageUrl).toMatch(/\\.jpg$/);
+      expect(imageUrl).toMatch(/\.jpg$/);
       const loaded=await page.evaluate(async url=>{
         const img=new Image();
         img.src=url;
