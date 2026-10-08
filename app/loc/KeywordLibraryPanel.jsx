@@ -25,6 +25,16 @@ function normalizeKeywordLines(value){
 function keywordText(value){
   return Array.isArray(value)?value.map(item=>String(item||'').trim()).filter(Boolean).join('\n'):'';
 }
+// Preserve the typed keyword on Save even when 「套用至編輯稿」 was not clicked.
+function keywordDraftWithInput(keywords,selectedKeyword,input){
+  const value=String(input||'').trim();
+  if(!value)return keywords;
+  const index=keywords.indexOf(selectedKeyword);
+  const next=keywords.filter(word=>word!==selectedKeyword&&word!==value);
+  if(selectedKeyword&&index>=0)next.splice(Math.min(index,next.length),0,value);
+  else next.push(value);
+  return next;
+}
 function blankDraft(className='',classId='',itemNo=1){
   return {
     keyword_id:null,
@@ -68,6 +78,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
   const [configSnapshot,setConfigSnapshot]=useState(null);
   const [loading,setLoading]=useState(true);
   const [busy,setBusy]=useState(false);
+  const [savingStage,setSavingStage]=useState('');
   const [message,setMessage]=useState('');
   const [workspace,setWorkspace]=useState('analysis');
 
@@ -92,7 +103,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     await invalidateClassification();
   }
 
-  async function load(preferredId='',preferredClass=''){
+  async function load(preferredId='',preferredClass='',options={}){
     if(!canEdit)return;
     setLoading(true);setMessage('');
     try{
@@ -152,8 +163,13 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
         setSelectedId('');setSelectedGroup('');setSelectedKeyword('');setKeywordEdit('');
         setDraft(null);
       }
+      return true;
     }catch(error){
-      setRows([]);setSelectedId('');setSelectedGroup('');setSelectedKeyword('');setKeywordEdit('');setDraft(null);setMessage(String(error?.message||error));
+      if(!options.preserveOnError){
+        setRows([]);setSelectedId('');setSelectedGroup('');setSelectedKeyword('');setKeywordEdit('');setDraft(null);
+      }
+      setMessage('關鍵詞重新載入失敗：'+String(error?.message||error));
+      return false;
     }finally{
       setLoading(false);
     }
@@ -207,11 +223,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     if(!draft)return;
     const value=keywordEdit.trim();
     if(!value){setMessage('請輸入關鍵詞。');return;}
-    const next=draftKeywords.filter(word=>word!==selectedKeyword&&word!==value);
-    if(selectedKeyword){
-      const position=draftKeywords.indexOf(selectedKeyword);
-      next.splice(Math.min(position,next.length),0,value);
-    }else next.push(value);
+    const next=keywordDraftWithInput(draftKeywords,selectedKeyword,value);
     setDraft(current=>({...current,keywords_text:next.join('\n')}));
     setSelectedKeyword(value);setKeywordEdit(value);
     setMessage('關鍵詞已放入編輯稿，請按「儲存」才會寫入資料庫。');
@@ -245,20 +257,37 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
       item_no:itemNo,
       item_name:itemName,
       principle:String(draft.principle||'').trim(),
-      keywords:normalizeKeywordLines(draft.keywords_text),
+      keywords:workspace==='manual'&&keywordEdit.trim()&&(!selectedKeyword||draftKeywords.includes(selectedKeyword))
+        ?keywordDraftWithInput(draftKeywords,selectedKeyword,keywordEdit)
+        :draftKeywords,
       order_no:Number.isFinite(Number(draft.order_no))?Number(draft.order_no):itemNo
     };
 
     setBusy(true);setMessage('');
+    setSavingStage('正在寫入關鍵詞至資料庫…');
     try{
       const result=await writeKeywordLibraryItem(scopeId,draft.keyword_id?'update':'insert',payload);
-      await markCurrentClassificationStale(classId);
+      // A confirmed write cannot be turned into a "write failure" by a
+      // classification reset or re-query that happens afterward.
+      setSavingStage('資料庫已寫入，正在更新分析狀態…');
+      let classificationWarning='';
+      try{
+        await markCurrentClassificationStale(classId);
+      }catch(error){
+        classificationWarning='；但分析狀態更新失敗：'+String(error?.message||error);
+      }
+      setSavingStage('資料庫已寫入，正在重新載入關鍵詞…');
       setSelectedClass(className);
-      await load(result.keyword_id||draft.keyword_id||'',className);
-      setMessage(classId===currentClassId?'關鍵詞設定已儲存；目前 Class 已變更，請重新分析文章。':'關鍵詞設定已儲存。');
+      const reloaded=await load(result.keyword_id||draft.keyword_id||'',className,{preserveOnError:true});
+      if(reloaded){
+        setMessage((classId===currentClassId?'關鍵詞已寫入資料庫；目前 Class 已變更，請重新分析文章。':'關鍵詞已寫入資料庫。')+classificationWarning);
+      }else{
+        setMessage('關鍵詞已寫入資料庫，但重新載入失敗；請重新進入關鍵詞頁面確認。'+classificationWarning);
+      }
     }catch(error){
-      setMessage(String(error?.message||error||'關鍵詞設定儲存失敗。'));
+      setMessage('關鍵詞資料庫寫入失敗：'+String(error?.message||error));
     }finally{
+      setSavingStage('');
       setBusy(false);
     }
   }
@@ -472,7 +501,8 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
       <button type="button" className="loc-button" disabled={busy||!selectedClass} onClick={copyClass}>複製整套 Class</button>
     </div>
 
-    {loading?<p className="scope-status">讀取中…</p>:null}
+    {loading?<p className="scope-status" role="status">正在載入關鍵詞資料…</p>:null}
+    {savingStage?<p className="scope-status scope-keyword-saving-progress" role="status" aria-live="polite" aria-busy="true"><span className="scope-keyword-saving-spinner" aria-hidden="true"/>{savingStage}</p>:null}
     {!loading&&workspace==='network'&&items.length?<div className="scope-keyword-network-layout">
       <KeywordNetworkEditor
         key={selectedClassId||selectedClass}
@@ -545,7 +575,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
             {draft.keyword_id?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={remove}>刪除此 Item</button>:null}
           </div>
         </>}
-        {message?<p className={message.includes('失敗')||message.includes('不可')||message.includes('0 rows')||message.includes('已經存在')?'scope-status scope-error':'scope-status'}>{message}</p>:null}
+        {message?<p role="status" aria-live="polite" className={message.includes('失敗')||message.includes('不可')||message.includes('0 rows')||message.includes('已經存在')?'scope-status scope-error':'scope-status'}>{message}</p>:null}
       </aside>:null}
     {!loading&&!items.length?<div className="scope-keyword-empty">
       <p className="scope-status">這個 Class 目前沒有分類項目。</p>
