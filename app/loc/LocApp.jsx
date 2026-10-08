@@ -10,6 +10,8 @@ import AboutView from './views/AboutView';
 import AuthorHomeView from './views/AuthorHomeView';
 import AdminHomeView from './views/AdminHomeView';
 import GenericScopeHomeView from './views/GenericScopeHomeView';
+import ScopeGroupOverview from './ScopeGroupOverview';
+import {FeaturePage} from '../modular/ui';
 import Statistics from '../modular/features/Statistics';
 import Culture from '../modular/features/Culture';
 import Search from '../modular/features/Search';
@@ -58,6 +60,10 @@ export default function LocApp({forcedView='home',forcedSection=null,forcedScope
   const ActiveView=forcedView==='home'
     ?HOME_VIEWS[scopeId]||GenericScopeHomeView
     :VIEWS[forcedView]||AboutView;
+  // LOC retains its bespoke aggregate pages. Every other DB Scope Group is
+  // an overview/guide only: never query another Scope's Galaxy or Time here.
+  const groupOverviewView=Boolean(scopeMeta?.aggregateChildren&&scopeId!=='loc'&&
+    ['statics','culture','governance'].includes(forcedView));
 
   if(!forcedScope&&runtime.dynamic&&!runtime.registryResolved){
     return <div className="loc-next-main" data-loc-scope={scopeId}><div className="loc-loading">載入 Scope Registry…</div></div>;
@@ -72,7 +78,14 @@ export default function LocApp({forcedView='home',forcedSection=null,forcedScope
   return <div className="loc-next-main" data-loc-scope={scopeId} data-loc-view={forcedView}>
     <Suspense fallback={<div className="loc-loading">載入頁面…</div>}>
       <FeatureGate scopeId={scopeId} scopeMeta={scopeMeta} view={forcedView}>
-        <ActiveView section={forcedSection}/>
+        {groupOverviewView?<FeaturePage featureId={forcedView}>
+          <ScopeGroupOverview
+            scopeId={scopeId}
+            featureId={forcedView}
+            title={scopeMeta.label+' · '+({statics:'統計',culture:'文化',governance:'治理'}[forcedView])}
+            description="群組只負責成員總覽與導引；請進入各子 Scope 查詢或管理實際內容。"
+          />
+        </FeaturePage>:<ActiveView section={forcedSection}/>}
       </FeatureGate>
     </Suspense>
   </div>;
