@@ -1,5 +1,5 @@
 {
-  "frozen_at": "2026-10-08",
+  "frozen_at": "2026-10-09",
   "policy": "Frozen branches are historical only. Do not add new work or open new PRs from them. Start new work from the latest main.",
   "active": [
     "main"
@@ -104,6 +104,7 @@
     "fix/governance-management-entry",
     "fix/independent-keyword-library",
     "fix/keyword-attr-progress-rc09",
+    "fix/keyword-attr-where-boolean-20261009",
     "fix/keyword-batch-attrs",
     "fix/keyword-batch-attrs-clean",
     "fix/keyword-classification-attrs",
