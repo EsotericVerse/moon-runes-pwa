@@ -132,6 +132,12 @@ if(!failures.length){
   for(const token of ['選擇符文群組','選擇符文','選擇關鍵詞','groupItems.map(item=>','draftKeywords.map(word=>']){
     if(!keywordPanel.includes(token))failures.push('Manual keyword selection must descend Group → Item → Keyword: '+token);
   }
+  if(!keywordPanel.includes('mergeKeywordEdit(draftKeywords,selectedKeyword,keywordEdit)')||
+     !keywordPanel.includes('<progress aria-label="關鍵詞儲存處理中"/>')||
+     !keywordPanel.includes("setWritePhase('reloading')")||
+     !keywordPanel.includes('關鍵詞資料庫寫入失敗：')){
+    failures.push('Keyword save must commit current input and show the progress and actual DB status globally.');
+  }
   const keywordGraph=read('app/loc/KeywordNetworkEditor.jsx');
   for(const token of ["expandedGroup","expandedItemId","rows.filter(row=>","},[graph,classId]);","groups.includes('特殊')","network.focus(originId","viewportRef.current={classId","network.moveTo({position:previousView.position"]){
     if(!keywordGraph.includes(token))failures.push('Keyword network must start at Special when present and preserve viewport during progressive expansion: '+token);
