@@ -25,9 +25,10 @@ export function visibleHomeChildren(slot={}){
     const text=plainHomeContent(entity?.text);
     // Legacy copies of a canonical main field must not be printed twice.
     if(text&&canonicalTexts.has(text))return false;
-    if(!text&&(!title||canonicalTexts.has(title)))return false;
-    // Keep media-only markup and hyperlinks without readable text.
-    if(!text&&!title&&!/<(?:img|video|audio|iframe|picture|svg)\b/i.test(entity?.text||''))return false;
+    // Keep media-only markup even when there is no readable text.
+    const media=/<(?:img|video|audio|iframe|picture|svg)\b/i.test(entity?.text||'');
+    if(!text&&!title&&!media)return false;
+    if(!text&&title&&canonicalTexts.has(title))return false;
     return true;
   });
 }
