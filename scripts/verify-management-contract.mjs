@@ -51,7 +51,7 @@ must(!galaxy.includes('include_in_time'),'generic search must not query nonexist
 must(galaxy.includes("'style_tags'")&&galaxy.includes("searchFields:['label','note','status','style_tags']"),'generic Time search must include style_tags');
 must(culture.includes('visibility,style_tags'),'Culture shared Time contract must include style_tags');
 must(editor.includes('style_tag_descriptions')&&editor.includes('<CultureStyleTagsField')&&visualStyleTags.includes('CultureStyleTagsField'),'Time editor must use visual searchable style chips rather than comma-delimited forms');
-must(editor.includes('styleDescriptionOf')&&editor.includes('missingStyleDescription')&&editor.includes('搜尋顯示說明')===false,'Time editor must require per-tag search descriptions and delegate visual editing to shared module');
+must(editor.includes('styleDescriptionOf')&&editor.includes('missingStyleDescription')&&editor.includes('搜尋顯示說明'),'Time editor must require per-tag search descriptions and delegate visual editing to shared module');
 must(cultureUi.includes('onClick={canEditWork')&&cultureUi.includes('isInteractiveTarget')&&!cultureUi.includes("UI_COPY.culture.editing:'編輯'"),'Culture existing works must enter editing by direct non-interactive card click without an Edit button');
 must(galaxy.includes('selectStyleKeywordIntroductions')&&!galaxy.includes('scopeCards('),'Search must prepend exact style-keyword introductions and must not use partial Scope-ID cards');
 must(management.includes('scope?.aggregateChildren?<ManagementDisclosure')&&management.includes('<ScopeGroupManagement scopeId={scopeId}/>'),'every DB Scope Group must have its own collapsed Manage entry');
