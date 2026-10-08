@@ -274,6 +274,17 @@ button,a,.loc-control,.loc-button,
   margin-top:clamp(.65rem,1.4vw,1rem);
 }
 
+/* Hero-only precedence stays in shared UI; homepage frame CSS remains override-free. */
+:is(.loc-next-main[data-loc-scope="loc"],.loc-next-main[data-loc-scope="lo3rwang"])
+  .loc-home>.loc-home-block--hero .loc-home-block__header>.loc-eyebrow{
+  font-size:var(--loc-type-hero-eyebrow)!important;
+}
+:is(.loc-next-main[data-loc-scope="loc"],.loc-next-main[data-loc-scope="lo3rwang"])
+  .loc-home>.loc-home-block--hero .loc-home-block__header>.loc-home-block__subtitle{
+  font-size:var(--loc-type-hero-subtitle)!important;
+  line-height:1.42!important;
+}
+
 /* LOC + Author use this shared feature Hero scale; LunaRunes is unchanged. */
 :is(.loc-next-main[data-loc-scope="loc"],.loc-next-main[data-loc-scope="lo3rwang"])
   .scope-feature-hero>.home-title-row>h1{
