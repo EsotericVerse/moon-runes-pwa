@@ -96,9 +96,12 @@ export default function KeywordNetworkEditor({
       network=new Network(containerRef.current,{nodes,edges},{
         autoResize:true,
         physics:false,
-        locale:'zh-tw',
-        locales:{'zh-tw':{
-          edit:'編輯',del:'刪除所選',back:'返回',addNode:'新增節點',addEdge:'新增關係',
+        // vis-network manipulation uses 'en' as its fallback locale.
+        // Replacing the locale map with only 'zh-tw' left fallback undefined
+        // and crashed while reading the manipulation toolbar 'close' label.
+        locale:'en',
+        locales:{en:{
+          edit:'編輯',del:'刪除所選',back:'返回',close:'關閉',addNode:'新增節點',addEdge:'新增關係',
           editNode:'編輯節點',editEdge:'編輯關係',addDescription:'點圖面放置新節點。',
           edgeDescription:'拖曳建立關係。',editEdgeDescription:'拖曳調整關係。',
           createEdgeError:'無法建立此關係。',deleteClusterError:'無法刪除群集。',editClusterError:'無法編輯群集。'
