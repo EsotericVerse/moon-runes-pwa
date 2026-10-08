@@ -217,13 +217,10 @@
 }
 .loc-home-block--hero>.loc-home-block__header>.loc-eyebrow{
   color:#f5d795;
-  font-size:var(--loc-type-hero-eyebrow)!important;
 }
 .loc-home-block--hero>.loc-home-block__header>.loc-home-block__subtitle{
   color:#e8d6ac;
-  font-size:var(--loc-type-hero-subtitle)!important;
   font-weight:var(--loc-weight-subtitle);
-  line-height:1.42!important;
 }
 .loc-home-block--hero>.loc-home-block__body :is(p,li){
   color:#edf1f9;
