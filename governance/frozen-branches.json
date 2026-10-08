@@ -72,6 +72,7 @@
     "fix/lunarunes-ui-clean",
     "fix/portable-public-query-contract",
     "fix/restore-all-public-page-presentation-20261008",
+    "fix/restore-author-home-db-inline-edit-20261008",
     "fix/restore-editable-page-layout",
     "fix/restore-google-management-login",
     "fix/restore-loc-aggregate-statistics-20261006",
