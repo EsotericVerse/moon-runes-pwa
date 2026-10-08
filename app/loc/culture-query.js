@@ -219,16 +219,17 @@ function periodRows(rows){
 function timelineItems(rows,{includeScope=false}={}){
   const all=Array.isArray(rows)?rows:[];
   const anchors=new Map(all.filter(row=>row.entry_type==='anchor').map(row=>[`${row.scope_id}:${row.anchor_id}`,row]));
-  return all.filter(row=>['anchor','event','period'].includes(row.entry_type)).map(row=>{
+  return all.filter(row=>['anchor','event','period','style_comment'].includes(row.entry_type)&&row.status!=='needs_anchor').map(row=>{
     const startAnchor=anchors.get(`${row.scope_id}:${row.start_anchor_id}`);
     const endAnchor=anchors.get(`${row.scope_id}:${row.end_anchor_id}`);
     const start=row.start_date||startAnchor?.start_date||null;
     const end=row.end_date||endAnchor?.start_date||null;
-    const kindLabel={anchor:'定錨點',event:'事件',period:'時期'}[row.entry_type];
-    const groupOrder={anchor:0,event:1,period:2}[row.entry_type]??99;
+    const kindLabel={anchor:'定錨點',event:'事件',period:'時期',style_comment:'風格標籤'}[row.entry_type];
+    const groupOrder={anchor:0,event:1,period:2,style_comment:3}[row.entry_type]??99;
     const scopeId=scopeIdOf(row.scope_id);
     return {...row,scope_id:scopeId,id:`${scopeId}:${row.entry_key}`,entry_id:`${scopeId}:${row.entry_key}`,start_date:start,end_date:end,date:start||end,
       display_label:row.title,
+      description:row.entry_type==='style_comment'?row.style_description:row.summary,
       group_key:includeScope?`${scopeId}:${row.entry_type}`:`kind:${row.entry_type}`,
       group_label:includeScope?`${scopeId} · ${kindLabel}`:kindLabel,
       group_order:groupOrder};
