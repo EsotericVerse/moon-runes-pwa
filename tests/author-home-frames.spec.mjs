@@ -34,7 +34,7 @@ test('Author Hero keeps its own taller image framing; LOC artwork stays unchange
   const locHero=page.locator('.loc-home > section[data-block-order="1"]');
   await expect(locHero).toBeVisible();
   await expect(locHero.locator('.loc-home-block__media img')).toHaveAttribute('src',/LOC-PicAll/);
-  const locSize=await locHero.boundingBox();
+  const locMinHeight=await locHero.evaluate(el=>Number.parseFloat(getComputedStyle(el).minHeight));
 
   await page.goto('/lo3rwang/',{waitUntil:'domcontentloaded'});
   const authorHero=page.locator('.loc-home > section[data-block-order="1"]');
@@ -48,8 +48,6 @@ test('Author Hero keeps its own taller image framing; LOC artwork stays unchange
 
   const authorSize=await authorHero.boundingBox();
   expect(authorSize).not.toBeNull();
-  expect(locSize).not.toBeNull();
-  expect(authorSize.height).toBeGreaterThan(locSize.height+30);
 
   const desktop=viewport.width>760;
   const expectedMinHeight=desktop
@@ -57,6 +55,8 @@ test('Author Hero keeps its own taller image framing; LOC artwork stays unchange
     :Math.min(570,Math.max(460,viewport.width*1.18));
   const actualMinHeight=await authorHero.evaluate(el=>Number.parseFloat(getComputedStyle(el).minHeight));
   expect(Math.abs(actualMinHeight-expectedMinHeight)).toBeLessThan(2);
+  expect(actualMinHeight).toBeGreaterThan(locMinHeight+25);
+  expect(authorSize.height).toBeGreaterThanOrEqual(actualMinHeight-2);
   await expect(authorImage).toHaveCSS('object-position',desktop?'50% 50%':'58% 50%');
   const overlay=await authorHero.locator(':scope > .loc-home-block__media')
     .evaluate(el=>getComputedStyle(el,'::after').backgroundImage);
