@@ -39,7 +39,7 @@ function normalizeEntities(value){
   }));
 }
 
-function normalizeRow(row,order){
+function normalizeRow(row,order,preserveText=false){
   return {
     uid:String(row?.uid||''),
     stored:Boolean(row?.uid),
@@ -47,7 +47,7 @@ function normalizeRow(row,order){
     eyebrow:String(row?.block_eyebrow||''),
     title:String(row?.block_title||''),
     subtitle:String(row?.block_subtitle||''),
-    text:removeDuplicatedLegacySubtitle(row?.block_text,row?.block_subtitle),
+    text:preserveText?String(row?.block_text||''):removeDuplicatedLegacySubtitle(row?.block_text,row?.block_subtitle),
     entities:normalizeEntities(row?.block_entity)
   };
 }
@@ -95,7 +95,7 @@ export default function ScopeEditableBlocks({
       return normalizedOrders.map(order=>normalizeRow(byOrder.get(order),order));
     }
     if(Number.isInteger(maxBlocks)&&maxBlocks>0){
-      const displayed=homeBlockRows(rows,pageName,maxBlocks).map(row=>normalizeRow(row,row.block_order));
+      const displayed=homeBlockRows(rows,pageName,maxBlocks).map(row=>normalizeRow(row,row.block_order,true));
       if(draft&&!draft.stored&&!displayed.some(slot=>slot.order===draft.order)&&draft.order<=maxBlocks){
         displayed.push({...draft});
         displayed.sort((a,b)=>a.order-b.order);
