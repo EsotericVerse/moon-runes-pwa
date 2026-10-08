@@ -298,7 +298,7 @@ export async function selectStyleKeywordIntroductions(scopes,query){
   const grouped=await Promise.all(scopeList.map(async scope=>{
     const current=scopeOf(scope);
     const result=await selectAllRows(current.time,{
-      columns:'record_id,record_type,label,resource_id,display_order,time_date,year_value,anchor_ids,style_tags,style_description,style_keyword_counts',
+      columns:'record_id,record_type,label,resource_id,display_order,time_date,year_value,anchor_ids,style_tags,style_description',
       filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}],
       orders:[{column:'display_order',ascending:true},{column:'record_id',ascending:true}]
     });
@@ -317,11 +317,16 @@ export async function selectStyleKeywordIntroductions(scopes,query){
       return [{row,matched,description,start,end,others}];
     });
     return Promise.all(matches.map(async({row,matched,description,start,end,others})=>{
-      // Always read the latest count; the integer[] Time column is a snapshot
-      // refreshed when the style is edited, not an authoritative live total.
-      let counted=null;
-      try{counted=await selectStyleKeywordDocumentCount(current.galaxy,matched);}
-      catch{/* An unavailable count must never hide the style introduction. */}
+      // Cross-link the other styles from this exact Time row. Their counts
+      // cover eligible works in this Scope, not only this period, and do not
+      // participate in the eight primary Class groups.
+      const related=await Promise.all(others.map(async tag=>{
+        try{
+          return {name:tag,work_count:await selectStyleKeywordDocumentCount(current.galaxy,tag)};
+        }catch{
+          return {name:tag,work_count:null};
+        }
+      }));
       return {
         row:{
           id:'style-keyword:'+current.id+':'+String(row.record_id||row.resource_id||matched),
@@ -330,9 +335,7 @@ export async function selectStyleKeywordIntroductions(scopes,query){
           title:matched,
           summary:description,
           period_label:String(row.label||'').trim(),
-          related_style_tags:others,
-          style_work_count:counted,
-          style_count_basis:'含關鍵詞的有效作品數（每篇計一次）',
+          related_style_tags:related,
           style_anchor_start:start,
           style_anchor_end:end
         },
