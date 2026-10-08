@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {mediaFacetDaily,mediaPlatform,mediaStyleTags} from '../app/loc/statistics-facets.mjs';
+import {DEFAULT_MEDIA_STYLE_EXCLUSIONS,filterMediaStyleRows,mediaFacetDaily,mediaPlatform,mediaStyleExclusions,mediaStyleTags} from '../app/loc/statistics-facets.mjs';
 
 test('URL host and path distinguish IG Reels, posts, Vocus and Suno',()=>{
   assert.equal(mediaPlatform({url:'https://www.instagram.com/reel/ABC/?igsh=abc'}),'IG Reels');
@@ -63,4 +63,18 @@ test('timestamps aggregate by Taiwan local calendar day even when DB returns UTC
     {createtime:'2026-10-07T21:37:51.602041+00:00',media_type:'suno',meta_tags:'政德風'},
     {createtime:'2026-10-08T02:00:00+08:00',media_type:'suno',meta_tags:'政德風'}
   ],'media_style'),[{day:'2026-10-08',category:'政德風',item_count:2}]);
+});
+
+test('male-voice stopword is excluded by default while meaningful high-frequency tags remain',()=>{
+  const rows=mediaFacetDaily([
+    {createtime:'2026-10-07T12:00:00+08:00',meta_tags:'男聲,政德風,希望向,Alternative Pop'},
+    {createtime:'2026-10-07T13:00:00+08:00',meta_tags:'男聲,政德風,希望向'}
+  ],'media_style');
+  assert.deepEqual(DEFAULT_MEDIA_STYLE_EXCLUSIONS,['男聲']);
+  assert.deepEqual(Object.fromEntries(filterMediaStyleRows(rows).map(row=>[row.category,row.item_count])),{
+    'Alternative Pop':1,'希望向':2,'政德風':2
+  });
+  assert.equal(filterMediaStyleRows(rows,[]).some(row=>row.category==='男聲'),true);
+  assert.equal(filterMediaStyleRows(rows,['男聲','希望向']).some(row=>row.category==='希望向'),false);
+  assert.deepEqual(mediaStyleExclusions('男聲, 男聲， 希望向'),['男聲','希望向']);
 });
