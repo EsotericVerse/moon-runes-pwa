@@ -2,6 +2,8 @@
 
 import ScopeEditableBlocks from './ScopeEditableBlocks';
 import {stripLocHomeEditorPlaceholders} from './loc-home-text.mjs';
+import {childPresentation} from './block-presentation.mjs';
+import {splitStatusContentSections} from './loc-status-sections.mjs';
 
 function stripOuterParagraph(html=''){
   const value=stripLocHomeEditorPlaceholders(html).trim();
@@ -70,34 +72,28 @@ function StatusHeading(slot){
 }
 
 function StatusBubbles(slot){
+  // The authored main status text is stored in block_text, not block_entity.
+  // Preserve every rich-text heading/paragraph inside the original framed cards.
+  const sections=splitStatusContentSections(slot.text);
+  const titled=(slot.entities||[]).filter(entity=>childPresentation(entity.title)==='card');
+  const bubbles=(slot.entities||[]).filter(entity=>
+    childPresentation(entity.title)==='bubble'&&String(entity.text||'').trim()
+  );
   return <>
-    {slot.entities.map((entity,index)=>{
-      const parts=paragraphParts(entity.text);
-      if(index===1){
-        return <div className="loc-bubble" key={entity.uid}>
-          <strong>{entity.title}</strong>
-          <Html tag="p" html={parts[0]||''}/>
-          {parts[1]?<details className="home-status-details">
-            <summary>架構</summary>
-            <Html tag="p" html={parts[1]}/>
-          </details>:null}
-          {parts[2]?<details className="home-status-details">
-            <summary>模組</summary>
-            <Html tag="p" html={parts[2]}/>
-          </details>:null}
-        </div>;
-      }
-      return <div className="loc-bubble" key={entity.uid}>
-        <strong>{entity.title}</strong>
-        <Html tag="p" html={parts[0]||''}/>
-        {parts.slice(1).map((part,partIndex)=><Html
-          tag="p"
-          className="home-status-reference"
-          html={part}
-          key={entity.uid+':'+partIndex}
-        />)}
-      </div>;
-    })}
+    {sections.length||titled.length?<div className="home-progress-grid home-status-frames">
+      {sections.map(section=><article className="home-progress-item home-status-card" key={section.key}>
+        <Html className="home-status-rich-text" html={section.html}/>
+      </article>)}
+      {titled.map(entity=><article className="home-progress-item home-status-card" key={entity.uid}>
+        <h3>{entity.title}</h3>
+        <Html className="home-status-rich-text" html={entity.text}/>
+      </article>)}
+    </div>:null}
+    {bubbles.length?<div className="home-draw-bubbles home-status-bubbles">
+      {bubbles.map(entity=><div className="loc-bubble" key={entity.uid}>
+        <Html html={entity.text}/>
+      </div>)}
+    </div>:null}
   </>;
 }
 
@@ -146,7 +142,7 @@ const CONFIG={
   beginnerHeading:{render:BeginnerHeading,slotClassName:'home-section-heading'},
   architectureHeading:{render:ArchitectureHeading,slotClassName:'home-section-heading'},
   statusHeading:{render:StatusHeading,slotClassName:'home-section-heading'},
-  statusBubbles:{render:StatusBubbles,slotClassName:'home-draw-bubbles home-status-bubbles'},
+  statusBubbles:{render:StatusBubbles,slotClassName:'home-status-content'},
   skillsHeading:{render:SkillsHeading,slotClassName:'home-section-heading'},
   skillsBody:{render:SkillsBody,slotClassName:'home-author-copy'},
   authorHeading:{render:AuthorHeading,slotClassName:'home-section-heading'},
