@@ -341,7 +341,7 @@ export async function selectStyleKeywordIntroductions(scopes,query){
         normalizeSearch(tag)!==token&&!samePeriod.some(item=>normalizeSearch(item)===normalizeSearch(tag)));
       const related=await Promise.all([...samePeriod,...otherPeriods].map(async tag=>({
         name:tag,
-        work_count:await countOf(tag),
+        document_total:await countOf(tag),
         same_period:samePeriod.some(item=>normalizeSearch(item)===normalizeSearch(tag))
       })));
       return {
