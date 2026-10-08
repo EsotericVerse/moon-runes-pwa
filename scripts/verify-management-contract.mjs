@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {snapTimelineRangeToAnchors} from '../app/modular/modules/culture-timeline/culture-anchor-snap.mjs';
 import {blocksToPlainText,normalizeBlocks,plainTextToBlocks} from '../app/loc/blocknote-content.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -12,6 +13,8 @@ const galaxy=read('app/loc/galaxy-query.js');
 const culture=read('app/loc/culture-query.js');
 const cultureUi=read('app/modular/features/Culture.jsx');
 const editor=read('app/modular/features/CultureTimelineEditor.jsx');
+const visualStyleTags=read('app/modular/features/CultureStyleTagsEditor.jsx');
+const nativeTimeline=read('app/modular/modules/culture-timeline/CultureTimeline.jsx');
 const management=read('app/loc/GovernanceManagement.jsx');
 const governance=read('app/modular/features/Governance.jsx');
 const statistics=read('app/modular/features/Statistics.jsx');
@@ -47,8 +50,8 @@ const sourceRefreshIndex=read('docs/sql/source-refresh-index.sql');
 must(!galaxy.includes('include_in_time'),'generic search must not query nonexistent include_in_time');
 must(galaxy.includes("'style_tags'")&&galaxy.includes("searchFields:['label','note','status','style_tags']"),'generic Time search must include style_tags');
 must(culture.includes('visibility,style_tags'),'Culture shared Time contract must include style_tags');
-must(editor.includes("style_tags:''")&&editor.includes('風格說明'),'shared Time editor must edit searchable style comments');
-must(editor.includes('style_tag_descriptions')&&editor.includes('搜尋顯示說明')&&editor.includes('搜尋精確命中風格詞時'),'Time editor must preserve searchable style comment descriptions');
+must(editor.includes('style_tag_descriptions')&&editor.includes('<CultureStyleTagsField')&&visualStyleTags.includes('CultureStyleTagsField'),'Time editor must use visual searchable style chips rather than comma-delimited forms');
+must(editor.includes('styleDescriptionOf')&&editor.includes('missingStyleDescription')&&editor.includes('搜尋顯示說明'),'Time editor must require per-tag search descriptions and delegate visual editing to shared module');
 must(cultureUi.includes('onClick={canEditWork')&&cultureUi.includes('isInteractiveTarget')&&!cultureUi.includes("UI_COPY.culture.editing:'編輯'"),'Culture existing works must enter editing by direct non-interactive card click without an Edit button');
 must(galaxy.includes('selectStyleKeywordIntroductions')&&!galaxy.includes('scopeCards('),'Search must prepend exact style-keyword introductions and must not use partial Scope-ID cards');
 must(management.includes('scope?.aggregateChildren?<ManagementDisclosure')&&management.includes('<ScopeGroupManagement scopeId={scopeId}/>'),'every DB Scope Group must have its own collapsed Manage entry');
@@ -87,6 +90,26 @@ must(!runesHome.includes('ScopeEditableBlocks')&&runesHome.includes('className="
 must(personalGovernance.includes('ScopeEditableBlocks')&&personalGovernance.includes('page="governance"'),'personal governance must use governance block rows');
 must(runesGovernance.includes('ScopeEditableBlocks')&&runesGovernance.includes('page="governance"'),'LunaRunes governance must use governance block rows');
 must(sharedSearch.includes('startEditing')&&sharedSearch.includes('BlockNoteEditor')&&sharedSearch.includes('GALAXY_EDITOR_COLUMNS')&&sharedSearch.includes('GalaxyAttrSummary')&&sharedSearch.includes('GalaxyAttrEditor')&&sharedSearch.includes("fullTextKey===row.key")&&sharedSearch.includes('updateRows'),'Search must open full Galaxy articles first, then expose permission-gated full Attr editing');
+must(cultureUi.includes('<CultureStyleTagsEditor')&&cultureUi.includes('onSaved={refreshTimelineData}')&&visualStyleTags.includes('CultureStyleTagsField')&&visualStyleTags.includes('updateRows(table,')&&visualStyleTags.includes('style_tag_descriptions'),'Culture period style tags must edit visible chips and save their canonical Time attrs');
+must(culture.includes('visibility,style_tags,style_tag_descriptions')&&culture.includes('record_id:row.record_id')&&culture.includes('style_tag_descriptions:row.style_tag_descriptions'),'Culture periods must expose original record ID and searchable style introduction metadata');
+must(cultureUi.includes('beginTimelineCreation')&&cultureUi.includes('pickingAnchorSlot')&&cultureUi.includes('selectedAnchorPick={pickedAnchor}')&&editor.includes('從時間長河選擇')&&editor.includes('<CultureStyleTagsField'),'Culture WYSIWYG must create Time entries through the timeline and pick anchor_ids[] directly from plotted anchors');
+must(nativeTimeline.includes('new Timeline(')&&['onAdd:','onMove:','onUpdate:','onRemove:'].every(token=>nativeTimeline.includes(token)),'Time manipulation must retain vis-timeline built-in add/edit/move/remove callbacks');
+
+must(cultureUi.includes('snapTimelineRangeToAnchors')&&nativeTimeline.includes("row.entryType==='period'")&&nativeTimeline.includes("row.entryType==='event'"),'Native vis-timeline must edit anchored period and event ranges without storing independent dates');
+const anchorFixture=[
+  {entry_type:'anchor',resource_id:'a',date_status:'exact',start_date:'2024-01-01'},
+  {entry_type:'anchor',resource_id:'b',date_status:'exact',start_date:'2024-03-01'},
+  {entry_type:'anchor',resource_id:'c',date_status:'exact',start_date:'2024-04-01'},
+  {entry_type:'anchor',resource_id:'d',date_status:'exact',start_date:'2024-05-01'}
+];
+const snappedPeriod=snapTimelineRangeToAnchors({start:'2024-01-02',end:'2024-03-31'},{entryType:'period',raw:{anchor_ids:['a','b']}},anchorFixture);
+must(snappedPeriod.anchor_ids.join(',')==='a,c'&&snappedPeriod.item.end==='2024-03-31','period range drag must snap to exclusive-end anchor without changing row dates');
+const snappedEvent=snapTimelineRangeToAnchors({start:'2024-01-01',end:'2024-04-01'},{entryType:'event',raw:{anchor_ids:['a','b']}},anchorFixture);
+must(snappedEvent.anchor_ids.join(',')==='a,c'&&snappedEvent.item.end==='2024-04-01','event range drag must snap inclusive end to actual anchor');
+let duplicateAnchorRejected=false;
+try{snapTimelineRangeToAnchors({start:'2024-04-01',end:'2024-03-31'},{entryType:'period',raw:{anchor_ids:['a','b']}},anchorFixture);}catch{duplicateAnchorRejected=true}
+must(duplicateAnchorRejected,'period bounds must reject duplicate or reversed anchor ranges');
+
 must(cultureUi.includes('CultureTimelineEditor')&&cultureUi.includes('selectedTimelineRecordId')&&cultureUi.includes('editable={account.canManageScopeSync(scopeId)}')&&cultureUi.includes('onMove={account.canManageScopeSync(scopeId)?moveTimelineRecord:null}')&&cultureUi.includes('onRemove={account.canManageScopeSync(scopeId)?removeTimelineRecord:null}'),'Culture first timeline must use native vis-timeline manipulation for authenticated period/anchor CRUD');
 must(admin.includes("insertRows('silver.manage'")&&admin.includes("deleteRows('silver.manage'"),'Admin Registry node panel must add/remove Manage mappings');
 must(admin.includes('DeploymentTree')&&admin.includes('vis-network/standalone')&&admin.includes("onMoveParent"),'Admin must manage Scope Registry through a draggable vis-network tree');

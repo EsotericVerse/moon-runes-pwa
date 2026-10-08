@@ -16,6 +16,7 @@ import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-sta
 import CultureTimeline from '../modules/culture-timeline/CultureTimeline';
 import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
 import {analyzeRiverDensity} from '../modules/culture-timeline/river-density-analysis.mjs';
+import {snapTimelineRangeToAnchors} from '../modules/culture-timeline/culture-anchor-snap.mjs';
 import {selectGalaxyContent} from '../../loc/galaxy-query';
 import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
 import {deleteRows,insertRows,dbAuthRelation,updateRows} from '../../loc/db-client.mjs';
@@ -24,6 +25,7 @@ import {useScopeRuntime} from '../use-scope-runtime';
 import {ContentEditor,FeaturePage,IncrementalList,WorkFullText,WorkSummaryCard} from '../ui';
 import {plainTextToBlocks} from '../../loc/blocknote-content.mjs';
 import CultureTimelineEditor from './CultureTimelineEditor';
+import CultureStyleTagsEditor from './CultureStyleTagsEditor';
 import {workDisplayHeading,workDisplayText} from '../work-display-model';
 import {useOffsetPagination} from '../use-offset-pagination';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
@@ -104,6 +106,11 @@ export default function Culture(){
   const [editingWorkKey,setEditingWorkKey]=useState('');
   const [selectedTimelineRecordId,setSelectedTimelineRecordId]=useState('');
   const [selectedTimelineDate,setSelectedTimelineDate]=useState('');
+  const [timelineAddType,setTimelineAddType]=useState('anchor');
+  const [suggestedRecordType,setSuggestedRecordType]=useState('anchor');
+  const [suggestedRequestNonce,setSuggestedRequestNonce]=useState(0);
+  const [pickingAnchorSlot,setPickingAnchorSlot]=useState(null);
+  const [pickedAnchor,setPickedAnchor]=useState(null);
   const [editDraft,setEditDraft]=useState(null);
   const [editBusy,setEditBusy]=useState(false);
   const [editError,setEditError]=useState('');
@@ -370,6 +377,15 @@ export default function Culture(){
   },[locScopeDistributionItems,locIntersectionScopeIds,locDistributionStart]);
   const hasTimelineSurface=isAggregateScope?Boolean(locSourceRiverItems.length):Boolean(timelineItems.length||selectedWorkPeriod?.start_date);
 
+  function beginTimelineCreation(type,date){
+    setSelectedTimelineRecordId('');
+    setPickedAnchor(null);
+    setPickingAnchorSlot(null);
+    setSuggestedRecordType(type);
+    setSelectedTimelineDate(date);
+    setSuggestedRequestNonce(value=>value+1);
+  }
+
   async function refreshTimelineData(){
     await Promise.all([
       queryClient.invalidateQueries({queryKey:['culture-timeline',scopeId]}),
@@ -377,21 +393,34 @@ export default function Culture(){
     ]);
   }
   async function moveTimelineRecord(item,row){
-    if(row?.entryType!=='anchor'||!row?.recordId||!scopeData?.time)return null;
-    const date=dayKeyFromTimelineValue(item?.start);
-    if(!date)return null;
+    if(!row?.recordId||!scopeData?.time)return null;
     try{
-      await updateRows(scopeData.time,{
-        time_date:date,
-        date_status:'exact',
-        year_value:null,
-        updated_at:new Date().toISOString()
-      },{filters:[{column:'record_id',operator:'eq',value:row.recordId}]});
-      await refreshTimelineData();
+      if(row.entryType==='anchor'){
+        const date=dayKeyFromTimelineValue(item?.start);
+        if(!date)throw new Error('定錨點日期無效。');
+        await updateRows(scopeData.time,{
+          time_date:date,
+          date_status:'exact',
+          year_value:null,
+          updated_at:new Date().toISOString()
+        },{filters:[{column:'record_id',operator:'eq',value:row.recordId}]});
+        await refreshTimelineData();
+        setEditError('');
+        return {...item,start:date};
+      }
+      if(row.entryType!=='period'&&row.entryType!=='event')return null;
+      const snapped=snapTimelineRangeToAnchors(item,row,timelineItems);
+      if(snapped.changed){
+        await updateRows(scopeData.time,{
+          anchor_ids:snapped.anchor_ids,
+          updated_at:new Date().toISOString()
+        },{filters:[{column:'record_id',operator:'eq',value:row.recordId}]});
+        await refreshTimelineData();
+      }
       setEditError('');
-      return item;
+      return snapped.item;
     }catch(error){
-      setEditError(error?.message||'定錨點移動失敗。');
+      setEditError(error?.message||'時間範圍調整失敗。');
       return null;
     }
   }
@@ -644,6 +673,13 @@ export default function Culture(){
               <section className='scope-card scope-culture-structure-river'>
                 <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
                 <h3>{UI_COPY.culture.structure}</h3>
+                {account.canManageScopeSync(scopeId)?<div className='scope-culture-timeline-tools'>
+                  <label><span>時間軸新增類型</span><select className='scope-select' value={timelineAddType} onChange={event=>setTimelineAddType(event.target.value)}>
+                    <option value='anchor'>定錨點</option><option value='period'>時期</option><option value='event'>事件</option>
+                  </select></label>
+                  <button type='button' className='loc-button' onClick={()=>beginTimelineCreation(timelineAddType,currentStructureStart||new Date().toISOString().slice(0,10))}>＋ 新增{timelineAddType==='anchor'?'定錨點':timelineAddType==='period'?'時期':'事件'}</button>
+                  <span className='scope-status'>可在時間軸上新增、拖曳定錨點或雙擊項目修改；編輯時期可直接點選軸上的定錨點。</span>
+                </div>:null}
                 {currentTimelineItems.length?<CultureTimeline
                   items={currentTimelineItems}
                   labelOf={item=>item.display_label||item.title}
@@ -660,6 +696,13 @@ export default function Culture(){
                     if(next)setSelectedPeriodKey(periodKey(next));
                   }}
                   onSelect={item=>{
+                    if(pickingAnchorSlot!==null){
+                      if(item?.entryType==='anchor'&&item?.resourceId){
+                        setPickedAnchor({slot:pickingAnchorSlot,anchorId:item.resourceId,nonce:Date.now()});
+                        setPickingAnchorSlot(null);
+                      }
+                      return;
+                    }
                     const recordId=String(item?.recordId||'').trim();
                     if(recordId){
                       setSelectedTimelineRecordId(recordId);
@@ -669,10 +712,7 @@ export default function Culture(){
                   editable={account.canManageScopeSync(scopeId)}
                   onAdd={account.canManageScopeSync(scopeId)?item=>{
                     const date=dayKeyFromTimelineValue(item?.start);
-                    if(date){
-                      setSelectedTimelineRecordId('');
-                      setSelectedTimelineDate(date);
-                    }
+                    if(date)beginTimelineCreation(timelineAddType,date);
                     return null;
                   }:null}
                   onMove={account.canManageScopeSync(scopeId)?moveTimelineRecord:null}
@@ -689,7 +729,12 @@ export default function Culture(){
                   scopeId={scopeId}
                   selectedRecordId={selectedTimelineRecordId}
                   suggestedAnchorDate={selectedTimelineDate}
-                  onClose={()=>{setSelectedTimelineRecordId('');setSelectedTimelineDate('')}}
+                  suggestedRecordType={suggestedRecordType}
+                  suggestedRequestNonce={suggestedRequestNonce}
+                  selectedAnchorPick={pickedAnchor}
+                  capturingAnchorSlot={pickingAnchorSlot}
+                  onPickAnchorSlot={slot=>setPickingAnchorSlot(current=>current===slot?null:slot)}
+                  onClose={()=>{setSelectedTimelineRecordId('');setSelectedTimelineDate('');setPickingAnchorSlot(null);setPickedAnchor(null)}}
                 />:null}
               </section>
 
@@ -711,9 +756,13 @@ export default function Culture(){
                 </div>
                 <p className='loc-eyebrow'>{UI_COPY.culture.classificationRiver}</p>
                 <h3>{labelOf(selectedWorkPeriod,0)}｜作品分類河道</h3>
-                {String(selectedWorkPeriod?.style_tags||'').trim()?<div className='scope-style-tags' aria-label='風格標籤'>
-                  {String(selectedWorkPeriod.style_tags).split(/[,，]/).map(item=>item.trim()).filter(Boolean).map(tag=><span key={tag}>{tag}</span>)}
-                </div>:null}
+                <CultureStyleTagsEditor
+                  period={selectedWorkPeriod}
+                  scopeId={scopeId}
+                  table={scopeData?.time}
+                  canEdit={account.canManageScopeSync(scopeId)}
+                  onSaved={refreshTimelineData}
+                />
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error)}</p>:null}
                 {!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!classificationBuckets.length
                   ?<p className='scope-status'>{UI_COPY.culture.noPeriodClassification}</p>:null}

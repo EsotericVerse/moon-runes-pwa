@@ -146,7 +146,7 @@ export default function CultureTimeline({
       const dataRows=rows.map(row=>editable?{
         ...row,
         editable:{
-          updateTime:row.entryType==='anchor',
+          updateTime:row.entryType==='anchor'||((row.entryType==='period'||row.entryType==='event')&&row.type==='range'&&!row.openStart&&!row.openEnd&&Array.isArray(row.raw?.anchor_ids)&&row.raw.anchor_ids.length>=2),
           updateGroup:false,
           remove:Boolean(row.recordId)
         }

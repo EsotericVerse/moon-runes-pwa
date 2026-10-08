@@ -9,6 +9,7 @@ import {useAccount} from '../../loc/use-account';
 import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
 import {selectRows} from '../../loc/db-query.mjs';
 import {FEATURE_LOADING_MESSAGE} from '../feature-data-state';
+import {CultureStyleTagsField,styleTagList} from './CultureStyleTagsEditor';
 
 const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_ids,date_status,year_value,visibility,style_tags,style_tag_descriptions';
 
@@ -23,9 +24,6 @@ const BLANK=Object.freeze({
 });
 
 function dateText(value){return value?String(value).slice(0,10):'';}
-function styleTagList(value){
-  return [...new Set(String(value||'').split(/[,，]/g).map(item=>String(item||'').trim()).filter(Boolean))];
-}
 function styleDescriptionMap(value){
   return value&&typeof value==='object'&&!Array.isArray(value)?{...value}:{};
 }
@@ -62,7 +60,7 @@ function rowSortDate(row,anchors){
   return dateText(anchors.get(first)?.time_date)||dateText(anchors.get(last)?.time_date)||'9999-12-31';
 }
 
-export default function CultureTimelineEditor({scopeId='',selectedRecordId='',suggestedAnchorDate='',onClose=null}){
+export default function CultureTimelineEditor({scopeId='',selectedRecordId='',suggestedAnchorDate='',suggestedRecordType='anchor',suggestedRequestNonce=0,selectedAnchorPick=null,onPickAnchorSlot=null,capturingAnchorSlot=null,onClose=null}){
   const account=useAccount();
   const searchParams=useSearchParams();
   const routeSuggestedAnchorDate=String(searchParams?.get?.('anchorDate')||'').slice(0,10);
@@ -149,15 +147,31 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
   useEffect(()=>{
     if(!/^\d{4}-\d{2}-\d{2}$/.test(effectiveSuggestedAnchorDate))return;
     setSelectedId('');
+    const recordType=EDITABLE_TYPES.some(([type])=>type===suggestedRecordType)?suggestedRecordType:'anchor';
+    const closestAnchor=anchorOptions
+      .filter(row=>dateText(row.time_date)&&dateText(row.time_date)<=effectiveSuggestedAnchorDate)
+      .at(-1);
     setDraft({
       ...BLANK,
-      record_type:'anchor',
-      time_date:effectiveSuggestedAnchorDate,
+      record_type:recordType,
+      time_date:recordType==='anchor'?effectiveSuggestedAnchorDate:'',
+      anchor_ids:recordType==='anchor'?['0','0']:[String(closestAnchor?.resource_id||'0'),'0'],
       note:''
     });
-    setMessage('已帶入河道日期。');
+    setMessage(recordType==='anchor'?'已帶入河道日期。':'請在時間長河選擇時期／事件的定錨點。');
     setFormOpen(true);
-  },[effectiveSuggestedAnchorDate]);
+  },[effectiveSuggestedAnchorDate,suggestedRecordType,suggestedRequestNonce]);
+
+  useEffect(()=>{
+    if(!selectedAnchorPick||!Number.isInteger(selectedAnchorPick.slot)||!selectedAnchorPick.anchorId)return;
+    setDraft(current=>{
+      if(current.record_type==='anchor')return current;
+      const ids=normalizeAnchorIds(current.anchor_ids);
+      if(selectedAnchorPick.slot<0||selectedAnchorPick.slot>=ids.length)return current;
+      return {...current,anchor_ids:ids.map((id,index)=>index===selectedAnchorPick.slot?selectedAnchorPick.anchorId:id)};
+    });
+    setMessage('已從時間長河帶入定錨點。');
+  },[selectedAnchorPick?.nonce]);
 
   if(!editable||account.loading||account.permissionLoading||!account.canManageScopeSync(dataScope))return null;
 
@@ -326,6 +340,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
                 :<option value="0" disabled>請選擇定錨點</option>}
               {anchorOptions.map(row=><option key={row.resource_id} value={row.resource_id}>{dateText(row.time_date)||row.year_value||'未知'}｜{row.label}</option>)}
             </select>
+            <button type="button" className="loc-button" aria-pressed={capturingAnchorSlot===index} onClick={()=>onPickAnchorSlot?.(index)}>{capturingAnchorSlot===index?'請點時間軸上的定錨點…':'從時間長河選擇'}</button>
             {ids.length>2&&index>0&&index<ids.length-1?<button type="button" onClick={()=>removeAnchor(index)}>移除此定錨點</button>:null}
           </label>)}
         </div>
@@ -333,14 +348,11 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       </div>:null}
 
       {draft.record_type!=='anchor'?<>
-        <label className="scope-management-wide-field"><span>風格說明</span><input className="scope-search-input" value={draft.style_tags||''} onChange={event=>change('style_tags',event.target.value)} placeholder="以逗號分隔；搜尋時可使用"/></label>
-        {styleTagList(draft.style_tags).length?<div className="scope-management-wide-field">
-          <h3>搜尋顯示說明</h3>
-          <p className="scope-status">搜尋精確命中風格詞時，先顯示這段簡短介紹，再列出相關搜尋結果。</p>
-          <div className="scope-management-fields">
-            {styleTagList(draft.style_tags).map(tag=><label key={tag}><span>{tag}</span><textarea className="scope-search-input" value={styleDescriptionOf(draft.style_tag_descriptions,tag)} onChange={event=>changeStyleDescription(tag,event.target.value)} placeholder={'搜尋「'+tag+'」時顯示的簡短介紹'}/></label>)}
-          </div>
-        </div>:null}
+        <div className="scope-management-wide-field">
+          <h3>風格標籤</h3>
+          <p className="scope-status">直接點選標籤修改名稱、移除或編輯搜尋顯示說明。</p>
+          <CultureStyleTagsField value={draft.style_tags} descriptions={draft.style_tag_descriptions} editable onChange={next=>setDraft(current=>({...current,style_tags:next.tags,style_tag_descriptions:next.descriptions}))}/>
+        </div>
       </>:null}
 
       <div className="scope-stat-controls">

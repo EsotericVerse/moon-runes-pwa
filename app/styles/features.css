@@ -124,6 +124,24 @@
 .scope-preview-links{display:flex;flex-wrap:wrap;gap:.55rem;align-items:center}
 .scope-style-tags{display:flex;flex-wrap:wrap;gap:.4rem;margin:.55rem 0 1rem}
 .scope-style-tags span{padding:.34rem .62rem;border:1px solid var(--loc-accent-border);border-radius:999px;background:var(--loc-ui-accent-soft);font-size:.82rem}
+
+/* Culture native visual editing: keep the same public chips while adding
+   optional authenticated manipulation without changing the page geometry. */
+.scope-style-tag-row{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem}
+.scope-style-tag-row .scope-style-tags{margin:.55rem 0 1rem}
+.scope-style-tag-edit{align-self:flex-start;margin:.55rem 0 1rem}
+.scope-style-tags .scope-style-tag-chip{padding:.34rem .62rem;border:1px solid var(--loc-accent-border);border-radius:999px;background:var(--loc-ui-accent-soft);font:inherit;font-size:.82rem;color:var(--loc-text);cursor:pointer}
+.scope-style-tags .scope-style-tag-chip.is-selected{outline:2px solid var(--loc-accent);outline-offset:2px}
+.scope-culture-style-editing{display:grid;gap:.7rem;padding:.8rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel)}
+.scope-style-tag-tools,.scope-style-tag-details{display:grid;gap:.65rem}
+.scope-style-tag-add,.scope-style-tag-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem}
+.scope-style-tag-add label{flex:1;min-width:10rem}
+.scope-style-tag-details label{display:grid;gap:.35rem}
+.scope-style-tag-details input,.scope-style-tag-details textarea,.scope-style-tag-add input{width:100%;min-width:0;max-width:100%;padding:.55rem .65rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel-2);color:var(--loc-text);font:inherit}
+.scope-culture-timeline-tools{display:flex;flex-wrap:wrap;align-items:center;gap:.65rem;margin:.5rem 0 .85rem}
+.scope-culture-timeline-tools label{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem}
+.scope-culture-timeline-tools .scope-status{flex:1 1 17rem;margin:0}
+
 .scope-danger-button{margin-top:.65rem;border-color:color-mix(in srgb,#d44 55%,var(--loc-line))!important}
 @media(max-width:860px){
   .scope-management-split{grid-template-columns:1fr}
