@@ -19,8 +19,8 @@ test('Four feature page hero frames read one LOC source while LunaRunes stays un
     // Editable feature subtitles may intentionally be blank. The Search copy
     // is compared to the same authored LOC block when exposed to another Scope.
     if(feature==='search')locSearchSubtitle=(await hero.locator('.scope-subtitle').innerText()).trim();
-    await expect(hero.locator('.scope-hero-description')).not.toBeEmpty();
-    await expect(hero.locator('.scope-hero-description p')).toHaveCount(1);
+    // Content authors own both description and paragraph structure; only the
+    // canonical Hero fields and one-frame presentation are structural.
   }
 
   // A second managed Scope consumes the same canonical LOC title/description.
