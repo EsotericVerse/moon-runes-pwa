@@ -43,6 +43,12 @@ test('LOC and Author Heros share a 16:9 cover frame while keeping author overlay
   const locMinHeight=await locHero.evaluate(el=>Number.parseFloat(getComputedStyle(el).minHeight));
   const locHeroSize=await locHero.boundingBox();
   expect(locHeroSize).not.toBeNull();
+  const locArtwork=await locHero.locator(':scope > .loc-home-block__media img').boundingBox();
+  expect(locArtwork).not.toBeNull();
+  expect(locArtwork.width).toBeGreaterThanOrEqual(locHeroSize.width*.95);
+  expect(locArtwork.height).toBeGreaterThanOrEqual(locHeroSize.height*.95);
+  expect(Math.abs(locArtwork.x-locHeroSize.x)).toBeLessThan(6);
+  expect(Math.abs(locArtwork.y-locHeroSize.y)).toBeLessThan(6);
   await expect(locHero).toHaveCSS('aspect-ratio',viewport.width>760?'16 / 9':'auto');
   if(viewport.width>760){
     await expect(locHero).toHaveCSS('display','flex');
@@ -72,6 +78,14 @@ test('LOC and Author Heros share a 16:9 cover frame while keeping author overlay
 
   const authorSize=await authorHero.boundingBox();
   expect(authorSize).not.toBeNull();
+  const authorArtwork=await authorImage.boundingBox();
+  expect(authorArtwork).not.toBeNull();
+  // Prevent the previously observed vertical image strip (an obsolete
+  // grid-column rule moved the absolutely positioned image to the right).
+  expect(authorArtwork.width).toBeGreaterThanOrEqual(authorSize.width*.95);
+  expect(authorArtwork.height).toBeGreaterThanOrEqual(authorSize.height*.95);
+  expect(Math.abs(authorArtwork.x-authorSize.x)).toBeLessThan(6);
+  expect(Math.abs(authorArtwork.y-authorSize.y)).toBeLessThan(6);
 
   const desktop=viewport.width>760;
   const expectedMinHeight=desktop
