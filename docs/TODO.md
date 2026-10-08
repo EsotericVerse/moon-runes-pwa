@@ -1,8 +1,8 @@
 # LOC Current TODO
 
-**Current version:** 0.9.0-rc.1
+**Current version:** 0.9.1-rc.1
 
-## 0.9.0 RC1 acceptance（承接 0.8.6 尚未完成人工驗收的項目）
+## 0.9.1 RC acceptance（承接 0.9.0 RC1 尚未完成人工驗收的項目）
 
 ### Public basic functions
 

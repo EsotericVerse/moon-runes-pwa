@@ -1,6 +1,22 @@
 # LOC Release Roadmap
 
-## Current — 0.9.0-rc.1 (2026-10-08)
+## Current — 0.9.1-rc.1 (2026-10-09)
+
+0.9.1-rc.1 是在已完成 0.9.0 RC1 後、以 Current `main` 為底的 **CSS 減法與版面穩定性候選版**；沿用原有資料權威、Scope／Theme／Hero 架構，不增加平行 DOM、主題系統或新功能。
+
+### 本次相對於 0.9.0 RC1 的調整
+
+- LOC／作者首頁共用 Block Renderer 保留；清除已退役的作者 Hero DOM 路徑與僅服務於舊頁面的樣式。
+- 整理 `home-content.css`、`responsive.css`、`uiux.css`、`features.css` 中可證實未使用的歷史覆寫；不改變主題色彩和符文遊戲樣式。
+- 保留 DB-backed 的 43 個底層 Theme Token 與當前管理合約；改變底層 Token 或將八個語意控制項落地，**不是本次 CSS 減法的交付項目**。
+- 加入 CSS／DOM 收斂的回歸 contract，維持既有 Next Build、public DB、Playwright 桌面／手機驗證門檻。
+- 原 0.9 RC1 後的 Keyword Attr 分批寫回與 SQL 修正由 Current 承接，不回填舊版 tag 或歷史紀錄。
+
+### 驗證與未完成責任
+
+版本必須以對應 commit 的 CI 成功為自動化依據；目前仍有人工 smoke、匯入 round-trip、管理權限與大型 corpus 性能等項目，詳見 `docs/TODO.md`。0.9.1 RC 不是 1.0 完成宣告。
+
+## Previous — 0.9.0-rc.1 (2026-10-08)
 
 0.9.0-rc.1 以 2026-10-08 的 Current `main`（發版工作起點 `64ccad0b2bd4376fae1b41c882c7b55ca16433ad`）為程式基線，正式將已在主線實作的 Scope／Scope Group 能力納入 Release Candidate。本次定錨只變更版本、文件與候選版發布流程；不引入新的產品功能、CSS 特例、資料庫結構或 Canon 規則。
 
@@ -22,7 +38,7 @@
 - 詳細驗收清單以 `docs/TODO.md` 為準；既有 0.9 readiness 記錄見 `governance/reviews/rc09-readiness-20261008.md`。
 - 候選版只代表「可進一步驗收與展示」，不是 1.0、不是「所有測試均已完成」，更不宣稱未執行的人工測試已通過。
 
-## Previous — 0.8.6-RC
+## Earlier — 0.8.6-RC
 
 0.8.6-RC 是之前以公開基本功能與 LunaRunes Current 功能為範圍的候選基線，包含：PostgreSQL SSOT、FeaturePage／Page Composition、權限與公開功能旗標隔離、Search／Statistics／Culture 精準查詢、LunaRunes 66 符＋第零符德、抽牌與每日紀錄、圖鑑、遊戲，以及 Hero／Theme／Auth／Management 自動化驗證。此版本留下的人工驗收責任**完整承接**到 0.9.0-rc.1，不因版本升級視為完成。
 

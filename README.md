@@ -1,6 +1,6 @@
 # LOC｜Luna Codex
 
-**Current version: 0.9.0-rc.1 (Release Candidate)**
+**Current version: 0.9.1-rc.1 (Release Candidate)**
 
 > 0.9 RC is an acceptance candidate, not a completed 1.0 release. Remaining manual checks are tracked in `docs/TODO.md`.
 
@@ -136,4 +136,4 @@ LunaRunes Canon content, approved English names and Rune semantics are not rewri
 
 - `docs/RELEASE_ROADMAP.md`
 - `docs/TODO.md`
-- `governance/releases/v0.9.0-rc.1.md`
+- `governance/releases/v0.9.1-rc.1.md`

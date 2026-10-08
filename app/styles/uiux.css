@@ -316,7 +316,7 @@ button,a,.loc-control,.loc-button,
   color:color-mix(in srgb,var(--loc-text) 88%,var(--loc-muted))!important;
 }
 
-.scope-home-hero-visual,.loc-home>.loc-hero>.home-hero-visual{
+.loc-home>.loc-hero>.home-hero-visual{
   position:relative;
   overflow:hidden;
   border:1px solid var(--loc-ui-hairline);
@@ -325,7 +325,7 @@ button,a,.loc-control,.loc-button,
   box-shadow:0 24px 64px rgb(0 0 0 / .18);
 }
 
-.scope-home-hero-visual::after,.loc-home>.loc-hero>.home-hero-visual::after{
+.loc-home>.loc-hero>.home-hero-visual::after{
   content:"";
   position:absolute;
   inset:0;
@@ -333,7 +333,7 @@ button,a,.loc-control,.loc-button,
   box-shadow:inset 0 0 0 1px rgb(255 255 255 / .025);
 }
 
-.scope-home-hero-visual img,.loc-home>.loc-hero>.home-hero-visual img{
+.loc-home>.loc-hero>.home-hero-visual img{
   transition:transform 900ms var(--loc-ui-ease-soft),filter 600ms var(--loc-ui-ease);
 }
 
@@ -425,25 +425,6 @@ button,a,.loc-control,.loc-button,
   color:var(--loc-text);
   border-color:var(--loc-accent-border);
   background:var(--loc-ui-accent-soft);
-}
-
-/* Homepage */
-.home-progress-grid{
-  gap:.75rem;
-}
-
-.home-progress-item{
-  min-height:9rem;
-  padding:1.1rem;
-  border-color:var(--loc-ui-hairline);
-  border-radius:var(--loc-ui-radius-md);
-  background:var(--loc-ui-panel-soft);
-}
-
-.home-about-figure,.home-framework-figure{
-  border-color:var(--loc-ui-hairline);
-  border-radius:var(--loc-ui-radius-lg);
-  box-shadow:0 16px 48px rgb(0 0 0 / .12);
 }
 
 /* Culture / Time River */
@@ -681,7 +662,7 @@ button,a,.loc-control,.loc-button,
     box-shadow:0 16px 42px rgb(0 0 0 / .13);
   }
 
-  .scope-home-hero-visual:hover img,.loc-home>.loc-hero>.home-hero-visual:hover img{
+  .loc-home>.loc-hero>.home-hero-visual:hover img{
     transform:scale(1.018);
     filter:saturate(1.05) contrast(1.02);
   }
@@ -757,9 +738,6 @@ button,a,.loc-control,.loc-button,
   }
   .loc-home-hero-copy>.home-title-row>h1{
     font-size:clamp(3rem,16vw,4.65rem)!important;
-  }
-  .home-progress-grid{
-    grid-template-columns:1fr;
   }
   .scope-culture-source-groups{
     grid-template-columns:1fr;

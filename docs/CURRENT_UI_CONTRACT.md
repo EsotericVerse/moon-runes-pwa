@@ -1,6 +1,6 @@
 # Current UI Contract
 
-**Version:** 0.9.0-rc.1
+**Version:** 0.9.1-rc.1
 
 ## Identity
 
@@ -56,6 +56,14 @@ Homepage 與共用分析以 Culture、Statistics、Search 為主：
 ## Theme
 
 八組 Theme 必須各自提供完整 palette。切換 Theme 時不得從上一組或其他 Theme 繼承缺少的 palette token。共用 geometry 與 typography 可以共用；palette、surface、state、background 與 shadow 由 Theme 自己負責。
+
+## CSS／DIV ownership（0.9.1 RC）
+
+- LOC 與作者首頁的正式 DOM 只由 `ScopeEditableBlocks` 配合 `LocHomeBlockDisplay` 產生；一個 canonical Page Block 對應一個主要 frame，不另包一套作者首頁 section/Hero。
+- 共用首頁 frame、圖片與標題幾何由 `app/styles/loc-about-original.css` 負責；`home-content.css` 保留真正使用中的標題組件與作者子頁排版，不能復活舊版 `author-home-hero`。
+- `uiux.css` 保留全域語意風格；`responsive.css` 只保留有對應現行 DOM 的 RWD 調整，不得以增加 `!important` 或新 wrapper 取代已有組件。
+- `app/modular/theme-registry.js` 的 43 個底層 Token 仍是現行 DB palette contract。本次 CSS 減法不修改它們；若未來提供八個上層語意控制項，必須作為既有 Token 的治理投影，不能增設第二個 palette authority。
+- 編輯器與共用 Feature Hero 仍走原有 `ScopeEditableBlocks`；CSS 清理後須通過桌面／手機 Playwright 測試，並保留使用者人工外觀驗收。
 
 ## Localization boundary
 

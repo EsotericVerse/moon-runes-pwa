@@ -49,6 +49,24 @@ for(const token of ["selection.scopeId===scopeId","setSelection({scopeId,themeId
 if(!portableSchema.includes('"loc_theme"')||!portableSchema.includes('"theme_attr" jsonb'))failures.push('portable schema must keep loc_theme theme_attr');
 if(portableSchema.includes('"theme_registry"'))failures.push('portable schema must not restore legacy theme_registry');
 
+// CSS subtraction guard: preserve the active shared frame and remove obsolete hero variants.
+const homeCss=read('app/styles/home-content.css');
+const homeFrameCss=read('app/styles/loc-about-original.css');
+const uiCss=read('app/styles/uiux.css');
+const responsiveCss=read('app/styles/responsive.css');
+const authorHome=read('app/loc/views/AuthorHomeView.jsx');
+for(const selector of ['.home-title-row{','.home-section-heading{','.home-architecture-figure{','.author-role-grid{','.author-trinity-layout{','.author-official-links{']){
+  if(!homeCss.includes(selector))failures.push('CSS subtraction removed active layout '+selector);
+}
+for(const className of ['author-home-hero','home-progress-grid','home-about-layout','home-framework-figure','author-about-grid','author-method-grid','author-contact-layout']){
+  if(homeCss.includes(className)||authorHome.includes(className))failures.push('obsolete CSS/DOM returned: '+className);
+}
+if(responsiveCss.includes('scope-home-hero-with-visual')||uiCss.includes('.home-progress-grid'))failures.push('retired homepage overrides returned');
+for(const required of ['.loc-home-block__header{','.loc-home-block--hero-side','.loc-home-block--with-image']){
+  if(!homeFrameCss.includes(required))failures.push('shared LOC/Author frame missing: '+required);
+}
+if(!authorHome.includes('<AuthorHomeEditableBlocks/>')||!authorHome.includes('loc-hero loc-hero-feature'))failures.push('Author home/subpages must preserve shared block display and feature hero');
+
 if(failures.length){
   console.error('[theme-contract] failures:\n'+failures.map(item=>'- '+item).join('\n'));
   process.exit(1);

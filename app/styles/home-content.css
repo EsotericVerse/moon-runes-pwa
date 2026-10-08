@@ -1,96 +1,4 @@
-/* Retired the obsolete side-column LOC Hero CSS. The shared home BlockNote
-   Hero in loc-about-original.css owns full-bleed artwork and copy framing. */
-.home-progress-grid{
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  margin-top:1rem;
-}
-.home-progress-item{
-  display:grid;
-  gap:.45rem;
-  border:1px solid var(--loc-line);
-}
-.home-progress-item small{
-  color:var(--loc-gold);
-  font-size:.75rem;
-  font-weight:800;
-  letter-spacing:.06em;
-}
-.home-progress-item strong{
-  color:var(--loc-text);
-  font-size:.98rem;
-  line-height:1.5;
-}
-.home-progress-item span{
-  color:var(--loc-muted);
-  font-size:.86rem;
-  line-height:1.7;
-}
-.home-progress-actions{margin-top:1rem}
-.home-framework>p:not(.loc-eyebrow):not(.loc-subtitle){max-width:80ch}
-.home-framework-figure{
-  margin:1rem 0 0;
-  overflow:hidden;
-  border:1px solid var(--loc-line);
-  background:var(--loc-surface-soft);
-}
-.home-framework-figure img{
-  display:block;
-  width:100%;
-  height:auto;
-}
-.home-beginner .home-rune-layout{
-  grid-template-columns:minmax(0,1.38fr) minmax(0,1fr);
-  gap:1.35rem;
-  align-items:start;
-}
-/* Start Here concept image stays secondary to the onboarding copy. */
-.home-beginner .home-framework-figure{
-  width:min(100%,420px);
-  max-width:none;
-  margin:0;
-  justify-self:center;
-  align-self:start;
-}
-.home-beginner .home-framework-figure img{
-  display:block;
-  width:100%;
-  max-width:none;
-  height:auto;
-  margin:0;
-  object-fit:contain;
-}
-
-.home-author-copy{
-  display:grid;
-  gap:.8rem;
-  margin-top:.35rem;
-}
-.home-author-copy p{
-  margin:0;
-  color:var(--loc-text);
-  line-height:1.8;
-}
-.home-about-layout{
-  display:grid;
-  grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);
-  gap:1.35rem;
-  align-items:start;
-}
-.home-about-figure{
-  width:min(100%,360px);
-  margin:.35rem 0 0;
-  justify-self:end;
-  overflow:hidden;
-  border:1px solid var(--loc-line);
-  background:var(--loc-surface-soft);
-}
-.home-about-figure img{
-  display:block;
-  width:100%;
-  height:auto;
-}
-
+/* Home title/section typography is shared; obsolete homepage layouts retired. */
 /* Homepage title hierarchy: left title, right short explanation. */
 .home-title-row{
   display:grid;
@@ -159,85 +67,8 @@
   }
 }
 
-@media(max-width:900px){
-  .home-progress-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .home-beginner .home-rune-layout{
-    grid-template-columns:minmax(0,1fr) minmax(220px,280px);
-    gap:1.25rem;
-  }
-  .home-beginner .home-framework-figure{max-width:280px}
-}
-@media(max-width:620px){
-  .home-progress-grid{grid-template-columns:1fr}
-  .home-beginner .home-rune-layout{
-    grid-template-columns:1fr;
-  }
-  .home-beginner .home-framework-figure{
-    width:min(100%,520px);
-    max-width:520px;
-    justify-self:center;
-    margin-top:.6rem;
-  }
-  .home-about-layout{
-    grid-template-columns:1fr;
-  }
-  .home-about-figure{
-    width:min(68vw,240px);
-    max-width:240px;
-    justify-self:center;
-  }
-}
 
-/* LOC homepage system status: two compact bubbles with expandable details. */
-.home-progress .home-status-bubbles{
-  grid-template-columns:repeat(2,minmax(0,1fr));
-}
-.home-status-reference{
-  margin:.65rem 0 0!important;
-  font-size:.86rem;
-  line-height:1.55;
-}
-.home-status-reference a{font-weight:700}
-
-.home-status-details{
-  width:100%;
-  margin-top:.55rem;
-  padding-top:.5rem;
-  border-top:1px solid var(--loc-line);
-  text-align:left;
-}
-.home-status-details summary{
-  cursor:pointer;
-  color:var(--loc-accent);
-  font-weight:700;
-}
-.home-status-details p{
-  margin:.45rem 0 0;
-  font-size:.82rem;
-  line-height:1.55;
-  color:var(--loc-muted);
-}
-.home-source-table th,
-.home-source-table th:first-child,
-.home-source-table td:first-child{width:25%}
-.home-source-table th:nth-child(2),
-.home-source-table td:nth-child(2),
-.home-source-table th:nth-child(3),
-.home-source-table td:nth-child(3){width:27%}
-.home-source-table th:last-child,
-.home-source-table td:last-child{width:21%;text-align:right}
-@media (max-width:620px){
-  .home-progress .home-status-bubbles{grid-template-columns:1fr}
-}
-
-/* LOC architecture presentation: same left-copy/right-visual rhythm as the homepage hero. */
-.home-architecture-layout{
-  display:grid;
-  grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);
-  gap:clamp(1.35rem,3vw,3rem);
-  align-items:center;
-}
-.home-architecture-copy{min-width:0}
+/* Shared visual class is still used by the Author detailed subpage. */
 .home-architecture-figure{
   width:100%;
   margin:0;
@@ -252,206 +83,27 @@
   height:auto;
   object-fit:contain;
 }
-@media(max-width:1024px){
-  .home-architecture-layout{
-    grid-template-columns:minmax(0,1fr) minmax(240px,320px);
-  }
-}
 @media(max-width:760px){
-  .home-architecture-layout{grid-template-columns:1fr}
   .home-architecture-figure{
     width:min(100%,520px);
     justify-self:center;
   }
 }
 
-
-/* Author homepage hero: full-width editorial image with foreground identity copy. */
-.author-home-hero{
-  position:relative;
-  display:grid;
-  align-items:center;
-  min-height:clamp(430px,50vw,620px);
-  padding:clamp(1.6rem,4vw,3.75rem);
-  overflow:hidden;
-  isolation:isolate;
-  border:1px solid color-mix(in srgb,var(--loc-accent) 20%,var(--loc-line));
-  background:var(--loc-bg);
-  box-shadow:0 24px 80px rgba(0,0,0,.28),inset 0 0 0 1px rgba(255,255,255,.025);
-}
-.author-home-hero-image{
-  position:absolute;
-  inset:0;
-  z-index:0;
-  display:block;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  object-position:center center;
-  pointer-events:none;
-  user-select:none;
-}
-.author-home-hero-overlay{
-  position:absolute;
-  inset:0;
-  z-index:1;
-  pointer-events:none;
-  background:
-    linear-gradient(90deg,rgba(3,6,13,.96) 0%,rgba(3,6,13,.86) 31%,rgba(3,6,13,.55) 52%,rgba(3,6,13,.18) 75%,rgba(3,6,13,.06) 100%),
-    linear-gradient(180deg,rgba(3,6,13,.08) 0%,rgba(3,6,13,.05) 58%,rgba(3,6,13,.50) 100%);
-}
-.author-home-hero::after{
-  content:none!important;
-  display:none!important;
-}
-.author-home-hero-copy{
-  position:relative;
-  z-index:2;
-  display:grid;
-  gap:.8rem;
-  width:min(100%,40rem);
-}
-.author-home-hero-copy .loc-eyebrow{
-  margin:0;
-  color:rgba(239,242,255,.72);
-  letter-spacing:.13em;
-}
-.author-home-hero-copy h1{
-  margin:0;
-  color:#f7f8ff;
-  font-size:clamp(3rem,6vw,5.4rem);
-  line-height:.96;
-  letter-spacing:-.045em;
-  text-shadow:0 4px 30px rgba(0,0,0,.45);
-}
-.author-home-hero-copy .loc-subtitle{
-  color:rgba(239,242,255,.76);
-  text-shadow:0 2px 20px rgba(0,0,0,.38);
-}
-.author-home-hero-copy>p{
-  max-width:38rem;
-  margin:0;
-  color:rgba(247,248,255,.84);
-  line-height:1.7;
-  text-shadow:0 2px 20px rgba(0,0,0,.40);
-}
-.author-home-hero-copy a{
-  color:#fff;
-  font-weight:750;
-}
-@media(max-width:760px){
-  .author-home-hero{
-    align-items:end;
-    min-height:clamp(460px,118vw,570px);
-    padding:1.35rem;
-  }
-  .author-home-hero-image{
-    object-position:58% center;
-  }
-  .author-home-hero-overlay{
-    background:
-      linear-gradient(180deg,rgba(3,6,13,.28) 0%,rgba(3,6,13,.34) 44%,rgba(3,6,13,.90) 100%),
-      linear-gradient(90deg,rgba(3,6,13,.72) 0%,rgba(3,6,13,.30) 72%,rgba(3,6,13,.12) 100%);
-  }
-  .author-home-hero-copy{
-    width:100%;
-  }
-}
-
-/* Hero artwork is exactly one image: foreground only when side is selected. */
-.author-home-hero--side{
-  grid-template-columns:minmax(0,1.2fr) minmax(230px,.8fr);
-  gap:clamp(1rem,3vw,2.5rem);
-  background:#101725;
-}
-.author-home-hero--side .author-home-hero-image{
-  position:relative;
-  inset:auto;
-  z-index:2;
-  grid-column:2;
-  grid-row:1;
-  height:auto;
-  max-height:470px;
-  object-fit:contain;
-  border:1px solid var(--loc-line);
-  border-radius:var(--loc-radius-sm);
-  background:var(--loc-surface-soft);
-  padding:.7rem;
-}
-.author-home-hero--side .author-home-hero-overlay{display:none}
-.author-home-hero--side .author-home-hero-copy{
-  grid-column:1;
-  grid-row:1;
-  width:100%;
-}
-.author-image-bubble{
-  padding:.7rem;
-  align-self:start;
-  background:var(--loc-surface-soft);
-}
-.author-image-bubble img{display:block;width:100%;height:auto;object-fit:contain}
-.author-inline-image-bubble{
-  max-width:560px;
-  padding:.7rem;
-  margin:.75rem 0;
-  background:var(--loc-surface-soft);
-}
-.author-inline-image-bubble img{display:block;max-width:100%;height:auto;object-fit:contain}
-@media(max-width:760px){
-  .author-home-hero--side{
-    grid-template-columns:minmax(0,1fr);
-    align-items:start;
-  }
-  .author-home-hero--side .author-home-hero-copy{grid-column:1;grid-row:1}
-  .author-home-hero--side .author-home-hero-image{
-    grid-column:1;
-    grid-row:2;
-    width:min(100%,520px);
-    justify-self:center;
-  }
-}
-
-/* Author homepage: editorial hierarchy first, supporting cards second. */
-.author-about-grid{
-  display:grid;
-  grid-template-columns:minmax(0,1.25fr) minmax(260px,.75fr);
-  gap:clamp(1.25rem,3vw,2.4rem);
-  align-items:start;
-}
-.author-about-primary{
-  display:grid;
-  gap:.7rem;
-}
-.author-about-primary p,
-.author-about-side p,
-.author-section-lead,
+/* Detailed Author pages (the public homepage uses shared LOC block frames). */
 .author-editorial-block p,
-.author-trinity-note,
-.author-contact-layout p{margin:0;line-height:1.78}
-.author-about-side{
-  display:grid;
-  gap:.55rem;
-  padding-left:clamp(1rem,2vw,1.5rem);
-  border-left:1px solid var(--loc-line);
-}
-.author-about-side h3,
+.author-trinity-note{margin:0;line-height:1.78}
 .author-editorial-block h3{
   margin:.15rem 0 .15rem;
   color:var(--loc-gold);
   font-size:1rem;
   line-height:1.4;
 }
-.author-section-lead{
-  max-width:76ch;
-  margin-bottom:1.1rem;
-}
 .author-role-grid{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
   gap:.8rem;
 }
-.author-professional-grid,
-.author-method-grid,
 .author-system-grid{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
@@ -511,12 +163,6 @@
   height:auto;
   object-fit:contain;
 }
-.author-contact-layout{
-  display:grid;
-  grid-template-columns:minmax(240px,.7fr) minmax(0,1.3fr);
-  gap:clamp(1rem,3vw,2rem);
-  align-items:start;
-}
 .author-official-links{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
@@ -541,18 +187,8 @@
   .author-official-links{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:760px){
-  .author-about-grid,
-  .author-professional-grid,
-  .author-method-grid,
   .author-system-grid,
-  .author-contact-layout,
   .author-trinity-layout{grid-template-columns:1fr}
-  .author-about-side{
-    padding-left:0;
-    padding-top:1rem;
-    border-left:0;
-    border-top:1px solid var(--loc-line);
-  }
   .author-trinity-figure{
     grid-row:1;
     width:min(100%,620px);

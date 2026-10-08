@@ -89,16 +89,14 @@
 }
 
 /* Homepage short title + explanation stay on one row on desktop. */
-.home-context .home-section-heading>h2,
-.home-author-words .home-section-heading>h2{
+.home-context .home-section-heading>h2{
   display:inline-block;
   margin:.12rem 0 .72rem;
   padding:0 .8rem .6rem 0;
   border-bottom:1px solid var(--loc-line);
   vertical-align:baseline;
 }
-.home-context .home-section-heading>.loc-subtitle,
-.home-author-words .home-section-heading>.loc-subtitle{
+.home-context .home-section-heading>.loc-subtitle{
   display:inline-block;
   margin:.12rem 0 .72rem!important;
   padding:0 0 .6rem .8rem;
@@ -113,37 +111,6 @@
   font-size:var(--loc-type-body);
   font-weight:var(--loc-weight-body);
   line-height:var(--loc-line-body);
-}
-
-/* Shared homepage hero media slot: same position as the LOC homepage visual. */
-.scope-home-hero-with-visual{
-  display:grid!important;
-  grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr)!important;
-  gap:clamp(1.5rem,4vw,4rem)!important;
-  align-items:center;
-  min-height:clamp(330px,44vh,500px);
-}
-.scope-home-hero-copy{grid-column:1;min-width:0}
-.scope-home-hero-visual{
-  grid-column:2;
-  grid-row:1;
-  align-self:center;
-  justify-self:stretch;
-  width:100%;
-  max-width:none;
-  margin:0;
-}
-.scope-home-hero-visual iframe{
-  display:block;
-  width:100%;
-  min-height:430px;
-  aspect-ratio:4/5;
-  border:0;
-  background:var(--loc-bg);
-}
-.scope-home-hero-media-stack{
-  display:grid;
-  gap:1rem;
 }
 
 .loc-next-nav,
@@ -165,44 +132,14 @@
 }
 .loc-next-search button{display:none}
 
-@media(max-width:1024px){
-  .scope-home-hero-with-visual{
-    grid-template-columns:minmax(0,1fr) minmax(240px,320px)!important;
-    min-height:auto;
-  }
-  .scope-home-hero-visual{max-width:320px}
-}
 @media(max-width:900px){
   .loc-next-subnav{justify-content:flex-start}
   .loc-next-search input{width:8rem}
 }
 
-@media(max-width:760px){
-  .scope-home-hero-with-visual{
-    grid-template-columns:1fr!important;
-    gap:1.25rem!important;
-  }
-  .scope-home-hero-copy,
-  .scope-home-hero-visual{
-    grid-column:1;
-  }
-  .scope-home-hero-visual{
-    grid-row:2;
-    justify-self:center;
-    width:min(100%,520px);
-    max-width:520px;
-    margin-top:.25rem;
-  }
-  .scope-home-hero-visual iframe{
-    min-height:0;
-  }
-}
-
 @media(max-width:680px){
   .home-context .home-section-heading>h2,
-  .home-context .home-section-heading>.loc-subtitle,
-  .home-author-words .home-section-heading>h2,
-  .home-author-words .home-section-heading>.loc-subtitle{
+  .home-context .home-section-heading>.loc-subtitle{
     display:block;
     padding-left:0;
     padding-right:0;
