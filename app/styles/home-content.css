@@ -236,8 +236,8 @@
   }
 }
 
-/* LOC system status: real framed content from block_text plus titled child cards.
-   Untitled nonempty children remain bubbles, but never replace the authored body. */
+/* LOC system status: frames from block_text, then child columns in stored order.
+   Titles determine card vs bubble, never an array index. */
 .home-progress .home-status-frames{
   grid-template-columns:repeat(3,minmax(0,1fr));
 }
@@ -252,7 +252,7 @@
   margin:0 0 .6rem;
   font-size:1.05rem;
   line-height:1.45;
-  color:var(--loc-heading);
+  color:var(--loc-text);
 }
 .home-progress .home-status-card p{
   margin:.45rem 0 0;
@@ -265,10 +265,22 @@
   .home-progress .home-status-frames{grid-template-columns:minmax(0,1fr)}
 }
 
-/* LOC homepage system status: additional untitled status bubbles only. */
+/* Preserve the original 3-column status grid; HTML and child bubbles share it. */
 .home-progress .home-status-bubbles{
-  grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-template-columns:repeat(3,minmax(0,1fr));
 }
+.home-progress .home-status-child-bubble{
+  align-items:stretch;
+  text-align:left;
+  justify-content:flex-start;
+}
+.home-progress .home-status-child-bubble p{
+  margin:.3rem 0 0;
+  font-size:.9rem;
+  line-height:1.65;
+  color:var(--loc-text);
+}
+.home-progress .home-status-child-bubble p:first-child{margin-top:0}
 .home-status-reference{
   margin:.65rem 0 0!important;
   font-size:.86rem;
