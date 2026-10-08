@@ -213,6 +213,20 @@ must(dbContract.includes("mode:'begin'")&&dbContract.includes("mode:'chunk'")&&d
 must(!keywordAnalysis.includes('PERSONAL_KEYWORD_TABLE')&&keywordAnalysis.includes('`silver.${scope}_keywords`'),'keyword classification must read the current Scope private keyword library');
 must(dbContract.includes("rpc('provision_scope'")&&dbContract.includes('provisionScope'),'DB client must expose the transactional Scope provisioning RPC');
 must(scopeProvisioning.includes('create table if not exists silver.scope_registry')&&scopeProvisioning.includes('create or replace function api.provision_scope'),'Scope provisioning SQL must define the DB registry and provisioning RPC');
+// Source and future-Scope schema parity: the Time contract is flat TEXT,
+// not a growing JSONB attribute bag or a stored keyword-count snapshot.
+for(const table of ['lo3rwang_time','lrunes_time']){
+  const start='CREATE TABLE "silver"."'+table+'" (';
+  const ddl=portableSchema.split(start)[1]?.split('\n);')[0]||'';
+  must(Boolean(ddl)&&['"anchor_ids" text[]','"style_tags" text','"style_description" text'].every(field=>ddl.includes(field)),
+    table+' needs canonical anchor_ids text[] and style_tags/style_description TEXT');
+  must(!ddl.includes('style_tag_descriptions')&&!ddl.includes('style_keyword_counts'),
+    table+' must not revive migrated JSONB style attrs or stored count snapshots');
+}
+must(scopeProvisioning.includes("create table silver.%I (like silver.lo3rwang_time including all)"),
+  'new Scope Time tables must clone the canonical TEXT Time template including all fields');
+must(!scopeProvisioning.includes('style_tag_descriptions'),
+  'Scope provisioning must not recreate the retired JSONB style attr');
 for(const suffix of ["_galaxy'","_galaxy_media'","_time'","_keywords'"])must(scopeProvisioning.includes(suffix),'Scope provisioning SQL missing fixed table suffix '+suffix);
 must(scopeProvisioning.includes('v_keyword_count<>66')&&scopeProvisioning.includes('p_parent_scope_id'),'Scope provisioning must lock the Rune66 default copy and parent Scope Group');
 must(scopeProvisioning.includes("v_blocks_name := v_scope||'_blocks'")&&scopeProvisioning.includes('like silver.lo3rwang_blocks including all')&&portableSchema.includes('"loc_blocks"')&&portableSchema.includes('"lo3rwang_blocks"')&&portableSchema.includes('"lrunes_blocks"'),'Scope provisioning/schema must store page blocks by uid with nested entities');
