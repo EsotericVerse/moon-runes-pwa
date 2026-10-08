@@ -25,6 +25,22 @@ function normalizeKeywordLines(value){
 function keywordText(value){
   return Array.isArray(value)?value.map(item=>String(item||'').trim()).filter(Boolean).join('\n'):'';
 }
+// The keyword input and multiline textarea edit the same draft. Save must
+// include the text currently in the input even if the user did not click
+// "套用至編輯稿" first. Never infer or create a keyword from unrelated fields.
+function mergeKeywordEdit(words,selected,value){
+  const next=normalizeKeywordLines(Array.isArray(words)?words.join('\n'):words);
+  const candidate=String(value||'').trim();
+  const previous=String(selected||'').trim();
+  if(!candidate)return next;
+  if(previous&&previous!==candidate){
+    const oldIndex=next.indexOf(previous);
+    const filtered=next.filter(word=>word!==previous&&word!==candidate);
+    filtered.splice(oldIndex<0?filtered.length:Math.min(oldIndex,filtered.length),0,candidate);
+    return filtered;
+  }
+  return next.includes(candidate)?next:[...next,candidate];
+}
 function blankDraft(className='',classId='',itemNo=1){
   return {
     keyword_id:null,
@@ -69,6 +85,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
   const [loading,setLoading]=useState(true);
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
+  const [writePhase,setWritePhase]=useState('');
   const [workspace,setWorkspace]=useState('analysis');
 
   const canEdit=account.canManageScopeSync(scopeId)&&Boolean(TABLE&&CONFIG_TABLE);
@@ -92,8 +109,8 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     await invalidateClassification();
   }
 
-  async function load(preferredId='',preferredClass=''){
-    if(!canEdit)return;
+  async function load(preferredId='',preferredClass='',{throwOnError=false}={}){
+    if(!canEdit)return false;
     setLoading(true);setMessage('');
     try{
       const [keywordResult,configResult]=await Promise.all([
@@ -152,8 +169,11 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
         setSelectedId('');setSelectedGroup('');setSelectedKeyword('');setKeywordEdit('');
         setDraft(null);
       }
+      return true;
     }catch(error){
-      setRows([]);setSelectedId('');setSelectedGroup('');setSelectedKeyword('');setKeywordEdit('');setDraft(null);setMessage(String(error?.message||error));
+      if(throwOnError)throw error;
+      setRows([]);setSelectedId('');setSelectedGroup('');setSelectedKeyword('');setKeywordEdit('');setDraft(null);setMessage('關鍵詞載入失敗：'+String(error?.message||error));
+      return false;
     }finally{
       setLoading(false);
     }
@@ -207,14 +227,10 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     if(!draft)return;
     const value=keywordEdit.trim();
     if(!value){setMessage('請輸入關鍵詞。');return;}
-    const next=draftKeywords.filter(word=>word!==selectedKeyword&&word!==value);
-    if(selectedKeyword){
-      const position=draftKeywords.indexOf(selectedKeyword);
-      next.splice(Math.min(position,next.length),0,value);
-    }else next.push(value);
+    const next=mergeKeywordEdit(draftKeywords,selectedKeyword,value);
     setDraft(current=>({...current,keywords_text:next.join('\n')}));
     setSelectedKeyword(value);setKeywordEdit(value);
-    setMessage('關鍵詞已放入編輯稿，請按「儲存」才會寫入資料庫。');
+    setMessage('關鍵詞已放入編輯稿，按「儲存」將寫入資料庫。');
   }
   function removeDraftKeyword(){
     if(!draft||!selectedKeyword)return;
@@ -224,7 +240,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
   }
 
   async function save(){
-    if(!draft)return;
+    if(!draft||busy)return;
     const classId=String(draft.class_id||'').trim();
     const className=String(draft.class_name||'').trim();
     const classGroup=String(draft.class_group||'').trim();
@@ -235,7 +251,6 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     if(!classGroup){setMessage('Group 不可為空。');return;}
     if(!itemName){setMessage('項目名稱不可為空。');return;}
     if(!Number.isInteger(itemNo)||itemNo<1){setMessage('項目編號必須是正整數。');return;}
-
     const payload={
       keyword_id:draft.keyword_id,
       class_id:classId,
@@ -245,21 +260,34 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
       item_no:itemNo,
       item_name:itemName,
       principle:String(draft.principle||'').trim(),
-      keywords:normalizeKeywordLines(draft.keywords_text),
+      // Save whatever the user has typed, without requiring a preliminary
+      // apply click that silently leaves the previous keyword list unchanged.
+      keywords:mergeKeywordEdit(draftKeywords,selectedKeyword,keywordEdit),
       order_no:Number.isFinite(Number(draft.order_no))?Number(draft.order_no):itemNo
     };
 
-    setBusy(true);setMessage('');
+    setBusy(true);setWritePhase('writing');setMessage('');
     try{
       const result=await writeKeywordLibraryItem(scopeId,draft.keyword_id?'update':'insert',payload);
-      await markCurrentClassificationStale(classId);
-      setSelectedClass(className);
-      await load(result.keyword_id||draft.keyword_id||'',className);
-      setMessage(classId===currentClassId?'關鍵詞設定已儲存；目前 Class 已變更，請重新分析文章。':'關鍵詞設定已儲存。');
+      // Database write is committed at this point. Subsequent errors MUST
+      // never be reported as "keyword write failed".
+      const warnings=[];
+      setWritePhase('syncing');
+      try{await markCurrentClassificationStale(classId);}
+      catch(error){warnings.push('分析狀態同步失敗：'+String(error?.message||error));}
+      setWritePhase('reloading');
+      try{await load(result.keyword_id||draft.keyword_id||'',className,{throwOnError:true});}
+      catch(error){warnings.push('重新載入失敗：'+String(error?.message||error));}
+      if(!warnings.length){
+        setSelectedClass(className);
+        setMessage(classId===currentClassId?'關鍵詞已成功寫入；目前 Class 已變更，請重新分析文章。':'關鍵詞已成功寫入。');
+      }else{
+        setMessage('關鍵詞已成功寫入資料庫，但'+warnings.join('；')+'。請稍後重新整理確認，避免重複建立。');
+      }
     }catch(error){
-      setMessage(String(error?.message||error||'關鍵詞設定儲存失敗。'));
+      setMessage('關鍵詞資料庫寫入失敗：'+String(error?.message||error));
     }finally{
-      setBusy(false);
+      setWritePhase('');setBusy(false);
     }
   }
 
@@ -418,6 +446,11 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     <p className="loc-eyebrow">Keyword Library</p>
     <h2>關鍵詞庫</h2>
     <p>每套 Class 以 UUID 獨立識別，可複製與分享；文章只保存分析後的 class_id 與 group_lists。公開統計直接讀文章 Attr，不會重新跑關鍵詞。</p>
+    {writePhase?<p className="scope-status" role="status" aria-live="polite">
+      <progress aria-label="關鍵詞儲存處理中"/>
+      {writePhase==='writing'?'正在寫入關鍵詞…':writePhase==='syncing'?'已寫入，正在更新分析狀態…':'已寫入，正在重新讀取資料確認…'}
+    </p>:null}
+    {message?<p className={/失敗|錯誤|不可|affected 0 rows|不存在|已經存在/.test(message)?'scope-status scope-error':'scope-status'} role="status" aria-live="polite">{message}</p>:null}
 
     <div className="scope-stat-controls scope-stat-workspace-switch">
       <label htmlFor="keyword-workspace-picker">關鍵詞工作區</label>
@@ -545,7 +578,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
             {draft.keyword_id?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={remove}>刪除此 Item</button>:null}
           </div>
         </>}
-        {message?<p className={message.includes('失敗')||message.includes('不可')||message.includes('0 rows')||message.includes('已經存在')?'scope-status scope-error':'scope-status'}>{message}</p>:null}
+
       </aside>:null}
     {!loading&&!items.length?<div className="scope-keyword-empty">
       <p className="scope-status">這個 Class 目前沒有分類項目。</p>
