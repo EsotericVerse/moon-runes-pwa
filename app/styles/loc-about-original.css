@@ -45,7 +45,7 @@
   padding:0 .8rem .6rem 0;
   border-bottom:1px solid var(--loc-line);
   color:var(--loc-text);
-  font-size:1.32rem;
+  font-size:var(--loc-type-home-section-title);
   font-weight:650;
   line-height:1.35;
   letter-spacing:normal;
