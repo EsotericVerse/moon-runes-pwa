@@ -9,9 +9,8 @@ import {useAccount} from '../../loc/use-account';
 import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
 import {selectRows} from '../../loc/db-query.mjs';
 import {FEATURE_LOADING_MESSAGE} from '../feature-data-state';
-import {CultureStyleTagsField,styleTagList} from './CultureStyleTagsEditor';
 
-const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_ids,date_status,year_value,visibility,style_tags,style_description';
+const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_ids,date_status,year_value,visibility';
 
 
 const EDITABLE_TYPES=Object.freeze([
@@ -20,7 +19,7 @@ const EDITABLE_TYPES=Object.freeze([
 const TYPE_LABEL=Object.freeze(Object.fromEntries(EDITABLE_TYPES));
 const BLANK=Object.freeze({
   record_id:'',record_type:'anchor',label:'',resource_id:'',note:'',time_date:'',
-  anchor_ids:['0','0'],status:'',display_order:'',date_status:'exact',year_value:'',visibility:'',style_tags:'',style_description:''
+  anchor_ids:['0','0'],status:'',display_order:'',date_status:'exact',year_value:'',visibility:''
 });
 
 function dateText(value){return value?String(value).slice(0,10):'';}
@@ -35,8 +34,7 @@ function rowDraft(row){
     ...BLANK,...row,
     anchor_ids:normalizeAnchorIds(row.anchor_ids),
     time_date:dateText(row.time_date),
-    year_value:row.year_value??'',
-    style_description:String(row.style_description||'')
+    year_value:row.year_value??''
   };
 }
 function newResourceId(type){
@@ -79,7 +77,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
     queryFn:async()=>{
       const {rows}=await selectRows(timeTable,{
         columns:TIME_COLUMNS,
-        filters:[{column:'record_type',operator:'in',value:EDITABLE_TYPES.map(([type])=>type)}],
+        filters:[{column:'record_type',operator:'in',value:[...EDITABLE_TYPES.map(([type])=>type),'style_comment']}],
         orders:[{column:'display_order',ascending:true},{column:'record_id',ascending:true}],
         limit:DB_QUERY_BATCH_SIZE,
         offset:0
@@ -210,9 +208,6 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
         );
         if(duplicate)throw new Error('同一資料區域已存在相同定錨點識別：'+resourceId);
       }
-      const activeStyleTags=type==='anchor'?[]:styleTagList(draft.style_tags);
-      const styleDescription=String(draft.style_description||'').trim();
-      if(activeStyleTags.length&&!styleDescription)throw new Error('請填寫風格主要敘述（TEXT），作為搜尋結果正文。');
       const payload={
         record_type:type,
         label,
@@ -221,8 +216,6 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
         status:String(draft.status||'').trim()||null,
         display_order:draft.display_order===''?null:Number(draft.display_order),
         visibility:String(draft.visibility||'').trim()||null,
-        style_tags:activeStyleTags.length?activeStyleTags.join(','):null,
-        style_description:styleDescription||null,
         time_date:null,
         anchor_ids:null,
         date_status:null,
@@ -309,7 +302,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       <label><span>名稱</span><input className="scope-search-input" value={draft.label||''} onChange={event=>change('label',event.target.value)} required/></label>
       <label><span>識別</span><input className="scope-search-input" value={draft.resource_id||''} disabled={Boolean(selectedId)} onChange={event=>change('resource_id',event.target.value)} placeholder="留空自動產生"/></label>
       <label><span>{draft.record_type==='anchor'?'定錨點說明（關鍵變化／持續檢討，非風格敘述）':'時期／事件說明（非風格敘述）'}</span><textarea className="scope-search-input" rows={5} value={draft.note||''} onChange={event=>change('note',event.target.value)}/></label>
-      {draft.record_type==='anchor'?<p className="scope-status">此處保存定錨點的轉折觀察，不是風格標籤。要新增「政德風」等搜尋介紹，請先儲存定錨點，再到文化頁的「作品分類河道」選擇相應時期，點「＋ 新增風格標籤」，填寫「風格主要敘述（TEXT）」。</p>:null}
+      {draft.record_type==='anchor'?<p className="scope-status">此處保存定錨點的轉折觀察，不是風格標籤。要新增「政德風」等獨立風格紀錄，請先儲存此定錨點，再到文化頁的「作品分類河道」點「＋ 新增風格標籤」，為該風格填寫自己的名稱、敘述及唯一定錨點。</p>:null}
 
       {draft.record_type==='anchor'?<div className="scope-stat-controls">
         <label><span>日期</span><input className="scope-select" type="date" value={dateText(draft.time_date)} onChange={event=>change('time_date',event.target.value)}/></label>
@@ -340,13 +333,6 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
         </details>
       </div>:null}
 
-      {draft.record_type!=='anchor'?<>
-        <div className="scope-management-wide-field">
-          <h3>風格標籤</h3>
-          <p className="scope-status">風格名稱是搜尋關鍵字，下方主要敘述（TEXT）是搜尋結果內容。</p>
-          <CultureStyleTagsField value={draft.style_tags} description={draft.style_description} editable mode={selectedId?'edit':'create'} onChange={next=>setDraft(current=>({...current,style_tags:next.tags,style_description:next.description}))}/>
-        </div>
-      </>:null}
 
       <div className="scope-stat-controls">
         <label><span>狀態</span><input className="scope-search-input" value={draft.status||''} onChange={event=>change('status',event.target.value)}/></label>

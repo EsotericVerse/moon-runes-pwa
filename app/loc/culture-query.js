@@ -11,7 +11,7 @@ import {selectManagedScope,selectManagedScopes} from './scope-data';
 
 
 
-const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_ids,date_status,year_value,visibility,style_tags,style_description';
+const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_ids,date_status,year_value,visibility,style_description';
 function scopeIdOf(value){return String(value||'').trim();}
 function timeDate(row){
   if(row?.time_date)return String(row.time_date).slice(0,10);
@@ -35,7 +35,7 @@ async function selectCultureTimeRows(scope,birthday=''){
   if(!scopeId||!table)throw new Error('Scope data 未解析');
   const {rows}=await selectRows(table,{
     columns:TIME_COLUMNS,
-    filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}],
+    filters:[{column:'record_type',operator:'in',value:['anchor','period','event','style_comment']}],
     orders:[{column:'display_order',ascending:true},{column:'record_id',ascending:true}],
     limit:DB_QUERY_BATCH_SIZE,
     offset:0
@@ -46,6 +46,7 @@ async function selectCultureTimeRows(scope,birthday=''){
   const anchors=rows.filter(row=>row.record_type==='anchor');
   const periods=rows.filter(row=>row.record_type==='period');
   const events=rows.filter(row=>row.record_type==='event');
+  const styleComments=rows.filter(row=>row.record_type==='style_comment');
   const anchorMap=new Map();
   for(const row of anchors){
     const anchorId=String(row.resource_id||'').trim();
@@ -67,15 +68,17 @@ async function selectCultureTimeRows(scope,birthday=''){
   }
   const normalize=(row,type)=>{
     const id=String(row.resource_id||row.record_id||'');
-    const ids=anchorIds(row.anchor_ids);
+    const ids=type==='style_comment'?(Array.isArray(row.anchor_ids)?row.anchor_ids:[]):anchorIds(row.anchor_ids);
     const firstId=ids[0]||'0';
     const lastId=ids.at(-1)||'0';
     const startAnchor=firstId==='0'?null:anchorMap.get(firstId);
     const endAnchor=lastId==='0'?null:anchorMap.get(lastId);
     const startDate=type==='anchor'
       ?timeDate(row)
-      :(firstId==='0'?scopeBirthday:timeDate(startAnchor));
-    const endBoundary=type==='anchor'
+      :type==='style_comment'
+        ?timeDate(startAnchor)
+        :(firstId==='0'?scopeBirthday:timeDate(startAnchor));
+    const endBoundary=type==='anchor'||type==='style_comment'
       ?null
       :(lastId==='0'?null:timeDate(endAnchor));
     return {
@@ -94,8 +97,8 @@ async function selectCultureTimeRows(scope,birthday=''){
       start_anchor_id:firstId==='0'?null:firstId,
       end_anchor_id:lastId==='0'?null:lastId,
       event_id:type==='event'?id:null,
-      open_start:type!=='anchor'&&firstId==='0',
-      open_end:type!=='anchor'&&lastId==='0',
+      open_start:['period','event'].includes(type)&&firstId==='0',
+      open_end:['period','event'].includes(type)&&lastId==='0',
       start_date:startDate,
       end_date:type==='period'?previousDay(endBoundary):endBoundary
     };
@@ -103,7 +106,13 @@ async function selectCultureTimeRows(scope,birthday=''){
   return [
     ...anchors.map(row=>normalize(row,'anchor')),
     ...periods.map(row=>normalize(row,'period')),
-    ...events.map(row=>normalize(row,'event'))
+    ...events.map(row=>normalize(row,'event')),
+    ...styleComments.map(row=>({
+      ...normalize(row,'style_comment'),
+      anchor_id:String(row.anchor_ids?.[0]||''),
+      style_description:String(row.style_description||''),
+      label:String(row.label||'')
+    }))
   ];
 }
 
@@ -204,22 +213,23 @@ function periodRows(rows){
     record_id:row.record_id||null,resource_id:row.resource_id||null,
     order:Number(row.order_no||0),status:row.status||'',anchor_id:row.anchor_id||null,start_anchor_id:row.start_anchor_id||null,
     end_anchor_id:row.end_anchor_id||null,anchor_ids:Array.isArray(row.anchor_ids)?row.anchor_ids:[],date_status:row.date_status||'',
-    style_tags:row.style_tags||'',style_description:row.style_description||'',open_start:Boolean(row.open_start),open_end:Boolean(row.open_end)
+    open_start:Boolean(row.open_start),open_end:Boolean(row.open_end)
   })).sort((a,b)=>a.order-b.order||String(a.period).localeCompare(String(b.period)));
 }
 function timelineItems(rows,{includeScope=false}={}){
   const all=Array.isArray(rows)?rows:[];
   const anchors=new Map(all.filter(row=>row.entry_type==='anchor').map(row=>[`${row.scope_id}:${row.anchor_id}`,row]));
-  return all.filter(row=>['anchor','event','period'].includes(row.entry_type)).map(row=>{
+  return all.filter(row=>['anchor','event','period','style_comment'].includes(row.entry_type)&&row.status!=='needs_anchor').map(row=>{
     const startAnchor=anchors.get(`${row.scope_id}:${row.start_anchor_id}`);
     const endAnchor=anchors.get(`${row.scope_id}:${row.end_anchor_id}`);
     const start=row.start_date||startAnchor?.start_date||null;
     const end=row.end_date||endAnchor?.start_date||null;
-    const kindLabel={anchor:'定錨點',event:'事件',period:'時期'}[row.entry_type];
-    const groupOrder={anchor:0,event:1,period:2}[row.entry_type]??99;
+    const kindLabel={anchor:'定錨點',event:'事件',period:'時期',style_comment:'風格標籤'}[row.entry_type];
+    const groupOrder={anchor:0,event:1,period:2,style_comment:3}[row.entry_type]??99;
     const scopeId=scopeIdOf(row.scope_id);
     return {...row,scope_id:scopeId,id:`${scopeId}:${row.entry_key}`,entry_id:`${scopeId}:${row.entry_key}`,start_date:start,end_date:end,date:start||end,
       display_label:row.title,
+      description:row.entry_type==='style_comment'?row.style_description:row.summary,
       group_key:includeScope?`${scopeId}:${row.entry_type}`:`kind:${row.entry_type}`,
       group_label:includeScope?`${scopeId} · ${kindLabel}`:kindLabel,
       group_order:groupOrder};
@@ -265,7 +275,8 @@ function cultureParts(scopeContext,runtimeId){
     anchor_id:row.anchor_id||null,
     status:row.status||''
   }));
-  return {normalizedContext,periods,eras,events,trajectories};
+  const styleComments=normalizedContext.filter(row=>row.entry_type==='style_comment');
+  return {normalizedContext,periods,eras,events,trajectories,styleComments};
 }
 
 export async function selectScopeCultureData(scopeId){
@@ -369,6 +380,7 @@ export async function selectScopeCultureData(scopeId){
     timelineItems:timelineItems(parts.normalizedContext),
     events:parts.events,
     trajectories:parts.trajectories,
+    styleComments:parts.styleComments,
     works:[]
   };
 }

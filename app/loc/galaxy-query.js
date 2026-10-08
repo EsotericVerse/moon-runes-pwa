@@ -256,8 +256,8 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false}={
   if(mediaOnly)return [media];
   const timeline=makeProvider({
     id:current.id+':timeline',table:current.time,source:current.id+' 時期',scope:current,idColumn:'record_id',
-    columns:['record_id','record_type','label','resource_id','note','time_date','anchor_ids','status','date_status','year_value','visibility','style_tags','style_description'],
-    searchFields:['label','note','status','style_tags','style_description'],dateColumn:'time_date',
+    columns:['record_id','record_type','label','resource_id','note','time_date','anchor_ids','status','date_status','year_value','visibility','style_description'],
+    searchFields:['label','note','status','style_description'],dateColumn:'time_date',
     filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}]
   });
   return [timeline,text];
@@ -266,107 +266,48 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false}={
 function normalizeSearch(value){
   return String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
 }
-function styleTagList(value){
-  return [...new Set(String(value||'').split(/[,，]/g).map(item=>String(item||'').trim()).filter(Boolean))];
+export async function selectStyleKeywordDocumentCount(table,keyword){
+  const q=String(keyword||'').trim();
+  if(!table||!q)return 0;
+  return selectCount(table,{idColumn:'uid',filters:[{column:'searchable',operator:'eq',value:true},{column:'statistics_able',operator:'eq',value:true},{column:'content',operator:'neq',value:''}],orFilter:orExpression(['title','content'],q)});
 }
-// This is a count of distinct searchable/statistics-enabled documents containing
-// the keyword in title or body. It is NOT a Rune/Class hit count.
-export async function selectStyleKeywordDocumentCount(galaxyTable,keyword){
-  const term=String(keyword||'').trim();
-  if(!galaxyTable||!term)return 0;
-  return selectCount(galaxyTable,{
-    idColumn:'uid',
-    filters:[
-      {column:'searchable',operator:'eq',value:true},
-      {column:'statistics_able',operator:'eq',value:true},
-      {column:'content',operator:'neq',value:''}
-    ],
-    orFilter:orExpression(['title','content'],term)
-  });
+function anchorDate(a){
+  if(a?.time_date)return String(a.time_date).slice(0,10);
+  return a?.date_status==='year_only'&&Number(a.year_value)>0?String(a.year_value)+'-01-01':'';
 }
-export async function selectStyleKeywordCounts(galaxyTable,tags){
-  const words=Array.isArray(tags)?tags:styleTagList(tags);
-  return Promise.all(words.map(tag=>selectStyleKeywordDocumentCount(galaxyTable,tag)));
-}
-function styleAnchorDate(row){
-  return String(row?.time_date||(Number.isInteger(row?.year_value)?String(row.year_value)+'-01-01':'')).slice(0,10);
-}
-// The canonical Time column is TEXT. Historical rows with several styles may
-// contain clearly titled paragraphs: prefer the matching paragraph when present.
-function styleDescriptionForTag(description,tag,tags){
-  const text=String(description||'').trim();
-  const parts=text.split(/\n\s*\n/).map(part=>part.trim()).filter(Boolean);
-  const headings=new Map(tags.map(item=>[normalizeSearch(item),item]));
-  const match=parts.find(part=>{
-    const pos=part.indexOf('：');
-    return pos>0&&headings.has(normalizeSearch(part.slice(0,pos)))&&normalizeSearch(part.slice(0,pos))===normalizeSearch(tag);
-  });
-  return match?match.slice(match.indexOf('：')+1).trim():text;
+function periodAt(date,periods,anchors){
+  if(!date)return null;
+  return periods.filter(p=>{
+    const ids=p.anchor_ids||[];
+    const start=ids[0]&&ids[0]!=='0'?anchorDate(anchors.get(ids[0])):'';
+    const end=ids.at(-1)&&ids.at(-1)!=='0'?anchorDate(anchors.get(ids.at(-1))):'';
+    return (!start||date>=start)&&(!end||date<end);
+  }).sort((a,b)=>anchorDate(anchors.get(b.anchor_ids?.[0])).localeCompare(anchorDate(anchors.get(a.anchor_ids?.[0]))))[0]||null;
 }
 export async function selectStyleKeywordIntroductions(scopes,query){
-  const token=normalizeSearch(query);
-  if(!token)return [];
-  const scopeList=(Array.isArray(scopes)?scopes:[]).filter(scope=>scope?.id&&scope?.time);
-  const grouped=await Promise.all(scopeList.map(async scope=>{
-    const current=scopeOf(scope);
-    const result=await selectAllRows(current.time,{
-      columns:'record_id,record_type,label,resource_id,display_order,time_date,year_value,anchor_ids,style_tags,style_description',
-      filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}],
-      orders:[{column:'display_order',ascending:true},{column:'record_id',ascending:true}]
-    });
-    const anchorMap=new Map((result.rows||[])
-      .filter(row=>row.record_type==='anchor'&&row.resource_id)
-      .map(row=>[String(row.resource_id),row]));
-    const styleRows=(result.rows||[]).filter(row=>['period','event'].includes(row.record_type)&&styleTagList(row.style_tags).length>0);
-    const allStyles=[...new Map(styleRows.flatMap(row=>styleTagList(row.style_tags).map(tag=>[normalizeSearch(tag),tag]))).values()];
-    const matches=styleRows.flatMap(row=>{
-      const tags=styleTagList(row.style_tags);
-      const matched=tags.find(tag=>normalizeSearch(tag)===token);
-      if(!matched||!String(row.style_description||'').trim())return [];
-      const ids=Array.isArray(row.anchor_ids)?row.anchor_ids.map(String):[];
-      const start=ids[0]==='0'?'':styleAnchorDate(anchorMap.get(ids[0]));
-      const end=ids.at(-1)==='0'?'':styleAnchorDate(anchorMap.get(ids.at(-1)));
-      return [{row,matched,tags,start,end,description:styleDescriptionForTag(row.style_description,matched,tags)}];
-    });
-    // Reuse one count promise per keyword within the current Scope/search.
-    const countCache=new Map();
-    function countOf(tag){
-      const key=normalizeSearch(tag);
-      if(!countCache.has(key))countCache.set(key,selectStyleKeywordDocumentCount(current.galaxy,tag).catch(()=>null));
-      return countCache.get(key);
-    }
-    return Promise.all(matches.map(async({row,matched,tags,start,end,description})=>{
-      const samePeriod=tags.filter(tag=>normalizeSearch(tag)!==token);
-      const otherPeriods=allStyles.filter(tag=>
-        normalizeSearch(tag)!==token&&!samePeriod.some(item=>normalizeSearch(item)===normalizeSearch(tag)));
-      const related=await Promise.all([...samePeriod,...otherPeriods].map(async tag=>({
-        name:tag,
-        document_total:await countOf(tag),
-        same_period:samePeriod.some(item=>normalizeSearch(item)===normalizeSearch(tag))
+  const key=normalizeSearch(query);
+  if(!key)return [];
+  const found=await Promise.all((Array.isArray(scopes)?scopes:[]).filter(s=>s?.id&&s?.time).map(async scope=>{
+    const c=scopeOf(scope);
+    const {rows=[]}=await selectAllRows(c.time,{columns:'record_id,record_type,resource_id,label,time_date,year_value,date_status,anchor_ids,style_description,status',filters:[{column:'record_type',operator:'in',value:['anchor','period','style_comment']}]});
+    const anchors=new Map(rows.filter(r=>r.record_type==='anchor'&&r.resource_id).map(r=>[String(r.resource_id),r]));
+    const periods=rows.filter(r=>r.record_type==='period');
+    const styles=rows.filter(r=>r.record_type==='style_comment'&&r.status!=='needs_anchor'&&r.label&&r.style_description);
+    const cache=new Map();
+    function count(tag){const k=normalizeSearch(tag);if(!cache.has(k))cache.set(k,selectStyleKeywordDocumentCount(c.galaxy,tag).catch(()=>null));return cache.get(k);}
+    return Promise.all(styles.filter(r=>normalizeSearch(r.label)===key).map(async r=>{
+      const date=anchorDate(anchors.get(r.anchor_ids?.[0]));
+      const period=periodAt(date,periods,anchors);
+      const related=await Promise.all(styles.filter(x=>x.record_id!==r.record_id).map(async x=>({
+        name:x.label,document_total:await count(x.label),
+        same_period:Boolean(period)&&period.record_id===periodAt(anchorDate(anchors.get(x.anchor_ids?.[0])),periods,anchors)?.record_id
       })));
-      return {
-        row:{
-          id:'style-keyword:'+current.id+':'+String(row.record_id||row.resource_id||matched),
-          scope_id:current.id,
-          style_keyword_intro:true,
-          title:matched,
-          summary:description,
-          period_label:String(row.label||'').trim(),
-          related_style_tags:related,
-          style_anchor_start:start,
-          style_anchor_end:end
-        },
-        source:String(row.label||'').trim()?('風格介紹 · '+String(row.label).trim()):'風格介紹',
-        providerId:current.id+':style-keyword'
-      };
+      return {row:{id:'style-keyword:'+c.id+':'+r.record_id,scope_id:c.id,style_keyword_intro:true,title:r.label,
+        summary:r.style_description,period_label:period?.label||'',related_style_tags:related,style_anchor_start:date,style_anchor_end:''},
+        source:period?.label?'風格介紹 · '+period.label:'風格介紹',providerId:c.id+':style-keyword'};
     }));
   }));
-  const seen=new Set();
-  return grouped.flat(2).filter(entry=>{
-    const key=entry.row.scope_id+'|'+normalizeSearch(entry.row.title)+'|'+entry.row.summary;
-    if(seen.has(key))return false;
-    seen.add(key);return true;
-  });
+  return found.flat(2);
 }
 
 export async function searchGalaxyRows(scopes,query,{

@@ -112,6 +112,9 @@ export default function Culture(){
   const [editingWorkKey,setEditingWorkKey]=useState('');
   const [selectedTimelineRecordId,setSelectedTimelineRecordId]=useState('');
   const [selectedTimelineDate,setSelectedTimelineDate]=useState('');
+  const [selectedStyleRecordId,setSelectedStyleRecordId]=useState('');
+  const [selectedStyleRequestNonce,setSelectedStyleRequestNonce]=useState(0);
+  const [stylePanelOpen,setStylePanelOpen]=useState(false);
   const [suggestedRecordType,setSuggestedRecordType]=useState('anchor');
   const [suggestedRequestNonce,setSuggestedRequestNonce]=useState(0);
   const [editDraft,setEditDraft]=useState(null);
@@ -415,7 +418,7 @@ export default function Culture(){
     const source=row?.raw||{};
     if(row.entryType==='anchor'){
       const anchorId=String(source?.resource_id||row.resourceId||'').trim();
-      const referenced=timelineItems.some(candidate=>
+      const referenced=[...timelineItems,...(query.data?.styleComments||[])].some(candidate=>
         String(candidate?.entry_type||'')!=='anchor'&&
         Array.isArray(candidate?.anchor_ids)&&candidate.anchor_ids.map(String).includes(anchorId)
       );
@@ -702,23 +705,58 @@ export default function Culture(){
                   }:null}
                   onSelect={item=>{
                     const recordId=String(item?.recordId||'').trim();
-                    if(recordId){
-                      setSelectedTimelineRecordId(recordId);
-                      setSelectedTimelineDate('');
+                    if(!recordId)return;
+                    if(item?.entryType==='style_comment'){
+                      if(account.canManageScopeSync(scopeId)){
+                        setSelectedStyleRecordId(recordId);
+                        setSelectedStyleRequestNonce(n=>n+1);
+                        setStylePanelOpen(true);
+                      }
+                      return;
                     }
+                    setSelectedTimelineRecordId(recordId);
+                    setSelectedTimelineDate('');
                   }}
                   editable={account.canManageScopeSync(scopeId)}
                   onAdd={null}
                   onMove={account.canManageScopeSync(scopeId)?moveTimelineRecord:null}
                   onUpdate={account.canManageScopeSync(scopeId)?(item,row)=>{
+                    if(row?.entryType==='style_comment'){
+                      setSelectedStyleRecordId(row.recordId);
+                      setSelectedStyleRequestNonce(n=>n+1);
+                      setStylePanelOpen(true);
+                      return null;
+                    }
                     if(row?.recordId){
                       setSelectedTimelineRecordId(row.recordId);
                       setSelectedTimelineDate('');
                     }
                     return null;
                   }:null}
-                  onRemove={account.canManageScopeSync(scopeId)?removeTimelineRecord:null}
+                  onRemove={account.canManageScopeSync(scopeId)?(item,row)=>{
+                    if(row?.entryType==='style_comment'){
+                      setSelectedStyleRecordId(row.recordId);
+                      setSelectedStyleRequestNonce(n=>n+1);
+                      setStylePanelOpen(true);
+                      return null;
+                    }
+                    return removeTimelineRecord(item,row);
+                  }:null}
                 />:<p className='scope-status'>{FEATURE_EMPTY_MESSAGE}</p>}
+                <details className='scope-culture-style-panel' open={stylePanelOpen} onToggle={event=>setStylePanelOpen(event.currentTarget.open)}>
+                  <summary>風格標籤（第四種 Time 紀錄） · {(query.data?.styleComments||[]).filter(row=>row.status!=='needs_anchor').length} 個已定位</summary>
+                  <CultureStyleTagsEditor
+                    period={selectedWorkPeriod}
+                    anchors={anchorRecords}
+                    styles={query.data?.styleComments||[]}
+                    scopeId={scopeId}
+                    table={scopeData?.time}
+                    canEdit={account.canManageScopeSync(scopeId)}
+                    selectedStyleRecordId={selectedStyleRecordId}
+                    selectedStyleRequestNonce={selectedStyleRequestNonce}
+                    onSaved={()=>{setSelectedStyleRecordId('');return refreshTimelineData();}}
+                  />
+                </details>
                 {account.canManageScopeSync(scopeId)?<CultureTimelineEditor
                   scopeId={scopeId}
                   selectedRecordId={selectedTimelineRecordId}
@@ -741,14 +779,6 @@ export default function Culture(){
                 </div>
                 <p className='loc-eyebrow'>{UI_COPY.culture.classificationRiver}</p>
                 <h3>{labelOf(selectedWorkPeriod,0)}｜作品分類河道</h3>
-                <CultureStyleTagsEditor
-                  period={selectedWorkPeriod}
-                  anchors={anchorRecords}
-                  scopeId={scopeId}
-                  table={scopeData?.time}
-                  canEdit={account.canManageScopeSync(scopeId)}
-                  onSaved={refreshTimelineData}
-                />
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error)}</p>:null}
                 {!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!classificationBuckets.length
                   ?<p className='scope-status'>{UI_COPY.culture.noPeriodClassification}</p>:null}

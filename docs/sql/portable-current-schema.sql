@@ -271,12 +271,12 @@ CREATE TABLE "silver"."lo3rwang_time" (
   "date_status" text,
   "year_value" integer,
   "visibility" text,
-  "style_tags" text,
   "style_description" text,
   "created_at" timestamp with time zone DEFAULT now() NOT NULL,
   "updated_at" timestamp with time zone DEFAULT now() NOT NULL,
   CONSTRAINT "lo3rwang_time_pkey" PRIMARY KEY (record_id),
-  CONSTRAINT "lo3rwang_time_record_type_check" CHECK (record_type = ANY (ARRAY['anchor'::text, 'period'::text, 'event'::text])),
+  CONSTRAINT "lo3rwang_time_record_type_check" CHECK (record_type = ANY (ARRAY['anchor'::text, 'period'::text, 'event'::text, 'style_comment'::text])),
+  CONSTRAINT "lo3rwang_time_style_comment_shape_check" CHECK (record_type <> 'style_comment' OR (nullif(btrim(label),'') IS NOT NULL AND nullif(btrim(style_description),'') IS NOT NULL AND ((status = 'needs_anchor' AND anchor_ids IS NULL) OR (status IS DISTINCT FROM 'needs_anchor' AND coalesce(cardinality(anchor_ids),0) = 1 AND coalesce(nullif(btrim(anchor_ids[1]),''),'') <> '0' AND nullif(btrim(coalesce(anchor_ids[1],'')),'') IS NOT NULL)))),
   CONSTRAINT "lo3rwang_time_record_type_resource_id_key" UNIQUE (record_type, resource_id)
 );
 
@@ -371,12 +371,12 @@ CREATE TABLE "silver"."lrunes_time" (
   "date_status" text,
   "year_value" integer,
   "visibility" text,
-  "style_tags" text,
   "style_description" text,
   "created_at" timestamp with time zone DEFAULT now() NOT NULL,
   "updated_at" timestamp with time zone DEFAULT now() NOT NULL,
   CONSTRAINT "lrunes_time_pkey" PRIMARY KEY (record_id),
-  CONSTRAINT "lrunes_time_record_type_check" CHECK (record_type = ANY (ARRAY['anchor'::text, 'period'::text, 'event'::text])),
+  CONSTRAINT "lrunes_time_record_type_check" CHECK (record_type = ANY (ARRAY['anchor'::text, 'period'::text, 'event'::text, 'style_comment'::text])),
+  CONSTRAINT "lrunes_time_style_comment_shape_check" CHECK (record_type <> 'style_comment' OR (nullif(btrim(label),'') IS NOT NULL AND nullif(btrim(style_description),'') IS NOT NULL AND ((status = 'needs_anchor' AND anchor_ids IS NULL) OR (status IS DISTINCT FROM 'needs_anchor' AND coalesce(cardinality(anchor_ids),0) = 1 AND coalesce(nullif(btrim(anchor_ids[1]),''),'') <> '0' AND nullif(btrim(coalesce(anchor_ids[1],'')),'') IS NOT NULL)))),
   CONSTRAINT "lrunes_time_record_type_resource_id_key" UNIQUE (record_type, resource_id)
 );
 
