@@ -241,6 +241,7 @@
 }
 .lrg-home{
   display:grid;
+  grid-template-columns:minmax(0,1fr);
   gap:16px;
   min-height:70vh;
 }
@@ -250,6 +251,8 @@
   position:relative;
   display:flex;
   align-items:center;
+  min-width:0;
+  width:100%;
   min-height:clamp(400px,46vw,560px);
   overflow:hidden;
   isolation:isolate;
@@ -267,6 +270,7 @@
 .lrg-home-copy{
   position:relative;
   z-index:2;
+  min-width:0;
   width:min(100%,44rem);
   padding:clamp(20px,4vw,46px);
 }
