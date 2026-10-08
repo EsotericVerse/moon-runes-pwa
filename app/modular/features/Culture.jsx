@@ -646,7 +646,7 @@ export default function Culture(){
                   fixedMax={locDistributionEnd}
                   hiddenDates={locRiverAnalysis.hiddenDates}
                 />:null}
-                <p className='scope-status'>LOC 文化頁顯示 Scope Group 的時間分布與交會；需要查詢個別文章列表，請前往各 Scope／作者自己的時間長河。</p>
+                <p className='scope-status'>本頁面只顯示所屬人員的交會時間作品。若需以時間查詢其他人的作品列表，請前往該人員的文化功能頁面。</p>
                 <div className='scope-result-links'>
                   {locIntersectionScopeIds.map(id=><a key={id} href={featureNavigationHref(id,'culture')}>scope_id: {id} · 個人時間長河</a>)}
                 </div>
