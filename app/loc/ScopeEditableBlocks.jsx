@@ -64,6 +64,9 @@ export default function ScopeEditableBlocks({
   editSlotClassName='',
   headingLevel=3,
   renderDisplay=null,
+  resolveSlotClassName=null,
+  maxBlocks=null,
+  containerless=false,
   allowEditing=true
 }){
   const account=useAccount();
@@ -82,10 +85,14 @@ export default function ScopeEditableBlocks({
   );
   const slots=useMemo(()=>{
     const rows=Array.isArray(query.data)?query.data:[];
-    if(!normalizedOrders.length)return rows.map(row=>normalizeRow(row,row.block_order));
-    const byOrder=new Map(rows.map(row=>[Number(row.block_order),row]));
-    return normalizedOrders.map(order=>normalizeRow(byOrder.get(order),order));
-  },[query.data,normalizedOrders]);
+    const selected=normalizedOrders.length
+      ?normalizedOrders.map(order=>rows.find(row=>Number(row.block_order)===order)).filter(Boolean)
+      :rows;
+    const limit=Number.isInteger(maxBlocks)&&maxBlocks>0?maxBlocks:Infinity;
+    return selected.filter(row=>Number(row.block_order)>=1&&Number(row.block_order)<=limit)
+      .sort((a,b)=>Number(a.block_order)-Number(b.block_order)||String(a.uid||'').localeCompare(String(b.uid||''))
+      .slice(0,limit).map(row=>normalizeRow(row,row.block_order));
+  },[query.data,normalizedOrders,maxBlocks]);
   const nextOrder=useMemo(()=>{
     const rows=Array.isArray(query.data)?query.data:[];
     return Math.max(0,...rows.map(row=>Number(row.block_order)||0))+1;
@@ -239,7 +246,7 @@ export default function ScopeEditableBlocks({
     </div>;
   }
 
-  return <div className={'scope-editable-block-grid '+className}>
+  const contents=<>
     {slots.map(slot=>{
       const active=draft?.uid&&(draft.uid===slot.uid||(!slot.stored&&draft.order===slot.order));
       const empty=!slot.eyebrow&&!slot.title&&!slot.subtitle&&!slot.text&&!slot.entities.length;
@@ -247,7 +254,7 @@ export default function ScopeEditableBlocks({
       const level=Number(headingLevel);
       const Heading=level===1?'h1':level===2?'h2':level===4?'h4':'h3';
       return <section
-        className={((active&&editSlotClassName)?editSlotClassName:slotClassName)+' scope-editable-block'+(active?' is-editing':'')+(canEdit&&!active?' is-editable-idle':'')+(empty?' is-empty':'')}
+        className={((active&&editSlotClassName)?editSlotClassName:(typeof resolveSlotClassName==='function'?resolveSlotClassName(slot):slotClassName))+' scope-editable-block'+(active?' is-editing':'')+(canEdit&&!active?' is-editable-idle':'')+(empty?' is-empty':'')}
         key={slot.uid||'order:'+slot.order}
         onClickCapture={canEdit&&!active?event=>{if(!isInteractiveTarget(event.target))begin(slot)}:undefined}
       >
@@ -305,12 +312,13 @@ export default function ScopeEditableBlocks({
         </>}
       </section>;
     })}
-    {canEdit&&!normalizedOrders.length?<button
+    {canEdit&&!normalizedOrders.length&&(!maxBlocks||nextOrder<=maxBlocks)?<button
       type="button"
       className="loc-button scope-add-page-block"
       onClick={()=>begin(normalizeRow(null,nextOrder))}
       disabled={busy}
     >＋ 新增文字框</button>:null}
     {message?<p className="scope-status" role="status">{message}</p>:null}
-  </div>;
+  </>;
+  return containerless?contents:<div className={'scope-editable-block-grid '+className}>{contents}</div>;
 }
