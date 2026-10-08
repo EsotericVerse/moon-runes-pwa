@@ -256,8 +256,8 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false}={
   if(mediaOnly)return [media];
   const timeline=makeProvider({
     id:current.id+':timeline',table:current.time,source:current.id+' 時期',scope:current,idColumn:'record_id',
-    columns:['record_id','record_type','label','resource_id','note','time_date','anchor_ids','status','date_status','year_value','visibility','style_tags','style_tag_descriptions'],
-    searchFields:['label','note','status','style_tags'],dateColumn:'time_date',
+    columns:['record_id','record_type','label','resource_id','note','time_date','anchor_ids','status','date_status','year_value','visibility','style_tags','style_description'],
+    searchFields:['label','note','status','style_tags','style_description'],dateColumn:'time_date',
     filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}]
   });
   return [timeline,text];
@@ -269,16 +269,6 @@ function normalizeSearch(value){
 function styleTagList(value){
   return [...new Set(String(value||'').split(/[,，]/g).map(item=>String(item||'').trim()).filter(Boolean))];
 }
-function styleTagDescription(value,tag){
-  const source=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
-  if(typeof source[tag]==='string'&&source[tag].trim())return source[tag].trim();
-  const normalized=normalizeSearch(tag);
-  for(const [key,description] of Object.entries(source)){
-    if(normalizeSearch(key)===normalized&&typeof description==='string'&&description.trim())return description.trim();
-  }
-  return '';
-}
-
 export async function selectStyleKeywordIntroductions(scopes,query){
   const token=normalizeSearch(query);
   if(!token)return [];
@@ -286,14 +276,14 @@ export async function selectStyleKeywordIntroductions(scopes,query){
   const grouped=await Promise.all(scopeList.map(async scope=>{
     const current=scopeOf(scope);
     const result=await selectAllRows(current.time,{
-      columns:'record_id,record_type,label,resource_id,display_order,style_tags,style_tag_descriptions',
+      columns:'record_id,record_type,label,resource_id,display_order,anchor_ids,style_tags,style_description',
       filters:[{column:'record_type',operator:'in',value:['period','event']}],
       orders:[{column:'display_order',ascending:true},{column:'record_id',ascending:true}]
     });
     return (result.rows||[]).flatMap(row=>{
       const matched=styleTagList(row.style_tags).find(tag=>normalizeSearch(tag)===token);
       if(!matched)return [];
-      const description=styleTagDescription(row.style_tag_descriptions,matched);
+      const description=String(row.style_description||'').trim();
       if(!description)return [];
       return [{
         row:{
@@ -302,7 +292,8 @@ export async function selectStyleKeywordIntroductions(scopes,query){
           style_keyword_intro:true,
           title:matched,
           summary:description,
-          period_label:String(row.label||'').trim()
+          period_label:String(row.label||'').trim(),
+          anchor_ids:Array.isArray(row.anchor_ids)?row.anchor_ids:[]
         },
         source:String(row.label||'').trim()?('風格關鍵詞 · '+String(row.label).trim()):'風格關鍵詞',
         providerId:current.id+':style-keyword'
