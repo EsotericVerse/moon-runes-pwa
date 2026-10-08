@@ -209,8 +209,7 @@
   grid-template-areas:"header media" "body media" "children media";
   gap:.8rem clamp(1rem,3vw,2rem);
   align-items:center;
-  background:var(--loc-surface);
-  --loc-text:var(--loc-text);
+  background:#101725;
 }
 .loc-home-block--hero-side>.loc-home-block__header{grid-area:header}
 .loc-home-block--hero-side>.loc-home-block__body{grid-area:body}
