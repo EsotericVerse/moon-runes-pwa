@@ -91,7 +91,7 @@ must(editableBlocks.includes('ENTITY_LIMIT=6')&&editableBlocks.includes("page='i
 must(['block_eyebrow','block_title','block_subtitle','block_text'].every(col=>editableBlocks.includes(col)&&scopeData.includes(col)),'Scope blocks must read and edit four canonical header/body columns');
 must(editableBlocks.includes('childPresentation(entity.title)')&&editableBlocks.includes('不用標題（文字泡泡）')&&!editableBlocks.includes('entity.kind'),'title-free child bubble and titled child card must use implicit kind, without a type selector');
 must(locHomeBlock.includes('slot.subtitle')&&authorHomeEditable.includes('slot.subtitle'),'LOC and Author heading displays must use the dedicated rich subtitle');
-must(portableSchema.includes('"block_eyebrow"')&&portableSchema.includes('"block_subtitle"')&&scopeProvisioning.includes('block_eyebrow')&&scopeProvisioning.includes('block_subtitle'),'portable and future scope table contracts must include standard block header columns');
+must(portableSchema.includes('"block_eyebrow"')&&portableSchema.includes('"block_subtitle"')&&scopeProvisioning.includes('like silver.lo3rwang_blocks including all'),'portable and future scope table contracts must include standard block header columns');
 
 must(editableBlocks.includes('儲存失敗：')&&editableBlocks.includes('scope-inline-save-status')&&editableBlocks.includes('refetchQueries'),'page block saves must visibly report success/failure and refetch saved data');
 must(editableBlocks.includes('dangerouslySetInnerHTML')&&!editableBlocks.includes('editable={false}'),'public page display must use static site markup; BlockNote is edit-only');
@@ -197,7 +197,7 @@ must(dbContract.includes("rpc('provision_scope'")&&dbContract.includes('provisio
 must(scopeProvisioning.includes('create table if not exists silver.scope_registry')&&scopeProvisioning.includes('create or replace function api.provision_scope'),'Scope provisioning SQL must define the DB registry and provisioning RPC');
 for(const suffix of ["_galaxy'","_galaxy_media'","_time'","_keywords'"])must(scopeProvisioning.includes(suffix),'Scope provisioning SQL missing fixed table suffix '+suffix);
 must(scopeProvisioning.includes('v_keyword_count<>66')&&scopeProvisioning.includes('p_parent_scope_id'),'Scope provisioning must lock the Rune66 default copy and parent Scope Group');
-must(scopeProvisioning.includes("v_blocks_name := v_scope||'_blocks'")&&scopeProvisioning.includes('page_name text not null')&&scopeProvisioning.includes('block_entity jsonb')&&portableSchema.includes('"loc_blocks"')&&portableSchema.includes('"lo3rwang_blocks"')&&portableSchema.includes('"lrunes_blocks"'),'Scope provisioning/schema must store page blocks by uid with nested entities');
+must(scopeProvisioning.includes("v_blocks_name := v_scope||'_blocks'")&&scopeProvisioning.includes('like silver.lo3rwang_blocks including all')&&portableSchema.includes('"loc_blocks"')&&portableSchema.includes('"lo3rwang_blocks"')&&portableSchema.includes('"lrunes_blocks"'),'Scope provisioning/schema must store page blocks by uid with nested entities');
 must(portableSchema.includes('"content_blocks" jsonb'),'Galaxy schema must preserve optional rich-editor layout separately from plain content');
 must((portableSchema.match(/"content_blocks" jsonb/g)||[]).length>=4,'Galaxy and Galaxy Media schemas must both persist BlockNote structure');
 must(portableSchema.includes('"loc_theme"')&&portableSchema.includes('"theme_attr" jsonb')&&portableSchema.includes('"database_targets"'),'portable schema must include loc_theme attributes and database targets');
