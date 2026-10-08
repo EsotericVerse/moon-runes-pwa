@@ -39,7 +39,7 @@ function HeroDisplay(slot){
       <h1>{slot.title}</h1>
       <Html tag="p" className="loc-subtitle" html={stripOuterParagraph(slot.subtitle||explain.text)}/>
     </div>
-    <Html className="loc-hero-copy" html={description.text||slot.text}/>
+    <Html className="loc-hero-copy" html={slot.text||description.text}/>
   </>;
 }
 
