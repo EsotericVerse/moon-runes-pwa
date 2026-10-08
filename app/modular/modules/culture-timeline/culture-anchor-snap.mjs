@@ -18,8 +18,8 @@ function anchorEntries(items){
     .filter(item=>item.day)
     .sort((a,b)=>a.day.localeCompare(b.day)||a.id.localeCompare(b.id));
 }
-function nearestAnchor(target,anchors,mode){
-  const score=item=>Math.abs(Date.parse((mode==='end'?previousDay(item.day):item.day)+'T00:00:00Z')-Date.parse(target+'T00:00:00Z'));
+function nearestAnchor(target,anchors,mode,periodEndExclusive=false){
+  const score=item=>Math.abs(Date.parse((mode==='end'&&periodEndExclusive?previousDay(item.day):item.day)+'T00:00:00Z')-Date.parse(target+'T00:00:00Z'));
   return [...anchors].sort((a,b)=>score(a)-score(b)||a.day.localeCompare(b.day)||a.id.localeCompare(b.id))[0]||null;
 }
 export function snapTimelineRangeToAnchors(item,row,timeRows=[]){
@@ -36,7 +36,7 @@ export function snapTimelineRangeToAnchors(item,row,timeRows=[]){
   const requestedEnd=dateKey(item?.end);
   if(!requestedStart||!requestedEnd)throw new Error('無法解析時間軸的新範圍。');
   const nextStart=requestedStart===oldStart.day?oldStart:nearestAnchor(requestedStart,anchors,'start');
-  const nextEnd=requestedEnd===previousDay(oldEnd.day)?oldEnd:nearestAnchor(requestedEnd,anchors,'end');
+  const nextEnd=requestedEnd===(row.entryType==='period'?previousDay(oldEnd.day):oldEnd.day)?oldEnd:nearestAnchor(requestedEnd,anchors,'end',row.entryType==='period');
   if(!nextStart||!nextEnd)throw new Error('目前沒有可以吸附的定錨點。');
   const nextIds=[nextStart.id,...original.slice(1,-1),nextEnd.id];
   if(new Set(nextIds).size!==nextIds.length)throw new Error('定錨點不能重複；請選擇其他範圍。');
@@ -48,6 +48,6 @@ export function snapTimelineRangeToAnchors(item,row,timeRows=[]){
   return {
     anchor_ids:nextIds,
     changed:nextIds.some((id,index)=>id!==original[index]),
-    item:{...item,start:nextStart.day,end:previousDay(nextEnd.day)}
+    item:{...item,start:nextStart.day,end:row.entryType==='period'?previousDay(nextEnd.day):nextEnd.day}
   };
 }
