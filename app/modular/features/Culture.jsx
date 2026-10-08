@@ -34,6 +34,13 @@ function isInteractiveTarget(target){
   return Boolean(target?.closest?.('a,button,input,select,textarea,summary,[role="button"],[contenteditable="true"]'));
 }
 
+// Preserve timeline instances while editor dialogs, suggested points and
+// existing-anchor reviews update around them.
+const EMPTY_RIVER_FOCUS=Object.freeze({});
+function emptyRiverLabel(){return '';}
+function classificationRiverLabel(item){
+  return item?.entry_type==='virtual_anchor'?(item.display_label||'◇'):item?.entry_type==='anchor'?'●':'';
+}
 function labelOf(item,index){
   return item?.display_label||item?.name||item?.title||item?.period||UI_COPY.format.period(index+1);
 }
@@ -650,8 +657,8 @@ export default function Culture(){
                 </p>:null}
                 {locScopeRiverItems.length?<CultureTimeline
                   items={locScopeRiverItems}
-                  labelOf={()=>''}
-                  focus={{}}
+                  labelOf={emptyRiverLabel}
+                  focus={EMPTY_RIVER_FOCUS}
                   mode='source'
                   windowStart={requestedWindowStart||locDistributionStart}
                   windowEnd={requestedWindowEnd||locDistributionEnd}
@@ -668,8 +675,8 @@ export default function Culture(){
                   <h4>{UI_COPY.culture.combinedRiver}</h4>
                   <CultureTimeline
                     items={locCombinedSourceRiverItems}
-                    labelOf={()=>''}
-                    focus={{}}
+                    labelOf={emptyRiverLabel}
+                    focus={EMPTY_RIVER_FOCUS}
                     mode='source'
                     windowStart={requestedWindowStart||locDistributionStart}
                     windowEnd={requestedWindowEnd||locDistributionEnd}
@@ -811,8 +818,8 @@ export default function Culture(){
                 </div>
                 {classificationRiverItems.length?<CultureTimeline
                   items={classificationRiverItems}
-                  labelOf={item=>item?.entry_type==='virtual_anchor'?(item.display_label||'◇'):item?.entry_type==='anchor'?'●':''}
-                  focus={{}}
+                  labelOf={classificationRiverLabel}
+                  focus={EMPTY_RIVER_FOCUS}
                   mode='source'
                   windowStart={selectedWindowStart}
                   windowEnd={selectedWindowEnd}
@@ -849,8 +856,8 @@ export default function Culture(){
                   </div>:null}
                   {!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.statisticsEnabled&&styleClassRiverItems.length?<CultureTimeline
                     items={styleClassRiverItems}
-                    labelOf={()=>''}
-                    focus={{}}
+                    labelOf={emptyRiverLabel}
+                    focus={EMPTY_RIVER_FOCUS}
                     mode='source'
                     windowStart={selectedWindowStart}
                     windowEnd={selectedWindowEnd}
