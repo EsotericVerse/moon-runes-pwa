@@ -161,6 +161,15 @@
   .loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]) .loc-home>.loc-home-block--hero:not(.loc-home-block--hero-side){
     aspect-ratio:16 / 9;
   }
+  /* Reuse the common frame without activating the old two-column
+     artwork grid. The background figure must remain inset 0 while the
+     original copy stays left aligned and vertically centered. */
+  .loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]) .loc-home>.loc-home-block--hero:not(.loc-home-block--hero-side){
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:0;
+  }
 }
 /* Outrank the shared .loc-home > .loc-hero > .home-hero-visual card rule:
    Hero artwork must overlay the frame, never participate in text flow. */
