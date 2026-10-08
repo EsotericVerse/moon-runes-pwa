@@ -9,6 +9,7 @@ const layout=read('app/layout.jsx');
 const game=read('app/lrunes/game/GameView.jsx');
 const registry=read('app/modular/theme-registry.js');
 const themeData=read('app/loc/theme-data.js');
+const lightPaletteMigration=read('docs/sql/theme-3-life-theme-5-mineral-light-20261008.sql');
 const admin=read('app/loc/views/AdminHomeView.jsx');
 const portableSchema=read('docs/sql/portable-current-schema.sql');
 
@@ -17,6 +18,7 @@ const ids=THEME_SLOTS.map(slot=>slot.id);
 const expectedIds=Array.from({length:8},(_,index)=>'theme-'+(index+1));
 if(JSON.stringify(ids)!==JSON.stringify(expectedIds))failures.push('theme IDs must remain theme-1 through theme-8 in order');
 if(THEME_TOKEN_KEYS.length!==43)failures.push('theme token contract must remain 43 keys');
+if(!lightPaletteMigration.includes("theme_id='theme-3'")||!lightPaletteMigration.includes("theme_id='theme-5'")||!lightPaletteMigration.includes('#fff5bf')||!lightPaletteMigration.includes('#fff6e9')||!lightPaletteMigration.includes('differs from original backup'))failures.push('Light Life/Mineral palettes must remain guarded, user-defined and reversible');
 if(new Set(THEME_TOKEN_KEYS).size!==THEME_TOKEN_KEYS.length)failures.push('theme token keys must be unique');
 
 const fallback=getThemeSlot('theme-7');
