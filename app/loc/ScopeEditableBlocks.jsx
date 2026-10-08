@@ -271,6 +271,8 @@ export default function ScopeEditableBlocks({
       return <section
         className={((active&&editSlotClassName)?editSlotClassName:(typeof resolveSlotClassName==='function'?resolveSlotClassName(slot):slotClassName))+' scope-editable-block'+(active?' is-editing':'')+(canEdit&&!active?' is-editable-idle':'')+(empty?' is-empty':'')}
         key={slot.uid||'order:'+slot.order}
+        data-page-name={pageName}
+        data-block-order={slot.order}
         onClickCapture={canEdit&&!active?event=>{if(!isInteractiveTarget(event.target))begin(slot)}:undefined}
       >
         {active?<>
