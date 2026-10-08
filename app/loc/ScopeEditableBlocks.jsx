@@ -171,9 +171,14 @@ export default function ScopeEditableBlocks({
   function removeEntity(index){
     setDraft(current=>{
       if(!current)return current;
+      const mode=heroImageMode(current);
       const entities=current.entities
         .filter((_,entityIndex)=>entityIndex!==index)
         .map((entity,entityIndex)=>({...entity,order:entityIndex+1}));
+      if(current.order===1&&entities.length){
+        entities.forEach(entity=>delete entity.image_mode);
+        if(mode==='side')entities[0].image_mode='side';
+      }
       return {...current,entities};
     });
   }
@@ -183,9 +188,15 @@ export default function ScopeEditableBlocks({
       if(!current)return current;
       const target=index+direction;
       if(target<0||target>=current.entities.length)return current;
+      const mode=heroImageMode(current);
       const entities=[...current.entities];
       [entities[index],entities[target]]=[entities[target],entities[index]];
-      return {...current,entities:entities.map((entity,entityIndex)=>({...entity,order:entityIndex+1}))};
+      const ordered=entities.map((entity,entityIndex)=>({...entity,order:entityIndex+1}));
+      if(current.order===1&&ordered.length){
+        ordered.forEach(entity=>delete entity.image_mode);
+        if(mode==='side')ordered[0].image_mode='side';
+      }
+      return {...current,entities:ordered};
     });
   }
 
@@ -321,7 +332,7 @@ export default function ScopeEditableBlocks({
               onChange={event=>setDraft(current=>({...current,title:event.target.value}))}
             />
           </label>
-          {pageName==='index'&&draft.order===1?<fieldset className="scope-hero-image-mode">
+          {pageName==='index'&&draft.order===1&&['loc','lo3rwang'].includes(scopeId)?<fieldset className="scope-hero-image-mode">
             <legend>Hero 圖片位置（背景或旁邊，二選一）</legend>
             <label><input type="radio" name={'hero-image-'+draft.uid} checked={heroImageMode(draft)==='background'} onChange={()=>updateHeroImageMode('background')}/> 背景</label>
             <label><input type="radio" name={'hero-image-'+draft.uid} checked={heroImageMode(draft)==='side'} onChange={()=>updateHeroImageMode('side')}/> 旁邊</label>
