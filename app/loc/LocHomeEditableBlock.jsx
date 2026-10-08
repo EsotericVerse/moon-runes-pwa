@@ -75,7 +75,7 @@ function StatusBubbles(slot){
       if(index===1){
         return <div className="loc-bubble" key={entity.uid}>
           <strong>{entity.title}</strong>
-          <Html tag="p" html={stripOuterParagraph(slot.subtitle)||parts[0]||''}/>
+          <Html tag="p" html={parts[0]||''}/>
           {parts[1]?<details className="home-status-details">
             <summary>架構</summary>
             <Html tag="p" html={parts[1]}/>
