@@ -319,7 +319,10 @@
 .scope-keyword-network{display:grid;gap:.7rem;min-width:0}
 .scope-keyword-network-help{display:flex;justify-content:space-between;gap:.75rem;flex-wrap:wrap;color:var(--scope-muted);font-size:.88rem}
 .scope-keyword-network-help strong{color:var(--scope-text)}
-.scope-keyword-network-canvas{min-height:clamp(480px,62vh,760px);background:color-mix(in srgb,var(--loc-bg) 48%,transparent)}
+.scope-keyword-network-canvas{height:clamp(480px,62vh,760px);min-height:0;max-height:760px;position:relative;background:color-mix(in srgb,var(--loc-bg) 48%,transparent)}
+.scope-keyword-manual-path{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end}
+.scope-keyword-manual-path label{min-width:0}
+@media(max-width:760px){.scope-keyword-manual-path{grid-template-columns:1fr}}
 .scope-keyword-network-inspector{position:sticky;top:5rem;display:grid;gap:.75rem;max-height:calc(100vh - 6rem);overflow:auto;padding:1rem;border:var(--scope-border);border-radius:var(--scope-radius);background:var(--loc-panel)}
 .scope-keyword-network-inspector>label{display:grid;gap:.35rem}
 .scope-keyword-empty{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
