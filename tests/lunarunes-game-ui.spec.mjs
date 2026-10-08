@@ -100,7 +100,7 @@ test.describe('LunaRunes tabletop UI',()=>{
   test('LunaRunes home stays mineral while game defaults to nature and still accepts theme changes',async({page})=>{
     await page.goto('/lrunes/',{waitUntil:'domcontentloaded'});
     await expect(page.locator('html')).toHaveAttribute('data-theme-id','theme-5',{timeout:15_000});
-    await expect.poll(()=>page.locator('html').evaluate(el=>getComputedStyle(el).getPropertyValue('--loc-bg').trim().toLowerCase())).toBe('#d9c878');
+    await expect.poll(()=>page.locator('html').evaluate(el=>getComputedStyle(el).getPropertyValue('--loc-bg').trim().toLowerCase())).toBe('#fff1b2');
 
     await page.goto('/game/',{waitUntil:'domcontentloaded'});
     await expect(page.locator('html')).toHaveAttribute('data-theme-id','theme-4',{timeout:15_000});
@@ -108,6 +108,12 @@ test.describe('LunaRunes tabletop UI',()=>{
     await expect.poll(()=>page.locator('html').evaluate(el=>getComputedStyle(el).getPropertyValue('--loc-bg').trim().toLowerCase())).toBe('#081b13');
     const themeSelect=page.locator('.scope-theme-control select').first();
     await expect(themeSelect).toBeVisible();
+    // Life retains its vivid orange baseline even as secondary panels are unified.
+    await themeSelect.selectOption('theme-3');
+    await expect(page.locator('html')).toHaveAttribute('data-theme-id','theme-3');
+    await expect.poll(()=>page.locator('html').evaluate(el=>getComputedStyle(el).getPropertyValue('--loc-bg').trim().toLowerCase())).toBe('#ff8a00');
+    await themeSelect.selectOption('system-default');
+    await expect(page.locator('html')).toHaveAttribute('data-theme-id','theme-4');
     const start=page.getByRole('button',{name:'開始遊戲'});
     await expect(start).toBeVisible();
 
