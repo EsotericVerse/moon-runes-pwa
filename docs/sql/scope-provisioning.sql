@@ -138,7 +138,9 @@ begin
   execute format('create table silver.%I (like silver.lo3rwang including all)',v_config_name);
   execute format('alter table silver.%I drop column if exists home_blocks',v_config_name);
   execute format('alter table silver.%I drop column if exists governance_blocks',v_config_name);
-  execute format('create table silver.%I (uid character(8) not null default upper(substr(replace(gen_random_uuid()::text,''-'',''''),1,8)), page_name text not null, block_eyebrow text not null default '''', block_title text not null default '''', block_subtitle text not null default '''', block_text text not null default '''', block_order integer not null, block_entity jsonb not null default ''[]''::jsonb, primary key(uid), check(uid ~ ''^[A-Za-z0-9]{8}$''), check(block_order >= 1), check(jsonb_typeof(block_entity)=''array'' and jsonb_array_length(block_entity)<=6))',v_blocks_name);
+  -- Canonical source of truth: do not repeat a separate Blocks schema here.
+  -- LIKE INCLUDING ALL copies fields, UID defaults, validation and page/order indexes.
+  execute format('create table silver.%I (like silver.lo3rwang_blocks including all)',v_blocks_name);
   execute format('create table silver.%I (like silver.lo3rwang_galaxy including all)',v_galaxy_name);
   execute format('create table silver.%I (like silver.lo3rwang_galaxy_media including all)',v_media_name);
   execute format('create table silver.%I (like silver.lo3rwang_time including all)',v_time_name);
@@ -212,13 +214,8 @@ begin
     v_config_name
   ) using v_scope,v_email,v_name,v_theme,v_new_class;
 
-  execute format(
-    'insert into silver.%I(block_page,block_title,block_text,block_order)
-     select p.page,'''','''',o.n
-     from (values (''home''),(''governance'')) as p(page)
-     cross join generate_series(1,4) as o(n)',
-    v_blocks_name
-  );
+  -- New Scopes start with no content rows. Editors add index/governance
+  -- text frames only when authored; avoid empty default frames and legacy pages.
 
   return jsonb_build_object(
     'scope_id',v_scope,'display_name',v_name,'parent_scope_id',v_parent,
