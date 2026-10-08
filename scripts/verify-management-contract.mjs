@@ -206,6 +206,13 @@ must(dbContract.includes('affected 0 rows')&&dbContract.includes('affected!==bat
 must(scopeData.includes("keywords:`silver.${id}_keywords`")&&scopeData.includes("blocks:`silver.${id}_blocks`")&&scopeData.includes('selectScopeGroupChildren')&&scopeData.includes('display_name,search_intro,search_aliases,theme,locale'),'Scope data must resolve Keywords, block tables, DB hierarchy and Scope-owned presentation');
 must(scopeGroup.includes('selectScopeGroupChildren(scopeId)')&&scopeGroup.includes('parent_scope_id'),'Scope Group management must read DB parent/child membership');
 must(admin.includes("if(mappingResult.error)throw new Error(mappingResult.error.message||'Mapping 讀取失敗。')")&&admin.includes("if(registryResult.error)throw new Error(registryResult.error.message||'Scope Registry 讀取失敗。')")&&admin.includes("setStatus(error?.message||'Admin 資料讀取失敗。')"),'Admin mapping/registry read rejections must surface in the UI');
+must(keywordLibrary.includes('keywordDraftWithInput')&&keywordLibrary.includes('keywordEdit.trim()')&&
+  keywordLibrary.includes('正在寫入關鍵詞至資料庫')&&
+  keywordLibrary.includes('資料庫已寫入，正在更新分析狀態')&&
+  keywordLibrary.includes('資料庫已寫入，正在重新載入關鍵詞')&&
+  keywordLibrary.includes('preserveOnError:true')&&
+  keywordLibrary.includes('role="status"'),
+  'Keyword Save must persist the typed input and report write, analysis invalidation and reload independently');
 must(keywordLibrary.includes('class_name')&&keywordLibrary.includes('class_group')&&keywordLibrary.includes('class_enable')&&keywordLibrary.includes('item_name')&&keywordLibrary.includes('principle')&&keywordLibrary.includes('keywords_text'),'keyword library editor must edit self-contained Class, Group, participation, item, principle and one keyword collection together');
 must(keywordLibrary.includes("dynamic(()=>import('./KeywordNetworkEditor')")&&keywordLibrary.includes("workspace==='manual'")&&keywordLibrary.includes("workspace==='network'")&&keywordNetwork.includes("import('vis-network/standalone')")&&keywordNetwork.includes('manipulation:')&&keywordNetwork.includes('addNode:')&&keywordNetwork.includes('editNode:')&&keywordNetwork.includes('deleteNode:'),'keyword library must expose manual editing without mounting its lazy vis-network workspace');
 must(keywordNetwork.includes("locale:'en'")&&keywordNetwork.includes("close:'關閉'"),'vis-network manipulation must provide an English locale fallback with the complete close label');
