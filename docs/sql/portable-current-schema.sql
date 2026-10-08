@@ -117,7 +117,9 @@ CREATE TABLE "silver"."keyword_classes" (
 CREATE TABLE "silver"."loc_blocks" (
   "uid" character(8) DEFAULT upper(substr(replace(gen_random_uuid()::text, '-'::text, ''::text), 1, 8)) NOT NULL,
   "page_name" text NOT NULL,
+  "block_eyebrow" text DEFAULT ''::text NOT NULL,
   "block_title" text DEFAULT ''::text NOT NULL,
+  "block_subtitle" text DEFAULT ''::text NOT NULL,
   "block_text" text DEFAULT ''::text NOT NULL,
   "block_order" integer NOT NULL,
   "block_entity" jsonb DEFAULT '[]'::jsonb NOT NULL,
@@ -130,7 +132,9 @@ CREATE TABLE "silver"."loc_blocks" (
 CREATE TABLE "silver"."lo3rwang_blocks" (
   "uid" character(8) DEFAULT upper(substr(replace(gen_random_uuid()::text, '-'::text, ''::text), 1, 8)) NOT NULL,
   "page_name" text NOT NULL,
+  "block_eyebrow" text DEFAULT ''::text NOT NULL,
   "block_title" text DEFAULT ''::text NOT NULL,
+  "block_subtitle" text DEFAULT ''::text NOT NULL,
   "block_text" text DEFAULT ''::text NOT NULL,
   "block_order" integer NOT NULL,
   "block_entity" jsonb DEFAULT '[]'::jsonb NOT NULL,
@@ -143,7 +147,9 @@ CREATE TABLE "silver"."lo3rwang_blocks" (
 CREATE TABLE "silver"."lrunes_blocks" (
   "uid" character(8) DEFAULT upper(substr(replace(gen_random_uuid()::text, '-'::text, ''::text), 1, 8)) NOT NULL,
   "page_name" text NOT NULL,
+  "block_eyebrow" text DEFAULT ''::text NOT NULL,
   "block_title" text DEFAULT ''::text NOT NULL,
+  "block_subtitle" text DEFAULT ''::text NOT NULL,
   "block_text" text DEFAULT ''::text NOT NULL,
   "block_order" integer NOT NULL,
   "block_entity" jsonb DEFAULT '[]'::jsonb NOT NULL,
