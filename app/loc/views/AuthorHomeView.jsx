@@ -1,4 +1,38 @@
 import { PageComposition } from '../../PageComposition';
+import authorHeroAsset from '../../../pics/lo3rwang-hero.jpg';
+
+function AuthorPage({eyebrow,title,subtitle,intro,heroImage=null,heroContent=null,sections=[]}){
+  return <section className="loc-view scope-home-composition">
+    {heroImage?<header className="loc-hero author-home-hero" id="top">
+      <img
+        className="author-home-hero-image"
+        src={heroImage.src}
+        alt=""
+        aria-hidden="true"
+        loading="eager"
+        fetchPriority="high"
+        decoding="async"
+      />
+      <div className="author-home-hero-overlay" aria-hidden="true"/>
+      {heroContent||<div className="author-home-hero-copy">
+        {eyebrow?<p className="loc-eyebrow">{eyebrow}</p>:null}
+        <div className="home-title-row"><h1>{title}</h1>{subtitle?<p className="loc-subtitle">{subtitle}</p>:null}</div>
+        {intro}
+      </div>}
+    </header>:<header className="loc-hero loc-hero-feature" id="top">
+      {eyebrow?<p className="loc-eyebrow">{eyebrow}</p>:null}
+      <div className="home-title-row"><h1>{title}</h1>{subtitle?<p className="loc-subtitle">{subtitle}</p>:null}</div>
+      {intro}
+    </header>}
+    {sections.map((section,index)=><section className="loc-card scope-home-section" id={section.id} key={section.id} data-composition-slot={index+1}>
+      {section.eyebrow?<p className="loc-eyebrow">{section.eyebrow}</p>:null}
+      {section.title?<h2>{section.title}</h2>:null}
+      {section.content}
+    </section>)}
+  </section>;
+}
+
+
 
 const PROFESSIONAL_ROLES=Object.freeze([
   Object.freeze({
@@ -191,16 +225,21 @@ export default function AuthorHomeView({section=null}){
     />;
   }
 
-  return <PageComposition
-    eyebrow="Lucas Oscar Wang"
-    title="政德"
-    subtitle="語言建築師"
-    intro={<>
+  return <AuthorPage
+    eyebrow={null}
+    title=""
+    subtitle=""
+    intro={null}
+    heroImage={authorHeroAsset}
+    heroContent={<div className="author-home-hero-copy">
+      <p className="loc-eyebrow">Lucas Oscar Wang</p>
+      <div className="home-title-row"><h1>政德</h1><p className="loc-subtitle">語言建築師</p></div>
+      <>
       <p>Hello！你好！你可以叫我 Oscar。</p>
-      <p>Wordsmith · Chaos Calibrator · Language Architect</p>
-      <p>Creator of LOC and LunaRunes · <a href="https://suno.com/s/AdpORl6l79UYLcor" target="_blank" rel="noopener noreferrer">聽〈這就是我〉 →</a></p>
-    </>}
-    heroVisual={<iframe src="https://www.instagram.com/p/DdX5ki-oZY6/embed" title="這就是我｜Lucas Oscar Wang 政德自我介紹" loading="eager" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" frameBorder="0" scrolling="no"/>}
+      <p>Wordsmith · Chaos Discerner · Language Architect</p>
+      <p>Creator of LOC and LunaRunes · <a href="https://suno.com/album/16130013-09f2-4be3-b2f6-05ce171ba7d5" target="_blank" rel="noopener noreferrer">聽《微月光，上場》 →</a></p>
+      </>
+    </div>}
     sections={[
       {
         id:'about',
