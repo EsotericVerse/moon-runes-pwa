@@ -43,9 +43,9 @@ BEGIN
           (status='needs_anchor' AND anchor_ids IS NULL)
           OR
           (status IS DISTINCT FROM 'needs_anchor'
-           AND cardinality(anchor_ids)=1
-           AND nullif(btrim(anchor_ids[1]),'') IS NOT NULL
-           AND anchor_ids[1]<>'0')
+           AND coalesce(cardinality(anchor_ids),0)=1
+           AND nullif(btrim(coalesce(anchor_ids[1],'')),'') IS NOT NULL
+           AND coalesce(anchor_ids[1],'0')<>'0')
         )
       ))
     $sql$,tbl,tbl||'_style_comment_shape_check');
@@ -79,7 +79,7 @@ BEGIN
                tag.ordinality AS tag_position,
                cardinality(regexp_split_to_array(t.style_tags,'[,，]')) AS tag_count,
                (SELECT btrim(substr(part,length(btrim(tag.tag))+2))
-                FROM unnest(string_to_array(t.style_description,E'\\n\\n')) AS part
+                FROM unnest(string_to_array(t.style_description,E'\n\n')) AS part
                 WHERE starts_with(btrim(part),btrim(tag.tag)||'：') LIMIT 1) AS own_description
         FROM silver.%I t
         CROSS JOIN LATERAL regexp_split_to_table(t.style_tags,'[,，]') WITH ORDINALITY AS tag(tag,ordinality)
