@@ -134,6 +134,14 @@
 .scope-style-tags .scope-style-tag-chip.is-selected{outline:2px solid var(--loc-accent);outline-offset:2px}
 .scope-culture-style-editing{display:grid;gap:.7rem;padding:.8rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel)}
 .scope-style-tag-tools,.scope-style-tag-details{display:grid;gap:.65rem}
+/* Optional recursive style navigation is compact and scannable; ordinary works stay below. */
+.scope-style-search-connections{display:grid;gap:.55rem;margin:.65rem 0 .35rem;padding:.8rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel)}
+.scope-style-search-related{display:grid;gap:.6rem}
+.scope-style-search-related-group{display:grid;gap:.35rem}
+.scope-style-search-related-group>span{font-weight:600;font-size:.88rem}
+.scope-style-search-related-links{display:flex;flex-wrap:wrap;gap:.4rem}
+.scope-style-search-related-links>a{display:inline-flex;align-items:center;min-width:0;max-width:100%;padding:.4rem .65rem;border:1px solid var(--loc-accent-border);border-radius:999px;background:var(--loc-ui-accent-soft);color:var(--loc-text);font-size:.88rem;overflow-wrap:anywhere;text-decoration:none}
+.scope-style-search-related-links>a:is(:hover,:focus-visible){outline:2px solid var(--loc-accent);outline-offset:2px}
 .scope-style-tag-add,.scope-style-tag-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem}
 .scope-style-tag-add label{flex:1;min-width:10rem}
 .scope-style-tag-details label{display:grid;gap:.35rem}
