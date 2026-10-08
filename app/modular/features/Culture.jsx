@@ -24,7 +24,6 @@ import {useScopeRuntime} from '../use-scope-runtime';
 import {ContentEditor,FeaturePage,IncrementalList,WorkFullText,WorkSummaryCard} from '../ui';
 import {plainTextToBlocks} from '../../loc/blocknote-content.mjs';
 import CultureTimelineEditor from './CultureTimelineEditor';
-import CultureStyleTagsEditor from './CultureStyleTagsEditor';
 import {workDisplayHeading,workDisplayText} from '../work-display-model';
 import {useOffsetPagination} from '../use-offset-pagination';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
@@ -112,9 +111,6 @@ export default function Culture(){
   const [editingWorkKey,setEditingWorkKey]=useState('');
   const [selectedTimelineRecordId,setSelectedTimelineRecordId]=useState('');
   const [selectedTimelineDate,setSelectedTimelineDate]=useState('');
-  const [selectedStyleRecordId,setSelectedStyleRecordId]=useState('');
-  const [selectedStyleRequestNonce,setSelectedStyleRequestNonce]=useState(0);
-  const [stylePanelOpen,setStylePanelOpen]=useState(false);
   const [suggestedRecordType,setSuggestedRecordType]=useState('anchor');
   const [suggestedRequestNonce,setSuggestedRequestNonce]=useState(0);
   const [editDraft,setEditDraft]=useState(null);
@@ -423,7 +419,7 @@ export default function Culture(){
         Array.isArray(candidate?.anchor_ids)&&candidate.anchor_ids.map(String).includes(anchorId)
       );
       if(referenced){
-        setEditError('此定錨點仍被時期或事件使用，請先調整引用。');
+        setEditError('此定錨點仍被時期、事件或風格標籤引用，請先調整引用。');
         return null;
       }
     }
@@ -680,6 +676,7 @@ export default function Culture(){
                   {['period','event'].map(type=><button key={type} type='button' className='loc-button' onClick={()=>beginTimelineCreation(type,'')}>
                     ＋ 新增{type==='period'?'時期':'事件'}（選擇既有定錨點）
                   </button>)}
+                  <button type='button' className='loc-button' onClick={()=>beginTimelineCreation('style_comment','')}>＋ 新增風格標籤</button>
                   <label><span>尋找既有定錨點</span><select className='scope-select' value='' onChange={event=>{
                     const anchor=anchorRecords.find(item=>item.record_id===event.target.value);
                     if(!anchor)return;
@@ -691,7 +688,18 @@ export default function Culture(){
                       {String(item.start_date||'年份未定').slice(0,10)}｜{item.display_label||item.title||item.resource_id}
                     </option>)}
                   </select></label>
-                  <span className='scope-status'>先選擇要回顧的時期範圍，再檢視既有定錨的轉折原因、作品變化及建議點。拖曳河道瀏覽全部時期；雙擊空白日期僅用來新增正式定錨點。</span>
+                  <label><span>尋找風格標籤</span><select className='scope-select' value='' onChange={event=>{
+                    const record=(query.data?.styleComments||[]).find(item=>String(item.record_id)===event.target.value);
+                    if(!record)return;
+                    setSelectedTimelineRecordId(String(record.record_id));
+                    setSelectedTimelineDate('');
+                  }}>
+                    <option value=''>選擇名稱（含待定位草稿）</option>
+                    {(query.data?.styleComments||[]).map(item=><option key={item.record_id} value={item.record_id}>
+                      {item.label}{item.status==='needs_anchor'?'｜尚待定錨':''}
+                    </option>)}
+                  </select></label>
+                  <span className='scope-status'>第一條河道包含定錨點、事件、時期、風格標籤四種紀錄。點選紀錄直接編輯；待定錨風格可由名稱找到。關鍵詞分析仍由作品分類河道處理。</span>
                 </div>:null}
                 {timelineItems.length?<CultureTimeline
                   items={timelineItems}
@@ -706,14 +714,6 @@ export default function Culture(){
                   onSelect={item=>{
                     const recordId=String(item?.recordId||'').trim();
                     if(!recordId)return;
-                    if(item?.entryType==='style_comment'){
-                      if(account.canManageScopeSync(scopeId)){
-                        setSelectedStyleRecordId(recordId);
-                        setSelectedStyleRequestNonce(n=>n+1);
-                        setStylePanelOpen(true);
-                      }
-                      return;
-                    }
                     setSelectedTimelineRecordId(recordId);
                     setSelectedTimelineDate('');
                   }}
@@ -721,42 +721,14 @@ export default function Culture(){
                   onAdd={null}
                   onMove={account.canManageScopeSync(scopeId)?moveTimelineRecord:null}
                   onUpdate={account.canManageScopeSync(scopeId)?(item,row)=>{
-                    if(row?.entryType==='style_comment'){
-                      setSelectedStyleRecordId(row.recordId);
-                      setSelectedStyleRequestNonce(n=>n+1);
-                      setStylePanelOpen(true);
-                      return null;
-                    }
                     if(row?.recordId){
                       setSelectedTimelineRecordId(row.recordId);
                       setSelectedTimelineDate('');
                     }
                     return null;
                   }:null}
-                  onRemove={account.canManageScopeSync(scopeId)?(item,row)=>{
-                    if(row?.entryType==='style_comment'){
-                      setSelectedStyleRecordId(row.recordId);
-                      setSelectedStyleRequestNonce(n=>n+1);
-                      setStylePanelOpen(true);
-                      return null;
-                    }
-                    return removeTimelineRecord(item,row);
-                  }:null}
+                  onRemove={account.canManageScopeSync(scopeId)?removeTimelineRecord:null}
                 />:<p className='scope-status'>{FEATURE_EMPTY_MESSAGE}</p>}
-                <details className='scope-culture-style-panel' open={stylePanelOpen} onToggle={event=>setStylePanelOpen(event.currentTarget.open)}>
-                  <summary>風格標籤（第四種 Time 紀錄） · {(query.data?.styleComments||[]).filter(row=>row.status!=='needs_anchor').length} 個已定位</summary>
-                  <CultureStyleTagsEditor
-                    period={selectedWorkPeriod}
-                    anchors={anchorRecords}
-                    styles={query.data?.styleComments||[]}
-                    scopeId={scopeId}
-                    table={scopeData?.time}
-                    canEdit={account.canManageScopeSync(scopeId)}
-                    selectedStyleRecordId={selectedStyleRecordId}
-                    selectedStyleRequestNonce={selectedStyleRequestNonce}
-                    onSaved={()=>{setSelectedStyleRecordId('');return refreshTimelineData();}}
-                  />
-                </details>
                 {account.canManageScopeSync(scopeId)?<CultureTimelineEditor
                   scopeId={scopeId}
                   selectedRecordId={selectedTimelineRecordId}
