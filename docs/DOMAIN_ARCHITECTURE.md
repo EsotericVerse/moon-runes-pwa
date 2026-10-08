@@ -23,7 +23,7 @@ Data Scope 與 Galaxy／Time 對應由 Supabase PostgreSQL 的 `silver.manage` �
 - `lo3rwang` — role admin
 - `lrunes` — role scope
 
-上述是範例而不是完整 Scope 清單；透過 Admin 新增的一般 Scope 也應由相同 mapping contract 解析，不在文件中維護另一份固定可用 Scope 名冊。Scope Group 成員關係則由 `silver.scope_registry.parent_scope_id` 維護，Group 只提供 Overview／導引，不跨 Scope 聚合 corpus。
+上述是範例而不是完整 Scope 清單；透過 Admin 新增的一般 Scope 也應由相同 mapping contract 解析，不在文件中維護另一份固定可用 Scope 名冊。Scope Group 成員關係則由 `silver.scope_registry.parent_scope_id` 維護。**一般新建 Group** 只提供 Overview／導引；既有 LOC (`loc`) 的 Culture／Statistics 例外保留跨 Scope 唯讀交會與有界分布比較，不產生第二份 corpus。
 
 Current deployment 與 data Scope 都使用 canonical id `lrunes`；不保留 `lunarunes` runtime alias。
 

@@ -25,9 +25,10 @@ LOC is the framework for organizing text, works, sources, time, relationships, s
 - Next filesystem owns existing named routes plus one fixed `/scope/.../` generic shell; DB-created Scope IDs are resolved from the Scope registry at runtime.
 - Supabase PostgreSQL owns the primary runtime canonical data. Neon is a public **read-only fallback** when the primary anonymous query fails; authenticated writes and account actions remain on the primary path and never fail over automatically.
 - The Scope registry owns hierarchy and deployment/navigation metadata; it does not own corpus data.
+- **LOC (`loc`) preserves limited cross-Scope analysis:** Statistics compares managed Scopes' totals, shares and time trends; Culture intersects their currently open periods and compares works/media source-category densities. Other DB-created Scope Groups are overview/navigation only. No merged canonical corpus is created.
 - `silver.manage` owns data Scope and Galaxy/Time table mapping.
 - PostgreSQL remains the authoritative query layer for Scope, fixed eligibility flags, COUNT, date ranges and pagination across Search, Statistics and Culture.
-- PostgreSQL handles global search, while confirmed keyword classifications are stored as fixed Galaxy attributes. Re-run the explicit batch only when the active Keyword Class or its rules change.
+- PostgreSQL handles precise Scope-based search (LOC Group Search remains a navigation guide), while confirmed keyword classifications are stored as fixed Galaxy attributes. Re-run the explicit batch only when the active Keyword Class or its rules change.
 - Keyword classes are self-contained, UUID-addressable Scope resources. The active Class is selected by `current_keyword_class_id`; article results are stored as `class_id` + `group_lists`, and public Statistics/Culture read those attrs without live reclassification.
 - Search is lexical/metadata search. Exact Scope aliases terminate with the Scope homepage entry; exact period style keywords prepend their configured short description and then continue normal related results.
 - Missing general-Scope configuration remains empty; LOC does not borrow LunaRunes Canon, keywords or Style as fallback.
@@ -36,8 +37,8 @@ LOC is the framework for organizing text, works, sources, time, relationships, s
 
 | Feature | Responsibility |
 | --- | --- |
-| Statistics | Live distribution and time-range statistics |
-| Culture | Single-Scope time density, source grouping and Anchor analysis; Group pages are overview/navigation only |
+| Statistics | Single-Scope distributions and LOC's bounded cross-Scope totals, share and time trends |
+| Culture | Single-Scope Time River, source and Anchor analysis; LOC also retains its cross-Scope intersection and combined source time rivers |
 | Governance | Public governance and management boundaries |
 | Search | Scope-aware lexical, metadata and relation search |
 
@@ -66,6 +67,7 @@ LOC is the framework for organizing text, works, sources, time, relationships, s
 - **分析機制：** `docs/LOC-AUTOMATIC-ANALYSIS.md` — Culture／Statistics／Search 如何遵守資料與決策邊界。
 - **架構與 UI 契約：** `docs/DOMAIN_ARCHITECTURE.md`、`docs/NAV_GOVERNANCE.md`、`docs/CURRENT_UI_CONTRACT.md`。
 - **權限、部署與遷移：** `docs/AUTHENTICATION.md`、`docs/DEPLOYMENT_OWNERSHIP.md`、`docs/DATABASE_MIGRATION.md`。
+- **Current Packages List：** `docs/PACKAGES.md` — 核對實際 `package.json`／lockfile 的直接依賴、用途與測試工具；版本權威仍是 manifest／lockfile。
 - **Repository 與發版治理：** `docs/REPO_DIRECTORY_GOVERNANCE.md`、`docs/RELEASE_ROADMAP.md`、`docs/TODO.md`。
 - **LunaRunes 抽牌治理：** `docs/LUNARUNES_DRAW_GOVERNANCE.md`；Game runtime contract 仍由 `app/lrunes/game/README.md` 維護。
 

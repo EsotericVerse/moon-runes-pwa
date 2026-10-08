@@ -7,7 +7,7 @@
 ### 已納入程式基線
 
 - LOC／月典與 LunaRunes／月之符文的獨立治理；共用 Statistics／Culture／Search／Governance 與各自的專屬頁面。
-- `silver.scope_registry.parent_scope_id` 是 Scope Group 成員唯一 authority；Group 功能頁只提供 Registry Overview 與導引，單 Scope 仍以 PostgreSQL 精準 query、COUNT 與 bounded pagination 處理 corpus。
+- `silver.scope_registry.parent_scope_id` 是 Group 成員關係 authority；一般 DB 新建 Scope Group 以 Registry Overview 與導引為主，**LOC (`loc`) 特別保留跨 Scope Culture 交會時間長河與綜合來源、Statistics 合併數量／比例／趨勢**。各 Scope 仍以 PostgreSQL 精準 query 與有界結果負責自身 corpus；LOC 沒有另存混合 corpus。
 - 既有具名路由與固定 `/scope/.../?scope=<id>` 通用 static shell；Scope Registry 負責動態解析，一般 Scope 不增加 bespoke filesystem routes。
 - 新 Scope 的 Config／Galaxy／Galaxy Media／Time／Keywords 五件套，以及以獨立 UUID copy-on-create 的 Rune66 預設 Keyword Class；不回寫來源 Scope、不使用 LunaRunes Canon 作通用 Scope fallback。
 - Admin／Manage 的 Scope、Scope Group、Keyword Class 與 Time 編輯、Source Refresh bounded delta、權限與 canonical visibility 均有 Current 實作與自動化 contract。
@@ -28,7 +28,7 @@
 
 ## 0.9 Scope Group architecture
 
-0.9 的主要架構目標已在 Current `main` 實作：由 Registry 與 `silver.manage` 定義 Scope／Scope Group 與資料表責任；Group 不建立跨 Scope corpus aggregate；一般 Scope copy-on-create 並使用通用 static shell；固定 canonical 更新由 Admin／Manage 完成，AI 並非必要 write path。後續重點是以實際資料進行操作驗收與錯誤處理回測，而非再擴張一套重複的 Scope system。
+0.9 的主要架構目標已在 Current `main` 實作：由 Registry 與 `silver.manage` 定義 Scope／Scope Group 與資料表責任；一般新建 Group 不自行建立跨 Scope corpus aggregate，但 LOC (`loc`) 保留原有跨 Scope 唯讀 Culture／Statistics 比較；一般 Scope copy-on-create 並使用通用 static shell；固定 canonical 更新由 Admin／Manage 完成，AI 並非必要 write path。後續重點是以實際資料進行操作驗收與錯誤處理回測，而非再擴張一套重複的 Scope system。
 
 ## 0.9 RC 後續收尾（2026-10-09）
 
