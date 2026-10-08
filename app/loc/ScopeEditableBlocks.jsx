@@ -274,17 +274,17 @@ export default function ScopeEditableBlocks({
               onChange={event=>setDraft(current=>({...current,title:event.target.value}))}
             />
           </label>
-          <label className="scope-management-wide-field">
+          <div className="scope-management-wide-field">
             <span>標題說明（可保留粗體與換行）</span>
-          </label>
+          </div>
           <RichBlockEditor
             key={draft.uid+':subtitle:edit'}
             initialContent={draft.subtitle?{html:draft.subtitle}:''}
             onHtmlChange={html=>setDraft(current=>({...current,subtitle:html}))}
           />
-          <label className="scope-management-wide-field">
+          <div className="scope-management-wide-field">
             <span>下方正文（BlockNote）</span>
-          </label>
+          </div>
           <RichBlockEditor
             key={draft.uid+':body:edit'}
             initialContent={draft.text?{html:draft.text}:''}
