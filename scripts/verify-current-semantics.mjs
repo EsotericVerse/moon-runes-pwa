@@ -118,7 +118,7 @@ if(!failures.length){
   }
   if(statistics.includes('{groupRows.map(row=>'))failures.push('Statistics Group ranking must not render every item in one long list.');
   const keywordPanel=read('app/loc/KeywordLibraryPanel.jsx');
-  for(const token of ["const [styleFilter,setStyleFilter]=useState('none')","<ScopeStatisticsResults","scopeHref(scopeId,'statics/keywords')"]){
+  for(const token of ["const [styleFilter,setStyleFilter]=useState('none')","<ScopeStatisticsResults","scopeHref(scopeId,'statics/keywords')","關鍵詞設定"]){
     if(!statistics.includes(token))failures.push('Statistics must defer keyword analysis and link its independent editor: '+token);
   }
   if(statistics.includes('KeywordLibraryPanel')||statistics.includes("current==='keywords'"))failures.push('Statistics must not mount the keyword editor in the same route.');
@@ -133,8 +133,11 @@ if(!failures.length){
     if(!keywordPanel.includes(token))failures.push('Manual keyword selection must descend Group → Item → Keyword: '+token);
   }
   const keywordGraph=read('app/loc/KeywordNetworkEditor.jsx');
-  for(const token of ["expandedGroup","expandedItemId","rows.filter(row=>","},[graph]);"]){
-    if(!keywordGraph.includes(token))failures.push('Keyword network must expand nodes progressively without remount on selectedId: '+token);
+  for(const token of ["expandedGroup","expandedItemId","rows.filter(row=>","},[graph,classId]);","groups.includes('特殊')","network.focus(originId","viewportRef.current={classId","network.moveTo({position:previousView.position"]){
+    if(!keywordGraph.includes(token))failures.push('Keyword network must start at Special when present and preserve viewport during progressive expansion: '+token);
+  }
+  if(!keywordPanel.includes("key={selectedClassId||selectedClass}")||!keywordPanel.includes("next==='manual'||next==='network'")){
+    failures.push('Keyword network must reset initial selection and origin when entering or changing its Class.');
   }
   for(const token of ["onTimeClick={pickingAnchorSlot===null","onBoundaryNavigate={pickingAnchorSlot===null","雙擊河道空白日期","onAdd={null}","riverAnalysis.suggestions.length} 個 · 已選","選取建議定錨日期","selectedVirtualAnchorDates.includes(item.date)","全選建議","saveSelectedVirtualAnchors"]){
     if(!culture.includes(token))failures.push('Culture river must support double-click anchors, drag-only period changes, and selectable bulk suggestions: '+token);
