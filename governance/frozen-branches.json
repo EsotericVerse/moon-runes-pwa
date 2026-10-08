@@ -63,6 +63,7 @@
     "fix/keyword-batch-attrs-clean",
     "fix/loc-home-language-uppercase",
     "fix/loc-statistics-controls-and-class-ties",
+    "fix/loc-status-restore-framed-text-20261008",
     "fix/lunarunes-home-draw-copy",
     "fix/lunarunes-home-eyebrow",
     "fix/lunarunes-ui-clean",
