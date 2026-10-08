@@ -686,7 +686,7 @@ export default function Culture(){
                       beginTimelineCreation(type,currentStructureStart);
                     }}>＋ 新增{label}</button>)}
                   </div>:null}
-                  <span className='scope-status'>點擊河道空白日期直接新增定錨點；拖曳可平移時間軸，點選既有項目可編輯。切換時期請使用下方時期選單。</span>
+                  <span className='scope-status'>雙擊河道空白日期新增定錨點；按住滑鼠左右拖曳，可跨到上一個或下一個時期。單擊不新增；點既有項目仍可編輯。</span>
                 </div>:null}
                 {currentTimelineItems.length?<CultureTimeline
                   items={currentTimelineItems}
@@ -697,6 +697,12 @@ export default function Culture(){
                   windowEnd={currentStructureEnd}
                   boundaryStart={currentStructureStart}
                   boundaryEnd={currentStructureEnd}
+                  onBoundaryNavigate={pickingAnchorSlot===null?direction=>{
+                    const currentIndex=primaryPeriods.findIndex(item=>periodKey(item)===periodKey(currentStructurePeriod));
+                    if(currentIndex<0)return;
+                    const adjacent=primaryPeriods[currentIndex+(direction==='previous'?-1:1)];
+                    if(adjacent)setSelectedPeriodKey(periodKey(adjacent));
+                  }:null}
                   onTimeClick={pickingAnchorSlot===null&&account.canManageScopeSync(scopeId)?date=>{
                     beginTimelineCreation('anchor',date);
                   }:null}
