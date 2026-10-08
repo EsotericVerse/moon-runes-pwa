@@ -45,7 +45,7 @@
   padding:0 .8rem .6rem 0;
   border-bottom:1px solid var(--loc-line);
   color:var(--loc-text);
-  font-size:1.32rem;
+  font-size:var(--loc-type-home-section-title);
   font-weight:650;
   line-height:1.35;
   letter-spacing:normal;
@@ -208,14 +208,25 @@
 }
 .loc-home-block--hero>.loc-home-block__header>h1{
   color:#fff;
-  font-size:clamp(2.25rem,6vw,4.25rem);
+  font-size:var(--loc-type-hero-home-title);
+  font-weight:var(--loc-weight-page-title);
+  line-height:var(--loc-line-hero-title);
   border:0;
   padding:0;
   text-shadow:0 2px 16px rgba(0,0,0,.55);
 }
-.loc-home-block--hero>.loc-home-block__header>.loc-eyebrow{color:#f5d795}
-.loc-home-block--hero>.loc-home-block__header>.loc-subtitle{color:#e8d6ac}
-.loc-home-block--hero>.loc-home-block__body p{color:#edf1f9;line-height:1.85}
+.loc-home-block--hero>.loc-home-block__header>.loc-eyebrow{
+  color:#f5d795;
+}
+.loc-home-block--hero>.loc-home-block__header>.loc-home-block__subtitle{
+  color:#e8d6ac;
+  font-weight:var(--loc-weight-subtitle);
+}
+.loc-home-block--hero>.loc-home-block__body :is(p,li){
+  color:#edf1f9;
+  font-size:var(--loc-type-hero-copy);
+  line-height:var(--loc-line-hero-copy);
+}
 .loc-home-block--hero>.loc-home-block__body strong{color:inherit}
 /* Only frame 1 can use background artwork. The side option makes the same
    image a contained bubble, never a second illustration or overlay. */

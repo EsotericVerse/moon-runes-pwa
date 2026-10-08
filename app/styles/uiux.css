@@ -46,6 +46,15 @@
   --loc-line-section-title:1.2;
   --loc-line-subtitle:1.55;
   --loc-line-body:1.78;
+  /* Shared Hero-only responsive typography; ordinary blocks stay unchanged. */
+  --loc-type-hero-home-title:clamp(4rem,6.4vw,6.5rem);
+  --loc-type-hero-feature-title:clamp(3.125rem,5.2vw,4.75rem);
+  --loc-type-home-section-title:clamp(1.5rem,2.1vw,1.875rem);
+  --loc-type-hero-subtitle:clamp(1.25rem,1.8vw,1.875rem);
+  --loc-type-hero-copy:clamp(1.125rem,1.45vw,1.375rem);
+  --loc-type-hero-eyebrow:clamp(.875rem,1.05vw,1.0625rem);
+  --loc-line-hero-title:1.06;
+  --loc-line-hero-copy:1.65;
 }
 
 html{
@@ -263,6 +272,42 @@ button,a,.loc-control,.loc-button,
 
 .scope-feature-hero .scope-hero-description{
   margin-top:clamp(.65rem,1.4vw,1rem);
+}
+
+/* Hero-only precedence stays in shared UI; homepage frame CSS remains override-free. */
+:is(.loc-next-main[data-loc-scope="loc"],.loc-next-main[data-loc-scope="lo3rwang"])
+  .loc-home>.loc-home-block--hero .loc-home-block__header>.loc-eyebrow{
+  font-size:var(--loc-type-hero-eyebrow)!important;
+}
+:is(.loc-next-main[data-loc-scope="loc"],.loc-next-main[data-loc-scope="lo3rwang"])
+  .loc-home>.loc-home-block--hero .loc-home-block__header>.loc-home-block__subtitle{
+  font-size:var(--loc-type-hero-subtitle)!important;
+  line-height:1.42!important;
+}
+
+/* LOC + Author use this shared feature Hero scale; LunaRunes is unchanged. */
+:is(.loc-next-main[data-loc-scope="loc"],.loc-next-main[data-loc-scope="lo3rwang"])
+  .scope-feature-hero>.home-title-row>h1{
+  font-size:var(--loc-type-hero-feature-title)!important;
+  font-weight:var(--loc-weight-page-title)!important;
+  line-height:var(--loc-line-hero-title)!important;
+}
+:is(.loc-next-main[data-loc-scope="loc"],.loc-next-main[data-loc-scope="lo3rwang"])
+  .scope-feature-hero .loc-eyebrow{
+  font-size:var(--loc-type-hero-eyebrow)!important;
+}
+:is(.loc-next-main[data-loc-scope="loc"],.loc-next-main[data-loc-scope="lo3rwang"])
+  .scope-feature-hero .scope-subtitle{
+  font-size:var(--loc-type-hero-subtitle)!important;
+  font-weight:var(--loc-weight-subtitle);
+  line-height:1.42!important;
+}
+:is(.loc-next-main[data-loc-scope="loc"],.loc-next-main[data-loc-scope="lo3rwang"])
+  .scope-feature-hero .scope-hero-description,
+:is(.loc-next-main[data-loc-scope="loc"],.loc-next-main[data-loc-scope="lo3rwang"])
+  .scope-feature-hero .scope-hero-description :where(p,li){
+  font-size:var(--loc-type-hero-copy);
+  line-height:var(--loc-line-hero-copy);
 }
 
 .loc-hero-context{
@@ -680,6 +725,14 @@ button,a,.loc-control,.loc-button,
 }
 
 @media(max-width:760px){
+  :root{
+    --loc-type-hero-home-title:clamp(2.5rem,10vw,3.75rem);
+    --loc-type-hero-feature-title:clamp(2.375rem,9vw,3.125rem);
+    --loc-type-home-section-title:clamp(1.375rem,5.5vw,1.625rem);
+    --loc-type-hero-subtitle:clamp(1.125rem,4.8vw,1.375rem);
+    --loc-type-hero-copy:clamp(1.0625rem,3.9vw,1.1875rem);
+    --loc-type-hero-eyebrow:.8125rem;
+  }
   body::before{background-size:48px 48px}
   .loc-next-main,.scope-main{
     width:min(100% - 1rem,var(--loc-ui-max));

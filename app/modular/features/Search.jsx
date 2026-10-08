@@ -207,7 +207,7 @@ function toResult(row,source,scopeId){
   const isScopeCard=Boolean(row.scope_card);
   const href=isScopeCard?scopeHref(scope):(row.url||row.href||row.suno_url||'');
   return {
-    key:identity?source+'-'+identity:[source,scope,title].join('-'),
+    key:identity?[scope,source,identity].join(':'):[source,scope,title].join('-'),
     source:displaySource,title:String(title),
     date:row.date||row.createtime||row.time_date||row.record_date||row.UpdateTime||row.updated_at||'',
     snippet:body,scopeId:scope,resourceType,resourceId,
@@ -223,8 +223,8 @@ function toResult(row,source,scopeId){
         ?[{id:'galaxy:'+row.galaxy_link,label:UI_COPY.search.parentText,href:galaxyIdentityHref(scope,row.galaxy_link)}].filter(link=>link.href)
         :[]),
     groupKey:resourceType==='galaxy'&&resourceId
-      ?'galaxy:'+resourceId
-      :(resourceType==='galaxy_media'&&row.galaxy_link?'galaxy:'+row.galaxy_link:'result:'+(identity||title)),
+      ?'galaxy:'+scope+':'+resourceId
+      :(resourceType==='galaxy_media'&&row.galaxy_link?'galaxy:'+scope+':'+row.galaxy_link:'result:'+scope+':'+(identity||title)),
     links:[...(href?[{id:resourceType||'primary',href,label:resourceType==='galaxy_media'?UI_COPY.search.mediaLink:UI_COPY.search.externalLink}]:[]),...(Array.isArray(row.resolved_links)?row.resolved_links:[])],
     destinations:[]
   };
@@ -280,7 +280,8 @@ export default function Search(){
   const searchId=useRef(0);
   const matchedQueryRef=useRef('');
   const pageSize=DEFAULT_LIST_BATCH_SIZE;
-  const aggregateScopes=Boolean(scope?.aggregateChildren);
+  // LOC searches all managed Scopes; only other Scope Groups are directory guides.
+  const aggregateScopes=Boolean(scope?.aggregateChildren&&scopeId!=='loc');
   const scopesQuery=useQuery({
     queryKey:['managed-scopes',scopeId],
     queryFn:selectManagedScopes,
@@ -289,14 +290,14 @@ export default function Search(){
   });
   const targetScopes=useMemo(()=>{
     const scopes=scopesQuery.data||[];
-    return scopes.filter(item=>item.id===scopeId);
+    return scopeId==='loc'?scopes:scopes.filter(item=>item.id===scopeId);
   },[scopeId,scopesQuery.data]);
   const scopeById=useMemo(()=>new Map(targetScopes.map(item=>[item.id,item])),[targetScopes]);
   const hiddenScopeIds=useMemo(
     ()=>targetScopes.filter(item=>account.canManageScopeSync(item.id)).map(item=>item.id),
     [targetScopes,account.authorizer]
   );
-  const collectionLabel=aggregateScopes?UI_COPY.search.allContent:String(scope?.label||scopeId);
+  const collectionLabel=scopeId==='loc'?UI_COPY.search.allContent:String(scope?.label||scopeId);
 
   async function loadGalaxyDetail(result){
     const scopeData=scopeById.get(result.scopeId);
@@ -330,7 +331,7 @@ export default function Search(){
     }
     try{
       if(!append){
-        if(matchesScopeAlias(scope,q)){
+        if(scopeId!=='loc'&&matchesScopeAlias(scope,q)){
           matchedQueryRef.current=q;
           setResults([{
             key:'scope:'+scopeId,
@@ -366,7 +367,7 @@ export default function Search(){
         limit:pageSize,
         // Prioritize document results after a recognized Time style introduction.
         // Time records remain available in normal searches without a style hit.
-        cursor:!append&&styleIntroductions.length?{stage:2,offset:0,source:'auto'}:cursor,
+        cursor:!append&&styleIntroductions.length&&scopeId!=='loc'?{stage:2,offset:0,source:'auto'}:cursor,
         mediaOnly:searchMode==='media',hiddenScopeIds
       });
       if(id!==searchId.current)return;

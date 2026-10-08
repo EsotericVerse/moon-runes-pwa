@@ -277,8 +277,13 @@ must(!/silver\.runes(?:_etc)?\b/.test(galaxy),'generic Galaxy/Search provider mu
 must(!/runeScopeIds|silver\.runes(?:_etc)?\b/.test(sharedSearch),'shared Search must stay Scope-data only');
 must(sharedSearch.includes('matchesScopeAlias')&&sharedSearch.includes('scope.searchIntro')&&sharedSearch.includes("label:'前往 Scope 首頁'")&&sharedSearch.includes('return;'),'exact Scope aliases must use Scope-owned presentation and stop the search');
 must(galaxy.includes("value:['anchor','period','style_comment']")&&galaxy.includes('summary:r.style_description')&&!galaxy.includes('styleTagList'),'Search loads one-to-one style comments');
-must(galaxy.includes('selectStyleKeywordDocumentCount')&&galaxy.includes('related_style_tags:related')&&galaxy.includes('same_period:')&&sharedSearch.includes('scope-style-search-related-links')&&sharedSearch.includes('style.document_total')&&sharedSearch.includes("cursor:!append&&styleIntroductions.length?{stage:2"),'Search introductions must offer counted linked personal styles before work results without Time snapshot columns');
+must(galaxy.includes('selectStyleKeywordDocumentCount')&&galaxy.includes('related_style_tags:related')&&galaxy.includes('same_period:')&&sharedSearch.includes('scope-style-search-related-links')&&sharedSearch.includes('style.document_total')&&sharedSearch.includes("cursor:!append&&styleIntroductions.length&&scopeId!=='loc'?{stage:2"),'Search introductions must offer counted linked personal styles before work results without Time snapshot columns');
 must(sharedSearch.includes('selectStyleKeywordIntroductions')&&sharedSearch.includes('[...styleIntroductions,...enrichedRows]'),'style keyword descriptions must precede ordinary related results');
+must(sharedSearch.includes("scope?.aggregateChildren&&scopeId!=='loc'")&&
+  sharedSearch.includes("scopeId==='loc'?scopes:scopes.filter(item=>item.id===scopeId)")&&
+  sharedSearch.includes("key:identity?[scope,source,identity].join(':')")&&
+  sharedSearch.includes("'galaxy:'+scope+':'+resourceId"),
+  'LOC must search all managed Scopes with scope-aware result identities; other groups remain overview-only');
 
 if(failures.length){
   console.error('[management-contract] verification failed');
