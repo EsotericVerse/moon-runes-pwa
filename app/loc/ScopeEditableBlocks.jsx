@@ -7,6 +7,7 @@ import {selectScopeBlocks} from './scope-data';
 import {useAccount} from './use-account';
 import RichBlockEditor from './RichBlockEditor';
 import {stripLocHomeEditorPlaceholders} from './loc-home-text.mjs';
+import {childPresentation,removeDuplicatedLegacySubtitle} from './block-presentation.mjs';
 
 const ENTITY_LIMIT=6;
 const UID_ALPHABET='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -42,8 +43,10 @@ function normalizeRow(row,order){
     uid:String(row?.uid||''),
     stored:Boolean(row?.uid),
     order:Number(row?.block_order||order||1),
+    eyebrow:String(row?.block_eyebrow||''),
     title:String(row?.block_title||''),
-    text:String(row?.block_text||''),
+    subtitle:String(row?.block_subtitle||''),
+    text:removeDuplicatedLegacySubtitle(row?.block_text,row?.block_subtitle),
     entities:normalizeEntities(row?.block_entity)
   };
 }
@@ -155,7 +158,9 @@ export default function ScopeEditableBlocks({
         :String(value??'');
       const values={
         page_name:pageName,
+        block_eyebrow:String(draft.eyebrow||'').trim(),
         block_title:String(draft.title||'').trim(),
+        block_subtitle:normalizeSavedHtml(draft.subtitle),
         block_text:normalizeSavedHtml(draft.text),
         block_order:Number(draft.order)||1,
         block_entity:normalizeEntities(draft.entities).map(({uid,title,text})=>({
@@ -202,7 +207,7 @@ export default function ScopeEditableBlocks({
   function renderEntities(entities,editable=false){
     if(!entities.length&&!editable)return null;
     return <div className="scope-block-entity-grid">
-      {entities.map((entity,index)=><article className="scope-block-entity" key={entity.uid}>
+      {entities.map((entity,index)=><article className={childPresentation(entity.title)==='card'?'scope-block-entity':'loc-bubble scope-block-text-bubble'} key={entity.uid}>
         {editable?<>
           <div className="scope-block-entity-actions">
             <button type="button" className="loc-button" disabled={index===0||busy} onClick={()=>moveEntity(index,-1)}>←</button>
@@ -210,9 +215,10 @@ export default function ScopeEditableBlocks({
             <button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={()=>removeEntity(index)}>刪除</button>
           </div>
           <label className="scope-management-wide-field">
-            <span>子文字框標題</span>
+            <span>標題（不用標題＝文字泡泡，輸入標題＝文字框）</span>
             <input
               className="scope-search-input"
+              placeholder="不用標題（文字泡泡）"
               value={entity.title}
               onChange={event=>updateEntity(index,{title:event.target.value})}
             />
@@ -223,7 +229,7 @@ export default function ScopeEditableBlocks({
             onHtmlChange={html=>updateEntity(index,{text:html})}
           />
         </>:<>
-          {entity.title?<h4>{entity.title}</h4>:null}
+          {childPresentation(entity.title)==='card'?<h4>{entity.title}</h4>:null}
           {entity.text?<div className="scope-rich-surface" dangerouslySetInnerHTML={{__html:entity.text}}/>:null}
         </>}
       </article>)}
@@ -236,7 +242,7 @@ export default function ScopeEditableBlocks({
   return <div className={'scope-editable-block-grid '+className}>
     {slots.map(slot=>{
       const active=draft?.uid&&(draft.uid===slot.uid||(!slot.stored&&draft.order===slot.order));
-      const empty=!slot.title&&!slot.text&&!slot.entities.length;
+      const empty=!slot.eyebrow&&!slot.title&&!slot.subtitle&&!slot.text&&!slot.entities.length;
       if(empty&&!canEdit)return null;
       const level=Number(headingLevel);
       const Heading=level===1?'h1':level===2?'h2':level===4?'h4':'h3';
@@ -253,12 +259,31 @@ export default function ScopeEditableBlocks({
             {message?<span className={'scope-inline-save-status'+(message.startsWith('儲存失敗')?' scope-error':'')} role="status" aria-live="polite">{message}</span>:null}
           </div>
           <label className="scope-management-wide-field">
-            <span>標題</span>
+            <span>英文標題（可留空）</span>
+            <input
+              className="scope-search-input"
+              value={draft.eyebrow}
+              onChange={event=>setDraft(current=>({...current,eyebrow:event.target.value}))}
+            />
+          </label>
+          <label className="scope-management-wide-field">
+            <span>中文大標題（可留空）</span>
             <input
               className="scope-search-input"
               value={draft.title}
               onChange={event=>setDraft(current=>({...current,title:event.target.value}))}
             />
+          </label>
+          <label className="scope-management-wide-field">
+            <span>標題說明（可保留粗體與換行）</span>
+          </label>
+          <RichBlockEditor
+            key={draft.uid+':subtitle:edit'}
+            initialContent={draft.subtitle?{html:draft.subtitle}:''}
+            onHtmlChange={html=>setDraft(current=>({...current,subtitle:html}))}
+          />
+          <label className="scope-management-wide-field">
+            <span>下方正文（BlockNote）</span>
           </label>
           <RichBlockEditor
             key={draft.uid+':body:edit'}
@@ -270,7 +295,9 @@ export default function ScopeEditableBlocks({
           {typeof renderDisplay==='function'
             ?renderDisplay(slot)
             :<>
+              {slot.eyebrow?<p className="loc-eyebrow">{slot.eyebrow}</p>:null}
               {slot.title?<Heading>{slot.title}</Heading>:null}
+              {slot.subtitle?<div className="loc-subtitle scope-block-subtitle" dangerouslySetInnerHTML={{__html:slot.subtitle}}/>:null}
               {slot.text?<div className="scope-rich-surface" dangerouslySetInnerHTML={{__html:slot.text}}/>:null}
               {renderEntities(slot.entities,false)}
             </>}
