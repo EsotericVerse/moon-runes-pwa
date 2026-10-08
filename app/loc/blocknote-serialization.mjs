@@ -6,10 +6,9 @@ const blankHtmlParagraph=/<p\b([^>]*)>(\s*(?:(?:\uFFFC|&#0*65532;|&#x0*fffc;)\s*
 
 function orphanObjectParagraph(block){
   if(!block||block.type!=='paragraph'||!Array.isArray(block.content)||!block.content.length)return false;
-  return block.content.every(part=>{
-    if(typeof part==='string')return objectOnlyText.test(part);
-    return part?.type==='text'&&typeof part.text==='string'&&objectOnlyText.test(part.text);
-  });
+  if(!block.content.every(part=>typeof part==='string'||(part?.type==='text'&&typeof part.text==='string')))return false;
+  const content=block.content.map(part=>typeof part==='string'?part:part.text).join('');
+  return objectOnlyText.test(content);
 }
 
 export function canonicalBlockNoteBlocks(blocks){
