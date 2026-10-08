@@ -22,7 +22,7 @@ import {deleteRows,insertRows,dbAuthRelation,updateRows} from '../../loc/db-clie
 import {useAccount} from '../../loc/use-account';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {ContentEditor,FeaturePage,IncrementalList,WorkFullText,WorkSummaryCard} from '../ui';
-import {plainTextToBlocks} from '../../loc/RichBlockEditor';
+import {plainTextToBlocks} from '../../loc/blocknote-content.mjs';
 import CultureTimelineEditor from './CultureTimelineEditor';
 import {workDisplayHeading,workDisplayText} from '../work-display-model';
 import {useOffsetPagination} from '../use-offset-pagination';
