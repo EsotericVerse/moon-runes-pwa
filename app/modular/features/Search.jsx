@@ -11,7 +11,7 @@ import {useAccount} from '../../loc/use-account';
 import {FeaturePage,IncrementalList,WorkFullText,WorkSummaryCard} from '../ui';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {scopeHref} from '../scope-registry';
-import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation';
+import {featureNavigationHref,galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
 import {resolveGalaxyExternalLinks,searchGalaxyRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordIntroductions} from '../../loc/galaxy-query';
 import {selectManagedScopes} from '../../loc/scope-data';
@@ -211,6 +211,14 @@ function toResult(row,source,scopeId){
     source:displaySource,title:String(title),
     date:row.date||row.createtime||row.time_date||row.record_date||row.UpdateTime||row.updated_at||'',
     snippet:body,scopeId:scope,resourceType,resourceId,
+    styleIntro:Boolean(row.style_keyword_intro),
+    styleWorkCount:Number.isInteger(row.style_work_count)?row.style_work_count:null,
+    styleCountSource:String(row.style_count_source||''),
+    styleCountBasis:String(row.style_count_basis||''),
+    stylePeriod:String(row.period_label||''),
+    styleAnchorStart:String(row.style_anchor_start||''),
+    styleAnchorEnd:String(row.style_anchor_end||''),
+    relatedStyleTags:Array.isArray(row.related_style_tags)?row.related_style_tags:[],
     editableTable,editableIdColumn,editResourceId,editableField,isScopeCard,href,
     relationLinks:resourceType==='galaxy'
       ?galaxyRelationLinks(scope,row)
@@ -618,6 +626,22 @@ export default function Search(){
           showSource
           showLinks
         >
+          {row.styleIntro?<div className="scope-style-search-connections">
+            <p className="scope-status">
+              <strong>關鍵詞作品數：</strong>
+              {row.styleWorkCount===null?'統計暫時無法取得':row.styleWorkCount.toLocaleString()+' 篇'}
+              {row.styleCountSource==='snapshot'?'（上次統計）':''}
+              <span> · {row.styleCountBasis||'標題／正文含此關鍵詞的有效作品，每篇計一次'}</span>
+            </p>
+            <div className="scope-preview-links">
+              <a href={scopeHref(row.scopeId)}>前往 {row.scopeId} Scope 網站</a>
+              {(row.styleAnchorStart||row.styleAnchorEnd)?<a href={featureNavigationHref(row.scopeId,'culture',{...(row.styleAnchorStart?{from:row.styleAnchorStart}:{}),...(row.styleAnchorEnd?{to:row.styleAnchorEnd}:{})})}>檢視時間與既有定錨點</a>:null}
+            </div>
+            {row.relatedStyleTags.length?<div className="scope-style-search-related">
+              <strong>同時期其他風格：</strong>
+              {row.relatedStyleTags.map(tag=><a key={tag} href={featureNavigationHref(row.scopeId,'search',{q:tag})}>{tag}</a>)}
+            </div>:null}
+          </div>:null}
           {row.resourceType==='galaxy'?<WorkFullText
             open={fullTextKey===row.key}
             loading={fullTextLoading&&fullTextKey===row.key}
