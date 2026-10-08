@@ -226,7 +226,7 @@ export default function AuthorHomeView({section=null}){
 
   // Public author homepage is owned by silver.lo3rwang_blocks, not stale JSX.
   // The two detailed author subpages above preserve their distinct layouts.
-  return <section className="loc-view scope-home-composition">
+  return <section className="loc-view loc-home">
     <AuthorHomeEditableBlocks/>
   </section>;
 }
