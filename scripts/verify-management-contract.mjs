@@ -212,6 +212,14 @@ must(keywordNetwork.includes("locale:'en'")&&keywordNetwork.includes("close:'關
 must(!keywordLibrary.includes('keyword_group')&&!keywordLibrary.includes("node_type:'style'")&&!keywordLibrary.includes("node_type:'keyword'"),'keyword library editor must not recreate style/rule/node-type storage');
 must(keywordLibrary.includes('scopeData=account.scopeDataFor(scopeId)')&&keywordLibrary.includes('keyword_min_chars')&&keywordLibrary.includes('keyword_min_documents'),'keyword analysis thresholds must resolve from the current Scope');
 must(keywordLibrary.includes('current_keyword_class_id')&&keywordLibrary.includes('keyword_class_share_enabled')&&keywordLibrary.includes('Class UUID'),'keyword library must expose current Class UUID and Scope sharing control');
+must(keywordLibrary.includes('mergeKeywordEdit(draftKeywords,selectedKeyword,keywordEdit)')&&
+  keywordLibrary.includes("setWritePhase('writing')")&&
+  keywordLibrary.includes("setWritePhase('syncing')")&&
+  keywordLibrary.includes("setWritePhase('reloading')")&&
+  keywordLibrary.includes('throwOnError:true')&&
+  keywordLibrary.includes('關鍵詞已成功寫入資料庫，但')&&
+  keywordLibrary.includes('role="status" aria-live="polite"'),
+  'Keyword saving must include un-applied text, report 3 visible loading stages, and distinguish committed writes from failed refreshes');
 must(keywordLibrary.includes('重新分析並寫入文章 Attr')&&keywordLibrary.includes('runRune66ClassificationBatch'),'keyword management must expose explicit batch classification instead of live recalculation');
 must(dbContract.includes("rpc('apply_keyword_classification'")&&dbContract.includes('p_scope_id:scope')&&dbContract.includes('silver.keyword_classes')&&dbContract.includes('randomUUID'),'keyword classification writes and copied Classes must be Scope-aware and use the UUID registry');
 must(dbContract.includes("rpc('read_keyword_class'")&&portableSchema.includes('api.read_keyword_class')&&portableSchema.includes('keyword_class_share_enabled'),'shared Keyword Class resolution must require scope + UUID and obey Scope sharing authorization');
