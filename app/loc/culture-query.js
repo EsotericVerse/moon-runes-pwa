@@ -68,15 +68,17 @@ async function selectCultureTimeRows(scope,birthday=''){
   }
   const normalize=(row,type)=>{
     const id=String(row.resource_id||row.record_id||'');
-    const ids=anchorIds(row.anchor_ids);
+    const ids=type==='style_comment'?(Array.isArray(row.anchor_ids)?row.anchor_ids:[]):anchorIds(row.anchor_ids);
     const firstId=ids[0]||'0';
     const lastId=ids.at(-1)||'0';
     const startAnchor=firstId==='0'?null:anchorMap.get(firstId);
     const endAnchor=lastId==='0'?null:anchorMap.get(lastId);
     const startDate=type==='anchor'
       ?timeDate(row)
-      :(firstId==='0'?scopeBirthday:timeDate(startAnchor));
-    const endBoundary=type==='anchor'
+      :type==='style_comment'
+        ?timeDate(startAnchor)
+        :(firstId==='0'?scopeBirthday:timeDate(startAnchor));
+    const endBoundary=type==='anchor'||type==='style_comment'
       ?null
       :(lastId==='0'?null:timeDate(endAnchor));
     return {
@@ -95,8 +97,8 @@ async function selectCultureTimeRows(scope,birthday=''){
       start_anchor_id:firstId==='0'?null:firstId,
       end_anchor_id:lastId==='0'?null:lastId,
       event_id:type==='event'?id:null,
-      open_start:type!=='anchor'&&firstId==='0',
-      open_end:type!=='anchor'&&lastId==='0',
+      open_start:['period','event'].includes(type)&&firstId==='0',
+      open_end:['period','event'].includes(type)&&lastId==='0',
       start_date:startDate,
       end_date:type==='period'?previousDay(endBoundary):endBoundary
     };
