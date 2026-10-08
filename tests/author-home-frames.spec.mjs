@@ -48,6 +48,8 @@ test('Author Hero keeps its own taller image framing; LOC artwork stays unchange
   const authorImage=authorHero.locator(':scope > .loc-home-block__media img');
   await expect(authorImage).toHaveAttribute('src',/lo3rwang-hero\.[^.]+\.jpg/);
   await expect(authorImage).toHaveCSS('object-fit','cover');
+  // Detect a missing image asset: a black hero background is not valid artwork.
+  await expect.poll(()=>authorImage.evaluate(img=>img.complete && img.naturalWidth>0)).toBe(true);
   await expect(authorImage).toHaveCSS('filter','none');
   await expect(authorImage).toHaveCSS('mask-image','none');
   await expect(authorHero).toHaveCSS('display','grid');
@@ -67,6 +69,10 @@ test('Author Hero keeps its own taller image framing; LOC artwork stays unchange
   const overlay=await authorHero.locator(':scope > .loc-home-block__media')
     .evaluate(el=>getComputedStyle(el,'::after').backgroundImage);
   expect(overlay).toContain('linear-gradient(');
+  // Author imagery stays visible behind the readable text; never restore
+  // the near-opaque (.96 desktop/.90 mobile) mask that hid the entire artwork.
+  expect(overlay).not.toContain('0.96');
+  expect(overlay).not.toContain('0.90');
 
   // Both pages still have the same DOM contract and one image in Hero.
   await expect(authorHero.locator(':scope > .loc-home-block__media img')).toHaveCount(1);
