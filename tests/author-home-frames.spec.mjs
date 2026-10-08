@@ -47,7 +47,7 @@ test('LOC and Author Heros share a 16:9 cover frame while keeping author overlay
   if(viewport.width>760){
     await expect(locHero).toHaveCSS('display','grid');
     await expect(locHero).toHaveCSS('align-content','center');
-    await expect(locHero).toHaveCSS('grid-template-columns',/^[\\d.]+px$/);
+    await expect(locHero).toHaveCSS('grid-template-columns',/^[0-9.]+px$/);
   }else{
     await expect(locHero).toHaveCSS('display','block');
   }
