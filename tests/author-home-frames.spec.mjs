@@ -18,7 +18,13 @@ test('Author homepage uses the exact LOC frame components and layouts',async({pa
   }
   await expect(page.locator('.loc-home > section[data-block-order="5"] .loc-home-block__media-bubble img')).toHaveAttribute('src','/pics/lo3rwang-3.png');
   await expect(page.locator('.loc-home > section[data-block-order="5"] .loc-home-block__media-bubble img')).toHaveCount(1);
-  await expect(page.locator('.loc-home > section[data-block-order="3"] .loc-home-block__children article')).toHaveCount(5);
+  // Editable author content can gain or lose child items; only the canonical
+  // one-to-six entity limit is structural. Do not freeze the author's copy count.
+  const authorFrameEntities=page.locator('.loc-home > section[data-block-order="3"] .loc-home-block__children article');
+  await expect(authorFrameEntities.first()).toBeVisible();
+  const entityCount=await authorFrameEntities.count();
+  expect(entityCount).toBeGreaterThanOrEqual(1);
+  expect(entityCount).toBeLessThanOrEqual(6);
   await expect(page.locator('.loc-home > section[data-block-order="6"] a[href^="mailto:"]')).toBeVisible();
   const image=page.locator('.loc-home > section[data-block-order="5"] .loc-home-block__media-bubble');
   const picture=await image.boundingBox();
