@@ -464,6 +464,14 @@ button,a,.loc-control,.loc-button,
   background-repeat:no-repeat;
   background-size:cover;
 }
+/* LOC and Author keep left-aligned wording, centered vertically within the
+   image frame. Rune feature-page layout is intentionally left unchanged. */
+.loc-next-main:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"])
+  .scope-feature-hero--artwork:not(.is-editing){
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
 .scope-feature-hero--artwork.scope-hero>.home-title-row>h1{
   color:#f7f8ff;
   text-shadow:0 3px 24px rgba(0,0,0,.6);

@@ -215,3 +215,31 @@ test('Eight feature JPGs map by Scope while keeping the same title and readable 
     }
   }
 });
+
+test('LOC and Author feature Hero text is vertically centered in its artwork frame',async({page})=>{
+  for(const prefix of ['', '/lo3rwang']){
+    for(const feature of ['culture','statics','search','governance']){
+      await page.goto(prefix+'/'+feature+'/',{waitUntil:'domcontentloaded'});
+      const hero=page.locator('header.scope-feature-hero--artwork');
+      await expect(hero.locator('.home-title-row>h1')).toBeVisible({timeout:25_000});
+      await expect(hero).toHaveCSS('display','flex');
+      await expect(hero).toHaveCSS('flex-direction','column');
+      await expect(hero).toHaveCSS('justify-content','center');
+      const offset=await hero.evaluate(el=>{
+        const heroBounds=el.getBoundingClientRect();
+        const visibleText=[...el.querySelectorAll(':scope > .loc-eyebrow, :scope > .home-title-row, :scope > .scope-hero-description')]
+          .map(node=>node.getBoundingClientRect())
+          .filter(rect=>rect.height>0);
+        if(!visibleText.length)return Number.POSITIVE_INFINITY;
+        const visualCenter=(visibleText[0].top+visibleText[visibleText.length-1].bottom)/2;
+        return Math.abs(visualCenter-(heroBounds.top+heroBounds.bottom)/2);
+      });
+      expect(offset).toBeLessThanOrEqual(32);
+      const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+      expect(overflow).toBeLessThanOrEqual(2);
+    }
+  }
+  // LunaRunes is already positioned correctly; no shared centering override.
+  await page.goto('/lrunes/culture/',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('header.scope-feature-hero--artwork')).not.toHaveCSS('display','flex');
+});
