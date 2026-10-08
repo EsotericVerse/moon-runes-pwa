@@ -54,6 +54,9 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
   const [rows,setRows]=useState([]);
   const [selectedClass,setSelectedClass]=useState('');
   const [selectedId,setSelectedId]=useState('');
+  const [selectedGroup,setSelectedGroup]=useState('');
+  const [selectedKeyword,setSelectedKeyword]=useState('');
+  const [keywordEdit,setKeywordEdit]=useState('');
   const [draft,setDraft]=useState(null);
   const [copyName,setCopyName]=useState('');
   const [minChars,setMinChars]=useState(DEFAULT_KEYWORD_MIN_CHARS);
@@ -142,13 +145,15 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
         ||null;
       if(candidate){
         setSelectedId(String(candidate.keyword_id));
+        setSelectedGroup(String(candidate.class_group||''));
+        setSelectedKeyword('');setKeywordEdit('');
         setDraft({...candidate,keywords_text:keywordText(candidate.keywords)});
       }else{
-        setSelectedId('');
+        setSelectedId('');setSelectedGroup('');setSelectedKeyword('');setKeywordEdit('');
         setDraft(null);
       }
     }catch(error){
-      setRows([]);setSelectedId('');setDraft(null);setMessage(String(error?.message||error));
+      setRows([]);setSelectedId('');setSelectedGroup('');setSelectedKeyword('');setKeywordEdit('');setDraft(null);setMessage(String(error?.message||error));
     }finally{
       setLoading(false);
     }
@@ -169,6 +174,9 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     .filter(row=>String(row.class_name)===selectedClass)
     .sort((a,b)=>Number(a.order_no||0)-Number(b.order_no||0)||Number(a.item_no||0)-Number(b.item_no||0)),[rows,selectedClass]);
   const selectedClassId=String(items[0]?.class_id||'');
+  const groups=useMemo(()=>[...new Set(items.map(item=>String(item.class_group||'').trim()).filter(Boolean))],[items]);
+  const groupItems=useMemo(()=>items.filter(item=>String(item.class_group||'').trim()===selectedGroup),[items,selectedGroup]);
+  const draftKeywords=useMemo(()=>normalizeKeywordLines(draft?.keywords_text||''),[draft?.keywords_text]);
   const configDirty=Boolean(configSnapshot)&&(
     Number(minChars)!==Number(configSnapshot.minChars)
     ||Number(minDocuments)!==Number(configSnapshot.minDocuments)
@@ -178,14 +186,41 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
 
   function selectItem(row){
     setSelectedId(String(row.keyword_id));
+    setSelectedGroup(String(row.class_group||''));
+    setSelectedKeyword('');setKeywordEdit('');
     setDraft({...row,keywords_text:keywordText(row.keywords)});
     setMessage('');
   }
   function newItem(group=''){
     const next=Math.max(0,...items.map(row=>Number(row.item_no)||0))+1;
-    setSelectedId('');
-    setDraft({...blankDraft(selectedClass,selectedClassId,next),class_group:String(group||'')});
+    setSelectedId('');setSelectedKeyword('');setKeywordEdit('');
+    setSelectedGroup(String(group||selectedGroup||''));
+    setDraft({...blankDraft(selectedClass,selectedClassId,next),class_group:String(group||selectedGroup||'')});
     setMessage('');
+  }
+
+  function chooseGroup(group){
+    setSelectedGroup(group);setSelectedId('');setDraft(null);
+    setSelectedKeyword('');setKeywordEdit('');setMessage('');
+  }
+  function applyDraftKeyword(){
+    if(!draft)return;
+    const value=keywordEdit.trim();
+    if(!value){setMessage('請輸入關鍵詞。');return;}
+    const next=draftKeywords.filter(word=>word!==selectedKeyword&&word!==value);
+    if(selectedKeyword){
+      const position=draftKeywords.indexOf(selectedKeyword);
+      next.splice(Math.min(position,next.length),0,value);
+    }else next.push(value);
+    setDraft(current=>({...current,keywords_text:next.join('\n')}));
+    setSelectedKeyword(value);setKeywordEdit(value);
+    setMessage('關鍵詞已放入編輯稿，請按「儲存」才會寫入資料庫。');
+  }
+  function removeDraftKeyword(){
+    if(!draft||!selectedKeyword)return;
+    setDraft(current=>({...current,keywords_text:draftKeywords.filter(word=>word!==selectedKeyword).join('\n')}));
+    setSelectedKeyword('');setKeywordEdit('');
+    setMessage('已從編輯稿移除關鍵詞，請按「儲存」才會寫入資料庫。');
   }
 
   async function save(){
@@ -394,7 +429,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
         isSearchable={false}
         options={KEYWORD_WORKSPACE_OPTIONS}
         value={KEYWORD_WORKSPACE_OPTIONS.find(option=>option.value===workspace)}
-        onChange={option=>setWorkspace(option?.value||'analysis')}
+        onChange={option=>{const next=option?.value||'analysis';setWorkspace(next);if(next==='manual')chooseGroup('');}}
         aria-label="關鍵詞工作區"
       />
     </div>
@@ -422,7 +457,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
 
     {workspace!=='analysis'?<>
     <div className="scope-stat-controls">
-      <label><span>Class</span><select className="scope-select" value={selectedClass} onChange={event=>{const name=event.target.value;setSelectedClass(name);const first=rows.find(row=>String(row.class_name)===name);if(first)selectItem(first);}}>
+      <label><span>Class</span><select className="scope-select" value={selectedClass} onChange={event=>{const name=event.target.value;setSelectedClass(name);const first=rows.find(row=>String(row.class_name)===name);if(workspace==='manual')chooseGroup('');else if(first)selectItem(first);else chooseGroup('');}}>
         {[...new Set(classes.map(item=>item.class_name))].map(name=><option key={name} value={name}>{name}</option>)}
       </select></label>
     </div>
@@ -454,8 +489,36 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     </div>:null}
 
     {!loading?<aside className="scope-management-editor scope-keyword-network-inspector">
-      <p className="scope-status">{workspace==='manual'?'直接選擇 Item 編輯與儲存；無需載入圖譜。':'可從圖譜選擇節點，右側編輯器會同步。'}</p>
-      {items.length?<div className="scope-stat-controls">
+      <p className="scope-status">{workspace==='manual'?'依序選擇符文群組 → 符文 Item → 關鍵詞；變更先放入編輯稿，按儲存才寫入資料庫。':'可從圖譜選擇節點，右側編輯器會同步。'}</p>
+      {workspace==='manual'?<>
+        <div className="scope-stat-controls scope-keyword-manual-path">
+          <label><span>符文群組</span><select className="scope-select" aria-label="選擇符文群組" value={selectedGroup} onChange={event=>chooseGroup(event.target.value)}>
+            <option value="">請先選擇符文群組</option>
+            {groups.map(group=><option key={group} value={group}>{group}</option>)}
+          </select></label>
+          <label><span>符文（Item）</span><select className="scope-select" aria-label="選擇符文" value={groupItems.some(row=>String(row.keyword_id)===selectedId)?selectedId:''} disabled={!selectedGroup} onChange={event=>{
+            const chosen=groupItems.find(row=>String(row.keyword_id)===event.target.value);
+            if(chosen)selectItem(chosen);
+            else {setSelectedId('');setDraft(null);setSelectedKeyword('');setKeywordEdit('');}
+          }}>
+            <option value="">請選擇符文</option>
+            {groupItems.map(item=><option key={item.keyword_id} value={item.keyword_id}>{item.item_name||item.item_no}</option>)}
+          </select></label>
+          <label><span>關鍵詞</span><select className="scope-select" aria-label="選擇關鍵詞" value={draftKeywords.includes(selectedKeyword)?selectedKeyword:''} disabled={!draft} onChange={event=>{
+            const word=event.target.value;setSelectedKeyword(word);setKeywordEdit(word);
+          }}>
+            <option value="">＋ 新增關鍵詞</option>
+            {draftKeywords.map(word=><option key={word} value={word}>{word}</option>)}
+          </select></label>
+        </div>
+        <div className="scope-stat-controls">
+          <button type="button" className="loc-button" disabled={!selectedGroup} onClick={()=>newItem(selectedGroup)}>＋ 新增符文 Item</button>
+          {draft?<><label><span>關鍵詞內容</span><input aria-label="關鍵詞內容" value={keywordEdit} onChange={event=>setKeywordEdit(event.target.value)} placeholder="輸入新關鍵詞或修改已選關鍵詞"/></label>
+            <button type="button" className="loc-button" onClick={applyDraftKeyword} disabled={busy||!keywordEdit.trim()}>套用至編輯稿</button>
+            {selectedKeyword?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={removeDraftKeyword}>從編輯稿移除</button>:null}
+          </>:null}
+        </div>
+      </>:items.length?<div className="scope-stat-controls">
         <label><span>選擇 Item</span><select className="scope-select" value={selectedId} onChange={event=>{
           const chosen=items.find(row=>String(row.keyword_id)===event.target.value);
           if(chosen)selectItem(chosen);
@@ -465,7 +528,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
         </select></label>
         <button type="button" className="loc-button" onClick={()=>newItem(items[0]?.class_group||'')}>＋ 新增 Item</button>
       </div>:null}
-        {!draft?<p className="scope-status">從圖上選擇 Item／Keyword；使用 vis-network 工具列新增、編輯或刪除節點。</p>:<>
+        {!draft?<p className="scope-status">{workspace==='manual'?'請先選擇符文群組，再選符文與關鍵詞，或在群組下新增符文。':'從圖上選擇 Item／Keyword；使用 vis-network 工具列新增、編輯或刪除節點。'}</p>:<>
           <div className="scope-management-fields">
             <label><span>Class</span><input value={draft.class_name||''} readOnly aria-readonly="true"/></label>
             <label><span>Group</span><input value={draft.class_group||''} onChange={event=>setDraft(current=>({...current,class_group:event.target.value}))}/></label>
