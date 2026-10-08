@@ -546,7 +546,7 @@ function ScopeGroupStatistics(){
       統計來源（scope_id）：{totals.map(row=>row.scope_id+' '+row.total.toLocaleString()+' 項 · '+row.ratio.toFixed(1)+'%').join('；')}
     </p>
 
-    <p className="scope-status">需要查看來源、Class、Group 或其他細部統計，請前往各 Scope／作者自己的統計頁。</p>
+    <p className="scope-status">若需要查詢相關成員的細部統計，請前往各相關成員的統計頁面即可。</p>
     <div className="scope-result-links">
       {scopeIds.map(id=><a key={id} href={featureNavigationHref(id,'statics')}>scope_id: {id} · 細部統計</a>)}
     </div>
