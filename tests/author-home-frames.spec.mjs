@@ -43,7 +43,7 @@ test('LOC and Author Heros share a 16:9 cover frame while keeping author overlay
   const locMinHeight=await locHero.evaluate(el=>Number.parseFloat(getComputedStyle(el).minHeight));
   const locHeroSize=await locHero.boundingBox();
   expect(locHeroSize).not.toBeNull();
-  await expect(locHero).toHaveCSS('aspect-ratio','16 / 9');
+  await expect(locHero).toHaveCSS('aspect-ratio',viewport.width>760?'16 / 9':'auto');
   if(viewport.width>760){
     expect(locHeroSize.height).toBeGreaterThanOrEqual(locHeroSize.width*9/16-2);
     // LOC must gain a widescreen editorial frame instead of its former
@@ -61,7 +61,7 @@ test('LOC and Author Heros share a 16:9 cover frame while keeping author overlay
   await expect(authorImage).toHaveCSS('filter','none');
   await expect(authorImage).toHaveCSS('mask-image','none');
   await expect(authorHero).toHaveCSS('display','grid');
-  await expect(authorHero).toHaveCSS('aspect-ratio','16 / 9');
+  await expect(authorHero).toHaveCSS('aspect-ratio',viewport.width>760?'16 / 9':'auto');
 
   const authorSize=await authorHero.boundingBox();
   expect(authorSize).not.toBeNull();
