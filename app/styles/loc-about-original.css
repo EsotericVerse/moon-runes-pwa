@@ -161,6 +161,14 @@
   .loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]) .loc-home>.loc-home-block--hero:not(.loc-home-block--hero-side){
     aspect-ratio:16 / 9;
   }
+  /* LOC's 16:9 canvas is taller than its copy. Center existing text blocks
+     as a group, leaving the approved artwork, content and author layout intact. */
+  .loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home>.loc-home-block--hero:not(.loc-home-block--hero-side){
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:0;
+  }
 }
 /* Outrank the shared .loc-home > .loc-hero > .home-hero-visual card rule:
    Hero artwork must overlay the frame, never participate in text flow. */
