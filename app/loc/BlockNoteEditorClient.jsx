@@ -24,8 +24,7 @@ export default function BlockNoteEditorClient({
       const blocks=editor.tryParseHTMLToBlocks(initialHtml);
       editor.replaceBlocks(editor.document,blocks);
     }
-    onHtmlChange?.(editor.blocksToHTMLLossy(editor.document));
-  },[editor,initialHtml,onHtmlChange]);
+  },[editor,initialHtml]);
 
   const emit=()=>{
     const blocks=editor.document;

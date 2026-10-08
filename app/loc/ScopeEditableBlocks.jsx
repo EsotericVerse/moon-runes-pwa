@@ -59,7 +59,8 @@ export default function ScopeEditableBlocks({
   slotClassName='loc-card',
   editSlotClassName='',
   headingLevel=3,
-  renderDisplay=null
+  renderDisplay=null,
+  allowEditing=true
 }){
   const account=useAccount();
   const queryClient=useQueryClient();
@@ -69,7 +70,7 @@ export default function ScopeEditableBlocks({
     queryFn:()=>selectScopeBlocks(scopeId,pageName),
     staleTime:60_000
   });
-  const canEdit=scopeId==='loc'?account.canManageGlobalSync():account.canManageScopeSync(scopeId);
+  const canEdit=allowEditing&&(scopeId==='loc'?account.canManageGlobalSync():account.canManageScopeSync(scopeId));
   const table=`silver.${scopeId}_blocks`;
   const normalizedOrders=useMemo(
     ()=>Array.isArray(orders)?orders.map(Number).filter(value=>Number.isInteger(value)&&value>0):[],
