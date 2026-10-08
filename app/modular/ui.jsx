@@ -9,7 +9,25 @@ import {useScopeRuntime} from './use-scope-runtime';
 import BlockNoteEditor from '../loc/BlockNoteEditor';
 import {blocksToPlainText,plainTextToBlocks} from '../loc/blocknote-content.mjs';
 import {selectScopeBlocks} from '../loc/scope-data';
-import {FEATURE_HERO_PAGE,sharedFeatureHeroFor,shouldUseSharedFeatureHero} from '../loc/feature-hero.mjs';
+import {FEATURE_HERO_PAGE,FEATURE_HERO_ORDER,sharedFeatureHeroFor,shouldUseSharedFeatureHero} from '../loc/feature-hero.mjs';
+import ScopeEditableBlocks from '../loc/ScopeEditableBlocks';
+
+// One visual header contract. On the LOC feature pages this same visible
+// header is wrapped by the existing ScopeEditableBlocks editor; elsewhere it
+// remains a read-only projection of exactly the same LOC records.
+function FeatureHeroContent({title,subtitle='',description='',rich=false}){
+  return <>
+    <div className="home-title-row">
+      <h1>{title}</h1>
+      {subtitle?(rich
+        ?<div className="loc-subtitle scope-subtitle scope-shared-hero-rich" dangerouslySetInnerHTML={{__html:subtitle}}/>
+        :<p className="loc-subtitle scope-subtitle">{subtitle}</p>):null}
+    </div>
+    {description?(rich
+      ?<div className="scope-hero-description scope-shared-hero-rich" dangerouslySetInnerHTML={{__html:description}}/>
+      :<div className="scope-hero-description">{description}</div>):null}
+  </>;
+}
 
 export function FeaturePage({featureId,children,subtitle=null,description=null}){
   const {scope,scopeId}=useScopeRuntime();
@@ -21,27 +39,49 @@ export function FeaturePage({featureId,children,subtitle=null,description=null})
   const resolvedDescription=description??profile.description;
   const finalSubtitle=subtitle||resolvedSubtitle;
   const sharedEnabled=shouldUseSharedFeatureHero(scopeId,featureId);
+  const locEditableHero=sharedEnabled&&scopeId==='loc';
   const sharedQuery=useQuery({
     queryKey:['scope-blocks','loc',FEATURE_HERO_PAGE],
     queryFn:()=>selectScopeBlocks('loc',FEATURE_HERO_PAGE),
     staleTime:60_000,
-    enabled:sharedEnabled
+    enabled:sharedEnabled&&!locEditableHero
   });
-  const shared=sharedEnabled?sharedFeatureHeroFor(sharedQuery.data,featureId):null;
-  const title=shared?.title||profile.title;
+  const shared=sharedEnabled&&!locEditableHero?sharedFeatureHeroFor(sharedQuery.data,featureId):null;
+  const fallbackCopy={
+    title:profile.title,
+    subtitle:finalSubtitle,
+    description:resolvedDescription
+  };
+
   return <main className="scope-main">
     <section className="scope-page">
-      <header className="loc-card scope-hero scope-feature-hero" data-feature-hero-source={shared?'loc':'default'}>
-        <div className="home-title-row">
-          <h1>{title}</h1>
-          {shared
-            ?(shared.subtitle?<div className="loc-subtitle scope-subtitle scope-shared-hero-rich" dangerouslySetInnerHTML={{__html:shared.subtitle}}/>:null)
-            :(finalSubtitle?<p className="loc-subtitle scope-subtitle">{finalSubtitle}</p>:null)}
-        </div>
-        {shared
-          ?(shared.description?<div className="scope-hero-description scope-shared-hero-rich" dangerouslySetInnerHTML={{__html:shared.description}}/>:null)
-          :(resolvedDescription?<div className="scope-hero-description">{resolvedDescription}</div>:null)}
-      </header>
+      {locEditableHero?<ScopeEditableBlocks
+        scopeId="loc"
+        page={FEATURE_HERO_PAGE}
+        orders={[FEATURE_HERO_ORDER[featureId]]}
+        containerless
+        slotTag="header"
+        slotClassName="loc-card scope-hero scope-feature-hero"
+        editSlotClassName="loc-card scope-hero scope-feature-hero"
+        placeholderFirstOrder={FEATURE_HERO_ORDER[featureId]}
+        allowEditing
+        allowDelete={false}
+        allowEntities={false}
+        editEyebrow={false}
+        renderDisplay={slot=><FeatureHeroContent
+          title={slot.stored?slot.title||profile.title:fallbackCopy.title}
+          subtitle={slot.stored?slot.subtitle:fallbackCopy.subtitle}
+          description={slot.stored?slot.text:fallbackCopy.description}
+          rich={slot.stored}
+        />}
+      />:<header className="loc-card scope-hero scope-feature-hero" data-feature-hero-source={shared?'loc':'default'}>
+        <FeatureHeroContent
+          title={shared?.title||fallbackCopy.title}
+          subtitle={shared?shared.subtitle:fallbackCopy.subtitle}
+          description={shared?shared.description:fallbackCopy.description}
+          rich={Boolean(shared)}
+        />
+      </header>}
       <div className="scope-content">{children}</div>
     </section>
   </main>;
