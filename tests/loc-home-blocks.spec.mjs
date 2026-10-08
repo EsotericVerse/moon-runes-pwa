@@ -35,11 +35,11 @@ test('LOC index home frames are rendered once, in database order, with authored 
   const viewport=page.viewportSize();
   for(const order of [2,3,6]){
     const frame=page.locator('.loc-home > section[data-block-order="'+order+'"]');
-    const picture=frame.locator('> .loc-home-block__media-bubble');
+    const picture=frame.locator(':scope > .loc-home-block__media-bubble');
     await expect(picture).toHaveCount(1);
     await expect(picture.locator('img')).toHaveCount(1);
     const [frameBox,headerBox,mediaBox]=await Promise.all([
-      frame.boundingBox(),frame.locator('> .loc-home-block__header').boundingBox(),picture.boundingBox()
+      frame.boundingBox(),frame.locator(':scope > .loc-home-block__header').boundingBox(),picture.boundingBox()
     ]);
     expect(frameBox&&headerBox&&mediaBox).toBeTruthy();
     expect(mediaBox.width).toBeLessThanOrEqual(frameBox.width);
