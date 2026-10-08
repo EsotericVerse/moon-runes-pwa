@@ -10,16 +10,16 @@ import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
 import {selectRows} from '../../loc/db-query.mjs';
 import {FEATURE_LOADING_MESSAGE} from '../feature-data-state';
 
-const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_ids,date_status,year_value,visibility';
+const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_ids,date_status,year_value,visibility,style_description';
 
 
 const EDITABLE_TYPES=Object.freeze([
-  ['anchor','定錨點'],['period','時期'],['event','事件']
+  ['anchor','定錨點'],['period','時期'],['event','事件'],['style_comment','風格標籤']
 ]);
 const TYPE_LABEL=Object.freeze(Object.fromEntries(EDITABLE_TYPES));
 const BLANK=Object.freeze({
   record_id:'',record_type:'anchor',label:'',resource_id:'',note:'',time_date:'',
-  anchor_ids:['0','0'],status:'',display_order:'',date_status:'exact',year_value:'',visibility:''
+  anchor_ids:['0','0'],status:'',display_order:'',date_status:'exact',year_value:'',visibility:'',style_description:''
 });
 
 function dateText(value){return value?String(value).slice(0,10):'';}
@@ -32,7 +32,7 @@ function rowDraft(row){
   if(!row)return {...BLANK};
   return {
     ...BLANK,...row,
-    anchor_ids:normalizeAnchorIds(row.anchor_ids),
+    anchor_ids:row.record_type==='style_comment'?(Array.isArray(row.anchor_ids)?row.anchor_ids:[]):normalizeAnchorIds(row.anchor_ids),
     time_date:dateText(row.time_date),
     year_value:row.year_value??''
   };
@@ -77,7 +77,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
     queryFn:async()=>{
       const {rows}=await selectRows(timeTable,{
         columns:TIME_COLUMNS,
-        filters:[{column:'record_type',operator:'in',value:[...EDITABLE_TYPES.map(([type])=>type),'style_comment']}],
+        filters:[{column:'record_type',operator:'in',value:EDITABLE_TYPES.map(([type])=>type)}],
         orders:[{column:'display_order',ascending:true},{column:'record_id',ascending:true}],
         limit:DB_QUERY_BATCH_SIZE,
         offset:0
@@ -146,10 +146,10 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       time_date:recordType==='anchor'?effectiveSuggestedAnchorDate:'',
       // Period/event creation starts with two explicit references, not an
       // inferred nearest anchor or a date clicked on the river.
-      anchor_ids:['0','0'],
+      anchor_ids:recordType==='style_comment'?[]:['0','0'],
       note:''
     });
-    setMessage(recordType==='anchor'?'已帶入河道日期。':'請先從既有定錨點分別選擇起點、終點；造成轉折的原因由定錨點名稱與說明保存。');
+    setMessage(recordType==='anchor'?'已帶入河道日期。':recordType==='style_comment'?'請為這個風格填寫獨立 TEXT 敘述，並指定一個正式定錨點。':'請先從既有定錨點分別選擇起點、終點；造成轉折的原因由定錨點名稱與說明保存。');
     setFormOpen(true);
   },[effectiveSuggestedAnchorDate,suggestedRecordType,suggestedRequestNonce]);
 
@@ -200,6 +200,13 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       const label=String(draft.label||'').trim();
       if(!label)throw new Error('請填寫名稱。');
       const resourceId=String(draft.resource_id||'').trim()||newResourceId(type);
+      if(type==='style_comment'){
+        const normalized=label.normalize('NFKC').toLocaleLowerCase('zh-Hant');
+        const duplicate=rawRows.find(row=>row.record_type==='style_comment'&&
+          String(row.label||'').trim().normalize('NFKC').toLocaleLowerCase('zh-Hant')===normalized&&
+          String(row.record_id||'')!==String(selectedId||''));
+        if(duplicate)throw new Error('此 Scope 已存在同名風格，每個風格名稱只能有一筆獨立敘述。');
+      }
       if(type==='anchor'){
         const duplicate=rawRows.find(row=>
           row.record_type==='anchor'&&
@@ -212,8 +219,8 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
         record_type:type,
         label,
         resource_id:resourceId,
-        note:String(draft.note||'').trim()||null,
-        status:String(draft.status||'').trim()||null,
+        note:type==='style_comment'?null:String(draft.note||'').trim()||null,
+        status:type==='style_comment'?'active':String(draft.status||'').trim()||null,
         display_order:draft.display_order===''?null:Number(draft.display_order),
         visibility:String(draft.visibility||'').trim()||null,
         time_date:null,
@@ -229,6 +236,13 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
         payload.time_date=exact||null;
         payload.date_status=exact?'exact':'year_only';
         payload.year_value=exact?null:year;
+      }else if(type==='style_comment'){
+        const styleDescription=String(draft.style_description||'').trim();
+        const anchorId=String(Array.isArray(draft.anchor_ids)?draft.anchor_ids[0]||'':'').trim();
+        if(!styleDescription)throw new Error('每個風格標籤必須有一段獨立的 TEXT 敘述。');
+        if(!anchorId||anchorId==='0'||!anchors.has(anchorId))throw new Error('請選擇一個已建立的正式定錨點。');
+        payload.style_description=styleDescription;
+        payload.anchor_ids=[anchorId];
       }else{
         const ids=normalizeAnchorIds(draft.anchor_ids);
         if(!selectedId&&ids.length===2&&ids.includes('0')){
@@ -274,7 +288,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
     if(draft.record_type==='anchor'){
       const id=String(draft.resource_id||'');
       const references=rawRows.filter(row=>row.record_type!=='anchor'&&normalizeAnchorIds(row.anchor_ids).includes(id));
-      if(references.length){setMessage('此定錨點仍被時期或事件使用，請先調整引用。');return;}
+      if(references.length){setMessage('此定錨點仍被時期、事件或風格標籤引用，請先調整引用。');return;}
     }
     setBusy(true);setMessage('');
     try{
@@ -299,17 +313,27 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       <label><span>類型</span><select className="scope-select" value={draft.record_type} disabled={Boolean(selectedId)} onChange={event=>change('record_type',event.target.value)}>
         {EDITABLE_TYPES.map(([type,label])=><option key={type} value={type}>{label}</option>)}
       </select></label>
-      <label><span>名稱</span><input className="scope-search-input" value={draft.label||''} onChange={event=>change('label',event.target.value)} required/></label>
+      <label><span>{draft.record_type==='style_comment'?'風格標籤名稱（搜尋關鍵詞）':'名稱'}</span><input className="scope-search-input" value={draft.label||''} onChange={event=>change('label',event.target.value)} required/></label>
       <label><span>識別</span><input className="scope-search-input" value={draft.resource_id||''} disabled={Boolean(selectedId)} onChange={event=>change('resource_id',event.target.value)} placeholder="留空自動產生"/></label>
-      <label><span>{draft.record_type==='anchor'?'定錨點說明（關鍵變化／持續檢討，非風格敘述）':'時期／事件說明（非風格敘述）'}</span><textarea className="scope-search-input" rows={5} value={draft.note||''} onChange={event=>change('note',event.target.value)}/></label>
-      {draft.record_type==='anchor'?<p className="scope-status">此處保存定錨點的轉折觀察，不是風格標籤。要新增「政德風」等獨立風格紀錄，請先儲存此定錨點，再到文化頁的「作品分類河道」點「＋ 新增風格標籤」，為該風格填寫自己的名稱、敘述及唯一定錨點。</p>:null}
+      {draft.record_type!=='style_comment'?<label><span>{draft.record_type==='anchor'?'定錨點說明（關鍵變化／持續檢討，非風格敘述）':'時期／事件說明（非風格敘述）'}</span><textarea className="scope-search-input" rows={5} value={draft.note||''} onChange={event=>change('note',event.target.value)}/></label>:null}
+      {draft.record_type==='style_comment'?<>
+        <label><span>風格專屬敘述（TEXT）</span><textarea className="scope-search-input" rows={7} value={draft.style_description||''} onChange={event=>change('style_description',event.target.value)} required placeholder="每筆風格各自保存一段說明，不與其他風格共用文字欄位"/></label>
+        <label><span>唯一正式定錨點</span>
+          <select className="scope-select" value={Array.isArray(draft.anchor_ids)?draft.anchor_ids[0]||'':''} onChange={event=>change('anchor_ids',event.target.value?[event.target.value]:[])} required>
+            <option value="">請選擇既有定錨點</option>
+            {anchorOptions.map(row=><option key={row.resource_id} value={row.resource_id}>{dateText(row.time_date)||row.year_value||'年份未定'}｜{row.label}</option>)}
+          </select>
+        </label>
+        <p className="scope-status">一個風格、一段獨立敘述、一個既有正式定錨點。可跨時期，不自動推定日期。</p>
+      </>:null}
+      {draft.record_type==='anchor'?<p className="scope-status">此處保存定錨點的轉折觀察，不是風格標籤。要新增「政德風」等獨立風格紀錄，請在第一條時間河道上方點「＋ 新增風格標籤」，填寫名稱、敘述及唯一定錨點。</p>:null}
 
       {draft.record_type==='anchor'?<div className="scope-stat-controls">
         <label><span>日期</span><input className="scope-select" type="date" value={dateText(draft.time_date)} onChange={event=>change('time_date',event.target.value)}/></label>
         <label><span>日期未知時的年份</span><input className="scope-search-input" type="number" value={draft.year_value??''} onChange={event=>change('year_value',event.target.value)}/></label>
       </div>:null}
 
-      {draft.record_type!=='anchor'?<div className="scope-management-wide-field">
+      {['period','event'].includes(draft.record_type)?<div className="scope-management-wide-field">
         <h3>起點與終點定錨點</h3>
         <p className="scope-status">時期與事件是既有定錨點之間的範圍，不會在此自動新增定錨點。選擇日期時同時確認名稱與形成轉折的原因。</p>
         {anchorOptions.length===0?<p className="scope-status scope-error">尚未建立正式定錨點。請先建立定錨點，或將河道建議定錨轉為正式定錨點。</p>:null}
@@ -334,10 +358,10 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       </div>:null}
 
 
-      <div className="scope-stat-controls">
+      {draft.record_type!=='style_comment'?<div className="scope-stat-controls">
         <label><span>狀態</span><input className="scope-search-input" value={draft.status||''} onChange={event=>change('status',event.target.value)}/></label>
         {draft.record_type==='period'?<label><span>排序</span><input className="scope-search-input" type="number" value={draft.display_order??''} onChange={event=>change('display_order',event.target.value)}/></label>:null}
-      </div>
+      </div>:null}
       {message?<p className="scope-status" role="status">{message}</p>:null}
       <div className="scope-tabs">
         <button type="submit" disabled={busy}>{busy?'儲存中…':'儲存'}</button>
