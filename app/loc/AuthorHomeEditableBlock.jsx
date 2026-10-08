@@ -44,7 +44,7 @@ function HeroDisplay(slot){
     <Html tag="p" className="loc-eyebrow" html={slot.eyebrow||stripOuterParagraph(english.text)||english.title}/>
     <div className="home-title-row">
       <h1>{slot.title}</h1>
-      <Html tag="p" className="loc-subtitle" html={stripOuterParagraph(slot.subtitle||role.text)}/>
+      <Html className="loc-subtitle" html={slot.subtitle||role.text}/>
     </div>
     {paragraphParts(slot.text).map((part,index)=><Html tag="p" html={part} key={'hero-'+index}/>)}
   </>;
