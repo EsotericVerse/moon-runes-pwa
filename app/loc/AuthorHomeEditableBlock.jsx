@@ -1,6 +1,7 @@
 'use client';
 
 import ScopeEditableBlocks from './ScopeEditableBlocks';
+import authorHeroAsset from '../../pics/lo3rwang-hero.jpg';
 
 function stripOuterParagraph(html=''){
   const value=String(html||'').trim();
@@ -41,12 +42,17 @@ function HeroDisplay(slot){
   const english=entityAt(slot,0);
   const role=entityAt(slot,1);
   return <>
-    <Html tag="p" className="loc-eyebrow" html={slot.eyebrow||stripOuterParagraph(english.text)||english.title}/>
-    <div className="home-title-row">
-      <h1>{slot.title}</h1>
-      <Html className="loc-subtitle" html={slot.subtitle||role.text}/>
+    <img className="author-home-hero-image" src={authorHeroAsset.src}
+      alt="" aria-hidden="true" loading="eager" fetchPriority="high" decoding="async"/>
+    <div className="author-home-hero-overlay" aria-hidden="true"/>
+    <div className="author-home-hero-copy">
+      <Html tag="p" className="loc-eyebrow" html={slot.eyebrow||stripOuterParagraph(english.text)||english.title}/>
+      <div className="home-title-row">
+        <h1 id="top">{slot.title}</h1>
+        <Html className="loc-subtitle" html={slot.subtitle||role.text}/>
+      </div>
+      {paragraphParts(slot.text).map((part,index)=><Html tag="p" html={part} key={'hero-'+index}/>)}
     </div>
-    {paragraphParts(slot.text).map((part,index)=><Html tag="p" html={part} key={'hero-'+index}/>)}
   </>;
 }
 
@@ -56,7 +62,7 @@ function AboutDisplay(slot){
   return <>
     <p className="loc-eyebrow">{slot.eyebrow||'About'}</p>
     {slot.subtitle?<Html className="loc-subtitle scope-block-subtitle" html={slot.subtitle}/>:null}
-    <h2>{slot.title}</h2>
+    <h2 id="about">{slot.title}</h2>
     <div className="author-about-grid">
       <div className="author-about-primary">
         {primary.map(entity=><article className="author-editorial-block" key={entity.uid}>
@@ -80,7 +86,7 @@ function ProfessionalDisplay(slot){
   return <>
     <p className="loc-eyebrow">{slot.eyebrow||'Professional'}</p>
     {slot.subtitle?<Html className="loc-subtitle scope-block-subtitle" html={slot.subtitle}/>:null}
-    <h2>{slot.title}</h2>
+    <h2 id="professional">{slot.title}</h2>
     <Html className="author-section-lead" html={slot.text}/>
     <div className="author-role-grid">
       {roles.map(entity=><article className="author-editorial-block" key={entity.uid}>
@@ -101,7 +107,7 @@ function SystemsDisplay(slot){
   return <>
     <p className="loc-eyebrow">{slot.eyebrow||'Systems'}</p>
     {slot.subtitle?<Html className="loc-subtitle scope-block-subtitle" html={slot.subtitle}/>:null}
-    <h2>{slot.title}</h2>
+    <h2 id="systems">{slot.title}</h2>
     <div className="author-system-grid">
       {slot.entities.map(entity=><article className="author-editorial-block" key={entity.uid}>
         <h3>{entity.title}</h3>
@@ -115,7 +121,7 @@ function SoulsDisplay(slot){
   return <>
     <p className="loc-eyebrow">{slot.eyebrow||'Three Souls'}</p>
     {slot.subtitle?<Html className="loc-subtitle scope-block-subtitle" html={slot.subtitle}/>:null}
-    <h2>{slot.title}</h2>
+    <h2 id="three-souls">{slot.title}</h2>
     <div className="author-trinity-layout">
       <figure className="home-architecture-figure author-trinity-figure">
         <img src="/pics/lo3rwang-3.png" alt="Oscar 政德、玄鑒 Lucas、符韻 Rune，以及柏隆 Bruno、睿汶 Raven 的關係圖" loading="lazy"/>
@@ -142,7 +148,7 @@ function ContactDisplay(slot){
   return <>
     <p className="loc-eyebrow">{slot.eyebrow||'Contact'}</p>
     {slot.subtitle?<Html className="loc-subtitle scope-block-subtitle" html={slot.subtitle}/>:null}
-    <h2>{slot.title}</h2>
+    <h2 id="contact">{slot.title}</h2>
     <div className="author-contact-layout">
       <div>
         <Html tag="p" html={parts[0]||''}/>
@@ -155,24 +161,50 @@ function ContactDisplay(slot){
   </>;
 }
 
-const CONFIG={
-  hero:{render:HeroDisplay,slotClassName:'author-home-hero-copy'},
-  about:{render:AboutDisplay,slotClassName:'author-home-display-block'},
-  professional:{render:ProfessionalDisplay,slotClassName:'author-home-display-block'},
-  systems:{render:SystemsDisplay,slotClassName:'author-home-display-block'},
-  souls:{render:SoulsDisplay,slotClassName:'author-home-display-block'},
-  contact:{render:ContactDisplay,slotClassName:'author-home-display-block'}
-};
+const DISPLAY_BY_ORDER=Object.freeze({
+  1:HeroDisplay,
+  2:AboutDisplay,
+  3:ProfessionalDisplay,
+  4:SystemsDisplay,
+  5:SoulsDisplay,
+  6:ContactDisplay
+});
 
-export default function AuthorHomeEditableBlock({order,variant}){
-  const config=CONFIG[variant]||CONFIG.about;
+function GenericDisplay(slot){
+  return <>
+    {slot.eyebrow?<p className="loc-eyebrow">{slot.eyebrow}</p>:null}
+    {slot.title?<h2>{slot.title}</h2>:null}
+    <Html html={slot.subtitle} className="loc-subtitle"/>
+    <Html html={slot.text} className="scope-rich-surface"/>
+    {slot.entities.map(entity=><article className="author-editorial-block" key={entity.uid}>
+      {entity.title?<h3>{entity.title}</h3>:null}
+      <Html html={entity.text}/>
+    </article>)}
+  </>;
+}
+
+function AuthorDisplay(slot){
+  const display=DISPLAY_BY_ORDER[slot.order]||GenericDisplay;
+  return display(slot);
+}
+
+function authorBlockClass(slot){
+  return slot.order===1?'loc-hero author-home-hero':'loc-card scope-home-section';
+}
+
+// One read, one native frame per DB block. Clicking a public frame opens the
+// existing shared BlockNote editor only for authorized Scope managers.
+export default function AuthorHomeEditableBlocks(){
   return <ScopeEditableBlocks
     scopeId="lo3rwang"
-    allowEditing={false}
     page="index"
-    orders={[order]}
-    slotClassName={config.slotClassName}
-    editSlotClassName="loc-card"
-    renderDisplay={config.render}
+    allowEditing
+    containerless
+    maxBlocks={8}
+    placeholderFirstOrder={1}
+    headingLevel={2}
+    renderDisplay={AuthorDisplay}
+    resolveSlotClassName={authorBlockClass}
+    editSlotClassName="loc-card scope-home-section"
   />;
 }
