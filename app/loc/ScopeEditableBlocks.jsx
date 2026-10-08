@@ -8,6 +8,7 @@ import {useAccount} from './use-account';
 import BlockNoteEditor from './BlockNoteEditor';
 import {stripLocHomeEditorPlaceholders} from './loc-home-text.mjs';
 import {childPresentation,removeDuplicatedLegacySubtitle} from './block-presentation.mjs';
+import {homeBlockRows} from './home-block-model.mjs';
 
 const ENTITY_LIMIT=6;
 const UID_ALPHABET='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -85,14 +86,15 @@ export default function ScopeEditableBlocks({
   );
   const slots=useMemo(()=>{
     const rows=Array.isArray(query.data)?query.data:[];
-    const selected=normalizedOrders.length
-      ?normalizedOrders.map(order=>rows.find(row=>Number(row.block_order)===order)).filter(Boolean)
-      :rows;
-    const limit=Number.isInteger(maxBlocks)&&maxBlocks>0?maxBlocks:Infinity;
-    return selected.filter(row=>Number(row.block_order)>=1&&Number(row.block_order)<=limit)
-      .sort((a,b)=>Number(a.block_order)-Number(b.block_order)||String(a.uid||'').localeCompare(String(b.uid||''))
-      .slice(0,limit).map(row=>normalizeRow(row,row.block_order));
-  },[query.data,normalizedOrders,maxBlocks]);
+    if(normalizedOrders.length){
+      const byOrder=new Map(rows.map(row=>[Number(row.block_order),row]));
+      return normalizedOrders.map(order=>normalizeRow(byOrder.get(order),order));
+    }
+    if(Number.isInteger(maxBlocks)&&maxBlocks>0){
+      return homeBlockRows(rows,pageName,maxBlocks).map(row=>normalizeRow(row,row.block_order));
+    }
+    return rows.map(row=>normalizeRow(row,row.block_order));
+  },[query.data,normalizedOrders,maxBlocks,pageName]);
   const nextOrder=useMemo(()=>{
     const rows=Array.isArray(query.data)?query.data:[];
     return Math.max(0,...rows.map(row=>Number(row.block_order)||0))+1;
