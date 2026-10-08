@@ -650,7 +650,7 @@ function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false}
           :<SourceTrendChart rows={trendQuery.data||[]} standard={effectiveTimeStandard} customRange={customRange} height={420}/>
         :<SummaryChart type={chartType} rankingType={rankingType} summary={summary} height={380}/>}
     </>:null}
-    {mediaDimension&&customReady?<div className="scope-stat-controls">
+    {mediaDimension&&Boolean(targetScopes.length)&&customReady&&Boolean(queryRange.startDate&&queryRange.endDate)?<div className="scope-stat-controls">
       <button type="button" className="loc-button" onClick={()=>mediaQuery.refetch()} disabled={mediaQuery.isFetching}>
         {mediaQuery.isFetching?'更新統計中…':'重新整理即時統計'}
       </button>
