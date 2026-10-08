@@ -165,7 +165,7 @@ export default function CultureTimeline({
         }
       }:row);
       const data=new DataSet(dataRows);
-      const timeGroupLabels={anchor:'定錨點',event:'事件',period:'時期',style_comment:'風格標籤'};
+      const timeGroupLabels={anchor:'定錨點',event:'事件',style_comment:'風格標籤',period:'時期'};
       const standardTimeKinds=Object.keys(timeGroupLabels);
       const foundGroups=[...new Set(rows.map(row=>row.group).filter(Boolean))];
       const groupIds=hasTimeKinds
