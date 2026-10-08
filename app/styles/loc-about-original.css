@@ -161,14 +161,14 @@
   .loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]) .loc-home>.loc-home-block--hero:not(.loc-home-block--hero-side){
     aspect-ratio:16 / 9;
   }
-  /* Keep the copy in the artwork's readable left area; center the
-     existing header, body and bubbles vertically as one group.
-     This shared rule retains the same LOC / Author frame contract. */
+  /* Reuse the common frame without activating the old two-column
+     artwork grid. The background figure must remain inset 0 while the
+     original copy stays left aligned and vertically centered. */
   .loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]) .loc-home>.loc-home-block--hero:not(.loc-home-block--hero-side){
-    display:grid;
-    grid-template-columns:minmax(0,1fr);
-    align-content:center;
-    row-gap:0;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:0;
   }
 }
 /* Outrank the shared .loc-home > .loc-hero > .home-hero-visual card rule:
