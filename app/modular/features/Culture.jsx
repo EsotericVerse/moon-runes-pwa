@@ -722,8 +722,6 @@ export default function Culture(){
                     }
                   }}
                   editable={account.canManageScopeSync(scopeId)}
-                  // Vis-timeline's add gesture conflicts with drag and period
-                  // navigation. Only explicit click-to-add mode opens the editor.
                   onAdd={null}
                   onMove={account.canManageScopeSync(scopeId)?moveTimelineRecord:null}
                   onUpdate={account.canManageScopeSync(scopeId)?(item,row)=>{
