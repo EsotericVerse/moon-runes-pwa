@@ -11,6 +11,7 @@ import {childPresentation,removeDuplicatedLegacySubtitle} from './block-presenta
 import {homeBlockRows} from './home-block-model.mjs';
 import {countHtmlImages,frameImageCount,firstFrameImageUrl,heroImageMode} from './blocknote-image-url.mjs';
 
+const ENTITY_LIMIT=6;
 const UID_ALPHABET='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 function makeUid(){
@@ -31,7 +32,7 @@ function pageNameOf(value='index'){
 
 function normalizeEntities(value){
   const rows=Array.isArray(value)?value:[];
-  return rows.map((entity,index)=>({
+  return rows.slice(0,ENTITY_LIMIT).map((entity,index)=>({
     uid:/^[A-Za-z0-9]{8}$/.test(String(entity?.uid||''))?String(entity.uid):makeUid(),
     title:String(entity?.title||''),
     text:String(entity?.text||''),
@@ -163,7 +164,7 @@ export default function ScopeEditableBlocks({
 
   function addEntity(){
     setDraft(current=>{
-      if(!current)return current;
+      if(!current||current.entities.length>=ENTITY_LIMIT)return current;
       return {
         ...current,
         entities:[...current.entities,{uid:makeUid(),title:'',text:'',order:current.entities.length+1}]
@@ -292,7 +293,7 @@ export default function ScopeEditableBlocks({
           {entity.text?<div className="scope-rich-surface" dangerouslySetInnerHTML={{__html:entity.text}}/>:null}
         </>}
       </article>)}
-      {editable?<button type="button" className="scope-block-entity-add" onClick={addEntity} disabled={busy}>
+      {editable&&entities.length<ENTITY_LIMIT?<button type="button" className="scope-block-entity-add" onClick={addEntity} disabled={busy}>
         ＋ 子文字框
       </button>:null}
     </div>;
