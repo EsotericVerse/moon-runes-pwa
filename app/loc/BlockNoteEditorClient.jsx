@@ -10,6 +10,7 @@ export default function BlockNoteEditorClient({
   initialBlocks=[],
   initialHtml='',
   editable=true,
+  canInsertImage=true,
   onChange=null,
   onHtmlChange=null
 }){
@@ -81,14 +82,30 @@ export default function BlockNoteEditorClient({
       return;
     }
     try{
-      const current=editor.getTextCursorPosition?.()?.block||editor.document?.at(-1);
-      if(isEmptyImageTarget(current)){
-        // Empty bubble => a single image block, with no orphan text paragraph.
-        editor.updateBlock(current,image);
-      }else if(current){
-        editor.insertBlocks([image],current,'after');
+      const findImage=blocks=>{
+        for(const block of blocks||[]){
+          if(block.type==='image')return block;
+          const child=findImage(block.children);
+          if(child)return child;
+        }
+        return null;
+      };
+      const existing=findImage(editor.document);
+      if(existing){
+        // Changing the URL replaces the existing image, never adds a second.
+        editor.updateBlock(existing,image);
+      }else if(!canInsertImage){
+        globalThis.alert?.('這個文字框架已有一張圖片。請先移除原圖，再插入其他位置。');
+        return;
       }else{
-        editor.replaceBlocks(editor.document,[image]);
+        const current=editor.getTextCursorPosition?.()?.block||editor.document?.at(-1);
+        if(isEmptyImageTarget(current)){
+          editor.updateBlock(current,image);
+        }else if(current){
+          editor.insertBlocks([image],current,'after');
+        }else{
+          editor.replaceBlocks(editor.document,[image]);
+        }
       }
       emit();
     }catch(error){
