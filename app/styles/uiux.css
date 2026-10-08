@@ -315,12 +315,12 @@ button,a,.loc-control,.loc-button,
   background-repeat:no-repeat;
   background-size:cover;
 }
-.scope-feature-hero--artwork>.home-title-row>h1{
+.scope-feature-hero--artwork.scope-hero>.home-title-row>h1{
   color:#f7f8ff;
   text-shadow:0 3px 24px rgba(0,0,0,.6);
 }
 .scope-feature-hero--artwork>.loc-eyebrow{color:#f5d795!important}
-.scope-feature-hero--artwork .scope-subtitle{color:#e8d6ac!important}
+.scope-feature-hero--artwork.scope-hero>.home-title-row>.scope-subtitle{color:#e8d6ac!important}
 .scope-feature-hero--artwork .scope-hero-description,
 .scope-feature-hero--artwork .scope-hero-description :where(p,li,strong){
   color:#f5f7fc!important;
