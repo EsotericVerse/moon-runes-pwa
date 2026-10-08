@@ -111,6 +111,12 @@ if(!failures.length){
   if(statistics.includes("?{startDate:customFrom,endDate:customTo}\n    :{startDate:'',endDate:''}"))failures.push('Preset Statistics ranges must not fall back to an unbounded database query.');
   if(galaxy.includes("{column:'source_name',operator:'neq',value:''}"))failures.push('Unknown source rows must reach Statistics and map to Others instead of being discarded.');
   for(const token of ['表現風格','Class｜符文群組','Group｜符文排行'])if(!statistics.includes(token))failures.push('Statistics style-filter presentation missing '+token);
+  // Group is an already-aggregated ranking; page only its rendered rows, while
+  // keeping the full result set for percentages and stable rank ordering.
+  for(const token of ['GROUP_RANKING_PAGE_SIZE=10','groupRows.slice((activeGroupPage-1)*GROUP_RANKING_PAGE_SIZE,activeGroupPage*GROUP_RANKING_PAGE_SIZE)','visibleGroupRows.map','Group 統計分頁','setGroupPage(activeGroupPage-1)','setGroupPage(activeGroupPage+1)']){
+    if(!statistics.includes(token))failures.push('Statistics Group ranking pagination missing '+token);
+  }
+  if(statistics.includes('{groupRows.map(row=>'))failures.push('Statistics Group ranking must not render every item in one long list.');
   for(const token of ['表現風格','Class｜符文群組比例','culture-style-filter'])if(!culture.includes(token))failures.push('Culture style-filter presentation missing '+token);
   if(!culture.includes('本頁面只顯示所屬人員的交會時間作品。若需以時間查詢其他人的作品列表，請前往該人員的文化功能頁面。'))failures.push('LOC Culture must preserve the user-approved intersection navigation guidance.');
   for(const token of ['currentStructurePeriod','items={currentTimelineItems}','windowStart={currentStructureStart}','windowEnd={currentStructureEnd}','onBoundaryNavigate'])if(!culture.includes(token))failures.push('Culture first river must show one current/selected period and navigate period-by-period: '+token);
