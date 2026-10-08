@@ -44,6 +44,7 @@
     "fix/admin-native-select-registry-fallback-v3-20261008",
     "fix/admin-registry-tree-mixed-levels-20261008",
     "fix/admin-theme-config-only-20261008",
+    "fix/author-contact-single-image-20261008",
     "fix/blocknote-save-roundtrip-20261008",
     "fix/blocknote-single-entry-current-20261008",
     "fix/canonical-management-oauth-redirects",
