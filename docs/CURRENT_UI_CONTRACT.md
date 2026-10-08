@@ -75,7 +75,7 @@ Statistics 登入管理後的關鍵詞設定以 Class 為第一層。每個 Clas
 
 每套 Keyword Class 使用 UUID，Scope 以 `current_keyword_class_id` 指向目前採用版本，並以 `keyword_class_share_enabled` 控制分享授權。規則修改後不即時計算；Scope 管理者明確執行一次批次分析，系統依時間順序完成分類並把結果寫入 Galaxy Attr：`class_id` 保存唯一 1–8 Class，`group_lists` 保存命中項目與次數；`false` 表示不參與分析，空 object 表示有參與但未命中。完全平手只在候選 Class 間依當下累積文章數動態分配，最後不保留 tie 狀態。
 
-批次完成後以 `staticstime` 定錨；平常 Statistics／Culture 只讀文章 Attr 與定錨 metadata，不重新讀全文或關鍵詞庫跑分類器。只有 Statistics 內登入後展開「關鍵詞設定」時才執行管理與重新分析。
+批次完成後以 `staticstime` 定錨；平常 Statistics／Culture 只讀文章 Attr 與定錨 metadata，不重新讀全文或關鍵詞庫跑分類器。關鍵詞設定以獨立管理頁 `/lo3rwang/statics/keywords/`（一般 Scope 使用 `/scope/statics/keywords/?scope=<id>`）提供；只有授權使用者進入該頁並手動操作才啟動設定／批次分析。統計頁不載入管理器，vis-network 只有選擇「視覺圖譜」才掛載。
 
 ## Management visibility
 
