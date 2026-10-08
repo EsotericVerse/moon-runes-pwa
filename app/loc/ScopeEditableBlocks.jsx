@@ -5,7 +5,7 @@ import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {deleteRows,insertRows,updateRows} from './db-client.mjs';
 import {selectScopeBlocks} from './scope-data';
 import {useAccount} from './use-account';
-import RichBlockEditor from './RichBlockEditor';
+import BlockNoteEditor from './BlockNoteEditor';
 import {stripLocHomeEditorPlaceholders} from './loc-home-text.mjs';
 import {childPresentation,removeDuplicatedLegacySubtitle} from './block-presentation.mjs';
 
@@ -223,7 +223,7 @@ export default function ScopeEditableBlocks({
               onChange={event=>updateEntity(index,{title:event.target.value})}
             />
           </label>
-          <RichBlockEditor
+          <BlockNoteEditor
             key={entity.uid+':edit'}
             initialContent={entity.text?{html:entity.text}:''}
             onHtmlChange={html=>updateEntity(index,{text:html})}
@@ -277,7 +277,7 @@ export default function ScopeEditableBlocks({
           <div className="scope-management-wide-field">
             <span>標題說明（可保留粗體與換行）</span>
           </div>
-          <RichBlockEditor
+          <BlockNoteEditor
             key={draft.uid+':subtitle:edit'}
             initialContent={draft.subtitle?{html:draft.subtitle}:''}
             onHtmlChange={html=>setDraft(current=>({...current,subtitle:html}))}
@@ -285,7 +285,7 @@ export default function ScopeEditableBlocks({
           <div className="scope-management-wide-field">
             <span>下方正文（BlockNote）</span>
           </div>
-          <RichBlockEditor
+          <BlockNoteEditor
             key={draft.uid+':body:edit'}
             initialContent={draft.text?{html:draft.text}:''}
             onHtmlChange={html=>setDraft(current=>({...current,text:html}))}
