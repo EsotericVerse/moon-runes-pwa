@@ -60,7 +60,7 @@ function rowSortDate(row,anchors){
   return dateText(anchors.get(first)?.time_date)||dateText(anchors.get(last)?.time_date)||'9999-12-31';
 }
 
-export default function CultureTimelineEditor({scopeId='',selectedRecordId='',suggestedAnchorDate='',suggestedRecordType='anchor',suggestedRequestNonce=0,selectedAnchorPick=null,onPickAnchorSlot=null,capturingAnchorSlot=null,onClose=null}){
+export default function CultureTimelineEditor({scopeId='',selectedRecordId='',suggestedAnchorDate='',suggestedRecordType='anchor',suggestedRequestNonce=0,onClose=null}){
   const account=useAccount();
   const searchParams=useSearchParams();
   const routeSuggestedAnchorDate=String(searchParams?.get?.('anchorDate')||'').slice(0,10);
@@ -149,30 +149,18 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
     if(!/^\d{4}-\d{2}-\d{2}$/.test(effectiveSuggestedAnchorDate))return;
     setSelectedId('');
     const recordType=EDITABLE_TYPES.some(([type])=>type===suggestedRecordType)?suggestedRecordType:'anchor';
-    const closestAnchor=anchorOptions
-      .filter(row=>dateText(row.time_date)&&dateText(row.time_date)<=effectiveSuggestedAnchorDate)
-      .at(-1);
     setDraft({
       ...BLANK,
       record_type:recordType,
       time_date:recordType==='anchor'?effectiveSuggestedAnchorDate:'',
-      anchor_ids:recordType==='anchor'?['0','0']:[String(closestAnchor?.resource_id||'0'),'0'],
+      // Period/event creation starts with two explicit references, not an
+      // inferred nearest anchor or a date clicked on the river.
+      anchor_ids:['0','0'],
       note:''
     });
-    setMessage(recordType==='anchor'?'已帶入河道日期。':'請在時間長河選擇時期／事件的定錨點。');
+    setMessage(recordType==='anchor'?'已帶入河道日期。':'請先從既有定錨點分別選擇起點、終點；造成轉折的原因由定錨點名稱與說明保存。');
     setFormOpen(true);
   },[effectiveSuggestedAnchorDate,suggestedRecordType,suggestedRequestNonce]);
-
-  useEffect(()=>{
-    if(!selectedAnchorPick||!Number.isInteger(selectedAnchorPick.slot)||!selectedAnchorPick.anchorId)return;
-    setDraft(current=>{
-      if(current.record_type==='anchor')return current;
-      const ids=normalizeAnchorIds(current.anchor_ids);
-      if(selectedAnchorPick.slot<0||selectedAnchorPick.slot>=ids.length)return current;
-      return {...current,anchor_ids:ids.map((id,index)=>index===selectedAnchorPick.slot?selectedAnchorPick.anchorId:id)};
-    });
-    setMessage('已從時間長河帶入定錨點。');
-  },[selectedAnchorPick?.nonce]);
 
   // Native showModal puts this form in the browser top layer rather than
   // letting a non-modal open dialog disappear below the vis-timeline canvas.
@@ -202,7 +190,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
     const ids=normalizeAnchorIds(current.anchor_ids);
     return {...current,anchor_ids:ids.map((id,idIndex)=>idIndex===index?value:id)};
   });
-  const addAnchor=()=>setDraft(current=>{
+  const addIntermediateAnchor=()=>setDraft(current=>{
     const ids=normalizeAnchorIds(current.anchor_ids);
     const last=ids.at(-1)||'0';
     return {...current,anchor_ids:[...ids.slice(0,-1),'0',last]};
@@ -264,6 +252,9 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
         payload.year_value=exact?null:year;
       }else{
         const ids=normalizeAnchorIds(draft.anchor_ids);
+        if(!selectedId&&ids.length===2&&ids.includes('0')){
+          throw new Error('新增時期／事件請明確選擇已建立的起點與終點定錨點；不能用空白日期或預設開放端代替。');
+        }
         if(ids.every(id=>id==='0'))throw new Error('時期／事件至少需要一個定錨點。');
         if(ids.slice(1,-1).includes('0'))throw new Error('0 只能用在第一或最後一個位置，表示開放端。');
         for(const id of ids){
@@ -339,22 +330,27 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       </div>:null}
 
       {draft.record_type!=='anchor'?<div className="scope-management-wide-field">
-        <h3>定錨點</h3>
-        <p className="scope-status">依時間順序選擇；第一個與最後一個是範圍邊界，中間仍是同一事件／時期內的定錨點。</p>
+        <h3>起點與終點定錨點</h3>
+        <p className="scope-status">時期與事件是既有定錨點之間的範圍，不會在此自動新增定錨點。選擇日期時同時確認名稱與形成轉折的原因。</p>
+        {anchorOptions.length===0?<p className="scope-status scope-error">尚未建立正式定錨點。請先建立定錨點，或將河道建議定錨轉為正式定錨點。</p>:null}
         <div className="scope-management-fields">
           {normalizeAnchorIds(draft.anchor_ids).map((anchorId,index,ids)=><label key={index}>
-            <span>{index===0?'起點':index===ids.length-1?'終點':'定錨點 '+(index+1)}</span>
-            <select className="scope-select" value={anchorId} onChange={event=>changeAnchor(index,event.target.value)}>
-              {(index===0||index===ids.length-1)
-                ?<option value="0">0｜開放端</option>
-                :<option value="0" disabled>請選擇定錨點</option>}
-              {anchorOptions.map(row=><option key={row.resource_id} value={row.resource_id}>{dateText(row.time_date)||row.year_value||'未知'}｜{row.label}</option>)}
+            <span>{index===0?'起點定錨點':index===ids.length-1?'終點定錨點':'中間定錨點 '+index}</span>
+            <select className="scope-select" aria-label={index===0?'選擇起點定錨點':index===ids.length-1?'選擇終點定錨點':'選擇中間定錨點'} value={anchorId} onChange={event=>changeAnchor(index,event.target.value)}>
+              <option value="0">{selectedId&&(index===0||index===ids.length-1)?'0｜既有開放端':'請選擇已建立的定錨點'}</option>
+              {anchorOptions.map(row=><option key={row.resource_id} value={row.resource_id}>
+                {dateText(row.time_date)||row.year_value||'年份未定'}｜{row.label}{row.note?'｜'+String(row.note).slice(0,65):''}
+              </option>)}
             </select>
-            <button type="button" className="loc-button" aria-pressed={capturingAnchorSlot===index} onClick={()=>onPickAnchorSlot?.(index)}>{capturingAnchorSlot===index?'請點時間軸上的定錨點…':'從時間長河選擇'}</button>
-            {ids.length>2&&index>0&&index<ids.length-1?<button type="button" onClick={()=>removeAnchor(index)}>移除此定錨點</button>:null}
+            {anchorId!=='0'&&anchors.has(anchorId)?<span className="scope-status">{String(anchors.get(anchorId).note||'尚無轉折原因說明；可編輯該定錨點補充。')}</span>:null}
+            {ids.length>2&&index>0&&index<ids.length-1?<button type="button" className="loc-button" onClick={()=>removeAnchor(index)}>移除此中間定錨點</button>:null}
           </label>)}
         </div>
-        <button type="button" onClick={addAnchor}>新增定錨點</button>
+        <details className="scope-culture-anchor-picker">
+          <summary>使用更多既有定錨點（選填）</summary>
+          <button type="button" className="loc-button" onClick={addIntermediateAnchor}>＋ 加入中間定錨點</button>
+          <p className="scope-status">僅增加對既有定錨點的引用，不會建立新的定錨點。已經使用開放端的歷史時期仍可保留原有設定。</p>
+        </details>
       </div>:null}
 
       {draft.record_type!=='anchor'?<>
