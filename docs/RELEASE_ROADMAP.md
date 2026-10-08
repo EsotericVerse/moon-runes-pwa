@@ -30,6 +30,12 @@
 
 0.9 的主要架構目標已在 Current `main` 實作：由 Registry 與 `silver.manage` 定義 Scope／Scope Group 與資料表責任；Group 不建立跨 Scope corpus aggregate；一般 Scope copy-on-create 並使用通用 static shell；固定 canonical 更新由 Admin／Manage 完成，AI 並非必要 write path。後續重點是以實際資料進行操作驗收與錯誤處理回測，而非再擴張一套重複的 Scope system。
 
+## 0.9 RC 後續收尾（2026-10-09）
+
+0.9.0-rc.1 的固定 tag 仍是既有展示候選版。其後 Current `main` 已合併 Keyword Attr 分批寫回、進度百分比與 SQL WHERE 條件修正；這些是 **tag 之後** 的修正，不追溯改寫 RC1 發版紀錄。
+
+0.9 的主要剩餘功能交付是 **Scope 管理選單的工作台整合與操作驗收**，優先重用既有 Admin Registry、Scope Settings、Import、Period、Keyword 等模組，不建立第二套資料或編輯權威。Import 已有程式入口，但尚未完成真實資料 round-trip 驗收。
+
 ## 1.0 Release
 
 ### 文件定位

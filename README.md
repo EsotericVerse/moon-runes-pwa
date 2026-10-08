@@ -23,7 +23,7 @@ LOC is the framework for organizing text, works, sources, time, relationships, s
 
 - Next.js owns application routing; React owns UI.
 - Next filesystem owns existing named routes plus one fixed `/scope/.../` generic shell; DB-created Scope IDs are resolved from the Scope registry at runtime.
-- Supabase PostgreSQL is the runtime data SSOT.
+- Supabase PostgreSQL owns the primary runtime canonical data. Neon is a public **read-only fallback** when the primary anonymous query fails; authenticated writes and account actions remain on the primary path and never fail over automatically.
 - The Scope registry owns hierarchy and deployment/navigation metadata; it does not own corpus data.
 - `silver.manage` owns data Scope and Galaxy/Time table mapping.
 - PostgreSQL remains the authoritative query layer for Scope, fixed eligibility flags, COUNT, date ranges and pagination across Search, Statistics and Culture.
@@ -59,16 +59,17 @@ LOC is the framework for organizing text, works, sources, time, relationships, s
 - Author — https://loc.lo3rwang.cc/lo3rwang/
 - Admin — https://admin.lo3rwang.cc/
 
-### LOC documents
+### LOC documents by responsibility
 
-- `docs/FEATURE_DEEP_DIVE.md` — Current 深度功能說明（目的、機制、跨功能關聯與治理邊界）；不是新手教學。
-- `docs/LOC_CANON.md`
-- `docs/LOC-AUTOMATIC-ANALYSIS.md`
-- `docs/LOC-language-theory.md`
-- `docs/DOMAIN_ARCHITECTURE.md`
-- `docs/NAV_GOVERNANCE.md`
-- `docs/REPO_DIRECTORY_GOVERNANCE.md`
-- `docs/CURRENT_UI_CONTRACT.md`
+- **對外深度功能說明：** `docs/FEATURE_DEEP_DIVE.md` — 目的、機制、跨功能關聯、適用情境與能力邊界；1.0 不以新手教學為主。
+- **Canon 與語言定位：** `docs/LOC_CANON.md`、`docs/LOC-language-theory.md` — 定義與責任，不由功能說明反向改寫。
+- **分析機制：** `docs/LOC-AUTOMATIC-ANALYSIS.md` — Culture／Statistics／Search 如何遵守資料與決策邊界。
+- **架構與 UI 契約：** `docs/DOMAIN_ARCHITECTURE.md`、`docs/NAV_GOVERNANCE.md`、`docs/CURRENT_UI_CONTRACT.md`。
+- **權限、部署與遷移：** `docs/AUTHENTICATION.md`、`docs/DEPLOYMENT_OWNERSHIP.md`、`docs/DATABASE_MIGRATION.md`。
+- **Repository 與發版治理：** `docs/REPO_DIRECTORY_GOVERNANCE.md`、`docs/RELEASE_ROADMAP.md`、`docs/TODO.md`。
+- **LunaRunes 抽牌治理：** `docs/LUNARUNES_DRAW_GOVERNANCE.md`；Game runtime contract 仍由 `app/lrunes/game/README.md` 維護。
+
+文件各守原有責任：深度功能說明不是第二份 Canon，Release/Review 歷史紀錄也不因 Current 更新而改寫。
 
 > 系統幫你看見軌跡，但不替你決定你是誰。
 
