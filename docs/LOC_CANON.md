@@ -37,6 +37,8 @@ Current shared features：
 
 LunaRunes 的 Draw、Daily、Directory、Game 與 duel routes 屬 LunaRunes Scope。
 
+**專案定位註記（2026-10-08）**：符文遊戲是繼 LOC 與符韻後的第三個創作專案。現階段路由、資料與符文資源仍接在 LunaRunes runtime；這是技術上的共用，並不代表遊戲與符韻核心是同一個產品。遊戲預設使用「自然」（theme-4，Dark）配色，符韻首頁維持「礦物」（theme-5，Light）。不要因共用配色或資料來源而混合專案身分或授權邊界。
+
 ## 4. Data architecture
 
 Galaxy：

@@ -12,6 +12,7 @@ export const metadata = {
 };
 
 const AUTO_DAY_THEME_ID='theme-7';
+const GAME_BOOTSTRAP_THEME_ID='theme-4';
 const AUTO_NIGHT_THEME_ID='theme-1';
 const INITIAL_SCOPE_THEMES=Object.values(SCOPES).map(scope=>({
   domain:scope.domain||'',
@@ -19,6 +20,7 @@ const INITIAL_SCOPE_THEMES=Object.values(SCOPES).map(scope=>({
   theme:scope.theme||{mode:'auto'}
 }));
 const INITIAL_THEME_IDS=[...new Set([
+  GAME_BOOTSTRAP_THEME_ID,
   AUTO_DAY_THEME_ID,
   AUTO_NIGHT_THEME_ID,
   ...INITIAL_SCOPE_THEMES.map(scope=>scope.theme?.themeId).filter(Boolean)
@@ -27,7 +29,7 @@ const INITIAL_THEME_SCHEMES=Object.freeze({
   'theme-1':'dark',
   'theme-2':'light',
   'theme-3':'light',
-  'theme-4':'light',
+  'theme-4':'dark',
   'theme-5':'light',
   'theme-6':'dark',
   'theme-7':'light',
@@ -48,6 +50,7 @@ const INITIAL_THEME_SCRIPT=`(()=>{try{
   })||scopes.find(scope=>scope.domain&&host===String(scope.domain).toLowerCase());
   const policy=match?.theme||{mode:'auto'};
   let themeId=policy.mode==='fixed'?policy.themeId:'';
+  if(pathname==='/game'||pathname.startsWith('/game/'))themeId='${GAME_BOOTSTRAP_THEME_ID}';
   if(!themeId){
     let hour=new Date().getHours();
     try{
