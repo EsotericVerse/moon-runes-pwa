@@ -10,6 +10,7 @@ export default function AboutView(){
       allowEditing
       containerless
       maxBlocks={8}
+      placeholderFirstOrder={1}
       renderDisplay={LocHomeBlockDisplay}
       resolveSlotClassName={locHomeBlockClass}
       editSlotClassName="loc-card loc-home-block"
