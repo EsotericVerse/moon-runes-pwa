@@ -303,43 +303,6 @@ button,a,.loc-control,.loc-button,
   .home-hero-identity--codex{font-size:1.5rem}
 }
 
-/* Eight authored feature artworks: one LOC image and one shared Scope image
-   per feature. Keep the existing header element, text sizing and theme intact. */
-.scope-feature-hero--artwork{
-  min-height:clamp(18rem,32vw,28rem);
-  background-color:#101725;
-  background-image:
-    linear-gradient(90deg,rgba(3,6,15,.94) 0%,rgba(3,6,15,.82) 36%,rgba(3,6,15,.34) 72%,rgba(3,6,15,.22) 100%),
-    var(--scope-feature-hero-image);
-  background-position:center;
-  background-repeat:no-repeat;
-  background-size:cover;
-}
-.scope-feature-hero--artwork.scope-hero>.home-title-row>h1{
-  color:#f7f8ff;
-  text-shadow:0 3px 24px rgba(0,0,0,.6);
-}
-.scope-feature-hero--artwork>.loc-eyebrow{color:#f5d795!important}
-.scope-feature-hero--artwork.scope-hero>.home-title-row>.scope-subtitle{color:#e8d6ac!important}
-.scope-feature-hero--artwork .scope-hero-description,
-.scope-feature-hero--artwork .scope-hero-description :where(p,li,strong){
-  color:#f5f7fc!important;
-  text-shadow:0 2px 14px rgba(0,0,0,.55);
-}
-.scope-feature-hero--culture{--scope-feature-hero-image:url('../../pics/scope-culture.jpg')}
-.scope-feature-hero--statics{--scope-feature-hero-image:url('../../pics/scope-statics.jpg')}
-.scope-feature-hero--search{--scope-feature-hero-image:url('../../pics/scope-search.jpg')}
-.scope-feature-hero--governance{--scope-feature-hero-image:url('../../pics/scope-gn.jpg')}
-.loc-next-main[data-loc-scope="loc"] .scope-feature-hero--culture{--scope-feature-hero-image:url('../../pics/LOC-culture.jpg')}
-.loc-next-main[data-loc-scope="loc"] .scope-feature-hero--statics{--scope-feature-hero-image:url('../../pics/LOC-statics.jpg')}
-.loc-next-main[data-loc-scope="loc"] .scope-feature-hero--search{--scope-feature-hero-image:url('../../pics/LOC-search.jpg')}
-.loc-next-main[data-loc-scope="loc"] .scope-feature-hero--governance{--scope-feature-hero-image:url('../../pics/LOC-gn.jpg')}
-@media(max-width:760px){
-  .scope-feature-hero--artwork{
-    background-image:linear-gradient(90deg,rgba(3,6,15,.89),rgba(3,6,15,.62)),var(--scope-feature-hero-image);
-  }
-}
-
 /* Hero hierarchy: showcase homepages keep their existing large treatment.
    Functional pages use the middle tier; detail and management pages stay compact. */
 .scope-feature-hero,
@@ -486,6 +449,44 @@ button,a,.loc-control,.loc-button,
   border-radius:var(--loc-ui-radius-lg);
   background:linear-gradient(160deg,var(--loc-ui-panel),color-mix(in srgb,var(--loc-panel) 67%,transparent));
   box-shadow:0 12px 36px rgb(0 0 0 / .09),inset 0 1px 0 rgb(255 255 255 / .025);
+}
+
+/* Feature artwork must follow the generic card background shorthand. */
+/* Eight authored feature artworks: one LOC image and one shared Scope image
+   per feature. Keep the existing header element, text sizing and theme intact. */
+.scope-feature-hero--artwork{
+  min-height:clamp(18rem,32vw,28rem);
+  background-color:#101725;
+  background-image:
+    linear-gradient(90deg,rgba(3,6,15,.94) 0%,rgba(3,6,15,.82) 36%,rgba(3,6,15,.34) 72%,rgba(3,6,15,.22) 100%),
+    var(--scope-feature-hero-image);
+  background-position:center;
+  background-repeat:no-repeat;
+  background-size:cover;
+}
+.scope-feature-hero--artwork.scope-hero>.home-title-row>h1{
+  color:#f7f8ff;
+  text-shadow:0 3px 24px rgba(0,0,0,.6);
+}
+.scope-feature-hero--artwork>.loc-eyebrow{color:#f5d795!important}
+.scope-feature-hero--artwork.scope-hero>.home-title-row>.scope-subtitle{color:#e8d6ac!important}
+.scope-feature-hero--artwork .scope-hero-description,
+.scope-feature-hero--artwork .scope-hero-description :where(p,li,strong){
+  color:#f5f7fc!important;
+  text-shadow:0 2px 14px rgba(0,0,0,.55);
+}
+.scope-feature-hero--culture{--scope-feature-hero-image:url('../../pics/scope-culture.jpg')}
+.scope-feature-hero--statics{--scope-feature-hero-image:url('../../pics/scope-statics.jpg')}
+.scope-feature-hero--search{--scope-feature-hero-image:url('../../pics/scope-search.jpg')}
+.scope-feature-hero--governance{--scope-feature-hero-image:url('../../pics/scope-gn.jpg')}
+.loc-next-main[data-loc-scope="loc"] .scope-feature-hero--culture{--scope-feature-hero-image:url('../../pics/LOC-culture.jpg')}
+.loc-next-main[data-loc-scope="loc"] .scope-feature-hero--statics{--scope-feature-hero-image:url('../../pics/LOC-statics.jpg')}
+.loc-next-main[data-loc-scope="loc"] .scope-feature-hero--search{--scope-feature-hero-image:url('../../pics/LOC-search.jpg')}
+.loc-next-main[data-loc-scope="loc"] .scope-feature-hero--governance{--scope-feature-hero-image:url('../../pics/LOC-gn.jpg')}
+@media(max-width:760px){
+  .scope-feature-hero--artwork{
+    background-image:linear-gradient(90deg,rgba(3,6,15,.89),rgba(3,6,15,.62)),var(--scope-feature-hero-image);
+  }
 }
 
 .loc-card,.loc-panel,.scope-card,.scope-feature-card{
