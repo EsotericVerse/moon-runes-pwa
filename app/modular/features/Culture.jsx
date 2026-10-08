@@ -467,10 +467,26 @@ export default function Culture(){
       };
     });
   },[riverAnalysis.suggestions,riverAnalysis.totalCount,selectedVirtualAnchorDates,selectedWindowStart,selectedWindowEnd]);
-  const visibleExistingAnchors=useMemo(()=>anchorRecords.filter(item=>{
+  const windowAnchorRecords=useMemo(()=>anchorRecords.filter(item=>{
     const date=String(item.start_date||'').slice(0,10);
     return date&&(!selectedWindowStart||date>=selectedWindowStart)&&(!selectedWindowEnd||date<=selectedWindowEnd);
-  }).map(item=>({
+  }),[anchorRecords,selectedWindowStart,selectedWindowEnd]);
+  const anchorReviews=useMemo(()=>{
+    const counts=new Map((riverAnalysis.density||[]).map(item=>[String(item.date),Number(item.count||0)]));
+    return windowAnchorRecords.map(anchor=>{
+      const date=String(anchor.start_date||'').slice(0,10);
+      const origin=Date.parse(date+'T00:00:00Z');
+      const countAt=offset=>counts.get(new Date(origin+offset*86400000).toISOString().slice(0,10))||0;
+      const before=[-3,-2,-1].reduce((total,offset)=>total+countAt(offset),0);
+      const after=[1,2,3].reduce((total,offset)=>total+countAt(offset),0);
+      const references=timelineItems.filter(row=>
+        ['period','event'].includes(String(row.entry_type||''))&&
+        Array.isArray(row.anchor_ids)&&row.anchor_ids.map(String).includes(String(anchor.resource_id))
+      );
+      return {anchor,date,before,after,references,hasDensity:counts.size>0};
+    });
+  },[windowAnchorRecords,timelineItems,riverAnalysis.density]);
+  const visibleExistingAnchors=useMemo(()=>windowAnchorRecords.map(item=>({
     ...item,
     display_label:'●',
     group_label:'既有定錨',
@@ -478,7 +494,7 @@ export default function Culture(){
     group_order:0,
     className:'scope-existing-anchor',
     title:'既有定錨：'+String(item.display_label||item.title||'')+'｜'+String(item.start_date||'').slice(0,10)
-  })),[anchorRecords,selectedWindowStart,selectedWindowEnd]);
+  })),[windowAnchorRecords]);
   const classificationRiverItems=useMemo(
     ()=>[...classificationBuckets,...visibleExistingAnchors,...virtualAnchorItems],
     [classificationBuckets,visibleExistingAnchors,virtualAnchorItems]
@@ -500,11 +516,17 @@ export default function Culture(){
       const time=scopeData?.time;
       if(!time)throw new Error('Scope data 未解析');
       const now=new Date().toISOString();
-      const rows=selectedVirtualAnchorDates.map(date=>({
+      const existingDays=anchorRecords.map(item=>Date.parse(String(item.start_date||'').slice(0,10)+'T00:00:00Z')).filter(Number.isFinite);
+      const safeDates=selectedVirtualAnchorDates.filter(date=>{
+        const day=Date.parse(date+'T00:00:00Z');
+        return Number.isFinite(day)&&!existingDays.some(existing=>Math.abs(day-existing)<=3*86400000);
+      });
+      if(!safeDates.length)throw new Error('所選日期附近已有正式定錨點，請優先回顧既有定錨，而不是重複新增。');
+      const rows=safeDates.map(date=>({
         record_type:'anchor',
-        label:date,
+        label:'文化作品密度轉折｜'+date,
         resource_id:'anchor:'+globalThis.crypto.randomUUID(),
-        note:'由時間長河建議定錨批量建立。',
+        note:'作品分類河道建議：'+(riverAnalysis.suggestions.find(item=>item.date===date)?.analysis||[]).join(' ')+'；需持續回顧與作品、事件及時期的關係。',
         status:null,
         display_order:null,
         visibility:null,
@@ -516,7 +538,7 @@ export default function Culture(){
       }));
       await insertRows(time,rows);
       setSelectedVirtualAnchorDates([]);
-      setAnchorSaveMessage('已一次建立 '+rows.length+' 個正式定錨點。');
+      setAnchorSaveMessage('已建立 '+rows.length+' 個正式定錨點；請回顧其名稱、轉折原因與關聯時期／事件。'+(rows.length<selectedVirtualAnchorDates.length?' 靠近既有定錨的日期已略過。':''));
       await query.refetch();
     }catch(error){
       setAnchorSaveMessage(error?.message||'批量建立定錨點失敗。');
