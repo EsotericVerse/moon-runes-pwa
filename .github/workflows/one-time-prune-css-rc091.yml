@@ -1,0 +1,23 @@
+name: One-time cleanup CSS RC branch
+on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/one-time-prune-css-rc091.yml"]
+permissions:
+  contents: write
+jobs:
+  cleanup:
+    if: "github.event.head_commit.message == 'ops: prune merged css subtraction branch 20261009'"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            if (context.ref !== 'refs/heads/main') throw new Error('Main required');
+            const {owner, repo} = context.repo;
+            const head = 'refactor/css-subtraction-rc091-20261009';
+            if (head === 'main') throw new Error('Protected default branch');
+            const pr = await github.rest.pulls.get({owner, repo, pull_number:468});
+            if (!pr.data.merged || pr.data.head.ref !== head) throw new Error('Source PR not verified as merged');
+            await github.rest.git.deleteRef({owner, repo, ref:`heads/${head}`});
+            core.info(`Deleted merged branch ${head}`);
