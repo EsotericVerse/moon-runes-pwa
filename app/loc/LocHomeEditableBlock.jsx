@@ -37,7 +37,7 @@ function HeroDisplay(slot){
     <Html tag="p" className="loc-eyebrow" html={slot.eyebrow||stripOuterParagraph(english.text)||english.title}/>
     <div className="home-title-row">
       <h1>{slot.title}</h1>
-      <Html tag="p" className="loc-subtitle" html={stripOuterParagraph(slot.subtitle||explain.text)}/>
+      <Html className="loc-subtitle" html={slot.subtitle||explain.text}/>
     </div>
     <Html className="loc-hero-copy" html={slot.text||description.text}/>
   </>;
@@ -48,7 +48,7 @@ function BeginnerHeading(slot){
   return <>
     <p className="loc-eyebrow">{slot.eyebrow||meta.title||'Start here'}</p>
     <h2>{slot.title}</h2>
-    <Html tag="p" className="loc-subtitle" html={stripOuterParagraph(slot.subtitle||meta.text)}/>
+    <Html className="loc-subtitle" html={slot.subtitle||meta.text}/>
   </>;
 }
 
@@ -64,7 +64,7 @@ function StatusHeading(slot){
   return <>
     <p className="loc-eyebrow">{slot.eyebrow||'System Status'}</p>
     <h2>{slot.title}</h2>
-    <Html tag="p" className="loc-subtitle" html={stripOuterParagraph(slot.subtitle||slot.text)}/>
+    <Html className="loc-subtitle" html={slot.subtitle||slot.text}/>
   </>;
 }
 
@@ -105,7 +105,7 @@ function SkillsHeading(slot){
   return <>
     <p className="loc-eyebrow">{slot.eyebrow||'LOC GPT Skills'}</p>
     <h2>{slot.title}</h2>
-    <Html tag="p" className="loc-subtitle" html={stripOuterParagraph(slot.subtitle)||parts[0]||''}/>
+    <Html className="loc-subtitle" html={slot.subtitle||(parts[0]?`<p>${parts[0]}</p>`:'')}/>
   </>;
 }
 
@@ -125,7 +125,7 @@ function AuthorHeading(slot){
   return <>
     <p className="loc-eyebrow">{slot.eyebrow||'About me'}</p>
     <h2>{slot.title}</h2>
-    <Html tag="p" className="loc-subtitle" html={stripOuterParagraph(slot.subtitle)||parts[0]||''}/>
+    <Html className="loc-subtitle" html={slot.subtitle||(parts[0]?`<p>${parts[0]}</p>`:'')}/>
   </>;
 }
 
