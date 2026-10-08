@@ -475,6 +475,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     {loading?<p className="scope-status">讀取中…</p>:null}
     {!loading&&workspace==='network'&&items.length?<div className="scope-keyword-network-layout">
       <KeywordNetworkEditor
+        key={selectedClassId||selectedClass}
         items={items}
         className={selectedClass}
         classId={selectedClassId}
