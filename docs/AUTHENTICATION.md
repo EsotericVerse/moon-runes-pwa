@@ -10,11 +10,22 @@
 
 這項備援不涵蓋登入、Scope 管理、寫入或權限驗證；這些操作不得自動改向 Neon。公開讀取不因此取得 management write authority。
 
+## Management roles
+
+Current 應用層**只有兩種正式管理角色**，由 `silver.manage.role` 判定，與 `app/loc/use-account.js` 的 `z.enum(['admin','scope'])` 一致：
+
+| role | 權限範圍 |
+| --- | --- |
+| `admin` | 全域管理，`canManageGlobalSync()` 成立，也可管理各 Scope |
+| `scope` | 只能管理 `silver.manage` 明確授權的 Scope（同一使用者可有多筆 Scope mapping），不具全域管理權限 |
+
+沒有 `group`、`editor`、`owner`、`guest` 等其他管理 role。**Scope Group 是 Registry 階層／成員關係，不是權限角色。** 登入、未登入、public read、Scope 的 Search／Statistics／Culture 功能開關、`searchable` 與 Theme 都不是 role；登入但沒有有效 `silver.manage` 權限時，也不會自動取得管理角色。
+
 ## Management data
 
-Management UI 只有在已登入且 Current permission check 通過後才提供寫入操作。
+Management UI 只有在已登入且 Current permission check 通過後才提供寫入操作；PostgreSQL 既有 RLS／write policies 仍是最終授權邊界。
 
-- Scope manager 只能管理授權 Scope。
+- `scope` 只能管理已授權 Scope；`admin` 具全域管理能力。
 - Admin authority 與 Scope public feature flag 是不同責任。
 - public searchable=false 不代表管理頁不可見。
 - Scope 的 Search／Statistics／Culture public flag 關閉，也不代表 canonical record 從管理頁消失。
