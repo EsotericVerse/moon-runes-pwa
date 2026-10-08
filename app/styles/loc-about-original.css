@@ -162,3 +162,105 @@
     background:linear-gradient(90deg,rgba(8,13,24,.93),rgba(8,13,24,.72));
   }
 }
+
+/* Restore legacy AboutView card reading contract, without changing Hero.
+   Later global UI rules had flattened all body copy and heading hierarchy. */
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card{
+  padding:1.15rem 1.25rem;
+  border:1px solid var(--loc-line);
+  border-radius:var(--loc-radius);
+  background:var(--loc-surface);
+  box-shadow:var(--loc-shadow-card);
+  color:var(--loc-text);
+}
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .home-section-heading{
+  display:grid;
+  grid-template-columns:max-content minmax(0,1fr);
+  column-gap:1.5rem;
+  align-items:start;
+  margin-bottom:1.1rem;
+}
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .home-section-heading > .loc-eyebrow{
+  grid-column:1;
+  grid-row:1;
+  margin:0 0 .3rem!important;
+}
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .home-section-heading > h2{
+  grid-column:1;
+  grid-row:2;
+  display:inline-block;
+  width:max-content;
+  max-width:100%;
+  margin:.2rem 0 .72rem;
+  padding:0 .8rem .6rem 0;
+  border-bottom:1px solid var(--loc-line);
+  color:var(--loc-text);
+  font-size:1.32rem;
+  font-weight:650;
+  line-height:1.35;
+  letter-spacing:normal;
+  text-wrap:initial;
+}
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .home-section-heading > .loc-subtitle{
+  grid-column:2;
+  grid-row:1 / span 2;
+  align-self:start;
+  justify-self:start;
+  max-width:28ch;
+  margin:.1rem 0 0!important;
+  padding:0;
+  border:0;
+  font-size:.9rem!important;
+  font-weight:600!important;
+  line-height:1.65!important;
+  letter-spacing:normal!important;
+  text-wrap:initial;
+}
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .home-author-copy{
+  display:grid;
+  gap:.8rem;
+  margin-top:.35rem;
+  min-width:0;
+}
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .home-author-copy > p{
+  display:block;
+  margin:0!important;
+  padding:0;
+  max-width:none;
+  color:var(--loc-text)!important;
+  font-size:1rem;
+  font-weight:400;
+  line-height:1.8!important;
+  letter-spacing:normal!important;
+  text-align:start;
+  text-wrap:initial;
+}
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .home-author-copy strong{
+  color:var(--loc-text);
+  font-weight:700;
+}
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .loc-bubble{
+  padding:1.15rem 1.25rem;
+  border:1px solid var(--loc-line);
+  border-radius:var(--loc-radius);
+  background:var(--loc-surface);
+  box-shadow:var(--loc-shadow-card);
+}
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .loc-bubble > p{
+  max-width:none;
+  font-weight:400;
+  letter-spacing:normal;
+  line-height:1.7;
+  text-wrap:initial;
+}
+@media(max-width:720px){
+  .loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .home-section-heading{
+    grid-template-columns:minmax(0,1fr);
+  }
+  .loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .home-section-heading > .loc-subtitle{
+    grid-column:1;
+    grid-row:auto;
+    max-width:none;
+    margin-top:.4rem!important;
+  }
+}
