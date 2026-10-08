@@ -4,6 +4,15 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {DataSet,Timeline} from 'vis-timeline/standalone';
 import {densityStyleForCount,densityStyleForRatio,formatCultureDateTime} from './culture-timeline-model.mjs';
 
+// Stable defaults matter: an inline [] or {} used as a hook dependency
+// would destroy and recreate vis-timeline after setReady() on each render.
+const EMPTY_ITEMS=Object.freeze([]);
+const EMPTY_FOCUS=Object.freeze({});
+const EMPTY_HIDDEN_DATES=Object.freeze([]);
+function defaultTimelineLabel(item,index){
+  return item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1);
+}
+
 function timelineRows(items,labelOf,focus){
   const source=Array.isArray(items)?items:[];
   const focusTerms=[focus?.identity,focus?.period,focus?.anchor].filter(Boolean).map(String);
@@ -90,9 +99,9 @@ function settle(handler,item,row,callback,defaultValue=null){
 }
 
 export default function CultureTimeline({
-  items=[],
-  labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),
-  focus={},
+  items=EMPTY_ITEMS,
+  labelOf=defaultTimelineLabel,
+  focus=EMPTY_FOCUS,
   mode='period',
   onSelect=null,
   onTimeClick=null,
@@ -108,7 +117,7 @@ export default function CultureTimeline({
   onBoundaryNavigate=null,
   fixedMin='',
   fixedMax='',
-  hiddenDates=[]
+  hiddenDates=EMPTY_HIDDEN_DATES
 }){
   const containerRef=useRef(null);
   const onSelectRef=useRef(onSelect);
@@ -149,7 +158,7 @@ export default function CultureTimeline({
       const dataRows=rows.map(row=>editable?{
         ...row,
         editable:{
-          updateTime:row.entryType==='anchor'||((row.entryType==='period'||row.entryType==='event')&&row.type==='range'&&!row.openStart&&!row.openEnd&&Array.isArray(row.raw?.anchor_ids)&&row.raw.anchor_ids.length>=2),
+          updateTime:row.entryType==='anchor',
           updateGroup:false,
           remove:Boolean(row.recordId)
         }
