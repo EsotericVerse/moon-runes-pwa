@@ -57,6 +57,7 @@ function ArchitectureHeading(slot){
   return <>
     <p className="loc-eyebrow">{slot.eyebrow||meta.title||'LOC Architecture'}</p>
     <h2>{slot.title}</h2>
+    {slot.subtitle?<Html className="loc-subtitle" html={slot.subtitle}/>:null}
   </>;
 }
 
