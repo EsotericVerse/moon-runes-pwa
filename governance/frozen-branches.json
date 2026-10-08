@@ -102,6 +102,7 @@
     "fix/sync-galaxy-classification-columns",
     "fix/theme-db-bootstrap-current-20261008",
     "fix/theme-db-bootstrap-refresh-v2",
+    "fix/theme-mineral-regression-test-20261008",
     "fix/unify-keyword-library",
     "governance-modules-batch",
     "governance/flexsearch-cache-contract-20261002",
