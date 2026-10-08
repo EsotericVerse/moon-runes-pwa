@@ -67,6 +67,7 @@ export default function ScopeEditableBlocks({
   renderDisplay=null,
   resolveSlotClassName=null,
   maxBlocks=null,
+  placeholderFirstOrder=null,
   containerless=false,
   allowEditing=true
 }){
@@ -98,12 +99,18 @@ export default function ScopeEditableBlocks({
       const displayed=homeBlockRows(rows,pageName,maxBlocks).map(row=>normalizeRow(row,row.block_order));
       if(draft&&!draft.stored&&!displayed.some(slot=>slot.order===draft.order)&&draft.order<=maxBlocks){
         displayed.push({...draft});
-        displayed.sort((a,b)=>a.order-b.order);
       }
+      // Render the standard Hero visual in static HTML before client data loads.
+      // The placeholder is replaced by the real first block after the DB query.
+      if(Number.isInteger(placeholderFirstOrder)&&placeholderFirstOrder>0&&placeholderFirstOrder<=maxBlocks
+          &&!displayed.some(slot=>slot.order===placeholderFirstOrder)){
+        displayed.push(normalizeRow(null,placeholderFirstOrder));
+      }
+      displayed.sort((a,b)=>a.order-b.order);
       return displayed;
     }
     return rows.map(row=>normalizeRow(row,row.block_order));
-  },[query.data,normalizedOrders,maxBlocks,pageName,draft]);
+  },[query.data,normalizedOrders,maxBlocks,pageName,draft,placeholderFirstOrder]);
   const nextOrder=useMemo(()=>{
     const rows=Array.isArray(query.data)?query.data:[];
     return Math.max(0,...rows.map(row=>Number(row.block_order)||0))+1;
@@ -258,7 +265,7 @@ export default function ScopeEditableBlocks({
     {slots.map(slot=>{
       const active=draft?.uid&&(draft.uid===slot.uid||(!slot.stored&&draft.order===slot.order));
       const empty=!slot.eyebrow&&!slot.title&&!slot.subtitle&&!slot.text&&!slot.entities.length;
-      if(empty&&!canEdit)return null;
+      if(empty&&!canEdit&&slot.order!==placeholderFirstOrder)return null;
       const level=Number(headingLevel);
       const Heading=level===1?'h1':level===2?'h2':level===4?'h4':'h3';
       return <section
