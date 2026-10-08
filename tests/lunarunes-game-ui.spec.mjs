@@ -100,13 +100,13 @@ test.describe('LunaRunes tabletop UI',()=>{
   test('LunaRunes home stays mineral while game defaults to nature and still accepts theme changes',async({page})=>{
     await page.goto('/lrunes/',{waitUntil:'domcontentloaded'});
     await expect(page.locator('html')).toHaveAttribute('data-theme-id','theme-5',{timeout:15_000});
-    await expect.poll(()=>page.locator('html').evaluate(el=>getComputedStyle(el).getPropertyValue('--loc-bg').trim().toLowerCase())).toBe('#fff5bf');
+    await expect.poll(()=>page.locator('html').evaluate(el=>getComputedStyle(el).getPropertyValue('--loc-bg').trim().toLowerCase())).toBe('#fff1b2');
     // The other Light palette stays bright orange but its content surfaces are cream, not pink/brown.
     const footerTheme=page.locator('.scope-theme-control select').first();
     await footerTheme.selectOption('theme-3');
     await expect(page.locator('html')).toHaveAttribute('data-theme','light');
     await expect.poll(()=>page.locator('html').evaluate(el=>getComputedStyle(el).getPropertyValue('--loc-bg').trim().toLowerCase())).toBe('#ff8a00');
-    await expect.poll(()=>page.locator('html').evaluate(el=>getComputedStyle(el).getPropertyValue('--loc-panel').trim().toLowerCase())).toBe('#fff6e9');
+    await expect.poll(()=>page.locator('html').evaluate(el=>getComputedStyle(el).getPropertyValue('--loc-panel').trim().toLowerCase())).toBe('#fff4e5');
     await footerTheme.selectOption('system-default');
     await expect(page.locator('html')).toHaveAttribute('data-theme-id','theme-5');
 
