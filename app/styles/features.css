@@ -442,8 +442,7 @@
 
 /* Rich header descriptions must preserve authored BlockNote markup. */
 .scope-editable-block .loc-subtitle>p,
-.loc-home-hero .loc-subtitle>p,
-.author-home-hero .loc-subtitle>p{
+.loc-home-hero .loc-subtitle>p{
   margin:0!important;
   padding:0;
   color:inherit!important;
@@ -454,13 +453,11 @@
   white-space:pre-line;
 }
 .scope-editable-block .loc-subtitle strong,
-.loc-home-hero .loc-subtitle strong,
-.author-home-hero .loc-subtitle strong{
+.loc-home-hero .loc-subtitle strong{
   font-weight:750;
 }
 .scope-editable-block .loc-subtitle a,
-.loc-home-hero .loc-subtitle a,
-.author-home-hero .loc-subtitle a{
+.loc-home-hero .loc-subtitle a{
   color:inherit;
   text-decoration:underline;
   text-underline-offset:.16em;
