@@ -154,11 +154,17 @@ if(!failures.length){
   }
   for(const token of ['表現風格','Class｜符文群組比例','culture-style-filter'])if(!culture.includes(token))failures.push('Culture style-filter presentation missing '+token);
   if(!culture.includes('本頁面只顯示所屬人員的交會時間作品。若需以時間查詢其他人的作品列表，請前往該人員的文化功能頁面。'))failures.push('LOC Culture must preserve the user-approved intersection navigation guidance.');
-  if(!cultureQuery.includes("style_comment:'風格標籤'")||!cultureQuery.includes('style_comment:3')||
+  if(!cultureQuery.includes("style_comment:'風格標籤'")||!cultureQuery.includes('style_comment:2,period:3')||
      !culture.includes("beginTimelineCreation('style_comment','')")||
-     !culture.includes('尋找風格標籤')||culture.includes('scope-culture-style-panel')||
+     !culture.includes('尋找風格標籤')||culture.includes('尋找既有定錨點')||
+     culture.includes('新增時期（選擇既有定錨點）')||culture.includes('新增事件（選擇既有定錨點）')||
+     culture.includes('scope-culture-style-panel')||
      !read('app/modular/modules/culture-timeline/CultureTimeline.jsx').includes("style_comment:'風格標籤'")){
     failures.push('First river must display its fourth style lane and native create/lookup editor, without a redundant folded panel.');
+  }
+  if(!culture.includes('＋ 新增正式定錨點')||!culture.includes('＋ 新增時期')||!culture.includes('＋ 新增事件')||!culture.includes('＋ 新增風格標籤')||
+     !read('app/modular/modules/culture-timeline/CultureTimeline.jsx').includes("style_comment:'風格標籤',period:'時期'")){
+    failures.push('Culture actions use four compact add buttons, but period must always be fourth Time lane.');
   }
   for(const token of ['currentStructurePeriod','items={timelineItems}','windowStart={currentStructureStart}','windowEnd={currentStructureEnd}','labelOf={labelOf}'])if(!culture.includes(token))failures.push('Culture first river must retain all historic anchors and keep the camera focused on the selected period: '+token);
   if(culture.includes('riverAction')||culture.includes('onBoundaryNavigate={riverAction'))failures.push('Culture river must not restore the browse/create mode toggle.');
