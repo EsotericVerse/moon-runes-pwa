@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 
-function buildGraph(items=[],className='',classId=''){
+function buildGraph(items=[],className='',classId='',expandedGroup='',expandedItemId=''){
   const rows=Array.isArray(items)?items:[];
   const nodes=[];
   const edges=[];
@@ -19,7 +19,9 @@ function buildGraph(items=[],className='',classId=''){
     meta.set(id,{kind:'group',group});
   });
 
-  rows.forEach((row,rowIndex)=>{
+  // Expand only one Group and one Item at a time; drawing all Keywords at once
+  // produces a very large horizontal graph and an unusable canvas.
+  rows.filter(row=>String(row.class_group||'').trim()===expandedGroup).forEach((row,rowIndex)=>{
     const itemId='item:'+String(row.keyword_id||rowIndex);
     const group=String(row.class_group||'').trim();
     const groupId='group:'+group;
@@ -33,7 +35,7 @@ function buildGraph(items=[],className='',classId=''){
     });
     edges.push({id:groupId+'>'+itemId,from:groupId,to:itemId});
     meta.set(itemId,{kind:'item',row});
-    (Array.isArray(row.keywords)?row.keywords:[]).forEach((keyword,index)=>{
+    if(String(row.keyword_id||'')===expandedItemId)(Array.isArray(row.keywords)?row.keywords:[]).forEach((keyword,index)=>{
       const text=String(keyword||'').trim();
       if(!text)return;
       const id='keyword:'+String(row.keyword_id||rowIndex)+':'+index;
@@ -58,10 +60,20 @@ export default function KeywordNetworkEditor({
   onMessage=null
 }){
   const containerRef=useRef(null);
+  const networkRef=useRef(null);
   const selectedNodeRef=useRef('');
+  const [expandedGroup,setExpandedGroup]=useState('');
+  const [expandedItemId,setExpandedItemId]=useState('');
   const handlersRef=useRef({onSelectItem,onNewItem,onDeleteItem,onDeleteKeyword,onDeleteGroup,onMessage});
   const [error,setError]=useState('');
-  const graph=useMemo(()=>buildGraph(items,className,classId),[items,className,classId]);
+  const graph=useMemo(()=>buildGraph(items,className,classId,expandedGroup,expandedItemId),[items,className,classId,expandedGroup,expandedItemId]);
+  useEffect(()=>{
+    const row=items.find(item=>String(item.keyword_id)===String(selectedId));
+    if(row){
+      setExpandedGroup(String(row.class_group||''));
+      setExpandedItemId(String(row.keyword_id||''));
+    }
+  },[selectedId,items]);
 
   useEffect(()=>{handlersRef.current={onSelectItem,onNewItem,onDeleteItem,onDeleteKeyword,onDeleteGroup,onMessage}},[onSelectItem,onNewItem,onDeleteItem,onDeleteKeyword,onDeleteGroup,onMessage]);
 
@@ -145,11 +157,20 @@ export default function KeywordNetworkEditor({
         nodes:{chosen:true},
         edges:{selectionWidth:2,hoverWidth:1.5}
       });
+      networkRef.current=network;
       network.fit({animation:false});
       network.on('selectNode',event=>{
         const id=String(event.nodes?.[0]||'');
         selectedNodeRef.current=id;
-        selectMeta(metaOf(id));
+        const meta=metaOf(id);
+        if(meta?.kind==='group'){
+          setExpandedGroup(meta.group);
+          setExpandedItemId('');
+        }else if(meta?.kind==='item'){
+          setExpandedGroup(String(meta.row?.class_group||''));
+          setExpandedItemId(String(meta.row?.keyword_id||''));
+        }
+        selectMeta(meta);
       });
       network.on('deselectNode',()=>{selectedNodeRef.current='';});
       network.on('doubleClick',event=>{
@@ -169,13 +190,19 @@ export default function KeywordNetworkEditor({
         }
       }
     }).catch(reason=>{if(!cancelled)setError(reason?.message||'vis-network 載入失敗。');});
-    return()=>{cancelled=true;network?.destroy();};
-  },[graph,selectedId]);
+    return()=>{cancelled=true;if(networkRef.current===network)networkRef.current=null;network?.destroy();};
+  },[graph]);
+  useEffect(()=>{
+    const itemNode='item:'+String(selectedId||'');
+    if(selectedId&&graph.meta.has(itemNode)&&networkRef.current){
+      networkRef.current.selectNodes([itemNode]);
+    }
+  },[selectedId,graph]);
 
   return <section className="scope-keyword-network" aria-label="關鍵詞階層圖">
     <div className="scope-keyword-network-help">
       <strong>Class → Group → Item → Keyword</strong>
-      <span>點選節點查看；雙擊或「編輯」修改；「新增節點」建立分類項目；「刪除所選」直接刪除 Item／Keyword／Group。</span>
+      <span>先選 Group 展開符文 Item，再點 Item 展開關鍵詞；可拖曳與縮放畫布，雙擊或使用工具列編輯。</span>
     </div>
     {error?<p className="scope-status scope-error">{error}</p>:null}
     <div ref={containerRef} className="scope-graph-canvas scope-keyword-network-canvas" role="application" aria-label={className+' 關鍵詞 vis-network 編輯器'}/>
