@@ -45,6 +45,13 @@ test('LOC and Author Heros share a 16:9 cover frame while keeping author overlay
   expect(locHeroSize).not.toBeNull();
   await expect(locHero).toHaveCSS('aspect-ratio',viewport.width>760?'16 / 9':'auto');
   if(viewport.width>760){
+    await expect(locHero).toHaveCSS('display','flex');
+    await expect(locHero).toHaveCSS('flex-direction','column');
+    await expect(locHero).toHaveCSS('justify-content','center');
+  }else{
+    await expect(locHero).toHaveCSS('display','block');
+  }
+  if(viewport.width>760){
     expect(locHeroSize.height).toBeGreaterThanOrEqual(locHeroSize.width*9/16-2);
     // LOC must gain a widescreen editorial frame instead of its former
     // 360–540px-only height cap, without enlarging or distorting its asset.
