@@ -685,9 +685,11 @@ export default function Culture(){
                 <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
                 <h3>{UI_COPY.culture.structure}</h3>
                 {account.canManageScopeSync(scopeId)?<div className='scope-culture-timeline-tools'>
-                  <button type='button' className='loc-button primary' onClick={()=>{
-                    beginTimelineCreation('anchor',currentStructureStart);
-                  }}>＋ 新增定錨點</button>
+                  <label><span>檢視時期範圍</span><select className='scope-select' value={selectedPeriodKey||periodKey(selectedWorkPeriod)} onChange={event=>setSelectedPeriodKey(event.target.value)}>
+                    <option value='all'>全部時期</option>
+                    {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{labelOf(item,0)}</option>)}
+                  </select></label>
+                  <button type='button' className='loc-button' onClick={()=>beginTimelineCreation('anchor',currentStructureStart)}>＋ 新增正式定錨點</button>
                   {['period','event'].map(type=><button key={type} type='button' className='loc-button' onClick={()=>beginTimelineCreation(type,'')}>
                     ＋ 新增{type==='period'?'時期':'事件'}（選擇既有定錨點）
                   </button>)}
@@ -702,11 +704,11 @@ export default function Culture(){
                       {String(item.start_date||'年份未定').slice(0,10)}｜{item.display_label||item.title||item.resource_id}
                     </option>)}
                   </select></label>
-                  <span className='scope-status'>全部既有定錨點均在此河道；拖曳查看其他時期。雙擊空白處才新增定錨點，單擊既有項目開啟編輯。時期／事件只透過選取既有定錨點設定起終點。</span>
+                  <span className='scope-status'>先選擇要回顧的時期範圍，再檢視既有定錨的轉折原因、作品變化及建議點。拖曳河道瀏覽全部時期；雙擊空白日期僅用來新增正式定錨點。</span>
                 </div>:null}
                 {timelineItems.length?<CultureTimeline
                   items={timelineItems}
-                  labelOf={item=>item.display_label||item.title}
+                  labelOf={labelOf}
                   focus={navigation}
                   mode='overview'
                   windowStart={currentStructureStart}
@@ -745,12 +747,6 @@ export default function Culture(){
 
               {selectedWorkPeriod?<section className='scope-card scope-culture-classification-river'>
                 <div className='scope-stat-controls'>
-                  <label className='scope-culture-period-select'>
-                    <span>{UI_COPY.culture.period}</span>
-                    <select className='scope-select' value={selectedPeriodKey||periodKey(selectedWorkPeriod)} onChange={event=>setSelectedPeriodKey(event.target.value)}>
-                      {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{labelOf(item,0)}</option>)}
-                    </select>
-                  </label>
                   {scopeId==='lo3rwang'?<label className='scope-culture-period-select'>
                     <span>表現風格</span>
                     <select className='scope-select' value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}>
@@ -772,22 +768,40 @@ export default function Culture(){
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error)}</p>:null}
                 {!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!classificationBuckets.length
                   ?<p className='scope-status'>{UI_COPY.culture.noPeriodClassification}</p>:null}
+                <section className='scope-culture-anchor-review' aria-label='既有定錨點持續回顧'>
+                  <h4>既有定錨點｜持續檢討</h4>
+                  <p className='scope-status'>先回顧範圍內的關鍵觀察點與形成原因，再對照前後作品、關聯時期／事件與系統建議。引用後的定錨點也能反覆檢視。</p>
+                  {anchorReviews.length?<div className='scope-culture-anchor-review-list'>
+                    {anchorReviews.map(({anchor,date,before,after,references,hasDensity})=><article key={anchor.record_id} className='scope-culture-anchor-review-item'>
+                      <div>
+                        <strong>{date}｜{anchor.display_label||anchor.title||'未命名定錨'}</strong>
+                        <p className='scope-status'>{anchor.summary||anchor.note||'尚未記錄此處的轉折原因，可開啟既有定錨點補充。'}</p>
+                        <p className='scope-status'>關聯：{references.length?references.map(item=>(item.entry_type==='period'?'時期':'事件')+'「'+(item.title||item.display_label||'未命名')+'」').join('、'):'目前尚未被時期／事件引用；仍保留作為獨立觀察點。'}</p>
+                        {hasDensity?<p className='scope-status'>本範圍作品數：前 3 日 {before} 項／後 3 日 {after} 項（僅代表作品量，不取代文化判斷）。</p>:null}
+                      </div>
+                      {account.canManageScopeSync(scopeId)?<button type='button' className='loc-button' onClick={()=>{
+                        setSelectedTimelineRecordId(anchor.record_id);
+                        setSelectedTimelineDate('');
+                      }}>回顧／編輯定錨</button>:null}
+                    </article>)}
+                  </div>:<p className='scope-status'>本範圍內沒有既有定錨點。可檢視其他時期或比較建議，不需要為了填滿河道而新增。</p>}
+                </section>
                 <div className='scope-culture-anchor-actions'>
-                  <span>● 既有定錨 {visibleExistingAnchors.length} 個／◇ 建議定錨 {riverAnalysis.suggestions.length} 個 · 已選 {selectedVirtualAnchorDates.length} 個。建議需先正式建立，才能作為時期／事件及風格標籤的定位。</span>
+                  <span>既有定錨 {anchorReviews.length} 個／候選建議 {riverAnalysis.suggestions.length} 個 · 已選候選 {selectedVirtualAnchorDates.length} 個。建議用來查核是否遺漏重要轉折，不要求全部建立。</span>
                   {riverAnalysis.suggestions.length?<details className='scope-culture-anchor-picker' open>
-                    <summary>選取建議定錨日期</summary>
+                    <summary>比對可能遺漏的轉折（僅為建議，不會自動建立）</summary>
                     <div className='scope-culture-anchor-choices'>
                       {riverAnalysis.suggestions.map(item=><label key={item.date} title={(item.analysis||[]).join(' ')}>
                         <input type='checkbox' checked={selectedVirtualAnchorDates.includes(item.date)} disabled={anchorSaveBusy} onChange={()=>toggleVirtualAnchor(item.date)}/>
-                        <span>{item.date}（{Number(item.beforeCount||0).toLocaleString()}／{Number(item.afterCount||0).toLocaleString()}）</span>
+                        <span>{item.date}｜前 3 日 {Number(item.beforeCount||0).toLocaleString()} 項／後 3 日 {Number(item.afterCount||0).toLocaleString()} 項｜{(item.analysis||[]).join(' ')}</span>
                       </label>)}
                     </div>
                   </details>:<span className='scope-status'>目前沒有可建議的定錨日期。</span>}
                   <div className='scope-preview-links'>
-                    <button type='button' className='loc-button' disabled={anchorSaveBusy||!riverAnalysis.suggestions.length} onClick={()=>setSelectedVirtualAnchorDates(riverAnalysis.suggestions.map(item=>item.date))}>全選建議</button>
+                    <button type='button' className='loc-button' disabled={anchorSaveBusy||!riverAnalysis.suggestions.length} onClick={()=>setSelectedVirtualAnchorDates(riverAnalysis.suggestions.map(item=>item.date))}>全選待審候選</button>
                     <button type='button' className='loc-button' disabled={anchorSaveBusy||!selectedVirtualAnchorDates.length} onClick={()=>setSelectedVirtualAnchorDates([])}>清除選取</button>
                     <button type='button' className='loc-button primary' disabled={anchorSaveBusy||!selectedVirtualAnchorDates.length||!account.canManageScopeSync(classificationScope)} onClick={saveSelectedVirtualAnchors}>
-                      {anchorSaveBusy?UI_COPY.culture.creating:'建立 '+selectedVirtualAnchorDates.length+' 個正式定錨點'}
+                      {anchorSaveBusy?UI_COPY.culture.creating:'審核後建立 '+selectedVirtualAnchorDates.length+' 個正式定錨點'}
                     </button>
                   </div>
                   {!account.canManageScopeSync(classificationScope)?<span className='scope-status'>登入管理權限後才能建立正式定錨點。</span>:null}
