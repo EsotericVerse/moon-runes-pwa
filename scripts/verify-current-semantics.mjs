@@ -139,19 +139,19 @@ if(!failures.length){
   if(!keywordPanel.includes("key={selectedClassId||selectedClass}")||!keywordPanel.includes("next==='manual'||next==='network'")){
     failures.push('Keyword network must reset initial selection and origin when entering or changing its Class.');
   }
-  for(const token of ["onTimeClick={pickingAnchorSlot===null","onBoundaryNavigate={pickingAnchorSlot===null","雙擊河道空白日期","onAdd={null}","riverAnalysis.suggestions.length} 個 · 已選","選取建議定錨日期","selectedVirtualAnchorDates.includes(item.date)","全選建議","saveSelectedVirtualAnchors"]){
-    if(!culture.includes(token))failures.push('Culture river must support double-click anchors, drag-only period changes, and selectable bulk suggestions: '+token);
+  for(const token of ["onTimeClick={account.canManageScopeSync(scopeId)?date=>","onAdd={null}","items={timelineItems}","檢視時期範圍","既有定錨點｜持續檢討","anchorReviews.map","safeDates=selectedVirtualAnchorDates.filter","selectedVirtualAnchorDates.includes(item.date)","全選待審候選","saveSelectedVirtualAnchors"]){
+    if(!culture.includes(token))failures.push('Culture river must review reusable existing anchors, compare suggestions, and add only after review: '+token);
   }
   for(const token of ['表現風格','Class｜符文群組比例','culture-style-filter'])if(!culture.includes(token))failures.push('Culture style-filter presentation missing '+token);
   if(!culture.includes('本頁面只顯示所屬人員的交會時間作品。若需以時間查詢其他人的作品列表，請前往該人員的文化功能頁面。'))failures.push('LOC Culture must preserve the user-approved intersection navigation guidance.');
-  for(const token of ['currentStructurePeriod','items={currentTimelineItems}','windowStart={currentStructureStart}','windowEnd={currentStructureEnd}','onTimeClick={pickingAnchorSlot===null','onBoundaryNavigate={pickingAnchorSlot===null'])if(!culture.includes(token))failures.push('Culture first river must show the selected period, allow drag navigation and double-click anchors: '+token);
+  for(const token of ['currentStructurePeriod','items={timelineItems}','windowStart={currentStructureStart}','windowEnd={currentStructureEnd}','labelOf={labelOf}'])if(!culture.includes(token))failures.push('Culture first river must retain all historic anchors and keep the camera focused on the selected period: '+token);
   if(culture.includes('riverAction')||culture.includes('onBoundaryNavigate={riverAction'))failures.push('Culture river must not restore the browse/create mode toggle.');
   const timeline=read('app/modular/modules/culture-timeline/CultureTimeline.jsx');
   for(const token of ["addEventListener('dblclick'","removeEventListener('dblclick'","event.detail!==2","instance.getEventProperties(event)","data-anchor-gesture={onTimeClick?'double-click':'none'}"]){
     if(!timeline.includes(token))failures.push('Culture timeline must require a native double click before creating an anchor: '+token);
   }
-  if(timeline.includes("instance.on('doubleClick'")||timeline.includes("instance.on('click'")||!timeline.includes("properties?.byUser!==true")||!timeline.includes("Math.abs(visibleSpan-initialSpan)")){
-    failures.push('Culture timeline must not synthesize anchor creation from a single click or crossing period navigation from a zoom.');
+  if(timeline.includes("instance.on('doubleClick'")||timeline.includes("instance.on('click'")||!timeline.includes('hiddenDates=EMPTY_HIDDEN_DATES')||!timeline.includes('focus=EMPTY_FOCUS')||!timeline.includes("updateTime:row.entryType==='anchor'")){
+    failures.push('Culture timeline must not remount on every render or allow free-date edits of anchored periods/events.');
   }
   const structureRiver=culture.slice(culture.indexOf("scope-culture-structure-river"),culture.indexOf("scope-culture-classification-river",culture.indexOf("scope-culture-structure-river")));
   if(structureRiver.includes('fixedMin={currentStructureStart}')||structureRiver.includes('fixedMax={currentStructureEnd}'))failures.push('Culture first river must remain horizontally navigable beyond the current period.');
@@ -162,7 +162,7 @@ if(!failures.length){
   const timelineEditor=read('app/modular/features/CultureTimelineEditor.jsx');
   if(cultureQuery.includes('anchor_pair')||timelineEditor.includes('anchor_pair'))failures.push('Timeline code must not restore legacy anchor_pair storage.');
   if(!cultureQuery.includes('anchor_ids'))failures.push('Culture timeline ordered-anchor contract missing anchor_ids');
-  for(const token of ['anchor_ids','normalizeAnchorIds','新增定錨點'])if(!timelineEditor.includes(token))failures.push('Timeline editor ordered-anchor contract missing '+token);
+  for(const token of ['anchor_ids','normalizeAnchorIds','起點與終點定錨點','從既有定錨點','anchorOptions.map(row=>','轉折原因'])if(!timelineEditor.includes(token))failures.push('Timeline editor must retain semantic references to existing anchor points: '+token);
   if(timelineEditor.includes('里程碑'))failures.push('Timeline editor must not expose milestone as a separate concept.');
   if(statistics.includes('關鍵詞排行')||culture.includes('關鍵詞排行'))failures.push('Keyword-level ranking must remain hidden behind Class / Group presentation');
   const dbAudit=read('scripts/verify-db-public-read.mjs');
