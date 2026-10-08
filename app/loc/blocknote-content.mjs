@@ -1,12 +1,4 @@
-'use client';
-
-import dynamic from 'next/dynamic';
-
-const BlockNoteEditorClient=dynamic(()=>import('./BlockNoteEditorClient'),{
-  ssr:false,
-  loading:()=>null
-});
-
+// Canonical BlockNote content conversion helpers; no React/editor dependency.
 function textFromInline(content){
   if(typeof content==='string')return content;
   if(Array.isArray(content))return content.map(textFromInline).filter(Boolean).join(' ');
@@ -54,23 +46,3 @@ export function blocksToPlainText(value){
   return out.join('\n').trim();
 }
 
-export default function RichBlockEditor({
-  initialContent,
-  editable=true,
-  onChange=null,
-  onHtmlChange=null,
-  className=''
-}){
-  const normalized=normalizeBlocks(initialContent);
-  const initialBlocks=Array.isArray(normalized)?normalized:plainTextToBlocks('');
-  const initialHtml=Array.isArray(normalized)?'':String(normalized?.html||'');
-  return <div className={'scope-blocknote '+(editable?'is-editable ':'is-readonly ')+className}>
-    <BlockNoteEditorClient
-      initialBlocks={initialBlocks}
-      initialHtml={initialHtml}
-      editable={editable}
-      onChange={onChange}
-      onHtmlChange={onHtmlChange}
-    />
-  </div>;
-}

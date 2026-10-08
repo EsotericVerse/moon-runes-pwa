@@ -19,7 +19,8 @@ import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayT
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import {applyFilters} from '../../loc/db-query.mjs';
-import RichBlockEditor,{blocksToPlainText,plainTextToBlocks} from '../../loc/RichBlockEditor';
+import BlockNoteEditor from '../../loc/BlockNoteEditor';
+import {blocksToPlainText,plainTextToBlocks} from '../../loc/blocknote-content.mjs';
 import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
 
 
@@ -629,7 +630,7 @@ export default function Search(){
           {editable&&(row.resourceType!=='galaxy'||fullTextKey===row.key)?<div className="scope-search-edit-action"><button type="button" className="loc-button" onClick={()=>startEditing(row)}>{editingKey===row.key?UI_COPY.search.editing:UI_COPY.common.edit}</button></div>:null}
           {draft?(row.resourceType==='galaxy'?<div className="scope-editor scope-search-article-editor">
             <label>{UI_COPY.common.title}<input value={draft.title||''} onChange={event=>setEditDraft(current=>({...current,title:event.target.value}))}/></label>
-            <RichBlockEditor
+            <BlockNoteEditor
               key={'search-edit:'+row.key}
               initialContent={draft.bodyBlocks}
               onChange={blocks=>setEditDraft(current=>({...current,bodyBlocks:blocks}))}
@@ -642,7 +643,7 @@ export default function Search(){
             </div>
           </div>:<div className="scope-editor scope-search-media-editor">
             <label>{UI_COPY.common.title}<input value={draft.title||''} onChange={event=>setEditDraft(current=>({...current,title:event.target.value}))}/></label>
-            <RichBlockEditor
+            <BlockNoteEditor
               key={'search-media-edit:'+row.key}
               initialContent={draft.bodyBlocks}
               onChange={blocks=>setEditDraft(current=>({...current,bodyBlocks:blocks,body:blocksToPlainText(blocks)}))}

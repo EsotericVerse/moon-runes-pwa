@@ -5,7 +5,8 @@ import {UI_COPY} from '../i18n/ui-copy';
 import {useUiCopy} from '../i18n/ui-locale';
 import {DEFAULT_LIST_BATCH_SIZE,LIST_LOAD_COOLDOWN_MS} from '../loc/list-loading-contract.mjs';
 import {useScopeRuntime} from './use-scope-runtime';
-import RichBlockEditor,{blocksToPlainText,plainTextToBlocks} from '../loc/RichBlockEditor';
+import BlockNoteEditor from '../loc/BlockNoteEditor';
+import {blocksToPlainText,plainTextToBlocks} from '../loc/blocknote-content.mjs';
 
 export function FeaturePage({featureId,children,subtitle=null,description=null}){
   const {scope}=useScopeRuntime();
@@ -49,7 +50,7 @@ export function ContentEditor({
     {showTitle?<label>{UI_COPY.common.title}<input value={draft.title||''} onChange={event=>change('title',event.target.value)}/></label>:null}
     {showBody?<div className="scope-editor-blocknote">
       <span>{bodyLabel}</span>
-      <RichBlockEditor
+      <BlockNoteEditor
         key={'content-editor:'+(draft.editorKey||'body')}
         initialContent={Array.isArray(draft.bodyBlocks)&&draft.bodyBlocks.length?draft.bodyBlocks:plainTextToBlocks(draft.body||'')}
         onChange={blocks=>setDraft(current=>({...current,bodyBlocks:blocks,body:blocksToPlainText(blocks)}))}
@@ -83,7 +84,7 @@ export function WorkFullText({
     {open&&error?<p className="scope-status scope-error">{error}</p>:null}
     {open&&!loading&&!error?<div className="scope-inline-card">
       {Array.isArray(blocks)&&blocks.length
-        ?<RichBlockEditor key={'full:'+JSON.stringify(blocks)} initialContent={blocks} editable={false}/>
+        ?<BlockNoteEditor key={'full:'+JSON.stringify(blocks)} initialContent={blocks} editable={false}/>
         :<p className="scope-prewrap">{content||emptyText}</p>}
     </div>:null}
   </div>;
