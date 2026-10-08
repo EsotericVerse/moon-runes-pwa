@@ -81,11 +81,12 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return Number(data||0);
   }
 
-  async function applyKeywordClassification(scopeId,payload={}){
+  async function applyKeywordClassification(scopeId,payload={}, {onProgress}={}){
     const scope=normalizeScopeId(scopeId);
     const rows=Array.isArray(payload?.rows)?payload.rows:[];
     const meta=payload?.meta&&typeof payload.meta==='object'?payload.meta:{};
     await keywordClassificationWrite(scope,{mode:'begin'});
+    onProgress?.({phase:'prepare',completed:0,total:rows.length});
 
     const batchSize=500;
     let count=0;
@@ -96,8 +97,10 @@ export function createDatabaseClient({publicClient,authClient,auth}){
         throw new Error(`Keyword classification chunk incomplete: expected ${batch.length}, affected ${affected}`);
       }
       count+=affected;
+      onProgress?.({phase:'write',completed:count,total:rows.length});
     }
 
+    onProgress?.({phase:'finalizing',completed:count,total:rows.length});
     const documentCount=await keywordClassificationWrite(scope,{mode:'finalize',meta});
     if(documentCount!==rows.length){
       throw new Error(`Keyword classification finalize mismatch: expected ${rows.length}, counted ${documentCount}`);
