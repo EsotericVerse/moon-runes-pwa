@@ -24,6 +24,7 @@
 - [x] Keyword Attr 批次寫回與進度百分比修正已合併至 0.9 RC 之後的 Current main（含 SQL chunk WHERE 修正）；不等於所有真實 corpus 壓力測試已簽核。
 - [ ] 在公開基本功能確認後，再開始 Governance／Admin／Scope Manage 的實際操作驗收。
 - [ ] 驗證 CRUD、0-row 例外處理、searchable=false canonical visibility、Theme、Scope config 與權限行為。
+- [ ] Import：使用真實來源檔測試自訂 JSON 欄位格式、巢狀資料路徑、多檔逐檔預覽、25–200 筆有界分批寫入、進度、重複 UID／原生 ID 與中斷後重新比對；程式實作不等於資料庫端實測已通過。
 - [ ] 驗證管理預覽、Import、Data、Period、Keyword 等工作區的實際使用流程。
 - [ ] 文化：時期設定與時間河道，實際驗證切換時期、錨點、河道範圍與儲存結果。
 - [ ] 統計：關鍵詞設定，實際驗證 Class／Group／Item 編輯、重新分析與分頁後 Group 排行。

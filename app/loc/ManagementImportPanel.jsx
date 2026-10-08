@@ -16,17 +16,6 @@ function sourceSuggestion(name=''){
   }
   return String(name).replace(/\.json$/i,'').trim().toLowerCase().replace(/[^a-z0-9_-]+/g,'-')||'import';
 }
-function firstValue(row,keys){
-  for(const key of keys)if(row?.[key]!==undefined&&row?.[key]!==null&&String(row[key]).trim()!=='')return row[key];
-  return '';
-}
-function asRows(value){
-  if(Array.isArray(value))return value;
-  if(Array.isArray(value?.items))return value.items;
-  if(Array.isArray(value?.posts))return value.posts;
-  if(Array.isArray(value?.data))return value.data;
-  return value&&typeof value==='object'?[value]:[];
-}
 function iso(value){
   if(!value)return null;
   const date=new Date(value);
@@ -159,27 +148,42 @@ function JsonImport({scopeId,format,onBusyChange}) {
     try{
       const galaxy=account.scopeDataFor(scopeId)?.galaxy;
       if(!galaxy)throw new Error('Scope data 未解析');
-      const unique=[],seen=new Set();
+      const unique=[],seenUid=new Set(),seenNative=new Set();
       let duplicateCount=0;
       for(const record of analyzed.valid){
-        if(seen.has(record.uid)){duplicateCount++;continue;}
-        seen.add(record.uid);unique.push(record);
+        const nativeId=String(record.source_native_id||'').trim();
+        if(seenUid.has(record.uid)||(nativeId&&seenNative.has(nativeId))){duplicateCount++;continue;}
+        seenUid.add(record.uid);
+        if(nativeId)seenNative.add(nativeId);
+        unique.push(record);
       }
       const existing=new Set();
+      const existingNative=new Set();
       for(let offset=0;offset<unique.length;offset+=200){
         const ids=unique.slice(offset,offset+200).map(record=>record.uid);
         const {data,error}=await dbAuthRelation(galaxy).select('uid').in('uid',ids);
         if(error)throw new Error(error.message||'既有 UID 檢查失敗。');
         for(const row of data||[])existing.add(String(row.uid||'').toUpperCase());
       }
-      const payload=unique.filter(record=>!existing.has(record.uid));
+      const nativeIds=[...seenNative];
+      for(let offset=0;offset<nativeIds.length;offset+=200){
+        const ids=nativeIds.slice(offset,offset+200);
+        const {data,error}=await dbAuthRelation(galaxy)
+          .select('source_native_id')
+          .eq('source_name',selected)
+          .in('source_native_id',ids);
+        if(error)throw new Error(error.message||'來源原生 ID 檢查失敗。');
+        for(const row of data||[])existingNative.add(String(row.source_native_id||'').trim());
+      }
+      const payload=unique.filter(record=>!existing.has(record.uid)&&!(record.source_native_id&&existingNative.has(record.source_native_id)));
+      const existingCount=unique.length-payload.length;
       setProgress({completed:0,total:payload.length,percent:payload.length?0:100});
       await writeImportBatches(payload,{
         batchSize:validImportBatchSize(format.batchSize),
         writeBatch:batch=>insertRows(galaxy,batch),
         onProgress:progress=>setProgress(progress)
       });
-      const skipped=analyzed.invalid.length+duplicateCount+existing.size;
+      const skipped=analyzed.invalid.length+duplicateCount+existingCount;
       setStatus('第 '+(queueIndex+1)+'／'+queue.length+' 檔完成：新增 '+payload.length.toLocaleString()+' 筆'+(skipped?'；略過 '+skipped.toLocaleString()+' 筆（無效／重複／已存在）':'')+'。'+(queueIndex+1<queue.length?'請選擇下一檔繼續。':'本次檔案全部處理完成。'));
       setRows([]);
     }catch(error){
@@ -192,7 +196,7 @@ function JsonImport({scopeId,format,onBusyChange}) {
     <label>{UI_COPY.management.currentFile}<input type="file" accept=".json,application/json" multiple disabled={busy} onChange={chooseFile}/></label>
     {fileName?<p>檔案：<strong>{fileName}</strong>（第 {queueIndex+1}／{queue.length} 檔）｜建議來源：<strong>{suggested}</strong></p>:null}
     <label>{UI_COPY.management.sourceChoice}<input disabled={busy||!rows.length} value={source} onChange={event=>setSource(event.target.value)} placeholder={suggested}/></label>
-    <p className="loc-subtitle">每次只讀取與確認一個 JSON 檔案；檔內資料再依設定筆數分批寫入此 Scope 的 Galaxy，不會一次送出全部有效資料。所有檔案共用上方格式設定。</p>
+    <p className="loc-subtitle">每次只讀取與確認一個 JSON 檔案；檔內資料依設定筆數分批寫入 Galaxy，不會一次送出全部有效資料。相同 UID 或「來源＋平台原生 ID」會略過。沒有這兩種穩定識別的紀錄，重新選檔不保證可辨識重複資料。</p>
     {rows.length?<section className="scope-import-preview" aria-label="JSON 匯入預覽">
       <p className="scope-status">有效 {analyzed.valid.length.toLocaleString()} 筆｜略過 {analyzed.invalid.length.toLocaleString()} 筆</p>
       <div className="scope-management-records">
