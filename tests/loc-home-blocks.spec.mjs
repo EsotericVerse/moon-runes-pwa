@@ -30,6 +30,26 @@ test('LOC index home frames are rendered once, in database order, with authored 
   expect(await page.locator('.loc-home .scope-editable-block-grid').count()).toBe(0);
   expect(await page.locator('.loc-home .scope-editable-block .scope-editable-block').count()).toBe(0);
 
+  // Existing artwork is a contained image-only bubble, not a second
+  // background. Its placement must adapt without crowding the text.
+  const viewport=page.viewportSize();
+  for(const order of [2,3,6]){
+    const frame=page.locator('.loc-home > section[data-block-order="'+order+'"]');
+    const picture=frame.locator('> .loc-home-block__media-bubble');
+    await expect(picture).toHaveCount(1);
+    await expect(picture.locator('img')).toHaveCount(1);
+    const [frameBox,headerBox,mediaBox]=await Promise.all([
+      frame.boundingBox(),frame.locator('> .loc-home-block__header').boundingBox(),picture.boundingBox()
+    ]);
+    expect(frameBox&&headerBox&&mediaBox).toBeTruthy();
+    expect(mediaBox.width).toBeLessThanOrEqual(frameBox.width);
+    if(viewport.width<=760){
+      expect(mediaBox.y).toBeGreaterThanOrEqual(headerBox.y);
+    }else{
+      expect(mediaBox.x).toBeGreaterThan(headerBox.x);
+    }
+  }
+
   const status=page.locator('.loc-home > section[data-block-order="4"]');
   await expect(status.locator('.loc-home-block__body')).toContainText('目前文字作品');
   await expect(status.locator('.loc-home-block__body')).toContainText('系統架構');
