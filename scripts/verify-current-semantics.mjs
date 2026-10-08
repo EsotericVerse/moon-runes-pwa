@@ -118,8 +118,13 @@ if(!failures.length){
   }
   if(statistics.includes('{groupRows.map(row=>'))failures.push('Statistics Group ranking must not render every item in one long list.');
   const keywordPanel=read('app/loc/KeywordLibraryPanel.jsx');
-  for(const token of ["const [styleFilter,setStyleFilter]=useState('none')","current==='keywords'","<ScopeStatisticsResults","<KeywordLibraryPanel","import Select from 'react-select'"]){
-    if(!statistics.includes(token))failures.push('Statistics must defer and isolate its keyword workspace: '+token);
+  for(const token of ["const [styleFilter,setStyleFilter]=useState('none')","<ScopeStatisticsResults","scopeHref(scopeId,'statics/keywords')"]){
+    if(!statistics.includes(token))failures.push('Statistics must defer keyword analysis and link its independent editor: '+token);
+  }
+  if(statistics.includes('KeywordLibraryPanel')||statistics.includes("current==='keywords'"))failures.push('Statistics must not mount the keyword editor in the same route.');
+  const keywordSettings=read('app/modular/features/KeywordSettings.jsx');
+  for(const token of ['canManageScopeSync(scopeId)',"dynamic(()=>import('../../loc/KeywordLibraryPanel')","<FeaturePage featureId=\"statics\""]){
+    if(!keywordSettings.includes(token))failures.push('Standalone keyword route must gate lazy management: '+token);
   }
   for(const token of ["workspace==='analysis'","workspace==='manual'","workspace==='network'","dynamic(()=>import('./KeywordNetworkEditor')","關鍵詞工作區"]){
     if(!keywordPanel.includes(token))failures.push('Keyword Library must expose separate analysis, manual and lazy graph views: '+token);
