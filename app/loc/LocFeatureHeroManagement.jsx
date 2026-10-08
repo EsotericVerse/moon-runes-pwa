@@ -40,6 +40,9 @@ export default function LocFeatureHeroManagement(){
       page={FEATURE_HERO_PAGE}
       orders={orders}
       allowEditing
+      allowDelete={false}
+      allowEntities={false}
+      editEyebrow={false}
       headingLevel={3}
       slotClassName="loc-card scope-feature-hero-preview"
       editSlotClassName="loc-card scope-feature-hero-preview"
