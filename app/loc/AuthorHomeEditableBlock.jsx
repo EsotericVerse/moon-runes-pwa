@@ -160,7 +160,7 @@ function ContactDisplay(slot){
     <h2 id="contact">{slot.title}</h2>
     <div className="author-contact-layout">
       <div>
-        <Html tag="p" html={parts[0]||''}/>
+        <Html tag="p" html={parts[0]||''} stripImage={Boolean(firstFrameImageUrl(slot))}/>
         {email?<p><a href={email.href}>{email.label}</a></p>:null}
       </div>
       <div className="author-official-links">
