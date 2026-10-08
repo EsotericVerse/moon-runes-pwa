@@ -1,7 +1,6 @@
 import './globals.css';
 import AppShell from './AppShell';
 import {LOC_ORIGIN} from './seo/metadata';
-import {getThemeSlot} from './modular/theme-registry';
 import {SCOPES} from './modular/scope-registry';
 
 export const metadata = {
@@ -24,10 +23,19 @@ const INITIAL_THEME_IDS=[...new Set([
   AUTO_NIGHT_THEME_ID,
   ...INITIAL_SCOPE_THEMES.map(scope=>scope.theme?.themeId).filter(Boolean)
 ])];
-const INITIAL_THEME_SLOTS=Object.fromEntries(INITIAL_THEME_IDS.map(id=>{
-  const slot=getThemeSlot(id);
-  return [id,{id:slot.id,scheme:slot.scheme,tokens:slot.tokens}];
-}));
+const INITIAL_THEME_SCHEMES=Object.freeze({
+  'theme-1':'dark',
+  'theme-2':'light',
+  'theme-3':'light',
+  'theme-4':'light',
+  'theme-5':'light',
+  'theme-6':'dark',
+  'theme-7':'light',
+  'theme-8':'dark'
+});
+const INITIAL_THEME_SLOTS=Object.fromEntries(INITIAL_THEME_IDS.map(id=>[
+  id,{id,scheme:INITIAL_THEME_SCHEMES[id]||'dark'}
+]));
 const INITIAL_THEME_SCRIPT=`(()=>{try{
   const slots=${JSON.stringify(INITIAL_THEME_SLOTS)};
   const scopes=${JSON.stringify(INITIAL_SCOPE_THEMES)};
@@ -55,7 +63,7 @@ const INITIAL_THEME_SCRIPT=`(()=>{try{
   root.dataset.theme=slot.scheme;
   root.dataset.themeId=slot.id;
   root.style.colorScheme=slot.scheme;
-  Object.entries(slot.tokens).forEach(([key,value])=>root.style.setProperty(key,value));
+  root.dataset.themeBootstrap='scheme-only';
 }catch{}})();`;
 
 export default function RootLayout({ children }) {
