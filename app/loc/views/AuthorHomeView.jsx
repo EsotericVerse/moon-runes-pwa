@@ -1,4 +1,4 @@
-import authorHeroAsset from '../../../pics/lo3rwang-hero.jpg';
+import AuthorHomeEditableBlocks from '../AuthorHomeEditableBlock';
 
 function AuthorPage({eyebrow,title,subtitle,intro,heroImage=null,heroContent=null,sections=[]}){
   return <section className="loc-view scope-home-composition">
@@ -39,7 +39,7 @@ const PROFESSIONAL_ROLES=Object.freeze([
     text:'從詞、句子與語意關係出發，整理文字如何形成脈絡、節奏與可辨識的表達。'
   }),
   Object.freeze({
-    title:'混沌校對者 · Chaos Calibrator',
+    title:'混沌辨律者 · Chaos Discerner',
     text:'把文字放回來源、時間與歷史裡比較，觀察延續、改變、矛盾與可能的污染，不急著替結果下定論。'
   }),
   Object.freeze({
@@ -224,93 +224,9 @@ export default function AuthorHomeView({section=null}){
     />;
   }
 
-  return <AuthorPage
-    eyebrow={null}
-    title=""
-    subtitle=""
-    intro={null}
-    heroImage={authorHeroAsset}
-    heroContent={<div className="author-home-hero-copy">
-      <p className="loc-eyebrow">Lucas Oscar Wang</p>
-      <div className="home-title-row"><h1>政德</h1><p className="loc-subtitle">語言建築師</p></div>
-      <>
-      <p>Hello！你好！你可以叫我 Oscar。</p>
-      <p>Wordsmith · Chaos Discerner · Language Architect</p>
-      <p>Creator of LOC and LunaRunes · <a href="https://suno.com/album/16130013-09f2-4be3-b2f6-05ce171ba7d5" target="_blank" rel="noopener noreferrer">聽《微月光，上場》 →</a></p>
-      </>
-    </div>}
-    sections={[
-      {
-        id:'about',
-        eyebrow:'About',
-        title:'關於我',
-        content:<div className="author-about-grid">
-          <div className="author-about-primary">
-            <p>Lucas Oscar Wang 政德，日常叫我 Oscar。寫作、音樂、系統整理與到處看看，都是我長期沒有放下的事情。</p>
-            <p><strong>人生觀：</strong>鑑古知今，求同存異。不在其位，不謀其政。隨心所欲，而不逾己。</p>
-            <p><strong>原則態度：</strong>敬畏未知，尊重異者，專業為先。</p>
-            <p><strong>擅長能力：</strong>歸納、整理與系統化；習慣把複雜原理收斂成可以理解與重複使用的結構。</p>
-          </div>
-          <aside className="author-about-side">
-            <h3>名字與識別</h3>
-            <p>完整署名是 Lucas Oscar Wang 政德，公開識別為 lo3rwang；日常稱呼仍是 Oscar。</p>
-            <h3>思想底色</h3>
-            <p>偏向老子體系的道與德，也重視自然、觀察與不以控制取代理解。</p>
-          </aside>
-        </div>
-      },
-      {
-        id:'professional',
-        eyebrow:'Professional',
-        title:'我在做什麼',
-        content:<>
-          <p className="author-section-lead">我的工作重心是處理語言、資料、脈絡與時間之間的關係，讓分散的文字、規則、版本與歷史紀錄形成可理解、可維護的結構。</p>
-          <ProfessionalRoles/>
-          <div className="author-professional-grid">
-            <article className="author-editorial-block">
-              <h3>語言顧問與系統設計</h3>
-              <WorkCopy/>
-            </article>
-            <article className="author-editorial-block">
-              <h3>數位資產管理</h3>
-              <DigitalAssetCopy/>
-            </article>
-          </div>
-        </>
-      },
-      {
-        id:'archive-tools',
-        eyebrow:'Explore',
-        title:'文化、統計與搜尋',
-        content:<>
-          <p className="author-section-lead">同一批作品可以從時間、數量與文字三個方向重新閱讀；三個功能都回到原始資料，不替作品增加新的判定。</p>
-          <ArchiveTools/>
-        </>
-      },
-      {
-        id:'systems',
-        eyebrow:'Systems',
-        title:'從自己的問題長出的系統',
-        content:<SystemsCopy/>
-      },
-      {
-        id:'three-souls',
-        eyebrow:'Three Souls',
-        title:'三魂',
-        content:<ThreeSouls/>
-      },
-      {
-        id:'contact',
-        eyebrow:'Contact',
-        title:'聯絡與官方連結',
-        content:<div className="author-contact-layout">
-          <div>
-            <p>合作、顧問、系統設計、數位資產管理或其他公開內容相關事項，可透過電子郵件聯絡。</p>
-            <p><a href="mailto:sopa2306@gmail.com">sopa2306@gmail.com</a></p>
-          </div>
-          <OfficialLinks/>
-        </div>
-      }
-    ]}
-  />;
+  // Public author homepage is owned by silver.lo3rwang_blocks, not stale JSX.
+  // The two detailed author subpages above preserve their distinct layouts.
+  return <section className="loc-view scope-home-composition">
+    <AuthorHomeEditableBlocks/>
+  </section>;
 }
