@@ -57,7 +57,7 @@ must(!galaxy.includes('include_in_time'),'generic search must not query nonexist
 must(galaxy.includes("searchFields:['label','note','status','style_description']")&&!galaxy.includes("'style_tags'"),'Search uses dedicated TEXT style body and no comma tags');
 must(culture.includes("value:['anchor','period','event','style_comment']"),'Culture reads independent style comments');
 must(editor.includes("['style_comment','風格標籤']")&&!editor.includes('style_tags')&&!cultureUi.includes('CultureStyleTagsEditor'),'Fourth style comment must use the shared Time editor, not legacy tag fields or a separate editor');
-must(editor.includes('payload.style_description=styleDescription')&&editor.includes('payload.anchor_ids=[anchorId]')&&cultureUi.includes("beginTimelineCreation('style_comment','')"),'Style create/update must save one independent TEXT description and one formal anchor');
+must(editor.includes('payload.style_description=styleDescription')&&editor.includes('payload.anchor_ids=[anchorId]')&&cultureUi.includes("beginTimelineCreation(recordType,'')")&&cultureUi.includes("<option value='style_comment'>風格標籤</option>"),'Style create/update must use shared Type selector and save one independent TEXT description and one formal anchor');
 must(cultureUi.includes('onClick={canEditWork')&&cultureUi.includes('isInteractiveTarget')&&!cultureUi.includes("UI_COPY.culture.editing:'編輯'"),'Culture existing works must enter editing by direct non-interactive card click without an Edit button');
 must(galaxy.includes('selectStyleKeywordIntroductions')&&!galaxy.includes('scopeCards('),'Search must prepend exact style-keyword introductions and must not use partial Scope-ID cards');
 must(management.includes('scope?.aggregateChildren?<ManagementDisclosure')&&management.includes('<ScopeGroupManagement scopeId={scopeId}/>'),'every DB Scope Group must have its own collapsed Manage entry');
@@ -147,14 +147,23 @@ must(!runesHome.includes('ScopeEditableBlocks')&&runesHome.includes('className="
 must(personalGovernance.includes('ScopeEditableBlocks')&&personalGovernance.includes('page="governance"'),'personal governance must use governance block rows');
 must(runesGovernance.includes('ScopeEditableBlocks')&&runesGovernance.includes('page="governance"'),'LunaRunes governance must use governance block rows');
 must(sharedSearch.includes('startEditing')&&sharedSearch.includes('BlockNoteEditor')&&sharedSearch.includes('GALAXY_EDITOR_COLUMNS')&&sharedSearch.includes('GalaxyAttrSummary')&&sharedSearch.includes('GalaxyAttrEditor')&&sharedSearch.includes("fullTextKey===row.key")&&sharedSearch.includes('updateRows'),'Search must open full Galaxy articles first, then expose permission-gated full Attr editing');
-must(cultureUi.includes('＋ 新增風格標籤')&&cultureUi.includes('尋找風格標籤')&&editor.includes('風格專屬敘述（TEXT）')&&!cultureUi.includes('scope-culture-style-panel'),'First Time river must directly expose style create and lookup without a folded panel');
-const compactTimeButtons=["＋ 新增正式定錨點","＋ 新增時期","＋ 新增事件","＋ 新增風格標籤"];
-must(!cultureUi.includes('尋找既有定錨點')&&!cultureUi.includes('新增時期（選擇既有定錨點）')&&!cultureUi.includes('新增事件（選擇既有定錨點）')&&compactTimeButtons.every(label=>cultureUi.includes(label)),'First Time river controls must use only compact add labels without redundant anchor lookup');
-must(compactTimeButtons.every((label,i)=>i===0||cultureUi.indexOf(compactTimeButtons[i-1])<cultureUi.indexOf(label)),'First Time river action buttons must retain original order with style add appended');
+must(editor.includes('風格標籤（新增／編輯）')&&editor.includes('風格專屬敘述（TEXT）')&&editor.includes("row.status==='needs_anchor'")&&!cultureUi.includes('尋找風格標籤')&&!cultureUi.includes('scope-culture-style-panel'),'Shared Time editor must let authors select existing or pending styles, without a top-level duplicate lookup');
+must(!cultureUi.includes('尋找既有定錨點')&&!cultureUi.includes('尋找風格標籤')&&
+  cultureUi.includes('＋ 新增正式定錨點')&&cultureUi.includes("aria-label='新增時間長河紀錄'")&&
+  ["<option value='period'>時期</option>","<option value='event'>事件</option>","<option value='style_comment'>風格標籤</option>"].every(label=>cultureUi.includes(label))&&
+  !cultureUi.includes('新增時期（選擇既有定錨點）')&&!cultureUi.includes('新增事件（選擇既有定錨點）'),
+  'Time toolbar is one anchor button plus one three-option selector, with no redundant lookup dropdown');
 must(nativeTimeline.includes("anchor:'定錨點',event:'事件',style_comment:'風格標籤',period:'時期'"),'Time River fourth group must always be period, not style');
 must(culture.includes('visibility,style_description')&&culture.includes('styleComments:parts.styleComments')&&culture.includes('style_comment:2,period:3')&&culture.includes("style_comment:'風格標籤'")&&culture.includes("entry_type==='style_comment'"),'Culture exposes independent style comments');
+must(editor.includes("ids.length!==2||concrete.length!==2")&&
+  editor.includes("ids.length>2||concrete.length<1||concrete.length>2")&&
+  editor.includes("payload.anchor_ids=[anchorId]")&&
+  !editor.includes('addIntermediateAnchor')&&editor.includes('legacyEventUnchanged'),
+  'Canonical Time anchor counts are period 1–2, event 2, style 1; historic 1/3 point events are not silently changed');
 must(nativeTimeline.includes('hasTimeKinds')&&nativeTimeline.includes("style_comment:'風格標籤'")&&nativeTimeline.includes('standardTimeKinds.map'),'Time chart must create the fourth style group even when it is empty');
-must(cultureUi.includes('beginTimelineCreation')&&cultureUi.includes('items={timelineItems}')&&cultureUi.includes('...classificationBuckets,...virtualAnchorItems')&&!cultureUi.includes('anchorReviews.map')&&editor.includes('起點與終點定錨點')&&editor.includes('anchorOptions.map(row=>')&&!editor.includes('CultureStyleTagsField'),'Time editor must not mix style comments into periods');
+must(cultureUi.includes('beginTimelineCreation')&&cultureUi.includes('items={timelineItems}')&&cultureUi.includes('...classificationBuckets,...virtualAnchorItems')&&!cultureUi.includes('anchorReviews.map')&&
+  editor.includes('時期：1 或 2 個定錨點')&&editor.includes('事件：固定選擇 2 個定錨點')&&editor.includes('anchorOptions.map(row=>')&&!editor.includes('CultureStyleTagsField'),
+  'Shared Time editor must use 1–2 anchors for periods, 2 for events, 1 for styles, without extra controls');
 must(nativeTimeline.includes('new Timeline(')&&['onAdd:','onMove:','onUpdate:','onRemove:','add:Boolean(onAddRef.current)','onTimeClickRef.current'].every(token=>nativeTimeline.includes(token)),'Time manipulation must retain vis-timeline edits and make add opt-in to avoid river gesture collisions');
 
 must(nativeTimeline.includes("updateTime:row.entryType==='anchor'")&&!cultureUi.includes('snapTimelineRangeToAnchors')&&editor.includes('payload.anchor_ids=ids'),'Only real anchor points can be dragged; periods and events must reference ordered anchor IDs from selectors');
