@@ -3,6 +3,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {snapTimelineRangeToAnchors} from '../app/modular/modules/culture-timeline/culture-anchor-snap.mjs';
 import {blocksToPlainText,normalizeBlocks,plainTextToBlocks} from '../app/loc/blocknote-content.mjs';
+import {HOME_BLOCK_LIMIT,homeBlockRows,visibleHomeEntities} from '../app/loc/home-block-model.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const failures=[];
@@ -41,7 +42,8 @@ const blockNoteEditor=read('app/loc/BlockNoteEditorClient.jsx');
 const editableBlocks=read('app/loc/ScopeEditableBlocks.jsx');
 const authorHome=read('app/loc/views/AuthorHomeView.jsx');
 const authorHomeEditable=read('app/loc/AuthorHomeEditableBlock.jsx');
-const locHomeEditable=read('app/loc/LocHomeEditableBlock.jsx');
+const locHomeBlock=read('app/loc/LocHomeBlockDisplay.jsx');
+const locHomeCss=read('app/styles/loc-about-original.css');
 const locHome=read('app/loc/views/AboutView.jsx');
 const runesHome=read('app/lrunes/RunesClient.jsx');
 const personalGovernance=read('app/modular/governance/PersonalGovernance.jsx');
@@ -83,15 +85,41 @@ for(const [file,body] of [['app/modular/ui.jsx',read('app/modular/ui.jsx')],['ap
 must(editableBlocks.includes('ENTITY_LIMIT=6')&&editableBlocks.includes("page='index'")&&editableBlocks.includes('page_name')&&editableBlocks.includes('block_entity')&&editableBlocks.includes("column:'uid'")&&editableBlocks.includes('isInteractiveTarget'),'Scope page editing must use stable block uid plus up to six child entities');
 must(['block_eyebrow','block_title','block_subtitle','block_text'].every(col=>editableBlocks.includes(col)&&scopeData.includes(col)),'Scope blocks must read and edit four canonical header/body columns');
 must(editableBlocks.includes('childPresentation(entity.title)')&&editableBlocks.includes('不用標題（文字泡泡）')&&!editableBlocks.includes('entity.kind'),'title-free child bubble and titled child card must use implicit kind, without a type selector');
-must(locHomeEditable.includes('slot.subtitle')&&authorHomeEditable.includes('slot.subtitle'),'LOC and Author heading displays must use the dedicated rich subtitle');
+must(locHomeBlock.includes('slot.subtitle')&&authorHomeEditable.includes('slot.subtitle'),'LOC and Author heading displays must use the dedicated rich subtitle');
 must(portableSchema.includes('"block_eyebrow"')&&portableSchema.includes('"block_subtitle"')&&scopeProvisioning.includes('block_eyebrow')&&scopeProvisioning.includes('block_subtitle'),'portable and future scope table contracts must include standard block header columns');
 
 must(editableBlocks.includes('儲存失敗：')&&editableBlocks.includes('scope-inline-save-status')&&editableBlocks.includes('refetchQueries'),'page block saves must visibly report success/failure and refetch saved data');
 must(editableBlocks.includes('dangerouslySetInnerHTML')&&!editableBlocks.includes('editable={false}'),'public page display must use static site markup; BlockNote is edit-only');
 must(authorHome.includes('authorHeroAsset')&&authorHome.includes('author-home-hero-copy')&&authorHome.includes('author-role-grid')&&authorHome.includes('author-professional-grid')&&authorHome.includes('author-system-grid')&&authorHome.includes('author-trinity-layout')&&authorHome.includes('author-contact-layout')&&!authorHome.includes('AuthorHomeEditableBlock'),'author homepage must preserve its October 1 sections and new hero without inline editing');
-must(locHomeEditable.includes('home-title-row')&&locHomeEditable.includes('home-status-bubbles')&&locHomeEditable.includes('loc-bubble'),'LOC homepage must preserve its original presentation while editing data-backed blocks');
-must(locHomeEditable.includes('allowEditing={true}')&&!locHomeEditable.includes('allowEditing={false}')&&editableBlocks.includes("account.canManageGlobalSync()")&&editableBlocks.includes("scopeId==='loc'"),'LOC homepage must allow authorized global Admin inline editing while keeping visitors read-only');
-must(locHome.includes('<LocHomeEditableBlock order={1} variant="hero"/>')&&locHome.includes('className="home-hero-visual"')&&!locHome.includes('<p>以微月光為鑑'),'LOC Hero must read authored text from Supabase block 1 and preserve approved full-image visual');
+must(locHomeBlock.includes('loc-home-block__header')&&locHomeBlock.includes('loc-home-block__body')&&locHomeBlock.includes('loc-home-block__children')&&locHomeCss.includes('.loc-home-block__children'),'LOC homepage must use one consistent header/body/children contract');
+must(locHome.includes('allowEditing')&&editableBlocks.includes("account.canManageGlobalSync()")&&editableBlocks.includes("scopeId==='loc'"),'LOC homepage must preserve permission-based BlockNote editing');
+must(locHome.includes('maxBlocks={8}')&&locHome.includes('placeholderFirstOrder={1}')&&locHome.includes('containerless')&&locHome.includes('renderDisplay={LocHomeBlockDisplay}')&&locHomeBlock.includes("order===1?'loc-hero loc-home-hero'")&&locHomeBlock.includes('SITE_IMAGES.locHero'),'LOC homepage must print up to 8 ordered frames, with Hero background only for order 1');
+
+must(HOME_BLOCK_LIMIT===8&&homeBlockRows([
+  {uid:'A',page_name:'index',block_order:4},
+  {uid:'B',page_name:'index',block_order:1},
+  {uid:'C',page_name:'other',block_order:3},
+  {uid:'D',page_name:'index',block_order:8},
+  {uid:'E',page_name:'index',block_order:9}
+]).map(row=>row.uid).join(',')==='B,A,D','Home page/order must drive display; reject other pages and >8 and render in order');
+const colFixture={
+  eyebrow:'System Status',title:'系統狀態',subtitle:'<p>系統簡介</p>',
+  text:'<h2>目前文字作品</h2><p>已整理</p><h2>系統架構</h2><p>技術模組</p>',
+  entities:[
+    {uid:'a',title:'',text:'<p>Next.js</p>'},
+    {uid:'b',title:'',text:'<p>vis-timeline</p>'},
+    {uid:'c',title:'',text:'<p>Zod</p>'},
+    {uid:'d',title:'',text:'<p></p>'}
+  ]
+};
+must(visibleHomeEntities(colFixture).map(entity=>entity.uid).join(',')==='a,b,c','LOC status must show all populated child items in DB order and hide only empty placeholders');
+must(visibleHomeEntities({...colFixture,entities:[{uid:'copy',title:'',text:colFixture.text}]}).length===0,'legacy duplicate whole-body child must not print twice');
+must(locHomeBlock.includes('visibleHomeEntities(slot)')&&locHomeBlock.includes('dangerouslySetInnerHTML')&&!locHomeBlock.includes('splitStatusContentSections')&&!locHomeBlock.includes('paragraphParts')&&!locHomeBlock.includes('entityAt('),'LOC read-only display must preserve all BlockNote HTML without rewriting or hardcoded data indexes');
+must(!fs.existsSync(path.join(root,'app/loc/LocHomeEditableBlock.jsx'))&&!locHome.includes('LocHomeEditableBlock'),'retired multi-renderer homepage module must be gone');
+must(editableBlocks.includes('containerless?contents:')&&editableBlocks.includes('resolveSlotClassName(slot)')&&editableBlocks.includes('homeBlockRows(rows,pageName,maxBlocks)'),'Home must create only one DOM section per DB row without nested layout wrappers');
+must(editableBlocks.includes('displayed.push(normalizeRow(null,placeholderFirstOrder))')&&locHomeBlock.includes('home-hero-visual'),'Hero responsive image must be rendered statically even before the DB content loads');
+must(!locHomeCss.includes('display:contents')&&!locHomeCss.includes('!important'),'Homepage CSS must not rely on wrapper-hiding or cascade override hacks');
+
 must(!runesHome.includes('ScopeEditableBlocks')&&runesHome.includes('className="basic-grid"'),'LunaRunes homepage must remain a fixed special presentation without inline management editing');
 must(personalGovernance.includes('ScopeEditableBlocks')&&personalGovernance.includes('page="governance"'),'personal governance must use governance block rows');
 must(runesGovernance.includes('ScopeEditableBlocks')&&runesGovernance.includes('page="governance"'),'LunaRunes governance must use governance block rows');

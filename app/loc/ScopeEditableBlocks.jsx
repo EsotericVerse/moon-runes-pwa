@@ -8,6 +8,7 @@ import {useAccount} from './use-account';
 import BlockNoteEditor from './BlockNoteEditor';
 import {stripLocHomeEditorPlaceholders} from './loc-home-text.mjs';
 import {childPresentation,removeDuplicatedLegacySubtitle} from './block-presentation.mjs';
+import {homeBlockRows} from './home-block-model.mjs';
 
 const ENTITY_LIMIT=6;
 const UID_ALPHABET='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -64,6 +65,10 @@ export default function ScopeEditableBlocks({
   editSlotClassName='',
   headingLevel=3,
   renderDisplay=null,
+  resolveSlotClassName=null,
+  maxBlocks=null,
+  placeholderFirstOrder=null,
+  containerless=false,
   allowEditing=true
 }){
   const account=useAccount();
@@ -80,20 +85,37 @@ export default function ScopeEditableBlocks({
     ()=>Array.isArray(orders)?orders.map(Number).filter(value=>Number.isInteger(value)&&value>0):[],
     [orders]
   );
+  const [draft,setDraft]=useState(null);
+  const [busy,setBusy]=useState(false);
+  const [message,setMessage]=useState('');
+
   const slots=useMemo(()=>{
     const rows=Array.isArray(query.data)?query.data:[];
-    if(!normalizedOrders.length)return rows.map(row=>normalizeRow(row,row.block_order));
-    const byOrder=new Map(rows.map(row=>[Number(row.block_order),row]));
-    return normalizedOrders.map(order=>normalizeRow(byOrder.get(order),order));
-  },[query.data,normalizedOrders]);
+    if(normalizedOrders.length){
+      const byOrder=new Map(rows.map(row=>[Number(row.block_order),row]));
+      return normalizedOrders.map(order=>normalizeRow(byOrder.get(order),order));
+    }
+    if(Number.isInteger(maxBlocks)&&maxBlocks>0){
+      const displayed=homeBlockRows(rows,pageName,maxBlocks).map(row=>normalizeRow(row,row.block_order));
+      if(draft&&!draft.stored&&!displayed.some(slot=>slot.order===draft.order)&&draft.order<=maxBlocks){
+        displayed.push({...draft});
+      }
+      // Render the standard Hero visual in static HTML before client data loads.
+      // The placeholder is replaced by the real first block after the DB query.
+      if(Number.isInteger(placeholderFirstOrder)&&placeholderFirstOrder>0&&placeholderFirstOrder<=maxBlocks
+          &&!displayed.some(slot=>slot.order===placeholderFirstOrder)){
+        displayed.push(normalizeRow(null,placeholderFirstOrder));
+      }
+      displayed.sort((a,b)=>a.order-b.order);
+      return displayed;
+    }
+    return rows.map(row=>normalizeRow(row,row.block_order));
+  },[query.data,normalizedOrders,maxBlocks,pageName,draft,placeholderFirstOrder]);
   const nextOrder=useMemo(()=>{
     const rows=Array.isArray(query.data)?query.data:[];
     return Math.max(0,...rows.map(row=>Number(row.block_order)||0))+1;
   },[query.data]);
 
-  const [draft,setDraft]=useState(null);
-  const [busy,setBusy]=useState(false);
-  const [message,setMessage]=useState('');
 
   function begin(slot){
     if(!canEdit)return;
@@ -239,16 +261,18 @@ export default function ScopeEditableBlocks({
     </div>;
   }
 
-  return <div className={'scope-editable-block-grid '+className}>
+  const contents=<>
     {slots.map(slot=>{
       const active=draft?.uid&&(draft.uid===slot.uid||(!slot.stored&&draft.order===slot.order));
       const empty=!slot.eyebrow&&!slot.title&&!slot.subtitle&&!slot.text&&!slot.entities.length;
-      if(empty&&!canEdit)return null;
+      if(empty&&!canEdit&&slot.order!==placeholderFirstOrder)return null;
       const level=Number(headingLevel);
       const Heading=level===1?'h1':level===2?'h2':level===4?'h4':'h3';
       return <section
-        className={((active&&editSlotClassName)?editSlotClassName:slotClassName)+' scope-editable-block'+(active?' is-editing':'')+(canEdit&&!active?' is-editable-idle':'')+(empty?' is-empty':'')}
+        className={((active&&editSlotClassName)?editSlotClassName:(typeof resolveSlotClassName==='function'?resolveSlotClassName(slot):slotClassName))+' scope-editable-block'+(active?' is-editing':'')+(canEdit&&!active?' is-editable-idle':'')+(empty?' is-empty':'')}
         key={slot.uid||'order:'+slot.order}
+        data-page-name={pageName}
+        data-block-order={slot.order}
         onClickCapture={canEdit&&!active?event=>{if(!isInteractiveTarget(event.target))begin(slot)}:undefined}
       >
         {active?<>
@@ -305,12 +329,13 @@ export default function ScopeEditableBlocks({
         </>}
       </section>;
     })}
-    {canEdit&&!normalizedOrders.length?<button
+    {canEdit&&!normalizedOrders.length&&(!maxBlocks||nextOrder<=maxBlocks)?<button
       type="button"
       className="loc-button scope-add-page-block"
       onClick={()=>begin(normalizeRow(null,nextOrder))}
       disabled={busy}
     >＋ 新增文字框</button>:null}
     {message?<p className="scope-status" role="status">{message}</p>:null}
-  </div>;
+  </>;
+  return containerless?contents:<div className={'scope-editable-block-grid '+className}>{contents}</div>;
 }

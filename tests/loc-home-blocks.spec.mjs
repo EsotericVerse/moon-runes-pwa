@@ -1,0 +1,32 @@
+import {test,expect} from '@playwright/test';
+
+test('LOC index home frames are rendered once, in database order, with authored rich HTML',async({page})=>{
+  await page.goto('/',{waitUntil:'domcontentloaded'});
+  const frames=page.locator('.loc-home > section.scope-editable-block');
+  const hero=page.locator('.loc-home > section[data-page-name="index"][data-block-order="1"]');
+  await expect(hero).toBeVisible();
+  await expect(hero.locator('picture img')).toHaveAttribute('src',/LOC-PicAll\.[^.]+\.png/);
+  await expect(hero.locator('picture source')).toHaveAttribute('srcSet',/LOC-PicAll_s\.[^.]+\.png/);
+
+  // Current public index has six blocks. Wait for DB hydration instead of
+  // mistaking the SSR Hero placeholder for a complete database render.
+  await expect(page.locator('.loc-home > section[data-block-order="6"]')).toBeVisible({timeout:20_000});
+  const orders=await frames.evaluateAll(items=>items.map(item=>Number(item.dataset.blockOrder)));
+  expect(orders.length).toBeLessThanOrEqual(8);
+  expect(orders).toEqual([...orders].sort((a,b)=>a-b));
+  expect(new Set(orders).size).toBe(orders.length);
+  expect(orders).toEqual([1,2,3,4,5,6]);
+  expect(await page.locator('.loc-home .scope-editable-block-grid').count()).toBe(0);
+  expect(await page.locator('.loc-home .scope-editable-block .scope-editable-block').count()).toBe(0);
+
+  const status=page.locator('.loc-home > section[data-block-order="4"]');
+  await expect(status.locator('.loc-home-block__body')).toContainText('目前文字作品');
+  await expect(status.locator('.loc-home-block__body')).toContainText('系統架構');
+  await expect(status.locator('.loc-home-block__children > article')).toHaveCount(3);
+  const strong=await status.locator('.loc-home-block__body strong').first().evaluate(node=>Number.parseInt(getComputedStyle(node).fontWeight,10));
+  expect(strong).toBeGreaterThanOrEqual(600);
+
+  const skills=page.locator('.loc-home > section[data-block-order="5"]');
+  await expect(skills.locator('.loc-home-block__children > article')).toHaveCount(3);
+  await expect(skills.locator('a[href*="LOC-GPT-Skills-v2.0-bundle.zip"]')).toBeVisible();
+});

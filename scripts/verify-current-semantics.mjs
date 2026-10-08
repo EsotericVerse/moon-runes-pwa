@@ -33,7 +33,9 @@ if(!failures.length){
   const pageBlockSeed=read('docs/sql/page-block-entities-blocknote.sql');
   const identitySource=identity+'\n'+pageBlockSeed;
   const runeIntro=read('app/lrunes/RuneIntroSection.jsx');
-  for(const token of ['語言架構框架','Language Architecture Framework','符號式語言'])if(!identitySource.includes(token))failures.push('identity missing '+token);
+  // Identity copy now belongs to silver.loc_blocks (index/order), not hardcoded JSX.
+  if(!identity.includes('page="index"')||!identity.includes('maxBlocks={8}')||!identity.includes('renderDisplay={LocHomeBlockDisplay}'))failures.push('LOC identity must render the canonical indexed page blocks');
+  for(const token of ['Language Architecture Framework','符號式語言'])if(!identitySource.includes(token))failures.push('identity seed missing '+token);
   if(!runeIntro.includes('Symbolic Language'))failures.push('Rune intro identity missing Symbolic Language');
   const dailyData=read('app/loc/daily-runes.js');
   for(const token of ['selectPreviousDailyRuneOccurrence','selectDailyRuneSituation','selectDailyRuneContext',"types:['sit_q','daily_r','daily_g','daily_b']","column:'current_moon'"])if(!dailyData.includes(token))failures.push('daily rune context missing '+token);
