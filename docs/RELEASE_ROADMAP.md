@@ -1,69 +1,45 @@
 # LOC Release Roadmap
 
-## Current — 0.8.6-RC
+## Current — 0.9.0-rc.1 (2026-10-08)
 
-0.8.6-RC 是目前 Current candidate。此版以「公開基本功能可驗收＋LunaRunes Current 功能完整」作為候選基線。
+0.9.0-rc.1 以 2026-10-08 的 Current `main`（發版工作起點 `64ccad0b2bd4376fae1b41c882c7b55ca16433ad`）為程式基線，正式將已在主線實作的 Scope／Scope Group 能力納入 Release Candidate。本次定錨只變更版本、文件與候選版發布流程；不引入新的產品功能、CSS 特例、資料庫結構或 Canon 規則。
 
-Current 已具備：
+### 已納入程式基線
 
-- Supabase PostgreSQL 為主要資料來源；Neon 保留 public-read 備援。
-- Search／Statistics／Culture／Governance 維持同一套 FeaturePage 與 Page Composition；功能名稱與共用視覺系統不因 Scope 任意改寫。
-- public Search／Statistics／Culture availability 已由 Current DB feature flags 控制；management canonical visibility 保持獨立。
-- Search／Statistics／Culture 使用 PostgreSQL 精準 query、固定 eligibility filter、COUNT 與 bounded pagination。
-- LOC Scope Group 的 Search／Statistics／Culture 僅讀取 Scope Registry 做成員總覽與導引；不跨 Scope 執行 corpus 搜尋、COUNT 或時間河。細部分析由各 Scope 自己執行。
-- FlexSearch runtime 已移除；Rune66 使用統一 canonical keyword library、literal classifier 與 Current 管理流程。
-- 一般 Scope 不以 LunaRunes keyword、positive_keywords、negative_keywords 或 Rune Canon 作 fallback。
-- LunaRunes 66 符＋第零符德、四方向、九組責任維持 Current Canon。
-- LunaRunes 單卡、每日、雙卡、三卡、五卡、4／6／7／8／9／10 張與 11 張 OW3gs 路徑完整。
-- 每日符文以單一行事曆保存主抽／補抽，並依該筆日期回看真實月相與上一筆同符文紀錄。
-- 符文圖鑑含九組、單符資料與延伸長文；長文採正式閱讀版型，不再塞入短提示 bubble。
-- LunaRunes Game 已具備首頁、遊戲文件、事件／符文／職業資料、回合流程與互動盤面。
-- LOC、LunaRunes、Game、功能頁、細節頁與管理頁已使用分級 Hero；分級只改層級，不建立不同 Feature theme。
-- Current build、static export、public DB probe、browser accessibility、Theme、Auth、Management contract 與 Cloudflare Pages checks 皆納入 CI。
+- LOC／月典與 LunaRunes／月之符文的獨立治理；共用 Statistics／Culture／Search／Governance 與各自的專屬頁面。
+- `silver.scope_registry.parent_scope_id` 是 Scope Group 成員唯一 authority；Group 功能頁只提供 Registry Overview 與導引，單 Scope 仍以 PostgreSQL 精準 query、COUNT 與 bounded pagination 處理 corpus。
+- 既有具名路由與固定 `/scope/.../?scope=<id>` 通用 static shell；Scope Registry 負責動態解析，一般 Scope 不增加 bespoke filesystem routes。
+- 新 Scope 的 Config／Galaxy／Galaxy Media／Time／Keywords 五件套，以及以獨立 UUID copy-on-create 的 Rune66 預設 Keyword Class；不回寫來源 Scope、不使用 LunaRunes Canon 作通用 Scope fallback。
+- Admin／Manage 的 Scope、Scope Group、Keyword Class 與 Time 編輯、Source Refresh bounded delta、權限與 canonical visibility 均有 Current 實作與自動化 contract。
+- LunaRunes 的 Draw、Daily、Directory、Game、OW3gs 等既有路徑和九組符文 Canon 維持原有責任。
+- 共用 Hero／Theme／Navigation、區塊式編輯與 Statistics／Culture 管理頁維持既有 Current 架構，不因版本升級增加平行實作。
 
-### 0.8.6-RC acceptance boundary
+### 驗證與限制
 
-本 RC 先驗收公開基本功能：
+- 候選版必須以 CI 的 `npm run verify`、public DB probe、Next build/static export 和 Playwright UI checks 成功為自動化證據。
+- 既有 `main` 工作流程在定錨前曾成功，但不等於 RC commit 自身已通過；RC 應以正式 tag 所指 commit 的結果為準。
+- 公開頁 desktop／mobile smoke、Import 與文章發布／編輯保存回讀、管理 CRUD／權限、真實大 corpus performance、loading／failure state 等人工驗收**尚未全部簽核**。
+- 詳細驗收清單以 `docs/TODO.md` 為準；既有 0.9 readiness 記錄見 `governance/reviews/rc09-readiness-20261008.md`。
+- 候選版只代表「可進一步驗收與展示」，不是 1.0、不是「所有測試均已完成」，更不宣稱未執行的人工測試已通過。
 
-- LOC 首頁與共用 Navigation。
-- Search／Statistics／Culture／Governance。
-- LunaRunes 首頁。
-- 單卡／每日／多卡／OW3gs 抽牌。
-- 每日符文紀錄。
-- 符文圖鑑：總覽、群組、單符。
-- LunaRunes Game：首頁、文件、開始遊戲與基本回合流程。
-- Author 公開頁與主要 responsive／loading／failure states。
+## Previous — 0.8.6-RC
 
-Manage／Admin 已有 automated contract、權限與 build 驗證，但尚未完成使用者實際操作驗收；不將「尚未人工使用」誤寫為已驗收。
+0.8.6-RC 是之前以公開基本功能與 LunaRunes Current 功能為範圍的候選基線，包含：PostgreSQL SSOT、FeaturePage／Page Composition、權限與公開功能旗標隔離、Search／Statistics／Culture 精準查詢、LunaRunes 66 符＋第零符德、抽牌與每日紀錄、圖鑑、遊戲，以及 Hero／Theme／Auth／Management 自動化驗證。此版本留下的人工驗收責任**完整承接**到 0.9.0-rc.1，不因版本升級視為完成。
 
-## 0.8.6 RC follow-up verification
+## 0.9 Scope Group architecture
 
-- 完成公開基本功能的人工 smoke test；先確認主要使用路徑，再進入管理功能驗收。
-- 完成 Governance／Admin／Scope Manage 的實際操作驗收，包括 CRUD、例外處理、searchable=false canonical visibility、Theme 與 Scope 設定。
-- 以大型 corpus 進行 Search／Culture／Statistics stress test，確認 bounded query + pagination 在實際資料量下仍符合預期。
-- 檢查 Culture／Search 的 incremental loading 與 Statistics 查詢在實際瀏覽流程中的速度與狀態回饋。
-- Source Refresh core 已採 `source_name + source_native_id` 的 bounded delta preview／write；OAuth 或其他 provider 只需提供相同 payload contract。
-
-## 0.9 Direction — Scope Group
-
-0.9 的主要架構方向是 Scope／Scope Group 化。各 Scope 的 Search／Statistics／Culture／Management／Audit 由 Scope resolver 取得資料表責任，不以指定 Scope table name 寫死流程；Scope Group 只以 `scope_registry.parent_scope_id` 管理成員、Overview 與導引，不建立跨 Scope corpus 聚合層。
-
-0.8.6-RC 的公開功能與 LunaRunes 基線是 0.9 的前置條件：先確認 Current 使用流程穩定，再擴充 Scope Group。
-
-0.9 的一般 Scope 延伸採 copy-on-create governance：建立固定 DB 五件套並以獨立 UUID 複製預設 Rune66 Class；新 Scope 透過固定 `/scope/.../?scope=<id>` static shell 即時掛載，不需要為每個 Scope 新增 Next route。來源 Scope 保持不變。LunaRunes canonical structure 不列入可自由改寫的 Scope template。
-
-固定、可預期的 canonical 更新由網站管理流程直接處理；Admin 可建立／編輯 Scope Group、調整 Parent／Route／排序／Active，Scope Manage 負責內容、關鍵詞與增量 Source Refresh；AI 不作為必要 write path。
+0.9 的主要架構目標已在 Current `main` 實作：由 Registry 與 `silver.manage` 定義 Scope／Scope Group 與資料表責任；Group 不建立跨 Scope corpus aggregate；一般 Scope copy-on-create 並使用通用 static shell；固定 canonical 更新由 Admin／Manage 完成，AI 並非必要 write path。後續重點是以實際資料進行操作驗收與錯誤處理回測，而非再擴張一套重複的 Scope system。
 
 ## 1.0 Release
 
 1.0 之前仍需完成：
 
-- image multimedia integration 與關係資料。
-- governed import workflow。
-- 完整 responsive／loading／failure-state regression。
-- Scope extension 與 Admin configuration 的實際驗證。
-- Current 文件、Canon 與 runtime contract 一致。
+- image multimedia integration 與正確的關係／provenance；media 保持 first-class，不製造空白 Galaxy text。
+- governed import workflow 與文章發布／編輯 round-trip 實測。
+- desktop/mobile responsive、loading、failure-state、deployment regression。
+- Scope extension、Admin configuration、權限與大型 corpus 的實際驗證。
+- 保持 Canon、README、Roadmap、runtime contract 與實際資料權威一致。
 
 ## Release rule
 
-不以新增 RC 數字掩蓋未完成的責任。每一版只描述 Current 實際存在的功能、已驗證的邊界與下一階段工作。
+不以提高版本號掩蓋未完成事項。每一版只描述 Current 已實作的功能、已取得的驗證證據與尚未完成的責任；release branch 由最新 `main` 建立，合併後 freeze。
