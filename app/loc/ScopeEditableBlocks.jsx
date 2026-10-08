@@ -11,7 +11,6 @@ import {childPresentation,removeDuplicatedLegacySubtitle} from './block-presenta
 import {homeBlockRows} from './home-block-model.mjs';
 import {countHtmlImages,frameImageCount,firstFrameImageUrl,heroImageMode} from './blocknote-image-url.mjs';
 
-const ENTITY_LIMIT=6;
 const UID_ALPHABET='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 function makeUid(){
@@ -32,7 +31,7 @@ function pageNameOf(value='index'){
 
 function normalizeEntities(value){
   const rows=Array.isArray(value)?value:[];
-  return rows.slice(0,ENTITY_LIMIT).map((entity,index)=>({
+  return rows.map((entity,index)=>({
     uid:/^[A-Za-z0-9]{8}$/.test(String(entity?.uid||''))?String(entity.uid):makeUid(),
     title:String(entity?.title||''),
     text:String(entity?.text||''),
@@ -74,7 +73,8 @@ export default function ScopeEditableBlocks({
   allowEditing=true,
   allowDelete=true,
   allowEntities=true,
-  editEyebrow=true
+  editEyebrow=true,
+  slotTag='section'
 }){
   const account=useAccount();
   const queryClient=useQueryClient();
@@ -163,7 +163,7 @@ export default function ScopeEditableBlocks({
 
   function addEntity(){
     setDraft(current=>{
-      if(!current||current.entities.length>=ENTITY_LIMIT)return current;
+      if(!current)return current;
       return {
         ...current,
         entities:[...current.entities,{uid:makeUid(),title:'',text:'',order:current.entities.length+1}]
@@ -292,12 +292,13 @@ export default function ScopeEditableBlocks({
           {entity.text?<div className="scope-rich-surface" dangerouslySetInnerHTML={{__html:entity.text}}/>:null}
         </>}
       </article>)}
-      {editable&&entities.length<ENTITY_LIMIT?<button type="button" className="scope-block-entity-add" onClick={addEntity} disabled={busy}>
+      {editable?<button type="button" className="scope-block-entity-add" onClick={addEntity} disabled={busy}>
         ＋ 子文字框
       </button>:null}
     </div>;
   }
 
+  const SlotTag=slotTag==='header'?'header':'section';
   const contents=<>
     {slots.map(slot=>{
       const active=draft?.uid&&(draft.uid===slot.uid||(!slot.stored&&draft.order===slot.order));
@@ -305,7 +306,7 @@ export default function ScopeEditableBlocks({
       if(empty&&!canEdit&&slot.order!==placeholderFirstOrder)return null;
       const level=Number(headingLevel);
       const Heading=level===1?'h1':level===2?'h2':level===4?'h4':'h3';
-      return <section
+      return <SlotTag
         className={((active&&editSlotClassName)?editSlotClassName:(typeof resolveSlotClassName==='function'?resolveSlotClassName(slot):slotClassName))+' scope-editable-block'+(active?' is-editing':'')+(canEdit&&!active?' is-editable-idle':'')+(empty?' is-empty':'')}
         key={slot.uid||'order:'+slot.order}
         data-page-name={pageName}
@@ -371,7 +372,7 @@ export default function ScopeEditableBlocks({
             </>}
           {empty&&canEdit?<p className="scope-status">點此建立文字框。</p>:null}
         </>}
-      </section>;
+      </SlotTag>;
     })}
     {canEdit&&!normalizedOrders.length&&(!maxBlocks||nextOrder<=maxBlocks)?<button
       type="button"
