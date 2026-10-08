@@ -274,7 +274,7 @@ begin
       'with payload as (
          select upper(btrim(x.uid))::character(8) as uid,x.class_id,coalesce(x.group_lists,''{}''::jsonb) as group_lists
          from jsonb_to_recordset($1) as x(uid text,class_id smallint,group_lists jsonb)
-         where btrim(coalesce(x.uid,''''))
+         where btrim(coalesce(x.uid,'''')) <> ''''
        )
        update %s as g set class_id=p.class_id,group_lists=p.group_lists from payload p where g.uid=p.uid',
       v_galaxy
