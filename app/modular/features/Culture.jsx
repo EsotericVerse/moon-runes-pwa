@@ -129,7 +129,7 @@ export default function Culture(){
   useEffect(()=>{
     if(isAggregateScope)return;
     const preferred=periodKey(openPeriod)||periodKey(primaryPeriods.at(-1))||'all';
-    setSelectedPeriodKey(preferred);
+    setSelectedPeriodKey(current=>(current==='all'||primaryPeriods.some(period=>periodKey(period)===current))?current:preferred);
   },[scopeId,isAggregateScope,openPeriod?.period,openPeriod?.start_date,primaryPeriods.length]);
   const selectedWorkPeriod=selectedPeriodKey==='all'
     ?allTimePeriod
@@ -266,9 +266,11 @@ export default function Culture(){
   const timelineItems=useMemo(()=>
     (query.data?.timelineItems||[]).filter(item=>isAggregateScope||item.scope_id===scopeId)
   ,[query.data,scopeId]);
-  const currentStructurePeriod=(!isAggregateScope&&selectedWorkPeriod&&selectedWorkPeriod.period!=='all')
-    ?selectedWorkPeriod
-    :(openPeriod||primaryPeriods.find(item=>String(item?.status||'').toLowerCase()==='current')||primaryPeriods.at(-1)||null);
+  const currentStructurePeriod=selectedPeriodKey==='all'
+    ?allTimePeriod
+    :(!isAggregateScope&&selectedWorkPeriod&&selectedWorkPeriod.period!=='all')
+      ?selectedWorkPeriod
+      :(openPeriod||primaryPeriods.find(item=>String(item?.status||'').toLowerCase()==='current')||primaryPeriods.at(-1)||null);
   const currentStructureStart=String(currentStructurePeriod?.start_date||'').slice(0,10);
   const currentStructureEnd=String(currentStructurePeriod?.end_date||new Date().toISOString().slice(0,10)).slice(0,10);
   // Keep every Time record in the first river. The selected period controls
