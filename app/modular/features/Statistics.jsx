@@ -3,7 +3,6 @@
 import {UI_COPY} from '../../i18n/ui-copy';
 
 import {useMemo,useState} from 'react';
-import Select from 'react-select';
 import {useRouter,useSearchParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
 import {
@@ -19,7 +18,7 @@ import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-sta
 import {useScopeRuntime} from '../use-scope-runtime';
 import {FeaturePage} from '../ui';
 import {useAccount} from '../../loc/use-account';
-import KeywordLibraryPanel from '../../loc/KeywordLibraryPanel';
+import {scopeHref} from '../scope-registry';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const GROUP_RANKING_PAGE_SIZE=10;
@@ -710,34 +709,14 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   </section>;
 }
 
-const STATISTICS_WORKSPACE_OPTIONS=Object.freeze([
-  {value:'results',label:'統計結果'},
-  {value:'keywords',label:'關鍵詞設定'}
-]);
-
 function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false}){
-  const [workspace,setWorkspace]=useState('results');
-  const current=canManageKeywords&&workspace==='keywords'?'keywords':'results';
   return <>
-    {canManageKeywords?<div className="scope-stat-controls scope-stat-workspace-switch">
-      <label htmlFor="statistics-workspace-picker">工作區</label>
-      <Select
-        inputId="statistics-workspace-picker"
-        className="scope-workspace-select"
-        classNamePrefix="scope-workspace-select"
-        unstyled
-        isSearchable={false}
-        options={STATISTICS_WORKSPACE_OPTIONS}
-        value={STATISTICS_WORKSPACE_OPTIONS.find(option=>option.value===current)}
-        onChange={option=>setWorkspace(option?.value==='keywords'?'keywords':'results')}
-        aria-label="統計工作區"
-      />
-    </div>:null}
-    {/* Mutually exclusive mounts prevent simultaneous statistics, keyword
-        analysis, and vis-network initialization on entering the page. */}
-    {current==='keywords'
-      ?<KeywordLibraryPanel scopeId={scopeId}/>
-      :<ScopeStatisticsResults scopeId={scopeId} navigation={navigation} types={types}/>}
+    {canManageKeywords?<section className="scope-stat-section scope-stat-keyword-link">
+      <a className="loc-button" href={scopeHref(scopeId,'statics/keywords')}>
+        前往獨立關鍵詞設定頁面
+      </a>
+    </section>:null}
+    <ScopeStatisticsResults scopeId={scopeId} navigation={navigation} types={types}/>
   </>;
 }
 
