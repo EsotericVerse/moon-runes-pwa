@@ -6,8 +6,17 @@
 function plainText(value){return String(value??'').trim();}
 function tagKey(value){return plainText(value).normalize('NFKC').toLocaleLowerCase();}
 function mediaDay(value){
-  const day=plainText(value).slice(0,10);
-  return /^\d{4}-\d{2}-\d{2}$/.test(day)?day:'';
+  const source=plainText(value);
+  const day=source.slice(0,10);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(day))return '';
+  if(source.length===10)return day;
+  const timestamp=new Date(source);
+  if(!Number.isFinite(timestamp.getTime()))return day;
+  const parts=new Intl.DateTimeFormat('en-US',{
+    timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'
+  }).formatToParts(timestamp);
+  const formatted=Object.fromEntries(parts.map(part=>[part.type,part.value]));
+  return formatted.year+'-'+formatted.month+'-'+formatted.day;
 }
 function isHost(host,domain){return host===domain||host.endsWith('.'+domain);}
 function sourceFromMetadata(row={}){
@@ -40,6 +49,7 @@ export function mediaPlatform(row={}){
     if(isHost(host,'tiktok.com'))return 'TikTok';
     if(isHost(host,'open.spotify.com'))return 'Spotify';
     if(isHost(host,'soundcloud.com'))return 'SoundCloud';
+    if(host&&host.includes('.'))return host.replace(/^www\./u,'');
   }catch{
     // Invalid URL: use canonical media metadata instead of throwing.
   }
@@ -65,7 +75,7 @@ export function mediaFacetDaily(rows=[],dimension='media_platform'){
     else if(dimension==='media_style')categories=mediaStyleTags(row.meta_tags);
     else if(dimension==='media_platform')categories=[mediaPlatform(row)];
     else throw new Error('Unsupported media statistics dimension: '+dimension);
-    if(dimension==='media_style'&&!categories.length)categories=['未標記曲風'];
+    if(dimension==='media_style'&&!categories.length)categories=['未標記 Meta Tag'];
     for(const category of categories){
       const key=day+'\u0000'+tagKey(category);
       const existing=entries.get(key);
