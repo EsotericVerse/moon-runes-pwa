@@ -11,7 +11,7 @@ import {selectManagedScope,selectManagedScopes} from './scope-data';
 
 
 
-const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_ids,date_status,year_value,visibility,style_tags,style_tag_descriptions';
+const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_ids,date_status,year_value,visibility,style_tags,style_description';
 function scopeIdOf(value){return String(value||'').trim();}
 function timeDate(row){
   if(row?.time_date)return String(row.time_date).slice(0,10);
@@ -204,7 +204,7 @@ function periodRows(rows){
     record_id:row.record_id||null,resource_id:row.resource_id||null,
     order:Number(row.order_no||0),status:row.status||'',anchor_id:row.anchor_id||null,start_anchor_id:row.start_anchor_id||null,
     end_anchor_id:row.end_anchor_id||null,anchor_ids:Array.isArray(row.anchor_ids)?row.anchor_ids:[],date_status:row.date_status||'',
-    style_tags:row.style_tags||'',style_tag_descriptions:row.style_tag_descriptions||{},open_start:Boolean(row.open_start),open_end:Boolean(row.open_end)
+    style_tags:row.style_tags||'',style_description:row.style_description||'',open_start:Boolean(row.open_start),open_end:Boolean(row.open_end)
   })).sort((a,b)=>a.order-b.order||String(a.period).localeCompare(String(b.period)));
 }
 function timelineItems(rows,{includeScope=false}={}){
