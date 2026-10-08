@@ -71,7 +71,7 @@ test('Author Hero keeps its own taller image framing; LOC artwork stays unchange
   expect(overlay).toContain('linear-gradient(');
   // Inspect the actual computed gradient: browser serializers may use 0.9
   // instead of 0.90. The author image must not be covered by near-black.
-  const overlayAlpha=[...overlay.matchAll(/rgba\\(3,\\s*6,\\s*13,\\s*([\\d.]+)\\)/g)].map(match=>Number(match[1]));
+  const overlayAlpha=[...overlay.matchAll(/rgba\(3,\s*6,\s*13,\s*([\d.]+)\)/g)].map(match=>Number(match[1]));
   expect(overlayAlpha.length).toBeGreaterThan(0);
   expect(Math.max(...overlayAlpha)).toBeLessThanOrEqual(.70);
 
