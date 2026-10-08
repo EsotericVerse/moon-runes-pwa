@@ -379,11 +379,13 @@ export default function Culture(){
   const hasTimelineSurface=isAggregateScope?Boolean(locSourceRiverItems.length):Boolean(timelineItems.length||selectedWorkPeriod?.start_date);
 
   function beginTimelineCreation(type,date){
+    // Creation must work even for periods without an exact Gregorian start day.
+    const creationDate=/^\d{4}-\d{2}-\d{2}$/.test(String(date||''))?String(date):new Date().toISOString().slice(0,10);
     setSelectedTimelineRecordId('');
     setPickedAnchor(null);
     setPickingAnchorSlot(null);
     setSuggestedRecordType(type);
-    setSelectedTimelineDate(date);
+    setSelectedTimelineDate(creationDate);
     setSuggestedRequestNonce(value=>value+1);
   }
 
@@ -675,13 +677,17 @@ export default function Culture(){
                 <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
                 <h3>{UI_COPY.culture.structure}</h3>
                 {account.canManageScopeSync(scopeId)?<div className='scope-culture-timeline-tools'>
-                  <button type='button' className='loc-button' aria-expanded={showTimelineCreation} onClick={()=>setShowTimelineCreation(value=>!value)}>＋ 新增</button>
+                  <button type='button' className='loc-button primary' onClick={()=>{
+                    setShowTimelineCreation(false);
+                    beginTimelineCreation('anchor',currentStructureStart);
+                  }}>＋ 新增定錨點</button>
+                  <button type='button' className='loc-button' aria-expanded={showTimelineCreation} onClick={()=>setShowTimelineCreation(value=>!value)}>＋ 新增時期／事件</button>
                   {showTimelineCreation?<div role='group' aria-label='新增時間資料' className='scope-culture-timeline-create'>
-                    {[['anchor','定錨點'],['period','時期'],['event','事件']].map(([type,label])=><button type='button' key={type} className='loc-button' onClick={()=>{
+                    {[['period','時期'],['event','事件']].map(([type,label])=><button type='button' key={type} className='loc-button' onClick={()=>{
                       setShowTimelineCreation(false);
                       setRiverAction('browse');
-                      beginTimelineCreation(type,currentStructureStart||new Date().toISOString().slice(0,10));
-                    }}>{label}</button>)}
+                      beginTimelineCreation(type,currentStructureStart);
+                    }}>＋ 新增{label}</button>)}
                   </div>:null}
                   <button type='button' className='loc-button' aria-pressed={riverAction==='anchor'} onClick={()=>setRiverAction(value=>value==='anchor'?'browse':'anchor')}>
                     {riverAction==='anchor'?'結束河道新增':'在河道點選新增定錨點'}
