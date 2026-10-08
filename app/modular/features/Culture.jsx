@@ -744,7 +744,7 @@ export default function Culture(){
                   }:null}
                 />:<p className='scope-status'>{FEATURE_EMPTY_MESSAGE}</p>}
                 <details className='scope-culture-style-panel' open={stylePanelOpen} onToggle={event=>setStylePanelOpen(event.currentTarget.open)}>
-                  <summary>風格標籤（第四種 Time 紀錄） · ${(query.data?.styleComments||[]).filter(row=>row.status!=='needs_anchor').length} 個已定位</summary>
+                  <summary>風格標籤（第四種 Time 紀錄） · {(query.data?.styleComments||[]).filter(row=>row.status!=='needs_anchor').length} 個已定位</summary>
                   <CultureStyleTagsEditor
                     period={selectedWorkPeriod}
                     anchors={anchorRecords}
