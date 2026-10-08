@@ -154,6 +154,11 @@ if(!failures.length){
   }
   for(const token of ['表現風格','Class｜符文群組比例','culture-style-filter'])if(!culture.includes(token))failures.push('Culture style-filter presentation missing '+token);
   if(!culture.includes('本頁面只顯示所屬人員的交會時間作品。若需以時間查詢其他人的作品列表，請前往該人員的文化功能頁面。'))failures.push('LOC Culture must preserve the user-approved intersection navigation guidance.');
+  if(!cultureQuery.includes("style_comment:'風格標籤'")||!cultureQuery.includes('style_comment:3')||
+     !culture.includes("item?.entryType==='style_comment'")||
+     !culture.includes('selectedStyleRecordId')){
+    failures.push('First river must show style_comment as fourth Time type with independent editing.');
+  }
   for(const token of ['currentStructurePeriod','items={timelineItems}','windowStart={currentStructureStart}','windowEnd={currentStructureEnd}','labelOf={labelOf}'])if(!culture.includes(token))failures.push('Culture first river must retain all historic anchors and keep the camera focused on the selected period: '+token);
   if(culture.includes('riverAction')||culture.includes('onBoundaryNavigate={riverAction'))failures.push('Culture river must not restore the browse/create mode toggle.');
   const timeline=read('app/modular/modules/culture-timeline/CultureTimeline.jsx');
