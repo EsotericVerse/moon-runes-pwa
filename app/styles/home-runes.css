@@ -57,8 +57,9 @@
 .runes-home-hero-copy h1{
   margin:0;
   color:#f7f8ff;
-  font-size:clamp(2.9rem,6vw,5.45rem);
-  line-height:.96;
+  font-size:var(--loc-type-hero-home-title);
+  font-weight:var(--loc-weight-page-title);
+  line-height:var(--loc-line-hero-title);
   letter-spacing:-.045em;
   text-shadow:0 4px 30px rgba(0,0,0,.45);
 }
@@ -72,13 +73,17 @@
   color:rgba(239,242,255,.8);
   text-shadow:0 2px 20px rgba(0,0,0,.36);
 }
+.runes-home-hero-copy>p:not(.loc-eyebrow):not(.runes-home-system){
+  font-size:var(--loc-type-hero-copy);
+  line-height:var(--loc-line-hero-copy);
+}
 
 .runes-home-hero .runes-home-lead{
   color:#f7f8ff!important;
 }
 
 .runes-home-hero .runes-home-system{
-  color:rgba(232,236,250,.66)!important;
+  color:rgba(232,236,250,.84)!important;
 }
 
 .runes-home-hero .loc-button{
@@ -92,7 +97,7 @@
   max-width:36rem;
   margin:.85rem 0 0!important;
   color:var(--loc-heading)!important;
-  font-size:clamp(1.12rem,2vw,1.45rem)!important;
+  font-size:var(--loc-type-hero-copy)!important;
   font-weight:750;
   line-height:1.65!important;
 }
@@ -100,7 +105,7 @@
 .runes-home-system{
   margin-top:.7rem!important;
   color:var(--loc-muted)!important;
-  font-size:.9rem!important;
+  font-size:1rem!important;
   line-height:1.55!important;
 }
 
@@ -268,6 +273,15 @@
   text-wrap:pretty;
 }
 
+/* The second-tier heading is shared with LOC/Author homepage frames;
+   smaller draw items and card text retain their independent hierarchy. */
+.runes-home-intro .home-section-heading>h2,
+.rune-basics>h2,
+.runes-review-section .home-section-heading>h2{
+  font-size:var(--loc-type-home-section-title);
+  font-weight:var(--loc-weight-section-title);
+  line-height:1.35;
+}
 .rune-basics h2{
   margin:0;
 }
