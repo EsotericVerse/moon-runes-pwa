@@ -458,3 +458,27 @@
 .admin-registry-fallback-item{width:100%;text-align:left;cursor:pointer}
 .admin-registry-fallback-item span{display:block;margin-top:.2rem;color:var(--loc-muted);font-size:.82rem}
 .admin-registry-fallback-item.is-selected{border-color:var(--loc-accent-border);background:var(--loc-ui-accent-soft)}
+
+/* Image-only BlockNote content stays in its containing text bubble.
+   Nothing here allows a second image or a non-Hero background. */
+.scope-rich-surface img,
+.scope-blocknote img,
+.loc-home-block__child-copy img,
+.author-home-display-block img{
+  display:block;
+  max-width:100%;
+  height:auto;
+  object-fit:contain;
+}
+.scope-hero-image-mode{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:.4rem 1rem;
+  padding:.6rem .8rem;
+  border:1px solid var(--loc-line);
+  border-radius:var(--loc-radius-sm);
+  color:var(--loc-text);
+}
+.scope-hero-image-mode legend{font-size:.9rem;font-weight:700}
+.scope-hero-image-mode label{display:inline-flex;align-items:center;gap:.35rem;cursor:pointer}
