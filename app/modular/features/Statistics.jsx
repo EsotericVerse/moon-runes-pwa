@@ -3,6 +3,7 @@
 import {UI_COPY} from '../../i18n/ui-copy';
 
 import {useMemo,useState} from 'react';
+import Select from 'react-select';
 import {useRouter,useSearchParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
 import {
@@ -601,7 +602,7 @@ function ScopeGroupStatistics(){
   </section>;
 }
 
-function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false}){
+function ScopeStatisticsResults({scopeId,navigation,types}){
   const requested=String(navigation.rankingType||'');
   const rankingType=types.includes(requested)?requested:(types[0]||'');
   const mediaDimension=MEDIA_STAT_TYPES.has(rankingType);
@@ -609,8 +610,8 @@ function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false}
   const [timeStandard,setTimeStandard]=useState('1y');
   const [customFrom,setCustomFrom]=useState('');
   const [customTo,setCustomTo]=useState('');
-  const [styleFilter,setStyleFilter]=useState(scopeId==='lo3rwang'?'rune66':'none');
-  const [showKeywordSettings,setShowKeywordSettings]=useState(false);
+  // Leave potentially expensive keyword aggregation OFF until explicitly chosen.
+  const [styleFilter,setStyleFilter]=useState('none');
   const customRange=useMemo(()=>({from:customFrom,to:customTo}),[customFrom,customTo]);
   const queryEndDate=useMemo(()=>taipeiDateKey(),[]);
   const effectiveTimeStandard=timeStandard;
@@ -649,7 +650,7 @@ function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false}
   }),[queryRange.startDate,queryRange.endDate]);
   const runeQuery=useQuery({
     queryKey:['statistics-style-filter','rune66',scopeId,styleRange.startDate,styleRange.endDate],
-    queryFn:()=>selectRune66Classification(styleRange),
+    queryFn:()=>selectRune66Classification({scopeId,...styleRange}),
     enabled:scopeId==='lo3rwang'&&styleFilter==='rune66'&&Boolean(styleRange.startDate&&styleRange.endDate),
     staleTime:5*60_000
   });
@@ -705,18 +706,39 @@ function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false}
       {runeQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(runeQuery.error)}</p>:null}
       {!runeQuery.isPending&&!runeQuery.error&&runeQuery.data?<Rune66Summary analysis={runeQuery.data}/>:null}
     </>:null}
-    {canManageKeywords?<section className="scope-card scope-keyword-statistics-management">
-      <button
-        type="button"
-        className="loc-button"
-        aria-expanded={showKeywordSettings}
-        onClick={()=>setShowKeywordSettings(value=>!value)}
-      >
-        {showKeywordSettings?'收起關鍵詞設定':'關鍵詞設定'}
-      </button>
-      {showKeywordSettings?<KeywordLibraryPanel scopeId={scopeId}/>:null}
-    </section>:null}
+
   </section>;
+}
+
+const STATISTICS_WORKSPACE_OPTIONS=Object.freeze([
+  {value:'results',label:'統計結果'},
+  {value:'keywords',label:'關鍵詞設定'}
+]);
+
+function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false}){
+  const [workspace,setWorkspace]=useState('results');
+  const current=canManageKeywords&&workspace==='keywords'?'keywords':'results';
+  return <>
+    {canManageKeywords?<div className="scope-stat-controls scope-stat-workspace-switch">
+      <label htmlFor="statistics-workspace-picker">工作區</label>
+      <Select
+        inputId="statistics-workspace-picker"
+        className="scope-workspace-select"
+        classNamePrefix="scope-workspace-select"
+        unstyled
+        isSearchable={false}
+        options={STATISTICS_WORKSPACE_OPTIONS}
+        value={STATISTICS_WORKSPACE_OPTIONS.find(option=>option.value===current)}
+        onChange={option=>setWorkspace(option?.value==='keywords'?'keywords':'results')}
+        aria-label="統計工作區"
+      />
+    </div>:null}
+    {/* Mutually exclusive mounts prevent simultaneous statistics, keyword
+        analysis, and vis-network initialization on entering the page. */}
+    {current==='keywords'
+      ?<KeywordLibraryPanel scopeId={scopeId}/>
+      :<ScopeStatisticsResults scopeId={scopeId} navigation={navigation} types={types}/>}
+  </>;
 }
 
 function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types,canManageKeywords=false}){
