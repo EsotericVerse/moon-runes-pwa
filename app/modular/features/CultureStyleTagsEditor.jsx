@@ -21,13 +21,15 @@ function anchorCaption(item){
 }
 
 /** One Time row: searchable style keywords plus ONE primary TEXT description. */
-export function CultureStyleTagsField({value='',description='',onChange=null,editable=false}){
+export function CultureStyleTagsField({value='',description='',onChange=null,editable=false,mode='edit'}){
   const tags=styleTagList(value);
   const [selected,setSelected]=useState('');
   const [renameText,setRenameText]=useState('');
   const [newName,setNewName]=useState('');
   const [error,setError]=useState('');
   const active=tags.includes(selected)?selected:'';
+  const canCreate=editable&&mode==='create';
+  const canEditExisting=editable&&mode==='edit';
   function emit(nextTags,nextDescription=description){
     onChange?.({tags:nextTags.join(','),description:nextDescription});setError('');
   }
@@ -50,16 +52,16 @@ export function CultureStyleTagsField({value='',description='',onChange=null,edi
   function remove(tag){emit(tags.filter(item=>item!==tag));if(selected===tag)setSelected('');}
   return <div className="scope-style-tag-editor">
     <div className="scope-style-tags" aria-label="風格標籤">
-      {tags.map(tag=>editable
+      {tags.map(tag=>canEditExisting
         ?<button key={tag} type="button" className={'scope-style-tag-chip'+(active===tag?' is-selected':'')} onClick={()=>open(tag)} aria-pressed={active===tag}>{tag}</button>
         :<span key={tag}>{tag}</span>)}
     </div>
     {editable?<div className="scope-style-tag-tools">
-      <div className="scope-style-tag-add">
+      {canCreate?<div className="scope-style-tag-add">
         <label><span className="sr-only">新增風格標籤</span><input value={newName} onChange={event=>setNewName(event.target.value)} placeholder="新增風格標籤" aria-label="新增風格標籤" onKeyDown={event=>{if(event.key==='Enter')add(event)}}/></label>
-        <button type="button" className="loc-button" onClick={add}>＋ 新增</button>
-      </div>
-      {active?<div className="scope-style-tag-details">
+        <button type="button" className="loc-button" onClick={add}>＋ 加入標籤</button>
+      </div>:null}
+      {canEditExisting&&active?<div className="scope-style-tag-details">
         <label><span>風格名稱</span><input value={renameText} onChange={event=>setRenameText(event.target.value)} onKeyDown={event=>{if(event.key==='Enter')rename(event)}}/></label>
         <div className="scope-style-tag-actions">
           <button type="button" className="loc-button" onClick={rename}>重新命名</button>
@@ -85,7 +87,7 @@ export default function CultureStyleTagsEditor({period,anchors=[],scopeId,table,
   const anchorById=new Map(availableAnchors.map(item=>[String(item.resource_id),item]));
   const [startAnchor,setStartAnchor]=useState(originalIds[0]);
   const [endAnchor,setEndAnchor]=useState(originalIds.at(-1));
-  const [editing,setEditing]=useState(false);
+  const [mode,setMode]=useState('view');
   const [value,setValue]=useState(storedTags);
   const [description,setDescription]=useState(storedDescription);
   const [busy,setBusy]=useState(false);
@@ -95,22 +97,26 @@ export default function CultureStyleTagsEditor({period,anchors=[],scopeId,table,
     setDescription(storedDescription);
     setStartAnchor(originalIds[0]);
     setEndAnchor(originalIds.at(-1));
-    setEditing(false);
+    setMode('view');
     setMessage('');
   },[recordId,storedTags,storedDescription,JSON.stringify(originalIds)]);
 
   function cancel(){
-    setValue(storedTags);setDescription(storedDescription);setStartAnchor(originalIds[0]);setEndAnchor(originalIds.at(-1));setEditing(false);setMessage('');
+    setValue(storedTags);setDescription(storedDescription);setStartAnchor(originalIds[0]);setEndAnchor(originalIds.at(-1));setMode('view');setMessage('');
   }
   async function save(){
     if(!recordId||!table)return;
     const tags=styleTagList(value);
+    if(mode==='create'&&tags.length<=styleTagList(storedTags).length){
+      setMessage('請先新增至少一個風格標籤。');return;
+    }
     if(tags.length&&!String(description||'').trim()){
       setMessage('請填寫風格的主要敘述（TEXT），作為搜尋結果正文。');return;
     }
     const nextIds=[...originalIds];
     nextIds[0]=startAnchor;
     nextIds[nextIds.length-1]=endAnchor;
+    if(mode==='edit'){
     for(const id of [startAnchor,endAnchor]){
       if(id!=='0'&&!anchorById.has(id)){setMessage('所選既有定錨點不存在，請重新選擇。');return;}
     }
@@ -131,28 +137,32 @@ export default function CultureStyleTagsEditor({period,anchors=[],scopeId,table,
         setMessage('定錨點必須依時間先後排列；包含任何已建立的中間定錨點。');return;
       }
     }
+    }
     setBusy(true);setMessage('');
     try{
       await updateRows(table,{
         style_tags:tags.length?tags.join(','):null,
         style_description:String(description||'').trim()||null,
-        anchor_ids:nextIds,
+        ...(mode==='edit'?{anchor_ids:nextIds}:{}),
         updated_at:new Date().toISOString()
       },{filters:[{column:'record_id',operator:'eq',value:recordId}]});
       await onSaved?.();
-      setEditing(false);
+      setMode('view');
       setMessage('風格標籤與主要敘述已儲存。');
     }catch(error){setMessage('儲存失敗：'+(error?.message||String(error)));}
     finally{setBusy(false);}
   }
   if(!recordId&&!storedTags)return null;
   return <div className="scope-culture-style-surface" data-scope={scopeId}>
-    {!editing?<div className="scope-style-tag-row">
+    {mode==='view'?<div className="scope-style-tag-row">
       <p className="scope-status">風格定位：{originalIds.map(id=>id==='0'?'既有開放端':anchorCaption(anchorById.get(id))||'未找到定錨點 '+id).join(' → ')}</p>
       <CultureStyleTagsField value={storedTags} description={storedDescription}/>
-      {canEdit&&recordId?<button type="button" className="loc-button scope-style-tag-edit" onClick={()=>setEditing(true)}>編輯風格標籤與定錨位置</button>:null}
+      {canEdit&&recordId?<div className="scope-tabs">
+        <button type="button" className="loc-button" onClick={()=>{setMode('create');setMessage('')}}>＋ 新增風格標籤</button>
+        <button type="button" className="loc-button scope-style-tag-edit" onClick={()=>{setMode('edit');setMessage('')}}>編輯風格標籤</button>
+      </div>:null}
     </div>:<div className="scope-culture-style-editing">
-      <div className="scope-management-fields">
+      {mode==='edit'?<div className="scope-management-fields">
         {[[0,'起點定錨點',startAnchor,setStartAnchor],[1,'終點定錨點',endAnchor,setEndAnchor]].map(([index,label,selected,setSelected])=><label key={label}>
           <span>{label}</span>
           <select className="scope-select" value={selected} onChange={event=>{setSelected(event.target.value);setMessage('')}}>
@@ -161,11 +171,11 @@ export default function CultureStyleTagsEditor({period,anchors=[],scopeId,table,
           </select>
           {selected!=='0'&&anchorById.has(selected)?<span className="scope-status">轉折原因：{anchorDescription(anchorById.get(selected))||'尚未寫入；可於定錨點編輯器補充。'}</span>:null}
         </label>)}
-      </div>
-      <p className="scope-status">沿用資料庫既有定錨點識別碼，不必重新輸入日期或新增相同定錨點。尚未正式建立的建議日期，請先由建議定錨清單建立正式定錨點。</p>
-      <CultureStyleTagsField value={value} description={description} editable onChange={next=>{setValue(next.tags);setDescription(next.description);setMessage('')}}/>
+      </div>:null}
+      {mode==='create'?<p className="scope-status">新增的風格標籤沿用目前時期已經建立的定錨點，不會另建日期或變更定錨範圍。</p>:null}
+      <CultureStyleTagsField value={value} description={description} editable mode={mode} onChange={next=>{setValue(next.tags);setDescription(next.description);setMessage('')}}/>
       <div className="scope-tabs">
-        <button type="button" disabled={busy} onClick={save}>{busy?'儲存中…':'儲存風格標籤'}</button>
+        <button type="button" disabled={busy} onClick={save}>{busy?'儲存中…':mode==='create'?'儲存新增風格標籤':'儲存風格標籤'}</button>
         <button type="button" disabled={busy} onClick={cancel}>取消</button>
       </div>
     </div>}
