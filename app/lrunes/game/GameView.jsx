@@ -501,7 +501,11 @@ export default function GameView(){
     const override=(Array.isArray(themeRows)?themeRows:[]).find(row=>row.theme_id===effectiveGameThemeId)||null;
     return override?mergeThemeSlot(effectiveGameThemeId,override):getThemeSlot(effectiveGameThemeId);
   },[effectiveGameThemeId,themeRows]);
-  const gameThemeStyle=useMemo(()=>({...gameTheme.tokens,colorScheme:gameTheme.scheme}),[gameTheme]);
+  // getThemeSlot is an emergency fallback with an Order palette, not the
+  // canonical Nature palette. Inherit the root while Theme DB is loading,
+  // rather than briefly painting the game with an unrelated light palette.
+  const hasCanonicalGameTheme=Array.isArray(themeRows)&&themeRows.some(row=>row.theme_id===effectiveGameThemeId);
+  const gameThemeStyle=useMemo(()=>hasCanonicalGameTheme?({...gameTheme.tokens,colorScheme:gameTheme.scheme}):undefined,[gameTheme,hasCanonicalGameTheme]);
   const allOpened=state?.players.every(player=>!player.opening);
   const phaseLabel=state?.phase==='event'?'事件':state?.phase==='duel'?'決鬥':'共鳴';
 
