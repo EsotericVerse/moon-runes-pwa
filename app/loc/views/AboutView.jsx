@@ -106,19 +106,19 @@ export default function AboutView(){
       <div className="home-draw-bubbles home-status-bubbles" aria-label="LOC 系統狀態">
         <div className="loc-bubble">
           <strong>文字系統</strong>
-          <p>作品文字量：超過 400 萬字<br/>資料時間：2005 ～ 至今</p>
+          <p>Canon 文字欄位：8,150,917 字元（含符文）<br/>Galaxy 正文：4,318,463 字元 · Canon 資料列：40,817<br/>資料時間：2005 ～ 至今</p>
           <p className="home-status-reference"><a href={'/statics/'}>詳細即時總數、來源與分布以統計頁面為準 →</a></p>
         </div>
         <div className="loc-bubble">
           <strong>系統模組</strong>
-          <p>Next.js + React + PostgreSQL</p>
+          <p>Next.js + React + Supabase</p>
           <details className="home-status-details">
             <summary>架構</summary>
-            <p>Next.js 負責網站結構與頁面路由，React 負責互動介面，PostgreSQL（Neon）負責保存與查詢文字、時間及關聯資料。<br/>Next.js 16.3.5 · React 19.3.0 · PostgreSQL（Neon） · Neon SDK 0.7.0-beta</p>
+            <p>Next.js 負責網站結構與頁面路由，React 負責互動介面，Supabase PostgreSQL 負責保存與查詢文字、時間及關聯資料。<br/>Next.js 16.3.5 · React 19.3.0 · Supabase PostgreSQL</p>
           </details>
           <details className="home-status-details">
             <summary>模組</summary>
-            <p>關鍵詞與搜尋：FlexSearch 0.8.212<br/>文化時間長河：vis-timeline 8.5.4<br/>統計：Recharts 3.10.1<br/>管理框架：vis-network 10.1.0<br/>安全認證：Zod 4.6.0 / Neon Auth<br/>頁面：Motion 13.4.4<br/>多媒體搜尋：TanStack Query 5.103.1</p>
+            <p>文化時間長河：vis-timeline 8.5.4<br/>統計：Recharts 3.10.1<br/>管理框架：vis-network 10.1.0<br/>安全認證：Zod 4.6.0 / Supabase Auth<br/>頁面：Motion 13.4.4<br/>多媒體搜尋：TanStack Query 5.103.1</p>
           </details>
         </div>
       </div>
