@@ -15,8 +15,9 @@ import ScopeEditableBlocks from '../loc/ScopeEditableBlocks';
 // One visual header contract. On the LOC feature pages this same visible
 // header is wrapped by the existing ScopeEditableBlocks editor; elsewhere it
 // remains a read-only projection of exactly the same LOC records.
-function FeatureHeroContent({title,subtitle='',description='',rich=false}){
+function FeatureHeroContent({eyebrow='',title,subtitle='',description='',rich=false}){
   return <>
+    {eyebrow?<p className="loc-eyebrow">{eyebrow}</p>:null}
     <div className="home-title-row">
       <h1>{title}</h1>
       {subtitle?(rich
@@ -67,8 +68,8 @@ export function FeaturePage({featureId,children,subtitle=null,description=null})
         allowEditing
         allowDelete={false}
         allowEntities={false}
-        editEyebrow={false}
         renderDisplay={slot=><FeatureHeroContent
+          eyebrow={slot.stored?slot.eyebrow:''}
           title={slot.stored?slot.title||profile.title:fallbackCopy.title}
           subtitle={slot.stored?slot.subtitle:fallbackCopy.subtitle}
           description={slot.stored?slot.text:fallbackCopy.description}
@@ -76,6 +77,7 @@ export function FeaturePage({featureId,children,subtitle=null,description=null})
         />}
       />:<header className="loc-card scope-hero scope-feature-hero" data-feature-hero-source={shared?'loc':'default'}>
         <FeatureHeroContent
+          eyebrow={shared?.eyebrow||''}
           title={shared?.title||fallbackCopy.title}
           subtitle={shared?shared.subtitle:fallbackCopy.subtitle}
           description={shared?shared.description:fallbackCopy.description}
