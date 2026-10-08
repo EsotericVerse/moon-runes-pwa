@@ -71,6 +71,7 @@
     "fix/culture-current-period-first-river",
     "fix/culture-doubleclick-anchor-drag-period-20261008",
     "fix/culture-native-dblclick-anchor-20261008",
+    "fix/time-style-description-text-20261008",
     "fix/culture-require-anchor-pair",
     "fix/culture-structure-river-navigation",
     "fix/daily-log-guidance-layout",
