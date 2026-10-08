@@ -11,7 +11,7 @@ import {selectManagedScope,selectManagedScopes} from './scope-data';
 
 
 
-const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_ids,date_status,year_value,visibility,style_tags';
+const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_ids,date_status,year_value,visibility,style_tags,style_tag_descriptions';
 function scopeIdOf(value){return String(value||'').trim();}
 function timeDate(row){
   if(row?.time_date)return String(row.time_date).slice(0,10);
