@@ -415,7 +415,7 @@ export default function Culture(){
     const source=row?.raw||{};
     if(row.entryType==='anchor'){
       const anchorId=String(source?.resource_id||row.resourceId||'').trim();
-      const referenced=timelineItems.some(candidate=>
+      const referenced=[...timelineItems,...(query.data?.styleComments||[])].some(candidate=>
         String(candidate?.entry_type||'')!=='anchor'&&
         Array.isArray(candidate?.anchor_ids)&&candidate.anchor_ids.map(String).includes(anchorId)
       );
