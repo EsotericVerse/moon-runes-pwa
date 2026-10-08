@@ -21,6 +21,7 @@ import {useAccount} from '../../loc/use-account';
 import KeywordLibraryPanel from '../../loc/KeywordLibraryPanel';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
+const GROUP_RANKING_PAGE_SIZE=10;
 const CHART_ACCENT='var(--loc-accent)';
 const CHART_TEXT='var(--loc-text)';
 const CHART_GRID='var(--loc-line)';
@@ -369,6 +370,7 @@ function groupLabel(value){
   return !text?'':text.endsWith('符文')?text:text+'之符文';
 }
 function Rune66Summary({analysis}){
+  const [groupPage,setGroupPage]=useState(1);
   const data=analysis||{};
   const className=String(data.keywordMeta?.class_name||'關鍵詞 Class');
   const globalCount=Math.max(0,Number(data.keywordDocumentCount||0));
@@ -386,6 +388,9 @@ function Rune66Summary({analysis}){
     .filter(row=>Number(row.count||0)>0);
   const classifiedTotal=Math.max(0,Number(data.classifiedCount||0));
   const groupHitTotal=groupRows.reduce((sum,row)=>sum+Number(row.count||0),0);
+  const groupPageCount=Math.max(1,Math.ceil(groupRows.length/GROUP_RANKING_PAGE_SIZE));
+  const activeGroupPage=Math.min(groupPage,groupPageCount);
+  const visibleGroupRows=groupRows.slice((activeGroupPage-1)*GROUP_RANKING_PAGE_SIZE,activeGroupPage*GROUP_RANKING_PAGE_SIZE);
   return <div className="scope-rune66-summary">
     <p className="scope-status">表現風格：{className} · 此區間有效作品 {Number(data.documentCount||0).toLocaleString()} 項 · 已分類 {classifiedTotal.toLocaleString()} · 未分類 {Number(data.unclassifiedCount||0).toLocaleString()} · 定錨時間 {new Date(data.staticstime).toLocaleString('zh-TW',{hour12:false})}</p>
     <section className="scope-card">
@@ -412,12 +417,17 @@ function Rune66Summary({analysis}){
       <h3>Group｜符文排行</h3>
       <p className="scope-status">同一作品內，相同 signal 重複出現只計 1 次；不同 signal 可累積。</p>
       <div className="scope-ranking">
-        {groupRows.map(row=>{
+        {visibleGroupRows.map(row=>{
           const count=Number(row.count||0);
           const ratio=groupHitTotal>0?(count/groupHitTotal)*100:0;
           return <div key={row.rune_id}><strong>{String(row.rune_id).padStart(2,'0')} · {groupLabel(row.label)}</strong><span>{count.toLocaleString()} 次 · {ratio.toFixed(1)}%</span></div>;
         })}
       </div>
+      {groupRows.length>GROUP_RANKING_PAGE_SIZE?<nav className="scope-stat-controls" aria-label="Group 統計分頁">
+        <button type="button" className="loc-button" disabled={activeGroupPage===1} onClick={()=>setGroupPage(activeGroupPage-1)}>上一頁</button>
+        <span className="scope-status" aria-live="polite">第 {activeGroupPage} / {groupPageCount} 頁 · 共 {groupRows.length.toLocaleString()} 項</span>
+        <button type="button" className="loc-button" disabled={activeGroupPage===groupPageCount} onClick={()=>setGroupPage(activeGroupPage+1)}>下一頁</button>
+      </nav>:null}
     </section>
   </div>;
 }
