@@ -53,6 +53,7 @@ export function applyTheme(slot){
   root.dataset.theme=slot.scheme;
   root.dataset.themeId=slot.id;
   root.dataset.themeSignature=themeSignature(slot);
+  delete root.dataset.themeBootstrap;
   root.style.colorScheme=slot.scheme;
   Object.entries(slot.tokens||{}).forEach(([key,value])=>{if(value)root.style.setProperty(key,value);});
 }
