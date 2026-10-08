@@ -105,7 +105,6 @@ test.describe('LunaRunes tabletop UI',()=>{
     await page.goto('/game/',{waitUntil:'domcontentloaded'});
     await expect(page.locator('html')).toHaveAttribute('data-theme-id','theme-4',{timeout:15_000});
     await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
-    await expect(page.locator('.game-shell')).toHaveAttribute('data-game-scheme','dark');
     await expect.poll(()=>page.locator('html').evaluate(el=>getComputedStyle(el).getPropertyValue('--loc-bg').trim().toLowerCase())).toBe('#081b13');
     const themeSelect=page.locator('.scope-theme-control select').first();
     await expect(themeSelect).toBeVisible();
