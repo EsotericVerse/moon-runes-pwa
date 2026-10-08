@@ -641,7 +641,7 @@ export default function Search(){
                 <span>同時期平行風格</span>
                 <div className="scope-style-search-related-links">
                   {row.relatedStyleTags.filter(style=>style.same_period).map(style=><a key={style.name} href={featureNavigationHref(row.scopeId,'search',{q:style.name})}>
-                    {style.name} · {style.work_count===null?'統計暫不可用':style.work_count.toLocaleString()+' 篇'}
+                    {style.name} · {style.document_total===null?'統計暫不可用':style.document_total.toLocaleString()+' 篇'}
                   </a>)}
                 </div>
               </div>:null}
@@ -649,7 +649,7 @@ export default function Search(){
                 <span>其他時期的個人風格</span>
                 <div className="scope-style-search-related-links">
                   {row.relatedStyleTags.filter(style=>!style.same_period).map(style=><a key={style.name} href={featureNavigationHref(row.scopeId,'search',{q:style.name})}>
-                    {style.name} · {style.work_count===null?'統計暫不可用':style.work_count.toLocaleString()+' 篇'}
+                    {style.name} · {style.document_total===null?'統計暫不可用':style.document_total.toLocaleString()+' 篇'}
                   </a>)}
                 </div>
               </div>:null}
