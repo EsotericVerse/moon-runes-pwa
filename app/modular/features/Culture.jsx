@@ -673,9 +673,9 @@ export default function Culture(){
                     {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{labelOf(item,0)}</option>)}
                   </select></label>
                   <button type='button' className='loc-button' onClick={()=>beginTimelineCreation('anchor',currentStructureStart)}>＋ 新增正式定錨點</button>
-                  <button type='button' className='loc-button' onClick={()=>beginTimelineCreation('event','')}>＋ 新增事件（選擇既有定錨點）</button>
+                  <button type='button' className='loc-button' onClick={()=>beginTimelineCreation('period','')}>＋ 新增時期</button>
+                  <button type='button' className='loc-button' onClick={()=>beginTimelineCreation('event','')}>＋ 新增事件</button>
                   <button type='button' className='loc-button' onClick={()=>beginTimelineCreation('style_comment','')}>＋ 新增風格標籤</button>
-                  <button type='button' className='loc-button' onClick={()=>beginTimelineCreation('period','')}>＋ 新增時期（選擇既有定錨點）</button>
                   <label><span>尋找風格標籤</span><select className='scope-select' value='' onChange={event=>{
                     const record=(query.data?.styleComments||[]).find(item=>String(item.record_id)===event.target.value);
                     if(!record)return;
