@@ -131,7 +131,8 @@ export default function CultureTimeline({
   const [chartError,setChartError]=useState(false);
   const rows=useMemo(()=>timelineRows(items,labelOf,focus),[items,labelOf,focus]);
   const fallbackRows=useMemo(()=>[...rows].sort((a,b)=>String(b.start).localeCompare(String(a.start))),[rows]);
-  const groupCount=new Set(rows.map(row=>row.group).filter(Boolean)).size;
+  const hasTimeKinds=mode==='overview'&&rows.some(row=>String(row.group||'').startsWith('kind:'));
+  const groupCount=Math.max(new Set(rows.map(row=>row.group).filter(Boolean)).size,hasTimeKinds?4:0);
   const compactGroupCount=Math.max(1,groupCount||rows.length);
   const timelineMinHeight=Math.max(180,96+compactGroupCount*46);
   const timelineMaxHeight=Math.max(360,Math.min(760,180+compactGroupCount*92));
@@ -164,14 +165,21 @@ export default function CultureTimeline({
         }
       }:row);
       const data=new DataSet(dataRows);
-      const groupIds=[...new Set(rows.map(row=>row.group).filter(Boolean))];
+      const timeGroupLabels={anchor:'定錨點',event:'事件',period:'時期',style_comment:'風格標籤'};
+      const standardTimeKinds=Object.keys(timeGroupLabels);
+      const foundGroups=[...new Set(rows.map(row=>row.group).filter(Boolean))];
+      const groupIds=hasTimeKinds
+        ?[...standardTimeKinds.map(kind=>'kind:'+kind),...foundGroups.filter(id=>!String(id).startsWith('kind:'))]
+        :foundGroups;
       const groups=groupIds.length?new DataSet(groupIds.map((id,index)=>{
         const members=rows.filter(row=>row.group===id);
         const explicit=members.map(row=>row.groupOrder).filter(Number.isFinite);
+        const kind=String(id).startsWith('kind:')?String(id).slice(5):'';
+        const defaultOrder=standardTimeKinds.indexOf(kind);
         return {
           id,
-          content:members.find(row=>row.groupContent)?.groupContent||groupLabel(id),
-          order:explicit.length?Math.min(...explicit):100+index
+          content:members.find(row=>row.groupContent)?.groupContent||timeGroupLabels[kind]||groupLabel(id),
+          order:explicit.length?Math.min(...explicit):defaultOrder>=0?defaultOrder:100+index
         };
       })):null;
       const rowById=id=>dataRows.find(row=>row.id===String(id))||null;
@@ -277,7 +285,7 @@ export default function CultureTimeline({
       if(containerRef.current&&handleNativeDoubleClick)containerRef.current.removeEventListener('dblclick',handleNativeDoubleClick);
       if(instance)instance.destroy();
     };
-  },[rows,timelineMinHeight,timelineMaxHeight,mode,windowStart,windowEnd,boundaryStart,boundaryEnd,fixedMin,fixedMax,hiddenDates,editable]);
+  },[rows,hasTimeKinds,timelineMinHeight,timelineMaxHeight,mode,windowStart,windowEnd,boundaryStart,boundaryEnd,fixedMin,fixedMax,hiddenDates,editable]);
 
   if(!rows.length)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><div className='scope-period-timeline scope-period-timeline-empty-line' role='region' aria-label='時間長河'/><p>{mode==='overview'?'尚未設定時期，目前以「所有」總覽顯示。':'目前時期尚無可顯示的時間資料。'}</p></div>;
 
