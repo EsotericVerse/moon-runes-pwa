@@ -8,6 +8,17 @@ test('LOC index home frames are rendered once, in database order, with authored 
   await expect(hero.locator('picture img')).toHaveAttribute('src',/LOC-PicAll\.[^.]+\.png/);
   await expect(hero.locator('picture source')).toHaveAttribute('srcSet',/LOC-PicAll_s\.[^.]+\.png/);
 
+  // The shared visual-card rule must not push the Hero image into text flow.
+  const heroArtwork=hero.locator('.home-hero-visual');
+  await expect(heroArtwork).toHaveCSS('position','absolute');
+  const [frame,artwork]=await Promise.all([hero.boundingBox(),heroArtwork.boundingBox()]);
+  expect(frame).not.toBeNull();
+  expect(artwork).not.toBeNull();
+  expect(Math.abs(frame.x-artwork.x)).toBeLessThan(4);
+  expect(Math.abs(frame.y-artwork.y)).toBeLessThan(4);
+  expect(Math.abs(frame.width-artwork.width)).toBeLessThan(4);
+  expect(Math.abs(frame.height-artwork.height)).toBeLessThan(4);
+
   // Current public index has six blocks. Wait for DB hydration instead of
   // mistaking the SSR Hero placeholder for a complete database render.
   await expect(page.locator('.loc-home > section[data-block-order="6"]')).toBeVisible({timeout:20_000});
