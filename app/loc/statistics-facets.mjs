@@ -55,6 +55,22 @@ export function mediaPlatform(row={}){
   }
   return sourceFromMetadata(row);
 }
+// Statistics-only exclusions. These do not mutate canonical media metadata.
+export const DEFAULT_MEDIA_STYLE_EXCLUSIONS=Object.freeze(['男聲']);
+export function mediaStyleExclusions(value=DEFAULT_MEDIA_STYLE_EXCLUSIONS){
+  const raw=Array.isArray(value)?value:String(value||'').split(/[,，、;；\n\r|]+/u);
+  const tags=new Map();
+  for(const item of raw){
+    const text=plainText(item);
+    const normalized=tagKey(text);
+    if(normalized&&!tags.has(normalized))tags.set(normalized,text);
+  }
+  return [...tags.values()];
+}
+export function filterMediaStyleRows(rows=[],exclusions=DEFAULT_MEDIA_STYLE_EXCLUSIONS){
+  const excluded=new Set(mediaStyleExclusions(exclusions).map(tagKey));
+  return (Array.isArray(rows)?rows:[]).filter(row=>!excluded.has(tagKey(row?.category)));
+}
 export function mediaStyleTags(value){
   const pieces=Array.isArray(value)?value:plainText(value).split(/[,，、;；\n\r|]+/u);
   const unique=new Map();
