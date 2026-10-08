@@ -3,6 +3,7 @@
 import {useEffect,useRef} from 'react';
 import {useCreateBlockNote} from '@blocknote/react';
 import {BlockNoteView} from '@blocknote/mantine';
+import {canonicalBlockNoteBlocks,canonicalBlockNoteHtml} from './blocknote-serialization.mjs';
 
 export default function BlockNoteEditorClient({
   initialBlocks=[],
@@ -12,24 +13,37 @@ export default function BlockNoteEditorClient({
   onHtmlChange=null
 }){
   const editor=useCreateBlockNote({
-    initialContent:initialBlocks,
+    initialContent:canonicalBlockNoteBlocks(initialBlocks),
     domAttributes:{editor:{'aria-label':editable?'文字編輯器':'文字內容'}}
   });
   const hydratedLegacyHtml=useRef(false);
+  const htmlEmitVersion=useRef(0);
 
   useEffect(()=>{
     if(hydratedLegacyHtml.current)return;
     hydratedLegacyHtml.current=true;
     if(initialHtml){
-      const blocks=editor.tryParseHTMLToBlocks(initialHtml);
-      editor.replaceBlocks(editor.document,blocks);
+      const blocks=editor.tryParseHTMLToBlocks(canonicalBlockNoteHtml(initialHtml));
+      editor.replaceBlocks(editor.document,canonicalBlockNoteBlocks(blocks));
     }
   },[editor,initialHtml]);
 
   const emit=()=>{
-    const blocks=editor.document;
+    // BlockNote JSON is the editing source of truth. Empty paragraphs must
+    // remain empty blocks, never literal ProseMirror U+FFFC characters.
+    const blocks=canonicalBlockNoteBlocks(editor.document);
     onChange?.(blocks);
-    onHtmlChange?.(editor.blocksToHTMLLossy(blocks));
+    if(!onHtmlChange)return;
+    const version=++htmlEmitVersion.current;
+    const exported=editor.blocksToHTMLLossy(blocks);
+    // Handle sync (current BlockNote) and async HTML exporters safely.
+    const deliver=html=>{
+      if(version===htmlEmitVersion.current)onHtmlChange(canonicalBlockNoteHtml(html));
+    };
+    if(typeof exported==='string')deliver(exported);
+    else Promise.resolve(exported).then(deliver).catch(error=>{
+      console.error('BlockNote HTML export failed',error);
+    });
   };
 
   function editLink(event){
