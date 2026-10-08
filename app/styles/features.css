@@ -347,14 +347,6 @@
 .scope-culture-timeline-dialog{position:fixed;inset:auto clamp(.75rem,4vw,3rem) clamp(.75rem,4vw,3rem) auto;z-index:1200;width:min(44rem,calc(100vw - 1.5rem));max-height:min(78vh,48rem);margin:0;padding:0;border:0;background:transparent;color:inherit;overflow:auto}
 .scope-culture-timeline-dialog::backdrop{background:rgb(0 0 0 / .35);backdrop-filter:blur(2px)}
 .scope-culture-timeline-dialog .scope-culture-inline-editor{margin:0;box-shadow:0 24px 80px rgb(0 0 0 / .35)}
-.scope-culture-anchor-review{display:grid;gap:.5rem;margin:.9rem 0}
-.scope-culture-anchor-review h4{margin:0;color:var(--loc-text)}
-.scope-culture-anchor-review-list{display:grid;gap:.5rem;max-height:min(50vh,28rem);overflow:auto;overscroll-behavior:contain;padding-right:.25rem}
-.scope-culture-anchor-review-item{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;padding:.7rem .8rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel)}
-.scope-culture-anchor-review-item>div{min-width:0;flex:1}
-.scope-culture-anchor-review-item p{margin:.3rem 0 0;overflow-wrap:anywhere}
-.scope-culture-anchor-review-item .loc-button{flex-shrink:0}
-@media(max-width:760px){.scope-culture-anchor-review-item{flex-direction:column;align-items:stretch}}
 .scope-culture-anchor-actions{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;margin:.65rem 0;padding:.65rem .8rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:color-mix(in srgb,var(--loc-panel) 76%,transparent);color:var(--loc-muted);font-size:.9rem}
 .scope-period-timeline .vis-item.scope-virtual-anchor{overflow:visible;border:0!important;background:transparent!important;color:color-mix(in srgb,var(--loc-accent) calc(55% + var(--virtual-anchor-strength,0)*45%),var(--loc-text))!important;font-weight:800;line-height:1;filter:drop-shadow(0 0 calc(4px + var(--virtual-anchor-strength,0)*10px) color-mix(in srgb,var(--loc-accent) 55%,transparent))}
 .scope-period-timeline .vis-item.scope-virtual-anchor .vis-item-content{display:block!important;overflow:visible!important;padding:.15rem .25rem!important;transform:none;cursor:pointer}
