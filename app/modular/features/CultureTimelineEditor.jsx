@@ -77,7 +77,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
     queryFn:async()=>{
       const {rows}=await selectRows(timeTable,{
         columns:TIME_COLUMNS,
-        filters:[{column:'record_type',operator:'in',value:EDITABLE_TYPES.map(([type])=>type)}],
+        filters:[{column:'record_type',operator:'in',value:[...EDITABLE_TYPES.map(([type])=>type),'style_comment']}],
         orders:[{column:'display_order',ascending:true},{column:'record_id',ascending:true}],
         limit:DB_QUERY_BATCH_SIZE,
         offset:0
