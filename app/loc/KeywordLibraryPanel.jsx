@@ -1,14 +1,22 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
+import Select from 'react-select';
+import dynamic from 'next/dynamic';
 import {useQueryClient} from '@tanstack/react-query';
 import {copyKeywordLibraryClass,dbAuthRelation,updateRows,writeKeywordLibraryItem} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {clearRune66ClassificationCache,runRune66ClassificationBatch} from './rune66-keyword-analysis';
-import KeywordNetworkEditor from './KeywordNetworkEditor';
+// The vis-network bundle is downloaded/mounted only when its view is chosen.
+const KeywordNetworkEditor=dynamic(()=>import('./KeywordNetworkEditor'),{ssr:false});
 
 const DEFAULT_KEYWORD_MIN_CHARS=32;
 const DEFAULT_KEYWORD_MIN_DOCUMENTS=100;
+const KEYWORD_WORKSPACE_OPTIONS=Object.freeze([
+  {value:'analysis',label:'分析設定'},
+  {value:'manual',label:'手動寫入'},
+  {value:'network',label:'視覺圖譜'}
+]);
 
 function normalizeKeywordLines(value){
   const lines=String(value||'').split(/\r?\n/).map(item=>item.trim()).filter(Boolean);
@@ -58,6 +66,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
   const [loading,setLoading]=useState(true);
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
+  const [workspace,setWorkspace]=useState('analysis');
 
   const canEdit=account.canManageScopeSync(scopeId)&&Boolean(TABLE&&CONFIG_TABLE);
 
@@ -375,7 +384,22 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     <h2>關鍵詞庫</h2>
     <p>每套 Class 以 UUID 獨立識別，可複製與分享；文章只保存分析後的 class_id 與 group_lists。公開統計直接讀文章 Attr，不會重新跑關鍵詞。</p>
 
-    <section className="scope-inline-card">
+    <div className="scope-stat-controls scope-stat-workspace-switch">
+      <label htmlFor="keyword-workspace-picker">關鍵詞工作區</label>
+      <Select
+        inputId="keyword-workspace-picker"
+        className="scope-workspace-select"
+        classNamePrefix="scope-workspace-select"
+        unstyled
+        isSearchable={false}
+        options={KEYWORD_WORKSPACE_OPTIONS}
+        value={KEYWORD_WORKSPACE_OPTIONS.find(option=>option.value===workspace)}
+        onChange={option=>setWorkspace(option?.value||'analysis')}
+        aria-label="關鍵詞工作區"
+      />
+    </div>
+
+    {workspace==='analysis'?<section className="scope-inline-card">
       <h3>分析設定</h3>
       <div className="scope-management-fields">
         <label><span>目前使用 Class</span><select className="scope-select" value={currentClassId} onChange={event=>setCurrentClassId(event.target.value)}>
@@ -394,8 +418,9 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
         <button type="button" className="loc-button" disabled={busy||!configDirty} onClick={saveAnalysisSettings}>儲存分析設定</button>
         <button type="button" className="loc-button primary" disabled={busy||configDirty||!currentClassId} onClick={runBatch}>{busy?'處理中…':'重新分析並寫入文章 Attr'}</button>
       </div>
-    </section>
+    </section>:null}
 
+    {workspace!=='analysis'?<>
     <div className="scope-stat-controls">
       <label><span>Class</span><select className="scope-select" value={selectedClass} onChange={event=>{const name=event.target.value;setSelectedClass(name);const first=rows.find(row=>String(row.class_name)===name);if(first)selectItem(first);}}>
         {[...new Set(classes.map(item=>item.class_name))].map(name=><option key={name} value={name}>{name}</option>)}
@@ -413,7 +438,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     </div>
 
     {loading?<p className="scope-status">讀取中…</p>:null}
-    {!loading&&items.length?<div className="scope-keyword-network-layout">
+    {!loading&&workspace==='network'&&items.length?<div className="scope-keyword-network-layout">
       <KeywordNetworkEditor
         items={items}
         className={selectedClass}
@@ -426,7 +451,20 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
         onDeleteGroup={removeGroup}
         onMessage={setMessage}
       />
-      <aside className="scope-management-editor scope-keyword-network-inspector">
+    </div>:null}
+
+    {!loading?<aside className="scope-management-editor scope-keyword-network-inspector">
+      <p className="scope-status">{workspace==='manual'?'直接選擇 Item 編輯與儲存；無需載入圖譜。':'可從圖譜選擇節點，右側編輯器會同步。'}</p>
+      {items.length?<div className="scope-stat-controls">
+        <label><span>選擇 Item</span><select className="scope-select" value={selectedId} onChange={event=>{
+          const chosen=items.find(row=>String(row.keyword_id)===event.target.value);
+          if(chosen)selectItem(chosen);
+        }}>
+          <option value="">新增／未選擇</option>
+          {items.map(item=><option key={item.keyword_id} value={item.keyword_id}>{item.class_group} · {item.item_name||item.item_no}</option>)}
+        </select></label>
+        <button type="button" className="loc-button" onClick={()=>newItem(items[0]?.class_group||'')}>＋ 新增 Item</button>
+      </div>:null}
         {!draft?<p className="scope-status">從圖上選擇 Item／Keyword；使用 vis-network 工具列新增、編輯或刪除節點。</p>:<>
           <div className="scope-management-fields">
             <label><span>Class</span><input value={draft.class_name||''} readOnly aria-readonly="true"/></label>
@@ -444,11 +482,11 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
           </div>
         </>}
         {message?<p className={message.includes('失敗')||message.includes('不可')||message.includes('0 rows')||message.includes('已經存在')?'scope-status scope-error':'scope-status'}>{message}</p>:null}
-      </aside>
-    </div>:null}
+      </aside>:null}
     {!loading&&!items.length?<div className="scope-keyword-empty">
       <p className="scope-status">這個 Class 目前沒有分類項目。</p>
       <button type="button" className="loc-button" onClick={()=>newItem('')}>建立第一個分類項目</button>
     </div>:null}
+    </>:null}
   </section>;
 }
