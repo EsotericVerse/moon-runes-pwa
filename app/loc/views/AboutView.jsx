@@ -1,14 +1,13 @@
-import {scopeHrefV2} from '../../modular-v2/scope-registry.v2';
 import {SITE_IMAGES} from '../../site-images';
 
 const RUNES_LINKS=Object.freeze({
-  home:scopeHrefV2('lunarunes'),
-  single:scopeHrefV2('lunarunes','duel/one'),
-  daily:scopeHrefV2('lunarunes','duel/daily'),
-  two:scopeHrefV2('lunarunes','duel/two'),
-  three:scopeHrefV2('lunarunes','duel/three'),
-  five:scopeHrefV2('lunarunes','duel/five'),
-  ow3gs:scopeHrefV2('lunarunes','duel/ow3gs')
+  home:'/lrunes/',
+  single:'/lrunes/duel/one/',
+  daily:'/lrunes/duel/daily/',
+  two:'/lrunes/duel/two/',
+  three:'/lrunes/duel/three/',
+  five:'/lrunes/duel/five/',
+  ow3gs:'/lrunes/duel/ow3gs/'
 });
 
 export default function AboutView(){
@@ -108,7 +107,7 @@ export default function AboutView(){
         <div className="loc-bubble">
           <strong>文字系統</strong>
           <p>作品文字量：超過 400 萬字<br/>資料時間：2005 ～ 至今</p>
-          <p className="home-status-reference"><a href={scopeHrefV2('loc','statics')}>詳細即時總數、來源與分布以統計頁面為準 →</a></p>
+          <p className="home-status-reference"><a href={'/statics/'}>詳細即時總數、來源與分布以統計頁面為準 →</a></p>
         </div>
         <div className="loc-bubble">
           <strong>系統模組</strong>
