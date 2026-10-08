@@ -139,10 +139,19 @@ export default function CultureStyleTagsEditor({period,anchors=[],scopeId,table,
     if((startAnchor==='0'&&originalIds[0]!=='0')||(endAnchor==='0'&&originalIds.at(-1)!=='0')){
       setMessage('不能將已指定的正式定錨點改成空白日期。');return;
     }
-    const startDate=anchorDate(anchorById.get(startAnchor));
-    const endDate=anchorDate(anchorById.get(endAnchor));
-    if(startDate&&endDate&&startDate>=endDate){
-      setMessage('終點定錨必須晚於起點；時期與事件的意義仍由各定錨點的名稱和說明決定。');return;
+    // An existing Time range may also reference intermediate anchors. When
+    // changing only its boundaries, preserve every intermediate ID and refuse
+    // a choice that would reverse the entire ordered anchor sequence.
+    if(nextIds.some(id=>id!=='0'&&!anchorById.has(id))){
+      setMessage('有既有定錨點無法取得，請先回顧原始時期／事件，避免錯誤覆寫引用。');return;
+    }
+    const dated=nextIds.filter(id=>id!=='0')
+      .map(id=>({id,date:anchorDate(anchorById.get(id))}))
+      .filter(item=>item.date);
+    for(let index=1;index<dated.length;index++){
+      if(dated[index-1].date>=dated[index].date){
+        setMessage('定錨點必須依時間先後排列；包含任何已建立的中間定錨點。');return;
+      }
     }
     setBusy(true);setMessage('');
     try{
