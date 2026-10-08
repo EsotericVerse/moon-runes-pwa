@@ -264,3 +264,84 @@
     margin-top:.4rem!important;
   }
 }
+
+/* LOC database-driven readonly blocks (orders 2–6).
+   Preserve RC8.5 visual contract independent of the DB/editor wrapper nodes.
+   Header Hero above is intentionally untouched. */
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .scope-editable-block-grid{
+  display:contents;
+}
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .scope-editable-block:not(.is-editing){
+  min-width:0;
+  color:var(--loc-text);
+}
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .home-author-copy > div{
+  display:grid;
+  gap:.8rem;
+  align-content:start;
+  min-width:0;
+}
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .home-author-copy p,
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .home-rune-copy-plain > p{
+  margin:0!important;
+  padding:0;
+  max-width:none;
+  color:var(--loc-text)!important;
+  font-size:1rem;
+  font-weight:400;
+  line-height:1.8!important;
+  letter-spacing:normal!important;
+  text-wrap:initial;
+  overflow-wrap:break-word;
+}
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .home-author-copy p strong,
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .home-rune-copy-plain p strong{
+  font-weight:700;
+}
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .home-section-heading > .loc-subtitle{
+  color:var(--loc-accent)!important;
+  font-weight:600!important;
+  line-height:1.65!important;
+  letter-spacing:normal!important;
+}
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .home-draw-bubbles .loc-bubble{
+  min-width:0;
+  padding:.8rem .65rem;
+  background:var(--loc-surface-soft);
+  text-align:center;
+}
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .home-draw-bubbles .loc-bubble > strong{
+  font-weight:700;
+}
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .home-draw-bubbles .loc-bubble > p{
+  margin:.3rem 0 0;
+  color:var(--loc-muted)!important;
+  font-size:.82rem;
+  font-weight:400;
+  line-height:1.45;
+  letter-spacing:normal;
+  text-wrap:initial;
+}
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .home-status-bubbles .loc-bubble{
+  align-items:stretch;
+  justify-content:flex-start;
+  text-align:left;
+}
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .home-status-bubbles .loc-bubble > p{
+  font-size:.9rem;
+  line-height:1.65;
+  color:var(--loc-text)!important;
+}
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .home-status-bubbles .loc-bubble > .home-status-reference{
+  font-size:.86rem;
+}
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .home-status-details p{
+  color:var(--loc-muted)!important;
+  font-size:.82rem;
+  line-height:1.55;
+}
+@media(max-width:620px){
+  .loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home > .loc-card .home-status-bubbles{
+    grid-template-columns:minmax(0,1fr);
+  }
+}
