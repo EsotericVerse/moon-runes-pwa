@@ -236,7 +236,36 @@
   }
 }
 
-/* LOC homepage system status: two compact bubbles with expandable details. */
+/* LOC system status: real framed content from block_text plus titled child cards.
+   Untitled nonempty children remain bubbles, but never replace the authored body. */
+.home-progress .home-status-frames{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+.home-progress .home-status-card{
+  align-content:start;
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+.home-progress .home-status-card h2,
+.home-progress .home-status-card h3,
+.home-progress .home-status-card h4{
+  margin:0 0 .6rem;
+  font-size:1.05rem;
+  line-height:1.45;
+  color:var(--loc-heading);
+}
+.home-progress .home-status-card p{
+  margin:.45rem 0 0;
+  color:var(--loc-text);
+  font-size:.9rem;
+  line-height:1.7;
+}
+.home-progress .home-status-card strong{font-size:inherit}
+@media(max-width:760px){
+  .home-progress .home-status-frames{grid-template-columns:minmax(0,1fr)}
+}
+
+/* LOC homepage system status: additional untitled status bubbles only. */
 .home-progress .home-status-bubbles{
   grid-template-columns:repeat(2,minmax(0,1fr));
 }
