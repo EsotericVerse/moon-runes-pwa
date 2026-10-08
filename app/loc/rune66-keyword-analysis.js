@@ -57,6 +57,74 @@ function documentOf(row){
     date:String(row.createtime||'').slice(0,10)
   };
 }
+function reportBatchProgress(onProgress,phase,completed,total,percent,label){
+  if(typeof onProgress!=='function')return;
+  onProgress({
+    phase,
+    completed,
+    total,
+    percent:Math.max(0,Math.min(100,Math.round(percent))),
+    label
+  });
+}
+
+// Preserve the canonical per-document Rune engine while yielding after small batches.
+// This keeps the UI responsive and counts real completed documents, not elapsed time.
+async function classifyDocumentsIncrementally(documents,catalogRows,onProgress){
+  const batchSize=120;
+  const parts=[];
+  const runeTotals=new Map();
+  const groupTotals=new Map();
+  const unsupportedRules=new Map();
+  let classifiedCount=0;
+  let unclassifiedCount=0;
+  let tieCount=0;
+  for(let offset=0;offset<documents.length;offset+=batchSize){
+    const chunk=classifyRune66Documents(documents.slice(offset,offset+batchSize),catalogRows);
+    parts.push(...chunk.classifications);
+    classifiedCount+=chunk.classifiedCount;
+    unclassifiedCount+=chunk.unclassifiedCount;
+    tieCount+=chunk.tieCount;
+    for(const row of chunk.runeTotals){
+      const existing=runeTotals.get(row.rune_id);
+      if(existing){
+        existing.count+=row.count;
+        existing.document_count+=row.document_count;
+      }else runeTotals.set(row.rune_id,{...row});
+    }
+    for(const row of chunk.groupTotals){
+      const existing=groupTotals.get(row.group);
+      if(existing){
+        existing.hit_count+=row.hit_count;
+        existing.document_count+=row.document_count;
+      }else groupTotals.set(row.group,{...row});
+    }
+    for(const rule of chunk.unsupportedRules){
+      unsupportedRules.set(JSON.stringify(rule),rule);
+    }
+    const completed=Math.min(documents.length,offset+batchSize);
+    reportBatchProgress(onProgress,'analysis',completed,documents.length,20+40*completed/documents.length,
+      '分析分類 '+completed.toLocaleString()+' / '+documents.length.toLocaleString()+' 篇');
+    // Permit React to paint the percent and allow user interaction between batches.
+    await new Promise(resolve=>setTimeout(resolve,0));
+  }
+  if(!documents.length){
+    reportBatchProgress(onProgress,'analysis',0,0,60,'沒有符合條件的文章');
+  }
+  const totals=[...runeTotals.values()];
+  return {
+    documentCount:documents.length,
+    classifiedCount,
+    unclassifiedCount,
+    tieCount,
+    classifications:parts,
+    runeTotals:totals.sort((a,b)=>a.rune_id-b.rune_id),
+    runeRanking:[...totals].sort((a,b)=>b.count-a.count||b.document_count-a.document_count||a.rune_id-b.rune_id),
+    groupTotals:[...groupTotals.values()].sort((a,b)=>a.order-b.order||a.group.localeCompare(b.group)),
+    unsupportedRules:[...unsupportedRules.values()]
+  };
+}
+
 function buildClassMap(catalogRows=[]){
   const groups=new Map();
   for(const row of catalogRows){
@@ -100,9 +168,9 @@ function metaOf(catalogRows,classMap,currentClassId){
     )
   };
 }
-function resolveDynamicClassifications(documents,catalogRows){
-  const engine=classifyRune66Documents(documents,catalogRows);
+async function resolveDynamicClassifications(documents,catalogRows,onProgress){
   const classMap=buildClassMap(catalogRows);
+  const engine=await classifyDocumentsIncrementally(documents,catalogRows,onProgress);
   const counts=new Map(classMap.ordered.map(item=>[item.group,0]));
   const byUid=new Map();
   let dynamicTieCount=0;
@@ -183,9 +251,11 @@ async function loadCurrentCatalog(scopeId,currentClassId){
   return data;
 }
 
-export async function runRune66ClassificationBatch(scopeId='lo3rwang'){
+export async function runRune66ClassificationBatch(scopeId='lo3rwang',{onProgress}={}){
   const normalizedScopeId=normalizeScopeId(scopeId);
+  reportBatchProgress(onProgress,'reading',0,0,0,'確認 Scope 與分析設定');
   const {scope,config}=await scopeAndConfig(normalizedScopeId);
+  reportBatchProgress(onProgress,'reading',0,0,3,'讀取文章與目前的關鍵詞庫');
   const minChars=normalizeKeywordMinChars(config.keyword_min_chars);
   const minDocuments=normalizeKeywordMinDocuments(config.keyword_min_documents);
   const currentClassId=String(config.current_keyword_class_id||'').trim();
@@ -193,13 +263,18 @@ export async function runRune66ClassificationBatch(scopeId='lo3rwang'){
     loadCurrentCatalog(normalizedScopeId,currentClassId),
     selectAllRows(scope.galaxy,{
       columns:'uid,title,content,createtime,searchable,statistics_able',
-      orders:[{column:'createtime',ascending:true},{column:'uid',ascending:true}]
+      orders:[{column:'createtime',ascending:true},{column:'uid',ascending:true}],
+      onProgress:({completed,total})=>reportBatchProgress(onProgress,'reading',completed,total,
+        3+17*(total?completed/total:1),
+        '讀取文章 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇')
     })
   ]);
   const rawRows=textResult.rows||[];
   const eligibleRows=rawRows.filter(row=>isEligibleRow(row,minChars));
   const documents=eligibleRows.map(documentOf);
-  const resolved=resolveDynamicClassifications(documents,catalogRows);
+  reportBatchProgress(onProgress,'reading',rawRows.length,rawRows.length,20,
+    '讀取完成；符合分析資格 '+documents.length.toLocaleString()+' 篇');
+  const resolved=await resolveDynamicClassifications(documents,catalogRows,onProgress);
   const eligibleByUid=resolved.byUid;
   const payloadRows=eligibleRows.map(row=>{
     const uid=String(row?.uid||'').trim();
@@ -211,23 +286,36 @@ export async function runRune66ClassificationBatch(scopeId='lo3rwang'){
     };
   });
   const keywordMeta=metaOf(catalogRows,resolved.classMap,currentClassId);
-  const written=await applyKeywordClassification(normalizedScopeId,{rows:payloadRows,meta:keywordMeta});
+  const written=await applyKeywordClassification(normalizedScopeId,{rows:payloadRows,meta:keywordMeta},{
+    onProgress:({phase,completed,total})=>{
+      const percent=phase==='prepare'?61:phase==='finalizing'?99:61+38*(total?completed/total:1);
+      const label=phase==='prepare'?'準備寫入文章 Attr':phase==='finalizing'?'正在定錨並核對寫入數量':
+        '資料庫已寫入 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇';
+      reportBatchProgress(onProgress,phase,completed,total,percent,label);
+    }
+  });
   if(written.count!==payloadRows.length||written.documentCount!==payloadRows.length){
     throw new Error('關鍵詞批次寫回不完整：預期 '+payloadRows.length+'，實際 '+written.count);
   }
   clearRune66ClassificationCache();
-  const refreshed=await selectAllRows(scope.config,{
-    columns:'keyword_document_count,staticstime',
-    filters:[{column:'id',operator:'eq',value:normalizedScopeId}]
-  });
+  const {data:verifiedRows,error:verificationError}=await dbAuthRelation(scope.config)
+    .select('keyword_document_count,staticstime')
+    .eq('id',normalizedScopeId).limit(1);
+  if(verificationError)throw new Error('關鍵詞定錨驗證失敗：'+verificationError.message);
+  const verified=verifiedRows?.[0];
+  if(!verified?.staticstime||Number(verified.keyword_document_count)!==payloadRows.length){
+    throw new Error('關鍵詞定錨驗證失敗：文章數或完成時間不符，統計尚不可公開');
+  }
+  reportBatchProgress(onProgress,'completed',payloadRows.length,payloadRows.length,100,
+    '已完成 '+payloadRows.length.toLocaleString()+' 篇文章 Attr 寫入與定錨驗證');
   return {
     ...resolved,
     documentCount:documents.length,
     keywordMinChars:minChars,
     keywordMinDocuments:minDocuments,
-    keywordDocumentCount:Number(refreshed.rows?.[0]?.keyword_document_count)||documents.length,
+    keywordDocumentCount:Number(verified.keyword_document_count),
     statisticsEnabled:documents.length>minDocuments,
-    staticstime:refreshed.rows?.[0]?.staticstime||''
+    staticstime:verified.staticstime
   };
 }
 
