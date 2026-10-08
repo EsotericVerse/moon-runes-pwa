@@ -1,6 +1,44 @@
 import {test,expect} from '@playwright/test';
 
 test.describe('LunaRunes tabletop UI',()=>{
+  test('new GameBoard homepage image covers the complete Hero on desktop and mobile',async({page})=>{
+    await page.goto('/lrunes/game/',{waitUntil:'domcontentloaded'});
+    const hero=page.locator('.lrg-home-hero');
+    await expect(hero).toBeVisible({timeout:15_000});
+    const artwork=hero.locator('.lrg-hero-image');
+    await expect(artwork).toBeVisible();
+    const measurements=await hero.evaluate(el=>{
+      const art=el.querySelector('.lrg-hero-image');
+      const copy=el.querySelector('.lrg-home-copy');
+      const frame=el.getBoundingClientRect();
+      const image=art.getBoundingClientRect();
+      const imgStyle=getComputedStyle(art);
+      const copyStyle=getComputedStyle(copy);
+      return {
+        loaded:art.complete&&art.naturalWidth>0,
+        objectFit:imgStyle.objectFit,
+        position:imgStyle.position,
+        leftGap:Math.abs(image.left-frame.left),
+        rightGap:Math.abs(image.right-frame.right),
+        topGap:Math.abs(image.top-frame.top),
+        bottomGap:Math.abs(image.bottom-frame.bottom),
+        copyAboveImage:Number(copyStyle.zIndex)>Number(imgStyle.zIndex),
+        heroOverflowRight:Math.max(0,image.right-document.documentElement.clientWidth),
+        heroOverflowLeft:Math.max(0,-image.left)
+      };
+    });
+    expect(measurements.loaded).toBe(true);
+    expect(measurements.position).toBe('absolute');
+    expect(measurements.objectFit).toBe('cover');
+    expect(measurements.leftGap).toBeLessThanOrEqual(2);
+    expect(measurements.rightGap).toBeLessThanOrEqual(2);
+    expect(measurements.topGap).toBeLessThanOrEqual(2);
+    expect(measurements.bottomGap).toBeLessThanOrEqual(2);
+    expect(measurements.copyAboveImage).toBe(true);
+    expect(measurements.heroOverflowLeft).toBeLessThanOrEqual(2);
+    expect(measurements.heroOverflowRight).toBeLessThanOrEqual(2);
+  });
+
   test('desktop can start a two-player game and finish opening setup',async({page})=>{
     await page.goto('/game/',{waitUntil:'domcontentloaded'});
     await expect(page.getByRole('heading',{name:'月之符文'})).toBeVisible({timeout:15_000});
@@ -53,7 +91,11 @@ test.describe('LunaRunes tabletop UI',()=>{
     await expect(card).toBeVisible();
     await expect(card.locator('.lrg-rune-art')).toBeVisible();
     await expect(card.locator('.lrg-card-action')).toBeVisible();
-    await expect(card.locator('.lrg-group-mark')).toBeVisible();
+    // Group artwork is optional per dealt Rune, so check a rendered mark
+    // rather than requiring the random first card to always have one.
+    const marks=page.locator('.lrg-card .lrg-group-mark');
+    expect(await marks.count()).toBeGreaterThan(0);
+    await expect(marks.first()).toBeVisible();
   });
 
   test('Event scoring help explains all four scoring points',async({page})=>{
