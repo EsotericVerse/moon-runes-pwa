@@ -158,7 +158,7 @@ export default function LocHomeEditableBlock({order,variant}){
   const config=CONFIG[variant]||CONFIG.body;
   return <ScopeEditableBlocks
     scopeId="loc"
-    allowEditing={false}
+    allowEditing={true}
     page="index"
     orders={[order]}
     slotClassName={config.slotClassName}
