@@ -145,6 +145,8 @@
   display:block;
   isolation:isolate;
   overflow:hidden;
+  /* Mobile is content-height driven; desktop alone enforces the 16:9 image
+     frame, avoiding intrinsic aspect-ratio width overflow on narrow screens. */
   min-height:clamp(360px,48vh,540px);
   padding:clamp(1.5rem,4vw,3.4rem);
   background:#101725;
@@ -154,6 +156,11 @@
   --loc-gold:#f5d795;
   --loc-accent:#e8d6ac;
   color:var(--loc-text);
+}
+@media(min-width:761px){
+  .loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]) .loc-home>.loc-home-block--hero:not(.loc-home-block--hero-side){
+    aspect-ratio:16 / 9;
+  }
 }
 /* Outrank the shared .loc-home > .loc-hero > .home-hero-visual card rule:
    Hero artwork must overlay the frame, never participate in text flow. */
@@ -209,6 +216,8 @@
   grid-template-areas:"header media" "body media" "children media";
   gap:.8rem clamp(1rem,3vw,2rem);
   align-items:center;
+  /* Side-by-side editorial images are contained, not 16:9 cover artwork. */
+  aspect-ratio:auto;
   background:#101725;
 }
 .loc-home-block--hero-side>.loc-home-block__header{grid-area:header}
@@ -316,8 +325,8 @@
   inset:0;
   pointer-events:none;
   background:
-    linear-gradient(90deg,rgba(3,6,13,.96) 0%,rgba(3,6,13,.86) 31%,rgba(3,6,13,.55) 52%,rgba(3,6,13,.18) 75%,rgba(3,6,13,.06) 100%),
-    linear-gradient(180deg,rgba(3,6,13,.08) 0%,rgba(3,6,13,.05) 58%,rgba(3,6,13,.50) 100%);
+    linear-gradient(90deg,rgba(3,6,13,.68) 0%,rgba(3,6,13,.46) 31%,rgba(3,6,13,.20) 52%,rgba(3,6,13,.06) 75%,transparent 100%),
+    linear-gradient(180deg,rgba(3,6,13,.02) 0%,rgba(3,6,13,.04) 58%,rgba(3,6,13,.26) 100%);
 }
 @media(max-width:760px){
   .loc-next-main[data-loc-scope="lo3rwang"][data-loc-view="home"] .loc-home>.loc-home-block--hero:not(.loc-home-block--hero-side){
@@ -330,7 +339,7 @@
   }
   .loc-next-main[data-loc-scope="lo3rwang"][data-loc-view="home"] .loc-home>.loc-home-block--hero:not(.loc-home-block--hero-side)>.loc-home-block__media::after{
     background:
-      linear-gradient(180deg,rgba(3,6,13,.28) 0%,rgba(3,6,13,.34) 44%,rgba(3,6,13,.90) 100%),
-      linear-gradient(90deg,rgba(3,6,13,.72) 0%,rgba(3,6,13,.30) 72%,rgba(3,6,13,.12) 100%);
+      linear-gradient(180deg,rgba(3,6,13,.08) 0%,rgba(3,6,13,.18) 44%,rgba(3,6,13,.64) 100%),
+      linear-gradient(90deg,rgba(3,6,13,.30) 0%,rgba(3,6,13,.12) 72%,transparent 100%);
   }
 }
