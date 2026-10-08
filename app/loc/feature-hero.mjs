@@ -1,4 +1,5 @@
-// The four feature headers share one LOC-managed, read-only presentation source.
+// The four feature headers share one LOC-managed data source; LOC edits in place,
+// other Scopes consume its read-only presentation.
 // Rows live on silver.loc_blocks.page_name='feature_hero', never on 'index'.
 // LunaRunes deliberately remains on its current read-only localized header.
 export const FEATURE_HERO_PAGE='feature_hero';
@@ -16,6 +17,7 @@ export function sharedFeatureHeroFor(rows,featureId){
   const row=(Array.isArray(rows)?rows:[]).find(item=>item?.page_name===FEATURE_HERO_PAGE&&Number(item.block_order)===order);
   if(!row)return null;
   return {
+    eyebrow:String(row.block_eyebrow||'').trim(),
     title:String(row.block_title||'').trim(),
     subtitle:String(row.block_subtitle||''),
     description:String(row.block_text||'')

@@ -2,17 +2,18 @@ import {test,expect} from '@playwright/test';
 
 test('Four feature page hero frames read one LOC source while LunaRunes stays unchanged',async({page})=>{
   const features=[
-    ['culture','文化'],
-    ['statics','統計'],
-    ['search','搜尋'],
-    ['governance','治理']
+    ['culture','文化','Culture'],
+    ['statics','統計','Statistics'],
+    ['search','搜尋','Search'],
+    ['governance','治理','Governance']
   ];
-  for(const [index,[feature,title]] of features.entries()){
+  for(const [index,[feature,title,english]] of features.entries()){
     await page.goto('/'+feature+'/',{waitUntil:'domcontentloaded'});
     const hero=page.locator('header.scope-feature-hero');
     await expect(hero).toHaveAttribute('data-page-name','feature_hero',{timeout:25_000});
     await expect(hero).toHaveAttribute('data-block-order',String(index+1));
     await expect(page.locator('header.scope-feature-hero')).toHaveCount(1);
+    await expect(hero.locator(':scope > .loc-eyebrow')).toHaveText(english);
     await expect(hero.locator('h1')).toHaveText(title);
     await expect(hero.locator('.scope-subtitle')).not.toBeEmpty();
     await expect(hero.locator('.scope-hero-description')).not.toBeEmpty();
@@ -22,6 +23,7 @@ test('Four feature page hero frames read one LOC source while LunaRunes stays un
   // A second managed Scope consumes the same canonical LOC title/description.
   await page.goto('/lo3rwang/search/',{waitUntil:'domcontentloaded'});
   await expect(page.locator('header.scope-feature-hero')).toHaveAttribute('data-feature-hero-source','loc',{timeout:25_000});
+  await expect(page.locator('header.scope-feature-hero > .loc-eyebrow')).toHaveText('Search');
   await expect(page.locator('header.scope-feature-hero h1')).toHaveText('搜尋');
   await expect(page.locator('header.scope-feature-hero .scope-subtitle')).toContainText('月典');
 
