@@ -3,7 +3,7 @@
 export function splitStatusContentSections(value=''){
   const html=String(value??'').trim();
   if(!html)return [];
-  const markers=[...html.matchAll(/<h[2-4]\\b[^>]*>[\\s\\S]*?<\\/h[2-4]>/gi)];
+  const markers=[...html.matchAll(/<h[2-4]\b[^>]*>[\s\S]*?<\/h[2-4]>/gi)];
   if(!markers.length)return [{key:'body',html}];
   const sections=[];
   const prefix=html.slice(0,markers[0].index);
