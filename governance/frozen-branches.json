@@ -85,6 +85,7 @@
     "fix/rune66-live-classification-refresh",
     "fix/rune66-tie-to-special",
     "fix/scope-keyword-min-chars-32",
+    "fix/scope-provision-canonical-blocks-20261008",
     "fix/scope-search-shortcut",
     "fix/scope-theme-selector-defaults",
     "fix/search-media-mode-separation",
