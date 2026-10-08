@@ -26,3 +26,39 @@ test('Author homepage uses the exact LOC frame components and layouts',async({pa
   expect(picture&&frame).toBeTruthy();
   expect(picture.width).toBeLessThanOrEqual(frame.width);
 });
+
+
+test('Author Hero keeps its own taller image framing; LOC artwork stays unchanged',async({page})=>{
+  const viewport=page.viewportSize();
+  await page.goto('/',{waitUntil:'domcontentloaded'});
+  const locHero=page.locator('.loc-home > section[data-block-order="1"]');
+  await expect(locHero).toBeVisible();
+  await expect(locHero.locator('.loc-home-block__media img')).toHaveAttribute('src',/LOC-PicAll/);
+  const locSize=await locHero.boundingBox();
+
+  await page.goto('/lo3rwang/',{waitUntil:'domcontentloaded'});
+  const authorHero=page.locator('.loc-home > section[data-block-order="1"]');
+  await expect(authorHero).toBeVisible();
+  const authorImage=authorHero.locator(':scope > .loc-home-block__media img');
+  await expect(authorImage).toHaveAttribute('src',/lo3rwang-hero\.[^.]+\.jpg/);
+  await expect(authorImage).toHaveCSS('object-fit','cover');
+  await expect(authorImage).toHaveCSS('filter','none');
+  await expect(authorImage).toHaveCSS('mask-image','none');
+  await expect(authorHero).toHaveCSS('display','grid');
+
+  const authorSize=await authorHero.boundingBox();
+  expect(authorSize).not.toBeNull();
+  expect(locSize).not.toBeNull();
+  expect(authorSize.height).toBeGreaterThan(locSize.height+30);
+
+  const desktop=viewport.width>760;
+  await expect(authorHero).toHaveCSS('min-height',desktop?'620px':'460px');
+  await expect(authorImage).toHaveCSS('object-position',desktop?'50% 50%':'58% 50%');
+  const overlay=await authorHero.locator(':scope > .loc-home-block__media')
+    .evaluate(el=>getComputedStyle(el,'::after').backgroundImage);
+  expect(overlay).toContain('linear-gradient(');
+
+  // Both pages still have the same DOM contract and one image in Hero.
+  await expect(authorHero.locator(':scope > .loc-home-block__media img')).toHaveCount(1);
+  await expect(authorHero.locator(':scope > .loc-home-block__header')).toHaveCount(1);
+});
