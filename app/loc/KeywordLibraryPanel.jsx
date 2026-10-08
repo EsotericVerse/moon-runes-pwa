@@ -429,7 +429,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
         isSearchable={false}
         options={KEYWORD_WORKSPACE_OPTIONS}
         value={KEYWORD_WORKSPACE_OPTIONS.find(option=>option.value===workspace)}
-        onChange={option=>setWorkspace(option?.value||'analysis')}
+        onChange={option=>{const next=option?.value||'analysis';setWorkspace(next);if(next==='manual')chooseGroup('');}}
         aria-label="關鍵詞工作區"
       />
     </div>
@@ -457,7 +457,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
 
     {workspace!=='analysis'?<>
     <div className="scope-stat-controls">
-      <label><span>Class</span><select className="scope-select" value={selectedClass} onChange={event=>{const name=event.target.value;setSelectedClass(name);const first=rows.find(row=>String(row.class_name)===name);if(first)selectItem(first);else chooseGroup('');}}>
+      <label><span>Class</span><select className="scope-select" value={selectedClass} onChange={event=>{const name=event.target.value;setSelectedClass(name);const first=rows.find(row=>String(row.class_name)===name);if(workspace==='manual')chooseGroup('');else if(first)selectItem(first);else chooseGroup('');}}>
         {[...new Set(classes.map(item=>item.class_name))].map(name=><option key={name} value={name}>{name}</option>)}
       </select></label>
     </div>
@@ -489,7 +489,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     </div>:null}
 
     {!loading?<aside className="scope-management-editor scope-keyword-network-inspector">
-      <p className="scope-status">{workspace==='manual'?'直接選擇 Item 編輯與儲存；無需載入圖譜。':'可從圖譜選擇節點，右側編輯器會同步。'}</p>
+      <p className="scope-status">{workspace==='manual'?'依序選擇符文群組 → 符文 Item → 關鍵詞；變更先放入編輯稿，按儲存才寫入資料庫。':'可從圖譜選擇節點，右側編輯器會同步。'}</p>
       {workspace==='manual'?<>
         <div className="scope-stat-controls scope-keyword-manual-path">
           <label><span>符文群組</span><select className="scope-select" aria-label="選擇符文群組" value={selectedGroup} onChange={event=>chooseGroup(event.target.value)}>
