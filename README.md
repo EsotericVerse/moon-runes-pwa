@@ -52,6 +52,7 @@ LOC is the framework for organizing text, works, sources, time, relationships, s
 - General Statistics are calculated live from canonical data. Keyword classification is the exception: a confirmed batch writes fixed article attrs so repeated Statistics/Culture views stay lightweight and deterministic.
 - Management reads canonical data even when public feature flags are off or `searchable=false`.
 - Admin can provision Scopes, create/edit Scope Groups and move registry membership without adding bespoke Next routes.
+- **Management roles are exactly `scope` and `admin`:** `scope` is limited to explicit Scope mappings; `admin` has global management authority. A Scope Group, anonymous access, and public feature flags are not additional roles; database RLS remains authoritative.
 - Source Refresh compares only incoming `source_name + source_native_id` values in bounded batches, then previews create/update/unchanged counts before writing.
 
 ### LOC deployment

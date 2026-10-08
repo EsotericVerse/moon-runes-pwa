@@ -101,7 +101,7 @@ Scope 定義獨立的資料與治理範圍；Scope Group 定義成員的組織�
 | Deployment／Group | silver.scope_registry | Domain、Directory、Parent、Active、排序與 Scope Group 成員關係 |
 | Data mapping | silver.manage | 對應資料 Scope 及 Galaxy／Time 職責 |
 | Content | 各 Scope canonical tables | 真正的作品、媒體、時間及關鍵詞資料 |
-| Auth／write | 既有 OAuth、權限與 DB policies | 保護管理操作及資料修改 |
+| Auth／write | `silver.manage` 的 `scope`／`admin` 兩種 role，加上既有 OAuth 與 DB policies | `scope` 只管理獲授權 Scope；`admin` 可全域管理；RLS 仍是寫入最終防線 |
 
 **必須區分 LOC 與一般新建 Scope Group。** LOC (`loc`) 本身的 Statistics／Culture 是原有的跨 Scope 簡易比較工作台：Statistics 比較多 Scope 合併數量、占比與時間趨勢；Culture 對照各 Scope 的交會時期與相同來源類別的作品／媒體分布。其他 DB 新建 Scope Group 的 Statistics／Culture／Search 仍以 Registry Overview 與導引為主。**包括 LOC 在內的 Group Search 目前均不跨所有子 Scope 執行全文搜尋。** 這些區別不建立混合 Galaxy corpus、不複製任何 Scope 的 Canon，也不合併權限。
 
@@ -109,7 +109,7 @@ Scope 定義獨立的資料與治理範圍；Scope Group 定義成員的組織�
 
 ### 6.1 管理功能的實際狀態
 
-Current Admin 已有 Registry 階層、群組建立、Parent 調整、Scope mapping、Theme 與權限相關功能。各 Scope 的 Governance／Manage 另有基本設定、發表文章、資料匯入等入口。
+Current 的正式管理 role **只有 `scope` 與 `admin`**：Scope 管理員依 `silver.manage` 的授權對應管理自己的 Scope，Admin 管理全域 Registry／Group／Mapping。Scope Group 是階層資料，不是第三種權限；登入狀態、public flag 與 searchable 也不是 role。Current Admin 已有 Registry 階層、群組建立、Parent 調整、Scope mapping、Theme 與權限相關功能。各 Scope 的 Governance／Manage 另有基本設定、發表文章、資料匯入等入口。
 
 但**整合成完整且易操作的 Scope 管理工作台，仍是 0.9 收尾的主要工作**。本文件介紹已存在的責任與能力，不把尚未完成的管理介面包裝成正式交付。
 
