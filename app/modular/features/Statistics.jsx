@@ -713,7 +713,7 @@ function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false}
   return <>
     {canManageKeywords?<section className="scope-stat-section scope-stat-keyword-link">
       <a className="loc-button" href={scopeHref(scopeId,'statics/keywords')}>
-        前往獨立關鍵詞設定頁面
+        關鍵詞設定
       </a>
     </section>:null}
     <ScopeStatisticsResults scopeId={scopeId} navigation={navigation} types={types}/>

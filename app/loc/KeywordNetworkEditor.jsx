@@ -2,6 +2,12 @@
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 
+function graphOriginGroup(items=[]){
+  const groups=[...new Set(items.map(row=>String(row.class_group||'').trim()).filter(Boolean))];
+  // Use the existing Keyword Class groups, not a LunaRunes-specific schema.
+  return groups.includes('特殊')?'特殊':(groups[0]||'');
+}
+
 function buildGraph(items=[],className='',classId='',expandedGroup='',expandedItemId=''){
   const rows=Array.isArray(items)?items:[];
   const nodes=[];
@@ -61,8 +67,9 @@ export default function KeywordNetworkEditor({
 }){
   const containerRef=useRef(null);
   const networkRef=useRef(null);
+  const viewportRef=useRef(null);
   const selectedNodeRef=useRef('');
-  const [expandedGroup,setExpandedGroup]=useState('');
+  const [expandedGroup,setExpandedGroup]=useState(()=>graphOriginGroup(items));
   const [expandedItemId,setExpandedItemId]=useState('');
   const handlersRef=useRef({onSelectItem,onNewItem,onDeleteItem,onDeleteKeyword,onDeleteGroup,onMessage});
   const [error,setError]=useState('');
@@ -158,7 +165,17 @@ export default function KeywordNetworkEditor({
         edges:{selectionWidth:2,hoverWidth:1.5}
       });
       networkRef.current=network;
-      network.fit({animation:false});
+      const previousView=viewportRef.current;
+      if(previousView?.classId===classId){
+        network.moveTo({position:previousView.position,scale:previousView.scale,animation:false});
+      }else{
+        const originId='group:'+graphOriginGroup(items);
+        if(graph.meta.has(originId)){
+          selectedNodeRef.current=originId;
+          network.selectNodes([originId]);
+          network.focus(originId,{scale:1.05,animation:false});
+        }else network.fit({animation:false});
+      }
       network.on('selectNode',event=>{
         const id=String(event.nodes?.[0]||'');
         selectedNodeRef.current=id;
@@ -186,12 +203,18 @@ export default function KeywordNetworkEditor({
         if(graph.meta.has(itemNode)){
           selectedNodeRef.current=itemNode;
           network.selectNodes([itemNode]);
-          network.focus(itemNode,{scale:1.05,animation:false});
         }
       }
     }).catch(reason=>{if(!cancelled)setError(reason?.message||'vis-network 載入失敗。');});
-    return()=>{cancelled=true;if(networkRef.current===network)networkRef.current=null;network?.destroy();};
-  },[graph]);
+    return()=>{
+      cancelled=true;
+      if(network){
+        viewportRef.current={classId,position:network.getViewPosition(),scale:network.getScale()};
+        if(networkRef.current===network)networkRef.current=null;
+        network.destroy();
+      }
+    };
+  },[graph,classId]);
   useEffect(()=>{
     const itemNode='item:'+String(selectedId||'');
     if(selectedId&&graph.meta.has(itemNode)&&networkRef.current){
@@ -202,7 +225,7 @@ export default function KeywordNetworkEditor({
   return <section className="scope-keyword-network" aria-label="關鍵詞階層圖">
     <div className="scope-keyword-network-help">
       <strong>Class → Group → Item → Keyword</strong>
-      <span>先選 Group 展開符文 Item，再點 Item 展開關鍵詞；可拖曳與縮放畫布，雙擊或使用工具列編輯。</span>
+      <span>以「特殊」群組為預設起點；先選 Group 展開符文 Item，再點 Item 展開關鍵詞。可自由拖曳、縮放與編輯。</span>
     </div>
     {error?<p className="scope-status scope-error">{error}</p>:null}
     <div ref={containerRef} className="scope-graph-canvas scope-keyword-network-canvas" role="application" aria-label={className+' 關鍵詞 vis-network 編輯器'}/>

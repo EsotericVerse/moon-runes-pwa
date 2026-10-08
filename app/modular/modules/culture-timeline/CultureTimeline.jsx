@@ -138,6 +138,8 @@ export default function CultureTimeline({
   useEffect(()=>{
     let cancelled=false;
     let instance=null;
+    let initialPanWindow=null;
+    let boundaryChangeSent=false;
     setChartError(false);
     if(!containerRef.current||!rows.length){setReady(false);return()=>{cancelled=true};}
     setReady(false);
@@ -212,41 +214,46 @@ export default function CultureTimeline({
         onSelectRef.current?.(rowById(selectedId)||null);
       });
       instance.on('rangechanged',properties=>{
-        if(!onBoundaryNavigateRef.current||fixedMin||fixedMax||properties?.byUser!==true)return;
+        // Only a real user pan can advance the selected period. A click or a
+        // ctrl+wheel zoom must not change periods.
+        if(!onBoundaryNavigateRef.current||fixedMin||fixedMax||properties?.byUser!==true||!initialPanWindow||boundaryChangeSent)return;
         const startMs=Date.parse(boundaryStart||windowStart||'');
         const endMs=Date.parse(boundaryEnd||windowEnd||'');
         const visibleStart=properties?.start instanceof Date?properties.start.getTime():Date.parse(properties?.start||'');
         const visibleEnd=properties?.end instanceof Date?properties.end.getTime():Date.parse(properties?.end||'');
-        if(!Number.isFinite(startMs)||!Number.isFinite(endMs)||!Number.isFinite(visibleStart)||!Number.isFinite(visibleEnd)||endMs<=startMs)return;
-        const threshold=Math.max(86400000,(endMs-startMs)*0.04);
-        if(visibleStart<startMs-threshold)onBoundaryNavigateRef.current('previous');
-        else if(visibleEnd>endMs+threshold)onBoundaryNavigateRef.current('next');
-      });
-      instance.on('click',properties=>{
-        if(properties?.what!=='item'&&onTimeClickRef.current&&properties?.time){
-          const time=properties.time instanceof Date?properties.time:new Date(properties.time);
-          if(!Number.isNaN(time.getTime())){
-            const year=time.getFullYear();
-            const month=String(time.getMonth()+1).padStart(2,'0');
-            const day=String(time.getDate()).padStart(2,'0');
-            onTimeClickRef.current(year+'-'+month+'-'+day);
-            return;
-          }
+        const initialStart=initialPanWindow.start.getTime();
+        const initialEnd=initialPanWindow.end.getTime();
+        const initialSpan=initialEnd-initialStart;
+        const visibleSpan=visibleEnd-visibleStart;
+        if(!Number.isFinite(startMs)||!Number.isFinite(endMs)||!Number.isFinite(visibleStart)||!Number.isFinite(visibleEnd)||initialSpan<=0||endMs<=startMs)return;
+        if(Math.abs(visibleSpan-initialSpan)>Math.max(86400000,initialSpan*0.03))return;
+        const shift=(visibleStart+visibleEnd-initialStart-initialEnd)/2;
+        const threshold=Math.max(86400000,initialSpan*0.04);
+        if(shift< -threshold&&visibleStart<startMs-threshold){
+          boundaryChangeSent=true;
+          onBoundaryNavigateRef.current('previous');
+        }else if(shift>threshold&&visibleEnd>endMs+threshold){
+          boundaryChangeSent=true;
+          onBoundaryNavigateRef.current('next');
         }
-        if(!onBoundaryNavigateRef.current||properties?.what==='item')return;
-        const startMs=Date.parse(boundaryStart||windowStart||'');
-        const endMs=Date.parse(boundaryEnd||windowEnd||'');
-        const clickMs=properties?.time instanceof Date?properties.time.getTime():Date.parse(properties?.time||'');
-        if(!Number.isFinite(startMs)||!Number.isFinite(endMs)||!Number.isFinite(clickMs)||endMs<=startMs)return;
-        const threshold=Math.max(86400000,(endMs-startMs)*0.08);
-        if(clickMs<=startMs+threshold)onBoundaryNavigateRef.current('previous');
-        else if(clickMs>=endMs-threshold)onBoundaryNavigateRef.current('next');
+      });
+      instance.on('doubleClick',properties=>{
+        // A single click always remains a selection gesture; never create
+        // anchors on a drag release or on top of an existing item.
+        if((properties?.what!=='background'&&properties?.what!=='axis')||!onTimeClickRef.current||!properties?.time)return;
+        const time=properties.time instanceof Date?properties.time:new Date(properties.time);
+        if(Number.isNaN(time.getTime()))return;
+        const year=time.getFullYear();
+        const month=String(time.getMonth()+1).padStart(2,'0');
+        const day=String(time.getDate()).padStart(2,'0');
+        onTimeClickRef.current(year+'-'+month+'-'+day);
       });
       if(windowStart&&windowEnd&&Number.isFinite(Date.parse(windowStart))&&Number.isFinite(Date.parse(windowEnd))){
         instance.setWindow(windowStart,windowEnd,{animation:false});
       }else{
         instance.fit({animation:false});
       }
+      initialPanWindow=instance.getWindow();
       setReady(true);
     }catch{
       if(!cancelled){setReady(false);setChartError(true);}
