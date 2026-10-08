@@ -117,6 +117,16 @@ if(!failures.length){
     if(!statistics.includes(token))failures.push('Statistics Group ranking pagination missing '+token);
   }
   if(statistics.includes('{groupRows.map(row=>'))failures.push('Statistics Group ranking must not render every item in one long list.');
+  const keywordPanel=read('app/loc/KeywordLibraryPanel.jsx');
+  for(const token of ["const [styleFilter,setStyleFilter]=useState('none')","current==='keywords'","<ScopeStatisticsResults","<KeywordLibraryPanel","import Select from 'react-select'"]){
+    if(!statistics.includes(token))failures.push('Statistics must defer and isolate its keyword workspace: '+token);
+  }
+  for(const token of ["workspace==='analysis'","workspace==='manual'","workspace==='network'","dynamic(()=>import('./KeywordNetworkEditor')","關鍵詞工作區"]){
+    if(!keywordPanel.includes(token))failures.push('Keyword Library must expose separate analysis, manual and lazy graph views: '+token);
+  }
+  for(const token of ["onTimeClick={riverAction==='anchor'","onBoundaryNavigate={riverAction==='browse'","onAdd={null}","riverAnalysis.suggestions.length} 個 · 已選","beforeCount.toLocaleString()+'／'+afterCount.toLocaleString()"]){
+    if(!culture.includes(token))failures.push('Culture river must separate navigation/add and show virtual anchor counts: '+token);
+  }
   for(const token of ['表現風格','Class｜符文群組比例','culture-style-filter'])if(!culture.includes(token))failures.push('Culture style-filter presentation missing '+token);
   if(!culture.includes('本頁面只顯示所屬人員的交會時間作品。若需以時間查詢其他人的作品列表，請前往該人員的文化功能頁面。'))failures.push('LOC Culture must preserve the user-approved intersection navigation guidance.');
   for(const token of ['currentStructurePeriod','items={currentTimelineItems}','windowStart={currentStructureStart}','windowEnd={currentStructureEnd}','onBoundaryNavigate'])if(!culture.includes(token))failures.push('Culture first river must show one current/selected period and navigate period-by-period: '+token);
