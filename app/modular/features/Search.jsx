@@ -212,9 +212,6 @@ function toResult(row,source,scopeId){
     date:row.date||row.createtime||row.time_date||row.record_date||row.UpdateTime||row.updated_at||'',
     snippet:body,scopeId:scope,resourceType,resourceId,
     styleIntro:Boolean(row.style_keyword_intro),
-    styleWorkCount:Number.isInteger(row.style_work_count)?row.style_work_count:null,
-    styleCountSource:String(row.style_count_source||''),
-    styleCountBasis:String(row.style_count_basis||''),
     stylePeriod:String(row.period_label||''),
     styleAnchorStart:String(row.style_anchor_start||''),
     styleAnchorEnd:String(row.style_anchor_end||''),
@@ -628,10 +625,7 @@ export default function Search(){
         >
           {row.styleIntro?<div className="scope-style-search-connections">
             <p className="scope-status">
-              <strong>關鍵詞作品數：</strong>
-              {row.styleWorkCount===null?'統計暫時無法取得':row.styleWorkCount.toLocaleString()+' 篇'}
-              {row.styleCountSource==='snapshot'?'（上次統計）':''}
-              <span> · {row.styleCountBasis||'標題／正文含此關鍵詞的有效作品，每篇計一次'}</span>
+              <strong>風格脈絡：</strong> {row.stylePeriod||'文化風格'} · 主要敘述見上方。
             </p>
             <div className="scope-preview-links">
               <a href={scopeHref(row.scopeId)}>前往 {row.scopeId} Scope 網站</a>
@@ -639,7 +633,10 @@ export default function Search(){
             </div>
             {row.relatedStyleTags.length?<div className="scope-style-search-related">
               <strong>同時期其他風格：</strong>
-              {row.relatedStyleTags.map(tag=><a key={tag} href={featureNavigationHref(row.scopeId,'search',{q:tag})}>{tag}</a>)}
+              {row.relatedStyleTags.map(style=><a key={style.name} href={featureNavigationHref(row.scopeId,'search',{q:style.name})}>
+                {style.name}（{style.work_count===null?'統計暫不可用':style.work_count.toLocaleString()+' 篇'}）
+              </a>)}
+              <span className="scope-status">統計為全 Scope 有效作品的標題／正文命中數，每篇計一次；不改動 Class 分布。</span>
             </div>:null}
           </div>:null}
           {row.resourceType==='galaxy'?<WorkFullText
