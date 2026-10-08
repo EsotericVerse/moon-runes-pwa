@@ -429,7 +429,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
         isSearchable={false}
         options={KEYWORD_WORKSPACE_OPTIONS}
         value={KEYWORD_WORKSPACE_OPTIONS.find(option=>option.value===workspace)}
-        onChange={option=>{const next=option?.value||'analysis';setWorkspace(next);if(next==='manual')chooseGroup('');}}
+        onChange={option=>{const next=option?.value||'analysis';setWorkspace(next);if(next==='manual'||next==='network')chooseGroup('');}}
         aria-label="關鍵詞工作區"
       />
     </div>
@@ -457,7 +457,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
 
     {workspace!=='analysis'?<>
     <div className="scope-stat-controls">
-      <label><span>Class</span><select className="scope-select" value={selectedClass} onChange={event=>{const name=event.target.value;setSelectedClass(name);const first=rows.find(row=>String(row.class_name)===name);if(workspace==='manual')chooseGroup('');else if(first)selectItem(first);else chooseGroup('');}}>
+      <label><span>Class</span><select className="scope-select" value={selectedClass} onChange={event=>{const name=event.target.value;setSelectedClass(name);const first=rows.find(row=>String(row.class_name)===name);if(workspace==='manual'||workspace==='network')chooseGroup('');else if(first)selectItem(first);else chooseGroup('');}}>
         {[...new Set(classes.map(item=>item.class_name))].map(name=><option key={name} value={name}>{name}</option>)}
       </select></label>
     </div>
