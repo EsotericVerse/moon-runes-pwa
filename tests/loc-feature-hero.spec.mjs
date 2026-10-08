@@ -170,6 +170,48 @@ test('Each homepage Hero has exactly its fixed Scope identity above overlays',as
     expect(overflow).toBeLessThanOrEqual(2);
     await expect(page.locator('.home-hero-identity')).toHaveCount(1);
   }
+  // The same fixed identity now accompanies the artwork on each feature Hero.
   await page.goto('/culture/',{waitUntil:'domcontentloaded'});
-  await expect(page.locator('.home-hero-identity')).toHaveCount(0);
+  await expect(page.locator('header.scope-feature-hero>.home-hero-identity--codex')).toHaveText('X');
+});
+
+test('Eight feature JPGs map by Scope while keeping the same title and readable Hero',async({page})=>{
+  const featureImages=[
+    ['culture','culture'],
+    ['statics','statics'],
+    ['search','search'],
+    ['governance','gn']
+  ];
+  const scopes=[
+    {prefix:'',filename:'LOC',mark:'codex'},
+    {prefix:'/lo3rwang',filename:'scope',mark:'anchor'},
+    {prefix:'/lrunes',filename:'scope',mark:'moon'}
+  ];
+  for(const {prefix,filename,mark} of scopes){
+    for(const [feature,asset] of featureImages){
+      await page.goto(prefix+'/'+feature+'/',{waitUntil:'domcontentloaded'});
+      const hero=page.locator('header.scope-feature-hero');
+      await expect(hero).toBeVisible({timeout:25000});
+      await expect(hero).toHaveClass(new RegExp('scope-feature-hero--'+feature));
+      await expect(hero.locator(':scope > .home-hero-identity--'+mark)).toHaveCount(1);
+      const imageUrl=await hero.evaluate(el=>{
+        const background=getComputedStyle(el).backgroundImage;
+        return background.match(/url\\(["']?([^"'\\)]+)["']?\\)/)?.[1]||'';
+      });
+      expect(imageUrl).toContain(filename+'-'+asset);
+      expect(imageUrl).toMatch(/\\.jpg$/);
+      const loaded=await page.evaluate(async url=>{
+        const img=new Image();
+        img.src=url;
+        try{await img.decode()}catch{return false}
+        return img.naturalWidth>0&&img.naturalHeight>0;
+      },imageUrl);
+      expect(loaded).toBe(true);
+      const heroTitle=hero.locator('.home-title-row>h1');
+      await expect(heroTitle).toBeVisible();
+      await expect(heroTitle).toHaveCSS('color','rgb(247, 248, 255)');
+      const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+      expect(overflow).toBeLessThanOrEqual(2);
+    }
+  }
 });
