@@ -233,7 +233,8 @@ must(importPanel.includes('record.createtime||current.createtime||null')&&import
 must(!/silver\.runes(?:_etc)?\b/.test(galaxy),'generic Galaxy/Search provider must not expose private Rune Core tables');
 must(!/runeScopeIds|silver\.runes(?:_etc)?\b/.test(sharedSearch),'shared Search must stay Scope-data only');
 must(sharedSearch.includes('matchesScopeAlias')&&sharedSearch.includes('scope.searchIntro')&&sharedSearch.includes("label:'前往 Scope 首頁'")&&sharedSearch.includes('return;'),'exact Scope aliases must use Scope-owned presentation and stop the search');
-must(galaxy.includes("columns:'record_id,record_type,label,resource_id,display_order,anchor_ids,style_tags,style_description'")&&galaxy.includes("summary:description")&&!galaxy.includes('style_tag_descriptions'),'Search must use Time style_description TEXT as its displayed primary content');
+must(galaxy.includes("columns:'record_id,record_type,label,resource_id,display_order,time_date,year_value,anchor_ids,style_tags,style_description'")&&galaxy.includes("summary:description")&&!galaxy.includes('style_tag_descriptions'),'Search must use Time style_description TEXT as its displayed primary content');
+must(galaxy.includes('selectStyleKeywordDocumentCount')&&galaxy.includes('related_style_tags:related')&&galaxy.includes('same_period:')&&sharedSearch.includes('scope-style-search-related-links')&&sharedSearch.includes('style.work_count')&&sharedSearch.includes("cursor:!append&&styleIntroductions.length?{stage:2"),'Search introductions must offer counted linked personal styles before work results without Time snapshot columns');
 must(sharedSearch.includes('selectStyleKeywordIntroductions')&&sharedSearch.includes('[...styleIntroductions,...enrichedRows]'),'style keyword descriptions must precede ordinary related results');
 
 if(failures.length){
