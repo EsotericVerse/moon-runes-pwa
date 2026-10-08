@@ -139,8 +139,18 @@ if(!failures.length){
   if(!keywordPanel.includes("key={selectedClassId||selectedClass}")||!keywordPanel.includes("next==='manual'||next==='network'")){
     failures.push('Keyword network must reset initial selection and origin when entering or changing its Class.');
   }
-  for(const token of ["onTimeClick={account.canManageScopeSync(scopeId)?date=>","onAdd={null}","items={timelineItems}","檢視時期範圍","既有定錨點｜持續檢討","anchorReviews.map","safeDates=selectedVirtualAnchorDates.filter","selectedVirtualAnchorDates.includes(item.date)","全選待審候選","saveSelectedVirtualAnchors"]){
+  for(const token of ["onTimeClick={account.canManageScopeSync(scopeId)?date=>","onAdd={null}","items={timelineItems}","檢視時期範圍","safeDates=selectedVirtualAnchorDates.filter","selectedVirtualAnchorDates.includes(item.date)","全選待審候選","saveSelectedVirtualAnchors"]){
     if(!culture.includes(token))failures.push('Culture river must review reusable existing anchors, compare suggestions, and add only after review: '+token);
+  }
+  if(!culture.includes("()=>[...classificationBuckets,...virtualAnchorItems]")||
+     culture.includes('visibleExistingAnchors')||culture.includes('anchorReviews.map')||
+     culture.includes('既有定錨點｜持續檢討')||
+     culture.includes("className:'scope-existing-anchor'")){
+    failures.push('Culture second river must not duplicate existing anchor markers or always-on review cards.');
+  }
+  if(!culture.includes("<details className='scope-culture-anchor-picker'>")||
+     culture.includes("<details className='scope-culture-anchor-picker' open>")){
+    failures.push('Candidate density comparison must stay opt-in and collapsed by default.');
   }
   for(const token of ['表現風格','Class｜符文群組比例','culture-style-filter'])if(!culture.includes(token))failures.push('Culture style-filter presentation missing '+token);
   if(!culture.includes('本頁面只顯示所屬人員的交會時間作品。若需以時間查詢其他人的作品列表，請前往該人員的文化功能頁面。'))failures.push('LOC Culture must preserve the user-approved intersection navigation guidance.');
