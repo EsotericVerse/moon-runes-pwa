@@ -64,6 +64,7 @@
     "fix/game-opening-isolation-20261008",
     "fix/game-opening-solo-flow-20261007",
     "fix/game-opening-transition-20261007",
+    "fix/governance-login-no-explanatory-copy-20261008",
     "fix/governance-management-entry",
     "fix/independent-keyword-library",
     "fix/keyword-batch-attrs-clean",
