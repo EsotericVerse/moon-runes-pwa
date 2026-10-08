@@ -61,6 +61,7 @@ LOC is the framework for organizing text, works, sources, time, relationships, s
 
 ### LOC documents
 
+- `docs/FEATURE_DEEP_DIVE.md` — Current 深度功能說明（目的、機制、跨功能關聯與治理邊界）；不是新手教學。
 - `docs/LOC_CANON.md`
 - `docs/LOC-AUTOMATIC-ANALYSIS.md`
 - `docs/LOC-language-theory.md`
