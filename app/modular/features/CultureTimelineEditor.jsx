@@ -146,9 +146,12 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
   },[selectedRecordId,rawRows]);
 
   useEffect(()=>{
-    if(!/^\d{4}-\d{2}-\d{2}$/.test(effectiveSuggestedAnchorDate))return;
-    setSelectedId('');
     const recordType=EDITABLE_TYPES.some(([type])=>type===suggestedRecordType)?suggestedRecordType:'anchor';
+    const hasAnchorDate=/^\d{4}-\d{2}-\d{2}$/.test(effectiveSuggestedAnchorDate);
+    // New period/event actions intentionally have no free-date input. They
+    // must still open the existing editor using two anchor selectors.
+    if(!hasAnchorDate&&(recordType==='anchor'||!suggestedRequestNonce))return;
+    setSelectedId('');
     setDraft({
       ...BLANK,
       record_type:recordType,
