@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
 import {selectMediaStatisticsFacetRows,selectScopeDensityRows,selectSourceTrendRows} from '../../loc/galaxy-query';
+import {DEFAULT_MEDIA_STYLE_EXCLUSIONS,filterMediaStyleRows,mediaStyleExclusions} from '../../loc/statistics-facets.mjs';
 import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
 import {selectManagedScopes} from '../../loc/scope-data';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation';
@@ -278,22 +279,46 @@ function facetTrend(rows=[],window={},selectedCategories=[]){
     return output;
   });
 }
-function MediaFacetStatistics({rankingType,rows=[],chartType='line',timeStandard='1y',customRange={}}){
+function MediaFacetStatistics({rankingType,rows=[],chartType='line',timeStandard='1y',customRange={},scopeId,navigation={}}){
+  const router=useRouter();
   const [selectedTag,setSelectedTag]=useState('all');
+  const rawExclusions=String(navigation.statExclude||'');
+  const exclusionText=rawExclusions==='-'?'':(rawExclusions||DEFAULT_MEDIA_STYLE_EXCLUSIONS.join(', '));
+  const [exclusionDraft,setExclusionDraft]=useState(exclusionText);
+  const exclusions=useMemo(()=>mediaStyleExclusions(exclusionText),[exclusionText]);
   const window=useMemo(()=>rowsInWindow(rows,timeStandard,customRange),[rows,timeStandard,customRange]);
-  const totals=useMemo(()=>facetTotals(window.rows),[window.rows]);
+  const facetRows=useMemo(()=>
+    rankingType==='media_style'?filterMediaStyleRows(window.rows,exclusions):window.rows,
+    [rankingType,window.rows,exclusions]
+  );
+  const totals=useMemo(()=>facetTotals(facetRows),[facetRows]);
   const chosen=totals.find(row=>row.term===selectedTag)?selectedTag:'all';
   const displayed=chosen==='all'?totals:totals.filter(row=>row.term===chosen);
   const chartCategories=chosen==='all'?totals.slice(0,6).map(row=>row.term):[chosen];
-  const chartRows=useMemo(()=>facetTrend(window.rows,window,chartCategories),[window.rows,window.startDate,window.endDate,window.bucket,chartCategories.join('\u0000')]);
+  const chartRows=useMemo(()=>facetTrend(facetRows,window,chartCategories),[facetRows,window.startDate,window.endDate,window.bucket,chartCategories.join('\u0000')]);
   const bars=(chosen==='all'?totals.slice(0,15):displayed).map(row=>({term:row.term,value:row.item_count}));
   const description=rankingType==='media_style'
     ?'從 Galaxy Media 的 meta_tags 即時計算所有統計詞（曲風、風格、主題等），同筆相同標籤只計一次；不將 Suno Style 正文當成媒體作品。'
     :rankingType==='media_platform'
       ?'依 URL 網域與路徑區分平台（IG Reels／IG 貼文、Vocus、Suno 等）；缺 URL 時才用媒體類型或來源欄位辨識。Suno song ID 不當成另一個平台。'
       :'每個多媒體紀錄只計入一個媒體類型。';
+  function applyExclusions(){
+    const next=mediaStyleExclusions(exclusionDraft).join(', ');
+    const nextValue=next===DEFAULT_MEDIA_STYLE_EXCLUSIONS.join(', ')?undefined:(next||'-');
+    if((nextValue||'').length>240)return;
+    if((nextValue||'')===rawExclusions)return;
+    router.push(featureNavigationHref(scopeId,'statics',{...navigation,statExclude:nextValue}));
+  }
   return <>
     <p className="scope-status">{description}</p>
+    {rankingType==='media_style'?<div className="scope-stat-controls">
+      <label><span>統計排除詞（以逗號分隔）</span>
+        <input className="scope-input" value={exclusionDraft} maxLength={240} onChange={event=>setExclusionDraft(event.target.value)} placeholder="例如：男聲" />
+      </label>
+      <button type="button" className="loc-button" onClick={applyExclusions}>套用排除詞</button>
+      <button type="button" className="loc-button" onClick={()=>setExclusionDraft(DEFAULT_MEDIA_STYLE_EXCLUSIONS.join(', '))}>恢復預設</button>
+      <p className="scope-status">預設排除：男聲。高頻不等於無意義；排除詞只影響目前統計視圖，原始 Meta Tag 不會更動。可透過網址保留設定。</p>
+    </div>:null}
     <div className="scope-stat-controls">
       <label><span>{rankingType==='media_style'?'指定 Meta Tag':'指定統計細項'}</span>
         <select className="scope-select" value={chosen} onChange={event=>setSelectedTag(event.target.value)}>
@@ -656,12 +681,14 @@ function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false}
       </button>
     </div>:null}
     {mediaDimension&&!mediaQuery.isPending&&!mediaQuery.error&&customReady?<MediaFacetStatistics
-      key={rankingType}
+      key={rankingType+':'+String(navigation.statExclude||'')}
       rankingType={rankingType}
       rows={mediaQuery.data||[]}
       chartType={chartType}
       timeStandard={effectiveTimeStandard}
       customRange={customRange}
+      scopeId={scopeId}
+      navigation={navigation}
     />:null}
     {styleFilter==='rune66'?<>
       {runeQuery.isPending?<p className="scope-status">正在讀取已定錨的關鍵詞 Attr…</p>:null}
