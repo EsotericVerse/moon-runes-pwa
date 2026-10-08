@@ -84,6 +84,10 @@ export default function ScopeEditableBlocks({
     ()=>Array.isArray(orders)?orders.map(Number).filter(value=>Number.isInteger(value)&&value>0):[],
     [orders]
   );
+  const [draft,setDraft]=useState(null);
+  const [busy,setBusy]=useState(false);
+  const [message,setMessage]=useState('');
+
   const slots=useMemo(()=>{
     const rows=Array.isArray(query.data)?query.data:[];
     if(normalizedOrders.length){
@@ -91,18 +95,20 @@ export default function ScopeEditableBlocks({
       return normalizedOrders.map(order=>normalizeRow(byOrder.get(order),order));
     }
     if(Number.isInteger(maxBlocks)&&maxBlocks>0){
-      return homeBlockRows(rows,pageName,maxBlocks).map(row=>normalizeRow(row,row.block_order));
+      const displayed=homeBlockRows(rows,pageName,maxBlocks).map(row=>normalizeRow(row,row.block_order));
+      if(draft&&!draft.stored&&!displayed.some(slot=>slot.order===draft.order)&&draft.order<=maxBlocks){
+        displayed.push({...draft});
+        displayed.sort((a,b)=>a.order-b.order);
+      }
+      return displayed;
     }
     return rows.map(row=>normalizeRow(row,row.block_order));
-  },[query.data,normalizedOrders,maxBlocks,pageName]);
+  },[query.data,normalizedOrders,maxBlocks,pageName,draft]);
   const nextOrder=useMemo(()=>{
     const rows=Array.isArray(query.data)?query.data:[];
     return Math.max(0,...rows.map(row=>Number(row.block_order)||0))+1;
   },[query.data]);
 
-  const [draft,setDraft]=useState(null);
-  const [busy,setBusy]=useState(false);
-  const [message,setMessage]=useState('');
 
   function begin(slot){
     if(!canEdit)return;
