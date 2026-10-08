@@ -11,6 +11,7 @@ test('URL host and path distinguish IG Reels, posts, Vocus and Suno',()=>{
   assert.equal(mediaPlatform({url:'',media_type:'suno',source_native_id:'31bf353a-1674-4f47-abca-c606cbd715b0'}),'Suno');
   assert.equal(mediaPlatform({url:'',media_type:'instagram',source_place:'Reels'}),'IG Reels');
   assert.equal(mediaPlatform({url:'https://youtube.com/shorts/abc'}),'YouTube Shorts');
+  assert.equal(mediaPlatform({url:'https://my-videos.example.net/watch/123'}),'my-videos.example.net');
 });
 
 test('style tags are independent, deduplicated, and preserve multiword genres',()=>{
@@ -40,6 +41,26 @@ test('each style counts once per media record; missing tags are visible',()=>{
   assert.deepEqual(mediaFacetDaily(rows,'media_style'),[
     {day:'2026-10-07',category:'Alternative Pop',item_count:2},
     {day:'2026-10-07',category:'Rock',item_count:1},
-    {day:'2026-10-07',category:'未標記曲風',item_count:1}
+    {day:'2026-10-07',category:'未標記 Meta Tag',item_count:1}
   ]);
+});
+
+test('meta_tags includes descriptive metadata terms, not only music genres',()=>{
+  const rows=[
+    {createtime:'2026-10-07T12:00:00+08:00',media_type:'suno',meta_tags:'Alternative Pop, 政德風, 男聲, 希望向'},
+    {createtime:'2026-10-07T15:00:00+08:00',media_type:'suno',meta_tags:'政德風, 希望向'}
+  ];
+  assert.deepEqual(mediaFacetDaily(rows,'media_style'),[
+    {day:'2026-10-07',category:'Alternative Pop',item_count:1},
+    {day:'2026-10-07',category:'希望向',item_count:2},
+    {day:'2026-10-07',category:'政德風',item_count:2},
+    {day:'2026-10-07',category:'男聲',item_count:1}
+  ]);
+});
+
+test('timestamps aggregate by Taiwan local calendar day even when DB returns UTC',()=>{
+  assert.deepEqual(mediaFacetDaily([
+    {createtime:'2026-10-07T21:37:51.602041+00:00',media_type:'suno',meta_tags:'政德風'},
+    {createtime:'2026-10-08T02:00:00+08:00',media_type:'suno',meta_tags:'政德風'}
+  ],'media_style'),[{day:'2026-10-08',category:'政德風',item_count:2}]);
 });
