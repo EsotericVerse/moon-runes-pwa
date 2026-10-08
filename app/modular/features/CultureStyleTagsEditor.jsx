@@ -11,7 +11,7 @@ function anchorName(row){
 }
 function normalize(value){return String(value||'').trim().normalize('NFKC').toLocaleLowerCase('zh-Hant');}
 export default function CultureStyleTagsEditor({
-  period,styles=[],anchors=[],scopeId,table,canEdit=false,onSaved=null
+  period,styles=[],anchors=[],scopeId,table,canEdit=false,onSaved=null,selectedStyleRecordId='',selectedStyleRequestNonce=0
 }){
   const [mode,setMode]=useState('view');
   const [recordId,setRecordId]=useState('');
@@ -34,6 +34,11 @@ export default function CultureStyleTagsEditor({
     setMode('view');setRecordId('');setLabel('');setDescription('');setAnchorId('');setMessage('');
   }
   useEffect(()=>{reset();},[scopeId]);
+  useEffect(()=>{
+    if(!selectedStyleRecordId)return;
+    const record=styles.find(item=>String(item.record_id||'')===String(selectedStyleRecordId));
+    if(record)edit(record);
+  },[selectedStyleRecordId,selectedStyleRequestNonce,styles]);
   function add(){
     setRecordId('');setLabel('');setDescription('');setAnchorId('');setMessage('');setMode('create');
   }
@@ -50,7 +55,7 @@ export default function CultureStyleTagsEditor({
     const name=label.trim(),body=description.trim();
     if(!name||!body){setMessage('每一個風格標籤都需要自己的名稱及完整敘述。');return;}
     if(!anchorId||!anchorsById.has(anchorId)){setMessage('每一個風格標籤必須選擇一個既有正式定錨點。');return;}
-    if(styles.some(row=>String(row.record_id||'')!==recordId&&normalize(row.label)===normalize(name)){
+    if(styles.some(row=>String(row.record_id||'')!==recordId&&normalize(row.label)===normalize(name))){
       setMessage('此 Scope 已存在同名風格，每個風格名稱只能有一筆獨立說明。');return;
     }
     setBusy(true);setMessage('');
