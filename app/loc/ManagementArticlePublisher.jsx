@@ -6,7 +6,8 @@ import {insertRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {createUid8} from './uid';
 import {normalizeRelationIds,requireGalaxyContent,resolveGalaxyTitle} from './content-policy';
-import RichBlockEditor,{blocksToPlainText,plainTextToBlocks} from './RichBlockEditor';
+import BlockNoteEditor from './BlockNoteEditor';
+import {blocksToPlainText,plainTextToBlocks} from './blocknote-content.mjs';
 
 const blank=()=>({
   title:'',bodyBlocks:plainTextToBlocks(''),source:'',url:'',source_id:'',target_id:'',ref_id:'',createtime:'',
@@ -69,7 +70,7 @@ export default function ManagementArticlePublisher({scopeId}){
           placeholder="新增標題"
           aria-label="文章標題"
         />
-        <RichBlockEditor
+        <BlockNoteEditor
           key={'publisher:'+scopeId}
           initialContent={draft.bodyBlocks}
           onChange={blocks=>change('bodyBlocks',blocks)}
