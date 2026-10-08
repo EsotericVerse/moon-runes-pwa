@@ -41,10 +41,10 @@ function HeroDisplay(slot){
   const english=entityAt(slot,0);
   const role=entityAt(slot,1);
   return <>
-    <Html tag="p" className="loc-eyebrow" html={stripOuterParagraph(english.text)||english.title}/>
+    <Html tag="p" className="loc-eyebrow" html={slot.eyebrow||stripOuterParagraph(english.text)||english.title}/>
     <div className="home-title-row">
       <h1>{slot.title}</h1>
-      <Html tag="p" className="loc-subtitle" html={stripOuterParagraph(role.text)}/>
+      <Html tag="p" className="loc-subtitle" html={stripOuterParagraph(slot.subtitle||role.text)}/>
     </div>
     {paragraphParts(slot.text).map((part,index)=><Html tag="p" html={part} key={'hero-'+index}/>)}
   </>;
@@ -54,7 +54,8 @@ function AboutDisplay(slot){
   const primary=slot.entities.slice(0,4);
   const side=slot.entities.slice(4,6);
   return <>
-    <p className="loc-eyebrow">About</p>
+    <p className="loc-eyebrow">{slot.eyebrow||'About'}</p>
+    {slot.subtitle?<Html className="loc-subtitle scope-block-subtitle" html={slot.subtitle}/>:null}
     <h2>{slot.title}</h2>
     <div className="author-about-grid">
       <div className="author-about-primary">
@@ -77,7 +78,8 @@ function ProfessionalDisplay(slot){
   const roles=slot.entities.slice(0,3);
   const work=slot.entities.slice(3,5);
   return <>
-    <p className="loc-eyebrow">Professional</p>
+    <p className="loc-eyebrow">{slot.eyebrow||'Professional'}</p>
+    {slot.subtitle?<Html className="loc-subtitle scope-block-subtitle" html={slot.subtitle}/>:null}
     <h2>{slot.title}</h2>
     <Html className="author-section-lead" html={slot.text}/>
     <div className="author-role-grid">
@@ -97,7 +99,8 @@ function ProfessionalDisplay(slot){
 
 function SystemsDisplay(slot){
   return <>
-    <p className="loc-eyebrow">Systems</p>
+    <p className="loc-eyebrow">{slot.eyebrow||'Systems'}</p>
+    {slot.subtitle?<Html className="loc-subtitle scope-block-subtitle" html={slot.subtitle}/>:null}
     <h2>{slot.title}</h2>
     <div className="author-system-grid">
       {slot.entities.map(entity=><article className="author-editorial-block" key={entity.uid}>
@@ -110,7 +113,8 @@ function SystemsDisplay(slot){
 
 function SoulsDisplay(slot){
   return <>
-    <p className="loc-eyebrow">Three Souls</p>
+    <p className="loc-eyebrow">{slot.eyebrow||'Three Souls'}</p>
+    {slot.subtitle?<Html className="loc-subtitle scope-block-subtitle" html={slot.subtitle}/>:null}
     <h2>{slot.title}</h2>
     <div className="author-trinity-layout">
       <figure className="home-architecture-figure author-trinity-figure">
@@ -136,7 +140,8 @@ function ContactDisplay(slot){
   const email=links.find(link=>link.href.startsWith('mailto:'));
   const official=links.filter(link=>!link.href.startsWith('mailto:'));
   return <>
-    <p className="loc-eyebrow">Contact</p>
+    <p className="loc-eyebrow">{slot.eyebrow||'Contact'}</p>
+    {slot.subtitle?<Html className="loc-subtitle scope-block-subtitle" html={slot.subtitle}/>:null}
     <h2>{slot.title}</h2>
     <div className="author-contact-layout">
       <div>
