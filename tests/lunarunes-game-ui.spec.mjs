@@ -1,6 +1,42 @@
 import {test,expect} from '@playwright/test';
 
 test.describe('LunaRunes tabletop UI',()=>{
+  test('new GameBoard homepage image covers the complete Hero on desktop and mobile',async({page})=>{
+    await page.goto('/lrunes/game/',{waitUntil:'domcontentloaded'});
+    const hero=page.locator('.lrg-home-hero');
+    await expect(hero).toBeVisible({timeout:15_000});
+    const artwork=hero.locator('.lrg-hero-image');
+    await expect(artwork).toBeVisible();
+    const measurements=await hero.evaluate(el=>{
+      const art=el.querySelector('.lrg-hero-image');
+      const copy=el.querySelector('.lrg-home-copy');
+      const frame=el.getBoundingClientRect();
+      const image=art.getBoundingClientRect();
+      const imgStyle=getComputedStyle(art);
+      const copyStyle=getComputedStyle(copy);
+      return {
+        loaded:art.complete&&art.naturalWidth>0,
+        objectFit:imgStyle.objectFit,
+        position:imgStyle.position,
+        leftGap:Math.abs(image.left-frame.left),
+        rightGap:Math.abs(image.right-frame.right),
+        topGap:Math.abs(image.top-frame.top),
+        bottomGap:Math.abs(image.bottom-frame.bottom),
+        copyAboveImage:Number(copyStyle.zIndex)>Number(imgStyle.zIndex),
+        horizontalOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
+      };
+    });
+    expect(measurements.loaded).toBe(true);
+    expect(measurements.position).toBe('absolute');
+    expect(measurements.objectFit).toBe('cover');
+    expect(measurements.leftGap).toBeLessThanOrEqual(2);
+    expect(measurements.rightGap).toBeLessThanOrEqual(2);
+    expect(measurements.topGap).toBeLessThanOrEqual(2);
+    expect(measurements.bottomGap).toBeLessThanOrEqual(2);
+    expect(measurements.copyAboveImage).toBe(true);
+    expect(measurements.horizontalOverflow).toBeLessThanOrEqual(2);
+  });
+
   test('desktop can start a two-player game and finish opening setup',async({page})=>{
     await page.goto('/game/',{waitUntil:'domcontentloaded'});
     await expect(page.getByRole('heading',{name:'月之符文'})).toBeVisible({timeout:15_000});
