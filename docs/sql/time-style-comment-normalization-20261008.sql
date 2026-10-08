@@ -1,8 +1,9 @@
 -- Canonical Time style_comment = ONE name + ONE TEXT description + ONE existing anchor ID.
--- One-time import: each legacy style is its own pending record, never
--- assigned the period's first/last anchor by inference. "needs_anchor" is
--- editor-only, not a published style. The author activates a style by picking
--- exactly one real anchor (which may be far outside the source period).
+-- Import each old style as one independent row. Only author-confirmed anchors
+-- are mapped: 治理自己→2026-08-04, 文字建築學→2025-10-16,
+-- 數位的長袖善舞→2026-10-06. 微月光 and 白晝之月 stay needs_anchor until
+-- the author confirms their earliest evidenced lyrics dates. Do not infer
+-- a date from the parent period. The retired name 混沌校對者 is not imported.
 -- The original anchor/period/event rows and their notes are never changed.
 DO $migrate$
 DECLARE
@@ -19,7 +20,7 @@ BEGIN
                 WHERE starts_with(btrim(part),btrim(tag.tag)||'：') LIMIT 1) AS own_description
         FROM silver.%I t
         CROSS JOIN LATERAL regexp_split_to_table(t.style_tags,'[,，]') AS tag(tag)
-        WHERE t.record_type IN ('period','event') AND nullif(btrim(t.style_tags),'') IS NOT NULL
+        WHERE t.record_type IN ('period','event') AND nullif(btrim(t.style_tags),'') IS NOT NULL AND btrim(tag.tag)<>'混沌校對者'
       )
       SELECT count(*) FROM source WHERE nullif(tag,'') IS NULL
         OR nullif(btrim(CASE WHEN tag_count=1 THEN style_description ELSE own_description END),'') IS NULL
@@ -29,6 +30,28 @@ BEGIN
   END LOOP;
 
   FOREACH tbl IN ARRAY ARRAY['lo3rwang_time','lrunes_time'] LOOP
+    -- Only use explicit date/anchor mappings the author provided.
+    IF tbl='lo3rwang_time' THEN
+      EXECUTE format($guard$
+        SELECT count(*) FROM (
+          VALUES ('治理自己','recuperation-end','2026-08-04'),
+                 ('文字建築學','loc-named','2025-10-16'),
+                 ('數位的長袖善舞','p7-start','2026-10-06')
+        ) AS v(tag,aid,day)
+        WHERE EXISTS (
+          SELECT 1 FROM silver.%I p
+          WHERE p.record_type IN ('period','event')
+            AND v.tag=ANY(regexp_split_to_array(p.style_tags,'[,，]'))
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM silver.%I a WHERE a.record_type='anchor'
+            AND a.resource_id=v.aid AND a.time_date=v.day::date
+        )
+      $guard$,tbl,tbl) INTO mismatch_count;
+      IF mismatch_count>0 THEN
+        RAISE EXCEPTION 'Explicit user-confirmed style anchors do not match actual date/IDs. No changes made.';
+      END IF;
+    END IF;
     EXECUTE format('ALTER TABLE silver.%I DROP CONSTRAINT IF EXISTS %I',tbl,tbl||'_record_type_check');
     EXECUTE format($sql$
       ALTER TABLE silver.%I ADD CONSTRAINT %I
@@ -60,12 +83,19 @@ BEGIN
                 WHERE starts_with(btrim(part),btrim(tag.tag)||'：') LIMIT 1) AS own_description
         FROM silver.%I t
         CROSS JOIN LATERAL regexp_split_to_table(t.style_tags,'[,，]') WITH ORDINALITY AS tag(tag,ordinality)
-        WHERE t.record_type IN ('period','event') AND nullif(btrim(t.style_tags),'') IS NOT NULL
+        WHERE t.record_type IN ('period','event') AND nullif(btrim(t.style_tags),'') IS NOT NULL AND btrim(tag.tag)<>'混沌校對者'
       )
       INSERT INTO silver.%I (record_type,resource_id,label,style_description,anchor_ids,status,display_order,created_at,updated_at)
       SELECT 'style_comment','style_comment:'||record_id::text||':'||tag_position::text,keyword,
              btrim(CASE WHEN tag_count=1 THEN style_description ELSE own_description END),
-             NULL,'needs_anchor',display_order,created_at,now()
+             CASE keyword
+               WHEN '治理自己' THEN ARRAY['recuperation-end']::text[]
+               WHEN '文字建築學' THEN ARRAY['loc-named']::text[]
+               WHEN '數位的長袖善舞' THEN ARRAY['p7-start']::text[]
+               ELSE NULL::text[]
+             END,
+             CASE WHEN keyword IN ('治理自己','文字建築學','數位的長袖善舞') THEN 'active' ELSE 'needs_anchor' END,
+             display_order,created_at,now()
       FROM src
       ON CONFLICT (record_type,resource_id) DO NOTHING
     $query$,tbl,tbl);
@@ -83,7 +113,7 @@ BEGIN
                 WHERE starts_with(btrim(part),btrim(tag.tag)||'：') LIMIT 1) AS own_description
         FROM silver.%I t
         CROSS JOIN LATERAL regexp_split_to_table(t.style_tags,'[,，]') WITH ORDINALITY AS tag(tag,ordinality)
-        WHERE t.record_type IN ('period','event') AND nullif(btrim(t.style_tags),'') IS NOT NULL
+        WHERE t.record_type IN ('period','event') AND nullif(btrim(t.style_tags),'') IS NOT NULL AND btrim(tag.tag)<>'混沌校對者'
       )
       SELECT count(*) FROM src
       LEFT JOIN silver.%I c ON c.record_type='style_comment'
