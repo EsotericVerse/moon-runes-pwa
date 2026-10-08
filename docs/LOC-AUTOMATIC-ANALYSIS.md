@@ -24,7 +24,9 @@ Current 單 Scope 流程：
 4. 時間長河與作品列表分層取得資料；作品列表採分頁／incremental loading，不因建圖一次載入全文。
 5. 使用者打開來源或作品後才查詳情；沒有資料時保留空狀態，不推論缺失的脈絡。
 
-**Scope Group 不執行跨 Scope 時間交會或作品聚合。** Group 的 Culture／Statistics／Search 僅讀取 Registry 成員並提供總覽與單 Scope 導引，不能 fan-out 查詢每個子 Scope corpus。
+**LOC（`loc`）是保留比較分析的例外，並非純導引頁。** LOC Culture 取得受管理 Scope 各自的 Time／目前開放時期，將共同觀察起點定為有效起點的最晚值（intersection），然後在交會期間分別對各自 Galaxy／Galaxy Media 做來源及媒體類別的 bounded 日分布查詢。結果呈現「交會時間長河」、各 Scope 作品／媒體量，以及「綜合來源時間長河」。相同來源分類指平台／來源類別相交，不代表把不同作者的作品誤認為同一作品。
+
+**一般 DB 新建的 Scope Group** 只提供 Registry Overview 與各 Scope 導引，不自動繼承 LOC 的比較能力。LOC 的聚合只是一種 read-only 分析呈現，沒有第二份混合 corpus、跨 Scope 寫入或 Scope 權限合併。
 
 Anchor：
 
@@ -36,7 +38,7 @@ Anchor：
 
 ## Statistics
 
-Statistics 即時計算 Current canonical data，可使用自訂日期區間。統計不保存 work_count、ranking snapshot 或第二份 materialized corpus。
+Statistics 即時計算 Current canonical data。單 Scope 保留自己的自訂日期範圍與分類；LOC (`loc`) 另可比較所管理 Scopes 的合併總數、各 Scope 占比與一年／一月／一週時間趨勢。統計不保存 work_count、ranking snapshot 或第二份 materialized corpus。
 
 Statistics 與 Culture 回答不同問題：
 

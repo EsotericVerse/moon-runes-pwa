@@ -46,9 +46,9 @@ NAV URL 由 Current Scope registry 產生。既有具名 Scope 維持 Next files
 
 Homepage 與共用分析以 Culture、Statistics、Search 為主：
 
-- 單 Scope Culture 顯示時間、密度、來源與 Anchor；Scope Group Culture 只顯示 Registry Overview 與各 Scope 文化入口。
-- 單 Scope Statistics 顯示自己的數量、來源、時間趨勢與圖表；LOC Scope Group Statistics 只做 Overview／導引，不跨 Scope 計算合併總數或占比。
-- 單 Scope Search 顯示精準文字／metadata 結果；Scope Group Search 只做 Scope Overview／導引，不同時搜尋所有子 Scope。Scope ID／中文名／英文名精確命中時只顯示對應 Scope 首頁入口並停止；風格關鍵詞精確命中時，先顯示時期設定中的短介紹，再列出一般相關結果。
+- 單 Scope Culture 顯示時間、密度、來源與 Anchor；**LOC (`loc`) Culture 顯示交會時間長河、各 Scope 數量、綜合來源時間長河與個別 Scope 文化入口**。其他 DB 新建的 Scope Group Culture 才只提供 Registry Overview 與導引。
+- 單 Scope Statistics 顯示自己的數量、來源、時間趨勢與圖表；**LOC (`loc`) Statistics 保留跨 Scope 合併總數、Scope 比例與時間趨勢**，可使用既有折線、長條、圓餅呈現。其他 DB 新建 Scope Group 的 Statistics 僅做 Overview／導引。
+- 單 Scope Search 顯示精準文字／metadata 結果；**包括 LOC 在內的 Scope Group Search** 僅做 Scope Overview／導引，不同時搜尋所有子 Scope。Scope ID／中文名／英文名精確命中時只顯示對應 Scope 首頁入口並停止；風格關鍵詞精確命中時，先顯示時期設定中的短介紹，再列出一般相關結果。
 - Governance 說明規則與管理責任。
 
 不再以固定八模組圖作為 Current UI 架構定義。

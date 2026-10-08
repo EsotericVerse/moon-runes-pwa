@@ -8,8 +8,8 @@
 
 - [ ] LOC 首頁與共用 Navigation 人工 smoke test。
 - [ ] Search：一般查詢、media mode、空結果與錯誤狀態人工確認。
-- [ ] Statistics：LOC Scope Group Overview／導引，以及單 Scope 的一年／一月／一週、折線／長條／圓餅圖人工確認。
-- [ ] Culture：LOC Scope Group 導引，以及單 Scope 的時間長河、分類、作品列表、Anchor 建議人工確認。
+- [ ] Statistics：LOC 跨 Scope 合併總數、Scope 占比與一年／一月／一週趨勢，以及單 Scope 各種圖表的人工確認；一般新建 Scope Group 才驗收 Overview／導引。
+- [ ] Culture：LOC 跨 Scope 時期交會、交會時間長河、各 Scope 作品／媒體數量及綜合來源時間長河，以及單 Scope 分類、作品列表、Anchor 建議人工確認；一般新建 Scope Group 只測導引。
 - [ ] Governance：LOC／LunaRunes／個人 Scope 公開內容人工確認。
 - [ ] LunaRunes 首頁與 Hero／次要入口人工確認。
 - [ ] LunaRunes 單卡／每日／雙卡／三卡／五卡／指定張數／OW3gs 人工 smoke test。
@@ -38,7 +38,7 @@
 ## 0.9 Scope Group（已進入 RC 程式基線，人工驗收仍依上述清單）
 
 - [x] Scope Group 成員以 `scope_registry.parent_scope_id` 為 authority；不新增第二套 table resolver。
-- [x] Search／Statistics／Culture 的 Group 頁只做 Registry Overview＋導引；不 fan-out 查詢多 Scope corpus，各 Scope 維持自己的精準 query + pagination。
+- [x] 一般新建 Scope Group 的 Search／Statistics／Culture 採 Registry Overview＋導引；LOC (`loc`) 特別保留跨 Scope Culture 時期交會、綜合來源與 Statistics 數量／比例／趨勢。Group Search 不跨 Scope 全文搜尋；各 Scope 的 canonical corpus、精準查詢與分頁契約維持獨立。
 - [x] Audit／Runtime 對新增 Scope 使用通用 `/scope/.../?scope=<id>` resolver contract，不新增具名 Scope route/table 清單。
 - [x] Scope 建立流程採先複製再獨立編輯；Rune66 預設 Class 以新 UUID／66 筆獨立複製，不回寫來源 Scope。
 - [x] Scope Registry／Group hierarchy／固定 canonical 更新已收斂到網站 Admin／Manage；AI 不作為必要 write path。

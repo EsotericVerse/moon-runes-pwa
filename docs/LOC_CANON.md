@@ -68,7 +68,7 @@ Query：
 
 LunaRunes 專有 SSOT（例如 `silver.runes`、`silver.runes_etc`、`silver.game`）不屬一般 Scope mapping，維持其專有責任。
 
-Scope Group 成員關係以 `silver.scope_registry.parent_scope_id` 為 authority。Group 只做 Overview／導引，不跨 Scope 查 Galaxy／Galaxy Media／Time，也不新增第二套 table resolver 或 corpus authority。
+Scope Group 成員關係以 `silver.scope_registry.parent_scope_id` 為 authority。**一般 DB 新建 Scope Group** 只做 Overview／導引，不自動跨 Scope 查 Galaxy／Galaxy Media／Time。**LOC (`loc`) 本身保留已存在的跨 Scope 簡易比較能力**，由各 Scope 原始 canonical tables 執行有限度、唯讀、具條件的彙總查詢；不因此建立第二套 table resolver、混合 corpus 或 canonical authority。
 
 ### Scope copy governance
 
@@ -96,7 +96,7 @@ Galaxy 編輯後 UpdateTime 必須更新。
 
 ## 6. Culture
 
-Culture 只分析目前選定的單一資料 Scope。Scope Group Culture 僅讀取 Registry 成員並導向各子 Scope，不建立跨 Scope intersection／union，也不對多個 Galaxy／Time 做 fan-out 聚合。
+一般 Scope Culture 以目前選定的單一資料 Scope 為範圍。**LOC (`loc`) Culture 例外保留跨 Scope 交會分析**：分別讀取各受管理 Scope 的 Time 開放時期，取共同觀察起點（各有效起點中的最晚者），再在交會時段分別查各 Scope 的 Galaxy／Galaxy Media 日分布，呈現交會時間長河、Scope 數量對比與綜合來源時間長河。這種有界彙整不取得或混合所有作品全文；一般新建 Scope Group 仍僅提供 Overview／導引，不自動具備此能力。
 
 單 Scope 先依 Time 的 Period／Anchor 決定範圍，再對自己的 Galaxy／Galaxy Media 做 bounded query；作品內容以 incremental page 載入，不在建圖階段載全文。
 
@@ -106,7 +106,7 @@ Anchor suggestion 需要足夠資料；Current threshold 為至少 20 筆 eligib
 
 ## 7. Statistics
 
-Statistics 即時計算各 Scope 自己的 canonical data。LOC Scope Group 不做跨 Scope 合併總數、占比或時間趨勢，只提供 Scope Registry Overview 與各 Scope Statistics 入口；單 Scope 可指定時間區間。work_count 不作為第二份 stored authority；排名與分布由該 Scope 的 Current query 即時計算。
+Statistics 即時計算 canonical data：一般 Scope 查自己的紀錄與指定區間；**LOC (`loc`) 的專屬 Statistics 另保留跨 Scope 合併總數、各 Scope 作品占比與一年／一月／一週時間趨勢**，由各 Scope 各自的 bounded 日分布查詢產生可比較結果，不以第二份資料表保存排名或 work_count。一般 DB 新建 Scope Group 不自動聚合；來源資料及權限仍分別屬於各 Scope。
 
 Multimedia 併入來源統計；無文字媒體與 YouTube 等可落入 Others 等來源分類，不另外製造一套媒體統計權威。
 

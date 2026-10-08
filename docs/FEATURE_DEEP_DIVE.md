@@ -55,7 +55,7 @@ Search 是基於 PostgreSQL 的精準文字／metadata 檢索，兼顧 Scope、�
 
 ## 四、Statistics：即時分布與固定分類結果並存
 
-Statistics 關注在選定日期範圍中，作品數量、來源、時間趨勢及媒體 metadata 如何分布；畫面有折線、長條與圓餅等表示方式。資料來源仍是單一 Scope 的 canonical tables，圖表不是另外存一套 work_count 或排名快照。
+Statistics 關注在選定日期範圍中，作品數量、來源、時間趨勢及媒體 metadata 如何分布；畫面有折線、長條與圓餅等表示方式。一般 Scope 的資料查詢仍限定自己的 canonical tables；LOC 另可跨受管理 Scope 比較總數、比例與趨勢，但每個來源仍獨立查詢，不另存 work_count、排名快照或合併 corpus。
 
 ### 4.1 兩種不同的計算責任
 
@@ -81,13 +81,13 @@ Current main 已合併 Attr SQL 批次修正及即時百分比進度；這代表
 
 ## 五、Culture：時間長河與文化轉折如何被分析
 
-Culture 不只是把作品按日期排成清單；它以時間、密度、來源、風格／分類及作品列表，協助觀察同一個 Scope 內的脈絡變化。
+Culture 不只是把作品按日期排成清單；單 Scope 可用時間、密度、來源、風格／分類與作品列表觀察自身脈絡，LOC 另外提供多位 Scope 成員在**時期交會與來源類別**上的有限度共同分析。
 
 **Time River** 可以從 Period／Anchor 所定義的範圍出發，查看不同日期區段出現的作品、來源與密度。先處理時間區間，再查相應的 Galaxy／Galaxy Media；作品詳情採增量讀取，不在畫河道時載入所有正文。
 
 **Anchor** 是文化敘事的定錨。系統可提出建議，但只有足夠資料才應建議；Current 的自動候選門檻為至少 20 筆符合資格資料。候選不是正式事件，必須由人確認後才能成為既定 Anchor。
 
-**交會與比較**只在有明確資料條件的範圍內進行。時間交會取 intersection，不能因缺值替來源想像共通歷史。沒有生日、沒有 Anchor 或缺少某時段資料，都要如實呈現空狀態，而不是強行推論。
+**交會與比較**只在有明確資料條件的範圍內進行。LOC 先對多個受管理 Scope 各自的 Time 取目前開放時期，交會起點是有效開始日期中的最晚者；交會時段的作品／媒體類別日分布仍從各 Scope 的 canonical tables 分別取得，再呈現「交會時間長河」、各 Scope 數量與「綜合來源時間長河」。同為 Facebook／Threads／IG／Others 等來源分類，只代表來源類別的可比較性，不代表不同人的紀錄或作品是同一筆。缺少開放時期的 Scope 不應被憑空納入交會，交會不等於 union 或全文混合。
 
 **文化與統計的根本差別：** 統計回答「分布怎麼變」，文化回答「哪些時間、來源及作品共同形成值得觀察的轉折」。兩者互補，但都不直接裁決文化意義。
 
@@ -103,7 +103,7 @@ Scope 定義獨立的資料與治理範圍；Scope Group 定義成員的組織�
 | Content | 各 Scope canonical tables | 真正的作品、媒體、時間及關鍵詞資料 |
 | Auth／write | 既有 OAuth、權限與 DB policies | 保護管理操作及資料修改 |
 
-**Scope Group 的 Search／Statistics／Culture 是總覽與導引。** 它只從 Registry 找到成員與各自入口，不跨多個 Scope 展開全文搜尋、合併 COUNT 或混合 Galaxy corpus。這是刻意的權責界線，不是漏做一個跨 Scope 聚合功能。
+**必須區分 LOC 與一般新建 Scope Group。** LOC (`loc`) 本身的 Statistics／Culture 是原有的跨 Scope 簡易比較工作台：Statistics 比較多 Scope 合併數量、占比與時間趨勢；Culture 對照各 Scope 的交會時期與相同來源類別的作品／媒體分布。其他 DB 新建 Scope Group 的 Statistics／Culture／Search 仍以 Registry Overview 與導引為主。**包括 LOC 在內的 Group Search 目前均不跨所有子 Scope 執行全文搜尋。** 這些區別不建立混合 Galaxy corpus、不複製任何 Scope 的 Canon，也不合併權限。
 
 一般 Scope 建立時使用固定 Config／Galaxy／Galaxy Media／Time／Keywords 五件套，並以新的 UUID 取得獨立 Keyword Class 副本。後續分類、文字與治理修改都只影響新 Scope，不反向修改來源 Scope；LunaRunes 的特殊語義更不能被當成一般 Scope 預設值。
 
