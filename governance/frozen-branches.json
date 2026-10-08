@@ -136,6 +136,7 @@
     "fix/statistics-analysis-set",
     "fix/statistics-group-ranking-pagination-20261008",
     "fix/statistics-query-window",
+    "fix/style-comment-one-tag-one-anchor-20261008",
     "fix/supabase-email-management-auth",
     "fix/sync-galaxy-classification-columns",
     "fix/theme-db-bootstrap-current-20261008",
