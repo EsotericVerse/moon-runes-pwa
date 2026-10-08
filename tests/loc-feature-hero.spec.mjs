@@ -18,7 +18,7 @@ test('Four feature page hero frames read one LOC source while LunaRunes stays un
     await expect(hero.locator('h1')).toHaveText(title);
     // Editable feature subtitles may intentionally be blank. The Search copy
     // is compared to the same authored LOC block when exposed to another Scope.
-    if(feature==='search')locSearchSubtitle=(await hero.locator('.scope-subtitle').innerText()).trim();
+    if(feature==='search')locSearchSubtitle=(await hero.locator('.scope-subtitle').allTextContents()).join('').trim();
     // Content authors own both description and paragraph structure; only the
     // canonical Hero fields and one-frame presentation are structural.
   }
@@ -30,7 +30,8 @@ test('Four feature page hero frames read one LOC source while LunaRunes stays un
   await expect(page.locator('header.scope-feature-hero h1')).toHaveText('搜尋');
   // Subtitle text is authored and editable in the LOC shared source.
   // Test sharing by comparing to LOC's live value, never by pinning its wording.
-  await expect(page.locator('header.scope-feature-hero .scope-subtitle')).toHaveText(locSearchSubtitle);
+  const authorSearchSubtitle=(await page.locator('header.scope-feature-hero .scope-subtitle').allTextContents()).join('').trim();
+  expect(authorSearchSubtitle).toBe(locSearchSubtitle);
 
   // Rune pages are read-only and retain the current independent UI copy.
   await page.goto('/lrunes/search/',{waitUntil:'domcontentloaded'});
