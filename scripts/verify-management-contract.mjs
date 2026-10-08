@@ -28,7 +28,8 @@ const scopeRegistry=read('app/modular/scope-registry.js');
 const importPanel=read('app/loc/ManagementImportPanel.jsx');
 const scopeSettings=read('app/loc/ScopeSettingsPanel.jsx');
 const publisher=read('app/loc/ManagementArticlePublisher.jsx');
-const richEditor=read('app/loc/RichBlockEditor.jsx');
+const blockNoteEntry=read('app/loc/BlockNoteEditor.jsx');
+const blockNoteContent=read('app/loc/blocknote-content.mjs');
 const blockNoteEditor=read('app/loc/BlockNoteEditorClient.jsx');
 const editableBlocks=read('app/loc/ScopeEditableBlocks.jsx');
 const authorHome=read('app/loc/views/AuthorHomeView.jsx');
@@ -57,10 +58,17 @@ must(management.includes("canManage=scope?.aggregateChildren?account.canManageGl
 must(governance.includes("scopeHref(scopeId,'governance/manage')"),'Governance must link to Scope Manage');
 must(!importPanel.includes('ManagementArticlePublisher')&&!importPanel.includes('role="tablist"')&&importPanel.includes('JsonImport')&&importPanel.includes('SourceRefresh'),'Data Import must contain import tools only');
 must(scopeSettings.includes('display_name')&&scopeSettings.includes('search_intro')&&scopeSettings.includes('search_aliases')&&scopeSettings.includes('updateRows'),'misc settings must edit Scope-owned presentation config');
-must(publisher.includes('scope-publisher-main')&&publisher.includes('scope-publisher-sidebar')&&publisher.includes('RichBlockEditor')&&publisher.includes('content_blocks'),'article publisher must use the shared rich editor while preserving plain content');
-must(richEditor.includes("dynamic(()=>import('./BlockNoteEditorClient')")&&!richEditor.includes('contentEditable')&&!richEditor.includes('execCommand'),'shared web editor must use BlockNote instead of bespoke contentEditable');
+must(publisher.includes('scope-publisher-main')&&publisher.includes('scope-publisher-sidebar')&&publisher.includes('BlockNoteEditor')&&publisher.includes('content_blocks'),'article publisher must use the shared rich editor while preserving plain content');
+must(blockNoteEntry.includes("dynamic(()=>import('./BlockNoteEditorClient')")&&blockNoteEntry.includes("from './blocknote-content.mjs'")&&!blockNoteEntry.includes('contentEditable')&&!blockNoteEntry.includes('execCommand'),'BlockNote entrypoint must lazy-load the canonical editor with shared content conversion');
+must(blockNoteContent.includes('plainTextToBlocks')&&blockNoteContent.includes('blocksToPlainText')&&blockNoteContent.includes('normalizeBlocks'),'canonical BlockNote data converters must preserve legacy plain text and rich block storage');
+must(!fs.existsSync(path.join(root,'app/loc/RichBlockEditor.jsx')),'retired RichBlockEditor.jsx must be removed');
 must(blockNoteEditor.includes("from '@blocknote/react'")&&blockNoteEditor.includes("from '@blocknote/mantine'")&&blockNoteEditor.includes('BlockNoteView')&&!blockNoteEditor.includes('uploadFile'),'BlockNote must be the shared URL-only text/media authoring surface');
 must(blockNoteEditor.includes('getSelectedLinkUrl')&&blockNoteEditor.includes('createLink')&&blockNoteEditor.includes('移除連結'),'BlockNote must expose explicit hyperlink editing controls');
+must(editableBlocks.includes('<BlockNoteEditor')&&publisher.includes('<BlockNoteEditor')&&sharedSearch.includes('<BlockNoteEditor')&&cultureUi.includes('plainTextToBlocks'),'all text/editor entrypoints must use BlockNote and preserve shared conversion');
+for(const [file,body] of [['app/modular/ui.jsx',read('app/modular/ui.jsx')],['app/loc/ManagementArticlePublisher.jsx',publisher],['app/modular/features/Search.jsx',sharedSearch],['app/modular/features/Culture.jsx',cultureUi],['app/loc/ScopeEditableBlocks.jsx',editableBlocks]]){
+  must(!body.includes('RichBlockEditor'),file+' must not refer to retired RichBlockEditor');
+}
+
 must(editableBlocks.includes('ENTITY_LIMIT=6')&&editableBlocks.includes("page='index'")&&editableBlocks.includes('page_name')&&editableBlocks.includes('block_entity')&&editableBlocks.includes("column:'uid'")&&editableBlocks.includes('isInteractiveTarget'),'Scope page editing must use stable block uid plus up to six child entities');
 must(editableBlocks.includes('儲存失敗：')&&editableBlocks.includes('scope-inline-save-status')&&editableBlocks.includes('refetchQueries'),'page block saves must visibly report success/failure and refetch saved data');
 must(editableBlocks.includes('dangerouslySetInnerHTML')&&!editableBlocks.includes('editable={false}'),'public page display must use static site markup; BlockNote is edit-only');
@@ -69,7 +77,7 @@ must(locHomeEditable.includes('home-title-row')&&locHomeEditable.includes('home-
 must(!runesHome.includes('ScopeEditableBlocks')&&runesHome.includes('className="basic-grid"'),'LunaRunes homepage must remain a fixed special presentation without inline management editing');
 must(personalGovernance.includes('ScopeEditableBlocks')&&personalGovernance.includes('page="governance"'),'personal governance must use governance block rows');
 must(runesGovernance.includes('ScopeEditableBlocks')&&runesGovernance.includes('page="governance"'),'LunaRunes governance must use governance block rows');
-must(sharedSearch.includes('startEditing')&&sharedSearch.includes('RichBlockEditor')&&sharedSearch.includes('GALAXY_EDITOR_COLUMNS')&&sharedSearch.includes('GalaxyAttrSummary')&&sharedSearch.includes('GalaxyAttrEditor')&&sharedSearch.includes("fullTextKey===row.key")&&sharedSearch.includes('updateRows'),'Search must open full Galaxy articles first, then expose permission-gated full Attr editing');
+must(sharedSearch.includes('startEditing')&&sharedSearch.includes('BlockNoteEditor')&&sharedSearch.includes('GALAXY_EDITOR_COLUMNS')&&sharedSearch.includes('GalaxyAttrSummary')&&sharedSearch.includes('GalaxyAttrEditor')&&sharedSearch.includes("fullTextKey===row.key")&&sharedSearch.includes('updateRows'),'Search must open full Galaxy articles first, then expose permission-gated full Attr editing');
 must(cultureUi.includes('CultureTimelineEditor')&&cultureUi.includes('selectedTimelineRecordId')&&cultureUi.includes('editable={account.canManageScopeSync(scopeId)}')&&cultureUi.includes('onMove={account.canManageScopeSync(scopeId)?moveTimelineRecord:null}')&&cultureUi.includes('onRemove={account.canManageScopeSync(scopeId)?removeTimelineRecord:null}'),'Culture first timeline must use native vis-timeline manipulation for authenticated period/anchor CRUD');
 must(admin.includes("insertRows('silver.manage'")&&admin.includes("deleteRows('silver.manage'"),'Admin Registry node panel must add/remove Manage mappings');
 must(admin.includes('DeploymentTree')&&admin.includes('vis-network/standalone')&&admin.includes("onMoveParent"),'Admin must manage Scope Registry through a draggable vis-network tree');
