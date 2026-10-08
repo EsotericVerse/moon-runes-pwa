@@ -1,0 +1,56 @@
+name: Publish LOC 0.9 RC1
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "governance/releases/v0.9.0-rc.1.md"
+
+permissions:
+  contents: write
+
+jobs:
+  release-candidate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Check RC version agreement
+        run: |
+          node --input-type=module -e '
+          import fs from "node:fs";
+          const version="0.9.0-rc.1";
+          const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));
+          const lock=JSON.parse(fs.readFileSync("package-lock.json","utf8"));
+          const readme=fs.readFileSync("README.md","utf8");
+          if(pkg.version!==version || lock.version!==version || lock.packages?.[""]?.version!==version || !readme.includes("Current version: "+version)) process.exit(1);
+          console.log("RC version agreement:",version);
+          '
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Verify repository contracts
+        run: npm run verify
+      - name: Verify public DB interface
+        run: npm run verify:db-public
+      - name: Build static export
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run browser checks
+        run: npm run test:ui
+      - name: Publish verified GitHub pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view v0.9.0-rc.1 >/dev/null 2>&1; then
+            echo "RC release already published; refusing to retag."
+            exit 0
+          fi
+          gh release create v0.9.0-rc.1 \
+            --target "$GITHUB_SHA" \
+            --title "LOC 0.9.0 RC1" \
+            --notes-file governance/releases/v0.9.0-rc.1.md \
+            --prerelease

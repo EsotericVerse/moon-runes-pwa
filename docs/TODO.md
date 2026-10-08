@@ -1,8 +1,8 @@
 # LOC Current TODO
 
-**Current version:** 0.8.6-RC
+**Current version:** 0.9.0-rc.1
 
-## 0.8.6 RC acceptance
+## 0.9.0 RC1 acceptance（承接 0.8.6 尚未完成人工驗收的項目）
 
 ### Public basic functions
 
@@ -33,7 +33,7 @@
 - [ ] 實際確認 Culture／Search incremental loading 與 Statistics 查詢速度、loading、empty、failure state。
 - [x] Source Refresh core：以 `source_name + source_native_id` 做 bounded delta preview／新增／更新；OAuth 只作來源 adapter，不改 Refresh contract。
 
-## 0.9 Scope Group
+## 0.9 Scope Group（已進入 RC 程式基線，人工驗收仍依上述清單）
 
 - [x] Scope Group 成員以 `scope_registry.parent_scope_id` 為 authority；不新增第二套 table resolver。
 - [x] Search／Statistics／Culture 的 Group 頁只做 Registry Overview＋導引；不 fan-out 查詢多 Scope corpus，各 Scope 維持自己的精準 query + pagination。
