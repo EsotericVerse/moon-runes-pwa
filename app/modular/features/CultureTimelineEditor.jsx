@@ -343,7 +343,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
         <div className="scope-management-wide-field">
           <h3>風格標籤</h3>
           <p className="scope-status">風格名稱是搜尋關鍵字，下方主要敘述（TEXT）是搜尋結果內容。</p>
-          <CultureStyleTagsField value={draft.style_tags} description={draft.style_description} editable onChange={next=>setDraft(current=>({...current,style_tags:next.tags,style_description:next.description}))}/>
+          <CultureStyleTagsField value={draft.style_tags} description={draft.style_description} editable mode={selectedId?'edit':'create'} onChange={next=>setDraft(current=>({...current,style_tags:next.tags,style_description:next.description}))}/>
         </div>
       </>:null}
 
