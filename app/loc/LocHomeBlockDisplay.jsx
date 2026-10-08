@@ -60,7 +60,7 @@ export default function LocHomeBlockDisplay(slot){
     {(media||customImage)?(hero?<figure className="loc-home-block__media home-hero-visual" aria-label={media.alt}>
       <picture>{!customImage?<source media="(max-width: 900px)" srcSet={media.small.src}/>:null}
         <img src={customImage||media.src.src} width={media.src.width} height={media.src.height}
-          alt="" aria-hidden="true" loading="eager" decoding="async"/></picture>
+          alt="" aria-hidden="true" loading="lazy" decoding="async"/></picture>
     </figure>:<article className="loc-home-block__media loc-home-block__media-bubble loc-bubble"
       style={media?.width?{'--loc-home-media-max':media.width}:undefined}>
       <img src={customImage||media?.src.src}
