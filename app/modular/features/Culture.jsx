@@ -744,6 +744,7 @@ export default function Culture(){
                 <CultureStyleTagsEditor
                   period={selectedWorkPeriod}
                   anchors={anchorRecords}
+                  styles={query.data?.styleComments||[]}
                   scopeId={scopeId}
                   table={scopeData?.time}
                   canEdit={account.canManageScopeSync(scopeId)}
