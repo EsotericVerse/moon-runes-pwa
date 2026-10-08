@@ -11,11 +11,12 @@ import {blocksToPlainText,plainTextToBlocks} from '../loc/blocknote-content.mjs'
 import {selectScopeBlocks} from '../loc/scope-data';
 import {FEATURE_HERO_PAGE,FEATURE_HERO_ORDER,sharedFeatureHeroFor,shouldUseSharedFeatureHero} from '../loc/feature-hero.mjs';
 import ScopeEditableBlocks from '../loc/ScopeEditableBlocks';
+import HeroCornerIdentity from '../loc/HeroCornerIdentity';
 
 // One visual header contract. On the LOC feature pages this same visible
 // header is wrapped by the existing ScopeEditableBlocks editor; elsewhere it
 // remains a read-only projection of exactly the same LOC records.
-function FeatureHeroContent({eyebrow='',title,subtitle='',description='',rich=false}){
+function FeatureHeroContent({eyebrow='',title,subtitle='',description='',rich=false,scopeId=''}){
   return <>
     {eyebrow?<p className="loc-eyebrow">{eyebrow}</p>:null}
     <div className="home-title-row">
@@ -27,6 +28,7 @@ function FeatureHeroContent({eyebrow='',title,subtitle='',description='',rich=fa
     {description?(rich
       ?<div className="scope-hero-description scope-shared-hero-rich" dangerouslySetInnerHTML={{__html:description}}/>
       :<div className="scope-hero-description">{description}</div>):null}
+    <HeroCornerIdentity scopeId={scopeId}/>
   </>;
 }
 
@@ -41,6 +43,7 @@ export function FeaturePage({featureId,children,subtitle=null,description=null})
   const finalSubtitle=subtitle||resolvedSubtitle;
   const sharedEnabled=shouldUseSharedFeatureHero(scopeId,featureId);
   const locEditableHero=sharedEnabled&&scopeId==='loc';
+  const heroClassName='loc-card scope-hero scope-feature-hero'+(FEATURE_HERO_ORDER[featureId]?' scope-feature-hero--artwork scope-feature-hero--'+featureId:'');
   const sharedQuery=useQuery({
     queryKey:['scope-blocks','loc',FEATURE_HERO_PAGE],
     queryFn:()=>selectScopeBlocks('loc',FEATURE_HERO_PAGE),
@@ -62,21 +65,23 @@ export function FeaturePage({featureId,children,subtitle=null,description=null})
         orders={[FEATURE_HERO_ORDER[featureId]]}
         containerless
         slotTag="header"
-        slotClassName="loc-card scope-hero scope-feature-hero"
-        editSlotClassName="loc-card scope-hero scope-feature-hero"
+        slotClassName={heroClassName}
+        editSlotClassName={heroClassName}
         placeholderFirstOrder={FEATURE_HERO_ORDER[featureId]}
         allowEditing
         allowDelete={false}
         allowEntities={false}
         renderDisplay={slot=><FeatureHeroContent
+          scopeId={scopeId}
           eyebrow={slot.stored?slot.eyebrow:''}
           title={slot.stored?slot.title||profile.title:fallbackCopy.title}
           subtitle={slot.stored?slot.subtitle:fallbackCopy.subtitle}
           description={slot.stored?slot.text:fallbackCopy.description}
           rich={slot.stored}
         />}
-      />:<header className="loc-card scope-hero scope-feature-hero" data-feature-hero-source={shared?'loc':'default'}>
+      />:<header className={heroClassName} data-feature-hero-source={shared?'loc':'default'}>
         <FeatureHeroContent
+          scopeId={scopeId}
           eyebrow={shared?.eyebrow||''}
           title={shared?.title||fallbackCopy.title}
           subtitle={shared?shared.subtitle:fallbackCopy.subtitle}
