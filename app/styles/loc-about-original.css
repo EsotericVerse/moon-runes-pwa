@@ -286,3 +286,51 @@
 @media(max-width:620px){
   .loc-home-block__children{grid-template-columns:minmax(0,1fr)}
 }
+
+
+/* Shared frame, independent artwork geometry.
+   The author portrait/editorial Hero is not the LOC landscape Hero asset.
+   Keep the existing author presentation dimensions without forking its DOM,
+   block editor, or the general LOC home layout. */
+.loc-next-main[data-loc-scope="lo3rwang"][data-loc-view="home"] .loc-home>.loc-home-block--hero:not(.loc-home-block--hero-side){
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  align-content:center;
+  min-height:clamp(430px,50vw,620px);
+  padding:clamp(1.6rem,4vw,3.75rem);
+}
+.loc-next-main[data-loc-scope="lo3rwang"][data-loc-view="home"] .loc-home>.loc-home-block--hero:not(.loc-home-block--hero-side)>.loc-home-block__media{
+  overflow:hidden;
+}
+.loc-next-main[data-loc-scope="lo3rwang"][data-loc-view="home"] .loc-home>.loc-home-block--hero:not(.loc-home-block--hero-side)>.loc-home-block__media img{
+  filter:none;
+  mask-image:none;
+  object-fit:cover;
+  object-position:center center;
+}
+/* The former author's editorial gradient shades copy without blacking out
+   or cropping the image with the landscape-only LOC brightness/mask effect. */
+.loc-next-main[data-loc-scope="lo3rwang"][data-loc-view="home"] .loc-home>.loc-home-block--hero:not(.loc-home-block--hero-side)>.loc-home-block__media::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(90deg,rgba(3,6,13,.96) 0%,rgba(3,6,13,.86) 31%,rgba(3,6,13,.55) 52%,rgba(3,6,13,.18) 75%,rgba(3,6,13,.06) 100%),
+    linear-gradient(180deg,rgba(3,6,13,.08) 0%,rgba(3,6,13,.05) 58%,rgba(3,6,13,.50) 100%);
+}
+@media(max-width:760px){
+  .loc-next-main[data-loc-scope="lo3rwang"][data-loc-view="home"] .loc-home>.loc-home-block--hero:not(.loc-home-block--hero-side){
+    align-content:end;
+    min-height:clamp(460px,118vw,570px);
+    padding:1.35rem;
+  }
+  .loc-next-main[data-loc-scope="lo3rwang"][data-loc-view="home"] .loc-home>.loc-home-block--hero:not(.loc-home-block--hero-side)>.loc-home-block__media img{
+    object-position:58% center;
+  }
+  .loc-next-main[data-loc-scope="lo3rwang"][data-loc-view="home"] .loc-home>.loc-home-block--hero:not(.loc-home-block--hero-side)>.loc-home-block__media::after{
+    background:
+      linear-gradient(180deg,rgba(3,6,13,.28) 0%,rgba(3,6,13,.34) 44%,rgba(3,6,13,.90) 100%),
+      linear-gradient(90deg,rgba(3,6,13,.72) 0%,rgba(3,6,13,.30) 72%,rgba(3,6,13,.12) 100%);
+  }
+}
