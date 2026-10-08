@@ -11,7 +11,7 @@ import {selectRows} from '../../loc/db-query.mjs';
 import {FEATURE_LOADING_MESSAGE} from '../feature-data-state';
 import {CultureStyleTagsField,styleTagList} from './CultureStyleTagsEditor';
 
-const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_ids,date_status,year_value,visibility,style_tags,style_tag_descriptions';
+const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_ids,date_status,year_value,visibility,style_tags,style_description';
 
 
 const EDITABLE_TYPES=Object.freeze([
@@ -20,20 +20,10 @@ const EDITABLE_TYPES=Object.freeze([
 const TYPE_LABEL=Object.freeze(Object.fromEntries(EDITABLE_TYPES));
 const BLANK=Object.freeze({
   record_id:'',record_type:'anchor',label:'',resource_id:'',note:'',time_date:'',
-  anchor_ids:['0','0'],status:'',display_order:'',date_status:'exact',year_value:'',visibility:'',style_tags:'',style_tag_descriptions:{}
+  anchor_ids:['0','0'],status:'',display_order:'',date_status:'exact',year_value:'',visibility:'',style_tags:'',style_description:''
 });
 
 function dateText(value){return value?String(value).slice(0,10):'';}
-function styleDescriptionMap(value){
-  return value&&typeof value==='object'&&!Array.isArray(value)?{...value}:{};
-}
-function styleDescriptionOf(value,tag){
-  const source=styleDescriptionMap(value);
-  if(typeof source[tag]==='string')return source[tag];
-  const normalized=String(tag||'').normalize('NFKC').trim().toLocaleLowerCase('zh-Hant');
-  const entry=Object.entries(source).find(([key])=>String(key||'').normalize('NFKC').trim().toLocaleLowerCase('zh-Hant')===normalized);
-  return typeof entry?.[1]==='string'?entry[1]:'';
-}
 function normalizeAnchorIds(value){
   const source=Array.isArray(value)?value:String(value||'').split(',');
   const ids=source.map(item=>String(item||'0').trim()||'0').filter(Boolean);
@@ -46,7 +36,7 @@ function rowDraft(row){
     anchor_ids:normalizeAnchorIds(row.anchor_ids),
     time_date:dateText(row.time_date),
     year_value:row.year_value??'',
-    style_tag_descriptions:styleDescriptionMap(row.style_tag_descriptions)
+    style_description:String(row.style_description||'')
   };
 }
 function newResourceId(type){
@@ -203,10 +193,6 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
     if(ids.length<=2)return current;
     return {...current,anchor_ids:ids.filter((_,idIndex)=>idIndex!==index)};
   });
-  const changeStyleDescription=(tag,value)=>setDraft(current=>({
-    ...current,
-    style_tag_descriptions:{...styleDescriptionMap(current.style_tag_descriptions),[tag]:value}
-  }));
 
   const save=async event=>{
     event.preventDefault();
@@ -225,11 +211,8 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
         if(duplicate)throw new Error('同一資料區域已存在相同定錨點識別：'+resourceId);
       }
       const activeStyleTags=type==='anchor'?[]:styleTagList(draft.style_tags);
-      const styleDescriptions=Object.fromEntries(activeStyleTags.map(tag=>[
-        tag,String(styleDescriptionOf(draft.style_tag_descriptions,tag)||'').trim()
-      ]));
-      const missingStyleDescription=activeStyleTags.find(tag=>!styleDescriptions[tag]);
-      if(missingStyleDescription)throw new Error('請為風格標籤「'+missingStyleDescription+'」填寫搜尋時顯示的簡短介紹。');
+      const styleDescription=String(draft.style_description||'').trim();
+      if(activeStyleTags.length&&!styleDescription)throw new Error('請填寫風格主要敘述（TEXT），作為搜尋結果正文。');
       const payload={
         record_type:type,
         label,
@@ -239,7 +222,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
         display_order:draft.display_order===''?null:Number(draft.display_order),
         visibility:String(draft.visibility||'').trim()||null,
         style_tags:activeStyleTags.length?activeStyleTags.join(','):null,
-        style_tag_descriptions:styleDescriptions,
+        style_description:styleDescription||null,
         time_date:null,
         anchor_ids:null,
         date_status:null,
@@ -359,8 +342,8 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       {draft.record_type!=='anchor'?<>
         <div className="scope-management-wide-field">
           <h3>風格標籤</h3>
-          <p className="scope-status">直接點選標籤修改名稱、移除或編輯搜尋顯示說明。</p>
-          <CultureStyleTagsField value={draft.style_tags} descriptions={draft.style_tag_descriptions} editable onChange={next=>setDraft(current=>({...current,style_tags:next.tags,style_tag_descriptions:next.descriptions}))}/>
+          <p className="scope-status">風格名稱是搜尋關鍵字，下方主要敘述（TEXT）是搜尋結果內容。</p>
+          <CultureStyleTagsField value={draft.style_tags} description={draft.style_description} editable mode={selectedId?'edit':'create'} onChange={next=>setDraft(current=>({...current,style_tags:next.tags,style_description:next.description}))}/>
         </div>
       </>:null}
 
