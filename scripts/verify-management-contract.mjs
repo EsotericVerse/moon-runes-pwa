@@ -34,6 +34,7 @@ const editableBlocks=read('app/loc/ScopeEditableBlocks.jsx');
 const authorHome=read('app/loc/views/AuthorHomeView.jsx');
 const authorHomeEditable=read('app/loc/AuthorHomeEditableBlock.jsx');
 const locHomeEditable=read('app/loc/LocHomeEditableBlock.jsx');
+const locHome=read('app/loc/views/AboutView.jsx');
 const runesHome=read('app/lrunes/RunesClient.jsx');
 const personalGovernance=read('app/modular/governance/PersonalGovernance.jsx');
 const runesGovernance=read('app/modular/governance/LunaRunesGovernance.jsx');
@@ -66,6 +67,7 @@ must(editableBlocks.includes('儲存失敗：')&&editableBlocks.includes('scope-
 must(editableBlocks.includes('dangerouslySetInnerHTML')&&!editableBlocks.includes('editable={false}'),'public page display must use static site markup; BlockNote is edit-only');
 must(authorHome.includes('authorHeroAsset')&&authorHome.includes('author-home-hero-copy')&&authorHome.includes('author-role-grid')&&authorHome.includes('author-professional-grid')&&authorHome.includes('author-system-grid')&&authorHome.includes('author-trinity-layout')&&authorHome.includes('author-contact-layout')&&!authorHome.includes('AuthorHomeEditableBlock'),'author homepage must preserve its October 1 sections and new hero without inline editing');
 must(locHomeEditable.includes('home-title-row')&&locHomeEditable.includes('home-status-bubbles')&&locHomeEditable.includes('loc-bubble'),'LOC homepage must preserve its original presentation while editing data-backed blocks');
+must(locHome.includes('<LocHomeEditableBlock order={1} variant="hero"/>')&&locHome.includes('className="home-hero-visual"')&&!locHome.includes('<p>以微月光為鑑'),'LOC Hero must read authored text from Supabase block 1 and preserve approved full-image visual');
 must(!runesHome.includes('ScopeEditableBlocks')&&runesHome.includes('className="basic-grid"'),'LunaRunes homepage must remain a fixed special presentation without inline management editing');
 must(personalGovernance.includes('ScopeEditableBlocks')&&personalGovernance.includes('page="governance"'),'personal governance must use governance block rows');
 must(runesGovernance.includes('ScopeEditableBlocks')&&runesGovernance.includes('page="governance"'),'LunaRunes governance must use governance block rows');
