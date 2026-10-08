@@ -128,7 +128,8 @@ export async function selectAllRows(table,{
   filters=[],
   orFilter='',
   orders=[],
-  pageSize=DB_QUERY_BATCH_SIZE
+  pageSize=DB_QUERY_BATCH_SIZE,
+  onProgress=null
 }={}){
   const size=Math.max(1,Math.min(DB_QUERY_BATCH_SIZE,Math.floor(Number(pageSize)||DB_QUERY_BATCH_SIZE)));
   const first=await selectRows(table,{columns,filters,orFilter,orders,limit:size,offset:0,count:'exact'});
@@ -136,11 +137,13 @@ export async function selectAllRows(table,{
   const total=Number(first.count) || rows.length;
   const source=first.dataSource||'auto';
   let offset=rows.length;
+  onProgress?.({completed:offset,total});
   while(offset<total){
     const page=await selectRows(table,{columns,filters,orFilter,orders,limit:size,offset,source});
     if(!page.rows.length)break;
     rows.push(...page.rows);
     offset+=page.rows.length;
+    onProgress?.({completed:offset,total});
   }
   return {rows,count:total,dataSource:source};
 }

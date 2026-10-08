@@ -58,6 +58,16 @@ assert.equal(requests.at(-1).init.headers.get('Content-Profile'),'silver');
 affected=0;
 await client.applyKeywordClassification('lo3rwang',{rows:[],meta:{class_id:'4c04471f-7cad-4309-9f15-0d1ddfcb5933'}});
 assert.equal(JSON.parse(requests.at(-1).init.body).p_scope_id,'lo3rwang');
+const batchEvents=[];
+affected=2;
+await client.applyKeywordClassification('lo3rwang',{
+  rows:[{uid:'TEST0001',class_id:1,group_lists:{'1':1}},{uid:'TEST0002',class_id:2,group_lists:{'2':1}}],
+  meta:{class_id:'4c04471f-7cad-4309-9f15-0d1ddfcb5933'}
+},{onProgress:event=>batchEvents.push(event)});
+assert.deepEqual(batchEvents.map(event=>event.phase),['prepare','write','finalizing']);
+assert.equal(batchEvents[1].completed,2,'write progress must count confirmed RPC rows');
+assert.equal(batchEvents[1].total,2);
+affected=1;
 const provisioned=await client.provisionScope({scope_id:'testscope',display_name:'Test Scope',email:'owner@example.test',directory:'/testscope',parent_scope_id:'loc',theme:'theme-7',copy_keywords:true});
 assert.equal(provisioned.scope_id,'testscope');
 assert.equal(provisioned.keyword_rows,66);

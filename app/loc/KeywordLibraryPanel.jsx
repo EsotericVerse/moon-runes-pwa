@@ -79,6 +79,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
   const [loading,setLoading]=useState(true);
   const [busy,setBusy]=useState(false);
   const [savingStage,setSavingStage]=useState('');
+  const [batchProgress,setBatchProgress]=useState(null);
   const [message,setMessage]=useState('');
   const [workspace,setWorkspace]=useState('analysis');
 
@@ -328,8 +329,9 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
   async function runBatch(){
     if(configDirty){setMessage('分析設定尚未儲存，請先儲存分析設定。');return;}
     setBusy(true);setMessage('');
+    setBatchProgress({phase:'reading',completed:0,total:0,percent:0,label:'準備文章分類'});
     try{
-      const result=await runRune66ClassificationBatch(scopeId);
+      const result=await runRune66ClassificationBatch(scopeId,{onProgress:setBatchProgress});
       await invalidateClassification();
       await load('',selectedClass);
       setMessage(
@@ -338,6 +340,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
         ' 篇完全平手以當下 Class 累積數動態分配。'
       );
     }catch(error){
+      setBatchProgress(current=>current?{...current,phase:'failed',label:'分析中斷；請查看下方錯誤後重新執行'}:null);
       setMessage(String(error?.message||error||'關鍵詞批次分析失敗。'));
     }finally{
       setBusy(false);
@@ -482,6 +485,12 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
         <button type="button" className="loc-button" disabled={busy||!configDirty} onClick={saveAnalysisSettings}>儲存分析設定</button>
         <button type="button" className="loc-button primary" disabled={busy||configDirty||!currentClassId} onClick={runBatch}>{busy?'處理中…':'重新分析並寫入文章 Attr'}</button>
       </div>
+      {batchProgress?<div className="scope-keyword-batch-progress" role="status" aria-live="polite">
+        <div className="scope-keyword-batch-progress-head"><strong>{batchProgress.phase==='failed'?'分析未完成':batchProgress.phase==='completed'?'分析完成':'文章 Attr 分析進度'}</strong><span>{batchProgress.percent}%</span></div>
+        <progress value={batchProgress.percent} max="100" aria-label="文章 Attr 分析進度" />
+        <p>{batchProgress.label}</p>
+        {batchProgress.total>0?<p>目前階段：{Number(batchProgress.completed||0).toLocaleString()} / {Number(batchProgress.total).toLocaleString()} 篇</p>:null}
+      </div>:null}
     </section>:null}
 
     {workspace!=='analysis'?<>

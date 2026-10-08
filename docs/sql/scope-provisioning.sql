@@ -259,7 +259,8 @@ begin
   if v_config is null or v_galaxy is null then raise exception 'Scope keyword classification relations are missing'; end if;
 
   if v_mode='begin' then
-    execute format('update %s set class_id=null,group_lists=''false''::jsonb',v_galaxy);
+    -- PostgreSQL safe-update requires a WHERE clause. Avoid touching already cleared rows.
+    execute format('update %s set class_id=null,group_lists=''false''::jsonb where class_id is not null or group_lists is distinct from ''false''::jsonb',v_galaxy);
     get diagnostics v_affected = row_count;
     execute format('update %s set staticstime=null,keyword_document_count=0,keyword_meta=''{}''::jsonb,updated_at=now() where id=$1',v_config) using v_scope;
     if not found then raise exception 'Scope config row not found'; end if;
