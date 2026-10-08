@@ -145,6 +145,9 @@
   display:block;
   isolation:isolate;
   overflow:hidden;
+  /* Desktop image frame follows the shared 1600:900 (16:9) art direction.
+     Keep the content-driven minimum height for shorter screens. */
+  aspect-ratio:16 / 9;
   min-height:clamp(360px,48vh,540px);
   padding:clamp(1.5rem,4vw,3.4rem);
   background:#101725;
@@ -209,6 +212,8 @@
   grid-template-areas:"header media" "body media" "children media";
   gap:.8rem clamp(1rem,3vw,2rem);
   align-items:center;
+  /* Side-by-side editorial images are contained, not 16:9 cover artwork. */
+  aspect-ratio:auto;
   background:#101725;
 }
 .loc-home-block--hero-side>.loc-home-block__header{grid-area:header}
