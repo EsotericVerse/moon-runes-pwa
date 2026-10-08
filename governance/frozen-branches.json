@@ -101,6 +101,7 @@
     "fix/keyword-batch-attrs-clean",
     "fix/keyword-classification-attrs",
     "fix/keyword-hierarchy-network-anchors-20261008",
+    "fix/keyword-save-visible-stages-20261008",
     "fix/loc-feature-hero-shared-subtitle-ci-20261008",
     "fix/loc-hero-image-position-20261008",
     "fix/loc-hero-supabase-text-20261008",
