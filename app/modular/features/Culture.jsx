@@ -16,6 +16,7 @@ import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-sta
 import CultureTimeline from '../modules/culture-timeline/CultureTimeline';
 import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
 import {analyzeRiverDensity} from '../modules/culture-timeline/river-density-analysis.mjs';
+import {snapTimelineRangeToAnchors} from '../modules/culture-timeline/culture-anchor-snap.mjs';
 import {selectGalaxyContent} from '../../loc/galaxy-query';
 import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
 import {deleteRows,insertRows,dbAuthRelation,updateRows} from '../../loc/db-client.mjs';
@@ -392,21 +393,34 @@ export default function Culture(){
     ]);
   }
   async function moveTimelineRecord(item,row){
-    if(row?.entryType!=='anchor'||!row?.recordId||!scopeData?.time)return null;
-    const date=dayKeyFromTimelineValue(item?.start);
-    if(!date)return null;
+    if(!row?.recordId||!scopeData?.time)return null;
     try{
-      await updateRows(scopeData.time,{
-        time_date:date,
-        date_status:'exact',
-        year_value:null,
-        updated_at:new Date().toISOString()
-      },{filters:[{column:'record_id',operator:'eq',value:row.recordId}]});
-      await refreshTimelineData();
+      if(row.entryType==='anchor'){
+        const date=dayKeyFromTimelineValue(item?.start);
+        if(!date)throw new Error('定錨點日期無效。');
+        await updateRows(scopeData.time,{
+          time_date:date,
+          date_status:'exact',
+          year_value:null,
+          updated_at:new Date().toISOString()
+        },{filters:[{column:'record_id',operator:'eq',value:row.recordId}]});
+        await refreshTimelineData();
+        setEditError('');
+        return {...item,start:date};
+      }
+      if(row.entryType!=='period'&&row.entryType!=='event')return null;
+      const snapped=snapTimelineRangeToAnchors(item,row,timelineItems);
+      if(snapped.changed){
+        await updateRows(scopeData.time,{
+          anchor_ids:snapped.anchor_ids,
+          updated_at:new Date().toISOString()
+        },{filters:[{column:'record_id',operator:'eq',value:row.recordId}]});
+        await refreshTimelineData();
+      }
       setEditError('');
-      return item;
+      return snapped.item;
     }catch(error){
-      setEditError(error?.message||'定錨點移動失敗。');
+      setEditError(error?.message||'時間範圍調整失敗。');
       return null;
     }
   }
