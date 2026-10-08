@@ -279,12 +279,6 @@
 /* Admin: tree-first system management */
 .admin-hero-row{display:flex;align-items:center;justify-content:space-between;gap:1rem}
 .admin-main-select,.admin-inline-select{max-width:32rem}
-.admin-react-select{min-width:0}
-.admin-react-select__control{min-height:2.65rem;padding:.2rem .65rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-md);background:var(--loc-panel);color:var(--loc-text)}
-.admin-react-select__menu{z-index:30;margin-top:.25rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-md);background:var(--loc-panel-strong);box-shadow:var(--loc-shadow-card);overflow:hidden}
-.admin-react-select__option{padding:.58rem .72rem;cursor:pointer}
-.admin-react-select__option--is-focused{background:var(--loc-ui-accent-soft)}
-.admin-react-select__single-value,.admin-react-select__input-container,.admin-react-select__placeholder{color:var(--loc-text)}
 .admin-workspace{display:grid;gap:1rem}
 .admin-deployment-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(19rem,.65fr);gap:1rem;align-items:start}
 .admin-deployment-tree{height:min(68vh,720px);min-height:34rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-lg);background:var(--loc-panel);overflow:hidden}
@@ -436,3 +430,13 @@
   text-decoration:underline;
   text-underline-offset:.16em;
 }
+
+.admin-native-select{width:100%;min-width:0;min-height:2.65rem;padding:.55rem .7rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-md);background:var(--loc-panel);color:var(--loc-text);font:inherit}
+.admin-native-select:focus{outline:2px solid var(--loc-ui-accent-soft);outline-offset:1px}
+.admin-deployment-tree-wrap{display:grid;gap:.7rem;min-width:0}
+.admin-deployment-tree.is-unavailable{display:none}
+.admin-registry-fallback{display:grid;gap:.65rem;padding:.8rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-lg);background:var(--loc-panel)}
+.admin-registry-fallback-list{display:grid;gap:.5rem}
+.admin-registry-fallback-item{width:100%;text-align:left;cursor:pointer}
+.admin-registry-fallback-item span{display:block;margin-top:.2rem;color:var(--loc-muted);font-size:.82rem}
+.admin-registry-fallback-item.is-selected{border-color:var(--loc-accent-border);background:var(--loc-ui-accent-soft)}
