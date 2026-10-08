@@ -3,6 +3,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {snapTimelineRangeToAnchors} from '../app/modular/modules/culture-timeline/culture-anchor-snap.mjs';
 import {splitStatusContentSections} from '../app/loc/loc-status-sections.mjs';
+import {HOME_COLUMN_ORDER,orderedHomeFields,visibleHomeChildren} from '../app/loc/loc-home-columns.mjs';
 import {blocksToPlainText,normalizeBlocks,plainTextToBlocks} from '../app/loc/blocknote-content.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -97,9 +98,25 @@ const framedStatus=splitStatusContentSections(statusFixture);
 must(framedStatus.length===2&&framedStatus.map(section=>section.html).join('')===statusFixture,'LOC status frames must retain every authored heading, paragraph, rich style and link in block_text');
 must(splitStatusContentSections('<p>沒有標題的正文</p>').length===1,'LOC status must not hide ordinary rich body without section headings');
 must(!splitStatusContentSections('').length,'LOC status must not invent empty data frames');
-must(locHomeEditable.includes('splitStatusContentSections(slot.text)')&&locHomeEditable.includes('home-progress-grid home-status-frames')&&locHomeEditable.includes('home-progress-item home-status-card'),'LOC System Status must render saved block_text in framed homepage cards');
-must(locHomeEditable.includes("childPresentation(entity.title)==='card'")&&locHomeEditable.includes("childPresentation(entity.title)==='bubble'&&String(entity.text||'').trim()"),'LOC System Status must show titled child entities as framed cards and suppress empty bubble artifacts');
+must(locHomeEditable.includes('splitStatusContentSections(text)')&&locHomeEditable.includes('home-progress-grid home-status-frames')&&locHomeEditable.includes('home-progress-item home-status-card'),'LOC System Status must render saved block_text in framed homepage cards');
+must(locHomeEditable.includes("childPresentation(entity.title)==='card'")&&locHomeEditable.includes('visibleHomeChildren(slot)')&&locHomeEditable.includes('home-status-child-bubble'),'LOC status must print all titled and untitled child columns in stored order without showing empty columns');
 must(read('app/styles/home-content.css').includes('.home-progress .home-status-frames')&&read('app/styles/home-content.css').includes('.home-progress .home-status-card'),'LOC status frames must retain their theme-driven styling');
+
+const fourHomeFields={eyebrow:'English',title:'中文標題',subtitle:'<p>副標題</p>',text:'<p>正文</p>'};
+must(HOME_COLUMN_ORDER.join(',')==='eyebrow,title,subtitle,text','Homepage Hero and other blocks must use canonical 4-field print order');
+must(orderedHomeFields(fourHomeFields).map(row=>row.value).join('|')==='English|中文標題|<p>副標題</p>|<p>正文</p>','Homepage renderer must print the four canonical columns without hardcoded exclusion');
+const orderedEntities=[
+  {uid:'col1',title:'English',text:'<p>English</p>'},
+  {uid:'col2',title:'第二欄',text:'<p>第二欄文字</p>'},
+  {uid:'col3',title:'',text:'<p><br></p>'},
+  {uid:'col4',title:'第四欄',text:'<p>第四欄文字</p>'},
+  {uid:'col5',title:'',text:'<p>第五欄文字</p>'}
+];
+must(visibleHomeChildren({...fourHomeFields,entities:orderedEntities}).map(row=>row.uid).join(',')==='col2,col4,col5','Homepage child renderer must preserve every nonempty column in DB array order and suppress only duplicates and empty placeholders');
+must(visibleHomeChildren({...fourHomeFields,entities:[{uid:'image',title:'',text:'<img src="/image.jpg">'}]}).length===1,'Homepage must not drop media-only child fields');
+must(locHomeEditable.includes('orderedHomeFields(slot)')&&locHomeEditable.includes('<OtherHomeChildren slot={slot}/>')&&locHomeEditable.includes('visibleHomeChildren(slot)')&&!locHomeEditable.includes('entityAt('),'Homepage variants must use shared ordered printing, not hardcoded child indexes');
+must(read('app/styles/home-content.css').includes('grid-template-columns:repeat(3,minmax(0,1fr))'),'LOC status must preserve the originally intended three-column layout');
+
 
 must(locHomeEditable.includes('allowEditing={true}')&&!locHomeEditable.includes('allowEditing={false}')&&editableBlocks.includes("account.canManageGlobalSync()")&&editableBlocks.includes("scopeId==='loc'"),'LOC homepage must allow authorized global Admin inline editing while keeping visitors read-only');
 must(locHome.includes('<LocHomeEditableBlock order={1} variant="hero"/>')&&locHome.includes('className="home-hero-visual"')&&!locHome.includes('<p>以微月光為鑑'),'LOC Hero must read authored text from Supabase block 1 and preserve approved full-image visual');
