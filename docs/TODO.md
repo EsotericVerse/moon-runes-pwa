@@ -43,6 +43,8 @@
 
 ## 1.0
 
+- [x] 深度功能介紹取代新手操作教學作為 1.0 的主要文件定位；維持獨立 Feature Deep Dive，不重複 Canon authority。
+- [ ] Scope 管理工作台與 Import 真實驗收後，核對 Feature Deep Dive 與正式 UI／資料流程一致性。
 - [ ] 整合既有來源中的 image multimedia。
 - [ ] 保持 image/media 為 first-class media data，不製造空白 Galaxy text。
 - [ ] 完成 governed import workflow 與來源 provenance。

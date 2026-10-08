@@ -32,6 +32,10 @@
 
 ## 1.0 Release
 
+### 文件定位
+
+1.0 對外功能文件以 `docs/FEATURE_DEEP_DIVE.md` 作為深度能力介紹：分析目的、資料機制、跨功能關係、具體情境及治理限制。不再以新手操作教學作為主要文件交付；現有已校閱的網站文案與 Canon 不因文件改版而覆寫。Scope 管理與 Import 驗收完成後，再比對深度介紹與最後 runtime 行為。
+
 1.0 之前仍需完成：
 
 - image multimedia integration 與正確的關係／provenance；media 保持 first-class，不製造空白 Galaxy text。
