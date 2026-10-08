@@ -4,7 +4,7 @@ import {DB_QUERY_BATCH_SIZE} from './query-contract.mjs';
 import {mediaFacetDaily} from './statistics-facets.mjs';
 import {DEFAULT_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
 import {publicContentFilters} from './content-policy';
-import {applyFilters,applyOrders,executePublicRead,selectAllRows,selectRows} from './db-query.mjs';
+import {applyFilters,applyOrders,executePublicRead,selectAllRows,selectCount,selectRows} from './db-query.mjs';
 
 function unique(values=[]){
   return [...new Set(values.map(value=>String(value||'').trim()).filter(Boolean))];
@@ -269,6 +269,28 @@ function normalizeSearch(value){
 function styleTagList(value){
   return [...new Set(String(value||'').split(/[,，]/g).map(item=>String(item||'').trim()).filter(Boolean))];
 }
+// This is a count of distinct searchable/statistics-enabled documents containing
+// the keyword in title or body. It is NOT a Rune/Class hit count.
+export async function selectStyleKeywordDocumentCount(galaxyTable,keyword){
+  const term=String(keyword||'').trim();
+  if(!galaxyTable||!term)return 0;
+  return selectCount(galaxyTable,{
+    idColumn:'uid',
+    filters:[
+      {column:'searchable',operator:'eq',value:true},
+      {column:'statistics_able',operator:'eq',value:true},
+      {column:'content',operator:'neq',value:''}
+    ],
+    orFilter:orExpression(['title','content'],term)
+  });
+}
+export async function selectStyleKeywordCounts(galaxyTable,tags){
+  const words=Array.isArray(tags)?tags:styleTagList(tags);
+  return Promise.all(words.map(tag=>selectStyleKeywordDocumentCount(galaxyTable,tag)));
+}
+function styleAnchorDate(row){
+  return String(row?.time_date||(Number.isInteger(row?.year_value)?String(row.year_value)+'-01-01':'')).slice(0,10);
+}
 export async function selectStyleKeywordIntroductions(scopes,query){
   const token=normalizeSearch(query);
   if(!token)return [];
@@ -276,16 +298,31 @@ export async function selectStyleKeywordIntroductions(scopes,query){
   const grouped=await Promise.all(scopeList.map(async scope=>{
     const current=scopeOf(scope);
     const result=await selectAllRows(current.time,{
-      columns:'record_id,record_type,label,resource_id,display_order,anchor_ids,style_tags,style_description',
-      filters:[{column:'record_type',operator:'in',value:['period','event']}],
+      columns:'record_id,record_type,label,resource_id,display_order,time_date,year_value,anchor_ids,style_tags,style_description,style_keyword_counts',
+      filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}],
       orders:[{column:'display_order',ascending:true},{column:'record_id',ascending:true}]
     });
-    return (result.rows||[]).flatMap(row=>{
-      const matched=styleTagList(row.style_tags).find(tag=>normalizeSearch(tag)===token);
-      if(!matched)return [];
+    const anchors=new Map((result.rows||[])
+      .filter(row=>row.record_type==='anchor'&&row.resource_id)
+      .map(row=>[String(row.resource_id),row]));
+    const matches=(result.rows||[]).filter(row=>['period','event'].includes(row.record_type)).flatMap(row=>{
+      const tags=styleTagList(row.style_tags);
+      const matched=tags.find(tag=>normalizeSearch(tag)===token);
       const description=String(row.style_description||'').trim();
-      if(!description)return [];
-      return [{
+      if(!matched||!description)return [];
+      const ids=Array.isArray(row.anchor_ids)?row.anchor_ids.map(String):[];
+      const start=ids[0]==='0'?'':styleAnchorDate(anchors.get(ids[0]));
+      const end=ids.at(-1)==='0'?'':styleAnchorDate(anchors.get(ids.at(-1)));
+      const others=tags.filter(tag=>normalizeSearch(tag)!==token);
+      return [{row,matched,description,start,end,others}];
+    });
+    return Promise.all(matches.map(async({row,matched,description,start,end,others})=>{
+      // Always read the latest count; the integer[] Time column is a snapshot
+      // refreshed when the style is edited, not an authoritative live total.
+      let counted=null;
+      try{counted=await selectStyleKeywordDocumentCount(current.galaxy,matched);}
+      catch{/* An unavailable count must never hide the style introduction. */}
+      return {
         row:{
           id:'style-keyword:'+current.id+':'+String(row.record_id||row.resource_id||matched),
           scope_id:current.id,
@@ -293,15 +330,19 @@ export async function selectStyleKeywordIntroductions(scopes,query){
           title:matched,
           summary:description,
           period_label:String(row.label||'').trim(),
-          anchor_ids:Array.isArray(row.anchor_ids)?row.anchor_ids:[]
+          related_style_tags:others,
+          style_work_count:counted,
+          style_count_basis:'含關鍵詞的有效作品數（每篇計一次）',
+          style_anchor_start:start,
+          style_anchor_end:end
         },
-        source:String(row.label||'').trim()?('風格關鍵詞 · '+String(row.label).trim()):'風格關鍵詞',
+        source:String(row.label||'').trim()?('風格介紹 · '+String(row.label).trim()):'風格介紹',
         providerId:current.id+':style-keyword'
-      }];
-    });
+      };
+    }));
   }));
   const seen=new Set();
-  return grouped.flat().filter(entry=>{
+  return grouped.flat(2).filter(entry=>{
     const key=entry.row.scope_id+'|'+normalizeSearch(entry.row.title)+'|'+entry.row.summary;
     if(seen.has(key))return false;
     seen.add(key);return true;
