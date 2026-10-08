@@ -162,6 +162,9 @@ must(admin.includes('admin-registry-fallback')&&admin.includes('圖形樹載入�
 must(admin.includes('syncManageScopeRow(')&&admin.includes("role:'scope'"),'Admin Scope node must edit Manage mapping atomically and keep role=scope fixed');
 must(admin.includes('部分 Scope 設定讀取失敗')&&admin.includes('configFailures.push')&&admin.includes("if(error)throw new Error(error.message||'Scope config 讀取失敗。')"),'Admin Scope config failures must be surfaced, not swallowed');
 must(admin.includes('provisionScope(')&&admin.includes('＋ Scope')&&admin.includes('＋ Group'),'Admin Registry must create Scope and Scope Group from the tree workspace');
+must(scopeProvisioning.includes("create table silver.%I (like silver.lo3rwang_blocks including all)")&&!scopeProvisioning.includes('block_page')&&scopeProvisioning.includes("enable row level security',v_blocks_name"),'new Scope Blocks must clone current UID/page_name/entity contract and enable RLS');
+must(scopeProvisioning.includes('New Scopes start with no content rows.')&&!scopeProvisioning.includes('generate_series(1,4)'),'new Scope must not pre-populate blank homepage/governance frames');
+
 must(admin.includes("dbAuthRelation('silver.scope_registry')")&&admin.includes('parent_scope_id'),'Admin must read the DB Scope Registry hierarchy');
 must(admin.includes("silver.database_targets")&&admin.includes('Database Target')&&admin.includes('Project ID'),'Admin must persist explicit Supabase/Neon migration targets');
 must(admin.includes("silver.loc_theme")&&admin.includes('theme_attr')&&admin.includes('THEME_TOKEN_KEYS')&&admin.includes('type="color"'),'Admin Theme editor must persist all editable theme attrs in loc_theme');
