@@ -258,7 +258,7 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false}={
     id:current.id+':timeline',table:current.time,source:current.id+' 時期',scope:current,idColumn:'record_id',
     columns:['record_id','record_type','label','resource_id','note','time_date','anchor_ids','status','date_status','year_value','visibility','style_description'],
     searchFields:['label','note','status','style_description'],dateColumn:'time_date',
-    filters:[{column:'record_type',operator:'in',value:['anchor','period','event','style_comment']}]
+    filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}]
   });
   return [timeline,text];
 }
@@ -289,10 +289,10 @@ export async function selectStyleKeywordIntroductions(scopes,query){
   if(!key)return [];
   const found=await Promise.all((Array.isArray(scopes)?scopes:[]).filter(s=>s?.id&&s?.time).map(async scope=>{
     const c=scopeOf(scope);
-    const {rows=[]}=await selectAllRows(c.time,{columns:'record_id,record_type,resource_id,label,time_date,year_value,date_status,anchor_ids,style_description',filters:[{column:'record_type',operator:'in',value:['anchor','period','style_comment']}]});
+    const {rows=[]}=await selectAllRows(c.time,{columns:'record_id,record_type,resource_id,label,time_date,year_value,date_status,anchor_ids,style_description,status',filters:[{column:'record_type',operator:'in',value:['anchor','period','style_comment']}]});
     const anchors=new Map(rows.filter(r=>r.record_type==='anchor'&&r.resource_id).map(r=>[String(r.resource_id),r]));
     const periods=rows.filter(r=>r.record_type==='period');
-    const styles=rows.filter(r=>r.record_type==='style_comment'&&r.label&&r.style_description);
+    const styles=rows.filter(r=>r.record_type==='style_comment'&&r.status!=='needs_anchor'&&r.label&&r.style_description);
     const cache=new Map();
     function count(tag){const k=normalizeSearch(tag);if(!cache.has(k))cache.set(k,selectStyleKeywordDocumentCount(c.galaxy,tag).catch(()=>null));return cache.get(k);}
     return Promise.all(styles.filter(r=>normalizeSearch(r.label)===key).map(async r=>{
