@@ -45,7 +45,6 @@ const authorHomeEditable=read('app/loc/AuthorHomeEditableBlock.jsx');
 const locHomeBlock=read('app/loc/LocHomeBlockDisplay.jsx');
 const locHomeCss=read('app/styles/loc-about-original.css');
 const locHome=read('app/loc/views/AboutView.jsx');
-const locFeatureHero=read('app/loc/LocFeatureHeroManagement.jsx');
 const sharedFeatureHero=read('app/loc/feature-hero.mjs');
 const featureUi=read('app/modular/ui.jsx');
 const runesHome=read('app/lrunes/RunesClient.jsx');
@@ -105,9 +104,11 @@ must(!authorHomeEditable.includes('AboutDisplay')&&!authorHomeEditable.includes(
 must(locHomeCss.includes('[data-loc-scope="lo3rwang"]')&&!locHomeCss.includes('.loc-next-main[data-loc-scope="loc"][data-loc-view="home"]'),'both homes must use the same scoped CSS without per-author overrides');
 must(locHomeBlock.includes('loc-home-block__header')&&locHomeBlock.includes('loc-home-block__body')&&locHomeBlock.includes('loc-home-block__children')&&locHomeCss.includes('.loc-home-block__children'),'LOC homepage must use one consistent header/body/children contract');
 must(locHome.includes('allowEditing')&&editableBlocks.includes("account.canManageGlobalSync()")&&editableBlocks.includes("scopeId==='loc'"),'LOC homepage must preserve permission-based BlockNote editing');
-must(locHome.includes('LocFeatureHeroManagement')&&locFeatureHero.includes('page={FEATURE_HERO_PAGE}')&&locFeatureHero.includes('allowDelete={false}')&&locFeatureHero.includes('canManageGlobalSync()'),'LOC homepage must centrally edit four fixed feature heading rows only for global managers');
-must(sharedFeatureHero.includes("scopeId!=='lrunes'")&&featureUi.includes("shouldUseSharedFeatureHero(scopeId,featureId)")&&featureUi.includes("selectScopeBlocks('loc',FEATURE_HERO_PAGE)")&&featureUi.includes("sharedFeatureHeroFor(sharedQuery.data,featureId)"),'four feature pages must reuse LOC managed hero content except LunaRunes');
-must(featureUi.includes("data-feature-hero-source={shared?'loc':'default'}"),'feature header should expose shared DB origin for automated testing');
+must(!locHome.includes('LocFeatureHeroManagement')&&!fs.existsSync(path.join(root,'app/loc/LocFeatureHeroManagement.jsx')),'the detached and duplicated four-feature manager must not exist on the LOC homepage');
+must(featureUi.includes('locEditableHero?<ScopeEditableBlocks')&&featureUi.includes('slotTag="header"')&&featureUi.includes('page={FEATURE_HERO_PAGE}')&&featureUi.includes('orders={[FEATURE_HERO_ORDER[featureId]]}')&&featureUi.includes('renderDisplay={slot=><FeatureHeroContent')&&featureUi.includes('allowDelete={false}')&&featureUi.includes('allowEntities={false}'),'LOC four function pages must edit their visible first/header frame through shared BlockNote, not a management page');
+must(editableBlocks.includes("const SlotTag=slotTag==='header'?'header':'section'")&&editableBlocks.includes('onClickCapture={canEdit&&!active?event=>')&&editableBlocks.includes("account.canManageGlobalSync()"),'shared block editor must support a semantic clickable header using existing global-manager permissions');
+must(sharedFeatureHero.includes("scopeId!=='lrunes'")&&featureUi.includes("shouldUseSharedFeatureHero(scopeId,featureId)")&&featureUi.includes("selectScopeBlocks('loc',FEATURE_HERO_PAGE)")&&featureUi.includes("sharedFeatureHeroFor(sharedQuery.data,featureId)"),'non-LOC feature pages must read the same managed LOC hero content while LunaRunes remains unchanged');
+must(featureUi.includes("data-feature-hero-source={shared?'loc':'default'}"),'non-LOC feature header exposes source for tests');
 
 must(locHome.includes('maxBlocks={8}')&&locHome.includes('placeholderFirstOrder={1}')&&locHome.includes('containerless')&&locHome.includes('renderDisplay={LocHomeBlockDisplay}')&&locHomeBlock.includes("order===1?'loc-hero loc-home-hero'")&&locHomeBlock.includes('SITE_IMAGES.locHero'),'LOC homepage must print up to 8 ordered frames, with Hero background only for order 1');
 
