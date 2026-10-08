@@ -10,12 +10,6 @@ function anchorName(row){
     .filter(Boolean).join('｜');
 }
 function normalize(value){return String(value||'').trim().normalize('NFKC').toLocaleLowerCase('zh-Hant');}
-function containsDate(period,date){
-  if(!date)return false;
-  const start=String(period?.start_date||'').slice(0,10);
-  const end=String(period?.end_date||'').slice(0,10);
-  return (!start||date>=start)&&(!end||date<=end);
-}
 export default function CultureStyleTagsEditor({
   period,styles=[],anchors=[],scopeId,table,canEdit=false,onSaved=null
 }){
@@ -30,21 +24,16 @@ export default function CultureStyleTagsEditor({
     .filter(row=>row?.entry_type==='anchor'&&row?.resource_id)
     .sort((a,b)=>String(a.start_date||'').localeCompare(String(b.start_date||''))),[anchors]);
   const anchorsById=useMemo(()=>new Map(availableAnchors.map(a=>[String(a.resource_id),a])),[availableAnchors]);
-  const visibleStyles=useMemo(()=>styles.filter(row=>{
-    const isAll=!period?.record_id;
-    if(row.status==='needs_anchor'){
-      // Migrated descriptions remain visible as private drafts until the
-      // author chooses a real anchor; the original period is only a workbench.
-      return canEdit&&(isAll||Number(row.order_no)===Number(period?.order));
-    }
-    const anchor=anchorsById.get(String(row.anchor_id||row.anchor_ids?.[0]||''));
-    if(!anchor)return false;
-    return isAll||containsDate(period,String(anchor.start_date||'').slice(0,10));
-  }).sort((a,b)=>String(a.label||'').localeCompare(String(b.label||''),'zh-Hant')),[styles,anchorsById,period,canEdit]);
+  // Style comments are independent of work periods. A style's chosen anchor
+  // can be decades before/after the currently selected work-classification
+  // period, so this editor must always allow editing all Scope styles.
+  const visibleStyles=useMemo(()=>[...styles]
+    .filter(row=>row?.status!=='needs_anchor'||canEdit)
+    .sort((a,b)=>String(a.label||'').localeCompare(String(b.label||''),'zh-Hant')),[styles,canEdit]);
   function reset(){
     setMode('view');setRecordId('');setLabel('');setDescription('');setAnchorId('');setMessage('');
   }
-  useEffect(()=>{reset();},[scopeId,period?.period,period?.start_date,period?.end_date]);
+  useEffect(()=>{reset();},[scopeId]);
   function add(){
     setRecordId('');setLabel('');setDescription('');setAnchorId('');setMessage('');setMode('create');
   }
@@ -61,9 +50,8 @@ export default function CultureStyleTagsEditor({
     const name=label.trim(),body=description.trim();
     if(!name||!body){setMessage('每一個風格標籤都需要自己的名稱及完整敘述。');return;}
     if(!anchorId||!anchorsById.has(anchorId)){setMessage('每一個風格標籤必須選擇一個既有正式定錨點。');return;}
-    if(styles.some(row=>String(row.record_id||'')!==recordId&&normalize(row.label)===normalize(name)&&
-      String(row.anchor_id||row.anchor_ids?.[0]||'')===anchorId)){
-      setMessage('同一個定錨點已存在相同名稱的風格。');return;
+    if(styles.some(row=>String(row.record_id||'')!==recordId&&normalize(row.label)===normalize(name)){
+      setMessage('此 Scope 已存在同名風格，每個風格名稱只能有一筆獨立說明。');return;
     }
     setBusy(true);setMessage('');
     try{
@@ -107,7 +95,7 @@ export default function CultureStyleTagsEditor({
             {row.status!=='needs_anchor'?<span className="scope-status">正式定錨：{anchorName(anchorsById.get(String(row.anchor_id||row.anchor_ids?.[0]||'')))}</span>:null}
           </div>
           {canEdit?<button type="button" className="loc-button" onClick={()=>edit(row)}>{row.status==='needs_anchor'?'指定定錨點':'編輯風格標籤'}</button>:null}
-        </article>):<p className="scope-status">此時期尚未設定風格標籤。</p>}
+        </article>):<p className="scope-status">此 Scope 尚未設定風格標籤。</p>}
       </div>
       {canEdit?<button type="button" className="loc-button" onClick={add}>＋ 新增風格標籤</button>:null}
     </>:<form onSubmit={save} className="scope-culture-style-editing">
