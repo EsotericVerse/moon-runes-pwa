@@ -308,7 +308,8 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       </select></label>
       <label><span>名稱</span><input className="scope-search-input" value={draft.label||''} onChange={event=>change('label',event.target.value)} required/></label>
       <label><span>識別</span><input className="scope-search-input" value={draft.resource_id||''} disabled={Boolean(selectedId)} onChange={event=>change('resource_id',event.target.value)} placeholder="留空自動產生"/></label>
-      <label><span>說明</span><textarea className="scope-search-input" value={draft.note||''} onChange={event=>change('note',event.target.value)}/></label>
+      <label><span>{draft.record_type==='anchor'?'定錨點說明（關鍵變化／持續檢討，非風格敘述）':'時期／事件說明（非風格敘述）'}</span><textarea className="scope-search-input" rows={5} value={draft.note||''} onChange={event=>change('note',event.target.value)}/></label>
+      {draft.record_type==='anchor'?<p className="scope-status">此處保存定錨點的轉折觀察，不是風格標籤。要新增「政德風」等搜尋介紹，請先儲存定錨點，再到文化頁的「作品分類河道」選擇相應時期，點「＋ 新增風格標籤」，填寫「風格主要敘述（TEXT）」。</p>:null}
 
       {draft.record_type==='anchor'?<div className="scope-stat-controls">
         <label><span>日期</span><input className="scope-select" type="date" value={dateText(draft.time_date)} onChange={event=>change('time_date',event.target.value)}/></label>

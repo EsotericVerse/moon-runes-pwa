@@ -71,6 +71,7 @@ export function CultureStyleTagsField({value='',description='',onChange=null,edi
       <label className="scope-management-wide-field"><span>風格主要敘述（TEXT，搜尋結果顯示）</span>
         <textarea rows={7} value={String(description||'')} onChange={event=>emit(tags,event.target.value)} placeholder="說明風格的文化特徵、變化原因及後續觀察重點"/>
       </label>
+      {tags.length>1?<p className="scope-status">同一時期有多個風格時，請在同一個 TEXT 欄位以「風格名稱：敘述」逐段書寫、空行分隔；搜尋會顯示所選風格的對應段落。</p>:null}
       {error?<p className="scope-status scope-error" role="alert">{error}</p>:null}
     </div>:description?<p className="scope-style-description">{description}</p>:null}
   </div>;

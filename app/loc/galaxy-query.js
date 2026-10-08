@@ -4,7 +4,7 @@ import {DB_QUERY_BATCH_SIZE} from './query-contract.mjs';
 import {mediaFacetDaily} from './statistics-facets.mjs';
 import {DEFAULT_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
 import {publicContentFilters} from './content-policy';
-import {applyFilters,applyOrders,executePublicRead,selectAllRows,selectRows} from './db-query.mjs';
+import {applyFilters,applyOrders,executePublicRead,selectAllRows,selectCount,selectRows} from './db-query.mjs';
 
 function unique(values=[]){
   return [...new Set(values.map(value=>String(value||'').trim()).filter(Boolean))];
@@ -269,6 +269,40 @@ function normalizeSearch(value){
 function styleTagList(value){
   return [...new Set(String(value||'').split(/[,，]/g).map(item=>String(item||'').trim()).filter(Boolean))];
 }
+// This is a count of distinct searchable/statistics-enabled documents containing
+// the keyword in title or body. It is NOT a Rune/Class hit count.
+export async function selectStyleKeywordDocumentCount(galaxyTable,keyword){
+  const term=String(keyword||'').trim();
+  if(!galaxyTable||!term)return 0;
+  return selectCount(galaxyTable,{
+    idColumn:'uid',
+    filters:[
+      {column:'searchable',operator:'eq',value:true},
+      {column:'statistics_able',operator:'eq',value:true},
+      {column:'content',operator:'neq',value:''}
+    ],
+    orFilter:orExpression(['title','content'],term)
+  });
+}
+export async function selectStyleKeywordCounts(galaxyTable,tags){
+  const words=Array.isArray(tags)?tags:styleTagList(tags);
+  return Promise.all(words.map(tag=>selectStyleKeywordDocumentCount(galaxyTable,tag)));
+}
+function styleAnchorDate(row){
+  return String(row?.time_date||(Number.isInteger(row?.year_value)?String(row.year_value)+'-01-01':'')).slice(0,10);
+}
+// The canonical Time column is TEXT. Historical rows with several styles may
+// contain clearly titled paragraphs: prefer the matching paragraph when present.
+function styleDescriptionForTag(description,tag,tags){
+  const text=String(description||'').trim();
+  const parts=text.split(/\n\s*\n/).map(part=>part.trim()).filter(Boolean);
+  const headings=new Map(tags.map(item=>[normalizeSearch(item),item]));
+  const match=parts.find(part=>{
+    const pos=part.indexOf('：');
+    return pos>0&&headings.has(normalizeSearch(part.slice(0,pos)))&&normalizeSearch(part.slice(0,pos))===normalizeSearch(tag);
+  });
+  return match?match.slice(match.indexOf('：')+1).trim():text;
+}
 export async function selectStyleKeywordIntroductions(scopes,query){
   const token=normalizeSearch(query);
   if(!token)return [];
@@ -276,16 +310,41 @@ export async function selectStyleKeywordIntroductions(scopes,query){
   const grouped=await Promise.all(scopeList.map(async scope=>{
     const current=scopeOf(scope);
     const result=await selectAllRows(current.time,{
-      columns:'record_id,record_type,label,resource_id,display_order,anchor_ids,style_tags,style_description',
-      filters:[{column:'record_type',operator:'in',value:['period','event']}],
+      columns:'record_id,record_type,label,resource_id,display_order,time_date,year_value,anchor_ids,style_tags,style_description',
+      filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}],
       orders:[{column:'display_order',ascending:true},{column:'record_id',ascending:true}]
     });
-    return (result.rows||[]).flatMap(row=>{
-      const matched=styleTagList(row.style_tags).find(tag=>normalizeSearch(tag)===token);
-      if(!matched)return [];
-      const description=String(row.style_description||'').trim();
-      if(!description)return [];
-      return [{
+    const anchorMap=new Map((result.rows||[])
+      .filter(row=>row.record_type==='anchor'&&row.resource_id)
+      .map(row=>[String(row.resource_id),row]));
+    const styleRows=(result.rows||[]).filter(row=>['period','event'].includes(row.record_type)&&styleTagList(row.style_tags).length>0);
+    const allStyles=[...new Map(styleRows.flatMap(row=>styleTagList(row.style_tags).map(tag=>[normalizeSearch(tag),tag]))).values()];
+    const matches=styleRows.flatMap(row=>{
+      const tags=styleTagList(row.style_tags);
+      const matched=tags.find(tag=>normalizeSearch(tag)===token);
+      if(!matched||!String(row.style_description||'').trim())return [];
+      const ids=Array.isArray(row.anchor_ids)?row.anchor_ids.map(String):[];
+      const start=ids[0]==='0'?'':styleAnchorDate(anchorMap.get(ids[0]));
+      const end=ids.at(-1)==='0'?'':styleAnchorDate(anchorMap.get(ids.at(-1)));
+      return [{row,matched,tags,start,end,description:styleDescriptionForTag(row.style_description,matched,tags)}];
+    });
+    // Reuse one count promise per keyword within the current Scope/search.
+    const countCache=new Map();
+    function countOf(tag){
+      const key=normalizeSearch(tag);
+      if(!countCache.has(key))countCache.set(key,selectStyleKeywordDocumentCount(current.galaxy,tag).catch(()=>null));
+      return countCache.get(key);
+    }
+    return Promise.all(matches.map(async({row,matched,tags,start,end,description})=>{
+      const samePeriod=tags.filter(tag=>normalizeSearch(tag)!==token);
+      const otherPeriods=allStyles.filter(tag=>
+        normalizeSearch(tag)!==token&&!samePeriod.some(item=>normalizeSearch(item)===normalizeSearch(tag)));
+      const related=await Promise.all([...samePeriod,...otherPeriods].map(async tag=>({
+        name:tag,
+        document_total:await countOf(tag),
+        same_period:samePeriod.some(item=>normalizeSearch(item)===normalizeSearch(tag))
+      })));
+      return {
         row:{
           id:'style-keyword:'+current.id+':'+String(row.record_id||row.resource_id||matched),
           scope_id:current.id,
@@ -293,15 +352,17 @@ export async function selectStyleKeywordIntroductions(scopes,query){
           title:matched,
           summary:description,
           period_label:String(row.label||'').trim(),
-          anchor_ids:Array.isArray(row.anchor_ids)?row.anchor_ids:[]
+          related_style_tags:related,
+          style_anchor_start:start,
+          style_anchor_end:end
         },
-        source:String(row.label||'').trim()?('風格關鍵詞 · '+String(row.label).trim()):'風格關鍵詞',
+        source:String(row.label||'').trim()?('風格介紹 · '+String(row.label).trim()):'風格介紹',
         providerId:current.id+':style-keyword'
-      }];
-    });
+      };
+    }));
   }));
   const seen=new Set();
-  return grouped.flat().filter(entry=>{
+  return grouped.flat(2).filter(entry=>{
     const key=entry.row.scope_id+'|'+normalizeSearch(entry.row.title)+'|'+entry.row.summary;
     if(seen.has(key))return false;
     seen.add(key);return true;

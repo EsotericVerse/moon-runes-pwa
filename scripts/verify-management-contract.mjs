@@ -213,6 +213,20 @@ must(dbContract.includes("mode:'begin'")&&dbContract.includes("mode:'chunk'")&&d
 must(!keywordAnalysis.includes('PERSONAL_KEYWORD_TABLE')&&keywordAnalysis.includes('`silver.${scope}_keywords`'),'keyword classification must read the current Scope private keyword library');
 must(dbContract.includes("rpc('provision_scope'")&&dbContract.includes('provisionScope'),'DB client must expose the transactional Scope provisioning RPC');
 must(scopeProvisioning.includes('create table if not exists silver.scope_registry')&&scopeProvisioning.includes('create or replace function api.provision_scope'),'Scope provisioning SQL must define the DB registry and provisioning RPC');
+// Source and future-Scope schema parity: the Time contract is flat TEXT,
+// not a growing JSONB attribute bag or a stored keyword-count snapshot.
+for(const table of ['lo3rwang_time','lrunes_time']){
+  const start='CREATE TABLE "silver"."'+table+'" (';
+  const ddl=portableSchema.split(start)[1]?.split('\n);')[0]||'';
+  must(Boolean(ddl)&&['"anchor_ids" text[]','"style_tags" text','"style_description" text'].every(field=>ddl.includes(field)),
+    table+' needs canonical anchor_ids text[] and style_tags/style_description TEXT');
+  must(!ddl.includes('style_tag_descriptions')&&!ddl.includes('style_keyword_counts'),
+    table+' must not revive migrated JSONB style attrs or stored count snapshots');
+}
+must(scopeProvisioning.includes("create table silver.%I (like silver.lo3rwang_time including all)"),
+  'new Scope Time tables must clone the canonical TEXT Time template including all fields');
+must(!scopeProvisioning.includes('style_tag_descriptions'),
+  'Scope provisioning must not recreate the retired JSONB style attr');
 for(const suffix of ["_galaxy'","_galaxy_media'","_time'","_keywords'"])must(scopeProvisioning.includes(suffix),'Scope provisioning SQL missing fixed table suffix '+suffix);
 must(scopeProvisioning.includes('v_keyword_count<>66')&&scopeProvisioning.includes('p_parent_scope_id'),'Scope provisioning must lock the Rune66 default copy and parent Scope Group');
 must(scopeProvisioning.includes("v_blocks_name := v_scope||'_blocks'")&&scopeProvisioning.includes('like silver.lo3rwang_blocks including all')&&portableSchema.includes('"loc_blocks"')&&portableSchema.includes('"lo3rwang_blocks"')&&portableSchema.includes('"lrunes_blocks"'),'Scope provisioning/schema must store page blocks by uid with nested entities');
@@ -233,7 +247,8 @@ must(importPanel.includes('record.createtime||current.createtime||null')&&import
 must(!/silver\.runes(?:_etc)?\b/.test(galaxy),'generic Galaxy/Search provider must not expose private Rune Core tables');
 must(!/runeScopeIds|silver\.runes(?:_etc)?\b/.test(sharedSearch),'shared Search must stay Scope-data only');
 must(sharedSearch.includes('matchesScopeAlias')&&sharedSearch.includes('scope.searchIntro')&&sharedSearch.includes("label:'前往 Scope 首頁'")&&sharedSearch.includes('return;'),'exact Scope aliases must use Scope-owned presentation and stop the search');
-must(galaxy.includes("columns:'record_id,record_type,label,resource_id,display_order,anchor_ids,style_tags,style_description'")&&galaxy.includes("summary:description")&&!galaxy.includes('style_tag_descriptions'),'Search must use Time style_description TEXT as its displayed primary content');
+must(galaxy.includes("columns:'record_id,record_type,label,resource_id,display_order,time_date,year_value,anchor_ids,style_tags,style_description'")&&galaxy.includes("summary:description")&&!galaxy.includes('style_tag_descriptions'),'Search must use Time style_description TEXT as its displayed primary content');
+must(galaxy.includes('selectStyleKeywordDocumentCount')&&galaxy.includes('related_style_tags:related')&&galaxy.includes('same_period:')&&sharedSearch.includes('scope-style-search-related-links')&&sharedSearch.includes('style.document_total')&&sharedSearch.includes("cursor:!append&&styleIntroductions.length?{stage:2"),'Search introductions must offer counted linked personal styles before work results without Time snapshot columns');
 must(sharedSearch.includes('selectStyleKeywordIntroductions')&&sharedSearch.includes('[...styleIntroductions,...enrichedRows]'),'style keyword descriptions must precede ordinary related results');
 
 if(failures.length){

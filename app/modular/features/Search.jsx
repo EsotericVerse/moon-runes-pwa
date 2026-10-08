@@ -4,14 +4,14 @@ import {UI_COPY} from '../../i18n/ui-copy';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
-import {useSearchParams} from 'next/navigation';
+import {useRouter,useSearchParams} from 'next/navigation';
 
 import {logSearchKeyword,selectAuthRow,updateRows} from '../../loc/db-client.mjs';
 import {useAccount} from '../../loc/use-account';
 import {FeaturePage,IncrementalList,WorkFullText,WorkSummaryCard} from '../ui';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {scopeHref} from '../scope-registry';
-import {galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation';
+import {featureNavigationHref,galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
 import {resolveGalaxyExternalLinks,searchGalaxyRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordIntroductions} from '../../loc/galaxy-query';
 import {selectManagedScopes} from '../../loc/scope-data';
@@ -211,6 +211,11 @@ function toResult(row,source,scopeId){
     source:displaySource,title:String(title),
     date:row.date||row.createtime||row.time_date||row.record_date||row.UpdateTime||row.updated_at||'',
     snippet:body,scopeId:scope,resourceType,resourceId,
+    styleIntro:Boolean(row.style_keyword_intro),
+    stylePeriod:String(row.period_label||''),
+    styleAnchorStart:String(row.style_anchor_start||''),
+    styleAnchorEnd:String(row.style_anchor_end||''),
+    relatedStyleTags:Array.isArray(row.related_style_tags)?row.related_style_tags:[],
     editableTable,editableIdColumn,editResourceId,editableField,isScopeCard,href,
     relationLinks:resourceType==='galaxy'
       ?galaxyRelationLinks(scope,row)
@@ -253,6 +258,7 @@ export default function Search(){
   const {scopeId,scope}=useScopeRuntime();
   const account=useAccount();
   const searchParams=useSearchParams();
+  const router=useRouter();
   const [query,setQuery]=useState('');
   const [searchMode,setSearchMode]=useState('all');
   const [results,setResults]=useState([]);
@@ -356,7 +362,13 @@ export default function Search(){
       const styleIntroductions=(!append&&searchMode!=='media')
         ?await selectStyleKeywordIntroductions(targetScopes,q)
         :[];
-      const search=await searchGalaxyRows(targetScopes,q,{limit:pageSize,cursor,mediaOnly:searchMode==='media',hiddenScopeIds});
+      const search=await searchGalaxyRows(targetScopes,q,{
+        limit:pageSize,
+        // Prioritize document results after a recognized Time style introduction.
+        // Time records remain available in normal searches without a style hit.
+        cursor:!append&&styleIntroductions.length?{stage:2,offset:0,source:'auto'}:cursor,
+        mediaOnly:searchMode==='media',hiddenScopeIds
+      });
       if(id!==searchId.current)return;
 
       const searchRows=[...(search.rows||[])];
@@ -570,7 +582,18 @@ export default function Search(){
     finally{setEditBusy(false)}
   }
 
-  async function runSearch(event){event.preventDefault();await executeSearch(query)}
+  async function runSearch(event){
+    event.preventDefault();
+    const term=String(query||'').trim();
+    if(!term)return;
+    // Keep the keyword in the URL and input so a style-to-style link is a
+    // reproducible next search, not a transient single-page interaction.
+    if(String(searchParams?.get('q')||'').trim()!==term||searchParams?.get('identity')){
+      router.push(featureNavigationHref(scopeId,'search',{q:term}));
+      return;
+    }
+    await executeSearch(term);
+  }
 
   if(aggregateScopes)return <FeaturePage featureId="search">
     <ScopeGroupOverview
@@ -618,6 +641,33 @@ export default function Search(){
           showSource
           showLinks
         >
+          {row.styleIntro?<div className="scope-style-search-connections">
+            <p className="scope-status"><strong>所屬時期：</strong>{row.stylePeriod||'文化風格'}</p>
+            <div className="scope-preview-links">
+              <a href={scopeHref(row.scopeId)}>前往 {row.scopeId} Scope 網站</a>
+              {(row.styleAnchorStart||row.styleAnchorEnd)?<a href={featureNavigationHref(row.scopeId,'culture',{...(row.styleAnchorStart?{from:row.styleAnchorStart}:{}),...(row.styleAnchorEnd?{to:row.styleAnchorEnd}:{})})}>時間長河與既有定錨點</a>:null}
+            </div>
+            {row.relatedStyleTags.length?<div className="scope-style-search-related">
+              <p className="scope-status"><strong>延伸探索：其他個人風格</strong>（點擊可繼續搜尋）</p>
+              {row.relatedStyleTags.some(style=>style.same_period)?<div className="scope-style-search-related-group">
+                <span>同時期平行風格</span>
+                <div className="scope-style-search-related-links">
+                  {row.relatedStyleTags.filter(style=>style.same_period).map(style=><a key={style.name} href={featureNavigationHref(row.scopeId,'search',{q:style.name})}>
+                    {style.name} · {style.document_total===null?'統計暫不可用':style.document_total.toLocaleString()+' 篇'}
+                  </a>)}
+                </div>
+              </div>:null}
+              {row.relatedStyleTags.some(style=>!style.same_period)?<div className="scope-style-search-related-group">
+                <span>其他時期的個人風格</span>
+                <div className="scope-style-search-related-links">
+                  {row.relatedStyleTags.filter(style=>!style.same_period).map(style=><a key={style.name} href={featureNavigationHref(row.scopeId,'search',{q:style.name})}>
+                    {style.name} · {style.document_total===null?'統計暫不可用':style.document_total.toLocaleString()+' 篇'}
+                  </a>)}
+                </div>
+              </div>:null}
+              <p className="scope-status">統計為全 Scope 有效作品的標題／正文命中篇數，每篇計一次，不改動 Class 分布。</p>
+            </div>:null}
+          </div>:null}
           {row.resourceType==='galaxy'?<WorkFullText
             open={fullTextKey===row.key}
             loading={fullTextLoading&&fullTextKey===row.key}
