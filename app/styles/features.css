@@ -138,6 +138,20 @@
 .scope-style-tag-add label{flex:1;min-width:10rem}
 .scope-style-tag-details label{display:grid;gap:.35rem}
 .scope-style-tag-details input,.scope-style-tag-details textarea,.scope-style-tag-add input{width:100%;min-width:0;max-width:100%;padding:.55rem .65rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel-2);color:var(--loc-text);font:inherit}
+
+/* A single theme-aware React Select contract shared by statistics/keyword workspaces. */
+.scope-stat-workspace-switch{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin:.65rem 0 1rem}
+.scope-workspace-select{flex:0 1 280px;min-width:min(100%,220px)}
+.scope-workspace-select__control{display:flex;align-items:center;min-height:2.65rem;padding:0 .65rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel-2);color:var(--loc-text)}
+.scope-workspace-select__value-container{display:flex;align-items:center;flex:1;min-width:0}
+.scope-workspace-select__single-value,.scope-workspace-select__input-container{color:var(--loc-text)}
+.scope-workspace-select__indicators{display:flex;align-items:center;color:var(--loc-muted)}
+.scope-workspace-select__menu{z-index:35;margin-top:.25rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel);box-shadow:var(--loc-shadow-card);overflow:hidden}
+.scope-workspace-select__option{padding:.65rem .8rem;color:var(--loc-text);cursor:pointer}
+.scope-workspace-select__option--is-focused{background:var(--loc-surface-soft)}
+.scope-workspace-select__option--is-selected{background:var(--loc-accent-surface-strong)}
+.scope-workspace-select__control:focus-within{outline:2px solid var(--loc-accent);outline-offset:2px}
+
 .scope-culture-timeline-tools{display:flex;flex-wrap:wrap;align-items:center;gap:.65rem;margin:.5rem 0 .85rem}
 .scope-culture-timeline-tools label{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem}
 .scope-culture-timeline-tools .scope-status{flex:1 1 17rem;margin:0}
