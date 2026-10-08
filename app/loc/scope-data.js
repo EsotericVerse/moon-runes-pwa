@@ -163,7 +163,7 @@ export async function selectScopeBlocks(scopeId,page='index'){
   if(!/^[a-z0-9_-]+$/.test(pageName))throw new Error('Page name 無效');
   const table=`silver.${id}_blocks`;
   const {rows}=await selectRows(table,{
-    columns:'uid,page_name,block_title,block_text,block_order,block_entity',
+    columns:'uid,page_name,block_eyebrow,block_title,block_subtitle,block_text,block_order,block_entity',
     filters:[{column:'page_name',operator:'eq',value:pageName}],
     orders:[{column:'block_order',ascending:true}],
     limit:DB_QUERY_BATCH_SIZE,

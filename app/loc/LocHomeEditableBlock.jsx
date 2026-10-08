@@ -34,37 +34,38 @@ function HeroDisplay(slot){
   const explain=entityAt(slot,1);
   const description=entityAt(slot,2);
   return <>
-    <Html tag="p" className="loc-eyebrow" html={stripOuterParagraph(english.text)||english.title}/>
+    <Html tag="p" className="loc-eyebrow" html={slot.eyebrow||stripOuterParagraph(english.text)||english.title}/>
     <div className="home-title-row">
       <h1>{slot.title}</h1>
-      <Html tag="p" className="loc-subtitle" html={stripOuterParagraph(explain.text)}/>
+      <Html className="loc-subtitle" html={slot.subtitle||explain.text}/>
     </div>
-    <Html className="loc-hero-copy" html={description.text||slot.text}/>
+    <Html className="loc-hero-copy" html={slot.text||description.text}/>
   </>;
 }
 
 function BeginnerHeading(slot){
   const meta=entityAt(slot,0);
   return <>
-    <p className="loc-eyebrow">{meta.title||'Start here'}</p>
+    <p className="loc-eyebrow">{slot.eyebrow||meta.title||'Start here'}</p>
     <h2>{slot.title}</h2>
-    <Html tag="p" className="loc-subtitle" html={stripOuterParagraph(meta.text)}/>
+    <Html className="loc-subtitle" html={slot.subtitle||meta.text}/>
   </>;
 }
 
 function ArchitectureHeading(slot){
   const meta=entityAt(slot,0);
   return <>
-    <p className="loc-eyebrow">{meta.title||'LOC Architecture'}</p>
+    <p className="loc-eyebrow">{slot.eyebrow||meta.title||'LOC Architecture'}</p>
     <h2>{slot.title}</h2>
+    {slot.subtitle?<Html className="loc-subtitle" html={slot.subtitle}/>:null}
   </>;
 }
 
 function StatusHeading(slot){
   return <>
-    <p className="loc-eyebrow">System Status</p>
+    <p className="loc-eyebrow">{slot.eyebrow||'System Status'}</p>
     <h2>{slot.title}</h2>
-    <Html tag="p" className="loc-subtitle" html={stripOuterParagraph(slot.text)}/>
+    <Html className="loc-subtitle" html={slot.subtitle||slot.text}/>
   </>;
 }
 
@@ -103,9 +104,9 @@ function StatusBubbles(slot){
 function SkillsHeading(slot){
   const parts=paragraphParts(slot.text);
   return <>
-    <p className="loc-eyebrow">LOC GPT Skills</p>
+    <p className="loc-eyebrow">{slot.eyebrow||'LOC GPT Skills'}</p>
     <h2>{slot.title}</h2>
-    <Html tag="p" className="loc-subtitle" html={parts[0]||''}/>
+    <Html className="loc-subtitle" html={slot.subtitle||(parts[0]?`<p>${parts[0]}</p>`:'')}/>
   </>;
 }
 
@@ -116,23 +117,23 @@ function SkillsBody(slot){
       <strong>{entity.title}</strong>：
       <span dangerouslySetInnerHTML={{__html:stripOuterParagraph(entity.text)}}/>
     </p>)}
-    {parts.slice(1).map((part,index)=><Html tag="p" html={part} key={'skill-body-'+index}/>)}
+    {parts.map((part,index)=><Html tag="p" html={part} key={'skill-body-'+index}/>)}
   </>;
 }
 
 function AuthorHeading(slot){
   const parts=paragraphParts(slot.text);
   return <>
-    <p className="loc-eyebrow">About me</p>
+    <p className="loc-eyebrow">{slot.eyebrow||'About me'}</p>
     <h2>{slot.title}</h2>
-    <Html tag="p" className="loc-subtitle" html={parts[0]||''}/>
+    <Html className="loc-subtitle" html={slot.subtitle||(parts[0]?`<p>${parts[0]}</p>`:'')}/>
   </>;
 }
 
 function AuthorBody(slot){
   const parts=paragraphParts(slot.text);
   return <>
-    {parts.slice(1).map((part,index)=><Html tag="p" html={part} key={'author-body-'+index}/>)}
+    {parts.map((part,index)=><Html tag="p" html={part} key={'author-body-'+index}/>)}
   </>;
 }
 

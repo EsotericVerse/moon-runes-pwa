@@ -359,6 +359,46 @@
   cursor:pointer;
 }
 .scope-add-page-block{margin-top:.8rem}
+
+/* Page-block body keeps real newlines, <br>, inline bold and hyperlinks. */
+.scope-editable-block .scope-rich-surface,
+.scope-editable-block .scope-block-subtitle,
+.scope-editable-block .scope-rich-surface p,
+.scope-editable-block .scope-block-subtitle p{
+  white-space:pre-line;
+  overflow-wrap:anywhere;
+}
+.scope-editable-block .scope-rich-surface strong,
+.scope-editable-block .scope-block-subtitle strong{
+  font-weight:700;
+}
+.scope-editable-block .scope-rich-surface a,
+.scope-editable-block .scope-block-subtitle a{
+  color:var(--loc-accent);
+  text-decoration:underline;
+  text-underline-offset:.16em;
+}
+.scope-editable-block .scope-block-subtitle p{
+  margin:0;
+  color:inherit;
+  font-size:inherit;
+  font-weight:inherit;
+  line-height:inherit;
+}
+.scope-editable-block .scope-block-entity-grid>.scope-block-text-bubble{
+  min-width:0;
+  border:1px solid var(--loc-line);
+  border-radius:1.15rem;
+  background:var(--loc-surface-soft);
+  box-shadow:none;
+  padding:.75rem 1rem;
+}
+.scope-editable-block .scope-block-text-bubble .scope-rich-surface>p:first-child{margin-top:0}
+.scope-editable-block .scope-block-text-bubble .scope-rich-surface>p:last-child{margin-bottom:0}
+.scope-editable-block .scope-block-entity-grid>.scope-block-entity{
+  border-radius:var(--loc-ui-radius-md);
+  background:var(--loc-surface-soft);
+}
 @media(max-width:680px){.scope-block-entity-grid{grid-template-columns:1fr}}
 
 .scope-blocknote-linkbar{display:flex;gap:.45rem;flex-wrap:wrap;margin:0 0 .45rem}
@@ -370,3 +410,29 @@
 .scope-management-disclosure[open]>summary::after{content:'－'}
 .scope-management-disclosure-body{padding:0 1rem 1rem}
 .scope-management-disclosure-body>.loc-card{margin:0;border:0;box-shadow:none;background:transparent;padding:.25rem 0}
+
+/* Rich header descriptions must preserve authored BlockNote markup. */
+.scope-editable-block .loc-subtitle>p,
+.loc-home-hero .loc-subtitle>p,
+.author-home-hero .loc-subtitle>p{
+  margin:0!important;
+  padding:0;
+  color:inherit!important;
+  font-size:inherit!important;
+  font-weight:inherit!important;
+  line-height:inherit!important;
+  letter-spacing:inherit;
+  white-space:pre-line;
+}
+.scope-editable-block .loc-subtitle strong,
+.loc-home-hero .loc-subtitle strong,
+.author-home-hero .loc-subtitle strong{
+  font-weight:750;
+}
+.scope-editable-block .loc-subtitle a,
+.loc-home-hero .loc-subtitle a,
+.author-home-hero .loc-subtitle a{
+  color:inherit;
+  text-decoration:underline;
+  text-underline-offset:.16em;
+}
