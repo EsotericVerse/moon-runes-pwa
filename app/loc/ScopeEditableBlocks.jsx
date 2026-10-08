@@ -6,6 +6,7 @@ import {deleteRows,insertRows,updateRows} from './db-client.mjs';
 import {selectScopeBlocks} from './scope-data';
 import {useAccount} from './use-account';
 import RichBlockEditor from './RichBlockEditor';
+import {stripLocHomeEditorPlaceholders} from './loc-home-text.mjs';
 
 const ENTITY_LIMIT=6;
 const UID_ALPHABET='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -149,15 +150,18 @@ export default function ScopeEditableBlocks({
     if(!draft)return;
     setBusy(true);setMessage('儲存中…');
     try{
+      const normalizeSavedHtml=value=>scopeId==='loc'&&pageName==='index'
+        ?stripLocHomeEditorPlaceholders(value)
+        :String(value??'');
       const values={
         page_name:pageName,
         block_title:String(draft.title||'').trim(),
-        block_text:String(draft.text||''),
+        block_text:normalizeSavedHtml(draft.text),
         block_order:Number(draft.order)||1,
         block_entity:normalizeEntities(draft.entities).map(({uid,title,text})=>({
           uid,
           title:String(title||'').trim(),
-          text:String(text||'')
+          text:normalizeSavedHtml(text)
         }))
       };
       if(draft.stored){

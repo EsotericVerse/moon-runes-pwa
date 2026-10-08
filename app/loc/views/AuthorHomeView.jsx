@@ -1,4 +1,3 @@
-import { PageComposition } from '../../PageComposition';
 import authorHeroAsset from '../../../pics/lo3rwang-hero.jpg';
 
 function AuthorPage({eyebrow,title,subtitle,intro,heroImage=null,heroContent=null,sections=[]}){
@@ -216,7 +215,7 @@ export default function AuthorHomeView({section=null}){
     });
     const ids=sectionGroups[section]||[];
     const activeSections=ids.length?detailedSections.filter(item=>ids.includes(item.id)):detailedSections;
-    return <PageComposition
+    return <AuthorPage
       eyebrow="Author"
       title="Lucas Oscar Wang 政德"
       subtitle="lo3rwang"

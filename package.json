@@ -5,11 +5,12 @@
   "scripts": {
     "dev": "next dev",
     "verify:modules": "node scripts/verify-module-contracts.mjs",
+    "verify:loc-home-text": "node scripts/test-loc-home-text.mjs",
     "verify:directories": "node scripts/verify-directory-governance.mjs",
     "verify:auth": "node scripts/verify-auth-boundary.mjs",
     "verify:rune-draw": "node scripts/verify-rune-draw-algorithm.mjs",
     "verify:semantics": "node scripts/verify-current-semantics.mjs",
-    "verify": "npm run verify:db-adapters && npm run verify:rune-draw && npm run verify:rune66-keywords && npm run verify:modules && npm run verify:semantics && npm run verify:scope-registry && npm run verify:directories && npm run verify:auth && npm run verify:theme && npm run verify:management",
+    "verify": "npm run verify:loc-home-text && npm run verify:db-adapters && npm run verify:rune-draw && npm run verify:rune66-keywords && npm run verify:modules && npm run verify:semantics && npm run verify:scope-registry && npm run verify:directories && npm run verify:auth && npm run verify:theme && npm run verify:management",
     "build": "next build",
     "verify:theme": "node scripts/verify-theme-contract.mjs",
     "verify:scope-registry": "node scripts/verify-scope-registry.mjs",

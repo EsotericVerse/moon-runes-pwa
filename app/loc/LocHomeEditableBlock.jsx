@@ -1,15 +1,16 @@
 'use client';
 
 import ScopeEditableBlocks from './ScopeEditableBlocks';
+import {stripLocHomeEditorPlaceholders} from './loc-home-text.mjs';
 
 function stripOuterParagraph(html=''){
-  const value=String(html||'').trim();
+  const value=stripLocHomeEditorPlaceholders(html).trim();
   const match=value.match(/^<p[^>]*>([\s\S]*)<\/p>$/i);
   return match?match[1]:value;
 }
 
 function paragraphParts(html=''){
-  const value=String(html||'');
+  const value=stripLocHomeEditorPlaceholders(html);
   const parts=[];
   const re=/<p[^>]*>([\s\S]*?)<\/p>/gi;
   let match;
@@ -18,9 +19,10 @@ function paragraphParts(html=''){
 }
 
 function Html({html,className='',tag='div'}){
-  if(!html)return null;
+  const cleaned=stripLocHomeEditorPlaceholders(html);
+  if(!cleaned)return null;
   const Tag=tag;
-  return <Tag className={className||undefined} dangerouslySetInnerHTML={{__html:html}}/>;
+  return <Tag className={className||undefined} dangerouslySetInnerHTML={{__html:cleaned}}/>;
 }
 
 function entityAt(slot,index){
