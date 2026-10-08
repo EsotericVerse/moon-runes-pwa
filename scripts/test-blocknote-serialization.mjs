@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {canonicalBlockNoteBlocks,canonicalBlockNoteHtml} from '../app/loc/blocknote-serialization.mjs';
+import {normalizeImageSource,imageBlockForUrl,isEmptyImageTarget,countHtmlImages,frameImageCount,firstFrameImageUrl,heroImageMode,stripHeroImageTag} from '../app/loc/blocknote-image-url.mjs';
 
 const glyph='\uFFFC';
 const blocks=[
@@ -39,5 +40,34 @@ assert.equal(canonicalBlockNoteHtml('<p>前'+glyph+'後</p>'),'<p>前'+glyph+'�
 assert.equal(canonicalBlockNoteHtml('<p><img src="https://example.com/asset.png"></p>'),'<p><img src="https://example.com/asset.png"></p>','media must remain');
 assert.equal(canonicalBlockNoteHtml('<p class="editor-empty">'+glyph+'</p>'),'<p class="editor-empty"><br></p>','keep paragraph attributes');
 assert.equal(canonicalBlockNoteHtml('<p>作者的話</p><p>ex-admin of StarRiver BBS</p>'),'<p>作者的話</p><p>ex-admin of StarRiver BBS</p>');
+
+
+assert.equal(normalizeImageSource(' https://example.com/pic.png '),'https://example.com/pic.png');
+assert.equal(normalizeImageSource('javascript:alert(1)'),'');
+assert.equal(normalizeImageSource('data:image/png;base64,AAAA'),'');
+assert.equal(normalizeImageSource('ftp://example.com/pic.png'),'');
+assert.equal(normalizeImageSource('https://username:password@example.com/a.png'),'');
+assert.equal(normalizeImageSource('/pics/relative.png'),'');
+assert.deepEqual(imageBlockForUrl('https://example.com/test.png'),{
+  type:'image',props:{url:'https://example.com/test.png',caption:'',showPreview:true}
+});
+assert.equal(imageBlockForUrl('file:///secret'),null);
+assert.ok(isEmptyImageTarget({type:'paragraph',content:[]}));
+assert.ok(isEmptyImageTarget({type:'paragraph',content:[{type:'text',text:' ',styles:{}}]}));
+assert.ok(!isEmptyImageTarget({type:'paragraph',content:[{type:'text',text:'Existing copy',styles:{}}]}));
+const imageFrame={
+  subtitle:'<p>小標題</p>',
+  text:'<p>段落</p>',
+  entities:[{title:'',text:'<p><img src="https://example.com/art.png"></p>',image_mode:'side'}]
+};
+assert.equal(frameImageCount(imageFrame),1,'one image bubble counts as one image in the entire frame');
+assert.equal(firstFrameImageUrl(imageFrame),'https://example.com/art.png');
+assert.equal(heroImageMode(imageFrame),'side');
+assert.equal(heroImageMode({...imageFrame,entities:[]}), 'background');
+assert.equal(countHtmlImages('<img src="a"><img src="b">'),2);
+assert.equal(frameImageCount({...imageFrame,text:'<img src="https://example.com/second.png">'}),2,
+  'a second image in another field must be rejected by save validation');
+assert.equal(stripHeroImageTag('<p>Hello</p><p><img src="https://example.com/art.png"></p>'),'<p>Hello</p>',
+  'Hero artwork must be rendered once by its frame, not a second inline image');
 
 console.log('[blocknote-serialization] empty paragraph count, bold, links, media, nested blocks and HTML round-trip guards passed');

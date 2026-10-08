@@ -14,6 +14,7 @@ export default function BlockNoteEditor({
   editable=true,
   onChange=null,
   onHtmlChange=null,
+  canInsertImage=true,
   className=''
 }){
   const normalized=normalizeBlocks(initialContent);
@@ -26,6 +27,7 @@ export default function BlockNoteEditor({
       editable={editable}
       onChange={onChange}
       onHtmlChange={onHtmlChange}
+      canInsertImage={canInsertImage}
     />
   </div>;
 }

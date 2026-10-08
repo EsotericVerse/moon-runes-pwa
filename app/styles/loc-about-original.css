@@ -201,6 +201,67 @@
 .loc-home-block--hero>.loc-home-block__header>.loc-subtitle{color:#e8d6ac}
 .loc-home-block--hero>.loc-home-block__body p{color:#edf1f9;line-height:1.85}
 .loc-home-block--hero>.loc-home-block__body strong{color:inherit}
+/* Only frame 1 can use background artwork. The side option makes the same
+   image a contained bubble, never a second illustration or overlay. */
+.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home>.loc-home-block--hero.loc-home-block--hero-side{
+  display:grid;
+  grid-template-columns:minmax(0,1.25fr) minmax(240px,.75fr);
+  grid-template-areas:"header media" "body media" "children media";
+  gap:.8rem clamp(1rem,3vw,2rem);
+  align-items:center;
+  background:#101725;
+}
+.loc-home-block--hero-side>.loc-home-block__header{grid-area:header}
+.loc-home-block--hero-side>.loc-home-block__body{grid-area:body}
+.loc-home-block--hero-side>.loc-home-block__children{grid-area:children}
+.loc-home>.loc-home-block--hero.loc-home-block--hero-side>.loc-home-block__media{
+  grid-area:media;
+  position:relative;
+  z-index:0;
+  inset:auto;
+  width:100%;
+  height:auto;
+  max-width:100%;
+  align-self:center;
+  border:1px solid var(--loc-line);
+  border-radius:var(--loc-radius-sm);
+  background:var(--loc-surface-soft);
+  padding:.65rem;
+}
+.loc-home-block--hero-side>.loc-home-block__media img,
+.loc-home-block--hero-side>.loc-home-block__media picture{
+  display:block;
+  height:auto;
+  max-height:440px;
+  width:100%;
+  object-fit:contain;
+}
+.loc-home-block--hero-side>.loc-home-block__media img{
+  filter:none;
+  mask-image:none;
+}
+.loc-home-block--hero-side>.loc-home-block__header,
+.loc-home-block--hero-side>.loc-home-block__body,
+.loc-home-block--hero-side>.loc-home-block__children{max-width:none}
+.loc-home-block__media-bubble{
+  width:100%;
+  max-width:var(--loc-home-media-max,100%);
+  padding:.7rem;
+  overflow:hidden;
+  border:1px solid var(--loc-line);
+  background:var(--loc-surface-soft);
+}
+@media(max-width:760px){
+  .loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home>.loc-home-block--hero.loc-home-block--hero-side{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-areas:"header" "body" "children" "media";
+  }
+  .loc-home>.loc-home-block--hero.loc-home-block--hero-side>.loc-home-block__media{
+    width:min(100%,520px);
+    justify-self:center;
+  }
+}
+
 @media(max-width:900px){
   .loc-home-block__children{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
