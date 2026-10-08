@@ -1,6 +1,7 @@
 import {test,expect} from '@playwright/test';
 
 test('Four feature page hero frames read one LOC source while LunaRunes stays unchanged',async({page})=>{
+  let locSearchSubtitle='';
   const features=[
     ['culture','文化','Culture'],
     ['statics','統計','Statistics'],
@@ -16,6 +17,7 @@ test('Four feature page hero frames read one LOC source while LunaRunes stays un
     await expect(hero.locator(':scope > .loc-eyebrow')).toHaveText(english);
     await expect(hero.locator('h1')).toHaveText(title);
     await expect(hero.locator('.scope-subtitle')).not.toBeEmpty();
+    if(feature==='search')locSearchSubtitle=(await hero.locator('.scope-subtitle').innerText()).trim();
     await expect(hero.locator('.scope-hero-description')).not.toBeEmpty();
     await expect(hero.locator('.scope-hero-description p')).toHaveCount(1);
   }
@@ -25,7 +27,10 @@ test('Four feature page hero frames read one LOC source while LunaRunes stays un
   await expect(page.locator('header.scope-feature-hero')).toHaveAttribute('data-feature-hero-source','loc',{timeout:25_000});
   await expect(page.locator('header.scope-feature-hero > .loc-eyebrow')).toHaveText('Search');
   await expect(page.locator('header.scope-feature-hero h1')).toHaveText('搜尋');
-  await expect(page.locator('header.scope-feature-hero .scope-subtitle')).toContainText('月典');
+  // Subtitle text is authored and editable in the LOC shared source.
+  // Test sharing by comparing to LOC's live value, never by pinning its wording.
+  expect(locSearchSubtitle).not.toBe('');
+  await expect(page.locator('header.scope-feature-hero .scope-subtitle')).toHaveText(locSearchSubtitle);
 
   // Rune pages are read-only and retain the current independent UI copy.
   await page.goto('/lrunes/search/',{waitUntil:'domcontentloaded'});
