@@ -36,6 +36,7 @@
     "feature/rune66-keyword-classification",
     "fix-author-home-moonlight-album-20261008",
     "fix-scope-editable-block-click-capture-20261008",
+    "fix/admin-native-select-registry-fallback-v3-20261008",
     "fix/blocknote-save-roundtrip-20261008",
     "fix/canonical-management-oauth-redirects",
     "fix/culture-current-period-first-river",
