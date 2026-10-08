@@ -174,6 +174,15 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
     setMessage('已從時間長河帶入定錨點。');
   },[selectedAnchorPick?.nonce]);
 
+  // Native showModal puts this form in the browser top layer rather than
+  // letting a non-modal open dialog disappear below the vis-timeline canvas.
+  // It must be a hook, before the conditional return, to support repeated adds.
+  useEffect(()=>{
+    const dialog=dialogRef.current;
+    if(formOpen&&dialog&&!dialog.open)dialog.showModal();
+    return()=>{if(dialog?.open)dialog.close();};
+  },[formOpen]);
+
   if(!editable||account.loading||account.permissionLoading||!account.canManageScopeSync(dataScope))return null;
 
   const selectRow=row=>{
@@ -308,15 +317,6 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
     }catch(error){setMessage(error?.message||'刪除失敗。');}
     finally{setBusy(false);}
   };
-
-  // Native showModal puts this form in the browser top layer rather than
-  // letting a non-modal open dialog disappear below the vis-timeline canvas.
-  // It must be a hook, before the conditional return, to support repeated adds.
-  useEffect(()=>{
-    const dialog=dialogRef.current;
-    if(formOpen&&dialog&&!dialog.open)dialog.showModal();
-    return()=>{if(dialog?.open)dialog.close();};
-  },[formOpen]);
 
   if(!formOpen)return null;
 
