@@ -106,7 +106,6 @@ export default function Culture(){
   const [editingWorkKey,setEditingWorkKey]=useState('');
   const [selectedTimelineRecordId,setSelectedTimelineRecordId]=useState('');
   const [selectedTimelineDate,setSelectedTimelineDate]=useState('');
-  const [riverAction,setRiverAction]=useState('browse');
   const [showTimelineCreation,setShowTimelineCreation]=useState(false);
   const [suggestedRecordType,setSuggestedRecordType]=useState('anchor');
   const [suggestedRequestNonce,setSuggestedRequestNonce]=useState(0);
@@ -274,7 +273,6 @@ export default function Culture(){
   const currentStructurePeriod=(!isAggregateScope&&selectedWorkPeriod&&selectedWorkPeriod.period!=='all')
     ?selectedWorkPeriod
     :(openPeriod||primaryPeriods.find(item=>String(item?.status||'').toLowerCase()==='current')||primaryPeriods.at(-1)||null);
-  const currentStructureIndex=primaryPeriods.findIndex(item=>periodKey(item)===periodKey(currentStructurePeriod));
   const currentStructureStart=String(currentStructurePeriod?.start_date||'').slice(0,10);
   const currentStructureEnd=String(currentStructurePeriod?.end_date||new Date().toISOString().slice(0,10)).slice(0,10);
   const currentTimelineItems=useMemo(()=>{
@@ -484,11 +482,11 @@ export default function Culture(){
         entry_type:'virtual_anchor',
         start_date:item.date,
         title:'建議定錨 '+item.date+'｜時期位置 '+(position*100).toFixed(1)+'%｜前 3 日 '+beforeCount.toLocaleString()+' 項 ('+((beforeCount/total)*100).toFixed(1)+'%)／後 3 日 '+afterCount.toLocaleString()+' 項 ('+((afterCount/total)*100).toFixed(1)+'%)｜'+(item.analysis||[]).join(' '),
-        display_label:(selected?'◆':'◇')+' '+beforeCount.toLocaleString()+'／'+afterCount.toLocaleString(),
+        display_label:selected?'◆':'◇',
         group_label:'建議定錨',
         item_count:0,
         className:'scope-virtual-anchor'+(selected?' is-selected':''),
-        style:'--virtual-anchor-strength:'+strength+';font-size:'+(16+Math.round(strength*12))+'px;',
+        style:'--virtual-anchor-strength:'+strength+';font-size:18px;',
         virtual_anchor:{...item,position_ratio:position,before_ratio:beforeCount/total,after_ratio:afterCount/total,strength_ratio:strength}
       };
     });
@@ -685,14 +683,10 @@ export default function Culture(){
                   {showTimelineCreation?<div role='group' aria-label='新增時間資料' className='scope-culture-timeline-create'>
                     {[['period','時期'],['event','事件']].map(([type,label])=><button type='button' key={type} className='loc-button' onClick={()=>{
                       setShowTimelineCreation(false);
-                      setRiverAction('browse');
                       beginTimelineCreation(type,currentStructureStart);
                     }}>＋ 新增{label}</button>)}
                   </div>:null}
-                  <button type='button' className='loc-button' aria-pressed={riverAction==='anchor'} onClick={()=>setRiverAction(value=>value==='anchor'?'browse':'anchor')}>
-                    {riverAction==='anchor'?'結束河道新增':'在河道點選新增定錨點'}
-                  </button>
-                  <span className='scope-status'>{riverAction==='anchor'?'新增模式：點河道空白日期建立定錨點；此時不切換時期。':'瀏覽模式：拖動河道，點兩端導覽相鄰時期；點既有項目進入編輯。'}</span>
+                  <span className='scope-status'>點擊河道空白日期直接新增定錨點；拖曳可平移時間軸，點選既有項目可編輯。切換時期請使用下方時期選單。</span>
                 </div>:null}
                 {currentTimelineItems.length?<CultureTimeline
                   items={currentTimelineItems}
@@ -703,15 +697,8 @@ export default function Culture(){
                   windowEnd={currentStructureEnd}
                   boundaryStart={currentStructureStart}
                   boundaryEnd={currentStructureEnd}
-                  onBoundaryNavigate={riverAction==='browse'&&pickingAnchorSlot===null?direction=>{
-                    if(currentStructureIndex<0)return;
-                    const nextIndex=direction==='previous'?currentStructureIndex-1:currentStructureIndex+1;
-                    const next=primaryPeriods[nextIndex];
-                    if(next)setSelectedPeriodKey(periodKey(next));
-                  }:null}
-                  onTimeClick={riverAction==='anchor'&&account.canManageScopeSync(scopeId)?date=>{
+                  onTimeClick={pickingAnchorSlot===null&&account.canManageScopeSync(scopeId)?date=>{
                     beginTimelineCreation('anchor',date);
-                    setRiverAction('browse');
                   }:null}
                   onSelect={item=>{
                     if(pickingAnchorSlot!==null){
@@ -780,6 +767,27 @@ export default function Culture(){
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error)}</p>:null}
                 {!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!classificationBuckets.length
                   ?<p className='scope-status'>{UI_COPY.culture.noPeriodClassification}</p>:null}
+                <div className='scope-culture-anchor-actions'>
+                  <span>建議定錨 {riverAnalysis.suggestions.length} 個 · 已選 {selectedVirtualAnchorDates.length} 個（◇ 候選／◆ 已選）。日期前後三日作品筆數及分析可在河道提示查看。</span>
+                  {riverAnalysis.suggestions.length?<details className='scope-culture-anchor-picker' open>
+                    <summary>選取建議定錨日期</summary>
+                    <div className='scope-culture-anchor-choices'>
+                      {riverAnalysis.suggestions.map(item=><label key={item.date} title={(item.analysis||[]).join(' ')}>
+                        <input type='checkbox' checked={selectedVirtualAnchorDates.includes(item.date)} disabled={anchorSaveBusy} onChange={()=>toggleVirtualAnchor(item.date)}/>
+                        <span>{item.date}（{Number(item.beforeCount||0).toLocaleString()}／{Number(item.afterCount||0).toLocaleString()}）</span>
+                      </label>)}
+                    </div>
+                  </details>:<span className='scope-status'>目前沒有可建議的定錨日期。</span>}
+                  <div className='scope-preview-links'>
+                    <button type='button' className='loc-button' disabled={anchorSaveBusy||!riverAnalysis.suggestions.length} onClick={()=>setSelectedVirtualAnchorDates(riverAnalysis.suggestions.map(item=>item.date))}>全選建議</button>
+                    <button type='button' className='loc-button' disabled={anchorSaveBusy||!selectedVirtualAnchorDates.length} onClick={()=>setSelectedVirtualAnchorDates([])}>清除選取</button>
+                    <button type='button' className='loc-button primary' disabled={anchorSaveBusy||!selectedVirtualAnchorDates.length||!account.canManageScopeSync(classificationScope)} onClick={saveSelectedVirtualAnchors}>
+                      {anchorSaveBusy?UI_COPY.culture.creating:'建立 '+selectedVirtualAnchorDates.length+' 個正式定錨點'}
+                    </button>
+                  </div>
+                  {!account.canManageScopeSync(classificationScope)?<span className='scope-status'>登入管理權限後才能建立正式定錨點。</span>:null}
+                  {anchorSaveMessage?<span role='status'>{anchorSaveMessage}</span>:null}
+                </div>
                 {classificationRiverItems.length?<CultureTimeline
                   items={classificationRiverItems}
                   labelOf={item=>item?.entry_type==='virtual_anchor'?(item.display_label||'◇'):''}
@@ -820,14 +828,6 @@ export default function Culture(){
                     windowEnd={selectedWindowEnd}
                   />:null}
                 </section>:null}
-                <div className='scope-culture-anchor-actions'>
-                  <span>◇ 虛擬定錨點 {riverAnalysis.suggestions.length} 個 · 已選 {selectedVirtualAnchorDates.length} 個｜河道標籤為前／後各 3 日筆數；滑過可看百分比與分析。</span>
-                  {account.canManageScopeSync(classificationScope)&&selectedVirtualAnchorDates.length?<button type='button' className='loc-button primary' disabled={anchorSaveBusy} onClick={saveSelectedVirtualAnchors}>
-                    {anchorSaveBusy?UI_COPY.culture.creating:'建立 '+selectedVirtualAnchorDates.length+' 個正式定錨點'}
-                  </button>:null}
-                  {anchorSaveMessage?<span role='status'>{anchorSaveMessage}</span>:null}
-                </div>
-
                 <p className='scope-status'>該時期總作品數：{Number(sourceSnapshotQuery.data?.totalCount||0).toLocaleString()} 項。</p>
 
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error)}</p>:null}
