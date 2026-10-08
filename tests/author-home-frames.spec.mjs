@@ -69,10 +69,11 @@ test('Author Hero keeps its own taller image framing; LOC artwork stays unchange
   const overlay=await authorHero.locator(':scope > .loc-home-block__media')
     .evaluate(el=>getComputedStyle(el,'::after').backgroundImage);
   expect(overlay).toContain('linear-gradient(');
-  // Author imagery stays visible behind the readable text; never restore
-  // the near-opaque (.96 desktop/.90 mobile) mask that hid the entire artwork.
-  expect(overlay).not.toContain('0.96');
-  expect(overlay).not.toContain('0.90');
+  // Inspect the actual computed gradient: browser serializers may use 0.9
+  // instead of 0.90. The author image must not be covered by near-black.
+  const overlayAlpha=[...overlay.matchAll(/rgba\\(3,\\s*6,\\s*13,\\s*([\\d.]+)\\)/g)].map(match=>Number(match[1]));
+  expect(overlayAlpha.length).toBeGreaterThan(0);
+  expect(Math.max(...overlayAlpha)).toBeLessThanOrEqual(.70);
 
   // Both pages still have the same DOM contract and one image in Hero.
   await expect(authorHero.locator(':scope > .loc-home-block__media img')).toHaveCount(1);
