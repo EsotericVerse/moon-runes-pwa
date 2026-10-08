@@ -291,6 +291,18 @@ export async function selectStyleKeywordCounts(galaxyTable,tags){
 function styleAnchorDate(row){
   return String(row?.time_date||(Number.isInteger(row?.year_value)?String(row.year_value)+'-01-01':'')).slice(0,10);
 }
+// The canonical Time column is TEXT. Historical rows with several styles may
+// contain clearly titled paragraphs: prefer the matching paragraph when present.
+function styleDescriptionForTag(description,tag,tags){
+  const text=String(description||'').trim();
+  const parts=text.split(/\n\s*\n/).map(part=>part.trim()).filter(Boolean);
+  const headings=new Map(tags.map(item=>[normalizeSearch(item),item]));
+  const match=parts.find(part=>{
+    const pos=part.indexOf('：');
+    return pos>0&&headings.has(normalizeSearch(part.slice(0,pos)))&&normalizeSearch(part.slice(0,pos))===normalizeSearch(tag);
+  });
+  return match?match.slice(match.indexOf('：')+1).trim():text;
+}
 export async function selectStyleKeywordIntroductions(scopes,query){
   const token=normalizeSearch(query);
   if(!token)return [];
@@ -302,31 +314,36 @@ export async function selectStyleKeywordIntroductions(scopes,query){
       filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}],
       orders:[{column:'display_order',ascending:true},{column:'record_id',ascending:true}]
     });
-    const anchors=new Map((result.rows||[])
+    const anchorMap=new Map((result.rows||[])
       .filter(row=>row.record_type==='anchor'&&row.resource_id)
       .map(row=>[String(row.resource_id),row]));
-    const matches=(result.rows||[]).filter(row=>['period','event'].includes(row.record_type)).flatMap(row=>{
+    const styleRows=(result.rows||[]).filter(row=>['period','event'].includes(row.record_type)&&styleTagList(row.style_tags).length>0);
+    const allStyles=[...new Map(styleRows.flatMap(row=>styleTagList(row.style_tags).map(tag=>[normalizeSearch(tag),tag]))).values()];
+    const matches=styleRows.flatMap(row=>{
       const tags=styleTagList(row.style_tags);
       const matched=tags.find(tag=>normalizeSearch(tag)===token);
-      const description=String(row.style_description||'').trim();
-      if(!matched||!description)return [];
+      if(!matched||!String(row.style_description||'').trim())return [];
       const ids=Array.isArray(row.anchor_ids)?row.anchor_ids.map(String):[];
-      const start=ids[0]==='0'?'':styleAnchorDate(anchors.get(ids[0]));
-      const end=ids.at(-1)==='0'?'':styleAnchorDate(anchors.get(ids.at(-1)));
-      const others=tags.filter(tag=>normalizeSearch(tag)!==token);
-      return [{row,matched,description,start,end,others}];
+      const start=ids[0]==='0'?'':styleAnchorDate(anchorMap.get(ids[0]));
+      const end=ids.at(-1)==='0'?'':styleAnchorDate(anchorMap.get(ids.at(-1)));
+      return [{row,matched,tags,start,end,description:styleDescriptionForTag(row.style_description,matched,tags)}];
     });
-    return Promise.all(matches.map(async({row,matched,description,start,end,others})=>{
-      // Cross-link the other styles from this exact Time row. Their counts
-      // cover eligible works in this Scope, not only this period, and do not
-      // participate in the eight primary Class groups.
-      const related=await Promise.all(others.map(async tag=>{
-        try{
-          return {name:tag,work_count:await selectStyleKeywordDocumentCount(current.galaxy,tag)};
-        }catch{
-          return {name:tag,work_count:null};
-        }
-      }));
+    // Reuse one count promise per keyword within the current Scope/search.
+    const countCache=new Map();
+    function countOf(tag){
+      const key=normalizeSearch(tag);
+      if(!countCache.has(key))countCache.set(key,selectStyleKeywordDocumentCount(current.galaxy,tag).catch(()=>null));
+      return countCache.get(key);
+    }
+    return Promise.all(matches.map(async({row,matched,tags,start,end,description})=>{
+      const samePeriod=tags.filter(tag=>normalizeSearch(tag)!==token);
+      const otherPeriods=allStyles.filter(tag=>
+        normalizeSearch(tag)!==token&&!samePeriod.some(item=>normalizeSearch(item)===normalizeSearch(tag)));
+      const related=await Promise.all([...samePeriod,...otherPeriods].map(async tag=>({
+        name:tag,
+        work_count:await countOf(tag),
+        same_period:samePeriod.some(item=>normalizeSearch(item)===normalizeSearch(tag))
+      })));
       return {
         row:{
           id:'style-keyword:'+current.id+':'+String(row.record_id||row.resource_id||matched),
