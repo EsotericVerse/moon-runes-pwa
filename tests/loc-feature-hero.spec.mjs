@@ -130,3 +130,46 @@ test('LOC, Author and LunaRunes share home typography tiers without changing Run
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(2);
 });
+
+test('Each homepage Hero has exactly its fixed Scope identity above overlays',async({page})=>{
+  const entries=[
+    {path:'/',mark:'codex',label:'Codex X',visible:'X'},
+    {path:'/lo3rwang/',mark:'anchor',label:'光之定錨點',visible:'光之定錨點'},
+    {path:'/lrunes/',mark:'moon',label:'玄韻家黃色圓點標誌',visible:''}
+  ];
+  for(const entry of entries){
+    await page.goto(entry.path,{waitUntil:'domcontentloaded'});
+    const hero=entry.mark==='moon'
+      ?page.locator('.runes-home-hero')
+      :page.locator('.loc-home>.loc-home-block--hero');
+    await expect(hero).toBeVisible({timeout:25000});
+    const mark=hero.locator(':scope > .home-hero-identity');
+    await expect(mark).toHaveCount(1);
+    await expect(mark).toHaveClass(new RegExp('home-hero-identity--'+entry.mark+'(?:\\s|$)'));
+    await expect(mark).toHaveAttribute('role','img');
+    await expect(mark).toHaveAttribute('aria-label',entry.label);
+    await expect(mark).toHaveText(entry.visible);
+    await expect(mark).toHaveCSS('position','absolute');
+    await expect(mark).toHaveCSS('pointer-events','none');
+    const zIndex=await mark.evaluate(element=>Number(getComputedStyle(element).zIndex));
+    expect(zIndex).toBeGreaterThanOrEqual(3);
+    const heroBox=await hero.boundingBox();
+    const markBox=await mark.boundingBox();
+    expect(heroBox&&markBox).toBeTruthy();
+    expect(markBox.x).toBeGreaterThanOrEqual(heroBox.x-2);
+    expect(markBox.y).toBeGreaterThanOrEqual(heroBox.y-2);
+    expect(markBox.x+markBox.width).toBeLessThanOrEqual(heroBox.x+heroBox.width+2);
+    expect(markBox.y+markBox.height).toBeLessThanOrEqual(heroBox.y+heroBox.height+2);
+    if(entry.mark!=='codex'){
+      const dot=await mark.evaluate(el=>getComputedStyle(el,'::before'));
+      expect(dot).toBeTruthy();
+      const dotSize=await mark.evaluate(el=>parseFloat(getComputedStyle(el,'::before').width));
+      expect(dotSize).toBeGreaterThanOrEqual(12);
+    }
+    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(2);
+    await expect(page.locator('.home-hero-identity')).toHaveCount(1);
+  }
+  await page.goto('/culture/',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('.home-hero-identity')).toHaveCount(0);
+});

@@ -2,6 +2,7 @@ import {scopeOrigin} from '../modular/scope-registry';
 import {RUNE_CUSTOM_DRAW_MODES} from './rune-draw-modes.mjs';
 import CustomDrawSelector from './CustomDrawSelector';
 import RuneIntroSection from './RuneIntroSection';
+import HeroCornerIdentity from '../loc/HeroCornerIdentity';
 import runesHeroAsset from '../../pics/LunaRunes-hero.jpg';
 
 const runeHref=path=>{
@@ -22,6 +23,7 @@ export default function RunesClient(){
         decoding="async"
       />
       <div className="runes-home-hero-overlay" aria-hidden="true"/>
+      <HeroCornerIdentity scopeId="lrunes"/>
       <div className="runes-home-hero-copy">
         <p className="loc-eyebrow">LunaRunes</p>
         <div className="home-title-row">

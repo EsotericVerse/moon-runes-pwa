@@ -1,6 +1,7 @@
 'use client';
 
 import {SITE_IMAGES} from '../site-images';
+import HeroCornerIdentity from './HeroCornerIdentity';
 import authorHeroAsset from '../../pics/lo3rwang-hero.jpg';
 import {childPresentation} from './block-presentation.mjs';
 import {visibleHomeEntities} from './home-block-model.mjs';
@@ -77,6 +78,7 @@ function SharedHomeBlockDisplay(slot,scopeId='loc'){
         width={customImage?undefined:media?.src.width} height={customImage?undefined:media?.src.height}
         alt={media?.alt||'文字框架圖片'} loading="lazy" decoding="async"/>
     </article>):null}
+    {hero?<HeroCornerIdentity scopeId={scopeId}/>:null}
   </>;
 }
 
