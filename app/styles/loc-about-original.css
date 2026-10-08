@@ -148,7 +148,12 @@
   min-height:clamp(360px,48vh,540px);
   padding:clamp(1.5rem,4vw,3.4rem);
   background:#101725;
-  color:#f5f7fc;
+  /* Local Hero-only palette: never mutate the selected global Theme. */
+  --loc-text:#f5f7fc;
+  --loc-heading:#ffffff;
+  --loc-gold:#f5d795;
+  --loc-accent:#e8d6ac;
+  color:var(--loc-text);
 }
 .loc-home-block--hero>.loc-home-block__media{
   position:absolute;
