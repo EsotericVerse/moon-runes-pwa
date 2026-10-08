@@ -35,11 +35,11 @@ function isInteractiveTarget(target){
 }
 
 // Preserve timeline instances while editor dialogs, suggested points and
-// existing-anchor reviews update around them.
+// density suggestions update around them.
 const EMPTY_RIVER_FOCUS=Object.freeze({});
 function emptyRiverLabel(){return '';}
 function classificationRiverLabel(item){
-  return item?.entry_type==='virtual_anchor'?(item.display_label||'◇'):item?.entry_type==='anchor'?'●':'';
+  return item?.entry_type==='virtual_anchor'?(item.display_label||'◇'):'';
 }
 function labelOf(item,index){
   return item?.display_label||item?.name||item?.title||item?.period||UI_COPY.format.period(index+1);
@@ -476,37 +476,12 @@ export default function Culture(){
       };
     });
   },[riverAnalysis.suggestions,riverAnalysis.totalCount,selectedVirtualAnchorDates,selectedWindowStart,selectedWindowEnd]);
-  const windowAnchorRecords=useMemo(()=>anchorRecords.filter(item=>{
-    const date=String(item.start_date||'').slice(0,10);
-    return date&&(!selectedWindowStart||date>=selectedWindowStart)&&(!selectedWindowEnd||date<=selectedWindowEnd);
-  }),[anchorRecords,selectedWindowStart,selectedWindowEnd]);
-  const anchorReviews=useMemo(()=>{
-    const counts=new Map((riverAnalysis.density||[]).map(item=>[String(item.date),Number(item.count||0)]));
-    return windowAnchorRecords.map(anchor=>{
-      const date=String(anchor.start_date||'').slice(0,10);
-      const origin=Date.parse(date+'T00:00:00Z');
-      const countAt=offset=>counts.get(new Date(origin+offset*86400000).toISOString().slice(0,10))||0;
-      const before=[-3,-2,-1].reduce((total,offset)=>total+countAt(offset),0);
-      const after=[1,2,3].reduce((total,offset)=>total+countAt(offset),0);
-      const references=timelineItems.filter(row=>
-        ['period','event'].includes(String(row.entry_type||''))&&
-        Array.isArray(row.anchor_ids)&&row.anchor_ids.map(String).includes(String(anchor.resource_id))
-      );
-      return {anchor,date,before,after,references,hasDensity:counts.size>0};
-    });
-  },[windowAnchorRecords,timelineItems,riverAnalysis.density]);
-  const visibleExistingAnchors=useMemo(()=>windowAnchorRecords.map(item=>({
-    ...item,
-    display_label:'●',
-    group_label:'既有定錨',
-    group_key:'existing-anchors',
-    group_order:0,
-    className:'scope-existing-anchor',
-    title:'既有定錨：'+String(item.display_label||item.title||'')+'｜'+String(item.start_date||'').slice(0,10)
-  })),[windowAnchorRecords]);
+  // The first river is the one canonical place for existing anchors.
+  // The work-classification river compares works with optional *candidate*
+  // density dates; never render a second copy of official anchors.
   const classificationRiverItems=useMemo(
-    ()=>[...classificationBuckets,...visibleExistingAnchors,...virtualAnchorItems],
-    [classificationBuckets,visibleExistingAnchors,virtualAnchorItems]
+    ()=>[...classificationBuckets,...virtualAnchorItems],
+    [classificationBuckets,virtualAnchorItems]
   );
   useEffect(()=>{
     setSelectedVirtualAnchorDates(current=>current.filter(date=>riverAnalysis.suggestions.some(item=>item.date===date)));
@@ -777,42 +752,24 @@ export default function Culture(){
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error)}</p>:null}
                 {!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!classificationBuckets.length
                   ?<p className='scope-status'>{UI_COPY.culture.noPeriodClassification}</p>:null}
-                <section className='scope-culture-anchor-review' aria-label='既有定錨點持續回顧'>
-                  <h4>既有定錨點｜持續檢討</h4>
-                  <p className='scope-status'>先回顧範圍內的關鍵觀察點與形成原因，再對照前後作品、關聯時期／事件與系統建議。引用後的定錨點也能反覆檢視。</p>
-                  {anchorReviews.length?<div className='scope-culture-anchor-review-list'>
-                    {anchorReviews.map(({anchor,date,before,after,references,hasDensity})=><article key={anchor.record_id} className='scope-culture-anchor-review-item'>
-                      <div>
-                        <strong>{date}｜{anchor.display_label||anchor.title||'未命名定錨'}</strong>
-                        <p className='scope-status'>{anchor.summary||anchor.note||'尚未記錄此處的轉折原因，可開啟既有定錨點補充。'}</p>
-                        <p className='scope-status'>關聯：{references.length?references.map(item=>(item.entry_type==='period'?'時期':'事件')+'「'+(item.title||item.display_label||'未命名')+'」').join('、'):'目前尚未被時期／事件引用；仍保留作為獨立觀察點。'}</p>
-                        {hasDensity?<p className='scope-status'>本範圍作品數：前 3 日 {before} 項／後 3 日 {after} 項（僅代表作品量，不取代文化判斷）。</p>:null}
-                      </div>
-                      {account.canManageScopeSync(scopeId)?<button type='button' className='loc-button' onClick={()=>{
-                        setSelectedTimelineRecordId(anchor.record_id);
-                        setSelectedTimelineDate('');
-                      }}>回顧／編輯定錨</button>:null}
-                    </article>)}
-                  </div>:<p className='scope-status'>本範圍內沒有既有定錨點。可檢視其他時期或比較建議，不需要為了填滿河道而新增。</p>}
-                </section>
                 <div className='scope-culture-anchor-actions'>
-                  <span>既有定錨 {anchorReviews.length} 個／候選建議 {riverAnalysis.suggestions.length} 個 · 已選候選 {selectedVirtualAnchorDates.length} 個。建議用來查核是否遺漏重要轉折，不要求全部建立。</span>
-                  {riverAnalysis.suggestions.length?<details className='scope-culture-anchor-picker' open>
-                    <summary>比對可能遺漏的轉折（僅為建議，不會自動建立）</summary>
+                  <span>作品量候選日期 {riverAnalysis.suggestions.length} 個；正式定錨點請在第一條時間河道查看。候選僅供有需要時比對，不要求新增或反覆檢討。</span>
+                  {riverAnalysis.suggestions.length?<details className='scope-culture-anchor-picker'>
+                    <summary>需要時再展開比對作品量變化（候選日期，非正式定錨點）</summary>
                     <div className='scope-culture-anchor-choices'>
                       {riverAnalysis.suggestions.map(item=><label key={item.date} title={(item.analysis||[]).join(' ')}>
                         <input type='checkbox' checked={selectedVirtualAnchorDates.includes(item.date)} disabled={anchorSaveBusy} onChange={()=>toggleVirtualAnchor(item.date)}/>
                         <span>{item.date}｜前 3 日 {Number(item.beforeCount||0).toLocaleString()} 項／後 3 日 {Number(item.afterCount||0).toLocaleString()} 項｜{(item.analysis||[]).join(' ')}</span>
                       </label>)}
                     </div>
-                  </details>:<span className='scope-status'>目前沒有可建議的定錨日期。</span>}
-                  <div className='scope-preview-links'>
-                    <button type='button' className='loc-button' disabled={anchorSaveBusy||!riverAnalysis.suggestions.length} onClick={()=>setSelectedVirtualAnchorDates(riverAnalysis.suggestions.map(item=>item.date))}>全選待審候選</button>
-                    <button type='button' className='loc-button' disabled={anchorSaveBusy||!selectedVirtualAnchorDates.length} onClick={()=>setSelectedVirtualAnchorDates([])}>清除選取</button>
-                    <button type='button' className='loc-button primary' disabled={anchorSaveBusy||!selectedVirtualAnchorDates.length||!account.canManageScopeSync(classificationScope)} onClick={saveSelectedVirtualAnchors}>
-                      {anchorSaveBusy?UI_COPY.culture.creating:'審核後建立 '+selectedVirtualAnchorDates.length+' 個正式定錨點'}
-                    </button>
-                  </div>
+                    <div className='scope-preview-links'>
+                      <button type='button' className='loc-button' disabled={anchorSaveBusy} onClick={()=>setSelectedVirtualAnchorDates(riverAnalysis.suggestions.map(item=>item.date))}>全選待審候選</button>
+                      <button type='button' className='loc-button' disabled={anchorSaveBusy||!selectedVirtualAnchorDates.length} onClick={()=>setSelectedVirtualAnchorDates([])}>清除選取</button>
+                      <button type='button' className='loc-button primary' disabled={anchorSaveBusy||!selectedVirtualAnchorDates.length||!account.canManageScopeSync(classificationScope)} onClick={saveSelectedVirtualAnchors}>
+                        {anchorSaveBusy?UI_COPY.culture.creating:'審核後建立 '+selectedVirtualAnchorDates.length+' 個正式定錨點'}
+                      </button>
+                    </div>
+                  </details>:null}
                   {!account.canManageScopeSync(classificationScope)?<span className='scope-status'>登入管理權限後才能建立正式定錨點。</span>:null}
                   {anchorSaveMessage?<span role='status'>{anchorSaveMessage}</span>:null}
                 </div>
@@ -827,13 +784,6 @@ export default function Culture(){
                   onSelect={item=>{
                     if(item?.entryType==='virtual_anchor'){
                       toggleVirtualAnchor(String(item?.start||'').slice(0,10));
-                      return;
-                    }
-                    if(item?.entryType==='anchor'&&item.recordId){
-                      if(account.canManageScopeSync(scopeId)){
-                        setSelectedTimelineRecordId(item.recordId);
-                        setSelectedTimelineDate('');
-                      }
                       return;
                     }
                     const term=String(item?.category||item?.group||'').split(' · ')[0].trim();
