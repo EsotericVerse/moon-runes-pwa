@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {snapTimelineRangeToAnchors} from '../app/modular/modules/culture-timeline/culture-anchor-snap.mjs';
+import {splitStatusContentSections} from '../app/loc/loc-status-sections.mjs';
 import {blocksToPlainText,normalizeBlocks,plainTextToBlocks} from '../app/loc/blocknote-content.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -90,6 +91,16 @@ must(editableBlocks.includes('儲存失敗：')&&editableBlocks.includes('scope-
 must(editableBlocks.includes('dangerouslySetInnerHTML')&&!editableBlocks.includes('editable={false}'),'public page display must use static site markup; BlockNote is edit-only');
 must(authorHome.includes('authorHeroAsset')&&authorHome.includes('author-home-hero-copy')&&authorHome.includes('author-role-grid')&&authorHome.includes('author-professional-grid')&&authorHome.includes('author-system-grid')&&authorHome.includes('author-trinity-layout')&&authorHome.includes('author-contact-layout')&&!authorHome.includes('AuthorHomeEditableBlock'),'author homepage must preserve its October 1 sections and new hero without inline editing');
 must(locHomeEditable.includes('home-title-row')&&locHomeEditable.includes('home-status-bubbles')&&locHomeEditable.includes('loc-bubble'),'LOC homepage must preserve its original presentation while editing data-backed blocks');
+
+const statusFixture='<h2 data-level="2">目前文字作品</h2><p><strong>文字作品</strong></p><h2 data-level="2">系統架構</h2><p><a href="/statics/">架構說明</a></p>';
+const framedStatus=splitStatusContentSections(statusFixture);
+must(framedStatus.length===2&&framedStatus.map(section=>section.html).join('')===statusFixture,'LOC status frames must retain every authored heading, paragraph, rich style and link in block_text');
+must(splitStatusContentSections('<p>沒有標題的正文</p>').length===1,'LOC status must not hide ordinary rich body without section headings');
+must(!splitStatusContentSections('').length,'LOC status must not invent empty data frames');
+must(locHomeEditable.includes('splitStatusContentSections(slot.text)')&&locHomeEditable.includes('home-progress-grid home-status-frames')&&locHomeEditable.includes('home-progress-item home-status-card'),'LOC System Status must render saved block_text in framed homepage cards');
+must(locHomeEditable.includes("childPresentation(entity.title)==='card'")&&locHomeEditable.includes("childPresentation(entity.title)==='bubble'&&String(entity.text||'').trim()"),'LOC System Status must show titled child entities as framed cards and suppress empty bubble artifacts');
+must(read('app/styles/home-content.css').includes('.home-progress .home-status-frames')&&read('app/styles/home-content.css').includes('.home-progress .home-status-card'),'LOC status frames must retain their theme-driven styling');
+
 must(locHomeEditable.includes('allowEditing={true}')&&!locHomeEditable.includes('allowEditing={false}')&&editableBlocks.includes("account.canManageGlobalSync()")&&editableBlocks.includes("scopeId==='loc'"),'LOC homepage must allow authorized global Admin inline editing while keeping visitors read-only');
 must(locHome.includes('<LocHomeEditableBlock order={1} variant="hero"/>')&&locHome.includes('className="home-hero-visual"')&&!locHome.includes('<p>以微月光為鑑'),'LOC Hero must read authored text from Supabase block 1 and preserve approved full-image visual');
 must(!runesHome.includes('ScopeEditableBlocks')&&runesHome.includes('className="basic-grid"'),'LunaRunes homepage must remain a fixed special presentation without inline management editing');
