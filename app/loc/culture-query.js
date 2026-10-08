@@ -225,7 +225,7 @@ function timelineItems(rows,{includeScope=false}={}){
     const start=row.start_date||startAnchor?.start_date||null;
     const end=row.end_date||endAnchor?.start_date||null;
     const kindLabel={anchor:'定錨點',event:'事件',period:'時期',style_comment:'風格標籤'}[row.entry_type];
-    const groupOrder={anchor:0,event:1,period:2,style_comment:3}[row.entry_type]??99;
+    const groupOrder={anchor:0,event:1,style_comment:2,period:3}[row.entry_type]??99;
     const scopeId=scopeIdOf(row.scope_id);
     return {...row,scope_id:scopeId,id:`${scopeId}:${row.entry_key}`,entry_id:`${scopeId}:${row.entry_key}`,start_date:start,end_date:end,date:start||end,
       display_label:row.title,

@@ -136,20 +136,19 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
   useEffect(()=>{
     const recordType=EDITABLE_TYPES.some(([type])=>type===suggestedRecordType)?suggestedRecordType:'anchor';
     const hasAnchorDate=/^\d{4}-\d{2}-\d{2}$/.test(effectiveSuggestedAnchorDate);
-    // New period/event actions intentionally have no free-date input. They
-    // must still open the existing editor using two anchor selectors.
+    // All three non-anchor types share this editor; the form chooses their
+    // required references: period 1–2, event 2, style_comment 1.
     if(!hasAnchorDate&&(recordType==='anchor'||!suggestedRequestNonce))return;
     setSelectedId('');
     setDraft({
       ...BLANK,
       record_type:recordType,
       time_date:recordType==='anchor'?effectiveSuggestedAnchorDate:'',
-      // Period/event creation starts with two explicit references, not an
-      // inferred nearest anchor or a date clicked on the river.
+      // No date is inferred from the river: the user picks the anchor(s).
       anchor_ids:recordType==='style_comment'?[]:['0','0'],
       note:''
     });
-    setMessage(recordType==='anchor'?'已帶入河道日期。':recordType==='style_comment'?'請為這個風格填寫獨立 TEXT 敘述，並指定一個正式定錨點。':'請先從既有定錨點分別選擇起點、終點；造成轉折的原因由定錨點名稱與說明保存。');
+    setMessage(recordType==='anchor'?'已帶入河道日期。':recordType==='style_comment'?'風格標籤需選 1 個定錨點。':recordType==='period'?'時期請選 1 或 2 個定錨點。':'事件需選 2 個定錨點。');
     setFormOpen(true);
   },[effectiveSuggestedAnchorDate,suggestedRecordType,suggestedRequestNonce]);
 
@@ -178,19 +177,20 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
   };
   const change=(key,value)=>setDraft(current=>({...current,[key]:value}));
   const changeAnchor=(index,value)=>setDraft(current=>{
-    const ids=normalizeAnchorIds(current.anchor_ids);
-    return {...current,anchor_ids:ids.map((id,idIndex)=>idIndex===index?value:id)};
+    // Historical multi-point events are preserved until an anchor selector
+    // is deliberately changed. A new choice uses the canonical two-point form.
+    const original=normalizeAnchorIds(current.anchor_ids);
+    const ids=[original[0]||'0',original.length>2?original.at(-1):original[1]||'0'];
+    ids[index]=value||'0';
+    return {...current,anchor_ids:ids};
   });
-  const addIntermediateAnchor=()=>setDraft(current=>{
-    const ids=normalizeAnchorIds(current.anchor_ids);
-    const last=ids.at(-1)||'0';
-    return {...current,anchor_ids:[...ids.slice(0,-1),'0',last]};
-  });
-  const removeAnchor=index=>setDraft(current=>{
-    const ids=normalizeAnchorIds(current.anchor_ids);
-    if(ids.length<=2)return current;
-    return {...current,anchor_ids:ids.filter((_,idIndex)=>idIndex!==index)};
-  });
+  const currentAnchorIds=normalizeAnchorIds(draft.anchor_ids);
+  const chosenAnchorPair=[currentAnchorIds[0]||'0',currentAnchorIds.length>2?currentAnchorIds.at(-1):currentAnchorIds[1]||'0'];
+  const legacyEventIds=rawRows.find(row=>String(row.record_id)===String(selectedId)&&row.record_type==='event')?.anchor_ids;
+  const legacyEventUnchanged=draft.record_type==='event'&&selectedId&&
+    Array.isArray(legacyEventIds)&&
+    (legacyEventIds.length!==2||legacyEventIds.includes('0'))&&
+    JSON.stringify(currentAnchorIds)===JSON.stringify(legacyEventIds);
 
   const save=async event=>{
     event.preventDefault();
@@ -245,16 +245,23 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
         payload.anchor_ids=[anchorId];
       }else{
         const ids=normalizeAnchorIds(draft.anchor_ids);
-        if(!selectedId&&ids.length===2&&ids.includes('0')){
-          throw new Error('新增時期／事件請明確選擇已建立的起點與終點定錨點；不能用空白日期或預設開放端代替。');
+        const concrete=ids.filter(id=>id!=='0');
+        // Existing 1-point/3-point historical events are never silently
+        // rewritten just because the author edits an unrelated field.
+        if(type==='event'&&!legacyEventUnchanged&&(ids.length!==2||concrete.length!==2)){
+          throw new Error('事件必須明確選擇 2 個正式定錨點。');
         }
-        if(ids.every(id=>id==='0'))throw new Error('時期／事件至少需要一個定錨點。');
-        if(ids.slice(1,-1).includes('0'))throw new Error('0 只能用在第一或最後一個位置，表示開放端。');
-        for(const id of ids){
-          if(id!=='0'&&!anchors.has(id))throw new Error('定錨點不存在：'+id);
+        if(type==='period'&&(ids.length>2||concrete.length<1||concrete.length>2)){
+          throw new Error('時期必須選擇 1 或 2 個正式定錨點。');
         }
-        const dated=ids
-          .filter(id=>id!=='0')
+        if(ids.slice(1,-1).includes('0'))throw new Error('只有時期可在起點或終點使用開放端。');
+        if(type==='event'&&!legacyEventUnchanged&&new Set(concrete).size!==2){
+          throw new Error('事件必須選擇 2 個不同的正式定錨點。');
+        }
+        for(const id of concrete){
+          if(!anchors.has(id))throw new Error('定錨點不存在：'+id);
+        }
+        const dated=concrete
           .map(id=>({id,date:dateText(anchors.get(id)?.time_date)}))
           .filter(item=>item.date);
         for(let index=1;index<dated.length;index+=1){
@@ -313,6 +320,24 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       <label><span>類型</span><select className="scope-select" value={draft.record_type} disabled={Boolean(selectedId)} onChange={event=>change('record_type',event.target.value)}>
         {EDITABLE_TYPES.map(([type,label])=><option key={type} value={type}>{label}</option>)}
       </select></label>
+      {draft.record_type==='style_comment'?<label><span>風格標籤（新增／編輯）</span>
+        <select className="scope-select" value={selectedId||''} onChange={event=>{
+          const row=rawRows.find(item=>item.record_type==='style_comment'&&String(item.record_id)===event.target.value);
+          if(row)selectRow(row);
+          else {
+            setSelectedId('');
+            setDraft({...BLANK,record_type:'style_comment',anchor_ids:[]});
+            setMessage('');
+          }
+        }}>
+          <option value="">＋ 新增風格標籤</option>
+          {rawRows.filter(row=>row.record_type==='style_comment')
+            .sort((a,b)=>String(a.label||'').localeCompare(String(b.label||''),'zh-Hant'))
+            .map(row=><option key={row.record_id} value={row.record_id}>
+              {row.label}{row.status==='needs_anchor'?'｜尚待定錨':''}
+            </option>)}
+        </select>
+      </label>:null}
       <label><span>{draft.record_type==='style_comment'?'風格標籤名稱（搜尋關鍵詞）':'名稱'}</span><input className="scope-search-input" value={draft.label||''} onChange={event=>change('label',event.target.value)} required/></label>
       <label><span>識別</span><input className="scope-search-input" value={draft.resource_id||''} disabled={Boolean(selectedId)} onChange={event=>change('resource_id',event.target.value)} placeholder="留空自動產生"/></label>
       {draft.record_type!=='style_comment'?<label><span>{draft.record_type==='anchor'?'定錨點說明（關鍵變化／持續檢討，非風格敘述）':'時期／事件說明（非風格敘述）'}</span><textarea className="scope-search-input" rows={5} value={draft.note||''} onChange={event=>change('note',event.target.value)}/></label>:null}
@@ -326,7 +351,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
         </label>
         <p className="scope-status">一個風格、一段獨立敘述、一個既有正式定錨點。可跨時期，不自動推定日期。</p>
       </>:null}
-      {draft.record_type==='anchor'?<p className="scope-status">此處保存定錨點的轉折觀察，不是風格標籤。要新增「政德風」等獨立風格紀錄，請在第一條時間河道上方點「＋ 新增風格標籤」，填寫名稱、敘述及唯一定錨點。</p>:null}
+      {draft.record_type==='anchor'?<p className="scope-status">此處保存定錨點的轉折觀察，不是風格標籤；新增風格請選「＋ 新增 → 風格標籤」。</p>:null}
 
       {draft.record_type==='anchor'?<div className="scope-stat-controls">
         <label><span>日期</span><input className="scope-select" type="date" value={dateText(draft.time_date)} onChange={event=>change('time_date',event.target.value)}/></label>
@@ -334,29 +359,27 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       </div>:null}
 
       {['period','event'].includes(draft.record_type)?<div className="scope-management-wide-field">
-        <h3>起點與終點定錨點</h3>
-        <p className="scope-status">時期與事件是既有定錨點之間的範圍，不會在此自動新增定錨點。選擇日期時同時確認名稱與形成轉折的原因。</p>
-        {anchorOptions.length===0?<p className="scope-status scope-error">尚未建立正式定錨點。請先建立定錨點，或將河道建議定錨轉為正式定錨點。</p>:null}
+        <h3>定錨點</h3>
+        <p className="scope-status">{draft.record_type==='period'?'時期：1 或 2 個定錨點；可以不指定起點或終點。':'事件：固定選擇 2 個定錨點。'}</p>
+        {anchorOptions.length===0?<p className="scope-status scope-error">尚未建立正式定錨點，請先建立後再選取。</p>:null}
+        {legacyEventUnchanged?<p className="scope-status">此舊事件原有 {legacyEventIds.length} 個定錨點；只修改其他欄位會保留原有關聯。若重新選擇起點或終點，改用新的 2 點規格。</p>:null}
         <div className="scope-management-fields">
-          {normalizeAnchorIds(draft.anchor_ids).map((anchorId,index,ids)=><label key={index}>
-            <span>{index===0?'起點定錨點':index===ids.length-1?'終點定錨點':'中間定錨點 '+index}</span>
-            <select className="scope-select" aria-label={index===0?'選擇起點定錨點':index===ids.length-1?'選擇終點定錨點':'選擇中間定錨點'} value={anchorId} onChange={event=>changeAnchor(index,event.target.value)}>
-              <option value="0">{selectedId&&(index===0||index===ids.length-1)?'0｜既有開放端':'請選擇已建立的定錨點'}</option>
+          {chosenAnchorPair.map((anchorId,index)=><label key={index}>
+            <span>{index===0?'起點定錨點':'終點定錨點'}{draft.record_type==='period'?'（選填）':''}</span>
+            <select className="scope-select"
+              aria-label={index===0?'選擇起點定錨點':'選擇終點定錨點'}
+              value={anchorId}
+              required={draft.record_type==='event'}
+              onChange={event=>changeAnchor(index,event.target.value)}>
+              <option value="0">{draft.record_type==='period'?'不指定（開放端）':'請選擇正式定錨點'}</option>
               {anchorOptions.map(row=><option key={row.resource_id} value={row.resource_id}>
-                {dateText(row.time_date)||row.year_value||'年份未定'}｜{row.label}{row.note?'｜'+String(row.note).slice(0,65):''}
+                {dateText(row.time_date)||row.year_value||'年份未定'}｜{row.label}
               </option>)}
             </select>
-            {anchorId!=='0'&&anchors.has(anchorId)?<span className="scope-status">{String(anchors.get(anchorId).note||'尚無轉折原因說明；可編輯該定錨點補充。')}</span>:null}
-            {ids.length>2&&index>0&&index<ids.length-1?<button type="button" className="loc-button" onClick={()=>removeAnchor(index)}>移除此中間定錨點</button>:null}
+            {anchorId!=='0'&&anchors.has(anchorId)?<span className="scope-status">{String(anchors.get(anchorId).note||'')}</span>:null}
           </label>)}
         </div>
-        <details className="scope-culture-anchor-picker">
-          <summary>使用更多既有定錨點（選填）</summary>
-          <button type="button" className="loc-button" onClick={addIntermediateAnchor}>＋ 加入中間定錨點</button>
-          <p className="scope-status">僅增加對既有定錨點的引用，不會建立新的定錨點。已經使用開放端的歷史時期仍可保留原有設定。</p>
-        </details>
       </div>:null}
-
 
       {draft.record_type!=='style_comment'?<div className="scope-stat-controls">
         <label><span>狀態</span><input className="scope-search-input" value={draft.status||''} onChange={event=>change('status',event.target.value)}/></label>

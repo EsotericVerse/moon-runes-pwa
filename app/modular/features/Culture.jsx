@@ -673,33 +673,18 @@ export default function Culture(){
                     {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{labelOf(item,0)}</option>)}
                   </select></label>
                   <button type='button' className='loc-button' onClick={()=>beginTimelineCreation('anchor',currentStructureStart)}>＋ 新增正式定錨點</button>
-                  {['period','event'].map(type=><button key={type} type='button' className='loc-button' onClick={()=>beginTimelineCreation(type,'')}>
-                    ＋ 新增{type==='period'?'時期':'事件'}（選擇既有定錨點）
-                  </button>)}
-                  <button type='button' className='loc-button' onClick={()=>beginTimelineCreation('style_comment','')}>＋ 新增風格標籤</button>
-                  <label><span>尋找既有定錨點</span><select className='scope-select' value='' onChange={event=>{
-                    const anchor=anchorRecords.find(item=>item.record_id===event.target.value);
-                    if(!anchor)return;
-                    setSelectedTimelineRecordId(anchor.record_id);
-                    setSelectedTimelineDate('');
+                  <select className='scope-select' aria-label='新增時間長河紀錄' defaultValue='' onChange={event=>{
+                    const recordType=event.currentTarget.value;
+                    if(!['period','event','style_comment'].includes(recordType))return;
+                    event.currentTarget.value='';
+                    beginTimelineCreation(recordType,'');
                   }}>
-                    <option value=''>選擇日期或名稱</option>
-                    {anchorRecords.map(item=><option key={item.record_id} value={item.record_id}>
-                      {String(item.start_date||'年份未定').slice(0,10)}｜{item.display_label||item.title||item.resource_id}
-                    </option>)}
-                  </select></label>
-                  <label><span>尋找風格標籤</span><select className='scope-select' value='' onChange={event=>{
-                    const record=(query.data?.styleComments||[]).find(item=>String(item.record_id)===event.target.value);
-                    if(!record)return;
-                    setSelectedTimelineRecordId(String(record.record_id));
-                    setSelectedTimelineDate('');
-                  }}>
-                    <option value=''>選擇名稱（含待定位草稿）</option>
-                    {(query.data?.styleComments||[]).map(item=><option key={item.record_id} value={item.record_id}>
-                      {item.label}{item.status==='needs_anchor'?'｜尚待定錨':''}
-                    </option>)}
-                  </select></label>
-                  <span className='scope-status'>第一條河道包含定錨點、事件、時期、風格標籤四種紀錄。點選紀錄直接編輯；待定錨風格可由名稱找到。關鍵詞分析仍由作品分類河道處理。</span>
+                    <option value='' disabled>＋ 新增</option>
+                    <option value='period'>時期</option>
+                    <option value='event'>事件</option>
+                    <option value='style_comment'>風格標籤</option>
+                  </select>
+                  <span className='scope-status'>第一條河道依序為定錨點、事件、風格標籤、時期。點選紀錄直接編輯；未定錨的風格可從「新增 → 風格標籤」表單選取。</span>
                 </div>:null}
                 {timelineItems.length?<CultureTimeline
                   items={timelineItems}

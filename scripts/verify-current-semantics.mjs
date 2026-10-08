@@ -154,11 +154,24 @@ if(!failures.length){
   }
   for(const token of ['表現風格','Class｜符文群組比例','culture-style-filter'])if(!culture.includes(token))failures.push('Culture style-filter presentation missing '+token);
   if(!culture.includes('本頁面只顯示所屬人員的交會時間作品。若需以時間查詢其他人的作品列表，請前往該人員的文化功能頁面。'))failures.push('LOC Culture must preserve the user-approved intersection navigation guidance.');
-  if(!cultureQuery.includes("style_comment:'風格標籤'")||!cultureQuery.includes('style_comment:3')||
-     !culture.includes("beginTimelineCreation('style_comment','')")||
-     !culture.includes('尋找風格標籤')||culture.includes('scope-culture-style-panel')||
-     !read('app/modular/modules/culture-timeline/CultureTimeline.jsx').includes("style_comment:'風格標籤'")){
-    failures.push('First river must display its fourth style lane and native create/lookup editor, without a redundant folded panel.');
+  if(!cultureQuery.includes("style_comment:'風格標籤'")||!cultureQuery.includes('style_comment:2,period:3')||
+     !culture.includes("beginTimelineCreation(recordType,'')")||
+     !culture.includes("aria-label='新增時間長河紀錄'")||
+     culture.includes('尋找風格標籤')||culture.includes('尋找既有定錨點')||
+     culture.includes('新增時期（選擇既有定錨點）')||culture.includes('新增事件（選擇既有定錨點）')||
+     culture.includes('scope-culture-style-panel')||
+     !read('app/modular/modules/culture-timeline/CultureTimeline.jsx').includes("style_comment:'風格標籤',period:'時期'")){
+    failures.push('First Time river must show style as third type, period fourth, and use one compact add selector.');
+  }
+  const timeEditor=read('app/modular/features/CultureTimelineEditor.jsx');
+  if(!culture.includes('＋ 新增正式定錨點')||
+     !["<option value='period'>時期</option>","<option value='event'>事件</option>","<option value='style_comment'>風格標籤</option>"].every(option=>culture.includes(option))||
+     !timeEditor.includes('風格標籤（新增／編輯）')||
+     !timeEditor.includes('時期：1 或 2 個定錨點')||
+     !timeEditor.includes('事件：固定選擇 2 個定錨點')||
+     !timeEditor.includes('legacyEventUnchanged')||
+     timeEditor.includes('addIntermediateAnchor')){
+    failures.push('Unified Time editor must select period 1–2 / event 2 / style 1 anchors and preserve legacy events.');
   }
   for(const token of ['currentStructurePeriod','items={timelineItems}','windowStart={currentStructureStart}','windowEnd={currentStructureEnd}','labelOf={labelOf}'])if(!culture.includes(token))failures.push('Culture first river must retain all historic anchors and keep the camera focused on the selected period: '+token);
   if(culture.includes('riverAction')||culture.includes('onBoundaryNavigate={riverAction'))failures.push('Culture river must not restore the browse/create mode toggle.');
@@ -178,7 +191,7 @@ if(!failures.length){
   const timelineEditor=read('app/modular/features/CultureTimelineEditor.jsx');
   if(cultureQuery.includes('anchor_pair')||timelineEditor.includes('anchor_pair'))failures.push('Timeline code must not restore legacy anchor_pair storage.');
   if(!cultureQuery.includes('anchor_ids'))failures.push('Culture timeline ordered-anchor contract missing anchor_ids');
-  for(const token of ['anchor_ids','normalizeAnchorIds','起點與終點定錨點','從既有定錨點','anchorOptions.map(row=>','轉折原因'])if(!timelineEditor.includes(token))failures.push('Timeline editor must retain semantic references to existing anchor points: '+token);
+  for(const token of ['anchor_ids','normalizeAnchorIds','chosenAnchorPair','anchorOptions.map(row=>','時期：1 或 2 個定錨點','事件：固定選擇 2 個定錨點'])if(!timelineEditor.includes(token))failures.push('Timeline editor must retain semantic references to existing anchor points: '+token);
   if(timelineEditor.includes('里程碑'))failures.push('Timeline editor must not expose milestone as a separate concept.');
   if(statistics.includes('關鍵詞排行')||culture.includes('關鍵詞排行'))failures.push('Keyword-level ranking must remain hidden behind Class / Group presentation');
   const dbAudit=read('scripts/verify-db-public-read.mjs');
