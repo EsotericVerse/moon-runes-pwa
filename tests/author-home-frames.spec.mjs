@@ -18,7 +18,15 @@ test('Author homepage uses the exact LOC frame components and layouts',async({pa
   }
   await expect(page.locator('.loc-home > section[data-block-order="5"] .loc-home-block__media-bubble img')).toHaveAttribute('src','/pics/lo3rwang-3.png');
   await expect(page.locator('.loc-home > section[data-block-order="5"] .loc-home-block__media-bubble img')).toHaveCount(1);
-  await expect(page.locator('.loc-home > section[data-block-order="3"] .loc-home-block__children article')).toHaveCount(5);
+  // BlockNote children are authored data, not a fixed five-card template.
+  // Ensure the full supported set survives the common renderer without blank cards.
+  const professionalChildren=page.locator('.loc-home > section[data-block-order="3"] .loc-home-block__children > article');
+  const childCount=await professionalChildren.count();
+  expect(childCount).toBeGreaterThanOrEqual(3);
+  expect(childCount).toBeLessThanOrEqual(6);
+  for(const child of await professionalChildren.all()){
+    expect((await child.innerText()).trim().length).toBeGreaterThan(0);
+  }
   await expect(page.locator('.loc-home > section[data-block-order="6"] a[href^="mailto:"]')).toBeVisible();
   const image=page.locator('.loc-home > section[data-block-order="5"] .loc-home-block__media-bubble');
   const picture=await image.boundingBox();
