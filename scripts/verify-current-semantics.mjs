@@ -147,8 +147,11 @@ if(!failures.length){
   for(const token of ['currentStructurePeriod','items={currentTimelineItems}','windowStart={currentStructureStart}','windowEnd={currentStructureEnd}','onTimeClick={pickingAnchorSlot===null','onBoundaryNavigate={pickingAnchorSlot===null'])if(!culture.includes(token))failures.push('Culture first river must show the selected period, allow drag navigation and double-click anchors: '+token);
   if(culture.includes('riverAction')||culture.includes('onBoundaryNavigate={riverAction'))failures.push('Culture river must not restore the browse/create mode toggle.');
   const timeline=read('app/modular/modules/culture-timeline/CultureTimeline.jsx');
-  if(!timeline.includes("instance.on('doubleClick'")||timeline.includes("instance.on('click'")||!timeline.includes("properties?.byUser!==true")||!timeline.includes("Math.abs(visibleSpan-initialSpan)")){
-    failures.push('Culture timeline must reserve doubleClick for anchor creation and user horizontal drag for crossing period boundaries.');
+  for(const token of ["addEventListener('dblclick'","removeEventListener('dblclick'","event.detail!==2","instance.getEventProperties(event)","data-anchor-gesture={onTimeClick?'double-click':'none'}"]){
+    if(!timeline.includes(token))failures.push('Culture timeline must require a native double click before creating an anchor: '+token);
+  }
+  if(timeline.includes("instance.on('doubleClick'")||timeline.includes("instance.on('click'")||!timeline.includes("properties?.byUser!==true")||!timeline.includes("Math.abs(visibleSpan-initialSpan)")){
+    failures.push('Culture timeline must not synthesize anchor creation from a single click or crossing period navigation from a zoom.');
   }
   const structureRiver=culture.slice(culture.indexOf("scope-culture-structure-river"),culture.indexOf("scope-culture-classification-river",culture.indexOf("scope-culture-structure-river")));
   if(structureRiver.includes('fixedMin={currentStructureStart}')||structureRiver.includes('fixedMax={currentStructureEnd}'))failures.push('Culture first river must remain horizontally navigable beyond the current period.');
