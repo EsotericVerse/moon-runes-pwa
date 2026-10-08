@@ -1,28 +1,13 @@
 import AuthorHomeEditableBlocks from '../AuthorHomeEditableBlock';
 
-function AuthorPage({eyebrow,title,subtitle,intro,heroImage=null,heroContent=null,sections=[]}){
+function AuthorPage({eyebrow,title,subtitle,intro,sections=[]}){
+  // Detailed subpages only. The public homepage uses shared LOC DB blocks.
   return <section className="loc-view scope-home-composition">
-    {heroImage?<header className="loc-hero author-home-hero" id="top">
-      <img
-        className="author-home-hero-image"
-        src={heroImage.src}
-        alt=""
-        aria-hidden="true"
-        loading="eager"
-        fetchPriority="high"
-        decoding="async"
-      />
-      <div className="author-home-hero-overlay" aria-hidden="true"/>
-      {heroContent||<div className="author-home-hero-copy">
-        {eyebrow?<p className="loc-eyebrow">{eyebrow}</p>:null}
-        <div className="home-title-row"><h1>{title}</h1>{subtitle?<p className="loc-subtitle">{subtitle}</p>:null}</div>
-        {intro}
-      </div>}
-    </header>:<header className="loc-hero loc-hero-feature" id="top">
+    <header className="loc-hero loc-hero-feature" id="top">
       {eyebrow?<p className="loc-eyebrow">{eyebrow}</p>:null}
       <div className="home-title-row"><h1>{title}</h1>{subtitle?<p className="loc-subtitle">{subtitle}</p>:null}</div>
       {intro}
-    </header>}
+    </header>
     {sections.map((section,index)=><section className="loc-card scope-home-section" id={section.id} key={section.id} data-composition-slot={index+1}>
       {section.eyebrow?<p className="loc-eyebrow">{section.eyebrow}</p>:null}
       {section.title?<h2>{section.title}</h2>:null}
@@ -30,8 +15,6 @@ function AuthorPage({eyebrow,title,subtitle,intro,heroImage=null,heroContent=nul
     </section>)}
   </section>;
 }
-
-
 
 const PROFESSIONAL_ROLES=Object.freeze([
   Object.freeze({
