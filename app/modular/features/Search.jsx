@@ -290,7 +290,7 @@ export default function Search(){
   });
   const targetScopes=useMemo(()=>{
     const scopes=scopesQuery.data||[];
-    return scopes.filter(item=>scopeId==='loc'?item.role==='scope':item.id===scopeId);
+    return scopeId==='loc'?scopes:scopes.filter(item=>item.id===scopeId);
   },[scopeId,scopesQuery.data]);
   const scopeById=useMemo(()=>new Map(targetScopes.map(item=>[item.id,item])),[targetScopes]);
   const hiddenScopeIds=useMemo(
