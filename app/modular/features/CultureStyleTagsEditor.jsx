@@ -31,10 +31,16 @@ export default function CultureStyleTagsEditor({
     .sort((a,b)=>String(a.start_date||'').localeCompare(String(b.start_date||''))),[anchors]);
   const anchorsById=useMemo(()=>new Map(availableAnchors.map(a=>[String(a.resource_id),a])),[availableAnchors]);
   const visibleStyles=useMemo(()=>styles.filter(row=>{
+    const isAll=!period?.record_id;
+    if(row.status==='needs_anchor'){
+      // Migrated descriptions remain visible as private drafts until the
+      // author chooses a real anchor; the original period is only a workbench.
+      return canEdit&&(isAll||Number(row.order_no)===Number(period?.order));
+    }
     const anchor=anchorsById.get(String(row.anchor_id||row.anchor_ids?.[0]||''));
     if(!anchor)return false;
-    return period?.period==='all'||containsDate(period,String(anchor.start_date||'').slice(0,10));
-  }).sort((a,b)=>String(a.label||'').localeCompare(String(b.label||''),'zh-Hant')),[styles,anchorsById,period]);
+    return isAll||containsDate(period,String(anchor.start_date||'').slice(0,10));
+  }).sort((a,b)=>String(a.label||'').localeCompare(String(b.label||''),'zh-Hant')),[styles,anchorsById,period,canEdit]);
   function reset(){
     setMode('view');setRecordId('');setLabel('');setDescription('');setAnchorId('');setMessage('');
   }
@@ -67,12 +73,12 @@ export default function CultureStyleTagsEditor({
           resource_id:'style_comment:'+globalThis.crypto.randomUUID(),
           label:name,
           style_description:body,
-          anchor_ids:[anchorId],
+          anchor_ids:[anchorId],status:'active',
           updated_at:new Date().toISOString()
         }]);
       }else{
         await updateRows(table,{
-          label:name,style_description:body,anchor_ids:[anchorId],
+          label:name,style_description:body,anchor_ids:[anchorId],status:'active',
           updated_at:new Date().toISOString()
         },{filters:[{column:'record_id',operator:'eq',value:recordId}]});
       }
@@ -91,15 +97,16 @@ export default function CultureStyleTagsEditor({
     finally{setBusy(false);}
   }
   return <section className="scope-culture-style-surface" data-scope={scopeId} aria-label="風格標籤與定錨點">
-    <p className="scope-status">每一筆 style_comment 獨立保存一個風格名稱、一段主要敘述（TEXT）、一個正式定錨點。時期只作為瀏覽範圍，不再共用描述欄位。</p>
+    <p className="scope-status">每一個已啟用的 style_comment 都有自己的名稱、TEXT 敘述與一個正式定錨點。舊風格先以待定位草稿保留，請依作品、歌詞或真正形成風格的時間自行選定；不會自動套用時期起點。</p>
     {mode==='view'?<>
       <div className="scope-style-tag-row">
         {visibleStyles.length?visibleStyles.map(row=><article className="scope-style-comment-item" key={row.record_id}>
           <div><strong>{row.label}</strong>
+            {row.status==='needs_anchor'?<p className="scope-status">待指定定錨點（舊風格文字已分開保存，尚未公開啟用）</p>:null}
             <p>{row.style_description}</p>
-            <span className="scope-status">正式定錨：{anchorName(anchorsById.get(String(row.anchor_id||row.anchor_ids?.[0]||'')))}</span>
+            {row.status!=='needs_anchor'?<span className="scope-status">正式定錨：{anchorName(anchorsById.get(String(row.anchor_id||row.anchor_ids?.[0]||'')))}</span>:null}
           </div>
-          {canEdit?<button type="button" className="loc-button" onClick={()=>edit(row)}>編輯風格標籤</button>:null}
+          {canEdit?<button type="button" className="loc-button" onClick={()=>edit(row)}>{row.status==='needs_anchor'?'指定定錨點':'編輯風格標籤'}</button>:null}
         </article>):<p className="scope-status">此時期尚未設定風格標籤。</p>}
       </div>
       {canEdit?<button type="button" className="loc-button" onClick={add}>＋ 新增風格標籤</button>:null}
