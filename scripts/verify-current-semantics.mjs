@@ -112,6 +112,7 @@ if(!failures.length){
   if(galaxy.includes("{column:'source_name',operator:'neq',value:''}"))failures.push('Unknown source rows must reach Statistics and map to Others instead of being discarded.');
   for(const token of ['表現風格','Class｜符文群組','Group｜符文排行'])if(!statistics.includes(token))failures.push('Statistics style-filter presentation missing '+token);
   for(const token of ['表現風格','Class｜符文群組比例','culture-style-filter'])if(!culture.includes(token))failures.push('Culture style-filter presentation missing '+token);
+  if(!culture.includes('本頁面只顯示所屬人員的交會時間作品。若需以時間查詢其他人的作品列表，請前往該人員的文化功能頁面。'))failures.push('LOC Culture must preserve the user-approved intersection navigation guidance.');
   for(const token of ['currentStructurePeriod','items={currentTimelineItems}','windowStart={currentStructureStart}','windowEnd={currentStructureEnd}','onBoundaryNavigate'])if(!culture.includes(token))failures.push('Culture first river must show one current/selected period and navigate period-by-period: '+token);
   const structureRiver=culture.slice(culture.indexOf("scope-culture-structure-river"),culture.indexOf("scope-culture-classification-river",culture.indexOf("scope-culture-structure-river")));
   if(structureRiver.includes('fixedMin={currentStructureStart}')||structureRiver.includes('fixedMax={currentStructureEnd}'))failures.push('Culture first river must remain horizontally navigable beyond the current period.');

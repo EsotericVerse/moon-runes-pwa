@@ -10,9 +10,9 @@ import ManagementArticlePublisher from './ManagementArticlePublisher';
 import ScopeGroupManagement from './ScopeGroupManagement';
 
 const LOGIN_COPY={
-  loc:{eyebrow:'LOC Group Management',title:'LOC Scope Group 管理登入',description:'登入後管理 LOC Scope Group 結構；個別 Scope 的內容仍回到各自頁面編輯。'},
-  lrunes:{eyebrow:'LunaRunes Management',title:'LunaRunes 管理登入',description:'登入後開啟月之符文的 Scope 設定、匯入與特殊管理功能。'},
-  lo3rwang:{eyebrow:'Personal Management',title:'lo3rwang 個人管理登入',description:'登入後開啟 Scope 設定、匯入與發表功能；既有內容直接回公開頁面編輯。'}
+  loc:{eyebrow:'LOC Group Management',title:'LOC Scope Group 管理登入'},
+  lrunes:{eyebrow:'LunaRunes Management',title:'LunaRunes 管理登入'},
+  lo3rwang:{eyebrow:'Personal Management',title:'lo3rwang 個人管理登入'}
 };
 
 function ManagementDisclosure({label,children}){
@@ -26,7 +26,7 @@ function LoginScreen({scopeId,account}){
   const copy=LOGIN_COPY[scopeId]||LOGIN_COPY.lo3rwang;
   const callbackURL=scopeId==='loc'?scopeHref('admin'):scopeHref(scopeId,'governance/manage');
   return <section className="loc-view">
-    <header className="loc-hero"><p className="loc-eyebrow">{copy.eyebrow}</p><h1>{copy.title}</h1><p>{copy.description}</p></header>
+    <header className="loc-hero"><p className="loc-eyebrow">{copy.eyebrow}</p><h1>{copy.title}</h1></header>
     <section className="loc-card">
       <button className="loc-button primary" type="button" onClick={()=>account.signIn(callbackURL)}>使用 Google 登入</button>
       {account.error?<p className="scope-status scope-error">{account.error}</p>:null}

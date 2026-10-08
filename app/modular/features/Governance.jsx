@@ -28,7 +28,6 @@ function GovernanceHome(){
     <View scopeId={scopeId} canEdit={canEdit}/>
     <section className="loc-card governance-management-cta">
       <h2>{scopeId==='loc'?'LOC 系統管理':getScope(scopeId).label+'管理'}</h2>
-      <p>{scopeId==='loc'?'LOC 的管理入口進入 Admin；Scope 建立、上下層 Registry、身份權限與資料表 Mapping 都集中在 Admin。':'Manage 只保留雜項設定與資料匯入／發表；關鍵詞設定在 Statistics，既有作品與時間資料直接在 Search／Culture 登入後編輯。'}</p>
       <div className="scope-preview-links">
         <a className="loc-button primary" href={manageHref}>{UI_COPY.governance.enterManagement}</a>
       </div>
