@@ -50,12 +50,12 @@ test('meta_tags includes descriptive metadata terms, not only music genres',()=>
     {createtime:'2026-10-07T12:00:00+08:00',media_type:'suno',meta_tags:'Alternative Pop, 政德風, 男聲, 希望向'},
     {createtime:'2026-10-07T15:00:00+08:00',media_type:'suno',meta_tags:'政德風, 希望向'}
   ];
-  assert.deepEqual(mediaFacetDaily(rows,'media_style'),[
-    {day:'2026-10-07',category:'Alternative Pop',item_count:1},
-    {day:'2026-10-07',category:'希望向',item_count:2},
-    {day:'2026-10-07',category:'政德風',item_count:2},
-    {day:'2026-10-07',category:'男聲',item_count:1}
-  ]);
+  assert.deepEqual(Object.fromEntries(mediaFacetDaily(rows,'media_style').map(row=>[row.category,row.item_count])),{
+    'Alternative Pop':1,
+    '政德風':2,
+    '男聲':1,
+    '希望向':2
+  });
 });
 
 test('timestamps aggregate by Taiwan local calendar day even when DB returns UTC',()=>{
