@@ -46,7 +46,7 @@ export function mediaPlatform(row={}){
   return sourceFromMetadata(row);
 }
 export function mediaStyleTags(value){
-  const pieces=Array.isArray(value)?value:plainText(value).split(/[,，、;\n\r|]+/u);
+  const pieces=Array.isArray(value)?value:plainText(value).split(/[,，、;；\n\r|]+/u);
   const unique=new Map();
   for(const piece of pieces){
     const tag=plainText(piece);
