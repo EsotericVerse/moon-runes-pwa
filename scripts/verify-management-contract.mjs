@@ -55,10 +55,10 @@ const registrySql=read('docs/sql/scope-registry-management.sql');
 const sourceRefreshIndex=read('docs/sql/source-refresh-index.sql');
 
 must(!galaxy.includes('include_in_time'),'generic search must not query nonexistent include_in_time');
-must(galaxy.includes("'style_tags'")&&galaxy.includes("searchFields:['label','note','status','style_tags']"),'generic Time search must include style_tags');
+must(galaxy.includes("'style_tags'")&&galaxy.includes("searchFields:['label','note','status','style_tags','style_description']"),'generic Time search must include style keyword and TEXT body');
 must(culture.includes('visibility,style_tags'),'Culture shared Time contract must include style_tags');
-must(editor.includes('style_tag_descriptions')&&editor.includes('<CultureStyleTagsField')&&visualStyleTags.includes('CultureStyleTagsField'),'Time editor must use visual searchable style chips rather than comma-delimited forms');
-must(editor.includes('styleDescriptionOf')&&editor.includes('missingStyleDescription')&&editor.includes('搜尋顯示說明'),'Time editor must require per-tag search descriptions and delegate visual editing to shared module');
+must(editor.includes('style_description:styleDescription||null')&&editor.includes('<CultureStyleTagsField')&&visualStyleTags.includes('風格主要敘述（TEXT'),'Time editor must store a primary searchable TEXT style body rather than JSON');
+must(editor.includes('activeStyleTags.length&&!styleDescription')&&visualStyleTags.includes("mode==='create'")&&visualStyleTags.includes("mode==='edit'")&&visualStyleTags.includes('＋ 新增風格標籤</button>')&&visualStyleTags.includes('>編輯風格標籤</button>'),'Style UI must separate create and edit sibling entries and require a primary searchable TEXT description');
 must(cultureUi.includes('onClick={canEditWork')&&cultureUi.includes('isInteractiveTarget')&&!cultureUi.includes("UI_COPY.culture.editing:'編輯'"),'Culture existing works must enter editing by direct non-interactive card click without an Edit button');
 must(galaxy.includes('selectStyleKeywordIntroductions')&&!galaxy.includes('scopeCards('),'Search must prepend exact style-keyword introductions and must not use partial Scope-ID cards');
 must(management.includes('scope?.aggregateChildren?<ManagementDisclosure')&&management.includes('<ScopeGroupManagement scopeId={scopeId}/>'),'every DB Scope Group must have its own collapsed Manage entry');
@@ -148,8 +148,8 @@ must(!runesHome.includes('ScopeEditableBlocks')&&runesHome.includes('className="
 must(personalGovernance.includes('ScopeEditableBlocks')&&personalGovernance.includes('page="governance"'),'personal governance must use governance block rows');
 must(runesGovernance.includes('ScopeEditableBlocks')&&runesGovernance.includes('page="governance"'),'LunaRunes governance must use governance block rows');
 must(sharedSearch.includes('startEditing')&&sharedSearch.includes('BlockNoteEditor')&&sharedSearch.includes('GALAXY_EDITOR_COLUMNS')&&sharedSearch.includes('GalaxyAttrSummary')&&sharedSearch.includes('GalaxyAttrEditor')&&sharedSearch.includes("fullTextKey===row.key")&&sharedSearch.includes('updateRows'),'Search must open full Galaxy articles first, then expose permission-gated full Attr editing');
-must(cultureUi.includes('<CultureStyleTagsEditor')&&cultureUi.includes('anchors={anchorRecords}')&&cultureUi.includes('onSaved={refreshTimelineData}')&&visualStyleTags.includes('CultureStyleTagsField')&&visualStyleTags.includes('anchor_ids:nextIds')&&visualStyleTags.includes('updateRows(table,')&&visualStyleTags.includes('style_tag_descriptions'),'Culture style editing must locate and reuse canonical existing anchor references');
-must(culture.includes('visibility,style_tags,style_tag_descriptions')&&culture.includes('record_id:row.record_id')&&culture.includes('style_tag_descriptions:row.style_tag_descriptions'),'Culture periods must expose original record ID and searchable style introduction metadata');
+must(cultureUi.includes('<CultureStyleTagsEditor')&&cultureUi.includes('anchors={anchorRecords}')&&cultureUi.includes('onSaved={refreshTimelineData}')&&visualStyleTags.includes('CultureStyleTagsField')&&visualStyleTags.includes('anchor_ids:nextIds')&&visualStyleTags.includes('updateRows(table,')&&visualStyleTags.includes('style_description:String(description'),'Culture style editing must reuse Time anchor references and write primary TEXT style descriptions');
+must(culture.includes('visibility,style_tags,style_description')&&culture.includes('record_id:row.record_id')&&culture.includes('style_description:row.style_description'),'Culture periods must expose original ID and primary style TEXT');
 must(cultureUi.includes('beginTimelineCreation')&&cultureUi.includes('items={timelineItems}')&&cultureUi.includes('anchorReviews.map')&&editor.includes('起點與終點定錨點')&&editor.includes('anchorOptions.map(row=>')&&editor.includes('<CultureStyleTagsField'),'Culture WYSIWYG must reuse existing anchor IDs via named selectors, preserving historic points for review');
 must(nativeTimeline.includes('new Timeline(')&&['onAdd:','onMove:','onUpdate:','onRemove:','add:Boolean(onAddRef.current)','onTimeClickRef.current'].every(token=>nativeTimeline.includes(token)),'Time manipulation must retain vis-timeline edits and make add opt-in to avoid river gesture collisions');
 
@@ -233,6 +233,7 @@ must(importPanel.includes('record.createtime||current.createtime||null')&&import
 must(!/silver\.runes(?:_etc)?\b/.test(galaxy),'generic Galaxy/Search provider must not expose private Rune Core tables');
 must(!/runeScopeIds|silver\.runes(?:_etc)?\b/.test(sharedSearch),'shared Search must stay Scope-data only');
 must(sharedSearch.includes('matchesScopeAlias')&&sharedSearch.includes('scope.searchIntro')&&sharedSearch.includes("label:'前往 Scope 首頁'")&&sharedSearch.includes('return;'),'exact Scope aliases must use Scope-owned presentation and stop the search');
+must(galaxy.includes("columns:'record_id,record_type,label,resource_id,display_order,anchor_ids,style_tags,style_description'")&&galaxy.includes("summary:description")&&!galaxy.includes('style_tag_descriptions'),'Search must use Time style_description TEXT as its displayed primary content');
 must(sharedSearch.includes('selectStyleKeywordIntroductions')&&sharedSearch.includes('[...styleIntroductions,...enrichedRows]'),'style keyword descriptions must precede ordinary related results');
 
 if(failures.length){
