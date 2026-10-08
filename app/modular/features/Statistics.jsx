@@ -9,7 +9,7 @@ import {
   Bar,BarChart,CartesianGrid,Cell,Legend,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectScopeDensityRows,selectSourceTrendRows} from '../../loc/galaxy-query';
+import {selectMediaStatisticsFacetRows,selectScopeDensityRows,selectSourceTrendRows} from '../../loc/galaxy-query';
 import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
 import {selectManagedScopes} from '../../loc/scope-data';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation';
@@ -25,8 +25,15 @@ const CHART_TEXT='var(--loc-text)';
 const CHART_GRID='var(--loc-line)';
 const CHART_TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)',borderRadius:'8px'};
 const CHART_TYPES=[['line',UI_COPY.statistics.line],['bar',UI_COPY.statistics.bar],['pie',UI_COPY.statistics.pie]];
-const STAT_TYPES=['total','source'];
-const STAT_TYPE_LABELS=Object.freeze({total:UI_COPY.statistics.totalSource,source:UI_COPY.statistics.workSource});
+const STAT_TYPES=['total','source','media_type','media_platform','media_style'];
+const STAT_TYPE_LABELS=Object.freeze({
+  total:UI_COPY.statistics.totalSource,
+  source:UI_COPY.statistics.workSource,
+  media_type:'多媒體類型',
+  media_platform:'多媒體 URL 平台',
+  media_style:'多媒體曲風／Tag'
+});
+const MEDIA_STAT_TYPES=new Set(['media_type','media_platform','media_style']);
 const STYLE_FILTERS=Object.freeze([{value:'none',label:'不套用'},{value:'rune66',label:'關鍵詞 Class'}]);
 const SOURCE_TREND_ORDER=Object.freeze(['Facebook','Threads','IG','Others']);
 const TIME_STANDARDS=Object.freeze([
@@ -234,6 +241,98 @@ function SourceTrendChart({rows=[],standard='1y',customRange={},height=420}){
       {SOURCE_TREND_ORDER.map((source,index)=><Line key={source} type="monotone" dataKey={source} stroke={PIE_COLORS[index%PIE_COLORS.length]} strokeWidth={2} dot={false} connectNulls/>)}
     </LineChart>
   </ResponsiveContainer>;
+}
+
+
+function facetTotals(rows=[]){
+  const map=new Map();
+  for(const row of rows){
+    const category=String(row.category||'').trim();
+    if(!category)continue;
+    const key=category.normalize('NFKC').toLocaleLowerCase();
+    const existing=map.get(key);
+    if(existing)existing.item_count+=(Number(row.item_count)||0);
+    else map.set(key,{term:category,item_count:Number(row.item_count)||0});
+  }
+  return [...map.values()].sort((a,b)=>b.item_count-a.item_count||a.term.localeCompare(b.term));
+}
+function facetTrend(rows=[],window={},selectedCategories=[]){
+  if(!window.startDate||!window.endDate)return [];
+  const categories=new Map(selectedCategories.map(value=>[String(value).normalize('NFKC').toLocaleLowerCase(),value]));
+  const buckets=new Map();
+  for(let cursor=new Date(window.startDate+'T00:00:00Z'),end=new Date(window.endDate+'T00:00:00Z');cursor<=end;cursor.setUTCDate(cursor.getUTCDate()+1)){
+    const bucket=trendBucket(cursor.toISOString().slice(0,10),window.bucket);
+    if(bucket&&!buckets.has(bucket.key))buckets.set(bucket.key,{period:bucket.label,_sort:bucket.key});
+  }
+  for(const row of rows){
+    const canonical=categories.get(String(row.category||'').normalize('NFKC').toLocaleLowerCase());
+    if(!canonical)continue;
+    const bucket=trendBucket(row.day,window.bucket);
+    if(!bucket)continue;
+    const output=buckets.get(bucket.key);
+    if(output)output[canonical]=(Number(output[canonical])||0)+(Number(row.item_count)||0);
+  }
+  return [...buckets.values()].sort((a,b)=>a._sort.localeCompare(b._sort)).map(row=>{
+    const output={period:row.period};
+    for(const category of selectedCategories)output[category]=Number(row[category])||0;
+    return output;
+  });
+}
+function MediaFacetStatistics({rankingType,rows=[],chartType='line',timeStandard='1y',customRange={}}){
+  const [selectedTag,setSelectedTag]=useState('all');
+  const window=useMemo(()=>rowsInWindow(rows,timeStandard,customRange),[rows,timeStandard,customRange]);
+  const totals=useMemo(()=>facetTotals(window.rows),[window.rows]);
+  const chosen=totals.find(row=>row.term===selectedTag)?selectedTag:'all';
+  const displayed=chosen==='all'?totals:totals.filter(row=>row.term===chosen);
+  const chartCategories=chosen==='all'?totals.slice(0,6).map(row=>row.term):[chosen];
+  const chartRows=useMemo(()=>facetTrend(window.rows,window,chartCategories),[window.rows,window.startDate,window.endDate,window.bucket,chartCategories.join('\u0000')]);
+  const bars=(chosen==='all'?totals.slice(0,15):displayed).map(row=>({term:row.term,value:row.item_count}));
+  const description=rankingType==='media_style'
+    ?'每筆媒體的同一曲風／Tag 只計一次；一筆作品有多個曲風會分別計入各標籤。曲風只來自 Galaxy Media metadata，不把 Suno Style 文字當作品。'
+    :rankingType==='media_platform'
+      ?'依 URL 網域與路徑區分平台（IG Reels／IG 貼文、Vocus、Suno 等）；缺 URL 時才用媒體類型或來源欄位辨識。Suno song ID 不當成另一個平台。'
+      :'每個多媒體紀錄只計入一個媒體類型。';
+  return <>
+    <p className="scope-status">{description}</p>
+    <div className="scope-stat-controls">
+      <label><span>{rankingType==='media_style'?'指定曲風／Tag':'指定統計細項'}</span>
+        <select className="scope-select" value={chosen} onChange={event=>setSelectedTag(event.target.value)}>
+          <option value="all">全部項目</option>
+          {totals.map(row=><option key={row.term} value={row.term}>{row.term}（{row.item_count.toLocaleString()}）</option>)}
+        </select>
+      </label>
+    </div>
+    {!totals.length?<p className="scope-status">{FEATURE_EMPTY_MESSAGE}</p>:<>
+      <div className="scope-ranking">
+        {displayed.slice(0,40).map(row=><div key={row.term}><strong>{row.term}</strong><span>{row.item_count.toLocaleString()}</span></div>)}
+      </div>
+      {displayed.length>40?<p className="scope-status">排行榜顯示前 40 項；可從上方選單指定其餘細項。</p>:null}
+      {chartType==='line'?<ResponsiveContainer width="100%" height={420}>
+        <LineChart data={chartRows} margin={{top:8,right:18,bottom:48,left:4}}>
+          <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
+          <XAxis dataKey="period" angle={-24} textAnchor="end" interval="preserveStartEnd" height={72} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+          <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID} allowDecimals={false}/>
+          <Tooltip contentStyle={CHART_TOOLTIP}/>
+          <Legend/>
+          {chartCategories.map((category,index)=><Line key={category} type="monotone" dataKey={category} stroke={PIE_COLORS[index%PIE_COLORS.length]} strokeWidth={2} dot={false}/>)}
+        </LineChart>
+      </ResponsiveContainer>:chartType==='pie'?<ResponsiveContainer width="100%" height={380}>
+        <PieChart><Tooltip contentStyle={CHART_TOOLTIP}/><Legend/>
+          <Pie data={bars} dataKey="value" nameKey="term" cx="50%" cy="50%" outerRadius={125}>
+            {bars.map((row,index)=><Cell key={row.term} fill={PIE_COLORS[index%PIE_COLORS.length]}/>)}
+          </Pie>
+        </PieChart>
+      </ResponsiveContainer>:<ResponsiveContainer width="100%" height={380}>
+        <BarChart data={bars} margin={{top:8,right:18,bottom:48,left:4}}>
+          <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
+          <XAxis dataKey="term" angle={-24} textAnchor="end" interval={0} height={90} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
+          <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID} allowDecimals={false}/>
+          <Tooltip contentStyle={CHART_TOOLTIP}/>
+          <Bar dataKey="value" fill={CHART_ACCENT} radius={[4,4,0,0]}/>
+        </BarChart>
+      </ResponsiveContainer>}
+    </>}
+  </>;
 }
 
 function classLabel(value){
@@ -470,6 +569,7 @@ function ScopeGroupStatistics(){
 function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false}){
   const requested=String(navigation.rankingType||'');
   const rankingType=types.includes(requested)?requested:(types[0]||'');
+  const mediaDimension=MEDIA_STAT_TYPES.has(rankingType);
   const [chartType,setChartType]=useState('line');
   const [timeStandard,setTimeStandard]=useState('1y');
   const [customFrom,setCustomFrom]=useState('');
@@ -496,14 +596,20 @@ function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false}
   const trendQuery=useQuery({
     queryKey:['statistics-source-trend',scopeId,effectiveTimeStandard,queryRange.startDate,queryRange.endDate],
     queryFn:()=>selectSourceTrendRows(targetScopes,queryRange),
-    enabled:Boolean(rankingType)&&Boolean(targetScopes.length)&&customReady&&Boolean(queryRange.startDate&&queryRange.endDate),
+    enabled:!mediaDimension&&Boolean(rankingType)&&Boolean(targetScopes.length)&&customReady&&Boolean(queryRange.startDate&&queryRange.endDate),
+    staleTime:5*60_000
+  });
+  const mediaQuery=useQuery({
+    queryKey:['statistics-media-facet',scopeId,rankingType,queryRange.startDate,queryRange.endDate],
+    queryFn:()=>selectMediaStatisticsFacetRows(targetScopes[0],rankingType,queryRange),
+    enabled:mediaDimension&&Boolean(targetScopes.length)&&customReady&&Boolean(queryRange.startDate&&queryRange.endDate),
     staleTime:5*60_000
   });
   const summary=useMemo(()=>buildSummary(trendQuery.data||[],effectiveTimeStandard,customRange),[trendQuery.data,effectiveTimeStandard,customRange]);
   const styleRange=useMemo(()=>({
-    startDate:summary.startDate||'',
-    endDate:summary.endDate||''
-  }),[summary.startDate,summary.endDate]);
+    startDate:queryRange.startDate||'',
+    endDate:queryRange.endDate||''
+  }),[queryRange.startDate,queryRange.endDate]);
   const runeQuery=useQuery({
     queryKey:['statistics-style-filter','rune66',scopeId,styleRange.startDate,styleRange.endDate],
     queryFn:()=>selectRune66Classification(styleRange),
@@ -530,9 +636,10 @@ function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false}
       </select></label>:null}
     </div>
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
-    {trendQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(trendQuery.error)}</p>:null}
+    {!mediaDimension&&trendQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(trendQuery.error)}</p>:null}
+    {mediaDimension&&mediaQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(mediaQuery.error)}</p>:null}
     {timeStandard==='custom'&&!customReady?<p className="scope-status">請設定有效的開始與結束日期。</p>:null}
-    {!trendQuery.isPending&&!trendQuery.error&&customReady?<>
+    {!mediaDimension&&!trendQuery.isPending&&!trendQuery.error&&customReady?<>
       <p className="scope-status">{summary.startDate&&summary.endDate?summary.startDate+' ～ '+summary.endDate:''}</p>
       <SummaryList rankingType={rankingType} summary={summary}/>
       {chartType==='line'
@@ -541,6 +648,14 @@ function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false}
           :<SourceTrendChart rows={trendQuery.data||[]} standard={effectiveTimeStandard} customRange={customRange} height={420}/>
         :<SummaryChart type={chartType} rankingType={rankingType} summary={summary} height={380}/>}
     </>:null}
+    {mediaDimension&&!mediaQuery.isPending&&!mediaQuery.error&&customReady?<MediaFacetStatistics
+      key={rankingType}
+      rankingType={rankingType}
+      rows={mediaQuery.data||[]}
+      chartType={chartType}
+      timeStandard={effectiveTimeStandard}
+      customRange={customRange}
+    />:null}
     {styleFilter==='rune66'?<>
       {runeQuery.isPending?<p className="scope-status">正在讀取已定錨的關鍵詞 Attr…</p>:null}
       {runeQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(runeQuery.error)}</p>:null}

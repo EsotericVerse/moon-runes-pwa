@@ -1,6 +1,7 @@
 'use client';
 
 import {DB_QUERY_BATCH_SIZE} from './query-contract.mjs';
+import {mediaFacetDaily} from './statistics-facets.mjs';
 import {DEFAULT_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
 import {publicContentFilters} from './content-policy';
 import {applyFilters,applyOrders,executePublicRead,selectAllRows,selectRows} from './db-query.mjs';
@@ -342,6 +343,44 @@ export async function searchGalaxyRows(scopes,query,{
     if(!hasMore)throw new AggregateError(failures,'資料搜尋 Provider 無法查詢');
     return {rows:[],failures,hasMore:true,nextCursor:{stage:stage+1,offset:0,source:'auto'}};
   }
+}
+
+
+/**
+ * Media facet aggregation reads only the selected Scope's narrow metadata columns,
+ * in bounded DB pages. It never fetches media binary or Galaxy body content.
+ * For large installations, a DB-side GROUP BY/RPC can replace this adapter
+ * without changing the facet response contract.
+ */
+export async function selectMediaStatisticsFacetRows(scope,dimension,{startDate='',endDate=''}={}){
+  const current=scopeOf(scope);
+  if(!['media_type','media_platform','media_style'].includes(dimension)){
+    throw new Error('Unknown media statistics dimension');
+  }
+  const filters=timeFilters('createtime',startDate,endDate);
+  const columns='media_id,media_type,url,source_native_id,source_place,meta_tags,createtime';
+  const orders=[{column:'media_id',ascending:true}];
+  const aggregates=new Map();
+  let offset=0,total=null,source='auto';
+  while(total===null||offset<total){
+    const page=await selectRows(current.galaxyMedia,{
+      columns,filters,orders,limit:DB_QUERY_BATCH_SIZE,offset,
+      count:offset===0?'exact':null,source
+    });
+    if(offset===0)total=Number.isFinite(Number(page.count))?Number(page.count):page.rows.length;
+    source=page.dataSource||source;
+    for(const row of mediaFacetDaily(page.rows,dimension)){
+      const key=row.day+'\u0000'+row.category.normalize('NFKC').toLocaleLowerCase();
+      const existing=aggregates.get(key);
+      if(existing)existing.item_count+=row.item_count;
+      else aggregates.set(key,{...row});
+    }
+    if(!page.rows.length)break;
+    offset+=page.rows.length;
+  }
+  return [...aggregates.values()].sort((a,b)=>
+    a.day.localeCompare(b.day)||a.category.localeCompare(b.category)
+  );
 }
 
 const SOURCE_BUCKET_ORDER=['Facebook','Threads','IG','Others'];
