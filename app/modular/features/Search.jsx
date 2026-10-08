@@ -361,7 +361,13 @@ export default function Search(){
       const styleIntroductions=(!append&&searchMode!=='media')
         ?await selectStyleKeywordIntroductions(targetScopes,q)
         :[];
-      const search=await searchGalaxyRows(targetScopes,q,{limit:pageSize,cursor,mediaOnly:searchMode==='media',hiddenScopeIds});
+      const search=await searchGalaxyRows(targetScopes,q,{
+        limit:pageSize,
+        // Prioritize document results after a recognized Time style introduction.
+        // Time records remain available in normal searches without a style hit.
+        cursor:!append&&styleIntroductions.length?{stage:2,offset:0,source:'auto'}:cursor,
+        mediaOnly:searchMode==='media',hiddenScopeIds
+      });
       if(id!==searchId.current)return;
 
       const searchRows=[...(search.rows||[])];
@@ -624,19 +630,30 @@ export default function Search(){
           showLinks
         >
           {row.styleIntro?<div className="scope-style-search-connections">
-            <p className="scope-status">
-              <strong>風格脈絡：</strong> {row.stylePeriod||'文化風格'} · 主要敘述見上方。
-            </p>
+            <p className="scope-status"><strong>所屬時期：</strong>{row.stylePeriod||'文化風格'}</p>
             <div className="scope-preview-links">
               <a href={scopeHref(row.scopeId)}>前往 {row.scopeId} Scope 網站</a>
-              {(row.styleAnchorStart||row.styleAnchorEnd)?<a href={featureNavigationHref(row.scopeId,'culture',{...(row.styleAnchorStart?{from:row.styleAnchorStart}:{}),...(row.styleAnchorEnd?{to:row.styleAnchorEnd}:{})})}>檢視時間與既有定錨點</a>:null}
+              {(row.styleAnchorStart||row.styleAnchorEnd)?<a href={featureNavigationHref(row.scopeId,'culture',{...(row.styleAnchorStart?{from:row.styleAnchorStart}:{}),...(row.styleAnchorEnd?{to:row.styleAnchorEnd}:{})})}>時間長河與既有定錨點</a>:null}
             </div>
             {row.relatedStyleTags.length?<div className="scope-style-search-related">
-              <strong>同時期其他風格：</strong>
-              {row.relatedStyleTags.map(style=><a key={style.name} href={featureNavigationHref(row.scopeId,'search',{q:style.name})}>
-                {style.name}（{style.work_count===null?'統計暫不可用':style.work_count.toLocaleString()+' 篇'}）
-              </a>)}
-              <span className="scope-status">統計為全 Scope 有效作品的標題／正文命中數，每篇計一次；不改動 Class 分布。</span>
+              <p className="scope-status"><strong>延伸探索：其他個人風格</strong>（點擊可繼續搜尋）</p>
+              {row.relatedStyleTags.some(style=>style.same_period)?<div className="scope-style-search-related-group">
+                <span>同時期平行風格</span>
+                <div className="scope-style-search-related-links">
+                  {row.relatedStyleTags.filter(style=>style.same_period).map(style=><a key={style.name} href={featureNavigationHref(row.scopeId,'search',{q:style.name})}>
+                    {style.name} · {style.work_count===null?'統計暫不可用':style.work_count.toLocaleString()+' 篇'}
+                  </a>)}
+                </div>
+              </div>:null}
+              {row.relatedStyleTags.some(style=>!style.same_period)?<div className="scope-style-search-related-group">
+                <span>其他時期的個人風格</span>
+                <div className="scope-style-search-related-links">
+                  {row.relatedStyleTags.filter(style=>!style.same_period).map(style=><a key={style.name} href={featureNavigationHref(row.scopeId,'search',{q:style.name})}>
+                    {style.name} · {style.work_count===null?'統計暫不可用':style.work_count.toLocaleString()+' 篇'}
+                  </a>)}
+                </div>
+              </div>:null}
+              <p className="scope-status">統計為全 Scope 有效作品的標題／正文命中篇數，每篇計一次，不改動 Class 分布。</p>
             </div>:null}
           </div>:null}
           {row.resourceType==='galaxy'?<WorkFullText
