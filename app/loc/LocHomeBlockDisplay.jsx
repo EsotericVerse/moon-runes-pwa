@@ -52,13 +52,14 @@ export default function LocHomeBlockDisplay(slot){
         </article>;
       })}
     </div>:null}
-    {media?<figure className={'loc-home-block__media'+(media.background?' home-hero-visual':'')}
+    {media?(hero?<figure className="loc-home-block__media home-hero-visual" aria-label={media.alt}>
+      <picture><source media="(max-width: 900px)" srcSet={media.small.src}/>
+        <img src={media.src.src} width={media.src.width} height={media.src.height}
+          alt="" aria-hidden="true" loading="eager" decoding="async"/></picture>
+    </figure>:<article className="loc-home-block__media loc-home-block__media-bubble loc-bubble"
       style={media.width?{'--loc-home-media-max':media.width}:undefined}>
-      {media.small?<picture><source media="(max-width: 900px)" srcSet={media.small.src}/>
-        <img src={media.src.src} width={media.src.width} height={media.src.height}
-          alt={media.alt} loading="lazy" decoding="async"/></picture>:
-        <img src={media.src.src} width={media.src.width} height={media.src.height}
-          alt={media.alt} loading="lazy" decoding="async"/>}
-    </figure>:null}
+      <img src={media.src.src} width={media.src.width} height={media.src.height}
+        alt={media.alt} loading="lazy" decoding="async"/>
+    </article>):null}
   </>;
 }
