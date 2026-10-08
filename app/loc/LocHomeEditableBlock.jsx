@@ -125,7 +125,7 @@ function AuthorHeading(slot){
   return <>
     <p className="loc-eyebrow">{slot.eyebrow||'About me'}</p>
     <h2>{slot.title}</h2>
-    <Html tag="p" className="loc-subtitle" html={parts[0]||''}/>
+    <Html tag="p" className="loc-subtitle" html={stripOuterParagraph(slot.subtitle)||parts[0]||''}/>
   </>;
 }
 
