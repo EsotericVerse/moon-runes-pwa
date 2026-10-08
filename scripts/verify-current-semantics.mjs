@@ -129,12 +129,20 @@ if(!failures.length){
   for(const token of ["workspace==='analysis'","workspace==='manual'","workspace==='network'","dynamic(()=>import('./KeywordNetworkEditor')","關鍵詞工作區"]){
     if(!keywordPanel.includes(token))failures.push('Keyword Library must expose separate analysis, manual and lazy graph views: '+token);
   }
-  for(const token of ["onTimeClick={riverAction==='anchor'","onBoundaryNavigate={riverAction==='browse'","onAdd={null}","riverAnalysis.suggestions.length} 個 · 已選","beforeCount.toLocaleString()+'／'+afterCount.toLocaleString()"]){
-    if(!culture.includes(token))failures.push('Culture river must separate navigation/add and show virtual anchor counts: '+token);
+  for(const token of ['選擇符文群組','選擇符文','選擇關鍵詞','groupItems.map(item=>','draftKeywords.map(word=>']){
+    if(!keywordPanel.includes(token))failures.push('Manual keyword selection must descend Group → Item → Keyword: '+token);
+  }
+  const keywordGraph=read('app/loc/KeywordNetworkEditor.jsx');
+  for(const token of ["expandedGroup","expandedItemId","rows.filter(row=>","},[graph]);"]){
+    if(!keywordGraph.includes(token))failures.push('Keyword network must expand nodes progressively without remount on selectedId: '+token);
+  }
+  for(const token of ["onTimeClick={pickingAnchorSlot===null","onAdd={null}","riverAnalysis.suggestions.length} 個 · 已選","選取建議定錨日期","selectedVirtualAnchorDates.includes(item.date)","全選建議","saveSelectedVirtualAnchors"]){
+    if(!culture.includes(token))failures.push('Culture river must support direct anchor creation and selectable bulk suggestions: '+token);
   }
   for(const token of ['表現風格','Class｜符文群組比例','culture-style-filter'])if(!culture.includes(token))failures.push('Culture style-filter presentation missing '+token);
   if(!culture.includes('本頁面只顯示所屬人員的交會時間作品。若需以時間查詢其他人的作品列表，請前往該人員的文化功能頁面。'))failures.push('LOC Culture must preserve the user-approved intersection navigation guidance.');
-  for(const token of ['currentStructurePeriod','items={currentTimelineItems}','windowStart={currentStructureStart}','windowEnd={currentStructureEnd}','onBoundaryNavigate'])if(!culture.includes(token))failures.push('Culture first river must show one current/selected period and navigate period-by-period: '+token);
+  for(const token of ['currentStructurePeriod','items={currentTimelineItems}','windowStart={currentStructureStart}','windowEnd={currentStructureEnd}','onTimeClick={pickingAnchorSlot===null'])if(!culture.includes(token))failures.push('Culture first river must show the selected period and create anchors from empty clicks: '+token);
+  if(culture.includes('riverAction')||culture.includes('onBoundaryNavigate={riverAction'))failures.push('Culture river must not hijack empty clicks or drag gestures to change the selected period.');
   const structureRiver=culture.slice(culture.indexOf("scope-culture-structure-river"),culture.indexOf("scope-culture-classification-river",culture.indexOf("scope-culture-structure-river")));
   if(structureRiver.includes('fixedMin={currentStructureStart}')||structureRiver.includes('fixedMax={currentStructureEnd}'))failures.push('Culture first river must remain horizontally navigable beyond the current period.');
   for(const token of ['isAggregateScope','locCombinedSourceRiverItems','locScopeDistributionItems'])if(!culture.includes(token))failures.push('LOC aggregate Culture contract missing '+token);
