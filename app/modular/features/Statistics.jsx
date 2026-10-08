@@ -258,18 +258,19 @@ function facetTotals(rows=[]){
 }
 function facetTrend(rows=[],window={},selectedCategories=[]){
   if(!window.startDate||!window.endDate)return [];
-  const categories=new Set(selectedCategories);
+  const categories=new Map(selectedCategories.map(value=>[String(value).normalize('NFKC').toLocaleLowerCase(),value]));
   const buckets=new Map();
   for(let cursor=new Date(window.startDate+'T00:00:00Z'),end=new Date(window.endDate+'T00:00:00Z');cursor<=end;cursor.setUTCDate(cursor.getUTCDate()+1)){
     const bucket=trendBucket(cursor.toISOString().slice(0,10),window.bucket);
     if(bucket&&!buckets.has(bucket.key))buckets.set(bucket.key,{period:bucket.label,_sort:bucket.key});
   }
   for(const row of rows){
-    if(!categories.has(row.category))continue;
+    const canonical=categories.get(String(row.category||'').normalize('NFKC').toLocaleLowerCase());
+    if(!canonical)continue;
     const bucket=trendBucket(row.day,window.bucket);
     if(!bucket)continue;
     const output=buckets.get(bucket.key);
-    if(output)output[row.category]=(Number(output[row.category])||0)+(Number(row.item_count)||0);
+    if(output)output[canonical]=(Number(output[canonical])||0)+(Number(row.item_count)||0);
   }
   return [...buckets.values()].sort((a,b)=>a._sort.localeCompare(b._sort)).map(row=>{
     const output={period:row.period};
