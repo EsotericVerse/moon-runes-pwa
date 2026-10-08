@@ -52,7 +52,11 @@ test('Author Hero keeps its own taller image framing; LOC artwork stays unchange
   expect(authorSize.height).toBeGreaterThan(locSize.height+30);
 
   const desktop=viewport.width>760;
-  await expect(authorHero).toHaveCSS('min-height',desktop?'620px':'460px');
+  const expectedMinHeight=desktop
+    ?Math.min(620,Math.max(430,viewport.width*.5))
+    :Math.min(570,Math.max(460,viewport.width*1.18));
+  const actualMinHeight=await authorHero.evaluate(el=>Number.parseFloat(getComputedStyle(el).minHeight));
+  expect(Math.abs(actualMinHeight-expectedMinHeight)).toBeLessThan(2);
   await expect(authorImage).toHaveCSS('object-position',desktop?'50% 50%':'58% 50%');
   const overlay=await authorHero.locator(':scope > .loc-home-block__media')
     .evaluate(el=>getComputedStyle(el,'::after').backgroundImage);
