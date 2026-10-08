@@ -30,8 +30,8 @@ const STAT_TYPE_LABELS=Object.freeze({
   total:UI_COPY.statistics.totalSource,
   source:UI_COPY.statistics.workSource,
   media_type:'多媒體類型',
-  media_platform:'多媒體 URL 平台',
-  media_style:'多媒體曲風／Tag'
+  media_platform:'多媒體來源統計',
+  media_style:'多媒體風格統計（Meta Tag）'
 });
 const MEDIA_STAT_TYPES=new Set(['media_type','media_platform','media_style']);
 const STYLE_FILTERS=Object.freeze([{value:'none',label:'不套用'},{value:'rune66',label:'關鍵詞 Class'}]);
@@ -288,14 +288,14 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',timeStandard
   const chartRows=useMemo(()=>facetTrend(window.rows,window,chartCategories),[window.rows,window.startDate,window.endDate,window.bucket,chartCategories.join('\u0000')]);
   const bars=(chosen==='all'?totals.slice(0,15):displayed).map(row=>({term:row.term,value:row.item_count}));
   const description=rankingType==='media_style'
-    ?'每筆媒體的同一曲風／Tag 只計一次；一筆作品有多個曲風會分別計入各標籤。曲風只來自 Galaxy Media metadata，不把 Suno Style 文字當作品。'
+    ?'從 Galaxy Media 的 meta_tags 即時計算所有統計詞（曲風、風格、主題等），同筆相同標籤只計一次；不將 Suno Style 正文當成媒體作品。'
     :rankingType==='media_platform'
       ?'依 URL 網域與路徑區分平台（IG Reels／IG 貼文、Vocus、Suno 等）；缺 URL 時才用媒體類型或來源欄位辨識。Suno song ID 不當成另一個平台。'
       :'每個多媒體紀錄只計入一個媒體類型。';
   return <>
     <p className="scope-status">{description}</p>
     <div className="scope-stat-controls">
-      <label><span>{rankingType==='media_style'?'指定曲風／Tag':'指定統計細項'}</span>
+      <label><span>{rankingType==='media_style'?'指定 Meta Tag':'指定統計細項'}</span>
         <select className="scope-select" value={chosen} onChange={event=>setSelectedTag(event.target.value)}>
           <option value="all">全部項目</option>
           {totals.map(row=><option key={row.term} value={row.term}>{row.term}（{row.item_count.toLocaleString()}）</option>)}
@@ -603,7 +603,9 @@ function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false}
     queryKey:['statistics-media-facet',scopeId,rankingType,queryRange.startDate,queryRange.endDate],
     queryFn:()=>selectMediaStatisticsFacetRows(targetScopes[0],rankingType,queryRange),
     enabled:mediaDimension&&Boolean(targetScopes.length)&&customReady&&Boolean(queryRange.startDate&&queryRange.endDate),
-    staleTime:5*60_000
+    staleTime:0,
+    refetchOnMount:'always',
+    refetchOnWindowFocus:true
   });
   const summary=useMemo(()=>buildSummary(trendQuery.data||[],effectiveTimeStandard,customRange),[trendQuery.data,effectiveTimeStandard,customRange]);
   const styleRange=useMemo(()=>({
@@ -648,6 +650,11 @@ function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false}
           :<SourceTrendChart rows={trendQuery.data||[]} standard={effectiveTimeStandard} customRange={customRange} height={420}/>
         :<SummaryChart type={chartType} rankingType={rankingType} summary={summary} height={380}/>}
     </>:null}
+    {mediaDimension&&customReady?<div className="scope-stat-controls">
+      <button type="button" className="loc-button" onClick={()=>mediaQuery.refetch()} disabled={mediaQuery.isFetching}>
+        {mediaQuery.isFetching?'更新統計中…':'重新整理即時統計'}
+      </button>
+    </div>:null}
     {mediaDimension&&!mediaQuery.isPending&&!mediaQuery.error&&customReady?<MediaFacetStatistics
       key={rankingType}
       rankingType={rankingType}
