@@ -13,6 +13,7 @@ import GenericScopeHomeView from './views/GenericScopeHomeView';
 import ScopeGroupOverview from './ScopeGroupOverview';
 import {FeaturePage} from '../modular/ui';
 import Statistics from '../modular/features/Statistics';
+import KeywordSettings from '../modular/features/KeywordSettings';
 import Culture from '../modular/features/Culture';
 import Search from '../modular/features/Search';
 import Governance from '../modular/features/Governance';
@@ -25,6 +26,7 @@ const ManagementView=dynamic(()=>import('./GovernanceManagement'),{loading});
 const VIEWS={
   game:GameView,
   statics:Statistics,
+  keywords:KeywordSettings,
   culture:Culture,
   search:Search,
   governance:Governance,
@@ -34,6 +36,7 @@ const HOME_VIEWS={loc:AboutView,lrunes:RunesHomeView,lo3rwang:AuthorHomeView,adm
 const FEATURE_FLAGS=Object.freeze({
   search:'search_able',
   statics:'statistics_able',
+  keywords:'statistics_able',
   culture:'culture_able'
 });
 

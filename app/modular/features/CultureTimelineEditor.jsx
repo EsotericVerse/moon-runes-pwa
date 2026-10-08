@@ -2,7 +2,7 @@
 
 import {DB_QUERY_BATCH_SIZE} from '../../loc/query-contract.mjs';
 
-import {useEffect,useMemo,useState} from 'react';
+import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useAccount} from '../../loc/use-account';
@@ -81,6 +81,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
   const [formOpen,setFormOpen]=useState(false);
+  const dialogRef=useRef(null);
 
   const query=useQuery({
     queryKey:['culture-period-settings',dataScope,timeTable],
@@ -172,6 +173,15 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
     });
     setMessage('已從時間長河帶入定錨點。');
   },[selectedAnchorPick?.nonce]);
+
+  // Native showModal puts this form in the browser top layer rather than
+  // letting a non-modal open dialog disappear below the vis-timeline canvas.
+  // It must be a hook, before the conditional return, to support repeated adds.
+  useEffect(()=>{
+    const dialog=dialogRef.current;
+    if(formOpen&&dialog&&!dialog.open)dialog.showModal();
+    return()=>{if(dialog?.open)dialog.close();};
+  },[formOpen]);
 
   if(!editable||account.loading||account.permissionLoading||!account.canManageScopeSync(dataScope))return null;
 
@@ -310,7 +320,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
 
   if(!formOpen)return null;
 
-  return <dialog open className="scope-culture-timeline-dialog">
+  return <dialog ref={dialogRef} aria-label="文化時間資料編輯器" className="scope-culture-timeline-dialog" onCancel={event=>{event.preventDefault();cancelEdit();}}>
     <section className="loc-card scope-feature-card scope-culture-inline-editor">
     {query.error?<p className="scope-status scope-error">{query.error.message}</p>:null}
     {duplicateAnchorIds.length?<p className="scope-status scope-error">同一資料區域存在重複的定錨點識別：{duplicateAnchorIds.join('、')}。請先修正，否則無法正確呈現文化資料。</p>:null}

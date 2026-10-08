@@ -194,9 +194,9 @@ export default function CultureTimeline({
         ...(fixedMax&&Number.isFinite(Date.parse(fixedMax))?{max:fixedMax}:{}),
         selectable:true,
         moveable:true,
-        editable:editable?{add:true,updateTime:true,updateGroup:false,remove:true,overrideItems:false}:false,
+        editable:editable?{add:Boolean(onAddRef.current),updateTime:true,updateGroup:false,remove:true,overrideItems:false}:false,
         ...(editable?{
-          onAdd:(item,callback)=>settle(onAddRef.current,item,null,callback,null),
+          ...(onAddRef.current?{onAdd:(item,callback)=>settle(onAddRef.current,item,null,callback,null)}:{}),
           onMove:(item,callback)=>settle(onMoveRef.current,item,rowById(item.id),callback,null),
           onUpdate:(item,callback)=>settle(onUpdateRef.current,item,rowById(item.id),callback,null),
           onRemove:(item,callback)=>settle(onRemoveRef.current,item,rowById(item.id),callback,null)

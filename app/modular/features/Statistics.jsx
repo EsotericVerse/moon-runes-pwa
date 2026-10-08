@@ -18,7 +18,7 @@ import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-sta
 import {useScopeRuntime} from '../use-scope-runtime';
 import {FeaturePage} from '../ui';
 import {useAccount} from '../../loc/use-account';
-import KeywordLibraryPanel from '../../loc/KeywordLibraryPanel';
+import {scopeHref} from '../scope-registry';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const GROUP_RANKING_PAGE_SIZE=10;
@@ -601,7 +601,7 @@ function ScopeGroupStatistics(){
   </section>;
 }
 
-function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false}){
+function ScopeStatisticsResults({scopeId,navigation,types}){
   const requested=String(navigation.rankingType||'');
   const rankingType=types.includes(requested)?requested:(types[0]||'');
   const mediaDimension=MEDIA_STAT_TYPES.has(rankingType);
@@ -609,8 +609,8 @@ function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false}
   const [timeStandard,setTimeStandard]=useState('1y');
   const [customFrom,setCustomFrom]=useState('');
   const [customTo,setCustomTo]=useState('');
-  const [styleFilter,setStyleFilter]=useState(scopeId==='lo3rwang'?'rune66':'none');
-  const [showKeywordSettings,setShowKeywordSettings]=useState(false);
+  // Leave potentially expensive keyword aggregation OFF until explicitly chosen.
+  const [styleFilter,setStyleFilter]=useState('none');
   const customRange=useMemo(()=>({from:customFrom,to:customTo}),[customFrom,customTo]);
   const queryEndDate=useMemo(()=>taipeiDateKey(),[]);
   const effectiveTimeStandard=timeStandard;
@@ -649,7 +649,7 @@ function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false}
   }),[queryRange.startDate,queryRange.endDate]);
   const runeQuery=useQuery({
     queryKey:['statistics-style-filter','rune66',scopeId,styleRange.startDate,styleRange.endDate],
-    queryFn:()=>selectRune66Classification(styleRange),
+    queryFn:()=>selectRune66Classification({scopeId,...styleRange}),
     enabled:scopeId==='lo3rwang'&&styleFilter==='rune66'&&Boolean(styleRange.startDate&&styleRange.endDate),
     staleTime:5*60_000
   });
@@ -705,18 +705,19 @@ function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false}
       {runeQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(runeQuery.error)}</p>:null}
       {!runeQuery.isPending&&!runeQuery.error&&runeQuery.data?<Rune66Summary analysis={runeQuery.data}/>:null}
     </>:null}
-    {canManageKeywords?<section className="scope-card scope-keyword-statistics-management">
-      <button
-        type="button"
-        className="loc-button"
-        aria-expanded={showKeywordSettings}
-        onClick={()=>setShowKeywordSettings(value=>!value)}
-      >
-        {showKeywordSettings?'收起關鍵詞設定':'關鍵詞設定'}
-      </button>
-      {showKeywordSettings?<KeywordLibraryPanel scopeId={scopeId}/>:null}
-    </section>:null}
+
   </section>;
+}
+
+function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false}){
+  return <>
+    {canManageKeywords?<section className="scope-stat-section scope-stat-keyword-link">
+      <a className="loc-button" href={scopeHref(scopeId,'statics/keywords')}>
+        前往獨立關鍵詞設定頁面
+      </a>
+    </section>:null}
+    <ScopeStatisticsResults scopeId={scopeId} navigation={navigation} types={types}/>
+  </>;
 }
 
 function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types,canManageKeywords=false}){
