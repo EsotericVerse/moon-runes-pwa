@@ -26,3 +26,38 @@ export function isEmptyImageTarget(block){
       piece?.type==='text'&&!String(piece.text||'').trim()
   );
 }
+
+const imageTag=/<img\b[^>]*>/gi;
+const imageSource=/\bsrc\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i;
+
+export function countHtmlImages(value=''){
+  return (String(value??'').match(imageTag)||[]).length;
+}
+
+export function frameImageCount(slot){
+  return countHtmlImages(slot?.subtitle)+countHtmlImages(slot?.text)+
+    (Array.isArray(slot?.entities)?slot.entities.reduce((n,item)=>n+countHtmlImages(item?.text),0):0);
+}
+
+export function firstFrameImageUrl(slot){
+  const html=[slot?.subtitle,slot?.text,...(Array.isArray(slot?.entities)?slot.entities.map(item=>item?.text):[])];
+  for(const value of html){
+    for(const tag of String(value||'').match(imageTag)||[]){
+      const source=tag.match(imageSource);
+      const url=normalizeImageSource(source?.[1]||source?.[2]||source?.[3]||'');
+      if(url)return url;
+    }
+  }
+  return '';
+}
+
+export function heroImageMode(slot){
+  return slot?.entities?.[0]?.image_mode==='side'?'side':'background';
+}
+
+// Remove only the image itself from hero reading copy. The image is rendered
+// once, by its frame, either behind the text or beside it.
+export function stripHeroImageTag(value=''){
+  return String(value??'').replace(imageTag,'')
+    .replace(/<p\b[^>]*>\s*(?:<br\s*\/?\s*>)?\s*<\/p>/gi,'');
+}
