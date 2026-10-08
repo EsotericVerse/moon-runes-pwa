@@ -31,7 +31,7 @@ export function FeaturePage({featureId,children,subtitle=null,description=null})
   const title=shared?.title||profile.title;
   return <main className="scope-main">
     <section className="scope-page">
-      <header className="loc-card scope-hero scope-feature-hero">
+      <header className="loc-card scope-hero scope-feature-hero" data-feature-hero-source={shared?'loc':'default'}>
         <div className="home-title-row">
           <h1>{title}</h1>
           {shared
