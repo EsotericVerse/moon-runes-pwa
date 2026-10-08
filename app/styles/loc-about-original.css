@@ -1,4 +1,4 @@
-/* LOC homepage only — one root section per DB row, no display:contents or
+/* LOC homepage only — one root section per DB row, without extra layout wrappers or
    nested component-specific CSS. All colors continue using the current Theme. */
 .loc-next-main[data-loc-scope="loc"][data-loc-view="home"]{
   width:min(1180px,calc(100% - 2rem));
@@ -58,6 +58,8 @@
   max-width:38ch;
   margin:.1rem 0 0;
   padding:0;
+  border:0;
+  background:transparent;
   color:var(--loc-accent);
   font-size:.9rem;
   font-weight:600;
