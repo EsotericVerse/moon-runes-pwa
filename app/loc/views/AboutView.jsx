@@ -4,18 +4,7 @@ import LocHomeEditableBlock from '../LocHomeEditableBlock';
 export default function AboutView(){
   return <section className="loc-view loc-home">
     <header className="loc-hero loc-home-hero">
-      <div className="loc-home-hero-copy">
-        <p className="loc-eyebrow">LOC (Language Architecture Framework)</p>
-        <div className="home-title-row">
-          <h1>LOC月典</h1>
-          <p className="loc-subtitle">以多面向語言結構與時間維度，整理、搜尋並呈現語言建築。</p>
-        </div>
-        <div className="loc-hero-copy">
-          <p>以微月光為鑑，即為月典(LOC,Luna Codex)，</p>
-		  <p>用於分析整理，顯示在時間長河內，文字發光的作品。</p>
-          <p>當微光慢慢集中變亮，你也將綻放屬於自己的光芒。</p>
-        </div>
-      </div>
+      <LocHomeEditableBlock order={1} variant="hero"/>
       <figure className="home-hero-visual">
         <picture>
           <source media="(max-width: 900px)" srcSet={SITE_IMAGES.locHeroSmall.src} />
