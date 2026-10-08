@@ -45,6 +45,9 @@ const authorHomeEditable=read('app/loc/AuthorHomeEditableBlock.jsx');
 const locHomeBlock=read('app/loc/LocHomeBlockDisplay.jsx');
 const locHomeCss=read('app/styles/loc-about-original.css');
 const locHome=read('app/loc/views/AboutView.jsx');
+const locFeatureHero=read('app/loc/LocFeatureHeroManagement.jsx');
+const sharedFeatureHero=read('app/loc/feature-hero.mjs');
+const featureUi=read('app/modular/ui.jsx');
 const runesHome=read('app/lrunes/RunesClient.jsx');
 const personalGovernance=read('app/modular/governance/PersonalGovernance.jsx');
 const runesGovernance=read('app/modular/governance/LunaRunesGovernance.jsx');
@@ -82,24 +85,30 @@ must(blockNoteEditor.includes("from '@blocknote/react'")&&blockNoteEditor.includ
 must(blockNoteEditor.includes('getSelectedLinkUrl')&&blockNoteEditor.includes('createLink')&&blockNoteEditor.includes('移除連結'),'BlockNote must expose explicit hyperlink editing controls');
 must(blockNoteEditor.includes('圖片網址')&&blockNoteEditor.includes('imageBlockForUrl')&&blockNoteEditor.includes('canInsertImage'),'BlockNote must allow remote image URL insertion with the current frame quota');
 must(blockNoteEntry.includes('canInsertImage={canInsertImage}')&&editableBlocks.includes('frameImageCount(draft)')&&editableBlocks.includes('embeddedImages>1')&&editableBlocks.includes('canInsertImageIn('),'page frames may contain at most one remotely linked image across all body and child fields');
-must(editableBlocks.includes('Hero 圖片位置（背景或旁邊，二選一）')&&editableBlocks.includes('image_mode')&&locHomeBlock.includes('heroImageMode(slot)')&&authorHomeEditable.includes('heroImageMode(slot)'),'Hero background or side is a persisted exclusive choice shared by LOC and author homepages');
-must(locHomeBlock.includes('loc-home-block__media-bubble')&&locHomeBlock.includes('(media||customImage)?')&&authorHomeEditable.includes('author-image-bubble'),'non-Hero preset images must be contained image bubbles and never duplicate custom images');
+must(editableBlocks.includes('Hero 圖片位置（背景或旁邊，二選一）')&&editableBlocks.includes('image_mode')&&locHomeBlock.includes('heroImageMode(slot)')&&locHomeBlock.includes('authorHomeBlockClass'),'Hero background or side is a persisted exclusive choice shared by LOC and author homepages');
+must(locHomeBlock.includes('loc-home-block__media-bubble')&&locHomeBlock.includes('(media||customImage)?')&&locHomeBlock.includes("5:{src:{src:'/pics/lo3rwang-3.png'}"),'non-Hero preset images must be contained image bubbles and never duplicate custom images');
 
 must(editableBlocks.includes('<BlockNoteEditor')&&publisher.includes('<BlockNoteEditor')&&sharedSearch.includes('<BlockNoteEditor')&&cultureUi.includes('plainTextToBlocks'),'all inline, longform and media editors must use BlockNote');
 for(const [file,body] of [['app/modular/ui.jsx',read('app/modular/ui.jsx')],['app/loc/ManagementArticlePublisher.jsx',publisher],['app/modular/features/Search.jsx',sharedSearch],['app/modular/features/Culture.jsx',cultureUi],['app/loc/ScopeEditableBlocks.jsx',editableBlocks]])must(!body.includes('RichBlockEditor'),file+' must not refer to retired RichBlockEditor');
 must(editableBlocks.includes('ENTITY_LIMIT=6')&&editableBlocks.includes("page='index'")&&editableBlocks.includes('page_name')&&editableBlocks.includes('block_entity')&&editableBlocks.includes("column:'uid'")&&editableBlocks.includes('isInteractiveTarget'),'Scope page editing must use stable block uid plus up to six child entities');
 must(['block_eyebrow','block_title','block_subtitle','block_text'].every(col=>editableBlocks.includes(col)&&scopeData.includes(col)),'Scope blocks must read and edit four canonical header/body columns');
 must(editableBlocks.includes('childPresentation(entity.title)')&&editableBlocks.includes('不用標題（文字泡泡）')&&!editableBlocks.includes('entity.kind'),'title-free child bubble and titled child card must use implicit kind, without a type selector');
-must(locHomeBlock.includes('slot.subtitle')&&authorHomeEditable.includes('slot.subtitle'),'LOC and Author heading displays must use the dedicated rich subtitle');
+must(locHomeBlock.includes('slot.subtitle')&&authorHomeEditable.includes('renderDisplay={AuthorHomeBlockDisplay}'),'LOC and Author heading displays must use the dedicated rich subtitle');
 must(portableSchema.includes('"block_eyebrow"')&&portableSchema.includes('"block_subtitle"')&&scopeProvisioning.includes('like silver.lo3rwang_blocks including all'),'portable and future scope table contracts must include standard block header columns');
 
 must(editableBlocks.includes('儲存失敗：')&&editableBlocks.includes('scope-inline-save-status')&&editableBlocks.includes('refetchQueries'),'page block saves must visibly report success/failure and refetch saved data');
 must(editableBlocks.includes('dangerouslySetInnerHTML')&&!editableBlocks.includes('editable={false}'),'public page display must use static site markup; BlockNote is edit-only');
 must(authorHome.includes('AuthorHomeEditableBlocks')&&!authorHome.includes('heroContent={<div'),'author homepage must render database blocks rather than hardcoded old homepage text');
-must(authorHomeEditable.includes('scopeId="lo3rwang"')&&authorHomeEditable.includes('allowEditing')&&authorHomeEditable.includes('containerless')&&authorHomeEditable.includes('renderDisplay={AuthorDisplay}')&&authorHomeEditable.includes('resolveSlotClassName={authorBlockClass}')&&authorHomeEditable.includes('authorHeroAsset.src')&&!authorHomeEditable.includes('allowEditing={false}'),'author homepage must use one permission-gated DB editor and retain existing Hero art');
-must(authorHomeEditable.includes("2:AboutDisplay")&&authorHomeEditable.includes("3:ProfessionalDisplay")&&authorHomeEditable.includes("4:SystemsDisplay")&&authorHomeEditable.includes("5:SoulsDisplay")&&authorHomeEditable.includes("6:ContactDisplay"),'author DB blocks 1–6 must preserve the original section presentations');
+must(authorHomeEditable.includes('scopeId="lo3rwang"')&&authorHomeEditable.includes('allowEditing')&&authorHomeEditable.includes('containerless')&&authorHomeEditable.includes('renderDisplay={AuthorHomeBlockDisplay}')&&authorHomeEditable.includes('resolveSlotClassName={authorHomeBlockClass}')&&!authorHomeEditable.includes('allowEditing={false}'),'author homepage must use LOC common frames with permission-gated DB editing');
+must(locHomeBlock.includes('function SharedHomeBlockDisplay')&&locHomeBlock.includes('function AuthorHomeBlockDisplay')&&locHomeBlock.includes('const AUTHOR_MEDIA')&&authorHome.includes('loc-view loc-home'),'author and LOC homepages must share the identical frame and HTML layout with distinct preset images');
+must(!authorHomeEditable.includes('AboutDisplay')&&!authorHomeEditable.includes('ProfessionalDisplay')&&!authorHomeEditable.includes('SoulsDisplay')&&!authorHomeEditable.includes('author-contact-layout'),'author homepage must not retain bespoke section renderers');
+must(locHomeCss.includes('[data-loc-scope="lo3rwang"]')&&!locHomeCss.includes('.loc-next-main[data-loc-scope="loc"][data-loc-view="home"]'),'both homes must use the same scoped CSS without per-author overrides');
 must(locHomeBlock.includes('loc-home-block__header')&&locHomeBlock.includes('loc-home-block__body')&&locHomeBlock.includes('loc-home-block__children')&&locHomeCss.includes('.loc-home-block__children'),'LOC homepage must use one consistent header/body/children contract');
 must(locHome.includes('allowEditing')&&editableBlocks.includes("account.canManageGlobalSync()")&&editableBlocks.includes("scopeId==='loc'"),'LOC homepage must preserve permission-based BlockNote editing');
+must(locHome.includes('LocFeatureHeroManagement')&&locFeatureHero.includes('page={FEATURE_HERO_PAGE}')&&locFeatureHero.includes('allowDelete={false}')&&locFeatureHero.includes('canManageGlobalSync()'),'LOC homepage must centrally edit four fixed feature heading rows only for global managers');
+must(sharedFeatureHero.includes("scopeId!=='lrunes'")&&featureUi.includes("shouldUseSharedFeatureHero(scopeId,featureId)")&&featureUi.includes("selectScopeBlocks('loc',FEATURE_HERO_PAGE)")&&featureUi.includes("sharedFeatureHeroFor(sharedQuery.data,featureId)"),'four feature pages must reuse LOC managed hero content except LunaRunes');
+must(featureUi.includes("data-feature-hero-source={shared?'loc':'default'}"),'feature header should expose shared DB origin for automated testing');
+
 must(locHome.includes('maxBlocks={8}')&&locHome.includes('placeholderFirstOrder={1}')&&locHome.includes('containerless')&&locHome.includes('renderDisplay={LocHomeBlockDisplay}')&&locHomeBlock.includes("order===1?'loc-hero loc-home-hero'")&&locHomeBlock.includes('SITE_IMAGES.locHero'),'LOC homepage must print up to 8 ordered frames, with Hero background only for order 1');
 
 must(HOME_BLOCK_LIMIT===8&&homeBlockRows([

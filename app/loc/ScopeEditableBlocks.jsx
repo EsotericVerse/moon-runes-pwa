@@ -71,7 +71,10 @@ export default function ScopeEditableBlocks({
   maxBlocks=null,
   placeholderFirstOrder=null,
   containerless=false,
-  allowEditing=true
+  allowEditing=true,
+  allowDelete=true,
+  allowEntities=true,
+  editEyebrow=true
 }){
   const account=useAccount();
   const queryClient=useQueryClient();
@@ -312,18 +315,18 @@ export default function ScopeEditableBlocks({
         {active?<>
           <div className="scope-inline-editbar">
             <button type="button" className="loc-button primary" disabled={busy} onClick={save}>{busy?'儲存中…':'儲存'}</button>
-            <button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={remove}>刪除</button>
+            {allowDelete?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={remove}>刪除</button>:null}
             <button type="button" className="loc-button" disabled={busy} onClick={cancel}>取消</button>
             {message?<span className={'scope-inline-save-status'+(message.startsWith('儲存失敗')?' scope-error':'')} role="status" aria-live="polite">{message}</span>:null}
           </div>
-          <label className="scope-management-wide-field">
+          {editEyebrow?<label className="scope-management-wide-field">
             <span>英文標題（可留空）</span>
             <input
               className="scope-search-input"
               value={draft.eyebrow}
               onChange={event=>setDraft(current=>({...current,eyebrow:event.target.value}))}
             />
-          </label>
+          </label>:null}
           <label className="scope-management-wide-field">
             <span>中文大標題（可留空）</span>
             <input
@@ -355,7 +358,7 @@ export default function ScopeEditableBlocks({
             onHtmlChange={html=>setDraft(current=>({...current,text:html}))}
             canInsertImage={canInsertImageIn(draft.text)}
           />
-          {renderEntities(draft.entities,true)}
+          {allowEntities?renderEntities(draft.entities,true):null}
         </>:<>
           {typeof renderDisplay==='function'
             ?renderDisplay(slot)

@@ -1,15 +1,18 @@
 'use client';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
+import {useQuery} from '@tanstack/react-query';
 import {UI_COPY} from '../i18n/ui-copy';
 import {useUiCopy} from '../i18n/ui-locale';
 import {DEFAULT_LIST_BATCH_SIZE,LIST_LOAD_COOLDOWN_MS} from '../loc/list-loading-contract.mjs';
 import {useScopeRuntime} from './use-scope-runtime';
 import BlockNoteEditor from '../loc/BlockNoteEditor';
 import {blocksToPlainText,plainTextToBlocks} from '../loc/blocknote-content.mjs';
+import {selectScopeBlocks} from '../loc/scope-data';
+import {FEATURE_HERO_PAGE,sharedFeatureHeroFor,shouldUseSharedFeatureHero} from '../loc/feature-hero.mjs';
 
 export function FeaturePage({featureId,children,subtitle=null,description=null}){
-  const {scope}=useScopeRuntime();
+  const {scope,scopeId}=useScopeRuntime();
   const copy=useUiCopy();
   const profile=copy.features?.[featureId]||UI_COPY.features?.[featureId]||{title:featureId,subtitle:'',description:''};
   const scopeCopyKey=scope?.id==='lo3rwang'?'author':scope?.id;
@@ -17,14 +20,27 @@ export function FeaturePage({featureId,children,subtitle=null,description=null})
   const resolvedSubtitle=localizedScope?.[featureId]||scope?.featureSubtitles?.[featureId]||profile.subtitle||'';
   const resolvedDescription=description??profile.description;
   const finalSubtitle=subtitle||resolvedSubtitle;
+  const sharedEnabled=shouldUseSharedFeatureHero(scopeId,featureId);
+  const sharedQuery=useQuery({
+    queryKey:['scope-blocks','loc',FEATURE_HERO_PAGE],
+    queryFn:()=>selectScopeBlocks('loc',FEATURE_HERO_PAGE),
+    staleTime:60_000,
+    enabled:sharedEnabled
+  });
+  const shared=sharedEnabled?sharedFeatureHeroFor(sharedQuery.data,featureId):null;
+  const title=shared?.title||profile.title;
   return <main className="scope-main">
     <section className="scope-page">
-      <header className="loc-card scope-hero scope-feature-hero">
+      <header className="loc-card scope-hero scope-feature-hero" data-feature-hero-source={shared?'loc':'default'}>
         <div className="home-title-row">
-          <h1>{profile.title}</h1>
-          {finalSubtitle?<p className="loc-subtitle scope-subtitle">{finalSubtitle}</p>:null}
+          <h1>{title}</h1>
+          {shared
+            ?(shared.subtitle?<div className="loc-subtitle scope-subtitle scope-shared-hero-rich" dangerouslySetInnerHTML={{__html:shared.subtitle}}/>:null)
+            :(finalSubtitle?<p className="loc-subtitle scope-subtitle">{finalSubtitle}</p>:null)}
         </div>
-        {resolvedDescription?<div className="scope-hero-description">{resolvedDescription}</div>:null}
+        {shared
+          ?(shared.description?<div className="scope-hero-description scope-shared-hero-rich" dangerouslySetInnerHTML={{__html:shared.description}}/>:null)
+          :(resolvedDescription?<div className="scope-hero-description">{resolvedDescription}</div>:null)}
       </header>
       <div className="scope-content">{children}</div>
     </section>

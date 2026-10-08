@@ -1,15 +1,15 @@
-/* LOC homepage only — one root section per DB row, without extra layout wrappers or
+/* LOC and Author homepages — one root section per DB row, without extra layout wrappers or
    nested component-specific CSS. All colors continue using the current Theme. */
-.loc-next-main[data-loc-scope="loc"][data-loc-view="home"]{
+.loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]){
   width:min(1180px,calc(100% - 2rem));
   margin:0 auto;
   padding:clamp(1.2rem,4vw,3rem) 0 4rem;
 }
-.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home{
+.loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]) .loc-home{
   display:grid;
   gap:1.15rem;
 }
-.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home>.loc-home-block{
+.loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]) .loc-home>.loc-home-block{
   min-width:0;
   padding:1.15rem 1.25rem;
   border:1px solid var(--loc-line);
@@ -140,7 +140,7 @@
   grid-template-areas:"media header" "media body" "media children";
 }
 /* Hero keeps the already approved full-bleed background and reading contrast. */
-.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home>.loc-home-block--hero{
+.loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]) .loc-home>.loc-home-block--hero{
   position:relative;
   display:block;
   isolation:isolate;
@@ -203,7 +203,7 @@
 .loc-home-block--hero>.loc-home-block__body strong{color:inherit}
 /* Only frame 1 can use background artwork. The side option makes the same
    image a contained bubble, never a second illustration or overlay. */
-.loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home>.loc-home-block--hero.loc-home-block--hero-side{
+.loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]) .loc-home>.loc-home-block--hero.loc-home-block--hero-side{
   display:grid;
   grid-template-columns:minmax(0,1.25fr) minmax(240px,.75fr);
   grid-template-areas:"header media" "body media" "children media";
@@ -252,7 +252,7 @@
   background:var(--loc-surface-soft);
 }
 @media(max-width:760px){
-  .loc-next-main[data-loc-scope="loc"][data-loc-view="home"] .loc-home>.loc-home-block--hero.loc-home-block--hero-side{
+  .loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]) .loc-home>.loc-home-block--hero.loc-home-block--hero-side{
     grid-template-columns:minmax(0,1fr);
     grid-template-areas:"header" "body" "children" "media";
   }

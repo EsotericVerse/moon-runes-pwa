@@ -1,6 +1,7 @@
 'use client';
 
 import {SITE_IMAGES} from '../site-images';
+import authorHeroAsset from '../../pics/lo3rwang-hero.jpg';
 import {childPresentation} from './block-presentation.mjs';
 import {visibleHomeEntities} from './home-block-model.mjs';
 import {stripLocHomeEditorPlaceholders} from './loc-home-text.mjs';
@@ -8,16 +9,25 @@ import {firstFrameImageUrl,heroImageMode,stripHeroImageTag} from './blocknote-im
 
 // Existing, approved site images only. New text frames have no image by default;
 // images are not uploaded to, or stored by, the block editor.
-const HOME_MEDIA=Object.freeze({
+const LOC_MEDIA=Object.freeze({
   1:{src:SITE_IMAGES.locHero,small:SITE_IMAGES.locHeroSmall,alt:'LOC 月典語言架構框架視覺理念圖',background:true},
   2:{src:SITE_IMAGES.lunarunes,alt:'LunaRunes 月之符文',position:'right',width:'420px'},
   3:{src:SITE_IMAGES.locArchitecture,alt:'LOC 月典架構：時間長河、玄子、玄裂與玄宇宙',position:'right',width:'360px'},
   6:{src:SITE_IMAGES.author,alt:'作者 Lucas Oscar Wang 政德',position:'right',width:'360px'}
 });
+const AUTHOR_MEDIA=Object.freeze({
+  1:{src:authorHeroAsset,alt:'作者 Lucas Oscar Wang 政德首頁主視覺',background:true},
+  5:{src:{src:'/pics/lo3rwang-3.png'},alt:'政德、玄鑒與符韻的三魂關係圖',position:'right',width:'420px'}
+});
 
-export function locHomeBlockClass(slot){
+function imageFor(slot,scopeId='loc'){
+  const assets=scopeId==='lo3rwang'?AUTHOR_MEDIA:LOC_MEDIA;
+  return assets[Number(slot?.order)||0]||null;
+}
+
+export function locHomeBlockClass(slot,scopeId='loc'){
   const order=Number(slot?.order)||0;
-  const media=HOME_MEDIA[order];
+  const media=imageFor(slot,scopeId);
   const hasCustomImage=Boolean(firstFrameImageUrl(slot));
   return [
     order===1?'loc-hero loc-home-hero':'loc-card',
@@ -33,9 +43,9 @@ function RichHtml({html,className='',stripImage=false}){
   return content.trim()?<div className={className} dangerouslySetInnerHTML={{__html:content}}/>:null;
 }
 
-export default function LocHomeBlockDisplay(slot){
+function SharedHomeBlockDisplay(slot,scopeId='loc'){
   const hero=Number(slot?.order)===1;
-  const media=HOME_MEDIA[Number(slot?.order)];
+  const media=imageFor(slot,scopeId);
   const customImage=firstFrameImageUrl(slot);
   const children=visibleHomeEntities(slot).filter(entity=>!customImage||entity.title||
     stripHeroImageTag(entity.text).replace(/<[^>]*>/g,'').trim());
@@ -57,9 +67,9 @@ export default function LocHomeBlockDisplay(slot){
         </article>;
       })}
     </div>:null}
-    {(media||customImage)?(hero?<figure className="loc-home-block__media home-hero-visual" aria-label={media.alt}>
-      <picture>{!customImage?<source media="(max-width: 900px)" srcSet={media.small.src}/>:null}
-        <img src={customImage||media.src.src} width={media.src.width} height={media.src.height}
+    {(media||customImage)?(hero?<figure className="loc-home-block__media home-hero-visual" aria-label={media?.alt||'首頁主視覺'}>
+      <picture>{!customImage&&media?.small?<source media="(max-width: 900px)" srcSet={media.small.src}/>:null}
+        <img src={customImage||media?.src.src} width={customImage?undefined:media?.src.width} height={customImage?undefined:media?.src.height}
           alt="" aria-hidden="true" loading="lazy" decoding="async"/></picture>
     </figure>:<article className="loc-home-block__media loc-home-block__media-bubble loc-bubble"
       style={media?.width?{'--loc-home-media-max':media.width}:undefined}>
@@ -68,4 +78,18 @@ export default function LocHomeBlockDisplay(slot){
         alt={media?.alt||'文字框架圖片'} loading="lazy" decoding="async"/>
     </article>):null}
   </>;
+}
+
+/* LOC and Author use exactly the same home frame renderer and DOM hierarchy.
+   Only preset images, block contents and scope editing permissions differ. */
+export default function LocHomeBlockDisplay(slot){
+  return SharedHomeBlockDisplay(slot,'loc');
+}
+
+export function AuthorHomeBlockDisplay(slot){
+  return SharedHomeBlockDisplay(slot,'lo3rwang');
+}
+
+export function authorHomeBlockClass(slot){
+  return locHomeBlockClass(slot,'lo3rwang');
 }

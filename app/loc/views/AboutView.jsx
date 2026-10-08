@@ -1,5 +1,6 @@
 import ScopeEditableBlocks from '../ScopeEditableBlocks';
 import LocHomeBlockDisplay,{locHomeBlockClass} from '../LocHomeBlockDisplay';
+import LocFeatureHeroManagement from '../LocFeatureHeroManagement';
 
 export default function AboutView(){
   return <section className="loc-view loc-home">
@@ -15,5 +16,6 @@ export default function AboutView(){
       resolveSlotClassName={locHomeBlockClass}
       editSlotClassName="loc-card loc-home-block"
     />
+    <LocFeatureHeroManagement/>
   </section>;
 }
