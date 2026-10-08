@@ -122,12 +122,6 @@
 .scope-management-preview{margin-top:1rem;min-height:62vh;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-lg);overflow:hidden;background:var(--loc-bg)}
 .scope-management-preview iframe{display:block;width:100%;height:70vh;border:0;background:var(--loc-bg)}
 .scope-preview-links{display:flex;flex-wrap:wrap;gap:.55rem;align-items:center}
-.scope-style-tag-row{display:grid;gap:.6rem;margin:.5rem 0 1rem}
-.scope-style-comment-item{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:.7rem;padding:.7rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm)}
-.scope-style-comment-item>div{min-width:0;flex:1}
-.scope-style-comment-item p{margin:.4rem 0;white-space:pre-wrap;overflow-wrap:anywhere}
-.scope-culture-style-editing{display:grid;gap:.7rem;padding:.8rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel)}
-.scope-culture-style-editing label{display:grid;gap:.35rem}
 /* Optional recursive style navigation is compact and scannable; ordinary works stay below. */
 .scope-style-search-connections{display:grid;gap:.55rem;margin:.65rem 0 .35rem;padding:.8rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel)}
 .scope-style-search-related{display:grid;gap:.6rem}
