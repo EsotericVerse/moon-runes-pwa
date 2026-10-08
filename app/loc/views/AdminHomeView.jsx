@@ -2,7 +2,6 @@
 
 import {UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale} from '../../i18n/ui-copy';
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
-import Select from 'react-select';
 import {scopeHref} from '../../modular/scope-registry';
 import {THEME_SLOTS,THEME_TOKEN_KEYS,applyTheme,getThemeSlot} from '../../modular/theme-registry';
 import {mergeThemeSlot} from '../theme-data';
@@ -95,10 +94,14 @@ function useAdminScopeData(){
 function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMoveParent}){
   const containerRef=useRef(null);
   const networkRef=useRef(null);
+  const [treeState,setTreeState]=useState('loading');
+  const [treeError,setTreeError]=useState('');
 
   useEffect(()=>{
     let cancelled=false;
     let network=null;
+    setTreeState('loading');
+    setTreeError('');
     const roots=registry.filter(row=>!row.parent_scope_id);
     const nodes=[
       {id:'__admin__',label:'Admin',shape:'box',level:0,fixed:true},
@@ -126,6 +129,7 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
         edges:{smooth:{enabled:true,type:'cubicBezier',forceDirection:'vertical',roundness:.35}}
       });
       networkRef.current=network;
+      setTreeState('ready');
       network.on('selectNode',params=>{
         const id=String(params?.nodes?.[0]||'');
         if(id&&id!=='__admin__')onSelect?.(id);
@@ -153,7 +157,11 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
         network.selectNodes([selectedId]);
         network.focus(selectedId,{scale:1,animation:false});
       }
-    }).catch(()=>{});
+    }).catch(error=>{
+      if(cancelled)return;
+      setTreeState('error');
+      setTreeError(String(error?.message||error||'Scope Registry 圖形樹載入失敗。'));
+    });
     return()=>{cancelled=true;network?.destroy();networkRef.current=null;};
   },[registry,configs,onSelect,onMoveParent]);
 
@@ -163,7 +171,19 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
     try{network.selectNodes([selectedId]);network.focus(selectedId,{scale:1,animation:{duration:180}});}catch{}
   },[selectedId]);
 
-  return <div ref={containerRef} className="admin-deployment-tree" role="region" aria-label="Scope Registry"/>;
+  return <div className="admin-deployment-tree-wrap">
+    <div ref={containerRef} className={'admin-deployment-tree'+(treeState==='error'?' is-unavailable':'')} role="region" aria-label="Scope Registry"/>
+    {treeState!=='ready'?<div className="admin-registry-fallback" role="region" aria-label="Scope Registry 清單">
+      <p className="scope-status">{treeState==='error'?'圖形樹載入失敗，已切換清單模式。':'Scope Registry 載入中…'}</p>
+      {treeError?<p className="scope-status scope-error">{treeError}</p>:null}
+      {registry.length?<div className="admin-registry-fallback-list">
+        {registry.map(row=><button type="button" className={'scope-inline-card admin-registry-fallback-item'+(row.scope_id===selectedId?' is-selected':'')} onClick={()=>onSelect?.(row.scope_id)} key={row.scope_id}>
+          <strong>{configs[row.scope_id]?.display_name||row.display_name||row.scope_id}</strong>
+          <span>{row.scope_id} · {row.scope_kind}{row.active===false?' · 停用':''}</span>
+        </button>)}
+      </div>:<p className="scope-status">目前沒有 Scope Registry 資料。</p>}
+    </div>:null}
+  </div>;
 }
 
 function RegistryNodePanel({data,selectedId,onCreateMode}){
@@ -176,7 +196,6 @@ function RegistryNodePanel({data,selectedId,onCreateMode}){
 
   const groups=registry.filter(row=>row.scope_kind==='group'&&row.active!==false&&row.scope_id!==selectedId);
   const parentOptions=[{value:'',label:'—'},...groups.map(row=>({value:row.scope_id,label:(row.display_name||row.scope_id)+' · '+row.scope_id}))];
-  const parentValue=parentOptions.find(option=>option.value===String(selected?.parent_scope_id||''))||parentOptions[0];
   const themeOptions=THEME_SLOTS.map(theme=>({value:theme.id,label:theme.label+' · '+theme.id}));
 
   const patchRegistry=(key,value)=>setRegistry(rows=>rows.map((row,index)=>index===selectedIndex?{...row,[key]:value}:row));
@@ -273,8 +292,8 @@ function RegistryNodePanel({data,selectedId,onCreateMode}){
         <label><span>顯示名稱</span><input value={config.display_name||''} onChange={e=>patchConfig('display_name',e.target.value)}/></label>
         <label><span>搜尋介紹</span><textarea rows={3} value={config.search_intro||''} onChange={e=>patchConfig('search_intro',e.target.value)}/></label>
         <label><span>搜尋別名</span><textarea rows={3} value={normalizeAliases(config.search_aliases).join('\n')} onChange={e=>patchConfig('search_aliases',e.target.value.split('\n'))}/></label>
-        <label><span>Theme</span><Select className="admin-react-select" classNamePrefix="admin-react-select" unstyled isSearchable={false} options={themeOptions} value={themeOptions.find(o=>o.value===config.theme)||themeOptions[6]} onChange={o=>patchConfig('theme',o?.value||'theme-7')}/></label>
-        <label><span>預設語系</span><Select className="admin-react-select" classNamePrefix="admin-react-select" unstyled isSearchable={false} options={UI_LOCALE_OPTIONS} value={UI_LOCALE_OPTIONS.find(o=>o.value===normalizeUiLocale(config.locale))||UI_LOCALE_OPTIONS[0]} onChange={o=>patchConfig('locale',normalizeUiLocale(o?.value))}/></label>
+        <label><span>Theme</span><select className="admin-native-select" value={config.theme||'theme-7'} onChange={e=>patchConfig('theme',e.target.value||'theme-7')}>{themeOptions.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
+        <label><span>預設語系</span><select className="admin-native-select" value={normalizeUiLocale(config.locale)} onChange={e=>patchConfig('locale',normalizeUiLocale(e.target.value))}>{UI_LOCALE_OPTIONS.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
         <div className="admin-inline-flags">
           <label><input type="checkbox" checked={config.search_able!==false} onChange={e=>patchConfig('search_able',e.target.checked)}/> Search</label>
           <label><input type="checkbox" checked={config.statistics_able!==false} onChange={e=>patchConfig('statistics_able',e.target.checked)}/> Statistics</label>
@@ -284,7 +303,7 @@ function RegistryNodePanel({data,selectedId,onCreateMode}){
 
       <label><span>Domain</span><input value={selected.domain||''} onChange={e=>patchRegistry('domain',e.target.value)}/></label>
       <label><span>Directory</span><input value={selected.directory||''} onChange={e=>patchRegistry('directory',e.target.value)}/></label>
-      {selected.scope_id!=='loc'?<label><span>Parent</span><Select className="admin-react-select" classNamePrefix="admin-react-select" unstyled isSearchable={false} options={parentOptions} value={parentValue} onChange={o=>patchRegistry('parent_scope_id',o?.value||'')}/></label>:null}
+      {selected.scope_id!=='loc'?<label><span>Parent</span><select className="admin-native-select" value={String(selected.parent_scope_id||'')} onChange={e=>patchRegistry('parent_scope_id',e.target.value||'')}>{parentOptions.map(option=><option value={option.value} key={option.value||'root'}>{option.label}</option>)}</select></label>:null}
       <label><span>排序</span><input type="number" value={selected.sort_order||0} onChange={e=>patchRegistry('sort_order',e.target.value)}/></label>
       {selected.scope_id!=='loc'?<label className="scope-setting-toggle"><input type="checkbox" checked={selected.active!==false} onChange={e=>patchRegistry('active',e.target.checked)}/> Active</label>:null}
 
@@ -366,9 +385,9 @@ function CreateNodePanel({data,kind='scope',onClose}){
       <label><span>Birthday</span><input type="date" value={scopeDraft.birthday} onChange={e=>setScopeDraft(v=>({...v,birthday:e.target.value}))}/></label>
       <label><span>Domain</span><input value={scopeDraft.domain} onChange={e=>setScopeDraft(v=>({...v,domain:e.target.value}))}/></label>
       <label><span>Directory</span><input value={scopeDraft.directory} onChange={e=>setScopeDraft(v=>({...v,directory:e.target.value}))}/></label>
-      <label><span>Parent</span><Select className="admin-react-select" classNamePrefix="admin-react-select" unstyled isSearchable={false} options={parentOptions} value={parentValue(scopeDraft.parent_scope_id)} onChange={o=>setScopeDraft(v=>({...v,parent_scope_id:o?.value||'loc'}))}/></label>
-      <label><span>Theme</span><Select className="admin-react-select" classNamePrefix="admin-react-select" unstyled isSearchable={false} options={themeOptions} value={themeOptions.find(o=>o.value===scopeDraft.theme)} onChange={o=>setScopeDraft(v=>({...v,theme:o?.value||'theme-7'}))}/></label>
-      <label><span>預設語系</span><Select className="admin-react-select" classNamePrefix="admin-react-select" unstyled isSearchable={false} options={UI_LOCALE_OPTIONS} value={UI_LOCALE_OPTIONS.find(o=>o.value===scopeDraft.locale)||UI_LOCALE_OPTIONS[0]} onChange={o=>setScopeDraft(v=>({...v,locale:normalizeUiLocale(o?.value)}))}/></label>
+      <label><span>Parent</span><select className="admin-native-select" value={scopeDraft.parent_scope_id||'loc'} onChange={e=>setScopeDraft(v=>({...v,parent_scope_id:e.target.value||'loc'}))}>{parentOptions.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
+      <label><span>Theme</span><select className="admin-native-select" value={scopeDraft.theme||'theme-7'} onChange={e=>setScopeDraft(v=>({...v,theme:e.target.value||'theme-7'}))}>{themeOptions.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
+      <label><span>預設語系</span><select className="admin-native-select" value={normalizeUiLocale(scopeDraft.locale)} onChange={e=>setScopeDraft(v=>({...v,locale:normalizeUiLocale(e.target.value)}))}>{UI_LOCALE_OPTIONS.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
       <label className="scope-setting-toggle"><input type="checkbox" checked={scopeDraft.copy_keywords!==false} onChange={e=>setScopeDraft(v=>({...v,copy_keywords:e.target.checked}))}/>複製 Rune66 Keyword Class</label>
       <button type="button" className="loc-button primary" onClick={createScope}>建立</button>
     </>:<>
@@ -376,7 +395,7 @@ function CreateNodePanel({data,kind='scope',onClose}){
       <label><span>Group 名稱</span><input value={groupDraft.display_name} onChange={e=>setGroupDraft(v=>({...v,display_name:e.target.value}))}/></label>
       <label><span>Domain</span><input value={groupDraft.domain} onChange={e=>setGroupDraft(v=>({...v,domain:e.target.value}))}/></label>
       <label><span>Directory</span><input value={groupDraft.directory} onChange={e=>setGroupDraft(v=>({...v,directory:e.target.value}))}/></label>
-      <label><span>Parent</span><Select className="admin-react-select" classNamePrefix="admin-react-select" unstyled isSearchable={false} options={parentOptions} value={parentValue(groupDraft.parent_scope_id)} onChange={o=>setGroupDraft(v=>({...v,parent_scope_id:o?.value||'loc'}))}/></label>
+      <label><span>Parent</span><select className="admin-native-select" value={groupDraft.parent_scope_id||'loc'} onChange={e=>setGroupDraft(v=>({...v,parent_scope_id:e.target.value||'loc'}))}>{parentOptions.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
       <label><span>排序</span><input type="number" value={groupDraft.sort_order} onChange={e=>setGroupDraft(v=>({...v,sort_order:e.target.value}))}/></label>
       <button type="button" className="loc-button primary" onClick={createGroup}>建立</button>
     </>}
@@ -417,6 +436,7 @@ function AdminRegistry(){
           <button type="button" className="loc-button" onClick={()=>setCreateKind('scope')}>＋ Scope</button>
           <button type="button" className="loc-button" onClick={()=>setCreateKind('group')}>＋ Group</button>
         </div>
+        {!registry.length&&data.status?<p className="scope-status scope-error">{data.status}</p>:null}
         <DeploymentTree registry={registry} configs={configs} selectedId={selectedId} onSelect={selectNode} onMoveParent={moveParent}/>
       </div>
       {createKind?<CreateNodePanel data={data} kind={createKind} onClose={()=>setCreateKind('')}/>:<RegistryNodePanel data={data} selectedId={selectedId} onCreateMode={setCreateKind}/>}
@@ -469,10 +489,10 @@ function DatabaseTarget(){
 
   return <section className="loc-card admin-workspace">
     <div className="admin-inline-select">
-      <Select className="admin-react-select" classNamePrefix="admin-react-select" unstyled isSearchable={false} options={options} value={options.find(o=>o.value===selectedId)||null} onChange={o=>setSelectedId(o?.value||'')} aria-label="Database Target"/>
+      <select className="admin-native-select" value={selectedId} onChange={e=>setSelectedId(e.target.value)} aria-label="Database Target">{options.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select>
     </div>
     {row?<div className="scope-management-fields">
-      <label><span>Provider</span><Select className="admin-react-select" classNamePrefix="admin-react-select" unstyled isSearchable={false} options={[{value:'supabase',label:'Supabase'},{value:'neon',label:'Neon'}]} value={{value:row.provider,label:row.provider==='supabase'?'Supabase':'Neon'}} onChange={o=>patch('provider',o?.value||'supabase')}/></label>
+      <label><span>Provider</span><select className="admin-native-select" value={row.provider||'supabase'} onChange={e=>patch('provider',e.target.value||'supabase')}><option value="supabase">Supabase</option><option value="neon">Neon</option></select></label>
       <label><span>Label</span><input value={row.label||''} onChange={e=>patch('label',e.target.value)}/></label>
       <label><span>Project ID</span><input value={row.project_id||''} onChange={e=>patch('project_id',e.target.value)}/></label>
       <label><span>Project URL / Data API</span><input value={row.project_url||''} onChange={e=>patch('project_url',e.target.value)}/></label>
@@ -539,11 +559,11 @@ function ThemeEditor(){
   }
 
   return <section className="loc-card admin-workspace">
-    <div className="admin-inline-select"><Select className="admin-react-select" classNamePrefix="admin-react-select" unstyled isSearchable={false} options={options} value={options.find(o=>o.value===themeId)||options[0]||null} onChange={o=>setThemeId(o?.value||'theme-1')}/></div>
+    <div className="admin-inline-select"><select className="admin-native-select" value={themeId} onChange={e=>setThemeId(e.target.value||'theme-1')}>{options.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></div>
     {draft?<>
       <div className="scope-management-fields">
         <label><span>名稱</span><input value={draft.label||''} onChange={e=>setDraft(v=>({...v,label:e.target.value}))}/></label>
-        <label><span>Scheme</span><Select className="admin-react-select" classNamePrefix="admin-react-select" unstyled isSearchable={false} options={[{value:'light',label:'light'},{value:'dark',label:'dark'}]} value={{value:draft.scheme,label:draft.scheme}} onChange={o=>setDraft(v=>({...v,scheme:o?.value||'light'}))}/></label>
+        <label><span>Scheme</span><select className="admin-native-select" value={draft.scheme||'light'} onChange={e=>setDraft(v=>({...v,scheme:e.target.value||'light'}))}><option value="light">light</option><option value="dark">dark</option></select></label>
         <label><span>Group</span><input value={draft.group||''} onChange={e=>setDraft(v=>({...v,group:e.target.value}))}/></label>
         <label><span>Style Key</span><input value={draft.styleKey||''} onChange={e=>setDraft(v=>({...v,styleKey:e.target.value}))}/></label>
         <label><span>Identity Color</span><input value={draft.identityColor||''} onChange={e=>setDraft(v=>({...v,identityColor:e.target.value}))}/></label>
@@ -595,7 +615,7 @@ export default function AdminHomeView(){
     <header className="loc-hero loc-hero-context admin-hero">
       <div className="admin-hero-row"><h1>{UI_COPY.admin.eyebrow}</h1><button className="loc-button" type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button></div>
       <div className="admin-main-select">
-        <Select className="admin-react-select" classNamePrefix="admin-react-select" unstyled isSearchable={false} options={ADMIN_OPTIONS} value={selectedOption} onChange={option=>setSection(option?.value||'registry')} aria-label="Admin 管理功能"/>
+        <select className="admin-native-select" value={selectedOption.value} onChange={e=>setSection(e.target.value||'registry')} aria-label="Admin 管理功能">{ADMIN_OPTIONS.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select>
       </div>
     </header>
     {section==='registry'?<AdminRegistry/>:null}
