@@ -6,7 +6,7 @@ import {QueryClient,QueryClientProvider,useQuery} from '@tanstack/react-query';
 import {UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale,uiCopy} from './i18n/ui-copy';
 import {UiLocaleProvider} from './i18n/ui-locale';
 import {FEATURES,SCOPES,featureHref,featureIdForPath,getScope,scopeHref} from './modular/scope-registry';
-import {applyTheme,getThemeSlot,themeSignature,THEME_SLOTS} from './modular/theme-registry';
+import {applyTheme,themeSignature,THEME_SLOTS} from './modular/theme-registry';
 import {mergeThemeSlot,selectThemeRegistry} from './loc/theme-data';
 import {useScopeRuntime} from './modular/use-scope-runtime';
 import {selectScopeConfig} from './loc/scope-data';
@@ -91,10 +91,13 @@ function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride
     :THEME_SLOTS.map(item=>({id:item.id,label:item.label}));
 
   useEffect(()=>{
+    // Do not flash the Order emergency palette under non-Order theme IDs
+    // while asynchronous silver.loc_theme resolves its canonical tokens.
+    if(!override&&effectiveThemeId!=='theme-7')return;
     const root=document.documentElement;
     if(root.dataset.themeSignature===themeSignature(slot))return;
     applyTheme(slot);
-  },[slot,scopeId]);
+  },[slot,scopeId,effectiveThemeId,override]);
 
   useEffect(()=>{
     if(selectedThemeId!==SYSTEM_THEME_ID||fixedDefaultThemeId||configuredDefaultThemeId)return undefined;
