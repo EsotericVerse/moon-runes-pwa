@@ -55,6 +55,17 @@
 - [ ] 完成 responsive、loading、failure-state 與 deployment regression。
 - [ ] 讓 Current Canon、README 與 runtime verifier 保持一致。
 
+## Post-0.9.1 / App Workgroup — Managed Auth（規劃中；不列入 0.9.1 RC 驗收門檻）
+
+**目的：** Scope Group／Scope Node 延伸為家庭、小型組織時，認證、邀請、成員管理委託成熟模組（優先評估 Clerk Auth + Organizations），減少每新增一個 Scope／Group 就要反覆處理 OAuth 與 Google Cloud 設定的維護負擔。**先完成私人 App／Import 驗收，再評估導入；此項不是已完成功能。**
+
+- [ ] 評估 Clerk Auth／Organizations 的 Next.js、iOS SDK、價格與 Supabase/Neon 整合；優先使用現成登入、Session、邀請、成員與撤銷 UI，避免自製 Auth 與第二套組織管理。
+- [ ] 保留 LOC 的 `scope_registry`、Scope Group／Node、Scope 建立／更新、資料表與 canonical 設定；Clerk 僅負責身分與組織成員資格，透過穩定身分／組織 ID 映射到既有 Scope，不能取代 Scope CRUD／資料權威。
+- [ ] 設計現行 Supabase Auth／`silver.manage` 的遷移與回退：Supabase 第三方 JWT／RLS 相容性、`silver.can_manage_scope`／`silver.can_manage_global`、舊帳號綁定、權限撤銷；不得只靠前端控制或 email 字串認證。
+- [ ] 新增 Scope／Group 不應要求另外建立 Google OAuth Client ID；選擇 Google 登入時仍須遵守正式環境提供者憑證規定，若目標為零 Google Cloud 設定可評估 Email OTP／Passkey。
+- [ ] 個人本機 App 保持可不登入、私密資料不自動上雲；只有 Workgroup／共享才要求認證。確認新私密 Scope **不沿用**既有部分公開 Scope 的 anonymous `SELECT USING (true)` 政策。
+- [ ] Workgroup 驗收：組織建立／邀請／加入／移除／撤銷、跨 Scope 權限隔離、裝置遺失／Session 失效、舊登入轉換與回退；新增 Scope 後認證流程無需重複人工配置，且不得破壞原有已驗收功能。
+
 ## Guardrails
 
 - 不自行新增 table、cache、projection、RLS 或 grant。
