@@ -12,7 +12,9 @@ LOC 是 Next.js static-export application。main 是 Current source branch；Git
 
 ## Runtime data
 
-Static frontend 的 Current canonical data 來自 Supabase PostgreSQL。公開功能透過 provider-neutral Data API boundary 讀取，不從 repository Markdown、JSON snapshot 或 local corpus file 載入 Current content。
+Static frontend 的主要 Current canonical data 來自 Supabase PostgreSQL。公開功能透過 provider-neutral Data API boundary 讀取；匿名公開 SELECT 在主來源失敗時可使用 Neon 唯讀備援，畫面須標明備援資料及可能的同步延遲。Authenticated writes、管理、OAuth 與 RLS 權限仍走原本主要路徑，不自動 fail over。
+
+Runtime 不從 repository Markdown、JSON snapshot 或 local corpus file 載入 Current content；備援讀取不形成第二套可編輯 Canon。
 
 ## Authority split
 

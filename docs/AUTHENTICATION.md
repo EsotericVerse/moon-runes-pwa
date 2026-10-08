@@ -6,9 +6,9 @@
 
 ## Public data
 
-公開 Search、Culture、Statistics、Rune reference 等功能以唯讀 Supabase Data API 取得允許公開的 canonical data。
+公開 Search、Culture、Statistics、Rune reference 等功能經由 provider-neutral Data API 取得允許公開的 canonical data。Supabase 是優先的公開讀取來源；只有匿名公開 SELECT 讀取失敗時才嘗試 Neon 唯讀備援，並標示備援資料。來源之間可能存在同步延遲；同一分頁讀取鏈固定使用已選定來源，不混合資料。
 
-公開讀取不因此取得 management write authority。
+這項備援不涵蓋登入、Scope 管理、寫入或權限驗證；這些操作不得自動改向 Neon。公開讀取不因此取得 management write authority。
 
 ## Management data
 

@@ -16,13 +16,15 @@ LOC 自動分析負責找出可觀察的資料變化，不替使用者定義事�
 
 Culture 使用 Time River 表達時間分布。
 
-Current 流程：
+Current 單 Scope 流程：
 
-1. 先從各 Scope Time data 找共同時間範圍。
-2. 交會永遠取 intersection。
-3. 取得交會區間後，再對 Galaxy 做聚合。
-4. 作品列表使用分頁／incremental loading。
-5. 點來源後再查該來源內容，不預先載入全部正文。
+1. 先解析目前選定的單一 Scope，以及其 Time／Galaxy／Galaxy Media 資料責任。
+2. 由該 Scope 的 Period、Anchor 與 Time 條件決定可比較的時間範圍；需要時間交會時以 intersection 為準，不把 union 當成交會。
+3. 限定時間後，才對該 Scope 自己的 Galaxy／Galaxy Media 執行精準、bounded query 與資料彙整。
+4. 時間長河與作品列表分層取得資料；作品列表採分頁／incremental loading，不因建圖一次載入全文。
+5. 使用者打開來源或作品後才查詳情；沒有資料時保留空狀態，不推論缺失的脈絡。
+
+**Scope Group 不執行跨 Scope 時間交會或作品聚合。** Group 的 Culture／Statistics／Search 僅讀取 Registry 成員並提供總覽與單 Scope 導引，不能 fan-out 查詢每個子 Scope corpus。
 
 Anchor：
 

@@ -20,6 +20,8 @@
 
 ### Management / Admin
 
+- [ ] **0.9 主要交付：** 完成 Scope 管理選單的既有模組整合與操作體驗；Admin 負責 Registry／Group／Mapping，各 Scope Manage 負責自身設定、資料、時期／文化、關鍵詞／統計、發表與 Import，避免平行編輯器或 Scope 特例。
+- [x] Keyword Attr 批次寫回與進度百分比修正已合併至 0.9 RC 之後的 Current main（含 SQL chunk WHERE 修正）；不等於所有真實 corpus 壓力測試已簽核。
 - [ ] 在公開基本功能確認後，再開始 Governance／Admin／Scope Manage 的實際操作驗收。
 - [ ] 驗證 CRUD、0-row 例外處理、searchable=false canonical visibility、Theme、Scope config 與權限行為。
 - [ ] 驗證管理預覽、Import、Data、Period、Keyword 等工作區的實際使用流程。
