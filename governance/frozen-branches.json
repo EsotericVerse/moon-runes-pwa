@@ -63,6 +63,7 @@
     "fix/admin-theme-config-only-20261008",
     "fix/author-contact-single-image-20261008",
     "fix/author-hero-natural-format-20261008",
+    "fix/author-hero-opaque-overlay-20261008",
     "fix/blocknote-placeholder-source-20261008",
     "fix/blocknote-save-roundtrip-20261008",
     "fix/blocknote-single-entry-current-20261008",
