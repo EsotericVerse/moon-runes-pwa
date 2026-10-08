@@ -60,7 +60,7 @@ function rowSortDate(row,anchors){
   return dateText(anchors.get(first)?.time_date)||dateText(anchors.get(last)?.time_date)||'9999-12-31';
 }
 
-export default function CultureTimelineEditor({scopeId='',selectedRecordId='',suggestedAnchorDate='',suggestedRecordType='anchor',selectedAnchorPick=null,onPickAnchorSlot=null,capturingAnchorSlot=null,onClose=null}){
+export default function CultureTimelineEditor({scopeId='',selectedRecordId='',suggestedAnchorDate='',suggestedRecordType='anchor',suggestedRequestNonce=0,selectedAnchorPick=null,onPickAnchorSlot=null,capturingAnchorSlot=null,onClose=null}){
   const account=useAccount();
   const searchParams=useSearchParams();
   const routeSuggestedAnchorDate=String(searchParams?.get?.('anchorDate')||'').slice(0,10);
@@ -160,7 +160,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
     });
     setMessage(recordType==='anchor'?'已帶入河道日期。':'請在時間長河選擇時期／事件的定錨點。');
     setFormOpen(true);
-  },[effectiveSuggestedAnchorDate,suggestedRecordType]);
+  },[effectiveSuggestedAnchorDate,suggestedRecordType,suggestedRequestNonce]);
 
   useEffect(()=>{
     if(!selectedAnchorPick||!Number.isInteger(selectedAnchorPick.slot)||!selectedAnchorPick.anchorId)return;
