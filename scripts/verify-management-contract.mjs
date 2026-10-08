@@ -93,7 +93,7 @@ must(editableBlocks.includes('dangerouslySetInnerHTML')&&!editableBlocks.include
 must(authorHome.includes('authorHeroAsset')&&authorHome.includes('author-home-hero-copy')&&authorHome.includes('author-role-grid')&&authorHome.includes('author-professional-grid')&&authorHome.includes('author-system-grid')&&authorHome.includes('author-trinity-layout')&&authorHome.includes('author-contact-layout')&&!authorHome.includes('AuthorHomeEditableBlock'),'author homepage must preserve its October 1 sections and new hero without inline editing');
 must(locHomeBlock.includes('loc-home-block__header')&&locHomeBlock.includes('loc-home-block__body')&&locHomeBlock.includes('loc-home-block__children')&&locHomeCss.includes('.loc-home-block__children'),'LOC homepage must use one consistent header/body/children contract');
 must(locHome.includes('allowEditing')&&editableBlocks.includes("account.canManageGlobalSync()")&&editableBlocks.includes("scopeId==='loc'"),'LOC homepage must preserve permission-based BlockNote editing');
-must(locHome.includes('maxBlocks={8}')&&locHome.includes('containerless')&&locHome.includes('renderDisplay={LocHomeBlockDisplay}')&&locHomeBlock.includes("order===1?'loc-hero loc-home-hero'")&&locHomeBlock.includes('SITE_IMAGES.locHero'),'LOC homepage must print up to 8 ordered frames, with Hero background only for order 1');
+must(locHome.includes('maxBlocks={8}')&&locHome.includes('placeholderFirstOrder={1}')&&locHome.includes('containerless')&&locHome.includes('renderDisplay={LocHomeBlockDisplay}')&&locHomeBlock.includes("order===1?'loc-hero loc-home-hero'")&&locHomeBlock.includes('SITE_IMAGES.locHero'),'LOC homepage must print up to 8 ordered frames, with Hero background only for order 1');
 
 must(HOME_BLOCK_LIMIT===8&&homeBlockRows([
   {uid:'A',page_name:'index',block_order:4},
@@ -117,6 +117,7 @@ must(visibleHomeEntities({...colFixture,entities:[{uid:'copy',title:'',text:colF
 must(locHomeBlock.includes('visibleHomeEntities(slot)')&&locHomeBlock.includes('dangerouslySetInnerHTML')&&!locHomeBlock.includes('splitStatusContentSections')&&!locHomeBlock.includes('paragraphParts')&&!locHomeBlock.includes('entityAt('),'LOC read-only display must preserve all BlockNote HTML without rewriting or hardcoded data indexes');
 must(!fs.existsSync(path.join(root,'app/loc/LocHomeEditableBlock.jsx'))&&!locHome.includes('LocHomeEditableBlock'),'retired multi-renderer homepage module must be gone');
 must(editableBlocks.includes('containerless?contents:')&&editableBlocks.includes('resolveSlotClassName(slot)')&&editableBlocks.includes('homeBlockRows(rows,pageName,maxBlocks)'),'Home must create only one DOM section per DB row without nested layout wrappers');
+must(editableBlocks.includes('displayed.push(normalizeRow(null,placeholderFirstOrder))')&&locHomeBlock.includes('home-hero-visual'),'Hero responsive image must be rendered statically even before the DB content loads');
 must(!locHomeCss.includes('display:contents')&&!locHomeCss.includes('!important'),'Homepage CSS must not rely on wrapper-hiding or cascade override hacks');
 
 must(!runesHome.includes('ScopeEditableBlocks')&&runesHome.includes('className="basic-grid"'),'LunaRunes homepage must remain a fixed special presentation without inline management editing');
