@@ -489,13 +489,3 @@
 .scope-shared-hero-rich>p+p{margin-top:.6rem}
 .scope-shared-hero-rich :is(strong,b){font-weight:700}
 .scope-shared-hero-rich img{display:block;max-width:100%;height:auto;object-fit:contain}
-.scope-feature-hero-management{margin-top:1rem;padding:1rem 1.25rem}
-.scope-feature-hero-management>summary{cursor:pointer;font-weight:700}
-.scope-feature-hero-management>.scope-status{margin:.75rem 0}
-.scope-feature-hero-management .scope-editable-block-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem}
-.scope-feature-hero-preview{min-width:0;padding:1rem}
-.scope-feature-hero-preview>.loc-eyebrow{margin-bottom:.5rem}
-.scope-feature-hero-preview>.home-title-row{grid-template-columns:minmax(0,1fr);gap:.5rem}
-.scope-feature-hero-preview>.home-title-row>h3{margin:0;font-size:1.32rem}
-.scope-feature-hero-preview .scope-subtitle{margin:0;max-width:none}
-@media(max-width:760px){.scope-feature-hero-management .scope-editable-block-grid{grid-template-columns:1fr}}
