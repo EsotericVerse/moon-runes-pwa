@@ -21,9 +21,9 @@ test('Author homepage uses the exact LOC frame components and layouts',async({pa
   // BlockNote children are authored data, not a fixed five-card template.
   // Ensure the full supported set survives the common renderer without blank cards.
   const professionalChildren=page.locator('.loc-home > section[data-block-order="3"] .loc-home-block__children > article');
-  const childCount=await professionalChildren.count();
-  expect(childCount).toBeGreaterThanOrEqual(3);
-  expect(childCount).toBeLessThanOrEqual(6);
+  // The author currently has six legitimate authored child text frames.
+  // Do not discard the sixth or silently accept missing content.
+  await expect(professionalChildren).toHaveCount(6);
   for(const child of await professionalChildren.all()){
     expect((await child.innerText()).trim().length).toBeGreaterThan(0);
   }
