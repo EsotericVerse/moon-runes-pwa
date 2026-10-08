@@ -9,6 +9,7 @@ import BlockNoteEditor from './BlockNoteEditor';
 import {stripLocHomeEditorPlaceholders} from './loc-home-text.mjs';
 import {childPresentation,removeDuplicatedLegacySubtitle} from './block-presentation.mjs';
 import {homeBlockRows} from './home-block-model.mjs';
+import {countHtmlImages,frameImageCount,firstFrameImageUrl,heroImageMode} from './blocknote-image-url.mjs';
 
 const ENTITY_LIMIT=6;
 const UID_ALPHABET='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -35,6 +36,7 @@ function normalizeEntities(value){
     uid:/^[A-Za-z0-9]{8}$/.test(String(entity?.uid||''))?String(entity.uid):makeUid(),
     title:String(entity?.title||''),
     text:String(entity?.text||''),
+    ...(entity?.image_mode==='side'?{image_mode:'side'}:{}),
     order:index+1
   }));
 }
@@ -132,6 +134,22 @@ export default function ScopeEditableBlocks({
     setMessage('');
   }
 
+  function updateHeroImageMode(value){
+    const mode=value==='side'?'side':'background';
+    setDraft(current=>{
+      if(!current)return current;
+      const entities=current.entities.length?[...current.entities]:[
+        {uid:makeUid(),title:'',text:'',order:1}
+      ];
+      entities[0]={...entities[0],image_mode:mode};
+      return {...current,entities};
+    });
+  }
+
+  function canInsertImageIn(html=''){
+    return !draft||frameImageCount(draft)-countHtmlImages(html)===0;
+  }
+
   function updateEntity(index,patch){
     setDraft(current=>{
       if(!current)return current;
@@ -175,6 +193,9 @@ export default function ScopeEditableBlocks({
     if(!draft)return;
     setBusy(true);setMessage('儲存中…');
     try{
+      const embeddedImages=frameImageCount(draft);
+      if(embeddedImages>1)throw new Error('每個文字框架最多只能有一張圖片，請先移除多餘圖片。');
+      if(embeddedImages===1&&!firstFrameImageUrl(draft))throw new Error('圖片必須是有效的 http:// 或 https:// 網址。');
       const normalizeSavedHtml=value=>scopeId==='loc'&&pageName==='index'
         ?stripLocHomeEditorPlaceholders(value)
         :String(value??'');
@@ -185,10 +206,11 @@ export default function ScopeEditableBlocks({
         block_subtitle:normalizeSavedHtml(draft.subtitle),
         block_text:normalizeSavedHtml(draft.text),
         block_order:Number(draft.order)||1,
-        block_entity:normalizeEntities(draft.entities).map(({uid,title,text})=>({
+        block_entity:normalizeEntities(draft.entities).map(({uid,title,text,image_mode},index)=>({
           uid,
           title:String(title||'').trim(),
-          text:normalizeSavedHtml(text)
+          text:normalizeSavedHtml(text),
+          ...(pageName==='index'&&draft.order===1&&index===0&&image_mode==='side'?{image_mode:'side'}:{})
         }))
       };
       if(draft.stored){
@@ -249,6 +271,7 @@ export default function ScopeEditableBlocks({
             key={entity.uid+':edit'}
             initialContent={entity.text?{html:entity.text}:''}
             onHtmlChange={html=>updateEntity(index,{text:html})}
+            canInsertImage={canInsertImageIn(entity.text)}
           />
         </>:<>
           {childPresentation(entity.title)==='card'?<h4>{entity.title}</h4>:null}
@@ -298,6 +321,11 @@ export default function ScopeEditableBlocks({
               onChange={event=>setDraft(current=>({...current,title:event.target.value}))}
             />
           </label>
+          {pageName==='index'&&draft.order===1?<fieldset className="scope-hero-image-mode">
+            <legend>Hero 圖片位置（背景或旁邊，二選一）</legend>
+            <label><input type="radio" name={'hero-image-'+draft.uid} checked={heroImageMode(draft)==='background'} onChange={()=>updateHeroImageMode('background')}/> 背景</label>
+            <label><input type="radio" name={'hero-image-'+draft.uid} checked={heroImageMode(draft)==='side'} onChange={()=>updateHeroImageMode('side')}/> 旁邊</label>
+          </fieldset>:null}
           <div className="scope-management-wide-field">
             <span>標題說明（可保留粗體與換行）</span>
           </div>
@@ -305,6 +333,7 @@ export default function ScopeEditableBlocks({
             key={draft.uid+':subtitle:edit'}
             initialContent={draft.subtitle?{html:draft.subtitle}:''}
             onHtmlChange={html=>setDraft(current=>({...current,subtitle:html}))}
+            canInsertImage={canInsertImageIn(draft.subtitle)}
           />
           <div className="scope-management-wide-field">
             <span>下方正文（BlockNote）</span>
@@ -313,6 +342,7 @@ export default function ScopeEditableBlocks({
             key={draft.uid+':body:edit'}
             initialContent={draft.text?{html:draft.text}:''}
             onHtmlChange={html=>setDraft(current=>({...current,text:html}))}
+            canInsertImage={canInsertImageIn(draft.text)}
           />
           {renderEntities(draft.entities,true)}
         </>:<>
