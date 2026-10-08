@@ -4,6 +4,15 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {DataSet,Timeline} from 'vis-timeline/standalone';
 import {densityStyleForCount,densityStyleForRatio,formatCultureDateTime} from './culture-timeline-model.mjs';
 
+// Stable defaults matter: an inline [] or {} used as a hook dependency
+// would destroy and recreate vis-timeline after setReady() on each render.
+const EMPTY_ITEMS=Object.freeze([]);
+const EMPTY_FOCUS=Object.freeze({});
+const EMPTY_HIDDEN_DATES=Object.freeze([]);
+function defaultTimelineLabel(item,index){
+  return item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1);
+}
+
 function timelineRows(items,labelOf,focus){
   const source=Array.isArray(items)?items:[];
   const focusTerms=[focus?.identity,focus?.period,focus?.anchor].filter(Boolean).map(String);
@@ -90,9 +99,9 @@ function settle(handler,item,row,callback,defaultValue=null){
 }
 
 export default function CultureTimeline({
-  items=[],
-  labelOf=(item,index)=>item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1),
-  focus={},
+  items=EMPTY_ITEMS,
+  labelOf=defaultTimelineLabel,
+  focus=EMPTY_FOCUS,
   mode='period',
   onSelect=null,
   onTimeClick=null,
@@ -108,7 +117,7 @@ export default function CultureTimeline({
   onBoundaryNavigate=null,
   fixedMin='',
   fixedMax='',
-  hiddenDates=[]
+  hiddenDates=EMPTY_HIDDEN_DATES
 }){
   const containerRef=useRef(null);
   const onSelectRef=useRef(onSelect);
@@ -140,6 +149,7 @@ export default function CultureTimeline({
     let instance=null;
     let initialPanWindow=null;
     let boundaryChangeSent=false;
+    let handleNativeDoubleClick=null;
     setChartError(false);
     if(!containerRef.current||!rows.length){setReady(false);return()=>{cancelled=true};}
     setReady(false);
@@ -148,7 +158,7 @@ export default function CultureTimeline({
       const dataRows=rows.map(row=>editable?{
         ...row,
         editable:{
-          updateTime:row.entryType==='anchor'||((row.entryType==='period'||row.entryType==='event')&&row.type==='range'&&!row.openStart&&!row.openEnd&&Array.isArray(row.raw?.anchor_ids)&&row.raw.anchor_ids.length>=2),
+          updateTime:row.entryType==='anchor',
           updateGroup:false,
           remove:Boolean(row.recordId)
         }
@@ -237,17 +247,21 @@ export default function CultureTimeline({
           onBoundaryNavigateRef.current('next');
         }
       });
-      instance.on('doubleClick',properties=>{
-        // A single click always remains a selection gesture; never create
-        // anchors on a drag release or on top of an existing item.
-        if((properties?.what!=='background'&&properties?.what!=='axis')||!onTimeClickRef.current||!properties?.time)return;
-        const time=properties.time instanceof Date?properties.time:new Date(properties.time);
+      // Bind the native DOM double-click gesture directly to the chart.
+      // vis-timeline's synthesized click/tap events must never open the
+      // anchor editor after a single click or a drag release.
+      handleNativeDoubleClick=event=>{
+        if(event.detail!==2||!onTimeClickRef.current)return;
+        const properties=instance.getEventProperties(event);
+        if(properties?.what!=='background'&&properties?.what!=='axis')return;
+        const time=properties.time instanceof Date?properties.time:new Date(properties.time||'');
         if(Number.isNaN(time.getTime()))return;
         const year=time.getFullYear();
         const month=String(time.getMonth()+1).padStart(2,'0');
         const day=String(time.getDate()).padStart(2,'0');
         onTimeClickRef.current(year+'-'+month+'-'+day);
-      });
+      };
+      containerRef.current.addEventListener('dblclick',handleNativeDoubleClick);
       if(windowStart&&windowEnd&&Number.isFinite(Date.parse(windowStart))&&Number.isFinite(Date.parse(windowEnd))){
         instance.setWindow(windowStart,windowEnd,{animation:false});
       }else{
@@ -258,14 +272,18 @@ export default function CultureTimeline({
     }catch{
       if(!cancelled){setReady(false);setChartError(true);}
     }
-    return()=>{cancelled=true;if(instance)instance.destroy();};
+    return()=>{
+      cancelled=true;
+      if(containerRef.current&&handleNativeDoubleClick)containerRef.current.removeEventListener('dblclick',handleNativeDoubleClick);
+      if(instance)instance.destroy();
+    };
   },[rows,timelineMinHeight,timelineMaxHeight,mode,windowStart,windowEnd,boundaryStart,boundaryEnd,fixedMin,fixedMax,hiddenDates,editable]);
 
   if(!rows.length)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><div className='scope-period-timeline scope-period-timeline-empty-line' role='region' aria-label='時間長河'/><p>{mode==='overview'?'尚未設定時期，目前以「所有」總覽顯示。':'目前時期尚無可顯示的時間資料。'}</p></div>;
 
   return <div className='scope-period-timeline-wrap'>
     {chartError?<p className='scope-status'>圖表載入失敗，以下改用清單顯示。</p>:null}
-    <div ref={containerRef} className='scope-period-timeline' role='region' aria-label={mode==='overview'?'所有時期與定錨點時間長河':'時間長河'} style={{'--scope-period-timeline-min-height':timelineMinHeight+'px'}}/>
+    <div ref={containerRef} data-anchor-gesture={onTimeClick?'double-click':'none'} className='scope-period-timeline' role='region' aria-label={mode==='overview'?'所有時期與定錨點時間長河':'時間長河'} style={{'--scope-period-timeline-min-height':timelineMinHeight+'px'}}/>
     {chartError?<ol className='scope-list'>
       {fallbackRows.map(row=><li key={row.id}><strong>{row.content}</strong>{row.group?<span> · {groupLabel(row.group)}</span>:null}<span> · {dateLabel(row.start)}</span>{row.title?<p>{row.title}</p>:null}</li>)}
     </ol>:null}
