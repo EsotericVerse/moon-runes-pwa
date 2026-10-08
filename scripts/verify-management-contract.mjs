@@ -55,10 +55,10 @@ const registrySql=read('docs/sql/scope-registry-management.sql');
 const sourceRefreshIndex=read('docs/sql/source-refresh-index.sql');
 
 must(!galaxy.includes('include_in_time'),'generic search must not query nonexistent include_in_time');
-must(galaxy.includes("'style_tags'")&&galaxy.includes("searchFields:['label','note','status','style_tags','style_description']"),'generic Time search must include style keyword and TEXT body');
-must(culture.includes('visibility,style_tags'),'Culture shared Time contract must include style_tags');
-must(editor.includes('style_description:styleDescription||null')&&editor.includes('<CultureStyleTagsField')&&visualStyleTags.includes('風格主要敘述（TEXT'),'Time editor must store a primary searchable TEXT style body rather than JSON');
-must(editor.includes('activeStyleTags.length&&!styleDescription')&&visualStyleTags.includes("mode==='create'")&&visualStyleTags.includes("mode==='edit'")&&visualStyleTags.includes('＋ 新增風格標籤</button>')&&visualStyleTags.includes('>編輯風格標籤</button>'),'Style UI must separate create and edit sibling entries and require a primary searchable TEXT description');
+must(galaxy.includes("searchFields:['label','note','status','style_description']")&&!galaxy.includes("'style_tags'"),'Search uses dedicated TEXT style body and no comma tags');
+must(culture.includes("value:['anchor','period','event','style_comment']"),'Culture reads independent style comments');
+must(!editor.includes('CultureStyleTagsField')&&!editor.includes('style_tags')&&visualStyleTags.includes("record_type:'style_comment'"),'Time editor must not embed legacy multi-tag notes');
+must(visualStyleTags.includes("mode==='create'")&&visualStyleTags.includes("mode==='edit'")&&visualStyleTags.includes('＋ 新增風格標籤</button>')&&visualStyleTags.includes('編輯風格標籤</button>')&&visualStyleTags.includes('anchor_ids:[anchorId]'),'Style create/edit are independent, each requiring one formal anchor');
 must(cultureUi.includes('onClick={canEditWork')&&cultureUi.includes('isInteractiveTarget')&&!cultureUi.includes("UI_COPY.culture.editing:'編輯'"),'Culture existing works must enter editing by direct non-interactive card click without an Edit button');
 must(galaxy.includes('selectStyleKeywordIntroductions')&&!galaxy.includes('scopeCards('),'Search must prepend exact style-keyword introductions and must not use partial Scope-ID cards');
 must(management.includes('scope?.aggregateChildren?<ManagementDisclosure')&&management.includes('<ScopeGroupManagement scopeId={scopeId}/>'),'every DB Scope Group must have its own collapsed Manage entry');
@@ -148,9 +148,9 @@ must(!runesHome.includes('ScopeEditableBlocks')&&runesHome.includes('className="
 must(personalGovernance.includes('ScopeEditableBlocks')&&personalGovernance.includes('page="governance"'),'personal governance must use governance block rows');
 must(runesGovernance.includes('ScopeEditableBlocks')&&runesGovernance.includes('page="governance"'),'LunaRunes governance must use governance block rows');
 must(sharedSearch.includes('startEditing')&&sharedSearch.includes('BlockNoteEditor')&&sharedSearch.includes('GALAXY_EDITOR_COLUMNS')&&sharedSearch.includes('GalaxyAttrSummary')&&sharedSearch.includes('GalaxyAttrEditor')&&sharedSearch.includes("fullTextKey===row.key")&&sharedSearch.includes('updateRows'),'Search must open full Galaxy articles first, then expose permission-gated full Attr editing');
-must(cultureUi.includes('<CultureStyleTagsEditor')&&cultureUi.includes('anchors={anchorRecords}')&&cultureUi.includes('onSaved={refreshTimelineData}')&&visualStyleTags.includes('CultureStyleTagsField')&&visualStyleTags.includes('anchor_ids:nextIds')&&visualStyleTags.includes('updateRows(table,')&&visualStyleTags.includes('style_description:String(description'),'Culture style editing must reuse Time anchor references and write primary TEXT style descriptions');
-must(culture.includes('visibility,style_tags,style_description')&&culture.includes('record_id:row.record_id')&&culture.includes('style_description:row.style_description'),'Culture periods must expose original ID and primary style TEXT');
-must(cultureUi.includes('beginTimelineCreation')&&cultureUi.includes('items={timelineItems}')&&cultureUi.includes('...classificationBuckets,...virtualAnchorItems')&&!cultureUi.includes('visibleExistingAnchors')&&!cultureUi.includes('anchorReviews.map')&&editor.includes('起點與終點定錨點')&&editor.includes('anchorOptions.map(row=>')&&editor.includes('<CultureStyleTagsField'),'Culture WYSIWYG must reuse existing anchor IDs via named selectors, preserving historic points for review');
+must(cultureUi.includes('<CultureStyleTagsEditor')&&cultureUi.includes('styles={query.data?.styleComments||[]}')&&visualStyleTags.includes('insertRows(table,[')&&visualStyleTags.includes('updateRows(table,')&&visualStyleTags.includes('style_description:body'),'Culture writes one independent style comment with one TEXT body');
+must(culture.includes('visibility,style_description')&&culture.includes('styleComments:parts.styleComments')&&culture.includes("entry_type==='style_comment'"),'Culture exposes independent style comments');
+must(cultureUi.includes('beginTimelineCreation')&&cultureUi.includes('items={timelineItems}')&&cultureUi.includes('...classificationBuckets,...virtualAnchorItems')&&!cultureUi.includes('anchorReviews.map')&&editor.includes('起點與終點定錨點')&&editor.includes('anchorOptions.map(row=>')&&!editor.includes('CultureStyleTagsField'),'Time editor must not mix style comments into periods');
 must(nativeTimeline.includes('new Timeline(')&&['onAdd:','onMove:','onUpdate:','onRemove:','add:Boolean(onAddRef.current)','onTimeClickRef.current'].every(token=>nativeTimeline.includes(token)),'Time manipulation must retain vis-timeline edits and make add opt-in to avoid river gesture collisions');
 
 must(nativeTimeline.includes("updateTime:row.entryType==='anchor'")&&!cultureUi.includes('snapTimelineRangeToAnchors')&&editor.includes('payload.anchor_ids=ids'),'Only real anchor points can be dragged; periods and events must reference ordered anchor IDs from selectors');
@@ -218,10 +218,10 @@ must(scopeProvisioning.includes('create table if not exists silver.scope_registr
 for(const table of ['lo3rwang_time','lrunes_time']){
   const start='CREATE TABLE "silver"."'+table+'" (';
   const ddl=portableSchema.split(start)[1]?.split('\n);')[0]||'';
-  must(Boolean(ddl)&&['"anchor_ids" text[]','"style_tags" text','"style_description" text'].every(field=>ddl.includes(field)),
-    table+' needs canonical anchor_ids text[] and style_tags/style_description TEXT');
-  must(!ddl.includes('style_tag_descriptions')&&!ddl.includes('style_keyword_counts'),
-    table+' must not revive migrated JSONB style attrs or stored count snapshots');
+  must(Boolean(ddl)&&['"anchor_ids" text[]','"style_description" text'].every(field=>ddl.includes(field)),
+    table+' needs canonical anchor_ids text[] and style_description TEXT');
+  must(!ddl.includes('style_tag_descriptions')&&!ddl.includes('style_tags')&&!ddl.includes('style_keyword_counts')&&ddl.includes('style_comment_shape_check'),
+    table+' must enforce one independent style_comment without legacy multi-style columns');
 }
 must(scopeProvisioning.includes("create table silver.%I (like silver.lo3rwang_time including all)"),
   'new Scope Time tables must clone the canonical TEXT Time template including all fields');
@@ -247,7 +247,7 @@ must(importPanel.includes('record.createtime||current.createtime||null')&&import
 must(!/silver\.runes(?:_etc)?\b/.test(galaxy),'generic Galaxy/Search provider must not expose private Rune Core tables');
 must(!/runeScopeIds|silver\.runes(?:_etc)?\b/.test(sharedSearch),'shared Search must stay Scope-data only');
 must(sharedSearch.includes('matchesScopeAlias')&&sharedSearch.includes('scope.searchIntro')&&sharedSearch.includes("label:'前往 Scope 首頁'")&&sharedSearch.includes('return;'),'exact Scope aliases must use Scope-owned presentation and stop the search');
-must(galaxy.includes("columns:'record_id,record_type,label,resource_id,display_order,time_date,year_value,anchor_ids,style_tags,style_description'")&&galaxy.includes("summary:description")&&!galaxy.includes('style_tag_descriptions'),'Search must use Time style_description TEXT as its displayed primary content');
+must(galaxy.includes("value:['anchor','period','style_comment']")&&galaxy.includes('summary:r.style_description')&&!galaxy.includes('styleTagList'),'Search loads one-to-one style comments');
 must(galaxy.includes('selectStyleKeywordDocumentCount')&&galaxy.includes('related_style_tags:related')&&galaxy.includes('same_period:')&&sharedSearch.includes('scope-style-search-related-links')&&sharedSearch.includes('style.document_total')&&sharedSearch.includes("cursor:!append&&styleIntroductions.length?{stage:2"),'Search introductions must offer counted linked personal styles before work results without Time snapshot columns');
 must(sharedSearch.includes('selectStyleKeywordIntroductions')&&sharedSearch.includes('[...styleIntroductions,...enrichedRows]'),'style keyword descriptions must precede ordinary related results');
 
