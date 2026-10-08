@@ -131,7 +131,7 @@ function AuthorHeading(slot){
 }
 
 function AuthorBody(slot){
-  return <BodyDisplay slot={slot}/>;
+  return BodyDisplay(slot);
 }
 
 function BodyDisplay(slot){
