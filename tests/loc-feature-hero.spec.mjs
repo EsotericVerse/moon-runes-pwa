@@ -84,3 +84,49 @@ test('LOC feature Hero titles scale beyond normal cards but preserve Rune settin
   const runePx=await rune.evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
   expect(featurePx).toBeGreaterThanOrEqual(runePx);
 });
+
+test('LOC, Author and LunaRunes share home typography tiers without changing Rune layout',async({page})=>{
+  const homeSizes=[];
+  for(const path of ['/','/lo3rwang/']){
+    await page.goto(path,{waitUntil:'domcontentloaded'});
+    const heroTitle=page.locator('.loc-home>.loc-home-block--hero>.loc-home-block__header>h1');
+    const sectionTitle=page.locator('.loc-home>.loc-home-block:not(.loc-home-block--hero) .loc-home-block__header>h2').first();
+    await expect(heroTitle).toBeVisible({timeout:25000});
+    await expect(sectionTitle).toBeVisible();
+    homeSizes.push({
+      hero:await heroTitle.evaluate(el=>parseFloat(getComputedStyle(el).fontSize)),
+      section:await sectionTitle.evaluate(el=>parseFloat(getComputedStyle(el).fontSize))
+    });
+  }
+  await page.goto('/lrunes/',{waitUntil:'domcontentloaded'});
+  const runeHero=page.locator('.runes-home-hero');
+  const runeTitle=runeHero.locator('.runes-home-hero-copy h1');
+  const runeSubtitle=runeHero.locator('.runes-home-hero-copy .home-title-row>.loc-subtitle');
+  await expect(runeTitle).toHaveText('月之符文');
+  await expect(runeSubtitle).toBeVisible();
+  const runeHeroSize=await runeTitle.evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
+  const runeSubtitleSize=await runeSubtitle.evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
+  const runeSectionTitles=[
+    page.locator('.runes-home-intro .home-section-heading>h2'),
+    page.locator('.runes-reading-flow>h2'),
+    page.locator('.runes-custom-draw-section>h2'),
+    page.locator('.runes-review-section .home-section-heading>h2')
+  ];
+  const runeSectionSizes=[];
+  for(const heading of runeSectionTitles){
+    await expect(heading).toBeVisible();
+    runeSectionSizes.push(await heading.evaluate(el=>parseFloat(getComputedStyle(el).fontSize)));
+  }
+  for(const item of homeSizes){
+    expect(Math.abs(item.hero-runeHeroSize)).toBeLessThanOrEqual(1);
+    for(const size of runeSectionSizes)expect(Math.abs(item.section-size)).toBeLessThanOrEqual(1);
+    expect(item.hero).toBeGreaterThan(item.section);
+  }
+  expect(runeSubtitleSize).toBeGreaterThanOrEqual(18);
+  await expect(runeHero.locator('.runes-home-hero-image')).toBeVisible();
+  await expect(page.getByRole('link',{name:'抽一張符文'})).toBeVisible();
+  await expect(page.getByRole('link',{name:'每日符文',exact:true})).toBeVisible();
+  await expect(page.locator('.runes-home-intro .home-rune-preview')).toBeVisible();
+  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+  expect(overflow).toBeLessThanOrEqual(2);
+});

@@ -285,7 +285,20 @@ button,a,.loc-control,.loc-button,
   line-height:1.42!important;
 }
 
-/* LOC + Author use this shared feature Hero scale; LunaRunes is unchanged. */
+/* LunaRunes keeps its own moonlit artwork and structure, but shares the
+   homepage Hero type scale. Put necessary global subtitle/eyebrow precedence
+   here rather than adding overrides to the rune artwork/layout stylesheet. */
+.runes-home-hero .runes-home-hero-copy>.loc-eyebrow{
+  font-size:var(--loc-type-hero-eyebrow)!important;
+  color:rgba(230,235,255,.84)!important;
+}
+.runes-home-hero .runes-home-hero-copy .home-title-row>.loc-subtitle{
+  font-size:var(--loc-type-hero-subtitle)!important;
+  line-height:1.42!important;
+  color:rgba(239,242,255,.88)!important;
+}
+
+/* LOC + Author use this shared feature Hero scale; LunaRunes feature pages are unchanged. */
 :is(.loc-next-main[data-loc-scope="loc"],.loc-next-main[data-loc-scope="lo3rwang"])
   .scope-feature-hero>.home-title-row>h1{
   font-size:var(--loc-type-hero-feature-title)!important;
