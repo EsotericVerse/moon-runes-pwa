@@ -276,7 +276,7 @@
 /* The second-tier heading is shared with LOC/Author homepage frames;
    smaller draw items and card text retain their independent hierarchy. */
 .runes-home-intro .home-section-heading>h2,
-.rune-basics>h2,
+.loc-card.rune-basics>h2,
 .runes-review-section .home-section-heading>h2{
   font-size:var(--loc-type-home-section-title);
   font-weight:var(--loc-weight-section-title);
