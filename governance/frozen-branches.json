@@ -127,6 +127,7 @@
     "fix/scope-theme-selector-defaults",
     "fix/search-media-mode-separation",
     "fix/statistics-analysis-set",
+    "fix/statistics-group-ranking-pagination-20261008",
     "fix/statistics-query-window",
     "fix/supabase-email-management-auth",
     "fix/sync-galaxy-classification-columns",
