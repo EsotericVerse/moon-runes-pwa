@@ -14,7 +14,6 @@ const galaxy=read('app/loc/galaxy-query.js');
 const culture=read('app/loc/culture-query.js');
 const cultureUi=read('app/modular/features/Culture.jsx');
 const editor=read('app/modular/features/CultureTimelineEditor.jsx');
-const visualStyleTags=read('app/modular/features/CultureStyleTagsEditor.jsx');
 const nativeTimeline=read('app/modular/modules/culture-timeline/CultureTimeline.jsx');
 const management=read('app/loc/GovernanceManagement.jsx');
 const governance=read('app/modular/features/Governance.jsx');
@@ -57,8 +56,8 @@ const sourceRefreshIndex=read('docs/sql/source-refresh-index.sql');
 must(!galaxy.includes('include_in_time'),'generic search must not query nonexistent include_in_time');
 must(galaxy.includes("searchFields:['label','note','status','style_description']")&&!galaxy.includes("'style_tags'"),'Search uses dedicated TEXT style body and no comma tags');
 must(culture.includes("value:['anchor','period','event','style_comment']"),'Culture reads independent style comments');
-must(!editor.includes('CultureStyleTagsField')&&!editor.includes('style_tags')&&visualStyleTags.includes("record_type:'style_comment'"),'Time editor must not embed legacy multi-tag notes');
-must(visualStyleTags.includes("mode==='create'")&&visualStyleTags.includes("mode==='edit'")&&visualStyleTags.includes('＋ 新增風格標籤</button>')&&visualStyleTags.includes("'指定定錨點':'編輯風格標籤'")&&visualStyleTags.includes('anchor_ids:[anchorId]'),'Style create/edit are independent, each requiring one formal anchor');
+must(editor.includes("['style_comment','風格標籤']")&&!editor.includes('style_tags')&&!cultureUi.includes('CultureStyleTagsEditor'),'Fourth style comment must use the shared Time editor, not legacy tag fields or a separate editor');
+must(editor.includes('payload.style_description=styleDescription')&&editor.includes('payload.anchor_ids=[anchorId]')&&cultureUi.includes("beginTimelineCreation('style_comment','')"),'Style create/update must save one independent TEXT description and one formal anchor');
 must(cultureUi.includes('onClick={canEditWork')&&cultureUi.includes('isInteractiveTarget')&&!cultureUi.includes("UI_COPY.culture.editing:'編輯'"),'Culture existing works must enter editing by direct non-interactive card click without an Edit button');
 must(galaxy.includes('selectStyleKeywordIntroductions')&&!galaxy.includes('scopeCards('),'Search must prepend exact style-keyword introductions and must not use partial Scope-ID cards');
 must(management.includes('scope?.aggregateChildren?<ManagementDisclosure')&&management.includes('<ScopeGroupManagement scopeId={scopeId}/>'),'every DB Scope Group must have its own collapsed Manage entry');
@@ -148,8 +147,9 @@ must(!runesHome.includes('ScopeEditableBlocks')&&runesHome.includes('className="
 must(personalGovernance.includes('ScopeEditableBlocks')&&personalGovernance.includes('page="governance"'),'personal governance must use governance block rows');
 must(runesGovernance.includes('ScopeEditableBlocks')&&runesGovernance.includes('page="governance"'),'LunaRunes governance must use governance block rows');
 must(sharedSearch.includes('startEditing')&&sharedSearch.includes('BlockNoteEditor')&&sharedSearch.includes('GALAXY_EDITOR_COLUMNS')&&sharedSearch.includes('GalaxyAttrSummary')&&sharedSearch.includes('GalaxyAttrEditor')&&sharedSearch.includes("fullTextKey===row.key")&&sharedSearch.includes('updateRows'),'Search must open full Galaxy articles first, then expose permission-gated full Attr editing');
-must(cultureUi.includes('第四種 Time 紀錄')&&cultureUi.includes('selectedStyleRecordId')&&cultureUi.includes('<CultureStyleTagsEditor')&&cultureUi.includes('styles={query.data?.styleComments||[]}')&&visualStyleTags.includes('insertRows(table,[')&&visualStyleTags.includes('updateRows(table,')&&visualStyleTags.includes('style_description:body'),'Culture writes one independent style comment with one TEXT body');
+must(cultureUi.includes('＋ 新增風格標籤')&&cultureUi.includes('尋找風格標籤')&&editor.includes('風格專屬敘述（TEXT）')&&!cultureUi.includes('scope-culture-style-panel'),'First Time river must directly expose style create and lookup without a folded panel');
 must(culture.includes('visibility,style_description')&&culture.includes('styleComments:parts.styleComments')&&culture.includes('style_comment:3')&&culture.includes("style_comment:'風格標籤'")&&culture.includes("entry_type==='style_comment'"),'Culture exposes independent style comments');
+must(nativeTimeline.includes('hasTimeKinds')&&nativeTimeline.includes("style_comment:'風格標籤'")&&nativeTimeline.includes('standardTimeKinds.map'),'Time chart must create the fourth style group even when it is empty');
 must(cultureUi.includes('beginTimelineCreation')&&cultureUi.includes('items={timelineItems}')&&cultureUi.includes('...classificationBuckets,...virtualAnchorItems')&&!cultureUi.includes('anchorReviews.map')&&editor.includes('起點與終點定錨點')&&editor.includes('anchorOptions.map(row=>')&&!editor.includes('CultureStyleTagsField'),'Time editor must not mix style comments into periods');
 must(nativeTimeline.includes('new Timeline(')&&['onAdd:','onMove:','onUpdate:','onRemove:','add:Boolean(onAddRef.current)','onTimeClickRef.current'].every(token=>nativeTimeline.includes(token)),'Time manipulation must retain vis-timeline edits and make add opt-in to avoid river gesture collisions');
 
@@ -168,7 +168,7 @@ let duplicateAnchorRejected=false;
 try{snapTimelineRangeToAnchors({start:'2024-04-01',end:'2024-03-31'},{entryType:'period',raw:{anchor_ids:['a','b']}},anchorFixture);}catch{duplicateAnchorRejected=true}
 must(duplicateAnchorRejected,'period bounds must reject duplicate or reversed anchor ranges');
 
-must(cultureUi.includes('CultureTimelineEditor')&&cultureUi.includes('selectedTimelineRecordId')&&cultureUi.includes('editable={account.canManageScopeSync(scopeId)}')&&cultureUi.includes('onMove={account.canManageScopeSync(scopeId)?moveTimelineRecord:null}')&&cultureUi.includes("row?.entryType==='style_comment'")&&cultureUi.includes('return removeTimelineRecord(item,row)'),'Culture first timeline must use native vis-timeline manipulation for authenticated period/anchor CRUD');
+must(cultureUi.includes('CultureTimelineEditor')&&cultureUi.includes('selectedTimelineRecordId')&&cultureUi.includes('editable={account.canManageScopeSync(scopeId)}')&&cultureUi.includes('onMove={account.canManageScopeSync(scopeId)?moveTimelineRecord:null}')&&cultureUi.includes('onRemove={account.canManageScopeSync(scopeId)?removeTimelineRecord:null}'),'Time vis-timeline must preserve native add/edit/remove for four types');
 must(admin.includes("insertRows('silver.manage'")&&admin.includes("deleteRows('silver.manage'"),'Admin Registry node panel must add/remove Manage mappings');
 must(admin.includes('DeploymentTree')&&admin.includes('vis-network/standalone')&&admin.includes("onMoveParent"),'Admin must manage Scope Registry through a draggable vis-network tree');
 must(admin.includes("{id:'__admin__',label:'Admin',shape:'box',fixed:true}")&&!admin.includes("shape:'box',level:0")&&admin.includes('layout:{hierarchical:{enabled:true'),'Admin hierarchical graph must not mix explicit node levels with unlevelled registry nodes');
