@@ -4,20 +4,12 @@ import ScopeEditableBlocks from './ScopeEditableBlocks';
 import {stripLocHomeEditorPlaceholders} from './loc-home-text.mjs';
 import {childPresentation} from './block-presentation.mjs';
 import {splitStatusContentSections} from './loc-status-sections.mjs';
+import {orderedHomeFields,visibleHomeChildren} from './loc-home-columns.mjs';
 
 function stripOuterParagraph(html=''){
   const value=stripLocHomeEditorPlaceholders(html).trim();
   const match=value.match(/^<p[^>]*>([\s\S]*)<\/p>$/i);
   return match?match[1]:value;
-}
-
-function paragraphParts(html=''){
-  const value=stripLocHomeEditorPlaceholders(html);
-  const parts=[];
-  const re=/<p[^>]*>([\s\S]*?)<\/p>/gi;
-  let match;
-  while((match=re.exec(value)))parts.push(match[1]);
-  return parts.length?parts:[value];
 }
 
 function Html({html,className='',tag='div'}){
@@ -27,114 +19,127 @@ function Html({html,className='',tag='div'}){
   return <Tag className={className||undefined} dangerouslySetInnerHTML={{__html:cleaned}}/>;
 }
 
-function entityAt(slot,index){
-  return slot?.entities?.[index]||{title:'',text:''};
+function homeFields(slot){
+  const [eyebrow,title,subtitle,text]=orderedHomeFields(slot).map(field=>field.value);
+  return {eyebrow,title,subtitle,text};
+}
+
+function OtherHomeChildren({slot}){
+  const children=visibleHomeChildren(slot);
+  if(!children.length)return null;
+  return <div className="scope-block-entity-grid home-extra-columns">
+    {children.map(entity=>childPresentation(entity.title)==='card'
+      ?<article className="scope-block-entity" key={entity.uid}>
+        <h4>{entity.title}</h4>
+        <Html html={entity.text}/>
+      </article>
+      :<div className="loc-bubble scope-block-text-bubble" key={entity.uid}>
+        <Html html={entity.text}/>
+      </div>)}
+  </div>;
 }
 
 function HeroDisplay(slot){
-  const english=entityAt(slot,0);
-  const explain=entityAt(slot,1);
-  const description=entityAt(slot,2);
+  const {eyebrow,title,subtitle,text}=homeFields(slot);
   return <>
-    <Html tag="p" className="loc-eyebrow" html={slot.eyebrow||stripOuterParagraph(english.text)||english.title}/>
+    <Html tag="p" className="loc-eyebrow" html={eyebrow}/>
     <div className="home-title-row">
-      <h1>{slot.title}</h1>
-      <Html className="loc-subtitle" html={slot.subtitle||explain.text}/>
+      {title?<h1>{title}</h1>:null}
+      <Html className="loc-subtitle" html={subtitle}/>
     </div>
-    <Html className="loc-hero-copy" html={slot.text||description.text}/>
+    <Html className="loc-hero-copy" html={text}/>
+    <OtherHomeChildren slot={slot}/>
   </>;
 }
 
 function BeginnerHeading(slot){
-  const meta=entityAt(slot,0);
+  const {eyebrow,title,subtitle}=homeFields(slot);
   return <>
-    <p className="loc-eyebrow">{slot.eyebrow||meta.title||'Start here'}</p>
-    <h2>{slot.title}</h2>
-    <Html className="loc-subtitle" html={slot.subtitle||meta.text}/>
+    <Html tag="p" className="loc-eyebrow" html={eyebrow}/>
+    {title?<h2>{title}</h2>:null}
+    <Html className="loc-subtitle" html={subtitle}/>
   </>;
 }
 
 function ArchitectureHeading(slot){
-  const meta=entityAt(slot,0);
+  const {eyebrow,title,subtitle}=homeFields(slot);
   return <>
-    <p className="loc-eyebrow">{slot.eyebrow||meta.title||'LOC Architecture'}</p>
-    <h2>{slot.title}</h2>
-    {slot.subtitle?<Html className="loc-subtitle" html={slot.subtitle}/>:null}
+    <Html tag="p" className="loc-eyebrow" html={eyebrow}/>
+    {title?<h2>{title}</h2>:null}
+    <Html className="loc-subtitle" html={subtitle}/>
   </>;
 }
 
 function StatusHeading(slot){
+  const {eyebrow,title,subtitle}=homeFields(slot);
   return <>
-    <p className="loc-eyebrow">{slot.eyebrow||'System Status'}</p>
-    <h2>{slot.title}</h2>
-    <Html className="loc-subtitle" html={slot.subtitle||slot.text}/>
+    <Html tag="p" className="loc-eyebrow" html={eyebrow}/>
+    {title?<h2>{title}</h2>:null}
+    <Html className="loc-subtitle" html={subtitle}/>
   </>;
 }
 
 function StatusBubbles(slot){
-  // The authored main status text is stored in block_text, not block_entity.
-  // Preserve every rich-text heading/paragraph inside the original framed cards.
-  const sections=splitStatusContentSections(slot.text);
-  const titled=(slot.entities||[]).filter(entity=>childPresentation(entity.title)==='card');
-  const bubbles=(slot.entities||[]).filter(entity=>
-    childPresentation(entity.title)==='bubble'&&String(entity.text||'').trim()
-  );
-  return <>
-    {sections.length||titled.length?<div className="home-progress-grid home-status-frames">
-      {sections.map(section=><article className="home-progress-item home-status-card" key={section.key}>
-        <Html className="home-status-rich-text" html={section.html}/>
-      </article>)}
-      {titled.map(entity=><article className="home-progress-item home-status-card" key={entity.uid}>
+  // Display main body (column 4) and then child columns in their stored order.
+  // The period heading markup defines content frames, not a hardcoded array index.
+  const {text}=homeFields(slot);
+  const sections=splitStatusContentSections(text);
+  const children=visibleHomeChildren(slot);
+  if(!sections.length&&!children.length)return null;
+  return <div className="home-progress-grid home-status-frames home-status-bubbles">
+    {sections.map(section=><article className="home-progress-item home-status-card" key={section.key}>
+      <Html className="home-status-rich-text" html={section.html}/>
+    </article>)}
+    {children.map(entity=>childPresentation(entity.title)==='card'
+      ?<article className="home-progress-item home-status-card" key={entity.uid}>
         <h3>{entity.title}</h3>
         <Html className="home-status-rich-text" html={entity.text}/>
-      </article>)}
-    </div>:null}
-    {bubbles.length?<div className="home-draw-bubbles home-status-bubbles">
-      {bubbles.map(entity=><div className="loc-bubble" key={entity.uid}>
+      </article>
+      :<div className="loc-bubble home-status-child-bubble" key={entity.uid}>
         <Html html={entity.text}/>
       </div>)}
-    </div>:null}
-  </>;
+  </div>;
 }
 
 function SkillsHeading(slot){
-  const parts=paragraphParts(slot.text);
+  const {eyebrow,title,subtitle}=homeFields(slot);
   return <>
-    <p className="loc-eyebrow">{slot.eyebrow||'LOC GPT Skills'}</p>
-    <h2>{slot.title}</h2>
-    <Html className="loc-subtitle" html={slot.subtitle||(parts[0]?`<p>${parts[0]}</p>`:'')}/>
+    <Html tag="p" className="loc-eyebrow" html={eyebrow}/>
+    {title?<h2>{title}</h2>:null}
+    <Html className="loc-subtitle" html={subtitle}/>
   </>;
 }
 
 function SkillsBody(slot){
-  const parts=paragraphParts(slot.text);
+  const {text}=homeFields(slot);
   return <>
-    {slot.entities.map(entity=><p key={entity.uid}>
-      <strong>{entity.title}</strong>：
+    <Html html={text}/>
+    {visibleHomeChildren(slot).map(entity=><p key={entity.uid}>
+      {entity.title?<><strong>{entity.title}</strong>：</>:null}
       <span dangerouslySetInnerHTML={{__html:stripOuterParagraph(entity.text)}}/>
     </p>)}
-    {parts.map((part,index)=><Html tag="p" html={part} key={'skill-body-'+index}/>)}
   </>;
 }
 
 function AuthorHeading(slot){
-  const parts=paragraphParts(slot.text);
+  const {eyebrow,title,subtitle}=homeFields(slot);
   return <>
-    <p className="loc-eyebrow">{slot.eyebrow||'About me'}</p>
-    <h2>{slot.title}</h2>
-    <Html className="loc-subtitle" html={slot.subtitle||(parts[0]?`<p>${parts[0]}</p>`:'')}/>
+    <Html tag="p" className="loc-eyebrow" html={eyebrow}/>
+    {title?<h2>{title}</h2>:null}
+    <Html className="loc-subtitle" html={subtitle}/>
   </>;
 }
 
 function AuthorBody(slot){
-  const parts=paragraphParts(slot.text);
-  return <>
-    {parts.map((part,index)=><Html tag="p" html={part} key={'author-body-'+index}/>)}
-  </>;
+  return <BodyDisplay slot={slot}/>;
 }
 
 function BodyDisplay(slot){
-  return <Html html={slot.text}/>;
+  const {text}=homeFields(slot);
+  return <>
+    <Html html={text}/>
+    <OtherHomeChildren slot={slot}/>
+  </>;
 }
 
 const CONFIG={
