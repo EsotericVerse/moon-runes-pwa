@@ -74,8 +74,10 @@ export default function ScopeEditableBlocks({
   allowEditing=true,
   allowDelete=true,
   allowEntities=true,
+  allowImages=true,
   editEyebrow=true,
-  slotTag='section'
+  slotTag='section',
+  slotId=''
 }){
   const account=useAccount();
   const queryClient=useQueryClient();
@@ -209,6 +211,7 @@ export default function ScopeEditableBlocks({
     setBusy(true);setMessage('儲存中…');
     try{
       const embeddedImages=frameImageCount(draft);
+      if(!allowImages&&embeddedImages>0)throw new Error('此文字區僅允許編輯文字。');
       if(embeddedImages>1)throw new Error('每個文字框架最多只能有一張圖片，請先移除多餘圖片。');
       if(embeddedImages===1&&!firstFrameImageUrl(draft))throw new Error('圖片必須是有效的 http:// 或 https:// 網址。');
       const normalizeSavedHtml=value=>scopeId==='loc'&&pageName==='index'
@@ -286,7 +289,7 @@ export default function ScopeEditableBlocks({
             key={entity.uid+':edit'}
             initialContent={entity.text?{html:entity.text}:''}
             onHtmlChange={html=>updateEntity(index,{text:html})}
-            canInsertImage={canInsertImageIn(entity.text)}
+            canInsertImage={allowImages&&canInsertImageIn(entity.text)}
           />
         </>:<>
           {childPresentation(entity.title)==='card'?<h4>{entity.title}</h4>:null}
@@ -308,6 +311,7 @@ export default function ScopeEditableBlocks({
       const level=Number(headingLevel);
       const Heading=level===1?'h1':level===2?'h2':level===4?'h4':'h3';
       return <SlotTag
+        id={slotId||undefined}
         className={((active&&editSlotClassName)?editSlotClassName:(typeof resolveSlotClassName==='function'?resolveSlotClassName(slot):slotClassName))+' scope-editable-block'+(active?' is-editing':'')+(canEdit&&!active?' is-editable-idle':'')+(empty?' is-empty':'')}
         key={slot.uid||'order:'+slot.order}
         data-page-name={pageName}
@@ -349,7 +353,7 @@ export default function ScopeEditableBlocks({
             key={draft.uid+':subtitle:edit'}
             initialContent={draft.subtitle?{html:draft.subtitle}:''}
             onHtmlChange={html=>setDraft(current=>({...current,subtitle:html}))}
-            canInsertImage={canInsertImageIn(draft.subtitle)}
+            canInsertImage={allowImages&&canInsertImageIn(draft.subtitle)}
           />
           <div className="scope-management-wide-field">
             <span>下方正文（BlockNote）</span>
@@ -358,7 +362,7 @@ export default function ScopeEditableBlocks({
             key={draft.uid+':body:edit'}
             initialContent={draft.text?{html:draft.text}:''}
             onHtmlChange={html=>setDraft(current=>({...current,text:html}))}
-            canInsertImage={canInsertImageIn(draft.text)}
+            canInsertImage={allowImages&&canInsertImageIn(draft.text)}
           />
           {allowEntities?renderEntities(draft.entities,true):null}
         </>:<>
