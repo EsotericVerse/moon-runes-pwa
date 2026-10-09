@@ -20,6 +20,10 @@ const checks=[
     files.registry.includes('registryRouteRows.get(id)')&&
     files.shell.includes('setScopeRegistryRouteRows(rows)')&&
     files.runtime.includes('setScopeRegistryRouteRows([row])')],
+  ['Scope transitions cannot show another Scope\'s cached name',
+    files.runtime.includes('registryRow?.scope_id===scopeId')&&
+    files.runtime.includes('configRow?.id===scopeId')&&
+    files.runtime.includes('configRow:activeConfigRow')],
   ['Scope display_name owns page and navigation labels',
     files.shell.includes('configRow?.display_name||registryRow?.display_name')&&
     files.shell.includes('document.title=name')&&
