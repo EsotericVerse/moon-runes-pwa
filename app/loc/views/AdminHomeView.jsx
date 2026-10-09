@@ -162,7 +162,8 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
       setTreeError(String(error?.message||error||'Scope Registry 圖形樹載入失敗。'));
     });
     return()=>{cancelled=true;network?.destroy();networkRef.current=null;};
-  },[registry,configs,onSelect,onMoveParent]);
+  // Draft Scope names are not canonical until saved; don't rebuild the graph on each keystroke.
+  },[registry,onSelect,onMoveParent]);
 
   useEffect(()=>{
     const network=networkRef.current;
