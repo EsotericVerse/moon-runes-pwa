@@ -209,13 +209,13 @@ must(admin.includes('syncManageScopeRow(')&&admin.includes("role:'scope'"),'Admi
 must(admin.includes('部分 Scope 設定讀取失敗')&&admin.includes('configFailures.push')&&admin.includes("if(error)throw new Error(error.message||'Scope config 讀取失敗。')"),'Admin Scope config failures must be surfaced, not swallowed');
 must(admin.includes('provisionScope(')&&admin.includes('＋ Scope')&&admin.includes('＋ Group'),'Admin Registry must create Scope and Scope Group from the tree workspace');
 must(
-  !admin.includes('<span>排序</span>')&&!admin.includes('<span>Theme</span>')&&
+  !admin.includes('<span>排序</span>')&&admin.includes('<span>主題</span>')&&
   !admin.includes('groupDraft.sort_order')&&
-  !scopeSettings.includes('<span>Theme</span>')&&
-  !scopeSettings.includes("change('theme',")&&
-  !scopeSettings.includes('theme:String(draft.theme')&&
+  scopeSettings.includes('<span>主題</span>')&&
+  scopeSettings.includes("change('theme',")&&
+  scopeSettings.includes('theme:String(draft.theme')&&
   admin.includes("active:selected.scope_id==='loc'?true:selected.active!==false"),
-  'Scope management must keep internal sort order and automatic Theme without exposing redundant controls'
+  'Scope management must hide numeric order while retaining named eight-Theme selection'
 );
 const scopeCreatePanel=admin.split("    {kind==='scope'?<>")[1]?.split("    </>:<>")[0]||'';
 must(
@@ -253,6 +253,16 @@ must(
   'Admin must maintain global email blocklist and validate blocked login through the DB'
 );
 
+must(
+  editableBlocks.includes('async function moveBlock(direction)')&&
+  editableBlocks.includes('moveScopeBlock(scopeId,pageName,draft.uid,direction)')&&
+  editableBlocks.includes('↑ 上移')&&editableBlocks.includes('↓ 下移')&&
+  editableBlocks.includes('movableSlots.length>1')&&
+  dbContract.includes("rpc('move_scope_block'")&&
+  scopeSettings.includes('THEME_SLOTS.map(theme=>')&&
+  admin.includes('label:theme.theme_name||theme.label||THEME_SLOTS.find'),
+  'Editable page frames must move up/down atomically while theme selectors display names only'
+);
 must(scopeProvisioning.includes("create table silver.%I (like silver.lo3rwang_blocks including all)")&&!scopeProvisioning.includes('block_page')&&scopeProvisioning.includes("enable row level security',v_blocks_name"),'new Scope Blocks must clone current UID/page_name/entity contract and enable RLS');
 must(scopeProvisioning.includes('New Scopes start with no content rows.')&&!scopeProvisioning.includes('generate_series(1,4)'),'new Scope must not pre-populate blank homepage/governance frames');
 
