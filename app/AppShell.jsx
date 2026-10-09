@@ -92,13 +92,18 @@ function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride
     :THEME_SLOTS.map(item=>({id:item.id,label:item.label}));
 
   useEffect(()=>{
-    // Do not flash the Order emergency palette under non-Order theme IDs
-    // while asynchronous silver.loc_theme resolves its canonical tokens.
-    if(!override&&effectiveThemeId!=='theme-7')return;
+    // A static export cannot know the current DB palette during HTML render.
+    // Hold first paint until the chosen Scope config and canonical palette resolve,
+    // then display the finished theme once. No user choice or palette is stored.
+    if(configQuery.isPending&&configQuery.fetchStatus!=='idle')return;
+    if(themeRegistryQuery.isPending)return;
     const root=document.documentElement;
-    if(root.dataset.themeSignature===themeSignature(slot))return;
+    if(root.dataset.themeSignature===themeSignature(slot)){
+      delete root.dataset.themeBootstrap;
+      return;
+    }
     applyTheme(slot);
-  },[slot,scopeId,effectiveThemeId,override]);
+  },[slot,scopeId,effectiveThemeId,configQuery.isPending,configQuery.fetchStatus,themeRegistryQuery.isPending]);
 
   useEffect(()=>{
     if(selectedThemeId!==SYSTEM_THEME_ID||fixedDefaultThemeId||configuredDefaultThemeId)return undefined;
