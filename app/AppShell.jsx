@@ -127,11 +127,11 @@ function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride
 }
 // The browser's Scope title follows the database display_name, never a static
 // Next.js Scope-specific title or an independent SEO label.
-function ScopePageTitle({displayName}){
+function ScopePageTitle({display_name}){
   useEffect(()=>{
-    const title=String(displayName||'').trim();
-    if(title&&document.title!==title)document.title=title;
-  },[displayName]);
+    const name=String(display_name||'').trim();
+    if(name&&document.title!==name)document.title=name;
+  },[display_name]);
   return null;
 }
 function LanguageSelect({locale,onChange,copy=UI_COPY}){
@@ -220,7 +220,7 @@ export default function AppShell({children}){
   const scopeNavLabel=item=>navDisplayNames[item.id]||item.id;
 
   return <QueryClientProvider client={client}><UiLocaleProvider locale={activeLocale}>
-    <ScopePageTitle displayName={configRow?.display_name||registryRow?.display_name}/>
+    <ScopePageTitle display_name={configRow?.display_name||registryRow?.display_name}/>
     <motion.div className="loc-scroll-progress" style={{scaleX}} aria-hidden="true"/>
     <header className="scope-global">
       <nav className="scope-nav" aria-label={copy.nav.aria}>
