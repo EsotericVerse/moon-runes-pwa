@@ -288,7 +288,7 @@ must(scopeProvisioning.includes('New Scopes start with no content rows.')&&!scop
 
 must(admin.includes("dbAuthRelation('silver.scope_registry')")&&admin.includes('parent_scope_id'),'Admin must read the DB Scope Registry hierarchy');
 must(admin.includes("silver.database_targets")&&admin.includes('Database Target')&&admin.includes('Project ID'),'Admin must persist explicit Supabase/Neon migration targets');
-must(admin.includes("silver.loc_theme")&&admin.includes('theme_attr')&&admin.includes('THEME_TOKEN_KEYS')&&admin.includes('type="color"'),'Admin Theme editor must persist all editable theme attrs in loc_theme');
+must(admin.includes("silver.loc_theme")&&admin.includes('THEME_DB_COLUMNS')&&admin.includes('themeTokenColumn')&&admin.includes('THEME_TOKEN_KEYS')&&admin.includes('type="color"')&&!admin.includes('theme_attr'),'Admin Theme editor must persist all editable theme attrs in loc_theme');
 must(dbContract.includes("schema('silver').rpc('management_write'")&&dbContract.includes('batchSize=200')&&!dbContract.includes("schema('api').rpc("),'client RPC calls must use exposed silver wrappers with bounded insert batches');
 must(dbContract.includes('`silver.${scope}_keywords`')&&!dbContract.includes("api.lo3rwang_keywords_manage"),'keyword library writes must resolve the current Scope keyword table');
 must(dbContract.includes('copyKeywordLibraryClass')&&keywordLibrary.includes('copyKeywordLibraryClass'),'keyword library must support copying a complete independent Class');
@@ -347,7 +347,7 @@ must(scopeProvisioning.includes('v_keyword_count<>66')&&scopeProvisioning.includ
 must(scopeProvisioning.includes("v_blocks_name := v_scope||'_blocks'")&&scopeProvisioning.includes('like silver.lo3rwang_blocks including all')&&portableSchema.includes('"loc_blocks"')&&portableSchema.includes('"lo3rwang_blocks"')&&portableSchema.includes('"lrunes_blocks"'),'Scope provisioning/schema must store page blocks by uid with nested entities');
 must(portableSchema.includes('"content_blocks" jsonb'),'Galaxy schema must preserve optional rich-editor layout separately from plain content');
 must((portableSchema.match(/"content_blocks" jsonb/g)||[]).length>=4,'Galaxy and Galaxy Media schemas must both persist BlockNote structure');
-must(portableSchema.includes('"loc_theme"')&&portableSchema.includes('"theme_attr" jsonb')&&portableSchema.includes('"database_targets"'),'portable schema must include loc_theme attributes and database targets');
+must(portableSchema.includes('"loc_theme"')&&portableSchema.includes('"loc_bg" text NOT NULL')&&!portableSchema.includes('"theme_attr" jsonb')&&portableSchema.includes('"database_targets"'),'portable schema must include loc_theme attributes and database targets');
 must(portableSchema.includes('FUNCTION silver.management_write')&&portableSchema.includes('FUNCTION silver.provision_scope')&&portableSchema.includes('FUNCTION silver.manage_scope_registry'),'portable schema must expose application RPC wrappers through silver');
 
 must(dbContract.includes("rpc('manage_scope_registry'")&&dbContract.includes('manageScopeRegistry'),'DB client must expose authorized Scope Registry management');
