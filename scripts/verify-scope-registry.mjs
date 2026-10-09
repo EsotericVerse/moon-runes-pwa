@@ -1,4 +1,4 @@
-import {FEATURES,SCOPES,featureHref,resolveScope,scopeHref,duplicateDomainLabelError} from '../app/modular/scope-registry.js';
+import {FEATURES,SCOPES,featureHref,resolveScope,scopeHref,duplicateDomainLabelError,setScopeRegistryRouteRows} from '../app/modular/scope-registry.js';
 
 const failures=[];
 if(resolveScope('unknown.example','/')!=='loc')failures.push('default Scope must remain loc');
@@ -7,8 +7,17 @@ if(!SCOPES.lrunes)failures.push('canonical lrunes Scope id missing');
 if(Object.values(SCOPES).some(scope=>Boolean(scope.searchAliases)))failures.push('DB search_aliases must not be duplicated in static Scope Registry');
 if(resolveScope('127.0.0.1','/lrunes/')!=='lrunes')failures.push('local static preview must resolve /lrunes/ as LunaRunes');
 if(resolveScope('localhost','/lrunes/game/')!=='lrunes')failures.push('local static preview must resolve mounted LunaRunes feature paths');
-if(scopeHref('lrunes')!=='https://lrunes.lo3rwang.cc/')failures.push('LunaRunes canonical route must remain its Domain');
-if(SCOPES.lrunes.domain!=='lrunes.lo3rwang.cc')failures.push('LunaRunes must declare its own Domain');
+if(Object.values(SCOPES).some(scope=>scope.domain||scope.mount))failures.push('Scope Domain/Directory values must not be duplicated in static JS');
+if(scopeHref('lrunes')!=='https://loc.lo3rwang.cc/lrunes/')failures.push('initial link fallback must use deployed Next mount without a duplicate Domain configuration');
+setScopeRegistryRouteRows([
+  {scope_id:'loc',domain:'loc.lo3rwang.cc',directory:null,active:true},
+  {scope_id:'lrunes',domain:'lrunes.lo3rwang.cc',directory:null,active:true},
+  {scope_id:'lo3rwang',domain:null,directory:'/lo3rwang',active:true},
+  {scope_id:'admin',domain:'admin.lo3rwang.cc',directory:null,active:true}
+]);
+if(scopeHref('lrunes')!=='https://lrunes.lo3rwang.cc/')failures.push('LunaRunes canonical Domain must come from DB Registry');
+if(resolveScope('lrunes.lo3rwang.cc','/')!=='lrunes')failures.push('LunaRunes host must resolve from DB Registry');
+if(scopeHref('lo3rwang')!=='https://loc.lo3rwang.cc/lo3rwang/')failures.push('Author Directory must derive from DB Registry');
 if(resolveScope('loc.lo3rwang.cc','/admin/')!=='admin')failures.push('Admin redirect target must resolve as Admin Scope');
 for(const [id,mode,reject] of [['lo3rwang','domain',true],['cc','domain',true],['aaa','domain',false],['lo3rwang','directory',false]]){
   if(Boolean(duplicateDomainLabelError(id,mode))!==reject)failures.push('Domain duplicate labels mismatch: '+id+' / '+mode);
@@ -18,10 +27,7 @@ if(scopeHref('newscope')!=='https://loc.lo3rwang.cc/scope/?scope=newscope')failu
 if(featureHref('newscope','search')!=='https://loc.lo3rwang.cc/scope/search/?scope=newscope')failures.push('dynamic Scope features must preserve Scope ID in the generic shell query');
 for(const [id,scope] of Object.entries(SCOPES)){
   if(scope.id!==id)failures.push(id+' registry key/id mismatch');
-  if(scope.domain&&resolveScope(scope.domain,'/')!==id)failures.push(id+' domain resolution mismatch');
-  if(scope.domain&&!featureHref(id,FEATURES[0].id).startsWith('https://'+scope.domain+'/'))failures.push(id+' canonical domain mismatch');
-  if(!scope.domain&&!scope.mount)failures.push(id+' route identity missing');
-  if(scope.mount&&resolveScope(scope.mount.host,scope.mount.path)!==id)failures.push(id+' mount resolution mismatch');
+  if(scope.domain||scope.mount)failures.push(id+' must not independently define Domain/Directory values');
   for(const feature of FEATURES){
     if(!featureHref(id,feature.id).startsWith('https://'))failures.push(id+'/'+feature.id+' canonical href invalid');
   }
