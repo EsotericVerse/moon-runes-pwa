@@ -1,11 +1,10 @@
 import LocApp from '../../../loc/LocApp';
-import {lunarunesMetadata} from '../../../seo/metadata';
+import {lunarunesPageCopyMetadata} from '../../../seo/metadata';
 
-export const metadata=lunarunesMetadata({
-  title:'管理｜月之符文',
-  description:'月之符文的治理與資料管理入口。',
-  path:'/governance/manage/',
+export async function generateMetadata(){
+  return lunarunesPageCopyMetadata({  path:'/governance/manage/',
   noIndex:true
 });
+}
 
 export default function Page(){return <LocApp forcedView="manage" forcedScope="lrunes"/>;}
