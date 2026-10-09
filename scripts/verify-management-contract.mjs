@@ -242,10 +242,23 @@ must(
   admin.includes('onClick={toggleScopeHidden}')&&
   admin.includes('onClick={deleteSelectedScope}')&&
   !admin.includes('開啟 UI')&&admin.includes('請輸入 Scope ID 以確認')&&
-  admin.includes('onClick={copyRune66}')&&
+  !admin.includes('onClick={copyRune66}')&&!admin.includes('copyRune66KeywordClass')&&
+  keywordLibrary.includes('onClick={copyRune66}')&&
+  keywordLibrary.includes('copyRune66KeywordClass(scopeId)')&&
+  keywordLibrary.includes('複製符文66為新 Class')&&
   dbContract.includes("rpc('delete_scope'")&&
   dbContract.includes("rpc('copy_rune66_keyword_class'"),
-  'Scope node must expose Save/Hide/Delete only, with separately persistent Rune66 copy'
+  'Admin Scope node must expose Save/Hide/Delete only; Rune66 independent Class copy belongs to Scope Keyword Library'
+);
+must(
+  admin.includes('name={\'registry-route-mode-\'+selectedId}')&&
+  admin.includes('checked={routeMode===\'domain\'}')&&
+  admin.includes('checked={routeMode===\'directory\'}')&&
+  admin.includes('DNS、轉址及網站託管設定須另外完成')&&
+  !admin.includes('onChange={e=>patchRegistry(\'domain\'')&&
+  !admin.includes('onChange={e=>patchRegistry(\'directory\'')&&
+  admin.includes('name="new-group-route-mode"'),
+  'Admin Registry must distinguish exclusive Domain/Directory modes and clarify DNS is external'
 );
 must(
   admin.includes("label:'系統黑名單'")&&admin.includes("silver.email_blocklist")&&
