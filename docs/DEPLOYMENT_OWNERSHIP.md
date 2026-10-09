@@ -10,13 +10,14 @@ LOC 是 Next.js static-export application。main 是 Current source branch；Git
 - .github/workflows/next-architecture.yml
 - .github/workflows/branch-freeze.yml
 
-## Domain vs Directory Registry
+## Scope route identity and labels
 
-- Scope Registry 的 `domain` / `directory` 必須二選一，表示預期對外入口類型，不代表 DNS、Hosting 或 Next.js 路由已完成。
-- `lrunes` 的正式入口為 `lrunes.lo3rwang.cc`（Domain）；既有網站轉址至 `loc.lo3rwang.cc/lrunes/`，此目錄只是實際服務路徑。Registry 應存 Domain，不應因轉址而與作者 Scope 混用 Directory。
-- `lo3rwang` 使用 `loc.lo3rwang.cc/lo3rwang/`（Directory），不要求新增作者子網域的 DNS CNAME。
-- 新增動態 Scope／Group 的可用 Next.js static-export 通用入口目前是 `https://loc.lo3rwang.cc/scope/?scope=<id>`。Registry 自動產生的 `/<id>` 或 `<id>.lo3rwang.cc` 是對外路由登記，不會自動建立靜態路徑、DNS 記錄或反向代理。對外啟用前需另行完成網站路由與 DNS／託管設定。
-- Global Admin 的 Registry 管理只記錄路由配置；Scope 的關鍵詞 Class／符文66複製應由 Scope Keyword Library 負責。
+- `silver.scope_registry` 的 `domain` 與 `directory` 必須二選一。`lrunes` 使用 `/lrunes`，`lo3rwang` 使用 `/lo3rwang`。已有的 `lrunes.lo3rwang.cc` 僅作為轉址別名。
+- Scope 的正式顯示標籤取自資料庫的 `display_name`；`scope_id` 是固定識別碼，不另外指定網頁標題。
+- Domain 採 `<scope_id>.lo3rwang.cc` 時，主機名稱的各段不得重複，建立時必須先拒絕，例如 `aaa.aaa.com.tw`。
+- 新的動態 Scope/Group 使用共用 Next 靜態路由 `/scope/?scope=<scope_id>`。
+- Scope 關鍵詞 Class／符文66的複製位於 Scope 的 Keyword Library，非全域 Admin。
+
 
 ## Runtime data
 
