@@ -29,7 +29,6 @@ export const SCOPES=Object.freeze({
 
   lrunes:Object.freeze({
     id:'lrunes',
-    domain:'lrunes.lo3rwang.cc',
     label:'月之符文',
     searchTitle:'月之符文 LunaRunes',
     searchAliases:Object.freeze(['lrunes','LunaRunes','月之符文']),
@@ -187,13 +186,7 @@ export function scopeHref(scopeId,localPath=''){
   const queryIndex=withoutHash.indexOf('?');
   const routePart=queryIndex>=0?withoutHash.slice(0,queryIndex):withoutHash;
   const query=queryIndex>=0?withoutHash.slice(queryIndex+1):'';
-  const parts=routePart.split('/').filter(Boolean);
-  // LunaRunes' dedicated host is already the Scope root. Do not attach its
-  // LOC mount prefix (/lrunes) again when composing links for Cloudflare.
-  if(id==='lrunes'&&SCOPES.lrunes.domain){
-    while(parts[0]==='lrunes')parts.shift();
-  }
-  const path=parts.join('/');
+  const path=routePart.split('/').filter(Boolean).join('/');
   const pathname=path?`/${path}/`:'/';
   if(SCOPES[id])return `${base}${pathname}${query?'?'+query:''}${hash}`;
   const params=new URLSearchParams(query);
