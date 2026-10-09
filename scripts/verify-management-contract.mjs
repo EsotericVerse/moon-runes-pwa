@@ -208,6 +208,15 @@ must(admin.includes('admin-registry-fallback')&&admin.includes('圖形樹載入�
 must(admin.includes('syncManageScopeRow(')&&admin.includes("role:'scope'"),'Admin Scope node must edit Manage mapping atomically and keep role=scope fixed');
 must(admin.includes('部分 Scope 設定讀取失敗')&&admin.includes('configFailures.push')&&admin.includes("if(error)throw new Error(error.message||'Scope config 讀取失敗。')"),'Admin Scope config failures must be surfaced, not swallowed');
 must(admin.includes('provisionScope(')&&admin.includes('＋ Scope')&&admin.includes('＋ Group'),'Admin Registry must create Scope and Scope Group from the tree workspace');
+must(
+  !admin.includes('<span>排序</span>')&&!admin.includes('<span>Theme</span>')&&
+  !admin.includes('groupDraft.sort_order')&&
+  !scopeSettings.includes('<span>Theme</span>')&&
+  !scopeSettings.includes("change('theme',")&&
+  !scopeSettings.includes('theme:String(draft.theme')&&
+  admin.includes("active:selected.scope_id==='loc'?true:selected.active!==false"),
+  'Scope management must keep internal sort order and automatic Theme without exposing redundant controls'
+);
 const scopeCreatePanel=admin.split("    {kind==='scope'?<>")[1]?.split("    </>:<>")[0]||'';
 must(
   scopeCreatePanel.includes('<span>Scope ID</span>')&&
