@@ -234,7 +234,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
       p_domain:String(values.domain||'').trim()||null,
       p_directory:String(values.directory||'').trim()||null,
       p_parent_scope_id:String(values.parent_scope_id||'loc').trim()||'loc',
-      p_theme:String(values.theme||'theme-7').trim()||'theme-7',
+      p_theme:String(values.theme||'system-default').trim()||'system-default',
       p_copy_keywords:values.copy_keywords!==false
     };
     const {data,error}=await authClient.schema('silver').rpc('provision_scope',payload);
