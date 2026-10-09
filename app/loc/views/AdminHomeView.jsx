@@ -104,6 +104,7 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
     setTreeError('');
     // Admin is the management site, not a Scope or an extra hierarchy level.
     const scopeRows=registry.filter(row=>row.scope_kind!=='system');
+    if(!scopeRows.length)return()=>{cancelled=true;};
     const nodes=scopeRows.map(row=>({
       id:row.scope_id,
       label:(configs[row.scope_id]?.display_name||row.display_name||row.scope_id)+'\n'+row.scope_id+(row.active===false?' · 停用':''),
