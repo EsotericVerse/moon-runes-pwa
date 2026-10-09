@@ -22,7 +22,7 @@ const checks=[
     files.runtime.includes('setScopeRegistryRouteRows([row])')],
   ['Scope display_name owns page and navigation labels',
     files.shell.includes('configRow?.display_name||registryRow?.display_name')&&
-    files.shell.includes('document.title=title')&&
+    files.shell.includes('document.title=name')&&
     files.shell.includes('row.display_name')&&
     files.runtime.includes('registryRow.display_name')&&
     files.locApp.includes('runtime.scope')],
