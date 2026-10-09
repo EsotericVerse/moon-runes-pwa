@@ -38,7 +38,7 @@ for(const name of publicPics){
   fs.copyFileSync(source,path.join(picsTarget,name));
 }
 
-const rootDownloads=['LunarRunesCardCut.pdf','LOC-GPT-Skills-v1.0.0-bundle.zip','LOC-GPT-Skills-v2.0-bundle.zip','LOC-GPT-Skills-v2.1-bundle.zip'];
+const rootDownloads=['LunarRunesCardCut.pdf'];
 for(const name of rootDownloads){
   const source=path.join(root,name);
   if(!fs.existsSync(source))throw new Error(`Static asset source missing: ${name}`);
