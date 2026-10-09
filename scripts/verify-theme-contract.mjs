@@ -23,9 +23,9 @@ const fallback=getThemeSlot('theme-7');
 if(fallback.id!=='theme-7'||!fallback.tokens||Object.keys(fallback.tokens).length!==THEME_TOKEN_KEYS.length)failures.push('theme-7 emergency fallback must stay complete');
 if(!registry.includes('Emergency fallback only')||registry.includes("const THEME_1=")||registry.includes("const THEME_8="))failures.push('static JS must keep only one emergency palette, not eight canonical palettes');
 
-for(const token of ["selectRows('silver.loc_theme'",'theme_attr','THEME_TOKEN_KEYS','mergeThemeSlot'])if(!themeData.includes(token))failures.push('DB theme loader missing '+token);
+for(const token of ["selectRows('silver.loc_theme'",'THEME_DB_COLUMNS','themeColumnForToken','THEME_TOKEN_KEYS','mergeThemeSlot'])if(!themeData.includes(token))failures.push('DB theme column loader missing '+token);
 for(const token of ["queryKey:['theme-registry']",'selectThemeRegistry','mergeThemeSlot','themeChoices'])if(!shell.includes(token))failures.push('AppShell DB-backed theme control missing '+token);
-for(const token of ["dbAuthRelation('silver.loc_theme')",'theme_attr','THEME_TOKEN_KEYS','type="color"'])if(!admin.includes(token))failures.push('Admin Theme editor missing '+token);
+for(const token of ["dbAuthRelation('silver.loc_theme')",'THEME_DB_COLUMNS','themeColumnForToken','THEME_TOKEN_KEYS','type="color"'])if(!admin.includes(token))failures.push('Admin Theme editor missing '+token);
 for(const token of ['selectThemeRegistry','mergeThemeSlot',"queryKey:['theme-registry']"])if(!game.includes(token))failures.push('Game must consume DB-backed theme registry: '+token);
 
 for(const scope of Object.values(SCOPES)){
@@ -49,7 +49,8 @@ if(!registry.includes('delete root.dataset.themeBootstrap'))failures.push('Theme
 if(shell.includes('if(fixedThemeId)return null')||shell.includes('if(fixedDefaultThemeId)return null'))failures.push('fixed Scope defaults must not hide the footer theme selector');
 for(const token of ["selection.scopeId===scopeId","setSelection({scopeId,themeId:SYSTEM_THEME_ID})","fixedDefaultThemeId||configuredDefaultThemeId||automaticThemeId(now)"])if(!shell.includes(token))failures.push('Scope-local system-default theme behavior missing '+token);
 
-if(!portableSchema.includes('"loc_theme"')||!portableSchema.includes('"theme_attr" jsonb'))failures.push('portable schema must keep loc_theme theme_attr');
+if(!portableSchema.includes('"loc_theme"')||portableSchema.includes('"theme_attr" jsonb')||!portableSchema.includes('"loc_bg" text NOT NULL')||!portableSchema.includes('"loc_shadow_card" text NOT NULL'))failures.push('portable schema must use explicit theme columns, never JSONB');
+if(themeData.includes('theme_attr')||admin.includes('theme_attr'))failures.push('Live Theme loader/editor may not use JSONB');
 if(portableSchema.includes('"theme_registry"'))failures.push('portable schema must not restore legacy theme_registry');
 
 // CSS subtraction guard: preserve the active shared frame and remove obsolete hero variants.
@@ -74,4 +75,4 @@ if(failures.length){
   console.error('[theme-contract] failures:\n'+failures.map(item=>'- '+item).join('\n'));
   process.exit(1);
 }
-console.log('[theme-contract] eight stable theme IDs, DB-backed attrs and emergency fallback verified');
+console.log('[theme-contract] eight stable theme IDs, DB-backed typed columns and emergency fallback verified');
