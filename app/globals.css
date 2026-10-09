@@ -20,3 +20,11 @@
 @import "./styles/uiux.css";
 @import "./styles/loc-about-original.css";
 
+
+
+/* The DB owns Theme palettes. Prevent intermediate CSS/default-palette flashes
+   on first load; reveal only after AppShell installs the resolved palette.
+   No user Theme selection or DB palette is persisted in browser storage. */
+html[data-theme-bootstrap="scheme-only"] body{
+  visibility:hidden;
+}
