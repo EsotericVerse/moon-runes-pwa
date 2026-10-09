@@ -8,7 +8,6 @@ DO $validate$ BEGIN
     OR (SELECT count(*) FROM jsonb_object_keys(t.theme_attr))<>5
   ) THEN RAISE EXCEPTION 'Theme JSON structure is inconsistent'; END IF;
 END $validate$;
-ALTER TABLE silver.loc_theme ADD COLUMN IF NOT EXISTS "theme_group" text;
 ALTER TABLE silver.loc_theme ADD COLUMN IF NOT EXISTS "scheme" text;
 ALTER TABLE silver.loc_theme ADD COLUMN IF NOT EXISTS "style_key" text;
 ALTER TABLE silver.loc_theme ADD COLUMN IF NOT EXISTS "identity_color" text;
@@ -56,7 +55,6 @@ ALTER TABLE silver.loc_theme ADD COLUMN IF NOT EXISTS "loc_hero_end" text;
 ALTER TABLE silver.loc_theme ADD COLUMN IF NOT EXISTS "loc_shadow" text;
 ALTER TABLE silver.loc_theme ADD COLUMN IF NOT EXISTS "loc_shadow_card" text;
 UPDATE silver.loc_theme SET
-  "theme_group"=theme_attr->>'group',
   "scheme"=theme_attr->>'scheme',
   "style_key"=theme_attr->>'style_key',
   "identity_color"=theme_attr->>'identity_color',
@@ -105,7 +103,6 @@ UPDATE silver.loc_theme SET
   "loc_shadow_card"=theme_attr->'tokens'->>'--loc-shadow-card';
 DO $verify$ BEGIN
   IF EXISTS (SELECT 1 FROM silver.loc_theme WHERE
-    "theme_group" IS NULL OR btrim("theme_group")='' OR
     "scheme" IS NULL OR btrim("scheme")='' OR
     "style_key" IS NULL OR btrim("style_key")='' OR
     "identity_color" IS NULL OR btrim("identity_color")='' OR
@@ -154,7 +151,6 @@ DO $verify$ BEGIN
     "loc_shadow_card" IS NULL OR btrim("loc_shadow_card")=''
   ) THEN RAISE EXCEPTION 'Incomplete theme column migration'; END IF;
 END $verify$;
-ALTER TABLE silver.loc_theme ALTER COLUMN "theme_group" SET NOT NULL;
 ALTER TABLE silver.loc_theme ALTER COLUMN "scheme" SET NOT NULL;
 ALTER TABLE silver.loc_theme ALTER COLUMN "style_key" SET NOT NULL;
 ALTER TABLE silver.loc_theme ALTER COLUMN "identity_color" SET NOT NULL;
@@ -201,4 +197,8 @@ ALTER TABLE silver.loc_theme ALTER COLUMN "loc_hero_start" SET NOT NULL;
 ALTER TABLE silver.loc_theme ALTER COLUMN "loc_hero_end" SET NOT NULL;
 ALTER TABLE silver.loc_theme ALTER COLUMN "loc_shadow" SET NOT NULL;
 ALTER TABLE silver.loc_theme ALTER COLUMN "loc_shadow_card" SET NOT NULL;
-ALTER TABLE silver.loc_theme ADD CONSTRAINT loc_theme_scheme_check CHECK (scheme IN ('light','dark'));
+DO $scheme$ BEGIN
+  IF NOT EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid='silver.loc_theme'::regclass AND conname='loc_theme_scheme_check') THEN
+    ALTER TABLE silver.loc_theme ADD CONSTRAINT loc_theme_scheme_check CHECK (scheme IN ('light','dark'));
+  END IF;
+END $scheme$;
