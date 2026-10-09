@@ -4,6 +4,15 @@
 
 管理登入使用 Google OAuth，由 Supabase Auth 建立可供資料 API 驗證的 JWT；PostgreSQL 權限與既有 RLS 決定可讀寫範圍。登入提供者可替換，資料庫端只要求可驗證的 JWT 身分。
 
+## Planned Clerk authentication boundary (package staging, not activated)
+
+- LOC's planned identity provider is **Clerk**. For the current `output: 'export'` / GitHub Pages deployment, the browser-compatible `@clerk/react` SDK is staged as a dependency. No Next.js server Middleware or new backend is implied.
+- **This dependency alone does not change login behavior**: Supabase Auth with Google OAuth remains active until a separate, verified Clerk runtime cutover is completed.
+- At cutover, Clerk supplies the authenticated session/JWT; Supabase is still the PostgreSQL Data API. Configure Supabase **Clerk third-party authentication** and test a verified Clerk token against the actual RLS policies before switching any authenticated write path.
+- `silver.manage` remains the authority for `admin` and `scope` management authorization. Cross-check exact identity mapping and each RLS policy before substituting Clerk user IDs for the existing email-based lookup. Never map roles from a browser-only flag or an unverified email.
+- Publishable Key may appear in client-side configuration; Clerk Secret Key, Supabase service-role key, and database credentials never appear in browser bundles, static exports, or git.
+- Until that cutover is validated, do not remove `getAccountSession`, `signInWithGoogle`, Supabase Auth clients, or the current RLS/policy contracts. Public, anonymous read behavior must remain unchanged.
+
 ## Public data
 
 公開 Search、Culture、Statistics、Rune reference 等功能經由 provider-neutral Data API 取得允許公開的 canonical data。Supabase 是優先的公開讀取來源；只有匿名公開 SELECT 讀取失敗時才嘗試 Neon 唯讀備援，並標示備援資料。來源之間可能存在同步延遲；同一分頁讀取鏈固定使用已選定來源，不混合資料。
