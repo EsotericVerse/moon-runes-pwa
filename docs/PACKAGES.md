@@ -2,7 +2,7 @@
 
 **基準：** `main` / `package.json`，2026-10-09  
 **Package version：** `0.9.1-rc.1`（候選版；既有 0.9.0 RC1 標籤不變）  
-**直接宣告：** 21 項 runtime dependencies、2 項 devDependencies
+**直接宣告：** 22 項 runtime dependencies、2 項 devDependencies
 
 本頁是**現行套件與模組責任對照**，不是第二份套件宣告、升級清單或安裝教學。版本範圍必須以根目錄 `package.json` 為權威，實際鎖定版本、完整相依樹以 `package-lock.json` 為權威；更新套件時應一起更新 Manifest／Lockfile，再同步此文件。CI 使用 `npm ci` 安裝。
 
@@ -18,11 +18,17 @@
 | `@tanstack/react-query` | `5.103.1` | 資料請求狀態與快取控制 |
 | `zod` | `4.6.0` | 資料結構與輸入 schema |
 
+### 認證（預備接管）
+
+| Package | package.json 宣告 | 目前責任 |
+| --- | --- | --- |
+| `@clerk/react` | `6.15.2` | 已納入的瀏覽器端 Clerk SDK；尚未啟用登入，未取代 Supabase Auth／RLS |
+
 ### 資料層
 
 | Package | package.json 宣告 | 目前責任 |
 | --- | --- | --- |
-| `@supabase/supabase-js` | `2.117.2` | Supabase Auth 與資料 API |
+| `@supabase/supabase-js` | `2.117.2` | 現行 Supabase Auth、PostgREST 資料 API；未來接收已驗證的 Clerk JWT 時仍保留資料 API |
 | `@supabase/postgrest-js` | `2.79.0` | PostgREST 資料 API 客戶端 |
 
 ### 富文字／管理
@@ -67,4 +73,4 @@
 - **LOC 不等於一般 Scope Group：** LOC Culture／Statistics 仍提供跨 Scope 有界比較；其他新建 Group 採 Registry Overview／導引。
 - **套件是實作依賴，不是資料權威：** PostgreSQL canonical tables 及既有 Scope、Auth、Provider 契約決定資料責任，不從套件名稱推導可用功能。
 - **MUI／Emotion／dnd-kit／boardgame.io 用於符文遊戲：** 不因共用 repository 就套用到所有 LOC 頁面；BlockNote／React Select 的責任亦以實際引用為準。
-- **本次只核對套件清單，未升級、移除或改變任何 package version。** 是否清退套件須另以實際引用、建置與測試證據決定。
+- **Clerk 目前只做套件準備：** 不新增第二套登入 UI、不切換 Session、不修改 `silver.manage`、RLS 或認證 API。Current 登入仍由 Supabase Auth 提供，轉換流程見 `docs/AUTHENTICATION.md`。
