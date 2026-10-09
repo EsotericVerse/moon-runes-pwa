@@ -493,10 +493,14 @@ function CreateNodePanel({data,kind='scope',onClose}){
   const parentOptions=groups.map(row=>({value:row.scope_id,label:(row.display_name||row.scope_id)+' · '+row.scope_id}));
   const [scopeDraft,setScopeDraft]=useState({...EMPTY_SCOPE_CREATE});
   const [groupDraft,setGroupDraft]=useState({...EMPTY_GROUP_CREATE});
+  const [creatingScope,setCreatingScope]=useState(false);
   const scopeDomainError=duplicateDomainLabelError(scopeDraft.scope_id,scopeDraft.route_mode);
   const groupDomainError=duplicateDomainLabelError(groupDraft.scope_id,groupDraft.route_mode);
 
   async function createScope(){
+    if(creatingScope)return;
+    setCreatingScope(true);
+    setStatus('正在建立 Scope 並驗證資料表…');
     let provisioned=false;
     let id='';
     try{
@@ -537,7 +541,7 @@ function CreateNodePanel({data,kind='scope',onClose}){
         refresh();
         onClose?.();
       }else setStatus(error?.message||'Scope 建立失敗。');
-    }
+    }finally{setCreatingScope(false);}
   }
 
   async function createGroup(){
@@ -569,7 +573,7 @@ function CreateNodePanel({data,kind='scope',onClose}){
       </div>
       <div className="admin-route-summary"><span>建立位置</span><strong>{scopeDraft.route_mode==='domain'?'Domain · 獨立網域':'Directory · 站內路徑'}</strong><code>{scopeDraft.route_mode==='domain'?(scopeDraft.scope_id||'scope-id')+'.lo3rwang.cc':'https://loc.lo3rwang.cc/'+(scopeDraft.scope_id||'scope-id')}</code></div>
       {scopeDomainError?<p className="scope-status scope-error" role="alert">{scopeDomainError}</p>:null}
-      <button type="button" className="loc-button primary" disabled={Boolean(scopeDomainError)} onClick={createScope}>建立</button>
+      <button type="button" className="loc-button primary" disabled={Boolean(scopeDomainError)||creatingScope} onClick={createScope}>{creatingScope?'建立與驗證中…':'建立'}</button>
     </>:<>
       <label><span>Group ID</span><input maxLength="15" value={groupDraft.scope_id} onChange={e=>setGroupDraft(v=>({...v,scope_id:e.target.value.toLowerCase()}))}/></label>
       <label><span>Group 名稱</span><input value={groupDraft.display_name} onChange={e=>setGroupDraft(v=>({...v,display_name:e.target.value}))}/></label>
@@ -632,6 +636,7 @@ function AdminRegistry(){
       <div className="admin-graph-header">
         <div><h2>Scope 關聯圖</h2><p>由左至右展開：LOC → Scope／Group。選取節點先看 Attr 摘要；點選任一 Attr 進入編輯。拖曳至其他 Group 可調整所屬關係。</p></div>
         <div className="admin-registry-actions">
+          <button type="button" className="loc-button" onClick={refresh}>重新讀取</button>
           <button type="button" className="loc-button" onClick={()=>setCreateKind('scope')}>＋ 新增 Scope</button>
           <button type="button" className="loc-button" onClick={()=>setCreateKind('group')}>＋ 新增 Group</button>
         </div>
