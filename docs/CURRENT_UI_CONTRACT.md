@@ -91,6 +91,8 @@ Statistics 登入管理後的關鍵詞設定以 Class 為第一層。每個 Clas
 
 - 新增 Scope 只填 Scope ID、必填管理者 Email、預設語系；Directory／Domain 為互斥 radio，Registry 路由資訊由 ID 推導。Parent 固定 `loc`，建立時複製一次 Rune66（66 rows 與全新 Class UUID）。
 - 新 Scope 的 Theme 使用 `system-default`：現有系統日間 `theme-7`／夜間 `theme-1` 自動切換，並非固定 `theme-7`。Scope 設定仍允許手動選擇八組 Theme。
+- Scope 的首頁／治理頁共用區塊可透過「上移／下移」交換相鄰區塊的持久化順序；固定用途的單一 Hero Header 不提供移動。子文字框的移動與首頁區塊的移動分開處理。
+- Theme 預設為系統日／夜自動，但可在 Scope 設定改選八套 Theme；各選單只顯示正式名稱（靈魂、連結等），`theme-1` 等識別值僅屬內部資料鍵。
 - Scope 節點的主要操作固定為「儲存／設定隱藏（或取消隱藏）／刪除」三項。隱藏只切換 `silver.scope_registry.active`，仍保留所有 canonical 資料；移除公開 Registry 導引，不代表資料本身變成私密。
 - 「複製符文66風格」在每個 Scope 節點常駐：每次經管理權限檢查後複製來源目前 66 筆項目為新 UUID 的獨立 Class，不覆蓋既有 Class，也不自動切換目前使用的 Class。
 - 「刪除」僅允許全域 Admin 永久移除非內建 Scope；前端必須再次輸入相符 Scope ID。資料庫執行層仍檢查全域權限、保護 `loc`／`lrunes`／`lo3rwang`／`admin`，以 `RESTRICT` 拒絕意外依賴，避免不受控 cascade。
