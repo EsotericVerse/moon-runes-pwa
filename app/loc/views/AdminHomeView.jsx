@@ -4,7 +4,7 @@ import {UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale} from '../../i18n/ui-copy';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {scopeHref,duplicateDomainLabelError} from '../../modular/scope-registry';
 import {THEME_SLOTS,THEME_TOKEN_KEYS} from '../../modular/theme-registry';
-import {mergeThemeSlot} from '../theme-data';
+import {mergeThemeSlot,themeTokenColumn,THEME_DB_COLUMNS} from '../theme-data';
 import {useAccount} from '../use-account';
 import {
   deleteScope,deleteRows,insertRows,dbAuthRelation,manageScopeRegistry,provisionScope,syncManageScopeRow,updateRows
@@ -565,7 +565,7 @@ function ThemeEditor(){
   useEffect(()=>{
     let active=true;
     (async()=>{
-      const {data,error}=await dbAuthRelation('silver.loc_theme').select('theme_id,theme_name,theme_attr,theme_order').order('theme_order');
+      const {data,error}=await dbAuthRelation('silver.loc_theme').select(THEME_DB_COLUMNS.join(',')).order('theme_order');
       if(!active)return;
       if(error){setStatus(error.message||'Theme 讀取失敗。');return;}
       setRows(data||[]);
@@ -593,13 +593,12 @@ function ThemeEditor(){
         theme_id:themeId,
         theme_name:String(draft.label||themeId).trim(),
         theme_order:Number(existing?.theme_order)||Number(String(themeId).split('-')[1])||1,
-        theme_attr:{
-          scheme:draft.scheme==='dark'?'dark':'light',
-          style_key:String(draft.styleKey||''),
-          group:String(draft.group||''),
-          identity_color:String(draft.identityColor||''),
-          tokens:Object.fromEntries(THEME_TOKEN_KEYS.map(key=>[key,String(draft.tokens?.[key]||'').trim()]))
-        }
+        scheme:draft.scheme==='dark'?'dark':'light',
+        style_key:String(draft.styleKey||''),
+        identity_color:String(draft.identityColor||''),
+        ...Object.fromEntries(THEME_TOKEN_KEYS.map(key=>[
+          themeTokenColumn(key),String(draft.tokens?.[key]||'').trim()
+        ]))
       };
       const {error}=await dbAuthRelation('silver.loc_theme').upsert(payload,{onConflict:'theme_id'});
       if(error)throw new Error(error.message||'Theme 儲存失敗。');
@@ -613,7 +612,6 @@ function ThemeEditor(){
       <div className="scope-management-fields">
         <label><span>名稱</span><input value={draft.label||''} onChange={e=>setDraft(v=>({...v,label:e.target.value}))}/></label>
         <label><span>Scheme</span><select className="admin-native-select" value={draft.scheme||'light'} onChange={e=>setDraft(v=>({...v,scheme:e.target.value||'light'}))}><option value="light">light</option><option value="dark">dark</option></select></label>
-        <label><span>Group</span><input value={draft.group||''} onChange={e=>setDraft(v=>({...v,group:e.target.value}))}/></label>
         <label><span>Style Key</span><input value={draft.styleKey||''} onChange={e=>setDraft(v=>({...v,styleKey:e.target.value}))}/></label>
         <label><span>Identity Color</span><input value={draft.identityColor||''} onChange={e=>setDraft(v=>({...v,identityColor:e.target.value}))}/></label>
       </div>
