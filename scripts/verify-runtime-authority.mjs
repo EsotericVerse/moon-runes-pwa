@@ -24,12 +24,18 @@ const checks=[
     files.runtime.includes('registryRow?.scope_id===scopeId')&&
     files.runtime.includes('configRow?.id===scopeId')&&
     files.runtime.includes('configRow:activeConfigRow')],
-  ['Scope display_name owns page and navigation labels',
+  ['Scope display_name remains independent navigation label',
     files.shell.includes('configRow?.display_name||registryRow?.display_name')&&
-    files.shell.includes('document.title=name')&&
     files.shell.includes('row.display_name')&&
     files.runtime.includes('activeRegistryRow.display_name')&&
     files.locApp.includes('runtime.scope')],
+  ['Public browser title/description use only manage Title_TW/Desc_TW',
+    files.scopeData.includes("rpc('read_scope_page_copy'")&&
+    files.shell.includes("queryKey:['scope-page-copy',scopeId]")&&
+    files.shell.includes('pageCopyQuery.data?.Title_TW')&&
+    files.shell.includes('pageCopyQuery.data?.Desc_TW')&&
+    files.shell.includes('document.title=title')&&
+    files.shell.includes('meta.setAttribute(\'content\',description)')],
   ['Scope settings and Theme palette derive from database',
     files.shell.includes('configQuery.data?.theme')&&
     files.shell.includes('queryFn:selectThemeRegistry')&&
