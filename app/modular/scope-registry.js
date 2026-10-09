@@ -187,7 +187,13 @@ export function scopeHref(scopeId,localPath=''){
   const queryIndex=withoutHash.indexOf('?');
   const routePart=queryIndex>=0?withoutHash.slice(0,queryIndex):withoutHash;
   const query=queryIndex>=0?withoutHash.slice(queryIndex+1):'';
-  const path=routePart.split('/').filter(Boolean).join('/');
+  const parts=routePart.split('/').filter(Boolean);
+  // LunaRunes' dedicated host is already the Scope root. Do not attach its
+  // LOC mount prefix (/lrunes) again when composing links for Cloudflare.
+  if(id==='lrunes'&&SCOPES.lrunes.domain){
+    while(parts[0]==='lrunes')parts.shift();
+  }
+  const path=parts.join('/');
   const pathname=path?`/${path}/`:'/';
   if(SCOPES[id])return `${base}${pathname}${query?'?'+query:''}${hash}`;
   const params=new URLSearchParams(query);
