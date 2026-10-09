@@ -1,0 +1,69 @@
+name: LOC iOS Capacitor Shell
+
+on:
+  push:
+    branches:
+      - feat/ios-capacitor-shell
+    paths:
+      - 'capacitor.config.json'
+      - '.github/workflows/ios-capacitor-shell.yml'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'next.config.mjs'
+      - 'app/**'
+      - 'public/**'
+      - 'assets/**'
+  pull_request:
+    paths:
+      - 'capacitor.config.json'
+      - '.github/workflows/ios-capacitor-shell.yml'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'next.config.mjs'
+      - 'app/**'
+      - 'public/**'
+      - 'assets/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ios-unsigned-build:
+    runs-on: macos-26-intel
+    timeout-minutes: 60
+    steps:
+      - name: Checkout LOC
+        uses: actions/checkout@v4
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify Xcode toolchain
+        run: |
+          xcodebuild -version
+          xcrun --find swift
+      - name: Install pinned npm dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Build LOC static web assets
+        run: |
+          npm run build
+          test -f out/index.html
+      - name: Generate ephemeral iOS native shell
+        run: |
+          npx cap add ios
+          npx cap sync ios
+          test -f ios/App/App.xcodeproj/project.pbxproj
+      - name: Resolve native Swift packages
+        run: xcodebuild -resolvePackageDependencies -project ios/App/App.xcodeproj -scheme App
+      - name: Compile unsigned iOS Simulator application
+        run: |
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build
