@@ -404,7 +404,7 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
       {label:'搜尋介紹',value:config?.search_intro||'未設定'},
       {label:'搜尋別名',value:normalizeAliases(config?.search_aliases).join('、')||'未設定'},
       {label:'主題',value:themeOptions.find(option=>option.value===(config?.theme||'system-default'))?.label||'系統預設'},
-      {label:'預設語系',value:normalizeUiLocale(config?.locale)},
+      {label:'預設語系',value:UI_LOCALE_OPTIONS.find(option=>option.value===normalizeUiLocale(config?.locale))?.label||'繁體中文'},
       {label:'功能開放',value:['Search','Statistics','Culture'].filter((name,index)=>[config?.search_able,config?.statistics_able,config?.culture_able][index]!==false).join('、')||'全部停用'},
       {label:'管理者數量',value:String(scopeMappings.length)}
     ]:[]),
