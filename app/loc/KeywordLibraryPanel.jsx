@@ -4,7 +4,7 @@ import {useEffect,useMemo,useState} from 'react';
 import Select from 'react-select';
 import dynamic from 'next/dynamic';
 import {useQueryClient} from '@tanstack/react-query';
-import {copyKeywordLibraryClass,dbAuthRelation,updateRows,writeKeywordLibraryItem} from './db-client.mjs';
+import {copyKeywordLibraryClass,copyRune66KeywordClass,dbAuthRelation,updateRows,writeKeywordLibraryItem} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {clearRune66ClassificationCache,runRune66ClassificationBatch} from './rune66-keyword-analysis';
 // The vis-network bundle is downloaded/mounted only when its view is chosen.
@@ -417,6 +417,23 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     }finally{setBusy(false);}
   }
 
+  async function copyRune66(){
+    if(busy)return;
+    setBusy(true);setMessage('');
+    try{
+      const result=await copyRune66KeywordClass(scopeId);
+      const createdName=String(result.class_name||'').trim();
+      const reloaded=await load('',createdName,{preserveOnError:true});
+      setMessage(reloaded
+        ?'已從符文66建立獨立 Class「'+createdName+'」（'+result.count+' 筆；UUID：'+result.class_id+'）。目前使用的 Class 不變，如需套用請至分析設定選擇。'
+        :'符文66已複製至資料庫（UUID：'+result.class_id+'），但重新載入失敗；請重新進入關鍵詞庫確認。');
+    }catch(error){
+      setMessage('符文66 Class 複製失敗：'+String(error?.message||error));
+    }finally{
+      setBusy(false);
+    }
+  }
+
   async function copyClass(){
     const target=String(copyName||'').trim();
     if(!selectedClass){setMessage('請先選擇要複製的 Class。');return;}
@@ -450,6 +467,11 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     <p className="loc-eyebrow">Keyword Library</p>
     <h2>關鍵詞庫</h2>
     <p>每套 Class 以 UUID 獨立識別，可複製與分享；文章只保存分析後的 class_id 與 group_lists。公開統計直接讀文章 Attr，不會重新跑關鍵詞。</p>
+    <div className="scope-stat-controls">
+      <button type="button" className="loc-button" disabled={busy||loading} onClick={copyRune66}>{busy?'處理中…':'複製符文66為新 Class'}</button>
+      <span className="scope-status">新增獨立 UUID 的 Class，不覆蓋既有關鍵詞，也不切換目前使用的 Class。</span>
+    </div>
+    {workspace==='analysis'&&message?<p role="status" aria-live="polite" className={message.includes('失敗')?'scope-status scope-error':'scope-status'}>{message}</p>:null}
 
     <div className="scope-stat-controls scope-stat-workspace-switch">
       <label htmlFor="keyword-workspace-picker">關鍵詞工作區</label>

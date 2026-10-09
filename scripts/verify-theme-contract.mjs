@@ -32,16 +32,19 @@ for(const scope of Object.values(SCOPES)){
   const policy=scope.theme||{mode:'auto'};
   if(policy.mode==='fixed'&&!expectedIds.includes(policy.themeId))failures.push(scope.id+': invalid fixed theme '+policy.themeId);
 }
-if(SCOPES.lo3rwang?.theme?.themeId!=='theme-2')failures.push('author system default must remain Link / theme-2');
-if(SCOPES.lrunes?.theme?.themeId!=='theme-5')failures.push('LunaRunes system default must remain Mineral / theme-5');
+if(SCOPES.lo3rwang?.theme?.mode==='fixed'||SCOPES.lrunes?.theme?.mode==='fixed')failures.push('Scope theme defaults must be owned by DB config, not hardcoded in routing');
+if(!shell.includes("queryFn:()=>selectScopeConfig(scopeId)")||!shell.includes("fixedDefaultThemeId||configuredDefaultThemeId||automaticThemeId(now)"))failures.push('Scope theme must resolve from current DB config and remain temporary when user switches');
 
 for(const token of ["SYSTEM_THEME_ID='system-default'","THEME_TIME_ZONE='Asia/Taipei'","DAY_THEME_ID='theme-7'","NIGHT_THEME_ID='theme-1'",'copy.common.systemTheme'])if(!shell.includes(token))failures.push('AppShell theme control missing '+token);
 if(!layout.includes("import AppShell from './AppShell'")||!layout.includes('<AppShell>{children}</AppShell>'))failures.push('Root layout must use AppShell');
-if(!layout.includes('id="loc-theme-bootstrap"')||!layout.includes('INITIAL_SCOPE_THEMES')||!layout.includes('INITIAL_THEME_SCHEMES')||!layout.includes("themeBootstrap='scheme-only'"))failures.push('Root layout must bootstrap only the scheme while DB theme tokens load');
-if(!layout.includes("  'theme-4':'dark',")||!layout.includes("const GAME_BOOTSTRAP_THEME_ID='theme-4'")||!layout.includes("pathname==='/game'"))failures.push('Nature game must bootstrap its dark scheme before DB palette hydration');
+if(!layout.includes('id="loc-theme-bootstrap"')||!layout.includes("themeBootstrap='scheme-only'")||layout.includes('INITIAL_SCOPE_THEMES'))failures.push('Root layout must bootstrap only color scheme without duplicating Scope policy');
+if(!layout.includes("const GAME_BOOTSTRAP_THEME_ID='theme-4'")||!layout.includes("pathname==='/game'")||!layout.includes('const scheme=game'))failures.push('Nature game must bootstrap its dark scheme before DB palette hydration');
 if(!game.includes("GAME_THEME_DEFAULT='theme-4'")||!game.includes('hasCanonicalGameTheme?')||!game.includes('colorScheme:gameTheme.scheme'))failures.push('Nature game must remain default and avoid Order palette flash while loading');
 if(!shell.includes('root.dataset.themeSignature===themeSignature(slot)'))failures.push('AppShell theme control must avoid needless root reapply while detecting token changes');
-if(!shell.includes("if(!override&&effectiveThemeId!=='theme-7')return"))failures.push('Non-Order palette must wait for its DB definition');
+const globalCss=read('app/globals.css');
+if(!shell.includes('if(themeRegistryQuery.isPending)return')||!shell.includes("configQuery.isPending&&configQuery.fetchStatus!=='idle'"))failures.push('AppShell must hold first paint until canonical DB Theme and Scope config are ready');
+if(!globalCss.includes('html[data-theme-bootstrap="scheme-only"] body')||!globalCss.includes('visibility:hidden;'))failures.push('First load must not show intermediate Theme colors');
+if(layout.includes('sessionStorage')||shell.includes('sessionStorage')||registry.includes('sessionStorage'))failures.push('Temporary Theme choices and palettes must not be stored in browser storage');
 if(!registry.includes('delete root.dataset.themeBootstrap'))failures.push('Theme hydration must remove temporary scheme-only bootstrap marker');
 if(shell.includes('if(fixedThemeId)return null')||shell.includes('if(fixedDefaultThemeId)return null'))failures.push('fixed Scope defaults must not hide the footer theme selector');
 for(const token of ["selection.scopeId===scopeId","setSelection({scopeId,themeId:SYSTEM_THEME_ID})","fixedDefaultThemeId||configuredDefaultThemeId||automaticThemeId(now)"])if(!shell.includes(token))failures.push('Scope-local system-default theme behavior missing '+token);

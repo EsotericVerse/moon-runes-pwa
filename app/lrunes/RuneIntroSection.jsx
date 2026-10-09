@@ -1,6 +1,24 @@
+'use client';
+
+import {useQuery} from '@tanstack/react-query';
+import {selectRows} from '../loc/db-query.mjs';
+import {runeImage} from './rune-directory.mjs';
+import RuneCardInfo from './RuneCardInfo';
 import RuneDrawModeBubbles from './RuneDrawModeBubbles';
 
 export default function RuneIntroSection(){
+  const sample=useQuery({
+    queryKey:['lunarunes-intro-rune',66],
+    queryFn:async()=>{
+      const {rows}=await selectRows('silver.runes',{
+        columns:'rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,positive_keywords,negative_keywords',
+        filters:[{column:'rune_id',operator:'eq',value:66}],
+        limit:1,offset:0
+      });
+      return rows?.[0]||null;
+    },
+    staleTime:300_000
+  });
   return <section className="loc-card home-copy-block home-rune-section runes-home-intro">
     <div className="home-section-heading runes-home-intro-heading">
       <p className="loc-eyebrow">LunaRunes(Symbolic Language)</p>
@@ -8,25 +26,10 @@ export default function RuneIntroSection(){
       <p className="loc-subtitle">不涉及神秘學，為單純的指引籤詩<br/>不保證一定就是註定，你擁有選擇權。</p>
     </div>
     <div className="home-rune-layout runes-home-intro-layout">
-      <div className="home-rune-preview runes-home-intro-preview" aria-label="命之符文示例">
-        <img src="/assets/lunarunes/cards/66_命.png" alt="命之符文" loading="lazy" decoding="async" />
-        <div className="home-rune-card-data">
-          <div className="home-rune-card-title">
-            <strong>命之符文</strong>
-            <span className="home-rune-glyph">⟁</span>
-            <span>(Fate)</span>
-          </div>
-          <p>定論的所有可能 / 命定者</p>
-          <details className="home-rune-keywords">
-            <summary>關鍵詞（點擊展開）</summary>
-            <p>正面：定論、必然、法則</p>
-            <p>負面：—</p>
-          </details>
-          <p>所屬分組：特殊 / 卡片屬性：未知</p>
-          <p>卡片月相：無 / 真實月相：空亡</p>
-          <p className="home-rune-direction">卡片面向：<strong>正位</strong></p>
-        </div>
-      </div>
+      {sample.data?<RuneCardInfo card={sample.data} imageSrc={runeImage(sample.data)} layout="home" direction="正位"/>:
+        <div className="home-rune-preview runes-home-intro-preview" aria-busy={sample.isPending}>
+          <p className="scope-status">{sample.error?'符文示例目前無法讀取。':'正在讀取符文示例…'}</p>
+        </div>}
       <div className="home-rune-copy home-rune-copy-plain runes-home-intro-copy">
         <p className="runes-hint-kicker">不知道怎麼說的話，往下抽牌就對了！</p>
         <p>沒什麼想問的，抽個每日符文看看吧！</p>

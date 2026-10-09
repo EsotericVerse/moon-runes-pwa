@@ -65,7 +65,7 @@ must(management.includes('scope?.aggregateChildren?<ManagementDisclosure')&&mana
 must(governance.includes('governance-management-cta')&&governance.includes('href={manageHref}')&&!governance.includes("LOC 的管理入口進入 Admin")&&!governance.includes('Manage 只保留雜項設定'),'LOC and Scope Governance CTA must show only a heading and management action without adjacent explanations');
 must(management.includes('account.signIn(callbackURL)')&&!management.includes('copy.description')&&!management.includes('description:\'登入後'),'Scope management login must keep its login action without a descriptive paragraph');
 must(management.includes('ScopeGroupManagement'),'Manage must compose the Scope Group module');
-must(scopeRuntime.includes("aggregateChildren:registryRow.scope_kind==='group'")&&genericHome.includes('ScopeGroupOverview')&&sharedSearch.includes('ScopeGroupOverview'),'New DB Scope Groups must use the generic runtime and existing public overview');
+must(scopeRuntime.includes("aggregateChildren:activeRegistryRow.scope_kind==='group'")&&genericHome.includes('ScopeGroupOverview')&&sharedSearch.includes('ScopeGroupOverview'),'New DB Scope Groups must use the generic runtime and existing public overview');
 must(locApp.includes("scopeMeta?.aggregateChildren&&scopeId!=='loc'")&&locApp.includes("['statics','culture','governance'].includes(forcedView)")&&locApp.includes('groupOverviewView?<FeaturePage')&&groupOverview.includes('selectScopeGroupChildren(scopeId)'),'Dynamic DB Groups must route Statistics/Culture/Governance to existing read-only member overview instead of LOC aggregate or nonexistent Group tables');
 must(groupOverview.includes('scopeHref(row.scope_id')&&groupOverview.includes('不執行 Group 級全文搜尋或統計 COUNT'),'Scope Group overview must direct users to child Scope queries without expensive group-wide counts');
 must(management.includes('<ScopeSettingsPanel')&&management.includes('<ManagementArticlePublisher')&&management.includes('<ManagementImportPanel')&&management.includes('ManagementDisclosure')&&management.includes('label="發表文章"')&&!management.includes('KeywordLibraryPanel'),'Scope Manage must keep settings, publishing and import as collapsed one-line disclosures');
@@ -203,6 +203,13 @@ must(admin.includes('DeploymentTree')&&admin.includes('vis-network/standalone')&
 must(admin.includes("{id:'__admin__',label:'Admin',shape:'box',fixed:true}")&&!admin.includes("shape:'box',level:0")&&admin.includes('layout:{hierarchical:{enabled:true'),'Admin hierarchical graph must not mix explicit node levels with unlevelled registry nodes');
 must(!admin.includes("react-select")&&!admin.includes('<Select')&&admin.includes('admin-native-select'),'Admin must use native select controls instead of react-select');
 must(['群組人員管理','資料庫設定','主題設定'].every(label=>admin.includes("label:'"+label+"'"))&&!admin.includes("value:'search'")&&!admin.includes('SearchKeywordReport'),'Admin primary menu must stay concise Chinese system settings without a redundant search query report');
+must(admin.includes('scopeDomainError?<p')&&admin.includes('groupDomainError?<p')&&admin.includes("duplicateDomainLabelError(id,mode)")&&admin.includes('disabled={Boolean(scopeDomainError)}'),'Admin Scope creation must immediately reject repeated Domain labels');
+must(read('app/AppShell.jsx').includes('function ScopePageCopy({scopeId,display_name})')&&
+  read('app/AppShell.jsx').includes('pageCopyQuery.data?.Title_TW')&&
+  read('app/AppShell.jsx').includes('pageCopyQuery.data?.Desc_TW')&&
+  read('app/loc/scope-data.js').includes("rpc('read_scope_page_copy'")&&
+  read('app/AppShell.jsx').includes('configRow?.display_name||registryRow?.display_name'),
+  'browser page copy must derive from manage Title_TW/Desc_TW independently of display_name');
 must(!admin.includes('applyTheme(')&&admin.includes('admin-theme-local-preview')&&admin.includes('正在編輯的主題（只修改草稿，不影響網站配色）'),'Admin Theme draft and preview must never mutate the live document root theme on entry or edit');
 must(admin.includes('admin-registry-fallback')&&admin.includes('圖形樹載入失敗，已切換清單模式。')&&admin.includes('setTreeError'),'Scope Registry must provide a visible fallback instead of failing blank');
 must(admin.includes('syncManageScopeRow(')&&admin.includes("role:'scope'"),'Admin Scope node must edit Manage mapping atomically and keep role=scope fixed');
@@ -242,10 +249,23 @@ must(
   admin.includes('onClick={toggleScopeHidden}')&&
   admin.includes('onClick={deleteSelectedScope}')&&
   !admin.includes('開啟 UI')&&admin.includes('請輸入 Scope ID 以確認')&&
-  admin.includes('onClick={copyRune66}')&&
+  !admin.includes('onClick={copyRune66}')&&!admin.includes('copyRune66KeywordClass')&&
+  keywordLibrary.includes('onClick={copyRune66}')&&
+  keywordLibrary.includes('copyRune66KeywordClass(scopeId)')&&
+  keywordLibrary.includes('複製符文66為新 Class')&&
   dbContract.includes("rpc('delete_scope'")&&
   dbContract.includes("rpc('copy_rune66_keyword_class'"),
-  'Scope node must expose Save/Hide/Delete only, with separately persistent Rune66 copy'
+  'Admin Scope node must expose Save/Hide/Delete only; Rune66 independent Class copy belongs to Scope Keyword Library'
+);
+must(
+  admin.includes('name={\'registry-route-mode-\'+selectedId}')&&
+  admin.includes('checked={routeMode===\'domain\'}')&&
+  admin.includes('checked={routeMode===\'directory\'}')&&
+  !admin.includes('DNS、轉址及網站託管設定須另外完成')&&
+  !admin.includes('onChange={e=>patchRegistry(\'domain\'')&&
+  !admin.includes('onChange={e=>patchRegistry(\'directory\'')&&
+  admin.includes('name="new-group-route-mode"'),
+  'Admin Registry must distinguish exclusive Domain/Directory modes and clarify DNS is external'
 );
 must(
   admin.includes("label:'系統黑名單'")&&admin.includes("silver.email_blocklist")&&

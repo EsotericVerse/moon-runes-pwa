@@ -12,24 +12,13 @@ const runeHref=path=>{
 };
 
 const RUNE_HERO_ORDERS=[1];
-const RUNE_HERO_DEFAULT={
-  eyebrow:'LunaRunes',
-  title:'月之符文',
-  subtitle:'<p>以月的角度紀錄。</p>',
-  text:[
-    '<p>抽牌先給你一個籤詩提示，再從符文本義、卡牌方向與月相交互往下判讀。</p>',
-    '<p>66個單一中文字 × 九組符文分組 × 四卡牌方向 × 月相交互</p>',
-    '<p>可以問一件事，也可以沒有問題直接抽取。</p>'
-  ].join('')
-};
-
 // LunaRunes is a special-case homepage: only the Hero copy is editable.
 // Draw routes, draw buttons, game, intro, and reading guidance remain fixed UI.
 function renderRuneHero(slot){
-  const eyebrow=slot.stored?slot.eyebrow:RUNE_HERO_DEFAULT.eyebrow;
-  const title=slot.stored?slot.title:RUNE_HERO_DEFAULT.title;
-  const subtitle=slot.stored?slot.subtitle:RUNE_HERO_DEFAULT.subtitle;
-  const text=slot.stored?slot.text:RUNE_HERO_DEFAULT.text;
+  const eyebrow=slot.stored?slot.eyebrow:'';
+  const title=slot.stored?slot.title:'';
+  const subtitle=slot.stored?slot.subtitle:'';
+  const text=slot.stored?slot.text:'';
   return <>
     <img
       className="runes-home-hero-image"

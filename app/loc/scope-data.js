@@ -2,6 +2,22 @@
 
 import {DB_QUERY_BATCH_SIZE} from './query-contract.mjs';
 import {selectRows} from './db-query.mjs';
+import {dbPublicClient} from './db-client.mjs';
+
+// Public page copy reads only Title_TW and Desc_TW through a least-privilege RPC.
+// The silver.manage table itself (emails/roles/mappings) remains private.
+export async function selectScopePageCopy(scopeId){
+  const id=String(scopeId||'').trim().toLowerCase();
+  if(!/^[a-z][a-z0-9]{0,14}$/.test(id))return null;
+  const {data,error}=await dbPublicClient.schema('silver').rpc('read_scope_page_copy',{p_scope_id:id});
+  if(error)throw new Error(error.message||'Scope page copy is unavailable');
+  const row=Array.isArray(data)?data[0]:data;
+  return row?{
+    scope_id:id,
+    Title_TW:String(row.Title_TW||'').trim(),
+    Desc_TW:String(row.Desc_TW||'').trim()
+  }:null;
+}
 
 export const MANAGE_TABLE='silver.manage';
 
@@ -142,16 +158,22 @@ export async function selectManagedScope(scopeId){
 }
 
 
-export async function selectScopeConfig(scopeId){
+// Deduplicate simultaneous readers (AppShell, Scope runtime, feature gate).
+// Keep no long-lived result cache: DB changes can be picked up on next read.
+const scopeConfigInFlight=new Map();
+export function selectScopeConfig(scopeId){
   const scope=defaultScopeData(scopeId);
-  if(!scope)return null;
-  const {rows}=await selectRows(scope.config,{
+  if(!scope)return Promise.resolve(null);
+  const existing=scopeConfigInFlight.get(scope.id);
+  if(existing)return existing;
+  const request=selectRows(scope.config,{
     columns:'id,display_name,search_intro,search_aliases,theme,locale,search_able,statistics_able,culture_able',
     filters:[{column:'id',operator:'eq',value:scope.id}],
     limit:1,
     offset:0
-  });
-  return rows[0]||null;
+  }).then(({rows})=>rows[0]||null).finally(()=>scopeConfigInFlight.delete(scope.id));
+  scopeConfigInFlight.set(scope.id,request);
+  return request;
 }
 
 

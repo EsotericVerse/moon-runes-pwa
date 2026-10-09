@@ -11,12 +11,8 @@ export const FEATURES=Object.freeze([
 export const SCOPES=Object.freeze({
   loc:Object.freeze({
     id:'loc',
-    domain:'loc.lo3rwang.cc',
-    label:UI_COPY.scope.loc.label,
     default:true,
     aggregateChildren:true,
-    searchTitle:'LOC月典',
-    searchAliases:Object.freeze(['loc','LOC','LunaCodex','月典']),
     featureSubtitles:Object.freeze({
       statics:UI_COPY.scope.loc.statics,
       culture:UI_COPY.scope.loc.culture,
@@ -29,11 +25,6 @@ export const SCOPES=Object.freeze({
 
   lrunes:Object.freeze({
     id:'lrunes',
-    domain:'lrunes.lo3rwang.cc',
-    label:'月之符文',
-    searchTitle:'月之符文 LunaRunes',
-    searchAliases:Object.freeze(['lrunes','LunaRunes','月之符文']),
-    mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'}),
     featureSubtitles:Object.freeze({
       statics:'查看月之符文相關資料的數量、來源與時間變化。',
       culture:'把月之符文相關紀錄放回時間順序，觀察不同時期的變化。',
@@ -41,25 +32,17 @@ export const SCOPES=Object.freeze({
       search:'從符文名稱、關鍵字或相關文字找到對應內容。'
     }),
     nav:Object.freeze({position:'before',order:1,label:UI_COPY.nav.lunarunes}),
-    theme:Object.freeze({mode:'fixed',themeId:'theme-5'}),
     searchKind:'runes'
   }),
 
   lo3rwang:Object.freeze({
     id:'lo3rwang',
-    label:UI_COPY.scope.author.label,
-    searchTitle:'Lucas Oscar Wang 政德',
-    searchAliases:Object.freeze(['lo3rwang','Lucas Oscar Wang','政德']),
     featureSubtitles:Object.freeze({search:UI_COPY.scope.author.search}),
-    mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'}),
-    nav:Object.freeze({position:'after',order:1,label:UI_COPY.nav.author}),
-    theme:Object.freeze({mode:'fixed',themeId:'theme-2'})
+    nav:Object.freeze({position:'after',order:1,label:UI_COPY.nav.author})
   }),
 
   admin:Object.freeze({
     id:'admin',
-    domain:'admin.lo3rwang.cc',
-    label:UI_COPY.scope.admin.label,
     featureScope:'loc',
     theme:Object.freeze({mode:'auto'})
   })
@@ -69,6 +52,14 @@ const DEFAULT_SCOPE_ID=Object.values(SCOPES).find(scope=>scope.default)?.id||Obj
 const GENERIC_SCOPE_HOST='loc.lo3rwang.cc';
 const GENERIC_SCOPE_PATH='/scope';
 const SCOPE_ID_PATTERN=/^[a-z][a-z0-9]{0,14}$/;
+
+export const DUPLICATE_DOMAIN_MESSAGE='網域名稱重複，拒絕建立。';
+export function duplicateDomainLabelError(scopeId,mode='domain'){
+  if(mode!=='domain')return '';
+  const domain=String(scopeId||'').trim().toLowerCase()+'.lo3rwang.cc';
+  const labels=domain.split('.').filter(Boolean);
+  return new Set(labels).size===labels.length?'':DUPLICATE_DOMAIN_MESSAGE;
+}
 
 export function normalizeScopeId(value=''){
   const id=String(value||'').trim().toLowerCase();
@@ -104,82 +95,74 @@ function cleanPath(pathname='/'){
   return value==='/'?'/':value;
 }
 
-const SCOPE_BY_DOMAIN=Object.freeze(
-  Object.fromEntries(
-    Object.entries(SCOPES)
-      .filter(([,scope])=>Boolean(scope.domain))
-      .map(([id,scope])=>[scope.domain,id])
-  )
-);
-
-function isPreviewHost(host=''){
-  const h=cleanHost(host);
-  return !h||h==='localhost'||h==='127.0.0.1'||h==='::1';
+// The database Scope Registry is the authority for Domain/Directory values.
+// Next.js still needs a deterministic, static-export fallback before it loads.
+// Such fallback paths are derived from existing app/<scope_id> routes, not a
+// second Domain or display_name configuration.
+let registryRouteRows=new Map();
+const LOC_FALLBACK_HOST='loc.lo3rwang.cc';
+export function setScopeRegistryRouteRows(rows=[]){
+  for(const row of Array.isArray(rows)?rows:[]){
+    const id=normalizeScopeId(row?.scope_id);
+    if(!id)continue;
+    if(row.active===false){registryRouteRows.delete(id);continue;}
+    registryRouteRows.set(id,{
+      domain:String(row.domain||'').trim().toLowerCase(),
+      directory:String(row.directory||'').trim()
+    });
+  }
 }
-
-function matchesMount(scope,host,pathname){
-  if(!scope.mount)return false;
-  const h=cleanHost(host);
-  const p=cleanPath(pathname);
-  const base=cleanPath(scope.mount.path);
-  return h===cleanHost(scope.mount.host)&&(p===base||p.startsWith(base+'/'));
-}
-
 export function resolveScope(host='',pathname='/'){
   const h=cleanHost(host);
-  for(const [id,scope] of Object.entries(SCOPES)){
-    if(matchesMount(scope,h,pathname))return id;
-  }
-  if(isPreviewHost(h)){
-    const path=cleanPath(pathname);
-    for(const [id,scope] of Object.entries(SCOPES)){
-      const base=scope.mount?cleanPath(scope.mount.path):null;
-      if(base&&(path===base||path.startsWith(base+'/')))return id;
+  const segments=cleanPath(pathname).split('/').filter(Boolean);
+  // Next filesystem owns these static mounts; Registry owns their public URLs.
+  if(segments[0]&&segments[0]!=='loc'&&SCOPES[segments[0]])return segments[0];
+  for(const [id,row] of registryRouteRows){
+    if(row.domain&&row.domain===h)return id;
+    if(row.directory&&h===LOC_FALLBACK_HOST){
+      const base=cleanPath(row.directory);
+      const path=cleanPath(pathname);
+      if(path===base||path.startsWith(base+'/'))return id;
     }
   }
-  return SCOPE_BY_DOMAIN[h]||DEFAULT_SCOPE_ID;
-}
-
-function normalizeScopeSearchAlias(value=''){
-  return String(value||'').normalize('NFKC').trim().toLocaleLowerCase('en-US');
-}
-
-export function resolveScopeSearchAlias(query=''){
-  const token=normalizeScopeSearchAlias(query);
-  if(!token)return null;
-  for(const scope of Object.values(SCOPES)){
-    const aliases=Array.isArray(scope.searchAliases)?scope.searchAliases:[];
-    if(aliases.some(alias=>normalizeScopeSearchAlias(alias)===token))return scope;
+  // Before DB hydration, a subdomain matching an existing static Scope ID
+  // can still be resolved without re-declaring its Domain string in JS.
+  const prefix=h.endsWith('.lo3rwang.cc')?h.slice(0,-'.lo3rwang.cc'.length):'';
+  if(prefix&&SCOPES[prefix]){
+    const authoritative=registryRouteRows.get(prefix);
+    if(!authoritative||authoritative.domain===h)return prefix;
   }
-  return null;
+  return DEFAULT_SCOPE_ID;
 }
 
 export function getScope(id){
-  const scopeId=normalizeScopeId(id);
-  if(scopeId&&SCOPES[scopeId])return SCOPES[scopeId];
-  if(scopeId)return genericScope(scopeId);
-  return SCOPES[DEFAULT_SCOPE_ID];
+  const scopeId=normalizeScopeId(id)||DEFAULT_SCOPE_ID;
+  // Static Registry stores route identity only; display_name lives in PostgreSQL.
+  if(SCOPES[scopeId])return {...SCOPES[scopeId],label:scopeId,searchTitle:scopeId};
+  return genericScope(scopeId);
 }
 
 export function scopeOrigin(scopeId){
   const id=normalizeScopeId(scopeId);
-  const scope=getScope(id);
-  const host=scope.domain||scope.mount?.host||(id&&!SCOPES[id]?GENERIC_SCOPE_HOST:'');
-  return host?`https://${host}`:'';
+  const row=registryRouteRows.get(id);
+  // Scope Registry Domain/Directory takes precedence after hydration.
+  return row?.domain?'https://'+row.domain:'https://'+LOC_FALLBACK_HOST;
 }
 
 function scopeBaseHref(scopeId){
   const id=normalizeScopeId(scopeId);
-  const scope=getScope(id);
-  if(id&&!SCOPES[id])return `https://${GENERIC_SCOPE_HOST}${GENERIC_SCOPE_PATH}`;
-  if(scope.domain)return scopeOrigin(id);
-  if(scope.mount)return `https://${scope.mount.host}${cleanPath(scope.mount.path)}`;
-  return '';
+  if(id&&!SCOPES[id])return 'https://'+LOC_FALLBACK_HOST+GENERIC_SCOPE_PATH;
+  const row=registryRouteRows.get(id);
+  if(row?.domain)return 'https://'+row.domain;
+  if(row?.directory)return 'https://'+LOC_FALLBACK_HOST+cleanPath(row.directory);
+  if(id===DEFAULT_SCOPE_ID)return 'https://'+LOC_FALLBACK_HOST;
+  return 'https://'+LOC_FALLBACK_HOST+'/'+id;
 }
 
 export function scopeHref(scopeId,localPath=''){
   const id=normalizeScopeId(scopeId)||DEFAULT_SCOPE_ID;
-  const base=scopeBaseHref(id).replace(/\/$/,'');
+  const untrimmed=scopeBaseHref(id);
+  const base=untrimmed.endsWith('/')?untrimmed.slice(0,-1):untrimmed;
   const raw=String(localPath||'');
   const hashIndex=raw.indexOf('#');
   const hash=hashIndex>=0?raw.slice(hashIndex):'';
@@ -188,11 +171,11 @@ export function scopeHref(scopeId,localPath=''){
   const routePart=queryIndex>=0?withoutHash.slice(0,queryIndex):withoutHash;
   const query=queryIndex>=0?withoutHash.slice(queryIndex+1):'';
   const path=routePart.split('/').filter(Boolean).join('/');
-  const pathname=path?`/${path}/`:'/';
-  if(SCOPES[id])return `${base}${pathname}${query?'?'+query:''}${hash}`;
+  const pathname=path?'/'+path+'/':'/';
+  if(SCOPES[id])return base+pathname+(query?'?'+query:'')+hash;
   const params=new URLSearchParams(query);
   params.set('scope',id);
-  return `${base}${pathname}?${params.toString()}${hash}`;
+  return base+pathname+'?'+params.toString()+hash;
 }
 
 export function featureHref(scopeId,featureId){

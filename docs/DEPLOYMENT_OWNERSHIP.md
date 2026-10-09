@@ -10,6 +10,15 @@ LOC 是 Next.js static-export application。main 是 Current source branch；Git
 - .github/workflows/next-architecture.yml
 - .github/workflows/branch-freeze.yml
 
+## Scope route identity and labels
+
+- `silver.scope_registry` 的 `domain` 與 `directory` 必須二選一。`lrunes` 以 `lrunes.lo3rwang.cc` 作為 Domain 入口；`lo3rwang` 以 `/lo3rwang` 作為 Directory 入口。站台實際由 LOC 主機服務的 `/lrunes/` 是部署掛載位置，不是 Registry 的 Directory 模式。
+- Scope 的正式顯示標籤取自資料庫的 `display_name`；`scope_id` 是固定識別碼，不另外指定網頁標題。
+- Domain 採 `<scope_id>.lo3rwang.cc` 時，主機名稱的各段不得重複，建立時必須先拒絕，例如 `aaa.aaa.com.tw`。
+- 新的動態 Scope/Group 使用共用 Next 靜態路由 `/scope/?scope=<scope_id>`。
+- Scope 關鍵詞 Class／符文66的複製位於 Scope 的 Keyword Library，非全域 Admin。
+
+
 ## Runtime data
 
 Static frontend 的主要 Current canonical data 來自 Supabase PostgreSQL。公開功能透過 provider-neutral Data API boundary 讀取；匿名公開 SELECT 在主來源失敗時可使用 Neon 唯讀備援，畫面須標明備援資料及可能的同步延遲。Authenticated writes、管理、OAuth 與 RLS 權限仍走原本主要路徑，不自動 fail over。

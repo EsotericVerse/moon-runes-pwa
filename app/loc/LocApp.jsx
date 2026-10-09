@@ -59,7 +59,7 @@ function FeatureGate({scopeId,scopeMeta=null,view,children}){
 export default function LocApp({forcedView='home',forcedSection=null,forcedScope=null}){
   const runtime=useScopeRuntime();
   const scopeId=forcedScope||runtime.scopeId;
-  const scopeMeta=forcedScope?getScope(forcedScope):runtime.scope;
+  const scopeMeta=forcedScope&&runtime.scopeId!==forcedScope?getScope(forcedScope):runtime.scope;
   const ActiveView=forcedView==='home'
     ?HOME_VIEWS[scopeId]||GenericScopeHomeView
     :VIEWS[forcedView]||AboutView;

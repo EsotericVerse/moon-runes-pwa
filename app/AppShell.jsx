@@ -5,11 +5,11 @@ import {motion,useScroll,useSpring} from 'motion/react';
 import {QueryClient,QueryClientProvider,useQuery} from '@tanstack/react-query';
 import {UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale,uiCopy} from './i18n/ui-copy';
 import {UiLocaleProvider} from './i18n/ui-locale';
-import {FEATURES,SCOPES,featureHref,featureIdForPath,getScope,scopeHref} from './modular/scope-registry';
+import {FEATURES,SCOPES,featureHref,featureIdForPath,getScope,scopeHref,setScopeRegistryRouteRows} from './modular/scope-registry';
 import {applyTheme,themeSignature,THEME_SLOTS} from './modular/theme-registry';
 import {mergeThemeSlot,selectThemeRegistry} from './loc/theme-data';
 import {useScopeRuntime} from './modular/use-scope-runtime';
-import {selectScopeConfig} from './loc/scope-data';
+import {selectScopeConfig,selectScopeRegistry,selectScopePageCopy} from './loc/scope-data';
 import {getDbSourceStatus,subscribeDbSourceStatus} from './loc/db-source-status.mjs';
 
 const SYSTEM_THEME_ID='system-default';
@@ -61,8 +61,9 @@ function automaticThemeId(date=new Date()){
 
 function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride=''}){
   const scope=scopeMeta||getScope(String(scopeId||'').trim());
-  const policy=scope.theme||{mode:'auto'};
-  const fixedDefaultThemeId=String(defaultThemeIdOverride||'').trim()||(policy.mode==='fixed'?String(policy.themeId||'').trim():'');
+  // Scope defaults are owned by the Scope config table; the game route alone
+  // has its own purpose-built temporary default, never persisted to the DB.
+  const fixedDefaultThemeId=String(defaultThemeIdOverride||'').trim();
   const configQuery=useQuery({
     queryKey:['scope-public-config',scopeId],
     queryFn:()=>selectScopeConfig(scopeId),
@@ -92,13 +93,18 @@ function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride
     :THEME_SLOTS.map(item=>({id:item.id,label:item.label}));
 
   useEffect(()=>{
-    // Do not flash the Order emergency palette under non-Order theme IDs
-    // while asynchronous silver.loc_theme resolves its canonical tokens.
-    if(!override&&effectiveThemeId!=='theme-7')return;
+    // A static export cannot know the current DB palette during HTML render.
+    // Hold first paint until the chosen Scope config and canonical palette resolve,
+    // then display the finished theme once. No user choice or palette is stored.
+    if(configQuery.isPending&&configQuery.fetchStatus!=='idle')return;
+    if(themeRegistryQuery.isPending)return;
     const root=document.documentElement;
-    if(root.dataset.themeSignature===themeSignature(slot))return;
+    if(root.dataset.themeSignature===themeSignature(slot)){
+      delete root.dataset.themeBootstrap;
+      return;
+    }
     applyTheme(slot);
-  },[slot,scopeId,effectiveThemeId,override]);
+  },[slot,scopeId,effectiveThemeId,configQuery.isPending,configQuery.fetchStatus,themeRegistryQuery.isPending]);
 
   useEffect(()=>{
     if(selectedThemeId!==SYSTEM_THEME_ID||fixedDefaultThemeId||configuredDefaultThemeId)return undefined;
@@ -118,6 +124,31 @@ function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride
       {themeChoices.map(item=><option value={item.id} key={item.id}>{item.label}</option>)}
     </select>
   </label>;
+}
+// Browser page copy comes from silver.manage.Title_TW / Desc_TW.
+// These are not Scope names; display_name remains the independent navigation label.
+function ScopePageCopy({scopeId,display_name}){
+  const pageCopyQuery=useQuery({
+    queryKey:['scope-page-copy',scopeId],
+    queryFn:()=>selectScopePageCopy(scopeId),
+    enabled:Boolean(scopeId)&&scopeId!=='loc'&&scopeId!=='admin',
+    staleTime:60_000
+  });
+  useEffect(()=>{
+    const title=String(pageCopyQuery.data?.Title_TW||display_name||'').trim();
+    if(title&&document.title!==title)document.title=title;
+    const description=String(pageCopyQuery.data?.Desc_TW||'').trim();
+    if(description){
+      let meta=document.head.querySelector('meta[name="description"]');
+      if(!meta){
+        meta=document.createElement('meta');
+        meta.setAttribute('name','description');
+        document.head.appendChild(meta);
+      }
+      if(meta.getAttribute('content')!==description)meta.setAttribute('content',description);
+    }
+  },[scopeId,display_name,pageCopyQuery.data?.Title_TW,pageCopyQuery.data?.Desc_TW]);
+  return null;
 }
 function LanguageSelect({locale,onChange,copy=UI_COPY}){
   return <label className="scope-theme-control scope-language-control">
@@ -151,9 +182,19 @@ export default function AppShell({children}){
   }));
   const {scrollYProgress}=useScroll();
   const scaleX=useSpring(scrollYProgress,{stiffness:220,damping:34,mass:.28});
-  const {scopeId,scope,host,pathname}=useScopeRuntime();
+  const {scopeId,scope,host,pathname,registryRow,configRow}=useScopeRuntime();
   const currentFeature=featureIdForPath(pathname);
   const [searchText,setSearchText]=useState('');
+  const [navDisplayNames,setNavDisplayNames]=useState({});
+  useEffect(()=>{
+    let active=true;
+    selectScopeRegistry().then(rows=>{
+      if(!active)return;
+      setScopeRegistryRouteRows(rows);
+      setNavDisplayNames(Object.fromEntries(rows.map(row=>[row.scope_id,row.display_name])));
+    }).catch(()=>{});
+    return()=>{active=false};
+  },[]);
   const currentScope=scope||getScope(scopeId);
   const [localeSelection,setLocaleSelection]=useState(()=>({scopeId:'',locale:'zh-Hant',manual:false}));
   const activeLocale=localeSelection.scopeId===scopeId?normalizeUiLocale(localeSelection.locale):'zh-Hant';
@@ -192,14 +233,10 @@ export default function AppShell({children}){
   }
 
   const featureLabel=item=>copy.features?.[item.id]?.title||item.label;
-  const scopeNavLabel=item=>{
-    if(item.id==='lrunes')return copy.nav.lunarunes;
-    if(item.id==='lo3rwang')return copy.nav.author;
-    if(item.id==='loc')return copy.nav.home;
-    return item.nav?.label||item.label;
-  };
+  const scopeNavLabel=item=>navDisplayNames[item.id]||item.id;
 
   return <QueryClientProvider client={client}><UiLocaleProvider locale={activeLocale}>
+    <ScopePageCopy scopeId={scopeId} display_name={configRow?.display_name||registryRow?.display_name}/>
     <motion.div className="loc-scroll-progress" style={{scaleX}} aria-hidden="true"/>
     <header className="scope-global">
       <nav className="scope-nav" aria-label={copy.nav.aria}>
