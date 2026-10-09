@@ -126,7 +126,7 @@ function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride
   </label>;
 }
 // Browser page copy comes from silver.manage.Title_TW / Desc_TW.
-// These are not Scope names; display_name remains the independent navigation label.
+// Title_TW is the Nav label. Desc_TW is the browser window title; display_name identifies the Scope.
 function ScopePageCopy({scopeId,display_name}){
   const pageCopyQuery=useQuery({
     queryKey:['scope-page-copy',scopeId],
@@ -135,7 +135,7 @@ function ScopePageCopy({scopeId,display_name}){
     staleTime:60_000
   });
   useEffect(()=>{
-    const title=String(pageCopyQuery.data?.Title_TW||display_name||'').trim();
+    const title=String(pageCopyQuery.data?.Desc_TW||display_name||'').trim();
     if(title&&document.title!==title)document.title=title;
     const description=String(pageCopyQuery.data?.Desc_TW||'').trim();
     if(description){
@@ -147,7 +147,7 @@ function ScopePageCopy({scopeId,display_name}){
       }
       if(meta.getAttribute('content')!==description)meta.setAttribute('content',description);
     }
-  },[scopeId,display_name,pageCopyQuery.data?.Title_TW,pageCopyQuery.data?.Desc_TW]);
+  },[scopeId,display_name,pageCopyQuery.data?.Desc_TW]);
   return null;
 }
 function LanguageSelect({locale,onChange,copy=UI_COPY}){
@@ -188,10 +188,19 @@ export default function AppShell({children}){
   const [navDisplayNames,setNavDisplayNames]=useState({});
   useEffect(()=>{
     let active=true;
-    selectScopeRegistry().then(rows=>{
+    selectScopeRegistry().then(async rows=>{
       if(!active)return;
       setScopeRegistryRouteRows(rows);
-      setNavDisplayNames(Object.fromEntries(rows.map(row=>[row.scope_id,row.display_name])));
+      const ids=NAV_SCOPES.map(item=>item.id);
+      const copies=await Promise.all(ids.map(async id=>{
+        try{return [id,(await selectScopePageCopy(id))?.Title_TW||''];}
+        catch{return [id,''];}
+      }));
+      if(!active)return;
+      const pageTitles=Object.fromEntries(copies);
+      setNavDisplayNames(Object.fromEntries(rows.map(row=>[
+        row.scope_id,pageTitles[row.scope_id]||row.display_name
+      ])));
     }).catch(()=>{});
     return()=>{active=false};
   },[]);
