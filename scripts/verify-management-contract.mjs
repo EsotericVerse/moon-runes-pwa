@@ -234,6 +234,13 @@ must(admin.includes("const provisionedScope=await provisionScope(")&&admin.inclu
 must(read('docs/sql/scope-provisioning.sql').includes("perform pg_catalog.pg_notify('pgrst','reload schema')"),'Scope provisioning SQL must request PostgREST schema cache reload after commit');
 must(admin.includes('onClick={refresh}>重新讀取'),'Admin graph must allow manual reload after a dynamic Scope schema cache settles');
 
+must(admin.includes('callback(null);')&&admin.includes('handlersRef.current.onDeleteNode?.(String(ids[0]))')&&!admin.includes("window.prompt('刪除將永久移除"),'vis-network delete must open an in-page confirmation, without prematurely removing nodes or using browser prompt');
+must(admin.includes('className="admin-delete-confirm"')&&admin.includes("onClick={confirmDelete}")&&admin.includes("deleteTyped.trim().toLowerCase()!==deletePending")&&admin.includes("onClick={cancelDelete}"),'Scope delete UI must require typed ID and support visible cancellation');
+must(admin.includes("result?.deleted!==true")&&admin.includes("dbAuthRelation('silver.scope_registry')")&&admin.includes("if(remaining?.length)")&&admin.includes('setRegistry(rows=>rows.filter(row=>row.scope_id!==id))'),'Scope node may disappear only after RPC success and Registry verification');
+must(admin.includes('onClick={()=>onDeleteNode?.(selectedId)}>刪除</button>')&&admin.includes('onDeleteNode={requestDelete}'),'read-only Attr summary and graph delete must share the same confirmation');
+must(adminCss.includes('.admin-delete-confirm')&&adminCss.includes('.admin-node-actions'),'delete confirmation must remain readable and visible on mobile');
+
+
 must(
   !admin.includes('<span>排序</span>')&&admin.includes('<span>主題</span>')&&
   !admin.includes('groupDraft.sort_order')&&
@@ -268,7 +275,7 @@ must(
   admin.includes('onClick={cancelEdit}>取消</button>')&&
   admin.includes('onClick={()=>onDeleteNode?.(current.scope_id)}>刪除</button>')&&
   admin.includes("patchRegistry('active',e.target.checked)")&&
-  !admin.includes('開啟 UI')&&admin.includes('請輸入 Scope ID 以確認')&&
+  !admin.includes('開啟 UI')&&admin.includes('請輸入 {deletePending} 以確認')&&
   !admin.includes('onClick={copyRune66}')&&!admin.includes('copyRune66KeywordClass')&&
   keywordLibrary.includes('onClick={copyRune66}')&&
   keywordLibrary.includes('copyRune66KeywordClass(scopeId)')&&
