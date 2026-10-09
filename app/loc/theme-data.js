@@ -3,17 +3,18 @@
 import {selectRows} from './db-query.mjs';
 import {getThemeSlot,THEME_TOKEN_KEYS} from '../modular/theme-registry';
 
-function attrOf(row){
-  return row?.theme_attr&&typeof row.theme_attr==='object'&&!Array.isArray(row.theme_attr)
-    ?row.theme_attr
-    :{};
-}
+export const themeTokenColumn=key=>String(key).slice(2).replaceAll('-','_');
+export const THEME_DB_COLUMNS=[
+  'theme_id','theme_name','theme_order','scheme','style_key','identity_color',
+  ...THEME_TOKEN_KEYS.map(themeTokenColumn)
+];
+const COLUMNS=THEME_DB_COLUMNS.join(',');
 
 export async function selectThemeOverride(themeId){
   const id=String(themeId||'').trim();
   if(!id)return null;
   const {rows}=await selectRows('silver.loc_theme',{
-    columns:'theme_id,theme_name,theme_attr,theme_order',
+    columns:COLUMNS,
     filters:[{column:'theme_id',operator:'eq',value:id}],
     limit:1,
     offset:0
@@ -23,7 +24,7 @@ export async function selectThemeOverride(themeId){
 
 export async function selectThemeRegistry(){
   const {rows}=await selectRows('silver.loc_theme',{
-    columns:'theme_id,theme_name,theme_attr,theme_order',
+    columns:COLUMNS,
     orders:[{column:'theme_order',ascending:true}],
     limit:8,
     offset:0
@@ -31,24 +32,24 @@ export async function selectThemeRegistry(){
   return rows||[];
 }
 
-export function mergeThemeSlot(themeId,override=null){
+// DB scalar columns are authoritative; the only fallback is the existing
+// emergency palette when the DB row itself is absent or incomplete.
+export function mergeThemeSlot(themeId,row=null){
   const base=getThemeSlot(themeId);
-  const attr=attrOf(override);
   const tokens={...base.tokens};
-  const custom=attr.tokens&&typeof attr.tokens==='object'&&!Array.isArray(attr.tokens)?attr.tokens:{};
   for(const key of THEME_TOKEN_KEYS){
-    const value=String(custom[key]??'').trim();
+    const value=String(row?.[themeTokenColumn(key)]??'').trim();
     if(value)tokens[key]=value;
   }
   return {
     ...base,
-    id:String(override?.theme_id||base.id||themeId),
-    label:String(override?.theme_name||base.label||themeId),
-    scheme:attr.scheme==='dark'?'dark':attr.scheme==='light'?'light':base.scheme,
-    styleKey:String(attr.style_key||base.styleKey||''),
-    group:String(attr.group||base.group||''),
-    identityColor:String(attr.identity_color||base.identityColor||''),
+    id:String(row?.theme_id||base.id||themeId),
+    label:String(row?.theme_name||base.label||themeId),
+    scheme:row?.scheme==='dark'?'dark':row?.scheme==='light'?'light':base.scheme,
+    styleKey:String(row?.style_key||base.styleKey||''),
+    group:String(row?.theme_name||base.group||''),
+    identityColor:String(row?.identity_color||base.identityColor||''),
     tokens,
-    themeOrder:Number(override?.theme_order)||Number(String(themeId).split('-')[1])||0
+    themeOrder:Number(row?.theme_order)||Number(String(themeId).split('-')[1])||0
   };
 }
