@@ -112,14 +112,6 @@ export function setScopeRegistryRouteRows(rows=[]){
     });
   }
 }
-function cleanHost(host=''){
-  return String(host||'').toLowerCase().split(':')[0];
-}
-function cleanPath(pathname='/'){
-  const value='/' + String(pathname||'/')
-    .split('?')[0].split('#')[0].split('/').filter(Boolean).join('/');
-  return value==='/'?'/':value;
-}
 export function resolveScope(host='',pathname='/'){
   const h=cleanHost(host);
   const segments=cleanPath(pathname).split('/').filter(Boolean);
@@ -166,7 +158,8 @@ function scopeBaseHref(scopeId){
 
 export function scopeHref(scopeId,localPath=''){
   const id=normalizeScopeId(scopeId)||DEFAULT_SCOPE_ID;
-  const base=scopeBaseHref(id).replace(/\\/$/,'');
+  const untrimmed=scopeBaseHref(id);
+  const base=untrimmed.endsWith('/')?untrimmed.slice(0,-1):untrimmed;
   const raw=String(localPath||'');
   const hashIndex=raw.indexOf('#');
   const hash=hashIndex>=0?raw.slice(hashIndex):'';
