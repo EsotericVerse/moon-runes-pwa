@@ -10,8 +10,7 @@ for(const [query,id] of [['月典','loc'],['LunaCodex','loc'],['LOC','loc'],['�
 if(resolveScopeSearchAlias('月')!==null)failures.push('Scope search aliases must require exact matches');
 if(resolveScope('127.0.0.1','/lrunes/')!=='lrunes')failures.push('local static preview must resolve /lrunes/ as LunaRunes');
 if(resolveScope('localhost','/lrunes/game/')!=='lrunes')failures.push('local static preview must resolve mounted LunaRunes feature paths');
-if(scopeHref('lrunes','lrunes')!=='https://lrunes.lo3rwang.cc/')failures.push('LunaRunes domain root must not repeat the /lrunes mount');
-if(scopeHref('lrunes','lrunes/lrunes/game')!=='https://lrunes.lo3rwang.cc/game/')failures.push('LunaRunes canonical href must strip repeated mount prefixes');
+if(scopeHref('lrunes')!=='https://loc.lo3rwang.cc/lrunes/')failures.push('LunaRunes canonical route must remain a LOC Directory');
 if(scopeHref('lo3rwang')!=='https://loc.lo3rwang.cc/lo3rwang/')failures.push('Author homepage must remain a LOC Directory route');
 if(scopeHref('newscope')!=='https://loc.lo3rwang.cc/scope/?scope=newscope')failures.push('dynamic Scope homepage must use the generic static shell');
 if(featureHref('newscope','search')!=='https://loc.lo3rwang.cc/scope/search/?scope=newscope')failures.push('dynamic Scope features must preserve Scope ID in the generic shell query');
