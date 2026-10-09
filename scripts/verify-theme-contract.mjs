@@ -41,7 +41,10 @@ if(!layout.includes('id="loc-theme-bootstrap"')||!layout.includes('INITIAL_SCOPE
 if(!layout.includes("  'theme-4':'dark',")||!layout.includes("const GAME_BOOTSTRAP_THEME_ID='theme-4'")||!layout.includes("pathname==='/game'"))failures.push('Nature game must bootstrap its dark scheme before DB palette hydration');
 if(!game.includes("GAME_THEME_DEFAULT='theme-4'")||!game.includes('hasCanonicalGameTheme?')||!game.includes('colorScheme:gameTheme.scheme'))failures.push('Nature game must remain default and avoid Order palette flash while loading');
 if(!shell.includes('root.dataset.themeSignature===themeSignature(slot)'))failures.push('AppShell theme control must avoid needless root reapply while detecting token changes');
-if(!shell.includes("if(!override&&effectiveThemeId!=='theme-7')return"))failures.push('Non-Order palette must wait for its DB definition');
+const globalCss=read('app/globals.css');
+if(!shell.includes('if(themeRegistryQuery.isPending)return')||!shell.includes("configQuery.isPending&&configQuery.fetchStatus!=='idle'"))failures.push('AppShell must hold first paint until canonical DB Theme and Scope config are ready');
+if(!globalCss.includes('html[data-theme-bootstrap="scheme-only"] body')||!globalCss.includes('visibility:hidden;'))failures.push('First load must not show intermediate Theme colors');
+if(layout.includes('sessionStorage')||shell.includes('sessionStorage')||registry.includes('sessionStorage'))failures.push('Temporary Theme choices and palettes must not be stored in browser storage');
 if(!registry.includes('delete root.dataset.themeBootstrap'))failures.push('Theme hydration must remove temporary scheme-only bootstrap marker');
 if(shell.includes('if(fixedThemeId)return null')||shell.includes('if(fixedDefaultThemeId)return null'))failures.push('fixed Scope defaults must not hide the footer theme selector');
 for(const token of ["selection.scopeId===scopeId","setSelection({scopeId,themeId:SYSTEM_THEME_ID})","fixedDefaultThemeId||configuredDefaultThemeId||automaticThemeId(now)"])if(!shell.includes(token))failures.push('Scope-local system-default theme behavior missing '+token);
