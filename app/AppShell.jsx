@@ -5,7 +5,7 @@ import {motion,useScroll,useSpring} from 'motion/react';
 import {QueryClient,QueryClientProvider,useQuery} from '@tanstack/react-query';
 import {UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale,uiCopy} from './i18n/ui-copy';
 import {UiLocaleProvider} from './i18n/ui-locale';
-import {FEATURES,SCOPES,featureHref,featureIdForPath,getScope,scopeHref} from './modular/scope-registry';
+import {FEATURES,SCOPES,featureHref,featureIdForPath,getScope,scopeHref,setScopeRegistryRouteRows} from './modular/scope-registry';
 import {applyTheme,themeSignature,THEME_SLOTS} from './modular/theme-registry';
 import {mergeThemeSlot,selectThemeRegistry} from './loc/theme-data';
 import {useScopeRuntime} from './modular/use-scope-runtime';
@@ -173,7 +173,9 @@ export default function AppShell({children}){
   useEffect(()=>{
     let active=true;
     selectScopeRegistry().then(rows=>{
-      if(active)setNavDisplayNames(Object.fromEntries(rows.map(row=>[row.scope_id,row.display_name])));
+      if(!active)return;
+      setScopeRegistryRouteRows(rows);
+      setNavDisplayNames(Object.fromEntries(rows.map(row=>[row.scope_id,row.display_name])));
     }).catch(()=>{});
     return()=>{active=false};
   },[]);
