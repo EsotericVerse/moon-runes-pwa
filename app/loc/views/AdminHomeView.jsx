@@ -19,7 +19,7 @@ const CREATE_OPTIONS=Object.freeze([
   {value:'scope',label:'新增 Scope'},
   {value:'group',label:'新增 Scope Group'}
 ]);
-const EMPTY_SCOPE_CREATE={scope_id:'',display_name:'',email:'',birthday:'',domain:'',directory:'',parent_scope_id:'loc',theme:'theme-7',locale:'zh-Hant',copy_keywords:true};
+const EMPTY_SCOPE_CREATE={scope_id:'',route_mode:'directory'};
 const EMPTY_GROUP_CREATE={scope_id:'',display_name:'',domain:'',directory:'',parent_scope_id:'loc',sort_order:''};
 const EMPTY_MAPPING={email:'',galaxy:'galaxy',time:'time',birthday:''};
 
@@ -334,11 +334,10 @@ function RegistryNodePanel({data,selectedId,onCreateMode}){
   </aside>;
 }
 
-function CreateNodePanel({data,kind='scope',onClose}){
+function CreateNodePanel({data,kind='scope',ownerEmail='',onClose}){
   const {registry,setStatus,refresh}=data;
   const groups=registry.filter(row=>row.scope_kind==='group'&&row.active!==false);
   const parentOptions=groups.map(row=>({value:row.scope_id,label:(row.display_name||row.scope_id)+' · '+row.scope_id}));
-  const themeOptions=THEME_SLOTS.map(theme=>({value:theme.id,label:theme.label+' · '+theme.id}));
   const [scopeDraft,setScopeDraft]=useState({...EMPTY_SCOPE_CREATE});
   const [groupDraft,setGroupDraft]=useState({...EMPTY_GROUP_CREATE});
 
@@ -346,15 +345,20 @@ function CreateNodePanel({data,kind='scope',onClose}){
     try{
       const id=String(scopeDraft.scope_id||'').trim().toLowerCase();
       if(!/^[a-z][a-z0-9]{0,14}$/.test(id))throw new Error('Scope ID 格式不正確。');
+      const email=String(ownerEmail||'').trim().toLowerCase();
+      if(!/^\S+@\S+\.\S+$/.test(email))throw new Error('無法取得目前 Admin Email，請重新登入。');
+      const mode=scopeDraft.route_mode;
+      if(!['directory','domain'].includes(mode))throw new Error('請選擇 Directory 或 Domain。');
       await provisionScope({
-        ...scopeDraft,scope_id:id,
-        display_name:String(scopeDraft.display_name||'').trim(),
-        email:String(scopeDraft.email||'').trim().toLowerCase(),
-        domain:String(scopeDraft.domain||'').trim()||null,
-        directory:String(scopeDraft.directory||'').trim()||null,
-        birthday:scopeDraft.birthday||null
+        scope_id:id,
+        display_name:id,
+        email,
+        domain:mode==='domain'?id+'.lo3rwang.cc':null,
+        directory:mode==='directory'?'/'+id:null,
+        parent_scope_id:'loc',
+        theme:'theme-7',
+        copy_keywords:true
       });
-      await updateRows('silver.'+id,{locale:normalizeUiLocale(scopeDraft.locale),updated_at:new Date().toISOString()},{filters:[{column:'id',operator:'eq',value:id}]});
       setStatus('Scope '+id+' 已建立。');refresh();onClose?.();
     }catch(error){setStatus(error?.message||'Scope 建立失敗。');}
   }
@@ -379,15 +383,11 @@ function CreateNodePanel({data,kind='scope',onClose}){
     <div className="admin-node-heading"><h2>{kind==='group'?'新增 Scope Group':'新增 Scope'}</h2><button type="button" className="loc-button" onClick={onClose}>取消</button></div>
     {kind==='scope'?<>
       <label><span>Scope ID</span><input maxLength="15" value={scopeDraft.scope_id} onChange={e=>setScopeDraft(v=>({...v,scope_id:e.target.value.toLowerCase()}))}/></label>
-      <label><span>顯示名稱</span><input value={scopeDraft.display_name} onChange={e=>setScopeDraft(v=>({...v,display_name:e.target.value}))}/></label>
-      <label><span>Email</span><input type="email" value={scopeDraft.email} onChange={e=>setScopeDraft(v=>({...v,email:e.target.value}))}/></label>
-      <label><span>Birthday</span><input type="date" value={scopeDraft.birthday} onChange={e=>setScopeDraft(v=>({...v,birthday:e.target.value}))}/></label>
-      <label><span>Domain</span><input value={scopeDraft.domain} onChange={e=>setScopeDraft(v=>({...v,domain:e.target.value}))}/></label>
-      <label><span>Directory</span><input value={scopeDraft.directory} onChange={e=>setScopeDraft(v=>({...v,directory:e.target.value}))}/></label>
-      <label><span>Parent</span><select className="admin-native-select" value={scopeDraft.parent_scope_id||'loc'} onChange={e=>setScopeDraft(v=>({...v,parent_scope_id:e.target.value||'loc'}))}>{parentOptions.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
-      <label><span>Theme</span><select className="admin-native-select" value={scopeDraft.theme||'theme-7'} onChange={e=>setScopeDraft(v=>({...v,theme:e.target.value||'theme-7'}))}>{themeOptions.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
-      <label><span>預設語系</span><select className="admin-native-select" value={normalizeUiLocale(scopeDraft.locale)} onChange={e=>setScopeDraft(v=>({...v,locale:normalizeUiLocale(e.target.value)}))}>{UI_LOCALE_OPTIONS.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
-      <label className="scope-setting-toggle"><input type="checkbox" checked={scopeDraft.copy_keywords!==false} onChange={e=>setScopeDraft(v=>({...v,copy_keywords:e.target.checked}))}/>複製 Rune66 Keyword Class</label>
+      <div className="admin-inline-flags" role="radiogroup" aria-label="Scope 路由模式">
+        <label><input type="radio" name="new-scope-route-mode" value="directory" checked={scopeDraft.route_mode==='directory'} onChange={()=>setScopeDraft(v=>({...v,route_mode:'directory'}))}/>Directory</label>
+        <label><input type="radio" name="new-scope-route-mode" value="domain" checked={scopeDraft.route_mode==='domain'} onChange={()=>setScopeDraft(v=>({...v,route_mode:'domain'}))}/>Domain</label>
+      </div>
+      <p className="scope-status">Registry：{scopeDraft.route_mode==='domain'?(scopeDraft.scope_id||'scope-id')+'.lo3rwang.cc':'/'+(scopeDraft.scope_id||'scope-id')}</p>
       <button type="button" className="loc-button primary" onClick={createScope}>建立</button>
     </>:<>
       <label><span>Group ID</span><input maxLength="15" value={groupDraft.scope_id} onChange={e=>setGroupDraft(v=>({...v,scope_id:e.target.value.toLowerCase()}))}/></label>
@@ -401,7 +401,7 @@ function CreateNodePanel({data,kind='scope',onClose}){
   </aside>;
 }
 
-function AdminRegistry(){
+function AdminRegistry({ownerEmail=''}){
   const data=useAdminScopeData();
   const {registry,configs,setRegistry,setStatus,refresh}=data;
   const [selectedId,setSelectedId]=useState('');
@@ -438,7 +438,7 @@ function AdminRegistry(){
         {!registry.length&&data.status?<p className="scope-status scope-error">{data.status}</p>:null}
         <DeploymentTree registry={registry} configs={configs} selectedId={selectedId} onSelect={selectNode} onMoveParent={moveParent}/>
       </div>
-      {createKind?<CreateNodePanel data={data} kind={createKind} onClose={()=>setCreateKind('')}/>:<RegistryNodePanel data={data} selectedId={selectedId} onCreateMode={setCreateKind}/>}
+      {createKind?<CreateNodePanel data={data} kind={createKind} ownerEmail={ownerEmail} onClose={()=>setCreateKind('')}/>:<RegistryNodePanel data={data} selectedId={selectedId} onCreateMode={setCreateKind}/>}
     </div>
   </section>;
 }
@@ -600,7 +600,7 @@ export default function AdminHomeView(){
         <select className="admin-native-select" value={selectedOption.value} onChange={e=>setSection(e.target.value||'registry')} aria-label="Admin 管理功能">{ADMIN_OPTIONS.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select>
       </div>
     </header>
-    {section==='registry'?<AdminRegistry/>:null}
+    {section==='registry'?<AdminRegistry ownerEmail={account.email}/>:null}
     {section==='database'?<DatabaseTarget/>:null}
     {section==='themes'?<ThemeEditor/>:null}
   </section>;
