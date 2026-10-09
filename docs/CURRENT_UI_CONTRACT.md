@@ -28,6 +28,8 @@ LunaRunes 首頁主流程固定為：
 5. 其他指定張數抽牌。
 6. 判讀與回測結果。
 
+LunaRunes 的首頁只開放 Hero 文字透過 `silver.lrunes_blocks`（`page_name=hero`）使用 BlockNote 編輯；治理頁（`page_name=governance`）維持既有 BlockNote。首頁其他段落及抽牌、解籤、遊戲頁不開放 BlockNote 編輯，也不以 Blocks 作為 Canon／抽牌規則來源。`index` 現有判讀說明資料不刪除、不挪用。
+
 Hero、功能列與內容段落依層級分工，不重複建立同一組主入口。雙卡／三卡／五卡保留既有牌陣結構；4／6／7／8／9／10 張使用指定抽牌數量 select；11 張維持 OW3gs。
 
 NAV URL 由 Current Scope registry 產生。既有具名 Scope 維持 Next filesystem route；DB 新建的一般 Scope／Scope Group 使用固定 `/scope/.../?scope=<id>` static shell，因此新增 Scope 不需要新增 filesystem route。
