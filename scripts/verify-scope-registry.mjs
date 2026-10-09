@@ -1,13 +1,10 @@
-import {FEATURES,SCOPES,featureHref,resolveScope,resolveScopeSearchAlias,scopeHref,duplicateDomainLabelError} from '../app/modular/scope-registry.js';
+import {FEATURES,SCOPES,featureHref,resolveScope,scopeHref,duplicateDomainLabelError} from '../app/modular/scope-registry.js';
 
 const failures=[];
 if(resolveScope('unknown.example','/')!=='loc')failures.push('default Scope must remain loc');
 if(SCOPES.lunarunes)failures.push('retired lunarunes runtime Scope id must not return');
 if(!SCOPES.lrunes)failures.push('canonical lrunes Scope id missing');
-for(const [query,id] of [['月典','loc'],['LunaCodex','loc'],['LOC','loc'],['月之符文','lrunes'],['LunaRunes','lrunes'],['lrunes','lrunes'],['lo3rwang','lo3rwang'],['政德','lo3rwang'],['Lucas Oscar Wang','lo3rwang']]){
-  if(resolveScopeSearchAlias(query)?.id!==id)failures.push('Scope search alias mismatch: '+query+' -> '+id);
-}
-if(resolveScopeSearchAlias('月')!==null)failures.push('Scope search aliases must require exact matches');
+if(Object.values(SCOPES).some(scope=>Boolean(scope.searchAliases)))failures.push('DB search_aliases must not be duplicated in static Scope Registry');
 if(resolveScope('127.0.0.1','/lrunes/')!=='lrunes')failures.push('local static preview must resolve /lrunes/ as LunaRunes');
 if(resolveScope('localhost','/lrunes/game/')!=='lrunes')failures.push('local static preview must resolve mounted LunaRunes feature paths');
 if(scopeHref('lrunes')!=='https://lrunes.lo3rwang.cc/')failures.push('LunaRunes canonical route must remain its Domain');
