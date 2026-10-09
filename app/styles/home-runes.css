@@ -78,6 +78,32 @@
   line-height:var(--loc-line-hero-copy);
 }
 
+/* BlockNote-managed Hero paragraphs retain the original typographic tiers. */
+.runes-home-hero-copy .runes-home-body{
+  display:grid;
+  gap:.85rem;
+}
+.runes-home-hero-copy .runes-home-body>p{
+  margin:0;
+  color:rgba(239,242,255,.8);
+  font-size:var(--loc-type-hero-copy);
+  line-height:var(--loc-line-hero-copy);
+  text-shadow:0 2px 20px rgba(0,0,0,.36);
+}
+.runes-home-hero-copy .runes-home-body>p:first-child{
+  max-width:36rem;
+  margin-top:.85rem!important;
+  color:#f7f8ff!important;
+  font-weight:750;
+  line-height:1.65!important;
+}
+.runes-home-hero-copy .runes-home-body>p:nth-child(2){
+  margin-top:.7rem!important;
+  color:rgba(232,236,250,.84)!important;
+  font-size:1rem!important;
+  line-height:1.55!important;
+}
+
 .runes-home-hero .runes-home-lead{
   color:#f7f8ff!important;
 }
