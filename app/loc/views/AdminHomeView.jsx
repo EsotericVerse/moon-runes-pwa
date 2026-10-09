@@ -197,7 +197,7 @@ function RegistryNodePanel({data,selectedId,onCreateMode,onDeleted}){
 
   const groups=registry.filter(row=>row.scope_kind==='group'&&row.active!==false&&row.scope_id!==selectedId);
   const parentOptions=[{value:'',label:'—'},...groups.map(row=>({value:row.scope_id,label:(row.display_name||row.scope_id)+' · '+row.scope_id}))];
-  const themeOptions=THEME_SLOTS.map(theme=>({value:theme.id,label:theme.label+' · '+theme.id}));
+  const themeOptions=[{value:'system-default',label:'系統預設（日／夜自動）'},...THEME_SLOTS.map(theme=>({value:theme.id,label:theme.label+' · '+theme.id}))];
 
   const patchRegistry=(key,value)=>setRegistry(rows=>rows.map((row,index)=>index===selectedIndex?{...row,[key]:value}:row));
   const patchConfig=(key,value)=>setConfigs(current=>({...current,[selectedId]:{...(current[selectedId]||{}),[key]:value}}));
@@ -335,7 +335,7 @@ function RegistryNodePanel({data,selectedId,onCreateMode,onDeleted}){
         <label><span>顯示名稱</span><input value={config.display_name||''} onChange={e=>patchConfig('display_name',e.target.value)}/></label>
         <label><span>搜尋介紹</span><textarea rows={3} value={config.search_intro||''} onChange={e=>patchConfig('search_intro',e.target.value)}/></label>
         <label><span>搜尋別名</span><textarea rows={3} value={normalizeAliases(config.search_aliases).join('\n')} onChange={e=>patchConfig('search_aliases',e.target.value.split('\n'))}/></label>
-        <label><span>Theme</span><select className="admin-native-select" value={config.theme||'theme-7'} onChange={e=>patchConfig('theme',e.target.value||'theme-7')}>{themeOptions.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
+        <label><span>Theme</span><select className="admin-native-select" value={config.theme||'system-default'} onChange={e=>patchConfig('theme',e.target.value||'system-default')}>{themeOptions.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
         <label><span>預設語系</span><select className="admin-native-select" value={normalizeUiLocale(config.locale)} onChange={e=>patchConfig('locale',normalizeUiLocale(e.target.value))}>{UI_LOCALE_OPTIONS.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
         <div className="admin-inline-flags">
           <label><input type="checkbox" checked={config.search_able!==false} onChange={e=>patchConfig('search_able',e.target.checked)}/> Search</label>
