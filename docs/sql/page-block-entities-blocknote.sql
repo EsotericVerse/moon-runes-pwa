@@ -191,7 +191,7 @@ begin
   insert into silver.lo3rwang_blocks(page_name,block_title,block_text,block_order,block_entity)
   values
   (
-    'index','政德','<p>Hello！你好！你可以叫我 Oscar。</p><p>Wordsmith · Chaos Discerner · Language Architect</p><p>Creator of LOC and LunaRunes · <a href="https://suno.com/album/16130013-09f2-4be3-b2f6-05ce171ba7d5">聽《微月光，上場》 →</a></p>',1,
+    'index','政德','<p>Hello！你好！你可以叫我 Oscar。</p><p>Wordsmith · Chaos Resonator · Language Architect</p><p>Creator of LOC and LunaRunes · <a href="https://suno.com/album/16130013-09f2-4be3-b2f6-05ce171ba7d5">聽《微月光，上場》 →</a></p>',1,
     jsonb_build_array(
       jsonb_build_object(
         'uid',upper(substr(md5('lo3rwang:index:hero:name'),1,8)),
@@ -234,7 +234,7 @@ begin
       ),
       jsonb_build_object(
         'uid',upper(substr(md5('lo3rwang:index:professional:discerner'),1,8)),
-        'title','混沌辨律者 · Chaos Discerner',
+        'title','混沌共振者 · Chaos Resonator',
         'text','<p>針對一團混亂的狀態，會以系統性的方式找尋規則性，進而拆解與破解；也延伸到對未來的風險管理。</p>'
       ),
       jsonb_build_object(
