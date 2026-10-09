@@ -59,6 +59,7 @@
 
 **目的：** Scope Group／Scope Node 延伸為家庭、小型組織時，認證、邀請、成員管理委託成熟模組（優先評估 Clerk Auth + Organizations），減少每新增一個 Scope／Group 就要反覆處理 OAuth 與 Google Cloud 設定的維護負擔。**優先級提高為近期可獨立實施的認證整合任務，可先於私人 App／Import 驗收進行；必須獨立開發、回歸驗證，不變動 0.9.1 RC 既有驗收結論。此項尚未實作。**
 
+- [ ] 核對前次已啟用的 Next.js Server／Render 執行環境及正式域名部署：目前 `main` 的 `next.config.mjs` 仍為 `output: 'export'`、GitHub Pages 靜態輸出；釐清正式動態 Server Runtime 是否另行部署、由哪個服務承載，以及切換／回退方式，再決定使用 `@clerk/nextjs` 或 `@clerk/react`。未完成部署確認前，不啟用 Clerk 登入接管。
 - [ ] 評估 Clerk Auth／Organizations 的 Next.js、iOS SDK、價格與 Supabase/Neon 整合；優先使用現成登入、Session、邀請、成員與撤銷 UI，避免自製 Auth 與第二套組織管理。
 - [ ] 保留 LOC 的 `scope_registry`、Scope Group／Node、Scope 建立／更新、資料表與 canonical 設定；Clerk 僅負責身分與組織成員資格，透過穩定身分／組織 ID 映射到既有 Scope，不能取代 Scope CRUD／資料權威。
 - [ ] 設計現行 Supabase Auth／`silver.manage` 的遷移與回退：Supabase 第三方 JWT／RLS 相容性、`silver.can_manage_scope`／`silver.can_manage_global`、舊帳號綁定、權限撤銷；不得只靠前端控制或 email 字串認證。
