@@ -208,6 +208,22 @@ must(admin.includes('admin-registry-fallback')&&admin.includes('圖形樹載入�
 must(admin.includes('syncManageScopeRow(')&&admin.includes("role:'scope'"),'Admin Scope node must edit Manage mapping atomically and keep role=scope fixed');
 must(admin.includes('部分 Scope 設定讀取失敗')&&admin.includes('configFailures.push')&&admin.includes("if(error)throw new Error(error.message||'Scope config 讀取失敗。')"),'Admin Scope config failures must be surfaced, not swallowed');
 must(admin.includes('provisionScope(')&&admin.includes('＋ Scope')&&admin.includes('＋ Group'),'Admin Registry must create Scope and Scope Group from the tree workspace');
+const scopeCreatePanel=admin.split("    {kind==='scope'?<>")[1]?.split("    </>:<>")[0]||'';
+must(
+  scopeCreatePanel.includes('<span>Scope ID</span>')&&
+  (scopeCreatePanel.match(/<input\\b/g)||[]).length===3&&
+  scopeCreatePanel.includes('type="radio" name="new-scope-route-mode" value="directory"')&&
+  scopeCreatePanel.includes('type="radio" name="new-scope-route-mode" value="domain"')&&
+  !scopeCreatePanel.includes('<span>Domain</span>')&&!scopeCreatePanel.includes('<span>Directory</span>'),
+  'Admin Scope creation must show only Scope ID input and exclusive Directory/Domain radio options'
+);
+must(
+  admin.includes("const EMPTY_SCOPE_CREATE={scope_id:'',route_mode:'directory'}")&&
+  admin.includes("domain:mode==='domain'?id+'.lo3rwang.cc':null")&&
+  admin.includes("directory:mode==='directory'?'/'+id:null")&&
+  admin.includes('email,')&&admin.includes('ownerEmail={ownerEmail}')&&admin.includes('ownerEmail={account.email}'),
+  'Admin Scope provisioning must derive mutually exclusive Registry routing and owner email from authenticated Admin'
+);
 must(scopeProvisioning.includes("create table silver.%I (like silver.lo3rwang_blocks including all)")&&!scopeProvisioning.includes('block_page')&&scopeProvisioning.includes("enable row level security',v_blocks_name"),'new Scope Blocks must clone current UID/page_name/entity contract and enable RLS');
 must(scopeProvisioning.includes('New Scopes start with no content rows.')&&!scopeProvisioning.includes('generate_series(1,4)'),'new Scope must not pre-populate blank homepage/governance frames');
 
