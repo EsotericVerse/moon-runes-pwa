@@ -3,6 +3,7 @@ import {RUNE_CUSTOM_DRAW_MODES} from './rune-draw-modes.mjs';
 import CustomDrawSelector from './CustomDrawSelector';
 import RuneIntroSection from './RuneIntroSection';
 import HeroCornerIdentity from '../loc/HeroCornerIdentity';
+import ScopeEditableBlocks from '../loc/ScopeEditableBlocks';
 import runesHeroAsset from '../../pics/LunaRunes-hero.jpg';
 
 const runeHref=path=>{
@@ -10,35 +11,69 @@ const runeHref=path=>{
   return `${scopeOrigin('lrunes')}/${clean}`;
 };
 
+const RUNE_HERO_ORDERS=[1];
+const RUNE_HERO_DEFAULT={
+  eyebrow:'LunaRunes',
+  title:'月之符文',
+  subtitle:'<p>以月的角度紀錄。</p>',
+  text:[
+    '<p>抽牌先給你一個籤詩提示，再從符文本義、卡牌方向與月相交互往下判讀。</p>',
+    '<p>66個單一中文字 × 九組符文分組 × 四卡牌方向 × 月相交互</p>',
+    '<p>可以問一件事，也可以沒有問題直接抽取。</p>'
+  ].join('')
+};
+
+// LunaRunes is a special-case homepage: only the Hero copy is editable.
+// Draw routes, draw buttons, game, intro, and reading guidance remain fixed UI.
+function renderRuneHero(slot){
+  const eyebrow=slot.stored?slot.eyebrow:RUNE_HERO_DEFAULT.eyebrow;
+  const title=slot.stored?slot.title:RUNE_HERO_DEFAULT.title;
+  const subtitle=slot.stored?slot.subtitle:RUNE_HERO_DEFAULT.subtitle;
+  const text=slot.stored?slot.text:RUNE_HERO_DEFAULT.text;
+  return <>
+    <img
+      className="runes-home-hero-image"
+      src={runesHeroAsset.src}
+      alt=""
+      aria-hidden="true"
+      loading="eager"
+      fetchPriority="high"
+      decoding="async"
+    />
+    <div className="runes-home-hero-overlay" aria-hidden="true"/>
+    <HeroCornerIdentity scopeId="lrunes"/>
+    <div className="runes-home-hero-copy">
+      {eyebrow?<p className="loc-eyebrow">{eyebrow}</p>:null}
+      <div className="home-title-row">
+        <h1>{title}</h1>
+        {subtitle?<div className="loc-subtitle" dangerouslySetInnerHTML={{__html:subtitle}}/>:null}
+      </div>
+      {text?<div className="runes-home-body scope-rich-surface" dangerouslySetInnerHTML={{__html:text}}/>:null}
+      <div className="runes-home-primary-actions" aria-label="開始抽牌">
+        <a className="loc-button runes-home-primary-action" href={runeHref('duel/one')}>抽一張符文</a>
+        <a className="loc-button" href={runeHref('duel/daily')}>每日符文</a>
+      </div>
+    </div>
+  </>;
+}
+
 export default function RunesClient(){
   return <main className="loc-next-main"><section className="loc-view">
-    <header className="loc-hero runes-home-hero" id="intro">
-      <img
-        className="runes-home-hero-image"
-        src={runesHeroAsset.src}
-        alt=""
-        aria-hidden="true"
-        loading="eager"
-        fetchPriority="high"
-        decoding="async"
-      />
-      <div className="runes-home-hero-overlay" aria-hidden="true"/>
-      <HeroCornerIdentity scopeId="lrunes"/>
-      <div className="runes-home-hero-copy">
-        <p className="loc-eyebrow">LunaRunes</p>
-        <div className="home-title-row">
-          <h1>月之符文</h1>
-          <p className="loc-subtitle">以月的角度紀錄。</p>
-        </div>
-        <p className="runes-home-lead">抽牌先給你一個籤詩提示，再從符文本義、卡牌方向與月相交互往下判讀。</p>
-        <p className="runes-home-system">66個單一中文字 × 九組符文分組 × 四卡牌方向 × 月相交互</p>
-        <p>可以問一件事，也可以沒有問題直接抽取。</p>
-        <div className="runes-home-primary-actions" aria-label="開始抽牌">
-          <a className="loc-button runes-home-primary-action" href={runeHref('duel/one')}>抽一張符文</a>
-          <a className="loc-button" href={runeHref('duel/daily')}>每日符文</a>
-        </div>
-      </div>
-    </header>
+    <ScopeEditableBlocks
+      scopeId="lrunes"
+      page="hero"
+      orders={RUNE_HERO_ORDERS}
+      slotTag="header"
+      slotId="intro"
+      slotClassName="loc-hero runes-home-hero"
+      editSlotClassName="loc-hero runes-home-hero"
+      containerless
+      placeholderFirstOrder={1}
+      renderDisplay={renderRuneHero}
+      allowDelete={false}
+      allowEntities={false}
+      allowImages={false}
+    />
 
     <nav className="runes-home-nav runes-home-secondary-nav" aria-label="月之符文延伸功能">
       <a className="loc-button" href={runeHref('list')}>符文圖鑑</a>
