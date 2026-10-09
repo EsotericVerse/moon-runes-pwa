@@ -1,4 +1,5 @@
 import {SITE_IMAGES} from '../site-images';
+import {readScopePageCopy} from './page-copy';
 
 export const LOC_ORIGIN='https://loc.lo3rwang.cc';
 export const LUNARUNES_ORIGIN='https://lrunes.lo3rwang.cc';
@@ -112,4 +113,14 @@ export function authorProfileJsonLd(){
       image:AUTHOR_IMAGE
     }
   };
+}
+
+export async function lunarunesPageCopyMetadata({path='/',noIndex=false}={}){
+  const fields=await readScopePageCopy('lrunes');
+  return lunarunesMetadata({title:fields.Title_TW,description:fields.Desc_TW,path,noIndex});
+}
+
+export async function authorPageCopyMetadata({path='/lo3rwang/',noIndex=false}={}){
+  const fields=await readScopePageCopy('lo3rwang');
+  return authorMetadata({title:fields.Title_TW,description:fields.Desc_TW,path,noIndex});
 }
