@@ -141,21 +141,6 @@ begin
     )
   ),
   (
-    'index','Skills','<p>把月典延伸可以重複使用的工作流程。<br>把語言治理與治理資料儲存庫，封裝成可直接調用的 AI Skills。</p><p>Skills 不是另一套理論，而是把 LOC 已形成的治理管理理念跟方法，轉成GPT可以重複執行的工作流程。</p>',5,
-    jsonb_build_array(
-      jsonb_build_object(
-        'uid',upper(substr(md5('loc:index:skills:governance'),1,8)),
-        'title','loc-km-governance',
-        'text','<p>檢查 Canon、KM、Registry、Base66、術語一致性、資料權威。</p>'
-      ),
-      jsonb_build_object(
-        'uid',upper(substr(md5('loc:index:skills:health'),1,8)),
-        'title','loc-repo-health-check',
-        'text','<p>檢查儲存庫結構、路徑、API／搜尋、部署與效能風險等。</p>'
-      )
-    )
-  ),
-  (
     'index','作者的話',
     '<p>整理治理過去的已知，是為了把時間還給現在，對未知的未來做好準備。</p>'
     ||'<p>文字資料經過基本解析以後，分析出關鍵詞。將關鍵詞整理分類以後，並配合時間線的可能風格變化，進一步解析成為該區間內的風格。</p>'
@@ -165,7 +150,7 @@ begin
     ||'<p>我的原則：敬畏未知，尊重異者，專業為先。</p>'
     ||'<p>立於無限減一的謙遜，但要有無限減一的專業。保有探索未知的好奇，尊重無限未知的領域，進而才能學習到更多的知識。</p>'
     ||'<p>Lucas Oscar Wang 政德. 2026.10.01.(ex-admin of StarRiver BBS.)</p>',
-    6,'[]'::jsonb
+    5,'[]'::jsonb
   );
 end
 $loc_seed$;

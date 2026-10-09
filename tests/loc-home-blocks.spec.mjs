@@ -19,21 +19,23 @@ test('LOC index home frames are rendered once, in database order, with authored 
   expect(Math.abs(frame.width-artwork.width)).toBeLessThan(4);
   expect(Math.abs(frame.height-artwork.height)).toBeLessThan(4);
 
-  // Current public index has six blocks. Wait for DB hydration instead of
+  // Current public index has five blocks. Wait for DB hydration instead of
   // mistaking the SSR Hero placeholder for a complete database render.
-  await expect(page.locator('.loc-home > section[data-block-order="6"]')).toBeVisible({timeout:20_000});
+  await expect(page.locator('.loc-home > section[data-block-order="5"]')).toBeVisible({timeout:20_000});
   const orders=await frames.evaluateAll(items=>items.map(item=>Number(item.dataset.blockOrder)));
   expect(orders.length).toBeLessThanOrEqual(8);
   expect(orders).toEqual([...orders].sort((a,b)=>a-b));
   expect(new Set(orders).size).toBe(orders.length);
-  expect(orders).toEqual([1,2,3,4,5,6]);
+  expect(orders).toEqual([1,2,3,4,5]);
+  await expect(frames).toHaveCount(5);
+  await expect(page.locator('.loc-home > section[data-block-order="6"]')).toHaveCount(0);
   expect(await page.locator('.loc-home .scope-editable-block-grid').count()).toBe(0);
   expect(await page.locator('.loc-home .scope-editable-block .scope-editable-block').count()).toBe(0);
 
   // Existing artwork is a contained image-only bubble, not a second
   // background. Its placement must adapt without crowding the text.
   const viewport=page.viewportSize();
-  for(const order of [2,3,6]){
+  for(const order of [2,3,5]){
     const frame=page.locator('.loc-home > section[data-block-order="'+order+'"]');
     const picture=frame.locator(':scope > .loc-home-block__media-bubble');
     await expect(picture).toHaveCount(1);
@@ -57,7 +59,8 @@ test('LOC index home frames are rendered once, in database order, with authored 
   const strong=await status.locator('.loc-home-block__body strong').first().evaluate(node=>Number.parseInt(getComputedStyle(node).fontWeight,10));
   expect(strong).toBeGreaterThanOrEqual(600);
 
-  const skills=page.locator('.loc-home > section[data-block-order="5"]');
-  await expect(skills.locator('.loc-home-block__children > article')).toHaveCount(3);
-  await expect(skills.locator('a[href*="LOC-GPT-Skills-v2.1-bundle.zip"]')).toBeVisible();
+  const author=page.locator('.loc-home > section[data-block-order="5"]');
+  await expect(author.locator('.loc-home-block__header h2')).toHaveText('作者的話');
+  await expect(author.locator('.loc-home-block__media-bubble img')).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Skills',exact:true})).toHaveCount(0);
 });

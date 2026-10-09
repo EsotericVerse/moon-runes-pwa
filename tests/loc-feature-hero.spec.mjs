@@ -43,7 +43,7 @@ test('Four feature page hero frames read one LOC source while LunaRunes stays un
   // happen only on the actual four feature-page header frames.
   await page.goto('/',{waitUntil:'domcontentloaded'});
   await expect(page.locator('details.scope-feature-hero-management')).toHaveCount(0);
-  await expect(page.locator('.loc-home > section[data-block-order="6"]')).toBeVisible({timeout:25_000});
+  await expect(page.locator('.loc-home > section[data-block-order="5"]')).toBeVisible({timeout:25_000});
 });
 
 test('LOC Search shows all-Scope search controls instead of Scope Group guide',async({page})=>{

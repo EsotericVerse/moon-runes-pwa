@@ -14,7 +14,7 @@ const LOC_MEDIA=Object.freeze({
   1:{src:SITE_IMAGES.locHero,small:SITE_IMAGES.locHeroSmall,alt:'LOC 月典語言架構框架視覺理念圖',background:true},
   2:{src:SITE_IMAGES.lunarunes,alt:'LunaRunes 月之符文',position:'right',width:'420px'},
   3:{src:SITE_IMAGES.locArchitecture,alt:'LOC 月典架構：時間長河、玄子、玄裂與玄宇宙',position:'right',width:'360px'},
-  6:{src:SITE_IMAGES.author,alt:'作者 Lucas Oscar Wang 政德',position:'right',width:'360px'}
+  5:{src:SITE_IMAGES.author,alt:'作者 Lucas Oscar Wang 政德',position:'right',width:'360px'}
 });
 const AUTHOR_MEDIA=Object.freeze({
   1:{src:authorHeroAsset,alt:'作者 Lucas Oscar Wang 政德首頁主視覺',background:true},
