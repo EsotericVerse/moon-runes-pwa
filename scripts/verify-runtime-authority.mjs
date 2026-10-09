@@ -28,7 +28,7 @@ const checks=[
     files.shell.includes('configRow?.display_name||registryRow?.display_name')&&
     files.shell.includes('document.title=name')&&
     files.shell.includes('row.display_name')&&
-    files.runtime.includes('registryRow.display_name')&&
+    files.runtime.includes('activeRegistryRow.display_name')&&
     files.locApp.includes('runtime.scope')],
   ['Scope settings and Theme palette derive from database',
     files.shell.includes('configQuery.data?.theme')&&
