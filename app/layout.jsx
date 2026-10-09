@@ -2,6 +2,7 @@ import './globals.css';
 import AppShell from './AppShell';
 import {LOC_ORIGIN} from './seo/metadata';
 import {SCOPES} from './modular/scope-registry';
+import {THEME_TOKEN_KEYS} from './modular/theme-registry';
 
 export const metadata = {
   metadataBase:new URL(LOC_ORIGIN),
@@ -41,6 +42,7 @@ const INITIAL_THEME_SLOTS=Object.fromEntries(INITIAL_THEME_IDS.map(id=>[
 const INITIAL_THEME_SCRIPT=`(()=>{try{
   const slots=${JSON.stringify(INITIAL_THEME_SLOTS)};
   const scopes=${JSON.stringify(INITIAL_SCOPE_THEMES)};
+  const keys=${JSON.stringify(THEME_TOKEN_KEYS)};
   const host=window.location.hostname.toLowerCase();
   const pathname=(window.location.pathname||'/').toLowerCase();
   const match=scopes.find(scope=>{
@@ -67,6 +69,17 @@ const INITIAL_THEME_SCRIPT=`(()=>{try{
   root.dataset.themeId=slot.id;
   root.style.colorScheme=slot.scheme;
   root.dataset.themeBootstrap='scheme-only';
+  try{
+    const cached=JSON.parse(window.sessionStorage.getItem('loc-theme-palette-v1:'+slot.id)||'null');
+    if(cached?.themeId===slot.id&&cached?.scheme===slot.scheme&&
+      typeof cached.signature==='string'&&cached.signature.length>0&&
+      Number.isFinite(cached.savedAt)&&Date.now()-cached.savedAt<21600000&&
+      cached.tokens&&keys.every(key=>typeof cached.tokens[key]==='string'&&cached.tokens[key].length>0)){
+      keys.forEach(key=>root.style.setProperty(key,cached.tokens[key]));
+      root.dataset.themeSignature=cached.signature;
+      root.dataset.themeBootstrap='cached-palette';
+    }
+  }catch{}
 }catch{}})();`;
 
 export default function RootLayout({ children }) {
