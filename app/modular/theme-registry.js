@@ -56,4 +56,14 @@ export function applyTheme(slot){
   delete root.dataset.themeBootstrap;
   root.style.colorScheme=slot.scheme;
   Object.entries(slot.tokens||{}).forEach(([key,value])=>{if(value)root.style.setProperty(key,value);});
+  // Transient render cache; database Theme attributes remain canonical.
+  try{
+    if(THEME_TOKEN_KEYS.every(key=>Boolean(String(slot.tokens?.[key]||'')))){
+      window.sessionStorage.setItem('loc-theme-palette-v1:'+slot.id,JSON.stringify({
+        themeId:slot.id,scheme:slot.scheme,signature:themeSignature(slot),
+        tokens:Object.fromEntries(THEME_TOKEN_KEYS.map(key=>[key,String(slot.tokens[key])])),
+        savedAt:Date.now()
+      }));
+    }
+  }catch{}
 }
