@@ -24,9 +24,11 @@ const checks=[
     files.runtime.includes('registryRow?.scope_id===scopeId')&&
     files.runtime.includes('configRow?.id===scopeId')&&
     files.runtime.includes('configRow:activeConfigRow')],
-  ['Scope display_name remains independent navigation label',
-    files.shell.includes('configRow?.display_name||registryRow?.display_name')&&
-    files.shell.includes('row.display_name')&&
+  ['Scope NAV reads silver.manage Title_TW rather than Registry display_name',
+    files.shell.includes("queryKey:['scope-page-copy',item.id]")&&
+    files.shell.includes('row?.Title_TW')&&
+    files.shell.includes('navDisplayNames[item.id]||item.nav.label')&&
+    !files.shell.includes('row.display_name')&&
     files.runtime.includes('activeRegistryRow.display_name')&&
     files.locApp.includes('runtime.scope')],
   ['Public browser title/description use only manage Title_TW/Desc_TW',
