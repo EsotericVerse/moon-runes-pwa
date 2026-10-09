@@ -1,6 +1,16 @@
 # LOC Release Roadmap
 
-## Current — 0.9.1-rc.1 (2026-10-09)
+## Current — 0.9.2-rc.1 (2026-10-09)
+
+0.9.2 RC 是以已合併的四功能 Hero 圖片與文字定位、首頁字級、固定 Scope 標誌，以及 0.9.1 CSS 減法為基線的**穩定／修 bug 候選版**，不宣稱所有人工驗收已完成。
+
+- LOC 四功能 Hero 使用 `pics/LOC-*.jpg`；作者與符韻四功能 Hero 共用 `pics/scope-*.jpg`，保留現有文案、編輯入口與字型規則。
+- LOC／作者四功能 Hero 文字垂直置中；符韻保留既有排版。三站首頁的 X／光之定錨點／黃色小圓為固定 Scope 身分識別，不受 Scope Group 變動影響。
+- 既有 Scope／Group、搜尋、文化、統計、治理及管理模組不因升版另造平行結構。**後續工作以修 bug、相容性和既有功能回歸為主，不擴張新的功能範圍。**
+- **Import：Pending（未人工實測）**。本版不將自訂 JSON／巢狀欄位、多檔預覽、有界分批寫入與中斷重跑標記為驗收通過；待使用者安排真實來源檔測試。
+- 桌面／手機自動化、公開 DB probe、建置由對應版本 commit 的 CI 確認；未執行的實機人工 smoke、CRUD／Auth 權限及大型資料壓力測試保留於 `docs/TODO.md`。
+
+## Previous — 0.9.1-rc.1 (2026-10-09)
 
 0.9.1-rc.1 是在已完成 0.9.0 RC1 後、以 Current `main` 為底的 **CSS 減法與版面穩定性候選版**；沿用原有資料權威、Scope／Theme／Hero 架構，不增加平行 DOM、主題系統或新功能。
 
@@ -50,7 +60,7 @@
 
 0.9.0-rc.1 的固定 tag 仍是既有展示候選版。其後 Current `main` 已合併 Keyword Attr 分批寫回、進度百分比與 SQL WHERE 條件修正；這些是 **tag 之後** 的修正，不追溯改寫 RC1 發版紀錄。
 
-0.9 的主要剩餘功能交付是 **Scope 管理選單的工作台整合與操作驗收**，優先重用既有 Admin Registry、Scope Settings、Import、Period、Keyword 等模組，不建立第二套資料或編輯權威。Import 已有程式入口，但尚未完成真實資料 round-trip 驗收。
+0.9 管理工作台以既有 Admin Registry、Scope Settings、Import、Period、Keyword 模組為基礎；Current 主要責任是**既有入口的實際操作驗收與 bug 修復**，不是擴充第二套工作台或資料權威。Import 已有程式入口，但尚未完成真實資料 round-trip 驗收（Pending）。
 
 ## 1.0 Release
 

@@ -1,8 +1,18 @@
 # LOC Current TODO
 
-**Current version:** 0.9.1-rc.1
+**Current version:** 0.9.2-rc.1
 
-## 0.9.1 RC acceptance（承接 0.9.0 RC1 尚未完成人工驗收的項目）
+**Release policy:** 0.9.2 RC 先定版，後續以修 bug／回歸驗證為主；Import 的真實來源測試由使用者暫緩，**Pending / 尚未驗收**。本表的 `[x]` 表示對應程式交付或已取得明確驗證證據，不能推論其他人工檢查也完成。
+
+## 0.9.2 RC — 已進入程式基線／自動化回歸
+
+- [x] LOC／作者／符韻首頁 Hero 的字級統一與各自固定身分識別（X／光之定錨點／黃色圓點）；不依賴 Scope Group。
+- [x] 四大功能 Hero 依 Scope 載入八張 JPG：LOC 專用四張；作者與符韻共用四張。
+- [x] LOC／作者的功能 Hero 文字移至圖片垂直中段；符韻沿用原有布局；已加入 desktop／mobile Playwright 回歸。
+- [x] 0.9.1 CSS／DIV 收斂、既有語意與共用排版契約繼續保留。
+- [ ] **0.9.2-rc.1 本身**的 `verify`／public DB／build／desktop-mobile CI：在對應 commit 執行完成後才登記結果，不以先前 PR 的 CI 代替。
+
+## 0.9.2 RC — 待確認／Bug-fix backlog（沿用先前未完成人工驗收）
 
 ### Public basic functions
 
@@ -20,15 +30,15 @@
 
 ### Management / Admin
 
-- [ ] **0.9 主要交付：** 完成 Scope 管理選單的既有模組整合與操作體驗；Admin 負責 Registry／Group／Mapping，各 Scope Manage 負責自身設定、資料、時期／文化、關鍵詞／統計、發表與 Import，避免平行編輯器或 Scope 特例。
+- [ ] **Scope 管理工作台實際操作驗收／bug 修復：** 既有 Admin Registry／Group／Mapping 與各 Scope 的 Settings、Data、Period／Culture、Keyword／Statistics、Publish、Import 等入口逐項核對，發現問題修正；不建立平行編輯器或 Scope 特例。
 - [x] Keyword Attr 批次寫回與進度百分比修正已合併至 0.9 RC 之後的 Current main（含 SQL chunk WHERE 修正）；不等於所有真實 corpus 壓力測試已簽核。
 - [ ] 在公開基本功能確認後，再開始 Governance／Admin／Scope Manage 的實際操作驗收。
 - [ ] 驗證 CRUD、0-row 例外處理、searchable=false canonical visibility、Theme、Scope config 與權限行為。
-- [ ] Import：使用真實來源檔測試自訂 JSON 欄位格式、巢狀資料路徑、多檔逐檔預覽、25–200 筆有界分批寫入、進度、重複 UID／原生 ID 與中斷後重新比對；程式實作不等於資料庫端實測已通過。
+- [ ] **Import — PENDING（使用者尚未安排人工測試）：** 真實來源檔、自訂 JSON 欄位格式、巢狀資料路徑、多檔逐檔預覽、25–200 筆有界分批寫入、進度、重複 UID／原生 ID 與中斷後重新比對，均待實際執行；程式入口與自動化測試不等於資料庫端 round-trip 已驗收。
 - [ ] 驗證管理預覽、Import、Data、Period、Keyword 等工作區的實際使用流程。
 - [ ] 文化：時期設定與時間河道，實際驗證切換時期、錨點、河道範圍與儲存結果。
 - [ ] 統計：關鍵詞設定，實際驗證 Class／Group／Item 編輯、重新分析與分頁後 Group 排行。
-- [ ] LOC 首頁 Hero：16:9 版面下檢查既有資料庫文字的換行、字級與可讀性；文案如要更改，等待作者指定新文字後再編輯，切勿以舊 JSX 種子覆蓋。
+- [ ] LOC 首頁 Hero：使用者已確認目前文字大小與整體呈現；仍須於不同螢幕寬度實機檢查 16:9、換行與對比。現有資料庫文案維持不變，不以 JSX 種子覆蓋。
 
 ### Performance / data scale
 
