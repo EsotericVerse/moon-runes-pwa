@@ -29,6 +29,7 @@ export const SCOPES=Object.freeze({
 
   lrunes:Object.freeze({
     id:'lrunes',
+    domain:'lrunes.lo3rwang.cc',
     label:'月之符文',
     searchTitle:'月之符文 LunaRunes',
     searchAliases:Object.freeze(['lrunes','LunaRunes','月之符文']),
