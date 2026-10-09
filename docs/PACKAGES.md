@@ -1,7 +1,7 @@
 # LOC Current Packages List
 
-**基準：** `main` / `package.json`，2026-10-09  
-**Package version：** `0.9.2-rc.1`（候選版；既有 0.9.0 RC1 標籤不變）  
+**基準：** `main` / `package.json`，2026-10-10  
+**Package version：** `0.9.2-rc.2`（候選版；既有 0.9.0 RC1 標籤不變）  
 **直接宣告：** 24 項 runtime dependencies、3 項 devDependencies
 
 本頁是**現行套件與模組責任對照**，不是第二份套件宣告、升級清單或安裝教學。版本範圍必須以根目錄 `package.json` 為權威，實際鎖定版本、完整相依樹以 `package-lock.json` 為權威；更新套件時應一起更新 Manifest／Lockfile，再同步此文件。CI 使用 `npm ci` 安裝。
