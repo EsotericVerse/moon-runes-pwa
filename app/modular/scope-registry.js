@@ -128,7 +128,10 @@ export function resolveScope(host='',pathname='/'){
   // Before DB hydration, a subdomain matching an existing static Scope ID
   // can still be resolved without re-declaring its Domain string in JS.
   const prefix=h.endsWith('.lo3rwang.cc')?h.slice(0,-'.lo3rwang.cc'.length):'';
-  if(prefix&&SCOPES[prefix])return prefix;
+  if(prefix&&SCOPES[prefix]){
+    const authoritative=registryRouteRows.get(prefix);
+    if(!authoritative||authoritative.domain===h)return prefix;
+  }
   return DEFAULT_SCOPE_ID;
 }
 
