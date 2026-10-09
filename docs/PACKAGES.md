@@ -2,7 +2,7 @@
 
 **基準：** `main` / `package.json`，2026-10-09  
 **Package version：** `0.9.1-rc.1`（候選版；既有 0.9.0 RC1 標籤不變）  
-**直接宣告：** 21 項 runtime dependencies、2 項 devDependencies
+**直接宣告：** 24 項 runtime dependencies、3 項 devDependencies
 
 本頁是**現行套件與模組責任對照**，不是第二份套件宣告、升級清單或安裝教學。版本範圍必須以根目錄 `package.json` 為權威，實際鎖定版本、完整相依樹以 `package-lock.json` 為權威；更新套件時應一起更新 Manifest／Lockfile，再同步此文件。CI 使用 `npm ci` 安裝。
 
@@ -17,6 +17,16 @@
 | `react-dom` | `19.3.0` | React DOM 執行層 |
 | `@tanstack/react-query` | `5.103.1` | 資料請求狀態與快取控制 |
 | `zod` | `4.6.0` | 資料結構與輸入 schema |
+
+### iOS App 封裝與裝置本機資料（App 專用，尚未建立 native platform）
+
+| Package | package.json 宣告 | 目前責任 |
+| --- | --- | --- |
+| `@capacitor/core` | `8.5.3` | App 原生橋接執行層（尚未接入原有 UI） |
+| `@capacitor/ios` | `8.5.3` | iOS 原生平台套件（尚未執行 `cap add ios`） |
+| `@capacitor-community/sqlite` | `8.1.1` | 預備 iOS 私人本機 SQLite 能力；不代替 Supabase Canon，未建立資料庫、未匯入任何資料 |
+
+開發依賴：`@capacitor/cli` `8.5.3`，只供後續初始化、同步與原生專案操作。Native 平台尚未建置；iOS 真機與 SQLCipher／SPM 兼容性仍需 macOS 編譯及驗證。X/Twitter 與 MSN 歷史資料暫不匯入。
 
 ### 資料層
 
