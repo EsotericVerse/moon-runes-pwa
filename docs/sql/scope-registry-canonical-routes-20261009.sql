@@ -22,7 +22,7 @@ ALTER TABLE silver.scope_registry
     AND CASE
       WHEN scope_id='loc' THEN domain='loc.lo3rwang.cc' AND directory IS NULL
       WHEN scope_id='admin' THEN domain='admin.lo3rwang.cc' AND directory IS NULL
-      WHEN scope_id='lrunes' THEN domain IS NULL AND directory='/lrunes'
+      WHEN scope_id='lrunes' THEN domain='lrunes.lo3rwang.cc' AND directory IS NULL
       WHEN scope_id='lo3rwang' THEN domain IS NULL AND directory='/lo3rwang'
       ELSE (domain IS NOT NULL AND domain=scope_id||'.lo3rwang.cc' AND directory IS NULL)
         OR (directory IS NOT NULL AND directory='/'||scope_id AND domain IS NULL)
