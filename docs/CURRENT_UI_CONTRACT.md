@@ -87,6 +87,15 @@ Statistics 登入管理後的關鍵詞設定以 Class 為第一層。每個 Clas
 
 批次完成後以 `staticstime` 定錨；平常 Statistics／Culture 只讀文章 Attr 與定錨 metadata，不重新讀全文或關鍵詞庫跑分類器。關鍵詞設定以獨立管理頁 `/lo3rwang/statics/keywords/`（一般 Scope 使用 `/scope/statics/keywords/?scope=<id>`）提供；只有授權使用者進入該頁並手動操作才啟動設定／批次分析。統計頁不載入管理器，vis-network 只有選擇「視覺圖譜」才掛載。
 
+## Admin Scope establishment and enforcement
+
+- 新增 Scope 只填 Scope ID、必填管理者 Email、預設語系；Directory／Domain 為互斥 radio，Registry 路由資訊由 ID 推導。Parent 固定 `loc`，建立時複製一次 Rune66（66 rows 與全新 Class UUID）。
+- 新 Scope 的 Theme 使用 `system-default`：現有系統日間 `theme-7`／夜間 `theme-1` 自動切換，並非固定 `theme-7`。Scope 設定仍允許手動選擇八組 Theme。
+- Scope 節點的主要操作固定為「儲存／設定隱藏（或取消隱藏）／刪除」三項。隱藏只切換 `silver.scope_registry.active`，仍保留所有 canonical 資料；移除公開 Registry 導引，不代表資料本身變成私密。
+- 「複製符文66風格」在每個 Scope 節點常駐：每次經管理權限檢查後複製來源目前 66 筆項目為新 UUID 的獨立 Class，不覆蓋既有 Class，也不自動切換目前使用的 Class。
+- 「刪除」僅允許全域 Admin 永久移除非內建 Scope；前端必須再次輸入相符 Scope ID。資料庫執行層仍檢查全域權限、保護 `loc`／`lrunes`／`lo3rwang`／`admin`，以 `RESTRICT` 拒絕意外依賴，避免不受控 cascade。
+- `silver.email_blocklist` 是全域 Email 黑名單，僅全域 Admin 可維護。任何命中的 OAuth Email（包含 `scope` 與 `admin`）都不得取得管理授權；資料庫 `silver.can_manage_scope`／`silver.can_manage_global` 是寫入時的權限邊界。前端明確提示「此帳號已列入系統黑名單，無法登入 LOC 管理功能」。黑名單限制管理登入／寫入，並不自動封鎖公開內容或撤銷第三方 OAuth 身分本身。
+
 ## Management visibility
 
 管理頁必須能看到 canonical records，即使：
