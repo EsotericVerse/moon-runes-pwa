@@ -1,0 +1,86 @@
+name: LOC iOS Device Unsigned IPA
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/ios-device-build.yml'
+      - 'capacitor.config.json'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'next.config.mjs'
+      - 'app/**'
+      - 'assets/**'
+      - 'public/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-device-ipa:
+    runs-on: macos-26-intel
+    timeout-minutes: 60
+    steps:
+      - name: Checkout LOC
+        uses: actions/checkout@v4
+      - name: Install Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify native build tools
+        run: |
+          xcodebuild -version
+          xcrun --find swift
+      - name: Install dependency lockfile
+        run: npm ci --no-audit --no-fund
+      - name: Build existing LOC static export
+        run: |
+          npm run build
+          test -f out/index.html
+      - name: Generate ephemeral iOS project and sync
+        run: |
+          npx cap add ios
+          npx cap sync ios
+          test -f ios/App/App.xcodeproj/project.pbxproj
+      - name: Resolve Swift packages
+        run: xcodebuild -resolvePackageDependencies -project ios/App/App.xcodeproj -scheme App
+      - name: Compile unsigned physical-device application
+        run: |
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/loc-ios-device-build" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build
+      - name: Package and verify unsigned IPA
+        shell: bash
+        run: |
+          set -euo pipefail
+          app="$RUNNER_TEMP/loc-ios-device-build/Build/Products/Debug-iphoneos/App.app"
+          test -d "$app"
+          test -f "$app/Info.plist"
+          test -f "$app/App"
+          test -f "$app/public/index.html"
+          xcrun lipo -archs "$app/App" | tr ' ' '\n' | grep -qx arm64
+          bundle=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Info.plist")
+          test "$bundle" = "cc.lo3rwang.loc.mobile"
+          stage="$RUNNER_TEMP/loc-ios-package"
+          mkdir -p "$stage/Payload" "$GITHUB_WORKSPACE/dist"
+          ditto "$app" "$stage/Payload/App.app"
+          (cd "$stage" && zip -qry "$GITHUB_WORKSPACE/dist/LOC-ios-device-unsigned.ipa" Payload)
+          unzip -t "$GITHUB_WORKSPACE/dist/LOC-ios-device-unsigned.ipa" | tail -1
+          test -s "$GITHUB_WORKSPACE/dist/LOC-ios-device-unsigned.ipa"
+          echo "Unsigned IPA generated. It must be signed on the user's machine; this CI artifact is NOT directly installable."
+      - name: Upload unsigned IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LOC-ios-device-unsigned
+          path: dist/LOC-ios-device-unsigned.ipa
+          retention-days: 7
+          if-no-files-found: error
