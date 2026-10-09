@@ -32,8 +32,8 @@ for(const scope of Object.values(SCOPES)){
   const policy=scope.theme||{mode:'auto'};
   if(policy.mode==='fixed'&&!expectedIds.includes(policy.themeId))failures.push(scope.id+': invalid fixed theme '+policy.themeId);
 }
-if(SCOPES.lo3rwang?.theme?.themeId!=='theme-2')failures.push('author system default must remain Link / theme-2');
-if(SCOPES.lrunes?.theme?.themeId!=='theme-5')failures.push('LunaRunes system default must remain Mineral / theme-5');
+if(SCOPES.lo3rwang?.theme?.mode==='fixed'||SCOPES.lrunes?.theme?.mode==='fixed')failures.push('Scope theme defaults must be owned by DB config, not hardcoded in routing');
+if(!shell.includes("queryFn:()=>selectScopeConfig(scopeId)")||!shell.includes("fixedDefaultThemeId||configuredDefaultThemeId||automaticThemeId(now)"))failures.push('Scope theme must resolve from current DB config and remain temporary when user switches');
 
 for(const token of ["SYSTEM_THEME_ID='system-default'","THEME_TIME_ZONE='Asia/Taipei'","DAY_THEME_ID='theme-7'","NIGHT_THEME_ID='theme-1'",'copy.common.systemTheme'])if(!shell.includes(token))failures.push('AppShell theme control missing '+token);
 if(!layout.includes("import AppShell from './AppShell'")||!layout.includes('<AppShell>{children}</AppShell>'))failures.push('Root layout must use AppShell');
