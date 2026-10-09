@@ -53,5 +53,20 @@ BEGIN
    OR (t."loc_shadow_card" IS DISTINCT FROM t.theme_attr->'tokens'->>'--loc-shadow-card')
   ) THEN RAISE EXCEPTION 'Typed Theme palette differs from legacy JSONB; keeping source column'; END IF;
 END $check$;
+-- The shared palette PK is an integer; the UI may render "theme-N" labels
+-- but those prefixes are never stored in the database.
+DO $identity$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM silver.loc_theme WHERE
+      theme_id !~ '^theme-[1-8]
+      OR theme_order <> split_part(theme_id,'-',2)::int
+  ) THEN RAISE EXCEPTION 'Theme numeric identity validation failed'; END IF;
+END $identity$;
+ALTER TABLE silver.loc_theme DROP CONSTRAINT loc_theme_id_check;
+ALTER TABLE silver.loc_theme
+  ALTER COLUMN theme_id TYPE smallint USING split_part(theme_id,'-',2)::smallint;
+ALTER TABLE silver.loc_theme
+  ADD CONSTRAINT loc_theme_id_check CHECK (theme_id BETWEEN 1 AND 8);
 ALTER TABLE silver.loc_theme DROP COLUMN theme_attr;
 ALTER TABLE silver.loc_theme DROP COLUMN IF EXISTS theme_group;
