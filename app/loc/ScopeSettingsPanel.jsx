@@ -2,6 +2,7 @@
 
 import {useEffect,useState} from 'react';
 import {UI_LOCALE_OPTIONS,normalizeUiLocale} from '../i18n/ui-copy';
+import {THEME_SLOTS} from '../modular/theme-registry';
 import {selectScopeConfig} from './scope-data';
 import {updateRows} from './db-client.mjs';
 import {useAccount} from './use-account';
@@ -10,6 +11,7 @@ const EMPTY={
   display_name:'',
   search_intro:'',
   search_aliases:[],
+  theme:'system-default',
   locale:'zh-Hant',
   search_able:true,
   statistics_able:true,
@@ -61,6 +63,7 @@ export default function ScopeSettingsPanel({scopeId}){
         display_name:displayName,
         search_intro:String(draft.search_intro||'').trim(),
         search_aliases:searchAliases,
+        theme:String(draft.theme||'system-default'),
         locale:normalizeUiLocale(draft.locale),
         search_able:draft.search_able!==false,
         statistics_able:draft.statistics_able!==false,
@@ -86,6 +89,13 @@ export default function ScopeSettingsPanel({scopeId}){
         <label>
           <span>顯示名稱</span>
           <input className="scope-search-input" value={draft.display_name||''} onChange={event=>change('display_name',event.target.value)} required/>
+        </label>
+        <label>
+          <span>主題</span>
+          <select className="scope-select" value={draft.theme||'system-default'} onChange={event=>change('theme',event.target.value)}>
+            <option value="system-default">系統預設（日／夜自動）</option>
+            {THEME_SLOTS.map(theme=><option value={theme.id} key={theme.id}>{theme.label}</option>)}
+          </select>
         </label>
         <label>
           <span>預設語系</span>
