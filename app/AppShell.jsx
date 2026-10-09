@@ -69,7 +69,8 @@ function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride
     staleTime:60_000,
     enabled:!fixedDefaultThemeId&&!scope.aggregateChildren&&scope.id!=='admin'
   });
-  const configuredDefaultThemeId=String(configQuery.data?.theme||'').trim();
+  const configuredTheme=String(configQuery.data?.theme||'').trim();
+  const configuredDefaultThemeId=configuredTheme===SYSTEM_THEME_ID?'':configuredTheme;
   const [selection,setSelection]=useState(()=>({scopeId,themeId:SYSTEM_THEME_ID}));
   const [now,setNow]=useState(()=>new Date());
   const selectedThemeId=selection.scopeId===scopeId?selection.themeId:SYSTEM_THEME_ID;
