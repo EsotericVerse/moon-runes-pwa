@@ -39,6 +39,27 @@ function normalizeAliases(value){
     .map(item=>String(item||'').trim()).filter(Boolean))];
 }
 
+// Dynamic Scope tables are created in one transaction. PostgREST may keep the
+// previous schema cache briefly after the provisioning RPC has committed.
+function scopeSchemaCachePending(error){
+  return String(error?.code||'')==='PGRST205'
+    ||/could not find the table .* in the schema cache/i.test(String(error?.message||''));
+}
+const waitForScopeSchema=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+async function readAdminScopeConfig(scopeId,{attempts=7}={}){
+  for(let attempt=0;attempt<attempts;attempt++){
+    if(attempt>0)await waitForScopeSchema(Math.min(2000,350*attempt));
+    const {data,error}=await dbAuthRelation('silver.'+scopeId)
+      .select('id,display_name,search_intro,search_aliases,theme,locale,search_able,statistics_able,culture_able')
+      .eq('id',scopeId).limit(1);
+    if(!error)return data?.[0]||null;
+    if(!scopeSchemaCachePending(error)||attempt===attempts-1){
+      throw new Error(error.message||'Scope config 讀取失敗。');
+    }
+  }
+  return null;
+}
+
 function useAdminScopeData(){
   const [registry,setRegistry]=useState([]);
   const [mappings,setMappings]=useState([]);
@@ -62,11 +83,8 @@ function useAdminScopeData(){
         const configFailures=[];
         await Promise.all(registryRows.filter(row=>row.scope_kind==='scope').map(async row=>{
           try{
-            const {data,error}=await dbAuthRelation('silver.'+row.scope_id)
-              .select('id,display_name,search_intro,search_aliases,theme,locale,search_able,statistics_able,culture_able')
-              .eq('id',row.scope_id).limit(1);
-            if(error)throw new Error(error.message||'Scope config 讀取失敗。');
-            if(data?.[0])configRows[row.scope_id]=data[0];
+            const config=await readAdminScopeConfig(row.scope_id);
+            if(config)configRows[row.scope_id]=config;
             else configFailures.push(row.scope_id+'：找不到 Scope config');
           }catch(error){
             configFailures.push(row.scope_id+'：'+String(error?.message||error||'Scope config 讀取失敗。'));
@@ -479,16 +497,18 @@ function CreateNodePanel({data,kind='scope',onClose}){
   const groupDomainError=duplicateDomainLabelError(groupDraft.scope_id,groupDraft.route_mode);
 
   async function createScope(){
+    let provisioned=false;
+    let id='';
     try{
-      const id=String(scopeDraft.scope_id||'').trim().toLowerCase();
+      id=String(scopeDraft.scope_id||'').trim().toLowerCase();
       if(!/^[a-z][a-z0-9]{0,14}$/.test(id))throw new Error('Scope ID 格式不正確。');
       const email=String(scopeDraft.email||'').trim().toLowerCase();
       if(!email)throw new Error('請先設定管理者 Email。');
-      if(!/^\S+@\S+\.\S+$/.test(email))throw new Error('Email 格式不正確。');
+      if(!/^\\S+@\\S+\\.\\S+$/.test(email))throw new Error('Email 格式不正確。');
       const mode=scopeDraft.route_mode;
       if(!['directory','domain'].includes(mode))throw new Error('請選擇 Directory 或 Domain。');
       if(duplicateDomainLabelError(id,mode))throw new Error('網域名稱重複，拒絕建立。');
-      await provisionScope({
+      const provisionedScope=await provisionScope({
         scope_id:id,
         display_name:id,
         email,
@@ -498,9 +518,26 @@ function CreateNodePanel({data,kind='scope',onClose}){
         theme:'system-default',
         copy_keywords:true
       });
-      await updateRows('silver.'+id,{locale:normalizeUiLocale(scopeDraft.locale),updated_at:new Date().toISOString()},{filters:[{column:'id',operator:'eq',value:id}]});
-      setStatus('Scope '+id+' 已建立（符文66已複製、Theme 為系統日夜自動模式）。');refresh();onClose?.();
-    }catch(error){setStatus(error?.message||'Scope 建立失敗。');}
+      // The RPC returned successfully; a later schema-cache failure is not a failed creation.
+      provisioned=true;
+      if(String(provisionedScope?.scope_id||'')!==id)throw new Error('Scope 建立回應缺少正確的 Scope ID。');
+      if(Number(provisionedScope?.keyword_rows)!==66)throw new Error('符文66複製數量不正確，請核對資料庫。');
+      await updateRows('silver.'+id,{
+        locale:normalizeUiLocale(scopeDraft.locale),
+        updated_at:new Date().toISOString()
+      },{filters:[{column:'id',operator:'eq',value:id}]});
+      const config=await readAdminScopeConfig(id);
+      if(!config)throw new Error('Scope 設定列尚未可讀，請重新讀取。');
+      setStatus('Scope '+id+' 已建立並驗證（6 張資料表、符文66、設定可讀）。');
+      refresh();
+      onClose?.();
+    }catch(error){
+      if(provisioned){
+        setStatus('Scope '+id+' 已建立，但後續驗證／設定尚未完成：'+String(error?.message||error)+'。請重新讀取，不要重複建立。');
+        refresh();
+        onClose?.();
+      }else setStatus(error?.message||'Scope 建立失敗。');
+    }
   }
 
   async function createGroup(){
