@@ -1,6 +1,20 @@
 # LOC Release Roadmap
 
-## Current — 0.9.2-rc.1 (2026-10-09)
+## Current — 0.9.2-rc.2 (2026-10-10)
+
+本版延續 RC1 的 Hero／CSS／Scope 架構，不新增平行模組，將 2026-10-09 至 10-10 已合併至 Current `main` 的治理、資料庫相容性與管理工作台修正定錨為 RC2。
+
+- Scope 管理：整合 Scope Registry 的左至右 vis-network 階層樹、Attr 摘要先行、明確的 Domain／Directory 路由資訊，以及 `silver.manage` 的 NAV／頁面文案欄位編輯（PR #491–#493）。
+- 動態 Scope 建立：Supabase `api.provision_scope` 完成六張表後會通知 PostgREST reload schema；前端針對 schema cache 短暫延遲重試、辨認「已建立但仍在等待讀取」與「建立失敗」，避免重複新增（PR #494；資料庫 Migration 已套用）。
+- Scope 刪除：vis-network 與 Attr 入口統一使用頁內確認，要求輸入 ID；RPC 回報刪除後再次核對 Registry 才移除節點，不再依賴瀏覽器 prompt 或先刪畫面（PR #495）。
+- 語系 Attr 摘要改用與選單一致的「繁體中文／简体中文／English」，資料庫仍存 `zh-Hant`／`zh-Hans`／`en`（PR #496）。
+- 沿用已合併的 `loc_theme` 具名型別欄位與數字 Theme ID 1–8（PR #486）；過時舊方案 PR #485 已關閉，不重新合併。
+- Branch Governance：現存已完成分支 Freeze，僅 `main` 與進行中的 `feat/ios-device-build` 保持 Active；手機實機 IPA 建置 PR #479 不納入 RC2 完成驗收。
+- **Import 真實檔案 round-trip、私密 iOS 實機驗證、Scope 刪除／建立的正式站人工端到端驗收均保留 Pending。** 本版是修正候選版，不是 1.0，也不以版本升級代替實測。
+
+自動化需以 RC2 合併 commit 的對應檢查為準；未取得結果以前不標記通過。詳細待驗收項目以 `docs/TODO.md` 為準。
+
+## Previous — 0.9.2-rc.1 (2026-10-09)
 
 0.9.2 RC 是以已合併的四功能 Hero 圖片與文字定位、首頁字級、固定 Scope 標誌，以及 0.9.1 CSS 減法為基線的**穩定／修 bug 候選版**，不宣稱所有人工驗收已完成。
 

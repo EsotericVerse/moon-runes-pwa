@@ -1,6 +1,6 @@
 # LOC Current TODO
 
-**Current version:** 0.9.2-rc.1
+**Current version:** 0.9.2-rc.2
 
 **Release policy:** 0.9.2 RC 先定版，後續以修 bug／回歸驗證為主；Import 的真實來源測試由使用者暫緩，**Pending / 尚未驗收**。本表的 `[x]` 表示對應程式交付或已取得明確驗證證據，不能推論其他人工檢查也完成。
 
@@ -10,7 +10,14 @@
 - [x] 四大功能 Hero 依 Scope 載入八張 JPG：LOC 專用四張；作者與符韻共用四張。
 - [x] LOC／作者的功能 Hero 文字移至圖片垂直中段；符韻沿用原有布局；已加入 desktop／mobile Playwright 回歸。
 - [x] 0.9.1 CSS／DIV 收斂、既有語意與共用排版契約繼續保留。
-- [ ] **0.9.2-rc.1 本身**的 `verify`／public DB／build／desktop-mobile CI：在對應 commit 執行完成後才登記結果，不以先前 PR 的 CI 代替。
+- [ ] **0.9.2-rc.2 本身**的 `verify`／public DB／build／desktop-mobile CI：在對應 commit 執行完成後才登記結果，不以先前 PR 的 CI 代替。
+
+## RC2 專項人工驗收（尚未簽核）
+
+- [ ] 新增一般 Scope 後，確認六張表、Registry、Manage 與 66 筆關鍵詞初始化完成；正式站立即重讀不再因 PostgREST schema cache 誤判失敗。
+- [ ] 從 vis-network／Attr 入口刪除測試 Scope，確認需要輸入 ID、取消可保留節點，且 RPC 與資料庫 Registry 都已移除才更新 UI。
+- [ ] 檢查 Scope 管理視覺階層、Domain／Directory、NAV／頁面文案和語系摘要一致性。
+- [ ] iOS `feat/ios-device-build` 實機 IPA 簽署與私密資料本機測試；PR #479 仍為獨立進行中工作。
 
 ## 0.9.2 RC — 待確認／Bug-fix backlog（沿用先前未完成人工驗收）
 
