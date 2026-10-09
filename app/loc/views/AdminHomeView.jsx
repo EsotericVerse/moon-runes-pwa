@@ -7,19 +7,20 @@ import {THEME_SLOTS,THEME_TOKEN_KEYS} from '../../modular/theme-registry';
 import {mergeThemeSlot} from '../theme-data';
 import {useAccount} from '../use-account';
 import {
-  deleteRows,insertRows,dbAuthRelation,manageScopeRegistry,provisionScope,syncManageScopeRow,updateRows
+  copyRune66KeywordClass,deleteRows,insertRows,dbAuthRelation,manageScopeRegistry,provisionScope,syncManageScopeRow,updateRows
 } from '../db-client.mjs';
 
 const ADMIN_OPTIONS=Object.freeze([
   {value:'registry',label:'群組人員管理'},
   {value:'database',label:'資料庫設定'},
-  {value:'themes',label:'主題設定'}
+  {value:'themes',label:'主題設定'},
+  {value:'blocklist',label:'系統黑名單'}
 ]);
 const CREATE_OPTIONS=Object.freeze([
   {value:'scope',label:'新增 Scope'},
   {value:'group',label:'新增 Scope Group'}
 ]);
-const EMPTY_SCOPE_CREATE={scope_id:'',email:'',route_mode:'directory'};
+const EMPTY_SCOPE_CREATE={scope_id:'',email:'',locale:'zh-Hant',route_mode:'directory'};
 const EMPTY_GROUP_CREATE={scope_id:'',display_name:'',domain:'',directory:'',parent_scope_id:'loc',sort_order:''};
 const EMPTY_MAPPING={email:'',galaxy:'galaxy',time:'time',birthday:''};
 
@@ -192,6 +193,7 @@ function RegistryNodePanel({data,selectedId,onCreateMode}){
   const config=configs[selectedId]||null;
   const scopeMappings=mappings.filter(row=>row.id===selectedId);
   const [newMapping,setNewMapping]=useState({...EMPTY_MAPPING});
+  const [runeCopyBusy,setRuneCopyBusy]=useState(false);
 
   const groups=registry.filter(row=>row.scope_kind==='group'&&row.active!==false&&row.scope_id!==selectedId);
   const parentOptions=[{value:'',label:'—'},...groups.map(row=>({value:row.scope_id,label:(row.display_name||row.scope_id)+' · '+row.scope_id}))];
@@ -223,7 +225,7 @@ function RegistryNodePanel({data,selectedId,onCreateMode}){
           display_name:String(config.display_name||selected.scope_id).trim(),
           search_intro:String(config.search_intro||'').trim(),
           search_aliases:normalizeAliases(config.search_aliases),
-          theme:String(config.theme||'theme-7'),
+          theme:String(config.theme||'system-default'),
           locale:normalizeUiLocale(config.locale),
           search_able:config.search_able!==false,
           statistics_able:config.statistics_able!==false,
@@ -274,6 +276,28 @@ function RegistryNodePanel({data,selectedId,onCreateMode}){
     }catch(error){setStatus(error?.message||'Mapping 新增失敗。');}
   }
 
+  async function toggleScopeHidden(){
+    if(!selected||selected.scope_kind!=='scope')return;
+    const hidden=selected.active!==false;
+    setStatus('');
+    try{
+      await manageScopeRegistry('update',selected.scope_id,{active:!hidden});
+      setStatus(selected.scope_id+(hidden?' 已設定隱藏（保留資料）。':' 已取消隱藏。'));
+      refresh();
+    }catch(error){setStatus(error?.message||'Scope 隱藏設定失敗。');}
+  }
+
+  async function copyRune66(){
+    if(!selected||selected.scope_kind!=='scope'||runeCopyBusy)return;
+    setRuneCopyBusy(true);setStatus('');
+    try{
+      const result=await copyRune66KeywordClass(selected.scope_id);
+      setStatus('已建立符文66獨立副本：'+result.class_name+'（'+result.count+' 筆，UUID：'+result.class_id+'）。目前使用的 Class 不變。');
+      refresh();
+    }catch(error){setStatus(error?.message||'符文66複製失敗。');}
+    finally{setRuneCopyBusy(false);}
+  }
+
   if(!selected)return <aside className="admin-context-panel"><p className="scope-status">點選節點。</p></aside>;
 
   return <aside className="admin-context-panel">
@@ -304,7 +328,8 @@ function RegistryNodePanel({data,selectedId,onCreateMode}){
       <label><span>Directory</span><input value={selected.directory||''} onChange={e=>patchRegistry('directory',e.target.value)}/></label>
       {selected.scope_id!=='loc'?<label><span>Parent</span><select className="admin-native-select" value={String(selected.parent_scope_id||'')} onChange={e=>patchRegistry('parent_scope_id',e.target.value||'')}>{parentOptions.map(option=><option value={option.value} key={option.value||'root'}>{option.label}</option>)}</select></label>:null}
       <label><span>排序</span><input type="number" value={selected.sort_order||0} onChange={e=>patchRegistry('sort_order',e.target.value)}/></label>
-      {selected.scope_id!=='loc'?<label className="scope-setting-toggle"><input type="checkbox" checked={selected.active!==false} onChange={e=>patchRegistry('active',e.target.checked)}/> Active</label>:null}
+      {selected.scope_kind==='scope'?<button type="button" className="loc-button" onClick={toggleScopeHidden}>{selected.active===false?'取消隱藏':'設定隱藏'}</button>:null}
+      {selected.scope_kind==='scope'?<button type="button" className="loc-button" disabled={runeCopyBusy} onClick={copyRune66}>{runeCopyBusy?'複製中…':'複製符文66風格'}</button>:null}
 
       <div className="scope-tabs">
         <button type="button" className="loc-button primary" onClick={saveRegistryAndConfig}>儲存節點</button>
@@ -357,10 +382,11 @@ function CreateNodePanel({data,kind='scope',onClose}){
         domain:mode==='domain'?id+'.lo3rwang.cc':null,
         directory:mode==='directory'?'/'+id:null,
         parent_scope_id:'loc',
-        theme:'theme-7',
+        theme:'system-default',
         copy_keywords:true
       });
-      setStatus('Scope '+id+' 已建立。');refresh();onClose?.();
+      await updateRows('silver.'+id,{locale:normalizeUiLocale(scopeDraft.locale),updated_at:new Date().toISOString()},{filters:[{column:'id',operator:'eq',value:id}]});
+      setStatus('Scope '+id+' 已建立（符文66已複製、Theme 為系統日夜自動模式）。');refresh();onClose?.();
     }catch(error){setStatus(error?.message||'Scope 建立失敗。');}
   }
 
@@ -385,6 +411,8 @@ function CreateNodePanel({data,kind='scope',onClose}){
     {kind==='scope'?<>
       <label><span>Scope ID</span><input maxLength="15" value={scopeDraft.scope_id} onChange={e=>setScopeDraft(v=>({...v,scope_id:e.target.value.toLowerCase()}))}/></label>
       <label><span>管理者 Email（必填）</span><input type="email" required autoComplete="off" value={scopeDraft.email} onChange={e=>setScopeDraft(v=>({...v,email:e.target.value}))}/></label>
+      <label><span>預設語系</span><select className="admin-native-select" value={normalizeUiLocale(scopeDraft.locale)} onChange={e=>setScopeDraft(v=>({...v,locale:normalizeUiLocale(e.target.value)}))}>{UI_LOCALE_OPTIONS.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
+      <p className="scope-status">Theme：系統預設（日／夜自動） · 符文66：建立時自動複製</p>
       <div className="admin-inline-flags" role="radiogroup" aria-label="Scope 路由模式">
         <label><input type="radio" name="new-scope-route-mode" value="directory" checked={scopeDraft.route_mode==='directory'} onChange={()=>setScopeDraft(v=>({...v,route_mode:'directory'}))}/>Directory</label>
         <label><input type="radio" name="new-scope-route-mode" value="domain" checked={scopeDraft.route_mode==='domain'} onChange={()=>setScopeDraft(v=>({...v,route_mode:'domain'}))}/>Domain</label>
@@ -586,6 +614,69 @@ function ThemeEditor(){
   </section>;
 }
 
+function AdminEmailBlocklist(){
+  const account=useAccount();
+  const [emails,setEmails]=useState([]);
+  const [email,setEmail]=useState('');
+  const [busy,setBusy]=useState(false);
+  const [message,setMessage]=useState('');
+  const [loading,setLoading]=useState(true);
+
+  const load=useCallback(async()=>{
+    setLoading(true);
+    try{
+      const {data,error}=await dbAuthRelation('silver.email_blocklist')
+        .select('email,created_at').order('email',{ascending:true});
+      if(error)throw new Error(error.message||'系統黑名單讀取失敗');
+      setEmails(data||[]);
+    }catch(error){setMessage(String(error?.message||error));}
+    finally{setLoading(false);}
+  },[]);
+  useEffect(()=>{load();},[load]);
+
+  async function add(){
+    const value=String(email||'').trim().toLowerCase();
+    if(!/^\S+@\S+\.\S+$/.test(value)){setMessage('Email 格式不正確。');return;}
+    if(value===String(account.email||'').toLowerCase()){
+      setMessage('不可將目前登入的 Admin 帳號加入黑名單。');return;
+    }
+    setBusy(true);setMessage('');
+    try{
+      const {error}=await dbAuthRelation('silver.email_blocklist').insert({email:value});
+      if(error)throw new Error(error.message||'新增黑名單失敗');
+      setEmail('');setMessage(value+' 已加入系統黑名單。');
+      await load();
+    }catch(error){setMessage(String(error?.message||error));}
+    finally{setBusy(false);}
+  }
+  async function remove(value){
+    if(!window.confirm('確認將 '+value+' 移出系統黑名單？'))return;
+    setBusy(true);setMessage('');
+    try{
+      const {error}=await dbAuthRelation('silver.email_blocklist').delete().eq('email',value);
+      if(error)throw new Error(error.message||'移出黑名單失敗');
+      setMessage(value+' 已移出黑名單。');
+      await load();
+    }catch(error){setMessage(String(error?.message||error));}
+    finally{setBusy(false);}
+  }
+  return <section className="loc-card admin-workspace">
+    <h2>系統黑名單（Email Block List）</h2>
+    <p className="scope-status">命中的 Email 不得使用任何 Scope 或全域 Admin 管理權限；資料庫亦會拒絕管理寫入。黑名單不會刪除帳號或既有資料。</p>
+    <label><span>Email</span><input type="email" value={email} onChange={e=>setEmail(e.target.value)}/></label>
+    <button type="button" className="loc-button primary" onClick={add} disabled={busy}>加入黑名單</button>
+    {loading?<p className="scope-status">讀取中…</p>:null}
+    {!loading&&emails.length===0?<p className="scope-status">目前沒有封鎖 Email。</p>:null}
+    <div className="scope-list">
+      {emails.map(item=><article className="scope-inline-card" key={item.email}>
+        <strong>{item.email}</strong>
+        <button type="button" className="loc-button" onClick={()=>remove(item.email)} disabled={busy}>移出黑名單</button>
+      </article>)}
+    </div>
+    {message?<p className="scope-status" role="status">{message}</p>:null}
+  </section>;
+}
+
 export default function AdminHomeView(){
   const account=useAccount();
   const [section,setSection]=useState('registry');
@@ -605,5 +696,6 @@ export default function AdminHomeView(){
     {section==='registry'?<AdminRegistry/>:null}
     {section==='database'?<DatabaseTarget/>:null}
     {section==='themes'?<ThemeEditor/>:null}
+    {section==='blocklist'?<AdminEmailBlocklist/>:null}
   </section>;
 }
