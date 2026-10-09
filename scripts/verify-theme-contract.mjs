@@ -50,6 +50,40 @@ if(shell.includes('if(fixedThemeId)return null')||shell.includes('if(fixedDefaul
 for(const token of ["selection.scopeId===scopeId","setSelection({scopeId,themeId:SYSTEM_THEME_ID})","fixedDefaultThemeId||configuredDefaultThemeId||automaticThemeId(now)"])if(!shell.includes(token))failures.push('Scope-local system-default theme behavior missing '+token);
 
 if(!portableSchema.includes('"loc_theme"')||portableSchema.includes('"theme_attr" jsonb')||!portableSchema.includes('"loc_bg" text NOT NULL')||!portableSchema.includes('"loc_shadow_card" text NOT NULL'))failures.push('portable schema must use explicit theme columns, never JSONB');
+
+if(!portableSchema.includes('"theme_id" smallint NOT NULL')||
+  !portableSchema.includes('CONSTRAINT "loc_theme_id_check" CHECK (theme_id BETWEEN 1 AND 8)')||
+  portableSchema.includes("theme_id ~ '^theme-[1-8]
+if(themeData.includes('theme_attr')||admin.includes('theme_attr'))failures.push('Live Theme loader/editor may not use JSONB');
+if(portableSchema.includes('"theme_registry"'))failures.push('portable schema must not restore legacy theme_registry');
+
+// CSS subtraction guard: preserve the active shared frame and remove obsolete hero variants.
+const homeCss=read('app/styles/home-content.css');
+const homeFrameCss=read('app/styles/loc-about-original.css');
+const uiCss=read('app/styles/uiux.css');
+const responsiveCss=read('app/styles/responsive.css');
+const authorHome=read('app/loc/views/AuthorHomeView.jsx');
+for(const selector of ['.home-title-row{','.home-section-heading{','.home-architecture-figure{','.author-role-grid{','.author-trinity-layout{','.author-official-links{']){
+  if(!homeCss.includes(selector))failures.push('CSS subtraction removed active layout '+selector);
+}
+for(const className of ['author-home-hero','home-progress-grid','home-about-layout','home-framework-figure','author-about-grid','author-method-grid','author-contact-layout']){
+  if(homeCss.includes(className)||authorHome.includes(className))failures.push('obsolete CSS/DOM returned: '+className);
+}
+if(responsiveCss.includes('scope-home-hero-with-visual')||uiCss.includes('.home-progress-grid'))failures.push('retired homepage overrides returned');
+for(const required of ['.loc-home-block__header{','.loc-home-block--hero-side','.loc-home-block--with-image']){
+  if(!homeFrameCss.includes(required))failures.push('shared LOC/Author frame missing: '+required);
+}
+if(!authorHome.includes('<AuthorHomeEditableBlocks/>')||!authorHome.includes('loc-hero loc-hero-feature'))failures.push('Author home/subpages must preserve shared block display and feature hero');
+
+if(failures.length){
+  console.error('[theme-contract] failures:\n'+failures.map(item=>'- '+item).join('\n'));
+  process.exit(1);
+}
+console.log('[theme-contract] eight stable theme IDs, DB-backed typed columns and emergency fallback verified');
+"))failures.push('loc_theme DB theme_id must be numeric 1–8, not theme-prefixed text');
+if(!themeData.includes('export function themeUiId(')||!themeData.includes('export function themeNumber('))failures.push('Presentation Theme IDs must be converted only at the DB boundary');
+if(!admin.includes('theme_db_numeric')||!admin.includes('themeNumber(themeId)'))failures.push('Theme Admin editor must save numeric DB key after migration');
+
 if(themeData.includes('theme_attr')||admin.includes('theme_attr'))failures.push('Live Theme loader/editor may not use JSONB');
 if(portableSchema.includes('"theme_registry"'))failures.push('portable schema must not restore legacy theme_registry');
 
