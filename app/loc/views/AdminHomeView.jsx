@@ -595,7 +595,6 @@ function ThemeEditor(){
         theme_order:Number(existing?.theme_order)||Number(String(themeId).split('-')[1])||1,
         scheme:draft.scheme==='dark'?'dark':'light',
         style_key:String(draft.styleKey||''),
-        theme_group:String(draft.group||'').trim(),
         identity_color:String(draft.identityColor||'').trim(),
         ...Object.fromEntries(THEME_TOKEN_KEYS.map(key=>[
           themeColumnForToken(key),String(draft.tokens?.[key]||'').trim()
@@ -613,7 +612,7 @@ function ThemeEditor(){
       <div className="scope-management-fields">
         <label><span>名稱</span><input value={draft.label||''} onChange={e=>setDraft(v=>({...v,label:e.target.value}))}/></label>
         <label><span>Scheme</span><select className="admin-native-select" value={draft.scheme||'light'} onChange={e=>setDraft(v=>({...v,scheme:e.target.value||'light'}))}><option value="light">light</option><option value="dark">dark</option></select></label>
-        <label><span>Group</span><input value={draft.group||''} onChange={e=>setDraft(v=>({...v,group:e.target.value}))}/></label>
+        <label><span>Group</span><input value={draft.label||''} disabled title="Group 使用主題名稱，不重複儲存"/></label>
         <label><span>Style Key</span><input value={draft.styleKey||''} onChange={e=>setDraft(v=>({...v,styleKey:e.target.value}))}/></label>
         <label><span>Identity Color</span><input value={draft.identityColor||''} onChange={e=>setDraft(v=>({...v,identityColor:e.target.value}))}/></label>
       </div>
