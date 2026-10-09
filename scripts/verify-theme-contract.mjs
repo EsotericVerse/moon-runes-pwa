@@ -37,8 +37,8 @@ if(!shell.includes("queryFn:()=>selectScopeConfig(scopeId)")||!shell.includes("f
 
 for(const token of ["SYSTEM_THEME_ID='system-default'","THEME_TIME_ZONE='Asia/Taipei'","DAY_THEME_ID='theme-7'","NIGHT_THEME_ID='theme-1'",'copy.common.systemTheme'])if(!shell.includes(token))failures.push('AppShell theme control missing '+token);
 if(!layout.includes("import AppShell from './AppShell'")||!layout.includes('<AppShell>{children}</AppShell>'))failures.push('Root layout must use AppShell');
-if(!layout.includes('id="loc-theme-bootstrap"')||!layout.includes('INITIAL_SCOPE_THEMES')||!layout.includes('INITIAL_THEME_SCHEMES')||!layout.includes("themeBootstrap='scheme-only'"))failures.push('Root layout must bootstrap only the scheme while DB theme tokens load');
-if(!layout.includes("  'theme-4':'dark',")||!layout.includes("const GAME_BOOTSTRAP_THEME_ID='theme-4'")||!layout.includes("pathname==='/game'"))failures.push('Nature game must bootstrap its dark scheme before DB palette hydration');
+if(!layout.includes('id="loc-theme-bootstrap"')||!layout.includes("themeBootstrap='scheme-only'")||layout.includes('INITIAL_SCOPE_THEMES'))failures.push('Root layout must bootstrap only color scheme without duplicating Scope policy');
+if(!layout.includes("const GAME_BOOTSTRAP_THEME_ID='theme-4'")||!layout.includes("pathname==='/game'")||!layout.includes('const scheme=game'))failures.push('Nature game must bootstrap its dark scheme before DB palette hydration');
 if(!game.includes("GAME_THEME_DEFAULT='theme-4'")||!game.includes('hasCanonicalGameTheme?')||!game.includes('colorScheme:gameTheme.scheme'))failures.push('Nature game must remain default and avoid Order palette flash while loading');
 if(!shell.includes('root.dataset.themeSignature===themeSignature(slot)'))failures.push('AppShell theme control must avoid needless root reapply while detecting token changes');
 const globalCss=read('app/globals.css');
