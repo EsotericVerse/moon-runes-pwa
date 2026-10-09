@@ -69,9 +69,10 @@ export function useScopeRuntime(){
     return()=>{active=false};
   },[dynamic,scopeId,location.mounted]);
 
+  const activeRegistryRow=registryRow?.scope_id===scopeId?registryRow:null;
   const base=getScope(scopeId);
   const configEnabled=Boolean(
-    scopeId&&scopeId!=='admin'&&!base.aggregateChildren&&(!dynamic||registryRow?.scope_kind==='scope')
+    scopeId&&scopeId!=='admin'&&!base.aggregateChildren&&(!dynamic||activeRegistryRow?.scope_kind==='scope')
   );
   const [configRow,setConfigRow]=useState(()=>configEnabled?(configCache.get(scopeId)||null):null);
 
@@ -96,26 +97,27 @@ export function useScopeRuntime(){
     return()=>{active=false};
   },[scopeId,configEnabled]);
 
-  const structural=registryRow?{
+  const activeConfigRow=configRow?.id===scopeId?configRow:null;
+  const structural=activeRegistryRow?{
     ...base,
-    label:registryRow.display_name||scopeId,
-    searchTitle:registryRow.display_name||scopeId,
-    aggregateChildren:registryRow.scope_kind==='group',
-    registry:registryRow
+    label:activeRegistryRow.display_name||scopeId,
+    searchTitle:activeRegistryRow.display_name||scopeId,
+    aggregateChildren:activeRegistryRow.scope_kind==='group',
+    registry:activeRegistryRow
   }:base;
-  const scope=configRow?{
+  const scope=activeConfigRow?{
     ...structural,
-    label:String(configRow.display_name||structural.label||scopeId).trim(),
-    searchTitle:String(configRow.display_name||structural.searchTitle||structural.label||scopeId).trim(),
-    searchAliases:Array.isArray(configRow.search_aliases)?configRow.search_aliases:structural.searchAliases,
-    searchIntro:String(configRow.search_intro||'').trim(),
-    config:configRow
+    label:String(activeConfigRow.display_name||structural.label||scopeId).trim(),
+    searchTitle:String(activeConfigRow.display_name||structural.searchTitle||structural.label||scopeId).trim(),
+    searchAliases:Array.isArray(activeConfigRow.search_aliases)?activeConfigRow.search_aliases:structural.searchAliases,
+    searchIntro:String(activeConfigRow.search_intro||'').trim(),
+    config:activeConfigRow
   }:structural;
 
   return {
     scopeId,scope,
     host:location.host,pathname,
-    dynamic,registryRow,registryResolved,registryError,
-    configRow
+    dynamic,registryRow:activeRegistryRow,registryResolved,registryError,
+    configRow:activeConfigRow
   };
 }
