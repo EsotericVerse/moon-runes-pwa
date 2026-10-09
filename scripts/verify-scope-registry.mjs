@@ -1,4 +1,4 @@
-import {FEATURES,SCOPES,featureHref,resolveScope,resolveScopeSearchAlias,scopeHref} from '../app/modular/scope-registry.js';
+import {FEATURES,SCOPES,featureHref,resolveScope,resolveScopeSearchAlias,scopeHref,duplicateDomainLabelError} from '../app/modular/scope-registry.js';
 
 const failures=[];
 if(resolveScope('unknown.example','/')!=='loc')failures.push('default Scope must remain loc');
@@ -11,6 +11,11 @@ if(resolveScopeSearchAlias('月')!==null)failures.push('Scope search aliases mus
 if(resolveScope('127.0.0.1','/lrunes/')!=='lrunes')failures.push('local static preview must resolve /lrunes/ as LunaRunes');
 if(resolveScope('localhost','/lrunes/game/')!=='lrunes')failures.push('local static preview must resolve mounted LunaRunes feature paths');
 if(scopeHref('lrunes')!=='https://loc.lo3rwang.cc/lrunes/')failures.push('LunaRunes canonical route must remain a LOC Directory');
+if(SCOPES.lrunes.domain)failures.push('LunaRunes must not declare an independent canonical domain');
+if(resolveScope('loc.lo3rwang.cc','/admin/')!=='admin')failures.push('Admin redirect target must resolve as Admin Scope');
+for(const [id,mode,reject] of [['lo3rwang','domain',true],['cc','domain',true],['aaa','domain',false],['lo3rwang','directory',false]]){
+  if(Boolean(duplicateDomainLabelError(id,mode))!==reject)failures.push('Domain duplicate labels mismatch: '+id+' / '+mode);
+}
 if(scopeHref('lo3rwang')!=='https://loc.lo3rwang.cc/lo3rwang/')failures.push('Author homepage must remain a LOC Directory route');
 if(scopeHref('newscope')!=='https://loc.lo3rwang.cc/scope/?scope=newscope')failures.push('dynamic Scope homepage must use the generic static shell');
 if(featureHref('newscope','search')!=='https://loc.lo3rwang.cc/scope/search/?scope=newscope')failures.push('dynamic Scope features must preserve Scope ID in the generic shell query');
