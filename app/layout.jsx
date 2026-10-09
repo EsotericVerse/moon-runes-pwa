@@ -1,7 +1,6 @@
 import './globals.css';
 import AppShell from './AppShell';
 import {LOC_ORIGIN} from './seo/metadata';
-import {SCOPES} from './modular/scope-registry';
 
 export const metadata = {
   metadataBase:new URL(LOC_ORIGIN),
@@ -12,60 +11,24 @@ export const metadata = {
 };
 
 const AUTO_DAY_THEME_ID='theme-7';
-const GAME_BOOTSTRAP_THEME_ID='theme-4';
 const AUTO_NIGHT_THEME_ID='theme-1';
-const INITIAL_SCOPE_THEMES=Object.values(SCOPES).map(scope=>({
-  domain:scope.domain||'',
-  mount:scope.mount||null,
-  theme:scope.theme||{mode:'auto'}
-}));
-const INITIAL_THEME_IDS=[...new Set([
-  GAME_BOOTSTRAP_THEME_ID,
-  AUTO_DAY_THEME_ID,
-  AUTO_NIGHT_THEME_ID,
-  ...INITIAL_SCOPE_THEMES.map(scope=>scope.theme?.themeId).filter(Boolean)
-])];
-const INITIAL_THEME_SCHEMES=Object.freeze({
-  'theme-1':'dark',
-  'theme-2':'light',
-  'theme-3':'light',
-  'theme-4':'dark',
-  'theme-5':'light',
-  'theme-6':'dark',
-  'theme-7':'light',
-  'theme-8':'dark'
-});
-const INITIAL_THEME_SLOTS=Object.fromEntries(INITIAL_THEME_IDS.map(id=>[
-  id,{id,scheme:INITIAL_THEME_SCHEMES[id]||'dark'}
-]));
+const GAME_BOOTSTRAP_THEME_ID='theme-4';
+// Static export can only mark the initial color scheme. The exact canonical
+// palette and per-Scope default are loaded once from PostgreSQL in AppShell.
 const INITIAL_THEME_SCRIPT=`(()=>{try{
-  const slots=${JSON.stringify(INITIAL_THEME_SLOTS)};
-  const scopes=${JSON.stringify(INITIAL_SCOPE_THEMES)};
-  const host=window.location.hostname.toLowerCase();
   const pathname=(window.location.pathname||'/').toLowerCase();
-  const match=scopes.find(scope=>{
-    if(!scope.mount)return false;
-    const base=String(scope.mount.path||'/').replace(/\\/+$/,'')||'/';
-    return host===String(scope.mount.host||'').toLowerCase()&&(pathname===base||pathname.startsWith(base+'/'));
-  })||scopes.find(scope=>scope.domain&&host===String(scope.domain).toLowerCase());
-  const policy=match?.theme||{mode:'auto'};
-  let themeId=policy.mode==='fixed'?policy.themeId:'';
-  if(pathname==='/game'||pathname.startsWith('/game/'))themeId='${GAME_BOOTSTRAP_THEME_ID}';
-  if(!themeId){
-    let hour=new Date().getHours();
-    try{
-      const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Taipei',hour:'2-digit',hourCycle:'h23'}).formatToParts(new Date());
-      const part=parts.find(item=>item.type==='hour');
-      if(part)hour=Number(part.value);
-    }catch{}
-    themeId=hour>=6&&hour<18?'${AUTO_DAY_THEME_ID}':'${AUTO_NIGHT_THEME_ID}';
-  }
-  const slot=slots[themeId];
-  if(!slot)return;
+  let hour=new Date().getHours();
+  try{
+    const part=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Taipei',hour:'2-digit',hourCycle:'h23'}).formatToParts(new Date()).find(x=>x.type==='hour');
+    if(part)hour=Number(part.value);
+  }catch{}
+  const game=pathname==='/game'||pathname.startsWith('/game/');
+  const themeId=game?'${GAME_BOOTSTRAP_THEME_ID}':(hour>=6&&hour<18?'${AUTO_DAY_THEME_ID}':'${AUTO_NIGHT_THEME_ID}');
+  const scheme=game||themeId==='${AUTO_NIGHT_THEME_ID}'?'dark':'light';
   const root=document.documentElement;
-  root.dataset.theme=slot.scheme;
-  root.dataset.themeId=slot.id;
-  root.style.colorScheme=slot.scheme;
+  root.dataset.theme=scheme;
+  root.dataset.themeId=themeId;
+  root.style.colorScheme=scheme;
   root.dataset.themeBootstrap='scheme-only';
 }catch{}})();`;
 
