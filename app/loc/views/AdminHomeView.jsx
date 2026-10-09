@@ -2,7 +2,7 @@
 
 import {UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale} from '../../i18n/ui-copy';
 import {useCallback,useEffect,useRef,useState} from 'react';
-import {scopeHref} from '../../modular/scope-registry';
+import {scopeHref,duplicateDomainLabelError} from '../../modular/scope-registry';
 import {THEME_SLOTS,THEME_TOKEN_KEYS} from '../../modular/theme-registry';
 import {mergeThemeSlot} from '../theme-data';
 import {useAccount} from '../use-account';
@@ -379,6 +379,8 @@ function CreateNodePanel({data,kind='scope',onClose}){
   const parentOptions=groups.map(row=>({value:row.scope_id,label:(row.display_name||row.scope_id)+' · '+row.scope_id}));
   const [scopeDraft,setScopeDraft]=useState({...EMPTY_SCOPE_CREATE});
   const [groupDraft,setGroupDraft]=useState({...EMPTY_GROUP_CREATE});
+  const scopeDomainError=duplicateDomainLabelError(scopeDraft.scope_id,scopeDraft.route_mode);
+  const groupDomainError=duplicateDomainLabelError(groupDraft.scope_id,groupDraft.route_mode);
 
   async function createScope(){
     try{
@@ -389,6 +391,7 @@ function CreateNodePanel({data,kind='scope',onClose}){
       if(!/^\S+@\S+\.\S+$/.test(email))throw new Error('Email 格式不正確。');
       const mode=scopeDraft.route_mode;
       if(!['directory','domain'].includes(mode))throw new Error('請選擇 Directory 或 Domain。');
+      if(duplicateDomainLabelError(id,mode))throw new Error('網域名稱重複，拒絕建立。');
       await provisionScope({
         scope_id:id,
         display_name:id,
@@ -408,6 +411,7 @@ function CreateNodePanel({data,kind='scope',onClose}){
     try{
       const id=String(groupDraft.scope_id||'').trim().toLowerCase();
       if(!/^[a-z][a-z0-9]{0,14}$/.test(id))throw new Error('Group ID 格式不正確。');
+      if(duplicateDomainLabelError(id,groupDraft.route_mode))throw new Error('網域名稱重複，拒絕建立。');
       await manageScopeRegistry('create_group',id,{
         display_name:String(groupDraft.display_name||'').trim(),
         domain:groupDraft.route_mode==='domain'?id+'.lo3rwang.cc':null,
@@ -431,7 +435,8 @@ function CreateNodePanel({data,kind='scope',onClose}){
         <label><input type="radio" name="new-scope-route-mode" value="domain" checked={scopeDraft.route_mode==='domain'} onChange={()=>setScopeDraft(v=>({...v,route_mode:'domain'}))}/>Domain</label>
       </div>
       <p className="scope-status">Registry：{scopeDraft.route_mode==='domain'?(scopeDraft.scope_id||'scope-id')+'.lo3rwang.cc':'/'+(scopeDraft.scope_id||'scope-id')}</p>
-      <button type="button" className="loc-button primary" onClick={createScope}>建立</button>
+      {scopeDomainError?<p className="scope-status scope-error" role="alert">{scopeDomainError}</p>:null}
+      <button type="button" className="loc-button primary" disabled={Boolean(scopeDomainError)} onClick={createScope}>建立</button>
     </>:<>
       <label><span>Group ID</span><input maxLength="15" value={groupDraft.scope_id} onChange={e=>setGroupDraft(v=>({...v,scope_id:e.target.value.toLowerCase()}))}/></label>
       <label><span>Group 名稱</span><input value={groupDraft.display_name} onChange={e=>setGroupDraft(v=>({...v,display_name:e.target.value}))}/></label>
@@ -440,8 +445,9 @@ function CreateNodePanel({data,kind='scope',onClose}){
         <label><input type="radio" name="new-group-route-mode" value="domain" checked={groupDraft.route_mode==='domain'} onChange={()=>setGroupDraft(v=>({...v,route_mode:'domain'}))}/>Domain</label>
       </div>
       <p className="scope-status">Registry：{groupDraft.route_mode==='domain'?(groupDraft.scope_id||'group-id')+'.lo3rwang.cc':'/'+(groupDraft.scope_id||'group-id')}</p>
+      {groupDomainError?<p className="scope-status scope-error" role="alert">{groupDomainError}</p>:null}
       <label><span>Parent</span><select className="admin-native-select" value={groupDraft.parent_scope_id||'loc'} onChange={e=>setGroupDraft(v=>({...v,parent_scope_id:e.target.value||'loc'}))}>{parentOptions.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
-      <button type="button" className="loc-button primary" onClick={createGroup}>建立</button>
+      <button type="button" className="loc-button primary" disabled={Boolean(groupDomainError)} onClick={createGroup}>建立</button>
     </>}
   </aside>;
 }
