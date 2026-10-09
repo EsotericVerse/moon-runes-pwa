@@ -113,6 +113,7 @@ async function verifyGameContract(client){
 
 const client=runtimeClient();
 await probe(client,'manage','id,role,birthday,galaxy,time');
+await probe(client,'loc_theme','theme_id,theme_name,theme_order,scheme,style_key,identity_color,loc_bg,loc_panel,loc_text,loc_accent,loc_shadow_card');
 
 const scopes=await managedScopes(client);
 if(!scopes.length)throw new Error('silver.manage returned no managed Scopes');
