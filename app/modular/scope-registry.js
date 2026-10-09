@@ -140,20 +140,6 @@ export function resolveScope(host='',pathname='/'){
   return DEFAULT_SCOPE_ID;
 }
 
-function normalizeScopeSearchAlias(value=''){
-  return String(value||'').normalize('NFKC').trim().toLocaleLowerCase('en-US');
-}
-
-export function resolveScopeSearchAlias(query=''){
-  const token=normalizeScopeSearchAlias(query);
-  if(!token)return null;
-  for(const scope of Object.values(SCOPES)){
-    const aliases=Array.isArray(scope.searchAliases)?scope.searchAliases:[];
-    if(aliases.some(alias=>normalizeScopeSearchAlias(alias)===token))return scope;
-  }
-  return null;
-}
-
 export function getScope(id){
   const scopeId=normalizeScopeId(id)||DEFAULT_SCOPE_ID;
   // Static Registry stores route identity only; display_name lives in PostgreSQL.
