@@ -125,8 +125,8 @@ function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride
     </select>
   </label>;
 }
-// Browser page copy comes from silver.manage.Title_TW / Desc_TW.
-// These are not Scope names; display_name remains the independent navigation label.
+// Scope NAV labels and browser page copy use silver.manage.Title_TW / Desc_TW.
+// Scope display_name remains independent for directory and content presentation.
 function ScopePageCopy({scopeId,display_name}){
   const pageCopyQuery=useQuery({
     queryKey:['scope-page-copy',scopeId],
@@ -189,12 +189,22 @@ export default function AppShell({children}){
   useEffect(()=>{
     let active=true;
     selectScopeRegistry().then(rows=>{
-      if(!active)return;
-      setScopeRegistryRouteRows(rows);
-      setNavDisplayNames(Object.fromEntries(rows.map(row=>[row.scope_id,row.display_name])));
+      if(active)setScopeRegistryRouteRows(rows);
     }).catch(()=>{});
+    Promise.all(NAV_SCOPES.filter(item=>item.id!=='loc').map(async item=>{
+      try{
+        const row=await client.fetchQuery({
+          queryKey:['scope-page-copy',item.id],
+          queryFn:()=>selectScopePageCopy(item.id),
+          staleTime:60_000
+        });
+        return [item.id,row?.Title_TW];
+      }catch{return [item.id,''];}
+    })).then(labels=>{
+      if(active)setNavDisplayNames(Object.fromEntries(labels.filter(([,label])=>label)));
+    });
     return()=>{active=false};
-  },[]);
+  },[client]);
   const currentScope=scope||getScope(scopeId);
   const [localeSelection,setLocaleSelection]=useState(()=>({scopeId:'',locale:'zh-Hant',manual:false}));
   const activeLocale=localeSelection.scopeId===scopeId?normalizeUiLocale(localeSelection.locale):'zh-Hant';
@@ -233,7 +243,7 @@ export default function AppShell({children}){
   }
 
   const featureLabel=item=>copy.features?.[item.id]?.title||item.label;
-  const scopeNavLabel=item=>navDisplayNames[item.id]||item.id;
+  const scopeNavLabel=item=>navDisplayNames[item.id]||item.nav.label;
 
   return <QueryClientProvider client={client}><UiLocaleProvider locale={activeLocale}>
     <ScopePageCopy scopeId={scopeId} display_name={configRow?.display_name||registryRow?.display_name}/>
