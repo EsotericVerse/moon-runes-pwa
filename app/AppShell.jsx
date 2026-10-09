@@ -61,8 +61,9 @@ function automaticThemeId(date=new Date()){
 
 function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride=''}){
   const scope=scopeMeta||getScope(String(scopeId||'').trim());
-  const policy=scope.theme||{mode:'auto'};
-  const fixedDefaultThemeId=String(defaultThemeIdOverride||'').trim()||(policy.mode==='fixed'?String(policy.themeId||'').trim():'');
+  // Scope defaults are owned by the Scope config table; the game route alone
+  // has its own purpose-built temporary default, never persisted to the DB.
+  const fixedDefaultThemeId=String(defaultThemeIdOverride||'').trim();
   const configQuery=useQuery({
     queryKey:['scope-public-config',scopeId],
     queryFn:()=>selectScopeConfig(scopeId),
