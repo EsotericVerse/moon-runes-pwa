@@ -14,15 +14,16 @@ export const THEME_DB_COLUMNS=[
   ...THEME_TOKEN_KEYS.map(themeColumnForToken)
 ].join(',');
 
-export async function selectThemeOverride(themeId){
-  const id=String(themeId||'').trim();
-  if(!id)return null;
-  const {rows}=await selectRows('silver.loc_theme',{
-    columns:THEME_DB_COLUMNS,
-    filters:[{column:'theme_id',operator:'eq',value:id}],
-    limit:1,offset:0
-  });
-  return rows?.[0]||null;
+// The database key is a number (1..8). Legacy client Theme identifiers are
+// presentation identifiers only, never stored in silver.loc_theme.
+export function themeUiId(value){
+  const id=String(value??'').trim();
+  const number=/^theme-([1-8])$/.exec(id)?.[1]||(/^[1-8]$/.test(id)?id:'');
+  return number?'theme-'+number:'';
+}
+export function themeNumber(value){
+  const id=themeUiId(value);
+  return id?Number(id.slice(6)):null;
 }
 
 export async function selectThemeRegistry(){
@@ -31,7 +32,12 @@ export async function selectThemeRegistry(){
     orders:[{column:'theme_order',ascending:true}],
     limit:8,offset:0
   });
-  return rows||[];
+  return (rows||[]).map(row=>({...row,theme_id:themeUiId(row.theme_id)}));
+}
+
+export async function selectThemeOverride(themeId){
+  const id=themeUiId(themeId);
+  return id?(await selectThemeRegistry()).find(row=>row.theme_id===id)||null:null;
 }
 
 export function mergeThemeSlot(themeId,override=null){
