@@ -243,70 +243,93 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
 }
 
 function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
-  const {registry,setRegistry,mappings,setMappings,configs,setConfigs,status,setStatus,refresh}=data;
-  const selectedIndex=registry.findIndex(row=>row.scope_id===selectedId);
-  const selected=selectedIndex>=0?registry[selectedIndex]:null;
+  const {registry,mappings,setMappings,configs,status,setStatus,refresh}=data;
+  const selected=registry.find(row=>row.scope_id===selectedId)||null;
   const config=configs[selectedId]||null;
   const scopeMappings=mappings.filter(row=>row.id===selectedId);
   const [newMapping,setNewMapping]=useState({...EMPTY_MAPPING});
   const pageCopy=scopeMappings[0]||null;
-  const patchPageCopy=(column,value)=>setMappings(rows=>rows.map(row=>row.id!==selectedId?row:{...row,[column]:value}));
+  // Only persist after explicit Save. Clicking another node or Cancel discards this draft.
+  const [editDraft,setEditDraft]=useState(null);
+  const editing=editDraft?.scopeId===selectedId;
+  const current=editing?editDraft.registry:selected;
+  const currentConfig=editing?editDraft.config:config;
+  const currentCopy=editing?editDraft.pageCopy:pageCopy;
+  const beginEdit=()=>setEditDraft({
+    scopeId:selectedId,
+    registry:{...selected},
+    config:config?{...config}:null,
+    pageCopy:pageCopy?{Title_TW:pageCopy.Title_TW||'',Desc_TW:pageCopy.Desc_TW||''}:null
+  });
+  const cancelEdit=()=>setEditDraft(null);
+  const patchRegistry=(key,value)=>setEditDraft(draft=>draft?.scopeId!==selectedId?draft:{
+    ...draft,registry:{...draft.registry,[key]:value}
+  });
+  const patchConfig=(key,value)=>setEditDraft(draft=>draft?.scopeId!==selectedId?draft:{
+    ...draft,config:{...draft.config,[key]:value}
+  });
+  const patchPageCopy=(key,value)=>setEditDraft(draft=>draft?.scopeId!==selectedId?draft:{
+    ...draft,pageCopy:{...draft.pageCopy,[key]:value}
+  });
 
   const groups=registry.filter(row=>row.scope_kind==='group'&&row.active!==false&&row.scope_id!==selectedId);
   const parentOptions=[{value:'',label:'—'},...groups.map(row=>({value:row.scope_id,label:(row.display_name||row.scope_id)+' · '+row.scope_id}))];
   const themeOptions=[{value:'system-default',label:'系統預設（日／夜自動）'},...THEME_SLOTS.map(theme=>({value:theme.id,label:theme.label}))];
-  const routeMode=selected?.domain?'domain':'directory';
+  const routeMode=current?.domain?'domain':'directory';
   const routeLocked=['loc','lrunes','lo3rwang'].includes(selectedId);
   const routeValue=routeMode==='domain'
-    ?String(selected?.domain||'')
-    :'https://loc.lo3rwang.cc'+String(selected?.directory||'');
-  const chooseRouteMode=mode=>setRegistry(rows=>rows.map((row,index)=>index!==selectedIndex?row:{
-    ...row,
-    domain:mode==='domain'?row.domain||row.scope_id+'.lo3rwang.cc':null,
-    directory:mode==='directory'?row.directory||'/'+row.scope_id:null
-  }));
-
-  const patchRegistry=(key,value)=>setRegistry(rows=>rows.map((row,index)=>index===selectedIndex?{...row,[key]:value}:row));
-  const patchConfig=(key,value)=>setConfigs(current=>({...current,[selectedId]:{...(current[selectedId]||{}),[key]:value}}));
+    ?'https://'+String(current?.domain||'')
+    :'https://loc.lo3rwang.cc'+String(current?.directory||'');
+  const chooseRouteMode=mode=>setEditDraft(draft=>draft?.scopeId!==selectedId?draft:{
+    ...draft,registry:{
+      ...draft.registry,
+      domain:mode==='domain'?draft.registry.domain||draft.registry.scope_id+'.lo3rwang.cc':null,
+      directory:mode==='directory'?draft.registry.directory||'/'+draft.registry.scope_id:null
+    }
+  });
   const patchMapping=(email,key,value)=>setMappings(rows=>rows.map(row=>row.id===selectedId&&row.email===email?{...row,[key]:value}:row));
 
   async function saveRegistryAndConfig(){
-    if(!selected)return;
+    if(!editing||!current)return;
     setStatus('');
     try{
-      if(selected.scope_kind!=='system'){
-        const hasDomain=Boolean(String(selected.domain||'').trim());
-        const hasDirectory=Boolean(String(selected.directory||'').trim());
+      if(current.scope_kind!=='system'){
+        const hasDomain=Boolean(String(current.domain||'').trim());
+        const hasDirectory=Boolean(String(current.directory||'').trim());
         if(hasDomain===hasDirectory)throw new Error('Domain / Directory 必須二選一。');
-        await manageScopeRegistry('update',selected.scope_id,{
-          display_name:String(selected.display_name||selected.scope_id).trim(),
-          domain:String(selected.domain||'').trim()||null,
-          directory:String(selected.directory||'').trim()||null,
-          parent_scope_id:selected.scope_id==='loc'?null:(String(selected.parent_scope_id||'').trim()||null),
-          active:selected.scope_id==='loc'?true:selected.active!==false
+        await manageScopeRegistry('update',current.scope_id,{
+          display_name:String(current.display_name||current.scope_id).trim(),
+          domain:String(current.domain||'').trim()||null,
+          directory:String(current.directory||'').trim()||null,
+          parent_scope_id:current.scope_id==='loc'?null:(String(current.parent_scope_id||'').trim()||null),
+          active:current.scope_id==='loc'?true:current.active!==false
         });
       }
-      if(selected.scope_kind==='scope'&&pageCopy){
-        if(!String(pageCopy.Title_TW||'').trim())throw new Error('NAV 中文名稱不可空白。');
-        await updateRows('silver.manage',{
-          Title_TW:String(pageCopy.Title_TW||'').trim(),
-          Desc_TW:String(pageCopy.Desc_TW||'').trim()
-        },{filters:[{column:'id',operator:'eq',value:selected.scope_id}]});
+      if(current.scope_kind==='scope'&&currentCopy){
+        if(!String(currentCopy.Title_TW||'').trim())throw new Error('NAV 中文名稱不可空白。');
+        if(String(currentCopy.Title_TW||'')!==String(pageCopy?.Title_TW||'')||
+          String(currentCopy.Desc_TW||'')!==String(pageCopy?.Desc_TW||'')){
+          await updateRows('silver.manage',{
+            Title_TW:String(currentCopy.Title_TW||'').trim(),
+            Desc_TW:String(currentCopy.Desc_TW||'').trim()
+          },{filters:[{column:'id',operator:'eq',value:current.scope_id}]});
+        }
       }
-      if(selected.scope_kind==='scope'&&config){
-        await updateRows('silver.'+selected.scope_id,{
-          display_name:String(config.display_name||selected.scope_id).trim(),
-          search_intro:String(config.search_intro||'').trim(),
-          search_aliases:normalizeAliases(config.search_aliases),
-          theme:String(config.theme||'system-default'),
-          locale:normalizeUiLocale(config.locale),
-          search_able:config.search_able!==false,
-          statistics_able:config.statistics_able!==false,
-          culture_able:config.culture_able!==false,
+      if(current.scope_kind==='scope'&&currentConfig){
+        await updateRows('silver.'+current.scope_id,{
+          display_name:String(currentConfig.display_name||current.scope_id).trim(),
+          search_intro:String(currentConfig.search_intro||'').trim(),
+          search_aliases:normalizeAliases(currentConfig.search_aliases),
+          theme:String(currentConfig.theme||'system-default'),
+          locale:normalizeUiLocale(currentConfig.locale),
+          search_able:currentConfig.search_able!==false,
+          statistics_able:currentConfig.statistics_able!==false,
+          culture_able:currentConfig.culture_able!==false,
           updated_at:new Date().toISOString()
-        },{filters:[{column:'id',operator:'eq',value:selected.scope_id}]});
+        },{filters:[{column:'id',operator:'eq',value:current.scope_id}]});
       }
-      setStatus(selected.scope_id+' 已更新。');
+      setStatus(current.scope_id+' 已更新。');
+      setEditDraft(null);
       refresh();
     }catch(error){setStatus(error?.message||'Scope 更新失敗。');}
   }
@@ -349,17 +372,6 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
       }]);
       setNewMapping({...EMPTY_MAPPING});setStatus('Mapping 已新增。');refresh();
     }catch(error){setStatus(error?.message||'Mapping 新增失敗。');}
-  }
-
-  async function toggleScopeHidden(){
-    if(!selected||selected.scope_kind!=='scope')return;
-    const hidden=selected.active!==false;
-    setStatus('');
-    try{
-      await manageScopeRegistry('update',selected.scope_id,{active:!hidden});
-      setStatus(selected.scope_id+(hidden?' 已設定隱藏（保留資料）。':' 已取消隱藏。'));
-      refresh();
-    }catch(error){setStatus(error?.message||'Scope 隱藏設定失敗。');}
   }
 
   if(!selected)return <aside className="admin-context-panel"><p className="scope-status">點選節點。</p></aside>;
