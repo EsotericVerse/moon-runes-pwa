@@ -30,6 +30,10 @@ const INITIAL_THEME_SCRIPT=`(()=>{try{
   root.dataset.themeId=themeId;
   root.style.colorScheme=scheme;
   root.dataset.themeBootstrap='scheme-only';
+  // A failed or stalled Theme fetch must not make the whole page invisible.
+  window.setTimeout(()=>{
+    if(root.dataset.themeBootstrap==='scheme-only')delete root.dataset.themeBootstrap;
+  },2000);
 }catch{}})();`;
 
 export default function RootLayout({ children }) {
