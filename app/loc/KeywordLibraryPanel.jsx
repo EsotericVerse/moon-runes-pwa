@@ -467,6 +467,11 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     <p className="loc-eyebrow">Keyword Library</p>
     <h2>關鍵詞庫</h2>
     <p>每套 Class 以 UUID 獨立識別，可複製與分享；文章只保存分析後的 class_id 與 group_lists。公開統計直接讀文章 Attr，不會重新跑關鍵詞。</p>
+    <div className="scope-stat-controls">
+      <button type="button" className="loc-button" disabled={busy||loading} onClick={copyRune66}>{busy?'處理中…':'複製符文66為新 Class'}</button>
+      <span className="scope-status">新增獨立 UUID 的 Class，不覆蓋既有關鍵詞，也不切換目前使用的 Class。</span>
+    </div>
+    {workspace==='analysis'&&message?<p role="status" aria-live="polite" className={message.includes('失敗')?'scope-status scope-error':'scope-status'}>{message}</p>:null}
 
     <div className="scope-stat-controls scope-stat-workspace-switch">
       <label htmlFor="keyword-workspace-picker">關鍵詞工作區</label>
@@ -525,9 +530,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     <div className="scope-stat-controls">
       <label><span>複製目前 Class</span><input value={copyName} placeholder="新 Class 名稱" onChange={event=>setCopyName(event.target.value)}/></label>
       <button type="button" className="loc-button" disabled={busy||!selectedClass} onClick={copyClass}>複製整套 Class</button>
-      <button type="button" className="loc-button" disabled={busy||loading} onClick={copyRune66}>{busy?'處理中…':'複製符文66為新 Class'}</button>
     </div>
-    <p className="scope-status">符文66複製會新增獨立 UUID 的 Class，不覆蓋現有關鍵詞，也不切換目前使用的 Class。</p>
 
     {loading?<p className="scope-status" role="status">正在載入關鍵詞資料…</p>:null}
     {savingStage?<p className="scope-status scope-keyword-saving-progress" role="status" aria-live="polite" aria-busy="true"><span className="scope-keyword-saving-spinner" aria-hidden="true"/>{savingStage}</p>:null}
