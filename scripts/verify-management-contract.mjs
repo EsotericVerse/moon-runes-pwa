@@ -228,8 +228,12 @@ must(read('app/AppShell.jsx').includes('function ScopePageCopy({scopeId,display_
 must(!admin.includes('applyTheme(')&&admin.includes('admin-theme-local-preview')&&admin.includes('正在編輯的主題（只修改草稿，不影響網站配色）'),'Admin Theme draft and preview must never mutate the live document root theme on entry or edit');
 must(admin.includes('admin-registry-fallback')&&admin.includes('圖形樹載入失敗，已切換清單模式。')&&admin.includes('setTreeError'),'Scope Registry must provide a visible fallback instead of failing blank');
 must(admin.includes('syncManageScopeRow(')&&admin.includes("role:'scope'"),'Admin Scope node must edit Manage mapping atomically and keep role=scope fixed');
-must(admin.includes('部分 Scope 設定讀取失敗')&&admin.includes('configFailures.push')&&admin.includes("if(error)throw new Error(error.message||'Scope config 讀取失敗。')"),'Admin Scope config failures must be surfaced, not swallowed');
+must(admin.includes('部分 Scope 設定讀取失敗')&&admin.includes('configFailures.push')&&admin.includes('readAdminScopeConfig(row.scope_id)')&&admin.includes("String(error?.code||'')==='PGRST205'"),'Admin must retry newly provisioned Scope config until PostgREST schema cache settles');
 must(admin.includes('provisionScope(')&&admin.includes('＋ 新增 Scope')&&admin.includes('＋ 新增 Group'),'Admin Registry must create Scope and Scope Group from the tree workspace');
+must(admin.includes("const provisionedScope=await provisionScope(")&&admin.includes('provisioned=true;')&&admin.includes('readAdminScopeConfig(id)')&&admin.includes('不要重複建立。')&&admin.includes('creatingScope?\'建立與驗證中…\':\'建立\''),'New Scope creation must verify config readiness, prevent duplicate clicks, and distinguish successful provisioning from pending cache');
+must(read('docs/sql/scope-provisioning.sql').includes("perform pg_catalog.pg_notify('pgrst','reload schema')"),'Scope provisioning SQL must request PostgREST schema cache reload after commit');
+must(admin.includes('onClick={refresh}>重新讀取'),'Admin graph must allow manual reload after a dynamic Scope schema cache settles');
+
 must(
   !admin.includes('<span>排序</span>')&&admin.includes('<span>主題</span>')&&
   !admin.includes('groupDraft.sort_order')&&
