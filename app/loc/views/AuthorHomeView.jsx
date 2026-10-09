@@ -22,7 +22,7 @@ const PROFESSIONAL_ROLES=Object.freeze([
     text:'從詞、句子與語意關係出發，整理文字如何形成脈絡、節奏與可辨識的表達。'
   }),
   Object.freeze({
-    title:'混沌辨律者 · Chaos Discerner',
+    title:'混沌共振者 · Chaos Resonator',
     text:'把文字放回來源、時間與歷史裡比較，觀察延續、改變、矛盾與可能的污染，不急著替結果下定論。'
   }),
   Object.freeze({
