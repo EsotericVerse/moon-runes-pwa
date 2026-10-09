@@ -58,6 +58,7 @@ export const SCOPES=Object.freeze({
   admin:Object.freeze({
     id:'admin',
     domain:'admin.lo3rwang.cc',
+    mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/admin'}),
     label:UI_COPY.scope.admin.label,
     featureScope:'loc',
     theme:Object.freeze({mode:'auto'})
