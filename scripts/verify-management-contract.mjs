@@ -205,6 +205,7 @@ const adminCss=read('app/styles/features.css');
 must(adminCss.includes('.admin-context-panel input:not([type="checkbox"]):not([type="radio"])')&&adminCss.includes('.admin-inline-flags input:is([type="checkbox"],[type="radio"])'),'Admin checkbox and radio inputs must retain native sizing instead of 100% field width');
 must(adminCss.includes('.admin-inline-flags[role="radiogroup"]')&&!adminCss.includes('max-height:78vh;overflow:auto'),'Admin route controls must be readable without a clipped nested form scrollbar');
 must(admin.includes('network.fit({animation:false,maxZoomLevel:1})')&&!admin.includes('network.focus(selectedId,'),'Admin graph must fit its canvas without zooming for every selection');
+must(admin.includes('},[registry,onSelect,onMoveParent]);'),'Draft Scope config changes must not rebuild the vis-network tree on each keystroke');
 must(!admin.includes("react-select")&&!admin.includes('<Select')&&admin.includes('admin-native-select'),'Admin must use native select controls instead of react-select');
 must(['群組人員管理','資料庫設定','主題設定'].every(label=>admin.includes("label:'"+label+"'"))&&!admin.includes("value:'search'")&&!admin.includes('SearchKeywordReport'),'Admin primary menu must stay concise Chinese system settings without a redundant search query report');
 must(admin.includes('scopeDomainError?<p')&&admin.includes('groupDomainError?<p')&&admin.includes("duplicateDomainLabelError(id,mode)")&&admin.includes('disabled={Boolean(scopeDomainError)}'),'Admin Scope creation must immediately reject repeated Domain labels');
