@@ -343,8 +343,6 @@ function RegistryNodePanel({data,selectedId,onCreateMode,onDeleted}){
         <label><input type="radio" name={'registry-route-mode-'+selectedId} value="directory" checked={routeMode==='directory'} disabled={routeLocked} onChange={()=>chooseRouteMode('directory')}/>Directory（站內路徑）</label>
       </div>
       <p className="scope-status">Registry：{routeMode==='domain'?selected.domain:selected.directory}{routeLocked?' · 內建路由不可變更':''}</p>
-      <p className="scope-status">{routeMode==='domain'?'Domain 只記錄入口；DNS、轉址及網站託管設定須另外完成。':'Directory 不需要新增子網域 DNS，但站台仍須有對應路由。'}</p>
-      {!routeLocked?<p className="scope-status">動態 Scope／Group 目前由 LOC 通用路徑 /scope/?scope={selectedId} 載入；Registry 的對外網址不會自動建立路由。</p>:null}
       {selected.scope_id!=='loc'?<label><span>Parent</span><select className="admin-native-select" value={String(selected.parent_scope_id||'')} onChange={e=>patchRegistry('parent_scope_id',e.target.value||'')}>{parentOptions.map(option=><option value={option.value} key={option.value||'root'}>{option.label}</option>)}</select></label>:null}
       <div className="scope-tabs">
         <button type="button" className="loc-button primary" onClick={saveRegistryAndConfig}>儲存</button>
@@ -433,8 +431,6 @@ function CreateNodePanel({data,kind='scope',onClose}){
         <label><input type="radio" name="new-scope-route-mode" value="domain" checked={scopeDraft.route_mode==='domain'} onChange={()=>setScopeDraft(v=>({...v,route_mode:'domain'}))}/>Domain</label>
       </div>
       <p className="scope-status">Registry：{scopeDraft.route_mode==='domain'?(scopeDraft.scope_id||'scope-id')+'.lo3rwang.cc':'/'+(scopeDraft.scope_id||'scope-id')}</p>
-      <p className="scope-status">{scopeDraft.route_mode==='domain'?'選擇 Domain 不會建立 DNS、轉址或託管設定，需另外完成。':'選擇 Directory 不需新增子網域 DNS，但自訂目錄路由須另外設定。'}</p>
-      <p className="scope-status">建立後目前可先透過 LOC 通用入口 /scope/?scope={scopeDraft.scope_id||'scope-id'} 使用；上述 Registry 網址不會自動部署。</p>
       <button type="button" className="loc-button primary" onClick={createScope}>建立</button>
     </>:<>
       <label><span>Group ID</span><input maxLength="15" value={groupDraft.scope_id} onChange={e=>setGroupDraft(v=>({...v,scope_id:e.target.value.toLowerCase()}))}/></label>
@@ -444,7 +440,6 @@ function CreateNodePanel({data,kind='scope',onClose}){
         <label><input type="radio" name="new-group-route-mode" value="domain" checked={groupDraft.route_mode==='domain'} onChange={()=>setGroupDraft(v=>({...v,route_mode:'domain'}))}/>Domain</label>
       </div>
       <p className="scope-status">Registry：{groupDraft.route_mode==='domain'?(groupDraft.scope_id||'group-id')+'.lo3rwang.cc':'/'+(groupDraft.scope_id||'group-id')}</p>
-      <p className="scope-status">Group 目前可從 /scope/?scope={groupDraft.scope_id||'group-id'} 使用；自訂 Domain／Directory 需要另外完成 DNS 或站台路由。</p>
       <label><span>Parent</span><select className="admin-native-select" value={groupDraft.parent_scope_id||'loc'} onChange={e=>setGroupDraft(v=>({...v,parent_scope_id:e.target.value||'loc'}))}>{parentOptions.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
       <button type="button" className="loc-button primary" onClick={createGroup}>建立</button>
     </>}
