@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import {usePathname} from 'next/navigation';
-import {getScope,isKnownScope,normalizeScopeId,resolveScope} from './scope-registry';
+import {getScope,isKnownScope,normalizeScopeId,resolveScope,setScopeRegistryRouteRows} from './scope-registry';
 import {selectScopeConfig,selectScopeRegistryEntry} from '../loc/scope-data';
 
 const registryCache=new Map();
@@ -59,6 +59,7 @@ export function useScopeRuntime(){
     setRegistryError('');
     selectScopeRegistryEntry(scopeId).then(row=>{
       if(!active)return;
+      if(row)setScopeRegistryRouteRows([row]);
       registryCache.set(scopeId,row||null);
       setRegistryRow(row||null);setRegistryResolved(true);
     }).catch(error=>{
