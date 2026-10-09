@@ -2,7 +2,7 @@
 
 import {useCallback,useEffect,useState} from 'react';
 import {z} from 'zod';
-import {getAccountSession,dbAuthRelation,signInWithGoogle,signOutAccount} from './db-client.mjs';
+import {getAccountSession,dbAuthRelation,isCurrentEmailBlocklisted,signInWithGoogle,signOutAccount} from './db-client.mjs';
 import {defaultScopeData,scopeDataFromManageRows} from './scope-data';
 
 const EmailSchema=z.string().trim().toLowerCase().email();
@@ -57,6 +57,12 @@ export function useAccount(){
       }
 
       const email=normalizeAuthEmail(user?.email);
+      // Deny globally before assigning any scope/admin management role.
+      if(await isCurrentEmailBlocklisted()){
+        await signOutAccount();
+        setState({...emptyState,loading:false,permissionLoading:false,error:'此帳號已列入系統黑名單，無法登入 LOC 管理功能。'});
+        return null;
+      }
       let permissions=[];
       if(email){
         const {data,error}=await dbAuthRelation('silver.manage')

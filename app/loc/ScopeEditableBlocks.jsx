@@ -2,7 +2,7 @@
 
 import {useMemo,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
-import {deleteRows,insertRows,updateRows} from './db-client.mjs';
+import {deleteRows,insertRows,moveScopeBlock,updateRows} from './db-client.mjs';
 import {selectScopeBlocks} from './scope-data';
 import {useAccount} from './use-account';
 import BlockNoteEditor from './BlockNoteEditor';
@@ -206,6 +206,20 @@ export default function ScopeEditableBlocks({
     });
   }
 
+  async function moveBlock(direction){
+    if(!draft?.stored||busy||normalizedOrders.length)return;
+    setBusy(true);setMessage('正在調整區塊順序…');
+    try{
+      const result=await moveScopeBlock(scopeId,pageName,draft.uid,direction);
+      setDraft(current=>current?.uid===draft.uid?{...current,order:Number(result.block_order)||current.order}:current);
+      await queryClient.invalidateQueries({queryKey:['scope-blocks',scopeId,pageName]});
+      await queryClient.refetchQueries({queryKey:['scope-blocks',scopeId,pageName],type:'active'});
+      setMessage('區塊順序已儲存。其他未儲存的文字修改仍留在草稿。');
+    }catch(error){
+      setMessage('區塊移動失敗：'+String(error?.message||error));
+    }finally{setBusy(false);}
+  }
+
   async function save(){
     if(!draft)return;
     setBusy(true);setMessage('儲存中…');
@@ -302,10 +316,12 @@ export default function ScopeEditableBlocks({
     </div>;
   }
 
+  const movableSlots=!normalizedOrders.length&&allowDelete?slots.filter(slot=>slot.stored):[];
   const SlotTag=slotTag==='header'?'header':'section';
   const contents=<>
     {slots.map(slot=>{
       const active=draft?.uid&&(draft.uid===slot.uid||(!slot.stored&&draft.order===slot.order));
+      const movableIndex=movableSlots.findIndex(item=>item.uid===slot.uid);
       const empty=!slot.eyebrow&&!slot.title&&!slot.subtitle&&!slot.text&&!slot.entities.length;
       if(empty&&!canEdit&&slot.order!==placeholderFirstOrder)return null;
       const level=Number(headingLevel);
@@ -321,6 +337,10 @@ export default function ScopeEditableBlocks({
         {active?<>
           <div className="scope-inline-editbar">
             <button type="button" className="loc-button primary" disabled={busy} onClick={save}>{busy?'儲存中…':'儲存'}</button>
+            {slot.stored&&movableSlots.length>1?<>
+              <button type="button" className="loc-button" disabled={busy||movableIndex<=0} onClick={()=>moveBlock(-1)}>↑ 上移</button>
+              <button type="button" className="loc-button" disabled={busy||movableIndex>=movableSlots.length-1} onClick={()=>moveBlock(1)}>↓ 下移</button>
+            </>:null}
             {allowDelete?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={remove}>刪除</button>:null}
             <button type="button" className="loc-button" disabled={busy} onClick={cancel}>取消</button>
             {message?<span className={'scope-inline-save-status'+(message.startsWith('儲存失敗')?' scope-error':'')} role="status" aria-live="polite">{message}</span>:null}

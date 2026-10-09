@@ -202,6 +202,40 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return {count:data.length,class_id:newClassId};
   }
 
+  async function isCurrentEmailBlocklisted(){
+    const {data,error}=await authClient.schema('silver').rpc('is_current_email_blocklisted');
+    if(error)throw new Error(error.message||'無法核對系統黑名單');
+    return data===true;
+  }
+
+  async function copyRune66KeywordClass(scopeId){
+    const scope=normalizeScopeId(scopeId);
+    if(!scope)throw new Error('Scope ID 格式不正確。');
+    const {data,error}=await authClient.schema('silver').rpc('copy_rune66_keyword_class',{p_scope_id:scope});
+    if(error)throw new Error(error.message||'符文66複製失敗。');
+    return data||{};
+  }
+
+  async function moveScopeBlock(scopeId,pageName,uid,direction){
+    const scope=normalizeScopeId(scopeId);
+    const page=String(pageName||'').trim().toLowerCase();
+    const blockUid=String(uid||'').trim();
+    if(!scope||!page||!(/^[A-Za-z0-9]{8}$/.test(blockUid))||![1,-1].includes(direction))throw new Error('無效的區塊移動參數。');
+    const {data,error}=await authClient.schema('silver').rpc('move_scope_block',{
+      p_scope_id:scope,p_page_name:page,p_uid:blockUid,p_direction:direction
+    });
+    if(error)throw new Error(error.message||'區塊移動失敗');
+    return data||{};
+  }
+
+  async function deleteScope(scopeId){
+    const scope=normalizeScopeId(scopeId);
+    if(!scope)throw new Error('Scope ID 格式不正確。');
+    const {data,error}=await authClient.schema('silver').rpc('delete_scope',{p_scope_id:scope});
+    if(error)throw new Error(error.message||'Scope 刪除失敗。');
+    return data||{};
+  }
+
   async function provisionScope(values={}){
     const scopeId=normalizeScopeId(values.scope_id);
     const payload={
@@ -212,7 +246,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
       p_domain:String(values.domain||'').trim()||null,
       p_directory:String(values.directory||'').trim()||null,
       p_parent_scope_id:String(values.parent_scope_id||'loc').trim()||'loc',
-      p_theme:String(values.theme||'theme-7').trim()||'theme-7',
+      p_theme:String(values.theme||'system-default').trim()||'system-default',
       p_copy_keywords:values.copy_keywords!==false
     };
     const {data,error}=await authClient.schema('silver').rpc('provision_scope',payload);
@@ -279,5 +313,5 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
-  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,writeKeywordLibraryItem,copyKeywordLibraryClass,provisionScope,manageScopeRegistry,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
+  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
 }
