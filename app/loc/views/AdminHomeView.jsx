@@ -7,7 +7,7 @@ import {THEME_SLOTS,THEME_TOKEN_KEYS} from '../../modular/theme-registry';
 import {mergeThemeSlot} from '../theme-data';
 import {useAccount} from '../use-account';
 import {
-  copyRune66KeywordClass,deleteScope,deleteRows,insertRows,dbAuthRelation,manageScopeRegistry,provisionScope,syncManageScopeRow,updateRows
+  deleteScope,deleteRows,insertRows,dbAuthRelation,manageScopeRegistry,provisionScope,syncManageScopeRow,updateRows
 } from '../db-client.mjs';
 
 const ADMIN_OPTIONS=Object.freeze([
@@ -21,7 +21,7 @@ const CREATE_OPTIONS=Object.freeze([
   {value:'group',label:'新增 Scope Group'}
 ]);
 const EMPTY_SCOPE_CREATE={scope_id:'',email:'',locale:'zh-Hant',route_mode:'directory'};
-const EMPTY_GROUP_CREATE={scope_id:'',display_name:'',domain:'',directory:'',parent_scope_id:'loc'};
+const EMPTY_GROUP_CREATE={scope_id:'',display_name:'',route_mode:'directory',parent_scope_id:'loc'};
 const EMPTY_MAPPING={email:'',galaxy:'galaxy',time:'time',birthday:''};
 
 function Login({account}){
@@ -193,11 +193,17 @@ function RegistryNodePanel({data,selectedId,onCreateMode,onDeleted}){
   const config=configs[selectedId]||null;
   const scopeMappings=mappings.filter(row=>row.id===selectedId);
   const [newMapping,setNewMapping]=useState({...EMPTY_MAPPING});
-  const [runeCopyBusy,setRuneCopyBusy]=useState(false);
 
   const groups=registry.filter(row=>row.scope_kind==='group'&&row.active!==false&&row.scope_id!==selectedId);
   const parentOptions=[{value:'',label:'—'},...groups.map(row=>({value:row.scope_id,label:(row.display_name||row.scope_id)+' · '+row.scope_id}))];
   const themeOptions=[{value:'system-default',label:'系統預設（日／夜自動）'},...THEME_SLOTS.map(theme=>({value:theme.id,label:theme.label}))];
+  const routeMode=selected?.domain?'domain':'directory';
+  const routeLocked=['loc','lrunes','lo3rwang'].includes(selectedId);
+  const chooseRouteMode=mode=>setRegistry(rows=>rows.map((row,index)=>index!==selectedIndex?row:{
+    ...row,
+    domain:mode==='domain'?row.domain||row.scope_id+'.lo3rwang.cc':null,
+    directory:mode==='directory'?row.directory||'/'+row.scope_id:null
+  }));
 
   const patchRegistry=(key,value)=>setRegistry(rows=>rows.map((row,index)=>index===selectedIndex?{...row,[key]:value}:row));
   const patchConfig=(key,value)=>setConfigs(current=>({...current,[selectedId]:{...(current[selectedId]||{}),[key]:value}}));
@@ -306,17 +312,6 @@ function RegistryNodePanel({data,selectedId,onCreateMode,onDeleted}){
     }catch(error){setStatus(error?.message||'Scope 刪除失敗。');}
   }
 
-  async function copyRune66(){
-    if(!selected||selected.scope_kind!=='scope'||runeCopyBusy)return;
-    setRuneCopyBusy(true);setStatus('');
-    try{
-      const result=await copyRune66KeywordClass(selected.scope_id);
-      setStatus('已建立符文66獨立副本：'+result.class_name+'（'+result.count+' 筆，UUID：'+result.class_id+'）。目前使用的 Class 不變。');
-      refresh();
-    }catch(error){setStatus(error?.message||'符文66複製失敗。');}
-    finally{setRuneCopyBusy(false);}
-  }
-
   if(!selected)return <aside className="admin-context-panel"><p className="scope-status">點選節點。</p></aside>;
 
   return <aside className="admin-context-panel">
@@ -343,17 +338,18 @@ function RegistryNodePanel({data,selectedId,onCreateMode,onDeleted}){
         </div>
       </>:null}
 
-      <label><span>Domain</span><input value={selected.domain||''} onChange={e=>patchRegistry('domain',e.target.value)}/></label>
-      <label><span>Directory</span><input value={selected.directory||''} onChange={e=>patchRegistry('directory',e.target.value)}/></label>
+      <div className="admin-inline-flags" role="radiogroup" aria-label="Scope Registry 路由模式">
+        <label><input type="radio" name={'registry-route-mode-'+selectedId} value="domain" checked={routeMode==='domain'} disabled={routeLocked} onChange={()=>chooseRouteMode('domain')}/>Domain（獨立網域）</label>
+        <label><input type="radio" name={'registry-route-mode-'+selectedId} value="directory" checked={routeMode==='directory'} disabled={routeLocked} onChange={()=>chooseRouteMode('directory')}/>Directory（站內路徑）</label>
+      </div>
+      <p className="scope-status">Registry：{routeMode==='domain'?selected.domain:selected.directory}{routeLocked?' · 內建路由不可變更':''}</p>
+      <p className="scope-status">{routeMode==='domain'?'Domain 只記錄入口；DNS、轉址及網站託管設定須另外完成。':'Directory 使用 LOC 既有站台路徑，不需要新增子網域 DNS。'}</p>
       {selected.scope_id!=='loc'?<label><span>Parent</span><select className="admin-native-select" value={String(selected.parent_scope_id||'')} onChange={e=>patchRegistry('parent_scope_id',e.target.value||'')}>{parentOptions.map(option=><option value={option.value} key={option.value||'root'}>{option.label}</option>)}</select></label>:null}
       <div className="scope-tabs">
         <button type="button" className="loc-button primary" onClick={saveRegistryAndConfig}>儲存</button>
         {selected.scope_kind==='scope'?<button type="button" className="loc-button" onClick={toggleScopeHidden}>{selected.active===false?'取消隱藏':'設定隱藏'}</button>:null}
         {selected.scope_kind==='scope'?<button type="button" className="loc-button" onClick={deleteSelectedScope}>刪除</button>:null}
       </div>
-      {selected.scope_kind==='scope'?<div className="scope-tabs">
-        <button type="button" className="loc-button" disabled={runeCopyBusy} onClick={copyRune66}>{runeCopyBusy?'複製中…':'複製符文66風格'}</button>
-      </div>:null}
     </>:null}
 
     {selected.scope_kind==='scope'?<section className="admin-node-mapping">
@@ -415,8 +411,8 @@ function CreateNodePanel({data,kind='scope',onClose}){
       if(!/^[a-z][a-z0-9]{0,14}$/.test(id))throw new Error('Group ID 格式不正確。');
       await manageScopeRegistry('create_group',id,{
         display_name:String(groupDraft.display_name||'').trim(),
-        domain:String(groupDraft.domain||'').trim()||null,
-        directory:String(groupDraft.directory||'').trim()||null,
+        domain:groupDraft.route_mode==='domain'?id+'.lo3rwang.cc':null,
+        directory:groupDraft.route_mode==='directory'?'/'+id:null,
         parent_scope_id:String(groupDraft.parent_scope_id||'loc').trim()||'loc'
       });
       setStatus('Scope Group '+id+' 已建立。');refresh();onClose?.();
@@ -436,12 +432,16 @@ function CreateNodePanel({data,kind='scope',onClose}){
         <label><input type="radio" name="new-scope-route-mode" value="domain" checked={scopeDraft.route_mode==='domain'} onChange={()=>setScopeDraft(v=>({...v,route_mode:'domain'}))}/>Domain</label>
       </div>
       <p className="scope-status">Registry：{scopeDraft.route_mode==='domain'?(scopeDraft.scope_id||'scope-id')+'.lo3rwang.cc':'/'+(scopeDraft.scope_id||'scope-id')}</p>
+      <p className="scope-status">{scopeDraft.route_mode==='domain'?'選擇 Domain 不會建立 DNS、轉址或託管設定，需另外完成。':'選擇 Directory 會使用 LOC 站內路徑，不需新增子網域 DNS。'}</p>
       <button type="button" className="loc-button primary" onClick={createScope}>建立</button>
     </>:<>
       <label><span>Group ID</span><input maxLength="15" value={groupDraft.scope_id} onChange={e=>setGroupDraft(v=>({...v,scope_id:e.target.value.toLowerCase()}))}/></label>
       <label><span>Group 名稱</span><input value={groupDraft.display_name} onChange={e=>setGroupDraft(v=>({...v,display_name:e.target.value}))}/></label>
-      <label><span>Domain</span><input value={groupDraft.domain} onChange={e=>setGroupDraft(v=>({...v,domain:e.target.value}))}/></label>
-      <label><span>Directory</span><input value={groupDraft.directory} onChange={e=>setGroupDraft(v=>({...v,directory:e.target.value}))}/></label>
+      <div className="admin-inline-flags" role="radiogroup" aria-label="Scope Group 路由模式">
+        <label><input type="radio" name="new-group-route-mode" value="directory" checked={groupDraft.route_mode==='directory'} onChange={()=>setGroupDraft(v=>({...v,route_mode:'directory'}))}/>Directory</label>
+        <label><input type="radio" name="new-group-route-mode" value="domain" checked={groupDraft.route_mode==='domain'} onChange={()=>setGroupDraft(v=>({...v,route_mode:'domain'}))}/>Domain</label>
+      </div>
+      <p className="scope-status">Registry：{groupDraft.route_mode==='domain'?(groupDraft.scope_id||'group-id')+'.lo3rwang.cc':'/'+(groupDraft.scope_id||'group-id')}</p>
       <label><span>Parent</span><select className="admin-native-select" value={groupDraft.parent_scope_id||'loc'} onChange={e=>setGroupDraft(v=>({...v,parent_scope_id:e.target.value||'loc'}))}>{parentOptions.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
       <button type="button" className="loc-button primary" onClick={createGroup}>建立</button>
     </>}
