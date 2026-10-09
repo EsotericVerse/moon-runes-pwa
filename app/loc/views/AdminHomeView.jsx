@@ -100,6 +100,7 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
   useEffect(()=>{
     let cancelled=false;
     let network=null;
+    let themeObserver=null;
     setTreeState('loading');
     setTreeError('');
     // Admin is the management site, not a Scope or an extra hierarchy level.
@@ -108,7 +109,10 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
     const nodes=scopeRows.map(row=>({
       id:row.scope_id,
       label:(configs[row.scope_id]?.display_name||row.display_name||row.scope_id)+'\n'+row.scope_id+(row.active===false?' · 停用':''),
-      shape:row.scope_kind==='group'?'box':'ellipse',
+      shape:'box',
+      borderWidth:row.scope_kind==='group'?2:1,
+      shapeProperties:{borderRadius:12},
+      widthConstraint:{maximum:210},
       fixed:row.scope_id==='loc',
       mass:1
     }));
@@ -120,14 +124,32 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
 
     import('vis-network/standalone').then(({Network})=>{
       if(cancelled||!containerRef.current)return;
+      const themeOptions=()=>{
+        const css=getComputedStyle(document.documentElement);
+        const token=(name,fallback)=>css.getPropertyValue(name).trim()||fallback;
+        const panel=token('--loc-panel','#181922');
+        const text=token('--loc-text','#fafafa');
+        const line=token('--loc-line','#626574');
+        const accent=token('--loc-accent','#8da8d4');
+        return {
+          nodes:{
+            color:{background:panel,border:line,highlight:{background:panel,border:accent},hover:{background:panel,border:accent}},
+            font:{color:text,face:'system-ui',size:15,multi:false},
+            margin:14
+          },
+          edges:{color:{color:line,highlight:accent,hover:accent}}
+        };
+      };
       network=new Network(containerRef.current,{nodes,edges},{
         autoResize:true,
         physics:{enabled:false},
-        layout:{hierarchical:{enabled:true,direction:'UD',sortMethod:'directed',levelSeparation:115,nodeSpacing:175,treeSpacing:200}},
+        layout:{hierarchical:{enabled:true,direction:'UD',sortMethod:'directed',levelSeparation:135,nodeSpacing:225,treeSpacing:225}},
         interaction:{hover:true,dragNodes:true,dragView:true,zoomView:true,selectable:true},
-        nodes:{borderWidth:1,margin:12,font:{multi:false}},
-        edges:{smooth:{enabled:true,type:'cubicBezier',forceDirection:'vertical',roundness:.35}}
+        ...themeOptions(),
+        edges:{...themeOptions().edges,smooth:{enabled:true,type:'cubicBezier',forceDirection:'vertical',roundness:.35}}
       });
+      themeObserver=new MutationObserver(()=>network?.setOptions(themeOptions()));
+      themeObserver.observe(document.documentElement,{attributes:true,attributeFilter:['style','data-theme-id']});
       networkRef.current=network;
       network.fit({animation:false,maxZoomLevel:1});
       setTreeState('ready');
@@ -162,7 +184,7 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
       setTreeState('error');
       setTreeError(String(error?.message||error||'Scope Registry 圖形樹載入失敗。'));
     });
-    return()=>{cancelled=true;network?.destroy();networkRef.current=null;};
+    return()=>{cancelled=true;themeObserver?.disconnect();network?.destroy();networkRef.current=null;};
   // Draft Scope names are not canonical until saved; don't rebuild the graph on each keystroke.
   },[registry,onSelect,onMoveParent]);
 
@@ -336,11 +358,10 @@ function RegistryNodePanel({data,selectedId,onDeleted}){
         </div>
       </>:null}
 
-      <div className="admin-inline-flags" role="radiogroup" aria-label="Scope Registry 路由模式">
-        <label><input type="radio" name={'registry-route-mode-'+selectedId} value="domain" checked={routeMode==='domain'} disabled={routeLocked} onChange={()=>chooseRouteMode('domain')}/>Domain（獨立網域）</label>
-        <label><input type="radio" name={'registry-route-mode-'+selectedId} value="directory" checked={routeMode==='directory'} disabled={routeLocked} onChange={()=>chooseRouteMode('directory')}/>Directory（站內路徑）</label>
-      </div>
-      <p className="scope-status">Registry：{routeMode==='domain'?selected.domain:selected.directory}{routeLocked?' · 內建路由不可變更':''}</p>
+      {!routeLocked?<div className="admin-inline-flags" role="radiogroup" aria-label="路由模式">
+        <label><input type="radio" name={'registry-route-mode-'+selectedId} value="domain" checked={routeMode==='domain'} onChange={()=>chooseRouteMode('domain')}/>獨立網域</label>
+        <label><input type="radio" name={'registry-route-mode-'+selectedId} value="directory" checked={routeMode==='directory'} onChange={()=>chooseRouteMode('directory')}/>站內路徑</label>
+      </div>:null}
       {selected.scope_id!=='loc'?<label><span>Parent</span><select className="admin-native-select" value={String(selected.parent_scope_id||'')} onChange={e=>patchRegistry('parent_scope_id',e.target.value||'')}>{parentOptions.map(option=><option value={option.value} key={option.value||'root'}>{option.label}</option>)}</select></label>:null}
       <div className="scope-tabs">
         <button type="button" className="loc-button primary" onClick={saveRegistryAndConfig}>儲存</button>
@@ -432,7 +453,6 @@ function CreateNodePanel({data,kind='scope',onClose}){
         <label><input type="radio" name="new-scope-route-mode" value="directory" checked={scopeDraft.route_mode==='directory'} onChange={()=>setScopeDraft(v=>({...v,route_mode:'directory'}))}/>Directory</label>
         <label><input type="radio" name="new-scope-route-mode" value="domain" checked={scopeDraft.route_mode==='domain'} onChange={()=>setScopeDraft(v=>({...v,route_mode:'domain'}))}/>Domain</label>
       </div>
-      <p className="scope-status">Registry：{scopeDraft.route_mode==='domain'?(scopeDraft.scope_id||'scope-id')+'.lo3rwang.cc':'/'+(scopeDraft.scope_id||'scope-id')}</p>
       {scopeDomainError?<p className="scope-status scope-error" role="alert">{scopeDomainError}</p>:null}
       <button type="button" className="loc-button primary" disabled={Boolean(scopeDomainError)} onClick={createScope}>建立</button>
     </>:<>
@@ -442,7 +462,6 @@ function CreateNodePanel({data,kind='scope',onClose}){
         <label><input type="radio" name="new-group-route-mode" value="directory" checked={groupDraft.route_mode==='directory'} onChange={()=>setGroupDraft(v=>({...v,route_mode:'directory'}))}/>Directory</label>
         <label><input type="radio" name="new-group-route-mode" value="domain" checked={groupDraft.route_mode==='domain'} onChange={()=>setGroupDraft(v=>({...v,route_mode:'domain'}))}/>Domain</label>
       </div>
-      <p className="scope-status">Registry：{groupDraft.route_mode==='domain'?(groupDraft.scope_id||'group-id')+'.lo3rwang.cc':'/'+(groupDraft.scope_id||'group-id')}</p>
       {groupDomainError?<p className="scope-status scope-error" role="alert">{groupDomainError}</p>:null}
       <label><span>Parent</span><select className="admin-native-select" value={groupDraft.parent_scope_id||'loc'} onChange={e=>setGroupDraft(v=>({...v,parent_scope_id:e.target.value||'loc'}))}>{parentOptions.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
       <button type="button" className="loc-button primary" disabled={Boolean(groupDomainError)} onClick={createGroup}>建立</button>
