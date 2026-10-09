@@ -55,9 +55,9 @@
 - [ ] 完成 responsive、loading、failure-state 與 deployment regression。
 - [ ] 讓 Current Canon、README 與 runtime verifier 保持一致。
 
-## Post-0.9.1 / App Workgroup — Managed Auth（規劃中；不列入 0.9.1 RC 驗收門檻）
+## Near-term — Managed Auth / Clerk（規劃中；不列入 0.9.1 RC 驗收門檻）
 
-**目的：** Scope Group／Scope Node 延伸為家庭、小型組織時，認證、邀請、成員管理委託成熟模組（優先評估 Clerk Auth + Organizations），減少每新增一個 Scope／Group 就要反覆處理 OAuth 與 Google Cloud 設定的維護負擔。**先完成私人 App／Import 驗收，再評估導入；此項不是已完成功能。**
+**目的：** Scope Group／Scope Node 延伸為家庭、小型組織時，認證、邀請、成員管理委託成熟模組（優先評估 Clerk Auth + Organizations），減少每新增一個 Scope／Group 就要反覆處理 OAuth 與 Google Cloud 設定的維護負擔。**優先級提高為近期可獨立實施的認證整合任務，可先於私人 App／Import 驗收進行；必須獨立開發、回歸驗證，不變動 0.9.1 RC 既有驗收結論。此項尚未實作。**
 
 - [ ] 評估 Clerk Auth／Organizations 的 Next.js、iOS SDK、價格與 Supabase/Neon 整合；優先使用現成登入、Session、邀請、成員與撤銷 UI，避免自製 Auth 與第二套組織管理。
 - [ ] 保留 LOC 的 `scope_registry`、Scope Group／Node、Scope 建立／更新、資料表與 canonical 設定；Clerk 僅負責身分與組織成員資格，透過穩定身分／組織 ID 映射到既有 Scope，不能取代 Scope CRUD／資料權威。
