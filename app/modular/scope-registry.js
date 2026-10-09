@@ -14,7 +14,6 @@ export const SCOPES=Object.freeze({
     domain:'loc.lo3rwang.cc',
     default:true,
     aggregateChildren:true,
-    searchAliases:Object.freeze(['loc','LOC','LunaCodex','月典']),
     featureSubtitles:Object.freeze({
       statics:UI_COPY.scope.loc.statics,
       culture:UI_COPY.scope.loc.culture,
@@ -28,7 +27,6 @@ export const SCOPES=Object.freeze({
   lrunes:Object.freeze({
     id:'lrunes',
     domain:'lrunes.lo3rwang.cc',
-    searchAliases:Object.freeze(['lrunes','LunaRunes','月之符文']),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'}),
     featureSubtitles:Object.freeze({
       statics:'查看月之符文相關資料的數量、來源與時間變化。',
@@ -37,17 +35,14 @@ export const SCOPES=Object.freeze({
       search:'從符文名稱、關鍵字或相關文字找到對應內容。'
     }),
     nav:Object.freeze({position:'before',order:1,label:UI_COPY.nav.lunarunes}),
-    theme:Object.freeze({mode:'fixed',themeId:'theme-5'}),
     searchKind:'runes'
   }),
 
   lo3rwang:Object.freeze({
     id:'lo3rwang',
-    searchAliases:Object.freeze(['lo3rwang','Lucas Oscar Wang','政德']),
     featureSubtitles:Object.freeze({search:UI_COPY.scope.author.search}),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'}),
-    nav:Object.freeze({position:'after',order:1,label:UI_COPY.nav.author}),
-    theme:Object.freeze({mode:'fixed',themeId:'theme-2'})
+    nav:Object.freeze({position:'after',order:1,label:UI_COPY.nav.author})
   }),
 
   admin:Object.freeze({
