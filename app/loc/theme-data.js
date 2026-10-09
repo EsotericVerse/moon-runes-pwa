@@ -10,7 +10,7 @@ export function themeColumnForToken(key){
   return key.slice(2).replaceAll('-','_');
 }
 export const THEME_DB_COLUMNS=[
-  'theme_id','theme_name','theme_order','scheme','theme_group','style_key','identity_color',
+  'theme_id','theme_name','theme_order','scheme','style_key','identity_color',
   ...THEME_TOKEN_KEYS.map(themeColumnForToken)
 ].join(',');
 
@@ -48,7 +48,7 @@ export function mergeThemeSlot(themeId,override=null){
     label:String(override?.theme_name||base.label||themeId),
     scheme:override?.scheme==='dark'?'dark':override?.scheme==='light'?'light':base.scheme,
     styleKey:String(override?.style_key||base.styleKey||''),
-    group:String(override?.theme_group||base.group||''),
+    group:String(override?.theme_name||base.group||''),
     identityColor:String(override?.identity_color||base.identityColor||''),
     tokens,
     themeOrder:Number(override?.theme_order)||Number(String(themeId).split('-')[1])||0
