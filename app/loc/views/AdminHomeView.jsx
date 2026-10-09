@@ -51,7 +51,7 @@ function useAdminScopeData(){
     (async()=>{
       try{
         const [mappingResult,registryResult]=await Promise.all([
-          dbAuthRelation('silver.manage').select('id,email,role,galaxy,time,birthday').order('id',{ascending:true}).order('email',{ascending:true}),
+          dbAuthRelation('silver.manage').select('id,email,role,galaxy,time,birthday,Title_TW,Desc_TW').order('id',{ascending:true}).order('email',{ascending:true}),
           dbAuthRelation('silver.scope_registry').select('scope_id,display_name,scope_kind,domain,directory,parent_scope_id,active,sort_order').order('sort_order',{ascending:true}).order('scope_id',{ascending:true})
         ]);
         if(mappingResult.error)throw new Error(mappingResult.error.message||'Mapping 讀取失敗。');
@@ -91,11 +91,13 @@ function useAdminScopeData(){
   };
 }
 
-function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMoveParent}){
+function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMoveParent,onDeleteNode}){
   const containerRef=useRef(null);
   const networkRef=useRef(null);
   const [treeState,setTreeState]=useState('loading');
   const [treeError,setTreeError]=useState('');
+  const handlersRef=useRef({onSelect,onMoveParent,onDeleteNode});
+  useEffect(()=>{handlersRef.current={onSelect,onMoveParent,onDeleteNode};},[onSelect,onMoveParent,onDeleteNode]);
 
   useEffect(()=>{
     let cancelled=false;
@@ -143,8 +145,29 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
       network=new Network(containerRef.current,{nodes,edges},{
         autoResize:true,
         physics:{enabled:false},
-        layout:{hierarchical:{enabled:true,direction:'UD',sortMethod:'directed',levelSeparation:135,nodeSpacing:225,treeSpacing:225}},
-        interaction:{hover:true,dragNodes:true,dragView:true,zoomView:true,selectable:true},
+        // UD lays each Group's children across the row; deeper Groups add rows below.
+        layout:{hierarchical:{enabled:true,direction:'UD',sortMethod:'directed',levelSeparation:150,nodeSpacing:245,treeSpacing:245}},
+        interaction:{hover:true,dragNodes:true,dragView:true,zoomView:true,selectable:true,keyboard:true,navigationButtons:true},
+        locale:'en',
+        locales:{en:{
+          edit:'編輯',del:'刪除所選',back:'返回',close:'關閉',
+          editNode:'編輯節點',editEdge:'編輯關係'
+        }},
+        manipulation:{
+          enabled:true,initiallyActive:true,addNode:false,addEdge:false,editEdge:false,
+          editNode:(nodeData,callback)=>{
+            const id=String(nodeData?.id||'');
+            if(id)handlersRef.current.onSelect?.(id);
+            callback(null);
+          },
+          deleteNode:(selection,callback)=>{
+            const ids=Array.isArray(selection?.nodes)?selection.nodes:[];
+            if(ids.length!==1){callback(null);return;}
+            Promise.resolve(handlersRef.current.onDeleteNode?.(String(ids[0]))).then(ok=>{
+              callback(ok?selection:null);
+            }).catch(()=>callback(null));
+          }
+        },
         ...themeOptions(),
         edges:{...themeOptions().edges,smooth:{enabled:true,type:'cubicBezier',forceDirection:'vertical',roundness:.35}}
       });
@@ -155,7 +178,11 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
       setTreeState('ready');
       network.on('selectNode',params=>{
         const id=String(params?.nodes?.[0]||'');
-        if(id)onSelect?.(id);
+        if(id)handlersRef.current.onSelect?.(id);
+      });
+      network.on('doubleClick',params=>{
+        const id=String(params?.nodes?.[0]||'');
+        if(id)handlersRef.current.onSelect?.(id);
       });
       network.on('dragEnd',params=>{
         const nodeId=String(params?.nodes?.[0]||'');
@@ -174,7 +201,11 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
           const d=Math.hypot(point.x-source.x,point.y-source.y);
           if(d<distance){distance=d;nearest=groupId;}
         }
-        if(nearest&&distance<190&&nearest!==row.parent_scope_id)onMoveParent?.(nodeId,nearest);
+        if(nearest&&distance<190&&nearest!==row.parent_scope_id){
+          const parent=registry.find(item=>item.scope_id===nearest);
+          if(window.confirm('將 '+nodeId+' 移至 '+(parent?.display_name||nearest)+'？'))handlersRef.current.onMoveParent?.(nodeId,nearest);
+          else network.fit({animation:false,maxZoomLevel:1});
+        }
       });
       if(selectedId&&registry.some(row=>row.scope_id===selectedId)){
         network.selectNodes([selectedId]);
@@ -186,7 +217,7 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
     });
     return()=>{cancelled=true;themeObserver?.disconnect();network?.destroy();networkRef.current=null;};
   // Draft Scope names are not canonical until saved; don't rebuild the graph on each keystroke.
-  },[registry,onSelect,onMoveParent]);
+  },[registry]);
 
   useEffect(()=>{
     const network=networkRef.current;
@@ -209,19 +240,24 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
   </div>;
 }
 
-function RegistryNodePanel({data,selectedId,onDeleted}){
+function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
   const {registry,setRegistry,mappings,setMappings,configs,setConfigs,status,setStatus,refresh}=data;
   const selectedIndex=registry.findIndex(row=>row.scope_id===selectedId);
   const selected=selectedIndex>=0?registry[selectedIndex]:null;
   const config=configs[selectedId]||null;
   const scopeMappings=mappings.filter(row=>row.id===selectedId);
   const [newMapping,setNewMapping]=useState({...EMPTY_MAPPING});
+  const pageCopy=scopeMappings[0]||null;
+  const patchPageCopy=(column,value)=>setMappings(rows=>rows.map(row=>row.id!==selectedId?row:{...row,[column]:value}));
 
   const groups=registry.filter(row=>row.scope_kind==='group'&&row.active!==false&&row.scope_id!==selectedId);
   const parentOptions=[{value:'',label:'—'},...groups.map(row=>({value:row.scope_id,label:(row.display_name||row.scope_id)+' · '+row.scope_id}))];
   const themeOptions=[{value:'system-default',label:'系統預設（日／夜自動）'},...THEME_SLOTS.map(theme=>({value:theme.id,label:theme.label}))];
   const routeMode=selected?.domain?'domain':'directory';
   const routeLocked=['loc','lrunes','lo3rwang'].includes(selectedId);
+  const routeValue=routeMode==='domain'
+    ?String(selected?.domain||'')
+    :'https://loc.lo3rwang.cc'+String(selected?.directory||'');
   const chooseRouteMode=mode=>setRegistry(rows=>rows.map((row,index)=>index!==selectedIndex?row:{
     ...row,
     domain:mode==='domain'?row.domain||row.scope_id+'.lo3rwang.cc':null,
@@ -247,6 +283,13 @@ function RegistryNodePanel({data,selectedId,onDeleted}){
           parent_scope_id:selected.scope_id==='loc'?null:(String(selected.parent_scope_id||'').trim()||null),
           active:selected.scope_id==='loc'?true:selected.active!==false
         });
+      }
+      if(selected.scope_kind==='scope'&&pageCopy){
+        if(!String(pageCopy.Title_TW||'').trim())throw new Error('NAV 中文名稱不可空白。');
+        await updateRows('silver.manage',{
+          Title_TW:String(pageCopy.Title_TW||'').trim(),
+          Desc_TW:String(pageCopy.Desc_TW||'').trim()
+        },{filters:[{column:'id',operator:'eq',value:selected.scope_id}]});
       }
       if(selected.scope_kind==='scope'&&config){
         await updateRows('silver.'+selected.scope_id,{
@@ -298,7 +341,9 @@ function RegistryNodePanel({data,selectedId,onDeleted}){
         id:selected.scope_id,email,role:'scope',
         galaxy:String(newMapping.galaxy||'galaxy').trim()||'galaxy',
         time:String(newMapping.time||'time').trim()||'time',
-        birthday:newMapping.birthday||null
+        birthday:newMapping.birthday||null,
+        Title_TW:String(pageCopy?.Title_TW||'').trim()||selected.scope_id,
+        Desc_TW:String(pageCopy?.Desc_TW||'').trim()
       }]);
       setNewMapping({...EMPTY_MAPPING});setStatus('Mapping 已新增。');refresh();
     }catch(error){setStatus(error?.message||'Mapping 新增失敗。');}
@@ -315,26 +360,6 @@ function RegistryNodePanel({data,selectedId,onDeleted}){
     }catch(error){setStatus(error?.message||'Scope 隱藏設定失敗。');}
   }
 
-  async function deleteSelectedScope(){
-    if(!selected||selected.scope_kind!=='scope')return;
-    if(['loc','lrunes','lo3rwang','admin'].includes(selected.scope_id)){
-      setStatus('內建 Scope 不允許刪除。');
-      return;
-    }
-    const typed=window.prompt('刪除將永久移除 '+selected.scope_id+' 的資料及設定。請輸入 Scope ID 以確認：');
-    if(typed===null)return;
-    if(String(typed).trim().toLowerCase()!==selected.scope_id){
-      setStatus('Scope ID 不相符，已取消刪除。');return;
-    }
-    setStatus('');
-    try{
-      await deleteScope(selected.scope_id);
-      setStatus(selected.scope_id+' 已永久刪除。');
-      onDeleted?.();
-      refresh();
-    }catch(error){setStatus(error?.message||'Scope 刪除失敗。');}
-  }
-
   if(!selected)return <aside className="admin-context-panel"><p className="scope-status">點選節點。</p></aside>;
 
   return <aside className="admin-context-panel">
@@ -346,7 +371,11 @@ function RegistryNodePanel({data,selectedId,onDeleted}){
     {selected.scope_kind!=='system'?<>
       {selected.scope_kind==='group'?<label><span>Group 名稱</span><input value={selected.display_name||''} onChange={e=>patchRegistry('display_name',e.target.value)}/></label>:null}
       {selected.scope_kind==='scope'&&config?<>
-        <label><span>顯示名稱</span><input value={config.display_name||''} onChange={e=>patchConfig('display_name',e.target.value)}/></label>
+        {pageCopy?<section className="admin-page-copy-fields" aria-label="公開頁面名稱設定">
+          <label><span>NAV 中文名稱（Title_TW）</span><input required value={pageCopy.Title_TW||''} onChange={e=>patchPageCopy('Title_TW',e.target.value)}/></label>
+          <label><span>頁面說明（Desc_TW）</span><textarea rows={2} value={pageCopy.Desc_TW||''} onChange={e=>patchPageCopy('Desc_TW',e.target.value)}/></label>
+        </section>:null}
+        <label><span>Scope 顯示名稱</span><input value={config.display_name||''} onChange={e=>patchConfig('display_name',e.target.value)}/></label>
         <label><span>搜尋介紹</span><textarea rows={3} value={config.search_intro||''} onChange={e=>patchConfig('search_intro',e.target.value)}/></label>
         <label><span>搜尋別名</span><textarea rows={3} value={normalizeAliases(config.search_aliases).join('\n')} onChange={e=>patchConfig('search_aliases',e.target.value.split('\n'))}/></label>
         <label><span>主題</span><select className="admin-native-select" value={config.theme||'system-default'} onChange={e=>patchConfig('theme',e.target.value)}>{themeOptions.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
@@ -358,6 +387,11 @@ function RegistryNodePanel({data,selectedId,onDeleted}){
         </div>
       </>:null}
 
+      <div className="admin-route-summary" aria-label="目前路由">
+        <span>路由類型</span>
+        <strong>{routeMode==='domain'?'Domain · 獨立網域':'Directory · 站內路徑'}</strong>
+        <code>{routeValue}</code>
+      </div>
       {!routeLocked?<div className="admin-inline-flags" role="radiogroup" aria-label="路由模式">
         <label><input type="radio" name={'registry-route-mode-'+selectedId} value="domain" checked={routeMode==='domain'} onChange={()=>chooseRouteMode('domain')}/>獨立網域</label>
         <label><input type="radio" name={'registry-route-mode-'+selectedId} value="directory" checked={routeMode==='directory'} onChange={()=>chooseRouteMode('directory')}/>站內路徑</label>
@@ -366,7 +400,7 @@ function RegistryNodePanel({data,selectedId,onDeleted}){
       <div className="scope-tabs">
         <button type="button" className="loc-button primary" onClick={saveRegistryAndConfig}>儲存</button>
         {selected.scope_kind==='scope'?<button type="button" className="loc-button" onClick={toggleScopeHidden}>{selected.active===false?'取消隱藏':'設定隱藏'}</button>:null}
-        {selected.scope_kind==='scope'?<button type="button" className="loc-button" onClick={deleteSelectedScope}>刪除</button>:null}
+        {selected.scope_kind==='scope'?<button type="button" className="loc-button" onClick={()=>onDeleteNode?.(selected.scope_id)}>刪除</button>:null}
       </div>
     </>:null}
 
@@ -453,6 +487,7 @@ function CreateNodePanel({data,kind='scope',onClose}){
         <label><input type="radio" name="new-scope-route-mode" value="directory" checked={scopeDraft.route_mode==='directory'} onChange={()=>setScopeDraft(v=>({...v,route_mode:'directory'}))}/>Directory</label>
         <label><input type="radio" name="new-scope-route-mode" value="domain" checked={scopeDraft.route_mode==='domain'} onChange={()=>setScopeDraft(v=>({...v,route_mode:'domain'}))}/>Domain</label>
       </div>
+      <div className="admin-route-summary"><span>建立位置</span><strong>{scopeDraft.route_mode==='domain'?'Domain · 獨立網域':'Directory · 站內路徑'}</strong><code>{scopeDraft.route_mode==='domain'?(scopeDraft.scope_id||'scope-id')+'.lo3rwang.cc':'https://loc.lo3rwang.cc/'+(scopeDraft.scope_id||'scope-id')}</code></div>
       {scopeDomainError?<p className="scope-status scope-error" role="alert">{scopeDomainError}</p>:null}
       <button type="button" className="loc-button primary" disabled={Boolean(scopeDomainError)} onClick={createScope}>建立</button>
     </>:<>
@@ -462,6 +497,7 @@ function CreateNodePanel({data,kind='scope',onClose}){
         <label><input type="radio" name="new-group-route-mode" value="directory" checked={groupDraft.route_mode==='directory'} onChange={()=>setGroupDraft(v=>({...v,route_mode:'directory'}))}/>Directory</label>
         <label><input type="radio" name="new-group-route-mode" value="domain" checked={groupDraft.route_mode==='domain'} onChange={()=>setGroupDraft(v=>({...v,route_mode:'domain'}))}/>Domain</label>
       </div>
+      <div className="admin-route-summary"><span>建立位置</span><strong>{groupDraft.route_mode==='domain'?'Domain · 獨立網域':'Directory · 站內路徑'}</strong><code>{groupDraft.route_mode==='domain'?(groupDraft.scope_id||'group-id')+'.lo3rwang.cc':'https://loc.lo3rwang.cc/'+(groupDraft.scope_id||'group-id')}</code></div>
       {groupDomainError?<p className="scope-status scope-error" role="alert">{groupDomainError}</p>:null}
       <label><span>Parent</span><select className="admin-native-select" value={groupDraft.parent_scope_id||'loc'} onChange={e=>setGroupDraft(v=>({...v,parent_scope_id:e.target.value||'loc'}))}>{parentOptions.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
       <button type="button" className="loc-button primary" disabled={Boolean(groupDomainError)} onClick={createGroup}>建立</button>
@@ -496,17 +532,35 @@ function AdminRegistry(){
   },[registry,setRegistry,setStatus,refresh]);
 
   const selectNode=useCallback(id=>{setCreateKind('');setSelectedId(id);},[]);
+  const deleteNode=useCallback(async id=>{
+    const row=registry.find(item=>item.scope_id===id);
+    if(!row||row.scope_kind!=='scope'){setStatus('只能刪除 Scope，Group 不可直接刪除。');return false;}
+    if(['loc','lrunes','lo3rwang','admin'].includes(id)){setStatus('內建 Scope 不允許刪除。');return false;}
+    const typed=window.prompt('刪除將永久移除 '+id+' 的資料及設定。請輸入 Scope ID 以確認：');
+    if(typed===null)return false;
+    if(String(typed).trim().toLowerCase()!==id){setStatus('Scope ID 不相符，已取消刪除。');return false;}
+    try{
+      await deleteScope(id);
+      if(selectedId===id)setSelectedId('');
+      setStatus(id+' 已永久刪除。');
+      refresh();
+      return true;
+    }catch(error){setStatus(error?.message||'Scope 刪除失敗。');return false;}
+  },[registry,refresh,selectedId,setStatus]);
   return <section className="loc-card admin-workspace">
     <div className="admin-deployment-layout">
-      <div>
+      <div className="admin-graph-header">
+        <div><h2>Scope 關聯圖</h2><p>同層橫向排列；選取節點後在下方編輯，拖曳至 Group 可調整所屬群組。</p></div>
         <div className="admin-registry-actions">
-          <button type="button" className="loc-button" onClick={()=>setCreateKind('scope')}>＋ Scope</button>
-          <button type="button" className="loc-button" onClick={()=>setCreateKind('group')}>＋ Group</button>
+          <button type="button" className="loc-button" onClick={()=>setCreateKind('scope')}>＋ 新增 Scope</button>
+          <button type="button" className="loc-button" onClick={()=>setCreateKind('group')}>＋ 新增 Group</button>
         </div>
-        {!registry.length&&data.status?<p className="scope-status scope-error">{data.status}</p>:null}
-        <DeploymentTree registry={registry} configs={configs} selectedId={selectedId} onSelect={selectNode} onMoveParent={moveParent}/>
       </div>
-      {createKind?<CreateNodePanel data={data} kind={createKind} onClose={()=>setCreateKind('')}/>:<RegistryNodePanel data={data} selectedId={selectedId} onDeleted={()=>setSelectedId('')}/>}
+      {!registry.length&&data.status?<p className="scope-status scope-error">{data.status}</p>:null}
+      <DeploymentTree registry={registry} configs={configs} selectedId={selectedId} onSelect={selectNode} onMoveParent={moveParent} onDeleteNode={deleteNode}/>
+      <div className="admin-editor-section" id="admin-scope-editor">
+        {createKind?<CreateNodePanel data={data} kind={createKind} onClose={()=>setCreateKind('')}/>:<RegistryNodePanel data={data} selectedId={selectedId} onDeleted={()=>setSelectedId('')} onDeleteNode={deleteNode}/>}
+      </div>
     </div>
   </section>;
 }
