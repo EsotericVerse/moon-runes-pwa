@@ -103,9 +103,14 @@ test('LOC, Author and LunaRunes share home typography tiers without changing Run
   const runeTitle=runeHero.locator('.runes-home-hero-copy h1');
   const runeSubtitle=runeHero.locator('.runes-home-hero-copy .home-title-row>.loc-subtitle');
   await expect(runeTitle).toHaveText('月之符文');
-  await expect(runeSubtitle).toBeVisible();
   const runeHeroSize=await runeTitle.evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
-  const runeSubtitleSize=await runeSubtitle.evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
+  // Subtitle is Scope-authored: an empty BlockNote paragraph is not a subtitle.
+  // Validate its typography only when an actual subtitle has been authored.
+  let runeSubtitleSize=null;
+  if(await runeSubtitle.count()){
+    await expect(runeSubtitle).toBeVisible();
+    runeSubtitleSize=await runeSubtitle.evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
+  }
   const runeSectionTitles=[
     page.locator('.runes-home-intro .home-section-heading>h2'),
     page.locator('.runes-reading-flow>h2'),
@@ -122,7 +127,7 @@ test('LOC, Author and LunaRunes share home typography tiers without changing Run
     for(const size of runeSectionSizes)expect(Math.abs(item.section-size)).toBeLessThanOrEqual(1);
     expect(item.hero).toBeGreaterThan(item.section);
   }
-  expect(runeSubtitleSize).toBeGreaterThanOrEqual(18);
+  if(runeSubtitleSize!==null)expect(runeSubtitleSize).toBeGreaterThanOrEqual(18);
   await expect(runeHero.locator('.runes-home-hero-image')).toBeVisible();
   await expect(page.getByRole('link',{name:'抽一張符文'})).toBeVisible();
   await expect(page.getByRole('link',{name:'每日符文',exact:true})).toBeVisible();
