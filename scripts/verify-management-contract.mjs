@@ -205,7 +205,7 @@ must(!admin.includes("react-select")&&!admin.includes('<Select')&&admin.includes
 must(['群組人員管理','資料庫設定','主題設定'].every(label=>admin.includes("label:'"+label+"'"))&&!admin.includes("value:'search'")&&!admin.includes('SearchKeywordReport'),'Admin primary menu must stay concise Chinese system settings without a redundant search query report');
 must(admin.includes('scopeDomainError?<p')&&admin.includes('groupDomainError?<p')&&admin.includes("duplicateDomainLabelError(id,mode)")&&admin.includes('disabled={Boolean(scopeDomainError)}'),'Admin Scope creation must immediately reject repeated Domain labels');
 must(read('app/AppShell.jsx').includes('function ScopePageTitle({displayName})')&&
-  read('app/AppShell.jsx').includes('document.title=title')&&
+  read('app/AppShell.jsx').includes('document.title=name')&&
   read('app/AppShell.jsx').includes('configRow?.display_name||registryRow?.display_name'),
   'browser page title must derive from Scope DB display_name only');
 must(!admin.includes('applyTheme(')&&admin.includes('admin-theme-local-preview')&&admin.includes('正在編輯的主題（只修改草稿，不影響網站配色）'),'Admin Theme draft and preview must never mutate the live document root theme on entry or edit');
