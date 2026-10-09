@@ -6,7 +6,8 @@ A field already maintained in PostgreSQL must not be independently defined as a 
 | Concern | Sole runtime authority | Changes / checks |
 | --- | --- | --- |
 | Scope ID / parent / active / Domain / Directory / sort order | `silver.scope_registry` | Domain and Directory mutually exclusive. `lrunes` = Domain `lrunes.lo3rwang.cc`; `lo3rwang` = Directory `/lo3rwang`. JS registers DB routes after hydration, not a second hostname table. |
-| Scope `display_name` | `silver.<scope_id>.display_name` for Scope; Registry for Group/system | The DB `sync_scope_config_display_name` trigger updates the Registry transactionally. Existing `lrunes` and `lo3rwang` have triggers; `api.provision_scope` installs them for new Scope tables. Browser's `document.title`, nav and Scope pages follow the DB label. |
+| Scope `display_name` | `silver.<scope_id>.display_name` for Scope; Registry for Group/system | DB-synchronized Scope/navigation label; not the browser page title. |
+| Browser page copy | `silver.manage."Title_TW"`, `"Desc_TW"` | Browser title/description use the two explicit fields through the limited public RPC. No forced suffix or exposed manager email. |
 | Scope search aliases, intro | `silver.<scope_id>.search_aliases`, `search_intro` | No independent hardcoded Scope aliases in `SCOPES`; user-authored content remains in its own table. |
 | Default Theme / palette | `silver.<scope_id>.theme` / `silver.loc_theme.theme_attr` | Removed fixed per-Scope Theme IDs; only in-memory temporary switching. The first partial CSS scheme is concealed until canonical DB palette is applied. Only one emergency palette exists for DB outage. |
 | Public feature availability | `silver.<scope_id>.search_able`, `statistics_able`, `culture_able` | Runtime FeatureGate checks DB flags. Mapping of UI feature to DB flag is a technical contract. |
@@ -16,7 +17,7 @@ A field already maintained in PostgreSQL must not be independently defined as a 
 | Navigation order / feature routes | Next.js UI composition; Registry supplies Scope identity, current URL and label | The relative locations of navigation slots and `/scope/?scope=ID` static-export shell remain technical presentation structure. |
 | Rune draw/game/keyword algorithm | Algorithm and game code | Stable logic, canonical 66 group semantics, fixed gameplay identifiers are deliberate constants; not interchangeable with DB presentation fields. |
 | Content authored as literals | Named, specifically fixed editorial pages and localized UI strings | Not a duplicated DB authority unless a matching editable/DB field exists. Author and LunaRunes editable Blocks continue to use their canonical storage. |
-| Static HTML/Next page metadata | Next.js static build, not Scope name authority | Build-time metadata and canonical URLs are static-export artifacts. Once hydrated the browser **Scope display name** comes from DB `display_name`. Static hosting cannot fetch live database labels during build without moving to server rendering. |
+| Static HTML/Next page metadata | Next.js static build, not Scope name authority | Build-time metadata and canonical URLs are static-export artifacts. After hydration, the browser page title and description come from DB `Title_TW` / `Desc_TW`. Static hosting cannot fetch live database labels during build without moving to server rendering. |
 
 ## Guardrails
 
