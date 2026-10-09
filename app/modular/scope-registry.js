@@ -12,10 +12,8 @@ export const SCOPES=Object.freeze({
   loc:Object.freeze({
     id:'loc',
     domain:'loc.lo3rwang.cc',
-    label:UI_COPY.scope.loc.label,
     default:true,
     aggregateChildren:true,
-    searchTitle:'LOC月典',
     searchAliases:Object.freeze(['loc','LOC','LunaCodex','月典']),
     featureSubtitles:Object.freeze({
       statics:UI_COPY.scope.loc.statics,
@@ -30,8 +28,6 @@ export const SCOPES=Object.freeze({
   lrunes:Object.freeze({
     id:'lrunes',
     domain:'lrunes.lo3rwang.cc',
-    label:'月之符文',
-    searchTitle:'月之符文 LunaRunes',
     searchAliases:Object.freeze(['lrunes','LunaRunes','月之符文']),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lrunes'}),
     featureSubtitles:Object.freeze({
@@ -47,8 +43,6 @@ export const SCOPES=Object.freeze({
 
   lo3rwang:Object.freeze({
     id:'lo3rwang',
-    label:UI_COPY.scope.author.label,
-    searchTitle:'Lucas Oscar Wang 政德',
     searchAliases:Object.freeze(['lo3rwang','Lucas Oscar Wang','政德']),
     featureSubtitles:Object.freeze({search:UI_COPY.scope.author.search}),
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/lo3rwang'}),
@@ -60,7 +54,6 @@ export const SCOPES=Object.freeze({
     id:'admin',
     domain:'admin.lo3rwang.cc',
     mount:Object.freeze({host:'loc.lo3rwang.cc',path:'/admin'}),
-    label:UI_COPY.scope.admin.label,
     featureScope:'loc',
     theme:Object.freeze({mode:'auto'})
   })
@@ -164,10 +157,10 @@ export function resolveScopeSearchAlias(query=''){
 }
 
 export function getScope(id){
-  const scopeId=normalizeScopeId(id);
-  if(scopeId&&SCOPES[scopeId])return SCOPES[scopeId];
-  if(scopeId)return genericScope(scopeId);
-  return SCOPES[DEFAULT_SCOPE_ID];
+  const scopeId=normalizeScopeId(id)||DEFAULT_SCOPE_ID;
+  // Static Registry stores route identity only; display_name lives in PostgreSQL.
+  if(SCOPES[scopeId])return {...SCOPES[scopeId],label:scopeId,searchTitle:scopeId};
+  return genericScope(scopeId);
 }
 
 export function scopeOrigin(scopeId){
