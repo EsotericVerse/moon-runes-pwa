@@ -34,19 +34,16 @@ export function useScopeRuntime(){
   const genericId=useMemo(()=>genericRouteScope(pathname,location.search),[pathname,location.search]);
   const scopeId=genericId||(genericShell?'':resolveScope(location.host,pathname));
   const dynamic=Boolean(genericShell&&(!genericId||!isKnownScope(genericId)));
-  const cached=dynamic?registryCache.get(scopeId):null;
+  const cached=scopeId?registryCache.get(scopeId):null;
   const [registryRow,setRegistryRow]=useState(cached||null);
   const [registryResolved,setRegistryResolved]=useState(!dynamic||(Boolean(scopeId)&&registryCache.has(scopeId)));
   const [registryError,setRegistryError]=useState('');
 
   useEffect(()=>{
     let active=true;
-    if(!dynamic){
-      setRegistryRow(null);setRegistryResolved(true);setRegistryError('');
-      return()=>{active=false};
-    }
+    // Every Scope, including built-ins, reads the canonical Registry display_name.
     if(!location.mounted){
-      setRegistryResolved(false);
+      if(dynamic)setRegistryResolved(false);
       return()=>{active=false};
     }
     if(!scopeId){
@@ -57,7 +54,9 @@ export function useScopeRuntime(){
       setRegistryRow(registryCache.get(scopeId));setRegistryResolved(true);setRegistryError('');
       return()=>{active=false};
     }
-    setRegistryResolved(false);setRegistryError('');
+    setRegistryRow(null);
+    setRegistryResolved(!dynamic);
+    setRegistryError('');
     selectScopeRegistryEntry(scopeId).then(row=>{
       if(!active)return;
       registryCache.set(scopeId,row||null);
