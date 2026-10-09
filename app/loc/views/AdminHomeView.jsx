@@ -21,7 +21,7 @@ const CREATE_OPTIONS=Object.freeze([
   {value:'group',label:'新增 Scope Group'}
 ]);
 const EMPTY_SCOPE_CREATE={scope_id:'',email:'',locale:'zh-Hant',route_mode:'directory'};
-const EMPTY_GROUP_CREATE={scope_id:'',display_name:'',domain:'',directory:'',parent_scope_id:'loc',sort_order:''};
+const EMPTY_GROUP_CREATE={scope_id:'',display_name:'',domain:'',directory:'',parent_scope_id:'loc'};
 const EMPTY_MAPPING={email:'',galaxy:'galaxy',time:'time',birthday:''};
 
 function Login({account}){
@@ -197,7 +197,6 @@ function RegistryNodePanel({data,selectedId,onCreateMode,onDeleted}){
 
   const groups=registry.filter(row=>row.scope_kind==='group'&&row.active!==false&&row.scope_id!==selectedId);
   const parentOptions=[{value:'',label:'—'},...groups.map(row=>({value:row.scope_id,label:(row.display_name||row.scope_id)+' · '+row.scope_id}))];
-  const themeOptions=[{value:'system-default',label:'系統預設（日／夜自動）'},...THEME_SLOTS.map(theme=>({value:theme.id,label:theme.label+' · '+theme.id}))];
 
   const patchRegistry=(key,value)=>setRegistry(rows=>rows.map((row,index)=>index===selectedIndex?{...row,[key]:value}:row));
   const patchConfig=(key,value)=>setConfigs(current=>({...current,[selectedId]:{...(current[selectedId]||{}),[key]:value}}));
@@ -216,8 +215,7 @@ function RegistryNodePanel({data,selectedId,onCreateMode,onDeleted}){
           domain:String(selected.domain||'').trim()||null,
           directory:String(selected.directory||'').trim()||null,
           parent_scope_id:selected.scope_id==='loc'?null:(String(selected.parent_scope_id||'').trim()||null),
-          active:selected.scope_id==='loc'?true:selected.active!==false,
-          sort_order:Number(selected.sort_order)||0
+          active:selected.scope_id==='loc'?true:selected.active!==false
         });
       }
       if(selected.scope_kind==='scope'&&config){
@@ -225,7 +223,6 @@ function RegistryNodePanel({data,selectedId,onCreateMode,onDeleted}){
           display_name:String(config.display_name||selected.scope_id).trim(),
           search_intro:String(config.search_intro||'').trim(),
           search_aliases:normalizeAliases(config.search_aliases),
-          theme:String(config.theme||'system-default'),
           locale:normalizeUiLocale(config.locale),
           search_able:config.search_able!==false,
           statistics_able:config.statistics_able!==false,
@@ -335,7 +332,6 @@ function RegistryNodePanel({data,selectedId,onCreateMode,onDeleted}){
         <label><span>顯示名稱</span><input value={config.display_name||''} onChange={e=>patchConfig('display_name',e.target.value)}/></label>
         <label><span>搜尋介紹</span><textarea rows={3} value={config.search_intro||''} onChange={e=>patchConfig('search_intro',e.target.value)}/></label>
         <label><span>搜尋別名</span><textarea rows={3} value={normalizeAliases(config.search_aliases).join('\n')} onChange={e=>patchConfig('search_aliases',e.target.value.split('\n'))}/></label>
-        <label><span>Theme</span><select className="admin-native-select" value={config.theme||'system-default'} onChange={e=>patchConfig('theme',e.target.value||'system-default')}>{themeOptions.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
         <label><span>預設語系</span><select className="admin-native-select" value={normalizeUiLocale(config.locale)} onChange={e=>patchConfig('locale',normalizeUiLocale(e.target.value))}>{UI_LOCALE_OPTIONS.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
         <div className="admin-inline-flags">
           <label><input type="checkbox" checked={config.search_able!==false} onChange={e=>patchConfig('search_able',e.target.checked)}/> Search</label>
@@ -347,7 +343,6 @@ function RegistryNodePanel({data,selectedId,onCreateMode,onDeleted}){
       <label><span>Domain</span><input value={selected.domain||''} onChange={e=>patchRegistry('domain',e.target.value)}/></label>
       <label><span>Directory</span><input value={selected.directory||''} onChange={e=>patchRegistry('directory',e.target.value)}/></label>
       {selected.scope_id!=='loc'?<label><span>Parent</span><select className="admin-native-select" value={String(selected.parent_scope_id||'')} onChange={e=>patchRegistry('parent_scope_id',e.target.value||'')}>{parentOptions.map(option=><option value={option.value} key={option.value||'root'}>{option.label}</option>)}</select></label>:null}
-      <label><span>排序</span><input type="number" value={selected.sort_order||0} onChange={e=>patchRegistry('sort_order',e.target.value)}/></label>
       <div className="scope-tabs">
         <button type="button" className="loc-button primary" onClick={saveRegistryAndConfig}>儲存</button>
         {selected.scope_kind==='scope'?<button type="button" className="loc-button" onClick={toggleScopeHidden}>{selected.active===false?'取消隱藏':'設定隱藏'}</button>:null}
@@ -419,8 +414,7 @@ function CreateNodePanel({data,kind='scope',onClose}){
         display_name:String(groupDraft.display_name||'').trim(),
         domain:String(groupDraft.domain||'').trim()||null,
         directory:String(groupDraft.directory||'').trim()||null,
-        parent_scope_id:String(groupDraft.parent_scope_id||'loc').trim()||'loc',
-        ...(String(groupDraft.sort_order||'').trim()?{sort_order:Number(groupDraft.sort_order)}:{})
+        parent_scope_id:String(groupDraft.parent_scope_id||'loc').trim()||'loc'
       });
       setStatus('Scope Group '+id+' 已建立。');refresh();onClose?.();
     }catch(error){setStatus(error?.message||'Scope Group 建立失敗。');}
@@ -446,7 +440,6 @@ function CreateNodePanel({data,kind='scope',onClose}){
       <label><span>Domain</span><input value={groupDraft.domain} onChange={e=>setGroupDraft(v=>({...v,domain:e.target.value}))}/></label>
       <label><span>Directory</span><input value={groupDraft.directory} onChange={e=>setGroupDraft(v=>({...v,directory:e.target.value}))}/></label>
       <label><span>Parent</span><select className="admin-native-select" value={groupDraft.parent_scope_id||'loc'} onChange={e=>setGroupDraft(v=>({...v,parent_scope_id:e.target.value||'loc'}))}>{parentOptions.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
-      <label><span>排序</span><input type="number" value={groupDraft.sort_order} onChange={e=>setGroupDraft(v=>({...v,sort_order:e.target.value}))}/></label>
       <button type="button" className="loc-button primary" onClick={createGroup}>建立</button>
     </>}
   </aside>;
