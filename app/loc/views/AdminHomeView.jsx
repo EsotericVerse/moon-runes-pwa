@@ -4,7 +4,7 @@ import {UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale} from '../../i18n/ui-copy';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {scopeHref,duplicateDomainLabelError} from '../../modular/scope-registry';
 import {THEME_SLOTS,THEME_TOKEN_KEYS} from '../../modular/theme-registry';
-import {mergeThemeSlot,THEME_DB_COLUMNS,themeColumnForToken} from '../theme-data';
+import {mergeThemeSlot,THEME_DB_COLUMNS,themeColumnForToken,themeUiId,themeNumber} from '../theme-data';
 import {useAccount} from '../use-account';
 import {
   deleteScope,deleteRows,insertRows,dbAuthRelation,manageScopeRegistry,provisionScope,syncManageScopeRow,updateRows
@@ -568,7 +568,11 @@ function ThemeEditor(){
       const {data,error}=await dbAuthRelation('silver.loc_theme').select(THEME_DB_COLUMNS).order('theme_order');
       if(!active)return;
       if(error){setStatus(error.message||'Theme 讀取失敗。');return;}
-      setRows(data||[]);
+      setRows((data||[]).map(row=>({
+        ...row,
+        theme_id:themeUiId(row.theme_id),
+        theme_db_numeric:typeof row.theme_id==='number'
+      })));
     })();
     return()=>{active=false};
   },[revision]);
@@ -590,7 +594,7 @@ function ThemeEditor(){
     try{
       const existing=rows.find(row=>row.theme_id===themeId)||null;
       const payload={
-        theme_id:themeId,
+        theme_id:existing?.theme_db_numeric?themeNumber(themeId):themeId,
         theme_name:String(draft.label||themeId).trim(),
         theme_order:Number(existing?.theme_order)||Number(String(themeId).split('-')[1])||1,
         scheme:draft.scheme==='dark'?'dark':'light',
