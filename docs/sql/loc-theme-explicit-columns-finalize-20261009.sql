@@ -58,9 +58,9 @@ END $check$;
 DO $identity$
 BEGIN
   IF EXISTS (
-    SELECT 1 FROM silver.loc_theme WHERE
-      theme_id !~ '^theme-[1-8]
-      OR theme_order <> split_part(theme_id,'-',2)::int
+    SELECT 1 FROM silver.loc_theme
+    WHERE theme_id !~ '^theme-[1-8]$'
+       OR theme_order <> split_part(theme_id,'-',2)::integer
   ) THEN RAISE EXCEPTION 'Theme numeric identity validation failed'; END IF;
 END $identity$;
 ALTER TABLE silver.loc_theme DROP CONSTRAINT loc_theme_id_check;
