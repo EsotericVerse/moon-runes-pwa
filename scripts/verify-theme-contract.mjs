@@ -50,16 +50,11 @@ if(shell.includes('if(fixedThemeId)return null')||shell.includes('if(fixedDefaul
 for(const token of ["selection.scopeId===scopeId","setSelection({scopeId,themeId:SYSTEM_THEME_ID})","fixedDefaultThemeId||configuredDefaultThemeId||automaticThemeId(now)"])if(!shell.includes(token))failures.push('Scope-local system-default theme behavior missing '+token);
 
 if(!portableSchema.includes('"loc_theme"')||portableSchema.includes('"theme_attr" jsonb')||!portableSchema.includes('"loc_bg" text NOT NULL')||!portableSchema.includes('"loc_shadow_card" text NOT NULL'))failures.push('portable schema must use explicit theme columns, never JSONB');
-
-if(!portableSchema.includes('"theme_id" smallint NOT NULL')||
-  !portableSchema.includes('CONSTRAINT "loc_theme_id_check" CHECK (theme_id BETWEEN 1 AND 8)'))
-  failures.push('loc_theme DB theme_id must be numeric 1–8, not prefixed text');
-if(!themeData.includes('export function themeUiId(')||!themeData.includes('export function themeNumber('))
-  failures.push('Theme UI identifiers must be translated only at the DB boundary');
-if(!admin.includes('theme_db_numeric')||!admin.includes('themeNumber(themeId)'))
-  failures.push('Theme Admin editor must save numeric DB key after migration');
+if(!portableSchema.includes('"theme_id" smallint NOT NULL')||!portableSchema.includes('CONSTRAINT "loc_theme_id_check" CHECK (theme_id BETWEEN 1 AND 8)'))failures.push('loc_theme DB ID must be numeric 1–8');
+if(!themeData.includes('export function themeUiId(')||!themeData.includes('export function themeNumber('))failures.push('DB numeric IDs must be translated at the Theme boundary');
+if(!admin.includes('theme_db_numeric')||!admin.includes('themeNumber(themeId)'))failures.push('Admin Theme editor must handle both rolling and numeric database IDs');
 if(themeData.includes('theme_attr')||admin.includes('theme_attr'))failures.push('Live Theme loader/editor may not use JSONB');
-if(portableSchema.includes('"theme_registry"'))failures.push('portable schema must not restore legacy theme_registry');
+if(portableSchema.includes('"theme_registry"'))failures.push('portable schema must not restore legacy Theme tables');
 
 // CSS subtraction guard: preserve the active shared frame and remove obsolete hero variants.
 const homeCss=read('app/styles/home-content.css');
