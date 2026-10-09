@@ -7,7 +7,7 @@ import {THEME_SLOTS,THEME_TOKEN_KEYS} from '../../modular/theme-registry';
 import {mergeThemeSlot} from '../theme-data';
 import {useAccount} from '../use-account';
 import {
-  copyRune66KeywordClass,deleteRows,insertRows,dbAuthRelation,manageScopeRegistry,provisionScope,syncManageScopeRow,updateRows
+  copyRune66KeywordClass,deleteScope,deleteRows,insertRows,dbAuthRelation,manageScopeRegistry,provisionScope,syncManageScopeRow,updateRows
 } from '../db-client.mjs';
 
 const ADMIN_OPTIONS=Object.freeze([
@@ -186,7 +186,7 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
   </div>;
 }
 
-function RegistryNodePanel({data,selectedId,onCreateMode}){
+function RegistryNodePanel({data,selectedId,onCreateMode,onDeleted}){
   const {registry,setRegistry,mappings,setMappings,configs,setConfigs,status,setStatus,refresh}=data;
   const selectedIndex=registry.findIndex(row=>row.scope_id===selectedId);
   const selected=selectedIndex>=0?registry[selectedIndex]:null;
@@ -287,6 +287,26 @@ function RegistryNodePanel({data,selectedId,onCreateMode}){
     }catch(error){setStatus(error?.message||'Scope 隱藏設定失敗。');}
   }
 
+  async function deleteSelectedScope(){
+    if(!selected||selected.scope_kind!=='scope')return;
+    if(['loc','lrunes','lo3rwang','admin'].includes(selected.scope_id)){
+      setStatus('內建 Scope 不允許刪除。');
+      return;
+    }
+    const typed=window.prompt('刪除將永久移除 '+selected.scope_id+' 的資料及設定。請輸入 Scope ID 以確認：');
+    if(typed===null)return;
+    if(String(typed).trim().toLowerCase()!==selected.scope_id){
+      setStatus('Scope ID 不相符，已取消刪除。');return;
+    }
+    setStatus('');
+    try{
+      await deleteScope(selected.scope_id);
+      setStatus(selected.scope_id+' 已永久刪除。');
+      onDeleted?.();
+      refresh();
+    }catch(error){setStatus(error?.message||'Scope 刪除失敗。');}
+  }
+
   async function copyRune66(){
     if(!selected||selected.scope_kind!=='scope'||runeCopyBusy)return;
     setRuneCopyBusy(true);setStatus('');
@@ -328,13 +348,14 @@ function RegistryNodePanel({data,selectedId,onCreateMode}){
       <label><span>Directory</span><input value={selected.directory||''} onChange={e=>patchRegistry('directory',e.target.value)}/></label>
       {selected.scope_id!=='loc'?<label><span>Parent</span><select className="admin-native-select" value={String(selected.parent_scope_id||'')} onChange={e=>patchRegistry('parent_scope_id',e.target.value||'')}>{parentOptions.map(option=><option value={option.value} key={option.value||'root'}>{option.label}</option>)}</select></label>:null}
       <label><span>排序</span><input type="number" value={selected.sort_order||0} onChange={e=>patchRegistry('sort_order',e.target.value)}/></label>
-      {selected.scope_kind==='scope'?<button type="button" className="loc-button" onClick={toggleScopeHidden}>{selected.active===false?'取消隱藏':'設定隱藏'}</button>:null}
-      {selected.scope_kind==='scope'?<button type="button" className="loc-button" disabled={runeCopyBusy} onClick={copyRune66}>{runeCopyBusy?'複製中…':'複製符文66風格'}</button>:null}
-
       <div className="scope-tabs">
-        <button type="button" className="loc-button primary" onClick={saveRegistryAndConfig}>儲存節點</button>
-        <a className="loc-button" href={scopeHref(selected.scope_id)} target="_blank" rel="noreferrer">開啟 UI</a>
+        <button type="button" className="loc-button primary" onClick={saveRegistryAndConfig}>儲存</button>
+        {selected.scope_kind==='scope'?<button type="button" className="loc-button" onClick={toggleScopeHidden}>{selected.active===false?'取消隱藏':'設定隱藏'}</button>:null}
+        {selected.scope_kind==='scope'?<button type="button" className="loc-button" onClick={deleteSelectedScope}>刪除</button>:null}
       </div>
+      {selected.scope_kind==='scope'?<div className="scope-tabs">
+        <button type="button" className="loc-button" disabled={runeCopyBusy} onClick={copyRune66}>{runeCopyBusy?'複製中…':'複製符文66風格'}</button>
+      </div>:null}
     </>:null}
 
     {selected.scope_kind==='scope'?<section className="admin-node-mapping">
@@ -468,7 +489,7 @@ function AdminRegistry(){
         {!registry.length&&data.status?<p className="scope-status scope-error">{data.status}</p>:null}
         <DeploymentTree registry={registry} configs={configs} selectedId={selectedId} onSelect={selectNode} onMoveParent={moveParent}/>
       </div>
-      {createKind?<CreateNodePanel data={data} kind={createKind} onClose={()=>setCreateKind('')}/>:<RegistryNodePanel data={data} selectedId={selectedId} onCreateMode={setCreateKind}/>}
+      {createKind?<CreateNodePanel data={data} kind={createKind} onClose={()=>setCreateKind('')}/>:<RegistryNodePanel data={data} selectedId={selectedId} onCreateMode={setCreateKind} onDeleted={()=>setSelectedId('')}/>}
     </div>
   </section>;
 }
