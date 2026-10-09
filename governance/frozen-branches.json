@@ -1,5 +1,5 @@
 {
-  "frozen_at": "2026-10-09",
+  "frozen_at": "2026-10-10",
   "policy": "Frozen branches are historical only. Do not add new work or open new PRs from them. Start new work from the latest main.",
   "active": [
     "main"
@@ -124,6 +124,7 @@
     "fix/lunarunes-home-draw-copy",
     "fix/lunarunes-home-eyebrow",
     "fix/lunarunes-ui-clean",
+    "fix/nav-manage-title-tw-20261009",
     "fix/new-gameboard-hero-full-bleed-20261008",
     "fix/portable-public-query-contract",
     "fix/restore-all-public-page-presentation-20261008",
