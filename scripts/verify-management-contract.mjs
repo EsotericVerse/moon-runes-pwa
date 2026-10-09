@@ -204,10 +204,12 @@ must(admin.includes("{id:'__admin__',label:'Admin',shape:'box',fixed:true}")&&!a
 must(!admin.includes("react-select")&&!admin.includes('<Select')&&admin.includes('admin-native-select'),'Admin must use native select controls instead of react-select');
 must(['群組人員管理','資料庫設定','主題設定'].every(label=>admin.includes("label:'"+label+"'"))&&!admin.includes("value:'search'")&&!admin.includes('SearchKeywordReport'),'Admin primary menu must stay concise Chinese system settings without a redundant search query report');
 must(admin.includes('scopeDomainError?<p')&&admin.includes('groupDomainError?<p')&&admin.includes("duplicateDomainLabelError(id,mode)")&&admin.includes('disabled={Boolean(scopeDomainError)}'),'Admin Scope creation must immediately reject repeated Domain labels');
-must(read('app/AppShell.jsx').includes('function ScopePageTitle({displayName})')&&
-  read('app/AppShell.jsx').includes('document.title=name')&&
+must(read('app/AppShell.jsx').includes('function ScopePageCopy({scopeId,display_name})')&&
+  read('app/AppShell.jsx').includes('pageCopyQuery.data?.Title_TW')&&
+  read('app/AppShell.jsx').includes('pageCopyQuery.data?.Desc_TW')&&
+  read('app/loc/scope-data.js').includes("rpc('read_scope_page_copy'")&&
   read('app/AppShell.jsx').includes('configRow?.display_name||registryRow?.display_name'),
-  'browser page title must derive from Scope DB display_name only');
+  'browser page copy must derive from manage Title_TW/Desc_TW independently of display_name');
 must(!admin.includes('applyTheme(')&&admin.includes('admin-theme-local-preview')&&admin.includes('正在編輯的主題（只修改草稿，不影響網站配色）'),'Admin Theme draft and preview must never mutate the live document root theme on entry or edit');
 must(admin.includes('admin-registry-fallback')&&admin.includes('圖形樹載入失敗，已切換清單模式。')&&admin.includes('setTreeError'),'Scope Registry must provide a visible fallback instead of failing blank');
 must(admin.includes('syncManageScopeRow(')&&admin.includes("role:'scope'"),'Admin Scope node must edit Manage mapping atomically and keep role=scope fixed');
