@@ -4,7 +4,7 @@ import {useEffect,useMemo,useState} from 'react';
 import Select from 'react-select';
 import dynamic from 'next/dynamic';
 import {useQueryClient} from '@tanstack/react-query';
-import {copyKeywordLibraryClass,dbAuthRelation,updateRows,writeKeywordLibraryItem} from './db-client.mjs';
+import {copyKeywordLibraryClass,copyRune66KeywordClass,dbAuthRelation,updateRows,writeKeywordLibraryItem} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {clearRune66ClassificationCache,runRune66ClassificationBatch} from './rune66-keyword-analysis';
 // The vis-network bundle is downloaded/mounted only when its view is chosen.
@@ -417,6 +417,23 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     }finally{setBusy(false);}
   }
 
+  async function copyRune66(){
+    if(busy)return;
+    setBusy(true);setMessage('');
+    try{
+      const result=await copyRune66KeywordClass(scopeId);
+      const createdName=String(result.class_name||'').trim();
+      const reloaded=await load('',createdName,{preserveOnError:true});
+      setMessage(reloaded
+        ?'已從符文66建立獨立 Class「'+createdName+'」（'+result.count+' 筆；UUID：'+result.class_id+'）。目前使用的 Class 不變，如需套用請至分析設定選擇。'
+        :'符文66已複製至資料庫（UUID：'+result.class_id+'），但重新載入失敗；請重新進入關鍵詞庫確認。');
+    }catch(error){
+      setMessage('符文66 Class 複製失敗：'+String(error?.message||error));
+    }finally{
+      setBusy(false);
+    }
+  }
+
   async function copyClass(){
     const target=String(copyName||'').trim();
     if(!selectedClass){setMessage('請先選擇要複製的 Class。');return;}
@@ -508,7 +525,9 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     <div className="scope-stat-controls">
       <label><span>複製目前 Class</span><input value={copyName} placeholder="新 Class 名稱" onChange={event=>setCopyName(event.target.value)}/></label>
       <button type="button" className="loc-button" disabled={busy||!selectedClass} onClick={copyClass}>複製整套 Class</button>
+      <button type="button" className="loc-button" disabled={busy||loading} onClick={copyRune66}>{busy?'處理中…':'複製符文66為新 Class'}</button>
     </div>
+    <p className="scope-status">符文66複製會新增獨立 UUID 的 Class，不覆蓋現有關鍵詞，也不切換目前使用的 Class。</p>
 
     {loading?<p className="scope-status" role="status">正在載入關鍵詞資料…</p>:null}
     {savingStage?<p className="scope-status scope-keyword-saving-progress" role="status" aria-live="polite" aria-busy="true"><span className="scope-keyword-saving-spinner" aria-hidden="true"/>{savingStage}</p>:null}
