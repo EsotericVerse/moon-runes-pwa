@@ -142,16 +142,22 @@ export async function selectManagedScope(scopeId){
 }
 
 
-export async function selectScopeConfig(scopeId){
+// Deduplicate simultaneous readers (AppShell, Scope runtime, feature gate).
+// Keep no long-lived result cache: DB changes can be picked up on next read.
+const scopeConfigInFlight=new Map();
+export function selectScopeConfig(scopeId){
   const scope=defaultScopeData(scopeId);
-  if(!scope)return null;
-  const {rows}=await selectRows(scope.config,{
+  if(!scope)return Promise.resolve(null);
+  const existing=scopeConfigInFlight.get(scope.id);
+  if(existing)return existing;
+  const request=selectRows(scope.config,{
     columns:'id,display_name,search_intro,search_aliases,theme,locale,search_able,statistics_able,culture_able',
     filters:[{column:'id',operator:'eq',value:scope.id}],
     limit:1,
     offset:0
-  });
-  return rows[0]||null;
+  }).then(({rows})=>rows[0]||null).finally(()=>scopeConfigInFlight.delete(scope.id));
+  scopeConfigInFlight.set(scope.id,request);
+  return request;
 }
 
 
