@@ -217,6 +217,9 @@ begin
   -- New Scopes start with no content rows. Editors add index/governance
   -- text frames only when authored; avoid empty default frames and legacy pages.
 
+  -- PostgREST must see all six new tables only after this transaction commits.
+  perform pg_catalog.pg_notify('pgrst','reload schema');
+
   return jsonb_build_object(
     'scope_id',v_scope,'display_name',v_name,'parent_scope_id',v_parent,
     'route_mode',case when v_domain<>'' then 'domain' else 'directory' end,
@@ -423,6 +426,9 @@ grant execute on function api.apply_keyword_classification(jsonb) to authenticat
 
   -- New Scopes start with no content rows. Editors add index/governance
   -- text frames only when authored; avoid empty default frames and legacy pages.
+
+  -- PostgREST must see all six new tables only after this transaction commits.
+  perform pg_catalog.pg_notify('pgrst','reload schema');
 
   return jsonb_build_object(
     'scope_id',v_scope,'display_name',v_name,'parent_scope_id',v_parent,
