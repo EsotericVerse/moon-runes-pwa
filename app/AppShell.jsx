@@ -9,7 +9,7 @@ import {FEATURES,SCOPES,featureHref,featureIdForPath,getScope,scopeHref} from '.
 import {applyTheme,themeSignature,THEME_SLOTS} from './modular/theme-registry';
 import {mergeThemeSlot,selectThemeRegistry} from './loc/theme-data';
 import {useScopeRuntime} from './modular/use-scope-runtime';
-import {selectScopeConfig,selectScopeRegistryEntry} from './loc/scope-data';
+import {selectScopeConfig,selectScopeRegistry} from './loc/scope-data';
 import {getDbSourceStatus,subscribeDbSourceStatus} from './loc/db-source-status.mjs';
 
 const SYSTEM_THEME_ID='system-default';
@@ -124,25 +124,13 @@ function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride
     </select>
   </label>;
 }
-// Scope's database display_name is the only authority for the browser title.
-// There is no independently configured SEO/marketing title for a Scope.
-function ScopePageTitle({scopeId,pathname}){
-  const titleQuery=useQuery({
-    queryKey:['scope-display-name',scopeId],
-    queryFn:async()=>{
-      const config=scopeId==='loc'||scopeId==='admin'?null:await selectScopeConfig(scopeId);
-      const displayName=String(config?.display_name||'').trim();
-      if(displayName)return displayName;
-      const registry=await selectScopeRegistryEntry(scopeId);
-      return String(registry?.display_name||'').trim();
-    },
-    enabled:Boolean(scopeId),
-    staleTime:60_000
-  });
+// The browser's Scope title follows the database display_name, never a static
+// Next.js Scope-specific title or an independent SEO label.
+function ScopePageTitle({displayName}){
   useEffect(()=>{
-    const displayName=String(titleQuery.data||'').trim();
-    if(displayName&&document.title!==displayName)document.title=displayName;
-  },[scopeId,pathname,titleQuery.data]);
+    const title=String(displayName||'').trim();
+    if(title&&document.title!==title)document.title=title;
+  },[displayName]);
   return null;
 }
 function LanguageSelect({locale,onChange,copy=UI_COPY}){
@@ -177,9 +165,17 @@ export default function AppShell({children}){
   }));
   const {scrollYProgress}=useScroll();
   const scaleX=useSpring(scrollYProgress,{stiffness:220,damping:34,mass:.28});
-  const {scopeId,scope,host,pathname}=useScopeRuntime();
+  const {scopeId,scope,host,pathname,registryRow,configRow}=useScopeRuntime();
   const currentFeature=featureIdForPath(pathname);
   const [searchText,setSearchText]=useState('');
+  const [navDisplayNames,setNavDisplayNames]=useState({});
+  useEffect(()=>{
+    let active=true;
+    selectScopeRegistry().then(rows=>{
+      if(active)setNavDisplayNames(Object.fromEntries(rows.map(row=>[row.scope_id,row.display_name])));
+    }).catch(()=>{});
+    return()=>{active=false};
+  },[]);
   const currentScope=scope||getScope(scopeId);
   const [localeSelection,setLocaleSelection]=useState(()=>({scopeId:'',locale:'zh-Hant',manual:false}));
   const activeLocale=localeSelection.scopeId===scopeId?normalizeUiLocale(localeSelection.locale):'zh-Hant';
@@ -218,15 +214,10 @@ export default function AppShell({children}){
   }
 
   const featureLabel=item=>copy.features?.[item.id]?.title||item.label;
-  const scopeNavLabel=item=>{
-    if(item.id==='lrunes')return copy.nav.lunarunes;
-    if(item.id==='lo3rwang')return copy.nav.author;
-    if(item.id==='loc')return copy.nav.home;
-    return item.nav?.label||item.label;
-  };
+  const scopeNavLabel=item=>navDisplayNames[item.id]||item.id;
 
   return <QueryClientProvider client={client}><UiLocaleProvider locale={activeLocale}>
-    <ScopePageTitle scopeId={scopeId} pathname={pathname}/>
+    <ScopePageTitle displayName={configRow?.display_name||registryRow?.display_name}/>
     <motion.div className="loc-scroll-progress" style={{scaleX}} aria-hidden="true"/>
     <header className="scope-global">
       <nav className="scope-nav" aria-label={copy.nav.aria}>
