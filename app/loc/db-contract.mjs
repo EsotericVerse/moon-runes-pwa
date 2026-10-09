@@ -202,6 +202,28 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return {count:data.length,class_id:newClassId};
   }
 
+  async function isCurrentEmailBlocklisted(){
+    const {data,error}=await authClient.schema('silver').rpc('is_current_email_blocklisted');
+    if(error)throw new Error(error.message||'無法核對系統黑名單');
+    return data===true;
+  }
+
+  async function copyRune66KeywordClass(scopeId){
+    const scope=normalizeScopeId(scopeId);
+    if(!scope)throw new Error('Scope ID 格式不正確。');
+    const {data,error}=await authClient.schema('silver').rpc('copy_rune66_keyword_class',{p_scope_id:scope});
+    if(error)throw new Error(error.message||'符文66複製失敗。');
+    return data||{};
+  }
+
+  async function deleteScope(scopeId){
+    const scope=normalizeScopeId(scopeId);
+    if(!scope)throw new Error('Scope ID 格式不正確。');
+    const {data,error}=await authClient.schema('silver').rpc('delete_scope',{p_scope_id:scope});
+    if(error)throw new Error(error.message||'Scope 刪除失敗。');
+    return data||{};
+  }
+
   async function provisionScope(values={}){
     const scopeId=normalizeScopeId(values.scope_id);
     const payload={
@@ -279,5 +301,5 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
-  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,writeKeywordLibraryItem,copyKeywordLibraryClass,provisionScope,manageScopeRegistry,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
+  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,provisionScope,manageScopeRegistry,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
 }
