@@ -10,8 +10,8 @@ for(const [query,id] of [['月典','loc'],['LunaCodex','loc'],['LOC','loc'],['�
 if(resolveScopeSearchAlias('月')!==null)failures.push('Scope search aliases must require exact matches');
 if(resolveScope('127.0.0.1','/lrunes/')!=='lrunes')failures.push('local static preview must resolve /lrunes/ as LunaRunes');
 if(resolveScope('localhost','/lrunes/game/')!=='lrunes')failures.push('local static preview must resolve mounted LunaRunes feature paths');
-if(scopeHref('lrunes')!=='https://loc.lo3rwang.cc/lrunes/')failures.push('LunaRunes canonical route must remain a LOC Directory');
-if(SCOPES.lrunes.domain)failures.push('LunaRunes must not declare an independent canonical domain');
+if(scopeHref('lrunes')!=='https://lrunes.lo3rwang.cc/')failures.push('LunaRunes canonical route must remain its Domain');
+if(SCOPES.lrunes.domain!=='lrunes.lo3rwang.cc')failures.push('LunaRunes must declare its own Domain');
 if(resolveScope('loc.lo3rwang.cc','/admin/')!=='admin')failures.push('Admin redirect target must resolve as Admin Scope');
 for(const [id,mode,reject] of [['lo3rwang','domain',true],['cc','domain',true],['aaa','domain',false],['lo3rwang','directory',false]]){
   if(Boolean(duplicateDomainLabelError(id,mode))!==reject)failures.push('Domain duplicate labels mismatch: '+id+' / '+mode);
