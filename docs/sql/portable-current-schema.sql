@@ -395,7 +395,7 @@ CREATE TABLE "silver"."database_targets" (
 CREATE UNIQUE INDEX database_targets_one_selected ON silver.database_targets USING btree ((selected)) WHERE selected;
 
 CREATE TABLE "silver"."loc_theme" (
-  "theme_id" text NOT NULL,
+  "theme_id" smallint NOT NULL,
   "theme_name" text NOT NULL,
   "theme_order" integer NOT NULL,
   "scheme" text NOT NULL,
@@ -445,7 +445,7 @@ CREATE TABLE "silver"."loc_theme" (
   "loc_shadow" text NOT NULL,
   "loc_shadow_card" text NOT NULL,
   CONSTRAINT "loc_theme_pkey" PRIMARY KEY (theme_id),
-  CONSTRAINT "loc_theme_id_check" CHECK (theme_id ~ '^theme-[1-8]$'::text),
+  CONSTRAINT "loc_theme_id_check" CHECK (theme_id BETWEEN 1 AND 8),
   CONSTRAINT "loc_theme_scheme_check" CHECK (scheme IN ('dark','light')),
   CONSTRAINT "loc_theme_order_check" CHECK (theme_order >= 1 AND theme_order <= 8)
 );
