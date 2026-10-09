@@ -107,7 +107,7 @@ test('LOC, Author and LunaRunes share home typography tiers without changing Run
   const runeHeroSize=await runeTitle.evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
   // A Scope may intentionally save a blank rich-text subtitle (<p><br></p>).
   // Check its typography only when there is actual visible text to render.
-  const runeSubtitleText=await runeSubtitle.textContent();
+  const runeSubtitleText=(await runeSubtitle.count())?await runeSubtitle.textContent():'';
   const hasRuneSubtitle=Boolean(runeSubtitleText?.trim());
   if(hasRuneSubtitle)await expect(runeSubtitle).toBeVisible();
   const runeSubtitleSize=hasRuneSubtitle
