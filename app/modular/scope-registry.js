@@ -69,6 +69,14 @@ const GENERIC_SCOPE_HOST='loc.lo3rwang.cc';
 const GENERIC_SCOPE_PATH='/scope';
 const SCOPE_ID_PATTERN=/^[a-z][a-z0-9]{0,14}$/;
 
+export const DUPLICATE_DOMAIN_MESSAGE='網域名稱重複，拒絕建立。';
+export function duplicateDomainLabelError(scopeId,mode='domain'){
+  if(mode!=='domain')return '';
+  const domain=String(scopeId||'').trim().toLowerCase()+'.lo3rwang.cc';
+  const labels=domain.split('.').filter(Boolean);
+  return new Set(labels).size===labels.length?'':DUPLICATE_DOMAIN_MESSAGE;
+}
+
 export function normalizeScopeId(value=''){
   const id=String(value||'').trim().toLowerCase();
   return SCOPE_ID_PATTERN.test(id)?id:'';
