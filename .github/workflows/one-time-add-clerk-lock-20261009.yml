@@ -1,0 +1,40 @@
+name: One-time prepare Clerk SDK lockfile
+on:
+  push:
+    branches:
+      - chore/add-clerk-react-auth-sdk-20261009
+    paths:
+      - .github/workflows/one-time-add-clerk-lock-20261009.yml
+permissions:
+  contents: write
+jobs:
+  dependency:
+    if: "github.event.head_commit.message == 'ops: install Clerk SDK with npm lockfile 20261009'"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Update manifest and lockfile (no runtime auth activation)
+        run: |
+          npm install @clerk/react@6.15.2 --save-exact --package-lock-only --ignore-scripts --no-audit --no-fund
+          node --input-type=module -e '
+          import fs from "node:fs";
+          const p=JSON.parse(fs.readFileSync("package.json","utf8"));
+          const l=JSON.parse(fs.readFileSync("package-lock.json","utf8"));
+          if(p.dependencies["@clerk/react"]!=="6.15.2"||l.packages[""].dependencies["@clerk/react"]!=="6.15.2")process.exit(1);
+          console.log("Clerk 6.15.2 manifest and lock agree");
+          '
+      - name: Commit exact lockfile to staging branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          if git diff --cached --quiet; then
+            echo "Unexpected: Clerk SDK did not change lockfile"
+            exit 1
+          fi
+          git commit -m "build(deps): stage Clerk React SDK with reproducible lockfile"
+          git push origin HEAD:chore/add-clerk-react-auth-sdk-20261009
