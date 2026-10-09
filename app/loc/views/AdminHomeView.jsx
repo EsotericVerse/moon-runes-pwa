@@ -102,21 +102,20 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
     let network=null;
     setTreeState('loading');
     setTreeError('');
-    const roots=registry.filter(row=>!row.parent_scope_id);
-    const nodes=[
-      {id:'__admin__',label:'Admin',shape:'box',fixed:true},
-      ...registry.map(row=>({
-        id:row.scope_id,
-        label:(configs[row.scope_id]?.display_name||row.display_name||row.scope_id)+'\n'+row.scope_id+(row.active===false?' · 停用':''),
-        shape:row.scope_kind==='group'?'box':'ellipse',
-        mass:1
-      }))
-    ];
-    const edges=[
-      ...roots.map(row=>({from:'__admin__',to:row.scope_id,arrows:'to'})),
-      ...registry.filter(row=>row.parent_scope_id).map(row=>({from:row.parent_scope_id,to:row.scope_id,arrows:'to'}))
-    ];
-    const groupIds=new Set(registry.filter(row=>row.scope_kind==='group').map(row=>row.scope_id));
+    // Admin is the management site, not a Scope or an extra hierarchy level.
+    const scopeRows=registry.filter(row=>row.scope_kind!=='system');
+    const nodes=scopeRows.map(row=>({
+      id:row.scope_id,
+      label:(configs[row.scope_id]?.display_name||row.display_name||row.scope_id)+'\n'+row.scope_id+(row.active===false?' · 停用':''),
+      shape:row.scope_kind==='group'?'box':'ellipse',
+      fixed:row.scope_id==='loc',
+      mass:1
+    }));
+    const scopeIds=new Set(scopeRows.map(row=>row.scope_id));
+    const edges=scopeRows
+      .filter(row=>row.parent_scope_id&&scopeIds.has(row.parent_scope_id))
+      .map(row=>({from:row.parent_scope_id,to:row.scope_id,arrows:'to'}));
+    const groupIds=new Set(scopeRows.filter(row=>row.scope_kind==='group').map(row=>row.scope_id));
 
     import('vis-network/standalone').then(({Network})=>{
       if(cancelled||!containerRef.current)return;
@@ -129,14 +128,15 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
         edges:{smooth:{enabled:true,type:'cubicBezier',forceDirection:'vertical',roundness:.35}}
       });
       networkRef.current=network;
+      network.fit({animation:false,maxZoomLevel:1});
       setTreeState('ready');
       network.on('selectNode',params=>{
         const id=String(params?.nodes?.[0]||'');
-        if(id&&id!=='__admin__')onSelect?.(id);
+        if(id)onSelect?.(id);
       });
       network.on('dragEnd',params=>{
         const nodeId=String(params?.nodes?.[0]||'');
-        if(!nodeId||nodeId==='__admin__')return;
+        if(!nodeId||nodeId==='loc')return;
         const row=registry.find(item=>item.scope_id===nodeId);
         if(!row||row.scope_kind==='group'&&nodeId==='loc')return;
         const positions=network.getPositions();
@@ -155,7 +155,6 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
       });
       if(selectedId&&registry.some(row=>row.scope_id===selectedId)){
         network.selectNodes([selectedId]);
-        network.focus(selectedId,{scale:1,animation:false});
       }
     }).catch(error=>{
       if(cancelled)return;
@@ -168,7 +167,7 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
   useEffect(()=>{
     const network=networkRef.current;
     if(!network||!selectedId)return;
-    try{network.selectNodes([selectedId]);network.focus(selectedId,{scale:1,animation:{duration:180}});}catch{}
+    try{network.selectNodes([selectedId]);}catch{}
   },[selectedId]);
 
   return <div className="admin-deployment-tree-wrap">
@@ -177,7 +176,7 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
       <p className="scope-status">{treeState==='error'?'圖形樹載入失敗，已切換清單模式。':'Scope Registry 載入中…'}</p>
       {treeError?<p className="scope-status scope-error">{treeError}</p>:null}
       {registry.length?<div className="admin-registry-fallback-list">
-        {registry.map(row=><button type="button" className={'scope-inline-card admin-registry-fallback-item'+(row.scope_id===selectedId?' is-selected':'')} onClick={()=>onSelect?.(row.scope_id)} key={row.scope_id}>
+        {registry.filter(row=>row.scope_kind!=='system').map(row=><button type="button" className={'scope-inline-card admin-registry-fallback-item'+(row.scope_id===selectedId?' is-selected':'')} onClick={()=>onSelect?.(row.scope_id)} key={row.scope_id}>
           <strong>{configs[row.scope_id]?.display_name||row.display_name||row.scope_id}</strong>
           <span>{row.scope_id} · {row.scope_kind}{row.active===false?' · 停用':''}</span>
         </button>)}
@@ -186,7 +185,7 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
   </div>;
 }
 
-function RegistryNodePanel({data,selectedId,onCreateMode,onDeleted}){
+function RegistryNodePanel({data,selectedId,onDeleted}){
   const {registry,setRegistry,mappings,setMappings,configs,setConfigs,status,setStatus,refresh}=data;
   const selectedIndex=registry.findIndex(row=>row.scope_id===selectedId);
   const selected=selectedIndex>=0?registry[selectedIndex]:null;
@@ -317,10 +316,7 @@ function RegistryNodePanel({data,selectedId,onCreateMode,onDeleted}){
   return <aside className="admin-context-panel">
     <div className="admin-node-heading">
       <div><p className="loc-eyebrow">{selected.scope_kind}</p><h2>{config?.display_name||selected.display_name||selected.scope_id}</h2><p className="scope-status">{selected.scope_id}</p></div>
-      <div className="scope-tabs">
-        <button type="button" onClick={()=>onCreateMode?.('scope')}>＋ Scope</button>
-        <button type="button" onClick={()=>onCreateMode?.('group')}>＋ Group</button>
-      </div>
+
     </div>
 
     {selected.scope_kind!=='system'?<>
@@ -489,7 +485,7 @@ function AdminRegistry(){
         {!registry.length&&data.status?<p className="scope-status scope-error">{data.status}</p>:null}
         <DeploymentTree registry={registry} configs={configs} selectedId={selectedId} onSelect={selectNode} onMoveParent={moveParent}/>
       </div>
-      {createKind?<CreateNodePanel data={data} kind={createKind} onClose={()=>setCreateKind('')}/>:<RegistryNodePanel data={data} selectedId={selectedId} onCreateMode={setCreateKind} onDeleted={()=>setSelectedId('')}/>}
+      {createKind?<CreateNodePanel data={data} kind={createKind} onClose={()=>setCreateKind('')}/>:<RegistryNodePanel data={data} selectedId={selectedId} onDeleted={()=>setSelectedId('')}/>}
     </div>
   </section>;
 }
