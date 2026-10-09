@@ -145,13 +145,15 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
       network=new Network(containerRef.current,{nodes,edges},{
         autoResize:true,
         physics:{enabled:false},
-        // UD lays each Group's children across the row; deeper Groups add rows below.
-        layout:{hierarchical:{enabled:true,direction:'UD',sortMethod:'directed',levelSeparation:150,nodeSpacing:245,treeSpacing:245}},
+        // LR: Group parent at left, siblings aligned vertically at right; deeper Groups extend right.
+        layout:{hierarchical:{enabled:true,direction:'LR',sortMethod:'directed',levelSeparation:235,nodeSpacing:120,treeSpacing:145}},
         interaction:{hover:true,dragNodes:true,dragView:true,zoomView:true,selectable:true,keyboard:true,navigationButtons:true},
         locale:'en',
         locales:{en:{
-          edit:'編輯',del:'刪除所選',back:'返回',close:'關閉',
-          editNode:'編輯節點',editEdge:'編輯關係'
+          edit:'編輯',del:'刪除所選',back:'返回',close:'關閉',addNode:'新增節點',addEdge:'新增關係',
+          editNode:'編輯節點',editEdge:'編輯關係',addDescription:'在圖面放置節點',
+          edgeDescription:'拖曳建立關係',editEdgeDescription:'拖曳調整關係',
+          createEdgeError:'不可建立此關係',deleteClusterError:'不能刪除群集',editClusterError:'不能編輯群集'
         }},
         manipulation:{
           enabled:true,initiallyActive:true,addNode:false,addEdge:false,editEdge:false,
@@ -169,7 +171,7 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
           }
         },
         ...themeOptions(),
-        edges:{...themeOptions().edges,smooth:{enabled:true,type:'cubicBezier',forceDirection:'vertical',roundness:.35}}
+        edges:{...themeOptions().edges,smooth:{enabled:true,type:'cubicBezier',forceDirection:'horizontal',roundness:.35}}
       });
       themeObserver=new MutationObserver(()=>network?.setOptions(themeOptions()));
       themeObserver.observe(document.documentElement,{attributes:true,attributeFilter:['style','data-theme-id']});
@@ -550,7 +552,7 @@ function AdminRegistry(){
   return <section className="loc-card admin-workspace">
     <div className="admin-deployment-layout">
       <div className="admin-graph-header">
-        <div><h2>Scope 關聯圖</h2><p>同層橫向排列；選取節點後在下方編輯，拖曳至 Group 可調整所屬群組。</p></div>
+        <div><h2>Scope 關聯圖</h2><p>由左至右展開：LOC → Scope／Group。選取或雙擊節點，在下方編輯；拖曳至其他 Group 可調整所屬關係。</p></div>
         <div className="admin-registry-actions">
           <button type="button" className="loc-button" onClick={()=>setCreateKind('scope')}>＋ 新增 Scope</button>
           <button type="button" className="loc-button" onClick={()=>setCreateKind('group')}>＋ 新增 Group</button>
