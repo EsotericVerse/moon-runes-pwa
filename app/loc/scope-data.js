@@ -2,6 +2,22 @@
 
 import {DB_QUERY_BATCH_SIZE} from './query-contract.mjs';
 import {selectRows} from './db-query.mjs';
+import {dbPublicClient} from './db-client.mjs';
+
+// Public page copy reads only Title_TW and Desc_TW through a least-privilege RPC.
+// The silver.manage table itself (emails/roles/mappings) remains private.
+export async function selectScopePageCopy(scopeId){
+  const id=String(scopeId||'').trim().toLowerCase();
+  if(!/^[a-z][a-z0-9]{0,14}$/.test(id))return null;
+  const {data,error}=await dbPublicClient.schema('silver').rpc('read_scope_page_copy',{p_scope_id:id});
+  if(error)throw new Error(error.message||'Scope page copy is unavailable');
+  const row=Array.isArray(data)?data[0]:data;
+  return row?{
+    scope_id:id,
+    Title_TW:String(row.Title_TW||'').trim(),
+    Desc_TW:String(row.Desc_TW||'').trim()
+  }:null;
+}
 
 export const MANAGE_TABLE='silver.manage';
 
