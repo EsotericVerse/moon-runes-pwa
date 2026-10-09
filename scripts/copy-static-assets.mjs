@@ -26,6 +26,7 @@ const publicPics=[
   'g3c-nature.element.jpg',
   'g4c-order.disorder.jpg',
   'lo3rwang-3.png',
+  'LOC-auth.png',
 ];
 
 const picsTarget=path.join(output,'pics');
