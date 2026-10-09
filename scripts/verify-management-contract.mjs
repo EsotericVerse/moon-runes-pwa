@@ -205,9 +205,17 @@ const adminCss=read('app/styles/features.css');
 must(adminCss.includes('.admin-context-panel input:not([type="checkbox"]):not([type="radio"])')&&adminCss.includes('.admin-inline-flags input:is([type="checkbox"],[type="radio"])'),'Admin checkbox and radio inputs must retain native sizing instead of 100% field width');
 must(adminCss.includes('.admin-inline-flags[role="radiogroup"]')&&!adminCss.includes('max-height:78vh;overflow:auto'),'Admin route controls must be readable without a clipped nested form scrollbar');
 must(admin.includes('if(!scopeRows.length)return()=>{cancelled=true;}')&&admin.includes('network.fit({animation:false,maxZoomLevel:1})')&&!admin.includes('network.focus(selectedId,'),'Admin graph must fit populated canvas without zooming for every selection');
-must(admin.includes('},[registry,onSelect,onMoveParent]);'),'Draft Scope config changes must not rebuild the vis-network tree on each keystroke');
-must(!admin.includes('Registry：')&&admin.includes('{!routeLocked?<div className="admin-inline-flags"'),'Admin UI must omit redundant Registry prose and locked route controls');
+must(admin.includes('},[registry]);')&&admin.includes('handlersRef.current={onSelect,onMoveParent,onDeleteNode}'),'Draft Scope config changes must not rebuild the vis-network tree on each keystroke');
+must(!admin.includes('Registry：')&&admin.includes('{!routeLocked?<div className="admin-inline-flags"')&&admin.includes('className="admin-route-summary"'),'Admin UI must show actual Domain or Directory values without redundant Registry prose');
 must(admin.includes('shapeProperties:{borderRadius:12}')&&admin.includes('themeObserver?.disconnect()')&&admin.includes("token('--loc-text'"),'Admin graph nodes must use compact theme-aware shapes with observer cleanup');
+must(admin.includes("direction:'LR'")&&admin.includes("forceDirection:'horizontal'")&&!admin.includes("direction:'UD'"),'Scope graph must place LOC at left and its children at right');
+must(adminCss.includes('.admin-deployment-layout{display:grid;grid-template-columns:minmax(0,1fr)')&&admin.includes('className="admin-editor-section"'),'Scope management must show full-width graph with editor below');
+must(admin.includes("select('id,email,role,galaxy,time,birthday,Title_TW,Desc_TW')")&&admin.includes("updateRows('silver.manage'")&&admin.includes("Title_TW:String(currentCopy.Title_TW")&&admin.includes('NAV 中文名稱（Title_TW）'),'Admin must edit silver.manage Title_TW and Desc_TW, including true DB writes');
+must(admin.includes("role=\"application\"")||admin.includes('manipulation:{'),'Scope graph must preserve direct vis-network edit/delete operations');
+must(admin.includes("const [editDraft,setEditDraft]=useState(null)")&&admin.includes('const editing=editDraft?.scopeId===selectedId;')&&admin.includes("const cancelEdit=()=>setEditDraft(null);"),'Scope node edits must remain local drafts until explicit Save or Cancel');
+must(admin.includes('admin-attribute-grid')&&admin.includes('aria-label="Scope 屬性摘要"')&&admin.includes('onClick={beginEdit}')&&adminCss.includes('.admin-attribute>strong'),'Scope node shows attribute summary first and clicking any attribute enters edit mode');
+must(admin.includes('key={selectedId} data={data} selectedId={selectedId}'),'Switching Scope node must discard any uncommitted edit draft');
+must(!admin.includes('async function toggleScopeHidden')&&admin.includes("patchRegistry('active',e.target.checked)"),'Visibility changes must not write before Save');
 must(!admin.includes("react-select")&&!admin.includes('<Select')&&admin.includes('admin-native-select'),'Admin must use native select controls instead of react-select');
 must(['群組人員管理','資料庫設定','主題設定'].every(label=>admin.includes("label:'"+label+"'"))&&!admin.includes("value:'search'")&&!admin.includes('SearchKeywordReport'),'Admin primary menu must stay concise Chinese system settings without a redundant search query report');
 must(admin.includes('scopeDomainError?<p')&&admin.includes('groupDomainError?<p')&&admin.includes("duplicateDomainLabelError(id,mode)")&&admin.includes('disabled={Boolean(scopeDomainError)}'),'Admin Scope creation must immediately reject repeated Domain labels');
@@ -221,14 +229,14 @@ must(!admin.includes('applyTheme(')&&admin.includes('admin-theme-local-preview')
 must(admin.includes('admin-registry-fallback')&&admin.includes('圖形樹載入失敗，已切換清單模式。')&&admin.includes('setTreeError'),'Scope Registry must provide a visible fallback instead of failing blank');
 must(admin.includes('syncManageScopeRow(')&&admin.includes("role:'scope'"),'Admin Scope node must edit Manage mapping atomically and keep role=scope fixed');
 must(admin.includes('部分 Scope 設定讀取失敗')&&admin.includes('configFailures.push')&&admin.includes("if(error)throw new Error(error.message||'Scope config 讀取失敗。')"),'Admin Scope config failures must be surfaced, not swallowed');
-must(admin.includes('provisionScope(')&&admin.includes('＋ Scope')&&admin.includes('＋ Group'),'Admin Registry must create Scope and Scope Group from the tree workspace');
+must(admin.includes('provisionScope(')&&admin.includes('＋ 新增 Scope')&&admin.includes('＋ 新增 Group'),'Admin Registry must create Scope and Scope Group from the tree workspace');
 must(
   !admin.includes('<span>排序</span>')&&admin.includes('<span>主題</span>')&&
   !admin.includes('groupDraft.sort_order')&&
   scopeSettings.includes('<span>主題</span>')&&
   scopeSettings.includes("change('theme',")&&
   scopeSettings.includes('theme:String(draft.theme')&&
-  admin.includes("active:selected.scope_id==='loc'?true:selected.active!==false"),
+  admin.includes("active:current.scope_id==='loc'?true:current.active!==false"),
   'Scope management must hide numeric order while retaining named eight-Theme selection'
 );
 const scopeCreatePanel=admin.split("    {kind==='scope'?<>")[1]?.split("    </>:<>")[0]||'';
@@ -253,8 +261,9 @@ must(
 );
 must(
   admin.includes('onClick={saveRegistryAndConfig}>儲存</button>')&&
-  admin.includes('onClick={toggleScopeHidden}')&&
-  admin.includes('onClick={deleteSelectedScope}')&&
+  admin.includes('onClick={cancelEdit}>取消</button>')&&
+  admin.includes('onClick={()=>onDeleteNode?.(current.scope_id)}>刪除</button>')&&
+  admin.includes("patchRegistry('active',e.target.checked)")&&
   !admin.includes('開啟 UI')&&admin.includes('請輸入 Scope ID 以確認')&&
   !admin.includes('onClick={copyRune66}')&&!admin.includes('copyRune66KeywordClass')&&
   keywordLibrary.includes('onClick={copyRune66}')&&
@@ -262,7 +271,7 @@ must(
   keywordLibrary.includes('複製符文66為新 Class')&&
   dbContract.includes("rpc('delete_scope'")&&
   dbContract.includes("rpc('copy_rune66_keyword_class'"),
-  'Admin Scope node must expose Save/Hide/Delete only; Rune66 independent Class copy belongs to Scope Keyword Library'
+  'Admin Scope node must expose Save/Cancel/Delete and visibility as a draft; Rune66 Class copy belongs to Scope Keyword Library'
 );
 must(
   admin.includes('name={\'registry-route-mode-\'+selectedId}')&&
