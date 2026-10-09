@@ -374,30 +374,58 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
     }catch(error){setStatus(error?.message||'Mapping 新增失敗。');}
   }
 
-  if(!selected)return <aside className="admin-context-panel"><p className="scope-status">點選節點。</p></aside>;
+  if(!selected)return <aside className="admin-context-panel"><p className="scope-status">請先選擇 Scope／Group 節點。</p></aside>;
 
-  return <aside className="admin-context-panel">
+  const attrs=[
+    {label:'Scope ID',value:selected.scope_id},
+    {label:'節點類型',value:selected.scope_kind==='group'?'Scope Group':'Scope'},
+    {label:'顯示名稱',value:config?.display_name||selected.display_name||'—'},
+    ...(selected.scope_kind==='scope'?[
+      {label:'NAV 中文名稱',value:pageCopy?.Title_TW||'未設定'},
+      {label:'頁面說明',value:pageCopy?.Desc_TW||'未設定'},
+      {label:'搜尋介紹',value:config?.search_intro||'未設定'},
+      {label:'搜尋別名',value:normalizeAliases(config?.search_aliases).join('、')||'未設定'},
+      {label:'主題',value:themeOptions.find(option=>option.value===(config?.theme||'system-default'))?.label||'系統預設'},
+      {label:'預設語系',value:normalizeUiLocale(config?.locale)},
+      {label:'功能開放',value:['Search','Statistics','Culture'].filter((name,index)=>[config?.search_able,config?.statistics_able,config?.culture_able][index]!==false).join('、')||'全部停用'},
+      {label:'管理者數量',value:String(scopeMappings.length)}
+    ]:[]),
+    {label:'路由類型',value:routeMode==='domain'?'Domain · 獨立網域':'Directory · 站內路徑'},
+    {label:'實際位置',value:routeValue},
+    ...(selected.scope_id==='loc'?[]:[{label:'所屬 Group',value:registry.find(row=>row.scope_id===selected.parent_scope_id)?.display_name||selected.parent_scope_id||'—'}]),
+    {label:'狀態',value:selected.active!==false?'啟用':'隱藏'}
+  ];
+
+  return <aside className={'admin-context-panel'+(editing?' is-editing':' is-reading')}>
     <div className="admin-node-heading">
-      <div><p className="loc-eyebrow">{selected.scope_kind}</p><h2>{config?.display_name||selected.display_name||selected.scope_id}</h2><p className="scope-status">{selected.scope_id}</p></div>
-
+      <div>
+        <p className="loc-eyebrow">{selected.scope_kind==='group'?'Scope Group':'Scope'} · {selected.scope_id}</p>
+        <h2>{config?.display_name||selected.display_name||selected.scope_id}</h2>
+      </div>
+      {!editing?<button type="button" className="loc-button primary" onClick={beginEdit}>編輯設定</button>:<span className="scope-status">編輯草稿 · 尚未儲存</span>}
     </div>
 
-    {selected.scope_kind!=='system'?<>
-      {selected.scope_kind==='group'?<label><span>Group 名稱</span><input value={selected.display_name||''} onChange={e=>patchRegistry('display_name',e.target.value)}/></label>:null}
-      {selected.scope_kind==='scope'&&config?<>
-        {pageCopy?<section className="admin-page-copy-fields" aria-label="公開頁面名稱設定">
-          <label><span>NAV 中文名稱（Title_TW）</span><input required value={pageCopy.Title_TW||''} onChange={e=>patchPageCopy('Title_TW',e.target.value)}/></label>
-          <label><span>頁面說明（Desc_TW）</span><textarea rows={2} value={pageCopy.Desc_TW||''} onChange={e=>patchPageCopy('Desc_TW',e.target.value)}/></label>
+    {!editing?<div className="admin-attribute-grid" aria-label="Scope 屬性摘要">
+      {attrs.map(item=><button type="button" className="admin-attribute" key={item.label} onClick={beginEdit} title={'編輯 '+item.label}>
+        <span>{item.label}</span>
+        <strong>{item.value}</strong>
+      </button>)}
+    </div>:<>
+      {current.scope_kind==='group'?<label><span>Group 名稱</span><input value={current.display_name||''} onChange={e=>patchRegistry('display_name',e.target.value)}/></label>:null}
+      {current.scope_kind==='scope'&&currentConfig?<>
+        {currentCopy?<section className="admin-page-copy-fields" aria-label="公開頁面名稱設定">
+          <label><span>NAV 中文名稱（Title_TW）</span><input required value={currentCopy.Title_TW||''} onChange={e=>patchPageCopy('Title_TW',e.target.value)}/></label>
+          <label><span>頁面說明（Desc_TW）</span><textarea rows={2} value={currentCopy.Desc_TW||''} onChange={e=>patchPageCopy('Desc_TW',e.target.value)}/></label>
         </section>:null}
-        <label><span>Scope 顯示名稱</span><input value={config.display_name||''} onChange={e=>patchConfig('display_name',e.target.value)}/></label>
-        <label><span>搜尋介紹</span><textarea rows={3} value={config.search_intro||''} onChange={e=>patchConfig('search_intro',e.target.value)}/></label>
-        <label><span>搜尋別名</span><textarea rows={3} value={normalizeAliases(config.search_aliases).join('\n')} onChange={e=>patchConfig('search_aliases',e.target.value.split('\n'))}/></label>
-        <label><span>主題</span><select className="admin-native-select" value={config.theme||'system-default'} onChange={e=>patchConfig('theme',e.target.value)}>{themeOptions.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
-        <label><span>預設語系</span><select className="admin-native-select" value={normalizeUiLocale(config.locale)} onChange={e=>patchConfig('locale',normalizeUiLocale(e.target.value))}>{UI_LOCALE_OPTIONS.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
+        <label><span>Scope 顯示名稱</span><input value={currentConfig.display_name||''} onChange={e=>patchConfig('display_name',e.target.value)}/></label>
+        <label><span>搜尋介紹</span><textarea rows={3} value={currentConfig.search_intro||''} onChange={e=>patchConfig('search_intro',e.target.value)}/></label>
+        <label><span>搜尋別名</span><textarea rows={3} value={normalizeAliases(currentConfig.search_aliases).join('\n')} onChange={e=>patchConfig('search_aliases',e.target.value.split('\n'))}/></label>
+        <label><span>主題</span><select className="admin-native-select" value={currentConfig.theme||'system-default'} onChange={e=>patchConfig('theme',e.target.value)}>{themeOptions.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
+        <label><span>預設語系</span><select className="admin-native-select" value={normalizeUiLocale(currentConfig.locale)} onChange={e=>patchConfig('locale',normalizeUiLocale(e.target.value))}>{UI_LOCALE_OPTIONS.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
         <div className="admin-inline-flags">
-          <label><input type="checkbox" checked={config.search_able!==false} onChange={e=>patchConfig('search_able',e.target.checked)}/> Search</label>
-          <label><input type="checkbox" checked={config.statistics_able!==false} onChange={e=>patchConfig('statistics_able',e.target.checked)}/> Statistics</label>
-          <label><input type="checkbox" checked={config.culture_able!==false} onChange={e=>patchConfig('culture_able',e.target.checked)}/> Culture</label>
+          <label><input type="checkbox" checked={currentConfig.search_able!==false} onChange={e=>patchConfig('search_able',e.target.checked)}/> Search</label>
+          <label><input type="checkbox" checked={currentConfig.statistics_able!==false} onChange={e=>patchConfig('statistics_able',e.target.checked)}/> Statistics</label>
+          <label><input type="checkbox" checked={currentConfig.culture_able!==false} onChange={e=>patchConfig('culture_able',e.target.checked)}/> Culture</label>
         </div>
       </>:null}
 
@@ -410,16 +438,17 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
         <label><input type="radio" name={'registry-route-mode-'+selectedId} value="domain" checked={routeMode==='domain'} onChange={()=>chooseRouteMode('domain')}/>獨立網域</label>
         <label><input type="radio" name={'registry-route-mode-'+selectedId} value="directory" checked={routeMode==='directory'} onChange={()=>chooseRouteMode('directory')}/>站內路徑</label>
       </div>:null}
-      {selected.scope_id!=='loc'?<label><span>Parent</span><select className="admin-native-select" value={String(selected.parent_scope_id||'')} onChange={e=>patchRegistry('parent_scope_id',e.target.value||'')}>{parentOptions.map(option=><option value={option.value} key={option.value||'root'}>{option.label}</option>)}</select></label>:null}
-      <div className="scope-tabs">
+      {current.scope_id!=='loc'?<label><span>所屬 Group</span><select className="admin-native-select" value={String(current.parent_scope_id||'')} onChange={e=>patchRegistry('parent_scope_id',e.target.value||'')}>{parentOptions.map(option=><option value={option.value} key={option.value||'root'}>{option.label}</option>)}</select></label>:null}
+      {current.scope_kind==='scope'?<label className="scope-setting-toggle"><input type="checkbox" checked={current.active!==false} onChange={e=>patchRegistry('active',e.target.checked)}/> 對外啟用</label>:null}
+      <div className="scope-tabs admin-edit-actions">
         <button type="button" className="loc-button primary" onClick={saveRegistryAndConfig}>儲存</button>
-        {selected.scope_kind==='scope'?<button type="button" className="loc-button" onClick={toggleScopeHidden}>{selected.active===false?'取消隱藏':'設定隱藏'}</button>:null}
-        {selected.scope_kind==='scope'?<button type="button" className="loc-button" onClick={()=>onDeleteNode?.(selected.scope_id)}>刪除</button>:null}
+        <button type="button" className="loc-button" onClick={cancelEdit}>取消</button>
+        {current.scope_kind==='scope'?<button type="button" className="loc-button scope-danger-button" disabled={routeLocked} onClick={()=>onDeleteNode?.(current.scope_id)}>刪除</button>:null}
       </div>
-    </>:null}
+    </>}
 
-    {selected.scope_kind==='scope'?<section className="admin-node-mapping">
-      <h3>Manage Mapping</h3>
+    {selected.scope_kind==='scope'&&!editing?<details className="admin-node-mapping">
+      <summary>管理者 Mapping（{scopeMappings.length}）</summary>
       {scopeMappings.map(row=><article className="scope-inline-card" key={row.email}>
         <strong>{row.email}</strong>
         <div className="scope-management-fields">
@@ -427,14 +456,14 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
           <label><span>Time</span><input value={row.time||'time'} onChange={e=>patchMapping(row.email,'time',e.target.value)}/></label>
           <label><span>Birthday</span><input type="date" value={row.birthday||''} onChange={e=>patchMapping(row.email,'birthday',e.target.value)}/></label>
         </div>
-        <div className="scope-tabs"><button type="button" onClick={()=>saveMapping(row)}>儲存</button><button type="button" onClick={()=>removeMapping(row)}>移除</button></div>
+        <div className="scope-tabs"><button type="button" onClick={()=>saveMapping(row)}>儲存 Mapping</button><button type="button" onClick={()=>removeMapping(row)}>移除</button></div>
       </article>)}
       <details>
         <summary>新增管理者</summary>
         <label><span>Email</span><input type="email" value={newMapping.email} onChange={e=>setNewMapping(v=>({...v,email:e.target.value}))}/></label>
         <button type="button" className="loc-button" onClick={addMapping}>新增</button>
       </details>
-    </section>:null}
+    </details>:null}
 
     {status?<p className="scope-status" role="status">{status}</p>:null}
   </aside>;
@@ -564,7 +593,7 @@ function AdminRegistry(){
   return <section className="loc-card admin-workspace">
     <div className="admin-deployment-layout">
       <div className="admin-graph-header">
-        <div><h2>Scope 關聯圖</h2><p>由左至右展開：LOC → Scope／Group。選取或雙擊節點，在下方編輯；拖曳至其他 Group 可調整所屬關係。</p></div>
+        <div><h2>Scope 關聯圖</h2><p>由左至右展開：LOC → Scope／Group。選取節點先看 Attr 摘要；點選任一 Attr 進入編輯。拖曳至其他 Group 可調整所屬關係。</p></div>
         <div className="admin-registry-actions">
           <button type="button" className="loc-button" onClick={()=>setCreateKind('scope')}>＋ 新增 Scope</button>
           <button type="button" className="loc-button" onClick={()=>setCreateKind('group')}>＋ 新增 Group</button>
@@ -573,7 +602,7 @@ function AdminRegistry(){
       {!registry.length&&data.status?<p className="scope-status scope-error">{data.status}</p>:null}
       <DeploymentTree registry={registry} configs={configs} selectedId={selectedId} onSelect={selectNode} onMoveParent={moveParent} onDeleteNode={deleteNode}/>
       <div className="admin-editor-section" id="admin-scope-editor">
-        {createKind?<CreateNodePanel data={data} kind={createKind} onClose={()=>setCreateKind('')}/>:<RegistryNodePanel data={data} selectedId={selectedId} onDeleted={()=>setSelectedId('')} onDeleteNode={deleteNode}/>}
+        {createKind?<CreateNodePanel data={data} kind={createKind} onClose={()=>setCreateKind('')}/>:<RegistryNodePanel key={selectedId} data={data} selectedId={selectedId} onDeleted={()=>setSelectedId('')} onDeleteNode={deleteNode}/>}
       </div>
     </div>
   </section>;
