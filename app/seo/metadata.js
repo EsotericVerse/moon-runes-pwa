@@ -117,10 +117,10 @@ export function authorProfileJsonLd(){
 
 export async function lunarunesPageCopyMetadata({path='/',noIndex=false}={}){
   const fields=await readScopePageCopy('lrunes');
-  return lunarunesMetadata({title:fields.Title_TW,description:fields.Desc_TW,path,noIndex});
+  return lunarunesMetadata({title:fields.Desc_TW,description:fields.Desc_TW,path,noIndex});
 }
 
 export async function authorPageCopyMetadata({path='/lo3rwang/',noIndex=false}={}){
   const fields=await readScopePageCopy('lo3rwang');
-  return authorMetadata({title:fields.Title_TW,description:fields.Desc_TW,path,noIndex});
+  return authorMetadata({title:fields.Desc_TW,description:fields.Desc_TW,path,noIndex});
 }
