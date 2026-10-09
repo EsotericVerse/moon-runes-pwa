@@ -148,7 +148,18 @@ must(editableBlocks.includes('containerless?contents:')&&editableBlocks.includes
 must(editableBlocks.includes('displayed.push(normalizeRow(null,placeholderFirstOrder))')&&locHomeBlock.includes('home-hero-visual'),'Hero responsive image must be rendered statically even before the DB content loads');
 must(!locHomeCss.includes('display:contents')&&!locHomeCss.includes('!important'),'Homepage CSS must not rely on wrapper-hiding or cascade override hacks');
 
-must(!runesHome.includes('ScopeEditableBlocks')&&runesHome.includes('className="basic-grid"'),'LunaRunes homepage must remain a fixed special presentation without inline management editing');
+must(
+  runesHome.includes('ScopeEditableBlocks')&&
+  runesHome.includes('page="hero"')&&
+  runesHome.includes('scopeId="lrunes"')&&
+  runesHome.includes('allowDelete={false}')&&
+  runesHome.includes('allowEntities={false}')&&
+  runesHome.includes('allowImages={false}')&&
+  runesHome.includes('renderDisplay={renderRuneHero}')&&
+  runesHome.includes('className="basic-grid"')&&
+  (runesHome.match(/<ScopeEditableBlocks/g)||[]).length===1,
+  'Only the LunaRunes Hero may use inline BlockNote; its other homepage sections remain fixed'
+);
 must(personalGovernance.includes('ScopeEditableBlocks')&&personalGovernance.includes('page="governance"'),'personal governance must use governance block rows');
 must(runesGovernance.includes('ScopeEditableBlocks')&&runesGovernance.includes('page="governance"'),'LunaRunes governance must use governance block rows');
 must(sharedSearch.includes('startEditing')&&sharedSearch.includes('BlockNoteEditor')&&sharedSearch.includes('GALAXY_EDITOR_COLUMNS')&&sharedSearch.includes('GalaxyAttrSummary')&&sharedSearch.includes('GalaxyAttrEditor')&&sharedSearch.includes("fullTextKey===row.key")&&sharedSearch.includes('updateRows'),'Search must open full Galaxy articles first, then expose permission-gated full Attr editing');
