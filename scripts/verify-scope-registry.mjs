@@ -18,6 +18,7 @@ setScopeRegistryRouteRows([
 if(scopeHref('lrunes')!=='https://lrunes.lo3rwang.cc/')failures.push('LunaRunes canonical Domain must come from DB Registry');
 if(resolveScope('lrunes.lo3rwang.cc','/')!=='lrunes')failures.push('LunaRunes host must resolve from DB Registry');
 if(scopeHref('lo3rwang')!=='https://loc.lo3rwang.cc/lo3rwang/')failures.push('Author Directory must derive from DB Registry');
+if(resolveScope('lo3rwang.lo3rwang.cc','/')!=='loc')failures.push('Directory-only Author must never resolve as an invented subdomain');
 if(resolveScope('loc.lo3rwang.cc','/admin/')!=='admin')failures.push('Admin redirect target must resolve as Admin Scope');
 for(const [id,mode,reject] of [['lo3rwang','domain',true],['cc','domain',true],['aaa','domain',false],['lo3rwang','directory',false]]){
   if(Boolean(duplicateDomainLabelError(id,mode))!==reject)failures.push('Domain duplicate labels mismatch: '+id+' / '+mode);
