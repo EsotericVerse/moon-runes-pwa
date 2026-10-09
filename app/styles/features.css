@@ -314,6 +314,15 @@
 .admin-graph-header h2{margin:0 0 .3rem}
 .admin-graph-header p{margin:0;color:var(--loc-muted);font-size:.88rem}
 .admin-deployment-tree{height:clamp(21rem,43vh,31rem);border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-lg);background:var(--loc-panel);overflow:hidden}
+.admin-node-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+.admin-delete-confirm{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(15rem,.9fr);gap:.75rem 1.1rem;align-items:end;padding:1.1rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-lg);background:var(--loc-surface-soft)}
+.admin-delete-confirm strong{font-size:1rem;color:var(--loc-heading)}
+.admin-delete-confirm p{margin:.4rem 0 0;color:var(--loc-muted);font-size:.9rem;line-height:1.6}
+.admin-delete-confirm label{display:grid;gap:.35rem;min-width:0}
+.admin-delete-confirm label span{font-size:.85rem;color:var(--loc-muted)}
+.admin-delete-confirm input{width:100%;min-width:0}
+.admin-delete-confirm .scope-tabs{grid-column:1/-1;justify-content:flex-end}
+@media(max-width:720px){.admin-delete-confirm{grid-template-columns:1fr}}
 .admin-editor-section{min-width:0}
 .admin-context-panel{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem 1.15rem;align-content:start;min-width:0;padding:clamp(1rem,2vw,1.4rem);border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-lg);background:var(--loc-panel)}
 .admin-context-panel>.admin-node-heading,.admin-context-panel>.admin-page-copy-fields,.admin-context-panel>.admin-route-summary,.admin-context-panel>.admin-inline-flags,.admin-context-panel>.scope-tabs,.admin-context-panel>.admin-node-mapping,.admin-context-panel>.scope-status,.admin-context-panel>details{grid-column:1/-1}

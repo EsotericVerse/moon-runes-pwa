@@ -181,11 +181,11 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
             callback(null);
           },
           deleteNode:(selection,callback)=>{
+            // Never remove a visual node before the database confirms deletion.
+            // Avoid browser prompt() from inside the vis-network manipulation callback.
             const ids=Array.isArray(selection?.nodes)?selection.nodes:[];
-            if(ids.length!==1){callback(null);return;}
-            Promise.resolve(handlersRef.current.onDeleteNode?.(String(ids[0]))).then(ok=>{
-              callback(ok?selection:null);
-            }).catch(()=>callback(null));
+            callback(null);
+            if(ids.length===1)handlersRef.current.onDeleteNode?.(String(ids[0]));
           }
         },
         ...themeOptions(),
@@ -420,7 +420,10 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
         <p className="loc-eyebrow">{selected.scope_kind==='group'?'Scope Group':'Scope'} · {selected.scope_id}</p>
         <h2>{config?.display_name||selected.display_name||selected.scope_id}</h2>
       </div>
-      {!editing?<button type="button" className="loc-button primary" onClick={beginEdit}>編輯設定</button>:<span className="scope-status">編輯草稿 · 尚未儲存</span>}
+      {!editing?<div className="admin-node-actions">
+        <button type="button" className="loc-button primary" onClick={beginEdit}>編輯設定</button>
+        {selected.scope_kind==='scope'&&!routeLocked?<button type="button" className="loc-button" onClick={()=>onDeleteNode?.(selectedId)}>刪除</button>:null}
+      </div>:<span className="scope-status">編輯草稿 · 尚未儲存</span>}
     </div>
 
     {!editing?<div className="admin-attribute-grid" aria-label="Scope 屬性摘要">
@@ -594,6 +597,14 @@ function AdminRegistry(){
   const {registry,configs,setRegistry,setStatus,refresh}=data;
   const [selectedId,setSelectedId]=useState('');
   const [createKind,setCreateKind]=useState('');
+  const [deletePending,setDeletePending]=useState('');
+  const [deleteTyped,setDeleteTyped]=useState('');
+  const [deleteBusy,setDeleteBusy]=useState(false);
+  const [deleteNotice,setDeleteNotice]=useState('');
+  const deleteConfirmRef=useRef(null);
+  useEffect(()=>{
+    if(deletePending)deleteConfirmRef.current?.scrollIntoView({behavior:'smooth',block:'nearest'});
+  },[deletePending]);
 
   useEffect(()=>{
     if(selectedId&&registry.some(row=>row.scope_id===selectedId))return;
@@ -616,21 +627,49 @@ function AdminRegistry(){
   },[registry,setRegistry,setStatus,refresh]);
 
   const selectNode=useCallback(id=>{setCreateKind('');setSelectedId(id);},[]);
-  const deleteNode=useCallback(async id=>{
+  const requestDelete=useCallback(id=>{
+    if(deleteBusy)return;
     const row=registry.find(item=>item.scope_id===id);
-    if(!row||row.scope_kind!=='scope'){setStatus('只能刪除 Scope，Group 不可直接刪除。');return false;}
-    if(['loc','lrunes','lo3rwang','admin'].includes(id)){setStatus('內建 Scope 不允許刪除。');return false;}
-    const typed=window.prompt('刪除將永久移除 '+id+' 的資料及設定。請輸入 Scope ID 以確認：');
-    if(typed===null)return false;
-    if(String(typed).trim().toLowerCase()!==id){setStatus('Scope ID 不相符，已取消刪除。');return false;}
+    if(!row||row.scope_kind!=='scope'){
+      setDeleteNotice('只能刪除 Scope；Group 與系統節點不可刪除。');
+      return;
+    }
+    if(['loc','lrunes','lo3rwang','admin'].includes(id)){
+      setDeleteNotice('內建 Scope 不允許刪除。');
+      return;
+    }
+    setCreateKind('');
+    setSelectedId(id);
+    setDeleteTyped('');
+    setDeleteNotice('');
+    setDeletePending(id);
+  },[registry,deleteBusy]);
+  const cancelDelete=()=>{if(deleteBusy)return;setDeletePending('');setDeleteTyped('');};
+  const confirmDelete=async()=>{
+    const id=deletePending;
+    if(!id||deleteBusy||deleteTyped.trim().toLowerCase()!==id)return;
+    setDeleteBusy(true);
+    setDeleteNotice(id+' 正在刪除並核對資料庫…');
     try{
-      await deleteScope(id);
-      if(selectedId===id)setSelectedId('');
-      setStatus(id+' 已永久刪除。');
+      const result=await deleteScope(id);
+      if(result?.deleted!==true||result?.scope_id!==id){
+        throw new Error('刪除 RPC 未回傳正確的完成確認。');
+      }
+      const {data:remaining,error:verifyError}=await dbAuthRelation('silver.scope_registry')
+        .select('scope_id').eq('scope_id',id).limit(1);
+      if(verifyError)throw new Error('刪除已執行，但 Registry 驗證失敗：'+verifyError.message);
+      if(remaining?.length)throw new Error('資料庫仍存在 '+id+'，已取消前端成功提示。');
+      setRegistry(rows=>rows.filter(row=>row.scope_id!==id));
+      setSelectedId(current=>current===id?'loc':current);
+      setDeletePending('');
+      setDeleteTyped('');
+      setDeleteNotice('Scope '+id+' 已確認自資料庫移除。');
       refresh();
-      return true;
-    }catch(error){setStatus(error?.message||'Scope 刪除失敗。');return false;}
-  },[registry,refresh,selectedId,setStatus]);
+    }catch(error){
+      setDeleteNotice('刪除 '+id+' 失敗：'+String(error?.message||error)+'。節點保留，請檢查後重試。');
+      refresh();
+    }finally{setDeleteBusy(false);}
+  };
   return <section className="loc-card admin-workspace">
     <div className="admin-deployment-layout">
       <div className="admin-graph-header">
@@ -641,10 +680,19 @@ function AdminRegistry(){
           <button type="button" className="loc-button" onClick={()=>setCreateKind('group')}>＋ 新增 Group</button>
         </div>
       </div>
-      {!registry.length&&data.status?<p className="scope-status scope-error">{data.status}</p>:null}
-      <DeploymentTree registry={registry} configs={configs} selectedId={selectedId} onSelect={selectNode} onMoveParent={moveParent} onDeleteNode={deleteNode}/>
+      <DeploymentTree registry={registry} configs={configs} selectedId={selectedId} onSelect={selectNode} onMoveParent={moveParent} onDeleteNode={requestDelete}/>
+      {deletePending?<section className="admin-delete-confirm" ref={deleteConfirmRef} role="region" aria-label="刪除 Scope 確認">
+        <div><strong>永久刪除 Scope：{deletePending}</strong><p>將移除這個 Scope 的六張資料表、關鍵詞、設定及管理紀錄；此操作不可復原。</p></div>
+        <label><span>請輸入 {deletePending} 以確認</span><input autoFocus autoComplete="off" value={deleteTyped} disabled={deleteBusy} onChange={e=>setDeleteTyped(e.target.value)} /></label>
+        <div className="scope-tabs">
+          <button type="button" className="loc-button" disabled={deleteBusy} onClick={cancelDelete}>取消</button>
+          <button type="button" className="loc-button primary" disabled={deleteBusy||deleteTyped.trim().toLowerCase()!==deletePending} onClick={confirmDelete}>{deleteBusy?'刪除與驗證中…':'確認永久刪除'}</button>
+        </div>
+      </section>:null}
+      {deleteNotice?<p className={'scope-status'+(deleteNotice.includes('失敗')?' scope-error':'')} role="status">{deleteNotice}</p>:null}
+      {data.status?<p className="scope-status" role="status">{data.status}</p>:null}
       <div className="admin-editor-section" id="admin-scope-editor">
-        {createKind?<CreateNodePanel data={data} kind={createKind} onClose={()=>setCreateKind('')}/>:<RegistryNodePanel key={selectedId} data={data} selectedId={selectedId} onDeleted={()=>setSelectedId('')} onDeleteNode={deleteNode}/>}
+        {createKind?<CreateNodePanel data={data} kind={createKind} onClose={()=>setCreateKind('')}/>:<RegistryNodePanel key={selectedId} data={data} selectedId={selectedId} onDeleted={()=>setSelectedId('')} onDeleteNode={requestDelete}/>}
       </div>
     </div>
   </section>;
