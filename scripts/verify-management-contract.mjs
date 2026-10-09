@@ -218,7 +218,7 @@ must(admin.includes('key={selectedId} data={data} selectedId={selectedId}'),'Swi
 must(!admin.includes('async function toggleScopeHidden')&&admin.includes("patchRegistry('active',e.target.checked)"),'Visibility changes must not write before Save');
 must(!admin.includes("react-select")&&!admin.includes('<Select')&&admin.includes('admin-native-select'),'Admin must use native select controls instead of react-select');
 must(['群組人員管理','資料庫設定','主題設定'].every(label=>admin.includes("label:'"+label+"'"))&&!admin.includes("value:'search'")&&!admin.includes('SearchKeywordReport'),'Admin primary menu must stay concise Chinese system settings without a redundant search query report');
-must(admin.includes('scopeDomainError?<p')&&admin.includes('groupDomainError?<p')&&admin.includes("duplicateDomainLabelError(id,mode)")&&admin.includes('disabled={Boolean(scopeDomainError)}'),'Admin Scope creation must immediately reject repeated Domain labels');
+must(admin.includes('scopeDomainError?<p')&&admin.includes('groupDomainError?<p')&&admin.includes("duplicateDomainLabelError(id,mode)")&&admin.includes('disabled={Boolean(scopeDomainError)||creatingScope}'),'Admin Scope creation must immediately reject repeated Domain labels');
 must(read('app/AppShell.jsx').includes('function ScopePageCopy({scopeId,display_name})')&&
   read('app/AppShell.jsx').includes('pageCopyQuery.data?.Title_TW')&&
   read('app/AppShell.jsx').includes('pageCopyQuery.data?.Desc_TW')&&
@@ -228,8 +228,12 @@ must(read('app/AppShell.jsx').includes('function ScopePageCopy({scopeId,display_
 must(!admin.includes('applyTheme(')&&admin.includes('admin-theme-local-preview')&&admin.includes('正在編輯的主題（只修改草稿，不影響網站配色）'),'Admin Theme draft and preview must never mutate the live document root theme on entry or edit');
 must(admin.includes('admin-registry-fallback')&&admin.includes('圖形樹載入失敗，已切換清單模式。')&&admin.includes('setTreeError'),'Scope Registry must provide a visible fallback instead of failing blank');
 must(admin.includes('syncManageScopeRow(')&&admin.includes("role:'scope'"),'Admin Scope node must edit Manage mapping atomically and keep role=scope fixed');
-must(admin.includes('部分 Scope 設定讀取失敗')&&admin.includes('configFailures.push')&&admin.includes("if(error)throw new Error(error.message||'Scope config 讀取失敗。')"),'Admin Scope config failures must be surfaced, not swallowed');
+must(admin.includes('部分 Scope 設定讀取失敗')&&admin.includes('configFailures.push')&&admin.includes('readAdminScopeConfig(row.scope_id)')&&admin.includes("String(error?.code||'')==='PGRST205'"),'Admin must retry newly provisioned Scope config until PostgREST schema cache settles');
 must(admin.includes('provisionScope(')&&admin.includes('＋ 新增 Scope')&&admin.includes('＋ 新增 Group'),'Admin Registry must create Scope and Scope Group from the tree workspace');
+must(admin.includes("const provisionedScope=await provisionScope(")&&admin.includes('provisioned=true;')&&admin.includes('readAdminScopeConfig(id)')&&admin.includes('不要重複建立。')&&admin.includes('creatingScope?\'建立與驗證中…\':\'建立\''),'New Scope creation must verify config readiness, prevent duplicate clicks, and distinguish successful provisioning from pending cache');
+must(read('docs/sql/scope-provisioning.sql').includes("perform pg_catalog.pg_notify('pgrst','reload schema')"),'Scope provisioning SQL must request PostgREST schema cache reload after commit');
+must(admin.includes('onClick={refresh}>重新讀取'),'Admin graph must allow manual reload after a dynamic Scope schema cache settles');
+
 must(
   !admin.includes('<span>排序</span>')&&admin.includes('<span>主題</span>')&&
   !admin.includes('groupDraft.sort_order')&&

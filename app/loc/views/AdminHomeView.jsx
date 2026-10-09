@@ -39,6 +39,27 @@ function normalizeAliases(value){
     .map(item=>String(item||'').trim()).filter(Boolean))];
 }
 
+// Dynamic Scope tables are created in one transaction. PostgREST may keep the
+// previous schema cache briefly after the provisioning RPC has committed.
+function scopeSchemaCachePending(error){
+  return String(error?.code||'')==='PGRST205'
+    ||/could not find the table .* in the schema cache/i.test(String(error?.message||''));
+}
+const waitForScopeSchema=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+async function readAdminScopeConfig(scopeId,{attempts=7}={}){
+  for(let attempt=0;attempt<attempts;attempt++){
+    if(attempt>0)await waitForScopeSchema(Math.min(2000,350*attempt));
+    const {data,error}=await dbAuthRelation('silver.'+scopeId)
+      .select('id,display_name,search_intro,search_aliases,theme,locale,search_able,statistics_able,culture_able')
+      .eq('id',scopeId).limit(1);
+    if(!error)return data?.[0]||null;
+    if(!scopeSchemaCachePending(error)||attempt===attempts-1){
+      throw new Error(error.message||'Scope config 讀取失敗。');
+    }
+  }
+  return null;
+}
+
 function useAdminScopeData(){
   const [registry,setRegistry]=useState([]);
   const [mappings,setMappings]=useState([]);
@@ -62,11 +83,8 @@ function useAdminScopeData(){
         const configFailures=[];
         await Promise.all(registryRows.filter(row=>row.scope_kind==='scope').map(async row=>{
           try{
-            const {data,error}=await dbAuthRelation('silver.'+row.scope_id)
-              .select('id,display_name,search_intro,search_aliases,theme,locale,search_able,statistics_able,culture_able')
-              .eq('id',row.scope_id).limit(1);
-            if(error)throw new Error(error.message||'Scope config 讀取失敗。');
-            if(data?.[0])configRows[row.scope_id]=data[0];
+            const config=await readAdminScopeConfig(row.scope_id);
+            if(config)configRows[row.scope_id]=config;
             else configFailures.push(row.scope_id+'：找不到 Scope config');
           }catch(error){
             configFailures.push(row.scope_id+'：'+String(error?.message||error||'Scope config 讀取失敗。'));
@@ -475,20 +493,26 @@ function CreateNodePanel({data,kind='scope',onClose}){
   const parentOptions=groups.map(row=>({value:row.scope_id,label:(row.display_name||row.scope_id)+' · '+row.scope_id}));
   const [scopeDraft,setScopeDraft]=useState({...EMPTY_SCOPE_CREATE});
   const [groupDraft,setGroupDraft]=useState({...EMPTY_GROUP_CREATE});
+  const [creatingScope,setCreatingScope]=useState(false);
   const scopeDomainError=duplicateDomainLabelError(scopeDraft.scope_id,scopeDraft.route_mode);
   const groupDomainError=duplicateDomainLabelError(groupDraft.scope_id,groupDraft.route_mode);
 
   async function createScope(){
+    if(creatingScope)return;
+    setCreatingScope(true);
+    setStatus('正在建立 Scope 並驗證資料表…');
+    let provisioned=false;
+    let id='';
     try{
-      const id=String(scopeDraft.scope_id||'').trim().toLowerCase();
+      id=String(scopeDraft.scope_id||'').trim().toLowerCase();
       if(!/^[a-z][a-z0-9]{0,14}$/.test(id))throw new Error('Scope ID 格式不正確。');
       const email=String(scopeDraft.email||'').trim().toLowerCase();
       if(!email)throw new Error('請先設定管理者 Email。');
-      if(!/^\S+@\S+\.\S+$/.test(email))throw new Error('Email 格式不正確。');
+      if(!/^\\S+@\\S+\\.\\S+$/.test(email))throw new Error('Email 格式不正確。');
       const mode=scopeDraft.route_mode;
       if(!['directory','domain'].includes(mode))throw new Error('請選擇 Directory 或 Domain。');
       if(duplicateDomainLabelError(id,mode))throw new Error('網域名稱重複，拒絕建立。');
-      await provisionScope({
+      const provisionedScope=await provisionScope({
         scope_id:id,
         display_name:id,
         email,
@@ -498,9 +522,26 @@ function CreateNodePanel({data,kind='scope',onClose}){
         theme:'system-default',
         copy_keywords:true
       });
-      await updateRows('silver.'+id,{locale:normalizeUiLocale(scopeDraft.locale),updated_at:new Date().toISOString()},{filters:[{column:'id',operator:'eq',value:id}]});
-      setStatus('Scope '+id+' 已建立（符文66已複製、Theme 為系統日夜自動模式）。');refresh();onClose?.();
-    }catch(error){setStatus(error?.message||'Scope 建立失敗。');}
+      // The RPC returned successfully; a later schema-cache failure is not a failed creation.
+      provisioned=true;
+      if(String(provisionedScope?.scope_id||'')!==id)throw new Error('Scope 建立回應缺少正確的 Scope ID。');
+      if(Number(provisionedScope?.keyword_rows)!==66)throw new Error('符文66複製數量不正確，請核對資料庫。');
+      await updateRows('silver.'+id,{
+        locale:normalizeUiLocale(scopeDraft.locale),
+        updated_at:new Date().toISOString()
+      },{filters:[{column:'id',operator:'eq',value:id}]});
+      const config=await readAdminScopeConfig(id);
+      if(!config)throw new Error('Scope 設定列尚未可讀，請重新讀取。');
+      setStatus('Scope '+id+' 已建立並驗證（6 張資料表、符文66、設定可讀）。');
+      refresh();
+      onClose?.();
+    }catch(error){
+      if(provisioned){
+        setStatus('Scope '+id+' 已建立，但後續驗證／設定尚未完成：'+String(error?.message||error)+'。請重新讀取，不要重複建立。');
+        refresh();
+        onClose?.();
+      }else setStatus(error?.message||'Scope 建立失敗。');
+    }finally{setCreatingScope(false);}
   }
 
   async function createGroup(){
@@ -532,7 +573,7 @@ function CreateNodePanel({data,kind='scope',onClose}){
       </div>
       <div className="admin-route-summary"><span>建立位置</span><strong>{scopeDraft.route_mode==='domain'?'Domain · 獨立網域':'Directory · 站內路徑'}</strong><code>{scopeDraft.route_mode==='domain'?(scopeDraft.scope_id||'scope-id')+'.lo3rwang.cc':'https://loc.lo3rwang.cc/'+(scopeDraft.scope_id||'scope-id')}</code></div>
       {scopeDomainError?<p className="scope-status scope-error" role="alert">{scopeDomainError}</p>:null}
-      <button type="button" className="loc-button primary" disabled={Boolean(scopeDomainError)} onClick={createScope}>建立</button>
+      <button type="button" className="loc-button primary" disabled={Boolean(scopeDomainError)||creatingScope} onClick={createScope}>{creatingScope?'建立與驗證中…':'建立'}</button>
     </>:<>
       <label><span>Group ID</span><input maxLength="15" value={groupDraft.scope_id} onChange={e=>setGroupDraft(v=>({...v,scope_id:e.target.value.toLowerCase()}))}/></label>
       <label><span>Group 名稱</span><input value={groupDraft.display_name} onChange={e=>setGroupDraft(v=>({...v,display_name:e.target.value}))}/></label>
@@ -595,6 +636,7 @@ function AdminRegistry(){
       <div className="admin-graph-header">
         <div><h2>Scope 關聯圖</h2><p>由左至右展開：LOC → Scope／Group。選取節點先看 Attr 摘要；點選任一 Attr 進入編輯。拖曳至其他 Group 可調整所屬關係。</p></div>
         <div className="admin-registry-actions">
+          <button type="button" className="loc-button" onClick={refresh}>重新讀取</button>
           <button type="button" className="loc-button" onClick={()=>setCreateKind('scope')}>＋ 新增 Scope</button>
           <button type="button" className="loc-button" onClick={()=>setCreateKind('group')}>＋ 新增 Group</button>
         </div>
