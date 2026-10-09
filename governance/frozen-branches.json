@@ -140,6 +140,7 @@
     "fix/rune66-live-classification-refresh",
     "fix/rune66-tie-to-special",
     "fix/scope-keyword-min-chars-32",
+    "fix/scope-keyword-rune66-copy-placement-20261009",
     "fix/scope-provision-canonical-blocks-20261008",
     "fix/scope-provisioning-canonical-blocks-20261008",
     "fix/scope-search-shortcut",
