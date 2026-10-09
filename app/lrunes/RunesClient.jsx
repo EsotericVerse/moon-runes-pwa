@@ -74,20 +74,12 @@ export default function RunesClient(){
 
     <section className="loc-card rune-basics runes-reading-flow">
       <h2>基本判讀順序</h2>
-      <ScopeEditableBlocks
-        scopeId="lrunes"
-        page="index"
-        className="basic-grid"
-        slotClassName="basic-item"
-        headingLevel={3}
-        allowEditing={false}
-        allowDelete={false}
-        allowEntities={false}
-        renderDisplay={slot=><>
-          {slot.title?<h3>{slot.title}</h3>:null}
-          {slot.text?<div className="scope-rich-surface" dangerouslySetInnerHTML={{__html:slot.text}}/>:null}
-        </>}
-      />
+      <div className="basic-grid">
+        <article className="basic-item"><h3>1. 先看符文本義</h3><p>先確認每張符文最基本的語意，作為整體判讀的核心。</p></article>
+        <article className="basic-item"><h3>2. 再看卡牌方向</h3><p>正位、半正位、半逆位、逆位描述同一符文在當下狀態中的不同表現。</p></article>
+        <article className="basic-item"><h3>3. 看月相交互</h3><p>以當日真實月相與該符文本身的卡牌月相交互，取得當下情境中的對應狀況。</p></article>
+        <article className="basic-item"><h3>4. 多張再看模組</h3><p>若為多張抽牌，再依雙卡、三卡、五卡、指定張數或 OW3gs 各自的模組結構進行組合判讀。</p></article>
+      </div>
     </section>
 
     <section className="loc-card rune-basics runes-custom-draw-section">
