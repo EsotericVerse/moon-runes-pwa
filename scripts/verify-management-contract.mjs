@@ -233,6 +233,10 @@ must(admin.includes('provisionScope(')&&admin.includes('＋ 新增 Scope')&&admi
 must(admin.includes("const provisionedScope=await provisionScope(")&&admin.includes('provisioned=true;')&&admin.includes('readAdminScopeConfig(id)')&&admin.includes('不要重複建立。')&&admin.includes('creatingScope?\'建立與驗證中…\':\'建立\''),'New Scope creation must verify config readiness, prevent duplicate clicks, and distinguish successful provisioning from pending cache');
 must(read('docs/sql/scope-provisioning.sql').includes("perform pg_catalog.pg_notify('pgrst','reload schema')"),'Scope provisioning SQL must request PostgREST schema cache reload after commit');
 must(admin.includes('onClick={refresh}>重新讀取'),'Admin graph must allow manual reload after a dynamic Scope schema cache settles');
+must(admin.includes("value:UI_LOCALE_OPTIONS.find(option=>option.value===normalizeUiLocale(config?.locale))?.label")&&
+  !admin.includes("{label:'預設語系',value:normalizeUiLocale(config?.locale)}")&&
+  admin.includes("UI_LOCALE_OPTIONS.map(option=><option value={option.value}"),
+  'Admin Scope locale summary must show the same translated labels as the editing selector, not raw BCP 47 codes');
 
 must(admin.includes('callback(null);')&&admin.includes('handlersRef.current.onDeleteNode?.(String(ids[0]))')&&!admin.includes("window.prompt('刪除將永久移除"),'vis-network delete must open an in-page confirmation, without prematurely removing nodes or using browser prompt');
 must(admin.includes('className="admin-delete-confirm"')&&admin.includes("onClick={confirmDelete}")&&admin.includes("deleteTyped.trim().toLowerCase()!==deletePending")&&admin.includes("onClick={cancelDelete}"),'Scope delete UI must require typed ID and support visible cancellation');
