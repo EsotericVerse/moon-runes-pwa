@@ -254,7 +254,7 @@ must(
   admin.includes('name={\'registry-route-mode-\'+selectedId}')&&
   admin.includes('checked={routeMode===\'domain\'}')&&
   admin.includes('checked={routeMode===\'directory\'}')&&
-  admin.includes('DNS、轉址及網站託管設定須另外完成')&&
+  !admin.includes('DNS、轉址及網站託管設定須另外完成')&&
   !admin.includes('onChange={e=>patchRegistry(\'domain\'')&&
   !admin.includes('onChange={e=>patchRegistry(\'directory\'')&&
   admin.includes('name="new-group-route-mode"'),
