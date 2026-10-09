@@ -59,5 +59,5 @@ test('LOC index home frames are rendered once, in database order, with authored 
 
   const skills=page.locator('.loc-home > section[data-block-order="5"]');
   await expect(skills.locator('.loc-home-block__children > article')).toHaveCount(3);
-  await expect(skills.locator('a[href*="LOC-GPT-Skills-v2.0-bundle.zip"]')).toBeVisible();
+  await expect(skills.locator('a[href*="LOC-GPT-Skills-v2.1-bundle.zip"]')).toBeVisible();
 });
