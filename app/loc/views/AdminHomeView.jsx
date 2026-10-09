@@ -19,7 +19,7 @@ const CREATE_OPTIONS=Object.freeze([
   {value:'scope',label:'新增 Scope'},
   {value:'group',label:'新增 Scope Group'}
 ]);
-const EMPTY_SCOPE_CREATE={scope_id:'',route_mode:'directory'};
+const EMPTY_SCOPE_CREATE={scope_id:'',email:'',route_mode:'directory'};
 const EMPTY_GROUP_CREATE={scope_id:'',display_name:'',domain:'',directory:'',parent_scope_id:'loc',sort_order:''};
 const EMPTY_MAPPING={email:'',galaxy:'galaxy',time:'time',birthday:''};
 
@@ -334,7 +334,7 @@ function RegistryNodePanel({data,selectedId,onCreateMode}){
   </aside>;
 }
 
-function CreateNodePanel({data,kind='scope',ownerEmail='',onClose}){
+function CreateNodePanel({data,kind='scope',onClose}){
   const {registry,setStatus,refresh}=data;
   const groups=registry.filter(row=>row.scope_kind==='group'&&row.active!==false);
   const parentOptions=groups.map(row=>({value:row.scope_id,label:(row.display_name||row.scope_id)+' · '+row.scope_id}));
@@ -345,8 +345,9 @@ function CreateNodePanel({data,kind='scope',ownerEmail='',onClose}){
     try{
       const id=String(scopeDraft.scope_id||'').trim().toLowerCase();
       if(!/^[a-z][a-z0-9]{0,14}$/.test(id))throw new Error('Scope ID 格式不正確。');
-      const email=String(ownerEmail||'').trim().toLowerCase();
-      if(!/^\S+@\S+\.\S+$/.test(email))throw new Error('無法取得目前 Admin Email，請重新登入。');
+      const email=String(scopeDraft.email||'').trim().toLowerCase();
+      if(!email)throw new Error('請先設定管理者 Email。');
+      if(!/^\S+@\S+\.\S+$/.test(email))throw new Error('Email 格式不正確。');
       const mode=scopeDraft.route_mode;
       if(!['directory','domain'].includes(mode))throw new Error('請選擇 Directory 或 Domain。');
       await provisionScope({
@@ -383,6 +384,7 @@ function CreateNodePanel({data,kind='scope',ownerEmail='',onClose}){
     <div className="admin-node-heading"><h2>{kind==='group'?'新增 Scope Group':'新增 Scope'}</h2><button type="button" className="loc-button" onClick={onClose}>取消</button></div>
     {kind==='scope'?<>
       <label><span>Scope ID</span><input maxLength="15" value={scopeDraft.scope_id} onChange={e=>setScopeDraft(v=>({...v,scope_id:e.target.value.toLowerCase()}))}/></label>
+      <label><span>管理者 Email（必填）</span><input type="email" required autoComplete="off" value={scopeDraft.email} onChange={e=>setScopeDraft(v=>({...v,email:e.target.value}))}/></label>
       <div className="admin-inline-flags" role="radiogroup" aria-label="Scope 路由模式">
         <label><input type="radio" name="new-scope-route-mode" value="directory" checked={scopeDraft.route_mode==='directory'} onChange={()=>setScopeDraft(v=>({...v,route_mode:'directory'}))}/>Directory</label>
         <label><input type="radio" name="new-scope-route-mode" value="domain" checked={scopeDraft.route_mode==='domain'} onChange={()=>setScopeDraft(v=>({...v,route_mode:'domain'}))}/>Domain</label>
@@ -401,7 +403,7 @@ function CreateNodePanel({data,kind='scope',ownerEmail='',onClose}){
   </aside>;
 }
 
-function AdminRegistry({ownerEmail=''}){
+function AdminRegistry(){
   const data=useAdminScopeData();
   const {registry,configs,setRegistry,setStatus,refresh}=data;
   const [selectedId,setSelectedId]=useState('');
@@ -438,7 +440,7 @@ function AdminRegistry({ownerEmail=''}){
         {!registry.length&&data.status?<p className="scope-status scope-error">{data.status}</p>:null}
         <DeploymentTree registry={registry} configs={configs} selectedId={selectedId} onSelect={selectNode} onMoveParent={moveParent}/>
       </div>
-      {createKind?<CreateNodePanel data={data} kind={createKind} ownerEmail={ownerEmail} onClose={()=>setCreateKind('')}/>:<RegistryNodePanel data={data} selectedId={selectedId} onCreateMode={setCreateKind}/>}
+      {createKind?<CreateNodePanel data={data} kind={createKind} onClose={()=>setCreateKind('')}/>:<RegistryNodePanel data={data} selectedId={selectedId} onCreateMode={setCreateKind}/>}
     </div>
   </section>;
 }
@@ -600,7 +602,7 @@ export default function AdminHomeView(){
         <select className="admin-native-select" value={selectedOption.value} onChange={e=>setSection(e.target.value||'registry')} aria-label="Admin 管理功能">{ADMIN_OPTIONS.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select>
       </div>
     </header>
-    {section==='registry'?<AdminRegistry ownerEmail={account.email}/>:null}
+    {section==='registry'?<AdminRegistry/>:null}
     {section==='database'?<DatabaseTarget/>:null}
     {section==='themes'?<ThemeEditor/>:null}
   </section>;
