@@ -9,7 +9,7 @@ import {FEATURES,SCOPES,featureHref,featureIdForPath,getScope,scopeHref} from '.
 import {applyTheme,themeSignature,THEME_SLOTS} from './modular/theme-registry';
 import {mergeThemeSlot,selectThemeRegistry} from './loc/theme-data';
 import {useScopeRuntime} from './modular/use-scope-runtime';
-import {selectScopeConfig} from './loc/scope-data';
+import {selectScopeConfig,selectScopeRegistryEntry} from './loc/scope-data';
 import {getDbSourceStatus,subscribeDbSourceStatus} from './loc/db-source-status.mjs';
 
 const SYSTEM_THEME_ID='system-default';
@@ -124,6 +124,27 @@ function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride
     </select>
   </label>;
 }
+// Scope's database display_name is the only authority for the browser title.
+// There is no independently configured SEO/marketing title for a Scope.
+function ScopePageTitle({scopeId,pathname}){
+  const titleQuery=useQuery({
+    queryKey:['scope-display-name',scopeId],
+    queryFn:async()=>{
+      const config=scopeId==='loc'||scopeId==='admin'?null:await selectScopeConfig(scopeId);
+      const displayName=String(config?.display_name||'').trim();
+      if(displayName)return displayName;
+      const registry=await selectScopeRegistryEntry(scopeId);
+      return String(registry?.display_name||'').trim();
+    },
+    enabled:Boolean(scopeId),
+    staleTime:60_000
+  });
+  useEffect(()=>{
+    const displayName=String(titleQuery.data||'').trim();
+    if(displayName&&document.title!==displayName)document.title=displayName;
+  },[scopeId,pathname,titleQuery.data]);
+  return null;
+}
 function LanguageSelect({locale,onChange,copy=UI_COPY}){
   return <label className="scope-theme-control scope-language-control">
     <span>{copy.common.language||'語系'}</span>
@@ -205,6 +226,7 @@ export default function AppShell({children}){
   };
 
   return <QueryClientProvider client={client}><UiLocaleProvider locale={activeLocale}>
+    <ScopePageTitle scopeId={scopeId} pathname={pathname}/>
     <motion.div className="loc-scroll-progress" style={{scaleX}} aria-hidden="true"/>
     <header className="scope-global">
       <nav className="scope-nav" aria-label={copy.nav.aria}>
