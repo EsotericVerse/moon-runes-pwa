@@ -17,7 +17,12 @@ const RUNE_HERO_ORDERS=[1];
 function renderRuneHero(slot){
   const eyebrow=slot.stored?slot.eyebrow:'';
   const title=slot.stored?slot.title:'';
-  const subtitle=slot.stored?slot.subtitle:'';
+  // Empty BlockNote placeholders (for example <p><br></p>) contain no text.
+  // Rendering them as subtitles creates a zero-height visual element.
+  const rawSubtitle=slot.stored?String(slot.subtitle||''):'';
+  const subtitle=rawSubtitle.replace(/<[^>]*>/g,'').replace(/&(?:nbsp|#160|#xA0);/gi,'').trim()
+    ?rawSubtitle:'';
+
   const text=slot.stored?slot.text:'';
   return <>
     <img
