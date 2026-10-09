@@ -9,7 +9,7 @@ import {FEATURES,SCOPES,featureHref,featureIdForPath,getScope,scopeHref,setScope
 import {applyTheme,themeSignature,THEME_SLOTS} from './modular/theme-registry';
 import {mergeThemeSlot,selectThemeRegistry} from './loc/theme-data';
 import {useScopeRuntime} from './modular/use-scope-runtime';
-import {selectScopeConfig,selectScopeRegistry} from './loc/scope-data';
+import {selectScopeConfig,selectScopeRegistry,selectScopePageCopy} from './loc/scope-data';
 import {getDbSourceStatus,subscribeDbSourceStatus} from './loc/db-source-status.mjs';
 
 const SYSTEM_THEME_ID='system-default';
@@ -125,13 +125,29 @@ function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride
     </select>
   </label>;
 }
-// The browser's Scope title follows the database display_name, never a static
-// Next.js Scope-specific title or an independent SEO label.
-function ScopePageTitle({display_name}){
+// Browser page copy comes from silver.manage.Title_TW / Desc_TW.
+// These are not Scope names; display_name remains the independent navigation label.
+function ScopePageCopy({scopeId,display_name}){
+  const pageCopyQuery=useQuery({
+    queryKey:['scope-page-copy',scopeId],
+    queryFn:()=>selectScopePageCopy(scopeId),
+    enabled:Boolean(scopeId)&&scopeId!=='loc'&&scopeId!=='admin',
+    staleTime:60_000
+  });
   useEffect(()=>{
-    const name=String(display_name||'').trim();
-    if(name&&document.title!==name)document.title=name;
-  },[display_name]);
+    const title=String(pageCopyQuery.data?.Title_TW||display_name||'').trim();
+    if(title&&document.title!==title)document.title=title;
+    const description=String(pageCopyQuery.data?.Desc_TW||'').trim();
+    if(description){
+      let meta=document.head.querySelector('meta[name="description"]');
+      if(!meta){
+        meta=document.createElement('meta');
+        meta.setAttribute('name','description');
+        document.head.appendChild(meta);
+      }
+      if(meta.getAttribute('content')!==description)meta.setAttribute('content',description);
+    }
+  },[scopeId,display_name,pageCopyQuery.data?.Title_TW,pageCopyQuery.data?.Desc_TW]);
   return null;
 }
 function LanguageSelect({locale,onChange,copy=UI_COPY}){
@@ -220,7 +236,7 @@ export default function AppShell({children}){
   const scopeNavLabel=item=>navDisplayNames[item.id]||item.id;
 
   return <QueryClientProvider client={client}><UiLocaleProvider locale={activeLocale}>
-    <ScopePageTitle display_name={configRow?.display_name||registryRow?.display_name}/>
+    <ScopePageCopy scopeId={scopeId} display_name={configRow?.display_name||registryRow?.display_name}/>
     <motion.div className="loc-scroll-progress" style={{scaleX}} aria-hidden="true"/>
     <header className="scope-global">
       <nav className="scope-nav" aria-label={copy.nav.aria}>
