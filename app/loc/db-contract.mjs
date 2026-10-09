@@ -216,6 +216,18 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return data||{};
   }
 
+  async function moveScopeBlock(scopeId,pageName,uid,direction){
+    const scope=normalizeScopeId(scopeId);
+    const page=String(pageName||'').trim().toLowerCase();
+    const blockUid=String(uid||'').trim();
+    if(!scope||!page||!(/^[A-Za-z0-9]{8}$/.test(blockUid))||![1,-1].includes(direction))throw new Error('無效的區塊移動參數。');
+    const {data,error}=await authClient.schema('silver').rpc('move_scope_block',{
+      p_scope_id:scope,p_page_name:page,p_uid:blockUid,p_direction:direction
+    });
+    if(error)throw new Error(error.message||'區塊移動失敗');
+    return data||{};
+  }
+
   async function deleteScope(scopeId){
     const scope=normalizeScopeId(scopeId);
     if(!scope)throw new Error('Scope ID 格式不正確。');
@@ -301,5 +313,5 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
-  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,provisionScope,manageScopeRegistry,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
+  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
 }
