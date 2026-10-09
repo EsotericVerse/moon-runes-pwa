@@ -211,19 +211,39 @@ must(admin.includes('provisionScope(')&&admin.includes('＋ Scope')&&admin.inclu
 const scopeCreatePanel=admin.split("    {kind==='scope'?<>")[1]?.split("    </>:<>")[0]||'';
 must(
   scopeCreatePanel.includes('<span>Scope ID</span>')&&
-  (scopeCreatePanel.match(/<input\\b/g)||[]).length===3&&
+  scopeCreatePanel.includes('管理者 Email（必填）')&&scopeCreatePanel.includes('type="email" required')&&
+  scopeCreatePanel.includes('預設語系')&&scopeCreatePanel.includes('UI_LOCALE_OPTIONS')&&
+  scopeCreatePanel.split('<input').length===5&&
   scopeCreatePanel.includes('type="radio" name="new-scope-route-mode" value="directory"')&&
   scopeCreatePanel.includes('type="radio" name="new-scope-route-mode" value="domain"')&&
   !scopeCreatePanel.includes('<span>Domain</span>')&&!scopeCreatePanel.includes('<span>Directory</span>'),
-  'Admin Scope creation must show only Scope ID input and exclusive Directory/Domain radio options'
+  'Admin Scope creation must show only ID, required Email, locale and exclusive Directory/Domain radio options'
 );
 must(
-  admin.includes("const EMPTY_SCOPE_CREATE={scope_id:'',route_mode:'directory'}")&&
+  admin.includes("const EMPTY_SCOPE_CREATE={scope_id:'',email:'',locale:'zh-Hant',route_mode:'directory'}")&&
+  admin.includes("const email=String(scopeDraft.email||'').trim().toLowerCase()")&&
   admin.includes("domain:mode==='domain'?id+'.lo3rwang.cc':null")&&
   admin.includes("directory:mode==='directory'?'/'+id:null")&&
-  admin.includes('email,')&&admin.includes('ownerEmail={ownerEmail}')&&admin.includes('ownerEmail={account.email}'),
-  'Admin Scope provisioning must derive mutually exclusive Registry routing and owner email from authenticated Admin'
+  admin.includes("theme:'system-default'")&&admin.includes('copy_keywords:true')&&
+  admin.includes("locale:normalizeUiLocale(scopeDraft.locale)"),
+  'Scope provisioning derives routing from ID, stores explicit owner/locale, auto Theme and initial Rune66 class'
 );
+must(
+  admin.includes('onClick={saveRegistryAndConfig}>儲存</button>')&&
+  admin.includes('onClick={toggleScopeHidden}')&&
+  admin.includes('onClick={deleteSelectedScope}')&&
+  !admin.includes('開啟 UI')&&admin.includes('請輸入 Scope ID 以確認')&&
+  admin.includes('onClick={copyRune66}')&&
+  dbContract.includes("rpc('delete_scope'")&&
+  dbContract.includes("rpc('copy_rune66_keyword_class'"),
+  'Scope node must expose Save/Hide/Delete only, with separately persistent Rune66 copy'
+);
+must(
+  admin.includes("label:'系統黑名單'")&&admin.includes("silver.email_blocklist")&&
+  dbContract.includes("rpc('is_current_email_blocklisted'"),
+  'Admin must maintain global email blocklist and validate blocked login through the DB'
+);
+
 must(scopeProvisioning.includes("create table silver.%I (like silver.lo3rwang_blocks including all)")&&!scopeProvisioning.includes('block_page')&&scopeProvisioning.includes("enable row level security',v_blocks_name"),'new Scope Blocks must clone current UID/page_name/entity contract and enable RLS');
 must(scopeProvisioning.includes('New Scopes start with no content rows.')&&!scopeProvisioning.includes('generate_series(1,4)'),'new Scope must not pre-populate blank homepage/governance frames');
 
