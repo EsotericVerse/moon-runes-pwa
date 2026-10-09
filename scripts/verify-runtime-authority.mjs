@@ -55,7 +55,7 @@ const checks=[
     !files.admin.includes('onClick={copyRune66}')],
   ['Domain creation rejects repeated DNS labels immediately',
     files.registry.includes('duplicateDomainLabelError')&&
-    files.admin.includes('disabled={Boolean(scopeDomainError)}')&&
+    files.admin.includes('disabled={Boolean(scopeDomainError)||creatingScope}')&&
     files.admin.includes('網域名稱重複，拒絕建立。')]
 ];
 const failures=checks.filter(([,ok])=>!ok).map(([label])=>label);
