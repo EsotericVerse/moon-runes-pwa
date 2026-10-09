@@ -9,7 +9,7 @@ A field already maintained in PostgreSQL must not be independently defined as a 
 | Scope `display_name` | `silver.<scope_id>.display_name` for Scope; Registry for Group/system | DB-synchronized Scope/navigation label; not the browser page title. |
 | Browser page copy | `silver.manage."Title_TW"`, `"Desc_TW"` | Browser title/description use the two explicit fields through the limited public RPC. No forced suffix or exposed manager email. |
 | Scope search aliases, intro | `silver.<scope_id>.search_aliases`, `search_intro` | No independent hardcoded Scope aliases in `SCOPES`; user-authored content remains in its own table. |
-| Default Theme / palette | `silver.<scope_id>.theme` / `silver.loc_theme.theme_attr` | Removed fixed per-Scope Theme IDs; only in-memory temporary switching. The first partial CSS scheme is concealed until canonical DB palette is applied. Only one emergency palette exists for DB outage. |
+| Default Theme / palette | `silver.<scope_id>.theme` / `silver.loc_theme` explicit columns | Removed fixed per-Scope Theme IDs; only in-memory temporary switching. The first partial CSS scheme is concealed until canonical DB palette is applied. Only one emergency palette exists for DB outage. |
 | Public feature availability | `silver.<scope_id>.search_able`, `statistics_able`, `culture_able` | Runtime FeatureGate checks DB flags. Mapping of UI feature to DB flag is a technical contract. |
 | Rune66 Class copy | Scoped DB RPC and Scope Keyword Library | No copy button in global Admin; new copies receive independent Class IDs and do not switch active Class. |
 | Domain collision validation | Registry CHECK / domain label function and creation UI | Repeated dot-delimited labels rejected while typing and by DB. No DNS state is invented. |
