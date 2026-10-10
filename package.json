@@ -23,7 +23,7 @@
     "verify:db-public": "node scripts/verify-db-public-read.mjs",
     "test:ui": "playwright test",
     "verify:static-export": "node scripts/verify-static-export.mjs",
-    "verify:management": "node scripts/verify-management-contract.mjs && node --test scripts/test-import-batch.mjs",
+    "verify:management": "node scripts/verify-management-contract.mjs && node --test scripts/test-import-batch.mjs scripts/test-import-source-classification.mjs",
     "verify:rune66-keywords": "node scripts/verify-rune66-keyword-engine.mjs",
     "verify:db-adapters": "node scripts/verify-db-adapters.mjs",
     "test:game": "node --experimental-default-type=module --test scripts/test-lunarunes-boardgame.mjs",

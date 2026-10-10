@@ -115,9 +115,12 @@ if(!failures.length){
   ])if(!statisticsMultiChart.includes(token)){
     failures.push('Statistics chart must have a real analytic purpose: '+token);
   }
-  for(const token of ['disabled={!locAllowed.some','disabled={!optionsForCurrent.some',
-    "aggregateScopes&&scopeId==='loc'",'totalKey="total"']){
+  for(const token of ['locAllowed.length?locAllowed.map','optionsForCurrent.length?optionsForCurrent.map',
+    "aggregateScopes&&scopeId==='loc'",'locChartType']){
     if(!statistics.includes(token))failures.push('Statistics must disable meaningless views and keep LOC Scope isolation: '+token);
+  }
+  if(statistics.includes('disabled={!locAllowed.some')||statistics.includes('disabled={!optionsForCurrent.some')||ownIntersection.includes('disabled={!availableCharts.some')){
+    failures.push('Unsupported chart types must be hidden, not left grey in controls.');
   }
   if(statistics.includes("Pie data={aggregateType==='total'")||statistics.includes("type={chartType}\n        rows={basicTrend}")){
     failures.push('Statistics must not use an all-100% single total as a category chart.');
@@ -134,6 +137,20 @@ if(!failures.length){
      !ownIntersection.includes('enabled:valid,')||
      !galaxy.includes('export async function selectScopeSourceBreakdownRows(scope,')){
     failures.push('Statistics must expose ten real charts, optional visible gap folds and strictly own-Scope intersections.');
+  }
+
+  const typeCatalog=read('app/loc/ImportContentTypeCatalog.jsx');
+  const typeIntersection=read('app/loc/statistics-source-intersection.mjs');
+  const importPanel=read('app/loc/ManagementImportPanel.jsx');
+  if(!typeCatalog.includes("silver.scope_content_types")||
+     !typeCatalog.includes('新增作品類型')||
+     !importPanel.includes('匯入時作品類型')||
+     !importPanel.includes("content_type:row.content_type")||
+     !typeIntersection.includes('aggregateOwnScopeStatistics')||
+     !typeIntersection.includes('ownScopeCategoryCatalog')||
+     !ownIntersection.includes('OWN_STAT_DIMENSIONS')||
+     !galaxy.includes('aggregateOwnScopeStatistics(texts.rows,media.rows)')){
+    failures.push('Import-managed work types and source/media/type intersections are not connected.');
   }
 
   const culture=read('app/modular/features/Culture.jsx');

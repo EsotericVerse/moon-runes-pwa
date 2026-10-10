@@ -10,10 +10,10 @@ import {
 
 // Chart types are capabilities, not ten interchangeable skins for one number.
 export const STAT_VISUAL_TYPES=Object.freeze([
-  ['line','折線圖'],['bar','長條圖'],['pie','圓餅圖'],
-  ['area','面積圖'],['stacked','堆疊面積圖'],['composed','組合圖'],
-  ['scatter','散點圖'],['radar','雷達圖'],['radial','放射長條圖'],
-  ['treemap','矩形樹圖']
+  ['line','折線圖 · 時間趨勢'],['bar','長條圖 · 期間比較'],['pie','圓餅圖 · 來源分布'],
+  ['area','面積圖 · 數量變化'],['stacked','堆疊面積圖 · 來源組成'],['composed','組合圖 · 總量與均線'],
+  ['scatter','散點圖 · 雙來源關係'],['radar','雷達圖 · 前後期占比'],['radial','放射長條圖 · 活躍期占比'],
+  ['treemap','矩形樹圖 · 來源分布']
 ]);
 const COLORS=['#7562cf','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f'];
 const TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)',borderRadius:'8px'};

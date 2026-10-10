@@ -171,7 +171,9 @@ function buildSourceTrend(rows=[],standard='1y',customRange={}){
   return [...buckets.values()].sort((a,b)=>a._sort.localeCompare(b._sort)).map(item=>{
     const output={period:item.period,start_date:item.start_date,end_date:item.end_date,total:item.total};
     for(const source of SOURCE_TREND_ORDER){
-      output[source]=item.total>0?Number((((Number(item[source])||0)/item.total)*100).toFixed(2)):0;
+      const count=Number(item[source])||0;
+      output[source+'_count']=count;
+      output[source]=item.total>0?Number(((count/item.total)*100).toFixed(2)):0;
     }
     return output;
   });
@@ -339,7 +341,7 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeC
       </label>
       <label><span>圖形</span>
         <select className="scope-select" value={chosenChartType} onChange={event=>onChartTypeChange?.(event.target.value)}>
-          {STAT_VISUAL_TYPES.map(([value,label])=><option key={value} value={value} disabled={!supported.some(([id])=>id===value)}>{label}</option>)}
+          {supported.length?supported.map(([value,label])=><option key={value} value={value}>{label}</option>):<option value="line">尚無可用圖形</option>}
         </select>
       </label>
     </div>
@@ -513,12 +515,12 @@ function ScopeGroupStatistics(){
   },[densityQuery.data,startDate,endDate,scopeIds,timeStandard]);
   const aggregateTimeStandards=TIME_STANDARDS.filter(item=>item.value!=='custom');
   const distributionData=totals.map(row=>({term:row.scope_id,value:row.total}));
-  const locSeries=aggregateType==='total'?[{key:'total',label:'LOC 合併總數'}]:scopeIds.map(id=>({key:id,label:id}));
-  const locDistribution=aggregateType==='total'
-    ?[{name:'LOC 合併總數',value:overallTotal}]
-    :distributionData.map(row=>({name:row.term,value:row.value}));
+  // Even when displaying a combined total, its composition is the real
+  // set of child Scopes. A single 100% "LOC total" pie is not analytics.
+  const locSeries=scopeIds.map(id=>({key:id,label:id}));
+  const locDistribution=distributionData.map(row=>({name:row.term,value:row.value}));
   const locAllowed=availableStatisticChartTypes({
-    rows:trendData,series:locSeries,distribution:locDistribution,totalKey:'total'
+    rows:trendData,series:locSeries,distribution:locDistribution,totalKey:aggregateType==='total'?'total':''
   });
   const locChartType=locAllowed.some(([value])=>value===chartType)?chartType:(locAllowed[0]?.[0]||'line');
 
@@ -540,7 +542,7 @@ function ScopeGroupStatistics(){
       <label>
         <span>{UI_COPY.statistics.chart}</span>
         <select className="scope-select" value={locChartType} onChange={event=>setChartType(event.target.value)}>
-          {CHART_TYPES.map(([value,label])=><option key={value} value={value} disabled={!locAllowed.some(([v])=>v===value)}>{label}</option>)}
+          {locAllowed.length?locAllowed.map(([value,label])=><option key={value} value={value}>{label}</option>):<option value="line">尚無可用圖形</option>}
         </select>
       </label>
       <label>
@@ -569,7 +571,7 @@ function ScopeGroupStatistics(){
 
     {!densityQuery.isPending&&!densityQuery.error&&trendData.length?<StatisticsMultiChart
       type={locChartType} rows={trendData} series={locSeries}
-      distribution={locDistribution} totalKey="total" height={420}
+      distribution={locDistribution} totalKey={aggregateType==='total'?'total':''} height={420}
     />:null}
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
     {densityQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(densityQuery.error)}</p>:null}
@@ -622,12 +624,12 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const summary=useMemo(()=>buildSummary(trendQuery.data||[],effectiveTimeStandard,customRange),[trendQuery.data,effectiveTimeStandard,customRange]);
   const basicTrend=useMemo(()=>buildSourceTrend(trendQuery.data||[],effectiveTimeStandard,customRange),
     [trendQuery.data,effectiveTimeStandard,customRange]);
-  const basicSeries=rankingType==='total'
-    ?[{key:'total',label:'作品／媒體紀錄數'}]
-    :SOURCE_TREND_ORDER.map(name=>({key:name,label:name+' (%)'}));
-  const basicDistribution=rankingType==='total'
-    ?[{name:'總紀錄數',value:summary.total}]
-    :summary.sources.map(item=>({name:item.term,value:item.item_count}));
+  // Source composition is meaningful even on the combined-total view:
+  // totals use raw source counts; source-share views use percentages.
+  const basicSeries=SOURCE_TREND_ORDER.map(name=>rankingType==='total'
+    ?{key:name+'_count',label:name}
+    :{key:name,label:name+' (%)'});
+  const basicDistribution=summary.sources.map(item=>({name:item.term,value:item.item_count}));
   const facetRange=rowsInWindow(mediaQuery.data||[],effectiveTimeStandard,customRange);
   const facetTotalsForOptions=facetTotals(facetRange.rows);
   const facetNames=facetTotalsForOptions.slice(0,6).map(row=>row.term);
@@ -635,7 +637,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const facetDistribution=facetTotalsForOptions.slice(0,15).map(row=>({name:row.term,value:row.item_count}));
   const optionsForCurrent=availableStatisticChartTypes(mediaDimension
     ?{rows:facetData,series:facetNames.map(name=>({key:name,label:name})),distribution:facetDistribution}
-    :{rows:basicTrend,series:basicSeries,distribution:basicDistribution,totalKey:'total'});
+    :{rows:basicTrend,series:basicSeries,distribution:basicDistribution,totalKey:rankingType==='total'?'total':''});
   const effectiveChartType=optionsForCurrent.some(([value])=>value===chartType)?chartType:(optionsForCurrent[0]?.[0]||'line');
   const styleRange=useMemo(()=>({
     startDate:queryRange.startDate||'',
@@ -653,7 +655,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     <div className="scope-stat-controls">
       <StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/>
       {!isLrunesDaily?<>{!mediaDimension?<label><span>{UI_COPY.statistics.chart}</span><select className="scope-select" value={effectiveChartType} onChange={event=>setChartType(event.target.value)}>
-        {CHART_TYPES.map(([value,label])=><option key={value} value={value} disabled={!optionsForCurrent.some(([v])=>v===value)}>{label}</option>)}
+        {optionsForCurrent.length?optionsForCurrent.map(([value,label])=><option key={value} value={value}>{label}</option>):<option value="line">尚無可用圖形</option>}
       </select></label>:null}
       <label><span>{UI_COPY.statistics.range}</span><select className="scope-select" value={timeStandard} onChange={event=>setTimeStandard(event.target.value)}>
         {TIME_STANDARDS.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
@@ -683,7 +685,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         rows={basicTrend}
         series={basicSeries}
         distribution={basicDistribution}
-        totalKey="total"
+        totalKey={rankingType==='total'?'total':''}
         foldBlank={foldBlank}
         height={420}
       />

@@ -8,6 +8,7 @@ import {useAccount} from './use-account';
 import {createUid8} from './uid';
 import {IMPORT_FIELD_ALIASES,importRowsFromJson,mappedImportValue,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
+import ImportContentTypeCatalog,{useImportContentTypes} from './ImportContentTypeCatalog';
 
 function sourceSuggestion(name=''){
   const value=String(name).toLowerCase();
@@ -22,7 +23,7 @@ function iso(value){
   return Number.isNaN(date.getTime())?null:date.toISOString();
 }
 
-function normalizeJsonImportEntry(entry,source,fieldMap={}){
+function normalizeJsonImportEntry(entry,source,fieldMap={},typeMode='file',typeCode=''){
   const row=entry?.raw||entry||{};
   const value=field=>mappedImportValue(row,field,fieldMap);
   const content=normalizeGalaxyContent(value('content'));
@@ -32,7 +33,8 @@ function normalizeJsonImportEntry(entry,source,fieldMap={}){
   if(!content)return {record:null,error:'無正文'};
   if([content,rawTitle,sourcePlace].some(hasIrrecoverableEncoding))return {record:null,error:'文字含不可逆編碼錯誤'};
   if(uid.length!==8)return {record:null,error:'UID 必須為 8 字'};
-  const contentType=String(value('content_type')||'other').trim()||'other';
+  const contentType=String(typeMode==='override'?typeCode:(value('content_type')||'other')).trim().toLowerCase();
+  if(!contentType)return {record:null,error:'請先指定匯入作品類型'};
   const visibility=value('searchable');
   const searchable=!(visibility===false||visibility===0||String(visibility).toLowerCase()==='false'||String(visibility)==='0');
   const record={
@@ -87,7 +89,7 @@ function ImportFormatSettings({format,onChange,disabled=false}){
   </details>;
 }
 
-function JsonImport({scopeId,format,onBusyChange}) {
+function JsonImport({scopeId,format,contentTypes=[],onBusyChange}) {
   const account=useAccount();
   const [fileName,setFileName]=useState('');
   const [rows,setRows]=useState([]);
@@ -100,12 +102,19 @@ function JsonImport({scopeId,format,onBusyChange}) {
   const suggested=useMemo(()=>sourceSuggestion(fileName),[fileName]);
   const analyzed=useMemo(()=>{
     const selected=source.trim();
-    const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,selected,format.fields));
+    const codes=new Set(contentTypes.filter(type=>type.enabled).map(type=>type.type_code));
+    const normalized=rows.map(entry=>{
+      const result=normalizeJsonImportEntry(entry,selected,format.fields,format.typeMode,format.typeCode);
+      if(result.record&&!codes.has(result.record.content_type)){
+        return {record:null,error:'作品類型 '+result.record.content_type+' 尚未加入或已停用'};
+      }
+      return result;
+    });
     return {
       valid:normalized.filter(item=>item.record).map(item=>item.record),
       invalid:normalized.filter(item=>!item.record)
     };
-  },[rows,source,format.fields]);
+  },[rows,source,format.fields,format.typeMode,format.typeCode,contentTypes]);
   if(!account.canManageScopeSync(scopeId))return null;
 
   async function loadQueuedFile(file,index,total){
@@ -224,6 +233,7 @@ function refreshComparable(record={}){
   return {
     title:String(record.title||''),
     content:String(record.content||''),
+    content_type:String(record.content_type||''),
     createtime:String(record.createtime||''),
     source_place:String(record.source_place||''),
     url:String(record.url||''),
@@ -237,7 +247,7 @@ function sameRefreshRecord(current,next){
   return Object.keys(a).every(key=>a[key]===b[key]);
 }
 
-function SourceRefresh({scopeId,format,onBusyChange}){
+function SourceRefresh({scopeId,format,contentTypes=[],onBusyChange}){
   const account=useAccount();
   const [fileName,setFileName]=useState('');
   const [rows,setRows]=useState([]);
@@ -266,7 +276,14 @@ function SourceRefresh({scopeId,format,onBusyChange}){
   async function analyze(){
     const selected=source.trim();
     if(!selected){setStatus('請先指定來源。');return;}
-    const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,selected,format.fields));
+    const codes=new Set(contentTypes.filter(type=>type.enabled).map(type=>type.type_code));
+    const normalized=rows.map(entry=>{
+      const result=normalizeJsonImportEntry(entry,selected,format.fields,format.typeMode,format.typeCode);
+      if(result.record&&!codes.has(result.record.content_type)){
+        return {record:null,error:'作品類型 '+result.record.content_type+' 尚未加入或已停用'};
+      }
+      return result;
+    });
     const valid=normalized.filter(item=>item.record&&item.record.source_native_id).map(item=>item.record);
     const invalid=normalized.length-valid.length;
     if(!valid.length){setPlan({creates:[],updates:[],unchanged:[],invalid});setStatus('沒有帶 source_native_id 的有效資料。');return;}
@@ -279,13 +296,15 @@ function SourceRefresh({scopeId,format,onBusyChange}){
       for(let offset=0;offset<ids.length;offset+=200){
         const batch=ids.slice(offset,offset+200);
         const {data,error}=await dbAuthRelation(galaxy)
-          .select('uid,title,content,createtime,source_native_id,source_place,url,searchable,statistics_able,source_name')
+          .select('uid,title,content,createtime,source_native_id,source_place,url,searchable,statistics_able,source_name,content_type')
           .eq('source_name',selected)
           .in('source_native_id',batch);
         if(error)throw new Error(error.message||'Source Refresh 既有資料比對失敗。');
         existing.push(...(data||[]));
       }
       const byNative=new Map(existing.map(row=>[String(row.source_native_id||'').trim(),row]));
+      const explicitTypeNativeIds=new Set(rows.filter(item=>String(mappedImportValue(item.raw,'content_type',format.fields)||'').trim())
+        .map(item=>String(mappedImportValue(item.raw,'source_native_id',format.fields)||'').trim()).filter(Boolean));
       const creates=[],updates=[],unchanged=[],seen=new Set();
       for(const record of valid){
         const nativeId=String(record.source_native_id||'').trim();
@@ -296,6 +315,7 @@ function SourceRefresh({scopeId,format,onBusyChange}){
         const next={
           ...record,
           uid:current.uid,
+          content_type:format.typeMode==='override'||explicitTypeNativeIds.has(nativeId)?record.content_type:current.content_type,
           source_name:selected,
           createtime:record.createtime||current.createtime||null,
           source_place:record.source_place||current.source_place||null,
@@ -333,6 +353,7 @@ function SourceRefresh({scopeId,format,onBusyChange}){
         await updateRows(galaxy,{
           title:row.title,
           content:row.content,
+          content_type:row.content_type,
           createtime:row.createtime,
           source_place:row.source_place,
           url:row.url,
@@ -534,7 +555,8 @@ function SunoImport({scopeId}){
 }
 
 export default function ManagementImportPanel({scopeId}){
-  const [format,setFormat]=useState({recordPath:'',batchSize:100,fields:{}});
+  const [format,setFormat]=useState({recordPath:'',batchSize:100,fields:{},typeMode:'file',typeCode:''});
+  const catalog=useImportContentTypes(scopeId);
   const [revision,setRevision]=useState(0);
   const [busyCount,setBusyCount]=useState(0);
   const setBusy=flag=>setBusyCount(value=>Math.max(0,value+(flag?1:-1)));
@@ -545,10 +567,25 @@ export default function ManagementImportPanel({scopeId}){
   }
   return <section className="scope-inline-card scope-management-imports">
     <h2>資料匯入</h2>
-    <p>Import 是進階資料操作：先選擇共用 JSON 格式，再逐檔預覽、按批寫入並核對筆數。Scope 與 Admin 是唯一兩種管理 role；匯入不是第三種權限。</p>
+    <ImportContentTypeCatalog scopeId={scopeId} catalog={catalog} busy={busyCount>0}/>
+    <div className="scope-stat-controls">
+      <label>匯入時作品類型
+        <select className="scope-select" disabled={busyCount>0||catalog.isPending} value={format.typeMode}
+          onChange={e=>changeFormat({...format,typeMode:e.target.value,typeCode:e.target.value==='file'?'':(catalog.types.find(row=>row.enabled)?.type_code||'')})}>
+          <option value="file">依 JSON 的 content_type 分類</option>
+          <option value="override">指定本次匯入的作品類型</option>
+        </select>
+      </label>
+      {format.typeMode==='override'?<label>指定作品類型
+        <select className="scope-select" disabled={busyCount>0||catalog.isPending} value={format.typeCode} onChange={e=>changeFormat({...format,typeCode:e.target.value})}>
+          <option value="">選擇作品類型</option>
+          {catalog.types.filter(row=>row.enabled).map(row=><option key={row.type_code} value={row.type_code}>{row.display_name}（{row.type_code}）</option>)}
+        </select>
+      </label>:null}
+    </div>
     <ImportFormatSettings format={format} onChange={changeFormat} disabled={busyCount>0}/>
-    <JsonImport key={'json-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/>
-    <SourceRefresh key={'refresh-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/>
+    <JsonImport key={'json-'+revision} scopeId={scopeId} format={format} contentTypes={catalog.types} onBusyChange={setBusy}/>
+    <SourceRefresh key={'refresh-'+revision} scopeId={scopeId} format={format} contentTypes={catalog.types} onBusyChange={setBusy}/>
     <MediaRecordInsert scopeId={scopeId}/>
     <SunoImport scopeId={scopeId}/>
   </section>;

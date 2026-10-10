@@ -2,6 +2,7 @@
 
 import {DB_QUERY_BATCH_SIZE} from './query-contract.mjs';
 import {mediaFacetDaily} from './statistics-facets.mjs';
+import {aggregateOwnScopeStatistics} from './statistics-source-intersection.mjs';
 import {DEFAULT_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
 import {publicContentFilters} from './content-policy';
 import {applyFilters,applyOrders,executePublicRead,selectAllRows,selectCount,selectRows} from './db-query.mjs';
@@ -432,30 +433,24 @@ export async function selectScopeDensityRows(scopes,{startDate='',endDate=''}={}
     .sort((a,b)=>a.day.localeCompare(b.day)||a.scope_id.localeCompare(b.scope_id));
 }
 
-// Own-Scope statistical breakdown. Never fetch another Scope here.
-// Keep the raw source_name and media_type, including the entries grouped as Others
-// by the overview, so the author can compare 2–4 real classifications.
+// Separate source, work-type and media breakdowns. These are independently
+// chosen within the current Scope; no cross-Scope read or merged corpus.
 export async function selectScopeSourceBreakdownRows(scope,{startDate='',endDate=''}={}){
   const current=scopeOf(scope);
   const [texts,media]=await Promise.all([
-    selectSourceDaily(current,{startDate,endDate}),
-    selectDailyCategoryCounts(current.galaxyMedia,'media_type',{startDate,endDate})
+    selectAllRows(current.galaxy,{
+      columns:'source_name,content_type,createtime',
+      filters:publicContentFilters([
+        ...timeFilters('createtime',startDate,endDate),
+        {column:'statistics_able',operator:'eq',value:true}
+      ])
+    }),
+    selectAllRows(current.galaxyMedia,{
+      columns:'media_type,createtime',
+      filters:timeFilters('createtime',startDate,endDate)
+    })
   ]);
-  return [
-    ...texts.map(row=>({
-      day:String(row.day||'').slice(0,10),
-      kind:'text',
-      category:String(row.source_name||'').trim(),
-      item_count:Number(row.item_count)||0
-    })),
-    ...media.map(row=>({
-      day:String(row.day||'').slice(0,10),
-      kind:'media',
-      category:String(row.category||'').trim(),
-      item_count:Number(row.item_count)||0
-    }))
-  ].filter(row=>/^\\d{4}-\\d{2}-\\d{2}$/.test(row.day)&&row.item_count>0)
-    .sort((a,b)=>a.day.localeCompare(b.day)||a.kind.localeCompare(b.kind)||a.category.localeCompare(b.category));
+  return aggregateOwnScopeStatistics(texts.rows,media.rows);
 }
 
 export async function selectSourceTrendRows(scopes,{startDate='',endDate=''}={}){

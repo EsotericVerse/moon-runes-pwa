@@ -3,7 +3,8 @@
 import {useMemo,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {selectScopeSourceBreakdownRows} from '../../../loc/galaxy-query';
-import StatisticsMultiChart,{STAT_VISUAL_TYPES,availableStatisticChartTypes} from './StatisticsMultiChart';
+import StatisticsMultiChart,{availableStatisticChartTypes} from './StatisticsMultiChart';
+import {OWN_STAT_DIMENSIONS,ownScopeCategoryCatalog} from '../../../loc/statistics-source-intersection.mjs';
 
 const DAY_MS=86400000;
 const dateOnly=v=>String(v||'').slice(0,10);
@@ -23,31 +24,10 @@ function canonicalBucket(day,unit){
   }
   return {key:day,from:day,to:day};
 }
-function ownSourceBucket(label=''){
-  const text=String(label||'').toLowerCase();
-  if(text.includes('facebook')||text==='fb')return 'Facebook';
-  if(text.includes('threads'))return 'Threads';
-  if(text.includes('instagram')||text.includes('reels')||text==='ig')return 'IG';
-  return 'Others';
-}
-function availableCategories(rows=[],onlyOther=false){
-  const count=new Map();
-  for(const row of rows){
-    if(onlyOther&&ownSourceBucket(row.category)!=='Others')continue;
-    const id=String(row.kind)+'\u0000'+String(row.category||'');
-    count.set(id,(count.get(id)||0)+(Number(row.item_count)||0));
-  }
-  return [...count.entries()].map(([id,total])=>{
-    const [kind,raw]=id.split('\u0000');
-    const name=raw||'未指定來源';
-    return {id,name:(kind==='media'?'媒體':'文字')+' · '+name,kind,raw,total};
-  }).sort((a,b)=>b.total-a.total||a.name.localeCompare(b.name));
-}
-
 export default function ScopeSelfIntersection({scope,range}){
   const [numberOfLanes,setNumberOfLanes]=useState(2);
   const [selected,setSelected]=useState([]);
-  const [onlyOthers,setOnlyOthers]=useState(false);
+  const [kindFilter,setKindFilter]=useState('all');
   const [chartType,setChartType]=useState('line');
   const [foldBlank,setFoldBlank]=useState(true);
   const start=dateOnly(range?.startDate),end=dateOnly(range?.endDate);
@@ -59,7 +39,7 @@ export default function ScopeSelfIntersection({scope,range}){
     staleTime:5*60_000
   });
   const rows=query.data||[];
-  const categoryList=useMemo(()=>availableCategories(rows,onlyOthers),[rows,onlyOthers]);
+  const categoryList=useMemo(()=>ownScopeCategoryCatalog(rows).filter(category=>kindFilter==='all'||category.kind===kindFilter),[rows,kindFilter]);
   const chosen=Array.from({length:numberOfLanes},(_,i)=>{
     const id=selected[i];
     if(id&&categoryList.some(c=>c.id===id)&&!selected.slice(0,i).includes(id))return id;
@@ -128,22 +108,22 @@ export default function ScopeSelfIntersection({scope,range}){
               {[2,3,4].map(n=><option key={n} value={n}>{n} 組</option>)}
             </select>
           </label>
-          <label><span>來源範圍</span>
-            <select className="scope-select" value={onlyOthers?'others':'all'} onChange={e=>{setOnlyOthers(e.target.value==='others');setSelected([])}}>
-              <option value="all">所有來源細項</option>
-              <option value="others">Others 原始來源細項</option>
+          <label><span>比較維度</span>
+            <select className="scope-select" value={kindFilter} onChange={e=>{setKindFilter(e.target.value);setSelected([])}}>
+              <option value="all">全部分類</option>
+              {OWN_STAT_DIMENSIONS.map(item=><option key={item.kind} value={item.kind}>{item.label}</option>)}
             </select>
           </label>
           <label><span>圖表</span>
             <select className="scope-select" value={chartType} onChange={e=>setChartType(e.target.value)}>
-              {STAT_VISUAL_TYPES.map(([value,label])=><option key={value} value={value} disabled={!availableCharts.some(([id])=>id===value)}>{label}</option>)}
+              {availableCharts.length?availableCharts.map(([value,label])=><option key={value} value={value}>{label}</option>):<option value="line">尚無可用圖形</option>}
             </select>
           </label>
           <label className="scope-setting-toggle"><input type="checkbox" checked={foldBlank} onChange={e=>setFoldBlank(e.target.checked)}/> 折疊空白時間區間</label>
         </div>
         <div className="scope-stat-controls">
           {Array.from({length:numberOfLanes},(_,index)=><label key={index}>
-            <span>來源 {index+1}</span>
+            <span>比較項目 {index+1}</span>
             <select className="scope-select" value={selection[index]||''} onChange={e=>{
               setSelected(prev=>{
                 const next=Array.from({length:numberOfLanes},(_,i)=>selection[i]||'');
@@ -152,9 +132,15 @@ export default function ScopeSelfIntersection({scope,range}){
               });
             }}>
               {!selection[index]?<option value="">沒有可選的來源</option>:null}
-              {categoryList.map(category=><option key={category.id} value={category.id} disabled={selection.some((s,i)=>s===category.id&&i!==index)}>
-                {category.name}（{category.total.toLocaleString()}）
-              </option>)}
+              {OWN_STAT_DIMENSIONS.map(dimension=>{
+                const options=categoryList.filter(category=>category.kind===dimension.kind&&
+                  !selection.some((chosen,i)=>i!==index&&chosen===category.id));
+                return options.length?<optgroup key={dimension.kind} label={dimension.label}>
+                  {options.map(category=><option key={category.id} value={category.id}>
+                    {category.name}（{category.total.toLocaleString()}）
+                  </option>)}
+                </optgroup>:null;
+              })}
             </select>
           </label>)}
         </div>

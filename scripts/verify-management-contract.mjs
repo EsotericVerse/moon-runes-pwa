@@ -34,6 +34,7 @@ const genericHome=read('app/loc/views/GenericScopeHomeView.jsx');
 const scopeRuntime=read('app/modular/use-scope-runtime.js');
 const scopeRegistry=read('app/modular/scope-registry.js');
 const importPanel=read('app/loc/ManagementImportPanel.jsx');
+const importTypeCatalog=read('app/loc/ImportContentTypeCatalog.jsx');
 const scopeSettings=read('app/loc/ScopeSettingsPanel.jsx');
 const publisher=read('app/loc/ManagementArticlePublisher.jsx');
 const blockNoteEntry=read('app/loc/BlockNoteEditor.jsx');
@@ -78,6 +79,7 @@ must(!management.includes('ManagementDataPanel')&&!management.includes('LivePrev
 must(management.includes("canManage=scope?.aggregateChildren?account.canManageGlobalSync():account.canManageScopeSync(scopeId)"),'Scope Group Manage must use global authority without becoming Admin');
 must(governance.includes("scopeHref(scopeId,'governance/manage')"),'Governance must link to Scope Manage');
 must(!importPanel.includes('ManagementArticlePublisher')&&!importPanel.includes('role="tablist"')&&importPanel.includes('JsonImport')&&importPanel.includes('SourceRefresh'),'Data Import must contain import tools only');
+must(importPanel.includes('contentTypes={catalog.types}')&&importPanel.includes("format.typeMode")&&importPanel.includes("content_type:row.content_type")&&importTypeCatalog.includes("silver.scope_content_types"),'Import must assign catalog-owned content_type to both JSON import and Source Refresh');
 must(importPanel.includes('ImportFormatSettings')&&importPanel.includes('format.recordPath')&&importPanel.includes('format.fields')&&importPanel.includes('writeImportBatches')&&importPanel.includes('progress.percent')&&importPanel.includes('下一個 JSON 檔案'),'Import must configure source formats, write bounded batches, and report visible progress across queued files');
 must(importRowsFromJson({payload:{entries:[{body:'字'}]}},'payload.entries').length===1,'Import format must select nested array paths');
 must(mappedImportValue({data:{body:'甲'}},'content',{content:'data.body'})==='甲','Import mapping must read configured nested fields');
