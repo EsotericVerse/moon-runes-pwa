@@ -27,6 +27,11 @@
   backdrop-filter:none;
   box-shadow:none;
 }
+/* LOC and author landing pages intentionally use the narrower 1180px
+   authored-content frame; keep the NAV aligned to that actual frame. */
+.scope-global:has(+ .loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"])){
+  width:min(1180px,calc(100% - 2rem));
+}
 .scope-global::after{display:none;}
 .scope-nav{
   display:flex;
