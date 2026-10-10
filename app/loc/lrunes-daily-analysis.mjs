@@ -2,6 +2,7 @@
 
 import {selectAllRows,selectRows} from './db-query.mjs';
 import {realMoonPhase} from './model/moon-phase.js';
+import {selectManagedScope} from './scope-data';
 
 export const LUNARUNES_PHASES=Object.freeze(['新月','上弦','滿月','下弦','空亡']);
 export const LUNARUNES_DIRECTIONS=Object.freeze(['正位','半正位','半逆位','逆位']);
@@ -148,6 +149,8 @@ export async function selectLunaRunesCulturalWorks({source='lo3rwang',startDate=
   // Query only the selected public corpus and the date window of daily runes.
   // Local/private files never enter this public data query.
   const scopeId=source==='lrunes'?'lrunes':'lo3rwang';
+  const scope=await selectManagedScope(scopeId);
+  if(!scope?.galaxy)throw new Error('找不到作品 Scope 的 silver.manage 對應');
   const filters=[
     {column:'statistics_able',operator:'eq',value:true},
     {column:'searchable',operator:'eq',value:true},
@@ -155,7 +158,7 @@ export async function selectLunaRunesCulturalWorks({source='lo3rwang',startDate=
     ...(isoDate(startDate)?[{column:'createtime',operator:'gte',value:startDate+'T00:00:00+08:00'}]:[]),
     ...(isoDate(endDate)?[{column:'createtime',operator:'lte',value:endDate+'T23:59:59.999+08:00'}]:[])
   ];
-  const {rows}=await selectAllRows('silver.'+scopeId+'_galaxy',{
+  const {rows}=await selectAllRows(scope.galaxy,{
     columns:'uid,title,createtime,source_name,content_type,url',
     filters,
     orders:[{column:'createtime',ascending:true},{column:'uid',ascending:true}]
@@ -174,7 +177,9 @@ export async function selectLunaRunesDayWorkTexts({source='lo3rwang',date='',lim
   const day=isoDate(date);
   if(!day)return [];
   const scopeId=source==='lrunes'?'lrunes':'lo3rwang';
-  const {rows}=await selectRows('silver.'+scopeId+'_galaxy',{
+  const scope=await selectManagedScope(scopeId);
+  if(!scope?.galaxy)throw new Error('找不到作品 Scope 的 silver.manage 對應');
+  const {rows}=await selectRows(scope.galaxy,{
     columns:'uid,title,content,createtime,source_name,url',
     filters:[
       {column:'statistics_able',operator:'eq',value:true},
@@ -225,7 +230,9 @@ export function lunarunesWorkTimeline(rows=[]){
 
 
 export async function selectLunaRunesCulturalAnchors(){
-  const {rows}=await selectAllRows('silver.lrunes_time',{
+  const scope=await selectManagedScope('lrunes');
+  if(!scope?.time)throw new Error('找不到符韻時間 Scope 的 silver.manage 對應');
+  const {rows}=await selectAllRows(scope.time,{
     columns:'record_id,label,time_date',
     filters:[{column:'record_type',operator:'eq',value:'anchor'}],
     orders:[{column:'time_date',ascending:true}]
