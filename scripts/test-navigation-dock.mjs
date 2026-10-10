@@ -102,3 +102,17 @@ test('LOC and Author home NAV can match a later sibling after JsonLd script',()=
   assert.ok(navCss.includes(':has(~ .loc-next-main[data-loc-view="home"]'));
   assert.equal(navCss.includes(':has(+ .loc-next-main[data-loc-view="home"]'),false);
 });
+
+test('native first-row NAV respects iOS safe area while web retains original layout',()=>{
+  const shell=fs.readFileSync('app/AppShell.jsx','utf8');
+  const css=fs.readFileSync('app/styles/nav.css','utf8');
+  const layout=fs.readFileSync('app/layout.jsx','utf8');
+  assert.match(shell,/data-native=\{native\?'ios':'web'\}/);
+  assert.match(layout,/viewportFit:'cover'/);
+  assert.match(css,/\.scope-global\[data-native="ios"\]/);
+  assert.match(css,/max\(env\(safe-area-inset-top,0px\),var\(--loc-native-top-fallback\)\)/);
+  assert.match(css,/min-height:40px/);
+  assert.match(css,/min-height:780px/);
+  assert.match(css,/position:static/);
+  assert.doesNotMatch(css,/\.scope-global\[data-native="ios"\]\s*\{[^}]*position:fixed/);
+});
