@@ -1,5 +1,5 @@
 // LunaRunes-only daily-draw analytics. No other Scope consumes this module.
-export const DAILY_RUNE_PAGE_SIZE=20;
+export const DAILY_RUNE_PAGE_SIZE=8;
 export const DAILY_RUNE_MODES=Object.freeze([
   {value:'rune',label:'符文本體'},
   {value:'rune_direction',label:'符文本體 × 位向'},

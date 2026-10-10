@@ -190,13 +190,13 @@ if(!failures.length){
   const cultureQuery=read('app/loc/culture-query.js');
   const queryContract=read('app/loc/query-contract.mjs');
   if(!queryContract.includes('DB_QUERY_BATCH_SIZE=1000'))failures.push('Portable Data API batch size must remain 1000.');
-  for(const token of ['ScopeGroupStatistics','ScopeStatisticsPanel','statisticsQueryRange','selectManagedScopes','selectScopeDensityRows(scopes','LOC 合併總數','Scope 分布（scope_id）','統計來源（scope_id）'])if(!statistics.includes(token))failures.push('Statistics aggregate/query-window contract missing '+token);
+  for(const token of ['ScopeGroupStatistics','ScopeStatisticsPanel','statisticsQueryRange','selectManagedScopes','selectScopeDensityRows(scopes','LOC 合併總數','所屬人員分布'])if(!statistics.includes(token))failures.push('Statistics aggregate/query-window contract missing '+token);
   if(statistics.includes("?{startDate:customFrom,endDate:customTo}\n    :{startDate:'',endDate:''}"))failures.push('Preset Statistics ranges must not fall back to an unbounded database query.');
   if(galaxy.includes("{column:'source_name',operator:'neq',value:''}"))failures.push('Unknown source rows must reach Statistics and map to Others instead of being discarded.');
   for(const token of ['表現風格','Class｜符文群組','Group｜符文排行'])if(!statistics.includes(token))failures.push('Statistics style-filter presentation missing '+token);
   // Group is an already-aggregated ranking; page only its rendered rows, while
   // keeping the full result set for percentages and stable rank ordering.
-  for(const token of ['GROUP_RANKING_PAGE_SIZE=10','groupRows.slice((activeGroupPage-1)*GROUP_RANKING_PAGE_SIZE,activeGroupPage*GROUP_RANKING_PAGE_SIZE)','visibleGroupRows.map','Group 統計分頁','setGroupPage(activeGroupPage-1)','setGroupPage(activeGroupPage+1)']){
+  for(const token of ['RUNE_RANKING_PAGE_SIZE=8','groupRows.slice((activeGroupPage-1)*GROUP_RANKING_PAGE_SIZE,activeGroupPage*GROUP_RANKING_PAGE_SIZE)','visibleGroupRows.map','Group 統計分頁','setGroupPage(activeGroupPage-1)','setGroupPage(activeGroupPage+1)']){
     if(!statistics.includes(token))failures.push('Statistics Group ranking pagination missing '+token);
   }
   if(statistics.includes('{groupRows.map(row=>'))failures.push('Statistics Group ranking must not render every item in one long list.');
@@ -278,7 +278,7 @@ if(!failures.length){
   if(structureRiver.includes('fixedMin={currentStructureStart}')||structureRiver.includes('fixedMax={currentStructureEnd}'))failures.push('Culture first river must remain horizontally navigable beyond the current period.');
   for(const token of ['isAggregateScope','locCombinedSourceRiverItems','locScopeDistributionItems'])if(!culture.includes(token))failures.push('LOC aggregate Culture contract missing '+token);
   for(const token of ['selectManagedScopes','Promise.all(managedScopes','buildLocSourceRiver','buildLocScopeDistribution'])if(!cultureQuery.includes(token))failures.push('LOC Culture aggregate data loader missing '+token);
-  for(const token of ['selectScopeGroupChildren','不跨 Scope 聚合 Galaxy／Galaxy Media／Time','前往此 Scope'])if(!scopeGroupOverview.includes(token))failures.push('Scope Group overview navigation contract missing '+token);
+  for(const token of ['selectScopeGroupChildren','成員首頁','前往該成員'])if(!scopeGroupOverview.includes(token))failures.push('Scope Group overview navigation contract missing '+token);
   if(!search.includes('enabled:!aggregateScopes')||!search.includes('Scope Group 搜尋導引')||!search.includes('ScopeGroupOverview'))failures.push('Scope Group Search must use registry overview instead of multi-Scope search.');
   const timelineEditor=read('app/modular/features/CultureTimelineEditor.jsx');
   if(cultureQuery.includes('anchor_pair')||timelineEditor.includes('anchor_pair'))failures.push('Timeline code must not restore legacy anchor_pair storage.');

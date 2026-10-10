@@ -121,7 +121,6 @@ export function LrunesDailyCulturePanel(){
   const message=queryMessage(query,range);
   return <section className="scope-card scope-culture-classification-river">
     <h3>每日符文｜時間長河</h3>
-    <p className="scope-status">當所選區間有每日符文紀錄，才在上方附帶一條天時月相河道；以月相變動日期作事件定錨，延續至下一次變動，中間無抽符的日期仍連續。若此區間完全沒有每日符文紀錄，就不顯示月相河道。下方保留符文名稱、四向方向與主抽／補抽／歷史紀錄。既有臺灣農曆五段式日期規則為日級推算，不代表精確天文時刻；不併入 Galaxy 作品數量。</p>
     <RangeControls mode={mode} setMode={setMode} from={from} setFrom={setFrom} to={to} setTo={setTo}/>
     {message?<p className="scope-status">{message}</p>:null}
     {!message?<p className="scope-status">{range.startDate} ～ {range.endDate} · {summary.dayCount} 個紀錄日 · {summary.recordCount} 筆抽取紀錄</p>:null}
@@ -153,12 +152,6 @@ export function LrunesDailyStatisticsPanel(){
   const featured=useMemo(()=>pagination.rows.slice(0,5),[pagination.rows]);
   const timeline=useMemo(()=>dailyCategoryTrend(draws,analysisMode,featured,mode==='1y'?'month':'day',range?.startDate,range?.endDate),[draws,analysisMode,featured,mode,range?.startDate,range?.endDate]);
   const bars=useMemo(()=>pagination.rows.map(row=>({label:row.label,value:row.count})),[pagination.rows]);
-  const directionSummary=useMemo(()=>analysisMode==='direction'&&ranking.length
-    ?DAILY_DIRECTIONS.map(direction=>{
-      const item=ranking.find(row=>row.direction===direction);
-      return direction+' '+Number(item?.count||0).toLocaleString()+' 次（'+Number(item?.ratio||0).toFixed(1)+'%）';
-    }).join('、')
-    :'',[analysisMode,ranking]);
   const message=queryMessage(query,range);
   return <>
     <div className="scope-stat-controls">
@@ -178,7 +171,6 @@ export function LrunesDailyStatisticsPanel(){
     {message?<p className="scope-status">{message}</p>:null}
     {!message?<>
       <p className="scope-status">{range.startDate} ～ {range.endDate} · {summary.dayCount} 個紀錄日 · {summary.recordCount} 筆抽取 · {analysisMode==='direction'?'四種位向（含零次）':ranking.length+' 種實際出現的組合'}</p>
-      {directionSummary?<p className="scope-status">所選期間四向分布：{directionSummary}。正逆位向屬符文詮釋維度，可協助觀察阻滯與推進的近期變化，但不能單憑比例判定實際事件或未來走向。</p>:null}
       {!ranking.length?<p className="scope-status">目前區間沒有每日符文紀錄。</p>:null}
       {ranking.length?<><div className="scope-ranking">
         {pagination.rows.map((row,index)=><div key={row.key}>
@@ -188,7 +180,7 @@ export function LrunesDailyStatisticsPanel(){
       </div>
       {pagination.totalPages>1?<nav className="scope-stat-controls" aria-label="每日符文排行榜分頁">
         <button type="button" className="loc-button" disabled={pagination.currentPage===1} onClick={()=>setPage(current=>Math.max(1,current-1))}>上一頁</button>
-        <span className="scope-status">第 {pagination.currentPage} / {pagination.totalPages} 頁（每頁最多 20 筆）</span>
+        <span className="scope-status">第 {pagination.currentPage} / {pagination.totalPages} 頁（每頁 8 筆）</span>
         <button type="button" className="loc-button" disabled={pagination.currentPage===pagination.totalPages} onClick={()=>setPage(current=>Math.min(pagination.totalPages,current+1))}>下一頁</button>
       </nav>:null}
       {chart==='bar'?<ResponsiveContainer width="100%" height={Math.max(220,bars.length*29+50)}>

@@ -25,7 +25,8 @@ import ScopeSelfIntersection from '../modules/statistics/ScopeSelfIntersection';
 import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
-const GROUP_RANKING_PAGE_SIZE=10;
+const OTHER_RANKING_PAGE_SIZE=10;
+const RUNE_RANKING_PAGE_SIZE=8;
 const CHART_ACCENT='var(--loc-accent)';
 const CHART_TEXT='var(--loc-text)';
 const CHART_GRID='var(--loc-line)';
@@ -290,6 +291,7 @@ function facetTrend(rows=[],window={},selectedCategories=[]){
 function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeChange,timeStandard='1y',customRange={},scopeId,navigation={},foldBlank=false}){
   const router=useRouter();
   const [selectedTag,setSelectedTag]=useState('all');
+  const [rankingPage,setRankingPage]=useState(1);
   const rawExclusions=String(navigation.statExclude||'');
   const exclusionText=rawExclusions==='-'?'':(rawExclusions||DEFAULT_MEDIA_STYLE_EXCLUSIONS.join(', '));
   const [exclusionDraft,setExclusionDraft]=useState(exclusionText);
@@ -302,6 +304,9 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeC
   const totals=useMemo(()=>facetTotals(facetRows),[facetRows]);
   const chosen=totals.find(row=>row.term===selectedTag)?selectedTag:'all';
   const displayed=chosen==='all'?totals:totals.filter(row=>row.term===chosen);
+  const pageSize=scopeId==='lrunes'?RUNE_RANKING_PAGE_SIZE:OTHER_RANKING_PAGE_SIZE;
+  const pages=Math.max(1,Math.ceil(displayed.length/pageSize));
+  const currentPage=Math.max(1,Math.min(pages,rankingPage));
   const chartCategories=chosen==='all'?totals.slice(0,6).map(row=>row.term):[chosen];
   const chartRows=useMemo(()=>facetTrend(facetRows,window,chartCategories),[facetRows,window.startDate,window.endDate,window.bucket,chartCategories.join('\u0000')]);
   const bars=(chosen==='all'?totals.slice(0,15):displayed).map(row=>({term:row.term,value:row.item_count}));
@@ -310,11 +315,6 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeC
     distribution:bars.map(row=>({name:row.term,value:row.value}))
   });
   const chosenChartType=supported.some(([value])=>value===chartType)?chartType:(supported[0]?.[0]||'line');
-  const description=rankingType==='media_style'
-    ?'從 Galaxy Media 的 meta_tags 即時計算所有統計詞（曲風、風格、主題等），同筆相同標籤只計一次；不將 Suno Style 正文當成媒體作品。'
-    :rankingType==='media_platform'
-      ?'依 URL 網域與路徑區分平台（IG Reels／IG 貼文、Vocus、Suno 等）；缺 URL 時才用媒體類型或來源欄位辨識。Suno song ID 不當成另一個平台。'
-      :'每個多媒體紀錄只計入一個媒體類型。';
   function applyExclusions(){
     const next=mediaStyleExclusions(exclusionDraft).join(', ');
     const nextValue=next===DEFAULT_MEDIA_STYLE_EXCLUSIONS.join(', ')?undefined:(next||'-');
@@ -323,18 +323,16 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeC
     router.push(featureNavigationHref(scopeId,'statics',{...navigation,statExclude:nextValue}));
   }
   return <>
-    <p className="scope-status">{description}</p>
     {rankingType==='media_style'?<div className="scope-stat-controls">
       <label><span>統計排除詞（以逗號分隔）</span>
         <input className="scope-input" value={exclusionDraft} maxLength={240} onChange={event=>setExclusionDraft(event.target.value)} placeholder="例如：男聲" />
       </label>
       <button type="button" className="loc-button" onClick={applyExclusions}>套用排除詞</button>
       <button type="button" className="loc-button" onClick={()=>setExclusionDraft(DEFAULT_MEDIA_STYLE_EXCLUSIONS.join(', '))}>恢復預設</button>
-      <p className="scope-status">預設排除：男聲。高頻不等於無意義；排除詞只影響目前統計視圖，原始 Meta Tag 不會更動。可透過網址保留設定。</p>
     </div>:null}
     <div className="scope-stat-controls">
       <label><span>{rankingType==='media_style'?'指定 Meta Tag':'指定統計細項'}</span>
-        <select className="scope-select" value={chosen} onChange={event=>setSelectedTag(event.target.value)}>
+        <select className="scope-select" value={chosen} onChange={event=>{setSelectedTag(event.target.value);setRankingPage(1);}}>
           <option value="all">全部項目</option>
           {totals.map(row=><option key={row.term} value={row.term}>{row.term}（{row.item_count.toLocaleString()}）</option>)}
         </select>
@@ -347,9 +345,13 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeC
     </div>
     {!totals.length?<p className="scope-status">{FEATURE_EMPTY_MESSAGE}</p>:<>
       <div className="scope-ranking">
-        {displayed.slice(0,40).map(row=><div key={row.term}><strong>{row.term}</strong><span>{row.item_count.toLocaleString()}</span></div>)}
+        {displayed.slice((currentPage-1)*pageSize,currentPage*pageSize).map(row=><div key={row.term}><strong>{row.term}</strong><span>{row.item_count.toLocaleString()}</span></div>)}
       </div>
-      {displayed.length>40?<p className="scope-status">排行榜顯示前 40 項；可從上方選單指定其餘細項。</p>:null}
+      {pages>1?<nav className="scope-stat-controls" aria-label="統計分頁">
+        <button type="button" className="loc-button" disabled={currentPage===1} onClick={()=>setRankingPage(currentPage-1)}>上一頁</button>
+        <span>{currentPage} / {pages}</span>
+        <button type="button" className="loc-button" disabled={currentPage===pages} onClick={()=>setRankingPage(currentPage+1)}>下一頁</button>
+      </nav>:null}
       <StatisticsMultiChart type={chosenChartType}
         rows={chartRows}
         series={chartCategories.map(category=>({key:category,label:category}))}
@@ -388,14 +390,13 @@ function Rune66Summary({analysis}){
     .filter(row=>Number(row.count||0)>0);
   const classifiedTotal=Math.max(0,Number(data.classifiedCount||0));
   const groupHitTotal=groupRows.reduce((sum,row)=>sum+Number(row.count||0),0);
-  const groupPageCount=Math.max(1,Math.ceil(groupRows.length/GROUP_RANKING_PAGE_SIZE));
+  const groupPageCount=Math.max(1,Math.ceil(groupRows.length/RUNE_RANKING_PAGE_SIZE));
   const activeGroupPage=Math.min(groupPage,groupPageCount);
-  const visibleGroupRows=groupRows.slice((activeGroupPage-1)*GROUP_RANKING_PAGE_SIZE,activeGroupPage*GROUP_RANKING_PAGE_SIZE);
+  const visibleGroupRows=groupRows.slice((activeGroupPage-1)*RUNE_RANKING_PAGE_SIZE,activeGroupPage*RUNE_RANKING_PAGE_SIZE);
   return <div className="scope-rune66-summary">
-    <p className="scope-status">表現風格：{className} · 此區間有效作品 {Number(data.documentCount||0).toLocaleString()} 項 · 已分類 {classifiedTotal.toLocaleString()} · 未分類 {Number(data.unclassifiedCount||0).toLocaleString()} · 定錨時間 {new Date(data.staticstime).toLocaleString('zh-TW',{hour12:false})}</p>
+    <div className="scope-ranking"><div><strong>{className}</strong><span>{Number(data.documentCount||0).toLocaleString()} 項 · 已分類 {classifiedTotal.toLocaleString()} · 未分類 {Number(data.unclassifiedCount||0).toLocaleString()}</span></div></div>
     <section className="scope-card">
       <h3>Class｜符文群組</h3>
-      <p className="scope-status">每篇作品只保留一個唯一 Class；比例以已分類作品數計算。</p>
       <div className="scope-ranking">
         {classRows.map(row=>{
           const count=Number(row.document_count||0);
@@ -415,7 +416,6 @@ function Rune66Summary({analysis}){
     </section>
     <section className="scope-card">
       <h3>Group｜符文排行</h3>
-      <p className="scope-status">同一作品內，相同 signal 重複出現只計 1 次；不同 signal 可累積。</p>
       <div className="scope-ranking">
         {visibleGroupRows.map(row=>{
           const count=Number(row.count||0);
@@ -423,7 +423,7 @@ function Rune66Summary({analysis}){
           return <div key={row.rune_id}><strong>{String(row.rune_id).padStart(2,'0')} · {groupLabel(row.label)}</strong><span>{count.toLocaleString()} 次 · {ratio.toFixed(1)}%</span></div>;
         })}
       </div>
-      {groupRows.length>GROUP_RANKING_PAGE_SIZE?<nav className="scope-stat-controls" aria-label="Group 統計分頁">
+      {groupRows.length>RUNE_RANKING_PAGE_SIZE?<nav className="scope-stat-controls" aria-label="Group 統計分頁">
         <button type="button" className="loc-button" disabled={activeGroupPage===1} onClick={()=>setGroupPage(activeGroupPage-1)}>上一頁</button>
         <span className="scope-status" aria-live="polite">第 {activeGroupPage} / {groupPageCount} 頁 · 共 {groupRows.length.toLocaleString()} 項</span>
         <button type="button" className="loc-button" disabled={activeGroupPage===groupPageCount} onClick={()=>setGroupPage(activeGroupPage+1)}>下一頁</button>
@@ -528,7 +528,6 @@ function ScopeGroupStatistics(){
     <header className="scope-stat-domain-heading">
       <div>
         <h2>{UI_COPY.statistics.result}</h2>
-        <p className="scope-status">LOC 顯示各 Scope 的整體分布與時間變化。</p>
       </div>
     </header>
     <div className="scope-stat-controls">
@@ -536,7 +535,7 @@ function ScopeGroupStatistics(){
         <span>{UI_COPY.statistics.item}</span>
         <select className="scope-select" value={aggregateType} onChange={event=>setAggregateType(event.target.value)}>
           <option value="total">LOC 合併總數</option>
-          <option value="scope">Scope 分布（scope_id）</option>
+          <option value="scope">所屬人員分布</option>
         </select>
       </label>
       <label>
@@ -560,13 +559,9 @@ function ScopeGroupStatistics(){
         <span>{overallTotal.toLocaleString()} 項</span>
       </div>
     </div>
-    <p className="scope-status">
-      統計來源（scope_id）：{totals.map(row=>row.scope_id+' '+row.total.toLocaleString()+' 項 · '+row.ratio.toFixed(1)+'%').join('；')}
-    </p>
 
-    <p className="scope-status">若需要查詢相關成員的細部統計，請前往各相關成員的統計頁面即可。</p>
     <div className="scope-result-links">
-      {scopeIds.map(id=><a key={id} href={featureNavigationHref(id,'statics')}>scope_id: {id} · 細部統計</a>)}
+      {scopeIds.map(id=><a key={id} href={featureNavigationHref(id,'statics')}>{id} · 查看統計</a>)}
     </div>
 
     {!densityQuery.isPending&&!densityQuery.error&&trendData.length?<StatisticsMultiChart

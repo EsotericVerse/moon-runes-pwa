@@ -68,7 +68,6 @@ function ImportFormatSettings({format,onChange,disabled=false}){
   const updateField=(key,value)=>onChange({...format,fields:{...format.fields,[key]:value}});
   return <details className="scope-inline-card scope-import-format">
     <summary>匯入格式設定（共用於 JSON Import／Source Refresh）</summary>
-    <p className="scope-status">先設定格式再選檔。欄位留空即使用既有名稱自動對應；可輸入單一欄位名稱、巢狀路徑（如 post.body），或逗號分隔的候選名稱。修改格式後，本次檔案預覽需重新選擇。</p>
     <div className="scope-management-fields">
       <label>資料陣列路徑（預設支援根陣列／items／posts／data／records）
         <input disabled={disabled} value={format.recordPath} onChange={e=>update('recordPath',e.target.value)} placeholder="例如 result.entries；留空自動辨識"/>
@@ -205,7 +204,6 @@ function JsonImport({scopeId,format,contentTypes=[],onBusyChange}) {
     <label>{UI_COPY.management.currentFile}<input type="file" accept=".json,application/json" multiple disabled={busy} onChange={chooseFile}/></label>
     {fileName?<p>檔案：<strong>{fileName}</strong>（第 {queueIndex+1}／{queue.length} 檔）｜建議來源：<strong>{suggested}</strong></p>:null}
     <label>{UI_COPY.management.sourceChoice}<input disabled={busy||!rows.length} value={source} onChange={event=>setSource(event.target.value)} placeholder={suggested}/></label>
-    <p className="loc-subtitle">每次只讀取與確認一個 JSON 檔案；檔內資料依設定筆數分批寫入 Galaxy，不會一次送出全部有效資料。相同 UID 或「來源＋平台原生 ID」會略過。沒有這兩種穩定識別的紀錄，重新選檔不保證可辨識重複資料。</p>
     {rows.length?<section className="scope-import-preview" aria-label="JSON 匯入預覽">
       <p className="scope-status">有效 {analyzed.valid.length.toLocaleString()} 筆｜略過 {analyzed.invalid.length.toLocaleString()} 筆</p>
       <div className="scope-management-records">

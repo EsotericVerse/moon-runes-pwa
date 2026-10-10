@@ -10,7 +10,7 @@ import ManagementArticlePublisher from './ManagementArticlePublisher';
 import ScopeGroupManagement from './ScopeGroupManagement';
 
 const LOGIN_COPY={
-  loc:{eyebrow:'LOC Group Management',title:'LOC Scope Group 管理登入'},
+  loc:{eyebrow:'LOC 管理',title:'LOC 群組管理登入'},
   lrunes:{eyebrow:'LunaRunes Management',title:'LunaRunes 管理登入'},
   lo3rwang:{eyebrow:'Personal Management',title:'lo3rwang 個人管理登入'}
 };
@@ -47,17 +47,17 @@ export default function GovernanceManagement(){
 
   return <section className="loc-view scope-management-page">
     <header className="loc-hero loc-hero-context">
-      <p className="loc-eyebrow">{UI_COPY.management.eyebrow} · {scopeId}</p>
-      <h1>{scope.label}{scopeId==='loc'?' Scope Group':''}管理</h1>
+      <p className="loc-eyebrow">{UI_COPY.management.eyebrow}</p>
+      <h1>{scope.label}管理</h1>
       <p>{account.user.email||account.user.name||''}</p>
       <div className="scope-preview-links">
-        {scopeId==='loc'?<a className="loc-button" href={scopeHref('admin')}>前往 Admin 系統設定</a>:<a className="loc-button" href={scopeHref(scopeId)}>返回 Scope</a>}
+        {scopeId==='loc'?<a className="loc-button" href={scopeHref('admin')}>前往 Admin 系統設定</a>:<a className="loc-button" href={scopeHref(scopeId)}>返回首頁</a>}
         <a className="loc-button" href="/settings/">帳號設定</a>
       </div>
     </header>
 
-    {scope?.aggregateChildren?<ManagementDisclosure label="Scope Group 管理"><ScopeGroupManagement scopeId={scopeId}/></ManagementDisclosure>:<>
-      <ManagementDisclosure label="Scope 設定"><ScopeSettingsPanel scopeId={scopeId}/></ManagementDisclosure>
+    {scope?.aggregateChildren?<ManagementDisclosure label="所屬人員管理"><ScopeGroupManagement scopeId={scopeId}/></ManagementDisclosure>:<>
+      <ManagementDisclosure label="個人設定"><ScopeSettingsPanel scopeId={scopeId}/></ManagementDisclosure>
       <ManagementDisclosure label="發表文章"><ManagementArticlePublisher scopeId={scopeId}/></ManagementDisclosure>
       <ManagementDisclosure label="資料匯入"><ManagementImportPanel scopeId={scopeId}/></ManagementDisclosure>
     </>}

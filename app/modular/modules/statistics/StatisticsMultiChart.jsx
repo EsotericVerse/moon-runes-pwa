@@ -208,6 +208,5 @@ export default function StatisticsMultiChart({
     {foldBlank&&gaps.length?<p className="scope-status" role="note">
       時間斷層：{gaps.map(g=>g.start+'～'+g.end+'（'+(g.days||g.buckets)+(g.days?' 天':' 區間')+'）').join('；')}
     </p>:null}
-    {actual==='radial'?<p className="scope-status">有紀錄的時間區間占比</p>:null}
   </div>;
 }
