@@ -109,7 +109,10 @@ if(!failures.length){
      !statistics.includes('<ScopeSelfIntersection')||
      !ownIntersection.includes("selectScopeSourceBreakdownRows")||
      !ownIntersection.includes("scope.galaxyMedia")||
-     !ownIntersection.includes('交會指不同來源在同一天均有紀錄')||
+     ownIntersection.includes('只分析目前 Scope 已允許統計的作品與媒體紀錄')||
+     ownIntersection.includes("useState(false);\n  const [numberOfLanes")||
+     ownIntersection.includes('開啟自交互統計')||
+     !ownIntersection.includes('enabled:valid,')||
      !galaxy.includes('export async function selectScopeSourceBreakdownRows(scope,')){
     failures.push('Statistics must expose ten real charts, optional visible gap folds and strictly own-Scope intersections.');
   }

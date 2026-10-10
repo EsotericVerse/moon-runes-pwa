@@ -45,7 +45,6 @@ function availableCategories(rows=[],onlyOther=false){
 }
 
 export default function ScopeSelfIntersection({scope,range}){
-  const [enabled,setEnabled]=useState(false);
   const [numberOfLanes,setNumberOfLanes]=useState(2);
   const [selected,setSelected]=useState([]);
   const [onlyOthers,setOnlyOthers]=useState(false);
@@ -56,7 +55,7 @@ export default function ScopeSelfIntersection({scope,range}){
   const query=useQuery({
     queryKey:['own-scope-source-intersection',scope?.id,start,end],
     queryFn:()=>selectScopeSourceBreakdownRows(scope,{startDate:start,endDate:end}),
-    enabled:enabled&&valid,
+    enabled:valid,
     staleTime:5*60_000
   });
   const rows=query.data||[];
@@ -118,11 +117,6 @@ export default function ScopeSelfIntersection({scope,range}){
 
   return <section className="scope-stat-section scope-self-intersection" aria-label="本 Scope 作品自交互統計">
     <h3>作品自交互統計</h3>
-    <p className="scope-status">只分析目前 Scope 已允許統計的作品與媒體紀錄；不查詢其他 Scope。交會指不同來源在同一天均有紀錄，並不代表同一筆作品同時屬於多個來源。</p>
-    <button type="button" className="loc-button" aria-expanded={enabled} onClick={()=>setEnabled(value=>!value)}>
-      {enabled?'收合自交互統計':'開啟自交互統計'}
-    </button>
-    {enabled?<>
       {query.isPending?<p className="scope-status">讀取本 Scope 的原始來源分類…</p>:null}
       {query.error?<p className="scope-status scope-error">來源分類讀取失敗：{String(query.error.message||query.error)}</p>:null}
       {!query.isPending&&!query.error?<div className="scope-self-intersection-content">
@@ -170,6 +164,5 @@ export default function ScopeSelfIntersection({scope,range}){
           <StatisticsMultiChart type={chartType} rows={calculated.chart} series={series} distribution={calculated.totals} foldBlank={foldBlank} height={410}/>
         </div>:<p className="scope-status">目前細分來源不足 {numberOfLanes} 組；請更換範圍或減少組數。</p>}
       </div>:null}
-    </>:null}
   </section>;
 }
