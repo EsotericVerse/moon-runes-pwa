@@ -47,3 +47,18 @@ test('top NAV leaves viewport on page scroll while six-button dock remains fixed
   expect(top).toBeLessThan(-30);
   await expect(dock).toBeInViewport();
 });
+
+for(const [filename,expectedTitle] of [
+  ['/culture/index.html','時間長河與文化軌跡'],
+  ['/statics/index.html','作品統計與時間變化'],
+  ['/lrunes/culture/index.html','時間長河與文化軌跡'],
+  ['/lrunes/statics/index.html','資料統計與時間變化'],
+  ['/settings/index.html','設定']
+]){
+  test('packaged native static HTML resolves to the intended page: '+filename,async({page})=>{
+    await page.goto(filename,{waitUntil:'domcontentloaded'});
+    await expect(page).toHaveTitle(new RegExp(expectedTitle));
+    await expect(page.locator('.scope-feature-dock')).toBeVisible();
+    await expect(page.locator('.scope-feature-dock a')).toHaveCount(6);
+  });
+}
