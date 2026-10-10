@@ -2,7 +2,7 @@ name: LOC iOS Device Unsigned IPA
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, qa/rc31-navigation-routing-base-20261011]
     paths:
       - '.github/workflows/ios-device-build.yml'
       - 'capacitor.config.json'
