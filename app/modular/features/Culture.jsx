@@ -29,6 +29,7 @@ import {useOffsetPagination} from '../use-offset-pagination';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 import {LrunesDailyCulturePanel} from '../../lrunes/DailyRuneAnalytics';
+import LocRuneWorkComparison from './LocRuneWorkComparison';
 
 function isInteractiveTarget(target){
   return Boolean(target?.closest?.('a,button,input,select,textarea,summary,[role="button"],[contenteditable="true"]'));
@@ -375,7 +376,7 @@ export default function Culture(){
     }
     return rows;
   },[locScopeDistributionItems,locIntersectionScopeIds,locDistributionStart]);
-  const hasTimelineSurface=isAggregateScope?Boolean(locSourceRiverItems.length):Boolean(timelineItems.length||selectedWorkPeriod?.start_date);
+  const hasTimelineSurface=isAggregateScope?Boolean(locSourceRiverItems.length||query.data?.scopes?.length):Boolean(timelineItems.length||selectedWorkPeriod?.start_date);
 
   function beginTimelineCreation(type,date){
     // Creation must work even for periods without an exact Gregorian start day.
@@ -633,6 +634,13 @@ export default function Culture(){
 
 
             {isAggregateScope?<>
+
+              <LocRuneWorkComparison
+                scopes={query.data?.comparisonScopes||query.data?.scopes||[]}
+                distribution={locScopeDistributionItems}
+                anchors={query.data?.comparisonAnchors||[]}
+                intersectionStart={locDistributionStart}
+              />
 
               <section className='scope-card scope-culture-classification-river scope-loc-time-river'>
                 <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>

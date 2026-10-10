@@ -26,6 +26,8 @@ Current 單 Scope 流程：
 
 **LOC（`loc`）是保留比較分析的例外，並非純導引頁。** LOC Culture 取得受管理 Scope 各自的 Time／目前開放時期，將共同觀察起點定為有效起點的最晚值（intersection），然後在交會期間分別對各自 Galaxy／Galaxy Media 做來源及媒體類別的 bounded 日分布查詢。結果呈現「交會時間長河」、各 Scope 作品／媒體量，以及「綜合來源時間長河」。相同來源分類指平台／來源類別相交，不代表把不同作者的作品誤認為同一作品。
 
+**LOC 專屬符韻／作者交會（唯讀）**：Culture 在原跨 Scope 總覽前增加「每日符文 × 個人作品」，將 `silver.lrunes_daily` 的每次符文、方向、紀錄或推算月相，與 `lo3rwang` Galaxy／Galaxy Media 作品／媒體依日期放到同一時間長河。符韻、個人作品與正式定錨點保留獨立河道；有同日每日符文時，定錨點顯示對應紀錄。列表按日期交錯展示兩個原始來源，嚴格每頁最多 20 筆，按需查作者原始公開作品 metadata，不載入全文。每日符文不納入 Galaxy 作品量，也不回寫到其他 Scope。缺少符文的日期只顯示原有作品，缺少作品則只顯示符文，不推論兩者有因果關係。
+
 **一般 DB 新建的 Scope Group** 只提供 Registry Overview 與各 Scope 導引，不自動繼承 LOC 的比較能力。LOC 的聚合只是一種 read-only 分析呈現，沒有第二份混合 corpus、跨 Scope 寫入或 Scope 權限合併。
 
 Anchor：
