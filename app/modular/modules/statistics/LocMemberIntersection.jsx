@@ -6,6 +6,8 @@ import {selectRows} from '../../../loc/db-query.mjs';
 import {selectScopeRegistry} from '../../../loc/scope-data';
 import {selectScopeSourceBreakdownRows} from '../../../loc/galaxy-query';
 import {selectDailyRuneRange} from '../../../loc/daily-runes';
+import {normalizeDailyDraws} from '../../../lrunes/daily-analytics-model.mjs';
+import {realMoonPhase} from '../../../loc/model/moon-phase';
 import {availableMemberMeasures,calculateMemberCross} from '../../../loc/member-intersection-model.mjs';
 import StatisticsMultiChart,{availableStatisticChartTypes} from './StatisticsMultiChart';
 
@@ -38,18 +40,21 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
   });
   const chosenIds=[...new Set(lanes.map(lane=>lane.person).filter(Boolean))];
   const fetched=useQuery({
-    queryKey:['loc-member-cross',startDate,endDate,chosenIds.join('|'),lanes.some(x=>x.metric==='daily')],
+    queryKey:['loc-member-cross',startDate,endDate,chosenIds.join('|'),lanes.some(x=>x.metric.startsWith('daily'))],
     enabled:Boolean(startDate&&endDate&&chosenIds.length),
     queryFn:async()=>{
       const pairs=await Promise.all(chosenIds.map(async id=>{
         const scope=scopes.find(item=>item.id===id);
         const [rows,daily]=await Promise.all([
           selectScopeSourceBreakdownRows(scope,{startDate,endDate}),
-          id==='lrunes'&&lanes.some(lane=>lane.person===id&&lane.metric==='daily')
+          id==='lrunes'&&lanes.some(lane=>lane.person===id&&lane.metric.startsWith('daily'))
             ?selectDailyRuneRange({startDate,endDate})
             :Promise.resolve([])
         ]);
-        return [id,{rows,daily}];
+        const draws=id==='lrunes'
+          ?normalizeDailyDraws(daily,date=>realMoonPhase(new Date(date+'T12:00:00+08:00')))
+          :[];
+        return [id,{rows,daily:draws}];
       }));
       return new Map(pairs);
     },
@@ -59,7 +64,7 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
   const measures=availableMemberMeasures([...datasets.values()].map(item=>item.rows),catalog.data?.categories||[]);
   const adjusted=lanes.map((lane,index)=>({
     ...lane,
-    metric:measures.some(item=>item.id===lane.metric)&&!(lane.metric==='daily'&&lane.person!=='lrunes')
+    metric:measures.some(item=>item.id===lane.metric)&&!(lane.metric.startsWith('daily')&&lane.person!=='lrunes')
       ?lane.metric:'total',
     label:(names.get(lane.person)||lane.person)+' · '+(measures.find(item=>item.id===lane.metric)?.name||'全部作品')
   }));
@@ -100,7 +105,7 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
         </label>
         <label>比較項目
           <select className="scope-select" value={adjusted[index].metric} onChange={e=>update(index,{metric:e.target.value})}>
-            {measures.filter(item=>item.id!=='daily'||lane.person==='lrunes').map(item=><option key={item.id} value={item.id}>{item.name}</option>)}
+            {measures.filter(item=>!item.id.startsWith('daily')||lane.person==='lrunes').map(item=><option key={item.id} value={item.id}>{item.name}</option>)}
           </select>
         </label>
       </div>)}

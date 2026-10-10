@@ -40,3 +40,22 @@ test('cross member selections preserve per-member and per-measure counts',()=>{
   assert.equal(subset.commonDays,0);
   assert.ok(availableMemberMeasures([...sets.values()].map(x=>x.rows),categories).some(x=>x.id==='media:song'));
 });
+
+test('daily rune dimensions can intersect another member without counting unrelated directions',()=>{
+  const sets=new Map([
+    ['alice',{rows:[{day:'2026-10-01',kind:'total',category:'文字作品',item_count:1}],daily:[]}],
+    ['lrunes',{rows:[],daily:[
+      {record_date:'2026-10-01',draw_kind:'main',direction:'正位',phase:'新月'},
+      {record_date:'2026-10-02',draw_kind:'supplement',direction:'逆位',phase:'滿月'}
+    ]}]
+  ]);
+  const value=calculateMemberCross([
+    {person:'alice',metric:'text'},{person:'lrunes',metric:'daily:direction:正位'},
+    {person:'lrunes',metric:'daily:phase:滿月'}
+  ],sets,{from:'2026-10-01',to:'2026-10-02',unit:'day',categories,aliases});
+  assert.deepEqual(value.totals.map(x=>x.value),[1,1,1]);
+  assert.equal(value.commonDays,0);
+  assert.equal(value.unionDays,2);
+  const kinds=availableMemberMeasures([...sets.values()].map(x=>x.rows),categories);
+  assert.ok(kinds.some(x=>x.id==='daily:direction:正位'));
+});
