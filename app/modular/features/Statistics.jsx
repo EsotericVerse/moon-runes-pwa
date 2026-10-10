@@ -17,6 +17,7 @@ import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {FeaturePage} from '../ui';
+import LunaRunesDailyAnalysis from './LunaRunesDailyAnalysis';
 import {useAccount} from '../../loc/use-account';
 import {scopeHref} from '../scope-registry';
 
@@ -728,19 +729,28 @@ function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types,canMana
 
 export default function Statistics(){
   const {scopeId,scope}=useScopeRuntime();
+  const [lrunesSource,setLrunesSource]=useState('daily');
   const account=useAccount();
   const searchParams=useSearchParams();
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
   const canManageKeywords=Boolean(account.user)&&scopeId!=='lrunes'&&account.canManageScopeSync(scopeId);
   return <FeaturePage featureId="statics">
     <section className="loc-card scope-feature-card">
-      <StatisticsPanel
+      {scopeId==='lrunes'?<div className='scope-stat-controls'>
+        <label><span>統計資料來源</span>
+          <select className='scope-select' value={lrunesSource} onChange={event=>setLrunesSource(event.target.value)}>
+            <option value='daily'>每日符文</option>
+            <option value='articles'>文章</option>
+          </select>
+        </label>
+      </div>:null}
+      {scopeId==='lrunes'&&lrunesSource==='daily'?<LunaRunesDailyAnalysis view='statistics'/>:<StatisticsPanel
         scopeId={scopeId}
         aggregateScopes={Boolean(scope?.aggregateChildren)}
         navigation={navigation}
         types={STAT_TYPES}
         canManageKeywords={canManageKeywords}
-      />
+      />}
     </section>
   </FeaturePage>;
 }
