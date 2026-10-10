@@ -1,4 +1,5 @@
 import {SITE_IMAGES} from '../site-images';
+import {faviconForScope} from '../site-favicons';
 
 export const LOC_ORIGIN='https://loc.lo3rwang.cc';
 export const LUNARUNES_ORIGIN='https://lrunes.lo3rwang.cc';
@@ -30,12 +31,14 @@ function pageMetadata({
   description,
   image,
   imageAlt,
+  faviconScope='loc',
   noIndex=false
 }){
   const canonical=urlFor(origin,path);
   return {
     title,
     description,
+    icons:{icon:[{url:faviconForScope(faviconScope),type:'image/png'}]},
     alternates:{canonical},
     openGraph:{
       title,
@@ -66,14 +69,14 @@ export function locMetadata({title,description,path='/',noIndex=false,image=LOC_
 export function lunarunesMetadata({title,description,path='/',noIndex=false,image=LUNARUNES_IMAGE,imageAlt='月之符文'}){
   return pageMetadata({
     origin:LUNARUNES_ORIGIN,path,siteName:'月之符文',title,description,
-    image,imageAlt,noIndex
+    image,imageAlt,noIndex,faviconScope:'lrunes'
   });
 }
 
 export function authorMetadata({title,description,path='/lo3rwang/',noIndex=false}){
   return pageMetadata({
     origin:LOC_ORIGIN,path,siteName:'Lucas Oscar Wang 政德',title,description,
-    image:AUTHOR_IMAGE,imageAlt:'Lucas Oscar Wang 政德',noIndex
+    image:AUTHOR_IMAGE,imageAlt:'Lucas Oscar Wang 政德',noIndex,faviconScope:'lo3rwang'
   });
 }
 

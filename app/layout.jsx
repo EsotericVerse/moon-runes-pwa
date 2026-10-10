@@ -1,12 +1,14 @@
 import './globals.css';
 import AppShell from './AppShell';
 import {LOC_ORIGIN} from './seo/metadata';
+import {faviconForScope} from './site-favicons';
 
 export const metadata = {
   metadataBase:new URL(LOC_ORIGIN),
   title:'LOC 月典',
   description:'月典是一套語言建構框架工具，用來整理文字、作品與時間脈絡。',
   applicationName:'LOC 月典',
+  icons:{icon:[{url:faviconForScope('loc'),type:'image/png'}]},
   referrer:'origin-when-cross-origin'
 };
 

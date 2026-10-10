@@ -10,6 +10,7 @@ import {FEATURES,SCOPES,featureIdForPath,getScope,setScopeRegistryRouteRows} fro
 import {applyTheme,themeSignature,THEME_SLOTS} from './modular/theme-registry';
 import {mergeThemeSlot,selectThemeRegistry} from './loc/theme-data';
 import {useScopeRuntime} from './modular/use-scope-runtime';
+import {faviconForScope} from './site-favicons';
 import {selectScopeConfig,selectScopeRegistry,selectScopePageCopy} from './loc/scope-data';
 import {getDbSourceStatus,subscribeDbSourceStatus} from './loc/db-source-status.mjs';
 import {useNavigationPreferences} from './loc/use-navigation-preferences';
@@ -189,6 +190,20 @@ export default function AppShell({children}){
   const {scrollYProgress}=useScroll();
   const scaleX=useSpring(scrollYProgress,{stiffness:220,damping:34,mass:.28});
   const {scopeId,scope,host,pathname,registryRow,configRow}=useScopeRuntime();
+  // Static export serves the same root HTML on multiple Scope subdomains.
+  // Update the browser tab icon after the client resolves the actual Scope.
+  useEffect(()=>{
+    if(!host)return;
+    let link=document.getElementById('loc-active-favicon');
+    if(!link){
+      link=document.createElement('link');
+      link.id='loc-active-favicon';
+      link.rel='icon';
+      link.type='image/png';
+      document.head.appendChild(link);
+    }
+    link.href=faviconForScope(scopeId);
+  },[scopeId,host]);
   const currentFeature=featureIdForPath(pathname);
   const isSettings=normalizePath(pathname)==='/settings';
   const [native,setNative]=useState(false);
