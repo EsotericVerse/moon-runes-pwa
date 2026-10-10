@@ -14,6 +14,7 @@ import {
 import {featureNavigationHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state';
 import CultureTimeline from '../modules/culture-timeline/CultureTimeline';
+import LunaRunesDailyAnalysis from './LunaRunesDailyAnalysis';
 import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
 import {analyzeRiverDensity} from '../modules/culture-timeline/river-density-analysis.mjs';
 import {selectGalaxyContent} from '../../loc/galaxy-query';
@@ -91,9 +92,11 @@ export default function Culture(){
   const queryClient=useQueryClient();
   const searchParams=useSearchParams();
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
+  const [lrunesSource,setLrunesSource]=useState('daily');
   const query=useQuery({
     queryKey:['culture-timeline',scopeId],
     queryFn:()=>selectScopeCultureData(scopeId),
+    enabled:scopeId!=='lrunes'||lrunesSource==='articles',
     staleTime:5*60_000
   });
 
@@ -160,7 +163,7 @@ export default function Culture(){
       startDate:selectedWorkPeriod?.start_date,
       endDate:selectedWorkPeriod?.end_date
     }),
-    enabled:!isAggregateScope&&Boolean(scopeData),
+    enabled:!isAggregateScope&&Boolean(scopeData)&&(scopeId!=='lrunes'||lrunesSource==='articles'),
     staleTime:5*60_000
   });
   const styleQuery=useQuery({
@@ -225,7 +228,7 @@ export default function Culture(){
       selectedCategory||'all'
     ].join('|'),
     pageSize:DEFAULT_LIST_BATCH_SIZE,
-    enabled:!isAggregateScope&&Boolean(scopeData)&&(!selectedCategory||Boolean(selectedGroup)),
+    enabled:!isAggregateScope&&Boolean(scopeData)&&(scopeId!=='lrunes'||lrunesSource==='articles')&&(!selectedCategory||Boolean(selectedGroup)),
     loadPage:async(cursor,limit)=>{
       const indexPage=await selectScopePeriodWorkIndex(scopeData,{
         startDate:selectedWorkPeriod?.start_date||'',
@@ -613,7 +616,17 @@ export default function Culture(){
   }
 
   return <FeaturePage featureId="culture">
-    <section className='loc-card scope-feature-card scope-feature-card-wide'>
+    {scopeId==='lrunes'?<section className='loc-card scope-feature-card'>
+      <label className='scope-culture-period-select'><span>文化資料來源</span>
+        <select className='scope-select' value={lrunesSource} onChange={event=>setLrunesSource(event.target.value)}>
+          <option value='daily'>每日符文</option>
+          <option value='articles'>文章</option>
+        </select>
+      </label>
+    </section>:null}
+    {scopeId==='lrunes'&&lrunesSource==='daily'
+      ?<section className='loc-card scope-feature-card scope-feature-card-wide'><LunaRunesDailyAnalysis view='culture'/></section>
+      :<section className='loc-card scope-feature-card scope-feature-card-wide'>
       <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
       <h2>{UI_COPY.culture.river}</h2>
       {query.error?<p className='scope-status scope-error'>{featureDataErrorMessage(query.error)}</p>:null}
@@ -873,6 +886,6 @@ export default function Culture(){
               </section>:null}
             </>}
       </>:null}
-    </section>
+    </section>}
   </FeaturePage>;
 }
