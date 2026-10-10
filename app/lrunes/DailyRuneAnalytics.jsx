@@ -175,7 +175,7 @@ export function LrunesDailyStatisticsPanel(){
       </label>
     </div>
     <RangeControls mode={mode} setMode={value=>{setMode(value);setPage(1);}} from={from} setFrom={value=>{setFrom(value);setPage(1);}} to={to} setTo={value=>{setTo(value);setPage(1);}}/>
-    <p className="scope-status">以每日符文實際抽取紀錄為基準，四種統計可獨立比較：符文本體、符文本體 × 位向、位向、符文本體 × 位向 × 真實月相。「符文本體」合併所有位向與月相；「位向」合併所有符文，固定顯示四向（含零次），可配合「最近一週／最近一個月」和時間趨勢觀察近期分布。各組合只統計實際出現者，每頁最多 20 名；月相延用按紀錄日期的日級規則，不代表精確天文時刻。</p>
+    <p className="scope-status">以每日符文實際抽取紀錄為基準，四種統計可獨立比較：符文本體、符文本體 × 位向、位向、符文本體 × 位向 × 真實月相。「符文本體」合併所有位向與月相；「位向」合併所有符文，固定顯示四向（含零次），可配合「最近一週／最近一個月」和時間趨勢觀察近期分布。各組合只統計實際出現者，每頁最多 20 名；月相優先沿用紀錄值，缺漏時依紀錄日期做日級推算，不代表精確天文時刻。</p>
     {message?<p className="scope-status">{message}</p>:null}
     {!message?<>
       <p className="scope-status">{range.startDate} ～ {range.endDate} · {summary.dayCount} 個紀錄日 · {summary.recordCount} 筆抽取 · {ranking.length} 種實際出現的組合</p>
