@@ -71,7 +71,11 @@ export function buildContinuousMoonRiver(startDate,endDate,phaseAtDate){
   return segments;
 }
 
-export function buildReferencedMoonRiver(startDate,endDate,lanes=[],phaseAtDate){
-  return hasReferencedDailyRune(lanes)?
+// A calendar lane must never exist by itself: selecting the source is not
+// enough if that selected date range contains no readable daily-rune records.
+// A gap BETWEEN actual rune days is fine and does not break the moon band.
+export function buildReferencedMoonRiver(startDate,endDate,lanes=[],phaseAtDate,visibleRuneCount=0){
+  const count=Number(visibleRuneCount);
+  return hasReferencedDailyRune(lanes)&&Number.isFinite(count)&&count>0?
     buildContinuousMoonRiver(startDate,endDate,phaseAtDate):[];
 }
