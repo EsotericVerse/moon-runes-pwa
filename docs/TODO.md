@@ -62,6 +62,7 @@
 - [ ] Culture：LOC 跨 Scope 時期交會、交會時間長河、各 Scope 作品／媒體數量及綜合來源時間長河，以及單 Scope 分類、作品列表、Anchor 建議人工確認；一般新建 Scope Group 只測導引。
 - [x] **LOC Culture｜正式項目交會（程式已實作；待人工驗收）：** 在 LOC → 文化可切換「時期交會／項目交會」。項目交會由使用者自由指定兩條 Scope＋來源河道，預設僅作示範但不寫死比較對象；支援不同人的 Facebook／Threads 等文字來源、Galaxy Media 指定媒體類型及符韻專屬每日符文。原時期交會、作品列表及 LOC 首頁不動。刪除 PR #505 固定「每日符文 × 個人作品」功能及其模組，不留隱藏的平行實作。
 - [ ] **LOC Culture｜正式項目交會人工驗收：** 驗證兩條不同 Scope 不同來源（例：lo3rwang Facebook／另一人 Threads）的同軸對比、各自每日計數與相對密度、0 筆日、三個日曆月上限、20 天分頁、可讀取權限、資料不足及 bounded query；無法取得的 Scope 由 DB RLS 決定讀取範圍，不能用跨 Scope 權限繞過限制。完成人工實測前不宣稱 UI 驗收完成。
+- [ ] **LOC Culture｜符韻資料型河道人工驗收：** 僅當指定 `lrunes` 的每日符文時，河道與每日表格顯示符文名稱、四向方向、依日期計算的真實月相（並區分主抽／補抽、歷史紀錄）；同日兩筆保留各自內容，完全不將符文的 1～2 次紀錄轉成密度。與一般 Facebook／Threads 等 Galaxy／媒體密度河道在共同日期軸對照；其它 Scope／資料來源不可啟用符文特例。
 - [ ] Governance：LOC／LunaRunes／個人 Scope 公開內容人工確認。
 - [ ] LunaRunes 首頁與 Hero／次要入口人工確認。
 - [ ] LunaRunes 單卡／每日／雙卡／三卡／五卡／指定張數／OW3gs 人工 smoke test。
