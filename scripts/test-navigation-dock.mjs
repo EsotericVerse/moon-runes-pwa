@@ -40,7 +40,7 @@ test('one immutable six-key feature dock and explicit global settings route',()=
   assert.match(code,/className="scope-feature-dock"/);
   assert.match(css,/grid-template-columns:repeat\(6,minmax\(0,1fr\)\)/);
   assert.match(css,/box-shadow:/);
-  assert.match(settings,/>每日符文<\/h2>/);
+  assert.match(settings,/>每日符文行事曆<\/h2>/);
   assert.match(settings,/>我的最愛<\/h2>/);
   assert.match(settings,/>設定首頁<\/h2>/);
   assert.match(settings,/>登入<\/h2>/);
@@ -115,4 +115,23 @@ test('native first-row NAV respects iOS safe area while web retains original lay
   assert.match(css,/min-height:780px/);
   assert.match(css,/position:static/);
   assert.doesNotMatch(css,/\.scope-global\[data-native="ios"\]\s*\{[^}]*position:fixed/);
+});
+
+
+test('Settings opens with the interactive daily rune calendar before homepage and preserves existing settings',()=>{
+  const settings=fs.readFileSync('app/loc/GlobalSettings.jsx','utf8');
+  const daily=fs.readFileSync('app/daily/log/DailyLogClient.jsx','utf8');
+  const content=settings.slice(settings.indexOf('<div className="scope-content scope-settings-options">'));
+  assert.match(settings,/import DailyLogClient from '\.\.\/daily\/log\/DailyLogClient';/);
+  assert.match(content,/<DailyLogClient embedded\/>/);
+  const calendar=content.indexOf('<h2 id="settings-daily-calendar-title">每日符文行事曆</h2>');
+  const homepage=content.indexOf('<h2>設定首頁</h2>');
+  const favorites=content.indexOf('<h2>我的最愛</h2>');
+  const login=content.indexOf('<h2>登入</h2>');
+  assert.ok(calendar>=0&&calendar<homepage&&homepage<favorites&&favorites<login);
+  assert.equal(content.match(/每日符文行事曆<\/h2>/g)?.length,1);
+  assert.match(content,/navigationHref\('lrunes','daily\/log',native\)/);
+  assert.match(daily,/export default function DailyLogClient\(\{embedded=false\}/);
+  assert.match(daily,/<DailyRuneCalendar/);
+  assert.match(daily,/\{!embedded&&canWrite\?/);
 });
