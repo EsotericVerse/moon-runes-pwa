@@ -1,14 +1,18 @@
-/* Fixed Scope identities for homepage Heros, separate from image/theme data.
-   One accessible mark per Hero; no additional layout wrapper or external asset. */
+'use client';
+
+import {useScopeRuntime} from '../modular/use-scope-runtime';
+import {heroExtraFor} from './hero-extra.mjs';
+
+// Sign eligibility is assigned once by the database when a Scope is registered.
+// All visitors see the same personal-IP sign; the page never inspects an email.
 export default function HeroCornerIdentity({scopeId}){
-  if(scopeId==='loc'){
-    return <span className="home-hero-identity home-hero-identity--codex" role="img" aria-label="Codex X">X</span>;
-  }
-  if(scopeId==='lo3rwang'){
-    return <span className="home-hero-identity home-hero-identity--anchor" role="img" aria-label="光之定錨點">光之定錨點</span>;
-  }
-  if(scopeId==='lrunes'){
-    return <span className="home-hero-identity home-hero-identity--moon" role="img" aria-label="玄韻家黃色圓點標誌"/>;
-  }
-  return null;
+  const {scopeId:runtimeId,registryRow}=useScopeRuntime();
+  const sign=heroExtraFor({
+    scopeId,
+    scopeKind:runtimeId===scopeId?registryRow?.scope_kind:'',
+    extraSign:runtimeId===scopeId?registryRow?.extra_sign:''
+  });
+  if(!sign)return null;
+  return <span className={'home-hero-identity home-hero-identity--'+sign.key}
+    role="img" aria-label={sign.label}>{sign.text}</span>;
 }
