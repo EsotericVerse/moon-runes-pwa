@@ -33,7 +33,8 @@
 - 已具 Scope 權限者可**讀取既有 canonical 每日紀錄製作離線備份**；其本機 SQLite 匯入不等於同步回 canonical，也不自動覆寫線上資料。
 - App 中只有得到 Scope 權限的使用者才會載入裝置歷史，訪客可以自由抽牌但不會偷偷留下追蹤紀錄。
 - 這是「每日符文專用 SQLite 備份」試驗，**不是**另案 Native Local File（例如 MSN 原始檔）的一般檔案儲存替身。
-- iOS WebView 的二進位分享與檔案選取支援必須新 IPA＋實體 iPhone 確認；無分享支援時應明確拒絕並提示，不可假稱已匯出成功。
+- 匯出透過原生 Capacitor Filesystem 在 Cache 生成短期二進位 SQLite 備份，並以 Capacitor Share 呼叫 iOS 分享／儲存到 Files；不經網路或私自寫入 iCloud。檔案選取使用裝置的本機選檔介面。
+- 原生 Filesystem／Share 的實機互通、暫存檔壽命及 iOS SQLite 沙盒備份政策必須新 IPA＋實體 iPhone 確認，不能以 CI 代替。
 
 ## 驗證界線
 
