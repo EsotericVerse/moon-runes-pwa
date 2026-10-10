@@ -237,7 +237,7 @@ if(!failures.length){
     failures.push('Candidate density comparison must stay opt-in and collapsed by default.');
   }
   for(const token of ['表現風格','Class｜符文群組比例','culture-style-filter'])if(!culture.includes(token))failures.push('Culture style-filter presentation missing '+token);
-  if(!culture.includes('本頁面只顯示所屬人員的交會時間作品。若需以時間查詢其他人的作品列表，請前往該人員的文化功能頁面。'))failures.push('LOC Culture must preserve the user-approved intersection navigation guidance.');
+  if(!culture.includes('locIntersectionScopeIds.map')||!culture.includes('個人時間長河')||culture.includes('scope_id: {id} · 個人時間長河'))failures.push('LOC Culture must link to the member without technical IDs or explanation blocks.');
   if(!cultureQuery.includes("style_comment:'風格標籤'")||!cultureQuery.includes('style_comment:2,period:3')||
      !culture.includes("beginTimelineCreation(recordType,'')")||
      !culture.includes("aria-label='新增時間長河紀錄'")||
