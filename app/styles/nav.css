@@ -10,11 +10,11 @@
 .loc-global-header .loc-next-home{margin-left:.15rem}
 @media(max-width:900px){.loc-global-header{padding:.65rem .8rem}.loc-global-header .loc-next-nav-primary{gap:.1rem}.loc-global-header .loc-next-nav-primary a{padding:.42rem .58rem}.loc-global-header .loc-next-search{margin-left:.35rem}.loc-global-header .loc-next-search input{width:150px}}
 
-/* Canonical first-row NAV: anchored to the page, not a floating pill.
+/* Canonical first-row NAV: normal document flow, never sticky or floating.
    Right LOC return stays visible; only the left rail scrolls. */
 .scope-global{
-  position:sticky;
-  top:0;
+  position:static;
+  top:auto;
   z-index:100;
   width:100%;
   padding:max(.45rem,env(safe-area-inset-top)) max(.65rem,env(safe-area-inset-right)) .45rem max(.65rem,env(safe-area-inset-left));
