@@ -28,7 +28,7 @@
     "verify:db-adapters": "node scripts/verify-db-adapters.mjs",
     "test:game": "node --experimental-default-type=module --test scripts/test-lunarunes-boardgame.mjs",
     "verify:nav": "node --test scripts/test-navigation-dock.mjs",
-    "verify:lrunes-daily": "node --test scripts/test-lrunes-daily-analytics.mjs",
+    "verify:lrunes-daily": "node --test scripts/test-lrunes-daily-analytics.mjs scripts/test-lrunes-moon-river.mjs",
     "verify:loc-items": "node --test scripts/test-loc-item-confluence.mjs"
   },
   "dependencies": {
