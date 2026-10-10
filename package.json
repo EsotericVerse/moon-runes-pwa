@@ -45,6 +45,7 @@
     "react-dom": "19.3.0",
     "react-select": "^5.10.2",
     "recharts": "3.10.1",
+    "sql.js": "1.14.2",
     "vis-network": "10.1.0",
     "vis-timeline": "8.5.4",
     "zod": "4.6.0",
