@@ -62,16 +62,26 @@ function TimeFilters({range,setRange,from,setFrom,to,setTo,phase,setPhase,direct
 }
 
 function LrunesStatistics({rows,summary}){
-  const top=summary.combinations.slice(0,12).map(row=>({label:row.label,value:row.count}));
+  const [detail,setDetail]=useState('tianshi');
+  const ranking=detail==='tianshi'?summary.combinations:summary.runeDirections;
+  const top=ranking.slice(0,12).map(row=>({label:row.label,value:row.count}));
   const cross=new Map();
   for(const row of rows){
     const key=row.card_phase+'|'+row.real_phase;
     cross.set(key,(cross.get(key)||0)+1);
   }
   return <>
-    <p className="scope-status">以「符文＋方位＋真實月相」作為一個基準狀態；卡片月相由符文固定決定，不重複計算。下列統計是實際發生次數，不是隨機組態估算。</p>
+    <p className="scope-status">統計可切換264種「符文＋方位」和1,320種「符文＋方位＋真實月相」基準狀態。卡片月相由符文固定決定，不重複乘算；圖表顯示實際發生次數。</p>
+    <div className="scope-stat-controls">
+      <label><span>統計組合層級</span>
+        <select className="scope-select" value={detail} onChange={event=>setDetail(event.target.value)}>
+          <option value="tianshi">含天時｜66 × 4 × 5（1,320）</option>
+          <option value="basic">基礎分布｜66 × 4（264）</option>
+        </select>
+      </label>
+    </div>
     <section className="scope-card">
-      <h3>符文 × 方位 × 天時｜最常出現的組合</h3>
+      <h3>{detail==='tianshi'?'符文 × 方位 × 真實月相':'符文 × 方位'}｜最常出現的組合</h3>
       {top.length?<ResponsiveContainer width="100%" height={Math.max(280,top.length*33)}>
         <BarChart data={top} layout="vertical" margin={{top:8,right:26,bottom:8,left:0}}>
           <CartesianGrid stroke="var(--loc-line)" strokeDasharray="3 3"/>
@@ -81,10 +91,10 @@ function LrunesStatistics({rows,summary}){
           <Bar dataKey="value" fill="var(--loc-accent)" radius={[0,4,4,0]}/>
         </BarChart>
       </ResponsiveContainer>:<p className="scope-status">目前時段沒有抽符紀錄。</p>}
-      {summary.combinations.length>12?<details>
-        <summary>查看所有已出現的 {summary.combinations.length} 種組合</summary>
+      {ranking.length>12?<details>
+        <summary>查看所有已出現的 {ranking.length} 種組合</summary>
         <div className="scope-ranking">
-          {summary.combinations.map(row=><div key={row.key}><strong>{row.label}</strong><span>{row.count} 次</span></div>)}
+          {ranking.map(row=><div key={row.key}><strong>{row.label}</strong><span>{row.count} 次</span></div>)}
         </div>
       </details>:null}
     </section>
