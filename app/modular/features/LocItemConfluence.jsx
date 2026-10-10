@@ -7,7 +7,7 @@ import {selectLocItemDailySeries} from '../../loc/item-confluence-query';
 import {
   ITEM_CONFLUENCE_PAGE_SIZE,ITEM_LANE_OPTIONS,itemConfluenceShiftMonth,
   validateItemConfluenceRange,validateItemLane,itemLaneDescription,
-  buildItemConfluenceDaily,buildItemConfluenceRiver,itemConfluenceSummary
+  buildItemConfluenceDaily,buildItemConfluenceRiver,itemConfluenceSummary,itemRuneDisplay
 } from '../../loc/item-confluence-model.mjs';
 import CultureTimeline from '../modules/culture-timeline/CultureTimeline';
 
@@ -22,6 +22,17 @@ function nowInTaipei(){
   }catch{return new Date().toISOString().slice(0,10);}
 }
 function labelOf(row){return String(row?.display_label||'');}
+function laneDayText(row,index,lane){
+  if(lane?.source==='daily:rune'){
+    const draws=row?.runeDraws?.[index]||[];
+    return draws.length?draws.map(itemRuneDisplay).join(' ／ '):'當日無符文紀錄';
+  }
+  const count=Number(row?.counts?.[index])||0;
+  return count.toLocaleString()+' 筆 · '+((Number(row?.ratios?.[index])||0)*100).toFixed(1)+'%';
+}
+function laneColumnLabel(lane){
+  return lane?.source==='daily:rune'?'每日符文 · 符文／四向／真實月相':'作品／媒體 · 筆數／相對密度';
+}
 function defaultLane(scopeId,source){return {scopeId,source,exact:''};}
 function LanePicker({label,lane,scopes,onChange}){
   const scopeOptions=scopes.filter(scope=>scope.id!=='loc');
@@ -84,8 +95,10 @@ export default function LocItemConfluence(){
   const daily=useMemo(()=>valid&&query.data?buildItemConfluenceDaily({
     startDate:range.startDate,endDate:range.endDate,lanes:[laneA,laneB],series:query.data
   }):[],[valid,query.data,range.startDate,range.endDate,laneA,laneB]);
-  const river=useMemo(()=>buildItemConfluenceRiver(daily,labels),[daily,labels]);
+  const river=useMemo(()=>buildItemConfluenceRiver(daily,labels,[laneA,laneB]),[daily,labels,laneA,laneB]);
   const summary=useMemo(()=>itemConfluenceSummary(daily),[daily]);
+  const lanes=[laneA,laneB];
+  const selectedRow=daily.find(row=>row.day===selectedDay)||null;
   const totalPages=Math.max(1,Math.ceil(daily.length/ITEM_CONFLUENCE_PAGE_SIZE));
   const visibleRows=daily.slice((page-1)*ITEM_CONFLUENCE_PAGE_SIZE,page*ITEM_CONFLUENCE_PAGE_SIZE);
   useEffect(()=>{setPage(1);setSelectedDay('');},
@@ -95,7 +108,7 @@ export default function LocItemConfluence(){
   return <section className="scope-card scope-culture-classification-river scope-loc-time-river" aria-label="LOC 自訂項目交會">
     <p className="loc-eyebrow">LOC Culture · 項目交會</p>
     <h3>指定河道交會比較</h3>
-    <p className="scope-status">從可讀取的 Scope 中指定兩條河道，在同一段日期觀察每日筆數與密度；不預設比較對象。來源不合併寫入資料庫，不把不同人的作品當作同一筆，也不推論交會代表因果。</p>
+    <p className="scope-status">從可讀取的 Scope 中指定兩條河道，在同一段日期觀察作品密度或符韻每日符文內容；符文只顯示符文名稱、四向方向及真實月相，不作密度。來源不合併寫入資料庫，不把不同人的作品當作同一筆，也不推論交會代表因果。</p>
     <div className="scope-stat-controls" style={{alignItems:'stretch'}}>
       <LanePicker label="河道 A" lane={laneA} scopes={scopes} onChange={setLaneA}/>
       <LanePicker label="河道 B" lane={laneB} scopes={scopes} onChange={setLaneB}/>
@@ -111,8 +124,13 @@ export default function LocItemConfluence(){
     {valid&&query.isPending?<p className="scope-status">正在計算兩條指定河道的每日密度…</p>:null}
     {query.error&&valid?<p className="scope-status scope-error" role="alert">項目交會讀取失敗：{String(query.error.message||query.error)}</p>:null}
     {valid&&query.data&&!query.error?<div>
-      <p className="scope-status">{range.startDate} ～ {range.endDate} · 河道 A {summary.totals[0].toLocaleString()} 筆 · 河道 B {summary.totals[1].toLocaleString()} 筆 · 雙方都有紀錄 {summary.bothActiveDays} 天</p>
-      <p className="scope-status">密度為各自河道「當日筆數 ÷ 該河道區間單日最高筆數」，只比較變化，不混用兩人的量尺。每日筆數以原始資料為準。</p>
+      <p className="scope-status">{range.startDate} ～ {range.endDate} · {lanes.map((lane,index)=>{
+        const total=summary.totals[index];
+        return '河道 '+(index===0?'A':'B')+' '+(lane.source==='daily:rune'
+          ?daily.filter(row=>row.runeDraws?.[index]?.length).length+' 個每日符文紀錄日'
+          :total.toLocaleString()+' 筆');
+      }).join(' · ')} · 雙方都有紀錄 {summary.bothActiveDays} 天</p>
+      <p className="scope-status">一般文字／媒體河道顯示筆數與各自峰值標準化密度；僅符韻每日符文河道直接顯示符文名稱、四向方向、由抽取日期計算的真實月相，不將一天 1～2 筆誤作密度差異。</p>
       {river.length?<CultureTimeline
         items={river}
         labelOf={labelOf}
@@ -128,14 +146,21 @@ export default function LocItemConfluence(){
         })()}
         onSelect={item=>setSelectedDay(String(item?.start||'').slice(0,10))}
       />:<p className="scope-status">選取期間沒有可觀察的公開資料，仍可調整來源或區間。</p>}
-      {selectedDay?<p className="scope-status" role="status">目前選取 {selectedDay}：{labels.map((label,i)=>label+' '+(daily.find(row=>row.day===selectedDay)?.counts[i]||0)+' 筆').join('；')}</p>:null}
+      {selectedRow?<div className="scope-card" role="status" aria-live="polite">
+        <p className="scope-status">選取日期：{selectedDay}</p>
+        {lanes.map((lane,index)=><p className="scope-status" key={index}>
+          <strong>{labels[index]}：</strong> {laneDayText(selectedRow,index,lane)}
+        </p>)}
+      </div>:null}
       <h4>每日交會數據</h4>
       <div className="scope-culture-source-work-scroll">
         <table className="scope-stat-table">
-          <thead><tr><th scope="col">日期</th><th scope="col">河道 A · 筆數／相對密度</th><th scope="col">河道 B · 筆數／相對密度</th></tr></thead>
+          <thead><tr><th scope="col">日期</th>
+            {lanes.map((lane,index)=><th key={index} scope="col">河道 {index===0?'A':'B'} · {laneColumnLabel(lane)}</th>)}
+          </tr></thead>
           <tbody>{visibleRows.map(row=><tr key={row.day}>
-            <th scope="row">{row.day}</th>
-            {row.counts.map((count,i)=><td key={i}>{count.toLocaleString()} 筆 · {(row.ratios[i]*100).toFixed(1)}%</td>)}
+            <th scope="row"><button type="button" className="loc-button" onClick={()=>setSelectedDay(row.day)}>{row.day}</button></th>
+            {lanes.map((lane,index)=><td key={index}>{laneDayText(row,index,lane)}</td>)}
           </tr>)}</tbody>
         </table>
       </div>

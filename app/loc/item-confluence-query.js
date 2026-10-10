@@ -2,8 +2,9 @@
 
 import {selectRows} from './db-query.mjs';
 import {selectDailyRuneRange} from './daily-runes';
+import {realMoonPhase} from './model/moon-phase';
 import {
-  validateItemConfluenceRange,validateItemLane
+  validateItemConfluenceRange,validateItemLane,groupItemConfluenceRunes
 } from './item-confluence-model.mjs';
 
 const PER_PAGE=1000;
@@ -35,11 +36,11 @@ export async function selectLocItemDailySeries({scope,lane,startDate,endDate,kno
   const totals=new Map();
   if(spec.source==='daily:rune'){
     const rows=await selectDailyRuneRange(range);
-    for(const row of rows){
-      const day=String(row.record_date||'').slice(0,10);
-      if(day<range.startDate||day>range.endDate)continue;
-      totals.set(day,(totals.get(day)||0)+1);
-    }
+    // A dedicated semantic source. The astronomical phase is calculated from
+    // the draw date even if an old recorded_phase value exists.
+    return groupItemConfluenceRunes(rows,day=>
+      realMoonPhase(new Date(day+'T12:00:00+08:00'))
+    );
   }else{
     const media=spec.source.startsWith('media:');
     const table=media?scope.galaxyMedia:scope.galaxy;

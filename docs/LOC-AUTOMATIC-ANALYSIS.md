@@ -26,7 +26,7 @@ Current 單 Scope 流程：
 
 **LOC（`loc`）是保留比較分析的例外，並非純導引頁。** LOC Culture 取得受管理 Scope 各自的 Time／目前開放時期，將共同觀察起點定為有效起點的最晚值（intersection），然後在交會期間分別對各自 Galaxy／Galaxy Media 做來源及媒體類別的 bounded 日分布查詢。結果呈現「交會時間長河」、各 Scope 作品／媒體量，以及「綜合來源時間長河」。相同來源分類指平台／來源類別相交，不代表把不同作者的作品誤認為同一作品。
 
-**LOC Culture 正式項目交會（Current）**：使用者可於文化頁切換「時期交會」與「項目交會」，前者保留既有跨 Scope 時期交會及作品列表；後者指定兩個獨立的 Scope／來源河道（文字 Galaxy 的 Facebook、Threads、Instagram、全部或指定 source_name；Galaxy Media 全部或指定 media_type；符韻專屬每日符文）。同一日期軸展示每日計數、各自峰值標準化密度、零筆日和 20 天／頁表格；交會區間最多三個日曆月。資料查詢遵循各自表的讀取權限與可統計／可搜尋標記，不混存不同 Scope，也不將每日符文列入 Galaxy 作品數。舊版 PR #505 的固定「每日符文 × 個人作品」UI／模組已移除；LOC 首頁不承載每日符文或其統計。交會只是時間並列，不推論因果。
+**LOC Culture 正式項目交會（Current）**：使用者可於文化頁切換「時期交會」與「項目交會」，前者保留既有跨 Scope 時期交會及作品列表；後者指定兩個獨立的 Scope／來源河道（文字 Galaxy 的 Facebook、Threads、Instagram、全部或指定 source_name；Galaxy Media 全部或指定 media_type；符韻專屬每日符文）。同一日期軸展示：一般 Galaxy／Galaxy Media 來源的每日計數與各自峰值標準化密度；唯一特例 `lrunes` 每日符文河道則按紀錄日逐筆顯示符文名稱、主抽／補抽或歷史類型、四向方向與從該日計算的真實月相（不顯示符文密度）。每日表格保留零筆日、20 天／頁；交會區間最多三個日曆月。資料查詢遵循各自表的讀取權限與可統計／可搜尋標記，不混存不同 Scope，也不將每日符文列入 Galaxy 作品數。舊版 PR #505 的固定「每日符文 × 個人作品」UI／模組已移除；LOC 首頁不承載每日符文或其統計。交會只是時間並列，不推論因果。
 
 **一般 DB 新建的 Scope Group** 只提供 Registry Overview 與各 Scope 導引，不自動繼承 LOC 的比較能力。LOC 的聚合只是一種 read-only 分析呈現，沒有第二份混合 corpus、跨 Scope 寫入或 Scope 權限合併。
 
