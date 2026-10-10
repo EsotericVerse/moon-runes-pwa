@@ -304,7 +304,7 @@ export default function AppShell({children}){
       return {id,icon:id,label:copy.features?.[id]?.title||feature.label,
         href:navigationHref(navScopeId,feature.path,native)};
     }),
-    {id:'settings',icon:'settings',label:copy.common.settings||'設定',href:'/settings/'}
+    {id:'settings',icon:'settings',label:copy.common.settings||'設定',href:native?'/settings/index.html':'/settings/'}
   ];
 
   useEffect(()=>{
@@ -334,7 +334,7 @@ export default function AppShell({children}){
             aria-controls="scope-nav-folder-contents" onClick={()=>setOpenFolderId(current=>current===folder.id?'':folder.id)}>
             {folder.label} <span aria-hidden="true">{openFolderId===folder.id?'▴':'▾'}</span>
           </button>)}
-          {!favoriteLinks.length&&!visibleFolders.length?<a href="/settings/" className="scope-nav-empty">到設定加入常用空間</a>:null}
+          {!favoriteLinks.length&&!visibleFolders.length?<a href={native?'/settings/index.html':'/settings/'} className="scope-nav-empty">到設定加入常用空間</a>:null}
         </ScrollableScopeNav>
         <a href={navigationHref('loc','',native)+(native?'?loc_direct=1':'')}
           className="scope-nav-loc-home" aria-current={scopeId==='loc'&&pathname==='/'?'page':undefined}>
