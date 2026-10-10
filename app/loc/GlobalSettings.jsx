@@ -139,11 +139,11 @@ export default function GlobalSettings(){
       <div className="scope-content scope-settings-options">
         <section className="scope-settings-daily-test" aria-labelledby="settings-daily-calendar-title">
           <h2 id="settings-daily-calendar-title">每日符文行事曆</h2>
-          <p className="scope-settings-note">使用測試｜直接切換月份、選擇日期，查看每日符文、當日指引與前次紀錄。</p>
+          <p className="scope-settings-note">使用測試｜未登入時僅顯示空白行事曆；登入後才會載入每日符文標記、當日指引與前次紀錄。</p>
           <DailyLogClient embedded/>
-          <p className="scope-settings-note">
+          {account.user&&!checking?<p className="scope-settings-note">
             <a className="loc-button" href={navigationHref('lrunes','daily/log',native)}>開啟完整每日符文紀錄與管理</a>
-          </p>
+          </p>:null}
         </section>
         <section className="loc-card">
           <h2>設定首頁</h2>
