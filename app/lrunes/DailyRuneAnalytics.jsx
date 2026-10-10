@@ -11,7 +11,7 @@ import {realMoonPhase} from '../loc/model/moon-phase';
 import {buildReferencedMoonRiver} from './daily-moon-river.mjs';
 import CultureTimeline from '../modular/modules/culture-timeline/CultureTimeline';
 import {
-  DAILY_RUNE_MODES,normalizeDailyDraws,rankDailyDraws,pageDailyRanking,
+  DAILY_RUNE_MODES,DAILY_DIRECTIONS,normalizeDailyDraws,rankDailyDraws,pageDailyRanking,
   summarizeDailyDraws,dailyCategoryTrend
 } from './daily-analytics-model.mjs';
 
@@ -153,6 +153,12 @@ export function LrunesDailyStatisticsPanel(){
   const featured=useMemo(()=>pagination.rows.slice(0,5),[pagination.rows]);
   const timeline=useMemo(()=>dailyCategoryTrend(draws,analysisMode,featured,mode==='1y'?'month':'day',range?.startDate,range?.endDate),[draws,analysisMode,featured,mode,range?.startDate,range?.endDate]);
   const bars=useMemo(()=>pagination.rows.map(row=>({label:row.label,value:row.count})),[pagination.rows]);
+  const directionSummary=useMemo(()=>analysisMode==='direction'&&ranking.length
+    ?DAILY_DIRECTIONS.map(direction=>{
+      const item=ranking.find(row=>row.direction===direction);
+      return direction+' '+Number(item?.count||0).toLocaleString()+' 次（'+Number(item?.ratio||0).toFixed(1)+'%）';
+    }).join('、')
+    :'',[analysisMode,ranking]);
   const message=queryMessage(query,range);
   return <>
     <div className="scope-stat-controls">
@@ -164,15 +170,16 @@ export function LrunesDailyStatisticsPanel(){
       <label><span>圖表</span>
         <select className="scope-select" value={chart} onChange={event=>setChart(event.target.value)}>
           <option value="bar">排行長條圖</option>
-          <option value="line">本頁前五名時間趨勢</option>
+          <option value="line">{analysisMode==='direction'?'四種位向時間趨勢':'本頁前五名時間趨勢'}</option>
         </select>
       </label>
     </div>
     <RangeControls mode={mode} setMode={value=>{setMode(value);setPage(1);}} from={from} setFrom={value=>{setFrom(value);setPage(1);}} to={to} setTo={value=>{setTo(value);setPage(1);}}/>
-    <p className="scope-status">以實際抽取紀錄統計；「僅符文」合併方向與月相，「三變數交互」分別計數。每頁只顯示 20 名，不展開全部 1,320 種可能組合。</p>
+    <p className="scope-status">以每日符文實際抽取紀錄為基準，四種統計可獨立比較：符文本體、符文本體 × 位向、位向、符文本體 × 位向 × 真實月相。「符文本體」合併所有位向與月相；「位向」合併所有符文，固定顯示四向（含零次），可配合「最近一週／最近一個月」和時間趨勢觀察近期分布。各組合只統計實際出現者，每頁最多 20 名；月相優先沿用紀錄值，缺漏時依紀錄日期做日級推算，不代表精確天文時刻。</p>
     {message?<p className="scope-status">{message}</p>:null}
     {!message?<>
       <p className="scope-status">{range.startDate} ～ {range.endDate} · {summary.dayCount} 個紀錄日 · {summary.recordCount} 筆抽取 · {ranking.length} 種實際出現的組合</p>
+      {directionSummary?<p className="scope-status">所選期間四向分布：{directionSummary}。正逆位向屬符文詮釋維度，可協助觀察阻滯與推進的近期變化，但不能單憑比例判定實際事件或未來走向。</p>:null}
       {!ranking.length?<p className="scope-status">目前區間沒有每日符文紀錄。</p>:null}
       {ranking.length?<><div className="scope-ranking">
         {pagination.rows.map((row,index)=><div key={row.key}>
@@ -189,7 +196,7 @@ export function LrunesDailyStatisticsPanel(){
         <BarChart data={bars} layout="vertical" margin={{top:8,right:16,bottom:8,left:4}}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--loc-line)"/>
           <XAxis type="number" allowDecimals={false} tick={{fill:'var(--loc-text)'}}/>
-          <YAxis type="category" dataKey="label" width={analysisMode==='triple'?195:72} tick={{fill:'var(--loc-text)',fontSize:12}}/>
+          <YAxis type="category" dataKey="label" width={analysisMode==='triple'?195:analysisMode==='rune_direction'?135:82} tick={{fill:'var(--loc-text)',fontSize:12}}/>
           <Tooltip contentStyle={{background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)'}}/>
           <Bar dataKey="value" name="抽取次數" fill="var(--loc-accent)" radius={[0,4,4,0]}/>
         </BarChart>
