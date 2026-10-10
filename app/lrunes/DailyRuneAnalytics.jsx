@@ -130,7 +130,7 @@ export function LrunesDailyCulturePanel(){
       focus={FOCUS}
       mode="source"
       windowStart={range.startDate}
-      windowEnd={range.endDate}
+      windowEnd={nextDay(range.endDate)}
       onSelect={item=>setSelected(item?.raw?.daily_record||null)}
     />:null}
     {!message&&!drawItems.length?<p className="scope-status">目前區間沒有每日符文紀錄；天時月相河道仍按日期連續呈現。</p>:null}
