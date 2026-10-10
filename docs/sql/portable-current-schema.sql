@@ -310,6 +310,7 @@ CREATE TABLE "silver"."lrunes_daily" (
   "draw_kind" text NOT NULL,
   "rune_number" integer NOT NULL,
   "direction" text NOT NULL,
+  "recorded_phase" text,
   "updated_at" timestamp with time zone DEFAULT now() NOT NULL,
   CONSTRAINT "lrunes_daily_pkey" PRIMARY KEY (record_id),
   CONSTRAINT "lrunes_daily_record_date_draw_kind_key" UNIQUE (record_date, draw_kind),
