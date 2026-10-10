@@ -238,16 +238,20 @@ export default function Culture(){
 
   const categoryGroups=sourceSnapshotQuery.data?.groups||[];
   const selectedGroup=categoryGroups.find(item=>item.category_key===selectedCategory)||null;
+  // When a period changes, the old category may not exist in the new period.
+  // Fall back to all works instead of disabling pagination and clearing it.
+  // Keyword Class is an independent visualization, not a work-list filter.
+  const effectiveCategoryKey=selectedGroup?.category_key||'';
   const periodWorksPage=useOffsetPagination({
     key:[
       classificationScope,
       selectedWorkPeriod?.period||'all',
       selectedWorkPeriod?.start_date||'',
       selectedWorkPeriod?.end_date||'',
-      selectedCategory||'all'
+      effectiveCategoryKey||'all'
     ].join('|'),
     pageSize:DEFAULT_LIST_BATCH_SIZE,
-    enabled:!isLrunesDaily&&!isAggregateScope&&Boolean(scopeData)&&(!selectedCategory||Boolean(selectedGroup)),
+    enabled:!isLrunesDaily&&!isAggregateScope&&Boolean(scopeData)&&Boolean(selectedWorkPeriod),
     loadPage:async(cursor,limit)=>{
       const indexPage=await selectScopePeriodWorkIndex(scopeData,{
         startDate:selectedWorkPeriod?.start_date||'',
@@ -858,7 +862,8 @@ export default function Culture(){
                     <h4>{selectedGroup?.display_label||UI_COPY.culture.allWorks} · {selectedCount.toLocaleString()} 項作品</h4>
                     {selectedGroup?<button type='button' className='scope-pagination-button' onClick={()=>setSelectedCategory('')}>{UI_COPY.culture.showAllWorks}</button>:null}
                   </header>
-                  {periodWorksPage.error?<p className='scope-status scope-error'>{featureDataErrorMessage(periodWorksPage.error)}</p>:null}
+                  {periodWorksPage.error?<p className='scope-status scope-error'>{featureDataErrorMessage(periodWorksPage.error)} <button type='button' className='loc-button' onClick={periodWorksPage.reload}>重新讀取作品</button></p>:null}
+                  {periodWorksPage.loading&&!visibleWorkRows.length?<p role='status' className='scope-status'>正在載入該時期作品…</p>:null}
                   <IncrementalList
                     items={visibleWorkRows}
                     batchSize={DEFAULT_LIST_BATCH_SIZE}
