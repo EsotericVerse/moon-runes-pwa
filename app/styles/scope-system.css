@@ -327,3 +327,95 @@
 .scope-keyword-network-inspector>label{display:grid;gap:.35rem}
 .scope-keyword-empty{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
 @media(max-width:980px){.scope-keyword-network-layout{grid-template-columns:1fr}.scope-keyword-network-inspector{position:static;max-height:none}}
+
+
+/* LOC8 day/night inspiration, realized as live native-App data surfaces.
+   CSS theme is deliberately scoped to settings; no global theme/NAV override. */
+.scope-rune-app-overview{
+  --rune-app-ink:#20345c;
+  --rune-app-accent:#7169ca;
+  --rune-app-glow:#f5f4ff;
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+  display:grid;
+  gap:1rem;
+  color:var(--rune-app-ink);
+  border:1px solid rgba(136,140,206,.34);
+  background:radial-gradient(ellipse at 82% 3%,rgba(255,248,224,.95) 0,rgba(255,248,224,.05) 28%,transparent 52%),linear-gradient(164deg,#f6f5ff 0%,#e5eafd 50%,#d3e4ef 100%);
+}
+.scope-rune-app-overview.is-night{
+  --rune-app-ink:#f1ead9;
+  --rune-app-accent:#eac087;
+  --rune-app-glow:#212f53;
+  border-color:rgba(223,191,135,.31);
+  background:radial-gradient(ellipse at 84% 4%,rgba(236,206,154,.19),transparent 36%),linear-gradient(160deg,#06142b 0%,#112542 55%,#172f49 100%);
+}
+.scope-rune-app-overview:after{
+  content:"";position:absolute;inset:auto -7% -15% -7%;height:34%;pointer-events:none;
+  opacity:.34;z-index:-1;
+  background:repeating-radial-gradient(ellipse at 50% 0%,transparent 0 14px,rgba(150,166,212,.27) 15px 16px,transparent 17px 29px);
+  transform:scaleY(.48);
+}
+.scope-rune-daynight-head,.scope-rune-daynight-section-head{
+  display:flex;justify-content:space-between;align-items:center;gap:.8rem;
+}
+.scope-rune-daynight-head h2{margin:.18rem 0;font-size:clamp(1.25rem,4.2vw,1.9rem);color:inherit;}
+.scope-rune-daynight-head p{margin:.2rem 0;line-height:1.55;color:inherit;}
+.scope-rune-daynight-head .loc-eyebrow{color:inherit;opacity:.8;}
+.scope-rune-daynight-orb{
+  display:grid;place-items:center;flex:0 0 64px;width:64px;height:64px;border-radius:50%;
+  color:var(--rune-app-accent);font-size:3rem;
+  background:radial-gradient(circle,rgba(255,255,255,.5),rgba(255,255,255,.05) 70%);
+  box-shadow:0 0 32px rgba(209,188,235,.18);
+}
+.scope-rune-daynight-today{
+  padding:1rem;border:1px solid currentColor;border-color:rgba(135,145,182,.25);
+  border-radius:1rem;background:color-mix(in srgb,var(--rune-app-glow) 54%,transparent);
+}
+.scope-rune-daynight-today .loc-eyebrow{color:inherit;opacity:.72;}
+.scope-rune-daynight-feature{display:flex;align-items:center;gap:1rem;min-width:0;}
+.scope-rune-daynight-feature>div{min-width:0;flex:1;}
+.scope-rune-daynight-feature h3{color:inherit;margin:.15rem 0;font-size:1.12rem;}
+.scope-rune-daynight-feature p{margin:.3rem 0;color:inherit;font-size:.91rem;overflow-wrap:anywhere;}
+.scope-rune-daynight-sigil{
+  flex:0 0 82px;width:82px;height:82px;display:grid;place-items:center;
+  border-radius:50%;font-size:2.7rem;line-height:1;color:var(--rune-app-accent);
+  border:1px solid currentColor;background:radial-gradient(circle,rgba(255,255,255,.36),transparent 67%);
+  box-shadow:0 0 0 7px rgba(181,174,224,.08),0 0 0 14px rgba(181,174,224,.05);
+}
+.scope-rune-daynight-shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.55rem;}
+.scope-rune-daynight-shortcuts button{
+  min-width:0;min-height:55px;border:1px solid rgba(146,151,193,.36);
+  border-radius:12px;background:color-mix(in srgb,var(--rune-app-glow) 75%,transparent);
+  color:inherit;cursor:pointer;padding:.5rem .25rem;font:inherit;font-size:.83rem;
+}
+.scope-rune-daynight-shortcuts button:hover,.scope-rune-daynight-shortcuts button:focus-visible{
+  border-color:var(--rune-app-accent);outline-offset:3px;
+}
+.scope-rune-daynight-trajectory{display:grid;gap:.7rem;}
+.scope-rune-daynight-section-head h3{font-size:1.1rem;margin:0;color:inherit;}
+.scope-rune-daynight-section-head .scope-select{max-width:140px;width:auto;}
+.scope-rune-daynight-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.4rem;}
+.scope-rune-daynight-metrics>div{
+  display:grid;gap:.2rem;padding:.7rem .35rem;text-align:center;
+  border-radius:.75rem;background:color-mix(in srgb,var(--rune-app-glow) 70%,transparent);
+}
+.scope-rune-daynight-metrics strong{color:inherit;font-size:clamp(1rem,3.6vw,1.28rem);}
+.scope-rune-daynight-metrics span{font-size:.77rem;opacity:.8;}
+.scope-rune-daynight-directions{display:grid;gap:.5rem;}
+.scope-rune-daynight-directions>div{display:grid;grid-template-columns:3.4rem 1fr 2rem;gap:.5rem;align-items:center;}
+.scope-rune-daynight-directions span,.scope-rune-daynight-directions strong{font-size:.86rem;}
+.scope-rune-daynight-track{height:10px;border-radius:9px;background:rgba(123,122,168,.2);overflow:hidden;}
+.scope-rune-daynight-track span{display:block;height:100%;border-radius:9px;background:var(--rune-app-accent);}
+.scope-rune-daynight-explain,.scope-rune-daynight-empty{margin:0;font-size:.87rem;line-height:1.6;color:inherit;}
+.scope-rune-daynight-chart{min-height:175px;overflow:hidden;color:var(--rune-app-accent);}
+.scope-rune-daynight-chart .recharts-cartesian-axis-tick{fill:var(--rune-app-ink);}
+.scope-rune-sqlite-transfer{display:grid;gap:.55rem;}
+.scope-rune-sqlite-transfer h3{margin:0;}
+@media(max-width:440px){
+  .scope-rune-daynight-orb{flex-basis:52px;width:52px;height:52px;font-size:2.3rem;}
+  .scope-rune-daynight-sigil{flex-basis:66px;width:66px;height:66px;font-size:2.2rem;}
+  .scope-rune-daynight-feature{gap:.75rem;}
+  .scope-rune-daynight-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
