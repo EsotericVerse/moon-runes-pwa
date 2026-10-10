@@ -136,7 +136,6 @@ export function LrunesDailyCulturePanel(){
     />:null}
     {!message&&!drawItems.length?<p className="scope-status">目前區間沒有每日符文紀錄，因此不顯示月相河道。</p>:null}
     {selected?<p className="scope-status">所選紀錄：{selected.record_date} · {groupLabel(selected)} · {selected.rune_name} · {selected.direction} · {selected.phase}{selected.phase_inferred?'（依日期推算）':''}</p>:null}
-    <p className="scope-status"><a href="/daily/log/">查看每日符文行事曆及前次紀錄 →</a></p>
   </section>;
 }
 
