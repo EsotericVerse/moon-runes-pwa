@@ -261,12 +261,13 @@ export default function AppShell({children}){
   },[activeLocale]);
   // Favorite targets are workspaces, not feature tabs. Unregistered/inactive
   // dynamic IDs are omitted; built-in fallback links work before DB hydration.
+  const scopeNavLabel=item=>navDisplayNames[item.id]||item.nav.label;
   const registryMap=new Map(registryScopes.map(item=>[item.scope_id,item]));
   const favoriteLinks=preferences.favorites.map(id=>{
     const builtIn=NAV_SCOPES.find(item=>item.id===id);
     const active=registryMap.get(id);
     if(!builtIn&&!active)return null;
-    return {id,label:navDisplayNames[id]||builtIn?.nav.label||active?.display_name||id};
+    return {id,label:builtIn?scopeNavLabel(builtIn):(navDisplayNames[id]||id)};
   }).filter(Boolean);
   const featureTabs=[
     {id:'home',icon:'home',label:'首頁',href:navigationHref(navScopeId,'',native)},
