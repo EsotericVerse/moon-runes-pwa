@@ -335,7 +335,7 @@ export default function Search(){
           matchedQueryRef.current=q;
           setResults([{
             key:'scope:'+scopeId,
-            source:'Scope',
+            source:'人員',
             title:scope.searchTitle||scope.label||scopeId,
             date:'',
             snippet:scope.searchIntro||'',

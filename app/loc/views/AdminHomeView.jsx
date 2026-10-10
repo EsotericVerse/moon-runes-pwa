@@ -87,7 +87,7 @@ function useAdminScopeData(){
           try{
             const config=await readAdminScopeConfig(row.scope_id);
             if(config)configRows[row.scope_id]=config;
-            else configFailures.push(row.scope_id+'：找不到 Scope config');
+            else configFailures.push(row.scope_id+'：找不到人員設定');
           }catch(error){
             configFailures.push(row.scope_id+'：'+String(error?.message||error||'人員設定讀取失敗。'));
           }
@@ -631,11 +631,11 @@ function AdminRegistry(){
     if(deleteBusy)return;
     const row=registry.find(item=>item.scope_id===id);
     if(!row||row.scope_kind!=='scope'){
-      setDeleteNotice('只能刪除 Scope；Group 與系統節點不可刪除。');
+      setDeleteNotice('只能刪除一般人員；群組與系統節點不可刪除。');
       return;
     }
     if(['loc','lrunes','lo3rwang','admin'].includes(id)){
-      setDeleteNotice('內建 Scope 不允許刪除。');
+      setDeleteNotice('內建人員不可刪除。');
       return;
     }
     setCreateKind('');
@@ -663,7 +663,7 @@ function AdminRegistry(){
       setSelectedId(current=>current===id?'loc':current);
       setDeletePending('');
       setDeleteTyped('');
-      setDeleteNotice('Scope '+id+' 已確認自資料庫移除。');
+      setDeleteNotice('人員 '+id+' 已移除。');
       refresh();
     }catch(error){
       setDeleteNotice('刪除 '+id+' 失敗：'+String(error?.message||error)+'。節點保留，請檢查後重試。');

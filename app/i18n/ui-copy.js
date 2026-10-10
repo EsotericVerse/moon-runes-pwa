@@ -218,7 +218,7 @@ const zhHant=Object.freeze({
   admin:Object.freeze({
     eyebrow:'系統管理',
     loginTitle:'系統管理登入',
-    loginIntro:'Admin 是獨立管理站，不屬於 Scope。',
+    loginIntro:'Admin 管理站',
     signIn:'使用 Google 登入',
     checking:'正在確認 Admin 權限…',
     denied:'目前登入身份沒有 Admin 權限。',
@@ -275,7 +275,7 @@ const en=Object.freeze({
   governance:Object.freeze({...zhHant.governance,rights:'Rights & Licensing',systemManagement:'System management',enterAdmin:'Open Admin',enterManagement:'Open Management'}),
   work:Object.freeze({...zhHant.work,viewLinks:'View links',relatedText:'Related text',untitled:'Untitled work',hidden:'This item is hidden (managers only)',link:'Link',noBody:'No body text.',loadingBody:'Loading full text…',collapseBody:'Collapse',viewBody:'View full text'}),
   management:Object.freeze({...zhHant.management,article:'Publish article',import:'Data import',keywords:'Keyword management',checking:'Checking login and permissions…',signOut:'Sign out',item:'Management item',noOptions:'No management options',permissionDenied:'This account does not have management permission for this scope.',eyebrow:'Management',locTitle:'LOC System Management',locDescription:'LOC system management is centralized in the Admin site.',dataType:'Data type',searchStatus:'Search status',previous:'Previous',next:'Next',articleSource:'Source',articleParent:'Parent / Source',articleTarget:'Target',articleReference:'Reference',articleBody:'Body',articleUrl:'Original URL',articleTime:'Published time',sourceRequired:'Source is required.',articlePublished:'Article published to Galaxy.',articlePublishFailed:'Article publication failed.',importJson:'JSON import',sourceChoice:'Source',currentFile:'File',startImport:'Start import',importing:'Importing…',songTitle:'Song title',lyrics:'Lyrics'}),
-  admin:Object.freeze({...zhHant.admin,eyebrow:'System Administration',loginTitle:'Admin Login',loginIntro:'Admin is a separate management site, not a Scope.',signIn:'Sign in with Google',checking:'Checking Admin permission…',denied:'This account does not have Admin permission.',overview:'Overview',theme:'Default Theme',item:'Management item'}),
+  admin:Object.freeze({...zhHant.admin,eyebrow:'System Administration',loginTitle:'Admin Login',loginIntro:'Admin management',signIn:'Sign in with Google',checking:'Checking Admin permission…',denied:'This account does not have Admin permission.',overview:'Overview',theme:'Default Theme',item:'Management item'}),
   format:Object.freeze({
     searchScope:label=>`Search “${label}”…`,
     searchResult:({label,query,hasMore,partial=''})=>`${label}: “${query}”${hasMore?' · more results available':''}${partial}`,
