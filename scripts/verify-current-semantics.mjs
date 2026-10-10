@@ -104,6 +104,25 @@ if(!failures.length){
   const statisticsMultiChart=read('app/modular/modules/statistics/StatisticsMultiChart.jsx');
   const ownIntersection=read('app/modular/modules/statistics/ScopeSelfIntersection.jsx');
   const chartChoices=statisticsMultiChart.match(/\['(?:line|bar|pie|area|stacked|composed|scatter|radar|radial|treemap)','/g)||[];
+  // Real visual analytics must depend on valid dimensions; never manufacture
+  // a 100% 'total' pie or render a time index as a second scatter metric.
+  for(const token of [
+    'availableStatisticChartTypes','categories.length>=2',
+    "type==='scatter'","type==='radar'","type==='radial'",
+    'scatterPair(time,fields)','radarPeriodComparison(time,fields)',
+    'activePeriodCoverage(time,fields)','movingAverage(time,fields,totalKey)',
+    'name="近三期移動平均"','name="前半期占比"','name="後半期占比"'
+  ])if(!statisticsMultiChart.includes(token)){
+    failures.push('Statistics chart must have a real analytic purpose: '+token);
+  }
+  for(const token of ['disabled={!locAllowed.some','disabled={!optionsForCurrent.some',
+    "aggregateScopes&&scopeId==='loc'",'totalKey="total"']){
+    if(!statistics.includes(token))failures.push('Statistics must disable meaningless views and keep LOC Scope isolation: '+token);
+  }
+  if(statistics.includes("Pie data={aggregateType==='total'")||statistics.includes("type={chartType}\n        rows={basicTrend}")){
+    failures.push('Statistics must not use an all-100% single total as a category chart.');
+  }
+
   if(chartChoices.length<10||!statisticsMultiChart.includes('foldEmptyTimeBuckets')||
      !statistics.includes('CHART_TYPES=STAT_VISUAL_TYPES')||
      !statistics.includes('<ScopeSelfIntersection')||

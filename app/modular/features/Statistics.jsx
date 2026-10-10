@@ -20,7 +20,7 @@ import {FeaturePage} from '../ui';
 import {useAccount} from '../../loc/use-account';
 import {scopeHref} from '../scope-registry';
 import {LrunesDailyStatisticsPanel} from '../../lrunes/DailyRuneAnalytics';
-import StatisticsMultiChart,{STAT_VISUAL_TYPES} from '../modules/statistics/StatisticsMultiChart';
+import StatisticsMultiChart,{STAT_VISUAL_TYPES,availableStatisticChartTypes} from '../modules/statistics/StatisticsMultiChart';
 import ScopeSelfIntersection from '../modules/statistics/ScopeSelfIntersection';
 import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
 
@@ -285,7 +285,7 @@ function facetTrend(rows=[],window={},selectedCategories=[]){
     return output;
   });
 }
-function MediaFacetStatistics({rankingType,rows=[],chartType='line',timeStandard='1y',customRange={},scopeId,navigation={},foldBlank=false}){
+function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeChange,timeStandard='1y',customRange={},scopeId,navigation={},foldBlank=false}){
   const router=useRouter();
   const [selectedTag,setSelectedTag]=useState('all');
   const rawExclusions=String(navigation.statExclude||'');
@@ -303,6 +303,11 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',timeStandard
   const chartCategories=chosen==='all'?totals.slice(0,6).map(row=>row.term):[chosen];
   const chartRows=useMemo(()=>facetTrend(facetRows,window,chartCategories),[facetRows,window.startDate,window.endDate,window.bucket,chartCategories.join('\u0000')]);
   const bars=(chosen==='all'?totals.slice(0,15):displayed).map(row=>({term:row.term,value:row.item_count}));
+  const supported=availableStatisticChartTypes({
+    rows:chartRows,series:chartCategories.map(category=>({key:category,label:category})),
+    distribution:bars.map(row=>({name:row.term,value:row.value}))
+  });
+  const chosenChartType=supported.some(([value])=>value===chartType)?chartType:(supported[0]?.[0]||'line');
   const description=rankingType==='media_style'
     ?'從 Galaxy Media 的 meta_tags 即時計算所有統計詞（曲風、風格、主題等），同筆相同標籤只計一次；不將 Suno Style 正文當成媒體作品。'
     :rankingType==='media_platform'
@@ -332,13 +337,18 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',timeStandard
           {totals.map(row=><option key={row.term} value={row.term}>{row.term}（{row.item_count.toLocaleString()}）</option>)}
         </select>
       </label>
+      <label><span>圖形</span>
+        <select className="scope-select" value={chosenChartType} onChange={event=>onChartTypeChange?.(event.target.value)}>
+          {STAT_VISUAL_TYPES.map(([value,label])=><option key={value} value={value} disabled={!supported.some(([id])=>id===value)}>{label}</option>)}
+        </select>
+      </label>
     </div>
     {!totals.length?<p className="scope-status">{FEATURE_EMPTY_MESSAGE}</p>:<>
       <div className="scope-ranking">
         {displayed.slice(0,40).map(row=><div key={row.term}><strong>{row.term}</strong><span>{row.item_count.toLocaleString()}</span></div>)}
       </div>
       {displayed.length>40?<p className="scope-status">排行榜顯示前 40 項；可從上方選單指定其餘細項。</p>:null}
-      <StatisticsMultiChart type={chartType}
+      <StatisticsMultiChart type={chosenChartType}
         rows={chartRows}
         series={chartCategories.map(category=>({key:category,label:category}))}
         distribution={bars.map(row=>({name:row.term,value:row.value}))}
@@ -503,6 +513,14 @@ function ScopeGroupStatistics(){
   },[densityQuery.data,startDate,endDate,scopeIds,timeStandard]);
   const aggregateTimeStandards=TIME_STANDARDS.filter(item=>item.value!=='custom');
   const distributionData=totals.map(row=>({term:row.scope_id,value:row.total}));
+  const locSeries=aggregateType==='total'?[{key:'total',label:'LOC 合併總數'}]:scopeIds.map(id=>({key:id,label:id}));
+  const locDistribution=aggregateType==='total'
+    ?[{name:'LOC 合併總數',value:overallTotal}]
+    :distributionData.map(row=>({name:row.term,value:row.value}));
+  const locAllowed=availableStatisticChartTypes({
+    rows:trendData,series:locSeries,distribution:locDistribution,totalKey:'total'
+  });
+  const locChartType=locAllowed.some(([value])=>value===chartType)?chartType:(locAllowed[0]?.[0]||'line');
 
   return <section className="scope-stat-section">
     <header className="scope-stat-domain-heading">
@@ -521,8 +539,8 @@ function ScopeGroupStatistics(){
       </label>
       <label>
         <span>{UI_COPY.statistics.chart}</span>
-        <select className="scope-select" value={chartType} onChange={event=>setChartType(event.target.value)}>
-          {CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}
+        <select className="scope-select" value={locChartType} onChange={event=>setChartType(event.target.value)}>
+          {CHART_TYPES.map(([value,label])=><option key={value} value={value} disabled={!locAllowed.some(([v])=>v===value)}>{label}</option>)}
         </select>
       </label>
       <label>
@@ -549,47 +567,9 @@ function ScopeGroupStatistics(){
       {scopeIds.map(id=><a key={id} href={featureNavigationHref(id,'statics')}>scope_id: {id} · 細部統計</a>)}
     </div>
 
-    {!densityQuery.isPending&&!densityQuery.error&&chartType==='line'&&trendData.length?<ResponsiveContainer width="100%" height={420}>
-      <LineChart data={trendData} margin={{top:8,right:18,bottom:48,left:4}}>
-        <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
-        <XAxis dataKey="period" angle={-24} textAnchor="end" interval="preserveStartEnd" height={72} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
-        <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
-        <Tooltip contentStyle={CHART_TOOLTIP}/>
-        {aggregateType==='total'
-          ?<Line type="monotone" dataKey="total" name="LOC 合併總數" stroke={CHART_ACCENT} strokeWidth={3} dot={false}/>
-          :<>
-            <Legend/>
-            {scopeIds.map((id,index)=><Line key={id} type="monotone" dataKey={id} name={'scope_id: '+id} stroke={PIE_COLORS[index%PIE_COLORS.length]} strokeWidth={2} dot={false} connectNulls/>)}
-          </>}
-      </LineChart>
-    </ResponsiveContainer>:null}
-
-    {!densityQuery.isPending&&!densityQuery.error&&chartType==='bar'&&distributionData.length?<ResponsiveContainer width="100%" height={380}>
-      <BarChart data={aggregateType==='total'?[{term:'LOC 合併總數',value:overallTotal}]:distributionData} margin={{top:8,right:18,bottom:32,left:8}}>
-        <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
-        <XAxis dataKey="term" tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
-        <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
-        <Tooltip contentStyle={CHART_TOOLTIP}/>
-        <Bar dataKey="value" name={aggregateType==='total'?'LOC 合併總數':'Scope 作品數'} fill={CHART_ACCENT} radius={[4,4,0,0]}/>
-      </BarChart>
-    </ResponsiveContainer>:null}
-
-    {!densityQuery.isPending&&!densityQuery.error&&chartType==='pie'&&distributionData.length?<ResponsiveContainer width="100%" height={380}>
-      <PieChart>
-        <Tooltip contentStyle={CHART_TOOLTIP}/>
-        <Legend/>
-        <Pie data={aggregateType==='total'?[{term:'LOC 合併總數',value:overallTotal}]:distributionData} dataKey="value" nameKey="term" cx="50%" cy="50%" outerRadius={140}>
-          {(aggregateType==='total'?[{term:'LOC 合併總數'}]:distributionData).map((row,index)=><Cell key={row.term} fill={PIE_COLORS[index%PIE_COLORS.length]}/>)}
-        </Pie>
-      </PieChart>
-    </ResponsiveContainer>:null}
-
-    {!['line','bar','pie'].includes(chartType)&&trendData.length?<StatisticsMultiChart
-      type={chartType}
-      rows={trendData}
-      series={aggregateType==='total'?[{key:'total',label:'LOC 合併總數'}]:scopeIds.map(id=>({key:id,label:id}))}
-      distribution={aggregateType==='total'?[{name:'LOC 合併總數',value:overallTotal}]:distributionData.map(row=>({name:row.term,value:row.value}))}
-      height={420}
+    {!densityQuery.isPending&&!densityQuery.error&&trendData.length?<StatisticsMultiChart
+      type={locChartType} rows={trendData} series={locSeries}
+      distribution={locDistribution} totalKey="total" height={420}
     />:null}
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
     {densityQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(densityQuery.error)}</p>:null}
@@ -640,6 +620,23 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     refetchOnWindowFocus:true
   });
   const summary=useMemo(()=>buildSummary(trendQuery.data||[],effectiveTimeStandard,customRange),[trendQuery.data,effectiveTimeStandard,customRange]);
+  const basicTrend=useMemo(()=>buildSourceTrend(trendQuery.data||[],effectiveTimeStandard,customRange),
+    [trendQuery.data,effectiveTimeStandard,customRange]);
+  const basicSeries=rankingType==='total'
+    ?[{key:'total',label:'作品／媒體紀錄數'}]
+    :SOURCE_TREND_ORDER.map(name=>({key:name,label:name+' (%)'}));
+  const basicDistribution=rankingType==='total'
+    ?[{name:'總紀錄數',value:summary.total}]
+    :summary.sources.map(item=>({name:item.term,value:item.item_count}));
+  const facetRange=rowsInWindow(mediaQuery.data||[],effectiveTimeStandard,customRange);
+  const facetTotalsForOptions=facetTotals(facetRange.rows);
+  const facetNames=facetTotalsForOptions.slice(0,6).map(row=>row.term);
+  const facetData=facetTrend(facetRange.rows,facetRange,facetNames);
+  const facetDistribution=facetTotalsForOptions.slice(0,15).map(row=>({name:row.term,value:row.item_count}));
+  const optionsForCurrent=availableStatisticChartTypes(mediaDimension
+    ?{rows:facetData,series:facetNames.map(name=>({key:name,label:name})),distribution:facetDistribution}
+    :{rows:basicTrend,series:basicSeries,distribution:basicDistribution,totalKey:'total'});
+  const effectiveChartType=optionsForCurrent.some(([value])=>value===chartType)?chartType:(optionsForCurrent[0]?.[0]||'line');
   const styleRange=useMemo(()=>({
     startDate:queryRange.startDate||'',
     endDate:queryRange.endDate||''
@@ -655,9 +652,9 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     <header className="scope-stat-domain-heading"><div><h2>{UI_COPY.statistics.result}</h2></div></header>
     <div className="scope-stat-controls">
       <StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/>
-      {!isLrunesDaily?<><label><span>{UI_COPY.statistics.chart}</span><select className="scope-select" value={chartType} onChange={event=>setChartType(event.target.value)}>
-        {CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}
-      </select></label>
+      {!isLrunesDaily?<>{!mediaDimension?<label><span>{UI_COPY.statistics.chart}</span><select className="scope-select" value={effectiveChartType} onChange={event=>setChartType(event.target.value)}>
+        {CHART_TYPES.map(([value,label])=><option key={value} value={value} disabled={!optionsForCurrent.some(([v])=>v===value)}>{label}</option>)}
+      </select></label>:null}
       <label><span>{UI_COPY.statistics.range}</span><select className="scope-select" value={timeStandard} onChange={event=>setTimeStandard(event.target.value)}>
         {TIME_STANDARDS.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
       </select></label>
@@ -665,7 +662,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         <label><span>{UI_COPY.statistics.start}</span><input className="scope-input" type="date" value={customFrom} onChange={event=>setCustomFrom(event.target.value)}/></label>
         <label><span>{UI_COPY.statistics.end}</span><input className="scope-input" type="date" value={customTo} onChange={event=>setCustomTo(event.target.value)}/></label>
       </>:null}
-      {!['pie','radar','radial','treemap'].includes(chartType)?<label className="scope-setting-toggle">
+      {!['pie','radar','radial','treemap','scatter'].includes(effectiveChartType)?<label className="scope-setting-toggle">
         <input type="checkbox" checked={foldBlank} onChange={event=>setFoldBlank(event.target.checked)}/> 折疊空白時間
       </label>:null}
       </>:null}
@@ -682,10 +679,11 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       <p className="scope-status">{summary.startDate&&summary.endDate?summary.startDate+' ～ '+summary.endDate:''}</p>
       <SummaryList rankingType={rankingType} summary={summary}/>
       <StatisticsMultiChart
-        type={chartType}
-        rows={buildSourceTrend(trendQuery.data||[],effectiveTimeStandard,customRange)}
-        series={rankingType==='total'?[{key:'total',label:'作品／媒體紀錄數'}]:SOURCE_TREND_ORDER.map(name=>({key:name,label:name+' (%)'}))}
-        distribution={rankingType==='total'?[{name:'總紀錄數',value:summary.total}]:summary.sources.map(item=>({name:item.term,value:item.item_count}))}
+        type={effectiveChartType}
+        rows={basicTrend}
+        series={basicSeries}
+        distribution={basicDistribution}
+        totalKey="total"
         foldBlank={foldBlank}
         height={420}
       />
@@ -700,6 +698,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       rankingType={rankingType}
       rows={mediaQuery.data||[]}
       chartType={chartType}
+      onChartTypeChange={setChartType}
       timeStandard={effectiveTimeStandard}
       customRange={customRange}
       foldBlank={foldBlank}

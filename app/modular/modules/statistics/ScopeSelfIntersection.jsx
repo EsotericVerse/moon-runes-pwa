@@ -3,7 +3,7 @@
 import {useMemo,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {selectScopeSourceBreakdownRows} from '../../../loc/galaxy-query';
-import StatisticsMultiChart,{STAT_VISUAL_TYPES} from './StatisticsMultiChart';
+import StatisticsMultiChart,{STAT_VISUAL_TYPES,availableStatisticChartTypes} from './StatisticsMultiChart';
 
 const DAY_MS=86400000;
 const dateOnly=v=>String(v||'').slice(0,10);
@@ -114,6 +114,8 @@ export default function ScopeSelfIntersection({scope,range}){
   },[rows,categories.map(c=>c.id).join('\u0000'),start,end,unit,valid]);
   const series=categories.map(c=>({key:c.id,label:c.name}));
   const enough=categories.length===numberOfLanes;
+  const availableCharts=availableStatisticChartTypes({rows:calculated.chart,series,distribution:calculated.totals});
+  const shownChartType=availableCharts.some(([id])=>id===chartType)?chartType:(availableCharts[0]?.[0]||'line');
 
   return <section className="scope-stat-section scope-self-intersection" aria-label="本 Scope 作品自交互統計">
     <h3>作品自交互統計</h3>
@@ -134,7 +136,7 @@ export default function ScopeSelfIntersection({scope,range}){
           </label>
           <label><span>圖表</span>
             <select className="scope-select" value={chartType} onChange={e=>setChartType(e.target.value)}>
-              {STAT_VISUAL_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}
+              {STAT_VISUAL_TYPES.map(([value,label])=><option key={value} value={value} disabled={!availableCharts.some(([id])=>id===value)}>{label}</option>)}
             </select>
           </label>
           <label className="scope-setting-toggle"><input type="checkbox" checked={foldBlank} onChange={e=>setFoldBlank(e.target.checked)}/> 折疊空白時間區間</label>
@@ -161,7 +163,7 @@ export default function ScopeSelfIntersection({scope,range}){
             <div><strong>{numberOfLanes} 組來源同日活躍</strong><span>{calculated.days.toLocaleString()} 天</span></div>
             {calculated.totals.map(item=><div key={item.name}><strong>{item.name}</strong><span>{item.value.toLocaleString()} 筆</span></div>)}
           </div>
-          <StatisticsMultiChart type={chartType} rows={calculated.chart} series={series} distribution={calculated.totals} foldBlank={foldBlank} height={410}/>
+          <StatisticsMultiChart type={shownChartType} rows={calculated.chart} series={series} distribution={calculated.totals} foldBlank={foldBlank} height={410}/>
         </div>:<p className="scope-status">目前細分來源不足 {numberOfLanes} 組；請更換範圍或減少組數。</p>}
       </div>:null}
   </section>;
