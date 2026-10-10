@@ -1,7 +1,8 @@
 name: LOC iOS Device Unsigned IPA
+run-name: LOC iOS IPA · main · ${{ github.sha }}
 
 on:
-  pull_request:
+  push:
     branches: [main]
     paths:
       - '.github/workflows/ios-device-build.yml'
@@ -18,6 +19,11 @@ on:
 
 permissions:
   contents: read
+
+# Keep only the newest main build when several app commits land together.
+concurrency:
+  group: loc-ios-device-main
+  cancel-in-progress: true
 
 jobs:
   build-device-ipa:
@@ -37,6 +43,8 @@ jobs:
           xcrun --find swift
       - name: Install dependency lockfile
         run: npm ci --no-audit --no-fund
+      - name: Verify navigation before native packaging
+        run: npm run verify:nav
       - name: Build existing LOC static export
         run: |
           npm run build
@@ -112,9 +120,22 @@ jobs:
           test -s "$GITHUB_WORKSPACE/dist/LOC-0.9.2-RC3.1-device-unsigned.ipa"
           echo "Unsigned IPA generated. It must be signed on the user's machine; this CI artifact is NOT directly installable."
       - name: Upload unsigned IPA artifact
+        id: ipa_upload
         uses: actions/upload-artifact@v4
         with:
-          name: LOC-0.9.2-RC3.1-device-unsigned
+          name: LOC-0.9.2-RC3.1-main-${{ github.run_number }}-unsigned
           path: dist/LOC-0.9.2-RC3.1-device-unsigned.ipa
-          retention-days: 7
+          retention-days: 14
           if-no-files-found: error
+      - name: Publish build summary and artifact link
+        env:
+          ARTIFACT_URL: ${{ steps.ipa_upload.outputs.artifact-url }}
+        run: |
+          {
+            echo '## LOC iOS device test build (main)'
+            echo "- Source branch: \`$GITHUB_REF_NAME\`"
+            echo "- Commit: \`$GITHUB_SHA\`"
+            echo "- [Download IPA Artifact]($ARTIFACT_URL)"
+            echo '- IPA is unsigned; Apple signing is required before device installation.'
+            echo '- CI validates packaging, not native iPhone tap/navigation behavior.'
+          } >> "$GITHUB_STEP_SUMMARY"
