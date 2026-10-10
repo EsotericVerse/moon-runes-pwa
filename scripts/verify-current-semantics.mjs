@@ -109,7 +109,7 @@ if(!failures.length){
      !statistics.includes('<ScopeSelfIntersection')||
      !ownIntersection.includes("selectScopeSourceBreakdownRows")||
      !ownIntersection.includes("scope.galaxyMedia")||
-     !ownIntersection.includes('交互指不同來源在同一天均有紀錄')||
+     !ownIntersection.includes('交會指不同來源在同一天均有紀錄')||
      !galaxy.includes('export async function selectScopeSourceBreakdownRows(scope,')){
     failures.push('Statistics must expose ten real charts, optional visible gap folds and strictly own-Scope intersections.');
   }
