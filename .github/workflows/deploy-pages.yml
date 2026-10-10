@@ -7,6 +7,9 @@ on:
   # Workflow-only maintenance should not rebuild/deploy the public website.
     paths-ignore:
       - ".github/workflows/**"
+      - "AGENTS.md"
+      - "README.md"
+      - "docs/**"
   workflow_dispatch:
 
 permissions:

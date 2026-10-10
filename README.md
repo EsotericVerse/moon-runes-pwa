@@ -131,7 +131,7 @@ LunaRunes Canon content, approved English names and Rune semantics are not rewri
 - Fixed UI copy is centralized in `app/i18n/ui-copy.js`.
 - Authored works, Galaxy content and LunaRunes Canon are outside UI-copy localization.
 - Repository documentation is Current-only: one responsibility has one maintained source, with no superseded or duplicate parallel authority.
-- New work starts from Current main; completed work is frozen after merge.
+- **Project development/acceptance policy (for all sessions):** [AGENTS.md](AGENTS.md). Everyday work is integrated directly into `main`; opening a remote Branch/PR is the exception, not the default. The owner validates the actual website/App, not PR code diffs. Freeze applies only to previously existing auxiliary branches, never to `main`.
 
 ## Release documents
 
