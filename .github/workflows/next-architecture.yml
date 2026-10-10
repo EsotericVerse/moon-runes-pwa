@@ -36,7 +36,7 @@ jobs:
         run: npm run verify:db-public
       - name: Build Current static export
         run: npm run build
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
       - name: Run browser accessibility checks
         run: npm run test:ui

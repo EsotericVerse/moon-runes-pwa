@@ -15,7 +15,8 @@ export default defineConfig({
   },
   projects:[
     {name:'desktop-chromium',use:{...devices['Desktop Chrome'],viewport:{width:1440,height:900}}},
-    {name:'mobile-chromium',use:{...devices['iPhone 13'],browserName:'chromium'}}
+    {name:'mobile-chromium',use:{...devices['iPhone 13'],browserName:'chromium'}},
+    {name:'mobile-webkit',use:{...devices['iPhone 13'],browserName:'webkit'},testMatch:'**/ios-touch.spec.mjs'}
   ],
   webServer:{
     command:'python3 -m http.server 4173 -d out',
