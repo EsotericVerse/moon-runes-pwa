@@ -26,7 +26,7 @@ async function attachRuneMeta(rows){
 
 async function selectDailyRangeRows(filters=[],orders=[]){
   return (await selectAllRows('silver.lrunes_daily',{
-    columns:'record_date,draw_kind,rune_number,direction',
+    columns:'record_date,draw_kind,rune_number,direction,recorded_phase',
     filters,
     orders
   })).rows;
