@@ -12,9 +12,9 @@ export const metadata = {
   referrer:'origin-when-cross-origin'
 };
 
-// Expose real cutout insets to the Capacitor WebView so iPhone Dynamic Island
-// is never allowed to overlap the favorites row.
-export const viewport={width:'device-width',initialScale:1,viewportFit:'cover'};
+// Keep the iOS WKWebView's native safe-area clipping in control of hit testing.
+// RC3.1 used viewport-fit=cover and is under device investigation for missing taps.
+export const viewport={width:'device-width',initialScale:1};
 
 const AUTO_DAY_THEME_ID='theme-7';
 const AUTO_NIGHT_THEME_ID='theme-1';
