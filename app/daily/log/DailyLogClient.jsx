@@ -17,6 +17,7 @@ import {selectRows} from '../../loc/db-query.mjs';
 import {useAccount} from '../../loc/use-account';
 
 const FIRST_MONTH=2026*12+7;
+const EMPTY_ROWS=Object.freeze([]);
 const DIRECTIONS=['正位','半正位','半逆位','逆位'];
 const DIRECTION_ROTATION=Object.freeze({
   '正位':'rune-rotate-0',
@@ -83,7 +84,7 @@ export default function DailyLogClient({embedded=false}={}){
   const {year,month}=monthParts(monthValue);
   const canWrite=canViewDetails&&account.canManageScopeSync('lrunes');
   // Calendar dates remain public in the UI; no rune data is queried without login.
-  const visibleRows=canViewDetails?rows:[];
+  const visibleRows=canViewDetails?rows:EMPTY_ROWS;
 
   const loadMonth=useCallback(async()=>{
     const request=++monthRequest.current;
@@ -147,7 +148,7 @@ export default function DailyLogClient({embedded=false}={}){
     return grouped;
   },[visibleRows]);
 
-  const selectedRows=useMemo(()=>byDate.get(selectedDate)||[],[byDate,selectedDate]);
+  const selectedRows=useMemo(()=>byDate.get(selectedDate)||EMPTY_ROWS,[byDate,selectedDate]);
 
   useEffect(()=>{
     let active=true;
