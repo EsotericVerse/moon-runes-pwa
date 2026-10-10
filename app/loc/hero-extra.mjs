@@ -1,16 +1,15 @@
-// Scope Hero Extra is an opt-in exception, not a generic Scope capability.
-// LOC marks its canonical Group identity. Author/LunaRunes owner marks require
-// an authenticated email matched to a scope-role row in silver.manage.
-// This controls visual presentation only; it never grants a database permission.
-const OWNER_EXTRA_SCOPES=new Set(['lo3rwang','lrunes']);
-const normalizedEmail=value=>String(value||'').trim().toLowerCase();
+// The Registry stores the one-time assigned Extra Sign key.
+// These copyrighted personal-IP presentations are intentionally not generic
+// Scope defaults. No email or session is checked during page rendering.
+const SIGN_DEFINITIONS=Object.freeze({
+  codex:Object.freeze({scopeId:'loc',scopeKind:'group',label:'Codex X',text:'X'}),
+  anchor:Object.freeze({scopeId:'lo3rwang',scopeKind:'scope',label:'光之定錨點',text:'光之定錨點'}),
+  moon:Object.freeze({scopeId:'lrunes',scopeKind:'scope',label:'玄韻家黃色圓點標誌',text:''})
+});
 
-export function mayRenderHeroExtra({scopeId='',scopeKind='',account=null}={}){
-  const id=String(scopeId||'').trim().toLowerCase();
-  if(id==='loc')return scopeKind==='group';
-  if(!OWNER_EXTRA_SCOPES.has(id))return false;
-  const sessionEmail=normalizedEmail(account?.user?.email);
-  const manageEmail=normalizedEmail(account?.email);
-  return Boolean(sessionEmail&&sessionEmail===manageEmail
-    &&account?.authorizer?.scopeIds?.includes(id));
+export function heroExtraFor({scopeId='',scopeKind='',extraSign=''}={}){
+  const key=String(extraSign||'').trim();
+  const definition=SIGN_DEFINITIONS[key];
+  if(!definition||definition.scopeId!==scopeId||definition.scopeKind!==scopeKind)return null;
+  return {key,...definition};
 }
