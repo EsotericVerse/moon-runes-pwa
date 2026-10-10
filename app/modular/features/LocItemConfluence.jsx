@@ -4,6 +4,8 @@ import {useEffect,useMemo,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {selectManagedScopes} from '../../loc/scope-data';
 import {selectLocItemDailySeries} from '../../loc/item-confluence-query';
+import {realMoonPhase} from '../../loc/model/moon-phase';
+import {buildReferencedMoonRiver} from '../../lrunes/daily-moon-river.mjs';
 import {
   ITEM_CONFLUENCE_PAGE_SIZE,ITEM_LANE_OPTIONS,itemConfluenceShiftMonth,
   validateItemConfluenceRange,validateItemLane,itemLaneDescription,
@@ -96,6 +98,11 @@ export default function LocItemConfluence(){
     startDate:range.startDate,endDate:range.endDate,lanes:[laneA,laneB],series:query.data
   }):[],[valid,query.data,range.startDate,range.endDate,laneA,laneB]);
   const river=useMemo(()=>buildItemConfluenceRiver(daily,labels,[laneA,laneB]),[daily,labels,laneA,laneB]);
+  const moonRiver=useMemo(()=>range.valid?buildReferencedMoonRiver(
+    range.startDate,range.endDate,[laneA,laneB],
+    date=>realMoonPhase(new Date(date+'T12:00:00+08:00'))
+  ):[],[range.valid,range.startDate,range.endDate,laneA.scopeId,laneA.source,laneB.scopeId,laneB.source]);
+  const combinedRiver=useMemo(()=>[...moonRiver,...river],[moonRiver,river]);
   const summary=useMemo(()=>itemConfluenceSummary(daily),[daily]);
   const lanes=[laneA,laneB];
   const selectedRow=daily.find(row=>row.day===selectedDay)||null;
@@ -108,7 +115,7 @@ export default function LocItemConfluence(){
   return <section className="scope-card scope-culture-classification-river scope-loc-time-river" aria-label="LOC 自訂項目交會">
     <p className="loc-eyebrow">LOC Culture · 項目交會</p>
     <h3>指定河道交會比較</h3>
-    <p className="scope-status">從可讀取的 Scope 中指定兩條河道，在同一段日期觀察作品密度或符韻每日符文內容；符文只顯示符文名稱、四向方向及真實月相，不作密度。來源不合併寫入資料庫，不把不同人的作品當作同一筆，也不推論交會代表因果。</p>
+    <p className="scope-status">從可讀取的 Scope 指定兩條河道；只要其中一條引用符韻每日符文，就在最上方自動加一條現實月相事件河道，以月相變動日定錨並延續至下次變動。沒有引用每日符文時不顯示月相河道。其他作品／媒體仍顯示各自密度；符文顯示名稱與四向，不顯示密度。各來源維持獨立。</p>
     <div className="scope-stat-controls" style={{alignItems:'stretch'}}>
       <LanePicker label="河道 A" lane={laneA} scopes={scopes} onChange={setLaneA}/>
       <LanePicker label="河道 B" lane={laneB} scopes={scopes} onChange={setLaneB}/>
@@ -121,7 +128,7 @@ export default function LocItemConfluence(){
     {scopesQuery.isPending?<p className="scope-status">正在讀取可選的 Scope…</p>:null}
     {scopesQuery.error?<p className="scope-status scope-error">Scope 清單讀取失敗：{String(scopesQuery.error.message||scopesQuery.error)}</p>:null}
     {!scopesQuery.isPending&&!scopesQuery.error&&invalidMessage?<p className="scope-status scope-error" role="alert">{invalidMessage}</p>:null}
-    {valid&&query.isPending?<p className="scope-status">正在計算兩條指定河道的每日密度…</p>:null}
+    {valid&&query.isPending?<p className="scope-status">正在讀取兩條指定河道的每日資料…</p>:null}
     {query.error&&valid?<p className="scope-status scope-error" role="alert">項目交會讀取失敗：{String(query.error.message||query.error)}</p>:null}
     {valid&&query.data&&!query.error?<div>
       <p className="scope-status">{range.startDate} ～ {range.endDate} · {lanes.map((lane,index)=>{
@@ -130,14 +137,18 @@ export default function LocItemConfluence(){
           ?daily.filter(row=>row.runeDraws?.[index]?.length).length+' 個每日符文紀錄日'
           :total.toLocaleString()+' 筆');
       }).join(' · ')} · 雙方都有紀錄 {summary.bothActiveDays} 天</p>
-      <p className="scope-status">一般文字／媒體河道顯示筆數與各自峰值標準化密度；僅符韻每日符文河道直接顯示符文名稱、四向方向、由抽取日期計算的真實月相，不將一天 1～2 筆誤作密度差異。</p>
-      {river.length?<CultureTimeline
-        items={river}
+      <p className="scope-status">一般文字／媒體河道顯示筆數與相對密度；符韻每日符文直接顯示名稱、四向與當日月相，不作密度比較。當選用每日符文，另顯示依臺灣農曆日級月相變動事件形成的連續天時河道，無抽符日亦不中斷（非精確天文朔望時刻）。</p>
+      {combinedRiver.length?<CultureTimeline
+        items={combinedRiver}
         labelOf={labelOf}
         focus={EMPTY_FOCUS}
         mode="source"
         windowStart={range.startDate}
-        windowEnd={range.endDate}
+        windowEnd={(()=>{
+          const date=new Date(range.endDate+'T00:00:00Z');
+          date.setUTCDate(date.getUTCDate()+1);
+          return date.toISOString().slice(0,10);
+        })()}
         fixedMin={range.startDate}
         fixedMax={(()=>{
           const date=new Date(range.endDate+'T00:00:00Z');
