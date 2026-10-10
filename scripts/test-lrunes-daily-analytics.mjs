@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  normalizeDailyDraws,rankDailyDraws,pageDailyRanking,summarizeDailyDraws,
+  normalizeDailyDraws,rankDailyDraws,pageDailyRanking,summarizeDailyDraws,dailyCategoryTrend,
   DAILY_RUNE_PAGE_SIZE
 } from '../app/lrunes/daily-analytics-model.mjs';
 
@@ -47,4 +47,14 @@ test('ranking never exposes a full list in one page',()=>{
   assert.equal(final.currentPage,4);
   assert.equal(final.rows.length,6);
   assert.ok(pageDailyRanking(items,1,1000).rows.length<=DAILY_RUNE_PAGE_SIZE);
+});
+
+test('trends follow the selected statistical category and fill missing days with zero',()=>{
+  const triple=rankDailyDraws(draws,'triple');
+  const chosen=triple.find(row=>row.label==='向 · 正位 · 新月');
+  const values=dailyCategoryTrend(draws,'triple',[chosen],'day','2026-10-01','2026-10-03');
+  assert.equal(values.length,3);
+  assert.equal(values[0][chosen.key],1);
+  assert.equal(values[1][chosen.key],0);
+  assert.equal(values[2][chosen.key],0);
 });
