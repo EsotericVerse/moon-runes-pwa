@@ -71,3 +71,28 @@ export function dailyTrend(rows=[],bucket='day'){
     period:key.replaceAll('-','/'),total
   }));
 }
+
+export function dailyCategoryTrend(rows=[],mode='rune',selected=[],bucket='day',startDate='',endDate=''){
+  const keys=new Set(selected.map(item=>String(item.key)));
+  if(!keys.size)return [];
+  const first=String(startDate||rows[0]?.record_date||'').slice(0,10);
+  const last=String(endDate||rows.at(-1)?.record_date||'').slice(0,10);
+  const result=new Map();
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(first)||!/^\d{4}-\d{2}-\d{2}$/.test(last)||first>last)return [];
+  for(let day=new Date(first+'T00:00:00Z'),stop=new Date(last+'T00:00:00Z');day<=stop;day.setUTCDate(day.getUTCDate()+1)){
+    const date=day.toISOString().slice(0,10);
+    const period=bucket==='month'?date.slice(0,7):date;
+    if(!result.has(period)){
+      const item={period:period.replaceAll('-','/')};
+      for(const key of keys)item[key]=0;
+      result.set(period,item);
+    }
+  }
+  for(const row of rows){
+    const period=bucket==='month'?row.record_date.slice(0,7):row.record_date;
+    const key=String(row.rune_number)+(mode==='triple'?'|'+row.direction+'|'+row.phase:'');
+    const record=result.get(period);
+    if(record&&keys.has(key))record[key]++;
+  }
+  return [...result.values()];
+}
