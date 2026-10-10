@@ -144,3 +144,5 @@ test('Capacitor static-file route is normalized to canonical Scope URL before hy
 });
 
 // Diagnostic RC3.1 branch tests bundled feature HTML navigation independently of any new App UI.
+
+// QA checks run against isolated RC3.1 release source, never later main features.
