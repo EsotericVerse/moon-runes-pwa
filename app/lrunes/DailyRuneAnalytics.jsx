@@ -3,7 +3,7 @@
 import {useMemo,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {
-  Bar,BarChart,CartesianGrid,Cell,Line,LineChart,Pie,PieChart,
+  Bar,BarChart,CartesianGrid,Line,LineChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
 import {selectDailyRuneRange} from '../loc/daily-runes';
@@ -11,7 +11,7 @@ import {realMoonPhase} from '../loc/model/moon-phase';
 import CultureTimeline from '../modular/modules/culture-timeline/CultureTimeline';
 import {
   DAILY_RUNE_MODES,normalizeDailyDraws,rankDailyDraws,pageDailyRanking,
-  summarizeDailyDraws,dailyTrend
+  summarizeDailyDraws,dailyCategoryTrend
 } from './daily-analytics-model.mjs';
 
 const PHASE_DATE_TIME='T12:00:00+08:00';
@@ -145,7 +145,8 @@ export function LrunesDailyStatisticsPanel(){
   const ranking=useMemo(()=>rankDailyDraws(draws,analysisMode),[draws,analysisMode]);
   const pagination=useMemo(()=>pageDailyRanking(ranking,page),[ranking,page]);
   const summary=useMemo(()=>summarizeDailyDraws(draws),[draws]);
-  const timeline=useMemo(()=>dailyTrend(draws,mode==='1y'?'month':'day'),[draws,mode]);
+  const featured=useMemo(()=>pagination.rows.slice(0,5),[pagination.rows]);
+  const timeline=useMemo(()=>dailyCategoryTrend(draws,analysisMode,featured,mode==='1y'?'month':'day',range?.startDate,range?.endDate),[draws,analysisMode,featured,mode,range?.startDate,range?.endDate]);
   const bars=useMemo(()=>pagination.rows.map(row=>({label:row.label,value:row.count})),[pagination.rows]);
   const message=queryMessage(query,range);
   return <>
@@ -158,8 +159,7 @@ export function LrunesDailyStatisticsPanel(){
       <label><span>圖表</span>
         <select className="scope-select" value={chart} onChange={event=>setChart(event.target.value)}>
           <option value="bar">排行長條圖</option>
-          <option value="line">抽取時間趨勢</option>
-          <option value="pie">排行比例圖</option>
+          <option value="line">本頁前五名時間趨勢</option>
         </select>
       </label>
     </div>
@@ -188,21 +188,14 @@ export function LrunesDailyStatisticsPanel(){
           <Tooltip contentStyle={{background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)'}}/>
           <Bar dataKey="value" name="抽取次數" fill="var(--loc-accent)" radius={[0,4,4,0]}/>
         </BarChart>
-      </ResponsiveContainer>:chart==='line'?<ResponsiveContainer width="100%" height={340}>
+      </ResponsiveContainer>:<ResponsiveContainer width="100%" height={340}>
         <LineChart data={timeline} margin={{top:8,right:16,bottom:40,left:4}}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--loc-line)"/>
           <XAxis dataKey="period" tick={{fill:'var(--loc-text)'}} angle={-20} textAnchor="end" height={65}/>
           <YAxis allowDecimals={false} tick={{fill:'var(--loc-text)'}}/>
           <Tooltip contentStyle={{background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)'}}/>
-          <Line type="monotone" dataKey="total" name="抽取次數" stroke="var(--loc-accent)" strokeWidth={2} dot={false}/>
+          {featured.map((row,index)=><Line key={row.key} type="monotone" dataKey={row.key} name={row.label} stroke={COLORS[index%COLORS.length]} strokeWidth={2} dot={false}/>)}
         </LineChart>
-      </ResponsiveContainer>:<ResponsiveContainer width="100%" height={350}>
-        <PieChart>
-          <Tooltip contentStyle={{background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)'}}/>
-          <Pie data={bars} dataKey="value" nameKey="label" cx="50%" cy="50%" outerRadius={120}>
-            {bars.map((row,index)=><Cell key={row.label} fill={COLORS[index%COLORS.length]}/>)}
-          </Pie>
-        </PieChart>
       </ResponsiveContainer>}</>:null}
     </>:null}
   </>;
