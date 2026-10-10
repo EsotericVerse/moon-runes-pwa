@@ -6,6 +6,8 @@ create table if not exists silver.scope_registry (
   scope_id text primary key,
   display_name text not null,
   scope_kind text not null default 'scope',
+  -- Assigned once by docs/sql/scope-extra-sign.sql. Never trusted from the browser.
+  extra_sign text,
   domain text,
   directory text,
   parent_scope_id text,
