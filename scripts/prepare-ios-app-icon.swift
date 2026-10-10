@@ -1,49 +1,41 @@
-// Draw the approved LOC lunar emblem on an opaque iOS App Icon canvas.
-// AppIcon is native-only; web favicon and author/LunaRunes art are independent.
+// Build an opaque native iOS 1024x1024 AppIcon from the approved LOC emblem.
+// CoreGraphics uses RGBX (alphaInfo.noneSkipLast), not an alpha-enabled bitmap.
 import AppKit
+import CoreGraphics
+import ImageIO
+import UniformTypeIdentifiers
 import Foundation
 
 guard CommandLine.arguments.count == 3 else {
-  fatalError("Usage: swift prepare-ios-app-icon.swift <LOC emblem PNG> <AppIcon output PNG>")
+  fatalError("Usage: swift prepare-ios-app-icon.swift <emblem PNG> <AppIcon PNG>")
 }
-let source = CommandLine.arguments[1]
-let output = CommandLine.arguments[2]
-guard let emblem = NSImage(contentsOfFile: source) else {
-  fatalError("Cannot open canonical LOC emblem at \(source)")
+let sourceURL = URL(fileURLWithPath: CommandLine.arguments[1])
+let outputURL = URL(fileURLWithPath: CommandLine.arguments[2])
+guard let source = CGImageSourceCreateWithURL(sourceURL as CFURL, nil),
+      let emblem = CGImageSourceCreateImageAtIndex(source, 0, nil) else {
+  fatalError("Cannot read canonical LOC lunar emblem")
 }
-let size = 1024
-guard let bitmap = NSBitmapImageRep(
-  bitmapDataPlanes: nil,
-  pixelsWide: size,
-  pixelsHigh: size,
-  bitsPerSample: 8,
-  samplesPerPixel: 3,
-  hasAlpha: false,
-  isPlanar: false,
-  colorSpaceName: .deviceRGB,
-  bytesPerRow: 0,
-  bitsPerPixel: 0
-), let context = NSGraphicsContext(bitmapImageRep: bitmap) else {
-  fatalError("Cannot allocate opaque 1024x1024 AppIcon canvas")
+let side = 1024
+let bitmapInfo = CGBitmapInfo.byteOrder32Big.rawValue | CGImageAlphaInfo.noneSkipLast.rawValue
+guard let canvas = CGContext(
+  data: nil, width: side, height: side,
+  bitsPerComponent: 8, bytesPerRow: 0,
+  space: CGColorSpaceCreateDeviceRGB(),
+  bitmapInfo: bitmapInfo
+) else {
+  fatalError("Cannot allocate opaque RGBX CoreGraphics canvas")
 }
-NSGraphicsContext.saveGraphicsState()
-NSGraphicsContext.current = context
-context.imageInterpolation = .high
-NSColor(srgbRed: 7.0 / 255.0, green: 24.0 / 255.0, blue: 45.0 / 255.0, alpha: 1).setFill()
-NSBezierPath(rect: NSRect(x: 0, y: 0, width: CGFloat(size), height: CGFloat(size))).fill()
-// The art is 64px favicon source from the approved LOC Scope identity.
-// Keep its outer observation dot visible; the OS supplies rounded corners.
-let inset: CGFloat = 62.0
-emblem.draw(
-  in: NSRect(x: inset, y: inset, width: CGFloat(size) - 2 * inset, height: CGFloat(size) - 2 * inset),
-  from: .zero,
-  operation: .sourceOver,
-  fraction: 1
-)
-context.flushGraphics()
-NSGraphicsContext.restoreGraphicsState()
-guard let data = bitmap.representation(using: .png, properties: [:]) else {
-  fatalError("Cannot render native AppIcon PNG")
+canvas.setFillColor(CGColor(red: 7.0/255.0, green: 24.0/255.0, blue: 45.0/255.0, alpha: 1))
+canvas.fill(CGRect(x: 0, y: 0, width: side, height: side))
+canvas.interpolationQuality = .high
+let inset: CGFloat = 62
+canvas.draw(emblem, in: CGRect(x: inset, y: inset, width: CGFloat(side) - 2*inset, height: CGFloat(side) - 2*inset))
+guard let image = canvas.makeImage(),
+      let destination = CGImageDestinationCreateWithURL(outputURL as CFURL, UTType.png.identifier as CFString, 1, nil) else {
+  fatalError("Cannot create AppIcon PNG destination")
 }
-try data.write(to: URL(fileURLWithPath: output), options: .atomic)
-print("Native LOC AppIcon ready: 1024x1024 RGB (opaque) at \(output)")
+CGImageDestinationAddImage(destination, image, nil)
+guard CGImageDestinationFinalize(destination) else {
+  fatalError("Cannot write AppIcon PNG")
+}
+print("Native LOC AppIcon ready: 1024x1024 opaque RGBX, output: \(outputURL.path)")
