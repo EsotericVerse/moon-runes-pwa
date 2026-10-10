@@ -63,3 +63,10 @@ NAV 固定功能文字與 LOC 首頁導引使用 `app/i18n/ui-copy.js`；具名 
 - Global Settings > 我的最愛 includes create/rename/delete folder and assigning each favorite to either direct first row or one folder. Deleting a folder returns its shortcuts to the first row; LOC remains pinned right and cannot be put in a folder.
 - Folder configuration is encoded *plain text* in existing `api.user_settings.text_value` under `loc-favorite-folders-v1`; no JSONB, local browser corpus copy, new DB table or Scope Group mutations. The folders only organize links; they **do not** change Scope roles, RLS, actual Group structures or route registry.
 - Lower six-key floating feature dock does not change. No IPA release until the user finishes website navigation acceptance.
+
+
+## NAV horizontal alignment (2026-10-10)
+
+- Top NAV keeps normal document flow, but its own outer bounds now match the shared content frame: `width:min(var(--loc-ui-max),calc(100% - clamp(1rem,4vw,4rem)))` with centered margins; on mobile it matches the existing `calc(100% - 1rem)` content width.
+- Left and right page gutters stay visible on wide and narrow displays; this does not introduce a rounded/floating container. The permanent LOC link is aligned to the right edge *inside* the content frame.
+- The top row's horizontal scrolling and optional second-row folders, and the bottom floating six-key dock, are unchanged.
