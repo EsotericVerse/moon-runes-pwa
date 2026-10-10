@@ -8,5 +8,9 @@ export function navigationHref(scopeId='loc',localPath='',native=false){
   const part=String(localPath||'').split('/').filter(Boolean).join('/');
   const prefix=id==='loc'?'':isKnownScope(id)?'/'+id:'/scope';
   const path=(prefix+'/'+(part?part+'/':'')).replace(/\/+/g,'/');
-  return isKnownScope(id)?path:path+(path.includes('?')?'&':'?')+'scope='+encodeURIComponent(id);
+  // Capacitor iOS serves bundled files by their explicit .html path; extension-
+  // less feature routes can fall back to the root index.html instead of the
+  // nested Next static export. Keep website canonical paths unchanged.
+  const nativeFile=path+'index.html';
+  return isKnownScope(id)?nativeFile:nativeFile+'?scope='+encodeURIComponent(id);
 }

@@ -21,6 +21,12 @@ const AUTO_NIGHT_THEME_ID='theme-1';
 const GAME_BOOTSTRAP_THEME_ID='theme-4';
 // Static export can only mark the initial color scheme. The exact canonical
 // palette and per-Scope default are loaded once from PostgreSQL in AppShell.
+const NATIVE_STATIC_ROUTE_SCRIPT=`(()=>{try{
+  if(window.location.protocol!=='capacitor:')return;
+  const {pathname,search,hash}=window.location;
+  if(!/\\/index\\.html$/.test(pathname))return;
+  window.history.replaceState(window.history.state,'',pathname.slice(0,-'index.html'.length)+search+hash);
+}catch{}})();`;
 const INITIAL_THEME_SCRIPT=`(()=>{try{
   const pathname=(window.location.pathname||'/').toLowerCase();
   let hour=new Date().getHours();
@@ -46,6 +52,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="zh-Hant" suppressHydrationWarning>
       <head>
+        <script id="loc-native-static-route" dangerouslySetInnerHTML={{__html:NATIVE_STATIC_ROUTE_SCRIPT}} />
         <script id="loc-theme-bootstrap" dangerouslySetInnerHTML={{__html:INITIAL_THEME_SCRIPT}} />
       </head>
       <body className="loc-app-shell">

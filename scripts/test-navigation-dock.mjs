@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {DEFAULT_FAVORITES,parseFavorites,serializeFavorites,homeScopeForAccount} from '../app/modular/navigation-preferences.mjs';
 import {navigationHref} from '../app/modular/nav-destinations.mjs';
 import fs from 'node:fs';
+import vm from 'node:vm';
 import {cleanFolderName,parseFavoriteFolders,serializeFavoriteFolders,visibleFavoriteLayout,normalizeFavoriteFolders} from '../app/modular/favorite-folders.mjs';
 
 test('anonymous users start with three favorite workspaces and LOC homepage',()=>{
@@ -24,10 +25,13 @@ test('preferred homepage never confers Scope authority',()=>{
   assert.equal(homeScopeForAccount('family1',adminAccount,['loc','lrunes','family1']),'family1');
 });
 test('native links resolve bundled routes, not external canonical domains',()=>{
-  assert.equal(navigationHref('loc','',true),'/');
-  assert.equal(navigationHref('lrunes','culture',true),'/lrunes/culture/');
-  assert.equal(navigationHref('lo3rwang','statics',true),'/lo3rwang/statics/');
-  assert.equal(navigationHref('family1','governance',true),'/scope/governance/?scope=family1');
+  assert.equal(navigationHref('loc','',true),'/index.html');
+  assert.equal(navigationHref('loc','culture',true),'/culture/index.html');
+  assert.equal(navigationHref('loc','statics',true),'/statics/index.html');
+  assert.equal(navigationHref('lrunes','',true),'/lrunes/index.html');
+  assert.equal(navigationHref('lrunes','culture',true),'/lrunes/culture/index.html');
+  assert.equal(navigationHref('lo3rwang','statics',true),'/lo3rwang/statics/index.html');
+  assert.equal(navigationHref('family1','governance',true),'/scope/governance/index.html?scope=family1');
   assert.match(navigationHref('lrunes','culture',false),/^https:\/\//);
 });
 test('one immutable six-key feature dock and explicit global settings route',()=>{
@@ -36,7 +40,7 @@ test('one immutable six-key feature dock and explicit global settings route',()=
   const settings=fs.readFileSync('app/loc/GlobalSettings.jsx','utf8');
   assert.match(code,/\{id:'home'/);
   assert.match(code,/\['culture','statics','search','governance'\]/);
-  assert.match(code,/\{id:'settings'.*href:'\/settings\/'\}/);
+  assert.match(code,/\{id:'settings'.*href:native\?'\/settings\/index\.html':'\/settings\/'\}/);
   assert.match(code,/className="scope-feature-dock"/);
   assert.match(css,/grid-template-columns:repeat\(6,minmax\(0,1fr\)\)/);
   assert.match(css,/box-shadow:/);
@@ -157,4 +161,26 @@ test('daily rune calendar only reads and renders record details after authentica
   assert.match(calendar,/showDetails=true/);
   assert.match(calendar,/const entries=showDetails\?/);
   assert.match(calendar,/const moonMarkers=showDetails\?phaseMarkers\(key\):\[\];/);
+});
+
+test('Capacitor static-file route is normalized to canonical Scope URL before hydration',()=>{
+  const layout=fs.readFileSync('app/layout.jsx','utf8');
+  const declaration=layout.match(/const NATIVE_STATIC_ROUTE_SCRIPT=`([\s\S]*?)`;/);
+  assert.ok(declaration,'native route normalization script must be present in RootLayout');
+  assert.match(layout,/id="loc-native-static-route"/);
+  const script=vm.runInNewContext('`'+declaration[1]+'`');
+  function execute(protocol,pathname,search='',hash=''){
+    let next=null;
+    const window={
+      location:{protocol,pathname,search,hash},
+      history:{state:{},replaceState(_state,_title,path){next=path;}}
+    };
+    vm.runInNewContext(script,{window});
+    return next;
+  }
+  assert.equal(execute('capacitor:','/lrunes/culture/index.html','?from=2026-10-01','#example'),'/lrunes/culture/?from=2026-10-01#example');
+  assert.equal(execute('capacitor:','/statics/index.html'),'/statics/');
+  assert.equal(execute('capacitor:','/index.html'),'/');
+  assert.equal(execute('https:','/lrunes/culture/index.html'),null);
+  assert.equal(execute('capacitor:','/lrunes/culture/'),null);
 });
