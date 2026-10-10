@@ -96,3 +96,9 @@ test('NAV pins return to LOC, conditionally scrolls and expands directories as a
   assert.match(settings,/>新增目錄<\/button>/);
   assert.match(settings,/FOLDERS_SETTING_KEY/);
 });
+
+test('LOC and Author home NAV can match a later sibling after JsonLd script',()=>{
+  const navCss=fs.readFileSync('app/styles/nav.css','utf8');
+  assert.match(navCss,/:has\\(~ \\.loc-next-main\\[data-loc-view="home"\\]/);
+  assert.doesNotMatch(navCss,/:has\\(\\+ \\.loc-next-main\\[data-loc-view="home"\\]/);
+});

@@ -67,6 +67,6 @@ NAV 固定功能文字與 LOC 首頁導引使用 `app/i18n/ui-copy.js`；具名 
 
 ## NAV horizontal alignment (2026-10-10)
 
-- Top NAV keeps normal document flow, but its own outer bounds now match the shared content frame: `width:min(var(--loc-ui-max),calc(100% - clamp(1rem,4vw,4rem)))` with centered margins; on mobile it matches the existing `calc(100% - 1rem)` content width. The LOC and author landing pages are intentionally narrower (`min(1180px,calc(100% - 2rem))`), so the NAV detects those layouts through `:has(+ .loc-next-main[data-loc-view="home"])` and uses their exact frame width instead.
+- Top NAV keeps normal document flow, but its own outer bounds now match the shared content frame: `width:min(var(--loc-ui-max),calc(100% - clamp(1rem,4vw,4rem)))` with centered margins; on mobile it matches the existing `calc(100% - 1rem)` content width. The LOC and author landing pages are intentionally narrower (`min(1180px,calc(100% - 2rem))`), so the NAV detects those layouts through `:has(~ .loc-next-main[data-loc-view="home"])` and uses their exact frame width instead.
 - Left and right page gutters stay visible on wide and narrow displays; this does not introduce a rounded/floating container. The permanent LOC link is aligned to the right edge *inside* the content frame.
 - The top row's horizontal scrolling and optional second-row folders, and the bottom floating six-key dock, are unchanged.
