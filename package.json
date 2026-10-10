@@ -12,7 +12,7 @@
     "verify:directories": "node scripts/verify-directory-governance.mjs",
     "verify:auth": "node scripts/verify-auth-boundary.mjs",
     "verify:rune-draw": "node scripts/verify-rune-draw-algorithm.mjs",
-    "verify:statistics-facets": "node --test scripts/test-statistics-facets.mjs scripts/test-member-intersection.mjs",
+    "verify:statistics-facets": "node --test scripts/test-statistics-facets.mjs scripts/test-member-intersection.mjs scripts/test-administrative-sources.mjs",
     "verify:semantics": "node scripts/verify-current-semantics.mjs",
     "verify": "npm run verify:block-presentation && npm run verify:blocknote && npm run verify:feature-hero && npm run verify:loc-home-text && npm run verify:db-adapters && npm run verify:rune-draw && npm run verify:statistics-facets && npm run verify:lrunes-daily && npm run verify:lrunes-settings && npm run verify:loc-items && npm run verify:rune66-keywords && npm run verify:modules && npm run verify:semantics && npm run verify:scope-registry && npm run verify:authority && npm run verify:directories && npm run verify:auth && npm run verify:theme && npm run verify:management && npm run verify:nav",
     "build": "next build",

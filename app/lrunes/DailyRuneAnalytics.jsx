@@ -134,7 +134,6 @@ export function LrunesDailyCulturePanel(){
       windowEnd={nextDay(range.endDate)}
       onSelect={item=>setSelected(item?.raw?.daily_record||null)}
     />:null}
-    {!message&&!drawItems.length?<p className="scope-status">目前區間沒有每日符文紀錄，因此不顯示月相河道。</p>:null}
     {selected?<p className="scope-status">所選紀錄：{selected.record_date} · {groupLabel(selected)} · {selected.rune_name} · {selected.direction} · {selected.phase}{selected.phase_inferred?'（依日期推算）':''}</p>:null}
   </section>;
 }

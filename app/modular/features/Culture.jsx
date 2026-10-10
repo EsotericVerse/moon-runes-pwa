@@ -804,8 +804,7 @@ export default function Culture(){
                       </button>
                     </div>
                   </details>:null}
-                  {!account.canManageScopeSync(classificationScope)?<span className='scope-status'>登入管理權限後才能建立正式定錨點。</span>:null}
-                  {anchorSaveMessage?<span role='status'>{anchorSaveMessage}</span>:null}
+                              {anchorSaveMessage?<span role='status'>{anchorSaveMessage}</span>:null}
                 </div>
                 {classificationRiverItems.length?<CultureTimeline
                   items={classificationRiverItems}

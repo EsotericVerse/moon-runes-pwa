@@ -103,6 +103,19 @@ if(!failures.length){
   const statistics=read('app/modular/features/Statistics.jsx');
   const statisticsMultiChart=read('app/modular/modules/statistics/StatisticsMultiChart.jsx');
   const ownIntersection=read('app/modular/modules/statistics/ScopeSelfIntersection.jsx');
+  const sourceTaxonomy=read('app/loc/statistics-admin-source.mjs');
+  const sourceEditor=read('app/loc/SourceCategoryEditor.jsx');
+  const crossMember=read('app/modular/modules/statistics/LocMemberIntersection.jsx');
+  if(!statistics.includes('administrativeSourceTrend(')||
+     !statistics.includes("queryKey:['statistics-source-taxonomy']")||
+     !sourceTaxonomy.includes("assignedSource(")||
+     !sourceEditor.includes('AdminSourceCategories')||
+     !sourceEditor.includes('ScopeOtherSources')||
+     !crossMember.includes("availableMemberMeasures")||
+     !ownIntersection.includes("kind:'group'")){
+    failures.push('Global source classes, member-level Others and cross-member analytics must share real data.');
+  }
+
   const chartChoices=statisticsMultiChart.match(/\['(?:line|bar|pie|area|stacked|composed|scatter|radar|radial|treemap)','/g)||[];
   // Real visual analytics must depend on valid dimensions; never manufacture
   // a 100% 'total' pie or render a time index as a second scatter metric.

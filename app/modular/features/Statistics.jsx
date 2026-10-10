@@ -9,7 +9,9 @@ import {
   Bar,BarChart,CartesianGrid,Cell,Legend,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectMediaStatisticsFacetRows,selectScopeDensityRows,selectSourceTrendRows} from '../../loc/galaxy-query';
+import {selectMediaStatisticsFacetRows,selectScopeDensityRows,selectSourceTrendRows,selectScopeSourceBreakdownRows} from '../../loc/galaxy-query';
+import {selectRows} from '../../loc/db-query.mjs';
+import {administrativeSourceTrend} from '../../loc/statistics-admin-source.mjs';
 import {DEFAULT_MEDIA_STYLE_EXCLUSIONS,filterMediaStyleRows,mediaStyleExclusions} from '../../loc/statistics-facets.mjs';
 import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
 import {selectManagedScopes} from '../../loc/scope-data';
@@ -378,11 +380,9 @@ function Rune66Summary({analysis}){
   const className=String(data.keywordMeta?.class_name||'關鍵詞 Class');
   const globalCount=Math.max(0,Number(data.keywordDocumentCount||0));
   const minDocuments=Math.max(0,Number(data.keywordMinDocuments||0));
-  if(!data.staticstime)return <div className="scope-rune66-summary">
-    <p className="scope-status">關鍵詞尚未定錨。登入後可在本統計頁開啟「關鍵詞設定」，完成重新分析並寫入文章 Attr。</p>
-  </div>;
-  if(!data.statisticsEnabled)return <div className="scope-rune66-summary">
-    <p className="scope-status">{className} 已定錨，但目前有效文章 {globalCount.toLocaleString()} 篇；必須大於 {minDocuments.toLocaleString()} 篇才啟用關鍵詞統計。</p>
+  if(!data.staticstime)return null;
+  if(!data.statisticsEnabled)return <div className="scope-ranking">
+    <div><strong>{className}</strong><span>{globalCount.toLocaleString()} / {minDocuments.toLocaleString()}</span></div>
   </div>;
   const classRows=[...(data.groupTotals||[])]
     .filter(row=>Number(row.document_count||0)>0)
@@ -619,14 +619,35 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     refetchOnWindowFocus:true
   });
   const summary=useMemo(()=>buildSummary(trendQuery.data||[],effectiveTimeStandard,customRange),[trendQuery.data,effectiveTimeStandard,customRange]);
-  const basicTrend=useMemo(()=>buildSourceTrend(trendQuery.data||[],effectiveTimeStandard,customRange),
-    [trendQuery.data,effectiveTimeStandard,customRange]);
-  // Source composition is meaningful even on the combined-total view:
-  // totals use raw source counts; source-share views use percentages.
-  const basicSeries=SOURCE_TREND_ORDER.map(name=>rankingType==='total'
-    ?{key:name+'_count',label:name}
-    :{key:name,label:name+' (%)'});
-  const basicDistribution=summary.sources.map(item=>({name:item.term,value:item.item_count}));
+  const sourceCatalog=useQuery({
+    queryKey:['statistics-source-taxonomy'],
+    enabled:!isLrunesDaily&&!mediaDimension&&Boolean(rankingType),
+    queryFn:async()=>{
+      const [cat,aliases]=await Promise.all([
+        selectRows('silver.statistics_source_categories',{columns:'category_code,display_name,enabled',limit:250}),
+        selectRows('silver.statistics_source_aliases',{columns:'source_key,category_code',limit:250})
+      ]);
+      return {categories:cat.rows,aliases:aliases.rows};
+    },
+    staleTime:5*60_000
+  });
+  const sourceRows=useQuery({
+    queryKey:['own-scope-source-intersection',scopeId,queryRange.startDate,queryRange.endDate],
+    queryFn:()=>selectScopeSourceBreakdownRows(targetScopes[0],queryRange),
+    enabled:!isLrunesDaily&&!mediaDimension&&Boolean(targetScopes.length)&&customReady&&Boolean(queryRange.startDate&&queryRange.endDate),
+    staleTime:5*60_000
+  });
+  const adminSource=useMemo(()=>administrativeSourceTrend(sourceRows.data||[],sourceCatalog.data||{},{
+    startDate:queryRange.startDate,endDate:queryRange.endDate,
+    unit:effectiveTimeStandard==='1y'?'month':effectiveTimeStandard==='1m'?'week':'day'
+  }),[sourceRows.data,sourceCatalog.data,queryRange.startDate,queryRange.endDate,effectiveTimeStandard]);
+  const basicTrend=adminSource.rows;
+  const basicSeries=adminSource.series;
+  const basicDistribution=adminSource.distribution;
+  const sourceSummary={...summary,total:adminSource.total,
+    sources:adminSource.distribution.map(row=>({term:row.name,item_count:row.value})),
+    startDate:queryRange.startDate,endDate:queryRange.endDate
+  };
   const facetRange=rowsInWindow(mediaQuery.data||[],effectiveTimeStandard,customRange);
   const facetTotalsForOptions=facetTotals(facetRange.rows);
   const facetNames=facetTotalsForOptions.slice(0,6).map(row=>row.term);
@@ -671,12 +692,12 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     </div>
     {isLrunesDaily?<LrunesDailyStatisticsPanel/>:<>
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
-    {!mediaDimension&&trendQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(trendQuery.error)}</p>:null}
+    {!mediaDimension&&(trendQuery.error||sourceRows.error||sourceCatalog.error)?<p className="scope-status scope-error">{featureDataErrorMessage(trendQuery.error||sourceRows.error||sourceCatalog.error)}</p>:null}
     {mediaDimension&&mediaQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(mediaQuery.error)}</p>:null}
     {timeStandard==='custom'&&!customReady?<p className="scope-status">請設定有效的開始與結束日期。</p>:null}
-    {!mediaDimension&&!trendQuery.isPending&&!trendQuery.error&&customReady?<>
-      <p className="scope-status">{summary.startDate&&summary.endDate?summary.startDate+' ～ '+summary.endDate:''}</p>
-      <SummaryList rankingType={rankingType} summary={summary}/>
+    {!mediaDimension&&!sourceRows.isPending&&!sourceCatalog.isPending&&!sourceRows.error&&!sourceCatalog.error&&customReady?<>
+      <p className="scope-status">{sourceSummary.startDate&&sourceSummary.endDate?sourceSummary.startDate+' ～ '+sourceSummary.endDate:''}</p>
+      <SummaryList rankingType={rankingType} summary={sourceSummary}/>
       <StatisticsMultiChart
         type={effectiveChartType}
         rows={basicTrend}
