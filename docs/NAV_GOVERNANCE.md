@@ -44,3 +44,12 @@ LunaRunes 的 game、list、duel/*、daily/* 等特殊 routes 由 Next filesyste
 ## UI copy
 
 NAV 固定功能文字與 LOC 首頁導引使用 `app/i18n/ui-copy.js`；具名 Scope 的 NAV 標題讀取 `silver.manage."Title_TW"`，讀取前暫用原有 UI label，不能拿 Registry 的 `display_name` 覆蓋。UI copy registry 不處理 Galaxy authored content 或 LunaRunes Canon。
+
+## Shared workspace navigation (2026-10-10)
+
+- Upper NAV = "我的最愛". Three legacy scopes are initially selected; authenticated users may save a custom list in the existing `api.user_settings` scalar text_value column.
+- Floating bottom dock = six immutable controls in this order: 首頁 / 文化 (hourglass) / 統計 / 搜尋 / 治理 / 設定. It uses six separate Theme-derived backgrounds and shadows.
+- First five controls resolve within the active Scope or Scope Group, preserving the existing canonical feature routing; Settings is global to the current site origin, never Scope-owned.
+- Homepage preference defaults to LOC. Account-selected homepage is validated against existing management Scope permissions. The native startup redirect runs only once per WebView session; explicit LOC navigation remains possible.
+- OAuth entry and signout UI are in Settings. Existing management RLS and role boundaries are unchanged.
+- iOS navigation uses bundled static local routes; browser navigation keeps canonical Scope domains. Other private iOS Local File features and Daily table migrations are out of scope.

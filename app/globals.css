@@ -20,6 +20,7 @@
 @import "./styles/uiux.css";
 @import "./styles/loc-about-original.css";
 @import "./styles/extra.css";
+@import "./styles/bottom-navigation.css";
 
 
 
@@ -29,3 +30,4 @@
 html[data-theme-bootstrap="scheme-only"] body{
   visibility:hidden;
 }
+

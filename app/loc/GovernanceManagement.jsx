@@ -24,11 +24,10 @@ function ManagementDisclosure({label,children}){
 
 function LoginScreen({scopeId,account}){
   const copy=LOGIN_COPY[scopeId]||LOGIN_COPY.lo3rwang;
-  const callbackURL=scopeId==='loc'?scopeHref('admin'):scopeHref(scopeId,'governance/manage');
   return <section className="loc-view">
     <header className="loc-hero"><p className="loc-eyebrow">{copy.eyebrow}</p><h1>{copy.title}</h1></header>
     <section className="loc-card">
-      <button className="loc-button primary" type="button" onClick={()=>account.signIn(callbackURL)}>使用 Google 登入</button>
+      <a className="loc-button primary" href="/settings/">前往設定登入</a>
       {account.error?<p className="scope-status scope-error">{account.error}</p>:null}
     </section>
   </section>;
@@ -43,7 +42,7 @@ export default function GovernanceManagement(){
   if(!account.user)return <LoginScreen scopeId={scopeId} account={account}/>;
   if(!canManage)return <section className="loc-view">
     <header className="loc-hero"><p className="loc-eyebrow">{UI_COPY.management.eyebrow}</p><h1>{scope.label}管理</h1></header>
-    <section className="loc-card"><p>{UI_COPY.management.permissionDenied}</p><button type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button></section>
+    <section className="loc-card"><p>{UI_COPY.management.permissionDenied}</p><a href="/settings/">帳號設定</a></section>
   </section>;
 
   return <section className="loc-view scope-management-page">
@@ -53,7 +52,7 @@ export default function GovernanceManagement(){
       <p>{account.user.email||account.user.name||''}</p>
       <div className="scope-preview-links">
         {scopeId==='loc'?<a className="loc-button" href={scopeHref('admin')}>前往 Admin 系統設定</a>:<a className="loc-button" href={scopeHref(scopeId)}>返回 Scope</a>}
-        <button className="loc-button" type="button" onClick={account.signOut}>{UI_COPY.management.signOut}</button>
+        <a className="loc-button" href="/settings/">帳號設定</a>
       </div>
     </header>
 
