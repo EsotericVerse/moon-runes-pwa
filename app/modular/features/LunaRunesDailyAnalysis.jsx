@@ -3,7 +3,7 @@
 import {useMemo,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {
-  Bar,BarChart,CartesianGrid,Cell,Line,LineChart,Pie,PieChart,
+  Bar,BarChart,CartesianGrid,Line,LineChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
 import CultureTimeline from '../modules/culture-timeline/CultureTimeline';
@@ -18,11 +18,9 @@ import {
   summarizeLunaRunesDaily
 } from '../../loc/lrunes-daily-analysis';
 
-const PALETTE=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55'];
 const TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)',borderRadius:8};
 const MONTH_MS=86400000;
 const EMPTY_FOCUS=Object.freeze({});
-const emptyLabel=()=> '';
 
 function dayBefore(value,days){
   const date=new Date(String(value||'')+'T00:00:00Z');
@@ -121,7 +119,7 @@ function LrunesStatistics({rows,summary}){
       <div style={{overflowX:'auto'}}>
         <table className="scope-table" style={{width:'100%',borderCollapse:'collapse',textAlign:'center'}}>
           <thead><tr><th scope="col">卡片／天時</th>{LUNARUNES_PHASES.map(phase=><th key={phase} scope="col">{phase}</th>)}</tr></thead>
-          <tbody>{Object.values(LUNARUNES_CARD_PHASES).map(card=><tr key={card}>
+          <tbody>{[...Object.values(LUNARUNES_CARD_PHASES),...(rows.some(row=>row.card_phase==='未指定')?['未指定']:[])].map(card=><tr key={card}>
             <th scope="row">{card}</th>
             {LUNARUNES_PHASES.map(real=><td key={real}>{cross.get(card+'|'+real)||0}</td>)}
           </tr>)}</tbody>
@@ -186,7 +184,7 @@ function LrunesCulture({rows,summary}){
     ...works.map(row=>row.work_date),
     ...anchorRiver.map(row=>row.start_date)
   ].filter(Boolean))].sort().reverse(),[rows,works,anchorRiver]);
-  const day=chosenDay||availableDays[0]||'';
+  const day=chosenDay>=start&&chosenDay<=end?chosenDay:(availableDays[0]||'');
   const context=useMemo(()=>lunarunesDateContext(day,rows,works,aroundDays),[day,rows,works,aroundDays]);
   const dayTextQuery=useQuery({
     queryKey:['lrunes-combined-culture-work-texts',workSource,day],
@@ -211,6 +209,7 @@ function LrunesCulture({rows,summary}){
       {workQuery.isPending?<p className="scope-status">正在取得文字作品的日期與數量…</p>:null}
       {workQuery.error?<p className="scope-status scope-error">文字作品讀取失敗：{workQuery.error.message}</p>:null}
       {anchorQuery.error?<p className="scope-status scope-error">定錨點讀取失敗：{anchorQuery.error.message}</p>:null}
+      <p className="scope-status">月相條件只篩選每日符文；天時背景與文字作品仍呈現完整日期區間，避免隱藏對照事實。</p>
       <p className="scope-status">此區間每日符文 {rows.length} 次／{new Set(rows.map(row=>row.record_date)).size} 日；對照來源作品 {works.length} 篇／{new Set(works.map(row=>row.work_date)).size} 日；作品密度建議定錨 {riverAnalysis.suggestions.length} 個（僅供觀察）。</p>
       <CultureTimeline items={parallelItems} mode="source" focus={EMPTY_FOCUS}
         windowStart={start} windowEnd={end} labelOf={item=>item.display_label||''}
