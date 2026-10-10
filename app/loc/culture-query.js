@@ -345,20 +345,10 @@ export async function selectScopeCultureData(scopeId){
     }))).flat();
 
     const built=buildLocSourceRiver(aggregateRows);
-    // LOC alone may align existing Time anchors across the two authored
-    // streams. Keep the source Scope ID and do not write cross-Scope Time.
-    const comparisonBundles=bundles.filter(bundle=>['lrunes','lo3rwang'].includes(bundle.runtimeId));
-    const comparisonAnchors=comparisonBundles
-      .flatMap(bundle=>timelineItems(
-        bundle.context.map(row=>({...row,scope_id:bundle.runtimeId})),
-        {includeScope:true}
-      ).filter(item=>item.entry_type==='anchor'));
     return {
       scopeId:id,
       scope:null,
       scopes:validBundles.map(bundle=>bundle.scope),
-      comparisonScopes:comparisonBundles.map(bundle=>bundle.scope),
-      comparisonAnchors,
       eras:{eras:[]},
       periods:[],
       openRanges,
