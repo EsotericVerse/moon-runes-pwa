@@ -270,6 +270,7 @@
     "refactor/module-first-wysiwyg-management-v2",
     "refactor/remove-loc-rune-intro",
     "refactor/scope-block-tables",
+    "refactor/scope-hero-extra-css-owner-20261010",
     "refactor/scope-manage-home-settings",
     "refactor/search-full-article-editor",
     "refactor/static-pwa-cleanup",
