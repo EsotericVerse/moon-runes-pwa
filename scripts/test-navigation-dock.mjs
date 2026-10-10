@@ -149,7 +149,8 @@ test('daily rune calendar only reads and renders record details after authentica
   assert.ok(daily.indexOf('if(!canViewDetails){')<daily.indexOf('selectDailyRuneMonth({year,month})'));
   assert.match(daily,/const request=\+\+monthRequest\.current;/);
   assert.match(daily,/if\(monthRequest\.current!==request\)return;/);
-  assert.match(daily,/return\(\)=>\{monthRequest\.current\+=1;\};/);
+  assert.match(daily,/return\(\)=>\{monthRequest\.current\+=1;/);
+  assert.match(daily,/window\.removeEventListener\('loc-rune-local-changed',reload\)/);
   assert.match(daily,/showDetails=\{canViewDetails\}/);
   assert.match(daily,/canViewDetails&&selectedRows\.length\?/);
   assert.match(daily,/canViewDetails&&!loading&&!error&&!rows\.length\?/);

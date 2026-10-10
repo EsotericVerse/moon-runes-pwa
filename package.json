@@ -14,7 +14,7 @@
     "verify:rune-draw": "node scripts/verify-rune-draw-algorithm.mjs",
     "verify:statistics-facets": "node --test scripts/test-statistics-facets.mjs",
     "verify:semantics": "node scripts/verify-current-semantics.mjs",
-    "verify": "npm run verify:block-presentation && npm run verify:blocknote && npm run verify:feature-hero && npm run verify:loc-home-text && npm run verify:db-adapters && npm run verify:rune-draw && npm run verify:statistics-facets && npm run verify:lrunes-daily && npm run verify:loc-items && npm run verify:rune66-keywords && npm run verify:modules && npm run verify:semantics && npm run verify:scope-registry && npm run verify:authority && npm run verify:directories && npm run verify:auth && npm run verify:theme && npm run verify:management && npm run verify:nav",
+    "verify": "npm run verify:block-presentation && npm run verify:blocknote && npm run verify:feature-hero && npm run verify:loc-home-text && npm run verify:db-adapters && npm run verify:rune-draw && npm run verify:statistics-facets && npm run verify:lrunes-daily && npm run verify:lrunes-settings && npm run verify:loc-items && npm run verify:rune66-keywords && npm run verify:modules && npm run verify:semantics && npm run verify:scope-registry && npm run verify:authority && npm run verify:directories && npm run verify:auth && npm run verify:theme && npm run verify:management && npm run verify:nav",
     "build": "next build",
     "verify:theme": "node scripts/verify-theme-contract.mjs",
     "verify:authority": "node scripts/verify-runtime-authority.mjs",
@@ -29,6 +29,7 @@
     "test:game": "node --experimental-default-type=module --test scripts/test-lunarunes-boardgame.mjs",
     "verify:nav": "node --test scripts/test-navigation-dock.mjs",
     "verify:lrunes-daily": "node --test scripts/test-lrunes-daily-analytics.mjs scripts/test-lrunes-moon-river.mjs",
+    "verify:lrunes-settings": "node --test scripts/test-lrunes-settings-local.mjs",
     "verify:loc-items": "node --test scripts/test-loc-item-confluence.mjs"
   },
   "dependencies": {
@@ -45,6 +46,7 @@
     "react-dom": "19.3.0",
     "react-select": "^5.10.2",
     "recharts": "3.10.1",
+    "sql.js": "1.14.2",
     "vis-network": "10.1.0",
     "vis-timeline": "8.5.4",
     "zod": "4.6.0",
@@ -55,6 +57,8 @@
     "@dnd-kit/core": "^6.3.1",
     "@capacitor-community/sqlite": "8.1.1",
     "@capacitor/core": "8.5.3",
+    "@capacitor/filesystem": "8.0.0",
+    "@capacitor/share": "8.0.0",
     "@capacitor/ios": "8.5.3"
   },
   "devDependencies": {

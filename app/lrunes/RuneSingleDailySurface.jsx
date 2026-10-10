@@ -45,7 +45,8 @@ export default function RuneSingleDailySurface({
   moonPhase,
   error,
   ritualCard,
-  onRetry
+  onRetry,
+  hideModeSelection=false
 }){
   const isDaily=modeKey==='daily';
   const drawnCard=draw?.cards?.[0]||null;
@@ -118,10 +119,10 @@ export default function RuneSingleDailySurface({
       </div>
     </section>
 
-    <section className="loc-card" data-draw-selection={modeKey}>
+    {!hideModeSelection?<section className="loc-card" data-draw-selection={modeKey}>
       <p className="loc-eyebrow">抽牌選擇</p>
       <h2>選擇抽牌方式</h2>
       <RuneDrawModeBubbles activeKey={modeKey}/>
-    </section>
+    </section>:null}
   </>;
 }

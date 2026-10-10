@@ -4,6 +4,11 @@ import {useEffect,useMemo,useState} from 'react';
 import {Capacitor} from '@capacitor/core';
 import {useNavigationPreferences} from './use-navigation-preferences';
 import DailyLogClient from '../daily/log/DailyLogClient';
+import RuneDrawClient from '../lrunes/RuneDrawClient';
+import RuneSQLiteTransfer from '../lrunes/RuneSQLiteTransfer';
+import RuneAppDayNightDashboard from '../lrunes/RuneAppDayNightDashboard';
+import {RUNE_ALL_DRAW_MODES} from '../lrunes/rune-draw-modes.mjs';
+import {settingsRunePolicy} from '../lrunes/settings-rune-policy.mjs';
 import {selectScopeRegistry} from './scope-data';
 import {putSetting} from './user-storage';
 import {DEFAULT_FAVORITES,FAVORITES_SETTING_KEY,HOME_SETTING_KEY,homeScopeForAccount,serializeFavorites,validScopeId} from '../modular/navigation-preferences.mjs';
@@ -29,6 +34,8 @@ export default function GlobalSettings(){
   const [newFolderName,setNewFolderName]=useState('');
   const [busy,setBusy]=useState('');
   const [status,setStatus]=useState('');
+  const [drawOpen,setDrawOpen]=useState(false);
+  const [drawMode,setDrawMode]=useState('daily');
   const identity=account.user?.id||account.user?.email||'';
 
   useEffect(()=>{setNative(Capacitor.isNativePlatform());},[]);
@@ -132,6 +139,17 @@ export default function GlobalSettings(){
     account.signIn(new URL('/settings/',window.location.href).href);
   }
   const checking=account.loading||account.permissionLoading||prefs.loading;
+  const runePolicy=settingsRunePolicy({
+    native,
+    authenticated:Boolean(account.user),
+    scopeManager:Boolean(account.user)&&account.canManageScopeSync('lrunes'),
+    loading:checking
+  });
+  function openAppDraw(mode){
+    setDrawMode(mode);
+    setDrawOpen(true);
+    window.requestAnimationFrame(()=>document.getElementById('settings-rune-draw')?.scrollIntoView({behavior:'smooth',block:'start'}));
+  }
 
   return <main className="scope-main">
     <section className="scope-page">
@@ -141,10 +159,29 @@ export default function GlobalSettings(){
           <h2 id="settings-daily-calendar-title">每日符文行事曆</h2>
           <p className="scope-settings-note">使用測試｜未登入時僅顯示空白行事曆；登入後才會載入每日符文標記、當日指引與前次紀錄。</p>
           <DailyLogClient embedded/>
+          {native&&runePolicy.canImport?<RuneSQLiteTransfer
+            canManage={runePolicy.canImport}
+            onImported={()=>window.dispatchEvent(new CustomEvent('loc-rune-local-changed'))}
+          />:null}
           {account.user&&!checking?<p className="scope-settings-note">
             <a className="loc-button" href={navigationHref('lrunes','daily/log',native)}>開啟完整每日符文紀錄與管理</a>
           </p>:null}
         </section>
+        {native&&runePolicy.canDraw?<RuneAppDayNightDashboard
+          canReadLocal={runePolicy.canRecord}
+          onSelectDraw={openAppDraw}
+        />:null}
+        {runePolicy.canDraw?<section className="loc-card" id="settings-rune-draw">
+          <h2>月典抽牌</h2>
+          <p className="scope-settings-note">月典的共用互動工具。App 訪客可直接使用；網站使用者需登入。OAuth 不代表可保存，只有月之符文 Scope 人員才能將結果寫入裝置 SQLite。</p>
+          <div className="scope-stat-controls">
+            <button type="button" className="loc-button" aria-expanded={drawOpen} onClick={()=>setDrawOpen(value=>!value)}>{drawOpen?'收合抽牌':'開啟抽牌'}</button>
+            {drawOpen?<label><span>抽牌方式</span><select className="scope-select" value={drawMode} onChange={event=>setDrawMode(event.target.value)}>
+              {RUNE_ALL_DRAW_MODES.map(item=><option value={item.key} key={item.key}>{item.label} · {item.count} 張</option>)}
+            </select></label>:null}
+          </div>
+          {drawOpen?<RuneDrawClient key={drawMode} drawKey={drawMode} embedded canSave={runePolicy.canRecord}/>:null}
+        </section>:null}
         <section className="loc-card">
           <h2>設定首頁</h2>
           <p className="scope-settings-note">預設為 LOC。可設定有權使用的 Scope 或 Scope Group；不影響權限。</p>
