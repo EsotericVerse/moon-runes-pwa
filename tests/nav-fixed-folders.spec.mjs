@@ -47,3 +47,19 @@ test('top NAV leaves viewport on page scroll while six-button dock remains fixed
   expect(top).toBeLessThan(-30);
   await expect(dock).toBeInViewport();
 });
+
+test('mobile tap hit targets reach the settings route without a covering layer',async({page},testInfo)=>{
+  test.skip(testInfo.project.name!=='mobile-chromium','Mobile touch simulation only; physical WKWebView remains to be tested');
+  await page.goto('/lrunes/',{waitUntil:'domcontentloaded'});
+  const tab=page.locator('.scope-feature-dock a[href="/settings/"]');
+  await expect(tab).toBeVisible();
+  const hit=await tab.evaluate(anchor=>{
+    const box=anchor.getBoundingClientRect();
+    const under=document.elementFromPoint(box.left+box.width/2,box.top+box.height/2);
+    return Boolean(under&&(anchor===under||anchor.contains(under)));
+  });
+  expect(hit).toBe(true);
+  await tab.tap();
+  await expect(page).toHaveURL(/\/settings\/?$/);
+  await expect(page.getByRole('heading',{name:'設定',exact:true}).first()).toBeVisible();
+});
