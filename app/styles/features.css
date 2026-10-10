@@ -544,3 +544,26 @@
 .scope-keyword-saving-spinner{display:inline-block;flex:0 0 1rem;width:1rem;height:1rem;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:scope-keyword-saving-spin .8s linear infinite}
 @keyframes scope-keyword-saving-spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.scope-keyword-saving-spinner{animation:none;border-right-color:currentColor}}
+
+/* LunaRunes real-calendar moon lane: contiguous phases, no work-count density. */
+.scope-period-timeline .vis-item.scope-lrunes-moon-phase{
+  --lrunes-phase-color:var(--loc-accent);
+  min-height:24px;
+  border:1px solid color-mix(in srgb,var(--lrunes-phase-color) 66%,var(--loc-line));
+  border-radius:2px;
+  background:color-mix(in srgb,var(--lrunes-phase-color) 38%,var(--loc-panel));
+  color:var(--loc-text);
+  font-size:.8rem;
+  font-weight:650;
+}
+.scope-period-timeline .vis-item.scope-lrunes-moon-phase .vis-item-content{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  padding:.15rem .3rem;
+}
+.scope-period-timeline .vis-item.scope-lrunes-moon-phase-0{--lrunes-phase-color:var(--loc-muted)}
+.scope-period-timeline .vis-item.scope-lrunes-moon-phase-1{--lrunes-phase-color:var(--loc-accent)}
+.scope-period-timeline .vis-item.scope-lrunes-moon-phase-2{--lrunes-phase-color:var(--loc-gold)}
+.scope-period-timeline .vis-item.scope-lrunes-moon-phase-3{--lrunes-phase-color:var(--loc-accent)}
+.scope-period-timeline .vis-item.scope-lrunes-moon-phase-4{--lrunes-phase-color:var(--loc-line)}
