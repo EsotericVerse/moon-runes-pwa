@@ -19,6 +19,7 @@ import {useScopeRuntime} from '../use-scope-runtime';
 import {FeaturePage} from '../ui';
 import {useAccount} from '../../loc/use-account';
 import {scopeHref} from '../scope-registry';
+import {LrunesDailyStatisticsPanel} from '../../lrunes/DailyRuneAnalytics';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const GROUP_RANKING_PAGE_SIZE=10;
@@ -29,6 +30,7 @@ const CHART_TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-l
 const CHART_TYPES=[['line',UI_COPY.statistics.line],['bar',UI_COPY.statistics.bar],['pie',UI_COPY.statistics.pie]];
 const STAT_TYPES=['total','source','media_type','media_platform','media_style'];
 const STAT_TYPE_LABELS=Object.freeze({
+  daily_rune:'每日符文',
   total:UI_COPY.statistics.totalSource,
   source:UI_COPY.statistics.workSource,
   media_type:'多媒體類型',
@@ -605,6 +607,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const requested=String(navigation.rankingType||'');
   const rankingType=types.includes(requested)?requested:(types[0]||'');
   const mediaDimension=MEDIA_STAT_TYPES.has(rankingType);
+  const isLrunesDaily=scopeId==='lrunes'&&rankingType==='daily_rune';
   const [chartType,setChartType]=useState('line');
   const [timeStandard,setTimeStandard]=useState('1y');
   const [customFrom,setCustomFrom]=useState('');
@@ -631,7 +634,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const trendQuery=useQuery({
     queryKey:['statistics-source-trend',scopeId,effectiveTimeStandard,queryRange.startDate,queryRange.endDate],
     queryFn:()=>selectSourceTrendRows(targetScopes,queryRange),
-    enabled:!mediaDimension&&Boolean(rankingType)&&Boolean(targetScopes.length)&&customReady&&Boolean(queryRange.startDate&&queryRange.endDate),
+    enabled:!isLrunesDaily&&!mediaDimension&&Boolean(rankingType)&&Boolean(targetScopes.length)&&customReady&&Boolean(queryRange.startDate&&queryRange.endDate),
     staleTime:5*60_000
   });
   const mediaQuery=useQuery({
@@ -658,7 +661,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     <header className="scope-stat-domain-heading"><div><h2>{UI_COPY.statistics.result}</h2></div></header>
     <div className="scope-stat-controls">
       <StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/>
-      <label><span>{UI_COPY.statistics.chart}</span><select className="scope-select" value={chartType} onChange={event=>setChartType(event.target.value)}>
+      {!isLrunesDaily?<><label><span>{UI_COPY.statistics.chart}</span><select className="scope-select" value={chartType} onChange={event=>setChartType(event.target.value)}>
         {CHART_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}
       </select></label>
       <label><span>{UI_COPY.statistics.range}</span><select className="scope-select" value={timeStandard} onChange={event=>setTimeStandard(event.target.value)}>
@@ -668,10 +671,12 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         <label><span>{UI_COPY.statistics.start}</span><input className="scope-input" type="date" value={customFrom} onChange={event=>setCustomFrom(event.target.value)}/></label>
         <label><span>{UI_COPY.statistics.end}</span><input className="scope-input" type="date" value={customTo} onChange={event=>setCustomTo(event.target.value)}/></label>
       </>:null}
+      </>:null}
       {scopeId==='lo3rwang'?<label><span>表現風格</span><select className="scope-select" value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}>
         {STYLE_FILTERS.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
       </select></label>:null}
     </div>
+    {isLrunesDaily?<LrunesDailyStatisticsPanel/>:<>
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
     {!mediaDimension&&trendQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(trendQuery.error)}</p>:null}
     {mediaDimension&&mediaQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(mediaQuery.error)}</p>:null}
@@ -705,7 +710,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       {runeQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(runeQuery.error)}</p>:null}
       {!runeQuery.isPending&&!runeQuery.error&&runeQuery.data?<Rune66Summary analysis={runeQuery.data}/>:null}
     </>:null}
-
+    </>}
   </section>;
 }
 
@@ -738,7 +743,7 @@ export default function Statistics(){
         scopeId={scopeId}
         aggregateScopes={Boolean(scope?.aggregateChildren)}
         navigation={navigation}
-        types={STAT_TYPES}
+        types={scopeId==='lrunes'?['daily_rune',...STAT_TYPES]:STAT_TYPES}
         canManageKeywords={canManageKeywords}
       />
     </section>
