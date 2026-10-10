@@ -1,21 +1,21 @@
-name: Publish LOC 0.9.2 RC3.1.1 iOS IPA
+name: Publish LOC 0.9.2 RC3.1 iOS IPA
 
 on:
   push:
     branches: [main]
     paths:
-      - 'governance/releases/v0.9.2-rc.3.1.1.md'
+      - 'governance/releases/v0.9.2-rc.3.1.md'
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: loc-092-rc311-release
+  group: loc-092-rc31-release
   cancel-in-progress: false
 
 jobs:
-  verify-rc311:
+  verify-rc31:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -52,7 +52,7 @@ jobs:
         run: npm run test:ui
 
   build-and-release-ipa:
-    needs: verify-rc311
+    needs: verify-rc31
     runs-on: macos-26-intel
     timeout-minutes: 65
     steps:
@@ -157,7 +157,7 @@ jobs:
           gh release create "$tag" \
             --target "$GITHUB_SHA" \
             --title "LOC 0.9.2 RC3.1 — iOS Native AppIcon" \
-            --notes-file governance/releases/v0.9.2-rc.3.1.1.md \
+            --notes-file governance/releases/v0.9.2-rc.3.1.md \
             --prerelease \
             dist/LOC-0.9.2-RC3.1-unsigned.ipa
           gh release view "$tag" --json assets,tagName,url
