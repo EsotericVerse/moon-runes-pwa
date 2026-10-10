@@ -129,6 +129,65 @@ export function summarizeLunaRunesDaily(rows=[]){
   };
 }
 
+
+// A separate, public work source shares the same date axis as daily draws.
+// This intentionally reads metadata only: the visual river tracks published
+// work counts, not text length or sentiment, which require separate analysis.
+function workDay(value){
+  if(!value)return '';
+  const date=new Date(value);
+  if(Number.isNaN(date.getTime()))return '';
+  try{
+    const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);
+    const fields=Object.fromEntries(parts.map(part=>[part.type,part.value]));
+    return isoDate(fields.year+'-'+fields.month+'-'+fields.day);
+  }catch{return isoDate(String(value).slice(0,10));}
+}
+
+export async function selectLunaRunesCulturalWorks(){
+  const {rows}=await selectAllRows('silver.lrunes_galaxy',{
+    columns:'uid,title,createtime,source_name,content_type,url',
+    filters:[
+      {column:'statistics_able',operator:'eq',value:true},
+      {column:'searchable',operator:'eq',value:true},
+      {column:'content',operator:'neq',value:''}
+    ],
+    orders:[{column:'createtime',ascending:true},{column:'uid',ascending:true}]
+  });
+  return rows.map(row=>({
+    ...row,
+    work_date:workDay(row.createtime)
+  })).filter(row=>Boolean(row.work_date));
+}
+
+export function lunarunesWorksOnDates(rows=[],from='',to=''){
+  const first=isoDate(from),last=isoDate(to);
+  return rows.filter(row=>row.work_date&&(!first||row.work_date>=first)&&(!last||row.work_date<=last));
+}
+
+export function lunarunesWorkTimeline(rows=[]){
+  const grouped=new Map();
+  for(const row of rows){
+    if(!row.work_date)continue;
+    if(!grouped.has(row.work_date))grouped.set(row.work_date,[]);
+    grouped.get(row.work_date).push(row);
+  }
+  const maxCount=Math.max(1,...[...grouped.values()].map(works=>works.length));
+  return [...grouped].map(([date,works])=>({
+    id:'lrunes-works:'+date,
+    entry_type:'culture_work_density',
+    group_key:'lrunes-works',
+    group_label:'文字作品',
+    group_order:2,
+    start_date:date,
+    end_date:nextDate(date),
+    display_label:'',
+    item_count:works.length,
+    density_ratio:works.length/maxCount,
+    title:date+'｜文字作品 '+works.length+' 項｜'+works.slice(0,5).map(row=>row.title||row.source_name||'未命名').join('、')+(works.length>5?'…':'')
+  })).sort((a,b)=>a.start_date.localeCompare(b.start_date));
+}
+
 export function lunarunesSkyTimeline(from,to){
   const start=isoDate(from),end=isoDate(to);
   if(!start||!end||start>end)return [];
