@@ -123,3 +123,21 @@ test('only the dedicated LunaRunes option can create semantic rune labels',()=>{
   assert.equal(items[0].display_label,'');
   assert.equal(daily[0].runeDraws[0].length,0);
 });
+
+// The moon event river belongs to the *cited and populated* LunaRunes daily
+// source, not to LOC Culture as an unconditional third source.
+test('LOC Culture only adds lunar event anchors beside populated daily rune records',async()=>{
+  const {buildReferencedMoonRiver}=await import('../app/lrunes/daily-moon-river.mjs');
+  const moon=day=>day<'2026-10-03'?'新月':'滿月';
+  const rune={scopeId:'lrunes',source:'daily:rune'};
+  const regular={scopeId:'lo3rwang',source:'galaxy:facebook'};
+  const noMoon=buildReferencedMoonRiver('2026-10-01','2026-10-04',[regular],moon,7);
+  const empty=buildReferencedMoonRiver('2026-10-01','2026-10-04',[rune,regular],moon,0);
+  const withRune=buildReferencedMoonRiver('2026-10-01','2026-10-04',[rune,regular],moon,2);
+  assert.deepEqual(noMoon,[]);
+  assert.deepEqual(empty,[]);
+  assert.equal(withRune.length,2);
+  assert.equal(withRune[0].group_order,-1);
+  assert.equal(withRune[1].moon_phase_anchor_date,'2026-10-03');
+  assert.equal(withRune[0].end_date,withRune[1].start_date);
+});

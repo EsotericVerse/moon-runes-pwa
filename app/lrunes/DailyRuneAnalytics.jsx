@@ -8,6 +8,7 @@ import {
 } from 'recharts';
 import {selectDailyRuneRange} from '../loc/daily-runes';
 import {realMoonPhase} from '../loc/model/moon-phase';
+import {buildReferencedMoonRiver} from './daily-moon-river.mjs';
 import CultureTimeline from '../modular/modules/culture-timeline/CultureTimeline';
 import {
   DAILY_RUNE_MODES,normalizeDailyDraws,rankDailyDraws,pageDailyRanking,
@@ -99,7 +100,11 @@ export function LrunesDailyCulturePanel(){
   const [selected,setSelected]=useState(null);
   const {range,query,draws}=useDailyRuneWindow(mode,from,to);
   const summary=useMemo(()=>summarizeDailyDraws(draws),[draws]);
-  const items=useMemo(()=>draws.map((row,index)=>({
+  const moonItems=useMemo(()=>range&&query.isSuccess?buildReferencedMoonRiver(
+    range.startDate,range.endDate,[{scopeId:'lrunes',source:'daily:rune'}],
+    date=>realMoonPhase(new Date(date+PHASE_DATE_TIME)),draws.length
+  ):[],[range?.startDate,range?.endDate,query.isSuccess,draws.length]);
+  const drawItems=useMemo(()=>draws.map((row,index)=>({
     id:'daily-rune:'+row.record_date+':'+row.draw_kind+':'+index,
     entry_id:'daily-rune:'+row.record_date+':'+row.draw_kind+':'+index,
     entry_type:'daily_rune',
@@ -112,25 +117,25 @@ export function LrunesDailyCulturePanel(){
     item_count:1,
     daily_record:row
   })),[draws]);
+  const items=useMemo(()=>[...moonItems,...drawItems],[moonItems,drawItems]);
   const message=queryMessage(query,range);
   return <section className="scope-card scope-culture-classification-river">
     <h3>每日符文｜時間長河</h3>
-    <p className="scope-status">依日期呈現符文、方向、當日月相；主抽、補抽與早期歷史紀錄分開標示，不併入 Galaxy 作品數量。</p>
+    <p className="scope-status">當所選區間有每日符文紀錄，才在上方附帶一條天時月相河道；以月相變動日期作事件定錨，延續至下一次變動，中間無抽符的日期仍連續。若此區間完全沒有每日符文紀錄，就不顯示月相河道。下方保留符文名稱、四向方向與主抽／補抽／歷史紀錄。既有臺灣農曆五段式日期規則為日級推算，不代表精確天文時刻；不併入 Galaxy 作品數量。</p>
     <RangeControls mode={mode} setMode={setMode} from={from} setFrom={setFrom} to={to} setTo={setTo}/>
     {message?<p className="scope-status">{message}</p>:null}
     {!message?<p className="scope-status">{range.startDate} ～ {range.endDate} · {summary.dayCount} 個紀錄日 · {summary.recordCount} 筆抽取紀錄</p>:null}
-    {!message&&items.length?<CultureTimeline
+    {range&&items.length?<CultureTimeline
       items={items}
       labelOf={riverLabel}
       focus={FOCUS}
       mode="source"
       windowStart={range.startDate}
-      windowEnd={range.endDate}
+      windowEnd={nextDay(range.endDate)}
       onSelect={item=>setSelected(item?.raw?.daily_record||null)}
     />:null}
-    {!message&&!items.length?<p className="scope-status">目前區間沒有每日符文紀錄。</p>:null}
+    {!message&&!drawItems.length?<p className="scope-status">目前區間沒有每日符文紀錄，因此不顯示月相河道。</p>:null}
     {selected?<p className="scope-status">所選紀錄：{selected.record_date} · {groupLabel(selected)} · {selected.rune_name} · {selected.direction} · {selected.phase}{selected.phase_inferred?'（依日期推算）':''}</p>:null}
-    <p className="scope-status"><a href="/daily/log/">查看每日符文行事曆及前次紀錄 →</a></p>
   </section>;
 }
 
