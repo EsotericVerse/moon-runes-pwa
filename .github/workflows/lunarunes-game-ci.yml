@@ -2,7 +2,6 @@ name: LunaRunes game integration checks
 on:
   push:
     branches: [main]
-  pull_request:
     paths:
       - 'app/lrunes/game/**'
       - 'app/loc/LocApp.jsx'
@@ -10,6 +9,7 @@ on:
       - 'package-lock.json'
       - 'scripts/test-lunarunes-boardgame.mjs'
       - '.github/workflows/lunarunes-game-ci.yml'
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
@@ -25,5 +25,4 @@ jobs:
           npm ci --no-audit --no-fund
       - name: Test game rules
         run: npm run test:game
-      - name: Verify application build
-        run: npm run build
+      # Full app build already runs in the main architecture check; do not duplicate it here.

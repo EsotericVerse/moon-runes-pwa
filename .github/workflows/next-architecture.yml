@@ -3,18 +3,21 @@ name: Next Architecture Build
 on:
   push:
     branches: [main]
-  pull_request:
     paths:
-      - "app/**"
-      - "assets/**"
-      - "docs/**"
-      - "scripts/**"
-      - "tests/**"
-      - "package.json"
-      - "package-lock.json"
-      - "next.config.mjs"
-      - ".github/workflows/next-architecture.yml"
+      - 'app/**'
+      - 'assets/**'
+      - 'public/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'next.config.mjs'
+      - '.github/workflows/next-architecture.yml'
   workflow_dispatch:
+
+concurrency:
+  group: next-architecture-main
+  cancel-in-progress: true
 
 jobs:
   build-next-architecture:

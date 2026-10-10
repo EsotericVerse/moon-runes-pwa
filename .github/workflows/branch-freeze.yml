@@ -1,7 +1,7 @@
 name: Branch Freeze
 
 on:
-  pull_request:
+  # Historical branch registry is diagnostic only, never a PR gate.
   workflow_dispatch:
 
 permissions:

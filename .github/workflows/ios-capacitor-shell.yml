@@ -1,28 +1,7 @@
 name: LOC iOS Capacitor Shell
 
+# Simulator-only diagnostic; the installable-device candidate comes from main IPA.
 on:
-  push:
-    branches:
-      - feat/ios-capacitor-shell
-    paths:
-      - 'capacitor.config.json'
-      - '.github/workflows/ios-capacitor-shell.yml'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'next.config.mjs'
-      - 'app/**'
-      - 'public/**'
-      - 'assets/**'
-  pull_request:
-    paths:
-      - 'capacitor.config.json'
-      - '.github/workflows/ios-capacitor-shell.yml'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'next.config.mjs'
-      - 'app/**'
-      - 'public/**'
-      - 'assets/**'
   workflow_dispatch:
 
 permissions:

@@ -1,11 +1,7 @@
 name: Synchronize LunaRunes dependency lockfile
+# Never auto-commit onto main during concurrent development; lockfile changes
+# should normally ship with package.json in one commit.
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - '.github/workflows/lunarunes-lock-sync.yml'
-      - 'package.json'
   workflow_dispatch:
 permissions:
   contents: write
