@@ -316,6 +316,7 @@ function SourceRefresh({scopeId,format,contentTypes=[],onBusyChange}){
           ...record,
           uid:current.uid,
           content_type:format.typeMode==='override'||explicitTypeNativeIds.has(nativeId)?record.content_type:current.content_type,
+          statistics_able:format.typeMode==='override'||explicitTypeNativeIds.has(nativeId)?record.statistics_able:current.statistics_able,
           source_name:selected,
           createtime:record.createtime||current.createtime||null,
           source_place:record.source_place||current.source_place||null,
