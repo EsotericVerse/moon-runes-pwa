@@ -1,8 +1,8 @@
 # LOC｜Luna Codex
 
-**Current version: 0.9.2-rc.2 (Release Candidate — bug-fix baseline)**
+**Current version: 0.9.2-rc.3 (Release Candidate — iOS launcher icon and web navigation baseline)**
 
-> 0.9.2 RC2 follows user acceptance of core Scope administration (creation, deletion and node management). It remains a stabilization candidate, not a completed 1.0 release. Import with real files and private iOS device testing are **Pending / not manually tested**. Other manual checks remain in `docs/TODO.md`.
+> 0.9.2 RC3 packages the latest main NAV/favorite folders, Culture revisions, and an iOS unsigned IPA with the approved LOC lunar AppIcon. It remains a stabilization candidate, not 1.0 GA. iOS IPA requires local signing for installation, and private Local File/import with real files remain **Pending / not manually tested**. See `docs/TODO.md`.
 
 This repository contains two related but separately governed systems:
 

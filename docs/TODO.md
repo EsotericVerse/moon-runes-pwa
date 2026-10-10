@@ -1,6 +1,6 @@
 # LOC Current TODO
 
-**Current version:** 0.9.2-rc.2
+**Current version:** 0.9.2-rc.3
 
 **Release policy:** 0.9.2 RC 先定版，後續以修 bug／回歸驗證為主；Import 的真實來源測試由使用者暫緩，**Pending / 尚未驗收**。本表的 `[x]` 表示對應程式交付或已取得明確驗證證據，不能推論其他人工檢查也完成。
 
@@ -10,7 +10,7 @@
 - [x] 四大功能 Hero 依 Scope 載入八張 JPG：LOC 專用四張；作者與符韻共用四張。
 - [x] LOC／作者的功能 Hero 文字移至圖片垂直中段；符韻沿用原有布局；已加入 desktop／mobile Playwright 回歸。
 - [x] 0.9.1 CSS／DIV 收斂、既有語意與共用排版契約繼續保留。
-- [ ] **0.9.2-rc.2 本身**的 `verify`／public DB／build／desktop-mobile CI：在對應 commit 執行完成後才登記結果，不以先前 PR 的 CI 代替。
+- [ ] **0.9.2-rc.3 本身**的 `verify`／public DB／build／desktop-mobile CI：以 RC3 commit 的 CI 為準，不沿用 RC2 或 NAV PR 的檢查結果。
 
 ## RC2 驗收紀錄與剩餘待辦
 
@@ -18,11 +18,11 @@
 - [x] Scope 刪除／節點管理核心流程：使用者在 RC2 升版前已確認正常；vis-network／Attr 入口、ID 確認、RPC 及 Registry 驗證流程均已納入 RC2 基線。
 - [ ] 其他細部／跨裝置邊界回歸：Scope 視覺階層、Domain／Directory、NAV／頁面文案及語系摘要在更多裝置／異常資料情境下的一致性。此項不是 Scope 核心新增／刪除尚未驗收。
 - [x] iOS Capacitor 靜態封裝與 unsigned IPA 建置管線已完成，PR #479 已合併 main；已完成的 CI 編譯**不等同**使用者實機完成 App Local File 驗收。
-- [ ] iPhone 安裝／更新版 IPA 的實機回歸與私密資料 Local File 驗收：等網站 NAV／功能選單確認後進行，不因 main 更新就反覆重新安裝。
+- [ ] 0.9.2 RC3 unsigned IPA 檔案取得、AltStore 本地簽署／安裝及 iPhone 實機回歸；**原生私密 Local File 仍獨立待開發驗收**。
 
 ## LOC App — 2026-10-10 獨立工作線
 
-**現行決策：** 網站是 NAV／功能選單的第一驗收環境；App 與網站共用同一套 React UI。網站確認前**暫不產生／要求重新安裝新版 IPA**。App 私密檔案另以原生環境能力隔離；Supabase 為公開／授權 Scope 資料主庫，不是私人 Local File 儲存位置，Neon 也不參與本機檔案儲存。
+**現行決策：** 使用者已要求製作 0.9.2 RC3 iOS IPA（原生桌面圖示納入）；App 與網站共用同一套 React UI。**本次僅供安裝驗收，不表示 Native Local File 完成。**App 私密檔案另以原生環境能力隔離；Supabase 為公開／授權 Scope 資料主庫，不是私人 Local File 儲存位置，Neon 也不參與本機檔案儲存。
 
 ### 已完成的程式基線
 
@@ -48,7 +48,7 @@
 
 ### App 圖示與範圍邊界
 
-- [ ] LOC／符韻瀏覽器 favicon 已獨立提出 PR #500，尚未合併；與 iOS App launcher icon 分開處理。作者使用既有「作者的話」原圖，不採 AI 繪製的黑曜石獸替代。
+- [x] **RC3 Native LOC AppIcon 導入程式已建立：** 使用已選定的 LOC 月球／時間長河徽記做 iOS 專屬桌面圖示，1024px 不透明 PNG 由 macOS/Xcode build 階段產出；須核對 IPA 內 Assets.car 與 App Icon 鍵。瀏覽器/favicon 仍另案 PR #500（未合併），與 App launcher icon 獨立；作者沿用「作者的話」原圖。
 - [ ] 未來 Scope Group（例如「XX 的家」）可成為自選首頁／我的最愛的空間；群組文件與個人本機檔案的存取邊界不可混用。Group 自有文件／統計／搜尋屬另外的資料功能工作線，不夾入本階段 App Local File 測試。
 - [ ] 每日符文原頁保留，Daily 專用資料表多人共用（非一人一表）；`silver.lo3rwang_daily` 與 `silver.lrunes_daily` 的 Table／VIEW 方案須獨立驗證後才動 Supabase，不塞進 `api.user_records`，也不與 App Local File 混在一個 PR。
   
