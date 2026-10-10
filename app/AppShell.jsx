@@ -1,22 +1,26 @@
 'use client';
 
 import {useEffect,useMemo,useState,useSyncExternalStore} from 'react';
+import {Capacitor} from '@capacitor/core';
 import {motion,useScroll,useSpring} from 'motion/react';
 import {QueryClient,QueryClientProvider,useQuery} from '@tanstack/react-query';
 import {UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale,uiCopy} from './i18n/ui-copy';
 import {UiLocaleProvider} from './i18n/ui-locale';
-import {FEATURES,SCOPES,featureHref,featureIdForPath,getScope,scopeHref,setScopeRegistryRouteRows} from './modular/scope-registry';
+import {FEATURES,SCOPES,featureIdForPath,getScope,setScopeRegistryRouteRows} from './modular/scope-registry';
 import {applyTheme,themeSignature,THEME_SLOTS} from './modular/theme-registry';
 import {mergeThemeSlot,selectThemeRegistry} from './loc/theme-data';
 import {useScopeRuntime} from './modular/use-scope-runtime';
 import {selectScopeConfig,selectScopeRegistry,selectScopePageCopy} from './loc/scope-data';
 import {getDbSourceStatus,subscribeDbSourceStatus} from './loc/db-source-status.mjs';
+import {useNavigationPreferences} from './loc/use-navigation-preferences';
+import {homeScopeForAccount} from './modular/navigation-preferences.mjs';
+import {navigationHref} from './modular/nav-destinations.mjs';
+import BottomNavIcon from './modular/BottomNavIcon';
 
 const SYSTEM_THEME_ID='system-default';
 const DAY_THEME_ID='theme-7';
 const NIGHT_THEME_ID='theme-1';
 const THEME_TIME_ZONE='Asia/Taipei';
-const NAV_FEATURE_ORDER=['culture','statics','governance'];
 const NAV_SCOPES=Object.values(SCOPES)
   .filter(scope=>scope.nav)
   .sort((a,b)=>String(a.nav.position).localeCompare(String(b.nav.position))||Number(a.nav.order||0)-Number(b.nav.order||0));
@@ -167,7 +171,7 @@ function normalizePath(value='/'){
 function targetIsCurrent(href,host,pathname){
   if(!host)return false;
   try{
-    const url=new URL(href);
+    const url=new URL(href,'https://'+host);
     return url.hostname===host.split(':')[0]&&normalizePath(url.pathname)===normalizePath(pathname);
   }catch{return false;}
 }
@@ -184,13 +188,21 @@ export default function AppShell({children}){
   const scaleX=useSpring(scrollYProgress,{stiffness:220,damping:34,mass:.28});
   const {scopeId,scope,host,pathname,registryRow,configRow}=useScopeRuntime();
   const currentFeature=featureIdForPath(pathname);
-  const [searchText,setSearchText]=useState('');
+  const isSettings=normalizePath(pathname)==='/settings';
+  const [native,setNative]=useState(false);
+  const preferences=useNavigationPreferences();
   const [navDisplayNames,setNavDisplayNames]=useState({});
+  const [registryScopes,setRegistryScopes]=useState([]);
+  const [registryLoaded,setRegistryLoaded]=useState(false);
+  useEffect(()=>{setNative(Capacitor.isNativePlatform());},[]);
   useEffect(()=>{
     let active=true;
     selectScopeRegistry().then(rows=>{
-      if(active)setScopeRegistryRouteRows(rows);
-    }).catch(()=>{});
+      if(active){
+        setScopeRegistryRouteRows(rows);
+        setRegistryScopes(rows||[]);
+      }
+    }).catch(()=>{}).finally(()=>{if(active)setRegistryLoaded(true);});
     Promise.all(NAV_SCOPES.filter(item=>item.id!=='loc').map(async item=>{
       try{
         const row=await client.fetchQuery({
@@ -205,6 +217,23 @@ export default function AppShell({children}){
     });
     return()=>{active=false};
   },[client]);
+  // Custom favorites follow the canonical Title_TW label when provided.
+  useEffect(()=>{
+    let active=true;
+    Promise.all(preferences.favorites.filter(id=>id!=='loc').map(async id=>{
+      try{
+        const row=await client.fetchQuery({
+          queryKey:['scope-page-copy',id],queryFn:()=>selectScopePageCopy(id),staleTime:60_000
+        });
+        return [id,row?.Title_TW];
+      }catch{return [id,''];}
+    })).then(rows=>{
+      if(active)setNavDisplayNames(current=>({...current,
+        ...Object.fromEntries(rows.filter(([,label])=>label))
+      }));
+    });
+    return()=>{active=false;};
+  },[client,preferences.favorites.join(',')]);
   const currentScope=scope||getScope(scopeId);
   const [localeSelection,setLocaleSelection]=useState(()=>({scopeId:'',locale:'zh-Hant',manual:false}));
   const activeLocale=localeSelection.scopeId===scopeId?normalizeUiLocale(localeSelection.locale):'zh-Hant';
@@ -230,43 +259,60 @@ export default function AppShell({children}){
   useEffect(()=>{
     if(typeof document!=='undefined')document.documentElement.lang=activeLocale;
   },[activeLocale]);
-  const beforeScopes=NAV_SCOPES.filter(item=>item.nav.position==='before');
-  const afterScopes=NAV_SCOPES.filter(item=>item.nav.position!=='before');
+  // Favorite targets are workspaces, not feature tabs. Unregistered/inactive
+  // dynamic IDs are omitted; built-in fallback links work before DB hydration.
+  const registryMap=new Map(registryScopes.map(item=>[item.scope_id,item]));
+  const favoriteLinks=preferences.favorites.map(id=>{
+    const builtIn=NAV_SCOPES.find(item=>item.id===id);
+    const active=registryMap.get(id);
+    if(!builtIn&&!active)return null;
+    return {id,label:navDisplayNames[id]||builtIn?.nav.label||active?.display_name||id};
+  }).filter(Boolean);
+  const featureTabs=[
+    {id:'home',icon:'home',label:'首頁',href:navigationHref(navScopeId,'',native)},
+    ...['culture','statics','search','governance'].map(id=>{
+      const feature=FEATURES.find(item=>item.id===id);
+      return {id,icon:id,label:copy.features?.[id]?.title||feature.label,
+        href:navigationHref(navScopeId,feature.path,native)};
+    }),
+    {id:'settings',icon:'settings',label:copy.common.settings||'設定',href:'/settings/'}
+  ];
 
-  function submitSearch(event){
-    event.preventDefault();
-    const q=searchText.trim();
-    if(!q)return;
-    const url=new URL(featureHref(navScopeId,'search'));
-    url.searchParams.set('q',q);
-    window.location.assign(url.toString());
-  }
+  useEffect(()=>{
+    // A saved homepage changes the native App launch destination, not the
+    // meaning of the "首頁" tab or the explicit LOC favorite link.
+    if(!native||pathname!=='/'||preferences.loading||!registryLoaded)return;
+    const key='loc-native-launch-home-checked';
+    if(window.sessionStorage.getItem(key))return;
+    window.sessionStorage.setItem(key,'1');
+    const target=homeScopeForAccount(preferences.home,preferences.account,
+      ['loc',...NAV_SCOPES.map(item=>item.id),...registryScopes.map(item=>item.scope_id)]);
+    if(target!=='loc')window.location.replace(navigationHref(target,'',true));
+  },[native,pathname,preferences.loading,preferences.home,preferences.account,registryLoaded,registryScopes]);
 
-  const featureLabel=item=>copy.features?.[item.id]?.title||item.label;
-  const scopeNavLabel=item=>navDisplayNames[item.id]||item.nav.label;
 
   return <QueryClientProvider client={client}><UiLocaleProvider locale={activeLocale}>
     <ScopePageCopy scopeId={scopeId} display_name={configRow?.display_name||registryRow?.display_name}/>
     <motion.div className="loc-scroll-progress" style={{scaleX}} aria-hidden="true"/>
     <header className="scope-global">
       <nav className="scope-nav" aria-label={copy.nav.aria}>
-        {beforeScopes.map(item=>{
-          const href=scopeHref(item.id);
-          return <NavTarget key={item.id} href={href} label={scopeNavLabel(item)} current={targetIsCurrent(href,host,pathname)}/>;
+        <span className="scope-favorites-label">我的最愛</span>
+        {favoriteLinks.map(item=>{
+          const href=navigationHref(item.id,'',native);
+          return <NavTarget key={item.id} href={href} label={item.label} current={targetIsCurrent(href,host,pathname)}/>;
         })}
-        {NAV_FEATURE_ORDER.map(id=>FEATURES.find(item=>item.id===id)).filter(Boolean).map(item=>
-          <NavTarget key={item.id} href={featureHref(navScopeId,item.id)} label={featureLabel(item)} current={!currentScope.featureScope&&currentFeature===item.id}/>
-        )}
-        <form onSubmit={submitSearch} role="search" className="scope-search">
-          <input name="q" type="search" aria-label={copy.nav.searchAria} placeholder={copy.nav.search} value={searchText} onChange={event=>setSearchText(event.target.value)}/>
-        </form>
-        {afterScopes.map(item=>{
-          const href=scopeHref(item.id);
-          return <NavTarget key={item.id} href={href} label={scopeNavLabel(item)} current={targetIsCurrent(href,host,pathname)}/>;
-        })}
+        {!favoriteLinks.length?<a href="/settings/" className="scope-nav-empty">到設定加入常用空間</a>:null}
       </nav>
     </header>
     {children}
+    <nav className="scope-feature-dock" aria-label="固定功能選單" data-scope={scopeId}>
+      {featureTabs.map(tab=><a key={tab.id} href={tab.href}
+        aria-current={tab.id==='settings'?isSettings?'page':undefined:
+          !isSettings&&(tab.id==='home'?!currentFeature:currentFeature===tab.id)?'page':undefined}>
+        <BottomNavIcon name={tab.icon}/>
+        <span>{tab.label}</span>
+      </a>)}
+    </nav>
     <footer className="scope-footer" data-scope={scopeId}>
       <div className="scope-footer-row">
         <a href="mailto:sopa2306@gmail.com">{copy.nav.contact}</a>

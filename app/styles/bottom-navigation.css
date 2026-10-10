@@ -1,0 +1,50 @@
+/* One shared feature dock for browser, PWA and Capacitor. The six tiles
+   are separate surfaces; there is deliberately no enclosing panel. */
+.scope-feature-dock{
+  position:fixed;z-index:140;left:50%;
+  bottom:calc(.8rem + env(safe-area-inset-bottom,0px));
+  transform:translateX(-50%);
+  width:min(660px,calc(100vw - 1.15rem));
+  display:grid;grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:clamp(.25rem,.9vw,.75rem);
+  pointer-events:none;
+}
+.scope-feature-dock a{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:.3rem;min-width:0;min-height:65px;padding:.55rem .2rem;
+  border:1px solid color-mix(in srgb,var(--loc-accent) 27%,var(--loc-line));
+  border-radius:clamp(12px,1.6vw,18px);
+  background:color-mix(in srgb,var(--loc-accent) 23%,var(--loc-panel) 77%);
+  color:var(--loc-text);
+  box-shadow:0 5px 13px rgb(0 0 0 / .22),0 1px 5px color-mix(in srgb,var(--loc-accent) 13%,transparent);
+  text-decoration:none;font-size:.77rem;font-weight:650;line-height:1.2;
+  -webkit-tap-highlight-color:transparent;pointer-events:auto;
+  transition:background .16s ease,box-shadow .16s ease,transform .16s ease;
+}
+.scope-feature-dock a svg{flex:none;width:23px;height:23px;}
+.scope-feature-dock a:hover,.scope-feature-dock a:focus-visible{
+  background:color-mix(in srgb,var(--loc-accent) 33%,var(--loc-panel) 67%);
+  box-shadow:0 8px 17px rgb(0 0 0 / .26);
+}
+.scope-feature-dock a[aria-current="page"]{
+  border-color:var(--loc-accent);
+  box-shadow:0 6px 18px color-mix(in srgb,var(--loc-accent) 30%,transparent),0 3px 10px rgb(0 0 0 / .2);
+}
+body{padding-bottom:calc(6.5rem + env(safe-area-inset-bottom,0px));}
+.scope-settings-options{display:grid;gap:.7rem;}
+.scope-settings-options label{display:flex;align-items:center;gap:.6rem;padding:.45rem 0;}
+.scope-settings-options select{max-width:100%;min-width:0;}
+.scope-settings-options fieldset{border:0;margin:0;padding:0;}
+.scope-settings-options legend{font-weight:650;margin-bottom:.6rem;}
+.scope-settings-note{color:var(--loc-muted);font-size:.85rem;}
+@media(max-width:560px){
+  .scope-feature-dock a{min-height:59px;font-size:.66rem;border-radius:12px;padding:.42rem .05rem;}
+  .scope-feature-dock a svg{width:21px;height:21px;}
+  .scope-feature-dock{bottom:calc(.55rem + env(safe-area-inset-bottom,0px));gap:5px;}
+}
+@media(prefers-reduced-motion:reduce){.scope-feature-dock a{transition:none;}}
+
+.scope-favorites-label{white-space:nowrap;color:var(--loc-accent);font-size:.78rem;font-weight:750;padding:0 .65rem;}
+.scope-nav-empty{font-style:italic;}
+.scope-settings-options .loc-card form{display:grid;justify-items:start;gap:.7rem;margin-top:.65rem;}
+.scope-settings-options input[type='checkbox']{flex:none;}

@@ -19,6 +19,7 @@ for(const route of [
   'search/index.html',
   'governance/index.html',
   'scope/index.html',
+  'settings/index.html',
   'scope/search/index.html',
   'scope/statics/index.html',
   'scope/culture/index.html',
