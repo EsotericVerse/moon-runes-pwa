@@ -7,10 +7,15 @@ import {
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
 import CultureTimeline from '../modules/culture-timeline/CultureTimeline';
+import {analyzeRiverDensity} from '../modules/culture-timeline/river-density-analysis.mjs';
+import {galaxyIdentityHref} from '../feature-navigation';
 import {
   LUNARUNES_CARD_PHASES,LUNARUNES_DIRECTIONS,LUNARUNES_PHASES,
   filterLunaRunesDaily,lunarunesDrawTimeline,lunarunesSkyTimeline,
-  selectLunaRunesDailyAnalysis,summarizeLunaRunesDaily
+  lunarunesWorkTimeline,lunarunesAnchorTimeline,lunarunesDateContext,
+  selectLunaRunesDailyAnalysis,selectLunaRunesCulturalWorks,
+  selectLunaRunesCulturalAnchors,selectLunaRunesDayWorkTexts,
+  summarizeLunaRunesDaily
 } from '../../loc/lrunes-daily-analysis';
 
 const PALETTE=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55'];
@@ -143,42 +148,127 @@ function LrunesStatistics({rows,summary}){
 
 function LrunesCulture({rows,summary}){
   const [chosenDay,setChosenDay]=useState('');
-  const availableDays=useMemo(()=>[...new Set(rows.map(row=>row.record_date))].sort().reverse(),[rows]);
-  const day=availableDays.includes(chosenDay)?chosenDay:(availableDays[0]||'');
-  const dayRows=rows.filter(row=>row.record_date===day);
-  const sky=useMemo(()=>lunarunesSkyTimeline(summary.firstDate,summary.lastDate),[summary.firstDate,summary.lastDate]);
+  const [workSource,setWorkSource]=useState('lo3rwang');
+  const [aroundDays,setAroundDays]=useState(3);
+  const start=summary.firstDate,end=summary.lastDate;
+  const workQuery=useQuery({
+    queryKey:['lrunes-combined-culture-works',workSource,start,end],
+    queryFn:()=>selectLunaRunesCulturalWorks({source:workSource,startDate:start,endDate:end}),
+    enabled:Boolean(start&&end),
+    staleTime:5*60_000
+  });
+  const anchorQuery=useQuery({
+    queryKey:['lrunes-combined-culture-anchors'],
+    queryFn:selectLunaRunesCulturalAnchors,
+    staleTime:5*60_000
+  });
+  const works=workQuery.data||[];
+  const workRiver=useMemo(()=>lunarunesWorkTimeline(works),[works]);
+  const sky=useMemo(()=>lunarunesSkyTimeline(start,end),[start,end]);
   const draws=useMemo(()=>lunarunesDrawTimeline(rows),[rows]);
+  const relevantAnchors=useMemo(()=>(anchorQuery.data||[]).filter(row=>
+    String(row.time_date||'').slice(0,10)>=start&&String(row.time_date||'').slice(0,10)<=end
+  ),[anchorQuery.data,start,end]);
+  const riverAnalysis=useMemo(()=>
+    analyzeRiverDensity(workRiver,relevantAnchors.map(row=>String(row.time_date).slice(0,10))),
+    [workRiver,relevantAnchors]
+  );
+  const anchorRiver=useMemo(()=>
+    lunarunesAnchorTimeline(relevantAnchors,riverAnalysis.suggestions),
+    [relevantAnchors,riverAnalysis.suggestions]
+  );
+  const parallelItems=useMemo(()=>
+    [...sky,...draws,...workRiver,...anchorRiver],
+    [sky,draws,workRiver,anchorRiver]
+  );
+  const availableDays=useMemo(()=>[...new Set([
+    ...rows.map(row=>row.record_date),
+    ...works.map(row=>row.work_date),
+    ...anchorRiver.map(row=>row.start_date)
+  ].filter(Boolean))].sort().reverse(),[rows,works,anchorRiver]);
+  const day=chosenDay||availableDays[0]||'';
+  const context=useMemo(()=>lunarunesDateContext(day,rows,works,aroundDays),[day,rows,works,aroundDays]);
+  const dayTextQuery=useQuery({
+    queryKey:['lrunes-combined-culture-work-texts',workSource,day],
+    queryFn:()=>selectLunaRunesDayWorkTexts({source:workSource,date:day,limit:12}),
+    enabled:Boolean(day&&context.sameDayWorks.length),
+    staleTime:5*60_000
+  });
+  const suggestion=riverAnalysis.suggestions.find(row=>row.date===day)||null;
+  const officialAnchor=relevantAnchors.find(row=>String(row.time_date).slice(0,10)===day)||null;
   return <>
     <section className="scope-card">
-      <h3>天時長河｜日期所對應的真實月相</h3>
-      <p className="scope-status">先顯示日曆本身的天時變化，再對照有實際抽符紀錄的日期。月相不因某天沒有抽牌而消失。</p>
-      <CultureTimeline items={sky} mode="source" focus={EMPTY_FOCUS}
-        windowStart={summary.firstDate} windowEnd={summary.lastDate}/>
-    </section>
-    <section className="scope-card">
-      <h3>每日抽符｜天時分布</h3>
-      <p className="scope-status">按真實月相分成五條河道。點選抽符日期可查看符文、方位、卡片月相與天時的完整記錄。</p>
-      <CultureTimeline items={draws} mode="source" focus={EMPTY_FOCUS} labelOf={emptyLabel}
-        windowStart={summary.firstDate} windowEnd={summary.lastDate}
-        onSelect={item=>{
-          const selected=String(item?.raw?.start_date||'').slice(0,10);
-          if(selected)setChosenDay(selected);
-        }}/>
+      <h3>月之眼睛｜符文、作品、天時與定錨點</h3>
+      <p className="scope-status">兩種個人紀錄在同一條日期軸上並行：每日符文與文字作品。天時作為日期參照，建議定錨點顯示作品密度變化的候選日期，不會自動建立正式定錨。</p>
       <div className="scope-stat-controls">
-        <label><span>查看抽符日期</span>
-          <select className="scope-select" value={day} onChange={event=>setChosenDay(event.target.value)}>
-            {availableDays.map(value=><option key={value} value={value}>{value}</option>)}
+        <label><span>對照的文字來源</span>
+          <select className="scope-select" value={workSource} onChange={event=>{setWorkSource(event.target.value);setChosenDay('');}}>
+            <option value="lo3rwang">作者個人作品（公開資料）</option>
+            <option value="lrunes">符韻作品（公開資料）</option>
           </select>
         </label>
       </div>
-      {dayRows.length?<div className="scope-ranking">
-        {dayRows.map((row,index)=><div key={row.record_id||index} style={{display:'block'}}>
+      {workQuery.isPending?<p className="scope-status">正在取得文字作品的日期與數量…</p>:null}
+      {workQuery.error?<p className="scope-status scope-error">文字作品讀取失敗：{workQuery.error.message}</p>:null}
+      {anchorQuery.error?<p className="scope-status scope-error">定錨點讀取失敗：{anchorQuery.error.message}</p>:null}
+      <p className="scope-status">此區間每日符文 {rows.length} 次／{new Set(rows.map(row=>row.record_date)).size} 日；對照來源作品 {works.length} 篇／{new Set(works.map(row=>row.work_date)).size} 日；作品密度建議定錨 {riverAnalysis.suggestions.length} 個（僅供觀察）。</p>
+      <CultureTimeline items={parallelItems} mode="source" focus={EMPTY_FOCUS}
+        windowStart={start} windowEnd={end} labelOf={item=>item.display_label||''}
+        onSelect={item=>{
+          const date=String(item?.raw?.start_date||'').slice(0,10);
+          if(date)setChosenDay(date);
+        }}/>
+      <p className="scope-status">由上至下：天時月相、每日符文、文字作品、正式與建議定錨。上下河道共用時間刻度，點選任一日期即可一起查看。沒有抽符的日子不會被推定為零次使用，僅代表沒有紀錄。</p>
+    </section>
+    <section className="scope-card">
+      <h3>日期交會檢視</h3>
+      <div className="scope-stat-controls">
+        <label><span>選擇日期</span>
+          <input className="scope-input" type="date" value={day} min={start} max={end}
+            onChange={event=>setChosenDay(event.target.value)}/>
+        </label>
+        <label><span>比較範圍</span>
+          <select className="scope-select" value={aroundDays} onChange={event=>setAroundDays(Number(event.target.value))}>
+            <option value={3}>前後3天</option>
+            <option value={7}>前後7天</option>
+            <option value={14}>前後14天</option>
+          </select>
+        </label>
+      </div>
+      {day?<p className="scope-status">
+        {day}・天時：{context.phase}
+        {officialAnchor?'・正式定錨：'+officialAnchor.label:''}
+        {suggestion?'・建議定錨候選':''}
+      </p>:null}
+      <div style={{display:'flex',gap:12,flexWrap:'wrap'}}>
+        <Metric label="當日抽符" value={context.sameDayDraws.length}/>
+        <Metric label="當日文字作品" value={context.sameDayWorks.length}/>
+        <Metric label={'之前'+aroundDays+'天・符文／作品'} value={context.beforeDraws+' ／ '+context.beforeWorks}/>
+        <Metric label={'之後'+aroundDays+'天・符文／作品'} value={context.afterDraws+' ／ '+context.afterWorks}/>
+      </div>
+      {suggestion?<p className="scope-status">建議日期依作品密度轉折產生：{(suggestion.analysis||[]).join(' ')} 這是變化偵測，不代表因果或個人心情判斷。</p>:null}
+      <h4>當日符文</h4>
+      {context.sameDayDraws.length?<div className="scope-ranking">
+        {context.sameDayDraws.map((row,index)=><div key={row.record_id||index} style={{display:'block'}}>
           <strong>{row.rune_name}之符文，{row.direction}，卡片月相{row.card_phase}，真實月相{row.real_phase}</strong>
-          <p className="scope-status">{row.draw_kind==='main'?'主抽':row.draw_kind==='supplement'?'補抽':'歷史抽符'} · {row.record_date}
-            {row.recorded_phase&&row.recorded_phase!==row.real_phase?' · 原始史料月相：'+row.recorded_phase:''}
+          <p className="scope-status">{row.draw_kind==='main'?'主抽':row.draw_kind==='supplement'?'補抽':'歷史抽符'}
+            {row.recorded_phase&&row.recorded_phase!==row.real_phase?'・當時史料記載月相：'+row.recorded_phase:''}
           </p>
         </div>)}
-      </div>:<p className="scope-status">選定時段沒有抽符紀錄。</p>}
+      </div>:<p className="scope-status">當日沒有已記錄的抽符。</p>}
+      <h4>當日作品與原始文字</h4>
+      {context.sameDayWorks.length>12?<p className="scope-status">當日共有 {context.sameDayWorks.length} 篇，以下只展開前12篇的文字摘錄。</p>:null}
+      {dayTextQuery.isPending&&context.sameDayWorks.length?<p className="scope-status">正在讀取當日作品原文…</p>:null}
+      {dayTextQuery.error?<p className="scope-status scope-error">原始文字讀取失敗：{dayTextQuery.error.message}</p>:null}
+      {(dayTextQuery.data||[]).length?<div className="scope-ranking">
+        {dayTextQuery.data.map(row=><div key={row.uid} style={{display:'block'}}>
+          <strong>{row.title||'未命名作品'}</strong>
+          <p className="scope-status">{row.source_name||'文字來源'}・{row.character_count.toLocaleString()} 字元・{new Date(row.createtime).toLocaleString('zh-TW',{timeZone:'Asia/Taipei'})}</p>
+          <p style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{row.excerpt||'（無可顯示內容）'}</p>
+          <a href={galaxyIdentityHref(row.scope_id,row.uid)}>查看作品與原始內容</a>
+        </div>)}
+      </div>:!dayTextQuery.isFetching&&!context.sameDayWorks.length?<p className="scope-status">當日沒有可對照的公開文字作品。</p>:null}
+      <p className="scope-status">這裡的作品密度是「篇數」，文字摘錄與字元數只在選定日期讀取；尚未將作品數誤稱為總文字量，也不對文字情緒或抽符之間宣稱因果。</p>
     </section>
   </>;
 }
