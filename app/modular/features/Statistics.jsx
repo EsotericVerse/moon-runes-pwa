@@ -22,6 +22,7 @@ import {scopeHref} from '../scope-registry';
 import {LrunesDailyStatisticsPanel} from '../../lrunes/DailyRuneAnalytics';
 import StatisticsMultiChart,{STAT_VISUAL_TYPES} from '../modules/statistics/StatisticsMultiChart';
 import ScopeSelfIntersection from '../modules/statistics/ScopeSelfIntersection';
+import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const GROUP_RANKING_PAGE_SIZE=10;
@@ -731,9 +732,16 @@ function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false}
 }
 
 function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types,canManageKeywords=false}){
-  return aggregateScopes
-    ?<ScopeGroupStatistics/>
-    :<ScopeStatisticsPanel scopeId={scopeId} navigation={navigation} types={types} canManageKeywords={canManageKeywords}/>;
+  // Cross-Scope statistical aggregation belongs to LOC only. Other Scope
+  // Groups remain overview/navigation surfaces, never merged COUNT queries.
+  if(aggregateScopes&&scopeId==='loc')return <ScopeGroupStatistics/>;
+  if(aggregateScopes)return <ScopeGroupOverview
+    scopeId={scopeId}
+    featureId="statics"
+    title="Scope Group 統計導引"
+    description="各 Scope 自行執行作品、來源及 2～4 組自交互統計；Group 只提供導引。"
+  />;
+  return <ScopeStatisticsPanel scopeId={scopeId} navigation={navigation} types={types} canManageKeywords={canManageKeywords}/>;
 }
 
 export default function Statistics(){
