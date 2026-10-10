@@ -102,6 +102,18 @@ if(!failures.length){
   if(rune66Engine.includes('keyword_group')||rune66Engine.includes("node_type==='style'")||rune66Engine.includes("node_type==='keyword'"))failures.push('Rune66 engine must not restore style/rule/node-type keyword storage');
   const statistics=read('app/modular/features/Statistics.jsx');
   const culture=read('app/modular/features/Culture.jsx');
+  // An existing ?from=... deep link may set the initial period, but must not
+  // reset a later explicit period selection on unrelated React query rerenders.
+  for(const token of [
+    'const primaryPeriods=useMemo(',
+    "const appliedDateNavigationRef=useRef('');",
+    "const navigationKey=[scopeId,requestedWindowStart,requestedWindowEnd].join('|');",
+    'if(appliedDateNavigationRef.current===navigationKey)return;',
+    'appliedDateNavigationRef.current=navigationKey;',
+    'if(isAggregateScope||!query.data)return;',
+    'onChange={event=>setSelectedPeriodKey(event.target.value)}'
+  ])if(!culture.includes(token))failures.push('Culture manual period range must survive refetch and deep-link rerenders: '+token);
+
   const search=read('app/modular/features/Search.jsx');
   const scopeGroupOverview=read('app/loc/ScopeGroupOverview.jsx');
   const cultureQuery=read('app/loc/culture-query.js');
