@@ -103,6 +103,7 @@
     "fix/culture-require-anchor-pair",
     "fix/culture-structure-river-navigation",
     "fix/culture-time-period-last-no-anchor-search-20261008",
+    "fix/culture-timeline-initial-viewport-20261011",
     "fix/daily-calendar-login-details-20261010",
     "fix/daily-log-guidance-layout",
     "fix/daily-log-remove-duplicate-summary",
