@@ -180,7 +180,7 @@ export function LrunesDailyStatisticsPanel(){
     {!message?<>
       <p className="scope-status">{range.startDate} ～ {range.endDate} · {summary.dayCount} 個紀錄日 · {summary.recordCount} 筆抽取 · {ranking.length} 種實際出現的組合</p>
       {directionSummary?<p className="scope-status">所選期間四向分布：{directionSummary}。正逆位向屬符文詮釋維度，可協助觀察阻滯與推進的近期變化，但不能單憑比例判定實際事件或未來走向。</p>:null}
-      {!ranking.length?<p className="scope-status">目前區間沒有每日符文紀錄。</p>:null>
+      {!ranking.length?<p className="scope-status">目前區間沒有每日符文紀錄。</p>:null}
       {ranking.length?<><div className="scope-ranking">
         {pagination.rows.map((row,index)=><div key={row.key}>
           <strong>{(pagination.currentPage-1)*pagination.pageSize+index+1}. {row.label}</strong>
