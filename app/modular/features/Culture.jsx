@@ -28,6 +28,7 @@ import {workDisplayHeading,workDisplayText} from '../work-display-model';
 import {useOffsetPagination} from '../use-offset-pagination';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
+import {LrunesDailyCulturePanel} from '../../lrunes/DailyRuneAnalytics';
 
 function isInteractiveTarget(target){
   return Boolean(target?.closest?.('a,button,input,select,textarea,summary,[role="button"],[contenteditable="true"]'));
@@ -88,12 +89,15 @@ function periodPositionRatio(date,start,end){
 export default function Culture(){
   const {scopeId,scope}=useScopeRuntime();
   const account=useAccount();
+  const [lrunesView,setLrunesView]=useState('daily');
+  const isLrunesDaily=scopeId==='lrunes'&&lrunesView==='daily';
   const queryClient=useQueryClient();
   const searchParams=useSearchParams();
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
   const query=useQuery({
     queryKey:['culture-timeline',scopeId],
     queryFn:()=>selectScopeCultureData(scopeId),
+    enabled:!isLrunesDaily,
     staleTime:5*60_000
   });
 
@@ -160,7 +164,7 @@ export default function Culture(){
       startDate:selectedWorkPeriod?.start_date,
       endDate:selectedWorkPeriod?.end_date
     }),
-    enabled:!isAggregateScope&&Boolean(scopeData),
+    enabled:!isLrunesDaily&&!isAggregateScope&&Boolean(scopeData),
     staleTime:5*60_000
   });
   const styleQuery=useQuery({
@@ -225,7 +229,7 @@ export default function Culture(){
       selectedCategory||'all'
     ].join('|'),
     pageSize:DEFAULT_LIST_BATCH_SIZE,
-    enabled:!isAggregateScope&&Boolean(scopeData)&&(!selectedCategory||Boolean(selectedGroup)),
+    enabled:!isLrunesDaily&&!isAggregateScope&&Boolean(scopeData)&&(!selectedCategory||Boolean(selectedGroup)),
     loadPage:async(cursor,limit)=>{
       const indexPage=await selectScopePeriodWorkIndex(scopeData,{
         startDate:selectedWorkPeriod?.start_date||'',
@@ -614,6 +618,13 @@ export default function Culture(){
 
   return <FeaturePage featureId="culture">
     <section className='loc-card scope-feature-card scope-feature-card-wide'>
+      {scopeId==='lrunes'?<div className='scope-stat-controls'><label><span>時間長河項目</span>
+        <select className='scope-select' value={lrunesView} onChange={event=>setLrunesView(event.target.value)}>
+          <option value='daily'>每日符文</option>
+          <option value='works'>文化作品與時期</option>
+        </select>
+      </label></div>:null}
+      {isLrunesDaily?<LrunesDailyCulturePanel/>:<>
       <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
       <h2>{UI_COPY.culture.river}</h2>
       {query.error?<p className='scope-status scope-error'>{featureDataErrorMessage(query.error)}</p>:null}
@@ -873,6 +884,7 @@ export default function Culture(){
               </section>:null}
             </>}
       </>:null}
+      </>}
     </section>
   </FeaturePage>;
 }
