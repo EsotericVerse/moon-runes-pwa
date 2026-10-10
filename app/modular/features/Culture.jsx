@@ -136,14 +136,16 @@ export default function Culture(){
   const allPeriods=useMemo(()=>sortPeriods(query.data?.eras?.eras||[]),[query.data]);
   const classificationScope=scopeId;
   const scopeData=query.data?.scope||null;
-  const primaryPeriods=isAggregateScope?[]:allPeriods.filter(item=>String(item?.scope_id||'')===scopeId);
+  // Use a stable periods array: date-navigation effects must not re-run just
+  // because a different Culture panel or query refreshed the page.
+  const primaryPeriods=useMemo(()=>isAggregateScope?[]:allPeriods.filter(item=>String(item?.scope_id||'')===scopeId),[isAggregateScope,allPeriods,scopeId]);
   const openPeriod=isAggregateScope?null:(openByScope.get(scopeId)||null);
   const allTimePeriod=useMemo(()=>periodRange(primaryPeriods,classificationScope),[primaryPeriods,classificationScope]);
   useEffect(()=>{
-    if(isAggregateScope)return;
+    if(isAggregateScope||!query.data)return;
     const preferred=periodKey(openPeriod)||periodKey(primaryPeriods.at(-1))||'all';
     setSelectedPeriodKey(current=>(current==='all'||primaryPeriods.some(period=>periodKey(period)===current))?current:preferred);
-  },[scopeId,isAggregateScope,openPeriod?.period,openPeriod?.start_date,primaryPeriods.length]);
+  },[scopeId,isAggregateScope,query.data,openPeriod?.period,openPeriod?.start_date,primaryPeriods]);
   const selectedWorkPeriod=selectedPeriodKey==='all'
     ?allTimePeriod
     :(primaryPeriods.find(item=>periodKey(item)===selectedPeriodKey)||openPeriod||allTimePeriod);
@@ -151,15 +153,28 @@ export default function Culture(){
   const selectedWindowEnd=String(selectedWorkPeriod?.end_date||new Date().toISOString().slice(0,10));
   const requestedWindowStart=String(navigation.from||'').slice(0,10);
   const requestedWindowEnd=String(navigation.to||'').slice(0,10);
+  // Deep-linked date ranges pick the initial period only once per URL request.
+  // Without this guard, re-rendered period arrays used to reapply the old URL
+  // and immediately undo a user's selection in the Culture period dropdown.
+  const appliedDateNavigationRef=useRef('');
   useEffect(()=>{
-    if(isAggregateScope||!requestedWindowStart||!primaryPeriods.length)return;
+    if(!requestedWindowStart){
+      appliedDateNavigationRef.current='';
+      return;
+    }
+    if(isAggregateScope||!primaryPeriods.length)return;
+    const navigationKey=[scopeId,requestedWindowStart,requestedWindowEnd].join('|');
+    if(appliedDateNavigationRef.current===navigationKey)return;
     const matched=primaryPeriods.find(item=>{
       const start=String(item?.start_date||'').slice(0,10);
       const end=String(item?.end_date||'9999-12-31').slice(0,10);
       return (!start||requestedWindowStart>=start)&&requestedWindowStart<=end;
     });
-    if(matched)setSelectedPeriodKey(periodKey(matched));
-  },[isAggregateScope,requestedWindowStart,primaryPeriods]);
+    if(matched){
+      appliedDateNavigationRef.current=navigationKey;
+      setSelectedPeriodKey(periodKey(matched));
+    }
+  },[scopeId,isAggregateScope,requestedWindowStart,requestedWindowEnd,primaryPeriods]);
 
   const sourceSnapshotQuery=useQuery({
     queryKey:['culture-period-source-snapshot',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
