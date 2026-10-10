@@ -1,6 +1,6 @@
 'use client';
 
-import {useCallback,useEffect,useMemo,useState} from 'react';
+import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import DailyRuneCalendar from '../../lrunes/DailyRuneCalendar';
 import RuneCardInfo from '../../lrunes/RuneCardInfo';
 import {runeImage} from '../../lrunes/rune-directory.mjs';
@@ -60,6 +60,8 @@ function rowKey(row){
 
 export default function DailyLogClient({embedded=false}={}){
   const account=useAccount();
+  const canViewDetails=!account.loading&&Boolean(account.user);
+  const monthRequest=useRef(0);
   const [monthValue,setMonthValue]=useState(()=>Math.max(FIRST_MONTH,currentMonthValue()));
   const [rows,setRows]=useState([]);
   const [selectedDate,setSelectedDate]=useState(()=>taipeiToday());
@@ -79,13 +81,23 @@ export default function DailyLogClient({embedded=false}={}){
     direction:'正位'
   }));
   const {year,month}=monthParts(monthValue);
-  const canWrite=account.canManageScopeSync('lrunes');
+  const canWrite=canViewDetails&&account.canManageScopeSync('lrunes');
+  // Calendar dates remain public in the UI; no rune data is queried without login.
+  const visibleRows=canViewDetails?rows:[];
 
   const loadMonth=useCallback(async()=>{
+    const request=++monthRequest.current;
+    if(!canViewDetails){
+      setRows([]);
+      setError('');
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError('');
     try{
       const result=await selectDailyRuneMonth({year,month});
+      if(monthRequest.current!==request)return;
       setRows(result);
       const today=taipeiToday();
       setSelectedDate(current=>{
@@ -94,12 +106,18 @@ export default function DailyLogClient({embedded=false}={}){
         return String(result.at(-1)?.record_date||dateKey(year,month,1)).slice(0,10);
       });
     }catch(reason){
+      if(monthRequest.current!==request)return;
       setRows([]);
       setError(String(reason?.message||reason||'讀取每日符文紀錄失敗。'));
-    }finally{setLoading(false);}
-  },[year,month]);
+    }finally{
+      if(monthRequest.current===request)setLoading(false);
+    }
+  },[year,month,canViewDetails]);
 
-  useEffect(()=>{loadMonth();},[loadMonth]);
+  useEffect(()=>{
+    loadMonth();
+    return()=>{monthRequest.current+=1;};
+  },[loadMonth]);
 
   useEffect(()=>{
     if(!canWrite)return;
@@ -121,13 +139,13 @@ export default function DailyLogClient({embedded=false}={}){
 
   const byDate=useMemo(()=>{
     const grouped=new Map();
-    for(const row of rows){
+    for(const row of visibleRows){
       const key=String(row.record_date).slice(0,10);
       if(!grouped.has(key))grouped.set(key,[]);
       grouped.get(key).push(row);
     }
     return grouped;
-  },[rows]);
+  },[visibleRows]);
 
   const selectedRows=useMemo(()=>byDate.get(selectedDate)||[],[byDate,selectedDate]);
 
@@ -234,7 +252,8 @@ export default function DailyLogClient({embedded=false}={}){
     <DailyRuneCalendar
       year={year}
       month={month}
-      rows={rows}
+      rows={visibleRows}
+      showDetails={canViewDetails}
       selectedDate={selectedDate}
       loading={loading}
       canPrevious={monthValue>FIRST_MONTH}
@@ -243,7 +262,7 @@ export default function DailyLogClient({embedded=false}={}){
       onSelectDate={setSelectedDate}
     />
 
-    {selectedRows.length?<section className="loc-card" aria-live="polite">
+    {canViewDetails&&selectedRows.length?<section className="loc-card" aria-live="polite">
       <p className="loc-eyebrow">每日符文說明</p>
       <h2>{formatDate(selectedDate)} 的當日指引與前次紀錄</h2>
       {comparisonLoading?<p className="loc-status">讀取前次同符文紀錄…</p>:null}
@@ -326,9 +345,9 @@ export default function DailyLogClient({embedded=false}={}){
       {message?<p className="scope-status">{message}</p>:null}
     </section>:null}
 
-    {error?<p role="alert" className="loc-status">{error}<button className="loc-button" type="button" onClick={loadMonth}>重新讀取</button></p>:null}
-    {loading?<p className="loc-status" aria-live="polite">讀取每日符文紀錄…</p>:null}
-    {!loading&&!error&&!rows.length?<article className="loc-card">目前沒有每日符文紀錄。</article>:null}
-    {selectedDate&&!selectedRows.length?<article className="loc-card" aria-live="polite">這一天沒有每日符文紀錄。</article>:null}
+    {canViewDetails&&error?<p role="alert" className="loc-status">{error}<button className="loc-button" type="button" onClick={loadMonth}>重新讀取</button></p>:null}
+    {canViewDetails&&loading?<p className="loc-status" aria-live="polite">讀取每日符文紀錄…</p>:null}
+    {canViewDetails&&!loading&&!error&&!rows.length?<article className="loc-card">目前沒有每日符文紀錄。</article>:null}
+    {canViewDetails&&selectedDate&&!selectedRows.length?<article className="loc-card" aria-live="polite">這一天沒有每日符文紀錄。</article>:null}
   </section>;
 }
