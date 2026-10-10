@@ -636,7 +636,7 @@ export default function Culture(){
             {isAggregateScope?<>
 
               <LocRuneWorkComparison
-                scopes={query.data?.scopes||[]}
+                scopes={query.data?.comparisonScopes||query.data?.scopes||[]}
                 distribution={locScopeDistributionItems}
                 anchors={query.data?.comparisonAnchors||[]}
                 intersectionStart={locDistributionStart}
