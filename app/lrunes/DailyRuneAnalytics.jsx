@@ -8,7 +8,7 @@ import {
 } from 'recharts';
 import {selectDailyRuneRange} from '../loc/daily-runes';
 import {realMoonPhase} from '../loc/model/moon-phase';
-import {buildContinuousMoonRiver} from './daily-moon-river.mjs';
+import {buildReferencedMoonRiver} from './daily-moon-river.mjs';
 import CultureTimeline from '../modular/modules/culture-timeline/CultureTimeline';
 import {
   DAILY_RUNE_MODES,normalizeDailyDraws,rankDailyDraws,pageDailyRanking,
@@ -100,8 +100,9 @@ export function LrunesDailyCulturePanel(){
   const [selected,setSelected]=useState(null);
   const {range,query,draws}=useDailyRuneWindow(mode,from,to);
   const summary=useMemo(()=>summarizeDailyDraws(draws),[draws]);
-  const moonItems=useMemo(()=>range?buildContinuousMoonRiver(
-    range.startDate,range.endDate,date=>realMoonPhase(new Date(date+PHASE_DATE_TIME))
+  const moonItems=useMemo(()=>range?buildReferencedMoonRiver(
+    range.startDate,range.endDate,[{scopeId:'lrunes',source:'daily:rune'}],
+    date=>realMoonPhase(new Date(date+PHASE_DATE_TIME))
   ):[],[range?.startDate,range?.endDate]);
   const drawItems=useMemo(()=>draws.map((row,index)=>({
     id:'daily-rune:'+row.record_date+':'+row.draw_kind+':'+index,
@@ -120,7 +121,7 @@ export function LrunesDailyCulturePanel(){
   const message=queryMessage(query,range);
   return <section className="scope-card scope-culture-classification-river">
     <h3>每日符文｜時間長河</h3>
-    <p className="scope-status">同一日期軸上方以連續河道呈現天時月相（無抽符的日期也不中斷）；下方保留每日符文名稱、四向方向與主抽／補抽／歷史紀錄。月相依既有台灣農曆五段式日期規則推算，並非精確天文朔望或符文卡片的固定月相；不併入 Galaxy 作品數量。</p>
+    <p className="scope-status">引用每日符文時，自動於上方增列天時月相河道；以月相變動日期作事件定錨，延續至下一次變動，無抽符也不中斷。下方保留符文名稱、四向方向與主抽／補抽／歷史紀錄。既有臺灣農曆五段式日期規則為日級推算，不代表精確天文時刻；不併入 Galaxy 作品數量。</p>
     <RangeControls mode={mode} setMode={setMode} from={from} setFrom={setFrom} to={to} setTo={setTo}/>
     {message?<p className="scope-status">{message}</p>:null}
     {!message?<p className="scope-status">{range.startDate} ～ {range.endDate} · {summary.dayCount} 個紀錄日 · {summary.recordCount} 筆抽取紀錄</p>:null}
