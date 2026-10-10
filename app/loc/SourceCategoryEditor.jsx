@@ -29,6 +29,7 @@ export function useSourceCategories(){
 export function AdminSourceCategories(){
   const account=useAccount(),query=useSourceCategories();
   const [category,setCategory]=useState(''),[title,setTitle]=useState('');
+  const [labels,setLabels]=useState({});
   const [alias,setAlias]=useState(''),[parent,setParent]=useState('others');
   const [notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
   if(!account.canManageGlobalSync())return null;
@@ -69,7 +70,11 @@ export function AdminSourceCategories(){
     </div>
     <div className="scope-management-records">
       {items.map(row=><div className="scope-inline-card" key={row.category_code}>
-        <strong>{row.display_name}</strong><span>{row.category_code}</span>
+        <label>分類名稱<input value={labels[row.category_code]??row.display_name} maxLength={80}
+          onChange={e=>setLabels(values=>({...values,[row.category_code]:e.target.value}))} disabled={busy}/></label>
+        <span>{row.category_code}</span>
+        <button type="button" className="loc-button" disabled={busy||!String(labels[row.category_code]??row.display_name).trim()}
+          onClick={()=>modify(CATEGORIES,{category_code:row.category_code},{display_name:String(labels[row.category_code]??row.display_name).trim()})}>儲存名稱</button>
         <button type="button" className="loc-button" disabled={busy} onClick={()=>modify(CATEGORIES,{category_code:row.category_code},{enabled:!row.enabled})}>{row.enabled?'停用':'啟用'}</button>
       </div>)}
     </div>
