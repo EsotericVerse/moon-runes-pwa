@@ -34,6 +34,7 @@ export default function DailyRuneCalendar({
   year,
   month,
   rows=[],
+  showDetails=true,
   selectedDate='',
   loading=false,
   canPrevious=true,
@@ -70,11 +71,11 @@ export default function DailyRuneCalendar({
       {cells.map((day,index)=>{
         if(!day)return <div role="gridcell" aria-hidden="true" key={'blank-'+index}/>;
         const key=dateKey(year,month,day);
-        const entries=byDate.get(key)||[];
+        const entries=showDetails?(byDate.get(key)||[]):[];
         const main=entries.some(row=>row.draw_kind==='main');
         const supplement=entries.some(row=>row.draw_kind==='supplement');
         const selected=selectedDate===key;
-        const moonMarkers=phaseMarkers(key);
+        const moonMarkers=showDetails?phaseMarkers(key):[];
         return <button
           role="gridcell"
           key={key}
