@@ -183,7 +183,15 @@ export default function CultureTimeline({
         };
       })):null;
       const rowById=id=>dataRows.find(row=>row.id===String(id))||null;
+      // Supply the selected camera range at construction time. Otherwise the
+      // timeline may auto-fit all periods during its first layout after an
+      // immediate setWindow(), making a chosen period appear to snap back.
+      const hasSelectedWindow=Boolean(windowStart&&windowEnd&&
+        Number.isFinite(Date.parse(windowStart))&&
+        Number.isFinite(Date.parse(windowEnd))&&
+        Date.parse(windowEnd)>=Date.parse(windowStart));
       instance=new Timeline(containerRef.current,data,groups,{
+        ...(hasSelectedWindow?{start:windowStart,end:windowEnd}:{}),
         autoResize:true,
         minHeight:timelineMinHeight+'px',
         maxHeight:timelineMaxHeight+'px',
@@ -270,7 +278,7 @@ export default function CultureTimeline({
         onTimeClickRef.current(year+'-'+month+'-'+day);
       };
       containerRef.current.addEventListener('dblclick',handleNativeDoubleClick);
-      if(windowStart&&windowEnd&&Number.isFinite(Date.parse(windowStart))&&Number.isFinite(Date.parse(windowEnd))){
+      if(hasSelectedWindow){
         instance.setWindow(windowStart,windowEnd,{animation:false});
       }else{
         instance.fit({animation:false});
