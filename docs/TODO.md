@@ -12,11 +12,11 @@
 - [x] 0.9.1 CSS／DIV 收斂、既有語意與共用排版契約繼續保留。
 - [ ] **0.9.2-rc.2 本身**的 `verify`／public DB／build／desktop-mobile CI：在對應 commit 執行完成後才登記結果，不以先前 PR 的 CI 代替。
 
-## RC2 專項人工驗收（尚未簽核）
+## RC2 驗收紀錄與剩餘待辦
 
-- [ ] 新增一般 Scope 後，確認六張表、Registry、Manage 與 66 筆關鍵詞初始化完成；正式站立即重讀不再因 PostgREST schema cache 誤判失敗。
-- [ ] 從 vis-network／Attr 入口刪除測試 Scope，確認需要輸入 ID、取消可保留節點，且 RPC 與資料庫 Registry 都已移除才更新 UI。
-- [ ] 檢查 Scope 管理視覺階層、Domain／Directory、NAV／頁面文案和語系摘要一致性。
+- [x] Scope 新增與初始化核心流程：使用者已在正式站確認正常；六張 Scope 表、Registry、Manage、Rune66 初始化及 PostgREST schema cache 相容性修正已納入 RC2 基線。
+- [x] Scope 刪除／節點管理核心流程：使用者在 RC2 升版前已確認正常；vis-network／Attr 入口、ID 確認、RPC 及 Registry 驗證流程均已納入 RC2 基線。
+- [ ] 其他細部／跨裝置邊界回歸：Scope 視覺階層、Domain／Directory、NAV／頁面文案及語系摘要在更多裝置／異常資料情境下的一致性。此項不是 Scope 核心新增／刪除尚未驗收。
 - [ ] iOS `feat/ios-device-build` 實機 IPA 簽署與私密資料本機測試；PR #479 仍為獨立進行中工作。
 
 ## 0.9.2 RC — 待確認／Bug-fix backlog（沿用先前未完成人工驗收）
@@ -37,10 +37,10 @@
 
 ### Management / Admin
 
-- [ ] **Scope 管理工作台實際操作驗收／bug 修復：** 既有 Admin Registry／Group／Mapping 與各 Scope 的 Settings、Data、Period／Culture、Keyword／Statistics、Publish、Import 等入口逐項核對，發現問題修正；不建立平行編輯器或 Scope 特例。
+- [ ] **其他管理工作區與例外情境驗收：** Scope 核心新增／刪除已由使用者驗收；Admin Registry 的進階 Group／Mapping 與各 Scope 的 Settings、Data、Period／Culture、Keyword／Statistics、Publish、Import 等入口仍視實際測試逐項核對，不建立平行編輯器或 Scope 特例。
 - [x] Keyword Attr 批次寫回與進度百分比修正已合併至 0.9 RC 之後的 Current main（含 SQL chunk WHERE 修正）；不等於所有真實 corpus 壓力測試已簽核。
-- [ ] 在公開基本功能確認後，再開始 Governance／Admin／Scope Manage 的實際操作驗收。
-- [ ] 驗證 CRUD、0-row 例外處理、searchable=false canonical visibility、Theme、Scope config 與權限行為。
+- [ ] Scope 核心管理已完成操作驗收；Governance／其他 Admin／Scope Manage 子功能的尚未覆蓋情境繼續核對。
+- [ ] 其他 CRUD 與異常邊界：0-row 例外、searchable=false canonical visibility、Theme、Scope config 與權限行為（不含已驗收的 Scope 核心新增／刪除）。
 - [ ] **Import — PENDING（使用者尚未安排人工測試）：** 真實來源檔、自訂 JSON 欄位格式、巢狀資料路徑、多檔逐檔預覽、25–200 筆有界分批寫入、進度、重複 UID／原生 ID 與中斷後重新比對，均待實際執行；程式入口與自動化測試不等於資料庫端 round-trip 已驗收。
 - [ ] 驗證管理預覽、Import、Data、Period、Keyword 等工作區的實際使用流程。
 - [ ] 文化：時期設定與時間河道，實際驗證切換時期、錨點、河道範圍與儲存結果。
@@ -64,7 +64,7 @@
 ## 1.0
 
 - [x] 深度功能介紹取代新手操作教學作為 1.0 的主要文件定位；維持獨立 Feature Deep Dive，不重複 Canon authority。
-- [ ] Scope 管理工作台與 Import 真實驗收後，核對 Feature Deep Dive 與正式 UI／資料流程一致性。
+- [ ] Import 與其他剩餘管理工作區驗收後，核對 Feature Deep Dive 與正式 UI／資料流程一致性。
 - [ ] 整合既有來源中的 image multimedia。
 - [ ] 保持 image/media 為 first-class media data，不製造空白 Galaxy text。
 - [ ] 完成 governed import workflow 與來源 provenance。
