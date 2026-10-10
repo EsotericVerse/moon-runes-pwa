@@ -42,10 +42,10 @@ test('ranking never exposes a full list in one page',()=>{
   }));
   const first=pageDailyRanking(items);
   assert.equal(first.rows.length,DAILY_RUNE_PAGE_SIZE);
-  assert.equal(first.totalPages,4);
+  assert.equal(first.totalPages,Math.ceil(items.length/DAILY_RUNE_PAGE_SIZE));
   const final=pageDailyRanking(items,100);
-  assert.equal(final.currentPage,4);
-  assert.equal(final.rows.length,6);
+  assert.equal(final.currentPage,Math.ceil(items.length/DAILY_RUNE_PAGE_SIZE));
+  assert.equal(final.rows.length,items.length%DAILY_RUNE_PAGE_SIZE);
   assert.ok(pageDailyRanking(items,1,1000).rows.length<=DAILY_RUNE_PAGE_SIZE);
 });
 
