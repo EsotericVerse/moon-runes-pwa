@@ -29,7 +29,7 @@ import {useOffsetPagination} from '../use-offset-pagination';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 import {LrunesDailyCulturePanel} from '../../lrunes/DailyRuneAnalytics';
-import LocRuneWorkComparison from './LocRuneWorkComparison';
+import LocItemConfluence from './LocItemConfluence';
 
 function isInteractiveTarget(target){
   return Boolean(target?.closest?.('a,button,input,select,textarea,summary,[role="button"],[contenteditable="true"]'));
@@ -91,14 +91,16 @@ export default function Culture(){
   const {scopeId,scope}=useScopeRuntime();
   const account=useAccount();
   const [lrunesView,setLrunesView]=useState('daily');
+  const [locCultureView,setLocCultureView]=useState('period');
   const isLrunesDaily=scopeId==='lrunes'&&lrunesView==='daily';
+  const isLocItemView=scopeId==='loc'&&locCultureView==='item';
   const queryClient=useQueryClient();
   const searchParams=useSearchParams();
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
   const query=useQuery({
     queryKey:['culture-timeline',scopeId],
     queryFn:()=>selectScopeCultureData(scopeId),
-    enabled:!isLrunesDaily,
+    enabled:!isLrunesDaily&&!isLocItemView,
     staleTime:5*60_000
   });
 
@@ -625,7 +627,13 @@ export default function Culture(){
           <option value='works'>文化作品與時期</option>
         </select>
       </label></div>:null}
-      {isLrunesDaily?<LrunesDailyCulturePanel/>:<>
+      {scopeId==='loc'?<div className='scope-stat-controls'><label><span>LOC 文化觀測模式</span>
+        <select className='scope-select' aria-label='LOC 文化觀測模式' value={locCultureView} onChange={event=>setLocCultureView(event.target.value)}>
+          <option value='period'>時期交會 · 原有作品列表</option>
+          <option value='item'>項目交會 · 指定兩條河道</option>
+        </select>
+      </label></div>:null}
+      {isLrunesDaily?<LrunesDailyCulturePanel/>:isLocItemView?<LocItemConfluence/>:<>
       <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
       <h2>{UI_COPY.culture.river}</h2>
       {query.error?<p className='scope-status scope-error'>{featureDataErrorMessage(query.error)}</p>:null}
@@ -634,13 +642,6 @@ export default function Culture(){
 
 
             {isAggregateScope?<>
-
-              <LocRuneWorkComparison
-                scopes={query.data?.comparisonScopes||query.data?.scopes||[]}
-                distribution={locScopeDistributionItems}
-                anchors={query.data?.comparisonAnchors||[]}
-                intersectionStart={locDistributionStart}
-              />
 
               <section className='scope-card scope-culture-classification-river scope-loc-time-river'>
                 <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
