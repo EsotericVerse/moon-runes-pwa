@@ -3,6 +3,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import {Capacitor} from '@capacitor/core';
 import {useNavigationPreferences} from './use-navigation-preferences';
+import DailyLogClient from '../daily/log/DailyLogClient';
 import {selectScopeRegistry} from './scope-data';
 import {putSetting} from './user-storage';
 import {DEFAULT_FAVORITES,FAVORITES_SETTING_KEY,HOME_SETTING_KEY,homeScopeForAccount,serializeFavorites,validScopeId} from '../modular/navigation-preferences.mjs';
@@ -136,6 +137,14 @@ export default function GlobalSettings(){
     <section className="scope-page">
       <header className="loc-hero"><p className="loc-eyebrow">Global Settings</p><h1>設定</h1><p>所有 Scope 共用的使用者設定。</p></header>
       <div className="scope-content scope-settings-options">
+        <section className="scope-settings-daily-test" aria-labelledby="settings-daily-calendar-title">
+          <h2 id="settings-daily-calendar-title">每日符文行事曆</h2>
+          <p className="scope-settings-note">使用測試｜直接切換月份、選擇日期，查看每日符文、當日指引與前次紀錄。</p>
+          <DailyLogClient embedded/>
+          <p className="scope-settings-note">
+            <a className="loc-button" href={navigationHref('lrunes','daily/log',native)}>開啟完整每日符文紀錄與管理</a>
+          </p>
+        </section>
         <section className="loc-card">
           <h2>設定首頁</h2>
           <p className="scope-settings-note">預設為 LOC。可設定有權使用的 Scope 或 Scope Group；不影響權限。</p>
@@ -195,11 +204,6 @@ export default function GlobalSettings(){
             <button type="button" className="loc-button" disabled={Boolean(busy)} onClick={logout}>登出</button>
           </div>:<button type="button" className="loc-button primary" onClick={login}>使用 Google 登入</button>}
           {account.error?<p role="alert" className="scope-status scope-error">{account.error}</p>:null}
-        </section>
-        <section className="loc-card">
-          <h2>每日符文</h2>
-          <p className="scope-settings-note">前往原有符韻每日符文紀錄。既有功能與資料表不做搬移。</p>
-          <a className="loc-button" href={navigationHref('lrunes','daily/log',native)}>前往每日符文</a>
         </section>
         {status?<p role="status" className="scope-status">{status}</p>:null}
       </div>
