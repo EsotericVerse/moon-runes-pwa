@@ -11,6 +11,7 @@ import RuneDrawModeBubbles from './RuneDrawModeBubbles';
 import {RUNE_RITUAL_DELAY_MS,RUNE_RITUAL_STEP_MS,runeRitualMessages} from './rune-ritual';
 import {RUNE_ALL_DRAW_MODES,RUNE_DRAW_MODES} from './rune-draw-modes.mjs';
 import {buildSpreadAdvice} from './rune-guidance-engine.mjs';
+import {saveLocalRuneDraw} from './local-rune-sqlite.mjs';
 
 const ROTATION_CLASSES=['rune-rotate-0','rune-rotate-90','rune-rotate-n90','rune-rotate-180'];
 const RUNE_DIRECTIONS=Object.freeze(['正位','半正位','半逆位','逆位']);
@@ -247,14 +248,17 @@ function SpreadCards({draw,mode,selectedMode,moonPhase}){
   return null;
 }
 
-export default function RuneDrawClient({drawKey='single'}){
+export default function RuneDrawClient({drawKey='single',embedded=false,canSave=false}){
   const {value:uiSettings}=useSetting(UI_SETTINGS_KEY,DEFAULT_UI_SETTINGS);
   const [error,setError]=useState('');
   const [draw,setDraw]=useState(null);
+  const [savedId,setSavedId]=useState('');
+  const [saveBusy,setSaveBusy]=useState(false);
+  const [saveMessage,setSaveMessage]=useState('');
   const [ritualStep,setRitualStep]=useState(-1);
   const [ritualCard,setRitualCard]=useState(null);
   const timers=useRef([]);
-  const autoStarted=useRef(false);
+  const autoStarted=useRef('');
 
   const selectedMode=useMemo(()=>RUNE_ALL_DRAW_MODES.find(item=>item.key===drawKey)||RUNE_DRAW_MODES[0],[drawKey]);
   const instantDraw=uiSettings?.draw_response==='instant';
@@ -278,7 +282,7 @@ export default function RuneDrawClient({drawKey='single'}){
       if(cards.length!==runeNumbers.length)throw new Error('抽中的符文資料不完整。');
       const reading=buildFixedReading(cards,directions,drawKey);
       const createdAt=new Date().toISOString();
-      setDraw({id:`rune-draw:${drawKey}:${Date.now()}`,createdAt,cards,directionIndexes,directions,reading});
+      setDraw({id:`rune-draw:${drawKey}:${globalThis.crypto?.randomUUID?.()||Date.now()}`,createdAt,cards,directionIndexes,directions,reading});
       setError('');
     }catch(err){
       setDraw(null);
@@ -292,6 +296,7 @@ export default function RuneDrawClient({drawKey='single'}){
     if(ritualStep>=0)return;
     setError('');
     setDraw(null);
+    setSaveMessage('');setSavedId('');
     timers.current.forEach(clearTimeout);
     timers.current=[];
     if(instantDraw){
@@ -310,18 +315,38 @@ export default function RuneDrawClient({drawKey='single'}){
   },[]);
 
   useEffect(()=>{
-    if(autoStarted.current)return;
-    autoStarted.current=true;
+    if(autoStarted.current===drawKey)return;
+    autoStarted.current=drawKey;
     executeDraw();
   },[drawKey]);
 
+  useEffect(()=>()=>{timers.current.forEach(clearTimeout);timers.current=[];},[]);
+
+  async function persistDraw(){
+    if(!canSave||!draw||saveBusy||savedId===draw.id)return;
+    setSaveBusy(true);setSaveMessage('');
+    try{
+      await saveLocalRuneDraw(draw,drawKey,moonPhase);
+      setSavedId(draw.id);
+      setSaveMessage('已保存至此裝置的 LunaRunes SQLite 紀錄。');
+      window.dispatchEvent(new CustomEvent('loc-rune-local-changed'));
+    }catch(error){setSaveMessage('無法儲存：'+String(error?.message||error));}
+    finally{setSaveBusy(false);}
+  }
+
+  const saveControl=draw&&embedded?<div className="loc-actions runes-retry">
+    {canSave?<button type="button" className="loc-button primary" onClick={persistDraw} disabled={saveBusy||savedId===draw.id}>{savedId===draw.id?'已儲存':saveBusy?'儲存中…':'儲存本次抽牌'}</button>
+      :<p className="scope-settings-note">可自由抽牌；只有已登入且具月之符文 Scope 權限才能記錄。未儲存的抽牌不會留存。</p>}
+    {saveMessage?<p role="status" className="scope-status">{saveMessage}</p>:null}
+  </div>:null;
+
   return <div className="runes-draw-surface">
     <section className="loc-view">
-      <header className="loc-hero" id="intro">
+      {!embedded?<header className="loc-hero" id="intro">
         <p className="loc-eyebrow">月之符文</p>
         <h1>月之符文</h1>
         <p>月之符文由 66 枚核心符文組成。選擇抽牌方式後，系統會依符文、方向與固定組句規則產生籤詩；結果只供參考，你仍保有自己的判斷與選擇。</p>
-      </header>
+      </header>:null}
 
       {singleDaily?
         <RuneSingleDailySurface
@@ -334,6 +359,7 @@ export default function RuneDrawClient({drawKey='single'}){
           error={error}
           ritualCard={ritualCard}
           onRetry={executeDraw}
+          hideModeSelection={embedded}
         />:
         <>
           {ritualStep>=0&&<section className="loc-card runes-ritual" data-draw-stage="ritual" data-draw-mode={drawKey} aria-live="polite">
@@ -363,11 +389,12 @@ export default function RuneDrawClient({drawKey='single'}){
                 <h2>占卜結果</h2>
                 <p>{draw.reading?.sentence||'資訊不足。'}</p>
               </div>
-              <DrawSelection activeKey={drawKey}/>
+              {!embedded?<DrawSelection activeKey={drawKey}/>:null}
             </section>
           </>}
         </>
       }
+      {saveControl}
     </section>
   </div>;
 }
