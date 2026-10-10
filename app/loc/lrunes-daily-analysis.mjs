@@ -1,7 +1,7 @@
 'use client';
 
 import {selectAllRows,selectRows} from './db-query.mjs';
-import {realMoonPhase} from './model/moon-phase';
+import {realMoonPhase} from './model/moon-phase.js';
 
 export const LUNARUNES_PHASES=Object.freeze(['新月','上弦','滿月','下弦','空亡']);
 export const LUNARUNES_DIRECTIONS=Object.freeze(['正位','半正位','半逆位','逆位']);
@@ -74,7 +74,7 @@ export function summarizeLunaRunesDaily(rows=[]){
   const byCombo=new Map(),byRuneDirection=new Map();
   const phaseCounts=new Map(LUNARUNES_PHASES.map(phase=>[phase,0]));
   const directionCounts=new Map(LUNARUNES_DIRECTIONS.map(direction=>[direction,0]));
-  const cardPhaseCounts=new Map(LUNARUNES_CARD_PHASES?Object.values(LUNARUNES_CARD_PHASES).map(phase=>[phase,0]):[]);
+  const cardPhaseCounts=new Map(Object.values(LUNARUNES_CARD_PHASES).map(phase=>[phase,0]));
   const byMonth=new Map();
   const distinctDays=new Set();
   const coveredCombos=new Set();
