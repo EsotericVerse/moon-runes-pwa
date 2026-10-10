@@ -9,6 +9,7 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - 'next.config.mjs'
+      - 'scripts/prepare-ios-static-assets.py'
       - 'app/**'
       - 'assets/**'
       - 'public/**'
@@ -39,6 +40,8 @@ jobs:
         run: |
           npm run build
           test -f out/index.html
+      - name: Convert iOS-only rune card URLs and filenames to ASCII
+        run: python3 scripts/prepare-ios-static-assets.py out
       - name: Generate ephemeral iOS project and sync
         run: |
           npx cap add ios
@@ -75,6 +78,17 @@ jobs:
           ditto "$app" "$stage/Payload/App.app"
           (cd "$stage" && zip -qry "$GITHUB_WORKSPACE/dist/LOC-ios-device-unsigned.ipa" Payload)
           unzip -t "$GITHUB_WORKSPACE/dist/LOC-ios-device-unsigned.ipa" | tail -1
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          with ZipFile('dist/LOC-ios-device-unsigned.ipa') as archive:
+              paths=archive.namelist()
+              assert all(name.isascii() for name in paths), 'Unicode filenames remain inside IPA'
+              prefix='Payload/App.app/public/assets/lunarunes/cards/'
+              actual={name for name in paths if name.startswith(prefix) and name.endswith('.png')}
+              expected={prefix+f'{index:02}.png' for index in range(1,67)}
+              assert actual==expected, f'Expected 66 ASCII-named card images, got {len(actual)}'
+              print('IPA verified: ASCII-only paths and 66 numeric card images')
+          PY
           test -s "$GITHUB_WORKSPACE/dist/LOC-ios-device-unsigned.ipa"
           echo "Unsigned IPA generated. It must be signed on the user's machine; this CI artifact is NOT directly installable."
       - name: Upload unsigned IPA artifact
