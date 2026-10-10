@@ -55,8 +55,8 @@ export default function LocItemConfluence(){
   const today=useMemo(nowInTaipei,[]);
   const [startDate,setStartDate]=useState(()=>itemConfluenceShiftMonth(nowInTaipei(),-3));
   const [endDate,setEndDate]=useState(today);
-  const [laneA,setLaneA]=useState(()=>defaultLane('lo3rwang','galaxy:facebook'));
-  const [laneB,setLaneB]=useState(()=>defaultLane('lrunes','daily:rune'));
+  const [laneA,setLaneA]=useState(()=>defaultLane('','galaxy:all'));
+  const [laneB,setLaneB]=useState(()=>defaultLane('','galaxy:all'));
   const [selectedDay,setSelectedDay]=useState('');
   const [page,setPage]=useState(1);
   const scopesQuery=useQuery({
@@ -95,7 +95,7 @@ export default function LocItemConfluence(){
   return <section className="scope-card scope-culture-classification-river scope-loc-time-river" aria-label="LOC 自訂項目交會">
     <p className="loc-eyebrow">LOC Culture · 項目交會</p>
     <h3>指定河道交會比較</h3>
-    <p className="scope-status">選擇兩條各自獨立的河道，在同一段日期觀察每日筆數與密度。來源不合併寫入資料庫，不把不同人的作品當作同一筆，也不推論交會代表因果。</p>
+    <p className="scope-status">從可讀取的 Scope 中指定兩條河道，在同一段日期觀察每日筆數與密度；不預設比較對象。來源不合併寫入資料庫，不把不同人的作品當作同一筆，也不推論交會代表因果。</p>
     <div className="scope-stat-controls" style={{alignItems:'stretch'}}>
       <LanePicker label="河道 A" lane={laneA} scopes={scopes} onChange={setLaneA}/>
       <LanePicker label="河道 B" lane={laneB} scopes={scopes} onChange={setLaneB}/>
