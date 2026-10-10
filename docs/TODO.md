@@ -17,8 +17,41 @@
 - [x] Scope 新增與初始化核心流程：使用者已在正式站確認正常；六張 Scope 表、Registry、Manage、Rune66 初始化及 PostgREST schema cache 相容性修正已納入 RC2 基線。
 - [x] Scope 刪除／節點管理核心流程：使用者在 RC2 升版前已確認正常；vis-network／Attr 入口、ID 確認、RPC 及 Registry 驗證流程均已納入 RC2 基線。
 - [ ] 其他細部／跨裝置邊界回歸：Scope 視覺階層、Domain／Directory、NAV／頁面文案及語系摘要在更多裝置／異常資料情境下的一致性。此項不是 Scope 核心新增／刪除尚未驗收。
-- [ ] iOS `feat/ios-device-build` 實機 IPA 簽署與私密資料本機測試；PR #479 仍為獨立進行中工作。
+- [x] iOS Capacitor 靜態封裝與 unsigned IPA 建置管線已完成，PR #479 已合併 main；已完成的 CI 編譯**不等同**使用者實機完成 App Local File 驗收。
+- [ ] iPhone 安裝／更新版 IPA 的實機回歸與私密資料 Local File 驗收：等網站 NAV／功能選單確認後進行，不因 main 更新就反覆重新安裝。
 
+## LOC App — 2026-10-10 獨立工作線
+
+**現行決策：** 網站是 NAV／功能選單的第一驗收環境；App 與網站共用同一套 React UI。網站確認前**暫不產生／要求重新安裝新版 IPA**。App 私密檔案另以原生環境能力隔離；Supabase 為公開／授權 Scope 資料主庫，不是私人 Local File 儲存位置，Neon 也不參與本機檔案儲存。
+
+### 已完成的程式基線
+
+- [x] PR #479 合併 main：Capacitor iOS wrapper、實機 unsigned IPA 建置流程與 iOS-only 符文卡牌 ASCII 靜態資源；已能在 iPhone 安裝使用此前基線。
+- [x] PR #502 合併 main：上方 NAV「我的最愛」（初始月之符文／作者首頁／月典首頁）與下方固定六鍵「首頁／文化（時間漏斗）／統計／搜尋／治理／設定」；前五鍵依 Scope／Theme 切換，第六鍵為全域設定；六鍵各有獨立圓角背景與陰影、安全區間距。
+- [x] 設定頁程式四項：設定首頁（預設 LOC）、我的最愛、登入（OAuth 統一入口）、每日符文（保留原符韻頁面）；目前已通過網站 build、UI/a11y 與 iOS CI，**尚不等同網站人工驗收**。
+- [x] App 與網站的 Native/Web 環境判斷已透過 Capacitor 接入既有 NAV；登入狀態與裝置執行環境是兩個不同判斷，不把 OAuth 登入等同原生 App 權限。
+
+### 可先在分支繼續開發（不需重裝 IPA）
+
+- [ ] **Native Local File 核心：** 只在 Capacitor iOS 原生環境啟用本機檔案選取／匯入／保存／清單／讀取／刪除；未登入也可用；一般網站登入後仍不能啟用此原生檔案功能。
+- [ ] 使用 iOS App Sandbox 中真正的檔案路徑保存原始私密檔案及必要的本機清單索引；**不用** Supabase、Neon、`api.user_records`、SQLite／IndexedDB 作為 Local File 的替身；不把整份檔案傳給 API、AI、分析服務或網站雲端同步。
+- [ ] 本機匯入第一個驗證案例採 MSN 對話紀錄等個人檔案：優先保留原檔位元組、檔名、大小、時間與格式，避免錯誤轉碼與覆蓋；檔案格式解析、離線搜尋／分類／統計採後續分段驗收，不先假設所有來源格式完全一致。
+- [ ] 原生 Filesystem／Document Picker 能力需評估可維護且與 Capacitor 8 相容的正式套件及 iOS 隱私／檔案保護策略；先補建置相容性與環境門檻測試，不在網站端偽裝成已支援 Local File。
+- [ ] 確認 App 資料備份／回復政策、卸載時私密本機檔案可能消失的提示，避免把測試檔案誤認為永久備份；任何雲端備份／分享必須獨立明確決策。
+
+### 網站通過後才進入 iPhone 驗收
+
+- [ ] 人工確認上方「我的最愛」與三個既有 Scope 入口、下方六個浮動獨立方塊、Theme 切換（含作者淡紫）、文化時間漏斗、Scope／Scope Group 內容指向，以及全域設定不跟著 Scope 改變。
+- [ ] 人工確認「設定首頁」預設 LOC、OAuth 登入／登出、使用者收藏與首頁偏好、跨 Scope RLS／權限邊界。不能以 PR 綠燈取代正式登入狀態測試。
+- [ ] 完成 App Local File 第一版後，**再**由新版 IPA 實機驗證：離線可匯入／讀取／列出／刪除、重新開啟仍保留、不同來源檔案可辨識、網頁無法打開本機功能、網路請求不含私密檔案內容。
+- [ ] 首次完整 App 驗收後再評估 OTA Web 資源更新。OTA 不能取代 iOS 原生外掛變更時的 IPA 更新，也不能取代 AltStore Classic 的定期簽章刷新；私密 Local File 必須在更新失敗時仍受保護。
+
+### App 圖示與範圍邊界
+
+- [ ] LOC／符韻瀏覽器 favicon 已獨立提出 PR #500，尚未合併；與 iOS App launcher icon 分開處理。作者使用既有「作者的話」原圖，不採 AI 繪製的黑曜石獸替代。
+- [ ] 未來 Scope Group（例如「XX 的家」）可成為自選首頁／我的最愛的空間；群組文件與個人本機檔案的存取邊界不可混用。Group 自有文件／統計／搜尋屬另外的資料功能工作線，不夾入本階段 App Local File 測試。
+- [ ] 每日符文原頁保留，Daily 專用資料表多人共用（非一人一表）；`silver.lo3rwang_daily` 與 `silver.lrunes_daily` 的 Table／VIEW 方案須獨立驗證後才動 Supabase，不塞進 `api.user_records`，也不與 App Local File 混在一個 PR。
+  
 ## 0.9.2 RC — 待確認／Bug-fix backlog（沿用先前未完成人工驗收）
 
 ### Public basic functions
