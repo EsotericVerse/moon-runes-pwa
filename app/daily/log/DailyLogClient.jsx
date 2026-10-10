@@ -15,6 +15,7 @@ import {
 } from '../../loc/daily-runes';
 import {selectRows} from '../../loc/db-query.mjs';
 import {useAccount} from '../../loc/use-account';
+import {listLocalDailyRunes} from '../../lrunes/local-rune-sqlite.mjs';
 
 const FIRST_MONTH=2026*12+7;
 const EMPTY_ROWS=Object.freeze([]);
@@ -98,13 +99,34 @@ export default function DailyLogClient({embedded=false}={}){
     setError('');
     try{
       const result=await selectDailyRuneMonth({year,month});
+      // Scope personnel can additionally see device-only daily records here.
+      // They are not synced into canonical silver.lrunes_daily.
+      const local=canWrite?await listLocalDailyRunes():[];
       if(monthRequest.current!==request)return;
-      setRows(result);
+      const byKey=new Map((result||[]).map(row=>[rowKey(row),row]));
+      const runeIds=[...new Set(local.map(row=>Number(row.rune_number)))];
+      const runeRows=runeIds.length?await selectRows('silver.runes',{
+        columns:'rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,positive_keywords,negative_keywords',
+        filters:[{column:'rune_id',operator:'in',value:runeIds}],limit:runeIds.length
+      }):{rows:[]};
+      if(monthRequest.current!==request)return;
+      const metadata=new Map((runeRows.rows||[]).map(item=>[Number(item.rune_id),item]));
+      for(const row of local){
+        if(String(row.record_date).slice(0,7)!==dateKey(year,month,1).slice(0,7))continue;
+        const rune=metadata.get(Number(row.rune_number))||{};
+        // Server entries win any record-date/draw-kind collision.
+        if(!byKey.has(rowKey(row)))byKey.set(rowKey(row),{
+          ...row,...rune,rune_id:rune.rune_id??row.rune_number,
+          rune_name:rune.rune_name||String(row.rune_number),local_only:true
+        });
+      }
+      const merged=[...byKey.values()].sort((a,b)=>rowKey(a).localeCompare(rowKey(b)));
+      setRows(merged);
       const today=taipeiToday();
       setSelectedDate(current=>{
         if(current&&current.slice(0,7)===dateKey(year,month,1).slice(0,7))return current;
         if(today.slice(0,7)===dateKey(year,month,1).slice(0,7))return today;
-        return String(result.at(-1)?.record_date||dateKey(year,month,1)).slice(0,10);
+        return String(merged.at(-1)?.record_date||dateKey(year,month,1)).slice(0,10);
       });
     }catch(reason){
       if(monthRequest.current!==request)return;
@@ -113,11 +135,13 @@ export default function DailyLogClient({embedded=false}={}){
     }finally{
       if(monthRequest.current===request)setLoading(false);
     }
-  },[year,month,canViewDetails]);
+  },[year,month,canViewDetails,canWrite]);
 
   useEffect(()=>{
     loadMonth();
-    return()=>{monthRequest.current+=1;};
+    const reload=()=>loadMonth();
+    window.addEventListener('loc-rune-local-changed',reload);
+    return()=>{monthRequest.current+=1;window.removeEventListener('loc-rune-local-changed',reload);};
   },[loadMonth]);
 
   useEffect(()=>{
@@ -283,7 +307,7 @@ export default function DailyLogClient({embedded=false}={}){
             />
 
             <div className="home-rune-copy home-rune-copy-plain">
-              <p className="loc-eyebrow">{current.draw_kind==='supplement'?'每日補抽':'每日主抽'}</p>
+              <p className="loc-eyebrow">{current.draw_kind==='supplement'?'每日補抽':'每日主抽'}{current.local_only?' · 本機紀錄':''}</p>
               <h2>{current.rune_name} · {current.direction}</h2>
               <div className="home-draw-bubbles" aria-label="每日符文建議">
                 <div className="loc-bubble">
@@ -315,7 +339,7 @@ export default function DailyLogClient({embedded=false}={}){
                   </>:<p>此前沒有抽到「{current.rune_name}」的紀錄。</p>}
                 </div>
               </div>
-              {canWrite&&!editing?<div className="scope-tabs">
+              {canWrite&&!current.local_only&&!editing?<div className="scope-tabs">
                 <button type="button" disabled={saving} onClick={()=>beginEdit(current)}>編輯</button>
                 <button type="button" disabled={saving} onClick={()=>removeRecord(current)}>刪除</button>
               </div>:null}
