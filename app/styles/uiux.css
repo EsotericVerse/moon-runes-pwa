@@ -145,10 +145,10 @@ button,a,.loc-control,.loc-button,
   to{opacity:1;transform:none}
 }
 
-/* Global navigation */
+/* Global navigation: occupies the first document row; does not follow scroll. */
 .scope-global{
-  position:sticky;
-  top:0;
+  position:static;
+  top:auto;
   z-index:100;
   padding:.65rem clamp(.65rem,2vw,1.25rem);
   border:0;

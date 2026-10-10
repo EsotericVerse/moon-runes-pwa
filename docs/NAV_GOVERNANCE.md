@@ -56,10 +56,10 @@ NAV 固定功能文字與 LOC 首頁導引使用 `app/i18n/ui-copy.js`；具名 
 
 ## First-row NAV and personal directories (2026-10-10)
 
-- Upper NAV is a **single anchored/sticky full-width first row**, not a floating pill/card. It has no visible 「我的最愛」 heading.
+- Upper NAV is a **single full-width first row in normal document flow (not fixed/sticky)**, not a floating pill/card. It has no visible 「我的最愛」 heading.
 - Left: direct favorite Scope and Scope Group shortcuts plus user-owned folder triggers. The rail scrolls horizontally; `<<` / `>>` controls render only when there is horizontal overflow. Disabled at the ends.
 - Right: permanent, non-scrolling `回月典首頁` link, independent of selected favorites or any folder.
-- Clicking a folder reveals **one second row** inside the anchored NAV; clicking it again or × collapses the row. Folder children are regular Scope shortcuts, with the same Title_TW naming and Scope authority rules.
+- Clicking a folder reveals **one second row** inside the top-of-page NAV; clicking it again or × collapses the row. Folder children are regular Scope shortcuts, with the same Title_TW naming and Scope authority rules.
 - Global Settings > 我的最愛 includes create/rename/delete folder and assigning each favorite to either direct first row or one folder. Deleting a folder returns its shortcuts to the first row; LOC remains pinned right and cannot be put in a folder.
 - Folder configuration is encoded *plain text* in existing `api.user_settings.text_value` under `loc-favorite-folders-v1`; no JSONB, local browser corpus copy, new DB table or Scope Group mutations. The folders only organize links; they **do not** change Scope roles, RLS, actual Group structures or route registry.
 - Lower six-key floating feature dock does not change. No IPA release until the user finishes website navigation acceptance.

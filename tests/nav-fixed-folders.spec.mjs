@@ -5,6 +5,8 @@ for(const route of ['/','/lrunes/','/lo3rwang/']){
     await page.goto(route,{waitUntil:'domcontentloaded'});
     const nav=page.locator('.scope-global .scope-nav');
     await expect(nav).toBeVisible();
+    await expect(page.locator('.scope-global')).toHaveCSS('position','static');
+    await expect(page.locator('.scope-feature-dock')).toHaveCSS('position','fixed');
     await expect(nav.getByText('我的最愛',{exact:true})).toHaveCount(0);
     await expect(page.locator('.scope-nav-loc-home')).toHaveText('回月典首頁');
     await expect(page.locator('.scope-nav-loc-home')).toBeVisible();
@@ -23,3 +25,16 @@ for(const route of ['/','/lrunes/','/lo3rwang/']){
     expect(overflow).toBeLessThanOrEqual(2);
   });
 }
+
+test('top NAV leaves viewport on page scroll while six-button dock remains fixed',async({page})=>{
+  await page.goto('/',{waitUntil:'domcontentloaded'});
+  const header=page.locator('.scope-global');
+  const dock=page.locator('.scope-feature-dock');
+  await expect(header).toHaveCSS('position','static');
+  await expect(dock).toHaveCSS('position','fixed');
+  await page.evaluate(()=>window.scrollTo(0,360));
+  await expect.poll(()=>page.evaluate(()=>window.scrollY)).toBeGreaterThan(100);
+  const top=await header.evaluate(node=>node.getBoundingClientRect().top);
+  expect(top).toBeLessThan(-30);
+  await expect(dock).toBeInViewport();
+});
