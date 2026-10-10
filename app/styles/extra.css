@@ -1,0 +1,52 @@
+/* Scope Extra Sign - personal IP markers only.
+   Keys are assigned once in silver.scope_registry.extra_sign at registration;
+   presentation is public and never implies online/login status.
+   Other Scope UI, Theme and functionality remain in shared CSS. */
+/* One fixed Scope identity per homepage Hero. The shared node stays above
+   artwork/overlays without affecting Hero layout, text flow or input events. */
+.home-hero-identity{
+  position:absolute;
+  z-index:5;
+  top:clamp(.8rem,1.6vw,1.3rem);
+  right:clamp(.8rem,1.6vw,1.3rem);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:.5rem;
+  max-width:calc(100% - 1.6rem);
+  min-height:1.35rem;
+  color:#f8e6b0;
+  font-size:clamp(.8125rem,1vw,.9375rem);
+  font-weight:700;
+  line-height:1.25;
+  letter-spacing:.06em;
+  white-space:nowrap;
+  text-shadow:0 2px 9px rgba(0,0,0,.9);
+  pointer-events:none;
+  user-select:none;
+}
+.home-hero-identity--codex{
+  font-size:clamp(1.4rem,2.2vw,2rem);
+  letter-spacing:0;
+}
+.home-hero-identity--anchor::before,
+.home-hero-identity--moon::before{
+  content:"";
+  display:block;
+  flex:none;
+  width:.875rem;
+  aspect-ratio:1;
+  border-radius:50%;
+  background:#f2d16b;
+  box-shadow:0 0 0 1px rgba(255,237,175,.35),0 0 13px rgba(242,209,107,.4);
+}
+.home-hero-identity--moon::before{width:1rem}
+@media(max-width:760px){
+  .home-hero-identity{
+    top:.65rem;
+    right:.75rem;
+    font-size:.8125rem;
+  }
+  .home-hero-identity--codex{font-size:1.5rem}
+}
+
