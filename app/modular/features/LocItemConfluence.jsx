@@ -98,10 +98,13 @@ export default function LocItemConfluence(){
     startDate:range.startDate,endDate:range.endDate,lanes:[laneA,laneB],series:query.data
   }):[],[valid,query.data,range.startDate,range.endDate,laneA,laneB]);
   const river=useMemo(()=>buildItemConfluenceRiver(daily,labels,[laneA,laneB]),[daily,labels,laneA,laneB]);
-  const moonRiver=useMemo(()=>range.valid?buildReferencedMoonRiver(
+  const runeRecordCount=useMemo(()=>river.reduce((count,item)=>
+    count+(item.entry_type==='item_daily_rune'?(item.daily_draws?.length||0):0),0
+  ),[river]);
+  const moonRiver=useMemo(()=>valid&&query.isSuccess?buildReferencedMoonRiver(
     range.startDate,range.endDate,[laneA,laneB],
-    date=>realMoonPhase(new Date(date+'T12:00:00+08:00'))
-  ):[],[range.valid,range.startDate,range.endDate,laneA.scopeId,laneA.source,laneB.scopeId,laneB.source]);
+    date=>realMoonPhase(new Date(date+'T12:00:00+08:00')),runeRecordCount
+  ):[],[valid,query.isSuccess,range.startDate,range.endDate,laneA.scopeId,laneA.source,laneB.scopeId,laneB.source,runeRecordCount]);
   const combinedRiver=useMemo(()=>[...moonRiver,...river],[moonRiver,river]);
   const summary=useMemo(()=>itemConfluenceSummary(daily),[daily]);
   const lanes=[laneA,laneB];
@@ -115,7 +118,7 @@ export default function LocItemConfluence(){
   return <section className="scope-card scope-culture-classification-river scope-loc-time-river" aria-label="LOC 自訂項目交會">
     <p className="loc-eyebrow">LOC Culture · 項目交會</p>
     <h3>指定河道交會比較</h3>
-    <p className="scope-status">從可讀取的 Scope 指定兩條河道；只要其中一條引用符韻每日符文，就在最上方自動加一條現實月相事件河道，以月相變動日定錨並延續至下次變動。沒有引用每日符文時不顯示月相河道。其他作品／媒體仍顯示各自密度；符文顯示名稱與四向，不顯示密度。各來源維持獨立。</p>
+    <p className="scope-status">從可讀取的 Scope 指定兩條河道；只在其中一條引用符韻每日符文、且所選區間有可讀取的每日符文紀錄時，才在最上方自動加上現實月相事件河道，以月相變動日定錨並延續至下次變動。未引用、無紀錄或讀取失敗時，不產生月相河道。其他作品／媒體仍顯示各自密度；符文顯示名稱與四向，不顯示密度。各來源維持獨立。</p>
     <div className="scope-stat-controls" style={{alignItems:'stretch'}}>
       <LanePicker label="河道 A" lane={laneA} scopes={scopes} onChange={setLaneA}/>
       <LanePicker label="河道 B" lane={laneB} scopes={scopes} onChange={setLaneB}/>
@@ -137,7 +140,7 @@ export default function LocItemConfluence(){
           ?daily.filter(row=>row.runeDraws?.[index]?.length).length+' 個每日符文紀錄日'
           :total.toLocaleString()+' 筆');
       }).join(' · ')} · 雙方都有紀錄 {summary.bothActiveDays} 天</p>
-      <p className="scope-status">一般文字／媒體河道顯示筆數與相對密度；符韻每日符文直接顯示名稱、四向與當日月相，不作密度比較。當選用每日符文，另顯示依臺灣農曆日級月相變動事件形成的連續天時河道，無抽符日亦不中斷（非精確天文朔望時刻）。</p>
+      <p className="scope-status">一般文字／媒體河道顯示筆數與相對密度；符韻每日符文直接顯示名稱、四向與當日月相，不作密度比較。當選用每日符文且區間內有抽符紀錄，才附帶依臺灣農曆日級月相變動事件形成的連續天時河道；中間沒有抽符的個別日期仍不中斷。區間內完全沒有符文紀錄則不顯示（非精確天文朔望時刻）。</p>
       {combinedRiver.length?<CultureTimeline
         items={combinedRiver}
         labelOf={labelOf}
