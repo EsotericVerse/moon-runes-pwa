@@ -1,0 +1,163 @@
+name: Publish LOC 0.9.2 RC3.1 iOS IPA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'governance/releases/v0.9.2-rc.3.1.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: loc-092-rc31-release
+  cancel-in-progress: false
+
+jobs:
+  verify-rc31:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify RC3.1 SemVer agreement and native icon source
+        run: |
+          node --input-type=module -e '
+          import fs from "node:fs";
+          const version="0.9.2-rc.3.1";
+          const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));
+          const lock=JSON.parse(fs.readFileSync("package-lock.json","utf8"));
+          const readme=fs.readFileSync("README.md","utf8");
+          if(pkg.version!==version||lock.version!==version||lock.packages?.[""]?.version!==version||!readme.includes("Current version: "+version))
+            throw new Error("RC3.1 version mismatch");
+          if(!fs.existsSync("assets/site/icons/loc-app-emblem.png")||!fs.existsSync("scripts/prepare-ios-app-icon.swift"))
+            throw new Error("LOC native AppIcon source or renderer missing");
+          console.log("RC3.1 version agreement and LOC AppIcon source OK");
+          '
+      - name: Install exact dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Verify repository contracts
+        run: npm run verify
+      - name: Verify primary public database interface
+        run: npm run verify:db-public
+      - name: Verify LOC static export
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Verify browser regression
+        run: npm run test:ui
+
+  build-and-release-ipa:
+    needs: verify-rc31
+    runs-on: macos-26-intel
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Check native build tools
+        run: |
+          xcodebuild -version
+          xcrun --find swift
+      - name: Install exact dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Build LOC RC3.1 static export
+        run: |
+          npm run build
+          test -f out/index.html
+      - name: Rewrite only iOS rune card filenames to ASCII
+        run: python3 scripts/prepare-ios-static-assets.py out
+      - name: Generate ephemeral Capacitor iOS shell
+        run: |
+          npx cap add ios
+          npx cap sync ios
+          test -f ios/App/App.xcodeproj/project.pbxproj
+      - name: Install approved LOC native AppIcon
+        run: |
+          set -euo pipefail
+          source_icon="assets/site/icons/loc-app-emblem.png"
+          target_icon="ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png"
+          test -s "$source_icon"
+          test -f ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json
+          swift scripts/prepare-ios-app-icon.swift "$source_icon" "$target_icon"
+          test -s "$target_icon"
+          /usr/bin/sips -g pixelWidth -g pixelHeight "$target_icon" | grep -q '1024'
+      - name: Resolve native Swift packages
+        run: xcodebuild -resolvePackageDependencies -project ios/App/App.xcodeproj -scheme App
+      - name: Compile unsigned physical-device RC3.1 application
+        run: |
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/loc-rc31-device-build" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            MARKETING_VERSION=0.9.2 \
+            CURRENT_PROJECT_VERSION=4 \
+            build
+      - name: Validate AppIcon, version and assemble unsigned IPA
+        shell: bash
+        run: |
+          set -euo pipefail
+          app="$RUNNER_TEMP/loc-rc31-device-build/Build/Products/Release-iphoneos/App.app"
+          test -d "$app"
+          test -s "$app/Assets.car"
+          test -f "$app/public/index.html"
+          xcrun lipo -archs "$app/App" | tr ' ' '\n' | grep -qx arm64
+          bundle=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Info.plist")
+          version=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app/Info.plist")
+          build=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$app/Info.plist")
+          icon=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIcons:CFBundlePrimaryIcon:CFBundleIconName' "$app/Info.plist")
+          test "$bundle" = "cc.lo3rwang.loc.mobile"
+          test "$version" = "0.9.2"
+          test "$build" = "4"
+          test "$icon" = "AppIcon"
+          mkdir -p "$RUNNER_TEMP/loc-rc31-ipa/Payload" dist
+          ditto "$app" "$RUNNER_TEMP/loc-rc31-ipa/Payload/App.app"
+          (cd "$RUNNER_TEMP/loc-rc31-ipa" && zip -qry "$GITHUB_WORKSPACE/dist/LOC-0.9.2-RC3.1-unsigned.ipa" Payload)
+          unzip -t dist/LOC-0.9.2-RC3.1-unsigned.ipa | tail -1
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          with ZipFile('dist/LOC-0.9.2-RC3.1-unsigned.ipa') as ipa:
+              paths=ipa.namelist()
+              assert all(n.isascii() for n in paths), 'Non-ASCII IPA path'
+              assert 'Payload/App.app/Assets.car' in paths, 'Native AppIcon catalog missing'
+              prefix='Payload/App.app/public/assets/lunarunes/cards/'
+              expected={prefix+f'{index:02}.png' for index in range(1,67)}
+              actual={n for n in paths if n.startswith(prefix) and n.endswith('.png')}
+              assert actual==expected, f'Rune card path count mismatch: {len(actual)}'
+          print('Verified: AppIcon catalog + arm64 + 66 ASCII rune cards')
+          PY
+      - name: Upload RC3.1 unsigned IPA as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LOC-0.9.2-RC3.1-unsigned-IPA
+          path: dist/LOC-0.9.2-RC3.1-unsigned.ipa
+          retention-days: 30
+          if-no-files-found: error
+      - name: Publish immutable RC3.1 GitHub pre-release and IPA asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag='v0.9.2-rc.3.1'
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "::error::RC3.1 GitHub Release already exists; refusing to change a published tag."
+            exit 1
+          fi
+          gh release create "$tag" \
+            --target "$GITHUB_SHA" \
+            --title "LOC 0.9.2 RC3.1 — iOS Native AppIcon" \
+            --notes-file governance/releases/v0.9.2-rc.3.1.md \
+            --prerelease \
+            dist/LOC-0.9.2-RC3.1-unsigned.ipa
+          gh release view "$tag" --json assets,tagName,url

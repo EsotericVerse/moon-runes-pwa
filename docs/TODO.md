@@ -1,10 +1,13 @@
 # LOC Current TODO
 
-**Current version:** 0.9.2-rc.3
+**Current version:** 0.9.2-rc.3.1
 
 **Release policy:** 0.9.2 RC 先定版，後續以修 bug／回歸驗證為主；Import 的真實來源測試由使用者暫緩，**Pending / 尚未驗收**。本表的 `[x]` 表示對應程式交付或已取得明確驗證證據，不能推論其他人工檢查也完成。
 
 ## 0.9.2 RC — 已進入程式基線／自動化回歸
+
+- [x] RC3.1 候選版包含 PR #514（引用每日符文且區間有紀錄時才出現連續真實月相事件河道，移除文化頁行事曆捷徑）與 PR #515（Capacitor iOS 上方收藏 NAV 避讓動態島；須實機人工驗收）。
+- [ ] RC3.1 GitHub 發版 workflow、自動化回歸、unsigned IPA 產出與 iPhone 動態島實機驗收；CI 不等於已安裝驗收。
 
 - [x] LOC／作者／符韻首頁 Hero 的字級統一與各自固定身分識別（X／光之定錨點／黃色圓點）；不依賴 Scope Group。
 - [x] 四大功能 Hero 依 Scope 載入八張 JPG：LOC 專用四張；作者與符韻共用四張。

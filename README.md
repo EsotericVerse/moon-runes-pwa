@@ -1,6 +1,7 @@
 # LOC｜Luna Codex
 
-**Current version: 0.9.2-rc.3 (Release Candidate — iOS launcher icon and web navigation baseline)**
+**Current version: 0.9.2-rc.3.1 (Release Candidate — iPhone Dynamic Island safe area + referenced lunar event river)**
+> 0.9.2 RC3.1 includes PR #514 (referenced Daily Rune lunar event river and Culture calendar shortcut removal) and PR #515 (iOS native safe-area / Dynamic Island NAV adjustment). New unsigned iOS IPA requires local signing.
 
 > 0.9.2 RC3 packages the latest main NAV/favorite folders, Culture revisions, and an iOS unsigned IPA with the approved LOC lunar AppIcon. It remains a stabilization candidate, not 1.0 GA. iOS IPA requires local signing for installation, and private Local File/import with real files remain **Pending / not manually tested**. See `docs/TODO.md`.
 
