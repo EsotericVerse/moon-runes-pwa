@@ -16,6 +16,8 @@ import {useNavigationPreferences} from './loc/use-navigation-preferences';
 import {homeScopeForAccount} from './modular/navigation-preferences.mjs';
 import {navigationHref} from './modular/nav-destinations.mjs';
 import BottomNavIcon from './modular/BottomNavIcon';
+import ScrollableScopeNav from './modular/ScrollableScopeNav';
+import {visibleFavoriteLayout} from './modular/favorite-folders.mjs';
 
 const SYSTEM_THEME_ID='system-default';
 const DAY_THEME_ID='theme-7';
@@ -194,6 +196,7 @@ export default function AppShell({children}){
   const [navDisplayNames,setNavDisplayNames]=useState({});
   const [registryScopes,setRegistryScopes]=useState([]);
   const [registryLoaded,setRegistryLoaded]=useState(false);
+  const [openFolderId,setOpenFolderId]=useState('');
   useEffect(()=>{setNative(Capacitor.isNativePlatform());},[]);
   useEffect(()=>{
     let active=true;
@@ -263,12 +266,22 @@ export default function AppShell({children}){
   // dynamic IDs are omitted; built-in fallback links work before DB hydration.
   const scopeNavLabel=item=>navDisplayNames[item.id]||item.nav.label;
   const registryMap=new Map(registryScopes.map(item=>[item.scope_id,item]));
-  const favoriteLinks=preferences.favorites.map(id=>{
+  const layout=visibleFavoriteLayout(preferences.favorites,preferences.folders);
+  const favoriteLinks=layout.direct.map(id=>{
     const builtIn=NAV_SCOPES.find(item=>item.id===id);
     const active=registryMap.get(id);
     if(!builtIn&&!active)return null;
     return {id,label:builtIn?scopeNavLabel(builtIn):(navDisplayNames[id]||id)};
   }).filter(Boolean);
+  const navLabel=id=>{
+    const builtIn=NAV_SCOPES.find(item=>item.id===id);
+    if(!builtIn&&!registryMap.has(id))return null;
+    return builtIn?scopeNavLabel(builtIn):(navDisplayNames[id]||id);
+  };
+  const visibleFolders=layout.directories.map(folder=>({
+    ...folder,links:folder.scopes.map(id=>({id,label:navLabel(id)})).filter(item=>item.label)
+  }));
+  const openFolder=visibleFolders.find(folder=>folder.id===openFolderId)||null;
   const featureTabs=[
     {id:'home',icon:'home',label:'首頁',href:navigationHref(navScopeId,'',native)+(native&&navScopeId==='loc'?'?loc_direct=1':'')},
     ...['culture','statics','search','governance'].map(id=>{
@@ -296,13 +309,33 @@ export default function AppShell({children}){
     <motion.div className="loc-scroll-progress" style={{scaleX}} aria-hidden="true"/>
     <header className="scope-global">
       <nav className="scope-nav" aria-label={copy.nav.aria}>
-        <span className="scope-favorites-label">我的最愛</span>
-        {favoriteLinks.map(item=>{
-          const href=navigationHref(item.id,'',native)+(native&&item.id==='loc'?'?loc_direct=1':'');
-          return <NavTarget key={item.id} href={href} label={item.label} current={targetIsCurrent(href,host,pathname)}/>;
-        })}
-        {!favoriteLinks.length?<a href="/settings/" className="scope-nav-empty">到設定加入常用空間</a>:null}
+        <ScrollableScopeNav label="常用空間" resetKey={preferences.favorites.join(',')+'|'+visibleFolders.map(folder=>folder.id+':'+folder.label).join(',')}>
+          {favoriteLinks.map(item=>{
+            const href=navigationHref(item.id,'',native);
+            return <NavTarget key={item.id} href={href} label={item.label} current={targetIsCurrent(href,host,pathname)}/>;
+          })}
+          {visibleFolders.map(folder=><button type="button" key={folder.id}
+            className="scope-nav-folder" aria-expanded={openFolderId===folder.id}
+            aria-controls="scope-nav-folder-contents" onClick={()=>setOpenFolderId(current=>current===folder.id?'':folder.id)}>
+            {folder.label} <span aria-hidden="true">{openFolderId===folder.id?'▴':'▾'}</span>
+          </button>)}
+          {!favoriteLinks.length&&!visibleFolders.length?<a href="/settings/" className="scope-nav-empty">到設定加入常用空間</a>:null}
+        </ScrollableScopeNav>
+        <a href={navigationHref('loc','',native)+(native?'?loc_direct=1':'')}
+          className="scope-nav-loc-home" aria-current={scopeId==='loc'&&pathname==='/'?'page':undefined}>
+          {copy.nav.home}
+        </a>
       </nav>
+      {openFolder?<div id="scope-nav-folder-contents" className="scope-nav-subrow" aria-label={openFolder.label+'目錄'}>
+        <ScrollableScopeNav label={openFolder.label+'目錄內容'} resetKey={openFolder.id+'|'+openFolder.links.map(item=>item.id).join(',')}>
+          {openFolder.links.map(item=>{
+            const href=navigationHref(item.id,'',native);
+            return <NavTarget key={item.id} href={href} label={item.label} current={targetIsCurrent(href,host,pathname)}/>;
+          })}
+          {!openFolder.links.length?<span className="scope-nav-folder-empty">目錄尚無入口</span>:null}
+        </ScrollableScopeNav>
+        <button type="button" className="scope-nav-close-folder" aria-label="收合目錄" onClick={()=>setOpenFolderId('')}>×</button>
+      </div>:null}
     </header>
     {children}
     <nav className="scope-feature-dock" aria-label="固定功能選單" data-scope={scopeId}>
