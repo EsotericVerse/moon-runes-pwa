@@ -21,6 +21,15 @@ for(const route of ['/','/lrunes/','/lo3rwang/']){
     expect(sizes.railRight).toBeLessThanOrEqual(sizes.homeLeft+1);
     expect(sizes.shadow).toBe('none');
     expect(sizes.radius).toBe('0px');
+    const bounds=await page.evaluate(()=>{
+      const nav=document.querySelector('.scope-global').getBoundingClientRect();
+      const content=document.querySelector('.loc-next-main, .scope-main').getBoundingClientRect();
+      return {navLeft:nav.left,navRight:nav.right,contentLeft:content.left,contentRight:content.right,viewport:innerWidth};
+    });
+    expect(Math.abs(bounds.navLeft-bounds.contentLeft)).toBeLessThanOrEqual(1);
+    expect(Math.abs(bounds.navRight-bounds.contentRight)).toBeLessThanOrEqual(1);
+    expect(bounds.navLeft).toBeGreaterThanOrEqual(6);
+    expect(bounds.navRight).toBeLessThanOrEqual(bounds.viewport-6);
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(2);
   });

@@ -16,14 +16,21 @@
   position:static;
   top:auto;
   z-index:100;
-  width:100%;
-  padding:max(.45rem,env(safe-area-inset-top)) max(.65rem,env(safe-area-inset-right)) .45rem max(.65rem,env(safe-area-inset-left));
+  /* Match the exact horizontal width of the shared content frame. */
+  width:min(var(--loc-ui-max),calc(100% - clamp(1rem,4vw,4rem)));
+  margin-inline:auto;
+  padding:max(.45rem,env(safe-area-inset-top)) 0 .45rem;
   border:0;
   border-bottom:1px solid var(--loc-line);
   border-radius:0;
   background:color-mix(in srgb,var(--loc-bg) 94%,var(--loc-panel));
   backdrop-filter:none;
   box-shadow:none;
+}
+/* LOC and author landing pages intentionally use the narrower 1180px
+   authored-content frame; keep the NAV aligned to that actual frame. */
+.scope-global:has(~ .loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"])){
+  width:min(1180px,calc(100% - 2rem));
 }
 .scope-global::after{display:none;}
 .scope-nav{
@@ -145,7 +152,8 @@
 .scope-favorite-folder-row>button{flex:0 0 auto;}
 @media(max-width:760px){
   .scope-global{
-    padding:max(.35rem,env(safe-area-inset-top)) max(.35rem,env(safe-area-inset-right)) .3rem max(.35rem,env(safe-area-inset-left));
+    width:min(calc(100% - 1rem),var(--loc-ui-max));
+    padding:max(.35rem,env(safe-area-inset-top)) 0 .3rem;
   }
   .scope-nav{gap:.2rem;}
   .scope-nav-loc-home{font-size:.76rem;padding:.45rem .4rem;}
