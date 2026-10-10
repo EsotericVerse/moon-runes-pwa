@@ -108,11 +108,15 @@ test('native first-row NAV respects iOS safe area while web retains original lay
   const css=fs.readFileSync('app/styles/nav.css','utf8');
   const layout=fs.readFileSync('app/layout.jsx','utf8');
   assert.match(shell,/data-native=\{native\?'ios':'web'\}/);
-  assert.match(layout,/viewportFit:'cover'/);
+  assert.match(layout,/initialScale:1/);
+  assert.doesNotMatch(layout,/viewportFit:'cover'/);
+  // Under native safe-area clipping, do not add another Dynamic Island-sized
+  // 54px CSS fallback that would shift the control hit-test geometry.
+  assert.doesNotMatch(css,/--loc-native-top-fallback:54px/);
   assert.match(css,/\.scope-global\[data-native="ios"\]/);
   assert.match(css,/max\(env\(safe-area-inset-top,0px\),var\(--loc-native-top-fallback\)\)/);
   assert.match(css,/min-height:40px/);
-  assert.match(css,/min-height:780px/);
+  assert.match(css,/--loc-native-top-fallback:\.45rem/);
   assert.match(css,/position:static/);
   assert.doesNotMatch(css,/\.scope-global\[data-native="ios"\]\s*\{[^}]*position:fixed/);
 });
