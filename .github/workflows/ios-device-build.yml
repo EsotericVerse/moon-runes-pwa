@@ -97,10 +97,10 @@ jobs:
           mkdir -p "$stage/Payload" "$GITHUB_WORKSPACE/dist"
           ditto "$app" "$stage/Payload/App.app"
           (cd "$stage" && zip -qry "$GITHUB_WORKSPACE/dist/LOC-0.9.2-RC3-device-unsigned.ipa" Payload)
-          unzip -t "$GITHUB_WORKSPACE/dist/LOC-ios-device-unsigned.ipa" | tail -1
+          unzip -t "$GITHUB_WORKSPACE/dist/LOC-0.9.2-RC3-device-unsigned.ipa" | tail -1
           python3 - <<'PY'
           from zipfile import ZipFile
-          with ZipFile('dist/LOC-ios-device-unsigned.ipa') as archive:
+          with ZipFile('dist/LOC-0.9.2-RC3-device-unsigned.ipa') as archive:
               paths=archive.namelist()
               assert all(name.isascii() for name in paths), 'Unicode filenames remain inside IPA'
               prefix='Payload/App.app/public/assets/lunarunes/cards/'
@@ -109,12 +109,12 @@ jobs:
               assert actual==expected, f'Expected 66 ASCII-named card images, got {len(actual)}'
               print('IPA verified: ASCII-only paths and 66 numeric card images')
           PY
-          test -s "$GITHUB_WORKSPACE/dist/LOC-ios-device-unsigned.ipa"
+          test -s "$GITHUB_WORKSPACE/dist/LOC-0.9.2-RC3-device-unsigned.ipa"
           echo "Unsigned IPA generated. It must be signed on the user's machine; this CI artifact is NOT directly installable."
       - name: Upload unsigned IPA artifact
         uses: actions/upload-artifact@v4
         with:
           name: LOC-0.9.2-RC3-device-unsigned
-          path: dist/LOC-ios-device-unsigned.ipa
+          path: dist/LOC-0.9.2-RC3-device-unsigned.ipa
           retention-days: 7
           if-no-files-found: error
