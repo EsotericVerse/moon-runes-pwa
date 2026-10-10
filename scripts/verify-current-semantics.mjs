@@ -102,6 +102,13 @@ if(!failures.length){
   if(rune66Engine.includes('keyword_group')||rune66Engine.includes("node_type==='style'")||rune66Engine.includes("node_type==='keyword'"))failures.push('Rune66 engine must not restore style/rule/node-type keyword storage');
   const statistics=read('app/modular/features/Statistics.jsx');
   const culture=read('app/modular/features/Culture.jsx');
+  const cultureTimeline=read('app/modular/modules/culture-timeline/CultureTimeline.jsx');
+  // Explicit period ranges must be applied before vis-timeline's first fit/layout.
+  if(!cultureTimeline.includes('const hasSelectedWindow=Boolean(windowStart&&windowEnd&&')||
+     !cultureTimeline.includes('...(hasSelectedWindow?{start:windowStart,end:windowEnd}:{})')||
+     !cultureTimeline.includes('if(hasSelectedWindow){')){
+    failures.push('Culture timeline must initialize selected window before auto-fit');
+  }
   // An existing ?from=... deep link may set the initial period, but must not
   // reset a later explicit period selection on unrelated React query rerenders.
   for(const token of [
