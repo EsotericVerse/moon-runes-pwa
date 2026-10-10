@@ -102,6 +102,18 @@ if(!failures.length){
   if(rune66Engine.includes('keyword_group')||rune66Engine.includes("node_type==='style'")||rune66Engine.includes("node_type==='keyword'"))failures.push('Rune66 engine must not restore style/rule/node-type keyword storage');
   const statistics=read('app/modular/features/Statistics.jsx');
   const culture=read('app/modular/features/Culture.jsx');
+  // Disabling the optional keyword Class river must never disable or clear the
+  // independent period works paginator (including P5).
+  for(const token of [
+    "const effectiveCategoryKey=selectedGroup?.category_key||'';",
+    "effectiveCategoryKey||'all'",
+    "enabled:!isLrunesDaily&&!isAggregateScope&&Boolean(scopeData)&&Boolean(selectedWorkPeriod)",
+    "styleFilter==='rune66'?<section className='scope-culture-style-filter'>",
+    "正在載入該時期作品…",
+    'onClick={periodWorksPage.reload}'
+  ])if(!culture.includes(token))failures.push('Culture P5/all works must survive keyword style changes: '+token);
+  if(culture.includes("(!selectedCategory||Boolean(selectedGroup))"))failures.push('Culture must not disable work pagination while source-category snapshot refreshes.');
+
   const cultureTimeline=read('app/modular/modules/culture-timeline/CultureTimeline.jsx');
   // Explicit period ranges must be applied before vis-timeline's first fit/layout.
   if(!cultureTimeline.includes('const hasSelectedWindow=Boolean(windowStart&&windowEnd&&')||
