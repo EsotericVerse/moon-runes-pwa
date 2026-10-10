@@ -88,10 +88,10 @@ test('NAV pins return to LOC, conditionally scrolls and expands directories as a
   assert.match(navCss,/\.scope-nav-loc-home\{/);
   assert.match(navCss,/\.scope-nav-viewport\{/);
   assert.match(navCss,/border-radius:0/);
-  assert.match(navCss,/\\.scope-global\\{[\\s\\S]*?position:static;/);
-  assert.doesNotMatch(navCss,/position:sticky/);
-  assert.doesNotMatch(fs.readFileSync('app/styles/uiux.css','utf8'),/\\.scope-global\\{\\s*position:sticky;/);
-  assert.match(fs.readFileSync('app/styles/bottom-navigation.css','utf8'),/\\.scope-feature-dock\\{\\s*position:fixed;/);
+  assert.ok(navCss.includes('.scope-global{\n  position:static;'));
+  assert.equal(navCss.includes('position:sticky'),false);
+  assert.equal(fs.readFileSync('app/styles/uiux.css','utf8').includes('.scope-global{\n  position:sticky;'),false);
+  assert.ok(fs.readFileSync('app/styles/bottom-navigation.css','utf8').includes('.scope-feature-dock{\n  position:fixed;'));
   assert.match(global,/@import "\.\/styles\/nav.css";/);
   assert.match(settings,/>新增目錄<\/button>/);
   assert.match(settings,/FOLDERS_SETTING_KEY/);
