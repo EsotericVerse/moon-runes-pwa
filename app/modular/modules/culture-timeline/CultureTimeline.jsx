@@ -120,6 +120,8 @@ export default function CultureTimeline({
   hiddenDates=EMPTY_HIDDEN_DATES
 }){
   const containerRef=useRef(null);
+  const timelineRef=useRef(null);
+  const [selectedRowId,setSelectedRowId]=useState('');
   const onSelectRef=useRef(onSelect);
   const onTimeClickRef=useRef(onTimeClick);
   const onBoundaryNavigateRef=useRef(onBoundaryNavigate);
@@ -150,7 +152,7 @@ export default function CultureTimeline({
     let instance=null;
     let initialPanWindow=null;
     let boundaryChangeSent=false;
-    let handleNativeDoubleClick=null;
+    timelineRef.current=null;
     setChartError(false);
     if(!containerRef.current||!rows.length){setReady(false);return()=>{cancelled=true};}
     setReady(false);
@@ -213,8 +215,10 @@ export default function CultureTimeline({
             millisecond:'YYYY/M/D HH:mm:ss',second:'YYYY/M/D HH:mm',minute:'YYYY/M/D',hour:'YYYY/M/D',weekday:'YYYY/M',day:'YYYY/M',week:'YYYY/M',month:'YYYY年',year:''
           }
         },
-        horizontalScroll:true,
-        zoomKey:'ctrlKey',
+        // Wheel/pinch zoom and dragging must not require Ctrl, Alt, or other keys.
+        horizontalScroll:false,
+        zoomable:true,
+        zoomKey:'',
         zoomMin:1000*60*60*24*14,
         zoomMax:1000*60*60*24*365*50,
         ...(Array.isArray(hiddenDates)&&hiddenDates.length?{hiddenDates}:{}),
@@ -235,9 +239,11 @@ export default function CultureTimeline({
           ?{axis:10,item:{horizontal:3,vertical:5}}
           :{item:{horizontal:8,vertical:12}}
       });
+      timelineRef.current=instance;
       instance.on('select',({items:selectedItems=[]})=>{
-        const selectedId=selectedItems[0];
-        onSelectRef.current?.(rowById(selectedId)||null);
+        const row=rowById(selectedItems[0]);
+        setSelectedRowId(row?.id||'');
+        onSelectRef.current?.(row);
       });
       instance.on('rangechanged',properties=>{
         // Only a real user pan can advance the selected period. A click or a
@@ -263,12 +269,10 @@ export default function CultureTimeline({
           onBoundaryNavigateRef.current('next');
         }
       });
-      // Bind the native DOM double-click gesture directly to the chart.
-      // vis-timeline's synthesized click/tap events must never open the
-      // anchor editor after a single click or a drag release.
-      handleNativeDoubleClick=event=>{
-        if(event.detail!==2||!onTimeClickRef.current)return;
-        const properties=instance.getEventProperties(event);
+      // vis-timeline handles mouse double-click and touch double-tap here.
+      // A single tap only selects; only an authorized caller may create an anchor.
+      instance.on('doubleClick',properties=>{
+        if(!onTimeClickRef.current)return;
         if(properties?.what!=='background'&&properties?.what!=='axis')return;
         const time=properties.time instanceof Date?properties.time:new Date(properties.time||'');
         if(Number.isNaN(time.getTime()))return;
@@ -276,8 +280,7 @@ export default function CultureTimeline({
         const month=String(time.getMonth()+1).padStart(2,'0');
         const day=String(time.getDate()).padStart(2,'0');
         onTimeClickRef.current(year+'-'+month+'-'+day);
-      };
-      containerRef.current.addEventListener('dblclick',handleNativeDoubleClick);
+      });
       if(hasSelectedWindow){
         instance.setWindow(windowStart,windowEnd,{animation:false});
       }else{
@@ -290,16 +293,55 @@ export default function CultureTimeline({
     }
     return()=>{
       cancelled=true;
-      if(containerRef.current&&handleNativeDoubleClick)containerRef.current.removeEventListener('dblclick',handleNativeDoubleClick);
+      if(timelineRef.current===instance)timelineRef.current=null;
       if(instance)instance.destroy();
     };
   },[rows,hasTimeKinds,timelineMinHeight,timelineMaxHeight,mode,windowStart,windowEnd,boundaryStart,boundaryEnd,fixedMin,fixedMax,hiddenDates,editable]);
 
+  // Explicit alternatives to gestures, available on touch, mouse, and keyboard.
+  function changeWindow(action){
+    const timeline=timelineRef.current;
+    if(!timeline)return;
+    if(action==='zoom-in')return timeline.zoomIn(.35,{animation:false});
+    if(action==='zoom-out')return timeline.zoomOut(.35,{animation:false});
+    if(action==='reset'){
+      if(windowStart&&windowEnd&&Number.isFinite(Date.parse(windowStart))&&Number.isFinite(Date.parse(windowEnd))){
+        return timeline.setWindow(windowStart,windowEnd,{animation:false});
+      }
+      return timeline.fit({animation:false});
+    }
+    const {start,end}=timeline.getWindow();
+    const from=start.getTime(),to=end.getTime();
+    if(!Number.isFinite(from)||!Number.isFinite(to)||to<=from)return;
+    const shift=(to-from)*.35*(action==='later'?1:-1);
+    timeline.setWindow(new Date(from+shift),new Date(to+shift),{animation:false});
+  }
+  function selectFromList(event){
+    const row=rows.find(item=>item.id===event.target.value)||null;
+    setSelectedRowId(row?.id||'');
+    if(row)timelineRef.current?.setSelection([row.id],{focus:true,animation:false});
+    onSelectRef.current?.(row);
+  }
+
   if(!rows.length)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><div className='scope-period-timeline scope-period-timeline-empty-line' role='region' aria-label='時間長河'/><p>{mode==='overview'?'尚未設定時期，目前以「所有」總覽顯示。':'目前時期尚無可顯示的時間資料。'}</p></div>;
 
   return <div className='scope-period-timeline-wrap'>
+    <div className='scope-timeline-controls' role='group' aria-label='時間長河操作'>
+      <button type='button' className='loc-button' aria-label='往較早時間移動' disabled={!ready} onClick={()=>changeWindow('earlier')}>←</button>
+      <button type='button' className='loc-button' aria-label='往較晚時間移動' disabled={!ready} onClick={()=>changeWindow('later')}>→</button>
+      <button type='button' className='loc-button' aria-label='放大時間長河' disabled={!ready} onClick={()=>changeWindow('zoom-in')}>＋</button>
+      <button type='button' className='loc-button' aria-label='縮小時間長河' disabled={!ready} onClick={()=>changeWindow('zoom-out')}>－</button>
+      <button type='button' className='loc-button' aria-label='重置時間長河視野' disabled={!ready} onClick={()=>changeWindow('reset')}>重置</button>
+    </div>
+    {onSelect&&mode==='overview'&&rows.length<=250?<label className='scope-timeline-item-picker'>
+      <span>選擇河道紀錄</span>
+      <select className='scope-select' aria-label='選擇河道紀錄' value={rows.some(row=>row.id===selectedRowId)?selectedRowId:''} onChange={selectFromList}>
+        <option value=''>請選擇日期或紀錄</option>
+        {rows.map(row=><option key={row.id} value={row.id}>{String(row.start||'').slice(0,10)} · {row.content||row.title||row.entryType||'紀錄'}</option>)}
+      </select>
+    </label>:null}
     {chartError?<p className='scope-status'>圖表載入失敗，以下改用清單顯示。</p>:null}
-    <div ref={containerRef} data-anchor-gesture={onTimeClick?'double-click':'none'} className='scope-period-timeline' role='region' aria-label={mode==='overview'?'所有時期與定錨點時間長河':'時間長河'} style={{'--scope-period-timeline-min-height':timelineMinHeight+'px'}}/>
+    <div ref={containerRef} data-anchor-gesture={onTimeClick?'double-tap':'none'} className='scope-period-timeline' role='region' aria-label={mode==='overview'?'所有時期與定錨點時間長河':'時間長河'} style={{'--scope-period-timeline-min-height':timelineMinHeight+'px'}}/>
     {chartError?<ol className='scope-list'>
       {fallbackRows.map(row=><li key={row.id}><strong>{row.content}</strong>{row.group?<span> · {groupLabel(row.group)}</span>:null}<span> · {dateLabel(row.start)}</span>{row.title?<p>{row.title}</p>:null}</li>)}
     </ol>:null}

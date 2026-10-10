@@ -235,14 +235,14 @@ function IncrementalLoad({
       if(loadingRef.current||error||now<readyAtRef.current)return;
       readyAtRef.current=now+Math.max(0,Number(cooldownMs)||0);
       onLoadMore();
-    },{root:scrollRootRef?.current||null,threshold:1});
+    },{root:scrollRootRef?.current||null,threshold:0.1,rootMargin:'80px 0px'});
     observer.observe(sentinel);
     return()=>observer.disconnect();
   },[hasMore,error,onLoadMore,cooldownMs,scrollRootRef]);
 
   if(!hasMore)return null;
   return <div ref={sentinelRef} className={'scope-load-sentinel'+(loading?' is-loading':'')} aria-live="polite">
-    <span>{loading?'…':label}</span>
+    <button type="button" className="loc-button" disabled={loading} onClick={()=>onLoadMore?.()} aria-label="載入更多內容">{loading?'載入中…':'載入更多'}</button>
   </div>;
 }
 

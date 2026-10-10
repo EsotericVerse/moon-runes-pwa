@@ -66,12 +66,18 @@
 .scope-result-links{display:flex;gap:.55rem;flex-wrap:wrap;}
 .scope-result-links a{padding:.3rem .55rem;border:var(--scope-border);border-radius:999px;font-size:.85rem;text-decoration:none;}
 .scope-period-timeline .vis-item.scope-period-timeline-focus{background:var(--loc-accent);border-color:var(--loc-accent);color:var(--loc-panel);font-weight:700;}
+/* Accessible Timeline controls do not depend on a mouse modifier key. */
+.scope-timeline-controls{display:flex;align-items:center;flex-wrap:wrap;gap:.4rem;margin:.4rem 0 .65rem}
+.scope-timeline-controls .loc-button{min-width:44px;min-height:44px;padding:.4rem .7rem}
+.scope-timeline-item-picker{display:grid;gap:.3rem;max-width:min(100%,26rem);margin:.35rem 0 .65rem}
+.scope-timeline-item-picker .scope-select{width:100%;min-height:44px}
+.scope-culture-timeline-selection{margin-top:.65rem}
 
-.scope-load-sentinel{position:relative;display:flex;justify-content:center;align-items:center;min-height:3rem;margin:.75rem 0 0;pointer-events:none;color:var(--scope-muted);font-weight:700;letter-spacing:.04em}
-.scope-load-sentinel span{display:inline-flex;align-items:center;padding:.45rem .8rem;border:var(--scope-border);border-radius:999px;background:color-mix(in srgb,var(--loc-panel) 92%,transparent);box-shadow:0 8px 24px rgb(0 0 0 / .12);animation:scope-load-float 1.5s ease-in-out infinite}
-.scope-load-sentinel.is-loading span{animation:none}
+.scope-load-sentinel{position:relative;display:flex;justify-content:center;align-items:center;min-height:3rem;margin:.75rem 0 0;color:var(--scope-muted);font-weight:700;letter-spacing:.04em}
+.scope-load-sentinel button{display:inline-flex;align-items:center;padding:.45rem .8rem;border:var(--scope-border);border-radius:999px;background:color-mix(in srgb,var(--loc-panel) 92%,transparent);box-shadow:0 8px 24px rgb(0 0 0 / .12);animation:scope-load-float 1.5s ease-in-out infinite}
+.scope-load-sentinel.is-loading button{animation:none}
 @keyframes scope-load-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-@media(prefers-reduced-motion:reduce){.scope-load-sentinel span{animation:none}}
+@media(prefers-reduced-motion:reduce){.scope-load-sentinel button{animation:none}}
 .scope-stat-controls{display:flex;gap:.75rem;flex-wrap:wrap;align-items:end;margin:0 0 1rem}
 .scope-stat-controls label{display:grid;gap:.35rem;min-width:10rem}
 .scope-stat-controls label>span{color:var(--scope-muted);font-size:.82rem}

@@ -117,6 +117,7 @@ export default function Culture(){
   const [fullTextError,setFullTextError]=useState('');
   const [editingWorkKey,setEditingWorkKey]=useState('');
   const [selectedTimelineRecordId,setSelectedTimelineRecordId]=useState('');
+  const [selectedTimelineInfo,setSelectedTimelineInfo]=useState(null);
   const [selectedTimelineDate,setSelectedTimelineDate]=useState('');
   const [suggestedRecordType,setSuggestedRecordType]=useState('anchor');
   const [suggestedRequestNonce,setSuggestedRequestNonce]=useState(0);
@@ -706,11 +707,12 @@ export default function Culture(){
               <section className='scope-card scope-culture-structure-river'>
                 <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
                 <h3>{UI_COPY.culture.structure}</h3>
-                {account.canManageScopeSync(scopeId)?<div className='scope-culture-timeline-tools'>
+                <div className='scope-culture-timeline-tools'>
                   <label><span>檢視時期範圍</span><select className='scope-select' value={selectedPeriodKey||periodKey(selectedWorkPeriod)} onChange={event=>setSelectedPeriodKey(event.target.value)}>
                     <option value='all'>全部時期</option>
                     {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{labelOf(item,0)}</option>)}
                   </select></label>
+                  {account.canManageScopeSync(scopeId)?<>
                   <button type='button' className='loc-button' onClick={()=>beginTimelineCreation('anchor',currentStructureStart)}>＋ 新增正式定錨點</button>
                   <select className='scope-select' aria-label='新增時間長河紀錄' defaultValue='' onChange={event=>{
                     const recordType=event.currentTarget.value;
@@ -724,7 +726,8 @@ export default function Culture(){
                     <option value='style_comment'>風格標籤</option>
                   </select>
                   <span className='scope-status'>第一條河道依序為定錨點、事件、風格標籤、時期。點選紀錄直接編輯；未定錨的風格可從「新增 → 風格標籤」表單選取。</span>
-                </div>:null}
+                  </>:null}
+                </div>
                 {timelineItems.length?<CultureTimeline
                   items={timelineItems}
                   labelOf={labelOf}
@@ -736,6 +739,7 @@ export default function Culture(){
                     beginTimelineCreation('anchor',date);
                   }:null}
                   onSelect={item=>{
+                    setSelectedTimelineInfo(item||null);
                     const recordId=String(item?.recordId||'').trim();
                     if(!recordId)return;
                     setSelectedTimelineRecordId(recordId);
@@ -753,6 +757,11 @@ export default function Culture(){
                   }:null}
                   onRemove={account.canManageScopeSync(scopeId)?removeTimelineRecord:null}
                 />:<p className='scope-status'>{FEATURE_EMPTY_MESSAGE}</p>}
+                {selectedTimelineInfo?<div className='scope-card scope-culture-timeline-selection' role='status'>
+                  <strong>{selectedTimelineInfo.content||selectedTimelineInfo.raw?.display_label||selectedTimelineInfo.title||'時間長河紀錄'}</strong>
+                  <p className='scope-status'>{String(selectedTimelineInfo.start||'').slice(0,10)}{selectedTimelineInfo.end?' ～ '+String(selectedTimelineInfo.end).slice(0,10):''}</p>
+                  {selectedTimelineInfo.title?<p>{selectedTimelineInfo.title}</p>:null}
+                </div>:null}
                 {account.canManageScopeSync(scopeId)?<CultureTimelineEditor
                   scopeId={scopeId}
                   selectedRecordId={selectedTimelineRecordId}

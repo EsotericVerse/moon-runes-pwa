@@ -207,11 +207,20 @@ if(!failures.length){
   for(const token of ['currentStructurePeriod','items={timelineItems}','windowStart={currentStructureStart}','windowEnd={currentStructureEnd}','labelOf={labelOf}'])if(!culture.includes(token))failures.push('Culture first river must retain all historic anchors and keep the camera focused on the selected period: '+token);
   if(culture.includes('riverAction')||culture.includes('onBoundaryNavigate={riverAction'))failures.push('Culture river must not restore the browse/create mode toggle.');
   const timeline=read('app/modular/modules/culture-timeline/CultureTimeline.jsx');
-  for(const token of ["addEventListener('dblclick'","removeEventListener('dblclick'","event.detail!==2","instance.getEventProperties(event)","data-anchor-gesture={onTimeClick?'double-click':'none'}"]){
-    if(!timeline.includes(token))failures.push('Culture timeline must require a native double click before creating an anchor: '+token);
+  // Mobile Safari/WKWebView should not require keyboard modifiers or raw DOM dblclick.
+  for(const token of ["instance.on('doubleClick'","zoomKey:''","scope-timeline-controls","aria-label='放大時間長河'","aria-label='縮小時間長河'","data-anchor-gesture={onTimeClick?'double-tap':'none'}"]){
+    if(!timeline.includes(token))failures.push('Culture timeline touch-accessibility contract missing: '+token);
   }
-  if(timeline.includes("instance.on('doubleClick'")||timeline.includes("instance.on('click'")||!timeline.includes('hiddenDates=EMPTY_HIDDEN_DATES')||!timeline.includes('focus=EMPTY_FOCUS')||!timeline.includes("updateTime:row.entryType==='anchor'")){
-    failures.push('Culture timeline must not remount on every render or allow free-date edits of anchored periods/events.');
+  if(timeline.includes("addEventListener('dblclick'")||timeline.includes("zoomKey:'ctrlKey'")||timeline.includes("instance.on('click'")||
+     !timeline.includes('hiddenDates=EMPTY_HIDDEN_DATES')||!timeline.includes('focus=EMPTY_FOCUS')||
+     !timeline.includes("updateTime:row.entryType==='anchor'")){
+    failures.push('Culture timeline must preserve selection/write boundaries without mouse-only gestures or free-date edits.');
+  }
+  const uiComponents=read('app/modular/ui.jsx');
+  if(!culture.includes("<div className='scope-culture-timeline-tools'>")||culture.includes("{account.canManageScopeSync(scopeId)?<div className='scope-culture-timeline-tools'>")||
+     !culture.includes("{account.canManageScopeSync(scopeId)?<>")||
+     !uiComponents.includes('aria-label="載入更多內容"')){
+    failures.push('Public period selection and manual pagination must work without an authenticated mouse user.');
   }
   const structureRiver=culture.slice(culture.indexOf("scope-culture-structure-river"),culture.indexOf("scope-culture-classification-river",culture.indexOf("scope-culture-structure-river")));
   if(structureRiver.includes('fixedMin={currentStructureStart}')||structureRiver.includes('fixedMax={currentStructureEnd}'))failures.push('Culture first river must remain horizontally navigable beyond the current period.');
