@@ -44,7 +44,6 @@ body{padding-bottom:calc(6.5rem + env(safe-area-inset-bottom,0px));}
 }
 @media(prefers-reduced-motion:reduce){.scope-feature-dock a{transition:none;}}
 
-.scope-favorites-label{white-space:nowrap;color:var(--loc-accent);font-size:.78rem;font-weight:750;padding:0 .65rem;}
 .scope-nav-empty{font-style:italic;}
 .scope-settings-options .loc-card form{display:grid;justify-items:start;gap:.7rem;margin-top:.65rem;}
 .scope-settings-options input[type='checkbox']{flex:none;}

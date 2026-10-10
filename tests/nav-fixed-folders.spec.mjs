@@ -1,0 +1,25 @@
+import {test,expect} from '@playwright/test';
+
+for(const route of ['/','/lrunes/','/lo3rwang/']){
+  test('fixed first-row NAV has pinned LOC return and the independent six-key dock on '+route,async({page})=>{
+    await page.goto(route,{waitUntil:'domcontentloaded'});
+    const nav=page.locator('.scope-global .scope-nav');
+    await expect(nav).toBeVisible();
+    await expect(nav.getByText('我的最愛',{exact:true})).toHaveCount(0);
+    await expect(page.locator('.scope-nav-loc-home')).toHaveText('回月典首頁');
+    await expect(page.locator('.scope-nav-loc-home')).toBeVisible();
+    await expect(page.locator('.scope-feature-dock a')).toHaveCount(6);
+    const sizes=await nav.evaluate(el=>{
+      const rail=el.querySelector('.scope-nav-rail').getBoundingClientRect();
+      const back=el.querySelector('.scope-nav-loc-home').getBoundingClientRect();
+      const header=el.closest('header').getBoundingClientRect();
+      const frame=getComputedStyle(el);
+      return {railRight:rail.right,homeLeft:back.left,shadow:frame.boxShadow,radius:frame.borderRadius,headerLeft:header.left};
+    });
+    expect(sizes.railRight).toBeLessThanOrEqual(sizes.homeLeft+1);
+    expect(sizes.shadow).toBe('none');
+    expect(sizes.radius).toBe('0px');
+    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(2);
+  });
+}

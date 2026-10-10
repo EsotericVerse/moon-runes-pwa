@@ -7,6 +7,7 @@ import {selectScopeRegistry} from './scope-data';
 import {putSetting} from './user-storage';
 import {DEFAULT_FAVORITES,FAVORITES_SETTING_KEY,HOME_SETTING_KEY,homeScopeForAccount,serializeFavorites,validScopeId} from '../modular/navigation-preferences.mjs';
 import {navigationHref} from '../modular/nav-destinations.mjs';
+import {FOLDERS_SETTING_KEY,MAX_FOLDERS,cleanFolderName,normalizeFavoriteFolders,serializeFavoriteFolders} from '../modular/favorite-folders.mjs';
 
 const DEFAULT_CHOICES=[
   {id:'lrunes',label:'月之符文'},
@@ -23,6 +24,8 @@ export default function GlobalSettings(){
   const [registryLoading,setRegistryLoading]=useState(true);
   const [home,setHome]=useState('loc');
   const [favorites,setFavorites]=useState([...DEFAULT_FAVORITES]);
+  const [folders,setFolders]=useState([]);
+  const [newFolderName,setNewFolderName]=useState('');
   const [busy,setBusy]=useState('');
   const [status,setStatus]=useState('');
   const identity=account.user?.id||account.user?.email||'';
@@ -39,6 +42,7 @@ export default function GlobalSettings(){
     if(prefs.loading)return;
     setHome(validScopeId(prefs.home)||'loc');
     setFavorites([...prefs.favorites]);
+    setFolders(prefs.folders.map(folder=>({...folder,scopes:[...folder.scopes]})));
   },[prefs.home,prefs.favorites.join(','),prefs.loading,identity]);
 
   const choices=useMemo(()=>{
@@ -76,18 +80,43 @@ export default function GlobalSettings(){
     }catch(error){setStatus('首頁設定失敗：'+String(error?.message||error));}
     finally{setBusy('');}
   }
+  function addFolder(){
+    const name=cleanFolderName(newFolderName);
+    if(!name||folders.length>=MAX_FOLDERS)return;
+    const id='f'+(globalThis.crypto?.randomUUID?.().replace(/-/g,'').slice(0,20)
+      ||(Date.now().toString(36)+Math.random().toString(36).slice(2,9)));
+    setFolders(current=>[...current,{id,label:name,scopes:[]}]);
+    setNewFolderName('');
+  }
+  function changeFolderForScope(scopeId,folderId){
+    setFolders(current=>current.map(folder=>({
+      ...folder,
+      scopes:folder.id===folderId
+        ?[...new Set([...folder.scopes,scopeId])]
+        :folder.scopes.filter(id=>id!==scopeId)
+    })));
+  }
   async function saveFavorites(event){
     event.preventDefault();
     if(!account.user)return;
     setBusy('favorites');setStatus('');
     try{
       const visibleIds=new Set(choices.map(item=>item.id));
-      const selected=favorites.filter(id=>visibleIds.has(id));
-      const serialized=serializeFavorites(selected);
+      const selected=favorites.filter(id=>visibleIds.has(id)&&id!=='admin');
+      const serialized=serializeFavorites([...new Set([...selected,'loc'])]);
+      const cleanFolders=normalizeFavoriteFolders(folders.map(folder=>({
+        ...folder,scopes:folder.scopes.filter(id=>selected.includes(id)&&id!=='loc')
+      })));
+      if(cleanFolders.length!==folders.length){
+        setStatus('目錄名稱不得為空白，請修正後再儲存。');return;
+      }
+      // Saving two scalar text settings; no JSONB, no extra relational tables.
+      await putSetting(FOLDERS_SETTING_KEY,serializeFavoriteFolders(cleanFolders));
       await putSetting(FAVORITES_SETTING_KEY,serialized);
       setFavorites(selected);
-      broadcast({favorites:serialized});
-      setStatus('我的最愛已儲存。');
+      setFolders(cleanFolders);
+      broadcast({favorites:serialized,folders:serializeFavoriteFolders(cleanFolders)});
+      setStatus('我的最愛與目錄已儲存。');
     }catch(error){setStatus('我的最愛儲存失敗：'+String(error?.message||error));}
     finally{setBusy('');}
   }
@@ -121,18 +150,41 @@ export default function GlobalSettings(){
         </section>
         <section className="loc-card">
           <h2>我的最愛</h2>
-          <p className="scope-settings-note">決定上方 NAV 顯示的 Scope／Scope Group，首次使用先列出月之符文、作者首頁與月典首頁。</p>
+          <p className="scope-settings-note">決定第一列顯示的空間，或將入口收進自訂目錄。右側「回月典首頁」永遠固定。</p>
           {registryError?<p className="scope-status scope-error">{registryError}</p>:null}
           <form onSubmit={saveFavorites}>
             <fieldset disabled={checking||!account.user||Boolean(busy)||registryLoading||Boolean(registryError)}>
               <legend>選擇上方入口</legend>
-              {choices.map(item=><label key={item.id}>
-                <input type="checkbox" checked={favorites.includes(item.id)} onChange={event=>setFavorites(current=>
-                  event.target.checked?[...current,item.id]:current.filter(id=>id!==item.id)
-                )}/>
-                <span>{item.label}</span>
-              </label>)}
+              {choices.filter(item=>item.id!=='loc').map(item=><div key={item.id} className="scope-favorite-setting-row">
+                <label>
+                  <input type="checkbox" checked={favorites.includes(item.id)} onChange={event=>setFavorites(current=>
+                    event.target.checked?[...current,item.id]:current.filter(id=>id!==item.id)
+                  )}/>
+                  <span>{item.label}</span>
+                </label>
+                {favorites.includes(item.id)?<select aria-label={item.label+'所屬目錄'}
+                  value={folders.find(folder=>folder.scopes.includes(item.id))?.id||''}
+                  onChange={event=>changeFolderForScope(item.id,event.target.value)}>
+                  <option value="">第一列直接顯示</option>
+                  {folders.map(folder=><option key={folder.id} value={folder.id}>{folder.label||'未命名目錄'}</option>)}
+                </select>:null}
+              </div>)}
             </fieldset>
+            <div className="scope-favorite-folder-editor">
+              <strong>自訂目錄</strong>
+              {folders.map(folder=><div className="scope-favorite-folder-row" key={folder.id}>
+                <input aria-label="目錄名稱" type="text" maxLength={35}
+                  value={folder.label} onChange={event=>setFolders(current=>current.map(item=>item.id===folder.id?{...item,label:event.target.value}:item))}/>
+                <button type="button" className="loc-button" onClick={()=>setFolders(current=>current.filter(item=>item.id!==folder.id))}>刪除</button>
+              </div>)}
+              <div className="scope-favorite-folder-row">
+                <input aria-label="新目錄名稱" type="text" maxLength={35} placeholder="新目錄名稱"
+                  value={newFolderName} onChange={event=>setNewFolderName(event.target.value)}/>
+                <button type="button" className="loc-button" onClick={addFolder}
+                  disabled={!newFolderName.trim()||folders.length>=MAX_FOLDERS||checking||!account.user}>新增目錄</button>
+              </div>
+              <p className="scope-settings-note">點第一列的目錄，內容才會展開第二列；刪除目錄後，入口回到第一列。</p>
+            </div>
             {account.user?<button className="loc-button primary" type="submit" disabled={checking||Boolean(busy)||registryLoading||Boolean(registryError)}>儲存我的最愛</button>:<p className="scope-settings-note">登入後才能保存我的最愛。</p>}
           </form>
         </section>
