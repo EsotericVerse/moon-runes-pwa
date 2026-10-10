@@ -101,6 +101,19 @@ if(!failures.length){
   for(const token of ['class_group','class_enable','item_no','item_name','principle','keywords'])if(!rune66Engine.includes(token))failures.push('Rune66 unified keyword item model missing '+token);
   if(rune66Engine.includes('keyword_group')||rune66Engine.includes("node_type==='style'")||rune66Engine.includes("node_type==='keyword'"))failures.push('Rune66 engine must not restore style/rule/node-type keyword storage');
   const statistics=read('app/modular/features/Statistics.jsx');
+  const statisticsMultiChart=read('app/modular/modules/statistics/StatisticsMultiChart.jsx');
+  const ownIntersection=read('app/modular/modules/statistics/ScopeSelfIntersection.jsx');
+  const chartChoices=statisticsMultiChart.match(/\['(?:line|bar|pie|area|stacked|composed|scatter|radar|radial|treemap)','/g)||[];
+  if(chartChoices.length<10||!statisticsMultiChart.includes('foldEmptyTimeBuckets')||
+     !statistics.includes('CHART_TYPES=STAT_VISUAL_TYPES')||
+     !statistics.includes('<ScopeSelfIntersection')||
+     !ownIntersection.includes("selectScopeSourceBreakdownRows")||
+     !ownIntersection.includes("scope.galaxyMedia")||
+     !ownIntersection.includes('交互指不同來源在同一天均有紀錄')||
+     !galaxy.includes('export async function selectScopeSourceBreakdownRows(scope,')){
+    failures.push('Statistics must expose ten real charts, optional visible gap folds and strictly own-Scope intersections.');
+  }
+
   const culture=read('app/modular/features/Culture.jsx');
   // Disabling the optional keyword Class river must never disable or clear the
   // independent period works paginator (including P5).

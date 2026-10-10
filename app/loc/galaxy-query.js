@@ -432,6 +432,32 @@ export async function selectScopeDensityRows(scopes,{startDate='',endDate=''}={}
     .sort((a,b)=>a.day.localeCompare(b.day)||a.scope_id.localeCompare(b.scope_id));
 }
 
+// Own-Scope statistical breakdown. Never fetch another Scope here.
+// Keep the raw source_name and media_type, including the entries grouped as Others
+// by the overview, so the author can compare 2–4 real classifications.
+export async function selectScopeSourceBreakdownRows(scope,{startDate='',endDate=''}={}){
+  const current=scopeOf(scope);
+  const [texts,media]=await Promise.all([
+    selectSourceDaily(current,{startDate,endDate}),
+    selectDailyCategoryCounts(current.galaxyMedia,'media_type',{startDate,endDate})
+  ]);
+  return [
+    ...texts.map(row=>({
+      day:String(row.day||'').slice(0,10),
+      kind:'text',
+      category:String(row.source_name||'').trim(),
+      item_count:Number(row.item_count)||0
+    })),
+    ...media.map(row=>({
+      day:String(row.day||'').slice(0,10),
+      kind:'media',
+      category:String(row.category||'').trim(),
+      item_count:Number(row.item_count)||0
+    }))
+  ].filter(row=>/^\\d{4}-\\d{2}-\\d{2}$/.test(row.day)&&row.item_count>0)
+    .sort((a,b)=>a.day.localeCompare(b.day)||a.kind.localeCompare(b.kind)||a.category.localeCompare(b.category));
+}
+
 export async function selectSourceTrendRows(scopes,{startDate='',endDate=''}={}){
   const range={startDate:dateOnly(startDate),endDate:dateOnly(endDate)};
   const rows=(await Promise.all((Array.isArray(scopes)?scopes:[]).map(scope=>scopeSourceTrendRows(scope,range)))).flat();

@@ -20,6 +20,8 @@ import {FeaturePage} from '../ui';
 import {useAccount} from '../../loc/use-account';
 import {scopeHref} from '../scope-registry';
 import {LrunesDailyStatisticsPanel} from '../../lrunes/DailyRuneAnalytics';
+import StatisticsMultiChart,{STAT_VISUAL_TYPES} from '../modules/statistics/StatisticsMultiChart';
+import ScopeSelfIntersection from '../modules/statistics/ScopeSelfIntersection';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const GROUP_RANKING_PAGE_SIZE=10;
@@ -27,7 +29,7 @@ const CHART_ACCENT='var(--loc-accent)';
 const CHART_TEXT='var(--loc-text)';
 const CHART_GRID='var(--loc-line)';
 const CHART_TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)',borderRadius:'8px'};
-const CHART_TYPES=[['line',UI_COPY.statistics.line],['bar',UI_COPY.statistics.bar],['pie',UI_COPY.statistics.pie]];
+const CHART_TYPES=STAT_VISUAL_TYPES;
 const STAT_TYPES=['total','source','media_type','media_platform','media_style'];
 const STAT_TYPE_LABELS=Object.freeze({
   daily_rune:'每日符文',
@@ -282,7 +284,7 @@ function facetTrend(rows=[],window={},selectedCategories=[]){
     return output;
   });
 }
-function MediaFacetStatistics({rankingType,rows=[],chartType='line',timeStandard='1y',customRange={},scopeId,navigation={}}){
+function MediaFacetStatistics({rankingType,rows=[],chartType='line',timeStandard='1y',customRange={},scopeId,navigation={},foldBlank=false}){
   const router=useRouter();
   const [selectedTag,setSelectedTag]=useState('all');
   const rawExclusions=String(navigation.statExclude||'');
@@ -335,30 +337,13 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',timeStandard
         {displayed.slice(0,40).map(row=><div key={row.term}><strong>{row.term}</strong><span>{row.item_count.toLocaleString()}</span></div>)}
       </div>
       {displayed.length>40?<p className="scope-status">排行榜顯示前 40 項；可從上方選單指定其餘細項。</p>:null}
-      {chartType==='line'?<ResponsiveContainer width="100%" height={420}>
-        <LineChart data={chartRows} margin={{top:8,right:18,bottom:48,left:4}}>
-          <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
-          <XAxis dataKey="period" angle={-24} textAnchor="end" interval="preserveStartEnd" height={72} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
-          <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID} allowDecimals={false}/>
-          <Tooltip contentStyle={CHART_TOOLTIP}/>
-          <Legend/>
-          {chartCategories.map((category,index)=><Line key={category} type="monotone" dataKey={category} stroke={PIE_COLORS[index%PIE_COLORS.length]} strokeWidth={2} dot={false}/>)}
-        </LineChart>
-      </ResponsiveContainer>:chartType==='pie'?<ResponsiveContainer width="100%" height={380}>
-        <PieChart><Tooltip contentStyle={CHART_TOOLTIP}/><Legend/>
-          <Pie data={bars} dataKey="value" nameKey="term" cx="50%" cy="50%" outerRadius={125}>
-            {bars.map((row,index)=><Cell key={row.term} fill={PIE_COLORS[index%PIE_COLORS.length]}/>)}
-          </Pie>
-        </PieChart>
-      </ResponsiveContainer>:<ResponsiveContainer width="100%" height={380}>
-        <BarChart data={bars} margin={{top:8,right:18,bottom:48,left:4}}>
-          <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
-          <XAxis dataKey="term" angle={-24} textAnchor="end" interval={0} height={90} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
-          <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID} allowDecimals={false}/>
-          <Tooltip contentStyle={CHART_TOOLTIP}/>
-          <Bar dataKey="value" fill={CHART_ACCENT} radius={[4,4,0,0]}/>
-        </BarChart>
-      </ResponsiveContainer>}
+      <StatisticsMultiChart type={chartType}
+        rows={chartRows}
+        series={chartCategories.map(category=>({key:category,label:category}))}
+        distribution={bars.map(row=>({name:row.term,value:row.value}))}
+        foldBlank={foldBlank}
+        height={420}
+      />
     </>}
   </>;
 }
@@ -598,6 +583,13 @@ function ScopeGroupStatistics(){
       </PieChart>
     </ResponsiveContainer>:null}
 
+    {!['line','bar','pie'].includes(chartType)&&trendData.length?<StatisticsMultiChart
+      type={chartType}
+      rows={trendData}
+      series={aggregateType==='total'?[{key:'total',label:'LOC 合併總數'}]:scopeIds.map(id=>({key:id,label:id}))}
+      distribution={aggregateType==='total'?[{name:'LOC 合併總數',value:overallTotal}]:distributionData.map(row=>({name:row.term,value:row.value}))}
+      height={420}
+    />:null}
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
     {densityQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(densityQuery.error)}</p>:null}
   </section>;
@@ -610,6 +602,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const isLrunesDaily=scopeId==='lrunes'&&rankingType==='daily_rune';
   const [chartType,setChartType]=useState('line');
   const [timeStandard,setTimeStandard]=useState('1y');
+  const [foldBlank,setFoldBlank]=useState(true);
   const [customFrom,setCustomFrom]=useState('');
   const [customTo,setCustomTo]=useState('');
   // Leave potentially expensive keyword aggregation OFF until explicitly chosen.
@@ -671,6 +664,9 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         <label><span>{UI_COPY.statistics.start}</span><input className="scope-input" type="date" value={customFrom} onChange={event=>setCustomFrom(event.target.value)}/></label>
         <label><span>{UI_COPY.statistics.end}</span><input className="scope-input" type="date" value={customTo} onChange={event=>setCustomTo(event.target.value)}/></label>
       </>:null}
+      {!['pie','radar','radial','treemap'].includes(chartType)?<label className="scope-setting-toggle">
+        <input type="checkbox" checked={foldBlank} onChange={event=>setFoldBlank(event.target.checked)}/> 折疊空白時間
+      </label>:null}
       </>:null}
       {scopeId==='lo3rwang'?<label><span>表現風格</span><select className="scope-select" value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}>
         {STYLE_FILTERS.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
@@ -684,11 +680,14 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     {!mediaDimension&&!trendQuery.isPending&&!trendQuery.error&&customReady?<>
       <p className="scope-status">{summary.startDate&&summary.endDate?summary.startDate+' ～ '+summary.endDate:''}</p>
       <SummaryList rankingType={rankingType} summary={summary}/>
-      {chartType==='line'
-        ?rankingType==='total'
-          ?<TotalTrendChart rows={trendQuery.data||[]} standard={effectiveTimeStandard} customRange={customRange} height={420}/>
-          :<SourceTrendChart rows={trendQuery.data||[]} standard={effectiveTimeStandard} customRange={customRange} height={420}/>
-        :<SummaryChart type={chartType} rankingType={rankingType} summary={summary} height={380}/>}
+      <StatisticsMultiChart
+        type={chartType}
+        rows={buildSourceTrend(trendQuery.data||[],effectiveTimeStandard,customRange)}
+        series={rankingType==='total'?[{key:'total',label:'作品／媒體紀錄數'}]:SOURCE_TREND_ORDER.map(name=>({key:name,label:name+' (%)'}))}
+        distribution={rankingType==='total'?[{name:'總紀錄數',value:summary.total}]:summary.sources.map(item=>({name:item.term,value:item.item_count}))}
+        foldBlank={foldBlank}
+        height={420}
+      />
     </>:null}
     {mediaDimension&&Boolean(targetScopes.length)&&customReady&&Boolean(queryRange.startDate&&queryRange.endDate)?<div className="scope-stat-controls">
       <button type="button" className="loc-button" onClick={()=>mediaQuery.refetch()} disabled={mediaQuery.isFetching}>
@@ -702,6 +701,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       chartType={chartType}
       timeStandard={effectiveTimeStandard}
       customRange={customRange}
+      foldBlank={foldBlank}
       scopeId={scopeId}
       navigation={navigation}
     />:null}
@@ -710,6 +710,11 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       {runeQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(runeQuery.error)}</p>:null}
       {!runeQuery.isPending&&!runeQuery.error&&runeQuery.data?<Rune66Summary analysis={runeQuery.data}/>:null}
     </>:null}
+    {!isLrunesDaily&&Boolean(targetScopes[0])&&customReady?<ScopeSelfIntersection
+      key={scopeId}
+      scope={targetScopes[0]}
+      range={queryRange}
+    />:null}
     </>}
   </section>;
 }
