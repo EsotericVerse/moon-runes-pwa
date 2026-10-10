@@ -142,3 +142,5 @@ test('Capacitor static-file route is normalized to canonical Scope URL before hy
   assert.equal(execute('https:','/lrunes/culture/index.html'),null);
   assert.equal(execute('capacitor:','/lrunes/culture/'),null);
 });
+
+// Diagnostic RC3.1 branch tests bundled feature HTML navigation independently of any new App UI.
