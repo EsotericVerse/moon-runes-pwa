@@ -2,7 +2,7 @@
 
 **Current version: 0.9.2-rc.2 (Release Candidate — bug-fix baseline)**
 
-> 0.9.2 RC is a stabilization and bug-fix candidate, not a completed 1.0 release. Import with real files is **Pending / not manually tested**. Remaining manual checks are tracked in `docs/TODO.md`.
+> 0.9.2 RC2 follows user acceptance of core Scope administration (creation, deletion and node management). It remains a stabilization candidate, not a completed 1.0 release. Import with real files and private iOS device testing are **Pending / not manually tested**. Other manual checks remain in `docs/TODO.md`.
 
 This repository contains two related but separately governed systems:
 
