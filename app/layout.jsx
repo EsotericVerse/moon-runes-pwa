@@ -12,6 +12,10 @@ export const metadata = {
   referrer:'origin-when-cross-origin'
 };
 
+// Expose real cutout insets to the Capacitor WebView so iPhone Dynamic Island
+// is never allowed to overlap the favorites row.
+export const viewport={width:'device-width',initialScale:1,viewportFit:'cover'};
+
 const AUTO_DAY_THEME_ID='theme-7';
 const AUTO_NIGHT_THEME_ID='theme-1';
 const GAME_BOOTSTRAP_THEME_ID='theme-4';

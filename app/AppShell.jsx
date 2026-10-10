@@ -322,7 +322,7 @@ export default function AppShell({children}){
   return <QueryClientProvider client={client}><UiLocaleProvider locale={activeLocale}>
     <ScopePageCopy scopeId={scopeId} display_name={configRow?.display_name||registryRow?.display_name}/>
     <motion.div className="loc-scroll-progress" style={{scaleX}} aria-hidden="true"/>
-    <header className="scope-global">
+    <header className="scope-global" data-native={native?'ios':'web'}>
       <nav className="scope-nav" aria-label={copy.nav.aria}>
         <ScrollableScopeNav label="常用空間" resetKey={preferences.favorites.join(',')+'|'+visibleFolders.map(folder=>folder.id+':'+folder.label).join(',')}>
           {favoriteLinks.map(item=>{

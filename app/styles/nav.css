@@ -160,5 +160,34 @@
   .scope-nav-items>a,.scope-nav-items>.scope-nav-current,.scope-nav-folder{font-size:.78rem;padding:.38rem .42rem;min-height:44px;}
   .scope-nav-arrow,.scope-nav-close-folder{min-width:29px;min-height:44px;padding:.15rem;}
 }
+
+/* Capacitor iOS only: the first NAV row must sit below the Dynamic Island,
+   never inside the screen cutout. WKWebView can report zero CSS env insets,
+   so use a conservative tall-iPhone fallback, not a device-resolution ID.
+   Safe area is reserved once, above a compact non-floating 40px row. */
+.scope-global[data-native="ios"]{
+  --loc-native-top-fallback:20px;
+  width:min(var(--loc-ui-max),calc(100% - 1rem - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px)));
+  padding-top:calc(max(env(safe-area-inset-top,0px),var(--loc-native-top-fallback)) + .15rem);
+  padding-bottom:.15rem;
+}
+.scope-global[data-native="ios"] .scope-nav-items>a,
+.scope-global[data-native="ios"] .scope-nav-items>.scope-nav-current,
+.scope-global[data-native="ios"] .scope-nav-folder,
+.scope-global[data-native="ios"] .scope-nav-loc-home,
+.scope-global[data-native="ios"] .scope-nav-arrow,
+.scope-global[data-native="ios"] .scope-nav-close-folder{
+  min-height:40px;
+  padding-block:.25rem;
+}
+.scope-global[data-native="ios"] .scope-nav-subrow{
+  padding-top:.1rem;
+}
+@media(max-width:520px) and (min-height:780px){
+  .scope-global[data-native="ios"]{
+    --loc-native-top-fallback:54px;
+  }
+}
+
 @media(prefers-reduced-motion:reduce){.scope-nav-viewport{scroll-behavior:auto;}}
 @media print{.scope-global{display:none!important;}}
