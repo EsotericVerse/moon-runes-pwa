@@ -167,6 +167,34 @@ export async function selectLunaRunesCulturalWorks({source='lo3rwang',startDate=
   })).filter(row=>Boolean(row.work_date));
 }
 
+
+// Load original text only for the selected day; timeline density uses metadata
+// and does not read thousands of documents into the browser.
+export async function selectLunaRunesDayWorkTexts({source='lo3rwang',date='',limit=12}={}){
+  const day=isoDate(date);
+  if(!day)return [];
+  const scopeId=source==='lrunes'?'lrunes':'lo3rwang';
+  const {rows}=await selectRows('silver.'+scopeId+'_galaxy',{
+    columns:'uid,title,content,createtime,source_name,url',
+    filters:[
+      {column:'statistics_able',operator:'eq',value:true},
+      {column:'searchable',operator:'eq',value:true},
+      {column:'content',operator:'neq',value:''},
+      {column:'createtime',operator:'gte',value:day+'T00:00:00+08:00'},
+      {column:'createtime',operator:'lte',value:day+'T23:59:59.999+08:00'}
+    ],
+    orders:[{column:'createtime',ascending:true},{column:'uid',ascending:true}],
+    limit:Math.max(1,Math.min(20,Math.floor(Number(limit)||12)))
+  });
+  return rows.map(row=>({
+    ...row,
+    scope_id:scopeId,
+    work_date:day,
+    excerpt:String(row.content||'').replace(/\s+/g,' ').slice(0,220),
+    character_count:[...String(row.content||'')].length
+  }));
+}
+
 export function lunarunesWorksOnDates(rows=[],from='',to=''){
   const first=isoDate(from),last=isoDate(to);
   return rows.filter(row=>row.work_date&&(!first||row.work_date>=first)&&(!last||row.work_date<=last));
