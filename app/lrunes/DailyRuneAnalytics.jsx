@@ -10,6 +10,7 @@ import {selectDailyRuneRange} from '../loc/daily-runes';
 import {realMoonPhase} from '../loc/model/moon-phase';
 import {buildReferencedMoonRiver} from './daily-moon-river.mjs';
 import CultureTimeline from '../modular/modules/culture-timeline/CultureTimeline';
+import StatisticsMultiChart,{availableStatisticChartTypes} from '../modular/modules/statistics/StatisticsMultiChart';
 import {
   DAILY_RUNE_MODES,DAILY_DIRECTIONS,normalizeDailyDraws,rankDailyDraws,pageDailyRanking,
   summarizeDailyDraws,dailyCategoryTrend
@@ -152,6 +153,11 @@ export function LrunesDailyStatisticsPanel(){
   const featured=useMemo(()=>pagination.rows.slice(0,5),[pagination.rows]);
   const timeline=useMemo(()=>dailyCategoryTrend(draws,analysisMode,featured,mode==='1y'?'month':'day',range?.startDate,range?.endDate),[draws,analysisMode,featured,mode,range?.startDate,range?.endDate]);
   const bars=useMemo(()=>pagination.rows.map(row=>({label:row.label,value:row.count})),[pagination.rows]);
+  const runeSeries=featured.map(row=>({key:row.key,label:row.label}));
+  const runeCategories=pagination.rows.map(row=>({name:row.label,value:row.count}));
+  const chartOptions=availableStatisticChartTypes({rows:timeline,series:runeSeries,distribution:runeCategories});
+  const availableCharts=[{value:'bar',label:'排行長條圖'},...chartOptions.filter(([id])=>id!=='bar').map(([value,label])=>({value,label}))];
+  const selectedChart=availableCharts.some(item=>item.value===chart)?chart:'bar';
   const message=queryMessage(query,range);
   return <>
     <div className="scope-stat-controls">
@@ -161,9 +167,8 @@ export function LrunesDailyStatisticsPanel(){
         </select>
       </label>
       <label><span>圖表</span>
-        <select className="scope-select" value={chart} onChange={event=>setChart(event.target.value)}>
-          <option value="bar">排行長條圖</option>
-          <option value="line">{analysisMode==='direction'?'四種位向時間趨勢':'本頁前五名時間趨勢'}</option>
+        <select className="scope-select" value={selectedChart} onChange={event=>setChart(event.target.value)}>
+          {availableCharts.map(item=><option value={item.value} key={item.value}>{item.label}</option>)}
         </select>
       </label>
     </div>
@@ -183,7 +188,7 @@ export function LrunesDailyStatisticsPanel(){
         <span className="scope-status">第 {pagination.currentPage} / {pagination.totalPages} 頁（每頁 8 筆）</span>
         <button type="button" className="loc-button" disabled={pagination.currentPage===pagination.totalPages} onClick={()=>setPage(current=>Math.min(pagination.totalPages,current+1))}>下一頁</button>
       </nav>:null}
-      {chart==='bar'?<ResponsiveContainer width="100%" height={Math.max(220,bars.length*29+50)}>
+      {selectedChart==='bar'?<ResponsiveContainer width="100%" height={Math.max(220,bars.length*29+50)}>
         <BarChart data={bars} layout="vertical" margin={{top:8,right:16,bottom:8,left:4}}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--loc-line)"/>
           <XAxis type="number" allowDecimals={false} tick={{fill:'var(--loc-text)'}}/>
@@ -191,15 +196,9 @@ export function LrunesDailyStatisticsPanel(){
           <Tooltip contentStyle={{background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)'}}/>
           <Bar dataKey="value" name="抽取次數" fill="var(--loc-accent)" radius={[0,4,4,0]}/>
         </BarChart>
-      </ResponsiveContainer>:<ResponsiveContainer width="100%" height={340}>
-        <LineChart data={timeline} margin={{top:8,right:16,bottom:40,left:4}}>
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--loc-line)"/>
-          <XAxis dataKey="period" tick={{fill:'var(--loc-text)'}} angle={-20} textAnchor="end" height={65}/>
-          <YAxis allowDecimals={false} tick={{fill:'var(--loc-text)'}}/>
-          <Tooltip contentStyle={{background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)'}}/>
-          {featured.map((row,index)=><Line key={row.key} type="monotone" dataKey={row.key} name={row.label} stroke={COLORS[index%COLORS.length]} strokeWidth={2} dot={false}/>)}
-        </LineChart>
-      </ResponsiveContainer>}</>:null}
+      </ResponsiveContainer>:<StatisticsMultiChart
+        type={selectedChart} rows={timeline} series={runeSeries} distribution={runeCategories} height={360}
+      />}</>:null}
     </>:null}
   </>;
 }

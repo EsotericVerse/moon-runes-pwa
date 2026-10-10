@@ -196,9 +196,10 @@ if(!failures.length){
   for(const token of ['表現風格','Class｜符文群組','Group｜符文排行'])if(!statistics.includes(token))failures.push('Statistics style-filter presentation missing '+token);
   // Group is an already-aggregated ranking; page only its rendered rows, while
   // keeping the full result set for percentages and stable rank ordering.
-  for(const token of ['RUNE_RANKING_PAGE_SIZE=8','groupRows.slice((activeGroupPage-1)*GROUP_RANKING_PAGE_SIZE,activeGroupPage*GROUP_RANKING_PAGE_SIZE)','visibleGroupRows.map','Group 統計分頁','setGroupPage(activeGroupPage-1)','setGroupPage(activeGroupPage+1)']){
+  for(const token of ['RUNE_RANKING_PAGE_SIZE=8','groupRows.slice((activeGroupPage-1)*RUNE_RANKING_PAGE_SIZE,activeGroupPage*RUNE_RANKING_PAGE_SIZE)','visibleGroupRows.map','Group 統計分頁','setGroupPage(activeGroupPage-1)','setGroupPage(activeGroupPage+1)']){
     if(!statistics.includes(token))failures.push('Statistics Group ranking pagination missing '+token);
   }
+  if(!statistics.includes('<LocMemberIntersection')||!statistics.includes('所屬人員分布'))failures.push('LOC member-level cross comparison missing.');
   if(statistics.includes('{groupRows.map(row=>'))failures.push('Statistics Group ranking must not render every item in one long list.');
   const keywordPanel=read('app/loc/KeywordLibraryPanel.jsx');
   for(const token of ["const [styleFilter,setStyleFilter]=useState('none')","<ScopeStatisticsResults","scopeHref(scopeId,'statics/keywords')","關鍵詞設定"]){
@@ -279,7 +280,7 @@ if(!failures.length){
   for(const token of ['isAggregateScope','locCombinedSourceRiverItems','locScopeDistributionItems'])if(!culture.includes(token))failures.push('LOC aggregate Culture contract missing '+token);
   for(const token of ['selectManagedScopes','Promise.all(managedScopes','buildLocSourceRiver','buildLocScopeDistribution'])if(!cultureQuery.includes(token))failures.push('LOC Culture aggregate data loader missing '+token);
   for(const token of ['selectScopeGroupChildren','成員首頁','前往該成員'])if(!scopeGroupOverview.includes(token))failures.push('Scope Group overview navigation contract missing '+token);
-  if(!search.includes('enabled:!aggregateScopes')||!search.includes('Scope Group 搜尋導引')||!search.includes('ScopeGroupOverview'))failures.push('Scope Group Search must use registry overview instead of multi-Scope search.');
+  if(!search.includes('enabled:!aggregateScopes')||!search.includes('成員搜尋')||!search.includes('ScopeGroupOverview'))failures.push('Scope Group Search must use registry overview instead of multi-Scope search.');
   const timelineEditor=read('app/modular/features/CultureTimelineEditor.jsx');
   if(cultureQuery.includes('anchor_pair')||timelineEditor.includes('anchor_pair'))failures.push('Timeline code must not restore legacy anchor_pair storage.');
   if(!cultureQuery.includes('anchor_ids'))failures.push('Culture timeline ordered-anchor contract missing anchor_ids');

@@ -6,19 +6,21 @@ import {scopeHref,duplicateDomainLabelError} from '../../modular/scope-registry'
 import {THEME_SLOTS,THEME_TOKEN_KEYS} from '../../modular/theme-registry';
 import {mergeThemeSlot,THEME_DB_COLUMNS,themeColumnForToken,themeUiId,themeNumber} from '../theme-data';
 import {useAccount} from '../use-account';
+import {AdminSourceCategories} from '../SourceCategoryEditor';
 import {
   deleteScope,deleteRows,insertRows,dbAuthRelation,manageScopeRegistry,provisionScope,syncManageScopeRow,updateRows
 } from '../db-client.mjs';
 
 const ADMIN_OPTIONS=Object.freeze([
   {value:'registry',label:'群組人員管理'},
+  {value:'sources',label:'總來源分類'},
   {value:'database',label:'資料庫設定'},
   {value:'themes',label:'主題設定'},
   {value:'blocklist',label:'系統黑名單'}
 ]);
 const CREATE_OPTIONS=Object.freeze([
-  {value:'scope',label:'新增 Scope'},
-  {value:'group',label:'新增 Scope Group'}
+  {value:'scope',label:'新增人員'},
+  {value:'group',label:'新增群組'}
 ]);
 const EMPTY_SCOPE_CREATE={scope_id:'',email:'',locale:'zh-Hant',route_mode:'directory'};
 const EMPTY_GROUP_CREATE={scope_id:'',display_name:'',route_mode:'directory',parent_scope_id:'loc'};
@@ -54,7 +56,7 @@ async function readAdminScopeConfig(scopeId,{attempts=7}={}){
       .eq('id',scopeId).limit(1);
     if(!error)return data?.[0]||null;
     if(!scopeSchemaCachePending(error)||attempt===attempts-1){
-      throw new Error(error.message||'Scope config 讀取失敗。');
+      throw new Error(error.message||'人員設定讀取失敗。');
     }
   }
   return null;
@@ -76,7 +78,7 @@ function useAdminScopeData(){
           dbAuthRelation('silver.scope_registry').select('scope_id,display_name,scope_kind,domain,directory,parent_scope_id,active,sort_order').order('sort_order',{ascending:true}).order('scope_id',{ascending:true})
         ]);
         if(mappingResult.error)throw new Error(mappingResult.error.message||'Mapping 讀取失敗。');
-        if(registryResult.error)throw new Error(registryResult.error.message||'Scope Registry 讀取失敗。');
+        if(registryResult.error)throw new Error(registryResult.error.message||'人員目錄讀取失敗。');
 
         const registryRows=registryResult.data||[];
         const configRows={};
@@ -87,7 +89,7 @@ function useAdminScopeData(){
             if(config)configRows[row.scope_id]=config;
             else configFailures.push(row.scope_id+'：找不到 Scope config');
           }catch(error){
-            configFailures.push(row.scope_id+'：'+String(error?.message||error||'Scope config 讀取失敗。'));
+            configFailures.push(row.scope_id+'：'+String(error?.message||error||'人員設定讀取失敗。'));
           }
         }));
 
@@ -95,7 +97,7 @@ function useAdminScopeData(){
         setRegistry(registryRows);
         setMappings((mappingResult.data||[]).map(row=>({...row,birthday:String(row.birthday||'').slice(0,10)})));
         setConfigs(configRows);
-        setStatus(configFailures.length?'部分 Scope 設定讀取失敗：'+configFailures.join('；'):'');
+        setStatus(configFailures.length?'部分人員設定讀取失敗：'+configFailures.join('；'):'');
       }catch(error){
         if(active)setStatus(error?.message||'Admin 資料讀取失敗。');
       }
@@ -233,7 +235,7 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
     }).catch(error=>{
       if(cancelled)return;
       setTreeState('error');
-      setTreeError(String(error?.message||error||'Scope Registry 圖形樹載入失敗。'));
+      setTreeError(String(error?.message||error||'人員關聯圖載入失敗。'));
     });
     return()=>{cancelled=true;themeObserver?.disconnect();network?.destroy();networkRef.current=null;};
   // Draft Scope names are not canonical until saved; don't rebuild the graph on each keystroke.
@@ -246,9 +248,9 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
   },[selectedId]);
 
   return <div className="admin-deployment-tree-wrap">
-    <div ref={containerRef} className={'admin-deployment-tree'+(treeState==='error'?' is-unavailable':'')} role="region" aria-label="Scope Registry"/>
-    {treeState!=='ready'?<div className="admin-registry-fallback" role="region" aria-label="Scope Registry 清單">
-      <p className="scope-status">{treeState==='error'?'圖形樹載入失敗，已切換清單模式。':'Scope Registry 載入中…'}</p>
+    <div ref={containerRef} className={'admin-deployment-tree'+(treeState==='error'?' is-unavailable':'')} role="region" aria-label="人員目錄"/>
+    {treeState!=='ready'?<div className="admin-registry-fallback" role="region" aria-label="人員清單">
+      <p className="scope-status">{treeState==='error'?'圖形樹載入失敗，已切換清單模式。':'人員目錄載入中…'}</p>
       {treeError?<p className="scope-status scope-error">{treeError}</p>:null}
       {registry.length?<div className="admin-registry-fallback-list">
         {registry.filter(row=>row.scope_kind!=='system').map(row=><button type="button" className={'scope-inline-card admin-registry-fallback-item'+(row.scope_id===selectedId?' is-selected':'')} onClick={()=>onSelect?.(row.scope_id)} key={row.scope_id}>
@@ -349,7 +351,7 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
       setStatus(current.scope_id+' 已更新。');
       setEditDraft(null);
       refresh();
-    }catch(error){setStatus(error?.message||'Scope 更新失敗。');}
+    }catch(error){setStatus(error?.message||'人員更新失敗。');}
   }
 
   async function saveMapping(row){
@@ -392,11 +394,11 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
     }catch(error){setStatus(error?.message||'Mapping 新增失敗。');}
   }
 
-  if(!selected)return <aside className="admin-context-panel"><p className="scope-status">請先選擇 Scope／Group 節點。</p></aside>;
+  if(!selected)return <aside className="admin-context-panel"><p className="scope-status">請選擇人員或群組</p></aside>;
 
   const attrs=[
-    {label:'Scope ID',value:selected.scope_id},
-    {label:'節點類型',value:selected.scope_kind==='group'?'Scope Group':'Scope'},
+    {label:'人員代碼',value:selected.scope_id},
+    {label:'節點類型',value:selected.scope_kind==='group'?'群組':'人員'},
     {label:'顯示名稱',value:config?.display_name||selected.display_name||'—'},
     ...(selected.scope_kind==='scope'?[
       {label:'NAV 中文名稱',value:pageCopy?.Title_TW||'未設定'},
@@ -410,15 +412,14 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
     ]:[]),
     {label:'路由類型',value:routeMode==='domain'?'Domain · 獨立網域':'Directory · 站內路徑'},
     {label:'實際位置',value:routeValue},
-    ...(selected.scope_id==='loc'?[]:[{label:'所屬 Group',value:registry.find(row=>row.scope_id===selected.parent_scope_id)?.display_name||selected.parent_scope_id||'—'}]),
+    ...(selected.scope_id==='loc'?[]:[{label:'所屬群組',value:registry.find(row=>row.scope_id===selected.parent_scope_id)?.display_name||selected.parent_scope_id||'—'}]),
     {label:'狀態',value:selected.active!==false?'啟用':'隱藏'}
   ];
 
   return <aside className={'admin-context-panel'+(editing?' is-editing':' is-reading')}>
     <div className="admin-node-heading">
       <div>
-        <p className="loc-eyebrow">{selected.scope_kind==='group'?'Scope Group':'Scope'} · {selected.scope_id}</p>
-        <h2>{config?.display_name||selected.display_name||selected.scope_id}</h2>
+                <h2>{config?.display_name||selected.display_name||selected.scope_id}</h2>
       </div>
       {!editing?<div className="admin-node-actions">
         <button type="button" className="loc-button primary" onClick={beginEdit}>編輯設定</button>
@@ -426,19 +427,19 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
       </div>:<span className="scope-status">編輯草稿 · 尚未儲存</span>}
     </div>
 
-    {!editing?<div className="admin-attribute-grid" aria-label="Scope 屬性摘要">
+    {!editing?<div className="admin-attribute-grid" aria-label="人員設定摘要">
       {attrs.map(item=><button type="button" className="admin-attribute" key={item.label} onClick={beginEdit} title={'編輯 '+item.label}>
         <span>{item.label}</span>
         <strong>{item.value}</strong>
       </button>)}
     </div>:<>
-      {current.scope_kind==='group'?<label><span>Group 名稱</span><input value={current.display_name||''} onChange={e=>patchRegistry('display_name',e.target.value)}/></label>:null}
+      {current.scope_kind==='group'?<label><span>群組名稱</span><input value={current.display_name||''} onChange={e=>patchRegistry('display_name',e.target.value)}/></label>:null}
       {current.scope_kind==='scope'&&currentConfig?<>
         {currentCopy?<section className="admin-page-copy-fields" aria-label="公開頁面名稱設定">
           <label><span>NAV 中文名稱（Title_TW）</span><input required value={currentCopy.Title_TW||''} onChange={e=>patchPageCopy('Title_TW',e.target.value)}/></label>
           <label><span>頁面說明（Desc_TW）</span><textarea rows={2} value={currentCopy.Desc_TW||''} onChange={e=>patchPageCopy('Desc_TW',e.target.value)}/></label>
         </section>:null}
-        <label><span>Scope 顯示名稱</span><input value={currentConfig.display_name||''} onChange={e=>patchConfig('display_name',e.target.value)}/></label>
+        <label><span>顯示名稱</span><input value={currentConfig.display_name||''} onChange={e=>patchConfig('display_name',e.target.value)}/></label>
         <label><span>搜尋介紹</span><textarea rows={3} value={currentConfig.search_intro||''} onChange={e=>patchConfig('search_intro',e.target.value)}/></label>
         <label><span>搜尋別名</span><textarea rows={3} value={normalizeAliases(currentConfig.search_aliases).join('\n')} onChange={e=>patchConfig('search_aliases',e.target.value.split('\n'))}/></label>
         <label><span>主題</span><select className="admin-native-select" value={currentConfig.theme||'system-default'} onChange={e=>patchConfig('theme',e.target.value)}>{themeOptions.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
@@ -540,10 +541,10 @@ function CreateNodePanel({data,kind='scope',onClose}){
       onClose?.();
     }catch(error){
       if(provisioned){
-        setStatus('Scope '+id+' 已建立，但後續驗證／設定尚未完成：'+String(error?.message||error)+'。請重新讀取，不要重複建立。');
+        setStatus('人員 '+id+' 已建立，但後續驗證／設定尚未完成：'+String(error?.message||error)+'。請重新讀取，不要重複建立。');
         refresh();
         onClose?.();
-      }else setStatus(error?.message||'Scope 建立失敗。');
+      }else setStatus(error?.message||'人員建立失敗。');
     }finally{setCreatingScope(false);}
   }
 
@@ -558,19 +559,18 @@ function CreateNodePanel({data,kind='scope',onClose}){
         directory:groupDraft.route_mode==='directory'?'/'+id:null,
         parent_scope_id:String(groupDraft.parent_scope_id||'loc').trim()||'loc'
       });
-      setStatus('Scope Group '+id+' 已建立。');refresh();onClose?.();
-    }catch(error){setStatus(error?.message||'Scope Group 建立失敗。');}
+      setStatus('群組 '+id+' 已建立。');refresh();onClose?.();
+    }catch(error){setStatus(error?.message||'群組建立失敗。');}
   }
 
   const parentValue=value=>parentOptions.find(o=>o.value===value)||parentOptions[0]||null;
   return <aside className="admin-context-panel">
-    <div className="admin-node-heading"><h2>{kind==='group'?'新增 Scope Group':'新增 Scope'}</h2><button type="button" className="loc-button" onClick={onClose}>取消</button></div>
+    <div className="admin-node-heading"><h2>{kind==='group'?'新增群組':'新增人員'}</h2><button type="button" className="loc-button" onClick={onClose}>取消</button></div>
     {kind==='scope'?<>
-      <label><span>Scope ID</span><input maxLength="15" value={scopeDraft.scope_id} onChange={e=>setScopeDraft(v=>({...v,scope_id:e.target.value.toLowerCase()}))}/></label>
+      <label><span>人員代碼</span><input maxLength="15" value={scopeDraft.scope_id} onChange={e=>setScopeDraft(v=>({...v,scope_id:e.target.value.toLowerCase()}))}/></label>
       <label><span>管理者 Email（必填）</span><input type="email" required autoComplete="off" value={scopeDraft.email} onChange={e=>setScopeDraft(v=>({...v,email:e.target.value}))}/></label>
       <label><span>預設語系</span><select className="admin-native-select" value={normalizeUiLocale(scopeDraft.locale)} onChange={e=>setScopeDraft(v=>({...v,locale:normalizeUiLocale(e.target.value)}))}>{UI_LOCALE_OPTIONS.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
-      <p className="scope-status">Theme：系統預設（日／夜自動） · 符文66：建立時自動複製</p>
-      <div className="admin-inline-flags" role="radiogroup" aria-label="Scope 路由模式">
+      <div className="admin-inline-flags" role="radiogroup" aria-label="人員網址">
         <label><input type="radio" name="new-scope-route-mode" value="directory" checked={scopeDraft.route_mode==='directory'} onChange={()=>setScopeDraft(v=>({...v,route_mode:'directory'}))}/>Directory</label>
         <label><input type="radio" name="new-scope-route-mode" value="domain" checked={scopeDraft.route_mode==='domain'} onChange={()=>setScopeDraft(v=>({...v,route_mode:'domain'}))}/>Domain</label>
       </div>
@@ -578,15 +578,15 @@ function CreateNodePanel({data,kind='scope',onClose}){
       {scopeDomainError?<p className="scope-status scope-error" role="alert">{scopeDomainError}</p>:null}
       <button type="button" className="loc-button primary" disabled={Boolean(scopeDomainError)||creatingScope} onClick={createScope}>{creatingScope?'建立與驗證中…':'建立'}</button>
     </>:<>
-      <label><span>Group ID</span><input maxLength="15" value={groupDraft.scope_id} onChange={e=>setGroupDraft(v=>({...v,scope_id:e.target.value.toLowerCase()}))}/></label>
-      <label><span>Group 名稱</span><input value={groupDraft.display_name} onChange={e=>setGroupDraft(v=>({...v,display_name:e.target.value}))}/></label>
-      <div className="admin-inline-flags" role="radiogroup" aria-label="Scope Group 路由模式">
+      <label><span>群組代碼</span><input maxLength="15" value={groupDraft.scope_id} onChange={e=>setGroupDraft(v=>({...v,scope_id:e.target.value.toLowerCase()}))}/></label>
+      <label><span>群組名稱</span><input value={groupDraft.display_name} onChange={e=>setGroupDraft(v=>({...v,display_name:e.target.value}))}/></label>
+      <div className="admin-inline-flags" role="radiogroup" aria-label="群組網址">
         <label><input type="radio" name="new-group-route-mode" value="directory" checked={groupDraft.route_mode==='directory'} onChange={()=>setGroupDraft(v=>({...v,route_mode:'directory'}))}/>Directory</label>
         <label><input type="radio" name="new-group-route-mode" value="domain" checked={groupDraft.route_mode==='domain'} onChange={()=>setGroupDraft(v=>({...v,route_mode:'domain'}))}/>Domain</label>
       </div>
       <div className="admin-route-summary"><span>建立位置</span><strong>{groupDraft.route_mode==='domain'?'Domain · 獨立網域':'Directory · 站內路徑'}</strong><code>{groupDraft.route_mode==='domain'?(groupDraft.scope_id||'group-id')+'.lo3rwang.cc':'https://loc.lo3rwang.cc/'+(groupDraft.scope_id||'group-id')}</code></div>
       {groupDomainError?<p className="scope-status scope-error" role="alert">{groupDomainError}</p>:null}
-      <label><span>Parent</span><select className="admin-native-select" value={groupDraft.parent_scope_id||'loc'} onChange={e=>setGroupDraft(v=>({...v,parent_scope_id:e.target.value||'loc'}))}>{parentOptions.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
+      <label><span>上層群組</span><select className="admin-native-select" value={groupDraft.parent_scope_id||'loc'} onChange={e=>setGroupDraft(v=>({...v,parent_scope_id:e.target.value||'loc'}))}>{parentOptions.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
       <button type="button" className="loc-button primary" disabled={Boolean(groupDomainError)} onClick={createGroup}>建立</button>
     </>}
   </aside>;
@@ -673,16 +673,16 @@ function AdminRegistry(){
   return <section className="loc-card admin-workspace">
     <div className="admin-deployment-layout">
       <div className="admin-graph-header">
-        <div><h2>Scope 關聯圖</h2><p>由左至右展開：LOC → Scope／Group。選取節點先看 Attr 摘要；點選任一 Attr 進入編輯。拖曳至其他 Group 可調整所屬關係。</p></div>
+        <div><h2>所屬人員關聯圖</h2></div>
         <div className="admin-registry-actions">
           <button type="button" className="loc-button" onClick={refresh}>重新讀取</button>
-          <button type="button" className="loc-button" onClick={()=>setCreateKind('scope')}>＋ 新增 Scope</button>
-          <button type="button" className="loc-button" onClick={()=>setCreateKind('group')}>＋ 新增 Group</button>
+          <button type="button" className="loc-button" onClick={()=>setCreateKind('scope')}>＋ 新增人員</button>
+          <button type="button" className="loc-button" onClick={()=>setCreateKind('group')}>＋ 新增群組</button>
         </div>
       </div>
       <DeploymentTree registry={registry} configs={configs} selectedId={selectedId} onSelect={selectNode} onMoveParent={moveParent} onDeleteNode={requestDelete}/>
-      {deletePending?<section className="admin-delete-confirm" ref={deleteConfirmRef} role="region" aria-label="刪除 Scope 確認">
-        <div><strong>永久刪除 Scope：{deletePending}</strong><p>將移除這個 Scope 的六張資料表、關鍵詞、設定及管理紀錄；此操作不可復原。</p></div>
+      {deletePending?<section className="admin-delete-confirm" ref={deleteConfirmRef} role="region" aria-label="刪除人員確認">
+        <div><strong>永久刪除人員：{deletePending}</strong><p>將移除此人員的六張資料表、關鍵詞、設定及管理紀錄；此操作不可復原。</p></div>
         <label><span>請輸入 {deletePending} 以確認</span><input autoFocus autoComplete="off" value={deleteTyped} disabled={deleteBusy} onChange={e=>setDeleteTyped(e.target.value)} /></label>
         <div className="scope-tabs">
           <button type="button" className="loc-button" disabled={deleteBusy} onClick={cancelDelete}>取消</button>
@@ -890,7 +890,6 @@ function AdminEmailBlocklist(){
   }
   return <section className="loc-card admin-workspace">
     <h2>系統黑名單（Email Block List）</h2>
-    <p className="scope-status">命中的 Email 不得使用任何 Scope 或全域 Admin 管理權限；資料庫亦會拒絕管理寫入。黑名單不會刪除帳號或既有資料。</p>
     <label><span>Email</span><input type="email" value={email} onChange={e=>setEmail(e.target.value)}/></label>
     <button type="button" className="loc-button primary" onClick={add} disabled={busy}>加入黑名單</button>
     {loading?<p className="scope-status">讀取中…</p>:null}
@@ -922,6 +921,7 @@ export default function AdminHomeView(){
       </div>
     </header>
     {section==='registry'?<AdminRegistry/>:null}
+    {section==='sources'?<AdminSourceCategories/>:null}
     {section==='database'?<DatabaseTarget/>:null}
     {section==='themes'?<ThemeEditor/>:null}
     {section==='blocklist'?<AdminEmailBlocklist/>:null}

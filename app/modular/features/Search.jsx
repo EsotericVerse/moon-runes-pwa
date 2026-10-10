@@ -350,7 +350,7 @@ export default function Search(){
             href:scopeHref(scopeId),
             relationLinks:[],
             groupKey:'scope:'+scopeId,
-            links:[{id:'scope-home',href:scopeHref(scopeId),label:'前往 Scope 首頁'}],
+            links:[{id:'scope-home',href:scopeHref(scopeId),label:'前往成員首頁'}],
             destinations:[]
           }]);
           setHasMore(false);
@@ -600,8 +600,8 @@ export default function Search(){
     <ScopeGroupOverview
       scopeId={scopeId}
       featureId="search"
-      title="Scope Group 搜尋導引"
-      description="請先選擇要搜尋的 Scope；Group 本身不對所有子 Scope 同時執行全文搜尋。"
+      title="成員搜尋"
+      description=""
     />
   </FeaturePage>;
 
@@ -645,7 +645,7 @@ export default function Search(){
           {row.styleIntro?<div className="scope-style-search-connections">
             <p className="scope-status"><strong>所屬時期：</strong>{row.stylePeriod||'文化風格'}</p>
             <div className="scope-preview-links">
-              <a href={scopeHref(row.scopeId)}>前往 {row.scopeId} Scope 網站</a>
+              <a href={scopeHref(row.scopeId)}>前往 {row.scopeId}</a>
               {(row.styleAnchorStart||row.styleAnchorEnd)?<a href={featureNavigationHref(row.scopeId,'culture',{...(row.styleAnchorStart?{from:row.styleAnchorStart}:{}),...(row.styleAnchorEnd?{to:row.styleAnchorEnd}:{})})}>時間長河與既有定錨點</a>:null}
             </div>
             {row.relatedStyleTags.length?<div className="scope-style-search-related">
@@ -666,7 +666,6 @@ export default function Search(){
                   </a>)}
                 </div>
               </div>:null}
-              <p className="scope-status">統計為全 Scope 有效作品的標題／正文命中篇數，每篇計一次，不改動 Class 分布。</p>
             </div>:null}
           </div>:null}
           {row.resourceType==='galaxy'?<WorkFullText

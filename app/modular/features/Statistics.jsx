@@ -22,6 +22,7 @@ import {scopeHref} from '../scope-registry';
 import {LrunesDailyStatisticsPanel} from '../../lrunes/DailyRuneAnalytics';
 import StatisticsMultiChart,{STAT_VISUAL_TYPES,availableStatisticChartTypes} from '../modules/statistics/StatisticsMultiChart';
 import ScopeSelfIntersection from '../modules/statistics/ScopeSelfIntersection';
+import LocMemberIntersection from '../modules/statistics/LocMemberIntersection';
 import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
@@ -568,6 +569,7 @@ function ScopeGroupStatistics(){
       type={locChartType} rows={trendData} series={locSeries}
       distribution={locDistribution} totalKey={aggregateType==='total'?'total':''} height={420}
     />:null}
+    <LocMemberIntersection scopes={scopes} startDate={startDate} endDate={endDate} timeStandard={timeStandard}/>
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
     {densityQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(densityQuery.error)}</p>:null}
   </section>;

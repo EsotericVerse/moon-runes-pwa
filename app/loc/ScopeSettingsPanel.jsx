@@ -42,7 +42,7 @@ export default function ScopeSettingsPanel({scopeId}){
       setDraft(next);
       setAliases(aliasText(next.search_aliases));
     }).catch(error=>{
-      if(active)setMessage(error?.message||'Scope 設定讀取失敗。');
+      if(active)setMessage(error?.message||'設定讀取失敗。');
     }).finally(()=>{if(active)setLoading(false);});
     return()=>{active=false};
   },[scopeId]);
@@ -74,14 +74,14 @@ export default function ScopeSettingsPanel({scopeId}){
       setAliases(aliasText(searchAliases));
       setMessage('已更新 Scope 基本設定。重新整理公開頁後即會使用新設定。');
     }catch(error){
-      setMessage(error?.message||'Scope 設定儲存失敗。');
+      setMessage(error?.message||'設定儲存失敗。');
     }finally{
       setBusy(false);
     }
   }
 
   return <section className="loc-card scope-feature-card">
-    <p className="loc-eyebrow">Scope Settings</p>
+    <p className="loc-eyebrow">個人設定</p>
     <h2>基本與雜項設定</h2>
     {loading?<p className="scope-status">讀取中…</p>:null}
     {!loading?<form onSubmit={save}>
@@ -106,8 +106,8 @@ export default function ScopeSettingsPanel({scopeId}){
       </div>
 
       <label className="scope-management-wide-field">
-        <span>搜尋頁 Scope 介紹</span>
-        <textarea className="scope-search-input" rows={4} value={draft.search_intro||''} onChange={event=>change('search_intro',event.target.value)} placeholder="精確搜尋 Scope 名稱或別名時顯示的介紹文字。"/>
+        <span>搜尋頁介紹</span>
+        <textarea className="scope-search-input" rows={4} value={draft.search_intro||''} onChange={event=>change('search_intro',event.target.value)} placeholder="搜尋名稱或別名"/>
       </label>
 
       <label className="scope-management-wide-field">

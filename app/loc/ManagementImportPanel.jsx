@@ -9,6 +9,7 @@ import {createUid8} from './uid';
 import {IMPORT_FIELD_ALIASES,importRowsFromJson,mappedImportValue,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 import ImportContentTypeCatalog,{useImportContentTypes} from './ImportContentTypeCatalog';
+import {ScopeOtherSources} from './SourceCategoryEditor';
 
 function sourceSuggestion(name=''){
   const value=String(name).toLowerCase();
@@ -567,6 +568,7 @@ export default function ManagementImportPanel({scopeId}){
   return <section className="scope-inline-card scope-management-imports">
     <h2>資料匯入</h2>
     <ImportContentTypeCatalog scopeId={scopeId} catalog={catalog} busy={busyCount>0}/>
+    <ScopeOtherSources scopeId={scopeId}/>
     <div className="scope-stat-controls">
       <label>匯入時作品類型
         <select className="scope-select" disabled={busyCount>0||catalog.isPending} value={format.typeMode}

@@ -68,7 +68,7 @@ must(management.includes('href="/settings/"')&&!management.includes('account.sig
 must(management.includes('ScopeGroupManagement'),'Manage must compose the Scope Group module');
 must(scopeRuntime.includes("aggregateChildren:activeRegistryRow.scope_kind==='group'")&&genericHome.includes('ScopeGroupOverview')&&sharedSearch.includes('ScopeGroupOverview'),'New DB Scope Groups must use the generic runtime and existing public overview');
 must(locApp.includes("scopeMeta?.aggregateChildren&&scopeId!=='loc'")&&locApp.includes("['statics','culture','governance'].includes(forcedView)")&&locApp.includes('groupOverviewView?<FeaturePage')&&groupOverview.includes('selectScopeGroupChildren(scopeId)'),'Dynamic DB Groups must route Statistics/Culture/Governance to existing read-only member overview instead of LOC aggregate or nonexistent Group tables');
-must(groupOverview.includes('scopeHref(row.scope_id')&&groupOverview.includes('不執行 Group 級全文搜尋或統計 COUNT'),'Scope Group overview must direct users to child Scope queries without expensive group-wide counts');
+must(groupOverview.includes('scopeHref(row.scope_id')&&groupOverview.includes('selectScopeGroupChildren(scopeId)'),'Scope Group overview must direct users to child Scope queries without expensive group-wide counts');
 must(management.includes('<ScopeSettingsPanel')&&management.includes('<ManagementArticlePublisher')&&management.includes('<ManagementImportPanel')&&management.includes('ManagementDisclosure')&&management.includes('label="發表文章"')&&!management.includes('KeywordLibraryPanel'),'Scope Manage must keep settings, publishing and import as collapsed one-line disclosures');
 const keywordPage=read('app/modular/features/KeywordSettings.jsx');
 const keywordAuthorRoute=read('app/lo3rwang/statics/keywords/page.jsx');
@@ -230,8 +230,8 @@ must(read('app/AppShell.jsx').includes('function ScopePageCopy({scopeId,display_
 must(!admin.includes('applyTheme(')&&admin.includes('admin-theme-local-preview')&&admin.includes('正在編輯的主題（只修改草稿，不影響網站配色）'),'Admin Theme draft and preview must never mutate the live document root theme on entry or edit');
 must(admin.includes('admin-registry-fallback')&&admin.includes('圖形樹載入失敗，已切換清單模式。')&&admin.includes('setTreeError'),'Scope Registry must provide a visible fallback instead of failing blank');
 must(admin.includes('syncManageScopeRow(')&&admin.includes("role:'scope'"),'Admin Scope node must edit Manage mapping atomically and keep role=scope fixed');
-must(admin.includes('部分 Scope 設定讀取失敗')&&admin.includes('configFailures.push')&&admin.includes('readAdminScopeConfig(row.scope_id)')&&admin.includes("String(error?.code||'')==='PGRST205'"),'Admin must retry newly provisioned Scope config until PostgREST schema cache settles');
-must(admin.includes('provisionScope(')&&admin.includes('＋ 新增 Scope')&&admin.includes('＋ 新增 Group'),'Admin Registry must create Scope and Scope Group from the tree workspace');
+must(admin.includes('部分人員設定讀取失敗')&&admin.includes('configFailures.push')&&admin.includes('readAdminScopeConfig(row.scope_id)')&&admin.includes("String(error?.code||'')==='PGRST205'"),'Admin must retry newly provisioned Scope config until PostgREST schema cache settles');
+must(admin.includes('provisionScope(')&&admin.includes('＋ 新增人員')&&admin.includes('＋ 新增群組'),'Admin Registry must create Scope and Scope Group from the tree workspace');
 must(admin.includes("const provisionedScope=await provisionScope(")&&admin.includes('provisioned=true;')&&admin.includes('readAdminScopeConfig(id)')&&admin.includes('不要重複建立。')&&admin.includes('creatingScope?\'建立與驗證中…\':\'建立\''),'New Scope creation must verify config readiness, prevent duplicate clicks, and distinguish successful provisioning from pending cache');
 must(read('docs/sql/scope-provisioning.sql').includes("perform pg_catalog.pg_notify('pgrst','reload schema')"),'Scope provisioning SQL must request PostgREST schema cache reload after commit');
 must(admin.includes('onClick={refresh}>重新讀取'),'Admin graph must allow manual reload after a dynamic Scope schema cache settles');
@@ -258,7 +258,7 @@ must(
 );
 const scopeCreatePanel=admin.split("    {kind==='scope'?<>")[1]?.split("    </>:<>")[0]||'';
 must(
-  scopeCreatePanel.includes('<span>Scope ID</span>')&&
+  scopeCreatePanel.includes('<span>人員代碼</span>')&&
   scopeCreatePanel.includes('管理者 Email（必填）')&&scopeCreatePanel.includes('type="email" required')&&
   scopeCreatePanel.includes('預設語系')&&scopeCreatePanel.includes('UI_LOCALE_OPTIONS')&&
   scopeCreatePanel.split('<input').length===5&&
