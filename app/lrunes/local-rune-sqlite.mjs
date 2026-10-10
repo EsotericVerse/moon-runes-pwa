@@ -258,13 +258,48 @@ export async function exportRuneSQLite(allDailyRows=[]){
 }
 export async function importRuneSQLite(bytes){
   const parsed=await parseBackup(bytes);
-  // Validate everything first, then merge into the device-only database. The
-  // user's server records and other Local File stores are never written here.
+  // Validate ALL records before any mutations; import is an atomic local
+  // transaction, never a write to the canonical daily Supabase table.
+  const drawSQL='INSERT OR IGNORE INTO rune_draw_history('+DRAW_COLUMNS+') VALUES(?,?,?,?,?,?)';
+  const dailySQL='INSERT OR IGNORE INTO lrunes_daily('+DAILY_COLUMNS+') VALUES(?,?,?,?,?,?)';
   let addedDraws=0,addedDaily=0;
-  for(const values of parsed.draws)
-    addedDraws+=await insertLocal('INSERT OR IGNORE INTO rune_draw_history('+DRAW_COLUMNS+') VALUES(?,?,?,?,?,?)',values);
-  for(const values of parsed.daily)
-    addedDaily+=await insertLocal('INSERT OR IGNORE INTO lrunes_daily('+DAILY_COLUMNS+') VALUES(?,?,?,?,?,?)',[...values.slice(0,5),'imported']);
+  if(Capacitor.isNativePlatform()){
+    const conn=await nativeDatabase();
+    await conn.beginTransaction();
+    try{
+      for(let index=0;index<parsed.draws.length;index+=200){
+        const batch=parsed.draws.slice(index,index+200).map(values=>({statement:drawSQL,values}));
+        const changed=await conn.executeSet(batch,false);
+        addedDraws+=Number(changed?.changes?.changes||0);
+      }
+      for(let index=0;index<parsed.daily.length;index+=200){
+        const batch=parsed.daily.slice(index,index+200).map(values=>({
+          statement:dailySQL,values:[...values.slice(0,5),'imported']
+        }));
+        const changed=await conn.executeSet(batch,false);
+        addedDaily+=Number(changed?.changes?.changes||0);
+      }
+      await conn.commitTransaction();
+    }catch(error){
+      await conn.rollbackTransaction();
+      throw error;
+    }
+  }else{
+    const db=await webDatabase();
+    db.run('BEGIN');
+    try{
+      for(const values of parsed.draws){
+        db.run(drawSQL,values);
+        addedDraws+=db.getRowsModified();
+      }
+      for(const values of parsed.daily){
+        db.run(dailySQL,[...values.slice(0,5),'imported']);
+        addedDaily+=db.getRowsModified();
+      }
+      db.run('COMMIT');
+      await writeWebBytes(db.export());
+    }catch(error){db.run('ROLLBACK');throw error;}
+  }
   return {addedDraws,addedDaily,foundDraws:parsed.draws.length,foundDaily:parsed.daily.length};
 }
 export async function inspectRuneSQLite(bytes){return parseBackup(bytes);}
