@@ -257,7 +257,7 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
           <strong>{configs[row.scope_id]?.display_name||row.display_name||row.scope_id}</strong>
           <span>{row.scope_id} · {row.scope_kind}{row.active===false?' · 停用':''}</span>
         </button>)}
-      </div>:<p className="scope-status">目前沒有 Scope Registry 資料。</p>}
+      </div>:<p className="scope-status">目前沒有人員資料。</p>}
     </div>:null}
   </div>;
 }
@@ -504,12 +504,12 @@ function CreateNodePanel({data,kind='scope',onClose}){
   async function createScope(){
     if(creatingScope)return;
     setCreatingScope(true);
-    setStatus('正在建立 Scope 並驗證資料表…');
+    setStatus('正在建立人員資料…');
     let provisioned=false;
     let id='';
     try{
       id=String(scopeDraft.scope_id||'').trim().toLowerCase();
-      if(!/^[a-z][a-z0-9]{0,14}$/.test(id))throw new Error('Scope ID 格式不正確。');
+      if(!/^[a-z][a-z0-9]{0,14}$/.test(id))throw new Error('人員代碼格式不正確。');
       const email=String(scopeDraft.email||'').trim().toLowerCase();
       if(!email)throw new Error('請先設定管理者 Email。');
       if(!/^\\S+@\\S+\\.\\S+$/.test(email))throw new Error('Email 格式不正確。');
@@ -528,15 +528,15 @@ function CreateNodePanel({data,kind='scope',onClose}){
       });
       // The RPC returned successfully; a later schema-cache failure is not a failed creation.
       provisioned=true;
-      if(String(provisionedScope?.scope_id||'')!==id)throw new Error('Scope 建立回應缺少正確的 Scope ID。');
+      if(String(provisionedScope?.scope_id||'')!==id)throw new Error('人員建立回應缺少正確代碼。');
       if(Number(provisionedScope?.keyword_rows)!==66)throw new Error('符文66複製數量不正確，請核對資料庫。');
       await updateRows('silver.'+id,{
         locale:normalizeUiLocale(scopeDraft.locale),
         updated_at:new Date().toISOString()
       },{filters:[{column:'id',operator:'eq',value:id}]});
       const config=await readAdminScopeConfig(id);
-      if(!config)throw new Error('Scope 設定列尚未可讀，請重新讀取。');
-      setStatus('Scope '+id+' 已建立並驗證（6 張資料表、符文66、設定可讀）。');
+      if(!config)throw new Error('人員設定尚未可讀。');
+      setStatus('人員 '+id+' 已建立。');
       refresh();
       onClose?.();
     }catch(error){

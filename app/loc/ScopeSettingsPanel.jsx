@@ -57,7 +57,7 @@ export default function ScopeSettingsPanel({scopeId}){
     try{
       const displayName=String(draft.display_name||'').trim();
       if(!displayName)throw new Error('顯示名稱不可為空。');
-      if(!table)throw new Error('Scope config table 未解析。');
+      if(!table)throw new Error('設定資料無法讀取。');
       const searchAliases=aliasList(aliases);
       await updateRows(table,{
         display_name:displayName,
@@ -72,7 +72,7 @@ export default function ScopeSettingsPanel({scopeId}){
       },{filters:[{column:'id',operator:'eq',value:scopeId}]});
       setDraft(current=>({...current,display_name:displayName,search_aliases:searchAliases}));
       setAliases(aliasText(searchAliases));
-      setMessage('已更新 Scope 基本設定。重新整理公開頁後即會使用新設定。');
+      setMessage('已儲存。');
     }catch(error){
       setMessage(error?.message||'設定儲存失敗。');
     }finally{

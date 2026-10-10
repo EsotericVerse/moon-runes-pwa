@@ -524,7 +524,7 @@ export default function Culture(){
     try{
       if(!account.canManageScopeSync(classificationScope))throw new Error('沒有建立此資料區域定錨點的權限。');
       const time=scopeData?.time;
-      if(!time)throw new Error('Scope data 未解析');
+      if(!time)throw new Error('資料來源未解析');
       const now=new Date().toISOString();
       const existingDays=anchorRecords.map(item=>Date.parse(String(item.start_date||'').slice(0,10)+'T00:00:00Z')).filter(Number.isFinite);
       const safeDates=selectedVirtualAnchorDates.filter(date=>{
@@ -564,7 +564,7 @@ export default function Culture(){
     const key=String(work?.key||('galaxy:'+uid));
     setEditingWorkKey(key);setEditDraft(null);setEditError('');
     try{
-      if(!scopeData)throw new Error('Scope data 未解析');
+      if(!scopeData)throw new Error('資料來源未解析');
       const {data,error}=await dbAuthRelation(scopeData.galaxy)
         .select('uid,title,content,content_blocks,searchable')
         .eq('uid',uid)
@@ -593,7 +593,7 @@ export default function Culture(){
     setEditBusy(true);setEditError('');
     try{
       if(!account.canManageScopeSync(classificationScope))throw new Error('沒有修改此資料區域的權限。');
-      if(!scopeData)throw new Error('Scope data 未解析');
+      if(!scopeData)throw new Error('資料來源未解析');
       const content=requireGalaxyContent(editDraft.body);
       await updateRows(scopeData.galaxy,{
         title:resolveGalaxyTitle(editDraft.title,content),
@@ -628,7 +628,7 @@ export default function Culture(){
     setFullTextError('');
     setFullTextLoading(true);
     try{
-      if(!scopeData)throw new Error('Scope data 未解析');
+      if(!scopeData)throw new Error('資料來源未解析');
       const row=await selectGalaxyContent(scopeData,uid);
       if(!row)throw new Error('找不到這筆作品。');
       setFullText(workDisplayText(row.content||''));
