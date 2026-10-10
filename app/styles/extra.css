@@ -45,8 +45,11 @@
 .home-hero-identity--codex::after{
   content:"";
   position:absolute;
+  top:50%;
+  left:50%;
   width:26%;
   aspect-ratio:1;
+  transform:translate(-50%,-50%);
   border-radius:50%;
   background:currentColor;
   box-shadow:0 0 8px rgba(248,230,176,.5);
