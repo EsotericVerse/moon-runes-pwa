@@ -139,7 +139,7 @@ test('LOC, Author and LunaRunes share home typography tiers without changing Run
 
 test('Each homepage Hero has exactly its fixed Scope identity above overlays',async({page})=>{
   const entries=[
-    {path:'/',mark:'codex',label:'Codex X',visible:'X'},
+    {path:'/',mark:'codex',label:'LOC 圓環中心實心點標誌',visible:''},
     {path:'/lo3rwang/',mark:'anchor',label:'光之定錨點',visible:'光之定錨點'},
     {path:'/lrunes/',mark:'moon',label:'玄韻家黃色圓點標誌',visible:''}
   ];
@@ -166,7 +166,17 @@ test('Each homepage Hero has exactly its fixed Scope identity above overlays',as
     expect(markBox.y).toBeGreaterThanOrEqual(heroBox.y-2);
     expect(markBox.x+markBox.width).toBeLessThanOrEqual(heroBox.x+heroBox.width+2);
     expect(markBox.y+markBox.height).toBeLessThanOrEqual(heroBox.y+heroBox.height+2);
-    if(entry.mark!=='codex'){
+    if(entry.mark==='codex'){
+      const ring=await mark.evaluate(el=>getComputedStyle(el,'::before'));
+      const center=await mark.evaluate(el=>getComputedStyle(el,'::after'));
+      expect(ring).toBeTruthy();
+      expect(ring.borderTopStyle).toBe('solid');
+      expect(parseFloat(ring.borderTopWidth)).toBeGreaterThanOrEqual(1);
+      expect(ring.borderTopLeftRadius).not.toBe('0px');
+      expect(center).toBeTruthy();
+      expect(parseFloat(center.width)).toBeGreaterThan(5);
+      expect(center.backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
+    }else{
       const dot=await mark.evaluate(el=>getComputedStyle(el,'::before'));
       expect(dot).toBeTruthy();
       const dotSize=await mark.evaluate(el=>parseFloat(getComputedStyle(el,'::before').width));
@@ -178,7 +188,7 @@ test('Each homepage Hero has exactly its fixed Scope identity above overlays',as
   }
   // The same fixed identity now accompanies the artwork on each feature Hero.
   await page.goto('/culture/',{waitUntil:'domcontentloaded'});
-  await expect(page.locator('header.scope-feature-hero>.home-hero-identity--codex')).toHaveText('X');
+  await expect(page.locator('header.scope-feature-hero>.home-hero-identity--codex')).toHaveText('');
 });
 
 test('Eight feature JPGs map by Scope while keeping the same title and readable Hero',async({page})=>{
