@@ -270,7 +270,7 @@ export default function AppShell({children}){
     return {id,label:builtIn?scopeNavLabel(builtIn):(navDisplayNames[id]||id)};
   }).filter(Boolean);
   const featureTabs=[
-    {id:'home',icon:'home',label:'首頁',href:navigationHref(navScopeId,'',native)},
+    {id:'home',icon:'home',label:'首頁',href:navigationHref(navScopeId,'',native)+(native&&navScopeId==='loc'?'?loc_direct=1':'')},
     ...['culture','statics','search','governance'].map(id=>{
       const feature=FEATURES.find(item=>item.id===id);
       return {id,icon:id,label:copy.features?.[id]?.title||feature.label,
@@ -283,9 +283,8 @@ export default function AppShell({children}){
     // A saved homepage changes the native App launch destination, not the
     // meaning of the "首頁" tab or the explicit LOC favorite link.
     if(!native||pathname!=='/'||preferences.loading||!registryLoaded)return;
-    const key='loc-native-launch-home-checked';
-    if(window.sessionStorage.getItem(key))return;
-    window.sessionStorage.setItem(key,'1');
+    // Explicit LOC navigation remains possible even with a saved default.
+    if(new URLSearchParams(window.location.search).has('loc_direct'))return;
     const target=homeScopeForAccount(preferences.home,preferences.account,
       ['loc',...NAV_SCOPES.map(item=>item.id),...registryScopes.map(item=>item.scope_id)]);
     if(target!=='loc')window.location.replace(navigationHref(target,'',true));
@@ -299,7 +298,7 @@ export default function AppShell({children}){
       <nav className="scope-nav" aria-label={copy.nav.aria}>
         <span className="scope-favorites-label">我的最愛</span>
         {favoriteLinks.map(item=>{
-          const href=navigationHref(item.id,'',native);
+          const href=navigationHref(item.id,'',native)+(native&&item.id==='loc'?'?loc_direct=1':'');
           return <NavTarget key={item.id} href={href} label={item.label} current={targetIsCurrent(href,host,pathname)}/>;
         })}
         {!favoriteLinks.length?<a href="/settings/" className="scope-nav-empty">到設定加入常用空間</a>:null}
