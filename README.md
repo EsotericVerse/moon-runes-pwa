@@ -1,9 +1,17 @@
-# LOC｜Luna Codex
+# LOC｜Luna Codex 月典
 
-**Current version: 0.9.2-rc.3.1 (Release Candidate — iPhone Dynamic Island safe area + referenced lunar event river)**
-> 0.9.2 RC3.1 includes PR #514 (referenced Daily Rune lunar event river and Culture calendar shortcut removal) and PR #515 (iOS native safe-area / Dynamic Island NAV adjustment). New unsigned iOS IPA requires local signing.
+**文字建築學（Text Architecture）｜語言架構、文字資料與時間脈絡的治理框架**
 
-> 0.9.2 RC3 packages the latest main NAV/favorite folders, Culture revisions, and an iOS unsigned IPA with the approved LOC lunar AppIcon. It remains a stabilization candidate, not 1.0 GA. iOS IPA requires local signing for installation, and private Local File/import with real files remain **Pending / not manually tested**. See `docs/TODO.md`.
+LOC 的正式主體是已持續建置、驗收的**網站與資料系統**，不是手機 App。以 `main` 為 Current，提供多 Scope 的文字、作品、來源、時間、搜尋、文化與統計分析，以及對應的治理與管理介面。
+
+### 專案目前階段
+
+- **LOC 網站主體：** 核心架構與主要功能已進入接近完成的 Release Candidate 收尾階段，現階段重點是既有功能的穩定、操作驗收與相容性修正，而不是重新建立一套架構。
+- **已建立的能力：** Scope／Scope Group 管理、Galaxy 與 Media／Time／Keyword 資料責任、Search／Culture／Statistics／Governance，以及 LOC 保留的跨 Scope 文化交會與統計比較。
+- **尚待驗收：** 以真實檔案進行 Import 端到端驗證，以及未覆蓋的權限、裝置與異常資料情境；不能因自動化通過就宣告 1.0 正式完成。
+- **版本標記：** Repository manifest 為 `0.9.2-rc.3.1`。版本編號不是網站全部功能的完成度，也不代表另外的非公開工作已可對外發布。
+
+本 README 介紹的是 LOC／LunaRunes 的公開網站與正式資料架構。獨立、尚未核准公開的測試工作，不作為本頁主產品或公開發版宣傳。
 
 This repository contains two related but separately governed systems:
 
@@ -131,7 +139,7 @@ LunaRunes Canon content, approved English names and Rune semantics are not rewri
 - Fixed UI copy is centralized in `app/i18n/ui-copy.js`.
 - Authored works, Galaxy content and LunaRunes Canon are outside UI-copy localization.
 - Repository documentation is Current-only: one responsibility has one maintained source, with no superseded or duplicate parallel authority.
-- **Project development/acceptance policy (for all sessions):** [AGENTS.md](AGENTS.md). Everyday work is integrated directly into `main`; opening a remote Branch/PR is the exception, not the default. The owner validates the actual website/App, not PR code diffs. Freeze applies only to previously existing auxiliary branches, never to `main`.
+- **開發與驗收的專案規範：** [AGENTS.md](AGENTS.md)。日常工作直接整合 `main`，不預設開遠端 Branch／PR；以實際產品操作驗收，不要求審閱 Diff。Freeze 只適用於既有已完成的輔助分支，絕不封鎖 `main`。
 
 ## Release documents
 

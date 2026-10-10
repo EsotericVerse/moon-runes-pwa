@@ -31,8 +31,16 @@
 
 When asked to work on LOC in a new conversation, check this file and the current `main` state first; do not infer that branch/PR approval is desired. The standing owner preference is **direct main integration and product-level acceptance**. If you cannot access this repository, say so rather than claiming to have changed it. Only a new explicit owner instruction overrides this default.
 
-## 5. Notification boundaries
+## 5. Public product versus private development
+
+- **The nearly finished public LOC website/framework is the primary product.** The iOS App is a newly started, independently accepted, non-public device-testing extension. Do not replace the public README's LOC project introduction, progress, or 1.0 readiness with native packaging details, Dynamic Island fixes, or repeated IPA release announcements.
+- Never publish an iOS App release, attach test IPA binaries to a public GitHub Release, or claim App public readiness without the owner's explicit instruction. Building an App artifact and passing CI are not authorization for public distribution.
+- **Repository visibility matters:** this GitHub repository is public as checked on 2026-10-11; public release assets and accessible workflow artifacts must not be represented as private. Do not put private files, personal chat archives or Local File content in this repository. Private iOS testing requires an appropriately access-controlled distribution path before sensitive files are involved.
+- If a previously published public App artifact conflicts with the owner's privacy decision, flag the exact release/asset instead of silently treating `prerelease` or `unsigned` as private.
+- Do not rewrite historical release tags to erase their history. Public-facing README describes the LOC website first; detailed mobile build instructions belong only in a properly controlled development context.
+
+## 6. Notification boundaries
 
 GitHub Actions trigger reduction limits generated runs, but GitHub account/email notification preferences are separately controlled by GitHub. Do not promise that changing repository workflows turns off all GitHub emails.
 
-Last revised: 2026-10-11.
+Last revised: 2026-10-11 (public LOC vs private iOS boundary).
