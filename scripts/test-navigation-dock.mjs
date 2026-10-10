@@ -135,3 +135,25 @@ test('Settings opens with the interactive daily rune calendar before homepage an
   assert.match(daily,/<DailyRuneCalendar/);
   assert.match(daily,/\{!embedded&&canWrite\?/);
 });
+
+
+test('daily rune calendar only reads and renders record details after authentication',()=>{
+  const settings=fs.readFileSync('app/loc/GlobalSettings.jsx','utf8');
+  const daily=fs.readFileSync('app/daily/log/DailyLogClient.jsx','utf8');
+  const calendar=fs.readFileSync('app/lrunes/DailyRuneCalendar.jsx','utf8');
+  assert.match(settings,/未登入時僅顯示空白行事曆/);
+  assert.match(settings,/account\.user&&!checking\?<p className="scope-settings-note">/);
+  assert.match(daily,/const canViewDetails=!account\.loading&&Boolean\(account\.user\);/);
+  assert.match(daily,/const visibleRows=canViewDetails\?rows:EMPTY_ROWS;/);
+  assert.match(daily,/if\(!canViewDetails\)\{\s*setRows\(\[\]\);/);
+  assert.ok(daily.indexOf('if(!canViewDetails){')<daily.indexOf('selectDailyRuneMonth({year,month})'));
+  assert.match(daily,/const request=\+\+monthRequest\.current;/);
+  assert.match(daily,/if\(monthRequest\.current!==request\)return;/);
+  assert.match(daily,/return\(\)=>\{monthRequest\.current\+=1;\};/);
+  assert.match(daily,/showDetails=\{canViewDetails\}/);
+  assert.match(daily,/canViewDetails&&selectedRows\.length\?/);
+  assert.match(daily,/canViewDetails&&!loading&&!error&&!rows\.length\?/);
+  assert.match(calendar,/showDetails=true/);
+  assert.match(calendar,/const entries=showDetails\?/);
+  assert.match(calendar,/const moonMarkers=showDetails\?phaseMarkers\(key\):\[\];/);
+});
