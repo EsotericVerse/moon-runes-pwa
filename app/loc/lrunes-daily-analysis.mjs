@@ -144,18 +144,25 @@ function workDay(value){
   }catch{return isoDate(String(value).slice(0,10));}
 }
 
-export async function selectLunaRunesCulturalWorks(){
-  const {rows}=await selectAllRows('silver.lrunes_galaxy',{
+export async function selectLunaRunesCulturalWorks({source='lo3rwang',startDate='',endDate=''}={}){
+  // Query only the selected public corpus and the date window of daily runes.
+  // Local/private files never enter this public data query.
+  const scopeId=source==='lrunes'?'lrunes':'lo3rwang';
+  const filters=[
+    {column:'statistics_able',operator:'eq',value:true},
+    {column:'searchable',operator:'eq',value:true},
+    {column:'content',operator:'neq',value:''},
+    ...(isoDate(startDate)?[{column:'createtime',operator:'gte',value:startDate+'T00:00:00+08:00'}]:[]),
+    ...(isoDate(endDate)?[{column:'createtime',operator:'lte',value:endDate+'T23:59:59.999+08:00'}]:[])
+  ];
+  const {rows}=await selectAllRows('silver.'+scopeId+'_galaxy',{
     columns:'uid,title,createtime,source_name,content_type,url',
-    filters:[
-      {column:'statistics_able',operator:'eq',value:true},
-      {column:'searchable',operator:'eq',value:true},
-      {column:'content',operator:'neq',value:''}
-    ],
+    filters,
     orders:[{column:'createtime',ascending:true},{column:'uid',ascending:true}]
   });
   return rows.map(row=>({
     ...row,
+    scope_id:scopeId,
     work_date:workDay(row.createtime)
   })).filter(row=>Boolean(row.work_date));
 }
@@ -188,6 +195,64 @@ export function lunarunesWorkTimeline(rows=[]){
   })).sort((a,b)=>a.start_date.localeCompare(b.start_date));
 }
 
+
+export async function selectLunaRunesCulturalAnchors(){
+  const {rows}=await selectAllRows('silver.lrunes_time',{
+    columns:'record_id,label,time_date',
+    filters:[{column:'record_type',operator:'eq',value:'anchor'}],
+    orders:[{column:'time_date',ascending:true}]
+  });
+  return rows.filter(row=>isoDate(row.time_date));
+}
+
+// Suggestions are read-only candidates, never automatically made official.
+export function lunarunesAnchorTimeline(anchors=[],suggestions=[]){
+  const official=anchors.map(row=>({
+    id:'lrunes-anchor:'+row.record_id,
+    entry_type:'anchor',
+    group_key:'lrunes-anchors',
+    group_label:'定錨點與建議',
+    group_order:3,
+    start_date:isoDate(row.time_date),
+    display_label:'◆',
+    title:'正式定錨｜'+row.time_date+'｜'+row.label,
+    anchor_status:'official'
+  }));
+  const proposed=suggestions.map(row=>({
+    id:'lrunes-anchor-candidate:'+row.date,
+    entry_type:'anchor_candidate',
+    group_key:'lrunes-anchors',
+    group_label:'定錨點與建議',
+    group_order:3,
+    start_date:row.date,
+    display_label:'◇',
+    title:'建議定錨（未建立）｜'+row.date+'｜'+(row.analysis||[]).join(' '),
+    anchor_status:'candidate'
+  }));
+  return [...official,...proposed];
+}
+
+export function lunarunesDateContext(date,draws=[],works=[],span=3){
+  const day=isoDate(date);
+  if(!day)return {date:'',sameDayDraws:[],sameDayWorks:[],beforeWorks:0,afterWorks:0,beforeDraws:0,afterDraws:0};
+  const ms=Date.parse(day+'T00:00:00Z'),windowDays=Math.max(1,Math.min(30,Number(span)||3));
+  const offset=value=>Math.round((Date.parse(String(value)+'T00:00:00Z')-ms)/86400000);
+  const aroundDraws=draws.filter(row=>Math.abs(offset(row.record_date))<=windowDays);
+  const aroundWorks=works.filter(row=>Math.abs(offset(row.work_date))<=windowDays);
+  return {
+    date:day,
+    phase:lunarunesPhaseForDate(day),
+    sameDayDraws:aroundDraws.filter(row=>row.record_date===day),
+    sameDayWorks:aroundWorks.filter(row=>row.work_date===day),
+    beforeDraws:aroundDraws.filter(row=>offset(row.record_date)<0).length,
+    afterDraws:aroundDraws.filter(row=>offset(row.record_date)>0).length,
+    beforeWorks:aroundWorks.filter(row=>offset(row.work_date)<0).length,
+    afterWorks:aroundWorks.filter(row=>offset(row.work_date)>0).length,
+    nearbyDraws:aroundDraws.filter(row=>row.record_date!==day),
+    nearbyWorks:aroundWorks.filter(row=>row.work_date!==day)
+  };
+}
+
 export function lunarunesSkyTimeline(from,to){
   const start=isoDate(from),end=isoDate(to);
   if(!start||!end||start>end)return [];
@@ -202,6 +267,7 @@ export function lunarunesSkyTimeline(from,to){
         entry_type:'sky_phase',
         group_key:'lrunes-sky',
         group_label:'天時・真實月相',
+        group_order:0,
         start_date:runStart,
         end_date:next,
         display_label:phase,
@@ -231,8 +297,9 @@ export function lunarunesDrawTimeline(rows=[]){
     return {
       id:'lrunes-daily:'+key,
       entry_type:'daily_draw',
-      group_key:'lrunes-draw:'+phase,
-      group_label:'抽符・'+phase,
+      group_key:'lrunes-draw',
+      group_label:'每日符文',
+      group_order:1,
       start_date:day,
       end_date:nextDate(day),
       display_label:'',
