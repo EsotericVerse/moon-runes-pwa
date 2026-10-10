@@ -30,10 +30,21 @@ export function lunarunesPhaseForDate(value){
 }
 
 export async function selectLunaRunesDailyAnalysis(){
-  const {rows}=await selectAllRows('silver.lrunes_daily',{
-    columns:'record_id,record_date,draw_kind,rune_number,direction,recorded_phase',
+  const query={
     orders:[{column:'record_date',ascending:true},{column:'record_id',ascending:true}]
-  });
+  };
+  let rows;
+  try{
+    ({rows}=await selectAllRows('silver.lrunes_daily',{
+      ...query,columns:'record_id,record_date,draw_kind,rune_number,direction,recorded_phase'
+    }));
+  }catch{
+    // Older read-only mirrors may not yet have the optional historical phase.
+    // Preserve daily analysis instead of failing the entire public page.
+    ({rows}=await selectAllRows('silver.lrunes_daily',{
+      ...query,columns:'record_id,record_date,draw_kind,rune_number,direction'
+    }));
+  }
   const {rows:runes}=await selectRows('silver.runes',{
     columns:'rune_id,rune_name,moon_phase,group_name',
     orders:[{column:'rune_id',ascending:true}],
