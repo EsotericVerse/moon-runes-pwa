@@ -13,15 +13,24 @@ function todayInTaipei(){
   return new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Taipei'});
 }
 async function shareSQLite(bytes,filename){
-  const file=new File([bytes],filename,{type:FILE_TYPE});
   if(Capacitor.isNativePlatform()){
-    // iOS WKWebView sharing support varies by installed WebKit version.
-    // Never silently claim a native Files save when the share API is absent.
-    if(!navigator.canShare?.({files:[file]})||!navigator.share)
-      throw new Error('此 App 版本尚未提供 SQLite 原生檔案分享能力；請在支援 Files 分享的新版 IPA 進行實機驗收。');
-    await navigator.share({files:[file],title:'LunaRunes SQLite 紀錄'});
-    return '已呼叫 iOS 系統分享功能；請確認檔案已儲存至所選位置。';
+    // Native bridge makes an actual local binary file, then presents the iOS
+    // Files/share sheet. It never posts the bytes to an HTTP endpoint.
+    const [{Filesystem,Directory},{Share}]=await Promise.all([
+      import('@capacitor/filesystem'),import('@capacitor/share')
+    ]);
+    let raw='';
+    for(let offset=0;offset<bytes.length;offset+=8192)
+      raw+=String.fromCharCode(...bytes.subarray(offset,offset+8192));
+    await Filesystem.writeFile({
+      path:filename,data:btoa(raw),directory:Directory.Cache
+    });
+    const {uri}=await Filesystem.getUri({path:filename,directory:Directory.Cache});
+    if(!uri)throw new Error('原生 SQLite 備份暫存檔路徑取得失敗。');
+    await Share.share({title:'LunaRunes SQLite 紀錄',url:uri,dialogTitle:'儲存或分享 SQLite 備份'});
+    return '已交給 iOS 系統分享／儲存；請確認在「檔案」中選擇了儲存位置。';
   }
+  const file=new File([bytes],filename,{type:FILE_TYPE});
   const url=URL.createObjectURL(file);
   const anchor=document.createElement('a');
   anchor.href=url;
