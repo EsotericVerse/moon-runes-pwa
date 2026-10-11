@@ -8,7 +8,6 @@ import {useAccount} from './use-account';
 import {createUid8} from './uid';
 import {IMPORT_FIELD_ALIASES,importRowsFromJson,mappedImportValue,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
-import {ScopeOtherSources} from './SourceCategoryEditor';
 
 function sourceSuggestion(name=''){
   const value=String(name).toLowerCase();
@@ -551,7 +550,6 @@ export default function ManagementImportPanel({scopeId}){
   }
   return <section className="scope-inline-card scope-management-imports">
     <h2>資料匯入</h2>
-    <ScopeOtherSources scopeId={scopeId}/>
     <ImportFormatSettings format={format} onChange={changeFormat} disabled={busyCount>0}/>
     <JsonImport key={'json-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/>
     <SourceRefresh key={'refresh-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/>

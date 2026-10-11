@@ -1,15 +1,16 @@
 'use client';
 
 import {useState} from 'react';
-import {useQuery} from '@tanstack/react-query';
+import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {dbAuthRelation} from './db-client.mjs';
 import {useAccount} from './use-account';
 
 const CATEGORIES='silver.statistics_source_categories';
 const ALIASES='silver.statistics_source_aliases';
-const OTHERS='silver.scope_other_sources';
+const PERSONAL='silver.scope_source_subcategories';
 const ID=/^[a-z][a-z0-9_-]{0,63}$/;
 const SOURCE=/^.{1,120}$/;
+const normalize=value=>String(value||'').trim().toLowerCase();
 
 export function useSourceCategories(){
   return useQuery({
@@ -27,7 +28,7 @@ export function useSourceCategories(){
 }
 
 export function AdminSourceCategories(){
-  const account=useAccount(),query=useSourceCategories();
+  const account=useAccount(),query=useSourceCategories(),client=useQueryClient();
   const [category,setCategory]=useState(''),[title,setTitle]=useState('');
   const [labels,setLabels]=useState({});
   const [alias,setAlias]=useState(''),[parent,setParent]=useState('others');
@@ -39,19 +40,22 @@ export function AdminSourceCategories(){
     try{
       await operation();
       await query.refetch();
+      await client.invalidateQueries({queryKey:['statistics-source-taxonomy']});
+      await client.invalidateQueries({queryKey:['own-scope-source-catalog']});
+      await client.invalidateQueries({queryKey:['loc-source-categories']});
       setCategory('');setTitle('');setAlias('');
     }catch(error){setNotice(String(error.message||error));}
     finally{setBusy(false);}
   }
   const add=()=>apply(async()=>{
-    const key=category.trim().toLowerCase(),label=title.trim();
+    const key=normalize(category),label=title.trim();
     if(!ID.test(key)||!label||label.length>80)throw Error('分類代碼或名稱無效');
     const {error}=await dbAuthRelation(CATEGORIES).insert({category_code:key,display_name:label});
     if(error)throw Error(error.message);
   });
   const map=()=>apply(async()=>{
-    const key=alias.trim().toLowerCase();
-    if(!SOURCE.test(key)||!key||!items.some(x=>x.category_code===parent))throw Error('請選擇來源與分類');
+    const key=normalize(alias);
+    if(!SOURCE.test(key)||!key||!items.some(x=>x.category_code===parent&&x.enabled))throw Error('請選擇來源與群組來源分類');
     const {error}=await dbAuthRelation(ALIASES).upsert({source_key:key,category_code:parent},{onConflict:'source_key'});
     if(error)throw Error(error.message);
   });
@@ -62,11 +66,12 @@ export function AdminSourceCategories(){
     if(error)throw Error(error.message);
   });
   return <section className="loc-card admin-workspace">
-    <h2>總來源分類</h2>
+    <h2>群組來源分類</h2>
+    <p className="scope-status">僅 LOC Admin 設定來源主分類；個別人員的來源命名及歸屬在各自的統計頁管理。</p>
     <div className="scope-stat-controls">
       <label>分類代碼<input value={category} onChange={e=>setCategory(e.target.value)} maxLength={64}/></label>
       <label>分類名稱<input value={title} onChange={e=>setTitle(e.target.value)} maxLength={80}/></label>
-      <button className="loc-button" type="button" disabled={busy||!category.trim()||!title.trim()} onClick={add}>新增分類</button>
+      <button className="loc-button" type="button" disabled={busy||!category.trim()||!title.trim()} onClick={add}>新增群組來源分類</button>
     </div>
     <div className="scope-management-records">
       {items.map(row=><div className="scope-inline-card" key={row.category_code}>
@@ -78,10 +83,10 @@ export function AdminSourceCategories(){
         <button type="button" className="loc-button" disabled={busy} onClick={()=>modify(CATEGORIES,{category_code:row.category_code},{enabled:!row.enabled})}>{row.enabled?'停用':'啟用'}</button>
       </div>)}
     </div>
-    <h3>來源歸屬</h3>
+    <h3>群組來源預設歸屬</h3>
     <div className="scope-stat-controls">
       <label>原始來源<input value={alias} maxLength={120} onChange={e=>setAlias(e.target.value)}/></label>
-      <label>總來源<select className="scope-select" value={parent} onChange={e=>setParent(e.target.value)}>
+      <label>群組來源分類<select className="scope-select" value={parent} onChange={e=>setParent(e.target.value)}>
         {items.filter(x=>x.enabled).map(x=><option key={x.category_code} value={x.category_code}>{x.display_name}</option>)}
       </select></label>
       <button type="button" className="loc-button" disabled={busy||!alias.trim()} onClick={map}>指定歸屬</button>
@@ -98,53 +103,79 @@ export function AdminSourceCategories(){
     {notice?<p role="status" className="scope-status">{notice}</p>:null}
   </section>;
 }
-export function ScopeOtherSources({scopeId}){
-  const account=useAccount();
-  const [source,setSource]=useState(''),[label,setLabel]=useState('');
-  const [notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
+
+export function ScopeCustomSourceCategories({scopeId}){
+  const account=useAccount(),client=useQueryClient(),groupQuery=useSourceCategories();
+  const [source,setSource]=useState(''),[label,setLabel]=useState(''),[category,setCategory]=useState('others');
+  const [labels,setLabels]=useState({}),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
+  const canManage=Boolean(scopeId&&account.canManageScopeSync(scopeId));
   const query=useQuery({
-    queryKey:['statistics-others',scopeId],
-    enabled:Boolean(scopeId&&account.canManageScopeSync(scopeId)),
+    queryKey:['scope-source-subcategories',scopeId],
+    enabled:canManage,
     queryFn:async()=>{
-      const {data,error}=await dbAuthRelation(OTHERS)
-        .select('source_key,display_name,enabled').eq('scope_id',scopeId).order('source_key');
+      const {data,error}=await dbAuthRelation(PERSONAL)
+        .select('source_key,category_code,display_name,enabled').eq('scope_id',scopeId).order('source_key');
       if(error)throw Error(error.message);
       return data||[];
     },
     staleTime:60_000
   });
-  if(!account.canManageScopeSync(scopeId))return null;
-  const apply=async(fn)=>{
+  if(!canManage)return null;
+  const groups=(groupQuery.data?.categories||[]).filter(row=>row.enabled);
+  async function apply(fn){
     setBusy(true);setNotice('');
-    try{await fn();await query.refetch();setSource('');setLabel('');}
-    catch(error){setNotice(String(error.message||error));}
+    try{
+      await fn();
+      await query.refetch();
+      await client.invalidateQueries({queryKey:['statistics-source-taxonomy',scopeId]});
+      await client.invalidateQueries({queryKey:['own-scope-source-catalog',scopeId]});
+      await client.invalidateQueries({queryKey:['loc-source-categories']});
+      setSource('');setLabel('');
+    }catch(error){setNotice(String(error.message||error));}
     finally{setBusy(false);}
-  };
+  }
   const add=()=>apply(async()=>{
-    const key=source.trim().toLowerCase(),name=label.trim()||source.trim();
+    const key=normalize(source),name=label.trim()||source.trim();
     if(!SOURCE.test(key)||!key||!name||name.length>80)throw Error('來源名稱無效');
-    const {error}=await dbAuthRelation(OTHERS)
-      .upsert({scope_id:scopeId,source_key:key,display_name:name,enabled:true},{onConflict:'scope_id,source_key'});
+    if(!groups.some(row=>row.category_code===category))throw Error('請先選擇有效的群組來源分類');
+    const {error}=await dbAuthRelation(PERSONAL).upsert({
+      scope_id:scopeId,source_key:key,display_name:name,category_code:category,enabled:true
+    },{onConflict:'scope_id,source_key'});
     if(error)throw Error(error.message);
   });
-  return <section className="scope-inline-card">
-    <h3>Others 來源</h3>
+  const update=(key,values)=>apply(async()=>{
+    const {error}=await dbAuthRelation(PERSONAL).update(values)
+      .eq('scope_id',scopeId).eq('source_key',key);
+    if(error)throw Error(error.message);
+  });
+  return <section className="scope-inline-card" aria-label="個人自訂來源分類">
+    <h3>個人自訂來源分類</h3>
+    <p className="scope-status">只管理目前人員的原始來源名稱及群組歸屬，不改動作品正文與其他 Scope。</p>
     <div className="scope-stat-controls">
-      <label>原始來源<input value={source} maxLength={120} onChange={e=>setSource(e.target.value)}/></label>
-      <label>名稱<input value={label} maxLength={80} onChange={e=>setLabel(e.target.value)}/></label>
-      <button type="button" className="loc-button" disabled={busy||!source.trim()} onClick={add}>儲存來源</button>
+      <label>原始來源<input value={source} maxLength={120} onChange={e=>setSource(e.target.value)} placeholder="source_name"/></label>
+      <label>自訂顯示名稱<input value={label} maxLength={80} onChange={e=>setLabel(e.target.value)}/></label>
+      <label>群組來源分類<select className="scope-select" value={groups.some(row=>row.category_code===category)?category:(groups[0]?.category_code||'')} onChange={e=>setCategory(e.target.value)}>
+        {groups.map(row=><option key={row.category_code} value={row.category_code}>{row.display_name}</option>)}
+      </select></label>
+      <button type="button" className="loc-button" disabled={busy||!source.trim()||!groups.length} onClick={add}>儲存個人來源分類</button>
     </div>
     <div className="scope-management-records">
       {(query.data||[]).map(row=><div className="scope-inline-card" key={row.source_key}>
-        <strong>{row.display_name}</strong><span>{row.source_key}</span>
-        <button type="button" className="loc-button" disabled={busy} onClick={()=>apply(async()=>{
-          const {error}=await dbAuthRelation(OTHERS).update({enabled:!row.enabled})
-            .eq('scope_id',scopeId).eq('source_key',row.source_key);
-          if(error)throw Error(error.message);
-        })}>{row.enabled?'停用':'啟用'}</button>
+        <span>{row.source_key}</span>
+        <label>自訂名稱<input maxLength={80} disabled={busy}
+          value={labels[row.source_key]??row.display_name}
+          onChange={e=>setLabels(old=>({...old,[row.source_key]:e.target.value}))}/></label>
+        <button type="button" className="loc-button" disabled={busy||!String(labels[row.source_key]??row.display_name).trim()}
+          onClick={()=>update(row.source_key,{display_name:String(labels[row.source_key]??row.display_name).trim()})}>儲存名稱</button>
+        <label>群組來源分類<select className="scope-select" value={row.category_code} disabled={busy}
+          onChange={e=>update(row.source_key,{category_code:e.target.value})}>
+          {(groupQuery.data?.categories||[]).map(item=><option key={item.category_code} value={item.category_code}>{item.display_name}</option>)}
+        </select></label>
+        <button type="button" className="loc-button" disabled={busy}
+          onClick={()=>update(row.source_key,{enabled:!row.enabled})}>{row.enabled?'停用':'啟用'}</button>
       </div>)}
     </div>
-    {query.error?<p className="scope-status scope-error">{String(query.error.message||query.error)}</p>:null}
+    {groupQuery.error||query.error?<p className="scope-status scope-error">{String(groupQuery.error?.message||query.error?.message)}</p>:null}
     {notice?<p role="status" className="scope-status">{notice}</p>:null}
   </section>;
 }
