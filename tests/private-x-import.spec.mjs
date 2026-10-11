@@ -40,6 +40,18 @@ test('website X archive: pre-count, detect duplicates, commit batches, search an
   await expect(page.getByText('已存在 3 筆')).toBeVisible();
   await page.getByRole('button',{name:'取消並刪除暫存'}).click();
   await expect(page.getByText('已移除未確認的本機暫存資料。')).toBeVisible();
+  // Even inside one backup, same native ID with divergent bodies is quarantined.
+  const contradictory=[
+    {tweet:{id_str:'204',full_text:'第一版本',created_at:'Mon Oct 09 15:26:46 +0000 2023'}},
+    {tweet:{id_str:'204',full_text:'第二版本',created_at:'Mon Oct 09 15:26:46 +0000 2023'}}
+  ];
+  await input.setInputFiles({
+    name:'conflicting-ids.js',mimeType:'application/javascript',
+    buffer:Buffer.from('window.YTD.tweet.part0 = '+JSON.stringify(contradictory)+';')
+  });
+  await expect(page.getByText('備份內同 ID 衝突 1 筆')).toBeVisible({timeout:20000});
+  await expect(page.getByText('準備新增 0 筆')).toBeVisible();
+  await page.getByRole('button',{name:'取消並刪除暫存'}).click();
   await page.getByRole('checkbox',{name:/確認永久清除目前瀏覽器/}).check();
   await page.getByRole('button',{name:'清除全部本機資料'}).click();
   await expect(page.getByRole('heading',{name:'已確認匯入的私人紀錄（0 筆）'})).toBeVisible();
