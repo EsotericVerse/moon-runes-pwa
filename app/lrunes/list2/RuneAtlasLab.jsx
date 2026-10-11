@@ -2,6 +2,7 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
+import {createPortal} from 'react-dom';
 import {selectRows} from '../../loc/db-query.mjs';
 import {runeImage} from '../rune-directory.mjs';
 import '../skin-lab.css';
@@ -166,17 +167,24 @@ export default function RuneAtlasLab(){
         onSelect={group?show:previewGroup}/>
       <div className="rune-3d-stage-label">{loading?'星域載入中……':
         error||(!group?'點選星球閱讀群組說明，再按「進入」查看符文':'輕觸符文，查看原有文字資料')}</div>
-      {preview&&!group?<section className="rune-3d-group-preview" role="dialog" aria-label={preview.name+'群組說明'}>
-        <p className="loc-eyebrow">RUNE CONSTELLATION · {String(preview.id).padStart(2,'0')}</p>
-        <h2>{preview.name}</h2><p className="rune-3d-group-en">{preview.english_name||''}</p>
-        <p className="rune-3d-group-description">{cleanse(preview.desc||'')}</p>
-        <p className="rune-3d-group-count">本群組 {preview.runeslist.length} 枚符文</p>
-        <div className="rune-skin-controls">
-          <button type="button" className="rune-skin-btn primary" onClick={()=>enterGroup(preview)}>進入</button>
-          <button type="button" className="rune-skin-btn" onClick={closePreview}>返回九星球</button>
-        </div>
-      </section>:null}
     </section>
+    {preview&&!group&&typeof document!=='undefined'?createPortal(
+      <div className="rune-3d-group-backdrop" onClick={closePreview} role="presentation">
+        <section className="rune-3d-group-preview" role="dialog" aria-modal="true"
+          aria-label={preview.name+'群組說明'} onClick={event=>event.stopPropagation()}>
+          <p className="loc-eyebrow">RUNE CONSTELLATION · {String(preview.id).padStart(2,'0')}</p>
+          <h2>{preview.name}</h2>
+          <p className="rune-3d-group-en">{preview.english_name||''}</p>
+          <p className="rune-3d-group-description">{cleanse(preview.desc||'')}</p>
+          <p className="rune-3d-group-count">本群組 {preview.runeslist.length} 枚符文</p>
+          <div className="rune-skin-controls">
+            <button type="button" className="rune-skin-btn primary"
+              autoFocus onClick={()=>enterGroup(preview)}>進入</button>
+            <button type="button" className="rune-skin-btn" onClick={closePreview}>返回九星球</button>
+          </div>
+        </section>
+      </div>,document.body
+    ):null}
     {!group?<nav className="rune-3d-group-index" aria-label="九個符文群組">
       {groups.map(item=><button key={item.id} type="button"
         className="rune-3d-group-name-btn" onClick={()=>previewGroup(item)}>{item.name}</button>)}
