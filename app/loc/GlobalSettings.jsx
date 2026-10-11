@@ -48,6 +48,13 @@ export default function GlobalSettings(){
   const [drawOpen,setDrawOpen]=useState(false);
   const [drawMode,setDrawMode]=useState('daily');
   const identity=account.user?.id||account.user?.email||'';
+  useEffect(()=>{
+    const params=new URLSearchParams(window.location.search);
+    const tab=params.get('section');
+    if(['daily','files','draw','home','favorites','manage','account'].includes(tab))setSection(tab);
+    const requested=params.get('scope');
+    if(requested&&/^[a-z0-9_-]{1,64}$/i.test(requested))setManagedScope(requested);
+  },[]);
 
   useEffect(()=>{
     const actual=Capacitor.isNativePlatform();
@@ -174,9 +181,9 @@ export default function GlobalSettings(){
             aria-label="選擇設定功能"/>
         </section>
 
-        {section==='files'?native?<PrivateLocalFiles/>:<section className="loc-card">
+        {section==='files'?(native?<PrivateLocalFiles/>:<section className="loc-card">
           <h2>文件匯入／匯出</h2>
-          <p className="scope-settings-note">網站的資料匯入使用 Supabase，必須具備對應 Scope 的管理權限；不再使用獨立的瀏覽器本機測試工作區。</p>
+          <p className="scope-settings-note">網站匯入使用 Supabase，必須具備對應 Scope 的管理權限；不再使用獨立的瀏覽器本機測試工作區。一般作品匯出功能尚未提供。</p>
           {!account.user?<p>請先登入，再使用你有權管理的資料匯入。</p>:
             manageScopes.length?<div>
               <label htmlFor="loc-import-scope">匯入目標 Scope</label>
@@ -188,7 +195,7 @@ export default function GlobalSettings(){
                 onChange={option=>setManagedScope(option?.value||'')}/>
               {canManageSelected?<ManagementImportPanel key={manageable} scopeId={manageable}/>:null}
             </div>:<p>目前帳號沒有可寫入的 Scope；不會開啟雲端匯入。</p>}
-        </section>:null}
+        </section>):null}
 
         {section==='daily'?<section className="scope-settings-daily-test" aria-labelledby="settings-daily-calendar-title">
           <h2 id="settings-daily-calendar-title">每日符文行事曆</h2>
