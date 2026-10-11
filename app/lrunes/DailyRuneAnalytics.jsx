@@ -142,7 +142,7 @@ export function LrunesDailyCulturePanel(){
 
 export function LrunesDailyStatisticsPanel(){
   const [zoomLevel,setZoomLevel]=useState(0);
-  const today=useMemo(todayInTaipei,[]);
+  const [today,setToday]=useState(()=>todayInTaipei());
   const zoomRange=useMemo(()=>statisticsZoomWindow(zoomLevel,today),[zoomLevel,today]);
   const [analysisMode,setAnalysisMode]=useState('rune');
   const [page,setPage]=useState(1);
@@ -173,7 +173,7 @@ export function LrunesDailyStatisticsPanel(){
         </select>
       </label>
     </div>
-    <StatisticsZoomControls level={zoomLevel} onChange={value=>{setZoomLevel(value);setPage(1);}} range={zoomRange}/>
+    <StatisticsZoomControls level={zoomLevel} onChange={value=>{setZoomLevel(value);setPage(1);}} range={zoomRange} onEndDateChange={value=>{setToday(value);setPage(1);}}/>
     {message?<p className="scope-status">{message}</p>:null}
     {!message?<>
       <p className="scope-status">{range.startDate} ～ {range.endDate} · {summary.dayCount} 個紀錄日 · {summary.recordCount} 筆抽取 · {analysisMode==='direction'?'四種位向（含零次）':ranking.length+' 種實際出現的組合'}</p>
