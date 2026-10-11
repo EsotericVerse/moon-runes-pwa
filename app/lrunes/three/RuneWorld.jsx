@@ -1,11 +1,12 @@
 'use client';
 
-import {useEffect,useMemo,useRef,useState} from 'react';
+import {Component,useEffect,useMemo,useRef,useState} from 'react';
 import {Canvas,useFrame,useThree} from '@react-three/fiber';
 import {OrbitControls,Sparkles,Stars} from '@react-three/drei';
 import {EffectComposer,Bloom} from '@react-three/postprocessing';
 import * as THREE from 'three';
 import * as opentype from 'opentype.js';
+import RuneAuraFX from './RuneAuraFX';
 
 const FONT_URL='https://raw.githubusercontent.com/google/fonts/main/ofl/notoseriftc/NotoSerifTC%5Bwght%5D.ttf';
 let fontPromise;
@@ -283,6 +284,7 @@ function RuneActor({item,index,total,font,mode,onSelect,quality='high'}){
     onPointerOver={()=>{document.body.style.cursor='pointer';}}
     onPointerOut={()=>{document.body.style.cursor='';}}>
     <RuneShape card={card} font={font} color={color}/>
+    <RuneAuraFX groupIndex={Number(card.rune_id)>=1&&Number(card.rune_id)<=64?Math.floor((Number(card.rune_id)-1)/8):8}/>
     <mesh position={[0,0,-.25]}>
       <torusGeometry args={[1.35,.018,10,90]}/>
       <meshBasicMaterial color={color} transparent opacity={.48} toneMapped={false}/>
@@ -334,16 +336,30 @@ function Scene({mode,items,onSelect,onBackgroundClick,quality}){
     {quality==='high'?<EffectComposer multisampling={0}><Bloom mipmapBlur intensity={.9} luminanceThreshold={.58} luminanceSmoothing={.25}/></EffectComposer>:null}
   </>;
 }
+class RuneSceneBoundary extends Component {
+  constructor(props){super(props);this.state={error:null};}
+  static getDerivedStateFromError(error){return {error};}
+  componentDidCatch(error){console.error('LunaRunes WebGL scene failed',error);}
+  render(){
+    if(this.state.error)return <div className="rune-world-failed" role="alert">
+      即時 3D 場景無法在此裝置啟動，請確認瀏覽器支援 WebGL。
+      <a href={this.props.mode==='draw'?'/duel/one/':'/list/'}>返回原有頁面</a>
+    </div>;
+    return this.props.children;
+  }
+}
 export default function RuneWorld({mode='groups',items=[],onSelect,onBackgroundClick,quality='high'}){
-  const [failed,setFailed]=useState(false);
-  if(failed)return <div className="rune-world-failed" role="status">此裝置無法啟動即時 3D，請切換靜態模式。</div>;
   return <div className="rune-world-canvas" data-renderer="threejs">
+    <RuneSceneBoundary mode={mode}>
     <Canvas camera={{position:[0,.15,12.8],fov:45}} dpr={quality==='high'?[1.5,2]:[1,1.5]}
       gl={{antialias:true,alpha:false,powerPreference:'high-performance'}}
       onCreated={({gl})=>{gl.toneMapping=THREE.ACESFilmicToneMapping;}}
       onPointerMissed={()=>onBackgroundClick?.()}
-      fallback={<span>正在準備 3D 圖形引擎…</span>}>
+      fallback={<div className="rune-world-failed" role="alert">
+        此瀏覽器無法啟動 WebGL 真 3D。<a href={mode==='draw'?'/duel/one/':'/list/'}>開啟原版頁面</a>
+      </div>}>
       <Scene mode={mode} items={items} onSelect={onSelect} onBackgroundClick={onBackgroundClick} quality={quality}/>
     </Canvas>
+    </RuneSceneBoundary>
   </div>;
 }

@@ -120,7 +120,11 @@ export default function RuneRitualLab(){
         {!finished?<button className="rune-skin-btn" type="button" onClick={finish} disabled={!ready||busy||items.length<1}>完成抽牌 · 開籤詩</button>:null}
         {finished?<button className="rune-skin-btn primary" type="button" onClick={reset}>重新開始</button>:null}
       </div>
-      <a href="/duel/one/" className="rune-skin-btn">舊版抽牌</a>
+      <nav className="rune-skin-controls" aria-label="返回與模式切換">
+        <a href="/card/" className="rune-skin-btn">← 3D 場域首頁</a>
+        <a href="/card/list/" className="rune-skin-btn">切換指定圖鑑</a>
+        <a href="/duel/one/" className="rune-skin-btn">舊版抽牌</a>
+      </nav>
     </div>
     {finished?<section className="rune-skin-verse rune-3d-reading" data-draw-stage="reading">
       <p className="loc-eyebrow">MOON VERSE</p><h2>占卜結果</h2>

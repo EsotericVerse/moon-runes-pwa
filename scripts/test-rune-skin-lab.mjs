@@ -7,8 +7,9 @@ const read=path=>readFileSync(resolve(base,path),'utf8');
 for(const path of [
   'app/lrunes/three/RuneWorld.jsx','app/lrunes/three/rune-world.css',
   'app/lrunes/list2/RuneAtlasLab.jsx','app/lrunes/duel2/RuneRitualLab.jsx',
-  'app/list2/page.jsx','app/duel2/page.jsx',
-  'app/lrunes/list2/page.jsx','app/lrunes/duel2/page.jsx'
+  'app/card/page.jsx','app/card/list/page.jsx','app/card/duel/page.jsx',
+  'app/lrunes/card/page.jsx','app/lrunes/card/list/page.jsx','app/lrunes/card/duel/page.jsx',
+  'app/list2/page.jsx','app/duel2/page.jsx'
 ])assert.ok(existsSync(resolve(base,path)),path+' not found');
 const world=read('app/lrunes/three/RuneWorld.jsx');
 const duel=read('app/lrunes/duel2/RuneRitualLab.jsx');

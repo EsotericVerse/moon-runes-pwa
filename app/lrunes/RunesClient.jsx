@@ -66,9 +66,9 @@ export default function RunesClient(){
 
     <nav className="runes-home-nav runes-home-secondary-nav" aria-label="月之符文延伸功能">
       <a className="loc-button" href={runeHref('list')}>符文圖鑑</a>
-      <a className="loc-button" href={runeHref('list2')}>3D 圖鑑（測試）</a>
+      <a className="loc-button" href={runeHref('card/list')}>3D 圖鑑（測試）</a>
       <a className="loc-button" href={runeHref('game')}>符文遊戲</a>
-      <a className="loc-button" href={runeHref('duel2')}>3D 抽牌（測試）</a>
+      <a className="loc-button" href={runeHref('card/duel')}>3D 抽牌（測試）</a>
       <a className="loc-button" href={runeHref('daily/log')}>每日符文紀錄</a>
     </nav>
 
