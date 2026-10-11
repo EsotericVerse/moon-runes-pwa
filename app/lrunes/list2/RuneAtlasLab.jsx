@@ -64,10 +64,9 @@ export default function RuneAtlasLab(){
   const native=useNativeNavigation();
   const [groups,setGroups]=useState([]);
   const [group,setGroup]=useState(null);
-  const [preview,setPreview]=useState(null);
   const [runes,setRunes]=useState([]);
   const [details,setDetails]=useState(null);
-    const [loading,setLoading]=useState(true);
+  const [loading,setLoading]=useState(true);
   const [error,setError]=useState('');
   useEffect(()=>{
     let active=true;
@@ -76,6 +75,7 @@ export default function RuneAtlasLab(){
         setGroups((rows||[]).map(row=>({...row,index:groupIndex(row)}))
           .sort((a,b)=>a.index-b.index).map((row,i)=>({
             ...row,id:row.index+1,name:row.group_id||GROUP_NAMES[i],
+            desc:cleanse(row.desc||''),
             runeslist:Array.isArray(row.runeslist)?row.runeslist.map(Number):[]
           })));
       }})
@@ -97,19 +97,11 @@ export default function RuneAtlasLab(){
       .finally(()=>{if(active)setLoading(false);});
     return()=>{active=false;};
   },[group]);
-  // Nested URL history makes native/PWA Back behave as expected:
-  // rune dialog → eight-rune orbit → nine-group orbit → /card hub.
-  const previewGroup=entry=>{
-    window.history.pushState({runeCardLevel:'preview'},'','#preview-'+entry.id);
-    setPreview(entry);setGroup(null);setDetails(null);
-  };
-  const closePreview=()=>{
-    if(window.history.state?.runeCardLevel==='preview')window.history.back();
-    else{window.history.replaceState({},'',window.location.pathname);setPreview(null);}
-  };
+  // Direct navigation: group artwork tap enters the group, never opens a preview modal.
   const enterGroup=entry=>{
+    if(!entry)return;
     window.history.pushState({runeCardLevel:'group'},'','#group-'+entry.id);
-    setGroup(entry);setPreview(null);setDetails(null);
+    setGroup(entry);setDetails(null);
   };
   const show=card=>{
     if(!group)return;
@@ -134,11 +126,8 @@ export default function RuneAtlasLab(){
     const syncLocation=()=>{
       const match=new RegExp('^#group-([0-9]+)(?:/rune-([0-9]+))?$').exec(window.location.hash);
       if(!match){
-        const selected=/^#preview-([0-9]+)$/.exec(window.location.hash);
-        setPreview(selected?groups.find(x=>Number(x.id)===Number(selected[1]))||null:null);
         setGroup(null);setDetails(null);return;
       }
-      setPreview(null);
       const g=groups.find(x=>Number(x.id)===Number(match[1]));
       setGroup(g||null);
       const id=Number(match[2]);
@@ -157,46 +146,36 @@ export default function RuneAtlasLab(){
     <header className="rune-art-header">
       <p className="loc-eyebrow">LunaRunes · Living Atlas</p>
       <h1>{group?group.name+'之符文':'月之符文 · 九曜星域'}</h1>
-      <p>{group?'展示原創符文卡圖。輕觸任一符文，即可閱讀原有圖鑑資料。':
-        '完整呈現九幅群組原創畫作。選擇群組閱讀介紹，再進入該組符文圖鑑。'}</p>
+      <p>{group?'瀏覽群組簡介與原創符文卡圖；輕觸任一符文即可閱讀圖鑑資料。':
+        '九大群組的原創畫作與基本資料。點選畫作直接進入該群組。'}</p>
     </header>
     <nav className="rune-art-toolbar" aria-label="圖鑑視角">
       {group?<span className="rune-art-toolbar-label">{group.name}組 · 原創符文畫廊</span>:<span className="rune-art-toolbar-label">九大符文群組 · 原創畫作</span>}
 
     </nav>
+    {group?<section className="rune-art-group-inline" aria-label={group.name+'群組介紹'}>
+      <div className="rune-art-group-inline-artwork">
+        <img src={groupImage(group.id)} alt={group.name+'群組原創畫作'} loading="eager" decoding="async"/>
+      </div>
+      <div className="rune-art-group-inline-copy">
+        <p className="loc-eyebrow">RUNE GROUP · {String(group.id).padStart(2,'0')} / 09</p>
+        <h2>{group.name}組</h2>
+        {group.english_name?<p className="rune-art-group-en">{group.english_name}</p>:null}
+        <p className="rune-art-group-description">{group.desc||'此群組尚無介紹內容。'}</p>
+        <p className="rune-art-group-count">本群組收錄 {group.runeslist.length} 枚符文{group.id===9?'（含誌銘）':''}</p>
+      </div>
+    </section>:null}
     <section className="rune-art-stage" aria-label="九群組與原創符文畫廊">
       <RuneArtStage mode={group?'runes':'groups'} items={display}
-        onSelect={group?show:previewGroup}/>
+        onSelect={group?show:enterGroup}/>
       <div className="rune-art-stage-label" role="status">{loading?'畫作載入中……':
-        error||(!group?'點選群組畫作閱讀介紹，再按「進入」查看符文':'輕觸符文卡面，查看原有文字資料')}</div>
+        error||(!group?'點選群組畫作，直接查看該群組的介紹及符文':'輕觸符文卡面，查看原有文字資料')}</div>
     </section>
     {group?<button type="button" className="rune-art-floating-back" onClick={backToGroups}
-      aria-label="返回九個群組星球"><span aria-hidden="true">←</span> 返回九群組</button>:null}
-    {preview&&!group&&typeof document!=='undefined'?createPortal(
-      <div className="rune-art-group-backdrop" onClick={closePreview} role="presentation">
-        <section className="rune-art-group-preview" role="dialog" aria-modal="true"
-          aria-label={preview.name+'群組說明'} onClick={event=>event.stopPropagation()}>
-          <div className="rune-art-group-artwork">
-            <img src={groupImage(preview.id)} alt={preview.name+'正式群組圖'} loading="eager"/>
-          </div>
-          <div className="rune-art-group-archive">
-            <p className="loc-eyebrow">RUNE CONSTELLATION · {String(preview.id).padStart(2,'0')}</p>
-            <h2>{preview.name}組</h2>
-            <p className="rune-art-group-en">{preview.english_name||''}</p>
-            <p className="rune-art-group-description">{cleanse(preview.desc||'')}</p>
-            <p className="rune-art-group-count">本群組收錄 {preview.runeslist.length} 枚符文{preview.id===9?'（含誌銘）':''}</p>
-            <div className="rune-skin-controls">
-              <button type="button" className="rune-skin-btn primary"
-                autoFocus onClick={()=>enterGroup(preview)}>進入符文星域</button>
-              <button type="button" className="rune-skin-btn" onClick={closePreview}>返回九星球</button>
-            </div>
-          </div>
-        </section>
-      </div>,document.body
-    ):null}
+      aria-label="返回九個群組"><span aria-hidden="true">←</span> 返回九群組</button>:null}
     {!group?<nav className="rune-art-group-index" aria-label="九個符文群組">
       {groups.map(item=><button key={item.id} type="button"
-        className="rune-art-group-name-btn" onClick={()=>previewGroup(item)}>{item.name}</button>)}
+        className="rune-art-group-name-btn" onClick={()=>enterGroup(item)}>{item.name}</button>)}
     </nav>:null}
     <footer className="rune-art-footer">
       <span>原創美術展示 · 保留符文原始卡面</span>
