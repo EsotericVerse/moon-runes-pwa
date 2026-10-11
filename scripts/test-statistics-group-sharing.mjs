@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
- sharedGroupCodes,canParticipateInCrossStatistics,canOfferMemberCrossStatistics,allowedMemberMetric,sharedSourceBreakdown,sharedScopeDensity
+ sharedGroupCodes,canParticipateInCrossStatistics,allowedMemberMetric,sharedSourceBreakdown,sharedScopeDensity
 } from '../app/loc/statistics-group-sharing.mjs';
 import {calculateMemberCross} from '../app/loc/member-intersection-model.mjs';
 
@@ -96,10 +96,8 @@ test('LOC always offers Lunarunes daily rune as independent comparison material'
   const denied=categories.map(group=>({scope_id:'lrunes',category_code:group.category_code,share_enabled:false}));
   const restrictive={categories,aliases,scopeSources,permissions:denied};
   assert.equal(canParticipateInCrossStatistics('lrunes',denied,categories),false);
-  assert.equal(canOfferMemberCrossStatistics('lrunes',denied,categories),true);
-  assert.equal(canOfferMemberCrossStatistics('alice',denied,categories),true);
-  assert.equal(allowedMemberMetric('lrunes','daily',restrictive),true);
-  assert.equal(allowedMemberMetric('lrunes','daily:direction:正位',restrictive),true);
+  assert.equal(allowedMemberMetric('lrunes','daily',restrictive),false);
+  assert.equal(allowedMemberMetric('lrunes','daily:direction:正位',restrictive),false);
   assert.equal(allowedMemberMetric('lrunes','total',restrictive),false);
   assert.equal(allowedMemberMetric('lrunes','source:facebook',restrictive),false);
   assert.equal(allowedMemberMetric('alice','daily',restrictive),false);
@@ -113,4 +111,19 @@ test('LOC always offers Lunarunes daily rune as independent comparison material'
   ],datasets,{from:'2026-10-01',to:'2026-10-03',unit:'day',categories,aliases,scopeSources});
   assert.deepEqual(result.totals.map(t=>t.value),[2,1]);
   assert.deepEqual(result.rows.map(row=>row.line0),[1,1,0]);
+});
+
+test('classification grant never defines availability of the dedicated Daily Rune data feed',()=>{
+  assert.equal(allowedMemberMetric('lrunes','daily',{categories:[],permissions:[]}),false);
+  assert.equal(allowedMemberMetric('lrunes','daily:phase:滿月',{categories:[],permissions:[]}),false);
+  // These facts remain valid when the source-category query fails or is disabled.
+  const datasets=new Map([['lrunes',{rows:[],daily:[
+    {record_date:'2026-10-08',draw_kind:'main',direction:'正位',phase:'新月'},
+    {record_date:'2026-10-09',draw_kind:'supplement',direction:'逆位',phase:'滿月'}
+  ]}]]);
+  const r=calculateMemberCross([{person:'lrunes',metric:'daily'}],datasets,{
+    from:'2026-10-08',to:'2026-10-10',unit:'day',categories:[],aliases:[],scopeSources:[]
+  });
+  assert.deepEqual(r.totals.map(x=>x.value),[2]);
+  assert.deepEqual(r.rows.map(x=>x.line0),[1,1,0]);
 });

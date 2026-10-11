@@ -3,14 +3,14 @@
 import {useMemo,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {selectRows} from '../../../loc/db-query.mjs';
-import {selectScopeRegistry} from '../../../loc/scope-data';
+import {defaultScopeData,selectScopeRegistry} from '../../../loc/scope-data';
 import {selectScopeSourceBreakdownRows} from '../../../loc/galaxy-query';
 import {selectDailyRuneRange} from '../../../loc/daily-runes';
 import {normalizeDailyDraws} from '../../../lrunes/daily-analytics-model.mjs';
 import {realMoonPhase} from '../../../loc/model/moon-phase';
 import {availableMemberMeasures,calculateMemberCross} from '../../../loc/member-intersection-model.mjs';
 import StatisticsMultiChart,{availableStatisticChartTypes} from './StatisticsMultiChart';
-import {sharedGroupCodes,sharedSourceBreakdown,canOfferMemberCrossStatistics,allowedMemberMetric} from '../../../loc/statistics-group-sharing.mjs';
+import {sharedGroupCodes,sharedSourceBreakdown,canParticipateInCrossStatistics,allowedMemberMetric} from '../../../loc/statistics-group-sharing.mjs';
 
 async function readCatalog(table,columns){
   return (await selectRows(table,{columns,limit:250,offset:0})).rows;
@@ -34,8 +34,17 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
     staleTime:5*60_000
   });
   const names=useMemo(()=>new Map((catalog.data?.people||[]).map(row=>[row.scope_id,row.display_name||row.scope_id])),[catalog.data?.people]);
-  const available=scopes.filter(scope=>canOfferMemberCrossStatistics(scope.id,sharing.permissions,sharing.categories))
-    .map(scope=>({id:scope.id,label:names.get(scope.id)||scope.id,scope}));
+  // Daily Rune is a dedicated test feed, not a registered Galaxy source or a
+  // group/personal source classification. It is always a LOC comparison choice.
+  const available=[
+    ...scopes.filter(scope=>scope.id!=='lrunes'&&
+      canParticipateInCrossStatistics(scope.id,sharing.permissions,sharing.categories))
+      .map(scope=>({id:scope.id,label:names.get(scope.id)||scope.id,scope})),
+    {id:'lrunes',label:names.get('lrunes')||'月之符文',
+      scope:scopes.find(scope=>scope.id==='lrunes')||defaultScopeData('lrunes')}
+  ];
+  const allows=(person,metric)=>metric.startsWith('daily')
+    ?person==='lrunes':allowedMemberMetric(person,metric,sharing);
   const lanes=Array.from({length:laneCount},(_,index)=>{
     const candidate=choices[index]||{};
     const fallback=available[index%Math.max(available.length,1)]?.id||'';
@@ -48,7 +57,7 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
     enabled:Boolean(startDate&&endDate&&chosenIds.length),
     queryFn:async()=>{
       const pairs=await Promise.all(chosenIds.map(async id=>{
-        const scope=scopes.find(item=>item.id===id);
+        const scope=available.find(item=>item.id===id)?.scope;
         const [rows,daily]=await Promise.all([
           sharedGroupCodes(id,sharing.permissions,sharing.categories).size
             ?selectScopeSourceBreakdownRows(scope,{startDate,endDate}):Promise.resolve([]),
@@ -71,7 +80,7 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
   const measures=availableMemberMeasures([...datasets.values()].map(item=>item.rows),sharing.categories||[],shareablePersonal);
   const adjusted=lanes.map((lane,index)=>({
     ...lane,
-    metric:measures.some(item=>item.id===lane.metric)&&allowedMemberMetric(lane.person,lane.metric,sharing)
+    metric:measures.some(item=>item.id===lane.metric)&&allows(lane.person,lane.metric)
       ?lane.metric:(lane.person==='lrunes'?'daily':'total'),
     label:(names.get(lane.person)||lane.person)+' · '+(measures.find(item=>item.id===lane.metric)?.name||'全部作品')
   }));
@@ -112,13 +121,13 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
         <label>比較項目
           <select className="scope-select" value={adjusted[index].metric} onChange={e=>update(index,{metric:e.target.value})}>
             {measures.filter(item=>(!item.id.startsWith('daily')||lane.person==='lrunes')&&
-            allowedMemberMetric(lane.person,item.id,sharing)).map(item=><option key={item.id} value={item.id}>{item.name}</option>)}
+            allows(lane.person,item.id)).map(item=><option key={item.id} value={item.id}>{item.name}</option>)}
           </select>
         </label>
       </div>)}
     </div>
     {fetched.error||catalog.error?<p className="scope-status scope-error">{String(fetched.error?.message||catalog.error?.message||'讀取失敗')}</p>:null}
-    {!fetched.isPending&&!catalog.isPending?<>
+    {!fetched.isPending?<>
       <div className="scope-ranking">
         <div><strong>共同活躍日</strong><span>{calculated.commonDays.toLocaleString()} 天</span></div>
         <div><strong>活躍日總數</strong><span>{calculated.unionDays.toLocaleString()} 天</span></div>
