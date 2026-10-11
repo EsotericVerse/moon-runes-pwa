@@ -156,6 +156,11 @@ export default function GlobalSettings(){
     <section className="scope-page">
       <header className="loc-hero"><p className="loc-eyebrow">Global Settings</p><h1>設定</h1><p>所有 Scope 共用的使用者設定。</p></header>
       <div className="scope-content scope-settings-options">
+        {!native?<section className="loc-card" aria-labelledby="private-import-settings-link">
+          <h2 id="private-import-settings-link">私人 X 備份匯入測試</h2>
+          <p className="scope-settings-note">網站專用，解析與儲存只在本機瀏覽器，不會將備份匯入公開 Scope 或 Supabase／Neon。刪除帳號不會自動刪除瀏覽器資料。</p>
+          <a className="loc-button" href="/private-import/">開啟私人本機匯入工作區</a>
+        </section>:null}
         {native?<PrivateLocalFiles/>:null}
         <section className="scope-settings-daily-test" aria-labelledby="settings-daily-calendar-title">
           <h2 id="settings-daily-calendar-title">每日符文行事曆</h2>
