@@ -187,3 +187,130 @@ background-clip:text;-webkit-text-fill-color:transparent;}
     bottom:calc(5.65rem + env(safe-area-inset-bottom,0px))}
   .rune-3d-duel-action{min-height:68px;padding:10px 8px;font-size:.99rem}
 }
+
+
+/* LunaRunes imperial atlas: authored artwork, porcelain-gold type,
+   animated ritual mist and unmistakable floating navigation. */
+.rune-3d-shell{
+  --rune-regal-serif:"Songti TC","Noto Serif TC","Source Han Serif TC","PMingLiU",Georgia,serif;
+}
+.rune-3d-header h1,
+.rune-3d-modal-head h2,
+.rune-3d-group-preview h2,
+.rune-3d-reading h2,
+.rune-3d-daily-reading h2{
+  font-family:var(--rune-regal-serif);
+  font-weight:750;
+  letter-spacing:.12em;
+  text-shadow:0 1px 0 #201326,0 0 15px #fce1af48,0 6px 30px #050511b0;
+}
+.rune-world-orb-name{
+  font-family:"Songti TC","Noto Serif TC","PMingLiU",serif!important;
+  font-size:clamp(16px,2vw,22px)!important;
+  font-weight:800!important;
+  letter-spacing:.2em!important;
+  padding:10px 15px!important;
+  color:#fff3de!important;
+  border:1px solid #f1d6a8!important;
+  border-radius:6px!important;
+  background:linear-gradient(145deg,#3d3352d9 0%,#100d23e8 45%,#30233dd9 100%)!important;
+  box-shadow:inset 0 1px 0 #fff0d18c,inset 0 0 16px #6a4c8b77,
+    0 0 26px #e4cba56f,0 7px 25px #000c!important;
+  text-shadow:0 1px 0 #170c2c,0 0 12px #f7e6cf,0 0 24px #ffffffb8!important;
+  transform:translateY(-2px);
+}
+.rune-world-orb-name:before,
+.rune-world-orb-name:after{
+  content:"✦";font-size:.55em;color:#e0bf86;
+  vertical-align:middle;padding:0 5px;
+}
+.rune-3d-stage{
+  background:
+    radial-gradient(ellipse at 50% 90%,#5238583d 0%,transparent 55%),
+    radial-gradient(ellipse at 25% 35%,#39306247 0%,transparent 55%),
+    linear-gradient(148deg,#060816,#121027 60%,#070b1b);
+}
+.rune-3d-stage:before{
+  content:"";position:absolute;inset:-12%;z-index:2;pointer-events:none;
+  background:
+    radial-gradient(ellipse 65% 23% at 46% 84%,#b4a0cf48,transparent 76%),
+    radial-gradient(ellipse 55% 19% at 20% 72%,#766bba36,transparent 80%),
+    radial-gradient(ellipse 50% 22% at 78% 62%,#e0c9a72e,transparent 84%),
+    radial-gradient(ellipse 62% 14% at 42% 21%,#827eb02a,transparent 82%);
+  filter:blur(24px);mix-blend-mode:screen;opacity:.77;
+  animation:rune-sanctum-mist 21s ease-in-out infinite alternate;
+}
+@keyframes rune-sanctum-mist{
+  from{transform:translate(-1%,1%) scale(1.02);opacity:.57}
+  to{transform:translate(2%,-1.5%) scale(1.09);opacity:.86}
+}
+.rune-3d-group-backdrop .rune-3d-group-preview{
+  display:grid;grid-template-columns:minmax(190px,.82fr) minmax(0,1fr);
+  align-items:center;gap:clamp(15px,2.5vw,32px);
+  width:min(910px,100%);max-height:min(88dvh,890px);
+  padding:clamp(15px,3vw,32px);
+  background:
+    radial-gradient(ellipse at 7% 16%,#8275a43a,transparent 52%),
+    linear-gradient(140deg,#131427,#24243e 55%,#0d1224);
+  border:1px solid #f2d5a6cb;
+  box-shadow:0 30px 110px #000d,0 0 75px #c7acfc67,inset 0 0 30px #f6d3a111;
+}
+.rune-3d-group-artwork{
+  overflow:hidden;min-width:0;border-radius:14px;
+  border:1px solid #f3dbb19c;
+  background:linear-gradient(135deg,#25213b,#0d1025);
+  box-shadow:0 18px 48px #0009,0 0 27px #bfadf04a;
+}
+.rune-3d-group-artwork img{
+  width:100%;height:auto;max-height:66dvh;object-fit:contain;display:block;
+}
+.rune-3d-group-archive{min-width:0;}
+.rune-3d-group-archive .loc-eyebrow{
+  color:#cbb6e6;letter-spacing:.17em;font-family:Georgia,serif;
+}
+.rune-3d-group-archive h2{
+  color:#f8e3bd;letter-spacing:.18em;font-size:clamp(1.9rem,3vw,2.75rem);
+}
+.rune-3d-group-archive .rune-3d-group-description{
+  margin:21px 0;font-family:var(--rune-regal-serif);
+  line-height:2;font-size:clamp(1.05rem,1.5vw,1.2rem);
+}
+.rune-3d-group-archive .rune-skin-controls{display:flex;gap:12px;flex-wrap:wrap;}
+.rune-3d-group-archive .rune-skin-btn.primary{
+  background:linear-gradient(120deg,#fcecc1,#dfb774);
+  border-color:#fff1be;color:#271a24;
+  box-shadow:0 0 22px #f2d4a155;
+}
+.rune-3d-floating-back{
+  position:fixed;right:clamp(18px,3.5vw,48px);
+  bottom:calc(7.3rem + env(safe-area-inset-bottom,0px));
+  z-index:180;
+  appearance:none;min-height:62px;max-width:calc(100vw - 36px);
+  display:inline-flex;align-items:center;justify-content:center;gap:12px;
+  padding:12px 23px;border:2px solid #fff0bf;border-radius:16px;
+  color:#241927;background:linear-gradient(125deg,#ffeab4,#efc77b,#f8e5ba);
+  box-shadow:0 0 0 4px #100a238f,0 0 30px #f1d79b99,0 15px 42px #000b;
+  font:800 clamp(1rem,2.2vw,1.2rem)/1.2 var(--rune-regal-serif);
+  letter-spacing:.06em;cursor:pointer;touch-action:manipulation;
+}
+.rune-3d-floating-back>span{font-size:1.7em;}
+.rune-3d-floating-back:hover,
+.rune-3d-floating-back:focus-visible{
+  outline:3px solid #fff5ce;outline-offset:4px;filter:brightness(1.08);
+}
+.rune-3d-modal{font-family:var(--rune-regal-serif);}
+@media(max-width:680px){
+  .rune-3d-group-backdrop .rune-3d-group-preview{
+    display:block;width:min(440px,100%);padding:14px;
+  }
+  .rune-3d-group-artwork{max-height:30dvh;margin:0 0 12px;}
+  .rune-3d-group-artwork img{max-height:29dvh;width:100%;object-fit:contain;}
+  .rune-3d-group-archive .rune-3d-group-description{margin:10px 0 15px;line-height:1.75;}
+  .rune-3d-floating-back{
+    right:14px;bottom:calc(11.5rem + env(safe-area-inset-bottom,0px));
+    min-height:60px;padding:12px 15px;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .rune-3d-stage:before{animation:none;}
+}
