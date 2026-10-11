@@ -11,7 +11,7 @@
     "verify:loc-home-text": "node scripts/test-loc-home-text.mjs",
     "verify:directories": "node scripts/verify-directory-governance.mjs",
     "verify:auth": "node scripts/verify-auth-boundary.mjs",
-    "verify:rune-draw": "node scripts/verify-rune-draw-algorithm.mjs && node --test scripts/test-rune-draw-reads.mjs scripts/test-rune-moon-phase.mjs",
+    "verify:rune-draw": "node scripts/verify-rune-draw-algorithm.mjs && node --test scripts/test-rune-draw-reads.mjs scripts/test-rune-moon-phase.mjs && npm run verify:3d-runes",
     "verify:statistics-facets": "node --test scripts/test-statistics-facets.mjs scripts/test-member-intersection.mjs scripts/test-administrative-sources.mjs scripts/test-statistics-zoom.mjs scripts/test-statistics-group-sharing.mjs",
     "verify:semantics": "node scripts/verify-current-semantics.mjs",
     "verify": "npm run verify:block-presentation && npm run verify:blocknote && npm run verify:feature-hero && npm run verify:loc-home-text && npm run verify:db-adapters && npm run verify:rune-draw && npm run verify:statistics-facets && npm run verify:lrunes-daily && npm run verify:lrunes-settings && npm run verify:loc-items && npm run verify:rune66-keywords && npm run verify:modules && npm run verify:semantics && npm run verify:scope-registry && npm run verify:authority && npm run verify:directories && npm run verify:auth && npm run verify:theme && npm run verify:management && npm run verify:nav",
@@ -30,7 +30,8 @@
     "verify:nav": "node --test scripts/test-navigation-dock.mjs",
     "verify:lrunes-daily": "node --test scripts/test-lrunes-daily-analytics.mjs scripts/test-lrunes-moon-river.mjs",
     "verify:lrunes-settings": "node --test scripts/test-lrunes-settings-local.mjs",
-    "verify:loc-items": "node --test scripts/test-loc-item-confluence.mjs"
+    "verify:loc-items": "node --test scripts/test-loc-item-confluence.mjs",
+    "verify:3d-runes": "node scripts/test-rune-skin-lab.mjs"
   },
   "dependencies": {
     "@blocknote/core": "0.55.0",
@@ -59,7 +60,13 @@
     "@capacitor/core": "8.5.3",
     "@capacitor/filesystem": "8.0.0",
     "@capacitor/share": "8.0.0",
-    "@capacitor/ios": "8.5.3"
+    "@capacitor/ios": "8.5.3",
+    "three": "0.180.0",
+    "@react-three/fiber": "9.8.1",
+    "@react-three/drei": "10.7.8",
+    "@react-three/postprocessing": "3.0.4",
+    "postprocessing": "^6.37.0",
+    "opentype.js": "1.3.4"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
