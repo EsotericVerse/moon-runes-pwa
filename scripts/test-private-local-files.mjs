@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {detectPrivateFileContent} from '../app/loc/private-file-detection.mjs';
 import {test} from 'node:test';
 import {
   createPrivateLocalStore,privateFilePath,PRIVATE_FILE_INDEX,
@@ -104,4 +105,58 @@ test('oversized private files are rejected before loading chunks',async()=>{
   const enormous={name:'huge.dat',size:PRIVATE_FILE_MAX_BYTES+1,slice(){throw Error('should not read');}};
   await assert.rejects(()=>store.importFile(enormous),/512 MB/);
   assert.equal(fs.files.size,0);
+});
+
+test('file names and MIME are not required: MSN-like XML in opaque .dat is recognized by contents',async()=>{
+  const fs=new MemoryNativeFilesystem(),store=createPrivateLocalStore(fs,location);
+  const xml='<?xml version="1.0" encoding="utf-8"?><Log FirstSessionID="1"><Message DateTime="2006-04-09T16:33:00"><From><User FriendlyName="小王"/></From><Text>你好</Text></Message></Log>';
+  const bytes=new TextEncoder().encode(xml);
+  const entry=await store.importFile(localFile(bytes,'unknown.dat','application/octet-stream'));
+  assert.equal(entry.detection.kind,'msn-xml');
+  assert.equal(entry.detection.certainty,'high');
+  assert.equal(entry.detection.encoding,'utf-8');
+  assert.equal(await store.preview(entry.id),xml);
+  const again=(await createPrivateLocalStore(fs,location).list())[0];
+  assert.equal(again.detection.kind,'msn-xml');
+  assert.deepEqual(fs.files.get(fs.key(privateFilePath(entry.id),location)),bytes);
+});
+
+test('UTF-16 LE without extension or BOM is recognized by byte pattern',async()=>{
+  const fs=new MemoryNativeFilesystem(),store=createPrivateLocalStore(fs,location);
+  const xml='<Log FirstSessionID="1"><Message DateTime="2006-04-09"><From><User FriendlyName="Friend"/></From><Text>hello</Text></Message></Log>';
+  const bytes=new Uint8Array(xml.length*2);
+  for(let i=0;i<xml.length;i++){bytes[i*2]=xml.charCodeAt(i);bytes[i*2+1]=0;}
+  const entry=await store.importFile(localFile(bytes,'archive',''));
+  assert.equal(entry.detection.kind,'msn-xml');
+  assert.equal(entry.detection.encoding,'utf-16le');
+  assert.equal(await store.preview(entry.id),xml);
+});
+
+test('content guessing is cautious: generic XML chat is not labeled MSN',()=>{
+  const xml='<Records><Message><Sender>A</Sender><Text>Hi</Text></Message></Records>';
+  const detection=detectPrivateFileContent(new TextEncoder().encode(xml));
+  assert.equal(detection.kind,'chat-xml');
+  assert.match(detection.label,/來源未確認/);
+});
+
+test('binary payload named .xml is never interpreted as XML',async()=>{
+  const fs=new MemoryNativeFilesystem(),store=createPrivateLocalStore(fs,location);
+  const bytes=Uint8Array.from([0x50,0x4b,0x03,0x04,0,255,1]);
+  const entry=await store.importFile(localFile(bytes,'messages.xml','text/xml'));
+  assert.equal(entry.detection.kind,'zip');
+  assert.equal(entry.detection.textual,false);
+  await assert.rejects(()=>store.preview(entry.id),/不提供文字預覽/);
+});
+
+test('valid JSON named .dat is recognized without relying on suffix',()=>{
+  const sample=new TextEncoder().encode('{"messages":[{"sender":"Friend","body":"Hi"}]}');
+  assert.equal(detectPrivateFileContent(sample).kind,'json');
+});
+
+test('unknown corrupt bytes are still preserved, not silently discarded',async()=>{
+  const fs=new MemoryNativeFilesystem(),store=createPrivateLocalStore(fs,location);
+  const bytes=Uint8Array.from([0,1,0,255,0,3,18,8]);
+  const entry=await store.importFile(localFile(bytes,'old_2002_export',''));
+  assert.equal(entry.detection.textual,false);
+  assert.deepEqual(fs.files.get(fs.key(privateFilePath(entry.id),location)),bytes);
 });
