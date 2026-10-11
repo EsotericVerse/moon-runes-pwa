@@ -136,19 +136,19 @@ export default function RuneRitualLab(){
       <span className="rune-art-toolbar-label">真實月相 {moon}　·　{items.length} / {MAX_DRAW} 枚</span>
 
     </nav>
-    <div className="rune-art-duel-action-dock" role="group" aria-label="抽牌桌操作">
-      {!finished?<button type="button" className="rune-art-duel-action rune-art-duel-action--draw"
-        onClick={drawOne} disabled={busy||!!selected||items.length>=MAX_DRAW}>
-        {busy?'召喚中…':items.length?'再召喚一枚':'觸碰召喚'}
-      </button>:null}
+    <div className="rune-art-duel-action-dock" role="group" aria-label="占卜功能列">
       <button type="button" className="rune-art-duel-action rune-art-duel-action--restart"
         onClick={reset} disabled={busy||!!selected||!items.length}>
-        重新占卜
+        重新開始占卜
       </button>
-      {!finished?<button type="button" className="rune-art-duel-action rune-art-duel-action--finish"
-        onClick={finish} disabled={busy||!!selected||!items.length}>
-        結束占卜，看指示籤詩
-      </button>:null}
+      <button type="button" className="rune-art-duel-action rune-art-duel-action--draw"
+        onClick={drawOne} disabled={busy||finished||!!selected||items.length>=MAX_DRAW}>
+        招喚下一枚符文
+      </button>
+      <button type="button" className="rune-art-duel-action rune-art-duel-action--finish"
+        onClick={finish} disabled={busy||finished||!!selected||!items.length}>
+        占卜結束，觀看籤詩
+      </button>
     </div>
     <section className="rune-art-stage" aria-label="原創符文美術動態抽牌">
       <RuneArtStage mode="draw" items={items}
@@ -171,16 +171,21 @@ export default function RuneRitualLab(){
         {items.map((item,index)=><span key={item.card.rune_id}>{index?'、':''}{shortRuneName(item.card)}{item.direction}</span>)}。</p>
       <p>指示籤詩為：{reading}</p>
     </section>:null}
-    <section className="rune-art-draw-guide" aria-label="占卜張數說明">
-      <h2>占卜張數說明</h2>
-      <p>不同的抽取張數對應不同的閱讀結構；以下僅為說明，不是模式選單。</p>
-      <div className="rune-art-draw-guide-grid">
-        {DRAW_COUNT_GUIDE.map(item=><article className="rune-art-draw-guide-card" key={item.key}>
-          <strong>{item.count} 張｜{item.label}</strong>
-          <p>{item.description}</p>
-        </article>)}
+    <details className="rune-art-draw-guide" aria-label="占卜張數說明">
+      <summary className="rune-art-draw-guide-summary">
+        <span>占卜張數說明</span>
+        <span className="rune-art-guide-toggle" aria-hidden="true">⌄</span>
+      </summary>
+      <div className="rune-art-draw-guide-content">
+        <p>不同的抽取張數對應不同的閱讀結構；以下僅為說明，不是模式選單。</p>
+        <div className="rune-art-draw-guide-grid">
+          {DRAW_COUNT_GUIDE.map(item=><article className="rune-art-draw-guide-card" key={item.key}>
+            <strong>{item.count} 張｜{item.label}</strong>
+            <p>{item.description}</p>
+          </article>)}
+        </div>
       </div>
-    </section>
+    </details>
     {selected&&typeof document!=='undefined'?createPortal(
       <RuneDrawCardDialog item={selected} onClose={()=>setSelected(null)}/>,document.body
     ):null}
