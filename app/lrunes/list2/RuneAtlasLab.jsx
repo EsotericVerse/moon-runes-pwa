@@ -10,7 +10,7 @@ import '../three/rune-world.css';
 const RuneWorld=dynamic(()=>import('../three/RuneWorld'),{ssr:false,loading:()=> <p className="rune-world-loading">月之星域正在形成……</p>});
 const GROUP_COLUMNS='group_id,english_name,desc,runeslist';
 const DETAIL_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,char_action,positive_keywords,negative_keywords,extra_rules,extra_notes,rune_evolution_history,myth_story,soul_question,practice_challenge,ritual_advice,harmony_advice';
-const GROUP_NAMES=['靈魂','連結','生命','自然','礦物','元素','秩序','失序','特殊'];
+const GROUP_NAMES=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
 function cleanse(value){
   return String(value??'').replace(/&#x([0-9a-f]+);/gi,(_,hex)=>String.fromCodePoint(parseInt(hex,16)))
     .replace(/&#([0-9]+);/g,(_,n)=>String.fromCodePoint(parseInt(n,10)))
@@ -61,6 +61,7 @@ function RuneInfoDialog({rune,onClose}){
 export default function RuneAtlasLab(){
   const [groups,setGroups]=useState([]);
   const [group,setGroup]=useState(null);
+  const [preview,setPreview]=useState(null);
   const [runes,setRunes]=useState([]);
   const [details,setDetails]=useState(null);
     const [loading,setLoading]=useState(true);
@@ -95,9 +96,17 @@ export default function RuneAtlasLab(){
   },[group]);
   // Nested URL history makes native/PWA Back behave as expected:
   // rune dialog → eight-rune orbit → nine-group orbit → /card hub.
+  const previewGroup=entry=>{
+    window.history.pushState({runeCardLevel:'preview'},'','#preview-'+entry.id);
+    setPreview(entry);setGroup(null);setDetails(null);
+  };
+  const closePreview=()=>{
+    if(window.history.state?.runeCardLevel==='preview')window.history.back();
+    else{window.history.replaceState({},'',window.location.pathname);setPreview(null);}
+  };
   const enterGroup=entry=>{
     window.history.pushState({runeCardLevel:'group'},'','#group-'+entry.id);
-    setGroup(entry);setDetails(null);
+    setGroup(entry);setPreview(null);setDetails(null);
   };
   const show=card=>{
     if(!group)return;
@@ -121,7 +130,12 @@ export default function RuneAtlasLab(){
   useEffect(()=>{
     const syncLocation=()=>{
       const match=new RegExp('^#group-([0-9]+)(?:/rune-([0-9]+))?$').exec(window.location.hash);
-      if(!match){setGroup(null);setDetails(null);return;}
+      if(!match){
+        const selected=/^#preview-([0-9]+)$/.exec(window.location.hash);
+        setPreview(selected?groups.find(x=>Number(x.id)===Number(selected[1]))||null:null);
+        setGroup(null);setDetails(null);return;
+      }
+      setPreview(null);
       const g=groups.find(x=>Number(x.id)===Number(match[1]));
       setGroup(g||null);
       const id=Number(match[2]);
@@ -141,7 +155,7 @@ export default function RuneAtlasLab(){
       <p className="loc-eyebrow">LunaRunes · Living Atlas</p>
       <h1>{group?group.name+'之符文':'月之符文 · 九曜星域'}</h1>
       <p>{group?'符文在星環中恆動。輕觸任一符文，它會回應你的觸摸，原有圖鑑文字隨即浮現。':
-        '九顆群組星球持續圍繞月亮。觸碰其中一顆，進入該群組的符文星環。'}</p>
+        '九顆群組星球持續環繞月亮。先點選星球閱讀群組說明，再按「進入」查看符文。'}</p>
     </header>
     <nav className="rune-3d-toolbar" aria-label="圖鑑視角">
       {group?<button className="rune-skin-btn" onClick={backToGroups}>← 回九群組</button>:<span className="rune-3d-toolbar-label">九大符文群組 · 恆動展示</span>}
@@ -149,10 +163,24 @@ export default function RuneAtlasLab(){
     </nav>
     <section className="rune-3d-stage" aria-label="真實 3D 符文星域">
       <RuneWorld mode={group?'runes':'groups'} items={display} quality="high"
-        onSelect={group?show:enterGroup}/>
+        onSelect={group?show:previewGroup}/>
       <div className="rune-3d-stage-label">{loading?'星域載入中……':
-        error||(!group?'觸碰一顆星球，進入符文群組':'輕觸符文，查看原有文字資料')}</div>
+        error||(!group?'點選星球閱讀群組說明，再按「進入」查看符文':'輕觸符文，查看原有文字資料')}</div>
+      {preview&&!group?<section className="rune-3d-group-preview" role="dialog" aria-label={preview.name+'群組說明'}>
+        <p className="loc-eyebrow">RUNE CONSTELLATION · {String(preview.id).padStart(2,'0')}</p>
+        <h2>{preview.name}</h2><p className="rune-3d-group-en">{preview.english_name||''}</p>
+        <p className="rune-3d-group-description">{cleanse(preview.desc||'')}</p>
+        <p className="rune-3d-group-count">本群組 {preview.runeslist.length} 枚符文</p>
+        <div className="rune-skin-controls">
+          <button type="button" className="rune-skin-btn primary" onClick={()=>enterGroup(preview)}>進入</button>
+          <button type="button" className="rune-skin-btn" onClick={closePreview}>返回九星球</button>
+        </div>
+      </section>:null}
     </section>
+    {!group?<nav className="rune-3d-group-index" aria-label="九個符文群組">
+      {groups.map(item=><button key={item.id} type="button"
+        className="rune-3d-group-name-btn" onClick={()=>previewGroup(item)}>{item.name}</button>)}
+    </nav>:null}
     <footer className="rune-3d-footer">
       <span>使用拖曳可變換觀看角度 · 場景始終恆動</span>
       <nav className="rune-skin-controls" aria-label="返回與模式切換">
