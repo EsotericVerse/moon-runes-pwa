@@ -120,7 +120,7 @@ export default function RuneAtlasLab(){
   };
   useEffect(()=>{
     const syncLocation=()=>{
-      const match=new RegExp('^#group-([0-9]+)(?:/rune-([0-9]+))?
+      const match=new RegExp('^#group-([0-9]+)(?:/rune-([0-9]+))?$').exec(window.location.hash);
       if(!match){setGroup(null);setDetails(null);return;}
       const g=groups.find(x=>Number(x.id)===Number(match[1]));
       setGroup(g||null);
