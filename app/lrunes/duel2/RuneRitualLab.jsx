@@ -6,6 +6,7 @@ import {createPortal} from 'react-dom';
 import {realMoonPhase} from '../../loc/model/moon-phase';
 import {randomIndex,loadDrawCards,buildFixedReading} from '../RuneDrawClient';
 import {runeImage} from '../rune-directory.mjs';
+import {RUNE_ALL_DRAW_MODES} from '../rune-draw-modes.mjs';
 import RuneCardInfo from '../RuneCardInfo';
 import '../skin-lab.css';
 import '../three/rune-world.css';
@@ -14,6 +15,10 @@ const RuneWorld=dynamic(()=>import('../three/RuneWorld'),{ssr:false,loading:()=>
 const MAX_DRAW=11;
 const REVEAL_MS=1000;
 const DIRECTIONS=['正位','半正位','半逆位','逆位'];
+// Explanatory only: 1–11 rune counts, without any route, button or handler.
+const DRAW_COUNT_GUIDE=RUNE_ALL_DRAW_MODES
+  .filter(item=>item.key!=='daily')
+  .slice().sort((a,b)=>a.count-b.count);
 function realText(card,type,directionIndex){
   return String(card?.rune_etc?.[type]?.[directionIndex+1]||'').trim();
 }
@@ -115,11 +120,11 @@ export default function RuneRitualLab(){
     }catch(e){setError(String(e?.message||e));}
   }
   function reset(){
-    if(locked.current)return;
+    if(locked.current||busy||selected)return;
     cardsRef.current=[];setItems([]);setSelected(null);setFinished(false);
     setReading('');setError('');setMessage('月光已就位，輕觸畫面召喚一枚符文');
   }
-  return <main className="loc-next-main rune-skin-lab rune-3d-shell" data-rune-lab="duel2">
+  return <main className="loc-next-main rune-skin-lab rune-3d-shell rune-3d-duel-shell" data-rune-lab="duel2">
     <header className="rune-3d-header">
       <p className="loc-eyebrow">LunaRunes · Living Ritual</p>
       <h1>月光召喚 · 3D 抽牌</h1>
@@ -134,18 +139,23 @@ export default function RuneRitualLab(){
       <RuneWorld mode="draw" items={items} quality="high"
         onSelect={showCard} onBackgroundClick={!finished&&!selected?drawOne:undefined}/>
       <div className="rune-3d-stage-label" role="status">{busy?'符文穿過金色光河，等待亮相……':message}</div>
-      {!finished&&items.length>0?<button type="button" className="rune-3d-finish-button"
-        onClick={finish} disabled={busy||!!selected} aria-label="結束抽牌並顯示組合籤詩">
-        結束抽牌 · 查看籤詩 <span aria-hidden="true">↗</span>
-      </button>:null}
     </section>
     {error?<p className="rune-skin-error" role="alert">{error}</p>:null}
+    <div className="rune-3d-duel-action-dock" role="group" aria-label="占卜操作">
+      <button type="button" className="rune-3d-duel-action rune-3d-duel-action--restart"
+        onClick={reset} disabled={busy||!!selected||!items.length}>
+        重新占卜
+      </button>
+      {!finished?<button type="button" className="rune-3d-duel-action rune-3d-duel-action--finish"
+        onClick={finish} disabled={busy||!!selected||!items.length}>
+        結束占卜，看指示籤詩
+      </button>:null}
+    </div>
     <div className="rune-3d-footer">
       <div className="rune-skin-controls">
         {!finished?<button type="button" className={'rune-skin-btn'+(!items.length?' primary':'')} onClick={drawOne} disabled={busy||!!selected||items.length>=MAX_DRAW}>
           {busy?'召喚中…':items.length?'再召喚一枚':'觸碰召喚'}
         </button>:null}
-        {finished?<button className="rune-skin-btn primary" type="button" onClick={reset}>重新開始</button>:null}
       </div>
       <nav className="rune-skin-controls" aria-label="返回與模式切換">
         <a href="/card/" className="rune-skin-btn">← 3D 場域首頁</a>
@@ -160,6 +170,16 @@ export default function RuneRitualLab(){
         {items.map((item,index)=><span key={item.card.rune_id}>{index?'、':''}{shortRuneName(item.card)}{item.direction}</span>)}。</p>
       <p>指示籤詩為：{reading}</p>
     </section>:null}
+    <section className="rune-3d-draw-guide" aria-label="占卜張數說明">
+      <h2>占卜張數說明</h2>
+      <p>不同的抽取張數對應不同的閱讀結構；以下僅為說明，不是模式選單。</p>
+      <div className="rune-3d-draw-guide-grid">
+        {DRAW_COUNT_GUIDE.map(item=><article className="rune-3d-draw-guide-card" key={item.key}>
+          <strong>{item.count} 張｜{item.label}</strong>
+          <p>{item.description}</p>
+        </article>)}
+      </div>
+    </section>
     {selected&&typeof document!=='undefined'?createPortal(
       <RuneDrawCardDialog item={selected} onClose={()=>setSelected(null)}/>,document.body
     ):null}
