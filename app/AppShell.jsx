@@ -19,6 +19,7 @@ import {navigationHref} from './modular/nav-destinations.mjs';
 import BottomNavIcon from './modular/BottomNavIcon';
 import ScrollableScopeNav from './modular/ScrollableScopeNav';
 import {visibleFavoriteLayout} from './modular/favorite-folders.mjs';
+import {MOBILE_HOME_ID,mobileFavoriteEnabled,mobileHomepageEnabled,mobileHomeHref} from './modular/mobile-home-preference.mjs';
 
 const SYSTEM_THEME_ID='system-default';
 const DAY_THEME_ID='theme-7';
@@ -207,12 +208,25 @@ export default function AppShell({children}){
   const currentFeature=featureIdForPath(pathname);
   const isSettings=normalizePath(pathname)==='/settings';
   const [native,setNative]=useState(false);
+  const [mobileFavorite,setMobileFavorite]=useState(true);
+  const [mobileHome,setMobileHome]=useState(false);
   const preferences=useNavigationPreferences();
   const [navDisplayNames,setNavDisplayNames]=useState({});
   const [registryScopes,setRegistryScopes]=useState([]);
   const [registryLoaded,setRegistryLoaded]=useState(false);
   const [openFolderId,setOpenFolderId]=useState('');
-  useEffect(()=>{setNative(Capacitor.isNativePlatform());},[]);
+  useEffect(()=>{
+    const actual=Capacitor.isNativePlatform();
+    setNative(actual);
+    if(!actual)return;
+    const sync=()=>{
+      setMobileFavorite(mobileFavoriteEnabled(window.localStorage));
+      setMobileHome(mobileHomepageEnabled(window.localStorage));
+    };
+    sync();
+    window.addEventListener('loc-device-navigation-changed',sync);
+    return()=>window.removeEventListener('loc-device-navigation-changed',sync);
+  },[]);
   useEffect(()=>{
     let active=true;
     selectScopeRegistry().then(rows=>{
@@ -282,27 +296,33 @@ export default function AppShell({children}){
   const scopeNavLabel=item=>navDisplayNames[item.id]||item.nav.label;
   const registryMap=new Map(registryScopes.map(item=>[item.scope_id,item]));
   const layout=visibleFavoriteLayout(preferences.favorites,preferences.folders);
-  const favoriteLinks=layout.direct.map(id=>{
+  const favoriteLinks=layout.direct.filter(id=>!native||id!=='lrunes').map(id=>{
     const builtIn=NAV_SCOPES.find(item=>item.id===id);
     const active=registryMap.get(id);
     if(!builtIn&&!active)return null;
     return {id,label:builtIn?scopeNavLabel(builtIn):(navDisplayNames[id]||id)};
   }).filter(Boolean);
+  // LunaRunes is the immutable core native App workspace, not a removable cloud favorite.
+  if(native){
+    favoriteLinks.unshift({id:'lrunes',label:'月之符文'});
+    if(mobileFavorite)favoriteLinks.splice(1,0,{id:MOBILE_HOME_ID,label:'我的手機'});
+  }
   const navLabel=id=>{
     const builtIn=NAV_SCOPES.find(item=>item.id===id);
     if(!builtIn&&!registryMap.has(id))return null;
     return builtIn?scopeNavLabel(builtIn):(navDisplayNames[id]||id);
   };
   const visibleFolders=layout.directories.map(folder=>({
-    ...folder,links:folder.scopes.map(id=>({id,label:navLabel(id)})).filter(item=>item.label)
+    ...folder,links:folder.scopes.filter(id=>!native||id!=='lrunes').map(id=>({id,label:navLabel(id)})).filter(item=>item.label)
   }));
   const openFolder=visibleFolders.find(folder=>folder.id===openFolderId)||null;
+  const isMyPhone=native&&normalizePath(pathname)==='/my-phone';
   const featureTabs=[
-    {id:'home',icon:'home',label:'首頁',href:navigationHref(navScopeId,'',native)+(native&&navScopeId==='loc'?'?loc_direct=1':'')},
+    {id:'home',icon:'home',label:'首頁',href:isMyPhone?mobileHomeHref(true):navigationHref(navScopeId,'',native)+(native&&navScopeId==='loc'?'?loc_direct=1':'')},
     ...['culture','statics','search','governance'].map(id=>{
       const feature=FEATURES.find(item=>item.id===id);
       return {id,icon:id,label:copy.features?.[id]?.title||feature.label,
-        href:navigationHref(navScopeId,feature.path,native)};
+        href:isMyPhone?mobileHomeHref(true)+'#'+id:navigationHref(navScopeId,feature.path,native)};
     }),
     {id:'settings',icon:'settings',label:copy.common.settings||'設定',href:native?'/settings/index.html':'/settings/'}
   ];
@@ -313,10 +333,13 @@ export default function AppShell({children}){
     if(!native||pathname!=='/'||preferences.loading||!registryLoaded)return;
     // Explicit LOC navigation remains possible even with a saved default.
     if(new URLSearchParams(window.location.search).has('loc_direct'))return;
+    if(mobileHome){
+      window.location.replace(mobileHomeHref(true));return;
+    }
     const target=homeScopeForAccount(preferences.home,preferences.account,
       ['loc',...NAV_SCOPES.map(item=>item.id),...registryScopes.map(item=>item.scope_id)]);
     if(target!=='loc')window.location.replace(navigationHref(target,'',true));
-  },[native,pathname,preferences.loading,preferences.home,preferences.account,registryLoaded,registryScopes]);
+  },[native,mobileHome,pathname,preferences.loading,preferences.home,preferences.account,registryLoaded,registryScopes]);
 
 
   return <QueryClientProvider client={client}><UiLocaleProvider locale={activeLocale}>
@@ -324,9 +347,9 @@ export default function AppShell({children}){
     <motion.div className="loc-scroll-progress" style={{scaleX}} aria-hidden="true"/>
     <header className="scope-global" data-native={native?'ios':'web'}>
       <nav className="scope-nav" aria-label={copy.nav.aria}>
-        <ScrollableScopeNav label="常用空間" resetKey={preferences.favorites.join(',')+'|'+visibleFolders.map(folder=>folder.id+':'+folder.label).join(',')}>
+        <ScrollableScopeNav label="常用空間" resetKey={preferences.favorites.join(',')+'|'+mobileFavorite+'|'+native+'|'+visibleFolders.map(folder=>folder.id+':'+folder.label).join(',')}>
           {favoriteLinks.map(item=>{
-            const href=navigationHref(item.id,'',native);
+            const href=item.id===MOBILE_HOME_ID?mobileHomeHref(native):navigationHref(item.id,'',native);
             return <NavTarget key={item.id} href={href} label={item.label} current={targetIsCurrent(href,host,pathname)}/>;
           })}
           {visibleFolders.map(folder=><button type="button" key={folder.id}
