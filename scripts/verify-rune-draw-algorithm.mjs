@@ -36,7 +36,7 @@ for(const [name,source] of [['RuneDrawClient',publicDraw]]){
     "return {sentence,domains:[],evaluation:weighted};",
     "moonTypes:['sit_q','sit_a']",
     "moonTypes:['sit_q','sit_a','daily_r','daily_g','daily_b']",
-    ":{staticTypes:[],moonTypes:['sit_q'],currentMoon:moonPhase};",
+    ":{staticTypes:[],moonTypes:['sit_q'],currentMoon};",
     "{column:'current_moon',operator:'eq',value:currentMoon}",
     'RUNE_RITUAL_DELAY_MS',
     'runeRitualMessages'
