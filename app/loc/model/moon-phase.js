@@ -10,7 +10,7 @@ const CHINESE_DIGITS=Object.freeze({'零':0,'〇':0,'一':1,'二':2,'三':3,'四
 
 function parseLunarDay(value){
   const raw=String(value??'').trim().normalize('NFKC');
-  if(/^\\d{1,2}$/.test(raw)){
+  if(/^\d{1,2}$/.test(raw)){
     const n=Number(raw);
     return n>=1&&n<=30?n:null;
   }
