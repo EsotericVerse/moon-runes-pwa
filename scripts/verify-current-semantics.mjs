@@ -131,6 +131,23 @@ if(!failures.length){
     failures.push('Group source categories and Scope-owned personal source classification must share real data.');
   }
 
+  // Cross-person participation is Scope × group source consent; there is
+  // no blanket Scope sharing flag and no personal custom source switch.
+  const crossSharing=read('app/loc/statistics-group-sharing.mjs');
+  const sharingEditor=read('app/loc/ScopeGroupStatisticsSharing.jsx');
+  if(!statistics.includes("queryKey:['cross-statistics-sharing']")||
+     !statistics.includes('sharedScopeDensity(')||
+     !statistics.includes('<ScopeGroupStatisticsSharing')||
+     !crossMember.includes('sharedSourceBreakdown(')||
+     !crossSharing.includes("row.kind!=='source'&&row.kind!=='media'")||
+     !crossSharing.includes('sharedGroupCodes(')||
+     !sharingEditor.includes('scope_group_source_sharing')||
+     !sharingEditor.includes("share_enabled:shareEnabled")||
+     statistics.includes('statistics_cross_scope_enabled')||
+     sharingEditor.includes('scope_source_subcategories')){
+    failures.push('Group sources must have per-Scope opt-in for cross-member totals and charts; personal custom source controls remain independent.');
+  }
+
   const zoomControls=read('app/modular/modules/statistics/StatisticsZoomControls.jsx');
   const zoomModel=read('app/modular/modules/statistics/statistics-time-zoom.mjs');
   const runeDaily=read('app/lrunes/DailyRuneAnalytics.jsx');
