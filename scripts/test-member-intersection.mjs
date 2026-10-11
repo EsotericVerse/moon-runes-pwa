@@ -79,3 +79,22 @@ test('custom source assignments are Scope-owned even in LOC member intersections
   assert.ok(measures.some(x=>x.id==='personal:alice:fb'));
   assert.ok(!measures.some(x=>x.id==='personal:bob:fb'));
 });
+
+test('Daily Rune 2025 records re-enter on minus and leave after plus restores the one-year window',()=>{
+  const older=Array.from({length:60},(_,i)=>({
+    record_date:new Date(Date.UTC(2025,4,31+i)).toISOString().slice(0,10),
+    draw_kind:'main',direction:'正位',phase:'新月'
+  }));
+  const recent=Array.from({length:96},(_,i)=>({
+    record_date:new Date(Date.UTC(2026,7,5+Math.floor(i*68/96))).toISOString().slice(0,10),
+    draw_kind:i%3?'main':'supplement',direction:'逆位',phase:'滿月'
+  }));
+  const datasets=new Map([['lrunes',{rows:[],daily:[...older,...recent]}]]);
+  const lanes=[{person:'lrunes',metric:'daily'}];
+  const options={unit:'month',categories:[],aliases:[]};
+  const before=calculateMemberCross(lanes,datasets,{from:'2025-10-11',to:'2026-10-11',...options});
+  const zoomedOut=calculateMemberCross(lanes,datasets,{from:'2024-10-11',to:'2026-10-11',...options});
+  const zoomedBack=calculateMemberCross(lanes,datasets,{from:'2025-10-11',to:'2026-10-11',...options});
+  assert.deepEqual([before.totals[0].value,zoomedOut.totals[0].value,zoomedBack.totals[0].value],[96,156,96]);
+  assert.equal(before.rows.length,zoomedBack.rows.length);
+});
