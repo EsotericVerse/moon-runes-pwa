@@ -9,7 +9,7 @@ import StatisticsMultiChart,{availableStatisticChartTypes} from './StatisticsMul
 import {OWN_STAT_DIMENSIONS,ownScopeCategoryCatalog} from '../../../loc/statistics-source-intersection.mjs';
 
 const DAY_MS=86400000;
-const DIMENSIONS=[{kind:'group',label:'總來源'},...OWN_STAT_DIMENSIONS];
+const DIMENSIONS=[{kind:'group',label:'群組來源分類'},...OWN_STAT_DIMENSIONS.map(row=>row.kind==='source'?{...row,label:'個人自訂來源分類'}:row)];
 const dateOnly=v=>String(v||'').slice(0,10);
 function canonicalBucket(day,unit){
   const date=new Date(day+'T00:00:00Z');
@@ -46,27 +46,28 @@ export default function ScopeSelfIntersection({scope,range}){
     queryKey:['own-scope-source-catalog',scope?.id],
     enabled:valid,
     queryFn:async()=>{
-      const [c,a,o]=await Promise.all([
+      const [c,a,p]=await Promise.all([
         selectRows('silver.statistics_source_categories',{columns:'category_code,display_name,enabled',limit:250}),
         selectRows('silver.statistics_source_aliases',{columns:'source_key,category_code',limit:250}),
-        selectRows('silver.scope_other_sources',{columns:'scope_id,source_key,display_name,enabled',
+        selectRows('silver.scope_source_subcategories',{columns:'scope_id,source_key,category_code,display_name,enabled',
           filters:[{column:'scope_id',operator:'eq',value:scope.id}],limit:250})
       ]);
-      return {categories:c.rows,aliases:a.rows,others:o.rows};
+      return {categories:c.rows,aliases:a.rows,scopeSources:p.rows};
     },
     staleTime:5*60_000
   });
   const categoryList=useMemo(()=>{
     const known=catalog.data?.categories||[],aliases=catalog.data?.aliases||[];
-    const others=new Map((catalog.data?.others||[]).filter(x=>x.enabled).map(x=>[x.source_key,x.display_name]));
+    const scopeSources=catalog.data?.scopeSources||[];
+    const personal=new Map(scopeSources.filter(x=>x.enabled).map(x=>[x.source_key.toLowerCase(),x.display_name]));
     const basic=ownScopeCategoryCatalog(rows).filter(item=>
-      item.kind!=='source'||assignedSource(item.raw,aliases,known)!=='others'||others.has(item.raw.toLowerCase())
-    ).map(item=>item.kind==='source'&&others.has(item.raw.toLowerCase())
-      ?{...item,name:others.get(item.raw.toLowerCase())}:item);
+      item.kind!=='source'||assignedSource(item.raw,aliases,known,scopeSources,scope.id)!=='others'||personal.has(item.raw.toLowerCase())
+    ).map(item=>item.kind==='source'&&personal.has(item.raw.toLowerCase())
+      ?{...item,name:personal.get(item.raw.toLowerCase())}:item);
     const grouped=new Map();
     for(const row of rows){
       if(row.kind!=='source')continue;
-      const id=assignedSource(row.category,aliases,known);
+      const id=assignedSource(row.category,aliases,known,scopeSources,scope.id);
       grouped.set(id,(grouped.get(id)||0)+(Number(row.item_count)||0));
     }
     const groups=[...grouped].filter(([,total])=>total>0).map(([id,total])=>({
@@ -96,7 +97,7 @@ export default function ScopeSelfIntersection({scope,range}){
       const day=dateOnly(row.day);
       const rawId=String(row.kind)+'\u0000'+String(row.category||'');
       const ids=[rawId];
-      if(row.kind==='source')ids.push('group\u0000'+assignedSource(row.category,catalog.data?.aliases||[],catalog.data?.categories||[]));
+      if(row.kind==='source')ids.push('group\u0000'+assignedSource(row.category,catalog.data?.aliases||[],catalog.data?.categories||[],catalog.data?.scopeSources||[],scope.id));
       if(!day||day<start||day>end)continue;
       const bucket=canonicalBucket(day,unit);
       if(!bucket)continue;
