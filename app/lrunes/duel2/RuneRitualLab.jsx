@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useRef,useState} from 'react';
-import dynamic from 'next/dynamic';
+import RuneArtStage from '../visual/RuneArtStage';
 import {createPortal} from 'react-dom';
 import {realMoonPhase} from '../../loc/model/moon-phase';
 import {navigationHref} from '../../modular/nav-destinations.mjs';
@@ -13,7 +13,6 @@ import RuneCardInfo from '../RuneCardInfo';
 import '../skin-lab.css';
 import '../three/rune-world.css';
 
-const RuneWorld=dynamic(()=>import('../three/RuneWorld'),{ssr:false,loading:()=> <p className="rune-world-loading">月光正在凝聚……</p>});
 const MAX_DRAW=11;
 const REVEAL_MS=1000;
 const DIRECTIONS=['正位','半正位','半逆位','逆位'];
@@ -71,7 +70,7 @@ export default function RuneRitualLab(){
   const [finished,setFinished]=useState(false);
   const [reading,setReading]=useState('');
   const [error,setError]=useState('');
-  const [message,setMessage]=useState('月光已就位，輕觸畫面召喚一枚符文');
+  const [message,setMessage]=useState('月光已就位，準備揭示第一枚符文');
   const cardsRef=useRef([]);
   const locked=useRef(false);
   const mounted=useRef(true);
@@ -81,7 +80,7 @@ export default function RuneRitualLab(){
   async function drawOne(){
     if(locked.current||finished||selected||cardsRef.current.length>=MAX_DRAW)return;
     locked.current=true;
-    setBusy(true);setError('');setMessage('月光正在引導下一枚符文……');
+    setBusy(true);setError('');setMessage('月光正在為下一枚符文揭幕……');
     const started=Date.now();
     const currentMoon=realMoonPhase();setMoon(currentMoon);
     if(currentMoon==='未知'){
@@ -103,7 +102,7 @@ export default function RuneRitualLab(){
         card,direction:DIRECTIONS[directionIndex],directionIndex,moon:currentMoon,birth:Date.now()
       }];
       cardsRef.current=next;setItems(next);
-      setMessage(next.length>=MAX_DRAW?'星環已達十一枚，請結束抽牌。':'符文已亮相，點符文查看單卡說明，或繼續召喚。');
+      setMessage(next.length>=MAX_DRAW?'已抽滿十一枚，請結束抽牌。':'符文已亮相，點擊卡片閱讀資料，或繼續召喚。');
     }catch(e){
       if(mounted.current){setError('抽牌失敗：'+String(e?.message||e));setMessage('觸碰畫面重試');}
     }finally{
@@ -130,8 +129,8 @@ export default function RuneRitualLab(){
   return <main className="loc-next-main rune-skin-lab rune-3d-shell rune-3d-duel-shell" data-rune-lab="duel2">
     <header className="rune-3d-header">
       <p className="loc-eyebrow">LunaRunes · Living Ritual</p>
-      <h1>月光召喚 · 3D 抽牌</h1>
-      <p>先是恆動等待的月光與流金。每輕觸畫面一次召喚一枚，約一秒後亮牌，符文飛向月輪並持續環繞。</p>
+      <h1>月光召喚 · 華麗抽牌</h1>
+      <p>讓原創符文卡面成為主角。月光揭幕、流金入場，逐枚抽取並保留原有占卜規則。</p>
     </header>
     <nav className="rune-3d-toolbar">
       <span className="rune-3d-toolbar-label">真實月相 {moon}　·　{items.length} / {MAX_DRAW} 枚</span>
@@ -151,11 +150,10 @@ export default function RuneRitualLab(){
         結束占卜，看指示籤詩
       </button>:null}
     </div>
-    <section className={'rune-3d-stage rune-3d-duel'+(!finished?' rune-3d-tappable':'')}
-      aria-label="點觸月光空間逐張抽取符文">
-      <RuneWorld mode="draw" items={items} quality="high"
+    <section className="rune-art-stage" aria-label="原創符文美術動態抽牌">
+      <RuneArtStage mode="draw" items={items}
         onSelect={showCard} onBackgroundClick={!finished&&!selected?drawOne:undefined}/>
-      <div className="rune-3d-stage-label" role="status">{busy?'符文穿過金色光河，等待亮相……':message}</div>
+      <div className="rune-art-stage-label" role="status">{busy?'月光正在揭示符文……':message}</div>
     </section>
     {error?<p className="rune-skin-error" role="alert">{error}</p>:null}
     <div className="rune-3d-footer">
