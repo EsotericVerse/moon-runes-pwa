@@ -126,7 +126,6 @@ export function LrunesDailyCulturePanel(){
     <h3>每日符文｜時間長河</h3>
     <RangeControls mode={mode} setMode={setMode} from={from} setFrom={setFrom} to={to} setTo={setTo}/>
     {message?<p className="scope-status">{message}</p>:null}
-    {earliest.error?<p className="scope-status scope-error">{String(earliest.error.message||earliest.error)}</p>:null}
     {!message?<p className="scope-status">{range.startDate} ～ {range.endDate} · {summary.dayCount} 個紀錄日 · {summary.recordCount} 筆抽取紀錄</p>:null}
     {range&&items.length?<CultureTimeline
       items={items}
