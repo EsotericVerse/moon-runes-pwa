@@ -63,8 +63,7 @@ export default function RuneAtlasLab(){
   const [group,setGroup]=useState(null);
   const [runes,setRunes]=useState([]);
   const [details,setDetails]=useState(null);
-  const [quality,setQuality]=useState('high');
-  const [loading,setLoading]=useState(true);
+    const [loading,setLoading]=useState(true);
   const [error,setError]=useState('');
   useEffect(()=>{
     let active=true;
@@ -108,20 +107,11 @@ export default function RuneAtlasLab(){
     </header>
     <nav className="rune-3d-toolbar" aria-label="圖鑑視角">
       {group?<button className="rune-skin-btn" onClick={()=>{setGroup(null);setDetails(null);}}>← 回九群組</button>:<span className="rune-3d-toolbar-label">九大符文群組 · 恆動展示</span>}
-      <label>視覺模式 <select value={quality} className="rune-skin-quality" onChange={e=>setQuality(e.target.value)}>
-        <option value="high">極致 3D</option><option value="standard">標準 3D</option><option value="static">靜態備援</option>
-      </select></label>
+
     </nav>
     <section className="rune-3d-stage" aria-label="真實 3D 符文星域">
-      {quality!=='static'?<RuneWorld mode={group?'runes':'groups'} items={display}
-          quality={quality} onSelect={group?show:g=>{setGroup(g);setDetails(null);}}/>
-        :<div className="rune-3d-static-grid">
-          {display.map((item,i)=><button type="button" className="rune-3d-static-item"
-            key={item.rune_id??item.id??i} onClick={()=>group?show(item):setGroup(item)}>
-            {group?<img src={runeImage(item)} alt=""/>:<span className="rune-3d-orb-icon">◉</span>}
-            <strong>{item.rune_name||item.name}</strong>
-          </button>)}
-        </div>}
+      <RuneWorld mode={group?'runes':'groups'} items={display} quality="high"
+        onSelect={group?show:g=>{setGroup(g);setDetails(null);}}/>
       <div className="rune-3d-stage-label">{loading?'星域載入中……':
         error||(!group?'觸碰一顆星球，進入符文群組':'輕觸符文，查看原有文字資料')}</div>
     </section>
