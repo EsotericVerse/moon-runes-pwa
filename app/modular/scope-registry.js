@@ -185,10 +185,8 @@ export function featureHref(scopeId,featureId){
 }
 
 export function featureIdForPath(pathname='/'){
-  const segment=String(pathname||'/')
-    .split('/')
-    .filter(Boolean)
-    .at(-1)||'';
-  return FEATURES.find(item=>item.path===segment)?.id||null;
+  // Deep routes retain the correct parent feature in the shared dock.
+  const segments=String(pathname||'/').split('?')[0].split('/').filter(Boolean);
+  return FEATURES.find(item=>segments.includes(item.path))?.id||null;
 }
 

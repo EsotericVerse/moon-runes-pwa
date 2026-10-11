@@ -3,10 +3,15 @@
 import {useEffect,useState} from 'react';
 import {selectRows} from '../loc/db-query.mjs';
 import {groupImage,localRuneId,runeImage,runeName,runeNumberForRoute,runeNumbersForGroup} from './rune-directory.mjs';
-import {scopeHref} from '../modular/scope-registry';
+import {navigationHref} from '../modular/nav-destinations.mjs';
+import useNativeNavigation from '../modular/use-native-navigation';
+import ContextReturnNav from '../modular/ContextReturnNav';
 import RuneCardInfo from './RuneCardInfo';
 
-const listHref=(path='')=>scopeHref('lrunes',`list${path?'/'+String(path).replace(/^\/+/, ''):''}`);
+function useRuneListHref(){
+  const native=useNativeNavigation();
+  return (path='')=>navigationHref('lrunes',`list${path?'/'+String(path).replace(/^\/+/, ''):''}`,native);
+}
 const RUNE_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,char_action,positive_keywords,negative_keywords,extra_rules,extra_notes';
 const RUNE_DETAIL_COLUMNS='rune_evolution_history,myth_story,soul_question,practice_challenge,ritual_advice,harmony_advice';
 const GROUP_COLUMNS='group_id,english_name,desc,runeslist';
@@ -80,8 +85,10 @@ function RuneDetails({card}){
 }
 
 export function RuneDirectoryRoot(){
+  const listHref=useRuneListHref();
   const {groups,error}=useRuneGroups();
   return <main className="loc-next-main"><section className="loc-view">
+    <ContextReturnNav scopeId="lrunes" label="回符文首頁"/>
     <header className="loc-hero loc-hero-feature"><h1>月之符文圖鑑</h1><p className="loc-subtitle">從九組分類開始瀏覽，再進入各組查看符文名稱、月相、方向與基本說明。</p></header>
     <section className="loc-card"><figure className="runes-atlas-overview"><img src="/assets/lunarunes/reference/loc_runes_66_overview.jpg" alt="月之符文 66 符總圖" loading="eager"/><figcaption>月之符文 66 符總圖</figcaption></figure></section>
     <section className="loc-card"><h2>群組列表</h2>
@@ -96,12 +103,14 @@ export function RuneDirectoryRoot(){
 }
 
 export function RuneGroupPage({groupId}){
+  const listHref=useRuneListHref();
   const {group,error:groupError}=useRuneGroup(groupId);
   const {runes:cards,error:runeError}=useRuneRows(runeNumbersForGroup(groupId));
   const error=groupError||runeError;
-  if(!group&&!error)return <main className="loc-next-main"><section className="loc-view"><p className="loc-note">正在讀取符文群組…</p></section></main>;
-  if(!group)return <main className="loc-next-main"><section className="loc-view"><p className="loc-error" role="alert">{error||'找不到符文群組。'}</p></section></main>;
+  if(!group&&!error)return <main className="loc-next-main"><section className="loc-view"><ContextReturnNav scopeId="lrunes" path="list" label="回符文圖鑑"/><p className="loc-note">正在讀取符文群組…</p></section></main>;
+  if(!group)return <main className="loc-next-main"><section className="loc-view"><ContextReturnNav scopeId="lrunes" path="list" label="回符文圖鑑"/><p className="loc-error" role="alert">{error||'找不到符文群組。'}</p></section></main>;
   return <main className="loc-next-main"><section className="loc-view">
+    <ContextReturnNav scopeId="lrunes" path="list" label="回符文圖鑑"/>
     <header className="loc-hero loc-hero-context"><p className="loc-eyebrow">第 {group.id} 組</p><h1>{group.name}組</h1><p className="loc-subtitle">{group.description}</p></header>
     <section className="loc-card">
       {error?<p className="loc-error" role="alert">符文讀取失敗：{error}</p>:null}
@@ -116,13 +125,17 @@ export function RuneGroupPage({groupId}){
 }
 
 export function RuneDetailPage({groupId,runeId}){
+  const listHref=useRuneListHref();
   const runeNumber=runeNumberForRoute(groupId,runeId);
   const {group,error:groupError}=useRuneGroup(groupId);
   const {card,error:runeError}=useRuneDetail(runeNumber);
   const error=groupError||runeError;
-  if((!group||!card)&&!error)return <main className="loc-next-main"><section className="loc-view"><p className="loc-note">正在讀取符文…</p></section></main>;
-  if(!group||!card)return <main className="loc-next-main"><section className="loc-view"><p className="loc-error" role="alert">{error||'找不到對應符文。'}</p></section></main>;
+  if((!group||!card)&&!error)return <main className="loc-next-main"><section className="loc-view"><ContextReturnNav scopeId="lrunes" path="list" label="回符文圖鑑"/><p className="loc-note">正在讀取符文…</p></section></main>;
+  if(!group||!card)return <main className="loc-next-main"><section className="loc-view"><ContextReturnNav scopeId="lrunes" path="list" label="回符文圖鑑"/><p className="loc-error" role="alert">{error||'找不到對應符文。'}</p></section></main>;
   return <main className="loc-next-main"><section className="loc-view">
+    <nav className="scope-context-return scope-preview-links" aria-label="返回群組">
+      <a className="loc-button" href={listHref(`${group.id}/`)}>← 回{group.name}組</a>
+    </nav>
     <header className="loc-hero loc-hero-context"><p className="loc-eyebrow">{group.name}組 · 第 {String(runeId).padStart(2,'0')} 枚</p><h1>{runeName(card)}之符文</h1><p className="loc-subtitle">{group.name}組</p></header>
     <RuneDetails card={card}/>
     <nav className="loc-card"><a href={listHref(`${group.id}/`)}>回{group.name}組</a> · <a href={listHref()}>回符文圖鑑</a></nav>

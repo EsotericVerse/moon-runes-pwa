@@ -1,8 +1,13 @@
 const LOC_HOME='https://loc.lo3rwang.cc/';
 
 const REDIRECT_SCRIPT=`(()=>{try{
-  const home=new URL('${LOC_HOME}');
   const current=new URL(window.location.href);
+  if(current.protocol==='capacitor:'){
+    if(current.pathname!=='/'&&current.pathname!=='/index.html')
+      window.location.replace('/index.html?loc_direct=1');
+    return;
+  }
+  const home=new URL('${LOC_HOME}');
   const onHome=current.origin===home.origin&&(current.pathname==='/'||current.pathname==='');
   if(!onHome)window.location.replace(home.href);
 }catch{}})();`;

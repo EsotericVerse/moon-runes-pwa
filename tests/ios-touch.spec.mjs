@@ -41,3 +41,12 @@ test('iOS WebKit draws show a recognized real Taipei moon phase',async({page,bro
   );
   await expect(page.locator('body')).not.toContainText('真實月相無法辨識');
 });
+
+test('mobile deep-feature dock and rune return link',async({page})=>{
+  await page.goto('/lo3rwang/statics/keywords/',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('.scope-feature-dock a[href*="/statics/"]')).toHaveAttribute('aria-current','page');
+  await page.goto('/lrunes/list/',{waitUntil:'domcontentloaded'});
+  const back=page.getByRole('link',{name:/回符文首頁/}).first();
+  await expect(back).toBeVisible();
+  await expect(back).toHaveAttribute('href',/\/lrunes\/$/);
+});

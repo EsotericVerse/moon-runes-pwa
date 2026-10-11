@@ -2,6 +2,7 @@
 
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import DailyRuneCalendar from '../../lrunes/DailyRuneCalendar';
+import ContextReturnNav from '../../modular/ContextReturnNav';
 import RuneCardInfo from '../../lrunes/RuneCardInfo';
 import {runeImage} from '../../lrunes/rune-directory.mjs';
 import {
@@ -268,6 +269,7 @@ export default function DailyLogClient({embedded=false}={}){
   }
 
   return <section className={'loc-view'+(!embedded?' daily-rune-log-view':'')}>
+    {!embedded?<ContextReturnNav scopeId="lrunes" label="回符文首頁"/>:null}
     {!embedded?<header className="loc-hero loc-hero-feature">
       <p className="loc-eyebrow">每日抽籤紀錄</p>
       <h1>每日符文抽籤紀錄</h1>

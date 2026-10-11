@@ -4,6 +4,8 @@ import {UI_COPY} from '../i18n/ui-copy';
 import {useAccount} from './use-account';
 import {useScopeRuntime} from '../modular/use-scope-runtime';
 import {scopeHref} from '../modular/scope-registry';
+import {navigationHref} from '../modular/nav-destinations.mjs';
+import useNativeNavigation from '../modular/use-native-navigation';
 import ScopeSettingsPanel from './ScopeSettingsPanel';
 import ManagementImportPanel from './ManagementImportPanel';
 import ManagementArticlePublisher from './ManagementArticlePublisher';
@@ -36,6 +38,7 @@ function LoginScreen({scopeId,account}){
 export default function GovernanceManagement(){
   const account=useAccount();
   const {scopeId,scope}=useScopeRuntime();
+  const native=useNativeNavigation();
   const canManage=scope?.aggregateChildren?account.canManageGlobalSync():account.canManageScopeSync(scopeId);
 
   if(account.loading||account.permissionLoading)return <section className="loc-view"><div className="loc-card">{UI_COPY.management.checking}</div></section>;
@@ -51,7 +54,8 @@ export default function GovernanceManagement(){
       <h1>{scope.label}管理</h1>
       <p>{account.user.email||account.user.name||''}</p>
       <div className="scope-preview-links">
-        {scopeId==='loc'?<a className="loc-button" href={scopeHref('admin')}>前往 Admin 系統設定</a>:<a className="loc-button" href={scopeHref(scopeId)}>返回首頁</a>}
+        <a className="loc-button" href={navigationHref(scopeId,'governance',native)}>← 返回治理</a>
+        {scopeId==='loc'?<a className="loc-button" href={native?'/admin/index.html':scopeHref('admin')}>前往 Admin 系統設定</a>:<a className="loc-button" href={navigationHref(scopeId,'',native)}>返回首頁</a>}
         <a className="loc-button" href="/settings/">帳號設定</a>
       </div>
     </header>

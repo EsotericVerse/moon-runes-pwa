@@ -3,6 +3,8 @@
 import {useEffect,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {realMoonPhase} from '../../loc/model/moon-phase';
+import {navigationHref} from '../../modular/nav-destinations.mjs';
+import useNativeNavigation from '../../modular/use-native-navigation';
 import {loadDrawCards,randomIndex} from '../RuneDrawClient';
 import {runeImage} from '../rune-directory.mjs';
 import '../skin-lab.css';
@@ -13,6 +15,7 @@ const DIRECTIONS=['正位','半正位','半逆位','逆位'];
 const FIELDS=[['sit_q','狀況形容'],['sit_a','狀況表達'],
   ['daily_r','每日占卜提醒'],['daily_g','每日占卜引導'],['daily_b','每日占卜祝福']];
 export default function RuneDaily3D(){
+  const native=useNativeNavigation();
   const [moon,setMoon]=useState(()=>realMoonPhase());
   const [draw,setDraw]=useState(null);
   const [busy,setBusy]=useState(false);
@@ -66,9 +69,10 @@ export default function RuneDaily3D(){
         {busy?'召喚中…':draw?'重新召喚每日符文':'召喚每日符文'}
       </button>
       <nav className="rune-skin-controls" aria-label="3D 模式">
-        <a className="rune-skin-btn" href="/card/">← 3D 場域首頁</a>
-        <a className="rune-skin-btn" href="/card/duel/">一般抽牌</a>
-        <a className="rune-skin-btn" href="/duel/daily/">原版每日指示</a>
+        <a className="rune-skin-btn" href={navigationHref('lrunes','',native)}>回符文首頁</a>
+        <a className="rune-skin-btn" href={navigationHref('lrunes','card',native)}>← 3D 場域首頁</a>
+        <a className="rune-skin-btn" href={navigationHref('lrunes','card/duel',native)}>一般抽牌</a>
+        <a className="rune-skin-btn" href={navigationHref('lrunes','duel/daily',native)}>原版每日指示</a>
       </nav>
     </div>
     {draw?<section className="rune-skin-verse rune-3d-daily-reading" data-draw-stage="reading">

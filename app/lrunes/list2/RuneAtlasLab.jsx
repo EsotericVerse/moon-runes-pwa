@@ -4,6 +4,8 @@ import {useEffect,useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {createPortal} from 'react-dom';
 import {selectRows} from '../../loc/db-query.mjs';
+import {navigationHref} from '../../modular/nav-destinations.mjs';
+import useNativeNavigation from '../../modular/use-native-navigation';
 import {runeImage,groupImage} from '../rune-directory.mjs';
 import '../skin-lab.css';
 import '../three/rune-world.css';
@@ -60,6 +62,7 @@ function RuneInfoDialog({rune,onClose}){
   </div>;
 }
 export default function RuneAtlasLab(){
+  const native=useNativeNavigation();
   const [groups,setGroups]=useState([]);
   const [group,setGroup]=useState(null);
   const [preview,setPreview]=useState(null);
@@ -199,9 +202,10 @@ export default function RuneAtlasLab(){
     <footer className="rune-3d-footer">
       <span>使用拖曳可變換觀看角度 · 場景始終恆動</span>
       <nav className="rune-skin-controls" aria-label="返回與模式切換">
-        <a href="/card/" className="rune-skin-btn">← 3D 場域首頁</a>
-        <a href="/card/duel/" className="rune-skin-btn">切換隨機抽牌</a>
-        <a href="/list/" className="rune-skin-btn">舊版圖鑑</a>
+        <a href={navigationHref('lrunes','',native)} className="rune-skin-btn">回符文首頁</a>
+        <a href={navigationHref('lrunes','card',native)} className="rune-skin-btn">← 3D 場域首頁</a>
+        <a href={navigationHref('lrunes','card/duel',native)} className="rune-skin-btn">切換隨機抽牌</a>
+        <a href={navigationHref('lrunes','list',native)} className="rune-skin-btn">舊版圖鑑</a>
       </nav>
     </footer>
     {details?<RuneInfoDialog rune={details} onClose={closeDetails}/>:null}

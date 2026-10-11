@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
+import ContextReturnNav from '../../modular/ContextReturnNav';
 import {Client} from 'boardgame.io/react';
 import {useQuery} from '@tanstack/react-query';
 import {
@@ -321,6 +322,7 @@ function Board({G,moves,rules,onRestart}){
       }
     }}>
       <main className="lrg">
+        <ContextReturnNav scopeId="lrunes" label="回符文首頁"/>
         <Paper component="header" className="lrg-top">
           <div>
             <Typography variant="overline" color="primary">LUNARUNES · TABLETOP</Typography>
@@ -469,6 +471,7 @@ export default function GameBoard(){
 
   return <ThemeProvider theme={uiTheme}>
     <main className="lrg lrg-home">
+      <ContextReturnNav scopeId="lrunes" label="回符文首頁"/>
       <Paper className="lrg-home-hero">
         <div className="lrg-home-copy">
           <Typography variant="overline" color="primary">LUNARUNES · TABLETOP</Typography>
