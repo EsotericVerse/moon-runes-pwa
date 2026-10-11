@@ -91,3 +91,41 @@ test('invalid UTF-8 refuses automatic replacement characters',async()=>{
   const contents=zipSync({'facebook/posts/your_posts_1.json':new Uint8Array([91,123,34,255,34,125,93])});
   await assert.rejects(()=>inspect(file(contents,'bad.zip')));
 });
+
+test('Meta Threads and Instagram JSON shape variations preserve raw information',async()=>{
+  const archive=zipSync({
+    'threads/threads_and_replies/text_posts.json':strToU8(JSON.stringify({
+      text_post_app_text_posts:[
+        {id:'thread-one',text:'Threads 不同欄位結構',timestamp:'2026-10-09T00:00:00Z'}
+      ]
+    })),
+    'facebook/posts/your_uncategorized_photos.json':strToU8(JSON.stringify({
+      other_photos_v2:[
+        {uri:'media/photos/old_picture.jpg',creation_timestamp:1440000000}
+      ]
+    })),
+    'instagram/your_instagram_activity/saved/saved_posts.json':strToU8(JSON.stringify({
+      unexpected_saved_posts:[
+        {uri:'saved-item/123',creation_timestamp:1440000000}
+      ]
+    }))
+  });
+  const {records,summary}=await inspect(file(archive,'mydata.zip'));
+  assert.equal(records.length,3);
+  assert.equal(records.find(r=>r.platform==='threads')?.text,'Threads 不同欄位結構');
+  assert.equal(records.find(r=>r.kind==='media')?.attachments[0].uri,'media/photos/old_picture.jpg');
+  assert.equal(records.find(r=>r.sourcePath.includes('saved_posts'))?.raw.uri,'saved-item/123');
+  assert.equal(summary.unrecognizedFiles.length,0);
+});
+
+test('novel Meta metadata schema is marked unmapped and raw values are retained',async()=>{
+  const archive=zipSync({
+    'facebook/other/unknown_section.json':strToU8(JSON.stringify({unseen_items:[
+      {alpha:'preserved',omega:{value:23}}
+    ]}))
+  });
+  const {records,summary}=await inspect(file(archive,'mystery.zip'));
+  assert.equal(records[0].kind,'unmapped');
+  assert.equal(records[0].raw.omega.value,23);
+  assert.equal(summary.unmappedRows,1);
+});
