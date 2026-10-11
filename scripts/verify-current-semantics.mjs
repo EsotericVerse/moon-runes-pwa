@@ -164,8 +164,18 @@ if(!failures.length){
 
   const typeIntersection=read('app/loc/statistics-source-intersection.mjs');
   const importPanel=read('app/loc/ManagementImportPanel.jsx');
-  for(const path of ['app/loc/galaxy-query.js','app/loc/ManagementImportPanel.jsx','app/modular/features/Search.jsx','app/loc/ManagementArticlePublisher.jsx','app/loc/import-batch.mjs']){
-    if(read(path).includes('content_type'))failures.push('Retired content-type field remains in '+path);
+  function listAppFiles(dir){
+    return fs.readdirSync(dir,{withFileTypes:true}).flatMap(entry=>{
+      const entryPath=dir+'/'+entry.name;
+      if(entry.isDirectory())return listAppFiles(entryPath);
+      return /\.(?:js|jsx|mjs|ts|tsx)$/.test(entry.name)?[entryPath]:[];
+    });
+  }
+  for(const appPath of listAppFiles('app')){
+    const source=read(appPath);
+    if(source.includes('content_type')||source.includes('contentType')||source.includes('作品類型')){
+      failures.push('Retired Galaxy work-type field remains in '+appPath);
+    }
   }
   if(!importPanel.includes("searchable:explicitVisibilityIds.has(nativeId)?record.searchable:current.searchable")||
      !importPanel.includes("statistics_able:explicitStatisticsIds.has(nativeId)?record.statistics_able:current.statistics_able")){
