@@ -19,7 +19,7 @@ function lotSections(card,direction){
   const text=String(card?.rune_etc?.lots?.[directionNo(direction)]||'').trim();
   if(!text)return [];
   return ['愛情','事業','關係','健康'].map(label=>{
-    const match=text.match(new RegExp(label+'：\\s*([^\\n]*?)(?=(?:愛情|事業|關係|健康)：|$)'));
+    const match=text.match(new RegExp(label+'：\\s*([\\s\\S]*?)(?=\\s*(?:愛情|事業|關係|健康)：|$)'));
     return {label,text:String(match?.[1]||'').trim().replace(/[。；]+$/,'')||'資訊不足'};
   });
 }
