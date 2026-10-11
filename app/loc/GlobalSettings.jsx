@@ -15,6 +15,7 @@ import {putSetting} from './user-storage';
 import {DEFAULT_FAVORITES,FAVORITES_SETTING_KEY,HOME_SETTING_KEY,homeScopeForAccount,serializeFavorites,validScopeId} from '../modular/navigation-preferences.mjs';
 import {navigationHref} from '../modular/nav-destinations.mjs';
 import {FOLDERS_SETTING_KEY,MAX_FOLDERS,cleanFolderName,normalizeFavoriteFolders,serializeFavoriteFolders} from '../modular/favorite-folders.mjs';
+import {MOBILE_HOME_ID,MOBILE_HOME_STORAGE_KEY,MOBILE_FAVORITE_STORAGE_KEY,mobileFavoriteEnabled,mobileHomepageEnabled} from '../modular/mobile-home-preference.mjs';
 
 const DEFAULT_CHOICES=[
   {id:'lrunes',label:'月之符文'},
@@ -30,6 +31,7 @@ export default function GlobalSettings(){
   const [registryError,setRegistryError]=useState('');
   const [registryLoading,setRegistryLoading]=useState(true);
   const [home,setHome]=useState('loc');
+  const [myPhoneFavorite,setMyPhoneFavorite]=useState(true);
   const [favorites,setFavorites]=useState([...DEFAULT_FAVORITES]);
   const [folders,setFolders]=useState([]);
   const [newFolderName,setNewFolderName]=useState('');
@@ -39,7 +41,14 @@ export default function GlobalSettings(){
   const [drawMode,setDrawMode]=useState('daily');
   const identity=account.user?.id||account.user?.email||'';
 
-  useEffect(()=>{setNative(Capacitor.isNativePlatform());},[]);
+  useEffect(()=>{
+    const actual=Capacitor.isNativePlatform();
+    setNative(actual);
+    if(actual){
+      setMyPhoneFavorite(mobileFavoriteEnabled(window.localStorage));
+      if(mobileHomepageEnabled(window.localStorage))setHome(MOBILE_HOME_ID);
+    }
+  },[]);
   useEffect(()=>{
     let alive=true;
     selectScopeRegistry().then(rows=>{if(alive)setRegistry(rows||[]);})
@@ -49,10 +58,10 @@ export default function GlobalSettings(){
   },[]);
   useEffect(()=>{
     if(prefs.loading)return;
-    setHome(validScopeId(prefs.home)||'loc');
+    setHome(native&&mobileHomepageEnabled(window.localStorage)?MOBILE_HOME_ID:(validScopeId(prefs.home)||'loc'));
     setFavorites([...prefs.favorites]);
     setFolders(prefs.folders.map(folder=>({...folder,scopes:[...folder.scopes]})));
-  },[prefs.home,prefs.favorites.join(','),prefs.loading,identity]);
+  },[prefs.home,prefs.favorites.join(','),prefs.loading,identity,native]);
 
   const choices=useMemo(()=>{
     const mapped=new Map(DEFAULT_CHOICES.map(item=>[item.id,item]));
@@ -67,20 +76,31 @@ export default function GlobalSettings(){
   },[registry]);
   const allowedHomes=useMemo(()=>{
     const assigned=new Set(account.authorizer?.scopeIds||[]);
-    return choices.filter(item=>item.id==='loc'||(
+    const visible=choices.filter(item=>item.id==='loc'||(
       account.user&&(account.canManageGlobalSync()||assigned.has(item.id))
     ));
-  },[choices,account.user,account.authorizer,account.canManageGlobalSync]);
-  const effectiveHome=homeScopeForAccount(home,account,allowedHomes.map(item=>item.id));
+    if(native)visible.push({id:MOBILE_HOME_ID,label:'我的手機（本機）'});
+    return visible;
+  },[choices,account.user,account.authorizer,account.canManageGlobalSync,native]);
+  const effectiveHome=native&&home===MOBILE_HOME_ID?MOBILE_HOME_ID:homeScopeForAccount(home,account,allowedHomes.map(item=>item.id));
 
   function broadcast(next){
     window.dispatchEvent(new CustomEvent('loc-navigation-changed',{detail:next}));
   }
   async function saveHome(event){
     event.preventDefault();
-    if(!account.user)return;
+    if(!account.user&&!native)return;
     setBusy('home');setStatus('');
     try{
+      if(native){
+        if(home===MOBILE_HOME_ID)window.localStorage.setItem(MOBILE_HOME_STORAGE_KEY,MOBILE_HOME_ID);
+        else window.localStorage.removeItem(MOBILE_HOME_STORAGE_KEY);
+        window.dispatchEvent(new Event('loc-device-navigation-changed'));
+        if(home===MOBILE_HOME_ID||!account.user){
+          setStatus('手機預設首頁已保存於此裝置，不影響網站設定。');
+          return;
+        }
+      }
       const chosen=homeScopeForAccount(home,account,allowedHomes.map(item=>item.id));
       await putSetting(HOME_SETTING_KEY,chosen);
       setHome(chosen);
@@ -107,9 +127,14 @@ export default function GlobalSettings(){
   }
   async function saveFavorites(event){
     event.preventDefault();
-    if(!account.user)return;
+    if(!account.user&&!native)return;
     setBusy('favorites');setStatus('');
     try{
+      if(native){
+        window.localStorage.setItem(MOBILE_FAVORITE_STORAGE_KEY,myPhoneFavorite?'true':'false');
+        window.dispatchEvent(new Event('loc-device-navigation-changed'));
+        if(!account.user){setStatus('手機最愛已儲存。月之符文固定保留。');return;}
+      }
       const visibleIds=new Set(choices.map(item=>item.id));
       const selected=favorites.filter(id=>visibleIds.has(id)&&id!=='admin');
       const serialized=serializeFavorites([...new Set([...selected,'loc'])]);
@@ -191,26 +216,30 @@ export default function GlobalSettings(){
         </section>:null}
         <section className="loc-card">
           <h2>設定首頁</h2>
-          <p className="scope-settings-note">預設為 LOC。可設定有權使用的 Scope 或 Scope Group；不影響權限。</p>
+          <p className="scope-settings-note">網站保留原有 Scope 首頁規則；iOS 可單獨選「我的手機」，此偏好只存在裝置，不寫入雲端。</p>
           <form onSubmit={saveHome}>
             <label><span>預設首頁</span>
-              <select className="scope-select" value={effectiveHome} onChange={event=>setHome(event.target.value)} disabled={checking||!account.user}>
+              <select className="scope-select" value={effectiveHome} onChange={event=>setHome(event.target.value)} disabled={checking&&!!account.user}>
                 {allowedHomes.map(item=><option key={item.id} value={item.id}>{item.label}</option>)}
               </select>
             </label>
-            {account.user?<button className="loc-button primary" type="submit" disabled={Boolean(busy)||checking}>儲存首頁</button>:<p className="scope-settings-note">登入後可修改；未登入時固定使用 LOC。</p>}
+            {account.user||native?<button className="loc-button primary" type="submit" disabled={Boolean(busy)||checking}>儲存首頁</button>:<p className="scope-settings-note">網站登入後可修改首頁。</p>}
           </form>
         </section>
         <section className="loc-card">
           <h2>我的最愛</h2>
-          <p className="scope-settings-note">決定第一列顯示的空間，或將入口收進自訂目錄。右側「回月典首頁」永遠固定。</p>
+          <p className="scope-settings-note">決定第一列顯示的空間，或將入口收進自訂目錄。右側「回月典首頁」永遠固定。iOS「月之符文」為內建核心，不能移除。</p>
+          {native?<label className="scope-favorite-setting-row">
+            <input type="checkbox" checked={myPhoneFavorite} onChange={event=>setMyPhoneFavorite(event.target.checked)}/>
+            <span>我的手機（僅本機顯示，不進網站最愛）</span>
+          </label>:null}
           {registryError?<p className="scope-status scope-error">{registryError}</p>:null}
           <form onSubmit={saveFavorites}>
             <fieldset disabled={checking||!account.user||Boolean(busy)||registryLoading||Boolean(registryError)}>
               <legend>選擇上方入口</legend>
               {choices.filter(item=>item.id!=='loc').map(item=><div key={item.id} className="scope-favorite-setting-row">
                 <label>
-                  <input type="checkbox" checked={favorites.includes(item.id)} onChange={event=>setFavorites(current=>
+                  <input type="checkbox" disabled={native&&item.id==='lrunes'} checked={native&&item.id==='lrunes'?true:favorites.includes(item.id)} onChange={event=>setFavorites(current=>
                     event.target.checked?[...current,item.id]:current.filter(id=>id!==item.id)
                   )}/>
                   <span>{item.label}</span>
@@ -238,7 +267,7 @@ export default function GlobalSettings(){
               </div>
               <p className="scope-settings-note">點第一列的目錄，內容才會展開第二列；刪除目錄後，入口回到第一列。</p>
             </div>
-            {account.user?<button className="loc-button primary" type="submit" disabled={checking||Boolean(busy)||registryLoading||Boolean(registryError)}>儲存我的最愛</button>:<p className="scope-settings-note">登入後才能保存我的最愛。</p>}
+            {account.user||native?<button className="loc-button primary" type="submit" disabled={Boolean(busy)||(account.user&&(checking||registryLoading||Boolean(registryError)))}>儲存我的最愛</button>:<p className="scope-settings-note">網站登入後才能保存我的最愛。</p>}
           </form>
         </section>
         <section className="loc-card">
