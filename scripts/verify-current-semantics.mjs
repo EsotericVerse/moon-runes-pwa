@@ -1,7 +1,24 @@
 import fs from 'node:fs';
 
 const failures=[];
-const read=path=>fs.readFileSync(path,'utf8');
+const read=pa
+  // +/- is a control for the picture itself, never part of an option bar.
+  const chartSideStyles=read('app/styles/scope-system.css');
+  if(!zoomControls.includes('className="scope-stat-chart-with-zoom"')||
+     !zoomControls.includes('className="scope-stat-chart-plot"')||
+     !zoomControls.includes('className="scope-stat-zoom-rail"')||
+     zoomControls.includes('className="scope-stat-controls"')||
+     !chartSideStyles.includes('grid-template-columns:minmax(0,1fr) auto')||
+     !chartSideStyles.includes('.scope-stat-zoom-rail .loc-button')||
+     !statistics.includes('<StatisticsZoomControls level={zoomLevel} onChange={setZoomLevel} range={zoomRange}>')||
+     !statistics.includes('<StatisticsZoomControls level={zoomLevel} onChange={setZoomLevel} range={queryRange}>')||
+     !statistics.includes('<StatisticsZoomControls level={zoomLevel} onChange={onZoomLevelChange} range={range}>')||
+     !runeDaily.includes('<StatisticsZoomControls level={zoomLevel} onChange={value=>{setZoomLevel(value);setPage(1);}} range={zoomRange}>')){
+    failures.push('Statistics +/- must stay beside the chart (including LOC, Scope, Media and Daily Rune), not in the option bar.');
+  }
+
+  const runeDaily=read('app/lrunes/DailyRuneAnalytics.jsx');
+th=>fs.readFileSync(path,'utf8');
 const required=[
   'app/loc/views/AboutView.jsx',
   'docs/sql/page-block-entities-blocknote.sql',
@@ -184,22 +201,6 @@ if(!failures.length){
 
   const zoomControls=read('app/modular/modules/statistics/StatisticsZoomControls.jsx');
   const zoomModel=read('app/modular/modules/statistics/statistics-time-zoom.mjs');
-  // +/- is a control for the picture itself, never part of an option bar.
-  const chartSideStyles=read('app/styles/scope-system.css');
-  if(!zoomControls.includes('className="scope-stat-chart-with-zoom"')||
-     !zoomControls.includes('className="scope-stat-chart-plot"')||
-     !zoomControls.includes('className="scope-stat-zoom-rail"')||
-     zoomControls.includes('className="scope-stat-controls"')||
-     !chartSideStyles.includes('grid-template-columns:minmax(0,1fr) auto')||
-     !chartSideStyles.includes('.scope-stat-zoom-rail .loc-button')||
-     !statistics.includes('<StatisticsZoomControls level={zoomLevel} onChange={setZoomLevel} range={zoomRange}>')||
-     !statistics.includes('<StatisticsZoomControls level={zoomLevel} onChange={setZoomLevel} range={queryRange}>')||
-     !statistics.includes('<StatisticsZoomControls level={zoomLevel} onChange={onZoomLevelChange} range={range}>')||
-     !runeDaily.includes('<StatisticsZoomControls level={zoomLevel} onChange={value=>{setZoomLevel(value);setPage(1);}} range={zoomRange}>')){
-    failures.push('Statistics +/- must stay beside the chart (including LOC, Scope, Media and Daily Rune), not in the option bar.');
-  }
-
-  const runeDaily=read('app/lrunes/DailyRuneAnalytics.jsx');
   if(statistics.includes('TIME_STANDARDS')||statistics.includes('timeStandard')||
      !statistics.includes('<StatisticsZoomControls')||
      !statistics.includes('statisticsZoomWindow(')||
