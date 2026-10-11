@@ -26,7 +26,7 @@ export default function ScopeGroupStatisticsSharing({scopeId}){
     staleTime:0,refetchOnWindowFocus:true
   });
   if(!enabled)return null;
-  const permissions=new Map((query.data||[]).map(row=>[row.category_code,row.share_enabled===true]));
+  const permissions=new Map((query.data||[]).map(row=>[row.category_code,row.share_enabled!==false]));
   async function update(categoryCode,shareEnabled){
     setBusy(categoryCode);setNotice('');
     try{
@@ -48,11 +48,11 @@ export default function ScopeGroupStatisticsSharing({scopeId}){
   }
   return <section className="scope-inline-card" aria-label="群組來源分類統計開放設定">
     <h3>群組來源分類 · 對外統計</h3>
-    <p className="scope-status">各來源群組可單獨決定是否納入 LOC 合併統計及其他成員的交互統計。未勾選即不參與；不影響自己的統計、搜尋與文化頁。個人自訂來源分類不另外設定。</p>
+    <p className="scope-status">各群組來源沿用既有對外統計狀態，預設納入 LOC 統計；本人可逐項取消勾選，立即排除該分類在 LOC 合併與成員交互統計的資料。自己的統計、搜尋與文化頁不受影響；個人自訂來源分類不另外設定。</p>
     <div className="scope-management-records">
       {(groups.data?.categories||[]).filter(row=>row.enabled!==false).map(row=>
         <label key={row.category_code} className="scope-inline-card scope-setting-toggle">
-          <input type="checkbox" checked={permissions.get(row.category_code)===true}
+          <input type="checkbox" checked={permissions.get(row.category_code)!==false}
             disabled={Boolean(busy)||query.isPending||Boolean(query.error)}
             onChange={event=>update(row.category_code,event.target.checked)}/>
           {row.display_name} · 允許納入其他人的統計
