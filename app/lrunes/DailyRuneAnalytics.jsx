@@ -183,7 +183,9 @@ export function LrunesDailyStatisticsPanel(){
     {message?<p className="scope-status">{message}</p>:null}
     {!message?<>
       <p className="scope-status">{range.startDate} ～ {range.endDate} · {summary.dayCount} 個紀錄日 · {summary.recordCount} 筆抽取 · {analysisMode==='direction'?'四種位向（含零次）':ranking.length+' 種實際出現的組合'}</p>
-      {!ranking.length?<p className="scope-status">目前區間沒有每日符文紀錄。</p>:null}
+      {!ranking.length?<StatisticsChartFrame level={zoomLevel} onChange={value=>{setZoomLevel(value);setPage(1);}} range={zoomRange} idPrefix="daily-rune-stat">
+        <p className="scope-status">目前區間沒有每日符文紀錄。</p>
+      </StatisticsChartFrame>:null}
       {ranking.length?<><div className="scope-ranking">
         {pagination.rows.map((row,index)=><div key={row.key}>
           <strong>{(pagination.currentPage-1)*pagination.pageSize+index+1}. {row.label}</strong>
