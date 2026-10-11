@@ -97,7 +97,7 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
     return next;
   });
   if(!available.length)return null;
-  return <section className="scope-stat-section">
+  return <section className="scope-stat-section" data-stat-cross-range={startDate+'|'+endDate} aria-busy={fetched.isFetching}>
     <h2>所屬人員交互統計</h2>
     <div className="scope-stat-controls">
       <label><span>比較組數</span>
