@@ -1,6 +1,6 @@
 import {selectRows} from './db-query.mjs';
 
-// Public, narrow metadata only. A missing consent row means false.
+// Public metadata for Galaxy group-source opt-outs only. No choice retains existing statistics; Daily Rune is independent.
 export async function selectCrossScopeSharing(){
   const [categories,aliases,scopeSources,permissions]=await Promise.all([
     selectRows('silver.statistics_source_categories',{columns:'category_code,display_name,enabled',limit:250}),
