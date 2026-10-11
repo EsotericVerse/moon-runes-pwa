@@ -28,7 +28,7 @@ test('website X archive: pre-count, detect duplicates, commit batches, search an
   await expect(page.getByText('匯入前查重與批次計畫')).toBeVisible({timeout:20000});
   await expect(page.getByText('準備新增 3 筆')).toBeVisible();
   await expect(page.getByText('預估 1 批',{exact:false})).toBeVisible();
-  await page.getByRole('checkbox',{name:/已核對樣本、來源、筆數/}).check();
+  await page.getByRole('checkbox',{name:/已核對來源、筆數/}).check();
   await page.getByRole('button',{name:'確認分批寫入本機'}).click();
   await expect(page.getByText('本機寫入完成：新增 3 筆',{exact:false})).toBeVisible({timeout:15000});
   await expect(page.getByRole('heading',{name:'已確認匯入的私人紀錄（3 筆）'})).toBeVisible();
