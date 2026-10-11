@@ -162,7 +162,7 @@ test('daily rune calendar only reads and renders record details after authentica
   const calendar=fs.readFileSync('app/lrunes/DailyRuneCalendar.jsx','utf8');
   assert.match(settings,/每日符文紀錄與日曆/);
   assert.match(settings,/\(native\|\|account\.user\)&&!checking\?<p className="scope-settings-note">/);
-  assert.match(daily,/const canViewDetails=native\\|\\|\\(!account\\.loading&&Boolean\\(account\\.user\\)\\);/);
+  assert.match(daily,/const canViewDetails=native\|\|\(!account\.loading&&Boolean\(account\.user\)\);/);
   assert.match(daily,/const visibleRows=canViewDetails\?rows:EMPTY_ROWS;/);
   assert.match(daily,/if\(!canViewDetails\)\{\s*setRows\(\[\]\);/);
   assert.ok(daily.indexOf('if(!canViewDetails){')<daily.indexOf('selectDailyRuneMonth({year,month})'));
