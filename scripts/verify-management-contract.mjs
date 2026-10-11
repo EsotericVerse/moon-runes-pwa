@@ -67,7 +67,7 @@ must(management.includes('href="/settings/"')&&!management.includes('account.sig
 must(management.includes('ScopeGroupManagement'),'Manage must compose the Scope Group module');
 must(scopeRuntime.includes("aggregateChildren:activeRegistryRow.scope_kind==='group'")&&genericHome.includes('ScopeGroupOverview')&&sharedSearch.includes('ScopeGroupOverview'),'New DB Scope Groups must use the generic runtime and existing public overview');
 must(locApp.includes("scopeMeta?.aggregateChildren&&scopeId!=='loc'")&&locApp.includes("['statics','culture','governance'].includes(forcedView)")&&locApp.includes('groupOverviewView?<FeaturePage')&&groupOverview.includes('selectScopeGroupChildren(scopeId)'),'Dynamic DB Groups must route Statistics/Culture/Governance to existing read-only member overview instead of LOC aggregate or nonexistent Group tables');
-must(groupOverview.includes('scopeHref(row.scope_id')&&groupOverview.includes('selectScopeGroupChildren(scopeId)'),'Scope Group overview must direct users to child Scope queries without expensive group-wide counts');
+must(groupOverview.includes('navigationHref(row.scope_id')&&groupOverview.includes('useNativeNavigation')&&groupOverview.includes('selectScopeGroupChildren(scopeId)'),'Scope Group overview must direct users to child Scope queries without expensive group-wide counts');
 must(management.includes('<ScopeSettingsPanel')&&management.includes('<ManagementArticlePublisher')&&management.includes('<ManagementImportPanel')&&management.includes('ManagementDisclosure')&&management.includes('label="發表文章"')&&!management.includes('KeywordLibraryPanel'),'Scope Manage must keep settings, publishing and import as collapsed one-line disclosures');
 const keywordPage=read('app/modular/features/KeywordSettings.jsx');
 const keywordAuthorRoute=read('app/lo3rwang/statics/keywords/page.jsx');
@@ -156,7 +156,7 @@ must(
   runesHome.includes('allowDelete={false}')&&
   runesHome.includes('allowEntities={false}')&&
   runesHome.includes('allowImages={false}')&&
-  runesHome.includes('renderDisplay={renderRuneHero}')&&
+  runesHome.includes('renderDisplay={slot=>renderRuneHero(slot,native)}')&&
   runesHome.includes('className="basic-grid"')&&
   (runesHome.match(/<ScopeEditableBlocks/g)||[]).length===1,
   'Only the LunaRunes Hero may use inline BlockNote; its other homepage sections remain fixed'
