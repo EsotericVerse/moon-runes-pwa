@@ -210,6 +210,64 @@ function OrbitPath({radius=3.45}){
     </mesh>
   </group>;
 }
+// A layered sanctuary instead of a bare text-orbit demo. All ornaments
+// remain behind the rune actors and never change their canonical glyph color.
+function SanctumField({mode,groupIndex=8}){
+  const outer=useRef(),inner=useRef(),tide=useRef();
+  const tone=GROUP_COLORS[groupIndex]||'#e8c9a9';
+  useFrame(({clock},delta)=>{
+    const time=clock.elapsedTime;
+    if(outer.current)outer.current.rotation.z+=delta*.019;
+    if(inner.current)inner.current.rotation.z-=delta*.033;
+    if(tide.current){
+      tide.current.scale.setScalar(1+.02*Math.sin(time*.6));
+      tide.current.rotation.z=Math.sin(time*.16)*.055;
+    }
+  });
+  return <group position={[0,0,-2.45]}>
+    <group ref={tide}>
+      <mesh><ringGeometry args={[1.75,1.78,144]}/>
+        <meshBasicMaterial color="#e6d6ad" toneMapped={false} transparent opacity={.45}
+          depthWrite={false} side={THREE.DoubleSide}/></mesh>
+      <mesh><ringGeometry args={[2.19,2.23,192]}/>
+        <meshBasicMaterial color={tone} toneMapped={false} transparent opacity={.51}
+          depthWrite={false} side={THREE.DoubleSide}/></mesh>
+      <mesh><ringGeometry args={[3.82,3.835,192]}/>
+        <meshBasicMaterial color="#b6b3e7" toneMapped={false} transparent opacity={.31}
+          depthWrite={false} side={THREE.DoubleSide}/></mesh>
+    </group>
+    <group ref={outer}>
+      {Array.from({length:24},(_,i)=>{
+        const angle=i*Math.PI/12;
+        return <group key={i} rotation-z={angle}>
+          <mesh position={[0,2.17,0]}>
+            <boxGeometry args={[i%3===0?.036:.018,i%3===0?.2:.075,.01]}/>
+            <meshBasicMaterial color={i%3===0?'#ffedbc':tone}
+              toneMapped={false} transparent opacity={.79} depthWrite={false}/>
+          </mesh>
+          {i%3===0?<mesh position={[0,3.82,0]}>
+            <octahedronGeometry args={[.065,0]}/>
+            <meshPhysicalMaterial color="#e5d3aa" roughness={.17} metalness={.68}
+              emissive="#ad90d5" emissiveIntensity={.28}/>
+          </mesh>:null}
+        </group>;
+      })}
+    </group>
+    <group ref={inner} rotation-z={.2}>
+      {Array.from({length:8},(_,i)=><mesh key={i} rotation-z={Math.PI*i/4}>
+        <torusGeometry args={[2.72,.014,6,92,Math.PI*.17]}/>
+        <meshBasicMaterial color={i%2?tone:'#f6e4c6'} toneMapped={false}
+          transparent opacity={.48} depthWrite={false}/>
+      </mesh>)}
+    </group>
+    <group scale={mode==='groups'?.74:1.18}>
+      <RuneAuraFX groupIndex={groupIndex}/>
+    </group>
+    <Sparkles count={mode==='draw'?170:115} position={[0,-1,-.2]}
+      scale={[9,5,2.7]} size={2.3} speed={.16} color={tone}/>
+  </group>;
+}
+
 function GroupOrb({group,index,total,onClick}){
   const ref=useRef(),pulse=useRef(0);
   const color=GROUP_COLORS[index%GROUP_COLORS.length];
@@ -354,6 +412,9 @@ function OrbitingRunes({items,mode,onSelect,quality}){
 }
 function Scene({mode,items,onSelect,onBackgroundClick,quality}){
   const {camera}=useThree();
+  const first=(items[0]?.card||items[0]);
+  const groupIndex=mode==='groups'?8:Number(first?.rune_id)>=1&&Number(first?.rune_id)<=64
+    ?Math.floor((Number(first.rune_id)-1)/8):8;
   useEffect(()=>{camera.position.set(0,.15,12.8);camera.lookAt(0,0,0);},[camera]);
   return <>
     <color attach="background" args={['#080b1d']}/>
@@ -363,13 +424,14 @@ function Scene({mode,items,onSelect,onBackgroundClick,quality}){
     <directionalLight position={[-4,6,6]} intensity={2.3} color="#f6e1ae"/>
     <StarField/>
     <Nebula/>
+    <SanctumField mode={mode} groupIndex={groupIndex}/>
     <Moon onTap={mode==='draw'?onBackgroundClick:undefined}/>
     <EnergyRiver visible={mode==='draw'} />
     {mode==='groups'?<GroupOrbits items={items} onSelect={onSelect}/>:
       <OrbitingRunes items={items} mode={mode} onSelect={onSelect} quality={quality}/>}
     <OrbitControls enablePan={false} enableZoom minDistance={10.5} maxDistance={17}
       minPolarAngle={Math.PI*.25} maxPolarAngle={Math.PI*.75} enableDamping dampingFactor={.045}/>
-    {quality==='high'?<EffectComposer multisampling={0}><Bloom mipmapBlur intensity={.9} luminanceThreshold={.58} luminanceSmoothing={.25}/></EffectComposer>:null}
+    {quality==='high'?<EffectComposer multisampling={0}><Bloom mipmapBlur intensity={1.18} luminanceThreshold={.56} luminanceSmoothing={.21}/></EffectComposer>:null}
   </>;
 }
 class RuneSceneBoundary extends Component {
