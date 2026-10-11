@@ -2,8 +2,8 @@ import RuneRitualLab from '../../lrunes/duel2/RuneRitualLab';
 import {lunarunesMetadata} from '../../seo/metadata';
 
 export const metadata=lunarunesMetadata({
-  title:'3D 符文隨機抽牌｜月之符文',
-  description:'真實 3D 月光召喚場域，逐次隨機抽取符文並生成原有籤詩。',
+  title:'符文月光抽牌 · 原創美術｜月之符文',
+  description:'符韻原創美術與動態揭牌，逐次抽取符文並生成原有籤詩。',
   path:'/card/duel/',noIndex:true
 });
 export default function RuneCardDuel(){return <RuneRitualLab/>;}
