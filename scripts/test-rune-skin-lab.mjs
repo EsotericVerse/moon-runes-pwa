@@ -66,12 +66,12 @@ assert.match(sceneCss,/\.rune-3d-duel-action--draw\{/);
 assert.match(sceneCss,/\.rune-3d-duel-action--finish\{grid-column:1\/-1\}/);
 assert.match(sceneCss,/rune-3d-draw-guide-grid/);
 const dockJsx=duel.slice(duel.indexOf('<div className="rune-3d-duel-action-dock"'),
-  duel.indexOf('<div className="rune-3d-footer"'));
+  duel.indexOf("<section className={'rune-3d-stage"));
 assert.match(dockJsx,/onClick=\{drawOne\}/);
 assert.match(dockJsx,/onClick=\{reset\}/);
 assert.match(dockJsx,/onClick=\{finish\}/);
-assert.ok(duel.indexOf('rune-3d-duel-action-dock')>duel.indexOf('rune-3d-stage-label'));
-assert.ok(duel.indexOf('rune-3d-duel-action-dock')<duel.indexOf('rune-3d-footer'));
+assert.ok(duel.indexOf('rune-3d-duel-action-dock')<duel.indexOf("<section className={'rune-3d-stage"));
+assert.ok(duel.indexOf('rune-3d-duel-action-dock')>duel.indexOf('rune-3d-toolbar'));
 
 assert.match(duel,/指示籤詩為/);
 assert.match(duel,/buildFixedReading\(/);
