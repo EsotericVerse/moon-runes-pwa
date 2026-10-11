@@ -26,6 +26,8 @@ import StatisticsMultiChart,{STAT_VISUAL_TYPES,availableStatisticChartTypes} fro
 import ScopeSelfIntersection from '../modules/statistics/ScopeSelfIntersection';
 import LocMemberIntersection from '../modules/statistics/LocMemberIntersection';
 import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
+import StatisticsZoomControls from '../modules/statistics/StatisticsZoomControls';
+import {statisticsZoomWindow} from '../modules/statistics/statistics-time-zoom.mjs';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const OTHER_RANKING_PAGE_SIZE=10;
@@ -47,24 +49,9 @@ const STAT_TYPE_LABELS=Object.freeze({
 const MEDIA_STAT_TYPES=new Set(['media_type','media_platform','media_style']);
 const STYLE_FILTERS=Object.freeze([{value:'none',label:'不套用'},{value:'rune66',label:'關鍵詞 Class'}]);
 const SOURCE_TREND_ORDER=Object.freeze(['Facebook','Threads','IG','Others']);
-const TIME_STANDARDS=Object.freeze([
-  {value:'1y',label:UI_COPY.statistics.year,months:12,bucket:'month'},
-  {value:'1m',label:UI_COPY.statistics.month,months:1,bucket:'day'},
-  {value:'1w',label:UI_COPY.statistics.week,days:6,bucket:'day'},
-  {value:'custom',label:UI_COPY.statistics.custom,bucket:'auto'}
-]);
-
 function dateKey(value){
   const key=String(value||'').slice(0,10);
   return /^\d{4}-\d{2}-\d{2}$/.test(key)?key:'';
-}
-function shiftDate(value,{months=0,days=0}={}){
-  const key=dateKey(value);
-  if(!key)return '';
-  const date=new Date(key+'T00:00:00Z');
-  if(months)date.setUTCMonth(date.getUTCMonth()+months);
-  if(days)date.setUTCDate(date.getUTCDate()+days);
-  return date.toISOString().slice(0,10);
 }
 function taipeiDateKey(date=new Date()){
   try{
@@ -79,25 +66,6 @@ function taipeiDateKey(date=new Date()){
   }catch{
     return date.toISOString().slice(0,10);
   }
-}
-function statisticsQueryRange(standard='1y',customRange={},endDate=taipeiDateKey()){
-  if(standard==='custom'){
-    const startDate=dateKey(customRange.from);
-    const customEnd=dateKey(customRange.to);
-    return startDate&&customEnd&&startDate<=customEnd
-      ?{startDate,endDate:customEnd}
-      :{startDate:'',endDate:''};
-  }
-  const config=TIME_STANDARDS.find(item=>item.value===standard)||TIME_STANDARDS[0];
-  const startDate=Number.isFinite(config.days)
-    ?shiftDate(endDate,{days:-config.days})
-    :shiftDate(endDate,{months:-config.months});
-  return {startDate,endDate};
-}
-function dayDistance(from,to){
-  const a=new Date(from+'T00:00:00Z').getTime();
-  const b=new Date(to+'T00:00:00Z').getTime();
-  return Math.max(0,Math.round((b-a)/86400000));
 }
 function trendBucket(value,unit){
   const key=dateKey(value);
@@ -119,41 +87,17 @@ function trendBucket(value,unit){
   }
   return {key,label:key.slice(5).replace('-','/'),start:key,end:key};
 }
-function statisticsWindow(rows=[],standard='1y',customRange={}){
-  const dates=rows.map(row=>dateKey(row.day)).filter(Boolean).sort();
-  const dataStart=dates[0]||'';
-  const dataEnd=dates.at(-1)||'';
-  if(!dataEnd)return {startDate:'',endDate:'',bucket:'day'};
-  if(standard==='custom'){
-    const from=dateKey(customRange.from);
-    const to=dateKey(customRange.to);
-    if(!from||!to||from>to)return {startDate:'',endDate:'',bucket:'day'};
-    const startDate=dataStart&&from<dataStart?dataStart:from;
-    const endDate=to>dataEnd?dataEnd:to;
-    if(startDate>endDate)return {startDate:'',endDate:'',bucket:'day'};
-    const days=dayDistance(startDate,endDate);
-    return {startDate,endDate,bucket:days>730?'month':days>90?'week':'day'};
-  }
-  const config=TIME_STANDARDS.find(item=>item.value===standard)||TIME_STANDARDS[0];
-  const requestedStart=Number.isFinite(config.days)
-    ?shiftDate(dataEnd,{days:-config.days})
-    :shiftDate(dataEnd,{months:-config.months});
-  const startDate=dataStart&&requestedStart<dataStart?dataStart:requestedStart;
-  return {startDate,endDate:dataEnd,bucket:config.bucket};
+function rowsInWindow(rows=[],range={}){
+  const startDate=dateKey(range.startDate),endDate=dateKey(range.endDate);
+  const bucket=['month','week','day'].includes(range.bucket)?range.bucket:'day';
+  if(!startDate||!endDate||startDate>endDate)return {rows:[],startDate:'',endDate:'',bucket};
+  return {rows:rows.filter(row=>{
+    const day=dateKey(row.day);
+    return day&&day>=startDate&&day<=endDate;
+  }),startDate,endDate,bucket};
 }
-function rowsInWindow(rows=[],standard='1y',customRange={}){
-  const window=statisticsWindow(rows,standard,customRange);
-  if(!window.startDate||!window.endDate)return {rows:[],...window};
-  return {
-    ...window,
-    rows:rows.filter(row=>{
-      const day=dateKey(row.day);
-      return day&&day>=window.startDate&&day<=window.endDate;
-    })
-  };
-}
-function buildSourceTrend(rows=[],standard='1y',customRange={}){
-  const window=rowsInWindow(rows,standard,customRange);
+function buildSourceTrend(rows=[],range={}){
+  const window=rowsInWindow(rows,range);
   if(!window.startDate||!window.endDate)return [];
   const buckets=new Map();
   for(let cursor=new Date(window.startDate+'T00:00:00Z'),end=new Date(window.endDate+'T00:00:00Z');cursor<=end;cursor.setUTCDate(cursor.getUTCDate()+1)){
@@ -182,8 +126,8 @@ function buildSourceTrend(rows=[],standard='1y',customRange={}){
     return output;
   });
 }
-function buildSummary(rows=[],standard='1y',customRange={}){
-  const window=rowsInWindow(rows,standard,customRange);
+function buildSummary(rows=[],range={}){
+  const window=rowsInWindow(rows,range);
   const totals=new Map(SOURCE_TREND_ORDER.map(source=>[source,0]));
   let total=0;
   for(const row of window.rows){
@@ -228,8 +172,8 @@ function SummaryChart({type='bar',rankingType,summary,height=380}){
     </BarChart>
   </ResponsiveContainer>;
 }
-function TotalTrendChart({rows=[],standard='1y',customRange={},height=420}){
-  const data=useMemo(()=>buildSourceTrend(rows,standard,customRange),[rows,standard,customRange]);
+function TotalTrendChart({rows=[],range={},height=420}){
+  const data=useMemo(()=>buildSourceTrend(rows,range),[rows,range]);
   if(!data.length)return <p className="scope-status">{FEATURE_EMPTY_MESSAGE}</p>;
   return <ResponsiveContainer width="100%" height={height}>
     <LineChart data={data} margin={{top:8,right:18,bottom:48,left:4}}>
@@ -241,8 +185,8 @@ function TotalTrendChart({rows=[],standard='1y',customRange={},height=420}){
     </LineChart>
   </ResponsiveContainer>;
 }
-function SourceTrendChart({rows=[],standard='1y',customRange={},height=420}){
-  const data=useMemo(()=>buildSourceTrend(rows,standard,customRange),[rows,standard,customRange]);
+function SourceTrendChart({rows=[],range={},height=420}){
+  const data=useMemo(()=>buildSourceTrend(rows,range),[rows,range]);
   if(!data.length)return <p className="scope-status">{FEATURE_EMPTY_MESSAGE}</p>;
   return <ResponsiveContainer width="100%" height={height}>
     <LineChart data={data} margin={{top:8,right:18,bottom:48,left:4}}>
@@ -291,7 +235,7 @@ function facetTrend(rows=[],window={},selectedCategories=[]){
     return output;
   });
 }
-function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeChange,timeStandard='1y',customRange={},scopeId,navigation={},foldBlank=false}){
+function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeChange,range={},scopeId,navigation={},foldBlank=false}){
   const router=useRouter();
   const [selectedTag,setSelectedTag]=useState('all');
   const [rankingPage,setRankingPage]=useState(1);
@@ -299,7 +243,7 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeC
   const exclusionText=rawExclusions==='-'?'':(rawExclusions||DEFAULT_MEDIA_STYLE_EXCLUSIONS.join(', '));
   const [exclusionDraft,setExclusionDraft]=useState(exclusionText);
   const exclusions=useMemo(()=>mediaStyleExclusions(exclusionText),[exclusionText]);
-  const window=useMemo(()=>rowsInWindow(rows,timeStandard,customRange),[rows,timeStandard,customRange]);
+  const window=useMemo(()=>rowsInWindow(rows,range),[rows,range]);
   const facetRows=useMemo(()=>
     rankingType==='media_style'?filterMediaStyleRows(window.rows,exclusions):window.rows,
     [rankingType,window.rows,exclusions]
@@ -459,7 +403,7 @@ async function selectPublicStatisticsMembers(){
 function ScopeGroupStatistics(){
   const [aggregateType,setAggregateType]=useState('total');
   const [chartType,setChartType]=useState('line');
-  const [timeStandard,setTimeStandard]=useState('1y');
+  const [zoomLevel,setZoomLevel]=useState(0);
   const scopesQuery=useQuery({
     queryKey:['managed-scopes'],
     queryFn:selectPublicStatisticsMembers,
@@ -467,16 +411,13 @@ function ScopeGroupStatistics(){
   });
   const scopes=scopesQuery.data||[];
   const scopeIds=useMemo(()=>scopes.map(scope=>String(scope.id||'').trim()).filter(Boolean),[scopes]);
-  const endDate=useMemo(()=>taipeiDateKey(),[]);
-  const startDate=useMemo(()=>{
-    if(timeStandard==='1w')return shiftDate(endDate,{days:-6});
-    if(timeStandard==='1m')return shiftDate(endDate,{months:-1});
-    return shiftDate(endDate,{months:-12});
-  },[timeStandard,endDate]);
+  const [endDate,setEndDate]=useState(()=>taipeiDateKey());
+  const zoomRange=useMemo(()=>statisticsZoomWindow(zoomLevel,endDate),[zoomLevel,endDate]);
+  const {startDate,endDate:rangeEndDate,bucket}=zoomRange;
   const densityQuery=useQuery({
-    queryKey:['scope-density','loc',timeStandard,startDate,endDate,scopeIds.join('|')],
-    queryFn:()=>selectScopeDensityRows(scopes,{startDate,endDate}),
-    enabled:Boolean(scopes.length&&startDate&&endDate),
+    queryKey:['scope-density','loc',zoomLevel,startDate,rangeEndDate,scopeIds.join('|')],
+    queryFn:()=>selectScopeDensityRows(scopes,{startDate,endDate:rangeEndDate}),
+    enabled:Boolean(scopes.length&&startDate&&rangeEndDate),
     staleTime:5*60_000
   });
   const overallTotal=useMemo(
@@ -496,10 +437,10 @@ function ScopeGroupStatistics(){
     });
   },[densityQuery.data,scopeIds,overallTotal]);
   const trendData=useMemo(()=>{
-    if(!startDate||!endDate)return [];
-    const bucketUnit=timeStandard==='1y'?'month':'day';
+    if(!startDate||!rangeEndDate)return [];
+    const bucketUnit=bucket;
     const buckets=new Map();
-    for(let cursor=new Date(startDate+'T00:00:00Z'),end=new Date(endDate+'T00:00:00Z');cursor<=end;cursor.setUTCDate(cursor.getUTCDate()+1)){
+    for(let cursor=new Date(startDate+'T00:00:00Z'),end=new Date(rangeEndDate+'T00:00:00Z');cursor<=end;cursor.setUTCDate(cursor.getUTCDate()+1)){
       const day=cursor.toISOString().slice(0,10);
       const bucket=trendBucket(day,bucketUnit);
       if(!bucket||buckets.has(bucket.key))continue;
@@ -519,8 +460,7 @@ function ScopeGroupStatistics(){
       buckets.set(bucket.key,row);
     }
     return [...buckets.values()].sort((a,b)=>a._sort.localeCompare(b._sort));
-  },[densityQuery.data,startDate,endDate,scopeIds,timeStandard]);
-  const aggregateTimeStandards=TIME_STANDARDS.filter(item=>item.value!=='custom');
+  },[densityQuery.data,startDate,rangeEndDate,scopeIds,bucket]);
   const distributionData=totals.map(row=>({term:row.scope_id,value:row.total}));
   // Even when displaying a combined total, its composition is the real
   // set of child Scopes. A single 100% "LOC total" pie is not analytics.
@@ -551,15 +491,10 @@ function ScopeGroupStatistics(){
           {locAllowed.length?locAllowed.map(([value,label])=><option key={value} value={value}>{label}</option>):<option value="line">尚無可用圖形</option>}
         </select>
       </label>
-      <label>
-        <span>{UI_COPY.statistics.range}</span>
-        <select className="scope-select" value={timeStandard} onChange={event=>setTimeStandard(event.target.value)}>
-          {aggregateTimeStandards.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
-        </select>
-      </label>
+      <StatisticsZoomControls level={zoomLevel} onChange={setZoomLevel} range={zoomRange} onEndDateChange={setEndDate}/>
     </div>
 
-    <p className="scope-status">{startDate&&endDate?startDate+' ～ '+endDate:''}</p>
+    <p className="scope-status">{startDate&&rangeEndDate?startDate+' ～ '+rangeEndDate:''}</p>
     <div className="scope-ranking">
       <div>
         <strong>LOC 合併總數</strong>
@@ -575,7 +510,7 @@ function ScopeGroupStatistics(){
       type={locChartType} rows={trendData} series={locSeries}
       distribution={locDistribution} totalKey={aggregateType==='total'?'total':''} height={420}
     />:null}
-    <LocMemberIntersection scopes={scopes} startDate={startDate} endDate={endDate} timeStandard={timeStandard}/>
+    <LocMemberIntersection scopes={scopes} startDate={startDate} endDate={rangeEndDate} unit={bucket}/>
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
     {densityQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(densityQuery.error)}</p>:null}
   </section>;
@@ -587,15 +522,11 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const mediaDimension=MEDIA_STAT_TYPES.has(rankingType);
   const isLrunesDaily=scopeId==='lrunes'&&rankingType==='daily_rune';
   const [chartType,setChartType]=useState('line');
-  const [timeStandard,setTimeStandard]=useState('1y');
+  const [zoomLevel,setZoomLevel]=useState(0);
   const [foldBlank,setFoldBlank]=useState(true);
-  const [customFrom,setCustomFrom]=useState('');
-  const [customTo,setCustomTo]=useState('');
   // Leave potentially expensive keyword aggregation OFF until explicitly chosen.
   const [styleFilter,setStyleFilter]=useState('none');
-  const customRange=useMemo(()=>({from:customFrom,to:customTo}),[customFrom,customTo]);
-  const queryEndDate=useMemo(()=>taipeiDateKey(),[]);
-  const effectiveTimeStandard=timeStandard;
+  const [queryEndDate,setQueryEndDate]=useState(()=>taipeiDateKey());
   const scopesQuery=useQuery({
     queryKey:['managed-scopes'],
     queryFn:selectPublicStatisticsMembers,
@@ -605,26 +536,22 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     const scopes=scopesQuery.data||[];
     return scopes.filter(scope=>scope.id===scopeId);
   },[scopeId,scopesQuery.data]);
-  const customReady=effectiveTimeStandard!=='custom'||Boolean(dateKey(customFrom)&&dateKey(customTo)&&customFrom<=customTo);
-  const queryRange=useMemo(
-    ()=>statisticsQueryRange(effectiveTimeStandard,customRange,queryEndDate),
-    [effectiveTimeStandard,customRange,queryEndDate]
-  );
+  const queryRange=useMemo(()=>statisticsZoomWindow(zoomLevel,queryEndDate),[zoomLevel,queryEndDate]);
   const trendQuery=useQuery({
-    queryKey:['statistics-source-trend',scopeId,effectiveTimeStandard,queryRange.startDate,queryRange.endDate],
+    queryKey:['statistics-source-trend',scopeId,zoomLevel,queryRange.startDate,queryRange.endDate],
     queryFn:()=>selectSourceTrendRows(targetScopes,queryRange),
-    enabled:!isLrunesDaily&&!mediaDimension&&Boolean(rankingType)&&Boolean(targetScopes.length)&&customReady&&Boolean(queryRange.startDate&&queryRange.endDate),
+    enabled:!isLrunesDaily&&!mediaDimension&&Boolean(rankingType)&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate),
     staleTime:5*60_000
   });
   const mediaQuery=useQuery({
     queryKey:['statistics-media-facet',scopeId,rankingType,queryRange.startDate,queryRange.endDate],
     queryFn:()=>selectMediaStatisticsFacetRows(targetScopes[0],rankingType,queryRange),
-    enabled:mediaDimension&&Boolean(targetScopes.length)&&customReady&&Boolean(queryRange.startDate&&queryRange.endDate),
+    enabled:mediaDimension&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate),
     staleTime:0,
     refetchOnMount:'always',
     refetchOnWindowFocus:true
   });
-  const summary=useMemo(()=>buildSummary(trendQuery.data||[],effectiveTimeStandard,customRange),[trendQuery.data,effectiveTimeStandard,customRange]);
+  const summary=useMemo(()=>buildSummary(trendQuery.data||[],queryRange),[trendQuery.data,queryRange]);
   const sourceCatalog=useQuery({
     queryKey:['statistics-source-taxonomy'],
     enabled:!isLrunesDaily&&!mediaDimension&&Boolean(rankingType),
@@ -640,13 +567,13 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const sourceRows=useQuery({
     queryKey:['own-scope-source-intersection',scopeId,queryRange.startDate,queryRange.endDate],
     queryFn:()=>selectScopeSourceBreakdownRows(targetScopes[0],queryRange),
-    enabled:!isLrunesDaily&&!mediaDimension&&Boolean(targetScopes.length)&&customReady&&Boolean(queryRange.startDate&&queryRange.endDate),
+    enabled:!isLrunesDaily&&!mediaDimension&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate),
     staleTime:5*60_000
   });
   const adminSource=useMemo(()=>administrativeSourceTrend(sourceRows.data||[],sourceCatalog.data||{},{
     startDate:queryRange.startDate,endDate:queryRange.endDate,
-    unit:effectiveTimeStandard==='1y'?'month':effectiveTimeStandard==='1m'?'week':'day'
-  }),[sourceRows.data,sourceCatalog.data,queryRange.startDate,queryRange.endDate,effectiveTimeStandard]);
+    unit:queryRange.bucket
+  }),[sourceRows.data,sourceCatalog.data,queryRange.startDate,queryRange.endDate,queryRange.bucket]);
   const basicTrend=adminSource.rows;
   const basicSeries=adminSource.series;
   const basicDistribution=adminSource.distribution;
@@ -654,7 +581,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     sources:adminSource.distribution.map(row=>({term:row.name,item_count:row.value})),
     startDate:queryRange.startDate,endDate:queryRange.endDate
   };
-  const facetRange=rowsInWindow(mediaQuery.data||[],effectiveTimeStandard,customRange);
+  const facetRange=rowsInWindow(mediaQuery.data||[],queryRange);
   const facetTotalsForOptions=facetTotals(facetRange.rows);
   const facetNames=facetTotalsForOptions.slice(0,6).map(row=>row.term);
   const facetData=facetTrend(facetRange.rows,facetRange,facetNames);
@@ -681,13 +608,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       {!isLrunesDaily?<>{!mediaDimension?<label><span>{UI_COPY.statistics.chart}</span><select className="scope-select" value={effectiveChartType} onChange={event=>setChartType(event.target.value)}>
         {optionsForCurrent.length?optionsForCurrent.map(([value,label])=><option key={value} value={value}>{label}</option>):<option value="line">尚無可用圖形</option>}
       </select></label>:null}
-      <label><span>{UI_COPY.statistics.range}</span><select className="scope-select" value={timeStandard} onChange={event=>setTimeStandard(event.target.value)}>
-        {TIME_STANDARDS.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
-      </select></label>
-      {timeStandard==='custom'?<>
-        <label><span>{UI_COPY.statistics.start}</span><input className="scope-input" type="date" value={customFrom} onChange={event=>setCustomFrom(event.target.value)}/></label>
-        <label><span>{UI_COPY.statistics.end}</span><input className="scope-input" type="date" value={customTo} onChange={event=>setCustomTo(event.target.value)}/></label>
-      </>:null}
+      <StatisticsZoomControls level={zoomLevel} onChange={setZoomLevel} range={queryRange} onEndDateChange={setQueryEndDate}/>
       {!['pie','radar','radial','treemap','scatter'].includes(effectiveChartType)?<label className="scope-setting-toggle">
         <input type="checkbox" checked={foldBlank} onChange={event=>setFoldBlank(event.target.checked)}/> 折疊空白時間
       </label>:null}
@@ -700,8 +621,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
     {!mediaDimension&&(trendQuery.error||sourceRows.error||sourceCatalog.error)?<p className="scope-status scope-error">{featureDataErrorMessage(trendQuery.error||sourceRows.error||sourceCatalog.error)}</p>:null}
     {mediaDimension&&mediaQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(mediaQuery.error)}</p>:null}
-    {timeStandard==='custom'&&!customReady?<p className="scope-status">請設定有效的開始與結束日期。</p>:null}
-    {!mediaDimension&&!sourceRows.isPending&&!sourceCatalog.isPending&&!sourceRows.error&&!sourceCatalog.error&&customReady?<>
+    {!mediaDimension&&!sourceRows.isPending&&!sourceCatalog.isPending&&!sourceRows.error&&!sourceCatalog.error?<>
       <p className="scope-status">{sourceSummary.startDate&&sourceSummary.endDate?sourceSummary.startDate+' ～ '+sourceSummary.endDate:''}</p>
       <SummaryList rankingType={rankingType} summary={sourceSummary}/>
       <StatisticsMultiChart
@@ -714,19 +634,18 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         height={420}
       />
     </>:null}
-    {mediaDimension&&Boolean(targetScopes.length)&&customReady&&Boolean(queryRange.startDate&&queryRange.endDate)?<div className="scope-stat-controls">
+    {mediaDimension&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate)?<div className="scope-stat-controls">
       <button type="button" className="loc-button" onClick={()=>mediaQuery.refetch()} disabled={mediaQuery.isFetching}>
         {mediaQuery.isFetching?'更新統計中…':'重新整理即時統計'}
       </button>
     </div>:null}
-    {mediaDimension&&!mediaQuery.isPending&&!mediaQuery.error&&customReady?<MediaFacetStatistics
+    {mediaDimension&&!mediaQuery.isPending&&!mediaQuery.error?<MediaFacetStatistics
       key={rankingType+':'+String(navigation.statExclude||'')}
       rankingType={rankingType}
       rows={mediaQuery.data||[]}
       chartType={chartType}
       onChartTypeChange={setChartType}
-      timeStandard={effectiveTimeStandard}
-      customRange={customRange}
+      range={queryRange}
       foldBlank={foldBlank}
       scopeId={scopeId}
       navigation={navigation}
@@ -736,7 +655,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       {runeQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(runeQuery.error)}</p>:null}
       {!runeQuery.isPending&&!runeQuery.error&&runeQuery.data?<Rune66Summary analysis={runeQuery.data}/>:null}
     </>:null}
-    {!isLrunesDaily&&Boolean(targetScopes[0])&&customReady?<ScopeSelfIntersection
+    {!isLrunesDaily&&Boolean(targetScopes[0])?<ScopeSelfIntersection
       key={scopeId}
       scope={targetScopes[0]}
       range={queryRange}

@@ -15,7 +15,7 @@ async function readCatalog(table,columns){
   return (await selectRows(table,{columns,limit:250,offset:0})).rows;
 }
 const DEFAULT_LANE_COUNT=2;
-export default function LocMemberIntersection({scopes=[],startDate='',endDate='',timeStandard='1y'}){
+export default function LocMemberIntersection({scopes=[],startDate='',endDate='',unit='month'}){
   const [laneCount,setLaneCount]=useState(DEFAULT_LANE_COUNT);
   const [choices,setChoices]=useState([]);
   const [graph,setGraph]=useState('line');
@@ -68,7 +68,6 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
       ?lane.metric:'total',
     label:(names.get(lane.person)||lane.person)+' · '+(measures.find(item=>item.id===lane.metric)?.name||'全部作品')
   }));
-  const unit=timeStandard==='1y'?'month':timeStandard==='1m'?'week':'day';
   const calculated=useMemo(()=>calculateMemberCross(adjusted,datasets,{
     from:startDate,to:endDate,unit,
     categories:catalog.data?.categories||[],aliases:catalog.data?.aliases||[]

@@ -11,6 +11,8 @@ import {realMoonPhase} from '../loc/model/moon-phase';
 import {buildReferencedMoonRiver} from './daily-moon-river.mjs';
 import CultureTimeline from '../modular/modules/culture-timeline/CultureTimeline';
 import StatisticsMultiChart,{availableStatisticChartTypes} from '../modular/modules/statistics/StatisticsMultiChart';
+import StatisticsZoomControls from '../modular/modules/statistics/StatisticsZoomControls';
+import {statisticsZoomWindow} from '../modular/modules/statistics/statistics-time-zoom.mjs';
 import {
   DAILY_RUNE_MODES,DAILY_DIRECTIONS,normalizeDailyDraws,rankDailyDraws,pageDailyRanking,
   summarizeDailyDraws,dailyCategoryTrend
@@ -139,18 +141,18 @@ export function LrunesDailyCulturePanel(){
 }
 
 export function LrunesDailyStatisticsPanel(){
-  const [mode,setMode]=useState('1y');
-  const [from,setFrom]=useState('');
-  const [to,setTo]=useState('');
+  const [zoomLevel,setZoomLevel]=useState(0);
+  const [today,setToday]=useState(()=>todayInTaipei());
+  const zoomRange=useMemo(()=>statisticsZoomWindow(zoomLevel,today),[zoomLevel,today]);
   const [analysisMode,setAnalysisMode]=useState('rune');
   const [page,setPage]=useState(1);
   const [chart,setChart]=useState('bar');
-  const {range,query,draws}=useDailyRuneWindow(mode,from,to);
+  const {range,query,draws}=useDailyRuneWindow('custom',zoomRange.startDate,zoomRange.endDate);
   const ranking=useMemo(()=>rankDailyDraws(draws,analysisMode),[draws,analysisMode]);
   const pagination=useMemo(()=>pageDailyRanking(ranking,page),[ranking,page]);
   const summary=useMemo(()=>summarizeDailyDraws(draws),[draws]);
   const featured=useMemo(()=>pagination.rows.slice(0,5),[pagination.rows]);
-  const timeline=useMemo(()=>dailyCategoryTrend(draws,analysisMode,featured,mode==='1y'?'month':'day',range?.startDate,range?.endDate),[draws,analysisMode,featured,mode,range?.startDate,range?.endDate]);
+  const timeline=useMemo(()=>dailyCategoryTrend(draws,analysisMode,featured,zoomRange.bucket,range?.startDate,range?.endDate),[draws,analysisMode,featured,zoomRange.bucket,range?.startDate,range?.endDate]);
   const bars=useMemo(()=>pagination.rows.map(row=>({label:row.label,value:row.count})),[pagination.rows]);
   const runeSeries=featured.map(row=>({key:row.key,label:row.label}));
   const runeCategories=pagination.rows.map(row=>({name:row.label,value:row.count}));
@@ -171,7 +173,7 @@ export function LrunesDailyStatisticsPanel(){
         </select>
       </label>
     </div>
-    <RangeControls mode={mode} setMode={value=>{setMode(value);setPage(1);}} from={from} setFrom={value=>{setFrom(value);setPage(1);}} to={to} setTo={value=>{setTo(value);setPage(1);}}/>
+    <StatisticsZoomControls level={zoomLevel} onChange={value=>{setZoomLevel(value);setPage(1);}} range={zoomRange} onEndDateChange={value=>{setToday(value);setPage(1);}}/>
     {message?<p className="scope-status">{message}</p>:null}
     {!message?<>
       <p className="scope-status">{range.startDate} ～ {range.endDate} · {summary.dayCount} 個紀錄日 · {summary.recordCount} 筆抽取 · {analysisMode==='direction'?'四種位向（含零次）':ranking.length+' 種實際出現的組合'}</p>
