@@ -6,6 +6,7 @@ import {selectScopeSourceBreakdownRows} from '../../../loc/galaxy-query';
 import {selectRows} from '../../../loc/db-query.mjs';
 import {assignedSource} from '../../../loc/member-intersection-model.mjs';
 import StatisticsMultiChart,{availableStatisticChartTypes} from './StatisticsMultiChart';
+import StatisticsChartFrame from './StatisticsChartFrame';
 import {OWN_STAT_DIMENSIONS,ownScopeCategoryCatalog} from '../../../loc/statistics-source-intersection.mjs';
 
 const DAY_MS=86400000;
@@ -27,7 +28,7 @@ function canonicalBucket(day,unit){
   }
   return {key:day,from:day,to:day};
 }
-export default function ScopeSelfIntersection({scope,range}){
+export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLevelChange}){
   const [numberOfLanes,setNumberOfLanes]=useState(2);
   const [selected,setSelected]=useState([]);
   const [kindFilter,setKindFilter]=useState('all');
@@ -199,7 +200,10 @@ export default function ScopeSelfIntersection({scope,range}){
             <div><strong>共同活躍日</strong><span>{calculated.days.toLocaleString()} 天</span></div>
             {calculated.totals.map(item=><div key={item.name}><strong>{item.name}</strong><span>{item.value.toLocaleString()} 筆</span></div>)}
           </div>
-          <StatisticsMultiChart type={shownChartType} rows={calculated.chart} series={series} distribution={calculated.totals} foldBlank={foldBlank} height={410}/>
+          <StatisticsChartFrame level={zoomLevel} onChange={onZoomLevelChange} range={range} idPrefix="scope-self-stat">
+            <StatisticsMultiChart type={shownChartType} rows={calculated.chart} series={series}
+              distribution={calculated.totals} foldBlank={foldBlank} height={410}/>
+          </StatisticsChartFrame>
         </div>:<p className="scope-status">目前細分來源不足 {numberOfLanes} 組；請更換範圍或減少組數。</p>}
       </div>:null}
   </section>;

@@ -11,7 +11,7 @@ import {realMoonPhase} from '../loc/model/moon-phase';
 import {buildReferencedMoonRiver} from './daily-moon-river.mjs';
 import CultureTimeline from '../modular/modules/culture-timeline/CultureTimeline';
 import StatisticsMultiChart,{availableStatisticChartTypes} from '../modular/modules/statistics/StatisticsMultiChart';
-import StatisticsZoomControls from '../modular/modules/statistics/StatisticsZoomControls';
+import StatisticsChartFrame from '../modular/modules/statistics/StatisticsChartFrame';
 import {statisticsZoomWindow} from '../modular/modules/statistics/statistics-time-zoom.mjs';
 import {
   DAILY_RUNE_MODES,DAILY_DIRECTIONS,normalizeDailyDraws,rankDailyDraws,pageDailyRanking,
@@ -180,11 +180,12 @@ export function LrunesDailyStatisticsPanel(){
         </select>
       </label>
     </div>
-    <StatisticsZoomControls level={zoomLevel} onChange={value=>{setZoomLevel(value);setPage(1);}} range={zoomRange}/>
     {message?<p className="scope-status">{message}</p>:null}
     {!message?<>
       <p className="scope-status">{range.startDate} ～ {range.endDate} · {summary.dayCount} 個紀錄日 · {summary.recordCount} 筆抽取 · {analysisMode==='direction'?'四種位向（含零次）':ranking.length+' 種實際出現的組合'}</p>
-      {!ranking.length?<p className="scope-status">目前區間沒有每日符文紀錄。</p>:null}
+      {!ranking.length?<StatisticsChartFrame level={zoomLevel} onChange={value=>{setZoomLevel(value);setPage(1);}} range={zoomRange} idPrefix="daily-rune-stat">
+        <p className="scope-status">目前區間沒有每日符文紀錄。</p>
+      </StatisticsChartFrame>:null}
       {ranking.length?<><div className="scope-ranking">
         {pagination.rows.map((row,index)=><div key={row.key}>
           <strong>{(pagination.currentPage-1)*pagination.pageSize+index+1}. {row.label}</strong>
@@ -196,6 +197,7 @@ export function LrunesDailyStatisticsPanel(){
         <span className="scope-status">第 {pagination.currentPage} / {pagination.totalPages} 頁（每頁 8 筆）</span>
         <button type="button" className="loc-button" disabled={pagination.currentPage===pagination.totalPages} onClick={()=>setPage(current=>Math.min(pagination.totalPages,current+1))}>下一頁</button>
       </nav>:null}
+      <StatisticsChartFrame level={zoomLevel} onChange={value=>{setZoomLevel(value);setPage(1);}} range={zoomRange} idPrefix="daily-rune-stat">
       {selectedChart==='bar'?<ResponsiveContainer width="100%" height={Math.max(220,bars.length*29+50)}>
         <BarChart data={bars} layout="vertical" margin={{top:8,right:16,bottom:8,left:4}}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--loc-line)"/>
@@ -206,7 +208,8 @@ export function LrunesDailyStatisticsPanel(){
         </BarChart>
       </ResponsiveContainer>:<StatisticsMultiChart
         type={selectedChart} rows={timeline} series={runeSeries} distribution={runeCategories} height={360}
-      />}</>:null}
+      />}
+      </StatisticsChartFrame></>:null}
     </>:null}
   </>;
 }

@@ -31,7 +31,7 @@ import {ScopeCustomSourceCategories} from '../../loc/SourceCategoryEditor';
 import ScopeGroupStatisticsSharing from '../../loc/ScopeGroupStatisticsSharing';
 import {selectCrossScopeSharing} from '../../loc/statistics-group-sharing-query.mjs';
 import {canParticipateInCrossStatistics,sharedScopeDensity} from '../../loc/statistics-group-sharing.mjs';
-import StatisticsZoomControls from '../modules/statistics/StatisticsZoomControls';
+import StatisticsChartFrame from '../modules/statistics/StatisticsChartFrame';
 import {statisticsZoomWindow} from '../modules/statistics/statistics-time-zoom.mjs';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
@@ -241,7 +241,7 @@ function facetTrend(rows=[],window={},selectedCategories=[]){
     return output;
   });
 }
-function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeChange,range={},scopeId,navigation={},foldBlank=false}){
+function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeChange,range={},scopeId,navigation={},foldBlank=false,zoomLevel=0,onZoomLevelChange}){
   const router=useRouter();
   const [selectedTag,setSelectedTag]=useState('all');
   const [rankingPage,setRankingPage]=useState(1);
@@ -296,7 +296,9 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeC
         </select>
       </label>
     </div>
-    {!totals.length?<p className="scope-status">{FEATURE_EMPTY_MESSAGE}</p>:<>
+    {!totals.length?<StatisticsChartFrame level={zoomLevel} onChange={onZoomLevelChange} range={range} idPrefix="scope-stat">
+      <p className="scope-status">{FEATURE_EMPTY_MESSAGE}</p>
+    </StatisticsChartFrame>:<>
       <div className="scope-ranking">
         {displayed.slice((currentPage-1)*pageSize,currentPage*pageSize).map(row=><div key={row.term}><strong>{row.term}</strong><span>{row.item_count.toLocaleString()}</span></div>)}
       </div>
@@ -305,13 +307,15 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeC
         <span>{currentPage} / {pages}</span>
         <button type="button" className="loc-button" disabled={currentPage===pages} onClick={()=>setRankingPage(currentPage+1)}>下一頁</button>
       </nav>:null}
-      <StatisticsMultiChart type={chosenChartType}
-        rows={chartRows}
-        series={chartCategories.map(category=>({key:category,label:category}))}
-        distribution={bars.map(row=>({name:row.term,value:row.value}))}
-        foldBlank={foldBlank}
-        height={420}
-      />
+      <StatisticsChartFrame level={zoomLevel} onChange={onZoomLevelChange} range={range} idPrefix="scope-stat">
+        <StatisticsMultiChart type={chosenChartType}
+          rows={chartRows}
+          series={chartCategories.map(category=>({key:category,label:category}))}
+          distribution={bars.map(row=>({name:row.term,value:row.value}))}
+          foldBlank={foldBlank}
+          height={420}
+        />
+      </StatisticsChartFrame>
     </>}
   </>;
 }
@@ -526,7 +530,6 @@ function ScopeGroupStatistics(){
           {locAllowed.length?locAllowed.map(([value,label])=><option key={value} value={value}>{label}</option>):<option value="line">尚無可用圖形</option>}
         </select>
       </label>
-      <StatisticsZoomControls level={zoomLevel} onChange={setZoomLevel} range={zoomRange}/>
     </div>
 
     <p className="scope-status">{startDate&&rangeEndDate?startDate+' ～ '+rangeEndDate:''}</p>
@@ -542,16 +545,19 @@ function ScopeGroupStatistics(){
       {scopeIds.map(id=><a key={id} href={featureNavigationHref(id,'statics')}>{id} · 查看統計</a>)}
     </div>
 
-    {!densityQuery.isPending&&!densityQuery.error&&trendData.length?<StatisticsMultiChart
-      type={locChartType} rows={trendData} series={locSeries}
-      distribution={locDistribution} totalKey={aggregateType==='total'?'total':''} height={420}
-    />:null}
+    <StatisticsChartFrame level={zoomLevel} onChange={setZoomLevel} range={zoomRange} idPrefix="loc-stat">
+      {!densityQuery.isPending&&!densityQuery.error&&trendData.length?<StatisticsMultiChart
+        type={locChartType} rows={trendData} series={locSeries}
+        distribution={locDistribution} totalKey={aggregateType==='total'?'total':''} height={420}
+      />:<p className="scope-status">{densityQuery.isPending?'統計讀取中…':'目前區間沒有可顯示的統計圖形。'}</p>}
+    </StatisticsChartFrame>
     <LocMemberIntersection key={startDate+'|'+rangeEndDate}
       scopes={scopesQuery.data||[]} startDate={startDate} endDate={rangeEndDate}
       unit={bucket} sharing={policy.data||{}}
       laneCount={memberLaneCount} onLaneCountChange={setMemberLaneCount}
       choices={memberChoices} onChoicesChange={setMemberChoices}
-      graph={memberGraph} onGraphChange={setMemberGraph}/>
+      graph={memberGraph} onGraphChange={setMemberGraph}
+      zoomLevel={zoomLevel} onZoomLevelChange={setZoomLevel} zoomRange={zoomRange}/>
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
     {policy.error?<p className="scope-status scope-error">{featureDataErrorMessage(policy.error)}</p>:null}
     {earliest.error?<p className="scope-status scope-error">{featureDataErrorMessage(earliest.error)}</p>:null}
@@ -661,7 +667,6 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       {!isLrunesDaily?<>{!mediaDimension?<label><span>{UI_COPY.statistics.chart}</span><select className="scope-select" value={effectiveChartType} onChange={event=>setChartType(event.target.value)}>
         {optionsForCurrent.length?optionsForCurrent.map(([value,label])=><option key={value} value={value}>{label}</option>):<option value="line">尚無可用圖形</option>}
       </select></label>:null}
-      <StatisticsZoomControls level={zoomLevel} onChange={setZoomLevel} range={queryRange}/>
       {!['pie','radar','radial','treemap','scatter'].includes(effectiveChartType)?<label className="scope-setting-toggle">
         <input type="checkbox" checked={foldBlank} onChange={event=>setFoldBlank(event.target.checked)}/> 折疊空白時間
       </label>:null}
@@ -678,15 +683,17 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     {!mediaDimension&&!sourceRows.isPending&&!sourceCatalog.isPending&&!sourceRows.error&&!sourceCatalog.error?<>
       <p className="scope-status">{sourceSummary.startDate&&sourceSummary.endDate?sourceSummary.startDate+' ～ '+sourceSummary.endDate:''}</p>
       <SummaryList rankingType={rankingType} summary={sourceSummary}/>
-      <StatisticsMultiChart
-        type={effectiveChartType}
-        rows={basicTrend}
-        series={basicSeries}
-        distribution={basicDistribution}
-        totalKey={rankingType==='total'?'total':''}
-        foldBlank={foldBlank}
-        height={420}
-      />
+      <StatisticsChartFrame level={zoomLevel} onChange={setZoomLevel} range={queryRange} idPrefix="scope-stat">
+        <StatisticsMultiChart
+          type={effectiveChartType}
+          rows={basicTrend}
+          series={basicSeries}
+          distribution={basicDistribution}
+          totalKey={rankingType==='total'?'total':''}
+          foldBlank={foldBlank}
+          height={420}
+        />
+      </StatisticsChartFrame>
     </>:null}
     {mediaDimension&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate)?<div className="scope-stat-controls">
       <button type="button" className="loc-button" onClick={()=>mediaQuery.refetch()} disabled={mediaQuery.isFetching}>
@@ -701,6 +708,8 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       onChartTypeChange={setChartType}
       range={queryRange}
       foldBlank={foldBlank}
+      zoomLevel={zoomLevel}
+      onZoomLevelChange={setZoomLevel}
       scopeId={scopeId}
       navigation={navigation}
     />:null}
@@ -713,6 +722,8 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       key={scopeId}
       scope={targetScopes[0]}
       range={queryRange}
+      zoomLevel={zoomLevel}
+      onZoomLevelChange={setZoomLevel}
     />:null}
     </>}
   </section>;

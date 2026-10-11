@@ -10,6 +10,7 @@ import {normalizeDailyDraws} from '../../../lrunes/daily-analytics-model.mjs';
 import {realMoonPhase} from '../../../loc/model/moon-phase';
 import {availableMemberMeasures,calculateMemberCross} from '../../../loc/member-intersection-model.mjs';
 import StatisticsMultiChart,{availableStatisticChartTypes} from './StatisticsMultiChart';
+import StatisticsChartFrame from './StatisticsChartFrame';
 import {sharedGroupCodes,sharedSourceBreakdown,canParticipateInCrossStatistics,allowedMemberMetric} from '../../../loc/statistics-group-sharing.mjs';
 
 async function readCatalog(table,columns){
@@ -19,7 +20,8 @@ const DEFAULT_LANE_COUNT=2;
 export default function LocMemberIntersection({
   scopes=[],startDate='',endDate='',unit='month',sharing={},
   laneCount=DEFAULT_LANE_COUNT,choices=[],graph='line',
-  onLaneCountChange,onChoicesChange,onGraphChange
+  onLaneCountChange,onChoicesChange,onGraphChange,
+  zoomLevel=0,onZoomLevelChange,zoomRange={}
 }){
   // The time range identifies the returned dataset. Choices live in the LOC
   // parent, so remounting one range cannot silently reset selected comparisons.
@@ -145,8 +147,10 @@ export default function LocMemberIntersection({
           <strong>{row.name}</strong><span>{row.value.toLocaleString()} 筆 · {row.activeDays} 天</span>
         </div>)}
       </div>
-      <StatisticsMultiChart type={chosenChart} rows={calculated.rows} series={calculated.series}
-        distribution={distribution} height={420} foldBlank/>
+      <StatisticsChartFrame level={zoomLevel} onChange={onZoomLevelChange} range={zoomRange} idPrefix="loc-member-stat">
+        <StatisticsMultiChart type={chosenChart} rows={calculated.rows} series={calculated.series}
+          distribution={distribution} height={420} foldBlank/>
+      </StatisticsChartFrame>
     </>:null}
   </section>;
 }
