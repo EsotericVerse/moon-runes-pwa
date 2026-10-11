@@ -8,6 +8,7 @@ for(const path of [
   'app/lrunes/three/RuneWorld.jsx','app/lrunes/three/rune-world.css',
   'app/lrunes/list2/RuneAtlasLab.jsx','app/lrunes/duel2/RuneRitualLab.jsx',
   'app/card/page.jsx','app/card/list/page.jsx','app/card/duel/page.jsx',
+  'app/card/daily/page.jsx','app/lrunes/card/daily/page.jsx','app/lrunes/daily3d/RuneDaily3D.jsx',
   'app/lrunes/card/page.jsx','app/lrunes/card/list/page.jsx','app/lrunes/card/duel/page.jsx',
   'app/list2/page.jsx','app/duel2/page.jsx'
 ])assert.ok(existsSync(resolve(base,path)),path+' not found');
@@ -28,16 +29,26 @@ assert.match(duel,/REVEAL_MS=1000/);
 assert.match(duel,/MAX_DRAW=11/);
 assert.match(duel,/onBackgroundClick={!finished\?drawOne:undefined}/);
 assert.match(duel,/loadDrawCards\(/);
-assert.match(duel,/realText\(card,'lots',n\)/);
+assert.match(duel,/function RuneDrawCardDialog\(/);
+assert.match(duel,/onSelect=\{showCard\}/);
+assert.match(duel,/結束抽牌/);
+assert.match(duel,/指示籤詩為/);
 assert.match(duel,/buildFixedReading\(/);
 assert.match(duel,/function finish\(/);
 assert.match(atlas,/selectRows\('silver\.runes_group'/);
 assert.match(atlas,/runeslist/);
-assert.match(atlas,/onSelect={group\?show/);
+assert.match(atlas,/onSelect={group\?show:previewGroup}/);
+assert.match(atlas,/preview\.desc/);
+assert.match(atlas,/onClick=\{\(\)=>enterGroup\(preview\)\}>進入/);
 assert.match(atlas,/role="dialog"/);
 assert.match(atlas,/rune_evolution_history/);
-assert.match(home,/runeHref\('duel2'\)/);
-assert.match(home,/runeHref\('list2'\)/);
+assert.match(home,/runeHref\('card\/duel'\)/);
+assert.match(home,/runeHref\('card\/list'\)/);
+assert.match(home,/runeHref\('card\/daily'\)/);
+assert.match(world,/rune-world-orb-name/);
+assert.match(world,/data-min-render-px="1024"/);
+assert.match(world,/canvas.width=1024;canvas.height=1024/);
+assert.match(read('app/lrunes/daily3d/RuneDaily3D.jsx'),/每日占卜祝福/);
 for(const dep of ['three','@react-three/fiber','@react-three/drei','@react-three/postprocessing','opentype.js']){
   assert.ok(pkg.dependencies[dep],dep+' missing from package.json');
 }
