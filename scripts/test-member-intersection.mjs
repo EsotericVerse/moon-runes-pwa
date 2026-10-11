@@ -59,3 +59,23 @@ test('daily rune dimensions can intersect another member without counting unrela
   const kinds=availableMemberMeasures([...sets.values()].map(x=>x.rows),categories);
   assert.ok(kinds.some(x=>x.id==='daily:direction:正位'));
 });
+
+
+test('custom source assignments are Scope-owned even in LOC member intersections',()=>{
+  const own=[{scope_id:'alice',source_key:'fb',category_code:'threads',display_name:'私人社群',enabled:true}];
+  assert.equal(assignedSource('fb',aliases,categories,own,'alice'),'threads');
+  assert.equal(assignedSource('fb',aliases,categories,own,'bob'),'facebook');
+  const sets=new Map([
+    ['alice',{rows:[{day:'2026-10-01',kind:'source',category:'fb',item_count:2}],daily:[]}],
+    ['bob',{rows:[{day:'2026-10-01',kind:'source',category:'fb',item_count:4}],daily:[]}]
+  ]);
+  const intersection=calculateMemberCross([
+    {person:'alice',metric:'personal:alice:fb'},
+    {person:'bob',metric:'source:facebook'},
+    {person:'alice',metric:'source:threads'}
+  ],sets,{from:'2026-10-01',to:'2026-10-01',unit:'day',categories,aliases,scopeSources:own});
+  assert.deepEqual(intersection.totals.map(x=>x.value),[2,4,2]);
+  const measures=availableMemberMeasures([...sets.values()].map(x=>x.rows),categories,own);
+  assert.ok(measures.some(x=>x.id==='personal:alice:fb'));
+  assert.ok(!measures.some(x=>x.id==='personal:bob:fb'));
+});
