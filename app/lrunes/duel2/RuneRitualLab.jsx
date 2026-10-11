@@ -151,7 +151,7 @@ export default function RuneRitualLab(){
       </button>
     </div>
     <section className="rune-art-stage" aria-label="原創符文美術動態抽牌">
-      <RuneArtStage mode="draw" items={items}
+      <RuneArtStage mode="draw" items={items} charging={busy}
         onSelect={showCard} onBackgroundClick={!finished&&!selected?drawOne:undefined}/>
       <div className="rune-art-stage-label" role="status">{busy?'月光正在揭示符文……':message}</div>
     </section>
