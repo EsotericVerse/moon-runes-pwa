@@ -173,6 +173,8 @@ export default function PrivateXArchiveWeb(){
             <span>準備新增 {n(plan.newCount)} 筆</span>
             <span>已存在 {n(plan.identical)} 筆</span>
             <span>同 ID 不同內容 {n(plan.conflicts)} 筆</span>
+            <span>備份內同 ID 衝突 {n(plan.withinConflicts||0)} 筆</span>
+            <span>備份內重複項目 {n(Math.max(0,preview.acceptedRows-plan.staged))} 筆</span>
           </div>
           <p>預估 <strong>{n(plan.batches)} 批</strong>；每批最多 {n(plan.batchSize)} 筆（按新增量自動調整）。單一路徑順序寫入，不開啟大量平行交易。</p>
           <p className="scope-settings-note">辨識的來源資料檔：{preview.sourceFiles.slice(0,8).join('、')||'無'}{preview.sourceFiles.length>8?' 等 '+n(preview.sourceFiles.length)+' 檔':''}；其他 ZIP 項目 {n(preview.otherFiles)} 個未解析。</p>
