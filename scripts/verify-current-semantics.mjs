@@ -170,13 +170,19 @@ if(!failures.length){
   if(statistics.includes('TIME_STANDARDS')||statistics.includes('timeStandard')||
      !statistics.includes('<StatisticsZoomControls')||
      !statistics.includes('statisticsZoomWindow(')||
-     !zoomControls.includes('縮小時間範圍')||!zoomControls.includes('放大時間範圍')||
-     !zoomModel.includes("bucket:'week'")||
+     !zoomControls.includes('擴大觀察範圍')||!zoomControls.includes('縮小觀察範圍')||
+     zoomControls.includes('type="date"')||zoomControls.includes('<select')||
+     !zoomControls.includes('全部資料')||
+     !zoomModel.includes("days>31?'week'")||
+     !zoomModel.includes('earliestDate')||
+     !statistics.includes('selectFirstDailyRuneDate()')||
+     !statistics.includes('selectFirstScopeStatisticsDate')||
+     !runeDaily.includes('selectFirstDailyRuneDate')||
      !runeDaily.includes('<StatisticsZoomControls')||
      !runeDaily.includes('zoomRange.bucket')||
      !ownIntersection.includes('range?.bucket')||
      !crossMember.includes("unit='month'")){
-    failures.push('Statistics zoom must replace date-unit presets and carry the same aggregation bucket through all comparisons.');
+    failures.push('Statistics controls must be +/- only, default to one year, reach real oldest records and preserve query/aggregation precision.');
   }
 
   const chartChoices=statisticsMultiChart.match(/\['(?:line|bar|pie|area|stacked|composed|scatter|radar|radial|treemap)','/g)||[];
