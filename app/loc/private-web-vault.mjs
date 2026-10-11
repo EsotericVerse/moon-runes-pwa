@@ -141,7 +141,7 @@ export async function planWebImport(db,id){
   });
   await completed(tx);
   plan.batchSize=recommendedWebBatchSize(plan.newCount);
-  plan.batches=Math.ceil(plan.newCount/plan.batchSize);
+  plan.batches=Math.ceil(plan.staged/plan.batchSize); // Includes skipped rows needing staged cleanup.
   return plan;
 }
 export async function confirmWebImport(db,id,onProgress,batchSize=BATCH){
