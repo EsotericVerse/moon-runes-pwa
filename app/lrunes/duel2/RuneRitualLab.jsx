@@ -144,7 +144,11 @@ export default function RuneRitualLab(){
       <div className="rune-3d-stage-label" role="status">{busy?'符文穿過金色光河，等待亮相……':message}</div>
     </section>
     {error?<p className="rune-skin-error" role="alert">{error}</p>:null}
-    <div className="rune-3d-duel-action-dock" role="group" aria-label="占卜操作">
+    <div className="rune-3d-duel-action-dock" role="group" aria-label="抽牌桌操作">
+      {!finished?<button type="button" className="rune-3d-duel-action rune-3d-duel-action--draw"
+        onClick={drawOne} disabled={busy||!!selected||items.length>=MAX_DRAW}>
+        {busy?'召喚中…':items.length?'再召喚一枚':'觸碰召喚'}
+      </button>:null}
       <button type="button" className="rune-3d-duel-action rune-3d-duel-action--restart"
         onClick={reset} disabled={busy||!!selected||!items.length}>
         重新占卜
@@ -155,11 +159,6 @@ export default function RuneRitualLab(){
       </button>:null}
     </div>
     <div className="rune-3d-footer">
-      <div className="rune-skin-controls">
-        {!finished?<button type="button" className={'rune-skin-btn'+(!items.length?' primary':'')} onClick={drawOne} disabled={busy||!!selected||items.length>=MAX_DRAW}>
-          {busy?'召喚中…':items.length?'再召喚一枚':'觸碰召喚'}
-        </button>:null}
-      </div>
       <nav className="rune-skin-controls" aria-label="返回與模式切換">
         <a href={navigationHref('lrunes','',native)} className="rune-skin-btn">回符文首頁</a>
         <a href={navigationHref('lrunes','card',native)} className="rune-skin-btn">← 3D 場域首頁</a>
