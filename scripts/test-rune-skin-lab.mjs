@@ -30,6 +30,18 @@ assert.match(duel,/MAX_DRAW=11/);
 assert.match(duel,/onBackgroundClick={!finished&&!selected\?drawOne:undefined}/);
 assert.match(duel,/loadDrawCards\(/);
 assert.match(duel,/function RuneDrawCardDialog\(/);
+assert.match(duel,/import RuneCardInfo from '\.\.\/RuneCardInfo'/);
+const dialog=duel.slice(duel.indexOf('function RuneDrawCardDialog('),duel.indexOf('const pause='));
+assert.match(dialog,/layout="home"/);
+assert.match(dialog,/realMoonPhase=\{item\.moon\}/);
+assert.match(dialog,/direction=\{item\.direction\}/);
+assert.doesNotMatch(dialog,/rune_etc|lotSections|sit_q|sit_a|daily_r/);
+assert.match(duel,/staticTypes:\[\],moonTypes:\['sit_q'\],currentMoon/);
+assert.match(duel,/createPortal\(/);
+assert.match(duel,/rune-3d-finish-button/);
+assert.match(atlas,/createPortal\(/);
+assert.match(read('app/lrunes/three/rune-world.css'),/z-index:10000/);
+
 assert.match(duel,/onSelect=\{showCard\}/);
 assert.match(duel,/結束抽牌/);
 assert.match(duel,/指示籤詩為/);
