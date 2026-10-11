@@ -2,7 +2,7 @@
 
 import {Component,useEffect,useMemo,useRef,useState} from 'react';
 import {Canvas,useFrame,useThree} from '@react-three/fiber';
-import {OrbitControls,Sparkles,Stars} from '@react-three/drei';
+import {Html,OrbitControls,Sparkles,Stars} from '@react-three/drei';
 import {EffectComposer,Bloom} from '@react-three/postprocessing';
 import * as THREE from 'three';
 import * as opentype from 'opentype.js';
@@ -32,13 +32,13 @@ function gradientTexture(){
   return new THREE.CanvasTexture(canvas);
 }
 function labelTexture(text,foreground='#f8efdf'){
-  const canvas=document.createElement('canvas');canvas.width=384;canvas.height=160;
+  const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=1024;
   const ctx=canvas.getContext('2d');
-  ctx.clearRect(0,0,384,160);ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.clearRect(0,0,1024,1024);ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.shadowColor='#f7deff';ctx.shadowBlur=22;ctx.fillStyle=foreground;
-  const max=text.length>4?43:58;
+  const max=text.length>4?190:280;
   ctx.font='700 '+max+'px "Noto Serif TC","PingFang TC",serif';
-  ctx.fillText(text,192,80,372);
+  ctx.fillText(text,512,512,944);
   const texture=new THREE.CanvasTexture(canvas);
   texture.colorSpace=THREE.SRGBColorSpace;
   return texture;
@@ -81,7 +81,7 @@ function Moon({onTap}){
   });
   return <group position={[0,.1,-.65]} onClick={e=>{e.stopPropagation();onTap?.();}}>
     <mesh ref={sphere}>
-      <sphereGeometry args={[1.04,64,64]}/>
+      <sphereGeometry args={[1.04,128,128]}/>
       <meshPhysicalMaterial color="#dedaf5" roughness={.56} metalness={.07} clearcoat={.18}
         emissive="#7274af" emissiveIntensity={.38}/>
     </mesh>
@@ -181,7 +181,6 @@ function OrbitPath({radius=3.45}){
 }
 function GroupOrb({group,index,total,onClick}){
   const ref=useRef(),pulse=useRef(0);
-  const texture=useMemo(()=>typeof document==='undefined'?null:labelTexture(String(group.name||group.group_id||group.label||index+1)),[group.name,group.group_id,group.label,index]);
   const color=GROUP_COLORS[index%GROUP_COLORS.length];
   useFrame(({clock,camera},delta)=>{
     if(!ref.current)return;
@@ -193,7 +192,6 @@ function GroupOrb({group,index,total,onClick}){
     const s=1+Math.sin(t*1.5+index)*.028+pulse.current*.18;
     ref.current.scale.setScalar(s);
   });
-  useEffect(()=>()=>texture?.dispose(),[texture]);
   return <group ref={ref} onClick={e=>{e.stopPropagation();pulse.current=1;onClick?.(group);}}
     onPointerOver={()=>{document.body.style.cursor='pointer';}}
     onPointerOut={()=>{document.body.style.cursor='';}}>
@@ -210,9 +208,13 @@ function GroupOrb({group,index,total,onClick}){
       <torusGeometry args={[.69,.008,7,90]}/>
       <meshBasicMaterial color="#ffe9bc" transparent opacity={.58}/>
     </mesh>
-    {texture?<sprite position={[0,0,.61]} scale={[.98,.42,1]}>
-      <spriteMaterial map={texture} transparent depthWrite={false} toneMapped={false}/>
-    </sprite>:null}
+    <Html center position={[0,0,.65]} distanceFactor={12}>
+      <button type="button" className="rune-world-orb-name"
+        aria-label={'查看'+(group.name||group.group_id)+'群組說明'}
+        onClick={event=>{event.stopPropagation();pulse.current=1;onClick?.(group);}}>
+        {group.name||group.group_id||'群組'}
+      </button>
+    </Html>
     <Sparkles count={10} scale={1.5} speed={.45} size={2.1} color={color}/>
   </group>;
 }
@@ -278,7 +280,6 @@ function RuneActor({item,index,total,font,mode,onSelect,quality='high'}){
     }
     root.current.position.y+=Math.sin(t*1.3+phase.current)*.17+bounce.current*.45;
     root.current.quaternion.copy(camera.quaternion);
-    root.current.rotation.z+=Math.sin(t*.9+index)*.045;
   });
   return <group ref={root} onClick={e=>{e.stopPropagation();bounce.current=1;onSelect?.(card);}}
     onPointerOver={()=>{document.body.style.cursor='pointer';}}
@@ -349,9 +350,27 @@ class RuneSceneBoundary extends Component {
   }
 }
 export default function RuneWorld({mode='groups',items=[],onSelect,onBackgroundClick,quality='high'}){
-  return <div className="rune-world-canvas" data-renderer="threejs">
+  const wrapper=useRef(null);
+  const [pixelRatio,setPixelRatio]=useState(2);
+  useEffect(()=>{
+    const node=wrapper.current;
+    if(!node)return;
+    const resize=()=>{
+      const rect=node.getBoundingClientRect();
+      // Both framebuffer dimensions must reach at least 1024 physical pixels.
+      // CSS sizes alone never increase the actual WebGL output resolution.
+      const required=Math.max(1024/Math.max(rect.width,1),1024/Math.max(rect.height,1));
+      setPixelRatio(Math.min(6,Math.max(quality==='high'?1.5:1,required,window.devicePixelRatio||1)));
+    };
+    resize();
+    const observer=typeof ResizeObserver!=='undefined'?new ResizeObserver(resize):null;
+    observer?.observe(node);
+    window.addEventListener('resize',resize);
+    return()=>{observer?.disconnect();window.removeEventListener('resize',resize);};
+  },[quality]);
+  return <div ref={wrapper} className="rune-world-canvas" data-renderer="threejs" data-min-render-px="1024">
     <RuneSceneBoundary mode={mode}>
-    <Canvas camera={{position:[0,.15,12.8],fov:45}} dpr={quality==='high'?[1.5,2]:[1,1.5]}
+    <Canvas camera={{position:[0,.15,12.8],fov:45}} dpr={pixelRatio}
       gl={{antialias:true,alpha:false,powerPreference:'high-performance'}}
       onCreated={({gl})=>{gl.toneMapping=THREE.ACESFilmicToneMapping;}}
       onPointerMissed={()=>onBackgroundClick?.()}
