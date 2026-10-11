@@ -76,7 +76,7 @@ function Gallery({mode,items,onSelect,reduced}){
     </div>
   </div>;
 }
-function DrawStage({items,onSelect,onBackgroundClick,reduced,daily=false,charging=false}){
+function DrawStage({items,onSelect,onBackgroundClick,reduced,daily=false,charging=false,actions=null}){
   const last=items[items.length-1];
   const active=last?.card||last;
   const previous=items.slice(0,-1);
@@ -119,8 +119,9 @@ function DrawStage({items,onSelect,onBackgroundClick,reduced,daily=false,chargin
         <div className="rune-art-reveal-title" aria-live="polite">
           <span>第 {items.length} 枚 · {String(active.rune_id).padStart(2,'0')}</span>
           <strong>{runeName(active)}之符文</strong>
-          <span>{last.direction||''}</span>
+          <span className="rune-art-direction-label">卡片方向：{last.direction||''}</span>
         </div>
+        {actions?<div className="rune-art-ritual-actions">{actions}</div>:null}
       </motion.div>:
       <motion.div className="rune-art-empty" key="empty"
         initial={reduced?false:{opacity:0,y:16}}
@@ -128,7 +129,8 @@ function DrawStage({items,onSelect,onBackgroundClick,reduced,daily=false,chargin
         <div className="rune-art-empty-ring" aria-hidden="true">☾</div>
         {daily?<button className="rune-art-invoke" type="button" onClick={()=>onBackgroundClick?.()}
           disabled={!onBackgroundClick}>觸碰月光，召喚每日符文</button>:
-          <p className="rune-art-empty-hint">使用上方「招喚下一枚符文」開始占卜</p>}
+          <p className="rune-art-empty-hint">按下「招喚下一枚符文」，讓月光揭開卡片。</p>}
+        {actions?<div className="rune-art-ritual-actions">{actions}</div>:null}
       </motion.div>}
     </AnimatePresence>
     {previous.length?<div className="rune-art-history" aria-label="先前抽出的符文">
@@ -146,12 +148,12 @@ function DrawStage({items,onSelect,onBackgroundClick,reduced,daily=false,chargin
       onClick={()=>onBackgroundClick()}>重新召喚每日符文 <span aria-hidden="true">✦</span></button>:null}
   </div>;
 }
-export default function RuneArtStage({mode='groups',items=[],onSelect,onBackgroundClick,charging=false}){
+export default function RuneArtStage({mode='groups',items=[],onSelect,onBackgroundClick,charging=false,actions=null}){
   const reduced=useReducedMotion();
   return <div className={'rune-art-world rune-art-world--'+mode}
     data-renderer="artwork-motion" data-visual-mode="2d">
     {(mode==='draw'||mode==='daily')?<DrawStage items={items} onSelect={onSelect}
-      onBackgroundClick={onBackgroundClick} reduced={reduced} daily={mode==='daily'} charging={charging}/>:
+      onBackgroundClick={onBackgroundClick} reduced={reduced} daily={mode==='daily'} charging={charging} actions={actions}/>:
       <Gallery mode={mode} items={items} onSelect={onSelect} reduced={reduced}/>}
   </div>;
 }
