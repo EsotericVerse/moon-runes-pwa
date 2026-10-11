@@ -302,20 +302,24 @@ export default function RuneDrawClient({drawKey='single',embedded=false,canSave=
 
   const selectedMode=useMemo(()=>RUNE_ALL_DRAW_MODES.find(item=>item.key===drawKey)||RUNE_DRAW_MODES[0],[drawKey]);
   const instantDraw=uiSettings?.draw_response==='instant';
-  const moonPhase=useMemo(()=>realMoonPhase(),[]);
+  const [moonPhase,setMoonPhase]=useState(()=>realMoonPhase());
   const ritualMessages=runeRitualMessages(drawKey);
   const singleDaily=drawKey==='single'||drawKey==='daily';
 
   async function finishDraw(){
     try{
+      // Resolve the live Taipei lunar day for each draw, not only at page mount.
+      const currentMoon=realMoonPhase();
+      setMoonPhase(currentMoon);
+      if(currentMoon==='未知')throw new Error('真實月相無法辨識，無法查詢籤詩。');
       const runePool=Array.from({length:66},(_,index)=>index+1);
       const {cards:runeNumbers,directionIndexes,directions}=drawRuneSession(runePool,selectedMode.count);
       const pairs=runeNumbers.map((runeNumber,index)=>({runeNumber:Number(runeNumber),dir:Number(directionIndexes[index])+1}));
       const queryPlan=drawKey==='daily'
-        ?{staticTypes:['direction'],moonTypes:['sit_q','sit_a','daily_r','daily_g','daily_b'],currentMoon:moonPhase}
+        ?{staticTypes:['direction'],moonTypes:['sit_q','sit_a','daily_r','daily_g','daily_b'],currentMoon}
         :drawKey==='single'
-          ?{staticTypes:['direction','lots'],moonTypes:['sit_q','sit_a'],currentMoon:moonPhase}
-          :{staticTypes:[],moonTypes:['sit_q'],currentMoon:moonPhase};
+          ?{staticTypes:['direction','lots'],moonTypes:['sit_q','sit_a'],currentMoon}
+          :{staticTypes:[],moonTypes:['sit_q'],currentMoon};
       const rows=await loadDrawCards(pairs,queryPlan);
       const byNumber=new Map(rows.map(row=>[Number(row.rune_id),row]));
       const cards=runeNumbers.map(number=>byNumber.get(Number(number))).filter(Boolean);
