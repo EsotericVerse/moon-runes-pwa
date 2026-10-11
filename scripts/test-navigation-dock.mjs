@@ -147,7 +147,7 @@ test('daily rune calendar only reads and renders record details after authentica
   const calendar=fs.readFileSync('app/lrunes/DailyRuneCalendar.jsx','utf8');
   assert.match(settings,/未登入時僅顯示空白行事曆/);
   assert.match(settings,/account\.user&&!checking\?<p className="scope-settings-note">/);
-  assert.match(daily,/const canViewDetails=!account\.loading&&Boolean\(account\.user\);/);
+  assert.match(daily,/const canViewDetails=native\\|\\|\\(!account\\.loading&&Boolean\\(account\\.user\\)\\);/);
   assert.match(daily,/const visibleRows=canViewDetails\?rows:EMPTY_ROWS;/);
   assert.match(daily,/if\(!canViewDetails\)\{\s*setRows\(\[\]\);/);
   assert.ok(daily.indexOf('if(!canViewDetails){')<daily.indexOf('selectDailyRuneMonth({year,month})'));
@@ -200,4 +200,16 @@ test('contextual returns and native 404 stay in the Capacitor bundle',()=>{
   assert.match(hub,/navigationHref\('lrunes','card\/duel',native\)/);
   assert.match(notFound,/current\.protocol==='capacitor:'/);
   assert.match(notFound,/index\.html\?loc_direct=1/);
+});
+
+test('native My Phone stays device-only and LunaRunes is immutable in favorites',()=>{
+  const shell=fs.readFileSync('app/AppShell.jsx','utf8');
+  const settings=fs.readFileSync('app/loc/GlobalSettings.jsx','utf8');
+  const home=fs.readFileSync('app/loc/MyPhoneHome.jsx','utf8');
+  assert.match(shell,/favoriteLinks\.unshift/);
+  assert.match(shell,/mobileHomeHref/);
+  assert.match(settings,/disabled=\{native&&item\.id==='lrunes'\}/);
+  assert.match(settings,/MOBILE_HOME_STORAGE_KEY/);
+  assert.match(home,/尚未匯入作品/);
+  assert.match(home,/尚未建立可用的本機作品全文索引/);
 });
