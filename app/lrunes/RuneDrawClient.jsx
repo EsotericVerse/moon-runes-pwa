@@ -398,3 +398,6 @@ export default function RuneDrawClient({drawKey='single',embedded=false,canSave=
     </section>
   </div>;
 }
+
+// Skin laboratories reuse the same rune selection, precise DB query and verse grammar.
+export {randomIndex,loadDrawCards,buildFixedReading};
