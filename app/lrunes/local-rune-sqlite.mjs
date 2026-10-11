@@ -302,4 +302,43 @@ export async function importRuneSQLite(bytes){
   }
   return {addedDraws,addedDaily,foundDraws:parsed.draws.length,foundDaily:parsed.daily.length};
 }
+
+export async function importLocalDailyTransfer(rows){
+  if(!Capacitor.isNativePlatform())throw new Error('每日符文 Local File 匯入僅適用原生 App。');
+  const validated=rows.map(row=>validateDaily({...row,source:'imported'}));
+  const unique=new Set();
+  for(const row of validated){
+    const key=row[0]+'|'+row[1];
+    if(unique.has(key))throw new Error('來源內有重複每日紀錄：'+key);
+    unique.add(key);
+  }
+  const conn=await nativeDatabase();
+  const existing=await conn.query('SELECT '+DAILY_COLUMNS+' FROM lrunes_daily');
+  const current=new Map((existing.values||[]).map(row=>[row.record_date+'|'+row.draw_kind,row]));
+  const fresh=[],conflicts=[];
+  let identical=0;
+  for(const values of validated){
+    const key=values[0]+'|'+values[1],old=current.get(key);
+    if(!old){fresh.push(values);continue;}
+    if(Number(old.rune_number)===values[2]&&old.direction===values[3]&&
+      String(old.recorded_phase||'')===values[4])identical++;
+    else conflicts.push(key);
+  }
+  if(fresh.length){
+    await conn.beginTransaction();
+    try{
+      const sql='INSERT OR IGNORE INTO lrunes_daily('+DAILY_COLUMNS+') VALUES(?,?,?,?,?,?)';
+      for(let offset=0;offset<fresh.length;offset+=100){
+        const batch=fresh.slice(offset,offset+100).map(values=>({statement:sql,values}));
+        await conn.executeSet(batch,false);
+      }
+      await conn.commitTransaction();
+    }catch(error){
+      await conn.rollbackTransaction();
+      throw error;
+    }
+  }
+  return {newCount:fresh.length,duplicateCount:identical,conflictCount:conflicts.length,conflicts};
+}
+
 export async function inspectRuneSQLite(bytes){return parseBackup(bytes);}
