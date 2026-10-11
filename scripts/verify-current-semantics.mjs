@@ -152,7 +152,7 @@ if(!failures.length){
   // public LOC statistics or suppress the independent Daily Rune comparison.
   if(!crossSharing.includes('row.share_enabled===false')||
      !crossSharing.includes("scopeId==='lrunes'||canParticipateInCrossStatistics")||
-     !crossSharing.includes("key.startsWith('daily')return scopeId==='lrunes'")||
+     !crossSharing.includes("key.startsWith('daily'))return scopeId==='lrunes'")||
      !statistics.includes('scopes={scopesQuery.data||[]}')||
      !crossMember.includes('canOfferMemberCrossStatistics(')||
      !crossMember.includes("person==='lrunes'?'daily':'total'")||
