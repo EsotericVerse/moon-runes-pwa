@@ -48,5 +48,5 @@ test('mobile deep-feature dock and rune return link',async({page})=>{
   await page.goto('/lrunes/list/',{waitUntil:'domcontentloaded'});
   const back=page.getByRole('link',{name:/回符文首頁/}).first();
   await expect(back).toBeVisible();
-  await expect(back).toHaveAttribute('href',/\/lrunes\/$/);
+  await expect(back).toHaveAttribute('href',/^(?:https:\/\/lrunes\.lo3rwang\.cc\/|https:\/\/loc\.lo3rwang\.cc\/lrunes\/|\/lrunes\/index\.html)$/);
 });
