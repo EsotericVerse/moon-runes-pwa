@@ -148,18 +148,20 @@ if(!failures.length){
     failures.push('Group sources must have per-Scope opt-in for cross-member totals and charts; personal custom source controls remain independent.');
   }
 
-  // Regression contract: new source-sharing controls must NEVER blank previously
-  // public LOC statistics or suppress the independent Daily Rune comparison.
+  // Regression contract: Daily Rune is an independent LOC comparison test feed.
+  // Failure or withdrawal of group-source permissions cannot suppress it.
   if(!crossSharing.includes('row.share_enabled===false')||
-     !crossSharing.includes("scopeId==='lrunes'||canParticipateInCrossStatistics")||
-     !crossSharing.includes("key.startsWith('daily'))return scopeId==='lrunes'")||
-     !statistics.includes('scopes={scopesQuery.data||[]}')||
-     !crossMember.includes('canOfferMemberCrossStatistics(')||
-     !crossMember.includes("person==='lrunes'?'daily':'total'")||
-     !crossMember.includes("allowedMemberMetric(lane.person,item.id,sharing)")||
+     !crossSharing.includes("key.startsWith('daily'))return false")||
+     !statistics.includes('sharing={policy.data||{}}')||
+     !crossMember.includes("scope:scopes.find(scope=>scope.id==='lrunes')||defaultScopeData('lrunes')")||
+     !crossMember.includes("metric.startsWith('daily')")||
+     !crossMember.includes("?person==='lrunes':allowedMemberMetric(person,metric,sharing)")||
+     !crossMember.includes("const scope=available.find(item=>item.id===id)?.scope")||
+     !crossMember.includes("{!fetched.isPending?<>")||
+     crossMember.includes('canOfferMemberCrossStatistics(')||
      !statisticsMultiChart.includes('if(!hasTime&&!categories.length)return []')||
      !statisticsMultiChart.includes("if(type==='area')return hasTime&&time.length>=2")){
-    failures.push('LOC charts and daily rune cross-statistics must survive source-category sharing changes.');
+    failures.push('LOC Daily Rune comparison must not depend on group source-category loading or authorization.');
   }
 
   const zoomControls=read('app/modular/modules/statistics/StatisticsZoomControls.jsx');
