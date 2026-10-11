@@ -62,6 +62,42 @@ function RuneDrawCardDialog({item,onClose}){
     </section>
   </div>;
 }
+function RuneDrawResultDialog({items,reading,homeHref,onRestart,onClose}){
+  useEffect(()=>{
+    const closeOnEscape=event=>{if(event.key==='Escape')onClose();};
+    window.addEventListener('keydown',closeOnEscape);
+    return()=>window.removeEventListener('keydown',closeOnEscape);
+  },[onClose]);
+  return <div className="rune-art-modal-backdrop rune-art-result-backdrop"
+    role="presentation" onClick={onClose}>
+    <section className="rune-art-modal rune-art-result-modal" role="dialog"
+      aria-modal="true" aria-label="本次占卜籤詩" onClick={event=>event.stopPropagation()}>
+      <div className="rune-art-modal-head rune-art-result-head">
+        <div>
+          <p className="loc-eyebrow">LUNARUNES · RUNE READING</p>
+          <h2>本次占卜籤詩</h2>
+        </div>
+        <div className="rune-art-result-actions">
+          <a className="rune-art-result-home" href={homeHref}>回到首頁</a>
+          <button type="button" className="rune-art-result-new" onClick={onRestart}>開始新抽牌</button>
+          <button type="button" className="rune-art-result-close" onClick={onClose}
+            aria-label="關閉占卜結果">×</button>
+        </div>
+      </div>
+      <div className="rune-art-result-body">
+        <p className="rune-art-result-count">本次抽了 {items.length} 枚符文</p>
+        <p className="rune-art-result-runes">
+          {items.map((item,index)=><span key={item.card.rune_id}>
+            {index?'、':''}{shortRuneName(item.card)}・{item.direction}
+          </span>)}
+        </p>
+        <div className="rune-art-result-verse" aria-label="籤詩內容">
+          <p>{reading}</p>
+        </div>
+      </div>
+    </section>
+  </div>;
+}
 const pause=milliseconds=>new Promise(done=>setTimeout(done,milliseconds));
 export default function RuneRitualLab(){
   const native=useNativeNavigation();
@@ -69,6 +105,7 @@ export default function RuneRitualLab(){
   const [busy,setBusy]=useState(false);
   const [finished,setFinished]=useState(false);
   const [reading,setReading]=useState('');
+  const [resultOpen,setResultOpen]=useState(false);
   const [error,setError]=useState('');
   const [message,setMessage]=useState('月光已就位，準備揭示第一枚符文');
   const cardsRef=useRef([]);
@@ -115,17 +152,28 @@ export default function RuneRitualLab(){
     if(item)setSelected(item);
   }
   function finish(){
-    if(locked.current||busy||finished||selected||!cardsRef.current.length)return;
+    if(locked.current||busy||selected||!cardsRef.current.length)return;
+    if(finished){setResultOpen(true);return;}
     try{
       setReading(officialReading(cardsRef.current));
-      setFinished(true);setError('');setMessage('抽牌完成；結果顯示於下方。');
+      setFinished(true);setResultOpen(true);setError('');
+      setMessage('占卜結束，已在視窗中呈現籤詩。');
     }catch(e){setError(String(e?.message||e));}
   }
   function reset(){
     if(locked.current||busy||selected)return;
     cardsRef.current=[];setItems([]);setSelected(null);setFinished(false);
-    setReading('');setError('');setMessage('月光已就位，輕觸畫面召喚一枚符文');
+    setReading('');setResultOpen(false);setError('');
+    setMessage('月光已就位，準備揭示第一枚符文');
   }
+  const actionDock=<div className="rune-art-duel-action-dock" role="group" aria-label="占卜功能列">
+    <button type="button" className="rune-art-duel-action rune-art-duel-action--restart"
+      onClick={reset} disabled={busy||!!selected||!items.length}>重新開始占卜</button>
+    <button type="button" className="rune-art-duel-action rune-art-duel-action--draw"
+      onClick={drawOne} disabled={busy||finished||!!selected||items.length>=MAX_DRAW}>招喚下一枚符文</button>
+    <button type="button" className="rune-art-duel-action rune-art-duel-action--finish"
+      onClick={finish} disabled={busy||!!selected||!items.length}>占卜結束，觀看籤詩</button>
+  </div>;
   return <main className="loc-next-main rune-skin-lab rune-art-shell rune-art-duel-shell" data-rune-lab="duel2">
     <header className="rune-art-header">
       <p className="loc-eyebrow">LunaRunes · Living Ritual</p>
@@ -136,22 +184,8 @@ export default function RuneRitualLab(){
       <span className="rune-art-toolbar-label">真實月相 {moon}　·　{items.length} / {MAX_DRAW} 枚</span>
 
     </nav>
-    <div className="rune-art-duel-action-dock" role="group" aria-label="占卜功能列">
-      <button type="button" className="rune-art-duel-action rune-art-duel-action--restart"
-        onClick={reset} disabled={busy||!!selected||!items.length}>
-        重新開始占卜
-      </button>
-      <button type="button" className="rune-art-duel-action rune-art-duel-action--draw"
-        onClick={drawOne} disabled={busy||finished||!!selected||items.length>=MAX_DRAW}>
-        招喚下一枚符文
-      </button>
-      <button type="button" className="rune-art-duel-action rune-art-duel-action--finish"
-        onClick={finish} disabled={busy||finished||!!selected||!items.length}>
-        占卜結束，觀看籤詩
-      </button>
-    </div>
     <section className="rune-art-stage" aria-label="原創符文美術動態抽牌">
-      <RuneArtStage mode="draw" items={items} charging={busy}
+      <RuneArtStage mode="draw" items={items} charging={busy} actions={actionDock}
         onSelect={showCard} onBackgroundClick={!finished&&!selected?drawOne:undefined}/>
       <div className="rune-art-stage-label" role="status">{busy?'月光正在揭示符文……':message}</div>
     </section>
@@ -165,12 +199,6 @@ export default function RuneRitualLab(){
         <a href={navigationHref('lrunes','duel/one',native)} className="rune-skin-btn">舊版抽牌</a>
       </nav>
     </div>
-    {finished?<section className="rune-skin-verse rune-art-reading" data-draw-stage="reading">
-      <h2>本次抽牌結果</h2>
-      <p>本次抽了 {items.length} 張符文，{items.length} 張符文分別為：
-        {items.map((item,index)=><span key={item.card.rune_id}>{index?'、':''}{shortRuneName(item.card)}{item.direction}</span>)}。</p>
-      <p>指示籤詩為：{reading}</p>
-    </section>:null}
     <details className="rune-art-draw-guide" aria-label="占卜張數說明">
       <summary className="rune-art-draw-guide-summary">
         <span>占卜張數說明</span>
@@ -188,6 +216,11 @@ export default function RuneRitualLab(){
     </details>
     {selected&&typeof document!=='undefined'?createPortal(
       <RuneDrawCardDialog item={selected} onClose={()=>setSelected(null)}/>,document.body
+    ):null}
+    {resultOpen&&finished&&typeof document!=='undefined'?createPortal(
+      <RuneDrawResultDialog items={items} reading={reading}
+        homeHref={navigationHref('lrunes','card',native)}
+        onRestart={reset} onClose={()=>setResultOpen(false)}/>,document.body
     ):null}
   </main>;
 }
