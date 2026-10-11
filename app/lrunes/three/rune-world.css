@@ -111,7 +111,7 @@ background-clip:text;-webkit-text-fill-color:transparent;}
 /* Floating windows must be above every drei Html orbital label and canvas. */
 .rune-3d-group-backdrop{
   --rune-gold:#ecd6a6;
-  position:fixed;inset:0;z-index:10000;
+  position:fixed;inset:0;z-index:2147483000;
   display:flex;align-items:center;justify-content:center;
   padding:clamp(12px,3vw,34px);overflow:auto;
   background:#040616df;backdrop-filter:blur(12px);
@@ -124,7 +124,7 @@ background-clip:text;-webkit-text-fill-color:transparent;}
 }
 .rune-3d-draw-modal-backdrop{
   --rune-gold:#ecd6a6;
-  z-index:10010;
+  z-index:2147483001;
 }
 .rune-3d-original-card-info{
   display:block;
