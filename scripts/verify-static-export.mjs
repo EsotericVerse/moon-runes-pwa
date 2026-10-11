@@ -33,6 +33,8 @@ if(fs.existsSync(notFoundPath)){
   const html=fs.readFileSync(notFoundPath,'utf8');
   if(!html.includes('https://loc.lo3rwang.cc/'))failures.push('404 export must redirect to LOC homepage');
   if(!html.includes('current.origin===home.origin'))failures.push('404 redirect must retain the LOC homepage loop guard');
+  if(!html.includes("current.protocol==='capacitor:'")||!html.includes('/index.html?loc_direct=1'))
+    failures.push('Native 404 must return to its bundled LOC homepage');
 }
 
 const indexPath=path.join(out,'index.html');
