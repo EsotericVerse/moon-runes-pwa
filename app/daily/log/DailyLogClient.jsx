@@ -2,6 +2,8 @@
 
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import DailyRuneCalendar from '../../lrunes/DailyRuneCalendar';
+import {Capacitor} from '@capacitor/core';
+import DailyRuneTransfer from '../../lrunes/DailyRuneTransfer';
 import ContextReturnNav from '../../modular/ContextReturnNav';
 import RuneCardInfo from '../../lrunes/RuneCardInfo';
 import {runeImage} from '../../lrunes/rune-directory.mjs';
@@ -16,7 +18,7 @@ import {
 } from '../../loc/daily-runes';
 import {selectRows} from '../../loc/db-query.mjs';
 import {useAccount} from '../../loc/use-account';
-import {listLocalDailyRunes} from '../../lrunes/local-rune-sqlite.mjs';
+import {listLocalDailyRunes,importLocalDailyTransfer,updateLocalDailyRune,deleteLocalDailyRune} from '../../lrunes/local-rune-sqlite.mjs';
 
 const FIRST_MONTH=2026*12+7;
 const EMPTY_ROWS=Object.freeze([]);
@@ -63,7 +65,9 @@ function rowKey(row){
 
 export default function DailyLogClient({embedded=false}={}){
   const account=useAccount();
-  const canViewDetails=!account.loading&&Boolean(account.user);
+  const [native,setNative]=useState(false);
+  useEffect(()=>{setNative(Capacitor.isNativePlatform());},[]);
+  const canViewDetails=native||(!account.loading&&Boolean(account.user));
   const monthRequest=useRef(0);
   const [monthValue,setMonthValue]=useState(()=>Math.max(FIRST_MONTH,currentMonthValue()));
   const [rows,setRows]=useState([]);
@@ -84,7 +88,7 @@ export default function DailyLogClient({embedded=false}={}){
     direction:'正位'
   }));
   const {year,month}=monthParts(monthValue);
-  const canWrite=canViewDetails&&account.canManageScopeSync('lrunes');
+  const canWrite=native||(canViewDetails&&account.canManageScopeSync('lrunes'));
   // Calendar dates remain public in the UI; no rune data is queried without login.
   const visibleRows=canViewDetails?rows:EMPTY_ROWS;
 
@@ -99,14 +103,14 @@ export default function DailyLogClient({embedded=false}={}){
     setLoading(true);
     setError('');
     try{
-      const result=await selectDailyRuneMonth({year,month});
+      const result=native?[]:await selectDailyRuneMonth({year,month});
       // Scope personnel can additionally see device-only daily records here.
       // They are not synced into canonical silver.lrunes_daily.
       const local=canWrite?await listLocalDailyRunes():[];
       if(monthRequest.current!==request)return;
       const byKey=new Map((result||[]).map(row=>[rowKey(row),row]));
       const runeIds=[...new Set(local.map(row=>Number(row.rune_number)))];
-      const runeRows=runeIds.length?await selectRows('silver.runes',{
+      const runeRows=runeIds.length&&!native?await selectRows('silver.runes',{
         columns:'rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,positive_keywords,negative_keywords',
         filters:[{column:'rune_id',operator:'in',value:runeIds}],limit:runeIds.length
       }):{rows:[]};
@@ -136,7 +140,7 @@ export default function DailyLogClient({embedded=false}={}){
     }finally{
       if(monthRequest.current===request)setLoading(false);
     }
-  },[year,month,canViewDetails,canWrite]);
+  },[year,month,canViewDetails,canWrite,native]);
 
   useEffect(()=>{
     loadMonth();
@@ -217,7 +221,13 @@ export default function DailyLogClient({embedded=false}={}){
     event.preventDefault();
     setSaving(true);setMessage('');
     try{
-      await insertDailyRuneRecord(newForm);
+      if(native){
+        const result=await importLocalDailyTransfer([{
+          record_date:newForm.recordDate,draw_kind:newForm.drawKind,
+          rune_number:Number(newForm.runeNumber),direction:newForm.direction,recorded_phase:''
+        }]);
+        if(!result.newCount)throw new Error('該日期與類別已有本機紀錄，不會覆寫。');
+      }else await insertDailyRuneRecord(newForm);
       const nextMonth=monthValueOf(newForm.recordDate);
       setSelectedDate(newForm.recordDate);
       if(nextMonth!==monthValue)setMonthValue(nextMonth);
@@ -244,7 +254,8 @@ export default function DailyLogClient({embedded=false}={}){
     if(!editForm)return;
     setSaving(true);setMessage('');
     try{
-      await updateDailyRuneRecord(editForm);
+      if(native)await updateLocalDailyRune(editForm);
+      else await updateDailyRuneRecord(editForm);
       await loadMonth();
       setEditingKey('');setEditForm(null);
       setMessage('已更新每日符文紀錄。');
@@ -257,9 +268,9 @@ export default function DailyLogClient({embedded=false}={}){
     if(!window.confirm('確定刪除這筆每日符文紀錄？'))return;
     setSaving(true);setMessage('');
     try{
-      await deleteDailyRuneRecord({
-        recordDate:String(row.record_date).slice(0,10),
-        drawKind:row.draw_kind
+      if(native)await deleteLocalDailyRune({recordDate:String(row.record_date).slice(0,10),drawKind:row.draw_kind});
+      else await deleteDailyRuneRecord({
+        recordDate:String(row.record_date).slice(0,10),drawKind:row.draw_kind
       });
       await loadMonth();
       setMessage('已刪除每日符文紀錄。');
@@ -341,7 +352,7 @@ export default function DailyLogClient({embedded=false}={}){
                   </>:<p>此前沒有抽到「{current.rune_name}」的紀錄。</p>}
                 </div>
               </div>
-              {canWrite&&!current.local_only&&!editing?<div className="scope-tabs">
+              {canWrite&&(!current.local_only||native)&&!editing?<div className="scope-tabs">
                 <button type="button" disabled={saving} onClick={()=>beginEdit(current)}>編輯</button>
                 <button type="button" disabled={saving} onClick={()=>removeRecord(current)}>刪除</button>
               </div>:null}
@@ -359,6 +370,8 @@ export default function DailyLogClient({embedded=false}={}){
       </div>:null}
     </section>:null}
 
+    {!embedded?<DailyRuneTransfer cloudCanManage={canWrite&&!native}
+      onImported={()=>{loadMonth();window.dispatchEvent(new CustomEvent('loc-rune-local-changed'));}}/>:null}
     {!embedded&&canWrite?<section className="loc-card">
       <p className="loc-eyebrow">手動紀錄</p>
       <h2>人工新增紀錄</h2>
