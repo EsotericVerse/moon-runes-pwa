@@ -35,11 +35,12 @@ const raw=[
 ];
 const taxonomy={categories,aliases,scopeSources,permissions};
 
-test('missing consent denies and consent is independent for every group source of every member',()=>{
- assert.equal(canParticipateInCrossStatistics('unknown',permissions,categories),false);
- assert.deepEqual([...sharedGroupCodes('alice',permissions,categories)],['facebook']);
- assert.deepEqual([...sharedGroupCodes('bob',permissions,categories)],['threads']);
- assert.deepEqual([...sharedGroupCodes('unknown',permissions,categories)],[]);
+test('missing consent preserves existing charts; only explicit group opt-out removes data',()=>{
+ assert.equal(canParticipateInCrossStatistics('unknown',permissions,categories),true);
+ assert.deepEqual([...sharedGroupCodes('alice',permissions,categories)],['facebook','others']);
+ assert.deepEqual([...sharedGroupCodes('bob',permissions,categories)],['facebook','threads','others']);
+ assert.deepEqual([...sharedGroupCodes('',permissions,categories)],[]);
+ assert.deepEqual([...sharedGroupCodes('existing-member',[],categories)],['facebook','threads','others']);
 });
 test('LOC density and total never leak excluded groups or precomputed unfiltered totals',()=>{
  const rows=sharedSourceBreakdown(raw,'alice',taxonomy);
@@ -52,13 +53,21 @@ test('LOC density and total never leak excluded groups or precomputed unfiltered
    {scope_id:'alice',day:'2026-10-01',item_count:4},
    {scope_id:'alice',day:'2026-10-02',item_count:2}
  ]);
- assert.deepEqual(sharedScopeDensity(raw,'charlie',taxonomy),[]);
+ assert.deepEqual(sharedScopeDensity(raw,'charlie',taxonomy),[
+   {scope_id:'charlie',day:'2026-10-01',item_count:9},
+   {scope_id:'charlie',day:'2026-10-02',item_count:7}
+ ]);
 });
 test('personal source labels receive no independent consent; only assigned group matters',()=>{
  const allowed=sharedSourceBreakdown(raw,'bob',taxonomy);
  assert.ok(allowed.some(row=>row.category==='threads'));
- assert.ok(!allowed.some(row=>row.category==='custom-blog'));
- assert.ok(!allowed.some(row=>row.category==='fb'));
+ assert.ok(allowed.some(row=>row.category==='custom-blog'));
+ assert.ok(allowed.some(row=>row.category==='fb'));
+ const denied=[...permissions,{scope_id:'bob',category_code:'facebook',share_enabled:false}];
+ const restricted=sharedSourceBreakdown(raw,'bob',{...taxonomy,permissions:denied});
+ assert.ok(!restricted.some(row=>row.category==='custom-blog'));
+ assert.ok(!restricted.some(row=>row.category==='fb'));
+ assert.ok(restricted.some(row=>row.category==='threads'));
 });
 test('cross-member total and source measures only consume published source groups',()=>{
  const datasets=new Map([['alice',{rows:sharedSourceBreakdown(raw,'alice',taxonomy),daily:[]}]]);
@@ -67,5 +76,18 @@ test('cross-member total and source measures only consume published source group
   {person:'alice',metric:'source:facebook'},
   {person:'alice',metric:'source:threads'}
  ],datasets,{from:'2026-10-01',to:'2026-10-02',unit:'day',categories,aliases,scopeSources});
- assert.deepEqual(result.totals.map(row=>row.value),[6,4,0]);
+ assert.deepEqual(result.totals.map(row=>row.value),[13,4,0]);
+});
+
+test('new and existing members retain all their pre-existing data until an explicit opt-out',()=>{
+ const baseline=sharedScopeDensity(raw,'alice',{...taxonomy,permissions:[]});
+ assert.deepEqual(baseline.map(row=>row.item_count),[9,7]);
+ const revoked=sharedScopeDensity(raw,'alice',{
+   ...taxonomy,permissions:[{scope_id:'alice',category_code:'threads',share_enabled:false}]
+ });
+ assert.deepEqual(revoked.map(row=>row.item_count),[4,7]);
+ const restored=sharedScopeDensity(raw,'alice',{
+   ...taxonomy,permissions:[{scope_id:'alice',category_code:'threads',share_enabled:true}]
+ });
+ assert.deepEqual(restored,baseline);
 });
