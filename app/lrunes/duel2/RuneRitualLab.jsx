@@ -124,7 +124,7 @@ export default function RuneRitualLab(){
     cardsRef.current=[];setItems([]);setSelected(null);setFinished(false);
     setReading('');setError('');setMessage('月光已就位，輕觸畫面召喚一枚符文');
   }
-  return <main className="loc-next-main rune-skin-lab rune-3d-shell" data-rune-lab="duel2">
+  return <main className="loc-next-main rune-skin-lab rune-3d-shell rune-3d-duel-shell" data-rune-lab="duel2">
     <header className="rune-3d-header">
       <p className="loc-eyebrow">LunaRunes · Living Ritual</p>
       <h1>月光召喚 · 3D 抽牌</h1>
