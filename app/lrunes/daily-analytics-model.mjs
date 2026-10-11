@@ -1,3 +1,5 @@
+import {statisticsWeekKey} from '../modular/modules/statistics/statistics-time-zoom.mjs';
+
 // LunaRunes-only daily-draw analytics. No other Scope consumes this module.
 export const DAILY_RUNE_PAGE_SIZE=8;
 export const DAILY_RUNE_MODES=Object.freeze([
@@ -101,7 +103,7 @@ export function dailyTrend(rows=[],bucket='day'){
   const counts=new Map();
   for(const row of rows){
     const day=row.record_date;
-    const key=bucket==='month'?day.slice(0,7):day;
+    const key=bucket==='month'?day.slice(0,7):bucket==='week'?statisticsWeekKey(day):day;
     counts.set(key,(counts.get(key)||0)+1);
   }
   return [...counts.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([key,total])=>({
@@ -118,7 +120,7 @@ export function dailyCategoryTrend(rows=[],mode='rune',selected=[],bucket='day',
   if(!/^\d{4}-\d{2}-\d{2}$/.test(first)||!/^\d{4}-\d{2}-\d{2}$/.test(last)||first>last)return [];
   for(let day=new Date(first+'T00:00:00Z'),stop=new Date(last+'T00:00:00Z');day<=stop;day.setUTCDate(day.getUTCDate()+1)){
     const date=day.toISOString().slice(0,10);
-    const period=bucket==='month'?date.slice(0,7):date;
+    const period=bucket==='month'?date.slice(0,7):bucket==='week'?statisticsWeekKey(date):date;
     if(!result.has(period)){
       const item={period:period.replaceAll('-','/')};
       for(const key of keys)item[key]=0;
@@ -126,7 +128,7 @@ export function dailyCategoryTrend(rows=[],mode='rune',selected=[],bucket='day',
     }
   }
   for(const row of rows){
-    const period=bucket==='month'?row.record_date.slice(0,7):row.record_date;
+    const period=bucket==='month'?row.record_date.slice(0,7):bucket==='week'?statisticsWeekKey(row.record_date):row.record_date;
     const key=dailyCategoryKey(row,mode);
     const record=result.get(period);
     if(record&&keys.has(key))record[key]++;
