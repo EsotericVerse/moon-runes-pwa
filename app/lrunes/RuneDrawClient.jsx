@@ -73,45 +73,49 @@ async function loadVerseOnlyCards(pairs,currentMoon){
   return cards;
 }
 
+// One drawn rune: fetch only its exact direction and current moon (no OR list).
+async function loadSingleDrawCard(pair,{staticTypes=[],moonTypes=[],currentMoon=''}) {
+  const runeId=Number(pair.runeNumber),dir=Number(pair.dir);
+  const base=await selectRows('silver.runes',{
+    columns:RUNE_COLUMNS,
+    filters:[{column:'rune_id',operator:'eq',value:runeId}],
+    limit:1,offset:0
+  });
+  const card=base.rows?.[0];
+  if(!card)throw new Error('抽中的符文資料不完整：'+runeId);
+  const rune={...card,rune_etc:{}};
+  const source=base.dataSource||'auto';
+  const readTypes=async(types,moon)=>{
+    if(!types.length)return;
+    if(moon&&moon==='未知')throw new Error('真實月相無法辨識，無法查詢籤詩。');
+    const filters=[
+      {column:'rune_id',operator:'eq',value:runeId},
+      {column:'dir',operator:'eq',value:dir},
+      {column:'type',operator:'in',value:types}
+    ];
+    if(moon)filters.push({column:'current_moon',operator:'eq',value:moon});
+    const {rows}=await selectRows('silver.runes_etc',{
+      columns:'type,desc',filters,limit:types.length,offset:0,source
+    });
+    const found=new Map((rows||[]).map(row=>[String(row.type),String(row.desc||'').trim()]));
+    for(const type of types){
+      const value=found.get(type);
+      // 65/66 have no daily_r/g/b canonical entries; do not invent them.
+      const specialDaily=runeId>=65&&['daily_r','daily_g','daily_b'].includes(type);
+      if(!value&&!specialDaily)throw new Error('籤詩資料未讀取完整：'+type+'，符文 '+runeId+'、位向 '+dir);
+      if(value)rune.rune_etc[type]={[dir]:value};
+    }
+  };
+  await readTypes(staticTypes,'');
+  if(moonTypes.length)await readTypes(moonTypes,currentMoon);
+  return [rune];
+}
+
 async function loadDrawCards(pairs,{staticTypes=[],moonTypes=[],currentMoon=''}) {
-  if(!staticTypes.length&&moonTypes.length===1&&moonTypes[0]==='sit_q')return loadVerseOnlyCards(pairs,currentMoon);
-  const ids=[...new Set(pairs.map(item=>Number(item.runeNumber)))];
-  const pairFilter=pairs.map(item=>`and(rune_id.eq.${Number(item.runeNumber)},dir.eq.${Number(item.dir)})`).join(',');
-  const staticPromise=staticTypes.length?selectRows('silver.runes_etc',{
-    columns:'rune_id,dir,type,current_moon,desc',
-    filters:[{column:'type',operator:'in',value:staticTypes}],
-    orFilter:pairFilter,
-    limit:Math.max(1,pairs.length*staticTypes.length),
-    offset:0
-  }):Promise.resolve({rows:[]});
-  const moonPromise=moonTypes.length&&currentMoon&&currentMoon!=='未知'?selectRows('silver.runes_etc',{
-    columns:'rune_id,dir,type,current_moon,desc',
-    filters:[
-      {column:'type',operator:'in',value:moonTypes},
-      {column:'current_moon',operator:'eq',value:currentMoon}
-    ],
-    orFilter:pairFilter,
-    limit:Math.max(1,pairs.length*moonTypes.length),
-    offset:0
-  }):Promise.resolve({rows:[]});
-  const [runeResult,staticResult,moonResult]=await Promise.all([
-    selectRows('silver.runes',{
-      columns:RUNE_COLUMNS,
-      filters:[{column:'rune_id',operator:'in',value:ids}],
-      limit:ids.length,
-      offset:0
-    }),
-    staticPromise,
-    moonPromise
-  ]);
-  const map=new Map((runeResult.rows||[]).map(row=>[Number(row.rune_id),{...row,rune_etc:{}}]));
-  for(const row of [...(staticResult.rows||[]),...(moonResult.rows||[])]){
-    const rune=map.get(Number(row.rune_id));
-    if(!rune)continue;
-    rune.rune_etc[row.type]??={};
-    rune.rune_etc[row.type][Number(row.dir)]=String(row.desc||'');
-  }
-  return [...map.values()];
+  if(pairs.length===1)return loadSingleDrawCard(pairs[0],{staticTypes,moonTypes,currentMoon});
+  if(!staticTypes.length&&moonTypes.length===1&&moonTypes[0]==='sit_q')
+    return loadVerseOnlyCards(pairs,currentMoon);
+  throw new Error('不支援的抽牌查詢組合。');
 }
 
 async function loadRuneCard(runeId){
