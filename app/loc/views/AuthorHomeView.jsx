@@ -1,8 +1,10 @@
 import AuthorHomeEditableBlocks from '../AuthorHomeEditableBlock';
+import ContextReturnNav from '../../modular/ContextReturnNav';
 
 function AuthorPage({eyebrow,title,subtitle,intro,sections=[]}){
   // Detailed subpages only. The public homepage uses shared LOC DB blocks.
   return <section className="loc-view scope-home-composition">
+    <ContextReturnNav scopeId="lo3rwang" label="回作者首頁"/>
     <header className="loc-hero loc-hero-feature" id="top">
       {eyebrow?<p className="loc-eyebrow">{eyebrow}</p>:null}
       <div className="home-title-row"><h1>{title}</h1>{subtitle?<p className="loc-subtitle">{subtitle}</p>:null}</div>
