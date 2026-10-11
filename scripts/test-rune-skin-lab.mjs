@@ -40,7 +40,8 @@ assert.match(duel,/staticTypes:\[\],moonTypes:\['sit_q'\],currentMoon/);
 assert.match(duel,/createPortal\(/);
 assert.match(duel,/rune-3d-duel-action-dock/);
 assert.match(atlas,/createPortal\(/);
-assert.match(read('app/lrunes/three/rune-world.css'),/z-index:10000/);
+assert.match(read('app/lrunes/three/rune-world.css'),/z-index:2147483000/);
+assert.match(world,/zIndexRange=\{\[100,0\]\}/);
 
 assert.match(duel,/onSelect=\{showCard\}/);
 assert.match(duel,/結束抽牌/);
