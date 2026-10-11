@@ -20,6 +20,22 @@ export function canParticipateInCrossStatistics(scopeId,permissions=[],categorie
 export function canOfferMemberCrossStatistics(scopeId,permissions=[],categories=[]){
   return scopeId==='lrunes'||canParticipateInCrossStatistics(scopeId,permissions,categories);
 }
+export function allowedMemberMetric(scopeId,metric,taxonomy={}){
+  const key=String(metric||'');
+  const shared=sharedGroupCodes(scopeId,taxonomy.permissions,taxonomy.categories);
+  if(key.startsWith('daily'))return scopeId==='lrunes';
+  if(key.startsWith('source:'))return shared.has(key.slice(7));
+  if(key.startsWith('personal:')){
+    const prefix='personal:'+scopeId+':';
+    if(!key.startsWith(prefix))return false;
+    const sourceKey=key.slice(prefix.length).toLowerCase();
+    return (taxonomy.scopeSources||[]).some(row=>row.scope_id===scopeId&&
+      row.enabled!==false&&String(row.source_key||'').toLowerCase()===sourceKey&&
+      shared.has(row.category_code));
+  }
+  if(key==='total'||key==='text'||key==='multimedia'||key.startsWith('media:'))return shared.size>0;
+  return false;
+}
 export function sharedSourceBreakdown(rows=[],scopeId='',taxonomy={}){
   const categories=taxonomy.categories||[],aliases=taxonomy.aliases||[];
   const personal=taxonomy.scopeSources||[],permissions=taxonomy.permissions||[];
