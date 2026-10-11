@@ -97,7 +97,7 @@ test('NAV pins return to LOC, conditionally scrolls and expands directories as a
   assert.equal(fs.readFileSync('app/styles/uiux.css','utf8').includes('.scope-global{\n  position:sticky;'),false);
   assert.ok(fs.readFileSync('app/styles/bottom-navigation.css','utf8').includes('.scope-feature-dock{\n  position:fixed;'));
   assert.match(global,/@import "\.\/styles\/nav.css";/);
-  assert.match(settings,/>新增目錄<\/button>/);
+  assert.match(settings,/新增、刪除與目錄管理暫不啟用/);
   assert.match(settings,/FOLDERS_SETTING_KEY/);
 });
 
@@ -122,31 +122,46 @@ test('native first-row NAV respects iOS safe area while web retains original lay
 });
 
 
-test('Settings opens with the interactive daily rune calendar before homepage and preserves existing settings',()=>{
+test('Settings React Select shows one section and retains daily, local files and managed imports',()=>{
   const settings=fs.readFileSync('app/loc/GlobalSettings.jsx','utf8');
   const daily=fs.readFileSync('app/daily/log/DailyLogClient.jsx','utf8');
   const content=settings.slice(settings.indexOf('<div className="scope-content scope-settings-options">'));
-  assert.match(settings,/import DailyLogClient from '\.\.\/daily\/log\/DailyLogClient';/);
+  assert.match(settings,/import Select from 'react-select';/);
+  assert.match(settings,/inputId="loc-settings-function"/);
+  assert.match(settings,/section==='daily'/);
+  assert.match(settings,/section==='files'/);
+  assert.match(settings,/section==='favorites'/);
+  assert.match(settings,/section==='manage'/);
+  assert.match(settings,/section==='home'/);
+  assert.match(settings,/section==='account'/);
   assert.match(content,/<DailyLogClient embedded\/>/);
-  const calendar=content.indexOf('<h2 id="settings-daily-calendar-title">每日符文行事曆</h2>');
-  const homepage=content.indexOf('<h2>設定首頁</h2>');
-  const favorites=content.indexOf('<h2>我的最愛</h2>');
-  const login=content.indexOf('<h2>登入</h2>');
-  assert.ok(calendar>=0&&calendar<homepage&&homepage<favorites&&favorites<login);
-  assert.equal(content.match(/每日符文行事曆<\/h2>/g)?.length,1);
+  assert.match(content,/<PrivateLocalFiles\/>/);
+  assert.match(content,/<ManagementImportPanel/);
+  assert.match(content,/設定首頁/);
+  assert.match(content,/我的最愛/);
+  assert.match(content,/登入/);
   assert.match(content,/navigationHref\('lrunes','daily\/log',native\)/);
-  assert.match(daily,/export default function DailyLogClient\(\{embedded=false\}/);
   assert.match(daily,/<DailyRuneCalendar/);
   assert.match(daily,/\{!embedded&&canWrite\?/);
 });
-
-
+test('governance management moves to permissions-scoped Settings, and the old URL redirects',()=>{
+  const governance=fs.readFileSync('app/modular/features/Governance.jsx','utf8');
+  const legacy=fs.readFileSync('app/loc/GovernanceManagement.jsx','utf8');
+  const settings=fs.readFileSync('app/loc/GlobalSettings.jsx','utf8');
+  assert.doesNotMatch(governance,/governance-management-cta/);
+  assert.match(legacy,/window.location.replace\(target\)/);
+  assert.match(settings,/canManageSelected/);
+  assert.match(settings,/ManagementArticlePublisher/);
+  assert.match(settings,/ScopeSettingsPanel/);
+  assert.match(settings,/ScopeGroupManagement/);
+  assert.match(settings,/section==='files'\?\(native\?<PrivateLocalFiles\/>/);
+});
 test('daily rune calendar only reads and renders record details after authentication',()=>{
   const settings=fs.readFileSync('app/loc/GlobalSettings.jsx','utf8');
   const daily=fs.readFileSync('app/daily/log/DailyLogClient.jsx','utf8');
   const calendar=fs.readFileSync('app/lrunes/DailyRuneCalendar.jsx','utf8');
-  assert.match(settings,/未登入時僅顯示空白行事曆/);
-  assert.match(settings,/account\.user&&!checking\?<p className="scope-settings-note">/);
+  assert.match(settings,/每日符文紀錄與日曆/);
+  assert.match(settings,/\(native\|\|account\.user\)&&!checking\?<p className="scope-settings-note">/);
   assert.match(daily,/const canViewDetails=native\\|\\|\\(!account\\.loading&&Boolean\\(account\\.user\\)\\);/);
   assert.match(daily,/const visibleRows=canViewDetails\?rows:EMPTY_ROWS;/);
   assert.match(daily,/if\(!canViewDetails\)\{\s*setRows\(\[\]\);/);
@@ -208,8 +223,15 @@ test('native My Phone stays device-only and LunaRunes is immutable in favorites'
   const home=fs.readFileSync('app/loc/MyPhoneHome.jsx','utf8');
   assert.match(shell,/favoriteLinks\.unshift/);
   assert.match(shell,/mobileHomeHref/);
-  assert.match(settings,/disabled=\{native&&item\.id==='lrunes'\}/);
+  assert.match(settings,/月之符文.*固定保留/);
   assert.match(settings,/MOBILE_HOME_STORAGE_KEY/);
   assert.match(home,/尚未匯入作品/);
   assert.match(home,/尚未建立可用的本機作品全文索引/);
+});
+
+test('retired private browser-only workbench cannot be reached from Settings',()=>{
+  const settings=fs.readFileSync('app/loc/GlobalSettings.jsx','utf8');
+  assert.doesNotMatch(settings,/private-import/);
+  assert.equal(fs.existsSync('app/private-import/page.jsx'),false);
+  assert.equal(fs.existsSync('app/loc/PrivateXArchiveWeb.jsx'),false);
 });
