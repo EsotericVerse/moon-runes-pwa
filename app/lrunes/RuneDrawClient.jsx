@@ -1,5 +1,7 @@
 'use client';
 
+import ContextReturnNav from '../modular/ContextReturnNav';
+
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {runeImage} from './rune-directory.mjs';
 import {selectRows} from '../loc/db-query.mjs';
@@ -386,6 +388,7 @@ export default function RuneDrawClient({drawKey='single',embedded=false,canSave=
 
   return <div className="runes-draw-surface">
     <section className="loc-view">
+      {!embedded?<ContextReturnNav scopeId="lrunes" label="回符文首頁"/>:null}
       {!embedded?<header className="loc-hero" id="intro">
         <p className="loc-eyebrow">月之符文</p>
         <h1>月之符文</h1>
