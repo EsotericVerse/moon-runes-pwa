@@ -341,4 +341,33 @@ export async function importLocalDailyTransfer(rows){
   return {newCount:fresh.length,duplicateCount:identical,conflictCount:conflicts.length,conflicts};
 }
 
+export async function updateLocalDailyRune({recordDate,drawKind,runeNumber,direction}={}){
+  if(!Capacitor.isNativePlatform())throw new Error('只能在本機 App 編輯每日符文。');
+  const values=validateDaily({
+    record_date:recordDate,draw_kind:drawKind,rune_number:Number(runeNumber),
+    direction,recorded_phase:'',source:'local'
+  });
+  const conn=await nativeDatabase();
+  const previous=(await conn.query(
+    'SELECT '+DAILY_COLUMNS+' FROM lrunes_daily WHERE record_date=? AND draw_kind=?',
+    [values[0],values[1]]
+  )).values||[];
+  if(!previous.length)throw new Error('本機沒有這筆每日紀錄。');
+  const changed=await conn.run(
+    'UPDATE lrunes_daily SET rune_number=?,direction=? WHERE record_date=? AND draw_kind=?',
+    [values[2],values[3],values[0],values[1]],false
+  );
+  if(!Number(changed?.changes?.changes||0))throw new Error('本機每日紀錄未更新。');
+  return true;
+}
+export async function deleteLocalDailyRune({recordDate,drawKind}={}){
+  if(!Capacitor.isNativePlatform())throw new Error('只能在本機 App 刪除每日符文。');
+  const date=String(recordDate||''),kind=String(drawKind||'');
+  if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)||!['main','supplement','history_1','history_2'].includes(kind))
+    throw new Error('每日符文日期或類別不正確。');
+  const conn=await nativeDatabase();
+  const result=await conn.run('DELETE FROM lrunes_daily WHERE record_date=? AND draw_kind=?',[date,kind],false);
+  if(!Number(result?.changes?.changes||0))throw new Error('本機沒有這筆每日紀錄。');
+  return true;
+}
 export async function inspectRuneSQLite(bytes){return parseBackup(bytes);}
