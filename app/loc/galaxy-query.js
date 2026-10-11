@@ -451,7 +451,7 @@ export async function selectFirstScopeStatisticsDate(scope){
     })
   ]);
   const dates=[...(text.rows||[]),...(media.rows||[])].map(row=>String(row.createtime||'').slice(0,10))
-    .filter(day=>/^\\d{4}-\\d{2}-\\d{2}$/.test(day)).sort();
+    .filter(day=>/^\d{4}-\d{2}-\d{2}$/.test(day)).sort();
   return dates[0]||'';
 }
 
