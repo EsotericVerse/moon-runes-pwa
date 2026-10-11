@@ -6,6 +6,7 @@
 - [x] 權限資料由 `silver.scope_group_source_sharing(scope_id,category_code,share_enabled)` 保存；Supabase、Neon 均已建立並核對 RLS。
 - [x] LOC 合併總數與跨成員交互統計只納入同意的群組來源資料，不使用未過濾的「全部作品」總數；自己的統計不受影響。
 - [x] 「個人自訂來源分類」不增加分享選項，來源所屬群組仍由原有分類邏輯決定。
+- [x] 每日符文是獨立的 LOC 交互統計**測試資料**，不是群組來源、不是個人自訂來源、不是作品來源；來源分類讀取失敗或全部關閉時，每日符文測試項仍可使用。
 - [ ] 自動化與正式環境驗證：各群組開關、撤銷、跨 Scope 數量、Neon 備援，以及每日符文在 LOC 交互統計中獨立於分類授權。不得要求使用者補救或重新開放既有統計。
 - [x] 更正誤建的整體 `statistics_cross_scope_enabled`：已確認 runtime 不使用，並於 2026-10-11 自 Supabase/Neon 的 `silver.lo3rwang`、`silver.lrunes` 實體移除。
 
