@@ -2,126 +2,130 @@ import assert from 'node:assert/strict';
 import {existsSync,readFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 
-const base=process.cwd();
-const read=path=>readFileSync(resolve(base,path),'utf8');
-for(const path of [
-  'app/lrunes/three/RuneWorld.jsx','app/lrunes/three/rune-world.css',
-  'app/lrunes/list2/RuneAtlasLab.jsx','app/lrunes/duel2/RuneRitualLab.jsx',
-  'app/card/page.jsx','app/card/list/page.jsx','app/card/duel/page.jsx',
-  'app/card/daily/page.jsx','app/lrunes/card/daily/page.jsx','app/lrunes/daily3d/RuneDaily3D.jsx',
-  'app/lrunes/card/page.jsx','app/lrunes/card/list/page.jsx','app/lrunes/card/duel/page.jsx',
-  'app/list2/page.jsx','app/duel2/page.jsx'
-])assert.ok(existsSync(resolve(base,path)),path+' not found');
-const world=read('app/lrunes/three/RuneWorld.jsx');
+const root=process.cwd();
+const read=path=>readFileSync(resolve(root,path),'utf8');
+const files=[
+  'app/lrunes/visual/RuneArtStage.jsx',
+  'app/lrunes/visual/rune-art-stage.css',
+  'app/lrunes/visual/rune-art-layout.css',
+  'app/lrunes/duel2/RuneRitualLab.jsx',
+  'app/lrunes/list2/RuneAtlasLab.jsx',
+  'app/lrunes/daily3d/RuneDaily3D.jsx',
+  'app/lrunes/RunesClient.jsx',
+  'app/lrunes/Rune3DNav.jsx',
+  'app/card/page.jsx','app/card/duel/page.jsx',
+  'app/card/list/page.jsx','app/card/daily/page.jsx',
+  'app/lrunes/card/duel/page.jsx','app/lrunes/card/list/page.jsx',
+  'app/lrunes/card/daily/page.jsx',
+  'app/duel/one/page.jsx','app/list/page.jsx'
+];
+for(const path of files)assert.ok(existsSync(resolve(root,path)),path+' missing');
+
+const art=read('app/lrunes/visual/RuneArtStage.jsx');
 const duel=read('app/lrunes/duel2/RuneRitualLab.jsx');
 const atlas=read('app/lrunes/list2/RuneAtlasLab.jsx');
-const home=read('app/lrunes/RunesClient.jsx');
+const daily=read('app/lrunes/daily3d/RuneDaily3D.jsx');
+const directory=read('app/lrunes/rune-directory.mjs');
 const pkg=JSON.parse(read('package.json'));
-assert.match(world,/from '@react-three\/fiber'/);
-assert.match(world,/new THREE.ExtrudeGeometry/);
-assert.match(world,/new THREE.CatmullRomCurve3/);
-assert.match(world,/function Moon\(/);
-assert.match(world,/function Nebula\(/);
-assert.match(world,/function OrbitingRunes\(/);
-assert.match(world,/useFrame\(/);
-assert.match(world,/function RuneActor\(/);
-assert.match(duel,/REVEAL_MS=1000/);
-assert.match(duel,/MAX_DRAW=11/);
-assert.match(duel,/onBackgroundClick={!finished&&!selected\?drawOne:undefined}/);
-assert.match(duel,/loadDrawCards\(/);
-assert.match(duel,/function RuneDrawCardDialog\(/);
-assert.match(duel,/import RuneCardInfo from '\.\.\/RuneCardInfo'/);
-const dialog=duel.slice(duel.indexOf('function RuneDrawCardDialog('),duel.indexOf('const pause='));
-assert.match(dialog,/layout="home"/);
-assert.match(dialog,/realMoonPhase=\{item\.moon\}/);
-assert.match(dialog,/direction=\{item\.direction\}/);
-assert.doesNotMatch(dialog,/rune_etc|lotSections|sit_q|sit_a|daily_r/);
-assert.match(duel,/staticTypes:\[\],moonTypes:\['sit_q'\],currentMoon/);
-assert.match(duel,/createPortal\(/);
-assert.match(duel,/rune-3d-duel-action-dock/);
-assert.match(atlas,/createPortal\(/);
-assert.match(read('app/lrunes/three/rune-world.css'),/z-index:2147483000/);
-assert.match(world,/zIndexRange=\{\[100,0\]\}/);
+const skin=read('app/lrunes/visual/rune-art-stage.css');
+const layout=read('app/lrunes/visual/rune-art-layout.css');
 
+assert.ok(pkg.dependencies.motion,'Motion package must be available');
+assert.match(art,/from 'motion\/react'/);
+assert.match(art,/AnimatePresence/);
+assert.match(art,/useReducedMotion/);
+assert.match(art,/groupImage,runeImage,runeName/);
+assert.match(art,/function Gallery\(/);
+assert.match(art,/function DrawStage\(/);
+assert.match(art,/className="rune-art-featured-card"/);
+assert.match(art,/className="rune-art-history"/);
+assert.match(art,/data-visual-mode="2d"/);
+// Retired renderer and demo assets must not be imported in any artwork route.
+for(const [path,src] of [
+  ['app/lrunes/visual/RuneArtStage.jsx',art],
+  ['app/lrunes/duel2/RuneRitualLab.jsx',duel],
+  ['app/lrunes/list2/RuneAtlasLab.jsx',atlas],
+  ['app/lrunes/daily3d/RuneDaily3D.jsx',daily]
+]){
+  assert.doesNotMatch(src,/three\/RuneWorld|three\/rune-world\.css|RuneGlyph3D|RuneAuraFX/gi,path+' must not use retired renderer');
+  assert.doesNotMatch(src,/@react-three|webgl|THREE\.\w+|<Canvas\b|<Text3D\b|tarot/i,path+' must be artwork-only');
+  if(path.includes('RuneRitualLab')||path.includes('RuneAtlasLab')||path.includes('RuneDaily3D')){
+    assert.match(src,/import RuneArtStage from '\.\.\/visual\/RuneArtStage'/);
+    assert.match(src,/import '\.\.\/visual\/rune-art-layout\.css'/);
+    assert.match(src,/<RuneArtStage mode=/);
+  }
+}
+assert.doesNotMatch(skin+layout,/transform-style:\s*preserve-3d|perspective\s*:|rotateY\s*\(/i);
+assert.match(skin,/\.rune-art-gallery-grid/);
+assert.match(skin,/\.rune-art-card-frame/);
+assert.match(layout,/\.rune-art-duel-action-dock/);
+assert.match(layout,/\.rune-art-group-preview/);
+
+// The old canonical /duel and /list routes are still independent and intact.
+assert.match(read('app/duel/one/page.jsx'),/DuelDrawPage/);
+assert.match(read('app/list/page.jsx'),/RuneDirectoryRoot/);
+assert.doesNotMatch(read('app/duel/one/page.jsx')+read('app/list/page.jsx'),/RuneArtStage|RuneRitualLab|RuneAtlasLab/);
+
+// Only /card/* paths expose the new artwork experiences.
+assert.match(read('app/card/duel/page.jsx'),/RuneRitualLab/);
+assert.match(read('app/card/list/page.jsx'),/RuneAtlasLab/);
+assert.match(read('app/card/daily/page.jsx'),/RuneDaily3D/);
+assert.match(read('app/lrunes/card/duel/page.jsx'),/card\/duel\/page/);
+assert.match(read('app/lrunes/card/list/page.jsx'),/card\/list\/page/);
+assert.match(read('app/lrunes/card/daily/page.jsx'),/card\/daily\/page/);
+
+// Existing draw algorithm/meaning, actual moon, directions and 11-card ceiling remain.
+assert.match(duel,/MAX_DRAW=11/);
+assert.match(duel,/REVEAL_MS=1000/);
+assert.match(duel,/DIRECTIONS=\['正位','半正位','半逆位','逆位'\]/);
+assert.match(duel,/realMoonPhase\(/);
+assert.match(duel,/randomIndex\(remaining.length\)/);
+assert.match(duel,/loadDrawCards\(/);
+assert.match(duel,/buildFixedReading\(/);
+assert.match(duel,/function drawOne\(/);
+assert.match(duel,/function finish\(/);
+assert.match(duel,/function reset\(/);
+assert.match(duel,/onBackgroundClick=\{!finished&&!selected\?drawOne:undefined\}/);
 assert.match(duel,/onSelect=\{showCard\}/);
-assert.match(duel,/結束抽牌/);
-assert.match(duel,/rune-3d-duel-action-dock/);
-assert.match(duel,/重新占卜/);
-assert.match(duel,/結束占卜，看指示籤詩/);
+assert.match(duel,/import RuneCardInfo from '\.\.\/RuneCardInfo'/);
+assert.match(duel,/createPortal\(/);
+assert.match(duel,/rune-art-duel-action-dock/);
+assert.match(duel,/onClick=\{drawOne\}/);
 assert.match(duel,/onClick=\{reset\}/);
 assert.match(duel,/onClick=\{finish\}/);
+assert.match(duel,/重新占卜/);
+assert.match(duel,/結束占卜，看指示籤詩/);
+const toolbar=duel.indexOf('rune-art-toolbar');
+const actions=duel.indexOf('rune-art-duel-action-dock');
+const stage=duel.indexOf('<section className="rune-art-stage"');
+assert.ok(toolbar<actions&&actions<stage,'controls must precede artwork, not footer');
 assert.match(duel,/DRAW_COUNT_GUIDE=RUNE_ALL_DRAW_MODES/);
 assert.match(duel,/item\.key!=='daily'/);
-assert.match(duel,/sort\(\(a,b\)=>a\.count-b\.count\)/);
-const guide=duel.slice(duel.indexOf('<section className="rune-3d-draw-guide"'),duel.indexOf('{selected&&typeof document'));
-assert.ok(guide.includes('<article className="rune-3d-draw-guide-card"'));
-assert.ok(!/<a\b|<button\b|onClick=|href=|tabIndex=/.test(guide),'explanatory count cards must contain no navigation or interactive actions');
-const sceneCss=read('app/lrunes/three/rune-world.css');
-assert.match(sceneCss,/\.rune-3d-duel-action-dock\{/);
-const dockCss=sceneCss.slice(sceneCss.indexOf('.rune-3d-duel-action-dock{'),
-  sceneCss.indexOf('.rune-3d-duel-action{'));
-assert.match(dockCss,/position:relative/);
-assert.doesNotMatch(dockCss,/position:fixed|bottom:calc|translateX/);
-assert.match(sceneCss,/\.rune-3d-duel-action--draw\{/);
-assert.match(sceneCss,/\.rune-3d-duel-action--finish\{grid-column:1\/-1\}/);
-assert.match(sceneCss,/rune-3d-draw-guide-grid/);
-const dockJsx=duel.slice(duel.indexOf('<div className="rune-3d-duel-action-dock"'),
-  duel.indexOf("<section className={'rune-3d-stage"));
-assert.match(dockJsx,/onClick=\{drawOne\}/);
-assert.match(dockJsx,/onClick=\{reset\}/);
-assert.match(dockJsx,/onClick=\{finish\}/);
-assert.ok(duel.indexOf('rune-3d-duel-action-dock')<duel.indexOf("<section className={'rune-3d-stage"));
-assert.ok(duel.indexOf('rune-3d-duel-action-dock')>duel.indexOf('rune-3d-toolbar'));
+const countGuide=duel.slice(duel.indexOf('<section className="rune-art-draw-guide"'),
+  duel.indexOf('{selected&&typeof document'));
+assert.doesNotMatch(countGuide,/<a\b|<button\b|onClick=|href=|tabIndex=/,
+  'count explanations must not turn into navigation buttons');
 
-assert.match(duel,/指示籤詩為/);
-assert.match(duel,/buildFixedReading\(/);
-assert.match(duel,/function finish\(/);
+// Group descriptions, group IDs and the original images remain authoritative.
 assert.match(atlas,/selectRows\('silver\.runes_group'/);
+assert.match(atlas,/selectRows\('silver\.runes'/);
 assert.match(atlas,/runeslist/);
-assert.match(atlas,/onSelect={group\?show:previewGroup}/);
-assert.match(atlas,/preview\.desc/);
-assert.match(atlas,/onClick=\{\(\)=>enterGroup\(preview\)\}>進入符文星域/);
-assert.match(atlas,/role="dialog"/);
+assert.match(atlas,/onSelect=\{group\?show:previewGroup\}/);
+assert.match(atlas,/src=\{groupImage\(preview.id\)\}/);
 assert.match(atlas,/rune_evolution_history/);
-assert.match(home,/runeHref\('card\/duel',native\)/);
-assert.match(home,/runeHref\('card\/list',native\)/);
-assert.match(home,/runeHref\('card\/daily',native\)/);
-assert.match(world,/rune-world-orb-name/);
-assert.match(world,/function GroupArtwork\(/);
-assert.match(world,/new THREE.TextureLoader\(\)/);
-assert.match(world,/groupPreviewImage\(group.id\)/);
-assert.match(world,/rune-world-orb-name--art/);
-const directory=read('app/lrunes/rune-directory.mjs');
-assert.match(directory,/export function groupPreviewImage\(/);
-assert.match(directory,/groupPreviewImage\(id\)\{return groupImage\(id\);\}/);
+assert.match(atlas,/createPortal\(/);
+assert.match(directory,/export function groupImage\(/);
+assert.match(directory,/\/assets\/lunarunes\/cards\//);
 for(const file of [
   '01.soul.jpg','02_connection.jpg','03_life.jpg','04_nature.jpg',
-  '05_mineral.jpg','06_element.jpg','07_order.jpg',
-  '08_disorder.jpg','09_specia.jpg'
-])assert.ok(existsSync(resolve(base,'pics',file)),'missing published group poster: '+file);
-const daily=read('app/daily/log/DailyLogClient.jsx');
-const scopeCss=read('app/styles/scope-system.css');
-assert.match(daily,/daily-rune-log-view/);
-assert.match(scopeCss,/\.daily-rune-log-view\{/);
-assert.match(scopeCss,/max-width:1040px/);
+  '05_mineral.jpg','06_element.jpg','07_order.jpg','08_disorder.jpg','09_specia.jpg'
+])assert.ok(existsSync(resolve(root,'pics',file)),'missing published group artwork: '+file);
+for(let id=1;id<=66;id++)assert.ok(existsSync(resolve(root,'assets/lunarunes/cards/'+String(id).padStart(2,'0')+'.png')),'rune card '+id+' missing');
 
-assert.match(world,/function SanctumField\(/);
-assert.match(world,/<SanctumField mode=\{mode\} groupIndex=\{groupIndex\}/);
-assert.match(world,/groupIndex=\{index\}/);
-assert.match(world,/canvas.width=1024;canvas.height=1024/);
-assert.match(world,/iridescence=\{\.48\}/);
-assert.match(atlas,/import \{runeImage,groupImage\}/);
-assert.match(atlas,/src=\{groupImage\(preview.id\)\}/);
-assert.match(atlas,/rune-3d-floating-back/);
-assert.match(atlas,/onClick=\{backToGroups\}/);
-assert.match(sceneCss,/rune-sanctum-mist/);
-assert.match(sceneCss,/rune-3d-group-artwork/);
-assert.match(sceneCss,/rune-3d-floating-back/);
-
-assert.match(world,/data-min-render-px="1024"/);
-assert.match(world,/canvas.width=1024;canvas.height=1024/);
-assert.match(read('app/lrunes/daily3d/RuneDaily3D.jsx'),/每日占卜祝福/);
-for(const dep of ['three','@react-three/fiber','@react-three/drei','@react-three/postprocessing','opentype.js']){
-  assert.ok(pkg.dependencies[dep],dep+' missing from package.json');
-}
-console.log('LunaRunes true 3D independent skin contracts passed.');
+assert.match(daily,/realMoonPhase\(/);
+assert.match(daily,/loadDrawCards\(/);
+assert.match(daily,/每日占卜祝福/);
+assert.match(daily,/onSelect=\{\(\)=>setDetails\(true\)\}/);
+assert.match(read('app/lrunes/RunesClient.jsx'),/runeHref\('card\/duel',native\)/);
+assert.match(read('app/card/page.jsx'),/符文美術場域/);
+console.log('LunaRunes original-art Motion routes and legacy separation passed.');
