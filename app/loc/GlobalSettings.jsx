@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
+import Select from 'react-select';
 import {Capacitor} from '@capacitor/core';
 import {useNavigationPreferences} from './use-navigation-preferences';
 import DailyLogClient from '../daily/log/DailyLogClient';
@@ -8,6 +9,10 @@ import RuneDrawClient from '../lrunes/RuneDrawClient';
 import RuneSQLiteTransfer from '../lrunes/RuneSQLiteTransfer';
 import RuneAppDayNightDashboard from '../lrunes/RuneAppDayNightDashboard';
 import PrivateLocalFiles from './PrivateLocalFiles';
+import ManagementImportPanel from './ManagementImportPanel';
+import ManagementArticlePublisher from './ManagementArticlePublisher';
+import ScopeSettingsPanel from './ScopeSettingsPanel';
+import ScopeGroupManagement from './ScopeGroupManagement';
 import {RUNE_ALL_DRAW_MODES} from '../lrunes/rune-draw-modes.mjs';
 import {settingsRunePolicy} from '../lrunes/settings-rune-policy.mjs';
 import {selectScopeRegistry} from './scope-data';
@@ -32,6 +37,9 @@ export default function GlobalSettings(){
   const [registryLoading,setRegistryLoading]=useState(true);
   const [home,setHome]=useState('loc');
   const [myPhoneFavorite,setMyPhoneFavorite]=useState(true);
+  const [section,setSection]=useState('daily');
+  const [managedScope,setManagedScope]=useState('');
+  const [managementAction,setManagementAction]=useState('profile');
   const [favorites,setFavorites]=useState([...DEFAULT_FAVORITES]);
   const [folders,setFolders]=useState([]);
   const [newFolderName,setNewFolderName]=useState('');
@@ -109,51 +117,6 @@ export default function GlobalSettings(){
     }catch(error){setStatus('首頁設定失敗：'+String(error?.message||error));}
     finally{setBusy('');}
   }
-  function addFolder(){
-    const name=cleanFolderName(newFolderName);
-    if(!name||folders.length>=MAX_FOLDERS)return;
-    const id='f'+(globalThis.crypto?.randomUUID?.().replace(/-/g,'').slice(0,20)
-      ||(Date.now().toString(36)+Math.random().toString(36).slice(2,9)));
-    setFolders(current=>[...current,{id,label:name,scopes:[]}]);
-    setNewFolderName('');
-  }
-  function changeFolderForScope(scopeId,folderId){
-    setFolders(current=>current.map(folder=>({
-      ...folder,
-      scopes:folder.id===folderId
-        ?[...new Set([...folder.scopes,scopeId])]
-        :folder.scopes.filter(id=>id!==scopeId)
-    })));
-  }
-  async function saveFavorites(event){
-    event.preventDefault();
-    if(!account.user&&!native)return;
-    setBusy('favorites');setStatus('');
-    try{
-      if(native){
-        window.localStorage.setItem(MOBILE_FAVORITE_STORAGE_KEY,myPhoneFavorite?'true':'false');
-        window.dispatchEvent(new Event('loc-device-navigation-changed'));
-        if(!account.user){setStatus('手機最愛已儲存。月之符文固定保留。');return;}
-      }
-      const visibleIds=new Set(choices.map(item=>item.id));
-      const selected=favorites.filter(id=>visibleIds.has(id)&&id!=='admin');
-      const serialized=serializeFavorites([...new Set([...selected,'loc'])]);
-      const cleanFolders=normalizeFavoriteFolders(folders.map(folder=>({
-        ...folder,scopes:folder.scopes.filter(id=>selected.includes(id)&&id!=='loc')
-      })));
-      if(cleanFolders.length!==folders.length){
-        setStatus('目錄名稱不得為空白，請修正後再儲存。');return;
-      }
-      // Saving two scalar text settings; no JSONB, no extra relational tables.
-      await putSetting(FOLDERS_SETTING_KEY,serializeFavoriteFolders(cleanFolders));
-      await putSetting(FAVORITES_SETTING_KEY,serialized);
-      setFavorites(selected);
-      setFolders(cleanFolders);
-      broadcast({favorites:serialized,folders:serializeFavoriteFolders(cleanFolders)});
-      setStatus('我的最愛與目錄已儲存。');
-    }catch(error){setStatus('我的最愛儲存失敗：'+String(error?.message||error));}
-    finally{setBusy('');}
-  }
   async function logout(){
     setBusy('logout');setStatus('');
     try{await account.signOut();window.location.reload();}
@@ -171,6 +134,21 @@ export default function GlobalSettings(){
     scopeManager:Boolean(account.user)&&account.canManageScopeSync('lrunes'),
     loading:checking
   });
+  const manageScopes=useMemo(()=>{
+    if(!account.user)return [];
+    return choices.filter(item=>account.canManageScopeSync(item.id));
+  },[choices,account.user,account.authorizer]);
+  const manageable=manageScopes.some(item=>item.id===managedScope)?managedScope:(manageScopes[0]?.id||'');
+  const canManageSelected=Boolean(manageable)&&account.canManageScopeSync(manageable);
+  const sectionOptions=[
+    {value:'daily',label:'每日符文紀錄'},
+    {value:'files',label:'文件匯入／匯出'},
+    ...(runePolicy.canDraw?[{value:'draw',label:'月典抽牌'}]:[]),
+    {value:'home',label:'首頁設定'},
+    {value:'favorites',label:'我的最愛（展示）'},
+    ...(manageScopes.length||account.canManageGlobalSync()?[{value:'manage',label:'管理功能'}]:[]),
+    {value:'account',label:'帳號'}
+  ];
   function openAppDraw(mode){
     setDrawMode(mode);
     setDrawOpen(true);
@@ -179,44 +157,74 @@ export default function GlobalSettings(){
 
   return <main className="scope-main">
     <section className="scope-page">
-      <header className="loc-hero"><p className="loc-eyebrow">Global Settings</p><h1>設定</h1><p>所有 Scope 共用的使用者設定。</p></header>
+      <header className="loc-hero">
+        <p className="loc-eyebrow">Global Settings</p>
+        <h1>設定</h1>
+        <p>選擇功能後，只顯示對應設定與操作。</p>
+      </header>
       <div className="scope-content scope-settings-options">
-        {!native?<section className="loc-card" aria-labelledby="private-import-settings-link">
-          <h2 id="private-import-settings-link">私人備份共用匯入</h2>
-          <p className="scope-settings-note">網站專用，可在本機解析 X、Meta、JSON 與文字備份；不會將資料寫入公開 Scope 或 Supabase／Neon。刪除帳號不會自動刪除瀏覽器資料。</p>
-          <a className="loc-button" href="/private-import/">開啟私人本機匯入工作區</a>
+        <section className="loc-card loc-settings-switcher">
+          <label htmlFor="loc-settings-function">設定功能</label>
+          <Select inputId="loc-settings-function" instanceId="loc-settings-function"
+            unstyled classNamePrefix="loc-settings-select"
+            className="loc-settings-select" isSearchable={false}
+            options={sectionOptions}
+            value={sectionOptions.find(item=>item.value===section)||sectionOptions[0]}
+            onChange={option=>{setSection(option?.value||'daily');setStatus('');}}
+            aria-label="選擇設定功能"/>
+        </section>
+
+        {section==='files'?native?<PrivateLocalFiles/>:<section className="loc-card">
+          <h2>文件匯入／匯出</h2>
+          <p className="scope-settings-note">網站的資料匯入使用 Supabase，必須具備對應 Scope 的管理權限；不再使用獨立的瀏覽器本機測試工作區。</p>
+          {!account.user?<p>請先登入，再使用你有權管理的資料匯入。</p>:
+            manageScopes.length?<div>
+              <label htmlFor="loc-import-scope">匯入目標 Scope</label>
+              <Select inputId="loc-import-scope" instanceId="loc-import-scope"
+                unstyled classNamePrefix="loc-settings-select" className="loc-settings-select"
+                isSearchable={false}
+                options={manageScopes.map(item=>({value:item.id,label:item.label}))}
+                value={manageScopes.map(item=>({value:item.id,label:item.label})).find(o=>o.value===manageable)||null}
+                onChange={option=>setManagedScope(option?.value||'')}/>
+              {canManageSelected?<ManagementImportPanel key={manageable} scopeId={manageable}/>:null}
+            </div>:<p>目前帳號沒有可寫入的 Scope；不會開啟雲端匯入。</p>}
         </section>:null}
-        {native?<PrivateLocalFiles/>:null}
-        <section className="scope-settings-daily-test" aria-labelledby="settings-daily-calendar-title">
+
+        {section==='daily'?<section className="scope-settings-daily-test" aria-labelledby="settings-daily-calendar-title">
           <h2 id="settings-daily-calendar-title">每日符文行事曆</h2>
-          <p className="scope-settings-note">使用測試｜未登入時僅顯示空白行事曆；登入後才會載入每日符文標記、當日指引與前次紀錄。</p>
+          <p className="scope-settings-note">每日符文紀錄與日曆。匯入／匯出請至完整每日符文紀錄。</p>
           <DailyLogClient embedded/>
           {native&&runePolicy.canImport?<RuneSQLiteTransfer
             canManage={runePolicy.canImport}
             onImported={()=>window.dispatchEvent(new CustomEvent('loc-rune-local-changed'))}
           />:null}
-          {account.user&&!checking?<p className="scope-settings-note">
-            <a className="loc-button" href={navigationHref('lrunes','daily/log',native)}>開啟完整每日符文紀錄與管理</a>
+          {(native||account.user)&&!checking?<p className="scope-settings-note">
+            <a className="loc-button" href={navigationHref('lrunes','daily/log',native)}>開啟完整每日符文紀錄（含匯入／匯出）</a>
           </p>:null}
-        </section>
-        {native&&runePolicy.canDraw?<RuneAppDayNightDashboard
-          canReadLocal={runePolicy.canRecord}
-          onSelectDraw={openAppDraw}
-        />:null}
-        {runePolicy.canDraw?<section className="loc-card" id="settings-rune-draw">
-          <h2>月典抽牌</h2>
-          <p className="scope-settings-note">月典的共用互動工具。App 訪客可直接使用；網站使用者需登入。OAuth 不代表可保存，只有月之符文 Scope 人員才能將結果寫入裝置 SQLite。</p>
-          <div className="scope-stat-controls">
-            <button type="button" className="loc-button" aria-expanded={drawOpen} onClick={()=>setDrawOpen(value=>!value)}>{drawOpen?'收合抽牌':'開啟抽牌'}</button>
-            {drawOpen?<label><span>抽牌方式</span><select className="scope-select" value={drawMode} onChange={event=>setDrawMode(event.target.value)}>
-              {RUNE_ALL_DRAW_MODES.map(item=><option value={item.key} key={item.key}>{item.label} · {item.count} 張</option>)}
-            </select></label>:null}
-          </div>
-          {drawOpen?<RuneDrawClient key={drawMode} drawKey={drawMode} embedded canSave={runePolicy.canRecord}/>:null}
         </section>:null}
-        <section className="loc-card">
+
+        {section==='draw'&&runePolicy.canDraw?<div className="loc-settings-panel-group">
+          {native&&runePolicy.canDraw?<RuneAppDayNightDashboard
+            canReadLocal={runePolicy.canRecord} onSelectDraw={openAppDraw}/>:null}
+          <section className="loc-card" id="settings-rune-draw">
+            <h2>月典抽牌</h2>
+            <p className="scope-settings-note">App 訪客可直接使用；網站需登入。是否儲存結果仍依月之符文權限判別。</p>
+            <div className="scope-stat-controls">
+              <button type="button" className="loc-button" aria-expanded={drawOpen}
+                onClick={()=>setDrawOpen(value=>!value)}>{drawOpen?'收合抽牌':'開啟抽牌'}</button>
+              {drawOpen?<label><span>抽牌方式</span>
+                <select className="scope-select" value={drawMode} onChange={event=>setDrawMode(event.target.value)}>
+                  {RUNE_ALL_DRAW_MODES.map(item=><option value={item.key} key={item.key}>{item.label} · {item.count} 張</option>)}
+                </select>
+              </label>:null}
+            </div>
+            {drawOpen?<RuneDrawClient key={drawMode} drawKey={drawMode} embedded canSave={runePolicy.canRecord}/>:null}
+          </section>
+        </div>:null}
+
+        {section==='home'?<section className="loc-card">
           <h2>設定首頁</h2>
-          <p className="scope-settings-note">網站保留原有 Scope 首頁規則；iOS 可單獨選「我的手機」，此偏好只存在裝置，不寫入雲端。</p>
+          <p className="scope-settings-note">網站保留原有 Scope 首頁設定；iOS 可獨立設定「我的手機」，僅儲存在裝置。</p>
           <form onSubmit={saveHome}>
             <label><span>預設首頁</span>
               <select className="scope-select" value={effectiveHome} onChange={event=>setHome(event.target.value)} disabled={checking&&!!account.user}>
@@ -225,59 +233,59 @@ export default function GlobalSettings(){
             </label>
             {account.user||native?<button className="loc-button primary" type="submit" disabled={Boolean(busy)||checking}>儲存首頁</button>:<p className="scope-settings-note">網站登入後可修改首頁。</p>}
           </form>
-        </section>
-        <section className="loc-card">
+        </section>:null}
+
+        {section==='favorites'?<section className="loc-card">
           <h2>我的最愛</h2>
-          <p className="scope-settings-note">決定第一列顯示的空間，或將入口收進自訂目錄。右側「回月典首頁」永遠固定。iOS「月之符文」為內建核心，不能移除。</p>
-          {native?<label className="scope-favorite-setting-row">
-            <input type="checkbox" checked={myPhoneFavorite} onChange={event=>setMyPhoneFavorite(event.target.checked)}/>
-            <span>我的手機（僅本機顯示，不進網站最愛）</span>
-          </label>:null}
-          {registryError?<p className="scope-status scope-error">{registryError}</p>:null}
-          <form onSubmit={saveFavorites}>
-            <fieldset disabled={checking||!account.user||Boolean(busy)||registryLoading||Boolean(registryError)}>
-              <legend>選擇上方入口</legend>
-              {choices.filter(item=>item.id!=='loc').map(item=><div key={item.id} className="scope-favorite-setting-row">
-                <label>
-                  <input type="checkbox" disabled={native&&item.id==='lrunes'} checked={native&&item.id==='lrunes'?true:favorites.includes(item.id)} onChange={event=>setFavorites(current=>
-                    event.target.checked?[...current,item.id]:current.filter(id=>id!==item.id)
-                  )}/>
-                  <span>{item.label}</span>
-                </label>
-                {favorites.includes(item.id)?<select aria-label={item.label+'所屬目錄'}
-                  value={folders.find(folder=>folder.scopes.includes(item.id))?.id||''}
-                  onChange={event=>changeFolderForScope(item.id,event.target.value)}>
-                  <option value="">第一列直接顯示</option>
-                  {folders.map(folder=><option key={folder.id} value={folder.id}>{folder.label||'未命名目錄'}</option>)}
-                </select>:null}
-              </div>)}
-            </fieldset>
-            <div className="scope-favorite-folder-editor">
-              <strong>自訂目錄</strong>
-              {folders.map(folder=><div className="scope-favorite-folder-row" key={folder.id}>
-                <input aria-label="目錄名稱" type="text" maxLength={35}
-                  value={folder.label} onChange={event=>setFolders(current=>current.map(item=>item.id===folder.id?{...item,label:event.target.value}:item))}/>
-                <button type="button" className="loc-button" onClick={()=>setFolders(current=>current.filter(item=>item.id!==folder.id))}>刪除</button>
-              </div>)}
-              <div className="scope-favorite-folder-row">
-                <input aria-label="新目錄名稱" type="text" maxLength={35} placeholder="新目錄名稱"
-                  value={newFolderName} onChange={event=>setNewFolderName(event.target.value)}/>
-                <button type="button" className="loc-button" onClick={addFolder}
-                  disabled={!newFolderName.trim()||folders.length>=MAX_FOLDERS||checking||!account.user}>新增目錄</button>
-              </div>
-              <p className="scope-settings-note">點第一列的目錄，內容才會展開第二列；刪除目錄後，入口回到第一列。</p>
-            </div>
-            {account.user||native?<button className="loc-button primary" type="submit" disabled={Boolean(busy)||(account.user&&(checking||registryLoading||Boolean(registryError)))}>儲存我的最愛</button>:<p className="scope-settings-note">網站登入後才能保存我的最愛。</p>}
-          </form>
-        </section>
-        <section className="loc-card">
+          <p className="scope-settings-note">此區暫時只展示，不開放修改、移除或重新編排。iOS 的「月之符文」為固定核心入口，不能從我的最愛移除。</p>
+          <div className="scope-favorite-setting-row"><strong>月之符文</strong><span>固定保留</span></div>
+          {native&&myPhoneFavorite?<div className="scope-favorite-setting-row"><strong>我的手機</strong><span>App 專屬</span></div>:null}
+          {favorites.filter(id=>id!=='lrunes').map(id=>{
+            const item=choices.find(option=>option.id===id);
+            return item?<div className="scope-favorite-setting-row" key={id}>
+              <span>{item.label}</span><span>{folders.find(folder=>folder.scopes.includes(id))?.label||'第一列'}</span>
+            </div>:null;
+          })}
+          {folders.length?<p className="scope-settings-note">現有目錄：{folders.map(folder=>folder.label).join('、')}</p>:null}
+          <p className="scope-settings-note">新增、刪除與目錄管理暫不啟用。</p>
+        </section>:null}
+
+        {section==='manage'&&(manageScopes.length||account.canManageGlobalSync())?<section className="loc-card">
+          <h2>管理功能</h2>
+          <p className="scope-settings-note">管理已從治理頁移至設定；功能權限維持原規則，不因顯示選單而開放寫入。</p>
+          {manageScopes.length?<div>
+            <label htmlFor="loc-manage-scope">管理 Scope</label>
+            <Select inputId="loc-manage-scope" instanceId="loc-manage-scope" isSearchable={false}
+              unstyled classNamePrefix="loc-settings-select" className="loc-settings-select"
+              options={manageScopes.map(item=>({value:item.id,label:item.label}))}
+              value={manageScopes.map(item=>({value:item.id,label:item.label})).find(o=>o.value===manageable)||null}
+              onChange={option=>setManagedScope(option?.value||'')}/>
+            <label htmlFor="loc-manage-action">管理項目</label>
+            <Select inputId="loc-manage-action" instanceId="loc-manage-action"
+              unstyled classNamePrefix="loc-settings-select" className="loc-settings-select"
+              isSearchable={false}
+              options={[{value:'profile',label:'個人設定'},{value:'publish',label:'發表文章'},{value:'import',label:'資料匯入'}]}
+              value={[{value:'profile',label:'個人設定'},{value:'publish',label:'發表文章'},{value:'import',label:'資料匯入'}].find(o=>o.value===managementAction)}
+              onChange={option=>setManagementAction(option?.value||'profile')}/>
+            {canManageSelected&&managementAction==='profile'?<ScopeSettingsPanel key={manageable} scopeId={manageable}/>:null}
+            {canManageSelected&&managementAction==='publish'?<ManagementArticlePublisher key={manageable} scopeId={manageable}/>:null}
+            {canManageSelected&&managementAction==='import'&&!native?<ManagementImportPanel key={manageable} scopeId={manageable}/>:null}
+            {canManageSelected&&managementAction==='import'&&native?<PrivateLocalFiles/>:null}
+          </div>:null}
+          {account.canManageGlobalSync()?<div className="loc-settings-panel-group">
+            <ScopeGroupManagement scopeId="loc"/>
+            <a className="loc-button" href={native?'/admin/index.html':'/admin/'}>Admin 系統設定</a>
+          </div>:null}
+        </section>:null}
+
+        {section==='account'?<section className="loc-card">
           <h2>登入</h2>
           {checking?<p>正在確認帳號…</p>:account.user?<div>
             <p>{account.user.email||'已登入'}</p>
             <button type="button" className="loc-button" disabled={Boolean(busy)} onClick={logout}>登出</button>
           </div>:<button type="button" className="loc-button primary" onClick={login}>使用 Google 登入</button>}
           {account.error?<p role="alert" className="scope-status scope-error">{account.error}</p>:null}
-        </section>
+        </section>:null}
         {status?<p role="status" className="scope-status">{status}</p>:null}
       </div>
     </section>
