@@ -4,7 +4,7 @@
 // Original: Environment, AccumulativeShadows, RandomizedLight, Center,
 // OrbitControls, mesh and material preserved. Only Leva controls are replaced
 // by incoming application parameters. No custom effect/geometry/animation code.
-import {useState,useTransition} from 'react';
+import {useEffect,useState,useTransition} from 'react';
 import {Canvas} from '@react-three/fiber';
 import {AccumulativeShadows,RandomizedLight,Center,Environment,OrbitControls} from '@react-three/drei';
 
@@ -35,6 +35,6 @@ function Env({preset,blur}){
   // Match the official example's React transition for HDRI preset changes.
   const [activePreset,setActivePreset]=useState(preset);
   const [,startTransition]=useTransition();
-  if(activePreset!==preset)startTransition(()=>setActivePreset(preset));
+  useEffect(()=>{startTransition(()=>setActivePreset(preset));},[preset,startTransition]);
   return <Environment background preset={activePreset} backgroundBlurriness={blur}/>;
 }
