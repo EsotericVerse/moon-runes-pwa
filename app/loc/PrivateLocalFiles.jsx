@@ -24,7 +24,7 @@ export default function PrivateLocalFiles(){
   const [progress,setProgress]=useState(null);
   const [pendingDelete,setPendingDelete]=useState('');
   const [preview,setPreview]=useState(null);
-  const [encoding,setEncoding]=useState('utf-8');
+  const [encoding,setEncoding]=useState('auto');
 
   useEffect(()=>{
     const supported=privateNative();
@@ -71,11 +71,12 @@ export default function PrivateLocalFiles(){
     finally{setProgress(null);setBusy(false);}
   }
 
-  async function showText(entry,nextEncoding=encoding){
+  async function showText(entry,nextEncoding='auto'){
     if(busy||!store)return;
     setBusy(true);setStatus('');setError('');
     try{
       const text=await store.preview(entry.id,nextEncoding);
+      setEncoding(nextEncoding);
       setPreview({id:entry.id,name:entry.name,text});
     }catch(e){setPreview(null);setError('本機預覽失敗：'+String(e?.message||e));}
     finally{setBusy(false);}
@@ -132,7 +133,7 @@ export default function PrivateLocalFiles(){
   return <section className="loc-card" aria-labelledby="loc-private-files-heading">
     <h2 id="loc-private-files-heading">私人 Local File（僅此 iPhone）</h2>
     <p className="scope-settings-note">不需登入。從 iOS「檔案」選取原始檔，完整複製到 App 專屬的 LibraryNoCloud 儲存區；不進入 Galaxy、Supabase、Neon、公開搜尋或任何網路 API。此功能與管理頁的雲端 JSON 匯入完全不同。</p>
-    <p className="scope-settings-note">每檔上限 512 MB，支援文字、JSON、XML、MSN 對話備份及其他檔案原樣保存。App 卸載時本機資料可能一併消失；不會自動雲端備份。若選擇「開啟／分享」，你可以自行決定是否交給其他 App 或儲存至 iCloud。</p>
+    <p className="scope-settings-note">每檔上限 512 MB；不要求特定檔名或副檔名，會檢查檔案開頭的位元組與資料結構，顯示可能格式及文字編碼。這只是本機辨識提示，尚不會把 MSN 對話拆成訊息、人物或時間軸。所有類型仍原樣保存。App 卸載時本機資料可能一併消失；不會自動雲端備份。若選擇「開啟／分享」，你可以自行決定是否交給其他 App 或儲存至 iCloud。</p>
     <div className="scope-stat-controls">
       <button type="button" className="loc-button primary" onClick={()=>picker.current?.click()} disabled={busy||!store}>選擇本機檔案匯入</button>
       <button type="button" className="loc-button" onClick={async()=>{
@@ -153,6 +154,7 @@ export default function PrivateLocalFiles(){
     {entries.map(entry=><div key={entry.id} className="scope-inline-card">
       <strong style={{overflowWrap:'anywhere'}}>{entry.name}</strong>
       <p className="scope-settings-note">{byteLabel(entry.size)} · 匯入 {readableDate(entry.importedAt)}{entry.lastModified?' · 原始修改 '+readableDate(entry.lastModified):''}</p>
+      {entry.detection?<p className="scope-settings-note">內容辨識：{entry.detection.label}（{entry.detection.certainty==='high'?'特徵明確':entry.detection.certainty==='medium'?'初步符合':'未確認'}）{entry.detection.encoding?' · 建議編碼 '+entry.detection.encoding:''}。{entry.detection.reason}</p>:<p className="scope-settings-note">舊版匯入資料：尚未進行內容辨識，原始檔保留不變。</p>}
       <div className="scope-stat-controls">
         {isTextPrivateFile(entry)?<button type="button" className="loc-button" onClick={()=>showText(entry)} disabled={busy}>文字預覽</button>:null}
         <button type="button" className="loc-button" onClick={()=>openWithIOS(entry)} disabled={busy}>開啟／分享</button>
@@ -168,9 +170,11 @@ export default function PrivateLocalFiles(){
             setEncoding(value);
             showText(entry,value);
           }} disabled={busy}>
+            <option value="auto">自動（依內容辨識）</option>
             <option value="utf-8">UTF-8</option>
             <option value="big5">Big5（繁中舊資料）</option>
             <option value="utf-16le">UTF-16 LE</option>
+            <option value="utf-16be">UTF-16 BE</option>
           </select>
         </label>
         <pre style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere',maxHeight:'24rem',overflowY:'auto'}}>{preview.text}</pre>
