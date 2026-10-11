@@ -25,8 +25,8 @@ create policy scope_group_source_sharing_update on silver.scope_group_source_sha
   using (silver.can_manage_scope(scope_id))
   with check (silver.can_manage_scope(scope_id));
 -- No change to silver.scope_source_subcategories or Galaxy data.
--- Temporary columns statistics_cross_scope_enabled on built-in Scope
--- configs are not referenced by runtime and are NOT an authorization source.
+-- The mistaken whole-Scope flag statistics_cross_scope_enabled was removed
+-- from both built-in Scope config tables on Supabase and Neon (2026-10-11).
 
 -- This installation originally deployed with DEFAULT false; keep existing rows unchanged
 -- and restore old behavior for future rows that have not been set explicitly.
