@@ -56,6 +56,21 @@ function Gallery({mode,items,onSelect,reduced}){
             <strong>{groupMode?(item.name||GROUP_NAMES[index]):runeName(item)}</strong>
             <span aria-hidden="true">↗</span>
           </span>
+          {groupMode?<span className="rune-art-group-summary">
+            {item.english_name?<span className="rune-art-group-english">{item.english_name}</span>:null}
+            {item.desc?<span className="rune-art-group-blurb">{item.desc}</span>:null}
+            <span className="rune-art-group-facts">
+              {item.quality&&item.quality!=='風格特徵'?<span className="rune-art-group-trait">
+                <span className="rune-art-fact-label">特徵</span> {item.quality}
+              </span>:null}
+              {item.style&&item.style!=='style / trait'?<span className="rune-art-group-style-tag">
+                <span className="rune-art-fact-label">風格</span> {item.style}
+              </span>:null}
+              {Array.isArray(item.runeslist)?<span className="rune-art-group-count-tag">
+                {item.runeslist.length} 枚
+              </span>:null}
+            </span>
+          </span>:null}
         </motion.button>;
       })}
     </div>
