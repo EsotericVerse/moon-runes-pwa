@@ -46,7 +46,7 @@ function issue(summary,message){
 function createJsonSink(path,summary,onRecord,signal){
   const parser=new JSONParser({paths:['$.*'],keepStack:false,stringBufferSize:64*1024});
   const decoder=new TextDecoder('utf-8',{fatal:true});
-  let prelude='',started=false,finished=false;
+  let prelude='',started=false,finished=false,tail='';
   parser.onValue=({value})=>{
     requireNotAborted(signal);
     summary.totalRows++;
@@ -87,8 +87,17 @@ function createJsonSink(path,summary,onRecord,signal){
       requireNotAborted(signal);
       if(finished)throw new Error('解析已關閉：'+path);
       const text=decoder.decode(chunk,{stream:!final});
-      if(text)appendText(text);
+      tail+=text;
+      // Hold a small trailing window: X's YTD JavaScript assignment ends in
+      // a semicolon, whereas streaming JSON parsers correctly reject it.
+      if(!final&&tail.length>4096){
+        appendText(tail.slice(0,-4096));
+        tail=tail.slice(-4096);
+      }
       if(final){
+        const finalText=tail.replace(/;\s*$/,'');
+        tail='';
+        if(finalText)appendText(finalText);
         if(!started)throw new Error('找不到 X 備份的 JSON 陣列：'+path);
         parser.end();
         finished=true;
