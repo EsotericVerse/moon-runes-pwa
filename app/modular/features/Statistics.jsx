@@ -634,7 +634,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         height={420}
       />
     </>:null}
-    {mediaDimension&&Boolean(targetScopes.length)&&customReady&&Boolean(queryRange.startDate&&queryRange.endDate)?<div className="scope-stat-controls">
+    {mediaDimension&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate)?<div className="scope-stat-controls">
       <button type="button" className="loc-button" onClick={()=>mediaQuery.refetch()} disabled={mediaQuery.isFetching}>
         {mediaQuery.isFetching?'更新統計中…':'重新整理即時統計'}
       </button>
