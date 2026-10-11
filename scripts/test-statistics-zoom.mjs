@@ -27,6 +27,7 @@ test('historical bounds are based on actual records, not fixed year presets or c
   assert.equal(wide.fullHistory,true);
   assert.equal(statisticsZoomWindow(0,'2026-10-11','2026-08-05').canZoomOut,false);
   assert.equal(statisticsZoomWindow(0,'2026-10-11','').canZoomOut,false);
+  assert.equal(statisticsZoomWindow(0,'2026-10-11','').canZoomIn,false);
   assert.equal(statisticsZoomLevel(-5),-5);
   assert.equal(statisticsZoomLevel(3.8),3);
   assert.equal(statisticsZoomWindow(25,'2026-10-11','2025-01-01').canZoomIn,false);
