@@ -59,7 +59,9 @@ assert.doesNotMatch(skin+layout,/transform-style:\s*preserve-3d|perspective\s*:|
 assert.match(skin,/\.rune-art-gallery-grid/);
 assert.match(skin,/\.rune-art-card-frame/);
 assert.match(layout,/\.rune-art-duel-action-dock/);
-assert.match(layout,/\.rune-art-group-preview/);
+assert.match(layout,/\.rune-art-group-inline/);
+assert.match(layout,/\.rune-art-draw-guide-summary/);
+assert.match(skin,/\.rune-art-charge-ring/);
 
 // The old canonical /duel and /list routes are still independent and intact.
 assert.match(read('app/duel/one/page.jsx'),/DuelDrawPage/);
@@ -93,16 +95,31 @@ assert.match(duel,/rune-art-duel-action-dock/);
 assert.match(duel,/onClick=\{drawOne\}/);
 assert.match(duel,/onClick=\{reset\}/);
 assert.match(duel,/onClick=\{finish\}/);
-assert.match(duel,/重新占卜/);
-assert.match(duel,/結束占卜，看指示籤詩/);
+const controls=duel.slice(duel.indexOf('className="rune-art-duel-action-dock"'),
+  duel.indexOf('<section className="rune-art-stage"'));
+assert.match(controls,/重新開始占卜/);
+assert.match(controls,/招喚下一枚符文/);
+assert.match(controls,/占卜結束，觀看籤詩/);
+assert.ok(controls.indexOf('重新開始占卜')<controls.indexOf('招喚下一枚符文'));
+assert.ok(controls.indexOf('招喚下一枚符文')<controls.indexOf('占卜結束，觀看籤詩'));
+assert.match(duel,/<RuneArtStage mode="draw" items=\{items\} charging=\{busy\}/);
+assert.match(art,/className="rune-art-charge"/);
+assert.match(art,/DIRECTION_ANGLES=Object\.freeze/);
+assert.match(art,/'逆位':180/);
+assert.match(art,/'半正位':90/);
+assert.match(art,/'半逆位':-90/);
+assert.match(art,/animate=\{\{rotate:angle\}\}/);
 const toolbar=duel.indexOf('rune-art-toolbar');
 const actions=duel.indexOf('rune-art-duel-action-dock');
 const stage=duel.indexOf('<section className="rune-art-stage"');
 assert.ok(toolbar<actions&&actions<stage,'controls must precede artwork, not footer');
 assert.match(duel,/DRAW_COUNT_GUIDE=RUNE_ALL_DRAW_MODES/);
 assert.match(duel,/item\.key!=='daily'/);
-const countGuide=duel.slice(duel.indexOf('<section className="rune-art-draw-guide"'),
+const countGuide=duel.slice(duel.indexOf('<details className="rune-art-draw-guide"'),
   duel.indexOf('{selected&&typeof document'));
+assert.match(countGuide,/<summary className="rune-art-draw-guide-summary">/);
+assert.doesNotMatch(countGuide,/<details[^>]*\sopen\b/);
+assert.match(countGuide,/DRAW_COUNT_GUIDE\.map\(/);
 assert.doesNotMatch(countGuide,/<a\b|<button\b|onClick=|href=|tabIndex=/,
   'count explanations must not turn into navigation buttons');
 
@@ -110,8 +127,13 @@ assert.doesNotMatch(countGuide,/<a\b|<button\b|onClick=|href=|tabIndex=/,
 assert.match(atlas,/selectRows\('silver\.runes_group'/);
 assert.match(atlas,/selectRows\('silver\.runes'/);
 assert.match(atlas,/runeslist/);
-assert.match(atlas,/onSelect=\{group\?show:previewGroup\}/);
-assert.match(atlas,/src=\{groupImage\(preview.id\)\}/);
+assert.match(atlas,/onSelect=\{group\?show:enterGroup\}/);
+assert.match(atlas,/className="rune-art-group-inline"/);
+assert.match(atlas,/src=\{groupImage\(group.id\)\}/);
+assert.match(atlas,/group\.english_name/);
+assert.match(atlas,/group\.desc/);
+assert.match(atlas,/group\.runeslist\.length/);
+assert.doesNotMatch(atlas,/previewGroup|setPreview\(|className="rune-art-group-preview"/);
 assert.match(atlas,/rune_evolution_history/);
 assert.match(atlas,/createPortal\(/);
 assert.match(directory,/export function groupImage\(/);
