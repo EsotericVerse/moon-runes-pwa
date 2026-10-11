@@ -139,7 +139,7 @@ export default function RuneRitualLab(){
         card,direction:DIRECTIONS[directionIndex],directionIndex,moon:currentMoon,birth:Date.now()
       }];
       cardsRef.current=next;setItems(next);
-      setMessage(next.length>=MAX_DRAW?'已抽滿十一枚，請結束抽牌。':'符文已亮相，點擊卡片閱讀資料，或繼續召喚。');
+      setMessage(next.length>=MAX_DRAW?'已抽滿十一枚，請結束抽牌。':'符文已亮相，點擊卡片閱讀資料，或點擊繼續召喚，或點擊結束來觀看指引籤詩。');
     }catch(e){
       if(mounted.current){setError('抽牌失敗：'+String(e?.message||e));setMessage('觸碰畫面重試');}
     }finally{
