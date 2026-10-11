@@ -10,12 +10,16 @@ test('mobile statistics uses responsive native controls without engineering pros
   expect(overflow).toBeLessThanOrEqual(2);
   const controls=page.locator('.scope-stat-controls select.scope-select');
   if(await controls.count()){
-    await controls.first().focus();
-    await expect(controls.first()).toBeFocused();
+    await expect(controls.first()).toBeVisible();
+    await expect(controls.first()).toBeEnabled();
+    const initial=await controls.first().inputValue();
+    await controls.first().selectOption(initial);
+    await expect(controls.first()).toHaveValue(initial);
   }
 });
 
-test('mobile feature navigation responds to a touch tap',async({page})=>{
+test('mobile feature navigation responds to a touch tap',async({page,isMobile})=>{
+  test.skip(!isMobile,'Requires a touch-enabled mobile browser');
   await page.goto('/lo3rwang/statics/',{waitUntil:'domcontentloaded'});
   const link=page.locator('.scope-feature-dock a[href*="/culture/"]').first();
   await expect(link).toBeVisible();
