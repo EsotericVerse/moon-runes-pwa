@@ -157,7 +157,7 @@ if(!failures.length){
      !crossMember.includes("metric.startsWith('daily')")||
      !crossMember.includes("?person==='lrunes':allowedMemberMetric(person,metric,sharing)")||
      !crossMember.includes("const scope=available.find(item=>item.id===id)?.scope")||
-     !crossMember.includes("{!fetched.isPending&&!fetched.isFetching?<>")||
+     !crossMember.includes("{!fetched.isPending&&!fetched.isFetching&&hasCurrentData?<>")||
      crossMember.includes('canOfferMemberCrossStatistics(')||
      !statisticsMultiChart.includes('if(!hasTime&&!categories.length)return []')||
      !statisticsMultiChart.includes("if(type==='area')return hasTime&&time.length>=2")){
