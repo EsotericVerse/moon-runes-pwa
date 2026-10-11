@@ -6,7 +6,7 @@ import {
   Bar,BarChart,CartesianGrid,Line,LineChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectDailyRuneRange} from '../loc/daily-runes';
+import {selectDailyRuneRange,selectFirstDailyRuneDate} from '../loc/daily-runes';
 import {realMoonPhase} from '../loc/model/moon-phase';
 import {buildReferencedMoonRiver} from './daily-moon-river.mjs';
 import CultureTimeline from '../modular/modules/culture-timeline/CultureTimeline';
@@ -126,6 +126,7 @@ export function LrunesDailyCulturePanel(){
     <h3>每日符文｜時間長河</h3>
     <RangeControls mode={mode} setMode={setMode} from={from} setFrom={setFrom} to={to} setTo={setTo}/>
     {message?<p className="scope-status">{message}</p>:null}
+    {earliest.error?<p className="scope-status scope-error">{String(earliest.error.message||earliest.error)}</p>:null}
     {!message?<p className="scope-status">{range.startDate} ～ {range.endDate} · {summary.dayCount} 個紀錄日 · {summary.recordCount} 筆抽取紀錄</p>:null}
     {range&&items.length?<CultureTimeline
       items={items}
@@ -142,8 +143,14 @@ export function LrunesDailyCulturePanel(){
 
 export function LrunesDailyStatisticsPanel(){
   const [zoomLevel,setZoomLevel]=useState(0);
-  const [today,setToday]=useState(()=>todayInTaipei());
-  const zoomRange=useMemo(()=>statisticsZoomWindow(zoomLevel,today),[zoomLevel,today]);
+  const today=useMemo(()=>todayInTaipei(),[]);
+  const earliest=useQuery({
+    queryKey:['statistics-history-start','daily-rune'],
+    queryFn:selectFirstDailyRuneDate,
+    staleTime:5*60_000
+  });
+  const zoomRange=useMemo(()=>statisticsZoomWindow(zoomLevel,today,earliest.data||''),
+    [zoomLevel,today,earliest.data]);
   const [analysisMode,setAnalysisMode]=useState('rune');
   const [page,setPage]=useState(1);
   const [chart,setChart]=useState('bar');
@@ -173,7 +180,7 @@ export function LrunesDailyStatisticsPanel(){
         </select>
       </label>
     </div>
-    <StatisticsZoomControls level={zoomLevel} onChange={value=>{setZoomLevel(value);setPage(1);}} range={zoomRange} onEndDateChange={value=>{setToday(value);setPage(1);}}/>
+    <StatisticsZoomControls level={zoomLevel} onChange={value=>{setZoomLevel(value);setPage(1);}} range={zoomRange}/>
     {message?<p className="scope-status">{message}</p>:null}
     {!message?<>
       <p className="scope-status">{range.startDate} ～ {range.endDate} · {summary.dayCount} 個紀錄日 · {summary.recordCount} 筆抽取 · {analysisMode==='direction'?'四種位向（含零次）':ranking.length+' 種實際出現的組合'}</p>
