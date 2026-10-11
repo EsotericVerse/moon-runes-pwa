@@ -50,3 +50,16 @@
 @keyframes rune-skin-breathe{0%,100%{opacity:.65;transform:scale(.96)}50%{opacity:1;transform:scale(1.06)}}
 @media(max-width:650px){.rune-skin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.rune-skin-cosmos{gap:0}.rune-skin-glyph{max-width:162px}.rune-skin-moon{width:80px;height:80px}.rune-skin-stage{min-height:360px;padding:10px}.rune-skin-btn{padding:10px 12px}.rune-skin-orbit-card{max-width:145px}.rune-skin-atlas-item{padding:8px 3px}}
 @media(prefers-reduced-motion:reduce){.rune-skin-aura{animation:none}}
+
+/* Physical socket layout: animated cards orbit a fixed centre moon, no empty slots. */
+.rune-skin-cosmos,.rune-skin-cosmos.single,.rune-skin-cosmos.two,.rune-skin-cosmos.three{position:relative;display:block;max-width:870px;height:clamp(475px,52vw,610px);margin:0 auto;overflow:visible}
+.rune-skin-cosmos .rune-skin-moon{position:absolute;top:50%;left:50%;margin:0;transform:translate(-50%,-50%);z-index:1}
+.rune-skin-cosmos .rune-skin-orbit-card{position:absolute;translate:-50% -50%;max-width:none;z-index:3;will-change:top,left}
+.rune-skin-cosmos .rune-skin-glyph{width:100%;max-width:none}
+.rune-skin-stage .rune-skin-spell{position:relative;margin:3px 0 8px;z-index:4}
+@media(max-width:650px){
+  .rune-skin-cosmos,.rune-skin-cosmos.single,.rune-skin-cosmos.two,.rune-skin-cosmos.three{height:490px}
+  .rune-skin-cosmos .rune-skin-orbit-card{line-height:1.28}
+  .rune-skin-cosmos .rune-skin-orbit-name{font-size:.75rem}
+  .rune-skin-cosmos .rune-skin-orbit-direction{font-size:.67rem}
+}

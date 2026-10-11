@@ -12,6 +12,19 @@ const MAX_DRAW=11;
 const SHOW_MS=3200;
 const SPELLS=['月光甦醒，符文回響。','以月為引，以字為契。','符文降臨，命意自明。'];
 const modeFor=count=>count===1?'single':count===11?'ow3gs':count+'card';
+// The moon stays at the centre; positions are calculated only from cards actually drawn.
+function orbitPoint(index,total){
+  if(total===1)return {x:50,y:63};
+  if(total===2)return {x:50,y:index===0?22:79};
+  const ring=total===3?3:total<=6?total:6;
+  const outer=total>6&&index>=6;
+  const slot=outer?index-6:index;
+  const count=outer?total-6:ring;
+  const angle=-Math.PI/2+2*Math.PI*slot/count;
+  const radiusX=total===3?31:outer?40:total>6?22:34;
+  const radiusY=total===3?32:outer?40:total>6?22:35;
+  return {x:50+radiusX*Math.cos(angle),y:50+radiusY*Math.sin(angle)};
+}
 
 export default function RuneRitualLab(){
   const [items,setItems]=useState([]);
@@ -92,12 +105,12 @@ export default function RuneRitualLab(){
       </select></label>
     </div>
     <section className="rune-skin-stage" aria-label="3D 符文召喚區">
-      <div className="rune-skin-moon" aria-label="月亮" role="img"/>
-      <div className="rune-skin-spell" aria-live="polite">{playing?spell:finished?'月光歸位，籤詩已啟。':items.length?'符文已就位，可以再抽或開籤詩。':'點擊「召喚一枚符文」開始。'}</div>
-      <div className={`rune-skin-cosmos ${stageClass}`}>
+      <div className={`rune-skin-cosmos ${stageClass}`} data-count={items.length}>
+        <div className="rune-skin-moon" aria-label="月亮" role="img"/>
         <AnimatePresence initial={false}>
           {items.map((item,index)=><motion.div layout
             className="rune-skin-orbit-card" key={item.card.rune_id}
+            style={{left:orbitPoint(index,items.length).x+'%',top:orbitPoint(index,items.length).y+'%',width:items.length>6?'clamp(66px,13vw,124px)':items.length>3?'clamp(90px,18vw,175px)':'clamp(115px,23vw,195px)'}}
             initial={{opacity:0,scale:.48,y:48}}
             animate={{opacity:1,scale:1,y:0}}
             exit={{opacity:0,scale:.5}}
@@ -109,6 +122,7 @@ export default function RuneRitualLab(){
           </motion.div>)}
         </AnimatePresence>
       </div>
+      <div className="rune-skin-spell" aria-live="polite">{playing?spell:finished?'月光歸位，籤詩已啟。':items.length?'符文已就位，可以再抽或開籤詩。':'點擊「召喚一枚符文」開始。'}</div>
       {busy&&!items.length?<p className="rune-skin-status">正在讀取符文資料……</p>:null}
     </section>
     {error?<p className="rune-skin-error" role="alert">{error}</p>:null}
