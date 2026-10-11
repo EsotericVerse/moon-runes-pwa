@@ -36,6 +36,26 @@
   font-size:clamp(.82rem,1.6vw,1.1rem);line-height:1.35;}
 .rune-art-tile-caption strong{flex:1;letter-spacing:.06em;font-family:"Noto Serif TC","Songti TC",serif;}
 .rune-art-tile-num{font-size:.7rem;letter-spacing:.08em;color:#deb98a;}
+
+/* Canonical nine-group metadata: subordinate to the original artwork. */
+.rune-art-group-tile{display:flex;flex-direction:column;}
+.rune-art-group-tile>.rune-art-tile-caption{width:100%;}
+.rune-art-group-summary{display:flex;flex:1;flex-direction:column;gap:9px;
+  min-width:0;padding:0 12px 13px;text-align:left;}
+.rune-art-group-english{display:block;color:#dfc58f;font-size:.86rem;line-height:1.35;
+  font-weight:650;letter-spacing:.11em;overflow-wrap:anywhere;}
+.rune-art-group-blurb{display:block;color:#e8e0ee;font-size:.87rem;
+  line-height:1.7;overflow-wrap:anywhere;}
+.rune-art-group-facts{display:flex;align-items:center;gap:6px 8px;flex-wrap:wrap;
+  margin-top:auto;padding-top:4px;}
+.rune-art-group-trait,.rune-art-group-style-tag,.rune-art-group-count-tag{display:inline-flex;
+  align-items:baseline;gap:5px;max-width:100%;padding:5px 8px;border-radius:9px;
+  border:1px solid #dbc49952;background:#171a33;color:#ecddca;
+  font-size:.74rem;line-height:1.4;overflow-wrap:anywhere;}
+.rune-art-group-style-tag{border-color:#b7a6dd55;background:#26253d;color:#e0d5f1;}
+.rune-art-group-count-tag{color:#f3d89d;border-color:#e3c28657;background:#4d382b5c;}
+.rune-art-fact-label{font-size:.67rem;font-weight:700;color:#dbb87c;white-space:nowrap;}
+
 .rune-art-ritual{position:relative;isolation:isolate;min-height:clamp(560px,68vh,760px);
   padding:clamp(22px,3vw,46px);display:flex;flex-direction:column;align-items:center;
   background:#0b1027;overflow:hidden;}
