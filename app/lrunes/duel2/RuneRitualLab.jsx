@@ -6,6 +6,7 @@ import {realMoonPhase} from '../../loc/model/moon-phase';
 import {randomIndex,loadDrawCards,buildFixedReading} from '../RuneDrawClient';
 import {runeImage} from '../rune-directory.mjs';
 import '../skin-lab.css';
+import '../three/rune-world.css';
 
 const RuneWorld=dynamic(()=>import('../three/RuneWorld'),{ssr:false,loading:()=> <p className="rune-world-loading">月光正在凝聚……</p>});
 const MAX_DRAW=11;
