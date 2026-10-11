@@ -143,7 +143,7 @@ export default function PrivateArchiveWeb(){
             <tr><th>衝突</th><td>同 ID 但內容不同：跳過且報告，不覆寫</td></tr>
             <tr><th>亂碼</th><td>不自動修復；標示疑似異常，保留原文</td></tr>
             <tr><th>寫入</th><td>預先計數並分批；只在確認後執行</td></tr>
-            <tr><th>未支援內容</th><td>未辨識 JSON 結構、部分平台活動及圖片／影片二進位媒體明列為未匯入，不算在成功筆數</td></tr>
+            <tr><th>未支援內容</th><td>未知 JSON 陣列逐筆保留原始欄位、標示「未映射」；無法安全解析的檔案與圖片／影片二進位媒體另列為未匯入</td></tr>
           </tbody></table>
           <label style={{display:'flex',gap:'0.6rem',alignItems:'flex-start'}}>
             <input type="checkbox" checked={confirmedPrivacy} onChange={event=>setConfirmedPrivacy(event.target.checked)}/>
@@ -167,6 +167,7 @@ export default function PrivateArchiveWeb(){
             <span>有效 {n(preview.acceptedRows)} 筆</span>
             <span>格式異常 {n(preview.rejectedRows)} 筆</span>
             <span>疑似亂碼 {n(preview.suspiciousRows)} 筆</span>
+            <span>未映射的原始 JSON {n(preview.unmappedRows||0)} 筆</span>
           </div>
           <div className="scope-stat-controls">
             <span>本機候選 {n(plan.staged)} 筆</span>
@@ -193,7 +194,7 @@ export default function PrivateArchiveWeb(){
           </details>:null}
           <label style={{display:'flex',gap:'0.6rem',alignItems:'flex-start'}}>
             <input type="checkbox" checked={confirmedText} onChange={event=>setConfirmedText(event.target.checked)}/>
-            <span>已核對樣本、來源、筆數與疑似亂碼提示；同意只將新增資料寫入這個瀏覽器，不修正原文、不覆寫既有紀錄。</span>
+            <span>已核對來源、筆數、疑似亂碼、未映射原始 JSON 與未匯入媒體；同意只將新增資料寫入此瀏覽器，不修正原文、不覆寫既有紀錄。</span>
           </label>
           <div className="scope-stat-controls">
             <button className="loc-button primary" type="button" disabled={!!busy||!confirmedText||!confirmedPrivacy} onClick={confirmImport}>確認分批寫入本機</button>
