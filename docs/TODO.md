@@ -53,13 +53,13 @@
 - [x] 設定頁程式四項：設定首頁（預設 LOC）、我的最愛、登入（OAuth 統一入口）、每日符文（保留原符韻頁面）；目前已通過網站 build、UI/a11y 與 iOS CI，**尚不等同網站人工驗收**。
 - [x] App 與網站的 Native/Web 環境判斷已透過 Capacitor 接入既有 NAV；登入狀態與裝置執行環境是兩個不同判斷，不把 OAuth 登入等同原生 App 權限。
 
-### 可先在分支繼續開發（不需重裝 IPA）
+### Native Local File（直接整合 main；首次測試須更新 IPA）
 
-- [ ] **Native Local File 核心：** 只在 Capacitor iOS 原生環境啟用本機檔案選取／匯入／保存／清單／讀取／刪除；未登入也可用；一般網站登入後仍不能啟用此原生檔案功能。
-- [ ] 使用 iOS App Sandbox 中真正的檔案路徑保存原始私密檔案及必要的本機清單索引；**不用** Supabase、Neon、`api.user_records`、SQLite／IndexedDB 作為 Local File 的替身；不把整份檔案傳給 API、AI、分析服務或網站雲端同步。
-- [ ] 本機匯入第一個驗證案例採 MSN 對話紀錄等個人檔案：優先保留原檔位元組、檔名、大小、時間與格式，避免錯誤轉碼與覆蓋；檔案格式解析、離線搜尋／分類／統計採後續分段驗收，不先假設所有來源格式完全一致。
-- [ ] 原生 Filesystem／Document Picker 能力需評估可維護且與 Capacitor 8 相容的正式套件及 iOS 隱私／檔案保護策略；先補建置相容性與環境門檻測試，不在網站端偽裝成已支援 Local File。
-- [ ] 確認 App 資料備份／回復政策、卸載時私密本機檔案可能消失的提示，避免把測試檔案誤認為永久備份；任何雲端備份／分享必須獨立明確決策。
+- [x] **Native Local File 程式：** `app/loc/PrivateLocalFiles.jsx` 已在全域設定接入 iOS-only 選檔、分段原始檔匯入、清單、文字預覽、明確分享及二次確認刪除；不用登入，網站不顯示入口。程式交付不代表 iPhone 已驗收。
+- [x] **裝置本機儲存程式：** `app/loc/private-local-files.mjs` 將原始位元組與 JSON 索引保存在 `Directory.LibraryNoCloud`（不加入 iCloud 備份）、以安全隨機 ID 隔離檔案路徑，並核對寫入大小；不經 Supabase、Neon、`api.user_records`、SQLite／IndexedDB、網路 API 或 AI。首次 iPhone 裝置讀寫仍待驗收。
+- [ ] **MSN 私密檔案實機驗收：** 用非敏感測試檔先驗證原始位元組／檔名／大小／時間／中文編碼、重啟後持續存在、文件開啟／分享、刪除、離線與網路流量無外傳，再由使用者自行決定是否匯入真正 MSN 檔案。格式解析、跨文件搜尋／分類／統計仍屬後續工作，不宣稱已完成。
+- [ ] **iPhone Plugin 驗收：** 利用 WKWebView 內建 `<input type=file>` 啟動 iOS Files picker；使用現有 `@capacitor/filesystem` 的 `LibraryNoCloud` 寫入與 `@capacitor/share` 顯式匯出。需確認 iOS 27/WKWebView/Capacitor 8 原生互通、不同檔案大小與 Sandbox 保護；已有 Node 模擬測試不能代替實機驗收。
+- [x] App 設定已提示解除安裝會失去 Sandbox 副本、私人資料不自動備份、分享只在使用者點擊時發生；後續若需加密、手動離線備份／回復，應獨立規劃，不以自動雲端備份取代。
 
 ### 網站通過後才進入 iPhone 驗收
 
