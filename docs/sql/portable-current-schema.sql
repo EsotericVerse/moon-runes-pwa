@@ -196,7 +196,6 @@ CREATE TABLE "silver"."lo3rwang" (
 
 CREATE TABLE "silver"."lo3rwang_galaxy" (
   "uid" character(8) NOT NULL,
-  "content_type" text NOT NULL,
   "title" text,
   "content" text,
   "content_blocks" jsonb,
@@ -318,7 +317,6 @@ CREATE TABLE "silver"."lrunes_daily" (
 
 CREATE TABLE "silver"."lrunes_galaxy" (
   "uid" character(8) NOT NULL,
-  "content_type" text NOT NULL,
   "title" text,
   "content" text,
   "content_blocks" jsonb,
@@ -536,7 +534,6 @@ CREATE UNIQUE INDEX game_rune_action_id_unique ON silver.game USING btree (rune_
 
 CREATE INDEX game_rune_id_idx ON silver.game USING btree (rune_id) WHERE (record_type = 'rune_action'::text);
 
-CREATE INDEX idx_lo3rwang_galaxy_content_type ON silver.lo3rwang_galaxy USING btree (content_type);
 
 CREATE INDEX idx_lo3rwang_galaxy_createtime ON silver.lo3rwang_galaxy USING btree (createtime);
 
@@ -574,7 +571,6 @@ CREATE INDEX lo3rwang_time_date_idx ON silver.lo3rwang_time USING btree (time_da
 
 CREATE INDEX lo3rwang_time_order_idx ON silver.lo3rwang_time USING btree (record_type, display_order);
 
-CREATE INDEX lrunes_galaxy_content_type_idx ON silver.lrunes_galaxy USING btree (content_type);
 
 CREATE INDEX lrunes_galaxy_createtime_idx ON silver.lrunes_galaxy USING btree (createtime);
 

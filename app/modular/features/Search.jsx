@@ -24,7 +24,7 @@ import {blocksToPlainText,plainTextToBlocks} from '../../loc/blocknote-content.m
 import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
 
 
-const GALAXY_EDITOR_COLUMNS='uid,content_type,title,content,createtime,source_native_id,source_place,searchable,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link,statistics_able,class_id,group_lists,content_blocks';
+const GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,source_native_id,source_place,searchable,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link,statistics_able,class_id,group_lists,content_blocks';
 
 const GALAXY_ATTR_ORDER=Object.freeze([
   'uid','title','content','createtime','source_native_id','source_place',
@@ -85,7 +85,6 @@ function galaxyDraftFromRow(row={},fallbackTitle=''){
       :plainTextToBlocks(String(row.content??'')),
     attrs:{
       uid:String(row.uid||'').trim(),
-      content_type:String(row.content_type||'').trim(),
       createtime:datetimeLocalValue(row.createtime),
       source_native_id:String(row.source_native_id||''),
       source_place:String(row.source_place||''),
@@ -539,7 +538,6 @@ export default function Search(){
       const attrs=editDraft.attrs||{};
       const classText=String(attrs.class_id??'').trim();
       const contentPatch=result.resourceType==='galaxy'?{
-        content_type:String(attrs.content_type||'').trim()||'article',
         title:nextTitle,
         content:body,
         content_blocks:editDraft.bodyBlocks,

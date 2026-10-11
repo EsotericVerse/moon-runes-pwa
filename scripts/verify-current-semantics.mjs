@@ -154,6 +154,14 @@ if(!failures.length){
 
   const typeIntersection=read('app/loc/statistics-source-intersection.mjs');
   const importPanel=read('app/loc/ManagementImportPanel.jsx');
+  for(const path of ['app/loc/galaxy-query.js','app/loc/ManagementImportPanel.jsx','app/modular/features/Search.jsx','app/loc/ManagementArticlePublisher.jsx','app/loc/import-batch.mjs']){
+    if(read(path).includes('content_type'))failures.push('Retired content-type field remains in '+path);
+  }
+  if(!importPanel.includes("searchable:explicitVisibilityIds.has(nativeId)?record.searchable:current.searchable")||
+     !importPanel.includes("statistics_able:explicitStatisticsIds.has(nativeId)?record.statistics_able:current.statistics_able")){
+    failures.push('Source Refresh must not overwrite visibility flags when the incoming file omits them.');
+  }
+
   if(typeIntersection.includes("kind:'type'")||importPanel.includes('匯入時作品類型')||
      importPanel.includes('<ImportContentTypeCatalog')||
      !typeIntersection.includes('aggregateOwnScopeStatistics')||

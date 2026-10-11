@@ -6,7 +6,6 @@ export const IMPORT_FIELD_ALIASES=Object.freeze({
   createtime:['createtime','created_at','create_time','created_time','date','published_at'],
   source_native_id:['source_native_id','native_id'],
   source_place:['source_place','place'],
-  content_type:['content_type','type'],
   url:['url','link','permalink'],
   source_id:['source_id'],
   target_id:['target_id'],

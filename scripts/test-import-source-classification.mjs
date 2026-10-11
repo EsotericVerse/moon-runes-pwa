@@ -4,9 +4,9 @@ import {aggregateOwnScopeStatistics,ownScopeCategoryCatalog} from '../app/loc/st
 
 test('source, work type and multimedia are independent author-controlled dimensions',()=>{
   const texts=[
-    {source_name:'facebook',content_type:'post',createtime:'2026-10-01T12:00:00Z'},
-    {source_name:'threads',content_type:'reply',createtime:'2026-10-01T13:00:00Z'},
-    {source_name:'suno',content_type:'lyrics',createtime:'2026-10-02T13:00:00Z'}
+    {source_name:'facebook',createtime:'2026-10-01T12:00:00Z'},
+    {source_name:'threads',createtime:'2026-10-01T13:00:00Z'},
+    {source_name:'suno',createtime:'2026-10-02T13:00:00Z'}
   ];
   const media=[
     {media_type:'instagram',createtime:'2026-10-01T16:00:00Z'},
@@ -25,8 +25,8 @@ test('source, work type and multimedia are independent author-controlled dimensi
 });
 test('invalid record dates are rejected rather than silently dropping every valid day',()=>{
   const rows=aggregateOwnScopeStatistics([
-    {source_name:'facebook',content_type:'post',createtime:'2026-10-11T08:00:00Z'},
-    {source_name:'facebook',content_type:'post',createtime:'not-a-date'}
+    {source_name:'facebook',createtime:'2026-10-11T08:00:00Z'},
+    {source_name:'facebook',createtime:'not-a-date'}
   ],[]);
   assert.equal(rows.filter(x=>x.kind==='source'&&x.category==='facebook').length,1);
 });

@@ -245,7 +245,7 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false}={
   const current=scopeOf(scope);
   const text=makeProvider({
     id:current.id+':text',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
-    columns:['uid','content_type','title','source_name','source_id','target_id','url','media_link','createtime'],
+    columns:['uid','title','source_name','source_id','target_id','url','media_link','createtime'],
     searchFields:['title','content','source_name'],dateColumn:'createtime',
     filters:publicContentFilters(includeHiddenText?[]:[{column:'searchable',operator:'eq',value:true}])
   });

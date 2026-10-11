@@ -33,19 +33,17 @@ function normalizeJsonImportEntry(entry,source,fieldMap={}){
   if(!content)return {record:null,error:'無正文'};
   if([content,rawTitle,sourcePlace].some(hasIrrecoverableEncoding))return {record:null,error:'文字含不可逆編碼錯誤'};
   if(uid.length!==8)return {record:null,error:'UID 必須為 8 字'};
-  const contentType=String(value('content_type')||'other').trim().toLowerCase()||'other';
   const visibility=value('searchable');
   const searchable=!(visibility===false||visibility===0||String(visibility).toLowerCase()==='false'||String(visibility)==='0');
   const record={
     uid,
-    content_type:contentType,
     title:resolveGalaxyTitle(rawTitle,content),
     content,
     createtime:iso(value('createtime')),
     source_native_id:String(value('source_native_id')||'').trim()||null,
     source_place:sourcePlace||null,
     searchable,
-    statistics_able:contentType!=='instruction'&&!isPureUrlContent(content),
+    statistics_able:value('statistics_able')===false||String(value('statistics_able')).toLowerCase()==='false'||!searchable?false:!isPureUrlContent(content),
     source_id:String(value('source_id')||'').trim()||null,
     target_id:normalizeRelationIds(value('target_id')),
     ref_id:String(value('ref_id')||'').trim()||null,
@@ -59,7 +57,7 @@ const IMPORT_FORMAT_FIELDS=Object.freeze([
   ['uid','UID'],['content','正文'],['title','標題'],['createtime','日期時間'],
   ['source_native_id','平台原生 ID'],['source_place','地點'],
   ['url','外部 URL'],['source_id','來源關聯'],['target_id','目標關聯'],
-  ['ref_id','參照關聯'],['searchable','公開搜尋']
+  ['ref_id','參照關聯'],['searchable','公開搜尋'],['statistics_able','納入統計']
 ]);
 
 function ImportFormatSettings({format,onChange,disabled=false}){
@@ -223,7 +221,6 @@ function refreshComparable(record={}){
   return {
     title:String(record.title||''),
     content:String(record.content||''),
-    content_type:String(record.content_type||''),
     createtime:String(record.createtime||''),
     source_place:String(record.source_place||''),
     url:String(record.url||''),
@@ -279,15 +276,21 @@ function SourceRefresh({scopeId,format,onBusyChange}){
       for(let offset=0;offset<ids.length;offset+=200){
         const batch=ids.slice(offset,offset+200);
         const {data,error}=await dbAuthRelation(galaxy)
-          .select('uid,title,content,createtime,source_native_id,source_place,url,searchable,statistics_able,source_name,content_type')
+          .select('uid,title,content,createtime,source_native_id,source_place,url,searchable,statistics_able,source_name')
           .eq('source_name',selected)
           .in('source_native_id',batch);
         if(error)throw new Error(error.message||'Source Refresh 既有資料比對失敗。');
         existing.push(...(data||[]));
       }
       const byNative=new Map(existing.map(row=>[String(row.source_native_id||'').trim(),row]));
-      const explicitTypeNativeIds=new Set(rows.filter(item=>String(mappedImportValue(item.raw,'content_type',format.fields)||'').trim())
+      const hasExplicit=(item,field)=>{
+        const value=mappedImportValue(item.raw,field,format.fields);
+        return value!==undefined&&value!==null&&String(value).trim()!=='';
+      };
+      const explicitNativeIds=field=>new Set(rows.filter(item=>hasExplicit(item,field))
         .map(item=>String(mappedImportValue(item.raw,'source_native_id',format.fields)||'').trim()).filter(Boolean));
+      const explicitVisibilityIds=explicitNativeIds('searchable');
+      const explicitStatisticsIds=explicitNativeIds('statistics_able');
       const creates=[],updates=[],unchanged=[],seen=new Set();
       for(const record of valid){
         const nativeId=String(record.source_native_id||'').trim();
@@ -298,8 +301,8 @@ function SourceRefresh({scopeId,format,onBusyChange}){
         const next={
           ...record,
           uid:current.uid,
-          content_type:explicitTypeNativeIds.has(nativeId)?record.content_type:current.content_type,
-          statistics_able:explicitTypeNativeIds.has(nativeId)?record.statistics_able:current.statistics_able,
+          searchable:explicitVisibilityIds.has(nativeId)?record.searchable:current.searchable,
+          statistics_able:explicitStatisticsIds.has(nativeId)?record.statistics_able:current.statistics_able,
           source_name:selected,
           createtime:record.createtime||current.createtime||null,
           source_place:record.source_place||current.source_place||null,
@@ -337,7 +340,6 @@ function SourceRefresh({scopeId,format,onBusyChange}){
         await updateRows(galaxy,{
           title:row.title,
           content:row.content,
-          content_type:row.content_type,
           createtime:row.createtime,
           source_place:row.source_place,
           url:row.url,
@@ -489,7 +491,7 @@ function SunoImport({scopeId}){
       const {galaxy,galaxyMedia}=scopeData;
       if(lyricsUid){
         await insertRows(galaxy,[{
-          uid:lyricsUid,content_type:'lyrics',
+          uid:lyricsUid,
           title,content:lyrics,createtime,
           source_id:sourceId,target_id:normalizeRelationIds(draft.target_id),ref_id:styleUid||draft.ref_id.trim()||null,
           url:draft.url.trim()||null,searchable:true,source_name:'suno'
@@ -497,7 +499,7 @@ function SunoImport({scopeId}){
       }
       if(styleUid){
         await insertRows(galaxy,[{
-          uid:styleUid,content_type:'instruction',
+          uid:styleUid,
           title:title+'｜Suno Style',content:stylePrompt,createtime,
           target_id:[lyricsUid],searchable:false,statistics_able:false,source_name:'suno'
         }]);
@@ -514,7 +516,6 @@ function SunoImport({scopeId}){
   }
   return <div className="scope-inline-card">
     <h4>Suno 單筆匯入</h4>
-    <p>Suno 無批次匯出時使用。歌詞與 Suno Style 進 Galaxy；媒體連結與 Meta Tag 進 Galaxy Media。</p>
     <form onSubmit={save} className="scope-editor">
       <label>{UI_COPY.management.songTitle}<input value={draft.title} onChange={e=>change('title',e.target.value)}/></label>
       <label>{UI_COPY.management.lyrics}<textarea rows={8} value={draft.lyrics} onChange={e=>change('lyrics',e.target.value)}/></label>

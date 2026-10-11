@@ -36,7 +36,6 @@ export default function ManagementArticlePublisher({scopeId}){
 
       await insertRows(galaxy,[{
         uid,
-        content_type:'article',
         title:resolveGalaxyTitle(draft.title,content),
         content,
         content_blocks:draft.bodyBlocks,

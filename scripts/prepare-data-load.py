@@ -54,11 +54,12 @@ def prepare(table, rows, columns):
     for row in rows:
         normalize_text_integrity(row, table)
     if name.endswith('_galaxy'):
-        columns = columns + ['statistics_able']
+        columns = [key for key in columns if key != 'content_type'] + ['statistics_able']
         for row in rows:
             content = str(row.get('content') or '').strip()
             pure_url = (content.startswith('http://') or content.startswith('https://')) and not any(ch.isspace() for ch in content)
-            row['statistics_able'] = row.get('content_type') != 'instruction' and not pure_url
+            row['statistics_able'] = row.get('statistics_able', row.get('searchable', True)) is not False and not pure_url
+            row.pop('content_type', None)
             if not isinstance(row['statistics_able'], bool):
                 raise ValueError('statistics_able must be a validated boolean for ' + table + ' uid=' + str(row.get('uid')))
     pk = next(c for c in inventory['constraints'] if c['schema_name'] == schema and c['relname'] == name and c['contype'] == 'p')

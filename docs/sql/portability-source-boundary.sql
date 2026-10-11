@@ -14,6 +14,6 @@ SELECT jsonb_build_object(
   'user_records',(SELECT coalesce(jsonb_agg(to_jsonb(r) ORDER BY owner_id,id),'[]'::jsonb) FROM api.user_records r),
   'user_settings',(SELECT coalesce(jsonb_agg(to_jsonb(s) ORDER BY owner_id,setting_key),'[]'::jsonb) FROM api.user_settings s),
   'suno_instruction_counts',(SELECT jsonb_build_object(
-      'all',(SELECT count(*) FROM silver.lo3rwang_galaxy WHERE source_name='suno' AND content_type='instruction'),
-      'searchable',(SELECT count(*) FROM silver.lo3rwang_galaxy WHERE source_name='suno' AND content_type='instruction' AND searchable)))
+      'all',(SELECT count(*) FROM silver.lo3rwang_galaxy WHERE source_name='suno' AND NOT statistics_able),
+      'searchable',(SELECT count(*) FROM silver.lo3rwang_galaxy WHERE source_name='suno' AND NOT statistics_able AND searchable)))
 ) AS boundary;

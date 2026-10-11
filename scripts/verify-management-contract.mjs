@@ -34,7 +34,6 @@ const genericHome=read('app/loc/views/GenericScopeHomeView.jsx');
 const scopeRuntime=read('app/modular/use-scope-runtime.js');
 const scopeRegistry=read('app/modular/scope-registry.js');
 const importPanel=read('app/loc/ManagementImportPanel.jsx');
-const importTypeCatalog=read('app/loc/ImportContentTypeCatalog.jsx');
 const scopeSettings=read('app/loc/ScopeSettingsPanel.jsx');
 const publisher=read('app/loc/ManagementArticlePublisher.jsx');
 const blockNoteEntry=read('app/loc/BlockNoteEditor.jsx');

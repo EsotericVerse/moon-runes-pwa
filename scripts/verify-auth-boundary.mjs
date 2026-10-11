@@ -32,7 +32,7 @@ if(!failures.length){
   const scopeSettings=read(files.scopeSettings);
   for(const token of ['account.canManageScopeSync(scopeId)','display_name','search_intro','search_aliases','updateRows'])if(!scopeSettings.includes(token))failures.push('Scope settings authorization missing '+token);
   const publisher=read(files.publisher);
-  for(const token of ['account.canManageScopeSync(scopeId)','insertRows','source_name','content_type'])if(!publisher.includes(token))failures.push('Publisher authorization missing '+token);
+  for(const token of ['account.canManageScopeSync(scopeId)','insertRows','source_name','searchable'])if(!publisher.includes(token))failures.push('Publisher authorization missing '+token);
   for(const path of [files.search,files.culture])if(!read(path).includes('UpdateTime:new Date().toISOString()'))failures.push(path+' must refresh Galaxy UpdateTime');
 }
 if(failures.length){
