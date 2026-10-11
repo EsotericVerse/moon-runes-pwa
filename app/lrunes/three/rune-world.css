@@ -314,3 +314,32 @@ background-clip:text;-webkit-text-fill-color:transparent;}
 @media(prefers-reduced-motion:reduce){
   .rune-3d-stage:before{animation:none;}
 }
+
+
+/* The nine planets now carry the actual published group illustrations.
+   Typography is secondary enamel lettering beneath the artwork. */
+.rune-world-orb-name--art{
+  font-family:"Songti TC","Noto Serif TC","PMingLiU",serif!important;
+  font-weight:700!important;
+  font-size:clamp(13px,1.45vw,18px)!important;
+  letter-spacing:.15em!important;
+  min-width:76px!important;
+  border-radius:999px!important;
+  padding:6px 11px!important;
+  background:linear-gradient(180deg,#30223abb,#171329e8)!important;
+  border:1px solid #d6b77c!important;
+  box-shadow:inset 0 1px 0 #fff1d376,0 3px 16px #000c,0 0 16px #b78acd55!important;
+  color:#fff0d3!important;
+  text-shadow:0 1px 1px #1d1322,0 0 10px #fff5cd81!important;
+}
+.rune-world-orb-name--art:before,.rune-world-orb-name--art:after{
+  content:"·";font-size:.7em;vertical-align:middle;padding:0 3px;color:#d9bf9b;
+}
+.rune-world-orb-name--art:hover,.rune-world-orb-name--art:focus-visible{
+  background:linear-gradient(180deg,#5d3c62,#20152f)!important;
+  border-color:#fff1c8!important;
+  box-shadow:0 0 24px #f5d7b69c,0 5px 20px #000c!important;
+}
+@media(max-width:650px){
+ .rune-world-orb-name--art{font-size:13px!important;min-width:58px!important;padding:7px 6px!important;}
+}
