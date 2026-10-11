@@ -117,7 +117,7 @@ if(!failures.length){
   const sourceEditor=read('app/loc/SourceCategoryEditor.jsx');
   const crossMember=read('app/modular/modules/statistics/LocMemberIntersection.jsx');
   if(!statistics.includes('administrativeSourceTrend(')||
-     !statistics.includes("queryKey:['statistics-source-taxonomy']")||
+     !statistics.includes("queryKey:['statistics-source-taxonomy',scopeId]")||
      !sourceTaxonomy.includes("assignedSource(")||
      !sourceEditor.includes('AdminSourceCategories')||
      !sourceEditor.includes('ScopeCustomSourceCategories')||
@@ -128,7 +128,7 @@ if(!failures.length){
      !ownIntersection.includes("scope_source_subcategories")||
      !crossMember.includes("availableMemberMeasures")||
      !ownIntersection.includes("kind:'group'")){
-    failures.push('Global source classes, member-level Others and cross-member analytics must share real data.');
+    failures.push('Group source categories and Scope-owned personal source classification must share real data.');
   }
 
   const zoomControls=read('app/modular/modules/statistics/StatisticsZoomControls.jsx');
