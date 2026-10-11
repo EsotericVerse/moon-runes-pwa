@@ -184,3 +184,20 @@ test('Capacitor static-file route is normalized to canonical Scope URL before hy
   assert.equal(execute('https:','/lrunes/culture/index.html'),null);
   assert.equal(execute('capacitor:','/lrunes/culture/'),null);
 });
+
+test('deep feature paths retain their dock feature',()=>{
+  const registry=fs.readFileSync('app/modular/scope-registry.js','utf8');
+  assert.match(registry,/segments\.includes\(item\.path\)/);
+  assert.ok(!registry.includes(".at(-1)||''"));
+});
+test('contextual returns and native 404 stay in the Capacitor bundle',()=>{
+  const nav=fs.readFileSync('app/modular/ContextReturnNav.jsx','utf8');
+  const site=fs.readFileSync('app/lrunes/RunesClient.jsx','utf8');
+  const hub=fs.readFileSync('app/lrunes/Rune3DNav.jsx','utf8');
+  const notFound=fs.readFileSync('app/not-found.jsx','utf8');
+  assert.match(nav,/navigationHref\(scopeId,path,native\)/);
+  assert.match(site,/navigationHref\('lrunes',path,native\)/);
+  assert.match(hub,/navigationHref\('lrunes','card\/duel',native\)/);
+  assert.match(notFound,/current\.protocol==='capacitor:'/);
+  assert.match(notFound,/index\.html\?loc_direct=1/);
+});
