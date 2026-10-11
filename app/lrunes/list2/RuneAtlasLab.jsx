@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import {selectRows} from '../../loc/db-query.mjs';
 import {runeImage} from '../rune-directory.mjs';
 import '../skin-lab.css';
+import '../three/rune-world.css';
 
 const RuneWorld=dynamic(()=>import('../three/RuneWorld'),{ssr:false,loading:()=> <p className="rune-world-loading">月之星域正在形成……</p>});
 const GROUP_COLUMNS='group_id,english_name,desc,runeslist';
