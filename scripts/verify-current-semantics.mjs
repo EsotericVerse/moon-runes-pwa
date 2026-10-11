@@ -171,6 +171,12 @@ if(!failures.length){
     failures.push('Own-Scope comparisons must preserve the raw source dimension beside group and personal source classifications.');
   }
 
+  if(!crossMember.includes('aria-busy={fetched.isFetching}')||
+     !crossMember.includes('!fetched.isPending&&!fetched.isFetching')||
+     !crossMember.includes('正在更新交會統計')){
+    failures.push('Cross-member zoom must hide previous-range statistics until new data is ready.');
+  }
+
   const zoomControls=read('app/modular/modules/statistics/StatisticsZoomControls.jsx');
   const zoomModel=read('app/modular/modules/statistics/statistics-time-zoom.mjs');
   const runeDaily=read('app/lrunes/DailyRuneAnalytics.jsx');
