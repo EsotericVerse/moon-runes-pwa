@@ -512,7 +512,7 @@ function ScopeGroupStatistics(){
     </div>
 
     <p className="scope-status">{startDate&&rangeEndDate?startDate+' ～ '+rangeEndDate:''}</p>
-    <p className="scope-status">LOC 合併統計僅計入成員明確開放的群組來源分類；未開放的類別不計入總數。</p>
+    <p className="scope-status">LOC 合併統計沿用原有公開來源資料；只有成員明確關閉的群組來源分類會從跨成員數值中排除。每日符文可獨立參與交互比較。</p>
     <div className="scope-ranking">
       <div>
         <strong>LOC 合併總數</strong>
@@ -528,7 +528,7 @@ function ScopeGroupStatistics(){
       type={locChartType} rows={trendData} series={locSeries}
       distribution={locDistribution} totalKey={aggregateType==='total'?'total':''} height={420}
     />:null}
-    {policy.data?<LocMemberIntersection scopes={scopes} startDate={startDate} endDate={rangeEndDate} unit={bucket} sharing={policy.data}/>:null}
+    {policy.data?<LocMemberIntersection scopes={scopesQuery.data||[]} startDate={startDate} endDate={rangeEndDate} unit={bucket} sharing={policy.data}/>:null}
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
     {policy.error?<p className="scope-status scope-error">{featureDataErrorMessage(policy.error)}</p>:null}
     {densityQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(densityQuery.error)}</p>:null}

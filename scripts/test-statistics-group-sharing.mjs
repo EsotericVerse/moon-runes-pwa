@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
- sharedGroupCodes,canParticipateInCrossStatistics,sharedSourceBreakdown,sharedScopeDensity
+ sharedGroupCodes,canParticipateInCrossStatistics,canOfferMemberCrossStatistics,allowedMemberMetric,sharedSourceBreakdown,sharedScopeDensity
 } from '../app/loc/statistics-group-sharing.mjs';
 import {calculateMemberCross} from '../app/loc/member-intersection-model.mjs';
 
@@ -35,30 +35,39 @@ const raw=[
 ];
 const taxonomy={categories,aliases,scopeSources,permissions};
 
-test('missing consent denies and consent is independent for every group source of every member',()=>{
- assert.equal(canParticipateInCrossStatistics('unknown',permissions,categories),false);
- assert.deepEqual([...sharedGroupCodes('alice',permissions,categories)],['facebook']);
- assert.deepEqual([...sharedGroupCodes('bob',permissions,categories)],['threads']);
- assert.deepEqual([...sharedGroupCodes('unknown',permissions,categories)],[]);
+test('missing consent preserves existing charts; only explicit group opt-out removes data',()=>{
+ assert.equal(canParticipateInCrossStatistics('unknown',permissions,categories),true);
+ assert.deepEqual([...sharedGroupCodes('alice',permissions,categories)],['facebook','others']);
+ assert.deepEqual([...sharedGroupCodes('bob',permissions,categories)],['facebook','threads','others']);
+ assert.deepEqual([...sharedGroupCodes('',permissions,categories)],[]);
+ assert.deepEqual([...sharedGroupCodes('existing-member',[],categories)],['facebook','threads','others']);
 });
 test('LOC density and total never leak excluded groups or precomputed unfiltered totals',()=>{
  const rows=sharedSourceBreakdown(raw,'alice',taxonomy);
  assert.deepEqual(rows.filter(row=>row.kind==='source').map(row=>row.category),['fb']);
- assert.equal(rows.filter(row=>row.kind==='media').reduce((n,row)=>n+row.item_count,0),2);
+ assert.equal(rows.filter(row=>row.kind==='media').reduce((n,row)=>n+row.item_count,0),7);
  assert.deepEqual(rows.filter(row=>row.kind==='total').map(row=>[row.day,row.category,row.item_count]),[
-   ['2026-10-01','文字作品',4],['2026-10-02','多媒體',2]
+   ['2026-10-01','文字作品',4],['2026-10-02','多媒體',7]
  ]);
  assert.deepEqual(sharedScopeDensity(raw,'alice',taxonomy),[
    {scope_id:'alice',day:'2026-10-01',item_count:4},
-   {scope_id:'alice',day:'2026-10-02',item_count:2}
+   {scope_id:'alice',day:'2026-10-02',item_count:7}
  ]);
- assert.deepEqual(sharedScopeDensity(raw,'charlie',taxonomy),[]);
+ assert.deepEqual(sharedScopeDensity(raw,'charlie',taxonomy),[
+   {scope_id:'charlie',day:'2026-10-01',item_count:9},
+   {scope_id:'charlie',day:'2026-10-02',item_count:7}
+ ]);
 });
 test('personal source labels receive no independent consent; only assigned group matters',()=>{
  const allowed=sharedSourceBreakdown(raw,'bob',taxonomy);
  assert.ok(allowed.some(row=>row.category==='threads'));
- assert.ok(!allowed.some(row=>row.category==='custom-blog'));
- assert.ok(!allowed.some(row=>row.category==='fb'));
+ assert.ok(allowed.some(row=>row.category==='custom-blog'));
+ assert.ok(allowed.some(row=>row.category==='fb'));
+ const denied=[...permissions,{scope_id:'bob',category_code:'facebook',share_enabled:false}];
+ const restricted=sharedSourceBreakdown(raw,'bob',{...taxonomy,permissions:denied});
+ assert.ok(!restricted.some(row=>row.category==='custom-blog'));
+ assert.ok(!restricted.some(row=>row.category==='fb'));
+ assert.ok(restricted.some(row=>row.category==='threads'));
 });
 test('cross-member total and source measures only consume published source groups',()=>{
  const datasets=new Map([['alice',{rows:sharedSourceBreakdown(raw,'alice',taxonomy),daily:[]}]]);
@@ -67,5 +76,41 @@ test('cross-member total and source measures only consume published source group
   {person:'alice',metric:'source:facebook'},
   {person:'alice',metric:'source:threads'}
  ],datasets,{from:'2026-10-01',to:'2026-10-02',unit:'day',categories,aliases,scopeSources});
- assert.deepEqual(result.totals.map(row=>row.value),[6,4,0]);
+ assert.deepEqual(result.totals.map(row=>row.value),[11,4,0]);
+});
+
+test('new and existing members retain all their pre-existing data until an explicit opt-out',()=>{
+ const baseline=sharedScopeDensity(raw,'alice',{...taxonomy,permissions:[]});
+ assert.deepEqual(baseline.map(row=>row.item_count),[9,7]);
+ const revoked=sharedScopeDensity(raw,'alice',{
+   ...taxonomy,permissions:[{scope_id:'alice',category_code:'threads',share_enabled:false}]
+ });
+ assert.deepEqual(revoked.map(row=>row.item_count),[4,7]);
+ const restored=sharedScopeDensity(raw,'alice',{
+   ...taxonomy,permissions:[{scope_id:'alice',category_code:'threads',share_enabled:true}]
+ });
+ assert.deepEqual(restored,baseline);
+});
+
+test('LOC always offers Lunarunes daily rune as independent comparison material',()=>{
+  const denied=categories.map(group=>({scope_id:'lrunes',category_code:group.category_code,share_enabled:false}));
+  const restrictive={categories,aliases,scopeSources,permissions:denied};
+  assert.equal(canParticipateInCrossStatistics('lrunes',denied,categories),false);
+  assert.equal(canOfferMemberCrossStatistics('lrunes',denied,categories),true);
+  assert.equal(canOfferMemberCrossStatistics('alice',denied,categories),true);
+  assert.equal(allowedMemberMetric('lrunes','daily',restrictive),true);
+  assert.equal(allowedMemberMetric('lrunes','daily:direction:正位',restrictive),true);
+  assert.equal(allowedMemberMetric('lrunes','total',restrictive),false);
+  assert.equal(allowedMemberMetric('lrunes','source:facebook',restrictive),false);
+  assert.equal(allowedMemberMetric('alice','daily',restrictive),false);
+  const datasets=new Map([['lrunes',{rows:sharedSourceBreakdown(raw,'lrunes',restrictive),daily:[
+    {record_date:'2026-10-01',draw_kind:'main',direction:'正位',phase:'新月'},
+    {record_date:'2026-10-02',draw_kind:'supplement',direction:'逆位',phase:'滿月'}
+  ]}]]);
+  const result=calculateMemberCross([
+    {person:'lrunes',metric:'daily',label:'每日符文'},
+    {person:'lrunes',metric:'daily:direction:正位',label:'正位'}
+  ],datasets,{from:'2026-10-01',to:'2026-10-03',unit:'day',categories,aliases,scopeSources});
+  assert.deepEqual(result.totals.map(t=>t.value),[2,1]);
+  assert.deepEqual(result.rows.map(row=>row.line0),[1,1,0]);
 });

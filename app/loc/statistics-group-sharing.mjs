@@ -1,17 +1,40 @@
 // Cross-Scope Statistics consent is controlled only at (Scope, Admin group source).
 // Personal source labels are not separate consent switches.
-// Missing or disabled permissions are denied, never inferred from public visibility.
+// Backward-compatible defaults: absence of an explicit choice retains previously
+// public LOC statistics; only an explicit false removes that group's contribution.
 import {assignedSource} from './member-intersection-model.mjs';
 
-const active=value=>value===true;
 export function sharedGroupCodes(scopeId,permissions=[],categories=[]){
-  const valid=new Set((categories||[]).filter(row=>row.enabled!==false).map(row=>String(row.category_code||'')));
-  return new Set((permissions||[]).filter(row=>
-    row.scope_id===scopeId&&active(row.share_enabled)&&valid.has(row.category_code)
-  ).map(row=>row.category_code));
+  if(!scopeId)return new Set();
+  const available=(categories||[]).filter(row=>row.enabled!==false)
+    .map(row=>String(row.category_code||'')).filter(Boolean);
+  const declined=new Set((permissions||[]).filter(row=>row.scope_id===scopeId&&row.share_enabled===false)
+    .map(row=>String(row.category_code||'')));
+  return new Set(available.filter(code=>!declined.has(code)));
 }
 export function canParticipateInCrossStatistics(scopeId,permissions=[],categories=[]){
   return sharedGroupCodes(scopeId,permissions,categories).size>0;
+}
+// LunaRunes Daily Rune is an independent data source for LOC intersections.
+// Group source opt-outs apply to Galaxy text/media only, never rune draws.
+export function canOfferMemberCrossStatistics(scopeId,permissions=[],categories=[]){
+  return scopeId==='lrunes'||canParticipateInCrossStatistics(scopeId,permissions,categories);
+}
+export function allowedMemberMetric(scopeId,metric,taxonomy={}){
+  const key=String(metric||'');
+  const shared=sharedGroupCodes(scopeId,taxonomy.permissions,taxonomy.categories);
+  if(key.startsWith('daily'))return scopeId==='lrunes';
+  if(key.startsWith('source:'))return shared.has(key.slice(7));
+  if(key.startsWith('personal:')){
+    const prefix='personal:'+scopeId+':';
+    if(!key.startsWith(prefix))return false;
+    const sourceKey=key.slice(prefix.length).toLowerCase();
+    return (taxonomy.scopeSources||[]).some(row=>row.scope_id===scopeId&&
+      row.enabled!==false&&String(row.source_key||'').toLowerCase()===sourceKey&&
+      shared.has(row.category_code));
+  }
+  if(key==='total'||key==='text'||key==='multimedia'||key.startsWith('media:'))return shared.size>0;
+  return false;
 }
 export function sharedSourceBreakdown(rows=[],scopeId='',taxonomy={}){
   const categories=taxonomy.categories||[],aliases=taxonomy.aliases||[];

@@ -10,7 +10,7 @@ import {normalizeDailyDraws} from '../../../lrunes/daily-analytics-model.mjs';
 import {realMoonPhase} from '../../../loc/model/moon-phase';
 import {availableMemberMeasures,calculateMemberCross} from '../../../loc/member-intersection-model.mjs';
 import StatisticsMultiChart,{availableStatisticChartTypes} from './StatisticsMultiChart';
-import {sharedGroupCodes,sharedSourceBreakdown} from '../../../loc/statistics-group-sharing.mjs';
+import {sharedGroupCodes,sharedSourceBreakdown,canOfferMemberCrossStatistics,allowedMemberMetric} from '../../../loc/statistics-group-sharing.mjs';
 
 async function readCatalog(table,columns){
   return (await selectRows(table,{columns,limit:250,offset:0})).rows;
@@ -34,12 +34,13 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
     staleTime:5*60_000
   });
   const names=useMemo(()=>new Map((catalog.data?.people||[]).map(row=>[row.scope_id,row.display_name||row.scope_id])),[catalog.data?.people]);
-  const available=scopes.filter(scope=>sharedGroupCodes(scope.id,sharing.permissions,sharing.categories).size>0)
+  const available=scopes.filter(scope=>canOfferMemberCrossStatistics(scope.id,sharing.permissions,sharing.categories))
     .map(scope=>({id:scope.id,label:names.get(scope.id)||scope.id,scope}));
   const lanes=Array.from({length:laneCount},(_,index)=>{
     const candidate=choices[index]||{};
     const fallback=available[index%Math.max(available.length,1)]?.id||'';
-    return {person:available.some(p=>p.id===candidate.person)?candidate.person:fallback,metric:candidate.metric||'total'};
+    const person=available.some(p=>p.id===candidate.person)?candidate.person:fallback;
+    return {person,metric:candidate.metric|| (person==='lrunes'?'daily':'total')};
   });
   const chosenIds=[...new Set(lanes.map(lane=>lane.person).filter(Boolean))];
   const fetched=useQuery({
@@ -49,7 +50,8 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
       const pairs=await Promise.all(chosenIds.map(async id=>{
         const scope=scopes.find(item=>item.id===id);
         const [rows,daily]=await Promise.all([
-          selectScopeSourceBreakdownRows(scope,{startDate,endDate}),
+          sharedGroupCodes(id,sharing.permissions,sharing.categories).size
+            ?selectScopeSourceBreakdownRows(scope,{startDate,endDate}):Promise.resolve([]),
           id==='lrunes'&&lanes.some(lane=>lane.person===id&&lane.metric.startsWith('daily'))
             ?selectDailyRuneRange({startDate,endDate})
             :Promise.resolve([])
@@ -69,11 +71,8 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
   const measures=availableMemberMeasures([...datasets.values()].map(item=>item.rows),sharing.categories||[],shareablePersonal);
   const adjusted=lanes.map((lane,index)=>({
     ...lane,
-    metric:measures.some(item=>item.id===lane.metric)&&
-      !(lane.metric.startsWith('daily')&&lane.person!=='lrunes')&&
-      !(lane.metric.startsWith('source:')&&!sharedGroupCodes(lane.person,sharing.permissions,sharing.categories).has(lane.metric.slice(7)))&&
-      !(lane.metric.startsWith('personal:')&&!lane.metric.startsWith('personal:'+lane.person+':'))
-      ?lane.metric:'total',
+    metric:measures.some(item=>item.id===lane.metric)&&allowedMemberMetric(lane.person,lane.metric,sharing)
+      ?lane.metric:(lane.person==='lrunes'?'daily':'total'),
     label:(names.get(lane.person)||lane.person)+' · '+(measures.find(item=>item.id===lane.metric)?.name||'全部作品')
   }));
   const calculated=useMemo(()=>calculateMemberCross(adjusted,datasets,{
@@ -106,15 +105,14 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
     <div className="scope-stat-controls">
       {lanes.map((lane,index)=><div className="scope-inline-card" key={index}>
         <label>所屬人員 {index+1}
-          <select className="scope-select" value={lane.person} onChange={e=>update(index,{person:e.target.value,metric:'total'})}>
+          <select className="scope-select" value={lane.person} onChange={e=>update(index,{person:e.target.value,metric:e.target.value==='lrunes'?'daily':'total'})}>
             {available.map(member=><option key={member.id} value={member.id}>{member.label}</option>)}
           </select>
         </label>
         <label>比較項目
           <select className="scope-select" value={adjusted[index].metric} onChange={e=>update(index,{metric:e.target.value})}>
             {measures.filter(item=>(!item.id.startsWith('daily')||lane.person==='lrunes')&&
-            (!item.id.startsWith('source:')||sharedGroupCodes(lane.person,sharing.permissions,sharing.categories).has(item.id.slice(7)))&&
-            (!item.id.startsWith('personal:')||item.id.startsWith('personal:'+lane.person+':'))).map(item=><option key={item.id} value={item.id}>{item.name}</option>)}
+            allowedMemberMetric(lane.person,item.id,sharing)).map(item=><option key={item.id} value={item.id}>{item.name}</option>)}
           </select>
         </label>
       </div>)}

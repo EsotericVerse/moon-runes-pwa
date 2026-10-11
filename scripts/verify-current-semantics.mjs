@@ -148,6 +148,20 @@ if(!failures.length){
     failures.push('Group sources must have per-Scope opt-in for cross-member totals and charts; personal custom source controls remain independent.');
   }
 
+  // Regression contract: new source-sharing controls must NEVER blank previously
+  // public LOC statistics or suppress the independent Daily Rune comparison.
+  if(!crossSharing.includes('row.share_enabled===false')||
+     !crossSharing.includes("scopeId==='lrunes'||canParticipateInCrossStatistics")||
+     !crossSharing.includes("key.startsWith('daily')return scopeId==='lrunes'")||
+     !statistics.includes('scopes={scopesQuery.data||[]}')||
+     !crossMember.includes('canOfferMemberCrossStatistics(')||
+     !crossMember.includes("person==='lrunes'?'daily':'total'")||
+     !crossMember.includes("allowedMemberMetric(lane.person,item.id,sharing)")||
+     !statisticsMultiChart.includes('if(!hasTime&&!categories.length)return []')||
+     !statisticsMultiChart.includes("if(type==='area')return hasTime&&time.length>=2")){
+    failures.push('LOC charts and daily rune cross-statistics must survive source-category sharing changes.');
+  }
+
   const zoomControls=read('app/modular/modules/statistics/StatisticsZoomControls.jsx');
   const zoomModel=read('app/modular/modules/statistics/statistics-time-zoom.mjs');
   const runeDaily=read('app/lrunes/DailyRuneAnalytics.jsx');

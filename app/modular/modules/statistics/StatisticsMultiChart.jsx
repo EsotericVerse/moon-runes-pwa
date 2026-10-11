@@ -81,13 +81,13 @@ export function availableStatisticChartTypes({rows=[],series=[],distribution=[],
   const time=Array.isArray(rows)?rows:[];
   const fields=nonemptySeries(time,series);
   const categories=normalizeDistribution(distribution,time,fields);
-  if(!time.length&&!categories.length)return [];
   const hasTime=time.length>0&&(fields.length>0||(totalKey&&time.some(row=>number(row[totalKey])>0)));
+  if(!hasTime&&!categories.length)return [];
   const hasMix=categories.length>=2;
   const compare=fields.length>=2;
   const usable=type=>{
     if(type==='line'||type==='bar')return hasTime||hasMix;
-    if(type==='area')return time.length>=2;
+    if(type==='area')return hasTime&&time.length>=2;
     if(type==='pie'||type==='treemap')return hasMix;
     if(type==='stacked')return compare&&time.length>=2;
     if(type==='composed')return time.length>=3&&new Set(time.map(row=>totalValue(row,fields,totalKey))).size>1;

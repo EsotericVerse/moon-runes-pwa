@@ -1,13 +1,14 @@
 -- Canonical per-Scope consent for group source statistics.
 -- Group categories are Admin-owned; each Scope chooses whether its own
 -- facts under that group can enter LOC aggregation and other member charts.
--- Missing rows mean false; this is not a content-privacy/RLS barrier.
+-- Missing rows keep historical public statistics (true); a member's explicit false withdraws that group.
+-- This is a statistical inclusion choice, not a content-privacy/RLS barrier.
 -- Do not reuse the incorrectly proposed whole-Scope flag.
 create table if not exists silver.scope_group_source_sharing (
   scope_id text not null references silver.scope_registry(scope_id) on delete cascade,
   category_code text not null references silver.statistics_source_categories(category_code)
     on update cascade on delete cascade,
-  share_enabled boolean not null default false,
+  share_enabled boolean not null default true,
   updated_at timestamptz not null default now(),
   primary key (scope_id,category_code)
 );
@@ -26,3 +27,7 @@ create policy scope_group_source_sharing_update on silver.scope_group_source_sha
 -- No change to silver.scope_source_subcategories or Galaxy data.
 -- Temporary columns statistics_cross_scope_enabled on built-in Scope
 -- configs are not referenced by runtime and are NOT an authorization source.
+
+-- This installation originally deployed with DEFAULT false; keep existing rows unchanged
+-- and restore old behavior for future rows that have not been set explicitly.
+alter table silver.scope_group_source_sharing alter column share_enabled set default true;
