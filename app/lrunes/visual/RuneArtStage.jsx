@@ -144,8 +144,6 @@ function DrawStage({items,onSelect,onBackgroundClick,reduced,daily=false,chargin
         <span>{index+1} · {runeName(item.card)}</span>
       </motion.button>)}
     </div>:null}
-    {daily&&last&&onBackgroundClick?<button type="button" className="rune-art-draw-again"
-      onClick={()=>onBackgroundClick()}>重新召喚每日符文 <span aria-hidden="true">✦</span></button>:null}
   </div>;
 }
 export default function RuneArtStage({mode='groups',items=[],onSelect,onBackgroundClick,charging=false,actions=null}){
