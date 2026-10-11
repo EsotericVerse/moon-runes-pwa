@@ -1,12 +1,14 @@
 'use client';
 
 import {FeaturePage} from '../../modular/ui';
-import {featureHref,scopeHref} from '../../modular/scope-registry';
+import {navigationHref} from '../../modular/nav-destinations.mjs';
+import useNativeNavigation from '../../modular/use-native-navigation';
 import {useScopeRuntime} from '../../modular/use-scope-runtime';
 import ScopeGroupOverview from '../ScopeGroupOverview';
 import ScopeEditableBlocks from '../ScopeEditableBlocks';
 
 export default function GenericScopeHomeView(){
+  const native=useNativeNavigation();
   const {scopeId,scope,registryRow}=useScopeRuntime();
   if(scope?.aggregateChildren){
     return <FeaturePage featureId="governance" subtitle={scope.label}>
@@ -24,11 +26,11 @@ export default function GenericScopeHomeView(){
       <ScopeEditableBlocks scopeId={scopeId} page="index"/>
       <p className="scope-status">{registryRow?.domain||registryRow?.directory||''}</p>
       <div className="scope-result-links">
-        <a href={featureHref(scopeId,'search')}>搜尋</a>
-        <a href={featureHref(scopeId,'statics')}>統計</a>
-        <a href={featureHref(scopeId,'culture')}>文化</a>
-        <a href={featureHref(scopeId,'governance')}>治理</a>
-        <a href={scopeHref(scopeId,'governance/manage')}>管理</a>
+        <a href={navigationHref(scopeId,'search',native)}>搜尋</a>
+        <a href={navigationHref(scopeId,'statics',native)}>統計</a>
+        <a href={navigationHref(scopeId,'culture',native)}>文化</a>
+        <a href={navigationHref(scopeId,'governance',native)}>治理</a>
+        <a href={navigationHref(scopeId,'governance/manage',native)}>管理</a>
       </div>
     </section>
   </section></main>;
