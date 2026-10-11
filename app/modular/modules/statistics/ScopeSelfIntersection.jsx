@@ -88,7 +88,7 @@ export default function ScopeSelfIntersection({scope,range}){
     return output;
   });
   const categories=selection.map(id=>categoryList.find(c=>c.id===id)).filter(Boolean);
-  const unit=(Date.parse(end)-Date.parse(start))/DAY_MS>180?'month':(Date.parse(end)-Date.parse(start))/DAY_MS>60?'week':'day';
+  const unit=['month','week','day'].includes(range?.bucket)?range.bucket:(Date.parse(end)-Date.parse(start))/DAY_MS>180?'month':(Date.parse(end)-Date.parse(start))/DAY_MS>60?'week':'day';
   const calculated=useMemo(()=>{
     if(!valid||!categories.length)return {chart:[],days:[],totals:[]};
     const counts=new Map(), activeDays=new Map();
