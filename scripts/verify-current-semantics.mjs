@@ -77,6 +77,16 @@ if(!failures.length){
   if(!featureState.includes('pgrst123')||!featureState.includes('資料查詢功能與資料庫介面不相容'))failures.push('Provider capability errors must not be mislabeled as read permissions.');
   const scopeData=read('app/loc/scope-data.js');
   for(const token of ["MANAGE_TABLE='silver.manage'",'scopeDataFromManageRows','defaultScopeData','selectManagedScopes'])if(!scopeData.includes(token))failures.push('Scope data source missing '+token);
+  const retiredContentType=read('docs/sql/retire-content-type-20261011.sql');
+  if(!retiredContentType.includes("TO anonymous USING (searchable IS TRUE)")||
+     !retiredContentType.includes("FOR SELECT TO authenticated USING (searchable IS TRUE OR silver.can_manage_scope")||
+     !retiredContentType.includes("DROP COLUMN IF EXISTS content_type")){
+    failures.push('Anonymous Galaxy read must not invoke the administrator-only permission function.');
+  }
+  const statisticsCurrent=read('app/modular/features/Statistics.jsx');
+  if(!statisticsCurrent.includes('selectPublicStatisticsMembers')||statisticsCurrent.includes('queryFn:selectManagedScopes')){
+    failures.push('Public statistics must resolve active members without authentication.');
+  }
   const packageJson=JSON.parse(read('package.json'));
   const packageLock=JSON.parse(read('package-lock.json'));
   if(packageJson.dependencies?.flexsearch||packageLock.packages?.['node_modules/flexsearch'])failures.push('FlexSearch must be removed from runtime dependencies and lockfile');
