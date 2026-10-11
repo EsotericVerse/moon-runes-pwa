@@ -30,7 +30,7 @@ export default function GenericScopeHomeView(){
         <a href={navigationHref(scopeId,'statics',native)}>統計</a>
         <a href={navigationHref(scopeId,'culture',native)}>文化</a>
         <a href={navigationHref(scopeId,'governance',native)}>治理</a>
-        <a href={navigationHref(scopeId,'governance/manage',native)}>管理</a>
+        <a href={'/settings/?section=manage&scope='+encodeURIComponent(scopeId)}>管理</a>
       </div>
     </section>
   </section></main>;
