@@ -11,6 +11,8 @@ import {groupImage,runeImage,runeName} from '../rune-directory.mjs';
 import './rune-art-stage.css';
 
 const PHASES=['','新月','上弦','滿月','下弦'];
+// Match the original /duel and /list orientation of the original card artwork.
+const DIRECTION_ANGLES=Object.freeze({'正位':0,'半正位':90,'半逆位':-90,'逆位':180});
 const GROUP_NAMES=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
 const stepTransition={duration:.65,ease:[.22,1,.36,1]};
 const imageProps={loading:'eager',decoding:'async'};
@@ -19,10 +21,13 @@ function CardMoon({card}){
   const value=PHASES[Number(card?.moon_phase)]||'無對應月相';
   return <span className="rune-art-card-moon" title={'卡片月相：'+value}>{value}</span>;
 }
-function RuneCardFace({card,direction}){
-  return <div className="rune-art-card-frame">
-    <img src={runeImage(card)} alt={runeName(card)+'原始符文卡面'}
-      loading="eager" decoding="async"/>
+function RuneCardFace({card,direction,reduced}){
+  const angle=DIRECTION_ANGLES[direction]??0;
+  return <div className="rune-art-card-frame" data-card-direction={direction||'正位'}>
+    <motion.img src={runeImage(card)} alt={runeName(card)+'原始符文卡面'}
+      loading="eager" decoding="async"
+      initial={reduced?false:{rotate:0}} animate={{rotate:angle}}
+      transition={reduced?{duration:0}:{duration:.9,delay:.24,ease:[.22,1,.36,1]}}/>
     <CardMoon card={card}/>
     {direction?<span className="rune-art-direction">{direction}</span>:null}
   </div>;
@@ -78,7 +83,7 @@ function DrawStage({items,onSelect,onBackgroundClick,reduced,daily=false}){
         <motion.button type="button" className="rune-art-featured-card" onClick={()=>onSelect?.(active)}
           aria-label={'查看'+runeName(active)+'之符文基本資料'} whileHover={reduced?undefined:{y:-5}}
           transition={{duration:.24}}>
-          <RuneCardFace card={active} direction={last.direction}/>
+          <RuneCardFace card={active} direction={last.direction} reduced={reduced}/>
         </motion.button>
         <div className="rune-art-reveal-title" aria-live="polite">
           <span>第 {items.length} 枚 · {String(active.rune_id).padStart(2,'0')}</span>
@@ -90,8 +95,9 @@ function DrawStage({items,onSelect,onBackgroundClick,reduced,daily=false}){
         initial={reduced?false:{opacity:0,y:16}}
         animate={{opacity:1,y:0}} transition={stepTransition}>
         <div className="rune-art-empty-ring" aria-hidden="true">☾</div>
-        <button className="rune-art-invoke" type="button" onClick={()=>onBackgroundClick?.()}
-          disabled={!onBackgroundClick}>{daily?'觸碰月光，召喚每日符文':'觸碰月光，召喚第一枚符文'}</button>
+        {daily?<button className="rune-art-invoke" type="button" onClick={()=>onBackgroundClick?.()}
+          disabled={!onBackgroundClick}>觸碰月光，召喚每日符文</button>:
+          <p className="rune-art-empty-hint">使用上方「招喚下一枚符文」開始占卜</p>}
       </motion.div>}
     </AnimatePresence>
     {previous.length?<div className="rune-art-history" aria-label="先前抽出的符文">
@@ -100,13 +106,13 @@ function DrawStage({items,onSelect,onBackgroundClick,reduced,daily=false}){
         initial={reduced?false:{opacity:0,y:16}} animate={{opacity:1,y:0}}
         transition={{duration:.42,delay:Math.min(index,10)*.04}}
         aria-label={'查看第'+(index+1)+'枚 '+runeName(item.card)+'符文'}>
-        <img src={runeImage(item.card)} alt="" loading="lazy" decoding="async"/>
+        <img src={runeImage(item.card)} alt="" loading="lazy" decoding="async"
+          style={{transform:`rotate(${DIRECTION_ANGLES[item.direction]??0}deg)`}}/>
         <span>{index+1} · {runeName(item.card)}</span>
       </motion.button>)}
     </div>:null}
-    {last&&onBackgroundClick?<button type="button" className="rune-art-draw-again"
-      onClick={()=>onBackgroundClick()}>
-      {daily?'重新召喚每日符文':'召喚下一枚符文'} <span aria-hidden="true">✦</span></button>:null}
+    {daily&&last&&onBackgroundClick?<button type="button" className="rune-art-draw-again"
+      onClick={()=>onBackgroundClick()}>重新召喚每日符文 <span aria-hidden="true">✦</span></button>:null}
   </div>;
 }
 export default function RuneArtStage({mode='groups',items=[],onSelect,onBackgroundClick}){
