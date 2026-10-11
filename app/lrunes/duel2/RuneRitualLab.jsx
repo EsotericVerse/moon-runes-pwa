@@ -137,13 +137,6 @@ export default function RuneRitualLab(){
       <span className="rune-3d-toolbar-label">真實月相 {moon}　·　{items.length} / {MAX_DRAW} 枚</span>
 
     </nav>
-    <section className={'rune-3d-stage rune-3d-duel'+(!finished?' rune-3d-tappable':'')}
-      aria-label="點觸月光空間逐張抽取符文">
-      <RuneWorld mode="draw" items={items} quality="high"
-        onSelect={showCard} onBackgroundClick={!finished&&!selected?drawOne:undefined}/>
-      <div className="rune-3d-stage-label" role="status">{busy?'符文穿過金色光河，等待亮相……':message}</div>
-    </section>
-    {error?<p className="rune-skin-error" role="alert">{error}</p>:null}
     <div className="rune-3d-duel-action-dock" role="group" aria-label="抽牌桌操作">
       {!finished?<button type="button" className="rune-3d-duel-action rune-3d-duel-action--draw"
         onClick={drawOne} disabled={busy||!!selected||items.length>=MAX_DRAW}>
@@ -158,6 +151,13 @@ export default function RuneRitualLab(){
         結束占卜，看指示籤詩
       </button>:null}
     </div>
+    <section className={'rune-3d-stage rune-3d-duel'+(!finished?' rune-3d-tappable':'')}
+      aria-label="點觸月光空間逐張抽取符文">
+      <RuneWorld mode="draw" items={items} quality="high"
+        onSelect={showCard} onBackgroundClick={!finished&&!selected?drawOne:undefined}/>
+      <div className="rune-3d-stage-label" role="status">{busy?'符文穿過金色光河，等待亮相……':message}</div>
+    </section>
+    {error?<p className="rune-skin-error" role="alert">{error}</p>:null}
     <div className="rune-3d-footer">
       <nav className="rune-skin-controls" aria-label="返回與模式切換">
         <a href={navigationHref('lrunes','',native)} className="rune-skin-btn">回符文首頁</a>
