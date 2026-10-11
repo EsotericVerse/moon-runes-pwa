@@ -120,7 +120,51 @@ export default function RuneAtlasLab(){
   };
   useEffect(()=>{
     const syncLocation=()=>{
-      const match=/^#group-(\\d+)(?:\\/rune-(\\d+))?$/.exec(window.location.hash);
+      const match=new RegExp('^#group-([0-9]+)(?:/rune-([0-9]+))?
+      if(!match){setGroup(null);setDetails(null);return;}
+      const g=groups.find(x=>Number(x.id)===Number(match[1]));
+      setGroup(g||null);
+      const id=Number(match[2]);
+      setDetails(id?(runes.find(r=>Number(r.rune_id)===id)||null):null);
+    };
+    window.addEventListener('popstate',syncLocation);
+    window.addEventListener('hashchange',syncLocation);
+    syncLocation();
+    return()=>{
+      window.removeEventListener('popstate',syncLocation);
+      window.removeEventListener('hashchange',syncLocation);
+    };
+  },[groups,runes]);
+  const display=useMemo(()=>group?runes:groups,[group,runes,groups]);
+  return <main className="loc-next-main rune-skin-lab rune-3d-shell" data-rune-lab="list2">
+    <header className="rune-3d-header">
+      <p className="loc-eyebrow">LunaRunes · Living Atlas</p>
+      <h1>{group?group.name+'之符文':'月之符文 · 九曜星域'}</h1>
+      <p>{group?'符文在星環中恆動。輕觸任一符文，它會回應你的觸摸，原有圖鑑文字隨即浮現。':
+        '九顆群組星球持續圍繞月亮。觸碰其中一顆，進入該群組的符文星環。'}</p>
+    </header>
+    <nav className="rune-3d-toolbar" aria-label="圖鑑視角">
+      {group?<button className="rune-skin-btn" onClick={backToGroups}>← 回九群組</button>:<span className="rune-3d-toolbar-label">九大符文群組 · 恆動展示</span>}
+
+    </nav>
+    <section className="rune-3d-stage" aria-label="真實 3D 符文星域">
+      <RuneWorld mode={group?'runes':'groups'} items={display} quality="high"
+        onSelect={group?show:enterGroup}/>
+      <div className="rune-3d-stage-label">{loading?'星域載入中……':
+        error||(!group?'觸碰一顆星球，進入符文群組':'輕觸符文，查看原有文字資料')}</div>
+    </section>
+    <footer className="rune-3d-footer">
+      <span>使用拖曳可變換觀看角度 · 場景始終恆動</span>
+      <nav className="rune-skin-controls" aria-label="返回與模式切換">
+        <a href="/card/" className="rune-skin-btn">← 3D 場域首頁</a>
+        <a href="/card/duel/" className="rune-skin-btn">切換隨機抽牌</a>
+        <a href="/list/" className="rune-skin-btn">舊版圖鑑</a>
+      </nav>
+    </footer>
+    {details?<RuneInfoDialog rune={details} onClose={closeDetails}/>:null}
+  </main>;
+}
+).exec(window.location.hash);
       if(!match){setGroup(null);setDetails(null);return;}
       const g=groups.find(x=>Number(x.id)===Number(match[1]));
       setGroup(g||null);
