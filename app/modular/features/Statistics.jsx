@@ -411,7 +411,7 @@ function ScopeGroupStatistics(){
   });
   const scopes=scopesQuery.data||[];
   const scopeIds=useMemo(()=>scopes.map(scope=>String(scope.id||'').trim()).filter(Boolean),[scopes]);
-  const endDate=useMemo(()=>taipeiDateKey(),[]);
+  const [endDate,setEndDate]=useState(()=>taipeiDateKey());
   const zoomRange=useMemo(()=>statisticsZoomWindow(zoomLevel,endDate),[zoomLevel,endDate]);
   const {startDate,endDate:rangeEndDate,bucket}=zoomRange;
   const densityQuery=useQuery({
@@ -491,7 +491,7 @@ function ScopeGroupStatistics(){
           {locAllowed.length?locAllowed.map(([value,label])=><option key={value} value={value}>{label}</option>):<option value="line">尚無可用圖形</option>}
         </select>
       </label>
-      <StatisticsZoomControls level={zoomLevel} onChange={setZoomLevel} range={zoomRange}/>
+      <StatisticsZoomControls level={zoomLevel} onChange={setZoomLevel} range={zoomRange} onEndDateChange={setEndDate}/>
     </div>
 
     <p className="scope-status">{startDate&&rangeEndDate?startDate+' ～ '+rangeEndDate:''}</p>
@@ -526,7 +526,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const [foldBlank,setFoldBlank]=useState(true);
   // Leave potentially expensive keyword aggregation OFF until explicitly chosen.
   const [styleFilter,setStyleFilter]=useState('none');
-  const queryEndDate=useMemo(()=>taipeiDateKey(),[]);
+  const [queryEndDate,setQueryEndDate]=useState(()=>taipeiDateKey());
   const scopesQuery=useQuery({
     queryKey:['managed-scopes'],
     queryFn:selectPublicStatisticsMembers,
@@ -608,7 +608,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       {!isLrunesDaily?<>{!mediaDimension?<label><span>{UI_COPY.statistics.chart}</span><select className="scope-select" value={effectiveChartType} onChange={event=>setChartType(event.target.value)}>
         {optionsForCurrent.length?optionsForCurrent.map(([value,label])=><option key={value} value={value}>{label}</option>):<option value="line">尚無可用圖形</option>}
       </select></label>:null}
-      <StatisticsZoomControls level={zoomLevel} onChange={setZoomLevel} range={queryRange}/>
+      <StatisticsZoomControls level={zoomLevel} onChange={setZoomLevel} range={queryRange} onEndDateChange={setQueryEndDate}/>
       {!['pie','radar','radial','treemap','scatter'].includes(effectiveChartType)?<label className="scope-setting-toggle">
         <input type="checkbox" checked={foldBlank} onChange={event=>setFoldBlank(event.target.checked)}/> 折疊空白時間
       </label>:null}
