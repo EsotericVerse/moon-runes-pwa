@@ -44,6 +44,24 @@ assert.match(read('app/lrunes/three/rune-world.css'),/z-index:10000/);
 
 assert.match(duel,/onSelect=\{showCard\}/);
 assert.match(duel,/結束抽牌/);
+assert.match(duel,/rune-3d-duel-action-dock/);
+assert.match(duel,/重新占卜/);
+assert.match(duel,/結束占卜，看指示籤詩/);
+assert.match(duel,/onClick=\{reset\}/);
+assert.match(duel,/onClick=\{finish\}/);
+assert.match(duel,/DRAW_COUNT_GUIDE=RUNE_ALL_DRAW_MODES/);
+assert.match(duel,/item\.key!=='daily'/);
+assert.match(duel,/sort\(\(a,b\)=>a\.count-b\.count\)/);
+const guide=duel.slice(duel.indexOf('<section className="rune-3d-draw-guide"'),duel.indexOf('{selected&&typeof document'));
+assert.ok(guide.includes('<article className="rune-3d-draw-guide-card"'));
+assert.ok(!/<a\b|<button\b|onClick=|href=|tabIndex=/.test(guide),'explanatory count cards must contain no navigation or interactive actions');
+const sceneCss=read('app/lrunes/three/rune-world.css');
+assert.match(sceneCss,/\.rune-3d-duel-action-dock\{/);
+assert.match(sceneCss,/position:fixed/);
+assert.match(sceneCss,/safe-area-inset-bottom/);
+assert.match(sceneCss,/min-height:68px/);
+assert.match(sceneCss,/rune-3d-draw-guide-grid/);
+
 assert.match(duel,/指示籤詩為/);
 assert.match(duel,/buildFixedReading\(/);
 assert.match(duel,/function finish\(/);
