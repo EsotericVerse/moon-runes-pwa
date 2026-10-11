@@ -22,22 +22,24 @@ function glyphName(card){
   return String(card?.rune_name||card?.label||'').replace(/之符文$/,'').trim().slice(0,1)||'月';
 }
 function gradientTexture(){
-  const canvas=document.createElement('canvas');canvas.width=128;canvas.height=128;
+  const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=1024;
   const ctx=canvas.getContext('2d');
-  const gradient=ctx.createRadialGradient(64,64,3,64,64,64);
+  const gradient=ctx.createRadialGradient(512,512,12,512,512,500);
   gradient.addColorStop(0,'rgba(220,191,255,.42)');
   gradient.addColorStop(.32,'rgba(137,112,232,.23)');
   gradient.addColorStop(1,'rgba(70,45,172,0)');
-  ctx.fillStyle=gradient;ctx.fillRect(0,0,128,128);
+  ctx.fillStyle=gradient;ctx.fillRect(0,0,1024,1024);
   return new THREE.CanvasTexture(canvas);
 }
 function labelTexture(text,foreground='#f8efdf'){
   const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=1024;
   const ctx=canvas.getContext('2d');
   ctx.clearRect(0,0,1024,1024);ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.shadowColor='#f7deff';ctx.shadowBlur=22;ctx.fillStyle=foreground;
-  const max=text.length>4?190:280;
-  ctx.font='700 '+max+'px "Noto Serif TC","PingFang TC",serif';
+  ctx.lineJoin='round';ctx.shadowColor='#f5e1bc';ctx.shadowBlur=38;ctx.fillStyle=foreground;
+  const max=text.length>4?235:470;
+  ctx.font='700 '+max+'px "Songti TC","Noto Serif TC","PMingLiU",serif';
+  ctx.lineWidth=14;ctx.strokeStyle='#d7ba89';ctx.strokeText(text,512,512,944);
+  ctx.shadowColor='#080516';ctx.shadowBlur=28;ctx.shadowOffsetY=8;
   ctx.fillText(text,512,512,944);
   const texture=new THREE.CanvasTexture(canvas);
   texture.colorSpace=THREE.SRGBColorSpace;
@@ -132,7 +134,7 @@ function StarField(){
 function Nebula(){
   const group=useRef();
   const texture=useMemo(()=>typeof document==='undefined'?null:gradientTexture(),[]);
-  const clouds=useMemo(()=>Array.from({length:29},(_,i)=>({
+  const clouds=useMemo(()=>Array.from({length:45},(_,i)=>({
     x:Math.sin(i*1.79)*6.0,y:Math.cos(i*2.29)*3.2,
     z:-1.8+(i%7)*.55,scale:1.7+(i%5)*.57,phase:i*.73
   })),[]);
@@ -151,7 +153,7 @@ function Nebula(){
   return <group ref={group}>
     {clouds.map((seed,i)=><mesh key={i} position={[seed.x,seed.y,seed.z]} scale={[seed.scale*2,seed.scale,1]}>
       <planeGeometry args={[1,1]}/>
-      <meshBasicMaterial map={texture} transparent opacity={.33+(i%3)*.055}
+      <meshBasicMaterial map={texture} transparent opacity={.39+(i%3)*.065}
         depthWrite={false} side={THREE.DoubleSide} blending={THREE.AdditiveBlending}/>
     </mesh>)}
   </group>;
@@ -237,6 +239,7 @@ function GroupOrb({group,index,total,onClick}){
       <torusGeometry args={[.69,.008,7,90]}/>
       <meshBasicMaterial color="#ffe9bc" transparent opacity={.58}/>
     </mesh>
+    <group scale={.32} position={[0,0,-.42]}><RuneAuraFX groupIndex={index}/></group>
     <Html center position={[0,0,.65]} distanceFactor={12}>
       <button type="button" className="rune-world-orb-name"
         aria-label={'查看'+(group.name||group.group_id)+'群組說明'}
@@ -263,16 +266,19 @@ function RuneShape({card,font,color}){
   const texture=useMemo(()=>typeof document==='undefined'?null:labelTexture(glyph,'#f5dfb2'),[glyph]);
   useEffect(()=>()=>{geometry?.dispose();texture?.dispose();},[geometry,texture]);
   return <group>
-    {geometry?<mesh geometry={geometry} rotation-y={.045}>
-      <meshPhysicalMaterial color={color} metalness={.67} roughness={.22} clearcoat={1}
-        clearcoatRoughness={.1} emissive={color} emissiveIntensity={.12}/>
+    {geometry?<mesh geometry={geometry}>
+      <meshPhysicalMaterial color={color} metalness={.8} roughness={.16} clearcoat={1}
+        clearcoatRoughness={.045} iridescence={.48} iridescenceIOR={1.34}
+        emissive={color} emissiveIntensity={.07}/>
+      <meshPhysicalMaterial color="#f5dfb9" metalness={.92} roughness={.16}
+        clearcoat={1} clearcoatRoughness={.04}/>
     </mesh>:<group>
-      <mesh>
-        <boxGeometry args={[1.65,1.85,.18]}/>
-        <meshPhysicalMaterial color="#282841" metalness={.5} roughness={.18} clearcoat={1}/>
+      <mesh rotation-x={Math.PI/2}>
+        <cylinderGeometry args={[1.13,1.13,.2,96]}/>
+        <meshPhysicalMaterial color="#221c35" metalness={.82} roughness={.14} clearcoat={1}/>
       </mesh>
-      {texture?<mesh position={[0,0,.1]}>
-        <planeGeometry args={[1.55,1.54]}/>
+      {texture?<mesh position={[0,0,.16]}>
+        <planeGeometry args={[2.1,2.1]}/>
         <meshBasicMaterial map={texture} transparent toneMapped={false}/>
       </mesh>:null}
     </group>}
@@ -351,7 +357,7 @@ function Scene({mode,items,onSelect,onBackgroundClick,quality}){
   useEffect(()=>{camera.position.set(0,.15,12.8);camera.lookAt(0,0,0);},[camera]);
   return <>
     <color attach="background" args={['#080b1d']}/>
-    <fog attach="fog" args={['#080b1d',12,38]}/>
+    <fog attach="fog" args={['#080b1d',6.7,23]}/>
     <ambientLight intensity={.45}/>
     <hemisphereLight args={['#a3b6ff','#1c1633',1.3]}/>
     <directionalLight position={[-4,6,6]} intensity={2.3} color="#f6e1ae"/>
