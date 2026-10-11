@@ -64,7 +64,9 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
     staleTime:5*60_000
   });
   const datasets=fetched.data||new Map();
-  const measures=availableMemberMeasures([...datasets.values()].map(item=>item.rows),sharing.categories||[],sharing.scopeSources||[]);
+  const shareablePersonal=(sharing.scopeSources||[]).filter(row=>
+    sharedGroupCodes(row.scope_id,sharing.permissions,sharing.categories).has(row.category_code));
+  const measures=availableMemberMeasures([...datasets.values()].map(item=>item.rows),sharing.categories||[],shareablePersonal);
   const adjusted=lanes.map((lane,index)=>({
     ...lane,
     metric:measures.some(item=>item.id===lane.metric)&&
