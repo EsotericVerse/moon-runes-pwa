@@ -48,9 +48,15 @@ export async function stageWebRecords(db,id,records){
   if(!records.length)return;
   const tx=db.transaction('staging','readwrite');
   const target=tx.objectStore('staging');
-  for(const record of records){
+  // Queue each lookup only after the prior put has been queued. Otherwise
+  // two equal IDs in the same 250-row batch could both read "missing".
+  let cursor=0;
+  const next=()=>{
+    if(cursor>=records.length)return;
+    const record=records[cursor++];
     const key=id+'/'+record.key;
     const lookup=target.get(key);
+    lookup.onerror=()=>tx.abort();
     lookup.onsuccess=()=>{
       const old=lookup.result;
       if(!old)target.put({...record,key,sessionId:id,recordKey:record.key});
@@ -59,8 +65,10 @@ export async function stageWebRecords(db,id,records){
         // Never silently replace an earlier value with the same platform ID.
         target.put({...old,archiveConflict:true});
       }
+      next();
     };
-  }
+  };
+  next();
   await completed(tx);
 }
 export async function setWebImportPreview(db,id,summary){
