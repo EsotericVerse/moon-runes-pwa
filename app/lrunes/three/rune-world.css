@@ -106,3 +106,56 @@ background-clip:text;-webkit-text-fill-color:transparent;}
   .rune-world-orb-name{font-size:16px;min-width:52px;padding:7px 5px;}
   .rune-3d-group-preview{padding:17px 14px;}
 }
+
+
+/* Floating windows must be above every drei Html orbital label and canvas. */
+.rune-3d-group-backdrop{
+  --rune-gold:#ecd6a6;
+  position:fixed;inset:0;z-index:10000;
+  display:flex;align-items:center;justify-content:center;
+  padding:clamp(12px,3vw,34px);overflow:auto;
+  background:#040616df;backdrop-filter:blur(12px);
+  isolation:isolate;
+}
+.rune-3d-group-backdrop .rune-3d-group-preview{
+  position:relative;top:auto;left:auto;transform:none;
+  width:min(510px,100%);max-height:min(85dvh,760px);
+  overflow:auto;flex-shrink:0;
+}
+.rune-3d-draw-modal-backdrop{
+  --rune-gold:#ecd6a6;
+  z-index:10010;
+}
+.rune-3d-original-card-info{
+  display:block;
+  padding:clamp(16px,3vw,28px);
+}
+.rune-3d-original-card-info .home-rune-preview{
+  width:100%;max-width:100%;margin:0;
+}
+.rune-3d-original-card-info .loc-rune-card-image{
+  width:min(270px,70vw);max-height:360px;object-fit:contain;
+}
+.rune-3d-original-card-info .home-rune-card-data{
+  min-width:0;overflow-wrap:anywhere;
+}
+.rune-3d-finish-button{
+  appearance:none;position:absolute;z-index:9;
+  top:16px;right:16px;min-height:56px;max-width:calc(100% - 32px);
+  padding:13px 23px;border-radius:16px;
+  border:2px solid #fff2bc;
+  font:800 clamp(1rem,2vw,1.24rem)/1.3 system-ui,sans-serif;
+  letter-spacing:.025em;color:#24151d;
+  background:linear-gradient(125deg,#fff2bb 0%,#f2c770 48%,#f6dd9c 100%);
+  box-shadow:0 0 0 3px #100b228f,0 0 26px #efd59d99,0 12px 28px #000b;
+  cursor:pointer;touch-action:manipulation;
+}
+.rune-3d-finish-button:hover,.rune-3d-finish-button:focus-visible{
+  outline:3px solid #f9ecb4;outline-offset:4px;
+  box-shadow:0 0 35px #f4d69dc4,0 12px 28px #000b;
+}
+.rune-3d-finish-button:disabled{opacity:.56;cursor:wait;}
+@media(max-width:650px){
+  .rune-3d-finish-button{top:12px;right:12px;min-height:52px;padding:11px 14px;font-size:1rem;}
+  .rune-3d-group-backdrop{padding:13px;}
+}
