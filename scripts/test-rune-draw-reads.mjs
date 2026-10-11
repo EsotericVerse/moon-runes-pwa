@@ -22,9 +22,10 @@ const grammarSource=source.slice(
 );
 assert.match(grammarSource,/function buildFixedReading/);
 const buildReading=new Function(
-  'RUNE_DIRECTIONS','RUNE_ALL_DRAW_MODES','buildSpreadAdvice',
+  'RUNE_DIRECTIONS','RUNE_ALL_DRAW_MODES','buildSpreadAdvice','directionNo',
   grammarSource+'; return buildFixedReading;'
-)(['正位','半正位','半逆位','逆位'],RUNE_ALL_DRAW_MODES,()=>({trend:'持平'}));
+)(['正位','半正位','半逆位','逆位'],RUNE_ALL_DRAW_MODES,()=>({trend:'持平'}),
+  direction=>['正位','半正位','半逆位','逆位'].indexOf(direction)+1);
 const surface=readFileSync(resolve('app/lrunes/RuneSingleDailySurface.jsx'),'utf8');
 const singleFunctions=surface.slice(
   surface.indexOf('function directionNo('),
