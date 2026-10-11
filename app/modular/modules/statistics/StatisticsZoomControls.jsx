@@ -8,9 +8,9 @@ export default function StatisticsZoomControls({level=0,onChange,range={}}){
       {range.startDate&&range.endDate?range.startDate+' ～ '+range.endDate:'尚無可用日期'}
       {range.fullHistory?' · 全部資料':''}
     </span>
-    <button type="button" className="loc-button" aria-label="縮小時間範圍" title="擴大觀察區間"
+    <button type="button" className="loc-button" aria-label="擴大觀察範圍" title="擴大觀察範圍"
       disabled={!range.canZoomOut} onClick={()=>onChange?.(level-1)}>－</button>
-    <button type="button" className="loc-button" aria-label="放大時間範圍" title="縮小觀察區間"
+    <button type="button" className="loc-button" aria-label="縮小觀察範圍" title="縮小觀察範圍"
       disabled={!range.canZoomIn} onClick={()=>onChange?.(level+1)}>＋</button>
   </div>;
 }
