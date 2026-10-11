@@ -275,7 +275,7 @@ export default function RuneDrawClient({drawKey='single',embedded=false,canSave=
         ?{staticTypes:['direction'],moonTypes:['sit_q','sit_a','daily_r','daily_g','daily_b'],currentMoon:moonPhase}
         :drawKey==='single'
           ?{staticTypes:['direction','lots'],moonTypes:['sit_q','sit_a'],currentMoon:moonPhase}
-          :{staticTypes:['direction'],moonTypes:['sit_q'],currentMoon:moonPhase};
+          :{staticTypes:[],moonTypes:['sit_q'],currentMoon:moonPhase};
       const rows=await loadDrawCards(pairs,queryPlan);
       const byNumber=new Map(rows.map(row=>[Number(row.rune_id),row]));
       const cards=runeNumbers.map(number=>byNumber.get(Number(number))).filter(Boolean);
