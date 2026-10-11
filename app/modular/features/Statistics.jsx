@@ -14,7 +14,7 @@ import {selectRows} from '../../loc/db-query.mjs';
 import {administrativeSourceTrend} from '../../loc/statistics-admin-source.mjs';
 import {DEFAULT_MEDIA_STYLE_EXCLUSIONS,filterMediaStyleRows,mediaStyleExclusions} from '../../loc/statistics-facets.mjs';
 import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
-import {selectManagedScopes} from '../../loc/scope-data';
+import {selectScopeRegistry,defaultScopeData} from '../../loc/scope-data';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation';
 import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state';
 import {useScopeRuntime} from '../use-scope-runtime';
@@ -450,13 +450,19 @@ function StatisticTypeSelect({scopeId,navigation,types}){
   </label>;
 }
 
+async function selectPublicStatisticsMembers(){
+  const rows=await selectScopeRegistry({scopeKind:'scope'});
+  return rows.map(row=>({...defaultScopeData(row.scope_id),label:row.display_name||row.scope_id}))
+    .filter(row=>row.id&&row.galaxy&&row.galaxyMedia);
+}
+
 function ScopeGroupStatistics(){
   const [aggregateType,setAggregateType]=useState('total');
   const [chartType,setChartType]=useState('line');
   const [timeStandard,setTimeStandard]=useState('1y');
   const scopesQuery=useQuery({
     queryKey:['managed-scopes'],
-    queryFn:selectManagedScopes,
+    queryFn:selectPublicStatisticsMembers,
     staleTime:5*60_000
   });
   const scopes=scopesQuery.data||[];
@@ -592,7 +598,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const effectiveTimeStandard=timeStandard;
   const scopesQuery=useQuery({
     queryKey:['managed-scopes'],
-    queryFn:selectManagedScopes,
+    queryFn:selectPublicStatisticsMembers,
     staleTime:5*60_000
   });
   const targetScopes=useMemo(()=>{
