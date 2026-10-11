@@ -81,8 +81,8 @@ export function availableStatisticChartTypes({rows=[],series=[],distribution=[],
   const time=Array.isArray(rows)?rows:[];
   const fields=nonemptySeries(time,series);
   const categories=normalizeDistribution(distribution,time,fields);
-  if(!hasTime&&!categories.length)return [];
   const hasTime=time.length>0&&(fields.length>0||(totalKey&&time.some(row=>number(row[totalKey])>0)));
+  if(!hasTime&&!categories.length)return [];
   const hasMix=categories.length>=2;
   const compare=fields.length>=2;
   const usable=type=>{
