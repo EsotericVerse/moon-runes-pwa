@@ -1,0 +1,114 @@
+/* 2D presentation UI for LunaRunes auxiliary artwork routes.
+   Entirely independent of the retired RuneWorld and rune-world.css. */
+.rune-art-shell{--rune-gold:#ecd6a6;max-width:1260px;margin:0 auto;padding:clamp(13px,2.2vw,28px)!important;
+  color:var(--loc-text,#f0edf4);}
+.rune-art-header{padding:12px 4px 18px;}
+.rune-art-header .loc-eyebrow{color:#e2ccab;letter-spacing:.18em;font-weight:650;text-transform:uppercase;}
+.rune-art-header h1{font:750 clamp(1.65rem,3.5vw,2.75rem)/1.2 "Noto Serif TC","Songti TC",serif;
+  letter-spacing:.06em;color:#f9e4c6;margin:8px 0;text-shadow:0 1px 20px #cc9a6766;}
+.rune-art-header p{max-width:80ch;color:var(--loc-muted,#d9d0e4);margin:6px 0;line-height:1.75;}
+.rune-art-toolbar,.rune-art-footer{display:flex;gap:12px;justify-content:space-between;
+  align-items:center;flex-wrap:wrap;padding:10px 4px;color:var(--loc-muted,#e4d8ec);}
+.rune-art-toolbar-label{font-size:.93rem;letter-spacing:.03em;}
+.rune-art-footer .rune-skin-controls{display:flex;gap:9px;flex-wrap:wrap;}
+.rune-art-footer .rune-skin-btn{min-height:43px;background:#26263d;color:#f8e7cc;border:1px solid #bca17c;}
+.rune-art-footer .rune-skin-btn.primary{background:linear-gradient(115deg,#bd9661,#ffe0ad);color:#211a23;font-weight:750;}
+.rune-art-footer .rune-skin-btn:disabled{opacity:.55;}
+.rune-art-duel-action-dock{position:relative;z-index:3;width:100%;display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:10px 0 12px;
+  padding:10px;border:1px solid #e8d2ac99;border-radius:16px;background:#15162ace;}
+.rune-art-duel-action{appearance:none;display:flex;justify-content:center;align-items:center;
+  text-align:center;min-width:0;min-height:60px;padding:10px 14px;border:1px solid #b69ea2;
+  background:#332b46;color:#f8e9d8;border-radius:11px;cursor:pointer;touch-action:manipulation;
+  font:750 clamp(.96rem,2vw,1.12rem)/1.38 system-ui,sans-serif;}
+.rune-art-duel-action--draw{border-color:#d7ac76;color:#261927;
+  background:linear-gradient(135deg,#b9894c,#ffe3b1,#d2a267);}
+.rune-art-duel-action--finish{border-color:#ffe09c;color:#241725;
+  background:linear-gradient(125deg,#fff0c2,#eebd68,#fce3b1);}
+.rune-art-duel-action--restart:only-child{grid-column:1/-1;}
+.rune-art-duel-action:disabled{opacity:.5;cursor:not-allowed;}
+.rune-art-shell button:focus-visible{outline:3px solid #ffe6ac;outline-offset:3px;}
+.rune-art-reading,.rune-art-daily-reading{margin:20px 0!important;padding:clamp(16px,2.5vw,30px)!important;
+  border:1px solid #d9bc8d99!important;border-radius:17px!important;
+  background:linear-gradient(145deg,#2b2647,#161d36)!important;color:#f6e6d5;}
+.rune-art-reading h2,.rune-art-daily-reading h2{font:750 clamp(1.4rem,3vw,2rem)/1.3 "Noto Serif TC","Songti TC",serif;
+  color:#ffe6b5;margin:0 0 14px;}
+.rune-art-reading p{line-height:1.85;white-space:pre-wrap;}
+.rune-art-draw-guide{margin-top:22px;padding:clamp(17px,2.5vw,26px);
+  border:1px solid #b5a8d262;border-radius:18px;background:#17182cc9;color:#f4e8dc;}
+.rune-art-draw-guide h2{font-size:clamp(1.2rem,2vw,1.6rem);margin:0 0 7px;color:#ffe4b4;}
+.rune-art-draw-guide>p{margin:0 0 16px;color:#d6cde0;font-size:.91rem;line-height:1.6;}
+.rune-art-draw-guide-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:10px;}
+.rune-art-draw-guide-card{padding:14px 16px;border:1px solid #b7a2c34d;border-radius:14px;background:#2c2942a6;}
+.rune-art-draw-guide-card strong{display:block;margin-bottom:7px;color:#f4d79e;font-size:1.04rem;}
+.rune-art-draw-guide-card p{margin:0;line-height:1.65;color:#e5dce8;}
+.rune-art-modal-backdrop{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;
+  justify-content:center;padding:clamp(12px,3vw,34px);background:#030612d9;
+  backdrop-filter:blur(12px);overflow:auto;}
+.rune-art-modal{width:min(850px,100%);max-height:90dvh;overflow:auto;flex-shrink:0;
+  border-radius:20px;border:1px solid #dbbf8999;color:#f7ebdb;
+  background:linear-gradient(145deg,#252743,#16172c 65%,#181126);
+  box-shadow:0 25px 100px #000c,0 0 45px #baa0ed31;}
+.rune-art-modal-head{position:sticky;top:0;z-index:2;display:flex;gap:12px;
+  justify-content:space-between;align-items:flex-start;padding:18px 22px 15px;
+  background:#1a1a30f0;border-bottom:1px solid #ffffff2c;backdrop-filter:blur(15px);}
+.rune-art-modal-head h2{font:750 clamp(1.3rem,3vw,2rem)/1.3 "Noto Serif TC","Songti TC",serif;
+  margin:5px 0;color:#f7dba3;}
+.rune-art-modal-head p{margin:0;color:#d3c9e0;}
+.rune-art-modal-main{padding:22px;display:grid;grid-template-columns:minmax(130px,210px) minmax(0,1fr);gap:24px;}
+.rune-art-modal-main>img{display:block;width:100%;height:auto;max-height:340px;object-fit:contain;
+  position:sticky;top:110px;border-radius:11px;}
+.rune-art-modal-details h3{font-size:1rem;color:#f1d8a8;margin:0 0 7px;}
+.rune-art-modal-details p{color:#e0dbe9;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.85;margin:0;}
+.rune-art-modal-details>div{padding-bottom:17px;margin-bottom:17px;border-bottom:1px solid #ffffff27;}
+.rune-art-original-card-info{display:block;padding:clamp(16px,3vw,28px);}
+.rune-art-original-card-info .home-rune-preview{width:100%;max-width:100%;margin:0;}
+.rune-art-original-card-info .loc-rune-card-image{width:min(270px,70vw);max-height:360px;object-fit:contain;}
+.rune-art-original-card-info .home-rune-card-data{min-width:0;overflow-wrap:anywhere;}
+.rune-art-group-backdrop{z-index:2147483001;}
+.rune-art-group-preview{display:grid;grid-template-columns:minmax(190px,.85fr) minmax(0,1fr);
+  align-items:center;gap:clamp(15px,3vw,32px);width:min(970px,100%);
+  padding:clamp(16px,3vw,30px);max-height:88dvh;overflow:auto;flex-shrink:0;
+  border-radius:21px;border:1px solid #efcb91b8;
+  background:radial-gradient(circle at 12% 12%,#7c65925a,transparent 55%),linear-gradient(140deg,#131427,#24243e 55%,#0d1224);
+  box-shadow:0 22px 85px #000c,0 0 60px #b8a0e133;}
+.rune-art-group-artwork{min-width:0;border-radius:15px;overflow:hidden;
+  border:1px solid #e1c08a80;box-shadow:0 14px 40px #0009;}
+.rune-art-group-artwork img{display:block;width:100%;height:auto;object-fit:contain;}
+.rune-art-group-archive{min-width:0;color:#f6ebda;}
+.rune-art-group-archive .loc-eyebrow{color:#f0d39d;letter-spacing:.16em;}
+.rune-art-group-archive h2{font:750 clamp(1.6rem,4vw,2.8rem)/1.22 "Noto Serif TC","Songti TC",serif;
+  color:#ffe7bd;margin:8px 0 4px;}
+.rune-art-group-en{color:#d2bddc;margin:5px 0 20px;letter-spacing:.12em;}
+.rune-art-group-description{line-height:1.8;white-space:pre-wrap;max-height:40vh;overflow:auto;color:#ebdfeb;}
+.rune-art-group-count{color:#ebcb9d;margin:16px 0;}
+.rune-art-group-archive .rune-skin-controls{display:flex;flex-wrap:wrap;gap:9px;}
+.rune-art-group-index{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px;justify-content:center;}
+.rune-art-group-name-btn{appearance:none;cursor:pointer;min-height:43px;padding:9px 18px;
+  border:1px solid #cba96a99;border-radius:999px;color:#f8e8cb;background:#242139;}
+.rune-art-floating-back{appearance:none;cursor:pointer;display:inline-block;margin:14px 4px 0;
+  border:1px solid #e9cb8b;border-radius:999px;padding:10px 18px;
+  background:linear-gradient(130deg,#c59a5d,#fce3af);color:#1e1821;font-weight:750;}
+.rune-art-daily-card{display:block;max-width:min(270px,80vw);width:100%;height:auto;
+  margin:8px auto 18px;object-fit:contain;border:1px solid #d9b47c;border-radius:12px;}
+.rune-art-daily-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:12px;}
+.rune-art-daily-fields article{padding:15px;border:1px solid #c0a6825a;background:#11162bb0;border-radius:12px;}
+.rune-art-daily-fields h3{color:#f8dca8;margin:0 0 9px;font-size:1.05rem;}
+.rune-art-daily-fields p{line-height:1.78;white-space:pre-wrap;margin:0;}
+.rune-art-daily-caveat{color:#e7b8a0;font-size:.9rem;}
+.rune-art-daily-modal-fields{padding:20px 24px;}
+@media(max-width:690px){
+  .rune-art-shell{padding:12px!important;}
+  .rune-art-toolbar,.rune-art-footer{gap:8px;}
+  .rune-art-toolbar-label{font-size:.82rem;}
+  .rune-art-duel-action-dock{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:8px;}
+  .rune-art-duel-action{min-height:56px;padding:8px;font-size:.94rem;}
+  .rune-art-duel-action--finish{grid-column:1/-1;}
+  .rune-art-modal{max-height:92dvh;}
+  .rune-art-modal-main{display:block;padding:15px;}
+  .rune-art-modal-main>img{position:static;width:min(220px,75vw);margin:0 auto 18px;}
+  .rune-art-modal-head{padding:13px;}
+  .rune-art-group-preview{display:block;padding:16px;}
+  .rune-art-group-artwork{width:min(270px,80vw);margin:0 auto 17px;}
+  .rune-art-group-description{max-height:25vh;}
+}
