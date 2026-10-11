@@ -56,7 +56,7 @@ export default function RuneDaily3D(){
       <span className="rune-art-toolbar-label">真實月相：{moon}　·　每日指示</span>
     </nav>
     <section className="rune-art-stage" aria-label="每日符文原創美術揭示">
-      <RuneArtStage mode="draw" items={draw?[draw]:[]}
+      <RuneArtStage mode="daily" items={draw?[draw]:[]}
         onSelect={()=>setDetails(true)} onBackgroundClick={!busy?drawDaily:undefined}/>
       <div className="rune-art-stage-label" role="status">
         {busy?'月光正在帶來每日指示……':draw?'今日符文已亮相，下方顯示每日指示。':'輕觸月光召喚每日符文'}
