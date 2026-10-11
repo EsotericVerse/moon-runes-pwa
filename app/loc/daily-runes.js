@@ -32,6 +32,14 @@ async function selectDailyRangeRows(filters=[],orders=[]){
   })).rows;
 }
 
+// Daily Rune is standalone LOC comparison test data, not a source category.
+export async function selectFirstDailyRuneDate(){
+  const {rows}=await selectRows('silver.lrunes_daily',{
+    columns:'record_date',orders:[{column:'record_date',ascending:true}],limit:1
+  });
+  return String(rows[0]?.record_date||'').slice(0,10);
+}
+
 export async function selectDailyRuneRange({startDate,endDate}={}){
   const start=String(startDate||'').slice(0,10);
   const end=String(endDate||'').slice(0,10);
