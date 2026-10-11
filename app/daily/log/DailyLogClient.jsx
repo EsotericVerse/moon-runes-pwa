@@ -267,7 +267,7 @@ export default function DailyLogClient({embedded=false}={}){
     }finally{setSaving(false);}
   }
 
-  return <section className="loc-view">
+  return <section className={'loc-view'+(!embedded?' daily-rune-log-view':'')}>
     {!embedded?<header className="loc-hero loc-hero-feature">
       <p className="loc-eyebrow">每日抽籤紀錄</p>
       <h1>每日符文抽籤紀錄</h1>
