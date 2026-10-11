@@ -36,6 +36,7 @@
     "verify:rune-assets": "node scripts/verify-rune-card-assets.mjs"
   },
   "dependencies": {
+    "@streamparser/json": "0.0.26",
     "@blocknote/core": "0.55.0",
     "@blocknote/mantine": "0.55.0",
     "@blocknote/react": "0.55.0",
@@ -68,7 +69,8 @@
     "@react-three/drei": "10.7.8",
     "@react-three/postprocessing": "3.0.4",
     "postprocessing": "^6.37.0",
-    "opentype.js": "1.3.4"
+    "opentype.js": "1.3.4",
+    "fflate": "0.8.3"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
