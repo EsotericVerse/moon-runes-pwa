@@ -1,6 +1,15 @@
 # LOC Current TODO
 
-**Current version:** 0.9.2-rc.3.1
+## 0.9.3 RC — 來源分類正式分層（已交付程式；待人工驗收）
+
+- [x] 正式命名：「群組來源分類」（LOC Admin 全域可編輯）與「個人自訂來源分類」（各 Scope 管理者編輯）。
+- [x] 以既有 `silver.statistics_source_categories`／`statistics_source_aliases` 與 `silver.scope_source_subcategories` 實作，不恢復已移除的 Galaxy 作品類型，不建立平行 corpus。
+- [x] 個人分類只影響其 Scope 的原始來源顯示名稱、群組歸屬及統計；未指定時繼承 Admin 預設，無對應則歸 Others。
+- [x] Admin／個人編輯、公開統計、Scope 自交互與 LOC 跨成員交互讀取同一資料權威；Neon 已補上缺少的個人分類表及權限以供公開讀取備援。
+- [ ] 人工驗收：新增群組分類、原始來源指定、個人來源增改與停用、跨 Scope 隔離、統計／交互刷新、Supabase 正常及 Neon 備援。
+- [ ] 舊 `silver.scope_other_sources` 已無 runtime 依賴且目前無紀錄；移除實體表須另做確認與資料治理，不在本次變更執行 DROP。
+
+**Current code version:** 0.9.3-rc（尚未完成完整驗收）
 
 **Release policy:** 0.9.2 RC 先定版，後續以修 bug／回歸驗證為主；Import 的真實來源測試由使用者暫緩，**Pending / 尚未驗收**。本表的 `[x]` 表示對應程式交付或已取得明確驗證證據，不能推論其他人工檢查也完成。
 
