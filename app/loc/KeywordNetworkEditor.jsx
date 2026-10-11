@@ -227,6 +227,13 @@ export default function KeywordNetworkEditor({
       <strong>Class → Group → Item → Keyword</strong>
       <span>以「特殊」群組為預設起點；先選 Group 展開符文 Item，再點 Item 展開關鍵詞。可自由拖曳、縮放與編輯。</span>
     </div>
+    <div className="scope-stat-controls" role="group" aria-label="關鍵詞圖譜觸控操作">
+      <button type="button" className="loc-button" onClick={()=>{
+        const network=networkRef.current;
+        if(network?.getSelectedNodes()?.length)network.editNode();
+      }}>編輯選取項目</button>
+      <button type="button" className="loc-button" onClick={()=>networkRef.current?.fit({animation:false})}>重置視野</button>
+    </div>
     {error?<p className="scope-status scope-error">{error}</p>:null}
     <div ref={containerRef} className="scope-graph-canvas scope-keyword-network-canvas" role="application" aria-label={className+' 關鍵詞 vis-network 編輯器'}/>
   </section>;
