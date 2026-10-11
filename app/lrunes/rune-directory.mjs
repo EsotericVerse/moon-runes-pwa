@@ -5,14 +5,9 @@ const GROUP_IMAGE_BY_ID=Object.freeze({
 });
 
 export function groupImage(id){return GROUP_IMAGE_BY_ID[String(id).padStart(2,'0')]||'';}
-const GROUP_PREVIEW_BY_ID=Object.freeze({
-  '01':'/pics/01.soul_s.jpg','02':'/pics/02_connection_s.jpg',
-  '03':'/pics/03_life_s.jpg','04':'/pics/04_nature_s.jpg',
-  '05':'/pics/05_mineral_s.jpg','06':'/pics/06_element_s.jpg',
-  '07':'/pics/07_order_s.jpg','08':'/pics/08_disorder_s.jpg',
-  '09':'/pics/09_special_s.jpg'
-});
-export function groupPreviewImage(id){return GROUP_PREVIEW_BY_ID[String(id).padStart(2,'0')]||'';}
+// The 3D sanctuary uses the published full-resolution group art, not small
+// list thumbnails. Rendering quality must not depend on stretched previews.
+export function groupPreviewImage(id){return groupImage(id);}
 
 export function runeName(card){return String(card?.rune_name||'').replace(/之符文$/,'').trim();}
 export function runeImage(card){
