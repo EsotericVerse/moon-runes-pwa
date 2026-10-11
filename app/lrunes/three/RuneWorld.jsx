@@ -297,7 +297,7 @@ function GroupOrb({group,index,total,onClick}){
       <torusGeometry args={[.69,.008,7,90]}/>
       <meshBasicMaterial color="#ffe9bc" transparent opacity={.58}/>
     </mesh>
-    <group scale={.32} position={[0,0,-.42]}><RuneAuraFX groupIndex={index}/></group>
+    <group scale={.45} position={[0,0,-.42]}><RuneAuraFX groupIndex={index}/></group>
     <Html center position={[0,0,.65]} distanceFactor={12}>
       <button type="button" className="rune-world-orb-name"
         aria-label={'查看'+(group.name||group.group_id)+'群組說明'}
