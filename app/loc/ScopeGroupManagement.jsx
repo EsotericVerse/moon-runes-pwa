@@ -15,7 +15,7 @@ export default function ScopeGroupManagement({scopeId='loc'}){
         <strong>{scope.display_name||scope.scope_id}</strong>
         <div className="scope-result-links">
           <a href={scopeHref(scope.scope_id)}>查看首頁</a>
-          <a href={scopeHref(scope.scope_id,'governance/manage')}>管理成員</a>
+          <a href={'/settings/?section=manage&scope='+encodeURIComponent(scope.scope_id)}>管理成員</a>
         </div>
       </article>)}
       {!query.isPending&&!scopes.length?<p className="scope-status">目前沒有成員。</p>:null}
