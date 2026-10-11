@@ -6,9 +6,14 @@ export function mobileFavoriteEnabled(storage){
   try{return storage?.getItem(MOBILE_FAVORITE_STORAGE_KEY)!=='false';}
   catch{return true;}
 }
+export function mobileHomepageChoice(storage){
+  try{
+    const saved=storage?.getItem(MOBILE_HOME_STORAGE_KEY);
+    return typeof saved==='string'&&/^[a-z0-9_-]{1,64}$/i.test(saved)?saved:'loc';
+  }catch{return 'loc';}
+}
 export function mobileHomepageEnabled(storage){
-  try{return storage?.getItem(MOBILE_HOME_STORAGE_KEY)===MOBILE_HOME_ID;}
-  catch{return false;}
+  return mobileHomepageChoice(storage)===MOBILE_HOME_ID;
 }
 export function mobileHomeHref(native){return native?'/my-phone/index.html':'/';}
 export function isMobileHome(id){return String(id)===MOBILE_HOME_ID;}
