@@ -144,18 +144,15 @@ background-clip:text;-webkit-text-fill-color:transparent;}
 }
 
 
-/* 3D duel: primary decisions are always a large, visible bottom-edge action.
-   The global six-item feature dock remains usable below this action rail. */
-.rune-3d-shell.rune-3d-duel-shell{padding-bottom:clamp(155px,18vh,220px)!important}
+/* Ritual actions belong directly to the scene/table, not to the viewport
+   bottom or the page footer. All three native handlers stay together. */
+.rune-3d-shell.rune-3d-duel-shell{padding-bottom:24px!important}
 .rune-3d-duel-action-dock{
-  position:fixed;z-index:145;left:50%;
-  bottom:calc(6.35rem + env(safe-area-inset-bottom,0px));
-  transform:translateX(-50%);
-  width:min(660px,calc(100vw - 24px));
-  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;
+  position:relative;z-index:5;
+  width:100%;margin:10px 0 12px;
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;
   padding:10px;border:1px solid #e8d2ac88;border-radius:18px;
-  background:#121326ed;box-shadow:0 12px 40px #050617cc;
-  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  background:#121326ed;box-shadow:0 8px 25px #05061755;
 }
 .rune-3d-duel-action{
   appearance:none;display:flex;align-items:center;justify-content:center;
@@ -164,6 +161,10 @@ background-clip:text;-webkit-text-fill-color:transparent;}
   color:#f5e5dc;background:#34304e;
   font:800 clamp(.98rem,2.2vw,1.2rem)/1.35 system-ui,sans-serif;
   text-align:center;cursor:pointer;touch-action:manipulation;
+}
+.rune-3d-duel-action--draw{
+  color:#241925;background:linear-gradient(135deg,#a88655,#f5dcb0);
+  border-color:#d9be88;
 }
 .rune-3d-duel-action--finish{
   color:#251a22;background:linear-gradient(120deg,#fff0b5,#f2ca76,#f6dea2);
@@ -184,8 +185,9 @@ background-clip:text;-webkit-text-fill-color:transparent;}
 .rune-3d-draw-guide-card p{margin:0;line-height:1.65;color:#e5dce8}
 @media(max-width:650px){
   .rune-3d-duel-action-dock{gap:7px;padding:8px;border-radius:15px;
-    bottom:calc(5.65rem + env(safe-area-inset-bottom,0px))}
-  .rune-3d-duel-action{min-height:68px;padding:10px 8px;font-size:.99rem}
+    grid-template-columns:repeat(2,minmax(0,1fr));margin:8px 0 10px}
+  .rune-3d-duel-action--finish{grid-column:1/-1}
+  .rune-3d-duel-action{min-height:56px;padding:10px 8px;font-size:.99rem}
 }
 
 
