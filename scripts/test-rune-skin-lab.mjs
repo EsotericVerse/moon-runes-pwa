@@ -77,6 +77,23 @@ assert.match(home,/runeHref\('card\/duel'\)/);
 assert.match(home,/runeHref\('card\/list'\)/);
 assert.match(home,/runeHref\('card\/daily'\)/);
 assert.match(world,/rune-world-orb-name/);
+assert.match(world,/function GroupArtwork\(/);
+assert.match(world,/new THREE.TextureLoader\(\)/);
+assert.match(world,/groupPreviewImage\(group.id\)/);
+assert.match(world,/rune-world-orb-name--art/);
+const directory=read('app/lrunes/rune-directory.mjs');
+assert.match(directory,/export function groupPreviewImage\(/);
+for(const file of [
+  '01.soul_s.jpg','02_connection_s.jpg','03_life_s.jpg','04_nature_s.jpg',
+  '05_mineral_s.jpg','06_element_s.jpg','07_order_s.jpg',
+  '08_disorder_s.jpg','09_special_s.jpg'
+])assert.ok(existsSync(resolve(base,'pics',file)),'missing published group poster: '+file);
+const daily=read('app/daily/log/DailyLogClient.jsx');
+const scopeCss=read('app/styles/scope-system.css');
+assert.match(daily,/daily-rune-log-view/);
+assert.match(scopeCss,/\.daily-rune-log-view\{/);
+assert.match(scopeCss,/max-width:1040px/);
+
 assert.match(world,/function SanctumField\(/);
 assert.match(world,/<SanctumField mode=\{mode\} groupIndex=\{groupIndex\}/);
 assert.match(world,/groupIndex=\{index\}/);
