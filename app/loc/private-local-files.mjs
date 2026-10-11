@@ -1,6 +1,7 @@
 // Private iOS Local File store. It has NO Supabase/Neon, network, OAuth or browser storage imports.
 // Dependencies are injected so the complete file lifecycle can be tested without an iPhone.
 // The caller must supply Capacitor Filesystem and Directory.LibraryNoCloud (not Documents/Cache).
+import {detectPrivateFileContent,PRIVATE_SNIFF_BYTES} from './private-file-detection.mjs';
 export const PRIVATE_FILE_ROOT='loc-private-files/v1';
 export const PRIVATE_FILE_INDEX=PRIVATE_FILE_ROOT+'/index.json';
 export const PRIVATE_FILE_CHUNK_BYTES=256*1024;
@@ -19,6 +20,9 @@ export function privateFilePath(id){
 }
 
 export function isTextPrivateFile(entry){
+  // New entries use actual sampled bytes, regardless of extension or MIME.
+  if(entry?.detection&&typeof entry.detection.textual==='boolean')return entry.detection.textual;
+  // Historical records without sniff data retain backward-compatible preview.
   return TEXT_FILE.test(String(entry?.name||''))||/^text\//i.test(String(entry?.type||''));
 }
 
@@ -54,7 +58,14 @@ function normalizedIndex(value){
       id:entry.id,name:entry.name,size:entry.size,
       type:typeof entry.type==='string'?entry.type:'',
       lastModified:Number.isFinite(entry.lastModified)?entry.lastModified:null,
-      importedAt:typeof entry.importedAt==='string'?entry.importedAt:''
+      importedAt:typeof entry.importedAt==='string'?entry.importedAt:'',
+      detection:entry.detection&&typeof entry.detection.kind==='string'&&
+        typeof entry.detection.textual==='boolean'&&typeof entry.detection.label==='string'
+        ?{kind:entry.detection.kind,label:entry.detection.label,
+          encoding:typeof entry.detection.encoding==='string'?entry.detection.encoding:'',
+          textual:entry.detection.textual,
+          certainty:typeof entry.detection.certainty==='string'?entry.detection.certainty:'low',
+          reason:typeof entry.detection.reason==='string'?entry.detection.reason:''}:null
     };
   });
 }
@@ -102,13 +113,16 @@ export function createPrivateLocalStore(filesystem,directory){
     if(!name||name.length>500)throw new Error('檔案名稱不正確或過長。');
     await ensureFilesFolder();
     const before=await readIndex(); // Never overwrite a damaged index.
+    // Detect on a bounded prefix only. The original file is copied unchanged.
+    const sample=new Uint8Array(await file.slice(0,Math.min(file.size,PRIVATE_SNIFF_BYTES)).arrayBuffer());
+    const detection=detectPrivateFileContent(sample);
     let id;
     do{id=newId();}while(before.some(item=>item.id===id));
     const path=privateFilePath(id);
     const entry={
       id,name,size:file.size,type:String(file.type||''),
       lastModified:Number.isFinite(file.lastModified)?file.lastModified:null,
-      importedAt:new Date().toISOString()
+      importedAt:new Date().toISOString(),detection
     };
     let created=false;
     try{
@@ -144,7 +158,7 @@ export function createPrivateLocalStore(filesystem,directory){
     await writeIndex(before.filter(item=>item.id!==id));
   }
 
-  async function preview(id,encoding='utf-8'){
+  async function preview(id,encoding='auto'){
     const path=privateFilePath(id);
     const entry=(await list()).find(item=>item.id===id);
     if(!entry)throw new Error('找不到本機檔案。');
@@ -154,7 +168,8 @@ export function createPrivateLocalStore(filesystem,directory){
     if(typeof result?.data!=='string')throw new Error('本機檔案讀取失敗。');
     const bytes=fromBase64(result.data);
     if(bytes.byteLength!==entry.size)throw new Error('本機檔案內容與保存大小不一致。');
-    return new TextDecoder(encoding,{fatal:false}).decode(bytes);
+    const effective=encoding==='auto'?(entry.detection?.encoding||'utf-8'):encoding;
+    return new TextDecoder(effective,{fatal:false}).decode(bytes);
   }
 
   async function getUri(id){
