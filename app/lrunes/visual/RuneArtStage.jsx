@@ -61,7 +61,7 @@ function Gallery({mode,items,onSelect,reduced}){
     </div>
   </div>;
 }
-function DrawStage({items,onSelect,onBackgroundClick,reduced,daily=false}){
+function DrawStage({items,onSelect,onBackgroundClick,reduced,daily=false,charging=false}){
   const last=items[items.length-1];
   const active=last?.card||last;
   const previous=items.slice(0,-1);
@@ -73,6 +73,22 @@ function DrawStage({items,onSelect,onBackgroundClick,reduced,daily=false}){
       <h2>{last?(daily?'今日月光已回應':'月光已回應'):(daily?'今日符文':'讓月光揭示符文')}</h2>
       <p>{last?'每一次亮牌，都保留符韻原始卡面與文字。':'一枚一枚召喚，從原創畫作開始。'}</p>
     </div>
+    <AnimatePresence>
+      {charging?<motion.div className="rune-art-charge" key="summon-charge"
+        role="status" aria-live="polite" aria-label="月光正在凝聚，準備揭示符文"
+        initial={reduced?false:{opacity:0,scale:.96}}
+        animate={{opacity:1,scale:1}}
+        exit={reduced?{opacity:0}:{opacity:0,scale:1.05}}
+        transition={{duration:reduced ? 0.01 : 0.22}}>
+        <motion.span className="rune-art-charge-ring" aria-hidden="true"
+          animate={reduced?undefined:{scale:[.88,1.08,.97],opacity:[.65,1,.75]}}
+          transition={reduced?undefined:{duration:1,repeat:Infinity,ease:'easeInOut'}}>
+          ☾
+        </motion.span>
+        <strong>月光凝聚中</strong>
+        <span>下一枚符文即將揭幕</span>
+      </motion.div>:null}
+    </AnimatePresence>
     <AnimatePresence mode="wait">
       {last?<motion.div className="rune-art-reveal" key={'revealed-'+active.rune_id}
         initial={reduced?false:{opacity:0,y:55,scale:.84,filter:'blur(12px)'}}
@@ -115,12 +131,12 @@ function DrawStage({items,onSelect,onBackgroundClick,reduced,daily=false}){
       onClick={()=>onBackgroundClick()}>重新召喚每日符文 <span aria-hidden="true">✦</span></button>:null}
   </div>;
 }
-export default function RuneArtStage({mode='groups',items=[],onSelect,onBackgroundClick}){
+export default function RuneArtStage({mode='groups',items=[],onSelect,onBackgroundClick,charging=false}){
   const reduced=useReducedMotion();
   return <div className={'rune-art-world rune-art-world--'+mode}
     data-renderer="artwork-motion" data-visual-mode="2d">
     {(mode==='draw'||mode==='daily')?<DrawStage items={items} onSelect={onSelect}
-      onBackgroundClick={onBackgroundClick} reduced={reduced} daily={mode==='daily'}/>:
+      onBackgroundClick={onBackgroundClick} reduced={reduced} daily={mode==='daily'} charging={charging}/>:
       <Gallery mode={mode} items={items} onSelect={onSelect} reduced={reduced}/>}
   </div>;
 }
