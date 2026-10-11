@@ -152,18 +152,15 @@ if(!failures.length){
     failures.push('Statistics must expose ten real charts, optional visible gap folds and strictly own-Scope intersections.');
   }
 
-  const typeCatalog=read('app/loc/ImportContentTypeCatalog.jsx');
   const typeIntersection=read('app/loc/statistics-source-intersection.mjs');
   const importPanel=read('app/loc/ManagementImportPanel.jsx');
-  if(!typeCatalog.includes("silver.scope_content_types")||
-     !typeCatalog.includes('新增作品類型')||
-     !importPanel.includes('匯入時作品類型')||
-     !importPanel.includes("content_type:row.content_type")||
+  if(typeIntersection.includes("kind:'type'")||importPanel.includes('匯入時作品類型')||
+     importPanel.includes('<ImportContentTypeCatalog')||
      !typeIntersection.includes('aggregateOwnScopeStatistics')||
      !typeIntersection.includes('ownScopeCategoryCatalog')||
      !ownIntersection.includes('OWN_STAT_DIMENSIONS')||
      !galaxy.includes('aggregateOwnScopeStatistics(texts.rows,media.rows)')){
-    failures.push('Import-managed work types and source/media/type intersections are not connected.');
+    failures.push('Source/media statistics must not expose redundant work-type labels.');
   }
 
   const culture=read('app/modular/features/Culture.jsx');

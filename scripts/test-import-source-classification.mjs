@@ -15,11 +15,11 @@ test('source, work type and multimedia are independent author-controlled dimensi
   const rows=aggregateOwnScopeStatistics(texts,media);
   assert.equal(rows.find(x=>x.day==='2026-10-01'&&x.kind==='source'&&x.category==='facebook')?.item_count,1);
   assert.equal(rows.find(x=>x.day==='2026-10-01'&&x.kind==='source'&&x.category==='threads')?.item_count,1);
-  assert.equal(rows.find(x=>x.day==='2026-10-01'&&x.kind==='type'&&x.category==='reply')?.item_count,1);
+  assert.ok(!rows.some(x=>x.kind==='type'));
   assert.equal(rows.find(x=>x.day==='2026-10-01'&&x.kind==='media'&&x.category==='instagram')?.item_count,1);
   assert.equal(rows.find(x=>x.day==='2026-10-01'&&x.kind==='total'&&x.category==='文字作品')?.item_count,2);
   const catalog=ownScopeCategoryCatalog(rows);
-  for(const kind of ['source','media','type','total'])assert.ok(catalog.some(row=>row.kind===kind),kind);
+  for(const kind of ['source','media','total'])assert.ok(catalog.some(row=>row.kind===kind),kind);
   assert.ok(catalog.some(row=>row.kind==='source'&&row.name==='Facebook'));
   assert.ok(catalog.some(row=>row.kind==='media'&&row.name==='instagram'));
 });

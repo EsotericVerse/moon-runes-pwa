@@ -6,7 +6,6 @@ const DAY_RE=/^\d{4}-\d{2}-\d{2}$/;
 export const OWN_STAT_DIMENSIONS=Object.freeze([
   {kind:'source',label:'原始作品來源'},
   {kind:'media',label:'多媒體類型'},
-  {kind:'type',label:'作品類型'},
   {kind:'total',label:'文字／多媒體總量'}
 ]);
 
@@ -31,7 +30,6 @@ export function aggregateOwnScopeStatistics(textRows=[],mediaRows=[]){
     const day=String(row?.createtime||'').slice(0,10);
     if(!DAY_RE.test(day))continue;
     add(day,'source',String(row?.source_name||'').trim());
-    add(day,'type',String(row?.content_type||'').trim());
     add(day,'total','文字作品');
   }
   for(const row of Array.isArray(mediaRows)?mediaRows:[]){
@@ -60,7 +58,6 @@ export function ownScopeCategoryCatalog(rows=[]){
     const [kind,raw]=id.split('\u0000');
     const name=kind==='source'?sourceLabel(raw)
       :kind==='media'?(raw||'未分類多媒體')
-      :kind==='type'?(raw||'未分類作品')
       :raw;
     return {id,kind,raw,name,total};
   }).sort((a,b)=>b.total-a.total||a.name.localeCompare(b.name));

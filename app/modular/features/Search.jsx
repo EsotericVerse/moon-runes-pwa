@@ -27,7 +27,7 @@ import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
 const GALAXY_EDITOR_COLUMNS='uid,content_type,title,content,createtime,source_native_id,source_place,searchable,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link,statistics_able,class_id,group_lists,content_blocks';
 
 const GALAXY_ATTR_ORDER=Object.freeze([
-  'uid','content_type','title','content','createtime','source_native_id','source_place',
+  'uid','title','content','createtime','source_native_id','source_place',
   'searchable','UpdateTime','url','source_id','target_id','ref_id','source_name',
   'media_link','statistics_able','class_id','group_lists','content_blocks'
 ]);
@@ -124,7 +124,6 @@ function GalaxyAttrEditor({draft,setDraft}){
     <summary>文章 Attr</summary>
     <div className="scope-management-fields scope-search-attr-editor">
       <label><span>uid</span><input value={attrs.uid||''} readOnly/></label>
-      <label><span>content_type</span><input value={attrs.content_type||''} onChange={event=>change('content_type',event.target.value)}/></label>
       <label><span>createtime</span><input type="datetime-local" value={attrs.createtime||''} onChange={event=>change('createtime',event.target.value)}/></label>
       <label><span>source_native_id</span><input value={attrs.source_native_id||''} onChange={event=>change('source_native_id',event.target.value)}/></label>
       <label><span>source_place</span><input value={attrs.source_place||''} onChange={event=>change('source_place',event.target.value)}/></label>

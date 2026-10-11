@@ -8,9 +8,8 @@ export function assignedSource(value,aliases=[],categories=[]){
   return categories.some(row=>row.category_code===category&&row.enabled!==false)?category:'others';
 }
 export function availableMemberMeasures(datasets=[],categories=[]){
-  const types=new Set(),media=new Set();
+  const media=new Set();
   for(const rows of datasets)for(const row of rows||[]){
-    if(row.kind==='type'&&row.category)types.add(lower(row.category));
     if(row.kind==='media'&&row.category)media.add(lower(row.category));
   }
   return [
@@ -18,7 +17,6 @@ export function availableMemberMeasures(datasets=[],categories=[]){
     {id:'text',name:'文字作品'},
     {id:'multimedia',name:'多媒體'},
     ...categories.filter(x=>x.enabled!==false).map(row=>({id:'source:'+row.category_code,name:'來源 · '+row.display_name})),
-    ...[...types].sort().map(id=>({id:'type:'+id,name:'作品類型 · '+id})),
     ...[...media].sort().map(id=>({id:'media:'+id,name:'多媒體類型 · '+id})),
     {id:'daily',name:'每日符文'},
     {id:'daily:kind:main',name:'每日符文 · 主抽'},
@@ -39,7 +37,6 @@ function measureRows(rows=[],metric,categories,aliases){
     else if(metric==='text')include=row.kind==='total'&&row.category==='文字作品';
     else if(metric==='multimedia')include=row.kind==='total'&&row.category==='多媒體';
     else if(metric.startsWith('source:'))include=row.kind==='source'&&assignedSource(row.category,aliases,categories)===metric.slice(7);
-    else if(metric.startsWith('type:'))include=row.kind==='type'&&lower(row.category)===metric.slice(5);
     else if(metric.startsWith('media:'))include=row.kind==='media'&&lower(row.category)===metric.slice(6);
     if(include)counts.set(day,(counts.get(day)||0)+count);
   }

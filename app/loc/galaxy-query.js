@@ -439,7 +439,7 @@ export async function selectScopeSourceBreakdownRows(scope,{startDate='',endDate
   const current=scopeOf(scope);
   const [texts,media]=await Promise.all([
     selectAllRows(current.galaxy,{
-      columns:'source_name,content_type,createtime',
+      columns:'source_name,createtime',
       filters:publicContentFilters([
         ...timeFilters('createtime',startDate,endDate),
         {column:'statistics_able',operator:'eq',value:true}
