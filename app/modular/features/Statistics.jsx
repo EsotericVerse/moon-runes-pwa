@@ -410,6 +410,10 @@ function ScopeGroupStatistics(){
   const [aggregateType,setAggregateType]=useState('total');
   const [chartType,setChartType]=useState('line');
   const [zoomLevel,setZoomLevel]=useState(0);
+  // Persist intersection selections while the range-specific query remounts.
+  const [memberLaneCount,setMemberLaneCount]=useState(2);
+  const [memberChoices,setMemberChoices]=useState([]);
+  const [memberGraph,setMemberGraph]=useState('line');
   const scopesQuery=useQuery({
     queryKey:['managed-scopes'],
     queryFn:selectPublicStatisticsMembers,
@@ -542,7 +546,12 @@ function ScopeGroupStatistics(){
       type={locChartType} rows={trendData} series={locSeries}
       distribution={locDistribution} totalKey={aggregateType==='total'?'total':''} height={420}
     />:null}
-    <LocMemberIntersection scopes={scopesQuery.data||[]} startDate={startDate} endDate={rangeEndDate} unit={bucket} sharing={policy.data||{}}/>
+    <LocMemberIntersection key={startDate+'|'+rangeEndDate}
+      scopes={scopesQuery.data||[]} startDate={startDate} endDate={rangeEndDate}
+      unit={bucket} sharing={policy.data||{}}
+      laneCount={memberLaneCount} onLaneCountChange={setMemberLaneCount}
+      choices={memberChoices} onChoicesChange={setMemberChoices}
+      graph={memberGraph} onGraphChange={setMemberGraph}/>
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
     {policy.error?<p className="scope-status scope-error">{featureDataErrorMessage(policy.error)}</p>:null}
     {earliest.error?<p className="scope-status scope-error">{featureDataErrorMessage(earliest.error)}</p>:null}

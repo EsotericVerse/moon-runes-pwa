@@ -171,10 +171,15 @@ if(!failures.length){
     failures.push('Own-Scope comparisons must preserve the raw source dimension beside group and personal source classifications.');
   }
 
-  if(!crossMember.includes('aria-busy={fetched.isFetching}')||
-     !crossMember.includes('!fetched.isPending&&!fetched.isFetching')||
-     !crossMember.includes('正在更新交會統計')){
-    failures.push('Cross-member zoom must hide previous-range statistics until new data is ready.');
+  if(!crossMember.includes('data-stat-cross-resolved-range=')||
+     !crossMember.includes('return {rangeKey,datasets:new Map(pairs)}')||
+     !crossMember.includes('fetched.data?.rangeKey===rangeKey')||
+     !crossMember.includes('!fetched.isPending&&!fetched.isFetching&&hasCurrentData')||
+     !crossMember.includes('正在更新交會統計')||
+     !statistics.includes("key={startDate+'|'+rangeEndDate}")||
+     !statistics.includes('choices={memberChoices} onChoicesChange={setMemberChoices}')||
+     !statistics.includes('laneCount={memberLaneCount} onLaneCountChange={setMemberLaneCount}')){
+    failures.push('Cross-member totals must belong to the exact current date window and preserve selected lanes after zoom.');
   }
 
   const zoomControls=read('app/modular/modules/statistics/StatisticsZoomControls.jsx');

@@ -1,6 +1,6 @@
 'use client';
 
-import {useMemo,useState} from 'react';
+import {useMemo} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {selectRows} from '../../../loc/db-query.mjs';
 import {defaultScopeData,selectScopeRegistry} from '../../../loc/scope-data';
@@ -16,10 +16,14 @@ async function readCatalog(table,columns){
   return (await selectRows(table,{columns,limit:250,offset:0})).rows;
 }
 const DEFAULT_LANE_COUNT=2;
-export default function LocMemberIntersection({scopes=[],startDate='',endDate='',unit='month',sharing={}}){
-  const [laneCount,setLaneCount]=useState(DEFAULT_LANE_COUNT);
-  const [choices,setChoices]=useState([]);
-  const [graph,setGraph]=useState('line');
+export default function LocMemberIntersection({
+  scopes=[],startDate='',endDate='',unit='month',sharing={},
+  laneCount=DEFAULT_LANE_COUNT,choices=[],graph='line',
+  onLaneCountChange,onChoicesChange,onGraphChange
+}){
+  // The time range identifies the returned dataset. Choices live in the LOC
+  // parent, so remounting one range cannot silently reset selected comparisons.
+  const rangeKey=startDate+'|'+endDate;
   const catalog=useQuery({
     queryKey:['loc-source-categories'],
     queryFn:async()=>{
@@ -70,11 +74,12 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
           :[];
         return [id,{rows:sharedSourceBreakdown(rows,id,sharing),daily:draws}];
       }));
-      return new Map(pairs);
+      return {rangeKey,datasets:new Map(pairs)};
     },
     staleTime:5*60_000
   });
-  const datasets=fetched.data||new Map();
+  const hasCurrentData=fetched.data?.rangeKey===rangeKey;
+  const datasets=hasCurrentData?fetched.data.datasets:new Map();
   const shareablePersonal=(sharing.scopeSources||[]).filter(row=>
     sharedGroupCodes(row.scope_id,sharing.permissions,sharing.categories).has(row.category_code));
   const measures=availableMemberMeasures([...datasets.values()].map(item=>item.rows),sharing.categories||[],shareablePersonal);
@@ -91,22 +96,25 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
   const distribution=calculated.totals.map(item=>({name:item.name,value:item.value}));
   const charts=availableStatisticChartTypes({rows:calculated.rows,series:calculated.series,distribution});
   const chosenChart=charts.some(([kind])=>kind===graph)?graph:(charts[0]?.[0]||'line');
-  const update=(i,part)=>setChoices(old=>{
+  const update=(i,part)=>onChoicesChange?.(old=>{
     const next=Array.from({length:laneCount},(_,index)=>({...lanes[index]}));
     next[i]={...next[i],...part};
     return next;
   });
   if(!available.length)return null;
-  return <section className="scope-stat-section" data-stat-cross-range={startDate+'|'+endDate} aria-busy={fetched.isFetching}>
+  return <section className="scope-stat-section"
+    data-stat-cross-range={rangeKey}
+    data-stat-cross-resolved-range={hasCurrentData?fetched.data.rangeKey:''}
+    aria-busy={fetched.isPending||fetched.isFetching||!hasCurrentData}>
     <h2>所屬人員交互統計</h2>
     <div className="scope-stat-controls">
       <label><span>比較組數</span>
-        <select className="scope-select" value={laneCount} onChange={e=>{setLaneCount(Number(e.target.value));setChoices([]);}}>
+        <select className="scope-select" value={laneCount} onChange={e=>{onLaneCountChange?.(Number(e.target.value));onChoicesChange?.([]);}}>
           {[2,3,4].map(n=><option key={n} value={n}>{n} 組</option>)}
         </select>
       </label>
       <label><span>圖形</span>
-        <select className="scope-select" value={chosenChart} onChange={e=>setGraph(e.target.value)}>
+        <select className="scope-select" value={chosenChart} onChange={e=>onGraphChange?.(e.target.value)}>
           {charts.map(([value,label])=><option value={value} key={value}>{label}</option>)}
         </select>
       </label>
@@ -127,8 +135,8 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
       </div>)}
     </div>
     {fetched.error||catalog.error?<p className="scope-status scope-error">{String(fetched.error?.message||catalog.error?.message||'讀取失敗')}</p>:null}
-    {fetched.isFetching?<p className="scope-status" role="status">正在更新交會統計…</p>:null}
-    {!fetched.isPending&&!fetched.isFetching?<>
+    {fetched.isPending||fetched.isFetching?<p className="scope-status" role="status">正在更新交會統計…</p>:null}
+    {!fetched.isPending&&!fetched.isFetching&&hasCurrentData?<>
       <div className="scope-ranking">
         <div><strong>共同活躍日</strong><span>{calculated.commonDays.toLocaleString()} 天</span></div>
         <div><strong>活躍日總數</strong><span>{calculated.unionDays.toLocaleString()} 天</span></div>
