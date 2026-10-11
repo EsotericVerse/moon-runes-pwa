@@ -127,7 +127,8 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
       </div>)}
     </div>
     {fetched.error||catalog.error?<p className="scope-status scope-error">{String(fetched.error?.message||catalog.error?.message||'讀取失敗')}</p>:null}
-    {!fetched.isPending?<>
+    {fetched.isFetching?<p className="scope-status" role="status">正在更新交會統計…</p>:null}
+    {!fetched.isPending&&!fetched.isFetching?<>
       <div className="scope-ranking">
         <div><strong>共同活躍日</strong><span>{calculated.commonDays.toLocaleString()} 天</span></div>
         <div><strong>活躍日總數</strong><span>{calculated.unionDays.toLocaleString()} 天</span></div>
