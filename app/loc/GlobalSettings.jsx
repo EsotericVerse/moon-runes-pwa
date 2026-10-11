@@ -135,9 +135,9 @@ export default function GlobalSettings(){
     loading:checking
   });
   const manageScopes=useMemo(()=>{
-    if(!account.user)return [];
+    if(native||!account.user)return [];
     return choices.filter(item=>account.canManageScopeSync(item.id));
-  },[choices,account.user,account.authorizer]);
+  },[choices,account.user,account.authorizer,native]);
   const manageable=manageScopes.some(item=>item.id===managedScope)?managedScope:(manageScopes[0]?.id||'');
   const canManageSelected=Boolean(manageable)&&account.canManageScopeSync(manageable);
   const sectionOptions=[
@@ -146,7 +146,7 @@ export default function GlobalSettings(){
     ...(runePolicy.canDraw?[{value:'draw',label:'月典抽牌'}]:[]),
     {value:'home',label:'首頁設定'},
     {value:'favorites',label:'我的最愛（展示）'},
-    ...(manageScopes.length||account.canManageGlobalSync()?[{value:'manage',label:'管理功能'}]:[]),
+    ...(!native&&(manageScopes.length||account.canManageGlobalSync())?[{value:'manage',label:'管理功能'}]:[]),
     {value:'account',label:'帳號'}
   ];
   function openAppDraw(mode){
@@ -250,7 +250,7 @@ export default function GlobalSettings(){
           <p className="scope-settings-note">新增、刪除與目錄管理暫不啟用。</p>
         </section>:null}
 
-        {section==='manage'&&(manageScopes.length||account.canManageGlobalSync())?<section className="loc-card">
+        {section==='manage'&&!native&&(manageScopes.length||account.canManageGlobalSync())?<section className="loc-card">
           <h2>管理功能</h2>
           <p className="scope-settings-note">管理已從治理頁移至設定；功能權限維持原規則，不因顯示選單而開放寫入。</p>
           {manageScopes.length?<div>
@@ -269,8 +269,7 @@ export default function GlobalSettings(){
               onChange={option=>setManagementAction(option?.value||'profile')}/>
             {canManageSelected&&managementAction==='profile'?<ScopeSettingsPanel key={manageable} scopeId={manageable}/>:null}
             {canManageSelected&&managementAction==='publish'?<ManagementArticlePublisher key={manageable} scopeId={manageable}/>:null}
-            {canManageSelected&&managementAction==='import'&&!native?<ManagementImportPanel key={manageable} scopeId={manageable}/>:null}
-            {canManageSelected&&managementAction==='import'&&native?<PrivateLocalFiles/>:null}
+            {canManageSelected&&managementAction==='import'?<ManagementImportPanel key={manageable} scopeId={manageable}/>:null}
           </div>:null}
           {account.canManageGlobalSync()?<div className="loc-settings-panel-group">
             <ScopeGroupManagement scopeId="loc"/>
