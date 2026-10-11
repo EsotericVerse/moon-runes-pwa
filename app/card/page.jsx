@@ -16,6 +16,7 @@ export default function RuneCardHub(){
     <nav className="runes-home-nav" aria-label="3D 場域模式">
       <a className="loc-button" href="/card/duel/">隨機抽牌 · 3D 召喚</a>
       <a className="loc-button" href="/card/list/">指定符文 · 3D 圖鑑</a>
+      <a className="loc-button" href="/card/daily/">每日符文 · 3D 指示</a>
     </nav>
   </section></main>;
 }
