@@ -8,7 +8,7 @@ import {navigationHref} from '../../modular/nav-destinations.mjs';
 import useNativeNavigation from '../../modular/use-native-navigation';
 import {runeImage,groupImage} from '../rune-directory.mjs';
 import '../skin-lab.css';
-import '../three/rune-world.css';
+import '../visual/rune-art-layout.css';
 
 const GROUP_COLUMNS='group_id,english_name,desc,runeslist';
 const DETAIL_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,char_action,positive_keywords,negative_keywords,extra_rules,extra_notes,rune_evolution_history,myth_story,soul_question,practice_challenge,ritual_advice,harmony_advice';
@@ -39,18 +39,18 @@ function RuneInfoDialog({rune,onClose}){
     ['實踐挑戰',rune.practice_challenge],['儀式建議',rune.ritual_advice],
     ['調和建議',rune.harmony_advice]
   ].filter(([,value])=>String(value??'').trim());
-  return <div className="rune-3d-modal-backdrop" role="presentation" onClick={onClose}>
-    <section className="rune-3d-modal" role="dialog" aria-modal="true" aria-label={rune.rune_name+'符文資料'} onClick={e=>e.stopPropagation()}>
-      <div className="rune-3d-modal-head">
+  return <div className="rune-art-modal-backdrop" role="presentation" onClick={onClose}>
+    <section className="rune-art-modal" role="dialog" aria-modal="true" aria-label={rune.rune_name+'符文資料'} onClick={e=>e.stopPropagation()}>
+      <div className="rune-art-modal-head">
         <div><span className="loc-eyebrow">RUNE ARCHIVE · {String(rune.rune_id).padStart(2,'0')}</span>
           <h2>{rune.rune_name}</h2>
           <p>{rune.english_name||''}　{rune.group_name||''}</p>
         </div>
         <button className="rune-skin-btn" type="button" autoFocus onClick={onClose} aria-label="關閉資訊視窗">× 關閉</button>
       </div>
-      <div className="rune-3d-modal-main">
+      <div className="rune-art-modal-main">
         <img src={runeImage(rune)} alt={rune.rune_name+'原始卡圖'} loading="lazy"/>
-        <div className="rune-3d-modal-details">
+        <div className="rune-art-modal-details">
           {details.map(([label,value])=><div key={label}>
             <h3>{label}</h3>
             <p>{cleanse(Array.isArray(value)?value.join('、'):value)}</p>
@@ -153,15 +153,15 @@ export default function RuneAtlasLab(){
     };
   },[groups,runes]);
   const display=useMemo(()=>group?runes:groups,[group,runes,groups]);
-  return <main className="loc-next-main rune-skin-lab rune-3d-shell" data-rune-lab="list2">
-    <header className="rune-3d-header">
+  return <main className="loc-next-main rune-skin-lab rune-art-shell" data-rune-lab="list2">
+    <header className="rune-art-header">
       <p className="loc-eyebrow">LunaRunes · Living Atlas</p>
       <h1>{group?group.name+'之符文':'月之符文 · 九曜星域'}</h1>
       <p>{group?'展示原創符文卡圖。輕觸任一符文，即可閱讀原有圖鑑資料。':
         '完整呈現九幅群組原創畫作。選擇群組閱讀介紹，再進入該組符文圖鑑。'}</p>
     </header>
-    <nav className="rune-3d-toolbar" aria-label="圖鑑視角">
-      {group?<span className="rune-3d-toolbar-label">{group.name}組 · 原創符文畫廊</span>:<span className="rune-3d-toolbar-label">九大符文群組 · 原創畫作</span>}
+    <nav className="rune-art-toolbar" aria-label="圖鑑視角">
+      {group?<span className="rune-art-toolbar-label">{group.name}組 · 原創符文畫廊</span>:<span className="rune-art-toolbar-label">九大符文群組 · 原創畫作</span>}
 
     </nav>
     <section className="rune-art-stage" aria-label="九群組與原創符文畫廊">
@@ -170,21 +170,21 @@ export default function RuneAtlasLab(){
       <div className="rune-art-stage-label" role="status">{loading?'畫作載入中……':
         error||(!group?'點選群組畫作閱讀介紹，再按「進入」查看符文':'輕觸符文卡面，查看原有文字資料')}</div>
     </section>
-    {group?<button type="button" className="rune-3d-floating-back" onClick={backToGroups}
+    {group?<button type="button" className="rune-art-floating-back" onClick={backToGroups}
       aria-label="返回九個群組星球"><span aria-hidden="true">←</span> 返回九群組</button>:null}
     {preview&&!group&&typeof document!=='undefined'?createPortal(
-      <div className="rune-3d-group-backdrop" onClick={closePreview} role="presentation">
-        <section className="rune-3d-group-preview" role="dialog" aria-modal="true"
+      <div className="rune-art-group-backdrop" onClick={closePreview} role="presentation">
+        <section className="rune-art-group-preview" role="dialog" aria-modal="true"
           aria-label={preview.name+'群組說明'} onClick={event=>event.stopPropagation()}>
-          <div className="rune-3d-group-artwork">
+          <div className="rune-art-group-artwork">
             <img src={groupImage(preview.id)} alt={preview.name+'正式群組圖'} loading="eager"/>
           </div>
-          <div className="rune-3d-group-archive">
+          <div className="rune-art-group-archive">
             <p className="loc-eyebrow">RUNE CONSTELLATION · {String(preview.id).padStart(2,'0')}</p>
             <h2>{preview.name}組</h2>
-            <p className="rune-3d-group-en">{preview.english_name||''}</p>
-            <p className="rune-3d-group-description">{cleanse(preview.desc||'')}</p>
-            <p className="rune-3d-group-count">本群組收錄 {preview.runeslist.length} 枚符文{preview.id===9?'（含誌銘）':''}</p>
+            <p className="rune-art-group-en">{preview.english_name||''}</p>
+            <p className="rune-art-group-description">{cleanse(preview.desc||'')}</p>
+            <p className="rune-art-group-count">本群組收錄 {preview.runeslist.length} 枚符文{preview.id===9?'（含誌銘）':''}</p>
             <div className="rune-skin-controls">
               <button type="button" className="rune-skin-btn primary"
                 autoFocus onClick={()=>enterGroup(preview)}>進入符文星域</button>
@@ -194,15 +194,15 @@ export default function RuneAtlasLab(){
         </section>
       </div>,document.body
     ):null}
-    {!group?<nav className="rune-3d-group-index" aria-label="九個符文群組">
+    {!group?<nav className="rune-art-group-index" aria-label="九個符文群組">
       {groups.map(item=><button key={item.id} type="button"
-        className="rune-3d-group-name-btn" onClick={()=>previewGroup(item)}>{item.name}</button>)}
+        className="rune-art-group-name-btn" onClick={()=>previewGroup(item)}>{item.name}</button>)}
     </nav>:null}
-    <footer className="rune-3d-footer">
+    <footer className="rune-art-footer">
       <span>原創美術展示 · 保留符文原始卡面</span>
       <nav className="rune-skin-controls" aria-label="返回與模式切換">
         <a href={navigationHref('lrunes','',native)} className="rune-skin-btn">回符文首頁</a>
-        <a href={navigationHref('lrunes','card',native)} className="rune-skin-btn">← 3D 場域首頁</a>
+        <a href={navigationHref('lrunes','card',native)} className="rune-skin-btn">← 符文展示首頁</a>
         <a href={navigationHref('lrunes','card/duel',native)} className="rune-skin-btn">切換隨機抽牌</a>
         <a href={navigationHref('lrunes','list',native)} className="rune-skin-btn">舊版圖鑑</a>
       </nav>
