@@ -27,6 +27,9 @@ import ScopeSelfIntersection from '../modules/statistics/ScopeSelfIntersection';
 import LocMemberIntersection from '../modules/statistics/LocMemberIntersection';
 import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
 import {ScopeCustomSourceCategories} from '../../loc/SourceCategoryEditor';
+import ScopeGroupStatisticsSharing from '../../loc/ScopeGroupStatisticsSharing';
+import {selectCrossScopeSharing} from '../../loc/statistics-group-sharing-query.mjs';
+import {canParticipateInCrossStatistics,sharedScopeDensity} from '../../loc/statistics-group-sharing.mjs';
 import StatisticsZoomControls from '../modules/statistics/StatisticsZoomControls';
 import {statisticsZoomWindow} from '../modules/statistics/statistics-time-zoom.mjs';
 
@@ -411,15 +414,27 @@ function ScopeGroupStatistics(){
     queryFn:selectPublicStatisticsMembers,
     staleTime:5*60_000
   });
-  const scopes=scopesQuery.data||[];
+  const policy=useQuery({
+    queryKey:['cross-statistics-sharing'],
+    queryFn:selectCrossScopeSharing,
+    staleTime:0,refetchOnMount:'always',refetchOnWindowFocus:true
+  });
+  const scopes=useMemo(()=>(scopesQuery.data||[]).filter(scope=>
+    canParticipateInCrossStatistics(scope.id,policy.data?.permissions,policy.data?.categories)
+  ),[scopesQuery.data,policy.data]);
   const scopeIds=useMemo(()=>scopes.map(scope=>String(scope.id||'').trim()).filter(Boolean),[scopes]);
   const [endDate,setEndDate]=useState(()=>taipeiDateKey());
   const zoomRange=useMemo(()=>statisticsZoomWindow(zoomLevel,endDate),[zoomLevel,endDate]);
   const {startDate,endDate:rangeEndDate,bucket}=zoomRange;
   const densityQuery=useQuery({
-    queryKey:['scope-density','loc',zoomLevel,startDate,rangeEndDate,scopeIds.join('|')],
-    queryFn:()=>selectScopeDensityRows(scopes,{startDate,endDate:rangeEndDate}),
-    enabled:Boolean(scopes.length&&startDate&&rangeEndDate),
+    queryKey:['scope-density','loc',zoomLevel,startDate,rangeEndDate,scopeIds.join('|'),JSON.stringify(policy.data?.permissions||[])],
+    queryFn:async()=>{
+      const output=await Promise.all(scopes.map(async scope=>
+        sharedScopeDensity(await selectScopeSourceBreakdownRows(scope,{startDate,endDate:rangeEndDate}),scope.id,policy.data)
+      ));
+      return output.flat();
+    },
+    enabled:Boolean(policy.data&&scopes.length&&startDate&&rangeEndDate),
     staleTime:5*60_000
   });
   const overallTotal=useMemo(
@@ -497,6 +512,7 @@ function ScopeGroupStatistics(){
     </div>
 
     <p className="scope-status">{startDate&&rangeEndDate?startDate+' ～ '+rangeEndDate:''}</p>
+    <p className="scope-status">LOC 合併統計僅計入成員明確開放的群組來源分類；未開放的類別不計入總數。</p>
     <div className="scope-ranking">
       <div>
         <strong>LOC 合併總數</strong>
@@ -512,8 +528,9 @@ function ScopeGroupStatistics(){
       type={locChartType} rows={trendData} series={locSeries}
       distribution={locDistribution} totalKey={aggregateType==='total'?'total':''} height={420}
     />:null}
-    <LocMemberIntersection scopes={scopes} startDate={startDate} endDate={rangeEndDate} unit={bucket}/>
+    {policy.data?<LocMemberIntersection scopes={scopes} startDate={startDate} endDate={rangeEndDate} unit={bucket} sharing={policy.data}/>:null}
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
+    {policy.error?<p className="scope-status scope-error">{featureDataErrorMessage(policy.error)}</p>:null}
     {densityQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(densityQuery.error)}</p>:null}
   </section>;
 }
@@ -677,6 +694,10 @@ function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false,
       </a>
     </section>:null}
     <ScopeStatisticsResults scopeId={scopeId} navigation={navigation} types={types}/>
+    {canManageSources?<details className="scope-stat-section">
+      <summary>群組來源分類 · 對外統計開放</summary>
+      <ScopeGroupStatisticsSharing scopeId={scopeId}/>
+    </details>:null}
     {canManageSources?<details className="scope-stat-section">
       <summary>個人自訂來源分類 · 管理</summary>
       <ScopeCustomSourceCategories scopeId={scopeId}/>
