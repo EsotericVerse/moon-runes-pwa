@@ -528,7 +528,7 @@ function ScopeGroupStatistics(){
       type={locChartType} rows={trendData} series={locSeries}
       distribution={locDistribution} totalKey={aggregateType==='total'?'total':''} height={420}
     />:null}
-    {policy.data?<LocMemberIntersection scopes={scopesQuery.data||[]} startDate={startDate} endDate={rangeEndDate} unit={bucket} sharing={policy.data}/>:null}
+    <LocMemberIntersection scopes={scopesQuery.data||[]} startDate={startDate} endDate={rangeEndDate} unit={bucket} sharing={policy.data||{}}/>
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
     {policy.error?<p className="scope-status scope-error">{featureDataErrorMessage(policy.error)}</p>:null}
     {densityQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(densityQuery.error)}</p>:null}
