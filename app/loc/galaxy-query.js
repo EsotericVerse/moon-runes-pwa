@@ -433,6 +433,28 @@ export async function selectScopeDensityRows(scopes,{startDate='',endDate=''}={}
     .sort((a,b)=>a.day.localeCompare(b.day)||a.scope_id.localeCompare(b.scope_id));
 }
 
+// Single-row ordered probes: determine the first *actual* statistic item
+// without loading the full corpus or inventing a historical year ceiling.
+export async function selectFirstScopeStatisticsDate(scope){
+  const current=scopeOf(scope);
+  const [text,media]=await Promise.all([
+    selectRows(current.galaxy,{
+      columns:'createtime',
+      filters:publicContentFilters([{column:'statistics_able',operator:'eq',value:true}]),
+      orders:[{column:'createtime',ascending:true,nullsFirst:false}],
+      limit:1
+    }),
+    selectRows(current.galaxyMedia,{
+      columns:'createtime',
+      orders:[{column:'createtime',ascending:true,nullsFirst:false}],
+      limit:1
+    })
+  ]);
+  const dates=[...(text.rows||[]),...(media.rows||[])].map(row=>String(row.createtime||'').slice(0,10))
+    .filter(day=>/^\d{4}-\d{2}-\d{2}$/.test(day)).sort();
+  return dates[0]||'';
+}
+
 // Separate source and media breakdowns. These are independently
 // chosen within the current Scope; no cross-Scope read or merged corpus.
 export async function selectScopeSourceBreakdownRows(scope,{startDate='',endDate=''}={}){

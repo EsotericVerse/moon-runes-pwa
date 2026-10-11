@@ -9,7 +9,7 @@ import StatisticsMultiChart,{availableStatisticChartTypes} from './StatisticsMul
 import {OWN_STAT_DIMENSIONS,ownScopeCategoryCatalog} from '../../../loc/statistics-source-intersection.mjs';
 
 const DAY_MS=86400000;
-const DIMENSIONS=[{kind:'group',label:'群組來源分類'},...OWN_STAT_DIMENSIONS.map(row=>row.kind==='source'?{...row,label:'個人自訂來源分類'}:row)];
+const DIMENSIONS=[{kind:'group',label:'群組來源分類'},...OWN_STAT_DIMENSIONS,{kind:'personal',label:'個人自訂來源分類'}];
 const dateOnly=v=>String(v||'').slice(0,10);
 function canonicalBucket(day,unit){
   const date=new Date(day+'T00:00:00Z');
@@ -60,10 +60,14 @@ export default function ScopeSelfIntersection({scope,range}){
     const known=catalog.data?.categories||[],aliases=catalog.data?.aliases||[];
     const scopeSources=catalog.data?.scopeSources||[];
     const personal=new Map(scopeSources.filter(x=>x.enabled).map(x=>[x.source_key.toLowerCase(),x.display_name]));
-    const basic=ownScopeCategoryCatalog(rows).filter(item=>
-      item.kind!=='source'||assignedSource(item.raw,aliases,known,scopeSources,scope.id)!=='others'||personal.has(item.raw.toLowerCase())
-    ).map(item=>item.kind==='source'&&personal.has(item.raw.toLowerCase())
-      ?{...item,name:personal.get(item.raw.toLowerCase())}:item);
+    // Keep the original raw-source comparison. Personal custom sources are
+    // an additional dimension, not a rename that hides existing sources.
+    const basic=ownScopeCategoryCatalog(rows);
+    const custom=basic.filter(item=>item.kind==='source'&&personal.has(item.raw.toLowerCase()))
+      .map(item=>({
+        ...item,id:'personal\u0000'+item.raw,kind:'personal',
+        name:personal.get(item.raw.toLowerCase())
+      }));
     const grouped=new Map();
     for(const row of rows){
       if(row.kind!=='source')continue;
@@ -73,7 +77,7 @@ export default function ScopeSelfIntersection({scope,range}){
     const groups=[...grouped].filter(([,total])=>total>0).map(([id,total])=>({
       id:'group\u0000'+id,kind:'group',name:known.find(x=>x.category_code===id)?.display_name||id,total
     }));
-    return [...groups,...basic].filter(item=>kindFilter==='all'||item.kind===kindFilter);
+    return [...groups,...basic,...custom].filter(item=>kindFilter==='all'||item.kind===kindFilter);
   },[rows,kindFilter,catalog.data]);
   const chosen=Array.from({length:numberOfLanes},(_,i)=>{
     const id=selected[i];
@@ -97,7 +101,13 @@ export default function ScopeSelfIntersection({scope,range}){
       const day=dateOnly(row.day);
       const rawId=String(row.kind)+'\u0000'+String(row.category||'');
       const ids=[rawId];
-      if(row.kind==='source')ids.push('group\u0000'+assignedSource(row.category,catalog.data?.aliases||[],catalog.data?.categories||[],catalog.data?.scopeSources||[],scope.id));
+      if(row.kind==='source'){
+        ids.push('group\u0000'+assignedSource(row.category,catalog.data?.aliases||[],catalog.data?.categories||[],catalog.data?.scopeSources||[],scope.id));
+        if((catalog.data?.scopeSources||[]).some(item=>item.enabled!==false&&
+          item.scope_id===scope.id&&item.source_key?.toLowerCase()===String(row.category||'').toLowerCase())){
+          ids.push('personal\u0000'+String(row.category||''));
+        }
+      }
       if(!day||day<start||day>end)continue;
       const bucket=canonicalBucket(day,unit);
       if(!bucket)continue;
