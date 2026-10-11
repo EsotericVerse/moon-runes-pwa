@@ -26,6 +26,7 @@ import StatisticsMultiChart,{STAT_VISUAL_TYPES,availableStatisticChartTypes} fro
 import ScopeSelfIntersection from '../modules/statistics/ScopeSelfIntersection';
 import LocMemberIntersection from '../modules/statistics/LocMemberIntersection';
 import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
+import {ScopeCustomSourceCategories} from '../../loc/SourceCategoryEditor';
 import StatisticsZoomControls from '../modules/statistics/StatisticsZoomControls';
 import {statisticsZoomWindow} from '../modules/statistics/statistics-time-zoom.mjs';
 
@@ -37,11 +38,12 @@ const CHART_TEXT='var(--loc-text)';
 const CHART_GRID='var(--loc-line)';
 const CHART_TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)',borderRadius:'8px'};
 const CHART_TYPES=STAT_VISUAL_TYPES;
-const STAT_TYPES=['total','source','media_type','media_platform','media_style'];
+const STAT_TYPES=['total','source','source_custom','media_type','media_platform','media_style'];
 const STAT_TYPE_LABELS=Object.freeze({
   daily_rune:'每日符文',
   total:UI_COPY.statistics.totalSource,
-  source:UI_COPY.statistics.workSource,
+  source:'群組來源分類',
+  source_custom:'個人自訂來源分類',
   media_type:'多媒體類型',
   media_platform:'多媒體來源統計',
   media_style:'多媒體風格統計（Meta Tag）'
@@ -553,14 +555,16 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   });
   const summary=useMemo(()=>buildSummary(trendQuery.data||[],queryRange),[trendQuery.data,queryRange]);
   const sourceCatalog=useQuery({
-    queryKey:['statistics-source-taxonomy'],
+    queryKey:['statistics-source-taxonomy',scopeId],
     enabled:!isLrunesDaily&&!mediaDimension&&Boolean(rankingType),
     queryFn:async()=>{
-      const [cat,aliases]=await Promise.all([
+      const [cat,aliases,personal]=await Promise.all([
         selectRows('silver.statistics_source_categories',{columns:'category_code,display_name,enabled',limit:250}),
-        selectRows('silver.statistics_source_aliases',{columns:'source_key,category_code',limit:250})
+        selectRows('silver.statistics_source_aliases',{columns:'source_key,category_code',limit:250}),
+        selectRows('silver.scope_source_subcategories',{columns:'scope_id,source_key,category_code,display_name,enabled',
+          filters:[{column:'scope_id',operator:'eq',value:scopeId}],limit:250})
       ]);
-      return {categories:cat.rows,aliases:aliases.rows};
+      return {categories:cat.rows,aliases:aliases.rows,scopeSources:personal.rows};
     },
     staleTime:5*60_000
   });
@@ -572,8 +576,9 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   });
   const adminSource=useMemo(()=>administrativeSourceTrend(sourceRows.data||[],sourceCatalog.data||{},{
     startDate:queryRange.startDate,endDate:queryRange.endDate,
-    unit:queryRange.bucket
-  }),[sourceRows.data,sourceCatalog.data,queryRange.startDate,queryRange.endDate,queryRange.bucket]);
+    unit:queryRange.bucket,scopeId,
+    dimension:rankingType==='source_custom'?'personal':'group'
+  }),[sourceRows.data,sourceCatalog.data,queryRange.startDate,queryRange.endDate,queryRange.bucket,scopeId,rankingType]);
   const basicTrend=adminSource.rows;
   const basicSeries=adminSource.series;
   const basicDistribution=adminSource.distribution;
@@ -664,7 +669,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   </section>;
 }
 
-function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false}){
+function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false,canManageSources=false}){
   return <>
     {canManageKeywords?<section className="scope-stat-section scope-stat-keyword-link">
       <a className="loc-button" href={scopeHref(scopeId,'statics/keywords')}>
@@ -672,10 +677,14 @@ function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false}
       </a>
     </section>:null}
     <ScopeStatisticsResults scopeId={scopeId} navigation={navigation} types={types}/>
+    {canManageSources?<details className="scope-stat-section">
+      <summary>個人自訂來源分類 · 管理</summary>
+      <ScopeCustomSourceCategories scopeId={scopeId}/>
+    </details>:null}
   </>;
 }
 
-function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types,canManageKeywords=false}){
+function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types,canManageKeywords=false,canManageSources=false}){
   // Cross-Scope statistical aggregation belongs to LOC only. Other Scope
   // Groups remain overview/navigation surfaces, never merged COUNT queries.
   if(aggregateScopes&&scopeId==='loc')return <ScopeGroupStatistics/>;
@@ -685,7 +694,7 @@ function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types,canMana
     title="Scope Group 統計導引"
     description="各 Scope 自行執行作品、來源及 2～4 組自交互統計；Group 只提供導引。"
   />;
-  return <ScopeStatisticsPanel scopeId={scopeId} navigation={navigation} types={types} canManageKeywords={canManageKeywords}/>;
+  return <ScopeStatisticsPanel scopeId={scopeId} navigation={navigation} types={types} canManageKeywords={canManageKeywords} canManageSources={canManageSources}/>;
 }
 
 export default function Statistics(){
@@ -694,6 +703,7 @@ export default function Statistics(){
   const searchParams=useSearchParams();
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
   const canManageKeywords=Boolean(account.user)&&scopeId!=='lrunes'&&account.canManageScopeSync(scopeId);
+  const canManageSources=Boolean(account.user)&&account.canManageScopeSync(scopeId);
   return <FeaturePage featureId="statics">
     <section className="loc-card scope-feature-card">
       <StatisticsPanel
@@ -702,6 +712,7 @@ export default function Statistics(){
         navigation={navigation}
         types={scopeId==='lrunes'?['daily_rune',...STAT_TYPES]:STAT_TYPES}
         canManageKeywords={canManageKeywords}
+        canManageSources={canManageSources}
       />
     </section>
   </FeaturePage>;
