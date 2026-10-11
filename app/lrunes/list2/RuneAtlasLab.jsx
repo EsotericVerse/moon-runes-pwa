@@ -10,7 +10,7 @@ import {runeImage,groupImage} from '../rune-directory.mjs';
 import '../skin-lab.css';
 import '../visual/rune-art-layout.css';
 
-const GROUP_COLUMNS='group_id,english_name,desc,runeslist';
+const GROUP_COLUMNS='group_id,english_name,desc,quality,style,runeslist';
 const DETAIL_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,char_action,positive_keywords,negative_keywords,extra_rules,extra_notes,rune_evolution_history,myth_story,soul_question,practice_challenge,ritual_advice,harmony_advice';
 const GROUP_NAMES=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
 function cleanse(value){
@@ -75,7 +75,10 @@ export default function RuneAtlasLab(){
         setGroups((rows||[]).map(row=>({...row,index:groupIndex(row)}))
           .sort((a,b)=>a.index-b.index).map((row,i)=>({
             ...row,id:row.index+1,name:row.group_id||GROUP_NAMES[i],
+            english_name:cleanse(row.english_name||''),
             desc:cleanse(row.desc||''),
+            quality:cleanse(row.quality||''),
+            style:cleanse(row.style||''),
             runeslist:Array.isArray(row.runeslist)?row.runeslist.map(Number):[]
           })));
       }})
@@ -162,6 +165,8 @@ export default function RuneAtlasLab(){
         <h2>{group.name}組</h2>
         {group.english_name?<p className="rune-art-group-en">{group.english_name}</p>:null}
         <p className="rune-art-group-description">{group.desc||'此群組尚無介紹內容。'}</p>
+        {group.quality&&group.quality!=='風格特徵'?<p className="rune-art-group-quality"><strong>群組特徵</strong> {group.quality}</p>:null}
+        {group.style&&group.style!=='style / trait'?<p className="rune-art-group-style"><strong>風格</strong> {group.style}</p>:null}
         <p className="rune-art-group-count">本群組收錄 {group.runeslist.length} 枚符文{group.id===9?'（含誌銘）':''}</p>
       </div>
     </section>:null}
