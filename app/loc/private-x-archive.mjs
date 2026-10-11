@@ -66,7 +66,6 @@ function createJsonSink(path,summary,onRecord,signal){
   function appendText(text){
     if(!started){
       prelude+=text;
-      if(prelude.length>4096)throw new Error('X 資料開頭不是可辨識的 JSON/YTD 格式：'+path);
       const trimmed=withoutBOM(prelude).trimStart();
       if(trimmed.startsWith('[')){
         started=true;parser.write(trimmed);prelude='';return;
@@ -78,6 +77,7 @@ function createJsonSink(path,summary,onRecord,signal){
           started=true;parser.write(rest);prelude='';return;
         }
       }
+      if(prelude.length>4096)throw new Error('X 資料開頭不是可辨識的 JSON/YTD 格式：'+path);
       return;
     }
     parser.write(text);
@@ -99,7 +99,7 @@ function createJsonSink(path,summary,onRecord,signal){
         tail='';
         if(finalText)appendText(finalText);
         if(!started)throw new Error('找不到 X 備份的 JSON 陣列：'+path);
-        parser.end();
+        if(!parser.isEnded)parser.end();
         finished=true;
       }
     },
