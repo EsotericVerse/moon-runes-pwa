@@ -83,10 +83,11 @@ assert.match(world,/groupPreviewImage\(group.id\)/);
 assert.match(world,/rune-world-orb-name--art/);
 const directory=read('app/lrunes/rune-directory.mjs');
 assert.match(directory,/export function groupPreviewImage\(/);
+assert.match(directory,/groupPreviewImage\(id\)\{return groupImage\(id\);\}/);
 for(const file of [
-  '01.soul_s.jpg','02_connection_s.jpg','03_life_s.jpg','04_nature_s.jpg',
-  '05_mineral_s.jpg','06_element_s.jpg','07_order_s.jpg',
-  '08_disorder_s.jpg','09_special_s.jpg'
+  '01.soul.jpg','02_connection.jpg','03_life.jpg','04_nature.jpg',
+  '05_mineral.jpg','06_element.jpg','07_order.jpg',
+  '08_disorder.jpg','09_specia.jpg'
 ])assert.ok(existsSync(resolve(base,'pics',file)),'missing published group poster: '+file);
 const daily=read('app/daily/log/DailyLogClient.jsx');
 const scopeCss=read('app/styles/scope-system.css');
