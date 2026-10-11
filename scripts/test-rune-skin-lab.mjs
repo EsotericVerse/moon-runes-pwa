@@ -125,8 +125,18 @@ assert.doesNotMatch(countGuide,/<a\b|<button\b|onClick=|href=|tabIndex=/,
 
 // Group descriptions, group IDs and the original images remain authoritative.
 assert.match(atlas,/selectRows\('silver\.runes_group'/);
+assert.match(atlas,/GROUP_COLUMNS='group_id,english_name,desc,quality,style,runeslist'/);
 assert.match(atlas,/selectRows\('silver\.runes'/);
 assert.match(atlas,/runeslist/);
+assert.match(art,/className="rune-art-group-summary"/);
+assert.match(art,/item\.english_name/);
+assert.match(art,/item\.desc/);
+assert.match(art,/item\.quality/);
+assert.match(art,/item\.style/);
+assert.match(art,/item\.runeslist\.length/);
+assert.match(skin,/\.rune-art-group-english/);
+assert.match(skin,/\.rune-art-group-blurb/);
+assert.match(skin,/\.rune-art-group-facts/);
 assert.match(atlas,/onSelect=\{group\?show:enterGroup\}/);
 assert.match(atlas,/className="rune-art-group-inline"/);
 assert.match(atlas,/src=\{groupImage\(group.id\)\}/);
