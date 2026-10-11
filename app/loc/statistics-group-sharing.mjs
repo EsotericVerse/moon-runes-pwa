@@ -1,14 +1,16 @@
 // Cross-Scope Statistics consent is controlled only at (Scope, Admin group source).
 // Personal source labels are not separate consent switches.
-// Missing or disabled permissions are denied, never inferred from public visibility.
+// Backward-compatible defaults: absence of an explicit choice retains previously
+// public LOC statistics; only an explicit false removes that group's contribution.
 import {assignedSource} from './member-intersection-model.mjs';
 
-const active=value=>value===true;
 export function sharedGroupCodes(scopeId,permissions=[],categories=[]){
-  const valid=new Set((categories||[]).filter(row=>row.enabled!==false).map(row=>String(row.category_code||'')));
-  return new Set((permissions||[]).filter(row=>
-    row.scope_id===scopeId&&active(row.share_enabled)&&valid.has(row.category_code)
-  ).map(row=>row.category_code));
+  if(!scopeId)return new Set();
+  const available=(categories||[]).filter(row=>row.enabled!==false)
+    .map(row=>String(row.category_code||'')).filter(Boolean);
+  const declined=new Set((permissions||[]).filter(row=>row.scope_id===scopeId&&row.share_enabled===false)
+    .map(row=>String(row.category_code||'')));
+  return new Set(available.filter(code=>!declined.has(code)));
 }
 export function canParticipateInCrossStatistics(scopeId,permissions=[],categories=[]){
   return sharedGroupCodes(scopeId,permissions,categories).size>0;
