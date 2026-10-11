@@ -433,7 +433,7 @@ export async function selectScopeDensityRows(scopes,{startDate='',endDate=''}={}
     .sort((a,b)=>a.day.localeCompare(b.day)||a.scope_id.localeCompare(b.scope_id));
 }
 
-// Separate source, work-type and media breakdowns. These are independently
+// Separate source and media breakdowns. These are independently
 // chosen within the current Scope; no cross-Scope read or merged corpus.
 export async function selectScopeSourceBreakdownRows(scope,{startDate='',endDate=''}={}){
   const current=scopeOf(scope);
