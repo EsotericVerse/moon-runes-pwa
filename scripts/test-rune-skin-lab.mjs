@@ -27,7 +27,7 @@ assert.match(world,/useFrame\(/);
 assert.match(world,/function RuneActor\(/);
 assert.match(duel,/REVEAL_MS=1000/);
 assert.match(duel,/MAX_DRAW=11/);
-assert.match(duel,/onBackgroundClick={!finished\?drawOne:undefined}/);
+assert.match(duel,/onBackgroundClick={!finished&&!selected\?drawOne:undefined}/);
 assert.match(duel,/loadDrawCards\(/);
 assert.match(duel,/function RuneDrawCardDialog\(/);
 assert.match(duel,/onSelect=\{showCard\}/);
