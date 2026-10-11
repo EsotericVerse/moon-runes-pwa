@@ -213,7 +213,7 @@ export async function queryWebRecords(db,search='',limit=100){
       const year=item.createdAt?.slice(0,4)||'日期未知';
       years[year]=(years[year]||0)+1;
       if((!term||item.text.toLocaleLowerCase().includes(term))&&found.length<limit)
-        found.push({key:item.key,text:item.text,createdAt:item.createdAt,sourcePath:item.sourcePath,suspectedMojibake:item.suspectedMojibake});
+        found.push({key:item.key,text:item.text,createdAt:item.createdAt,platform:item.platform||'legacy',kind:item.kind||'record',sender:item.sender||null,sourcePath:item.sourcePath,suspectedMojibake:item.suspectedMojibake});
       row.continue();
     };
     cursor.onerror=()=>reject(fail(cursor));
