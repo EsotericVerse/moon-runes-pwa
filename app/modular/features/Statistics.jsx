@@ -9,8 +9,9 @@ import {
   Bar,BarChart,CartesianGrid,Cell,Legend,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectMediaStatisticsFacetRows,selectScopeDensityRows,selectSourceTrendRows,selectScopeSourceBreakdownRows} from '../../loc/galaxy-query';
+import {selectMediaStatisticsFacetRows,selectScopeDensityRows,selectSourceTrendRows,selectScopeSourceBreakdownRows,selectFirstScopeStatisticsDate} from '../../loc/galaxy-query';
 import {selectRows} from '../../loc/db-query.mjs';
+import {selectFirstDailyRuneDate} from '../../loc/daily-runes';
 import {administrativeSourceTrend} from '../../loc/statistics-admin-source.mjs';
 import {DEFAULT_MEDIA_STYLE_EXCLUSIONS,filterMediaStyleRows,mediaStyleExclusions} from '../../loc/statistics-facets.mjs';
 import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
@@ -423,8 +424,21 @@ function ScopeGroupStatistics(){
     canParticipateInCrossStatistics(scope.id,policy.data?.permissions,policy.data?.categories)
   ),[scopesQuery.data,policy.data]);
   const scopeIds=useMemo(()=>scopes.map(scope=>String(scope.id||'').trim()).filter(Boolean),[scopes]);
-  const [endDate,setEndDate]=useState(()=>taipeiDateKey());
-  const zoomRange=useMemo(()=>statisticsZoomWindow(zoomLevel,endDate),[zoomLevel,endDate]);
+  const endDate=useMemo(()=>taipeiDateKey(),[]);
+  const earliest=useQuery({
+    queryKey:['statistics-history-start','loc',scopesQuery.data?.map(row=>row.id).join('|')],
+    enabled:scopesQuery.isSuccess,
+    queryFn:async()=>{
+      const starts=await Promise.all([
+        ...(scopesQuery.data||[]).map(selectFirstScopeStatisticsDate),
+        selectFirstDailyRuneDate()
+      ]);
+      return starts.filter(Boolean).sort()[0]||'';
+    },
+    staleTime:5*60_000
+  });
+  const zoomRange=useMemo(()=>statisticsZoomWindow(zoomLevel,endDate,earliest.data||''),
+    [zoomLevel,endDate,earliest.data]);
   const {startDate,endDate:rangeEndDate,bucket}=zoomRange;
   const densityQuery=useQuery({
     queryKey:['scope-density','loc',zoomLevel,startDate,rangeEndDate,scopeIds.join('|'),JSON.stringify(policy.data?.permissions||[])],
@@ -508,7 +522,7 @@ function ScopeGroupStatistics(){
           {locAllowed.length?locAllowed.map(([value,label])=><option key={value} value={value}>{label}</option>):<option value="line">尚無可用圖形</option>}
         </select>
       </label>
-      <StatisticsZoomControls level={zoomLevel} onChange={setZoomLevel} range={zoomRange} onEndDateChange={setEndDate}/>
+      <StatisticsZoomControls level={zoomLevel} onChange={setZoomLevel} range={zoomRange}/>
     </div>
 
     <p className="scope-status">{startDate&&rangeEndDate?startDate+' ～ '+rangeEndDate:''}</p>
@@ -531,6 +545,7 @@ function ScopeGroupStatistics(){
     <LocMemberIntersection scopes={scopesQuery.data||[]} startDate={startDate} endDate={rangeEndDate} unit={bucket} sharing={policy.data||{}}/>
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
     {policy.error?<p className="scope-status scope-error">{featureDataErrorMessage(policy.error)}</p>:null}
+    {earliest.error?<p className="scope-status scope-error">{featureDataErrorMessage(earliest.error)}</p>:null}
     {densityQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(densityQuery.error)}</p>:null}
   </section>;
 }
@@ -545,7 +560,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const [foldBlank,setFoldBlank]=useState(true);
   // Leave potentially expensive keyword aggregation OFF until explicitly chosen.
   const [styleFilter,setStyleFilter]=useState('none');
-  const [queryEndDate,setQueryEndDate]=useState(()=>taipeiDateKey());
+  const queryEndDate=useMemo(()=>taipeiDateKey(),[]);
   const scopesQuery=useQuery({
     queryKey:['managed-scopes'],
     queryFn:selectPublicStatisticsMembers,
@@ -555,7 +570,14 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     const scopes=scopesQuery.data||[];
     return scopes.filter(scope=>scope.id===scopeId);
   },[scopeId,scopesQuery.data]);
-  const queryRange=useMemo(()=>statisticsZoomWindow(zoomLevel,queryEndDate),[zoomLevel,queryEndDate]);
+  const earliest=useQuery({
+    queryKey:['statistics-history-start',scopeId],
+    enabled:!isLrunesDaily&&Boolean(targetScopes[0]),
+    queryFn:()=>selectFirstScopeStatisticsDate(targetScopes[0]),
+    staleTime:5*60_000
+  });
+  const queryRange=useMemo(()=>statisticsZoomWindow(zoomLevel,queryEndDate,earliest.data||''),
+    [zoomLevel,queryEndDate,earliest.data]);
   const trendQuery=useQuery({
     queryKey:['statistics-source-trend',scopeId,zoomLevel,queryRange.startDate,queryRange.endDate],
     queryFn:()=>selectSourceTrendRows(targetScopes,queryRange),
@@ -630,7 +652,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       {!isLrunesDaily?<>{!mediaDimension?<label><span>{UI_COPY.statistics.chart}</span><select className="scope-select" value={effectiveChartType} onChange={event=>setChartType(event.target.value)}>
         {optionsForCurrent.length?optionsForCurrent.map(([value,label])=><option key={value} value={value}>{label}</option>):<option value="line">尚無可用圖形</option>}
       </select></label>:null}
-      <StatisticsZoomControls level={zoomLevel} onChange={setZoomLevel} range={queryRange} onEndDateChange={setQueryEndDate}/>
+      <StatisticsZoomControls level={zoomLevel} onChange={setZoomLevel} range={queryRange}/>
       {!['pie','radar','radial','treemap','scatter'].includes(effectiveChartType)?<label className="scope-setting-toggle">
         <input type="checkbox" checked={foldBlank} onChange={event=>setFoldBlank(event.target.checked)}/> 折疊空白時間
       </label>:null}
@@ -641,6 +663,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     </div>
     {isLrunesDaily?<LrunesDailyStatisticsPanel/>:<>
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
+    {earliest.error?<p className="scope-status scope-error">{featureDataErrorMessage(earliest.error)}</p>:null}
     {!mediaDimension&&(trendQuery.error||sourceRows.error||sourceCatalog.error)?<p className="scope-status scope-error">{featureDataErrorMessage(trendQuery.error||sourceRows.error||sourceCatalog.error)}</p>:null}
     {mediaDimension&&mediaQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(mediaQuery.error)}</p>:null}
     {!mediaDimension&&!sourceRows.isPending&&!sourceCatalog.isPending&&!sourceRows.error&&!sourceCatalog.error?<>
