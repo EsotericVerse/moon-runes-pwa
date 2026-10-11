@@ -7,6 +7,7 @@ import DailyLogClient from '../daily/log/DailyLogClient';
 import RuneDrawClient from '../lrunes/RuneDrawClient';
 import RuneSQLiteTransfer from '../lrunes/RuneSQLiteTransfer';
 import RuneAppDayNightDashboard from '../lrunes/RuneAppDayNightDashboard';
+import PrivateLocalFiles from './PrivateLocalFiles';
 import {RUNE_ALL_DRAW_MODES} from '../lrunes/rune-draw-modes.mjs';
 import {settingsRunePolicy} from '../lrunes/settings-rune-policy.mjs';
 import {selectScopeRegistry} from './scope-data';
@@ -155,6 +156,7 @@ export default function GlobalSettings(){
     <section className="scope-page">
       <header className="loc-hero"><p className="loc-eyebrow">Global Settings</p><h1>設定</h1><p>所有 Scope 共用的使用者設定。</p></header>
       <div className="scope-content scope-settings-options">
+        {native?<PrivateLocalFiles/>:null}
         <section className="scope-settings-daily-test" aria-labelledby="settings-daily-calendar-title">
           <h2 id="settings-daily-calendar-title">每日符文行事曆</h2>
           <p className="scope-settings-note">使用測試｜未登入時僅顯示空白行事曆；登入後才會載入每日符文標記、當日指引與前次紀錄。</p>
