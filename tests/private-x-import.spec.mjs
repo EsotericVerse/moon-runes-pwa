@@ -16,7 +16,7 @@ test('website X archive: pre-count, detect duplicates, commit batches, search an
     if(body.includes('LOC X 私人備份驗證內容'))leaked.push(request.url());
   });
   await page.goto('/private-import/',{waitUntil:'domcontentloaded'});
-  await expect(page.getByRole('heading',{name:'私人 X 備份匯入測試'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'私人備份共用匯入工作區'})).toBeVisible();
   await page.getByRole('checkbox',{name:/我了解：這是未加密/}).check();
 
   const input=page.locator('input[type=file]');
