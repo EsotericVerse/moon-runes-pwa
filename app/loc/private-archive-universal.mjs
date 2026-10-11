@@ -70,9 +70,9 @@ function normalize(row,{platform,kind,path,index,conversation}){
     ...(Array.isArray(item.media)?item.media:[]),
     ...(item.uri?[{uri:item.uri}]:[])
   ].map(v=>({uri:txt(v?.uri)||txt(v?.media?.uri)||null})).filter(v=>v.uri).slice(0,200);
-  if(actualKind==='message'&&text===null&&!attachments.length)
+  if(kind==='message'&&text===null&&!attachments.length)
     return {error:'訊息沒有文字或可辨識附件'};
-  if(actualKind==='post'&&text===null&&!attachments.length)
+  if(kind==='post'&&text===null&&!attachments.length)
     return {error:'貼文沒有可辨識文字或附件'};
   // A previously unseen Meta schema is retained as explicitly unmapped JSON,
   // never silently presented as a successfully mapped post or message.
@@ -115,15 +115,15 @@ function determine(path,prefix){
       return {platform:category(path)==='instagram'?'instagram':'messenger',kind:'message',array:'messages'};
   }
   if(/threads/.test(p)||/"media_product_type"\s*:\s*"THREADS"/.test(head)){
-    return {platform:'threads',kind:'post',array:head.startsWith('[')?'$':rootArray(head,['threads','posts','data','thread_posts','threads_posts','text_post_app_text_posts'])};
+    return {platform:'threads',kind:'post',array:head.startsWith('[')?'$':rootArray(head,['threads','posts','data','thread_posts','threads_posts','text_post_app_text_posts'])||rootArrayAny(head)};
   }
   if(/your_posts|status_updates|facebook_activity|posts_\d+\.json|posts\.json/.test(p)||
     /"status_updates"\s*:/.test(head)){
     const platform=category(path)==='meta'?'facebook':category(path);
-    return {platform,kind:'post',array:head.startsWith('[')?'$':rootArray(head,['status_updates','posts','ig_posts','data'])};
+    return {platform,kind:'post',array:head.startsWith('[')?'$':rootArray(head,['status_updates','posts','ig_posts','data'])||rootArrayAny(head)};
   }
   if(/ig_posts|instagram|media\/posts|content\/posts/.test(p)){
-    return {platform:'instagram',kind:'post',array:head.startsWith('[')?'$':rootArray(head,['ig_posts','posts','data','media'])};
+    return {platform:'instagram',kind:'post',array:head.startsWith('[')?'$':rootArray(head,['ig_posts','posts','data','media'])||rootArrayAny(head)};
   }
   if(head.startsWith('[')){
     const kind=/\/comments?\//.test(p)?'comment':
