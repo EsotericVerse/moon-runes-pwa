@@ -4,7 +4,6 @@ import {UI_COPY} from '../../i18n/ui-copy';
 
 import {FeaturePage} from '../ui';
 import {useScopeRuntime} from '../use-scope-runtime';
-import {scopeHref} from '../scope-registry';
 import {useAccount} from '../../loc/use-account';
 import LocGovernance,{LOC_GOVERNANCE_SUBTITLE} from '../governance/LocGovernance';
 import LunaRunesGovernance,{LUNARUNES_GOVERNANCE_SUBTITLE} from '../governance/LunaRunesGovernance';
@@ -18,20 +17,12 @@ function governanceFor(scopeId){
 }
 
 function GovernanceHome(){
-  const {scopeId,scope}=useScopeRuntime();
+  const {scopeId}=useScopeRuntime();
   const account=useAccount();
   const {View,subtitle}=governanceFor(scopeId);
-  const adminHref=scopeHref('admin');
-  const manageHref=scopeId==='loc'?adminHref:scopeHref(scopeId,'governance/manage');
   const canEdit=account.canManageScopeSync(scopeId);
   return <FeaturePage featureId="governance" subtitle={subtitle}>
     <View scopeId={scopeId} canEdit={canEdit}/>
-    <section className="loc-card governance-management-cta">
-      <h2>{scopeId==='loc'?'LOC 系統管理':String(scope?.label||scopeId)+'管理'}</h2>
-      <div className="scope-preview-links">
-        <a className="loc-button primary" href={manageHref}>{UI_COPY.governance.enterManagement}</a>
-      </div>
-    </section>
   </FeaturePage>;
 }
 
