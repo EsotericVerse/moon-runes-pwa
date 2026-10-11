@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import dynamic from 'next/dynamic';
+import RuneArtStage from '../visual/RuneArtStage';
 import {createPortal} from 'react-dom';
 import {selectRows} from '../../loc/db-query.mjs';
 import {navigationHref} from '../../modular/nav-destinations.mjs';
@@ -10,7 +10,6 @@ import {runeImage,groupImage} from '../rune-directory.mjs';
 import '../skin-lab.css';
 import '../three/rune-world.css';
 
-const RuneWorld=dynamic(()=>import('../three/RuneWorld'),{ssr:false,loading:()=> <p className="rune-world-loading">月之星域正在形成……</p>});
 const GROUP_COLUMNS='group_id,english_name,desc,runeslist';
 const DETAIL_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,char_action,positive_keywords,negative_keywords,extra_rules,extra_notes,rune_evolution_history,myth_story,soul_question,practice_challenge,ritual_advice,harmony_advice';
 const GROUP_NAMES=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
@@ -158,18 +157,18 @@ export default function RuneAtlasLab(){
     <header className="rune-3d-header">
       <p className="loc-eyebrow">LunaRunes · Living Atlas</p>
       <h1>{group?group.name+'之符文':'月之符文 · 九曜星域'}</h1>
-      <p>{group?'符文在星環中恆動。輕觸任一符文，它會回應你的觸摸，原有圖鑑文字隨即浮現。':
-        '九顆群組星球持續環繞月亮。先點選星球閱讀群組說明，再按「進入」查看符文。'}</p>
+      <p>{group?'展示原創符文卡圖。輕觸任一符文，即可閱讀原有圖鑑資料。':
+        '完整呈現九幅群組原創畫作。選擇群組閱讀介紹，再進入該組符文圖鑑。'}</p>
     </header>
     <nav className="rune-3d-toolbar" aria-label="圖鑑視角">
-      {group?<span className="rune-3d-toolbar-label">{group.name}組 · 互動符文星域</span>:<span className="rune-3d-toolbar-label">九大符文群組 · 恆動展示</span>}
+      {group?<span className="rune-3d-toolbar-label">{group.name}組 · 原創符文畫廊</span>:<span className="rune-3d-toolbar-label">九大符文群組 · 原創畫作</span>}
 
     </nav>
-    <section className="rune-3d-stage" aria-label="真實 3D 符文星域">
-      <RuneWorld mode={group?'runes':'groups'} items={display} quality="high"
+    <section className="rune-art-stage" aria-label="九群組與原創符文畫廊">
+      <RuneArtStage mode={group?'runes':'groups'} items={display}
         onSelect={group?show:previewGroup}/>
-      <div className="rune-3d-stage-label">{loading?'星域載入中……':
-        error||(!group?'點選星球閱讀群組說明，再按「進入」查看符文':'輕觸符文，查看原有文字資料')}</div>
+      <div className="rune-art-stage-label" role="status">{loading?'畫作載入中……':
+        error||(!group?'點選群組畫作閱讀介紹，再按「進入」查看符文':'輕觸符文卡面，查看原有文字資料')}</div>
     </section>
     {group?<button type="button" className="rune-3d-floating-back" onClick={backToGroups}
       aria-label="返回九個群組星球"><span aria-hidden="true">←</span> 返回九群組</button>:null}
@@ -200,7 +199,7 @@ export default function RuneAtlasLab(){
         className="rune-3d-group-name-btn" onClick={()=>previewGroup(item)}>{item.name}</button>)}
     </nav>:null}
     <footer className="rune-3d-footer">
-      <span>使用拖曳可變換觀看角度 · 場景始終恆動</span>
+      <span>原創美術展示 · 保留符文原始卡面</span>
       <nav className="rune-skin-controls" aria-label="返回與模式切換">
         <a href={navigationHref('lrunes','',native)} className="rune-skin-btn">回符文首頁</a>
         <a href={navigationHref('lrunes','card',native)} className="rune-skin-btn">← 3D 場域首頁</a>
