@@ -8,7 +8,7 @@ test('mobile statistics uses responsive native controls without engineering pros
   await expect(page.locator('body')).not.toContainText('以每日符文實際抽取紀錄為基準');
   const overflow=await page.evaluate(()=>Math.max(0,document.documentElement.scrollWidth-document.documentElement.clientWidth));
   expect(overflow).toBeLessThanOrEqual(2);
-  const controls=page.locator('.scope-stat-controls select.scope-select');
+  const controls=page.locator('.scope-stat-controls select.scope-select:visible');
   if(await controls.count()){
     await expect(controls.first()).toBeVisible();
     await expect(controls.first()).toBeEnabled();

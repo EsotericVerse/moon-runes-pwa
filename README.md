@@ -1,5 +1,7 @@
 # LOC｜Luna Codex
 
+**Current version: 0.9.4-rc** — iOS navigation and unsigned IPA candidate.
+
 This repository contains two related but separately governed systems:
 
 - **LOC／月典 — Language Architecture Framework**
