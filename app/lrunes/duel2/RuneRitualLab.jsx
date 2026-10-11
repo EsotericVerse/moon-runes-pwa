@@ -4,7 +4,6 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {realMoonPhase} from '../../loc/model/moon-phase';
 import {randomIndex,loadDrawCards,buildFixedReading} from '../RuneDrawClient';
-import {runeImage} from '../rune-directory.mjs';
 import '../skin-lab.css';
 import '../three/rune-world.css';
 
@@ -46,8 +45,7 @@ function officialReading(items){
 const pause=milliseconds=>new Promise(done=>setTimeout(done,milliseconds));
 export default function RuneRitualLab(){
   const [items,setItems]=useState([]);
-  const [quality,setQuality]=useState('high');
-  const [busy,setBusy]=useState(false);
+    const [busy,setBusy]=useState(false);
   const [ready,setReady]=useState(false);
   const [finished,setFinished]=useState(false);
   const [reading,setReading]=useState('');
@@ -105,22 +103,12 @@ export default function RuneRitualLab(){
     </header>
     <nav className="rune-3d-toolbar">
       <span className="rune-3d-toolbar-label">真實月相 {moon}　·　{items.length} / {MAX_DRAW} 枚</span>
-      <label>視覺模式 <select className="rune-skin-quality" value={quality} onChange={e=>setQuality(e.target.value)}>
-        <option value="high">極致 3D</option><option value="standard">標準 3D</option>
-        <option value="static">靜態備援</option>
-      </select></label>
+
     </nav>
     <section className={'rune-3d-stage rune-3d-duel'+(!finished?' rune-3d-tappable':'')}
       aria-label="點觸月光空間逐張抽取符文">
-      {quality!=='static'?<RuneWorld mode="draw" items={items} quality={quality}
+      <RuneWorld mode="draw" items={items} quality="high"
         onBackgroundClick={!finished?drawOne:undefined}/>
-        :<button className="rune-3d-static-wait" type="button" onClick={drawOne} disabled={busy||finished||items.length===MAX_DRAW}>
-          <div className="rune-3d-static-moon">☾</div>
-          <span>輕觸召喚一枚符文</span>
-          <div className="rune-3d-static-grid">{items.map(item=>
-            <figure key={item.card.rune_id}><img src={runeImage(item.card)} alt={item.card.rune_name}/>
-              <figcaption>{item.card.rune_name} · {item.direction}</figcaption></figure>)}</div>
-        </button>}
       <div className="rune-3d-stage-label" role="status">{busy?'符文穿過金色光河，等待亮相……':message}</div>
     </section>
     {error?<p className="rune-skin-error" role="alert">{error}</p>:null}
