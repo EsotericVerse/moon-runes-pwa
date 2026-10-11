@@ -2,8 +2,8 @@ import RuneRitualLab from '../lrunes/duel2/RuneRitualLab';
 import {lunarunesMetadata} from '../seo/metadata';
 
 export const metadata=lunarunesMetadata({
-  title:'3D 符文召喚儀式｜月之符文測試',
-  description:'月之符文逐張召喚與 3D 抽牌效果實驗，獨立於正式抽牌頁。',
+  title:'符文月光召喚儀式｜月之符文測試',
+  description:'以符韻原創畫作逐枚召喚與揭牌，獨立於原有正式抽牌頁。',
   path:'/duel2/',
   noIndex:true
 });
