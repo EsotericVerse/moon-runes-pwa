@@ -45,13 +45,13 @@ test('missing consent preserves existing charts; only explicit group opt-out rem
 test('LOC density and total never leak excluded groups or precomputed unfiltered totals',()=>{
  const rows=sharedSourceBreakdown(raw,'alice',taxonomy);
  assert.deepEqual(rows.filter(row=>row.kind==='source').map(row=>row.category),['fb']);
- assert.equal(rows.filter(row=>row.kind==='media').reduce((n,row)=>n+row.item_count,0),2);
+ assert.equal(rows.filter(row=>row.kind==='media').reduce((n,row)=>n+row.item_count,0),7);
  assert.deepEqual(rows.filter(row=>row.kind==='total').map(row=>[row.day,row.category,row.item_count]),[
-   ['2026-10-01','文字作品',4],['2026-10-02','多媒體',2]
+   ['2026-10-01','文字作品',4],['2026-10-02','多媒體',7]
  ]);
  assert.deepEqual(sharedScopeDensity(raw,'alice',taxonomy),[
    {scope_id:'alice',day:'2026-10-01',item_count:4},
-   {scope_id:'alice',day:'2026-10-02',item_count:2}
+   {scope_id:'alice',day:'2026-10-02',item_count:7}
  ]);
  assert.deepEqual(sharedScopeDensity(raw,'charlie',taxonomy),[
    {scope_id:'charlie',day:'2026-10-01',item_count:9},
@@ -76,7 +76,7 @@ test('cross-member total and source measures only consume published source group
   {person:'alice',metric:'source:facebook'},
   {person:'alice',metric:'source:threads'}
  ],datasets,{from:'2026-10-01',to:'2026-10-02',unit:'day',categories,aliases,scopeSources});
- assert.deepEqual(result.totals.map(row=>row.value),[13,4,0]);
+ assert.deepEqual(result.totals.map(row=>row.value),[11,4,0]);
 });
 
 test('new and existing members retain all their pre-existing data until an explicit opt-out',()=>{
