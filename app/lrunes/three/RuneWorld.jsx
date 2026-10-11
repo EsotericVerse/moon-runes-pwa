@@ -58,7 +58,7 @@ function makeGlyphGeometry(font,text){
   if(!shapes.length)return null;
   const geometry=new THREE.ExtrudeGeometry(shapes,{
     depth:63,steps:1,bevelEnabled:true,bevelThickness:18,bevelSize:12,
-    bevelSegments:3,curveSegments:4
+    bevelSegments:6,curveSegments:12
   });
   geometry.computeBoundingBox();
   const box=geometry.boundingBox;
@@ -74,16 +74,45 @@ function useFont(){
   useEffect(()=>{let active=true;loadRuneFont().then(value=>{if(active)setFont(value);});return()=>{active=false;};},[]);
   return font;
 }
+// 1024px procedural moon albedo and bump texture: avoid an untextured,
+ // flat grey sphere on a high-resolution screen.
+function moonSurfaceTexture(){
+  const size=1024,canvas=document.createElement('canvas');
+  canvas.width=size;canvas.height=size;
+  const ctx=canvas.getContext('2d');
+  if(!ctx)return null;
+  ctx.fillStyle='#cfd3df';ctx.fillRect(0,0,size,size);
+  let seed=91286431;
+  const rand=()=>{seed=(1664525*seed+1013904223)>>>0;return seed/4294967296;};
+  for(let i=0;i<460;i++){
+    const x=rand()*size,y=rand()*size;
+    const radius=(rand()<.86?3+rand()*21:30+rand()*72);
+    const shadow=ctx.createRadialGradient(x-radius*.17,y-radius*.16,radius*.08,x,y,radius);
+    shadow.addColorStop(0,'rgba(92,100,123,.34)');
+    shadow.addColorStop(.62,'rgba(102,111,133,.16)');
+    shadow.addColorStop(.79,'rgba(233,233,243,.20)');
+    shadow.addColorStop(.93,'rgba(235,236,246,.12)');
+    shadow.addColorStop(1,'rgba(182,195,215,0)');
+    ctx.fillStyle=shadow;ctx.beginPath();ctx.arc(x,y,radius,0,Math.PI*2);ctx.fill();
+  }
+  const texture=new THREE.CanvasTexture(canvas);
+  texture.colorSpace=THREE.SRGBColorSpace;
+  texture.anisotropy=8;
+  return texture;
+}
 function Moon({onTap}){
   const sphere=useRef();
+  const surface=useMemo(()=>typeof document==='undefined'?null:moonSurfaceTexture(),[]);
+  useEffect(()=>()=>surface?.dispose(),[surface]);
   useFrame(({clock})=>{
     if(sphere.current)sphere.current.rotation.y=clock.elapsedTime*.017;
   });
   return <group position={[0,.1,-.65]} onClick={e=>{e.stopPropagation();onTap?.();}}>
     <mesh ref={sphere}>
       <sphereGeometry args={[1.04,128,128]}/>
-      <meshPhysicalMaterial color="#dedaf5" roughness={.56} metalness={.07} clearcoat={.18}
-        emissive="#7274af" emissiveIntensity={.38}/>
+      <meshPhysicalMaterial map={surface} bumpMap={surface} bumpScale={.038}
+        color="#eeebff" roughness={.78} metalness={.04} clearcoat={.15}
+        emissive="#454969" emissiveIntensity={.24}/>
     </mesh>
     <mesh scale={1.23}>
       <sphereGeometry args={[1.03,36,36]}/>
