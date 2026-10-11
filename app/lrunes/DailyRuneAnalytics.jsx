@@ -180,7 +180,6 @@ export function LrunesDailyStatisticsPanel(){
         </select>
       </label>
     </div>
-    <StatisticsZoomControls level={zoomLevel} onChange={value=>{setZoomLevel(value);setPage(1);}} range={zoomRange}/>
     {message?<p className="scope-status">{message}</p>:null}
     {!message?<>
       <p className="scope-status">{range.startDate} ～ {range.endDate} · {summary.dayCount} 個紀錄日 · {summary.recordCount} 筆抽取 · {analysisMode==='direction'?'四種位向（含零次）':ranking.length+' 種實際出現的組合'}</p>
@@ -196,17 +195,19 @@ export function LrunesDailyStatisticsPanel(){
         <span className="scope-status">第 {pagination.currentPage} / {pagination.totalPages} 頁（每頁 8 筆）</span>
         <button type="button" className="loc-button" disabled={pagination.currentPage===pagination.totalPages} onClick={()=>setPage(current=>Math.min(pagination.totalPages,current+1))}>下一頁</button>
       </nav>:null}
-      {selectedChart==='bar'?<ResponsiveContainer width="100%" height={Math.max(220,bars.length*29+50)}>
-        <BarChart data={bars} layout="vertical" margin={{top:8,right:16,bottom:8,left:4}}>
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--loc-line)"/>
-          <XAxis type="number" allowDecimals={false} tick={{fill:'var(--loc-text)'}}/>
-          <YAxis type="category" dataKey="label" width={analysisMode==='triple'?195:analysisMode==='rune_direction'?135:82} tick={{fill:'var(--loc-text)',fontSize:12}}/>
-          <Tooltip contentStyle={{background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)'}}/>
-          <Bar dataKey="value" name="抽取次數" fill="var(--loc-accent)" radius={[0,4,4,0]}/>
-        </BarChart>
-      </ResponsiveContainer>:<StatisticsMultiChart
-        type={selectedChart} rows={timeline} series={runeSeries} distribution={runeCategories} height={360}
-      />}</>:null}
+      <StatisticsZoomControls level={zoomLevel} onChange={value=>{setZoomLevel(value);setPage(1);}} range={zoomRange}>
+        {selectedChart==='bar'?<ResponsiveContainer width="100%" height={Math.max(220,bars.length*29+50)}>
+          <BarChart data={bars} layout="vertical" margin={{top:8,right:16,bottom:8,left:4}}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--loc-line)"/>
+            <XAxis type="number" allowDecimals={false} tick={{fill:'var(--loc-text)'}}/>
+            <YAxis type="category" dataKey="label" width={analysisMode==='triple'?195:analysisMode==='rune_direction'?135:82} tick={{fill:'var(--loc-text)',fontSize:12}}/>
+            <Tooltip contentStyle={{background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)'}}/>
+            <Bar dataKey="value" name="抽取次數" fill="var(--loc-accent)" radius={[0,4,4,0]}/>
+          </BarChart>
+        </ResponsiveContainer>:<StatisticsMultiChart
+          type={selectedChart} rows={timeline} series={runeSeries} distribution={runeCategories} height={360}
+        />}
+      </StatisticsZoomControls></>:null}
     </>:null}
   </>;
 }
