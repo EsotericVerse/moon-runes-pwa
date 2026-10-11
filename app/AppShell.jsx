@@ -19,7 +19,7 @@ import {navigationHref} from './modular/nav-destinations.mjs';
 import BottomNavIcon from './modular/BottomNavIcon';
 import ScrollableScopeNav from './modular/ScrollableScopeNav';
 import {visibleFavoriteLayout} from './modular/favorite-folders.mjs';
-import {MOBILE_HOME_ID,mobileFavoriteEnabled,mobileHomepageEnabled,mobileHomeHref} from './modular/mobile-home-preference.mjs';
+import {MOBILE_HOME_ID,mobileFavoriteEnabled,mobileHomepageChoice,mobileHomeHref} from './modular/mobile-home-preference.mjs';
 
 const SYSTEM_THEME_ID='system-default';
 const DAY_THEME_ID='theme-7';
@@ -209,7 +209,7 @@ export default function AppShell({children}){
   const isSettings=normalizePath(pathname)==='/settings';
   const [native,setNative]=useState(false);
   const [mobileFavorite,setMobileFavorite]=useState(true);
-  const [mobileHome,setMobileHome]=useState(false);
+  const [nativeHomepage,setNativeHomepage]=useState('loc');
   const preferences=useNavigationPreferences();
   const [navDisplayNames,setNavDisplayNames]=useState({});
   const [registryScopes,setRegistryScopes]=useState([]);
@@ -221,7 +221,7 @@ export default function AppShell({children}){
     if(!actual)return;
     const sync=()=>{
       setMobileFavorite(mobileFavoriteEnabled(window.localStorage));
-      setMobileHome(mobileHomepageEnabled(window.localStorage));
+      setNativeHomepage(mobileHomepageChoice(window.localStorage));
     };
     sync();
     window.addEventListener('loc-device-navigation-changed',sync);
@@ -333,13 +333,13 @@ export default function AppShell({children}){
     if(!native||pathname!=='/'||preferences.loading||!registryLoaded)return;
     // Explicit LOC navigation remains possible even with a saved default.
     if(new URLSearchParams(window.location.search).has('loc_direct'))return;
-    if(mobileHome){
+    if(nativeHomepage===MOBILE_HOME_ID){
       window.location.replace(mobileHomeHref(true));return;
     }
-    const target=homeScopeForAccount(preferences.home,preferences.account,
+    const target=nativeHomepage==='lrunes'?'lrunes':homeScopeForAccount(nativeHomepage,preferences.account,
       ['loc',...NAV_SCOPES.map(item=>item.id),...registryScopes.map(item=>item.scope_id)]);
     if(target!=='loc')window.location.replace(navigationHref(target,'',true));
-  },[native,mobileHome,pathname,preferences.loading,preferences.home,preferences.account,registryLoaded,registryScopes]);
+  },[native,nativeHomepage,pathname,preferences.loading,preferences.account,registryLoaded,registryScopes]);
 
 
   return <QueryClientProvider client={client}><UiLocaleProvider locale={activeLocale}>
