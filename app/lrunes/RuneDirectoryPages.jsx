@@ -107,8 +107,8 @@ export function RuneGroupPage({groupId}){
   const {group,error:groupError}=useRuneGroup(groupId);
   const {runes:cards,error:runeError}=useRuneRows(runeNumbersForGroup(groupId));
   const error=groupError||runeError;
-  if(!group&&!error)return <main className="loc-next-main"><section className="loc-view"><p className="loc-note">正在讀取符文群組…</p></section></main>;
-  if(!group)return <main className="loc-next-main"><section className="loc-view"><p className="loc-error" role="alert">{error||'找不到符文群組。'}</p></section></main>;
+  if(!group&&!error)return <main className="loc-next-main"><section className="loc-view"><ContextReturnNav scopeId="lrunes" path="list" label="回符文圖鑑"/><p className="loc-note">正在讀取符文群組…</p></section></main>;
+  if(!group)return <main className="loc-next-main"><section className="loc-view"><ContextReturnNav scopeId="lrunes" path="list" label="回符文圖鑑"/><p className="loc-error" role="alert">{error||'找不到符文群組。'}</p></section></main>;
   return <main className="loc-next-main"><section className="loc-view">
     <ContextReturnNav scopeId="lrunes" path="list" label="回符文圖鑑"/>
     <header className="loc-hero loc-hero-context"><p className="loc-eyebrow">第 {group.id} 組</p><h1>{group.name}組</h1><p className="loc-subtitle">{group.description}</p></header>
@@ -130,8 +130,8 @@ export function RuneDetailPage({groupId,runeId}){
   const {group,error:groupError}=useRuneGroup(groupId);
   const {card,error:runeError}=useRuneDetail(runeNumber);
   const error=groupError||runeError;
-  if((!group||!card)&&!error)return <main className="loc-next-main"><section className="loc-view"><p className="loc-note">正在讀取符文…</p></section></main>;
-  if(!group||!card)return <main className="loc-next-main"><section className="loc-view"><p className="loc-error" role="alert">{error||'找不到對應符文。'}</p></section></main>;
+  if((!group||!card)&&!error)return <main className="loc-next-main"><section className="loc-view"><ContextReturnNav scopeId="lrunes" path="list" label="回符文圖鑑"/><p className="loc-note">正在讀取符文…</p></section></main>;
+  if(!group||!card)return <main className="loc-next-main"><section className="loc-view"><ContextReturnNav scopeId="lrunes" path="list" label="回符文圖鑑"/><p className="loc-error" role="alert">{error||'找不到對應符文。'}</p></section></main>;
   return <main className="loc-next-main"><section className="loc-view">
     <nav className="scope-context-return scope-preview-links" aria-label="返回群組">
       <a className="loc-button" href={listHref(`${group.id}/`)}>← 回{group.name}組</a>
