@@ -2,9 +2,11 @@
 
 import {useEffect,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
+import {createPortal} from 'react-dom';
 import {realMoonPhase} from '../../loc/model/moon-phase';
 import {randomIndex,loadDrawCards,buildFixedReading} from '../RuneDrawClient';
 import {runeImage} from '../rune-directory.mjs';
+import RuneCardInfo from '../RuneCardInfo';
 import '../skin-lab.css';
 import '../three/rune-world.css';
 
@@ -12,7 +14,6 @@ const RuneWorld=dynamic(()=>import('../three/RuneWorld'),{ssr:false,loading:()=>
 const MAX_DRAW=11;
 const REVEAL_MS=1000;
 const DIRECTIONS=['正位','半正位','半逆位','逆位'];
-const SHORT_TEXT_TYPES=['direction','sit_q','sit_a','lots'];
 function realText(card,type,directionIndex){
   return String(card?.rune_etc?.[type]?.[directionIndex+1]||'').trim();
 }
@@ -31,50 +32,27 @@ function officialReading(items){
     throw new Error('組合籤詩內容不完整，請重試。');
   return sentence;
 }
-function lotSections(card,index){
-  const source=realText(card,'lots',index);
-  const labels=['愛情','事業','關係','健康'];
-  return labels.map((label,i)=>{
-    const begin=source.indexOf(label+'：');
-    if(begin<0)return {label,text:''};
-    const start=begin+label.length+1;
-    const following=labels.slice(i+1).map(next=>source.indexOf(next+'：',start)).filter(x=>x>=0);
-    const end=following.length?Math.min(...following):source.length;
-    return {label,text:source.slice(start,end).trim().replace(/[。；\s]+$/,'')};
-  }).filter(item=>item.text);
-}
-function RuneDrawCardDialog({item,card,loading,error,onClose}){
+// This is exactly the same silver.runes "card basic information" UI used
+// in the accepted original draw. NO runes_etc content or queries in this dialog.
+function RuneDrawCardDialog({item,onClose}){
   useEffect(()=>{
     const close=e=>{if(e.key==='Escape')onClose();};
     window.addEventListener('keydown',close);
     return()=>window.removeEventListener('keydown',close);
   },[onClose]);
-  const fields=card?[
-    ['位向說明',realText(card,'direction',item.directionIndex)],
-    ['狀況形容',realText(card,'sit_q',item.directionIndex)],
-    ['狀況表達',realText(card,'sit_a',item.directionIndex)]
-  ]:[];
-  return <div className="rune-3d-modal-backdrop" role="presentation" onClick={onClose}>
-    <section className="rune-3d-modal" role="dialog" aria-modal="true"
-      aria-label={shortRuneName(item.card)+'符文單卡說明'} onClick={e=>e.stopPropagation()}>
+  const card=item.card;
+  return <div className="rune-3d-modal-backdrop rune-3d-draw-modal-backdrop" role="presentation" onClick={onClose}>
+    <section className="rune-3d-modal rune-3d-draw-modal" role="dialog" aria-modal="true"
+      aria-label={shortRuneName(card)+'符文基本資料'} onClick={e=>e.stopPropagation()}>
       <div className="rune-3d-modal-head">
-        <div><span className="loc-eyebrow">RUNE READING · 單卡內容</span>
-          <h2>{shortRuneName(item.card)}之符文 · {item.direction}</h2></div>
+        <div><span className="loc-eyebrow">RUNE ARCHIVE · 卡片基本資料</span>
+          <h2>{shortRuneName(card)}之符文 · {item.direction}</h2></div>
         <button className="rune-skin-btn" type="button" autoFocus onClick={onClose}>× 關閉</button>
       </div>
-      {loading?<p className="rune-3d-dialog-status">讀取單卡內容中……</p>:null}
-      {error?<p className="rune-skin-error" role="alert">{error}</p>:null}
-      {card?<div className="rune-3d-modal-main">
-        <img src={runeImage(card)} alt={shortRuneName(card)+'原始符文卡'}/>
-        <div className="rune-3d-modal-details">
-          <div><h3>位向與月相</h3>
-            <p>{item.direction} · 真實月相 {item.moon} · 卡片月相 {['','新月','上弦','滿月','下弦'][Number(card.moon_phase)]||'無'}</p></div>
-          {fields.filter(([,value])=>value).map(([label,value])=>
-            <div key={label}><h3>{label}</h3><p>{value}</p></div>)}
-          {lotSections(card,item.directionIndex).map(({label,text})=>
-            <div key={label}><h3>{label}</h3><p>{text}</p></div>)}
-        </div>
-      </div>:null}
+      <div className="rune-3d-modal-main rune-3d-original-card-info">
+        <RuneCardInfo card={card} imageSrc={runeImage(card)}
+          direction={item.direction} realMoonPhase={item.moon} layout="home"/>
+      </div>
     </section>
   </div>;
 }
@@ -91,10 +69,6 @@ export default function RuneRitualLab(){
   const mounted=useRef(true);
   const [moon,setMoon]=useState(()=>realMoonPhase());
   const [selected,setSelected]=useState(null);
-  const [detail,setDetail]=useState(null);
-  const [detailBusy,setDetailBusy]=useState(false);
-  const [detailError,setDetailError]=useState('');
-  const detailCache=useRef(new Map());
   useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;};},[]);
   async function drawOne(){
     if(locked.current||finished||selected||cardsRef.current.length>=MAX_DRAW)return;
@@ -110,15 +84,11 @@ export default function RuneRitualLab(){
     const runeNumber=remaining[randomIndex(remaining.length)];
     const directionIndex=randomIndex(4);
     try{
-      const first=cardsRef.current.length===0;
       const cards=await loadDrawCards([{runeNumber,dir:directionIndex+1}],{
-        staticTypes:first?['direction','lots']:[],
-        moonTypes:first?['sit_q','sit_a']:['sit_q'],
-        currentMoon
+        staticTypes:[],moonTypes:['sit_q'],currentMoon
       });
       const card=cards.find(x=>Number(x.rune_id)===runeNumber);
       if(!card||!realText(card,'sit_q',directionIndex))throw Error('抽中的符文籤詩無法讀取');
-      if(first)detailCache.current.set(runeNumber,card);
       await pause(Math.max(0,REVEAL_MS-(Date.now()-started)));
       if(!mounted.current)return;
       const next=[...cardsRef.current,{
@@ -133,22 +103,9 @@ export default function RuneRitualLab(){
       if(mounted.current)setBusy(false);
     }
   }
-  async function showCard(card){
+  function showCard(card){
     const item=cardsRef.current.find(x=>Number(x.card.rune_id)===Number(card.rune_id));
-    if(!item)return;
-    setSelected(item);setDetailError('');
-    const cached=detailCache.current.get(Number(card.rune_id));
-    if(cached){setDetail(cached);setDetailBusy(false);return;}
-    setDetail(null);setDetailBusy(true);
-    try{
-      const cards=await loadDrawCards([{runeNumber:Number(card.rune_id),dir:item.directionIndex+1}],{
-        staticTypes:['direction','lots'],moonTypes:['sit_q','sit_a'],currentMoon:item.moon
-      });
-      if(!cards[0])throw new Error('找不到單卡內容');
-      detailCache.current.set(Number(card.rune_id),cards[0]);
-      if(mounted.current){setDetail(cards[0]);setDetailError('');}
-    }catch(e){if(mounted.current)setDetailError('讀取單卡失敗：'+String(e?.message||e));}
-    finally{if(mounted.current)setDetailBusy(false);}
+    if(item)setSelected(item);
   }
   function finish(){
     if(locked.current||busy||finished||selected||!cardsRef.current.length)return;
@@ -159,7 +116,7 @@ export default function RuneRitualLab(){
   }
   function reset(){
     if(locked.current)return;
-    cardsRef.current=[];detailCache.current.clear();setItems([]);setSelected(null);setDetail(null);setFinished(false);
+    cardsRef.current=[];setItems([]);setSelected(null);setFinished(false);
     setReading('');setError('');setMessage('月光已就位，輕觸畫面召喚一枚符文');
   }
   return <main className="loc-next-main rune-skin-lab rune-3d-shell" data-rune-lab="duel2">
@@ -177,14 +134,17 @@ export default function RuneRitualLab(){
       <RuneWorld mode="draw" items={items} quality="high"
         onSelect={showCard} onBackgroundClick={!finished&&!selected?drawOne:undefined}/>
       <div className="rune-3d-stage-label" role="status">{busy?'符文穿過金色光河，等待亮相……':message}</div>
+      {!finished&&items.length>0?<button type="button" className="rune-3d-finish-button"
+        onClick={finish} disabled={busy||!!selected} aria-label="結束抽牌並顯示組合籤詩">
+        結束抽牌 · 查看籤詩 <span aria-hidden="true">↗</span>
+      </button>:null}
     </section>
     {error?<p className="rune-skin-error" role="alert">{error}</p>:null}
     <div className="rune-3d-footer">
       <div className="rune-skin-controls">
-        {!finished?<button type="button" className="rune-skin-btn primary" onClick={drawOne} disabled={busy||!!selected||items.length>=MAX_DRAW}>
+        {!finished?<button type="button" className={'rune-skin-btn'+(!items.length?' primary':'')} onClick={drawOne} disabled={busy||!!selected||items.length>=MAX_DRAW}>
           {busy?'召喚中…':items.length?'再召喚一枚':'觸碰召喚'}
         </button>:null}
-        {!finished?<button className="rune-skin-btn" type="button" onClick={finish} disabled={busy||!!selected||!items.length}>結束抽牌</button>:null}
         {finished?<button className="rune-skin-btn primary" type="button" onClick={reset}>重新開始</button>:null}
       </div>
       <nav className="rune-skin-controls" aria-label="返回與模式切換">
@@ -200,7 +160,8 @@ export default function RuneRitualLab(){
         {items.map((item,index)=><span key={item.card.rune_id}>{index?'、':''}{shortRuneName(item.card)}{item.direction}</span>)}。</p>
       <p>指示籤詩為：{reading}</p>
     </section>:null}
-    {selected?<RuneDrawCardDialog item={selected} card={detail} loading={detailBusy}
-      error={detailError} onClose={()=>{setSelected(null);setDetail(null);setDetailError('');}}/>:null}
+    {selected&&typeof document!=='undefined'?createPortal(
+      <RuneDrawCardDialog item={selected} onClose={()=>setSelected(null)}/>,document.body
+    ):null}
   </main>;
 }
