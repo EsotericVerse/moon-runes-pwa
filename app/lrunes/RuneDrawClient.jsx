@@ -41,7 +41,40 @@ function drawRuneSession(items,count){
 
 function directionNo(direction){return RUNE_DIRECTIONS.indexOf(direction)+1;}
 
+// Multi-card draws read exactly one sit_q for each drawn rune, in draw order.
+async function loadVerseOnlyCards(pairs,currentMoon){
+  if(!currentMoon||currentMoon==='未知')throw new Error('真實月相無法辨識，無法查詢組合籤詩。');
+  const ids=pairs.map(pair=>Number(pair.runeNumber));
+  const base=await selectRows('silver.runes',{
+    columns:RUNE_COLUMNS,
+    filters:[{column:'rune_id',operator:'in',value:ids}],
+    limit:ids.length,offset:0
+  });
+  const cardsById=new Map((base.rows||[]).map(card=>[Number(card.rune_id),card]));
+  const cards=[];
+  for(const pair of pairs){
+    const runeId=Number(pair.runeNumber),dir=Number(pair.dir);
+    const card=cardsById.get(runeId);
+    if(!card)throw new Error('抽中的符文資料不完整：'+runeId);
+    const {rows}=await selectRows('silver.runes_etc',{
+      columns:'desc',
+      filters:[
+        {column:'rune_id',operator:'eq',value:runeId},
+        {column:'dir',operator:'eq',value:dir},
+        {column:'type',operator:'eq',value:'sit_q'},
+        {column:'current_moon',operator:'eq',value:currentMoon}
+      ],
+      limit:1,offset:0,source:base.dataSource||'auto'
+    });
+    const verse=String(rows?.[0]?.desc||'').trim();
+    if(!verse)throw new Error('組合籤詩缺少 sit_q：符文 '+runeId+'、位向 '+dir+'、月相 '+currentMoon);
+    cards.push({...card,rune_etc:{sit_q:{[dir]:verse}}});
+  }
+  return cards;
+}
+
 async function loadDrawCards(pairs,{staticTypes=[],moonTypes=[],currentMoon=''}) {
+  if(!staticTypes.length&&moonTypes.length===1&&moonTypes[0]==='sit_q')return loadVerseOnlyCards(pairs,currentMoon);
   const ids=[...new Set(pairs.map(item=>Number(item.runeNumber)))];
   const pairFilter=pairs.map(item=>`and(rune_id.eq.${Number(item.runeNumber)},dir.eq.${Number(item.dir)})`).join(',');
   const staticPromise=staticTypes.length?selectRows('silver.runes_etc',{
