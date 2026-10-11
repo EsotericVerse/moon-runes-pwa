@@ -79,6 +79,40 @@
 @keyframes scope-load-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 @media(prefers-reduced-motion:reduce){.scope-load-sentinel button{animation:none}}
 .scope-stat-controls{display:flex;gap:.75rem;flex-wrap:wrap;align-items:end;margin:0 0 1rem}
+/* Chart zoom is part of the visualization, NOT the source/chart selector. */
+.scope-stat-chart-frame{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 44px;
+  align-items:start;
+  gap:clamp(.25rem,.8vw,.65rem);
+  width:100%;
+  min-width:0;
+}
+.scope-stat-chart-frame__canvas{min-width:0;width:100%}
+.scope-stat-zoom-rail{
+  display:flex;
+  flex-direction:column;
+  gap:.45rem;
+  width:44px;
+  margin-top:.6rem;
+  align-self:start;
+}
+.scope-stat-zoom-rail .loc-button{
+  display:grid;
+  place-items:center;
+  min-width:44px;
+  width:44px;
+  min-height:44px;
+  padding:0;
+  font-size:1.35rem;
+  line-height:1;
+  font-weight:650;
+}
+.scope-stat-zoom-rail .loc-button:disabled{cursor:not-allowed}
+@media(max-width:480px){
+  .scope-stat-chart-frame{grid-template-columns:minmax(0,1fr) 44px;gap:.2rem}
+}
+
 .scope-stat-controls label{display:grid;gap:.35rem;min-width:10rem}
 .scope-stat-controls label>span{color:var(--scope-muted);font-size:.82rem}
 .scope-select{padding:.55rem .75rem;}
