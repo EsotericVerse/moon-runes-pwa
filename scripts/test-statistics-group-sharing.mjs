@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
- sharedGroupCodes,canParticipateInCrossStatistics,sharedSourceBreakdown,sharedScopeDensity
+ sharedGroupCodes,canParticipateInCrossStatistics,canOfferMemberCrossStatistics,allowedMemberMetric,sharedSourceBreakdown,sharedScopeDensity
 } from '../app/loc/statistics-group-sharing.mjs';
 import {calculateMemberCross} from '../app/loc/member-intersection-model.mjs';
 
@@ -90,4 +90,27 @@ test('new and existing members retain all their pre-existing data until an expli
    ...taxonomy,permissions:[{scope_id:'alice',category_code:'threads',share_enabled:true}]
  });
  assert.deepEqual(restored,baseline);
+});
+
+test('LOC always offers Lunarunes daily rune as independent comparison material',()=>{
+  const denied=categories.map(group=>({scope_id:'lrunes',category_code:group.category_code,share_enabled:false}));
+  const restrictive={categories,aliases,scopeSources,permissions:denied};
+  assert.equal(canParticipateInCrossStatistics('lrunes',denied,categories),false);
+  assert.equal(canOfferMemberCrossStatistics('lrunes',denied,categories),true);
+  assert.equal(canOfferMemberCrossStatistics('alice',denied,categories),true);
+  assert.equal(allowedMemberMetric('lrunes','daily',restrictive),true);
+  assert.equal(allowedMemberMetric('lrunes','daily:direction:正位',restrictive),true);
+  assert.equal(allowedMemberMetric('lrunes','total',restrictive),false);
+  assert.equal(allowedMemberMetric('lrunes','source:facebook',restrictive),false);
+  assert.equal(allowedMemberMetric('alice','daily',restrictive),false);
+  const datasets=new Map([['lrunes',{rows:sharedSourceBreakdown(raw,'lrunes',restrictive),daily:[
+    {record_date:'2026-10-01',draw_kind:'main',direction:'正位',phase:'新月'},
+    {record_date:'2026-10-02',draw_kind:'supplement',direction:'逆位',phase:'滿月'}
+  ]}]]);
+  const result=calculateMemberCross([
+    {person:'lrunes',metric:'daily',label:'每日符文'},
+    {person:'lrunes',metric:'daily:direction:正位',label:'正位'}
+  ],datasets,{from:'2026-10-01',to:'2026-10-03',unit:'day',categories,aliases,scopeSources});
+  assert.deepEqual(result.totals.map(t=>t.value),[2,1]);
+  assert.deepEqual(result.rows.map(row=>row.line0),[1,1,0]);
 });
