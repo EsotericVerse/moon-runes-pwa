@@ -38,23 +38,26 @@
 .rune-art-tile-num{font-size:.7rem;letter-spacing:.08em;color:#deb98a;}
 
 /* Canonical nine-group metadata: subordinate to the original artwork. */
-.rune-art-group-tile{display:flex;flex-direction:column;}
+.rune-art-group-tile{display:flex;flex-direction:column;
+  color:#f7ecde;background:linear-gradient(140deg,#332945,#18182c 58%,#11152a);
+  text-shadow:0 1px 2px #050615a8;}
+.rune-art-group-tile .rune-art-tile-caption strong{color:#fff0d7;}
 .rune-art-group-tile>.rune-art-tile-caption{width:100%;}
 .rune-art-group-summary{display:flex;flex:1;flex-direction:column;gap:9px;
   min-width:0;padding:0 12px 13px;text-align:left;}
-.rune-art-group-english{display:block;color:#dfc58f;font-size:.86rem;line-height:1.35;
+.rune-art-group-english{display:block;color:#ffe0a5;font-size:.86rem;line-height:1.35;
   font-weight:650;letter-spacing:.11em;overflow-wrap:anywhere;}
-.rune-art-group-blurb{display:block;color:#e8e0ee;font-size:.87rem;
+.rune-art-group-blurb{display:block;color:#f1e8f6;font-size:.87rem;
   line-height:1.7;overflow-wrap:anywhere;}
 .rune-art-group-facts{display:flex;align-items:center;gap:6px 8px;flex-wrap:wrap;
   margin-top:auto;padding-top:4px;}
 .rune-art-group-trait,.rune-art-group-style-tag,.rune-art-group-count-tag{display:inline-flex;
   align-items:baseline;gap:5px;max-width:100%;padding:5px 8px;border-radius:9px;
-  border:1px solid #dbc49952;background:#171a33;color:#ecddca;
+  border:1px solid #dbc49973;background:#1f223b;color:#f4e9dc;
   font-size:.74rem;line-height:1.4;overflow-wrap:anywhere;}
-.rune-art-group-style-tag{border-color:#b7a6dd55;background:#26253d;color:#e0d5f1;}
-.rune-art-group-count-tag{color:#f3d89d;border-color:#e3c28657;background:#4d382b5c;}
-.rune-art-fact-label{font-size:.67rem;font-weight:700;color:#dbb87c;white-space:nowrap;}
+.rune-art-group-style-tag{border-color:#b7a6dd80;background:#2a2944;color:#f0e5ff;}
+.rune-art-group-count-tag{color:#ffdfa2;border-color:#e9cd9080;background:#403024;}
+.rune-art-fact-label{font-size:.67rem;font-weight:700;color:#ffe1a4;white-space:nowrap;}
 
 .rune-art-ritual{position:relative;isolation:isolate;min-height:clamp(560px,68vh,760px);
   padding:clamp(22px,3vw,46px);display:flex;flex-direction:column;align-items:center;
@@ -91,7 +94,7 @@
 .rune-art-empty-hint{color:#f6e3c1;text-align:center;font-size:.94rem;line-height:1.6;
   text-shadow:0 1px 9px #000a;}
 
-.rune-art-empty{display:flex;align-items:center;flex:1;justify-content:center;flex-direction:column;
+.rune-art-empty{display:flex;align-items:center;flex:1;justify-content:center;flex-direction:column;width:100%;
   min-height:300px;position:relative;z-index:1;gap:19px;}
 .rune-art-empty-ring{width:clamp(140px,23vw,230px);aspect-ratio:1;border:1px solid #ecd5ac9e;border-radius:50%;
   display:grid;place-items:center;color:#fff1d8;font:clamp(6rem,13vw,10rem)/1 serif;
@@ -128,6 +131,7 @@
 .rune-art-reveal-title{display:flex;flex-direction:column;align-items:center;gap:5px;margin:9px 0 12px;
   color:#f9ddad;text-shadow:0 1px 8px #000c;font-size:.88rem;letter-spacing:.08em;}
 .rune-art-reveal-title strong{font:750 clamp(1.25rem,2.8vw,1.8rem)/1.4 "Noto Serif TC","Songti TC",serif;color:#fff5d9;}
+.rune-art-direction-label{display:block;color:#ffdfad;font-size:.99rem;font-weight:700;}
 .rune-art-history{position:relative;z-index:2;width:100%;display:flex;justify-content:center;gap:10px;
   overflow-x:auto;padding:12px 6px 14px;scrollbar-width:thin;scrollbar-color:#bd9c76 #18182b;}
 .rune-art-history-item{min-width:78px;max-width:120px;width:clamp(80px,12%,120px);
