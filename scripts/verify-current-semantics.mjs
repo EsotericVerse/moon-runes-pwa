@@ -120,7 +120,12 @@ if(!failures.length){
      !statistics.includes("queryKey:['statistics-source-taxonomy']")||
      !sourceTaxonomy.includes("assignedSource(")||
      !sourceEditor.includes('AdminSourceCategories')||
-     !sourceEditor.includes('ScopeOtherSources')||
+     !sourceEditor.includes('ScopeCustomSourceCategories')||
+     !sourceEditor.includes('silver.scope_source_subcategories')||
+     !statistics.includes('source_custom')||
+     !statistics.includes('<ScopeCustomSourceCategories')||
+     !crossMember.includes("scope_source_subcategories")||
+     !ownIntersection.includes("scope_source_subcategories")||
      !crossMember.includes("availableMemberMeasures")||
      !ownIntersection.includes("kind:'group'")){
     failures.push('Global source classes, member-level Others and cross-member analytics must share real data.');
