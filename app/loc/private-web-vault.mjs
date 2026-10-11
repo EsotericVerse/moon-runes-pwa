@@ -48,7 +48,19 @@ export async function stageWebRecords(db,id,records){
   if(!records.length)return;
   const tx=db.transaction('staging','readwrite');
   const target=tx.objectStore('staging');
-  for(const record of records)target.put({...record,key:id+'/'+record.key,sessionId:id,recordKey:record.key});
+  for(const record of records){
+    const key=id+'/'+record.key;
+    const lookup=target.get(key);
+    lookup.onsuccess=()=>{
+      const old=lookup.result;
+      if(!old)target.put({...record,key,sessionId:id,recordKey:record.key});
+      else if(old.text!==record.text||old.originalTimestamp!==record.originalTimestamp||
+        String(old.replyTo||'')!==String(record.replyTo||'')){
+        // Never silently replace an earlier value with the same platform ID.
+        target.put({...old,archiveConflict:true});
+      }
+    };
+  }
   await completed(tx);
 }
 export async function setWebImportPreview(db,id,summary){
@@ -95,7 +107,7 @@ export async function removeWebDraft(db,id){
 export async function planWebImport(db,id){
   const tx=db.transaction(['staging','records'],'readonly');
   const records=tx.objectStore('records'),index=tx.objectStore('staging').index('sessionId');
-  const plan={staged:0,newCount:0,identical:0,conflicts:0,batchSize:100,batches:0};
+  const plan={staged:0,newCount:0,identical:0,conflicts:0,withinConflicts:0,batchSize:100,batches:0};
   const cursor=index.openCursor(IDBKeyRange.only(id));
   await new Promise((resolve,reject)=>{
     cursor.onerror=()=>reject(fail(cursor));
@@ -104,6 +116,9 @@ export async function planWebImport(db,id){
       if(!row){resolve();return;}
       plan.staged++;
       const pending=row.value;
+      if(pending.archiveConflict){
+        plan.withinConflicts++;row.continue();return;
+      }
       const lookup=records.get(pending.recordKey);
       lookup.onerror=()=>reject(fail(lookup));
       lookup.onsuccess=()=>{
@@ -139,6 +154,9 @@ export async function confirmWebImport(db,id,onProgress,batchSize=BATCH){
         if(!row||handled>=limit)return;
         handled++;
         const item=row.value;
+        if(item.archiveConflict){
+          changed++;row.delete();row.continue();return;
+        }
         const existing=records.get(item.recordKey);
         existing.onerror=()=>tx.abort();
         existing.onsuccess=()=>{
