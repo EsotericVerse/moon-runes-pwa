@@ -20,7 +20,7 @@ import {putSetting} from './user-storage';
 import {DEFAULT_FAVORITES,FAVORITES_SETTING_KEY,HOME_SETTING_KEY,homeScopeForAccount,serializeFavorites,validScopeId} from '../modular/navigation-preferences.mjs';
 import {navigationHref} from '../modular/nav-destinations.mjs';
 import {FOLDERS_SETTING_KEY,MAX_FOLDERS,cleanFolderName,normalizeFavoriteFolders,serializeFavoriteFolders} from '../modular/favorite-folders.mjs';
-import {MOBILE_HOME_ID,MOBILE_HOME_STORAGE_KEY,MOBILE_FAVORITE_STORAGE_KEY,mobileFavoriteEnabled,mobileHomepageEnabled} from '../modular/mobile-home-preference.mjs';
+import {MOBILE_HOME_ID,MOBILE_HOME_STORAGE_KEY,mobileFavoriteEnabled,mobileHomepageChoice} from '../modular/mobile-home-preference.mjs';
 
 const DEFAULT_CHOICES=[
   {id:'lrunes',label:'月之符文'},
@@ -61,7 +61,7 @@ export default function GlobalSettings(){
     setNative(actual);
     if(actual){
       setMyPhoneFavorite(mobileFavoriteEnabled(window.localStorage));
-      if(mobileHomepageEnabled(window.localStorage))setHome(MOBILE_HOME_ID);
+      setHome(mobileHomepageChoice(window.localStorage));
     }
   },[]);
   useEffect(()=>{
@@ -73,7 +73,7 @@ export default function GlobalSettings(){
   },[]);
   useEffect(()=>{
     if(prefs.loading)return;
-    setHome(native&&mobileHomepageEnabled(window.localStorage)?MOBILE_HOME_ID:(validScopeId(prefs.home)||'loc'));
+    setHome(native?mobileHomepageChoice(window.localStorage):(validScopeId(prefs.home)||'loc'));
     setFavorites([...prefs.favorites]);
     setFolders(prefs.folders.map(folder=>({...folder,scopes:[...folder.scopes]})));
   },[prefs.home,prefs.favorites.join(','),prefs.loading,identity,native]);
@@ -91,7 +91,7 @@ export default function GlobalSettings(){
   },[registry]);
   const allowedHomes=useMemo(()=>{
     const assigned=new Set(account.authorizer?.scopeIds||[]);
-    const visible=choices.filter(item=>item.id==='loc'||(
+    const visible=choices.filter(item=>item.id==='loc'||(native&&item.id==='lrunes')||(
       account.user&&(account.canManageGlobalSync()||assigned.has(item.id))
     ));
     if(native)visible.push({id:MOBILE_HOME_ID,label:'我的手機（本機）'});
@@ -108,13 +108,12 @@ export default function GlobalSettings(){
     setBusy('home');setStatus('');
     try{
       if(native){
-        if(home===MOBILE_HOME_ID)window.localStorage.setItem(MOBILE_HOME_STORAGE_KEY,MOBILE_HOME_ID);
-        else window.localStorage.removeItem(MOBILE_HOME_STORAGE_KEY);
+        const requested=allowedHomes.some(item=>item.id===home)?home:'loc';
+        window.localStorage.setItem(MOBILE_HOME_STORAGE_KEY,requested);
         window.dispatchEvent(new Event('loc-device-navigation-changed'));
-        if(home===MOBILE_HOME_ID||!account.user){
-          setStatus('手機預設首頁已保存於此裝置，不影響網站設定。');
-          return;
-        }
+        setHome(requested);
+        setStatus('手機預設首頁已保存於此裝置，不會修改網站首頁設定。');
+        return;
       }
       const chosen=homeScopeForAccount(home,account,allowedHomes.map(item=>item.id));
       await putSetting(HOME_SETTING_KEY,chosen);
