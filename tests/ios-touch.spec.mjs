@@ -36,7 +36,7 @@ test('iOS WebKit draws show a recognized real Taipei moon phase',async({page,bro
   test.skip(browserName!=='webkit','iOS-specific Intl Chinese calendar coverage');
   await page.goto('/duel/daily/',{waitUntil:'domcontentloaded'});
   await expect(page.locator('body')).toContainText(
-    /真實月相[：:]\\s*(?:新月|上弦|滿月|下弦|空亡)/,
+    /真實月相[：:]\s*(?:新月|上弦|滿月|下弦|空亡)/,
     {timeout:15_000}
   );
   await expect(page.locator('body')).not.toContainText('真實月相無法辨識');
