@@ -411,7 +411,7 @@ export default function RuneDrawClient({drawKey='single',embedded=false,canSave=
         <>
           {ritualStep>=0&&<section className="loc-card runes-ritual" data-draw-stage="ritual" data-draw-mode={drawKey} aria-live="polite">
             <div className="runes-ritual-card">
-              <img src="/assets/lunarunes/cards/65_玄.png" alt="玄之符文"/>
+              <img src={runeImage({rune_id:65})} alt="玄之符文"/>
               <strong>玄之符文</strong>
             </div>
             <div className="runes-ritual-copy">

@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
+import {runeImage} from '../rune-directory.mjs';
 import {useQuery} from '@tanstack/react-query';
 import Select from 'react-select';
 import {AnimatePresence,motion} from 'motion/react';
@@ -211,12 +212,7 @@ function ReplayTimeline({logs=[],selectedLogIndex=null,onSelect=null}){
   </section>;
 }
 
-function runeCardImage(card){
-  const id=Number(card?.id??card?.rune_id??card?.rune_number);
-  const number=String(Number.isFinite(id)?id:0).padStart(2,'0');
-  const name=String(card?.name??card?.rune_name??'').replace(/之符文$/,'').trim();
-  return name?'/assets/lunarunes/cards/'+number+'_'+name+'.png':'';
-}
+const runeCardImage=runeImage;
 
 function groupVisual(groupAssets,groupName){
   return groupAssets.find(item=>item.group===groupName)||null;

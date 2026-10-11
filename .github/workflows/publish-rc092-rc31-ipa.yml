@@ -71,7 +71,7 @@ jobs:
         run: |
           npm run build
           test -f out/index.html
-      - name: Rewrite only iOS rune card filenames to ASCII
+      - name: Validate permanent numeric Rune card assets (no rewriting)
         run: python3 scripts/prepare-ios-static-assets.py out
       - name: Generate ephemeral Capacitor iOS shell
         run: |

@@ -10,9 +10,11 @@ export function groupImage(id){return GROUP_IMAGE_BY_ID[String(id).padStart(2,'0
 export function groupPreviewImage(id){return groupImage(id);}
 
 export function runeName(card){return String(card?.rune_name||'').replace(/之符文$/,'').trim();}
+// Rune ID is the only canonical image identity on both Web and iOS.
 export function runeImage(card){
-  const number=String(Number(card?.rune_id)||0).padStart(2,'0');
-  return `/assets/lunarunes/cards/${number}_${runeName(card)}.png`;
+  const id=Number(card?.rune_id??card?.id??card?.rune_number);
+  if(!Number.isInteger(id)||id<1||id>66)return '';
+  return `/assets/lunarunes/cards/${String(id).padStart(2,'0')}.png`;
 }
 export function runeNumbersForGroup(groupId){
   const id=Number(groupId);

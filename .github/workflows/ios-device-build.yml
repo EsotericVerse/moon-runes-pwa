@@ -1,20 +1,8 @@
 name: LOC iOS Device Unsigned IPA
 run-name: LOC iOS IPA · main · ${{ github.sha }}
 
+# Manual only: no new IPA until requested by the owner.
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/ios-device-build.yml'
-      - 'capacitor.config.json'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'next.config.mjs'
-      - 'scripts/prepare-ios-static-assets.py'
-      - 'scripts/prepare-ios-app-icon.swift'
-      - 'app/**'
-      - 'assets/**'
-      - 'public/**'
   workflow_dispatch:
 
 permissions:
@@ -49,7 +37,7 @@ jobs:
         run: |
           npm run build
           test -f out/index.html
-      - name: Convert iOS-only rune card URLs and filenames to ASCII
+      - name: Verify numeric source Rune card files (never rewrite)
         run: python3 scripts/prepare-ios-static-assets.py out
       - name: Generate ephemeral iOS project and sync
         run: |

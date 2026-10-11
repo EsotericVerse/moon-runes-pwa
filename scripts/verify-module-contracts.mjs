@@ -53,8 +53,8 @@ for(const path of [
   'app/loc/scope-data.js',
   'app/loc/galaxy-query.js',
   'app/loc/culture-query.js',
-  'assets/lunarunes/cards/65_玄.png',
-  'assets/lunarunes/cards/66_命.png'
+  'assets/lunarunes/cards/65.png',
+  'assets/lunarunes/cards/66.png'
 ]){
   if(!existsSync(resolve(root,path)))failures.push('missing Current module/asset: '+path);
 }

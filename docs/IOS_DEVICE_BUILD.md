@@ -6,13 +6,13 @@ Build the existing LOC 0.9.2 RC static PWA as a native iOS **device-targeted** A
 
 ## Build
 
-- Starting source: latest LOC `main`; PR work is `feat/ios-device-build`.
+- Starting source: LOC `main`. The build runs by manual workflow dispatch while a new IPA is deferred.
 - Workflow: `.github/workflows/ios-device-build.yml`.
 - Uses Node 22, Next.js static export, Capacitor 8 `cap add ios` and `cap sync ios`, Swift Package Manager.
 - Xcode `iphoneos` SDK with `generic/platform=iOS` and `CODE_SIGNING_ALLOWED=NO`.
 - Builds a device **arm64** `App.app` rather than an iOS Simulator binary.
-- As a Windows AltServer compatibility workaround, `scripts/prepare-ios-static-assets.py` changes 66 card image filenames to ASCII numeric IDs (`01.png`–`66.png`) and updates all static and dynamically generated image references **only within the iOS native export**. Web PWA assets and rune names remain unchanged. This includes runtime references from the rune game.
-- CI verifies the resulting IPA has no non-ASCII paths and exactly 66 numeric card PNGs.
+- The repository now permanently stores the 66 original card PNGs as `01.png`–`66.png`. Web and iOS use exactly the same checked-in files, and every card view uses the shared `runeImage(card)` URL builder. `scripts/prepare-ios-static-assets.py` is now read-only validation and must never rename files or alter compiled JavaScript.
+- CI verifies source images, shared Rune URLs, static-export images, then ensures the IPA holds all 66 numerical card PNGs and no legacy card image names.
 - Builds a `Payload/App.app` ZIP archive with `.ipa` extension as a GitHub Actions artifact, retained for 7 days.
 - Does not upload signing credentials, Apple IDs, provisioning profiles, certificates or real device files.
 

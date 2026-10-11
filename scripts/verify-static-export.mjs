@@ -28,6 +28,20 @@ for(const route of [
   '404.html'
 ])requireFile(route);
 
+const cardDirectory=path.join(out,'assets/lunarunes/cards');
+const expectedRuneCards=Array.from({length:66},(_,index)=>String(index+1).padStart(2,'0')+'.png').sort();
+if(!fs.existsSync(cardDirectory))failures.push('missing canonical Rune image directory');
+else{
+  const actual=fs.readdirSync(cardDirectory).sort();
+  if(JSON.stringify(actual)!==JSON.stringify(expectedRuneCards))
+    failures.push('export must contain exactly 01.png–66.png and no obsolete Rune image names');
+  for(const name of expectedRuneCards){
+    const source=path.join(cardDirectory,name);
+    if(!fs.existsSync(source))continue;
+    if(fs.readFileSync(source).subarray(0,8).toString('hex')!=='89504e470d0a1a0a')
+      failures.push('invalid Rune PNG signature '+name);
+  }
+}
 const notFoundPath=path.join(out,'404.html');
 if(fs.existsSync(notFoundPath)){
   const html=fs.readFileSync(notFoundPath,'utf8');

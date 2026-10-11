@@ -2,6 +2,7 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import ContextReturnNav from '../../modular/ContextReturnNav';
+import {runeImage} from '../rune-directory.mjs';
 import {Client} from 'boardgame.io/react';
 import {useQuery} from '@tanstack/react-query';
 import {
@@ -76,7 +77,7 @@ function useLocGameTheme(){
   return useMemo(()=>buildGameTheme(tokens),[tokens]);
 }
 
-const cardSrc=card=>'/assets/lunarunes/cards/'+String(card.id).padStart(2,'0')+'_'+String(card.name).replace(/之符文$/,'').trim()+'.png';
+const cardSrc=card=>runeImage(card);
 const labelStage=s=>s==='opening'?'起手棄牌':s==='event'?'事件':s==='duel'?'決鬥':s==='finished'?'結算':String(s||'').includes('resonance')?'共鳴':s||'—';
 const samePair=(a,b,x,y)=>(a===x&&b===y)||(a===y&&b===x);
 
