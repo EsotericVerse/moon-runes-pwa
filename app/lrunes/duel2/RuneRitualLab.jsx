@@ -4,6 +4,8 @@ import {useEffect,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {createPortal} from 'react-dom';
 import {realMoonPhase} from '../../loc/model/moon-phase';
+import {navigationHref} from '../../modular/nav-destinations.mjs';
+import useNativeNavigation from '../../modular/use-native-navigation';
 import {randomIndex,loadDrawCards,buildFixedReading} from '../RuneDrawClient';
 import {runeImage} from '../rune-directory.mjs';
 import {RUNE_ALL_DRAW_MODES} from '../rune-draw-modes.mjs';
@@ -63,6 +65,7 @@ function RuneDrawCardDialog({item,onClose}){
 }
 const pause=milliseconds=>new Promise(done=>setTimeout(done,milliseconds));
 export default function RuneRitualLab(){
+  const native=useNativeNavigation();
   const [items,setItems]=useState([]);
   const [busy,setBusy]=useState(false);
   const [finished,setFinished]=useState(false);
@@ -158,10 +161,11 @@ export default function RuneRitualLab(){
         </button>:null}
       </div>
       <nav className="rune-skin-controls" aria-label="返回與模式切換">
-        <a href="/card/" className="rune-skin-btn">← 3D 場域首頁</a>
-        <a href="/card/list/" className="rune-skin-btn">切換指定圖鑑</a>
-        <a href="/card/daily/" className="rune-skin-btn">每日符文</a>
-        <a href="/duel/one/" className="rune-skin-btn">舊版抽牌</a>
+        <a href={navigationHref('lrunes','',native)} className="rune-skin-btn">回符文首頁</a>
+        <a href={navigationHref('lrunes','card',native)} className="rune-skin-btn">← 3D 場域首頁</a>
+        <a href={navigationHref('lrunes','card/list',native)} className="rune-skin-btn">切換指定圖鑑</a>
+        <a href={navigationHref('lrunes','card/daily',native)} className="rune-skin-btn">每日符文</a>
+        <a href={navigationHref('lrunes','duel/one',native)} className="rune-skin-btn">舊版抽牌</a>
       </nav>
     </div>
     {finished?<section className="rune-skin-verse rune-3d-reading" data-draw-stage="reading">
