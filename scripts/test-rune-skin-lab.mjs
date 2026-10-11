@@ -38,7 +38,7 @@ assert.match(dialog,/direction=\{item\.direction\}/);
 assert.doesNotMatch(dialog,/rune_etc|lotSections|sit_q|sit_a|daily_r/);
 assert.match(duel,/staticTypes:\[\],moonTypes:\['sit_q'\],currentMoon/);
 assert.match(duel,/createPortal\(/);
-assert.match(duel,/rune-3d-finish-button/);
+assert.match(duel,/rune-3d-duel-action-dock/);
 assert.match(atlas,/createPortal\(/);
 assert.match(read('app/lrunes/three/rune-world.css'),/z-index:10000/);
 
