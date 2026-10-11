@@ -183,10 +183,13 @@ if(!failures.length){
   }
 
   const zoomControls=read('app/modular/modules/statistics/StatisticsZoomControls.jsx');
+  const zoomFrame=read('app/modular/modules/statistics/StatisticsChartFrame.jsx');
+  const layoutCss=read('app/styles/scope-system.css');
   const zoomModel=read('app/modular/modules/statistics/statistics-time-zoom.mjs');
   const runeDaily=read('app/lrunes/DailyRuneAnalytics.jsx');
   if(statistics.includes('TIME_STANDARDS')||statistics.includes('timeStandard')||
-     !statistics.includes('<StatisticsZoomControls')||
+     !statistics.includes('<StatisticsChartFrame')||
+     !zoomFrame.includes('<StatisticsZoomControls')||
      !statistics.includes('statisticsZoomWindow(')||
      !zoomControls.includes('擴大觀察範圍')||!zoomControls.includes('縮小觀察範圍')||
      zoomControls.includes('type="date"')||zoomControls.includes('<select')||
@@ -196,11 +199,25 @@ if(!failures.length){
      !statistics.includes('selectFirstDailyRuneDate()')||
      !statistics.includes('selectFirstScopeStatisticsDate')||
      !runeDaily.includes('selectFirstDailyRuneDate')||
-     !runeDaily.includes('<StatisticsZoomControls')||
+     !runeDaily.includes('<StatisticsChartFrame')||
      !runeDaily.includes('zoomRange.bucket')||
      !ownIntersection.includes('range?.bucket')||
      !crossMember.includes("unit='month'")){
     failures.push('Statistics controls must be +/- only, default to one year, reach real oldest records and preserve query/aggregation precision.');
+  }
+
+  if(statistics.includes('<StatisticsZoomControls')||runeDaily.includes('<StatisticsZoomControls')||
+     !statistics.includes('idPrefix="loc-stat"')||
+     !statistics.includes('idPrefix="scope-stat"')||
+     !statistics.includes('idPrefix="loc-member-stat"') &&
+       !crossMember.includes('idPrefix="loc-member-stat"')||
+     !zoomFrame.includes('scope-stat-chart-frame__canvas')||
+     !zoomControls.includes('scope-stat-zoom-rail')||
+     !layoutCss.includes('grid-template-columns:minmax(0,1fr) 44px')||
+     !crossMember.includes('<StatisticsChartFrame')||
+     !ownIntersection.includes('<StatisticsChartFrame')||
+     !runeDaily.includes('idPrefix="daily-rune-stat"')){
+    failures.push('Statistics +/- zoom must stay on the right of each chart, not among selection controls.');
   }
 
   const chartChoices=statisticsMultiChart.match(/\['(?:line|bar|pie|area|stacked|composed|scatter|radar|radial|treemap)','/g)||[];
