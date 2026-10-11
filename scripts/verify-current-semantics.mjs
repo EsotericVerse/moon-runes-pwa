@@ -164,6 +164,13 @@ if(!failures.length){
     failures.push('LOC Daily Rune comparison must not depend on group source-category loading or authorization.');
   }
 
+  if(!ownIntersection.includes("{kind:'personal',label:'個人自訂來源分類'}")||
+     !ownIntersection.includes("const basic=ownScopeCategoryCatalog(rows)")||
+     !ownIntersection.includes("id:'personal\\u0000'+item.raw")||
+     !ownIntersection.includes("ids.push('personal\\u0000'")){
+    failures.push('Own-Scope comparisons must preserve the raw source dimension beside group and personal source classifications.');
+  }
+
   const zoomControls=read('app/modular/modules/statistics/StatisticsZoomControls.jsx');
   const zoomModel=read('app/modular/modules/statistics/statistics-time-zoom.mjs');
   const runeDaily=read('app/lrunes/DailyRuneAnalytics.jsx');
