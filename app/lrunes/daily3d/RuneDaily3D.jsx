@@ -8,7 +8,7 @@ import useNativeNavigation from '../../modular/use-native-navigation';
 import {loadDrawCards,randomIndex} from '../RuneDrawClient';
 import {runeImage} from '../rune-directory.mjs';
 import '../skin-lab.css';
-import '../three/rune-world.css';
+import '../visual/rune-art-layout.css';
 
 const DIRECTIONS=['正位','半正位','半逆位','逆位'];
 const FIELDS=[['sit_q','狀況形容'],['sit_a','狀況表達'],
@@ -46,14 +46,14 @@ export default function RuneDaily3D(){
   const fields=draw?FIELDS.map(([key,label])=>({
     label,text:String(draw.card?.rune_etc?.[key]?.[draw.directionIndex+1]||'').trim()
   })).filter(field=>field.text):[];
-  return <main className="loc-next-main rune-skin-lab rune-3d-shell" data-rune-lab="daily3d">
-    <header className="rune-3d-header">
+  return <main className="loc-next-main rune-skin-lab rune-art-shell" data-rune-lab="daily3d">
+    <header className="rune-art-header">
       <p className="loc-eyebrow">LunaRunes · Living Daily</p>
       <h1>每日符文 · 月光指示</h1>
       <p>每日指示獨立呈現。以當下真實月相、符文與位向精確查詢原有五項文字。</p>
     </header>
-    <nav className="rune-3d-toolbar">
-      <span className="rune-3d-toolbar-label">真實月相：{moon}　·　每日指示</span>
+    <nav className="rune-art-toolbar">
+      <span className="rune-art-toolbar-label">真實月相：{moon}　·　每日指示</span>
     </nav>
     <section className="rune-art-stage" aria-label="每日符文原創美術揭示">
       <RuneArtStage mode="draw" items={draw?[draw]:[]}
@@ -63,7 +63,7 @@ export default function RuneDaily3D(){
       </div>
     </section>
     {error?<p className="rune-skin-error" role="alert">{error}</p>:null}
-    <div className="rune-3d-footer">
+    <div className="rune-art-footer">
       <button type="button" className="rune-skin-btn primary" onClick={drawDaily} disabled={busy}>
         {busy?'召喚中…':draw?'重新召喚每日符文':'召喚每日符文'}
       </button>
@@ -74,24 +74,24 @@ export default function RuneDaily3D(){
         <a className="rune-skin-btn" href={navigationHref('lrunes','duel/daily',native)}>原版每日指示</a>
       </nav>
     </div>
-    {draw?<section className="rune-skin-verse rune-3d-daily-reading" data-draw-stage="reading">
+    {draw?<section className="rune-skin-verse rune-art-daily-reading" data-draw-stage="reading">
       <h2>每日符文：{String(draw.card.rune_name||'').replace(/之符文$/,'')} · {draw.direction}</h2>
-      <img className="rune-3d-daily-card" src={runeImage(draw.card)}
+      <img className="rune-art-daily-card" src={runeImage(draw.card)}
         alt={draw.card.rune_name+'卡片'} loading="lazy"/>
       <p>卡片月相：{['','新月','上弦','滿月','下弦'][Number(draw.card.moon_phase)]||'無'} ／ 真實月相：{draw.moon}</p>
-      <div className="rune-3d-daily-fields">
+      <div className="rune-art-daily-fields">
         {fields.map(field=><article key={field.label}><h3>{field.label}</h3><p>{field.text}</p></article>)}
       </div>
       {Number(draw.card.rune_id)>=65&&fields.length<5?
-        <p className="rune-3d-daily-caveat">特殊符文尚未建置全部每日母資料，僅展示實際存在的原始文字。</p>:null}
+        <p className="rune-art-daily-caveat">特殊符文尚未建置全部每日母資料，僅展示實際存在的原始文字。</p>:null}
     </section>:null}
-    {details&&draw?<div className="rune-3d-modal-backdrop" onClick={()=>setDetails(false)} role="presentation">
-      <section className="rune-3d-modal" role="dialog" aria-modal="true" aria-label="每日符文內容" onClick={e=>e.stopPropagation()}>
-        <div className="rune-3d-modal-head">
+    {details&&draw?<div className="rune-art-modal-backdrop" onClick={()=>setDetails(false)} role="presentation">
+      <section className="rune-art-modal" role="dialog" aria-modal="true" aria-label="每日符文內容" onClick={e=>e.stopPropagation()}>
+        <div className="rune-art-modal-head">
           <h2>{draw.card.rune_name} · {draw.direction}</h2>
           <button type="button" className="rune-skin-btn" onClick={()=>setDetails(false)}>× 關閉</button>
         </div>
-        <div className="rune-3d-modal-details rune-3d-daily-modal-fields">
+        <div className="rune-art-modal-details rune-art-daily-modal-fields">
           {fields.map(field=><div key={field.label}><h3>{field.label}</h3><p>{field.text}</p></div>)}
         </div>
       </section>
