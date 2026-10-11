@@ -15,6 +15,11 @@ export function sharedGroupCodes(scopeId,permissions=[],categories=[]){
 export function canParticipateInCrossStatistics(scopeId,permissions=[],categories=[]){
   return sharedGroupCodes(scopeId,permissions,categories).size>0;
 }
+// LunaRunes Daily Rune is an independent data source for LOC intersections.
+// Group source opt-outs apply to Galaxy text/media only, never rune draws.
+export function canOfferMemberCrossStatistics(scopeId,permissions=[],categories=[]){
+  return scopeId==='lrunes'||canParticipateInCrossStatistics(scopeId,permissions,categories);
+}
 export function sharedSourceBreakdown(rows=[],scopeId='',taxonomy={}){
   const categories=taxonomy.categories||[],aliases=taxonomy.aliases||[];
   const personal=taxonomy.scopeSources||[],permissions=taxonomy.permissions||[];
