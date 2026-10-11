@@ -296,7 +296,9 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeC
         </select>
       </label>
     </div>
-    {!totals.length?<p className="scope-status">{FEATURE_EMPTY_MESSAGE}</p>:<>
+    {!totals.length?<StatisticsChartFrame level={zoomLevel} onChange={onZoomLevelChange} range={range} idPrefix="scope-stat">
+      <p className="scope-status">{FEATURE_EMPTY_MESSAGE}</p>
+    </StatisticsChartFrame>:<>
       <div className="scope-ranking">
         {displayed.slice((currentPage-1)*pageSize,currentPage*pageSize).map(row=><div key={row.term}><strong>{row.term}</strong><span>{row.item_count.toLocaleString()}</span></div>)}
       </div>
