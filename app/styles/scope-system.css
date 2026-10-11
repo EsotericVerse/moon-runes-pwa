@@ -303,6 +303,20 @@
 .scope-daily-calendar-range-cell{min-height:84px;padding:.375rem .25rem;border:1px solid var(--loc-line,rgba(128,128,128,.3));border-radius:8px;opacity:.45}
 .scope-daily-calendar-range-cell.is-selected{border-width:2px;border-color:currentColor;opacity:1}
 .scope-daily-calendar-entry-list{display:grid;gap:.125rem;margin-top:.25rem;font-size:.72rem}
+/* Only the standalone daily rune log needs a narrower reading frame.
+   Keep the shared LOC/scope wrappers and embedded calendar unchanged. */
+.daily-rune-log-view{
+  box-sizing:border-box;
+  width:calc(100% - clamp(24px,5vw,88px));
+  max-width:1040px;
+  min-width:0;
+  margin-inline:auto;
+}
+.daily-rune-log-view > *{min-width:0;}
+@media(max-width:600px){
+  .daily-rune-log-view{width:calc(100% - 20px);}
+}
+
 .daily-log-calendar{padding:clamp(.75rem,1.5vw,1rem)}
 .daily-log-calendar .scope-daily-calendar-nav{gap:.5rem;margin-bottom:.5rem}
 .daily-log-calendar .scope-daily-calendar-nav h2{font-size:clamp(1rem,1.8vw,1.2rem)}
