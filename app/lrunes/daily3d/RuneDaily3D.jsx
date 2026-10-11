@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect,useRef,useState} from 'react';
+import {createPortal} from 'react-dom';
 import RuneArtStage from '../visual/RuneArtStage';
 import {realMoonPhase} from '../../loc/model/moon-phase';
 import {navigationHref} from '../../modular/nav-destinations.mjs';
@@ -11,6 +12,7 @@ import '../skin-lab.css';
 import '../visual/rune-art-layout.css';
 
 const DIRECTIONS=['正位','半正位','半逆位','逆位'];
+const CARD_ROTATION=[0,90,-90,180];
 const FIELDS=[['sit_q','狀況形容'],['sit_a','狀況表達'],
   ['daily_r','每日占卜提醒'],['daily_g','每日占卜引導'],['daily_b','每日占卜祝福']];
 export default function RuneDaily3D(){
@@ -23,6 +25,12 @@ export default function RuneDaily3D(){
   const lock=useRef(false);
   const mounted=useRef(true);
   useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;};},[]);
+  useEffect(()=>{
+    if(!details)return;
+    const onEscape=event=>{if(event.key==='Escape')setDetails(false);};
+    window.addEventListener('keydown',onEscape);
+    return()=>window.removeEventListener('keydown',onEscape);
+  },[details]);
   async function drawDaily(){
     if(lock.current)return;
     lock.current=true;setBusy(true);setError('');setDetails(false);
@@ -43,9 +51,18 @@ export default function RuneDaily3D(){
     }catch(e){if(mounted.current)setError('每日指示讀取失敗：'+String(e?.message||e));}
     finally{lock.current=false;if(mounted.current)setBusy(false);}
   }
+  function startOver(){
+    if(lock.current||busy)return;
+    setDraw(null);setDetails(false);setError('');
+    setMoon(realMoonPhase());
+  }
   const fields=draw?FIELDS.map(([key,label])=>({
     label,text:String(draw.card?.rune_etc?.[key]?.[draw.directionIndex+1]||'').trim()
   })).filter(field=>field.text):[];
+  const dailyActions=draw?<div className="rune-art-daily-actions" role="group" aria-label="每日符文操作">
+    <button type="button" className="rune-art-duel-action rune-art-duel-action--finish"
+      onClick={()=>setDetails(true)} disabled={busy}>占卜結束，觀看每日指示</button>
+  </div>:null;
   return <main className="loc-next-main rune-skin-lab rune-art-shell" data-rune-lab="daily3d">
     <header className="rune-art-header">
       <p className="loc-eyebrow">LunaRunes · Living Daily</p>
@@ -56,17 +73,14 @@ export default function RuneDaily3D(){
       <span className="rune-art-toolbar-label">真實月相：{moon}　·　每日指示</span>
     </nav>
     <section className="rune-art-stage" aria-label="每日符文原創美術揭示">
-      <RuneArtStage mode="daily" items={draw?[draw]:[]}
+      <RuneArtStage mode="daily" items={draw?[draw]:[]} actions={dailyActions}
         onSelect={()=>setDetails(true)} onBackgroundClick={!busy?drawDaily:undefined}/>
       <div className="rune-art-stage-label" role="status">
-        {busy?'月光正在帶來每日指示……':draw?'今日符文已亮相，下方顯示每日指示。':'輕觸月光召喚每日符文'}
+        {busy?'月光正在帶來每日指示……':draw?'今日符文已亮相，按「占卜結束」查看每日指示。':'輕觸月光召喚每日符文'}
       </div>
     </section>
     {error?<p className="rune-skin-error" role="alert">{error}</p>:null}
     <div className="rune-art-footer">
-      <button type="button" className="rune-skin-btn primary" onClick={drawDaily} disabled={busy}>
-        {busy?'召喚中…':draw?'重新召喚每日符文':'召喚每日符文'}
-      </button>
       <nav className="rune-skin-controls" aria-label="符文模式">
         <a className="rune-skin-btn" href={navigationHref('lrunes','',native)}>回符文首頁</a>
         <a className="rune-skin-btn" href={navigationHref('lrunes','card',native)}>← 符文展示首頁</a>
@@ -74,27 +88,45 @@ export default function RuneDaily3D(){
         <a className="rune-skin-btn" href={navigationHref('lrunes','duel/daily',native)}>原版每日指示</a>
       </nav>
     </div>
-    {draw?<section className="rune-skin-verse rune-art-daily-reading" data-draw-stage="reading">
-      <h2>每日符文：{String(draw.card.rune_name||'').replace(/之符文$/,'')} · {draw.direction}</h2>
-      <img className="rune-art-daily-card" src={runeImage(draw.card)}
-        alt={draw.card.rune_name+'卡片'} loading="lazy"/>
-      <p>卡片月相：{['','新月','上弦','滿月','下弦'][Number(draw.card.moon_phase)]||'無'} ／ 真實月相：{draw.moon}</p>
-      <div className="rune-art-daily-fields">
-        {fields.map(field=><article key={field.label}><h3>{field.label}</h3><p>{field.text}</p></article>)}
-      </div>
-      {Number(draw.card.rune_id)>=65&&fields.length<5?
-        <p className="rune-art-daily-caveat">特殊符文尚未建置全部每日母資料，僅展示實際存在的原始文字。</p>:null}
-    </section>:null}
-    {details&&draw?<div className="rune-art-modal-backdrop" onClick={()=>setDetails(false)} role="presentation">
-      <section className="rune-art-modal" role="dialog" aria-modal="true" aria-label="每日符文內容" onClick={e=>e.stopPropagation()}>
-        <div className="rune-art-modal-head">
-          <h2>{draw.card.rune_name} · {draw.direction}</h2>
-          <button type="button" className="rune-skin-btn" onClick={()=>setDetails(false)}>× 關閉</button>
-        </div>
-        <div className="rune-art-modal-details rune-art-daily-modal-fields">
-          {fields.map(field=><div key={field.label}><h3>{field.label}</h3><p>{field.text}</p></div>)}
-        </div>
-      </section>
-    </div>:null}
+    {details&&draw&&typeof document!=='undefined'?createPortal(
+      <div className="rune-art-modal-backdrop rune-art-result-backdrop"
+        onClick={()=>setDetails(false)} role="presentation">
+        <section className="rune-art-modal rune-art-result-modal" role="dialog"
+          aria-modal="true" aria-label="每日符文指示"
+          onClick={event=>event.stopPropagation()}>
+          <div className="rune-art-modal-head rune-art-result-head">
+            <div>
+              <p className="loc-eyebrow">LUNARUNES · DAILY GUIDANCE</p>
+              <h2>每日符文指示</h2>
+            </div>
+            <div className="rune-art-result-actions">
+              <a className="rune-art-result-home" href={navigationHref('lrunes','card',native)}>回到首頁</a>
+              <button type="button" className="rune-art-result-new" onClick={startOver}>開始新抽牌</button>
+              <button type="button" className="rune-art-result-close"
+                onClick={()=>setDetails(false)} aria-label="關閉每日指示">×</button>
+            </div>
+          </div>
+          <div className="rune-art-result-body rune-art-daily-result-body">
+            <div className="rune-art-daily-summary">
+              <img className="rune-art-daily-card" src={runeImage(draw.card)}
+                alt={draw.card.rune_name+'原始符文卡面'} loading="eager"
+                style={{transform:`rotate(${CARD_ROTATION[draw.directionIndex]??0}deg)`}}/>
+              <div className="rune-art-daily-summary-copy">
+                <h3>{String(draw.card.rune_name||'').replace(/之符文$/,'')} · {draw.direction}</h3>
+                <p>卡片月相：{['','新月','上弦','滿月','下弦'][Number(draw.card.moon_phase)]||'無'}</p>
+                <p>真實月相：{draw.moon}</p>
+              </div>
+            </div>
+            <div className="rune-art-daily-fields" aria-label="每日五項指示">
+              {fields.map(field=><article key={field.label}>
+                <h3>{field.label}</h3><p>{field.text}</p>
+              </article>)}
+            </div>
+            {Number(draw.card.rune_id)>=65&&fields.length<5?
+              <p className="rune-art-daily-caveat">特殊符文尚未建置全部每日母資料，僅展示實際存在的原始文字。</p>:null}
+          </div>
+        </section>
+      </div>,document.body
+    ):null}
   </main>;
 }
