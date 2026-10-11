@@ -182,7 +182,7 @@ export default function RuneAtlasLab(){
             <h2>{preview.name}組</h2>
             <p className="rune-3d-group-en">{preview.english_name||''}</p>
             <p className="rune-3d-group-description">{cleanse(preview.desc||'')}</p>
-            <p className="rune-3d-group-count">本群組 {preview.runeslist.filter(id=>id!==0).length} 枚主要符文</p>
+            <p className="rune-3d-group-count">本群組收錄 {preview.runeslist.length} 枚符文{preview.id===9?'（含誌銘）':''}</p>
             <div className="rune-skin-controls">
               <button type="button" className="rune-skin-btn primary"
                 autoFocus onClick={()=>enterGroup(preview)}>進入符文星域</button>
