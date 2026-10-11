@@ -7,6 +7,7 @@ import {EffectComposer,Bloom} from '@react-three/postprocessing';
 import * as THREE from 'three';
 import * as opentype from 'opentype.js';
 import RuneAuraFX from './RuneAuraFX';
+import {groupPreviewImage} from '../rune-directory.mjs';
 
 const FONT_URL='https://raw.githubusercontent.com/google/fonts/main/ofl/notoseriftc/NotoSerifTC%5Bwght%5D.ttf';
 let fontPromise;
@@ -268,9 +269,31 @@ function SanctumField({mode,groupIndex=8}){
   </group>;
 }
 
+function GroupArtwork({image}){
+  const [texture,setTexture]=useState(null);
+  useEffect(()=>{
+    if(!image)return;
+    let active=true;
+    const loader=new THREE.TextureLoader();
+    const resource=loader.load(image,loaded=>{
+      if(!active){loaded.dispose();return;}
+      loaded.colorSpace=THREE.SRGBColorSpace;
+      loaded.anisotropy=8;
+      setTexture(loaded);
+    },undefined,()=>{if(active)setTexture(null);});
+    return()=>{active=false;resource.dispose();};
+  },[image]);
+  if(!texture)return null;
+  return <mesh position={[0,0,.592]}>
+    <circleGeometry args={[.475,96]}/>
+    <meshBasicMaterial map={texture} toneMapped={false}
+      side={THREE.DoubleSide} transparent opacity={.97} depthWrite={false}/>
+  </mesh>;
+}
 function GroupOrb({group,index,total,onClick}){
   const ref=useRef(),pulse=useRef(0);
   const color=GROUP_COLORS[index%GROUP_COLORS.length];
+  const image=groupPreviewImage(group.id);
   useFrame(({clock,camera},delta)=>{
     if(!ref.current)return;
     const t=clock.elapsedTime;
@@ -285,27 +308,48 @@ function GroupOrb({group,index,total,onClick}){
     onPointerOver={()=>{document.body.style.cursor='pointer';}}
     onPointerOut={()=>{document.body.style.cursor='';}}>
     <mesh>
-      <icosahedronGeometry args={[.53,5]}/>
-      <meshPhysicalMaterial color={color} metalness={.48} roughness={.14} clearcoat={1}
-        clearcoatRoughness={.08} emissive={color} emissiveIntensity={.28}/>
+      <sphereGeometry args={[.575,64,48]}/>
+      <meshPhysicalMaterial color={color} metalness={.8} roughness={.21} clearcoat={1}
+        clearcoatRoughness={.06} emissive={color} emissiveIntensity={.26}/>
+    </mesh>
+    <GroupArtwork image={image}/>
+    <mesh position={[0,0,.6]}>
+      <torusGeometry args={[.493,.029,12,100]}/>
+      <meshPhysicalMaterial color="#f9e2b4" metalness={.93} roughness={.12}
+        emissive="#dfbd87" emissiveIntensity={.22}/>
+    </mesh>
+    <mesh position={[0,0,.6]} rotation-z={index*.17}>
+      <torusGeometry args={[.578,.009,7,108]}/>
+      <meshBasicMaterial color="#fff2db" transparent opacity={.72} toneMapped={false}/>
     </mesh>
     <mesh rotation-z={index*.31}>
-      <torusGeometry args={[.77,.019,9,90]}/>
+      <torusGeometry args={[.82,.014,9,112]}/>
       <meshBasicMaterial color={color} toneMapped={false}/>
     </mesh>
     <mesh rotation-y={Math.PI/2.8}>
-      <torusGeometry args={[.69,.008,7,90]}/>
-      <meshBasicMaterial color="#ffe9bc" transparent opacity={.58}/>
+      <torusGeometry args={[.7,.009,7,112]}/>
+      <meshBasicMaterial color="#ffe9bc" transparent opacity={.61}/>
     </mesh>
-    <group scale={.45} position={[0,0,-.42]}><RuneAuraFX groupIndex={index}/></group>
-    <Html center position={[0,0,.65]} distanceFactor={12} zIndexRange={[100,0]}>
-      <button type="button" className="rune-world-orb-name"
+    <group scale={.47} position={[0,0,-.42]}>
+      <RuneAuraFX groupIndex={index}/>
+    </group>
+    {Array.from({length:8},(_,i)=>{
+      const angle=i*Math.PI/4;
+      return <mesh key={i} position={[Math.cos(angle)*.77,Math.sin(angle)*.77,.08]}
+        rotation-z={angle}>
+        <octahedronGeometry args={[i%2?.028:.042,0]}/>
+        <meshPhysicalMaterial color={i%2?color:'#ffecd2'} roughness={.17}
+          metalness={.65} emissive={color} emissiveIntensity={.25}/>
+      </mesh>;
+    })}
+    <Html center position={[0,-.78,.7]} distanceFactor={11} zIndexRange={[100,0]}>
+      <button type="button" className="rune-world-orb-name rune-world-orb-name--art"
         aria-label={'查看'+(group.name||group.group_id)+'群組說明'}
         onClick={event=>{event.stopPropagation();pulse.current=1;onClick?.(group);}}>
         {group.name||group.group_id||'群組'}
       </button>
     </Html>
-    <Sparkles count={10} scale={1.5} speed={.45} size={2.1} color={color}/>
+    <Sparkles count={20} scale={1.9} speed={.35} size={2.0} color={color}/>
   </group>;
 }
 function GroupOrbits({items,onSelect}){
