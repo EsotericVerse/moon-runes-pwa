@@ -62,13 +62,15 @@ test('supports general JSON arrays without extension and preserves original keys
   assert.equal(records[0].raw.unknown_key,'keep');
 });
 
-test('unknown structured JSON does not masquerade as supported Meta or X records',async()=>{
+test('unknown structured JSON remains explicitly unmapped, not falsely normalized',async()=>{
   const payload=zipSync({'meta/unknown.json':strToU8(JSON.stringify({obscure:[{data:'not-a-post'}]})),
     'facebook/posts/your_posts_1.json':strToU8(JSON.stringify([{timestamp:1700000000,data:[{post:'real post'}]}]))});
   const {records,summary}=await inspect(file(payload,'bundle.zip'));
-  assert.equal(records.length,1);
-  assert.ok(summary.unrecognizedFiles.includes('meta/unknown.json'));
-  assert.equal(summary.otherFiles,1);
+  assert.equal(records.length,2);
+  const unknown=records.find(r=>r.sourcePath==='meta/unknown.json');
+  assert.equal(unknown?.kind,'unmapped');
+  assert.equal(unknown?.raw.data,'not-a-post');
+  assert.equal(summary.unmappedRows,1);
 });
 
 test('binary files are never decoded as private messages',async()=>{
