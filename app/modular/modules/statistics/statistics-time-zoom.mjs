@@ -43,7 +43,7 @@ export function statisticsZoomWindow(level=0,endDate='',earliestDate=''){
     level:zoom,
     fullHistory:Boolean(earliest&&startDate<=earliest),
     canZoomOut:Boolean(earliest&&startDate>earliest),
-    canZoomIn:days>0
+    canZoomIn:Boolean(earliest&&days>0)
   };
 }
 export function statisticsWeekKey(date){
