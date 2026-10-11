@@ -47,7 +47,7 @@ jobs:
       - name: Verify LOC static export
         run: npm run build
       - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium webkit
       - name: Verify browser regression
         run: npm run test:ui
 
