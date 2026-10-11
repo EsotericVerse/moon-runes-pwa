@@ -87,7 +87,7 @@ async function loadSingleDrawCard(pair,{staticTypes=[],moonTypes=[],currentMoon=
   const source=base.dataSource||'auto';
   const readTypes=async(types,moon)=>{
     if(!types.length)return;
-    if(moon&&moon==='未知')throw new Error('真實月相無法辨識，無法查詢籤詩。');
+    if(moon==='未知')throw new Error('真實月相無法辨識，無法查詢籤詩。');
     const filters=[
       {column:'rune_id',operator:'eq',value:runeId},
       {column:'dir',operator:'eq',value:dir},
@@ -107,7 +107,10 @@ async function loadSingleDrawCard(pair,{staticTypes=[],moonTypes=[],currentMoon=
     }
   };
   await readTypes(staticTypes,'');
-  if(moonTypes.length)await readTypes(moonTypes,currentMoon);
+  if(moonTypes.length){
+    if(!currentMoon||currentMoon==='未知')throw new Error('真實月相無法辨識，無法查詢籤詩。');
+    await readTypes(moonTypes,currentMoon);
+  }
   return [rune];
 }
 
