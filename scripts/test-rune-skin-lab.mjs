@@ -58,10 +58,20 @@ assert.ok(guide.includes('<article className="rune-3d-draw-guide-card"'));
 assert.ok(!/<a\b|<button\b|onClick=|href=|tabIndex=/.test(guide),'explanatory count cards must contain no navigation or interactive actions');
 const sceneCss=read('app/lrunes/three/rune-world.css');
 assert.match(sceneCss,/\.rune-3d-duel-action-dock\{/);
-assert.match(sceneCss,/position:fixed/);
-assert.match(sceneCss,/safe-area-inset-bottom/);
-assert.match(sceneCss,/min-height:68px/);
+const dockCss=sceneCss.slice(sceneCss.indexOf('.rune-3d-duel-action-dock{'),
+  sceneCss.indexOf('.rune-3d-duel-action{'));
+assert.match(dockCss,/position:relative/);
+assert.doesNotMatch(dockCss,/position:fixed|bottom:calc|translateX/);
+assert.match(sceneCss,/\.rune-3d-duel-action--draw\{/);
+assert.match(sceneCss,/\.rune-3d-duel-action--finish\{grid-column:1\/-1\}/);
 assert.match(sceneCss,/rune-3d-draw-guide-grid/);
+const dockJsx=duel.slice(duel.indexOf('<div className="rune-3d-duel-action-dock"'),
+  duel.indexOf('<div className="rune-3d-footer"'));
+assert.match(dockJsx,/onClick=\{drawOne\}/);
+assert.match(dockJsx,/onClick=\{reset\}/);
+assert.match(dockJsx,/onClick=\{finish\}/);
+assert.ok(duel.indexOf('rune-3d-duel-action-dock')>duel.indexOf('rune-3d-stage-label'));
+assert.ok(duel.indexOf('rune-3d-duel-action-dock')<duel.indexOf('rune-3d-footer'));
 
 assert.match(duel,/指示籤詩為/);
 assert.match(duel,/buildFixedReading\(/);
