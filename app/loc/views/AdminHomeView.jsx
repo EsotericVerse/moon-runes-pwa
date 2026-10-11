@@ -13,7 +13,7 @@ import {
 
 const ADMIN_OPTIONS=Object.freeze([
   {value:'registry',label:'群組人員管理'},
-  {value:'sources',label:'總來源分類'},
+  {value:'sources',label:'群組來源分類'},
   {value:'database',label:'資料庫設定'},
   {value:'themes',label:'主題設定'},
   {value:'blocklist',label:'系統黑名單'}
