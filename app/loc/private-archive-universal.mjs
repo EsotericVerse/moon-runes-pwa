@@ -105,7 +105,7 @@ function determine(path,prefix){
   if(/(?:^|\/)messages?(?:_\d+)?\.json$/.test(p)||/\/messages\/inbox\//.test(p)||
      /^\{\s*"participants"\s*:/.test(head)&&/"messages"\s*:/.test(head.slice(0,16000))){
     if(/"messages"\s*:/.test(head.slice(0,16000))||/\/(?:message|messages)_\d+\.json$/.test(p))
-      return {platform:category(path)==='meta'?'messenger':category(path),kind:'message',array:'messages'};
+      return {platform:category(path)==='instagram'?'instagram':'messenger',kind:'message',array:'messages'};
   }
   if(/threads/.test(p)||/"media_product_type"\s*:\s*"THREADS"/.test(head)){
     return {platform:'threads',kind:'post',array:head.startsWith('[')?'$':rootArray(head,['threads','posts','data','thread_posts'])};
