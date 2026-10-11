@@ -126,6 +126,21 @@ if(!failures.length){
     failures.push('Global source classes, member-level Others and cross-member analytics must share real data.');
   }
 
+  const zoomControls=read('app/modular/modules/statistics/StatisticsZoomControls.jsx');
+  const zoomModel=read('app/modular/modules/statistics/statistics-time-zoom.mjs');
+  const runeDaily=read('app/lrunes/DailyRuneAnalytics.jsx');
+  if(statistics.includes('TIME_STANDARDS')||statistics.includes('timeStandard')||
+     !statistics.includes('<StatisticsZoomControls')||
+     !statistics.includes('statisticsZoomWindow(')||
+     !zoomControls.includes('縮小時間範圍')||!zoomControls.includes('放大時間範圍')||
+     !zoomModel.includes("bucket:'week'")||
+     !runeDaily.includes('<StatisticsZoomControls')||
+     !runeDaily.includes('zoomRange.bucket')||
+     !ownIntersection.includes('range?.bucket')||
+     !crossMember.includes("unit='month'")){
+    failures.push('Statistics zoom must replace date-unit presets and carry the same aggregation bucket through all comparisons.');
+  }
+
   const chartChoices=statisticsMultiChart.match(/\['(?:line|bar|pie|area|stacked|composed|scatter|radar|radial|treemap)','/g)||[];
   // Real visual analytics must depend on valid dimensions; never manufacture
   // a 100% 'total' pie or render a time index as a second scatter metric.
