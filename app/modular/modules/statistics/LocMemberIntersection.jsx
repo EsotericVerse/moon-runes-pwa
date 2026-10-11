@@ -22,12 +22,13 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
   const catalog=useQuery({
     queryKey:['loc-source-categories'],
     queryFn:async()=>{
-      const [categories,aliases,people]=await Promise.all([
+      const [categories,aliases,personal,people]=await Promise.all([
         readCatalog('silver.statistics_source_categories','category_code,display_name,enabled,sort_order'),
         readCatalog('silver.statistics_source_aliases','source_key,category_code'),
+        readCatalog('silver.scope_source_subcategories','scope_id,source_key,category_code,display_name,enabled'),
         selectScopeRegistry({scopeKind:'scope'})
       ]);
-      return {categories,aliases,people};
+      return {categories,aliases,scopeSources:personal,people};
     },
     staleTime:5*60_000
   });
@@ -61,16 +62,16 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
     staleTime:5*60_000
   });
   const datasets=fetched.data||new Map();
-  const measures=availableMemberMeasures([...datasets.values()].map(item=>item.rows),catalog.data?.categories||[]);
+  const measures=availableMemberMeasures([...datasets.values()].map(item=>item.rows),catalog.data?.categories||[],catalog.data?.scopeSources||[]);
   const adjusted=lanes.map((lane,index)=>({
     ...lane,
-    metric:measures.some(item=>item.id===lane.metric)&&!(lane.metric.startsWith('daily')&&lane.person!=='lrunes')
+    metric:measures.some(item=>item.id===lane.metric)&&!(lane.metric.startsWith('daily')&&lane.person!=='lrunes')&&!(lane.metric.startsWith('personal:')&&!lane.metric.startsWith('personal:'+lane.person+':'))
       ?lane.metric:'total',
     label:(names.get(lane.person)||lane.person)+' · '+(measures.find(item=>item.id===lane.metric)?.name||'全部作品')
   }));
   const calculated=useMemo(()=>calculateMemberCross(adjusted,datasets,{
     from:startDate,to:endDate,unit,
-    categories:catalog.data?.categories||[],aliases:catalog.data?.aliases||[]
+    categories:catalog.data?.categories||[],aliases:catalog.data?.aliases||[],scopeSources:catalog.data?.scopeSources||[]
   }),[JSON.stringify(adjusted),datasets,startDate,endDate,unit,catalog.data]);
   const distribution=calculated.totals.map(item=>({name:item.name,value:item.value}));
   const charts=availableStatisticChartTypes({rows:calculated.rows,series:calculated.series,distribution});
@@ -104,7 +105,7 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
         </label>
         <label>比較項目
           <select className="scope-select" value={adjusted[index].metric} onChange={e=>update(index,{metric:e.target.value})}>
-            {measures.filter(item=>!item.id.startsWith('daily')||lane.person==='lrunes').map(item=><option key={item.id} value={item.id}>{item.name}</option>)}
+            {measures.filter(item=>(!item.id.startsWith('daily')||lane.person==='lrunes')&&(!item.id.startsWith('personal:')||item.id.startsWith('personal:'+lane.person+':'))).map(item=><option key={item.id} value={item.id}>{item.name}</option>)}
           </select>
         </label>
       </div>)}
