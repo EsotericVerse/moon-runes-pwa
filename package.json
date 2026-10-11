@@ -14,7 +14,7 @@
     "verify:rune-draw": "node scripts/verify-rune-draw-algorithm.mjs && node --test scripts/test-rune-draw-reads.mjs scripts/test-rune-moon-phase.mjs && npm run verify:3d-runes",
     "verify:statistics-facets": "node --test scripts/test-statistics-facets.mjs scripts/test-member-intersection.mjs scripts/test-administrative-sources.mjs scripts/test-statistics-zoom.mjs scripts/test-statistics-group-sharing.mjs",
     "verify:semantics": "node scripts/verify-current-semantics.mjs",
-    "verify": "npm run verify:block-presentation && npm run verify:blocknote && npm run verify:feature-hero && npm run verify:loc-home-text && npm run verify:db-adapters && npm run verify:rune-draw && npm run verify:statistics-facets && npm run verify:lrunes-daily && npm run verify:lrunes-settings && npm run verify:loc-items && npm run verify:rune66-keywords && npm run verify:modules && npm run verify:semantics && npm run verify:scope-registry && npm run verify:authority && npm run verify:directories && npm run verify:auth && npm run verify:theme && npm run verify:management && npm run verify:nav",
+    "verify": "npm run verify:block-presentation && npm run verify:blocknote && npm run verify:feature-hero && npm run verify:loc-home-text && npm run verify:db-adapters && npm run verify:rune-draw && npm run verify:statistics-facets && npm run verify:lrunes-daily && npm run verify:lrunes-settings && npm run verify:local-files && npm run verify:loc-items && npm run verify:rune66-keywords && npm run verify:modules && npm run verify:semantics && npm run verify:scope-registry && npm run verify:authority && npm run verify:directories && npm run verify:auth && npm run verify:theme && npm run verify:management && npm run verify:nav",
     "build": "next build",
     "verify:theme": "node scripts/verify-theme-contract.mjs",
     "verify:authority": "node scripts/verify-runtime-authority.mjs",
@@ -31,7 +31,8 @@
     "verify:lrunes-daily": "node --test scripts/test-lrunes-daily-analytics.mjs scripts/test-lrunes-moon-river.mjs",
     "verify:lrunes-settings": "node --test scripts/test-lrunes-settings-local.mjs",
     "verify:loc-items": "node --test scripts/test-loc-item-confluence.mjs",
-    "verify:3d-runes": "node scripts/test-rune-skin-lab.mjs"
+    "verify:3d-runes": "node scripts/test-rune-skin-lab.mjs",
+    "verify:local-files": "node --test scripts/test-private-local-files.mjs"
   },
   "dependencies": {
     "@blocknote/core": "0.55.0",
