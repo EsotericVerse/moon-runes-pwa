@@ -17,7 +17,6 @@ function loadRuneFont(){
   return fontPromise;
 }
 const GROUP_COLORS=['#d6b5fa','#ffbbce','#8be8bb','#bce9a2','#c8d0ff','#ffc98b','#98caff','#e2a5e8','#e8d5af'];
-const phases=['◌','●','◐','○','◑'];
 function glyphName(card){
   return String(card?.rune_name||card?.label||'').replace(/之符文$/,'').trim().slice(0,1)||'月';
 }
@@ -74,12 +73,12 @@ function useFont(){
   useEffect(()=>{let active=true;loadRuneFont().then(value=>{if(active)setFont(value);});return()=>{active=false;};},[]);
   return font;
 }
-function Moon(){
+function Moon({onTap}){
   const sphere=useRef();
   useFrame(({clock})=>{
     if(sphere.current)sphere.current.rotation.y=clock.elapsedTime*.017;
   });
-  return <group position={[0,.1,-.65]}>
+  return <group position={[0,.1,-.65]} onClick={e=>{e.stopPropagation();onTap?.();}}>
     <mesh ref={sphere}>
       <sphereGeometry args={[1.04,64,64]}/>
       <meshPhysicalMaterial color="#dedaf5" roughness={.56} metalness={.07} clearcoat={.18}
@@ -288,7 +287,7 @@ function RuneActor({item,index,total,font,mode,onSelect,quality='high'}){
       <torusGeometry args={[1.35,.018,10,90]}/>
       <meshBasicMaterial color={color} transparent opacity={.48} toneMapped={false}/>
     </mesh>
-    {halo?<mesh position={[0,0,-.1]}>
+    {halo&&!halo[1]?<mesh position={[0,0,-.1]}>
       <torusGeometry args={[1.23,.026,10,halo[1]?24:120,Math.PI*2]}/>
       <meshBasicMaterial color={halo[0]} toneMapped={false} transparent opacity={.9}/>
     </mesh>:null}
@@ -315,7 +314,7 @@ function OrbitingRunes({items,mode,onSelect,quality}){
       total={items.length} mode={mode} font={font} quality={quality} onSelect={onSelect}/>)}
   </group>;
 }
-function Scene({mode,items,onSelect,quality}){
+function Scene({mode,items,onSelect,onBackgroundClick,quality}){
   const {camera}=useThree();
   useEffect(()=>{camera.position.set(0,.15,12.8);camera.lookAt(0,0,0);},[camera]);
   return <>
@@ -326,7 +325,7 @@ function Scene({mode,items,onSelect,quality}){
     <directionalLight position={[-4,6,6]} intensity={2.3} color="#f6e1ae"/>
     <StarField/>
     <Nebula/>
-    <Moon/>
+    <Moon onTap={mode==='draw'?onBackgroundClick:undefined}/>
     <EnergyRiver visible={mode==='draw'} />
     {mode==='groups'?<GroupOrbits items={items} onSelect={onSelect}/>:
       <OrbitingRunes items={items} mode={mode} onSelect={onSelect} quality={quality}/>}
@@ -344,7 +343,7 @@ export default function RuneWorld({mode='groups',items=[],onSelect,onBackgroundC
       onCreated={({gl})=>{gl.toneMapping=THREE.ACESFilmicToneMapping;}}
       onPointerMissed={()=>onBackgroundClick?.()}
       fallback={<span>正在準備 3D 圖形引擎…</span>}>
-      <Scene mode={mode} items={items} onSelect={onSelect} quality={quality}/>
+      <Scene mode={mode} items={items} onSelect={onSelect} onBackgroundClick={onBackgroundClick} quality={quality}/>
     </Canvas>
   </div>;
 }
