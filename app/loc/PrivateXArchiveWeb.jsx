@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useRef,useState} from 'react';
-import {inspectXArchive,X_ARCHIVE_MAX_BYTES} from './private-x-archive.mjs';
+import {inspectPrivateArchive,ARCHIVE_MAX_BYTES} from './private-archive-universal.mjs';
 import {
   openPrivateWebVault,createWebImport,stageWebRecords,removeWebDraft,
   confirmWebImport,queryWebRecords,listWebImports,deleteWebVault,
@@ -11,7 +11,7 @@ import {
 const n=value=>Number(value||0).toLocaleString('zh-TW');
 const date=value=>value?new Date(value).toLocaleString('zh-TW'):'日期未辨識';
 const reason=error=>String(error?.message||error||'未知錯誤');
-export default function PrivateXArchiveWeb(){
+export default function PrivateArchiveWeb(){
   const picker=useRef(null),activeController=useRef(null);
   const [db,setDb]=useState(null);
   const [busy,setBusy]=useState('');
@@ -46,14 +46,14 @@ export default function PrivateXArchiveWeb(){
     event.target.value='';
     if(!file||!db||busy||draft)return;
     setError('');setStatus('');setProgress(null);setConfirmedText(false);
-    if(file.size>X_ARCHIVE_MAX_BYTES){
+    if(file.size>ARCHIVE_MAX_BYTES){
       setError('選取檔案超過本版 2 GiB 安全限制；原始檔未修改。');return;
     }
     setBusy('解析與計算');const controller=new AbortController();activeController.current=controller;
     let id=null;const queued=[];
     try{
-      id=await createWebImport(db,file.name||'無檔名 X 備份');
-      const summary=await inspectXArchive(file,{
+      id=await createWebImport(db,file.name||'未命名私人備份');
+      const summary=await inspectPrivateArchive(file,{
         signal:controller.signal,
         onRecord:record=>queued.push(record),
         flush:async(force=false)=>{
@@ -127,8 +127,8 @@ export default function PrivateXArchiveWeb(){
     <section className="scope-page">
       <header className="loc-hero">
         <p className="loc-eyebrow">Private · Browser-only</p>
-        <h1>私人 X 備份匯入測試</h1>
-        <p>先在網站驗證完整資料轉換和查重，再進行 iPhone Local File 整合。</p>
+        <h1>私人備份共用匯入工作區</h1>
+        <p>本機解析 X、Facebook、Instagram、Messenger、Threads 與可辨識通用文件，再共用查重、分批和搜尋流程。</p>
       </header>
       <div className="scope-content scope-settings-options">
         <section className="loc-card">
@@ -136,14 +136,14 @@ export default function PrivateXArchiveWeb(){
           <p>此工作區不連接 LOC 的 Supabase、Neon 或公開 Galaxy 匯入程序；不論是否登入，備份與衍生紀錄只存放在<strong>目前瀏覽器的 IndexedDB</strong>，不會跨設備同步。</p>
           <p className="scope-settings-note">重要：這是技術測試版，瀏覽器儲存<strong>尚未加密</strong>，清除網站資料後可能消失。刪除測試帳號不會自動刪除這台裝置的 IndexedDB，必須使用下方「清除全部本機資料」。請勿在公用電腦使用私人備份。</p>
           <table className="scope-table"><tbody>
-            <tr><th>來源</th><td>X／Twitter 備份（推文與回覆）</td></tr>
+            <tr><th>來源</th><td>X、Meta Facebook／Instagram／Messenger／Threads、一般 JSON／文字；自動識別可解析項目</td></tr>
             <tr><th>隱私</th><td>完全本機，不公開、不送遠端資料庫</td></tr>
-            <tr><th>欄位</th><td>原生貼文 ID、時間、正文、回覆關聯、原始 JSON</td></tr>
-            <tr><th>去重</th><td>以 X 原生貼文 ID 為唯一鍵，已存在不再新增</td></tr>
+            <tr><th>欄位</th><td>平台、紀錄類型、原生 ID／穩定複合 ID、時間、作者／發話者、文字、附件參照與原始 JSON 欄位</td></tr>
+            <tr><th>去重</th><td>優先平台原生 ID；無原生 ID 的私訊以對話、時間、發話者、原文組合識別，不靠語意判重</td></tr>
             <tr><th>衝突</th><td>同 ID 但內容不同：跳過且報告，不覆寫</td></tr>
             <tr><th>亂碼</th><td>不自動修復；標示疑似異常，保留原文</td></tr>
             <tr><th>寫入</th><td>預先計數並分批；只在確認後執行</td></tr>
-            <tr><th>未支援內容</th><td>私訊與其他檔案不會假稱已匯入</td></tr>
+            <tr><th>未支援內容</th><td>未辨識 JSON 結構、部分平台活動及圖片／影片二進位媒體明列為未匯入，不算在成功筆數</td></tr>
           </tbody></table>
           <label style={{display:'flex',gap:'0.6rem',alignItems:'flex-start'}}>
             <input type="checkbox" checked={confirmedPrivacy} onChange={event=>setConfirmedPrivacy(event.target.checked)}/>
@@ -151,12 +151,12 @@ export default function PrivateXArchiveWeb(){
           </label>
           <div className="scope-stat-controls">
             <button type="button" className="loc-button primary" disabled={!confirmedPrivacy||!db||!!busy||!!draft} onClick={()=>picker.current?.click()}>
-              選擇 X 備份 ZIP／JS／JSON
+              選擇私人備份 ZIP／JSON／JS／TXT
             </button>
             {busy==='解析與計算'?<button type="button" className="loc-button" onClick={()=>activeController.current?.abort()}>取消解析</button>:null}
             <input ref={picker} type="file" hidden onChange={chooseFile} aria-label="選取本機 X 資料備份"/>
           </div>
-          <p className="scope-settings-note">支援 ZIP 或獨立的 X YTD 推文資料檔；不依賴檔案副檔名。大檔以串流處理並保護記憶體，ZIP 與解壓總量設有安全上限。</p>
+          <p className="scope-settings-note">支援 X YTD、Meta Facebook／Instagram 貼文、Messenger／Instagram 私訊、Threads 常見 JSON 匯出、一般 JSON 與純文字（可無副檔名）。按內容及欄位辨識，不假定 Meta 每種匯出版本均相同。ZIP 內媒體檔目前只統計不保存；未辨識檔案明確列出。</p>
           {busy?<p role="status">目前作業：{busy}{progress?.size?'，已讀取 '+n(progress.read)+'／'+n(progress.size)+' bytes；已辨識 '+n(progress.rows)+' 筆':''}{progress?.inserted!==undefined?'，新增 '+n(progress.inserted)+' 筆':''}</p>:null}
         </section>
         {preview&&plan?<section className="loc-card">
@@ -177,10 +177,15 @@ export default function PrivateXArchiveWeb(){
             <span>備份內重複項目 {n(Math.max(0,preview.acceptedRows-plan.staged))} 筆</span>
           </div>
           <p>預估 <strong>{n(plan.batches)} 批</strong>；每批最多 {n(plan.batchSize)} 筆（按新增量自動調整）。單一路徑順序寫入，不開啟大量平行交易。</p>
-          <p className="scope-settings-note">辨識的來源資料檔：{preview.sourceFiles.slice(0,8).join('、')||'無'}{preview.sourceFiles.length>8?' 等 '+n(preview.sourceFiles.length)+' 檔':''}；其他 ZIP 項目 {n(preview.otherFiles)} 個未解析。</p>
+          <p className="scope-settings-note">解析來源：{Object.entries(preview.byPlatform||{}).map(([platform,count])=>platform+' '+n(count)+' 筆').join('、')||'無'}。</p>
+          <p className="scope-settings-note">辨識的資料檔：{preview.sourceFiles.slice(0,8).join('、')||'無'}{preview.sourceFiles.length>8?' 等 '+n(preview.sourceFiles.length)+' 檔':''}；未解析 ZIP 項目 {n(preview.otherFiles)} 個（其中媒體 {n(preview.mediaFiles)} 個）。</p>
+          {preview.unrecognizedFiles?.length?<details>
+            <summary>未辨識的檔案（不列入成功匯入）</summary>
+            <ul>{preview.unrecognizedFiles.map((filename,i)=><li key={i}>{filename}</li>)}</ul>
+          </details>:null}
           <h3>文字預覽（原文，不自動修正）</h3>
           {preview.sample.map((item,i)=><div key={i} className="scope-inline-card">
-            <p className="scope-settings-note">{item.nativeId} · {date(item.createdAt)}</p>
+            <p className="scope-settings-note">{item.platform||'未知'} · {item.kind||'紀錄'} · {item.nativeId} · {date(item.createdAt)}</p>
             <p style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{item.text}</p>
           </div>)}
           {preview.problems.length?<details><summary>解析異常示例</summary>
@@ -198,20 +203,20 @@ export default function PrivateXArchiveWeb(){
         <section className="loc-card">
           <h2>已確認匯入的私人紀錄（{n(entries.total)} 筆）</h2>
           <form onSubmit={search} className="scope-stat-controls">
-            <label>本機文字搜尋<input type="search" value={query} onChange={event=>setQuery(event.target.value)} placeholder="關鍵字、中文內容"/></label>
+            <label>本機文字搜尋（跨來源）<input type="search" value={query} onChange={event=>setQuery(event.target.value)} placeholder="關鍵字、中文內容"/></label>
             <button className="loc-button" type="submit" disabled={!db||!!busy}>搜尋／重新統計</button>
           </form>
           <p className="scope-settings-note">年度數量：{Object.entries(entries.years).sort(([a],[b])=>b.localeCompare(a)).slice(0,25).map(([y,c])=>y+' 年 '+n(c)+' 筆').join('；')||'尚無紀錄'}</p>
           {entries.found.map(item=><div key={item.key} className="scope-inline-card">
-            <p className="scope-settings-note">{date(item.createdAt)} · {item.sourcePath}{item.suspectedMojibake?' · 疑似編碼異常':''}</p>
+            <p className="scope-settings-note">{date(item.createdAt)} · {item.platform||'來源未知'} · {item.kind||'紀錄'} · {item.sourcePath}{item.suspectedMojibake?' · 疑似編碼異常':''}</p>
             <p style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{item.text}</p>
           </div>)}
           {entries.total>100?<p className="scope-settings-note">為避免載入過多內容，單次最多顯示 100 筆；年度總數仍由整份本機索引計算。</p>:null}
-          <p className="scope-settings-note">已完成的匯入作業：{n(history.filter(h=>h.state==='complete').length)} 份。</p>
+          <p className="scope-settings-note">已完成的私人匯入作業：{n(history.filter(h=>h.state==='complete').length)} 份。</p>
         </section>
         <section className="loc-card">
           <h2>結束臨時帳號測試前</h2>
-          <p>清除這個瀏覽器中的私人備份解析資料。此操作不會刪除你持有的 X 原始備份 ZIP，也不涉及遠端帳號或雲端資料庫。</p>
+          <p>清除這個瀏覽器中的私人備份解析資料。此操作不會刪除你持有的 原始備份檔，也不涉及遠端帳號或雲端資料庫。</p>
           <label style={{display:'flex',gap:'0.6rem',alignItems:'center'}}>
             <input type="checkbox" checked={clearArmed} onChange={event=>setClearArmed(event.target.checked)}/>
             <span>確認永久清除目前瀏覽器的所有本機測試紀錄</span>
