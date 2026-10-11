@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import {readFileSync} from 'node:fs';
 import {
   normalizeDailyDraws,rankDailyDraws,pageDailyRanking,summarizeDailyDraws,dailyCategoryTrend,
   DAILY_RUNE_PAGE_SIZE,DAILY_RUNE_MODES,DAILY_DIRECTIONS,dailyCategoryKey
@@ -114,4 +115,17 @@ test('both new statistical dimensions use exactly the same keys for ranking and 
   assert.equal(monthly.length,1);
   assert.equal(monthly[0][positive],3);
   assert.equal(monthly[0][reverse],1);
+});
+
+test('Culture Daily Rune river must not reference the statistics-only earliest query',()=>{
+  const source=readFileSync(new URL('../app/lrunes/DailyRuneAnalytics.jsx',import.meta.url),'utf8');
+  const beginning=source.indexOf('export function LrunesDailyCulturePanel()');
+  const end=source.indexOf('export function LrunesDailyStatisticsPanel()');
+  assert.ok(beginning>=0&&end>beginning,'Both separate panels must be present');
+  const culture=source.slice(beginning,end);
+  const statistics=source.slice(end);
+  assert.doesNotMatch(culture,/\bearliest\b/,'Culture must not access the statistics-only history query');
+  assert.match(culture,/useDailyRuneWindow\(mode,from,to\)/);
+  assert.match(culture,/queryMessage\(query,range\)/);
+  assert.match(statistics,/const earliest=useQuery\(/);
 });
