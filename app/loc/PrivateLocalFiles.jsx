@@ -65,6 +65,7 @@ export default function PrivateLocalFiles(){
         }catch(e){failures.push(file.name+'：'+String(e?.message||e));}
       }
       setEntries(await store.list());
+      window.dispatchEvent(new CustomEvent('loc-private-file-changed'));
       setStatus('已將 '+completed+'／'+files.length+' 份原始檔案保存於這支 iPhone；沒有上傳到 Supabase、Neon 或網站。');
       if(failures.length)setError(failures.join('；'));
     }catch(e){setError('檔案清單更新失敗：'+String(e?.message||e));}
@@ -123,6 +124,7 @@ export default function PrivateLocalFiles(){
     try{
       await store.remove(entry.id);
       setEntries(await store.list());
+      window.dispatchEvent(new CustomEvent('loc-private-file-changed'));
       setPendingDelete('');
       setPreview(null);
       setStatus('已從這支裝置刪除「'+entry.name+'」，不影響原先在 iOS 檔案 App 的來源檔。');
