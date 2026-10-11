@@ -1,6 +1,6 @@
 // Shared, deterministic own-Scope intersection model.
-// Each dimension has its own count. A record may appear in its source,
-// content-type and whole-medium counters; those counters are never summed.
+// Source, media, and total counters are independent dimensions.
+// A record's source and total counts must never be summed.
 const DAY_RE=/^\d{4}-\d{2}-\d{2}$/;
 
 export const OWN_STAT_DIMENSIONS=Object.freeze([
