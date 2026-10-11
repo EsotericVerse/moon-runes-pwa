@@ -10,12 +10,13 @@ import {normalizeDailyDraws} from '../../../lrunes/daily-analytics-model.mjs';
 import {realMoonPhase} from '../../../loc/model/moon-phase';
 import {availableMemberMeasures,calculateMemberCross} from '../../../loc/member-intersection-model.mjs';
 import StatisticsMultiChart,{availableStatisticChartTypes} from './StatisticsMultiChart';
+import {sharedGroupCodes,sharedSourceBreakdown} from '../../../loc/statistics-group-sharing.mjs';
 
 async function readCatalog(table,columns){
   return (await selectRows(table,{columns,limit:250,offset:0})).rows;
 }
 const DEFAULT_LANE_COUNT=2;
-export default function LocMemberIntersection({scopes=[],startDate='',endDate='',unit='month'}){
+export default function LocMemberIntersection({scopes=[],startDate='',endDate='',unit='month',sharing={}}){
   const [laneCount,setLaneCount]=useState(DEFAULT_LANE_COUNT);
   const [choices,setChoices]=useState([]);
   const [graph,setGraph]=useState('line');
@@ -33,7 +34,8 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
     staleTime:5*60_000
   });
   const names=useMemo(()=>new Map((catalog.data?.people||[]).map(row=>[row.scope_id,row.display_name||row.scope_id])),[catalog.data?.people]);
-  const available=scopes.map(scope=>({id:scope.id,label:names.get(scope.id)||scope.id,scope}));
+  const available=scopes.filter(scope=>sharedGroupCodes(scope.id,sharing.permissions,sharing.categories).size>0)
+    .map(scope=>({id:scope.id,label:names.get(scope.id)||scope.id,scope}));
   const lanes=Array.from({length:laneCount},(_,index)=>{
     const candidate=choices[index]||{};
     const fallback=available[index%Math.max(available.length,1)]?.id||'';
@@ -41,7 +43,7 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
   });
   const chosenIds=[...new Set(lanes.map(lane=>lane.person).filter(Boolean))];
   const fetched=useQuery({
-    queryKey:['loc-member-cross',startDate,endDate,chosenIds.join('|'),lanes.some(x=>x.metric.startsWith('daily'))],
+    queryKey:['loc-member-cross',startDate,endDate,chosenIds.join('|'),lanes.some(x=>x.metric.startsWith('daily')),JSON.stringify(sharing)],
     enabled:Boolean(startDate&&endDate&&chosenIds.length),
     queryFn:async()=>{
       const pairs=await Promise.all(chosenIds.map(async id=>{
@@ -55,24 +57,27 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
         const draws=id==='lrunes'
           ?normalizeDailyDraws(daily,date=>realMoonPhase(new Date(date+'T12:00:00+08:00')))
           :[];
-        return [id,{rows,daily:draws}];
+        return [id,{rows:sharedSourceBreakdown(rows,id,sharing),daily:draws}];
       }));
       return new Map(pairs);
     },
     staleTime:5*60_000
   });
   const datasets=fetched.data||new Map();
-  const measures=availableMemberMeasures([...datasets.values()].map(item=>item.rows),catalog.data?.categories||[],catalog.data?.scopeSources||[]);
+  const measures=availableMemberMeasures([...datasets.values()].map(item=>item.rows),sharing.categories||[],sharing.scopeSources||[]);
   const adjusted=lanes.map((lane,index)=>({
     ...lane,
-    metric:measures.some(item=>item.id===lane.metric)&&!(lane.metric.startsWith('daily')&&lane.person!=='lrunes')&&!(lane.metric.startsWith('personal:')&&!lane.metric.startsWith('personal:'+lane.person+':'))
+    metric:measures.some(item=>item.id===lane.metric)&&
+      !(lane.metric.startsWith('daily')&&lane.person!=='lrunes')&&
+      !(lane.metric.startsWith('source:')&&!sharedGroupCodes(lane.person,sharing.permissions,sharing.categories).has(lane.metric.slice(7)))&&
+      !(lane.metric.startsWith('personal:')&&!lane.metric.startsWith('personal:'+lane.person+':'))
       ?lane.metric:'total',
     label:(names.get(lane.person)||lane.person)+' · '+(measures.find(item=>item.id===lane.metric)?.name||'全部作品')
   }));
   const calculated=useMemo(()=>calculateMemberCross(adjusted,datasets,{
     from:startDate,to:endDate,unit,
-    categories:catalog.data?.categories||[],aliases:catalog.data?.aliases||[],scopeSources:catalog.data?.scopeSources||[]
-  }),[JSON.stringify(adjusted),datasets,startDate,endDate,unit,catalog.data]);
+    categories:sharing.categories||[],aliases:sharing.aliases||[],scopeSources:sharing.scopeSources||[]
+  }),[JSON.stringify(adjusted),datasets,startDate,endDate,unit,sharing]);
   const distribution=calculated.totals.map(item=>({name:item.name,value:item.value}));
   const charts=availableStatisticChartTypes({rows:calculated.rows,series:calculated.series,distribution});
   const chosenChart=charts.some(([kind])=>kind===graph)?graph:(charts[0]?.[0]||'line');
@@ -105,7 +110,9 @@ export default function LocMemberIntersection({scopes=[],startDate='',endDate=''
         </label>
         <label>比較項目
           <select className="scope-select" value={adjusted[index].metric} onChange={e=>update(index,{metric:e.target.value})}>
-            {measures.filter(item=>(!item.id.startsWith('daily')||lane.person==='lrunes')&&(!item.id.startsWith('personal:')||item.id.startsWith('personal:'+lane.person+':'))).map(item=><option key={item.id} value={item.id}>{item.name}</option>)}
+            {measures.filter(item=>(!item.id.startsWith('daily')||lane.person==='lrunes')&&
+            (!item.id.startsWith('source:')||sharedGroupCodes(lane.person,sharing.permissions,sharing.categories).has(item.id.slice(7)))&&
+            (!item.id.startsWith('personal:')||item.id.startsWith('personal:'+lane.person+':'))).map(item=><option key={item.id} value={item.id}>{item.name}</option>)}
           </select>
         </label>
       </div>)}
