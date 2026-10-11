@@ -56,7 +56,7 @@ function Gallery({mode,items,onSelect,reduced}){
     </div>
   </div>;
 }
-function DrawStage({items,onSelect,onBackgroundClick,reduced}){
+function DrawStage({items,onSelect,onBackgroundClick,reduced,daily=false}){
   const last=items[items.length-1];
   const active=last?.card||last;
   const previous=items.slice(0,-1);
@@ -65,7 +65,7 @@ function DrawStage({items,onSelect,onBackgroundClick,reduced}){
     <div className="rune-art-ritual-aura" aria-hidden="true"/>
     <div className="rune-art-ritual-heading">
       <span className="rune-art-kicker">MOONLIGHT · RUNE REVELATION</span>
-      <h2>{last?'月光已回應':'讓月光揭示符文'}</h2>
+      <h2>{last?(daily?'今日月光已回應':'月光已回應'):(daily?'今日符文':'讓月光揭示符文')}</h2>
       <p>{last?'每一次亮牌，都保留符韻原始卡面與文字。':'一枚一枚召喚，從原創畫作開始。'}</p>
     </div>
     <AnimatePresence mode="wait">
@@ -91,7 +91,7 @@ function DrawStage({items,onSelect,onBackgroundClick,reduced}){
         animate={{opacity:1,y:0}} transition={stepTransition}>
         <div className="rune-art-empty-ring" aria-hidden="true">☾</div>
         <button className="rune-art-invoke" type="button" onClick={()=>onBackgroundClick?.()}
-          disabled={!onBackgroundClick}>觸碰月光，召喚第一枚符文</button>
+          disabled={!onBackgroundClick}>{daily?'觸碰月光，召喚每日符文':'觸碰月光，召喚第一枚符文'}</button>
       </motion.div>}
     </AnimatePresence>
     {previous.length?<div className="rune-art-history" aria-label="先前抽出的符文">
@@ -105,15 +105,16 @@ function DrawStage({items,onSelect,onBackgroundClick,reduced}){
       </motion.button>)}
     </div>:null}
     {last&&onBackgroundClick?<button type="button" className="rune-art-draw-again"
-      onClick={()=>onBackgroundClick()}>召喚下一枚符文 <span aria-hidden="true">✦</span></button>:null}
+      onClick={()=>onBackgroundClick()}>
+      {daily?'重新召喚每日符文':'召喚下一枚符文'} <span aria-hidden="true">✦</span></button>:null}
   </div>;
 }
 export default function RuneArtStage({mode='groups',items=[],onSelect,onBackgroundClick}){
   const reduced=useReducedMotion();
   return <div className={'rune-art-world rune-art-world--'+mode}
     data-renderer="artwork-motion" data-visual-mode="2d">
-    {mode==='draw'?<DrawStage items={items} onSelect={onSelect}
-      onBackgroundClick={onBackgroundClick} reduced={reduced}/>:
+    {(mode==='draw'||mode==='daily')?<DrawStage items={items} onSelect={onSelect}
+      onBackgroundClick={onBackgroundClick} reduced={reduced} daily={mode==='daily'}/>:
       <Gallery mode={mode} items={items} onSelect={onSelect} reduced={reduced}/>}
   </div>;
 }
