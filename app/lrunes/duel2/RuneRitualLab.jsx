@@ -11,7 +11,7 @@ import {runeImage} from '../rune-directory.mjs';
 import {RUNE_ALL_DRAW_MODES} from '../rune-draw-modes.mjs';
 import RuneCardInfo from '../RuneCardInfo';
 import '../skin-lab.css';
-import '../three/rune-world.css';
+import '../visual/rune-art-layout.css';
 
 const MAX_DRAW=11;
 const REVEAL_MS=1000;
@@ -47,15 +47,15 @@ function RuneDrawCardDialog({item,onClose}){
     return()=>window.removeEventListener('keydown',close);
   },[onClose]);
   const card=item.card;
-  return <div className="rune-3d-modal-backdrop rune-3d-draw-modal-backdrop" role="presentation" onClick={onClose}>
-    <section className="rune-3d-modal rune-3d-draw-modal" role="dialog" aria-modal="true"
+  return <div className="rune-art-modal-backdrop rune-art-draw-modal-backdrop" role="presentation" onClick={onClose}>
+    <section className="rune-art-modal rune-art-draw-modal" role="dialog" aria-modal="true"
       aria-label={shortRuneName(card)+'符文基本資料'} onClick={e=>e.stopPropagation()}>
-      <div className="rune-3d-modal-head">
+      <div className="rune-art-modal-head">
         <div><span className="loc-eyebrow">RUNE ARCHIVE · 卡片基本資料</span>
           <h2>{shortRuneName(card)}之符文 · {item.direction}</h2></div>
         <button className="rune-skin-btn" type="button" autoFocus onClick={onClose}>× 關閉</button>
       </div>
-      <div className="rune-3d-modal-main rune-3d-original-card-info">
+      <div className="rune-art-modal-main rune-art-original-card-info">
         <RuneCardInfo card={card} imageSrc={runeImage(card)}
           direction={item.direction} realMoonPhase={item.moon} layout="home"/>
       </div>
@@ -126,26 +126,26 @@ export default function RuneRitualLab(){
     cardsRef.current=[];setItems([]);setSelected(null);setFinished(false);
     setReading('');setError('');setMessage('月光已就位，輕觸畫面召喚一枚符文');
   }
-  return <main className="loc-next-main rune-skin-lab rune-3d-shell rune-3d-duel-shell" data-rune-lab="duel2">
-    <header className="rune-3d-header">
+  return <main className="loc-next-main rune-skin-lab rune-art-shell rune-art-duel-shell" data-rune-lab="duel2">
+    <header className="rune-art-header">
       <p className="loc-eyebrow">LunaRunes · Living Ritual</p>
       <h1>月光召喚 · 華麗抽牌</h1>
       <p>讓原創符文卡面成為主角。月光揭幕、流金入場，逐枚抽取並保留原有占卜規則。</p>
     </header>
-    <nav className="rune-3d-toolbar">
-      <span className="rune-3d-toolbar-label">真實月相 {moon}　·　{items.length} / {MAX_DRAW} 枚</span>
+    <nav className="rune-art-toolbar">
+      <span className="rune-art-toolbar-label">真實月相 {moon}　·　{items.length} / {MAX_DRAW} 枚</span>
 
     </nav>
-    <div className="rune-3d-duel-action-dock" role="group" aria-label="抽牌桌操作">
-      {!finished?<button type="button" className="rune-3d-duel-action rune-3d-duel-action--draw"
+    <div className="rune-art-duel-action-dock" role="group" aria-label="抽牌桌操作">
+      {!finished?<button type="button" className="rune-art-duel-action rune-art-duel-action--draw"
         onClick={drawOne} disabled={busy||!!selected||items.length>=MAX_DRAW}>
         {busy?'召喚中…':items.length?'再召喚一枚':'觸碰召喚'}
       </button>:null}
-      <button type="button" className="rune-3d-duel-action rune-3d-duel-action--restart"
+      <button type="button" className="rune-art-duel-action rune-art-duel-action--restart"
         onClick={reset} disabled={busy||!!selected||!items.length}>
         重新占卜
       </button>
-      {!finished?<button type="button" className="rune-3d-duel-action rune-3d-duel-action--finish"
+      {!finished?<button type="button" className="rune-art-duel-action rune-art-duel-action--finish"
         onClick={finish} disabled={busy||!!selected||!items.length}>
         結束占卜，看指示籤詩
       </button>:null}
@@ -156,26 +156,26 @@ export default function RuneRitualLab(){
       <div className="rune-art-stage-label" role="status">{busy?'月光正在揭示符文……':message}</div>
     </section>
     {error?<p className="rune-skin-error" role="alert">{error}</p>:null}
-    <div className="rune-3d-footer">
+    <div className="rune-art-footer">
       <nav className="rune-skin-controls" aria-label="返回與模式切換">
         <a href={navigationHref('lrunes','',native)} className="rune-skin-btn">回符文首頁</a>
-        <a href={navigationHref('lrunes','card',native)} className="rune-skin-btn">← 3D 場域首頁</a>
+        <a href={navigationHref('lrunes','card',native)} className="rune-skin-btn">← 符文展示首頁</a>
         <a href={navigationHref('lrunes','card/list',native)} className="rune-skin-btn">切換指定圖鑑</a>
         <a href={navigationHref('lrunes','card/daily',native)} className="rune-skin-btn">每日符文</a>
         <a href={navigationHref('lrunes','duel/one',native)} className="rune-skin-btn">舊版抽牌</a>
       </nav>
     </div>
-    {finished?<section className="rune-skin-verse rune-3d-reading" data-draw-stage="reading">
+    {finished?<section className="rune-skin-verse rune-art-reading" data-draw-stage="reading">
       <h2>本次抽牌結果</h2>
       <p>本次抽了 {items.length} 張符文，{items.length} 張符文分別為：
         {items.map((item,index)=><span key={item.card.rune_id}>{index?'、':''}{shortRuneName(item.card)}{item.direction}</span>)}。</p>
       <p>指示籤詩為：{reading}</p>
     </section>:null}
-    <section className="rune-3d-draw-guide" aria-label="占卜張數說明">
+    <section className="rune-art-draw-guide" aria-label="占卜張數說明">
       <h2>占卜張數說明</h2>
       <p>不同的抽取張數對應不同的閱讀結構；以下僅為說明，不是模式選單。</p>
-      <div className="rune-3d-draw-guide-grid">
-        {DRAW_COUNT_GUIDE.map(item=><article className="rune-3d-draw-guide-card" key={item.key}>
+      <div className="rune-art-draw-guide-grid">
+        {DRAW_COUNT_GUIDE.map(item=><article className="rune-art-draw-guide-card" key={item.key}>
           <strong>{item.count} 張｜{item.label}</strong>
           <p>{item.description}</p>
         </article>)}
