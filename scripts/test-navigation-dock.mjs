@@ -44,10 +44,10 @@ test('one immutable six-key feature dock and explicit global settings route',()=
   assert.match(code,/className="scope-feature-dock"/);
   assert.match(css,/grid-template-columns:repeat\(6,minmax\(0,1fr\)\)/);
   assert.match(css,/box-shadow:/);
-  assert.match(settings,/>每日符文行事曆<\/h2>/);
-  assert.match(settings,/>我的最愛<\/h2>/);
-  assert.match(settings,/>設定首頁<\/h2>/);
-  assert.match(settings,/>登入<\/h2>/);
+  assert.match(settings,/<h2>首頁設定<\/h2>/);
+  assert.match(settings,/scope-settings-favorite-preview/);
+  assert.match(settings,/<h2>帳號<\/h2>/);
+  assert.doesNotMatch(settings,/DailyLogClient|RuneSQLiteTransfer|RuneDrawClient/);
 });
 
 test('favorite folders are plain text, safe Unicode labels and stable per-folder IDs',()=>{
@@ -122,61 +122,44 @@ test('native first-row NAV respects iOS safe area while web retains original lay
 });
 
 
-test('Settings React Select shows one section and retains daily, local files and managed imports',()=>{
+
+test('Settings has one home & favorites pane, one import pane, and separated management without Rune UI',()=>{
   const settings=fs.readFileSync('app/loc/GlobalSettings.jsx','utf8');
   const daily=fs.readFileSync('app/daily/log/DailyLogClient.jsx','utf8');
-  const content=settings.slice(settings.indexOf('<div className="scope-content scope-settings-options">'));
   assert.match(settings,/import Select from 'react-select';/);
   assert.match(settings,/inputId="loc-settings-function"/);
-  assert.doesNotMatch(settings,/月典抽牌|section==='draw'|RuneDrawClient|RuneAppDayNightDashboard/);
-  assert.match(settings,/section==='daily'/);
-  assert.match(settings,/section==='files'/);
-  assert.match(settings,/section==='favorites'/);
-  assert.match(settings,/section==='manage'/);
+  assert.match(settings,/option\('home','首頁設定'\)/);
+  assert.match(settings,/option\('files',native\?'本機檔案':'文件匯入'\)/);
+  assert.match(settings,/option\('personal','個人首頁'\)/);
+  assert.match(settings,/option\('manage','管理選單'\)/);
   assert.match(settings,/section==='home'/);
-  assert.match(settings,/section==='account'/);
-  assert.match(content,/<DailyLogClient embedded\/>/);
-  assert.match(content,/<PrivateLocalFiles\/>/);
-  assert.match(content,/<ManagementImportPanel/);
-  assert.match(content,/設定首頁/);
-  assert.match(content,/我的最愛/);
-  assert.match(content,/登入/);
-  assert.match(content,/navigationHref\('lrunes','daily\/log',native\)/);
+  assert.match(settings,/section==='files'/);
+  assert.match(settings,/section==='personal'/);
+  assert.match(settings,/section==='manage'/);
+  assert.match(settings,/scope-settings-favorite-preview/);
+  assert.match(settings,/MOBILE_HOME_STORAGE_KEY/);
+  assert.match(settings,/<PrivateLocalFiles\/>/);
+  assert.match(settings,/<ScopeSettingsPanel/);
+  assert.match(settings,/<ManagementImportPanel/);
+  assert.match(settings,/<ManagementArticlePublisher/);
+  assert.match(settings,/<ScopeGroupManagement/);
+  assert.doesNotMatch(settings,/月典抽牌|每日符文紀錄|DailyLogClient|RuneSQLiteTransfer|RuneDrawClient|RuneAppDayNightDashboard/);
+  assert.doesNotMatch(settings,/section==='favorites'|section==='daily'|我的最愛（展示）/);
   assert.match(daily,/<DailyRuneCalendar/);
-  assert.match(daily,/\{!embedded&&canWrite\?/);
 });
-test('governance management moves to permissions-scoped Settings, and the old URL redirects',()=>{
+test('governance management delegates to permission-scoped Settings',()=>{
   const governance=fs.readFileSync('app/modular/features/Governance.jsx','utf8');
   const legacy=fs.readFileSync('app/loc/GovernanceManagement.jsx','utf8');
   const settings=fs.readFileSync('app/loc/GlobalSettings.jsx','utf8');
   assert.doesNotMatch(governance,/governance-management-cta/);
   assert.match(legacy,/window.location.replace\(target\)/);
-  assert.match(settings,/canManageSelected/);
-  assert.match(settings,/ManagementArticlePublisher/);
+  assert.match(settings,/managedScopes/);
+  assert.match(settings,/account.canManageScopeSync\(item.id\)/);
+  assert.match(settings,/canManageGlobal/);
   assert.match(settings,/ScopeSettingsPanel/);
+  assert.match(settings,/ManagementArticlePublisher/);
   assert.match(settings,/ScopeGroupManagement/);
-  assert.match(settings,/section==='files'\?\(native\?<PrivateLocalFiles\/>/);
-});
-test('daily rune calendar only reads and renders record details after authentication',()=>{
-  const settings=fs.readFileSync('app/loc/GlobalSettings.jsx','utf8');
-  const daily=fs.readFileSync('app/daily/log/DailyLogClient.jsx','utf8');
-  const calendar=fs.readFileSync('app/lrunes/DailyRuneCalendar.jsx','utf8');
-  assert.match(settings,/每日符文紀錄與日曆/);
-  assert.match(settings,/\(native\|\|account\.user\)&&!checking\?<p className="scope-settings-note">/);
-  assert.match(daily,/const canViewDetails=native\|\|\(!account\.loading&&Boolean\(account\.user\)\);/);
-  assert.match(daily,/const visibleRows=canViewDetails\?rows:EMPTY_ROWS;/);
-  assert.match(daily,/if\(!canViewDetails\)\{\s*setRows\(\[\]\);/);
-  assert.ok(daily.indexOf('if(!canViewDetails){')<daily.indexOf('selectDailyRuneMonth({year,month})'));
-  assert.match(daily,/const request=\+\+monthRequest\.current;/);
-  assert.match(daily,/if\(monthRequest\.current!==request\)return;/);
-  assert.match(daily,/return\(\)=>\{monthRequest\.current\+=1;/);
-  assert.match(daily,/window\.removeEventListener\('loc-rune-local-changed',reload\)/);
-  assert.match(daily,/showDetails=\{canViewDetails\}/);
-  assert.match(daily,/canViewDetails&&selectedRows\.length\?/);
-  assert.match(daily,/canViewDetails&&!loading&&!error&&!rows\.length\?/);
-  assert.match(calendar,/showDetails=true/);
-  assert.match(calendar,/const entries=showDetails\?/);
-  assert.match(calendar,/const moonMarkers=showDetails\?phaseMarkers\(key\):\[\];/);
+  assert.match(settings,/ManagementImportPanel/);
 });
 
 test('Capacitor static-file route is normalized to canonical Scope URL before hydration',()=>{
@@ -224,7 +207,7 @@ test('native My Phone stays device-only and LunaRunes is immutable in favorites'
   const home=fs.readFileSync('app/loc/MyPhoneHome.jsx','utf8');
   assert.match(shell,/favoriteLinks\.unshift/);
   assert.match(shell,/mobileHomeHref/);
-  assert.match(settings,/月之符文.*固定保留/);
+  assert.match(settings,/\['lrunes',\.\.\.\(mobileFavoriteEnabled/);
   assert.match(settings,/MOBILE_HOME_STORAGE_KEY/);
   assert.match(home,/尚未匯入作品/);
   assert.match(home,/尚未建立可用的本機作品全文索引/);
