@@ -97,7 +97,7 @@ test('NAV pins return to LOC, conditionally scrolls and expands directories as a
   assert.equal(fs.readFileSync('app/styles/uiux.css','utf8').includes('.scope-global{\n  position:sticky;'),false);
   assert.ok(fs.readFileSync('app/styles/bottom-navigation.css','utf8').includes('.scope-feature-dock{\n  position:fixed;'));
   assert.match(global,/@import "\.\/styles\/nav.css";/);
-  assert.match(settings,/新增、刪除與目錄管理暫不啟用/);
+  assert.doesNotMatch(settings,/新增、刪除與目錄管理暫不啟用/);
   assert.match(settings,/FOLDERS_SETTING_KEY/);
 });
 
