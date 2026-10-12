@@ -196,4 +196,19 @@ assert.match(cssHero,/width:min\(calc\(100% - clamp\(16px,3vw,56px\)\),1880px\)/
 assert.match(cssHero,/height:clamp\(620px,80dvh,980px\)/,'stage must be Hero-sized on desktop');
 assert.match(cssHero,/\.rune-3d-stage:fullscreen/,'Fullscreen view must use the browser-native API');
 assert.match(cssHero,/\.rune-3d-result-shelf/,'results belong inside the unified stage');
+
+/* Authored moonlit mist: never replace the original 66 VFX with a homemade scene. */
+assert.match(stage,/export function RuneMistBackdrop/,'draw stage must expose persistent native fog');
+assert.match(stage,/AUTHORED_EFFECT_FILES\['M:foot_smoke2'\]/,'fog must be an existing Effekseer smoke module');
+assert.match(stage,/ambientPauseRef/,'mobile GPU should pause fog drawing during the main rune performance');
+assert.match(stage,/ambientRetire\?\.stop\?\.\(\)/,'persistent fog clips must retire old native handles');
+assert.match(stage,/quality==='high'\?1\.5:1/,'ambient DPR needs both high-quality and balanced modes');
+assert.match(drawFlow,/RuneMistBackdrop phase=\{phase\} quality=\{sceneQuality\}/);
+assert.match(drawFlow,/rune-skin-moon rune-3d-night-moon/,'reuse existing moon artwork instead of DIY moon effects');
+assert.match(drawFlow,/setSceneQuality\(current=>current==='high'\?'balanced':'high'\)/,'quality toggle must be functional');
+assert.match(cssHero,/data-ritual-phase="waiting"/,'fog reacts to drawing click');
+assert.match(cssHero,/data-ritual-phase="revealing"/,'authored fog clears for giant Rune');
+assert.match(cssHero,/data-ritual-phase="transfer"/,'fog returns after the Rune settles');
+assert.doesNotMatch(drawFlow,/new THREE\.Points|ShaderMaterial|RuneAura/,'no generated fog/particles/shader');
+
 console.log('Rune embodiment: 66 distinct authored VFX, 66 unique semantic symbols, all pinned with provenance.');

@@ -2,7 +2,7 @@
 
 import {useEffect,useRef,useState} from 'react';
 import {motion,useReducedMotion} from 'motion/react';
-import EffekseerStage,{WaitingEffekseerStage} from './effekseer/EffekseerStage';
+import EffekseerStage,{WaitingEffekseerStage,RuneMistBackdrop} from './effekseer/EffekseerStage';
 import {navigationHref} from '../modular/nav-destinations.mjs';
 import useNativeNavigation from '../modular/use-native-navigation';
 import {selectRows} from '../loc/db-query.mjs';
@@ -57,6 +57,7 @@ export default function Rune3DPreview({mode='duel'}){
   const [sample,setSample]=useState(null);
   const [focusedRune,setFocusedRune]=useState(null);
   const [ceremonySubject,setCeremonySubject]=useState('glyph');
+  const [sceneQuality,setSceneQuality]=useState('high');
   const [phase,setPhase]=useState('idle'); // idle → waiting → revealing → transfer → ready
   const [pending,setPending]=useState(null);
   const [transferTarget,setTransferTarget]=useState(null);
@@ -199,10 +200,18 @@ export default function Rune3DPreview({mode='duel'}){
             onClick={()=>setCeremonySubject('glyph')}>巨大符文字</button>
           <button type="button" aria-pressed={ceremonySubject==='card'}
             onClick={()=>setCeremonySubject('card')}>漂浮卡圖</button>
+          <button type="button" aria-pressed={sceneQuality==='high'}
+            onClick={()=>setSceneQuality(current=>current==='high'?'balanced':'high')}>
+            {sceneQuality==='high'?'高畫質':'省電模式'}
+          </button>
         </div>}
     </nav>
     <section className="rune-3d-stage" aria-label={label} ref={stageRef}
       data-ritual-phase={isList?'atlas':phase}>
+      {!isList?<div className="rune-3d-night-backdrop" aria-hidden="true">
+        <span className="rune-skin-moon rune-3d-night-moon"/>
+      </div>:null}
+      {!isList?<RuneMistBackdrop phase={phase} quality={sceneQuality}/>:null}
       {isList?(presented?<EffekseerStage rune={presented}
         onGlyphClick={()=>choose(presented)}/>:<div className="rune-3d-awaiting">請選擇符文</div>):
         <>
@@ -211,7 +220,7 @@ export default function Rune3DPreview({mode='duel'}){
           {phase==='revealing'&&pending?<EffekseerStage key={pending.birth}
             rune={pending.card} direction={pending.direction} ceremony
             appearance={ceremonySubject} cardSrc={runeImage(pending.card)}
-            vfxOnly onCeremonyComplete={()=>setPhase(current=>current==='revealing'?'transfer':current)}
+            quality={sceneQuality} vfxOnly onCeremonyComplete={()=>setPhase(current=>current==='revealing'?'transfer':current)}
             onGlyphClick={()=>{}}/>:null}
           {phase==='idle'?<button type="button" className="rune-3d-tap-to-draw"
             onClick={drawOne} disabled={busy}>點選畫面抽牌</button>:null}

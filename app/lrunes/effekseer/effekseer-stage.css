@@ -267,3 +267,55 @@
   .rune-3d-result-rune,.rune-3d-result-slot{flex-basis:62px;width:62px;height:75px}
   .rune-3d-tap-to-draw{padding:15px}
 }
+
+/* The moon is the EXISTING Rune moon visual from skin-lab.css; the moving fog
+   is the vendored Effekseer smoke scene. Only compositing changes by ritual phase.
+   No synthetic particles, fog shader, homemade aura, or moving CSS clouds. */
+.rune-3d-stage:not([data-ritual-phase="atlas"]){
+  background:#080f28;
+}
+.rune-3d-night-backdrop{
+  position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;
+  background:radial-gradient(ellipse 64% 72% at 70% 21%,#353d66 0%,#1a2445 46%,#0a122a 85%,#070c1d 100%);
+}
+.rune-3d-night-backdrop .rune-3d-night-moon{
+  position:absolute;
+  width:clamp(110px,13vw,212px);
+  height:clamp(110px,13vw,212px);
+  left:73%;top:22%;margin:0;
+  transform:translate(-50%,-50%);
+  opacity:.74;filter:saturate(.7) brightness(.95);
+  pointer-events:none;
+}
+.rune-3d-mist-backdrop{
+  position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none;
+  opacity:.86;transform:translate3d(0,0,0) scale(1);
+  transition:opacity 1050ms ease,transform 1300ms cubic-bezier(.22,.72,.23,1);
+  will-change:opacity,transform;
+}
+.rune-3d-mist-backdrop .rune-effekseer-stage{position:absolute;inset:0}
+.rune-3d-mist-backdrop .rune-effekseer-canvas{opacity:.82}
+.rune-3d-stage[data-ritual-phase="waiting"] .rune-3d-mist-backdrop{
+  opacity:.48;transform:translate3d(3%,-2%,0) scale(1.16);
+}
+.rune-3d-stage[data-ritual-phase="revealing"] .rune-3d-mist-backdrop{
+  opacity:.12;transform:translate3d(8%,-4%,0) scale(1.35);
+}
+.rune-3d-stage[data-ritual-phase="transfer"] .rune-3d-mist-backdrop{
+  opacity:.48;transform:translate3d(3%,-1%,0) scale(1.12);
+}
+.rune-3d-stage[data-ritual-phase="ready"] .rune-3d-mist-backdrop,
+.rune-3d-stage[data-ritual-phase="idle"] .rune-3d-mist-backdrop{
+  opacity:.86;transform:translate3d(0,0,0) scale(1);
+}
+.rune-3d-stage:not([data-ritual-phase="atlas"])>.rune-effekseer-stage{z-index:2}
+@media(max-width:700px){
+ .rune-3d-night-backdrop .rune-3d-night-moon{
+   left:74%;top:23%;width:clamp(88px,22vw,150px);height:clamp(88px,22vw,150px);opacity:.65
+ }
+ .rune-3d-mist-backdrop .rune-effekseer-canvas{opacity:.72}
+}
+@media(prefers-reduced-motion:reduce){
+ .rune-3d-mist-backdrop{transition:none;will-change:auto}
+}
+/* End moonlit authored fog backdrop. */

@@ -149,8 +149,10 @@ const WAITING_AUTHORED_EFFECT=Object.freeze({
   path:SOURCE+AUTHORED_EFFECT_FILES['M:MagicArea'],tuning:{scale:2.2,speed:.8}
 });
 
-function EffekseerCanvas({effect,reduced,onReady,ceremony=false,groupEffect=null,waiting=false}){
+function EffekseerCanvas({effect,reduced,onReady,ceremony=false,groupEffect=null,waiting=false,ambient=false,ambientPaused=false,quality='high'}){
   const canvas=useRef(null);
+  const ambientPauseRef=useRef(ambientPaused);
+  ambientPauseRef.current=ambientPaused;
   const [status,setStatus]=useState('正在啟動 Effekseer…');
   useEffect(()=>{
     let active=true,frame=0,observer;
@@ -170,7 +172,9 @@ function EffekseerCanvas({effect,reduced,onReady,ceremony=false,groupEffect=null
         const resize=()=>{
           const r=target.getBoundingClientRect();
           if(!r.width||!r.height)return;
-          renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+          // Renderer-native resolution control, not a stretched CSS screenshot.
+          const maxDpr=ambient?(quality==='high'?1.5:1):quality==='high'?2:1.2;
+          renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,maxDpr));
           renderer.setSize(Math.round(r.width),Math.round(r.height),false);
           camera.aspect=r.width/r.height;camera.updateProjectionMatrix();camera.updateMatrixWorld();
         };
@@ -193,7 +197,7 @@ function EffekseerCanvas({effect,reduced,onReady,ceremony=false,groupEffect=null
         }
         // The effect data, materials and textures remain exactly as authored.
         const effectFile=effect.path;
-        let loaded,started=false,playingHandle=null,settledEffectStarted=false;
+        let loaded,started=false,playingHandle=null,settledEffectStarted=false,ambientLastSpawn=0,ambientRetire=null;
         const extras=[];
         loaded=context.loadEffect(effectFile,1,()=>{
           if(!active)return;
@@ -207,6 +211,7 @@ function EffekseerCanvas({effect,reduced,onReady,ceremony=false,groupEffect=null
              if(tuning?.speed)handle.setSpeed(tuning.speed);
              if(tuning?.color)handle.setAllColor(...tuning.color);
              started=true;
+             ambientLastSpawn=0;
              // Overlay authored assets only when the base effect has loaded successfully.
              for(const overlay of effect.overlays||[]){
                let authoredOverlay;
@@ -272,13 +277,27 @@ function EffekseerCanvas({effect,reduced,onReady,ceremony=false,groupEffect=null
         const draw=()=>{
           if(!active)return;
           const delta=Math.min(clock.getDelta(),.05);
-          if(started&&!document.hidden){
+          if(started&&!document.hidden&&!ambientPauseRef.current){
             elapsed+=delta;
+            if(ambient&&elapsed-ambientLastSpawn>=3.4){
+              ambientLastSpawn=elapsed;
+              // Overlap short, licensed smoke clips to avoid an empty sky.
+              // The old handle is stopped through Effekseer's native API.
+              ambientRetire?.stop?.();
+              ambientRetire=playingHandle;
+              try{
+                playingHandle=context.play(loaded,0,0,0);
+                const effectScale=effect.tuning?.scale||1;
+                playingHandle.setScale(effectScale,effectScale,effectScale);
+                if(effect.tuning?.speed)playingHandle.setSpeed(effect.tuning.speed);
+                if(effect.tuning?.color)playingHandle.setAllColor(...effect.tuning.color);
+              }catch(error){if(active)setStatus('霧氣重播失敗：'+String(error?.message||error));}
+            }
             if(ceremony){
               camera.position.z=ritualCameraDistance(elapsed);
               camera.updateMatrixWorld();
             }
-            if(elapsed>=(ceremony?8.7:waiting?1.4:4.8)){
+            if(!ambient&&elapsed>=(ceremony?8.7:waiting?1.4:4.8)){
               // One finite reveal, without a persistent blank WebGL animation loop.
               context.stopAll();
               renderer.clear();
@@ -287,6 +306,11 @@ function EffekseerCanvas({effect,reduced,onReady,ceremony=false,groupEffect=null
             // Move the actual licensed Effekseer effect handle, not a decorative SVG.
             // These fixed transforms never emit particles or alter the authored package.
             const tuning=effect.tuning;
+            if(playingHandle&&ambient){
+              // A gentle sideways sweep, performed on the existing authored
+              // smoke handle rather than a synthetic animation effect.
+              playingHandle.setLocation(Math.sin(elapsed*.21)*.95,-.75+Math.sin(elapsed*.15)*.18,0);
+            }
             if(playingHandle&&tuning?.motion){
               const base=tuning.scale||1;
               const phase=elapsed/4.8;
@@ -435,19 +459,36 @@ function EffekseerCanvas({effect,reduced,onReady,ceremony=false,groupEffect=null
       try{context?.release();}catch{}
       try{renderer?.dispose();}catch{}
     };
-  },[effect,reduced,ceremony,groupEffect,waiting]);
+  },[effect,reduced,ceremony,groupEffect,waiting,ambient,quality]);
   return <div className="rune-effekseer-canvas-wrap">
     <canvas ref={canvas} className="rune-effekseer-canvas" aria-hidden="true"/>
-    {status?<p className="rune-effekseer-status" role="status">{status}</p>:null}
+    {!ambient&&status?<p className="rune-effekseer-status" role="status">{status}</p>:null}
   </div>;
 }
+
+// Persistent moonlit mist comes exclusively from an already vendored Effekseer
+// file. Its breathing/clearing is playback and composition, never DIY particles.
+const AUTHORED_MOON_MIST=Object.freeze({
+  path:SOURCE+AUTHORED_EFFECT_FILES['M:foot_smoke2'],
+  tuning:{scale:4.8,speed:.48,color:[198,205,227,150]}
+});
+export function RuneMistBackdrop({phase='idle',quality='high'}){
+  const reduced=useReducedMotion();
+  const clearing=phase==='waiting'||phase==='revealing';
+  return <div className="rune-3d-mist-backdrop" data-clearing={clearing?'true':'false'}
+    data-quality={quality} aria-hidden="true">
+    <EffekseerCanvas effect={AUTHORED_MOON_MIST} reduced={reduced}
+      ambient ambientPaused={phase==='revealing'} quality={quality}/>
+  </div>;
+}
+
 export function WaitingEffekseerStage(){
   const reduced=useReducedMotion();
   return <div className="rune-effekseer-stage" data-source="authored-waiting">
     <EffekseerCanvas effect={WAITING_AUTHORED_EFFECT} reduced={reduced} waiting/>
   </div>;
 }
-export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,direction=null,ceremony=false,appearance='glyph',cardSrc=null,onCeremonyComplete=null}){
+export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,direction=null,ceremony=false,appearance='glyph',cardSrc=null,onCeremonyComplete=null,quality='high'}){
   const reduced=useReducedMotion();
   const [replay,setReplay]=useState(0);
   const [visibleKey,setVisibleKey]=useState('');
@@ -470,7 +511,7 @@ export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,directio
   return <div className="rune-effekseer-stage" data-source="effekseer" data-rune={word}
     data-ceremony={ceremony?'summoning':undefined}
     data-direction={direction==='正位'?'upright':direction==='半正位'?'semi-upright':direction==='半逆位'?'semi-reversed':direction==='逆位'?'reversed':undefined}>
-    <EffekseerCanvas key={key} effect={effect} groupEffect={groupEffect} reduced={reduced} ceremony={ceremony} onReady={()=>setVisibleKey(key)}/>
+    <EffekseerCanvas key={key} effect={effect} groupEffect={groupEffect} reduced={reduced} ceremony={ceremony} quality={quality} onReady={()=>setVisibleKey(key)}/>
     <div className="rune-effekseer-glyph-position">
       <AnimatePresence mode="wait">
         {visualReady?<motion.button key={key} type="button"
