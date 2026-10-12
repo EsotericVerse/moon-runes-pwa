@@ -117,7 +117,7 @@ export const RUNE_EFFECT_KEYS=Object.freeze({
   "Memory": "T:Light2",
   "Boundary": "G:ef_barrior01",
   "Domain": "T:Magic2",
-  "Mirror": "S:ImageDistortion",
+  "Mirror": "G:ef_ice03",
   "Core": "G:ef_fire01",
   "Path": "T:Arrow1",
   "Sever": "T:Sword5",
@@ -125,7 +125,7 @@ export const RUNE_EFFECT_KEYS=Object.freeze({
   "Chain": "T:hozyo2",
   "Awaken": "T:Light1",
   "Separation": "T:Blow8",
-  "Insight": "M:Holy1",
+  "Insight": "M:Sylph15",
   "Error": "M:Breakdown",
   "Birth": "R:Cure1",
   "Aging": "M:StairBroken3",
@@ -138,19 +138,19 @@ export const RUNE_EFFECT_KEYS=Object.freeze({
   "Tree": "T:Cure4",
   "Blossom": "T:Cure5",
   "Leaf": "M:A_Sylph1",
-  "Grass": "M:Magic1_earth",
-  "Root": "M:Gohlem1",
+  "Grass": "T:Wind1",
+  "Root": "M:Magic1_earth",
   "Seed": "T:Cure7",
   "Fruit": "T:hozyo4",
-  "Branch": "M:Sylph15",
+  "Branch": "G:ef_lightning03",
   "Gold": "M:Gohlem5",
-  "Jade": "M:IcicleLocus",
-  "Crystal": "M:Icicle2",
+  "Jade": "S:Unlit",
+  "Crystal": "S:RampMap",
   "Land": "M:Magic2_earth",
-  "Stone": "M:Rock1",
-  "Diamond": "M:Gohlem_Shield2",
+  "Stone": "M:Gohlem_Shield2",
+  "Diamond": "T:Light4",
   "Ore": "M:Rock2",
-  "Dust": "M:foot_smoke5",
+  "Dust": "R:Blow1",
   "Radiance": "R:Light",
   "Shadow": "S:Falloff",
   "Water": "R:ToonWater",
@@ -159,30 +159,33 @@ export const RUNE_EFFECT_KEYS=Object.freeze({
   "Earth": "T:Soil1",
   "Thunder": "G:ef_lightning02",
   "Air": "M:Sylph2",
-  "Sun": "M:Magic1_holy",
+  "Sun": "G:ef_holy01",
   "Moon": "M:Holy2",
   "Star": "M:meteo1",
   "Phase": "M:Sylph10",
-  "Clarity": "M:Magic2_holy",
+  "Clarity": "M:Holy1",
   "Time": "M:Sylph7",
-  "Space": "M:Magic2_wind",
+  "Space": "S:PolarCoords",
   "Reason": "M:Magic1_wind",
   "Blessing": "T:Cure1",
   "Calamity": "M:Thunder3",
   "Blank": "M:foot_smoke8",
   "Dream": "T:Blow13",
-  "Illusion": "M:AquaPoint",
+  "Illusion": "M:Wind_Impact",
   "Karma": "M:Sylph11",
-  "Void": "M:Wind_Impact",
-  "Result": "M:Attack_Impact",
-  "Chaos": "M:Sylph13",
-  "Fate": "M:Lance5"
+  "Void": "M:AquaPoint",
+  "Result": "T:Blow10",
+  "Chaos": "SAMPLE:Simple_Ring_Shape1",
+  "Fate": "M:Sylph13"
 });
 export const CANONICAL_RUNE_ENGLISH=Object.freeze(["Virtue","Spirit","Soul","Spectrum","Memory","Boundary","Domain","Mirror","Core","Path","Sever","Seal","Chain","Awaken","Separation","Insight","Error","Birth","Aging","Illness","Death","Heart","Love","Language","Resonance","Tree","Blossom","Leaf","Grass","Root","Seed","Fruit","Branch","Gold","Jade","Crystal","Land","Stone","Diamond","Ore","Dust","Radiance","Shadow","Water","Flame","Wind","Earth","Thunder","Air","Sun","Moon","Star","Phase","Clarity","Time","Space","Reason","Blessing","Calamity","Blank","Dream","Illusion","Karma","Void","Result","Chaos","Fate"]);
 // Existing Effekseer module playback transforms only: no authored particles or custom shaders.
-export const RUNE_EFFECT_TUNING=Object.freeze({"Resonance":{"scale":2.25,"speed":1,"motion":"pulse"},"Aging":{"speed":0.75,"scale":2.1},"Grass":{"speed":0.78,"scale":2.1},"Root":{"speed":0.84,"scale":2.1},"Branch":{"scale":2.1,"speed":0.87},"Gold":{"speed":0.85,"scale":2.1},"Jade":{"speed":0.76,"scale":2.1},"Crystal":{"speed":0.87,"scale":2.1},"Ore":{"scale":2.08,"speed":0.8},"Flame":{"scale":2.35,"speed":0.94},"Star":{"scale":2.28,"speed":0.85},"Phase":{"scale":1.9,"speed":0.82,"motion":"hourglass-scale"},"Time":{"scale":1.95,"speed":0.8,"motion":"hourglass-turn"},"Space":{"scale":2.1,"speed":0.82},"Void":{"scale":2.35,"speed":0.8,"motion":"collapse"},"Result":{"scale":2.1,"speed":0.9},"Chaos":{"scale":2.25,"speed":1,"motion":"chaotic"},"Fate":{"scale":2.25,"speed":0.7},"Insight":{"scale":2.1},"Error":{"scale":2.1},"Leaf":{"scale":2.1},"Land":{"scale":2.1},"Stone":{"scale":2.05,"speed":0.86},"Diamond":{"scale":2.1},"Dust":{"scale":2.1},"Air":{"scale":2.1},"Sun":{"scale":2.1},"Moon":{"scale":2.1},"Clarity":{"scale":2.1},"Reason":{"scale":2.1},"Calamity":{"scale":2.1},"Blank":{"scale":2.1},"Illusion":{"scale":2.1},"Karma":{"scale":1.9,"speed":0.9,"motion":"hourglass-wobble"}});
+export const RUNE_EFFECT_TUNING=Object.freeze({"Resonance":{"scale":2.25,"speed":1,"color":[185,228,255,255],"motion":"pulse","rotationZ":1.5707963267948966},"Aging":{"speed":0.75,"scale":2.1},"Grass":{"scale":1.85,"speed":0.65,"color":[134,244,132,255],"motion":"sprout"},"Root":{"scale":1.75,"speed":0.72,"color":[170,126,83,255],"motion":"root-down"},"Branch":{"scale":1.75,"speed":0.55,"color":[160,127,79,255],"motion":"branch-out"},"Gold":{"speed":0.85,"scale":2.1},"Jade":{"scale":2.05,"speed":0.72,"color":[175,240,206,255],"motion":"gentle"},"Crystal":{"scale":1.9,"speed":0.85,"color":[221,242,255,255],"motion":"facet"},"Ore":{"scale":2.08,"speed":0.7,"color":[208,165,112,255],"motion":"ore-rise"},"Flame":{"scale":2.35,"speed":0.94},"Star":{"scale":2.25,"speed":0.82,"color":[230,242,255,255]},"Phase":{"scale":1.9,"speed":0.82,"motion":"hourglass-scale"},"Time":{"scale":1.95,"speed":0.8,"motion":"hourglass-turn"},"Space":{"scale":2.15,"speed":0.83,"color":[176,208,255,255],"motion":"space-contract"},"Void":{"scale":2.05,"speed":0.8,"color":[181,170,225,255],"motion":"collapse"},"Result":{"scale":2.25,"speed":0.75,"color":[245,221,165,255],"motion":"result"},"Chaos":{"scale":2.25,"speed":0.83,"color":[198,154,239,255],"motion":"chaos-orbit"},"Fate":{"scale":2.1,"speed":0.62,"color":[192,176,240,255],"motion":"fate-converge"},"Insight":{"scale":2.35,"speed":1.3,"color":[255,239,170,255],"motion":"revelation"},"Error":{"scale":2.1,"speed":0.85,"color":[255,78,87,255]},"Leaf":{"scale":2.1},"Land":{"scale":2.1},"Stone":{"scale":1.98,"speed":0.82,"color":[166,156,143,255],"motion":"weight"},"Diamond":{"scale":1.85,"speed":0.62,"color":[247,250,255,255],"motion":"facet"},"Dust":{"scale":1.7,"speed":0.67,"color":[187,175,165,210],"motion":"dust-drift"},"Air":{"scale":2.1},"Sun":{"scale":2.2,"speed":0.79,"color":[255,199,80,255],"motion":"radiate"},"Moon":{"scale":2.1},"Clarity":{"scale":2.1,"speed":0.95,"color":[255,255,245,255],"motion":"revelation"},"Reason":{"scale":2.1},"Calamity":{"scale":2.1},"Blank":{"scale":2.1},"Illusion":{"scale":2.2,"speed":0.65,"color":[210,208,234,200],"motion":"mist"},"Karma":{"scale":1.9,"speed":0.9,"motion":"hourglass-wobble"},"Mirror":{"scale":1.9,"speed":0.73,"color":[203,224,247,255],"motion":"reflect"}});
+// Only licensed, authored Effekseer effects may be layered; no new particle emitter.
+export const RUNE_VFX_OVERLAYS=Object.freeze({"Mirror":[["S:ImageDistortion","mirror"]],"Error":[["T:Sword5","cross-forward"],["T:Sword5","cross-backward"]],"Root":[["G:ef_lightning03","root-tendrils"]],"Chaos":[["SAMPLE:Simple_Ring_Shape2","counter-orbit"]]});
 export function runeEffectFor(rune){
  const name=String(rune?.english_name||'').trim();
  const key=Object.hasOwn(RUNE_EFFECT_KEYS,name)?RUNE_EFFECT_KEYS[name]:null;
- return key?{key,path:'/vendor/effekseer/'+AUTHORED_EFFECT_FILES[key],tuning:RUNE_EFFECT_TUNING[name]||null}:null;
+ return key?{key,path:'/vendor/effekseer/'+AUTHORED_EFFECT_FILES[key],tuning:RUNE_EFFECT_TUNING[name]||null,
+  overlays:(RUNE_VFX_OVERLAYS[name]||[]).map(([overlayKey,role])=>({key:overlayKey,role,path:'/vendor/effekseer/'+AUTHORED_EFFECT_FILES[overlayKey]}))}:null;
 }

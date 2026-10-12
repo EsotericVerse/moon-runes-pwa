@@ -106,3 +106,9 @@
 @media(max-width:480px){.rune-3d-library-groups{grid-template-columns:repeat(3,minmax(0,1fr))}.rune-3d-glyph-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.rune-3d-glyph-tile{min-height:114px;padding:8px 2px}.rune-3d-glyph-letter{font-size:clamp(2.1rem,11vw,3.25rem)}.rune-3d-glyph-english{font-size:.62rem}.rune-3d-library-manifestation .rune-3d-stage{height:50dvh;min-height:360px}}
 
 .rune-3d-awaiting{display:flex;align-items:center;justify-content:center;min-height:100%;padding:26px;text-align:center;color:#f0dfc5;font-size:clamp(1rem,2.2vw,1.25rem);background:radial-gradient(ellipse at 50% 45%,#443b6861,#090916 74%)}
+
+/* Review queue only: preserve original nine-group directory and card drawing. */
+.rune-3d-review-toolbar{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 0}
+.rune-3d-review-toolbar button[aria-pressed="true"]{background:#78609c;border-color:#f5d49c}
+.rune-3d-review-stepping{display:flex;align-items:center;gap:10px}
+.rune-3d-review-stepping span{font:600 .86rem/1.4 system-ui,sans-serif;color:#f6e5cc;min-width:40px;text-align:center}

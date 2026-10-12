@@ -141,6 +141,7 @@ function EffekseerCanvas({effect,reduced,onReady}){
         // The effect data, materials and textures remain exactly as authored.
         const effectFile=effect.path;
         let loaded,started=false,playingHandle=null;
+        const extras=[];
         loaded=context.loadEffect(effectFile,1,()=>{
           if(!active)return;
           setStatus('');
@@ -151,6 +152,31 @@ function EffekseerCanvas({effect,reduced,onReady}){
              if(tuning?.scale)handle.setScale(tuning.scale,tuning.scale,tuning.scale);
              if(tuning?.rotationZ!==undefined)handle.setRotation(0,0,tuning.rotationZ);
              if(tuning?.speed)handle.setSpeed(tuning.speed);
+             if(tuning?.color)handle.setAllColor(...tuning.color);
+             started=true;
+             // Overlay authored assets only when the base effect has loaded successfully.
+             for(const overlay of effect.overlays||[]){
+               let authoredOverlay;
+               authoredOverlay=context.loadEffect(overlay.path,1,()=>{
+                 if(!active||!started)return;
+                 try{
+                   const other=context.play(authoredOverlay,0,0,0);
+                   if(overlay.role==='mirror')other.setScale(-1.35,1.35,1.35);
+                   else if(overlay.role.startsWith('cross-')){
+                     other.setScale(1.65,1.65,1.65);
+                     other.setRotation(0,0,overlay.role==='cross-forward'?Math.PI/4:-Math.PI/4);
+                     other.setAllColor(255,70,78,255);
+                   }else if(overlay.role==='root-tendrils'){
+                     other.setScale(.85,-1.1,.85);
+                     other.setAllColor(171,124,79,255);
+                   }else if(overlay.role==='counter-orbit'){
+                     other.setScale(1.95,1.95,1.95);
+                     other.setAllColor(149,210,255,255);
+                   }
+                   extras.push({handle:other,role:overlay.role});
+                 }catch(error){if(active)setStatus('附加特效無法播放：'+String(error?.message||error));}
+               },(message,url)=>{if(active)setStatus('附加 Effekseer 素材載入失敗：'+String(message||url));});
+             }
              started=true;
            }catch(error){setStatus('特效無法播放：'+String(error?.message||error));}
           onReady?.();
@@ -173,24 +199,71 @@ function EffekseerCanvas({effect,reduced,onReady}){
             const tuning=effect.tuning;
             if(playingHandle&&tuning?.motion){
               const base=tuning.scale||1;
-              if(tuning.motion==='collapse'){
-                const scale=base*Math.pow(Math.max(0,1-elapsed/4.2),2);
-                playingHandle.setScale(scale,scale,scale);
-              }else if(tuning.motion==='pulse'){
-                const scale=base*(1+.18*Math.sin(elapsed*2*Math.PI*3.5));
-                playingHandle.setScale(scale,scale,scale);
-              }else if(tuning.motion==='hourglass-scale'){
-                const scale=base*(1+.24*Math.sin(elapsed*2*Math.PI/2.1));
-                playingHandle.setScale(scale,scale,scale);
-              }else if(tuning.motion==='hourglass-turn'){
-                playingHandle.setRotation(0,0,elapsed*2*Math.PI/3.2);
-              }else if(tuning.motion==='hourglass-wobble'){
-                const amp=.37*Math.exp(-elapsed*.9);
-                playingHandle.setRotation(0,0,amp*Math.sin(elapsed*14));
-              }else if(tuning.motion==='chaotic'){
-                const scale=base*(1+.14*Math.sin(elapsed*11)+.11*Math.cos(elapsed*17));
-                playingHandle.setScale(scale,scale,scale);
-                playingHandle.setRotation(0,0,.31*Math.sin(elapsed*9));
+              const phase=elapsed/4.8;
+              switch(tuning.motion){
+                case 'collapse': {
+                  const size=base*Math.pow(Math.max(0,1-phase),2);
+                  playingHandle.setScale(size,size,size);break;
+                }
+                case 'pulse': {
+                  const size=base*(1+.21*Math.sin(elapsed*2*Math.PI*3.5));
+                  playingHandle.setScale(size,size,size);break;
+                }
+                case 'hourglass-scale': {
+                  const size=base*(1+.24*Math.sin(elapsed*2*Math.PI/2.1));
+                  playingHandle.setScale(size,size,size);break;
+                }
+                case 'hourglass-turn':playingHandle.setRotation(0,0,elapsed*2*Math.PI/3.2);break;
+                case 'hourglass-wobble':playingHandle.setRotation(0,0,.37*Math.exp(-elapsed*.9)*Math.sin(elapsed*14));break;
+                case 'chaotic':{
+                  const s=base*(1+.14*Math.sin(elapsed*11)+.11*Math.cos(elapsed*17));
+                  playingHandle.setScale(s,s,s);playingHandle.setRotation(0,0,.31*Math.sin(elapsed*9));break;
+                }
+                case 'chaos-orbit':playingHandle.setRotation(0,0,elapsed*1.95);break;
+                case 'revelation':{
+                  const s=base*(.45+.55*Math.min(1,elapsed/.85));
+                  playingHandle.setScale(s,s,s);break;
+                }
+                case 'sprout':{
+                  const s=base*(.28+.72*Math.min(1,phase*1.8));
+                  playingHandle.setScale(s,s,s);playingHandle.setLocation(0,-1.5+1.75*Math.min(1,phase*1.8),0);break;
+                }
+                case 'root-down':playingHandle.setLocation(0,.9-2.4*Math.min(1,phase*1.4),0);break;
+                case 'branch-out':{
+                  const grow=Math.min(1,phase*1.7);
+                  playingHandle.setScale(.28+base*grow,base*(.4+.6*grow),base);break;
+                }
+                case 'ore-rise':{
+                  const rise=Math.min(1,phase*1.5);
+                  playingHandle.setLocation(0,-2+2.7*rise,0);
+                  playingHandle.setScale(base*(.38+.62*rise),base*(.38+.62*rise),base);break;
+                }
+                case 'dust-drift':playingHandle.setLocation(-1.15+phase*2.45,.2+Math.sin(elapsed*.8)*.38,0);break;
+                case 'space-contract':{
+                  const s=base*(1.35-.85*Math.min(1,phase*1.6));
+                  playingHandle.setScale(s,s,s);break;
+                }
+                case 'mist':playingHandle.setLocation(Math.sin(elapsed*.7)*.38,Math.cos(elapsed*.43)*.23,0);break;
+                case 'fate-converge':{
+                  const r=1.6*Math.pow(Math.max(0,1-phase),1.3);
+                  playingHandle.setLocation(Math.cos(elapsed*2.1)*r,Math.sin(elapsed*2.1)*r,0);
+                  playingHandle.setRotation(0,0,elapsed*.45);break;
+                }
+                case 'radiate':{
+                  const s=base*(.85+.13*Math.sin(elapsed*2.2));playingHandle.setScale(s,s,s);break;
+                }
+                case 'gentle':playingHandle.setRotation(0,0,.05*Math.sin(elapsed*.8));break;
+                case 'facet':playingHandle.setRotation(0,0,.12*Math.sin(elapsed*.9));break;
+                case 'weight':playingHandle.setLocation(0,.45-.45*Math.min(1,elapsed/.55),0);break;
+                case 'reflect':playingHandle.setRotation(0,0,.06*Math.sin(elapsed*1.1));break;
+                case 'result':{
+                  const size=base*(.6+.4*Math.min(1,elapsed/.95));playingHandle.setScale(size,size,size);break;
+                }
+                default:break;
+              }
+              for(const {handle,role} of extras){
+                if(role==='counter-orbit')handle.setRotation(0,0,-elapsed*2.3);
+                else if(role==='root-tendrils')handle.setLocation(0,.9-2.4*Math.min(1,phase*1.4),0);
               }
             }
             context.update(delta*60);

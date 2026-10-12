@@ -3,6 +3,7 @@
 import {useEffect,useRef,useState} from 'react';
 import {selectRows} from '../loc/db-query.mjs';
 import {runeGlyphProfile} from './effekseer/rune-glyph-library.mjs';
+import {RUNE_VFX_REVIEW_NAMES} from './effekseer/rune-review-queue.mjs';
 import EffekseerStage from './effekseer/EffekseerStage';
 import {runeImage,runeName} from './rune-directory.mjs';
 import {navigationHref} from '../modular/nav-destinations.mjs';
@@ -32,6 +33,7 @@ export default function Rune3DLibrary(){
   const native=useNativeNavigation();
   const [allRunes,setAllRunes]=useState([]);
   const [groupId,setGroupId]=useState(1);
+  const [reviewMode,setReviewMode]=useState(false);
   const [focusId,setFocusId]=useState(1);
   const [details,setDetails]=useState(null);
   const [status,setStatus]=useState('loading');
@@ -61,15 +63,28 @@ export default function Rune3DLibrary(){
   },[reload]);
 
   const group=GROUPS.find(item=>item.id===groupId)||GROUPS[0];
-  const runes=allRunes.filter(rune=>inGroup(rune,group));
+  const runes=reviewMode?allRunes.filter(rune=>RUNE_VFX_REVIEW_NAMES.includes(rune.english_name)):
+    allRunes.filter(rune=>inGroup(rune,group));
   const current=runes.find(rune=>Number(rune.rune_id)===focusId)||runes[0]||null;
+  const jumpTo=(rune)=>{
+    if(!rune)return;
+    setFocusId(Number(rune.rune_id));setDetails(null);
+    requestAnimationFrame(()=>stageRef.current?.scrollIntoView({behavior:'smooth',block:'center'}));
+  };
+  const stepRune=(direction)=>{
+    const index=runes.findIndex(rune=>Number(rune.rune_id)===Number(current?.rune_id));
+    const next=runes[(index+direction+runes.length)%runes.length];
+    jumpTo(next);
+  };
   const selectGroup=(entry)=>{
-    setGroupId(entry.id);setFocusId(entry.start);setDetails(null);
+    setReviewMode(false);setGroupId(entry.id);setFocusId(entry.start);setDetails(null);
+  };
+  const showRejected=()=>{
+    const first=allRunes.find(rune=>RUNE_VFX_REVIEW_NAMES.includes(rune.english_name));
+    setReviewMode(true);if(first)setFocusId(Number(first.rune_id));setDetails(null);
   };
   const reveal=(rune)=>{
-    setFocusId(Number(rune.rune_id));setDetails(null);
-    // Touch-first navigation: the selected glyph is manifested immediately below.
-    requestAnimationFrame(()=>stageRef.current?.scrollIntoView({behavior:'smooth',block:'center'}));
+    jumpTo(rune);
   };
 
   return <main className="loc-next-main rune-skin-lab rune-3d-shell rune-3d-library" data-rune-3d-preview="list" data-rune-embodiment="66">
@@ -78,6 +93,12 @@ export default function Rune3DLibrary(){
       <h1>六十六枚符文 · 字之形</h1>
       <p>每枚符文都有自己的文字本體。相近的符文共享合適的字型筆勢，各自以語義、色彩與魔法短暫顯現。</p>
     </header>
+    <div className="rune-3d-review-toolbar" role="group" aria-label="符文特效檢視方式">
+      <button type="button" className="rune-skin-btn" aria-pressed={!reviewMode}
+        onClick={()=>{setReviewMode(false);setFocusId(group.start);setDetails(null);}}>九組符文圖鑑</button>
+      <button type="button" className="rune-skin-btn" aria-pressed={reviewMode}
+        onClick={showRejected}>待修 22 枚 · 快速驗收</button>
+    </div>
     <nav className="rune-3d-group-index rune-3d-library-groups" aria-label="切換符文群組">
       {GROUPS.map(entry=><button type="button" key={entry.id}
         aria-pressed={groupId===entry.id} onClick={()=>selectGroup(entry)}>
@@ -86,8 +107,8 @@ export default function Rune3DLibrary(){
     </nav>
     <section className="rune-3d-library-index" aria-label={group.name+'符文字樣'}>
       <div className="rune-3d-library-title">
-        <h2>{group.name} · 符文字樣</h2>
-        <span>{status==='ready'?group.start+'–'+group.end+' / 66':'資料載入中'}</span>
+        <h2>{reviewMode?'待修 22 枚 · 特效驗收':group.name+' · 符文字樣'}</h2>
+        <span>{status==='ready'?(reviewMode?runes.length+' 枚待檢視':group.start+'–'+group.end+' / 66'):'資料載入中'}</span>
       </div>
       {status==='loading'?<p role="status" className="rune-3d-library-message">正在載入符文的正式字義與字樣……</p>:null}
       {status==='error'?<div className="rune-3d-library-message" role="alert">
@@ -110,12 +131,17 @@ export default function Rune3DLibrary(){
     {current?<section className="rune-3d-library-manifestation" ref={stageRef} aria-label={runeName(current)+'符文顯現'}>
       <div className="rune-3d-library-title">
         <h2>{runeName(current)} · {current.english_name}</h2>
-        <span>{group.name}之符文</span>
+        <span>{reviewMode?'特效集中檢視':group.name+'之符文'}</span>
       </div>
       <div className="rune-3d-stage">
         <EffekseerStage rune={current} onGlyphClick={()=>setDetails(current)}/>
       </div>
       <div className="rune-3d-library-actions">
+        <div className="rune-3d-review-stepping" role="group" aria-label="切換符文特效">
+          <button type="button" className="rune-skin-btn" onClick={()=>stepRune(-1)}>← 上一枚</button>
+          <span>{Math.max(0,runes.findIndex(rune=>rune.rune_id===current.rune_id))+1} / {runes.length}</span>
+          <button type="button" className="rune-skin-btn" onClick={()=>stepRune(1)}>下一枚 →</button>
+        </div>
         <button className="rune-skin-btn" type="button" onClick={()=>setDetails(current)}>閱讀符文資料</button>
         <span>選擇上方其他符文，即可觀看它的字型與顯現</span>
       </div>
