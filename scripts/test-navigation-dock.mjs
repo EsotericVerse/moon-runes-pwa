@@ -128,6 +128,7 @@ test('Settings React Select shows one section and retains daily, local files and
   const content=settings.slice(settings.indexOf('<div className="scope-content scope-settings-options">'));
   assert.match(settings,/import Select from 'react-select';/);
   assert.match(settings,/inputId="loc-settings-function"/);
+  assert.doesNotMatch(settings,/月典抽牌|section==='draw'|RuneDrawClient|RuneAppDayNightDashboard/);
   assert.match(settings,/section==='daily'/);
   assert.match(settings,/section==='files'/);
   assert.match(settings,/section==='favorites'/);
