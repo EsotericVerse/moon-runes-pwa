@@ -8,6 +8,7 @@ import {AUTHORED_EFFECT_FILES,runeEffectFor} from './rune-effect-library.mjs';
 import {runeIconFor} from './rune-semantic-icons.mjs';
 import {groupStageForRune,cinematicCameraPose,GROUP_IMPACT_AT} from './rune-cinematic-language.mjs';
 import {redirectHd256ParticleTexture} from './hd256-particle-paths.mjs';
+import {redirectSoftMatteTexture} from './soft-matte-textures.mjs';
 
 const SOURCE='/vendor/effekseer/';
 const WASM=SOURCE+'effekseer.wasm';
@@ -237,7 +238,9 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
               ?alphaCorrected.replace('/Texture/_fog-cloud-2048.png','/Texture/_hd256/_fog-cloud-2048.png')
               :alphaCorrected;
           }
-          :hd256Redirect;
+          :['M:foot_smoke2','M:Sylph10'].includes(effect.key)
+            ?redirectSoftMatteTexture
+            :hd256Redirect;
         let loaded,started=false,playingHandle=null,settledEffectStarted=false,ambientLastSpawn=0,ambientRetire=null;
         let ambientGhost=null,ambientGhostRetire=null;
         const extras=[];
@@ -266,6 +269,8 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
              }
              // Overlay authored assets only when the base effect has loaded successfully.
              for(const overlay of effect.overlays||[]){
+               const overlayTextureRedirect=overlay.role==='jade-reflection'
+                 ?redirectSoftMatteTexture:hd256Redirect;
                let authoredOverlay;
                authoredOverlay=context.loadEffect(overlay.path,1,()=>{
                  if(!active||!started)return;
@@ -280,8 +285,8 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
                      other.setRotation(0,0,overlay.role==='cross-forward'?Math.PI/4:-Math.PI/4);
                      other.setAllColor(255,70,78,255);
                    }else if(overlay.role==='jade-reflection'){
-                     other.setScale(1.3,1.05,1.3);
-                     other.setAllColor(113,233,154,155);
+                     other.setScale(1.04,.9,1.04);
+                     other.setAllColor(150,234,186,132);
                    }else if(overlay.role==='dust-left'||overlay.role==='dust-right'){
                      const sign=overlay.role==='dust-left'?-1:1;
                      other.setScale(.8,.95,.8);
@@ -318,7 +323,7 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
                    }
                    extras.push({handle:other,role:overlay.role});
                  }catch(error){if(active)setStatus('附加特效無法播放：'+String(error?.message||error));}
-               },(message,url)=>{if(active)setStatus('附加 Effekseer 素材載入失敗：'+String(message||url));},hd256Redirect);
+               },(message,url)=>{if(active)setStatus('附加 Effekseer 素材載入失敗：'+String(message||url));},overlayTextureRedirect);
              }
              started=true;
            }catch(error){setStatus('特效無法播放：'+String(error?.message||error));}
