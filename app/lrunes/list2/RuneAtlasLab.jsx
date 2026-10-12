@@ -2,6 +2,7 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import RuneArtStage from '../visual/RuneArtStage';
+import RuneCardInfo from '../RuneCardInfo';
 import {createPortal} from 'react-dom';
 import {selectRows} from '../../loc/db-query.mjs';
 import {navigationHref} from '../../modular/nav-destinations.mjs';
@@ -31,9 +32,7 @@ function RuneInfoDialog({rune,onClose}){
     return()=>window.removeEventListener('keydown',escape);
   },[onClose]);
   const details=[
-    ['符文本義',rune.rune_description],['原型',rune.archetype],
-    ['角色行動',rune.char_action],['正向關鍵詞',rune.positive_keywords],
-    ['負向關鍵詞',rune.negative_keywords],['額外規則',rune.extra_rules],
+    ['角色行動',rune.char_action],['額外規則',rune.extra_rules],
     ['額外留意',rune.extra_notes],['符文歷史',rune.rune_evolution_history],
     ['神話故事',rune.myth_story],['靈魂課題',rune.soul_question],
     ['實踐挑戰',rune.practice_challenge],['儀式建議',rune.ritual_advice],
@@ -48,8 +47,10 @@ function RuneInfoDialog({rune,onClose}){
         </div>
         <button className="rune-skin-btn" type="button" autoFocus onClick={onClose} aria-label="關閉資訊視窗">× 關閉</button>
       </div>
-      <div className="rune-art-modal-main">
-        <img src={runeImage(rune)} alt={rune.rune_name+'原始卡圖'} loading="lazy"/>
+      <div className="rune-art-modal-main rune-art-modal-main--canonical">
+        <div className="rune-art-modal-profile">
+          <RuneCardInfo card={rune} imageSrc={runeImage(rune)} layout="profile"/>
+        </div>
         <div className="rune-art-modal-details">
           {details.map(([label,value])=><div key={label}>
             <h3>{label}</h3>
@@ -148,7 +149,7 @@ export default function RuneAtlasLab(){
   return <main className="loc-next-main rune-skin-lab rune-art-shell" data-rune-lab="list2">
     <header className="rune-art-header">
       <p className="loc-eyebrow">LunaRunes · Living Atlas</p>
-      <h1>{group?group.name+'之符文':'月之符文 · 九曜星域'}</h1>
+      <h1>{group?group.name+'之符文':'月之符文 · 九大群組'}</h1>
       <p>{group?'瀏覽群組簡介與原創符文卡圖；輕觸任一符文即可閱讀圖鑑資料。':
         '九大群組的原創畫作與基本資料。點選畫作直接進入該群組。'}</p>
     </header>
@@ -172,6 +173,8 @@ export default function RuneAtlasLab(){
     </section>:null}
     <section className="rune-art-stage" aria-label="九群組與原創符文畫廊">
       <RuneArtStage mode={group?'runes':'groups'} items={display}
+        galleryTitle={group?group.name+' · 符文原始卡片':'九大符文群組'}
+        galleryDescription={group?'依原本卡片資料顯示本義、原型、關鍵詞、屬性與月相；點選卡圖閱讀完整資料。':'選取群組原創畫作，直接展開群組介紹和符文卡片。'}
         onSelect={group?show:enterGroup}/>
       <div className="rune-art-stage-label" role="status">{loading?'畫作載入中……':
         error||(!group?'點選群組畫作，直接查看該群組的介紹及符文':'輕觸符文卡面，查看原有文字資料')}</div>

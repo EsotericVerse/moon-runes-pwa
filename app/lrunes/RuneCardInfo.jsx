@@ -19,6 +19,8 @@ export default function RuneCardInfo({
   card,
   imageSrc,
   imageClassName='loc-rune-card-image',
+  onOpen,
+  openLabel='',
   positionLabel='',
   direction='',
   realMoonPhase='',
@@ -41,7 +43,10 @@ export default function RuneCardInfo({
   if(layout==='home'){
     return <div className="home-rune-preview" data-rune-id={dataRuneId??card.rune_id}>
       {positionLabel?<p className="loc-eyebrow">{positionLabel}</p>:null}
-      {imageSrc?<img className={imageClassName} src={imageSrc} alt={runeTitle(card)}/>:null}
+      {imageSrc?(onOpen?<button type="button" className="rune-gallery-image-open"
+        onClick={onOpen} aria-label={openLabel||'查看'+runeTitle(card)}>
+        <img className={imageClassName} src={imageSrc} alt={runeTitle(card)}/>
+      </button>:<img className={imageClassName} src={imageSrc} alt={runeTitle(card)}/>):null}
       <div className="home-rune-card-data">
         <div className="home-rune-card-title">
           <strong>{runeTitle(card)}</strong>

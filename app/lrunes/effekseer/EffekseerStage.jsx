@@ -149,8 +149,10 @@ const WAITING_AUTHORED_EFFECT=Object.freeze({
   path:SOURCE+AUTHORED_EFFECT_FILES['M:MagicArea'],tuning:{scale:2.2,speed:.8}
 });
 
-function EffekseerCanvas({effect,reduced,onReady,ceremony=false,groupEffect=null,waiting=false,ambient=false,ambientPaused=false,quality='high'}){
+function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=false,groupEffect=null,waiting=false,ambient=false,ambientPaused=false,quality='high'}){
   const canvas=useRef(null);
+  const onPlaybackCompleteRef=useRef(onPlaybackComplete);
+  onPlaybackCompleteRef.current=onPlaybackComplete;
   const ambientPauseRef=useRef(ambientPaused);
   ambientPauseRef.current=ambientPaused;
   const [status,setStatus]=useState('正在啟動 Effekseer…');
@@ -158,8 +160,8 @@ function EffekseerCanvas({effect,reduced,onReady,ceremony=false,groupEffect=null
     let active=true,frame=0,observer;
     let renderer,context,clock;
     const target=canvas.current;
-    if(reduced){setStatus('');onReady?.();return;}
-    if(!effect){setStatus('');onReady?.();return;}
+    if(reduced){setStatus('');onReady?.();onPlaybackCompleteRef.current?.();return;}
+    if(!effect){setStatus('');onReady?.();onPlaybackCompleteRef.current?.();return;}
     (async()=>{
       try{
         const api=await readyRuntime();
@@ -271,7 +273,7 @@ function EffekseerCanvas({effect,reduced,onReady,ceremony=false,groupEffect=null
              started=true;
            }catch(error){setStatus('特效無法播放：'+String(error?.message||error));}
           onReady?.();
-        },(message,url)=>{if(active){setStatus('特效素材載入失敗：'+String(message||url));onReady?.();}});
+        },(message,url)=>{if(active){setStatus('特效素材載入失敗：'+String(message||url));onReady?.();onPlaybackCompleteRef.current?.();}});
         clock=new THREE.Clock();
         let elapsed=0;
         const draw=()=>{
@@ -301,6 +303,7 @@ function EffekseerCanvas({effect,reduced,onReady,ceremony=false,groupEffect=null
               // One finite reveal, without a persistent blank WebGL animation loop.
               context.stopAll();
               renderer.clear();
+              if(!ceremony&&!waiting&&!ambient)onPlaybackCompleteRef.current?.();
               return;
             }
             // Move the actual licensed Effekseer effect handle, not a decorative SVG.
@@ -449,7 +452,7 @@ function EffekseerCanvas({effect,reduced,onReady,ceremony=false,groupEffect=null
           frame=requestAnimationFrame(draw);
         };
         draw();
-      }catch(error){if(active){setStatus('Effekseer 無法啟動：'+String(error?.message||error));onReady?.();}}
+      }catch(error){if(active){setStatus('Effekseer 無法啟動：'+String(error?.message||error));onReady?.();onPlaybackCompleteRef.current?.();}}
     })();
     return()=>{
       active=false;
@@ -488,7 +491,7 @@ export function WaitingEffekseerStage(){
     <EffekseerCanvas effect={WAITING_AUTHORED_EFFECT} reduced={reduced} waiting/>
   </div>;
 }
-export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,direction=null,ceremony=false,appearance='glyph',cardSrc=null,onCeremonyComplete=null,quality='high'}){
+export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,direction=null,ceremony=false,appearance='glyph',cardSrc=null,onCeremonyComplete=null,onPlaybackComplete=null,quality='high'}){
   const reduced=useReducedMotion();
   const [replay,setReplay]=useState(0);
   const [visibleKey,setVisibleKey]=useState('');
@@ -511,7 +514,7 @@ export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,directio
   return <div className="rune-effekseer-stage" data-source="effekseer" data-rune={word}
     data-ceremony={ceremony?'summoning':undefined}
     data-direction={direction==='正位'?'upright':direction==='半正位'?'semi-upright':direction==='半逆位'?'semi-reversed':direction==='逆位'?'reversed':undefined}>
-    <EffekseerCanvas key={key} effect={effect} groupEffect={groupEffect} reduced={reduced} ceremony={ceremony} quality={quality} onReady={()=>setVisibleKey(key)}/>
+    <EffekseerCanvas key={key} effect={effect} groupEffect={groupEffect} reduced={reduced} ceremony={ceremony} quality={quality} onPlaybackComplete={onPlaybackComplete} onReady={()=>setVisibleKey(key)}/>
     <div className="rune-effekseer-glyph-position">
       <AnimatePresence mode="wait">
         {visualReady?<motion.button key={key} type="button"

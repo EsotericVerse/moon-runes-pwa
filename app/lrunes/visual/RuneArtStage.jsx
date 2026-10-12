@@ -8,6 +8,7 @@
  */
 import {motion,AnimatePresence,useReducedMotion} from 'motion/react';
 import {groupImage,runeImage,runeName} from '../rune-directory.mjs';
+import RuneCardInfo from '../RuneCardInfo';
 import './rune-art-stage.css';
 
 const PHASES=['','新月','上弦','滿月','下弦'];
@@ -32,7 +33,7 @@ function RuneCardFace({card,direction,reduced}){
     {direction?<span className="rune-art-direction">{direction}</span>:null}
   </div>;
 }
-function Gallery({mode,items,onSelect,reduced,galleryTitle=null,galleryDescription=null}){
+function Gallery({mode,items,onSelect,reduced,galleryTitle=null,galleryDescription=null,runeActionLabel='閱讀符文完整資料'}){
   const groupMode=mode==='groups';
   return <div className={'rune-art-gallery '+(groupMode?'rune-art-gallery--groups':'rune-art-gallery--runes')}>
     <div className="rune-art-gallery-intro">
@@ -45,6 +46,18 @@ function Gallery({mode,items,onSelect,reduced,galleryTitle=null,galleryDescripti
         const key=groupMode?'group-'+String(item.id):'rune-'+String(item.rune_id);
         const url=groupMode?groupImage(item.id):runeImage(item);
         if(!url)return null;
+        if(!groupMode){
+          return <motion.article key={key} className="rune-art-gallery-tile rune-art-rune-detail-tile"
+            initial={reduced?false:{opacity:0,y:24}}
+            animate={{opacity:1,y:0}}
+            transition={{...stepTransition,delay:reduced?0:Math.min(index,10)*.065}}>
+            <RuneCardInfo card={item} imageSrc={url} layout="home"
+              onOpen={()=>onSelect?.(item)}
+              openLabel={runeActionLabel+'：'+runeName(item)+'之符文'}/>
+            <button type="button" className="rune-art-rune-open-action"
+              onClick={()=>onSelect?.(item)}>{runeActionLabel} <span aria-hidden="true">↗</span></button>
+          </motion.article>;
+        }
         return <motion.button type="button" className={'rune-art-gallery-tile '+(groupMode?'rune-art-group-tile':'rune-art-rune-tile')}
           key={key} onClick={()=>onSelect?.(item)} aria-label={groupMode?'查看'+item.name+'群組':'查看'+runeName(item)+'之符文'}
           initial={reduced?false:{opacity:0,y:24}}
@@ -146,12 +159,12 @@ function DrawStage({items,onSelect,onBackgroundClick,reduced,daily=false,chargin
     </div>:null}
   </div>;
 }
-export default function RuneArtStage({mode='groups',items=[],onSelect,onBackgroundClick,charging=false,actions=null,galleryTitle=null,galleryDescription=null}){
+export default function RuneArtStage({mode='groups',items=[],onSelect,onBackgroundClick,charging=false,actions=null,galleryTitle=null,galleryDescription=null,runeActionLabel='閱讀符文完整資料'}){
   const reduced=useReducedMotion();
   return <div className={'rune-art-world rune-art-world--'+mode}
     data-renderer="artwork-motion" data-visual-mode="2d">
     {(mode==='draw'||mode==='daily')?<DrawStage items={items} onSelect={onSelect}
       onBackgroundClick={onBackgroundClick} reduced={reduced} daily={mode==='daily'} charging={charging} actions={actions}/>:
-      <Gallery mode={mode} items={items} onSelect={onSelect} reduced={reduced} galleryTitle={galleryTitle} galleryDescription={galleryDescription}/>}
+      <Gallery mode={mode} items={items} onSelect={onSelect} reduced={reduced} galleryTitle={galleryTitle} galleryDescription={galleryDescription} runeActionLabel={runeActionLabel}/>}
   </div>;
 }

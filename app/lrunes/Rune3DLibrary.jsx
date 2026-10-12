@@ -1,8 +1,10 @@
 'use client';
 
 import {useEffect,useRef,useState} from 'react';
+import {motion,useReducedMotion} from 'motion/react';
 import {selectRows} from '../loc/db-query.mjs';
 import RuneArtStage from './visual/RuneArtStage';
+import RuneCardInfo from './RuneCardInfo';
 import EffekseerStage from './effekseer/EffekseerStage';
 import {groupImage,runeImage,runeName} from './rune-directory.mjs';
 import {navigationHref} from '../modular/nav-destinations.mjs';
@@ -22,12 +24,6 @@ const GROUPS=Object.freeze([
   {id:7,name:'秩序',start:49,end:56},
   {id:8,name:'無序',start:57,end:64},
   {id:9,name:'特殊',start:65,end:66}
-]);
-const DIRECTIONS=Object.freeze([
-  {name:'正位',hint:'完整藍色光緣'},
-  {name:'半正位',hint:'間斷淺藍光緣'},
-  {name:'半逆位',hint:'間斷淺紅光緣'},
-  {name:'逆位',hint:'完整紅色光緣'}
 ]);
 const RUNE_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,char_action,positive_keywords,negative_keywords,extra_rules,extra_notes,rune_evolution_history,myth_story,soul_question,practice_challenge,ritual_advice,harmony_advice';
 const GROUP_COLUMNS='group_id,english_name,desc,quality,style,runeslist';
@@ -57,7 +53,9 @@ export default function Rune3DLibrary(){
   const [groupError,setGroupError]=useState('');
   const [groupId,setGroupId]=useState(null);
   const [focusId,setFocusId]=useState(null);
-  const [direction,setDirection]=useState(null);
+  const [showCardInfo,setShowCardInfo]=useState(false);
+  const [playback,setPlayback]=useState(0);
+  const reducedMotion=useReducedMotion();
   const [details,setDetails]=useState(null);
   const [status,setStatus]=useState('loading');
   const [error,setError]=useState('');
@@ -114,14 +112,16 @@ export default function Rune3DLibrary(){
   },[focusId]);
   const jumpTo=rune=>{
     if(!rune)return;
+    setShowCardInfo(false);
+    setPlayback(n=>n+1);
     setFocusId(Number(rune.rune_id));setDetails(null);
   };
   const selectGroup=entry=>{
-    setGroupId(entry.id);setFocusId(null);setDirection(null);setDetails(null);
+    setGroupId(entry.id);setFocusId(null);setShowCardInfo(false);setDetails(null);
     window.scrollTo?.({top:0,behavior:'smooth'});
   };
   const backToGroups=()=>{
-    setGroupId(null);setFocusId(null);setDirection(null);setDetails(null);
+    setGroupId(null);setFocusId(null);setShowCardInfo(false);setDetails(null);
     window.scrollTo?.({top:0,behavior:'smooth'});
   };
   const stepRune=delta=>{
@@ -169,7 +169,8 @@ export default function Rune3DLibrary(){
       <section className="rune-3d-atlas-gallery" aria-label={group.name+'原創符文卡圖'}>
         <RuneArtStage mode="runes" items={runes} onSelect={jumpTo}
           galleryTitle={group.name+' · 符文卡圖'}
-          galleryDescription="點選原創符文卡圖，在下方展開 3D 演出與四向位向光緣預覽。"/>
+          galleryDescription="符文卡圖、原始敘述與基本屬性均完整呈現；點選卡圖觀看專屬 3D 演出。"
+          runeActionLabel="觀看 3D 顯現"/>
       </section>
     </>:null}
 
@@ -179,19 +180,26 @@ export default function Rune3DLibrary(){
         <h2>{runeName(current)} · {current.english_name}</h2>
         <span>第 {current.rune_id} / 66 枚 · {group.name}</span>
       </div>
-      <div className="rune-3d-orientation-selector" role="group" aria-label="四向位向外緣光預覽">
-        <button type="button" className="rune-3d-orientation-btn"
-          aria-pressed={direction===null} onClick={()=>setDirection(null)}>原本字色</button>
-        {DIRECTIONS.map(entry=><button type="button" key={entry.name}
-          className="rune-3d-orientation-btn" data-direction={entry.name}
-          aria-pressed={direction===entry.name} aria-label={entry.name+'：'+entry.hint}
-          onClick={()=>setDirection(entry.name)}>{entry.name}</button>)}
-      </div>
-      <p className="rune-3d-orientation-help">
-        {direction?DIRECTIONS.find(entry=>entry.name===direction)?.hint+'，僅作用於文字輪廓，不修改字形與魔法。':'原本字色，沒有位向描邊。'} 
-      </p>
-      <div className="rune-3d-stage">
-        <EffekseerStage key={current.rune_id} rune={current} direction={direction} vfxOnly onGlyphClick={()=>setDetails(current)}/>
+      <div className={'rune-3d-stage rune-3d-atlas-performance'+(showCardInfo?' rune-3d-atlas-performance--reading':'')}>
+        <EffekseerStage key={current.rune_id+'-'+playback} rune={current} vfxOnly
+          onPlaybackComplete={()=>setShowCardInfo(true)}
+          onGlyphClick={()=>setDetails(current)}/>
+        {showCardInfo?<motion.div key={'reading-'+current.rune_id+'-'+playback}
+          className="rune-3d-atlas-reading" role="region" aria-label={runeName(current)+'原始符文卡片資料'}
+          initial={reducedMotion?false:{opacity:0,y:20}}
+          animate={{opacity:1,y:0}}
+          transition={{duration:reducedMotion?0:.75,ease:'easeOut'}}>
+          <div className="rune-3d-atlas-reading-inner">
+            <p className="loc-eyebrow">RUNE ARCHIVE · {String(current.rune_id).padStart(2,'0')} / 66</p>
+            <RuneCardInfo card={current} imageSrc={runeImage(current)} layout="home"/>
+            <div className="rune-3d-atlas-reading-actions">
+              <button type="button" className="rune-skin-btn" onClick={()=>{
+                setShowCardInfo(false);setPlayback(n=>n+1);
+              }}>重播符文演出</button>
+              <button type="button" className="rune-skin-btn" onClick={()=>setDetails(current)}>閱讀完整資料</button>
+            </div>
+          </div>
+        </motion.div>:null}
       </div>
       <div className="rune-3d-library-actions">
         <div className="rune-3d-review-stepping" role="group" aria-label="前後符文">

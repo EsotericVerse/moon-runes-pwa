@@ -163,3 +163,69 @@
   .rune-art-card-frame:after{animation:none;}
   .rune-art-gallery-tile{transition:none;}
 }
+
+/* The original 2D/3D atlas both reuse the SAME card information component as
+   the left-hand LunaRunes homepage panel. Only its layout is adapted. */
+.rune-art-gallery--runes .rune-art-gallery-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  max-width:1320px;
+}
+.rune-art-gallery--runes .rune-art-rune-detail-tile{
+  display:flex;flex-direction:column;gap:12px;
+  padding:clamp(12px,2vw,22px);cursor:default;
+  text-align:left;min-width:0;color:#f4e8db;
+}
+.rune-art-rune-detail-tile .home-rune-preview{
+  display:grid;align-content:start;gap:12px;
+  width:100%;height:auto;min-width:0;margin:0;padding:0;
+  border:0;box-shadow:none;background:transparent;
+  color:#f5e8d4;
+}
+.rune-art-rune-detail-tile .rune-gallery-image-open{
+  display:block;appearance:none;cursor:pointer;width:100%;padding:0;
+  border:0;border-radius:12px;background:transparent;touch-action:manipulation;
+}
+.rune-art-rune-detail-tile .rune-gallery-image-open:focus-visible{
+  outline:3px solid #ffe4a9;outline-offset:3px;
+}
+.rune-art-rune-detail-tile .loc-rune-card-image{
+  display:block;width:min(100%,290px);max-width:100%;height:auto;
+  aspect-ratio:1;object-fit:contain;margin:0 auto;
+  border:1px solid #cfb1858c;border-radius:12px;
+}
+.rune-art-rune-detail-tile .home-rune-card-data{
+  display:grid;gap:9px;margin:0;padding:0;min-width:0;
+}
+.rune-art-rune-detail-tile .home-rune-card-title{
+  display:flex;justify-content:center;gap:7px;flex-wrap:wrap;
+  font-size:clamp(.85rem,1.35vw,1rem);line-height:1.4;
+}
+.rune-art-rune-detail-tile .home-rune-card-title strong{
+  color:#ffebcb;font-size:clamp(1.02rem,1.5vw,1.3rem)
+}
+.rune-art-rune-detail-tile .home-rune-card-title span,
+.rune-art-rune-detail-tile .home-rune-card-data p{color:#e5dbe9;line-height:1.7}
+.rune-art-rune-detail-tile .home-rune-keywords{
+  border-top:1px solid #e3c18e52;padding:9px 3px;
+  color:#f5e6d3
+}
+.rune-art-rune-detail-tile .home-rune-keywords summary{
+  cursor:pointer;min-height:35px;color:#ffe3b2;font-weight:650
+}
+.rune-art-rune-detail-tile .home-rune-keywords p{
+  line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere;
+  color:#ebe2ea
+}
+.rune-art-rune-open-action{
+  appearance:none;cursor:pointer;margin-top:auto;width:100%;
+  min-height:47px;padding:11px 15px;border:1px solid #d5b881;
+  border-radius:11px;background:#514062;color:#fff0d4;
+  font:650 .94rem/1.45 system-ui,sans-serif;
+}
+.rune-art-rune-open-action:hover{border-color:#ffe0a2;background:#675077}
+.rune-art-rune-open-action:focus-visible{outline:3px solid #ffe4a9;outline-offset:3px}
+@media(max-width:760px){
+  .rune-art-gallery--runes .rune-art-gallery-grid{grid-template-columns:1fr}
+  .rune-art-rune-detail-tile .loc-rune-card-image{width:min(72vw,260px)}
+}
+/* End canonical original-card data in rune atlas listing. */

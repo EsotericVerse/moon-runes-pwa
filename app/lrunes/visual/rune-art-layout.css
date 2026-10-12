@@ -175,3 +175,36 @@
   .rune-art-group-inline-artwork{width:min(270px,80vw);margin:0 auto 17px;}
   .rune-art-group-description{max-height:none;}
 }
+
+/* The 2D artwork atlas uses the SAME canonical RuneCardInfo profile as the
+   old directory, not a title-only image card or a second interpretation. */
+.rune-art-modal-main--canonical{display:grid;grid-template-columns:minmax(0,1fr);gap:20px}
+.rune-art-modal-main--canonical .rune-art-modal-profile{min-width:0}
+.rune-art-modal-main--canonical .runes-rune-profile{
+  display:grid;grid-template-columns:minmax(110px,220px) minmax(0,1fr);
+  gap:16px;align-items:center;min-width:0;
+}
+.rune-art-modal-main--canonical .runes-rune-profile .loc-rune-card-image{
+  display:block;position:static;width:100%;max-width:220px;height:auto;aspect-ratio:1;
+  object-fit:contain;margin:0;border:1px solid #c6ab85a8;border-radius:13px
+}
+.rune-art-modal-main--canonical .runes-rune-profile-copy h2{
+  font:700 clamp(1.1rem,2.5vw,1.55rem)/1.4 "Noto Serif TC",serif;
+  color:#ffe7b6;margin:0 0 9px
+}
+.rune-art-modal-main--canonical .runes-rune-profile-copy p{line-height:1.8;color:#e5d8e9}
+.rune-art-modal-main--canonical .runes-rune-detail-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:16px
+}
+.rune-art-modal-main--canonical .runes-rune-detail-grid span{
+  display:grid;gap:4px;overflow-wrap:anywhere;padding:11px 13px;
+  border:1px solid #a698ba67;border-radius:10px;background:#302941;
+  color:#e9dfea;font-size:.9rem;line-height:1.65
+}
+.rune-art-modal-main--canonical .runes-rune-detail-grid strong{color:#ffe1aa}
+.rune-art-modal-main--canonical .rune-art-modal-details{margin-top:4px}
+@media(max-width:600px){
+  .rune-art-modal-main--canonical .runes-rune-profile{grid-template-columns:1fr}
+  .rune-art-modal-main--canonical .runes-rune-profile .loc-rune-card-image{margin:auto;width:min(220px,65vw)}
+  .rune-art-modal-main--canonical .runes-rune-detail-grid{grid-template-columns:1fr}
+}
