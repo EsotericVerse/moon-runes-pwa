@@ -75,6 +75,6 @@ const report={
 };
 await mkdir(dirname(REPORT),{recursive:true});
 await writeFile(REPORT,JSON.stringify(report,null,2)+'\n');
-console.log('[EFFEKSEER-HD256] '+eligible.length+' authored sprite textures with at least 256px longest edge; 
+console.log('[EFFEKSEER-HD256] '+eligible.length+' authored sprite textures with at least 256px longest edge; '+
   (originals.length-eligible.length)+' protected normal/atlas/material textures left original; '+
   '1 native-alpha fog variant for comparison. Original VFX unmodified.');
