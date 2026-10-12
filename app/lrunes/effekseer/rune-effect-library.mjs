@@ -145,8 +145,10 @@ export const RUNE_EFFECT_KEYS=Object.freeze({
   "Fate": "T:Blow15"
 });
 export const CANONICAL_RUNE_ENGLISH=Object.freeze(["Virtue","Spirit","Soul","Spectrum","Memory","Boundary","Domain","Mirror","Core","Path","Sever","Seal","Chain","Awaken","Separation","Insight","Error","Birth","Aging","Illness","Death","Heart","Love","Language","Resonance","Tree","Blossom","Leaf","Grass","Root","Seed","Fruit","Branch","Gold","Jade","Crystal","Land","Stone","Diamond","Ore","Dust","Radiance","Shadow","Water","Flame","Wind","Earth","Thunder","Air","Sun","Moon","Star","Phase","Clarity","Time","Space","Reason","Blessing","Calamity","Blank","Dream","Illusion","Karma","Void","Result","Chaos","Fate"]);
+// Existing Effekseer module playback transforms only: no authored particles or custom shaders.
+export const RUNE_EFFECT_TUNING=Object.freeze({"Resonance":{"scale":1.15,"speed":1.05},"Aging":{"speed":0.75},"Grass":{"speed":0.78},"Root":{"speed":0.84},"Branch":{"scale":1.12,"speed":0.87},"Gold":{"speed":0.85},"Jade":{"speed":0.76},"Crystal":{"speed":0.87},"Ore":{"speed":0.77},"Flame":{"scale":1.28,"speed":0.93},"Star":{"scale":0.86,"rotationZ":3.141592653589793,"speed":0.82},"Phase":{"speed":0.78},"Time":{"speed":0.75},"Space":{"scale":1.22,"speed":0.82},"Void":{"speed":0.72},"Result":{"scale":1.07,"speed":0.9},"Chaos":{"scale":1.22,"speed":0.92},"Fate":{"scale":1.12,"speed":0.68}});
 export function runeEffectFor(rune){
  const name=String(rune?.english_name||'').trim();
  const key=Object.hasOwn(RUNE_EFFECT_KEYS,name)?RUNE_EFFECT_KEYS[name]:null;
- return key?{key,path:'/vendor/effekseer/'+AUTHORED_EFFECT_FILES[key]}:null;
+ return key?{key,path:'/vendor/effekseer/'+AUTHORED_EFFECT_FILES[key],tuning:RUNE_EFFECT_TUNING[name]||null}:null;
 }

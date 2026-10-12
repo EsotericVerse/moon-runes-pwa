@@ -19,7 +19,7 @@ for(const [family,style] of Object.entries(RUNE_GLYPH_STYLES)){
     byId.set(id,family);
   }
 }
-const accents=Object.freeze({"34":"#a9dac8","40":"#c8bcb0","41":"#ffe9a5","42":"#b3a2d1","43":"#a4d5f1","44":"#f4ae76","45":"#b7dfde","47":"#d0c5f9","50":"#e5e5ec","61":"#d2b6e9","63":"#aa9ac6"});
+const accents=Object.freeze({"15":"#f4e9b9","16":"#dca1ae","18":"#b6a99b","24":"#c7afed","27":"#a0c67e","28":"#9cdd83","29":"#b68e6c","32":"#95c48a","33":"#f5d07b","34":"#b6edd3","35":"#d9f6ff","36":"#c7b49c","37":"#b8afb0","38":"#f5fbff","39":"#c5a887","40":"#b8b2a3","41":"#ffe9a5","42":"#b3a2d1","43":"#a4d5f1","44":"#ffab58","45":"#b7dfde","47":"#d0c5f9","48":"#a7d9df","49":"#ffd990","50":"#e7ecff","51":"#f8f8fd","52":"#b5b2de","53":"#eaf7ff","54":"#c7d0ef","55":"#afa5d9","56":"#d9bb93","58":"#d9a2a2","59":"#dad8d0","61":"#c6a7dc","62":"#d3b6e9","63":"#9784be","64":"#efdbad","65":"#ad91dd","66":"#dfc89d"});
 const fallback=Object.freeze({family:'scribe',font:'script',ink:'#e6d8c9',finish:'ink'});
 export function runeGlyphProfile(rune){
   const id=Number(rune?.rune_id);

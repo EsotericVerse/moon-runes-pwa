@@ -70,22 +70,40 @@ function SemanticIllustration({word,reduced}){
 function iconMotionFor(word){
   const base={opacity:[0,.93,.93,0],scale:[.8,1,1,1]};
   const visual={
-    '悟':{scale:[.48,1.26,1.02,1]},
-    '誤':{x:[26,-15,12,0],rotate:[19,-12,7,0]},
-    '老':{scale:[1.12,1,.95,.9]},
-    '葉':{x:[-26,16,-9,0],rotate:[-21,13,-8,0]},
-    '草':{y:[42,0,-5,0],scale:[.25,.88,1.08,1]},
-    '根':{scaleY:[.08,.58,1,1]},
-    '枝':{scaleX:[.36,.88,1.18,1]},
-    '塵':{x:[-40,-5,42,76],y:[28,3,-13,-31]},
-    '氣':{x:[-70,-16,36,90]},
+    '悟':{scale:[.42,.78,1.24,1],opacity:[0,.55,1,0]},
+    '誤':{x:[-24,17,-10,0],rotate:[-14,15,-8,0]},
+    '老':{scale:[1.19,1.02,.91,.83],y:[-12,0,15,26]},
+    '韻':{scale:[.61,1.22,.8,1.12],opacity:[0,1,.57,0]},
+    '葉':{x:[-34,-8,18,0],rotate:[-18,12,-9,0]},
+    '草':{y:[45,10,-5,0],scale:[.22,.57,1.11,1]},
+    '根':{scaleY:[.07,.37,.75,1],y:[-32,-18,-7,0]},
+    '枝':{scaleX:[.18,.49,.86,1.12]},
+    '金':{scale:[.61,.93,1.14,1]},
+    '玉':{scale:[.84,1.06,.95,1],rotate:[-7,0,2,0]},
+    '晶':{scale:[.68,.91,1.08,1],rotate:[-8,-2,4,0]},
+    '地':{scale:[.49,.77,.95,1],y:[22,7,1,0]},
+    '石':{y:[-65,-14,5,0],rotate:[-9,0,2,0]},
+    '鑽':{scale:[.95,1,1,1],opacity:[0,.67,1,0]},
+    '礦':{scale:[.43,.68,.88,1],opacity:[0,.38,.75,0]},
+    '塵':{x:[-42,-6,40,78],y:[30,5,-12,-31]},
+    '火':{y:[33,8,-12,-31],scale:[.66,.86,1,1.05]},
+    '氣':{x:[-77,-20,36,96]},
+    '日':{scale:[.38,.73,1.05,1],opacity:[0,.67,1,0]},
+    '月':{scale:[.95,1,1,1],y:[28,8,0,-3]},
     '星':{x:[50,25,-22,-76],y:[-90,-14,100,170],rotate:[25,28,34,38]},
-    '虛':{scale:[1.27,1,.38,0]},
-    '幻':{filter:['blur(10px)','blur(0px)','blur(3px)','blur(11px)']},
-    '明':{filter:['blur(10px)','blur(3px)','blur(0px)','blur(0px)']},
     '辰':{scale:[.65,1.28,.84,1]},
+    '明':{filter:['blur(10px)','blur(3px)','blur(0px)','blur(0px)']},
     '時':{rotate:[0,90,270,360]},
+    '空':{scale:[.52,.77,1.16,1.3]},
+    '因':{scale:[.38,.67,.93,1],rotate:[-17,-7,0,0]},
+    '禍':{scale:[.72,1.2,.87,1],rotate:[-12,8,-4,0]},
+    '無':{opacity:[0,.75,.22,0],scale:[1,1,.96,.96]},
+    '幻':{filter:['blur(9px)','blur(0px)','blur(4px)','blur(12px)']},
     '緣':{rotate:[-18,13,-6,0]},
+    '虛':{scale:[1.27,1,.38,0]},
+    '果':{x:[-51,-11,2,0],scale:[.55,.86,1.06,1]},
+    '玄':{x:[-18,22,-11,0],rotate:[-23,37,-29,16],scale:[.7,1.2,.87,1]},
+    '命':{scale:[.48,.93,1.05,1],rotate:[-75,-18,0,0]},
   };
   return {...base,...(visual[word]||{})};
 }
@@ -126,7 +144,14 @@ function EffekseerCanvas({effect,reduced,onReady}){
         loaded=context.loadEffect(effectFile,1,()=>{
           if(!active)return;
           setStatus('');
-          try{context.play(loaded,0,0,0);started=true;}catch(error){setStatus('特效無法播放：'+String(error?.message||error));}
+          try{
+             const handle=context.play(loaded,0,0,0);
+             const tuning=effect.tuning;
+             if(tuning?.scale)handle.setScale(tuning.scale,tuning.scale,tuning.scale);
+             if(tuning?.rotationZ!==undefined)handle.setRotation(0,0,tuning.rotationZ);
+             if(tuning?.speed)handle.setSpeed(tuning.speed);
+             started=true;
+           }catch(error){setStatus('特效無法播放：'+String(error?.message||error));}
           onReady?.();
         },(message,url)=>{if(active){setStatus('特效素材載入失敗：'+String(message||url));onReady?.();}});
         clock=new THREE.Clock();
