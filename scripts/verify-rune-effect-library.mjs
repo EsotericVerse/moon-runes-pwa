@@ -152,7 +152,7 @@ assert.match(stage,/jade-reflection/);
 assert.match(stage,/data-direction=\{direction/);
 assert.match(stage,/rune-direction-stroke/);
 const drawPreview=readFileSync('app/lrunes/Rune3DPreview.jsx','utf8');
-assert.match(drawPreview,/direction=\{isList\?null:items\[items\.length-1\]\?\.direction\|\|null\}/,'3D draw and daily must pass actual four-value direction');
+assert.match(drawPreview,/direction=\{pending\.direction\}/,'3D draw and daily must pass the pending draw’s actual four-value direction');
 for(const token of ['data-direction="upright"','data-direction="semi-upright"','data-direction="semi-reversed"','data-direction="reversed"']){
  assert.ok(presentation.includes(token),'directional stroke missing: '+token);
 }
