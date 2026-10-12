@@ -26,6 +26,11 @@
 .rune-effekseer-glyph[data-glyph-finish="glass"]{text-shadow:0 1px 0 #ffffff73,0 6px 13px #030512c4}
 .rune-effekseer-glyph[data-glyph-finish="plain"]{text-shadow:0 8px 17px #03040ac0}
 .rune-effekseer-glyph[data-glyph-finish="ink"]{text-shadow:0 2px 1px #080812ad,0 11px 20px #03050cb0}
+/* A professionally-authored, semantically readable pictogram accompanies each Rune.
+ * Screen blend removes the icon library's black sample backdrop without custom shaders.
+ */
+.rune-effekseer-meaning-icon{position:absolute;z-index:3;top:23%;left:calc(50% - clamp(190px,23vw,285px));width:clamp(78px,10vw,118px);height:auto;aspect-ratio:1;pointer-events:none;object-fit:contain;mix-blend-mode:screen;filter:drop-shadow(0 3px 9px #090917);opacity:.94}
+@media(max-width:640px){.rune-effekseer-meaning-icon{top:22%;left:5%;width:clamp(70px,19vw,96px)}}
 .rune-effekseer-gesture{position:absolute;top:15%;left:calc(50% + clamp(60px,12vw,132px));z-index:4;font:normal clamp(2.8rem,7vw,4.6rem)/1 sans-serif;transform-origin:center;pointer-events:none;filter:drop-shadow(0 5px 10px #05040a)}
 .rune-effekseer-gesture--awaken{top:16%;left:calc(50% + clamp(52px,12vw,125px))}
 .rune-effekseer-speech{position:relative;display:grid;place-items:center;min-width:1.1em;min-height:1.1em;padding:.07em;border-radius:50% 50% 50% 12%;background:#f6e7c4;color:#372c48;box-shadow:0 3px 14px #0604118c}

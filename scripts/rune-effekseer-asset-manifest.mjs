@@ -1,6 +1,6 @@
-/* Authored Effekseer sample bundles with pinned upstream blobs; consumed by npm prebuild/predev.
- * All assets remain from professional upstream authors, not generated particle substitutes.
- * Godot4 source MIT; tktk official contributed samples CC0.
+/* Authored Effekseer packages pinned to upstream Git blob hashes.
+ * All sample effects and their textures/models/materials are pre-existing game assets.
+ * Godot4 sample MIT; tktk Effekseer contributed samples CC0.
  */
 export const EFFECT_ASSET_BLOBS=Object.freeze([
   {
@@ -890,6 +890,750 @@ export const EFFECT_ASSET_BLOBS=Object.freeze([
     "path": "tests/Resources/Texture/star.png",
     "sha": "cfe744ee3822b0f00d93cd250c4248f92b234333",
     "size": 9455
+  },
+  {
+    "target": "tktk/Effects/Cure6.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Cure6.efkefc",
+    "sha": "0030a3b08650024c71b140ecceefa46a5f9df2b5",
+    "size": 8101
+  },
+  {
+    "target": "tktk/Effects/Light3.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Light3.efkefc",
+    "sha": "f759653786bdeba2f54198c6c60f29ea0411ab2b",
+    "size": 9004
+  },
+  {
+    "target": "tktk/Effects/Light2.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Light2.efkefc",
+    "sha": "940a324f97893dfdc5d2a9ecb7566d5bd7e27b87",
+    "size": 17575
+  },
+  {
+    "target": "tktk/Effects/Arrow1.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Arrow1.efkefc",
+    "sha": "5d6db548019630ef0263c14d46c170f0c444151a",
+    "size": 30373
+  },
+  {
+    "target": "tktk/Effects/Sword5.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Sword5.efkefc",
+    "sha": "4db588ba01a58230c503ac988b43366953a42466",
+    "size": 6431
+  },
+  {
+    "target": "tktk/Effects/hozyo1.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/hozyo1.efkefc",
+    "sha": "06212c607a76c56f05f5051ded6947f17be7e7f9",
+    "size": 13664
+  },
+  {
+    "target": "tktk/Effects/hozyo2.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/hozyo2.efkefc",
+    "sha": "b1b6c72104fcf1519388c93e7e52e78f09d79027",
+    "size": 27270
+  },
+  {
+    "target": "tktk/Effects/Light1.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Light1.efkefc",
+    "sha": "f50e62381d40a58a17b3b206bfcf2acfcf5c729c",
+    "size": 17226
+  },
+  {
+    "target": "tktk/Effects/Blow8.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Blow8.efkefc",
+    "sha": "7822b620699dc64f445876de7be9aaa364325bbb",
+    "size": 12337
+  },
+  {
+    "target": "tktk/Effects/Blow12.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Blow12.efkefc",
+    "sha": "833756aa8aeac6d466e49a8ec67d07060fa06c17",
+    "size": 21560
+  },
+  {
+    "target": "tktk/Effects/Blow9.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Blow9.efkefc",
+    "sha": "801cd07f1300b373f27a5bb7c330ad4cde9633ed",
+    "size": 15887
+  },
+  {
+    "target": "tktk/Effects/Cure2.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Cure2.efkefc",
+    "sha": "2857caf5daf8c3932bcdc8537520a32b094bfced",
+    "size": 11708
+  },
+  {
+    "target": "tktk/Effects/Cure3.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Cure3.efkefc",
+    "sha": "821f3cb2aa61db6d27cd8e10b570c34479e0c37d",
+    "size": 8117
+  },
+  {
+    "target": "tktk/Effects/Blow10.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Blow10.efkefc",
+    "sha": "8848f987c916b4d0e43475215ef76267bfbf6f6b",
+    "size": 11239
+  },
+  {
+    "target": "tktk/Effects/Cure4.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Cure4.efkefc",
+    "sha": "0522b45bd07e97b0a28b237b13ca7149fe418f80",
+    "size": 3795
+  },
+  {
+    "target": "tktk/Effects/Cure5.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Cure5.efkefc",
+    "sha": "036535aba5cadff8966b86dbe0c4af4e4229685b",
+    "size": 10133
+  },
+  {
+    "target": "tktk/Effects/Wind1.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Wind1.efkefc",
+    "sha": "69b73586352d109da12337baa43fcb44d82e7e55",
+    "size": 4869
+  },
+  {
+    "target": "tktk/Effects/Blow2.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Blow2.efkefc",
+    "sha": "2bb074ab4a0086ea293f238a955487566177dbce",
+    "size": 10119
+  },
+  {
+    "target": "tktk/Effects/hozyo3.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/hozyo3.efkefc",
+    "sha": "36bb04c843f4abd42406b4ff7a554379be357a58",
+    "size": 15867
+  },
+  {
+    "target": "tktk/Effects/hozyo4.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/hozyo4.efkefc",
+    "sha": "78e2bd61b37a687e6c337d27da2efacc75d063f4",
+    "size": 15446
+  },
+  {
+    "target": "tktk/Effects/Wind2.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Wind2.efkefc",
+    "sha": "5f375f49b5128d5d98ff30a04ad793b02f49d934",
+    "size": 16847
+  },
+  {
+    "target": "tktk/Effects/Blow4.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Blow4.efkefc",
+    "sha": "c87fb596f9052738aece4415903863d815b5abbd",
+    "size": 10959
+  },
+  {
+    "target": "tktk/Effects/Blow5.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Blow5.efkefc",
+    "sha": "f90c68784caa369140b7f2fd70e090711c245e1c",
+    "size": 13332
+  },
+  {
+    "target": "tktk/Effects/hozyo5.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/hozyo5.efkefc",
+    "sha": "749f739fe885d4e2cc3b733e3f9180c4ae8323e7",
+    "size": 15315
+  },
+  {
+    "target": "tktk/Effects/Blow11.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Blow11.efkefc",
+    "sha": "47118587b5538feb9286fbc8052b68dcc4eefc5c",
+    "size": 21055
+  },
+  {
+    "target": "tktk/Effects/Blow14.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Blow14.efkefc",
+    "sha": "d78c8aec5aa603e65ec4e5e0c62b741ecb77e32b",
+    "size": 23718
+  },
+  {
+    "target": "tktk/Effects/Blow3.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Blow3.efkefc",
+    "sha": "9e8dc98b8b58a48f03be19895a5847263d3b8da5",
+    "size": 5560
+  },
+  {
+    "target": "tktk/Effects/Light4.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Light4.efkefc",
+    "sha": "d45ee3e51e8f8cbe03a73dd68d4c4303baf5d7c2",
+    "size": 80875
+  },
+  {
+    "target": "tktk/Effects/Fire1.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Fire1.efkefc",
+    "sha": "161fddfab0cccdefefa6624ce0f087388acdf84c",
+    "size": 6163
+  },
+  {
+    "target": "tktk/Effects/Blow7.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Blow7.efkefc",
+    "sha": "eef4b90259e69a0763f1c381a95f9764b3597128",
+    "size": 8384
+  },
+  {
+    "target": "tktk/Effects/Cure1.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Cure1.efkefc",
+    "sha": "fa382481bc5a9398e9560dcf04950ade8f86b79b",
+    "size": 8982
+  },
+  {
+    "target": "tktk/Effects/Blow13.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Blow13.efkefc",
+    "sha": "20acc6d1820d793a1e7b85a01ad9db16c3a58cf1",
+    "size": 25850
+  },
+  {
+    "target": "tktk/Effects/Fire2.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Fire2.efkefc",
+    "sha": "7072f8a82f1e44eaa993128ff40eb3ef06d82ad0",
+    "size": 9563
+  },
+  {
+    "target": "tktk/Effects/Blow15.efkefc",
+    "repo": "newold3/Godot-RPG-Creator",
+    "revision": "e7d2d69193022f1d000c0bf96eee0b5561e2183f",
+    "path": "Assets/EffekEffects/tktk01/Effects/Blow15.efkefc",
+    "sha": "bff7f8bf165ec69b834117716a47ae673b36c09f",
+    "size": 30140
+  },
+  {
+    "target": "tktk/Texture/7iro.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/7iro.png",
+    "sha": "b58a642e80d593129014756d2ab44bab3abb868e",
+    "size": 34725
+  },
+  {
+    "target": "tktk/Texture/7irohannten.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/7irohannten.png",
+    "sha": "b99a4f708473e92f5592cc3c41e0065c92419587",
+    "size": 34904
+  },
+  {
+    "target": "tktk/Texture/AuroraRing.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/AuroraRing.png",
+    "sha": "32dd2721b3ed1f7bb89a40355013b044963d4422",
+    "size": 9216
+  },
+  {
+    "target": "tktk/Texture/Aurora_B.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/Aurora_B.png",
+    "sha": "ff2a7ea2505b1f05aeb8b3b6d5bc0c16385d5f24",
+    "size": 8902
+  },
+  {
+    "target": "tktk/Texture/Flame01.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/Flame01.png",
+    "sha": "0166f9c0428734e9856f0aaf5c432597fe6b1069",
+    "size": 13122
+  },
+  {
+    "target": "tktk/Texture/Fog3001.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/Fog3001.png",
+    "sha": "16ec23ed1ba470bdbc17d2215168d14c7b3ec686",
+    "size": 24637
+  },
+  {
+    "target": "tktk/Texture/Fog3002.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/Fog3002.png",
+    "sha": "ef9f4236ede1fcd6eb5b948a60bb74d2e935dc1e",
+    "size": 34873
+  },
+  {
+    "target": "tktk/Texture/FractalNoise_2.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/FractalNoise_2.png",
+    "sha": "19c0a621826f3db6ea43b25fdc9dd48e04c1e5cb",
+    "size": 220529
+  },
+  {
+    "target": "tktk/Texture/Line2.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/Line2.png",
+    "sha": "7b98e01d8b5276c472d2af1ac3745487b1e29fe7",
+    "size": 3264
+  },
+  {
+    "target": "tktk/Texture/Line6.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/Line6.png",
+    "sha": "35fd89f4c4360f120e6975016f320c500d554841",
+    "size": 4145
+  },
+  {
+    "target": "tktk/Texture/Shock_wave001.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/Shock_wave001.png",
+    "sha": "26f55daee1df8a7fd3359651eadefd030edc82b2",
+    "size": 19904
+  },
+  {
+    "target": "tktk/Texture/Shock_wave004.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/Shock_wave004.png",
+    "sha": "bd6cfa1918f47d395e89e5d09922694ec1029dda",
+    "size": 14277
+  },
+  {
+    "target": "tktk/Texture/StanBlade.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/StanBlade.png",
+    "sha": "149ed3823c38aa7fa81b3cedfa56d56cf4dde868",
+    "size": 23697
+  },
+  {
+    "target": "tktk/Texture/Thunder1.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/Thunder1.png",
+    "sha": "baea0b646cf42f81b154155b5e2776dc73a0299f",
+    "size": 3590
+  },
+  {
+    "target": "tktk/Texture/WaterForm1.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/WaterForm1.png",
+    "sha": "9fcbbdd9f652e2a48e6b142fdb006cbf9866cfb3",
+    "size": 154338
+  },
+  {
+    "target": "tktk/Texture/Wind.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/Wind.png",
+    "sha": "a9cb0465abd0967493a1e6aea6ffd2b96ca19e39",
+    "size": 14374
+  },
+  {
+    "target": "tktk/Texture/Wind01.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/Wind01.png",
+    "sha": "c479cadf7fd84f2040c0a65eccdd25108744847a",
+    "size": 10565
+  },
+  {
+    "target": "tktk/Texture/actionlines.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/actionlines.png",
+    "sha": "418f637f20ae984c3ac58992b972d021117c5bca",
+    "size": 9623
+  },
+  {
+    "target": "tktk/Texture/aura3_type2.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/aura3_type2.png",
+    "sha": "fe0c84eed7069bb87b575e61b9b91c4df22ec58e",
+    "size": 822320
+  },
+  {
+    "target": "tktk/Texture/burst02_red.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/burst02_red.png",
+    "sha": "c3c598e2cdfa74b8b6e063820145505ec0f0c369",
+    "size": 135489
+  },
+  {
+    "target": "tktk/Texture/ezzi.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/ezzi.png",
+    "sha": "8ff73e4f841120cc5c758f43012d0a16ccd263e9",
+    "size": 7553
+  },
+  {
+    "target": "tktk/Texture/ezziglow.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/ezziglow.png",
+    "sha": "bd407f142116e0d8b962880fd177d916d783a98c",
+    "size": 17774
+  },
+  {
+    "target": "tktk/Texture/hisigata0.9.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/hisigata0.9.png",
+    "sha": "f4ad3b423c6792ef745957924db3c87eaac41993",
+    "size": 7499
+  },
+  {
+    "target": "tktk/Texture/hisigata0.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/hisigata0.png",
+    "sha": "c58f0124e405da0af519a4369239fb9e2f32cdb0",
+    "size": 9696
+  },
+  {
+    "target": "tktk/Texture/hisigata1.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/hisigata1.png",
+    "sha": "1ee72dd2187fb4f05e5b7fe71a2852b02a636bea",
+    "size": 7349
+  },
+  {
+    "target": "tktk/Texture/magma.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/magma.png",
+    "sha": "68b71d4eba9332234e7af1a270b891c4ad556607",
+    "size": 1216371
+  },
+  {
+    "target": "tktk/Texture/naihu.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/naihu.png",
+    "sha": "f768931b4ab1e415b4e67a49be92a7b66311d8c1",
+    "size": 3427
+  },
+  {
+    "target": "tktk/Texture/rainnaka.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/rainnaka.png",
+    "sha": "693053e1e2b072c7d3a3198cce2fe011e7e12716",
+    "size": 9030
+  },
+  {
+    "target": "tktk/Texture/rainnki.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/rainnki.png",
+    "sha": "58c6e376d6506a91b4dd6e479c9fbdcbf0c27bae",
+    "size": 8658
+  },
+  {
+    "target": "tktk/Texture/rainnmidori.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/rainnmidori.png",
+    "sha": "1dadfd987edb74a1888001bb18b812b747218142",
+    "size": 11143
+  },
+  {
+    "target": "tktk/Texture/rainnmizu.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/rainnmizu.png",
+    "sha": "e2025b60089c95b00c74451ce3ebe747fab1b47a",
+    "size": 8760
+  },
+  {
+    "target": "tktk/Texture/rinngu,mizuiro.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/rinngu,mizuiro.png",
+    "sha": "b8295eab2c82441aa1c96b9e7991f76c68512f7e",
+    "size": 27373
+  },
+  {
+    "target": "tktk/Texture/smoke_tex.png",
+    "repo": "effekseer/EffekseerForWebGL",
+    "revision": "e8c3ce076644789918695b0cba0031461c817890",
+    "path": "tests/Resources/Texture/smoke_tex.png",
+    "sha": "47f4ca63c8b46f9be4f5da48a95b4731bcbf0cad",
+    "size": 208912
+  },
+  {
+    "target": "godot4-material1/AlphaCutoff.efkefc",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/AlphaCutoff.efkefc",
+    "sha": "ccd431637707fa1d7920f5852124a7e05e2e0e92",
+    "size": 3031
+  },
+  {
+    "target": "godot4-material1/Dissolve.efkefc",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/Dissolve.efkefc",
+    "sha": "1007802d72de99ea2d6cf65ed70fcad7f633f98b",
+    "size": 3051
+  },
+  {
+    "target": "godot4-material1/Falloff.efkefc",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/Falloff.efkefc",
+    "sha": "bc5ae35e9d53a69389c68a67c70b5a8e1c569880",
+    "size": 1993
+  },
+  {
+    "target": "godot4-material1/ImageDistortion.efkefc",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/ImageDistortion.efkefc",
+    "sha": "05741b3ba6701c361f1dd883ee14cd2e886e7e74",
+    "size": 2580
+  },
+  {
+    "target": "godot4-material1/Materials/AlphaCutoff.efkmat",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/Materials/AlphaCutoff.efkmat",
+    "sha": "de20537c4f3aa0691ebdbbff8d08068de82a5cc3",
+    "size": 4597
+  },
+  {
+    "target": "godot4-material1/Materials/Dissolve.efkmat",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/Materials/Dissolve.efkmat",
+    "sha": "ef18cd7e8bdf187ba9371be1e267caaf0a94f01b",
+    "size": 6332
+  },
+  {
+    "target": "godot4-material1/Materials/Falloff.efkmat",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/Materials/Falloff.efkmat",
+    "sha": "a7f4c6805c10d7bc647f636c51adb6eeb1cc67ef",
+    "size": 3812
+  },
+  {
+    "target": "godot4-material1/Materials/ImageDistortion.efkmat",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/Materials/ImageDistortion.efkmat",
+    "sha": "881917325d55542d67014a5c08b3331f6616acce",
+    "size": 6185
+  },
+  {
+    "target": "godot4-material1/Materials/PolarCoords.efkmat",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/Materials/PolarCoords.efkmat",
+    "sha": "132aa98417dfa9ae34972e776a60bc5d7d6e65d1",
+    "size": 5145
+  },
+  {
+    "target": "godot4-material1/Materials/RampColor.efkmat",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/Materials/RampColor.efkmat",
+    "sha": "faa66d1ab43a96f3d20997b3fad9a13f02363860",
+    "size": 4790
+  },
+  {
+    "target": "godot4-material1/Materials/Unlit.efkmat",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/Materials/Unlit.efkmat",
+    "sha": "e8e7dfd5a5fdd187d643928bee65ad5d0b1ab895",
+    "size": 2840
+  },
+  {
+    "target": "godot4-material1/Materials/VertexTransform.efkmat",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/Materials/VertexTransform.efkmat",
+    "sha": "02b988d6a73f5213ca01fda1866c240f3d47657b",
+    "size": 5088
+  },
+  {
+    "target": "godot4-material1/Models/MergedSphere.efkmodel",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/Models/MergedSphere.efkmodel",
+    "sha": "8fe505dd9bba0038d7c640b92e4e0639fbfcc40c",
+    "size": 45084
+  },
+  {
+    "target": "godot4-material1/Models/Sphare.efkmodel",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/Models/Sphare.efkmodel",
+    "sha": "009c604a9f715d6526fb78959dc96fe0401e93cd",
+    "size": 130584
+  },
+  {
+    "target": "godot4-material1/PolarCoords.efkefc",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/PolarCoords.efkefc",
+    "sha": "f65f30fdea12fdcfbeddeaed9656b75f7d4856ab",
+    "size": 1279
+  },
+  {
+    "target": "godot4-material1/RampMap.efkefc",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/RampMap.efkefc",
+    "sha": "3ff3d0d261411ce90c464823e5d0300857d33d49",
+    "size": 2615
+  },
+  {
+    "target": "godot4-material1/Textures/Check01.png",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/Textures/Check01.png",
+    "sha": "93420f24fd699efde289a8e55df916c5ac31d2d5",
+    "size": 2352
+  },
+  {
+    "target": "godot4-material1/Textures/Distortion01.png",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/Textures/Distortion01.png",
+    "sha": "07360b4e51abb0ecad75da53edd1f9b691ac4974",
+    "size": 343049
+  },
+  {
+    "target": "godot4-material1/Textures/Flash01.png",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/Textures/Flash01.png",
+    "sha": "3c08b3fbcec5a6423e2a2a1cb4f8b844c0b05363",
+    "size": 24652
+  },
+  {
+    "target": "godot4-material1/Textures/Grid01.png",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/Textures/Grid01.png",
+    "sha": "d88aa2b3f653ea5b03cc28d7577478ed84400f37",
+    "size": 3974
+  },
+  {
+    "target": "godot4-material1/Textures/RampAlpha1.png",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/Textures/RampAlpha1.png",
+    "sha": "f8859bd1b2327ef228aafeaca1f3fc756562ca14",
+    "size": 2547
+  },
+  {
+    "target": "godot4-material1/Textures/RampColor_Green.png",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/Textures/RampColor_Green.png",
+    "sha": "4f9fc745bbb3461c416a970cff08eb823c72f9a4",
+    "size": 3782
+  },
+  {
+    "target": "godot4-material1/Textures/RampColor_Orange.png",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/Textures/RampColor_Orange.png",
+    "sha": "dcba8256562feeba613b6777b0e133d2212873ab",
+    "size": 4980
+  },
+  {
+    "target": "godot4-material1/Textures/RampColor_Purple.png",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/Textures/RampColor_Purple.png",
+    "sha": "dccf167be75193ada33f76291c4d7ad6db4fc9a4",
+    "size": 4752
+  },
+  {
+    "target": "godot4-material1/Unlit.efkefc",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/Unlit.efkefc",
+    "sha": "00013de1099693dd29d5d73db3e205468f760e03",
+    "size": 1112
+  },
+  {
+    "target": "godot4-material1/VertexTransform.efkefc",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material1/VertexTransform.efkefc",
+    "sha": "3df435cf256cb5a81799971ca4d23f77acbd2c01",
+    "size": 2465
   }
 ]);
-export const AUTHORED_EFFECT_NAMES=Object.freeze({"godot4":["ef_barrior01","ef_fire01","ef_fire02","ef_fire03","ef_holy01","ef_ice01","ef_ice02","ef_ice03","ef_lightning01","ef_lightning02","ef_lightning03","ef_parts_hit01","ef_parts_hit02","ef_wind01","ef_wind02","ef_wind03"],"tktk":["Dark1","Dark2","Dark3","Magic1","Magic2","Soil1","Cure7"]});
+export const AUTHORED_EFFECT_NAMES=Object.freeze({"godot4":["ef_barrior01","ef_fire01","ef_fire02","ef_fire03","ef_holy01","ef_ice01","ef_ice02","ef_ice03","ef_lightning01","ef_lightning02","ef_lightning03","ef_parts_hit01","ef_parts_hit02","ef_wind01","ef_wind02","ef_wind03"],"tktk":["Cure6","Dark3","Light3","Light2","Magic2","Arrow1","Sword5","hozyo1","hozyo2","Light1","Blow8","Blow12","Blow9","Dark1","Dark2","Cure2","Cure3","Magic1","Blow10","Cure4","Cure5","Wind1","Blow2","hozyo3","Cure7","hozyo4","Wind2","Blow4","Blow5","hozyo5","Blow11","Blow14","Blow3","Soil1","Light4","Fire1","Blow7","Cure1","Blow13","Fire2","Blow15"],"materials":["ImageDistortion","Falloff","Unlit","PolarCoords","RampMap","Dissolve","VertexTransform","AlphaCutoff"]});

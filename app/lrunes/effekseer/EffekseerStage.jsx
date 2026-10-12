@@ -1,10 +1,11 @@
 'use client';
 
-import {useEffect,useRef,useState} from 'react';
+import {useEffect,useMemo,useRef,useState} from 'react';
 import {AnimatePresence,motion,useReducedMotion} from 'motion/react';
 import * as THREE from 'three';
 import {runeGlyphProfile} from './rune-glyph-library.mjs';
 import {runeEffectFor} from './rune-effect-library.mjs';
+import {runeIconFor} from './rune-semantic-icons.mjs';
 
 const SOURCE='/vendor/effekseer/';
 const WASM=SOURCE+'effekseer.wasm';
@@ -150,7 +151,8 @@ export default function EffekseerStage({rune,onGlyphClick}){
   const word=nameOf(rune);
   const profile=runeGlyphProfile(rune);
   const key=String(rune?.rune_id??word)+'-'+word+'-'+replay;
-  const effect=runeEffectFor(rune);
+  const effect=useMemo(()=>runeEffectFor(rune),[rune?.english_name]);
+  const semanticIcon=runeIconFor(rune);
   const visualReady=reduced||!effect||visibleKey===key;
   return <div className="rune-effekseer-stage" data-source="effekseer" data-rune={word}>
     <EffekseerCanvas key={key} effect={effect} reduced={reduced} onReady={()=>setVisibleKey(key)}/>
@@ -168,6 +170,11 @@ export default function EffekseerStage({rune,onGlyphClick}){
           {word}
         </motion.button>:null}
       </AnimatePresence>
+      {visualReady&&semanticIcon?<motion.img key={'meaning-'+key} className="rune-effekseer-meaning-icon"
+        src={semanticIcon} alt="" aria-hidden="true"
+        initial={reduced?false:{opacity:0,scale:.8}}
+        animate={reduced?{opacity:1,scale:1}:{opacity:[0,.93,.93,0],scale:[.8,1,1,1]}}
+        transition={{duration:reduced?0:4.2,times:[0,.15,.78,1],ease:'easeInOut'}}/>:null}
       {visualReady?<SemanticIllustration key={'gesture-'+key} word={word} reduced={reduced}/>:null}
       <span className="rune-effekseer-english">{rune?.english_name||''}</span>
     </div>

@@ -2,42 +2,49 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {AUTHORED_EFFECT_FILES,RUNE_EFFECT_KEYS,CANONICAL_RUNE_ENGLISH,runeEffectFor} from '../app/lrunes/effekseer/rune-effect-library.mjs';
 import {EFFECT_ASSET_BLOBS,AUTHORED_EFFECT_NAMES} from './rune-effekseer-asset-manifest.mjs';
+import {RUNE_SEMANTIC_ICONS,runeIconFor} from '../app/lrunes/effekseer/rune-semantic-icons.mjs';
 const stage=readFileSync('app/lrunes/effekseer/EffekseerStage.jsx','utf8');
 const pkg=JSON.parse(readFileSync('package.json','utf8'));
 assert.equal(CANONICAL_RUNE_ENGLISH.length,67);
 assert.equal(new Set(CANONICAL_RUNE_ENGLISH).size,67);
-assert.equal(Object.keys(RUNE_EFFECT_KEYS).length,67);
 assert.deepEqual(Object.keys(RUNE_EFFECT_KEYS),CANONICAL_RUNE_ENGLISH);
-assert.equal(RUNE_EFFECT_KEYS.Blank,null,'Blank is deliberate absence, never Void');
+assert.equal(RUNE_EFFECT_KEYS.Virtue,null,'0 is not a drawable Rune');
+const chosen=Object.values(RUNE_EFFECT_KEYS).filter(Boolean);
+assert.equal(chosen.length,66,'all 66 drawable Runes have an authored VFX');
+assert.equal(new Set(chosen).size,66,'no duplicate VFX assignments permitted');
+assert.equal(new Set(chosen.map(x=>AUTHORED_EFFECT_FILES[x])).size,66,'no two keys alias the same VFX file');
+assert.notEqual(RUNE_EFFECT_KEYS.Blank,RUNE_EFFECT_KEYS.Void);
 assert.notEqual(RUNE_EFFECT_KEYS.Void,RUNE_EFFECT_KEYS.Illusion);
 assert.notEqual(RUNE_EFFECT_KEYS.Flame,RUNE_EFFECT_KEYS.Radiance);
-assert.notEqual(RUNE_EFFECT_KEYS.Thunder,RUNE_EFFECT_KEYS.Wind);
-const installed=new Set(EFFECT_ASSET_BLOBS.map(file=>file.target));
-assert.equal(installed.size,EFFECT_ASSET_BLOBS.length,'Bundle paths are unique');
-for(const blob of EFFECT_ASSET_BLOBS){
- assert.match(blob.sha,/^[\da-f]{40}$/);
- assert.ok(blob.size>0);
- assert.ok(blob.repo&&blob.revision&&blob.path);
+assert.equal(RUNE_EFFECT_KEYS.Spectrum,'T:Light3','Spectrum must use rainbow-colored authored Light3');
+assert.equal(RUNE_EFFECT_KEYS.Mirror,'S:ImageDistortion','Mirror must use optical effect, never ice');
+assert.equal(RUNE_EFFECT_KEYS.Blank,'S:Dissolve','Blank is a uniquely disappearing module, not Void');
+assert.equal(RUNE_SEMANTIC_ICONS.length,67);
+assert.equal(new Set(RUNE_SEMANTIC_ICONS.map(x=>x.path)).size,67);
+assert.equal(RUNE_SEMANTIC_ICONS[3].path,'lorc/rainbow-star.svg');
+assert.equal(RUNE_SEMANTIC_ICONS[7].path,'lorc/mirror-mirror.svg');
+assert.equal(RUNE_SEMANTIC_ICONS[55].path,'lorc/portal.svg');
+const pinned=new Map(EFFECT_ASSET_BLOBS.map(x=>[x.target,x]));
+assert.equal(pinned.size,EFFECT_ASSET_BLOBS.length);
+for(const blob of EFFECT_ASSET_BLOBS){assert.match(blob.sha,/^[a-f\d]{40}$/);assert.ok(blob.size>0);}
+for(let id=1;id<=66;id++){
+ const name=CANONICAL_RUNE_ENGLISH[id];
+ const profile=runeEffectFor({rune_id:id,english_name:name});
+ assert.ok(profile?.path,'Effect missing: '+id+' '+name);
+ assert.ok(profile.path.startsWith('/vendor/effekseer/'));
+ const file=profile.path.slice('/vendor/effekseer/'.length);
+ if(file.startsWith('Collections/'))assert.ok(pinned.has(file.slice('Collections/'.length)),'Unbundled effect '+name+': '+file);
+ else assert.ok(file.startsWith('Resources/'),'Unrecognised existing effect: '+file);
+ const icon=RUNE_SEMANTIC_ICONS[id];
+ assert.equal(icon.id,id);assert.equal(icon.name,name);assert.match(icon.sha,/^[a-f\d]{40}$/);
+ assert.equal(runeIconFor({rune_id:id}),'/vendor/rune-semantic-icons/'+id+'.svg');
 }
-for(let i=0;i<CANONICAL_RUNE_ENGLISH.length;i++){
- const name=CANONICAL_RUNE_ENGLISH[i];
- const effect=runeEffectFor({rune_id:i,english_name:name});
- if(i===0||name==='Blank'){assert.equal(effect,null);continue;}
- assert.ok(effect,'Missing authored effect for '+i+' '+name);
- assert.ok(AUTHORED_EFFECT_FILES[RUNE_EFFECT_KEYS[name]]);
- assert.ok(effect.path.startsWith('/vendor/effekseer/'));
- const relative=effect.path.slice('/vendor/effekseer/'.length);
- if(relative.startsWith('Collections/')){
-  assert.ok(installed.has(relative.slice('Collections/'.length)),'Missing pinned package: '+name);
- } else {
-  assert.ok(relative.startsWith('Resources/'),'Unexpected effect path: '+relative);
- }
-}
-assert.equal(CANONICAL_RUNE_ENGLISH.filter(name=>RUNE_EFFECT_KEYS[name]).length,65);
-assert.equal(AUTHORED_EFFECT_NAMES.godot4.length,16);
-assert.equal(AUTHORED_EFFECT_NAMES.tktk.length,7);
+assert.equal(AUTHORED_EFFECT_NAMES.tktk.length,41);
+assert.equal(AUTHORED_EFFECT_NAMES.materials.length,8);
 assert.match(stage,/runeEffectFor\(rune\)/);
+assert.match(stage,/runeIconFor\(rune\)/);
 assert.match(stage,/onReady=\{\(\)=>setVisibleKey\(key\)\}/);
-assert.doesNotMatch(stage,/const LIBRARY=|RuneAuraFX|RuneAura/);
-assert.match(pkg.scripts.prebuild,/prepare-rune-effekseer-assets/);
-console.log('65 drawable effects use pinned authored assets; Blank remains distinct and intentionally without magic.');
+assert.match(stage,/useMemo\(\(\)=>runeEffectFor\(rune\)/);
+assert.doesNotMatch(stage,/RuneAuraFX|RuneAura|const LIBRARY=/);
+assert.match(pkg.scripts.prebuild,/prepare-rune-semantic-icons/);
+console.log('Rune embodiment: 66 distinct authored VFX, 66 unique semantic symbols, all pinned with provenance.');
