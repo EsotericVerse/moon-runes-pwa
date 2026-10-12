@@ -7,7 +7,7 @@
  * Keeping the browser's font rasterization also preserves the eight canonical
  * lettering families without introducing additional font downloads.
  */
-export const RUNE_SOLID_RASTER=320;
+export const RUNE_SOLID_RASTER=384;
 export const RUNE_SOLID_DEPTH=.23;
 
 export const RUNE_SOLID_FONTS=Object.freeze({
@@ -113,7 +113,7 @@ export function runeSolidShapes(THREE,word,fontProfile,canvas){
   ctx.clearRect(0,0,n,n);
   ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.fillStyle='#fff';
-  ctx.font=font.weight+' 252px "'+font.family+'"';
+  ctx.font=font.weight+' 302px "'+font.family+'"';
   ctx.fillText(word,n/2,n/2+8,n*.89);
   const rgba=ctx.getImageData(0,0,n,n).data;
   const mask=new Uint8Array(n*n);
@@ -132,9 +132,9 @@ export function runeSolidShapes(THREE,word,fontProfile,canvas){
   const unit=5.25/dimension;
   const centerX=(minX+maxX+1)/2,centerY=(minY+maxY+1)/2;
   const reshape=poly=>poly.map(([x,y])=>[(x-centerX)*unit,(y+centerY)*unit]);
-  const outside=contours.filter(poly=>signedArea(poly)>0)
+  const outside=contours.filter(poly=>signedArea(poly)<0)
     .sort((a,b)=>Math.abs(signedArea(b))-Math.abs(signedArea(a)));
-  const holes=contours.filter(poly=>signedArea(poly)<0);
+  const holes=contours.filter(poly=>signedArea(poly)>0);
   const shapes=outside.map(outline=>{
     const points=reshape(outline);
     const shape=new THREE.Shape();
