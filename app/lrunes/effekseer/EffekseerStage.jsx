@@ -168,7 +168,7 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
       try{
         const api=await readyRuntime();
         if(!active||!target)return;
-        renderer=new THREE.WebGLRenderer({canvas:target,alpha:true,antialias:false,powerPreference:'high-performance'});
+        renderer=new THREE.WebGLRenderer({canvas:target,alpha:true,antialias:quality==='high'&&!ambient,powerPreference:'high-performance'});
         renderer.setClearColor(0,0);
         const camera=new THREE.PerspectiveCamera(35,1,1,1000);
         camera.position.set(0,0,24);
@@ -177,8 +177,16 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
           const r=target.getBoundingClientRect();
           if(!r.width||!r.height)return;
           // Renderer-native resolution control, not a stretched CSS screenshot.
-          const maxDpr=ambient?(quality==='high'?1.5:1):quality==='high'?2:1.2;
-          renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,maxDpr));
+          // The giant rune reveal pushes the camera 2x closer to particles.
+          // High mode supersamples the native Effekseer WebGL framebuffer even
+          // on desktop displays with DPR 1; CSS enlargement cannot do this.
+          // This improves raster aliasing, not missing source alpha/detail.
+          const maxDpr=ambient?(quality==='high'?1.5:1):quality==='high'?3:1.2;
+          const deviceDpr=window.devicePixelRatio||1;
+          const renderDpr=!ambient&&quality==='high'
+            ?Math.min(Math.max(deviceDpr,2),maxDpr)
+            :Math.min(deviceDpr,maxDpr);
+          renderer.setPixelRatio(renderDpr);
           renderer.setSize(Math.round(r.width),Math.round(r.height),false);
           camera.aspect=r.width/r.height;camera.updateProjectionMatrix();camera.updateMatrixWorld();
         };
