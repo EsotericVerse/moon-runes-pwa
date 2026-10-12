@@ -12,6 +12,7 @@ import {dirname,resolve} from 'node:path';
 export const HD_FOG_SOURCE='https://opengameart.org/sites/default/files/oga-textures/136561/fx_cloudalpha05.png';
 export const HD_FOG_DESTINATION='public/vendor/effekseer/Collections/MAGICALxSPIRAL/Texture/_fog-cloud-2048.png';
 export const HD_FOG_SIZE=2048;
+export const HD_FOG_SHA256='5cae51b43d8d7dbb4b9d8e1f8830d4120ef1cd9f95690f4c5f58afb0c2b0f339';
 const DEST=resolve(HD_FOG_DESTINATION);
 const sha256=bytes=>createHash('sha256').update(bytes).digest('hex');
 function verify(bytes){
@@ -19,6 +20,7 @@ function verify(bytes){
     throw Error('2K cloud-fog material is not a PNG');
   const w=bytes.readUInt32BE(16),h=bytes.readUInt32BE(20);
   const depth=bytes[24],type=bytes[25];
+  if(sha256(bytes)!==HD_FOG_SHA256)throw Error('2K cloud texture checksum mismatch; upstream content changed');
   if(w!==HD_FOG_SIZE||h!==HD_FOG_SIZE)
     throw Error('Fog texture is '+w+'×'+h+'; native 2048×2048 mandatory');
   if(depth!==8||![4,6].includes(type))
