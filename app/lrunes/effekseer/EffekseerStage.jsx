@@ -216,9 +216,12 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
         // Only this authored smoke emitter receives a genuine native 2048×2048
         // CC0 transparent cloud texture, not an enlarged 128×128 sprite.
         // Original .efkefc files and the 66 rune VFX remain unchanged.
-        const fogRedirects=new Set();
+        const fogRedirects=new Set(),fogRequested=new Set();
         const textureRedirect=ambient&&effectFile.endsWith('/MxS_foot_smoke2.efkefc')
-          ?(path)=>redirectAmbientFogTexture(path,name=>fogRedirects.add(name))
+          ?(path)=>{
+            fogRequested.add(String(path).replaceAll('\\','/').split('/').pop());
+            return redirectAmbientFogTexture(path,name=>fogRedirects.add(name));
+          }
           :undefined;
         let loaded,started=false,playingHandle=null,settledEffectStarted=false,ambientLastSpawn=0,ambientRetire=null;
         let ambientGhost=null,ambientGhostRetire=null;
@@ -229,7 +232,9 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
             const attributes=renderer.getContext().getContextAttributes();
             const scene=ambientDepth==='foreground'?'近景':'遠景';
             const textures=[...fogRedirects].join('、')||'無';
-            setStatus('霧氣'+scene+'：Effekseer 已載入｜素材重導：'+textures+
+            setStatus('霧氣'+scene+'：Effekseer 已載入｜素材請求：'+
+              ([...fogRequested].join('、')||'無')+
+              '｜實際替換：'+textures+
               '｜Canvas alpha：'+Boolean(attributes?.alpha)+
               '｜premultiplied：'+Boolean(attributes?.premultipliedAlpha));
           }else setStatus('');
