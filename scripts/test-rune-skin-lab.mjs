@@ -166,7 +166,7 @@ assert.match(atlas,/group\.desc/);
 assert.match(atlas,/group\.runeslist\.length/);
 assert.doesNotMatch(atlas,/previewGroup|setPreview\(|className="rune-art-group-preview"/);
 assert.match(atlas,/rune_evolution_history/);
-assert.match(atlas,/createPortal\(/);
+assert.match(atlas,/<RuneInfoDialog rune=\{details\} onClose=\{closeDetails\}\/>/);
 assert.match(directory,/export function groupImage\(/);
 assert.match(directory,/\/assets\/lunarunes\/cards\//);
 for(const file of [
