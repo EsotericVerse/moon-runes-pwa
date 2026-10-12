@@ -259,7 +259,7 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
                  ambientGhost=context.play(loaded,0,0,0);
                  const g=(effect.tuning?.scale||1)*.69;
                  ambientGhost.setScale(g,g,g);
-                 ambientGhost.setAllColor(185,202,224,60);
+                 ambientGhost.setAllColor(207,217,233,115);
                  ambientGhost.setSpeed(.39);
                  ambientGhost.setLocation(-1.7,.55,-4.2);
                }catch(error){if(active)setStatus('遠景霧氣無法播放：'+String(error?.message||error));}
@@ -352,7 +352,7 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
                   ambientGhost=context.play(loaded,0,0,0);
                   const g=effectScale*.69;
                   ambientGhost.setScale(g,g,g);
-                  ambientGhost.setAllColor(185,202,224,60);
+                  ambientGhost.setAllColor(207,217,233,115);
                   ambientGhost.setSpeed(.39);
                   ambientGhost.setLocation(-1.7,.55,-4.2);
                 }
@@ -565,11 +565,11 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
 // file. Its breathing/clearing is playback and composition, never DIY particles.
 const AUTHORED_MOON_MIST=Object.freeze({
   path:SOURCE+AUTHORED_EFFECT_FILES['M:foot_smoke2'],
-  tuning:{scale:1.3,speed:.42,color:[193,203,225,95]}
+  tuning:{scale:3.0,speed:.42,color:[223,227,238,185]}
 });
 const AUTHORED_FOREGROUND_MIST=Object.freeze({
   path:SOURCE+AUTHORED_EFFECT_FILES['M:foot_smoke2'],
-  tuning:{scale:.74,speed:.37,color:[210,207,232,66]}
+  tuning:{scale:1.6,speed:.37,color:[225,225,239,135]}
 });
 export function RuneMistBackdrop({phase='idle',quality='high',textureQuality='original'}){
   const reduced=useReducedMotion();
