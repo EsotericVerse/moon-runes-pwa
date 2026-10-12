@@ -221,6 +221,10 @@ assert.match(cssHero,/\.rune-3d-stage\[data-ritual-phase="revealing"\] \.rune-3d
   'the moonlight illustration must clear during the large authored-effect reveal');
 assert.doesNotMatch(cssHero,/radial-gradient\(ellipse 64% 72% at 70% 21%/,
   'old tinted radial gradient must not leak through transparent particle quads');
+assert.match(cssHero,/\.rune-3d-stage\[data-ritual-phase="waiting"\] \.rune-3d-night-moon\{\s*filter:[^}]*opacity:0/s,
+  'late waiting-state moon rules must not reintroduce purple behind opaque particles');
+assert.match(cssHero,/\.rune-3d-stage\[data-ritual-phase="revealing"\] \.rune-3d-night-moon\{\s*filter:[^}]*opacity:0/s,
+  'late revealing-state moon rules must not reintroduce purple backlight');
 
 /* Authored moonlit mist: never replace the original 66 VFX with a homemade scene. */
 assert.match(stage,/export function RuneMistBackdrop/,'draw stage must expose persistent native fog');
