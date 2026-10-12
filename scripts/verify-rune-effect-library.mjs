@@ -17,9 +17,9 @@ for(const [name,key] of Object.entries(ACCEPTED_RUNE_EFFECT_BASELINE))assert.equ
 assert.equal(RUNE_EFFECT_TUNING.Star.rotationZ,Math.PI,'star module must point down');
 assert.ok(RUNE_EFFECT_TUNING.Flame.scale>1,'genuine flame module must read on first glance');
 assert.ok(RUNE_EFFECT_TUNING.Fate.speed<1&&RUNE_EFFECT_TUNING.Chaos.scale>1);
-assert.match(stage,/handle\\.setScale\\(/);
-assert.match(stage,/handle\\.setRotation\\(/);
-assert.match(stage,/handle\\.setSpeed\\(/);
+assert.ok(stage.includes('handle.setScale('),'Effekseer handle setScale missing');
+assert.ok(stage.includes('handle.setRotation('),'Effekseer handle setRotation missing');
+assert.ok(stage.includes('handle.setSpeed('),'Effekseer handle setSpeed missing');
 for(const [word] of RUNE_REJECTED_BRIEFS)assert.ok(stage.includes("'"+word+"':"),'missing choreographed rejection: '+word);
 assert.equal(RUNE_EFFECT_KEYS.Virtue,null,'0 is not a drawable Rune');
 const chosen=Object.values(RUNE_EFFECT_KEYS).filter(Boolean);
