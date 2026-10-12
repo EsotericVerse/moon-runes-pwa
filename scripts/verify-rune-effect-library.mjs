@@ -22,7 +22,7 @@ assert.equal(RUNE_EFFECT_KEYS.Star,'M:meteo1','Star must use authored meteor, ne
 assert.equal(RUNE_EFFECT_KEYS.Insight,'M:Sylph15','owner assigned former Branch effect to Insight');
 assert.equal(RUNE_EFFECT_KEYS.Stone,'M:Gohlem_Shield2','owner assigned former Diamond effect to Stone');
 assert.equal(RUNE_EFFECT_KEYS.Space,'S:PolarCoords','restore prior Time space contraction effect');
-assert.equal(RUNE_EFFECT_KEYS.Illusion,'M:Wind_Impact','owner assigned former Void to Illusion');
+assert.equal(RUNE_EFFECT_KEYS.Illusion,'M:foot_smoke2','owner requested drifting fog for Illusion');
 assert.equal(RUNE_EFFECT_KEYS.Void,'M:AquaPoint','owner assigned former Illusion to Void');
 assert.equal(RUNE_EFFECT_TUNING.Resonance.rotationZ,Math.PI/2,'horizontal wave orientation');
 assert.deepEqual(RUNE_EFFECT_TUNING.Star.color,[255,255,255,255],'meteor light is neutral white');
