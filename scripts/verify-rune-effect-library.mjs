@@ -38,7 +38,6 @@ assert.equal(RUNE_EFFECT_KEYS.Dust,'M:foot_smoke7');
 assert.equal(RUNE_EFFECT_KEYS.Illusion,'M:foot_smoke2');
 assert.equal(RUNE_EFFECT_KEYS.Chaos,'M:Sylph13','Chaos inherits former Fate VFX');
 assert.equal(RUNE_EFFECT_KEYS.Fate,'SAMPLE:Simple_Ring_Shape1','Fate inherits former Chaos VFX');
-assert.ok(presentation.includes('grayscale(1) brightness(1.65)'),'Star filters color out of the VFX canvas');
 for(const key of ['M:Sylph8','M:Sylph5','M:foot_smoke7','M:foot_smoke2']){
   const path=AUTHORED_EFFECT_FILES[key]?.slice('Collections/'.length);
   assert.ok(path,'Missing effect source '+key);
@@ -72,6 +71,7 @@ assert.ok(EFFECT_ASSET_BLOBS.some(file=>file.target==='godot4/Textures/tx_fire_f
 
 assert.equal(RUNE_EFFECT_KEYS.Spectrum,'T:Light3','Spectrum must use rainbow-colored authored Light3');
 const presentation=readFileSync('app/lrunes/effekseer/effekseer-stage.css','utf8');
+assert.ok(presentation.includes('grayscale(1) brightness(1.65)'),'Star filters color out of the VFX canvas');
 assert.match(presentation,/data-rune="彩"/,'Spectrum must visually express multiple colors');
 assert.match(presentation,/linear-gradient\(100deg/,'Spectrum needs a genuinely multicolored letterform');
 assert.match(presentation,/data-rune="火"/,'Flame must carry a warm-color object and typeface');
