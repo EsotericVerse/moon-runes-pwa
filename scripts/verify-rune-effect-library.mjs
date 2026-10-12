@@ -273,7 +273,13 @@ assert.match(stage,/quality==='high'&&!reduced/,'balanced mode must avoid the th
 assert.doesNotMatch(stage,/AUTHORED_EFFECT_FILES\['M:foot_smoke7'\]/,
   'particle-only smoke7 is not a valid mist source');
 assert.match(stage,/\/MxS_foot_smoke2\.efkefc/,'correct texture redirect applies to vetted smoke source');
-assert.match(stage,/\/_fog-cloud-2048\.png/,'web loader uses native 2K transparent cloud image, not a scaled 128-pixel particle');
+const fogRoutes=readFileSync('app/lrunes/effekseer/ambient-fog-assets.mjs','utf8');
+assert.match(fogRoutes,/\/_fog-cloud-2048\.png/,'ambient-only redirect uses genuine transparent native 2K texture');
+assert.match(stage,/redirectAmbientFogTexture\(path,name=>fogRedirects\.add\(name\)\)/,
+  'Effekseer must use the validated fog URL redirect instead of original opaque sprites');
+assert.match(stage,/diagnoseAmbient/,'fog QA must reveal renderer and loading status');
+assert.match(stage,/fogRedirects/,'QA must show whether Effekseer requested the redirected textures');
+
 assert.doesNotMatch(stage,/textureRedirect[\s\S]*?_fog-star\.png/,'star sprites must not appear in the persistent fog');
 assert.match(stage,/textureRedirect\);/,'official loadEffect redirect callback resolves transparent cloud images');
 const hdBuild=readFileSync('scripts/prepare-rune-fog-hd.mjs','utf8');
