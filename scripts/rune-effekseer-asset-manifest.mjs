@@ -4,6 +4,38 @@
  */
 export const EFFECT_ASSET_BLOBS=Object.freeze([
   {
+    "target": "MAGICALxSPIRAL/MxS_Sylph8.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Sylph8.efkefc",
+    "sha": "9353a3515292e1abb97687b511a9286d198e8c6e",
+    "size": 4805
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Sylph5.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Sylph5.efkefc",
+    "sha": "8e2bd06f54304354d46ef910ca95f9ff8bd14590",
+    "size": 2887
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_foot_smoke7.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_foot_smoke7.efkefc",
+    "sha": "5617e231e12b02f04079f58d980009806f8d43bf",
+    "size": 1903
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_foot_smoke2.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_foot_smoke2.efkefc",
+    "sha": "7bd27d01b185c1634d9396cdf5b7a0db18bf443a",
+    "size": 2663
+  },
+  {
     "target": "godot4/ef_fire01_projectile.efkefc",
     "repo": "effekseer/EffekseerForGodot4",
     "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
