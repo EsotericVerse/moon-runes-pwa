@@ -32,13 +32,13 @@ function RuneCardFace({card,direction,reduced}){
     {direction?<span className="rune-art-direction">{direction}</span>:null}
   </div>;
 }
-function Gallery({mode,items,onSelect,reduced}){
+function Gallery({mode,items,onSelect,reduced,galleryTitle=null,galleryDescription=null}){
   const groupMode=mode==='groups';
   return <div className={'rune-art-gallery '+(groupMode?'rune-art-gallery--groups':'rune-art-gallery--runes')}>
     <div className="rune-art-gallery-intro">
       <span className="rune-art-kicker">LUNARUNES · ORIGINAL ARTWORK</span>
-      <h2>{groupMode?'九曜星域':'符文圖鑑'}</h2>
-      <p>{groupMode?'每一個群組都保有原始畫作的完整面貌。':'使用符韻原始卡面，不重新繪製中文字。'}</p>
+      <h2>{galleryTitle||(groupMode?'九曜星域':'符文圖鑑')}</h2>
+      <p>{galleryDescription||(groupMode?'每一個群組都保有原始畫作的完整面貌。':'使用符韻原始卡面，不重新繪製中文字。')}</p>
     </div>
     <div className="rune-art-gallery-grid">
       {items.map((item,index)=>{
@@ -146,12 +146,12 @@ function DrawStage({items,onSelect,onBackgroundClick,reduced,daily=false,chargin
     </div>:null}
   </div>;
 }
-export default function RuneArtStage({mode='groups',items=[],onSelect,onBackgroundClick,charging=false,actions=null}){
+export default function RuneArtStage({mode='groups',items=[],onSelect,onBackgroundClick,charging=false,actions=null,galleryTitle=null,galleryDescription=null}){
   const reduced=useReducedMotion();
   return <div className={'rune-art-world rune-art-world--'+mode}
     data-renderer="artwork-motion" data-visual-mode="2d">
     {(mode==='draw'||mode==='daily')?<DrawStage items={items} onSelect={onSelect}
       onBackgroundClick={onBackgroundClick} reduced={reduced} daily={mode==='daily'} charging={charging} actions={actions}/>:
-      <Gallery mode={mode} items={items} onSelect={onSelect} reduced={reduced}/>}
+      <Gallery mode={mode} items={items} onSelect={onSelect} reduced={reduced} galleryTitle={galleryTitle} galleryDescription={galleryDescription}/>}
   </div>;
 }

@@ -2,12 +2,13 @@
 
 import {useEffect,useRef,useState} from 'react';
 import {selectRows} from '../loc/db-query.mjs';
-import {runeGlyphProfile} from './effekseer/rune-glyph-library.mjs';
+import RuneArtStage from './visual/RuneArtStage';
 import EffekseerStage from './effekseer/EffekseerStage';
-import {runeImage,runeName} from './rune-directory.mjs';
+import {groupImage,runeImage,runeName} from './rune-directory.mjs';
 import {navigationHref} from '../modular/nav-destinations.mjs';
 import useNativeNavigation from '../modular/use-native-navigation';
 import './skin-lab.css';
+import './visual/rune-art-layout.css';
 import './effekseer/effekseer-stage.css';
 
 // Nine canonical groups, eight runes each except the last two-rune group.
@@ -28,20 +29,34 @@ const DIRECTIONS=Object.freeze([
   {name:'半逆位',hint:'間斷淺紅光緣'},
   {name:'逆位',hint:'完整紅色光緣'}
 ]);
-const RUNE_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,rune_description,archetype,char_action,positive_keywords,negative_keywords';
+const RUNE_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,char_action,positive_keywords,negative_keywords,extra_rules,extra_notes,rune_evolution_history,myth_story,soul_question,practice_challenge,ritual_advice,harmony_advice';
+const GROUP_COLUMNS='group_id,english_name,desc,quality,style,runeslist';
 const inGroup=(rune,group)=>Number(rune.rune_id)>=group.start&&Number(rune.rune_id)<=group.end;
+function cleanse(value){
+  return String(value??'').replace(/&#x([0-9a-f]+);/gi,(_,hex)=>String.fromCodePoint(parseInt(hex,16)))
+    .replace(/&#([0-9]+);/g,(_,n)=>String.fromCodePoint(parseInt(n,10)))
+    .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>')
+    .replace(/&quot;/g,'"').replace(/&#39;|&apos;/g,"'");
+}
+function groupIndex(row){
+  const ids=(Array.isArray(row?.runeslist)?row.runeslist:[])
+    .map(Number).filter(n=>Number.isInteger(n)&&n>=1&&n<=64);
+  return ids.length?Math.floor((Math.min(...ids)-1)/8):8;
+}
 
 function Keywords({label,words}){
   if(!words)return null;
-  const content=Array.isArray(words)?words.filter(Boolean).join('、'):String(words).trim();
+  const content=cleanse(Array.isArray(words)?words.filter(Boolean).join('、'):words);
   return content?<p><strong>{label}：</strong>{content}</p>:null;
 }
 
 export default function Rune3DLibrary(){
   const native=useNativeNavigation();
   const [allRunes,setAllRunes]=useState([]);
-  const [groupId,setGroupId]=useState(1);
-  const [focusId,setFocusId]=useState(1);
+  const [groupRows,setGroupRows]=useState([]);
+  const [groupError,setGroupError]=useState('');
+  const [groupId,setGroupId]=useState(null);
+  const [focusId,setFocusId]=useState(null);
   const [direction,setDirection]=useState(null);
   const [details,setDetails]=useState(null);
   const [status,setStatus]=useState('loading');
@@ -72,21 +87,45 @@ export default function Rune3DLibrary(){
     return()=>{active=false;};
   },[reload]);
 
-  const group=GROUPS.find(item=>item.id===groupId)||GROUPS[0];
-  const runes=allRunes.filter(rune=>inGroup(rune,group));
-  const current=runes.find(rune=>Number(rune.rune_id)===focusId)||runes[0]||null;
+  useEffect(()=>{
+    let active=true;
+    selectRows('silver.runes_group',{columns:GROUP_COLUMNS,limit:9,offset:0})
+      .then(({rows})=>{
+        if(!active)return;
+        if((rows||[]).length!==9)throw Error('群組資料不完整：'+(rows||[]).length+' / 9');
+        setGroupRows(rows);setGroupError('');
+      }).catch(err=>{if(active)setGroupError('群組文字資料暫時無法載入：'+String(err?.message||err));});
+    return()=>{active=false;};
+  },[reload]);
+
+  const groups=GROUPS.map(entry=>{
+    const row=groupRows.find(value=>groupIndex(value)===entry.id-1);
+    return {...entry,english_name:cleanse(row?.english_name),
+      desc:cleanse(row?.desc),quality:cleanse(row?.quality),style:cleanse(row?.style),
+      runeslist:Array.from({length:entry.end-entry.start+1},(_,index)=>entry.start+index)};
+  });
+  const group=groups.find(item=>item.id===groupId)||null;
+  const runes=group?allRunes.filter(rune=>inGroup(rune,group)):[];
+  const current=focusId===null?null:runes.find(rune=>Number(rune.rune_id)===focusId)||null;
   const runePosition=Math.max(0,runes.findIndex(rune=>Number(rune.rune_id)===Number(current?.rune_id)));
 
+  useEffect(()=>{
+    if(focusId!==null)stageRef.current?.scrollIntoView({behavior:'smooth',block:'start'});
+  },[focusId]);
   const jumpTo=rune=>{
     if(!rune)return;
     setFocusId(Number(rune.rune_id));setDetails(null);
-    requestAnimationFrame(()=>stageRef.current?.scrollIntoView({behavior:'smooth',block:'center'}));
   };
   const selectGroup=entry=>{
-    setGroupId(entry.id);setFocusId(entry.start);setDetails(null);
+    setGroupId(entry.id);setFocusId(null);setDirection(null);setDetails(null);
+    window.scrollTo?.({top:0,behavior:'smooth'});
+  };
+  const backToGroups=()=>{
+    setGroupId(null);setFocusId(null);setDirection(null);setDetails(null);
+    window.scrollTo?.({top:0,behavior:'smooth'});
   };
   const stepRune=delta=>{
-    if(!runes.length)return;
+    if(!runes.length||!current)return;
     jumpTo(runes[(runePosition+delta+runes.length)%runes.length]);
   };
 
@@ -94,41 +133,45 @@ export default function Rune3DLibrary(){
     data-rune-3d-preview="list" data-rune-embodiment="66">
     <header className="rune-3d-header">
       <p className="loc-eyebrow">LUNARUNES · 符文圖鑑</p>
-      <h1>六十六枚符文 · 3D 圖鑑</h1>
-      <p>九大群組、六十六枚原創中文字。選取符文後，以原本字形與專屬 Effekseer 魔法短暫顯現；四種位向可在圖鑑中獨立預覽，不影響抽牌。</p>
+      <h1>{group?group.name+'組 · 3D 符文圖鑑':'六十六枚符文 · 3D 圖鑑'}</h1>
+      <p>{group?'群組畫作展開後，點選符文卡圖，即可觀看該枚符文的 3D Effekseer 顯現。':
+        '以九個群組的原創圖片為入口，展開符文畫廊，不再使用星系式選單。'}</p>
     </header>
-
-    <nav className="rune-3d-group-index rune-3d-library-groups" aria-label="九大符文群組">
-      {GROUPS.map(entry=><button type="button" key={entry.id}
-        aria-pressed={groupId===entry.id} onClick={()=>selectGroup(entry)}>
-        <span>{entry.name}</span><small>{entry.end-entry.start+1} 枚</small>
-      </button>)}
-    </nav>
-
-    <section className="rune-3d-library-index" aria-label={group.name+'符文字樣'}>
-      <div className="rune-3d-library-title">
-        <h2>{group.name} · 符文列表</h2>
-        <span>{status==='ready'?group.start+'–'+group.end+' / 66':'資料載入中'}</span>
-      </div>
-      {status==='loading'?<p role="status" className="rune-3d-library-message">正在載入六十六枚符文……</p>:null}
-      {status==='error'?<div className="rune-3d-library-message" role="alert">
-        <p>符文資料無法完整載入：{error}</p>
-        <button type="button" className="rune-skin-btn" onClick={()=>{setStatus('loading');setReload(n=>n+1);}}>重新載入</button>
-      </div>:null}
-      {status==='ready'?<div className="rune-3d-glyph-grid">
-        {runes.map(rune=>{
-          const profile=runeGlyphProfile(rune);
-          return <button type="button" key={rune.rune_id} className="rune-3d-glyph-tile"
-            aria-pressed={Number(current?.rune_id)===Number(rune.rune_id)}
-            aria-label={'顯現 '+runeName(rune)+' 之符文'}
-            onClick={()=>jumpTo(rune)}>
-            <span className={'rune-3d-glyph-letter rune-effekseer-glyph--'+profile.font}
-              data-glyph-finish={profile.finish} style={{'--rune-ink':profile.ink}} aria-hidden="true">{runeName(rune)}</span>
-            <span className="rune-3d-glyph-english">{rune.english_name}</span>
-          </button>;
-        })}
-      </div>:null}
-    </section>
+    {status==='loading'?<p className="rune-3d-library-message" role="status">正在載入六十六枚符文……</p>:null}
+    {status==='error'?<div className="rune-3d-library-message" role="alert">
+      <p>符文資料無法完整載入：{error}</p>
+      <button type="button" className="rune-skin-btn" onClick={()=>{setStatus('loading');setReload(n=>n+1);}}>重新載入</button>
+    </div>:null}
+    {groupError?<p className="rune-3d-atlas-data-warning" role="status">{groupError}（原創群組畫作仍可瀏覽）</p>:null}
+    {status==='ready'&&!group?<section className="rune-3d-atlas-gallery" aria-label="九大群組原創圖片">
+      <RuneArtStage mode="groups" items={groups} onSelect={selectGroup}
+        galleryTitle="九大符文群組" galleryDescription="點選原創畫作，展開群組介紹與符文卡圖。"/>
+    </section>:null}
+    {status==='ready'&&group?<>
+      <nav className="rune-3d-atlas-back" aria-label="返回群組畫廊">
+        <button type="button" className="rune-skin-btn" onClick={backToGroups}>← 返回九個群組</button>
+        <span>第 {String(group.id).padStart(2,'0')} / 09 組 · {runes.length} 枚</span>
+      </nav>
+      <section className="rune-3d-atlas-group-hero" aria-label={group.name+'群組原創畫作與介紹'}>
+        <div className="rune-3d-atlas-group-artwork">
+          <img src={groupImage(group.id)} alt={group.name+'群組原創畫作'} loading="eager" decoding="async"/>
+        </div>
+        <div className="rune-3d-atlas-group-copy">
+          <p className="loc-eyebrow">RUNE GROUP · {String(group.id).padStart(2,'0')} / 09</p>
+          <h2>{group.name}組</h2>
+          {group.english_name?<p className="rune-3d-atlas-group-en">{group.english_name}</p>:null}
+          {group.desc?<p className="rune-3d-atlas-group-description">{group.desc}</p>:null}
+          {group.quality&&group.quality!=='風格特徵'?<p><strong>群組特徵：</strong>{group.quality}</p>:null}
+          {group.style&&group.style!=='style / trait'?<p><strong>風格：</strong>{group.style}</p>:null}
+          <p>本群組收錄 {runes.length} 枚 3D 符文</p>
+        </div>
+      </section>
+      <section className="rune-3d-atlas-gallery" aria-label={group.name+'原創符文卡圖'}>
+        <RuneArtStage mode="runes" items={runes} onSelect={jumpTo}
+          galleryTitle={group.name+' · 符文卡圖'}
+          galleryDescription="點選原創符文卡圖，在下方展開 3D 演出與四向位向光緣預覽。"/>
+      </section>
+    </>:null}
 
     {status==='ready'&&current?<section className="rune-3d-library-manifestation" ref={stageRef}
       aria-label={runeName(current)+'符文 3D 顯現'}>
@@ -177,10 +220,18 @@ export default function Rune3DLibrary(){
         <div className="rune-3d-daily-modal-fields">
           <img className="rune-3d-daily-card" src={runeImage(details)}
             alt={runeName(details)+'原始符文卡面'}/>
-          {details.rune_description?<p>{details.rune_description}</p>:null}
-          {details.archetype?<p><strong>象徵原型：</strong>{String(details.archetype)}</p>:null}
+          {details.rune_description?<p><strong>符文本義：</strong>{cleanse(details.rune_description)}</p>:null}
+          {details.archetype?<p><strong>象徵原型：</strong>{cleanse(details.archetype)}</p>:null}
+          {details.char_action?<p><strong>角色行動：</strong>{cleanse(details.char_action)}</p>:null}
           <Keywords label="正向關鍵字" words={details.positive_keywords}/>
           <Keywords label="逆向關鍵字" words={details.negative_keywords}/>
+          {[
+            ['額外規則',details.extra_rules],['額外留意',details.extra_notes],
+            ['符文歷史',details.rune_evolution_history],['神話故事',details.myth_story],
+            ['靈魂課題',details.soul_question],['實踐挑戰',details.practice_challenge],
+            ['儀式建議',details.ritual_advice],['調和建議',details.harmony_advice]
+          ].filter(([,value])=>String(value??'').trim()).map(([label,value])=>
+            <p key={label}><strong>{label}：</strong>{cleanse(Array.isArray(value)?value.join('、'):value)}</p>)}
         </div>
       </section>
     </div>:null}
