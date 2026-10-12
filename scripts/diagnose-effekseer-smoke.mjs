@@ -4,7 +4,7 @@ import {readFile,stat} from 'node:fs/promises';
 import {resolve,dirname,join} from 'node:path';
 import {EFFECT_ASSET_BLOBS} from './rune-effekseer-asset-manifest.mjs';
 const base=resolve('public/vendor/effekseer/Collections/MAGICALxSPIRAL');
-const targets=['MxS_foot_smoke2.efkefc','MxS_foot_smoke7.efkefc','Texture/smoke_01.png'];
+const targets=['MxS_foot_smoke2.efkefc','MxS_foot_smoke5.efkefc','MxS_foot_smoke7.efkefc','MxS_foot_smoke8.efkefc','Texture/smoke_01.png','Texture/particle.png','Texture/star.png'];
 for(const name of targets){
  const path=resolve(base,name);
  let file;
@@ -13,6 +13,23 @@ for(const name of targets){
  if(name.endsWith('.png')){
    if(file.subarray(0,8).toString('hex')==='89504e470d0a1a0a'){
      console.log('[FOG-DIAG] PNG width='+file.readUInt32BE(16)+' height='+file.readUInt32BE(20)+' depth='+file[24]+' colorType='+file[25]);
+     const chunks=[];
+     let pos=8;
+     while(pos+12<=file.length){
+       const length=file.readUInt32BE(pos);
+       const type=file.toString('ascii',pos+4,pos+8);
+       chunks.push({type,length,position:pos});
+       pos+=12+length;
+       if(type==='IEND')break;
+     }
+     const trans=chunks.find(x=>x.type==='tRNS');
+     const pal=chunks.find(x=>x.type==='PLTE');
+     const palBytes=pal?.length||0;
+     const transparency=trans?Array.from(file.subarray(trans.position+8,trans.position+8+trans.length)):[];
+     console.log('[FOG-DIAG] PNG DETAILS '+name+' chunks='+chunks.map(x=>x.type+':'+x.length).join(',')+
+       ' paletteColors='+(palBytes/3)+' transValues='+JSON.stringify(transparency.slice(0,30))+
+       ' paletteTransparent='+transparency.filter(x=>x<255).length);
+
    }
  }else{
    const latin=file.toString('latin1').match(/[A-Za-z0-9_./\\-]{4,}/g)||[];
