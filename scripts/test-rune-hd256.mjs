@@ -48,8 +48,8 @@ assert.match(draw,/RuneMistBackdrop phase=\{phase\} quality=\{sceneQuality\} tex
 assert.match(stage,/textureQuality='original'/,'renderer must retain emergency resource rollback');
 assert.match(prepare,/HD256_SPRITE_EDGE/);
 assert.match(prepare,/meta\.hasAlpha/,'transparency must be preserved');
-assert.match(prepare,/scale=HD256_SPRITE_EDGE\/Math\.max\(meta\.width,meta\.height\)/,
- 'longest edge should be 256 preserving aspect ratio');
+assert.match(prepare,/scale=Math\.max\(1,HD256_SPRITE_EDGE\/Math\.max\(meta\.width,meta\.height\)\)/,
+ 'upscale below 256 but do not downsample already detailed images');
 assert.match(pkg.scripts.prebuild,/prepare-rune-effekseer-hd256\.mjs/,'production build must create 256 assets');
 assert.match(pkg.scripts.predev,/prepare-rune-effekseer-hd256\.mjs/,'local build must create 256 assets');
 console.log('[HD256] '+selected.length+' pinned authored PNGs route to 256xmax-edge sprites, originals retained.');
