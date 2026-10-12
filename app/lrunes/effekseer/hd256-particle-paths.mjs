@@ -13,8 +13,7 @@ export function isHd256ParticleTexture(filename){
   if(!/\.png$/i.test(file)||file.startsWith('_'))return false;
   // Resizing these can corrupt sprite-sheet frames, UV lookup semantics or
   // material inputs, so they are intentionally outside the sprite pilot.
-  return !/(?:^|[_\-.])(flipbook|normal|noise|mask|ramp|lookup|grid|check|white|distortion)(?:[_\-.]|$)/i.test(file) &&
-    !/(?:_normal|normalmap|noisemap|alphamap)\.png$/i.test(file);
+  return !/(flipbook|normal|noise|mask|ramp|lookup|grid|check|white|distort|flowmap|heightmap|gradient)/i.test(file);
 }
 
 export function redirectHd256ParticleTexture(resourcePath){
