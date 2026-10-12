@@ -515,10 +515,10 @@
   transition:filter 800ms ease,opacity 800ms ease,transform 1100ms ease;
 }
 .rune-3d-stage[data-ritual-phase="waiting"] .rune-3d-night-moon{
-  filter:brightness(1.07) saturate(.8);opacity:.82
+  filter:brightness(1.07) saturate(.8);opacity:0
 }
 .rune-3d-stage[data-ritual-phase="revealing"] .rune-3d-night-moon{
-  filter:brightness(1.42) saturate(1.05);opacity:.94;
+  filter:brightness(1.42) saturate(1.05);opacity:0;
   transform:translate(-50%,-50%) scale(1.035)
 }
 .rune-3d-stage[data-ritual-phase="ready"] .rune-3d-night-moon{
