@@ -16,6 +16,12 @@ assert.equal(new Set(chosen.map(x=>AUTHORED_EFFECT_FILES[x])).size,66,'no two ke
 assert.notEqual(RUNE_EFFECT_KEYS.Blank,RUNE_EFFECT_KEYS.Void);
 assert.notEqual(RUNE_EFFECT_KEYS.Void,RUNE_EFFECT_KEYS.Illusion);
 assert.notEqual(RUNE_EFFECT_KEYS.Flame,RUNE_EFFECT_KEYS.Radiance);
+assert.equal(RUNE_EFFECT_KEYS.Flame,'G:ef_fire01_projectile','Flame uses genuine flipbook flame artwork, not fire02 shockwave');
+assert.equal(RUNE_EFFECT_KEYS.Resonance,'G:ef_fire03','Resonance must use the specific animation the owner identified on Calamity');
+assert.equal(RUNE_EFFECT_KEYS.Calamity,'T:Blow10','Calamity receives a distinct, authored impact');
+assert.ok(EFFECT_ASSET_BLOBS.some(file=>file.target==='godot4/ef_fire01_projectile.efkefc'));
+assert.ok(EFFECT_ASSET_BLOBS.some(file=>file.target==='godot4/Textures/tx_fire_flipbook01_1024.png'));
+
 assert.equal(RUNE_EFFECT_KEYS.Spectrum,'T:Light3','Spectrum must use rainbow-colored authored Light3');
 const presentation=readFileSync('app/lrunes/effekseer/effekseer-stage.css','utf8');
 assert.match(presentation,/data-rune="彩"/,'Spectrum must visually express multiple colors');
@@ -48,6 +54,9 @@ assert.equal(AUTHORED_EFFECT_NAMES.tktk.length,41);
 assert.equal(AUTHORED_EFFECT_NAMES.materials.length,8);
 assert.match(stage,/runeEffectFor\(rune\)/);
 assert.match(stage,/runeIconFor\(rune\)/);
+assert.match(stage,/iconMotionFor\(word\)/,'symbolic material has semantics-driven Motion, not generic bounces');
+assert.match(stage,/scale:\[1\.3,1,\.42,0\]/,'Void must visibly converge toward its center');
+assert.match(stage,/'星':\{x:/,'celestial star must fall, not rise like fireworks');
 assert.match(stage,/onReady=\{\(\)=>setVisibleKey\(key\)\}/);
 assert.match(stage,/useMemo\(\(\)=>runeEffectFor\(rune\)/);
 assert.doesNotMatch(stage,/RuneAuraFX|RuneAura|const LIBRARY=/);

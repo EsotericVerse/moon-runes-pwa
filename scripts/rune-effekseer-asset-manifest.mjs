@@ -4,6 +4,14 @@
  */
 export const EFFECT_ASSET_BLOBS=Object.freeze([
   {
+    "target": "godot4/ef_fire01_projectile.efkefc",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/sample-material3/ef_fire01_projectile.efkefc",
+    "sha": "534e84dd6b3378d7a6f6cf7d5b75542a66e4023a",
+    "size": 8528
+  },
+  {
     "target": "godot4/ef_barrior01.efkefc",
     "repo": "effekseer/EffekseerForGodot4",
     "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",

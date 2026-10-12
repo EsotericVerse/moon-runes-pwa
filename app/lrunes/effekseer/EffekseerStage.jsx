@@ -38,7 +38,7 @@ function readyRuntime(){
 function animationFor(word){
   // Text motion is handled by the existing Motion library; VFX are from Effekseer.
   if(word==='無')return{opacity:[0,1,0,0],scale:[.96,1,1,1]};
-  if(word==='虛')return{opacity:[0,.85,.5,0],scale:[.85,1.08,.94,1]};
+  if(word==='虛')return{opacity:[0,.9,.7,0],scale:[1.3,1,.42,0]};
   if(word==='辰')return{opacity:[0,1,1,0],y:[12,0,0,-7]};
   if(word==='時')return{opacity:[0,1,1,0],y:[12,0,0,-7]};
   if(word==='緣')return{opacity:[0,1,1,0],y:[12,0,0,-7]};
@@ -64,6 +64,30 @@ function SemanticIllustration({word,reduced}){
     initial={reduced?false:{opacity:0,y:12}}
     animate={reduced?{opacity:1,y:0}:{opacity:[0,1,1,1],y:[12,0,0,0],...actions[word]}}
     transition={{duration:reduced?0:3.3,ease:'easeInOut'}} role="presentation">⌛</motion.span>;
+}
+// Choreography is a Motion transform on pre-authored pictograms, never DIY particles.
+// The stage effect always comes from the distinct licensed Effekseer package.
+function iconMotionFor(word){
+  const base={opacity:[0,.93,.93,0],scale:[.8,1,1,1]};
+  const visual={
+    '悟':{scale:[.48,1.26,1.02,1]},
+    '誤':{x:[26,-15,12,0],rotate:[19,-12,7,0]},
+    '老':{scale:[1.12,1,.95,.9]},
+    '葉':{x:[-26,16,-9,0],rotate:[-21,13,-8,0]},
+    '草':{y:[42,0,-5,0],scale:[.25,.88,1.08,1]},
+    '根':{scaleY:[.08,.58,1,1]},
+    '枝':{scaleX:[.36,.88,1.18,1]},
+    '塵':{x:[-40,-5,42,76],y:[28,3,-13,-31]},
+    '氣':{x:[-70,-16,36,90]},
+    '星':{x:[50,25,-22,-76],y:[-90,-14,100,170],rotate:[25,28,34,38]},
+    '虛':{scale:[1.27,1,.38,0]},
+    '幻':{filter:['blur(10px)','blur(0px)','blur(3px)','blur(11px)']},
+    '明':{filter:['blur(10px)','blur(3px)','blur(0px)','blur(0px)']},
+    '辰':{scale:[.65,1.28,.84,1]},
+    '時':{rotate:[0,90,270,360]},
+    '緣':{rotate:[-18,13,-6,0]},
+  };
+  return {...base,...(visual[word]||{})};
 }
 function nameOf(rune){return String(rune?.rune_name||rune?.totem||'光').replace(/之符文$/,'').trim().slice(0,1)||'光';}
 function EffekseerCanvas({effect,reduced,onReady}){
@@ -173,7 +197,7 @@ export default function EffekseerStage({rune,onGlyphClick}){
       {visualReady&&semanticIcon?<motion.img key={'meaning-'+key} className="rune-effekseer-meaning-icon"
         src={semanticIcon} alt="" aria-hidden="true"
         initial={reduced?false:{opacity:0,scale:.8}}
-        animate={reduced?{opacity:1,scale:1}:{opacity:[0,.93,.93,0],scale:[.8,1,1,1]}}
+        animate={reduced?{opacity:1,scale:1}:iconMotionFor(word)}
         transition={{duration:reduced?0:4.2,times:[0,.15,.78,1],ease:'easeInOut'}}/>:null}
       {visualReady?<SemanticIllustration key={'gesture-'+key} word={word} reduced={reduced}/>:null}
       <span className="rune-effekseer-english">{rune?.english_name||''}</span>
