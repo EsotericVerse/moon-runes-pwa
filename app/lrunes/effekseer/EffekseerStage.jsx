@@ -521,7 +521,8 @@ export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,directio
           className={showCard?'rune-effekseer-ceremony-card':'rune-effekseer-glyph rune-effekseer-glyph--'+profile.font}
           data-glyph-family={profile.family} data-glyph-finish={profile.finish}
           style={{'--rune-ink':profile.ink}}
-          aria-label={'查看 '+word+' 之符文'} onClick={onGlyphClick}
+          aria-label={onGlyphClick?'查看 '+word+' 之符文':word+'符文特效展示'}
+          onClick={onGlyphClick} disabled={!onGlyphClick}
           initial={reduced?false:{opacity:0,scale:.75}}
           animate={reduced?{opacity:1,scale:1}:ceremony?RITUAL_GLYPH_MOTION:animationFor(word)}
           onAnimationComplete={()=>{

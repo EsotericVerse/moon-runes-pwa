@@ -27,7 +27,8 @@ export default function RuneCardInfo({
   className='loc-context-item compact loc-draw-card',
   dataRuneId,
   dataDrawPosition,
-  layout='draw'
+  layout='draw',
+  expandKeywords=false
 }){
   if(!card)return null;
   const description=text(card.rune_description);
@@ -54,11 +55,15 @@ export default function RuneCardInfo({
           {english?<span>({english})</span>:null}
         </div>
         <p>{description||'—'}{archetype?' / '+archetype:''}</p>
-        <details className="home-rune-keywords">
+        {expandKeywords?<div className="home-rune-keywords rune-card-keywords-expanded">
+          <strong>關鍵詞</strong>
+          <p>正面：{positive}</p>
+          <p>負面：{negative}</p>
+        </div>:<details className="home-rune-keywords">
           <summary>關鍵詞（點擊展開）</summary>
           <p>正面：{positive}</p>
           <p>負面：{negative}</p>
-        </details>
+        </details>}
         <p>所屬分組：{group} / 卡片屬性：{cardAttr}</p>
         <p>卡片月相：{cardMoon}{realMoonPhase?' / 真實月相：'+realMoonPhase:''}</p>
         {direction?<p className="home-rune-direction">卡片面向：<strong>{direction}</strong></p>:null}

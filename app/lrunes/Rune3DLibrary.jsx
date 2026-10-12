@@ -40,12 +40,6 @@ function groupIndex(row){
   return ids.length?Math.floor((Math.min(...ids)-1)/8):8;
 }
 
-function Keywords({label,words}){
-  if(!words)return null;
-  const content=cleanse(Array.isArray(words)?words.filter(Boolean).join('、'):words);
-  return content?<p><strong>{label}：</strong>{content}</p>:null;
-}
-
 export default function Rune3DLibrary(){
   const native=useNativeNavigation();
   const [allRunes,setAllRunes]=useState([]);
@@ -56,7 +50,6 @@ export default function Rune3DLibrary(){
   const [showCardInfo,setShowCardInfo]=useState(false);
   const [playback,setPlayback]=useState(0);
   const reducedMotion=useReducedMotion();
-  const [details,setDetails]=useState(null);
   const [status,setStatus]=useState('loading');
   const [error,setError]=useState('');
   const [reload,setReload]=useState(0);
@@ -114,14 +107,14 @@ export default function Rune3DLibrary(){
     if(!rune)return;
     setShowCardInfo(false);
     setPlayback(n=>n+1);
-    setFocusId(Number(rune.rune_id));setDetails(null);
+    setFocusId(Number(rune.rune_id));
   };
   const selectGroup=entry=>{
-    setGroupId(entry.id);setFocusId(null);setShowCardInfo(false);setDetails(null);
+    setGroupId(entry.id);setFocusId(null);setShowCardInfo(false);
     window.scrollTo?.({top:0,behavior:'smooth'});
   };
   const backToGroups=()=>{
-    setGroupId(null);setFocusId(null);setShowCardInfo(false);setDetails(null);
+    setGroupId(null);setFocusId(null);setShowCardInfo(false);
     window.scrollTo?.({top:0,behavior:'smooth'});
   };
   const stepRune=delta=>{
@@ -182,8 +175,7 @@ export default function Rune3DLibrary(){
       </div>
       <div className={'rune-3d-stage rune-3d-atlas-performance'+(showCardInfo?' rune-3d-atlas-performance--reading':'')}>
         <EffekseerStage key={current.rune_id+'-'+playback} rune={current} vfxOnly
-          onPlaybackComplete={()=>setShowCardInfo(true)}
-          onGlyphClick={()=>setDetails(current)}/>
+          onPlaybackComplete={()=>setShowCardInfo(true)}/>
         {showCardInfo?<motion.div key={'reading-'+current.rune_id+'-'+playback}
           className="rune-3d-atlas-reading" role="region" aria-label={runeName(current)+'原始符文卡片資料'}
           initial={reducedMotion?false:{opacity:0,y:20}}
@@ -191,12 +183,25 @@ export default function Rune3DLibrary(){
           transition={{duration:reducedMotion?0:.75,ease:'easeOut'}}>
           <div className="rune-3d-atlas-reading-inner">
             <p className="loc-eyebrow">RUNE ARCHIVE · {String(current.rune_id).padStart(2,'0')} / 66</p>
-            <RuneCardInfo card={current} imageSrc={runeImage(current)} layout="home"/>
+            <h3 className="rune-3d-atlas-reading-title">{runeName(current)}之符文 · 詳細資料</h3>
+            <RuneCardInfo card={current} imageSrc={runeImage(current)} layout="home" expandKeywords/>
+            <div className="rune-3d-atlas-reading-details" aria-label="符文完整延伸敘述">
+              {[
+                ['角色行動',current.char_action],['額外規則',current.extra_rules],
+                ['額外留意',current.extra_notes],['符文歷史',current.rune_evolution_history],
+                ['神話故事',current.myth_story],['靈魂課題',current.soul_question],
+                ['實踐挑戰',current.practice_challenge],['儀式建議',current.ritual_advice],
+                ['調和建議',current.harmony_advice]
+              ].filter(([,value])=>String(value??'').trim()).map(([label,value])=>
+                <section key={label} className="rune-3d-atlas-reading-detail">
+                  <h4>{label}</h4>
+                  <p>{cleanse(Array.isArray(value)?value.join('、'):value)}</p>
+                </section>)}
+            </div>
             <div className="rune-3d-atlas-reading-actions">
               <button type="button" className="rune-skin-btn" onClick={()=>{
                 setShowCardInfo(false);setPlayback(n=>n+1);
               }}>重播符文演出</button>
-              <button type="button" className="rune-skin-btn" onClick={()=>setDetails(current)}>閱讀完整資料</button>
             </div>
           </div>
         </motion.div>:null}
@@ -207,7 +212,7 @@ export default function Rune3DLibrary(){
           <span>{runePosition+1} / {runes.length}</span>
           <button type="button" className="rune-skin-btn" onClick={()=>stepRune(1)}>下一枚 →</button>
         </div>
-        <button className="rune-skin-btn" type="button" onClick={()=>setDetails(current)}>閱讀符文資料</button>
+
       </div>
     </section>:null}
 
@@ -218,30 +223,6 @@ export default function Rune3DLibrary(){
       </nav>
     </footer>
 
-    {details?<div className="rune-3d-modal-backdrop" role="presentation" onClick={()=>setDetails(null)}>
-      <section className="rune-3d-modal" role="dialog" aria-modal="true"
-        aria-label={runeName(details)+'符文資料'} onClick={event=>event.stopPropagation()}>
-        <header className="rune-3d-modal-head">
-          <h2>{runeName(details)} · {details.english_name}</h2>
-          <button type="button" className="rune-skin-btn" onClick={()=>setDetails(null)} autoFocus>關閉</button>
-        </header>
-        <div className="rune-3d-daily-modal-fields">
-          <img className="rune-3d-daily-card" src={runeImage(details)}
-            alt={runeName(details)+'原始符文卡面'}/>
-          {details.rune_description?<p><strong>符文本義：</strong>{cleanse(details.rune_description)}</p>:null}
-          {details.archetype?<p><strong>象徵原型：</strong>{cleanse(details.archetype)}</p>:null}
-          {details.char_action?<p><strong>角色行動：</strong>{cleanse(details.char_action)}</p>:null}
-          <Keywords label="正向關鍵字" words={details.positive_keywords}/>
-          <Keywords label="逆向關鍵字" words={details.negative_keywords}/>
-          {[
-            ['額外規則',details.extra_rules],['額外留意',details.extra_notes],
-            ['符文歷史',details.rune_evolution_history],['神話故事',details.myth_story],
-            ['靈魂課題',details.soul_question],['實踐挑戰',details.practice_challenge],
-            ['儀式建議',details.ritual_advice],['調和建議',details.harmony_advice]
-          ].filter(([,value])=>String(value??'').trim()).map(([label,value])=>
-            <p key={label}><strong>{label}：</strong>{cleanse(Array.isArray(value)?value.join('、'):value)}</p>)}
-        </div>
-      </section>
-    </div>:null}
+
   </main>;
 }

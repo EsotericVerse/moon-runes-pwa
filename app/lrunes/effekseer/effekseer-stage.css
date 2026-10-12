@@ -432,3 +432,45 @@
   .rune-3d-library .rune-3d-atlas-performance--reading>.rune-effekseer-stage{transition:none}
 }
 /* End library-specific post-performance reading. */
+
+/* 3D atlas is one continuous reading destination after the short authored VFX:
+   all original extended records are visible by scrolling, with no detail dialog. */
+.rune-3d-atlas-reading-title{
+  margin:8px 0 18px;color:#ffe6b1;
+  font:700 clamp(1.35rem,2.7vw,2rem)/1.4 "Noto Serif TC","Songti TC",serif;
+}
+.rune-3d-atlas-reading .rune-card-keywords-expanded{
+  display:grid;gap:6px;margin:8px 0;
+  padding:11px 13px;border:1px solid #ccaf815e;border-radius:11px;
+  color:#f4e8d8;background:#1c1c33b6;
+}
+.rune-3d-atlas-reading .rune-card-keywords-expanded strong{
+  color:#ffdda4;font-size:.89rem;
+}
+.rune-3d-atlas-reading .rune-card-keywords-expanded p{
+  color:#e6dceb;white-space:pre-wrap;overflow-wrap:anywhere;
+}
+.rune-3d-atlas-reading-details{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;margin:24px 0 16px;padding-top:20px;
+  border-top:1px solid #d9b68060;
+}
+.rune-3d-atlas-reading-detail{
+  min-width:0;padding:16px 18px;
+  border:1px solid #b29fb474;border-radius:13px;
+  background:linear-gradient(150deg,#302c46,#1d2238);
+}
+.rune-3d-atlas-reading-detail h4{
+  margin:0 0 10px;color:#f7dba7;
+  font-size:1.05rem;font-weight:700;
+}
+.rune-3d-atlas-reading-detail p{
+  margin:0;color:#efe5f0;line-height:1.88;
+  white-space:pre-wrap;overflow-wrap:anywhere;
+}
+.rune-effekseer-glyph:disabled{pointer-events:none;cursor:default}
+@media(max-width:760px){
+  .rune-3d-atlas-reading-details{grid-template-columns:1fr;gap:10px}
+  .rune-3d-atlas-reading-detail{padding:13px 15px}
+}
+/* End 3D atlas complete post-VFX reading. */
