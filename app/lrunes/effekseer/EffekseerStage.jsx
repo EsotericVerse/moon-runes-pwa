@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import {runeGlyphProfile} from './rune-glyph-library.mjs';
 import {AUTHORED_EFFECT_FILES,runeEffectFor} from './rune-effect-library.mjs';
 import {runeIconFor} from './rune-semantic-icons.mjs';
+import {groupStageForRune,cinematicCameraPose,GROUP_IMPACT_AT} from './rune-cinematic-language.mjs';
 
 const SOURCE='/vendor/effekseer/';
 const WASM=SOURCE+'effekseer.wasm';
@@ -149,7 +150,7 @@ const WAITING_AUTHORED_EFFECT=Object.freeze({
   path:SOURCE+AUTHORED_EFFECT_FILES['M:MagicArea'],tuning:{scale:2.2,speed:.8}
 });
 
-function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=false,groupEffect=null,waiting=false,ambient=false,ambientPaused=false,quality='high'}){
+function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=false,groupEffect=null,groupStage=null,waiting=false,ambient=false,ambientDepth='rear',ambientPaused=false,quality='high'}){
   const canvas=useRef(null);
   const onPlaybackCompleteRef=useRef(onPlaybackComplete);
   onPlaybackCompleteRef.current=onPlaybackComplete;
@@ -185,13 +186,20 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
         observer.observe(target);
         context=api.createContext();
         context.init(renderer.getContext());
+        let groupHandle=null,groupBaseline=1;
+        let impactAsset=null,impactReady=false,impactStarted=false;
+        if(ceremony&&groupStage&&AUTHORED_EFFECT_FILES[groupStage.impact]){
+          impactAsset=context.loadEffect(SOURCE+AUTHORED_EFFECT_FILES[groupStage.impact],1,
+            ()=>{if(active)impactReady=true;},()=>{impactReady=false;});
+        }
         if(groupEffect){
           let groupAsset;
           groupAsset=context.loadEffect(groupEffect.path,1,()=>{
             if(!active)return;
             try{
-              const groupHandle=context.play(groupAsset,0,0,0);
+              groupHandle=context.play(groupAsset,0,0,0);
               const groupSize=groupEffect.tuning?.scale||1;
+              groupBaseline=groupSize;
               groupHandle.setScale(groupSize,groupSize,groupSize);
               if(groupEffect.tuning?.speed)groupHandle.setSpeed(groupEffect.tuning.speed);
             }catch(error){if(active)setStatus('群組特效無法播放：'+String(error?.message||error));}
@@ -200,6 +208,7 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
         // The effect data, materials and textures remain exactly as authored.
         const effectFile=effect.path;
         let loaded,started=false,playingHandle=null,settledEffectStarted=false,ambientLastSpawn=0,ambientRetire=null;
+        let ambientGhost=null,ambientGhostRetire=null;
         const extras=[];
         loaded=context.loadEffect(effectFile,1,()=>{
           if(!active)return;
@@ -214,6 +223,16 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
              if(tuning?.color)handle.setAllColor(...tuning.color);
              started=true;
              ambientLastSpawn=0;
+             if(ambient&&ambientDepth==='rear'&&quality==='high'){
+               try{
+                 ambientGhost=context.play(loaded,0,0,0);
+                 const g=(effect.tuning?.scale||1)*.69;
+                 ambientGhost.setScale(g,g,g);
+                 ambientGhost.setAllColor(185,202,224,60);
+                 ambientGhost.setSpeed(.39);
+                 ambientGhost.setLocation(-1.7,.55,-4.2);
+               }catch(error){if(active)setStatus('遠景霧氣無法播放：'+String(error?.message||error));}
+             }
              // Overlay authored assets only when the base effect has loaded successfully.
              for(const overlay of effect.overlays||[]){
                let authoredOverlay;
@@ -287,17 +306,54 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
               // The old handle is stopped through Effekseer's native API.
               ambientRetire?.stop?.();
               ambientRetire=playingHandle;
+              if(ambientGhost){
+                ambientGhostRetire?.stop?.();
+                ambientGhostRetire=ambientGhost;
+                ambientGhost=null;
+              }
               try{
                 playingHandle=context.play(loaded,0,0,0);
                 const effectScale=effect.tuning?.scale||1;
                 playingHandle.setScale(effectScale,effectScale,effectScale);
                 if(effect.tuning?.speed)playingHandle.setSpeed(effect.tuning.speed);
                 if(effect.tuning?.color)playingHandle.setAllColor(...effect.tuning.color);
+                if(ambientDepth==='rear'&&quality==='high'){
+                  ambientGhost=context.play(loaded,0,0,0);
+                  const g=effectScale*.69;
+                  ambientGhost.setScale(g,g,g);
+                  ambientGhost.setAllColor(185,202,224,60);
+                  ambientGhost.setSpeed(.39);
+                  ambientGhost.setLocation(-1.7,.55,-4.2);
+                }
               }catch(error){if(active)setStatus('霧氣重播失敗：'+String(error?.message||error));}
             }
             if(ceremony){
-              camera.position.z=ritualCameraDistance(elapsed);
+              const pose=cinematicCameraPose(elapsed,groupStage,ritualCameraDistance(elapsed));
+              camera.position.set(pose.x,pose.y,pose.z);
+              camera.lookAt(0,0,0);
               camera.updateMatrixWorld();
+              if(!impactStarted&&impactReady&&elapsed>=GROUP_IMPACT_AT&&elapsed<=1.45){
+                impactStarted=true;
+                try{
+                  const impact=context.play(impactAsset,0,0,0);
+                  const scale=groupStage.impactScale*(quality==='high'?1:.73);
+                  impact.setScale(scale,scale,scale);
+                  impact.setSpeed(groupStage.impactSpeed);
+                  const c=groupStage.impactColor;
+                  impact.setAllColor(c[0],c[1],c[2],Math.round(c[3]*(quality==='high'?1:.68)));
+                }catch(error){if(active)setStatus('高潮衝擊素材無法播放：'+String(error?.message||error));}
+              }
+              if(groupHandle&&groupStage){
+                const approach=Math.min(1,elapsed/1.15);
+                const returnFactor=1-smoothstep((elapsed-3.2)/1.3);
+                const breathe=1+.07*Math.sin(elapsed*(groupStage.style==='surge'?6:2.1));
+                const grow=groupBaseline*(.62+.38*approach)*returnFactor*breathe;
+                groupHandle.setScale(grow,grow,grow);
+                if(groupStage.style==='converge')groupHandle.setRotation(0,0,Math.sin(elapsed*.9)*.18);
+                else if(groupStage.style==='displace')groupHandle.setLocation(Math.sin(elapsed*3)*.38,.1*Math.cos(elapsed*4),0);
+                else if(groupStage.style==='rise')groupHandle.setLocation(0,-.65+Math.min(1,elapsed/2)*.95,0);
+                else if(groupStage.style==='weight')groupHandle.setLocation(0,.4-Math.min(1,elapsed)*.4,0);
+              }
             }
             if(!ambient&&elapsed>=(ceremony?8.7:waiting?1.4:4.8)){
               // One finite reveal, without a persistent blank WebGL animation loop.
@@ -310,9 +366,14 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
             // These fixed transforms never emit particles or alter the authored package.
             const tuning=effect.tuning;
             if(playingHandle&&ambient){
-              // A gentle sideways sweep, performed on the existing authored
-              // smoke handle rather than a synthetic animation effect.
-              playingHandle.setLocation(Math.sin(elapsed*.21)*.95,-.75+Math.sin(elapsed*.15)*.18,0);
+              // Effekseer-authored smoke at native 3D depth coordinates.
+              const foreground=ambientDepth==='foreground';
+              playingHandle.setLocation(
+                Math.sin(elapsed*(foreground?.3:.21))*(foreground?1.18:.95),
+                (foreground?-1.3:-.75)+Math.sin(elapsed*.15)*.18,foreground?3:0);
+              if(ambientGhost){
+                ambientGhost.setLocation(-1.7+Math.sin(elapsed*.19)*.48,.55+Math.cos(elapsed*.2)*.2,-4.2);
+              }
             }
             if(playingHandle&&tuning?.motion){
               const base=tuning.scale||1;
@@ -462,7 +523,7 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
       try{context?.release();}catch{}
       try{renderer?.dispose();}catch{}
     };
-  },[effect,reduced,ceremony,groupEffect,waiting,ambient,quality]);
+  },[effect,reduced,ceremony,groupEffect,groupStage,waiting,ambient,ambientDepth,quality]);
   return <div className="rune-effekseer-canvas-wrap">
     <canvas ref={canvas} className="rune-effekseer-canvas" aria-hidden="true"/>
     {!ambient&&status?<p className="rune-effekseer-status" role="status">{status}</p>:null}
@@ -475,14 +536,25 @@ const AUTHORED_MOON_MIST=Object.freeze({
   path:SOURCE+AUTHORED_EFFECT_FILES['M:foot_smoke2'],
   tuning:{scale:4.8,speed:.48,color:[198,205,227,150]}
 });
+const AUTHORED_FOREGROUND_MIST=Object.freeze({
+  path:SOURCE+AUTHORED_EFFECT_FILES['M:foot_smoke7'],
+  tuning:{scale:3.1,speed:.43,color:[210,207,232,98]}
+});
 export function RuneMistBackdrop({phase='idle',quality='high'}){
   const reduced=useReducedMotion();
   const clearing=phase==='waiting'||phase==='revealing';
-  return <div className="rune-3d-mist-backdrop" data-clearing={clearing?'true':'false'}
-    data-quality={quality} aria-hidden="true">
-    <EffekseerCanvas effect={AUTHORED_MOON_MIST} reduced={reduced}
-      ambient ambientPaused={phase==='revealing'} quality={quality}/>
-  </div>;
+  return <>
+    <div className="rune-3d-mist-backdrop" data-clearing={clearing?'true':'false'}
+      data-quality={quality} aria-hidden="true">
+      <EffekseerCanvas effect={AUTHORED_MOON_MIST} reduced={reduced}
+        ambient ambientDepth="rear" ambientPaused={phase==='revealing'} quality={quality}/>
+    </div>
+    {quality==='high'&&!reduced?<div className="rune-3d-foreground-mist"
+      data-ritual-mist={phase} aria-hidden="true">
+      <EffekseerCanvas effect={AUTHORED_FOREGROUND_MIST} reduced={reduced}
+        ambient ambientDepth="foreground" ambientPaused={phase==='revealing'} quality={quality}/>
+    </div>:null}
+  </>;
 }
 
 export function WaitingEffekseerStage(){
@@ -501,6 +573,7 @@ export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,directio
   const key=String(rune?.rune_id??word)+'-'+word+'-'+replay;
   const effect=useMemo(()=>runeEffectFor(rune),[rune?.english_name]);
   const groupEffect=useMemo(()=>ceremony?groupEffectFor(rune):null,[ceremony,rune?.rune_id]);
+  const groupStage=useMemo(()=>ceremony?groupStageForRune(rune?.rune_id):null,[ceremony,rune?.rune_id]);
   const semanticIcon=runeIconFor(rune);
   const visualReady=reduced||!effect||visibleKey===key;
   const showCard=ceremony&&appearance==='card'&&Boolean(cardSrc);
@@ -513,8 +586,9 @@ export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,directio
   },[ceremony,reduced,key]);
   return <div className="rune-effekseer-stage" data-source="effekseer" data-rune={word}
     data-ceremony={ceremony?'summoning':undefined}
+    data-quality={quality} data-group-stage={groupStage?.style}
     data-direction={direction==='正位'?'upright':direction==='半正位'?'semi-upright':direction==='半逆位'?'semi-reversed':direction==='逆位'?'reversed':undefined}>
-    <EffekseerCanvas key={key} effect={effect} groupEffect={groupEffect} reduced={reduced} ceremony={ceremony} quality={quality} onPlaybackComplete={onPlaybackComplete} onReady={()=>setVisibleKey(key)}/>
+    <EffekseerCanvas key={key} effect={effect} groupEffect={groupEffect} groupStage={groupStage} reduced={reduced} ceremony={ceremony} quality={quality} onPlaybackComplete={onPlaybackComplete} onReady={()=>setVisibleKey(key)}/>
     <div className="rune-effekseer-glyph-position">
       <AnimatePresence mode="wait">
         {visualReady?<motion.button key={key} type="button"

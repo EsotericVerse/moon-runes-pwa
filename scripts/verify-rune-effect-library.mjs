@@ -5,6 +5,7 @@ import {EFFECT_ASSET_BLOBS,AUTHORED_EFFECT_NAMES} from './rune-effekseer-asset-m
 import {RUNE_SEMANTIC_ICONS,runeIconFor} from '../app/lrunes/effekseer/rune-semantic-icons.mjs';
 import {RUNE_REJECTED_BRIEFS,ACCEPTED_RUNE_EFFECT_BASELINE} from './rune-rejected-brief.mjs';
 import {RUNE_VFX_REVIEW_QUEUE,RUNE_VFX_REVIEW_NAMES,RUNE_VFX_REVIEW_STATUS} from '../app/lrunes/effekseer/rune-review-queue.mjs';
+import {GROUP_STAGE_LANGUAGE,groupStageForRune,cinematicCameraPose,GROUP_IMPACT_AT} from '../app/lrunes/effekseer/rune-cinematic-language.mjs';
 const stage=readFileSync('app/lrunes/effekseer/EffekseerStage.jsx','utf8');
 const pkg=JSON.parse(readFileSync('package.json','utf8'));
 assert.equal(CANONICAL_RUNE_ENGLISH.length,67);
@@ -221,5 +222,38 @@ assert.doesNotMatch(drawFlow,/>繼續召喚符文<\/button>/,'there must not be 
 assert.match(cssHero,/\.rune-3d-ritual-ready\{pointer-events:none\}/,'ready message must not intercept stage clicks');
 assert.match(cssHero,/\.rune-3d-ritual-actions button\{pointer-events:auto\}/,'actual controls must remain independent of stage clicks');
 assert.match(cssHero,/\.rune-3d-continue-hitarea:focus-visible/,'keyboard activation is available');
+
+
+/* High-spec authored cinematic stage: one precise nine-group program with
+   only licensed effects and normal Three.js/Effekseer camera playback. */
+assert.equal(GROUP_STAGE_LANGUAGE.length,9,'one theatrical camera language per canonical group');
+assert.equal(new Set(GROUP_STAGE_LANGUAGE.map(row=>row.style)).size,9,'every group needs a distinct scenic motion signature');
+for(const entry of GROUP_STAGE_LANGUAGE){
+  assert.ok(AUTHORED_EFFECT_FILES[entry.impact],'unlicensed/missing Effekseer impact '+entry.impact);
+  assert.ok(entry.impactScale>0&&entry.impactSpeed>0,'invalid authored playback transform for '+entry.group);
+}
+for(let id=1;id<=66;id++){
+  const scene=groupStageForRune(id);
+  assert.equal(scene,GROUP_STAGE_LANGUAGE[id<=64?Math.floor((id-1)/8):8],'wrong group staging for rune '+id);
+}
+for(const value of [0,-1,67,66.1,'not-a-rune'])assert.equal(groupStageForRune(value),null);
+assert.equal(GROUP_IMPACT_AT,.62,'authored impact aligns with first full rune reveal');
+assert.equal(cinematicCameraPose(5,GROUP_STAGE_LANGUAGE[5],24).z,24,'camera must return to its original focal depth');
+assert.ok(cinematicCameraPose(GROUP_IMPACT_AT,GROUP_STAGE_LANGUAGE[5],12).z<12,'impact must physically advance the lens');
+assert.notEqual(cinematicCameraPose(1.3,GROUP_STAGE_LANGUAGE[0],13).x,cinematicCameraPose(1.3,GROUP_STAGE_LANGUAGE[3],13).x,
+  'camera choreography must distinguish groups');
+assert.match(stage,/cinematicCameraPose\(elapsed,groupStage,ritualCameraDistance\(elapsed\)\)/);
+assert.match(stage,/context\.play\(impactAsset,0,0,0\)/,'impact must play an existing Effekseer file');
+assert.match(stage,/AUTHORED_EFFECT_FILES\[groupStage\.impact\]/,'impact must come from the pinned author library');
+assert.match(stage,/ambientDepth==='foreground'/,'high-spec mist needs real native foreground spatial placement');
+assert.match(stage,/ambientGhost\.setLocation\(/,'high-spec mist needs a far-depth authored layer');
+assert.match(stage,/quality==='high'&&!reduced/,'balanced mode must avoid the third WebGL canvas');
+assert.match(stage,/AUTHORED_EFFECT_FILES\['M:foot_smoke7'\]/,'front mist must be another authored smoke scene');
+assert.match(stage,/groupHandle\.setScale\(grow,grow,grow\)/,'group backdrop changes over the same authored timeline');
+const cinematicCSS=readFileSync('app/lrunes/effekseer/effekseer-stage.css','utf8');
+assert.match(cinematicCSS,/\.rune-3d-foreground-mist\{/);
+assert.match(cinematicCSS,/rune-cinematic-peak 4\.8s/);
+assert.match(cinematicCSS,/data-ritual-phase="revealing".*rune-3d-foreground-mist/);
+assert.doesNotMatch(stage,/new THREE\.Points|new THREE\.ShaderMaterial|RuneAura/);
 
 console.log('Rune embodiment: 66 distinct authored VFX, 66 unique semantic symbols, all pinned with provenance.');
