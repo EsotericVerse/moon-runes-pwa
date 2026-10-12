@@ -138,43 +138,33 @@ export default function Rune3DPreview({mode='duel'}){
     }catch(e){setError(String(e?.message||e));}
   }
   const isList=mode==='list';
-  // The Effekseer trial uses real, pre-authored effects. Unsupported rune
-  // meanings remain unassigned rather than substituting unrelated VFX.
-  const DEMO=[{rune_id:41,rune_name:'光',english_name:'Radiance',group_name:'元素'},
-    {rune_id:44,rune_name:'火',english_name:'Flame',group_name:'元素'},
-    {rune_id:43,rune_name:'水',english_name:'Water',group_name:'元素'},
-    {rune_id:45,rune_name:'風',english_name:'Wind',group_name:'元素'},
-    {rune_id:57,rune_name:'福',english_name:'Blessing',group_name:'無序'}];
+  // Draw and daily must not manifest a fabricated default Light Rune.
+  // The symbol only appears once real canonical draw data is available.
   const latest=items[items.length-1]?.card;
-  const presented=isList?(focusedRune||runes[0]||sample||DEMO[0]):(latest||sample||DEMO[0]);
+  const presented=isList?(focusedRune||runes[0]||null):(latest||null);
   function choose(entry){setSelected(entry);}
   const label=isList?(group?group.name+'之符文':'九大符文群組'):mode==='daily'?'每日符文 · 3D 測試':'月光抽牌 · 3D 測試';
   const details=isList?selected:items.find(item=>Number(item.card.rune_id)===Number(selected?.rune_id))?.card;
   const day=mode==='daily'?items[0]:null;
   return <main className="loc-next-main rune-skin-lab rune-3d-shell" data-rune-3d-preview={mode}>
     <header className="rune-3d-header">
-      <p className="loc-eyebrow">LunaRunes · Effekseer · Rune Motion</p>
+      <p className="loc-eyebrow">LunaRunes · 符文顯現</p>
       <h1>{label}</h1>
-      <p>現成 Effekseer 遊戲效果與中文字短暫動畫的獨立試播；不修改現有 2D。</p>
+      <p>抽中的符文以自己適合的字樣與魔法短暫顯現，抽牌規則維持不變。</p>
     </header>
     <nav className="rune-3d-toolbar" aria-label="顯示與模式切換">
       <span className="rune-3d-toolbar-label">{isList?(group?group.name+'組':'九大群組'):'真實月相：'+moon+' · '+items.length+' 枚'}</span>
-      <span className="rune-3d-toolbar-label">Effekseer 原版效果 + Motion 字動畫</span>
+      <span className="rune-3d-toolbar-label">專屬字樣 · 魔法顯現</span>
     </nav>
     <section className="rune-3d-stage" aria-label={label}>
-      <EffekseerStage rune={presented} onGlyphClick={()=>{if(latest)choose(latest);else if(isList&&group&&focusedRune)choose(focusedRune);}}/>
+      {presented?<EffekseerStage rune={presented} onGlyphClick={()=>{if(latest)choose(latest);else if(isList&&group&&focusedRune)choose(focusedRune);}}/>:
+        <div className="rune-3d-awaiting" role="status">尚未召喚符文。請按下方「召喚符文」，讓文字與魔法出現。</div>}
       <p className="rune-3d-stage-label" role="status">{error||(
         busy?'正在載入符文資料……':isList?(group?'選取符文以查看字義與動畫':'選擇群組，查看獨立文字展示'):
-        latest?'這是最新抽出的符文；點擊文字查看原始資料':'以下為現成 Effekseer 魔法效果的字動畫示範'
+        latest?'這是最新抽出的符文；點擊文字查看原始資料':'符文尚未亮相'
       )}</p>
     </section>
-    {!items.length?<nav className="rune-3d-sample-nav" aria-label="現成效果試播">
-      {DEMO.map(entry=><button type="button" key={entry.rune_id}
-        aria-pressed={Number(presented?.rune_id)===entry.rune_id}
-        onClick={()=>{setSample(entry);setFocusedRune(null);}}>
-        {entry.rune_name} <small>{entry.english_name}</small>
-      </button>)}
-    </nav>:null}
+
     {isList?<div className="rune-3d-footer">
       {group?<button className="rune-skin-btn" type="button" onClick={()=>{setGroup(null);setSelected(null);setFocusedRune(null);}}>← 返回九個群組</button>:null}
       {group?<span>{group.english_name||''}　{group.desc||''}</span>:null}

@@ -1,6 +1,6 @@
-import Rune3DPreview from '../../lrunes/Rune3DPreview';
+import Rune3DLibrary from '../../lrunes/Rune3DLibrary';
 import {lunarunesMetadata} from '../../seo/metadata';
 export const metadata=lunarunesMetadata({
-  title:'3D 符文圖鑑測試｜月之符文',description:'獨立測試符文群組與立體字形，不更動 2D 圖鑑。',path:'/card3d/list/',noIndex:true
+  title:'符文顯現圖鑑｜月之符文',description:'以字型、符文字樣與適合的魔法顯現六十六枚符文。',path:'/card3d/list/',noIndex:true
 });
-export default function Page(){return <Rune3DPreview mode="list"/>;}
+export default function Page(){return <Rune3DLibrary/>;}

@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const read=path=>readFileSync(path,'utf8');
+const page=read('app/card3d/list/page.jsx'),list=read('app/lrunes/Rune3DLibrary.jsx');
+const stage=read('app/lrunes/effekseer/EffekseerStage.jsx');
+const twoD=read('app/card/list/page.jsx');
+assert.match(page,/Rune3DLibrary/);
+assert.doesNotMatch(page,/Rune3DPreview/);
+assert.match(list,/limit:67,offset:0/);
+assert.match(list,/next.length!==66/);
+assert.match(list,/runeGlyphProfile\(rune\)/);
+assert.match(list,/rune-3d-glyph-grid/);
+assert.match(list,/<EffekseerStage rune=\{current\}/);
+assert.match(list,/selectGroup/);
+assert.doesNotMatch(list,/DEMO\[0\]|現成效果試播/);
+assert.match(stage,/runeGlyphProfile\(rune\)/);
+assert.match(twoD,/RuneAtlasLab/);
+console.log('3D directory shows group lettering and manifests selected real Rune; accepted 2D untouched.');

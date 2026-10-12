@@ -170,8 +170,6 @@ export default function EffekseerStage({rune,onGlyphClick}){
       <span className="rune-effekseer-english">{rune?.english_name||''}</span>
     </div>
     <button type="button" className="rune-effekseer-replay" onClick={()=>setReplay(value=>value+1)}>重播文字與效果</button>
-    <p className="rune-effekseer-source">
-      {effect?'Effekseer · '+effect+'.efkefc':'文字動畫展示 · 尚未匹配適當的現成效果'}
-    </p>
+    <span className="rune-effekseer-source" aria-hidden="true">{rune?.group_name||''}</span>
   </div>;
 }
