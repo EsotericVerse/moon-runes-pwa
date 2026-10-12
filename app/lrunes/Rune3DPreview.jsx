@@ -2,7 +2,7 @@
 
 import {useEffect,useRef,useState} from 'react';
 import {motion,useReducedMotion} from 'motion/react';
-import EffekseerStage,{WaitingEffekseerStage,RuneMistBackdrop} from './effekseer/EffekseerStage';
+import EffekseerStage,{WaitingEffekseerStage} from './effekseer/EffekseerStage';
 import {navigationHref} from '../modular/nav-destinations.mjs';
 import useNativeNavigation from '../modular/use-native-navigation';
 import {selectRows} from '../loc/db-query.mjs';
@@ -211,7 +211,6 @@ export default function Rune3DPreview({mode='duel'}){
       {!isList?<div className="rune-3d-night-backdrop" aria-hidden="true">
         <span className="rune-skin-moon rune-3d-night-moon"/>
       </div>:null}
-      {!isList?<RuneMistBackdrop phase={phase} quality={sceneQuality}/>:null}
       {isList?(presented?<EffekseerStage rune={presented}
         onGlyphClick={()=>choose(presented)}/>:<div className="rune-3d-awaiting">請選擇符文</div>):
         <>

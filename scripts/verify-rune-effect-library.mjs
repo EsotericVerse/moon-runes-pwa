@@ -204,7 +204,11 @@ assert.match(stage,/AUTHORED_EFFECT_FILES\['M:foot_smoke2'\]/,'fog must be an ex
 assert.match(stage,/ambientPauseRef/,'mobile GPU should pause fog drawing during the main rune performance');
 assert.match(stage,/ambientRetire\?\.stop\?\.\(\)/,'persistent fog clips must retire old native handles');
 assert.match(stage,/quality==='high'\?1\.5:1/,'ambient DPR needs both high-quality and balanced modes');
-assert.match(drawFlow,/RuneMistBackdrop phase=\{phase\} quality=\{sceneQuality\}/);
+assert.doesNotMatch(drawFlow,/RuneMistBackdrop/,'unreviewed smoke effect cannot run before tapping the draw stage');
+assert.match(drawFlow,/phase==='idle'\?<button type="button" className="rune-3d-tap-to-draw"/,
+  'idle scene keeps the tap-anywhere-to-draw control');
+assert.match(drawFlow,/phase==='waiting'\?<><WaitingEffekseerStage\/>/,
+  'waiting Effekseer begins only after the user draws');
 assert.match(drawFlow,/rune-skin-moon rune-3d-night-moon/,'reuse existing moon artwork instead of DIY moon effects');
 assert.match(drawFlow,/setSceneQuality\(current=>current==='high'\?'balanced':'high'\)/,'quality toggle must be functional');
 assert.match(cssHero,/data-ritual-phase="waiting"/,'fog reacts to drawing click');
