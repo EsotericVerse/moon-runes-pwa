@@ -109,6 +109,7 @@ export default function GlobalSettings(){
     ...(managedScopes.length||canManageGlobal?[option('manage','管理選單')]:[]),
     option('account','帳號')
   ];
+  const activeSection=sections.some(item=>item.value===section)?section:'home';
   const scopeOptions=managedScopes.map(item=>option(item.id,item.label));
   const manageOptions=[
     ...(managedScopes.length?[option('publish','發表文章')]:[]),
@@ -154,11 +155,11 @@ export default function GlobalSettings(){
         <label htmlFor="loc-settings-function">設定功能</label>
         <Select {...selectProps} inputId="loc-settings-function" instanceId="loc-settings-function"
           aria-label="選擇設定功能" options={sections}
-          value={sections.find(item=>item.value===section)||sections[0]}
+          value={sections.find(item=>item.value===activeSection)||sections[0]}
           onChange={item=>{setSection(item?.value||'home');setStatus('');}}/>
       </section>
 
-      {section==='home'?<section className="loc-card">
+      {activeSection==='home'?<section className="loc-card">
         <h2>首頁設定</h2>
         <form onSubmit={saveHome} className="scope-stat-controls">
           <label><span>預設首頁</span>
@@ -177,7 +178,7 @@ export default function GlobalSettings(){
         </div>
       </section>:null}
 
-      {section==='files'?(native?<PrivateLocalFiles/>:<section className="loc-card">
+      {activeSection==='files'?(native?<PrivateLocalFiles/>:<section className="loc-card">
         <h2>文件匯入</h2>
         {account.user?managedScopes.length?<div className="loc-settings-panel-group">
           {scopeOptions.length>1?<label htmlFor="loc-import-scope">Scope</label>:null}
@@ -190,7 +191,7 @@ export default function GlobalSettings(){
         <button type="button" className="loc-button primary" onClick={login}>登入</button>}
       </section>):null}
 
-      {section==='personal'&&selectedScope?<section className="loc-card">
+      {activeSection==='personal'&&selectedScope?<section className="loc-card">
         <h2>個人首頁</h2>
         {scopeOptions.length>1?<label htmlFor="loc-personal-scope">首頁</label>:null}
         {scopeOptions.length>1?<Select {...selectProps} inputId="loc-personal-scope"
@@ -200,7 +201,7 @@ export default function GlobalSettings(){
         <ScopeSettingsPanel key={selectedScope.id} scopeId={selectedScope.id}/>
       </section>:null}
 
-      {section==='manage'&&activeManage?<section className="loc-card">
+      {activeSection==='manage'&&activeManage?<section className="loc-card">
         <h2>管理選單</h2>
         <label htmlFor="loc-manage-action">管理功能</label>
         <Select {...selectProps} inputId="loc-manage-action" instanceId="loc-manage-action"
@@ -219,7 +220,7 @@ export default function GlobalSettings(){
           href="/admin/">開啟系統設定</a>:null}
       </section>:null}
 
-      {section==='account'?<section className="loc-card">
+      {activeSection==='account'?<section className="loc-card">
         <h2>帳號</h2>
         {waiting?<p>載入中…</p>:account.user?<div>
           <p>{account.user.email||'已登入'}</p>
