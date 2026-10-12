@@ -1714,6 +1714,14 @@ export const EFFECT_ASSET_BLOBS=Object.freeze([
     "path": "Demo/effects/samples/Emissive.efkmat",
     "sha": "97ff9f7e720e3821f906c7225189b6fe498837f5",
     "size": 1218
+  },
+  {
+    "target": "godot4-samples/Material/Emissive.efkmat",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/samples/Emissive.efkmat",
+    "sha": "97ff9f7e720e3821f906c7225189b6fe498837f5",
+    "size": 1218
   }
 ]);
 export const AUTHORED_EFFECT_NAMES=Object.freeze({"godot4":["ef_barrior01","ef_fire01","ef_fire02","ef_fire03","ef_holy01","ef_ice01","ef_ice02","ef_ice03","ef_lightning01","ef_lightning02","ef_lightning03","ef_parts_hit01","ef_parts_hit02","ef_wind01","ef_wind02","ef_wind03"],"tktk":["Cure6","Dark3","Light3","Light2","Magic2","Arrow1","Sword5","hozyo1","hozyo2","Light1","Blow8","Blow12","Blow9","Dark1","Dark2","Cure2","Cure3","Magic1","Blow10","Cure4","Cure5","Wind1","Blow2","hozyo3","Cure7","hozyo4","Wind2","Blow4","Blow5","hozyo5","Blow11","Blow14","Blow3","Soil1","Light4","Fire1","Blow7","Cure1","Blow13","Fire2","Blow15"],"materials":["ImageDistortion","Falloff","Unlit","PolarCoords","RampMap","Dissolve","VertexTransform","AlphaCutoff"]});
