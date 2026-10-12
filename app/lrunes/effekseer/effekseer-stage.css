@@ -10,12 +10,17 @@
 .rune-effekseer-canvas{pointer-events:none}
 .rune-effekseer-glyph-position{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;pointer-events:none;z-index:2}
 .rune-effekseer-glyph{pointer-events:auto;appearance:none;background:transparent;border:0;cursor:pointer;line-height:1;
- font-size:clamp(130px,27vw,280px);font-weight:700;color:#fff3db;filter:drop-shadow(0 3px 4px #000c);
+ font-size:clamp(130px,27vw,280px);font-weight:400;font-synthesis:none;color:#fff3db;filter:drop-shadow(0 3px 4px #000c);
  text-shadow:0 0 2px #e8cb9c,0 10px 22px #06040e;min-width:1.3em;min-height:1.2em;text-align:center}
 .rune-effekseer-glyph:focus-visible{outline:3px solid #fff0bb;outline-offset:8px;border-radius:16px}
 .rune-effekseer-glyph--brush{font-family:'Ma Shan Zheng','Long Cang','BiauKai','DFKai-SB',cursive}
 .rune-effekseer-glyph--engraved{font-family:'ZCOOL XiaoWei','LXGW WenKai TC','Noto Serif TC',serif}
 .rune-effekseer-glyph--handwritten{font-family:'LXGW WenKai TC','Long Cang','BiauKai',serif}
+.rune-effekseer-gesture{position:absolute;top:15%;left:calc(50% + clamp(60px,12vw,132px));z-index:4;font:normal clamp(2.8rem,7vw,4.6rem)/1 sans-serif;transform-origin:center;pointer-events:none;filter:drop-shadow(0 5px 10px #05040a)}
+.rune-effekseer-gesture--awaken{top:16%;left:calc(50% + clamp(52px,12vw,125px))}
+.rune-effekseer-speech{position:relative;display:grid;place-items:center;min-width:1.1em;min-height:1.1em;padding:.07em;border-radius:50% 50% 50% 12%;background:#f6e7c4;color:#372c48;box-shadow:0 3px 14px #0604118c}
+.rune-effekseer-replay{position:absolute;right:14px;top:14px;z-index:5;min-height:44px;padding:9px 14px;border:1px solid #bba78b;border-radius:10px;background:#29243de6;color:#fff0d0;font:600 .86rem/1.4 system-ui,sans-serif;cursor:pointer}
+.rune-effekseer-replay:focus-visible{outline:3px solid #f5d49c;outline-offset:3px}
 .rune-effekseer-english{font:500 1rem/1.5 system-ui,sans-serif;letter-spacing:.26em;color:#f6e6cd;transform:translateY(-8px)}
 .rune-effekseer-source{position:absolute;bottom:8px;left:16px;right:16px;text-align:center;z-index:3;font-size:.76rem;color:#d3c9e7}
 .rune-effekseer-status{position:absolute;left:16px;right:16px;top:10px;text-align:center;font-size:.8rem;color:#ffd9bb}
@@ -38,6 +43,6 @@
 .rune-3d-daily-card{display:block;width:min(200px,50vw);height:auto;margin:0 auto}
 .rune-3d-daily-fields{display:grid;gap:12px}.rune-3d-daily-fields article{border:1px solid #ffffff35;padding:12px;border-radius:12px}
 .rune-3d-daily-fields h3{margin:0 0 6px}.rune-3d-daily-fields p{margin:0}
-@media(max-width:640px){.rune-3d-stage{height:58dvh;min-height:385px}.rune-3d-duel-action-dock{grid-template-columns:repeat(2,1fr)}
+@media(max-width:640px){.rune-effekseer-gesture{left:calc(50% + 24vw);top:23%}.rune-effekseer-replay{right:8px;top:8px}.rune-3d-stage{height:58dvh;min-height:385px}.rune-3d-duel-action-dock{grid-template-columns:repeat(2,1fr)}
 .rune-3d-duel-action--finish{grid-column:1/-1}.rune-effekseer-glyph{font-size:clamp(135px,38vw,210px)}}
 @media(prefers-reduced-motion:reduce){.rune-effekseer-stage{scroll-behavior:auto}}
