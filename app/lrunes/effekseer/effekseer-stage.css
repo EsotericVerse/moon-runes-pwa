@@ -265,15 +265,16 @@
   .rune-3d-tap-to-draw{padding:15px}
 }
 
-/* The moon is the EXISTING Rune moon visual from skin-lab.css; the moving fog
-   is the vendored Effekseer smoke scene. Only compositing changes by ritual phase.
-   No synthetic particles, fog shader, homemade aura, or moving CSS clouds. */
+/* Keep the full-size native Effekseer stage, but use one true black
+   backdrop instead of the purple radial gradient. Authored sprites with
+   dark mattes otherwise reveal their quads against the tinted background.
+   Atlas visuals and the original authored VFX remain untouched. */
 .rune-3d-stage:not([data-ritual-phase="atlas"]){
-  background:#080f28;
+  background:#000;
 }
 .rune-3d-night-backdrop{
   position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;
-  background:radial-gradient(ellipse 64% 72% at 70% 21%,#353d66 0%,#1a2445 46%,#0a122a 85%,#070c1d 100%);
+  background:#000;
 }
 .rune-3d-night-backdrop .rune-3d-night-moon{
   position:absolute;
@@ -283,6 +284,14 @@
   transform:translate(-50%,-50%);
   opacity:.74;filter:saturate(.7) brightness(.95);
   pointer-events:none;
+  transition:opacity .45s ease;
+}
+/* During the big animated reveal, let every pixel behind authored particles
+   remain black. The moon returns between draws without changing the VFX. */
+.rune-3d-stage[data-ritual-phase="waiting"] .rune-3d-night-moon,
+.rune-3d-stage[data-ritual-phase="revealing"] .rune-3d-night-moon,
+.rune-3d-stage[data-ritual-phase="transfer"] .rune-3d-night-moon{
+  opacity:0;
 }
 .rune-3d-mist-backdrop{
   position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none;
