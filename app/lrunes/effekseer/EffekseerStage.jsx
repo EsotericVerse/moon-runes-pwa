@@ -212,11 +212,12 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
         // The effect data, materials and textures remain exactly as authored.
         const effectFile=effect.path;
         // Official Effekseer WebGL accepts a fifth argument: redirect(path).
-        // Only the authored smoke effect receives alpha-corrected COPIES of
-        // its original indexed textures. All 66 .efkefc remain unchanged.
-        const textureRedirect=effectFile.endsWith('/MxS_foot_smoke2.efkefc')
-          ?(path)=>path.replace('/Texture/smoke_01.png','/Texture/_fog-smoke_01.png')
-                       .replace('/Texture/star.png','/Texture/_fog-star.png')
+        // Only this authored smoke emitter receives a genuine native 2048×2048
+        // CC0 transparent cloud texture, not an enlarged 128×128 sprite.
+        // Original .efkefc files and the 66 rune VFX remain unchanged.
+        const textureRedirect=ambient&&effectFile.endsWith('/MxS_foot_smoke2.efkefc')
+          ?(path)=>path.replace('/Texture/smoke_01.png','/Texture/_fog-cloud-2048.png')
+                       .replace('/Texture/star.png','/Texture/_fog-cloud-2048.png')
           :undefined;
         let loaded,started=false,playingHandle=null,settledEffectStarted=false,ambientLastSpawn=0,ambientRetire=null;
         let ambientGhost=null,ambientGhostRetire=null;

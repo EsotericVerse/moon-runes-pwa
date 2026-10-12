@@ -32,7 +32,7 @@ export default function RuneDaily3D(){
     return()=>window.removeEventListener('keydown',onEscape);
   },[details]);
   async function drawDaily(){
-    if(lock.current)return;
+    if(lock.current||draw)return;
     lock.current=true;setBusy(true);setError('');setDetails(false);
     const currentMoon=realMoonPhase();setMoon(currentMoon);
     if(currentMoon==='未知'){
@@ -46,23 +46,18 @@ export default function RuneDaily3D(){
         staticTypes:['direction'],moonTypes:FIELDS.map(([type])=>type),currentMoon
       });
       if(!card)throw new Error('每日符文資料尚未就緒。');
-      if(mounted.current)setDraw({card,directionIndex:index,
-        direction:DIRECTIONS[index],birth:Date.now(),moon:currentMoon});
+      if(mounted.current){
+        setDraw({card,directionIndex:index,
+          direction:DIRECTIONS[index],birth:Date.now(),moon:currentMoon});
+        // Daily has precisely one card, so reveal canonical details immediately.
+        setDetails(true);
+      }
     }catch(e){if(mounted.current)setError('每日指示讀取失敗：'+String(e?.message||e));}
     finally{lock.current=false;if(mounted.current)setBusy(false);}
-  }
-  function startOver(){
-    if(lock.current||busy)return;
-    setDraw(null);setDetails(false);setError('');
-    setMoon(realMoonPhase());
   }
   const fields=draw?FIELDS.map(([key,label])=>({
     label,text:String(draw.card?.rune_etc?.[key]?.[draw.directionIndex+1]||'').trim()
   })).filter(field=>field.text):[];
-  const dailyActions=draw?<div className="rune-art-daily-actions" role="group" aria-label="每日符文操作">
-    <button type="button" className="rune-art-duel-action rune-art-duel-action--finish"
-      onClick={()=>setDetails(true)} disabled={busy}>占卜結束，觀看每日指示</button>
-  </div>:null;
   return <main className="loc-next-main rune-skin-lab rune-art-shell" data-rune-lab="daily3d">
     <header className="rune-art-header">
       <p className="loc-eyebrow">LunaRunes · Living Daily</p>
@@ -73,10 +68,10 @@ export default function RuneDaily3D(){
       <span className="rune-art-toolbar-label">真實月相：{moon}　·　每日指示</span>
     </nav>
     <section className="rune-art-stage" aria-label="每日符文原創美術揭示">
-      <RuneArtStage mode="daily" items={draw?[draw]:[]} actions={dailyActions}
-        onSelect={()=>setDetails(true)} onBackgroundClick={!busy?drawDaily:undefined}/>
+      <RuneArtStage mode="daily" items={draw?[draw]:[]}
+        onSelect={()=>setDetails(true)} onBackgroundClick={!busy&&!draw?drawDaily:undefined}/>
       <div className="rune-art-stage-label" role="status">
-        {busy?'月光正在帶來每日指示……':draw?'今日符文已亮相，按「占卜結束」查看每日指示。':'輕觸月光召喚每日符文'}
+        {busy?'正在讀取今日符文與原始指引……':draw?'今日符文已亮相，指引將直接呈現；點選卡片可重新閱讀。':'輕觸月光召喚每日符文'}
       </div>
     </section>
     {error?<p className="rune-skin-error" role="alert">{error}</p>:null}
@@ -101,7 +96,6 @@ export default function RuneDaily3D(){
             </div>
             <div className="rune-art-result-actions">
               <a className="rune-art-result-home" href={navigationHref('lrunes','card',native)}>回到首頁</a>
-              <button type="button" className="rune-art-result-new" onClick={startOver}>開始新抽牌</button>
               <button type="button" className="rune-art-result-close"
                 onClick={()=>setDetails(false)} aria-label="關閉每日指示">×</button>
             </div>

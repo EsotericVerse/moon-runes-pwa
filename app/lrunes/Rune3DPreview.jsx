@@ -9,13 +9,14 @@ import {selectRows} from '../loc/db-query.mjs';
 import {realMoonPhase} from '../loc/model/moon-phase';
 import {randomIndex,loadDrawCards,buildFixedReading} from './RuneDrawClient';
 import {runeImage,runeName} from './rune-directory.mjs';
+import RuneCardInfo from './RuneCardInfo';
 import './skin-lab.css';
 import './effekseer/effekseer-stage.css';
 
 const DIRECTIONS=['正位','半正位','半逆位','逆位'];
 const DAILY_FIELDS=[['sit_q','狀況形容'],['sit_a','狀況表達'],['daily_r','每日占卜提醒'],['daily_g','每日占卜引導'],['daily_b','每日占卜祝福']];
 const GROUP_COLUMNS='group_id,english_name,desc,quality,style,runeslist';
-const RUNE_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,rune_description,archetype,char_action,positive_keywords,negative_keywords';
+const RUNE_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,char_action,positive_keywords,negative_keywords';
 const GROUP_NAMES=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
 const MODES=[['duel','抽牌'],['daily','每日符文'],['list','符文圖鑑']];
 
@@ -132,7 +133,9 @@ export default function Rune3DPreview({mode='duel'}){
   async function drawOne(){
     if(lock.current||busy||phase==='waiting'||phase==='revealing'||phase==='transfer'||finished||
       (mode==='daily'&&cards.current.length)||(mode==='duel'&&cards.current.length>=11))return;
-    lock.current=true;setBusy(true);setError('');setPhase('waiting');
+    lock.current=true;setBusy(true);setError('');
+    // Daily is one draw, one direct result; ritual waiting belongs to multi-card duel.
+    if(mode!=='daily')setPhase('waiting');
     const started=Date.now();
     const currentMoon=realMoonPhase();
     setMoon(currentMoon);
@@ -153,12 +156,21 @@ export default function Rune3DPreview({mode='duel'}){
       const card=rows.find(row=>Number(row.rune_id)===runeNumber);
       if(!card)throw Error('符文資料無法讀取。');
       const item={card,direction:DIRECTIONS[directionIndex],directionIndex,moon:currentMoon,birth:Date.now()};
-      // One full second of actual authored waiting VFX precedes the reveal.
-      const remainingWait=Math.max(0,1000-(Date.now()-started));
-      if(remainingWait)await new Promise(resolve=>setTimeout(resolve,remainingWait));
       if(live.current){
-        setPending(item);
-        setPhase('revealing');
+        if(mode==='daily'){
+          // No one-second waiting, ceremonial reveal, transfer, or second button.
+          cards.current=[item];
+          setItems([item]);
+          setPending(null);
+          setTransferTarget(null);
+          setFinished(true);
+          setPhase('ready');
+          setResultOpen(true);
+        }else{
+          const remainingWait=Math.max(0,1000-(Date.now()-started));
+          if(remainingWait)await new Promise(resolve=>setTimeout(resolve,remainingWait));
+          if(live.current){setPending(item);setPhase('revealing');}
+        }
       }
     }catch(e){if(live.current){
       setError('抽牌失敗：'+String(e?.message||e));
@@ -246,15 +258,15 @@ export default function Rune3DPreview({mode='duel'}){
             aria-label="本次召喚完成後的操作">
             <p className="rune-3d-ritual-title">召喚完成，{items.length} 枚符文</p>
             <p className="rune-3d-ritual-instructions">
-              {mode==='daily'?'點選下方抽牌結果區觀看符文細節，或點選「觀看每日指示」閱讀今日指引。':
+              {mode==='daily'?'今日符文已抽取完成。每日指引已自動顯示，可隨時重新查看。':
                 finished||items.length>=11?
                   '點選下方抽牌結果區觀看符文細節，或點選「觀看籤詩」閱讀本次指引。':
                   '點選下方抽牌結果區觀看符文細節；輕觸舞台畫面任一空白處繼續抽牌，或點選「觀看籤詩」結束占卜並閱讀指引。'}
             </p>
             <div className="rune-3d-ritual-actions">
-              <button type="button" onClick={reset}>重新開始</button>
+              {mode!=='daily'?<button type="button" onClick={reset}>重新開始</button>:null}
               <button type="button" onClick={()=>mode==='daily'?setResultOpen(true):finish()}>
-                {mode==='daily'?'觀看每日指示':'觀看籤詩'}</button>
+                {mode==='daily'?'重新查看今日指引':'觀看籤詩'}</button>
             </div>
           </div>:null}
           {items.length>0||phase==='transfer'?<div className="rune-3d-result-shelf"
@@ -315,11 +327,15 @@ export default function Rune3DPreview({mode='duel'}){
           <span>{i+1}. {runeName(item.card)}</span><small>{item.direction}</small>
         </button>)}
       </div>
-      <h3>指引籤詩</h3>
+      {day?<div className="rune-3d-daily-summary">
+        <RuneCardInfo card={day.card} imageSrc={runeImage(day.card)} direction={day.direction}
+          realMoonPhase={day.moon} layout="home" expandKeywords/>
+      </div>:null}
+      <h3>{mode==='daily'?'每日符文指引':'指引籤詩'}</h3>
       {day?<div className="rune-3d-daily-fields">
         {readDaily(day).map(field=><article key={field.label}><h3>{field.label}</h3><p>{field.text}</p></article>)}
       </div>:<p>{reading}</p>}
-      <button type="button" className="rune-skin-btn" onClick={reset}>開始新抽牌</button>
+      {mode!=='daily'?<button type="button" className="rune-skin-btn" onClick={reset}>開始新抽牌</button>:null}
     </ResultDialog>}
   </main>;
 }

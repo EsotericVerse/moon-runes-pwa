@@ -554,3 +554,32 @@
     >.rune-effekseer-canvas-wrap{animation:none}
 }
 /* End cinematic authored VFX stage. */
+
+/* Daily-only direct result: the single picked Rune and its five original
+   Supabase fields are visible immediately, with no second navigation step. */
+.rune-3d-modal .rune-3d-daily-summary{
+  margin-bottom:18px;padding:clamp(10px,2vw,18px);
+  border:1px solid #baa27875;border-radius:14px;
+  background:linear-gradient(135deg,#2a2544,#1a233d);
+}
+.rune-3d-modal .rune-3d-daily-summary .home-rune-preview{
+  width:100%;min-width:0;margin:0;padding:0;
+  display:grid;grid-template-columns:minmax(100px,190px) minmax(0,1fr);
+  align-items:start;gap:clamp(12px,2vw,22px);
+  background:transparent;border:0;box-shadow:none;
+}
+.rune-3d-modal .rune-3d-daily-summary .loc-rune-card-image{
+  display:block;width:min(100%,190px);height:auto;aspect-ratio:1;object-fit:contain;
+  border:1px solid #c9a87690;border-radius:12px;
+}
+.rune-3d-modal .rune-3d-daily-summary .home-rune-card-data{min-width:0;line-height:1.72}
+.rune-3d-modal .rune-3d-daily-summary .home-rune-card-data p{color:#f1e7ec}
+.rune-3d-modal .rune-3d-daily-summary .home-rune-card-title strong{color:#ffe9bd}
+.rune-3d-modal .rune-3d-daily-summary .home-rune-keywords{color:#f4ddbb}
+.rune-3d-modal .rune-3d-daily-summary .rune-card-keywords-expanded{display:grid;gap:4px}
+.rune-3d-modal .rune-3d-daily-fields article{background:#3129447c;white-space:pre-wrap}
+@media(max-width:640px){
+  .rune-3d-modal .rune-3d-daily-summary .home-rune-preview{grid-template-columns:1fr}
+  .rune-3d-modal .rune-3d-daily-summary .loc-rune-card-image{margin:0 auto;width:min(52vw,160px)}
+}
+/* End daily direct readout. */

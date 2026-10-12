@@ -3,8 +3,8 @@
   "version": "0.9.4-rc",
   "private": true,
   "scripts": {
-    "predev": "node scripts/prepare-effekseer-wasm.mjs && node scripts/prepare-rune-effekseer-assets.mjs && node scripts/prepare-rune-fog-transparency.mjs && node scripts/prepare-rune-semantic-icons.mjs",
-    "prebuild": "node scripts/prepare-effekseer-wasm.mjs && node scripts/prepare-rune-effekseer-assets.mjs && node scripts/prepare-rune-fog-transparency.mjs && node scripts/prepare-rune-semantic-icons.mjs",
+    "predev": "node scripts/prepare-effekseer-wasm.mjs && node scripts/prepare-rune-effekseer-assets.mjs && node scripts/prepare-rune-fog-hd.mjs && node scripts/prepare-rune-semantic-icons.mjs",
+    "prebuild": "node scripts/prepare-effekseer-wasm.mjs && node scripts/prepare-rune-effekseer-assets.mjs && node scripts/prepare-rune-fog-hd.mjs && node scripts/prepare-rune-semantic-icons.mjs",
     "dev": "next dev",
     "verify:modules": "node scripts/verify-module-contracts.mjs",
     "verify:blocknote": "node scripts/test-blocknote-serialization.mjs",

@@ -186,6 +186,22 @@ for(const key of ["'idle'","'waiting'","'revealing'","'transfer'","'ready'"]){
   assert.ok(drawFlow.includes(key),'ritual phase missing: '+key);
 }
 assert.match(drawFlow,/remainingWait=Math\.max\(0,1000-/,'waiting phase must last at least 1 second');
+assert.match(stage,/textureRedirect=ambient&&effectFile\.endsWith\(/,
+  'never redirect Illusion rune original smoke textures; 2K fog is ambient-only');
+assert.match(drawFlow,/if\(mode!=='daily'\)setPhase\('waiting'\)/,'daily draw does not enter wait state');
+assert.match(drawFlow,/if\(mode==='daily'\)\{[\s\S]*?cards\.current=\[item\];[\s\S]*?setResultOpen\(true\);/,
+  'daily draw must show the one actual Rune and the complete daily results automatically');
+assert.match(drawFlow,/mode!=='daily'\?<button type="button" onClick=\{reset\}>重新開始/,
+  'daily mode must not expose multi-draw restart button');
+assert.match(drawFlow,/mode!=='daily'\?<button type="button" className="rune-skin-btn" onClick=\{reset\}>開始新抽牌/,
+  'daily results must not offer a redundant new draw');
+const artDaily=readFileSync('app/lrunes/daily3d/RuneDaily3D.jsx','utf8');
+assert.match(artDaily,/setDetails\(true\);/,'2D art daily must auto-open its one result');
+assert.doesNotMatch(artDaily,/占卜結束，觀看每日指示|開始新抽牌/,'daily art has no redundant end/restart step');
+assert.match(artDaily,/if\(lock\.current\|\|draw\)return/,'2D art daily cannot redraw once a card is shown');
+assert.match(drawFlow,/<RuneCardInfo card=\{day\.card\} imageSrc=\{runeImage\(day\.card\)\} direction=\{day\.direction\}/,
+  'daily results include original card and actual direction before five daily guidance fields');
+
 assert.match(drawFlow,/onCeremonyComplete=\{\(\)=>setPhase/,'Rune returns to result area after authored performance');
 assert.match(drawFlow,/onAnimationComplete=\{completeTransfer\}/,'moving into result shelf must finish before next draw');
 assert.match(drawFlow,/onClick=\{\(\)=>choose\(item\.card\)\}/,'result shelf must open Rune details');
@@ -257,9 +273,13 @@ assert.match(stage,/quality==='high'&&!reduced/,'balanced mode must avoid the th
 assert.doesNotMatch(stage,/AUTHORED_EFFECT_FILES\['M:foot_smoke7'\]/,
   'particle-only smoke7 is not a valid mist source');
 assert.match(stage,/\/MxS_foot_smoke2\.efkefc/,'correct texture redirect applies to vetted smoke source');
-assert.match(stage,/\/_fog-smoke_01\.png/,'web loader uses corrected transparent copy of the real smoke image');
-assert.match(stage,/\/_fog-star\.png/,'secondary authored image also receives real alpha');
-assert.match(stage,/textureRedirect\);/,'official loadEffect redirect callback resolves masked images');
+assert.match(stage,/\/_fog-cloud-2048\.png/,'web loader uses native 2K transparent cloud image, not a scaled 128-pixel particle');
+assert.doesNotMatch(stage,/textureRedirect[\s\S]*?_fog-star\.png/,'star sprites must not appear in the persistent fog');
+assert.match(stage,/textureRedirect\);/,'official loadEffect redirect callback resolves transparent cloud images');
+const hdBuild=readFileSync('scripts/prepare-rune-fog-hd.mjs','utf8');
+assert.match(hdBuild,/HD_FOG_SIZE=2048/,'stage fog must originate at full 2K');
+assert.match(hdBuild,/\[4,6\]\.includes\(type\)/,'stage fog requires explicit PNG alpha');
+assert.match(hdBuild,/CC0/,'licensed high-resolution fog provenance is required');
 assert.match(stage,/ambient\?\{enablePremultipliedAlpha:true\}:undefined/,
   'ambient Effekseer blending must match the Three.js premultiplied canvas');
 assert.match(cssHero,/\.rune-3d-mist-backdrop \.rune-effekseer-canvas\{[^}]*mix-blend-mode:screen/s,
