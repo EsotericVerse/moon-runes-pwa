@@ -43,4 +43,18 @@ When asked to work on LOC in a new conversation, check this file and the current
 
 GitHub Actions trigger reduction limits generated runs, but GitHub account/email notification preferences are separately controlled by GitHub. Do not promise that changing repository workflows turns off all GitHub emails.
 
-Last revised: 2026-10-11 (public LOC vs private iOS boundary).
+## 7. Mandatory role-switch review for every user-facing change
+
+Perform these **three roles sequentially**. They are delivery gates, not three pieces of UI or text to display to users.
+
+1. **Engineer — implement.** Confirm the requested behavior, existing modules, data ownership, and permissions. Reuse the correct module and established components; do not invent new features, names, menus, explanatory cards, or cross-module shortcuts to demonstrate an architectural concept. Make the behavior correct and test it.
+2. **Designer — inspect the finished interface.** Stop thinking like the implementer. Look at the **actual rendered result**, including desktop and phone-sized layouts when applicable. Judge hierarchy, visual weight, information density, spacing, responsive arrangement, and whether essential results are visible without unnecessary scrolling. Delete or redesign redundant headings, repeated controls, oversized cards, and internal engineering explanations. If you would reject the screen as a designer, **do not submit it**.
+3. **Ordinary user — complete the task.** Stop thinking like the designer or engineer. From the entry point, try to perform the intended action without prior implementation knowledge: find the correct control, navigate, import/save/search or otherwise finish the task, and interpret its real result. Check empty, loading, error and permission states. An inactive display or an explanation of a future feature is **not** a usable feature. If navigation or purpose is confusing, **do not submit it**.
+
+- **Non-negotiable handoff:** All three roles must pass before calling UI/UX complete. Passing unit tests and a build does not substitute for the designer/user pass. If rendered or real-device checks were not possible, state explicitly that the corresponding review remains unverified; do not claim to have viewed or accepted the design.
+- **Rules are implemented in behavior, not written onto the interface.** Product Canon, privacy boundaries, source routing, fixed destinations and disabled operations belong in code. Do not plaster explanatory paragraphs or developer status notes onto user screens.
+- **Remove before adding.** For each proposed UI element ask whether the same operation already exists, whether removing it improves the user's flow, and whether it crosses product/module identity (LOC generic functions vs LunaRunes-specific features). Do not create a second entry point to satisfy an implementation checklist.
+- **Owner is not the design QA department.** Catch and fix obvious UX problems yourself; never knowingly hand over a screen you would immediately criticize when asked “what do you think as a user?”
+
+Last revised: 2026-10-12 (mandatory engineer → designer → ordinary-user review).
+
