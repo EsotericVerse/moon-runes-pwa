@@ -1,3 +1,9 @@
 Effekseer for WebGL v1.70: MIT License, © Effekseer contributors. Source: https://github.com/effekseer/EffekseerForWebGL
 Effect files and referenced resources are from the same repository's tests/Resources directory.
 The WebGL JavaScript runtime and WebAssembly binary match pinned upstream revision e8c3ce076644789918695b0cba0031461c817890. The verified WebAssembly binary is downloaded during development/build and served from /vendor/effekseer/effekseer.wasm, not from a third-party host at runtime.
+
+Additional authored VFX (pinned by Git blob checksum and downloaded at build time):
+- EffekseerForGodot4 official Godot sample effects, revision 8706d2917c2487efac3a4943c16a10dfcfc5b127, https://github.com/effekseer/EffekseerForGodot4 (MIT License, Copyright © 2020 Effekseer; retain license notice).
+- tktk contributed effect files (CC0, Effekseer sample collection), mirrored in newold3/Godot-RPG-Creator revision e7d2d69193022f1d000c0bf96eee0b5561e2183f, https://github.com/newold3/Godot-RPG-Creator ; associated tktk textures from EffekseerForWebGL revision e8c3ce076644789918695b0cba0031461c817890.
+- Official upstream sample catalogue: https://effekseer.github.io/en/contribute.html ; tktk collection appears under contributor sample effects.
+Every referenced texture/model/material is served locally as part of the game VFX module. These are licensed, pre-authored effects; the Rune manifestation code does not synthesize particles.

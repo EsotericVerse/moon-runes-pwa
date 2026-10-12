@@ -4,14 +4,12 @@ import {useEffect,useRef,useState} from 'react';
 import {AnimatePresence,motion,useReducedMotion} from 'motion/react';
 import * as THREE from 'three';
 import {runeGlyphProfile} from './rune-glyph-library.mjs';
+import {runeEffectFor} from './rune-effect-library.mjs';
 
 const SOURCE='/vendor/effekseer/';
 const WASM=SOURCE+'effekseer.wasm';
 // Only pre-authored Effekseer effects with semantically appropriate meanings.
 // No custom emitters, particles, shaders, or synthetic effect substitutes.
-const LIBRARY=Object.freeze({
-  Radiance:'Light',Blessing:'Cure1',Wind:'Blow1',Water:'ToonWater'
-});
 let runtimePromise;
 function loadRuntime(){
   if(typeof window==='undefined')return Promise.reject(new Error('僅支援瀏覽器'));
@@ -67,15 +65,15 @@ function SemanticIllustration({word,reduced}){
     transition={{duration:reduced?0:3.3,ease:'easeInOut'}} role="presentation">⌛</motion.span>;
 }
 function nameOf(rune){return String(rune?.rune_name||rune?.totem||'光').replace(/之符文$/,'').trim().slice(0,1)||'光';}
-function EffekseerCanvas({effect,reduced}){
+function EffekseerCanvas({effect,reduced,onReady}){
   const canvas=useRef(null);
   const [status,setStatus]=useState('正在啟動 Effekseer…');
   useEffect(()=>{
     let active=true,frame=0,observer;
     let renderer,context,clock;
     const target=canvas.current;
-    if(reduced){setStatus('已依系統設定減少動畫');return;}
-    if(!effect){setStatus('尚無語義相符的現成魔法效果');return;}
+    if(reduced){setStatus('');onReady?.();return;}
+    if(!effect){setStatus('');onReady?.();return;}
     (async()=>{
       try{
         const api=await readyRuntime();
@@ -98,36 +96,38 @@ function EffekseerCanvas({effect,reduced}){
         context=api.createContext();
         context.init(renderer.getContext());
         // The effect data, materials and textures remain exactly as authored.
-        const effectFile=SOURCE+'Resources/'+effect+'.efkefc';
-        let loaded;
+        const effectFile=effect.path;
+        let loaded,started=false;
         loaded=context.loadEffect(effectFile,1,()=>{
           if(!active)return;
           setStatus('');
-          context.play(loaded,0,0,0);
-        },(message,url)=>{if(active)setStatus('特效素材載入失敗：'+String(message||url));});
+          try{context.play(loaded,0,0,0);started=true;}catch(error){setStatus('特效無法播放：'+String(error?.message||error));}
+          onReady?.();
+        },(message,url)=>{if(active){setStatus('特效素材載入失敗：'+String(message||url));onReady?.();}});
         clock=new THREE.Clock();
         let elapsed=0;
         const draw=()=>{
           if(!active)return;
-          frame=requestAnimationFrame(draw);
           const delta=Math.min(clock.getDelta(),.05);
-          if(document.hidden)return;
-          elapsed+=delta;
-          if(elapsed>=4.8){
-            // One brief appearance per selected Rune. Replay is explicit.
-            context.stopAll();
+          if(started&&!document.hidden){
+            elapsed+=delta;
+            if(elapsed>=4.8){
+              // One finite reveal, without a persistent blank WebGL animation loop.
+              context.stopAll();
+              renderer.clear();
+              return;
+            }
+            context.update(delta*60);
+            context.setProjectionMatrix(camera.projectionMatrix.elements);
+            context.setCameraMatrix(camera.matrixWorldInverse.elements);
             renderer.clear();
-            return;
+            context.draw();
+            renderer.resetState();
           }
-          context.update(delta*60);
-          context.setProjectionMatrix(camera.projectionMatrix.elements);
-          context.setCameraMatrix(camera.matrixWorldInverse.elements);
-          renderer.clear();
-          context.draw();
-          renderer.resetState();
+          frame=requestAnimationFrame(draw);
         };
         draw();
-      }catch(error){if(active)setStatus('Effekseer 無法啟動：'+String(error?.message||error));}
+      }catch(error){if(active){setStatus('Effekseer 無法啟動：'+String(error?.message||error));onReady?.();}}
     })();
     return()=>{
       active=false;
@@ -146,15 +146,17 @@ function EffekseerCanvas({effect,reduced}){
 export default function EffekseerStage({rune,onGlyphClick}){
   const reduced=useReducedMotion();
   const [replay,setReplay]=useState(0);
+  const [visibleKey,setVisibleKey]=useState('');
   const word=nameOf(rune);
   const profile=runeGlyphProfile(rune);
   const key=String(rune?.rune_id??word)+'-'+word+'-'+replay;
-  const effect=LIBRARY[String(rune?.english_name||'').trim()]||null;
+  const effect=runeEffectFor(rune);
+  const visualReady=reduced||!effect||visibleKey===key;
   return <div className="rune-effekseer-stage" data-source="effekseer" data-rune={word}>
-    <EffekseerCanvas key={key} effect={effect} reduced={reduced}/>
+    <EffekseerCanvas key={key} effect={effect} reduced={reduced} onReady={()=>setVisibleKey(key)}/>
     <div className="rune-effekseer-glyph-position">
       <AnimatePresence mode="wait">
-        <motion.button key={key} type="button"
+        {visualReady?<motion.button key={key} type="button"
           className={'rune-effekseer-glyph rune-effekseer-glyph--'+profile.font}
           data-glyph-family={profile.family} data-glyph-finish={profile.finish}
           style={{'--rune-ink':profile.ink}}
@@ -164,9 +166,9 @@ export default function EffekseerStage({rune,onGlyphClick}){
           exit={{opacity:0,transition:{duration:reduced?0:.12}}}
           transition={{duration:reduced?0:4.2,times:[0,.17,.78,1],ease:'easeInOut'}}>
           {word}
-        </motion.button>
+        </motion.button>:null}
       </AnimatePresence>
-      <SemanticIllustration key={'gesture-'+key} word={word} reduced={reduced}/>
+      {visualReady?<SemanticIllustration key={'gesture-'+key} word={word} reduced={reduced}/>:null}
       <span className="rune-effekseer-english">{rune?.english_name||''}</span>
     </div>
     <button type="button" className="rune-effekseer-replay" onClick={()=>setReplay(value=>value+1)}>重播文字與效果</button>

@@ -13,3 +13,6 @@ tmp/
 coverage/
 *.log
 desktop.ini
+
+# Reproducible, checksum-pinned authored Effekseer sample assets, downloaded during prebuild/predev
+public/vendor/effekseer/Collections/
