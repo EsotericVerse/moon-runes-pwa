@@ -191,7 +191,7 @@ export default function Rune3DLibrary(){
         {direction?DIRECTIONS.find(entry=>entry.name===direction)?.hint+'，僅作用於文字輪廓，不修改字形與魔法。':'原本字色，沒有位向描邊。'} 
       </p>
       <div className="rune-3d-stage">
-        <EffekseerStage rune={current} direction={direction} vfxOnly onGlyphClick={()=>setDetails(current)}/>
+        <EffekseerStage key={current.rune_id} rune={current} direction={direction} vfxOnly onGlyphClick={()=>setDetails(current)}/>
       </div>
       <div className="rune-3d-library-actions">
         <div className="rune-3d-review-stepping" role="group" aria-label="前後符文">
