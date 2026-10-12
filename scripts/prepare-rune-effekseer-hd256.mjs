@@ -2,11 +2,12 @@
  * Create a side-by-side HD256 trial pack from pinned, licensed Effekseer PNGs.
  * Never overwrite the source textures or authored effects.
  *
- * This is a comparison experiment: resampling a 64px original does NOT invent
- * true 256px detail. Original asset opacity, silhouettes and material behavior
- * require visual QA even when the generated bitmap is exactly 256px wide.
+ * Never downsample already detailed source art. Every eligible source with a
+ * long edge under 256 is enlarged to 256; sources >=256 are copied unchanged.
+ * Resampling a 64px original does NOT invent true 256px detail. Visual QA is
+ * mandatory for opacity, silhouettes and authored UV/material behavior.
  */
-import {mkdir,rename,rm,writeFile} from 'node:fs/promises';
+import {copyFile,mkdir,rename,rm,writeFile} from 'node:fs/promises';
 import {dirname,resolve,sep} from 'node:path';
 import sharp from 'sharp';
 import {EFFECT_ASSET_BLOBS} from './rune-effekseer-asset-manifest.mjs';
@@ -27,13 +28,14 @@ async function create256(originalRelative,outputRelative,kind){
   const meta=await input.metadata();
   if(meta.format!=='png'||!meta.width||!meta.height)throw Error('Not a valid PNG: '+originalRelative);
   if((meta.pages||1)!==1)throw Error('Animated PNG requires authored frame preservation: '+originalRelative);
-  const scale=HD256_SPRITE_EDGE/Math.max(meta.width,meta.height);
+  const scale=Math.max(1,HD256_SPRITE_EDGE/Math.max(meta.width,meta.height));
   const w=Math.max(1,Math.round(meta.width*scale));
   const h=Math.max(1,Math.round(meta.height*scale));
   await mkdir(dirname(output),{recursive:true});
   const tmp=output+'.temp-'+process.pid;
   try{
-    await sharp(original,{limitInputPixels:8192*8192})
+    if(scale===1)await copyFile(original,tmp);
+    else await sharp(original,{limitInputPixels:8192*8192})
       .resize(w,h,{kernel:sharp.kernel.lanczos3,fit:'fill',fastShrinkOnLoad:false})
       .png({compressionLevel:9,palette:false})
       .toFile(tmp);
@@ -45,7 +47,7 @@ async function create256(originalRelative,outputRelative,kind){
   }finally{await rm(tmp,{force:true});}
   return {kind,source:originalRelative,output:outputRelative,
     sourceWidth:meta.width,sourceHeight:meta.height,width:w,height:h,
-    sourceHasAlpha:Boolean(meta.hasAlpha)};
+    enlarged:scale>1,sourceHasAlpha:Boolean(meta.hasAlpha)};
 }
 const originals=EFFECT_ASSET_BLOBS.filter(item=>item.target.toLowerCase().endsWith('.png'));
 const eligible=originals.map(item=>[item.target,redirectHd256ParticleTexture(item.target)])
@@ -68,11 +70,11 @@ const report={
   actualSprites:eligible.length,
   excludedNonSpriteTextures:originals.length-eligible.length,
   fogVariant:FOG_256,
-  notes:'Original sources remain unchanged; alpha errors are NOT repaired by resampling.',
+  notes:'Minimum 256px longest edge for ordinary sprites; native images larger than 256px are preserved. Alpha errors are NOT repaired by resampling.',
   textures:completed
 };
 await mkdir(dirname(REPORT),{recursive:true});
 await writeFile(REPORT,JSON.stringify(report,null,2)+'\n');
-console.log('[EFFEKSEER-HD256] '+eligible.length+' authored sprite textures resampled to longest edge 256; '+
+console.log('[EFFEKSEER-HD256] '+eligible.length+' authored sprite textures with at least 256px longest edge; 
   (originals.length-eligible.length)+' protected normal/atlas/material textures left original; '+
   '1 native-alpha fog variant for comparison. Original VFX unmodified.');
