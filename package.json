@@ -21,7 +21,7 @@
     "verify:theme": "node scripts/verify-theme-contract.mjs",
     "verify:authority": "node scripts/verify-runtime-authority.mjs",
     "verify:scope-registry": "node scripts/verify-scope-registry.mjs",
-    "postbuild": "node scripts/copy-static-assets.mjs && node scripts/verify-static-export.mjs",
+    "postbuild": "node scripts/copy-static-assets.mjs && node scripts/verify-static-export.mjs && node scripts/diagnose-effekseer-smoke.mjs",
     "verify:db-public": "node scripts/verify-db-public-read.mjs",
     "test:ui": "playwright test",
     "verify:static-export": "node scripts/verify-static-export.mjs",
