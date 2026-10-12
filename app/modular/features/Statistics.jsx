@@ -374,7 +374,7 @@ function MediaCrossTagStatistics({rows=[],range={},navigation={},zoomLevel=0,onZ
       }
     }
     return [...map.values()].sort((a,b)=>a.key.localeCompare(b.key));
-  },[trendPairs.map(x=>x.key+':'+x.count).join('\u0000'),range.bucket]);
+  },[pairs,range.bucket]);
   return <section className="scope-stat-cross" aria-label="多媒體標籤交互統計">
     <h3>多媒體 Meta Tag 交互統計</h3>
     <p className="scope-status">兩側標籤皆從現有多媒體 metadata 產生；預選 Mandopop／J-Pop／K-Pop 對其他標籤，沒有的組合不列出。每組每筆媒體只算一次。</p>
