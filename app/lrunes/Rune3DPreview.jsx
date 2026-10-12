@@ -62,12 +62,10 @@ export default function Rune3DPreview({mode='duel'}){
   // Display actual 256px comparison textures on the public 3D stage by default.
   // ?texture=original remains a diagnostic rollback, not a user-facing gate.
   const [textureQuality,setTextureQuality]=useState('hd256');
-  const [fogPreview,setFogPreview]=useState(false);
-  // Isolate repaired authored smoke until an actual WebGL visual inspection
-  // confirms the texture alpha is right; never surprise users with squares.
+  // The licensed Effekseer smoke scene is now part of the main 3D draw stage.
+  // No fog_preview query flag: the black stage masks dark-matte sprite edges.
   useEffect(()=>{
     const query=new URLSearchParams(window.location.search);
-    setFogPreview(query.get('fog_preview')==='1');
     setTextureQuality(query.get('texture')==='original'?'original':'hd256');
   },[]);
   const [phase,setPhase]=useState('idle'); // idle → waiting → revealing → transfer → ready
@@ -235,7 +233,7 @@ export default function Rune3DPreview({mode='duel'}){
       {!isList?<div className="rune-3d-night-backdrop" aria-hidden="true">
         <span className="rune-skin-moon rune-3d-night-moon"/>
       </div>:null}
-      {!isList&&fogPreview?<RuneMistBackdrop phase={phase} quality={sceneQuality} textureQuality={textureQuality}/>:null}
+      {!isList?<RuneMistBackdrop phase={phase} quality={sceneQuality} textureQuality={textureQuality}/>:null}
       {isList?(presented?<EffekseerStage rune={presented} textureQuality={textureQuality}
         onGlyphClick={()=>choose(presented)}/>:<div className="rune-3d-awaiting">請選擇符文</div>):
         <>
