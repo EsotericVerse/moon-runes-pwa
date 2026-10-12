@@ -583,3 +583,17 @@
   .rune-3d-modal .rune-3d-daily-summary .loc-rune-card-image{margin:0 auto;width:min(52vw,160px)}
 }
 /* End daily direct readout. */
+
+/* QA-only status for the original Effekseer smoke pipeline. It is present
+   only when fog_preview=1; it neither renders fog nor changes particles. */
+.rune-effekseer-fog-diagnostic{
+  position:absolute;top:8px;left:8px;z-index:12;
+  max-width:min(88%,570px);margin:0;padding:7px 10px;
+  color:#fff2d5;background:#070e22e8;border:1px solid #b8c5e0b0;
+  border-radius:7px;font:500 12px/1.5 ui-monospace,monospace;
+  text-align:left;white-space:normal;overflow-wrap:anywhere;
+  pointer-events:none;
+}
+.rune-3d-foreground-mist .rune-effekseer-fog-diagnostic{
+  top:auto;bottom:8px;
+}
