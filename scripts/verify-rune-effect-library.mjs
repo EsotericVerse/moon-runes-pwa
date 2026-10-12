@@ -14,9 +14,9 @@ assert.equal(RUNE_REJECTED_BRIEFS.length,34,'owner returned exactly 34 runes');
 assert.equal(new Set(RUNE_REJECTED_BRIEFS.map(row=>row[0])).size,34);
 assert.equal(new Set(RUNE_REJECTED_BRIEFS.map(row=>row[1])).size,34);
 assert.equal(Object.keys(ACCEPTED_RUNE_EFFECT_BASELINE).length,31,'Mirror was returned and must not remain in accepted baseline');
-assert.equal(RUNE_VFX_REVIEW_QUEUE.length,22);
-assert.equal(new Set(RUNE_VFX_REVIEW_NAMES).size,22);
-assert.equal(new Set(RUNE_VFX_REVIEW_QUEUE.map(row=>row[1])).size,22);
+assert.equal(RUNE_VFX_REVIEW_QUEUE.length,12);
+assert.equal(new Set(RUNE_VFX_REVIEW_NAMES).size,12);
+assert.equal(new Set(RUNE_VFX_REVIEW_QUEUE.map(row=>row[1])).size,12);
 for(const [name,key] of Object.entries(ACCEPTED_RUNE_EFFECT_BASELINE))assert.equal(RUNE_EFFECT_KEYS[name],key,'accepted VFX is immutable: '+name);
 assert.equal(RUNE_EFFECT_KEYS.Star,'M:meteo1','Star must use authored meteor, never upward fireworks');
 assert.equal(RUNE_EFFECT_KEYS.Insight,'M:Sylph15','owner assigned former Branch effect to Insight');
@@ -25,12 +25,28 @@ assert.equal(RUNE_EFFECT_KEYS.Space,'S:PolarCoords','restore prior Time space co
 assert.equal(RUNE_EFFECT_KEYS.Illusion,'M:Wind_Impact','owner assigned former Void to Illusion');
 assert.equal(RUNE_EFFECT_KEYS.Void,'M:AquaPoint','owner assigned former Illusion to Void');
 assert.equal(RUNE_EFFECT_TUNING.Resonance.rotationZ,Math.PI/2,'horizontal wave orientation');
-assert.equal(RUNE_EFFECT_TUNING.Star.color[0],230,'meteor receives cool white tint');
+assert.deepEqual(RUNE_EFFECT_TUNING.Star.color,[255,255,255,255],'meteor light is neutral white');
 assert.equal(RUNE_EFFECT_TUNING.Sun.color[0],255,'solar effect must be warm gold');
 assert.equal(RUNE_EFFECT_TUNING.Ore.motion,'ore-rise');
 assert.equal(RUNE_EFFECT_TUNING.Dust.motion,'dust-drift');
-assert.equal(RUNE_EFFECT_TUNING.Chaos.motion,'chaos-orbit');
-assert.equal(RUNE_EFFECT_TUNING.Fate.motion,'fate-converge');
+assert.equal(RUNE_EFFECT_KEYS.Root,'M:Magic1_earth','Root uses earth motion, not lightning');
+assert.ok(!runeEffectFor({english_name:'Root'}).overlays.some(x=>x.key.includes('lightning')),'no lightning root overlays');
+assert.equal(RUNE_EFFECT_KEYS.Branch,'M:Sylph8','Branch uses authored organic flow, not lightning');
+assert.ok(!runeEffectFor({english_name:'Branch'}).overlays.some(x=>x.key.includes('lightning')),'no lightning branch overlays');
+assert.equal(RUNE_EFFECT_KEYS.Jade,'M:Sylph5','Jade no longer uses pixel material');
+assert.equal(RUNE_EFFECT_KEYS.Dust,'M:foot_smoke7');
+assert.equal(RUNE_EFFECT_KEYS.Illusion,'M:foot_smoke2');
+assert.equal(RUNE_EFFECT_KEYS.Chaos,'M:Sylph13','Chaos inherits former Fate VFX');
+assert.equal(RUNE_EFFECT_KEYS.Fate,'SAMPLE:Simple_Ring_Shape1','Fate inherits former Chaos VFX');
+assert.ok(presentation.includes('grayscale(1) brightness(1.65)'),'Star filters color out of the VFX canvas');
+for(const key of ['M:Sylph8','M:Sylph5','M:foot_smoke7','M:foot_smoke2']){
+  const path=AUTHORED_EFFECT_FILES[key]?.slice('Collections/'.length);
+  assert.ok(path,'Missing effect source '+key);
+  assert.ok(EFFECT_ASSET_BLOBS.some(item=>item.target===path&&item.sha.length===40),'Missing pinned original effect '+key);
+}
+
+assert.equal(RUNE_EFFECT_TUNING.Chaos.motion,'fate-converge','owner exchanged Fate effect into Chaos');
+assert.equal(RUNE_EFFECT_TUNING.Fate.motion,'chaos-orbit','owner exchanged Chaos effect into Fate');
 assert.match(stage,/other\.setRotation\(/,'two authored diagonal slash handles must mark Error');
 assert.match(stage,/setAllColor\(/,'authored effects must support meaning-specific tint');
 assert.equal(RUNE_EFFECT_TUNING.Void.motion,'collapse','Void effect itself converges to the center');
@@ -60,7 +76,7 @@ assert.match(presentation,/data-rune="彩"/,'Spectrum must visually express mult
 assert.match(presentation,/linear-gradient\(100deg/,'Spectrum needs a genuinely multicolored letterform');
 assert.match(presentation,/data-rune="火"/,'Flame must carry a warm-color object and typeface');
 
-assert.notEqual(RUNE_EFFECT_KEYS.Mirror,'S:ImageDistortion','Mirror is newly rejected, replace primary optical effect');
+assert.notEqual(RUNE_EFFECT_KEYS.Mirror,'G:ef_ice03','Mirror can never be crystalline ice');
 assert.equal(RUNE_EFFECT_KEYS.Blank,'M:foot_smoke8','Blank needs an authored fading dispersion module');
 assert.equal(RUNE_SEMANTIC_ICONS.length,67);
 assert.equal(new Set(RUNE_SEMANTIC_ICONS.map(x=>x.path)).size,67);
@@ -108,7 +124,7 @@ assert.match(pkg.scripts.prebuild,/prepare-rune-semantic-icons/);
 assert.notEqual(RUNE_EFFECT_KEYS.Karma,'T:Fire2','Timing/coincidence must not be represented by fire');
 assert.notEqual(RUNE_EFFECT_KEYS.Star,'T:Fire1','Celestial Star must not be generic fire');
 assert.notEqual(RUNE_EFFECT_KEYS.Space,'G:ef_wind03','Space must not be a tornado');
-assert.notEqual(RUNE_EFFECT_KEYS.Mirror,'S:ImageDistortion','returned Mirror must be reassigned');
+assert.equal(RUNE_EFFECT_KEYS.Mirror,'S:ImageDistortion','Mirror uses authored optical reflection, never ice');
 assert.equal(RUNE_EFFECT_KEYS.Spectrum,'T:Light3','Spectrum must use the authored multicolour light effect');
 assert.match(readFileSync('app/lrunes/effekseer/effekseer-stage.css','utf8'),/data-rune="彩"/);
 console.log('Rune embodiment: 66 distinct authored VFX, 66 unique semantic symbols, all pinned with provenance.');
