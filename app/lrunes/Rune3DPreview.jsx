@@ -59,14 +59,16 @@ export default function Rune3DPreview({mode='duel'}){
   const [focusedRune,setFocusedRune]=useState(null);
   const [ceremonySubject,setCeremonySubject]=useState('glyph');
   const [sceneQuality,setSceneQuality]=useState('high');
-  const [textureQuality,setTextureQuality]=useState('original');
+  // Display actual 256px comparison textures on the public 3D stage by default.
+  // ?texture=original remains a diagnostic rollback, not a user-facing gate.
+  const [textureQuality,setTextureQuality]=useState('hd256');
   const [fogPreview,setFogPreview]=useState(false);
   // Isolate repaired authored smoke until an actual WebGL visual inspection
   // confirms the texture alpha is right; never surprise users with squares.
   useEffect(()=>{
     const query=new URLSearchParams(window.location.search);
     setFogPreview(query.get('fog_preview')==='1');
-    setTextureQuality(query.get('texture256')==='1'?'hd256':'original');
+    setTextureQuality(query.get('texture')==='original'?'original':'hd256');
   },[]);
   const [phase,setPhase]=useState('idle'); // idle → waiting → revealing → transfer → ready
   const [pending,setPending]=useState(null);
@@ -225,10 +227,7 @@ export default function Rune3DPreview({mode='duel'}){
             onClick={()=>setSceneQuality(current=>current==='high'?'balanced':'high')}>
             {sceneQuality==='high'?'高畫質':'省電模式'}
           </button>
-          <button type="button" aria-pressed={textureQuality==='hd256'}
-            onClick={()=>setTextureQuality(current=>current==='hd256'?'original':'hd256')}>
-            {textureQuality==='hd256'?'粒子貼圖：256 測試':'粒子貼圖：原版'}
-          </button>
+          <span className="rune-3d-toolbar-label">粒子貼圖：256</span>
         </div>}
     </nav>
     <section className="rune-3d-stage" aria-label={label} ref={stageRef}
