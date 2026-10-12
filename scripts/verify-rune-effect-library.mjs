@@ -174,4 +174,26 @@ assert.match(drawStage,/cardSrc=\{!isList\?runeImage\(presented\):null\}/);
 assert.match(drawStage,/巨大符文字/);
 assert.match(drawStage,/漂浮卡圖/);
 
+
+assert.match(stage,/WaitingEffekseerStage/,'1-second waiting must use existing authored VFX');
+assert.match(stage,/groupEffectFor/,'pre-authored group layers must be supported');
+assert.match(stage,/context\.play\(groupAsset,0,0,0\)/,'group VFX plays inside the original context');
+assert.match(stage,/onCeremonyComplete/,'revealed Rune must complete then transfer');
+assert.equal(RUNE_EFFECT_KEYS.Root,'B:Homing_Laser01');
+const drawFlow=readFileSync('app/lrunes/Rune3DPreview.jsx','utf8');
+for(const key of ["'idle'","'waiting'","'revealing'","'transfer'","'ready'"]){
+  assert.ok(drawFlow.includes(key),'ritual phase missing: '+key);
+}
+assert.match(drawFlow,/remainingWait=Math\.max\(0,1000-/,'waiting phase must last at least 1 second');
+assert.match(drawFlow,/onCeremonyComplete=\{\(\)=>setPhase/,'Rune returns to result area after authored performance');
+assert.match(drawFlow,/onAnimationComplete=\{completeTransfer\}/,'moving into result shelf must finish before next draw');
+assert.match(drawFlow,/onClick=\{\(\)=>choose\(item\.card\)\}/,'result shelf must open Rune details');
+assert.match(drawFlow,/setResultOpen\(true\)/,'guide is a centered dialog, not a page section');
+assert.match(drawFlow,/requestFullscreen/,'browser Fullscreen API controls stage without reinventing a renderer');
+assert.doesNotMatch(drawFlow,/rune-3d-duel-action-dock/,'legacy controls below the stage are removed');
+const cssHero=readFileSync('app/lrunes/effekseer/effekseer-stage.css','utf8');
+assert.match(cssHero,/width:min\(calc\(100% - clamp\(16px,3vw,56px\)\),1880px\)/,'desktop stage must not be 1120px-wide');
+assert.match(cssHero,/height:clamp\(620px,80dvh,980px\)/,'stage must be Hero-sized on desktop');
+assert.match(cssHero,/\.rune-3d-stage:fullscreen/,'Fullscreen view must use the browser-native API');
+assert.match(cssHero,/\.rune-3d-result-shelf/,'results belong inside the unified stage');
 console.log('Rune embodiment: 66 distinct authored VFX, 66 unique semantic symbols, all pinned with provenance.');

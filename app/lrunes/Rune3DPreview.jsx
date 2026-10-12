@@ -1,7 +1,8 @@
 'use client';
 
 import {useEffect,useRef,useState} from 'react';
-import EffekseerStage from './effekseer/EffekseerStage';
+import {motion,useReducedMotion} from 'motion/react';
+import EffekseerStage,{WaitingEffekseerStage} from './effekseer/EffekseerStage';
 import {navigationHref} from '../modular/nav-destinations.mjs';
 import useNativeNavigation from '../modular/use-native-navigation';
 import {selectRows} from '../loc/db-query.mjs';
@@ -56,11 +57,37 @@ export default function Rune3DPreview({mode='duel'}){
   const [sample,setSample]=useState(null);
   const [focusedRune,setFocusedRune]=useState(null);
   const [ceremonySubject,setCeremonySubject]=useState('glyph');
+  const [phase,setPhase]=useState('idle'); // idle → waiting → revealing → transfer → ready
+  const [pending,setPending]=useState(null);
+  const [transferTarget,setTransferTarget]=useState(null);
+  const stageRef=useRef(null),slotRef=useRef(null),resultsRef=useRef(null);
+  const reducedMotion=useReducedMotion();
   const lock=useRef(false);
   const live=useRef(true);
   const cards=useRef([]);
 
   useEffect(()=>{live.current=true;return()=>{live.current=false;};},[]);
+  useEffect(()=>{
+    if(phase!=='transfer'||!pending)return;
+    const frame=requestAnimationFrame(()=>{
+      const shelf=resultsRef.current,slot=slotRef.current,area=stageRef.current;
+      if(!area||!slot){setTransferTarget({x:0,y:0});return;}
+      if(shelf)shelf.scrollLeft=shelf.scrollWidth;
+      const origin=area.getBoundingClientRect(),target=slot.getBoundingClientRect();
+      setTransferTarget({
+        x:target.left+target.width/2-origin.left-origin.width/2,
+        y:target.top+target.height/2-origin.top-origin.height/2
+      });
+    });
+    return()=>cancelAnimationFrame(frame);
+  },[phase,pending]);
+  function completeTransfer(){
+    if(phase!=='transfer'||!pending)return;
+    const next=[...cards.current,pending];
+    cards.current=next;
+    setItems(next);setPending(null);setTransferTarget(null);
+    setPhase('ready');
+  }
   useEffect(()=>{
     if(mode!=='list')return;
     let active=true;
@@ -96,12 +123,15 @@ export default function Rune3DPreview({mode='duel'}){
   },[mode,group]);
 
   async function drawOne(){
-    if(lock.current||finished||(mode==='daily'&&cards.current.length)||(mode==='duel'&&cards.current.length>=11))return;
-    lock.current=true;setBusy(true);setError('');
+    if(lock.current||busy||phase==='waiting'||phase==='revealing'||phase==='transfer'||finished||
+      (mode==='daily'&&cards.current.length)||(mode==='duel'&&cards.current.length>=11))return;
+    lock.current=true;setBusy(true);setError('');setPhase('waiting');
+    const started=Date.now();
     const currentMoon=realMoonPhase();
     setMoon(currentMoon);
     if(currentMoon==='未知'){
-      setError('真實月相無法辨識，無法查詢籤詩。');setBusy(false);lock.current=false;return;
+      setError('真實月相無法辨識，無法查詢籤詩。');setPhase(cards.current.length?'ready':'idle');
+      setBusy(false);lock.current=false;return;
     }
     const used=new Set(cards.current.map(item=>Number(item.card.rune_id)));
     const remaining=Array.from({length:66},(_,i)=>i+1).filter(id=>!used.has(id));
@@ -116,15 +146,23 @@ export default function Rune3DPreview({mode='duel'}){
       const card=rows.find(row=>Number(row.rune_id)===runeNumber);
       if(!card)throw Error('符文資料無法讀取。');
       const item={card,direction:DIRECTIONS[directionIndex],directionIndex,moon:currentMoon,birth:Date.now()};
-      const updated=[...cards.current,item];
-      cards.current=updated;
-      if(live.current)setItems(updated);
-    }catch(e){if(live.current)setError('抽牌失敗：'+String(e?.message||e));}
+      // One full second of actual authored waiting VFX precedes the reveal.
+      const remainingWait=Math.max(0,1000-(Date.now()-started));
+      if(remainingWait)await new Promise(resolve=>setTimeout(resolve,remainingWait));
+      if(live.current){
+        setPending(item);
+        setPhase('revealing');
+      }
+    }catch(e){if(live.current){
+      setError('抽牌失敗：'+String(e?.message||e));
+      setPhase(cards.current.length?'ready':'idle');
+    }}
     finally{lock.current=false;if(live.current)setBusy(false);}
   }
   function reset(){
     if(lock.current||busy)return;
     cards.current=[];setItems([]);setReading('');setSelected(null);
+    setPending(null);setTransferTarget(null);setPhase('idle');
     setResultOpen(false);setFinished(false);setError('');setMoon(realMoonPhase());
   }
   function finish(){
@@ -142,9 +180,9 @@ export default function Rune3DPreview({mode='duel'}){
   // Draw and daily must not manifest a fabricated default Light Rune.
   // The symbol only appears once real canonical draw data is available.
   const latest=items[items.length-1]?.card;
-  const presented=isList?(focusedRune||runes[0]||null):(latest||null);
+  const presented=isList?(focusedRune||runes[0]||null):(phase==='revealing'?pending?.card||null:null);
   function choose(entry){setSelected(entry);}
-  const label=isList?(group?group.name+'之符文':'九大符文群組'):mode==='daily'?'每日符文 · 3D 測試':'月光抽牌 · 3D 測試';
+  const label=isList?(group?group.name+'之符文':'九大符文群組'):mode==='daily'?'每日符文 · 3D':'月光抽牌 · 3D';
   const details=isList?selected:items.find(item=>Number(item.card.rune_id)===Number(selected?.rune_id))?.card;
   const day=mode==='daily'?items[0]:null;
   return <main className="loc-next-main rune-skin-lab rune-3d-shell" data-rune-3d-preview={mode}>
@@ -163,16 +201,60 @@ export default function Rune3DPreview({mode='duel'}){
             onClick={()=>setCeremonySubject('card')}>漂浮卡圖</button>
         </div>}
     </nav>
-    <section className="rune-3d-stage" aria-label={label}>
-      {presented?<EffekseerStage rune={presented} direction={isList?null:items[items.length-1]?.direction||null}
-        ceremony={!isList} appearance={ceremonySubject} cardSrc={!isList?runeImage(presented):null}
-        vfxOnly={!isList}
-        onGlyphClick={()=>{if(latest)choose(latest);else if(isList&&group&&focusedRune)choose(focusedRune);}}/>:
-        <div className="rune-3d-awaiting" role="status">尚未召喚符文。請按下方「召喚符文」，讓文字與魔法出現。</div>}
-      <p className="rune-3d-stage-label" role="status">{error||(
-        busy?'正在載入符文資料……':isList?(group?'選取符文以查看字義與動畫':'選擇群組，查看獨立文字展示'):
-        latest?'這是最新抽出的符文；點擊文字查看原始資料':'符文尚未亮相'
-      )}</p>
+    <section className="rune-3d-stage" aria-label={label} ref={stageRef}
+      data-ritual-phase={isList?'atlas':phase}>
+      {isList?(presented?<EffekseerStage rune={presented}
+        onGlyphClick={()=>choose(presented)}/>:<div className="rune-3d-awaiting">請選擇符文</div>):
+        <>
+          {phase==='waiting'?<><WaitingEffekseerStage/>
+            <div className="rune-3d-ritual-status" role="status">正在喚醒符文……</div></>:null}
+          {phase==='revealing'&&pending?<EffekseerStage key={pending.birth}
+            rune={pending.card} direction={pending.direction} ceremony
+            appearance={ceremonySubject} cardSrc={runeImage(pending.card)}
+            vfxOnly onCeremonyComplete={()=>setPhase(current=>current==='revealing'?'transfer':current)}
+            onGlyphClick={()=>{}}/>:null}
+          {phase==='idle'?<button type="button" className="rune-3d-tap-to-draw"
+            onClick={drawOne} disabled={busy}>點選畫面抽牌</button>:null}
+          {phase==='transfer'&&pending&&transferTarget?
+            <motion.div className="rune-3d-flying-rune" aria-hidden="true"
+              initial={{x:0,y:0,scale:1,opacity:1}}
+              animate={{x:transferTarget.x,y:transferTarget.y,scale:.23,opacity:1}}
+              transition={{duration:reducedMotion?.05:.9,ease:[.24,.77,.24,1]}}
+              onAnimationComplete={completeTransfer}>
+              {ceremonySubject==='card'?<img src={runeImage(pending.card)} alt=""/>:
+                <span>{runeName(pending.card)}</span>}
+            </motion.div>:null}
+          {(phase==='ready')?<div className="rune-3d-ritual-ready" role="group"
+            aria-label="本次召喚完成後的操作">
+            <p>召喚完成 · {items.length} 枚符文</p>
+            <div className="rune-3d-ritual-actions">
+              <button type="button" onClick={reset}>重新開始</button>
+              <button type="button" onClick={drawOne}
+                disabled={mode==='daily'||items.length>=11||finished}>繼續召喚符文</button>
+              <button type="button" onClick={()=>mode==='daily'?setResultOpen(true):finish()}>
+                {mode==='daily'?'查看每日指示':'查看籤詩'}</button>
+            </div>
+          </div>:null}
+          {items.length>0||phase==='transfer'?<div className="rune-3d-result-shelf"
+            ref={resultsRef} role="group" aria-label="已抽出的符文結果">
+            {items.map((item,i)=><button type="button" key={item.birth}
+              className="rune-3d-result-rune" onClick={()=>choose(item.card)}
+              aria-label={'查看第'+(i+1)+'枚 '+runeName(item.card)+' '+item.direction+'的細節'}>
+              <span className="rune-3d-result-letter">{runeName(item.card)}</span>
+              <small>{item.direction}</small>
+            </button>)}
+            {phase==='transfer'&&pending?<span ref={slotRef}
+              className="rune-3d-result-slot" aria-hidden="true"/>:null}
+          </div>:null}
+          {error?<p className="rune-3d-ritual-error" role="alert">{error}</p>:null}
+          <button type="button" className="rune-3d-fullscreen" aria-label="切換舞台全螢幕"
+            onClick={async()=>{
+              try{
+                if(document.fullscreenElement)await document.exitFullscreen?.();
+                else await stageRef.current?.requestFullscreen?.();
+              }catch{}
+            }}>全螢幕</button>
+        </>}
     </section>
 
     {isList?<div className="rune-3d-footer">
@@ -188,16 +270,7 @@ export default function Rune3DPreview({mode='duel'}){
         {groups.map(entry=><button type="button" key={entry.id} className="rune-3d-group-name-btn"
           onClick={()=>{setGroup(entry);setFocusedRune(null);setSample(null);}}>{entry.name}</button>)}
       </nav>:null}
-    </div>:<div className="rune-3d-duel-action-dock" role="group" aria-label="3D 抽牌操作">
-      <button className="rune-3d-duel-action rune-3d-duel-action--restart" type="button"
-        disabled={busy||!items.length} onClick={reset}>重新開始</button>
-      <button className="rune-3d-duel-action rune-3d-duel-action--draw" type="button"
-        disabled={busy||finished||(mode==='daily'&&items.length>0)||items.length>=11}
-        onClick={drawOne}>召喚符文</button>
-      <button className="rune-3d-duel-action rune-3d-duel-action--finish" type="button"
-        disabled={busy||!items.length} onClick={()=>mode==='daily'?setResultOpen(true):finish()}>
-        {mode==='daily'?'觀看每日指示':'結束抽牌，觀看籤詩'}</button>
-    </div>}
+    </div>:null}
     <footer className="rune-3d-footer">
       <nav className="rune-skin-controls" aria-label="切換 2D 和 3D">
         <a className="rune-skin-btn" href={navigationHref('lrunes','',native)}>回符文首頁</a>
@@ -211,9 +284,16 @@ export default function Rune3DPreview({mode='duel'}){
         <img className="rune-3d-daily-card" src={runeImage(details)} alt={runeName(details)+'原始卡面'}/>
         <p>{details.rune_description||details.rune_name}</p></>:null}
     </ResultDialog>}
-    {resultOpen&&items.length>0&&<ResultDialog title={mode==='daily'?'每日符文指示':'本次占卜籤詩'}
+    {resultOpen&&items.length>0&&<ResultDialog title={mode==='daily'?'抽牌結果與每日指引':'抽牌結果與指引籤詩'}
       onClose={()=>setResultOpen(false)}>
-      <p>{items.map(item=>runeName(item.card)+' · '+item.direction).join('、')}</p>
+      <div className="rune-3d-modal-results" aria-label="抽牌結果">
+        {items.map((item,i)=><button type="button" key={item.birth} onClick={()=>{
+          setResultOpen(false);choose(item.card);
+        }}>
+          <span>{i+1}. {runeName(item.card)}</span><small>{item.direction}</small>
+        </button>)}
+      </div>
+      <h3>指引籤詩</h3>
       {day?<div className="rune-3d-daily-fields">
         {readDaily(day).map(field=><article key={field.label}><h3>{field.label}</h3><p>{field.text}</p></article>)}
       </div>:<p>{reading}</p>}
