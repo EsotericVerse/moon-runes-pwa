@@ -213,6 +213,14 @@ assert.match(cssHero,/width:min\(calc\(100% - clamp\(16px,3vw,56px\)\),1880px\)/
 assert.match(cssHero,/height:clamp\(620px,80dvh,980px\)/,'stage must be Hero-sized on desktop');
 assert.match(cssHero,/\.rune-3d-stage:fullscreen/,'Fullscreen view must use the browser-native API');
 assert.match(cssHero,/\.rune-3d-result-shelf/,'results belong inside the unified stage');
+assert.match(cssHero,/\.rune-3d-stage:not\(\[data-ritual-phase="atlas"\]\)\{\s*background:#000;/,
+  'rune draw canvas must use a true black backdrop to match dark-matte Effekseer sprites');
+assert.match(cssHero,/\.rune-3d-night-backdrop\{[^}]*background:#000;/s,
+  'the separate moonlit underlay must not introduce a purple/blue gradient behind particles');
+assert.match(cssHero,/\.rune-3d-stage\[data-ritual-phase="revealing"\] \.rune-3d-night-moon/,
+  'the moonlight illustration must clear during the large authored-effect reveal');
+assert.doesNotMatch(cssHero,/radial-gradient\(ellipse 64% 72% at 70% 21%/,
+  'old tinted radial gradient must not leak through transparent particle quads');
 
 /* Authored moonlit mist: never replace the original 66 VFX with a homemade scene. */
 assert.match(stage,/export function RuneMistBackdrop/,'draw stage must expose persistent native fog');
