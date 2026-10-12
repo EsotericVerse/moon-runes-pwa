@@ -1730,6 +1730,750 @@ export const EFFECT_ASSET_BLOBS=Object.freeze([
     "path": "Demo/effects/samples/Emissive.efkmat",
     "sha": "97ff9f7e720e3821f906c7225189b6fe498837f5",
     "size": 1218
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Holy1.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Holy1.efkefc",
+    "sha": "339989c390fed15269e0f5ee166dea4943e75ada",
+    "size": 4154
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Breakdown.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Breakdown.efkefc",
+    "sha": "d590cf09329203a712c79081b62a6d828236ad3a",
+    "size": 7256
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_StairBroken3.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_StairBroken3.efkefc",
+    "sha": "227d62dbcfab917e83c1129e8db536ba217548eb",
+    "size": 1798
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_MagicArea.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_MagicArea.efkefc",
+    "sha": "271bc0ca4c0bace512cfd955dd28efc0c9f6f5a3",
+    "size": 7590
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_A_Sylph1.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_A_Sylph1.efkefc",
+    "sha": "404dee3110f7b9fd6a094aec67b942b86bca402a",
+    "size": 7185
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Magic1_earth.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Magic1_earth.efkefc",
+    "sha": "d9a62a5babdaca71606c0465ee9a0c7533da7d62",
+    "size": 8677
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Gohlem1.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Gohlem1.efkefc",
+    "sha": "6a53192032436b137e26cccc8e1489452b456bc8",
+    "size": 5727
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Sylph15.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Sylph15.efkefc",
+    "sha": "7f814eb617f0905825005e9a07818b0966d34b72",
+    "size": 12210
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Gohlem5.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Gohlem5.efkefc",
+    "sha": "eb0d1ef7936360f258ddc6dbf60c75162b510e61",
+    "size": 14029
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_IcicleLocus.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_IcicleLocus.efkefc",
+    "sha": "3779adb06a44d77f4b3e059859696958ee1c0b6c",
+    "size": 2320
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Icicle2.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Icicle2.efkefc",
+    "sha": "518cdc9510374c171aad6a4ac1ffcfbb466da9fe",
+    "size": 6960
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Magic2_earth.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Magic2_earth.efkefc",
+    "sha": "119d1ea8aef787473bcf15fbec331035ca9943e8",
+    "size": 2827
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Rock1.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Rock1.efkefc",
+    "sha": "61f8310963d9359084148da5b7d0ac9f6af82ac7",
+    "size": 4133
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Gohlem_Shield2.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Gohlem_Shield2.efkefc",
+    "sha": "46cc7892a8136bf610c55a6fa7a2eca3e8045364",
+    "size": 1646
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Rock2.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Rock2.efkefc",
+    "sha": "a25d52dcb4afdce827c820062c3964b6bc4a0bf7",
+    "size": 6405
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_foot_smoke5.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_foot_smoke5.efkefc",
+    "sha": "41992070510689cef673f8ecd1c8c2abb046402a",
+    "size": 2086
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_FirePot1.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_FirePot1.efkefc",
+    "sha": "766a9ec40f68e733f5eef180e17c890556f57b8e",
+    "size": 5651
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Sylph2.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Sylph2.efkefc",
+    "sha": "473e5a892312d319bffe24d6655d092dd4d47d12",
+    "size": 6566
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Magic1_holy.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Magic1_holy.efkefc",
+    "sha": "1df1dd2acf34119c042c8f38d1cb51c1d7adb41a",
+    "size": 8657
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Holy2.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Holy2.efkefc",
+    "sha": "64a25c29e20ec58d638248512c1b11b9621a0dd9",
+    "size": 3773
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_meteo1.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_meteo1.efkefc",
+    "sha": "31ece657dc4268f5bbd1c167fc4138b5269ee7de",
+    "size": 12321
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Sylph10.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Sylph10.efkefc",
+    "sha": "150e4a961344e025806c76e15864a6f140c45c1d",
+    "size": 3342
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Magic2_holy.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Magic2_holy.efkefc",
+    "sha": "464cf49598c4d0768e759fb5087856cc9fce7e29",
+    "size": 2781
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Sylph7.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Sylph7.efkefc",
+    "sha": "777f23976d92ed33dd86b22c3fefe06ec70de9a5",
+    "size": 7537
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Magic2_wind.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Magic2_wind.efkefc",
+    "sha": "1ddd18d0376225dd624b5079a4e6c5498fd68edc",
+    "size": 2846
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Magic1_wind.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Magic1_wind.efkefc",
+    "sha": "b395e3d38811c84169447e12ceeb6f78615bf051",
+    "size": 8675
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Thunder3.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Thunder3.efkefc",
+    "sha": "91fb2c2fd26c0d6d60e8b35eea30c2d7eea05d25",
+    "size": 3579
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_foot_smoke8.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_foot_smoke8.efkefc",
+    "sha": "b090d8c2835a145affe9e2f5e65f0735e63d4ae5",
+    "size": 1937
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_AquaPoint.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_AquaPoint.efkefc",
+    "sha": "89aaf40e75d7e839e55c21c79252680f8140bd17",
+    "size": 8692
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Sylph11.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Sylph11.efkefc",
+    "sha": "10a9e2de3c900fbc84ff3cd5cf4127fdbb95f768",
+    "size": 8177
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Wind_Impact.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Wind_Impact.efkefc",
+    "sha": "8123c8f384ab382fd0cfb20f3ed7ec75c6038c18",
+    "size": 7850
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Attack_Impact.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Attack_Impact.efkefc",
+    "sha": "a4f00ea7eec5fa3afd9cc3d337ced652c465ea95",
+    "size": 8542
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Sylph13.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Sylph13.efkefc",
+    "sha": "d17c1ca97870c3044939b28cab29712cb4467816",
+    "size": 5955
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Lance5.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Lance5.efkefc",
+    "sha": "c2a608ac2e49f6a810e1fb6e3604e88795f234a7",
+    "size": 16854
+  },
+  {
+    "target": "MAGICALxSPIRAL/Model/Hammer.efkmodel",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Model/Hammer.efkmodel",
+    "sha": "81475000dfe9e102c0454b6cc129797c2b4d42e3",
+    "size": 17096
+  },
+  {
+    "target": "MAGICALxSPIRAL/Model/block1.efkmodel",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Model/block1.efkmodel",
+    "sha": "eb0c1dacefae2f29f849922406c355cc9eeab6e4",
+    "size": 2152
+  },
+  {
+    "target": "MAGICALxSPIRAL/Model/block2.efkmodel",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Model/block2.efkmodel",
+    "sha": "9f38c040fd938e584756692723ca582572748fe9",
+    "size": 2488
+  },
+  {
+    "target": "MAGICALxSPIRAL/Model/block3.efkmodel",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Model/block3.efkmodel",
+    "sha": "5f701e71d6915a252d65de3c9bd0a84d2e85a839",
+    "size": 2544
+  },
+  {
+    "target": "MAGICALxSPIRAL/Model/coin.efkmodel",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Model/coin.efkmodel",
+    "sha": "c455489f9ab7c1af8eae0deb41d34aac8c469d83",
+    "size": 6320
+  },
+  {
+    "target": "MAGICALxSPIRAL/Model/gohlem_arm.efkmodel",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Model/gohlem_arm.efkmodel",
+    "sha": "686230a1d5b974b1581bc96a26374f427cc37272",
+    "size": 41552
+  },
+  {
+    "target": "MAGICALxSPIRAL/Model/gohlem_shield.efkmodel",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Model/gohlem_shield.efkmodel",
+    "sha": "aa0b7d0c49ec0fefdd66a93933abede6ac44714c",
+    "size": 113760
+  },
+  {
+    "target": "MAGICALxSPIRAL/Model/icicle1.efkmodel",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Model/icicle1.efkmodel",
+    "sha": "56bbc14a62ea815492d6092269e7864d19b279e1",
+    "size": 4296
+  },
+  {
+    "target": "MAGICALxSPIRAL/Model/icicle2.efkmodel",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Model/icicle2.efkmodel",
+    "sha": "56bbc14a62ea815492d6092269e7864d19b279e1",
+    "size": 4296
+  },
+  {
+    "target": "MAGICALxSPIRAL/Model/icicle3.efkmodel",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Model/icicle3.efkmodel",
+    "sha": "9b99b502155ba82e560476510c2d08c6c2ed09d3",
+    "size": 4296
+  },
+  {
+    "target": "MAGICALxSPIRAL/Model/rock1.efkmodel",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Model/rock1.efkmodel",
+    "sha": "30b28a9e47051f80fd5d804c22a9882b8a243ff4",
+    "size": 13608
+  },
+  {
+    "target": "MAGICALxSPIRAL/Model/rock2.efkmodel",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Model/rock2.efkmodel",
+    "sha": "6db8e6ca82f7f4802d33a6c80da37d6ce24d14d5",
+    "size": 10824
+  },
+  {
+    "target": "MAGICALxSPIRAL/Model/sphere.efkmodel",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Model/sphere.efkmodel",
+    "sha": "c9ac2f6d9e564ee33ae007a16d810617afe28dad",
+    "size": 16600
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/Fire1.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/Fire1.png",
+    "sha": "43241488f5eb71fd0c4954982204f25eeb7a8fdc",
+    "size": 16366
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/Fire2.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/Fire2.png",
+    "sha": "c2daefd768fa751579ef502d986a7520ca80e7ad",
+    "size": 15838
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/Fire3.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/Fire3.png",
+    "sha": "bb89ce6188fbf907e5ee4164280838883fed054e",
+    "size": 46792
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/Fire4.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/Fire4.png",
+    "sha": "afd1956c319d45d1d3a4bdd29a2fed4f0934e82a",
+    "size": 5945
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/Hammer1.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/Hammer1.png",
+    "sha": "2873c1ecaca4fbd370ad130c791bf34d1fb0cc82",
+    "size": 56989
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/Line1.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/Line1.png",
+    "sha": "df7818eeda2f55c6d42793ff1ab0b463ec50d8ad",
+    "size": 668
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/Line2.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/Line2.png",
+    "sha": "52e0045b4b952b74d9aee782d501eabdda31de2e",
+    "size": 1408
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/Line3.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/Line3.png",
+    "sha": "14d62353a293d660cf50a48599f867009a2b74f6",
+    "size": 3195
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/Line4.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/Line4.png",
+    "sha": "d6d01b9db2c2874b56048fa12fb8fa3c593bf546",
+    "size": 3286
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/Line5.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/Line5.png",
+    "sha": "91992003dd6db7b2c8a38d9923c09caf29dd815f",
+    "size": 3291
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/Line6.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/Line6.png",
+    "sha": "a7d5f22a580cdf1e6687558d9d3b321c2975d2f7",
+    "size": 2125
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/ShockWave1.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/ShockWave1.png",
+    "sha": "6e77b252352a8ea92e9aa50307904f5feec01f13",
+    "size": 2578
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/ShockWave2.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/ShockWave2.png",
+    "sha": "da82a3e00b60182c3d2f195adffbc9d73459ca83",
+    "size": 1745
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/ShockWave3.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/ShockWave3.png",
+    "sha": "1e0ffc399f96c5c7f96f97cb5db7b511c5d5aedb",
+    "size": 413
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/ShockWave4.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/ShockWave4.png",
+    "sha": "68f10d7718d16c5fda5d088d792958e7e36f5af4",
+    "size": 2873
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/ShockWave5.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/ShockWave5.png",
+    "sha": "9aedd23aa809d389a64d27b2f04001430f28c42a",
+    "size": 5464
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/ShockWave6.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/ShockWave6.png",
+    "sha": "797f40fc3c66f9814370dda8b6991634c9c2eeda",
+    "size": 2869
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/ShockWave7.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/ShockWave7.png",
+    "sha": "6a4a0ddbc423f0fa4b18a1ae97dea8bc4e82076a",
+    "size": 2888
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/ShockWave8.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/ShockWave8.png",
+    "sha": "44d1f2211ddd6ba07a172a251f64bf299d2307b3",
+    "size": 7441
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/Thunder1.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/Thunder1.png",
+    "sha": "337f80d17ba5fd3f6d4f2365be6786914ffcd1a9",
+    "size": 1662
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/Thunder2.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/Thunder2.png",
+    "sha": "5b57068d50a4a3189e17419be41883828ca004f4",
+    "size": 13160
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/Thunder3.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/Thunder3.png",
+    "sha": "8dccf9504b4e82d66eb9667e8eb3cb89ba68c18d",
+    "size": 2619
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/Thunder4.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/Thunder4.png",
+    "sha": "1db5f7e03f8cf6d56953644c9c236ad065825d22",
+    "size": 2617
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/Thunder5.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/Thunder5.png",
+    "sha": "7b870fe304780b0a33b95284d9e7512256cdc7bd",
+    "size": 2677
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/Thunder6.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/Thunder6.png",
+    "sha": "9874138a4cee26e4997aa418b65bdc72c8894a90",
+    "size": 2684
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/Water.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/Water.png",
+    "sha": "eff0c1652172ccd8fe96ab05969d6035a3aaada2",
+    "size": 255535
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/WaterForm1.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/WaterForm1.png",
+    "sha": "ff4de62f01503ad2773d0aafbf8b84e126c17190",
+    "size": 66279
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/WaterForm1_normal.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/WaterForm1_normal.png",
+    "sha": "3318cc18530453537b38df95856edf55bde12ad4",
+    "size": 64698
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/WaterForm2.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/WaterForm2.png",
+    "sha": "00d9cad9ed5b8e1a5158854bfe3377af87db3f1c",
+    "size": 42977
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/Water_normal.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/Water_normal.png",
+    "sha": "4fc79ee4bfcb6b7994681cfc158058a15ff6b3b9",
+    "size": 253494
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/White.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/White.png",
+    "sha": "fc8f106eeb6c7e66c31b94c6e2c728571a334271",
+    "size": 98
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/circle1.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/circle1.png",
+    "sha": "9d1d4841301b9f19fa74d5030308b02455fa3163",
+    "size": 7441
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/circle2.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/circle2.png",
+    "sha": "9cf9e238ea8dc6b2a2b10e6da66ba61e89b2371b",
+    "size": 5340
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/circle3.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/circle3.png",
+    "sha": "1e30ba180fda094c51a273e0c9e43b9d92c7c603",
+    "size": 3869
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/circle4.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/circle4.png",
+    "sha": "352188681977f5fe3d4f6c89ed452e69a9d6a798",
+    "size": 196413
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/fireline.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/fireline.png",
+    "sha": "f84ccfff113df00031da28e68e89a427fdfa49eb",
+    "size": 1646
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/fireline2.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/fireline2.png",
+    "sha": "5390a47515185ec9fd4bd412705701fd83a55dbd",
+    "size": 1492
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/icicle.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/icicle.png",
+    "sha": "288d47d8302071f67860ac72621356f12ddf62fa",
+    "size": 54719
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/icicle2.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/icicle2.png",
+    "sha": "0ce515713f268996f79245ef103a11d30abdcfd9",
+    "size": 53752
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/particle.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/particle.png",
+    "sha": "f956fd94f717501d905eed67941ee1b36aa4b035",
+    "size": 559
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/particle2.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/particle2.png",
+    "sha": "e8026108b315e1d4d305ac58a9a3e63b7d7218a4",
+    "size": 1337
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/particle3.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/particle3.png",
+    "sha": "059393d4fbd132c4d61d205a739bc0142a2b69a8",
+    "size": 505
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/particle4.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/particle4.png",
+    "sha": "6b11a2676ca0253deaf9285d371dbe9698ab347f",
+    "size": 1004
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/shield_color.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/shield_color.png",
+    "sha": "59431549d019d4f221209389663e30d598cfd8a6",
+    "size": 26144
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/smoke_01.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/smoke_01.png",
+    "sha": "8dd18b1c645fc5e58671b611dcdd995bd3cd0300",
+    "size": 6708
+  },
+  {
+    "target": "MAGICALxSPIRAL/Texture/star.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/Texture/star.png",
+    "sha": "002361710776e514a1f9875a7a520a8c88c6aef2",
+    "size": 2257
   }
 ]);
 export const AUTHORED_EFFECT_NAMES=Object.freeze({"godot4":["ef_barrior01","ef_fire01","ef_fire02","ef_fire03","ef_holy01","ef_ice01","ef_ice02","ef_ice03","ef_lightning01","ef_lightning02","ef_lightning03","ef_parts_hit01","ef_parts_hit02","ef_wind01","ef_wind02","ef_wind03"],"tktk":["Cure6","Dark3","Light3","Light2","Magic2","Arrow1","Sword5","hozyo1","hozyo2","Light1","Blow8","Blow12","Blow9","Dark1","Dark2","Cure2","Cure3","Magic1","Blow10","Cure4","Cure5","Wind1","Blow2","hozyo3","Cure7","hozyo4","Wind2","Blow4","Blow5","hozyo5","Blow11","Blow14","Blow3","Soil1","Light4","Fire1","Blow7","Cure1","Blow13","Fire2","Blow15"],"materials":["ImageDistortion","Falloff","Unlit","PolarCoords","RampMap","Dissolve","VertexTransform","AlphaCutoff"]});

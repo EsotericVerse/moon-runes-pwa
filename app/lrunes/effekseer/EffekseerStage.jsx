@@ -140,12 +140,13 @@ function EffekseerCanvas({effect,reduced,onReady}){
         context.init(renderer.getContext());
         // The effect data, materials and textures remain exactly as authored.
         const effectFile=effect.path;
-        let loaded,started=false;
+        let loaded,started=false,playingHandle=null;
         loaded=context.loadEffect(effectFile,1,()=>{
           if(!active)return;
           setStatus('');
           try{
              const handle=context.play(loaded,0,0,0);
+             playingHandle=handle;
              const tuning=effect.tuning;
              if(tuning?.scale)handle.setScale(tuning.scale,tuning.scale,tuning.scale);
              if(tuning?.rotationZ!==undefined)handle.setRotation(0,0,tuning.rotationZ);
@@ -166,6 +167,31 @@ function EffekseerCanvas({effect,reduced,onReady}){
               context.stopAll();
               renderer.clear();
               return;
+            }
+            // Move the actual licensed Effekseer effect handle, not a decorative SVG.
+            // These fixed transforms never emit particles or alter the authored package.
+            const tuning=effect.tuning;
+            if(playingHandle&&tuning?.motion){
+              const base=tuning.scale||1;
+              if(tuning.motion==='collapse'){
+                const scale=base*Math.pow(Math.max(0,1-elapsed/4.2),2);
+                playingHandle.setScale(scale,scale,scale);
+              }else if(tuning.motion==='pulse'){
+                const scale=base*(1+.18*Math.sin(elapsed*2*Math.PI*3.5));
+                playingHandle.setScale(scale,scale,scale);
+              }else if(tuning.motion==='hourglass-scale'){
+                const scale=base*(1+.24*Math.sin(elapsed*2*Math.PI/2.1));
+                playingHandle.setScale(scale,scale,scale);
+              }else if(tuning.motion==='hourglass-turn'){
+                playingHandle.setRotation(0,0,elapsed*2*Math.PI/3.2);
+              }else if(tuning.motion==='hourglass-wobble'){
+                const amp=.37*Math.exp(-elapsed*.9);
+                playingHandle.setRotation(0,0,amp*Math.sin(elapsed*14));
+              }else if(tuning.motion==='chaotic'){
+                const scale=base*(1+.14*Math.sin(elapsed*11)+.11*Math.cos(elapsed*17));
+                playingHandle.setScale(scale,scale,scale);
+                playingHandle.setRotation(0,0,.31*Math.sin(elapsed*9));
+              }
             }
             context.update(delta*60);
             context.setProjectionMatrix(camera.projectionMatrix.elements);

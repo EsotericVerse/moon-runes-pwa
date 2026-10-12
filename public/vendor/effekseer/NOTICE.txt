@@ -13,3 +13,8 @@ Rune manifestation v2: 66 unique effect files + 66 unique semantic object pictog
 - EffekseerForGodot4 sample-material1 MIT-licensed authored optical and dissolve effects (same pinned official upstream revision as above).
 - game-icons/icons, upstream revision 82d948812bfe3f269ef8f731dcdb07b08160edc4, by Lorc, Delapouite and additional named icon contributors; CC BY 3.0 (selected badges may be public domain). Original per-icon author directories are preserved in app/lrunes/effekseer/rune-semantic-icons.mjs and may be credited at https://game-icons.net/ . License terms: https://creativecommons.org/licenses/by/3.0/ .
 - Every icon and every effect dependency is pinned to a SHA-1 Git blob and made available from the same origin at build time. 66 separate VFX files are selected for the drawable runes, not 66 names aliasing fewer assets.
+
+Rune manifestation authored-module resourcing (2026-10-12):
+- 34 rejected VFX bindings are now sourced from the existing CC0 MAGICAL X SPIRAL Effekseer contributed-effects collection. The project uses unchanged .efkefc files and the existing Effekseer WebGL runtime, not generated particle effects.
+- Pinned source mirror: https://github.com/munokura/Effekseer-sample-for-RPG-Tkool-MZ at 7faccfd4c769d49f56877950eb4b815846b952e5; MAGICALxSPIRAL/MxS_*.efkefc, with Texture/ and Model/ referenced resources.
+- Upstream Effekseer CC0 catalogue: https://effekseer.github.io/en/contribute.html . Material names alone are not proof of semantic correctness: artist visual approval remains required.

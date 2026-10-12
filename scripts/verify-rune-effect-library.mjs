@@ -14,8 +14,9 @@ assert.equal(new Set(RUNE_REJECTED_BRIEFS.map(row=>row[0])).size,34);
 assert.equal(new Set(RUNE_REJECTED_BRIEFS.map(row=>row[1])).size,34);
 assert.equal(Object.keys(ACCEPTED_RUNE_EFFECT_BASELINE).length,32);
 for(const [name,key] of Object.entries(ACCEPTED_RUNE_EFFECT_BASELINE))assert.equal(RUNE_EFFECT_KEYS[name],key,'accepted VFX is immutable: '+name);
-assert.equal(RUNE_EFFECT_TUNING.Star.rotationZ,Math.PI,'star module must point down');
-assert.ok(RUNE_EFFECT_TUNING.Flame.scale>1,'genuine flame module must read on first glance');
+assert.equal(RUNE_EFFECT_KEYS.Star,'M:meteo1','Star must use authored meteor, never upward fireworks');
+assert.equal(RUNE_EFFECT_TUNING.Void.motion,'collapse','Void effect itself converges to the center');
+assert.ok(RUNE_EFFECT_TUNING.Flame.scale>2,'Flame must fill visible stage');
 assert.ok(RUNE_EFFECT_TUNING.Fate.speed<1&&RUNE_EFFECT_TUNING.Chaos.scale>1);
 assert.ok(stage.includes('handle.setScale('),'Effekseer handle setScale missing');
 assert.ok(stage.includes('handle.setRotation('),'Effekseer handle setRotation missing');
@@ -29,9 +30,9 @@ assert.equal(new Set(chosen.map(x=>AUTHORED_EFFECT_FILES[x])).size,66,'no two ke
 assert.notEqual(RUNE_EFFECT_KEYS.Blank,RUNE_EFFECT_KEYS.Void);
 assert.notEqual(RUNE_EFFECT_KEYS.Void,RUNE_EFFECT_KEYS.Illusion);
 assert.notEqual(RUNE_EFFECT_KEYS.Flame,RUNE_EFFECT_KEYS.Radiance);
-assert.equal(RUNE_EFFECT_KEYS.Flame,'G:ef_fire01_projectile','Flame uses genuine flipbook flame artwork, not fire02 shockwave');
-assert.equal(RUNE_EFFECT_KEYS.Resonance,'G:ef_fire03','Resonance must use the specific animation the owner identified on Calamity');
-assert.equal(RUNE_EFFECT_KEYS.Calamity,'T:Blow10','Calamity receives a distinct, authored impact');
+assert.equal(RUNE_EFFECT_KEYS.Flame,'M:FirePot1','Flame must use a genuine pre-authored flame module');
+assert.equal(RUNE_EFFECT_KEYS.Resonance,'M:MagicArea','Resonance effect must be a wave field rather than fire');
+assert.equal(RUNE_EFFECT_KEYS.Calamity,'M:Thunder3','Calamity must have independently authored destructive storm VFX');
 assert.ok(EFFECT_ASSET_BLOBS.some(file=>file.target==='godot4/ef_fire01_projectile.efkefc'));
 assert.ok(EFFECT_ASSET_BLOBS.some(file=>file.target==='godot4/Textures/tx_fire_flipbook01_1024.png'));
 
@@ -42,7 +43,7 @@ assert.match(presentation,/linear-gradient\(100deg/,'Spectrum needs a genuinely 
 assert.match(presentation,/data-rune="火"/,'Flame must carry a warm-color object and typeface');
 
 assert.equal(RUNE_EFFECT_KEYS.Mirror,'S:ImageDistortion','Mirror must use optical effect, never ice');
-assert.equal(RUNE_EFFECT_KEYS.Blank,'S:Dissolve','Blank is a uniquely disappearing module, not Void');
+assert.equal(RUNE_EFFECT_KEYS.Blank,'M:foot_smoke8','Blank needs an authored fading dispersion module');
 assert.equal(RUNE_SEMANTIC_ICONS.length,67);
 assert.equal(new Set(RUNE_SEMANTIC_ICONS.map(x=>x.path)).size,67);
 assert.equal(RUNE_SEMANTIC_ICONS[3].path,'lorc/rainbow-star.svg');
@@ -64,6 +65,11 @@ for(let id=1;id<=66;id++){
  assert.equal(runeIconFor({rune_id:id}),'/vendor/rune-semantic-icons/'+id+'.svg');
 }
 assert.equal(AUTHORED_EFFECT_NAMES.tktk.length,41);
+for(const effect of Object.values(RUNE_EFFECT_KEYS).filter(key=>key?.startsWith('M:'))){
+ assert.ok(AUTHORED_EFFECT_FILES[effect]?.includes('MAGICALxSPIRAL/MxS_'),'new authored effect missing: '+effect);
+ assert.ok(pinned.has(AUTHORED_EFFECT_FILES[effect].replace(/^Collections\\//,'')),'new authored asset unbundled '+effect);
+}
+assert.equal(Object.values(RUNE_EFFECT_KEYS).filter(x=>x?.startsWith('M:')).length,34,'each owner-rejected effect was actually replaced, not just recolored');
 assert.equal(AUTHORED_EFFECT_NAMES.materials.length,8);
 assert.match(stage,/runeEffectFor\(rune\)/);
 assert.match(stage,/runeIconFor\(rune\)/);
