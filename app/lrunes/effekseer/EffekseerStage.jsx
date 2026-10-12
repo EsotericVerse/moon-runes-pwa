@@ -261,6 +261,17 @@ function EffekseerCanvas({effect,reduced,onReady}){
                   playingHandle.setScale(s,s,s);break;
                 }
                 case 'mist':playingHandle.setLocation(Math.sin(elapsed*.7)*.38,Math.cos(elapsed*.43)*.23,0);break;
+                case 'mist-drift':{
+                  playingHandle.setLocation(-1.1+elapsed*.52,Math.sin(elapsed*.65)*.24,0);
+                  playingHandle.setAllColor(207,204,221,Math.round(55+105*Math.sin(Math.min(1,phase)*Math.PI)));
+                  break;
+                }
+                case 'clarify':{
+                  const g=Math.min(1,elapsed/2.2);
+                  playingHandle.setAllColor(255,255,245,Math.round(30+225*g));
+                  playingHandle.setScale(base*(.7+.3*g),base*(.7+.3*g),base);
+                  break;
+                }
                 case 'fate-converge':{
                   const r=1.6*Math.pow(Math.max(0,1-phase),1.3);
                   playingHandle.setLocation(Math.cos(elapsed*2.1)*r,Math.sin(elapsed*2.1)*r,0);
