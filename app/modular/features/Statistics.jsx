@@ -363,18 +363,13 @@ function MediaCrossTagStatistics({rows=[],range={},navigation={},zoomLevel=0,onZ
   const leading=pairs.slice(0,12);
   const trendPairs=pairs.slice(0,6);
   const trendData=useMemo(()=>{
-    const map=new Map();
-    for(const pair of trendPairs){
-      for(const [day,count] of pair.days){
-        const bucket=trendBucket(day,range.bucket||'day');
-        if(!bucket)continue;
-        if(!map.has(bucket.key))map.set(bucket.key,{period:bucket.label,key:bucket.key});
-        const value=map.get(bucket.key);
-        value[pair.key]=(Number(value[pair.key])||0)+count;
-      }
-    }
-    return [...map.values()].sort((a,b)=>a.key.localeCompare(b.key));
-  },[pairs,range.bucket]);
+    const daily=trendPairs.flatMap(pair=>[...pair.days].map(([day,item_count])=>({
+      day,category:pair.key,item_count
+    })));
+    return facetTrend(daily,{
+      startDate:range.startDate,endDate:range.endDate,bucket:range.bucket||'day'
+    },trendPairs.map(pair=>pair.key));
+  },[pairs,range.startDate,range.endDate,range.bucket]);
   return <section className="scope-stat-cross" aria-label="多媒體標籤交互統計">
     <h3>多媒體 Meta Tag 交互統計</h3>
     <p className="scope-status">兩側標籤皆從現有多媒體 metadata 產生；預選 Mandopop／J-Pop／K-Pop 對其他標籤，沒有的組合不列出。每組每筆媒體只算一次。</p>
