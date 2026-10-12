@@ -132,10 +132,10 @@ test('Settings has one home & favorites pane, one import pane, and separated man
   assert.match(settings,/option\('files',native\?'本機檔案':'文件匯入'\)/);
   assert.match(settings,/option\('personal','個人首頁'\)/);
   assert.match(settings,/option\('manage','管理選單'\)/);
-  assert.match(settings,/section==='home'/);
-  assert.match(settings,/section==='files'/);
-  assert.match(settings,/section==='personal'/);
-  assert.match(settings,/section==='manage'/);
+  assert.match(settings,/activeSection==='home'/);
+  assert.match(settings,/activeSection==='files'/);
+  assert.match(settings,/activeSection==='personal'/);
+  assert.match(settings,/activeSection==='manage'/);
   assert.match(settings,/scope-settings-favorite-preview/);
   assert.match(settings,/MOBILE_HOME_STORAGE_KEY/);
   assert.match(settings,/<PrivateLocalFiles\/>/);
