@@ -207,6 +207,13 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
         }
         // The effect data, materials and textures remain exactly as authored.
         const effectFile=effect.path;
+        // Official Effekseer WebGL accepts a fifth argument: redirect(path).
+        // Only the authored smoke effect receives alpha-corrected COPIES of
+        // its original indexed textures. All 66 .efkefc remain unchanged.
+        const textureRedirect=effectFile.endsWith('/MxS_foot_smoke2.efkefc')
+          ?(path)=>path.replace('/Texture/smoke_01.png','/Texture/_fog-smoke_01.png')
+                       .replace('/Texture/star.png','/Texture/_fog-star.png')
+          :undefined;
         let loaded,started=false,playingHandle=null,settledEffectStarted=false,ambientLastSpawn=0,ambientRetire=null;
         let ambientGhost=null,ambientGhostRetire=null;
         const extras=[];
@@ -292,7 +299,7 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
              started=true;
            }catch(error){setStatus('特效無法播放：'+String(error?.message||error));}
           onReady?.();
-        },(message,url)=>{if(active){setStatus('特效素材載入失敗：'+String(message||url));onReady?.();onPlaybackCompleteRef.current?.();}});
+        },(message,url)=>{if(active){setStatus('特效素材載入失敗：'+String(message||url));onReady?.();onPlaybackCompleteRef.current?.();}},textureRedirect);
         clock=new THREE.Clock();
         let elapsed=0;
         const draw=()=>{
@@ -534,11 +541,11 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
 // file. Its breathing/clearing is playback and composition, never DIY particles.
 const AUTHORED_MOON_MIST=Object.freeze({
   path:SOURCE+AUTHORED_EFFECT_FILES['M:foot_smoke2'],
-  tuning:{scale:4.8,speed:.48,color:[198,205,227,150]}
+  tuning:{scale:1.3,speed:.42,color:[193,203,225,95]}
 });
 const AUTHORED_FOREGROUND_MIST=Object.freeze({
-  path:SOURCE+AUTHORED_EFFECT_FILES['M:foot_smoke7'],
-  tuning:{scale:3.1,speed:.43,color:[210,207,232,98]}
+  path:SOURCE+AUTHORED_EFFECT_FILES['M:foot_smoke2'],
+  tuning:{scale:.74,speed:.37,color:[210,207,232,66]}
 });
 export function RuneMistBackdrop({phase='idle',quality='high'}){
   const reduced=useReducedMotion();

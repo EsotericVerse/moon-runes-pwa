@@ -204,7 +204,9 @@ assert.match(stage,/AUTHORED_EFFECT_FILES\['M:foot_smoke2'\]/,'fog must be an ex
 assert.match(stage,/ambientPauseRef/,'mobile GPU should pause fog drawing during the main rune performance');
 assert.match(stage,/ambientRetire\?\.stop\?\.\(\)/,'persistent fog clips must retire old native handles');
 assert.match(stage,/quality==='high'\?1\.5:1/,'ambient DPR needs both high-quality and balanced modes');
-assert.doesNotMatch(drawFlow,/RuneMistBackdrop/,'unreviewed smoke effect cannot run before tapping the draw stage');
+assert.match(drawFlow,/fogPreview\?<RuneMistBackdrop phase=\{phase\} quality=\{sceneQuality\}/,
+  'repaired fog is visual-QA opt-in until screenshot inspection');
+assert.match(drawFlow,/get\('fog_preview'\)==='1'/,'fog probe is disabled by default');
 assert.match(drawFlow,/phase==='idle'\?<button type="button" className="rune-3d-tap-to-draw"/,
   'idle scene keeps the tap-anywhere-to-draw control');
 assert.match(drawFlow,/phase==='waiting'\?<><WaitingEffekseerStage\/>/,
@@ -252,7 +254,12 @@ assert.match(stage,/AUTHORED_EFFECT_FILES\[groupStage\.impact\]/,'impact must co
 assert.match(stage,/ambientDepth==='foreground'/,'high-spec mist needs real native foreground spatial placement');
 assert.match(stage,/ambientGhost\.setLocation\(/,'high-spec mist needs a far-depth authored layer');
 assert.match(stage,/quality==='high'&&!reduced/,'balanced mode must avoid the third WebGL canvas');
-assert.match(stage,/AUTHORED_EFFECT_FILES\['M:foot_smoke7'\]/,'front mist must be another authored smoke scene');
+assert.doesNotMatch(stage,/AUTHORED_EFFECT_FILES\['M:foot_smoke7'\]/,
+  'particle-only smoke7 is not a valid mist source');
+assert.match(stage,/\/MxS_foot_smoke2\.efkefc/,'correct texture redirect applies to vetted smoke source');
+assert.match(stage,/\/_fog-smoke_01\.png/,'web loader uses corrected transparent copy of the real smoke image');
+assert.match(stage,/\/_fog-star\.png/,'secondary authored image also receives real alpha');
+assert.match(stage,/textureRedirect\);/,'official loadEffect redirect callback resolves masked images');
 assert.match(stage,/groupHandle\.setScale\(grow,grow,grow\)/,'group backdrop changes over the same authored timeline');
 const cinematicCSS=readFileSync('app/lrunes/effekseer/effekseer-stage.css','utf8');
 assert.match(cinematicCSS,/\.rune-3d-foreground-mist\{/);

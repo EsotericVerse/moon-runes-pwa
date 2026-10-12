@@ -2,7 +2,7 @@
 
 import {useEffect,useRef,useState} from 'react';
 import {motion,useReducedMotion} from 'motion/react';
-import EffekseerStage,{WaitingEffekseerStage} from './effekseer/EffekseerStage';
+import EffekseerStage,{WaitingEffekseerStage,RuneMistBackdrop} from './effekseer/EffekseerStage';
 import {navigationHref} from '../modular/nav-destinations.mjs';
 import useNativeNavigation from '../modular/use-native-navigation';
 import {selectRows} from '../loc/db-query.mjs';
@@ -58,6 +58,12 @@ export default function Rune3DPreview({mode='duel'}){
   const [focusedRune,setFocusedRune]=useState(null);
   const [ceremonySubject,setCeremonySubject]=useState('glyph');
   const [sceneQuality,setSceneQuality]=useState('high');
+  const [fogPreview,setFogPreview]=useState(false);
+  // Isolate repaired authored smoke until an actual WebGL visual inspection
+  // confirms the texture alpha is right; never surprise users with squares.
+  useEffect(()=>{
+    setFogPreview(new URLSearchParams(window.location.search).get('fog_preview')==='1');
+  },[]);
   const [phase,setPhase]=useState('idle'); // idle → waiting → revealing → transfer → ready
   const [pending,setPending]=useState(null);
   const [transferTarget,setTransferTarget]=useState(null);
@@ -211,6 +217,7 @@ export default function Rune3DPreview({mode='duel'}){
       {!isList?<div className="rune-3d-night-backdrop" aria-hidden="true">
         <span className="rune-skin-moon rune-3d-night-moon"/>
       </div>:null}
+      {!isList&&fogPreview?<RuneMistBackdrop phase={phase} quality={sceneQuality}/>:null}
       {isList?(presented?<EffekseerStage rune={presented}
         onGlyphClick={()=>choose(presented)}/>:<div className="rune-3d-awaiting">請選擇符文</div>):
         <>
