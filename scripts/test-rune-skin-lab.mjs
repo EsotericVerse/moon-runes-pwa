@@ -113,7 +113,7 @@ assert.match(art,/className="rune-art-ritual-actions"/);
 assert.match(daily,/占卜結束，觀看每日指示/);
 assert.match(daily,/actions=\{dailyActions\}/);
 assert.match(daily,/createPortal\(/);
-assert.match(daily,/className="rune-art-result-modal"/);
+assert.match(daily,/className="rune-art-modal rune-art-result-modal"/);
 assert.match(daily,/className="rune-art-result-home"/);
 assert.match(daily,/className="rune-art-result-new"/);
 assert.doesNotMatch(daily,/\{draw\?<section className="rune-skin-verse/);

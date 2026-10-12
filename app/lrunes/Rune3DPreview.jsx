@@ -1,0 +1,213 @@
+'use client';
+
+import {useEffect,useRef,useState} from 'react';
+import RuneWorld from './three/RuneWorld';
+import {navigationHref} from '../modular/nav-destinations.mjs';
+import useNativeNavigation from '../modular/use-native-navigation';
+import {selectRows} from '../loc/db-query.mjs';
+import {realMoonPhase} from '../loc/model/moon-phase';
+import {randomIndex,loadDrawCards,buildFixedReading} from './RuneDrawClient';
+import {runeImage,runeName} from './rune-directory.mjs';
+import './skin-lab.css';
+import './three/rune-world.css';
+
+const DIRECTIONS=['正位','半正位','半逆位','逆位'];
+const DAILY_FIELDS=[['sit_q','狀況形容'],['sit_a','狀況表達'],['daily_r','每日占卜提醒'],['daily_g','每日占卜引導'],['daily_b','每日占卜祝福']];
+const GROUP_COLUMNS='group_id,english_name,desc,quality,style,runeslist';
+const RUNE_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,rune_description,archetype,char_action,positive_keywords,negative_keywords';
+const GROUP_NAMES=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
+const MODES=[['duel','抽牌'],['daily','每日符文'],['list','符文圖鑑']];
+
+function ResultDialog({title,children,onClose}){
+  useEffect(()=>{
+    const close=event=>{if(event.key==='Escape')onClose();};
+    window.addEventListener('keydown',close);
+    return()=>window.removeEventListener('keydown',close);
+  },[onClose]);
+  return <div className="rune-3d-modal-backdrop" role="presentation" onClick={onClose}>
+    <section className="rune-3d-modal" role="dialog" aria-modal="true" aria-label={title} onClick={event=>event.stopPropagation()}>
+      <header className="rune-3d-modal-head">
+        <h2>{title}</h2>
+        <button type="button" className="rune-skin-btn" autoFocus onClick={onClose}>× 關閉</button>
+      </header>
+      <div className="rune-3d-daily-modal-fields">{children}</div>
+    </section>
+  </div>;
+}
+function readDaily(item){
+  return DAILY_FIELDS.map(([key,label])=>({
+    label,text:String(item.card?.rune_etc?.[key]?.[item.directionIndex+1]||'').trim()
+  })).filter(field=>field.text);
+}
+
+export default function Rune3DPreview({mode='duel'}){
+  const native=useNativeNavigation();
+  const [items,setItems]=useState([]);
+  const [groups,setGroups]=useState([]);
+  const [group,setGroup]=useState(null);
+  const [runes,setRunes]=useState([]);
+  const [selected,setSelected]=useState(null);
+  const [reading,setReading]=useState('');
+  const [resultOpen,setResultOpen]=useState(false);
+  const [finished,setFinished]=useState(false);
+  const [busy,setBusy]=useState(false);
+  const [error,setError]=useState('');
+  const [moon,setMoon]=useState(()=>realMoonPhase());
+  const [quality,setQuality]=useState('standard');
+  const lock=useRef(false);
+  const live=useRef(true);
+  const cards=useRef([]);
+
+  useEffect(()=>{live.current=true;return()=>{live.current=false;};},[]);
+  useEffect(()=>{
+    if(mode!=='list')return;
+    let active=true;
+    setBusy(true);
+    selectRows('silver.runes_group',{columns:GROUP_COLUMNS,limit:9,offset:0})
+      .then(({rows})=>{
+        if(!active)return;
+        const mapped=(rows||[]).map(row=>{
+          const nums=(Array.isArray(row.runeslist)?row.runeslist:[]).map(Number).filter(Number.isInteger);
+          const primary=nums.filter(id=>id>=1&&id<=64);
+          const index=primary.length?Math.floor((Math.min(...primary)-1)/8):8;
+          return {...row,index,id:index+1,name:row.group_id||GROUP_NAMES[index],runeslist:nums};
+        }).sort((a,b)=>a.index-b.index);
+        setGroups(mapped);
+      })
+      .catch(e=>{if(active)setError('群組載入失敗：'+String(e?.message||e));})
+      .finally(()=>{if(active)setBusy(false);});
+    return()=>{active=false;};
+  },[mode]);
+  useEffect(()=>{
+    if(mode!=='list'||!group){setRunes([]);return;}
+    let active=true;
+    setBusy(true);setError('');
+    const ids=[...new Set(group.runeslist)].filter(Number.isInteger);
+    if(!ids.length){setBusy(false);return;}
+    selectRows('silver.runes',{columns:RUNE_COLUMNS,
+      filters:[{column:'rune_id',operator:'in',value:ids}],
+      orders:[{column:'rune_id',ascending:true}],limit:ids.length,offset:0})
+      .then(({rows})=>{if(active)setRunes(rows||[]);})
+      .catch(e=>{if(active)setError('符文讀取失敗：'+String(e?.message||e));})
+      .finally(()=>{if(active)setBusy(false);});
+    return()=>{active=false;};
+  },[mode,group]);
+
+  async function drawOne(){
+    if(lock.current||finished||(mode==='daily'&&cards.current.length)||(mode==='duel'&&cards.current.length>=11))return;
+    lock.current=true;setBusy(true);setError('');
+    const currentMoon=realMoonPhase();
+    setMoon(currentMoon);
+    if(currentMoon==='未知'){
+      setError('真實月相無法辨識，無法查詢籤詩。');setBusy(false);lock.current=false;return;
+    }
+    const used=new Set(cards.current.map(item=>Number(item.card.rune_id)));
+    const remaining=Array.from({length:66},(_,i)=>i+1).filter(id=>!used.has(id));
+    const runeNumber=remaining[randomIndex(remaining.length)];
+    const directionIndex=randomIndex(4);
+    try{
+      const rows=await loadDrawCards([{runeNumber,dir:directionIndex+1}],{
+        staticTypes:mode==='daily'?['direction']:[],
+        moonTypes:mode==='daily'?DAILY_FIELDS.map(([key])=>key):['sit_q'],
+        currentMoon
+      });
+      const card=rows.find(row=>Number(row.rune_id)===runeNumber);
+      if(!card)throw Error('符文資料無法讀取。');
+      const item={card,direction:DIRECTIONS[directionIndex],directionIndex,moon:currentMoon,birth:Date.now()};
+      const updated=[...cards.current,item];
+      cards.current=updated;
+      if(live.current)setItems(updated);
+    }catch(e){if(live.current)setError('抽牌失敗：'+String(e?.message||e));}
+    finally{lock.current=false;if(live.current)setBusy(false);}
+  }
+  function reset(){
+    if(lock.current||busy)return;
+    cards.current=[];setItems([]);setReading('');setSelected(null);
+    setResultOpen(false);setFinished(false);setError('');setMoon(realMoonPhase());
+  }
+  function finish(){
+    if(lock.current||busy||!items.length)return;
+    if(finished){setResultOpen(true);return;}
+    try{
+      const count=items.length;
+      const text=count===1?String(items[0].card?.rune_etc?.sit_q?.[items[0].directionIndex+1]||'').trim():
+        buildFixedReading(items.map(item=>item.card),items.map(item=>item.direction),count===11?'ow3gs':count+'card').sentence;
+      if(!text||text.includes('資訊不足'))throw Error('籤詩資料不完整。');
+      setReading(text);setFinished(true);setResultOpen(true);
+    }catch(e){setError(String(e?.message||e));}
+  }
+  const isList=mode==='list';
+  const current=isList?(group?runes:groups):items;
+  const sceneMode=isList?(group?'runes':'groups'):'draw';
+  function choose(entry){
+    if(isList){
+      if(!group){setGroup(entry);setSelected(null);return;}
+      setSelected(entry);return;
+    }
+    setSelected(entry);
+  }
+  const label=isList?(group?group.name+'之符文':'九大符文群組'):mode==='daily'?'每日符文 · 3D 測試':'月光抽牌 · 3D 測試';
+  const details=isList?selected:items.find(item=>Number(item.card.rune_id)===Number(selected?.rune_id))?.card;
+  const day=mode==='daily'?items[0]:null;
+  return <main className="loc-next-main rune-skin-lab rune-3d-shell" data-rune-3d-preview={mode}>
+    <header className="rune-3d-header">
+      <p className="loc-eyebrow">LunaRunes · 3D Experimental Preview</p>
+      <h1>{label}</h1>
+      <p>獨立的 3D 表現測試；現有 2D 抽牌、每日指示與圖鑑維持不變。</p>
+    </header>
+    <nav className="rune-3d-toolbar" aria-label="顯示與模式切換">
+      <span className="rune-3d-toolbar-label">{isList?(group?group.name+'組':'九大群組'):'真實月相：'+moon+' · '+items.length+' 枚'}</span>
+      <label>渲染品質
+        <select className="rune-skin-quality" value={quality} onChange={event=>setQuality(event.target.value)}>
+          <option value="standard">標準</option><option value="high">高品質</option>
+        </select>
+      </label>
+    </nav>
+    <section className="rune-3d-stage" aria-label={label}>
+      <RuneWorld mode={sceneMode} items={current} quality={quality}
+        onSelect={choose} onBackgroundClick={!isList&&!busy&&!finished?drawOne:undefined}/>
+      <div className="rune-3d-stage-label" role="status">{error||(
+        busy?'正在載入……':isList?(group?'點擊符文字形查看資料':'點擊群組進入圖鑑'):
+          items.length?'點擊符文字形查看資料，或使用下方操作按鈕':'點擊月亮或下方按鈕召喚符文'
+      )}</div>
+    </section>
+    {isList?<div className="rune-3d-footer">
+      {group?<button className="rune-skin-btn" type="button" onClick={()=>{setGroup(null);setSelected(null);}}>← 返回九個群組</button>:null}
+      {group?<span>{group.english_name||''}　{group.desc||''}</span>:null}
+      {!group?<nav className="rune-3d-group-index" aria-label="群組快速切換">
+        {groups.map(entry=><button type="button" key={entry.id} className="rune-3d-group-name-btn"
+          onClick={()=>setGroup(entry)}>{entry.name}</button>)}
+      </nav>:null}
+    </div>:<div className="rune-3d-duel-action-dock" role="group" aria-label="3D 抽牌操作">
+      <button className="rune-3d-duel-action rune-3d-duel-action--restart" type="button"
+        disabled={busy||!items.length} onClick={reset}>重新開始</button>
+      <button className="rune-3d-duel-action rune-3d-duel-action--draw" type="button"
+        disabled={busy||finished||(mode==='daily'&&items.length>0)||items.length>=11}
+        onClick={drawOne}>召喚符文</button>
+      <button className="rune-3d-duel-action rune-3d-duel-action--finish" type="button"
+        disabled={busy||!items.length} onClick={()=>mode==='daily'?setResultOpen(true):finish()}>
+        {mode==='daily'?'觀看每日指示':'結束抽牌，觀看籤詩'}</button>
+    </div>}
+    <footer className="rune-3d-footer">
+      <nav className="rune-skin-controls" aria-label="切換 2D 和 3D">
+        <a className="rune-skin-btn" href={navigationHref('lrunes','',native)}>回符文首頁</a>
+        <a className="rune-skin-btn" href={navigationHref('lrunes','card/'+mode,native)}>返回 2D 版本</a>
+        {MODES.filter(([id])=>id!==mode).map(([id,name])=>
+          <a key={id} className="rune-skin-btn" href={navigationHref('lrunes','card3d/'+id,native)}>3D {name}</a>)}
+      </nav>
+    </footer>
+    {selected&&<ResultDialog title={runeName(selected)+'之符文'} onClose={()=>setSelected(null)}>
+      {details?<><p>{details.english_name||''}　{details.group_name||''}</p>
+        <img className="rune-3d-daily-card" src={runeImage(details)} alt={runeName(details)+'原始卡面'}/>
+        <p>{details.rune_description||details.rune_name}</p></>:null}
+    </ResultDialog>}
+    {resultOpen&&items.length>0&&<ResultDialog title={mode==='daily'?'每日符文指示':'本次占卜籤詩'}
+      onClose={()=>setResultOpen(false)}>
+      <p>{items.map(item=>runeName(item.card)+' · '+item.direction).join('、')}</p>
+      {day?<div className="rune-3d-daily-fields">
+        {readDaily(day).map(field=><article key={field.label}><h3>{field.label}</h3><p>{field.text}</p></article>)}
+      </div>:<p>{reading}</p>}
+      <button type="button" className="rune-skin-btn" onClick={reset}>開始新抽牌</button>
+    </ResultDialog>}
+  </main>;
+}
