@@ -14,6 +14,8 @@ assert.match(list,/<EffekseerStage rune=\{current\}/);
 assert.match(list,/selectGroup/);
 assert.match(list,/RUNE_VFX_REVIEW_NAMES/);
 assert.match(list,/showRejected/);
+assert.match(list,/vfxOnly=\{reviewMode\}/);
+assert.match(stage,/vfxOnly=false/);
 assert.match(list,/stepRune\(-1\)/);
 assert.match(list,/stepRune\(1\)/);
 assert.match(list,/待修 22 枚 · 快速驗收/);

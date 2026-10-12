@@ -134,7 +134,7 @@ export default function Rune3DLibrary(){
         <span>{reviewMode?'特效集中檢視':group.name+'之符文'}</span>
       </div>
       <div className="rune-3d-stage">
-        <EffekseerStage rune={current} onGlyphClick={()=>setDetails(current)}/>
+        <EffekseerStage rune={current} vfxOnly={reviewMode} onGlyphClick={()=>setDetails(current)}/>
       </div>
       <div className="rune-3d-library-actions">
         <div className="rune-3d-review-stepping" role="group" aria-label="切換符文特效">

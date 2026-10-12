@@ -292,7 +292,7 @@ function EffekseerCanvas({effect,reduced,onReady}){
     {status?<p className="rune-effekseer-status" role="status">{status}</p>:null}
   </div>;
 }
-export default function EffekseerStage({rune,onGlyphClick}){
+export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false}){
   const reduced=useReducedMotion();
   const [replay,setReplay]=useState(0);
   const [visibleKey,setVisibleKey]=useState('');
@@ -318,12 +318,12 @@ export default function EffekseerStage({rune,onGlyphClick}){
           {word}
         </motion.button>:null}
       </AnimatePresence>
-      {visualReady&&semanticIcon?<motion.img key={'meaning-'+key} className="rune-effekseer-meaning-icon"
+      {!vfxOnly&&visualReady&&semanticIcon?<motion.img key={'meaning-'+key} className="rune-effekseer-meaning-icon"
         src={semanticIcon} alt="" aria-hidden="true"
         initial={reduced?false:{opacity:0,scale:.8}}
         animate={reduced?{opacity:1,scale:1}:iconMotionFor(word)}
         transition={{duration:reduced?0:4.2,times:[0,.15,.78,1],ease:'easeInOut'}}/>:null}
-      {visualReady?<SemanticIllustration key={'gesture-'+key} word={word} reduced={reduced}/>:null}
+      {!vfxOnly&&visualReady?<SemanticIllustration key={'gesture-'+key} word={word} reduced={reduced}/>:null}
       <span className="rune-effekseer-english">{rune?.english_name||''}</span>
     </div>
     <button type="button" className="rune-effekseer-replay" onClick={()=>setReplay(value=>value+1)}>重播文字與效果</button>
