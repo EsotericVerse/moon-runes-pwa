@@ -5,7 +5,7 @@
  */
 function plainText(value){return String(value??'').trim();}
 function tagKey(value){return plainText(value).normalize('NFKC').toLocaleLowerCase();}
-function mediaDay(value){
+export function mediaDay(value){
   const source=plainText(value);
   const day=source.slice(0,10);
   if(!/^\d{4}-\d{2}-\d{2}$/.test(day))return '';
