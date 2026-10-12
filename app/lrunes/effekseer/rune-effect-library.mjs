@@ -68,7 +68,11 @@ export const AUTHORED_EFFECT_FILES=Object.freeze({
   "S:AlphaCutoff": "Collections/godot4-material1/AlphaCutoff.efkefc",
   "G:ef_parts_hit01": "Collections/godot4/ef_parts_hit01.efkefc",
   "G:ef_lightning03": "Collections/godot4/ef_lightning03.efkefc",
-  "T:Blow15": "Collections/tktk/Effects/Blow15.efkefc"
+  "T:Blow15": "Collections/tktk/Effects/Blow15.efkefc",
+  "SAMPLE:Simple_Ring_Shape1": "Collections/godot4-samples/Simple_Ring_Shape1.efkefc",
+  "SAMPLE:Simple_Ring_Shape2": "Collections/godot4-samples/Simple_Ring_Shape2.efkefc",
+  "SAMPLE:Simple_Turbulence_Fireworks": "Collections/godot4-samples/Simple_Turbulence_Fireworks.efkefc",
+  "SAMPLE:Simple_Turbulence_Particles": "Collections/godot4-samples/Simple_Turbulence_Particles.efkefc"
 });
 export const RUNE_EFFECT_KEYS=Object.freeze({
   "Virtue": null,
@@ -122,21 +126,21 @@ export const RUNE_EFFECT_KEYS=Object.freeze({
   "Air": "R:Blow1",
   "Sun": "G:ef_holy01",
   "Moon": "T:Light4",
-  "Star": "T:Fire1",
+  "Star": "SAMPLE:Simple_Turbulence_Fireworks",
   "Phase": "T:Blow7",
   "Clarity": "S:Unlit",
   "Time": "S:PolarCoords",
-  "Space": "G:ef_wind03",
+  "Space": "SAMPLE:Simple_Ring_Shape2",
   "Reason": "S:RampMap",
   "Blessing": "T:Cure1",
   "Calamity": "G:ef_fire03",
   "Blank": "S:Dissolve",
   "Dream": "T:Blow13",
   "Illusion": "S:VertexTransform",
-  "Karma": "T:Fire2",
+  "Karma": "SAMPLE:Simple_Ring_Shape1",
   "Void": "S:AlphaCutoff",
   "Result": "G:ef_parts_hit01",
-  "Chaos": "G:ef_lightning03",
+  "Chaos": "SAMPLE:Simple_Turbulence_Particles",
   "Fate": "T:Blow15"
 });
 export const CANONICAL_RUNE_ENGLISH=Object.freeze(["Virtue","Spirit","Soul","Spectrum","Memory","Boundary","Domain","Mirror","Core","Path","Sever","Seal","Chain","Awaken","Separation","Insight","Error","Birth","Aging","Illness","Death","Heart","Love","Language","Resonance","Tree","Blossom","Leaf","Grass","Root","Seed","Fruit","Branch","Gold","Jade","Crystal","Land","Stone","Diamond","Ore","Dust","Radiance","Shadow","Water","Flame","Wind","Earth","Thunder","Air","Sun","Moon","Star","Phase","Clarity","Time","Space","Reason","Blessing","Calamity","Blank","Dream","Illusion","Karma","Void","Result","Chaos","Fate"]);

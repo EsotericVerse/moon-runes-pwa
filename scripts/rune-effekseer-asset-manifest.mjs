@@ -1634,6 +1634,86 @@ export const EFFECT_ASSET_BLOBS=Object.freeze([
     "path": "Demo/effects/sample-material1/VertexTransform.efkefc",
     "sha": "3df435cf256cb5a81799971ca4d23f77acbd2c01",
     "size": 2465
+  },
+  {
+    "target": "godot4-samples/Simple_Ring_Shape1.efkefc",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/samples/Simple_Ring_Shape1.efkefc",
+    "sha": "564d2699419aa250dd79acbedc284c82d629c7a7",
+    "size": 11546
+  },
+  {
+    "target": "godot4-samples/Simple_Ring_Shape2.efkefc",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/samples/Simple_Ring_Shape2.efkefc",
+    "sha": "eb635051df593280292805dca3344205f7ab670d",
+    "size": 8096
+  },
+  {
+    "target": "godot4-samples/Simple_Turbulence_Fireworks.efkefc",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/samples/Simple_Turbulence_Fireworks.efkefc",
+    "sha": "0c2dcb26c6e1889d54c7930bee89bb7c4fd3b723",
+    "size": 4036
+  },
+  {
+    "target": "godot4-samples/Simple_Turbulence_Particles.efkefc",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/samples/Simple_Turbulence_Particles.efkefc",
+    "sha": "e326f7a64472ffeb4a81f2b763bfd0fdbe62278c",
+    "size": 2822
+  },
+  {
+    "target": "godot4-samples/Texture/Particle01.png",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/samples/Texture/Particle01.png",
+    "sha": "ce5ae5e9d0c3561f47e419b9f2b5fa5e1676f344",
+    "size": 7082
+  },
+  {
+    "target": "godot4-samples/Texture/Particle02.png",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/samples/Texture/Particle02.png",
+    "sha": "88b7fb3396201caacc73312e1241c8edd8f92881",
+    "size": 7230
+  },
+  {
+    "target": "godot4-samples/Texture/Cloud01.png",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/samples/Texture/Cloud01.png",
+    "sha": "f3ed505b04c579bf365ada9175a5a0b18de9e01b",
+    "size": 20657
+  },
+  {
+    "target": "godot4-samples/Texture/Flame01.png",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/samples/Texture/Flame01.png",
+    "sha": "0166f9c0428734e9856f0aaf5c432597fe6b1069",
+    "size": 13122
+  },
+  {
+    "target": "godot4-samples/Texture/Particle04_bokashi_hard.png",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/samples/Texture/Particle04_bokashi_hard.png",
+    "sha": "ab451be99afb41821fc3eb3f8688925b74b70986",
+    "size": 14132
+  },
+  {
+    "target": "godot4-samples/Emissive.efkmat",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/samples/Emissive.efkmat",
+    "sha": "97ff9f7e720e3821f906c7225189b6fe498837f5",
+    "size": 1218
   }
 ]);
 export const AUTHORED_EFFECT_NAMES=Object.freeze({"godot4":["ef_barrior01","ef_fire01","ef_fire02","ef_fire03","ef_holy01","ef_ice01","ef_ice02","ef_ice03","ef_lightning01","ef_lightning02","ef_lightning03","ef_parts_hit01","ef_parts_hit02","ef_wind01","ef_wind02","ef_wind03"],"tktk":["Cure6","Dark3","Light3","Light2","Magic2","Arrow1","Sword5","hozyo1","hozyo2","Light1","Blow8","Blow12","Blow9","Dark1","Dark2","Cure2","Cure3","Magic1","Blow10","Cure4","Cure5","Wind1","Blow2","hozyo3","Cure7","hozyo4","Wind2","Blow4","Blow5","hozyo5","Blow11","Blow14","Blow3","Soil1","Light4","Fire1","Blow7","Cure1","Blow13","Fire2","Blow15"],"materials":["ImageDistortion","Falloff","Unlit","PolarCoords","RampMap","Dissolve","VertexTransform","AlphaCutoff"]});

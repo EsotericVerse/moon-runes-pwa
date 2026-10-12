@@ -52,4 +52,11 @@ assert.match(stage,/onReady=\{\(\)=>setVisibleKey\(key\)\}/);
 assert.match(stage,/useMemo\(\(\)=>runeEffectFor\(rune\)/);
 assert.doesNotMatch(stage,/RuneAuraFX|RuneAura|const LIBRARY=/);
 assert.match(pkg.scripts.prebuild,/prepare-rune-semantic-icons/);
+// Semantic contract: an effect is distinct AND evokes the DB English concept.
+assert.notEqual(RUNE_EFFECT_KEYS.Karma,'T:Fire2','Timing/coincidence must not be represented by fire');
+assert.notEqual(RUNE_EFFECT_KEYS.Star,'T:Fire1','Celestial Star must not be generic fire');
+assert.notEqual(RUNE_EFFECT_KEYS.Space,'G:ef_wind03','Space must not be a tornado');
+assert.equal(RUNE_EFFECT_KEYS.Mirror,'S:ImageDistortion','Mirror is reflection, not ice');
+assert.equal(RUNE_EFFECT_KEYS.Spectrum,'T:Light3','Spectrum must use the authored multicolour light effect');
+assert.match(readFileSync('app/lrunes/effekseer/effekseer-stage.css','utf8'),/data-rune="彩"/);
 console.log('Rune embodiment: 66 distinct authored VFX, 66 unique semantic symbols, all pinned with provenance.');

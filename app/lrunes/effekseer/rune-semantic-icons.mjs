@@ -258,9 +258,9 @@ export const RUNE_SEMANTIC_ICONS=Object.freeze([
   {
     "id": 36,
     "name": "Land",
-    "path": "lorc/mountains.svg",
-    "sha": "238f4dd55ac74c29920a752c7ec1060168da3558",
-    "size": 1338
+    "path": "delapouite/family-house.svg",
+    "sha": "69350fc7c64fad7af90a4f01b7f9f2f789550537",
+    "size": 771
   },
   {
     "id": 37,
@@ -440,9 +440,9 @@ export const RUNE_SEMANTIC_ICONS=Object.freeze([
   {
     "id": 62,
     "name": "Karma",
-    "path": "lorc/radial-balance.svg",
-    "sha": "73da3375bf6310f56c5a8fdb8c90bffdd734ef27",
-    "size": 1689
+    "path": "delapouite/time-synchronization.svg",
+    "sha": "ab6018292e7a87ad7023bcd3838f23bee98bbe5a",
+    "size": 1116
   },
   {
     "id": 63,
@@ -454,23 +454,23 @@ export const RUNE_SEMANTIC_ICONS=Object.freeze([
   {
     "id": 64,
     "name": "Result",
-    "path": "skoll/achievement.svg",
-    "sha": "7e2be55ac362e410a027a4877ec561cc20922ff4",
-    "size": 885
+    "path": "delapouite/finish-line.svg",
+    "sha": "804a31dc424b19db5d7e45a652d3bd926fbe0503",
+    "size": 612
   },
   {
     "id": 65,
     "name": "Chaos",
-    "path": "delapouite/unbalanced.svg",
-    "sha": "2ca77a89a362ea3f05ae945682cdf4aa33dd9eb6",
-    "size": 324
+    "path": "delapouite/perspective-dice-six-faces-random.svg",
+    "sha": "13f66b2a63ded0a4acea2c984b782743d78c31c7",
+    "size": 2946
   },
   {
     "id": 66,
     "name": "Fate",
-    "path": "delapouite/dice-eight-faces-eight.svg",
-    "sha": "6bc316dc87ce3ea4cc96c56b8b90842111349666",
-    "size": 1991
+    "path": "delapouite/pick-of-destiny.svg",
+    "sha": "8209bb019bbf6885f43b5d3bcab8220ef0ec3a2e",
+    "size": 3134
   }
 ]);
 export function runeIconFor(rune){
