@@ -4,7 +4,7 @@ import {AUTHORED_EFFECT_FILES,RUNE_EFFECT_KEYS,CANONICAL_RUNE_ENGLISH,RUNE_EFFEC
 import {EFFECT_ASSET_BLOBS,AUTHORED_EFFECT_NAMES} from './rune-effekseer-asset-manifest.mjs';
 import {RUNE_SEMANTIC_ICONS,runeIconFor} from '../app/lrunes/effekseer/rune-semantic-icons.mjs';
 import {RUNE_REJECTED_BRIEFS,ACCEPTED_RUNE_EFFECT_BASELINE} from './rune-rejected-brief.mjs';
-import {RUNE_VFX_REVIEW_QUEUE,RUNE_VFX_REVIEW_NAMES} from '../app/lrunes/effekseer/rune-review-queue.mjs';
+import {RUNE_VFX_REVIEW_QUEUE,RUNE_VFX_REVIEW_NAMES,RUNE_VFX_REVIEW_STATUS} from '../app/lrunes/effekseer/rune-review-queue.mjs';
 const stage=readFileSync('app/lrunes/effekseer/EffekseerStage.jsx','utf8');
 const pkg=JSON.parse(readFileSync('package.json','utf8'));
 assert.equal(CANONICAL_RUNE_ENGLISH.length,67);
@@ -14,9 +14,9 @@ assert.equal(RUNE_REJECTED_BRIEFS.length,34,'owner returned exactly 34 runes');
 assert.equal(new Set(RUNE_REJECTED_BRIEFS.map(row=>row[0])).size,34);
 assert.equal(new Set(RUNE_REJECTED_BRIEFS.map(row=>row[1])).size,34);
 assert.equal(Object.keys(ACCEPTED_RUNE_EFFECT_BASELINE).length,31,'Mirror was returned and must not remain in accepted baseline');
-assert.equal(RUNE_VFX_REVIEW_QUEUE.length,12);
-assert.equal(new Set(RUNE_VFX_REVIEW_NAMES).size,12);
-assert.equal(new Set(RUNE_VFX_REVIEW_QUEUE.map(row=>row[1])).size,12);
+assert.equal(RUNE_VFX_REVIEW_QUEUE.length,7);
+assert.equal(new Set(RUNE_VFX_REVIEW_NAMES).size,7);
+assert.equal(new Set(RUNE_VFX_REVIEW_QUEUE.map(row=>row[1])).size,7);
 for(const [name,key] of Object.entries(ACCEPTED_RUNE_EFFECT_BASELINE))assert.equal(RUNE_EFFECT_KEYS[name],key,'accepted VFX is immutable: '+name);
 assert.equal(RUNE_EFFECT_KEYS.Star,'M:meteo1','Star must use authored meteor, never upward fireworks');
 assert.equal(RUNE_EFFECT_KEYS.Insight,'M:Sylph15','owner assigned former Branch effect to Insight');
@@ -29,12 +29,12 @@ assert.deepEqual(RUNE_EFFECT_TUNING.Star.color,[255,255,255,255],'meteor light i
 assert.equal(RUNE_EFFECT_TUNING.Sun.color[0],255,'solar effect must be warm gold');
 assert.equal(RUNE_EFFECT_TUNING.Ore.motion,'ore-rise');
 assert.equal(RUNE_EFFECT_TUNING.Dust.motion,'dust-drift');
-assert.equal(RUNE_EFFECT_KEYS.Root,'M:Magic1_earth','Root uses earth motion, not lightning');
+assert.equal(RUNE_EFFECT_KEYS.Root,'SAMPLE:Simple_Ribbon_Parent','Root uses smooth authored ribbon trails');
 assert.ok(!runeEffectFor({english_name:'Root'}).overlays.some(x=>x.key.includes('lightning')),'no lightning root overlays');
-assert.equal(RUNE_EFFECT_KEYS.Branch,'M:Sylph8','Branch uses authored organic flow, not lightning');
+assert.equal(RUNE_EFFECT_KEYS.Branch,'SAMPLE:Simple_Track1','Branch uses authored smooth tracks');
 assert.ok(!runeEffectFor({english_name:'Branch'}).overlays.some(x=>x.key.includes('lightning')),'no lightning branch overlays');
-assert.equal(RUNE_EFFECT_KEYS.Jade,'M:Sylph5','Jade no longer uses pixel material');
-assert.equal(RUNE_EFFECT_KEYS.Dust,'M:foot_smoke7');
+assert.equal(RUNE_EFFECT_KEYS.Jade,'M:Undine2','Jade moves away from pixelated sample');
+assert.equal(RUNE_EFFECT_KEYS.Dust,'SAMPLE:Simple_Turbulence_Particles');
 assert.equal(RUNE_EFFECT_KEYS.Illusion,'M:foot_smoke2');
 assert.equal(RUNE_EFFECT_KEYS.Chaos,'M:Sylph13','Chaos inherits former Fate VFX');
 assert.equal(RUNE_EFFECT_KEYS.Fate,'SAMPLE:Simple_Ring_Shape1','Fate inherits former Chaos VFX');
@@ -124,7 +124,18 @@ assert.match(pkg.scripts.prebuild,/prepare-rune-semantic-icons/);
 assert.notEqual(RUNE_EFFECT_KEYS.Karma,'T:Fire2','Timing/coincidence must not be represented by fire');
 assert.notEqual(RUNE_EFFECT_KEYS.Star,'T:Fire1','Celestial Star must not be generic fire');
 assert.notEqual(RUNE_EFFECT_KEYS.Space,'G:ef_wind03','Space must not be a tornado');
-assert.equal(RUNE_EFFECT_KEYS.Mirror,'S:ImageDistortion','Mirror uses authored optical reflection, never ice');
+assert.equal(RUNE_EFFECT_KEYS.Mirror,'SAMPLE:Simple_Ring_Shape2','Mirror uses authored non-ice border');
 assert.equal(RUNE_EFFECT_KEYS.Spectrum,'T:Light3','Spectrum must use the authored multicolour light effect');
 assert.match(readFileSync('app/lrunes/effekseer/effekseer-stage.css','utf8'),/data-rune="彩"/);
+
+assert.deepEqual(RUNE_VFX_REVIEW_NAMES,['Mirror','Root','Branch','Jade','Crystal','Diamond','Dust']);
+assert.ok(RUNE_VFX_REVIEW_NAMES.every(name=>RUNE_VFX_REVIEW_STATUS[name]==='rejected'),'the seven remain X until visual review');
+assert.ok(runeEffectFor({english_name:'Root'}).overlays.every(x=>x.key==='SAMPLE:Simple_Ribbon_Parent'));
+assert.ok(runeEffectFor({english_name:'Branch'}).overlays.every(x=>x.key==='SAMPLE:Simple_Ribbon_Parent'));
+assert.ok(!runeEffectFor({english_name:'Mirror'}).overlays.some(x=>x.key.toLowerCase().includes('ice')));
+for(const key of ['SAMPLE:Simple_Ribbon_Parent','SAMPLE:Simple_Track1','M:Undine2']){
+ const path=AUTHORED_EFFECT_FILES[key]?.slice('Collections/'.length);
+ assert.ok(EFFECT_ASSET_BLOBS.some(x=>x.target===path&&x.sha.length===40),'pinned authored VFX missing '+key);
+}
+
 console.log('Rune embodiment: 66 distinct authored VFX, 66 unique semantic symbols, all pinned with provenance.');

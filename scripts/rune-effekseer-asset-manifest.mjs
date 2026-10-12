@@ -4,6 +4,30 @@
  */
 export const EFFECT_ASSET_BLOBS=Object.freeze([
   {
+    "target": "godot4-samples/Simple_Ribbon_Parent.efkefc",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/samples/Simple_Ribbon_Parent.efkefc",
+    "sha": "18fd1d06aec8fb6cfaad1f1bc2713e2e09c64954",
+    "size": 3523
+  },
+  {
+    "target": "godot4-samples/Simple_Track1.efkefc",
+    "repo": "effekseer/EffekseerForGodot4",
+    "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",
+    "path": "Demo/effects/samples/Simple_Track1.efkefc",
+    "sha": "09186d1ff10e4ad0cd401c4a4c5135d3c410fc85",
+    "size": 7216
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Undine2.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Undine2.efkefc",
+    "sha": "e27d35d51c91d7a6f50815015fcaf59bceb60c3f",
+    "size": 4166
+  },
+  {
     "target": "MAGICALxSPIRAL/MxS_Sylph8.efkefc",
     "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
     "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",

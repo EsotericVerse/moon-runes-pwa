@@ -18,7 +18,7 @@ assert.match(list,/vfxOnly=\{reviewMode\}/);
 assert.match(stage,/vfxOnly=false/);
 assert.match(list,/stepRune\(-1\)/);
 assert.match(list,/stepRune\(1\)/);
-assert.match(list,/本輪 12 枚 · 快速驗收/);
+assert.match(list,/退回 7 枚 · 快速驗收/);
 assert.doesNotMatch(list,/DEMO\[0\]|現成效果試播/);
 assert.match(stage,/runeGlyphProfile\(rune\)/);
 assert.match(twoD,/RuneAtlasLab/);

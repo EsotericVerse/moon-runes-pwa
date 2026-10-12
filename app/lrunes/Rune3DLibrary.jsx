@@ -97,7 +97,7 @@ export default function Rune3DLibrary(){
       <button type="button" className="rune-skin-btn" aria-pressed={!reviewMode}
         onClick={()=>{setReviewMode(false);setFocusId(group.start);setDetails(null);}}>九組符文圖鑑</button>
       <button type="button" className="rune-skin-btn" aria-pressed={reviewMode}
-        onClick={showRejected}>本輪 12 枚 · 快速驗收</button>
+        onClick={showRejected}>退回 7 枚 · 快速驗收</button>
     </div>
     <nav className="rune-3d-group-index rune-3d-library-groups" aria-label="切換符文群組">
       {GROUPS.map(entry=><button type="button" key={entry.id}
@@ -107,7 +107,7 @@ export default function Rune3DLibrary(){
     </nav>
     <section className="rune-3d-library-index" aria-label={group.name+'符文字樣'}>
       <div className="rune-3d-library-title">
-        <h2>{reviewMode?'本輪 12 枚 · 特效驗收':group.name+' · 符文字樣'}</h2>
+        <h2>{reviewMode?'退回 7 枚 · 特效驗收':group.name+' · 符文字樣'}</h2>
         <span>{status==='ready'?(reviewMode?runes.length+' 枚待檢視':group.start+'–'+group.end+' / 66'):'資料載入中'}</span>
       </div>
       {status==='loading'?<p role="status" className="rune-3d-library-message">正在載入符文的正式字義與字樣……</p>:null}

@@ -115,3 +115,6 @@
 
 /* Owner requirement: Star shows strictly neutral white light, not colored source textures. */
 .rune-effekseer-stage[data-rune="星"] .rune-effekseer-canvas{filter:grayscale(1) brightness(1.65) contrast(1.08)}
+
+/* Dust effect: desaturate particle texture rather than tinting only the overlay. */
+.rune-effekseer-stage[data-rune="塵"] .rune-effekseer-canvas{filter:grayscale(1) sepia(.19) saturate(.65) contrast(.75) opacity(.78)}

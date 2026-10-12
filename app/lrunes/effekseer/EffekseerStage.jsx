@@ -161,7 +161,10 @@ function EffekseerCanvas({effect,reduced,onReady}){
                  if(!active||!started)return;
                  try{
                    const other=context.play(authoredOverlay,0,0,0);
-                   if(overlay.role==='mirror')other.setScale(-1.35,1.35,1.35);
+                   if(overlay.role==='mirror-surface'){
+                     other.setScale(-1.2,1.5,1.2);
+                     other.setAllColor(236,239,242,180);
+                   }
                    else if(overlay.role.startsWith('cross-')){
                      other.setScale(1.65,1.65,1.65);
                      other.setRotation(0,0,overlay.role==='cross-forward'?Math.PI/4:-Math.PI/4);
@@ -242,6 +245,11 @@ function EffekseerCanvas({effect,reduced,onReady}){
                 }
                 case 'root-down':playingHandle.setLocation(0,.9-2.4*Math.min(1,phase*1.4),0);break;
                 case 'root-spread':{
+                  const g=Math.min(1,elapsed/2.9);
+                  playingHandle.setScale(base*(.18+.82*g),base*(.32+.68*g),base);
+                  playingHandle.setLocation(0,.65-1.7*g,0);break;
+                }
+                case 'root-spread':{
                   const g=Math.min(1,elapsed/2.8);
                   playingHandle.setScale(base*(.5+.5*g),base*(.4+.6*g),base);
                   playingHandle.setLocation(0,.7-1.7*g,0);break;
@@ -298,7 +306,7 @@ function EffekseerCanvas({effect,reduced,onReady}){
                 }else if(role==='branch-left'||role==='branch-right'){
                   const sign=role==='branch-left'?-1:1,g=Math.min(1,elapsed/2.6);
                   handle.setLocation(sign*(.27+1.45*g),.3+.75*g,0);
-                  handle.setScale(.6+.7*g,.65+.8*g,.7);
+                  handle.setScale(.25+1.0*g,.3+1.0*g,.7);
                 }
               }
             }
