@@ -63,7 +63,7 @@ export default function Rune3DPreview({mode='duel'}){
   // ?texture=original remains a diagnostic rollback, not a user-facing gate.
   const [textureQuality,setTextureQuality]=useState('hd256');
   // The licensed Effekseer smoke scene is now part of the main 3D draw stage.
-  // No fog_preview query flag: the black stage masks dark-matte sprite edges.
+  // No hidden runtime toggle: the black stage masks dark-matte sprite edges.
   useEffect(()=>{
     const query=new URLSearchParams(window.location.search);
     setTextureQuality(query.get('texture')==='original'?'original':'hd256');
