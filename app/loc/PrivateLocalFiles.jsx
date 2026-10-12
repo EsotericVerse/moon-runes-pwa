@@ -134,8 +134,7 @@ export default function PrivateLocalFiles(){
 
   return <section className="loc-card" aria-labelledby="loc-private-files-heading">
     <h2 id="loc-private-files-heading">私人 Local File（僅此 iPhone）</h2>
-    <p className="scope-settings-note">不需登入。從 iOS「檔案」選取原始檔，完整複製到 App 專屬的 LibraryNoCloud 儲存區；不進入 Galaxy、Supabase、Neon、公開搜尋或任何網路 API。此功能與管理頁的雲端 JSON 匯入完全不同。</p>
-    <p className="scope-settings-note">每檔上限 512 MB；不要求特定檔名或副檔名，會檢查檔案開頭的位元組與資料結構，顯示可能格式及文字編碼。這只是本機辨識提示，尚不會把 MSN 對話拆成訊息、人物或時間軸。所有類型仍原樣保存。App 卸載時本機資料可能一併消失；不會自動雲端備份。若選擇「開啟／分享」，你可以自行決定是否交給其他 App 或儲存至 iCloud。</p>
+    <p className="scope-settings-note">檔案僅保存在此裝置。單檔上限 512 MB；卸載 App 可能遺失本機資料。</p>
     <div className="scope-stat-controls">
       <button type="button" className="loc-button primary" onClick={()=>picker.current?.click()} disabled={busy||!store}>選擇本機檔案匯入</button>
       <button type="button" className="loc-button" onClick={async()=>{
