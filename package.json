@@ -3,6 +3,8 @@
   "version": "0.9.4-rc",
   "private": true,
   "scripts": {
+    "predev": "node scripts/prepare-effekseer-wasm.mjs",
+    "prebuild": "node scripts/prepare-effekseer-wasm.mjs",
     "dev": "next dev",
     "verify:modules": "node scripts/verify-module-contracts.mjs",
     "verify:blocknote": "node scripts/test-blocknote-serialization.mjs",

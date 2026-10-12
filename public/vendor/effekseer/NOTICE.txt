@@ -1,2 +1,3 @@
 Effekseer for WebGL v1.70: MIT License, © Effekseer contributors. Source: https://github.com/effekseer/EffekseerForWebGL
-Effect files and referenced resources are sourced from the same repository's tests/Resources directory. The WebAssembly runtime is referenced from the pinned upstream GitHub revision rather than bundled locally in this browser-only prototype.
+Effect files and referenced resources are from the same repository's tests/Resources directory.
+The WebGL JavaScript runtime and WebAssembly binary match pinned upstream revision e8c3ce076644789918695b0cba0031461c817890. The verified WebAssembly binary is downloaded during development/build and served from /vendor/effekseer/effekseer.wasm, not from a third-party host at runtime.

@@ -5,7 +5,7 @@ import {AnimatePresence,motion,useReducedMotion} from 'motion/react';
 import * as THREE from 'three';
 
 const SOURCE='/vendor/effekseer/';
-const WASM='https://raw.githubusercontent.com/effekseer/EffekseerForWebGL/e8c3ce076644789918695b0cba0031461c817890/docs/effekseer.wasm';
+const WASM=SOURCE+'effekseer.wasm';
 // Only pre-authored Effekseer effects with semantically appropriate meanings.
 // No custom emitters, particles, shaders, or synthetic effect substitutes.
 const LIBRARY=Object.freeze({
