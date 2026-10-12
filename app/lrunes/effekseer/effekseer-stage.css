@@ -112,3 +112,6 @@
 .rune-3d-review-toolbar button[aria-pressed="true"]{background:#78609c;border-color:#f5d49c}
 .rune-3d-review-stepping{display:flex;align-items:center;gap:10px}
 .rune-3d-review-stepping span{font:600 .86rem/1.4 system-ui,sans-serif;color:#f6e5cc;min-width:40px;text-align:center}
+
+/* Owner requirement: Star shows strictly neutral white light, not colored source textures. */
+.rune-effekseer-stage[data-rune="星"] .rune-effekseer-canvas{filter:grayscale(1) brightness(1.65) contrast(1.08)}
