@@ -220,12 +220,12 @@ assert.match(stage,/AUTHORED_EFFECT_FILES\['M:foot_smoke2'\]/,'fog must be an ex
 assert.match(stage,/ambientPauseRef/,'mobile GPU should pause fog drawing during the main rune performance');
 assert.match(stage,/ambientRetire\?\.stop\?\.\(\)/,'persistent fog clips must retire old native handles');
 assert.match(stage,/quality==='high'\?1\.5:1/,'ambient DPR needs both high-quality and balanced modes');
-assert.match(drawFlow,/fogPreview\?<RuneMistBackdrop phase=\{phase\} quality=\{sceneQuality\}/,
+assert.match(drawFlow,/fogPreview\?<RuneMistBackdrop phase=\{phase\} quality=\{sceneQuality\} textureQuality=\{textureQuality\}/,
   'repaired fog is visual-QA opt-in until screenshot inspection');
 assert.match(drawFlow,/get\('fog_preview'\)==='1'/,'fog probe is disabled by default');
 assert.match(drawFlow,/phase==='idle'\?<button type="button" className="rune-3d-tap-to-draw"/,
   'idle scene keeps the tap-anywhere-to-draw control');
-assert.match(drawFlow,/phase==='waiting'\?<><WaitingEffekseerStage\/>/,
+assert.match(drawFlow,/phase==='waiting'\?<><WaitingEffekseerStage textureQuality=\{textureQuality\}\/>/,
   'waiting Effekseer begins only after the user draws');
 assert.match(drawFlow,/rune-skin-moon rune-3d-night-moon/,'reuse existing moon artwork instead of DIY moon effects');
 assert.match(drawFlow,/setSceneQuality\(current=>current==='high'\?'balanced':'high'\)/,'quality toggle must be functional');
