@@ -295,13 +295,13 @@
 }
 .rune-3d-mist-backdrop{
   position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none;
-  opacity:.86;transform:translate3d(0,0,0) scale(1);
+  opacity:.96;transform:translate3d(0,0,0) scale(1);
   transition:opacity 1050ms ease,transform 1300ms cubic-bezier(.22,.72,.23,1);
   will-change:opacity,transform;
 }
 .rune-3d-mist-backdrop .rune-effekseer-stage{position:absolute;inset:0}
 .rune-3d-mist-backdrop .rune-effekseer-canvas{
-  opacity:.82;mix-blend-mode:screen;
+  opacity:1;mix-blend-mode:screen;
 }
 .rune-3d-stage[data-ritual-phase="waiting"] .rune-3d-mist-backdrop{
   opacity:.48;transform:translate3d(3%,-2%,0) scale(1.16);
@@ -314,7 +314,7 @@
 }
 .rune-3d-stage[data-ritual-phase="ready"] .rune-3d-mist-backdrop,
 .rune-3d-stage[data-ritual-phase="idle"] .rune-3d-mist-backdrop{
-  opacity:.86;transform:translate3d(0,0,0) scale(1);
+  opacity:.96;transform:translate3d(0,0,0) scale(1);
 }
 .rune-3d-stage:not([data-ritual-phase="atlas"])>.rune-effekseer-stage{z-index:2}
 @media(max-width:700px){
@@ -490,13 +490,13 @@
    native browser compositing on the existing moon and canvas. No RuneAura. */
 .rune-3d-foreground-mist{
   position:absolute;inset:0;z-index:3;overflow:hidden;pointer-events:none;
-  opacity:.22;transform:translate3d(0,0,0) scale(1.05);
+  opacity:.45;transform:translate3d(0,0,0) scale(1.05);
   transition:opacity 950ms ease,transform 1350ms cubic-bezier(.2,.7,.2,1);
 }
 .rune-3d-foreground-mist .rune-effekseer-canvas-wrap,
 .rune-3d-foreground-mist .rune-effekseer-stage{position:absolute;inset:0}
 .rune-3d-foreground-mist .rune-effekseer-canvas{
-  opacity:.71;mix-blend-mode:screen;pointer-events:none;
+  opacity:.88;mix-blend-mode:screen;pointer-events:none;
 }
 .rune-3d-stage[data-ritual-phase="waiting"] .rune-3d-foreground-mist{
   opacity:.16;transform:translate3d(4%,0,0) scale(1.13)
@@ -509,7 +509,7 @@
 }
 .rune-3d-stage[data-ritual-phase="idle"] .rune-3d-foreground-mist,
 .rune-3d-stage[data-ritual-phase="ready"] .rune-3d-foreground-mist{
-  opacity:.22;transform:translate3d(0,0,0) scale(1.05)
+  opacity:.45;transform:translate3d(0,0,0) scale(1.05)
 }
 .rune-3d-stage .rune-3d-night-moon{
   transition:filter 800ms ease,opacity 800ms ease,transform 1100ms ease;
