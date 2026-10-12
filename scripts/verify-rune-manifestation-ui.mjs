@@ -10,7 +10,7 @@ assert.match(list,/limit:67,offset:0/);
 assert.match(list,/next.length!==66/);
 assert.match(list,/RuneArtStage mode="groups"/,'3D atlas must show nine original group artworks');
 assert.match(list,/RuneArtStage mode="runes"/,'selected group must expand its original rune-card gallery');
-assert.match(list,/<EffekseerStage key=\{current\.rune_id\} rune=\{current\}/,'the selected rune retains its original 3D effect stage');
+assert.match(list,/<EffekseerStage key=\{current\.rune_id\+'-'\+playback\} rune=\{current\}/,'the selected rune can replay the original 3D effect before showing its text');
 assert.match(list,/selectGroup/);
 assert.match(list,/groupImage\(group\.id\)/,'original full-resolution group painting must expand');
 assert.match(list,/silver\.runes_group/,'group text is sourced from canonical Supabase via existing query module');
