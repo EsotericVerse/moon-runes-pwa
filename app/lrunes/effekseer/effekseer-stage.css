@@ -13,6 +13,26 @@
  font-size:clamp(130px,27vw,280px);font-weight:400;font-synthesis:none;color:var(--rune-ink,#f4e5d2);filter:drop-shadow(0 3px 4px #000c);
  text-shadow:0 0 2px #e8cb9c,0 10px 22px #06040e;min-width:1.3em;min-height:1.2em;text-align:center}
 .rune-effekseer-glyph:focus-visible{outline:3px solid #fff0bb;outline-offset:8px;border-radius:16px}
+/* True Three.js solid Chinese glyph: physically extruded strokes, beveled
+   edges and fixed front-facing lighting. The original 2D font remains readable
+   until the real glyph geometry finishes building (or if WebGL is unavailable).
+   No custom magic VFX, no RuneAura, and no palette overrides. */
+.rune-effekseer-glyph{position:relative;display:inline-flex;justify-content:center;align-items:center;overflow:visible}
+.rune-3d-glyph-canvas{
+  position:absolute;top:50%;left:50%;width:1.48em;height:1.40em;
+  transform:translate(-50%,-50%);display:block;pointer-events:none;
+  background:transparent;z-index:1
+}
+.rune-3d-glyph-fallback{
+  position:relative;z-index:0;display:inline-block;
+  transition:opacity 180ms ease
+}
+.rune-3d-glyph-fallback[data-solid-ready="true"]{opacity:0}
+.rune-effekseer-glyph .rune-direction-stroke{z-index:2}
+@media(prefers-reduced-motion:reduce){
+  .rune-3d-glyph-fallback{transition:none}
+}
+
 /* Eight shared typographic families; selected by symbol identity rather than whole group. */
 .rune-effekseer-glyph--script{font-family:'LXGW WenKai TC','BiauKai','DFKai-SB',serif}
 .rune-effekseer-glyph--serif{font-family:'Noto Serif TC','Songti TC',serif;font-weight:700}
