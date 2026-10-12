@@ -26,6 +26,17 @@
 .rune-effekseer-glyph[data-glyph-finish="glass"]{text-shadow:0 1px 0 #ffffff73,0 6px 13px #030512c4}
 .rune-effekseer-glyph[data-glyph-finish="plain"]{text-shadow:0 8px 17px #03040ac0}
 .rune-effekseer-glyph[data-glyph-finish="ink"]{text-shadow:0 2px 1px #080812ad,0 11px 20px #03050cb0}
+/* Typographic identity, not DIY magic VFX: a first-glance, language-independent hue.
+ * The authored Effekseer scene remains the animated source of movement.
+ */
+.rune-effekseer-stage[data-rune="彩"] .rune-effekseer-glyph{
+ color:#f8e5f1;
+ background:linear-gradient(100deg,#ff6374 4%,#ffb34f 19%,#fce87a 33%,#64eeb4 49%,#72c5ff 65%,#aa91ff 81%,#ef7ecc 97%);
+ background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.rune-effekseer-stage[data-rune="火"] .rune-effekseer-glyph{color:#ffae52;text-shadow:0 2px 1px #220c0b,0 9px 16px #33110b}
+.rune-effekseer-stage[data-rune="火"] .rune-effekseer-meaning-icon{filter:sepia(1) saturate(5) hue-rotate(338deg) brightness(1.3) drop-shadow(0 4px 9px #391207)}
+.rune-effekseer-stage[data-rune="鏡"] .rune-effekseer-meaning-icon{filter:sepia(.2) saturate(1.4) hue-rotate(160deg) brightness(1.5) drop-shadow(0 4px 9px #0c223a)}
 /* A professionally-authored, semantically readable pictogram accompanies each Rune.
  * Screen blend removes the icon library's black sample backdrop without custom shaders.
  */

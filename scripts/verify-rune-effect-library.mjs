@@ -17,6 +17,11 @@ assert.notEqual(RUNE_EFFECT_KEYS.Blank,RUNE_EFFECT_KEYS.Void);
 assert.notEqual(RUNE_EFFECT_KEYS.Void,RUNE_EFFECT_KEYS.Illusion);
 assert.notEqual(RUNE_EFFECT_KEYS.Flame,RUNE_EFFECT_KEYS.Radiance);
 assert.equal(RUNE_EFFECT_KEYS.Spectrum,'T:Light3','Spectrum must use rainbow-colored authored Light3');
+const presentation=readFileSync('app/lrunes/effekseer/effekseer-stage.css','utf8');
+assert.match(presentation,/data-rune="彩"/,'Spectrum must visually express multiple colors');
+assert.match(presentation,/linear-gradient\(100deg/,'Spectrum needs a genuinely multicolored letterform');
+assert.match(presentation,/data-rune="火"/,'Flame must carry a warm-color object and typeface');
+
 assert.equal(RUNE_EFFECT_KEYS.Mirror,'S:ImageDistortion','Mirror must use optical effect, never ice');
 assert.equal(RUNE_EFFECT_KEYS.Blank,'S:Dissolve','Blank is a uniquely disappearing module, not Void');
 assert.equal(RUNE_SEMANTIC_ICONS.length,67);
