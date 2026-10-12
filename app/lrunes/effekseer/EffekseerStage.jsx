@@ -3,6 +3,7 @@
 import {useEffect,useRef,useState} from 'react';
 import {AnimatePresence,motion,useReducedMotion} from 'motion/react';
 import * as THREE from 'three';
+import {runeGlyphProfile} from './rune-glyph-library.mjs';
 
 const SOURCE='/vendor/effekseer/';
 const WASM=SOURCE+'effekseer.wasm';
@@ -10,10 +11,6 @@ const WASM=SOURCE+'effekseer.wasm';
 // No custom emitters, particles, shaders, or synthetic effect substitutes.
 const LIBRARY=Object.freeze({
   Radiance:'Light',Blessing:'Cure1',Wind:'Blow1',Water:'ToonWater'
-});
-const FONT_BY_GROUP=Object.freeze({
-  '靈魂':'brush','連結':'brush','生命':'handwritten','自然':'brush',
-  '礦物':'engraved','元素':'brush','秩序':'engraved','無序':'handwritten','特殊':'brush'
 });
 let runtimePromise;
 function loadRuntime(){
@@ -70,7 +67,6 @@ function SemanticIllustration({word,reduced}){
     transition={{duration:reduced?0:3.3,ease:'easeInOut'}} role="presentation">⌛</motion.span>;
 }
 function nameOf(rune){return String(rune?.rune_name||rune?.totem||'光').replace(/之符文$/,'').trim().slice(0,1)||'光';}
-function glyphGroup(rune){return String(rune?.group_name||'元素').replace(/組$/,'');}
 function EffekseerCanvas({effect,reduced}){
   const canvas=useRef(null);
   const [status,setStatus]=useState('正在啟動 Effekseer…');
@@ -151,7 +147,7 @@ export default function EffekseerStage({rune,onGlyphClick}){
   const reduced=useReducedMotion();
   const [replay,setReplay]=useState(0);
   const word=nameOf(rune);
-  const group=glyphGroup(rune);
+  const profile=runeGlyphProfile(rune);
   const key=String(rune?.rune_id??word)+'-'+word+'-'+replay;
   const effect=LIBRARY[String(rune?.english_name||'').trim()]||null;
   return <div className="rune-effekseer-stage" data-source="effekseer" data-rune={word}>
@@ -159,7 +155,9 @@ export default function EffekseerStage({rune,onGlyphClick}){
     <div className="rune-effekseer-glyph-position">
       <AnimatePresence mode="wait">
         <motion.button key={key} type="button"
-          className={'rune-effekseer-glyph rune-effekseer-glyph--'+(FONT_BY_GROUP[group]||'handwritten')}
+          className={'rune-effekseer-glyph rune-effekseer-glyph--'+profile.font}
+          data-glyph-family={profile.family} data-glyph-finish={profile.finish}
+          style={{'--rune-ink':profile.ink}}
           aria-label={'查看 '+word+' 之符文'} onClick={onGlyphClick}
           initial={reduced?false:{opacity:0,scale:.75}}
           animate={reduced?{opacity:1,scale:1}:animationFor(word)}
