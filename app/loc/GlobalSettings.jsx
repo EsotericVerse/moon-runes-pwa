@@ -5,15 +5,12 @@ import Select from 'react-select';
 import {Capacitor} from '@capacitor/core';
 import {useNavigationPreferences} from './use-navigation-preferences';
 import DailyLogClient from '../daily/log/DailyLogClient';
-import RuneDrawClient from '../lrunes/RuneDrawClient';
 import RuneSQLiteTransfer from '../lrunes/RuneSQLiteTransfer';
-import RuneAppDayNightDashboard from '../lrunes/RuneAppDayNightDashboard';
 import PrivateLocalFiles from './PrivateLocalFiles';
 import ManagementImportPanel from './ManagementImportPanel';
 import ManagementArticlePublisher from './ManagementArticlePublisher';
 import ScopeSettingsPanel from './ScopeSettingsPanel';
 import ScopeGroupManagement from './ScopeGroupManagement';
-import {RUNE_ALL_DRAW_MODES} from '../lrunes/rune-draw-modes.mjs';
 import {settingsRunePolicy} from '../lrunes/settings-rune-policy.mjs';
 import {selectScopeRegistry} from './scope-data';
 import {putSetting} from './user-storage';
@@ -45,13 +42,11 @@ export default function GlobalSettings(){
   const [newFolderName,setNewFolderName]=useState('');
   const [busy,setBusy]=useState('');
   const [status,setStatus]=useState('');
-  const [drawOpen,setDrawOpen]=useState(false);
-  const [drawMode,setDrawMode]=useState('daily');
   const identity=account.user?.id||account.user?.email||'';
   useEffect(()=>{
     const params=new URLSearchParams(window.location.search);
     const tab=params.get('section');
-    if(['daily','files','draw','home','favorites','manage','account'].includes(tab))setSection(tab);
+    if(['daily','files','home','favorites','manage','account'].includes(tab))setSection(tab);
     const requested=params.get('scope');
     if(requested&&/^[a-z0-9_-]{1,64}$/i.test(requested))setManagedScope(requested);
   },[]);
@@ -149,18 +144,11 @@ export default function GlobalSettings(){
   const sectionOptions=[
     {value:'daily',label:'每日符文紀錄'},
     {value:'files',label:'文件匯入／匯出'},
-    ...(runePolicy.canDraw?[{value:'draw',label:'月典抽牌'}]:[]),
     {value:'home',label:'首頁設定'},
     {value:'favorites',label:'我的最愛（展示）'},
     ...(!native&&(manageScopes.length||account.canManageGlobalSync())?[{value:'manage',label:'管理功能'}]:[]),
     {value:'account',label:'帳號'}
   ];
-  function openAppDraw(mode){
-    setDrawMode(mode);
-    setDrawOpen(true);
-    window.requestAnimationFrame(()=>document.getElementById('settings-rune-draw')?.scrollIntoView({behavior:'smooth',block:'start'}));
-  }
-
   return <main className="scope-main">
     <section className="scope-page">
       <header className="loc-hero">
@@ -208,25 +196,6 @@ export default function GlobalSettings(){
             <a className="loc-button" href={navigationHref('lrunes','daily/log',native)}>開啟完整每日符文紀錄（含匯入／匯出）</a>
           </p>:null}
         </section>:null}
-
-        {section==='draw'&&runePolicy.canDraw?<div className="loc-settings-panel-group">
-          {native&&runePolicy.canDraw?<RuneAppDayNightDashboard
-            canReadLocal={runePolicy.canRecord} onSelectDraw={openAppDraw}/>:null}
-          <section className="loc-card" id="settings-rune-draw">
-            <h2>月典抽牌</h2>
-            <p className="scope-settings-note">App 訪客可直接使用；網站需登入。是否儲存結果仍依月之符文權限判別。</p>
-            <div className="scope-stat-controls">
-              <button type="button" className="loc-button" aria-expanded={drawOpen}
-                onClick={()=>setDrawOpen(value=>!value)}>{drawOpen?'收合抽牌':'開啟抽牌'}</button>
-              {drawOpen?<label><span>抽牌方式</span>
-                <select className="scope-select" value={drawMode} onChange={event=>setDrawMode(event.target.value)}>
-                  {RUNE_ALL_DRAW_MODES.map(item=><option value={item.key} key={item.key}>{item.label} · {item.count} 張</option>)}
-                </select>
-              </label>:null}
-            </div>
-            {drawOpen?<RuneDrawClient key={drawMode} drawKey={drawMode} embedded canSave={runePolicy.canRecord}/>:null}
-          </section>
-        </div>:null}
 
         {section==='home'?<section className="loc-card">
           <h2>設定首頁</h2>
