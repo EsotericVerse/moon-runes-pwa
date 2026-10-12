@@ -209,8 +209,8 @@ test('native My Phone stays device-only and LunaRunes is immutable in favorites'
   assert.match(shell,/mobileHomeHref/);
   assert.match(settings,/\['lrunes',\.\.\.\(mobileFavoriteEnabled/);
   assert.match(settings,/MOBILE_HOME_STORAGE_KEY/);
-  assert.match(home,/尚未匯入作品/);
-  assert.match(home,/尚未建立可用的本機作品全文索引/);
+  assert.match(home,/<PrivateLocalFiles\/>/);
+  assert.doesNotMatch(home,/文化統計與作品全文搜尋|搜尋已匯入檔案名稱|尚未匯入作品/);
 });
 
 test('retired private browser-only workbench cannot be reached from Settings',()=>{
