@@ -6,6 +6,7 @@ import {RUNE_SEMANTIC_ICONS,runeIconFor} from '../app/lrunes/effekseer/rune-sema
 import {RUNE_REJECTED_BRIEFS,ACCEPTED_RUNE_EFFECT_BASELINE} from './rune-rejected-brief.mjs';
 import {RUNE_VFX_REVIEW_QUEUE,RUNE_VFX_REVIEW_NAMES,RUNE_VFX_REVIEW_STATUS} from '../app/lrunes/effekseer/rune-review-queue.mjs';
 import {GROUP_STAGE_LANGUAGE,groupStageForRune,cinematicCameraPose,GROUP_IMPACT_AT} from '../app/lrunes/effekseer/rune-cinematic-language.mjs';
+import {redirectAmbientFogTexture,AMBIENT_FOG_IMAGE} from '../app/lrunes/effekseer/ambient-fog-assets.mjs';
 const stage=readFileSync('app/lrunes/effekseer/EffekseerStage.jsx','utf8');
 const pkg=JSON.parse(readFileSync('package.json','utf8'));
 assert.equal(CANONICAL_RUNE_ENGLISH.length,67);
@@ -273,6 +274,21 @@ assert.match(stage,/quality==='high'&&!reduced/,'balanced mode must avoid the th
 assert.doesNotMatch(stage,/AUTHORED_EFFECT_FILES\['M:foot_smoke7'\]/,
   'particle-only smoke7 is not a valid mist source');
 assert.match(stage,/\/MxS_foot_smoke2\.efkefc/,'correct texture redirect applies to vetted smoke source');
+// Verify actual Effekseer resource URLs, not only source-code regexes.
+assert.match(AMBIENT_FOG_IMAGE,/Texture\/_fog-cloud-2048\.png$/);
+for(const path of [
+  '/vendor/effekseer/Collections/MAGICALxSPIRAL/Texture/smoke_01.png',
+  'Texture/star.png','smoke_01.png?revision=1',
+  'Texture\\star.png'
+]){
+  let redirected='';
+  const output=redirectAmbientFogTexture(path,name=>{redirected=name;});
+  assert.ok(redirected==='smoke_01'||redirected==='star','opaque fog texture missed: '+path);
+  assert.match(output,/_fog-cloud-2048\.png(?:\?revision=1)?$/,'native 2K asset substitution failed: '+path);
+}
+for(const original of ['Texture/particle.png','Texture/other_smoke_01.png','Texture/_fog-cloud-2048.png']){
+  assert.equal(redirectAmbientFogTexture(original),original,'must not alter other authored effect dependencies');
+}
 const fogRoutes=readFileSync('app/lrunes/effekseer/ambient-fog-assets.mjs','utf8');
 assert.match(fogRoutes,/\/_fog-cloud-2048\.png/,'ambient-only redirect uses genuine transparent native 2K texture');
 assert.match(stage,/redirectAmbientFogTexture\(path,name=>fogRedirects\.add\(name\)\)/,
