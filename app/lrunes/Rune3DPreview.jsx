@@ -233,15 +233,22 @@ export default function Rune3DPreview({mode='duel'}){
               {ceremonySubject==='card'?<img src={runeImage(pending.card)} alt=""/>:
                 <span>{runeName(pending.card)}</span>}
             </motion.div>:null}
-          {(phase==='ready')?<div className="rune-3d-ritual-ready" role="group"
+          {phase==='ready'&&mode==='duel'&&!finished&&items.length<11?
+            <button type="button" className="rune-3d-continue-hitarea"
+              onClick={drawOne} aria-label="點選舞台繼續抽牌" disabled={busy}/>:null}
+          {phase==='ready'?<div className="rune-3d-ritual-ready" role="group"
             aria-label="本次召喚完成後的操作">
-            <p>召喚完成 · {items.length} 枚符文</p>
+            <p className="rune-3d-ritual-title">召喚完成，{items.length} 枚符文</p>
+            <p className="rune-3d-ritual-instructions">
+              {mode==='daily'?'點選下方抽牌結果區觀看符文細節，或點選「觀看每日指示」閱讀今日指引。':
+                finished||items.length>=11?
+                  '點選下方抽牌結果區觀看符文細節，或點選「觀看籤詩」閱讀本次指引。':
+                  '點選下方抽牌結果區觀看符文細節；輕觸舞台畫面任一空白處繼續抽牌，或點選「觀看籤詩」結束占卜並閱讀指引。'}
+            </p>
             <div className="rune-3d-ritual-actions">
               <button type="button" onClick={reset}>重新開始</button>
-              <button type="button" onClick={drawOne}
-                disabled={mode==='daily'||items.length>=11||finished}>繼續召喚符文</button>
               <button type="button" onClick={()=>mode==='daily'?setResultOpen(true):finish()}>
-                {mode==='daily'?'查看每日指示':'查看籤詩'}</button>
+                {mode==='daily'?'觀看每日指示':'觀看籤詩'}</button>
             </div>
           </div>:null}
           {items.length>0||phase==='transfer'?<div className="rune-3d-result-shelf"

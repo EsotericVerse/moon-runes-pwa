@@ -211,4 +211,15 @@ assert.match(cssHero,/data-ritual-phase="revealing"/,'authored fog clears for gi
 assert.match(cssHero,/data-ritual-phase="transfer"/,'fog returns after the Rune settles');
 assert.doesNotMatch(drawFlow,/new THREE\.Points|ShaderMaterial|RuneAura/,'no generated fog/particles/shader');
 
+
+assert.match(drawFlow,/className="rune-3d-continue-hitarea"/,'the empty stage itself remains clickable');
+assert.match(drawFlow,/onClick=\{drawOne\} aria-label="點選舞台繼續抽牌"/,'clicking empty stage draws the next Rune');
+assert.match(drawFlow,/phase==='ready'&&mode==='duel'&&!finished&&items\.length<11/,'no redraw during completed or daily spreads');
+assert.match(drawFlow,/輕觸舞台畫面任一空白處繼續抽牌/,'clear tap-the-stage instructions');
+assert.match(drawFlow,/點選下方抽牌結果區觀看符文細節/,'result area explains detail access');
+assert.doesNotMatch(drawFlow,/>繼續召喚符文<\/button>/,'there must not be a separate continue button');
+assert.match(cssHero,/\.rune-3d-ritual-ready\{pointer-events:none\}/,'ready message must not intercept stage clicks');
+assert.match(cssHero,/\.rune-3d-ritual-actions button\{pointer-events:auto\}/,'actual controls must remain independent of stage clicks');
+assert.match(cssHero,/\.rune-3d-continue-hitarea:focus-visible/,'keyboard activation is available');
+
 console.log('Rune embodiment: 66 distinct authored VFX, 66 unique semantic symbols, all pinned with provenance.');
