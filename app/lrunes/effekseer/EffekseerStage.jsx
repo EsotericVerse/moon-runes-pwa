@@ -166,9 +166,21 @@ function EffekseerCanvas({effect,reduced,onReady}){
                      other.setScale(1.65,1.65,1.65);
                      other.setRotation(0,0,overlay.role==='cross-forward'?Math.PI/4:-Math.PI/4);
                      other.setAllColor(255,70,78,255);
-                   }else if(overlay.role==='root-tendrils'){
-                     other.setScale(.85,-1.1,.85);
-                     other.setAllColor(171,124,79,255);
+                   }else if(overlay.role==='root-left'||overlay.role==='root-right'){
+                     const sign=overlay.role==='root-left'?-1:1;
+                     other.setScale(.7,.9,.7);
+                     other.setRotation(0,0,sign*.52);
+                     other.setLocation(sign*.35,.2,0);
+                     other.setAllColor(151,121,88,255);
+                   }else if(overlay.role==='branch-left'||overlay.role==='branch-right'){
+                     const sign=overlay.role==='branch-left'?-1:1;
+                     other.setScale(.7,1.1,.7);
+                     other.setRotation(0,0,sign*.56);
+                     other.setLocation(sign*.38,.3,0);
+                     other.setAllColor(140,181,125,255);
+                   }else if(overlay.role==='mirror-frame'){
+                     other.setScale(1.45,1.8,1.45);
+                     other.setAllColor(218,231,242,230);
                    }else if(overlay.role==='counter-orbit'){
                      other.setScale(1.95,1.95,1.95);
                      other.setAllColor(149,210,255,255);
@@ -229,6 +241,11 @@ function EffekseerCanvas({effect,reduced,onReady}){
                   playingHandle.setScale(s,s,s);playingHandle.setLocation(0,-1.5+1.75*Math.min(1,phase*1.8),0);break;
                 }
                 case 'root-down':playingHandle.setLocation(0,.9-2.4*Math.min(1,phase*1.4),0);break;
+                case 'root-spread':{
+                  const g=Math.min(1,elapsed/2.8);
+                  playingHandle.setScale(base*(.5+.5*g),base*(.4+.6*g),base);
+                  playingHandle.setLocation(0,.7-1.7*g,0);break;
+                }
                 case 'branch-out':{
                   const grow=Math.min(1,phase*1.7);
                   playingHandle.setScale(.28+base*grow,base*(.4+.6*grow),base);break;
@@ -263,7 +280,15 @@ function EffekseerCanvas({effect,reduced,onReady}){
               }
               for(const {handle,role} of extras){
                 if(role==='counter-orbit')handle.setRotation(0,0,-elapsed*2.3);
-                else if(role==='root-tendrils')handle.setLocation(0,.9-2.4*Math.min(1,phase*1.4),0);
+                else if(role==='root-left'||role==='root-right'){
+                  const sign=role==='root-left'?-1:1,g=Math.min(1,elapsed/3.2);
+                  handle.setLocation(sign*(.2+1.2*g),.15-1.6*g,0);
+                  handle.setRotation(0,0,sign*(.27+.42*g));
+                }else if(role==='branch-left'||role==='branch-right'){
+                  const sign=role==='branch-left'?-1:1,g=Math.min(1,elapsed/2.6);
+                  handle.setLocation(sign*(.27+1.45*g),.3+.75*g,0);
+                  handle.setScale(.6+.7*g,.65+.8*g,.7);
+                }
               }
             }
             context.update(delta*60);
