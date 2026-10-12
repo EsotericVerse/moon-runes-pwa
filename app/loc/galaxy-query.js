@@ -377,6 +377,29 @@ export async function selectMediaStatisticsFacetRows(scope,dimension,{startDate=
   );
 }
 
+// Cross-tag comparisons must retain each media item's own metadata.
+// Daily facet aggregates cannot reconstruct which tags belonged to the same item.
+export async function selectMediaCrossTagRows(scope,{startDate='',endDate=''}={}){
+  const current=scopeOf(scope);
+  const filters=timeFilters('createtime',startDate,endDate);
+  const orders=[{column:'media_id',ascending:true}];
+  const rows=[];
+  let offset=0,total=null,source='auto';
+  while(total===null||offset<total){
+    const page=await selectRows(current.galaxyMedia,{
+      columns:'media_id,title,url,meta_tags,createtime',
+      filters,orders,limit:DB_QUERY_BATCH_SIZE,offset,
+      count:offset===0?'exact':null,source
+    });
+    if(offset===0)total=Number.isFinite(Number(page.count))?Number(page.count):page.rows.length;
+    source=page.dataSource||source;
+    for(const row of page.rows)if(String(row.meta_tags||'').trim())rows.push(row);
+    if(!page.rows.length)break;
+    offset+=page.rows.length;
+  }
+  return rows;
+}
+
 const SOURCE_BUCKET_ORDER=['Facebook','Threads','IG','Others'];
 function dateOnly(value){return String(value||'').slice(0,10);}
 function sourceBucket(value=''){
