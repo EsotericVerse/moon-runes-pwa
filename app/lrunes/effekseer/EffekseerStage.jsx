@@ -7,6 +7,7 @@ import {runeGlyphProfile} from './rune-glyph-library.mjs';
 import {AUTHORED_EFFECT_FILES,runeEffectFor} from './rune-effect-library.mjs';
 import {runeIconFor} from './rune-semantic-icons.mjs';
 import {groupStageForRune,cinematicCameraPose,GROUP_IMPACT_AT} from './rune-cinematic-language.mjs';
+import {redirectHd256ParticleTexture} from './hd256-particle-paths.mjs';
 
 const SOURCE='/vendor/effekseer/';
 const WASM=SOURCE+'effekseer.wasm';
@@ -150,7 +151,7 @@ const WAITING_AUTHORED_EFFECT=Object.freeze({
   path:SOURCE+AUTHORED_EFFECT_FILES['M:MagicArea'],tuning:{scale:2.2,speed:.8}
 });
 
-function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=false,groupEffect=null,groupStage=null,waiting=false,ambient=false,ambientDepth='rear',ambientPaused=false,quality='high'}){
+function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=false,groupEffect=null,groupStage=null,waiting=false,ambient=false,ambientDepth='rear',ambientPaused=false,quality='high',textureQuality='original'}){
   const canvas=useRef(null);
   const onPlaybackCompleteRef=useRef(onPlaybackComplete);
   onPlaybackCompleteRef.current=onPlaybackComplete;
@@ -190,11 +191,12 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
         // The mismatch makes transparent particle billboards composite poorly.
         // Match the two ONLY in the isolated ambient fog context.
         context.init(renderer.getContext(),ambient?{enablePremultipliedAlpha:true}:undefined);
+        const hd256Redirect=textureQuality==='hd256'?redirectHd256ParticleTexture:undefined;
         let groupHandle=null,groupBaseline=1;
         let impactAsset=null,impactReady=false,impactStarted=false;
         if(ceremony&&groupStage&&AUTHORED_EFFECT_FILES[groupStage.impact]){
           impactAsset=context.loadEffect(SOURCE+AUTHORED_EFFECT_FILES[groupStage.impact],1,
-            ()=>{if(active)impactReady=true;},()=>{impactReady=false;});
+            ()=>{if(active)impactReady=true;},()=>{impactReady=false;},hd256Redirect);
         }
         if(groupEffect){
           let groupAsset;
@@ -207,7 +209,7 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
               groupHandle.setScale(groupSize,groupSize,groupSize);
               if(groupEffect.tuning?.speed)groupHandle.setSpeed(groupEffect.tuning.speed);
             }catch(error){if(active)setStatus('群組特效無法播放：'+String(error?.message||error));}
-          },(message,url)=>{if(active)setStatus('群組 Effekseer 素材載入失敗：'+String(message||url));});
+          },(message,url)=>{if(active)setStatus('群組 Effekseer 素材載入失敗：'+String(message||url));},hd256Redirect);
         }
         // The effect data, materials and textures remain exactly as authored.
         const effectFile=effect.path;
@@ -216,9 +218,14 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
         // CC0 transparent cloud texture, not an enlarged 128×128 sprite.
         // Original .efkefc files and the 66 rune VFX remain unchanged.
         const textureRedirect=ambient&&effectFile.endsWith('/MxS_foot_smoke2.efkefc')
-          ?(path)=>path.replace('/Texture/smoke_01.png','/Texture/_fog-cloud-2048.png')
-                       .replace('/Texture/star.png','/Texture/_fog-cloud-2048.png')
-          :undefined;
+          ?(path)=>{
+            const alphaCorrected=path.replace('/Texture/smoke_01.png','/Texture/_fog-cloud-2048.png')
+              .replace('/Texture/star.png','/Texture/_fog-cloud-2048.png');
+            return textureQuality==='hd256'
+              ?alphaCorrected.replace('/Texture/_fog-cloud-2048.png','/Texture/_hd256/_fog-cloud-2048.png')
+              :alphaCorrected;
+          }
+          :hd256Redirect;
         let loaded,started=false,playingHandle=null,settledEffectStarted=false,ambientLastSpawn=0,ambientRetire=null;
         let ambientGhost=null,ambientGhostRetire=null;
         const extras=[];
@@ -299,7 +306,7 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
                    }
                    extras.push({handle:other,role:overlay.role});
                  }catch(error){if(active)setStatus('附加特效無法播放：'+String(error?.message||error));}
-               },(message,url)=>{if(active)setStatus('附加 Effekseer 素材載入失敗：'+String(message||url));});
+               },(message,url)=>{if(active)setStatus('附加 Effekseer 素材載入失敗：'+String(message||url));},hd256Redirect);
              }
              started=true;
            }catch(error){setStatus('特效無法播放：'+String(error?.message||error));}
@@ -535,7 +542,7 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
       try{context?.release();}catch{}
       try{renderer?.dispose();}catch{}
     };
-  },[effect,reduced,ceremony,groupEffect,groupStage,waiting,ambient,ambientDepth,quality]);
+  },[effect,reduced,ceremony,groupEffect,groupStage,waiting,ambient,ambientDepth,quality,textureQuality]);
   return <div className="rune-effekseer-canvas-wrap">
     <canvas ref={canvas} className="rune-effekseer-canvas" aria-hidden="true"/>
     {!ambient&&status?<p className="rune-effekseer-status" role="status">{status}</p>:null}
@@ -552,30 +559,30 @@ const AUTHORED_FOREGROUND_MIST=Object.freeze({
   path:SOURCE+AUTHORED_EFFECT_FILES['M:foot_smoke2'],
   tuning:{scale:.74,speed:.37,color:[210,207,232,66]}
 });
-export function RuneMistBackdrop({phase='idle',quality='high'}){
+export function RuneMistBackdrop({phase='idle',quality='high',textureQuality='original'}){
   const reduced=useReducedMotion();
   const clearing=phase==='waiting'||phase==='revealing';
   return <>
     <div className="rune-3d-mist-backdrop" data-clearing={clearing?'true':'false'}
       data-quality={quality} aria-hidden="true">
       <EffekseerCanvas effect={AUTHORED_MOON_MIST} reduced={reduced}
-        ambient ambientDepth="rear" ambientPaused={phase==='revealing'} quality={quality}/>
+        ambient ambientDepth="rear" ambientPaused={phase==='revealing'} quality={quality} textureQuality={textureQuality}/>
     </div>
     {quality==='high'&&!reduced?<div className="rune-3d-foreground-mist"
       data-ritual-mist={phase} aria-hidden="true">
       <EffekseerCanvas effect={AUTHORED_FOREGROUND_MIST} reduced={reduced}
-        ambient ambientDepth="foreground" ambientPaused={phase==='revealing'} quality={quality}/>
+        ambient ambientDepth="foreground" ambientPaused={phase==='revealing'} quality={quality} textureQuality={textureQuality}/>
     </div>:null}
   </>;
 }
 
-export function WaitingEffekseerStage(){
+export function WaitingEffekseerStage({textureQuality='original'}){
   const reduced=useReducedMotion();
   return <div className="rune-effekseer-stage" data-source="authored-waiting">
-    <EffekseerCanvas effect={WAITING_AUTHORED_EFFECT} reduced={reduced} waiting/>
+    <EffekseerCanvas effect={WAITING_AUTHORED_EFFECT} reduced={reduced} waiting textureQuality={textureQuality}/>
   </div>;
 }
-export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,direction=null,ceremony=false,appearance='glyph',cardSrc=null,onCeremonyComplete=null,onPlaybackComplete=null,quality='high'}){
+export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,direction=null,ceremony=false,appearance='glyph',cardSrc=null,onCeremonyComplete=null,onPlaybackComplete=null,quality='high',textureQuality='original'}){
   const reduced=useReducedMotion();
   const [replay,setReplay]=useState(0);
   const [visibleKey,setVisibleKey]=useState('');
@@ -598,9 +605,9 @@ export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,directio
   },[ceremony,reduced,key]);
   return <div className="rune-effekseer-stage" data-source="effekseer" data-rune={word}
     data-ceremony={ceremony?'summoning':undefined}
-    data-quality={quality} data-group-stage={groupStage?.style}
+    data-quality={quality} data-texture-quality={textureQuality} data-group-stage={groupStage?.style}
     data-direction={direction==='正位'?'upright':direction==='半正位'?'semi-upright':direction==='半逆位'?'semi-reversed':direction==='逆位'?'reversed':undefined}>
-    <EffekseerCanvas key={key} effect={effect} groupEffect={groupEffect} groupStage={groupStage} reduced={reduced} ceremony={ceremony} quality={quality} onPlaybackComplete={onPlaybackComplete} onReady={()=>setVisibleKey(key)}/>
+    <EffekseerCanvas key={key} effect={effect} groupEffect={groupEffect} groupStage={groupStage} reduced={reduced} ceremony={ceremony} quality={quality} textureQuality={textureQuality} onPlaybackComplete={onPlaybackComplete} onReady={()=>setVisibleKey(key)}/>
     <div className="rune-effekseer-glyph-position">
       <AnimatePresence mode="wait">
         {visualReady?<motion.button key={key} type="button"

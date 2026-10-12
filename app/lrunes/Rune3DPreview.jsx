@@ -59,11 +59,16 @@ export default function Rune3DPreview({mode='duel'}){
   const [focusedRune,setFocusedRune]=useState(null);
   const [ceremonySubject,setCeremonySubject]=useState('glyph');
   const [sceneQuality,setSceneQuality]=useState('high');
+  // Display actual 256px comparison textures on the public 3D stage by default.
+  // ?texture=original remains a diagnostic rollback, not a user-facing gate.
+  const [textureQuality,setTextureQuality]=useState('hd256');
   const [fogPreview,setFogPreview]=useState(false);
   // Isolate repaired authored smoke until an actual WebGL visual inspection
   // confirms the texture alpha is right; never surprise users with squares.
   useEffect(()=>{
-    setFogPreview(new URLSearchParams(window.location.search).get('fog_preview')==='1');
+    const query=new URLSearchParams(window.location.search);
+    setFogPreview(query.get('fog_preview')==='1');
+    setTextureQuality(query.get('texture')==='original'?'original':'hd256');
   },[]);
   const [phase,setPhase]=useState('idle'); // idle → waiting → revealing → transfer → ready
   const [pending,setPending]=useState(null);
@@ -222,6 +227,7 @@ export default function Rune3DPreview({mode='duel'}){
             onClick={()=>setSceneQuality(current=>current==='high'?'balanced':'high')}>
             {sceneQuality==='high'?'高畫質':'省電模式'}
           </button>
+          <span className="rune-3d-toolbar-label">粒子貼圖：256</span>
         </div>}
     </nav>
     <section className="rune-3d-stage" aria-label={label} ref={stageRef}
@@ -229,16 +235,16 @@ export default function Rune3DPreview({mode='duel'}){
       {!isList?<div className="rune-3d-night-backdrop" aria-hidden="true">
         <span className="rune-skin-moon rune-3d-night-moon"/>
       </div>:null}
-      {!isList&&fogPreview?<RuneMistBackdrop phase={phase} quality={sceneQuality}/>:null}
-      {isList?(presented?<EffekseerStage rune={presented}
+      {!isList&&fogPreview?<RuneMistBackdrop phase={phase} quality={sceneQuality} textureQuality={textureQuality}/>:null}
+      {isList?(presented?<EffekseerStage rune={presented} textureQuality={textureQuality}
         onGlyphClick={()=>choose(presented)}/>:<div className="rune-3d-awaiting">請選擇符文</div>):
         <>
-          {phase==='waiting'?<><WaitingEffekseerStage/>
+          {phase==='waiting'?<><WaitingEffekseerStage textureQuality={textureQuality}/>
             <div className="rune-3d-ritual-status" role="status">正在喚醒符文……</div></>:null}
           {phase==='revealing'&&pending?<EffekseerStage key={pending.birth}
             rune={pending.card} direction={pending.direction} ceremony
             appearance={ceremonySubject} cardSrc={runeImage(pending.card)}
-            quality={sceneQuality} vfxOnly onCeremonyComplete={()=>setPhase(current=>current==='revealing'?'transfer':current)}
+            quality={sceneQuality} textureQuality={textureQuality} vfxOnly onCeremonyComplete={()=>setPhase(current=>current==='revealing'?'transfer':current)}
             onGlyphClick={()=>{}}/>:null}
           {phase==='idle'?<button type="button" className="rune-3d-tap-to-draw"
             onClick={drawOne} disabled={busy}>點選畫面抽牌</button>:null}
