@@ -9,11 +9,12 @@ import {
   Bar,BarChart,CartesianGrid,Cell,Legend,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectMediaStatisticsFacetRows,selectScopeDensityRows,selectSourceTrendRows,selectScopeSourceBreakdownRows,selectFirstScopeStatisticsDate} from '../../loc/galaxy-query';
+import {selectMediaStatisticsFacetRows,selectMediaCrossTagRows,selectScopeDensityRows,selectSourceTrendRows,selectScopeSourceBreakdownRows,selectFirstScopeStatisticsDate} from '../../loc/galaxy-query';
 import {selectRows} from '../../loc/db-query.mjs';
 import {selectFirstDailyRuneDate} from '../../loc/daily-runes';
 import {administrativeSourceTrend} from '../../loc/statistics-admin-source.mjs';
 import {DEFAULT_MEDIA_STYLE_EXCLUSIONS,filterMediaStyleRows,mediaStyleExclusions} from '../../loc/statistics-facets.mjs';
+import {defaultMediaCrossAxes,mediaCrossIntersections,mediaCrossTagCatalog} from '../../loc/media-style-intersection.mjs';
 import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
 import {selectScopeRegistry,defaultScopeData} from '../../loc/scope-data';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation';
@@ -320,6 +321,126 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeC
   </>;
 }
 
+function MediaCrossTagPicker({title,options,selected,onChange}){
+  const chosen=new Set(selected);
+  return <details className="scope-stat-cross-picker">
+    <summary>{title}（已選 {chosen.size} 項）</summary>
+    <div style={{display:'flex',gap:8,flexWrap:'wrap',margin:'8px 0'}}>
+      <button className="loc-button" type="button" onClick={()=>onChange(options.map(x=>x.key))}>全選</button>
+      <button className="loc-button" type="button" onClick={()=>onChange([])}>清除</button>
+    </div>
+    <div style={{maxHeight:210,overflowY:'auto',display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(165px,1fr))',gap:6}}>
+      {options.map(tag=><label key={tag.key} className="scope-setting-toggle" style={{display:'flex',alignItems:'center',gap:6}}>
+        <input type="checkbox" checked={chosen.has(tag.key)} onChange={event=>{
+          onChange(event.target.checked?[...chosen,tag.key]:[...chosen].filter(key=>key!==tag.key));
+        }}/>
+        <span>{tag.label}（{tag.count}）</span>
+      </label>)}
+    </div>
+  </details>;
+}
+function MediaCrossTagStatistics({rows=[],range={},navigation={},zoomLevel=0,onZoomLevelChange}){
+  const [leftOverride,setLeftOverride]=useState(null);
+  const [rightOverride,setRightOverride]=useState(null);
+  const [mode,setMode]=useState('ranking');
+  const [visibleCount,setVisibleCount]=useState(15);
+  const [selectedPair,setSelectedPair]=useState('');
+  const rawExclusions=String(navigation.statExclude||'');
+  const exclusions=useMemo(()=>new Set(mediaStyleExclusions(rawExclusions==='-'?'':(rawExclusions||DEFAULT_MEDIA_STYLE_EXCLUSIONS)).map(x=>x.normalize('NFKC').toLocaleLowerCase())),[rawExclusions]);
+  const baseCatalog=useMemo(()=>mediaCrossTagCatalog(rows),[rows]);
+  const catalog=useMemo(()=>({
+    ...baseCatalog,
+    options:baseCatalog.options.filter(x=>!exclusions.has(x.key))
+  }),[baseCatalog,exclusions]);
+  const tagKeys=new Set(catalog.options.map(x=>x.key));
+  const defaults=defaultMediaCrossAxes(catalog);
+  const left=leftOverride===null?defaults.left:leftOverride.filter(x=>tagKeys.has(x));
+  const leftSet=new Set(left);
+  const right=rightOverride===null?catalog.options.filter(x=>!leftSet.has(x.key)).map(x=>x.key)
+    :rightOverride.filter(x=>tagKeys.has(x));
+  const pairs=useMemo(()=>mediaCrossIntersections(catalog,left,right),[catalog,left.join('\u0000'),right.join('\u0000')]);
+  const selected=pairs.find(x=>x.key===selectedPair);
+  const leading=pairs.slice(0,12);
+  const trendPairs=pairs.slice(0,6);
+  const trendData=useMemo(()=>{
+    const map=new Map();
+    for(const pair of trendPairs){
+      for(const [day,count] of pair.days){
+        const bucket=trendBucket(day,range.bucket||'day');
+        if(!bucket)continue;
+        if(!map.has(bucket.key))map.set(bucket.key,{period:bucket.label,key:bucket.key});
+        const value=map.get(bucket.key);
+        value[pair.key]=(Number(value[pair.key])||0)+count;
+      }
+    }
+    return [...map.values()].sort((a,b)=>a.key.localeCompare(b.key));
+  },[trendPairs.map(x=>x.key+':'+x.count).join('\u0000'),range.bucket]);
+  return <section className="scope-stat-cross" aria-label="多媒體標籤交互統計">
+    <h3>多媒體 Meta Tag 交互統計</h3>
+    <p className="scope-status">兩側標籤皆從現有多媒體 metadata 產生；預選 Mandopop／J-Pop／K-Pop 對其他標籤，沒有的組合不列出。每組每筆媒體只算一次。</p>
+    {!catalog.options.length?<p className="scope-status">目前區間沒有可交互比較的 Meta Tag。</p>:<>
+      <div className="scope-stat-controls" style={{alignItems:'start'}}>
+        <MediaCrossTagPicker title="第一組標籤" options={catalog.options} selected={left} onChange={setLeftOverride}/>
+        <MediaCrossTagPicker title="第二組標籤" options={catalog.options} selected={right} onChange={setRightOverride}/>
+        <button type="button" className="loc-button" onClick={()=>{
+          setLeftOverride(null);setRightOverride(null);setSelectedPair('');setVisibleCount(15);
+        }}>恢復預設搭配</button>
+      </div>
+      <div className="scope-stat-controls">
+        <label><span>圖表</span><select className="scope-select" value={mode} onChange={event=>setMode(event.target.value)}>
+          <option value="ranking">組合數量</option><option value="trend">組合時間趨勢</option>
+        </select></label>
+        <span>符合的標籤組合：{pairs.length.toLocaleString()} 組</span>
+      </div>
+      {!pairs.length?<p className="scope-status">目前選擇沒有共同出現的標籤組合，請調整任一側標籤。</p>:<>
+        <StatisticsChartFrame level={zoomLevel} onChange={onZoomLevelChange} range={range} idPrefix="scope-stat-cross">
+          {mode==='ranking'?<div style={{overflowX:'auto'}}>
+            <div style={{minWidth:480}}>
+              <ResponsiveContainer width="100%" height={Math.max(250,leading.length*38+70)}>
+                <BarChart data={leading.map(pair=>({key:pair.key,label:pair.leftLabel+' × '+pair.rightLabel,count:pair.count}))} layout="vertical" margin={{top:10,right:20,bottom:14,left:6}}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
+                  <XAxis type="number" allowDecimals={false} tick={{fill:CHART_TEXT}}/>
+                  <YAxis dataKey="label" type="category" width={190} tick={{fill:CHART_TEXT,fontSize:11}}/>
+                  <Tooltip contentStyle={CHART_TOOLTIP}/>
+                  <Bar dataKey="count" name="共同作品" fill={CHART_ACCENT} maxBarSize={28}/>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>:<ResponsiveContainer width="100%" height={420}>
+            <LineChart data={trendData} margin={{top:16,right:12,bottom:55,left:0}}>
+              <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
+              <XAxis dataKey="period" angle={-25} textAnchor="end" height={65} tick={{fill:CHART_TEXT,fontSize:11}}/>
+              <YAxis allowDecimals={false} tick={{fill:CHART_TEXT}}/>
+              <Tooltip contentStyle={CHART_TOOLTIP}/><Legend/>
+              {trendPairs.map((pair,i)=><Line key={pair.key} type="monotone" name={pair.leftLabel+' × '+pair.rightLabel} dataKey={pair.key} stroke={PIE_COLORS[i%PIE_COLORS.length]} strokeWidth={2} dot={trendData.length<20} connectNulls={false}/>)}
+            </LineChart>
+          </ResponsiveContainer>}
+        </StatisticsChartFrame>
+        <div className="scope-ranking">
+          {pairs.slice(0,visibleCount).map(pair=><div key={pair.key}>
+            <strong>{pair.leftLabel} × {pair.rightLabel}</strong>
+            <span>{pair.count.toLocaleString()} 件
+              {' '}<button type="button" className="loc-button" onClick={()=>setSelectedPair(selectedPair===pair.key?'':pair.key)}>
+                {selectedPair===pair.key?'收起作品':'查看作品'}
+              </button>
+            </span>
+          </div>)}
+        </div>
+        {visibleCount<pairs.length?<button type="button" className="loc-button" onClick={()=>setVisibleCount(n=>n+15)}>顯示更多組合</button>:null}
+        {selected?<div className="scope-stat-cross-matches">
+          <h4>{selected.leftLabel} × {selected.rightLabel} · {selected.count} 件</h4>
+          <div className="scope-ranking">
+            {selected.media.map(media=><div key={media.id}>
+              <strong>{media.title||media.id}</strong>
+              <span>{media.day||'未標記日期'} {/^https?:\/\//iu.test(media.url)?<a href={media.url} target="_blank" rel="noopener noreferrer">查看媒體</a>:null}</span>
+            </div>)}
+          </div>
+        </div>:null}
+      </>}
+    </>}
+  </section>;
+}
+
 function classLabel(value){
   const text=String(value||'').trim();
   return !text?'':text.endsWith('群組')?text:text+'群組';
@@ -607,6 +728,14 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     refetchOnMount:'always',
     refetchOnWindowFocus:true
   });
+  const crossTagQuery=useQuery({
+    queryKey:['statistics-media-cross-tags',scopeId,queryRange.startDate,queryRange.endDate],
+    queryFn:()=>selectMediaCrossTagRows(targetScopes[0],queryRange),
+    enabled:rankingType==='media_style'&&Boolean(targetScopes[0])&&Boolean(queryRange.startDate&&queryRange.endDate),
+    staleTime:0,
+    refetchOnMount:'always',
+    refetchOnWindowFocus:true
+  });
   const summary=useMemo(()=>buildSummary(trendQuery.data||[],queryRange),[trendQuery.data,queryRange]);
   const sourceCatalog=useQuery({
     queryKey:['statistics-source-taxonomy',scopeId],
@@ -700,6 +829,15 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         {mediaQuery.isFetching?'更新統計中…':'重新整理即時統計'}
       </button>
     </div>:null}
+    {rankingType==='media_style'&&crossTagQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(crossTagQuery.error)}</p>:null}
+    {rankingType==='media_style'&&crossTagQuery.isPending?<p className="scope-status">正在讀取多媒體標籤組合…</p>:null}
+    {rankingType==='media_style'&&!crossTagQuery.isPending&&!crossTagQuery.error?<MediaCrossTagStatistics
+      rows={crossTagQuery.data||[]}
+      range={queryRange}
+      navigation={navigation}
+      zoomLevel={zoomLevel}
+      onZoomLevelChange={setZoomLevel}
+    />:null}
     {mediaDimension&&!mediaQuery.isPending&&!mediaQuery.error?<MediaFacetStatistics
       key={rankingType+':'+String(navigation.statExclude||'')}
       rankingType={rankingType}
