@@ -27,12 +27,12 @@ assert.match(list,/rune-3d-atlas-reading-details/,'the complete original details
 for(const field of ['char_action','extra_rules','extra_notes','rune_evolution_history','myth_story','soul_question','practice_challenge','ritual_advice','harmony_advice'])assert.ok(list.includes('current.'+field),'immediately readable extended field missing: '+field);
 assert.doesNotMatch(list,/閱讀完整資料|閱讀符文資料/,'never require a second click to read full details');
 assert.doesNotMatch(list,/setDetails\(/,'3D gallery does not open a redundant nested details dialog');
-assert.match(info,/expandKeywords=false/,'other homepage and atlas uses retain original keywords presentation');
 assert.match(stage,/disabled=\{!onGlyphClick\}/,'presentation-only 3D glyph is not an inert button');
 assert.match(list,/onPlaybackComplete=\{\(\)=>setShowCardInfo\(true\)\}/,'canonical text surfaces after authored VFX stops');
 assert.match(list,/showCardInfo\?<motion\.div/,'post-VFX reading is a visible within-stage overlay');
 assert.match(list,/setShowCardInfo\(false\)/,'switching runes resets playback and reading');
 const info=read('app/lrunes/RuneCardInfo.jsx');
+assert.match(info,/expandKeywords=false/,'other homepage and atlas uses retain original keywords presentation');
 const art=read('app/lrunes/visual/RuneArtStage.jsx');
 const twoDAtlas=read('app/lrunes/list2/RuneAtlasLab.jsx');
 assert.match(info,/layout==='home'/,'canonical left homepage card renderer must be retained');
