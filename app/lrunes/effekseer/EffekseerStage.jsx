@@ -7,6 +7,7 @@ import {runeGlyphProfile} from './rune-glyph-library.mjs';
 import {AUTHORED_EFFECT_FILES,runeEffectFor} from './rune-effect-library.mjs';
 import {runeIconFor} from './rune-semantic-icons.mjs';
 import {groupStageForRune,cinematicCameraPose,GROUP_IMPACT_AT} from './rune-cinematic-language.mjs';
+import {redirectAmbientFogTexture} from './ambient-fog-assets.mjs';
 
 const SOURCE='/vendor/effekseer/';
 const WASM=SOURCE+'effekseer.wasm';
@@ -150,7 +151,7 @@ const WAITING_AUTHORED_EFFECT=Object.freeze({
   path:SOURCE+AUTHORED_EFFECT_FILES['M:MagicArea'],tuning:{scale:2.2,speed:.8}
 });
 
-function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=false,groupEffect=null,groupStage=null,waiting=false,ambient=false,ambientDepth='rear',ambientPaused=false,quality='high'}){
+function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=false,groupEffect=null,groupStage=null,waiting=false,ambient=false,ambientDepth='rear',ambientPaused=false,quality='high',diagnoseAmbient=false}){
   const canvas=useRef(null);
   const onPlaybackCompleteRef=useRef(onPlaybackComplete);
   onPlaybackCompleteRef.current=onPlaybackComplete;
@@ -215,16 +216,23 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
         // Only this authored smoke emitter receives a genuine native 2048×2048
         // CC0 transparent cloud texture, not an enlarged 128×128 sprite.
         // Original .efkefc files and the 66 rune VFX remain unchanged.
+        const fogRedirects=new Set();
         const textureRedirect=ambient&&effectFile.endsWith('/MxS_foot_smoke2.efkefc')
-          ?(path)=>path.replace('/Texture/smoke_01.png','/Texture/_fog-cloud-2048.png')
-                       .replace('/Texture/star.png','/Texture/_fog-cloud-2048.png')
+          ?(path)=>redirectAmbientFogTexture(path,name=>fogRedirects.add(name))
           :undefined;
         let loaded,started=false,playingHandle=null,settledEffectStarted=false,ambientLastSpawn=0,ambientRetire=null;
         let ambientGhost=null,ambientGhostRetire=null;
         const extras=[];
         loaded=context.loadEffect(effectFile,1,()=>{
           if(!active)return;
-          setStatus('');
+          if(ambient&&diagnoseAmbient){
+            const attributes=renderer.getContext().getContextAttributes();
+            const scene=ambientDepth==='foreground'?'近景':'遠景';
+            const textures=[...fogRedirects].join('、')||'無';
+            setStatus('霧氣'+scene+'：Effekseer 已載入｜素材重導：'+textures+
+              '｜Canvas alpha：'+Boolean(attributes?.alpha)+
+              '｜premultiplied：'+Boolean(attributes?.premultipliedAlpha));
+          }else setStatus('');
           try{
              const handle=context.play(loaded,0,0,0);
              playingHandle=handle;
@@ -535,10 +543,12 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
       try{context?.release();}catch{}
       try{renderer?.dispose();}catch{}
     };
-  },[effect,reduced,ceremony,groupEffect,groupStage,waiting,ambient,ambientDepth,quality]);
+  },[effect,reduced,ceremony,groupEffect,groupStage,waiting,ambient,ambientDepth,quality,diagnoseAmbient]);
   return <div className="rune-effekseer-canvas-wrap">
     <canvas ref={canvas} className="rune-effekseer-canvas" aria-hidden="true"/>
-    {!ambient&&status?<p className="rune-effekseer-status" role="status">{status}</p>:null}
+    {(!ambient||diagnoseAmbient)&&status?<p
+      className={'rune-effekseer-status'+(diagnoseAmbient?' rune-effekseer-fog-diagnostic':'')}
+      role="status">{status}</p>:null}
   </div>;
 }
 
@@ -559,12 +569,12 @@ export function RuneMistBackdrop({phase='idle',quality='high'}){
     <div className="rune-3d-mist-backdrop" data-clearing={clearing?'true':'false'}
       data-quality={quality} aria-hidden="true">
       <EffekseerCanvas effect={AUTHORED_MOON_MIST} reduced={reduced}
-        ambient ambientDepth="rear" ambientPaused={phase==='revealing'} quality={quality}/>
+        ambient ambientDepth="rear" ambientPaused={phase==='revealing'} quality={quality} diagnoseAmbient/>
     </div>
     {quality==='high'&&!reduced?<div className="rune-3d-foreground-mist"
       data-ritual-mist={phase} aria-hidden="true">
       <EffekseerCanvas effect={AUTHORED_FOREGROUND_MIST} reduced={reduced}
-        ambient ambientDepth="foreground" ambientPaused={phase==='revealing'} quality={quality}/>
+        ambient ambientDepth="foreground" ambientPaused={phase==='revealing'} quality={quality} diagnoseAmbient/>
     </div>:null}
   </>;
 }
