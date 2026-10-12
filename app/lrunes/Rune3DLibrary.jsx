@@ -49,6 +49,10 @@ export default function Rune3DLibrary(){
   const [focusId,setFocusId]=useState(null);
   const [showCardInfo,setShowCardInfo]=useState(false);
   const [playback,setPlayback]=useState(0);
+  const [textureQuality,setTextureQuality]=useState('original');
+  useEffect(()=>{
+    setTextureQuality(new URLSearchParams(window.location.search).get('texture256')==='1'?'hd256':'original');
+  },[]);
   const reducedMotion=useReducedMotion();
   const [status,setStatus]=useState('loading');
   const [error,setError]=useState('');
@@ -172,9 +176,14 @@ export default function Rune3DLibrary(){
       <div className="rune-3d-library-title">
         <h2>{runeName(current)} · {current.english_name}</h2>
         <span>第 {current.rune_id} / 66 枚 · {group.name}</span>
+        <button type="button" className="rune-skin-btn" aria-pressed={textureQuality==='hd256'}
+          onClick={()=>{
+            setTextureQuality(value=>value==='hd256'?'original':'hd256');
+            setPlayback(value=>value+1);setShowCardInfo(false);
+          }}>{textureQuality==='hd256'?'粒子貼圖：256 測試':'粒子貼圖：原版'}</button>
       </div>
       <div className={'rune-3d-stage rune-3d-atlas-performance'+(showCardInfo?' rune-3d-atlas-performance--reading':'')}>
-        <EffekseerStage key={current.rune_id+'-'+playback} rune={current} vfxOnly
+        <EffekseerStage key={current.rune_id+'-'+playback} rune={current} vfxOnly textureQuality={textureQuality}
           onPlaybackComplete={()=>setShowCardInfo(true)}/>
         {showCardInfo?<motion.div key={'reading-'+current.rune_id+'-'+playback}
           className="rune-3d-atlas-reading" role="region" aria-label={runeName(current)+'原始符文卡片資料'}
