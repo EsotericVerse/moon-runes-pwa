@@ -1,0 +1,31 @@
+.author-albums-page{display:grid;gap:1.25rem;width:min(1100px,calc(100% - 1rem));margin:0 auto;padding-bottom:3rem;min-width:0}
+.author-albums-page .scope-context-return{margin-bottom:.2rem}
+.author-albums-hero{display:grid;gap:.7rem;padding:clamp(1rem,3vw,2rem)}
+.author-albums-hero .scope-rich-surface p{margin:.55rem 0}
+.author-albums-guide{display:grid;gap:.8rem}
+.author-albums-guide>p{margin:0}
+.author-albums-style-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}
+.author-albums-style-link{display:grid;align-content:start;gap:.4rem;min-width:0;padding:1rem;border:1px solid var(--loc-line);border-radius:14px;text-decoration:none;background:var(--loc-panel);color:var(--loc-text)}
+.author-albums-style-link:hover,.author-albums-style-link:focus-visible{border-color:var(--loc-accent);outline-offset:2px}
+.author-albums-style-link strong{color:var(--loc-heading)}
+.author-albums-style-link span{white-space:pre-line;line-height:1.55;overflow-wrap:anywhere;font-size:.9rem}
+.author-albums-style-link small{color:var(--loc-accent);font-weight:700}
+.author-albums-note,.author-albums-count{color:var(--loc-muted);font-size:.85rem;line-height:1.6}
+.author-albums-collection{display:grid;gap:1rem;min-width:0}
+.author-albums-collection>h2{margin:.5rem 0 0;font-size:var(--loc-type-section-title)}
+.author-albums-card{display:grid;gap:.8rem;min-width:0}
+.author-albums-album-header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem}
+.author-albums-album-header h2{margin:.25rem 0}
+.author-albums-album-header p{margin:.2rem 0}
+.author-albums-open{display:inline-flex;text-align:center;text-decoration:none;min-height:44px;align-items:center}
+.author-albums-introduction{display:grid;gap:.5rem}
+.author-albums-introduction p{margin:0;line-height:1.7}
+.author-albums-tracklist{border-top:1px solid var(--loc-line);padding-top:.8rem}
+.author-albums-tracklist summary{cursor:pointer;font-weight:750;padding:.3rem 0}
+.author-albums-tracklist ol{display:grid;gap:0;list-style:decimal;margin:.6rem 0 0;padding-left:2rem}
+.author-albums-tracklist li{padding:.15rem 0;min-width:0}
+.author-albums-tracklist li::marker{color:var(--loc-muted);font-variant-numeric:tabular-nums}
+.author-albums-tracklist li a{display:flex;gap:1rem;justify-content:space-between;align-items:center;padding:.5rem .7rem;border-radius:9px;text-decoration:none;min-height:44px;overflow-wrap:anywhere}
+.author-albums-tracklist li a:hover,.author-albums-tracklist li a:focus-visible{background:var(--loc-ui-accent-soft);text-decoration:underline}
+.author-albums-listen{color:var(--loc-accent);white-space:nowrap;font-size:.8rem;font-weight:700}
+@media(max-width:640px){.author-albums-style-grid{grid-template-columns:minmax(0,1fr)}.author-albums-album-header{align-items:flex-start;flex-direction:column}.author-albums-open{width:100%;justify-content:center}}
