@@ -4,6 +4,7 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {AnimatePresence,motion,useReducedMotion} from 'motion/react';
 import * as THREE from 'three';
 import {runeGlyphProfile} from './rune-glyph-library.mjs';
+import RuneExtrudedGlyph from './RuneExtrudedGlyph';
 import {AUTHORED_EFFECT_FILES,runeEffectFor} from './rune-effect-library.mjs';
 import {runeIconFor} from './rune-semantic-icons.mjs';
 import {groupStageForRune,cinematicCameraPose,GROUP_IMPACT_AT} from './rune-cinematic-language.mjs';
@@ -644,7 +645,8 @@ export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,directio
           exit={{opacity:0,transition:{duration:reduced?0:.12}}}
           transition={ceremony?{duration:reduced?0:RITUAL_DURATION,times:RITUAL_KEYFRAMES,ease:'easeInOut'}:{duration:reduced?0:4.2,times:[0,.17,.78,1],ease:'easeInOut'}}>
           {showCard?<img className="rune-effekseer-ceremony-card-image" src={cardSrc} alt={word+'符文卡面'}/>:
-            <>{word}{direction?<span className="rune-direction-stroke" aria-hidden="true">{word}</span>:null}</>}
+            <><RuneExtrudedGlyph word={word} profile={profile}/>
+              {direction?<span className="rune-direction-stroke" aria-hidden="true">{word}</span>:null}</>}
         </motion.button>:null}
       </AnimatePresence>
       {!vfxOnly&&!ceremony&&visualReady&&semanticIcon?<motion.img key={'meaning-'+key} className="rune-effekseer-meaning-icon"
