@@ -161,7 +161,7 @@ export default function EffekseerStage({rune,onGlyphClick}){
           aria-label={'查看 '+word+' 之符文'} onClick={onGlyphClick}
           initial={reduced?false:{opacity:0,scale:.75}}
           animate={reduced?{opacity:1,scale:1}:animationFor(word)}
-          exit={{opacity:0}}
+          exit={{opacity:0,transition:{duration:reduced?0:.12}}}
           transition={{duration:reduced?0:4.2,times:[0,.17,.78,1],ease:'easeInOut'}}>
           {word}
         </motion.button>
