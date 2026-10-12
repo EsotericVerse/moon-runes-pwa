@@ -4,6 +4,14 @@
  */
 export const EFFECT_ASSET_BLOBS=Object.freeze([
   {
+    "target": "MAGICALxSPIRAL/MxS_Gohlem_Shield1.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Gohlem_Shield1.efkefc",
+    "sha": "596e939859b2670504f7f8a7e978ab1e8b145bdf",
+    "size": 5074
+  },
+  {
     "target": "Basic/Basic_Homing_Laser01.efkefc",
     "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
     "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",

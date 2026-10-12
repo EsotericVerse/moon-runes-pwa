@@ -124,7 +124,7 @@ assert.match(pkg.scripts.prebuild,/prepare-rune-semantic-icons/);
 assert.notEqual(RUNE_EFFECT_KEYS.Karma,'T:Fire2','Timing/coincidence must not be represented by fire');
 assert.notEqual(RUNE_EFFECT_KEYS.Star,'T:Fire1','Celestial Star must not be generic fire');
 assert.notEqual(RUNE_EFFECT_KEYS.Space,'G:ef_wind03','Space must not be a tornado');
-assert.equal(RUNE_EFFECT_KEYS.Mirror,'SAMPLE:Simple_Ring_Shape2','Mirror uses authored non-ice border');
+assert.equal(RUNE_EFFECT_KEYS.Mirror,'M:Gohlem_Shield1','Mirror uses a shield-shaped authored VFX and optical reflection');
 assert.equal(RUNE_EFFECT_KEYS.Spectrum,'T:Light3','Spectrum must use the authored multicolour light effect');
 assert.match(readFileSync('app/lrunes/effekseer/effekseer-stage.css','utf8'),/data-rune="彩"/);
 
@@ -133,6 +133,8 @@ assert.ok(RUNE_VFX_REVIEW_NAMES.every(name=>RUNE_VFX_REVIEW_STATUS[name]==='reje
 assert.ok(runeEffectFor({english_name:'Root'}).overlays.every(x=>x.key==='B:Homing_Laser01'));
 assert.ok(runeEffectFor({english_name:'Branch'}).overlays.every(x=>x.key==='B:Homing_Laser01'));
 assert.ok(!runeEffectFor({english_name:'Mirror'}).overlays.some(x=>x.key.toLowerCase().includes('ice')));
+assert.equal(runeEffectFor({english_name:'Mirror'}).overlays[0].key,'S:ImageDistortion','shield mirror contains authored reflective overlay');
+assert.ok(EFFECT_ASSET_BLOBS.some(x=>x.target==='MAGICALxSPIRAL/MxS_Gohlem_Shield1.efkefc'),'mirror shield source must be pinned');
 for(const key of ['B:Homing_Laser01','M:Sylph6','NS:MagicShield']){
  const path=AUTHORED_EFFECT_FILES[key]?.slice('Collections/'.length);
  assert.ok(EFFECT_ASSET_BLOBS.some(x=>x.target===path&&x.sha.length===40),'pinned authored VFX missing '+key);
