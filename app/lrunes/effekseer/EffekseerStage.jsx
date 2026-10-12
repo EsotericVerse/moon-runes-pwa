@@ -185,7 +185,11 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
         observer=new ResizeObserver(resize);
         observer.observe(target);
         context=api.createContext();
-        context.init(renderer.getContext());
+        // EffekseerForWebGL defaults to unpremultiplied output, whereas
+        // Three.WebGLRenderer defaults to a premultiplied-alpha canvas.
+        // The mismatch makes transparent particle billboards composite poorly.
+        // Match the two ONLY in the isolated ambient fog context.
+        context.init(renderer.getContext(),ambient?{enablePremultipliedAlpha:true}:undefined);
         let groupHandle=null,groupBaseline=1;
         let impactAsset=null,impactReady=false,impactStarted=false;
         if(ceremony&&groupStage&&AUTHORED_EFFECT_FILES[groupStage.impact]){

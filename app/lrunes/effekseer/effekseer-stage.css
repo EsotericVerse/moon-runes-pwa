@@ -291,7 +291,9 @@
   will-change:opacity,transform;
 }
 .rune-3d-mist-backdrop .rune-effekseer-stage{position:absolute;inset:0}
-.rune-3d-mist-backdrop .rune-effekseer-canvas{opacity:.82}
+.rune-3d-mist-backdrop .rune-effekseer-canvas{
+  opacity:.82;mix-blend-mode:screen;
+}
 .rune-3d-stage[data-ritual-phase="waiting"] .rune-3d-mist-backdrop{
   opacity:.48;transform:translate3d(3%,-2%,0) scale(1.16);
 }

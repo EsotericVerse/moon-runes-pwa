@@ -260,6 +260,10 @@ assert.match(stage,/\/MxS_foot_smoke2\.efkefc/,'correct texture redirect applies
 assert.match(stage,/\/_fog-smoke_01\.png/,'web loader uses corrected transparent copy of the real smoke image');
 assert.match(stage,/\/_fog-star\.png/,'secondary authored image also receives real alpha');
 assert.match(stage,/textureRedirect\);/,'official loadEffect redirect callback resolves masked images');
+assert.match(stage,/ambient\?\{enablePremultipliedAlpha:true\}:undefined/,
+  'ambient Effekseer blending must match the Three.js premultiplied canvas');
+assert.match(cssHero,/\.rune-3d-mist-backdrop \.rune-effekseer-canvas\{[^}]*mix-blend-mode:screen/s,
+  'black-matte smoke cannot render as a rectangle over the moonlit stage');
 assert.match(stage,/groupHandle\.setScale\(grow,grow,grow\)/,'group backdrop changes over the same authored timeline');
 const cinematicCSS=readFileSync('app/lrunes/effekseer/effekseer-stage.css','utf8');
 assert.match(cinematicCSS,/\.rune-3d-foreground-mist\{/);
