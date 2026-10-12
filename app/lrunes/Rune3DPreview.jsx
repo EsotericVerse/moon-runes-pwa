@@ -157,7 +157,8 @@ export default function Rune3DPreview({mode='duel'}){
       <span className="rune-3d-toolbar-label">專屬字樣 · 魔法顯現</span>
     </nav>
     <section className="rune-3d-stage" aria-label={label}>
-      {presented?<EffekseerStage rune={presented} onGlyphClick={()=>{if(latest)choose(latest);else if(isList&&group&&focusedRune)choose(focusedRune);}}/>:
+      {presented?<EffekseerStage rune={presented} direction={isList?null:items[items.length-1]?.direction||null}
+        onGlyphClick={()=>{if(latest)choose(latest);else if(isList&&group&&focusedRune)choose(focusedRune);}}/>:
         <div className="rune-3d-awaiting" role="status">尚未召喚符文。請按下方「召喚符文」，讓文字與魔法出現。</div>}
       <p className="rune-3d-stage-label" role="status">{error||(
         busy?'正在載入符文資料……':isList?(group?'選取符文以查看字義與動畫':'選擇群組，查看獨立文字展示'):

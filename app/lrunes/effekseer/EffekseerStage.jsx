@@ -169,6 +169,24 @@ function EffekseerCanvas({effect,reduced,onReady}){
                      other.setScale(1.65,1.65,1.65);
                      other.setRotation(0,0,overlay.role==='cross-forward'?Math.PI/4:-Math.PI/4);
                      other.setAllColor(255,70,78,255);
+                   }else if(overlay.role==='jade-reflection'){
+                     other.setScale(1.3,1.05,1.3);
+                     other.setAllColor(113,233,154,155);
+                   }else if(overlay.role==='dust-left'||overlay.role==='dust-right'){
+                     const sign=overlay.role==='dust-left'?-1:1;
+                     other.setScale(.8,.95,.8);
+                     other.setLocation(sign*.45,-.15,0);
+                     other.setAllColor(188,181,165,95);
+                   }else if(overlay.role==='root-outer-left'||overlay.role==='root-outer-right'){
+                     const sign=overlay.role==='root-outer-left'?-1:1;
+                     other.setScale(.55,1.35,.6);
+                     other.setRotation(0,0,sign*.75);
+                     other.setAllColor(131,100,72,225);
+                   }else if(overlay.role==='branch-outer-left'||overlay.role==='branch-outer-right'){
+                     const sign=overlay.role==='branch-outer-left'?-1:1;
+                     other.setScale(.65,1.2,.65);
+                     other.setRotation(0,0,sign*.8);
+                     other.setAllColor(140,207,130,225);
                    }else if(overlay.role==='root-left'||overlay.role==='root-right'){
                      const sign=overlay.role==='root-left'?-1:1;
                      other.setScale(.7,.9,.7);
@@ -244,15 +262,22 @@ function EffekseerCanvas({effect,reduced,onReady}){
                   playingHandle.setScale(s,s,s);playingHandle.setLocation(0,-1.5+1.75*Math.min(1,phase*1.8),0);break;
                 }
                 case 'root-down':playingHandle.setLocation(0,.9-2.4*Math.min(1,phase*1.4),0);break;
+                case 'root-branch-down':{
+                  const grow=Math.min(1,elapsed/2.8);
+                  playingHandle.setLocation(0,.6-2.3*grow,0);
+                  playingHandle.setScale(base*(.35+.65*grow),base*(.35+.65*grow),base);
+                  break;
+                }
+                case 'branch-up':{
+                  const grow=Math.min(1,elapsed/2.5);
+                  playingHandle.setLocation(0,-.85+2.1*grow,0);
+                  playingHandle.setScale(base*(.35+.65*grow),base*(.35+.65*grow),base);
+                  break;
+                }
                 case 'root-spread':{
                   const g=Math.min(1,elapsed/2.9);
                   playingHandle.setScale(base*(.18+.82*g),base*(.32+.68*g),base);
                   playingHandle.setLocation(0,.65-1.7*g,0);break;
-                }
-                case 'root-spread':{
-                  const g=Math.min(1,elapsed/2.8);
-                  playingHandle.setScale(base*(.5+.5*g),base*(.4+.6*g),base);
-                  playingHandle.setLocation(0,.7-1.7*g,0);break;
                 }
                 case 'branch-out':{
                   const grow=Math.min(1,phase*1.7);
@@ -303,6 +328,17 @@ function EffekseerCanvas({effect,reduced,onReady}){
                   const sign=role==='root-left'?-1:1,g=Math.min(1,elapsed/3.2);
                   handle.setLocation(sign*(.2+1.2*g),.15-1.6*g,0);
                   handle.setRotation(0,0,sign*(.27+.42*g));
+                }else if(role==='dust-left'||role==='dust-right'){
+                  const sign=role==='dust-left'?-1:1;
+                  handle.setLocation(sign*(.5+elapsed*.19),-.2+Math.sin(elapsed*.65)*.22,0);
+                }else if(role==='root-outer-left'||role==='root-outer-right'){
+                  const sign=role==='root-outer-left'?-1:1,g=Math.min(1,elapsed/3.2);
+                  handle.setLocation(sign*(.25+1.55*g),.2-2.4*g,0);
+                  handle.setScale(.15+.9*g,.2+1.2*g,.6);
+                }else if(role==='branch-outer-left'||role==='branch-outer-right'){
+                  const sign=role==='branch-outer-left'?-1:1,g=Math.min(1,elapsed/2.5);
+                  handle.setLocation(sign*(.3+1.45*g),-.65+2.3*g,0);
+                  handle.setScale(.18+1.0*g,.3+1.3*g,.65);
                 }else if(role==='branch-left'||role==='branch-right'){
                   const sign=role==='branch-left'?-1:1,g=Math.min(1,elapsed/2.6);
                   handle.setLocation(sign*(.27+1.45*g),.3+.75*g,0);
@@ -336,7 +372,7 @@ function EffekseerCanvas({effect,reduced,onReady}){
     {status?<p className="rune-effekseer-status" role="status">{status}</p>:null}
   </div>;
 }
-export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false}){
+export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,direction=null}){
   const reduced=useReducedMotion();
   const [replay,setReplay]=useState(0);
   const [visibleKey,setVisibleKey]=useState('');
@@ -346,7 +382,8 @@ export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false}){
   const effect=useMemo(()=>runeEffectFor(rune),[rune?.english_name]);
   const semanticIcon=runeIconFor(rune);
   const visualReady=reduced||!effect||visibleKey===key;
-  return <div className="rune-effekseer-stage" data-source="effekseer" data-rune={word}>
+  return <div className="rune-effekseer-stage" data-source="effekseer" data-rune={word}
+    data-direction={direction==='正位'?'upright':direction==='半正位'?'semi-upright':direction==='半逆位'?'semi-reversed':direction==='逆位'?'reversed':undefined}>
     <EffekseerCanvas key={key} effect={effect} reduced={reduced} onReady={()=>setVisibleKey(key)}/>
     <div className="rune-effekseer-glyph-position">
       <AnimatePresence mode="wait">
@@ -360,6 +397,7 @@ export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false}){
           exit={{opacity:0,transition:{duration:reduced?0:.12}}}
           transition={{duration:reduced?0:4.2,times:[0,.17,.78,1],ease:'easeInOut'}}>
           {word}
+          {direction?<span className="rune-direction-stroke" aria-hidden="true">{word}</span>:null}
         </motion.button>:null}
       </AnimatePresence>
       {!vfxOnly&&visualReady&&semanticIcon?<motion.img key={'meaning-'+key} className="rune-effekseer-meaning-icon"

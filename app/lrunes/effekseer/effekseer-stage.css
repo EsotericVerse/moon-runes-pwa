@@ -118,3 +118,25 @@
 
 /* Dust effect: desaturate particle texture rather than tinting only the overlay. */
 .rune-effekseer-stage[data-rune="塵"] .rune-effekseer-canvas{filter:grayscale(1) sepia(.19) saturate(.65) contrast(.75) opacity(.78)}
+
+/* The four draw orientations are thin external strokes on the Chinese glyph,
+   not a custom particle system and never a recoloring of its intrinsic ink. */
+.rune-effekseer-stage[data-direction] .rune-effekseer-glyph{position:relative;isolation:isolate}
+.rune-direction-stroke{
+ position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+ font:inherit;line-height:inherit;letter-spacing:inherit;pointer-events:none;
+ color:transparent;-webkit-text-fill-color:transparent;
+ -webkit-text-stroke:clamp(1.35px,.18vw,2.2px) var(--rune-direction-glow);
+ text-shadow:none;
+ filter:drop-shadow(0 0 2px var(--rune-direction-glow)) drop-shadow(0 0 5px var(--rune-direction-glow));
+}
+.rune-effekseer-stage[data-direction="upright"]{--rune-direction-glow:#419aff}
+.rune-effekseer-stage[data-direction="semi-upright"]{--rune-direction-glow:#9bcaff}
+.rune-effekseer-stage[data-direction="semi-reversed"]{--rune-direction-glow:#ffacb2}
+.rune-effekseer-stage[data-direction="reversed"]{--rune-direction-glow:#ec4b59}
+/* Interrupted contour on half-orientations. No ring around the card or the stage. */
+.rune-effekseer-stage[data-direction="semi-upright"] .rune-direction-stroke,
+.rune-effekseer-stage[data-direction="semi-reversed"] .rune-direction-stroke{
+ -webkit-mask-image:repeating-linear-gradient(133deg,#000 0 17px,transparent 17px 24px);
+ mask-image:repeating-linear-gradient(133deg,#000 0 17px,transparent 17px 24px);
+}

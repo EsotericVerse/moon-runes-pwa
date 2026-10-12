@@ -4,6 +4,46 @@
  */
 export const EFFECT_ASSET_BLOBS=Object.freeze([
   {
+    "target": "Basic/Basic_Homing_Laser01.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "Basic/Basic_Homing_Laser01.efkefc",
+    "sha": "c0b4e765cb1846f7f940575b9fbfc9d9b5ea4f4d",
+    "size": 2515
+  },
+  {
+    "target": "MAGICALxSPIRAL/MxS_Sylph6.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "MAGICALxSPIRAL/MxS_Sylph6.efkefc",
+    "sha": "a532861ecc1b133a7b1bc417d21227d6e90d8495",
+    "size": 3304
+  },
+  {
+    "target": "NextSoft01/NextSoft01_MagicShield.efkefc",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "NextSoft01/NextSoft01_MagicShield.efkefc",
+    "sha": "22963dc9365da2e017082facfa24d1694b892e4f",
+    "size": 1971
+  },
+  {
+    "target": "Basic/Texture/Particle01.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "Basic/Texture/Particle01.png",
+    "sha": "ce5ae5e9d0c3561f47e419b9f2b5fa5e1676f344",
+    "size": 7082
+  },
+  {
+    "target": "Basic/Texture/LaserMain02.png",
+    "repo": "munokura/Effekseer-sample-for-RPG-Tkool-MZ",
+    "revision": "7faccfd4c769d49f56877950eb4b815846b952e5",
+    "path": "Basic/Texture/LaserMain02.png",
+    "sha": "8ce8847c2f3c8da653bb2099ac3a48a84655d819",
+    "size": 826
+  },
+  {
     "target": "godot4-samples/Simple_Ribbon_Parent.efkefc",
     "repo": "effekseer/EffekseerForGodot4",
     "revision": "8706d2917c2487efac3a4943c16a10dfcfc5b127",

@@ -29,12 +29,12 @@ assert.deepEqual(RUNE_EFFECT_TUNING.Star.color,[255,255,255,255],'meteor light i
 assert.equal(RUNE_EFFECT_TUNING.Sun.color[0],255,'solar effect must be warm gold');
 assert.equal(RUNE_EFFECT_TUNING.Ore.motion,'ore-rise');
 assert.equal(RUNE_EFFECT_TUNING.Dust.motion,'dust-drift');
-assert.equal(RUNE_EFFECT_KEYS.Root,'SAMPLE:Simple_Ribbon_Parent','Root uses smooth authored ribbon trails');
+assert.equal(RUNE_EFFECT_KEYS.Root,'B:Homing_Laser01','Root uses its own branching authored trail, not former Dust particles');
 assert.ok(!runeEffectFor({english_name:'Root'}).overlays.some(x=>x.key.includes('lightning')),'no lightning root overlays');
-assert.equal(RUNE_EFFECT_KEYS.Branch,'SAMPLE:Simple_Track1','Branch uses authored smooth tracks');
+assert.equal(RUNE_EFFECT_KEYS.Branch,'M:Sylph6','Branch uses its own upward spreading authored effect');
 assert.ok(!runeEffectFor({english_name:'Branch'}).overlays.some(x=>x.key.includes('lightning')),'no lightning branch overlays');
-assert.equal(RUNE_EFFECT_KEYS.Jade,'M:Undine2','Jade moves away from pixelated sample');
-assert.equal(RUNE_EFFECT_KEYS.Dust,'SAMPLE:Simple_Turbulence_Particles');
+assert.equal(RUNE_EFFECT_KEYS.Jade,'NS:MagicShield','Jade uses reflective planar shield sample');
+assert.equal(RUNE_EFFECT_KEYS.Dust,'SAMPLE:Simple_Ribbon_Parent','Dust adopts the specific effect formerly used by Root');
 assert.equal(RUNE_EFFECT_KEYS.Illusion,'M:foot_smoke2');
 assert.equal(RUNE_EFFECT_KEYS.Chaos,'M:Sylph13','Chaos inherits former Fate VFX');
 assert.equal(RUNE_EFFECT_KEYS.Fate,'SAMPLE:Simple_Ring_Shape1','Fate inherits former Chaos VFX');
@@ -130,12 +130,31 @@ assert.match(readFileSync('app/lrunes/effekseer/effekseer-stage.css','utf8'),/da
 
 assert.deepEqual(RUNE_VFX_REVIEW_NAMES,['Mirror','Root','Branch','Jade','Crystal','Diamond','Dust']);
 assert.ok(RUNE_VFX_REVIEW_NAMES.every(name=>RUNE_VFX_REVIEW_STATUS[name]==='rejected'),'the seven remain X until visual review');
-assert.ok(runeEffectFor({english_name:'Root'}).overlays.every(x=>x.key==='SAMPLE:Simple_Ribbon_Parent'));
-assert.ok(runeEffectFor({english_name:'Branch'}).overlays.every(x=>x.key==='SAMPLE:Simple_Ribbon_Parent'));
+assert.ok(runeEffectFor({english_name:'Root'}).overlays.every(x=>x.key==='B:Homing_Laser01'));
+assert.ok(runeEffectFor({english_name:'Branch'}).overlays.every(x=>x.key==='B:Homing_Laser01'));
 assert.ok(!runeEffectFor({english_name:'Mirror'}).overlays.some(x=>x.key.toLowerCase().includes('ice')));
-for(const key of ['SAMPLE:Simple_Ribbon_Parent','SAMPLE:Simple_Track1','M:Undine2']){
+for(const key of ['B:Homing_Laser01','M:Sylph6','NS:MagicShield']){
  const path=AUTHORED_EFFECT_FILES[key]?.slice('Collections/'.length);
  assert.ok(EFFECT_ASSET_BLOBS.some(x=>x.target===path&&x.sha.length===40),'pinned authored VFX missing '+key);
 }
+
+
+assert.notEqual(RUNE_EFFECT_KEYS.Root,RUNE_EFFECT_KEYS.Dust,'owner forbids reusing former Dust as Root');
+assert.equal(RUNE_EFFECT_TUNING.Root.motion,'root-branch-down');
+assert.equal(RUNE_EFFECT_TUNING.Branch.motion,'branch-up');
+assert.equal(RUNE_EFFECT_TUNING.Jade.motion,'jade-reflection');
+assert.ok(runeEffectFor({english_name:'Dust'}).overlays.every(x=>x.key==='SAMPLE:Simple_Ribbon_Parent'));
+assert.match(stage,/case 'root-branch-down'/);
+assert.match(stage,/case 'branch-up'/);
+assert.match(stage,/jade-reflection/);
+assert.match(stage,/data-direction=\{direction/);
+assert.match(stage,/rune-direction-stroke/);
+const drawPreview=readFileSync('app/lrunes/Rune3DPreview.jsx','utf8');
+assert.match(drawPreview,/direction=\{isList\?null:items\[items\.length-1\]\?\.direction\|\|null\}/,'3D draw and daily must pass actual four-value direction');
+for(const token of ['data-direction="upright"','data-direction="semi-upright"','data-direction="semi-reversed"','data-direction="reversed"']){
+ assert.ok(presentation.includes(token),'directional stroke missing: '+token);
+}
+assert.match(presentation,/mask-image:repeating-linear-gradient/,'half-directions require interrupted outline, not solid');
+assert.match(presentation,/-webkit-text-stroke:/,'orientation must hug the glyph outline');
 
 console.log('Rune embodiment: 66 distinct authored VFX, 66 unique semantic symbols, all pinned with provenance.');
