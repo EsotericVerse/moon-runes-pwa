@@ -67,7 +67,7 @@ for(let id=1;id<=66;id++){
 assert.equal(AUTHORED_EFFECT_NAMES.tktk.length,41);
 for(const effect of Object.values(RUNE_EFFECT_KEYS).filter(key=>key?.startsWith('M:'))){
  assert.ok(AUTHORED_EFFECT_FILES[effect]?.includes('MAGICALxSPIRAL/MxS_'),'new authored effect missing: '+effect);
- assert.ok(pinned.has(AUTHORED_EFFECT_FILES[effect].replace(/^Collections\\//,'')),'new authored asset unbundled '+effect);
+ assert.ok(pinned.has(AUTHORED_EFFECT_FILES[effect].slice('Collections/'.length)),'new authored asset unbundled '+effect);
 }
 assert.equal(Object.values(RUNE_EFFECT_KEYS).filter(x=>x?.startsWith('M:')).length,34,'each owner-rejected effect was actually replaced, not just recolored');
 assert.equal(AUTHORED_EFFECT_NAMES.materials.length,8);
