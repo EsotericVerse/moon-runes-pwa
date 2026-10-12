@@ -168,9 +168,9 @@ assert.match(stage,/settledEffectStarted/,'the same authored scene should return
 assert.match(stage,/ceremony=false/,'normal 3D atlas presentation must be unchanged');
 assert.doesNotMatch(stage,/RuneAuraFX|RuneAura|customEmitter/);
 const drawStage=readFileSync('app/lrunes/Rune3DPreview.jsx','utf8');
-assert.match(drawStage,/ceremony=\{!isList\}/);
+assert.match(drawStage,/direction=\{pending\.direction\} ceremony/,'only a real drawn Rune enters the ceremonial mode');
 assert.match(drawStage,/appearance=\{ceremonySubject\}/);
-assert.match(drawStage,/cardSrc=\{!isList\?runeImage\(presented\):null\}/);
+assert.match(drawStage,/cardSrc=\{runeImage\(pending\.card\)\}/,'floating card uses its actual drawn Rune image');
 assert.match(drawStage,/巨大符文字/);
 assert.match(drawStage,/漂浮卡圖/);
 
