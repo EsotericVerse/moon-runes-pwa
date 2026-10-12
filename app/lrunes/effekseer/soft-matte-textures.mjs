@@ -11,7 +11,7 @@ export const SOFT_MATTE_NAMES=Object.freeze([
 
 export function redirectSoftMatteTexture(resourcePath){
   if(typeof resourcePath!=='string')return resourcePath;
-  return resourcePath.replace(/(^|[\/\\])Texture([\/\\])([^\/\\?#]+\.png)(?=$|[?#])/i,
+  return resourcePath.replace(/(^|[\/\\])(Texture)([\/\\])([^\/\\?#]+\.png)(?=$|[?#])/i,
     (original,prefix,folder,slash,filename)=>
       SOFT_MATTE_NAMES.includes(filename)
         ?prefix+folder+slash+'_softmatte'+slash+filename
