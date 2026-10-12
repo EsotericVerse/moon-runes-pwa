@@ -282,6 +282,10 @@ assert.match(hdBuild,/\[4,6\]\.includes\(type\)/,'stage fog requires explicit PN
 assert.match(hdBuild,/CC0/,'licensed high-resolution fog provenance is required');
 assert.match(stage,/ambient\?\{enablePremultipliedAlpha:true\}:undefined/,
   'ambient Effekseer blending must match the Three.js premultiplied canvas');
+assert.match(stage,/premultipliedAlpha:ambient/,
+  'the THREE canvas must use straight alpha for drawn runes and premultiplied alpha for ambient fog');
+assert.match(stage,/antialias:quality==='high'&&!ambient/,
+  'high-quality 3D rune opening must retain native antialiasing');
 assert.match(cssHero,/\.rune-3d-mist-backdrop \.rune-effekseer-canvas\{[^}]*mix-blend-mode:screen/s,
   'black-matte smoke cannot render as a rectangle over the moonlit stage');
 assert.match(stage,/groupHandle\.setScale\(grow,grow,grow\)/,'group backdrop changes over the same authored timeline');
