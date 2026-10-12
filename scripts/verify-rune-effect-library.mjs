@@ -159,4 +159,19 @@ for(const token of ['data-direction="upright"','data-direction="semi-upright"','
 assert.match(presentation,/mask-image:repeating-linear-gradient/,'half-directions require interrupted outline, not solid');
 assert.match(presentation,/-webkit-text-stroke:/,'orientation must hug the glyph outline');
 
+
+assert.match(stage,/RITUAL_GLYPH_MOTION/,'ritual typography must have real zoom-and-return keyframes');
+assert.match(stage,/RITUAL_KEYFRAMES/);
+assert.match(stage,/ritualCameraDistance\(elapsed\)/,'authored VFX should visibly fill then relinquish stage');
+assert.match(stage,/context\.play\(loaded,0,0,0\)/,'only the authored Rune effect is ever played');
+assert.match(stage,/settledEffectStarted/,'the same authored scene should return at reduced footprint');
+assert.match(stage,/ceremony=false/,'normal 3D atlas presentation must be unchanged');
+assert.doesNotMatch(stage,/RuneAuraFX|RuneAura|customEmitter/);
+const drawStage=readFileSync('app/lrunes/Rune3DPreview.jsx','utf8');
+assert.match(drawStage,/ceremony=\{!isList\}/);
+assert.match(drawStage,/appearance=\{ceremonySubject\}/);
+assert.match(drawStage,/cardSrc=\{!isList\?runeImage\(presented\):null\}/);
+assert.match(drawStage,/巨大符文字/);
+assert.match(drawStage,/漂浮卡圖/);
+
 console.log('Rune embodiment: 66 distinct authored VFX, 66 unique semantic symbols, all pinned with provenance.');

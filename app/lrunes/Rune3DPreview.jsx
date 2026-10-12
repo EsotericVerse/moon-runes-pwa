@@ -55,6 +55,7 @@ export default function Rune3DPreview({mode='duel'}){
   const [moon,setMoon]=useState(()=>realMoonPhase());
   const [sample,setSample]=useState(null);
   const [focusedRune,setFocusedRune]=useState(null);
+  const [ceremonySubject,setCeremonySubject]=useState('glyph');
   const lock=useRef(false);
   const live=useRef(true);
   const cards=useRef([]);
@@ -150,14 +151,22 @@ export default function Rune3DPreview({mode='duel'}){
     <header className="rune-3d-header">
       <p className="loc-eyebrow">LunaRunes · 符文顯現</p>
       <h1>{label}</h1>
-      <p>抽中的符文以自己適合的字樣與魔法短暫顯現，抽牌規則維持不變。</p>
+      <p>抽中時由巨大符文字或漂浮卡圖登場，專屬 Effekseer 魔法鋪滿舞台，再一起歸位；抽牌規則維持不變。</p>
     </header>
     <nav className="rune-3d-toolbar" aria-label="顯示與模式切換">
       <span className="rune-3d-toolbar-label">{isList?(group?group.name+'組':'九大群組'):'真實月相：'+moon+' · '+items.length+' 枚'}</span>
-      <span className="rune-3d-toolbar-label">專屬字樣 · 魔法顯現</span>
+      {isList?<span className="rune-3d-toolbar-label">專屬字樣 · 魔法顯現</span>:
+        <div className="rune-3d-ceremony-subject" role="group" aria-label="召喚主體">
+          <button type="button" aria-pressed={ceremonySubject==='glyph'}
+            onClick={()=>setCeremonySubject('glyph')}>巨大符文字</button>
+          <button type="button" aria-pressed={ceremonySubject==='card'}
+            onClick={()=>setCeremonySubject('card')}>漂浮卡圖</button>
+        </div>}
     </nav>
     <section className="rune-3d-stage" aria-label={label}>
       {presented?<EffekseerStage rune={presented} direction={isList?null:items[items.length-1]?.direction||null}
+        ceremony={!isList} appearance={ceremonySubject} cardSrc={!isList?runeImage(presented):null}
+        vfxOnly={!isList}
         onGlyphClick={()=>{if(latest)choose(latest);else if(isList&&group&&focusedRune)choose(focusedRune);}}/>:
         <div className="rune-3d-awaiting" role="status">尚未召喚符文。請按下方「召喚符文」，讓文字與魔法出現。</div>}
       <p className="rune-3d-stage-label" role="status">{error||(

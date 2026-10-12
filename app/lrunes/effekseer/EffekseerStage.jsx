@@ -108,7 +108,29 @@ function iconMotionFor(word){
   return {...base,...(visual[word]||{})};
 }
 function nameOf(rune){return String(rune?.rune_name||rune?.totem||'光').replace(/之符文$/,'').trim().slice(0,1)||'光';}
-function EffekseerCanvas({effect,reduced,onReady}){
+
+/**
+ * Ritual choreography controls *presentation only*: the same licensed authored
+ * Effekseer file supplies all particles throughout the opening and return.
+ * Never create a custom aura/emitter/shader or a second invented effects layer.
+ */
+export const RITUAL_DURATION=3.8;
+export const RITUAL_GLYPH_MOTION=Object.freeze({
+  opacity:[0,1,1,1,1,1],
+  scale:[.58,2.65,3.05,2.95,1.12,1],
+  y:[28,0,0,0,0,0]
+});
+export const RITUAL_KEYFRAMES=Object.freeze([0,.12,.29,.51,.83,1]);
+const smoothstep=t=>{const x=Math.max(0,Math.min(1,t));return x*x*(3-2*x);};
+function ritualCameraDistance(t){
+  // 24 is the original stage distance; 10.8 creates a broad authored-VFX shot.
+  if(t<.48)return 24-(24-10.8)*smoothstep(t/.48);
+  if(t<1.84)return 10.8;
+  if(t<3.25)return 10.8+(24-10.8)*smoothstep((t-1.84)/(3.25-1.84));
+  return 24; // visible, deliberate return to the original stage composition
+}
+
+function EffekseerCanvas({effect,reduced,onReady,ceremony=false}){
   const canvas=useRef(null);
   const [status,setStatus]=useState('正在啟動 Effekseer…');
   useEffect(()=>{
@@ -140,7 +162,7 @@ function EffekseerCanvas({effect,reduced,onReady}){
         context.init(renderer.getContext());
         // The effect data, materials and textures remain exactly as authored.
         const effectFile=effect.path;
-        let loaded,started=false,playingHandle=null;
+        let loaded,started=false,playingHandle=null,settledEffectStarted=false;
         const extras=[];
         loaded=context.loadEffect(effectFile,1,()=>{
           if(!active)return;
@@ -221,7 +243,11 @@ function EffekseerCanvas({effect,reduced,onReady}){
           const delta=Math.min(clock.getDelta(),.05);
           if(started&&!document.hidden){
             elapsed+=delta;
-            if(elapsed>=4.8){
+            if(ceremony){
+              camera.position.z=ritualCameraDistance(elapsed);
+              camera.updateMatrixWorld();
+            }
+            if(elapsed>=(ceremony?8.7:4.8)){
               // One finite reveal, without a persistent blank WebGL animation loop.
               context.stopAll();
               renderer.clear();
@@ -346,6 +372,18 @@ function EffekseerCanvas({effect,reduced,onReady}){
                 }
               }
             }
+            // After the grand arrival, replay the SAME authored file at reduced
+            // footprint; the final composition remains calm instead of vanishing.
+            if(ceremony&&started&&!settledEffectStarted&&elapsed>=3.65){
+              settledEffectStarted=true;
+              try{
+                const small=context.play(loaded,0,0,0);
+                const authoredScale=(effect.tuning?.scale||1)*.58;
+                small.setScale(authoredScale,authoredScale,authoredScale);
+                if(effect.tuning?.color)small.setAllColor(...effect.tuning.color);
+                if(effect.tuning?.speed)small.setSpeed(effect.tuning.speed*.82);
+              }catch(error){if(active)setStatus('特效歸位失敗：'+String(error?.message||error));}
+            }
             context.update(delta*60);
             context.setProjectionMatrix(camera.projectionMatrix.elements);
             context.setCameraMatrix(camera.matrixWorldInverse.elements);
@@ -366,13 +404,13 @@ function EffekseerCanvas({effect,reduced,onReady}){
       try{context?.release();}catch{}
       try{renderer?.dispose();}catch{}
     };
-  },[effect,reduced]);
+  },[effect,reduced,ceremony]);
   return <div className="rune-effekseer-canvas-wrap">
     <canvas ref={canvas} className="rune-effekseer-canvas" aria-hidden="true"/>
     {status?<p className="rune-effekseer-status" role="status">{status}</p>:null}
   </div>;
 }
-export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,direction=null}){
+export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,direction=null,ceremony=false,appearance='glyph',cardSrc=null}){
   const reduced=useReducedMotion();
   const [replay,setReplay]=useState(0);
   const [visibleKey,setVisibleKey]=useState('');
@@ -382,30 +420,32 @@ export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,directio
   const effect=useMemo(()=>runeEffectFor(rune),[rune?.english_name]);
   const semanticIcon=runeIconFor(rune);
   const visualReady=reduced||!effect||visibleKey===key;
+  const showCard=ceremony&&appearance==='card'&&Boolean(cardSrc);
   return <div className="rune-effekseer-stage" data-source="effekseer" data-rune={word}
+    data-ceremony={ceremony?'summoning':undefined}
     data-direction={direction==='正位'?'upright':direction==='半正位'?'semi-upright':direction==='半逆位'?'semi-reversed':direction==='逆位'?'reversed':undefined}>
-    <EffekseerCanvas key={key} effect={effect} reduced={reduced} onReady={()=>setVisibleKey(key)}/>
+    <EffekseerCanvas key={key} effect={effect} reduced={reduced} ceremony={ceremony} onReady={()=>setVisibleKey(key)}/>
     <div className="rune-effekseer-glyph-position">
       <AnimatePresence mode="wait">
         {visualReady?<motion.button key={key} type="button"
-          className={'rune-effekseer-glyph rune-effekseer-glyph--'+profile.font}
+          className={showCard?'rune-effekseer-ceremony-card':'rune-effekseer-glyph rune-effekseer-glyph--'+profile.font}
           data-glyph-family={profile.family} data-glyph-finish={profile.finish}
           style={{'--rune-ink':profile.ink}}
           aria-label={'查看 '+word+' 之符文'} onClick={onGlyphClick}
           initial={reduced?false:{opacity:0,scale:.75}}
-          animate={reduced?{opacity:1,scale:1}:animationFor(word)}
+          animate={reduced?{opacity:1,scale:1}:ceremony?RITUAL_GLYPH_MOTION:animationFor(word)}
           exit={{opacity:0,transition:{duration:reduced?0:.12}}}
-          transition={{duration:reduced?0:4.2,times:[0,.17,.78,1],ease:'easeInOut'}}>
-          {word}
-          {direction?<span className="rune-direction-stroke" aria-hidden="true">{word}</span>:null}
+          transition={ceremony?{duration:reduced?0:RITUAL_DURATION,times:RITUAL_KEYFRAMES,ease:'easeInOut'}:{duration:reduced?0:4.2,times:[0,.17,.78,1],ease:'easeInOut'}}>
+          {showCard?<img className="rune-effekseer-ceremony-card-image" src={cardSrc} alt={word+'符文卡面'}/>:
+            <>{word}{direction?<span className="rune-direction-stroke" aria-hidden="true">{word}</span>:null}</>}
         </motion.button>:null}
       </AnimatePresence>
-      {!vfxOnly&&visualReady&&semanticIcon?<motion.img key={'meaning-'+key} className="rune-effekseer-meaning-icon"
+      {!vfxOnly&&!ceremony&&visualReady&&semanticIcon?<motion.img key={'meaning-'+key} className="rune-effekseer-meaning-icon"
         src={semanticIcon} alt="" aria-hidden="true"
         initial={reduced?false:{opacity:0,scale:.8}}
         animate={reduced?{opacity:1,scale:1}:iconMotionFor(word)}
         transition={{duration:reduced?0:4.2,times:[0,.15,.78,1],ease:'easeInOut'}}/>:null}
-      {!vfxOnly&&visualReady?<SemanticIllustration key={'gesture-'+key} word={word} reduced={reduced}/>:null}
+      {!vfxOnly&&!ceremony&&visualReady?<SemanticIllustration key={'gesture-'+key} word={word} reduced={reduced}/>:null}
       <span className="rune-effekseer-english">{rune?.english_name||''}</span>
     </div>
     <button type="button" className="rune-effekseer-replay" onClick={()=>setReplay(value=>value+1)}>重播文字與效果</button>

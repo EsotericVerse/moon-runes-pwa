@@ -153,3 +153,15 @@
 .rune-3d-orientation-btn:focus-visible{outline:3px solid #f4dfac;outline-offset:2px}
 .rune-3d-orientation-help{color:#d8cfdf;margin:0 0 11px;font-size:.83rem;line-height:1.5}
 @media(max-width:480px){.rune-3d-orientation-selector{gap:5px}.rune-3d-orientation-btn{flex:1 1 calc(33.33% - 5px);min-width:0;padding:10px 5px;font-size:.78rem}}
+
+/* Grand reveal uses the authored rune's Effekseer stage, not generated effects. */
+.rune-3d-ceremony-subject{display:flex;flex-wrap:wrap;gap:6px}
+.rune-3d-ceremony-subject button{cursor:pointer;min-height:44px;padding:9px 13px;border:1px solid #ab9dc0;border-radius:10px;background:#29243d;color:#f9e9d7;font:600 .85rem/1.35 system-ui,sans-serif}
+.rune-3d-ceremony-subject button[aria-pressed="true"]{border-color:#f5d49c;background:#69517f}
+.rune-3d-ceremony-subject button:focus-visible{outline:3px solid #f5d49c;outline-offset:2px}
+.rune-effekseer-ceremony-card{pointer-events:auto;border:0;appearance:none;cursor:pointer;background:transparent;
+ display:flex;align-items:center;justify-content:center;padding:0;max-height:70%;width:clamp(125px,25vw,220px);aspect-ratio:2/3;
+ transform-origin:center;filter:drop-shadow(0 12px 24px #0009)}
+.rune-effekseer-ceremony-card-image{display:block;width:100%;height:100%;object-fit:contain;border-radius:10px}
+@media(max-width:640px){.rune-effekseer-ceremony-card{width:clamp(115px,40vw,185px)}.rune-3d-ceremony-subject button{flex:1 1 auto}}
+@media(prefers-reduced-motion:reduce){.rune-3d-ceremony-subject button{scroll-behavior:auto}}
