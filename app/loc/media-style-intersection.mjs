@@ -32,7 +32,6 @@ export function mediaCrossTagCatalog(rows=[]){
 export function defaultMediaCrossAxes(catalog){
   const options=catalog?.options||[];
   const left=options.filter(item=>isPopDefault(item.key)).map(item=>item.key);
-  if(!left.length&&options.length)left.push(options[0].key);
   const selected=new Set(left);
   return {left,right:options.filter(item=>!selected.has(item.key)).map(item=>item.key)};
 }
