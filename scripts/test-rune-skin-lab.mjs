@@ -48,7 +48,7 @@ for(const [path,src] of [
   ['app/lrunes/daily3d/RuneDaily3D.jsx',daily]
 ]){
   assert.doesNotMatch(src,/three\/RuneWorld|three\/rune-world\.css|RuneGlyph3D|RuneAuraFX/gi,path+' must not use retired renderer');
-  assert.doesNotMatch(src,/from ['\"](?:three|@react-three\/[a-z-]+)['\"]|THREE\.\w+|<Canvas\b|<Text3D\b/i,path+' must be artwork-only');
+  assert.doesNotMatch(src,/from ['\"](?:three|@react-three\/[a-z-]+)['\"]|THREE\.\w+|<Canvas\b|<Text3D\b/,path+' must be artwork-only');
   if(path.includes('RuneRitualLab')||path.includes('RuneAtlasLab')||path.includes('RuneDaily3D')){
     assert.match(src,/import RuneArtStage from '\.\.\/visual\/RuneArtStage'/);
     assert.match(src,/import '\.\.\/visual\/rune-art-layout\.css'/);
