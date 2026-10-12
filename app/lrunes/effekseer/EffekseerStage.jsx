@@ -168,7 +168,11 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
       try{
         const api=await readyRuntime();
         if(!active||!target)return;
-        renderer=new THREE.WebGLRenderer({canvas:target,alpha:true,antialias:quality==='high'&&!ambient,powerPreference:'high-performance'});
+        // The authored Effekseer particles are straight-alpha by default.
+        // The dedicated ambient fog context explicitly opts into premultiplied-alpha;
+        // match WebGL canvas composition to the corresponding Effekseer output.
+        renderer=new THREE.WebGLRenderer({canvas:target,alpha:true,premultipliedAlpha:ambient,
+          antialias:quality==='high'&&!ambient,powerPreference:'high-performance'});
         renderer.setClearColor(0,0);
         const camera=new THREE.PerspectiveCamera(35,1,1,1000);
         camera.position.set(0,0,24);
