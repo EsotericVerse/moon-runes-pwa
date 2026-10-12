@@ -16,7 +16,6 @@ export default function sitemap(){
     '/lo3rwang',
     '/lo3rwang/work',
     '/lo3rwang/other',
-    '/lo3rwang/albums',
     '/lo3rwang/statics',
     '/lo3rwang/culture',
     '/lo3rwang/governance'
