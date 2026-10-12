@@ -102,11 +102,14 @@ export default function RuneExtrudedGlyph({word,profile}){
         camera.lookAt(0,0,0);
         const resize=()=>{
           if(!active||!renderer||!camera)return;
-          const rect=canvas.getBoundingClientRect();
-          if(rect.width<8||rect.height<8)return;
+          // CSS Motion scales the whole glyph up to its authored 3.05x
+          // cinematic size. Use the untransformed layout box here, otherwise
+          // measuring its animated bounding rect rasterizes a smaller bitmap.
+          const width=canvas.offsetWidth,height=canvas.offsetHeight;
+          if(width<8||height<8)return;
           renderer.setPixelRatio(Math.min(Math.max(window.devicePixelRatio||1,2),3));
-          renderer.setSize(Math.round(rect.width),Math.round(rect.height),false);
-          camera.aspect=rect.width/rect.height;
+          renderer.setSize(width,height,false);
+          camera.aspect=width/height;
           camera.updateProjectionMatrix();
           renderer.render(scene,camera);
         };
