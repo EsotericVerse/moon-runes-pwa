@@ -40,12 +40,8 @@ At release time, preserve Supabase PostgreSQL as the primary runtime authority, 
 ## Authority for the remaining Current documents
 
 - Product/semantic definition: `docs/LOC_CANON.md`, `docs/LUNARUNES_DRAW_GOVERNANCE.md`.
-- Product depth and analysis: `docs/FEATURE_DEEP_DIVE.md`, `docs/LOC-AUTOMATIC-ANALYSIS.md`.
-- One UI/NAV contract: `docs/CURRENT_UI_CONTRACT.md`.
-- One domains/deployment/runtime contract: `docs/DOMAIN_ARCHITECTURE.md`.
-- One native App/Local File/SQLite contract: `docs/IOS_APP.md`.
-- Data/permissions: `docs/DATABASE_MIGRATION.md`, `docs/AUTHENTICATION.md`.
-- Directory and dependency ownership: `docs/REPO_DIRECTORY_GOVERNANCE.md`, `package.json`, `package-lock.json`.
-- Released RC's archived build specification: `governance/releases/v0.9.5-rc.md`; earlier release documents remain accessible in their historical Git tags.
+- Public features: `docs/FEATURE_DEEP_DIVE.md`.
+- Implementation, UI, iOS, data boundaries and test contracts: `app/`, `scripts/`, `tests/`, `docs/sql/`, `package.json`, `package-lock.json`.
+- Current RC release note: `governance/releases/v0.9.5-rc.md`. Superseded process/architecture narratives are removed rather than retained as parallel rules.
 
 **Rule:** A completed implementation, an automated check and an explicitly accepted real-device workflow are different statuses. Do not retroactively infer unperformed validation or present a patch-eligible improvement as an unimplemented core system.
