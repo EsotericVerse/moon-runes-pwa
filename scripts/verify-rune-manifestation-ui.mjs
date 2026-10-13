@@ -59,7 +59,9 @@ assert.match(list,/stepRune\(1\)/);
 assert.doesNotMatch(list,/退回 7 枚|快速驗收|測試版本/);
 assert.doesNotMatch(list,/DEMO\[0\]|現成效果試播/);
 assert.match(stage,/runeGlyphProfile\(rune\)/);
-assert.match(twoD,/RuneAtlasLab/);
+assert.match(twoD,/RuneUnifiedView/);
+assert.match(twoD,/feature="list" defaultView="2d"/,
+  'canonical atlas initially renders original art while offering 3D in-page');
 const drawModal=read('app/lrunes/Rune3DPreview.jsx');
 const drawCss=read('app/lrunes/effekseer/effekseer-stage.css');
 assert.match(drawModal,/import \{createPortal\} from 'react-dom'/,
