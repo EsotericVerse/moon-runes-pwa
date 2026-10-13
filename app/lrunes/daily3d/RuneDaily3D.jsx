@@ -15,7 +15,7 @@ const DIRECTIONS=['正位','半正位','半逆位','逆位'];
 const CARD_ROTATION=[0,90,-90,180];
 const FIELDS=[['sit_q','狀況形容'],['sit_a','狀況表達'],
   ['daily_r','每日占卜提醒'],['daily_g','每日占卜引導'],['daily_b','每日占卜祝福']];
-export default function RuneDaily3D(){
+export default function RuneDaily3D({presentationSwitcher=null}){
   const native=useNativeNavigation();
   const [moon,setMoon]=useState(()=>realMoonPhase());
   const [draw,setDraw]=useState(null);
@@ -60,6 +60,7 @@ export default function RuneDaily3D(){
   })).filter(field=>field.text):[];
   return <main className="loc-next-main" data-rune-lab="daily3d">
     <div className="loc-panel rune-skin-lab rune-art-shell">
+    {presentationSwitcher}
     <header className="rune-art-header">
       <p className="loc-eyebrow">LunaRunes · Living Daily</p>
       <h1>每日符文 · 月光指示</h1>
