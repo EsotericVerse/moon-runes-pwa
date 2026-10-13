@@ -32,18 +32,6 @@
 .scope-global:has(~ .loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"])){
   width:min(1180px,calc(100% - 2rem));
 }
-/* 3D Rune draw and daily expand their stage beyond the ordinary 1280px
-   document frame. Match the *inner stage edges*, not the wider padded main
-   wrapper, or the shorter painted NAV creates an artificial center rectangle
-   with unmatched left/right yellow gutters. Other LOC/Nav widths stay fixed. */
-.scope-global:has(~ .loc-next-main.rune-3d-shell[data-rune-3d-preview]){
-  width:min(
-    calc(1880px - clamp(24px,4.4vw,64px)),
-    calc(100% - clamp(16px,3vw,56px) - clamp(24px,4.4vw,64px))
-  );
-  max-width:none;
-  background:transparent;
-}
 .scope-global::after{display:none;}
 .scope-nav{
   display:flex;
