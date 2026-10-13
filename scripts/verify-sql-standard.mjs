@@ -20,6 +20,5 @@ for(const [name,dialect] of dialects){
   assert.equal(update.parameters.includes('changed'),true,name+': UPDATE values must be parameters');
   const remove=db.deleteFrom('works').where('id','=',1).compile();
   assert.equal(remove.parameters.includes(1),true,name+': DELETE values must be parameters');
-  await db.destroy();
 }
 console.log('[sql-standard] Kysely SELECT / INSERT / UPDATE / DELETE compile across PostgreSQL, MySQL, SQL Server and SQLite; no database executed');
