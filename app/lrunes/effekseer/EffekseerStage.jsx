@@ -121,7 +121,7 @@ function nameOf(rune){return String(rune?.rune_name||rune?.totem||'光').replace
 export const RITUAL_DURATION=4.8;
 export const RITUAL_GLYPH_MOTION=Object.freeze({
   opacity:[0,1,1,1,1,1,1],
-  scale:[.58,2.65,3.05,3.05,2.95,1.12,1],
+  scale:[.58,1.68,2.0,2.0,1.92,1.08,1],
   y:[28,0,0,0,0,0,0]
 });
 export const RITUAL_KEYFRAMES=Object.freeze([0,.13,.3,.53,.70,.91,1]);
