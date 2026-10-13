@@ -1,0 +1,183 @@
+name: One-time LOC pre-1.0 archived branch cleanup
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-time-pre1-branch-cleanup.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: loc-pre1-branch-cleanup
+  cancel-in-progress: false
+
+jobs:
+  archive-then-remove-old-branches:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout complete repository history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate exact branch audit and protect main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > expected-branches.txt <<'AUDITED_BRANCHES'
+          chore/add-clerk-react-auth-sdk-20261009|3b925e53d99fff64df3e576e6ba626cb7e0ae990
+          chore/freeze-merged-admin-scope-20261009|9670c358003ccd088b0f93400f02ee38142fc52f
+          chore/retire-superseded-loc-docs-20261011|f91ba120818246376295c5270f7f4bb35d58d712
+          codex/center-feature-hero-copy-20261009|c4ac4a94b80b3ad6e98be2c99decf17a2cd41ea7
+          codex/eight-feature-hero-jpg-20261009|2c060da8614fa2e48aeeaaac15c8865de459f267
+          codex/home-hero-scope-identities-20261009|0ad1e02c59f37127d702261a0d2b3c98d57111f2
+          codex/loc-author-hero-type-and-global-search-20261009|86ff7512cb7f455cc5c1ed19811c80e19660f14b
+          codex/three-home-typography-unification-20261009|03c7328bed509346aa795d474200a8a700d43817
+          docs/app-local-file-workstream-20261010|8dc123597ccd0fcb8db08791678a9ea1ee27ff56
+          docs/cleanup-incorrect-statistics-toggle-20261011|cdf2ad546d7c0fc6620139375db596bbe9591f06
+          docs/loc-confluence-three-month-compare|db285327c277e10ba96ee89da9d213d38f0739ce
+          docs/loc-item-confluence-test-plan|dc248b2a28fefa3870f36c2b4f0a45505b21db93
+          docs/rc2-scope-acceptance-20261010|9005ac6967f8568bf52b463bcdf9f16f9ff014fb
+          feat/author-albums-style-guide-20261012|bbe8a8ef037c578ea62fda4b88f0c398672a145f
+          feat/group-personal-source-taxonomy-20261011|bb9a5a83cf3ae12f4425d03b75cc7cbcb4de4869
+          feat/ios-capacitor-shell|b98927722cc5e7e757d30a6db15b9477555b6e0b
+          feat/ios-capacitor-sqlite-deps|8e347a205b55c730c1ca2cb49ea37375f85907c3
+          feat/ios-device-build|7202687a84be10f270f366c4e24a8b40fc3b8d52
+          feat/loc-culture-selectable-item-confluence|e9be48ad985f37398618ea0d345623dc24095b29
+          feat/loc-rune-author-work-confluence|86b74d9620a8dcea0bee59fee7a714a5d0453e93
+          feat/lrunes-continuous-moon-river-20261010|71c4323b8aad8912af2ba59c694c22f05766ed5b
+          feat/lrunes-daily-triple-analytics|d092b6ce09e0f824cc387e40c600561206a0f8b2
+          feat/lrunes-effekseer-hd256-20261013|65ea95fbd9803f1c398d56489ba7af1c37855262
+          feat/lrunes-four-statistical-modes-20261011|9e30b5dee504f8318765139830a5dd8e40082740
+          feat/lrunes-hero-blocknote-only-20261009|b12fec6d307802b70074d91bfa865589a598e95d
+          feat/lunarunes-official-templates-baseline|6496c65ff0154ad16ba3a6d667524b2d94484da8
+          feat/media-style-cross-comparison-20261012|a49bfa2c0be7d6f529b6c58858a541293a4ad741
+          feat/nav-fixed-folders-20261010|560f7d957583e1305100fe44a3772e02c931b17a
+          feat/scope-favicons-20261010|4d66c22b2c00c0af7133958f38fb69343c1196c1
+          feat/scope-statistics-sharing-consent-20261011|819ab98c13e3a2b96442de4044a83d78bea89e2e
+          feat/settings-native-rune-draw-sqlite-20261011|fe960b4b64554d14bb46aad46e2a7c63efef0213
+          feat/shared-bottom-nav-settings|0b375bc941aabedc72a05159bf9c3dca8156beae
+          feat/statistics-zoom-controls-20261011|2dabbfe1c6b5b722471ff7ba28e48eb378c3c37b
+          feature/lrunes-tianshi-daily-analysis|2dfce94945c8aedd0eb5a896c9dbb3d28ceb1a54
+          fix/3d-duel-action-bar-static-draw-guide-20261011|1839f8554151232f3961598e2cae632af69fdfda
+          fix/admin-locale-summary-label-20261010|99273529de8e36d7cf1f5466ef1bb2458069ab31
+          fix/admin-scope-delete-ui-20261010|bae6dc868ec3d077206a0afd44af397fe9d896b7
+          fix/admin-scope-hierarchy-manage-copy-20261010|ea0ac7f7491aa8ecc9cd05a1cd4aaf682845aef3
+          fix/admin-scope-route-choice-20261009|3973026d3f389b823f8cb1bbf0528c5d7ab571ff
+          fix/admin-scope-workspace-ui-20261010|219270433cb6fa5ff649bd72dad7345c154d8a99
+          fix/author-culture-p5-unfiltered-works-20261011|c7c8d9ef30e551663038ac7241d07fa5a5ff4792
+          fix/author-culture-period-persistence-20261011|9c86ddbacba3eef8075afd93451647caf08cee72
+          fix/cross-zoom-ci-stale-guard-20261011|2f776bdb2a8f1a7ea75690f87ed0bd827ab6c786
+          fix/culture-timeline-initial-viewport-20261011|929f97b73797dcbcace1479efdbdf48549e83c63
+          fix/daily-calendar-login-details-20261010|9c4eacc0af787a007c1fe8f40501b00839025c37
+          fix/daily-rune-independent-loc-comparison-20261011|9814947ae2d421d5b4cd4b4599b884ec5cf76a74
+          fix/effekseer-fog-diagnostics-daily-20261013|510bd5a6e066e5ee3d6a0424d61de3795858289a
+          fix/group-sharing-ci-verifier-20261011|547f669ce9b98fe4fdade5bc7621258dc4fd4d57
+          fix/ios-native-nav-safe-area-20261010|eae3c770163c5813134e62f1519380484d4f2e9a
+          fix/ios-sitemap-navigation-094-20261011|363d2f7dc6ecfc8cec287e7e610f1b5d1c6f0724
+          fix/loc-authority-static-image|841b783eab2b7c668b8ac9aa05bf4abacb2c425b
+          fix/loc-rune-ci-guard-20261011|b7aaea028229e953a7f72b58e50656437ed8af8d
+          fix/loc-rune-ci-guard2-20261011|b5dda26eb1d18fc29e330b183071f7dff8860157
+          fix/loc-rune-content-lane|3a54cf72c86f166cc8136050e16f91cd70bf9bd9
+          fix/loc-stat-chart-empty-eligibility-20261011|a38e10b6c1b7e79b72015ad052a6972f98c5fe9a
+          fix/lrunes-culture-daily-undefined-earliest-20261011|e63db49b4875a7707b6afae318c2dfa03328b540
+          fix/lrunes-direction-zero-count-label-20261011|f34e42cfd66c770a8401b0eb27e012b88639041c
+          fix/lrunes-optional-hero-subtitle-test-20261009|2b6c6045a8712f8fa355656dd3a2e502a8454e0e
+          fix/nav-align-content-width-20261010|9465cdc96947fa29e13de4dc5f8510f1b037a228
+          fix/nav-manage-title-tw-20261009|bfb8ce71c45acfb4ccb896db6dac78f63f47d538
+          fix/nav-normal-flow-20261010|66166d228ee0346969991cbaffbaa3bc3a34a882
+          fix/page-copy-hydration-20261009|535aa6e0002c2a22641b66f8c71e8d673839db08
+          fix/rc094-canonical-return-test-20261011|09ab3f95052bc03ebce032925a9b9ba6c7330042
+          fix/rc094-verify-native-contract-20261011|8c7f8bd1d2b449abbdd16ca05e7343ffc3e45627
+          fix/rc094-webkit-release-gate-20261011|f96acc3fc8e2708c9b0ed36445d9ac4c51909fce
+          fix/remove-author-albums-page-20261012|7afb2020a5b178631efcfda46de42f57ceb96f7f
+          fix/retired-content-type-final-cleanup-20261011|2a8619a4084dbb30b50355e2212ba39f46031749
+          fix/runes-empty-subtitle-20261009|c794571dfb523c9f00303fa476b3fd749aa527fd
+          fix/scope-keyword-rune66-copy-placement-20261009|01e9d2202629342e31139adb7fd1a6d00bf9863f
+          fix/scope-provision-cache-ready-20261010|ba1f57d31af932fdbec2e06d874a2944f87c7317
+          fix/settings-daily-rune-calendar-first-20261010|957da21f5596e1d67460e9a28a82700b99aa6acb
+          fix/source-taxonomy-semantic-key-20261011|80beb68cbf8291a3306d55252a70dfd9c1325411
+          fix/stat-chart-side-zoom-20261011|13cd70fe6251a6a432dc902ea8f9b5a6a9d6bada
+          fix/stat-cross-range-semantic-assert-20261011|6b81f5876f8bf5f0c7cf38500b26b951c2a80c68
+          fix/stat-cross-semantics-zoom-guard-20261011|8b20a9d3546adddf07b39fea32db8f699a3d7fc6
+          fix/statistics-zoom-beside-graph-20261011|224be69aa7d8de59cf481271d25a001d641c04ea
+          fix/statistics-zoom-controls-test-ids-20261011|f4d1dccad7494ad3154273956c347370bd20adee
+          fix/statistics-zoom-verifier-20261011|5bd1b0833fe2800e6e1018eac870f2949987b375
+          fix/stats-cross-range-identity-20261011|dccebbad64456ba650908035789ca62bab48dd25
+          fix/stats-crossover-refresh-on-zoom-20261011|2aac9254f0d0d89363839835650cd64059c3eb6f
+          fix/stats-separate-personal-vs-raw-source-20261011|49b3f1ef328939995074ea3a44065df767e2e319
+          freeze/loc-theme-columns-and-hero-test-20261009|414f7816546fdb7e301a8a6afdef88c2f39057cb
+          freeze/scope-runtime-authority-20261009|a12adcdaf1ec0db95070d1397aee91980a2a30bf
+          freeze/theme-schema-and-runes-subtitle-20261009|b5ce9016c272fae8b0eed7a3d830abaad4f13a81
+          hotfix/rc31-native-feature-routing-20261011|2c724da608b40e24b62715b8f109fa5240803ff5
+          hotfix/rc31-native-tap-viewport-20261011|a08b1cdab99c488bf2f1506347a02907d0cff2bf
+          qa/rc31-navigation-routing-base-20261011|d7fa10eda97945a8f70492c01508ac5ce9b33b33
+          refactor/loc-theme-explicit-columns-20261009|c85a4bb59275da8c706b206b564166b0aa9f53d7
+          refactor/loc-theme-typed-columns-20261009|bbdf27858cd6b395355c0f71fd5b7cc56bed4a02
+          refactor/manage-scope-route-authority-20261009|9970e4a03b8342ad1f4b68f54c16d9cb5183ee17
+          refactor/scope-hero-extra-css-owner-20261010|e0f92bab522b48ee6686c02b0fd3006e164b4626
+          release/0.9.2-rc.1-20261009|5b7ed8a0d25760267fbc70a75f1e2bff6ed755e4
+          release/0.9.2-rc.2-20261010|6e9d1c747740666909a471f033fb3bf4a46eb760
+          release/0.9.2-rc.3-ios-icon|00988a39a9b6435956048b8d5756507bb98646b3
+          release/0.9.2-rc.3.1-ios-20261010|3e30ef4fe3d4fd759dcaa147a4eff999847343f5
+          release/loc-0.9.4-rc-ipa-20261011|81490aa209b7666b2faacfea6e6bf712078a4ff0
+          AUDITED_BRANCHES
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/branches?per_page=100" --jq '.[] | "\(.name)|\(.commit.sha)"' | sort > live-branches.txt
+          { cat expected-branches.txt; printf 'main|%s\n' "${GITHUB_SHA}"; } | sort > audited-with-main.txt
+          diff -u audited-with-main.txt live-branches.txt
+          test "$(wc -l < expected-branches.txt)" -eq 96
+          test -z "$(gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls?state=open&per_page=100" --jq '.[].number')"
+          test "$(gh api "repos/${GITHUB_REPOSITORY}/branches/main" --jq '.commit.sha')" = "${GITHUB_SHA}"
+          echo 'Audited 96 non-main refs; open PR count 0; main fixed.'
+
+      - name: Create verified complete pre-1.0 Git bundle backup
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --prune origin '+refs/heads/*:refs/remotes/origin/*' --tags
+          mkdir -p pre1-backup
+          cp expected-branches.txt pre1-backup/branch-heads.txt
+          git bundle create pre1-backup/loc-before-1.0-branches.bundle --all
+          git bundle verify pre1-backup/loc-before-1.0-branches.bundle
+          git bundle list-heads pre1-backup/loc-before-1.0-branches.bundle > pre1-backup/contents.txt
+          test "$(grep -c 'refs/remotes/origin/' pre1-backup/contents.txt)" -ge 97
+          echo 'Complete Git bundle archive verified before any deletion.'
+
+      - name: Preserve recovery artifact before deletion
+        uses: actions/upload-artifact@v4
+        with:
+          name: LOC-pre1-full-branch-history-recovery
+          path: pre1-backup/
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: Delete audited non-main references only
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(gh api "repos/${GITHUB_REPOSITORY}/branches/main" --jq '.commit.sha')" = "${GITHUB_SHA}"
+          test -z "$(gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls?state=open&per_page=100" --jq '.[].number')"
+          count=0
+          while IFS='|' read -r branch sha; do
+            test -n "$branch"
+            test "$branch" != main
+            case "$branch" in refs/*|/*|*..*) echo "Unsafe branch name: $branch"; exit 1;; esac
+            live_sha="$(gh api "repos/${GITHUB_REPOSITORY}/branches/${branch}" --jq '.commit.sha')"
+            test "$live_sha" = "$sha" || { echo "Branch changed; aborting: $branch"; exit 1; }
+            gh api --method DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/${branch}" >/dev/null
+            count=$((count+1))
+            echo "Removed $count/96: $branch"
+          done < expected-branches.txt
+          test "$count" -eq 96
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/branches?per_page=100" --jq '.[].name' > remaining.txt
+          test "$(wc -l < remaining.txt)" -eq 1
+          grep -qx main remaining.txt
+          echo 'Verified: only main remains; tags and releases were not modified.'
