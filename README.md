@@ -1,6 +1,6 @@
 # LOC｜Luna Codex
 
-**Current version: 0.9.5-rc** — Unified LunaRunes 2D/3D display, environment-routed import, and unsigned iOS IPA candidate.
+**Current version: 0.9.5-rc** — LOC 1.0 release candidate; published 0.9.5 unsigned iOS IPA is separately subject to iPhone acceptance.
 
 This repository contains two related but separately governed systems:
 
@@ -63,9 +63,11 @@ LOC is the framework for organizing text, works, sources, time, relationships, s
 - `docs/LOC-AUTOMATIC-ANALYSIS.md`
 - `docs/LOC-language-theory.md`
 - `docs/DOMAIN_ARCHITECTURE.md`
-- `docs/NAV_GOVERNANCE.md`
+- `docs/CURRENT_UI_CONTRACT.md` — includes the single NAV/favorites contract
 - `docs/REPO_DIRECTORY_GOVERNANCE.md`
-- `docs/CURRENT_UI_CONTRACT.md`
+- `docs/RELEASE_ROADMAP.md` — one current release/patch checklist
+- `docs/IOS_APP.md` — native packaging, Local File, SQLite
+- `docs/DATABASE_MIGRATION.md` — provider, schema, portability
 
 > 系統幫你看見軌跡，但不替你決定你是誰。
 

@@ -1,95 +1,51 @@
-# LOC Release Roadmap
+# LOC — Current Release and Maintenance Plan
 
-## Current — 0.9.2-rc.2 (2026-10-10)
+**Current source:** `main` · **package:** `0.9.5-rc` (check `package.json`) · **as of:** 2026-10-14  
+**1.0.0 candidate date:** 2026-10-16, the first anniversary of LOC's naming; **tentative, not a guaranteed publication**.
 
-本版延續 RC1 的 Hero／CSS／Scope 架構，不新增平行模組，將 2026-10-09 至 10-10 已合併至 Current `main` 的治理、資料庫相容性與管理工作台修正定錨為 RC2。
+This is the **only Current release-readiness and outstanding-work document**. Historical RC plans and the old TODO are not parallel product authority. Published Git Tags and GitHub Releases retain immutable version history.
 
-- Scope 管理：整合 Scope Registry 的左至右 vis-network 階層樹、Attr 摘要先行、明確的 Domain／Directory 路由資訊，以及 `silver.manage` 的 NAV／頁面文案欄位編輯（PR #491–#493）。
-- 動態 Scope 建立：Supabase `api.provision_scope` 完成六張表後會通知 PostgREST reload schema；前端針對 schema cache 短暫延遲重試、辨認「已建立但仍在等待讀取」與「建立失敗」，避免重複新增（PR #494；資料庫 Migration 已套用）。
-- Scope 刪除：vis-network 與 Attr 入口統一使用頁內確認，要求輸入 ID；RPC 回報刪除後再次核對 Registry 才移除節點，不再依賴瀏覽器 prompt 或先刪畫面（PR #495）。
-- 語系 Attr 摘要改用與選單一致的「繁體中文／简体中文／English」，資料庫仍存 `zh-Hant`／`zh-Hans`／`en`（PR #496）。
-- 沿用已合併的 `loc_theme` 具名型別欄位與數字 Theme ID 1–8（PR #486）；過時舊方案 PR #485 已關閉，不重新合併。
-- Branch Governance：現存已完成分支 Freeze，僅 `main` 與進行中的 `feat/ios-device-build` 保持 Active；手機實機 IPA 建置 PR #479 不納入 RC2 完成驗收。
-- **Scope 新增／刪除與核心節點管理已由使用者在正式站確認正常，這是 RC2 升版的驗收前提。** Import 真實檔案 round-trip、私密 iOS 實機驗證及未覆蓋的跨裝置／權限邊界仍為 Pending。本版不是 1.0，未驗收項目不因升版視為完成。
+## Release intent
 
-自動化需以 RC2 合併 commit 的對應檢查為準；未取得結果以前不標記通過。詳細待驗收項目以 `docs/TODO.md` 為準。
+LOC's core framework is considered ready for an initial stable release by the author. The final 1.0 preparation is **repository/version-control cleanup, coherent Current documents, and release packaging**, not a new major feature sprint. Small correctable issues, UI polish and import edge cases may proceed under `1.0.1`, `1.0.2`, etc. A version number is not a claim of perfect or universal real-device testing.
 
-## Previous — 0.9.2-rc.1 (2026-10-09)
+At release time, preserve Supabase PostgreSQL as the primary runtime authority, existing Registry/Manage/Galaxy/Time mappings, canonical content, Auth/RLS boundaries, LunaRunes symbols and approved 2D/3D VFX. Do not rewrite data or change existing published release tags for cosmetic cleanliness.
 
-0.9.2 RC 是以已合併的四功能 Hero 圖片與文字定位、首頁字級、固定 Scope 標誌，以及 0.9.1 CSS 減法為基線的**穩定／修 bug 候選版**，不宣稱所有人工驗收已完成。
+## Current completed capability and evidence
 
-- LOC 四功能 Hero 使用 `pics/LOC-*.jpg`；作者與符韻四功能 Hero 共用 `pics/scope-*.jpg`，保留現有文案、編輯入口與字型規則。
-- LOC／作者四功能 Hero 文字垂直置中；符韻保留既有排版。三站首頁的 X／光之定錨點／黃色小圓為固定 Scope 身分識別，不受 Scope Group 變動影響。
-- 既有 Scope／Group、搜尋、文化、統計、治理及管理模組不因升版另造平行結構。**後續工作以修 bug、相容性和既有功能回歸為主，不擴張新的功能範圍。**
-- **Import：Pending（未人工實測）**。本版不將自訂 JSON／巢狀欄位、多檔預覽、有界分批寫入與中斷重跑標記為驗收通過；待使用者安排真實來源檔測試。
-- 桌面／手機自動化、公開 DB probe、建置由對應版本 commit 的 CI 確認；未執行的實機人工 smoke、CRUD／Auth 權限及大型資料壓力測試保留於 `docs/TODO.md`。
+- **Core**: Scope/Scope Group Registry, reusable static shell, Galaxy text/media, Source/Time mapping, Search, Statistics, Culture, Governance and authorized management are implemented on Current main.
+- **Navigation**: one global NAV, personal favorites/folders, six shared dock actions, and Scope-aware canonical web/native routes.
+- **LunaRunes**: the 66-symbol Canon, draw/daily/library/game functions and unified 2D/3D experience retain their separate authored rules.
+- **iOS**: Capacitor arm64 builds and unsigned IPA packaging exist; `v0.9.5-rc` has a successful published IPA. This does not assert signed installation or iPhone acceptance.
+- **Environment-based file routing**: native App uses private Local File, website uses authorized database import. Neither environment is selected by screen dimensions.
+- **Version control**: 96 obsolete branch refs were cleaned after verified Git Bundle backup; Current work enters `main` without new PRs unless expressly authorized. Preserve official Releases/Tags, keep only active release automation.
+- **Verification**: report specific workflow run SHA and status; GitHub CI/build/browser checks and actual on-device/manual use are distinct evidence.
 
-## Previous — 0.9.1-rc.1 (2026-10-09)
+## 1.0 packaging checks
 
-0.9.1-rc.1 是在已完成 0.9.0 RC1 後、以 Current `main` 為底的 **CSS 減法與版面穩定性候選版**；沿用原有資料權威、Scope／Theme／Hero 架構，不增加平行 DOM、主題系統或新功能。
+1. Freeze the exact `main` commit to publish, check `package.json`/`package-lock.json`, README, native version/build number and release notes are consistent.
+2. Run Current repository contracts (`npm run verify`), public DB read contract, static build, desktop/mobile browser checks and GitHub Pages deployment; fix true blockers without suppressing failing assertions.
+3. Confirm no broken main navigation, silent wrong-Scope writes, authorization/RLS bypasses, missing essential bundle assets or unusable primary flows. **Genuine data-loss, privacy or authorization regressions are blockers; ordinary small defects can be patched.**
+4. For an iOS deliverable, independently run Xcode arm64, validate Bundle ID, AppIcon, numeric 66 cards, export of static routes and the IPA artifact. Label it **unsigned** until locally signed and tested; web acceptance must not be represented as iPhone acceptance.
+5. Publish a new immutable `v1.0.0` tag/Release only after the actual release decision. No early tagging because of the anniversary alone.
 
-### 本次相對於 0.9.0 RC1 的調整
+## Post-release acceptance / patch queue (not automatically 1.0 blockers)
 
-- LOC／作者首頁共用 Block Renderer 保留；清除已退役的作者 Hero DOM 路徑與僅服務於舊頁面的樣式。
-- 整理 `home-content.css`、`responsive.css`、`uiux.css`、`features.css` 中可證實未使用的歷史覆寫；不改變主題色彩和符文遊戲樣式。
-- 保留 DB-backed 的 43 個底層 Theme Token 與當前管理合約；改變底層 Token 或將八個語意控制項落地，**不是本次 CSS 減法的交付項目**。
-- 加入 CSS／DOM 收斂的回歸 contract，維持既有 Next Build、public DB、Playwright 桌面／手機驗證門檻。
-- 原 0.9 RC1 後的 Keyword Attr 分批寫回與 SQL 修正由 Current 承接，不回填舊版 tag 或歷史紀錄。
+- Website JSON Import/Source Refresh: real sample data round-trip; custom nested mapping, duplicate UID/native IDs, bounded batches, partial failures, permissions and provenance, ensuring no unintended duplicates.
+- iPhone: native Local File import/list/read/delete, `LibraryNoCloud` persistence, offline behavior, Files picker/Share, byte-for-byte verification and no unexpected uploads; App-specific SQLite binary backup/restore and daily Rune permission boundaries.
+- Remaining device smoke: NAV/favorites/folders, safe-area and touch, 2D/3D/3D ambient fog, daily Rune/draw/library, Account/OAuth and error/empty states; visual approval is distinct from automated tests.
+- Scope/Group and managed features: Admin mapping, source-category sharing/revocation, source refresh, media/artist metadata/provenance, Culture cross-Scope timeline, Statistics, Keyword Class analysis and large-corpus performance.
+- Verify future feature descriptions against deployed behavior; optional Clerk/organization auth and more advanced Group collaboration stay **separately proposed work**, never silently enabled for 1.0.
 
-### 驗證與未完成責任
+## Authority for the remaining Current documents
 
-版本必須以對應 commit 的 CI 成功為自動化依據；目前仍有人工 smoke、匯入 round-trip、管理權限與大型 corpus 性能等項目，詳見 `docs/TODO.md`。0.9.1 RC 不是 1.0 完成宣告。
+- Product/semantic definition: `docs/LOC_CANON.md`, `docs/LUNARUNES_DRAW_GOVERNANCE.md`.
+- Product depth and analysis: `docs/FEATURE_DEEP_DIVE.md`, `docs/LOC-AUTOMATIC-ANALYSIS.md`.
+- One UI/NAV contract: `docs/CURRENT_UI_CONTRACT.md`.
+- One domains/deployment/runtime contract: `docs/DOMAIN_ARCHITECTURE.md`.
+- One native App/Local File/SQLite contract: `docs/IOS_APP.md`.
+- Data/permissions: `docs/DATABASE_MIGRATION.md`, `docs/AUTHENTICATION.md`.
+- Directory and dependency ownership: `docs/REPO_DIRECTORY_GOVERNANCE.md`, `package.json`, `package-lock.json`.
+- Released RC's archived build specification: `governance/releases/v0.9.5-rc.md`; earlier release documents remain accessible in their historical Git tags.
 
-## Previous — 0.9.0-rc.1 (2026-10-08)
-
-0.9.0-rc.1 以 2026-10-08 的 Current `main`（發版工作起點 `64ccad0b2bd4376fae1b41c882c7b55ca16433ad`）為程式基線，正式將已在主線實作的 Scope／Scope Group 能力納入 Release Candidate。本次定錨只變更版本、文件與候選版發布流程；不引入新的產品功能、CSS 特例、資料庫結構或 Canon 規則。
-
-### 已納入程式基線
-
-- LOC／月典與 LunaRunes／月之符文的獨立治理；共用 Statistics／Culture／Search／Governance 與各自的專屬頁面。
-- `silver.scope_registry.parent_scope_id` 是 Group 成員關係 authority；一般 DB 新建 Scope Group 以 Registry Overview 與導引為主，**LOC (`loc`) 特別保留跨 Scope Culture 交會時間長河與綜合來源、Statistics 合併數量／比例／趨勢**。各 Scope 仍以 PostgreSQL 精準 query 與有界結果負責自身 corpus；LOC 沒有另存混合 corpus。
-- 既有具名路由與固定 `/scope/.../?scope=<id>` 通用 static shell；Scope Registry 負責動態解析，一般 Scope 不增加 bespoke filesystem routes。
-- 新 Scope 的 Config／Galaxy／Galaxy Media／Time／Keywords 五件套，以及以獨立 UUID copy-on-create 的 Rune66 預設 Keyword Class；不回寫來源 Scope、不使用 LunaRunes Canon 作通用 Scope fallback。
-- Admin／Manage 的 Scope、Scope Group、Keyword Class 與 Time 編輯、Source Refresh bounded delta、權限與 canonical visibility 均有 Current 實作與自動化 contract。
-- LunaRunes 的 Draw、Daily、Directory、Game、OW3gs 等既有路徑和九組符文 Canon 維持原有責任。
-- 共用 Hero／Theme／Navigation、區塊式編輯與 Statistics／Culture 管理頁維持既有 Current 架構，不因版本升級增加平行實作。
-
-### 驗證與限制
-
-- 候選版必須以 CI 的 `npm run verify`、public DB probe、Next build/static export 和 Playwright UI checks 成功為自動化證據。
-- 既有 `main` 工作流程在定錨前曾成功，但不等於 RC commit 自身已通過；RC 應以正式 tag 所指 commit 的結果為準。
-- 公開頁 desktop／mobile smoke、Import 與文章發布／編輯保存回讀、管理 CRUD／權限、真實大 corpus performance、loading／failure state 等人工驗收**尚未全部簽核**。
-- 詳細驗收清單以 `docs/TODO.md` 為準；既有 0.9 readiness 記錄見 `governance/reviews/rc09-readiness-20261008.md`。
-- 候選版只代表「可進一步驗收與展示」，不是 1.0、不是「所有測試均已完成」，更不宣稱未執行的人工測試已通過。
-
-## Earlier — 0.8.6-RC
-
-0.8.6-RC 是之前以公開基本功能與 LunaRunes Current 功能為範圍的候選基線，包含：PostgreSQL SSOT、FeaturePage／Page Composition、權限與公開功能旗標隔離、Search／Statistics／Culture 精準查詢、LunaRunes 66 符＋第零符德、抽牌與每日紀錄、圖鑑、遊戲，以及 Hero／Theme／Auth／Management 自動化驗證。此版本留下的人工驗收責任**完整承接**到 0.9.0-rc.1，不因版本升級視為完成。
-
-## 0.9 Scope Group architecture
-
-0.9 的主要架構目標已在 Current `main` 實作：由 Registry 與 `silver.manage` 定義 Scope／Scope Group 與資料表責任；一般新建 Group 不自行建立跨 Scope corpus aggregate，但 LOC (`loc`) 保留原有跨 Scope 唯讀 Culture／Statistics 比較；一般 Scope copy-on-create 並使用通用 static shell；固定 canonical 更新由 Admin／Manage 完成，AI 並非必要 write path。後續重點是以實際資料進行操作驗收與錯誤處理回測，而非再擴張一套重複的 Scope system。
-
-## 0.9 RC 後續收尾（2026-10-09）
-
-0.9.0-rc.1 的固定 tag 仍是既有展示候選版。其後 Current `main` 已合併 Keyword Attr 分批寫回、進度百分比與 SQL WHERE 條件修正；這些是 **tag 之後** 的修正，不追溯改寫 RC1 發版紀錄。
-
-0.9 管理工作台以既有 Admin Registry、Scope Settings、Import、Period、Keyword 模組為基礎；Current 主要責任是**既有入口的實際操作驗收與 bug 修復**，不是擴充第二套工作台或資料權威。Import 已有程式入口，但尚未完成真實資料 round-trip 驗收（Pending）。
-
-## 1.0 Release
-
-### 文件定位
-
-1.0 對外功能文件以 `docs/FEATURE_DEEP_DIVE.md` 作為深度能力介紹：分析目的、資料機制、跨功能關係、具體情境及治理限制。不再以新手操作教學作為主要文件交付；現有已校閱的網站文案與 Canon 不因文件改版而覆寫。Import 等剩餘工作區實際驗收完成後，再比對深度介紹與最後 runtime 行為。
-
-1.0 之前仍需完成：
-
-- image multimedia integration 與正確的關係／provenance；media 保持 first-class，不製造空白 Galaxy text。
-- governed import workflow 與文章發布／編輯 round-trip 實測。
-- desktop/mobile responsive、loading、failure-state、deployment regression。
-- Scope extension、Admin configuration、權限與大型 corpus 的實際驗證。
-- 保持 Canon、README、Roadmap、runtime contract 與實際資料權威一致。
-
-## Release rule
-
-不以提高版本號掩蓋未完成事項。每一版只描述 Current 已實作的功能、已取得的驗證證據與尚未完成的責任；release branch 由最新 `main` 建立，合併後 freeze。
+**Rule:** A completed implementation, an automated check and an explicitly accepted real-device workflow are different statuses. Do not retroactively infer unperformed validation or present a patch-eligible improvement as an unimplemented core system.

@@ -1,6 +1,27 @@
-# 月典 App｜設定中的共用符文體驗（LOC8 風格延續）
+# LOC iOS App — Current native contract
 
-## 定位
+**Source:** latest `main`; actual candidate version comes from `package.json`. The released `v0.9.5-rc` unsigned IPA is a fixed historical artifact and does not automatically acquire later commits.
+
+## Build and packaging
+
+- `capacitor.config.json` sets `appId: cc.lo3rwang.loc.mobile`, `appName: LOC`, and `webDir: out`; no remote `server.url` is configured.
+- Web assets: `npm ci` → `npm run build` → Next.js static `out/`; iOS project generated in CI using `npx cap add ios` and `npx cap sync ios`.
+- Physical iPhone target: GitHub Actions `.github/workflows/ios-device-build.yml` (manual unsigned IPA) and current RC publisher `.github/workflows/publish-rc095-ipa.yml`. Xcode `iphoneos` arm64 `CODE_SIGNING_ALLOWED=NO`, not iOS Simulator packaging.
+- The 66 original images remain `01.png`–`66.png`; `scripts/prepare-ios-static-assets.py` validates the permanent filenames rather than renaming assets. Use the same `runeImage` URL source in browser/native.
+- Preserve the approved native AppIcon, Bundle ID and `CFBundleShortVersionString`/`CFBundleVersion` checks. As of 0.9.5-RC the native bundle reports `0.9.5 (7)`.
+- **Unsigned IPA is not directly installable**. Signing/provisioning is performed on the user's machine through a supported signer. Never commit/upload Apple credentials, provisioning profiles or private files.
+- Website Playwright, GitHub Pages success and iOS arm64 compilation do **not** count as installed-device WKWebView/tap/navigation, native plugin, privacy or offline acceptance.
+
+## App/Web automatic import routing
+
+- Native Capacitor iOS App → Global Settings / files → `PrivateLocalFiles` → isolated `Directory.LibraryNoCloud` on device (raw original bytes, not uploaded to Supabase/Neon).
+- Desktop or mobile **browser website** → Global Settings / files → `ManagementImportPanel` → authorized Scope's Supabase primary database through the established PostgREST/RLS boundary; JSON mapping, bounded write batches, source refresh and duplicate checks remain in this web workflow.
+- Routing is automatic from **native runtime versus web**, not from screen size. Native Local File is not equivalent to structured database JSON ingestion. It is also not the Rune-specific SQLite backup module.
+- iOS real-device Local File round-trip, persistence, deletion, Files picker, Share and offline privacy still require real installation/acceptance; future small issues can be fixed in a patch.
+
+## Rune-specific local SQLite and personal dashboard
+
+### Role and governance
 
 「設定」是全域入口，不是符韻 Scope 專用的管理工具；原生 iOS App 依 LOC8 晝夜畫面構想，把今日符文、抽取操作、行事曆與近期位向分析組成可操作的個人觀測面板。原本 LunaRunes 中的符文母資料、66 張卡牌、規則與 Canon 不移轉所有權；這裡只重用成熟的抽牌／解讀功能。現有全域六鍵 NAV 順序、名稱與功能不變。
 

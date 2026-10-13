@@ -1,8 +1,8 @@
 # LOC／LunaRunes 深度功能說明
 
-**定位：** 0.9 RC 已實作能力的分析型導覽；作為 1.0 功能介紹的維護基礎。  
+**定位：** Current LOC 已實作能力的分析型說明；供 1.0 及後續維護使用。  
 **文件類型：** Feature Deep Dive，不是新手操作教學、發版驗收報告或第二份 Canon。  
-**內容基準：** Current main，2026-10-09。正式可用性仍以實際部署與驗收紀錄為準。
+**內容基準：** Current `main`，2026-10-14。正式可用性仍以實際部署與驗收紀錄為準。
 
 ## 一、LOC 是怎樣的分析框架
 
@@ -111,7 +111,7 @@ Scope 定義獨立的資料與治理範圍；Scope Group 定義成員的組織�
 
 Current 的正式管理 role **只有 `scope` 與 `admin`**：Scope 管理員依 `silver.manage` 的授權對應管理自己的 Scope，Admin 管理全域 Registry／Group／Mapping。Scope Group 是階層資料，不是第三種權限；登入狀態、public flag 與 searchable 也不是 role。Current Admin 已有 Registry 階層、群組建立、Parent 調整、Scope mapping、Theme 與權限相關功能。各 Scope 的 Governance／Manage 另有基本設定、發表文章、資料匯入等入口。
 
-但**整合成完整且易操作的 Scope 管理工作台，仍是 0.9 收尾的主要工作**。本文件介紹已存在的責任與能力，不把尚未完成的管理介面包裝成正式交付。
+管理工作台已具現行整合入口；剩餘的真實資料匯入、少見錯誤情境與跨裝置手動驗收列在唯一維護中的 `docs/RELEASE_ROADMAP.md`，不將局部待修項目描述成缺少整套核心工作台。
 
 ## 七、Import／Source Refresh：來源可追溯、重複資料可辨識
 
@@ -123,7 +123,7 @@ Current 的正式管理 role **只有 `scope` 與 `admin`**：Scope 管理員依
 
 Media URL／provenance 與作品關係須保持獨立明確。系統不應為一則只有圖片或影片 URL 的記錄製造假正文，也不應因來源變更失去可追溯的 native ID。
 
-**1.0 gate：** Import 實際資料回合測試、權限、重複處理、部分失敗及 provenance 驗證尚須完成；這是發版品質要求，不是已通過的功能宣稱。
+**驗收邊界：** Import 的真實資料 round-trip、重複、部分失敗、權限與 provenance 尚需人工測試。一般小修可排入 1.0.x patch，但涉及資料遺失或未授權寫入的缺陷仍不得忽略。
 
 ## 八、LunaRunes：獨立符號語言，不是通用關鍵詞模組
 
@@ -157,6 +157,6 @@ LunaRunes 可以成為 LOC 研究、分類及文化觀察的對象，但不能�
 - Canon／字義與定義：docs/LOC_CANON.md、docs/LUNARUNES_DRAW_GOVERNANCE.md。
 - 結構與 UI 契約：docs/CURRENT_UI_CONTRACT.md、docs/DOMAIN_ARCHITECTURE.md。
 - 詳細分析責任：docs/LOC-AUTOMATIC-ANALYSIS.md。
-- 發版與未完成驗收：docs/RELEASE_ROADMAP.md、docs/TODO.md。
+- 發版與未完成驗收：docs/RELEASE_ROADMAP.md。
 
 **1.0 前應再核對** Scope 管理工作台最後的 UI、Import 真實 round-trip、媒體來源整合、行動裝置及 failure state，並依最終 main 更新本文件的能力狀態；不得因說明文件已撰寫就勾選產品驗收完成。

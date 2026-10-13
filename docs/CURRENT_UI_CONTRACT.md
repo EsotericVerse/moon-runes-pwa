@@ -1,6 +1,6 @@
 # Current UI Contract
 
-**Version:** 0.9.1-rc.1
+**Authority:** Current `main` UI contract; package version is maintained in `package.json`.
 
 ## Identity
 
@@ -21,8 +21,8 @@ Current 共用功能固定為：
 
 LunaRunes 首頁主流程固定為：
 
-1. Hero 主視覺：LunaRunes artwork、單卡抽籤與每日符文主入口。
-2. 次要功能列：符文圖鑑、符文遊戲、每日符文紀錄。
+1. 單一主要入口：「抽一張符文」、「每日符文」、「符文圖鑑」；各入口內可切換 2D 原創美術及 3D 符文特效，不重複列出兩套主入口。
+2. 次要入口保留符文遊戲與每日符文紀錄；`/card3d/.../` 舊路徑可相容進入 3D，不建立第二套首頁主選單。
 3. 月之符文籤詩系統介紹。
 4. 基本判讀順序。
 5. 其他指定張數抽牌。
@@ -59,7 +59,7 @@ Homepage 與共用分析以 Culture、Statistics、Search 為主：
 
 八組 Theme 必須各自提供完整 palette。切換 Theme 時不得從上一組或其他 Theme 繼承缺少的 palette token。共用 geometry 與 typography 可以共用；palette、surface、state、background 與 shadow 由 Theme 自己負責。
 
-## CSS／DIV ownership（0.9.1 RC）
+## CSS／DIV ownership
 
 - LOC 與作者首頁的正式 DOM 只由 `ScopeEditableBlocks` 配合 `LocHomeBlockDisplay` 產生；一個 canonical Page Block 對應一個主要 frame，不另包一套作者首頁 section/Hero。
 - 共用首頁 frame、圖片與標題幾何由 `app/styles/loc-about-original.css` 負責；`home-content.css` 保留真正使用中的標題組件與作者子頁排版，不能復活舊版 `author-home-hero`。
@@ -108,3 +108,47 @@ Statistics 登入管理後的關鍵詞設定以 Class 為第一層。每個 Clas
 Public visibility 與 management visibility 是不同責任。
 
 Admin 可建立 Scope、建立 Scope Group，以及修改 Registry 的顯示名稱、Domain／Directory、Parent、排序與 Active；Scope ID 與 Kind 建立後固定。Scope Group 不建立 corpus tables。Source Refresh 以 `source_name + source_native_id` 做 bounded delta preview／新增／更新，不掃描整張 Galaxy。
+
+
+## Navigation authority and personal directories
+
+以下內容已由原單獨 NAV 規範收斂到本文件，不能再以第二份 NAV 文件建立平行規則。
+
+## Authority split
+
+- Next filesystem：route authority。
+- Scope registry：canonical domain、mount、shared feature URL 與路由 metadata（`display_name` 不作全站 NAV 名稱）。
+- `silver.manage`：data Scope／table mapping；`"Title_TW"` 為 Scope NAV 名稱唯一資料來源，透過既有唯讀 `silver.read_scope_page_copy` 取得。
+- PostgreSQL canonical tables：資料內容。
+
+Registry 不管理資料表真相，也不替 PostgreSQL 再建立一份 Scope data registry。
+
+## UI copy
+
+NAV 固定功能文字與 LOC 首頁導引使用 `app/i18n/ui-copy.js`；具名 Scope 的 NAV 標題讀取 `silver.manage."Title_TW"`，讀取前暫用原有 UI label，不能拿 Registry 的 `display_name` 覆蓋。UI copy registry 不處理 Galaxy authored content 或 LunaRunes Canon。
+
+## Shared workspace navigation (2026-10-10)
+
+- Upper NAV = "我的最愛". Three legacy scopes are initially selected; authenticated users may save a custom list in the existing `api.user_settings` scalar text_value column.
+- Floating bottom dock = six immutable controls in this order: 首頁 / 文化 (hourglass) / 統計 / 搜尋 / 治理 / 設定. It uses six separate Theme-derived backgrounds and shadows.
+- First five controls resolve within the active Scope or Scope Group, preserving the existing canonical feature routing; Settings is global to the current site origin, never Scope-owned.
+- Homepage preference defaults to LOC. Account-selected homepage is validated against existing management Scope permissions. The native startup redirect runs only once per WebView session; explicit LOC navigation remains possible.
+- OAuth entry and signout UI are in Settings. Existing management RLS and role boundaries are unchanged.
+- iOS navigation uses bundled static local routes; browser navigation keeps canonical Scope domains. Other private iOS Local File features and Daily table migrations are out of scope.
+
+## First-row NAV and personal directories (2026-10-10)
+
+- Upper NAV is a **single full-width first row in normal document flow (not fixed/sticky)**, not a floating pill/card. It has no visible 「我的最愛」 heading.
+- Left: direct favorite Scope and Scope Group shortcuts plus user-owned folder triggers. The rail scrolls horizontally; `<<` / `>>` controls render only when there is horizontal overflow. Disabled at the ends.
+- Right: permanent, non-scrolling `回月典首頁` link, independent of selected favorites or any folder.
+- Clicking a folder reveals **one second row** inside the top-of-page NAV; clicking it again or × collapses the row. Folder children are regular Scope shortcuts, with the same Title_TW naming and Scope authority rules.
+- Global Settings > 我的最愛 includes create/rename/delete folder and assigning each favorite to either direct first row or one folder. Deleting a folder returns its shortcuts to the first row; LOC remains pinned right and cannot be put in a folder.
+- Folder configuration is encoded *plain text* in existing `api.user_settings.text_value` under `loc-favorite-folders-v1`; no JSONB, local browser corpus copy, new DB table or Scope Group mutations. The folders only organize links; they **do not** change Scope roles, RLS, actual Group structures or route registry.
+- Lower six-key floating feature dock does not change; native tap/navigation acceptance is tracked independently of web CI.
+
+
+## NAV horizontal alignment (2026-10-10)
+
+- Top NAV keeps normal document flow, but its own outer bounds now match the shared content frame: `width:min(var(--loc-ui-max),calc(100% - clamp(1rem,4vw,4rem)))` with centered margins; on mobile it matches the existing `calc(100% - 1rem)` content width. The LOC and author landing pages are intentionally narrower (`min(1180px,calc(100% - 2rem))`), so the NAV detects those layouts through `:has(~ .loc-next-main[data-loc-view="home"])` and uses their exact frame width instead.
+- Left and right page gutters stay visible on wide and narrow displays; this does not introduce a rounded/floating container. The permanent LOC link is aligned to the right edge *inside* the content frame.
+- The top row's horizontal scrolling and optional second-row folders, and the bottom floating six-key dock, are unchanged.

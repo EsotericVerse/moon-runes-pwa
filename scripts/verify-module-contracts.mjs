@@ -40,7 +40,7 @@ walk(resolve(root,'app'),path=>{
   }
 });
 
-for(const path of ['docs/NAV_GOVERNANCE.md','docs/DOMAIN_ARCHITECTURE.md']){
+for(const path of ['docs/CURRENT_UI_CONTRACT.md','docs/DOMAIN_ARCHITECTURE.md']){
   const source=readFileSync(resolve(root,path),'utf8');
   for(const retired of ['modular-v2','ScopeNavV2','scope-registry.v2','GlobalNav.jsx']){
     if(source.includes(retired))failures.push(path+': retired architecture authority must not return: '+retired);
