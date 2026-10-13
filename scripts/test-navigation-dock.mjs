@@ -107,27 +107,24 @@ test('LOC and Author home NAV can match a later sibling after JsonLd script',()=
   assert.equal(navCss.includes(':has(+ .loc-next-main[data-loc-view="home"]'),false);
 });
 
-test('3D rune draw NAV spans exactly the same inner content frame as its stage',()=>{
+test('3D rune draw restores its missing themed OUTER content card without touching the global NAV',()=>{
   const navCss=fs.readFileSync('app/styles/nav.css','utf8');
   const stageCss=fs.readFileSync('app/lrunes/effekseer/effekseer-stage.css','utf8');
   const page=fs.readFileSync('app/lrunes/Rune3DPreview.jsx','utf8');
   assert.match(page,/className="loc-next-main rune-skin-lab rune-3d-shell"/);
   assert.match(page,/data-rune-3d-preview=\{mode\}/);
-  assert.match(navCss,/\.scope-global:has\(~ \.loc-next-main\.rune-3d-shell\[data-rune-3d-preview\]\)/);
-  assert.match(navCss,/calc\(1880px - clamp\(24px,4\.4vw,64px\)\)/);
-  assert.match(navCss,/calc\(100% - clamp\(16px,3vw,56px\) - clamp\(24px,4\.4vw,64px\)\)/);
-  assert.match(navCss,/max-width:none;\s*background:transparent;/);
-  assert.match(stageCss,/width:min\(calc\(100% - clamp\(16px,3vw,56px\)\),1880px\);/);
-  assert.match(stageCss,/padding:clamp\(12px,2\.2vw,32px\)/);
-  const clamp=(lo,n,hi)=>Math.min(hi,Math.max(lo,n));
-  for(const viewport of [360,560,1024,1830,2000,2560]){
-    const outer=Math.min(viewport-clamp(16,viewport*.03,56),1880);
-    const padding=clamp(12,viewport*.022,32);
-    const actualStageInner=outer-2*padding;
-    const nav=Math.min(1880-clamp(24,viewport*.044,64),
-      viewport-clamp(16,viewport*.03,56)-clamp(24,viewport*.044,64));
-    assert.ok(Math.abs(actualStageInner-nav)<.01,'NAV mismatch at '+viewport+'px');
-  }
+  assert.match(stageCss,/\.loc-next-main\.rune-skin-lab\.rune-3d-shell\[data-rune-3d-preview\]\{/,
+    'the entire drawing content needs its own outer text box');
+  assert.match(stageCss,/\.rune-3d-shell\[data-rune-3d-preview\]\{[\s\S]*?border:1px solid/,
+    'a visible border frames both sides of the missing centered block');
+  assert.match(stageCss,/border-radius:var\(--loc-ui-radius-lg,22px\)/);
+  assert.match(stageCss,/background:linear-gradient\(160deg,var\(--loc-ui-panel-strong/,
+    'main outer card uses the theme palette, not an invented fixed color');
+  assert.match(stageCss,/box-shadow:var\(--loc-shadow-card/);
+  assert.match(stageCss,/\.rune-3d-stage:not\(\[data-ritual-phase="atlas"\]\)\{\s*background:#000;/,
+    'the actual cinematic canvas must remain true black');
+  assert.doesNotMatch(navCss,/\.scope-global:has\(~ \.loc-next-main\.rune-3d-shell\[data-rune-3d-preview\]\)/,
+    'revert the mistaken NAV alignment change');
 });
 
 test('native first-row NAV respects iOS safe area while web retains original layout',()=>{
