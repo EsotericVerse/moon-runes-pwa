@@ -92,6 +92,10 @@
 .rune-3d-footer .rune-skin-controls{display:flex;gap:9px;flex-wrap:wrap}
 .rune-3d-modal-backdrop{position:fixed;inset:0;z-index:2147480000;display:flex;align-items:center;justify-content:center;background:#050512db;padding:15px}
 .rune-3d-modal{background:#1d1a30;color:#f7e9d5;border:1px solid #c2a477;border-radius:18px;width:min(760px,100%);max-height:85dvh;overflow:auto}
+.rune-3d-modal{--rune-gold:#ecd6a6;color-scheme:dark}
+.rune-3d-modal .rune-3d-daily-modal-fields{color:#f7e9d5}
+.rune-3d-modal .rune-3d-daily-modal-fields>p{color:#f7e9d5;line-height:1.85;overflow-wrap:anywhere}
+.rune-3d-modal .rune-3d-daily-fields p{color:#f1e7ec}
 .rune-3d-modal-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:16px;border-bottom:1px solid #ffffff25}
 .rune-3d-modal-head h2{margin:0}.rune-3d-daily-modal-fields{padding:16px;line-height:1.8;white-space:pre-wrap}
 .rune-3d-daily-card{display:block;width:min(200px,50vw);height:auto;margin:0 auto}
