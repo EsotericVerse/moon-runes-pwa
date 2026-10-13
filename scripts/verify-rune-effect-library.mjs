@@ -209,7 +209,12 @@ assert.match(drawFlow,/setResultOpen\(true\)/,'guide is a centered dialog, not a
 assert.match(drawFlow,/requestFullscreen/,'browser Fullscreen API controls stage without reinventing a renderer');
 assert.doesNotMatch(drawFlow,/rune-3d-duel-action-dock/,'legacy controls below the stage are removed');
 const cssHero=readFileSync('app/lrunes/effekseer/effekseer-stage.css','utf8');
-assert.match(cssHero,/width:min\(calc\(100% - clamp\(16px,3vw,56px\)\),1880px\)/,'desktop stage must not be 1120px-wide');
+assert.doesNotMatch(cssHero,/width:min\\(calc\\(100% - clamp\\(16px,3vw,56px\\)\\),1880px\\)/,
+  '3D effect must inherit the original LOC content width instead of a competing 1880px main');
+assert.match(drawFlow,/return <main className="loc-next-main"/,
+  '3D stage belongs within the site page layout');
+assert.match(drawFlow,/<div className="loc-panel rune-skin-lab rune-3d-shell">/,
+  '3D stage remains inside the original LOC text panel');
 assert.match(cssHero,/height:clamp\(620px,80dvh,980px\)/,'stage must be Hero-sized on desktop');
 assert.match(cssHero,/\.rune-3d-stage:fullscreen/,'Fullscreen view must use the browser-native API');
 assert.match(cssHero,/\.rune-3d-result-shelf/,'results belong inside the unified stage');
