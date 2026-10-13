@@ -146,7 +146,8 @@ export default function RuneAtlasLab(){
     };
   },[groups,runes]);
   const display=useMemo(()=>group?runes:groups,[group,runes,groups]);
-  return <main className="loc-next-main rune-skin-lab rune-art-shell" data-rune-lab="list2">
+  return <main className="loc-next-main" data-rune-lab="list2">
+    <div className="loc-panel rune-skin-lab rune-art-shell">
     <header className="rune-art-header">
       <p className="loc-eyebrow">LunaRunes · Living Atlas</p>
       <h1>{group?group.name+'之符文':'月之符文 · 九大群組'}</h1>
@@ -195,5 +196,6 @@ export default function RuneAtlasLab(){
       </nav>
     </footer>
     {details?<RuneInfoDialog rune={details} onClose={closeDetails}/>:null}
+    </div>
   </main>;
 }
