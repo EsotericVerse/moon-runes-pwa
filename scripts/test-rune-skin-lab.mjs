@@ -68,10 +68,24 @@ assert.match(read('app/duel/one/page.jsx'),/DuelDrawPage/);
 assert.match(read('app/list/page.jsx'),/RuneDirectoryRoot/);
 assert.doesNotMatch(read('app/duel/one/page.jsx')+read('app/list/page.jsx'),/RuneArtStage|RuneRitualLab|RuneAtlasLab/);
 
-// Only /card/* paths expose the new artwork experiences.
-assert.match(read('app/card/duel/page.jsx'),/RuneRitualLab/);
-assert.match(read('app/card/list/page.jsx'),/RuneAtlasLab/);
-assert.match(read('app/card/daily/page.jsx'),/RuneDaily3D/);
+// Canonical draw/daily/atlas paths now provide an in-page 2D/3D choice;
+// original-art effects and reading semantics remain unchanged behind the switch.
+for(const feature of ['duel','daily','list']){
+  const page=read('app/card/'+feature+'/page.jsx');
+  assert.match(page,/RuneUnifiedView/,'canonical '+feature+' must load one feature interface');
+  assert.match(page,new RegExp('feature="'+feature+'" defaultView="2d"'),
+    'canonical '+feature+' defaults to original 2D artwork');
+  const legacy=read('app/card3d/'+feature+'/page.jsx');
+  assert.match(legacy,new RegExp('feature="'+feature+'" defaultView="3d"'),
+    'legacy 3D '+feature+' links must remain usable');
+}
+const unified=read('app/lrunes/RuneUnifiedView.jsx');
+for(const moduleName of ['RuneRitualLab','RuneAtlasLab','RuneDaily3D','Rune3DPreview','Rune3DLibrary']){
+  assert.ok(unified.includes(moduleName),'unified switch must preserve '+moduleName);
+}
+assert.match(unified,/aria-pressed=\{view==='2d'\}/);
+assert.match(unified,/aria-pressed=\{view==='3d'\}/);
+assert.match(unified,/presentationSwitcher=\{modeControl\}/);
 assert.match(read('app/lrunes/card/duel/page.jsx'),/card\/duel\/page/);
 assert.match(read('app/lrunes/card/list/page.jsx'),/card\/list\/page/);
 assert.match(read('app/lrunes/card/daily/page.jsx'),/card\/daily\/page/);
