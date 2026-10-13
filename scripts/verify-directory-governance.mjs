@@ -3,8 +3,8 @@ import {basename,join,resolve} from 'node:path';
 
 const root=process.cwd();
 const failures=[];
-const allowedRootDirs=new Set(['.github','app','assets','docs','governance','pics','public','scripts','tests']);
-for(const name of ['app','assets','docs','governance','pics','public','scripts','tests']){
+const allowedRootDirs=new Set(['.github','app','assets','governance','pics','public','scripts','sql','tests']);
+for(const name of ['app','assets','governance','pics','public','scripts','sql','tests']){
   if(!existsSync(resolve(root,name)))failures.push('missing Current root directory: '+name+'/');
 }
 for(const name of readdirSync(root)){
@@ -41,12 +41,6 @@ for(const retired of [
   'docs/REPO_DIRECTORY_GOVERNANCE.md','docs/SCOPE_EXTRA_SIGN.md'
 ]){
   if(existsSync(resolve(root,retired)))failures.push('retired parallel authority returned: '+retired);
-}
-for(const path of [
-  'docs/LOC_CANON.md','docs/LUNARUNES_DRAW_GOVERNANCE.md',
-  'docs/FEATURE_DEEP_DIVE.md','docs/RELEASE_ROADMAP.md'
-]){
-  if(!existsSync(resolve(root,path)))failures.push('missing Current document: '+path);
 }
 if(failures.length){
   console.error('[directory-governance] failures:\n'+failures.map(item=>'- '+item).join('\n'));
