@@ -10,6 +10,7 @@ import {runeIconFor} from './rune-semantic-icons.mjs';
 import {groupStageForRune,cinematicCameraPose,GROUP_IMPACT_AT} from './rune-cinematic-language.mjs';
 import {redirectHd256ParticleTexture} from './hd256-particle-paths.mjs';
 import {redirectSoftMatteTexture} from './soft-matte-textures.mjs';
+import {redirectAmbientFogTexture} from './ambient-fog-assets.mjs';
 
 const SOURCE='/vendor/effekseer/';
 const WASM=SOURCE+'effekseer.wasm';
@@ -153,7 +154,7 @@ const WAITING_AUTHORED_EFFECT=Object.freeze({
   path:SOURCE+AUTHORED_EFFECT_FILES['M:MagicArea'],tuning:{scale:2.2,speed:.8}
 });
 
-function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=false,groupEffect=null,groupStage=null,waiting=false,ambient=false,ambientDepth='rear',ambientPaused=false,quality='high',textureQuality='original'}){
+function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=false,groupEffect=null,groupStage=null,waiting=false,ambient=false,ambientDepth='rear',ambientPaused=false,quality='high',textureQuality='original',diagnoseAmbient=false}){
   const canvas=useRef(null);
   const onPlaybackCompleteRef=useRef(onPlaybackComplete);
   onPlaybackCompleteRef.current=onPlaybackComplete;
@@ -231,13 +232,12 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
         // Only this authored smoke emitter receives a genuine native 2048×2048
         // CC0 transparent cloud texture, not an enlarged 128×128 sprite.
         // Original .efkefc files and the 66 rune VFX remain unchanged.
+        const fogRequests=new Set(),fogRedirects=new Set();
         const textureRedirect=ambient&&effectFile.endsWith('/MxS_foot_smoke2.efkefc')
           ?(path)=>{
-            const alphaCorrected=path.replace('/Texture/smoke_01.png','/Texture/_fog-cloud-2048.png')
-              .replace('/Texture/star.png','/Texture/_fog-cloud-2048.png');
-            return textureQuality==='hd256'
-              ?alphaCorrected.replace('/Texture/_fog-cloud-2048.png','/Texture/_hd256/_fog-cloud-2048.png')
-              :alphaCorrected;
+            fogRequests.add(String(path).replaceAll('\\','/').split('/').pop());
+            return redirectAmbientFogTexture(path,{quality:textureQuality,
+              onReplacement:({original,replacement})=>fogRedirects.add(original+' → '+replacement)});
           }
           :['M:foot_smoke2','M:Sylph10'].includes(effect.key)
             ?redirectSoftMatteTexture
@@ -247,7 +247,14 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
         const extras=[];
         loaded=context.loadEffect(effectFile,1,()=>{
           if(!active)return;
-          setStatus('');
+          if(ambient&&diagnoseAmbient){
+            const attrs=renderer.getContext()?.getContextAttributes?.();
+            setStatus('Effekseer 原生霧氣 '+(ambientDepth==='rear'?'遠景':'前景')+
+              '｜載入成功｜請求：'+([...fogRequests].join('、')||'無')+
+              '｜替換：'+([...fogRedirects].join('、')||'未命中')+
+              '｜WebGL alpha='+String(attrs?.alpha)+
+              ' premultipliedAlpha='+String(attrs?.premultipliedAlpha));
+          }else setStatus('');
           try{
              const handle=context.play(loaded,0,0,0);
              playingHandle=handle;
@@ -560,10 +567,10 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
       try{context?.release();}catch{}
       try{renderer?.dispose();}catch{}
     };
-  },[effect,reduced,ceremony,groupEffect,groupStage,waiting,ambient,ambientDepth,quality,textureQuality]);
+  },[effect,reduced,ceremony,groupEffect,groupStage,waiting,ambient,ambientDepth,quality,textureQuality,diagnoseAmbient]);
   return <div className="rune-effekseer-canvas-wrap">
     <canvas ref={canvas} className="rune-effekseer-canvas" aria-hidden="true"/>
-    {!ambient&&status?<p className="rune-effekseer-status" role="status">{status}</p>:null}
+    {(!ambient||diagnoseAmbient)&&status?<p className={'rune-effekseer-status'+(diagnoseAmbient?' rune-effekseer-fog-diagnostic':'')} role="status">{status}</p>:null}
   </div>;
 }
 
@@ -577,19 +584,19 @@ const AUTHORED_FOREGROUND_MIST=Object.freeze({
   path:SOURCE+AUTHORED_EFFECT_FILES['M:foot_smoke2'],
   tuning:{scale:1.6,speed:.37,color:[225,225,239,135]}
 });
-export function RuneMistBackdrop({phase='idle',quality='high',textureQuality='original'}){
+export function RuneMistBackdrop({phase='idle',quality='high',textureQuality='original',diagnoseAmbient=false}){
   const reduced=useReducedMotion();
   const clearing=phase==='waiting'||phase==='revealing';
   return <>
     <div className="rune-3d-mist-backdrop" data-clearing={clearing?'true':'false'}
       data-quality={quality} aria-hidden="true">
       <EffekseerCanvas effect={AUTHORED_MOON_MIST} reduced={reduced}
-        ambient ambientDepth="rear" ambientPaused={phase==='revealing'} quality={quality} textureQuality={textureQuality}/>
+        ambient ambientDepth="rear" ambientPaused={phase==='revealing'} quality={quality} textureQuality={textureQuality} diagnoseAmbient={diagnoseAmbient}/>
     </div>
     {quality==='high'&&!reduced?<div className="rune-3d-foreground-mist"
       data-ritual-mist={phase} aria-hidden="true">
       <EffekseerCanvas effect={AUTHORED_FOREGROUND_MIST} reduced={reduced}
-        ambient ambientDepth="foreground" ambientPaused={phase==='revealing'} quality={quality} textureQuality={textureQuality}/>
+        ambient ambientDepth="foreground" ambientPaused={phase==='revealing'} quality={quality} textureQuality={textureQuality} diagnoseAmbient={diagnoseAmbient}/>
     </div>:null}
   </>;
 }
