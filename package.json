@@ -16,7 +16,7 @@
     "verify:rune-draw": "node scripts/verify-rune-draw-algorithm.mjs && node --test scripts/test-rune-draw-reads.mjs scripts/test-rune-moon-phase.mjs && npm run verify:3d-runes",
     "verify:statistics-facets": "node --test scripts/test-statistics-facets.mjs scripts/test-member-intersection.mjs scripts/test-administrative-sources.mjs scripts/test-statistics-zoom.mjs scripts/test-statistics-group-sharing.mjs scripts/test-media-style-intersection.mjs",
     "verify:semantics": "node scripts/verify-current-semantics.mjs",
-    "verify": "npm run verify:nav && npm run verify:management && npm run verify:rune-assets && npm run verify:block-presentation && npm run verify:blocknote && npm run verify:feature-hero && npm run verify:loc-home-text && npm run verify:db-adapters && npm run verify:rune-draw && npm run verify:statistics-facets && npm run verify:lrunes-daily && npm run verify:lrunes-settings && npm run verify:local-files && npm run verify:private-x && npm run verify:private-archive && npm run verify:daily-transfer && npm run verify:loc-items && npm run verify:rune66-keywords && npm run verify:modules && npm run verify:semantics && npm run verify:scope-registry && npm run verify:authority && npm run verify:directories && npm run verify:auth && npm run verify:theme",
+    "verify": "npm run verify:nav && npm run verify:management && npm run verify:rune-assets && npm run verify:block-presentation && npm run verify:blocknote && npm run verify:feature-hero && npm run verify:loc-home-text && npm run verify:db-adapters && npm run verify:sql-standard && npm run verify:rune-draw && npm run verify:statistics-facets && npm run verify:lrunes-daily && npm run verify:lrunes-settings && npm run verify:local-files && npm run verify:private-x && npm run verify:private-archive && npm run verify:daily-transfer && npm run verify:loc-items && npm run verify:rune66-keywords && npm run verify:modules && npm run verify:semantics && npm run verify:scope-registry && npm run verify:authority && npm run verify:directories && npm run verify:auth && npm run verify:theme",
     "build": "next build",
     "verify:theme": "node scripts/verify-theme-contract.mjs",
     "verify:authority": "node scripts/verify-runtime-authority.mjs",
@@ -38,7 +38,8 @@
     "verify:rune-assets": "node scripts/verify-rune-card-assets.mjs",
     "verify:private-x": "node --test scripts/test-private-x-archive.mjs",
     "verify:private-archive": "node --test scripts/test-private-archive-universal.mjs",
-    "verify:daily-transfer": "node --test scripts/test-daily-transfer.mjs"
+    "verify:daily-transfer": "node --test scripts/test-daily-transfer.mjs",
+    "verify:sql-standard": "node scripts/verify-sql-standard.mjs"
   },
   "dependencies": {
     "@streamparser/json": "0.0.26",
@@ -75,7 +76,8 @@
     "@react-three/postprocessing": "3.0.4",
     "postprocessing": "^6.37.0",
     "opentype.js": "1.3.4",
-    "fflate": "0.8.3"
+    "fflate": "0.8.3",
+    "kysely": "0.29.6"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
