@@ -39,6 +39,7 @@ function renderRuneHero(slot,native){
       <div className="runes-home-primary-actions" aria-label="開始抽牌">
         <a className="loc-button runes-home-primary-action" href={runeHref('card/duel',native)}>抽一張符文</a>
         <a className="loc-button" href={runeHref('card/daily',native)}>每日符文</a>
+        <a className="loc-button" href={runeHref('card/list',native)}>符文圖鑑</a>
       </div>
     </div>
   </>;
@@ -64,11 +65,7 @@ export default function RunesClient(){
     />
 
     <nav className="runes-home-nav runes-home-secondary-nav" aria-label="月之符文延伸功能">
-      <a className="loc-button" href={runeHref('card/list',native)}>符文圖鑑</a>
-      <a className="loc-button" href={runeHref('card3d/list',native)}>3D 符文圖鑑</a>
       <a className="loc-button" href={runeHref('game',native)}>符文遊戲</a>
-      <a className="loc-button" href={runeHref('card3d/duel',native)}>3D 月光抽牌（測試）</a>
-      <a className="loc-button" href={runeHref('card3d/daily',native)}>3D 每日符文（測試）</a>
       <a className="loc-button" href={runeHref('daily/log',native)}>每日符文紀錄</a>
     </nav>
 
