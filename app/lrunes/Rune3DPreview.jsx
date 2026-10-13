@@ -47,7 +47,7 @@ function readDaily(item){
   })).filter(field=>field.text);
 }
 
-export default function Rune3DPreview({mode='duel'}){
+export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
   const native=useNativeNavigation();
   const [items,setItems]=useState([]);
   const [groups,setGroups]=useState([]);
@@ -214,6 +214,7 @@ export default function Rune3DPreview({mode='duel'}){
   const day=mode==='daily'?items[0]:null;
   return <main className="loc-next-main" data-rune-3d-preview={mode}>
     <div className="loc-panel rune-skin-lab rune-3d-shell">
+    {presentationSwitcher}
     <header className="rune-3d-header">
       <p className="loc-eyebrow">LunaRunes · 符文顯現</p>
       <h1>{label}</h1>
