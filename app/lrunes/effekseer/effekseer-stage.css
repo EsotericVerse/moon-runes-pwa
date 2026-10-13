@@ -404,6 +404,34 @@
 }
 /* End canonical 3D atlas art-gallery expansion. */
 
+/* Instant, persistent solid-glyph review in the atlas. This is the same
+   authored Three.js glyph used during drawing, without cinematic zoom or
+   temporary Effekseer playback. Never allocate 66 simultaneous WebGL views. */
+.rune-3d-library .rune-3d-atlas-glyph-review{
+  display:flex;align-items:center;justify-content:center;
+  flex-wrap:wrap;gap:clamp(12px,3vw,28px);
+  min-height:245px;margin:13px 0 17px;padding:16px 24px;
+  border:1px solid #ad9cc38c;border-radius:18px;
+  background:#000;color:#f1e6ed;
+}
+.rune-3d-library .rune-3d-atlas-glyph-model{
+  flex:0 0 auto;font-size:clamp(142px,19vw,215px);
+  min-width:1.42em;min-height:1.35em;
+  cursor:default;pointer-events:none;filter:none;
+}
+.rune-3d-library .rune-3d-atlas-glyph-copy{
+  flex:1 1 230px;max-width:360px;line-height:1.6;
+}
+.rune-3d-library .rune-3d-atlas-glyph-copy p{margin:.5rem 0}
+.rune-3d-library .rune-3d-atlas-glyph-copy .loc-eyebrow{
+  color:#eed7a6;font-weight:700;letter-spacing:.08em
+}
+@media(max-width:620px){
+ .rune-3d-library .rune-3d-atlas-glyph-review{gap:0;padding:12px 16px;text-align:center}
+ .rune-3d-library .rune-3d-atlas-glyph-model{font-size:clamp(138px,34vw,175px)}
+ .rune-3d-library .rune-3d-atlas-glyph-copy{flex-basis:100%;max-width:none}
+}
+
 /* 3D library uses original RuneCardInfo, as the homepage/old atlas do.
    This is standard UI copy following licensed Effekseer playback, not VFX. */
 .rune-3d-library .rune-art-gallery--runes .rune-art-gallery-grid{
