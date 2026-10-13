@@ -107,8 +107,10 @@ test('LOC and Author home NAV can match a later sibling after JsonLd script',()=
   assert.equal(navCss.includes(':has(+ .loc-next-main[data-loc-view="home"]'),false);
 });
 
-test('all LunaRunes 3D/2D draw, daily and atlas pages keep their outer content card',()=>{
+test('all LunaRunes drawing and atlas pages use ORIGINAL loc-next-main + nested loc-panel composition',()=>{
   const navCss=fs.readFileSync('app/styles/nav.css','utf8');
+  const uiCss=fs.readFileSync('app/styles/uiux.css','utf8');
+  const componentCss=fs.readFileSync('app/styles/components.css','utf8');
   const shellCss=fs.readFileSync('app/lrunes/skin-lab.css','utf8');
   const stageCss=fs.readFileSync('app/lrunes/effekseer/effekseer-stage.css','utf8');
   const draw3D=fs.readFileSync('app/lrunes/Rune3DPreview.jsx','utf8');
@@ -116,26 +118,39 @@ test('all LunaRunes 3D/2D draw, daily and atlas pages keep their outer content c
   const draw2D=fs.readFileSync('app/lrunes/duel2/RuneRitualLab.jsx','utf8');
   const daily2D=fs.readFileSync('app/lrunes/daily3d/RuneDaily3D.jsx','utf8');
   const atlas2D=fs.readFileSync('app/lrunes/list2/RuneAtlasLab.jsx','utf8');
-  assert.match(draw3D,/className="loc-next-main rune-skin-lab rune-3d-shell"/);
-  assert.match(atlas3D,/className="loc-next-main rune-skin-lab rune-3d-shell rune-3d-library"/);
-  for(const code of [draw2D,daily2D,atlas2D]){
-    assert.match(code,/className="loc-next-main rune-skin-lab rune-art-shell/,
-      '2D source-art pages reuse the same visible content card structure');
+  for(const [name,code] of [
+    ['3D draw/daily',draw3D],['3D atlas',atlas3D],
+    ['original art draw',draw2D],['original art daily',daily2D],
+    ['original art atlas',atlas2D]
+  ]){
+    assert.match(code,/return <main className="loc-next-main"/,
+      name+' must inherit the original LOC page-width/gutter CSS');
+    assert.match(code,/return <main className="loc-next-main"[^>]*>\s*<div className="loc-panel rune-skin-lab/,
+      name+' must use a REAL child LOC text box instead of styling <main> as a frame');
+    assert.match(code,/<\/div>\s*<\/main>;/,
+      name+' must close its inner text-box before main');
+    assert.doesNotMatch(code,/return <main className="loc-next-main rune-skin-lab/,
+      name+' must not mix page and text-box CSS layers');
   }
-  assert.match(shellCss,/\.loc-next-main\.rune-skin-lab:is\(\.rune-3d-shell,\.rune-art-shell\)\{/);
-  assert.match(shellCss,/\.loc-next-main\.rune-skin-lab\.rune-3d-shell\{\s*background:linear-gradient/);
-  assert.match(shellCss,/\.loc-next-main\.rune-skin-lab\.rune-art-shell\{\s*background:linear-gradient/);
-  assert.match(shellCss,/border:1px solid color-mix/);
-  assert.match(shellCss,/border-radius:var\(--loc-ui-radius-lg,22px\)/);
-  assert.match(shellCss,/min-width:0;\s*max-width:100%;/);
-  assert.match(shellCss,/\.rune-3d-atlas-gallery/);
-  assert.match(shellCss,/\.rune-art-gallery/);
-  assert.doesNotMatch(stageCss,/\.rune-3d-shell\[data-rune-3d-preview\]\{/,
-    'avoid independently painting 3D preview, which leaves atlas and 2D pages out of frame');
+  assert.match(uiCss,/\.loc-next-main,\.scope-main\{\s*width:min\(var\(--loc-ui-max\)/);
+  assert.match(componentCss,/\.loc-card,\.loc-panel,\.loc-bubble\{padding:/);
+  assert.match(uiCss,/\.loc-card,\.loc-panel,\.loc-bubble,\.scope-card/,
+    'original card/theme contract supplies border-radius, background, box shadow');
+  assert.match(shellCss,/\.loc-next-main>\.loc-panel\.rune-skin-lab\{/);
+  assert.match(shellCss,/max-width:none;\s*margin:0;/,
+    'old 1120/1180/1260px independent maximum widths must not re-narrow the text box');
+  assert.match(shellCss,/\.loc-next-main>\.loc-panel\.rune-art-shell\{/,
+    'original-art presentations keep their canonical dark palette');
+  assert.doesNotMatch(shellCss,/\.loc-next-main\.rune-skin-lab:is\(/,
+    'no improvised outer border/background/shadow on main');
+  assert.doesNotMatch(stageCss,/\.loc-next-main\.rune-skin-lab\.rune-3d-shell\{/,
+    'the 1880px 3D width override has been removed');
+  assert.doesNotMatch(stageCss,/width:min\(calc\(100% - clamp\(16px,3vw,56px\)\),1880px\)/,
+    'no second, bespoke page-width equation on top of LOC');
   assert.match(stageCss,/\.rune-3d-stage:not\(\[data-ritual-phase="atlas"\]\)\{\s*background:#000;/,
-    'the actual cinematic stage remains black despite the outer panel');
+    'the approved pure-black cinematic canvas is unaffected by the native panel');
   assert.doesNotMatch(navCss,/\.scope-global:has\(~ \.loc-next-main\.rune-3d-shell\[data-rune-3d-preview\]\)/,
-    'do not change the independent site NAV to patch rune content geometry');
+    'independent global navigation is unchanged');
 });
 
 test('native first-row NAV respects iOS safe area while web retains original layout',()=>{
