@@ -67,11 +67,14 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
   // Display actual 256px comparison textures on the public 3D stage by default.
   // ?texture=original remains a diagnostic rollback, not a user-facing gate.
   const [textureQuality,setTextureQuality]=useState('hd256');
+  // Opt-in QA only: ?fog_preview=1 exposes native fog loading/alpha readings.
+  const [diagnoseAmbient,setDiagnoseAmbient]=useState(false);
   // The licensed Effekseer smoke scene is now part of the main 3D draw stage.
   // No hidden runtime toggle: the black stage masks dark-matte sprite edges.
   useEffect(()=>{
     const query=new URLSearchParams(window.location.search);
     setTextureQuality(query.get('texture')==='original'?'original':'hd256');
+    setDiagnoseAmbient(query.get('fog_preview')==='1');
   },[]);
   const [phase,setPhase]=useState('idle'); // idle → waiting → revealing → transfer → ready
   const [pending,setPending]=useState(null);
@@ -240,7 +243,7 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
       {!isList?<div className="rune-3d-night-backdrop" aria-hidden="true">
         <span className="rune-skin-moon rune-3d-night-moon"/>
       </div>:null}
-      {!isList?<RuneMistBackdrop phase={phase} quality={sceneQuality} textureQuality={textureQuality}/>:null}
+      {!isList?<RuneMistBackdrop phase={phase} quality={sceneQuality} textureQuality={textureQuality} diagnoseAmbient={diagnoseAmbient}/>:null}
       {isList?(presented?<EffekseerStage rune={presented} textureQuality={textureQuality}
         onGlyphClick={()=>choose(presented)}/>:<div className="rune-3d-awaiting">請選擇符文</div>):
         <>
