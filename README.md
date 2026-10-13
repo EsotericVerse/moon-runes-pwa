@@ -1,6 +1,6 @@
 # LOC｜Luna Codex
 
-**Current version: 0.9.4-rc** — iOS navigation and unsigned IPA candidate.
+**Current version: 0.9.5-rc** — Unified LunaRunes 2D/3D display, environment-routed import, and unsigned iOS IPA candidate.
 
 This repository contains two related but separately governed systems:
 
