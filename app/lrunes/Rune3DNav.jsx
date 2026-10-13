@@ -5,10 +5,10 @@ import useNativeNavigation from '../modular/use-native-navigation';
 
 export default function RuneArtNav(){
   const native=useNativeNavigation();
-  return <nav className="runes-home-nav" aria-label="原創美術展示模式">
+  return <nav className="runes-home-nav" aria-label="符文三大功能入口">
     <a className="loc-button" href={navigationHref('lrunes','',native)}>← 回符文首頁</a>
-    <a className="loc-button" href={navigationHref('lrunes','card/duel',native)}>隨機抽牌 · 月光召喚</a>
-    <a className="loc-button" href={navigationHref('lrunes','card/list',native)}>指定符文 · 原創畫廊</a>
-    <a className="loc-button" href={navigationHref('lrunes','card/daily',native)}>每日符文 · 月光指示</a>
+    <a className="loc-button" href={navigationHref('lrunes','card/duel',native)}>抽牌 · 選擇 2D／3D</a>
+    <a className="loc-button" href={navigationHref('lrunes','card/list',native)}>符文圖鑑 · 選擇 2D／3D</a>
+    <a className="loc-button" href={navigationHref('lrunes','card/daily',native)}>每日符文 · 選擇 2D／3D</a>
   </nav>;
 }
