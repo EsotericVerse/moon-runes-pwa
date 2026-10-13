@@ -6,6 +6,7 @@ import {RUNE_SEMANTIC_ICONS,runeIconFor} from '../app/lrunes/effekseer/rune-sema
 import {RUNE_REJECTED_BRIEFS,ACCEPTED_RUNE_EFFECT_BASELINE} from './rune-rejected-brief.mjs';
 import {RUNE_VFX_REVIEW_QUEUE,RUNE_VFX_REVIEW_NAMES,RUNE_VFX_REVIEW_STATUS} from '../app/lrunes/effekseer/rune-review-queue.mjs';
 import {GROUP_STAGE_LANGUAGE,groupStageForRune,cinematicCameraPose,GROUP_IMPACT_AT} from '../app/lrunes/effekseer/rune-cinematic-language.mjs';
+import {redirectAmbientFogTexture,AMBIENT_FOG_IMAGE} from '../app/lrunes/effekseer/ambient-fog-assets.mjs';
 const stage=readFileSync('app/lrunes/effekseer/EffekseerStage.jsx','utf8');
 const pkg=JSON.parse(readFileSync('package.json','utf8'));
 assert.equal(CANONICAL_RUNE_ENGLISH.length,67);
@@ -291,7 +292,28 @@ assert.match(stage,/quality==='high'&&!reduced/,'balanced mode must avoid the th
 assert.doesNotMatch(stage,/AUTHORED_EFFECT_FILES\['M:foot_smoke7'\]/,
   'particle-only smoke7 is not a valid mist source');
 assert.match(stage,/\/MxS_foot_smoke2\.efkefc/,'correct texture redirect applies to vetted smoke source');
-assert.match(stage,/\/_fog-cloud-2048\.png/,'web loader uses native 2K transparent cloud image, not a scaled 128-pixel particle');
+assert.match(AMBIENT_FOG_IMAGE,/Texture\/_fog-cloud-2048\.png$/);
+assert.match(stage,/redirectAmbientFogTexture\(path,/,'only vetted native fog textures are redirected');
+const fogPaths=[
+  ['Texture/smoke_01.png','Texture/_fog-cloud-2048.png','Texture/_hd256/_fog-cloud-2048.png'],
+  ['Texture/star.png','Texture/_fog-cloud-2048.png','Texture/_hd256/_fog-cloud-2048.png'],
+  ['smoke_01.png?revision=1','_fog-cloud-2048.png?revision=1','_hd256/_fog-cloud-2048.png?revision=1'],
+  ['Texture\\\\star.png','Texture\\\\_fog-cloud-2048.png','Texture\\\\_hd256\\\\_fog-cloud-2048.png'],
+  ['/vendor/effekseer/Texture/smoke_01.png','/vendor/effekseer/Texture/_fog-cloud-2048.png','/vendor/effekseer/Texture/_hd256/_fog-cloud-2048.png']
+];
+for(const [input,normal,hd] of fogPaths){
+  const seen=[];
+  assert.equal(redirectAmbientFogTexture(input,{onReplacement:p=>seen.push(p)}),normal);
+  assert.equal(redirectAmbientFogTexture(input,{quality:'hd256'}),hd);
+  assert.equal(seen.length,1,'diagnostic reports each redirected authored fog texture');
+}
+assert.equal(redirectAmbientFogTexture('/Texture/unrelated.png',{quality:'hd256'}),'/Texture/unrelated.png');
+assert.match(stage,/diagnoseAmbient/,'QA diagnostics must stay explicitly opt-in');
+assert.match(stage,/getContextAttributes/,'QA diagnostics must inspect actual WebGL canvas alpha');
+const drawPreview=readFileSync('app/lrunes/Rune3DPreview.jsx','utf8');
+assert.match(drawPreview,/query.get\('fog_preview'\)==='1'/,'QA activated only via fog_preview=1');
+assert.match(drawPreview,/diagnoseAmbient=\{diagnoseAmbient\}/);
+
 assert.doesNotMatch(stage,/textureRedirect[\s\S]*?_fog-star\.png/,'star sprites must not appear in the persistent fog');
 assert.match(stage,/textureRedirect\);/,'official loadEffect redirect callback resolves transparent cloud images');
 const hdBuild=readFileSync('scripts/prepare-rune-fog-hd.mjs','utf8');
