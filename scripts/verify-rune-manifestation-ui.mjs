@@ -4,8 +4,14 @@ const read=path=>readFileSync(path,'utf8');
 const page=read('app/card3d/list/page.jsx'),list=read('app/lrunes/Rune3DLibrary.jsx');
 const stage=read('app/lrunes/effekseer/EffekseerStage.jsx');
 const twoD=read('app/card/list/page.jsx');
-assert.match(page,/Rune3DLibrary/);
-assert.doesNotMatch(page,/Rune3DPreview/);
+assert.match(page,/RuneUnifiedView/);
+assert.match(page,/feature="list" defaultView="3d"/);
+const unified=read('app/lrunes/RuneUnifiedView.jsx');
+assert.match(unified,/import\('\.\/Rune3DLibrary'\)/,
+  '3D atlas content remains the original standalone professional effect gallery');
+assert.match(unified,/import\('\.\/list2\/RuneAtlasLab'\)/,
+  'switching 2D retains original-art atlas rather than replacing its data');
+assert.match(unified,/feature='duel'/);
 assert.match(list,/limit:67,offset:0/);
 assert.match(list,/next.length!==66/);
 assert.match(list,/RuneArtStage mode="groups"/,'3D atlas must show nine original group artworks');
