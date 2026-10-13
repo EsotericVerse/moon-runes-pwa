@@ -317,11 +317,10 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
       </nav>:null}
     </div>:null}
     <footer className="rune-3d-footer">
-      <nav className="rune-skin-controls" aria-label="切換 2D 和 3D">
+      <nav className="rune-skin-controls" aria-label="符文三大功能">
         <a className="rune-skin-btn" href={navigationHref('lrunes','',native)}>回符文首頁</a>
-        <a className="rune-skin-btn" href={navigationHref('lrunes','card/'+mode,native)}>返回 2D 版本</a>
         {MODES.filter(([id])=>id!==mode).map(([id,name])=>
-          <a key={id} className="rune-skin-btn" href={navigationHref('lrunes','card3d/'+id,native)}>3D {name}</a>)}
+          <a key={id} className="rune-skin-btn" href={navigationHref('lrunes','card/'+id,native)}>{name}</a>)}
       </nav>
     </footer>
     {selected&&<ResultDialog title={runeName(selected)+'之符文'} onClose={()=>setSelected(null)}>
