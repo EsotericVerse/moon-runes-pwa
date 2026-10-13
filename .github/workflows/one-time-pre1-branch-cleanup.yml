@@ -4,7 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - '.github/workflows/one-time-pre1-branch-cleanup.yml'
+      - 'governance/branch-cleanup-trigger-20261014.txt'
+  workflow_dispatch:
 
 permissions:
   contents: write
