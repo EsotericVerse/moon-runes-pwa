@@ -61,7 +61,7 @@ function RuneInfoDialog({rune,onClose}){
     </section>
   </div>;
 }
-export default function RuneAtlasLab(){
+export default function RuneAtlasLab({presentationSwitcher=null}){
   const native=useNativeNavigation();
   const [groups,setGroups]=useState([]);
   const [group,setGroup]=useState(null);
@@ -148,6 +148,7 @@ export default function RuneAtlasLab(){
   const display=useMemo(()=>group?runes:groups,[group,runes,groups]);
   return <main className="loc-next-main" data-rune-lab="list2">
     <div className="loc-panel rune-skin-lab rune-art-shell">
+    {presentationSwitcher}
     <header className="rune-art-header">
       <p className="loc-eyebrow">LunaRunes · Living Atlas</p>
       <h1>{group?group.name+'之符文':'月之符文 · 九大群組'}</h1>
