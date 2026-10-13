@@ -232,8 +232,13 @@
   color:#fff1d9;text-shadow:0 3px 14px #09030f}
 .rune-3d-ritual-error{position:absolute;top:14px;left:14px;right:102px;z-index:15;
   color:#ffd3c5;background:#261922dd;padding:8px 12px;border-radius:8px}
-.rune-3d-ritual-ready{position:absolute;inset:12% 16% 21%;z-index:5;
-  display:flex;flex-direction:column;justify-content:center;align-items:center;gap:18px;text-align:center}
+/* The global six-tile feature dock floats above page content. Keep the
+   completion controls in the UPPER stage area rather than centering them over
+   the fixed dock (which previously left an orphan purple button rectangle
+   visible through the tiles). The original black VFX stage remains unchanged. */
+.rune-3d-ritual-ready{position:absolute;inset:2% 12% 39%;z-index:5;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  gap:clamp(10px,1.6vh,16px);text-align:center}
 .rune-3d-ritual-ready p{margin:0;color:#f5e7d4;font-size:clamp(1.1rem,2.3vw,1.75rem)}
 .rune-3d-continue-hitarea{position:absolute;inset:0;z-index:3;display:block;width:100%;height:100%;
   padding:0;margin:0;border:0;appearance:none;background:transparent;cursor:pointer;touch-action:manipulation}
@@ -276,7 +281,7 @@
 .rune-3d-modal-results button small{font-size:.75rem;color:#cfc6de}
 .rune-3d-modal-results button:focus-visible{outline:3px solid #f5d49c;outline-offset:2px}
 @media(max-width:700px){
-  .rune-3d-ritual-ready{inset:13% 5% 21%;gap:12px}
+  .rune-3d-ritual-ready{inset:2% 5% 38%;gap:10px}
   .rune-3d-ritual-actions{width:100%;gap:8px}
   .rune-3d-ritual-actions button{flex:1 1 42%;padding:11px 7px}
   .rune-3d-ritual-actions button:last-child{flex-basis:100%}
