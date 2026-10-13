@@ -36,7 +36,7 @@ export default function RuneUnifiedView({feature='duel',defaultView='2d'}){
     const onHistory=()=>setView(getView());
     window.addEventListener('popstate',onHistory);
     return()=>window.removeEventListener('popstate',onHistory);
-  },[fallback]);
+  },[fallback,selectedFeature]);
 
   const selectView=next=>{
     if(next!=='2d'&&next!=='3d')return;
@@ -45,7 +45,7 @@ export default function RuneUnifiedView({feature='duel',defaultView='2d'}){
     url.searchParams.set('view',next);
     window.history.replaceState(window.history.state,'',url.pathname+url.search+url.hash);
   };
-  const modeControl=<nav className="rune-presentation-switch" role="group"
+  const modeControl=<div className="rune-presentation-switch" role="group"
     aria-label={TITLES[selectedFeature]+'的顯示方式'}>
     <span className="rune-presentation-switch-title">{TITLES[selectedFeature]} · 顯示方式</span>
     <div className="rune-presentation-switch-options">
@@ -54,7 +54,7 @@ export default function RuneUnifiedView({feature='duel',defaultView='2d'}){
       <button type="button" aria-pressed={view==='3d'}
         className="rune-presentation-switch-option" onClick={()=>selectView('3d')}>3D 符文特效</button>
     </div>
-  </nav>;
+  </div>;
   const Component=VISUALS[selectedFeature][view];
   return <Component key={selectedFeature+'-'+view}
     {...(view==='3d'&&selectedFeature!=='list'?{mode:selectedFeature}:{})}
