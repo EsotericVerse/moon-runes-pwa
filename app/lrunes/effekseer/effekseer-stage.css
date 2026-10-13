@@ -182,6 +182,18 @@
   margin-inline:auto;
   padding:clamp(12px,2.2vw,32px);
 }
+/* The draw/daily page needs its missing OUTER text/content card, not a
+   second stage canvas or an adjustment to the independent global NAV.
+   This themed panel frames the title, settings, black stage and footer as one
+   continuous block; the cinematic stage itself stays pure black. */
+.loc-next-main.rune-skin-lab.rune-3d-shell[data-rune-3d-preview]{
+  border:1px solid color-mix(in srgb,var(--loc-accent) 30%,var(--loc-line));
+  border-radius:var(--loc-ui-radius-lg,22px);
+  background:linear-gradient(160deg,var(--loc-ui-panel-strong,var(--loc-panel)),
+    var(--loc-ui-panel,var(--loc-surface)));
+  box-shadow:var(--loc-shadow-card,0 14px 38px rgb(0 0 0 / .15));
+}
+
 .rune-3d-shell:not(.rune-3d-library)>.rune-3d-stage{
   width:100%;
   height:clamp(620px,80dvh,980px);
