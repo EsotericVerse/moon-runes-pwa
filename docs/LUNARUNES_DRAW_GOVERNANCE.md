@@ -139,7 +139,7 @@ Daily 抽牌與 Daily record 分開：
 
 - 每日抽牌的結果展示與正式每日紀錄的寫入是不同責任；不能因看到抽牌結果就宣稱已經寫入紀錄，或因保存紀錄改變抽牌結果、每日原文與真實月相。
 - 儲存紀錄的 UI 只能對具有 `lrunes` Scope 管理權限的帳號提供；前端使用既有 `account.canManageScopeSync('lrunes')`，資料庫最後仍依 `silver.lrunes_daily` RLS 與 `silver.can_manage_scope('lrunes')` 判斷。不得以登入本身代替授權。
-- 原生 App 裝置 SQLite 歷史及匯入／匯出與 canonical `silver.lrunes_daily` 不得混為一談。App 的儲存／讀取、每日展示與權限細節由 `docs/IOS_APP.md` 說明；未實測場景歸入 `docs/RELEASE_ROADMAP.md`，不在 Canon 中留舊版 TODO 或宣稱完成驗收。
+- 原生 App 裝置 SQLite 歷史及匯入／匯出與 canonical `silver.lrunes_daily` 不得混為一談。App 的儲存／讀取、每日展示與權限以現行程式與測試為準；未實測場景列於 `docs/RELEASE_ROADMAP.md`，不在 Canon 中留舊版 TODO 或宣稱完成驗收。
 
 ## Moon phase
 
