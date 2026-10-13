@@ -296,7 +296,7 @@ assert.match(AMBIENT_FOG_IMAGE,/Texture\/_fog-cloud-2048\.png$/);
 assert.match(stage,/redirectAmbientFogTexture\(path,/,'only vetted native fog textures are redirected');
 const fogPaths=[
   ['Texture/smoke_01.png','Texture/_fog-cloud-2048.png','Texture/_hd256/_fog-cloud-2048.png'],
-  ['Texture/star.png','Texture/_fog-cloud-2048.png','Texture/_hd256/_fog-cloud-2048.png'],
+  [String.raw`Texture\star.png`,String.raw`Texture\_fog-cloud-2048.png`,String.raw`Texture\_hd256\_fog-cloud-2048.png`],
   ['smoke_01.png?revision=1','_fog-cloud-2048.png?revision=1','_hd256/_fog-cloud-2048.png?revision=1'],
   ['Texture\\\\star.png','Texture\\\\_fog-cloud-2048.png','Texture\\\\_hd256\\\\_fog-cloud-2048.png'],
   ['/vendor/effekseer/Texture/smoke_01.png','/vendor/effekseer/Texture/_fog-cloud-2048.png','/vendor/effekseer/Texture/_hd256/_fog-cloud-2048.png']
