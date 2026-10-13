@@ -1,4 +1,4 @@
-import RuneRitualLab from '../../lrunes/duel2/RuneRitualLab';
+import RuneUnifiedView from '../../lrunes/RuneUnifiedView';
 import {lunarunesMetadata} from '../../seo/metadata';
 
 export const metadata=lunarunesMetadata({
@@ -6,4 +6,4 @@ export const metadata=lunarunesMetadata({
   description:'符韻原創美術與動態揭牌，逐次抽取符文並生成原有籤詩。',
   path:'/card/duel/',noIndex:true
 });
-export default function RuneCardDuel(){return <RuneRitualLab/>;}
+export default function RuneCardDuel(){return <RuneUnifiedView feature="duel" defaultView="2d"/>;}
