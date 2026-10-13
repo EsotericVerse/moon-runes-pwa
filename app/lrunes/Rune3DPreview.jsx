@@ -207,7 +207,8 @@ export default function Rune3DPreview({mode='duel'}){
   const label=isList?(group?group.name+'之符文':'九大符文群組'):mode==='daily'?'每日符文 · 3D':'月光抽牌 · 3D';
   const details=isList?selected:items.find(item=>Number(item.card.rune_id)===Number(selected?.rune_id))?.card;
   const day=mode==='daily'?items[0]:null;
-  return <main className="loc-next-main rune-skin-lab rune-3d-shell" data-rune-3d-preview={mode}>
+  return <main className="loc-next-main" data-rune-3d-preview={mode}>
+    <div className="loc-panel rune-skin-lab rune-3d-shell">
     <header className="rune-3d-header">
       <p className="loc-eyebrow">LunaRunes · 符文顯現</p>
       <h1>{label}</h1>
@@ -341,5 +342,6 @@ export default function Rune3DPreview({mode='duel'}){
       </div>:<p>{reading}</p>}
       {mode!=='daily'?<button type="button" className="rune-skin-btn" onClick={reset}>開始新抽牌</button>:null}
     </ResultDialog>}
+    </div>
   </main>;
 }
