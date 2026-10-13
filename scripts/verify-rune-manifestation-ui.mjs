@@ -54,4 +54,18 @@ assert.doesNotMatch(list,/退回 7 枚|快速驗收|測試版本/);
 assert.doesNotMatch(list,/DEMO\[0\]|現成效果試播/);
 assert.match(stage,/runeGlyphProfile\(rune\)/);
 assert.match(twoD,/RuneAtlasLab/);
+const drawModal=read('app/lrunes/Rune3DPreview.jsx');
+const drawCss=read('app/lrunes/effekseer/effekseer-stage.css');
+assert.match(drawModal,/import \{createPortal\} from 'react-dom'/,
+  'reading overlays use the established portal pattern');
+assert.match(drawModal,/return createPortal\(<div className="rune-3d-modal-backdrop"/,
+  'the poem modal escapes LOC panel paragraph-color rules');
+assert.match(drawModal,/<\/div>,document\.body\);/,
+  'the result portal must attach directly to document.body');
+assert.match(drawCss,/\.rune-3d-modal \.rune-3d-daily-modal-fields>p\{color:#f7e9d5/,
+  'night-background divination poems must be legible in light themes');
+assert.match(drawCss,/\.rune-3d-modal \.rune-3d-daily-fields p\{color:#f1e7ec\}/,
+  'daily 3D result guidance keeps dedicated readable light text');
+assert.match(drawCss,/\.rune-3d-modal\{--rune-gold:#ecd6a6;color-scheme:dark\}/,
+  'portal must carry its own rune button border palette and dark color scheme');
 console.log('Production 2D/3D atlas: original group art, RuneCardInfo canonical listings, 3D text after authored VFX, no orientation display.');
