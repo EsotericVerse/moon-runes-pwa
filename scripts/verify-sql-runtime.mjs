@@ -5,7 +5,20 @@ import {Kysely, SqliteDialect} from 'kysely';
 // Real in-memory execution of the same portable query-builder calls.
 // Does not access external services or production databases.
 const sqlite=new DatabaseSync(':memory:');
-const db=new Kysely({dialect:new SqliteDialect({database:sqlite})});
+// Kysely's SQLite dialect expects the better-sqlite3 synchronous statement contract.
+// Adapt Node's built-in SQLite only inside this isolated test.
+const sqliteCompatible={
+  prepare(sql){
+    const stmt=sqlite.prepare(sql);
+    return {
+      reader:/^\\s*(?:select|with|pragma)\\b/i.test(sql),
+      all(parameters){return stmt.all(...parameters)},
+      run(parameters){return stmt.run(...parameters)}
+    };
+  },
+  close(){sqlite.close()}
+};
+const db=new Kysely({dialect:new SqliteDialect({database:sqliteCompatible})});
 try {
   await db.schema.createTable('loc_portable_probe')
     .addColumn('id','integer',col=>col.primaryKey())
