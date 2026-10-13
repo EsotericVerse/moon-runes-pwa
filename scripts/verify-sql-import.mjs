@@ -3,7 +3,7 @@ import {DatabaseSync} from 'node:sqlite';
 import {Kysely,SqliteDialect} from 'kysely';
 import {importPortableSnapshot} from './portable-snapshot-import.mjs';
 const native=new DatabaseSync(':memory:');
-const compatible={prepare(sql){const stmt=native.prepare(sql);return {reader:/^\\s*(?:select|with|pragma)\\b/i.test(sql),all(p){return stmt.all(...p)},run(p){return stmt.run(...p)}}},close(){native.close()}};
+const compatible={prepare(sql){const stmt=native.prepare(sql);return {reader:/^\s*(?:select|with|pragma)\b/i.test(sql),all(p){return stmt.all(...p)},run(p){return stmt.run(...p)}}},close(){native.close()}};
 const db=new Kysely({dialect:new SqliteDialect({database:compatible})});
 const table='transfer_test';
 const manifest=[{table:'silver.'+table,columns:['id','title'],rows:2}];
