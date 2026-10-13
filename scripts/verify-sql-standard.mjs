@@ -17,6 +17,16 @@ for(const [name,dialect] of dialects){
     createQueryCompiler:()=>dialect.createQueryCompiler()
   };
   const db=new Kysely({dialect:compileDialect});
+  const createTable=db.schema.createTable('loc_portable_probe')
+    .addColumn('id','integer',column=>column.primaryKey())
+    .addColumn('title','varchar(255)',column=>column.notNull())
+    .compile();
+  assert.match(createTable.sql,/create table/i,name+': portable table DDL must compile');
+  assert.match(createTable.sql,/primary key/i,name+': table must retain primary key');
+  assert.match(createTable.sql,/not null/i,name+': table must retain required column');
+  const createIndex=db.schema.createIndex('loc_portable_probe_title_idx')
+    .on('loc_portable_probe').column('title').compile();
+  assert.match(createIndex.sql,/create index/i,name+': portable index DDL must compile');
   const query=db.selectFrom('works').select(['id','title']).where('scope_id','=', 'testscope').limit(10).compile();
   assert.equal(query.parameters.includes('testscope'),true,name+': values must be parameters');
   assert.equal(query.sql.includes('testscope'),false,name+': values must not be interpolated');
@@ -28,4 +38,4 @@ for(const [name,dialect] of dialects){
   const remove=db.deleteFrom('works').where('id','=',1).compile();
   assert.equal(remove.parameters.includes(1),true,name+': DELETE values must be parameters');
 }
-console.log('[sql-standard] Kysely SELECT / INSERT / UPDATE / DELETE compile across PostgreSQL, MySQL, SQL Server and SQLite; no database executed');
+console.log('[sql-standard] Kysely schema / index / SELECT / INSERT / UPDATE / DELETE compile across PostgreSQL, MySQL, SQL Server and SQLite; no database executed');
