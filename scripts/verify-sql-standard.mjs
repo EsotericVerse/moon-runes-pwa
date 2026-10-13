@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {Kysely, PostgresDialect, MysqlDialect, MssqlDialect, SqliteDialect} from 'kysely';
+import {Kysely, PostgresDialect, MysqlDialect, MssqlDialect, SqliteDialect, DummyDriver} from 'kysely';
 
 // Compile-only: no credentials, connections, schema changes or live queries.
 const dialects=[
@@ -9,7 +9,7 @@ const dialects=[
   ['sqlite',new SqliteDialect({database:{}})]
 ];
 for(const [name,dialect] of dialects){
-  const db=new Kysely({dialect});
+  // Use Kysely's real SQL compiler with a non-connecting driver.\n  const compileDialect={\n    createAdapter:()=>dialect.createAdapter(),\n    createDriver:()=>new DummyDriver(),\n    createIntrospector:db=>dialect.createIntrospector(db),\n    createQueryCompiler:()=>dialect.createQueryCompiler()\n  };\n  const db=new Kysely({dialect:compileDialect});
   const query=db.selectFrom('works').select(['id','title']).where('scope_id','=', 'testscope').limit(10).compile();
   assert.equal(query.parameters.includes('testscope'),true,name+': values must be parameters');
   assert.equal(query.sql.includes('testscope'),false,name+': values must not be interpolated');
