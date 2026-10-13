@@ -1,129 +1,18 @@
 # LOC｜Luna Codex
 
-**Current version: 0.9.5-rc** — LOC 1.0 release candidate; published 0.9.5 unsigned iOS IPA is separately subject to iPhone acceptance.
+**LOC／月典 — Language Architecture Framework（語言架構框架）**
 
-This repository contains two related but separately governed systems:
+LOC 用於整理與探索作品、資訊和時間脈絡，提供搜尋、統計、文化時間軌跡與內容管理等功能。
 
-- **LOC／月典 — Language Architecture Framework**
-- **LunaRunes／月之符文 — Symbolic Language**
+**LunaRunes／月之符文 — Symbolic Language（符號式語言）**
 
-**Lucas Oscar Wang 政德 — Language Architect｜語言建築師**
+LunaRunes 提供符文抽牌、每日符文、符文圖鑑與互動體驗。
 
-The two systems can interoperate, but their definitions, data responsibilities and special rules are not shared by default.
+**創作者與唯一開發者：Lucas Oscar Wang 政德**
 
----
+## 官方網站
 
-## LOC
-
-LOC is the framework for organizing text, works, sources, time, relationships, search and analysis.
-
-### Current architecture
-
-- Next.js owns application routing; React owns UI.
-- Next filesystem owns existing named routes plus one fixed `/scope/.../` generic shell; DB-created Scope IDs are resolved from the Scope registry at runtime.
-- Supabase PostgreSQL is the runtime data SSOT.
-- The Scope registry owns hierarchy and deployment/navigation metadata; it does not own corpus data.
-- `silver.manage` owns data Scope and Galaxy/Time table mapping.
-- PostgreSQL remains the authoritative query layer for Scope, fixed eligibility flags, COUNT, date ranges and pagination across Search, Statistics and Culture.
-- PostgreSQL handles global search, while confirmed keyword classifications are stored as fixed Galaxy attributes. Re-run the explicit batch only when the active Keyword Class or its rules change.
-- Keyword classes are self-contained, UUID-addressable Scope resources. The active Class is selected by `current_keyword_class_id`; article results are stored as `class_id` + `group_lists`, and public Statistics/Culture read those attrs without live reclassification.
-- Search is lexical/metadata search. Exact Scope aliases terminate with the Scope homepage entry; exact period style keywords prepend their configured short description and then continue normal related results.
-- Missing general-Scope configuration remains empty; LOC does not borrow LunaRunes Canon, keywords or Style as fallback.
-
-### Shared LOC features
-
-| Feature | Responsibility |
-| --- | --- |
-| Statistics | Live distribution and time-range statistics |
-| Culture | Single-Scope time density, source grouping and Anchor analysis; Group pages are overview/navigation only |
-| Governance | Public governance and management boundaries |
-| Search | Scope-aware lexical, metadata and relation search |
-
-### LOC data rules
-
-- Galaxy `uid` is the canonical record identity.
-- Text works live in Galaxy.
-- Media without body text remains media; no blank Galaxy body is invented.
-- Media metadata and `meta_tags` may participate in Search, Culture and Statistics.
-- `source_id`, `target_id`, `ref_id` and `galaxy_link` keep relationships explicit.
-- General Statistics are calculated live from canonical data. Keyword classification is the exception: a confirmed batch writes fixed article attrs so repeated Statistics/Culture views stay lightweight and deterministic.
-- Management reads canonical data even when public feature flags are off or `searchable=false`.
-- Admin can provision Scopes, create/edit Scope Groups and move registry membership without adding bespoke Next routes.
-- Source Refresh compares only incoming `source_name + source_native_id` values in bounded batches, then previews create/update/unchanged counts before writing.
-
-### LOC deployment
-
-- LOC — https://loc.lo3rwang.cc/
-- Author — https://loc.lo3rwang.cc/lo3rwang/
-- Admin — https://admin.lo3rwang.cc/
-
-### Single source of truth
-
-- Source code, automated tests, SQL migrations and Supabase PostgreSQL are the actual implementation and data authorities.
-- `docs/LOC_CANON.md` — LOC and LunaRunes fixed definitions.
-- `docs/LUNARUNES_DRAW_GOVERNANCE.md` — Rune/direction/draw grammar.
-- `docs/LOC-language-theory.md` — original language theory.
-- `docs/FEATURE_DEEP_DIVE.md` — current public feature explanation.
-- `docs/RELEASE_ROADMAP.md` — current release readiness and patch queue.
-- `docs/sql/` — executable/reference schema migration files, **not** another runtime authority.
-
-Deployment: Next.js static export, GitHub Pages, Capacitor for native iOS. Native App files use on-device private storage; the website's authorized Scope imports write to primary Supabase. Anonymous public reads may use an explicitly labeled Neon fallback; management and authenticated writes never fail over. The application UI and tests, not duplicate architecture documents, determine the current navigation, settings and provider behavior.
-
+- LOC：https://loc.lo3rwang.cc/
+- LunaRunes：https://lrunes.lo3rwang.cc/
 
 > 系統幫你看見軌跡，但不替你決定你是誰。
-
----
-
-## LunaRunes
-
-LunaRunes is an independent Symbolic Language with its own Canon, Rune data, draw grammar and special routes.
-
-### Current Rune structure
-
-- 01–64: eight core groups.
-- 65 玄 — Chaos.
-- 66 命 — Fate.
-- 第零符 德 — author baseline Rune; never part of the normal draw pool.
-
-Directions are fixed as:
-
-1. 正位
-2. 半正位
-3. 半逆位
-4. 逆位
-
-LunaRunes special semantics belong only to LunaRunes. They do not become general LOC Scope defaults.
-
-### LunaRunes runtime data
-
-Canonical runtime tables:
-
-- `silver.runes`
-- `silver.runes_etc`
-
-Draw/runtime queries read only the Rune IDs, selected directions and data types actually needed for the current result. They do not preload every direction and slice in JavaScript.
-
-### LunaRunes features
-
-LunaRunes owns its own Draw, Daily, Rune Directory, Game and duel routes.
-
-Its canonical deployment is:
-
-- LunaRunes — https://lrunes.lo3rwang.cc/
-- Alternate LOC mount — https://loc.lo3rwang.cc/lrunes/
-
-### LunaRunes documents
-
-- `docs/LUNARUNES_DRAW_GOVERNANCE.md`
-
-LunaRunes Canon content, approved English names and Rune semantics are not rewritten by general UI localization or LOC Search behavior.
-
----
-
-## Shared UI and repository rules
-
-- Eight Themes each provide a complete palette.
-- Fixed UI copy is centralized in `app/i18n/ui-copy.js`.
-- Authored works, Galaxy content and LunaRunes Canon are outside UI-copy localization.
-- Repository documentation is Current-only: one responsibility has one maintained source, with no superseded or duplicate parallel authority.
-
