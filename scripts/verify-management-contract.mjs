@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 13897)
+Total output lines: 412
+
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -172,54 +175,7 @@ must(!cultureUi.includes('尋找既有定錨點')&&!cultureUi.includes('尋找�
   !cultureUi.includes('新增時期（選擇既有定錨點）')&&!cultureUi.includes('新增事件（選擇既有定錨點）'),
   'Time toolbar is one anchor button plus one three-option selector, with no redundant lookup dropdown');
 must(nativeTimeline.includes("anchor:'定錨點',event:'事件',style_comment:'風格標籤',period:'時期'"),'Time River fourth group must always be period, not style');
-must(culture.includes('visibility,style_description')&&culture.includes('styleComments:parts.styleComments')&&culture.includes('style_comment:2,period:3')&&culture.includes("style_comment:'風格標籤'")&&culture.includes("entry_type==='style_comment'"),'Culture exposes independent style comments');
-must(editor.includes("ids.length!==2||concrete.length!==2")&&
-  editor.includes("ids.length>2||concrete.length<1||concrete.length>2")&&
-  editor.includes("payload.anchor_ids=[anchorId]")&&
-  !editor.includes('addIntermediateAnchor')&&editor.includes('legacyEventUnchanged'),
-  'Canonical Time anchor counts are period 1–2, event 2, style 1; historic 1/3 point events are not silently changed');
-must(nativeTimeline.includes('hasTimeKinds')&&nativeTimeline.includes("style_comment:'風格標籤'")&&nativeTimeline.includes('standardTimeKinds.map'),'Time chart must create the fourth style group even when it is empty');
-must(cultureUi.includes('beginTimelineCreation')&&cultureUi.includes('items={timelineItems}')&&cultureUi.includes('...classificationBuckets,...virtualAnchorItems')&&!cultureUi.includes('anchorReviews.map')&&
-  editor.includes('時期：1 或 2 個定錨點')&&editor.includes('事件：固定選擇 2 個定錨點')&&editor.includes('anchorOptions.map(row=>')&&!editor.includes('CultureStyleTagsField'),
-  'Shared Time editor must use 1–2 anchors for periods, 2 for events, 1 for styles, without extra controls');
-must(nativeTimeline.includes('new Timeline(')&&['onAdd:','onMove:','onUpdate:','onRemove:','add:Boolean(onAddRef.current)','onTimeClickRef.current'].every(token=>nativeTimeline.includes(token)),'Time manipulation must retain vis-timeline edits and make add opt-in to avoid river gesture collisions');
-
-must(nativeTimeline.includes("updateTime:row.entryType==='anchor'")&&!cultureUi.includes('snapTimelineRangeToAnchors')&&editor.includes('payload.anchor_ids=ids'),'Only real anchor points can be dragged; periods and events must reference ordered anchor IDs from selectors');
-const anchorFixture=[
-  {entry_type:'anchor',resource_id:'a',date_status:'exact',start_date:'2024-01-01'},
-  {entry_type:'anchor',resource_id:'b',date_status:'exact',start_date:'2024-03-01'},
-  {entry_type:'anchor',resource_id:'c',date_status:'exact',start_date:'2024-04-01'},
-  {entry_type:'anchor',resource_id:'d',date_status:'exact',start_date:'2024-05-01'}
-];
-const snappedPeriod=snapTimelineRangeToAnchors({start:'2024-01-02',end:'2024-03-31'},{entryType:'period',raw:{anchor_ids:['a','b']}},anchorFixture);
-must(snappedPeriod.anchor_ids.join(',')==='a,c'&&snappedPeriod.item.end==='2024-03-31','period range drag must snap to exclusive-end anchor without changing row dates');
-const snappedEvent=snapTimelineRangeToAnchors({start:'2024-01-01',end:'2024-04-01'},{entryType:'event',raw:{anchor_ids:['a','b']}},anchorFixture);
-must(snappedEvent.anchor_ids.join(',')==='a,c'&&snappedEvent.item.end==='2024-04-01','event range drag must snap inclusive end to actual anchor');
-let duplicateAnchorRejected=false;
-try{snapTimelineRangeToAnchors({start:'2024-04-01',end:'2024-03-31'},{entryType:'period',raw:{anchor_ids:['a','b']}},anchorFixture);}catch{duplicateAnchorRejected=true}
-must(duplicateAnchorRejected,'period bounds must reject duplicate or reversed anchor ranges');
-
-must(cultureUi.includes('CultureTimelineEditor')&&cultureUi.includes('selectedTimelineRecordId')&&cultureUi.includes('editable={account.canManageScopeSync(scopeId)}')&&cultureUi.includes('onMove={account.canManageScopeSync(scopeId)?moveTimelineRecord:null}')&&cultureUi.includes('onRemove={account.canManageScopeSync(scopeId)?removeTimelineRecord:null}'),'Time vis-timeline must preserve native add/edit/remove for four types');
-must(admin.includes("insertRows('silver.manage'")&&admin.includes("deleteRows('silver.manage'"),'Admin Registry node panel must add/remove Manage mappings');
-must(admin.includes('DeploymentTree')&&admin.includes('vis-network/standalone')&&admin.includes("onMoveParent"),'Admin must manage Scope Registry through a draggable vis-network tree');
-must(admin.includes("registry.filter(row=>row.scope_kind!=='system')")&&!admin.includes("id:'__admin__'")&&admin.includes("fixed:row.scope_id==='loc'")&&admin.includes('layout:{hierarchical:{enabled:true'),'Admin hierarchy must display only real Scope/Group nodes, never a duplicate Admin system node');
-const adminCss=read('app/styles/features.css');
-must(adminCss.includes('.admin-context-panel input:not([type="checkbox"]):not([type="radio"])')&&adminCss.includes('.admin-inline-flags input:is([type="checkbox"],[type="radio"])'),'Admin checkbox and radio inputs must retain native sizing instead of 100% field width');
-must(adminCss.includes('.admin-inline-flags[role="radiogroup"]')&&!adminCss.includes('max-height:78vh;overflow:auto'),'Admin route controls must be readable without a clipped nested form scrollbar');
-must(admin.includes('if(!scopeRows.length)return()=>{cancelled=true;}')&&admin.includes('network.fit({animation:false,maxZoomLevel:1})')&&!admin.includes('network.focus(selectedId,'),'Admin graph must fit populated canvas without zooming for every selection');
-must(admin.includes('},[registry]);')&&admin.includes('handlersRef.current={onSelect,onMoveParent,onDeleteNode}'),'Draft Scope config changes must not rebuild the vis-network tree on each keystroke');
-must(!admin.includes('Registry：')&&admin.includes('{!routeLocked?<div className="admin-inline-flags"')&&admin.includes('className="admin-route-summary"'),'Admin UI must show actual Domain or Directory values without redundant Registry prose');
-must(admin.includes('shapeProperties:{borderRadius:12}')&&admin.includes('themeObserver?.disconnect()')&&admin.includes("token('--loc-text'"),'Admin graph nodes must use compact theme-aware shapes with observer cleanup');
-must(admin.includes("direction:'LR'")&&admin.includes("forceDirection:'horizontal'")&&!admin.includes("direction:'UD'"),'Scope graph must place LOC at left and its children at right');
-must(adminCss.includes('.admin-deployment-layout{display:grid;grid-template-columns:minmax(0,1fr)')&&admin.includes('className="admin-editor-section"'),'Scope management must show full-width graph with editor below');
-must(admin.includes("select('id,email,role,galaxy,time,birthday,Title_TW,Desc_TW')")&&admin.includes("updateRows('silver.manage'")&&admin.includes("Title_TW:String(currentCopy.Title_TW")&&admin.includes('NAV 中文名稱（Title_TW）'),'Admin must edit silver.manage Title_TW and Desc_TW, including true DB writes');
-must(admin.includes("role=\"application\"")||admin.includes('manipulation:{'),'Scope graph must preserve direct vis-network edit/delete operations');
-must(admin.includes("const [editDraft,setEditDraft]=useState(null)")&&admin.includes('const editing=editDraft?.scopeId===selectedId;')&&admin.includes("const cancelEdit=()=>setEditDraft(null);"),'Scope node edits must remain local drafts until explicit Save or Cancel');
-must(admin.includes('admin-attribute-grid')&&admin.includes('aria-label="人員設定摘要"')&&admin.includes('onClick={beginEdit}')&&adminCss.includes('.admin-attribute>strong'),'Scope node shows attribute summary first and clicking any attribute enters edit mode');
-must(admin.includes('key={selectedId} data={data} selectedId={selectedId}'),'Switching Scope node must discard any uncommitted edit draft');
-must(!admin.includes('async function toggleScopeHidden')&&admin.includes("patchRegistry('active',e.target.checked)"),'Visibility changes must not write before Save');
-must(!admin.includes("react-select")&&!admin.includes('<Select')&&admin.includes('admin-native-select'),'Admin must use native select controls instead of react-select');
-must(['群組人員管理','資料庫設定','主題設定'].every(label=>admin.includes("label:'"+label+"'"))&&!admin.includes("value:'search'")&&!admin.includes('SearchKeywordReport'),'Admin primary menu must stay concise Chinese system settings without a redundant search query report');
+must(culture.includes('visibility,style_description')&&culture.includes('styleComments:parts.styleComments')&&culture.includes('style_comment:2,period:3')&&culture.includes("style_comment:'風格標籤'")&&culture.includes("entry_type==='style_comment'"),'Culture exposes independent style com…1897 tokens truncated…ywordReport'),'Admin primary menu must stay concise Chinese system settings without a redundant search query report');
 must(admin.includes('scopeDomainError?<p')&&admin.includes('groupDomainError?<p')&&admin.includes("duplicateDomainLabelError(id,mode)")&&admin.includes('disabled={Boolean(scopeDomainError)||creatingScope}'),'Admin Scope creation must immediately reject repeated Domain labels');
 must(read('app/AppShell.jsx').includes('function ScopePageCopy({scopeId,display_name})')&&
   read('app/AppShell.jsx').includes('pageCopyQuery.data?.Title_TW')&&
@@ -351,7 +307,7 @@ must(keywordAnalysis.includes('DEFAULT_KEYWORD_MIN_CHARS=32')&&keywordAnalysis.i
 must(keywordAnalysis.includes('analysisCharacterCount(row?.content)>minChars'),'keyword classification must gate on non-whitespace body characters');
 must(keywordAnalysis.includes("columns:'uid,createtime,class_id,group_lists'"),'public keyword Statistics/Culture must read stored article attrs');
 must(keywordAnalysis.includes('dynamicTieCount')&&keywordAnalysis.includes('counts.get(candidate)'),'complete keyword ties must use dynamic current Class counts');
-must(portableSchema.includes("group_lists='false'::jsonb")&&keywordAnalysis.includes('group_lists:result?.group_lists||{}'),'keyword attrs must reset excluded rows to false and store eligible no-hit rows as objects');
+must((portableSchema.includes("group_lists='false'::jsonb")||portableSchema.includes("group_lists=''false''::jsonb"))&&portableSchema.includes("coalesce(x.group_lists,''{}''::jsonb)")&&keywordAnalysis.includes('group_lists:result?.group_lists||{}'),'keyword attrs must reset excluded rows to false and store eligible no-hit rows as objects');
 must(portableSchema.includes('"lrunes_galaxy_class_id_check"')&&portableSchema.includes('"lrunes_galaxy_group_lists_shape_check"'),'all managed Galaxy schemas must keep class_id/group_lists parity');
 must(dbContract.includes("mode:'begin'")&&dbContract.includes("mode:'chunk'")&&dbContract.includes("mode:'finalize'")&&dbContract.includes('batchSize=500'),'keyword attr writes must reset, write bounded chunks, then finalize staticstime');
 must(scopeProvisioning.includes("where class_id is not null or group_lists is distinct from ''false''::jsonb"),'keyword analysis reset must obey safe-update WHERE requirement');

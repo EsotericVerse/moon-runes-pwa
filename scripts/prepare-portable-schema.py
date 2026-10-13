@@ -60,26 +60,63 @@ for index in inventory['indexes']:
     if (index['schemaname'], index['tablename']) in tables and index['indexname'] not in constraint_indexes:
         sql.append(index['indexdef'] + ';')
 
+# Keep the two identity helpers above tables because current-user defaults call
+# them. Emit every remaining live routine from the catalog, with dependencies
+# before RPC wrappers and triggers.
 function_order = [
     ('silver', 'current_auth_email'),
     ('silver', 'can_manage_global'),
     ('silver', 'can_manage_scope'),
+    ('silver', 'domain_has_repeated_labels'),
+    ('silver', 'registered_scope_extra_sign'),
     ('api', 'management_write'),
+    ('api', 'apply_keyword_classification'),
+    ('api', 'copy_rune66_keyword_class'),
+    ('api', 'delete_scope'),
+    ('api', 'log_search_keyword'),
+    ('api', 'manage_scope_registry'),
+    ('api', 'move_scope_block'),
+    ('api', 'provision_scope'),
+    ('api', 'read_keyword_class'),
+    ('silver', 'is_current_email_blocklisted'),
+    ('silver', 'read_scope_page_copy'),
     ('silver', 'normalize_galaxy_content_validity'),
+    ('silver', 'set_scope_extra_sign_on_insert'),
+    ('silver', 'sync_scope_config_display_name'),
+    ('silver', 'touch_visual_novel_updated_at'),
+    ('silver', 'management_write'),
+    ('silver', 'apply_keyword_classification'),
+    ('silver', 'copy_rune66_keyword_class'),
+    ('silver', 'delete_scope'),
+    ('silver', 'log_search_keyword'),
+    ('silver', 'manage_scope_registry'),
+    ('silver', 'move_scope_block'),
+    ('silver', 'provision_scope'),
+    ('silver', 'read_keyword_class'),
 ]
+functions_by_key = {}
+for function in inventory['functions']:
+    functions_by_key.setdefault((function['schema_name'], function['proname']), []).append(function)
+ordered_functions = []
 for schema_name, name in function_order:
-    function = next(f for f in inventory['functions'] if f['schema_name'] == schema_name and f['proname'] == name)
+    candidates = functions_by_key.get((schema_name, name), [])
+    if not candidates:
+        raise SystemExit(f'Missing live routine: {schema_name}.{name}')
+    # Overloads are ordered by identity arguments, so the older one-argument
+    # classification routine is emitted before the scope-aware overload.
+    if schema_name == 'api' and name == 'apply_keyword_classification':
+        ordered_functions.extend(sorted(candidates, key=lambda item: (not item['arguments'].startswith('p_scope_id'), item['arguments'])))
+    else:
+        ordered_functions.extend(sorted(candidates, key=lambda item: item['arguments']))
+covered = {('api', 'request_claims'), ('api', 'current_user_id')}
+covered.update((f['schema_name'], f['proname']) for f in ordered_functions)
+uncovered = [f for f in inventory['functions'] if (f['schema_name'], f['proname']) not in covered]
+if uncovered:
+    raise SystemExit('Unmapped live routines: ' + ', '.join(f"{f['schema_name']}.{f['proname']}" for f in uncovered))
+for function in ordered_functions:
     definition = identity(function['definition']).replace("'silver', 'auth', 'public'", "'pg_catalog', 'silver', 'api'")
     sql.append(definition + ';')
 
-sql.extend([
-    "CREATE OR REPLACE FUNCTION silver.management_write(p_table text,p_operation text,p_rows jsonb DEFAULT NULL::jsonb,p_values jsonb DEFAULT NULL::jsonb,p_filters jsonb DEFAULT '[]'::jsonb) RETURNS jsonb LANGUAGE sql SECURITY DEFINER SET search_path TO '' AS $ SELECT api.management_write(p_table,p_operation,p_rows,p_values,p_filters) $;",
-    "CREATE OR REPLACE FUNCTION silver.apply_keyword_classification(p_scope_id text,p_rows jsonb) RETURNS integer LANGUAGE sql SECURITY DEFINER SET search_path TO '' AS $ SELECT api.apply_keyword_classification(p_scope_id,p_rows) $;",
-    "CREATE OR REPLACE FUNCTION silver.read_keyword_class(p_scope_id text,p_class_id uuid) RETURNS jsonb LANGUAGE sql SECURITY DEFINER SET search_path TO '' AS $ SELECT api.read_keyword_class(p_scope_id,p_class_id) $;",
-    "CREATE OR REPLACE FUNCTION silver.provision_scope(p_scope_id text,p_display_name text,p_email text,p_birthday date DEFAULT NULL::date,p_domain text DEFAULT NULL::text,p_directory text DEFAULT NULL::text,p_parent_scope_id text DEFAULT 'loc'::text,p_theme text DEFAULT 'theme-7'::text,p_copy_keywords boolean DEFAULT true) RETURNS jsonb LANGUAGE sql SECURITY DEFINER SET search_path TO '' AS $ SELECT api.provision_scope(p_scope_id,p_display_name,p_email,p_birthday,p_domain,p_directory,p_parent_scope_id,p_theme,p_copy_keywords) $;",
-    "CREATE OR REPLACE FUNCTION silver.manage_scope_registry(p_operation text,p_scope_id text,p_values jsonb DEFAULT '{}'::jsonb) RETURNS jsonb LANGUAGE sql SECURITY DEFINER SET search_path TO '' AS $ SELECT api.manage_scope_registry(p_operation,p_scope_id,p_values) $;",
-    "CREATE OR REPLACE FUNCTION silver.log_search_keyword(p_scope_id text,p_query_text text) RETURNS void LANGUAGE sql SECURITY DEFINER SET search_path TO '' AS $ SELECT api.log_search_keyword(p_scope_id,p_query_text) $;",
-])
 for view in inventory['views']:
     options = ','.join(view['reloptions'] or [])
     sql.append('CREATE VIEW ' + relation(view['schema_name'], view['relname']) + (' WITH (' + options + ')' if options else '') + ' AS ' + view['definition'])
@@ -92,7 +129,7 @@ for row in inventory['relations']:
         if row['relforcerowsecurity']:
             sql.append('ALTER TABLE ' + relation(row['schema_name'], row['relname']) + ' FORCE ROW LEVEL SECURITY;')
 for policy in boundary['policies']:
-    roles = ','.join(ident(r) for r in policy['roles'])
+    roles = ','.join(ident('anonymous' if r == 'anon' else r) for r in policy['roles'])
     value = 'CREATE POLICY ' + ident(policy['policyname']) + ' ON ' + relation(policy['schemaname'], policy['tablename']) + ' AS ' + policy['permissive'] + ' FOR ' + policy['cmd'] + ' TO ' + roles
     if policy['qual'] is not None:
         value += ' USING (' + identity(policy['qual']) + ')'
@@ -103,11 +140,12 @@ sql.extend(['GRANT USAGE ON SCHEMA silver,api TO anonymous,authenticated;',
             'REVOKE ALL ON ALL FUNCTIONS IN SCHEMA silver,api FROM PUBLIC;',
             'GRANT EXECUTE ON FUNCTION api.request_claims(),api.current_user_id(),silver.current_auth_email(),silver.can_manage_global(),silver.can_manage_scope(text) TO authenticated;',
             'GRANT EXECUTE ON FUNCTION api.management_write(text,text,jsonb,jsonb,jsonb) TO authenticated;',
-            'GRANT EXECUTE ON FUNCTION silver.management_write(text,text,jsonb,jsonb,jsonb),silver.apply_keyword_classification(text,jsonb),silver.provision_scope(text,text,text,date,text,text,text,text,boolean),silver.manage_scope_registry(text,text,jsonb) TO authenticated;',
-            'GRANT EXECUTE ON FUNCTION silver.read_keyword_class(text,uuid),silver.log_search_keyword(text,text) TO anonymous,authenticated;'])
+            'GRANT EXECUTE ON FUNCTION silver.management_write(text,text,jsonb,jsonb,jsonb),silver.apply_keyword_classification(text,jsonb),silver.copy_rune66_keyword_class(text),silver.delete_scope(text),silver.log_search_keyword(text,text),silver.manage_scope_registry(text,text,jsonb),silver.move_scope_block(text,text,text,integer),silver.provision_scope(text,text,text,date,text,text,text,text,boolean),silver.is_current_email_blocklisted(),silver.read_keyword_class(text,uuid) TO authenticated;',
+            'GRANT EXECUTE ON FUNCTION silver.read_scope_page_copy(text),silver.log_search_keyword(text,text),silver.read_keyword_class(text,uuid) TO anonymous,authenticated;'])
 for grant in inventory['table_grants']:
-    if grant['grantee'] in ('anonymous', 'authenticated') and (grant['table_schema'], grant['table_name']) in tables.union({('api', 'lo3rwang_keywords_manage')}):
-        sql.append('GRANT ' + grant['privilege_type'] + ' ON ' + relation(grant['table_schema'], grant['table_name']) + ' TO ' + ident(grant['grantee']) + ';')
+    grantee = 'anonymous' if grant['grantee'] == 'anon' else grant['grantee']
+    if grantee in ('anonymous', 'authenticated') and (grant['table_schema'], grant['table_name']) in tables.union({('api', 'lo3rwang_keywords_manage')}):
+        sql.append('GRANT ' + grant['privilege_type'] + ' ON ' + relation(grant['table_schema'], grant['table_name']) + ' TO ' + ident(grantee) + ';')
 sql.append('GRANT SELECT (id,role,birthday,galaxy,time) ON silver.manage TO anonymous;')
 sql.append('GRANT USAGE,SELECT ON SEQUENCE silver.lo3rwang_keywords_keyword_id_seq TO authenticated;')
 output.write_text('\n\n'.join(sql) + '\n')
