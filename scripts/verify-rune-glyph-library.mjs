@@ -16,6 +16,14 @@ assert.equal(runeGlyphProfile({rune_id:44}).font,runeGlyphProfile({rune_id:45}).
 assert.notEqual(runeGlyphProfile({rune_id:44}).ink,runeGlyphProfile({rune_id:45}).ink);
 assert.match(stage,/runeGlyphProfile\(rune\)/);
 assert.match(stage,/data-glyph-family=\{profile.family\}/);
+assert.match(stage,/scale:\[\.58,1\.68,2\.0,2\.0,1\.92,1\.08,1\]/,
+  'cinematic character must stay within the approved 2.0x enlargement cap');
+assert.match(css,/font-size:clamp\(108px,22vw,220px\)/,
+  'base glyph is smaller so the moving authored effects remain visible');
+assert.match(css,/font-size:clamp\(108px,31vw,170px\)/,
+  'mobile 3D character must respect the smaller visual footprint');
+assert.match(css,/rune-3d-atlas-glyph-model\{\s*flex:0 0 auto;font-size:clamp\(120px,16vw,175px\)/,
+  'catalogued 3D volume review must stay proportional and readable');
 assert.match(stage,/<EffekseerCanvas key=/);
 assert.doesNotMatch(stage,/FONT_BY_GROUP|RuneAuraFX|RuneAura/);
 console.log('All canonical Runes reuse eight typographic families in their manifestation stage.');
