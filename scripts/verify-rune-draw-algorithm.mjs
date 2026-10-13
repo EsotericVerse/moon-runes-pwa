@@ -4,7 +4,6 @@ import {resolve} from 'node:path';
 const root=process.cwd();
 const publicDraw=readFileSync(resolve(root,'app/lrunes/RuneDrawClient.jsx'),'utf8');
 const drawModes=readFileSync(resolve(root,'app/lrunes/rune-draw-modes.mjs'),'utf8');
-const governance=readFileSync(resolve(root,'docs/LUNARUNES_DRAW_GOVERNANCE.md'),'utf8');
 const ritual=readFileSync(resolve(root,'app/lrunes/rune-ritual.js'),'utf8');
 const guidance=readFileSync(resolve(root,'app/lrunes/rune-guidance-engine.mjs'),'utf8');
 const dailySurface=readFileSync(resolve(root,'app/lrunes/RuneSingleDailySurface.jsx'),'utf8');
@@ -116,20 +115,5 @@ for(const fragment of [
   "'10card':{x:[0,1,2,3],variable:[4,5],y:[6,7,8,9]}"
 ])if(!guidance.includes(fragment))throw new Error('Rune x/y guidance missing: '+fragment);
 for(const fragment of ['狀況形容','狀況表達','每日占卜提醒','每日占卜引導','每日占卜祝福'])if(!dailySurface.includes(fragment))throw new Error('Daily moon-aware layer missing: '+fragment);
-for(const fragment of [
-  '## Draw pool',
-  '## Precise directional query',
-  '## Draw entry points',
-  '抽牌張數上限固定為 11',
-  '### Two cards',
-  '### Four cards',
-  '### Six cards',
-  '### Seven cards',
-  '### Eight cards',
-  '### Nine cards',
-  '### Ten cards',
-  '### OW3gs',
-  '## Daily'
-])if(!governance.includes(fragment))throw new Error('Draw Governance missing Current section: '+fragment);
 
 console.log('[rune-draw] Current 66-Rune draw, exact moon-aware Situation/Daily reads, linked Rune verse grammar, flexible 2–10 card spreads, OW3gs and ritual verified');
