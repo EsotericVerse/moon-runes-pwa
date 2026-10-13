@@ -76,8 +76,8 @@ test('LOC feature Hero titles scale beyond normal cards but preserve Rune settin
   await page.goto('/culture/',{waitUntil:'domcontentloaded'});
   const title=page.locator('.scope-feature-hero>.home-title-row>h1');
   await expect(title).toBeVisible({timeout:25000});
+  await expect.poll(()=>title.evaluate(el=>parseFloat(getComputedStyle(el).fontSize)),{timeout:10000}).toBeGreaterThanOrEqual(37);
   const featurePx=await title.evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
-  expect(featurePx).toBeGreaterThanOrEqual(37);
   await page.goto('/lrunes/culture/',{waitUntil:'domcontentloaded'});
   const rune=page.locator('.scope-feature-hero>.home-title-row>h1');
   await expect(rune).toBeVisible({timeout:25000});
@@ -157,8 +157,7 @@ test('Each homepage Hero has exactly its fixed Scope identity above overlays',as
     await expect(mark).toHaveText(entry.visible);
     await expect(mark).toHaveCSS('position','absolute');
     await expect(mark).toHaveCSS('pointer-events','none');
-    const zIndex=await mark.evaluate(element=>Number(getComputedStyle(element).zIndex));
-    expect(zIndex).toBeGreaterThanOrEqual(3);
+    await expect.poll(()=>mark.evaluate(element=>Number(getComputedStyle(element).zIndex)),{timeout:10000}).toBeGreaterThanOrEqual(3);
     const heroBox=await hero.boundingBox();
     const markBox=await mark.boundingBox();
     expect(heroBox&&markBox).toBeTruthy();
