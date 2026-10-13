@@ -310,7 +310,6 @@ for(const [input,normal,hd] of fogPaths){
 assert.equal(redirectAmbientFogTexture('/Texture/unrelated.png',{quality:'hd256'}),'/Texture/unrelated.png');
 assert.match(stage,/diagnoseAmbient/,'QA diagnostics must stay explicitly opt-in');
 assert.match(stage,/getContextAttributes/,'QA diagnostics must inspect actual WebGL canvas alpha');
-const drawPreview=readFileSync('app/lrunes/Rune3DPreview.jsx','utf8');
 assert.match(drawPreview,/query.get\('fog_preview'\)==='1'/,'QA activated only via fog_preview=1');
 assert.match(drawPreview,/diagnoseAmbient=\{diagnoseAmbient\}/);
 
