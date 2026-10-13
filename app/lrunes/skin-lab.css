@@ -63,3 +63,43 @@
   .rune-skin-cosmos .rune-skin-orbit-name{font-size:.75rem}
   .rune-skin-cosmos .rune-skin-orbit-direction{font-size:.67rem}
 }
+
+/* All LunaRunes presentation routes share ONE visible outer content frame:
+   3D duel/daily, 3D atlas, and the original-art 2D draw/daily/atlas.
+   The site theme remains authoritative on 3D routes; 2D art keeps its own
+   licensed-stage-compatible dark palette. Never style the global NAV here. */
+.loc-next-main.rune-skin-lab:is(.rune-3d-shell,.rune-art-shell){
+  box-sizing:border-box;
+  min-width:0;
+  border:1px solid color-mix(in srgb,var(--loc-accent) 30%,var(--loc-line));
+  border-radius:var(--loc-ui-radius-lg,22px);
+  box-shadow:var(--loc-shadow-card,0 14px 38px rgb(0 0 0 / .15));
+}
+.loc-next-main.rune-skin-lab.rune-3d-shell{
+  background:linear-gradient(160deg,var(--loc-ui-panel-strong,var(--loc-panel)),
+    var(--loc-ui-panel,var(--loc-surface)));
+}
+.loc-next-main.rune-skin-lab.rune-art-shell{
+  background:linear-gradient(150deg,#24203c,#15172c 64%,#20213a);
+  border-color:#bba58b8c;
+}
+.loc-next-main.rune-skin-lab:is(.rune-3d-shell,.rune-art-shell)
+  >:is(header,nav,section,div,footer,details){
+  box-sizing:border-box;
+  min-width:0;
+  max-width:100%;
+}
+.loc-next-main.rune-skin-lab :is(
+  .rune-3d-stage,.rune-art-stage,.rune-3d-atlas-gallery,
+  .rune-3d-atlas-group-hero,.rune-3d-atlas-glyph-review,
+  .rune-3d-library-manifestation,.rune-art-gallery
+){
+  box-sizing:border-box;
+  min-width:0;
+  max-width:100%;
+}
+@media(max-width:700px){
+  .loc-next-main.rune-skin-lab:is(.rune-3d-shell,.rune-art-shell){
+    border-radius:var(--loc-ui-radius-md,16px);
+  }
+}
