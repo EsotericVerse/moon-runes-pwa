@@ -107,6 +107,29 @@ test('LOC and Author home NAV can match a later sibling after JsonLd script',()=
   assert.equal(navCss.includes(':has(+ .loc-next-main[data-loc-view="home"]'),false);
 });
 
+test('3D rune draw NAV spans exactly the same inner content frame as its stage',()=>{
+  const navCss=fs.readFileSync('app/styles/nav.css','utf8');
+  const stageCss=fs.readFileSync('app/lrunes/effekseer/effekseer-stage.css','utf8');
+  const page=fs.readFileSync('app/lrunes/Rune3DPreview.jsx','utf8');
+  assert.match(page,/className="loc-next-main rune-skin-lab rune-3d-shell"/);
+  assert.match(page,/data-rune-3d-preview=\{mode\}/);
+  assert.match(navCss,/\.scope-global:has\(~ \.loc-next-main\.rune-3d-shell\[data-rune-3d-preview\]\)/);
+  assert.match(navCss,/calc\(1880px - clamp\(24px,4\.4vw,64px\)\)/);
+  assert.match(navCss,/calc\(100% - clamp\(16px,3vw,56px\) - clamp\(24px,4\.4vw,64px\)\)/);
+  assert.match(navCss,/max-width:none;\s*background:transparent;/);
+  assert.match(stageCss,/width:min\(calc\(100% - clamp\(16px,3vw,56px\)\),1880px\);/);
+  assert.match(stageCss,/padding:clamp\(12px,2\.2vw,32px\)/);
+  const clamp=(lo,n,hi)=>Math.min(hi,Math.max(lo,n));
+  for(const viewport of [360,560,1024,1830,2000,2560]){
+    const outer=Math.min(viewport-clamp(16,viewport*.03,56),1880);
+    const padding=clamp(12,viewport*.022,32);
+    const actualStageInner=outer-2*padding;
+    const nav=Math.min(1880-clamp(24,viewport*.044,64),
+      viewport-clamp(16,viewport*.03,56)-clamp(24,viewport*.044,64));
+    assert.ok(Math.abs(actualStageInner-nav)<.01,'NAV mismatch at '+viewport+'px');
+  }
+});
+
 test('native first-row NAV respects iOS safe area while web retains original layout',()=>{
   const shell=fs.readFileSync('app/AppShell.jsx','utf8');
   const css=fs.readFileSync('app/styles/nav.css','utf8');
