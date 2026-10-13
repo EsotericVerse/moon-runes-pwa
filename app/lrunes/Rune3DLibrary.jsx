@@ -6,6 +6,8 @@ import {selectRows} from '../loc/db-query.mjs';
 import RuneArtStage from './visual/RuneArtStage';
 import RuneCardInfo from './RuneCardInfo';
 import EffekseerStage from './effekseer/EffekseerStage';
+import RuneExtrudedGlyph from './effekseer/RuneExtrudedGlyph';
+import {RUNE_GLYPH_STYLES,runeGlyphProfile} from './effekseer/rune-glyph-library.mjs';
 import {groupImage,runeImage,runeName} from './rune-directory.mjs';
 import {navigationHref} from '../modular/nav-destinations.mjs';
 import useNativeNavigation from '../modular/use-native-navigation';
@@ -103,6 +105,7 @@ export default function Rune3DLibrary(){
   const runes=group?allRunes.filter(rune=>inGroup(rune,group)):[];
   const current=focusId===null?null:runes.find(rune=>Number(rune.rune_id)===focusId)||null;
   const runePosition=Math.max(0,runes.findIndex(rune=>Number(rune.rune_id)===Number(current?.rune_id)));
+  const currentGlyph=current?runeGlyphProfile(current):null;
 
   useEffect(()=>{
     if(focusId!==null)stageRef.current?.scrollIntoView({behavior:'smooth',block:'start'});
@@ -177,6 +180,18 @@ export default function Rune3DLibrary(){
         <h2>{runeName(current)} · {current.english_name}</h2>
         <span>第 {current.rune_id} / 66 枚 · {group.name}</span>
         <span className="rune-3d-toolbar-label">粒子貼圖：256</span>
+      </div>
+      <div className="rune-3d-atlas-glyph-review" aria-label={runeName(current)+'的 3D 字型檢視'}>
+        <div className={'rune-effekseer-glyph rune-effekseer-glyph--'+currentGlyph.font+' rune-3d-atlas-glyph-model'}
+          data-glyph-family={currentGlyph.family} data-glyph-finish={currentGlyph.finish}
+          style={{'--rune-ink':currentGlyph.ink}}>
+          <RuneExtrudedGlyph key={'preview-'+current.rune_id} word={runeName(current).slice(0,1)} profile={currentGlyph}/>
+        </div>
+        <div className="rune-3d-atlas-glyph-copy">
+          <p className="loc-eyebrow">3D 字型 · 固定檢視</p>
+          <p>字型：{RUNE_GLYPH_STYLES[currentGlyph.family]?.label||currentGlyph.family}</p>
+          <p>正面固定、立體筆畫及側面厚度，可直接比較每枚符文。</p>
+        </div>
       </div>
       <div className={'rune-3d-stage rune-3d-atlas-performance'+(showCardInfo?' rune-3d-atlas-performance--reading':'')}>
         <EffekseerStage key={current.rune_id+'-'+playback} rune={current} vfxOnly textureQuality={textureQuality}
