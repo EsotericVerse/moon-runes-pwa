@@ -1,4 +1,4 @@
-import RuneAtlasLab from '../../lrunes/list2/RuneAtlasLab';
+import RuneUnifiedView from '../../lrunes/RuneUnifiedView';
 import {lunarunesMetadata} from '../../seo/metadata';
 
 export const metadata=lunarunesMetadata({
@@ -6,4 +6,4 @@ export const metadata=lunarunesMetadata({
   description:'以九大群組原創畫作與 66 張卡面展示原有符文圖鑑資訊。',
   path:'/card/list/',noIndex:true
 });
-export default function RuneCardList(){return <RuneAtlasLab/>;}
+export default function RuneCardList(){return <RuneUnifiedView feature="list" defaultView="2d"/>;}
