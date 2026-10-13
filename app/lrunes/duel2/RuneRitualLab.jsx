@@ -99,7 +99,7 @@ function RuneDrawResultDialog({items,reading,homeHref,onRestart,onClose}){
   </div>;
 }
 const pause=milliseconds=>new Promise(done=>setTimeout(done,milliseconds));
-export default function RuneRitualLab(){
+export default function RuneRitualLab({presentationSwitcher=null}){
   const native=useNativeNavigation();
   const [items,setItems]=useState([]);
   const [busy,setBusy]=useState(false);
@@ -176,6 +176,7 @@ export default function RuneRitualLab(){
   </div>;
   return <main className="loc-next-main" data-rune-lab="duel2">
     <div className="loc-panel rune-skin-lab rune-art-shell rune-art-duel-shell">
+    {presentationSwitcher}
     <header className="rune-art-header">
       <p className="loc-eyebrow">LunaRunes · Living Ritual</p>
       <h1>月光召喚 · 華麗抽牌</h1>
