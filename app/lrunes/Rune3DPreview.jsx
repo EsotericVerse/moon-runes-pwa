@@ -2,6 +2,7 @@
 
 import {useEffect,useRef,useState} from 'react';
 import {motion,useReducedMotion} from 'motion/react';
+import {createPortal} from 'react-dom';
 import EffekseerStage,{WaitingEffekseerStage,RuneMistBackdrop} from './effekseer/EffekseerStage';
 import {navigationHref} from '../modular/nav-destinations.mjs';
 import useNativeNavigation from '../modular/use-native-navigation';
@@ -26,7 +27,11 @@ function ResultDialog({title,children,onClose}){
     window.addEventListener('keydown',close);
     return()=>window.removeEventListener('keydown',close);
   },[onClose]);
-  return <div className="rune-3d-modal-backdrop" role="presentation" onClick={onClose}>
+  // The canonical LOC content frame owns .loc-panel p theme colors.
+  // Overlay dialogs must portal out of that frame to retain their dedicated
+  // dark-surface text contrast (as the original-art rune dialogs already do).
+  if(typeof document==='undefined')return null;
+  return createPortal(<div className="rune-3d-modal-backdrop" role="presentation" onClick={onClose}>
     <section className="rune-3d-modal" role="dialog" aria-modal="true" aria-label={title} onClick={event=>event.stopPropagation()}>
       <header className="rune-3d-modal-head">
         <h2>{title}</h2>
@@ -34,7 +39,7 @@ function ResultDialog({title,children,onClose}){
       </header>
       <div className="rune-3d-daily-modal-fields">{children}</div>
     </section>
-  </div>;
+  </div>,document.body);
 }
 function readDaily(item){
   return DAILY_FIELDS.map(([key,label])=>({
