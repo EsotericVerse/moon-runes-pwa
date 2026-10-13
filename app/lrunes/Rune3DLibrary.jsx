@@ -240,7 +240,8 @@ export default function Rune3DLibrary({presentationSwitcher=null}){
     <footer className="rune-3d-footer">
       <nav className="rune-skin-controls" aria-label="符文圖鑑導覽">
         <a className="rune-skin-btn" href={navigationHref('lrunes','',native)}>回符文首頁</a>
-        <a className="rune-skin-btn" href={navigationHref('lrunes','card/list',native)}>2D 符文圖鑑</a>
+        <a className="rune-skin-btn" href={navigationHref('lrunes','card/duel',native)}>符文抽牌</a>
+        <a className="rune-skin-btn" href={navigationHref('lrunes','card/daily',native)}>每日符文</a>
       </nav>
     </footer>
 
