@@ -174,7 +174,8 @@ export default function RuneRitualLab(){
     <button type="button" className="rune-art-duel-action rune-art-duel-action--finish"
       onClick={finish} disabled={busy||!!selected||!items.length}>占卜結束，觀看籤詩</button>
   </div>;
-  return <main className="loc-next-main rune-skin-lab rune-art-shell rune-art-duel-shell" data-rune-lab="duel2">
+  return <main className="loc-next-main" data-rune-lab="duel2">
+    <div className="loc-panel rune-skin-lab rune-art-shell rune-art-duel-shell">
     <header className="rune-art-header">
       <p className="loc-eyebrow">LunaRunes · Living Ritual</p>
       <h1>月光召喚 · 華麗抽牌</h1>
@@ -222,5 +223,6 @@ export default function RuneRitualLab(){
         homeHref={navigationHref('lrunes','card',native)}
         onRestart={reset} onClose={()=>setResultOpen(false)}/>,document.body
     ):null}
+    </div>
   </main>;
 }
