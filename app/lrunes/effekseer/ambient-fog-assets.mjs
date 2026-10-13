@@ -8,7 +8,8 @@ export function redirectAmbientFogTexture(path,{quality='original',onReplacement
   if(typeof path!=='string')return path;
   return path.replace(/(^|[/\\])(smoke_01|star)\.png(?=$|[?#])/i,
     (whole,prefix,original)=>{
-      const replacement=(quality==='hd256'?'_hd256/':'')+'_fog-cloud-2048.png';
+      const separator=prefix==='\\'?'\\':'/';
+      const replacement=(quality==='hd256'?'_hd256'+separator:'')+'_fog-cloud-2048.png';
       onReplacement?.({original:original.toLowerCase(),replacement});
       return prefix+replacement;
     });
