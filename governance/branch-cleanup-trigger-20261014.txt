@@ -1,5 +1,0 @@
-LOC pre-1.0 branch governance cleanup explicitly requested by repository owner.
-Expected: main + 96 archived development branches, no open PR.
-Process: verify branch SHAs, store complete Git bundle as 90-day workflow artifact, delete 96 non-main refs, verify main remains.
-Historical release tags and releases must remain untouched.
-This trigger file and temporary workflow will be removed once cleanup completes.
