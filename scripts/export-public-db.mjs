@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {createHash} from 'node:crypto';
 import {createConfiguredAdapter} from '../app/loc/providers/configured.mjs';
 
 const [inventoryFile,outputDirectory]=process.argv.slice(2);
@@ -43,8 +44,9 @@ for(const table of [...tables].sort()){
     console.log(JSON.stringify({table,exported:rows.length,expected}));
   }while(rows.length<expected);
   if(rows.length!==expected)throw new Error(table+' export count mismatch');
-  fs.writeFileSync(path.join(outputDirectory,table+'.json'),JSON.stringify(rows),{mode:0o600});
-  manifest.push({table:'silver.'+table,columns,rows:rows.length,exportedAt:new Date().toISOString()});
+  const snapshot=JSON.stringify(rows);
+  fs.writeFileSync(path.join(outputDirectory,table+'.json'),snapshot,{mode:0o600});
+  manifest.push({table:'silver.'+table,columns,primaryKey:order,rows:rows.length,sha256:createHash('sha256').update(snapshot).digest('hex'),exportedAt:new Date().toISOString()});
   fs.writeFileSync(path.join(outputDirectory,'manifest.json'),JSON.stringify(manifest,null,2),{mode:0o600});
 }
 console.log('Public canonical export complete. This Data API export is not a transactionally consistent pg_dump snapshot. Private canonical records need an owner export.');

@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
 import {DatabaseSync} from 'node:sqlite';
 import {Kysely,SqliteDialect} from 'kysely';
 import {importPortableSnapshot} from './portable-snapshot-import.mjs';
 const native=new DatabaseSync(':memory:');
+native.exec('PRAGMA foreign_keys=ON');
 const compatible={prepare(sql){const stmt=native.prepare(sql);return {reader:/^\s*(?:select|with|pragma)\b/i.test(sql),all(p){return stmt.all(...p)},run(p){return stmt.run(...p)}}},close(){native.close()}};
 const db=new Kysely({dialect:new SqliteDialect({database:compatible})});
 const table='transfer_test';
@@ -22,5 +24,23 @@ try{
   await assert.rejects(()=>importPortableSnapshot(db,[{table:'silver.'+table,columns:['id','title'],rows:2}],async()=>[{id:1,title:'a'}],rename),/row count mismatch/);
   await assert.rejects(()=>importPortableSnapshot(db,[{table:'silver.'+table,columns:['id','title'],rows:1}],async()=>[{id:1,title:'a',extra:'bad'}],rename),/Unexpected column/);
   await assert.rejects(()=>importPortableSnapshot(db,[{table:'silver.x;DROP TABLE users',columns:['id'],rows:0}],async()=>[]),/Invalid transfer identifier/);
+  await db.schema.createTable('parent_test').addColumn('id','integer',c=>c.primaryKey()).execute();
+  await db.schema.createTable('child_test').addColumn('id','integer',c=>c.primaryKey()).addColumn('parent_id','integer',c=>c.notNull().references('parent_test.id')).execute();
+  const orderedManifest=[
+    {table:'silver.child_test',columns:['id','parent_id'],primaryKey:['id'],dependsOn:['silver.parent_test'],rows:1},
+    {table:'silver.parent_test',columns:['id'],primaryKey:['id'],rows:1}
+  ];
+  const ordered=await importPortableSnapshot(db,orderedManifest,async entry=>entry.table.endsWith('child_test')?[{id:10,parent_id:1}]:[{id:1}],rename);
+  assert.deepEqual(ordered.map(row=>row.table),['parent_test','child_test'],'FK dependencies must determine safe import order');
+  await db.deleteFrom('child_test').execute();
+  await db.deleteFrom('parent_test').execute();
+  await assert.rejects(()=>importPortableSnapshot(db,[{table:'silver.'+table,columns:['id','title'],primaryKey:['id'],rows:2}],async()=>[{id:1,title:'first'},{id:1,title:'duplicate'}],rename),/Duplicate primary key in snapshot/);
+  await assert.rejects(()=>importPortableSnapshot(db,[{table:'silver.'+table,columns:['id','title'],rows:0,dependsOn:['silver.missing']}],async()=>[],rename),/Missing dependency/);
+  const checksummedRows=[{id:20,title:'checksum'}];
+  const sha256=createHash('sha256').update(JSON.stringify(checksummedRows)).digest('hex');
+  const checked=await importPortableSnapshot(db,[{table:'silver.'+table,columns:['id','title'],primaryKey:['id'],rows:1,sha256}],async()=>checksummedRows,rename);
+  assert.equal(checked[0].rows,1,'valid snapshot digest must import');
+  await db.deleteFrom(table).execute();
+  await assert.rejects(()=>importPortableSnapshot(db,[{table:'silver.'+table,columns:['id','title'],rows:1,sha256:'0'.repeat(64)}],async()=>checksummedRows,rename),/checksum mismatch/);
   console.log('[sql-import] Kysely transactional snapshot import, row integrity, fail-closed and rollback passed');
 }finally{await db.destroy()}
