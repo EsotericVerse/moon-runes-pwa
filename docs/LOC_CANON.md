@@ -1,6 +1,6 @@
 # LOC Current Canon
 
-**Version:** 0.9.1-rc.1  
+**Contract:** Current canonical language architecture; code version belongs only to `package.json`.  
 **Author:** Lucas Oscar Wang 政德
 
 ## 1. Fixed identity

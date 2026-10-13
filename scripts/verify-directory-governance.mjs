@@ -30,7 +30,19 @@ for(const sourceName of ['LunaRune66.xlsx','LunarRunesCardCut.pdf']){
   if(matches.length!==1)failures.push(sourceName+' must have exactly one Current repository source; found '+matches.length);
   if(matches.length===1&&resolve(matches[0])!==resolve(root,sourceName))failures.push(sourceName+' Current source must be at repository root');
 }
-for(const path of ['docs/LOC_CANON.md','docs/DOMAIN_ARCHITECTURE.md','docs/CURRENT_UI_CONTRACT.md','docs/REPO_DIRECTORY_GOVERNANCE.md']){
+// Release 1.0 keeps one Current document per responsibility.
+for(const retired of [
+  'docs/TODO.md','docs/NAV_GOVERNANCE.md','docs/DEPLOYMENT_OWNERSHIP.md',
+  'docs/IOS_APP_SHELL.md','docs/IOS_DEVICE_BUILD.md','docs/LOC_APP_RUNE_SETTINGS.md',
+  'docs/PACKAGES.md','governance/frozen-branches.json'
+]){
+  if(existsSync(resolve(root,retired)))failures.push('retired parallel authority returned: '+retired);
+}
+for(const path of [
+  'docs/LOC_CANON.md','docs/DOMAIN_ARCHITECTURE.md',
+  'docs/CURRENT_UI_CONTRACT.md','docs/REPO_DIRECTORY_GOVERNANCE.md',
+  'docs/RELEASE_ROADMAP.md','docs/IOS_APP.md'
+]){
   if(!existsSync(resolve(root,path)))failures.push('missing Current document: '+path);
 }
 if(failures.length){
