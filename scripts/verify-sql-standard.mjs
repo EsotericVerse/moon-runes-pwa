@@ -9,7 +9,14 @@ const dialects=[
   ['sqlite',new SqliteDialect({database:{}})]
 ];
 for(const [name,dialect] of dialects){
-  // Use Kysely's real SQL compiler with a non-connecting driver.\n  const compileDialect={\n    createAdapter:()=>dialect.createAdapter(),\n    createDriver:()=>new DummyDriver(),\n    createIntrospector:db=>dialect.createIntrospector(db),\n    createQueryCompiler:()=>dialect.createQueryCompiler()\n  };\n  const db=new Kysely({dialect:compileDialect});
+  // Use Kysely's real SQL compiler with a non-connecting driver.
+  const compileDialect={
+    createAdapter:()=>dialect.createAdapter(),
+    createDriver:()=>new DummyDriver(),
+    createIntrospector:db=>dialect.createIntrospector(db),
+    createQueryCompiler:()=>dialect.createQueryCompiler()
+  };
+  const db=new Kysely({dialect:compileDialect});
   const query=db.selectFrom('works').select(['id','title']).where('scope_id','=', 'testscope').limit(10).compile();
   assert.equal(query.parameters.includes('testscope'),true,name+': values must be parameters');
   assert.equal(query.sql.includes('testscope'),false,name+': values must not be interpolated');
