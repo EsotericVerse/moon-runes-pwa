@@ -173,18 +173,8 @@
 @media(max-width:640px){.rune-effekseer-ceremony-card{width:clamp(115px,40vw,185px)}.rune-3d-ceremony-subject button{flex:1 1 auto}}
 @media(prefers-reduced-motion:reduce){.rune-3d-ceremony-subject button{scroll-behavior:auto}}
 
-/* Canonical LunaRunes 3D stage sizing: layout from the actual viewport,
- * not the old 1120px article column. Preserve the published rune typography. */
-.loc-next-main.rune-skin-lab.rune-3d-shell{
-  box-sizing:border-box;
-  width:min(calc(100% - clamp(16px,3vw,56px)),1880px);
-  max-width:none;
-  margin-inline:auto;
-  padding:clamp(12px,2.2vw,32px);
-}
-/* The outer content frame of every LunaRunes draw and atlas is defined
-   once in skin-lab.css, including 2D routes; this file owns only 3D staging. */
-
+/* The true page width comes from LOC .loc-next-main; the canonical
+   .loc-panel inside it owns the surrounding text box. */
 .rune-3d-shell:not(.rune-3d-library)>.rune-3d-stage{
   width:100%;
   height:clamp(620px,80dvh,980px);
@@ -195,10 +185,6 @@
   min-height:540px;
 }
 @media(max-width:700px){
-  .loc-next-main.rune-skin-lab.rune-3d-shell{
-    width:calc(100% - 12px);
-    padding:6px;
-  }
   .rune-3d-shell:not(.rune-3d-library)>.rune-3d-stage{
     height:clamp(510px,75dvh,780px);
     min-height:510px;
