@@ -129,8 +129,8 @@ export default function Rune3DLibrary(){
     jumpTo(runes[(runePosition+delta+runes.length)%runes.length]);
   };
 
-  return <main className="loc-next-main rune-skin-lab rune-3d-shell rune-3d-library"
-    data-rune-3d-preview="list" data-rune-embodiment="66">
+  return <main className="loc-next-main" data-rune-3d-preview="list" data-rune-embodiment="66">
+    <div className="loc-panel rune-skin-lab rune-3d-shell rune-3d-library">
     <header className="rune-3d-header">
       <p className="loc-eyebrow">LUNARUNES · 符文圖鑑</p>
       <h1>{group?group.name+'組 · 3D 符文圖鑑':'六十六枚符文 · 3D 圖鑑'}</h1>
@@ -244,5 +244,6 @@ export default function Rune3DLibrary(){
     </footer>
 
 
+    </div>
   </main>;
 }
