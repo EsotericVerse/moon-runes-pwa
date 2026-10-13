@@ -11,7 +11,7 @@ const sqliteCompatible={
   prepare(sql){
     const stmt=sqlite.prepare(sql);
     return {
-      reader:/^\\s*(?:select|with|pragma)\\b/i.test(sql),
+      reader:/^\s*(?:select|with|pragma)\b/i.test(sql),
       all(parameters){return stmt.all(...parameters)},
       run(parameters){return stmt.run(...parameters)}
     };
