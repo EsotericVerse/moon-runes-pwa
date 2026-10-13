@@ -57,17 +57,18 @@ LOC is the framework for organizing text, works, sources, time, relationships, s
 - Author — https://loc.lo3rwang.cc/lo3rwang/
 - Admin — https://admin.lo3rwang.cc/
 
-### LOC documents
+### Single source of truth
 
-- `docs/LOC_CANON.md`
-- `docs/LOC-AUTOMATIC-ANALYSIS.md`
-- `docs/LOC-language-theory.md`
-- `docs/DOMAIN_ARCHITECTURE.md`
-- `docs/CURRENT_UI_CONTRACT.md` — includes the single NAV/favorites contract
-- `docs/REPO_DIRECTORY_GOVERNANCE.md`
-- `docs/RELEASE_ROADMAP.md` — one current release/patch checklist
-- `docs/IOS_APP.md` — native packaging, Local File, SQLite
-- `docs/DATABASE_MIGRATION.md` — provider, schema, portability
+- Source code, automated tests, SQL migrations and Supabase PostgreSQL are the actual implementation and data authorities.
+- `docs/LOC_CANON.md` — LOC and LunaRunes fixed definitions.
+- `docs/LUNARUNES_DRAW_GOVERNANCE.md` — Rune/direction/draw grammar.
+- `docs/LOC-language-theory.md` — original language theory.
+- `docs/FEATURE_DEEP_DIVE.md` — current public feature explanation.
+- `docs/RELEASE_ROADMAP.md` — current release readiness and patch queue.
+- `docs/sql/` — executable/reference schema migration files, **not** another runtime authority.
+
+Deployment: Next.js static export, GitHub Pages, Capacitor for native iOS. Native App files use on-device private storage; the website's authorized Scope imports write to primary Supabase. Anonymous public reads may use an explicitly labeled Neon fallback; management and authenticated writes never fail over. The application UI and tests, not duplicate architecture documents, determine the current navigation, settings and provider behavior.
+
 
 > 系統幫你看見軌跡，但不替你決定你是誰。
 
