@@ -34,14 +34,17 @@ for(const sourceName of ['LunaRune66.xlsx','LunarRunesCardCut.pdf']){
 for(const retired of [
   'docs/TODO.md','docs/NAV_GOVERNANCE.md','docs/DEPLOYMENT_OWNERSHIP.md',
   'docs/IOS_APP_SHELL.md','docs/IOS_DEVICE_BUILD.md','docs/LOC_APP_RUNE_SETTINGS.md',
-  'docs/PACKAGES.md','governance/frozen-branches.json'
+  'docs/PACKAGES.md','governance/frozen-branches.json',
+  'docs/AUTHENTICATION.md','docs/CURRENT_UI_CONTRACT.md',
+  'docs/DATABASE_MIGRATION.md','docs/DOMAIN_ARCHITECTURE.md',
+  'docs/IOS_APP.md','docs/LOC-AUTOMATIC-ANALYSIS.md',
+  'docs/REPO_DIRECTORY_GOVERNANCE.md','docs/SCOPE_EXTRA_SIGN.md'
 ]){
   if(existsSync(resolve(root,retired)))failures.push('retired parallel authority returned: '+retired);
 }
 for(const path of [
-  'docs/LOC_CANON.md','docs/DOMAIN_ARCHITECTURE.md',
-  'docs/CURRENT_UI_CONTRACT.md','docs/REPO_DIRECTORY_GOVERNANCE.md',
-  'docs/RELEASE_ROADMAP.md','docs/IOS_APP.md'
+  'docs/LOC_CANON.md','docs/LUNARUNES_DRAW_GOVERNANCE.md',
+  'docs/FEATURE_DEEP_DIVE.md','docs/RELEASE_ROADMAP.md'
 ]){
   if(!existsSync(resolve(root,path)))failures.push('missing Current document: '+path);
 }
