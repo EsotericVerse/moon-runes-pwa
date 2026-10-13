@@ -240,8 +240,8 @@ assert.match(stage,/ambientRetire\?\.stop\?\.\(\)/,'persistent fog clips must re
 assert.match(stage,/quality==='high'\?1\.5:1/,'ambient DPR needs both high-quality and balanced modes');
 assert.match(drawFlow, /!isList\?<RuneMistBackdrop phase=\{phase\} quality=\{sceneQuality\} textureQuality=\{textureQuality\}/,
   'native Effekseer fog must be mounted by default on the main 3D draw stage');
-assert.doesNotMatch(drawFlow,/fogPreview|setFogPreview|fog_preview/,
-  'native smoke must never depend on a hidden query-string preview switch');
+assert.doesNotMatch(drawFlow,/fogPreview|setFogPreview/,
+  'native fog playback is always enabled; only the independent QA status may be opt-in');
 assert.match(drawFlow,/phase==='idle'\?<button type="button" className="rune-3d-tap-to-draw"/,
   'idle scene keeps the tap-anywhere-to-draw control');
 assert.match(drawFlow,/phase==='waiting'\?<><WaitingEffekseerStage textureQuality=\{textureQuality\}\/>/,
