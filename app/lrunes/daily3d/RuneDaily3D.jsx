@@ -58,7 +58,8 @@ export default function RuneDaily3D(){
   const fields=draw?FIELDS.map(([key,label])=>({
     label,text:String(draw.card?.rune_etc?.[key]?.[draw.directionIndex+1]||'').trim()
   })).filter(field=>field.text):[];
-  return <main className="loc-next-main rune-skin-lab rune-art-shell" data-rune-lab="daily3d">
+  return <main className="loc-next-main" data-rune-lab="daily3d">
+    <div className="loc-panel rune-skin-lab rune-art-shell">
     <header className="rune-art-header">
       <p className="loc-eyebrow">LunaRunes · Living Daily</p>
       <h1>每日符文 · 月光指示</h1>
@@ -122,5 +123,6 @@ export default function RuneDaily3D(){
         </section>
       </div>,document.body
     ):null}
+    </div>
   </main>;
 }
