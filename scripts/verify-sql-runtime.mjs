@@ -32,7 +32,7 @@ try {
     .execute();
   const selected=await db.selectFrom('loc_portable_probe').select(['id','title'])
     .where('scope_id','=','testscope').execute();
-  assert.deepEqual(selected,[{id:1,title:'first'}]);
+  assert.deepEqual(selected.map(row=>({id:row.id,title:row.title})),[{id:1,title:'first'}]);
   await db.updateTable('loc_portable_probe').set({title:'updated'})
     .where('id','=',1).execute();
   const updated=await db.selectFrom('loc_portable_probe').select('title')
