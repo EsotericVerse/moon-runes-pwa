@@ -13,7 +13,7 @@ const files={
   extraCss:read('app/styles/extra.css'),
   extra:read('app/loc/hero-extra.mjs'),
   identity:read('app/loc/HeroCornerIdentity.jsx'),
-  extraSql:read('docs/sql/scope-extra-sign.sql')
+  extraSql:read('sql/scope-extra-sign.sql')
 };
 const checks=[
   ['Static Scope identity excludes duplicate Domain/Directory declarations',

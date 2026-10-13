@@ -10,7 +10,7 @@ const game=read('app/lrunes/game/GameView.jsx');
 const registry=read('app/modular/theme-registry.js');
 const themeData=read('app/loc/theme-data.js');
 const admin=read('app/loc/views/AdminHomeView.jsx');
-const portableSchema=read('docs/sql/portable-current-schema.sql');
+const portableSchema=read('sql/portable-current-schema.sql');
 
 if(THEME_SLOTS.length!==8)failures.push('theme registry must expose eight stable IDs');
 const ids=THEME_SLOTS.map(slot=>slot.id);

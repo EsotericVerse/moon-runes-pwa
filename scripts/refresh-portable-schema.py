@@ -11,5 +11,5 @@ subprocess.run([
     str(root/'scripts/prepare-portable-schema.py'),
     sys.argv[1],
     sys.argv[2],
-    str(root/'docs/sql/portable-current-schema.sql')
+    str(root/'sql/portable-current-schema.sql')
 ],check=True)

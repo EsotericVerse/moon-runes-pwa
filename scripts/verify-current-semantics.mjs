@@ -4,7 +4,7 @@ const failures=[];
 const read=path=>fs.readFileSync(path,'utf8');
 const required=[
   'app/loc/views/AboutView.jsx',
-  'docs/sql/page-block-entities-blocknote.sql',
+  'sql/page-block-entities-blocknote.sql',
   'app/loc/galaxy-query.js',
   'app/modular/features/Search.jsx',
   'app/loc/daily-runes.js',
@@ -30,7 +30,7 @@ const required=[
 for(const path of required)if(!fs.existsSync(path)||!read(path).trim())failures.push('missing Current contract file: '+path);
 if(!failures.length){
   const identity=read('app/loc/views/AboutView.jsx');
-  const pageBlockSeed=read('docs/sql/page-block-entities-blocknote.sql');
+  const pageBlockSeed=read('sql/page-block-entities-blocknote.sql');
   const identitySource=identity+'\n'+pageBlockSeed;
   const runeIntro=read('app/lrunes/RuneIntroSection.jsx');
   // Identity copy now belongs to silver.loc_blocks (index/order), not hardcoded JSX.
@@ -77,7 +77,7 @@ if(!failures.length){
   if(!featureState.includes('pgrst123')||!featureState.includes('資料查詢功能與資料庫介面不相容'))failures.push('Provider capability errors must not be mislabeled as read permissions.');
   const scopeData=read('app/loc/scope-data.js');
   for(const token of ["MANAGE_TABLE='silver.manage'",'scopeDataFromManageRows','defaultScopeData','selectManagedScopes'])if(!scopeData.includes(token))failures.push('Scope data source missing '+token);
-  const retiredContentType=read('docs/sql/retire-content-type-20261011.sql');
+  const retiredContentType=read('sql/retire-content-type-20261011.sql');
   if(!retiredContentType.includes("TO anonymous USING (searchable IS TRUE)")||
      !retiredContentType.includes("FOR SELECT TO authenticated USING (searchable IS TRUE OR silver.can_manage_scope")||
      !retiredContentType.includes("DROP COLUMN IF EXISTS content_type")){

@@ -25,8 +25,8 @@ const dbContract=read('app/loc/db-contract.mjs');
 const keywordLibrary=read('app/loc/KeywordLibraryPanel.jsx');
 const keywordNetwork=read('app/loc/KeywordNetworkEditor.jsx');
 const keywordAnalysis=read('app/loc/rune66-keyword-analysis.js');
-const portableSchema=read('docs/sql/portable-current-schema.sql');
-const scopeProvisioning=read('docs/sql/scope-provisioning.sql');
+const portableSchema=read('sql/portable-current-schema.sql');
+const scopeProvisioning=read('sql/scope-provisioning.sql');
 const scopeData=read('app/loc/scope-data.js');
 const scopeGroup=read('app/loc/ScopeGroupManagement.jsx');
 const locApp=read('app/loc/LocApp.jsx');
@@ -52,8 +52,8 @@ const runesHome=read('app/lrunes/RunesClient.jsx');
 const personalGovernance=read('app/modular/governance/PersonalGovernance.jsx');
 const runesGovernance=read('app/modular/governance/LunaRunesGovernance.jsx');
 const sharedSearch=read('app/modular/features/Search.jsx');
-const registrySql=read('docs/sql/scope-registry-management.sql');
-const sourceRefreshIndex=read('docs/sql/source-refresh-index.sql');
+const registrySql=read('sql/scope-registry-management.sql');
+const sourceRefreshIndex=read('sql/source-refresh-index.sql');
 
 must(!galaxy.includes('include_in_time'),'generic search must not query nonexistent include_in_time');
 must(galaxy.includes("searchFields:['label','note','status','style_description']")&&!galaxy.includes("'style_tags'"),'Search uses dedicated TEXT style body and no comma tags');
@@ -233,7 +233,7 @@ must(admin.includes('syncManageScopeRow(')&&admin.includes("role:'scope'"),'Admi
 must(admin.includes('部分人員設定讀取失敗')&&admin.includes('configFailures.push')&&admin.includes('readAdminScopeConfig(row.scope_id)')&&admin.includes("String(error?.code||'')==='PGRST205'"),'Admin must retry newly provisioned Scope config until PostgREST schema cache settles');
 must(admin.includes('provisionScope(')&&admin.includes('＋ 新增人員')&&admin.includes('＋ 新增群組'),'Admin Registry must create Scope and Scope Group from the tree workspace');
 must(admin.includes("const provisionedScope=await provisionScope(")&&admin.includes('provisioned=true;')&&admin.includes('readAdminScopeConfig(id)')&&admin.includes('不要重複建立。')&&admin.includes('creatingScope?\'建立與驗證中…\':\'建立\''),'New Scope creation must verify config readiness, prevent duplicate clicks, and distinguish successful provisioning from pending cache');
-must(read('docs/sql/scope-provisioning.sql').includes("perform pg_catalog.pg_notify('pgrst','reload schema')"),'Scope provisioning SQL must request PostgREST schema cache reload after commit');
+must(read('sql/scope-provisioning.sql').includes("perform pg_catalog.pg_notify('pgrst','reload schema')"),'Scope provisioning SQL must request PostgREST schema cache reload after commit');
 must(admin.includes('onClick={refresh}>重新讀取'),'Admin graph must allow manual reload after a dynamic Scope schema cache settles');
 must(admin.includes("value:UI_LOCALE_OPTIONS.find(option=>option.value===normalizeUiLocale(config?.locale))?.label")&&
   !admin.includes("{label:'預設語系',value:normalizeUiLocale(config?.locale)}")&&
