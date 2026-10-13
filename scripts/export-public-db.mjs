@@ -6,11 +6,24 @@ const [inventoryFile,outputDirectory]=process.argv.slice(2);
 if(!inventoryFile||!outputDirectory)throw new Error('Usage: node scripts/export-public-db.mjs <current-catalog.json> <private-output-directory>');
 const inventory=JSON.parse(fs.readFileSync(inventoryFile,'utf8'));
 const client=createConfiguredAdapter().publicClient;
-const tables=['game','lo3rwang','lo3rwang_galaxy','lo3rwang_galaxy_media','lo3rwang_keywords','lo3rwang_time','lrunes','lrunes_daily','lrunes_galaxy','lrunes_galaxy_media','lrunes_time','runes','runes_etc','runes_group'];
+// Discover the live Scope layout, rather than exporting only hard-coded Scopes.
+const {data:scopeRows,error:scopeError}=await client.schema('silver').from('manage')
+  .select('id,galaxy,time').order('id');
+if(scopeError)throw new Error('Scope registry read failed: '+scopeError.message);
+if(!Array.isArray(scopeRows))throw new Error('Scope registry missing');
+const tables=new Set(['game','lrunes_daily','runes','runes_etc','runes_group']);
+for(const row of scopeRows){
+  const id=String(row.id||'');
+  const galaxy=String(row.galaxy||'galaxy');
+  const time=String(row.time||'time');
+  if(!/^[a-z][a-z0-9]{0,14}$/.test(id))throw new Error('Invalid Scope ID in live registry');
+  for(const name of [galaxy,time])if(!/^[a-z][a-z0-9_]*$/.test(name))throw new Error('Invalid Scope table mapping');
+  for(const name of [id,`${id}_${galaxy}`,`${id}_${galaxy}_media`,`${id}_${time}`,`${id}_keywords`])tables.add(name);
+}
 const retired=new Set(['reply_to','in_reply_to_username','reference_only']);
 fs.mkdirSync(outputDirectory,{recursive:true,mode:0o700});
 const manifest=[];
-for(const table of tables){
+for(const table of [...tables].sort()){
   const columns=inventory.columns.filter(row=>row.schema_name==='silver'&&row.relname===table&&!retired.has(row.attname)).sort((a,b)=>a.attnum-b.attnum).map(row=>row.attname);
   if(!columns.length)throw new Error('Current catalog has no columns for '+table);
   const pk=inventory.constraints.find(row=>row.schema_name==='silver'&&row.relname===table&&row.contype==='p');
