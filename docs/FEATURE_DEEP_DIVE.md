@@ -155,8 +155,7 @@ LunaRunes 可以成為 LOC 研究、分類及文化觀察的對象，但不能�
 本文件負責說明**深度能力、機制、關聯、適用情境與邊界**。不重複寫「第一步點哪裡」的新手教學，不把網站已校閱的文案覆寫成文件版本，也不取代下列維護權威：
 
 - Canon／字義與定義：docs/LOC_CANON.md、docs/LUNARUNES_DRAW_GOVERNANCE.md。
-- 結構與 UI 契約：docs/CURRENT_UI_CONTRACT.md、docs/DOMAIN_ARCHITECTURE.md。
-- 詳細分析責任：docs/LOC-AUTOMATIC-ANALYSIS.md。
+- 現行程式行為：以 `app/`、自動化測試及正式資料庫為準，不維護第二套文字架構。
 - 發版與未完成驗收：docs/RELEASE_ROADMAP.md。
 
 **1.0 前應再核對** Scope 管理工作台最後的 UI、Import 真實 round-trip、媒體來源整合、行動裝置及 failure state，並依最終 main 更新本文件的能力狀態；不得因說明文件已撰寫就勾選產品驗收完成。
