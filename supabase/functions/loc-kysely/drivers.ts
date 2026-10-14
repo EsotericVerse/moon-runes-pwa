@@ -47,7 +47,7 @@ export async function databaseForTarget(input:Record<string,unknown>,options:{pr
   if(target.engine==="postgres"){
     if(!["postgres:","postgresql:"].includes(uri.protocol))throw new Error("PostgreSQL needs a postgres URL");
     if(target.provider==="supabase"&&uri.port!=="6543")console.warn("[loc-kysely] Supabase should use its transaction pooler");
-    dialect=new PostgresDialect({pool:new Pool({connectionString:profile.url,max:1,idleTimeoutMillis:1000,connectionTimeoutMillis:5000})});
+    dialect=new PostgresDialect({pool:new Pool({connectionString:profile.url,max:1,idleTimeoutMillis:15000,connectionTimeoutMillis:7000})});
   }else if(target.engine==="mysql"){
     if(uri.protocol!=="mysql:")throw new Error("MySQL needs a mysql URL");
     const mysql=await import("npm:mysql2@3.15.0");

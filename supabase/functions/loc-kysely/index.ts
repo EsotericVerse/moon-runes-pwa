@@ -38,7 +38,18 @@ const neonLocReadTables = new Set([
 
 const controlTarget={provider:"supabase",engine:"postgres",connection_alias:"supabase_current",connection_mode:"pooler"};
 
+function isSupabaseControlTarget(target:Record<string,unknown>){
+  if(target.provider!=="supabase"||target.engine!=="postgres"||target.connection_alias!=="supabase_current")return false;
+  const link=String(target.project_url||"").replace(/\/$/,"");
+  return !link||link===supabaseUrl.replace(/\/$/,"");
+}
+
+
 async function profileForTarget(target:Record<string,unknown>){
+  // The selected primary Supabase control project already has its trusted
+  // connection URL in Edge secrets. Do not open a second connection or read
+  // Vault on every ordinary public request.
+  if(isSupabaseControlTarget(target))return resolveConnectionProfile(controlTarget);
   const control=await databaseForTarget(controlTarget);
   const secret=await readVaultConnection(control,target);
   if(secret)return secret;
@@ -231,6 +242,13 @@ Deno.serve(async (request) => {
           .select(["provider","engine","connection_alias","connection_mode","project_url","selected"])
           .where("selected","=",true).execute();
         const selected=selectedDatabaseTarget(rows);
+        // Keep the default Supabase read, write, RPC and RLS execution in the
+        // SAME PostgreSQL transaction as target resolution. This avoids a
+        // second pool acquisition and a Vault roundtrip per LOC request.
+        if(isSupabaseControlTarget(selected)){
+          const result=await executeRequest(trx,selected,role,claims,body);
+          return {target:selected,result};
+        }
         return {target:selected};
       });
       resolvingTarget=false;
@@ -248,7 +266,9 @@ Deno.serve(async (request) => {
     if(target.provider==="neon"&&role==="anon"){role="anonymous";claims.role=role;}
     if(target.engine!=="postgres"&&(body.kind!=="query"||body.operation!=="select"||body.schema!=="silver"||typeof body.table!=="string"||!neonLocReadTables.has(body.table)))
       return json({error:{message:"Cross-engine target is not authorized for this operation"}},403);
-    const db=await databaseForTarget(target,{profileLookup:profileForTarget});
+    const db=isSupabaseControlTarget(target)
+      ?await databaseForTarget(controlTarget)
+      :await databaseForTarget(target,{profileLookup:profileForTarget});
     const result=await db.transaction().execute(trx=>executeRequest(trx,target,role,claims,body));
     return json(result,200,result.count===null?{}:{"content-range":`0-${Math.max(0,(Array.isArray(result.data)?result.data.length:0)-1)}/${result.count}`});
   } catch (error) {

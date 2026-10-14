@@ -32,6 +32,11 @@ assert.match(adminUi,/DB Host:Port/,'Ordinary SQL target must expose Host and Po
 assert.match(adminUi,/type="password"/,'Database password field must be masked');
 assert.match(adminUi,/save_database_target/,'The Admin form must save through the trusted SQL endpoint');
 assert.match(edge,/profileLookup:profileForTarget/,'The saved connection Link must reach the Kysely driver');
+assert.match(edge,/if\(isSupabaseControlTarget\(selected\)\)\{[\s\S]*?executeRequest\(trx,selected,role,claims,body\)/,'primary Supabase must execute inside the target registry transaction');
+assert.match(edge,/if\(isSupabaseControlTarget\(target\)\)return resolveConnectionProfile\(controlTarget\)/,'default Supabase must not query Vault for every request');
+assert.match(edge,/isSupabaseControlTarget\(target\)[\s\S]*?databaseForTarget\(controlTarget\)/,'default Supabase bypasses profile lookup and the secondary pool');
+assert.match(drivers,/idleTimeoutMillis:15000,connectionTimeoutMillis:7000/,'keep the Edge PG pool alive long enough to reuse across reads');
+
 assert.match(edge,/saveVaultConnection/,'Trusted admin route must use encrypted Vault storage');
 assert.match(secrets,/vault\.decrypted_secrets/,'Database credentials must be read only on the trusted server');
 assert.doesNotMatch(adminUi,/LOC_DB_CONNECTIONS_JSON/,'Admin should not require editing server configuration by hand');
