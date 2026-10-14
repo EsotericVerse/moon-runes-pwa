@@ -780,7 +780,7 @@ function DatabaseTarget(){
         const engine=event.target.value;
         setRows(current=>current.map(item=>item.target_id===selectedId?{...item,engine,provider:engine==='postgres'?item.provider:'custom',connection_mode:'direct'}:item));
       }}>
-        {SQL_ENGINE_OPTIONS.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}
+        {SQL_ENGINE_OPTIONS.map(option=><option key={option.value} value={option.value} disabled={option.value==='sqlite'}>{option.label}{option.value==='sqlite'?'（需本機／Gateway）':''}</option>)}
       </select></label>
       <label><span>服務商</span><select className="admin-native-select" value={row.provider} disabled={isManaged} onChange={event=>patch('provider',event.target.value)}>
         {databaseProviderChoices(row.engine).map(option=><option key={option.value} value={option.value}>{option.label}</option>)}
