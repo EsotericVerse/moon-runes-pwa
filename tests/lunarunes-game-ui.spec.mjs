@@ -39,6 +39,34 @@ test.describe('LunaRunes tabletop UI',()=>{
     expect(measurements.heroOverflowRight).toBeLessThanOrEqual(2);
   });
 
+  test('Game Hero is visible before the game SQL dataset finishes loading',async({page})=>{
+    let release;
+    const hold=new Promise(resolve=>{release=resolve;});
+    let delayedQueries=0;
+    await page.route('**/functions/v1/loc-kysely',async route=>{
+      const request=route.request();
+      if(request.method()==='POST'){
+        let body=null;
+        try{body=request.postDataJSON()}catch{}
+        if(body?.kind==='query'&&body?.table==='game'){
+          delayedQueries++;
+          await hold;
+        }
+      }
+      await route.continue();
+    });
+    try{
+      await page.goto('/lrunes/game/',{waitUntil:'domcontentloaded'});
+      await expect.poll(()=>delayedQueries,{timeout:12_000}).toBeGreaterThan(0);
+      const hero=page.locator('.lrg-home-hero');
+      await expect(hero).toBeVisible();
+      await expect(hero.locator('.lrg-hero-image')).toBeVisible();
+      await expect(page.getByText('載入遊戲資料…')).toBeVisible();
+    }finally{
+      release();
+    }
+  });
+
   test('desktop can start a two-player game and finish opening setup',async({page})=>{
     await page.goto('/game/',{waitUntil:'domcontentloaded'});
     await expect(page.getByRole('heading',{name:'月之符文'})).toBeVisible({timeout:15_000});
