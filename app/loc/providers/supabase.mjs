@@ -53,5 +53,5 @@ export function createSupabaseAdapter({
     },
     auth:authenticatedSdk.auth
   };
-  return {publicClient:publicSdk,authClient,auth:authenticatedSdk.auth};
+  return {publicClient:publicSdk,configuredPublicClient:edgePublic,authClient,auth:authenticatedSdk.auth};
 }
