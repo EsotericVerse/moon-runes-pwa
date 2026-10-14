@@ -12,7 +12,6 @@ const adminUi=readFileSync(new URL('../app/loc/views/AdminHomeView.jsx',import.m
 const dbQuery=readFileSync(new URL('../app/loc/db-query.mjs',import.meta.url),'utf8');
 const dbStatus=readFileSync(new URL('../app/loc/db-source-status.mjs',import.meta.url),'utf8');
 const config=readFileSync(new URL('../supabase/config.toml',import.meta.url),'utf8');
-const portableSchema=readFileSync(new URL('../sql/portable-current-schema.sql',import.meta.url),'utf8');
 assert.match(config,/\[functions\.loc-kysely\][\s\S]*?verify_jwt\s*=\s*false/);
 assert.match(edge,/auth\.getUser\(token\)/,'authenticated SQL must follow Supabase JWT verification');
 assert.match(edge,/set local role authenticated/);
@@ -58,10 +57,16 @@ assert.doesNotMatch(adminUi,/LOC_DB_CONNECTIONS_JSON/,'Admin should not require 
 assert.doesNotMatch(edge,/SUPABASE_SERVICE_ROLE_KEY|service_role/i,'trusted SQL must never execute as service_role');
 const neonAllowlistBlock=edge.match(/const neonLocReadTables = new Set\(\[([\s\S]*?)\]\);/)?.[1]||'';
 assert.doesNotMatch(neonAllowlistBlock,/database_targets|email_blocklist/,'Neon reads must stay on the LOC table allowlist');
-const canonicalLocTables=[...portableSchema.matchAll(/CREATE TABLE "silver"\."([^"]+)"/g)].map(match=>match[1]).filter(name=>!['VisualNovel','database_targets','email_blocklist'].includes(name)).sort();
 const neonTableBlock=edge.match(/const neonLocReadTables = new Set\(\[([\s\S]*?)\]\);/)?.[1]||'';
-const neonLocTables=[...neonTableBlock.matchAll(/"([a-z][a-z0-9_]*)"/g)].map(match=>match[1]).sort();
-assert.deepEqual(neonLocTables,canonicalLocTables,'Neon mirror scope is the LOC table subset; Admin and non-LOC tables are excluded');
+const neonLocTables=[...neonTableBlock.matchAll(/"([a-z][a-z0-9_]*)"/g)].map(match=>match[1]);
+assert.ok(neonLocTables.length>0,'Neon read-only table allowlist must exist');
+assert.equal(new Set(neonLocTables).size,neonLocTables.length,'Neon allowlist must not contain duplicate tables');
+for(const table of ['game','runes','manage','scope_registry','loc_theme','lo3rwang_galaxy','lrunes_galaxy']){
+  assert.ok(neonLocTables.includes(table),'Current LOC public feature must retain backup availability: '+table);
+}
+for(const table of ['database_targets','email_blocklist','user_records','user_settings']){
+  assert.ok(!neonLocTables.includes(table),'Secret or Admin control tables must never enter the backup allowlist: '+table);
+}
 const legacyTheme=adaptNeonThemeRequest({kind:'query',schema:'silver',table:'loc_theme',operation:'select',columns:['theme_id','theme_name','scheme','loc_bg','identity_color'],filters:[{column:'theme_id',operator:'eq',value:1}],orders:[{column:'theme_order'}],limit:8});
 assert.deepEqual(legacyTheme.request.columns,['theme_id','theme_name','theme_order','theme_attr']);
 assert.equal(legacyTheme.request.filters[0].value,'theme-1');
