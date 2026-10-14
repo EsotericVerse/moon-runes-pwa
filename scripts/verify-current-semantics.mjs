@@ -106,7 +106,7 @@ if(!failures.length){
     "document.addEventListener('visibilitychange'",
     "window.addEventListener('pageshow'",
     "setManualReadSource(next==='neon'"])if(!dbQuery.includes(token))failures.push('Event-driven primary/backup routing missing '+token);
-  if(/providerExpiresAt|30_000|setInterval\\(/.test(dbQuery))failures.push('Public reads must not repeatedly poll the provider status');
+  if(/providerExpiresAt|30_000|setInterval\(/.test(dbQuery))failures.push('Public reads must not repeatedly poll the provider status');
   for(const token of ["const source=first.dataSource||'auto'","offset,source",
     "dbBackupPublicClient,'backup'","markPrimaryReadFailed"])if(!dbQuery.includes(token))failures.push('Public read pinned fallback missing '+token);
   const edgeControl=read('supabase/functions/loc-kysely/index.ts');
