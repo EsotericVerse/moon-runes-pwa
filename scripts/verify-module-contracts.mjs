@@ -71,6 +71,12 @@ for(const path of [
   if(existsSync(resolve(root,path)))failures.push('retired data-layer module still present: '+path);
 }
 
+// The route imports GameBoard's default export. Exporting a helper instead
+// silently renders only the Hero and prevents ALL gameplay data requests.
+const gameBoardSource=readFileSync(resolve(root,'app/lrunes/game/GameBoard.jsx'),'utf8');
+if(!/export\\s+default\\s+function\\s+GameBoard\\s*\\(/.test(gameBoardSource))
+  failures.push('LunaRunes game default export must be GameBoard, not GameHomeHero');
+
 if(failures.length){
   console.error('[module-contracts] failures:\n'+failures.map(item=>'- '+item).join('\n'));
   process.exit(1);

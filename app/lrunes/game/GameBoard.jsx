@@ -455,7 +455,7 @@ function Board({G,moves,rules,onRestart}){
     </DndContext>;
 }
 
-export default // The artwork and the game identity are stable UI, not database results.
+// The artwork and the game identity are stable UI, not database results.
 // Render the Hero during loading too; only the game-data badges wait for SQL.
 function GameHomeHero({data=null}){
   return <Paper className="lrg-home-hero">
@@ -474,7 +474,7 @@ function GameHomeHero({data=null}){
   </Paper>;
 }
 
-function GameBoard(){
+export default function GameBoard(){
   const uiTheme=useLocGameTheme();
   const {data,error,isLoading}=useQuery({queryKey:['lrunes','game','current'],queryFn:loadGameData,staleTime:60000});
   const [count,setCount]=useState(2);
