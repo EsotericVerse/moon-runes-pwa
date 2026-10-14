@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {createKyselyEdgeClient} from '../app/loc/providers/kysely-edge.mjs';
 import {createSupabaseAdapter} from '../app/loc/providers/supabase.mjs';
+import {selectedDatabaseProvider} from '../app/loc/providers/selected-database-target.mjs';
 
 const calls=[];
 let sessionToken='user.jwt.token';
@@ -60,4 +61,10 @@ await adapter.publicClient.schema('silver').from('manage').select('id');
 await adapter.authClient.schema('silver').from('manage').select('id');
 assert.equal(adapterCalls[0].url,adapterCalls[1].url,'public and authenticated data reads share the same Kysely endpoint');
 assert.equal(adapterCalls[1].init.headers.authorization,'Bearer user.jwt.token');
-console.log('[kysely-edge-client] Supabase Auth session retention, shared LOC CRUD/RPC endpoint, Neon anonymous routing and fail-closed errors passed');
+assert.equal(JSON.parse(adapterCalls[0].init.body).target,'configured','LOC clients ask the server to route through the saved Admin target');
+assert.equal(JSON.parse(adapterCalls[1].init.body).target,'configured');
+assert.equal(selectedDatabaseProvider([{provider:'neon',selected:true},{provider:'supabase',selected:false}]),'neon');
+assert.equal(selectedDatabaseProvider([{provider:'neon',selected:false},{provider:'supabase',selected:true}]),'supabase');
+assert.throws(()=>selectedDatabaseProvider([{provider:'neon',selected:true},{provider:'supabase',selected:true}]),/More than one/);
+assert.throws(()=>selectedDatabaseProvider([{provider:'firebase',selected:true}]),/not supported/);
+console.log('[kysely-edge-client] Supabase Auth retention, Admin-selected live routing, selected-provider validation, Neon fallback and fail-closed errors passed');

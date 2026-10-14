@@ -3,6 +3,7 @@ import pg from "npm:pg@8.16.3";
 import { Kysely, PostgresDialect, sql } from "npm:kysely@0.29.6";
 import { executeAllowlistedRpc, executeKyselyQuery, isKyselyClientError } from "../../../app/loc/providers/kysely-runtime.mjs";
 import { adaptNeonThemeRequest, normalizeNeonThemeRows } from "../../../app/loc/providers/neon-theme-compat.mjs";
+import { selectedDatabaseProvider } from "../../../app/loc/providers/selected-database-target.mjs";
 
 const corsHeaders = {
   "access-control-allow-origin": "*",
@@ -48,6 +49,12 @@ function database(target: string) {
   return db;
 }
 
+async function selectedProvider() {
+  const rows = await database("supabase").selectFrom("silver.database_targets")
+    .select("provider").where("selected", "=", true).execute();
+  return selectedDatabaseProvider(rows);
+}
+
 function json(body: unknown, status = 200, extraHeaders: Record<string, string> = {}) {
   return new Response(JSON.stringify(body), {
     status,
@@ -81,21 +88,17 @@ Deno.serve(async (request) => {
   } catch {
     return json({ error: { message: "Invalid JSON body" } }, 400);
   }
-  const target = body.target === "neon" ? "neon" : body.target === undefined || body.target === "supabase" ? "supabase" : "";
-  if (!target) return json({ error: { message: "Unsupported database target" } }, 400);
-  if (target === "neon" && (body.kind !== "query" || body.operation !== "select" || request.headers.has("authorization"))) {
-    return json({ error: { message: "Neon backup permits anonymous SELECT only" } }, 403);
-  }
-  if (target === "neon" && (body.schema !== "silver" || typeof body.table !== "string" || !neonLocReadTables.has(body.table))) {
-    return json({ error: { message: "Neon backup table is not enabled" } }, 403);
+  const requestedTarget = body.target === undefined ? "configured" : body.target;
+  if (!["configured", "supabase", "neon"].includes(String(requestedTarget))) {
+    return json({ error: { message: "Unsupported database target" } }, 400);
   }
 
-  let role = target === "neon" ? "anonymous" : "anon";
+  let role = "anon";
   let claims: Record<string, unknown> = { role };
   const authorization = request.headers.get("authorization") || "";
   if (authorization) {
     const match = authorization.match(/^Bearer\s+(.+)$/i);
-    if (!match || target !== "supabase") return json({ error: { message: "Invalid authorization header" } }, 401);
+    if (!match) return json({ error: { message: "Invalid authorization header" } }, 401);
     const token = match[1];
     const authClient = createClient(supabaseUrl, apiKey, { auth: { persistSession: false, autoRefreshToken: false } });
     const { data, error } = await authClient.auth.getUser(token);
@@ -103,6 +106,30 @@ Deno.serve(async (request) => {
     claims = tokenPayload(token);
     if (claims.sub !== data.user.id) return json({ error: { message: "Session subject mismatch" } }, 401);
     role = "authenticated";
+    claims.role = role;
+  }
+
+  let target: string;
+  try {
+    // Target administration remains on Supabase. Resolve all other requests
+    // from the saved Admin setting on every call so changes need no rebuild.
+    const managesTargets = body.kind === "query" && body.schema === "silver" && body.table === "database_targets";
+    target = requestedTarget === "configured"
+      ? managesTargets ? "supabase" : await selectedProvider()
+      : String(requestedTarget);
+  } catch (error) {
+    console.error("[loc-kysely] Could not resolve selected database target", error);
+    return json({ error: { message: "Selected database target is unavailable" } }, 503);
+  }
+
+  if (target === "neon" && (body.kind !== "query" || body.operation !== "select")) {
+    return json({ error: { message: "Neon LOC mirror is read-only" } }, 403);
+  }
+  if (target === "neon" && (body.schema !== "silver" || typeof body.table !== "string" || !neonLocReadTables.has(body.table))) {
+    return json({ error: { message: "Neon LOC mirror table is not enabled" } }, 403);
+  }
+  if (target === "neon" && role === "anon") {
+    role = "anonymous";
     claims.role = role;
   }
 

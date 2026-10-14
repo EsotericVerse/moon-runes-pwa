@@ -5,7 +5,7 @@
   "capabilities": {
     "public_read_failover": {
       "status": "required",
-      "primary_source": "Supabase",
+      "primary_source": "Admin-selected PostgreSQL target (Supabase default)",
       "backup_source": "Neon",
       "read_scope": "anonymous public SELECT only",
       "automatic_failover": true,

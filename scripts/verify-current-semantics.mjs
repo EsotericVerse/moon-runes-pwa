@@ -69,7 +69,7 @@ if(!failures.length){
   const dbQuery=read('app/loc/db-query.mjs');
   for(const token of ['executePublicRead','dbBackupPublicClient','markPrimaryReadFailed','source=\'auto\''])if(!dbQuery.includes(token))failures.push('Public read failover contract missing '+token);
   const configured=read('app/loc/providers/configured.mjs');
-  for(const token of ['createNeonPublicAdapter','backupPublicClient','primarySourceLabel:\'Supabase\'','backupSourceLabel:\'Neon\''])if(!configured.includes(token))failures.push('Configured dual-source public read missing '+token);
+  for(const token of ['createNeonPublicAdapter','backupPublicClient','primarySourceLabel:\'Admin-selected\'','backupSourceLabel:\'Neon\''])if(!configured.includes(token))failures.push('Configured dual-source public read missing '+token);
   const appShell=read('app/AppShell.jsx');
   for(const token of ['主要資料來源：','備用資料來源：','目前使用：','備援資料可能有同步時間差'])if(!appShell.includes(token))failures.push('Global data source disclosure missing '+token);
   if(appShell.indexOf('<DataSourceStatus/>')<appShell.indexOf('<footer'))failures.push('Data source status must remain in the footer, not above page content.');
@@ -95,7 +95,7 @@ if(!failures.length){
   if(/from ['"]flexsearch['"]|new Index\(/i.test(game+'\n'+keywordEngine))failures.push('Runtime text matching must not depend on FlexSearch');
   const capabilityRegistry=JSON.parse(read('governance/runtime-capabilities.json'));
   const publicReadFailover=capabilityRegistry?.capabilities?.public_read_failover;
-  if(!publicReadFailover||publicReadFailover.status!=='required'||publicReadFailover.primary_source!=='Supabase'||publicReadFailover.backup_source!=='Neon')failures.push('Public-read failover capability must require Supabase primary and Neon backup.');
+  if(!publicReadFailover||publicReadFailover.status!=='required'||publicReadFailover.primary_source!=='Admin-selected PostgreSQL target (Supabase default)'||publicReadFailover.backup_source!=='Neon')failures.push('Public-read failover capability must require the Admin-selected PostgreSQL target and Neon backup.');
   if(publicReadFailover?.write_failover!==false||publicReadFailover?.ui_source_disclosure_required!==true||publicReadFailover?.page_chain_source_pinning_required!==true)failures.push('Public-read failover safety/disclosure contract is incomplete.');
   const portableQueries=capabilityRegistry?.capabilities?.provider_neutral_public_queries;
   if(!portableQueries||portableQueries.optional_provider_aggregate_dependency_allowed!==false)failures.push('Provider-neutral public query capability must reject optional aggregate dependencies.');

@@ -28,7 +28,7 @@ class KyselyQuery {
 
 function parseContentRange(value){const match=String(value||'').match(/\/(\d+)$/);return match?Number(match[1]):null}
 
-export function createKyselyEdgeClient({url,publishableKey,auth,role='authenticated',target='supabase',fetch:fetchImpl=globalThis.fetch}={}){
+export function createKyselyEdgeClient({url,publishableKey,auth,role='authenticated',target='configured',fetch:fetchImpl=globalThis.fetch}={}){
   if(!url||!publishableKey||typeof fetchImpl!=='function')throw new Error('Kysely Edge requires a project URL, publishable key and fetch');
   const endpoint=String(url).replace(/\/+$/,'')+'/functions/v1/loc-kysely';
   async function execute(body){

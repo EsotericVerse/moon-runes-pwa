@@ -746,12 +746,24 @@ function DatabaseTarget(){
       <select className="admin-native-select" value={selectedId} onChange={e=>setSelectedId(e.target.value)} aria-label="Database Target">{options.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select>
     </div>
     {row?<div className="scope-management-fields">
-      <label><span>Provider</span><select className="admin-native-select" value={row.provider||'supabase'} onChange={e=>patch('provider',e.target.value||'supabase')}><option value="supabase">Supabase</option><option value="neon">Neon</option></select></label>
+      <label><span>Provider</span><select className="admin-native-select" value={row.provider||'supabase'} onChange={e=>patch('provider',e.target.value||'supabase')}><option value="supabase">Supabase · PostgreSQL</option><option value="neon">Neon · LOC 唯讀鏡像</option></select></label>
       <label><span>Label</span><input value={row.label||''} onChange={e=>patch('label',e.target.value)}/></label>
       <label><span>Project ID</span><input value={row.project_id||''} onChange={e=>patch('project_id',e.target.value)}/></label>
       <label><span>Project URL / Data API</span><input value={row.project_url||''} onChange={e=>patch('project_url',e.target.value)}/></label>
-      <div className="scope-management-wide-field"><button type="button" className="loc-button primary" onClick={save}>設為搬遷／部署目標</button></div>
+      <div className="scope-management-wide-field"><button type="button" className="loc-button primary" onClick={save}>套用為 LOC 資料目標</button></div>
     </div>:null}
+    <div className="scope-management-fields">
+      <div className="scope-management-wide-field">
+        <strong>LOC 資料路徑支援</strong>
+        <p>Supabase Auth 保留登入與 session；LOC 資料請求由同一個 server-side Kysely endpoint 執行，並依此處選定的 PostgreSQL 目標即時路由。</p>
+        <ul>
+          <li>目前已接通：Supabase PostgreSQL；Neon 僅供 LOC 鏡像唯讀，切換前須先在 Edge Function secret 設定 NEON_DATABASE_URL。</li>
+          <li>PostgreSQL 相容服務（包括 Google Cloud SQL for PostgreSQL）可沿用同一資料庫協定與 Kysely driver；每個目標仍須提供伺服器端連線密鑰及相容的 LOC schema。</li>
+          <li>MySQL、SQL Server：保留 portable schema 與 Kysely SQL 支援，目前尚未接入正式資料路由。</li>
+          <li>Firebase／Firestore 是文件資料模型，不能直接切到 SQL endpoint；需要獨立的資料 adapter。</li>
+        </ul>
+      </div>
+    </div>
     {status?<p className="scope-status" role="status">{status}</p>:null}
   </section>;
 }
