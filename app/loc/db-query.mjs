@@ -6,27 +6,41 @@ import {DB_QUERY_BATCH_SIZE} from './query-contract.mjs';
 import {dbBackupPublicClient,dbConfiguredPublicClient,dbPublicClient} from './db-client.mjs';
 import {markPrimaryReadFailed,markPrimaryReadSucceeded,setManualReadSource} from './db-source-status.mjs';
 
-// Cache the public provider flag, not any credentials. Routine Supabase traffic
-// stays on PostgREST; only selected emergency reads use the Edge SQL transport.
+// Resolve the selected provider once when a page becomes active, not on every
+// database query and not on a short-lived polling timer. Only non-secret status
+// travels to the client. Supabase's normal reads remain on Data API/PostgREST.
 let selectedProvider='supabase';
-let providerExpiresAt=0;
+let providerResolved=false;
 let providerLookup=null;
+let providerRevision=0;
+function invalidateProvider(){
+  providerRevision++;
+  providerResolved=false;
+}
 async function activePublicProvider(){
-  if(Date.now()<providerExpiresAt)return selectedProvider;
-  if(!dbConfiguredPublicClient?.activeTarget)return 'supabase';
+  if(providerResolved)return selectedProvider;
+  if(!dbConfiguredPublicClient?.activeTarget){
+    providerResolved=true;
+    return selectedProvider;
+  }
   if(!providerLookup){
+    const revision=providerRevision;
     providerLookup=(async()=>{
       try{
         const result=await dbConfiguredPublicClient.activeTarget();
         const next=String(result?.data?.provider||'supabase');
         if(!['supabase','neon','custom'].includes(next))throw new Error('Invalid active database provider');
-        selectedProvider=next;
-        providerExpiresAt=Date.now()+30_000;
-        setManualReadSource(next==='neon'?'Neon':next==='custom'?'Standard SQL':'');
+        if(revision===providerRevision){
+          selectedProvider=next;
+          setManualReadSource(next==='neon'?'Neon':next==='custom'?'Standard SQL':'');
+        }
       }catch{
-        // If Supabase control is unavailable, retain ordinary automatic fallback.
-        providerExpiresAt=Date.now()+5_000;
-      }finally{providerLookup=null;}
+        // Keep the last known route. If primary reads fail, the existing public
+        // fallback can still use Neon without repeated control-plane queries.
+      }finally{
+        if(revision===providerRevision)providerResolved=true;
+        providerLookup=null;
+      }
       return selectedProvider;
     })();
   }
@@ -34,8 +48,14 @@ async function activePublicProvider(){
 }
 if(typeof window!=='undefined'){
   window.addEventListener('loc-database-target-changed',()=>{
-    providerExpiresAt=0;
+    invalidateProvider();
     void activePublicProvider();
+  });
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible')invalidateProvider();
+  });
+  window.addEventListener('pageshow',event=>{
+    if(event.persisted)invalidateProvider();
   });
 }
 

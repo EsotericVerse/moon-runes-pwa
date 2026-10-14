@@ -12,7 +12,6 @@ const required=[
   'app/lrunes/DailyRuneCalendar.jsx',
   'app/loc/scope-data.js',
   'scripts/verify-db-public-read.mjs',
-  'governance/runtime-capabilities.json',
   'app/loc/rune66-keyword-analysis.js',
   'app/loc/model/rune66-keyword-engine.mjs',
   'app/loc/KeywordLibraryPanel.jsx',
@@ -100,13 +99,19 @@ if(!failures.length){
   const game=read('app/lrunes/game/GameView.jsx');
   const keywordEngine=read('app/loc/model/rune66-keyword-engine.mjs');
   if(/from ['"]flexsearch['"]|new Index\(/i.test(game+'\n'+keywordEngine))failures.push('Runtime text matching must not depend on FlexSearch');
-  const capabilityRegistry=JSON.parse(read('governance/runtime-capabilities.json'));
-  const publicReadFailover=capabilityRegistry?.capabilities?.public_read_failover;
-  if(!publicReadFailover||publicReadFailover.status!=='required'||publicReadFailover.primary_source!=='Admin-selected PostgreSQL target (Supabase default)'||publicReadFailover.backup_source!=='Neon')failures.push('Public-read failover capability must require the Admin-selected PostgreSQL target and Neon backup.');
-  if(publicReadFailover?.write_failover!==false||publicReadFailover?.ui_source_disclosure_required!==true||publicReadFailover?.page_chain_source_pinning_required!==true)failures.push('Public-read failover safety/disclosure contract is incomplete.');
-  const portableQueries=capabilityRegistry?.capabilities?.provider_neutral_public_queries;
-  if(!portableQueries||portableQueries.optional_provider_aggregate_dependency_allowed!==false)failures.push('Provider-neutral public query capability must reject optional aggregate dependencies.');
-  if(Object.keys(capabilityRegistry?.capabilities||{}).some(name=>/flexsearch/i.test(name)))failures.push('Retired FlexSearch capabilities must be removed from governance');
+  // Validate active modules directly; do not keep a separately configured JSON
+  // registry or issue a schema/status probe for each public data request.
+  for(const token of ['let providerResolved=false','if(providerResolved)return selectedProvider',
+    "window.addEventListener('loc-database-target-changed'",
+    "document.addEventListener('visibilitychange'",
+    "window.addEventListener('pageshow'",
+    "setManualReadSource(next==='neon'"])if(!dbQuery.includes(token))failures.push('Event-driven primary/backup routing missing '+token);
+  if(/providerExpiresAt|30_000|setInterval\\(/.test(dbQuery))failures.push('Public reads must not repeatedly poll the provider status');
+  for(const token of ["const source=first.dataSource||'auto'","offset,source",
+    "dbBackupPublicClient,'backup'","markPrimaryReadFailed"])if(!dbQuery.includes(token))failures.push('Public read pinned fallback missing '+token);
+  const edgeControl=read('supabase/functions/loc-kysely/index.ts');
+  for(const token of ['Neon LOC mirror is read-only','selectTargetAtomically','active_public_target'])
+    if(!edgeControl.includes(token))failures.push('Admin-controlled read-only failover guard missing '+token);
   const rune66Analysis=read('app/loc/rune66-keyword-analysis.js');
   for(const token of ["column:'statistics_able',operator:'eq',value:true"])if(!galaxy.includes(token)||!rune66Analysis.includes(token))failures.push('Statistics and Rune66 analysis must use fixed statistics_able filters');
   const rune66Engine=read('app/loc/model/rune66-keyword-engine.mjs');

@@ -119,6 +119,15 @@ const scopes=await managedScopes(client);
 if(!scopes.length)throw new Error('silver.manage returned no managed Scopes');
 for(const scope of scopes)await verifyManagedScope(client,scope);
 
+// CI-only policy behavior check: nonsearchable private Galaxy records must
+// never be visible to the anonymous Data API client. No live-page schema audit.
+for(const table of ['lo3rwang_galaxy','lrunes_galaxy']){
+  const {count,error}=await client.schema('silver').from(table)
+    .select('uid',{count:'exact',head:true}).eq('searchable',false);
+  if(error)throw new Error('Anonymous Galaxy policy check '+table+': '+error.message);
+  if(Number(count)!==0)throw new Error('Anonymous Galaxy policy exposed unsearchable rows in '+table);
+}
+
 // LunaRunes-only canonical SSOT remains explicitly named; it is not a general Scope mapping path.
 await probe(client,'runes','rune_id,rune_name');
 await probe(client,'game','game_key,record_type,sort_order,status,is_current,event_id,event_group,event_group_2,rune_id,role_id,rule_code,macro_code,asset_code');
