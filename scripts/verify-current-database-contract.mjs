@@ -16,7 +16,7 @@ for(const provider of ['supabase','neon']){
   const target=normalizeDatabaseTarget({provider,engine:'postgres'});
   assert.equal(resolveSqlExecutionPort(target).engine,'postgres');
 }
-assert.throws(()=>normalizeDatabaseTarget({provider:'custom',engine:'sqlite'}),/persistent trusted local/);
+assert.throws(()=>normalizeDatabaseTarget({provider:'custom',engine:'sqlite',connection_alias:'sqlite_local'}),/persistent trusted local/);
 assert.throws(()=>selectedDatabaseTarget([{provider:'supabase',selected:true},{provider:'neon',selected:true}]),/More than one/);
 for(const name of ['management_write','provision_scope','manage_scope_registry','apply_keyword_classification','read_keyword_class']){
   assert.ok(Array.isArray(RPC_ALLOWLIST['silver.'+name]),'RPC must remain allowlisted: '+name);
