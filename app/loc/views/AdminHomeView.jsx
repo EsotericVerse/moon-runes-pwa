@@ -8,7 +8,7 @@ import {mergeThemeSlot,THEME_DB_COLUMNS,themeColumnForToken,themeUiId,themeNumbe
 import {useAccount} from '../use-account';
 import {AdminSourceCategories} from '../SourceCategoryEditor';
 import {
-  deleteScope,deleteRows,insertRows,dbAuthRelation,manageScopeRegistry,provisionScope,syncManageScopeRow,updateRows
+  deleteScope,deleteRows,insertRows,dbAuthClient,dbAuthRelation,manageScopeRegistry,provisionScope,syncManageScopeRow,updateRows
 } from '../db-client.mjs';
 
 const ADMIN_OPTIONS=Object.freeze([
@@ -703,67 +703,98 @@ function DatabaseTarget(){
   const [selectedId,setSelectedId]=useState('');
   const [status,setStatus]=useState('');
   const [revision,setRevision]=useState(0);
-
+  const [saving,setSaving]=useState(false);
   useEffect(()=>{
     let active=true;
     (async()=>{
-      const {data,error}=await dbAuthRelation('silver.database_targets').select('target_id,provider,label,project_id,project_url,selected,updated_at').order('provider').order('target_id');
+      const {data,error}=await dbAuthRelation('silver.database_targets')
+        .select('target_id,provider,engine,connection_alias,connection_mode,label,project_id,project_url,selected,updated_at')
+        .order('provider').order('target_id');
       if(!active)return;
-      if(error){setStatus(error.message||'讀取失敗。');return;}
+      if(error){setStatus(error.message||'資料庫目標讀取失敗。');return;}
       const next=data||[];setRows(next);
-      setSelectedId(next.find(row=>row.selected)?.target_id||next[0]?.target_id||'');
+      setSelectedId(next.find(item=>item.selected)?.target_id||next[0]?.target_id||'');
     })();
     return()=>{active=false};
   },[revision]);
-
-  const index=rows.findIndex(row=>row.target_id===selectedId);
-  const row=index>=0?rows[index]:null;
-  const options=rows.map(item=>({value:item.target_id,label:item.label+' · '+item.provider}));
+  const index=rows.findIndex(item=>item.target_id===selectedId);
+  const row=index<0?null:rows[index];
   const patch=(key,value)=>setRows(current=>current.map((item,i)=>i===index?{...item,[key]:value}:item));
-
-  async function save(){
-    if(!row)return;
-    setStatus('');
-    try{
-      const clear=await dbAuthRelation('silver.database_targets').update({selected:false,updated_at:new Date().toISOString()}).neq('target_id','');
-      if(clear.error)throw new Error(clear.error.message||'Database Target 清除失敗。');
-      for(const item of rows){
-        const result=await dbAuthRelation('silver.database_targets').update({
-          provider:item.provider,label:String(item.label||item.target_id).trim(),
-          project_id:String(item.project_id||'').trim()||null,
-          project_url:String(item.project_url||'').trim(),
-          selected:item.target_id===row.target_id,
-          updated_at:new Date().toISOString()
-        }).eq('target_id',item.target_id);
-        if(result.error)throw new Error(result.error.message||'Database Target 更新失敗。');
-      }
-      setStatus('Database Target 已更新。');setRevision(v=>v+1);
-    }catch(error){setStatus(error?.message||'Database Target 儲存失敗。');}
+  const add=()=>{
+    const id='target_'+crypto.randomUUID().replaceAll('-','').slice(0,20);
+    setRows(current=>[...current,{target_id:id,provider:'custom',engine:'postgres',connection_alias:id,connection_mode:'direct',label:'新資料庫目標',project_id:'',project_url:'',selected:false,_new:true}]);
+    setSelectedId(id);setStatus('');
+  };
+  async function remove(){
+    if(!row||row.selected){setStatus('不能刪除目前使用中的資料庫目標。');return;}
+    if(row._new){setRows(current=>current.filter(item=>item.target_id!==row.target_id));setSelectedId(rows.find(item=>item.target_id!==row.target_id)?.target_id||'');return;}
+    const result=await dbAuthRelation('silver.database_targets').delete().eq('target_id',row.target_id);
+    if(result.error){setStatus(result.error.message||'刪除目標失敗。');return;}
+    setStatus('已刪除未使用的資料庫目標。');setRevision(v=>v+1);
   }
-
+  async function save(){
+    if(!row||saving)return;
+    setSaving(true);setStatus('');
+    try{
+      for(const item of rows){
+        const payload={
+          provider:item.provider,engine:item.provider==='custom'?item.engine:'postgres',
+          connection_alias:String(item.connection_alias||'').trim()||null,
+          connection_mode:item.provider==='supabase'?'pooler':item.connection_mode||'direct',
+          label:String(item.label||item.target_id).trim(),
+          project_id:String(item.project_id||'').trim()||null,
+          project_url:String(item.project_url||'').trim()
+        };
+        const relation=dbAuthRelation('silver.database_targets');
+        const result=item._new
+          ?await relation.insert({...payload,target_id:item.target_id,selected:false})
+          :await relation.update(payload).eq('target_id',item.target_id);
+        if(result.error)throw new Error(result.error.message||'儲存資料庫設定失敗。');
+      }
+      // The SQL endpoint atomically checks Admin permission, secret readiness,
+      // and switches the target in ONE transaction. Never clear selection first.
+      const {error}=await dbAuthClient.schema('silver').rpc('set_database_target',{p_target_id:selectedId});
+      if(error)throw new Error(error.message||'資料庫目標切換失敗。');
+      setStatus('資料庫目標設定已儲存，連接種類已套用。');setRevision(v=>v+1);
+    }catch(error){setStatus(error?.message||'儲存失敗。原本的資料庫目標保持不變。');}
+    finally{setSaving(false);}
+  }
   return <section className="loc-card admin-workspace">
     <div className="admin-inline-select">
-      <select className="admin-native-select" value={selectedId} onChange={e=>setSelectedId(e.target.value)} aria-label="Database Target">{options.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}</select>
+      <label><span>資料庫目標</span><select className="admin-native-select" value={selectedId} onChange={e=>setSelectedId(e.target.value)} aria-label="Database Target">
+        {rows.map(item=><option key={item.target_id} value={item.target_id}>{item.label} · {item.provider==='custom'?item.engine:item.provider}</option>)}
+      </select></label>
+      <button type="button" className="loc-button" onClick={add}>新增連接目標</button>
     </div>
     {row?<div className="scope-management-fields">
-      <label><span>Provider</span><select className="admin-native-select" value={row.provider||'supabase'} onChange={e=>patch('provider',e.target.value||'supabase')}><option value="supabase">Supabase · PostgreSQL</option><option value="neon">Neon · LOC 唯讀鏡像</option></select></label>
-      <label><span>Label</span><input value={row.label||''} onChange={e=>patch('label',e.target.value)}/></label>
-      <label><span>Project ID</span><input value={row.project_id||''} onChange={e=>patch('project_id',e.target.value)}/></label>
-      <label><span>Project URL / Data API</span><input value={row.project_url||''} onChange={e=>patch('project_url',e.target.value)}/></label>
-      <div className="scope-management-wide-field"><button type="button" className="loc-button primary" onClick={save}>套用為 LOC 資料目標</button></div>
-    </div>:null}
-    <div className="scope-management-fields">
+      <label><span>服務來源</span><select className="admin-native-select" value={row.provider} onChange={e=>{patch('provider',e.target.value);}}>
+        <option value="supabase">Supabase（PostgreSQL）</option><option value="neon">Neon（PostgreSQL 唯讀）</option>
+        <option value="custom">通用 SQL 連接</option>
+      </select></label>
+      <label><span>資料庫引擎 / Driver</span><select className="admin-native-select" value={row.provider==='custom'?row.engine||'postgres':'postgres'} disabled={row.provider!=='custom'} onChange={e=>patch('engine',e.target.value)}>
+        <option value="postgres">PostgreSQL（含 Google Cloud SQL、RDS、Azure）</option>
+        <option value="mysql">MySQL / MariaDB</option>
+        <option value="mssql">SQL Server / Azure SQL</option>
+        <option value="sqlite">SQLite（需持久化執行環境）</option>
+      </select></label>
+      <label><span>連接方式</span><select className="admin-native-select" value={row.provider==='supabase'?'pooler':row.connection_mode||'direct'} disabled={row.provider==='supabase'} onChange={e=>patch('connection_mode',e.target.value)}>
+        <option value="direct">標準連線</option><option value="pooler">連線池 / Pooler</option>
+      </select></label>
+      <label><span>連線別名（伺服器端金鑰）</span><input value={row.connection_alias||''} onChange={e=>patch('connection_alias',e.target.value)} placeholder="例如 office_mysql"/></label>
+      <label><span>顯示名稱</span><input value={row.label||''} onChange={e=>patch('label',e.target.value)}/></label>
+      <label><span>Project ID（選填）</span><input value={row.project_id||''} onChange={e=>patch('project_id',e.target.value)}/></label>
+      <label><span>Project URL（資訊欄位，非資料庫憑證）</span><input value={row.project_url||''} onChange={e=>patch('project_url',e.target.value)}/></label>
       <div className="scope-management-wide-field">
-        <strong>LOC 資料路徑支援</strong>
-        <p>Supabase Auth 保留登入與 session；LOC 資料請求由同一個 server-side Kysely endpoint 執行，並依此處選定的 PostgreSQL 目標即時路由。</p>
-        <ul>
-          <li>目前目標：Supabase PostgreSQL。Serverless Edge 高併發請使用 PostgreSQL transaction pooler；伺服器優先使用 Edge Function 的 SUPABASE_DB_URL，Neon 僅供 LOC 鏡像唯讀，切換前須安全設定 NEON_DATABASE_URL。</li>
-          <li>PostgreSQL 相容服務（包括 Google Cloud SQL for PostgreSQL）可沿用同一資料庫協定與 Kysely driver；每個目標仍須提供伺服器端連線密鑰及相容的 LOC schema。</li>
-          <li>MySQL、SQL Server：保留 portable schema 與 Kysely SQL 支援，目前尚未接入正式資料路由。</li>
-          <li>Firebase／Firestore 是文件資料模型，不能直接切到 SQL endpoint；需要獨立的資料 adapter。</li>
-        </ul>
+        <button type="button" className="loc-button primary" onClick={save} disabled={saving}>{saving?'儲存中…':'儲存並套用資料庫目標'}</button>
+        {!row.selected?<button type="button" className="loc-button" onClick={remove} disabled={saving}>刪除此未使用目標</button>:null}
       </div>
-    </div>
+    </div>:null}
+    <div className="scope-management-fields"><div className="scope-management-wide-field">
+      <strong>通用 SQL 連接</strong>
+      <p>LOC 共用 Kysely 資料操作介面。新增目標時選擇引擎及連接種類，不必為雲端廠商修改 LOC Code；資料庫密碼不進入此頁或 GitHub。</p>
+      <p>先在可信任的 Edge 執行端配置 LOC_DB_CONNECTIONS_JSON 的別名與連線資訊；選擇未配置的別名會拒絕切換，原目標不受影響。</p>
+      <p>PostgreSQL 仍需部署 LOC Schema／RLS。MySQL、SQL Server 已備妥 Driver，但目前因缺少跨引擎逐使用者權限模型，僅允許公開資料唯讀，不會冒險放開寫入。SQLite 需持久化執行環境，不能直接在無持久磁碟的 Edge 上使用。</p>
+    </div></div>
     {status?<p className="scope-status" role="status">{status}</p>:null}
   </section>;
 }

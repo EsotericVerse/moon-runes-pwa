@@ -6,6 +6,7 @@ import {buildAllowlistedRpcQuery,buildKyselyMutationQuery,executeKyselyQuery} fr
 import {adaptNeonThemeRequest,normalizeNeonThemeRows} from '../app/loc/providers/neon-theme-compat.mjs';
 
 const edge=readFileSync(new URL('../supabase/functions/loc-kysely/index.ts',import.meta.url),'utf8');
+const drivers=readFileSync(new URL('../supabase/functions/loc-kysely/drivers.ts',import.meta.url),'utf8');
 const config=readFileSync(new URL('../supabase/config.toml',import.meta.url),'utf8');
 const portableSchema=readFileSync(new URL('../sql/portable-current-schema.sql',import.meta.url),'utf8');
 assert.match(config,/\[functions\.loc-kysely\][\s\S]*?verify_jwt\s*=\s*false/);
@@ -13,7 +14,7 @@ assert.match(edge,/auth\.getUser\(token\)/,'authenticated SQL must follow Supaba
 assert.match(edge,/set local role authenticated/);
 assert.match(edge,/set local role anon/);
 assert.match(edge,/set local role anonymous/);
-assert.match(edge,/NEON_DATABASE_URL/);
+assert.match(drivers,/NEON_DATABASE_URL/);
 assert.match(edge,/candidates\.find\(isTransactionPooler\)/,'Edge prefers a transaction-pooler URL for PostgreSQL');
 assert.match(edge,/selectedDatabaseProvider\(rows\)/,'Kysely resolves the saved Admin provider for each request');
 assert.match(edge,/database\("supabase"\)\.transaction\(\)\.execute\(async \(trx\)/,'Admin target lookup and selected Supabase CRUD share one transaction connection');
@@ -21,6 +22,8 @@ assert.match(edge,/Selected database target is unavailable/);
 assert.match(edge,/managesTargets[\s\S]*?"supabase"/,'Admin target rows remain managed on the Supabase control database');
 assert.match(edge,/SUPABASE_PUBLISHABLE_KEYS/,'Edge Functions default publishable-key secret is supported without adding a browser secret');
 assert.match(edge,/Neon LOC mirror is read-only/);
+assert.match(edge,/selectTargetAtomically/,'Admin selection must use an atomic, permission-checked route');
+assert.match(drivers,/MysqlDialect/);assert.match(drivers,/MssqlDialect/);
 assert.doesNotMatch(edge,/SUPABASE_SERVICE_ROLE_KEY|service_role/i,'trusted SQL must never execute as service_role');
 const neonAllowlistBlock=edge.match(/const neonLocReadTables = new Set\(\[([\s\S]*?)\]\);/)?.[1]||'';
 assert.doesNotMatch(neonAllowlistBlock,/database_targets|email_blocklist/,'Neon reads must stay on the LOC table allowlist');
