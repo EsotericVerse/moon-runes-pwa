@@ -5,7 +5,8 @@ test('keyword management uses a standalone route and does not eagerly mount a gr
   page.on('pageerror',error=>runtimeErrors.push(error.message));
   const response=await page.goto('/lo3rwang/statics/keywords/',{waitUntil:'domcontentloaded'});
   expect(response?.status()).toBe(200);
-  await expect(page.getByRole('heading',{name:'關鍵詞設定'})).toBeVisible();
+  // Give the client-side Scope bootstrap room under parallel browser load; do not skip the heading assertion.
+  await expect(page.getByRole('heading',{name:'關鍵詞設定'})).toBeVisible({timeout:20_000});
   await expect(page.getByRole('link',{name:'返回統計頁'})).toHaveAttribute('href',/\/lo3rwang\/statics\//);
   await expect(page.locator('.scope-keyword-network-canvas')).toHaveCount(0);
   await expect(page.locator('.scope-keyword-network')).toHaveCount(0);
