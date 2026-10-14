@@ -7,6 +7,8 @@ import {adaptNeonThemeRequest,normalizeNeonThemeRows} from '../app/loc/providers
 
 const edge=readFileSync(new URL('../supabase/functions/loc-kysely/index.ts',import.meta.url),'utf8');
 const drivers=readFileSync(new URL('../supabase/functions/loc-kysely/drivers.ts',import.meta.url),'utf8');
+const secrets=readFileSync(new URL('../supabase/functions/loc-kysely/database-connections.ts',import.meta.url),'utf8');
+const adminUi=readFileSync(new URL('../app/loc/views/AdminHomeView.jsx',import.meta.url),'utf8');
 const config=readFileSync(new URL('../supabase/config.toml',import.meta.url),'utf8');
 const portableSchema=readFileSync(new URL('../sql/portable-current-schema.sql',import.meta.url),'utf8');
 assert.match(config,/\[functions\.loc-kysely\][\s\S]*?verify_jwt\s*=\s*false/);
@@ -25,6 +27,14 @@ assert.match(edge,/Neon LOC mirror is read-only/);
 assert.match(edge,/selectTargetAtomically/,'Admin selection must use an atomic, permission-checked route');
 assert.match(edge,/resolveSqlExecutionPort/,'Kysely runtime selects the central port contract');
 assert.match(drivers,/MysqlDialect/);assert.match(drivers,/MssqlDialect/);
+assert.match(adminUi,/Link \/ Project/,'Cloud provider selection must expose the location Link');
+assert.match(adminUi,/DB Host:Port/,'Ordinary SQL target must expose Host and Port');
+assert.match(adminUi,/type="password"/,'Database password field must be masked');
+assert.match(adminUi,/save_database_target/,'The Admin form must save through the trusted SQL endpoint');
+assert.match(edge,/profileLookup:profileForTarget/,'The saved connection Link must reach the Kysely driver');
+assert.match(edge,/saveVaultConnection/,'Trusted admin route must use encrypted Vault storage');
+assert.match(secrets,/vault\.decrypted_secrets/,'Database credentials must be read only on the trusted server');
+assert.doesNotMatch(adminUi,/LOC_DB_CONNECTIONS_JSON/,'Admin should not require editing server configuration by hand');
 assert.doesNotMatch(edge,/SUPABASE_SERVICE_ROLE_KEY|service_role/i,'trusted SQL must never execute as service_role');
 const neonAllowlistBlock=edge.match(/const neonLocReadTables = new Set\(\[([\s\S]*?)\]\);/)?.[1]||'';
 assert.doesNotMatch(neonAllowlistBlock,/database_targets|email_blocklist/,'Neon reads must stay on the LOC table allowlist');
