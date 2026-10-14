@@ -53,6 +53,7 @@ export function createKyselyEdgeClient({url,publishableKey,auth,role='authentica
     schema(schema){return {from(table){return new KyselyQuery(execute,schema,table)},rpc(name,args={}){return execute({kind:'rpc',schema,name,args,target})}}},
     rpc(name,args={},options={}){return execute({kind:'rpc',schema:options.schema||'silver',name,args,target})},
     auth:auth||null,
+    activeTarget(){return execute({kind:'status',name:'active_public_target'});},
     role,target
   };
   return client;
