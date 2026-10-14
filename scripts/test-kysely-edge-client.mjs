@@ -52,6 +52,14 @@ assert.equal(JSON.parse(neonCalls[0].init.body).target,'neon');
 
 const rejected=createKyselyEdgeClient({url:'https://loc.example.test',publishableKey:'sb_publishable_test',fetch:async()=>new Response(JSON.stringify({error:{message:'denied'}}),{status:403})});
 await assert.rejects(async()=>await rejected.schema('silver').from('manage').select('*'),/denied/);
+let transientReads=0;
+const retryRead=createKyselyEdgeClient({url:'https://loc.example.test',publishableKey:'sb_publishable_test',role:'anon',fetch:async()=>++transientReads===1?new Response(JSON.stringify({error:{message:'temporarily unavailable'}}),{status:503}):new Response(JSON.stringify({data:[{id:'recovered'}]}),{status:200})});
+assert.deepEqual((await retryRead.schema('silver').from('manage').select('id')).data,[{id:'recovered'}]);
+assert.equal(transientReads,2,'a transient PostgreSQL connection failure retries one read once');
+let transientWrites=0;
+const noWriteRetry=createKyselyEdgeClient({url:'https://loc.example.test',publishableKey:'sb_publishable_test',role:'anon',fetch:async()=>{transientWrites++;return new Response(JSON.stringify({error:{message:'temporarily unavailable'}}),{status:503})}});
+await assert.rejects(async()=>await noWriteRetry.schema('manage').from('email_blocklist').insert({email:'x@example.test'}),/temporarily unavailable/);
+assert.equal(transientWrites,1,'writes are never retried automatically');
 const authOptions=[];const adapterCalls=[];
 const adapter=createSupabaseAdapter({url:'https://loc.example.test',publishableKey:'sb_publishable_test',createClientImpl:(url,key,options)=>{authOptions.push(options);return {auth}},fetchImpl:async(url,init)=>{adapterCalls.push({url,init});return new Response(JSON.stringify({data:[{id:'ok'}]}),{status:200})}});
 assert.equal(authOptions.length,1,'only the Supabase Auth/session SDK remains instantiated');

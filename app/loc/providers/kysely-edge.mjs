@@ -36,7 +36,13 @@ export function createKyselyEdgeClient({url,publishableKey,auth,role='authentica
     if(auth){const result=await auth.getSession();token=result?.data?.session?.access_token||'';if(result?.error)throw result.error;if(!token)throw new Error('Authenticated database request requires an active session')}
     const headers={'content-type':'application/json',apikey:publishableKey};
     if(token)headers.authorization='Bearer '+token;
-    const response=await fetchImpl(endpoint,{method:'POST',headers,body:JSON.stringify({...body,target})});
+    const request={method:'POST',headers,body:JSON.stringify({...body,target})};
+    let response;
+    for(let attempt=0;attempt<2;attempt++){
+      response=await fetchImpl(endpoint,request);
+      if(response.ok||body.kind!=='query'||body.operation!=='select'||response.status!==503||attempt===1)break;
+      await new Promise(resolve=>setTimeout(resolve,120));
+    }
     let payload=null;try{payload=await response.json()}catch{}
     if(!response.ok){const error=new Error(payload?.error?.message||payload?.message||`Kysely request failed (HTTP ${response.status})`);error.status=response.status;error.code=payload?.error?.code;error.details=payload?.error?.details;throw error}
     if(body.kind==='rpc')return {data:payload?.data??null,error:null,status:response.status};

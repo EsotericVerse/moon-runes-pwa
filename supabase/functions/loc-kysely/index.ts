@@ -160,9 +160,12 @@ Deno.serve(async (request) => {
     const result = await database(target).transaction().execute((trx) => executeRequest(trx, target, role, claims, body));
     return json(result, 200, result.count === null ? {} : { "content-range": `0-${Math.max(0, (Array.isArray(result.data) ? result.data.length : 0) - 1)}/${result.count}` });
   } catch (error) {
-    const status = resolvingTarget ? 503 : isKyselyClientError(error) ? 400 : 500;
+    const message = error instanceof Error ? error.message : "";
+    const code = error && typeof error === "object" && "code" in error ? String(error.code) : "";
+    const transientConnectionFailure = code === "53300" || code.startsWith("08") || /connection (?:terminated|timeout)|remaining connection slots/i.test(message);
+    const status = resolvingTarget || transientConnectionFailure ? 503 : isKyselyClientError(error) ? 400 : 500;
     if (status >= 500) console.error("[loc-kysely] Database request failed", error);
-    const message = resolvingTarget ? "Selected database target is unavailable" : status === 400 && error instanceof Error ? error.message : "Database request failed";
-    return json({ error: { message, code: error instanceof Error && "code" in error ? String(error.code) : undefined } }, status);
+    const responseMessage = resolvingTarget ? "Selected database target is unavailable" : status === 503 ? "Database is temporarily unavailable" : status === 400 ? message : "Database request failed";
+    return json({ error: { message: responseMessage, code: code || undefined } }, status);
   }
 });
