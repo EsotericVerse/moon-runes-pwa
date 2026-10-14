@@ -1,9 +1,9 @@
 import { createClient } from "npm:@supabase/supabase-js@2.117.2";
-import pg from "npm:pg@8.16.3";
-import { Kysely, PostgresDialect, sql } from "npm:kysely@0.29.6";
+import { sql } from "npm:kysely@0.29.6";
+import {databaseForTarget,resolveConnectionProfile} from "./drivers.ts";
 import { executeAllowlistedRpc, executeKyselyQuery, isKyselyClientError } from "../../../app/loc/providers/kysely-runtime.mjs";
 import { adaptNeonThemeRequest, normalizeNeonThemeRows } from "../../../app/loc/providers/neon-theme-compat.mjs";
-import { selectedDatabaseProvider } from "../../../app/loc/providers/selected-database-target.mjs";
+import { selectedDatabaseTarget } from "../../../app/loc/providers/selected-database-target.mjs";
 
 const corsHeaders = {
   "access-control-allow-origin": "*",
@@ -23,8 +23,6 @@ function configuredPublishableKeys() {
   return new Set(keys);
 }
 const publishableKeys = configuredPublishableKeys();
-const { Pool } = pg;
-const databases = new Map<string, Kysely<Record<string, Record<string, unknown>>>>();
 const neonLocReadTables = new Set([
   "game", "keyword_classes", "lo3rwang", "lo3rwang_blocks", "lo3rwang_galaxy",
   "lo3rwang_galaxy_media", "lo3rwang_keywords", "lo3rwang_time", "loc_blocks",
@@ -35,42 +33,52 @@ const neonLocReadTables = new Set([
   "statistics_source_categories",
 ]);
 
-function database(target: string) {
-  const envName = target === "neon" ? "NEON_DATABASE_URL" : "SUPABASE_DB_URL";
-  const candidates = [Deno.env.get(envName), target === "supabase" ? Deno.env.get("DATABASE_URL") : null].filter((value): value is string => Boolean(value));
-  const isTransactionPooler = (value: string) => {
-    try {
-      const url = new URL(value);
-      return url.port === "6543" && (url.hostname.endsWith(".pooler.supabase.com") || url.hostname.startsWith("db."));
-    }
-    catch { return false; }
-  };
-  const connectionString = candidates.find(isTransactionPooler) || candidates[0];
-  if (!connectionString) throw new Error(`${envName} is not configured`);
-  if (target === "supabase" && !isTransactionPooler(connectionString)) console.warn("[loc-kysely] Supabase Edge connection is not using a transaction pooler");
-  let db = databases.get(target);
-  if (!db) {
-    const pool = new Pool({ connectionString, max: 1, idleTimeoutMillis: 1_000, connectionTimeoutMillis: 5_000 });
-    db = new Kysely({ dialect: new PostgresDialect({ pool }) });
-    databases.set(target, db);
+const controlTarget={provider:"supabase",engine:"postgres",connection_alias:"supabase_current",connection_mode:"pooler"};
+async function executeRequest(trx: any, target: Record<string,any>, role: string, claims: Record<string, unknown>, body: Record<string, unknown>) {
+  if(target.engine!=="postgres"){
+    // No PostgreSQL RLS or set-local-role on other engines. Until the target's
+    // authorization adapter exists, permit only the public LOC read surface.
+    if(body.kind!=="query"||body.operation!=="select"||body.schema!=="silver"||typeof body.table!=="string"||!neonLocReadTables.has(body.table))
+      throw Object.assign(new Error("Cross-engine target only permits public LOC reads"),{httpStatus:403});
+    return await executeKyselyQuery(trx,body,{dialect:target.engine});
   }
-  return db;
-}
-
-async function executeRequest(trx: any, target: string, role: string, claims: Record<string, unknown>, body: Record<string, unknown>) {
   if (role === "authenticated") await sql`set local role authenticated`.execute(trx);
-  else if (target === "neon") await sql`set local role anonymous`.execute(trx);
+  else if (target.provider === "neon") await sql`set local role anonymous`.execute(trx);
   else await sql`set local role anon`.execute(trx);
   await sql`select set_config('request.jwt.claims', ${JSON.stringify(claims)}, true)`.execute(trx);
   await sql`select set_config('request.jwt.claim.sub', ${String(claims.sub || "")}, true)`.execute(trx);
   await sql`select set_config('request.jwt.claim.role', ${role}, true)`.execute(trx);
-  if (body.kind === "query") {
-    const theme = target === "neon" ? adaptNeonThemeRequest(body) : null;
-    const result = await executeKyselyQuery(trx, theme?.request || body);
-    if (theme) result.data = normalizeNeonThemeRows(result.data, theme.columns);
+  if(body.kind==="query"){
+    const theme=target.provider==="neon"?adaptNeonThemeRequest(body):null;
+    const result=await executeKyselyQuery(trx,theme?.request||body);
+    if(theme)result.data=normalizeNeonThemeRows(result.data,theme.columns);
     return result;
   }
-  return await executeAllowlistedRpc(trx, body);
+  return await executeAllowlistedRpc(trx,body);
+}
+
+async function selectTargetAtomically(id:string,role:string,claims:Record<string,unknown>){
+  if(role!=="authenticated"||!id||!/^[a-z][a-z0-9_-]{0,80}$/i.test(id))
+    throw Object.assign(new Error("Authorized target ID required"),{httpStatus:403});
+  const db=await databaseForTarget(controlTarget);
+  return db.transaction().execute(async trx=>{
+    await sql`set local role authenticated`.execute(trx);
+    await sql`select set_config('request.jwt.claims',${JSON.stringify(claims)},true)`.execute(trx);
+    await sql`select set_config('request.jwt.claim.sub',${String(claims.sub||"")},true)`.execute(trx);
+    const grant=await sql`select silver.can_manage_global() as allowed`.execute(trx);
+    if(grant.rows[0]?.allowed!==true)throw Object.assign(new Error("Administrator permission is required"),{httpStatus:403});
+    const row=await trx.selectFrom("silver.database_targets")
+      .select(["target_id","provider","engine","connection_alias","connection_mode"])
+      .where("target_id","=",id).executeTakeFirst();
+    if(!row)throw Object.assign(new Error("Database target does not exist"),{httpStatus:400});
+    const target=selectedDatabaseTarget([{...row,selected:true}]);
+    resolveConnectionProfile(target); // fail closed when the server secret is absent
+    await trx.updateTable("silver.database_targets").set({selected:false}).where("selected","=",true).execute();
+    const updated=await trx.updateTable("silver.database_targets").set({selected:true,updated_at:new Date()})
+      .where("target_id","=",id).executeTakeFirstOrThrow();
+    if(Number(updated.numUpdatedRows||0)!==1)throw new Error("Database target activation failed");
+    return {target_id:id,provider:target.provider,engine:target.engine};
+  });
 }
 
 function json(body: unknown, status = 200, extraHeaders: Record<string, string> = {}) {
@@ -127,51 +135,53 @@ Deno.serve(async (request) => {
     claims.role = role;
   }
 
-  let target: string;
   let resolvingTarget = false;
   try {
-    const managesTargets = body.kind === "query" && body.schema === "silver" && body.table === "database_targets";
-    target = requestedTarget === "configured"
-      ? "supabase"
-      : String(requestedTarget);
-    if (requestedTarget === "configured" && !managesTargets) {
-      // Read the saved target before setting caller claims, then execute the
-      // Supabase path in that same transaction/connection. A target change is
-      // observed on the next request without doubling PostgreSQL connections.
-      resolvingTarget = true;
-      const resolved = await database("supabase").transaction().execute(async (trx) => {
-        const rows = await trx.selectFrom("silver.database_targets")
-          .select("provider").where("selected", "=", true).execute();
-        const selected = selectedDatabaseProvider(rows);
-        if (selected === "supabase") return { target: selected, result: await executeRequest(trx, selected, role, claims, body) };
-        return { target: selected };
+    if(body.kind==="rpc"&&body.schema==="silver"&&body.name==="set_database_target"){
+      if(!body.args||typeof body.args!=="object"||Array.isArray(body.args)||Object.keys(body.args).some(key=>key!=="p_target_id"))
+        return json({error:{message:"Invalid database target activation"}},400);
+      const targetId=(body.args as Record<string,unknown>).p_target_id;
+      const result=await selectTargetAtomically(String(targetId||""),role,claims);
+      return json({data:result,count:null});
+    }
+    const managesTargets=body.kind==="query"&&body.schema==="silver"&&body.table==="database_targets";
+    let target=controlTarget as Record<string,any>;
+    if(requestedTarget==="neon")target={provider:"neon",engine:"postgres",connection_alias:"neon_current",connection_mode:"direct"};
+    if(requestedTarget==="configured"&&!managesTargets){
+      resolvingTarget=true;
+      const control=await databaseForTarget(controlTarget);
+      const resolved=await control.transaction().execute(async trx=>{
+        const rows=await trx.selectFrom("silver.database_targets")
+          .select(["provider","engine","connection_alias","connection_mode","selected"])
+          .where("selected","=",true).execute();
+        const selected=selectedDatabaseTarget(rows);
+        if(selected.provider==="supabase")
+          return {target:selected,result:await executeRequest(trx,selected,role,claims,body)};
+        return {target:selected};
       });
-      resolvingTarget = false;
-      target = resolved.target;
-      if ("result" in resolved) {
-        const result = resolved.result;
-        return json(result, 200, result.count === null ? {} : { "content-range": `0-${Math.max(0, (Array.isArray(result.data) ? result.data.length : 0) - 1)}/${result.count}` });
+      resolvingTarget=false;
+      target=resolved.target;
+      if("result" in resolved){
+        const result=resolved.result!;
+        return json(result,200,result.count===null?{}:{"content-range":`0-${Math.max(0,(Array.isArray(result.data)?result.data.length:0)-1)}/${result.count}`});
       }
     }
-
-    if (target === "neon" && (body.kind !== "query" || body.operation !== "select")) {
-      return json({ error: { message: "Neon LOC mirror is read-only" } }, 403);
-    }
-    if (target === "neon" && (body.schema !== "silver" || typeof body.table !== "string" || !neonLocReadTables.has(body.table))) {
-      return json({ error: { message: "Neon LOC mirror table is not enabled" } }, 403);
-    }
-    if (target === "neon" && role === "anon") {
-      role = "anonymous";
-      claims.role = role;
-    }
-
-    const result = await database(target).transaction().execute((trx) => executeRequest(trx, target, role, claims, body));
-    return json(result, 200, result.count === null ? {} : { "content-range": `0-${Math.max(0, (Array.isArray(result.data) ? result.data.length : 0) - 1)}/${result.count}` });
+    if(requestedTarget==="supabase")target=controlTarget;
+    if(target.provider==="neon"&&(body.kind!=="query"||body.operation!=="select"))
+      return json({error:{message:"Neon LOC mirror is read-only"}},403);
+    if(target.provider==="neon"&&(body.schema!=="silver"||typeof body.table!=="string"||!neonLocReadTables.has(body.table)))
+      return json({error:{message:"Neon LOC mirror table is not enabled"}},403);
+    if(target.provider==="neon"&&role==="anon"){role="anonymous";claims.role=role;}
+    if(target.engine!=="postgres"&&(body.kind!=="query"||body.operation!=="select"||body.schema!=="silver"||typeof body.table!=="string"||!neonLocReadTables.has(body.table)))
+      return json({error:{message:"Cross-engine target is not authorized for this operation"}},403);
+    const db=await databaseForTarget(target);
+    const result=await db.transaction().execute(trx=>executeRequest(trx,target,role,claims,body));
+    return json(result,200,result.count===null?{}:{"content-range":`0-${Math.max(0,(Array.isArray(result.data)?result.data.length:0)-1)}/${result.count}`});
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
     const code = error && typeof error === "object" && "code" in error ? String(error.code) : "";
     const transientConnectionFailure = code === "53300" || code.startsWith("08") || /connection (?:terminated|timeout)|remaining connection slots/i.test(message);
-    const status = resolvingTarget || transientConnectionFailure ? 503 : isKyselyClientError(error) ? 400 : 500;
+    const status = (error && typeof error === 'object' && 'httpStatus' in error) ? Number(error.httpStatus) : resolvingTarget || transientConnectionFailure ? 503 : isKyselyClientError(error) ? 400 : 500;
     if (status >= 500) console.error("[loc-kysely] Database request failed", error);
     const responseMessage = resolvingTarget ? "Selected database target is unavailable" : status === 503 ? "Database is temporarily unavailable" : status === 400 ? message : "Database request failed";
     return json({ error: { message: responseMessage, code: code || undefined } }, status);
