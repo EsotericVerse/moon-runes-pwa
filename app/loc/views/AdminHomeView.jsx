@@ -740,8 +740,9 @@ function DatabaseTarget(){
     if(result.error){setStatus(result.error.message||'刪除資料庫目標失敗。');return;}
     setStatus('已刪除資料庫目標。');setRevision(v=>v+1);
   }
-  async function save(){
+  async function save({switchTarget=false}={}){
     if(!row||saving)return;
+    if(switchTarget&&!window.confirm(row.provider==='neon'?'確定切換至 Neon 唯讀備援？此模式不支援備援寫入，管理功能仍由 Supabase 控制。':'確定切換至這個資料庫？請確認目標已完成連線與權限設定。'))return;
     setSaving(true);setStatus('');
     try{
       const location=normalizeDatabaseLocation(row.provider,row.project_url);
@@ -758,12 +759,13 @@ function DatabaseTarget(){
         username,
         database,
         password,
-        activate:row.selected===true
+        activate:switchTarget||row.selected===true
       };
       const {error}=await dbAuthClient.schema('silver').rpc('save_database_target',{p_target:payload});
       if(error)throw new Error(error.message||'資料庫儲存或切換失敗。');
       setPassword('');setUsername('');setDatabase('');
-      setStatus(row.selected?'目前使用中的主要資料庫設定已儲存。':'備用資料庫設定已儲存，主要資料庫維持不變。');
+      setStatus(switchTarget?(row.provider==='neon'?'已切換至 Neon 唯讀備援，寫入仍由 Supabase 控制。':'已切換至所選資料庫。'):(row.selected?'目前使用中的資料庫設定已儲存。':'備用資料庫設定已儲存，主要資料庫維持不變。'));
+      if(switchTarget)window.dispatchEvent(new Event('loc-database-target-changed'));
       setRevision(v=>v+1);
     }catch(error){setStatus(error?.message||'儲存失敗，原目標維持不變。');}
     finally{setSaving(false);}
@@ -787,17 +789,18 @@ function DatabaseTarget(){
       </select></label>
       <label><span>{cloud?'Link / Project':'DB Host:Port'}</span><input value={row.project_url||''} onChange={event=>patch('project_url',event.target.value)}
         placeholder={row.provider==='supabase'?'Project ID 或 https://xxx.supabase.co':row.provider==='neon'?'Neon DB Endpoint 或 Data API URL':'db.example.com:5432'}/></label>
-      {cloud?<label><span>Region（地區）</span><input value={row.region||''} onChange={event=>patch('region',event.target.value)} placeholder="例如 ap-southeast-1"/></label>:null}
+      <label><span>Region / Area（地區，選填）</span><input value={row.region||''} onChange={event=>patch('region',event.target.value)} placeholder="例如 ap-southeast-1、eastus"/></label>
       <label><span>Database</span><input value={database} onChange={event=>setDatabase(event.target.value)} autoComplete="off" placeholder={row.provider==='supabase'?'postgres':row.provider==='neon'?'neondb':'Database name'}/></label>
       <label><span>User</span><input value={username} onChange={event=>setUsername(event.target.value)} autoComplete="off" placeholder={row.provider==='supabase'?'postgres':'DB username'}/></label>
       <label><span>Password</span><input type="password" value={password} onChange={event=>setPassword(event.target.value)} autoComplete="new-password" placeholder="已有憑證可留空"/></label>
       <div className="scope-management-wide-field">
-        <button type="button" className="loc-button primary" onClick={save} disabled={saving}>{saving?'儲存中…':'儲存設定'}</button>
+        <button type="button" className="loc-button primary" onClick={()=>save()} disabled={saving}>{saving?'儲存中…':'儲存設定'}</button>
+        {!row.selected?<button type="button" className="loc-button" onClick={()=>save({switchTarget:true})} disabled={saving}>{saving?'處理中…':'切換至此資料庫'}</button>:null}
         {!row.selected&&!isManaged?<button type="button" className="loc-button" onClick={remove} disabled={saving}>刪除</button>:null}
       </div>
     </div>:null}
-    <p className="scope-status">Type 選擇 SQL Driver，服務商決定 Link 格式。儲存備用資料庫不會切換 Supabase 主要資料庫。已儲存的帳密可留空沿用；新連線需填 Database／User／Password。密碼加密保存在伺服器端，不會顯示在此頁。</p>
-    {row?.provider==='neon'?<p className="scope-status">Neon 請填資料庫端點或 Data API URL；只有 Project ID 無法推算 PostgreSQL 連線端點。目前 Neon 鏡像維持唯讀。</p>:null}
+    <p className="scope-status">Type 選擇 SQL Driver，服務商決定 Link 格式。Region / Area 可為任何服務商記錄所在區域；新建 Supabase Pooler 連線時必須填寫 Region。儲存設定不切換資料庫；只有明確按下「切換至此資料庫」才會切換。已儲存的帳密可留空沿用；新連線需填 Database／User／Password。密碼保存在伺服器端，不會顯示在此頁。</p>
+    {row?.provider==='neon'?<p className="scope-status">Neon 請填資料庫端點或 Data API URL；只有 Project ID 無法推算 PostgreSQL 連線端點。手動切換至 Neon 時僅提供公開讀取，管理寫入仍依賴 Supabase。</p>:null}
     {status?<p className="scope-status" role="status">{status}</p>:null}
   </section>;
 }
