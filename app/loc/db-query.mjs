@@ -3,8 +3,41 @@
 import {DB_QUERY_BATCH_SIZE} from './query-contract.mjs';
 
 
-import {dbBackupPublicClient,dbPublicClient} from './db-client.mjs';
-import {markPrimaryReadFailed,markPrimaryReadSucceeded} from './db-source-status.mjs';
+import {dbBackupPublicClient,dbConfiguredPublicClient,dbPublicClient} from './db-client.mjs';
+import {markPrimaryReadFailed,markPrimaryReadSucceeded,setManualReadSource} from './db-source-status.mjs';
+
+// Cache the public provider flag, not any credentials. Routine Supabase traffic
+// stays on PostgREST; only selected emergency reads use the Edge SQL transport.
+let selectedProvider='supabase';
+let providerExpiresAt=0;
+let providerLookup=null;
+async function activePublicProvider(){
+  if(Date.now()<providerExpiresAt)return selectedProvider;
+  if(!dbConfiguredPublicClient?.activeTarget)return 'supabase';
+  if(!providerLookup){
+    providerLookup=(async()=>{
+      try{
+        const result=await dbConfiguredPublicClient.activeTarget();
+        const next=String(result?.data?.provider||'supabase');
+        if(!['supabase','neon','custom'].includes(next))throw new Error('Invalid active database provider');
+        selectedProvider=next;
+        providerExpiresAt=Date.now()+30_000;
+        setManualReadSource(next==='neon'?'Neon':next==='custom'?'Standard SQL':'');
+      }catch{
+        // If Supabase control is unavailable, retain ordinary automatic fallback.
+        providerExpiresAt=Date.now()+5_000;
+      }finally{providerLookup=null;}
+      return selectedProvider;
+    })();
+  }
+  return providerLookup;
+}
+if(typeof window!=='undefined'){
+  window.addEventListener('loc-database-target-changed',()=>{
+    providerExpiresAt=0;
+    void activePublicProvider();
+  });
+}
 
 function publicRelation(client,table){
   const [schema,name]=String(table).split('.');
@@ -45,6 +78,16 @@ export async function executePublicRead(table,buildQuery,{source='auto'}={}){
       markPrimaryReadFailed(table,failure);
       throw failure;
     }
+  }
+
+  const provider=await activePublicProvider();
+  if(provider==='neon'){
+    if(!dbBackupPublicClient)throw new Error('Neon backup reader is unavailable');
+    return run(dbBackupPublicClient,'backup');
+  }
+  if(provider==='custom'){
+    if(!dbConfiguredPublicClient)throw new Error('Selected SQL reader is unavailable');
+    return run(dbConfiguredPublicClient,'selected');
   }
 
   let primaryError=null;
