@@ -17,6 +17,8 @@ for(const table of [
 ])assert.match(schema,new RegExp(`CREATE TABLE \\"silver\\"\\.\\"${table}\\"`),`missing live relation silver.${table}`);
 
 assert.match(schema,/CREATE ROLE anonymous NOLOGIN/,'portable anonymous role must exist');
+assert.match(schema,/"database_targets_engine_check"/, 'current schema must include the new driver selection');
+assert.match(schema,/"connection_alias" text/, 'connection secrets remain referenced only by alias');
 assert.doesNotMatch(schema,/CREATE POLICY .* TO "anon"/,'Supabase anon role must be mapped to portable anonymous role');
 assert.match(schema,/CREATE POLICY "user_records_owner_all"[\s\S]*?owner_id = api\.current_user_id\(\)/,'private user records must remain owner scoped');
 assert.match(schema,/CREATE POLICY "user_settings_owner_all"[\s\S]*?owner_id = api\.current_user_id\(\)/,'private user settings must remain owner scoped');
