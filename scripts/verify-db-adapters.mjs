@@ -97,7 +97,7 @@ process.env.NEXT_PUBLIC_LOC_DB_PROVIDER='supabase';
 process.env.NEXT_PUBLIC_SUPABASE_URL='https://count.example.test';
 globalThis.fetch=async()=>new Response(null,{status:403});
 const {selectCount}=await import('../app/loc/db-query.mjs');
-await assert.rejects(()=>selectCount('silver.any_scope_galaxy',{idColumn:'uid'}),error=>error?.primaryError?.status===403);
+await assert.rejects(()=>selectCount('silver.any_scope_galaxy',{idColumn:'uid'}),error=>error?.status===403);
 await assert.rejects(()=>selectCount('silver.any_scope_galaxy'),/explicit ID column/);
 globalThis.fetch=originalFetch;
 const appRoot=resolve('app');
