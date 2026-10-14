@@ -75,7 +75,7 @@ if(!failures.length){
   const scopeData=read('app/loc/scope-data.js');
   for(const token of ["MANAGE_TABLE='silver.manage'",'scopeDataFromManageRows','defaultScopeData','selectManagedScopes'])if(!scopeData.includes(token))failures.push('Scope data source missing '+token);
   const livePrivacyTest=read('scripts/verify-db-public-read.mjs');
-  for(const token of [".eq('searchable',false)","if(Number(count)!==0)"]){
+  for(const token of [".eq('searchable',false)","if((data||[]).length!==0)"]){
     if(!livePrivacyTest.includes(token))failures.push('CI must verify anonymous Galaxy RLS with real public data');
   }
   const statisticsCurrent=read('app/modular/features/Statistics.jsx');
