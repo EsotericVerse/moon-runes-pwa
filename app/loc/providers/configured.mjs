@@ -1,13 +1,13 @@
 import {createSupabaseAdapter} from './supabase.mjs';
-import {createNeonPublicAdapter} from './neon-public.mjs';
+import {createBackupPublicAdapter} from './neon-public.mjs';
 
 export function createConfiguredAdapter(){
   const primary=createSupabaseAdapter();
-  const backup=createNeonPublicAdapter();
+  const backup=createBackupPublicAdapter();
   return {
     ...primary,
     backupPublicClient:backup.publicClient,
     primarySourceLabel:'Admin-selected',
-    backupSourceLabel:'Neon'
+    backupSourceLabel:'Backup'
   };
 }

@@ -27,7 +27,7 @@ for(const requirement of ['managedScopes(client)','verifyManagedScope(client,sco
   assert.ok(releaseProbe.includes(requirement),'Release data check is missing '+requirement);
 }
 const admin=readFileSync(new URL('../app/loc/views/AdminHomeView.jsx',import.meta.url),'utf8');
-assert.ok(admin.includes('save_database_target')&&admin.includes('save({switchTarget:true})'),
+assert.ok(admin.includes('save_database_target')&&admin.includes('saveRouting')&&admin.includes('set_database_routing'),
   'Admin must separate saving from deliberate emergency database switching');
 const ignored=new Set(['.git','.next','node_modules','out','dist','ios','.turbo']);
 const root=new URL('../',import.meta.url);

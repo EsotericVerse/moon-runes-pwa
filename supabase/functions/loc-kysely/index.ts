@@ -108,9 +108,40 @@ async function saveDatabaseTarget(input:Record<string,unknown>,role:string,claim
     else await trx.insertInto("silver.database_targets").values({...record,target_id:targetId,selected:false}).execute();
     if(input.activate===true){
       await trx.updateTable("silver.database_targets").set({selected:false}).where("selected","=",true).execute();
-      await trx.updateTable("silver.database_targets").set({selected:true}).where("target_id","=",targetId).execute();
+      await trx.updateTable("silver.database_targets").set({selected:true,backup_selected:false}).where("target_id","=",targetId).execute();
     }
     return {target_id:targetId,provider,engine,selected:input.activate===true};
+  });
+}
+
+async function saveDatabaseRouting(input:Record<string,unknown>,role:string,claims:Record<string,unknown>){
+  if(role!=="authenticated"||!input||typeof input!=="object"||Array.isArray(input))
+    throw Object.assign(new Error("Administrator permission required"),{httpStatus:403});
+  const primaryId=String(input.primary_id||"");
+  const backupId=String(input.backup_id||"");
+  const mode=String(input.mode||"single");
+  if(!/^[a-z][a-z0-9_-]{0,80}$/i.test(primaryId)||
+     (backupId&&!/^[a-z][a-z0-9_-]{0,80}$/i.test(backupId))||
+     backupId===primaryId||!["single","db-managed"].includes(mode))
+    throw Object.assign(new Error("Invalid database routing"),{httpStatus:400});
+  const control=await checkAdminRole(claims);
+  return control.transaction().execute(async trx=>{
+    const ids=backupId?[primaryId,backupId]:[primaryId];
+    const targets=await trx.selectFrom("silver.database_targets")
+      .select(["target_id","provider","engine","connection_alias","connection_mode","project_url"])
+      .where("target_id","in",ids).execute();
+    if(targets.length!==ids.length)throw Object.assign(new Error("Database target not found"),{httpStatus:400});
+    for(const item of targets){
+      const target=selectedDatabaseTarget([{...item,selected:true}]);
+      await profileForTarget(target);
+    }
+    await trx.updateTable("silver.database_targets")
+      .set({selected:false,backup_selected:false,routing_mode:"single"}).execute();
+    await trx.updateTable("silver.database_targets")
+      .set({selected:true,routing_mode:mode}).where("target_id","=",primaryId).execute();
+    if(backupId)await trx.updateTable("silver.database_targets")
+      .set({backup_selected:true}).where("target_id","=",backupId).execute();
+    return {primary_id:primaryId,backup_id:backupId||null,mode};
   });
 }
 
@@ -155,7 +186,7 @@ async function selectTargetAtomically(id:string,role:string,claims:Record<string
     const target=selectedDatabaseTarget([{...row,selected:true}]);
     await profileForTarget(target); // fail closed when the Link has no matching credential
     await trx.updateTable("silver.database_targets").set({selected:false}).where("selected","=",true).execute();
-    const updated=await trx.updateTable("silver.database_targets").set({selected:true,updated_at:new Date()})
+    const updated=await trx.updateTable("silver.database_targets").set({selected:true,backup_selected:false,updated_at:new Date()})
       .where("target_id","=",id).executeTakeFirstOrThrow();
     if(Number(updated.numUpdatedRows||0)!==1)throw new Error("Database target activation failed");
     return {target_id:id,provider:target.provider,engine:target.engine};
@@ -196,7 +227,7 @@ Deno.serve(async (request) => {
     return json({ error: { message: "Invalid JSON body" } }, 400);
   }
   const requestedTarget = body.target === undefined ? "configured" : body.target;
-  if (!["configured", "supabase", "neon"].includes(String(requestedTarget))) {
+  if (!["configured", "supabase", "neon", "backup"].includes(String(requestedTarget))) {
     return json({ error: { message: "Unsupported database target" } }, 400);
   }
 
@@ -223,10 +254,19 @@ Deno.serve(async (request) => {
     if(body.kind==="status"&&body.name==="active_public_target"){
       if(requestedTarget!=="configured")return json({error:{message:"Invalid status target"}},400);
       const control=await databaseForTarget(controlTarget);
-      const row=await control.selectFrom("silver.database_targets").select("provider")
-        .where("selected","=",true).executeTakeFirst();
-      const provider=row?.provider==="neon"?"neon":row?.provider==="custom"?"custom":"supabase";
-      return json({data:{provider}});
+      const rows=await control.selectFrom("silver.database_targets")
+        .select(["target_id","provider","connection_alias","project_url","selected","backup_selected","routing_mode"])
+        .where(eb=>eb.or([eb("selected","=",true),eb("backup_selected","=",true)])).execute();
+      const primary=rows.find(row=>row.selected===true);
+      const backup=rows.find(row=>row.backup_selected===true&&row.target_id!==primary?.target_id);
+      return json({data:{
+        provider:primary?.provider||"supabase",
+        primary_id:primary?.target_id||"supabase-current",
+        primary_control:!primary||isSupabaseControlTarget(primary),
+        backup_id:backup?.target_id||null,
+        backup_provider:backup?.provider||null,
+        mode:primary?.routing_mode==="db-managed"?"db-managed":"single"
+      }});
     }
     if(body.kind==="rpc"&&body.schema==="silver"&&body.name==="save_database_target"){
       if(!body.args||typeof body.args!=="object"||Array.isArray(body.args)||Object.keys(body.args).some(key=>key!=="p_target"))
@@ -241,9 +281,29 @@ Deno.serve(async (request) => {
       const result=await selectTargetAtomically(String(targetId||""),role,claims);
       return json({data:result,count:null});
     }
+    if(body.kind==="rpc"&&body.schema==="silver"&&body.name==="set_database_routing"){
+      if(!body.args||typeof body.args!=="object"||Array.isArray(body.args)||
+         Object.keys(body.args).some(key=>key!=="p_routing"))
+        return json({error:{message:"Invalid routing settings"}},400);
+      const result=await saveDatabaseRouting((body.args as Record<string,any>).p_routing,role,claims);
+      return json({data:result,count:null});
+    }
     const managesTargets=body.kind==="query"&&body.schema==="silver"&&body.table==="database_targets";
     let target=controlTarget as Record<string,any>;
     if(requestedTarget==="neon")target={provider:"neon",engine:"postgres",connection_alias:"neon_current",connection_mode:"direct"};
+    if(requestedTarget==="backup"){
+      if(body.kind!=="query"||body.operation!=="select"||
+         body.schema!=="silver"||!neonLocReadTables.has(String(body.table||"")))
+        return json({error:{message:"Backup is read-only"}},403);
+      resolvingTarget=true;
+      const control=await databaseForTarget(controlTarget);
+      const selected=await control.selectFrom("silver.database_targets")
+        .select(["target_id","provider","engine","connection_alias","connection_mode","project_url"])
+        .where("backup_selected","=",true).executeTakeFirst();
+      if(!selected)return json({error:{message:"Backup database is not selected"}},503);
+      target=selectedDatabaseTarget([{...selected,selected:true}]);
+      resolvingTarget=false;
+    }
     if(requestedTarget==="configured"&&!managesTargets){
       resolvingTarget=true;
       const control=await databaseForTarget(controlTarget);

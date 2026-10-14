@@ -4,60 +4,16 @@ import {DB_QUERY_BATCH_SIZE} from './query-contract.mjs';
 
 
 import {dbBackupPublicClient,dbConfiguredPublicClient,dbPublicClient} from './db-client.mjs';
-import {markPrimaryReadFailed,markPrimaryReadSucceeded,setManualReadSource} from './db-source-status.mjs';
+import {markPrimaryReadFailed,markPrimaryReadSucceeded} from './db-source-status.mjs';
 
-// Resolve the selected provider once when a page becomes active, not on every
-// database query and not on a short-lived polling timer. Only non-secret status
-// travels to the client. Supabase's normal reads remain on Data API/PostgREST.
-let selectedProvider='supabase';
-let providerResolved=false;
-let providerLookup=null;
-let providerRevision=0;
-function invalidateProvider(){
-  providerRevision++;
-  providerResolved=false;
-}
-async function activePublicProvider(){
-  if(providerResolved)return selectedProvider;
-  if(!dbConfiguredPublicClient?.activeTarget){
-    providerResolved=true;
-    return selectedProvider;
-  }
-  if(!providerLookup){
-    const revision=providerRevision;
-    providerLookup=(async()=>{
-      try{
-        const result=await dbConfiguredPublicClient.activeTarget();
-        const next=String(result?.data?.provider||'supabase');
-        if(!['supabase','neon','custom'].includes(next))throw new Error('Invalid active database provider');
-        if(revision===providerRevision){
-          selectedProvider=next;
-          setManualReadSource(next==='neon'?'Neon':next==='custom'?'Standard SQL':'');
-        }
-      }catch{
-        // Keep the last known route. If primary reads fail, the existing public
-        // fallback can still use Neon without repeated control-plane queries.
-      }finally{
-        if(revision===providerRevision)providerResolved=true;
-        providerLookup=null;
-      }
-      return selectedProvider;
-    })();
-  }
-  return providerLookup;
-}
-if(typeof window!=='undefined'){
-  window.addEventListener('loc-database-target-changed',()=>{
-    invalidateProvider();
-    void activePublicProvider();
-  });
-  document.addEventListener('visibilitychange',()=>{
-    if(document.visibilityState==='visible')invalidateProvider();
-  });
-  window.addEventListener('pageshow',event=>{
-    if(event.persisted)invalidateProvider();
-  });
-}
+import {selectedDatabaseRouting} from './providers/routing-state.mjs';
+const recoverableReadError=error=>{
+  const code=String(error?.code||'');
+  const status=Number(error?.status||error?.cause?.status||0);
+  if(status===429||status>=500)return true;
+  if(code.startsWith('08')||code==='53300')return true;
+  return status===0&&(error instanceof TypeError||/network|fetch failed|timeout|connection|unavailable/i.test(String(error?.message||'')));
+};
 
 function publicRelation(client,table){
   const [schema,name]=String(table).split('.');
@@ -78,54 +34,37 @@ function resultError(result,table,source){
   return error;
 }
 export async function executePublicRead(table,buildQuery,{source='auto'}={}){
+  const routing=await selectedDatabaseRouting(dbConfiguredPublicClient);
+  const primaryClient=routing.primaryControl?dbPublicClient:dbConfiguredPublicClient;
+  if(!primaryClient)throw new Error('Selected primary database is unavailable');
   const run=async(client,label)=>{
     const result=await buildQuery(publicRelation(client,table));
     const failure=resultError(result,table,label);
     if(failure)throw failure;
     return {...result,__dataSource:label};
   };
-  if(source==='backup'){
-    if(!dbBackupPublicClient)throw new Error('Backup public-read provider is not configured');
-    return run(dbBackupPublicClient,'backup');
-  }
-  if(source==='primary'){
+  const primary=async()=>{
     try{
-      const result=await run(dbPublicClient,'primary');
+      const value=await run(primaryClient,'primary');
       markPrimaryReadSucceeded(table);
-      return result;
+      return value;
     }catch(error){
-      const failure=error instanceof Error?error:new Error(String(error||'Primary public read failed'));
-      markPrimaryReadFailed(table,failure);
-      throw failure;
+      markPrimaryReadFailed(table,error);
+      throw error;
     }
-  }
-
-  const provider=await activePublicProvider();
-  if(provider==='neon'){
-    if(!dbBackupPublicClient)throw new Error('Neon backup reader is unavailable');
+  };
+  const backup=async()=>{
+    if(!routing.backupId||!dbBackupPublicClient)throw new Error('Backup database is not selected');
     return run(dbBackupPublicClient,'backup');
-  }
-  if(provider==='custom'){
-    if(!dbConfiguredPublicClient)throw new Error('Selected SQL reader is unavailable');
-    return run(dbConfiguredPublicClient,'selected');
-  }
-
-  let primaryError=null;
-  try{
-    const result=await run(dbPublicClient,'primary');
-    markPrimaryReadSucceeded(table);
-    return result;
-  }catch(error){
-    primaryError=error instanceof Error?error:new Error(String(error||'Primary public read failed'));
-    markPrimaryReadFailed(table,primaryError);
-  }
-  if(!dbBackupPublicClient)throw primaryError;
-  try{
-    return await run(dbBackupPublicClient,'backup');
-  }catch(backupError){
-    const secondary=backupError instanceof Error?backupError:new Error(String(backupError||'Backup public read failed'));
-    const aggregate=new AggregateError([primaryError,secondary],'Public read failed on primary and backup for '+table);
-    aggregate.primaryError=primaryError;
+  };
+  if(source==='primary')return primary();
+  if(source==='backup')return backup();
+  let original;
+  try{return await primary()}catch(error){original=error}
+  if(!routing.backupId||!recoverableReadError(original))throw original;
+  try{return await backup()}catch(secondary){
+    const aggregate=new AggregateError([original,secondary],'Primary and backup read failed for '+table);
+    aggregate.primaryError=original;
     aggregate.backupError=secondary;
     throw aggregate;
   }

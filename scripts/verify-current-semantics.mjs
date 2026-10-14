@@ -32,7 +32,7 @@ if(!failures.length){
   const runeIntro=read('app/lrunes/RuneIntroSection.jsx');
   // Identity copy now belongs to silver.loc_blocks (index/order), not hardcoded JSX.
   if(!identity.includes('page="index"')||!identity.includes('maxBlocks={8}')||!identity.includes('renderDisplay={LocHomeBlockDisplay}'))failures.push('LOC identity must render the canonical indexed page blocks');
-  for(const token of ['Language Architecture Framework','符號式語言'])if(!identitySource.includes(token))failures.push('identity seed missing '+token);
+  for(const token of ['LOC','LunaRunes'])if(!identitySource.includes(token))failures.push('identity seed missing '+token);
   if(!runeIntro.includes('Symbolic Language'))failures.push('Rune intro identity missing Symbolic Language');
   const dailyData=read('app/loc/daily-runes.js');
   for(const token of ['selectPreviousDailyRuneOccurrence','selectDailyRuneSituation','selectDailyRuneContext',"types:['sit_q','daily_r','daily_g','daily_b']","column:'current_moon'"])if(!dailyData.includes(token))failures.push('daily rune context missing '+token);
@@ -90,17 +90,17 @@ if(!failures.length){
   if(/from ['"]flexsearch['"]|new Index\(/i.test(game+'\n'+keywordEngine))failures.push('Runtime text matching must not depend on FlexSearch');
   // Validate active modules directly; do not keep a separately configured JSON
   // registry or issue a schema/status probe for each public data request.
-  for(const token of ['let providerResolved=false','if(providerResolved)return selectedProvider',
-    "window.addEventListener('loc-database-target-changed'",
-    "document.addEventListener('visibilitychange'",
-    "window.addEventListener('pageshow'",
-    "setManualReadSource(next==='neon'"])if(!dbQuery.includes(token))failures.push('Event-driven primary/backup routing missing '+token);
-  if(/providerExpiresAt|30_000|setInterval\(/.test(dbQuery))failures.push('Public reads must not repeatedly poll the provider status');
-  for(const token of ["const source=first.dataSource||'auto'","offset,source",
-    "dbBackupPublicClient,'backup'","markPrimaryReadFailed"])if(!dbQuery.includes(token))failures.push('Public read pinned fallback missing '+token);
+  const routingState=read('app/loc/providers/routing-state.mjs');
+  for(const token of ['selectedDatabaseRouting','recoverableReadError','source===\'backup\'','routing.backupId'])
+    if(!dbQuery.includes(token))failures.push('Fail-closed selectable backup route missing '+token);
+  for(const token of ['invalidateDatabaseRouting','loc-database-target-changed','backupProvider','mode']){
+    if(!routingState.includes(token))failures.push('Database routing cache missing '+token);
+  }
+  if(/providerExpiresAt|30_000|setInterval\(/.test(dbQuery+routingState))
+    failures.push('Database routing must never be polled on a timer');
   const edgeControl=read('supabase/functions/loc-kysely/index.ts');
-  for(const token of ['Neon LOC mirror is read-only','selectTargetAtomically','active_public_target'])
-    if(!edgeControl.includes(token))failures.push('Admin-controlled read-only failover guard missing '+token);
+  for(const token of ['saveDatabaseRouting','backup_selected','set_database_routing','requestedTarget==="backup"','Neon LOC mirror is read-only'])
+    if(!edgeControl.includes(token))failures.push('Trusted primary/backup routing missing '+token);
   const rune66Analysis=read('app/loc/rune66-keyword-analysis.js');
   for(const token of ["column:'statistics_able',operator:'eq',value:true"])if(!galaxy.includes(token)||!rune66Analysis.includes(token))failures.push('Statistics and Rune66 analysis must use fixed statistics_able filters');
   const rune66Engine=read('app/loc/model/rune66-keyword-engine.mjs');

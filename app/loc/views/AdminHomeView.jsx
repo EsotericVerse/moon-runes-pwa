@@ -709,6 +709,9 @@ function DatabaseTarget(){
   const [username,setUsername]=useState('');
   const [password,setPassword]=useState('');
   const [database,setDatabase]=useState('');
+  const [primaryId,setPrimaryId]=useState('');
+  const [backupId,setBackupId]=useState('');
+  const [routingMode,setRoutingMode]=useState('single');
   useEffect(()=>{
     let active=true;
     (async()=>{
@@ -718,6 +721,9 @@ function DatabaseTarget(){
       if(!active)return;
       if(error){setStatus(error.message||'資料庫目標讀取失敗。');return;}
       const next=data||[];setRows(next);
+      setPrimaryId(next.find(item=>item.selected)?.target_id||'');
+      setBackupId(next.find(item=>item.backup_selected)?.target_id||'');
+      setRoutingMode(next.find(item=>item.selected)?.routing_mode==='db-managed'?'db-managed':'single');
       setSelectedId(current=>next.some(item=>item.target_id===current)?current:(next.find(item=>item.selected)?.target_id||next[0]?.target_id||''));
     })();
     return()=>{active=false};
@@ -734,11 +740,27 @@ function DatabaseTarget(){
     pick(id);
   };
   async function remove(){
-    if(!row||row.selected){setStatus('無法刪除正在使用的資料庫。');return;}
+    if(!row||row.selected||row.backup_selected){setStatus('無法刪除正在使用的資料庫。');return;}
     if(row._new){const next=rows.filter(item=>item.target_id!==row.target_id);setRows(next);pick(next[0]?.target_id||'');return;}
     const result=await dbAuthRelation('silver.database_targets').delete().eq('target_id',row.target_id);
     if(result.error){setStatus(result.error.message||'刪除資料庫目標失敗。');return;}
     setStatus('已刪除資料庫目標。');setRevision(v=>v+1);
+  }
+  async function saveRouting(){
+    if(saving||!primaryId||backupId===primaryId){setStatus('主要與次要資料庫不可相同。');return}
+    if(rows.some(item=>(item.target_id===primaryId||item.target_id===backupId)&&item._new)){
+      setStatus('請先儲存新增的資料庫。');return;
+    }
+    setSaving(true);
+    try{
+      const {error}=await dbAuthClient.schema('silver').rpc('set_database_routing',{
+        p_routing:{primary_id:primaryId,backup_id:backupId||null,mode:routingMode}
+      });
+      if(error)throw new Error(error.message||'資料庫路由設定失敗');
+      window.dispatchEvent(new Event('loc-database-target-changed'));
+      window.location.reload();
+    }catch(error){setStatus(error?.message||'資料庫路由設定失敗')}
+    finally{setSaving(false)}
   }
   async function save({switchTarget=false}={}){
     if(!row||saving)return;
@@ -774,6 +796,19 @@ function DatabaseTarget(){
     finally{setSaving(false);}
   }
   return <section className="loc-card admin-workspace">
+    <div className="scope-management-fields">
+      <label><span>主要資料庫</span><select className="admin-native-select" value={primaryId} onChange={event=>setPrimaryId(event.target.value)}>
+        {rows.filter(item=>!item._new).map(item=><option key={item.target_id} value={item.target_id}>{item.label}</option>)}
+      </select></label>
+      <label><span>次要資料庫</span><select className="admin-native-select" value={backupId} onChange={event=>setBackupId(event.target.value)}>
+        <option value="">不使用</option>
+        {rows.filter(item=>!item._new&&item.target_id!==primaryId).map(item=><option key={item.target_id} value={item.target_id}>{item.label}</option>)}
+      </select></label>
+      <label><span>運作模式</span><select className="admin-native-select" value={routingMode} onChange={event=>setRoutingMode(event.target.value)}>
+        <option value="single">單庫</option><option value="db-managed">資料庫端同步</option>
+      </select></label>
+      <div className="scope-management-wide-field"><button type="button" className="loc-button primary" onClick={saveRouting} disabled={saving||!primaryId}>{saving?'處理中…':'套用'}</button></div>
+    </div>
     <div className="admin-inline-select">
       <label><span>已儲存的資料庫</span><select className="admin-native-select" value={selectedId} onChange={event=>pick(event.target.value)}>
         {rows.map(item=><option key={item.target_id} value={item.target_id}>{item.label} {item.selected?'· 使用中':''}</option>)}
@@ -802,8 +837,6 @@ function DatabaseTarget(){
         {!row.selected&&!isManaged?<button type="button" className="loc-button" onClick={remove} disabled={saving}>刪除</button>:null}
       </div>
     </div>:null}
-    <p className="scope-status">Type 選擇 SQL Driver，服務商決定 Link 格式。Region / Area 可為任何服務商記錄所在區域；新建 Supabase Pooler 連線時必須填寫 Region。儲存設定不切換資料庫；只有明確按下「切換至此資料庫」才會切換。已儲存的帳密可留空沿用；新連線需填 Database／User／Password。密碼保存在伺服器端，不會顯示在此頁。</p>
-    {row?.provider==='neon'?<p className="scope-status">Neon 請填資料庫端點或 Data API URL；只有 Project ID 無法推算 PostgreSQL 連線端點。手動切換至 Neon 時僅提供公開讀取，管理寫入仍依賴 Supabase。</p>:null}
     {status?<p className="scope-status" role="status">{status}</p>:null}
   </section>;
 }
