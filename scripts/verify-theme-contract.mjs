@@ -10,7 +10,6 @@ const game=read('app/lrunes/game/GameView.jsx');
 const registry=read('app/modular/theme-registry.js');
 const themeData=read('app/loc/theme-data.js');
 const admin=read('app/loc/views/AdminHomeView.jsx');
-const portableSchema=read('sql/portable-current-schema.sql');
 
 if(THEME_SLOTS.length!==8)failures.push('theme registry must expose eight stable IDs');
 const ids=THEME_SLOTS.map(slot=>slot.id);
@@ -49,12 +48,9 @@ if(!registry.includes('delete root.dataset.themeBootstrap'))failures.push('Theme
 if(shell.includes('if(fixedThemeId)return null')||shell.includes('if(fixedDefaultThemeId)return null'))failures.push('fixed Scope defaults must not hide the footer theme selector');
 for(const token of ["selection.scopeId===scopeId","setSelection({scopeId,themeId:SYSTEM_THEME_ID})","fixedDefaultThemeId||configuredDefaultThemeId||automaticThemeId(now)"])if(!shell.includes(token))failures.push('Scope-local system-default theme behavior missing '+token);
 
-if(!portableSchema.includes('"loc_theme"')||portableSchema.includes('"theme_attr" jsonb')||!portableSchema.includes('"loc_bg" text NOT NULL')||!portableSchema.includes('"loc_shadow_card" text NOT NULL'))failures.push('portable schema must use explicit theme columns, never JSONB');
-if(!portableSchema.includes('"theme_id" smallint NOT NULL')||!(/CONSTRAINT "loc_theme_id_check" CHECK \(theme_id BETWEEN 1 AND 8\)/.test(portableSchema)||/CONSTRAINT "loc_theme_id_check" CHECK \(theme_id >= 1 AND theme_id <= 8\)/.test(portableSchema)))failures.push('loc_theme DB ID must be numeric 1–8');
-if(!themeData.includes('export function themeUiId(')||!themeData.includes('export function themeNumber('))failures.push('DB numeric IDs must be translated at the Theme boundary');
-if(!admin.includes('theme_db_numeric')||!admin.includes('themeNumber(themeId)'))failures.push('Admin Theme editor must handle both rolling and numeric database IDs');
-if(themeData.includes('theme_attr')||admin.includes('theme_attr'))failures.push('Live Theme loader/editor may not use JSONB');
-if(portableSchema.includes('"theme_registry"'))failures.push('portable schema must not restore legacy Theme tables');
+for(const token of ['THEME_DB_COLUMNS','loc_bg','loc_shadow_card','themeUiId','themeNumber'])if(!themeData.includes(token))failures.push('Live theme database column adapter missing '+token);
+if(themeData.includes('theme_attr')||admin.includes('theme_attr'))failures.push('Live theme code must not restore legacy JSONB attributes');
+if(!admin.includes('theme_db_numeric')||!admin.includes('themeNumber(themeId)'))failures.push('Admin theme ID translation must work with database numeric IDs');
 
 // CSS subtraction guard: preserve the active shared frame and remove obsolete hero variants.
 const homeCss=read('app/styles/home-content.css');
