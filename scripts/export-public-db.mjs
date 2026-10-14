@@ -12,18 +12,22 @@ const {data:scopeRows,error:scopeError}=await client.schema('silver').from('mana
   .select('id,galaxy,time').order('id');
 if(scopeError)throw new Error('Scope registry read failed: '+scopeError.message);
 if(!Array.isArray(scopeRows))throw new Error('Scope registry missing');
-const tables=new Set(['game','lrunes_daily','runes','runes_etc','runes_group']);
+const catalogTables=new Set(inventory.relations.filter(row=>row.schema_name==='silver'&&row.relkind==='r').map(row=>row.relname));
+const tables=new Set(['manage','game','lrunes_daily','runes','runes_etc','runes_group','keyword_classes','loc_theme','loc_blocks','scope_registry','scope_group_source_sharing','scope_other_sources','scope_source_subcategories','statistics_source_aliases','statistics_source_categories'].filter(table=>catalogTables.has(table)));
 for(const row of scopeRows){
   const id=String(row.id||'');
   const galaxy=String(row.galaxy||'galaxy');
   const time=String(row.time||'time');
   if(!/^[a-z][a-z0-9]{0,14}$/.test(id))throw new Error('Invalid Scope ID in live registry');
   for(const name of [galaxy,time])if(!/^[a-z][a-z0-9_]*$/.test(name))throw new Error('Invalid Scope table mapping');
-  for(const name of [id,`${id}_${galaxy}`,`${id}_${galaxy}_media`,`${id}_${time}`,`${id}_keywords`])tables.add(name);
+  if(!catalogTables.has(id))throw new Error('Scope config table missing from catalog: '+id);
+  for(const name of [id,`${id}_${galaxy}`,`${id}_${galaxy}_media`,`${id}_${time}`,`${id}_keywords`,`${id}_blocks`])if(catalogTables.has(name))tables.add(name);
 }
 const retired=new Set(['reply_to','in_reply_to_username','reference_only']);
 fs.mkdirSync(outputDirectory,{recursive:true,mode:0o700});
 const manifest=[];
+const partialFile=path.join(outputDirectory,'manifest.partial.json');
+fs.rmSync(path.join(outputDirectory,'manifest.json'),{force:true});
 for(const table of [...tables].sort()){
   const columns=inventory.columns.filter(row=>row.schema_name==='silver'&&row.relname===table&&!retired.has(row.attname)).sort((a,b)=>a.attnum-b.attnum).map(row=>row.attname);
   if(!columns.length)throw new Error('Current catalog has no columns for '+table);
@@ -46,7 +50,11 @@ for(const table of [...tables].sort()){
   if(rows.length!==expected)throw new Error(table+' export count mismatch');
   const snapshot=JSON.stringify(rows);
   fs.writeFileSync(path.join(outputDirectory,table+'.json'),snapshot,{mode:0o600});
-  manifest.push({table:'silver.'+table,columns,primaryKey:order,rows:rows.length,sha256:createHash('sha256').update(snapshot).digest('hex'),exportedAt:new Date().toISOString()});
-  fs.writeFileSync(path.join(outputDirectory,'manifest.json'),JSON.stringify(manifest,null,2),{mode:0o600});
+  const related=inventory.constraints.filter(x=>x.schema_name==='silver'&&x.relname===table&&x.contype==='f')
+    .map(x=>x.definition.match(/REFERENCES\\s+(?:\\\"?silver\\\"?\\.)?\\\"?([a-z][a-z0-9_]*)\\\"?/i)?.[1])
+    .filter(name=>name&&name!==table&&tables.has(name));
+  manifest.push({table:'silver.'+table,columns,primaryKey:order,dependsOn:[...new Set(related)].map(name=>'silver.'+name),rows:rows.length,sha256:createHash('sha256').update(snapshot).digest('hex'),exportedAt:new Date().toISOString()});
+  fs.writeFileSync(partialFile,JSON.stringify(manifest,null,2),{mode:0o600});
 }
+fs.renameSync(partialFile,path.join(outputDirectory,'manifest.json'));
 console.log('Public canonical export complete. This Data API export is not a transactionally consistent pg_dump snapshot. Private canonical records need an owner export.');
