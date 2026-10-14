@@ -11,14 +11,16 @@ const DEFAULT_STATE=Object.freeze({
 let labels={primaryLabel:DEFAULT_STATE.primaryLabel,backupLabel:DEFAULT_STATE.backupLabel};
 const failures=new Map();
 const listeners=new Set();
+let manualReadLabel='';
 
 function snapshot(){
   const failingResources=[...failures.keys()].sort();
   const first=[...failures.values()][0]||null;
   return Object.freeze({
     ...labels,
-    activeSource:failingResources.length?'backup':'primary',
-    degraded:Boolean(failingResources.length),
+    backupLabel:manualReadLabel||labels.backupLabel,
+    activeSource:manualReadLabel||failingResources.length?'backup':'primary',
+    degraded:Boolean(manualReadLabel||failingResources.length),
     failingResources,
     primaryError:first?.message||'',
     fallbackSince:first?.since||null
@@ -37,6 +39,13 @@ export function configureDbSourceLabels(primaryLabel='Supabase',backupLabel='Neo
   };
   emit();
 }
+export function setManualReadSource(label=''){
+  const next=String(label||'').trim();
+  if(manualReadLabel===next)return;
+  manualReadLabel=next;
+  emit();
+}
+
 export function markPrimaryReadFailed(resource,error){
   const key=String(resource||'public-read');
   const existing=failures.get(key);
