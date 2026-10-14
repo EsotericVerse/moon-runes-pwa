@@ -96,6 +96,12 @@ assert.equal(apiCalls.length,1,'only the Admin connection configuration RPC trav
 assert.equal(apiCalls[0].url,'https://loc.example.test/functions/v1/loc-kysely');
 assert.equal(apiCalls[0].init.headers.authorization,'Bearer user.jwt.token');
 assert.equal(JSON.parse(apiCalls[0].init.body).name,'save_database_target');
+await adapter.configuredPublicClient.activeTarget();
+assert.equal(apiCalls.length,2,'One explicit lightweight provider check follows the Admin RPC');
+assert.equal(JSON.parse(apiCalls[1].init.body).kind,'status');
+assert.equal(JSON.parse(apiCalls[1].init.body).name,'active_public_target');
+assert.equal(JSON.parse(apiCalls[1].init.body).target,'configured');
+assert.equal('authorization' in apiCalls[1].init.headers,false,'Provider flag must be readable without borrowing Admin credentials');
 assert.equal(selectedDatabaseProvider([{provider:'neon',selected:true},{provider:'supabase',selected:false}]),'neon');
 assert.equal(selectedDatabaseProvider([{provider:'neon',selected:false},{provider:'supabase',selected:true}]),'supabase');
 assert.throws(()=>selectedDatabaseProvider([{provider:'neon',selected:true},{provider:'supabase',selected:true}]),/More than one/);
