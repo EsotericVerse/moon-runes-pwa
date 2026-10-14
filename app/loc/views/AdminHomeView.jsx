@@ -765,7 +765,10 @@ function DatabaseTarget(){
       if(error)throw new Error(error.message||'資料庫儲存或切換失敗。');
       setPassword('');setUsername('');setDatabase('');
       setStatus(switchTarget?(row.provider==='neon'?'已切換至 Neon 唯讀備援，寫入仍由 Supabase 控制。':'已切換至所選資料庫。'):(row.selected?'目前使用中的資料庫設定已儲存。':'備用資料庫設定已儲存，主要資料庫維持不變。'));
-      if(switchTarget)window.dispatchEvent(new Event('loc-database-target-changed'));
+      if(switchTarget){
+        window.dispatchEvent(new Event('loc-database-target-changed'));
+        window.location.reload(); // Prevent mixed cached rows after a global source switch.
+      }
       setRevision(v=>v+1);
     }catch(error){setStatus(error?.message||'儲存失敗，原目標維持不變。');}
     finally{setSaving(false);}
