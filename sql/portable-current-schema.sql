@@ -104,6 +104,7 @@ CREATE TABLE "silver"."database_targets" (
   "engine" text DEFAULT 'postgres'::text NOT NULL,
   "connection_alias" text,
   "connection_mode" text DEFAULT 'direct'::text NOT NULL,
+  "region" text DEFAULT ''::text NOT NULL,
   CONSTRAINT "database_targets_pkey" PRIMARY KEY (target_id),
   CONSTRAINT "database_targets_provider_check" CHECK (provider = ANY (ARRAY['supabase'::text, 'neon'::text, 'custom'::text])),
   CONSTRAINT "database_targets_engine_check" CHECK (engine = ANY (ARRAY['postgres'::text, 'mysql'::text, 'mssql'::text, 'sqlite'::text])),

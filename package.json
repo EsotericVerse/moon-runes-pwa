@@ -44,7 +44,7 @@
     "verify:sql-runtime": "node scripts/verify-sql-runtime.mjs",
     "verify:sql-import": "node scripts/verify-sql-import.mjs",
     "verify:portable-schema": "node scripts/verify-portable-schema.mjs",
-    "verify:database-targets": "node scripts/test-database-targets.mjs"
+    "verify:database-targets": "node scripts/test-database-targets.mjs && node scripts/test-database-link.mjs"
   },
   "dependencies": {
     "@streamparser/json": "0.0.26",
