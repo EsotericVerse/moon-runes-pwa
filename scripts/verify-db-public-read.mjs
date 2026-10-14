@@ -121,7 +121,8 @@ for(const scope of scopes)await verifyManagedScope(client,scope);
 
 // CI-only policy behavior check: nonsearchable private Galaxy records must
 // never be visible to the anonymous Data API client. No live-page schema audit.
-for(const table of ['lo3rwang_galaxy','lrunes_galaxy']){
+for(const scope of scopes){
+  const table=scope.galaxy;
   const {count,error}=await client.schema('silver').from(table)
     .select('uid',{count:'exact',head:true}).eq('searchable',false);
   if(error)throw new Error('Anonymous Galaxy policy check '+table+': '+error.message);
