@@ -29,6 +29,7 @@ assert.match(edge,/resolveSqlExecutionPort/,'Kysely runtime selects the central 
 assert.match(drivers,/MysqlDialect/);assert.match(drivers,/MssqlDialect/);
 assert.match(adminUi,/Link \/ Project/,'Cloud provider selection must expose the location Link');
 assert.match(adminUi,/DB Host:Port/,'Ordinary SQL target must expose Host and Port');
+assert.match(adminUi,/disabled=\{option\.value==='sqlite'\}/,'Remote database selector must not offer unsupported SQLite gateway as a live target');
 assert.match(adminUi,/type="password"/,'Database password field must be masked');
 assert.match(adminUi,/save_database_target/,'The Admin form must save through the trusted SQL endpoint');
 assert.match(adminUi,/activate:row\.selected===true/,'Saving a backup target must not activate or replace the primary database');
