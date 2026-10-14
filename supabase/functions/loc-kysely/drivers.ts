@@ -35,10 +35,10 @@ export function resolveConnectionProfile(input:Record<string,unknown>):Connectio
   };
   return {engine:"postgres",url:candidates.find(pooler)||candidates[0],tls:true};
 }
-export async function databaseForTarget(input:Record<string,unknown>){
+export async function databaseForTarget(input:Record<string,unknown>,options:{profileLookup?:(target:Record<string,unknown>)=>Promise<ConnectionProfile>}={}){
   const target=normalizeDatabaseTarget(input);
-  const profile=resolveConnectionProfile(target);
-  const key=target.connection_alias+":"+target.engine;
+  const profile=options.profileLookup?await options.profileLookup(target):resolveConnectionProfile(target);
+  const key=target.connection_alias+":"+target.engine+":"+profile.url;
   const cached=instances.get(key);
   if(cached)return cached;
   const uri=new URL(profile.url);
