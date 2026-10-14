@@ -12,8 +12,7 @@ const files={
   css:read('app/globals.css'),
   extraCss:read('app/styles/extra.css'),
   extra:read('app/loc/hero-extra.mjs'),
-  identity:read('app/loc/HeroCornerIdentity.jsx'),
-  extraSql:read('sql/scope-extra-sign.sql')
+  identity:read('app/loc/HeroCornerIdentity.jsx')
 };
 const checks=[
   ['Static Scope identity excludes duplicate Domain/Directory declarations',
@@ -70,12 +69,11 @@ const checks=[
     files.extraCss.includes('.home-hero-identity--codex::after')&&
     files.extra.includes("label:'LOC 圓環中心實心點標誌',text:''")&&
     !read('app/styles/uiux.css').includes('.home-hero-identity--codex')],
-  ['Sign assignment is one-time, unique and derived from verified Registry owner',
-    files.extraSql.includes('scope_registry_extra_sign_unique')&&
-    files.extraSql.includes('before insert on silver.scope_registry')&&
-    files.extraSql.includes("where id='lo3rwang' and role='admin'")&&
-    files.extraSql.includes("lower(btrim(m.email))=v_owner_email")&&
-    files.extraSql.includes("new.extra_sign := silver.registered_scope_extra_sign")],
+  ['Extra Sign reads registered Scope data, never an untrusted account claim',
+    files.scopeData.includes("columns:'scope_id,display_name,scope_kind,extra_sign")&&
+    files.identity.includes('registryRow?.extra_sign')&&
+    !files.identity.includes('useAccount')&&
+    !files.identity.includes('account.email')],
   ['Domain creation rejects repeated DNS labels immediately',
     files.registry.includes('duplicateDomainLabelError')&&
     files.admin.includes('disabled={Boolean(scopeDomainError)||creatingScope}')&&
