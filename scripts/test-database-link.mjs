@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {DATABASE_PROVIDER_CHOICES,databaseProviderChoices,normalizeDatabaseLocation} from '../app/loc/providers/database-link.mjs';
+assert.deepEqual(databaseProviderChoices('mysql').map(x=>x.value),['custom']);
+assert.deepEqual(databaseProviderChoices('postgres').map(x=>x.value),['supabase','neon','custom']);
+assert.equal(normalizeDatabaseLocation('supabase','qlouywsdiiyiyzpoxyqy').link,'https://qlouywsdiiyiyzpoxyqy.supabase.co');
+assert.equal(normalizeDatabaseLocation('neon','https://ep-rapid-queen-b3oyboy6.apirest.c-4.ap-southeast-1.aws.neon.tech/neondb/rest/v1').host,'ep-rapid-queen-b3oyboy6.c-4.ap-southeast-1.aws.neon.tech');
+assert.equal(normalizeDatabaseLocation('custom','db.example.com:3306').port,3306);
+assert.throws(()=>normalizeDatabaseLocation('neon','restless-sky-20803706'),/endpoint/);
+assert.throws(()=>normalizeDatabaseLocation('custom','localhost:99999'),/port/);
+assert.equal(DATABASE_PROVIDER_CHOICES.length,3);
+console.log('[database-link] SQL type/provider/location presets verified');
