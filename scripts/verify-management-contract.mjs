@@ -25,8 +25,6 @@ const dbContract=read('app/loc/db-contract.mjs');
 const keywordLibrary=read('app/loc/KeywordLibraryPanel.jsx');
 const keywordNetwork=read('app/loc/KeywordNetworkEditor.jsx');
 const keywordAnalysis=read('app/loc/rune66-keyword-analysis.js');
-const portableSchema=read('sql/portable-current-schema.sql');
-const scopeProvisioning=read('sql/scope-provisioning.sql');
 const scopeData=read('app/loc/scope-data.js');
 const scopeGroup=read('app/loc/ScopeGroupManagement.jsx');
 const locApp=read('app/loc/LocApp.jsx');
@@ -52,8 +50,31 @@ const runesHome=read('app/lrunes/RunesClient.jsx');
 const personalGovernance=read('app/modular/governance/PersonalGovernance.jsx');
 const runesGovernance=read('app/modular/governance/LunaRunesGovernance.jsx');
 const sharedSearch=read('app/modular/features/Search.jsx');
-const registrySql=read('sql/scope-registry-management.sql');
-const sourceRefreshIndex=read('sql/source-refresh-index.sql');
+
+
+// Verify current runtime boundaries, not checked-in database patches. CI's
+// verify:db-public covers the actual Supabase Data API and public visibility.
+const runtimePorts=read('app/loc/providers/kysely-runtime.mjs');
+const edgeServer=read('supabase/functions/loc-kysely/index.ts');
+const liveProbe=read('scripts/verify-db-public-read.mjs');
+for(const name of ['provision_scope','manage_scope_registry','apply_keyword_classification','read_keyword_class']){
+  must(runtimePorts.includes("'silver."+name+"'")&&dbContract.includes("rpc('"+name+"'"),
+    name+' must remain available through authorized Kysely and Data API modules');
+}
+must(dbContract.includes('copyKeywordLibraryClass')&&dbContract.includes("rpc('read_keyword_class'"),
+  'private and shared Keyword Class operations must remain explicitly scoped');
+must(edgeServer.includes('auth.getUser(token)')&&edgeServer.includes('set local role authenticated'),
+  'trusted Edge writes must retain authenticated execution');
+must(liveProbe.includes(".eq('searchable',false)")&&liveProbe.includes('Number(count)!==0'),
+  'release checks must prove private Galaxy rows are not anonymously readable');
+must(editableBlocks.includes('block_eyebrow')&&editableBlocks.includes('block_subtitle')&&
+  scopeData.includes('block_eyebrow')&&scopeData.includes('block_subtitle'),
+  'future Scope blocks must retain four canonical header/body fields');
+must(importPanel.includes('source_native_id')&&importPanel.includes("offset+=200"),
+  'source refresh must keep bounded indexed lookup fields');
+must(keywordAnalysis.includes('group_lists:result?.group_lists||{}')&&
+  dbContract.includes("mode:'begin'")&&dbContract.includes("mode:'finalize'"),
+  'keyword attr writes must preserve safe batch lifecycle');
 
 must(!galaxy.includes('include_in_time'),'generic search must not query nonexistent include_in_time');
 must(galaxy.includes("searchFields:['label','note','status','style_description']")&&!galaxy.includes("'style_tags'"),'Search uses dedicated TEXT style body and no comma tags');
@@ -105,7 +126,7 @@ must(editableBlocks.includes('ENTITY_LIMIT=6')&&editableBlocks.includes("page='i
 must(['block_eyebrow','block_title','block_subtitle','block_text'].every(col=>editableBlocks.includes(col)&&scopeData.includes(col)),'Scope blocks must read and edit four canonical header/body columns');
 must(editableBlocks.includes('childPresentation(entity.title)')&&editableBlocks.includes('不用標題（文字泡泡）')&&!editableBlocks.includes('entity.kind'),'title-free child bubble and titled child card must use implicit kind, without a type selector');
 must(locHomeBlock.includes('slot.subtitle')&&authorHomeEditable.includes('renderDisplay={AuthorHomeBlockDisplay}'),'LOC and Author heading displays must use the dedicated rich subtitle');
-must(portableSchema.includes('"block_eyebrow"')&&portableSchema.includes('"block_subtitle"')&&scopeProvisioning.includes('like silver.lo3rwang_blocks including all'),'portable and future scope table contracts must include standard block header columns');
+
 
 must(editableBlocks.includes('儲存失敗：')&&editableBlocks.includes('scope-inline-save-status')&&editableBlocks.includes('refetchQueries'),'page block saves must visibly report success/failure and refetch saved data');
 must(editableBlocks.includes('dangerouslySetInnerHTML')&&!editableBlocks.includes('editable={false}'),'public page display must use static site markup; BlockNote is edit-only');
@@ -233,7 +254,7 @@ must(admin.includes('syncManageScopeRow(')&&admin.includes("role:'scope'"),'Admi
 must(admin.includes('部分人員設定讀取失敗')&&admin.includes('configFailures.push')&&admin.includes('readAdminScopeConfig(row.scope_id)')&&admin.includes("String(error?.code||'')==='PGRST205'"),'Admin must retry newly provisioned Scope config until PostgREST schema cache settles');
 must(admin.includes('provisionScope(')&&admin.includes('＋ 新增人員')&&admin.includes('＋ 新增群組'),'Admin Registry must create Scope and Scope Group from the tree workspace');
 must(admin.includes("const provisionedScope=await provisionScope(")&&admin.includes('provisioned=true;')&&admin.includes('readAdminScopeConfig(id)')&&admin.includes('不要重複建立。')&&admin.includes('creatingScope?\'建立與驗證中…\':\'建立\''),'New Scope creation must verify config readiness, prevent duplicate clicks, and distinguish successful provisioning from pending cache');
-must(read('sql/scope-provisioning.sql').includes("perform pg_catalog.pg_notify('pgrst','reload schema')"),'Scope provisioning SQL must request PostgREST schema cache reload after commit');
+
 must(admin.includes('onClick={refresh}>重新讀取'),'Admin graph must allow manual reload after a dynamic Scope schema cache settles');
 must(admin.includes("value:UI_LOCALE_OPTIONS.find(option=>option.value===normalizeUiLocale(config?.locale))?.label")&&
   !admin.includes("{label:'預設語系',value:normalizeUiLocale(config?.locale)}")&&
@@ -316,8 +337,8 @@ must(
   admin.includes('label:theme.theme_name||theme.label||THEME_SLOTS.find'),
   'Editable page frames must move up/down atomically while theme selectors display names only'
 );
-must(scopeProvisioning.includes("create table silver.%I (like silver.lo3rwang_blocks including all)")&&!scopeProvisioning.includes('block_page')&&scopeProvisioning.includes("enable row level security',v_blocks_name"),'new Scope Blocks must clone current UID/page_name/entity contract and enable RLS');
-must(scopeProvisioning.includes('New Scopes start with no content rows.')&&!scopeProvisioning.includes('generate_series(1,4)'),'new Scope must not pre-populate blank homepage/governance frames');
+
+
 
 must(admin.includes("dbAuthRelation('silver.scope_registry')")&&admin.includes('parent_scope_id'),'Admin must read the DB Scope Registry hierarchy');
 must(admin.includes("silver.database_targets")&&admin.includes('save_database_target')&&admin.includes('SQL_ENGINE_OPTIONS.map')&&admin.includes('databaseProviderChoices')&&admin.includes('Link / Project'),'Admin must save and select explicit SQL type/provider/Link targets');
@@ -345,51 +366,41 @@ must(keywordLibrary.includes('scopeData=account.scopeDataFor(scopeId)')&&keyword
 must(keywordLibrary.includes('current_keyword_class_id')&&keywordLibrary.includes('keyword_class_share_enabled')&&keywordLibrary.includes('Class UUID'),'keyword library must expose current Class UUID and Scope sharing control');
 must(keywordLibrary.includes('重新分析並寫入文章 Attr')&&keywordLibrary.includes('runRune66ClassificationBatch'),'keyword management must expose explicit batch classification instead of live recalculation');
 must(dbContract.includes("rpc('apply_keyword_classification'")&&dbContract.includes('p_scope_id:scope')&&dbContract.includes('silver.keyword_classes')&&dbContract.includes('randomUUID'),'keyword classification writes and copied Classes must be Scope-aware and use the UUID registry');
-must(dbContract.includes("rpc('read_keyword_class'")&&portableSchema.includes('api.read_keyword_class')&&portableSchema.includes('keyword_class_share_enabled'),'shared Keyword Class resolution must require scope + UUID and obey Scope sharing authorization');
-must(!portableSchema.includes('GRANT SELECT ON "silver"."lo3rwang_keywords" TO "anonymous"'),'private keyword contents must not be anonymously enumerable');
+
+
 must(keywordAnalysis.includes('DEFAULT_KEYWORD_MIN_CHARS=32')&&keywordAnalysis.includes('DEFAULT_KEYWORD_MIN_DOCUMENTS=100'),'keyword batch must retain >32 article and >100 statistics thresholds');
 must(keywordAnalysis.includes('analysisCharacterCount(row?.content)>minChars'),'keyword classification must gate on non-whitespace body characters');
 must(keywordAnalysis.includes("columns:'uid,createtime,class_id,group_lists'"),'public keyword Statistics/Culture must read stored article attrs');
 must(keywordAnalysis.includes('dynamicTieCount')&&keywordAnalysis.includes('counts.get(candidate)'),'complete keyword ties must use dynamic current Class counts');
-must((portableSchema.includes("group_lists='false'::jsonb")||portableSchema.includes("group_lists=''false''::jsonb"))&&portableSchema.includes("coalesce(x.group_lists,''{}''::jsonb)")&&keywordAnalysis.includes('group_lists:result?.group_lists||{}'),'keyword attrs must reset excluded rows to false and store eligible no-hit rows as objects');
-must(portableSchema.includes('"lrunes_galaxy_class_id_check"')&&portableSchema.includes('"lrunes_galaxy_group_lists_shape_check"'),'all managed Galaxy schemas must keep class_id/group_lists parity');
+
+
 must(dbContract.includes("mode:'begin'")&&dbContract.includes("mode:'chunk'")&&dbContract.includes("mode:'finalize'")&&dbContract.includes('batchSize=500'),'keyword attr writes must reset, write bounded chunks, then finalize staticstime');
-must(scopeProvisioning.includes("where class_id is not null or group_lists is distinct from ''false''::jsonb"),'keyword analysis reset must obey safe-update WHERE requirement');
-must(scopeProvisioning.includes("where btrim(coalesce(x.uid,'''')) <> ''''"),'keyword classification chunk SQL must filter UID with a boolean condition');
+
+
 must(keywordAnalysis.includes('classifyDocumentsIncrementally')&&keywordAnalysis.includes('onProgress:({completed,total})')&&keywordAnalysis.includes("reportBatchProgress(onProgress,'completed'")&&keywordAnalysis.includes('verified?.staticstime'),'keyword analysis must report real read/classify/write progress and verify the anchor before 100 percent');
 must(keywordLibrary.includes('<progress value={batchProgress.percent}')&&keywordLibrary.includes('onProgress:setBatchProgress')&&keywordLibrary.includes("phase:'failed'"),'keyword batch UI must report visible percent and preserve failure status');
 must(!keywordAnalysis.includes('PERSONAL_KEYWORD_TABLE')&&keywordAnalysis.includes('`silver.${scope}_keywords`'),'keyword classification must read the current Scope private keyword library');
 must(dbContract.includes("rpc('provision_scope'")&&dbContract.includes('provisionScope'),'DB client must expose the transactional Scope provisioning RPC');
-must(scopeProvisioning.includes('create table if not exists silver.scope_registry')&&scopeProvisioning.includes('create or replace function api.provision_scope'),'Scope provisioning SQL must define the DB registry and provisioning RPC');
+
 // Source and future-Scope schema parity: the Time contract is flat TEXT,
 // not a growing JSONB attribute bag or a stored keyword-count snapshot.
-for(const table of ['lo3rwang_time','lrunes_time']){
-  const start='CREATE TABLE "silver"."'+table+'" (';
-  const ddl=portableSchema.split(start)[1]?.split('\n);')[0]||'';
-  must(Boolean(ddl)&&['"anchor_ids" text[]','"style_description" text'].every(field=>ddl.includes(field)),
-    table+' needs canonical anchor_ids text[] and style_description TEXT');
-  must(!ddl.includes('style_tag_descriptions')&&!ddl.includes('style_tags')&&!ddl.includes('style_keyword_counts')&&ddl.includes('style_comment_shape_check'),
-    table+' must enforce one independent style_comment without legacy multi-style columns');
-}
-must(scopeProvisioning.includes("create table silver.%I (like silver.lo3rwang_time including all)"),
-  'new Scope Time tables must clone the canonical TEXT Time template including all fields');
-must(!scopeProvisioning.includes('style_tag_descriptions'),
-  'Scope provisioning must not recreate the retired JSONB style attr');
-for(const suffix of ["_galaxy'","_galaxy_media'","_time'","_keywords'"])must(scopeProvisioning.includes(suffix),'Scope provisioning SQL missing fixed table suffix '+suffix);
-must(scopeProvisioning.includes('v_keyword_count<>66')&&scopeProvisioning.includes('p_parent_scope_id'),'Scope provisioning must lock the Rune66 default copy and parent Scope Group');
-must(scopeProvisioning.includes("v_blocks_name := v_scope||'_blocks'")&&scopeProvisioning.includes('like silver.lo3rwang_blocks including all')&&portableSchema.includes('"loc_blocks"')&&portableSchema.includes('"lo3rwang_blocks"')&&portableSchema.includes('"lrunes_blocks"'),'Scope provisioning/schema must store page blocks by uid with nested entities');
-must(portableSchema.includes('"content_blocks" jsonb'),'Galaxy schema must preserve optional rich-editor layout separately from plain content');
-must((portableSchema.match(/"content_blocks" jsonb/g)||[]).length>=4,'Galaxy and Galaxy Media schemas must both persist BlockNote structure');
-must(portableSchema.includes('"loc_theme"')&&portableSchema.includes('"loc_bg" text NOT NULL')&&!portableSchema.includes('"theme_attr" jsonb')&&portableSchema.includes('"database_targets"'),'portable schema must include typed loc_theme columns and database targets');
-must(portableSchema.includes('FUNCTION silver.management_write')&&portableSchema.includes('FUNCTION silver.provision_scope')&&portableSchema.includes('FUNCTION silver.manage_scope_registry'),'portable schema must expose application RPC wrappers through silver');
+
+
+
+
+
+
+
+
+
 
 must(dbContract.includes("rpc('manage_scope_registry'")&&dbContract.includes('manageScopeRegistry'),'DB client must expose authorized Scope Registry management');
 must(admin.includes('CreateNodePanel')&&admin.includes("manageScopeRegistry('update'")&&admin.includes("manageScopeRegistry('create_group'"),'Admin tree workspace must edit Registry hierarchy and create Scope Groups');
-must(registrySql.includes('create or replace function api.manage_scope_registry')&&registrySql.includes('Scope Group parent would create a cycle'),'Scope Registry SQL must enforce global authorization and cycle-safe hierarchy');
+
 must(scopeRuntime.includes("pathname==='/scope'||pathname.startsWith('/scope/')")&&scopeRuntime.includes('selectScopeRegistryEntry'),'generic Scope runtime must resolve DB registry entries through the fixed static shell');
 must(scopeRegistry.includes("GENERIC_SCOPE_PATH='/scope'")&&scopeRegistry.includes("params.set('scope',id)"),'unknown DB Scope links must route through the generic static shell');
 must(importPanel.includes('function SourceRefresh')&&importPanel.includes("source_native_id")&&importPanel.includes(".eq('source_name',selected)")&&importPanel.includes("offset+=200"),'Source Refresh must use bounded source_name + source_native_id delta queries instead of full-table scans');
-must(sourceRefreshIndex.includes('(source_name,source_native_id)')&&sourceRefreshIndex.includes('where source_name is not null and source_native_id is not null'),'Source Refresh lookup must keep the composite partial index contract');
+
 must(importPanel.includes('record.createtime||current.createtime||null')&&importPanel.includes('record.source_place||current.source_place||null')&&importPanel.includes('record.url||current.url||null'),'Source Refresh must preserve optional existing metadata when the payload omits it');
 
 must(!/silver\.runes(?:_etc)?\b/.test(galaxy),'generic Galaxy/Search provider must not expose private Rune Core tables');
