@@ -1,6 +1,8 @@
 import { createClient } from "npm:@supabase/supabase-js@2.117.2";
 import { sql } from "npm:kysely@0.29.6";
 import {databaseForTarget,resolveConnectionProfile} from "./drivers.ts";
+import {makeConnectionProfile,readVaultConnection,saveVaultConnection} from "./database-connections.ts";
+import {normalizeDatabaseLocation} from "../../../app/loc/providers/database-link.mjs";
 import { executeAllowlistedRpc, executeKyselyQuery, isKyselyClientError } from "../../../app/loc/providers/kysely-runtime.mjs";
 import { adaptNeonThemeRequest, normalizeNeonThemeRows } from "../../../app/loc/providers/neon-theme-compat.mjs";
 import { selectedDatabaseTarget } from "../../../app/loc/providers/selected-database-target.mjs";
@@ -35,6 +37,72 @@ const neonLocReadTables = new Set([
 ]);
 
 const controlTarget={provider:"supabase",engine:"postgres",connection_alias:"supabase_current",connection_mode:"pooler"};
+
+async function profileForTarget(target:Record<string,unknown>){
+  const control=await databaseForTarget(controlTarget);
+  const secret=await readVaultConnection(control,target);
+  if(secret)return secret;
+  const profile=resolveConnectionProfile(target);
+  if(typeof target.project_url==="string"&&target.project_url){
+    const location=normalizeDatabaseLocation(String(target.provider),target.project_url);
+    if(target.provider==="supabase"){
+      if(location.projectId!==new URL(supabaseUrl).hostname.split(".")[0])
+        throw Object.assign(new Error("Supabase Link has no matching saved credentials"),{httpStatus:400});
+    }else if(target.provider==="neon"){
+      if(location.host!==new URL(profile.url).hostname)
+        throw Object.assign(new Error("Neon Link has no matching saved credentials"),{httpStatus:400});
+    }
+  }
+  return profile;
+}
+async function checkAdminRole(claims:Record<string,unknown>){
+  const control=await databaseForTarget(controlTarget);
+  const valid=await control.transaction().execute(async trx=>{
+    await sql`set local role authenticated`.execute(trx);
+    await sql`select set_config('request.jwt.claims',${JSON.stringify(claims)},true)`.execute(trx);
+    await sql`select set_config('request.jwt.claim.sub',${String(claims.sub||"")},true)`.execute(trx);
+    const result=await sql<{allowed:boolean}>`select silver.can_manage_global() as allowed`.execute(trx);
+    return result.rows[0]?.allowed===true;
+  });
+  if(!valid)throw Object.assign(new Error("Administrator permission required"),{httpStatus:403});
+  return control;
+}
+async function saveDatabaseTarget(input:Record<string,unknown>,role:string,claims:Record<string,unknown>){
+  if(role!=="authenticated")throw Object.assign(new Error("Sign in as administrator"),{httpStatus:403});
+  if(!input||typeof input!=="object"||Array.isArray(input))throw Object.assign(new Error("Invalid target payload"),{httpStatus:400});
+  const targetId=String(input.target_id||"");
+  if(!/^[a-z][a-z0-9_-]{0,80}$/i.test(targetId))throw Object.assign(new Error("Invalid target ID"),{httpStatus:400});
+  const engine=String(input.engine||"postgres");
+  const provider=String(input.provider||"custom");
+  const alias=String(input.connection_alias||targetId.replaceAll("-","_"));
+  const target=selectedDatabaseTarget([{provider,engine,connection_alias:alias,connection_mode:String(input.connection_mode||"direct"),selected:true}]);
+  const location=normalizeDatabaseLocation(provider,input.project_url);
+  const region=String(input.region||"").trim();
+  if(region.length>64||!/^([a-z0-9-]+)?$/.test(region))throw Object.assign(new Error("Invalid Region"),{httpStatus:400});
+  const label=String(input.label||targetId).trim();
+  if(!label||label.length>160)throw Object.assign(new Error("Invalid target label"),{httpStatus:400});
+  const password=typeof input.password==="string"?input.password:"";
+  const profile=password?makeConnectionProfile({...target,...input,project_url:location.link},password):null;
+  const control=await checkAdminRole(claims);
+  if(!profile)await profileForTarget({...target,project_url:location.link});
+  const record={
+    provider,engine,connection_alias:alias,connection_mode:target.connection_mode,
+    label,project_id:provider==="supabase"?location.projectId:String(input.project_id||"")||null,
+    project_url:location.link,region,updated_at:new Date()
+  };
+  return control.transaction().execute(async trx=>{
+    if(profile)await saveVaultConnection(trx,alias,profile);
+    const exists=await trx.selectFrom("silver.database_targets").select("target_id").where("target_id","=",targetId).executeTakeFirst();
+    if(exists)await trx.updateTable("silver.database_targets").set(record).where("target_id","=",targetId).execute();
+    else await trx.insertInto("silver.database_targets").values({...record,target_id:targetId,selected:false}).execute();
+    if(input.activate===true){
+      await trx.updateTable("silver.database_targets").set({selected:false}).where("selected","=",true).execute();
+      await trx.updateTable("silver.database_targets").set({selected:true}).where("target_id","=",targetId).execute();
+    }
+    return {target_id:targetId,provider,engine,selected:input.activate===true};
+  });
+}
+
 async function executeRequest(trx: any, target: Record<string,any>, role: string, claims: Record<string, unknown>, body: Record<string, unknown>) {
   const executionPort=resolveSqlExecutionPort(target);
   if(executionPort.session!=="postgres-rls"){
@@ -70,11 +138,11 @@ async function selectTargetAtomically(id:string,role:string,claims:Record<string
     const grant=await sql`select silver.can_manage_global() as allowed`.execute(trx);
     if(grant.rows[0]?.allowed!==true)throw Object.assign(new Error("Administrator permission is required"),{httpStatus:403});
     const row=await trx.selectFrom("silver.database_targets")
-      .select(["target_id","provider","engine","connection_alias","connection_mode"])
+      .select(["target_id","provider","engine","connection_alias","connection_mode","project_url"])
       .where("target_id","=",id).executeTakeFirst();
     if(!row)throw Object.assign(new Error("Database target does not exist"),{httpStatus:400});
     const target=selectedDatabaseTarget([{...row,selected:true}]);
-    resolveConnectionProfile(target); // fail closed when the server secret is absent
+    await profileForTarget(target); // fail closed when the Link has no matching credential
     await trx.updateTable("silver.database_targets").set({selected:false}).where("selected","=",true).execute();
     const updated=await trx.updateTable("silver.database_targets").set({selected:true,updated_at:new Date()})
       .where("target_id","=",id).executeTakeFirstOrThrow();
@@ -139,6 +207,12 @@ Deno.serve(async (request) => {
 
   let resolvingTarget = false;
   try {
+    if(body.kind==="rpc"&&body.schema==="silver"&&body.name==="save_database_target"){
+      if(!body.args||typeof body.args!=="object"||Array.isArray(body.args)||Object.keys(body.args).some(key=>key!=="p_target"))
+        return json({error:{message:"Invalid target settings"}},400);
+      const result=await saveDatabaseTarget((body.args as Record<string,any>).p_target,role,claims);
+      return json({data:result,count:null});
+    }
     if(body.kind==="rpc"&&body.schema==="silver"&&body.name==="set_database_target"){
       if(!body.args||typeof body.args!=="object"||Array.isArray(body.args)||Object.keys(body.args).some(key=>key!=="p_target_id"))
         return json({error:{message:"Invalid database target activation"}},400);
@@ -154,11 +228,9 @@ Deno.serve(async (request) => {
       const control=await databaseForTarget(controlTarget);
       const resolved=await control.transaction().execute(async trx=>{
         const rows=await trx.selectFrom("silver.database_targets")
-          .select(["provider","engine","connection_alias","connection_mode","selected"])
+          .select(["provider","engine","connection_alias","connection_mode","project_url","selected"])
           .where("selected","=",true).execute();
         const selected=selectedDatabaseTarget(rows);
-        if(selected.provider==="supabase")
-          return {target:selected,result:await executeRequest(trx,selected,role,claims,body)};
         return {target:selected};
       });
       resolvingTarget=false;
@@ -176,7 +248,7 @@ Deno.serve(async (request) => {
     if(target.provider==="neon"&&role==="anon"){role="anonymous";claims.role=role;}
     if(target.engine!=="postgres"&&(body.kind!=="query"||body.operation!=="select"||body.schema!=="silver"||typeof body.table!=="string"||!neonLocReadTables.has(body.table)))
       return json({error:{message:"Cross-engine target is not authorized for this operation"}},403);
-    const db=await databaseForTarget(target);
+    const db=await databaseForTarget(target,{profileLookup:profileForTarget});
     const result=await db.transaction().execute(trx=>executeRequest(trx,target,role,claims,body));
     return json(result,200,result.count===null?{}:{"content-range":`0-${Math.max(0,(Array.isArray(result.data)?result.data.length:0)-1)}/${result.count}`});
   } catch (error) {
@@ -185,7 +257,7 @@ Deno.serve(async (request) => {
     const transientConnectionFailure = code === "53300" || code.startsWith("08") || /connection (?:terminated|timeout)|remaining connection slots/i.test(message);
     const status = (error && typeof error === 'object' && 'httpStatus' in error) ? Number(error.httpStatus) : resolvingTarget || transientConnectionFailure ? 503 : isKyselyClientError(error) ? 400 : 500;
     if (status >= 500) console.error("[loc-kysely] Database request failed", error);
-    const responseMessage = resolvingTarget ? "Selected database target is unavailable" : status === 503 ? "Database is temporarily unavailable" : status === 400 ? message : "Database request failed";
+    const responseMessage = status === 400 || status === 403 ? message : resolvingTarget ? "Selected database target is unavailable" : status === 503 ? "Database is temporarily unavailable" : "Database request failed";
     return json({ error: { message: responseMessage, code: code || undefined } }, status);
   }
 });
