@@ -190,24 +190,22 @@ test('Each homepage Hero has exactly its fixed Scope identity above overlays',as
   await expect(page.locator('header.scope-feature-hero>.home-hero-identity--codex')).toHaveText('');
 });
 
-test('Eight feature JPGs map by Scope while keeping the same title and readable Hero',async({page})=>{
-  const featureImages=[
-    ['culture','culture'],
-    ['statics','statics'],
-    ['search','search'],
-    ['governance','gn']
-  ];
-  const scopes=[
-    {prefix:'',filename:'LOC',mark:'codex'},
-    {prefix:'/lo3rwang',filename:'scope',mark:'anchor'},
-    {prefix:'/lrunes',filename:'scope',mark:'moon'}
-  ];
-  for(const {prefix,filename,mark} of scopes){
-    for(const [feature,asset] of featureImages){
+// Independent per-Scope tests: a dozen DB-hydrated page loads and image
+// decodes cannot share Playwright's 45s per-test budget.
+const featureArtwork=[['culture','culture'],['statics','statics'],['search','search'],['governance','gn']];
+for(const {prefix,filename,mark} of [
+  {prefix:'',filename:'LOC',mark:'codex'},
+  {prefix:'/lo3rwang',filename:'scope',mark:'anchor'},
+  {prefix:'/lrunes',filename:'scope',mark:'moon'}
+]){
+  test('Four feature JPGs match the '+(prefix||'LOC')+' Scope identity, title and artwork',async({page})=>{
+    for(const [feature,asset] of featureArtwork){
       await page.goto(prefix+'/'+feature+'/',{waitUntil:'domcontentloaded'});
       const hero=page.locator('header.scope-feature-hero');
-      await expect(hero).toBeVisible({timeout:25000});
+      await expect(hero).toBeVisible({timeout:25_000});
       await expect(hero).toHaveClass(new RegExp('scope-feature-hero--'+feature));
+      // Scope identity is loaded asynchronously from silver.scope_registry.
+      // Await the actual sign; no text, images, or accessibility checks are skipped.
       await expect(hero.locator(':scope > .home-hero-identity--'+mark)).toHaveCount(1);
       const imageUrl=await hero.evaluate(el=>{
         const background=getComputedStyle(el).backgroundImage;
@@ -228,8 +226,8 @@ test('Eight feature JPGs map by Scope while keeping the same title and readable 
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
       expect(overflow).toBeLessThanOrEqual(2);
     }
-  }
-});
+  });
+}
 
 test('LOC and Author feature Hero text is vertically centered in its artwork frame',async({page})=>{
   for(const prefix of ['', '/lo3rwang']){
