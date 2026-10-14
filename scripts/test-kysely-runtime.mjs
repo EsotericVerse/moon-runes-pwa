@@ -1,0 +1,95 @@
+import assert from 'node:assert/strict';
+import {DatabaseSync} from 'node:sqlite';
+import {readFileSync} from 'node:fs';
+import {Kysely,SqliteDialect,PostgresDialect,MysqlDialect,MssqlDialect,DummyDriver} from 'kysely';
+import {buildAllowlistedRpcQuery,buildKyselyMutationQuery,executeKyselyQuery} from '../app/loc/providers/kysely-runtime.mjs';
+import {adaptNeonThemeRequest,normalizeNeonThemeRows} from '../app/loc/providers/neon-theme-compat.mjs';
+
+const edge=readFileSync(new URL('../supabase/functions/loc-kysely/index.ts',import.meta.url),'utf8');
+const config=readFileSync(new URL('../supabase/config.toml',import.meta.url),'utf8');
+const portableSchema=readFileSync(new URL('../sql/portable-current-schema.sql',import.meta.url),'utf8');
+assert.match(config,/\[functions\.loc-kysely\][\s\S]*?verify_jwt\s*=\s*false/);
+assert.match(edge,/auth\.getUser\(token\)/,'authenticated SQL must follow Supabase JWT verification');
+assert.match(edge,/set local role authenticated/);
+assert.match(edge,/set local role anon/);
+assert.match(edge,/set local role anonymous/);
+assert.match(edge,/NEON_DATABASE_URL/);
+assert.match(edge,/SUPABASE_PUBLISHABLE_KEYS/,'Edge Functions default publishable-key secret is supported without adding a browser secret');
+assert.match(edge,/Neon backup permits anonymous SELECT only/);
+assert.doesNotMatch(edge,/SUPABASE_SERVICE_ROLE_KEY|service_role/i,'trusted SQL must never execute as service_role');
+assert.doesNotMatch(edge,/database_targets|email_blocklist/,'Neon reads must stay on the LOC table allowlist');
+const canonicalLocTables=[...portableSchema.matchAll(/CREATE TABLE "silver"\."([^"]+)"/g)].map(match=>match[1]).filter(name=>!['VisualNovel','database_targets','email_blocklist'].includes(name)).sort();
+const neonTableBlock=edge.match(/const neonLocReadTables = new Set\(\[([\s\S]*?)\]\);/)?.[1]||'';
+const neonLocTables=[...neonTableBlock.matchAll(/"([a-z][a-z0-9_]*)"/g)].map(match=>match[1]).sort();
+assert.deepEqual(neonLocTables,canonicalLocTables,'Neon mirror scope is the LOC table subset; Admin and non-LOC tables are excluded');
+const legacyTheme=adaptNeonThemeRequest({kind:'query',schema:'silver',table:'loc_theme',operation:'select',columns:['theme_id','theme_name','scheme','loc_bg','identity_color'],filters:[{column:'theme_id',operator:'eq',value:1}],orders:[{column:'theme_order'}],limit:8});
+assert.deepEqual(legacyTheme.request.columns,['theme_id','theme_name','theme_order','theme_attr']);
+assert.equal(legacyTheme.request.filters[0].value,'theme-1');
+assert.deepEqual(normalizeNeonThemeRows([{theme_id:'theme-1',theme_name:'靈魂',theme_order:1,theme_attr:{scheme:'dark',style_key:'soul',identity_color:'#1d2f8f',tokens:{'--loc-bg':'#05060d'}}}],legacyTheme.columns),[{theme_id:1,theme_name:'靈魂',scheme:'dark',loc_bg:'#05060d',identity_color:'#1d2f8f'}]);
+assert.throws(()=>adaptNeonThemeRequest({schema:'silver',table:'loc_theme',operation:'update'}),/read-only/);
+assert.ok(adaptNeonThemeRequest({schema:'silver',table:'loc_theme',operation:'select',columns:['*'],limit:8}));
+
+const sqlite=new DatabaseSync(':memory:');
+sqlite.exec("ATTACH DATABASE ':memory:' AS silver");
+const compatible={prepare(source){const statement=sqlite.prepare(source);return {reader:/^\s*(?:select|with|pragma)\b/i.test(source),all(parameters){return statement.all(...parameters)},run(parameters){return statement.run(...parameters)}}},close(){sqlite.close()}};
+const db=new Kysely({dialect:new SqliteDialect({database:compatible})});
+try{
+  await db.schema.withSchema('silver').createTable('probe').addColumn('id','integer',c=>c.primaryKey()).addColumn('title','text',c=>c.notNull()).addColumn('scope_id','text',c=>c.notNull()).execute();
+  await db.insertInto('silver.probe').values([{id:1,title:'Moon',scope_id:'loc'},{id:2,title:'Sun',scope_id:'lrunes'}]).execute();
+  const selected=await executeKyselyQuery(db,{kind:'query',schema:'silver',table:'probe',operation:'select',columns:['id','title'],filters:[{column:'title',operator:'ilike',value:'MOON'}]});
+  assert.deepEqual(selected.data.map(row=>({...row})),[{id:1,title:'Moon'}]);
+  const nestedOr=await executeKyselyQuery(db,{kind:'query',schema:'silver',table:'probe',operation:'select',columns:['id'],or:['and(id.eq.1,title.eq.Moon),and(id.eq.2,title.eq.Sun)']});
+  assert.deepEqual(nestedOr.data.map(row=>row.id),[1,2],'nested PostgREST AND groups inside OR remain semantically equivalent');
+  const emptyPage=await executeKyselyQuery(db,{kind:'query',schema:'silver',table:'probe',operation:'select',columns:['id'],limit:0});
+  assert.deepEqual(emptyPage.data,[],'zero-length ranges remain empty instead of expanding to the default page limit');
+  const counted=await executeKyselyQuery(db,{kind:'query',schema:'silver',table:'probe',operation:'select',columns:['id'],filters:[{column:'scope_id',operator:'eq',value:'loc'}],count:true,head:true});
+  assert.equal(counted.count,1);assert.equal(counted.data,null);
+  const inserted=await executeKyselyQuery(db,{kind:'query',schema:'silver',table:'probe',operation:'insert',values:{id:3,title:'Third',scope_id:'loc'}});
+  assert.equal(inserted.count,1);
+  const upserted=await executeKyselyQuery(db,{kind:'query',schema:'silver',table:'probe',operation:'upsert',values:{id:3,title:'Changed',scope_id:'loc'},onConflict:['id']});
+  assert.equal(upserted.count,1);
+  const updated=await executeKyselyQuery(db,{kind:'query',schema:'silver',table:'probe',operation:'update',values:{title:'Updated'},filters:[{column:'id',operator:'eq',value:3}]});
+  assert.equal(updated.count,1);
+  const removed=await executeKyselyQuery(db,{kind:'query',schema:'silver',table:'probe',operation:'delete',filters:[{column:'id',operator:'eq',value:2}]});
+  assert.equal(removed.count,1);
+  await assert.rejects(()=>executeKyselyQuery(db,{kind:'query',schema:'silver',table:'probe',operation:'delete'}),/Unfiltered writes/);
+  await assert.rejects(()=>executeKyselyQuery(db,{kind:'query',schema:'public',table:'probe',operation:'select'}),/Schema is not enabled/);
+}finally{await db.destroy()}
+
+const dialects=[['postgres',new PostgresDialect({pool:{}})],['mysql',new MysqlDialect({pool:{}})],['mssql',new MssqlDialect({tedious:{},pool:{}})]];
+for(const [dialectName,dialect] of dialects){
+  const compileDialect={createAdapter:()=>dialect.createAdapter(),createDriver:()=>new DummyDriver(),createIntrospector:db=>dialect.createIntrospector(db),createQueryCompiler:()=>dialect.createQueryCompiler()};
+  const compileDb=new Kysely({dialect:compileDialect});
+  const mutation=(operation,extra={})=>buildKyselyMutationQuery(compileDb,{kind:'query',schema:'silver',table:'probe',operation,values:{id:9,title:'bound'},onConflict:['id'],filters:['update','delete'].includes(operation)?[{column:'id',operator:'eq',value:9}]:[],columns:['id','title'],returning:true,...extra},{dialect:dialectName}).query.compile();
+  for(const operation of ['insert','update','delete','upsert']){
+    const compiled=mutation(operation);
+    assert.equal(compiled.sql.includes('bound'),false,dialectName+' '+operation+' must bind values');
+    if(operation==='delete')assert.equal(compiled.parameters.includes(9),true,dialectName+' delete filter must be bound');
+    else assert.equal(compiled.parameters.includes('bound'),true,dialectName+' '+operation+' must bind values');
+  }
+  const upsert=mutation('upsert');
+  if(dialectName==='mysql')assert.match(upsert.sql,/on duplicate key update/i);
+  else if(dialectName==='mssql')assert.match(upsert.sql,/merge into/i);
+  else assert.match(upsert.sql,/on conflict/i);
+  const ignoreUpsert=mutation('upsert',{ignoreDuplicates:true});
+  if(dialectName==='mysql')assert.match(ignoreUpsert.sql,/on duplicate key update/i);
+  else if(dialectName==='mssql')assert.doesNotMatch(ignoreUpsert.sql,/do nothing/i,'SQL Server MERGE has no no-op action; omit WHEN MATCHED');
+  else assert.match(ignoreUpsert.sql,/do nothing/i);
+  if(dialectName==='mssql')assert.match(mutation('update').sql,/output "inserted"/i);
+  if(dialectName==='mssql')assert.match(mutation('delete').sql,/output "deleted"/i);
+  await compileDb.destroy();
+}
+const pgDialect=new PostgresDialect({pool:{}});
+const pgCompileDialect={createAdapter:()=>pgDialect.createAdapter(),createDriver:()=>new DummyDriver(),createIntrospector:db=>pgDialect.createIntrospector(db),createQueryCompiler:()=>pgDialect.createQueryCompiler()};
+const pgCompileDb=new Kysely({dialect:pgCompileDialect});
+const rpc=buildAllowlistedRpcQuery({kind:'rpc',schema:'silver',name:'delete_scope',args:{p_scope_id:'parameterized'}}).query.compile(pgCompileDb);
+assert.equal(rpc.sql.includes('parameterized'),false);
+assert.equal(rpc.parameters.includes('parameterized'),true);
+assert.match(rpc.sql,/"p_scope_id"\s*=>/,'PostgreSQL RPC arguments use allowlisted names so database defaults remain intact');
+const defaulted=buildAllowlistedRpcQuery({kind:'rpc',schema:'silver',name:'management_write',args:{p_table:'silver.manage',p_operation:'read'}}).query.compile(pgCompileDb);
+assert.match(defaulted.sql,/"p_operation"\s*=>/);
+assert.equal(defaulted.parameters.includes('read'),true);
+assert.equal(defaulted.sql.includes('p_rows'),false,'omitted RPC defaults must be left to PostgreSQL');
+assert.throws(()=>buildAllowlistedRpcQuery({kind:'rpc',schema:'silver',name:'delete_scope',args:{}}),/Missing required RPC argument/);
+await pgCompileDb.destroy();
+console.log('[kysely-runtime] SQLite live CRUD; PostgreSQL/MySQL/SQL Server CRUD, returning and native upsert SQL; PostgreSQL named allowlisted RPC parameterization passed');

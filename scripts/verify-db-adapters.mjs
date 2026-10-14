@@ -5,6 +5,10 @@ import {createDatabaseClient} from '../app/loc/db-contract.mjs';
 import {createPostgrestAdapter} from '../app/loc/providers/postgrest.mjs';
 
 const requests=[];
+const configuredSource=readFileSync(new URL('../app/loc/providers/configured.mjs',import.meta.url),'utf8');
+assert.match(configuredSource,/createSupabaseAdapter/);
+assert.match(configuredSource,/createNeonPublicAdapter/);
+assert.doesNotMatch(configuredSource,/createPostgrestAdapter|provider\s*===\s*['"]postgrest['"]/,'all runtime LOC data traffic must use the Kysely endpoint');
 let affected=1;
 const session={user:{id:'test-owner',email:'owner@example.test'}};
 const auth={
@@ -89,11 +93,11 @@ assert.equal(called,false,'Unconfigured authentication must fail before contacti
 
 // HEAD failures can have no JSON error body; never convert them to count=0.
 const originalFetch=globalThis.fetch;
-process.env.NEXT_PUBLIC_LOC_DB_PROVIDER='postgrest';
-process.env.NEXT_PUBLIC_LOC_DATA_API_URL='https://count.example.test';
+process.env.NEXT_PUBLIC_LOC_DB_PROVIDER='supabase';
+process.env.NEXT_PUBLIC_SUPABASE_URL='https://count.example.test';
 globalThis.fetch=async()=>new Response(null,{status:403});
 const {selectCount}=await import('../app/loc/db-query.mjs');
-await assert.rejects(()=>selectCount('silver.any_scope_galaxy',{idColumn:'uid'}),/HTTP 403/);
+await assert.rejects(()=>selectCount('silver.any_scope_galaxy',{idColumn:'uid'}),error=>error?.primaryError?.status===403);
 await assert.rejects(()=>selectCount('silver.any_scope_galaxy'),/explicit ID column/);
 globalThis.fetch=originalFetch;
 const appRoot=resolve('app');

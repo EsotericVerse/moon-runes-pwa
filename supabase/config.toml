@@ -1,0 +1,2 @@
+[functions.loc-kysely]
+verify_jwt = false
