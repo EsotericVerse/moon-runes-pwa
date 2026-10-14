@@ -455,7 +455,26 @@ function Board({G,moves,rules,onRestart}){
     </DndContext>;
 }
 
-export default function GameBoard(){
+export default // The artwork and the game identity are stable UI, not database results.
+// Render the Hero during loading too; only the game-data badges wait for SQL.
+function GameHomeHero({data=null}){
+  return <Paper className="lrg-home-hero">
+    <div className="lrg-home-copy">
+      <Typography variant="overline" color="primary">LUNARUNES · TABLETOP</Typography>
+      <Typography variant="h3" component="h1">月之符文</Typography>
+      <Typography color="text.secondary">以 66 枚符文、事件回應、De 與共鳴互動構成的本機多人桌遊。</Typography>
+      {data?<Stack direction="row" flexWrap="wrap" gap={1} sx={{mt:1.5}}>
+        <Chip label={data.cards.length+' 枚符文'}/>
+        <Chip label={data.events.length+' 張事件'}/>
+        <Chip label={data.roles.length+' 職'}/>
+        <Chip label={data.rounds.length+' 個正式回合＋平手決鬥'}/>
+      </Stack>:null}
+    </div>
+    <img className="lrg-hero-image" src={gameHeroAsset.src} alt="月之符文桌遊主視覺"/>
+  </Paper>;
+}
+
+function GameBoard(){
   const uiTheme=useLocGameTheme();
   const {data,error,isLoading}=useQuery({queryKey:['lrunes','game','current'],queryFn:loadGameData,staleTime:60000});
   const [count,setCount]=useState(2);
@@ -466,27 +485,22 @@ export default function GameBoard(){
     debug:false
   }):null,[data,count,match]);
 
-  if(isLoading)return <ThemeProvider theme={uiTheme}><main className="lrg"><Alert severity="info">載入遊戲資料…</Alert></main></ThemeProvider>;
-  if(error||!data)return <ThemeProvider theme={uiTheme}><main className="lrg"><Alert severity="error" role="alert">遊戲資料載入失敗：{error?.message||'無資料'}</Alert></main></ThemeProvider>;
+  if(isLoading)return <ThemeProvider theme={uiTheme}><main className="lrg lrg-home">
+    <ContextReturnNav scopeId="lrunes" label="回符文首頁"/>
+    <GameHomeHero/>
+    <Alert severity="info">載入遊戲資料…</Alert>
+  </main></ThemeProvider>;
+  if(error||!data)return <ThemeProvider theme={uiTheme}><main className="lrg lrg-home">
+    <ContextReturnNav scopeId="lrunes" label="回符文首頁"/>
+    <GameHomeHero/>
+    <Alert severity="error" role="alert">遊戲資料載入失敗：{error?.message||'無資料'}</Alert>
+  </main></ThemeProvider>;
   if(Engine)return <ThemeProvider theme={uiTheme}><Engine key={match}/></ThemeProvider>;
 
   return <ThemeProvider theme={uiTheme}>
     <main className="lrg lrg-home">
       <ContextReturnNav scopeId="lrunes" label="回符文首頁"/>
-      <Paper className="lrg-home-hero">
-        <div className="lrg-home-copy">
-          <Typography variant="overline" color="primary">LUNARUNES · TABLETOP</Typography>
-          <Typography variant="h3" component="h1">月之符文</Typography>
-          <Typography color="text.secondary">以 66 枚符文、事件回應、De 與共鳴互動構成的本機多人桌遊。</Typography>
-          <Stack direction="row" flexWrap="wrap" gap={1} sx={{mt:1.5}}>
-            <Chip label={data.cards.length+' 枚符文'}/>
-            <Chip label={data.events.length+' 張事件'}/>
-            <Chip label={data.roles.length+' 職'}/>
-            <Chip label={data.rounds.length+' 個正式回合＋平手決鬥'}/>
-          </Stack>
-        </div>
-        <img className="lrg-hero-image" src={gameHeroAsset.src} alt="月之符文桌遊主視覺"/>
-      </Paper>
+      <GameHomeHero data={data}/>
 
       <Paper className="lrg-setup">
         <Typography variant="h6" component="h2">建立本機對局</Typography>
