@@ -43,15 +43,12 @@ test.describe('LunaRunes tabletop UI',()=>{
     let release;
     const hold=new Promise(resolve=>{release=resolve;});
     let delayedQueries=0;
-    await page.route('**/functions/v1/loc-kysely',async route=>{
-      const request=route.request();
-      if(request.method()==='POST'){
-        let body=null;
-        try{body=request.postDataJSON()}catch{}
-        if(body?.kind==='query'&&body?.table==='game'){
-          delayedQueries++;
-          await hold;
-        }
+    // Primary Supabase reads use its managed PostgREST API; delay the actual
+    // game table requests rather than the optional generic Kysely Edge path.
+    await page.route('**/rest/v1/game**',async route=>{
+      if(['GET','HEAD'].includes(route.request().method())){
+        delayedQueries++;
+        await hold;
       }
       await route.continue();
     });
