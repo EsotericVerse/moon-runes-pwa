@@ -48,7 +48,8 @@ if(!registry.includes('delete root.dataset.themeBootstrap'))failures.push('Theme
 if(shell.includes('if(fixedThemeId)return null')||shell.includes('if(fixedDefaultThemeId)return null'))failures.push('fixed Scope defaults must not hide the footer theme selector');
 for(const token of ["selection.scopeId===scopeId","setSelection({scopeId,themeId:SYSTEM_THEME_ID})","fixedDefaultThemeId||configuredDefaultThemeId||automaticThemeId(now)"])if(!shell.includes(token))failures.push('Scope-local system-default theme behavior missing '+token);
 
-for(const token of ['THEME_DB_COLUMNS','loc_bg','loc_shadow_card','themeUiId','themeNumber'])if(!themeData.includes(token))failures.push('Live theme database column adapter missing '+token);
+for(const token of ['THEME_DB_COLUMNS','THEME_TOKEN_KEYS.map(themeColumnForToken)','themeColumnForToken','themeUiId','themeNumber'])if(!themeData.includes(token))failures.push('Live theme database column adapter missing '+token);
+for(const key of ['--loc-bg','--loc-shadow-card'])if(!THEME_TOKEN_KEYS.includes(key))failures.push('Theme DB column mapping missing '+key);
 if(themeData.includes('theme_attr')||admin.includes('theme_attr'))failures.push('Live theme code must not restore legacy JSONB attributes');
 if(!admin.includes('theme_db_numeric')||!admin.includes('themeNumber(themeId)'))failures.push('Admin theme ID translation must work with database numeric IDs');
 
