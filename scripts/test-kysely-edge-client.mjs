@@ -60,19 +60,44 @@ let transientWrites=0;
 const noWriteRetry=createKyselyEdgeClient({url:'https://loc.example.test',publishableKey:'sb_publishable_test',role:'anon',fetch:async()=>{transientWrites++;return new Response(JSON.stringify({error:{message:'temporarily unavailable'}}),{status:503})}});
 await assert.rejects(async()=>await noWriteRetry.schema('manage').from('email_blocklist').insert({email:'x@example.test'}),/temporarily unavailable/);
 assert.equal(transientWrites,1,'writes are never retried automatically');
-const authOptions=[];const adapterCalls=[];
-const adapter=createSupabaseAdapter({url:'https://loc.example.test',publishableKey:'sb_publishable_test',createClientImpl:(url,key,options)=>{authOptions.push(options);return {auth}},fetchImpl:async(url,init)=>{adapterCalls.push({url,init});return new Response(JSON.stringify({data:[{id:'ok'}]}),{status:200})}});
-assert.equal(authOptions.length,1,'only the Supabase Auth/session SDK remains instantiated');
-assert.equal(authOptions[0].auth.persistSession,true);
-assert.equal(authOptions[0].auth.autoRefreshToken,true);
-await adapter.publicClient.schema('silver').from('manage').select('id');
-await adapter.authClient.schema('silver').from('manage').select('id');
-assert.equal(adapterCalls[0].url,adapterCalls[1].url,'public and authenticated data reads share the same Kysely endpoint');
-assert.equal(adapterCalls[1].init.headers.authorization,'Bearer user.jwt.token');
-assert.equal(JSON.parse(adapterCalls[0].init.body).target,'configured','LOC clients ask the server to route through the saved Admin target');
-assert.equal(JSON.parse(adapterCalls[1].init.body).target,'configured');
+const sdkSettings=[];
+const apiCalls=[];
+const adapter=createSupabaseAdapter({
+  url:'https://loc.example.test',publishableKey:'sb_publishable_test',
+  createClientImpl:(url,key,options)=>{
+    sdkSettings.push(options);
+    return {
+      auth,
+      schema(schema){
+        return {
+          from(table){return {
+            select(columns){return Promise.resolve({data:[{id:table}],error:null,count:1})}
+          }},
+          rpc(name,args){return Promise.resolve({data:{name,args},error:null})}
+        };
+      }
+    };
+  },
+  fetchImpl:async(url,init)=>{
+    apiCalls.push({url,init});
+    return new Response(JSON.stringify({data:{target_id:'supabase-current'}}),{status:200});
+  }
+});
+assert.equal(sdkSettings.length,2,'authenticated and anonymous Supabase SDKs must stay isolated');
+assert.equal(sdkSettings[0].auth.persistSession,true,'authenticated client retains browser session');
+assert.equal(sdkSettings[1].auth.persistSession,false,'anonymous primary reads never borrow a signed-in session');
+assert.ok(sdkSettings.every(x=>x.global&&'fetch' in x.global),'Data API uses the configured fetch');
+assert.deepEqual((await adapter.publicClient.schema('silver').from('game').select('game_key')).data,[{id:'game'}]);
+assert.deepEqual((await adapter.authClient.schema('silver').from('scope_registry').select('scope_id')).data,[{id:'scope_registry'}]);
+assert.equal(apiCalls.length,0,'routine primary reads must NOT open a Kysely PG connection');
+assert.deepEqual((await adapter.authClient.schema('silver').rpc('management_write',{p_operation:'select'})).data,{name:'management_write',args:{p_operation:'select'}});
+await adapter.authClient.schema('silver').rpc('save_database_target',{p_target:{target_id:'supabase-current'}});
+assert.equal(apiCalls.length,1,'only the Admin connection configuration RPC travels to Edge');
+assert.equal(apiCalls[0].url,'https://loc.example.test/functions/v1/loc-kysely');
+assert.equal(apiCalls[0].init.headers.authorization,'Bearer user.jwt.token');
+assert.equal(JSON.parse(apiCalls[0].init.body).name,'save_database_target');
 assert.equal(selectedDatabaseProvider([{provider:'neon',selected:true},{provider:'supabase',selected:false}]),'neon');
 assert.equal(selectedDatabaseProvider([{provider:'neon',selected:false},{provider:'supabase',selected:true}]),'supabase');
 assert.throws(()=>selectedDatabaseProvider([{provider:'neon',selected:true},{provider:'supabase',selected:true}]),/More than one/);
 assert.throws(()=>selectedDatabaseProvider([{provider:'firebase',selected:true}]),/not supported/);
-console.log('[kysely-edge-client] Supabase Auth retention, Admin-selected live routing, selected-provider validation, Neon fallback and fail-closed errors passed');
+console.log('[kysely-edge-client] Supabase primary Data API, isolated public/auth sessions, Edge Admin RPC, portable SQL routing and fail-closed errors passed');
