@@ -40,6 +40,12 @@ test.describe('LunaRunes tabletop UI',()=>{
   });
 
   test('Game Hero is visible before the game SQL dataset finishes loading',async({page})=>{
+    // Diagnostics are emitted only from this loading regression, so failures
+    // identify actual browser, hydration and SQL errors instead of guessing.
+    const pageErrors=[],consoleErrors=[],failedRequests=[];
+    page.on('pageerror',error=>pageErrors.push(error.message));
+    page.on('console',message=>{if(message.type()==='error')consoleErrors.push(message.text())});
+    page.on('requestfailed',request=>failedRequests.push(request.method()+' '+request.url().split('?')[0]+' '+request.failure()?.errorText));
     let release;
     const hold=new Promise(resolve=>{release=resolve;});
     let delayedQueries=0;
@@ -60,6 +66,12 @@ test.describe('LunaRunes tabletop UI',()=>{
       await expect(hero.locator('.lrg-hero-image')).toBeVisible();
       await expect(page.getByText('載入遊戲資料…')).toBeVisible();
     }finally{
+      const alerts=await page.getByRole('alert').allTextContents().catch(()=>[]);
+      const main=await page.locator('main').first().innerText().catch(()=>'(main missing)');
+      console.log('[game-load-diagnostics]',JSON.stringify({
+        delayedQueries,alerts,main:main.slice(0,250),pageErrors:pageErrors.slice(0,4),
+        consoleErrors:consoleErrors.slice(0,5),failedRequests:failedRequests.slice(0,5)
+      }));
       release();
     }
   });
