@@ -66,7 +66,7 @@ if(!failures.length){
   const dbQuery=read('app/loc/db-query.mjs');
   for(const token of ['executePublicRead','dbBackupPublicClient','markPrimaryReadFailed','source=\'auto\''])if(!dbQuery.includes(token))failures.push('Public read failover contract missing '+token);
   const configured=read('app/loc/providers/configured.mjs');
-  for(const token of ['createNeonPublicAdapter','backupPublicClient','primarySourceLabel:\'Admin-selected\'','backupSourceLabel:\'Neon\''])if(!configured.includes(token))failures.push('Configured dual-source public read missing '+token);
+  for(const token of ['createBackupPublicAdapter','backupPublicClient','primarySourceLabel:\'Admin-selected\'','backupSourceLabel:\'Backup\''])if(!configured.includes(token))failures.push('Configured dual-source public read missing '+token);
   const appShell=read('app/AppShell.jsx');
   for(const token of ['主要資料來源：','備用資料來源：','目前使用：','備援資料可能有同步時間差'])if(!appShell.includes(token))failures.push('Global data source disclosure missing '+token);
   if(appShell.indexOf('<DataSourceStatus/>')<appShell.indexOf('<footer'))failures.push('Data source status must remain in the footer, not above page content.');

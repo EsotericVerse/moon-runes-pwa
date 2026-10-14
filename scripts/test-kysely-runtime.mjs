@@ -27,8 +27,8 @@ assert.match(edge,/SUPABASE_PUBLISHABLE_KEYS/,'Edge Functions default publishabl
 assert.match(edge,/Neon LOC mirror is read-only/);
 assert.match(edge,/selectTargetAtomically/,'Admin selection must use an atomic, permission-checked route');
 assert.match(edge,/body\.kind==="status"&&body\.name==="active_public_target"/,'Public active provider status must not leak credentials');
-assert.match(dbQuery,/activePublicProvider\(\)/,'Public reads must resolve the manually selected database');
-assert.match(dbQuery,/provider==='neon'/,'Neon emergency selection must read from backup');
+assert.match(dbQuery,/selectedDatabaseRouting\(dbConfiguredPublicClient\)/,'Public reads must resolve chosen routing configuration');
+assert.match(dbQuery,/routing\.backupId/,'Read fallback must require an explicitly chosen backup');
 assert.match(dbQuery,/provider==='custom'/,'Custom SQL selection must read from configured target');
 assert.match(dbStatus,/setManualReadSource/,'Footer must disclose the manual backup source');
 assert.match(edge,/resolveSqlExecutionPort/,'Kysely runtime selects the central port contract');
