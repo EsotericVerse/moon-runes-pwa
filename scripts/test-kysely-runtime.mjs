@@ -31,6 +31,10 @@ assert.match(adminUi,/Link \/ Project/,'Cloud provider selection must expose the
 assert.match(adminUi,/DB Host:Port/,'Ordinary SQL target must expose Host and Port');
 assert.match(adminUi,/type="password"/,'Database password field must be masked');
 assert.match(adminUi,/save_database_target/,'The Admin form must save through the trusted SQL endpoint');
+assert.match(adminUi,/activate:row\.selected===true/,'Saving a backup target must not activate or replace the primary database');
+assert.doesNotMatch(adminUi,/activate:\s*true\b/,'Database settings save must never silently switch the active target');
+assert.match(adminUi,/setSelectedId\(current=>next\.some\(item=>item\.target_id===current\)/,'Refreshing targets must retain the edited backup selection');
+assert.match(adminUi,/\u5132\u5b58\u8a2d\u5b9a/,'Admin action must describe saving settings rather than silently switching database');
 assert.match(edge,/profileLookup:profileForTarget/,'The saved connection Link must reach the Kysely driver');
 assert.match(edge,/if\(isSupabaseControlTarget\(selected\)\)\{[\s\S]*?executeRequest\(trx,selected,role,claims,body\)/,'primary Supabase must execute inside the target registry transaction');
 assert.match(edge,/if\(isSupabaseControlTarget\(target\)\)return resolveConnectionProfile\(controlTarget\)/,'default Supabase must not query Vault for every request');
