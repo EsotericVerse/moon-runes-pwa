@@ -218,6 +218,16 @@ Deno.serve(async (request) => {
 
   let resolvingTarget = false;
   try {
+    // Public status discloses only the selected provider, never connection profiles.
+    // Clients cache this lightweight lookup and keep normal Supabase reads on PostgREST.
+    if(body.kind==="status"&&body.name==="active_public_target"){
+      if(requestedTarget!=="configured")return json({error:{message:"Invalid status target"}},400);
+      const control=await databaseForTarget(controlTarget);
+      const row=await control.selectFrom("silver.database_targets").select("provider")
+        .where("selected","=",true).executeTakeFirst();
+      const provider=row?.provider==="neon"?"neon":row?.provider==="custom"?"custom":"supabase";
+      return json({data:{provider}});
+    }
     if(body.kind==="rpc"&&body.schema==="silver"&&body.name==="save_database_target"){
       if(!body.args||typeof body.args!=="object"||Array.isArray(body.args)||Object.keys(body.args).some(key=>key!=="p_target"))
         return json({error:{message:"Invalid target settings"}},400);
