@@ -1,6 +1,6 @@
 {
   "name": "loc-next-architecture",
-  "version": "0.9.5-rc",
+  "version": "0.9.6-rc",
   "private": true,
   "scripts": {
     "predev": "node scripts/prepare-effekseer-wasm.mjs && node scripts/prepare-rune-effekseer-assets.mjs && node scripts/prepare-rune-fog-hd.mjs && node scripts/prepare-rune-effekseer-hd256.mjs && node scripts/prepare-rune-effekseer-soft-matte.mjs && node scripts/prepare-rune-semantic-icons.mjs",
