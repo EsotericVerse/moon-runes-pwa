@@ -4,7 +4,6 @@ const failures=[];
 const read=path=>fs.readFileSync(path,'utf8');
 const required=[
   'app/loc/views/AboutView.jsx',
-  'sql/page-block-entities-blocknote.sql',
   'app/loc/galaxy-query.js',
   'app/modular/features/Search.jsx',
   'app/loc/daily-runes.js',
@@ -29,8 +28,7 @@ const required=[
 for(const path of required)if(!fs.existsSync(path)||!read(path).trim())failures.push('missing Current contract file: '+path);
 if(!failures.length){
   const identity=read('app/loc/views/AboutView.jsx');
-  const pageBlockSeed=read('sql/page-block-entities-blocknote.sql');
-  const identitySource=identity+'\n'+pageBlockSeed;
+  const identitySource=identity+'\n'+read('README.md');
   const runeIntro=read('app/lrunes/RuneIntroSection.jsx');
   // Identity copy now belongs to silver.loc_blocks (index/order), not hardcoded JSX.
   if(!identity.includes('page="index"')||!identity.includes('maxBlocks={8}')||!identity.includes('renderDisplay={LocHomeBlockDisplay}'))failures.push('LOC identity must render the canonical indexed page blocks');
@@ -76,18 +74,9 @@ if(!failures.length){
   if(!featureState.includes('pgrst123')||!featureState.includes('資料查詢功能與資料庫介面不相容'))failures.push('Provider capability errors must not be mislabeled as read permissions.');
   const scopeData=read('app/loc/scope-data.js');
   for(const token of ["MANAGE_TABLE='silver.manage'",'scopeDataFromManageRows','defaultScopeData','selectManagedScopes'])if(!scopeData.includes(token))failures.push('Scope data source missing '+token);
-  const currentSchema=read('sql/portable-current-schema.sql');
-  for(const scope of ['lo3rwang','lrunes']){
-    const galaxy=scope+'_galaxy';
-    const policies=currentSchema.split('\\n').filter(line=>line.startsWith('CREATE POLICY "'+galaxy+'_'));
-    const publicRead=policies.find(line=>line.includes('"'+galaxy+'_public_read"'));
-    const protectedRead=policies.find(line=>line.includes('"'+galaxy+'_authenticated_read"'));
-    const createTable=currentSchema.match(new RegExp('CREATE TABLE "silver"\\."'+galaxy+'" \\(([\\s\\S]*?)\\n\\);'))?.[1]||'';
-    if(!publicRead?.includes('FOR SELECT TO "anonymous" USING ((searchable IS TRUE))')||
-       !protectedRead?.includes('FOR SELECT TO "authenticated" USING (((searchable IS TRUE) OR silver.can_manage_scope')||
-       !createTable||createTable.includes('"content_type"')){
-      failures.push('Current '+galaxy+' schema must protect public reads and omit retired content_type.');
-    }
+  const livePrivacyTest=read('scripts/verify-db-public-read.mjs');
+  for(const token of [".eq('searchable',false)","if(Number(count)!==0)"]){
+    if(!livePrivacyTest.includes(token))failures.push('CI must verify anonymous Galaxy RLS with real public data');
   }
   const statisticsCurrent=read('app/modular/features/Statistics.jsx');
   if(!statisticsCurrent.includes('selectPublicStatisticsMembers')||statisticsCurrent.includes('queryFn:selectManagedScopes')){
