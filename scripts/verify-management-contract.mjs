@@ -65,7 +65,7 @@ must(dbContract.includes('copyKeywordLibraryClass')&&dbContract.includes("rpc('r
   'private and shared Keyword Class operations must remain explicitly scoped');
 must(edgeServer.includes('auth.getUser(token)')&&edgeServer.includes('set local role authenticated'),
   'trusted Edge writes must retain authenticated execution');
-must(liveProbe.includes(".eq('searchable',false)")&&liveProbe.includes('Number(count)!==0'),
+must(liveProbe.includes(".eq('searchable',false)")&&liveProbe.includes('if((data||[]).length!==0)'),
   'release checks must prove private Galaxy rows are not anonymously readable');
 must(editableBlocks.includes('block_eyebrow')&&editableBlocks.includes('block_subtitle')&&
   scopeData.includes('block_eyebrow')&&scopeData.includes('block_subtitle'),
