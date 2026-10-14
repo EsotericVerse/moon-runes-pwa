@@ -77,11 +77,18 @@ if(!failures.length){
   if(!featureState.includes('pgrst123')||!featureState.includes('資料查詢功能與資料庫介面不相容'))failures.push('Provider capability errors must not be mislabeled as read permissions.');
   const scopeData=read('app/loc/scope-data.js');
   for(const token of ["MANAGE_TABLE='silver.manage'",'scopeDataFromManageRows','defaultScopeData','selectManagedScopes'])if(!scopeData.includes(token))failures.push('Scope data source missing '+token);
-  const retiredContentType=read('sql/retire-content-type-20261011.sql');
-  if(!retiredContentType.includes("TO anonymous USING (searchable IS TRUE)")||
-     !retiredContentType.includes("FOR SELECT TO authenticated USING (searchable IS TRUE OR silver.can_manage_scope")||
-     !retiredContentType.includes("DROP COLUMN IF EXISTS content_type")){
-    failures.push('Anonymous Galaxy read must not invoke the administrator-only permission function.');
+  const currentSchema=read('sql/portable-current-schema.sql');
+  for(const scope of ['lo3rwang','lrunes']){
+    const galaxy=scope+'_galaxy';
+    const policies=currentSchema.split('\\n').filter(line=>line.startsWith('CREATE POLICY "'+galaxy+'_'));
+    const publicRead=policies.find(line=>line.includes('"'+galaxy+'_public_read"'));
+    const protectedRead=policies.find(line=>line.includes('"'+galaxy+'_authenticated_read"'));
+    const createTable=currentSchema.match(new RegExp('CREATE TABLE "silver"\\."'+galaxy+'" \\(([\\s\\S]*?)\\n\\);'))?.[1]||'';
+    if(!publicRead?.includes('FOR SELECT TO "anonymous" USING ((searchable IS TRUE))')||
+       !protectedRead?.includes('FOR SELECT TO "authenticated" USING (((searchable IS TRUE) OR silver.can_manage_scope')||
+       !createTable||createTable.includes('"content_type"')){
+      failures.push('Current '+galaxy+' schema must protect public reads and omit retired content_type.');
+    }
   }
   const statisticsCurrent=read('app/modular/features/Statistics.jsx');
   if(!statisticsCurrent.includes('selectPublicStatisticsMembers')||statisticsCurrent.includes('queryFn:selectManagedScopes')){
