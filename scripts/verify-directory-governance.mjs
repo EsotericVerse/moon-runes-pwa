@@ -3,8 +3,8 @@ import {basename,join,resolve} from 'node:path';
 
 const root=process.cwd();
 const failures=[];
-const allowedRootDirs=new Set(['.github','app','assets','governance','pics','public','scripts','sql','supabase','tests']);
-for(const name of ['app','assets','governance','pics','public','scripts','sql','supabase','tests']){
+const allowedRootDirs=new Set(['.github','app','assets','pics','public','scripts','supabase','tests']);
+for(const name of ['app','assets','pics','public','scripts','supabase','tests']){
   if(!existsSync(resolve(root,name)))failures.push('missing Current root directory: '+name+'/');
 }
 for(const name of readdirSync(root)){
@@ -25,6 +25,11 @@ function walk(dir,files=[]){
   return files;
 }
 const files=walk(root);
+if(files.some(path=>path.toLowerCase().endsWith('.sql')))
+  failures.push('LOC 1.0 must contain zero standalone SQL files');
+for(const file of ['README.md','COPYRIGHT.md','LunaRune66.xlsx','LunarRunesCardCut.pdf']){
+  if(!existsSync(resolve(root,file)))failures.push('missing LOC 1.0 artifact: '+file);
+}
 for(const sourceName of ['LunaRune66.xlsx','LunarRunesCardCut.pdf']){
   const matches=files.filter(path=>basename(path)===sourceName);
   if(matches.length!==1)failures.push(sourceName+' must have exactly one Current repository source; found '+matches.length);
