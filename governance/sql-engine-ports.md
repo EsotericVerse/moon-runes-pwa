@@ -23,25 +23,25 @@ Kysely API references:
 
 1. `app/loc/providers/sql-engine-ports.mjs`: **single engine port registry** shared by Admin UI and Edge target execution. All engine additions register here; LOC feature modules should never branch on cloud vendor.
 2. `app/loc/providers/selected-database-target.mjs`: validates chosen engine, provider, mode and **server-side connection alias**.
-3. `supabase/functions/loc-kysely/drivers.ts`: maps the selected port to the documented Kysely driver; credentials must only exist in server secrets.
+3. `supabase/functions/loc-kysely/drivers.ts`: maps the selected port to the documented Kysely driver; credentials stay on the trusted runtime. `database-connections.ts` stores Admin-entered credentials in encrypted Supabase Vault and resolves saved aliases.
 4. `app/loc/providers/kysely-runtime.mjs`: centralized parameterized SQL query builders (select, insert, update, delete, upsert).
 5. `supabase/functions/loc-kysely/index.ts`: authenticated request/session boundary. PostgreSQL uses existing role/RLS; a database without compatible RLS must implement a trusted authorization adapter before permitting protected data or mutations.
 6. `sql/portable-current-schema.sql`: current PostgreSQL schema snapshot. This file is **not** an automatically executable MySQL or SQL Server DDL conversion. Use Kysely's schema builder plus explicit type/index/constraint adapters when provisioning a destination, then the existing transactional snapshot importer.
 
 ## Connection configuration
 
-Select Admin → Database Settings → New target → Vendor = Generic SQL → Engine/Driver → connection alias. The alias identifies a **server-side** secret, not a password field.
+Admin → 資料庫設定 exposes **Type → Provider → Link**. PostgreSQL providers include Supabase, Neon and Standard SQL. MySQL and SQL Server use Standard SQL. The Link stores a server location, **not a password**.
 
-`LOC_DB_CONNECTIONS_JSON` (server/Edge secret only; do not commit real values):
-```json
-{
-  "office_mysql": {"engine": "mysql", "url": "mysql://USER:PASSWORD@HOST:3306/silver", "tls": true},
-  "azure_sql": {"engine": "mssql", "url": "mssql://USER:PASSWORD@HOST:1433/loc", "tls": true},
-  "cloud_postgres": {"engine": "postgres", "url": "postgresql://USER:PASSWORD@HOST:5432/loc", "tls": true}
-}
-```
+- Standard SQL: **Host/IP:Port**, Database, User, Password.
+- Supabase: Project ID or project URL, optional Region and Database/User/Password (required when configuring a new connection).
+- Neon: database endpoint or Data API URL (Project ID alone does not identify a PostgreSQL endpoint), optional Region, Database/User/Password.
+- Existing current Supabase / Neon connections may reuse their trusted server-side credentials without re-entering a password. A **changed Link without matching credentials must fail closed** rather than accidentally query the previous database.
 
-Target activation validates the secret alias and permissions before changing the selected row. The original Supabase control database stays authoritative for Admin target registry and authentication. Other engines **must already have a compatible schema, data and permissions**; selecting a driver does not itself create a database, migrate data or manufacture its credentials.
+The authenticated Admin save action calls `save_database_target` on the trusted Edge function. It validates Admin permissions, stores new credentials in **Supabase Vault**, and saves only non-secret connection metadata in `silver.database_targets`. After saving, the Kysely driver factory resolves the selected **Link + credential profile** dynamically on subsequent requests. It does not require source edits or an Edge redeploy for the selected target.
+
+The older `LOC_DB_CONNECTIONS_JSON` environment variable remains a compatibility fallback; it is no longer the required Admin workflow. Supabase stays the management and authentication control plane even if another database is selected.
+
+The target database must still exist and have the LOC schema and permissions available. Changing Type/Link does not migrate data or manufacture a user account. For now, Neon mirror requests remain read-only; MySQL and SQL Server protected writes need their authorization adapter before those operations may be enabled.
 
 ## Acceptance standard
 
