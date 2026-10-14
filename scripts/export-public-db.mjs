@@ -51,7 +51,7 @@ for(const table of [...tables].sort()){
   const snapshot=JSON.stringify(rows);
   fs.writeFileSync(path.join(outputDirectory,table+'.json'),snapshot,{mode:0o600});
   const related=inventory.constraints.filter(x=>x.schema_name==='silver'&&x.relname===table&&x.contype==='f')
-    .map(x=>x.definition.match(/REFERENCES\\s+(?:\\\"?silver\\\"?\\.)?\\\"?([a-z][a-z0-9_]*)\\\"?/i)?.[1])
+    .map(x=>x.definition.match(/REFERENCES\s+(?:"?silver"?\.)?"?([a-z][a-z0-9_]*)"?/i)?.[1])
     .filter(name=>name&&name!==table&&tables.has(name));
   manifest.push({table:'silver.'+table,columns,primaryKey:order,dependsOn:[...new Set(related)].map(name=>'silver.'+name),rows:rows.length,sha256:createHash('sha256').update(snapshot).digest('hex'),exportedAt:new Date().toISOString()});
   fs.writeFileSync(partialFile,JSON.stringify(manifest,null,2),{mode:0o600});
