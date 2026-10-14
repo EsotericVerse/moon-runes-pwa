@@ -14,6 +14,7 @@ assert.match(edge,/set local role authenticated/);
 assert.match(edge,/set local role anon/);
 assert.match(edge,/set local role anonymous/);
 assert.match(edge,/NEON_DATABASE_URL/);
+assert.match(edge,/candidates\.find\(isTransactionPooler\)/,'Edge prefers a transaction-pooler URL for PostgreSQL');
 assert.match(edge,/selectedDatabaseProvider\(rows\)/,'Kysely resolves the saved Admin provider for each request');
 assert.match(edge,/database\("supabase"\)\.transaction\(\)\.execute\(async \(trx\)/,'Admin target lookup and selected Supabase CRUD share one transaction connection');
 assert.match(edge,/Selected database target is unavailable/);

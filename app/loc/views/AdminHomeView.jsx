@@ -757,7 +757,7 @@ function DatabaseTarget(){
         <strong>LOC 資料路徑支援</strong>
         <p>Supabase Auth 保留登入與 session；LOC 資料請求由同一個 server-side Kysely endpoint 執行，並依此處選定的 PostgreSQL 目標即時路由。</p>
         <ul>
-          <li>目前已接通：Supabase PostgreSQL；Neon 僅供 LOC 鏡像唯讀，切換前須先在 Edge Function secret 設定 NEON_DATABASE_URL。</li>
+          <li>目前目標：Supabase PostgreSQL。Serverless Edge 高併發請使用 PostgreSQL transaction pooler；伺服器優先使用 Edge Function 的 SUPABASE_DB_URL，Neon 僅供 LOC 鏡像唯讀，切換前須安全設定 NEON_DATABASE_URL。</li>
           <li>PostgreSQL 相容服務（包括 Google Cloud SQL for PostgreSQL）可沿用同一資料庫協定與 Kysely driver；每個目標仍須提供伺服器端連線密鑰及相容的 LOC schema。</li>
           <li>MySQL、SQL Server：保留 portable schema 與 Kysely SQL 支援，目前尚未接入正式資料路由。</li>
           <li>Firebase／Firestore 是文件資料模型，不能直接切到 SQL endpoint；需要獨立的資料 adapter。</li>

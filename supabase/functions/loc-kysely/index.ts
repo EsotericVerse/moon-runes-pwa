@@ -37,9 +37,17 @@ const neonLocReadTables = new Set([
 
 function database(target: string) {
   const envName = target === "neon" ? "NEON_DATABASE_URL" : "SUPABASE_DB_URL";
-  let connectionString = Deno.env.get(envName);
-  if (!connectionString && target === "supabase") connectionString = Deno.env.get("DATABASE_URL");
+  const candidates = [Deno.env.get(envName), target === "supabase" ? Deno.env.get("DATABASE_URL") : null].filter((value): value is string => Boolean(value));
+  const isTransactionPooler = (value: string) => {
+    try {
+      const url = new URL(value);
+      return url.port === "6543" && (url.hostname.endsWith(".pooler.supabase.com") || url.hostname.startsWith("db."));
+    }
+    catch { return false; }
+  };
+  const connectionString = candidates.find(isTransactionPooler) || candidates[0];
   if (!connectionString) throw new Error(`${envName} is not configured`);
+  if (target === "supabase" && !isTransactionPooler(connectionString)) console.warn("[loc-kysely] Supabase Edge connection is not using a transaction pooler");
   let db = databases.get(target);
   if (!db) {
     const pool = new Pool({ connectionString, max: 1, idleTimeoutMillis: 1_000, connectionTimeoutMillis: 5_000 });
