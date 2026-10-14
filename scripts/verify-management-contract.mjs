@@ -320,7 +320,7 @@ must(scopeProvisioning.includes("create table silver.%I (like silver.lo3rwang_bl
 must(scopeProvisioning.includes('New Scopes start with no content rows.')&&!scopeProvisioning.includes('generate_series(1,4)'),'new Scope must not pre-populate blank homepage/governance frames');
 
 must(admin.includes("dbAuthRelation('silver.scope_registry')")&&admin.includes('parent_scope_id'),'Admin must read the DB Scope Registry hierarchy');
-must(admin.includes("silver.database_targets")&&admin.includes('Database Target')&&admin.includes('Project ID'),'Admin must persist explicit Supabase/Neon migration targets');
+must(admin.includes("silver.database_targets")&&admin.includes('save_database_target')&&admin.includes('SQL_ENGINE_OPTIONS.map')&&admin.includes('databaseProviderChoices')&&admin.includes('Link / Project'),'Admin must save and select explicit SQL type/provider/Link targets');
 must(admin.includes("silver.loc_theme")&&admin.includes('THEME_DB_COLUMNS')&&admin.includes('themeColumnForToken')&&admin.includes('THEME_TOKEN_KEYS')&&admin.includes('type="color"')&&!admin.includes('theme_attr'),'Admin Theme editor must persist typed theme columns without JSONB');
 must(dbContract.includes("schema('silver').rpc('management_write'")&&dbContract.includes('batchSize=200')&&!dbContract.includes("schema('api').rpc("),'client RPC calls must use exposed silver wrappers with bounded insert batches');
 must(dbContract.includes('`silver.${scope}_keywords`')&&!dbContract.includes("api.lo3rwang_keywords_manage"),'keyword library writes must resolve the current Scope keyword table');
