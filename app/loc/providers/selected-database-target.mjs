@@ -1,5 +1,6 @@
 // LOC database target registry. Engine and hosting vendor are separate concerns.
-export const DATABASE_ENGINES=Object.freeze(['postgres','mysql','mssql','sqlite']);
+import {SQL_ENGINE_OPTIONS,getSqlEnginePort} from './sql-engine-ports.mjs';
+export const DATABASE_ENGINES=Object.freeze(SQL_ENGINE_OPTIONS.map(entry=>entry.value));
 export const DATABASE_PROVIDERS=Object.freeze(['supabase','neon','custom']);
 export const CONNECTION_MODES=Object.freeze(['direct','pooler']);
 const aliasPattern=/^[a-z][a-z0-9_]{0,63}$/;
@@ -17,7 +18,7 @@ export function normalizeDatabaseTarget(row){
   const mode=String(row.connection_mode||(provider==='supabase'?'pooler':'direct'));
   if(!modes.has(mode))throw new Error('Invalid database connection mode');
   // SQLite is supported in portable/local Kysely, not as an ephemeral Edge database.
-  if(engine==='sqlite')throw new Error('SQLite requires a persistent trusted local/gateway runtime');
+  if(getSqlEnginePort(engine).runtime==='persistent-gateway')throw new Error('SQLite requires a persistent trusted local/gateway runtime');
   return {...row,provider,engine,connection_alias:alias,connection_mode:mode};
 }
 export function selectedDatabaseTarget(rows,{fallback='supabase'}={}){

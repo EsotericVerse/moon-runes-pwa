@@ -23,6 +23,7 @@ assert.match(edge,/Selected database target is unavailable/);
 assert.match(edge,/SUPABASE_PUBLISHABLE_KEYS/,'Edge Functions default publishable-key secret is supported without adding a browser secret');
 assert.match(edge,/Neon LOC mirror is read-only/);
 assert.match(edge,/selectTargetAtomically/,'Admin selection must use an atomic, permission-checked route');
+assert.match(edge,/resolveSqlExecutionPort/,'Kysely runtime selects the central port contract');
 assert.match(drivers,/MysqlDialect/);assert.match(drivers,/MssqlDialect/);
 assert.doesNotMatch(edge,/SUPABASE_SERVICE_ROLE_KEY|service_role/i,'trusted SQL must never execute as service_role');
 const neonAllowlistBlock=edge.match(/const neonLocReadTables = new Set\(\[([\s\S]*?)\]\);/)?.[1]||'';

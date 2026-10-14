@@ -6,6 +6,7 @@ import {scopeHref,duplicateDomainLabelError} from '../../modular/scope-registry'
 import {THEME_SLOTS,THEME_TOKEN_KEYS} from '../../modular/theme-registry';
 import {mergeThemeSlot,THEME_DB_COLUMNS,themeColumnForToken,themeUiId,themeNumber} from '../theme-data';
 import {useAccount} from '../use-account';
+import {SQL_ENGINE_OPTIONS} from '../providers/sql-engine-ports.mjs';
 import {AdminSourceCategories} from '../SourceCategoryEditor';
 import {
   deleteScope,deleteRows,insertRows,dbAuthClient,dbAuthRelation,manageScopeRegistry,provisionScope,syncManageScopeRow,updateRows
@@ -772,10 +773,7 @@ function DatabaseTarget(){
         <option value="custom">通用 SQL 連接</option>
       </select></label>
       <label><span>資料庫引擎 / Driver</span><select className="admin-native-select" value={row.provider==='custom'?row.engine||'postgres':'postgres'} disabled={row.provider!=='custom'} onChange={e=>patch('engine',e.target.value)}>
-        <option value="postgres">PostgreSQL（含 Google Cloud SQL、RDS、Azure）</option>
-        <option value="mysql">MySQL / MariaDB</option>
-        <option value="mssql">SQL Server / Azure SQL</option>
-        <option value="sqlite">SQLite（需持久化執行環境）</option>
+        {SQL_ENGINE_OPTIONS.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}
       </select></label>
       <label><span>連接方式</span><select className="admin-native-select" value={row.provider==='supabase'?'pooler':row.connection_mode||'direct'} disabled={row.provider==='supabase'} onChange={e=>patch('connection_mode',e.target.value)}>
         <option value="direct">標準連線</option><option value="pooler">連線池 / Pooler</option>

@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict';
 import {DATABASE_ENGINES,normalizeDatabaseTarget,selectedDatabaseTarget,selectedDatabaseProvider} from '../app/loc/providers/selected-database-target.mjs';
+import {SQL_ENGINE_OPTIONS,SQL_ENGINE_PORTS,getSqlRuntimeCapabilities,resolveSqlExecutionPort} from '../app/loc/providers/sql-engine-ports.mjs';
 assert.deepEqual(DATABASE_ENGINES,['postgres','mysql','mssql','sqlite']);
+assert.deepEqual(SQL_ENGINE_OPTIONS.map(item=>item.value),DATABASE_ENGINES);
+assert.equal(SQL_ENGINE_PORTS.length,4);
+assert.deepEqual(getSqlRuntimeCapabilities('mysql').operations,['select','insert','update','delete','upsert']);
+assert.equal(resolveSqlExecutionPort({engine:'mssql'}).session,'external-acl');
+assert.equal(resolveSqlExecutionPort({engine:'postgres'}).session,'postgres-rls');
+assert.equal(getSqlRuntimeCapabilities('sqlite').runtime,'persistent-gateway');
 assert.equal(selectedDatabaseProvider([{provider:'supabase',selected:true}]),'supabase');
 assert.equal(selectedDatabaseTarget([{provider:'neon',selected:true}]).engine,'postgres');
 assert.equal(normalizeDatabaseTarget({provider:'custom',engine:'mysql',connection_alias:'client_mysql'}).engine,'mysql');

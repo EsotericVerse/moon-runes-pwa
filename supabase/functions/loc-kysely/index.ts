@@ -4,6 +4,7 @@ import {databaseForTarget,resolveConnectionProfile} from "./drivers.ts";
 import { executeAllowlistedRpc, executeKyselyQuery, isKyselyClientError } from "../../../app/loc/providers/kysely-runtime.mjs";
 import { adaptNeonThemeRequest, normalizeNeonThemeRows } from "../../../app/loc/providers/neon-theme-compat.mjs";
 import { selectedDatabaseTarget } from "../../../app/loc/providers/selected-database-target.mjs";
+import {resolveSqlExecutionPort} from "../../../app/loc/providers/sql-engine-ports.mjs";
 
 const corsHeaders = {
   "access-control-allow-origin": "*",
@@ -35,12 +36,13 @@ const neonLocReadTables = new Set([
 
 const controlTarget={provider:"supabase",engine:"postgres",connection_alias:"supabase_current",connection_mode:"pooler"};
 async function executeRequest(trx: any, target: Record<string,any>, role: string, claims: Record<string, unknown>, body: Record<string, unknown>) {
-  if(target.engine!=="postgres"){
+  const executionPort=resolveSqlExecutionPort(target);
+  if(executionPort.session!=="postgres-rls"){
     // No PostgreSQL RLS or set-local-role on other engines. Until the target's
     // authorization adapter exists, permit only the public LOC read surface.
     if(body.kind!=="query"||body.operation!=="select"||body.schema!=="silver"||typeof body.table!=="string"||!neonLocReadTables.has(body.table))
       throw Object.assign(new Error("Cross-engine target only permits public LOC reads"),{httpStatus:403});
-    return await executeKyselyQuery(trx,body,{dialect:target.engine});
+    return await executeKyselyQuery(trx,body,{dialect:executionPort.engine});
   }
   if (role === "authenticated") await sql`set local role authenticated`.execute(trx);
   else if (target.provider === "neon") await sql`set local role anonymous`.execute(trx);
