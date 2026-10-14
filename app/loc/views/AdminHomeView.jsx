@@ -718,7 +718,7 @@ function DatabaseTarget(){
       if(!active)return;
       if(error){setStatus(error.message||'資料庫目標讀取失敗。');return;}
       const next=data||[];setRows(next);
-      setSelectedId(next.find(item=>item.selected)?.target_id||next[0]?.target_id||'');
+      setSelectedId(current=>next.some(item=>item.target_id===current)?current:(next.find(item=>item.selected)?.target_id||next[0]?.target_id||''));
     })();
     return()=>{active=false};
   },[revision]);
@@ -758,12 +758,12 @@ function DatabaseTarget(){
         username,
         database,
         password,
-        activate:true
+        activate:row.selected===true
       };
       const {error}=await dbAuthClient.schema('silver').rpc('save_database_target',{p_target:payload});
       if(error)throw new Error(error.message||'資料庫儲存或切換失敗。');
       setPassword('');setUsername('');setDatabase('');
-      setStatus('設定已套用。LOC 後續請求將使用選定的資料庫 Link。');
+      setStatus(row.selected?'目前使用中的主要資料庫設定已儲存。':'備用資料庫設定已儲存，主要資料庫維持不變。');
       setRevision(v=>v+1);
     }catch(error){setStatus(error?.message||'儲存失敗，原目標維持不變。');}
     finally{setSaving(false);}
@@ -792,11 +792,11 @@ function DatabaseTarget(){
       <label><span>User</span><input value={username} onChange={event=>setUsername(event.target.value)} autoComplete="off" placeholder={row.provider==='supabase'?'postgres':'DB username'}/></label>
       <label><span>Password</span><input type="password" value={password} onChange={event=>setPassword(event.target.value)} autoComplete="new-password" placeholder="已有憑證可留空"/></label>
       <div className="scope-management-wide-field">
-        <button type="button" className="loc-button primary" onClick={save} disabled={saving}>{saving?'儲存中…':'儲存並切換'}</button>
+        <button type="button" className="loc-button primary" onClick={save} disabled={saving}>{saving?'儲存中…':'儲存設定'}</button>
         {!row.selected&&!isManaged?<button type="button" className="loc-button" onClick={remove} disabled={saving}>刪除</button>:null}
       </div>
     </div>:null}
-    <p className="scope-status">Type 選擇 SQL Driver，服務商決定 Link 格式。已儲存的帳密可留空沿用；新連線需填 Database／User／Password。密碼加密保存在伺服器端，不會顯示在此頁。</p>
+    <p className="scope-status">Type 選擇 SQL Driver，服務商決定 Link 格式。儲存備用資料庫不會切換 Supabase 主要資料庫。已儲存的帳密可留空沿用；新連線需填 Database／User／Password。密碼加密保存在伺服器端，不會顯示在此頁。</p>
     {row?.provider==='neon'?<p className="scope-status">Neon 請填資料庫端點或 Data API URL；只有 Project ID 無法推算 PostgreSQL 連線端點。目前 Neon 鏡像維持唯讀。</p>:null}
     {status?<p className="scope-status" role="status">{status}</p>:null}
   </section>;
