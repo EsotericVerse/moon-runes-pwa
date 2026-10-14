@@ -42,17 +42,27 @@ function database(target: string) {
   if (!connectionString) throw new Error(`${envName} is not configured`);
   let db = databases.get(target);
   if (!db) {
-    const pool = new Pool({ connectionString, max: 1, idleTimeoutMillis: 10_000 });
+    const pool = new Pool({ connectionString, max: 1, idleTimeoutMillis: 1_000, connectionTimeoutMillis: 5_000 });
     db = new Kysely({ dialect: new PostgresDialect({ pool }) });
     databases.set(target, db);
   }
   return db;
 }
 
-async function selectedProvider() {
-  const rows = await database("supabase").selectFrom("silver.database_targets")
-    .select("provider").where("selected", "=", true).execute();
-  return selectedDatabaseProvider(rows);
+async function executeRequest(trx: any, target: string, role: string, claims: Record<string, unknown>, body: Record<string, unknown>) {
+  if (role === "authenticated") await sql`set local role authenticated`.execute(trx);
+  else if (target === "neon") await sql`set local role anonymous`.execute(trx);
+  else await sql`set local role anon`.execute(trx);
+  await sql`select set_config('request.jwt.claims', ${JSON.stringify(claims)}, true)`.execute(trx);
+  await sql`select set_config('request.jwt.claim.sub', ${String(claims.sub || "")}, true)`.execute(trx);
+  await sql`select set_config('request.jwt.claim.role', ${role}, true)`.execute(trx);
+  if (body.kind === "query") {
+    const theme = target === "neon" ? adaptNeonThemeRequest(body) : null;
+    const result = await executeKyselyQuery(trx, theme?.request || body);
+    if (theme) result.data = normalizeNeonThemeRows(result.data, theme.columns);
+    return result;
+  }
+  return await executeAllowlistedRpc(trx, body);
 }
 
 function json(body: unknown, status = 200, extraHeaders: Record<string, string> = {}) {
@@ -110,50 +120,49 @@ Deno.serve(async (request) => {
   }
 
   let target: string;
+  let resolvingTarget = false;
   try {
-    // Target administration remains on Supabase. Resolve all other requests
-    // from the saved Admin setting on every call so changes need no rebuild.
     const managesTargets = body.kind === "query" && body.schema === "silver" && body.table === "database_targets";
     target = requestedTarget === "configured"
-      ? managesTargets ? "supabase" : await selectedProvider()
+      ? "supabase"
       : String(requestedTarget);
-  } catch (error) {
-    console.error("[loc-kysely] Could not resolve selected database target", error);
-    return json({ error: { message: "Selected database target is unavailable" } }, 503);
-  }
-
-  if (target === "neon" && (body.kind !== "query" || body.operation !== "select")) {
-    return json({ error: { message: "Neon LOC mirror is read-only" } }, 403);
-  }
-  if (target === "neon" && (body.schema !== "silver" || typeof body.table !== "string" || !neonLocReadTables.has(body.table))) {
-    return json({ error: { message: "Neon LOC mirror table is not enabled" } }, 403);
-  }
-  if (target === "neon" && role === "anon") {
-    role = "anonymous";
-    claims.role = role;
-  }
-
-  try {
-    const result = await database(target).transaction().execute(async (trx) => {
-      if (role === "authenticated") await sql`set local role authenticated`.execute(trx);
-      else if (target === "neon") await sql`set local role anonymous`.execute(trx);
-      else await sql`set local role anon`.execute(trx);
-      await sql`select set_config('request.jwt.claims', ${JSON.stringify(claims)}, true)`.execute(trx);
-      await sql`select set_config('request.jwt.claim.sub', ${String(claims.sub || "")}, true)`.execute(trx);
-      await sql`select set_config('request.jwt.claim.role', ${role}, true)`.execute(trx);
-      if (body.kind === "query") {
-        const theme = target === "neon" ? adaptNeonThemeRequest(body) : null;
-        const result = await executeKyselyQuery(trx, theme?.request || body);
-        if (theme) result.data = normalizeNeonThemeRows(result.data, theme.columns);
-        return result;
+    if (requestedTarget === "configured" && !managesTargets) {
+      // Read the saved target before setting caller claims, then execute the
+      // Supabase path in that same transaction/connection. A target change is
+      // observed on the next request without doubling PostgreSQL connections.
+      resolvingTarget = true;
+      const resolved = await database("supabase").transaction().execute(async (trx) => {
+        const rows = await trx.selectFrom("silver.database_targets")
+          .select("provider").where("selected", "=", true).execute();
+        const selected = selectedDatabaseProvider(rows);
+        if (selected === "supabase") return { target: selected, result: await executeRequest(trx, selected, role, claims, body) };
+        return { target: selected };
+      });
+      resolvingTarget = false;
+      target = resolved.target;
+      if ("result" in resolved) {
+        const result = resolved.result;
+        return json(result, 200, result.count === null ? {} : { "content-range": `0-${Math.max(0, (Array.isArray(result.data) ? result.data.length : 0) - 1)}/${result.count}` });
       }
-      return await executeAllowlistedRpc(trx, body);
-    });
+    }
+
+    if (target === "neon" && (body.kind !== "query" || body.operation !== "select")) {
+      return json({ error: { message: "Neon LOC mirror is read-only" } }, 403);
+    }
+    if (target === "neon" && (body.schema !== "silver" || typeof body.table !== "string" || !neonLocReadTables.has(body.table))) {
+      return json({ error: { message: "Neon LOC mirror table is not enabled" } }, 403);
+    }
+    if (target === "neon" && role === "anon") {
+      role = "anonymous";
+      claims.role = role;
+    }
+
+    const result = await database(target).transaction().execute((trx) => executeRequest(trx, target, role, claims, body));
     return json(result, 200, result.count === null ? {} : { "content-range": `0-${Math.max(0, (Array.isArray(result.data) ? result.data.length : 0) - 1)}/${result.count}` });
   } catch (error) {
-    const status = isKyselyClientError(error) ? 400 : 500;
-    if (status === 500) console.error("[loc-kysely] Database request failed", error);
-    const message = status === 400 && error instanceof Error ? error.message : "Database request failed";
+    const status = resolvingTarget ? 503 : isKyselyClientError(error) ? 400 : 500;
+    if (status >= 500) console.error("[loc-kysely] Database request failed", error);
+    const message = resolvingTarget ? "Selected database target is unavailable" : status === 400 && error instanceof Error ? error.message : "Database request failed";
     return json({ error: { message, code: error instanceof Error && "code" in error ? String(error.code) : undefined } }, status);
   }
 });
