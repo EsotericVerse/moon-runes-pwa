@@ -126,6 +126,6 @@ test('Culture Daily Rune river must not reference the statistics-only earliest q
   const statistics=source.slice(end);
   assert.doesNotMatch(culture,/\bearliest\b/,'Culture must not access the statistics-only history query');
   assert.match(culture,/useDailyRuneWindow\(mode,from,to\)/);
-  assert.match(culture,/queryMessage\(query,range\)/);
+  assert.match(culture,/queryMessage\(query,range,text\)/);
   assert.match(statistics,/const earliest=useQuery\(/);
 });
