@@ -57,6 +57,13 @@ const sharedSearch=read('app/modular/features/Search.jsx');
 const runtimePorts=read('app/loc/providers/kysely-runtime.mjs');
 const edgeServer=read('supabase/functions/loc-kysely/index.ts');
 const liveProbe=read('scripts/verify-db-public-read.mjs');
+const functionalLabel=(source,tag,label)=>source.includes('<'+tag+'>'+label+'</'+tag+'>')||
+  source.includes('<'+tag+'><FieldText text="'+label+'"/></'+tag+'>');
+const functionalOption=(source,value,label)=>source.includes("<option value='"+value+"'>"+label+"</option>")||
+  source.includes("<option value='"+value+"'><FieldText text=\""+label+"\"/></option>");
+const functionalButton=(source,onClick,label)=>source.includes('onClick={'+onClick+'}>'+label+'</button>')||
+  source.includes('onClick={'+onClick+'}><FieldText text="'+label+'"/></button>');
+
 for(const name of ['provision_scope','manage_scope_registry','apply_keyword_classification','read_keyword_class']){
   must(runtimePorts.includes("'silver."+name+"'")&&dbContract.includes("rpc('"+name+"'"),
     name+' must remain available through authorized Kysely and Data API modules');
@@ -80,7 +87,7 @@ must(!galaxy.includes('include_in_time'),'generic search must not query nonexist
 must(galaxy.includes("searchFields:['label','note','status','style_description']")&&!galaxy.includes("'style_tags'"),'Search uses dedicated TEXT style body and no comma tags');
 must(culture.includes("value:['anchor','period','event','style_comment']"),'Culture reads independent style comments');
 must(editor.includes("['style_comment','風格標籤']")&&!editor.includes('style_tags')&&!cultureUi.includes('CultureStyleTagsEditor'),'Fourth style comment must use the shared Time editor, not legacy tag fields or a separate editor');
-must(editor.includes('payload.style_description=styleDescription')&&editor.includes('payload.anchor_ids=[anchorId]')&&cultureUi.includes("beginTimelineCreation(recordType,'')")&&cultureUi.includes("<option value='style_comment'>風格標籤</option>"),'Style create/update must use shared Type selector and save one independent TEXT description and one formal anchor');
+must(editor.includes('payload.style_description=styleDescription')&&editor.includes('payload.anchor_ids=[anchorId]')&&cultureUi.includes("beginTimelineCreation(recordType,'')")&&functionalOption(cultureUi,'style_comment','風格標籤'),'Style create/update must use shared Type selector and save one independent TEXT description and one formal anchor');
 must(cultureUi.includes('onClick={canEditWork')&&cultureUi.includes('isInteractiveTarget')&&!cultureUi.includes("UI_COPY.culture.editing:'編輯'"),'Culture existing works must enter editing by direct non-interactive card click without an Edit button');
 must(galaxy.includes('selectStyleKeywordIntroductions')&&!galaxy.includes('scopeCards('),'Search must prepend exact style-keyword introductions and must not use partial Scope-ID cards');
 must(globalSettings.includes('<ScopeGroupManagement scopeId="loc"/>')&&globalSettings.includes('canManageGlobal'),'Scope group membership management must be permission-gated in Settings');
@@ -189,7 +196,7 @@ must(sharedSearch.includes('startEditing')&&sharedSearch.includes('BlockNoteEdit
 must(editor.includes('風格標籤（新增／編輯）')&&editor.includes('風格專屬敘述（TEXT）')&&editor.includes("row.status==='needs_anchor'")&&!cultureUi.includes('尋找風格標籤')&&!cultureUi.includes('scope-culture-style-panel'),'Shared Time editor must let authors select existing or pending styles, without a top-level duplicate lookup');
 must(!cultureUi.includes('尋找既有定錨點')&&!cultureUi.includes('尋找風格標籤')&&
   cultureUi.includes('＋ 新增正式定錨點')&&cultureUi.includes("aria-label='新增時間長河紀錄'")&&
-  ["<option value='period'>時期</option>","<option value='event'>事件</option>","<option value='style_comment'>風格標籤</option>"].every(label=>cultureUi.includes(label))&&
+  [['period','時期'],['event','事件'],['style_comment','風格標籤']].every(([value,label])=>functionalOption(cultureUi,value,label))&&
   !cultureUi.includes('新增時期（選擇既有定錨點）')&&!cultureUi.includes('新增事件（選擇既有定錨點）'),
   'Time toolbar is one anchor button plus one three-option selector, with no redundant lookup dropdown');
 must(nativeTimeline.includes("anchor:'定錨點',event:'事件',style_comment:'風格標籤',period:'時期'"),'Time River fourth group must always be period, not style');
@@ -255,7 +262,7 @@ must(admin.includes('部分人員設定讀取失敗')&&admin.includes('configFai
 must(admin.includes('provisionScope(')&&admin.includes('＋ 新增人員')&&admin.includes('＋ 新增群組'),'Admin Registry must create Scope and Scope Group from the tree workspace');
 must(admin.includes("const provisionedScope=await provisionScope(")&&admin.includes('provisioned=true;')&&admin.includes('readAdminScopeConfig(id)')&&admin.includes('不要重複建立。')&&admin.includes('creatingScope?\'建立與驗證中…\':\'建立\''),'New Scope creation must verify config readiness, prevent duplicate clicks, and distinguish successful provisioning from pending cache');
 
-must(admin.includes('onClick={refresh}>重新讀取'),'Admin graph must allow manual reload after a dynamic Scope schema cache settles');
+must(functionalButton(admin,'refresh','重新讀取'),'Admin graph must allow manual reload after a dynamic Scope schema cache settles');
 must(admin.includes("value:UI_LOCALE_OPTIONS.find(option=>option.value===normalizeUiLocale(config?.locale))?.label")&&
   !admin.includes("{label:'預設語系',value:normalizeUiLocale(config?.locale)}")&&
   admin.includes("UI_LOCALE_OPTIONS.map(option=><option value={option.value}"),
@@ -269,9 +276,9 @@ must(adminCss.includes('.admin-delete-confirm')&&adminCss.includes('.admin-node-
 
 
 must(
-  !admin.includes('<span>排序</span>')&&admin.includes('<span>主題</span>')&&
+  !admin.includes('<span>排序</span>')&&functionalLabel(admin,'span','主題')&&
   !admin.includes('groupDraft.sort_order')&&
-  scopeSettings.includes('<span>主題</span>')&&
+  functionalLabel(scopeSettings,'span','主題')&&
   scopeSettings.includes("change('theme',")&&
   scopeSettings.includes('theme:String(draft.theme')&&
   admin.includes("active:current.scope_id==='loc'?true:current.active!==false"),
@@ -279,7 +286,7 @@ must(
 );
 const scopeCreatePanel=admin.split("    {kind==='scope'?<>")[1]?.split("    </>:<>")[0]||'';
 must(
-  scopeCreatePanel.includes('<span>人員代碼</span>')&&
+  functionalLabel(scopeCreatePanel,'span','人員代碼')&&
   scopeCreatePanel.includes('管理者 Email（必填）')&&scopeCreatePanel.includes('type="email" required')&&
   scopeCreatePanel.includes('預設語系')&&scopeCreatePanel.includes('UI_LOCALE_OPTIONS')&&
   scopeCreatePanel.split('<input').length===5&&
@@ -298,9 +305,9 @@ must(
   'Scope provisioning derives routing from ID, stores explicit owner/locale, auto Theme and initial Rune66 class'
 );
 must(
-  admin.includes('onClick={saveRegistryAndConfig}>儲存</button>')&&
-  admin.includes('onClick={cancelEdit}>取消</button>')&&
-  admin.includes('onClick={()=>onDeleteNode?.(current.scope_id)}>刪除</button>')&&
+  functionalButton(admin,'saveRegistryAndConfig','儲存')&&
+  functionalButton(admin,'cancelEdit','取消')&&
+  functionalButton(admin,'()=>onDeleteNode?.(current.scope_id)','刪除')&&
   admin.includes("patchRegistry('active',e.target.checked)")&&
   !admin.includes('開啟 UI')&&admin.includes('請輸入 {deletePending} 以確認')&&
   !admin.includes('onClick={copyRune66}')&&!admin.includes('copyRune66KeywordClass')&&

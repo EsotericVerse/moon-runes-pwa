@@ -378,7 +378,9 @@ if(!failures.length){
   }
   const timeEditor=read('app/modular/features/CultureTimelineEditor.jsx');
   if(!culture.includes('＋ 新增正式定錨點')||
-     !["<option value='period'>時期</option>","<option value='event'>事件</option>","<option value='style_comment'>風格標籤</option>"].every(option=>culture.includes(option))||
+     ![['period','時期'],['event','事件'],['style_comment','風格標籤']].every(([value,label])=>
+       culture.includes("<option value='"+value+"'>"+label+"</option>")||
+       culture.includes("<option value='"+value+"'><FieldText text=\""+label+"\"/></option>"))||
      !timeEditor.includes('風格標籤（新增／編輯）')||
      !timeEditor.includes('時期：1 或 2 個定錨點')||
      !timeEditor.includes('事件：固定選擇 2 個定錨點')||
