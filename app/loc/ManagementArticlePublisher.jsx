@@ -1,9 +1,8 @@
 'use client';
-import FieldText from '../i18n/FieldText';
+import UiText,{useUiText} from '../i18n/UiText';
 
 import {UI_COPY} from '../i18n/ui-copy';
-import {useUiCopy,useUiLocale} from '../i18n/ui-locale';
-import {translateUiField} from '../i18n/ui-functional-copy.mjs';
+import {useUiCopy} from '../i18n/ui-locale';
 import {useState} from 'react';
 import {insertRows} from './db-client.mjs';
 import {useAccount} from './use-account';
@@ -19,8 +18,7 @@ const blank=()=>({
 
 export default function ManagementArticlePublisher({scopeId}){
   const UI_COPY=useUiCopy();
-  const {locale}=useUiLocale();
-  const t=text=>translateUiField(locale,text);
+  const t=useUiText();
   const account=useAccount();
   const [draft,setDraft]=useState(blank());
   const [status,setStatus]=useState('');
@@ -38,7 +36,7 @@ export default function ManagementArticlePublisher({scopeId}){
       const now=new Date().toISOString();
       const uid=createUid8();
       const galaxy=account.scopeDataFor(scopeId)?.galaxy;
-      if(!galaxy)throw new Error('Scope data 未解析');
+      if(!galaxy)throw new Error(t('uiExtra.publisher.scopeUnavailable'));
 
       await insertRows(galaxy,[{
         uid,
@@ -71,8 +69,8 @@ export default function ManagementArticlePublisher({scopeId}){
           className="scope-publisher-title"
           value={draft.title}
           onChange={event=>change('title',event.target.value)}
-          placeholder={t('新增標題')}
-          aria-label={t('文章標題')}
+          placeholder={t('uiExtra.publisher.addTitle')}
+          aria-label={t('uiExtra.publisher.articleTitle')}
         />
         <BlockNoteEditor
           key={'publisher:'+scopeId}
@@ -83,23 +81,23 @@ export default function ManagementArticlePublisher({scopeId}){
 
       <aside className="scope-publisher-sidebar">
         <section className="scope-publisher-panel">
-          <h3><FieldText text="發佈"/></h3>
+          <h3><UiText id="uiExtra.publisher.publish"/></h3>
           <label>
             <span>{UI_COPY.management.articleTime}</span>
             <input type="datetime-local" value={draft.createtime} onChange={event=>change('createtime',event.target.value)}/>
           </label>
           <label className="scope-setting-toggle">
             <input type="checkbox" checked={draft.hidden===true} onChange={event=>change('hidden',event.target.checked)}/>
-            <FieldText text="不顯示於公開搜尋"/>
+            <UiText id="uiExtra.publisher.excludeSearch"/>
           </label>
-          <button className="loc-button primary" type="submit" disabled={busy}><FieldText text=<FieldText text={busy?'發佈中…':'發佈文章'}/>/></button>
+          <button className="loc-button primary" type="submit" disabled={busy}><UiText id={busy?'uiExtra.publisher.publishing':'uiExtra.publisher.publishArticle'}/></button>
         </section>
 
         <section className="scope-publisher-panel">
-          <h3><FieldText text="來源"/></h3>
+          <h3><UiText id="uiExtra.publisher.source"/></h3>
           <label>
             <span>{UI_COPY.management.articleSource}</span>
-            <input value={draft.source} onChange={event=>change('source',event.target.value)} placeholder="例如 threads / vocus / personal" required/>
+            <input value={draft.source} onChange={event=>change('source',event.target.value)} placeholder={t('uiExtra.publisher.sourceHint')} required/>
           </label>
           <label>
             <span>{UI_COPY.management.articleUrl}</span>
@@ -108,7 +106,7 @@ export default function ManagementArticlePublisher({scopeId}){
         </section>
 
         <details className="scope-publisher-panel">
-          <summary><FieldText text="進階關聯"/></summary>
+          <summary><UiText id="uiExtra.publisher.relations"/></summary>
           <label><span>source_id</span><input value={draft.source_id} onChange={event=>change('source_id',event.target.value)} placeholder={UI_COPY.management.articleParent}/></label>
           <label><span>target_id</span><input value={draft.target_id} onChange={event=>change('target_id',event.target.value)} placeholder={UI_COPY.management.articleTarget}/></label>
           <label><span>ref_id</span><input value={draft.ref_id} onChange={event=>change('ref_id',event.target.value)} placeholder={UI_COPY.management.articleReference}/></label>
