@@ -9,7 +9,7 @@ import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useAccount} from '../../loc/use-account';
 import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
 import {selectRows} from '../../loc/db-query.mjs';
-import {FEATURE_LOADING_MESSAGE} from '../feature-data-state';
+
 
 const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_ids,date_status,year_value,visibility,style_description';
 
@@ -49,7 +49,8 @@ function rowSortDate(row,anchors){
 }
 
 export default function CultureTimelineEditor({scopeId='',selectedRecordId='',suggestedAnchorDate='',suggestedRecordType='anchor',suggestedRequestNonce=0,onClose=null}){
-  const l=useUiCopy().timelineEditor;
+  const copy=useUiCopy();
+  const l=copy.timelineEditor;
   const account=useAccount();
   const searchParams=useSearchParams();
   const routeSuggestedAnchorDate=String(searchParams?.get?.('anchorDate')||'').slice(0,10);
@@ -316,7 +317,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
     <section className="loc-card scope-feature-card scope-culture-inline-editor">
     {query.error?<p className="scope-status scope-error">{query.error.message}</p>:null}
     {duplicateAnchorIds.length?<p className="scope-status scope-error">{l.duplicateDataPrefix}{duplicateAnchorIds.join('、')}{l.duplicateDataSuffix}</p>:null}
-    {query.isPending?<p className="scope-status">{FEATURE_LOADING_MESSAGE}</p>:null}
+    {query.isPending?<p className="scope-status">{copy.uiExtra.dataErrors.loading}</p>:null}
     <form onSubmit={save}>
       <label><span>{l.type}</span><select className="scope-select" value={draft.record_type} disabled={Boolean(selectedId)} onChange={event=>change('record_type',event.target.value)}>
         {EDITABLE_TYPES.map(([type,label])=><option key={type} value={type}>{l[label]}</option>)}
