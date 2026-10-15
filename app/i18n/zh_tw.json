@@ -1393,6 +1393,8 @@
     "notAllowedWord": "不可",
     "alreadyExistsWord": "已經存在",
     "deleteSuffix": "」？",
-    "copyRuneJoin": "」（"
+    "copyRuneJoin": "」（",
+    "groupDeletedPrefix": "Group「",
+    "uuidCopiedSuffix": "。"
   }
 }
