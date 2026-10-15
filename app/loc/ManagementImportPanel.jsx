@@ -8,7 +8,7 @@ import {useAccount} from './use-account';
 import {createUid8} from './uid';
 import {IMPORT_FIELD_ALIASES,importRowsFromJson,mappedImportValue,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
-import {sunoStyleMetaTags} from './suno-style-meta-tags.mjs';
+import {refreshSunoStyleMetaTags} from './suno-style-meta-tags.mjs';
 
 function sourceSuggestion(name=''){
   const value=String(name).toLowerCase();
@@ -470,11 +470,11 @@ function SunoImport({scopeId}){
   if(!account.canManageScopeSync(scopeId))return null;
   const change=(key,value)=>setDraft(current=>({
     ...current,[key]:value,
-    ...(key==='stylePrompt'&&!current.metaTagsEdited?{metaTags:sunoStyleMetaTags(value)}:{}),
+    ...(key==='stylePrompt'&&!current.metaTagsEdited?{metaTags:refreshSunoStyleMetaTags(value,current.metaTags)}:{}),
     ...(key==='metaTags'?{metaTagsEdited:true}:{})
   }));
   function regenerateStyleTags(){
-    setDraft(current=>({...current,metaTags:sunoStyleMetaTags(current.stylePrompt),metaTagsEdited:false}));
+    setDraft(current=>({...current,metaTags:refreshSunoStyleMetaTags(current.stylePrompt,current.metaTags),metaTagsEdited:false}));
   }
   function detectId(url){
     const match=String(url||'').match(/\/song\/([0-9a-f-]{20,})/i);return match?.[1]||'';
