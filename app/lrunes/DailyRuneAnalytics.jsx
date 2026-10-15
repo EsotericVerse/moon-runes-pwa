@@ -1,6 +1,7 @@
 'use client';
 
 import {useMemo,useState} from 'react';
+import {useUiCopy} from '../i18n/ui-locale';
 import {useQuery} from '@tanstack/react-query';
 import {
   Bar,BarChart,CartesianGrid,Line,LineChart,
@@ -21,14 +22,9 @@ import {
 const PHASE_DATE_TIME='T12:00:00+08:00';
 const FOCUS=Object.freeze({});
 const COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
-const DRAW_LABELS=Object.freeze({main:'主抽',supplement:'補抽',history_1:'歷史紀錄一',history_2:'歷史紀錄二'});
 const DRAW_ORDER=Object.freeze({main:0,supplement:1,history_1:2,history_2:3});
-const TIME_OPTIONS=Object.freeze([
-  {value:'1y',label:'最近一年'},
-  {value:'1m',label:'最近一個月'},
-  {value:'1w',label:'最近一週'},
-  {value:'custom',label:'指定日期區間'}
-]);
+const TIME_OPTION_KEYS=Object.freeze({ '1y':'lastYear','1m':'lastMonth','1w':'lastWeek',custom:'customRange'});
+const MODE_KEYS=Object.freeze({rune:'rune',rune_direction:'runeDirection',direction:'direction',triple:'triple'});
 
 function todayInTaipei(){
   try{
@@ -72,31 +68,33 @@ function useDailyRuneWindow(mode,customFrom,customTo){
   return {range,query,draws};
 }
 function RangeControls({mode,setMode,from,setFrom,to,setTo}){
+  const text=useUiCopy().dailyRune;
   return <div className="scope-stat-controls">
-    <label><span>統計區間</span>
+    <label><span>{text.range}</span>
       <select className="scope-select" value={mode} onChange={event=>setMode(event.target.value)}>
-        {TIME_OPTIONS.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}
+        {Object.entries(TIME_OPTION_KEYS).map(([value,key])=><option key={value} value={value}>{text[key]}</option>)}
       </select>
     </label>
     {mode==='custom'?<>
-      <label><span>開始日期</span><input className="scope-input" type="date" value={from} onChange={event=>setFrom(event.target.value)}/></label>
-      <label><span>結束日期</span><input className="scope-input" type="date" value={to} onChange={event=>setTo(event.target.value)}/></label>
+      <label><span>{text.start}</span><input className="scope-input" type="date" value={from} onChange={event=>setFrom(event.target.value)}/></label>
+      <label><span>{text.end}</span><input className="scope-input" type="date" value={to} onChange={event=>setTo(event.target.value)}/></label>
     </>:null}
   </div>;
 }
-function queryMessage(query,range){
-  if(!range)return '請指定有效的開始與結束日期。';
-  if(query.error)return '每日符文讀取失敗：'+String(query.error?.message||query.error);
-  if(query.isPending)return '正在讀取每日符文…';
+function queryMessage(query,range,text){
+  if(!range)return text.invalidRange;
+  if(query.error)return text.readError+String(query.error?.message||query.error);
+  if(query.isPending)return text.reading;
   return '';
 }
-function groupLabel(row){
-  return DRAW_LABELS[row.draw_kind]||'其他歷史紀錄';
+function groupLabel(row,text){
+  return ({main:text.drawMain,supplement:text.drawSupplement,history_1:text.historyOne,history_2:text.historyTwo})[row.draw_kind]||text.otherHistory;
 }
 function nextDay(date){return offsetDate(date,{days:1});}
 function riverLabel(row){return String(row?.display_label||'');}
 
 export function LrunesDailyCulturePanel(){
+  const text=useUiCopy().dailyRune;
   const [mode,setMode]=useState('1y');
   const [from,setFrom]=useState('');
   const [to,setTo]=useState('');
@@ -111,22 +109,22 @@ export function LrunesDailyCulturePanel(){
     id:'daily-rune:'+row.record_date+':'+row.draw_kind+':'+index,
     entry_id:'daily-rune:'+row.record_date+':'+row.draw_kind+':'+index,
     entry_type:'daily_rune',
-    group_label:groupLabel(row),
+    group_label:groupLabel(row,text),
     group_order:DRAW_ORDER[row.draw_kind]??4,
     start_date:row.record_date,
     end_date:nextDay(row.record_date),
     display_label:row.rune_name+' · '+row.direction+' · '+row.phase,
-    title:row.record_date+' · '+groupLabel(row)+' · '+row.rune_name+' · '+row.direction+' · '+row.phase+(row.phase_inferred?'（依紀錄日期推算）':''),
+    title:row.record_date+' · '+groupLabel(row,text)+' · '+row.rune_name+' · '+row.direction+' · '+row.phase+(row.phase_inferred?text.inferredRecord:''),
     item_count:1,
     daily_record:row
-  })),[draws]);
+  })),[draws,text]);
   const items=useMemo(()=>[...moonItems,...drawItems],[moonItems,drawItems]);
-  const message=queryMessage(query,range);
+  const message=queryMessage(query,range,text);
   return <section className="scope-card scope-culture-classification-river">
-    <h3>每日符文｜時間長河</h3>
+    <h3>{text.riverTitle}</h3>
     <RangeControls mode={mode} setMode={setMode} from={from} setFrom={setFrom} to={to} setTo={setTo}/>
     {message?<p className="scope-status">{message}</p>:null}
-    {!message?<p className="scope-status">{range.startDate} ～ {range.endDate} · {summary.dayCount} 個紀錄日 · {summary.recordCount} 筆抽取紀錄</p>:null}
+    {!message?<p className="scope-status">{range.startDate} ～ {range.endDate} · {summary.dayCount}{text.days}{summary.recordCount}{text.drawRecords}</p>:null}
     {range&&items.length?<CultureTimeline
       items={items}
       labelOf={riverLabel}
@@ -136,11 +134,12 @@ export function LrunesDailyCulturePanel(){
       windowEnd={nextDay(range.endDate)}
       onSelect={item=>setSelected(item?.raw?.daily_record||null)}
     />:null}
-    {selected?<p className="scope-status">所選紀錄：{selected.record_date} · {groupLabel(selected)} · {selected.rune_name} · {selected.direction} · {selected.phase}{selected.phase_inferred?'（依日期推算）':''}</p>:null}
+    {selected?<p className="scope-status">{text.selectedRecord}{selected.record_date} · {groupLabel(selected,text)} · {selected.rune_name} · {selected.direction} · {selected.phase}{selected.phase_inferred?text.inferredDate:''}</p>:null}
   </section>;
 }
 
 export function LrunesDailyStatisticsPanel(){
+  const text=useUiCopy().dailyRune;
   const [zoomLevel,setZoomLevel]=useState(0);
   const today=useMemo(()=>todayInTaipei(),[]);
   const earliest=useQuery({
@@ -163,17 +162,17 @@ export function LrunesDailyStatisticsPanel(){
   const runeSeries=featured.map(row=>({key:row.key,label:row.label}));
   const runeCategories=pagination.rows.map(row=>({name:row.label,value:row.count}));
   const chartOptions=availableStatisticChartTypes({rows:timeline,series:runeSeries,distribution:runeCategories});
-  const availableCharts=[{value:'bar',label:'排行長條圖'},...chartOptions.filter(([id])=>id!=='bar').map(([value,label])=>({value,label}))];
+  const availableCharts=[{value:'bar',label:text.rankingBar},...chartOptions.filter(([id])=>id!=='bar').map(([value,label])=>({value,label}))];
   const selectedChart=availableCharts.some(item=>item.value===chart)?chart:'bar';
-  const message=queryMessage(query,range);
+  const message=queryMessage(query,range,text);
   return <>
     <div className="scope-stat-controls">
-      <label><span>每日符文分析模式</span>
+      <label><span>{text.analyticsMode}</span>
         <select className="scope-select" value={analysisMode} onChange={event=>{setAnalysisMode(event.target.value);setPage(1);}}>
-          {DAILY_RUNE_MODES.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}
+          {DAILY_RUNE_MODES.map(option=><option key={option.value} value={option.value}>{text[MODE_KEYS[option.value]]||option.label}</option>)}
         </select>
       </label>
-      <label><span>圖表</span>
+      <label><span>{text.chart}</span>
         <select className="scope-select" value={selectedChart} onChange={event=>setChart(event.target.value)}>
           {availableCharts.map(item=><option value={item.value} key={item.value}>{item.label}</option>)}
         </select>
@@ -181,20 +180,20 @@ export function LrunesDailyStatisticsPanel(){
     </div>
     {message?<p className="scope-status">{message}</p>:null}
     {!message?<>
-      <p className="scope-status">{range.startDate} ～ {range.endDate} · {summary.dayCount} 個紀錄日 · {summary.recordCount} 筆抽取 · {analysisMode==='direction'?'四種位向（含零次）':ranking.length+' 種實際出現的組合'}</p>
+      <p className="scope-status">{range.startDate} ～ {range.endDate} · {summary.dayCount}{text.days}{summary.recordCount}{text.drawCount}{analysisMode==='direction'?text.allDirections:ranking.length+text.actualCombinations}</p>
       {!ranking.length?<StatisticsChartFrame level={zoomLevel} onChange={value=>{setZoomLevel(value);setPage(1);}} range={zoomRange} idPrefix="daily-rune-stat">
-        <p className="scope-status">目前區間沒有每日符文紀錄。</p>
+        <p className="scope-status">{text.empty}</p>
       </StatisticsChartFrame>:null}
       {ranking.length?<><div className="scope-ranking">
         {pagination.rows.map((row,index)=><div key={row.key}>
           <strong>{(pagination.currentPage-1)*pagination.pageSize+index+1}. {row.label}</strong>
-          <span>{row.count.toLocaleString()} 次 · {row.ratio.toFixed(1)}%</span>
+          <span>{row.count.toLocaleString()}{text.times}{row.ratio.toFixed(1)}%</span>
         </div>)}
       </div>
-      {pagination.totalPages>1?<nav className="scope-stat-controls" aria-label="每日符文排行榜分頁">
-        <button type="button" className="loc-button" disabled={pagination.currentPage===1} onClick={()=>setPage(current=>Math.max(1,current-1))}>上一頁</button>
-        <span className="scope-status">第 {pagination.currentPage} / {pagination.totalPages} 頁（每頁 8 筆）</span>
-        <button type="button" className="loc-button" disabled={pagination.currentPage===pagination.totalPages} onClick={()=>setPage(current=>Math.min(pagination.totalPages,current+1))}>下一頁</button>
+      {pagination.totalPages>1?<nav className="scope-stat-controls" aria-label={text.rankingPages}>
+        <button type="button" className="loc-button" disabled={pagination.currentPage===1} onClick={()=>setPage(current=>Math.max(1,current-1))}>{text.previous}</button>
+        <span className="scope-status">{text.page}{pagination.currentPage} / {pagination.totalPages}{text.pageSize}</span>
+        <button type="button" className="loc-button" disabled={pagination.currentPage===pagination.totalPages} onClick={()=>setPage(current=>Math.min(pagination.totalPages,current+1))}>{text.next}</button>
       </nav>:null}
       <StatisticsChartFrame level={zoomLevel} onChange={value=>{setZoomLevel(value);setPage(1);}} range={zoomRange} idPrefix="daily-rune-stat">
       {selectedChart==='bar'?<ResponsiveContainer width="100%" height={Math.max(220,bars.length*29+50)}>
@@ -203,7 +202,7 @@ export function LrunesDailyStatisticsPanel(){
           <XAxis type="number" allowDecimals={false} tick={{fill:'var(--loc-text)'}}/>
           <YAxis type="category" dataKey="label" width={analysisMode==='triple'?195:analysisMode==='rune_direction'?135:82} tick={{fill:'var(--loc-text)',fontSize:12}}/>
           <Tooltip contentStyle={{background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)'}}/>
-          <Bar dataKey="value" name="抽取次數" fill="var(--loc-accent)" radius={[0,4,4,0]}/>
+          <Bar dataKey="value" name={text.extractions} fill="var(--loc-accent)" radius={[0,4,4,0]}/>
         </BarChart>
       </ResponsiveContainer>:<StatisticsMultiChart
         type={selectedChart} rows={timeline} series={runeSeries} distribution={runeCategories} height={360}
