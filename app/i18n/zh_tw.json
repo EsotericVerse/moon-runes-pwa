@@ -932,6 +932,28 @@
       "body": "下方正文（BlockNote）",
       "clickToCreate": "點此建立文字框。",
       "addBlock": "＋ 新增文字框"
+    },
+    "sourceCategory": {
+      "groupTitle": "群組來源分類",
+      "groupGuide": "僅 LOC Admin 設定來源主分類；個別人員的來源命名及歸屬在各自的統計頁管理。",
+      "code": "分類代碼",
+      "name": "分類名稱",
+      "createGroup": "新增群組來源分類",
+      "saveName": "儲存名稱",
+      "disable": "停用",
+      "enable": "啟用",
+      "defaultMap": "群組來源預設歸屬",
+      "rawSource": "原始來源",
+      "assign": "指定歸屬",
+      "personalTitle": "個人自訂來源分類",
+      "personalGuide": "只管理目前人員的原始來源名稱及群組歸屬，不改動作品正文與其他 Scope。",
+      "displayName": "自訂顯示名稱",
+      "savePersonal": "儲存個人來源分類",
+      "customName": "自訂名稱",
+      "badCode": "分類代碼或名稱無效",
+      "chooseSource": "請選擇來源與群組來源分類",
+      "badSource": "來源名稱無效",
+      "chooseGroup": "請先選擇有效的群組來源分類"
     }
   }
 }
