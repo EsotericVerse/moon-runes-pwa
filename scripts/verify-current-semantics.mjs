@@ -226,7 +226,7 @@ if(!failures.length){
     "type==='scatter'","type==='radar'","type==='radial'",
     'scatterPair(time,fields)','radarPeriodComparison(time,fields)',
     'activePeriodCoverage(time,fields)','movingAverage(time,fields,totalKey)',
-    'name="近三期移動平均"','name="前半期占比"','name="後半期占比"'
+    "t('uiExtra.chartLabels.movingAverage')","t('uiExtra.chartLabels.firstHalf')","t('uiExtra.chartLabels.lastHalf')"'
   ])if(!statisticsMultiChart.includes(token)){
     failures.push('Statistics chart must have a real analytic purpose: '+token);
   }
@@ -320,19 +320,19 @@ if(!failures.length){
   const cultureQuery=read('app/loc/culture-query.js');
   const queryContract=read('app/loc/query-contract.mjs');
   if(!queryContract.includes('DB_QUERY_BATCH_SIZE=1000'))failures.push('Portable Data API batch size must remain 1000.');
-  for(const token of ['ScopeGroupStatistics','ScopeStatisticsPanel','statisticsZoomWindow','selectPublicStatisticsMembers','sharedScopeDensity(','LOC 合併總數','所屬人員分布'])if(!statistics.includes(token))failures.push('Statistics aggregate/query-window contract missing '+token);
+  for(const token of ['ScopeGroupStatistics','ScopeStatisticsPanel','statisticsZoomWindow','selectPublicStatisticsMembers','sharedScopeDensity(','uiExtra.statisticsView.memberCount','uiExtra.statisticsView.memberDistribution'])if(!statistics.includes(token))failures.push('Statistics aggregate/query-window contract missing '+token);
   if(statistics.includes("?{startDate:customFrom,endDate:customTo}\n    :{startDate:'',endDate:''}"))failures.push('Preset Statistics ranges must not fall back to an unbounded database query.');
   if(galaxy.includes("{column:'source_name',operator:'neq',value:''}"))failures.push('Unknown source rows must reach Statistics and map to Others instead of being discarded.');
   for(const token of ['uiExtra.statisticsView.displayStyle','uiExtra.statisticsView.classRuneTitle','uiExtra.statisticsView.runeRankTitle'])if(!statistics.includes(token))failures.push('Statistics style-filter presentation missing '+token);
   // Group is an already-aggregated ranking; page only its rendered rows, while
   // keeping the full result set for percentages and stable rank ordering.
-  for(const token of ['RUNE_RANKING_PAGE_SIZE=8','groupRows.slice((activeGroupPage-1)*RUNE_RANKING_PAGE_SIZE,activeGroupPage*RUNE_RANKING_PAGE_SIZE)','visibleGroupRows.map','Group 統計分頁','setGroupPage(activeGroupPage-1)','setGroupPage(activeGroupPage+1)']){
+  for(const token of ['RUNE_RANKING_PAGE_SIZE=8','groupRows.slice((activeGroupPage-1)*RUNE_RANKING_PAGE_SIZE,activeGroupPage*RUNE_RANKING_PAGE_SIZE)','visibleGroupRows.map','uiExtra.statisticsView.groupPageNav','setGroupPage(activeGroupPage-1)','setGroupPage(activeGroupPage+1)']){
     if(!statistics.includes(token))failures.push('Statistics Group ranking pagination missing '+token);
   }
-  if(!statistics.includes('<LocMemberIntersection')||!statistics.includes('所屬人員分布'))failures.push('LOC member-level cross comparison missing.');
+  if(!statistics.includes('<LocMemberIntersection')||!statistics.includes('uiExtra.statisticsView.memberDistribution'))failures.push('LOC member-level cross comparison missing.');
   if(statistics.includes('{groupRows.map(row=>'))failures.push('Statistics Group ranking must not render every item in one long list.');
   const keywordPanel=read('app/loc/KeywordLibraryPanel.jsx');
-  for(const token of ["const [styleFilter,setStyleFilter]=useState('none')","<ScopeStatisticsResults","scopeHref(scopeId,'statics/keywords')","關鍵詞設定"]){
+  for(const token of ["const [styleFilter,setStyleFilter]=useState('none')","<ScopeStatisticsResults","scopeHref(scopeId,'statics/keywords')","uiExtra.statisticsView.keywordSettings"]){
     if(!statistics.includes(token))failures.push('Statistics must defer keyword analysis and link its independent editor: '+token);
   }
   if(statistics.includes('KeywordLibraryPanel')||statistics.includes("current==='keywords'"))failures.push('Statistics must not mount the keyword editor in the same route.');
