@@ -1,7 +1,5 @@
 'use client';
-import FieldText from '../i18n/FieldText';
 import {useUiLocale} from '../i18n/ui-locale';
-import {translateUiField} from '../i18n/ui-functional-copy.mjs';
 import UiText,{useUiText} from '../i18n/UiText';
 
 import {useEffect,useState} from 'react';
@@ -31,7 +29,6 @@ function aliasList(value){
 
 export default function ScopeSettingsPanel({scopeId}){
   const {locale}=useUiLocale();
-  const t=text=>translateUiField(locale,text);
   const uiT=useUiText();
   const account=useAccount();
   const [draft,setDraft]=useState(EMPTY);
@@ -88,24 +85,24 @@ export default function ScopeSettingsPanel({scopeId}){
   }
 
   return <section className="loc-card scope-feature-card">
-    <p className="loc-eyebrow"><FieldText text="個人設定"/></p>
-    <h2><FieldText text="基本與雜項設定"/></h2>
+    <p className="loc-eyebrow"><UiText id="uiExtra.scopeSettings.personalTitle"/></p>
+    <h2><UiText id="uiExtra.scopeSettings.miscellaneous"/></h2>
     {loading?<p className="scope-status"><UiText id="common.loading"/></p>:null}
     {!loading?<form onSubmit={save}>
       <div className="scope-management-fields">
         <label>
-          <span><FieldText text="顯示名稱"/></span>
+          <span><UiText id="uiExtra.scopeSettings.displayName"/></span>
           <input className="scope-search-input" value={draft.display_name||''} onChange={event=>change('display_name',event.target.value)} required/>
         </label>
         <label>
-          <span><FieldText text="主題"/></span>
+          <span><UiText id="common.theme"/></span>
           <select className="scope-select" value={draft.theme||'system-default'} onChange={event=>change('theme',event.target.value)}>
-            <option value="system-default"><FieldText text="系統預設（日／夜自動）"/></option>
+            <option value="system-default"><UiText id="uiExtra.scopeSettings.systemDayNight"/></option>
             {THEME_SLOTS.map(theme=><option value={theme.id} key={theme.id}>{theme.label}</option>)}
           </select>
         </label>
         <label>
-          <span><FieldText text="預設語系"/></span>
+          <span><UiText id="uiExtra.scopeSettings.defaultLocale"/></span>
           <select className="scope-select" value={normalizeUiLocale(draft.locale)} onChange={event=>change('locale',normalizeUiLocale(event.target.value))}>
             {UI_LOCALE_OPTIONS.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}
           </select>
@@ -113,26 +110,26 @@ export default function ScopeSettingsPanel({scopeId}){
       </div>
 
       <label className="scope-management-wide-field">
-        <span><FieldText text="搜尋頁介紹"/></span>
+        <span><UiText id="uiExtra.scopeSettings.searchIntro"/></span>
         <textarea className="scope-search-input" rows={4} value={draft.search_intro||''} onChange={event=>change('search_intro',event.target.value)} placeholder={uiT('uiExtra.scopeSettings.searchNameHint')}/>
       </label>
 
       <label className="scope-management-wide-field">
-        <span><FieldText text="搜尋別名"/></span>
+        <span><UiText id="uiExtra.scopeSettings.searchAliases"/></span>
         <textarea className="scope-search-input" rows={5} value={aliases} onChange={event=>setAliases(event.target.value)} placeholder={uiT('uiExtra.scopeSettings.aliasesHint')}/>
       </label>
 
       <fieldset className="scope-management-wide-field">
-        <legend><FieldText text="公開功能"/></legend>
+        <legend><UiText id="uiExtra.scopeSettings.publicFeatures"/></legend>
         <div className="scope-editor-options">
-          <label><input type="checkbox" checked={draft.search_able!==false} onChange={event=>change('search_able',event.target.checked)}/><FieldText text="搜尋"/></label>
-          <label><input type="checkbox" checked={draft.statistics_able!==false} onChange={event=>change('statistics_able',event.target.checked)}/><FieldText text="統計"/></label>
-          <label><input type="checkbox" checked={draft.culture_able!==false} onChange={event=>change('culture_able',event.target.checked)}/><FieldText text="文化"/></label>
+          <label><input type="checkbox" checked={draft.search_able!==false} onChange={event=>change('search_able',event.target.checked)}/><UiText id="features.search.title"/></label>
+          <label><input type="checkbox" checked={draft.statistics_able!==false} onChange={event=>change('statistics_able',event.target.checked)}/><UiText id="features.statics.title"/></label>
+          <label><input type="checkbox" checked={draft.culture_able!==false} onChange={event=>change('culture_able',event.target.checked)}/><UiText id="features.culture.title"/></label>
         </div>
       </fieldset>
 
       {message?<p className="scope-status" role="status">{message}</p>:null}
-      <div className="scope-tabs"><button type="submit" disabled={busy}><FieldText text={busy?'儲存中…':'更新設定'}/></button></div>
+      <div className="scope-tabs"><button type="submit" disabled={busy}><UiText id={busy?'common.saving':'uiExtra.scopeSettings.update'}/></button></div>
     </form>:null}
   </section>;
 }
