@@ -932,6 +932,28 @@
       "body": "本文（BlockNote）",
       "clickToCreate": "クリックしてテキストカードを追加",
       "addBlock": "＋ テキストカードを追加"
+    },
+    "sourceCategory": {
+      "groupTitle": "グループのソース分類",
+      "groupGuide": "LOC 管理者がソースの基本分類を設定します。各メンバーのソース名と所属分類はそれぞれの統計ページで管理します。",
+      "code": "分類コード",
+      "name": "分類名",
+      "createGroup": "グループソース分類を追加",
+      "saveName": "名前を保存",
+      "disable": "無効化",
+      "enable": "有効化",
+      "defaultMap": "グループ分類の既定割当",
+      "rawSource": "元のソース",
+      "assign": "分類を割り当てる",
+      "personalTitle": "個人のソース分類",
+      "personalGuide": "現在のメンバーのソース名と所属分類のみ管理します。作品本文や他の Scope は変更しません。",
+      "displayName": "カスタム表示名",
+      "savePersonal": "個人ソース分類を保存",
+      "customName": "カスタム名",
+      "badCode": "分類コードまたは名前が無効です",
+      "chooseSource": "ソースとグループ分類を選択してください",
+      "badSource": "ソース名が無効です",
+      "chooseGroup": "有効なグループ分類を選択してください"
     }
   }
 }
