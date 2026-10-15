@@ -751,6 +751,28 @@
       "body": "下方正文（BlockNote）",
       "clickToCreate": "点击建立文字框。",
       "addBlock": "＋ 新建文字框"
+    },
+    "sourceCategory": {
+      "groupTitle": "群组来源分类",
+      "groupGuide": "仅 LOC 管理员设置来源主分类；各成员的来源命名和归属由自己的统计页管理。",
+      "code": "分类代码",
+      "name": "分类名称",
+      "createGroup": "新增群组来源分类",
+      "saveName": "保存名称",
+      "disable": "停用",
+      "enable": "启用",
+      "defaultMap": "群组来源默认归属",
+      "rawSource": "原始来源",
+      "assign": "指定归属",
+      "personalTitle": "个人自定义来源分类",
+      "personalGuide": "仅管理当前成员的原始来源名称及群组归属，不修改作品正文或其他 Scope。",
+      "displayName": "自定义显示名称",
+      "savePersonal": "保存个人来源分类",
+      "customName": "自定义名称",
+      "badCode": "分类代码或名称无效",
+      "chooseSource": "请选择来源与群组来源分类",
+      "badSource": "来源名称无效",
+      "chooseGroup": "请先选择有效的群组来源分类"
     }
   }
 }
