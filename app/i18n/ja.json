@@ -676,7 +676,13 @@
       "bodyManaged": "上の全文エディターで管理",
       "memberSearch": "メンバー検索",
       "articleDateInvalid": "記事の日時形式が無効です。",
-      "groupListInvalid": "group_lists は有効な JSON である必要があります。"
+      "groupListInvalid": "group_lists は有効な JSON である必要があります。",
+      "attributeTitle": "記事の属性",
+      "attrShown": "全文は上に表示されています",
+      "memberSource": "メンバー",
+      "memberHomeLink": "メンバーのホームを開く",
+      "partialExtendedData": "（一部の関連データを取得できません）",
+      "classIdInvalid": "class_id は数値で指定してください。"
     },
     "statisticsUI": {
       "dailyRune": "毎日のルーン",
