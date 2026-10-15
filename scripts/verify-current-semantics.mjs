@@ -378,10 +378,9 @@ if(!failures.length){
     failures.push('First Time river must show style as third type, period fourth, and use one compact add selector.');
   }
   const timeEditor=read('app/modular/features/CultureTimelineEditor.jsx');
-  if(!culture.includes('＋ 新增正式定錨點')||
-     ![['period','時期'],['event','事件'],['style_comment','風格標籤']].every(([value,label])=>
-       culture.includes("<option value='"+value+"'>"+label+"</option>")||
-       culture.includes("<option value='"+value+"'><FieldText text=\""+label+"\"/></option>"))||
+  if(!culture.includes('uiExtra.cultureView.ddOfficialAnchor')||
+     ![['period','uiExtra.cultureView.period'],['event','uiExtra.cultureView.event'],['style_comment','uiExtra.cultureView.styleTag']].every(([value,id])=>
+        culture.includes("<option value='"+value+"'><UiText id=\""+id+"\"/></option>"))||
      !timeEditor.includes('l.styleEditor')||
      !timeEditor.includes('l.periodHint')||
      !timeEditor.includes('l.eventHint')||
