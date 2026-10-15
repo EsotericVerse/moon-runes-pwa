@@ -1393,6 +1393,8 @@
     "notAllowedWord": "不可",
     "alreadyExistsWord": "既に存在",
     "deleteSuffix": "」を削除しますか？",
-    "copyRuneJoin": "」（"
+    "copyRuneJoin": "」（",
+    "groupDeletedPrefix": "Group「",
+    "uuidCopiedSuffix": "。"
   }
 }
