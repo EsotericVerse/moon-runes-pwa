@@ -167,7 +167,7 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
           <label><span>{l.comparisonDimensions}</span>
             <select className="scope-select" value={kindFilter} onChange={e=>{setKindFilter(e.target.value);setSelected([])}}>
               <option value="all">{l.allCategories}</option>
-              {DIMENSIONS.map(item=><option key={item.kind} value={item.kind}{translateUiField(locale,item.label)}</option>)}
+              {DIMENSIONS.map(item=><option key={item.kind} value={item.kind}>{translateUiField(locale,item.label)}</option>)}
             </select>
           </label>
           <label><span><FieldText text="圖表"/></span>
