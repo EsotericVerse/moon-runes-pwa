@@ -1,5 +1,5 @@
 'use client';
-import FieldText from '../i18n/FieldText';
+import UiText,{useUiText} from '../i18n/UiText';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
@@ -233,6 +233,7 @@ function IncrementalLoad({
   label='…',
   scrollRootRef=null
 }){
+  const t=useUiText();
   const sentinelRef=useRef(null);
   const loadingRef=useRef(Boolean(loading));
   const readyAtRef=useRef(0);
@@ -254,7 +255,7 @@ function IncrementalLoad({
 
   if(!hasMore)return null;
   return <div ref={sentinelRef} className={'scope-load-sentinel'+(loading?' is-loading':'')} aria-live="polite">
-    <button type="button" className="loc-button" disabled={loading} onClick={()=>onLoadMore?.()} aria-label="載入更多內容"><FieldText text={loading?'載入中…':'載入更多'}/></button>
+    <button type="button" className="loc-button" disabled={loading} onClick={()=>onLoadMore?.()} aria-label={t('uiExtra.pagination.loadMoreAria')}><UiText id={loading?'uiExtra.pagination.loading':'uiExtra.pagination.loadMore'}/></button>
   </div>;
 }
 
