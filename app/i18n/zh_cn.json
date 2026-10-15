@@ -773,6 +773,31 @@
       "chooseSource": "请选择来源与群组来源分类",
       "badSource": "来源名称无效",
       "chooseGroup": "请先选择有效的群组来源分类"
+    },
+    "sharing": {
+      "updated": "已更新群组来源分类的共享统计设置。",
+      "title": "群组来源分类 · 共享统计",
+      "guide": "各群组来源沿用现有共享统计设置；本人可取消勾选，将该分类排除于群组合并和成员交互统计。个人统计、搜索和文化页不受影响。",
+      "allow": "允许纳入其他成员的统计",
+      "loading": "正在读取分类共享设置…",
+      "aria": "群组来源分类共享设置"
+    },
+    "publisher": {
+      "scopeUnavailable": "无法解析 Scope 数据",
+      "addTitle": "新增标题",
+      "articleTitle": "文章标题",
+      "publish": "发布",
+      "excludeSearch": "不显示于公开搜索",
+      "publishing": "发布中…",
+      "publishArticle": "发布文章",
+      "source": "来源",
+      "sourceHint": "例如 threads / vocus / personal",
+      "relations": "高级关联"
+    },
+    "pagination": {
+      "loading": "加载中…",
+      "loadMore": "加载更多",
+      "loadMoreAria": "加载更多内容"
     }
   }
 }
