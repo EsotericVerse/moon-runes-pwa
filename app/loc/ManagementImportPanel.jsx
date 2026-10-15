@@ -8,6 +8,7 @@ import {useAccount} from './use-account';
 import {createUid8} from './uid';
 import {IMPORT_FIELD_ALIASES,importRowsFromJson,mappedImportValue,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
+import {sunoStyleMetaTags} from './suno-style-meta-tags.mjs';
 
 function sourceSuggestion(name=''){
   const value=String(name).toLowerCase();
@@ -464,10 +465,17 @@ function MediaRecordInsert({scopeId}){
 
 function SunoImport({scopeId}){
   const account=useAccount();
-  const [draft,setDraft]=useState({title:'',lyrics:'',url:'',nativeId:'',createdDate:'',stylePrompt:'',metaTags:'',source_id:'',target_id:'',ref_id:''});
+  const [draft,setDraft]=useState({title:'',lyrics:'',url:'',nativeId:'',createdDate:'',stylePrompt:'',metaTags:'',metaTagsEdited:false,source_id:'',target_id:'',ref_id:''});
   const [status,setStatus]=useState('');const [busy,setBusy]=useState(false);
   if(!account.canManageScopeSync(scopeId))return null;
-  const change=(key,value)=>setDraft(current=>({...current,[key]:value}));
+  const change=(key,value)=>setDraft(current=>({
+    ...current,[key]:value,
+    ...(key==='stylePrompt'&&!current.metaTagsEdited?{metaTags:sunoStyleMetaTags(value)}:{}),
+    ...(key==='metaTags'?{metaTagsEdited:true}:{})
+  }));
+  function regenerateStyleTags(){
+    setDraft(current=>({...current,metaTags:sunoStyleMetaTags(current.stylePrompt),metaTagsEdited:false}));
+  }
   function detectId(url){
     const match=String(url||'').match(/\/song\/([0-9a-f-]{20,})/i);return match?.[1]||'';
   }
@@ -509,7 +517,7 @@ function SunoImport({scopeId}){
         title,url:draft.url.trim()||null,
         meta_tags:metaTags||null,createtime
       }]);
-      setStatus('Suno 單筆資料已儲存。');setDraft({title:'',lyrics:'',url:'',nativeId:'',createdDate:'',stylePrompt:'',metaTags:'',source_id:'',target_id:'',ref_id:''});
+      setStatus('Suno 單筆資料已儲存。');setDraft({title:'',lyrics:'',url:'',nativeId:'',createdDate:'',stylePrompt:'',metaTags:'',metaTagsEdited:false,source_id:'',target_id:'',ref_id:''});
     }catch(error){setStatus(error?.message||'Suno 儲存失敗。');}
     finally{setBusy(false);}
   }
@@ -524,8 +532,9 @@ function SunoImport({scopeId}){
         <label>日期<input type="date" value={draft.createdDate} onChange={e=>change('createdDate',e.target.value)}/></label>
       </div>
       <div className="scope-stat-controls">
-        <label>Suno Style<input value={draft.stylePrompt} onChange={e=>change('stylePrompt',e.target.value)}/></label>
-        <label>Meta Tags<input value={draft.metaTags} onChange={e=>change('metaTags',e.target.value)} placeholder="建立時由資料提供者設定" required/></label>
+        <label>Suno Style<textarea rows={3} value={draft.stylePrompt} onChange={e=>change('stylePrompt',e.target.value)}/></label>
+        <label>Meta Tags<input value={draft.metaTags} onChange={e=>change('metaTags',e.target.value)} placeholder="從 Suno Style 逐字節錄，可補 LP15-3／LunaRunesMusic" required/></label>
+        <button type="button" className="loc-button" onClick={regenerateStyleTags}>從 Suno Style 重新擷取 Meta Tags</button>
       </div>
       <div className="scope-stat-controls">
         <label>source_id<input value={draft.source_id} onChange={e=>change('source_id',e.target.value)}/></label>
