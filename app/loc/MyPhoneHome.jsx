@@ -1,4 +1,5 @@
 'use client';
+import FieldText from '../i18n/FieldText';
 
 import {useEffect,useState} from 'react';
 import {Capacitor} from '@capacitor/core';
@@ -11,7 +12,7 @@ export default function MyPhoneHome(){
   },[]);
 
   return <main className="scope-main"><section className="scope-page">
-    <header className="loc-hero"><h1>我的手機</h1></header>
+    <header className="loc-hero"><h1><FieldText text="我的手機"/></h1></header>
     {native?<div className="scope-content"><PrivateLocalFiles/></div>:
       <section className="loc-card"><p>僅在 iOS App 提供。</p></section>}
   </section></main>;

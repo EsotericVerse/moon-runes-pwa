@@ -1,4 +1,5 @@
 'use client';
+import FieldText from '../i18n/FieldText';
 
 import {useEffect,useRef} from 'react';
 import {useCreateBlockNote} from '@blocknote/react';
@@ -122,9 +123,9 @@ export default function BlockNoteEditorClient({
 
   return <>
     {editable?<div className="scope-blocknote-linkbar">
-      <button type="button" className="loc-button" onMouseDown={event=>event.preventDefault()} onClick={editLink}>連結</button>
-      <button type="button" className="loc-button" onMouseDown={event=>event.preventDefault()} onClick={removeLink}>移除連結</button>
-      <button type="button" className="loc-button" onMouseDown={event=>event.preventDefault()} onClick={insertImageUrl}>圖片網址</button>
+      <button type="button" className="loc-button" onMouseDown={event=>event.preventDefault()} onClick={editLink}><FieldText text="連結"/></button>
+      <button type="button" className="loc-button" onMouseDown={event=>event.preventDefault()} onClick={removeLink}><FieldText text="移除連結"/></button>
+      <button type="button" className="loc-button" onMouseDown={event=>event.preventDefault()} onClick={insertImageUrl}><FieldText text="圖片網址"/></button>
     </div>:null}
     <BlockNoteView
       editor={editor}

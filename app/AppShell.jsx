@@ -5,7 +5,9 @@ import {Capacitor} from '@capacitor/core';
 import {motion,useScroll,useSpring} from 'motion/react';
 import {QueryClient,QueryClientProvider,useQuery} from '@tanstack/react-query';
 import {UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale,uiCopy} from './i18n/ui-copy';
-import {UiLocaleProvider} from './i18n/ui-locale';
+import {UiLocaleProvider,useUiLocale} from './i18n/ui-locale';
+import FieldText from './i18n/FieldText';
+import {translateUiField} from './i18n/ui-functional-copy.mjs';
 import {FEATURES,SCOPES,featureIdForPath,getScope,setScopeRegistryRouteRows} from './modular/scope-registry';
 import {applyTheme,themeSignature,THEME_SLOTS} from './modular/theme-registry';
 import {mergeThemeSlot,selectThemeRegistry} from './loc/theme-data';
@@ -30,15 +32,16 @@ const NAV_SCOPES=Object.values(SCOPES)
   .sort((a,b)=>String(a.nav.position).localeCompare(String(b.nav.position))||Number(a.nav.order||0)-Number(b.nav.order||0));
 
 function DataSourceStatus(){
+  const {locale}=useUiLocale();
   const status=useSyncExternalStore(subscribeDbSourceStatus,getDbSourceStatus,getDbSourceStatus);
   const current=status.degraded
     ?`備援資料（${status.backupLabel}）`
     :`主要資料（${status.primaryLabel}）`;
   return <div className={'scope-data-source-global'+(status.degraded?' is-backup':'')} role="status">
-    <span>主要資料來源：{status.primaryLabel}</span>
-    <span>備用資料來源：{status.backupLabel}</span>
-    <span>目前使用：{current}</span>
-    {status.degraded?<span>備援資料可能有同步時間差。</span>:null}
+    <span><FieldText text="主要資料來源："/>{status.primaryLabel}</span>
+    <span><FieldText text="備用資料來源："/>{status.backupLabel}</span>
+    <span><FieldText text="目前使用："/>{current}</span>
+    {status.degraded?<span><FieldText text="備援資料可能有同步時間差。"/></span>:null}
   </div>;
 }
 
@@ -318,7 +321,7 @@ export default function AppShell({children}){
   const openFolder=visibleFolders.find(folder=>folder.id===openFolderId)||null;
   const isMyPhone=native&&normalizePath(pathname)==='/my-phone';
   const featureTabs=[
-    {id:'home',icon:'home',label:'首頁',href:isMyPhone?mobileHomeHref(true):navigationHref(navScopeId,'',native)+(native&&navScopeId==='loc'?'?loc_direct=1':'')},
+    {id:'home',icon:'home',label:translateUiField(locale,'首頁'),href:isMyPhone?mobileHomeHref(true):navigationHref(navScopeId,'',native)+(native&&navScopeId==='loc'?'?loc_direct=1':'')},
     ...['culture','statics','search','governance'].map(id=>{
       const feature=FEATURES.find(item=>item.id===id);
       return {id,icon:id,label:copy.features?.[id]?.title||feature.label,
@@ -370,13 +373,13 @@ export default function AppShell({children}){
             const href=navigationHref(item.id,'',native);
             return <NavTarget key={item.id} href={href} label={item.label} current={targetIsCurrent(href,host,pathname)}/>;
           })}
-          {!openFolder.links.length?<span className="scope-nav-folder-empty">目錄尚無入口</span>:null}
+          {!openFolder.links.length?<span className="scope-nav-folder-empty"><FieldText text="目錄尚無入口"/></span>:null}
         </ScrollableScopeNav>
-        <button type="button" className="scope-nav-close-folder" aria-label="收合目錄" onClick={()=>setOpenFolderId('')}>×</button>
+        <button type="button" className="scope-nav-close-folder" aria-label={translateUiField(locale,'收合目錄')} onClick={()=>setOpenFolderId('')}>×</button>
       </div>:null}
     </header>
     {children}
-    <nav className="scope-feature-dock" aria-label="固定功能選單" data-scope={scopeId}>
+    <nav className="scope-feature-dock" aria-label={translateUiField(locale,'固定功能選單')} data-scope={scopeId}>
       {featureTabs.map(tab=><a key={tab.id} href={tab.href}
         aria-current={tab.id==='settings'?isSettings?'page':undefined:
           !isSettings&&(tab.id==='home'?!currentFeature:currentFeature===tab.id)?'page':undefined}>

@@ -1,4 +1,5 @@
 'use client';
+import FieldText from '../../../i18n/FieldText';
 
 import {useMemo} from 'react';
 import {useQuery} from '@tanstack/react-query';
@@ -108,9 +109,9 @@ export default function LocMemberIntersection({
     data-stat-cross-range={rangeKey}
     data-stat-cross-resolved-range={hasCurrentData?fetched.data.rangeKey:''}
     aria-busy={fetched.isPending||fetched.isFetching||!hasCurrentData}>
-    <h2>所屬人員交互統計</h2>
+    <h2><FieldText text="所屬人員交互統計"/></h2>
     <div className="scope-stat-controls">
-      <label><span>比較組數</span>
+      <label><span><FieldText text="比較組數"/></span>
         <select className="scope-select" value={laneCount} onChange={e=>{onLaneCountChange?.(Number(e.target.value));onChoicesChange?.([]);}}>
           {[2,3,4].map(n=><option key={n} value={n}>{n} 組</option>)}
         </select>

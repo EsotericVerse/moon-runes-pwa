@@ -1,4 +1,5 @@
 'use client';
+import FieldText from '../i18n/FieldText';
 
 import {useEffect,useRef,useState} from 'react';
 import {Capacitor} from '@capacitor/core';
@@ -133,10 +134,10 @@ export default function PrivateLocalFiles(){
   }
 
   return <section className="loc-card" aria-labelledby="loc-private-files-heading">
-    <h2 id="loc-private-files-heading">私人 Local File（僅此 iPhone）</h2>
+    <h2 id="loc-private-files-heading"><FieldText text="私人 Local File（僅此 iPhone）"/></h2>
     <p className="scope-settings-note">檔案僅保存在此裝置。單檔上限 512 MB；卸載 App 可能遺失本機資料。</p>
     <div className="scope-stat-controls">
-      <button type="button" className="loc-button primary" onClick={()=>picker.current?.click()} disabled={busy||!store}>選擇本機檔案匯入</button>
+      <button type="button" className="loc-button primary" onClick={()=>picker.current?.click()} disabled={busy||!store}><FieldText text="選擇本機檔案匯入"/></button>
       <button type="button" className="loc-button" onClick={async()=>{
         if(busy||!store)return;
         setBusy(true);setError('');
@@ -162,7 +163,7 @@ export default function PrivateLocalFiles(){
         <button type="button" className="loc-button" disabled={busy} onClick={()=>remove(entry)}>
           {pendingDelete===entry.id?'確認永久刪除':'刪除本機副本'}
         </button>
-        {pendingDelete===entry.id?<button type="button" className="loc-button" onClick={()=>setPendingDelete('')} disabled={busy}>取消</button>:null}
+        {pendingDelete===entry.id?<button type="button" className="loc-button" onClick={()=>setPendingDelete('')} disabled={busy}><FieldText text="取消"/></button>:null}
       </div>
       {preview?.id===entry.id?<div>
         <label>文字編碼

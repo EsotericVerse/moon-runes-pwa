@@ -1,4 +1,5 @@
 'use client';
+import FieldText from '../i18n/FieldText';
 
 import {useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
@@ -47,7 +48,7 @@ export default function ScopeGroupStatisticsSharing({scopeId}){
     finally{setBusy('');}
   }
   return <section className="scope-inline-card" aria-label="群組來源分類統計開放設定">
-    <h3>群組來源分類 · 對外統計</h3>
+    <h3><FieldText text="群組來源分類 · 對外統計"/></h3>
     <p className="scope-status">各群組來源沿用既有對外統計狀態，預設納入 LOC 統計；本人可逐項取消勾選，立即排除該分類在 LOC 合併與成員交互統計的資料。自己的統計、搜尋與文化頁不受影響；個人自訂來源分類不另外設定。</p>
     <div className="scope-management-records">
       {(groups.data?.categories||[]).filter(row=>row.enabled!==false).map(row=>

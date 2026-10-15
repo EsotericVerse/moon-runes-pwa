@@ -1,4 +1,5 @@
 'use client';
+import FieldText from '../../../i18n/FieldText';
 
 import {useMemo,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
@@ -149,12 +150,12 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
   const shownChartType=availableCharts.some(([id])=>id===chartType)?chartType:(availableCharts[0]?.[0]||'line');
 
   return <section className="scope-stat-section scope-self-intersection" aria-label="作品自交互統計">
-    <h3>作品自交互統計</h3>
+    <h3><FieldText text="作品自交互統計"/></h3>
       {query.isPending?<p className="scope-status">讀取來源…</p>:null}
       {query.error||catalog.error?<p className="scope-status scope-error">{String(query.error?.message||catalog.error?.message||'讀取失敗')}</p>:null}
       {!query.isPending&&!catalog.isPending&&!query.error&&!catalog.error?<div className="scope-self-intersection-content">
         <div className="scope-stat-controls">
-          <label><span>交互組數</span>
+          <label><span><FieldText text="交互組數"/></span>
             <select className="scope-select" value={numberOfLanes} onChange={e=>{setNumberOfLanes(Number(e.target.value));setSelected([])}}>
               {[2,3,4].map(n=><option key={n} value={n}>{n} 組</option>)}
             </select>
