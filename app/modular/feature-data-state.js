@@ -19,19 +19,22 @@ function namedMatch(text,patterns){
   return '';
 }
 
-export function featureDataErrorMessage(error){
+import {UI_COPY} from '../i18n/ui-copy';
+
+export function featureDataErrorMessage(error,copy=UI_COPY){
+  const l=copy.uiExtra.dataErrors;
   const raw=errorText(error);
   const message=raw.toLowerCase();
-  if(!message)return '目前資料讀取失敗。';
+  if(!message)return l.readFailed;
 
   const column=namedMatch(raw,[
     /column\s+["']?([^"'\s]+)["']?\s+(?:does not exist|not found)/i,
     /could not find the ['"]?([^'"]+)['"]? column/i,
     /unknown column\s+["']?([^"'\s]+)["']?/i
   ]);
-  if(column)return `欄位「${column}」無法讀取或不存在。`;
+  if(column)return l.columnNamed.replace('{column}',column);
   if(/column .*does not exist|could not find .* column|unknown column|42703/.test(message)){
-    return '目前有資料欄位無法讀取或不存在。';
+    return l.columnUnknown;
   }
 
   const relation=namedMatch(raw,[
@@ -39,30 +42,30 @@ export function featureDataErrorMessage(error){
     /table\s+["']?([^"'\s]+)["']?\s+(?:does not exist|not found)/i,
     /schema\s+["']?([^"'\s]+)["']?\s+(?:does not exist|not found)/i
   ]);
-  if(relation)return `資料表或 Schema「${relation}」無法讀取或不存在。`;
+  if(relation)return l.relationNamed.replace('{relation}',relation);
   if(/relation .*does not exist|table .*does not exist|schema .*does not exist|42p01|3f000/.test(message)){
-    return '目前有資料表或 Schema 無法讀取或不存在。';
+    return l.relationUnknown;
   }
 
   if(/pgrst123|aggregate functions? (?:are )?(?:disabled|not allowed)|db_aggregates_enabled/.test(message)){
-    return '目前資料查詢功能與資料庫介面不相容。';
+    return l.incompatibleQuery;
   }
   if(/permission denied|insufficient privilege|not allowed|42501/.test(message)){
-    return '目前資料讀取權限不足。';
+    return l.permissionDenied;
   }
   if(/jwt|authentication|authorization|bearer token|jwk not found|401|403/.test(message)){
-    return '目前資料驗證失敗。';
+    return l.authenticationFailed;
   }
   if(/timeout|statement timeout|57014/.test(message)){
-    return '目前資料查詢逾時。';
+    return l.timeout;
   }
   if(/fetch|network|connect|offline|502|503|504/.test(message)){
-    return '目前資料庫連結失敗。';
+    return l.connectionFailed;
   }
   if(/invalid row shape|validation|zod|invalid response/.test(message)){
-    return '目前資料格式驗證失敗。';
+    return l.invalidFormat;
   }
-  return '目前資料查詢失敗。';
+  return l.queryFailed;
 }
 
 export const FEATURE_LOADING_MESSAGE='正在讀取資料中，資料量較大時可能需要一些時間。';
