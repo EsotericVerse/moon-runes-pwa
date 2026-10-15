@@ -133,6 +133,17 @@ export function ContentEditor({
   </div>;
 }
 
+// Galaxy articles are stored once as plain content; turn explicit URLs into safe links.
+function renderGalaxyContent(value){
+  const parts=String(value||'').split(/(https?:\/\/[^\s<>]+)/gi);
+  return parts.map((part,index)=>{
+    if(!/^https?:\/\//i.test(part))return part;
+    const href=part.replace(/[.,;!?，。；！？)\]]+$/u,'');
+    const suffix=part.slice(href.length);
+    return <span key={'galaxy-url-'+index}><a href={href} target="_blank" rel="noopener noreferrer">{href}</a>{suffix}</span>;
+  });
+}
+
 export function WorkFullText({
   open=false,
   loading=false,
@@ -148,7 +159,7 @@ export function WorkFullText({
     </button>
     {open&&error?<p className="scope-status scope-error">{error}</p>:null}
     {open&&!loading&&!error?<div className="scope-inline-card">
-      <p className="scope-prewrap">{content||emptyText}</p>
+      <p className="scope-prewrap">{renderGalaxyContent(content||emptyText)}</p>
     </div>:null}
   </div>;
 }
