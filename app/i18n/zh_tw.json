@@ -1106,6 +1106,10 @@
       "monthUnit": "月",
       "secondUnit": "秒",
       "record": "紀錄"
+    },
+    "dataSourceStatus": {
+      "primary": "主要資料",
+      "backup": "備援資料"
     }
   },
   "dailyRune": {
