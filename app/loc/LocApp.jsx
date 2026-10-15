@@ -1,5 +1,6 @@
 'use client';
 import FieldText from '../i18n/FieldText';
+import UiText,{useUiText} from '../i18n/UiText';
 
 import dynamic from 'next/dynamic';
 import {Suspense} from 'react';
@@ -19,7 +20,7 @@ import Culture from '../modular/features/Culture';
 import Search from '../modular/features/Search';
 import Governance from '../modular/features/Governance';
 
-const loading=()=> <div className="loc-loading">載入功能模組…</div>;
+const loading=()=> <div className="loc-loading"><UiText id="uiExtra.feature.moduleLoading"/></div>;
 const RunesHomeView=dynamic(()=>import('../lrunes/RunesClient'),{loading});
 const GameView=dynamic(()=>import('../lrunes/game/GameBoard'),{ssr:false,loading});
 const ManagementView=dynamic(()=>import('./GovernanceManagement'),{loading});
@@ -52,12 +53,13 @@ function FeatureGate({scopeId,scopeMeta=null,view,children}){
     enabled
   });
   if(!enabled)return children;
-  if(query.isPending)return <div className="loc-loading">載入功能設定…</div>;
-  if(query.data?.[flag]===false)return <main className="scope-main"><section className="scope-page"><section className="loc-card"><p className="scope-status">此功能目前未公開。</p></section></section></main>;
+  if(query.isPending)return <div className="loc-loading"><UiText id="uiExtra.feature.settingsLoading"/></div>;
+  if(query.data?.[flag]===false)return <main className="scope-main"><section className="scope-page"><section className="loc-card"><p className="scope-status"><UiText id="uiExtra.feature.unpublished"/></p></section></section></main>;
   return children;
 }
 
 export default function LocApp({forcedView='home',forcedSection=null,forcedScope=null}){
+  const t=useUiText();
   const runtime=useScopeRuntime();
   const scopeId=forcedScope||runtime.scopeId;
   const scopeMeta=forcedScope&&runtime.scopeId!==forcedScope?getScope(forcedScope):runtime.scope;
@@ -70,24 +72,24 @@ export default function LocApp({forcedView='home',forcedSection=null,forcedScope
     ['statics','culture','governance'].includes(forcedView));
 
   if(!forcedScope&&runtime.dynamic&&!runtime.registryResolved){
-    return <div className="loc-next-main" data-loc-scope={scopeId}><div className="loc-loading">載入 Scope Registry…</div></div>;
+    return <div className="loc-next-main" data-loc-scope={scopeId}><div className="loc-loading"><UiText id="uiExtra.feature.registryLoading"/></div></div>;
   }
   if(!forcedScope&&runtime.dynamic&&(runtime.registryError||!runtime.registryRow)){
     return <main className="scope-main"><section className="scope-page"><section className="loc-card">
-      <h1><FieldText text="Scope 無法使用"/></h1>
-      <p className="scope-status scope-error">{runtime.registryError||'找不到已啟用的 Scope Registry。'}</p>
+      <h1><UiText id="uiExtra.feature.registryUnavailable"/></h1>
+      <p className="scope-status scope-error">{runtime.registryError||t('uiExtra.feature.registryNotFound')}</p>
     </section></section></main>;
   }
 
   return <div className="loc-next-main" data-loc-scope={scopeId} data-loc-view={forcedView}>
-    <Suspense fallback={<div className="loc-loading">載入頁面…</div>}>
+    <Suspense fallback={<div className="loc-loading"><UiText id="uiExtra.feature.pageLoading"/></div>}>
       <FeatureGate scopeId={scopeId} scopeMeta={scopeMeta} view={forcedView}>
         {groupOverviewView?<FeaturePage featureId={forcedView}>
           <ScopeGroupOverview
             scopeId={scopeId}
             featureId={forcedView}
-            title={scopeMeta.label+' · '+({statics:'統計',culture:'文化',governance:'治理'}[forcedView])}
-            description="群組只負責成員總覽與導引；請進入各子 Scope 查詢或管理實際內容。"
+            title={scopeMeta.label+' · '+t({statics:'features.statics.title',culture:'features.culture.title',governance:'features.governance.title'}[forcedView])}
+            description={t('uiExtra.feature.groupGuide')}
           />
         </FeaturePage>:<ActiveView section={forcedSection}/>}
       </FeatureGate>
