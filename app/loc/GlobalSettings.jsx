@@ -1,7 +1,5 @@
 'use client';
-import FieldText from '../i18n/FieldText';
-import {useUiLocale} from '../i18n/ui-locale';
-import {translateUiField} from '../i18n/ui-functional-copy.mjs';
+import UiText,{useUiText} from '../i18n/UiText';
 
 import {useEffect,useMemo,useState} from 'react';
 import Select from 'react-select';
@@ -22,11 +20,6 @@ import {
   mobileFavoriteEnabled,mobileHomepageChoice
 } from '../modular/mobile-home-preference.mjs';
 
-const BASE_CHOICES=[
-  {id:'lrunes',label:'月之符文'},
-  {id:'lo3rwang',label:'作者首頁'},
-  {id:'loc',label:'月典首頁'}
-];
 const option=(value,label)=>({value,label});
 const selectProps={
   unstyled:true,isSearchable:false,
@@ -34,8 +27,7 @@ const selectProps={
 };
 
 export default function GlobalSettings(){
-  const {locale}=useUiLocale();
-  const t=text=>translateUiField(locale,text);
+  const uiT=useUiText();
   const prefs=useNavigationPreferences();
   const {account}=prefs;
   const [native,setNative]=useState(false);
@@ -69,16 +61,17 @@ export default function GlobalSettings(){
   },[native,prefs.home,prefs.loading,account.user?.id]);
 
   const choices=useMemo(()=>{
-    const found=new Map(BASE_CHOICES.map(item=>[item.id,item]));
+    const baseChoices=[{id:'lrunes',label:uiT('nav.lunarunes')},{id:'lo3rwang',label:uiT('uiExtra.globalSettings.authorHome')},{id:'loc',label:uiT('uiExtra.globalSettings.locHome')}];
+    const found=new Map(baseChoices.map(item=>[item.id,item]));
     for(const row of registry){
       if(!row?.scope_id||row.scope_id==='admin')continue;
       found.set(row.scope_id,{
         id:row.scope_id,
-        label:BASE_CHOICES.find(item=>item.id===row.scope_id)?.label||row.display_name||row.scope_id
+        label:baseChoices.find(item=>item.id===row.scope_id)?.label||row.display_name||row.scope_id
       });
     }
     return [...found.values()];
-  },[registry]);
+  },[registry,uiT('common.language')]);
   const managedScopes=useMemo(()=>
     !native&&account.user?choices.filter(item=>account.canManageScopeSync(item.id)):[],
     [choices,native,account.user,account.authorizer]
@@ -91,7 +84,7 @@ export default function GlobalSettings(){
       item.id==='loc'||(native&&item.id==='lrunes')||
       (account.user&&(account.canManageGlobalSync()||allowed.has(item.id)))
     );
-    if(native)items.push({id:MOBILE_HOME_ID,label:'我的手機'});
+    if(native)items.push({id:MOBILE_HOME_ID,label:uiT('uiExtra.globalSettings.myPhone')});
     return items;
   },[choices,native,account.user,account.authorizer]);
   const actualHome=native?
@@ -103,22 +96,22 @@ export default function GlobalSettings(){
       ['lrunes',...(mobileFavoriteEnabled(typeof window==='undefined'?null:window.localStorage)?[MOBILE_HOME_ID]:[]),...prefs.favorites]:
       prefs.favorites;
     const unique=[...new Set(ids)];
-    return unique.map(id=>id===MOBILE_HOME_ID?{id,label:'我的手機'}:choices.find(item=>item.id===id))
+    return unique.map(id=>id===MOBILE_HOME_ID?{id,label:uiT('uiExtra.globalSettings.myPhone')}:choices.find(item=>item.id===id))
       .filter(Boolean);
   },[native,prefs.favorites.join(','),choices]);
 
   const sections=[
-    option('home','首頁設定'),
-    option('files',native?'本機檔案':'文件匯入'),
-    ...(managedScopes.length?[option('personal','個人首頁')]:[]),
-    ...(managedScopes.length||canManageGlobal?[option('manage','管理選單')]:[]),
-    option('account','帳號')
+    option('home',uiT('uiExtra.globalSettings.homeSettings')),
+    option('files',native?uiT('uiExtra.globalSettings.localFiles'):uiT('uiExtra.globalSettings.documentImport')),
+    ...(managedScopes.length?[option('personal',uiT('uiExtra.globalSettings.personalHome'))]:[]),
+    ...(managedScopes.length||canManageGlobal?[option('manage',uiT('uiExtra.globalSettings.manageMenu'))]:[]),
+    option('account',uiT('uiExtra.globalSettings.account'))
   ];
   const activeSection=sections.some(item=>item.value===section)?section:'home';
   const scopeOptions=managedScopes.map(item=>option(item.id,item.label));
   const manageOptions=[
-    ...(managedScopes.length?[option('publish','發表文章')]:[]),
-    ...(canManageGlobal?[option('members','成員管理'),option('admin','系統設定')]:[])
+    ...(managedScopes.length?[option('publish',uiT('uiExtra.globalSettings.publish'))]:[]),
+    ...(canManageGlobal?[option('members',uiT('uiExtra.globalSettings.members')),option('admin',uiT('uiExtra.globalSettings.systemSettings'))]:[])
   ];
   const activeManage=manageOptions.find(item=>item.value===manageAction)||manageOptions[0];
   const waiting=Boolean(busy)||prefs.loading||account.loading||account.permissionLoading;
@@ -139,9 +132,9 @@ export default function GlobalSettings(){
         window.dispatchEvent(new CustomEvent('loc-navigation-changed',{detail:{home:next}}));
         setHome(next);
       }
-      setStatus('首頁已儲存');
+      setStatus(uiT('uiExtra.globalSettings.savedHome'));
     }catch(error){
-      setStatus('儲存失敗：'+String(error?.message||error));
+      setStatus(uiT('uiExtra.globalSettings.saveFailed',{error:String(error?.message||error)}));
     }finally{setBusy(false);}
   }
   async function logout(){
@@ -154,29 +147,29 @@ export default function GlobalSettings(){
   }
 
   return <main className="scope-main"><section className="scope-page">
-    <header className="loc-hero"><h1><FieldText text="設定"/></h1></header>
+    <header className="loc-hero"><h1><UiText id="uiExtra.globalSettings.settings"/></h1></header>
     <div className="scope-content scope-settings-options">
       <section className="loc-card loc-settings-switcher">
-        <label htmlFor="loc-settings-function"><FieldText text="設定功能"/></label>
+        <label htmlFor="loc-settings-function"><UiText id="uiExtra.globalSettings.chooseSettings"/></label>
         <Select {...selectProps} inputId="loc-settings-function" instanceId="loc-settings-function"
-          aria-label={t("選擇設定功能")} options={sections.map(item=>({...item,label:t(item.label)}))}
-          value={sections.map(item=>({...item,label:t(item.label)})).find(item=>item.value===activeSection)||sections[0]}
+          aria-label={uiT('uiExtra.globalSettings.chooseSettings')} options={sections}
+          value={sections.find(item=>item.value===activeSection)||sections[0]}
           onChange={item=>{setSection(item?.value||'home');setStatus('');}}/>
       </section>
 
       {activeSection==='home'?<section className="loc-card">
-        <h2><FieldText text="首頁設定"/></h2>
+        <h2><UiText id="uiExtra.globalSettings.homeSettings"/></h2>
         <form onSubmit={saveHome} className="scope-stat-controls">
-          <label><span><FieldText text="預設首頁"/></span>
+          <label><span><UiText id="uiExtra.globalSettings.defaultHome"/></span>
             <select className="scope-select" value={actualHome} onChange={event=>setHome(event.target.value)}
               disabled={waiting&&!native}>
               {allowedHomes.map(item=><option key={item.id} value={item.id}>{item.label}</option>)}
             </select>
           </label>
-          {native||account.user?<button type="submit" className="loc-button primary" disabled={waiting}><FieldText text="儲存"/></button>:null}
+          {native||account.user?<button type="submit" className="loc-button primary" disabled={waiting}><UiText id="uiExtra.globalSettings.save"/></button>:null}
         </form>
         <div className="scope-settings-favorite-preview">
-          <strong><FieldText text="我的最愛"/></strong>
+          <strong><UiText id="uiExtra.globalSettings.favorites"/></strong>
           <div className="scope-settings-favorite-items">
             {favoriteItems.map(item=><span key={item.id} className="scope-settings-favorite-item">{item.label}</span>)}
           </div>
@@ -184,7 +177,7 @@ export default function GlobalSettings(){
       </section>:null}
 
       {activeSection==='files'?(native?<PrivateLocalFiles/>:<section className="loc-card">
-        <h2><FieldText text="文件匯入"/></h2>
+        <h2><UiText id="uiExtra.globalSettings.documentImport"/></h2>
         {account.user?managedScopes.length?<div className="loc-settings-panel-group">
           {scopeOptions.length>1?<label htmlFor="loc-import-scope">Scope</label>:null}
           {scopeOptions.length>1?<Select {...selectProps} inputId="loc-import-scope"
@@ -192,13 +185,13 @@ export default function GlobalSettings(){
             value={scopeOptions.find(item=>item.value===selectedScope?.id)||null}
             onChange={item=>setRequestedScope(item?.value||'')}/>:null}
           {selectedScope?<ManagementImportPanel key={selectedScope.id} scopeId={selectedScope.id}/>:null}
-        </div>:<p><FieldText text="沒有可匯入的空間。"/></p>:
-        <button type="button" className="loc-button primary" onClick={login}><FieldText text="登入"/></button>}
+        </div>:<p><UiText id="uiExtra.globalSettings.noImportScopes"/></p>:
+        <button type="button" className="loc-button primary" onClick={login}><UiText id="uiExtra.globalSettings.login"/></button>}
       </section>):null}
 
       {activeSection==='personal'&&selectedScope?<section className="loc-card">
-        <h2><FieldText text="個人首頁"/></h2>
-        {scopeOptions.length>1?<label htmlFor="loc-personal-scope"><FieldText text="首頁"/></label>:null}
+        <h2><UiText id="uiExtra.globalSettings.personalHome"/></h2>
+        {scopeOptions.length>1?<label htmlFor="loc-personal-scope"><UiText id="uiExtra.globalSettings.home"/></label>:null}
         {scopeOptions.length>1?<Select {...selectProps} inputId="loc-personal-scope"
           instanceId="loc-personal-scope" options={scopeOptions}
           value={scopeOptions.find(item=>item.value===selectedScope.id)||null}
@@ -207,10 +200,10 @@ export default function GlobalSettings(){
       </section>:null}
 
       {activeSection==='manage'&&activeManage?<section className="loc-card">
-        <h2><FieldText text="管理選單"/></h2>
-        <label htmlFor="loc-manage-action"><FieldText text="管理功能"/></label>
+        <h2><UiText id="uiExtra.globalSettings.manageMenu"/></h2>
+        <label htmlFor="loc-manage-action"><UiText id="uiExtra.globalSettings.manageFeature"/></label>
         <Select {...selectProps} inputId="loc-manage-action" instanceId="loc-manage-action"
-          options={manageOptions.map(item=>({...item,label:t(item.label)}))} value={{...activeManage,label:t(activeManage.label)}}
+          options={manageOptions} value={activeManage}
           onChange={item=>setManageAction(item?.value||manageOptions[0].value)}/>
         {activeManage.value==='publish'&&selectedScope?<div className="loc-settings-panel-group">
           {scopeOptions.length>1?<label htmlFor="loc-manage-scope">Scope</label>:null}
@@ -222,15 +215,15 @@ export default function GlobalSettings(){
         </div>:null}
         {activeManage.value==='members'&&canManageGlobal?<ScopeGroupManagement scopeId="loc"/>:null}
         {activeManage.value==='admin'&&canManageGlobal?<a className="loc-button"
-          href="/admin/">開啟系統設定</a>:null}
+          href="/admin/"><UiText id="uiExtra.globalSettings.openSystemSettings"/></a>:null}
       </section>:null}
 
       {activeSection==='account'?<section className="loc-card">
-        <h2><FieldText text="帳號"/></h2>
-        {waiting?<p>載入中…</p>:account.user?<div>
-          <p>{account.user.email||'已登入'}</p>
-          <button type="button" className="loc-button" disabled={busy} onClick={logout}><FieldText text="登出"/></button>
-        </div>:<button type="button" className="loc-button primary" onClick={login}><FieldText text="登入"/></button>}
+        <h2><UiText id="uiExtra.globalSettings.account"/></h2>
+        {waiting?<p><UiText id="uiExtra.globalSettings.loading"/></p>:account.user?<div>
+          <p>{account.user.email||uiT('uiExtra.globalSettings.signedIn')}</p>
+          <button type="button" className="loc-button" disabled={busy} onClick={logout}><UiText id="uiExtra.globalSettings.logout"/></button>
+        </div>:<button type="button" className="loc-button primary" onClick={login}><UiText id="uiExtra.globalSettings.login"/></button>}
         {account.error?<p role="alert" className="scope-status scope-error">{account.error}</p>:null}
       </section>:null}
       {status?<p role="status" className="scope-status">{status}</p>:null}
