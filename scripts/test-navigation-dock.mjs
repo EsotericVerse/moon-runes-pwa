@@ -44,9 +44,9 @@ test('one immutable six-key feature dock and explicit global settings route',()=
   assert.match(code,/className="scope-feature-dock"/);
   assert.match(css,/grid-template-columns:repeat\(6,minmax\(0,1fr\)\)/);
   assert.match(css,/box-shadow:/);
-  assert.ok(settings.includes("<h2>首頁設定</h2>")||settings.includes('<h2><FieldText text="首頁設定"/></h2>'));
+  assert.ok(settings.includes('<h2><UiText id="uiExtra.globalSettings.homeSettings"/></h2>'));
   assert.match(settings,/scope-settings-favorite-preview/);
-  assert.ok(settings.includes('<h2>帳號</h2>')||settings.includes('<h2><FieldText text="帳號"/></h2>'));
+  assert.ok(settings.includes('<h2><UiText id="uiExtra.globalSettings.account"/></h2>'));
   assert.doesNotMatch(settings,/DailyLogClient|RuneSQLiteTransfer|RuneDrawClient/);
 });
 
@@ -174,10 +174,10 @@ test('Settings has one home & favorites pane, one import pane, and separated man
   const daily=fs.readFileSync('app/daily/log/DailyLogClient.jsx','utf8');
   assert.match(settings,/import Select from 'react-select';/);
   assert.match(settings,/inputId="loc-settings-function"/);
-  assert.match(settings,/option\('home','首頁設定'\)/);
-  assert.match(settings,/option\('files',native\?'本機檔案':'文件匯入'\)/);
-  assert.match(settings,/option\('personal','個人首頁'\)/);
-  assert.match(settings,/option\('manage','管理選單'\)/);
+  assert.ok(settings.includes("option('home',uiT('uiExtra.globalSettings.homeSettings'))"));
+  assert.ok(settings.includes("option('files',native?uiT('uiExtra.globalSettings.localFiles'):uiT('uiExtra.globalSettings.documentImport'))"));
+  assert.ok(settings.includes("option('personal',uiT('uiExtra.globalSettings.personalHome'))"));
+  assert.ok(settings.includes("option('manage',uiT('uiExtra.globalSettings.manageMenu'))"));
   assert.match(settings,/activeSection==='home'/);
   assert.match(settings,/activeSection==='files'/);
   assert.match(settings,/activeSection==='personal'/);
