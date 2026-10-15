@@ -1,6 +1,5 @@
 'use client';
-import FieldText from '../../i18n/FieldText';
-import {useUiLocale} from '../../i18n/ui-locale';
+import {useUiCopy,useUiLocale} from '../../i18n/ui-locale';
 import {translateUiField} from '../../i18n/ui-functional-copy.mjs';
 
 import {DB_QUERY_BATCH_SIZE} from '../../loc/query-contract.mjs';
@@ -17,7 +16,7 @@ const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status
 
 
 const EDITABLE_TYPES=Object.freeze([
-  ['anchor','定錨點'],['period','時期'],['event','事件'],['style_comment','風格標籤']
+  ['anchor','anchor'],['period','period'],['event','event'],['style_comment','style']
 ]);
 const TYPE_LABEL=Object.freeze(Object.fromEntries(EDITABLE_TYPES));
 const BLANK=Object.freeze({
@@ -53,7 +52,7 @@ function rowSortDate(row,anchors){
 
 export default function CultureTimelineEditor({scopeId='',selectedRecordId='',suggestedAnchorDate='',suggestedRecordType='anchor',suggestedRequestNonce=0,onClose=null}){
   const {locale}=useUiLocale();
-  const t=text=>translateUiField(locale,text);
+  const l=useUiCopy().timelineEditor;
   const account=useAccount();
   const searchParams=useSearchParams();
   const routeSuggestedAnchorDate=String(searchParams?.get?.('anchorDate')||'').slice(0,10);
@@ -153,9 +152,9 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       anchor_ids:recordType==='style_comment'?[]:['0','0'],
       note:''
     });
-    setMessage(recordType==='anchor'?'已帶入河道日期。':recordType==='style_comment'?'風格標籤需選 1 個定錨點。':recordType==='period'?'時期請選 1 或 2 個定錨點。':'事件需選 2 個定錨點。');
+    setMessage(recordType==='anchor'?l.inferredAnchor:recordType==='style_comment'?l.styleNeedsAnchor:recordType==='period'?l.periodNeedsAnchor:l.eventNeedsAnchor);
     setFormOpen(true);
-  },[effectiveSuggestedAnchorDate,suggestedRecordType,suggestedRequestNonce]);
+  },[effectiveSuggestedAnchorDate,suggestedRecordType,suggestedRequestNonce,l]);
 
   // Native showModal puts this form in the browser top layer rather than
   // letting a non-modal open dialog disappear below the vis-timeline canvas.
@@ -203,14 +202,14 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
     try{
       const type=String(draft.record_type||'');
       const label=String(draft.label||'').trim();
-      if(!label)throw new Error('請填寫名稱。');
+      if(!label)throw new Error(l.nameRequired);
       const resourceId=String(draft.resource_id||'').trim()||newResourceId(type);
       if(type==='style_comment'){
         const normalized=label.normalize('NFKC').toLocaleLowerCase('zh-Hant');
         const duplicate=rawRows.find(row=>row.record_type==='style_comment'&&
           String(row.label||'').trim().normalize('NFKC').toLocaleLowerCase('zh-Hant')===normalized&&
           String(row.record_id||'')!==String(selectedId||''));
-        if(duplicate)throw new Error('此 Scope 已存在同名風格，每個風格名稱只能有一筆獨立敘述。');
+        if(duplicate)throw new Error(l.duplicateStyle);
       }
       if(type==='anchor'){
         const duplicate=rawRows.find(row=>
@@ -218,7 +217,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
           String(row.resource_id||'').trim()===resourceId&&
           String(row.record_id||'')!==String(selectedId||'')
         );
-        if(duplicate)throw new Error('同一資料區域已存在相同定錨點識別：'+resourceId);
+        if(duplicate)throw new Error(l.duplicateAnchor+resourceId);
       }
       const payload={
         record_type:type,
@@ -237,15 +236,15 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       if(type==='anchor'){
         const exact=dateText(draft.time_date);
         const year=draft.year_value===''?null:Number(draft.year_value);
-        if(!exact&&!Number.isInteger(year))throw new Error('定錨點需要日期；日期未知時至少填年份。');
+        if(!exact&&!Number.isInteger(year))throw new Error(l.dateRequired);
         payload.time_date=exact||null;
         payload.date_status=exact?'exact':'year_only';
         payload.year_value=exact?null:year;
       }else if(type==='style_comment'){
         const styleDescription=String(draft.style_description||'').trim();
         const anchorId=String(Array.isArray(draft.anchor_ids)?draft.anchor_ids[0]||'':'').trim();
-        if(!styleDescription)throw new Error('每個風格標籤必須有一段獨立的 TEXT 敘述。');
-        if(!anchorId||anchorId==='0'||!anchors.has(anchorId))throw new Error('請選擇一個已建立的正式定錨點。');
+        if(!styleDescription)throw new Error(l.styleDescriptionRequired);
+        if(!anchorId||anchorId==='0'||!anchors.has(anchorId))throw new Error(l.formalAnchorRequired);
         payload.style_description=styleDescription;
         payload.anchor_ids=[anchorId];
       }else{
@@ -254,24 +253,24 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
         // Existing 1-point/3-point historical events are never silently
         // rewritten just because the author edits an unrelated field.
         if(type==='event'&&!legacyEventUnchanged&&(ids.length!==2||concrete.length!==2)){
-          throw new Error('事件必須明確選擇 2 個正式定錨點。');
+          throw new Error(l.eventTwo);
         }
         if(type==='period'&&(ids.length>2||concrete.length<1||concrete.length>2)){
-          throw new Error('時期必須選擇 1 或 2 個正式定錨點。');
+          throw new Error(l.periodOneTwo);
         }
-        if(ids.slice(1,-1).includes('0'))throw new Error('只有時期可在起點或終點使用開放端。');
+        if(ids.slice(1,-1).includes('0'))throw new Error(l.openPeriodOnly);
         if(type==='event'&&!legacyEventUnchanged&&new Set(concrete).size!==2){
-          throw new Error('事件必須選擇 2 個不同的正式定錨點。');
+          throw new Error(l.distinctAnchors);
         }
         for(const id of concrete){
-          if(!anchors.has(id))throw new Error('定錨點不存在：'+id);
+          if(!anchors.has(id))throw new Error(l.anchorMissing+id);
         }
         const dated=concrete
           .map(id=>({id,date:dateText(anchors.get(id)?.time_date)}))
           .filter(item=>item.date);
         for(let index=1;index<dated.length;index+=1){
           if(dated[index-1].date>=dated[index].date){
-            throw new Error('定錨點必須依時間先後排列。');
+            throw new Error(l.anchorOrder);
           }
         }
         payload.anchor_ids=ids;
@@ -291,7 +290,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       setMessage('');
       setFormOpen(false);
       onClose?.();
-    }catch(error){setMessage(error?.message||'儲存失敗。');}
+    }catch(error){setMessage(error?.message||l.saveError);}
     finally{setBusy(false);}
   };
 
@@ -300,7 +299,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
     if(draft.record_type==='anchor'){
       const id=String(draft.resource_id||'');
       const references=rawRows.filter(row=>row.record_type!=='anchor'&&normalizeAnchorIds(row.anchor_ids).includes(id));
-      if(references.length){setMessage('此定錨點仍被時期、事件或風格標籤引用，請先調整引用。');return;}
+      if(references.length){setMessage(l.anchorInUse);return;}
     }
     setBusy(true);setMessage('');
     try{
@@ -310,22 +309,22 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       await queryClient.invalidateQueries({queryKey:['culture-period-settings',dataScope]});
       await queryClient.invalidateQueries({queryKey:['culture-timeline',scopeId]});
       setSelectedId('');setDraft({...BLANK});setMessage('');setFormOpen(false);onClose?.();
-    }catch(error){setMessage(error?.message||'刪除失敗。');}
+    }catch(error){setMessage(error?.message||l.deleteError);}
     finally{setBusy(false);}
   };
 
   if(!formOpen)return null;
 
-  return <dialog ref={dialogRef} aria-label={t('文化時間資料編輯器')} className="scope-culture-timeline-dialog" onCancel={event=>{event.preventDefault();cancelEdit();}}>
+  return <dialog ref={dialogRef} aria-label={l.editorTitle} className="scope-culture-timeline-dialog" onCancel={event=>{event.preventDefault();cancelEdit();}}>
     <section className="loc-card scope-feature-card scope-culture-inline-editor">
     {query.error?<p className="scope-status scope-error">{query.error.message}</p>:null}
-    {duplicateAnchorIds.length?<p className="scope-status scope-error">同一資料區域存在重複的定錨點識別：{duplicateAnchorIds.join('、')}。請先修正，否則無法正確呈現文化資料。</p>:null}
+    {duplicateAnchorIds.length?<p className="scope-status scope-error">{l.duplicateDataPrefix}{duplicateAnchorIds.join('、')}{l.duplicateDataSuffix}</p>:null}
     {query.isPending?<p className="scope-status">{FEATURE_LOADING_MESSAGE}</p>:null}
     <form onSubmit={save}>
-      <label><span><FieldText text="類型"/></span><select className="scope-select" value={draft.record_type} disabled={Boolean(selectedId)} onChange={event=>change('record_type',event.target.value)}>
-        {EDITABLE_TYPES.map(([type,label])=><option key={type} value={type}><FieldText text={label}/></option>)}
+      <label><span>{l.type}</span><select className="scope-select" value={draft.record_type} disabled={Boolean(selectedId)} onChange={event=>change('record_type',event.target.value)}>
+        {EDITABLE_TYPES.map(([type,label])=><option key={type} value={type}>{l[label]}</option>)}
       </select></label>
-      {draft.record_type==='style_comment'?<label><span><FieldText text="風格標籤（新增／編輯）"/></span>
+      {draft.record_type==='style_comment'?<label><span>{l.styleEditor}</span>
         <select className="scope-select" value={selectedId||''} onChange={event=>{
           const row=rawRows.find(item=>item.record_type==='style_comment'&&String(item.record_id)===event.target.value);
           if(row)selectRow(row);
@@ -335,50 +334,50 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
             setMessage('');
           }
         }}>
-          <option value=""><FieldText text="＋ 新增風格標籤"/></option>
+          <option value="">{l.newStyle}</option>
           {rawRows.filter(row=>row.record_type==='style_comment')
             .sort((a,b)=>String(a.label||'').localeCompare(String(b.label||''),'zh-Hant'))
             .map(row=><option key={row.record_id} value={row.record_id}>
-              {row.label}{row.status==='needs_anchor'?'｜尚待定錨':''}
+              {row.label}{row.status==='needs_anchor'?l.pendingAnchor:''}
             </option>)}
         </select>
       </label>:null}
-      <label><span><FieldText text={draft.record_type==='style_comment'?'風格標籤名稱（搜尋關鍵詞）':'名稱'}/></span><input className="scope-search-input" value={draft.label||''} onChange={event=>change('label',event.target.value)} required/></label>
-      <label><span><FieldText text="識別"/></span><input className="scope-search-input" value={draft.resource_id||''} disabled={Boolean(selectedId)} onChange={event=>change('resource_id',event.target.value)} placeholder={t('留空自動產生')}/></label>
-      {draft.record_type!=='style_comment'?<label><span><FieldText text={draft.record_type==='anchor'?'定錨點說明（關鍵變化／持續檢討，非風格敘述）':'時期／事件說明（非風格敘述）'}/></span><textarea className="scope-search-input" rows={5} value={draft.note||''} onChange={event=>change('note',event.target.value)}/></label>:null}
+      <label><span>{draft.record_type==='style_comment'?l.styleName:l.name}</span><input className="scope-search-input" value={draft.label||''} onChange={event=>change('label',event.target.value)} required/></label>
+      <label><span>{l.identity}</span><input className="scope-search-input" value={draft.resource_id||''} disabled={Boolean(selectedId)} onChange={event=>change('resource_id',event.target.value)} placeholder={l.autoIdentifier}/></label>
+      {draft.record_type!=='style_comment'?<label><span>{draft.record_type==='anchor'?l.anchorDescription:l.periodDescription}</span><textarea className="scope-search-input" rows={5} value={draft.note||''} onChange={event=>change('note',event.target.value)}/></label>:null}
       {draft.record_type==='style_comment'?<>
-        <label><span><FieldText text="風格專屬敘述（TEXT）"/></span><textarea className="scope-search-input" rows={7} value={draft.style_description||''} onChange={event=>change('style_description',event.target.value)} required placeholder={t('每筆風格各自保存一段說明，不與其他風格共用文字欄位')}/></label>
-        <label><span><FieldText text="唯一正式定錨點"/></span>
+        <label><span>{l.styleText}</span><textarea className="scope-search-input" rows={7} value={draft.style_description||''} onChange={event=>change('style_description',event.target.value)} required placeholder={l.styleHint}/></label>
+        <label><span>{l.uniqueAnchor}</span>
           <select className="scope-select" value={Array.isArray(draft.anchor_ids)?draft.anchor_ids[0]||'':''} onChange={event=>change('anchor_ids',event.target.value?[event.target.value]:[])} required>
-            <option value=""><FieldText text="請選擇既有定錨點"/></option>
-            {anchorOptions.map(row=><option key={row.resource_id} value={row.resource_id}>{dateText(row.time_date)||row.year_value||'年份未定'}｜{row.label}</option>)}
+            <option value="">{l.chooseExisting}</option>
+            {anchorOptions.map(row=><option key={row.resource_id} value={row.resource_id}>{dateText(row.time_date)||row.year_value||l.unknownYear}｜{row.label}</option>)}
           </select>
         </label>
-        <p className="scope-status"><FieldText text="一個風格、一段獨立敘述、一個既有正式定錨點。可跨時期，不自動推定日期。"/></p>
+        <p className="scope-status">{l.styleRule}</p>
       </>:null}
-      {draft.record_type==='anchor'?<p className="scope-status"><FieldText text="此處保存定錨點的轉折觀察，不是風格標籤；新增風格請選「＋ 新增 → 風格標籤」。"/></p>:null}
+      {draft.record_type==='anchor'?<p className="scope-status">{l.anchorRule}</p>:null}
 
       {draft.record_type==='anchor'?<div className="scope-stat-controls">
-        <label><span><FieldText text="日期"/></span><input className="scope-select" type="date" value={dateText(draft.time_date)} onChange={event=>change('time_date',event.target.value)}/></label>
-        <label><span><FieldText text="日期未知時的年份"/></span><input className="scope-search-input" type="number" value={draft.year_value??''} onChange={event=>change('year_value',event.target.value)}/></label>
+        <label><span>{l.date}</span><input className="scope-select" type="date" value={dateText(draft.time_date)} onChange={event=>change('time_date',event.target.value)}/></label>
+        <label><span>{l.unknownDateYear}</span><input className="scope-search-input" type="number" value={draft.year_value??''} onChange={event=>change('year_value',event.target.value)}/></label>
       </div>:null}
 
       {['period','event'].includes(draft.record_type)?<div className="scope-management-wide-field">
-        <h3><FieldText text="定錨點"/></h3>
-        <p className="scope-status">{draft.record_type==='period'?'時期：1 或 2 個定錨點；可以不指定起點或終點。':'事件：固定選擇 2 個定錨點。'}</p>
-        {anchorOptions.length===0?<p className="scope-status scope-error">尚未建立正式定錨點，請先建立後再選取。</p>:null}
-        {legacyEventUnchanged?<p className="scope-status">此舊事件原有 {legacyEventIds.length} 個定錨點；只修改其他欄位會保留原有關聯。若重新選擇起點或終點，改用新的 2 點規格。</p>:null}
+        <h3>{l.anchor}</h3>
+        <p className="scope-status">{draft.record_type==='period'?l.periodHint:l.eventHint}</p>
+        {anchorOptions.length===0?<p className="scope-status scope-error">{l.noAnchors}</p>:null}
+        {legacyEventUnchanged?<p className="scope-status">{l.legacyPrefix}{legacyEventIds.length}{l.legacySuffix}</p>:null}
         <div className="scope-management-fields">
           {chosenAnchorPair.map((anchorId,index)=><label key={index}>
-            <span>{t(index===0?'起點定錨點':'終點定錨點')}{draft.record_type==='period'?t('（選填）'):''}</span>
+            <span>{(index===0?l.startAnchor:l.endAnchor)}{draft.record_type==='period'?l.optional:''}</span>
             <select className="scope-select"
-              aria-label={t(index===0?'選擇起點定錨點':'選擇終點定錨點')}
+              aria-label={(index===0?l.chooseStart:l.chooseEnd)}
               value={anchorId}
               required={draft.record_type==='event'}
               onChange={event=>changeAnchor(index,event.target.value)}>
-              <option value="0"><FieldText text={draft.record_type==='period'?'不指定（開放端）':'請選擇正式定錨點'}/></option>
+              <option value="0">{draft.record_type==='period'?l.openEnd:l.chooseFormal}</option>
               {anchorOptions.map(row=><option key={row.resource_id} value={row.resource_id}>
-                {dateText(row.time_date)||row.year_value||'年份未定'}｜{row.label}
+                {dateText(row.time_date)||row.year_value||l.unknownYear}｜{row.label}
               </option>)}
             </select>
             {anchorId!=='0'&&anchors.has(anchorId)?<span className="scope-status">{String(anchors.get(anchorId).note||'')}</span>:null}
@@ -387,14 +386,14 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       </div>:null}
 
       {draft.record_type!=='style_comment'?<div className="scope-stat-controls">
-        <label><span><FieldText text="狀態"/></span><input className="scope-search-input" value={draft.status||''} onChange={event=>change('status',event.target.value)}/></label>
-        {draft.record_type==='period'?<label><span><FieldText text="排序"/></span><input className="scope-search-input" type="number" value={draft.display_order??''} onChange={event=>change('display_order',event.target.value)}/></label>:null}
+        <label><span>{l.status}</span><input className="scope-search-input" value={draft.status||''} onChange={event=>change('status',event.target.value)}/></label>
+        {draft.record_type==='period'?<label><span>{l.sort}</span><input className="scope-search-input" type="number" value={draft.display_order??''} onChange={event=>change('display_order',event.target.value)}/></label>:null}
       </div>:null}
       {message?<p className="scope-status" role="status">{message}</p>:null}
       <div className="scope-tabs">
-        <button type="submit" disabled={busy}><FieldText text={busy?'儲存中…':'儲存'}/></button>
-        <button type="button" disabled={busy} onClick={cancelEdit}><FieldText text="取消"/></button>
-        {selectedId?<button type="button" disabled={busy} onClick={remove}><FieldText text="刪除"/></button>:null}
+        <button type="submit" disabled={busy}>{busy?l.saving:l.save}</button>
+        <button type="button" disabled={busy} onClick={cancelEdit}>{l.cancel}</button>
+        {selectedId?<button type="button" disabled={busy} onClick={remove}>{l.delete}</button>:null}
       </div>
     </form>
     </section>
