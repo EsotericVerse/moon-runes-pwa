@@ -1,5 +1,6 @@
 'use client';
-import FieldText from '../../i18n/FieldText';
+import {useUiCopy,useUiLocale} from '../../i18n/ui-locale';
+import {translateUiField} from '../../i18n/ui-functional-copy.mjs';
 
 import {useEffect,useMemo,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
@@ -25,19 +26,20 @@ function nowInTaipei(){
   }catch{return new Date().toISOString().slice(0,10);}
 }
 function labelOf(row){return String(row?.display_label||'');}
-function laneDayText(row,index,lane){
+function laneDayText(row,index,lane,l){
   if(lane?.source==='daily:rune'){
     const draws=row?.runeDraws?.[index]||[];
-    return draws.length?draws.map(itemRuneDisplay).join(' ／ '):'當日無符文紀錄';
+    return draws.length?draws.map(itemRuneDisplay).join(' ／ '):l.noneToday;
   }
   const count=Number(row?.counts?.[index])||0;
-  return count.toLocaleString()+' 筆 · '+((Number(row?.ratios?.[index])||0)*100).toFixed(1)+'%';
+  return count.toLocaleString()+l.recordUnit+((Number(row?.ratios?.[index])||0)*100).toFixed(1)+'%';
 }
-function laneColumnLabel(lane){
-  return lane?.source==='daily:rune'?'每日符文 · 符文／四向／真實月相':'作品／媒體 · 筆數／相對密度';
+function laneColumnLabel(lane,l){
+  return lane?.source==='daily:rune'?l.runeColumn:l.mediaColumn;
 }
 function defaultLane(scopeId,source){return {scopeId,source,exact:''};}
 function LanePicker({label,lane,scopes,onChange}){
+  const l=useUiCopy().itemConfluence;
   const scopeOptions=scopes.filter(scope=>scope.id!=='loc');
   const sourceOptions=ITEM_LANE_OPTIONS.filter(option=>option.value!=='daily:rune'||lane.scopeId==='lrunes');
   return <fieldset className="scope-card" style={{minWidth:0,flex:'1 1 250px'}}>
@@ -48,17 +50,17 @@ function LanePicker({label,lane,scopes,onChange}){
           const id=event.target.value;
           onChange({...lane,scopeId:id,source:lane.source==='daily:rune'&&id!=='lrunes'?'galaxy:all':lane.source});
         }}>
-          {!scopeOptions.some(scope=>scope.id===lane.scopeId)?<option value=""><FieldText text="請選擇"/></option>:null}
+          {!scopeOptions.some(scope=>scope.id===lane.scopeId)?<option value="">{l.select}</option>:null}
           {scopeOptions.map(scope=><option key={scope.id} value={scope.id}>{scope.id}</option>)}
         </select>
       </label>
-      <label><span><FieldText text="指定河道項目"/></span>
+      <label><span>{l.laneItem}</span>
         <select className="scope-select" value={sourceOptions.some(item=>item.value===lane.source)?lane.source:'galaxy:all'}
           onChange={event=>onChange({...lane,source:event.target.value,exact:''})}>
-          {sourceOptions.map(option=><option key={option.value} value={option.value}><FieldText text={option.label}/></option>)}
+          {sourceOptions.map(option=><option key={option.value} value={option.value}>{l[({ 'galaxy:facebook':'galaxyFacebook','galaxy:threads':'galaxyThreads','galaxy:instagram':'galaxyInstagram','galaxy:all':'galaxyAll','galaxy:exact':'galaxyExact','media:all':'mediaAll','media:exact':'mediaExact','daily:rune':'dailyRune'})[option.value]]||option.label}</option>)}
         </select>
       </label>
-      {lane.source.endsWith(':exact')?<label><span><FieldText text="指定原始類型"/></span>
+      {lane.source.endsWith(':exact')?<label><span>{l.exactType}</span>
         <input className="scope-input" value={lane.exact} maxLength={100} placeholder={lane.source.startsWith('media:')?'media_type':'source_name'}
           onChange={event=>onChange({...lane,exact:event.target.value})}/>
       </label>:null}
@@ -66,6 +68,8 @@ function LanePicker({label,lane,scopes,onChange}){
   </fieldset>;
 }
 export default function LocItemConfluence(){
+  const l=useUiCopy().itemConfluence;
+  const {locale}=useUiLocale();
   const today=useMemo(nowInTaipei,[]);
   const [startDate,setStartDate]=useState(()=>itemConfluenceShiftMonth(nowInTaipei(),-3));
   const [endDate,setEndDate]=useState(today);
@@ -94,7 +98,12 @@ export default function LocItemConfluence(){
     enabled:valid&&Boolean(selectedA&&selectedB),
     staleTime:60_000
   });
-  const labels=useMemo(()=>[itemLaneDescription(laneA),itemLaneDescription(laneB)],[laneA,laneB]);
+  const labels=useMemo(()=>[laneA,laneB].map(lane=>{
+    const label=itemLaneDescription(lane);
+    const option=ITEM_LANE_OPTIONS.find(item=>item.value===lane.source);
+    const keys={'galaxy:facebook':'galaxyFacebook','galaxy:threads':'galaxyThreads','galaxy:instagram':'galaxyInstagram','galaxy:all':'galaxyAll','galaxy:exact':'galaxyExact','media:all':'mediaAll','media:exact':'mediaExact','daily:rune':'dailyRune'};
+    return String(lane.scopeId||'')+' · '+(lane.source.endsWith(':exact')?(lane.source.startsWith('media:')?l.mediaLabel:l.textLabel)+String(lane.exact||''):(l[keys[option?.value]]||label||l.unselected));
+  }),[laneA,laneB,l]);
   const daily=useMemo(()=>valid&&query.data?buildItemConfluenceDaily({
     startDate:range.startDate,endDate:range.endDate,lanes:[laneA,laneB],series:query.data
   }):[],[valid,query.data,range.startDate,range.endDate,laneA,laneB]);
@@ -114,34 +123,34 @@ export default function LocItemConfluence(){
   const visibleRows=daily.slice((page-1)*ITEM_CONFLUENCE_PAGE_SIZE,page*ITEM_CONFLUENCE_PAGE_SIZE);
   useEffect(()=>{setPage(1);setSelectedDay('');},
     [startDate,endDate,laneA.scopeId,laneA.source,laneA.exact,laneB.scopeId,laneB.source,laneB.exact]);
-  const invalidMessage=!range.valid?range.reason:!selectionA.valid?('河道 A：'+selectionA.reason):!selectionB.valid?('河道 B：'+selectionB.reason):'';
+  const invalidMessage=!range.valid?translateUiField(locale,range.reason):!selectionA.valid?(l.streamA+': '+translateUiField(locale,selectionA.reason)):!selectionB.valid?(l.streamB+': '+translateUiField(locale,selectionB.reason)):'';
 
-  return <section className="scope-card scope-culture-classification-river scope-loc-time-river" aria-label="LOC 自訂項目交會">
-    <p className="loc-eyebrow">LOC Culture · 項目交會</p>
-    <h3><FieldText text="指定河道交會比較"/></h3>
-    <p className="scope-status">從可讀取的 Scope 指定兩條河道；只在其中一條引用符韻每日符文、且所選區間有可讀取的每日符文紀錄時，才在最上方自動加上現實月相事件河道，以月相變動日定錨並延續至下次變動。未引用、無紀錄或讀取失敗時，不產生月相河道。其他作品／媒體仍顯示各自密度；符文顯示名稱與四向，不顯示密度。各來源維持獨立。</p>
+  return <section className="scope-card scope-culture-classification-river scope-loc-time-river" aria-label={l.aria}>
+    <p className="loc-eyebrow">LOC Culture · {l.eyebrow}</p>
+    <h3>{l.title}</h3>
+    <p className="scope-status">{l.instructions}</p>
     <div className="scope-stat-controls" style={{alignItems:'stretch'}}>
-      <LanePicker label="河道 A" lane={laneA} scopes={scopes} onChange={setLaneA}/>
-      <LanePicker label="河道 B" lane={laneB} scopes={scopes} onChange={setLaneB}/>
+      <LanePicker label={l.streamA} lane={laneA} scopes={scopes} onChange={setLaneA}/>
+      <LanePicker label={l.streamB} lane={laneB} scopes={scopes} onChange={setLaneB}/>
     </div>
     <div className="scope-stat-controls">
-      <label><span><FieldText text="開始日期"/></span><input className="scope-input" type="date" value={startDate} onChange={event=>setStartDate(event.target.value)}/></label>
-      <label><span><FieldText text="結束日期"/></span><input className="scope-input" type="date" value={endDate} onChange={event=>setEndDate(event.target.value)}/></label>
-      <span className="scope-status">單次比較最多三個日曆月；超出期間不發出查詢。</span>
+      <label><span>{l.startDate}</span><input className="scope-input" type="date" value={startDate} onChange={event=>setStartDate(event.target.value)}/></label>
+      <label><span>{l.endDate}</span><input className="scope-input" type="date" value={endDate} onChange={event=>setEndDate(event.target.value)}/></label>
+      <span className="scope-status">{l.limit}</span>
     </div>
-    {scopesQuery.isPending?<p className="scope-status">正在讀取可選的 Scope…</p>:null}
-    {scopesQuery.error?<p className="scope-status scope-error">Scope 清單讀取失敗：{String(scopesQuery.error.message||scopesQuery.error)}</p>:null}
+    {scopesQuery.isPending?<p className="scope-status">{l.loadingScopes}</p>:null}
+    {scopesQuery.error?<p className="scope-status scope-error">{l.scopeError}{String(scopesQuery.error.message||scopesQuery.error)}</p>:null}
     {!scopesQuery.isPending&&!scopesQuery.error&&invalidMessage?<p className="scope-status scope-error" role="alert">{invalidMessage}</p>:null}
-    {valid&&query.isPending?<p className="scope-status">正在讀取兩條指定河道的每日資料…</p>:null}
-    {query.error&&valid?<p className="scope-status scope-error" role="alert">項目交會讀取失敗：{String(query.error.message||query.error)}</p>:null}
+    {valid&&query.isPending?<p className="scope-status">{l.reading}</p>:null}
+    {query.error&&valid?<p className="scope-status scope-error" role="alert">{l.readError}{String(query.error.message||query.error)}</p>:null}
     {valid&&query.data&&!query.error?<div>
       <p className="scope-status">{range.startDate} ～ {range.endDate} · {lanes.map((lane,index)=>{
         const total=summary.totals[index];
-        return '河道 '+(index===0?'A':'B')+' '+(lane.source==='daily:rune'
-          ?daily.filter(row=>row.runeDraws?.[index]?.length).length+' 個每日符文紀錄日'
-          :total.toLocaleString()+' 筆');
-      }).join(' · ')} · 雙方都有紀錄 {summary.bothActiveDays} 天</p>
-      <p className="scope-status">一般文字／媒體河道顯示筆數與相對密度；符韻每日符文直接顯示名稱、四向與當日月相，不作密度比較。當選用每日符文且區間內有抽符紀錄，才附帶依臺灣農曆日級月相變動事件形成的連續天時河道；中間沒有抽符的個別日期仍不中斷。區間內完全沒有符文紀錄則不顯示（非精確天文朔望時刻）。</p>
+        return l.streamPrefix+(index===0?'A':'B')+' '+(lane.source==='daily:rune'
+          ?daily.filter(row=>row.runeDraws?.[index]?.length).length+l.runeDays
+          :total.toLocaleString()+l.entries);
+      }).join(' · ')}{l.bothDays}{summary.bothActiveDays}{l.dayUnit}</p>
+      <p className="scope-status">{l.note}</p>
       {combinedRiver.length?<CultureTimeline
         items={combinedRiver}
         labelOf={labelOf}
@@ -160,29 +169,29 @@ export default function LocItemConfluence(){
           return date.toISOString().slice(0,10);
         })()}
         onSelect={item=>setSelectedDay(String(item?.start||'').slice(0,10))}
-      />:<p className="scope-status">選取期間沒有可觀察的公開資料，仍可調整來源或區間。</p>}
+      />:<p className="scope-status">{l.empty}</p>}
       {selectedRow?<div className="scope-card" role="status" aria-live="polite">
-        <p className="scope-status">選取日期：{selectedDay}</p>
+        <p className="scope-status">{l.selectedDay}{selectedDay}</p>
         {lanes.map((lane,index)=><p className="scope-status" key={index}>
-          <strong>{labels[index]}：</strong> {laneDayText(selectedRow,index,lane)}
+          <strong>{labels[index]}：</strong> {laneDayText(selectedRow,index,lane,l)}
         </p>)}
       </div>:null}
-      <h4><FieldText text="每日交會數據"/></h4>
+      <h4>{l.dailyData}</h4>
       <div className="scope-culture-source-work-scroll">
         <table className="scope-stat-table">
-          <thead><tr><th scope="col">日期</th>
-            {lanes.map((lane,index)=><th key={index} scope="col">河道 {index===0?'A':'B'} · {laneColumnLabel(lane)}</th>)}
+          <thead><tr><th scope="col">{l.date}</th>
+            {lanes.map((lane,index)=><th key={index} scope="col">{l.streamPrefix}{index===0?'A':'B'} · {laneColumnLabel(lane,l)}</th>)}
           </tr></thead>
           <tbody>{visibleRows.map(row=><tr key={row.day}>
             <th scope="row"><button type="button" className="loc-button" onClick={()=>setSelectedDay(row.day)}>{row.day}</button></th>
-            {lanes.map((lane,index)=><td key={index}>{laneDayText(row,index,lane)}</td>)}
+            {lanes.map((lane,index)=><td key={index}>{laneDayText(row,index,lane,l)}</td>)}
           </tr>)}</tbody>
         </table>
       </div>
-      <nav className="scope-stat-controls" aria-label="項目交會每日資料分頁">
-        <button type="button" className="loc-button" disabled={page<=1} onClick={()=>setPage(value=>Math.max(1,value-1))}><FieldText text="上一頁"/></button>
-        <span className="scope-status">第 {page}／{totalPages} 頁 · 每頁最多 {ITEM_CONFLUENCE_PAGE_SIZE} 天</span>
-        <button type="button" className="loc-button" disabled={page>=totalPages} onClick={()=>setPage(value=>Math.min(totalPages,value+1))}><FieldText text="下一頁"/></button>
+      <nav className="scope-stat-controls" aria-label={l.pagination}>
+        <button type="button" className="loc-button" disabled={page<=1} onClick={()=>setPage(value=>Math.max(1,value-1))}>{l.previous}</button>
+        <span className="scope-status">{l.page}{page}/{totalPages}{l.pages}{ITEM_CONFLUENCE_PAGE_SIZE}{l.pageDays}</span>
+        <button type="button" className="loc-button" disabled={page>=totalPages} onClick={()=>setPage(value=>Math.min(totalPages,value+1))}>{l.next}</button>
       </nav>
     </div>:null}
   </section>;
