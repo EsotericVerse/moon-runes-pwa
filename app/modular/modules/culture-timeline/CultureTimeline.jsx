@@ -1,4 +1,7 @@
 'use client';
+import FieldText from '../../../i18n/FieldText';
+import {useUiLocale} from '../../../i18n/ui-locale';
+import {translateUiField} from '../../../i18n/ui-functional-copy.mjs';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {DataSet,Timeline} from 'vis-timeline/standalone';
@@ -119,6 +122,8 @@ export default function CultureTimeline({
   fixedMax='',
   hiddenDates=EMPTY_HIDDEN_DATES
 }){
+  const {locale}=useUiLocale();
+  const t=text=>translateUiField(locale,text);
   const containerRef=useRef(null);
   const timelineRef=useRef(null);
   const [selectedRowId,setSelectedRowId]=useState('');
@@ -323,25 +328,25 @@ export default function CultureTimeline({
     onSelectRef.current?.(row);
   }
 
-  if(!rows.length)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><div className='scope-period-timeline scope-period-timeline-empty-line' role='region' aria-label='時間長河'/><p>{mode==='overview'?'尚未設定時期，目前以「所有」總覽顯示。':'目前時期尚無可顯示的時間資料。'}</p></div>;
+  if(!rows.length)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><div className='scope-period-timeline scope-period-timeline-empty-line' role='region' aria-label={t('時間長河')}/><p><FieldText text={mode==='overview'?'尚未設定時期，目前以「所有」總覽顯示。':'目前時期尚無可顯示的時間資料。'}/></p></div>;
 
   return <div className='scope-period-timeline-wrap'>
-    <div className='scope-timeline-controls' role='group' aria-label='時間長河操作'>
-      <button type='button' className='loc-button' aria-label='往較早時間移動' disabled={!ready} onClick={()=>changeWindow('earlier')}>←</button>
-      <button type='button' className='loc-button' aria-label='往較晚時間移動' disabled={!ready} onClick={()=>changeWindow('later')}>→</button>
-      <button type='button' className='loc-button' aria-label='放大時間長河' disabled={!ready} onClick={()=>changeWindow('zoom-in')}>＋</button>
-      <button type='button' className='loc-button' aria-label='縮小時間長河' disabled={!ready} onClick={()=>changeWindow('zoom-out')}>－</button>
-      <button type='button' className='loc-button' aria-label='重置時間長河視野' disabled={!ready} onClick={()=>changeWindow('reset')}>重置</button>
+    <div className='scope-timeline-controls' role='group' aria-label={t('時間長河操作')}>
+      <button type='button' className='loc-button' aria-label={t('往較早時間移動')} disabled={!ready} onClick={()=>changeWindow('earlier')}>←</button>
+      <button type='button' className='loc-button' aria-label={t('往較晚時間移動')} disabled={!ready} onClick={()=>changeWindow('later')}>→</button>
+      <button type='button' className='loc-button' aria-label={t('放大時間長河')} disabled={!ready} onClick={()=>changeWindow('zoom-in')}>＋</button>
+      <button type='button' className='loc-button' aria-label={t('縮小時間長河')} disabled={!ready} onClick={()=>changeWindow('zoom-out')}>－</button>
+      <button type='button' className='loc-button' aria-label={t('重置時間長河視野')} disabled={!ready} onClick={()=>changeWindow('reset')}><FieldText text="重置"/></button>
     </div>
     {onSelect&&mode==='overview'&&rows.length<=250?<label className='scope-timeline-item-picker'>
-      <span>選擇河道紀錄</span>
-      <select className='scope-select' aria-label='選擇河道紀錄' value={rows.some(row=>row.id===selectedRowId)?selectedRowId:''} onChange={selectFromList}>
-        <option value=''>請選擇日期或紀錄</option>
+      <span><FieldText text="選擇河道紀錄"/></span>
+      <select className='scope-select' aria-label={t('選擇河道紀錄')} value={rows.some(row=>row.id===selectedRowId)?selectedRowId:''} onChange={selectFromList}>
+        <option value=''><FieldText text="請選擇日期或紀錄"/></option>
         {rows.map(row=><option key={row.id} value={row.id}>{String(row.start||'').slice(0,10)} · {row.content||row.title||row.entryType||'紀錄'}</option>)}
       </select>
     </label>:null}
-    {chartError?<p className='scope-status'>圖表載入失敗，以下改用清單顯示。</p>:null}
-    <div ref={containerRef} data-anchor-gesture={onTimeClick?'double-tap':'none'} className='scope-period-timeline' role='region' aria-label={mode==='overview'?'所有時期與定錨點時間長河':'時間長河'} style={{'--scope-period-timeline-min-height':timelineMinHeight+'px'}}/>
+    {chartError?<p className='scope-status'><FieldText text="圖表載入失敗，以下改用清單顯示。"/></p>:null}
+    <div ref={containerRef} data-anchor-gesture={onTimeClick?'double-tap':'none'} className='scope-period-timeline' role='region' aria-label={t(mode==='overview'?'所有時期與定錨點時間長河':'時間長河')} style={{'--scope-period-timeline-min-height':timelineMinHeight+'px'}}/>
     {chartError?<ol className='scope-list'>
       {fallbackRows.map(row=><li key={row.id}><strong>{row.content}</strong>{row.group?<span> · {groupLabel(row.group)}</span>:null}<span> · {dateLabel(row.start)}</span>{row.title?<p>{row.title}</p>:null}</li>)}
     </ol>:null}

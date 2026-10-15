@@ -1,5 +1,7 @@
 'use client';
 import FieldText from '../../i18n/FieldText';
+import {useUiLocale} from '../../i18n/ui-locale';
+import {translateUiField} from '../../i18n/ui-functional-copy.mjs';
 
 import {DB_QUERY_BATCH_SIZE} from '../../loc/query-contract.mjs';
 
@@ -50,6 +52,8 @@ function rowSortDate(row,anchors){
 }
 
 export default function CultureTimelineEditor({scopeId='',selectedRecordId='',suggestedAnchorDate='',suggestedRecordType='anchor',suggestedRequestNonce=0,onClose=null}){
+  const {locale}=useUiLocale();
+  const t=text=>translateUiField(locale,text);
   const account=useAccount();
   const searchParams=useSearchParams();
   const routeSuggestedAnchorDate=String(searchParams?.get?.('anchorDate')||'').slice(0,10);
@@ -312,7 +316,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
 
   if(!formOpen)return null;
 
-  return <dialog ref={dialogRef} aria-label="文化時間資料編輯器" className="scope-culture-timeline-dialog" onCancel={event=>{event.preventDefault();cancelEdit();}}>
+  return <dialog ref={dialogRef} aria-label={t('文化時間資料編輯器')} className="scope-culture-timeline-dialog" onCancel={event=>{event.preventDefault();cancelEdit();}}>
     <section className="loc-card scope-feature-card scope-culture-inline-editor">
     {query.error?<p className="scope-status scope-error">{query.error.message}</p>:null}
     {duplicateAnchorIds.length?<p className="scope-status scope-error">同一資料區域存在重複的定錨點識別：{duplicateAnchorIds.join('、')}。請先修正，否則無法正確呈現文化資料。</p>:null}
@@ -340,7 +344,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
         </select>
       </label>:null}
       <label><span><FieldText text={draft.record_type==='style_comment'?'風格標籤名稱（搜尋關鍵詞）':'名稱'}/></span><input className="scope-search-input" value={draft.label||''} onChange={event=>change('label',event.target.value)} required/></label>
-      <label><span><FieldText text="識別"/></span><input className="scope-search-input" value={draft.resource_id||''} disabled={Boolean(selectedId)} onChange={event=>change('resource_id',event.target.value)} placeholder="留空自動產生"/></label>
+      <label><span><FieldText text="識別"/></span><input className="scope-search-input" value={draft.resource_id||''} disabled={Boolean(selectedId)} onChange={event=>change('resource_id',event.target.value)} placeholder={t('留空自動產生')}/></label>
       {draft.record_type!=='style_comment'?<label><span>{draft.record_type==='anchor'?'定錨點說明（關鍵變化／持續檢討，非風格敘述）':'時期／事件說明（非風格敘述）'}</span><textarea className="scope-search-input" rows={5} value={draft.note||''} onChange={event=>change('note',event.target.value)}/></label>:null}
       {draft.record_type==='style_comment'?<>
         <label><span>風格專屬敘述（TEXT）</span><textarea className="scope-search-input" rows={7} value={draft.style_description||''} onChange={event=>change('style_description',event.target.value)} required placeholder="每筆風格各自保存一段說明，不與其他風格共用文字欄位"/></label>
@@ -368,7 +372,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
           {chosenAnchorPair.map((anchorId,index)=><label key={index}>
             <span>{index===0?'起點定錨點':'終點定錨點'}{draft.record_type==='period'?'（選填）':''}</span>
             <select className="scope-select"
-              aria-label={index===0?'選擇起點定錨點':'選擇終點定錨點'}
+              aria-label={t(index===0?'選擇起點定錨點':'選擇終點定錨點')}
               value={anchorId}
               required={draft.record_type==='event'}
               onChange={event=>changeAnchor(index,event.target.value)}>

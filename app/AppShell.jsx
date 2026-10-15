@@ -321,7 +321,7 @@ export default function AppShell({children}){
   const openFolder=visibleFolders.find(folder=>folder.id===openFolderId)||null;
   const isMyPhone=native&&normalizePath(pathname)==='/my-phone';
   const featureTabs=[
-    {id:'home',icon:'home',label:translateUiField(locale,'首頁'),href:isMyPhone?mobileHomeHref(true):navigationHref(navScopeId,'',native)+(native&&navScopeId==='loc'?'?loc_direct=1':'')},
+    {id:'home',icon:'home',label:translateUiField(activeLocale,'首頁'),href:isMyPhone?mobileHomeHref(true):navigationHref(navScopeId,'',native)+(native&&navScopeId==='loc'?'?loc_direct=1':'')},
     ...['culture','statics','search','governance'].map(id=>{
       const feature=FEATURES.find(item=>item.id===id);
       return {id,icon:id,label:copy.features?.[id]?.title||feature.label,
@@ -350,7 +350,7 @@ export default function AppShell({children}){
     <motion.div className="loc-scroll-progress" style={{scaleX}} aria-hidden="true"/>
     <header className="scope-global" data-native={native?'ios':'web'}>
       <nav className="scope-nav" aria-label={copy.nav.aria}>
-        <ScrollableScopeNav label="常用空間" resetKey={preferences.favorites.join(',')+'|'+mobileFavorite+'|'+native+'|'+visibleFolders.map(folder=>folder.id+':'+folder.label).join(',')}>
+        <ScrollableScopeNav label={translateUiField(activeLocale,'常用空間')} resetKey={preferences.favorites.join(',')+'|'+mobileFavorite+'|'+native+'|'+visibleFolders.map(folder=>folder.id+':'+folder.label).join(',')}>
           {favoriteLinks.map(item=>{
             const href=item.id===MOBILE_HOME_ID?mobileHomeHref(native):navigationHref(item.id,'',native);
             return <NavTarget key={item.id} href={href} label={item.label} current={targetIsCurrent(href,host,pathname)}/>;
@@ -360,26 +360,26 @@ export default function AppShell({children}){
             aria-controls="scope-nav-folder-contents" onClick={()=>setOpenFolderId(current=>current===folder.id?'':folder.id)}>
             {folder.label} <span aria-hidden="true">{openFolderId===folder.id?'▴':'▾'}</span>
           </button>)}
-          {!favoriteLinks.length&&!visibleFolders.length?<a href={native?'/settings/index.html':'/settings/'} className="scope-nav-empty">到設定加入常用空間</a>:null}
+          {!favoriteLinks.length&&!visibleFolders.length?<a href={native?'/settings/index.html':'/settings/'} className="scope-nav-empty"><FieldText text="到設定加入常用空間"/></a>:null}
         </ScrollableScopeNav>
         <a href={navigationHref('loc','',native)+(native?'?loc_direct=1':'')}
           className="scope-nav-loc-home" aria-current={scopeId==='loc'&&pathname==='/'?'page':undefined}>
           {copy.nav.home}
         </a>
       </nav>
-      {openFolder?<div id="scope-nav-folder-contents" className="scope-nav-subrow" aria-label={openFolder.label+'目錄'}>
-        <ScrollableScopeNav label={openFolder.label+'目錄內容'} resetKey={openFolder.id+'|'+openFolder.links.map(item=>item.id).join(',')}>
+      {openFolder?<div id="scope-nav-folder-contents" className="scope-nav-subrow" aria-label={openFolder.label+' '+translateUiField(activeLocale,'目錄')}>
+        <ScrollableScopeNav label={openFolder.label+' '+translateUiField(activeLocale,'目錄內容')} resetKey={openFolder.id+'|'+openFolder.links.map(item=>item.id).join(',')}>
           {openFolder.links.map(item=>{
             const href=navigationHref(item.id,'',native);
             return <NavTarget key={item.id} href={href} label={item.label} current={targetIsCurrent(href,host,pathname)}/>;
           })}
           {!openFolder.links.length?<span className="scope-nav-folder-empty"><FieldText text="目錄尚無入口"/></span>:null}
         </ScrollableScopeNav>
-        <button type="button" className="scope-nav-close-folder" aria-label={translateUiField(locale,'收合目錄')} onClick={()=>setOpenFolderId('')}>×</button>
+        <button type="button" className="scope-nav-close-folder" aria-label={translateUiField(activeLocale,'收合目錄')} onClick={()=>setOpenFolderId('')}>×</button>
       </div>:null}
     </header>
     {children}
-    <nav className="scope-feature-dock" aria-label={translateUiField(locale,'固定功能選單')} data-scope={scopeId}>
+    <nav className="scope-feature-dock" aria-label={translateUiField(activeLocale,'固定功能選單')} data-scope={scopeId}>
       {featureTabs.map(tab=><a key={tab.id} href={tab.href}
         aria-current={tab.id==='settings'?isSettings?'page':undefined:
           !isSettings&&(tab.id==='home'?!currentFeature:currentFeature===tab.id)?'page':undefined}>

@@ -800,7 +800,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         {optionsForCurrent.length?optionsForCurrent.map(([value,label])=><option key={value} value={value}><FieldText text={label}/></option>):<option value="line"><FieldText text="尚無可用圖形"/></option>}
       </select></label>:null}
       {!['pie','radar','radial','treemap','scatter'].includes(effectiveChartType)?<label className="scope-setting-toggle">
-        <input type="checkbox" checked={foldBlank} onChange={event=>setFoldBlank(event.target.checked)}/> 折疊空白時間
+        <input type="checkbox" checked={foldBlank} onChange={event=>setFoldBlank(event.target.checked)}/> <FieldText text="折疊空白時間"/>
       </label>:null}
       </>:null}
       {scopeId==='lo3rwang'?<label><span><FieldText text="表現風格"/></span><select className="scope-select" value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}>

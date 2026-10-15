@@ -2,7 +2,8 @@
 import FieldText from '../i18n/FieldText';
 
 import {UI_COPY} from '../i18n/ui-copy';
-import {useUiCopy} from '../i18n/ui-locale';
+import {useUiCopy,useUiLocale} from '../i18n/ui-locale';
+import {translateUiField} from '../i18n/ui-functional-copy.mjs';
 import {useState} from 'react';
 import {insertRows} from './db-client.mjs';
 import {useAccount} from './use-account';
@@ -18,6 +19,8 @@ const blank=()=>({
 
 export default function ManagementArticlePublisher({scopeId}){
   const UI_COPY=useUiCopy();
+  const {locale}=useUiLocale();
+  const t=text=>translateUiField(locale,text);
   const account=useAccount();
   const [draft,setDraft]=useState(blank());
   const [status,setStatus]=useState('');
@@ -69,8 +72,8 @@ export default function ManagementArticlePublisher({scopeId}){
           className="scope-publisher-title"
           value={draft.title}
           onChange={event=>change('title',event.target.value)}
-          placeholder="新增標題"
-          aria-label="文章標題"
+          placeholder={t('新增標題')}
+          aria-label={t('文章標題')}
         />
         <BlockNoteEditor
           key={'publisher:'+scopeId}

@@ -1,5 +1,7 @@
 'use client';
 import FieldText from '../i18n/FieldText';
+import {useUiLocale} from '../i18n/ui-locale';
+import {translateUiField} from '../i18n/ui-functional-copy.mjs';
 
 import {useEffect,useState} from 'react';
 import {UI_LOCALE_OPTIONS,normalizeUiLocale} from '../i18n/ui-copy';
@@ -27,6 +29,8 @@ function aliasList(value){
 }
 
 export default function ScopeSettingsPanel({scopeId}){
+  const {locale}=useUiLocale();
+  const t=text=>translateUiField(locale,text);
   const account=useAccount();
   const [draft,setDraft]=useState(EMPTY);
   const [aliases,setAliases]=useState('');
@@ -108,7 +112,7 @@ export default function ScopeSettingsPanel({scopeId}){
 
       <label className="scope-management-wide-field">
         <span><FieldText text="搜尋頁介紹"/></span>
-        <textarea className="scope-search-input" rows={4} value={draft.search_intro||''} onChange={event=>change('search_intro',event.target.value)} placeholder="搜尋名稱或別名"/>
+        <textarea className="scope-search-input" rows={4} value={draft.search_intro||''} onChange={event=>change('search_intro',event.target.value)} placeholder={t('搜尋名稱或別名')}/>
       </label>
 
       <label className="scope-management-wide-field">

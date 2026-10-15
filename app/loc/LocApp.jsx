@@ -1,4 +1,5 @@
 'use client';
+import FieldText from '../i18n/FieldText';
 
 import dynamic from 'next/dynamic';
 import {Suspense} from 'react';
@@ -73,7 +74,7 @@ export default function LocApp({forcedView='home',forcedSection=null,forcedScope
   }
   if(!forcedScope&&runtime.dynamic&&(runtime.registryError||!runtime.registryRow)){
     return <main className="scope-main"><section className="scope-page"><section className="loc-card">
-      <h1>Scope 無法使用</h1>
+      <h1><FieldText text="Scope 無法使用"/></h1>
       <p className="scope-status scope-error">{runtime.registryError||'找不到已啟用的 Scope Registry。'}</p>
     </section></section></main>;
   }

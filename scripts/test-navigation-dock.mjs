@@ -44,9 +44,9 @@ test('one immutable six-key feature dock and explicit global settings route',()=
   assert.match(code,/className="scope-feature-dock"/);
   assert.match(css,/grid-template-columns:repeat\(6,minmax\(0,1fr\)\)/);
   assert.match(css,/box-shadow:/);
-  assert.match(settings,/<h2>首頁設定<\/h2>/);
+  assert.ok(settings.includes("<h2>首頁設定</h2>")||settings.includes('<h2><FieldText text="首頁設定"/></h2>'));
   assert.match(settings,/scope-settings-favorite-preview/);
-  assert.match(settings,/<h2>帳號<\/h2>/);
+  assert.ok(settings.includes('<h2>帳號</h2>')||settings.includes('<h2><FieldText text="帳號"/></h2>'));
   assert.doesNotMatch(settings,/DailyLogClient|RuneSQLiteTransfer|RuneDrawClient/);
 });
 

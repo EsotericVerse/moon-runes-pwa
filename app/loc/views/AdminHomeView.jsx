@@ -2,7 +2,8 @@
 import FieldText from '../../i18n/FieldText';
 
 import {UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale} from '../../i18n/ui-copy';
-import {useUiCopy} from '../../i18n/ui-locale';
+import {useUiCopy,useUiLocale} from '../../i18n/ui-locale';
+import {translateUiField} from '../../i18n/ui-functional-copy.mjs';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {scopeHref,duplicateDomainLabelError} from '../../modular/scope-registry';
 import {THEME_SLOTS,THEME_TOKEN_KEYS} from '../../modular/theme-registry';
@@ -994,6 +995,7 @@ function AdminEmailBlocklist(){
 
 export default function AdminHomeView(){
   const UI_COPY=useUiCopy();
+  const {locale}=useUiLocale();
   const account=useAccount();
   const [section,setSection]=useState('registry');
   const selectedOption=ADMIN_OPTIONS.find(option=>option.value===section)||ADMIN_OPTIONS[0];
@@ -1006,7 +1008,7 @@ export default function AdminHomeView(){
     <header className="loc-hero loc-hero-context admin-hero">
       <div className="admin-hero-row"><h1>{UI_COPY.admin.eyebrow}</h1><a className="loc-button" href="/settings/"><FieldText text="帳號設定"/></a></div>
       <div className="admin-main-select">
-        <select className="admin-native-select" value={selectedOption.value} onChange={e=>setSection(e.target.value||'registry')} aria-label="Admin 管理功能">{ADMIN_OPTIONS.map(option=><option value={option.value} key={option.value}><FieldText text={option.label}/></option>)}</select>
+        <select className="admin-native-select" value={selectedOption.value} onChange={e=>setSection(e.target.value||'registry')} aria-label={translateUiField(locale,'Admin 管理功能')}>{ADMIN_OPTIONS.map(option=><option value={option.value} key={option.value}><FieldText text={option.label}/></option>)}</select>
       </div>
     </header>
     {section==='registry'?<AdminRegistry/>:null}
