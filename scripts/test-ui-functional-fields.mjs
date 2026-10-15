@@ -7,7 +7,9 @@ assert.equal(translateUiField('zh-Hans','主要資料庫'),'主数据库');
 assert.equal(translateUiField('en','私人創作內容'),'私人創作內容');
 for(const name of ['Search','Statistics','Culture']){
   const path='../app/modular/features/'+name+'.jsx';
-  assert.ok(readFileSync(new URL(path,import.meta.url),'utf8').includes('FieldText'));
+  const source=readFileSync(new URL(path,import.meta.url),'utf8');
+  assert.ok(source.includes('FieldText')||source.includes('const UI_COPY=useUiCopy();'),
+    'Functional controls must read the selected UI locale: '+name);
 }
 const pkg=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8'));
 const lock=JSON.parse(readFileSync(new URL('../package-lock.json',import.meta.url),'utf8'));
