@@ -291,7 +291,7 @@ if(!failures.length){
     "effectiveCategoryKey||'all'",
     "enabled:!isLrunesDaily&&!isAggregateScope&&Boolean(scopeData)&&Boolean(selectedWorkPeriod)",
     "styleFilter==='rune66'?<section className='scope-culture-style-filter'>",
-    "正在載入該時期作品…",
+    'l.loadingPeriodWorks',
     'onClick={periodWorksPage.reload}'
   ])if(!culture.includes(token))failures.push('Culture P5/all works must survive keyword style changes: '+token);
   if(culture.includes("(!selectedCategory||Boolean(selectedGroup))"))failures.push('Culture must not disable work pagination while source-category snapshot refreshes.');
