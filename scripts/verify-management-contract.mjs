@@ -281,7 +281,7 @@ must(adminCss.includes('.admin-delete-confirm')&&adminCss.includes('.admin-node-
 must(
   !admin.includes('<span>排序</span>')&&functionalLabel(admin,'span','主題')&&
   !admin.includes('groupDraft.sort_order')&&
-  functionalLabel(scopeSettings,'span','主題')&&
+  scopeSettings.includes('<UiText id="common.theme"/>')&&
   scopeSettings.includes("change('theme',")&&
   scopeSettings.includes('theme:String(draft.theme')&&
   admin.includes("active:current.scope_id==='loc'?true:current.active!==false"),
@@ -415,7 +415,7 @@ must(importPanel.includes('record.createtime||current.createtime||null')&&import
 
 must(!/silver\.runes(?:_etc)?\b/.test(galaxy),'generic Galaxy/Search provider must not expose private Rune Core tables');
 must(!/runeScopeIds|silver\.runes(?:_etc)?\b/.test(sharedSearch),'shared Search must stay Scope-data only');
-must(sharedSearch.includes('matchesScopeAlias')&&sharedSearch.includes('scope.searchIntro')&&sharedSearch.includes("label:'前往成員首頁'")&&sharedSearch.includes('return;'),'exact Scope aliases must use Scope-owned presentation and stop the search');
+must(sharedSearch.includes('matchesScopeAlias')&&sharedSearch.includes('scope.searchIntro')&&sharedSearch.includes("label:t('uiExtra.searchUI.memberHomeLink')")&&sharedSearch.includes('return;'),'exact Scope aliases must use Scope-owned presentation and stop the search');
 must(galaxy.includes("value:['anchor','period','style_comment']")&&galaxy.includes('summary:r.style_description')&&!galaxy.includes('styleTagList'),'Search loads one-to-one style comments');
 must(galaxy.includes('selectStyleKeywordDocumentCount')&&galaxy.includes('related_style_tags:related')&&galaxy.includes('same_period:')&&sharedSearch.includes('scope-style-search-related-links')&&sharedSearch.includes('style.document_total')&&sharedSearch.includes("cursor:!append&&styleIntroductions.length&&scopeId!=='loc'?{stage:2"),'Search introductions must offer counted linked personal styles before work results without Time snapshot columns');
 must(sharedSearch.includes('selectStyleKeywordIntroductions')&&sharedSearch.includes('[...styleIntroductions,...enrichedRows]'),'style keyword descriptions must precede ordinary related results');
