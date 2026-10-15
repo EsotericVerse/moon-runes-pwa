@@ -720,6 +720,37 @@
       "signedIn": "已登录",
       "home": "首页",
       "save": "保存"
+    },
+    "editBlocks": {
+      "moving": "正在调整区块顺序…",
+      "moved": "区块顺序已保存。其他未保存的文字修改仍保留在草稿中。",
+      "moveFailed": "区块移动失败：{error}",
+      "saving": "保存中…",
+      "textOnly": "此文本区仅允许编辑文字。",
+      "oneImage": "每个文本框架最多只能有一张图片，请删除多余图片。",
+      "invalidImage": "图片必须是有效的 http:// 或 https:// 网址。",
+      "saved": "已保存。",
+      "saveFailedPrefix": "保存失败：",
+      "unknown": "未知错误",
+      "deleted": "已删除。",
+      "deleteFailed": "删除失败。",
+      "remove": "删除",
+      "childTitleHint": "标题（不填写＝文字气泡，填写＝文字框）",
+      "bubbleHint": "不填写标题（文字气泡）",
+      "addChild": "＋ 子文字框",
+      "save": "保存",
+      "moveUp": "↑ 上移",
+      "moveDown": "↓ 下移",
+      "cancel": "取消",
+      "englishEyebrow": "英文标题（可留空）",
+      "chineseHeadline": "中文大标题（可留空）",
+      "heroImageMode": "Hero 图片位置（背景或旁边，二选一）",
+      "background": "背景",
+      "beside": "旁边",
+      "subtitle": "标题说明（支持粗体和换行）",
+      "body": "下方正文（BlockNote）",
+      "clickToCreate": "点击建立文字框。",
+      "addBlock": "＋ 新建文字框"
     }
   }
 }
