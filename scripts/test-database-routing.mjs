@@ -8,6 +8,7 @@ const primary={activeTarget:async()=>{
 }};
 const first=await selectedDatabaseRouting(primary);
 assert.equal(first.primaryId,'supabase-current');
+assert.equal(first.verified,true);
 assert.equal(first.backupId,'neon-current');
 assert.equal(first.mode,'single');
 assert.deepEqual(await selectedDatabaseRouting(primary),first);
@@ -18,6 +19,7 @@ const switched=await selectedDatabaseRouting({
     backup_id:'supabase-current',backup_provider:'supabase',mode:'db-managed',primary_control:false}})
 });
 assert.equal(switched.primaryControl,false);
+assert.equal(switched.verified,true);
 assert.equal(switched.backupId,'supabase-current');
 assert.equal(switched.mode,'db-managed');
 assert.equal(requests,1);
@@ -35,3 +37,7 @@ assert.equal(calls[0].target,'backup');
 await assert.rejects(async()=>client.schema('silver').from('runes').insert({rune_id:1}),/read-only/);
 assert.equal(calls[1].target,'backup');
 console.log('[database-routing] independent main/backup, explicit mode, no polling and fail-closed backup transport');
+
+invalidateDatabaseRouting();
+const unknown=await selectedDatabaseRouting({activeTarget:async()=>{throw new Error('Control database unavailable')}});
+assert.equal(unknown.verified,false,'Unknown primary must never authorize writes');

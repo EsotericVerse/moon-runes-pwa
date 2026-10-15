@@ -1,9 +1,9 @@
-const defaultRouting=Object.freeze({provider:'supabase',primaryId:'supabase-current',backupId:null,backupProvider:null,mode:'single',primaryControl:true});
+const defaultRouting=Object.freeze({provider:'supabase',primaryId:'supabase-current',backupId:null,backupProvider:null,mode:'single',primaryControl:true,verified:false});
 let route=defaultRouting;
 let resolved=false;
 let pending=null;
 let revision=0;
-export function invalidateDatabaseRouting(){revision++;resolved=false;pending=null}
+export function invalidateDatabaseRouting(){revision++;resolved=false;pending=null;route={...route,verified:false}}
 export async function selectedDatabaseRouting(client){
   if(resolved)return route;
   if(pending)return pending;
@@ -23,7 +23,8 @@ export async function selectedDatabaseRouting(client){
           backupId:data.backup_id?String(data.backup_id):null,
           backupProvider:data.backup_provider?String(data.backup_provider):null,
           mode:data.mode==='db-managed'?'db-managed':'single',
-          primaryControl:data.primary_control===undefined?provider==='supabase':data.primary_control===true
+          primaryControl:data.primary_control===undefined?provider==='supabase':data.primary_control===true,
+          verified:true
         };
       }
     }catch{
@@ -39,4 +40,5 @@ export async function selectedDatabaseRouting(client){
 if(typeof window!=='undefined'){
   window.addEventListener('loc-database-target-changed',invalidateDatabaseRouting);
   window.addEventListener('pageshow',event=>{if(event.persisted)invalidateDatabaseRouting()});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')invalidateDatabaseRouting()});
 }

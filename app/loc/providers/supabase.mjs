@@ -39,6 +39,7 @@ export function createSupabaseAdapter({
     const steps=[];
     const execute=async()=>{
       const selection=await selectedDatabaseRouting(edgePublic);
+      if(!selection.verified)throw new Error('Primary database cannot be confirmed; write cancelled');
       if(selection.provider==='neon')throw new Error('Selected primary database is read-only');
       const source=selection.primaryControl?authenticatedSdk.schema(schema):edgeAdmin.schema(schema);
       let query=source.from(table)[method](...args);
@@ -75,6 +76,7 @@ export function createSupabaseAdapter({
           return edgeAdmin.schema(schema).rpc(name,args);
         if(name==='read_keyword_class'||name==='read_scope_page_copy')return db.rpc(name,args,options);
         return selectedDatabaseRouting(edgePublic).then(selected=>{
+          if(!selected.verified)throw new Error('Primary database cannot be confirmed; write cancelled');
           if(selected.provider==='neon')throw new Error('Selected primary database is read-only');
           return selected.primaryControl?db.rpc(name,args,options):edgeAdmin.schema(schema).rpc(name,args);
         });
