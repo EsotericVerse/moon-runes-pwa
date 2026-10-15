@@ -15,7 +15,7 @@ function keysOf(node,prefix=''){
     return typeof value==='object'&&value!==null?keysOf(value,path):[path];
   });
 }
-const mainSections=['common','nav','features','scope','search','statistics','culture','governance','work','management','admin'];
+const mainSections=['common','nav','features','scope','search','statistics','culture','governance','work','management','admin','dailyRune','privateFiles','itemConfluence'];
 for(const locale of locales){
   const dict=dictionaries[locale];
   for(const section of mainSections)assert.deepEqual(keysOf(dict[section]).sort(),keysOf(zh[section]).sort(),
@@ -39,13 +39,16 @@ const cleared=[
   'app/modular/modules/statistics/StatisticsMultiChart.jsx',
   'app/loc/ScopeGroupStatisticsSharing.jsx',
   'app/loc/ManagementArticlePublisher.jsx',
-  'app/modular/ui.jsx'
+  'app/modular/ui.jsx',
+  'app/lrunes/DailyRuneAnalytics.jsx',
+  'app/loc/PrivateLocalFiles.jsx',
+  'app/modular/features/LocItemConfluence.jsx'
 ];
 for(const file of cleared){
   const text=read(file);
   assert.ok(!/[\u3400-\u9fff]/u.test(text),
     file+' contains hard-coded Chinese. Put interface strings into locale JSON and use ASCII keys.');
-  for(const match of text.matchAll(/['"]((?:uiExtra|features|scope|common|nav|search|statistics|culture|management)\.[\w.]+)['"]/gu)){
+  for(const match of text.matchAll(/['"]((?:uiExtra|features|scope|common|nav|search|statistics|culture|management|dailyRune|privateFiles|itemConfluence)\.[\w.]+)['"]/gu)){
     const key=match[1];
     if(key.endsWith('.'))continue; // dynamic suffix, checked by the corresponding runtime module
     for(const locale of locales){
@@ -54,4 +57,4 @@ for(const file of cleared){
     }
   }
 }
-console.log('[ui-i18n] 4 locale JSON structures, static keys and 16 hardcode-free UI files passed');
+console.log('[ui-i18n] 4 locale JSON structures, static keys and 19 hardcode-free UI files passed');
