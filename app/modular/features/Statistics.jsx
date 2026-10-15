@@ -15,7 +15,6 @@ import {selectMediaStatisticsFacetRows,selectMediaCrossTagRows,selectScopeDensit
 import {selectRows} from '../../loc/db-query.mjs';
 import {selectFirstDailyRuneDate} from '../../loc/daily-runes';
 import {administrativeSourceTrend} from '../../loc/statistics-admin-source.mjs';
-import {DEFAULT_MEDIA_STYLE_EXCLUSIONS,filterMediaStyleRows,mediaStyleExclusions} from '../../loc/statistics-facets.mjs';
 import {defaultMediaCrossAxes,mediaCrossIntersections,mediaCrossTagCatalog} from '../../loc/media-style-intersection.mjs';
 import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
 import {selectScopeRegistry,defaultScopeData} from '../../loc/scope-data';
@@ -247,19 +246,12 @@ function facetTrend(rows=[],window={},selectedCategories=[]){
     return output;
   });
 }
-function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeChange,range={},scopeId,navigation={},foldBlank=false,zoomLevel=0,onZoomLevelChange}){
-  const router=useRouter();
+function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeChange,range={},scopeId,foldBlank=false,zoomLevel=0,onZoomLevelChange}){
   const [selectedTag,setSelectedTag]=useState('all');
   const [rankingPage,setRankingPage]=useState(1);
-  const rawExclusions=String(navigation.statExclude||'');
-  const exclusionText=rawExclusions==='-'?'':(rawExclusions||DEFAULT_MEDIA_STYLE_EXCLUSIONS.join(', '));
-  const [exclusionDraft,setExclusionDraft]=useState(exclusionText);
-  const exclusions=useMemo(()=>mediaStyleExclusions(exclusionText),[exclusionText]);
   const window=useMemo(()=>rowsInWindow(rows,range),[rows,range]);
-  const facetRows=useMemo(()=>
-    rankingType==='media_style'?filterMediaStyleRows(window.rows,exclusions):window.rows,
-    [rankingType,window.rows,exclusions]
-  );
+  // No NOT/exclusion list; count all existing Meta Tags.
+  const facetRows=window.rows;
   const totals=useMemo(()=>facetTotals(facetRows),[facetRows]);
   const chosen=totals.find(row=>row.term===selectedTag)?selectedTag:'all';
   const displayed=chosen==='all'?totals:totals.filter(row=>row.term===chosen);
@@ -274,21 +266,7 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeC
     distribution:bars.map(row=>({name:row.term,value:row.value}))
   });
   const chosenChartType=supported.some(([value])=>value===chartType)?chartType:(supported[0]?.[0]||'line');
-  function applyExclusions(){
-    const next=mediaStyleExclusions(exclusionDraft).join(', ');
-    const nextValue=next===DEFAULT_MEDIA_STYLE_EXCLUSIONS.join(', ')?undefined:(next||'-');
-    if((nextValue||'').length>240)return;
-    if((nextValue||'')===rawExclusions)return;
-    router.push(featureNavigationHref(scopeId,'statics',{...navigation,statExclude:nextValue}));
-  }
   return <>
-    {rankingType==='media_style'?<div className="scope-stat-controls">
-      <label><span><FieldText text="統計排除詞（以逗號分隔）"/></span>
-        <input className="scope-input" value={exclusionDraft} maxLength={240} onChange={event=>setExclusionDraft(event.target.value)} placeholder="J-Pop" />
-      </label>
-      <button type="button" className="loc-button" onClick={applyExclusions}><FieldText text="套用排除詞"/></button>
-      <button type="button" className="loc-button" onClick={()=>setExclusionDraft(DEFAULT_MEDIA_STYLE_EXCLUSIONS.join(', '))}><FieldText text="恢復預設"/></button>
-    </div>:null}
     <div className="scope-stat-controls">
       <label><span><FieldText text={rankingType==='media_style'?'指定 Meta Tag':'指定統計細項'}/></span>
         <select className="scope-select" value={chosen} onChange={event=>{setSelectedTag(event.target.value);setRankingPage(1);}}>
@@ -344,19 +322,13 @@ function MediaCrossTagPicker({title,options,selected,onChange}){
     </div>
   </details>;
 }
-function MediaCrossTagStatistics({rows=[],range={},navigation={},zoomLevel=0,onZoomLevelChange}){
+function MediaCrossTagStatistics({rows=[],range={},zoomLevel=0,onZoomLevelChange}){
   const [leftOverride,setLeftOverride]=useState(null);
   const [rightOverride,setRightOverride]=useState(null);
   const [mode,setMode]=useState('ranking');
   const [visibleCount,setVisibleCount]=useState(15);
   const [selectedPair,setSelectedPair]=useState('');
-  const rawExclusions=String(navigation.statExclude||'');
-  const exclusions=useMemo(()=>new Set(mediaStyleExclusions(rawExclusions==='-'?'':(rawExclusions||DEFAULT_MEDIA_STYLE_EXCLUSIONS)).map(x=>x.normalize('NFKC').toLocaleLowerCase())),[rawExclusions]);
-  const baseCatalog=useMemo(()=>mediaCrossTagCatalog(rows),[rows]);
-  const catalog=useMemo(()=>({
-    ...baseCatalog,
-    options:baseCatalog.options.filter(x=>!exclusions.has(x.key))
-  }),[baseCatalog,exclusions]);
+  const catalog=useMemo(()=>mediaCrossTagCatalog(rows),[rows]);
   const tagKeys=new Set(catalog.options.map(x=>x.key));
   const defaults=defaultMediaCrossAxes(catalog);
   const left=leftOverride===null?defaults.left:leftOverride.filter(x=>tagKeys.has(x));
@@ -837,12 +809,11 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     {rankingType==='media_style'&&!crossTagQuery.isPending&&!crossTagQuery.error?<MediaCrossTagStatistics
       rows={crossTagQuery.data||[]}
       range={queryRange}
-      navigation={navigation}
       zoomLevel={zoomLevel}
       onZoomLevelChange={setZoomLevel}
     />:null}
     {mediaDimension&&!mediaQuery.isPending&&!mediaQuery.error?<MediaFacetStatistics
-      key={rankingType+':'+String(navigation.statExclude||'')}
+      key={rankingType}
       rankingType={rankingType}
       rows={mediaQuery.data||[]}
       chartType={chartType}
@@ -852,7 +823,6 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       zoomLevel={zoomLevel}
       onZoomLevelChange={setZoomLevel}
       scopeId={scopeId}
-      navigation={navigation}
     />:null}
     {styleFilter==='rune66'?<>
       {runeQuery.isPending?<p className="scope-status">正在讀取已定錨的關鍵詞 Attr…</p>:null}
