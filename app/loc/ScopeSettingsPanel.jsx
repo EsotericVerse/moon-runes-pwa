@@ -2,6 +2,7 @@
 import FieldText from '../i18n/FieldText';
 import {useUiLocale} from '../i18n/ui-locale';
 import {translateUiField} from '../i18n/ui-functional-copy.mjs';
+import UiText,{useUiText} from '../i18n/UiText';
 
 import {useEffect,useState} from 'react';
 import {UI_LOCALE_OPTIONS,normalizeUiLocale} from '../i18n/ui-copy';
@@ -31,6 +32,7 @@ function aliasList(value){
 export default function ScopeSettingsPanel({scopeId}){
   const {locale}=useUiLocale();
   const t=text=>translateUiField(locale,text);
+  const uiT=useUiText();
   const account=useAccount();
   const [draft,setDraft]=useState(EMPTY);
   const [aliases,setAliases]=useState('');
@@ -47,7 +49,7 @@ export default function ScopeSettingsPanel({scopeId}){
       setDraft(next);
       setAliases(aliasText(next.search_aliases));
     }).catch(error=>{
-      if(active)setMessage(error?.message||'設定讀取失敗。');
+      if(active)setMessage(error?.message||uiT('uiExtra.scopeSettings.loadFailed'));
     }).finally(()=>{if(active)setLoading(false);});
     return()=>{active=false};
   },[scopeId]);
@@ -61,8 +63,8 @@ export default function ScopeSettingsPanel({scopeId}){
     setBusy(true);setMessage('');
     try{
       const displayName=String(draft.display_name||'').trim();
-      if(!displayName)throw new Error('顯示名稱不可為空。');
-      if(!table)throw new Error('設定資料無法讀取。');
+      if(!displayName)throw new Error(uiT('uiExtra.scopeSettings.displayRequired'));
+      if(!table)throw new Error(uiT('uiExtra.scopeSettings.unavailable'));
       const searchAliases=aliasList(aliases);
       await updateRows(table,{
         display_name:displayName,
@@ -77,9 +79,9 @@ export default function ScopeSettingsPanel({scopeId}){
       },{filters:[{column:'id',operator:'eq',value:scopeId}]});
       setDraft(current=>({...current,display_name:displayName,search_aliases:searchAliases}));
       setAliases(aliasText(searchAliases));
-      setMessage('已儲存。');
+      setMessage(uiT('uiExtra.scopeSettings.saved'));
     }catch(error){
-      setMessage(error?.message||'設定儲存失敗。');
+      setMessage(error?.message||uiT('uiExtra.scopeSettings.saveFailed'));
     }finally{
       setBusy(false);
     }
@@ -88,7 +90,7 @@ export default function ScopeSettingsPanel({scopeId}){
   return <section className="loc-card scope-feature-card">
     <p className="loc-eyebrow"><FieldText text="個人設定"/></p>
     <h2><FieldText text="基本與雜項設定"/></h2>
-    {loading?<p className="scope-status">讀取中…</p>:null}
+    {loading?<p className="scope-status"><UiText id="common.loading"/></p>:null}
     {!loading?<form onSubmit={save}>
       <div className="scope-management-fields">
         <label>
@@ -112,12 +114,12 @@ export default function ScopeSettingsPanel({scopeId}){
 
       <label className="scope-management-wide-field">
         <span><FieldText text="搜尋頁介紹"/></span>
-        <textarea className="scope-search-input" rows={4} value={draft.search_intro||''} onChange={event=>change('search_intro',event.target.value)} placeholder={t('搜尋名稱或別名')}/>
+        <textarea className="scope-search-input" rows={4} value={draft.search_intro||''} onChange={event=>change('search_intro',event.target.value)} placeholder={uiT('uiExtra.scopeSettings.searchNameHint')}/>
       </label>
 
       <label className="scope-management-wide-field">
         <span><FieldText text="搜尋別名"/></span>
-        <textarea className="scope-search-input" rows={5} value={aliases} onChange={event=>setAliases(event.target.value)} placeholder={'每行一個，例如：\nlo3rwang\nLucas Oscar Wang\n政德'}/>
+        <textarea className="scope-search-input" rows={5} value={aliases} onChange={event=>setAliases(event.target.value)} placeholder={uiT('uiExtra.scopeSettings.aliasesHint')}/>
       </label>
 
       <fieldset className="scope-management-wide-field">
