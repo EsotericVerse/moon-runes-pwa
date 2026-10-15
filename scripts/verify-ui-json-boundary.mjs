@@ -20,6 +20,8 @@ for(const locale of locales){
   const dict=dictionaries[locale];
   for(const section of mainSections)assert.deepEqual(keysOf(dict[section]).sort(),keysOf(zh[section]).sort(),
     locale+' must keep the same core UI dictionary structure for '+section);
+  assert.deepEqual(keysOf(dict.fields).sort(),keysOf(zh.fields).sort(),
+    locale+' is missing a FieldText translation key.');
   assert.deepEqual(keysOf(dict.uiExtra).sort(),keysOf(zh.uiExtra).sort(),
     locale+' is missing a functional UI string. All four dictionaries share the same keys.');
   for(const section of ['fields','formatMessages','dailyRune','privateFiles','itemConfluence','timelineEditor','keywordPanel']){
