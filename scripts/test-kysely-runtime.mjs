@@ -40,7 +40,8 @@ assert.match(adminUi,/type="password"/,'Database password field must be masked')
 assert.match(adminUi,/save_database_target/,'The Admin form must save through the trusted SQL endpoint');
 assert.match(adminUi,/activate:switchTarget\|\|row\.selected===true/,'Saving a backup target must not activate it without explicit switching');
 assert.match(adminUi,/save\(\{switchTarget:true\}\)/,'The Admin interface must offer an explicit emergency database switch');
-assert.match(adminUi,/Region \/ Area/,'Region must be editable for all database providers');
+assert.match(adminUi,/uiExtra\.adminView\.regionArea/,'Region label must come from the active UI locale');
+assert.match(adminUi,/onChange=\{event=>patch\('region',event\.target\.value\)\}/,'Region must remain editable for all database providers');
 assert.match(adminUi,/window\.location\.reload\(\)/,'Emergency switching must flush old cached data');
 assert.doesNotMatch(adminUi,/activate:\s*true\b/,'Database settings save must never silently switch the active target');
 assert.match(adminUi,/setSelectedId\(current=>next\.some\(item=>item\.target_id===current\)/,'Refreshing targets must retain the edited backup selection');
