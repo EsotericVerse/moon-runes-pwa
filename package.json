@@ -45,7 +45,7 @@
     "verify:sql-import": "node scripts/verify-sql-import.mjs",
     "verify:database-contract": "node scripts/verify-current-database-contract.mjs",
     "verify:database-targets": "node scripts/test-database-targets.mjs && node scripts/test-database-link.mjs && node scripts/test-database-routing.mjs",
-    "verify:ui-locale": "node scripts/test-ui-functional-fields.mjs"
+    "verify:ui-locale": "node scripts/test-ui-functional-fields.mjs && node scripts/verify-ui-json-boundary.mjs"
   },
   "dependencies": {
     "@streamparser/json": "0.0.26",
