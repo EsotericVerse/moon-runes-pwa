@@ -149,7 +149,8 @@
     "editing": "編輯中",
     "noPeriodClassification": "目前沒有此時期的作品分類資料。",
     "selectedPrefix": "已選取｜",
-    "creating": "建立中…"
+    "creating": "建立中…",
+    "viewMode": "检视模式"
   },
   "governance": {
     "rights": "权利与授权",
