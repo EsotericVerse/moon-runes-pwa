@@ -839,7 +839,13 @@
       "groupSourcesShare": "群組來源分類 · 對外統計開放",
       "personalSourcesManage": "個人自訂來源分類 · 管理",
       "scopeGroupStatisticsTitle": "Scope Group 統計導引",
-      "scopeGroupStatisticsHelp": "各 Scope 自行執行作品、來源及 2～4 組自交互統計；Group 只提供導引。"
+      "scopeGroupStatisticsHelp": "各 Scope 自行執行作品、來源及 2～4 組自交互統計；Group 只提供導引。",
+      "groupSuffix": "群組",
+      "runeSuffix": "之符文",
+      "classWorkCount": "Class 作品數",
+      "groupWorks": "{count} 篇 · {ratio}%",
+      "runeHits": "{count} 次 · {ratio}%",
+      "totalWithCount": "{count} 項"
     }
   }
 }
