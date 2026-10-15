@@ -407,7 +407,7 @@ export default function Search(){
       if(!append)setStatus(UI_COPY.format.searchResult({label:searchMode==='media'?UI_COPY.search.media:'「'+collectionLabel+'」',query:q,hasMore:search.hasMore,partial}));
     }catch(exception){
       if(id!==searchId.current)return;
-      setError(featureDataErrorMessage(exception));
+      setError(featureDataErrorMessage(exception,UI_COPY));
       setStatus(UI_COPY.search.failed);
     }finally{
       if(append&&id===searchId.current)setLoadingMore(false);
@@ -445,7 +445,7 @@ export default function Search(){
       setStatus(UI_COPY.search.relationLoaded);
     }catch(exception){
       if(id!==searchId.current)return;
-      setResults([]);setError(featureDataErrorMessage(exception));setStatus(UI_COPY.search.relationFailed);
+      setResults([]);setError(featureDataErrorMessage(exception,UI_COPY));setStatus(UI_COPY.search.relationFailed);
     }
   }
 
