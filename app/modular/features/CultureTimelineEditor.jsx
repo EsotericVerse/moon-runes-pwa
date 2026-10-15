@@ -1,6 +1,5 @@
 'use client';
-import {useUiCopy,useUiLocale} from '../../i18n/ui-locale';
-import {translateUiField} from '../../i18n/ui-functional-copy.mjs';
+import {useUiCopy} from '../../i18n/ui-locale';
 
 import {DB_QUERY_BATCH_SIZE} from '../../loc/query-contract.mjs';
 
@@ -18,7 +17,6 @@ const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status
 const EDITABLE_TYPES=Object.freeze([
   ['anchor','anchor'],['period','period'],['event','event'],['style_comment','style']
 ]);
-const TYPE_LABEL=Object.freeze(Object.fromEntries(EDITABLE_TYPES));
 const BLANK=Object.freeze({
   record_id:'',record_type:'anchor',label:'',resource_id:'',note:'',time_date:'',
   anchor_ids:['0','0'],status:'',display_order:'',date_status:'exact',year_value:'',visibility:'',style_description:''
@@ -51,7 +49,6 @@ function rowSortDate(row,anchors){
 }
 
 export default function CultureTimelineEditor({scopeId='',selectedRecordId='',suggestedAnchorDate='',suggestedRecordType='anchor',suggestedRequestNonce=0,onClose=null}){
-  const {locale}=useUiLocale();
   const l=useUiCopy().timelineEditor;
   const account=useAccount();
   const searchParams=useSearchParams();
