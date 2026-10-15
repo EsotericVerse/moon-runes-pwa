@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {sunoStyleMetaTags} from '../app/loc/suno-style-meta-tags.mjs';
+import {sunoStyleMetaTags,refreshSunoStyleMetaTags} from '../app/loc/suno-style-meta-tags.mjs';
 
 test('Meta Tags copy exact leading source Style phrases without translated or invented labels',()=>{
   assert.equal(
@@ -20,4 +20,13 @@ test('Chinese segments cannot be auto-translated; classification identifiers are
   assert.equal(sunoStyleMetaTags('空壓, UK Garage, J-Pop'),'UK Garage, J-Pop');
   assert.equal(sunoStyleMetaTags(''), '');
   assert.equal(sunoStyleMetaTags('Suno Style: Indie Pop, City Pop'),'Indie Pop, City Pop');
+});
+
+test('Style refresh retains only explicitly assigned album and Rune Music identifiers',()=>{
+  assert.equal(
+    refreshSunoStyleMetaTags('Art Rock, Progressive Pop, Cinematic',
+      'Dream Pop, LunaRunesMusic, LP15-3, Male Voice'),
+    'Art Rock, Progressive Pop, Cinematic, LunaRunesMusic, LP15-3'
+  );
+  assert.equal(refreshSunoStyleMetaTags('UK Garage, Indie Pop','LP12'),'UK Garage, Indie Pop, LP12');
 });
