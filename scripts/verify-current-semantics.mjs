@@ -226,7 +226,7 @@ if(!failures.length){
     "type==='scatter'","type==='radar'","type==='radial'",
     'scatterPair(time,fields)','radarPeriodComparison(time,fields)',
     'activePeriodCoverage(time,fields)','movingAverage(time,fields,totalKey)',
-    "t('uiExtra.chartLabels.movingAverage')","t('uiExtra.chartLabels.firstHalf')","t('uiExtra.chartLabels.lastHalf')"'
+    "t('uiExtra.chartLabels.movingAverage')","t('uiExtra.chartLabels.firstHalf')","t('uiExtra.chartLabels.lastHalf')"
   ])if(!statisticsMultiChart.includes(token)){
     failures.push('Statistics chart must have a real analytic purpose: '+token);
   }
