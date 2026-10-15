@@ -1,5 +1,5 @@
 'use client';
-import FieldText from '../i18n/FieldText';
+import UiText,{useUiText} from '../i18n/UiText';
 
 import {useMemo,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
@@ -80,6 +80,7 @@ export default function ScopeEditableBlocks({
   slotTag='section',
   slotId=''
 }){
+  const t=useUiText();
   const account=useAccount();
   const queryClient=useQueryClient();
   const pageName=pageNameOf(page);
@@ -209,26 +210,26 @@ export default function ScopeEditableBlocks({
 
   async function moveBlock(direction){
     if(!draft?.stored||busy||normalizedOrders.length)return;
-    setBusy(true);setMessage('正在調整區塊順序…');
+    setBusy(true);setMessage(t('uiExtra.editBlocks.moving'));
     try{
       const result=await moveScopeBlock(scopeId,pageName,draft.uid,direction);
       setDraft(current=>current?.uid===draft.uid?{...current,order:Number(result.block_order)||current.order}:current);
       await queryClient.invalidateQueries({queryKey:['scope-blocks',scopeId,pageName]});
       await queryClient.refetchQueries({queryKey:['scope-blocks',scopeId,pageName],type:'active'});
-      setMessage('區塊順序已儲存。其他未儲存的文字修改仍留在草稿。');
+      setMessage(t('uiExtra.editBlocks.moved'));
     }catch(error){
-      setMessage('區塊移動失敗：'+String(error?.message||error));
+      setMessage(t('uiExtra.editBlocks.moveFailed',{error:String(error?.message||error)}));
     }finally{setBusy(false);}
   }
 
   async function save(){
     if(!draft)return;
-    setBusy(true);setMessage('儲存中…');
+    setBusy(true);setMessage(t('uiExtra.editBlocks.saving'));
     try{
       const embeddedImages=frameImageCount(draft);
-      if(!allowImages&&embeddedImages>0)throw new Error('此文字區僅允許編輯文字。');
-      if(embeddedImages>1)throw new Error('每個文字框架最多只能有一張圖片，請先移除多餘圖片。');
-      if(embeddedImages===1&&!firstFrameImageUrl(draft))throw new Error('圖片必須是有效的 http:// 或 https:// 網址。');
+      if(!allowImages&&embeddedImages>0)throw new Error(t('uiExtra.editBlocks.textOnly'));
+      if(embeddedImages>1)throw new Error(t('uiExtra.editBlocks.oneImage'));
+      if(embeddedImages===1&&!firstFrameImageUrl(draft))throw new Error(t('uiExtra.editBlocks.invalidImage'));
       const normalizeSavedHtml=value=>scopeId==='loc'&&pageName==='index'
         ?stripLocHomeEditorPlaceholders(value)
         :String(value??'');
@@ -254,9 +255,9 @@ export default function ScopeEditableBlocks({
       await queryClient.invalidateQueries({queryKey:['scope-blocks',scopeId,pageName]});
       await queryClient.refetchQueries({queryKey:['scope-blocks',scopeId,pageName],type:'active'});
       setDraft(null);
-      setMessage('已儲存。');
+      setMessage(t('uiExtra.editBlocks.saved'));
     }catch(error){
-      setMessage('儲存失敗：'+String(error?.message||error||'未知錯誤'));
+      setMessage(t('uiExtra.editBlocks.saveFailedPrefix')+String(error?.message||error||t('uiExtra.editBlocks.unknown')));
     }finally{
       setBusy(false);
     }
@@ -273,9 +274,9 @@ export default function ScopeEditableBlocks({
       await deleteRows(table,{filters:[{column:'uid',operator:'eq',value:draft.uid}]});
       await queryClient.invalidateQueries({queryKey:['scope-blocks',scopeId,pageName]});
       setDraft(null);
-      setMessage('已刪除。');
+      setMessage(t('uiExtra.editBlocks.deleted'));
     }catch(error){
-      setMessage(error?.message||'刪除失敗。');
+      setMessage(error?.message||t('uiExtra.editBlocks.deleteFailed'));
     }finally{
       setBusy(false);
     }
@@ -289,13 +290,13 @@ export default function ScopeEditableBlocks({
           <div className="scope-block-entity-actions">
             <button type="button" className="loc-button" disabled={index===0||busy} onClick={()=>moveEntity(index,-1)}>←</button>
             <button type="button" className="loc-button" disabled={index===entities.length-1||busy} onClick={()=>moveEntity(index,1)}>→</button>
-            <button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={()=>removeEntity(index)}><FieldText text="刪除"/></button>
+            <button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={()=>removeEntity(index)}><UiText id="uiExtra.editBlocks.remove"/></button>
           </div>
           <label className="scope-management-wide-field">
-            <span><FieldText text="標題（不用標題＝文字泡泡，輸入標題＝文字框）"/></span>
+            <span><UiText id="uiExtra.editBlocks.childTitleHint"/></span>
             <input
               className="scope-search-input"
-              placeholder="不用標題（文字泡泡）"
+              placeholder={t('uiExtra.editBlocks.bubbleHint')}
               value={entity.title}
               onChange={event=>updateEntity(index,{title:event.target.value})}
             />
@@ -312,7 +313,7 @@ export default function ScopeEditableBlocks({
         </>}
       </article>)}
       {editable&&entities.length<ENTITY_LIMIT?<button type="button" className="scope-block-entity-add" onClick={addEntity} disabled={busy}>
-        ＋ 子文字框
+        <UiText id="uiExtra.editBlocks.addChild"/>
       </button>:null}
     </div>;
   }
@@ -337,17 +338,17 @@ export default function ScopeEditableBlocks({
       >
         {active?<>
           <div className="scope-inline-editbar">
-            <button type="button" className="loc-button primary" disabled={busy} onClick={save}>{busy?'儲存中…':'儲存'}</button>
+            <button type="button" className="loc-button primary" disabled={busy} onClick={save}>{busy?t('uiExtra.editBlocks.saving'):t('uiExtra.editBlocks.save')}</button>
             {slot.stored&&movableSlots.length>1?<>
-              <button type="button" className="loc-button" disabled={busy||movableIndex<=0} onClick={()=>moveBlock(-1)}><FieldText text="↑ 上移"/></button>
-              <button type="button" className="loc-button" disabled={busy||movableIndex>=movableSlots.length-1} onClick={()=>moveBlock(1)}><FieldText text="↓ 下移"/></button>
+              <button type="button" className="loc-button" disabled={busy||movableIndex<=0} onClick={()=>moveBlock(-1)}><UiText id="uiExtra.editBlocks.moveUp"/></button>
+              <button type="button" className="loc-button" disabled={busy||movableIndex>=movableSlots.length-1} onClick={()=>moveBlock(1)}><UiText id="uiExtra.editBlocks.moveDown"/></button>
             </>:null}
-            {allowDelete?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={remove}><FieldText text="刪除"/></button>:null}
-            <button type="button" className="loc-button" disabled={busy} onClick={cancel}>取消</button>
-            {message?<span className={'scope-inline-save-status'+(message.startsWith('儲存失敗')?' scope-error':'')} role="status" aria-live="polite">{message}</span>:null}
+            {allowDelete?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={remove}><UiText id="uiExtra.editBlocks.remove"/></button>:null}
+            <button type="button" className="loc-button" disabled={busy} onClick={cancel}><UiText id="uiExtra.editBlocks.cancel"/></button>
+            {message?<span className={'scope-inline-save-status'+(message.startsWith(t('uiExtra.editBlocks.saveFailedPrefix'))?' scope-error':'')} role="status" aria-live="polite">{message}</span>:null}
           </div>
           {editEyebrow?<label className="scope-management-wide-field">
-            <span>英文標題（可留空）</span>
+            <span><UiText id="uiExtra.editBlocks.englishEyebrow"/></span>
             <input
               className="scope-search-input"
               value={draft.eyebrow}
@@ -355,7 +356,7 @@ export default function ScopeEditableBlocks({
             />
           </label>:null}
           <label className="scope-management-wide-field">
-            <span>中文大標題（可留空）</span>
+            <span><UiText id="uiExtra.editBlocks.chineseHeadline"/></span>
             <input
               className="scope-search-input"
               value={draft.title}
@@ -363,12 +364,12 @@ export default function ScopeEditableBlocks({
             />
           </label>
           {pageName==='index'&&draft.order===1&&['loc','lo3rwang'].includes(scopeId)?<fieldset className="scope-hero-image-mode">
-            <legend>Hero 圖片位置（背景或旁邊，二選一）</legend>
-            <label><input type="radio" name={'hero-image-'+draft.uid} checked={heroImageMode(draft)==='background'} onChange={()=>updateHeroImageMode('background')}/> 背景</label>
-            <label><input type="radio" name={'hero-image-'+draft.uid} checked={heroImageMode(draft)==='side'} onChange={()=>updateHeroImageMode('side')}/> 旁邊</label>
+            <legend><UiText id="uiExtra.editBlocks.heroImageMode"/></legend>
+            <label><input type="radio" name={'hero-image-'+draft.uid} checked={heroImageMode(draft)==='background'} onChange={()=>updateHeroImageMode('background')}/> <UiText id="uiExtra.editBlocks.background"/></label>
+            <label><input type="radio" name={'hero-image-'+draft.uid} checked={heroImageMode(draft)==='side'} onChange={()=>updateHeroImageMode('side')}/> <UiText id="uiExtra.editBlocks.beside"/></label>
           </fieldset>:null}
           <div className="scope-management-wide-field">
-            <span>標題說明（可保留粗體與換行）</span>
+            <span><UiText id="uiExtra.editBlocks.subtitle"/></span>
           </div>
           <BlockNoteEditor
             key={draft.uid+':subtitle:edit'}
@@ -377,7 +378,7 @@ export default function ScopeEditableBlocks({
             canInsertImage={allowImages&&canInsertImageIn(draft.subtitle)}
           />
           <div className="scope-management-wide-field">
-            <span>下方正文（BlockNote）</span>
+            <span><UiText id="uiExtra.editBlocks.body"/></span>
           </div>
           <BlockNoteEditor
             key={draft.uid+':body:edit'}
@@ -396,7 +397,7 @@ export default function ScopeEditableBlocks({
               {slot.text?<div className="scope-rich-surface" dangerouslySetInnerHTML={{__html:slot.text}}/>:null}
               {renderEntities(slot.entities,false)}
             </>}
-          {empty&&canEdit?<p className="scope-status">點此建立文字框。</p>:null}
+          {empty&&canEdit?<p className="scope-status"><UiText id="uiExtra.editBlocks.clickToCreate"/></p>:null}
         </>}
       </SlotTag>;
     })}
@@ -405,7 +406,7 @@ export default function ScopeEditableBlocks({
       className="loc-button scope-add-page-block"
       onClick={()=>begin(normalizeRow(null,nextOrder))}
       disabled={busy}
-    >＋ 新增文字框</button>:null}
+    ><UiText id="uiExtra.editBlocks.addBlock"/></button>:null}
     {message?<p className="scope-status" role="status">{message}</p>:null}
   </>;
   return containerless?contents:<div className={'scope-editable-block-grid '+className}>{contents}</div>;
