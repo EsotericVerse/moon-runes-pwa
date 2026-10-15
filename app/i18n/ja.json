@@ -609,5 +609,47 @@
     "兩側標籤皆從現有多媒體 metadata 產生；預選 Mandopop／J-Pop／K-Pop 對其他標籤，沒有的組合不列出。每組每筆媒體只算一次。": "両側のタグは既存のメディアメタデータから取得します。Mandopop／J-Pop／K-Pop と他のタグの組み合わせを初期選択し、存在しない組み合わせは表示しません。各メディアは組み合わせごとに1回だけ集計します。",
     "目前區間沒有可交互比較的 Meta Tag。": "選択した期間に比較可能なメタタグがありません。",
     "目前選擇沒有共同出現的標籤組合，請調整任一側標籤。": "現在の選択では共起するタグの組み合わせがありません。いずれかのタグを変更してください。"
+  },
+  "uiExtra": {
+    "scopeGroup": {
+      "membersTitle": "所属メンバー",
+      "openHome": "ホームを見る",
+      "manageMember": "メンバーを管理",
+      "noMembers": "メンバーがいません。",
+      "directoryTitle": "メンバー一覧",
+      "memberHome": "メンバーのホーム",
+      "openMemberFeature": "このメンバーの{feature}を開く",
+      "unknownFeature": "機能"
+    },
+    "genericScope": {
+      "guide": "この Scope Group はメンバー一覧と案内のみを提供します。各 Scope のコンテンツと分析はそれぞれで管理します。"
+    },
+    "feature": {
+      "moduleLoading": "機能モジュールを読み込み中…",
+      "settingsLoading": "機能設定を読み込み中…",
+      "unpublished": "この機能は公開されていません。",
+      "registryLoading": "Scope Registry を読み込み中…",
+      "registryUnavailable": "Scope を利用できません",
+      "registryNotFound": "有効な Scope Registry が見つかりません。",
+      "pageLoading": "ページを読み込み中…",
+      "groupGuide": "このグループではメンバーの案内のみを行います。コンテンツの閲覧・管理は各 Scope で行ってください。"
+    },
+    "keywords": {
+      "settingsLoading": "キーワード設定を読み込み中…",
+      "settingsTitle": "キーワード設定",
+      "settingsGuide": "このページは統計検索とは独立しています。手動編集では vis-network を読み込まず、グラフを選択した場合のみ読み込みます。",
+      "backToStatistics": "統計に戻る",
+      "verifyingAccess": "管理権限を確認中…",
+      "accessDenied": "このページは Scope の管理権限を持つログインユーザーのみ利用できます。"
+    },
+    "scopeSettings": {
+      "loadFailed": "設定の読み込みに失敗しました。",
+      "displayRequired": "表示名を入力してください。",
+      "unavailable": "設定データを取得できません。",
+      "saved": "保存しました。",
+      "saveFailed": "設定を保存できませんでした。",
+      "searchNameHint": "名前または別名を検索",
+      "aliasesHint": "1 行に 1 つずつ入力、例：\\nlo3rwang\\nLucas Oscar Wang\\n政德"
+    }
   }
 }
