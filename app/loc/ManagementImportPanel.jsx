@@ -258,9 +258,9 @@ function SourceRefresh({scopeId,format,onBusyChange}){
       const list=importRowsFromJson(parsed,format.recordPath);
       setRows(list.map(row=>({raw:row,import_uid:createUid8()})));
       setSource(sourceSuggestion(file.name));
-      setStatus('已載入 '+list.length.toLocaleString()+' 筆 Refresh payload；先分析差異，不會直接寫入。');
+      setStatus(t('uiExtra.importUI.refreshLoaded',{count:list.length.toLocaleString()}));
     }catch(error){
-      setRows([]);setPlan(null);setStatus('Refresh JSON／格式解析失敗：'+(error?.message||error));
+      setRows([]);setPlan(null);setStatus(t('uiExtra.importUI.refreshParseFailed',{error:error?.message||error}));
     }
   }
 
@@ -270,8 +270,8 @@ function SourceRefresh({scopeId,format,onBusyChange}){
     const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,selected,format.fields,t));
     const valid=normalized.filter(item=>item.record&&item.record.source_native_id).map(item=>item.record);
     const invalid=normalized.length-valid.length;
-    if(!valid.length){setPlan({creates:[],updates:[],unchanged:[],invalid});setStatus('沒有帶 source_native_id 的有效資料。');return;}
-    setBusy(true);onBusyChange?.(true);setStatus('分析差異中…');setProgress(null);
+    if(!valid.length){setPlan({creates:[],updates:[],unchanged:[],invalid});setStatus(t('uiExtra.importUI.noNativeId'));return;}
+    setBusy(true);onBusyChange?.(true);setStatus(t('uiExtra.importUI.analyzing'));setProgress(null);
     try{
       const galaxy=account.scopeDataFor(scopeId)?.galaxy;
       if(!galaxy)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
@@ -283,7 +283,7 @@ function SourceRefresh({scopeId,format,onBusyChange}){
           .select('uid,title,content,createtime,source_native_id,source_place,url,searchable,statistics_able,source_name')
           .eq('source_name',selected)
           .in('source_native_id',batch);
-        if(error)throw new Error(error.message||'Source Refresh 既有資料比對失敗。');
+        if(error)throw new Error(error.message||t('uiExtra.importUI.refreshCompareFailed'));
         existing.push(...(data||[]));
       }
       const byNative=new Map(existing.map(row=>[String(row.source_native_id||'').trim(),row]));
@@ -317,8 +317,8 @@ function SourceRefresh({scopeId,format,onBusyChange}){
       }
       const nextPlan={creates,updates,unchanged,invalid:invalid+(valid.length-seen.size)};
       setPlan(nextPlan);
-      setStatus('差異完成：新增 '+creates.length.toLocaleString()+'、更新 '+updates.length.toLocaleString()+'、不變 '+unchanged.length.toLocaleString()+'、略過 '+nextPlan.invalid.toLocaleString()+'。');
-    }catch(error){setPlan(null);setStatus(error?.message||'Source Refresh 分析失敗。');}
+      setStatus(t('uiExtra.importUI.diffComplete',{created:creates.length.toLocaleString(),updated:updates.length.toLocaleString(),unchanged:unchanged.length.toLocaleString(),skipped:nextPlan.invalid.toLocaleString()}));
+    }catch(error){setPlan(null);setStatus(error?.message||t('uiExtra.importUI.refreshAnalyzeFailed'));}
     finally{setBusy(false);onBusyChange?.(false);}
   }
 
@@ -354,29 +354,29 @@ function SourceRefresh({scopeId,format,onBusyChange}){
         completed++;
         if(completed%10===0||completed===total)setProgress({completed,total,percent:Math.round(completed/Math.max(1,total)*100)});
       }
-      setStatus('Source Refresh 完成：新增 '+plan.creates.length.toLocaleString()+'、更新 '+plan.updates.length.toLocaleString()+'；不變資料未重寫。');
+      setStatus(t('uiExtra.importUI.refreshComplete',{created:plan.creates.length.toLocaleString(),updated:plan.updates.length.toLocaleString()}));
       setPlan(null);setRows([]);setFileName('');
     }catch(error){
       setPlan(null);
-      setStatus(String(error?.message||error||'Source Refresh 寫入失敗。')+'。可能已有部分批次成功，請重新「分析差異」後再套用，避免重複寫入。');
+      setStatus(String(error?.message||error||t('uiExtra.importUI.refreshWriteFailed'))+t('uiExtra.importUI.refreshRetry'));
     }finally{setBusy(false);onBusyChange?.(false);}
   }
 
   return <div className="scope-inline-card">
     <h4>Source Refresh</h4>
-    <p>以 source_name + source_native_id 進行增量更新；沿用上方格式設定，先查本檔資料涉及的來源 ID。先預覽差異，再逐批新增、逐筆更新。若中途失敗，必須重新分析差異。</p>
+    <p><UiText id="uiExtra.importUI.refreshHelp"/></p>
     <label>Refresh JSON<input type="file" accept=".json,application/json" disabled={busy} onChange={chooseFile}/></label>
-    {fileName?<p>檔案：<strong>{fileName}</strong></p>:null}
-    <label>來源<input disabled={busy} value={source} onChange={event=>{setSource(event.target.value);setPlan(null);setProgress(null);}} placeholder={sourceSuggestion(fileName)}/></label>
+    {fileName?<p><UiText id="uiExtra.importUI.fileLabel"/><strong>{fileName}</strong></p>:null}
+    <label><UiText id="uiExtra.importUI.sourceLabel"/><input disabled={busy} value={source} onChange={event=>{setSource(event.target.value);setPlan(null);setProgress(null);}} placeholder={sourceSuggestion(fileName)}/></label>
     <div className="scope-tabs">
-      <button type="button" disabled={busy||!rows.length} onClick={analyze}>{busy?'處理中…':'分析差異'}</button>
-      <button type="button" disabled={busy||!plan||(!plan.creates.length&&!plan.updates.length)} onClick={applyRefresh}>分批套用 Refresh</button>
+      <button type="button" disabled={busy||!rows.length} onClick={analyze}>{busy?t('uiExtra.importUI.processing'):t('uiExtra.importUI.analyze')}</button>
+      <button type="button" disabled={busy||!plan||(!plan.creates.length&&!plan.updates.length)} onClick={applyRefresh}><UiText id="uiExtra.importUI.applyRefresh"/></button>
     </div>
     {plan?<div className="scope-ranking">
-      <div><strong>新增</strong><span>{plan.creates.length.toLocaleString()}</span></div>
-      <div><strong>更新</strong><span>{plan.updates.length.toLocaleString()}</span></div>
-      <div><strong>不變</strong><span>{plan.unchanged.length.toLocaleString()}</span></div>
-      <div><strong>略過</strong><span>{plan.invalid.toLocaleString()}</span></div>
+      <div><strong><UiText id="uiExtra.importUI.create"/></strong><span>{plan.creates.length.toLocaleString()}</span></div>
+      <div><strong><UiText id="uiExtra.importUI.update"/></strong><span>{plan.updates.length.toLocaleString()}</span></div>
+      <div><strong><UiText id="uiExtra.importUI.unchanged"/></strong><span>{plan.unchanged.length.toLocaleString()}</span></div>
+      <div><strong><UiText id="uiExtra.importUI.skipped"/></strong><span>{plan.invalid.toLocaleString()}</span></div>
     </div>:null}
     {progress?<div role="status" className="scope-import-progress">
       <progress value={progress.percent||0} max="100"/>
