@@ -340,10 +340,10 @@ if(!failures.length){
   for(const token of ['canManageScopeSync(scopeId)',"dynamic(()=>import('../../loc/KeywordLibraryPanel')","<FeaturePage featureId=\"statics\""]){
     if(!keywordSettings.includes(token))failures.push('Standalone keyword route must gate lazy management: '+token);
   }
-  for(const token of ["workspace==='analysis'","workspace==='manual'","workspace==='network'","dynamic(()=>import('./KeywordNetworkEditor')","關鍵詞工作區"]){
+  for(const token of ["workspace==='analysis'","workspace==='manual'","workspace==='network'","dynamic(()=>import('./KeywordNetworkEditor')","l.workspace"]){
     if(!keywordPanel.includes(token))failures.push('Keyword Library must expose separate analysis, manual and lazy graph views: '+token);
   }
-  for(const token of ['選擇符文群組','選擇符文','選擇關鍵詞','groupItems.map(item=>','draftKeywords.map(word=>']){
+  for(const token of ['l.selectRuneGroup','l.selectRune','l.selectKeyword','groupItems.map(item=>','draftKeywords.map(word=>']){
     if(!keywordPanel.includes(token))failures.push('Manual keyword selection must descend Group → Item → Keyword: '+token);
   }
   const keywordGraph=read('app/loc/KeywordNetworkEditor.jsx');
