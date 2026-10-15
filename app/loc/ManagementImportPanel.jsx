@@ -1,6 +1,6 @@
 'use client';
 
-import {useUiCopy} from '../i18n/ui-locale';
+import {useUiCopy,useUiLocale} from '../i18n/ui-locale';
 import UiText,{useUiText} from '../i18n/UiText';
 
 import {useMemo,useState} from 'react';
@@ -24,16 +24,16 @@ function iso(value){
   return Number.isNaN(date.getTime())?null:date.toISOString();
 }
 
-function normalizeJsonImportEntry(entry,source,fieldMap={}){
+function normalizeJsonImportEntry(entry,source,fieldMap={},t){
   const row=entry?.raw||entry||{};
   const value=field=>mappedImportValue(row,field,fieldMap);
   const content=normalizeGalaxyContent(value('content'));
   const rawTitle=repairMojibakeText(value('title')).trim();
   const sourcePlace=repairMojibakeText(value('source_place')).trim();
   const uid=String(value('uid')||entry?.import_uid||createUid8()).trim().toUpperCase();
-  if(!content)return {record:null,error:'無正文'};
-  if([content,rawTitle,sourcePlace].some(hasIrrecoverableEncoding))return {record:null,error:'文字含不可逆編碼錯誤'};
-  if(uid.length!==8)return {record:null,error:'UID 必須為 8 字'};
+  if(!content)return {record:null,error:t('uiExtra.importUI.invalidNoBody')};
+  if([content,rawTitle,sourcePlace].some(hasIrrecoverableEncoding))return {record:null,error:t('uiExtra.importUI.invalidEncoding')};
+  if(uid.length!==8)return {record:null,error:t('uiExtra.importUI.invalidUid')};
   const visibility=value('searchable');
   const searchable=!(visibility===false||visibility===0||String(visibility).toLowerCase()==='false'||String(visibility)==='0');
   const record={
@@ -55,29 +55,28 @@ function normalizeJsonImportEntry(entry,source,fieldMap={}){
 }
 
 const IMPORT_FORMAT_FIELDS=Object.freeze([
-  ['uid','UID'],['content','正文'],['title','標題'],['createtime','日期時間'],
-  ['source_native_id','平台原生 ID'],['source_place','地點'],
-  ['url','外部 URL'],['source_id','來源關聯'],['target_id','目標關聯'],
-  ['ref_id','參照關聯'],['searchable','公開搜尋'],['statistics_able','納入統計']
+  'uid','content','title','createtime','source_native_id','source_place',
+  'url','source_id','target_id','ref_id','searchable','statistics_able'
 ]);
 
 function ImportFormatSettings({format,onChange,disabled=false}){
+  const t=useUiText();
   const update=(key,value)=>onChange({...format,[key]:value});
   const updateField=(key,value)=>onChange({...format,fields:{...format.fields,[key]:value}});
   return <details className="scope-inline-card scope-import-format">
-    <summary>匯入格式設定（共用於 JSON Import／Source Refresh）</summary>
+    <summary><UiText id="uiExtra.importUI.formatSummary"/></summary>
     <div className="scope-management-fields">
-      <label>資料陣列路徑（預設支援根陣列／items／posts／data／records）
-        <input disabled={disabled} value={format.recordPath} onChange={e=>update('recordPath',e.target.value)} placeholder="例如 result.entries；留空自動辨識"/>
+      <label><UiText id="uiExtra.importUI.recordPath"/>
+        <input disabled={disabled} value={format.recordPath} onChange={e=>update('recordPath',e.target.value)} placeholder={t('uiExtra.importUI.recordPathHint')}/>
       </label>
-      <label>每批寫入筆數
+      <label><UiText id="uiExtra.importUI.batchSize"/>
         <select disabled={disabled} value={format.batchSize} onChange={e=>update('batchSize',Number(e.target.value))}>
-          {[25,50,100,200].map(size=><option key={size} value={size}>{size} 筆／批</option>)}
+          {[25,50,100,200].map(size=><option key={size} value={size}>{t('uiExtra.importUI.itemsPerBatch',{count:size})}</option>)}
         </select>
       </label>
     </div>
     <div className="scope-management-fields">
-      {IMPORT_FORMAT_FIELDS.map(([key,label])=><label key={key}>{label}
+      {IMPORT_FORMAT_FIELDS.map(key=><label key={key}>{t('uiExtra.importUI.field.'+key)}
         <input disabled={disabled} value={format.fields[key]||''}
           onChange={e=>updateField(key,e.target.value)}
           placeholder={IMPORT_FIELD_ALIASES[key].join(', ')}/>
@@ -87,6 +86,7 @@ function ImportFormatSettings({format,onChange,disabled=false}){
 }
 
 function JsonImport({scopeId,format,onBusyChange}) {
+  const {locale}=useUiLocale();
   const UI_COPY=useUiCopy();
   const t=useUiText();
   const account=useAccount();
@@ -101,12 +101,12 @@ function JsonImport({scopeId,format,onBusyChange}) {
   const suggested=useMemo(()=>sourceSuggestion(fileName),[fileName]);
   const analyzed=useMemo(()=>{
     const selected=source.trim();
-    const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,selected,format.fields));
+    const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,selected,format.fields,t));
     return {
       valid:normalized.filter(item=>item.record).map(item=>item.record),
       invalid:normalized.filter(item=>!item.record)
     };
-  },[rows,source,format.fields]);
+  },[rows,source,format.fields,locale]);
   if(!account.canManageScopeSync(scopeId))return null;
 
   async function loadQueuedFile(file,index,total){
@@ -120,10 +120,10 @@ function JsonImport({scopeId,format,onBusyChange}) {
       }));
       setRows(prepared);
       setSource(sourceSuggestion(file.name));
-      setStatus('第 '+(index+1)+'／'+total+' 檔已解析 '+list.length.toLocaleString()+' 筆；請檢查來源與預覽後再寫入。');
+      setStatus(t('uiExtra.importUI.parsedFile',{index:index+1,total,count:list.length.toLocaleString()}));
     }catch(error){
       setRows([]);
-      setStatus('第 '+(index+1)+' 檔 JSON／格式解析失敗：'+(error?.message||error));
+      setStatus(t('uiExtra.importUI.parseFileFailed',{index:index+1,error:error?.message||error}));
     }
   }
   async function chooseFile(event){
@@ -142,13 +142,13 @@ function JsonImport({scopeId,format,onBusyChange}) {
   async function run(){
     if(busy||!rows.length)return;
     const selected=source.trim();
-    if(!selected){setStatus('請先指定來源。');return;}
-    if(!analyzed.valid.length){setStatus('沒有可匯入的有效資料。');return;}
-    setBusy(true);onBusyChange?.(true);setStatus('核對現有 UID…');
+    if(!selected){setStatus(t('uiExtra.importUI.selectSource'));return;}
+    if(!analyzed.valid.length){setStatus(t('uiExtra.importUI.noValidItems'));return;}
+    setBusy(true);onBusyChange?.(true);setStatus(t('uiExtra.importUI.checkingUids'));
     setProgress({completed:0,total:analyzed.valid.length,percent:0});
     try{
       const galaxy=account.scopeDataFor(scopeId)?.galaxy;
-      if(!galaxy)throw new Error('Scope data 未解析');
+      if(!galaxy)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
       const unique=[],seenUid=new Set(),seenNative=new Set();
       let duplicateCount=0;
       for(const record of analyzed.valid){
@@ -163,7 +163,7 @@ function JsonImport({scopeId,format,onBusyChange}) {
       for(let offset=0;offset<unique.length;offset+=200){
         const ids=unique.slice(offset,offset+200).map(record=>record.uid);
         const {data,error}=await dbAuthRelation(galaxy).select('uid').in('uid',ids);
-        if(error)throw new Error(error.message||'既有 UID 檢查失敗。');
+        if(error)throw new Error(error.message||t('uiExtra.importUI.existingUidFailed'));
         for(const row of data||[])existing.add(String(row.uid||'').toUpperCase());
       }
       const nativeIds=[...seenNative];
@@ -173,7 +173,7 @@ function JsonImport({scopeId,format,onBusyChange}) {
           .select('source_native_id')
           .eq('source_name',selected)
           .in('source_native_id',ids);
-        if(error)throw new Error(error.message||'來源原生 ID 檢查失敗。');
+        if(error)throw new Error(error.message||t('uiExtra.importUI.existingNativeFailed'));
         for(const row of data||[])existingNative.add(String(row.source_native_id||'').trim());
       }
       const payload=unique.filter(record=>!existing.has(record.uid)&&!(record.source_native_id&&existingNative.has(record.source_native_id)));
@@ -185,36 +185,36 @@ function JsonImport({scopeId,format,onBusyChange}) {
         onProgress:progress=>setProgress(progress)
       });
       const skipped=analyzed.invalid.length+duplicateCount+existingCount;
-      setStatus('第 '+(queueIndex+1)+'／'+queue.length+' 檔完成：新增 '+payload.length.toLocaleString()+' 筆'+(skipped?'；略過 '+skipped.toLocaleString()+' 筆（無效／重複／已存在）':'')+'。'+(queueIndex+1<queue.length?'請選擇下一檔繼續。':'本次檔案全部處理完成。'));
+      setStatus(t('uiExtra.importUI.importComplete',{index:queueIndex+1,total:queue.length,count:payload.length.toLocaleString(),skipped:skipped?t('uiExtra.importUI.skippedClause',{count:skipped.toLocaleString()}):'',next:t(queueIndex+1<queue.length?'uiExtra.importUI.nextFileGuide':'uiExtra.importUI.finishedAll')}));
       setRows([]);
     }catch(error){
-      setStatus(String(error?.message||error||'匯入失敗。')+' 可保留本檔並重新執行；系統會重新核對已存在 UID。');
+      setStatus(String(error?.message||error||t('uiExtra.importUI.importFailed'))+t('uiExtra.importUI.importRetry'));
     }finally{setBusy(false);onBusyChange?.(false);}
   }
   const pending=queue.length>queueIndex+1;
   return <div className="scope-inline-card">
     <h4>{UI_COPY.management.importJson}</h4>
     <label>{UI_COPY.management.currentFile}<input type="file" accept=".json,application/json" multiple disabled={busy} onChange={chooseFile}/></label>
-    {fileName?<p>檔案：<strong>{fileName}</strong>（第 {queueIndex+1}／{queue.length} 檔）｜建議來源：<strong>{suggested}</strong></p>:null}
+    {fileName?<p><UiText id="uiExtra.importUI.fileLabel"/><strong>{fileName}</strong><UiText id="uiExtra.importUI.fileQueue" params={{index:queueIndex+1,total:queue.length}}/><strong>{suggested}</strong></p>:null}
     <label>{UI_COPY.management.sourceChoice}<input disabled={busy||!rows.length} value={source} onChange={event=>setSource(event.target.value)} placeholder={suggested}/></label>
-    {rows.length?<section className="scope-import-preview" aria-label="JSON 匯入預覽">
-      <p className="scope-status">有效 {analyzed.valid.length.toLocaleString()} 筆｜略過 {analyzed.invalid.length.toLocaleString()} 筆</p>
+    {rows.length?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.preview')}>
+      <p className="scope-status"><UiText id="uiExtra.importUI.validSkipped" params={{valid:analyzed.valid.length.toLocaleString(),skipped:analyzed.invalid.length.toLocaleString()}}/></p>
       <div className="scope-management-records">
         {analyzed.valid.slice(0,5).map(record=><article className="scope-inline-card" key={record.uid}>
           <strong>{record.title||record.uid}</strong>
-          <span>{record.uid} · {String(record.createtime||'').slice(0,10)||'無日期'}</span>
+          <span>{record.uid} · {String(record.createtime||'').slice(0,10)||t('uiExtra.importUI.noDate')}</span>
           <p>{String(record.content||'').slice(0,180)}{String(record.content||'').length>180?'…':''}</p>
         </article>)}
       </div>
-      {analyzed.invalid.length?<p className="scope-status">前幾筆略過原因：{analyzed.invalid.slice(0,5).map(item=>item.error).join('、')}</p>:null}
+      {analyzed.invalid.length?<p className="scope-status"><UiText id="uiExtra.importUI.skippedReasons"/>{analyzed.invalid.slice(0,5).map(item=>item.error).join('、')}</p>:null}
     </section>:null}
     {progress?<div role="status" className="scope-import-progress">
       <progress value={progress.percent||0} max="100"/>
-      <p>已確認寫入 {Number(progress.completed||0).toLocaleString()}／{Number(progress.total||0).toLocaleString()} 筆 · {progress.percent||0}%</p>
+      <p><UiText id="uiExtra.importUI.writtenProgress" params={{completed:Number(progress.completed||0).toLocaleString(),total:Number(progress.total||0).toLocaleString(),percent:progress.percent||0}}/></p>
     </div>:null}
     <div className="scope-tabs">
-      <button type="button" disabled={busy||!analyzed.valid.length} onClick={run}>{busy?UI_COPY.management.importing:'分批匯入目前檔案'}</button>
-      {pending&&!rows.length?<button type="button" disabled={busy} onClick={nextFile}>下一個 JSON 檔案</button>:null}
+      <button type="button" disabled={busy||!analyzed.valid.length} onClick={run}>{busy?UI_COPY.management.importing:t('uiExtra.importUI.batchImport')}</button>
+      {pending&&!rows.length?<button type="button" disabled={busy} onClick={nextFile}><UiText id="uiExtra.importUI.nextJson"/></button>:null}
     </div>
     {status?<p className="scope-status" role="status">{status}</p>:null}
   </div>;
@@ -266,15 +266,15 @@ function SourceRefresh({scopeId,format,onBusyChange}){
 
   async function analyze(){
     const selected=source.trim();
-    if(!selected){setStatus('請先指定來源。');return;}
-    const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,selected,format.fields));
+    if(!selected){setStatus(t('uiExtra.importUI.selectSource'));return;}
+    const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,selected,format.fields,t));
     const valid=normalized.filter(item=>item.record&&item.record.source_native_id).map(item=>item.record);
     const invalid=normalized.length-valid.length;
     if(!valid.length){setPlan({creates:[],updates:[],unchanged:[],invalid});setStatus('沒有帶 source_native_id 的有效資料。');return;}
     setBusy(true);onBusyChange?.(true);setStatus('分析差異中…');setProgress(null);
     try{
       const galaxy=account.scopeDataFor(scopeId)?.galaxy;
-      if(!galaxy)throw new Error('Scope data 未解析');
+      if(!galaxy)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
       const existing=[];
       const ids=[...new Set(valid.map(row=>String(row.source_native_id||'').trim()).filter(Boolean))];
       for(let offset=0;offset<ids.length;offset+=200){
@@ -331,7 +331,7 @@ function SourceRefresh({scopeId,format,onBusyChange}){
     setProgress({completed:0,total,percent:total?0:100});
     try{
       const galaxy=account.scopeDataFor(scopeId)?.galaxy;
-      if(!galaxy)throw new Error('Scope data 未解析');
+      if(!galaxy)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
       await writeImportBatches(plan.creates,{
         batchSize:validImportBatchSize(format.batchSize),
         writeBatch:batch=>insertRows(galaxy,batch),
@@ -380,7 +380,7 @@ function SourceRefresh({scopeId,format,onBusyChange}){
     </div>:null}
     {progress?<div role="status" className="scope-import-progress">
       <progress value={progress.percent||0} max="100"/>
-      <p>已確認寫入 {Number(progress.completed||0).toLocaleString()}／{Number(progress.total||0).toLocaleString()} 筆 · {progress.percent||0}%</p>
+      <p><UiText id="uiExtra.importUI.writtenProgress" params={{completed:Number(progress.completed||0).toLocaleString(),total:Number(progress.total||0).toLocaleString(),percent:progress.percent||0}}/></p>
     </div>:null}
     {status?<p className="scope-status" role="status">{status}</p>:null}
   </div>;
