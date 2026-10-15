@@ -172,7 +172,7 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
           </label>
           <label><span><FieldText text="圖表"/></span>
             <select className="scope-select" value={chartType} onChange={e=>setChartType(e.target.value)}>
-              {availableCharts.length?availableCharts.map(([value,label])=><option key={value} value={value}{translateUiField(locale,label)}</option>):<option value="line"><FieldText text="尚無可用圖形"/></option>}
+              {availableCharts.length?availableCharts.map(([value,label])=><option key={value} value={value}>{translateUiField(locale,label)}</option>):<option value="line"><FieldText text="尚無可用圖形"/></option>}
             </select>
           </label>
           <label className="scope-setting-toggle"><input type="checkbox" checked={foldBlank} onChange={e=>setFoldBlank(e.target.checked)}/> {l.foldEmptyTime}</label>
