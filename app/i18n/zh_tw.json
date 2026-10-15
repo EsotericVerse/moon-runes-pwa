@@ -847,6 +847,31 @@
       "runeHits": "{count} 次 · {ratio}%",
       "totalWithCount": "{count} 項",
       "foldBlank": "折疊空白時間"
+    },
+    "chartTypes": {
+      "line": "折線圖 · 時間趨勢",
+      "bar": "長條圖 · 期間比較",
+      "pie": "圓餅圖 · 來源分布",
+      "area": "面積圖 · 數量變化",
+      "stacked": "堆疊面積圖 · 來源組成",
+      "composed": "組合圖 · 總量與均線",
+      "scatter": "散點圖 · 雙來源關係",
+      "radar": "雷達圖 · 前後期占比",
+      "radial": "放射長條圖 · 活躍期占比",
+      "treemap": "矩形樹圖 · 來源分布"
+    },
+    "chartLabels": {
+      "dayUnit": "天",
+      "periodUnit": "區間",
+      "total": "總量",
+      "firstHalf": "前半期占比",
+      "lastHalf": "後半期占比",
+      "periodTotal": "該期總量",
+      "movingAverage": "近三期移動平均",
+      "noComparable": "目前區間沒有可比較的資料。",
+      "chartAria": "統計圖形",
+      "gapLabel": "時間斷層：",
+      "gapSeparator": "；"
     }
   }
 }
