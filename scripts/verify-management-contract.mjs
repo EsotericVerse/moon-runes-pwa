@@ -209,14 +209,14 @@ must(!cultureUi.includes('尋找既有定錨點')&&!cultureUi.includes('尋找�
   [['period','時期'],['event','事件'],['style_comment','風格標籤']].every(([value,label])=>functionalOption(cultureUi,value,label))&&
   !cultureUi.includes('新增時期（選擇既有定錨點）')&&!cultureUi.includes('新增事件（選擇既有定錨點）'),
   'Time toolbar is one anchor button plus one three-option selector, with no redundant lookup dropdown');
-must(nativeTimeline.includes("anchor:'定錨點',event:'事件',style_comment:'風格標籤',period:'時期'"),'Time River fourth group must always be period, not style');
+must(nativeTimeline.includes('anchor:labels.anchor,event:labels.event,style_comment:labels.styleComment,period:labels.period'),'Time River fourth group must always be period, not style');
 must(culture.includes('visibility,style_description')&&culture.includes('styleComments:parts.styleComments')&&culture.includes('style_comment:2,period:3')&&culture.includes("style_comment:'風格標籤'")&&culture.includes("entry_type==='style_comment'"),'Culture exposes independent style comments');
 must(editor.includes("ids.length!==2||concrete.length!==2")&&
   editor.includes("ids.length>2||concrete.length<1||concrete.length>2")&&
   editor.includes("payload.anchor_ids=[anchorId]")&&
   !editor.includes('addIntermediateAnchor')&&editor.includes('legacyEventUnchanged'),
   'Canonical Time anchor counts are period 1–2, event 2, style 1; historic 1/3 point events are not silently changed');
-must(nativeTimeline.includes('hasTimeKinds')&&nativeTimeline.includes("style_comment:'風格標籤'")&&nativeTimeline.includes('standardTimeKinds.map'),'Time chart must create the fourth style group even when it is empty');
+must(nativeTimeline.includes('hasTimeKinds')&&nativeTimeline.includes('style_comment:labels.styleComment')&&nativeTimeline.includes('standardTimeKinds.map'),'Time chart must create the fourth style group even when it is empty');
 must(cultureUi.includes('beginTimelineCreation')&&cultureUi.includes('items={timelineItems}')&&cultureUi.includes('...classificationBuckets,...virtualAnchorItems')&&!cultureUi.includes('anchorReviews.map')&&
   editor.includes('l.periodHint')&&editor.includes('l.eventHint')&&editor.includes('anchorOptions.map(row=>')&&!editor.includes('CultureStyleTagsField'),
   'Shared Time editor must use 1–2 anchors for periods, 2 for events, 1 for styles, without extra controls');
