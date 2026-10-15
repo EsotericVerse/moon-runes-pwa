@@ -1393,6 +1393,8 @@
     "notAllowedWord": "not allowed",
     "alreadyExistsWord": "already exists",
     "deleteSuffix": "”?",
-    "copyRuneJoin": "” ("
+    "copyRuneJoin": "” (",
+    "groupDeletedPrefix": "Group “",
+    "uuidCopiedSuffix": "."
   }
 }
