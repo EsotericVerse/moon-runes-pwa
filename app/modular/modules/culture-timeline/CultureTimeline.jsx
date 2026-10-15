@@ -16,7 +16,7 @@ function defaultTimelineLabel(item,index){
   return item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1);
 }
 
-function timelineRows(items,labelOf,focus){
+function timelineRows(items,labelOf,focus,labels={}){
   const source=Array.isArray(items)?items:[];
   const focusTerms=[focus?.identity,focus?.period,focus?.anchor].filter(Boolean).map(String);
   const knownTimes=source.flatMap(item=>[
@@ -65,9 +65,9 @@ function timelineRows(items,labelOf,focus){
       content:labelOf(item,index),
       title:[
         item?.title,item?.description,item?.milestone,item?.anchor_role,item?.anchor_type,
-        openStart?'A 之前／open start':'',openEnd?'A 之後／open end':'',
-        item?.date_status==='year_only'?'僅年份':'',
-        item?.is_primary_anchor?'主要錨點':'',item?.is_rc_zone?'RC 區':''
+        openStart?labels.openStart:'',openEnd?labels.openEnd:'',
+        item?.date_status==='year_only'?labels.yearOnly:'',
+        item?.is_primary_anchor?labels.primaryAnchor:'',item?.is_rc_zone?labels.rcZone:''
       ].filter(Boolean).join(' · '),
       start,
       recordId:String(item?.record_id||item?.recordId||''),
@@ -122,7 +122,9 @@ export default function CultureTimeline({
   fixedMax='',
   hiddenDates=EMPTY_HIDDEN_DATES
 }){
-  const {locale}=useUiLocale();
+  const {locale,copy}=useUiLocale();
+  const labels=copy.uiExtra.cultureTimeline;
+  const timelineLocale=locale==='zh-Hans'?'zh-cn':locale==='zh-Hant'?'zh-tw':locale;
   const t=text=>translateUiField(locale,text);
   const containerRef=useRef(null);
   const timelineRef=useRef(null);
@@ -136,7 +138,7 @@ export default function CultureTimeline({
   const onRemoveRef=useRef(onRemove);
   const [ready,setReady]=useState(false);
   const [chartError,setChartError]=useState(false);
-  const rows=useMemo(()=>timelineRows(items,labelOf,focus),[items,labelOf,focus]);
+  const rows=useMemo(()=>timelineRows(items,labelOf===defaultTimelineLabel?(item,index)=>item?.display_label||item?.name||item?.title||item?.period||labels.item+' '+(index+1):labelOf,focus,labels),[items,labelOf,focus,labels]);
   const fallbackRows=useMemo(()=>[...rows].sort((a,b)=>String(b.start).localeCompare(String(a.start))),[rows]);
   const hasTimeKinds=mode==='overview'&&rows.some(row=>String(row.group||'').startsWith('kind:'));
   const groupCount=Math.max(new Set(rows.map(row=>row.group).filter(Boolean)).size,hasTimeKinds?4:0);
@@ -172,7 +174,7 @@ export default function CultureTimeline({
         }
       }:row);
       const data=new DataSet(dataRows);
-      const timeGroupLabels={anchor:'定錨點',event:'事件',style_comment:'風格標籤',period:'時期'};
+      const timeGroupLabels={anchor:labels.anchor,event:labels.event,style_comment:labels.styleComment,period:labels.period};
       const standardTimeKinds=Object.keys(timeGroupLabels);
       const foundGroups=[...new Set(rows.map(row=>row.group).filter(Boolean))];
       const groupIds=hasTimeKinds
@@ -204,20 +206,20 @@ export default function CultureTimeline({
         maxHeight:timelineMaxHeight+'px',
         verticalScroll:true,
         groupOrder:'order',
-        locale:'zh-tw',
+        locale:timelineLocale,
         locales:{
-          'zh-tw':{
-            current:'目前',
-            time:'時間',
-            deleteSelected:'刪除所選項目'
+          [timelineLocale]:{
+            current:labels.current,
+            time:labels.time,
+            deleteSelected:labels.deleteSelected
           }
         },
         format:{
           minorLabels:{
-            millisecond:'SSS',second:'s秒',minute:'HH:mm',hour:'HH:mm',weekday:'M/D',day:'M/D',week:'M/D',month:'M月',year:'YYYY'
+            millisecond:'SSS',second:locale==='en'?'s':'s'+labels.secondUnit,minute:'HH:mm',hour:'HH:mm',weekday:'M/D',day:'M/D',week:'M/D',month:'M/D'+labels.monthUnit,year:'YYYY'
           },
           majorLabels:{
-            millisecond:'YYYY/M/D HH:mm:ss',second:'YYYY/M/D HH:mm',minute:'YYYY/M/D',hour:'YYYY/M/D',weekday:'YYYY/M',day:'YYYY/M',week:'YYYY/M',month:'YYYY年',year:''
+            millisecond:'YYYY/M/D HH:mm:ss',second:'YYYY/M/D HH:mm',minute:'YYYY/M/D',hour:'YYYY/M/D',weekday:'YYYY/M',day:'YYYY/M',week:'YYYY/M',month:'YYYY'+labels.yearUnit,year:''
           }
         },
         // Wheel/pinch zoom and dragging must not require Ctrl, Alt, or other keys.
@@ -301,7 +303,7 @@ export default function CultureTimeline({
       if(timelineRef.current===instance)timelineRef.current=null;
       if(instance)instance.destroy();
     };
-  },[rows,hasTimeKinds,timelineMinHeight,timelineMaxHeight,mode,windowStart,windowEnd,boundaryStart,boundaryEnd,fixedMin,fixedMax,hiddenDates,editable]);
+  },[rows,hasTimeKinds,timelineMinHeight,timelineMaxHeight,mode,windowStart,windowEnd,boundaryStart,boundaryEnd,fixedMin,fixedMax,hiddenDates,editable,locale,labels,timelineLocale]);
 
   // Explicit alternatives to gestures, available on touch, mouse, and keyboard.
   function changeWindow(action){
@@ -342,7 +344,7 @@ export default function CultureTimeline({
       <span><FieldText text="選擇河道紀錄"/></span>
       <select className='scope-select' aria-label={t('選擇河道紀錄')} value={rows.some(row=>row.id===selectedRowId)?selectedRowId:''} onChange={selectFromList}>
         <option value=''><FieldText text="請選擇日期或紀錄"/></option>
-        {rows.map(row=><option key={row.id} value={row.id}>{String(row.start||'').slice(0,10)} · {row.content||row.title||row.entryType||'紀錄'}</option>)}
+        {rows.map(row=><option key={row.id} value={row.id}>{String(row.start||'').slice(0,10)} · {row.content||row.title||row.entryType||labels.record}</option>)}
       </select>
     </label>:null}
     {chartError?<p className='scope-status'><FieldText text="圖表載入失敗，以下改用清單顯示。"/></p>:null}
