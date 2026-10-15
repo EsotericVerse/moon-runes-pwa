@@ -1,6 +1,9 @@
 'use client';
 
 import {useMemo} from 'react';
+import {UI_COPY} from '../../../i18n/ui-copy';
+import {useUiLocale} from '../../../i18n/ui-locale';
+import {useUiText} from '../../../i18n/UiText';
 import {
   Area,AreaChart,Bar,BarChart,CartesianGrid,Cell,ComposedChart,
   Legend,Line,LineChart,Pie,PieChart,PolarAngleAxis,PolarGrid,
@@ -10,11 +13,8 @@ import {
 
 // Chart types are capabilities, not ten interchangeable skins for one number.
 export const STAT_VISUAL_TYPES=Object.freeze([
-  ['line','折線圖 · 時間趨勢'],['bar','長條圖 · 期間比較'],['pie','圓餅圖 · 來源分布'],
-  ['area','面積圖 · 數量變化'],['stacked','堆疊面積圖 · 來源組成'],['composed','組合圖 · 總量與均線'],
-  ['scatter','散點圖 · 雙來源關係'],['radar','雷達圖 · 前後期占比'],['radial','放射長條圖 · 活躍期占比'],
-  ['treemap','矩形樹圖 · 來源分布']
-]);
+  'line','bar','pie','area','stacked','composed','scatter','radar','radial','treemap'
+].map(type=>Object.freeze([type,'uiExtra.chartTypes.'+type])));
 const COLORS=['#7562cf','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f'];
 const TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)',borderRadius:'8px'};
 const GRID='var(--loc-line)',TEXT='var(--loc-text)',DAY=86400000;
@@ -100,7 +100,9 @@ export function availableStatisticChartTypes({rows=[],series=[],distribution=[],
 }
 
 // Display-only compression: one marked gap, never an invented zero-count data point.
-export function foldEmptyTimeBuckets(rows=[],series=[]){
+export function foldEmptyTimeBuckets(rows=[],series=[],units={}){
+  const dayUnit=units.dayUnit??UI_COPY.uiExtra.chartLabels.dayUnit;
+  const periodUnit=units.periodUnit??UI_COPY.uiExtra.chartLabels.periodUnit;
   const list=Array.isArray(rows)?rows:[],out=[],gaps=[];
   for(let i=0;i<list.length;){
     if(series.some(s=>number(list[i]?.[s.key])>0)){out.push(list[i]);i++;continue;}
@@ -110,7 +112,7 @@ export function foldEmptyTimeBuckets(rows=[],series=[]){
     const end=String(list[j-1].end_date||list[j-1].start_date||'').slice(0,10);
     const from=Date.parse(begin),to=Date.parse(end);
     const days=Number.isFinite(from)&&Number.isFinite(to)?Math.max(1,Math.round((to-from)/DAY)+1):null;
-    out.push({period:'∥ '+(days?days+' 天':(j-i)+' 區間'),start_date:begin,end_date:end,folded:true,
+    out.push({period:'∥ '+(days?days+' '+dayUnit:(j-i)+' '+periodUnit),start_date:begin,end_date:end,folded:true,
       ...Object.fromEntries(series.map(s=>[s.key,null]))});
     gaps.push({start:begin,end,days,buckets:j-i});
     i=j;
@@ -120,14 +122,17 @@ export function foldEmptyTimeBuckets(rows=[],series=[]){
 export default function StatisticsMultiChart({
   type='line',rows=[],series=[],distribution=[],totalKey='',height=380,foldBlank=false
 }){
+  const {locale}=useUiLocale();
+  const t=useUiText();
+  const units={dayUnit:t('uiExtra.chartLabels.dayUnit'),periodUnit:t('uiExtra.chartLabels.periodUnit')};
   const time=Array.isArray(rows)?rows:[];
   const fields=useMemo(()=>nonemptySeries(time,series),[time,series]);
   const categories=useMemo(()=>normalizeDistribution(distribution,time,fields),[distribution,time,fields]);
   const usable=availableStatisticChartTypes({rows:time,series:fields,distribution:categories,totalKey});
   const actual=usable.some(([id])=>id===type)?type:(usable[0]?.[0]||'line');
-  const timeFields=totalKey?[{key:totalKey,label:'總量'}]:fields;
+  const timeFields=totalKey?[{key:totalKey,label:t('uiExtra.chartLabels.total')}]:fields;
   const {rows:display,gaps}=useMemo(()=>foldBlank&&['line','bar','area','stacked','composed'].includes(actual)
-    ?foldEmptyTimeBuckets(time,timeFields):{rows:time,gaps:[]},[foldBlank,actual,time,timeFields]);
+    ?foldEmptyTimeBuckets(time,timeFields,units):{rows:time,gaps:[]},[foldBlank,actual,time,timeFields,locale]);
   const margin={top:16,right:18,bottom:44,left:0};
   const axes=(<><CartesianGrid stroke={GRID} strokeDasharray="3 3"/>
     <XAxis dataKey="period" tick={{fill:TEXT,fontSize:11}} angle={-20} textAnchor="end" height={64} interval="preserveStartEnd" stroke={GRID}/>
@@ -142,8 +147,8 @@ export default function StatisticsMultiChart({
   // Calculate averages on the original, complete timeline before shortening gaps.
   const composed=useMemo(()=>{
     const full=movingAverage(time,fields,totalKey);
-    return foldBlank?foldEmptyTimeBuckets(full,timeFields).rows:full;
-  },[time,fields,totalKey,foldBlank,timeFields]);
+    return foldBlank?foldEmptyTimeBuckets(full,timeFields,units).rows:full;
+  },[time,fields,totalKey,foldBlank,timeFields,locale]);
   let chart=null;
   if(actual==='pie')chart=<PieChart>
     <Tooltip contentStyle={TOOLTIP}/><Legend wrapperStyle={{fontSize:11}}/>
@@ -156,8 +161,8 @@ export default function StatisticsMultiChart({
   else if(actual==='radar'&&comparison)chart=<RadarChart data={comparison} outerRadius="67%">
     <PolarGrid stroke={GRID}/><PolarAngleAxis dataKey="name" tick={{fill:TEXT,fontSize:11}}/>
     <PolarRadiusAxis domain={[0,100]} tick={{fill:TEXT,fontSize:10}}/>
-    <Radar name="前半期占比" dataKey="early" stroke={color(0)} fill={color(0)} fillOpacity={.2}/>
-    <Radar name="後半期占比" dataKey="late" stroke={color(1)} fill={color(1)} fillOpacity={.2}/>
+    <Radar name={t('uiExtra.chartLabels.firstHalf')} dataKey="early" stroke={color(0)} fill={color(0)} fillOpacity={.2}/>
+    <Radar name={t('uiExtra.chartLabels.lastHalf')} dataKey="late" stroke={color(1)} fill={color(1)} fillOpacity={.2}/>
     <Legend/><Tooltip contentStyle={TOOLTIP} formatter={v=>Number(v).toFixed(1)+'%'}/>
   </RadarChart>;
   else if(actual==='radial'&&coverage)chart=<RadialBarChart data={coverage} innerRadius="16%" outerRadius="82%" startAngle={90} endAngle={-270}>
@@ -184,8 +189,8 @@ export default function StatisticsMultiChart({
     <XAxis dataKey="period" tick={{fill:TEXT,fontSize:11}} angle={-20} textAnchor="end" height={64} interval="preserveStartEnd" stroke={GRID}/>
     <YAxis tick={{fill:TEXT,fontSize:11}} allowDecimals={false} stroke={GRID}/>
     <Tooltip contentStyle={TOOLTIP}/><Legend/>
-    <Bar dataKey="__stat_total" name="該期總量" fill={color(0)} opacity={.65} maxBarSize={30}/>
-    <Line dataKey="__stat_average" name="近三期移動平均" stroke={color(2)} strokeWidth={3} dot={false} connectNulls={false}/>
+    <Bar dataKey="__stat_total" name={t('uiExtra.chartLabels.periodTotal')} fill={color(0)} opacity={.65} maxBarSize={30}/>
+    <Line dataKey="__stat_average" name={t('uiExtra.chartLabels.movingAverage')} stroke={color(2)} strokeWidth={3} dot={false} connectNulls={false}/>
   </ComposedChart>;
   else if(actual==='stacked')chart=<AreaChart data={display} margin={margin}>
     {axes}{fields.map((f,i)=><Area key={f.key} type="linear" dataKey={f.key} name={f.label} stackId="parts"
@@ -202,11 +207,11 @@ export default function StatisticsMultiChart({
     {axes}{timeFields.map((f,i)=><Line key={f.key} type="linear" dataKey={f.key} name={f.label}
       stroke={color(i)} strokeWidth={2.5} dot={display.length<25} connectNulls={false} isAnimationActive={false}/>)}
   </LineChart>;
-  if(!usable.length)return <p className="scope-status">目前區間沒有可比較的資料。</p>;
-  return <div className="scope-multichart" role="group" aria-label="統計圖形">
+  if(!usable.length)return <p className="scope-status">{t('uiExtra.chartLabels.noComparable')}</p>;
+  return <div className="scope-multichart" role="group" aria-label={t('uiExtra.chartLabels.chartAria')}>
     <ResponsiveContainer width="100%" height={height}>{chart}</ResponsiveContainer>
     {foldBlank&&gaps.length?<p className="scope-status" role="note">
-      時間斷層：{gaps.map(g=>g.start+'～'+g.end+'（'+(g.days||g.buckets)+(g.days?' 天':' 區間')+'）').join('；')}
+      {t('uiExtra.chartLabels.gapLabel')}{gaps.map(g=>g.start+'～'+g.end+'（'+(g.days||g.buckets)+' '+(g.days?units.dayUnit:units.periodUnit)+'）').join(t('uiExtra.chartLabels.gapSeparator'))}
     </p>:null}
   </div>;
 }
