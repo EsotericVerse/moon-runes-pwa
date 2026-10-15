@@ -16,7 +16,7 @@ import {
   selectScopeCultureData
 } from '../../loc/culture-query';
 import {featureNavigationHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
-import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state';
+import {featureDataErrorMessage} from '../feature-data-state';
 import CultureTimeline from '../modules/culture-timeline/CultureTimeline';
 import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
 import {analyzeRiverDensity} from '../modules/culture-timeline/river-density-analysis.mjs';
@@ -665,8 +665,8 @@ export default function Culture(){
       {isLrunesDaily?<LrunesDailyCulturePanel/>:isLocItemView?<LocItemConfluence/>:<>
       <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
       <h2>{UI_COPY.culture.river}</h2>
-      {query.error?<p className='scope-status scope-error'>{featureDataErrorMessage(query.error)}</p>:null}
-      {!query.isPending&&!query.error&&!hasTimelineSurface?<p className='scope-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+      {query.error?<p className='scope-status scope-error'>{featureDataErrorMessage(query.error,UI_COPY)}</p>:null}
+      {!query.isPending&&!query.error&&!hasTimelineSurface?<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>:null}
       {!query.isPending&&!query.error&&hasTimelineSurface?<>
 
 
@@ -764,7 +764,7 @@ export default function Culture(){
                     return null;
                   }:null}
                   onRemove={account.canManageScopeSync(scopeId)?removeTimelineRecord:null}
-                />:<p className='scope-status'>{FEATURE_EMPTY_MESSAGE}</p>}
+                />:<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>}
                 {selectedTimelineInfo?<div className='scope-card scope-culture-timeline-selection' role='status'>
                   <strong>{selectedTimelineInfo.content||selectedTimelineInfo.raw?.display_label||selectedTimelineInfo.title||translateUiField(locale,'時間長河紀錄')}</strong>
                   <p className='scope-status'>{String(selectedTimelineInfo.start||'').slice(0,10)}{selectedTimelineInfo.end?' ～ '+String(selectedTimelineInfo.end).slice(0,10):''}</p>
@@ -792,7 +792,7 @@ export default function Culture(){
                 </div>
                 <p className='loc-eyebrow'>{UI_COPY.culture.classificationRiver}</p>
                 <h3>{localizedLabelOf(selectedWorkPeriod,0)}｜<UiText id="uiExtra.cultureView.workClassificationLane"/></h3>
-                {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error)}</p>:null}
+                {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
                 {!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!classificationBuckets.length
                   ?<p className='scope-status'>{UI_COPY.culture.noPeriodClassification}</p>:null}
                 <div className='scope-culture-anchor-actions'>
@@ -840,7 +840,7 @@ export default function Culture(){
                   <p className='loc-eyebrow'>表現風格 · {String(styleQuery.data?.keywordMeta?.class_name||'關鍵詞 Class')}</p>
                   <h4>Class｜符文群組比例</h4>
                   {styleQuery.isPending?<p className='scope-status'>正在讀取已定錨的關鍵詞 Attr…</p>:null}
-                  {styleQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(styleQuery.error)}</p>:null}
+                  {styleQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(styleQuery.error,UI_COPY)}</p>:null}
                   {!styleQuery.isPending&&!styleQuery.error&&!styleQuery.data?.staticstime?<p className='scope-status'>關鍵詞尚未定錨；請登入 Statistics 的「關鍵詞設定」重新分析文章。</p>:null}
                   {!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.staticstime&&!styleQuery.data?.statisticsEnabled?<p className='scope-status'>目前有效文章 {Number(styleQuery.data?.keywordDocumentCount||0).toLocaleString()} 篇；必須大於 {Number(styleQuery.data?.keywordMinDocuments||0).toLocaleString()} 篇才啟用關鍵詞統計。</p>:null}
                   {!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.statisticsEnabled&&styleClassRows.length?<div className='scope-ranking'>
@@ -857,8 +857,8 @@ export default function Culture(){
                 </section>:null}
                 <p className='scope-status'>{formatCultureUi(l.periodWorksTotal,{count:Number(sourceSnapshotQuery.data?.totalCount||0).toLocaleString(locale)})}</p>
 
-                {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error)}</p>:null}
-                {!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!categoryGroups.length?<p className='scope-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+                {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
+                {!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!categoryGroups.length?<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>:null}
                 {categoryGroups.length?<IncrementalList
                   items={categoryGroups}
                   batchSize={DEFAULT_LIST_BATCH_SIZE}
@@ -878,7 +878,7 @@ export default function Culture(){
                     <h4>{selectedGroup?.display_label||UI_COPY.culture.allWorks} · {selectedCount.toLocaleString(locale)}{l.workItemUnit}</h4>
                     {selectedGroup?<button type='button' className='scope-pagination-button' onClick={()=>setSelectedCategory('')}>{UI_COPY.culture.showAllWorks}</button>:null}
                   </header>
-                  {periodWorksPage.error?<p className='scope-status scope-error'>{featureDataErrorMessage(periodWorksPage.error)} <button type='button' className='loc-button' onClick={periodWorksPage.reload}><UiText id="uiExtra.cultureView.reloadWorks"/></button></p>:null}
+                  {periodWorksPage.error?<p className='scope-status scope-error'>{featureDataErrorMessage(periodWorksPage.error,UI_COPY)} <button type='button' className='loc-button' onClick={periodWorksPage.reload}><UiText id="uiExtra.cultureView.reloadWorks"/></button></p>:null}
                   {periodWorksPage.loading&&!visibleWorkRows.length?<p role='status' className='scope-status'>{l.loadingPeriodWorks}</p>:null}
                   <IncrementalList
                     items={visibleWorkRows}
@@ -924,7 +924,7 @@ export default function Culture(){
                     </WorkSummaryCard>;
                     }}
                   />
-                  {!periodWorksPage.loading&&!periodWorksPage.error&&!visibleWorkRows.length?<p className='scope-status'>{FEATURE_EMPTY_MESSAGE}</p>:null}
+                  {!periodWorksPage.loading&&!periodWorksPage.error&&!visibleWorkRows.length?<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>:null}
                 </section>
               </section>:null}
             </>}
