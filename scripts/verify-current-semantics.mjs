@@ -369,7 +369,7 @@ if(!failures.length){
   if(!culture.includes('locIntersectionScopeIds.map')||!culture.includes('個人時間長河')||culture.includes('scope_id: {id} · 個人時間長河'))failures.push('LOC Culture must link to the member without technical IDs or explanation blocks.');
   if(!cultureQuery.includes("style_comment:'風格標籤'")||!cultureQuery.includes('style_comment:2,period:3')||
      !culture.includes("beginTimelineCreation(recordType,'')")||
-     !culture.includes("aria-label='新增時間長河紀錄'")||
+     !culture.includes("aria-label={translateUiField(locale,'新增時間長河紀錄')}")||
      culture.includes('尋找風格標籤')||culture.includes('尋找既有定錨點')||
      culture.includes('新增時期（選擇既有定錨點）')||culture.includes('新增事件（選擇既有定錨點）')||
      culture.includes('scope-culture-style-panel')||
