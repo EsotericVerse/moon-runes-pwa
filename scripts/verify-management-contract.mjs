@@ -126,18 +126,18 @@ must(blockNoteEditor.includes("from '@blocknote/react'")&&blockNoteEditor.includ
 must(blockNoteEditor.includes('getSelectedLinkUrl')&&blockNoteEditor.includes('createLink')&&blockNoteEditor.includes('移除連結'),'BlockNote must expose explicit hyperlink editing controls');
 must(blockNoteEditor.includes('圖片網址')&&blockNoteEditor.includes('imageBlockForUrl')&&blockNoteEditor.includes('canInsertImage'),'BlockNote must allow remote image URL insertion with the current frame quota');
 must(blockNoteEntry.includes('canInsertImage={canInsertImage}')&&editableBlocks.includes('frameImageCount(draft)')&&editableBlocks.includes('embeddedImages>1')&&editableBlocks.includes('canInsertImageIn('),'page frames may contain at most one remotely linked image across all body and child fields');
-must(editableBlocks.includes('Hero 圖片位置（背景或旁邊，二選一）')&&editableBlocks.includes('image_mode')&&locHomeBlock.includes('heroImageMode(slot)')&&locHomeBlock.includes('authorHomeBlockClass'),'Hero background or side is a persisted exclusive choice shared by LOC and author homepages');
+must(editableBlocks.includes('uiExtra.editBlocks.heroImageMode')&&editableBlocks.includes('image_mode')&&locHomeBlock.includes('heroImageMode(slot)')&&locHomeBlock.includes('authorHomeBlockClass'),'Hero background or side is a persisted exclusive choice shared by LOC and author homepages');
 must(locHomeBlock.includes('loc-home-block__media-bubble')&&locHomeBlock.includes('(media||customImage)?')&&locHomeBlock.includes("5:{src:{src:'/pics/lo3rwang-3.png'}"),'non-Hero preset images must be contained image bubbles and never duplicate custom images');
 
 must(editableBlocks.includes('<BlockNoteEditor')&&publisher.includes('<BlockNoteEditor')&&sharedSearch.includes('<BlockNoteEditor')&&cultureUi.includes('plainTextToBlocks'),'all inline, longform and media editors must use BlockNote');
 for(const [file,body] of [['app/modular/ui.jsx',read('app/modular/ui.jsx')],['app/loc/ManagementArticlePublisher.jsx',publisher],['app/modular/features/Search.jsx',sharedSearch],['app/modular/features/Culture.jsx',cultureUi],['app/loc/ScopeEditableBlocks.jsx',editableBlocks]])must(!body.includes('RichBlockEditor'),file+' must not refer to retired RichBlockEditor');
 must(editableBlocks.includes('ENTITY_LIMIT=6')&&editableBlocks.includes("page='index'")&&editableBlocks.includes('page_name')&&editableBlocks.includes('block_entity')&&editableBlocks.includes("column:'uid'")&&editableBlocks.includes('isInteractiveTarget'),'Scope page editing must use stable block uid plus up to six child entities');
 must(['block_eyebrow','block_title','block_subtitle','block_text'].every(col=>editableBlocks.includes(col)&&scopeData.includes(col)),'Scope blocks must read and edit four canonical header/body columns');
-must(editableBlocks.includes('childPresentation(entity.title)')&&editableBlocks.includes('不用標題（文字泡泡）')&&!editableBlocks.includes('entity.kind'),'title-free child bubble and titled child card must use implicit kind, without a type selector');
+must(editableBlocks.includes('childPresentation(entity.title)')&&editableBlocks.includes('uiExtra.editBlocks.bubbleHint')&&!editableBlocks.includes('entity.kind'),'title-free child bubble and titled child card must use implicit kind, without a type selector');
 must(locHomeBlock.includes('slot.subtitle')&&authorHomeEditable.includes('renderDisplay={AuthorHomeBlockDisplay}'),'LOC and Author heading displays must use the dedicated rich subtitle');
 
 
-must(editableBlocks.includes('儲存失敗：')&&editableBlocks.includes('scope-inline-save-status')&&editableBlocks.includes('refetchQueries'),'page block saves must visibly report success/failure and refetch saved data');
+must(editableBlocks.includes('uiExtra.editBlocks.saveFailedPrefix')&&editableBlocks.includes('scope-inline-save-status')&&editableBlocks.includes('refetchQueries'),'page block saves must visibly report success/failure and refetch saved data');
 must(editableBlocks.includes('dangerouslySetInnerHTML')&&!editableBlocks.includes('editable={false}'),'public page display must use static site markup; BlockNote is edit-only');
 must(authorHome.includes('AuthorHomeEditableBlocks')&&!authorHome.includes('heroContent={<div'),'author homepage must render database blocks rather than hardcoded old homepage text');
 must(authorHomeEditable.includes('scopeId="lo3rwang"')&&authorHomeEditable.includes('allowEditing')&&authorHomeEditable.includes('containerless')&&authorHomeEditable.includes('renderDisplay={AuthorHomeBlockDisplay}')&&authorHomeEditable.includes('resolveSlotClassName={authorHomeBlockClass}')&&!authorHomeEditable.includes('allowEditing={false}'),'author homepage must use LOC common frames with permission-gated DB editing');
@@ -340,7 +340,7 @@ must(
 must(
   editableBlocks.includes('async function moveBlock(direction)')&&
   editableBlocks.includes('moveScopeBlock(scopeId,pageName,draft.uid,direction)')&&
-  editableBlocks.includes('↑ 上移')&&editableBlocks.includes('↓ 下移')&&
+  editableBlocks.includes('uiExtra.editBlocks.moveUp')&&editableBlocks.includes('uiExtra.editBlocks.moveDown')&&
   editableBlocks.includes('movableSlots.length>1')&&
   dbContract.includes("rpc('move_scope_block'")&&
   scopeSettings.includes('THEME_SLOTS.map(theme=>')&&
