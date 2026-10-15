@@ -469,6 +469,40 @@
       "saveFailed": "保存设置失败。",
       "searchNameHint": "搜索名称或别名",
       "aliasesHint": "每行一个，例如：\\nlo3rwang\\nLucas Oscar Wang\\n政德"
+    },
+    "searchUI": {
+      "stylePeriod": "所属时期：",
+      "unknownStyle": "文化风格",
+      "openScope": "前往 {scope}",
+      "timelineAnchors": "时间长河与现有锚点",
+      "exploreMore": "延伸探索：其他个人风格",
+      "clickToExplore": "（点击可继续搜索）",
+      "samePeriodStyles": "同一时期的平行风格",
+      "otherPeriodStyles": "其他时期的个人风格",
+      "countUnavailable": "暂无法统计",
+      "documentCount": "{count} 篇",
+      "uuidHint": "每行一个 UUID／ID",
+      "mediaUuidHint": "每行一个 media UUID",
+      "bodyManaged": "由上方全文编辑器管理",
+      "memberSearch": "成员搜索",
+      "articleDateInvalid": "文章时间格式无效。",
+      "groupListInvalid": "group_lists 必须是有效 JSON。"
+    },
+    "statisticsUI": {
+      "dailyRune": "每日符文",
+      "sourceGroup": "群组来源分类",
+      "sourceCustom": "个人自定义来源分类",
+      "mediaType": "多媒体类型",
+      "mediaPlatform": "多媒体来源统计",
+      "mediaStyle": "多媒体风格统计（Meta Tag）",
+      "notApplied": "不套用",
+      "keywordClass": "关键词 Class",
+      "loading": "正在读取统计…",
+      "noChart": "当前时间范围没有可显示的统计图表。",
+      "loadingMediaTags": "正在读取多媒体标签组合…",
+      "loadingKeywordAttrs": "正在读取已定位的关键词 Attr…",
+      "refreshing": "正在更新统计…",
+      "refresh": "刷新实时统计"
     }
   }
 }
