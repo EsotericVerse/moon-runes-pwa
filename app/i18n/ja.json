@@ -1106,6 +1106,10 @@
       "monthUnit": "月",
       "secondUnit": "秒",
       "record": "記録"
+    },
+    "dataSourceStatus": {
+      "primary": "メインデータ",
+      "backup": "バックアップデータ"
     }
   },
   "dailyRune": {
