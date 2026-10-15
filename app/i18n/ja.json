@@ -847,6 +847,31 @@
       "runeHits": "{count} 回・{ratio}%",
       "totalWithCount": "{count} 件",
       "foldBlank": "空白期間を折りたたむ"
+    },
+    "chartTypes": {
+      "line": "折れ線 · 時間推移",
+      "bar": "棒グラフ · 期間比較",
+      "pie": "円グラフ · ソース分布",
+      "area": "面グラフ · 数量推移",
+      "stacked": "積み上げ面 · ソース構成",
+      "composed": "複合 · 合計と平均",
+      "scatter": "散布図 · ソース関係",
+      "radar": "レーダー · 期間別割合",
+      "radial": "放射状棒 · 活動期間比",
+      "treemap": "ツリーマップ · ソース分布"
+    },
+    "chartLabels": {
+      "dayUnit": "日",
+      "periodUnit": "期間",
+      "total": "合計",
+      "firstHalf": "前半の割合",
+      "lastHalf": "後半の割合",
+      "periodTotal": "期間合計",
+      "movingAverage": "直近3期間の移動平均",
+      "noComparable": "比較できるデータがありません。",
+      "chartAria": "統計グラフ",
+      "gapLabel": "時間の空白：",
+      "gapSeparator": "；"
     }
   }
 }
