@@ -609,5 +609,47 @@
     "兩側標籤皆從現有多媒體 metadata 產生；預選 Mandopop／J-Pop／K-Pop 對其他標籤，沒有的組合不列出。每組每筆媒體只算一次。": "兩側標籤皆從現有多媒體 metadata 產生；預選 Mandopop／J-Pop／K-Pop 對其他標籤，沒有的組合不列出。每組每筆媒體只算一次。",
     "目前區間沒有可交互比較的 Meta Tag。": "目前區間沒有可交互比較的 Meta Tag。",
     "目前選擇沒有共同出現的標籤組合，請調整任一側標籤。": "目前選擇沒有共同出現的標籤組合，請調整任一側標籤。"
+  },
+  "uiExtra": {
+    "scopeGroup": {
+      "membersTitle": "所屬人員",
+      "openHome": "查看首頁",
+      "manageMember": "管理成員",
+      "noMembers": "目前沒有成員。",
+      "directoryTitle": "成員總覽",
+      "memberHome": "成員首頁",
+      "openMemberFeature": "前往該成員{feature}",
+      "unknownFeature": "功能"
+    },
+    "genericScope": {
+      "guide": "此 Scope Group 只負責成員總覽與導引；實際內容與分析由各子 Scope 自己處理。"
+    },
+    "feature": {
+      "moduleLoading": "載入功能模組…",
+      "settingsLoading": "載入功能設定…",
+      "unpublished": "此功能目前未公開。",
+      "registryLoading": "載入 Scope Registry…",
+      "registryUnavailable": "Scope 無法使用",
+      "registryNotFound": "找不到已啟用的 Scope Registry。",
+      "pageLoading": "載入頁面…",
+      "groupGuide": "群組只負責成員總覽與導引；請進入各子 Scope 查詢或管理實際內容。"
+    },
+    "keywords": {
+      "settingsLoading": "載入關鍵詞設定…",
+      "settingsTitle": "關鍵詞設定",
+      "settingsGuide": "此頁獨立於統計查詢。手動編輯不會啟動 vis-network；只有選擇視覺圖譜才載入圖形。",
+      "backToStatistics": "返回統計頁",
+      "verifyingAccess": "正在確認管理權限…",
+      "accessDenied": "此頁僅供擁有該 Scope 管理權限的登入者使用。"
+    },
+    "scopeSettings": {
+      "loadFailed": "設定讀取失敗。",
+      "displayRequired": "顯示名稱不可為空。",
+      "unavailable": "設定資料無法讀取。",
+      "saved": "已儲存。",
+      "saveFailed": "設定儲存失敗。",
+      "searchNameHint": "搜尋名稱或別名",
+      "aliasesHint": "每行一個，例如：\\nlo3rwang\\nLucas Oscar Wang\\n政德"
+    }
   }
 }
