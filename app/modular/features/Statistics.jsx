@@ -284,7 +284,7 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeC
   return <>
     {rankingType==='media_style'?<div className="scope-stat-controls">
       <label><span><FieldText text="統計排除詞（以逗號分隔）"/></span>
-        <input className="scope-input" value={exclusionDraft} maxLength={240} onChange={event=>setExclusionDraft(event.target.value)} placeholder="例如：男聲" />
+        <input className="scope-input" value={exclusionDraft} maxLength={240} onChange={event=>setExclusionDraft(event.target.value)} placeholder="Male Voice" />
       </label>
       <button type="button" className="loc-button" onClick={applyExclusions}><FieldText text="套用排除詞"/></button>
       <button type="button" className="loc-button" onClick={()=>setExclusionDraft(DEFAULT_MEDIA_STYLE_EXCLUSIONS.join(', '))}><FieldText text="恢復預設"/></button>
