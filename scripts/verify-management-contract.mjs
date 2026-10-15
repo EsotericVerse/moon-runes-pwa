@@ -262,7 +262,7 @@ must(!admin.includes('applyTheme(')&&admin.includes('admin-theme-local-preview')
 must(admin.includes('admin-registry-fallback')&&admin.includes('圖形樹載入失敗，已切換清單模式。')&&admin.includes('setTreeError'),'Scope Registry must provide a visible fallback instead of failing blank');
 must(admin.includes('syncManageScopeRow(')&&admin.includes("role:'scope'"),'Admin Scope node must edit Manage mapping atomically and keep role=scope fixed');
 must(admin.includes('部分人員設定讀取失敗')&&admin.includes('configFailures.push')&&admin.includes('readAdminScopeConfig(row.scope_id)')&&admin.includes("String(error?.code||'')==='PGRST205'"),'Admin must retry newly provisioned Scope config until PostgREST schema cache settles');
-must(admin.includes('provisionScope(')&&admin.includes('＋ 新增人員')&&admin.includes('＋ 新增群組'),'Admin Registry must create Scope and Scope Group from the tree workspace');
+must(admin.includes('provisionScope(')&&admin.includes('uiExtra.adminView.addPerson')&&admin.includes('uiExtra.adminView.addGroup'),'Admin Registry must create Scope and Scope Group from the tree workspace');
 must(admin.includes("const provisionedScope=await provisionScope(")&&admin.includes('provisioned=true;')&&admin.includes('readAdminScopeConfig(id)')&&admin.includes('不要重複建立。')&&admin.includes('creatingScope?\'建立與驗證中…\':\'建立\''),'New Scope creation must verify config readiness, prevent duplicate clicks, and distinguish successful provisioning from pending cache');
 
 must(functionalButton(admin,'refresh','重新讀取'),'Admin graph must allow manual reload after a dynamic Scope schema cache settles');
@@ -316,7 +316,7 @@ must(
   !admin.includes('onClick={copyRune66}')&&!admin.includes('copyRune66KeywordClass')&&
   keywordLibrary.includes('onClick={copyRune66}')&&
   keywordLibrary.includes('copyRune66KeywordClass(scopeId)')&&
-  keywordLibrary.includes('複製符文66為新 Class')&&
+  keywordLibrary.includes('l.copyRuneButton')&&
   dbContract.includes("rpc('delete_scope'")&&
   dbContract.includes("rpc('copy_rune66_keyword_class'"),
   'Admin Scope node must expose Save/Cancel/Delete and visibility as a draft; Rune66 Class copy belongs to Scope Keyword Library'
@@ -362,9 +362,9 @@ must(scopeData.includes("keywords:`silver.${id}_keywords`")&&scopeData.includes(
 must(scopeGroup.includes('selectScopeGroupChildren(scopeId)')&&scopeData.includes('parent_scope_id'),'Scope Group management must read DB parent/child membership');
 must(admin.includes("if(mappingResult.error)throw new Error(mappingResult.error.message||'Mapping 讀取失敗。')")&&admin.includes("if(registryResult.error)throw new Error(registryResult.error.message||'人員目錄讀取失敗。')")&&admin.includes("setStatus(error?.message||'Admin 資料讀取失敗。')"),'Admin mapping/registry read rejections must surface in the UI');
 must(keywordLibrary.includes('keywordDraftWithInput')&&keywordLibrary.includes('keywordEdit.trim()')&&
-  keywordLibrary.includes('正在寫入關鍵詞至資料庫')&&
-  keywordLibrary.includes('資料庫已寫入，正在更新分析狀態')&&
-  keywordLibrary.includes('資料庫已寫入，正在重新載入關鍵詞')&&
+  keywordLibrary.includes('l.writing')&&
+  keywordLibrary.includes('l.updatingAnalysis')&&
+  keywordLibrary.includes('l.reloading')&&
   keywordLibrary.includes('preserveOnError:true')&&
   keywordLibrary.includes('role="status"'),
   'Keyword Save must persist the typed input and report write, analysis invalidation and reload independently');
@@ -374,7 +374,7 @@ must(keywordNetwork.includes("locale:'en'")&&keywordNetwork.includes("close:'關
 must(!keywordLibrary.includes('keyword_group')&&!keywordLibrary.includes("node_type:'style'")&&!keywordLibrary.includes("node_type:'keyword'"),'keyword library editor must not recreate style/rule/node-type storage');
 must(keywordLibrary.includes('scopeData=account.scopeDataFor(scopeId)')&&keywordLibrary.includes('keyword_min_chars')&&keywordLibrary.includes('keyword_min_documents'),'keyword analysis thresholds must resolve from the current Scope');
 must(keywordLibrary.includes('current_keyword_class_id')&&keywordLibrary.includes('keyword_class_share_enabled')&&keywordLibrary.includes('Class UUID'),'keyword library must expose current Class UUID and Scope sharing control');
-must(keywordLibrary.includes('重新分析並寫入文章 Attr')&&keywordLibrary.includes('runRune66ClassificationBatch'),'keyword management must expose explicit batch classification instead of live recalculation');
+must(keywordLibrary.includes('l.reanalyse')&&keywordLibrary.includes('runRune66ClassificationBatch'),'keyword management must expose explicit batch classification instead of live recalculation');
 must(dbContract.includes("rpc('apply_keyword_classification'")&&dbContract.includes('p_scope_id:scope')&&dbContract.includes('silver.keyword_classes')&&dbContract.includes('randomUUID'),'keyword classification writes and copied Classes must be Scope-aware and use the UUID registry');
 
 
