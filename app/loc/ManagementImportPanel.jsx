@@ -1,6 +1,7 @@
 'use client';
 
-import {UI_COPY} from '../i18n/ui-copy';
+import {useUiCopy} from '../i18n/ui-locale';
+import UiText,{useUiText} from '../i18n/UiText';
 
 import {useMemo,useState} from 'react';
 import {insertRows,dbAuthRelation,updateRows} from './db-client.mjs';
@@ -86,6 +87,8 @@ function ImportFormatSettings({format,onChange,disabled=false}){
 }
 
 function JsonImport({scopeId,format,onBusyChange}) {
+  const UI_COPY=useUiCopy();
+  const t=useUiText();
   const account=useAccount();
   const [fileName,setFileName]=useState('');
   const [rows,setRows]=useState([]);
@@ -235,6 +238,7 @@ function sameRefreshRecord(current,next){
 }
 
 function SourceRefresh({scopeId,format,onBusyChange}){
+  const t=useUiText();
   const account=useAccount();
   const [fileName,setFileName]=useState('');
   const [rows,setRows]=useState([]);
@@ -383,6 +387,8 @@ function SourceRefresh({scopeId,format,onBusyChange}){
 }
 
 function MediaRecordInsert({scopeId}){
+  const UI_COPY=useUiCopy();
+  const t=useUiText();
   const account=useAccount();
   const [draft,setDraft]=useState({
     galaxy_link:'',
@@ -405,14 +411,14 @@ function MediaRecordInsert({scopeId}){
     setBusy(true);setStatus('');
     try{
       const galaxyLink=String(draft.galaxy_link||'').trim().toUpperCase();
-      if(galaxyLink&&galaxyLink.length!==8)throw new Error('galaxy_link 必須是 8 字 UID，或留空。');
+      if(galaxyLink&&galaxyLink.length!==8)throw new Error(t('uiExtra.importUI.linkUidInvalid'));
       const mediaType=repairMojibakeText(draft.media_type).trim();
-      if(!mediaType)throw new Error('media_type 為必填欄位。');
+      if(!mediaType)throw new Error(t('uiExtra.importUI.mediaTypeRequired'));
       const metaTags=repairMojibakeText(draft.meta_tags).trim();
       const mediaTitle=repairMojibakeText(draft.title).trim();
       const sourcePlace=repairMojibakeText(draft.source_place).trim();
-      if([mediaType,metaTags,mediaTitle,sourcePlace].some(hasIrrecoverableEncoding))throw new Error('多媒體文字 metadata 含不可逆編碼錯誤。');
-      if(!metaTags)throw new Error('meta_tags 必須在建立多媒體紀錄時由資料提供者設定；LOC 不會自動分類。');
+      if([mediaType,metaTags,mediaTitle,sourcePlace].some(hasIrrecoverableEncoding))throw new Error(t('uiExtra.importUI.mediaEncoding'));
+      if(!metaTags)throw new Error(t('uiExtra.importUI.tagsRequired'));
       const record={
         galaxy_link:galaxyLink||null,
         source_native_id:String(draft.source_native_id||'').trim()||null,
@@ -424,9 +430,9 @@ function MediaRecordInsert({scopeId}){
         createtime:iso(draft.createtime)
       };
       const galaxyMedia=account.scopeDataFor(scopeId)?.galaxyMedia;
-      if(!galaxyMedia)throw new Error('Scope data 未解析');
+      if(!galaxyMedia)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
       await insertRows(galaxyMedia,[record]);
-      setStatus('多媒體資料已直接寫入 Galaxy Media。');
+      setStatus(t('uiExtra.importUI.mediaSaved'));
       setDraft({
         galaxy_link:'',
         source_native_id:'',
@@ -437,26 +443,26 @@ function MediaRecordInsert({scopeId}){
         meta_tags:'',
         createtime:''
       });
-    }catch(error){setStatus(error?.message||'多媒體儲存失敗。');}
+    }catch(error){setStatus(error?.message||t('uiExtra.importUI.mediaSaveFailed'));}
     finally{setBusy(false);}
   }
 
   return <div className="scope-inline-card">
     <h4>{UI_COPY.management.addMedia}</h4>
-    <p>只記錄外部媒體參照與文字 metadata：URL／雲端連結、檔名或標題、來源 ID、時間、地點與 Meta Tag；不接收、不暫存任何圖片／音訊／影片檔案。media_id 由資料庫自動產生，url 可留空。</p>
+    <p><UiText id="uiExtra.importUI.mediaHelp"/></p>
     <form onSubmit={save} className="scope-editor">
       <div className="scope-stat-controls">
         <label>media_type<input value={draft.media_type} onChange={e=>change('media_type',e.target.value)} placeholder="ig_pic / facebook_pic / suno / video / url" required/></label>
-        <label>galaxy_link<input value={draft.galaxy_link} onChange={e=>change('galaxy_link',e.target.value)} placeholder="8 字 UID，可留空"/></label>
+        <label>galaxy_link<input value={draft.galaxy_link} onChange={e=>change('galaxy_link',e.target.value)} placeholder={t('uiExtra.importUI.mediaUidHint')}/></label>
         <label>createtime<input type="datetime-local" value={draft.createtime} onChange={e=>change('createtime',e.target.value)}/></label>
       </div>
       <div className="scope-stat-controls">
         <label>source_native_id<input value={draft.source_native_id} onChange={e=>change('source_native_id',e.target.value)}/></label>
-        <label>source_place<input value={draft.source_place} onChange={e=>change('source_place',e.target.value)} placeholder="打卡地點／拍攝位置"/></label>
+        <label>source_place<input value={draft.source_place} onChange={e=>change('source_place',e.target.value)} placeholder={t('uiExtra.importUI.placeHint')}/></label>
       </div>
-      <label>title／檔名<input value={draft.title} onChange={e=>change('title',e.target.value)}/></label>
-      <label>url<input value={draft.url} onChange={e=>change('url',e.target.value)} placeholder="外部 URL／雲端連結，可留空，之後再補"/></label>
-      <label>meta_tags<input value={draft.meta_tags} onChange={e=>change('meta_tags',e.target.value)} placeholder="建立時由資料提供者設定，逗號分隔" required/></label>
+      <label><UiText id="uiExtra.importUI.mediaTitle"/><input value={draft.title} onChange={e=>change('title',e.target.value)}/></label>
+      <label>url<input value={draft.url} onChange={e=>change('url',e.target.value)} placeholder={t('uiExtra.importUI.externalUrlHint')}/></label>
+      <label>meta_tags<input value={draft.meta_tags} onChange={e=>change('meta_tags',e.target.value)} placeholder={t('uiExtra.importUI.tagHint')} required/></label>
       <button type="submit" disabled={busy}>{busy?UI_COPY.common.saving:UI_COPY.management.addMedia}</button>
       {status?<p className="scope-status">{status}</p>:null}
     </form>
@@ -464,6 +470,8 @@ function MediaRecordInsert({scopeId}){
 }
 
 function SunoImport({scopeId}){
+  const UI_COPY=useUiCopy();
+  const t=useUiText();
   const account=useAccount();
   const [draft,setDraft]=useState({title:'',lyrics:'',url:'',nativeId:'',createdDate:'',stylePrompt:'',metaTags:'',metaTagsEdited:false,source_id:'',target_id:'',ref_id:''});
   const [status,setStatus]=useState('');const [busy,setBusy]=useState(false);
@@ -486,15 +494,15 @@ function SunoImport({scopeId}){
       const lyrics=normalizeGalaxyContent(draft.lyrics);
       const stylePrompt=normalizeGalaxyContent(draft.stylePrompt);
       const metaTags=repairMojibakeText(draft.metaTags).trim();
-      if([title,lyrics,stylePrompt,metaTags].some(hasIrrecoverableEncoding))throw new Error('Suno 文字資料含不可逆編碼錯誤。');
-      if(!title)throw new Error('請填寫歌名。');
-      if(!metaTags)throw new Error('Media Meta Tags 必須在建立時提供；LOC 不會自動分類。');
+      if([title,lyrics,stylePrompt,metaTags].some(hasIrrecoverableEncoding))throw new Error(t('uiExtra.importUI.sunoEncoding'));
+      if(!title)throw new Error(t('uiExtra.importUI.sunoTitleRequired'));
+      if(!metaTags)throw new Error(t('uiExtra.importUI.sunoTagsRequired'));
       const createtime=draft.createdDate?new Date(draft.createdDate+'T00:00:00+08:00').toISOString():new Date().toISOString();
       const lyricsUid=lyrics?createUid8():null;
       const styleUid=lyricsUid&&stylePrompt?createUid8():null;
       const sourceId=draft.source_id.trim()||(styleUid?draft.ref_id.trim():'')||null;
       const scopeData=account.scopeDataFor(scopeId);
-      if(!scopeData)throw new Error('Scope data 未解析');
+      if(!scopeData)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
       const {galaxy,galaxyMedia}=scopeData;
       if(lyricsUid){
         await insertRows(galaxy,[{
@@ -517,24 +525,24 @@ function SunoImport({scopeId}){
         title,url:draft.url.trim()||null,
         meta_tags:metaTags||null,createtime
       }]);
-      setStatus('Suno 單筆資料已儲存。');setDraft({title:'',lyrics:'',url:'',nativeId:'',createdDate:'',stylePrompt:'',metaTags:'',metaTagsEdited:false,source_id:'',target_id:'',ref_id:''});
-    }catch(error){setStatus(error?.message||'Suno 儲存失敗。');}
+      setStatus(t('uiExtra.importUI.sunoSaved'));setDraft({title:'',lyrics:'',url:'',nativeId:'',createdDate:'',stylePrompt:'',metaTags:'',metaTagsEdited:false,source_id:'',target_id:'',ref_id:''});
+    }catch(error){setStatus(error?.message||t('uiExtra.importUI.sunoSaveFailed'));}
     finally{setBusy(false);}
   }
   return <div className="scope-inline-card">
-    <h4>Suno 單筆匯入</h4>
+    <h4><UiText id="uiExtra.importUI.sunoImport"/></h4>
     <form onSubmit={save} className="scope-editor">
       <label>{UI_COPY.management.songTitle}<input value={draft.title} onChange={e=>change('title',e.target.value)}/></label>
       <label>{UI_COPY.management.lyrics}<textarea rows={8} value={draft.lyrics} onChange={e=>change('lyrics',e.target.value)}/></label>
       <div className="scope-stat-controls">
         <label>Suno URL<input value={draft.url} onChange={e=>change('url',e.target.value)}/></label>
-        <label>Suno ID<input value={draft.nativeId} onChange={e=>change('nativeId',e.target.value)} placeholder="可由 URL 自動辨識"/></label>
-        <label>日期<input type="date" value={draft.createdDate} onChange={e=>change('createdDate',e.target.value)}/></label>
+        <label>Suno ID<input value={draft.nativeId} onChange={e=>change('nativeId',e.target.value)} placeholder={t('uiExtra.importUI.sunoIdHint')}/></label>
+        <label><UiText id="common.date"/><input type="date" value={draft.createdDate} onChange={e=>change('createdDate',e.target.value)}/></label>
       </div>
       <div className="scope-stat-controls">
         <label>Suno Style<textarea rows={3} value={draft.stylePrompt} onChange={e=>change('stylePrompt',e.target.value)}/></label>
-        <label>Meta Tags<input value={draft.metaTags} onChange={e=>change('metaTags',e.target.value)} placeholder="從 Suno Style 逐字節錄，可補 LP15-3／LunaRunesMusic" required/></label>
-        <button type="button" className="loc-button" onClick={regenerateStyleTags}>從 Suno Style 重新擷取 Meta Tags</button>
+        <label>Meta Tags<input value={draft.metaTags} onChange={e=>change('metaTags',e.target.value)} placeholder={t('uiExtra.importUI.sunoStyleTagHint')} required/></label>
+        <button type="button" className="loc-button" onClick={regenerateStyleTags}><UiText id="uiExtra.importUI.sunoRegenerate"/></button>
       </div>
       <div className="scope-stat-controls">
         <label>source_id<input value={draft.source_id} onChange={e=>change('source_id',e.target.value)}/></label>
@@ -558,7 +566,7 @@ export default function ManagementImportPanel({scopeId}){
     setRevision(value=>value+1);
   }
   return <section className="scope-inline-card scope-management-imports">
-    <h2>資料匯入</h2>
+    <h2><UiText id="uiExtra.importUI.importTitle"/></h2>
     <ImportFormatSettings format={format} onChange={changeFormat} disabled={busyCount>0}/>
     <JsonImport key={'json-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/>
     <SourceRefresh key={'refresh-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/>
