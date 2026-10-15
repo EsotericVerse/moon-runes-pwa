@@ -56,7 +56,7 @@ export function mediaPlatform(row={}){
   return sourceFromMetadata(row);
 }
 // Statistics-only exclusions. These do not mutate canonical media metadata.
-export const DEFAULT_MEDIA_STYLE_EXCLUSIONS=Object.freeze(['Male Voice']);
+export const DEFAULT_MEDIA_STYLE_EXCLUSIONS=Object.freeze([]);
 export function mediaStyleExclusions(value=DEFAULT_MEDIA_STYLE_EXCLUSIONS){
   const raw=Array.isArray(value)?value:String(value||'').split(/[,，、;；\n\r|]+/u);
   const tags=new Map();
