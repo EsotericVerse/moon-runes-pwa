@@ -952,6 +952,31 @@
       "chooseSource": "請選擇來源與群組來源分類",
       "badSource": "來源名稱無效",
       "chooseGroup": "請先選擇有效的群組來源分類"
+    },
+    "sharing": {
+      "updated": "已更新群組來源分類的統計開放設定。",
+      "title": "群組來源分類 · 對外統計",
+      "guide": "各群組來源沿用既有對外統計設定；本人可取消勾選，將該分類排除於群組合併與成員交互統計。個人統計、搜尋及文化頁不受影響。",
+      "allow": "允許納入其他人的統計",
+      "loading": "讀取分類開放設定…",
+      "aria": "群組來源分類統計開放設定"
+    },
+    "publisher": {
+      "scopeUnavailable": "Scope data 未解析",
+      "addTitle": "新增標題",
+      "articleTitle": "文章標題",
+      "publish": "發佈",
+      "excludeSearch": "不顯示於公開搜尋",
+      "publishing": "發佈中…",
+      "publishArticle": "發佈文章",
+      "source": "來源",
+      "sourceHint": "例如 threads / vocus / personal",
+      "relations": "進階關聯"
+    },
+    "pagination": {
+      "loading": "載入中…",
+      "loadMore": "載入更多",
+      "loadMoreAria": "載入更多內容"
     }
   }
 }
