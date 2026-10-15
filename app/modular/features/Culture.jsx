@@ -727,7 +727,7 @@ export default function Culture(){
                     <option value='event'><FieldText text="事件"/></option>
                     <option value='style_comment'><FieldText text="風格標籤"/></option>
                   </select>
-                  <span className='scope-status'>第一條河道依序為定錨點、事件、風格標籤、時期。點選紀錄直接編輯；未定錨的風格可從「新增 → 風格標籤」表單選取。</span>
+                  <span className='scope-status'><FieldText text="第一條河道依序為定錨點、事件、風格標籤、時期。點選紀錄直接編輯；未定錨的風格可從「新增 → 風格標籤」表單選取。"/></span>
                   </>:null}
                 </div>
                 {timelineItems.length?<CultureTimeline
@@ -792,7 +792,7 @@ export default function Culture(){
                 <div className='scope-culture-anchor-actions'>
                   <span>作品量候選日期 {riverAnalysis.suggestions.length} 個；正式定錨點請在第一條時間河道查看。候選僅供有需要時比對，不要求新增或反覆檢討。</span>
                   {riverAnalysis.suggestions.length?<details className='scope-culture-anchor-picker'>
-                    <summary>需要時再展開比對作品量變化（候選日期，非正式定錨點）</summary>
+                    <summary><FieldText text="需要時再展開比對作品量變化（候選日期，非正式定錨點）"/></summary>
                     <div className='scope-culture-anchor-choices'>
                       {riverAnalysis.suggestions.map(item=><label key={item.date} title={(item.analysis||[]).join(' ')}>
                         <input type='checkbox' checked={selectedVirtualAnchorDates.includes(item.date)} disabled={anchorSaveBusy} onChange={()=>toggleVirtualAnchor(item.date)}/>

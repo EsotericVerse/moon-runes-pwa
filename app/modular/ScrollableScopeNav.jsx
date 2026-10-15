@@ -9,7 +9,7 @@ import {useCallback,useEffect,useRef,useState} from 'react';
 export default function ScrollableScopeNav({children,resetKey='',label='導覽入口'}){
   const {locale}=useUiLocale();
   const text=x=>translateUiField(locale,x);
-  const localizedLabel=text(label);
+  const localizedLabel=label==='導覽入口'?text('導覽入口'):label;
   const viewport=useRef(null);
   const [position,setPosition]=useState({overflow:false,left:false,right:false});
   const measure=useCallback(()=>{

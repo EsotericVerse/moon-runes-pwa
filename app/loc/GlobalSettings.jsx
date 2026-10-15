@@ -192,7 +192,7 @@ export default function GlobalSettings(){
             value={scopeOptions.find(item=>item.value===selectedScope?.id)||null}
             onChange={item=>setRequestedScope(item?.value||'')}/>:null}
           {selectedScope?<ManagementImportPanel key={selectedScope.id} scopeId={selectedScope.id}/>:null}
-        </div>:<p>沒有可匯入的空間。</p>:
+        </div>:<p><FieldText text="沒有可匯入的空間。"/></p>:
         <button type="button" className="loc-button primary" onClick={login}><FieldText text="登入"/></button>}
       </section>):null}
 

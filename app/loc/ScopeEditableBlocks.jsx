@@ -292,7 +292,7 @@ export default function ScopeEditableBlocks({
             <button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={()=>removeEntity(index)}><FieldText text="刪除"/></button>
           </div>
           <label className="scope-management-wide-field">
-            <span>標題（不用標題＝文字泡泡，輸入標題＝文字框）</span>
+            <span><FieldText text="標題（不用標題＝文字泡泡，輸入標題＝文字框）"/></span>
             <input
               className="scope-search-input"
               placeholder="不用標題（文字泡泡）"
@@ -339,8 +339,8 @@ export default function ScopeEditableBlocks({
           <div className="scope-inline-editbar">
             <button type="button" className="loc-button primary" disabled={busy} onClick={save}>{busy?'儲存中…':'儲存'}</button>
             {slot.stored&&movableSlots.length>1?<>
-              <button type="button" className="loc-button" disabled={busy||movableIndex<=0} onClick={()=>moveBlock(-1)}>↑ 上移</button>
-              <button type="button" className="loc-button" disabled={busy||movableIndex>=movableSlots.length-1} onClick={()=>moveBlock(1)}>↓ 下移</button>
+              <button type="button" className="loc-button" disabled={busy||movableIndex<=0} onClick={()=>moveBlock(-1)}><FieldText text="↑ 上移"/></button>
+              <button type="button" className="loc-button" disabled={busy||movableIndex>=movableSlots.length-1} onClick={()=>moveBlock(1)}><FieldText text="↓ 下移"/></button>
             </>:null}
             {allowDelete?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={remove}><FieldText text="刪除"/></button>:null}
             <button type="button" className="loc-button" disabled={busy} onClick={cancel}>取消</button>

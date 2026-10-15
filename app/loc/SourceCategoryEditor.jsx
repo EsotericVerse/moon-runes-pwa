@@ -68,7 +68,7 @@ export function AdminSourceCategories(){
   });
   return <section className="loc-card admin-workspace">
     <h2><FieldText text="群組來源分類"/></h2>
-    <p className="scope-status">僅 LOC Admin 設定來源主分類；個別人員的來源命名及歸屬在各自的統計頁管理。</p>
+    <p className="scope-status"><FieldText text="僅 LOC Admin 設定來源主分類；個別人員的來源命名及歸屬在各自的統計頁管理。"/></p>
     <div className="scope-stat-controls">
       <label><FieldText text="分類代碼"/><input value={category} onChange={e=>setCategory(e.target.value)} maxLength={64}/></label>
       <label><FieldText text="分類名稱"/><input value={title} onChange={e=>setTitle(e.target.value)} maxLength={80}/></label>
@@ -151,7 +151,7 @@ export function ScopeCustomSourceCategories({scopeId}){
   });
   return <section className="scope-inline-card" aria-label="個人自訂來源分類">
     <h3><FieldText text="個人自訂來源分類"/></h3>
-    <p className="scope-status">只管理目前人員的原始來源名稱及群組歸屬，不改動作品正文與其他 Scope。</p>
+    <p className="scope-status"><FieldText text="只管理目前人員的原始來源名稱及群組歸屬，不改動作品正文與其他 Scope。"/></p>
     <div className="scope-stat-controls">
       <label><FieldText text="原始來源"/><input value={source} maxLength={120} onChange={e=>setSource(e.target.value)} placeholder="source_name"/></label>
       <label><FieldText text="自訂顯示名稱"/><input value={label} maxLength={80} onChange={e=>setLabel(e.target.value)}/></label>

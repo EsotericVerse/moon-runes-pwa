@@ -1,5 +1,4 @@
 'use client';
-import FieldText from '../../../i18n/FieldText';
 
 import {useMemo} from 'react';
 import {

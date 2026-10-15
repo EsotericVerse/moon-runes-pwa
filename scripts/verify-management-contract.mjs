@@ -271,7 +271,7 @@ must(admin.includes("value:UI_LOCALE_OPTIONS.find(option=>option.value===normali
 must(admin.includes('callback(null);')&&admin.includes('handlersRef.current.onDeleteNode?.(String(ids[0]))')&&!admin.includes("window.prompt('刪除將永久移除"),'vis-network delete must open an in-page confirmation, without prematurely removing nodes or using browser prompt');
 must(admin.includes('className="admin-delete-confirm"')&&admin.includes("onClick={confirmDelete}")&&admin.includes("deleteTyped.trim().toLowerCase()!==deletePending")&&admin.includes("onClick={cancelDelete}"),'Scope delete UI must require typed ID and support visible cancellation');
 must(admin.includes("result?.deleted!==true")&&admin.includes("dbAuthRelation('silver.scope_registry')")&&admin.includes("if(remaining?.length)")&&admin.includes('setRegistry(rows=>rows.filter(row=>row.scope_id!==id))'),'Scope node may disappear only after RPC success and Registry verification');
-must(admin.includes('onClick={()=>onDeleteNode?.(selectedId)}>刪除</button>')&&admin.includes('onDeleteNode={requestDelete}'),'read-only Attr summary and graph delete must share the same confirmation');
+must(functionalButton(admin,'()=>onDeleteNode?.(selectedId)','刪除')&&admin.includes('onDeleteNode={requestDelete}'),'read-only Attr summary and graph delete must share the same confirmation');
 must(adminCss.includes('.admin-delete-confirm')&&adminCss.includes('.admin-node-actions'),'delete confirmation must remain readable and visible on mobile');
 
 

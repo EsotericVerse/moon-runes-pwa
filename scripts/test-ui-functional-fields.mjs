@@ -5,6 +5,9 @@ for(const [source,expected] of [['主要資料庫','Primary database'],['次要�
 assert.equal(translateUiField('zh-Hant','主要資料庫'),'主要資料庫');
 assert.equal(translateUiField('zh-Hans','主要資料庫'),'主数据库');
 assert.equal(translateUiField('en','私人創作內容'),'私人創作內容');
+assert.equal(translateUiField('en','文章屬性'),'Article properties');
+assert.equal(translateUiField('zh-Hans','文章屬性'),'文章属性');
+assert.equal(translateUiField('en','上一頁'),'Previous');
 for(const name of ['Search','Statistics','Culture']){
   const path='../app/modular/features/'+name+'.jsx';
   const source=readFileSync(new URL(path,import.meta.url),'utf8');
