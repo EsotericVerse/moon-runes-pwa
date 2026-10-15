@@ -845,7 +845,8 @@
       "classWorkCount": "Class work count",
       "groupWorks": "{count} works · {ratio}%",
       "runeHits": "{count} hits · {ratio}%",
-      "totalWithCount": "{count} items"
+      "totalWithCount": "{count} items",
+      "foldBlank": "Collapse empty periods"
     }
   }
 }
