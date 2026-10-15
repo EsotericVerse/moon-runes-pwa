@@ -138,7 +138,6 @@ export function WorkFullText({
   loading=false,
   error='',
   content='',
-  blocks=null,
   onToggle,
   emptyText=UI_COPY.work.noBody
 }){
@@ -149,9 +148,7 @@ export function WorkFullText({
     </button>
     {open&&error?<p className="scope-status scope-error">{error}</p>:null}
     {open&&!loading&&!error?<div className="scope-inline-card">
-      {Array.isArray(blocks)&&blocks.length
-        ?<BlockNoteEditor key={'full:'+JSON.stringify(blocks)} initialContent={blocks} editable={false}/>
-        :<p className="scope-prewrap">{content||emptyText}</p>}
+      <p className="scope-prewrap">{content||emptyText}</p>
     </div>:null}
   </div>;
 }
