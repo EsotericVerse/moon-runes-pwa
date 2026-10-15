@@ -845,7 +845,8 @@
       "classWorkCount": "Class 作品數",
       "groupWorks": "{count} 篇 · {ratio}%",
       "runeHits": "{count} 次 · {ratio}%",
-      "totalWithCount": "{count} 項"
+      "totalWithCount": "{count} 項",
+      "foldBlank": "折疊空白時間"
     }
   }
 }
