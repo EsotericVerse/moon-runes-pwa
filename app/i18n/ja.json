@@ -839,7 +839,13 @@
       "groupSourcesShare": "グループソース分類・公開統計",
       "personalSourcesManage": "個人ソース分類・管理",
       "scopeGroupStatisticsTitle": "Scope Group 統計ガイド",
-      "scopeGroupStatisticsHelp": "各 Scope が作品・ソース・2～4 組の交互統計を担当します。Group は案内のみを行います。"
+      "scopeGroupStatisticsHelp": "各 Scope が作品・ソース・2～4 組の交互統計を担当します。Group は案内のみを行います。",
+      "groupSuffix": "グループ",
+      "runeSuffix": "のルーン",
+      "classWorkCount": "Class 作品数",
+      "groupWorks": "{count} 件・{ratio}%",
+      "runeHits": "{count} 回・{ratio}%",
+      "totalWithCount": "{count} 件"
     }
   }
 }
