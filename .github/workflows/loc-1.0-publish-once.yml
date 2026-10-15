@@ -17,10 +17,10 @@ jobs:
         with:
           script: |
             const owner=context.repo.owner, repo=context.repo.repo;
-            const target='b296740ee65f6ad7bbad8c88306a84336f25ede6';
+            const target='98f032844c3ee73e4ec8af507adada4d81cfa54c';
             const checks=[
-              {id:38768746959,name:'Next Architecture Build #2708'},
-              {id:38768747009,name:'Deploy Main Next to GitHub Pages #4731'}
+              {id:38769793357,name:'Next Architecture Build #2709'},
+              {id:38769793499,name:'Deploy Main Next to GitHub Pages #4732'}
             ];
             for(let attempt=0;attempt<48;attempt++){
               const states=await Promise.all(checks.map(async check=>{
@@ -61,7 +61,7 @@ jobs:
               '**正式網站：** https://loc.lo3rwang.cc/',
               '**原始碼：** https://github.com/EsotericVerse/moon-runes-pwa',
               '**發布提交：** '+target
-            ].join('\\n');
+            ].join('\n');
             const {data}=await github.rest.repos.createRelease({
               owner,repo,tag_name:tag,target_commitish:target,
               name:'LOC 1.0 R — 正式發布',
