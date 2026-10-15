@@ -279,7 +279,7 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeC
       </label>
       <label><span><UiText id="statistics.chart"/></span>
         <select className="scope-select" value={chosenChartType} onChange={event=>onChartTypeChange?.(event.target.value)}>
-          {supported.length?supported.map(([value,label])=><option key={value} value={value}><FieldText text={label}/></option>):<option value="line"><UiText id="uiExtra.statisticsView.noVisual"/></option>}
+          {supported.length?supported.map(([value,label])=><option key={value} value={value}>{t(label)}</option>):<option value="line"><UiText id="uiExtra.statisticsView.noVisual"/></option>}
         </select>
       </label>
     </div>
@@ -631,7 +631,7 @@ function ScopeGroupStatistics(){
       <label>
         <span>{UI_COPY.statistics.chart}</span>
         <select className="scope-select" value={locChartType} onChange={event=>setChartType(event.target.value)}>
-          {locAllowed.length?locAllowed.map(([value,label])=><option key={value} value={value}><FieldText text={label}/></option>):<option value="line"><UiText id="uiExtra.statisticsView.noVisual"/></option>}
+          {locAllowed.length?locAllowed.map(([value,label])=><option key={value} value={value}>{t(label)}</option>):<option value="line"><UiText id="uiExtra.statisticsView.noVisual"/></option>}
         </select>
       </label>
     </div>
@@ -779,7 +779,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     <div className="scope-stat-controls">
       <StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/>
       {!isLrunesDaily?<>{!mediaDimension?<label><span>{UI_COPY.statistics.chart}</span><select className="scope-select" value={effectiveChartType} onChange={event=>setChartType(event.target.value)}>
-        {optionsForCurrent.length?optionsForCurrent.map(([value,label])=><option key={value} value={value}><FieldText text={label}/></option>):<option value="line"><UiText id="uiExtra.statisticsView.noVisual"/></option>}
+        {optionsForCurrent.length?optionsForCurrent.map(([value,label])=><option key={value} value={value}>{t(label)}</option>):<option value="line"><UiText id="uiExtra.statisticsView.noVisual"/></option>}
       </select></label>:null}
       {!['pie','radar','radial','treemap','scatter'].includes(effectiveChartType)?<label className="scope-setting-toggle">
         <input type="checkbox" checked={foldBlank} onChange={event=>setFoldBlank(event.target.checked)}/> <UiText id="uiExtra.statisticsView.foldBlank"/>
