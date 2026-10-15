@@ -262,7 +262,7 @@ must(!admin.includes('applyTheme(')&&admin.includes('admin-theme-local-preview')
 must(admin.includes('admin-registry-fallback')&&admin.includes('圖形樹載入失敗，已切換清單模式。')&&admin.includes('setTreeError'),'Scope Registry must provide a visible fallback instead of failing blank');
 must(admin.includes('syncManageScopeRow(')&&admin.includes("role:'scope'"),'Admin Scope node must edit Manage mapping atomically and keep role=scope fixed');
 must(admin.includes('部分人員設定讀取失敗')&&admin.includes('configFailures.push')&&admin.includes('readAdminScopeConfig(row.scope_id)')&&admin.includes("String(error?.code||'')==='PGRST205'"),'Admin must retry newly provisioned Scope config until PostgREST schema cache settles');
-must(admin.includes('provisionScope(')&&admin.includes('uiExtra.adminView.addPerson')&&admin.includes('uiExtra.adminView.addGroup'),'Admin Registry must create Scope and Scope Group from the tree workspace');
+must(admin.includes('provisionScope(')&&admin.includes('uiExtra.adminView.ddMember')&&admin.includes('uiExtra.adminView.ddGroup'),'Admin Registry must create Scope and Scope Group from the tree workspace');
 must(admin.includes("const provisionedScope=await provisionScope(")&&admin.includes('provisioned=true;')&&admin.includes('readAdminScopeConfig(id)')&&admin.includes('不要重複建立。')&&admin.includes('creatingScope?\'建立與驗證中…\':\'建立\''),'New Scope creation must verify config readiness, prevent duplicate clicks, and distinguish successful provisioning from pending cache');
 
 must(functionalButton(admin,'refresh','重新讀取'),'Admin graph must allow manual reload after a dynamic Scope schema cache settles');
