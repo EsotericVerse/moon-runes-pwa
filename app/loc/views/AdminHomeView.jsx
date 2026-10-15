@@ -1,4 +1,5 @@
 'use client';
+import UiText from '../../i18n/UiText';
 import FieldText from '../../i18n/FieldText';
 
 import {UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale} from '../../i18n/ui-copy';
@@ -428,9 +429,9 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
                 <h2>{config?.display_name||selected.display_name||selected.scope_id}</h2>
       </div>
       {!editing?<div className="admin-node-actions">
-        <button type="button" className="loc-button primary" onClick={beginEdit}><FieldText text="編輯設定"/></button>
-        {selected.scope_kind==='scope'&&!routeLocked?<button type="button" className="loc-button" onClick={()=>onDeleteNode?.(selectedId)}><FieldText text="刪除"/></button>:null}
-      </div>:<span className="scope-status"><FieldText text="編輯草稿 · 尚未儲存"/></span>}
+        <button type="button" className="loc-button primary" onClick={beginEdit}><UiText id="uiExtra.adminView.editSettings"/></button>
+        {selected.scope_kind==='scope'&&!routeLocked?<button type="button" className="loc-button" onClick={()=>onDeleteNode?.(selectedId)}><UiText id="uiExtra.adminView.delete"/></button>:null}
+      </div>:<span className="scope-status"><UiText id="uiExtra.adminView.editingDraftNotSaved"/></span>}
     </div>
 
     {!editing?<div className="admin-attribute-grid" aria-label="人員設定摘要">
@@ -439,17 +440,17 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
         <strong>{item.value}</strong>
       </button>)}
     </div>:<>
-      {current.scope_kind==='group'?<label><span><FieldText text="群組名稱"/></span><input value={current.display_name||''} onChange={e=>patchRegistry('display_name',e.target.value)}/></label>:null}
+      {current.scope_kind==='group'?<label><span><UiText id="uiExtra.adminView.groupName"/></span><input value={current.display_name||''} onChange={e=>patchRegistry('display_name',e.target.value)}/></label>:null}
       {current.scope_kind==='scope'&&currentConfig?<>
         {currentCopy?<section className="admin-page-copy-fields" aria-label="公開頁面名稱設定">
-          <label><span><FieldText text="NAV 中文名稱（Title_TW）"/></span><input required value={currentCopy.Title_TW||''} onChange={e=>patchPageCopy('Title_TW',e.target.value)}/></label>
-          <label><span><FieldText text="頁面說明（Desc_TW）"/></span><textarea rows={2} value={currentCopy.Desc_TW||''} onChange={e=>patchPageCopy('Desc_TW',e.target.value)}/></label>
+          <label><span><UiText id="uiExtra.adminView.navigationTitle"/></span><input required value={currentCopy.Title_TW||''} onChange={e=>patchPageCopy('Title_TW',e.target.value)}/></label>
+          <label><span><UiText id="uiExtra.adminView.pageDescription"/></span><textarea rows={2} value={currentCopy.Desc_TW||''} onChange={e=>patchPageCopy('Desc_TW',e.target.value)}/></label>
         </section>:null}
-        <label><span><FieldText text="顯示名稱"/></span><input value={currentConfig.display_name||''} onChange={e=>patchConfig('display_name',e.target.value)}/></label>
-        <label><span><FieldText text="搜尋介紹"/></span><textarea rows={3} value={currentConfig.search_intro||''} onChange={e=>patchConfig('search_intro',e.target.value)}/></label>
-        <label><span><FieldText text="搜尋別名"/></span><textarea rows={3} value={normalizeAliases(currentConfig.search_aliases).join('\n')} onChange={e=>patchConfig('search_aliases',e.target.value.split('\n'))}/></label>
-        <label><span><FieldText text="主題"/></span><select className="admin-native-select" value={currentConfig.theme||'system-default'} onChange={e=>patchConfig('theme',e.target.value)}>{themeOptions.map(option=><option value={option.value} key={option.value}><FieldText text={option.label}/></option>)}</select></label>
-        <label><span><FieldText text="預設語系"/></span><select className="admin-native-select" value={normalizeUiLocale(currentConfig.locale)} onChange={e=>patchConfig('locale',normalizeUiLocale(e.target.value))}>{UI_LOCALE_OPTIONS.map(option=><option value={option.value} key={option.value}><FieldText text={option.label}/></option>)}</select></label>
+        <label><span><UiText id="uiExtra.adminView.displayName"/></span><input value={currentConfig.display_name||''} onChange={e=>patchConfig('display_name',e.target.value)}/></label>
+        <label><span><UiText id="uiExtra.adminView.searchIntroduction"/></span><textarea rows={3} value={currentConfig.search_intro||''} onChange={e=>patchConfig('search_intro',e.target.value)}/></label>
+        <label><span><UiText id="uiExtra.adminView.searchAliases"/></span><textarea rows={3} value={normalizeAliases(currentConfig.search_aliases).join('\n')} onChange={e=>patchConfig('search_aliases',e.target.value.split('\n'))}/></label>
+        <label><span><UiText id="uiExtra.adminView.theme"/></span><select className="admin-native-select" value={currentConfig.theme||'system-default'} onChange={e=>patchConfig('theme',e.target.value)}>{themeOptions.map(option=><option value={option.value} key={option.value}><FieldText text={option.label}/></option>)}</select></label>
+        <label><span><UiText id="uiExtra.adminView.defaultLanguage"/></span><select className="admin-native-select" value={normalizeUiLocale(currentConfig.locale)} onChange={e=>patchConfig('locale',normalizeUiLocale(e.target.value))}>{UI_LOCALE_OPTIONS.map(option=><option value={option.value} key={option.value}><FieldText text={option.label}/></option>)}</select></label>
         <div className="admin-inline-flags">
           <label><input type="checkbox" checked={currentConfig.search_able!==false} onChange={e=>patchConfig('search_able',e.target.checked)}/> Search</label>
           <label><input type="checkbox" checked={currentConfig.statistics_able!==false} onChange={e=>patchConfig('statistics_able',e.target.checked)}/> Statistics</label>
@@ -458,20 +459,20 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
       </>:null}
 
       <div className="admin-route-summary" aria-label="目前路由">
-        <span><FieldText text="路由類型"/></span>
+        <span><UiText id="uiExtra.adminView.routeType"/></span>
         <strong>{routeMode==='domain'?'Domain · 獨立網域':'Directory · 站內路徑'}</strong>
         <code>{routeValue}</code>
       </div>
       {!routeLocked?<div className="admin-inline-flags" role="radiogroup" aria-label="路由模式">
-        <label><input type="radio" name={'registry-route-mode-'+selectedId} value="domain" checked={routeMode==='domain'} onChange={()=>chooseRouteMode('domain')}/><FieldText text="獨立網域"/></label>
-        <label><input type="radio" name={'registry-route-mode-'+selectedId} value="directory" checked={routeMode==='directory'} onChange={()=>chooseRouteMode('directory')}/><FieldText text="站內路徑"/></label>
+        <label><input type="radio" name={'registry-route-mode-'+selectedId} value="domain" checked={routeMode==='domain'} onChange={()=>chooseRouteMode('domain')}/><UiText id="uiExtra.adminView.independentDomain"/></label>
+        <label><input type="radio" name={'registry-route-mode-'+selectedId} value="directory" checked={routeMode==='directory'} onChange={()=>chooseRouteMode('directory')}/><UiText id="uiExtra.adminView.siteDirectory"/></label>
       </div>:null}
-      {current.scope_id!=='loc'?<label><span><FieldText text="所屬 Group"/></span><select className="admin-native-select" value={String(current.parent_scope_id||'')} onChange={e=>patchRegistry('parent_scope_id',e.target.value||'')}>{parentOptions.map(option=><option value={option.value} key={option.value||'root'}><FieldText text={option.label}/></option>)}</select></label>:null}
-      {current.scope_kind==='scope'?<label className="scope-setting-toggle"><input type="checkbox" checked={current.active!==false} onChange={e=>patchRegistry('active',e.target.checked)}/> <FieldText text="對外啟用"/></label>:null}
+      {current.scope_id!=='loc'?<label><span><UiText id="uiExtra.adminView.parentGroup"/></span><select className="admin-native-select" value={String(current.parent_scope_id||'')} onChange={e=>patchRegistry('parent_scope_id',e.target.value||'')}>{parentOptions.map(option=><option value={option.value} key={option.value||'root'}><FieldText text={option.label}/></option>)}</select></label>:null}
+      {current.scope_kind==='scope'?<label className="scope-setting-toggle"><input type="checkbox" checked={current.active!==false} onChange={e=>patchRegistry('active',e.target.checked)}/> <UiText id="uiExtra.adminView.publiclyEnabled"/></label>:null}
       <div className="scope-tabs admin-edit-actions">
-        <button type="button" className="loc-button primary" onClick={saveRegistryAndConfig}><FieldText text="儲存"/></button>
-        <button type="button" className="loc-button" onClick={cancelEdit}><FieldText text="取消"/></button>
-        {current.scope_kind==='scope'?<button type="button" className="loc-button scope-danger-button" disabled={routeLocked} onClick={()=>onDeleteNode?.(current.scope_id)}><FieldText text="刪除"/></button>:null}
+        <button type="button" className="loc-button primary" onClick={saveRegistryAndConfig}><UiText id="uiExtra.adminView.save"/></button>
+        <button type="button" className="loc-button" onClick={cancelEdit}><UiText id="uiExtra.adminView.cancel"/></button>
+        {current.scope_kind==='scope'?<button type="button" className="loc-button scope-danger-button" disabled={routeLocked} onClick={()=>onDeleteNode?.(current.scope_id)}><UiText id="uiExtra.adminView.delete"/></button>:null}
       </div>
     </>}
 
@@ -484,12 +485,12 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
           <label><span>Time</span><input value={row.time||'time'} onChange={e=>patchMapping(row.email,'time',e.target.value)}/></label>
           <label><span>Birthday</span><input type="date" value={row.birthday||''} onChange={e=>patchMapping(row.email,'birthday',e.target.value)}/></label>
         </div>
-        <div className="scope-tabs"><button type="button" onClick={()=>saveMapping(row)}><FieldText text="儲存 Mapping"/></button><button type="button" onClick={()=>removeMapping(row)}><FieldText text="移除"/></button></div>
+        <div className="scope-tabs"><button type="button" onClick={()=>saveMapping(row)}><UiText id="uiExtra.adminView.saveMapping"/></button><button type="button" onClick={()=>removeMapping(row)}><UiText id="uiExtra.adminView.remove"/></button></div>
       </article>)}
       <details>
-        <summary><FieldText text="新增管理者"/></summary>
+        <summary><UiText id="uiExtra.adminView.addAdministrator"/></summary>
         <label><span>Email</span><input type="email" value={newMapping.email} onChange={e=>setNewMapping(v=>({...v,email:e.target.value}))}/></label>
-        <button type="button" className="loc-button" onClick={addMapping}><FieldText text="新增"/></button>
+        <button type="button" className="loc-button" onClick={addMapping}><UiText id="uiExtra.adminView.add"/></button>
       </details>
     </details>:null}
 
@@ -571,29 +572,29 @@ function CreateNodePanel({data,kind='scope',onClose}){
 
   const parentValue=value=>parentOptions.find(o=>o.value===value)||parentOptions[0]||null;
   return <aside className="admin-context-panel">
-    <div className="admin-node-heading"><h2>{kind==='group'?'新增群組':'新增人員'}</h2><button type="button" className="loc-button" onClick={onClose}><FieldText text="取消"/></button></div>
+    <div className="admin-node-heading"><h2>{kind==='group'?'新增群組':'新增人員'}</h2><button type="button" className="loc-button" onClick={onClose}><UiText id="uiExtra.adminView.cancel"/></button></div>
     {kind==='scope'?<>
-      <label><span><FieldText text="人員代碼"/></span><input maxLength="15" value={scopeDraft.scope_id} onChange={e=>setScopeDraft(v=>({...v,scope_id:e.target.value.toLowerCase()}))}/></label>
-      <label><span><FieldText text="管理者 Email（必填）"/></span><input type="email" required autoComplete="off" value={scopeDraft.email} onChange={e=>setScopeDraft(v=>({...v,email:e.target.value}))}/></label>
-      <label><span><FieldText text="預設語系"/></span><select className="admin-native-select" value={normalizeUiLocale(scopeDraft.locale)} onChange={e=>setScopeDraft(v=>({...v,locale:normalizeUiLocale(e.target.value)}))}>{UI_LOCALE_OPTIONS.map(option=><option value={option.value} key={option.value}><FieldText text={option.label}/></option>)}</select></label>
+      <label><span><UiText id="uiExtra.adminView.memberId"/></span><input maxLength="15" value={scopeDraft.scope_id} onChange={e=>setScopeDraft(v=>({...v,scope_id:e.target.value.toLowerCase()}))}/></label>
+      <label><span><UiText id="uiExtra.adminView.administratorEmail"/></span><input type="email" required autoComplete="off" value={scopeDraft.email} onChange={e=>setScopeDraft(v=>({...v,email:e.target.value}))}/></label>
+      <label><span><UiText id="uiExtra.adminView.defaultLanguage"/></span><select className="admin-native-select" value={normalizeUiLocale(scopeDraft.locale)} onChange={e=>setScopeDraft(v=>({...v,locale:normalizeUiLocale(e.target.value)}))}>{UI_LOCALE_OPTIONS.map(option=><option value={option.value} key={option.value}><FieldText text={option.label}/></option>)}</select></label>
       <div className="admin-inline-flags" role="radiogroup" aria-label="人員網址">
         <label><input type="radio" name="new-scope-route-mode" value="directory" checked={scopeDraft.route_mode==='directory'} onChange={()=>setScopeDraft(v=>({...v,route_mode:'directory'}))}/>Directory</label>
         <label><input type="radio" name="new-scope-route-mode" value="domain" checked={scopeDraft.route_mode==='domain'} onChange={()=>setScopeDraft(v=>({...v,route_mode:'domain'}))}/>Domain</label>
       </div>
-      <div className="admin-route-summary"><span><FieldText text="建立位置"/></span><strong>{scopeDraft.route_mode==='domain'?'Domain · 獨立網域':'Directory · 站內路徑'}</strong><code>{scopeDraft.route_mode==='domain'?(scopeDraft.scope_id||'scope-id')+'.lo3rwang.cc':'https://loc.lo3rwang.cc/'+(scopeDraft.scope_id||'scope-id')}</code></div>
+      <div className="admin-route-summary"><span><UiText id="uiExtra.adminView.createLocation"/></span><strong>{scopeDraft.route_mode==='domain'?'Domain · 獨立網域':'Directory · 站內路徑'}</strong><code>{scopeDraft.route_mode==='domain'?(scopeDraft.scope_id||'scope-id')+'.lo3rwang.cc':'https://loc.lo3rwang.cc/'+(scopeDraft.scope_id||'scope-id')}</code></div>
       {scopeDomainError?<p className="scope-status scope-error" role="alert">{scopeDomainError}</p>:null}
       <button type="button" className="loc-button primary" disabled={Boolean(scopeDomainError)||creatingScope} onClick={createScope}><FieldText text={creatingScope?'建立與驗證中…':'建立'}/></button>
     </>:<>
-      <label><span><FieldText text="群組代碼"/></span><input maxLength="15" value={groupDraft.scope_id} onChange={e=>setGroupDraft(v=>({...v,scope_id:e.target.value.toLowerCase()}))}/></label>
-      <label><span><FieldText text="群組名稱"/></span><input value={groupDraft.display_name} onChange={e=>setGroupDraft(v=>({...v,display_name:e.target.value}))}/></label>
+      <label><span><UiText id="uiExtra.adminView.groupId"/></span><input maxLength="15" value={groupDraft.scope_id} onChange={e=>setGroupDraft(v=>({...v,scope_id:e.target.value.toLowerCase()}))}/></label>
+      <label><span><UiText id="uiExtra.adminView.groupName"/></span><input value={groupDraft.display_name} onChange={e=>setGroupDraft(v=>({...v,display_name:e.target.value}))}/></label>
       <div className="admin-inline-flags" role="radiogroup" aria-label="群組網址">
         <label><input type="radio" name="new-group-route-mode" value="directory" checked={groupDraft.route_mode==='directory'} onChange={()=>setGroupDraft(v=>({...v,route_mode:'directory'}))}/>Directory</label>
         <label><input type="radio" name="new-group-route-mode" value="domain" checked={groupDraft.route_mode==='domain'} onChange={()=>setGroupDraft(v=>({...v,route_mode:'domain'}))}/>Domain</label>
       </div>
-      <div className="admin-route-summary"><span><FieldText text="建立位置"/></span><strong>{groupDraft.route_mode==='domain'?'Domain · 獨立網域':'Directory · 站內路徑'}</strong><code>{groupDraft.route_mode==='domain'?(groupDraft.scope_id||'group-id')+'.lo3rwang.cc':'https://loc.lo3rwang.cc/'+(groupDraft.scope_id||'group-id')}</code></div>
+      <div className="admin-route-summary"><span><UiText id="uiExtra.adminView.createLocation"/></span><strong>{groupDraft.route_mode==='domain'?'Domain · 獨立網域':'Directory · 站內路徑'}</strong><code>{groupDraft.route_mode==='domain'?(groupDraft.scope_id||'group-id')+'.lo3rwang.cc':'https://loc.lo3rwang.cc/'+(groupDraft.scope_id||'group-id')}</code></div>
       {groupDomainError?<p className="scope-status scope-error" role="alert">{groupDomainError}</p>:null}
-      <label><span><FieldText text="上層群組"/></span><select className="admin-native-select" value={groupDraft.parent_scope_id||'loc'} onChange={e=>setGroupDraft(v=>({...v,parent_scope_id:e.target.value||'loc'}))}>{parentOptions.map(option=><option value={option.value} key={option.value}><FieldText text={option.label}/></option>)}</select></label>
-      <button type="button" className="loc-button primary" disabled={Boolean(groupDomainError)} onClick={createGroup}><FieldText text="建立"/></button>
+      <label><span><UiText id="uiExtra.adminView.parentGroup2"/></span><select className="admin-native-select" value={groupDraft.parent_scope_id||'loc'} onChange={e=>setGroupDraft(v=>({...v,parent_scope_id:e.target.value||'loc'}))}>{parentOptions.map(option=><option value={option.value} key={option.value}><FieldText text={option.label}/></option>)}</select></label>
+      <button type="button" className="loc-button primary" disabled={Boolean(groupDomainError)} onClick={createGroup}><UiText id="uiExtra.adminView.create"/></button>
     </>}
   </aside>;
 }
@@ -679,11 +680,11 @@ function AdminRegistry(){
   return <section className="loc-card admin-workspace">
     <div className="admin-deployment-layout">
       <div className="admin-graph-header">
-        <div><h2><FieldText text="所屬人員關聯圖"/></h2></div>
+        <div><h2><UiText id="uiExtra.adminView.memberRelationshipGraph"/></h2></div>
         <div className="admin-registry-actions">
-          <button type="button" className="loc-button" onClick={refresh}><FieldText text="重新讀取"/></button>
-          <button type="button" className="loc-button" onClick={()=>setCreateKind('scope')}><FieldText text="＋ 新增人員"/></button>
-          <button type="button" className="loc-button" onClick={()=>setCreateKind('group')}><FieldText text="＋ 新增群組"/></button>
+          <button type="button" className="loc-button" onClick={refresh}><UiText id="uiExtra.adminView.reload"/></button>
+          <button type="button" className="loc-button" onClick={()=>setCreateKind('scope')}><UiText id="uiExtra.adminView.ddMember"/></button>
+          <button type="button" className="loc-button" onClick={()=>setCreateKind('group')}><UiText id="uiExtra.adminView.ddGroup"/></button>
         </div>
       </div>
       <DeploymentTree registry={registry} configs={configs} selectedId={selectedId} onSelect={selectNode} onMoveParent={moveParent} onDeleteNode={requestDelete}/>
@@ -691,7 +692,7 @@ function AdminRegistry(){
         <div><strong>永久刪除人員：{deletePending}</strong><p>將移除此人員的六張資料表、關鍵詞、設定及管理紀錄；此操作不可復原。</p></div>
         <label><span>請輸入 {deletePending} 以確認</span><input autoFocus autoComplete="off" value={deleteTyped} disabled={deleteBusy} onChange={e=>setDeleteTyped(e.target.value)} /></label>
         <div className="scope-tabs">
-          <button type="button" className="loc-button" disabled={deleteBusy} onClick={cancelDelete}><FieldText text="取消"/></button>
+          <button type="button" className="loc-button" disabled={deleteBusy} onClick={cancelDelete}><UiText id="uiExtra.adminView.cancel"/></button>
           <button type="button" className="loc-button primary" disabled={deleteBusy||deleteTyped.trim().toLowerCase()!==deletePending} onClick={confirmDelete}><FieldText text={deleteBusy?'刪除與驗證中…':'確認永久刪除'}/></button>
         </div>
       </section>:null}
@@ -801,23 +802,23 @@ function DatabaseTarget(){
   }
   return <section className="loc-card admin-workspace">
     <div className="scope-management-fields">
-      <label><span><FieldText text="主要資料庫"/></span><select className="admin-native-select" value={primaryId} onChange={event=>setPrimaryId(event.target.value)}>
+      <label><span><UiText id="uiExtra.adminView.primaryDatabase"/></span><select className="admin-native-select" value={primaryId} onChange={event=>setPrimaryId(event.target.value)}>
         {rows.filter(item=>!item._new).map(item=><option key={item.target_id} value={item.target_id}>{item.label}</option>)}
       </select></label>
-      <label><span><FieldText text="次要資料庫"/></span><select className="admin-native-select" value={backupId} onChange={event=>setBackupId(event.target.value)}>
-        <option value=""><FieldText text="不使用"/></option>
+      <label><span><UiText id="uiExtra.adminView.backupDatabase"/></span><select className="admin-native-select" value={backupId} onChange={event=>setBackupId(event.target.value)}>
+        <option value=""><UiText id="uiExtra.adminView.none"/></option>
         {rows.filter(item=>!item._new&&item.target_id!==primaryId).map(item=><option key={item.target_id} value={item.target_id}>{item.label}</option>)}
       </select></label>
-      <label><span><FieldText text="運作模式"/></span><select className="admin-native-select" value={routingMode} onChange={event=>setRoutingMode(event.target.value)}>
-        <option value="single"><FieldText text="單庫"/></option><option value="db-managed"><FieldText text="資料庫端同步"/></option>
+      <label><span><UiText id="uiExtra.adminView.routingMode"/></span><select className="admin-native-select" value={routingMode} onChange={event=>setRoutingMode(event.target.value)}>
+        <option value="single"><UiText id="uiExtra.adminView.singleDatabase"/></option><option value="db-managed"><UiText id="uiExtra.adminView.dbManagedReplication"/></option>
       </select></label>
       <div className="scope-management-wide-field"><button type="button" className="loc-button primary" onClick={saveRouting} disabled={saving||!primaryId}><FieldText text={saving?'處理中…':'套用'}/></button></div>
     </div>
     <div className="admin-inline-select">
-      <label><span><FieldText text="已儲存的資料庫"/></span><select className="admin-native-select" value={selectedId} onChange={event=>pick(event.target.value)}>
-        {rows.map(item=><option key={item.target_id} value={item.target_id}>{item.label} {item.selected?<FieldText text="使用中"/>:null}</option>)}
+      <label><span><UiText id="uiExtra.adminView.savedDatabases"/></span><select className="admin-native-select" value={selectedId} onChange={event=>pick(event.target.value)}>
+        {rows.map(item=><option key={item.target_id} value={item.target_id}>{item.label} {item.selected?<UiText id="uiExtra.adminView.active"/>:null}</option>)}
       </select></label>
-      <button type="button" className="loc-button" onClick={add}><FieldText text="新增資料庫"/></button>
+      <button type="button" className="loc-button" onClick={add}><UiText id="uiExtra.adminView.addDatabase"/></button>
     </div>
     {row?<div className="scope-management-fields">
       <label><span>Type</span><select className="admin-native-select" value={row.engine||'postgres'} disabled={isManaged} onChange={event=>{
@@ -826,19 +827,19 @@ function DatabaseTarget(){
       }}>
         {SQL_ENGINE_OPTIONS.map(option=><option key={option.value} value={option.value} disabled={option.value==='sqlite'}>{option.label}{option.value==='sqlite'?'（需本機／Gateway）':''}</option>)}
       </select></label>
-      <label><span><FieldText text="服務商"/></span><select className="admin-native-select" value={row.provider} disabled={isManaged} onChange={event=>patch('provider',event.target.value)}>
+      <label><span><UiText id="uiExtra.adminView.provider"/></span><select className="admin-native-select" value={row.provider} disabled={isManaged} onChange={event=>patch('provider',event.target.value)}>
         {databaseProviderChoices(row.engine).map(option=><option key={option.value} value={option.value}><FieldText text={option.label}/></option>)}
       </select></label>
       <label><span>{cloud?'Link / Project':'DB Host:Port'}</span><input value={row.project_url||''} onChange={event=>patch('project_url',event.target.value)}
         placeholder={row.provider==='supabase'?'Project ID 或 https://xxx.supabase.co':row.provider==='neon'?'Neon DB Endpoint 或 Data API URL':'db.example.com:5432'}/></label>
-      <label><span><FieldText text="Region / Area（地區，選填）"/></span><input value={row.region||''} onChange={event=>patch('region',event.target.value)} placeholder="例如 ap-southeast-1、eastus"/></label>
+      <label><span><UiText id="uiExtra.adminView.regionArea"/></span><input value={row.region||''} onChange={event=>patch('region',event.target.value)} placeholder="例如 ap-southeast-1、eastus"/></label>
       <label><span>Database</span><input value={database} onChange={event=>setDatabase(event.target.value)} autoComplete="off" placeholder={row.provider==='supabase'?'postgres':row.provider==='neon'?'neondb':'Database name'}/></label>
       <label><span>User</span><input value={username} onChange={event=>setUsername(event.target.value)} autoComplete="off" placeholder={row.provider==='supabase'?'postgres':'DB username'}/></label>
       <label><span>Password</span><input type="password" value={password} onChange={event=>setPassword(event.target.value)} autoComplete="new-password" placeholder="已有憑證可留空"/></label>
       <div className="scope-management-wide-field">
         <button type="button" className="loc-button primary" onClick={()=>save()} disabled={saving}><FieldText text={saving?'儲存中…':'儲存設定'}/></button>
         {!row.selected?<button type="button" className="loc-button" onClick={()=>save({switchTarget:true})} disabled={saving}><FieldText text={saving?'處理中…':'切換至此資料庫'}/></button>:null}
-        {!row.selected&&!isManaged?<button type="button" className="loc-button" onClick={remove} disabled={saving}><FieldText text="刪除"/></button>:null}
+        {!row.selected&&!isManaged?<button type="button" className="loc-button" onClick={remove} disabled={saving}><UiText id="uiExtra.adminView.delete"/></button>:null}
       </div>
     </div>:null}
     {status?<p className="scope-status" role="status">{status}</p>:null}
@@ -904,10 +905,10 @@ function ThemeEditor(){
   }
 
   return <section className="loc-card admin-workspace">
-    <div className="admin-inline-select"><label><span><FieldText text="正在編輯的主題（只修改草稿，不影響網站配色）"/></span><select className="admin-native-select" value={themeId} onChange={e=>setThemeId(e.target.value||'theme-7')}>{options.map(option=><option value={option.value} key={option.value}><FieldText text={option.label}/></option>)}</select></label></div>
+    <div className="admin-inline-select"><label><span><UiText id="uiExtra.adminView.editingTheme"/></span><select className="admin-native-select" value={themeId} onChange={e=>setThemeId(e.target.value||'theme-7')}>{options.map(option=><option value={option.value} key={option.value}><FieldText text={option.label}/></option>)}</select></label></div>
     {draft?<>
       <div className="scope-management-fields">
-        <label><span><FieldText text="名稱"/></span><input value={draft.label||''} onChange={e=>setDraft(v=>({...v,label:e.target.value}))}/></label>
+        <label><span><UiText id="uiExtra.adminView.name"/></span><input value={draft.label||''} onChange={e=>setDraft(v=>({...v,label:e.target.value}))}/></label>
         <label><span>Scheme</span><select className="admin-native-select" value={draft.scheme||'light'} onChange={e=>setDraft(v=>({...v,scheme:e.target.value||'light'}))}><option value="light">light</option><option value="dark">dark</option></select></label>
         <label><span>Group</span><input value={draft.label||''} disabled title="Group 使用主題名稱，不重複儲存"/></label>
         <label><span>Style Key</span><input value={draft.styleKey||''} onChange={e=>setDraft(v=>({...v,styleKey:e.target.value}))}/></label>
@@ -925,7 +926,7 @@ function ThemeEditor(){
           return <label key={key}><span>{key}</span><div className="admin-theme-token-input">{color?<input type="color" value={value} onChange={e=>setToken(key,e.target.value)}/>:null}<input value={value} onChange={e=>setToken(key,e.target.value)}/></div></label>;
         })}
       </div>
-      <button type="button" className="loc-button primary" onClick={save}><FieldText text="儲存主題設定"/></button>
+      <button type="button" className="loc-button primary" onClick={save}><UiText id="uiExtra.adminView.saveThemeSettings"/></button>
     </>:null}
     {status?<p className="scope-status" role="status">{status}</p>:null}
   </section>;
@@ -980,13 +981,13 @@ function AdminEmailBlocklist(){
   return <section className="loc-card admin-workspace">
     <h2>系統黑名單（Email Block List）</h2>
     <label><span>Email</span><input type="email" value={email} onChange={e=>setEmail(e.target.value)}/></label>
-    <button type="button" className="loc-button primary" onClick={add} disabled={busy}><FieldText text="加入黑名單"/></button>
+    <button type="button" className="loc-button primary" onClick={add} disabled={busy}><UiText id="uiExtra.adminView.addToBlocklist"/></button>
     {loading?<p className="scope-status">讀取中…</p>:null}
     {!loading&&emails.length===0?<p className="scope-status">目前沒有封鎖 Email。</p>:null}
     <div className="scope-list">
       {emails.map(item=><article className="scope-inline-card" key={item.email}>
         <strong>{item.email}</strong>
-        <button type="button" className="loc-button" onClick={()=>remove(item.email)} disabled={busy}><FieldText text="移出黑名單"/></button>
+        <button type="button" className="loc-button" onClick={()=>remove(item.email)} disabled={busy}><UiText id="uiExtra.adminView.removeFromBlocklist"/></button>
       </article>)}
     </div>
     {message?<p className="scope-status" role="status">{message}</p>:null}
@@ -1002,11 +1003,11 @@ export default function AdminHomeView(){
 
   if(account.loading||account.permissionLoading)return <section className="loc-view"><div className="loc-card">{UI_COPY.admin.checking}</div></section>;
   if(!account.user)return <Login account={account}/>;
-  if(!account.canManageGlobalSync())return <section className="loc-view"><section className="loc-card"><p>{UI_COPY.admin.denied}</p><a href="/settings/"><FieldText text="帳號設定"/></a></section></section>;
+  if(!account.canManageGlobalSync())return <section className="loc-view"><section className="loc-card"><p>{UI_COPY.admin.denied}</p><a href="/settings/"><UiText id="uiExtra.adminView.accountSettings"/></a></section></section>;
 
   return <section className="loc-view scope-management-page">
     <header className="loc-hero loc-hero-context admin-hero">
-      <div className="admin-hero-row"><h1>{UI_COPY.admin.eyebrow}</h1><a className="loc-button" href="/settings/"><FieldText text="帳號設定"/></a></div>
+      <div className="admin-hero-row"><h1>{UI_COPY.admin.eyebrow}</h1><a className="loc-button" href="/settings/"><UiText id="uiExtra.adminView.accountSettings"/></a></div>
       <div className="admin-main-select">
         <select className="admin-native-select" value={selectedOption.value} onChange={e=>setSection(e.target.value||'registry')} aria-label={translateUiField(locale,'Admin 管理功能')}>{ADMIN_OPTIONS.map(option=><option value={option.value} key={option.value}><FieldText text={option.label}/></option>)}</select>
       </div>
