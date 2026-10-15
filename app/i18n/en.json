@@ -872,6 +872,35 @@
       "chartAria": "Statistics chart",
       "gapLabel": "Time gap: ",
       "gapSeparator": "; "
+    },
+    "globalSettings": {
+      "authorHome": "Author homepage",
+      "locHome": "LOC homepage",
+      "myPhone": "My phone",
+      "homeSettings": "Homepage settings",
+      "localFiles": "Local files",
+      "documentImport": "Document import",
+      "personalHome": "Personal homepage",
+      "manageMenu": "Management",
+      "account": "Account",
+      "publish": "Publish article",
+      "members": "Manage members",
+      "systemSettings": "System settings",
+      "savedHome": "Homepage saved.",
+      "saveFailed": "Save failed: {error}",
+      "settings": "Settings",
+      "chooseSettings": "Select settings section",
+      "defaultHome": "Default homepage",
+      "favorites": "Favorites",
+      "noImportScopes": "No accessible Scopes available for importing.",
+      "login": "Sign in",
+      "logout": "Sign out",
+      "manageFeature": "Management feature",
+      "openSystemSettings": "Open system settings",
+      "loading": "Loading…",
+      "signedIn": "Signed in",
+      "home": "Home",
+      "save": "Save"
     }
   }
 }
