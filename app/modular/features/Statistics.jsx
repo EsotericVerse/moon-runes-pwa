@@ -417,18 +417,21 @@ function MediaCrossTagStatistics({rows=[],range={},zoomLevel=0,onZoomLevelChange
   </section>;
 }
 
-function classLabel(value){
+function classLabel(value,t){
   const text=String(value||'').trim();
-  return !text?'':text.endsWith('群組')?text:text+'群組';
+  const suffix=t('uiExtra.statisticsView.groupSuffix');
+  return !text?'':text.endsWith(suffix)||text.endsWith(UI_COPY.uiExtra.statisticsView.groupSuffix)?text:text+suffix;
 }
-function groupLabel(value){
+function groupLabel(value,t){
   const text=String(value||'').trim();
-  return !text?'':text.endsWith('符文')?text:text+'之符文';
+  const suffix=t('uiExtra.statisticsView.runeSuffix');
+  return !text?'':text.endsWith(suffix)||text.endsWith(UI_COPY.uiExtra.statisticsView.runeSuffix)?text:text+suffix;
 }
 function Rune66Summary({analysis}){
+  const t=useUiText();
   const [groupPage,setGroupPage]=useState(1);
   const data=analysis||{};
-  const className=String(data.keywordMeta?.class_name||'關鍵詞 Class');
+  const className=String(data.keywordMeta?.class_name||t('uiExtra.statisticsView.classFallback'));
   const globalCount=Math.max(0,Number(data.keywordDocumentCount||0));
   const minDocuments=Math.max(0,Number(data.keywordMinDocuments||0));
   if(!data.staticstime)return null;
@@ -446,38 +449,38 @@ function Rune66Summary({analysis}){
   const activeGroupPage=Math.min(groupPage,groupPageCount);
   const visibleGroupRows=groupRows.slice((activeGroupPage-1)*RUNE_RANKING_PAGE_SIZE,activeGroupPage*RUNE_RANKING_PAGE_SIZE);
   return <div className="scope-rune66-summary">
-    <div className="scope-ranking"><div><strong>{className}</strong><span>{Number(data.documentCount||0).toLocaleString()} 項 · 已分類 {classifiedTotal.toLocaleString()} · 未分類 {Number(data.unclassifiedCount||0).toLocaleString()}</span></div></div>
+    <div className="scope-ranking"><div><strong>{className}</strong><span>{t('uiExtra.statisticsView.classifiedCount',{total:Number(data.documentCount||0).toLocaleString(),classified:classifiedTotal.toLocaleString(),unclassified:Number(data.unclassifiedCount||0).toLocaleString()})}</span></div></div>
     <section className="scope-card">
-      <h3>Class｜符文群組</h3>
+      <h3><UiText id="uiExtra.statisticsView.classRuneTitle"/></h3>
       <div className="scope-ranking">
         {classRows.map(row=>{
           const count=Number(row.document_count||0);
           const ratio=classifiedTotal>0?(count/classifiedTotal)*100:0;
-          return <div key={row.group}><strong>{classLabel(row.group)}</strong><span>{count.toLocaleString()} 篇 · {ratio.toFixed(1)}%</span></div>;
+          return <div key={row.group}><strong>{classLabel(row.group,t)}</strong><span>{t('uiExtra.statisticsView.groupWorks',{count:count.toLocaleString(),ratio:ratio.toFixed(1)})}</span></div>;
         })}
       </div>
       {classRows.length?<ResponsiveContainer width="100%" height={360}>
-        <BarChart data={classRows.map(row=>({label:classLabel(row.group),value:Number(row.document_count)||0}))} margin={{top:8,right:18,bottom:28,left:8}}>
+        <BarChart data={classRows.map(row=>({label:classLabel(row.group,t),value:Number(row.document_count)||0}))} margin={{top:8,right:18,bottom:28,left:8}}>
           <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
           <XAxis dataKey="label" tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
           <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
           <Tooltip contentStyle={CHART_TOOLTIP}/>
-          <Bar dataKey="value" name="Class 作品數" fill={CHART_ACCENT} radius={[4,4,0,0]}/>
+          <Bar dataKey="value" name={t('uiExtra.statisticsView.classWorkCount')} fill={CHART_ACCENT} radius={[4,4,0,0]}/>
         </BarChart>
       </ResponsiveContainer>:null}
     </section>
     <section className="scope-card">
-      <h3>Group｜符文排行</h3>
+      <h3><UiText id="uiExtra.statisticsView.runeRankTitle"/></h3>
       <div className="scope-ranking">
         {visibleGroupRows.map(row=>{
           const count=Number(row.count||0);
           const ratio=groupHitTotal>0?(count/groupHitTotal)*100:0;
-          return <div key={row.rune_id}><strong>{String(row.rune_id).padStart(2,'0')} · {groupLabel(row.label)}</strong><span>{count.toLocaleString()} 次 · {ratio.toFixed(1)}%</span></div>;
+          return <div key={row.rune_id}><strong>{String(row.rune_id).padStart(2,'0')} · {groupLabel(row.label,t)}</strong><span>{t('uiExtra.statisticsView.runeHits',{count:count.toLocaleString(),ratio:ratio.toFixed(1)})}</span></div>;
         })}
       </div>
-      {groupRows.length>RUNE_RANKING_PAGE_SIZE?<nav className="scope-stat-controls" aria-label="Group 統計分頁">
+      {groupRows.length>RUNE_RANKING_PAGE_SIZE?<nav className="scope-stat-controls" aria-label={t('uiExtra.statisticsView.groupPageNav')}>
         <button type="button" className="loc-button" disabled={activeGroupPage===1} onClick={()=>setGroupPage(activeGroupPage-1)}><UiText id="uiExtra.statisticsView.previous"/></button>
-        <span className="scope-status" aria-live="polite">第 {activeGroupPage} / {groupPageCount} 頁 · 共 {groupRows.length.toLocaleString()} 項</span>
+        <span className="scope-status" aria-live="polite"><UiText id="uiExtra.statisticsView.pageTotal" params={{page:activeGroupPage,pages:groupPageCount,total:groupRows.length.toLocaleString()}}/></span>
         <button type="button" className="loc-button" disabled={activeGroupPage===groupPageCount} onClick={()=>setGroupPage(activeGroupPage+1)}><UiText id="uiExtra.statisticsView.next"/></button>
       </nav>:null}
     </section>
@@ -511,6 +514,7 @@ async function selectPublicStatisticsMembers(){
 
 function ScopeGroupStatistics(){
   const UI_COPY=useUiCopy();
+  const t=useUiText();
   const [aggregateType,setAggregateType]=useState('total');
   const [chartType,setChartType]=useState('line');
   const [zoomLevel,setZoomLevel]=useState(0);
@@ -620,8 +624,8 @@ function ScopeGroupStatistics(){
       <label>
         <span>{UI_COPY.statistics.item}</span>
         <select className="scope-select" value={aggregateType} onChange={event=>setAggregateType(event.target.value)}>
-          <option value="total"><FieldText text="LOC 合併總數"/></option>
-          <option value="scope"><FieldText text="所屬人員分布"/></option>
+          <option value="total"><UiText id="uiExtra.statisticsView.memberCount"/></option>
+          <option value="scope"><UiText id="uiExtra.statisticsView.memberDistribution"/></option>
         </select>
       </label>
       <label>
@@ -633,16 +637,16 @@ function ScopeGroupStatistics(){
     </div>
 
     <p className="scope-status">{startDate&&rangeEndDate?startDate+' ～ '+rangeEndDate:''}</p>
-    <p className="scope-status">LOC 合併統計沿用原有公開來源資料；只有成員明確關閉的群組來源分類會從跨成員數值中排除。每日符文可獨立參與交互比較。</p>
+    <p className="scope-status"><UiText id="uiExtra.statisticsView.groupAggregateHelp"/></p>
     <div className="scope-ranking">
       <div>
-        <strong><FieldText text="LOC 合併總數"/></strong>
-        <span>{overallTotal.toLocaleString()} 項</span>
+        <strong><UiText id="uiExtra.statisticsView.memberCount"/></strong>
+        <span>{t('uiExtra.statisticsView.totalWithCount',{count:overallTotal.toLocaleString()})}</span>
       </div>
     </div>
 
     <div className="scope-result-links">
-      {scopeIds.map(id=><a key={id} href={featureNavigationHref(id,'statics')}>{id} · 查看統計</a>)}
+      {scopeIds.map(id=><a key={id} href={featureNavigationHref(id,'statics')}>{id} · {t('uiExtra.statisticsView.viewMemberStat')}</a>)}
     </div>
 
     <StatisticsChartFrame level={zoomLevel} onChange={setZoomLevel} range={zoomRange} idPrefix="loc-stat">
@@ -778,10 +782,10 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         {optionsForCurrent.length?optionsForCurrent.map(([value,label])=><option key={value} value={value}><FieldText text={label}/></option>):<option value="line"><UiText id="uiExtra.statisticsView.noVisual"/></option>}
       </select></label>:null}
       {!['pie','radar','radial','treemap','scatter'].includes(effectiveChartType)?<label className="scope-setting-toggle">
-        <input type="checkbox" checked={foldBlank} onChange={event=>setFoldBlank(event.target.checked)}/> <FieldText text="折疊空白時間"/>
+        <input type="checkbox" checked={foldBlank} onChange={event=>setFoldBlank(event.target.checked)}/> <UiText id="uiExtra.statisticsView.foldBlank"/>
       </label>:null}
       </>:null}
-      {scopeId==='lo3rwang'?<label><span><FieldText text="表現風格"/></span><select className="scope-select" value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}>
+      {scopeId==='lo3rwang'?<label><span><UiText id="uiExtra.statisticsView.displayStyle"/></span><select className="scope-select" value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}>
         {STYLE_FILTERS.map(item=><option key={item.value} value={item.value}>{t(item.textKey)}</option>)}
       </select></label>:null}
     </div>
@@ -850,30 +854,31 @@ function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false,
   return <>
     {canManageKeywords?<section className="scope-stat-section scope-stat-keyword-link">
       <a className="loc-button" href={scopeHref(scopeId,'statics/keywords')}>
-        關鍵詞設定
+        <UiText id="uiExtra.statisticsView.keywordSettings"/>
       </a>
     </section>:null}
     <ScopeStatisticsResults scopeId={scopeId} navigation={navigation} types={types}/>
     {canManageSources?<details className="scope-stat-section">
-      <summary><FieldText text="群組來源分類 · 對外統計開放"/></summary>
+      <summary><UiText id="uiExtra.statisticsView.groupSourcesShare"/></summary>
       <ScopeGroupStatisticsSharing scopeId={scopeId}/>
     </details>:null}
     {canManageSources?<details className="scope-stat-section">
-      <summary><FieldText text="個人自訂來源分類 · 管理"/></summary>
+      <summary><UiText id="uiExtra.statisticsView.personalSourcesManage"/></summary>
       <ScopeCustomSourceCategories scopeId={scopeId}/>
     </details>:null}
   </>;
 }
 
 function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types,canManageKeywords=false,canManageSources=false}){
+  const t=useUiText();
   // Cross-Scope statistical aggregation belongs to LOC only. Other Scope
   // Groups remain overview/navigation surfaces, never merged COUNT queries.
   if(aggregateScopes&&scopeId==='loc')return <ScopeGroupStatistics/>;
   if(aggregateScopes)return <ScopeGroupOverview
     scopeId={scopeId}
     featureId="statics"
-    title="Scope Group 統計導引"
-    description="各 Scope 自行執行作品、來源及 2～4 組自交互統計；Group 只提供導引。"
+    title={t('uiExtra.statisticsView.scopeGroupStatisticsTitle')}
+    description={t('uiExtra.statisticsView.scopeGroupStatisticsHelp')}
   />;
   return <ScopeStatisticsPanel scopeId={scopeId} navigation={navigation} types={types} canManageKeywords={canManageKeywords} canManageSources={canManageSources}/>;
 }
