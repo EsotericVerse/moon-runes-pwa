@@ -839,7 +839,13 @@
       "groupSourcesShare": "Group source categories · shared statistics",
       "personalSourcesManage": "Personal source categories · management",
       "scopeGroupStatisticsTitle": "Scope Group statistics guide",
-      "scopeGroupStatisticsHelp": "Each Scope runs its own works, source, and 2–4 group interaction statistics. The Group provides navigation only."
+      "scopeGroupStatisticsHelp": "Each Scope runs its own works, source, and 2–4 group interaction statistics. The Group provides navigation only.",
+      "groupSuffix": " group",
+      "runeSuffix": " rune",
+      "classWorkCount": "Class work count",
+      "groupWorks": "{count} works · {ratio}%",
+      "runeHits": "{count} hits · {ratio}%",
+      "totalWithCount": "{count} items"
     }
   }
 }
