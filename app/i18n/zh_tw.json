@@ -872,6 +872,35 @@
       "chartAria": "統計圖形",
       "gapLabel": "時間斷層：",
       "gapSeparator": "；"
+    },
+    "globalSettings": {
+      "authorHome": "作者首頁",
+      "locHome": "月典首頁",
+      "myPhone": "我的手機",
+      "homeSettings": "首頁設定",
+      "localFiles": "本機檔案",
+      "documentImport": "文件匯入",
+      "personalHome": "個人首頁",
+      "manageMenu": "管理選單",
+      "account": "帳號",
+      "publish": "發表文章",
+      "members": "成員管理",
+      "systemSettings": "系統設定",
+      "savedHome": "首頁已儲存",
+      "saveFailed": "儲存失敗：{error}",
+      "settings": "設定",
+      "chooseSettings": "選擇設定功能",
+      "defaultHome": "預設首頁",
+      "favorites": "我的最愛",
+      "noImportScopes": "沒有可匯入的空間。",
+      "login": "登入",
+      "logout": "登出",
+      "manageFeature": "管理功能",
+      "openSystemSettings": "開啟系統設定",
+      "loading": "載入中…",
+      "signedIn": "已登入",
+      "home": "首頁",
+      "save": "儲存"
     }
   }
 }
