@@ -1,4 +1,5 @@
 'use client';
+import FieldText from '../../i18n/FieldText';
 
 import {useEffect,useMemo,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
@@ -47,17 +48,17 @@ function LanePicker({label,lane,scopes,onChange}){
           const id=event.target.value;
           onChange({...lane,scopeId:id,source:lane.source==='daily:rune'&&id!=='lrunes'?'galaxy:all':lane.source});
         }}>
-          {!scopeOptions.some(scope=>scope.id===lane.scopeId)?<option value="">請選擇</option>:null}
+          {!scopeOptions.some(scope=>scope.id===lane.scopeId)?<option value=""><FieldText text="請選擇"/></option>:null}
           {scopeOptions.map(scope=><option key={scope.id} value={scope.id}>{scope.id}</option>)}
         </select>
       </label>
-      <label><span>指定河道項目</span>
+      <label><span><FieldText text="指定河道項目"/></span>
         <select className="scope-select" value={sourceOptions.some(item=>item.value===lane.source)?lane.source:'galaxy:all'}
           onChange={event=>onChange({...lane,source:event.target.value,exact:''})}>
-          {sourceOptions.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}
+          {sourceOptions.map(option=><option key={option.value} value={option.value}><FieldText text={option.label}/></option>)}
         </select>
       </label>
-      {lane.source.endsWith(':exact')?<label><span>指定原始類型</span>
+      {lane.source.endsWith(':exact')?<label><span><FieldText text="指定原始類型"/></span>
         <input className="scope-input" value={lane.exact} maxLength={100} placeholder={lane.source.startsWith('media:')?'media_type':'source_name'}
           onChange={event=>onChange({...lane,exact:event.target.value})}/>
       </label>:null}
@@ -117,15 +118,15 @@ export default function LocItemConfluence(){
 
   return <section className="scope-card scope-culture-classification-river scope-loc-time-river" aria-label="LOC 自訂項目交會">
     <p className="loc-eyebrow">LOC Culture · 項目交會</p>
-    <h3>指定河道交會比較</h3>
+    <h3><FieldText text="指定河道交會比較"/></h3>
     <p className="scope-status">從可讀取的 Scope 指定兩條河道；只在其中一條引用符韻每日符文、且所選區間有可讀取的每日符文紀錄時，才在最上方自動加上現實月相事件河道，以月相變動日定錨並延續至下次變動。未引用、無紀錄或讀取失敗時，不產生月相河道。其他作品／媒體仍顯示各自密度；符文顯示名稱與四向，不顯示密度。各來源維持獨立。</p>
     <div className="scope-stat-controls" style={{alignItems:'stretch'}}>
       <LanePicker label="河道 A" lane={laneA} scopes={scopes} onChange={setLaneA}/>
       <LanePicker label="河道 B" lane={laneB} scopes={scopes} onChange={setLaneB}/>
     </div>
     <div className="scope-stat-controls">
-      <label><span>開始日期</span><input className="scope-input" type="date" value={startDate} onChange={event=>setStartDate(event.target.value)}/></label>
-      <label><span>結束日期</span><input className="scope-input" type="date" value={endDate} onChange={event=>setEndDate(event.target.value)}/></label>
+      <label><span><FieldText text="開始日期"/></span><input className="scope-input" type="date" value={startDate} onChange={event=>setStartDate(event.target.value)}/></label>
+      <label><span><FieldText text="結束日期"/></span><input className="scope-input" type="date" value={endDate} onChange={event=>setEndDate(event.target.value)}/></label>
       <span className="scope-status">單次比較最多三個日曆月；超出期間不發出查詢。</span>
     </div>
     {scopesQuery.isPending?<p className="scope-status">正在讀取可選的 Scope…</p>:null}
@@ -166,7 +167,7 @@ export default function LocItemConfluence(){
           <strong>{labels[index]}：</strong> {laneDayText(selectedRow,index,lane)}
         </p>)}
       </div>:null}
-      <h4>每日交會數據</h4>
+      <h4><FieldText text="每日交會數據"/></h4>
       <div className="scope-culture-source-work-scroll">
         <table className="scope-stat-table">
           <thead><tr><th scope="col">日期</th>
@@ -179,9 +180,9 @@ export default function LocItemConfluence(){
         </table>
       </div>
       <nav className="scope-stat-controls" aria-label="項目交會每日資料分頁">
-        <button type="button" className="loc-button" disabled={page<=1} onClick={()=>setPage(value=>Math.max(1,value-1))}>上一頁</button>
+        <button type="button" className="loc-button" disabled={page<=1} onClick={()=>setPage(value=>Math.max(1,value-1))}><FieldText text="上一頁"/></button>
         <span className="scope-status">第 {page}／{totalPages} 頁 · 每頁最多 {ITEM_CONFLUENCE_PAGE_SIZE} 天</span>
-        <button type="button" className="loc-button" disabled={page>=totalPages} onClick={()=>setPage(value=>Math.min(totalPages,value+1))}>下一頁</button>
+        <button type="button" className="loc-button" disabled={page>=totalPages} onClick={()=>setPage(value=>Math.min(totalPages,value+1))}><FieldText text="下一頁"/></button>
       </nav>
     </div>:null}
   </section>;

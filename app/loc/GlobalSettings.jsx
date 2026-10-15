@@ -1,5 +1,7 @@
 'use client';
 import FieldText from '../i18n/FieldText';
+import {useUiLocale} from '../i18n/ui-locale';
+import {translateUiField} from '../i18n/ui-functional-copy.mjs';
 
 import {useEffect,useMemo,useState} from 'react';
 import Select from 'react-select';
@@ -32,6 +34,8 @@ const selectProps={
 };
 
 export default function GlobalSettings(){
+  const {locale}=useUiLocale();
+  const t=text=>translateUiField(locale,text);
   const prefs=useNavigationPreferences();
   const {account}=prefs;
   const [native,setNative]=useState(false);
@@ -150,20 +154,20 @@ export default function GlobalSettings(){
   }
 
   return <main className="scope-main"><section className="scope-page">
-    <header className="loc-hero"><h1>設定</h1></header>
+    <header className="loc-hero"><h1><FieldText text="設定"/></h1></header>
     <div className="scope-content scope-settings-options">
       <section className="loc-card loc-settings-switcher">
-        <label htmlFor="loc-settings-function">設定功能</label>
+        <label htmlFor="loc-settings-function"><FieldText text="設定功能"/></label>
         <Select {...selectProps} inputId="loc-settings-function" instanceId="loc-settings-function"
-          aria-label="選擇設定功能" options={sections}
-          value={sections.find(item=>item.value===activeSection)||sections[0]}
+          aria-label={t("選擇設定功能")} options={sections.map(item=>({...item,label:t(item.label)}))}
+          value={sections.map(item=>({...item,label:t(item.label)})).find(item=>item.value===activeSection)||sections[0]}
           onChange={item=>{setSection(item?.value||'home');setStatus('');}}/>
       </section>
 
       {activeSection==='home'?<section className="loc-card">
-        <h2>首頁設定</h2>
+        <h2><FieldText text="首頁設定"/></h2>
         <form onSubmit={saveHome} className="scope-stat-controls">
-          <label><span>預設首頁</span>
+          <label><span><FieldText text="預設首頁"/></span>
             <select className="scope-select" value={actualHome} onChange={event=>setHome(event.target.value)}
               disabled={waiting&&!native}>
               {allowedHomes.map(item=><option key={item.id} value={item.id}>{item.label}</option>)}
@@ -172,7 +176,7 @@ export default function GlobalSettings(){
           {native||account.user?<button type="submit" className="loc-button primary" disabled={waiting}><FieldText text="儲存"/></button>:null}
         </form>
         <div className="scope-settings-favorite-preview">
-          <strong>我的最愛</strong>
+          <strong><FieldText text="我的最愛"/></strong>
           <div className="scope-settings-favorite-items">
             {favoriteItems.map(item=><span key={item.id} className="scope-settings-favorite-item">{item.label}</span>)}
           </div>
@@ -180,7 +184,7 @@ export default function GlobalSettings(){
       </section>:null}
 
       {activeSection==='files'?(native?<PrivateLocalFiles/>:<section className="loc-card">
-        <h2>文件匯入</h2>
+        <h2><FieldText text="文件匯入"/></h2>
         {account.user?managedScopes.length?<div className="loc-settings-panel-group">
           {scopeOptions.length>1?<label htmlFor="loc-import-scope">Scope</label>:null}
           {scopeOptions.length>1?<Select {...selectProps} inputId="loc-import-scope"
@@ -193,8 +197,8 @@ export default function GlobalSettings(){
       </section>):null}
 
       {activeSection==='personal'&&selectedScope?<section className="loc-card">
-        <h2>個人首頁</h2>
-        {scopeOptions.length>1?<label htmlFor="loc-personal-scope">首頁</label>:null}
+        <h2><FieldText text="個人首頁"/></h2>
+        {scopeOptions.length>1?<label htmlFor="loc-personal-scope"><FieldText text="首頁"/></label>:null}
         {scopeOptions.length>1?<Select {...selectProps} inputId="loc-personal-scope"
           instanceId="loc-personal-scope" options={scopeOptions}
           value={scopeOptions.find(item=>item.value===selectedScope.id)||null}
@@ -203,10 +207,10 @@ export default function GlobalSettings(){
       </section>:null}
 
       {activeSection==='manage'&&activeManage?<section className="loc-card">
-        <h2>管理選單</h2>
-        <label htmlFor="loc-manage-action">管理功能</label>
+        <h2><FieldText text="管理選單"/></h2>
+        <label htmlFor="loc-manage-action"><FieldText text="管理功能"/></label>
         <Select {...selectProps} inputId="loc-manage-action" instanceId="loc-manage-action"
-          options={manageOptions} value={activeManage}
+          options={manageOptions.map(item=>({...item,label:t(item.label)}))} value={{...activeManage,label:t(activeManage.label)}}
           onChange={item=>setManageAction(item?.value||manageOptions[0].value)}/>
         {activeManage.value==='publish'&&selectedScope?<div className="loc-settings-panel-group">
           {scopeOptions.length>1?<label htmlFor="loc-manage-scope">Scope</label>:null}
@@ -222,7 +226,7 @@ export default function GlobalSettings(){
       </section>:null}
 
       {activeSection==='account'?<section className="loc-card">
-        <h2>帳號</h2>
+        <h2><FieldText text="帳號"/></h2>
         {waiting?<p>載入中…</p>:account.user?<div>
           <p>{account.user.email||'已登入'}</p>
           <button type="button" className="loc-button" disabled={busy} onClick={logout}><FieldText text="登出"/></button>

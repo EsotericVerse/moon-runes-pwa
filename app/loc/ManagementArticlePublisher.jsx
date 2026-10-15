@@ -1,6 +1,8 @@
 'use client';
+import FieldText from '../i18n/FieldText';
 
 import {UI_COPY} from '../i18n/ui-copy';
+import {useUiCopy} from '../i18n/ui-locale';
 import {useState} from 'react';
 import {insertRows} from './db-client.mjs';
 import {useAccount} from './use-account';
@@ -15,6 +17,7 @@ const blank=()=>({
 });
 
 export default function ManagementArticlePublisher({scopeId}){
+  const UI_COPY=useUiCopy();
   const account=useAccount();
   const [draft,setDraft]=useState(blank());
   const [status,setStatus]=useState('');
@@ -78,20 +81,20 @@ export default function ManagementArticlePublisher({scopeId}){
 
       <aside className="scope-publisher-sidebar">
         <section className="scope-publisher-panel">
-          <h3>發佈</h3>
+          <h3><FieldText text="發佈"/></h3>
           <label>
             <span>{UI_COPY.management.articleTime}</span>
             <input type="datetime-local" value={draft.createtime} onChange={event=>change('createtime',event.target.value)}/>
           </label>
           <label className="scope-setting-toggle">
             <input type="checkbox" checked={draft.hidden===true} onChange={event=>change('hidden',event.target.checked)}/>
-            不顯示於公開搜尋
+            <FieldText text="不顯示於公開搜尋"/>
           </label>
-          <button className="loc-button primary" type="submit" disabled={busy}>{busy?'發佈中…':'發佈文章'}</button>
+          <button className="loc-button primary" type="submit" disabled={busy}><FieldText text=<FieldText text={busy?'發佈中…':'發佈文章'}/>/></button>
         </section>
 
         <section className="scope-publisher-panel">
-          <h3>來源</h3>
+          <h3><FieldText text="來源"/></h3>
           <label>
             <span>{UI_COPY.management.articleSource}</span>
             <input value={draft.source} onChange={event=>change('source',event.target.value)} placeholder="例如 threads / vocus / personal" required/>
@@ -103,7 +106,7 @@ export default function ManagementArticlePublisher({scopeId}){
         </section>
 
         <details className="scope-publisher-panel">
-          <summary>進階關聯</summary>
+          <summary><FieldText text="進階關聯"/></summary>
           <label><span>source_id</span><input value={draft.source_id} onChange={event=>change('source_id',event.target.value)} placeholder={UI_COPY.management.articleParent}/></label>
           <label><span>target_id</span><input value={draft.target_id} onChange={event=>change('target_id',event.target.value)} placeholder={UI_COPY.management.articleTarget}/></label>
           <label><span>ref_id</span><input value={draft.ref_id} onChange={event=>change('ref_id',event.target.value)} placeholder={UI_COPY.management.articleReference}/></label>

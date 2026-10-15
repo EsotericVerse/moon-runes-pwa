@@ -715,7 +715,7 @@ export default function Culture(){
                     {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{labelOf(item,0)}</option>)}
                   </select></label>
                   {account.canManageScopeSync(scopeId)?<>
-                  <button type='button' className='loc-button' onClick={()=>beginTimelineCreation('anchor',currentStructureStart)}>＋ 新增正式定錨點</button>
+                  <button type='button' className='loc-button' onClick={()=>beginTimelineCreation('anchor',currentStructureStart)}><FieldText text="＋ 新增正式定錨點"/></button>
                   <select className='scope-select' aria-label='新增時間長河紀錄' defaultValue='' onChange={event=>{
                     const recordType=event.currentTarget.value;
                     if(!['period','event','style_comment'].includes(recordType))return;
@@ -800,8 +800,8 @@ export default function Culture(){
                       </label>)}
                     </div>
                     <div className='scope-preview-links'>
-                      <button type='button' className='loc-button' disabled={anchorSaveBusy} onClick={()=>setSelectedVirtualAnchorDates(riverAnalysis.suggestions.map(item=>item.date))}>全選待審候選</button>
-                      <button type='button' className='loc-button' disabled={anchorSaveBusy||!selectedVirtualAnchorDates.length} onClick={()=>setSelectedVirtualAnchorDates([])}>清除選取</button>
+                      <button type='button' className='loc-button' disabled={anchorSaveBusy} onClick={()=>setSelectedVirtualAnchorDates(riverAnalysis.suggestions.map(item=>item.date))}><FieldText text="全選待審候選"/></button>
+                      <button type='button' className='loc-button' disabled={anchorSaveBusy||!selectedVirtualAnchorDates.length} onClick={()=>setSelectedVirtualAnchorDates([])}><FieldText text="清除選取"/></button>
                       <button type='button' className='loc-button primary' disabled={anchorSaveBusy||!selectedVirtualAnchorDates.length||!account.canManageScopeSync(classificationScope)} onClick={saveSelectedVirtualAnchors}>
                         {anchorSaveBusy?UI_COPY.culture.creating:'審核後建立 '+selectedVirtualAnchorDates.length+' 個正式定錨點'}
                       </button>
@@ -872,7 +872,7 @@ export default function Culture(){
                     <h4>{selectedGroup?.display_label||UI_COPY.culture.allWorks} · {selectedCount.toLocaleString()} 項作品</h4>
                     {selectedGroup?<button type='button' className='scope-pagination-button' onClick={()=>setSelectedCategory('')}>{UI_COPY.culture.showAllWorks}</button>:null}
                   </header>
-                  {periodWorksPage.error?<p className='scope-status scope-error'>{featureDataErrorMessage(periodWorksPage.error)} <button type='button' className='loc-button' onClick={periodWorksPage.reload}>重新讀取作品</button></p>:null}
+                  {periodWorksPage.error?<p className='scope-status scope-error'>{featureDataErrorMessage(periodWorksPage.error)} <button type='button' className='loc-button' onClick={periodWorksPage.reload}><FieldText text="重新讀取作品"/></button></p>:null}
                   {periodWorksPage.loading&&!visibleWorkRows.length?<p role='status' className='scope-status'>正在載入該時期作品…</p>:null}
                   <IncrementalList
                     items={visibleWorkRows}

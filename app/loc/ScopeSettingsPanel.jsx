@@ -82,8 +82,8 @@ export default function ScopeSettingsPanel({scopeId}){
   }
 
   return <section className="loc-card scope-feature-card">
-    <p className="loc-eyebrow">個人設定</p>
-    <h2>基本與雜項設定</h2>
+    <p className="loc-eyebrow"><FieldText text="個人設定"/></p>
+    <h2><FieldText text="基本與雜項設定"/></h2>
     {loading?<p className="scope-status">讀取中…</p>:null}
     {!loading?<form onSubmit={save}>
       <div className="scope-management-fields">
@@ -117,11 +117,11 @@ export default function ScopeSettingsPanel({scopeId}){
       </label>
 
       <fieldset className="scope-management-wide-field">
-        <legend>公開功能</legend>
+        <legend><FieldText text="公開功能"/></legend>
         <div className="scope-editor-options">
-          <label><input type="checkbox" checked={draft.search_able!==false} onChange={event=>change('search_able',event.target.checked)}/>搜尋</label>
-          <label><input type="checkbox" checked={draft.statistics_able!==false} onChange={event=>change('statistics_able',event.target.checked)}/>統計</label>
-          <label><input type="checkbox" checked={draft.culture_able!==false} onChange={event=>change('culture_able',event.target.checked)}/>文化</label>
+          <label><input type="checkbox" checked={draft.search_able!==false} onChange={event=>change('search_able',event.target.checked)}/><FieldText text="搜尋"/></label>
+          <label><input type="checkbox" checked={draft.statistics_able!==false} onChange={event=>change('statistics_able',event.target.checked)}/><FieldText text="統計"/></label>
+          <label><input type="checkbox" checked={draft.culture_able!==false} onChange={event=>change('culture_able',event.target.checked)}/><FieldText text="文化"/></label>
         </div>
       </fieldset>
 

@@ -1,4 +1,5 @@
 'use client';
+import FieldText from '../../i18n/FieldText';
 
 import {UI_COPY} from '../../i18n/ui-copy';
 import {useUiCopy} from '../../i18n/ui-locale';
@@ -107,7 +108,7 @@ function galaxyDraftFromRow(row={},fallbackTitle=''){
 function GalaxyAttrSummary({row}){
   if(!row)return null;
   return <details className="scope-search-attr-panel">
-    <summary>文章 Attr</summary>
+    <summary><FieldText text="文章屬性"/></summary>
     <dl className="scope-search-attr-grid">
       {GALAXY_ATTR_ORDER.map(key=><div key={key}>
         <dt>{key}</dt>
@@ -121,7 +122,7 @@ function GalaxyAttrEditor({draft,setDraft}){
   const attrs=draft?.attrs||{};
   const change=(key,value)=>setDraft(current=>({...current,attrs:{...(current?.attrs||{}),[key]:value}}));
   return <details className="scope-search-attr-panel" open>
-    <summary>文章 Attr</summary>
+    <summary><FieldText text="文章屬性"/></summary>
     <div className="scope-management-fields scope-search-attr-editor">
       <label><span>uid</span><input value={attrs.uid||''} readOnly/></label>
       <label><span>createtime</span><input type="datetime-local" value={attrs.createtime||''} onChange={event=>change('createtime',event.target.value)}/></label>
@@ -650,7 +651,7 @@ export default function Search(){
             {row.relatedStyleTags.length?<div className="scope-style-search-related">
               <p className="scope-status"><strong>延伸探索：其他個人風格</strong>（點擊可繼續搜尋）</p>
               {row.relatedStyleTags.some(style=>style.same_period)?<div className="scope-style-search-related-group">
-                <span>同時期平行風格</span>
+                <span><FieldText text="同時期平行風格"/></span>
                 <div className="scope-style-search-related-links">
                   {row.relatedStyleTags.filter(style=>style.same_period).map(style=><a key={style.name} href={featureNavigationHref(row.scopeId,'search',{q:style.name})}>
                     {style.name} · {style.document_total===null?'統計暫不可用':style.document_total.toLocaleString()+' 篇'}
@@ -658,7 +659,7 @@ export default function Search(){
                 </div>
               </div>:null}
               {row.relatedStyleTags.some(style=>!style.same_period)?<div className="scope-style-search-related-group">
-                <span>其他時期的個人風格</span>
+                <span><FieldText text="其他時期的個人風格"/></span>
                 <div className="scope-style-search-related-links">
                   {row.relatedStyleTags.filter(style=>!style.same_period).map(style=><a key={style.name} href={featureNavigationHref(row.scopeId,'search',{q:style.name})}>
                     {style.name} · {style.document_total===null?'統計暫不可用':style.document_total.toLocaleString()+' 篇'}

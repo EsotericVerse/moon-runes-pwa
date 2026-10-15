@@ -1,4 +1,5 @@
 'use client';
+import FieldText from '../i18n/FieldText';
 
 import {useMemo,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
@@ -288,7 +289,7 @@ export default function ScopeEditableBlocks({
           <div className="scope-block-entity-actions">
             <button type="button" className="loc-button" disabled={index===0||busy} onClick={()=>moveEntity(index,-1)}>←</button>
             <button type="button" className="loc-button" disabled={index===entities.length-1||busy} onClick={()=>moveEntity(index,1)}>→</button>
-            <button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={()=>removeEntity(index)}>刪除</button>
+            <button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={()=>removeEntity(index)}><FieldText text="刪除"/></button>
           </div>
           <label className="scope-management-wide-field">
             <span>標題（不用標題＝文字泡泡，輸入標題＝文字框）</span>
@@ -341,7 +342,7 @@ export default function ScopeEditableBlocks({
               <button type="button" className="loc-button" disabled={busy||movableIndex<=0} onClick={()=>moveBlock(-1)}>↑ 上移</button>
               <button type="button" className="loc-button" disabled={busy||movableIndex>=movableSlots.length-1} onClick={()=>moveBlock(1)}>↓ 下移</button>
             </>:null}
-            {allowDelete?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={remove}>刪除</button>:null}
+            {allowDelete?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={remove}><FieldText text="刪除"/></button>:null}
             <button type="button" className="loc-button" disabled={busy} onClick={cancel}>取消</button>
             {message?<span className={'scope-inline-save-status'+(message.startsWith('儲存失敗')?' scope-error':'')} role="status" aria-live="polite">{message}</span>:null}
           </div>

@@ -287,7 +287,7 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeC
         <input className="scope-input" value={exclusionDraft} maxLength={240} onChange={event=>setExclusionDraft(event.target.value)} placeholder="例如：男聲" />
       </label>
       <button type="button" className="loc-button" onClick={applyExclusions}><FieldText text="套用排除詞"/></button>
-      <button type="button" className="loc-button" onClick={()=>setExclusionDraft(DEFAULT_MEDIA_STYLE_EXCLUSIONS.join(', '))}>恢復預設</button>
+      <button type="button" className="loc-button" onClick={()=>setExclusionDraft(DEFAULT_MEDIA_STYLE_EXCLUSIONS.join(', '))}><FieldText text="恢復預設"/></button>
     </div>:null}
     <div className="scope-stat-controls">
       <label><span><FieldText text={rankingType==='media_style'?'指定 Meta Tag':'指定統計細項'}/></span>
@@ -309,9 +309,9 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeC
         {displayed.slice((currentPage-1)*pageSize,currentPage*pageSize).map(row=><div key={row.term}><strong>{row.term}</strong><span>{row.item_count.toLocaleString()}</span></div>)}
       </div>
       {pages>1?<nav className="scope-stat-controls" aria-label="統計分頁">
-        <button type="button" className="loc-button" disabled={currentPage===1} onClick={()=>setRankingPage(currentPage-1)}>上一頁</button>
+        <button type="button" className="loc-button" disabled={currentPage===1} onClick={()=>setRankingPage(currentPage-1)}><FieldText text="上一頁"/></button>
         <span>{currentPage} / {pages}</span>
-        <button type="button" className="loc-button" disabled={currentPage===pages} onClick={()=>setRankingPage(currentPage+1)}>下一頁</button>
+        <button type="button" className="loc-button" disabled={currentPage===pages} onClick={()=>setRankingPage(currentPage+1)}><FieldText text="下一頁"/></button>
       </nav>:null}
       <StatisticsChartFrame level={zoomLevel} onChange={onZoomLevelChange} range={range} idPrefix="scope-stat">
         <StatisticsMultiChart type={chosenChartType}
@@ -331,8 +331,8 @@ function MediaCrossTagPicker({title,options,selected,onChange}){
   return <details className="scope-stat-cross-picker">
     <summary>{title}（已選 {chosen.size} 項）</summary>
     <div style={{display:'flex',gap:8,flexWrap:'wrap',margin:'8px 0'}}>
-      <button className="loc-button" type="button" onClick={()=>onChange(options.map(x=>x.key))}>全選</button>
-      <button className="loc-button" type="button" onClick={()=>onChange([])}>清除</button>
+      <button className="loc-button" type="button" onClick={()=>onChange(options.map(x=>x.key))}><FieldText text="全選"/></button>
+      <button className="loc-button" type="button" onClick={()=>onChange([])}><FieldText text="清除"/></button>
     </div>
     <div style={{maxHeight:210,overflowY:'auto',display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(165px,1fr))',gap:6}}>
       {options.map(tag=><label key={tag.key} className="scope-setting-toggle" style={{display:'flex',alignItems:'center',gap:6}}>
@@ -376,7 +376,7 @@ function MediaCrossTagStatistics({rows=[],range={},navigation={},zoomLevel=0,onZ
     },trendPairs.map(pair=>pair.key));
   },[pairs,range.startDate,range.endDate,range.bucket]);
   return <section className="scope-stat-cross" aria-label="多媒體標籤交互統計">
-    <h3>多媒體 Meta Tag 交互統計</h3>
+    <h3><FieldText text="多媒體 Meta Tag 交互統計"/></h3>
     <p className="scope-status">兩側標籤皆從現有多媒體 metadata 產生；預選 Mandopop／J-Pop／K-Pop 對其他標籤，沒有的組合不列出。每組每筆媒體只算一次。</p>
     {!catalog.options.length?<p className="scope-status">目前區間沒有可交互比較的 Meta Tag。</p>:<>
       <div className="scope-stat-controls" style={{alignItems:'start'}}>
@@ -384,7 +384,7 @@ function MediaCrossTagStatistics({rows=[],range={},navigation={},zoomLevel=0,onZ
         <MediaCrossTagPicker title="第二組標籤" options={catalog.options} selected={right} onChange={setRightOverride}/>
         <button type="button" className="loc-button" onClick={()=>{
           setLeftOverride(null);setRightOverride(null);setSelectedPair('');setVisibleCount(15);
-        }}>恢復預設搭配</button>
+        }}><FieldText text="恢復預設搭配"/></button>
       </div>
       <div className="scope-stat-controls">
         <label><span><FieldText text="圖表"/></span><select className="scope-select" value={mode} onChange={event=>setMode(event.target.value)}>
@@ -421,7 +421,7 @@ function MediaCrossTagStatistics({rows=[],range={},navigation={},zoomLevel=0,onZ
             <strong>{pair.leftLabel} × {pair.rightLabel}</strong>
             <span>{pair.count.toLocaleString()} 件
               {' '}<button type="button" className="loc-button" onClick={()=>setSelectedPair(selectedPair===pair.key?'':pair.key)}>
-                {selectedPair===pair.key?'收起作品':'查看作品'}
+                <FieldText text={selectedPair===pair.key?'收起作品':'查看作品'}/>
               </button>
             </span>
           </div>)}
@@ -500,9 +500,9 @@ function Rune66Summary({analysis}){
         })}
       </div>
       {groupRows.length>RUNE_RANKING_PAGE_SIZE?<nav className="scope-stat-controls" aria-label="Group 統計分頁">
-        <button type="button" className="loc-button" disabled={activeGroupPage===1} onClick={()=>setGroupPage(activeGroupPage-1)}>上一頁</button>
+        <button type="button" className="loc-button" disabled={activeGroupPage===1} onClick={()=>setGroupPage(activeGroupPage-1)}><FieldText text="上一頁"/></button>
         <span className="scope-status" aria-live="polite">第 {activeGroupPage} / {groupPageCount} 頁 · 共 {groupRows.length.toLocaleString()} 項</span>
-        <button type="button" className="loc-button" disabled={activeGroupPage===groupPageCount} onClick={()=>setGroupPage(activeGroupPage+1)}>下一頁</button>
+        <button type="button" className="loc-button" disabled={activeGroupPage===groupPageCount} onClick={()=>setGroupPage(activeGroupPage+1)}><FieldText text="下一頁"/></button>
       </nav>:null}
     </section>
   </div>;
@@ -643,8 +643,8 @@ function ScopeGroupStatistics(){
       <label>
         <span>{UI_COPY.statistics.item}</span>
         <select className="scope-select" value={aggregateType} onChange={event=>setAggregateType(event.target.value)}>
-          <option value="total">LOC 合併總數</option>
-          <option value="scope">所屬人員分布</option>
+          <option value="total"><FieldText text="LOC 合併總數"/></option>
+          <option value="scope"><FieldText text="所屬人員分布"/></option>
         </select>
       </label>
       <label>
@@ -659,7 +659,7 @@ function ScopeGroupStatistics(){
     <p className="scope-status">LOC 合併統計沿用原有公開來源資料；只有成員明確關閉的群組來源分類會從跨成員數值中排除。每日符文可獨立參與交互比較。</p>
     <div className="scope-ranking">
       <div>
-        <strong>LOC 合併總數</strong>
+        <strong><FieldText text="LOC 合併總數"/></strong>
         <span>{overallTotal.toLocaleString()} 項</span>
       </div>
     </div>
@@ -879,11 +879,11 @@ function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false,
     </section>:null}
     <ScopeStatisticsResults scopeId={scopeId} navigation={navigation} types={types}/>
     {canManageSources?<details className="scope-stat-section">
-      <summary>群組來源分類 · 對外統計開放</summary>
+      <summary><FieldText text="群組來源分類 · 對外統計開放"/></summary>
       <ScopeGroupStatisticsSharing scopeId={scopeId}/>
     </details>:null}
     {canManageSources?<details className="scope-stat-section">
-      <summary>個人自訂來源分類 · 管理</summary>
+      <summary><FieldText text="個人自訂來源分類 · 管理"/></summary>
       <ScopeCustomSourceCategories scopeId={scopeId}/>
     </details>:null}
   </>;

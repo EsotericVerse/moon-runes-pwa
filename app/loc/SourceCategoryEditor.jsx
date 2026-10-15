@@ -1,4 +1,5 @@
 'use client';
+import FieldText from '../i18n/FieldText';
 
 import {useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
@@ -66,30 +67,30 @@ export function AdminSourceCategories(){
     if(error)throw Error(error.message);
   });
   return <section className="loc-card admin-workspace">
-    <h2>群組來源分類</h2>
+    <h2><FieldText text="群組來源分類"/></h2>
     <p className="scope-status">僅 LOC Admin 設定來源主分類；個別人員的來源命名及歸屬在各自的統計頁管理。</p>
     <div className="scope-stat-controls">
-      <label>分類代碼<input value={category} onChange={e=>setCategory(e.target.value)} maxLength={64}/></label>
-      <label>分類名稱<input value={title} onChange={e=>setTitle(e.target.value)} maxLength={80}/></label>
-      <button className="loc-button" type="button" disabled={busy||!category.trim()||!title.trim()} onClick={add}>新增群組來源分類</button>
+      <label><FieldText text="分類代碼"/><input value={category} onChange={e=>setCategory(e.target.value)} maxLength={64}/></label>
+      <label><FieldText text="分類名稱"/><input value={title} onChange={e=>setTitle(e.target.value)} maxLength={80}/></label>
+      <button className="loc-button" type="button" disabled={busy||!category.trim()||!title.trim()} onClick={add}><FieldText text="新增群組來源分類"/></button>
     </div>
     <div className="scope-management-records">
       {items.map(row=><div className="scope-inline-card" key={row.category_code}>
-        <label>分類名稱<input value={labels[row.category_code]??row.display_name} maxLength={80}
+        <label><FieldText text="分類名稱"/><input value={labels[row.category_code]??row.display_name} maxLength={80}
           onChange={e=>setLabels(values=>({...values,[row.category_code]:e.target.value}))} disabled={busy}/></label>
         <span>{row.category_code}</span>
         <button type="button" className="loc-button" disabled={busy||!String(labels[row.category_code]??row.display_name).trim()}
-          onClick={()=>modify(CATEGORIES,{category_code:row.category_code},{display_name:String(labels[row.category_code]??row.display_name).trim()})}>儲存名稱</button>
-        <button type="button" className="loc-button" disabled={busy} onClick={()=>modify(CATEGORIES,{category_code:row.category_code},{enabled:!row.enabled})}>{row.enabled?'停用':'啟用'}</button>
+          onClick={()=>modify(CATEGORIES,{category_code:row.category_code},{display_name:String(labels[row.category_code]??row.display_name).trim()})}><FieldText text="儲存名稱"/></button>
+        <button type="button" className="loc-button" disabled={busy} onClick={()=>modify(CATEGORIES,{category_code:row.category_code},{enabled:!row.enabled})}><FieldText text=<FieldText text={row.enabled?'停用':'啟用'}/>/></button>
       </div>)}
     </div>
-    <h3>群組來源預設歸屬</h3>
+    <h3><FieldText text="群組來源預設歸屬"/></h3>
     <div className="scope-stat-controls">
-      <label>原始來源<input value={alias} maxLength={120} onChange={e=>setAlias(e.target.value)}/></label>
-      <label>群組來源分類<select className="scope-select" value={parent} onChange={e=>setParent(e.target.value)}>
+      <label><FieldText text="原始來源"/><input value={alias} maxLength={120} onChange={e=>setAlias(e.target.value)}/></label>
+      <label><FieldText text="群組來源分類"/><select className="scope-select" value={parent} onChange={e=>setParent(e.target.value)}>
         {items.filter(x=>x.enabled).map(x=><option key={x.category_code} value={x.category_code}>{x.display_name}</option>)}
       </select></label>
-      <button type="button" className="loc-button" disabled={busy||!alias.trim()} onClick={map}>指定歸屬</button>
+      <button type="button" className="loc-button" disabled={busy||!alias.trim()} onClick={map}><FieldText text="指定歸屬"/></button>
     </div>
     <div className="scope-management-records">
       {aliases.map(row=><div className="scope-inline-card" key={row.source_key}>
@@ -149,30 +150,30 @@ export function ScopeCustomSourceCategories({scopeId}){
     if(error)throw Error(error.message);
   });
   return <section className="scope-inline-card" aria-label="個人自訂來源分類">
-    <h3>個人自訂來源分類</h3>
+    <h3><FieldText text="個人自訂來源分類"/></h3>
     <p className="scope-status">只管理目前人員的原始來源名稱及群組歸屬，不改動作品正文與其他 Scope。</p>
     <div className="scope-stat-controls">
-      <label>原始來源<input value={source} maxLength={120} onChange={e=>setSource(e.target.value)} placeholder="source_name"/></label>
-      <label>自訂顯示名稱<input value={label} maxLength={80} onChange={e=>setLabel(e.target.value)}/></label>
-      <label>群組來源分類<select className="scope-select" value={groups.some(row=>row.category_code===category)?category:(groups[0]?.category_code||'')} onChange={e=>setCategory(e.target.value)}>
+      <label><FieldText text="原始來源"/><input value={source} maxLength={120} onChange={e=>setSource(e.target.value)} placeholder="source_name"/></label>
+      <label><FieldText text="自訂顯示名稱"/><input value={label} maxLength={80} onChange={e=>setLabel(e.target.value)}/></label>
+      <label><FieldText text="群組來源分類"/><select className="scope-select" value={groups.some(row=>row.category_code===category)?category:(groups[0]?.category_code||'')} onChange={e=>setCategory(e.target.value)}>
         {groups.map(row=><option key={row.category_code} value={row.category_code}>{row.display_name}</option>)}
       </select></label>
-      <button type="button" className="loc-button" disabled={busy||!source.trim()||!groups.length} onClick={add}>儲存個人來源分類</button>
+      <button type="button" className="loc-button" disabled={busy||!source.trim()||!groups.length} onClick={add}><FieldText text="儲存個人來源分類"/></button>
     </div>
     <div className="scope-management-records">
       {(query.data||[]).map(row=><div className="scope-inline-card" key={row.source_key}>
         <span>{row.source_key}</span>
-        <label>自訂名稱<input maxLength={80} disabled={busy}
+        <label><FieldText text="自訂名稱"/><input maxLength={80} disabled={busy}
           value={labels[row.source_key]??row.display_name}
           onChange={e=>setLabels(old=>({...old,[row.source_key]:e.target.value}))}/></label>
         <button type="button" className="loc-button" disabled={busy||!String(labels[row.source_key]??row.display_name).trim()}
-          onClick={()=>update(row.source_key,{display_name:String(labels[row.source_key]??row.display_name).trim()})}>儲存名稱</button>
-        <label>群組來源分類<select className="scope-select" value={row.category_code} disabled={busy}
+          onClick={()=>update(row.source_key,{display_name:String(labels[row.source_key]??row.display_name).trim()})}><FieldText text="儲存名稱"/></button>
+        <label><FieldText text="群組來源分類"/><select className="scope-select" value={row.category_code} disabled={busy}
           onChange={e=>update(row.source_key,{category_code:e.target.value})}>
           {(groupQuery.data?.categories||[]).map(item=><option key={item.category_code} value={item.category_code}>{item.display_name}</option>)}
         </select></label>
         <button type="button" className="loc-button" disabled={busy}
-          onClick={()=>update(row.source_key,{enabled:!row.enabled})}>{row.enabled?'停用':'啟用'}</button>
+          onClick={()=>update(row.source_key,{enabled:!row.enabled})}><FieldText text=<FieldText text={row.enabled?'停用':'啟用'}/>/></button>
       </div>)}
     </div>
     {groupQuery.error||query.error?<p className="scope-status scope-error">{String(groupQuery.error?.message||query.error?.message)}</p>:null}
