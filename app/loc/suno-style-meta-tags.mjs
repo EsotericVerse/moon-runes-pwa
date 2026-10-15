@@ -20,3 +20,21 @@ export function sunoStyleMetaTags(source,{limit=3}={}){
   }
   return selected.join(', ');
 }
+
+/**
+ * Re-extracting a Style must not silently erase explicit album positions or
+ * the author's Rune Music classification from an existing Media tag field.
+ */
+export function refreshSunoStyleMetaTags(source,current=''){
+  const extracted=sunoStyleMetaTags(source);
+  const explicitIds=String(current??'').split(/[,，]/u)
+    .map(value=>value.trim())
+    .filter(value=>/^(?:LP[0-9]+(?:-[0-9]+)?|LunaRunesMusic)$/iu.test(value));
+  const tags=[...extracted.split(',').map(value=>value.trim()).filter(Boolean),...explicitIds];
+  const seen=new Set();
+  return tags.filter(value=>{
+    const key=value.normalize('NFKC').toLowerCase();
+    if(seen.has(key))return false;
+    seen.add(key);return true;
+  }).join(', ');
+}
