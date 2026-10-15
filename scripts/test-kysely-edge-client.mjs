@@ -61,6 +61,7 @@ const noWriteRetry=createKyselyEdgeClient({url:'https://loc.example.test',publis
 await assert.rejects(async()=>await noWriteRetry.schema('manage').from('email_blocklist').insert({email:'x@example.test'}),/temporarily unavailable/);
 assert.equal(transientWrites,1,'writes are never retried automatically');
 const sdkSettings=[];
+const sdkRpcCalls=[];
 const apiCalls=[];
 const adapter=createSupabaseAdapter({
   url:'https://loc.example.test',publishableKey:'sb_publishable_test',
@@ -73,7 +74,12 @@ const adapter=createSupabaseAdapter({
           from(table){return {
             select(columns){return Promise.resolve({data:[{id:table}],error:null,count:1})}
           }},
-          rpc(name,args){return Promise.resolve({data:{name,args},error:null})}
+          rpc(name,args){
+            sdkRpcCalls.push(name);
+            return Promise.resolve({data:name==='loc_public_routing_state'
+              ?{provider:'supabase',primary_id:'supabase-current',primary_control:true,backup_id:'neon-current',mode:'single'}
+              :{name,args},error:null});
+          }
         };
       }
     };
@@ -92,16 +98,13 @@ assert.deepEqual((await adapter.authClient.schema('silver').from('scope_registry
 assert.equal(apiCalls.length,0,'routine primary reads must NOT open a Kysely PG connection');
 assert.deepEqual((await adapter.authClient.schema('silver').rpc('management_write',{p_operation:'select'})).data,{name:'management_write',args:{p_operation:'select'}});
 await adapter.authClient.schema('silver').rpc('save_database_target',{p_target:{target_id:'supabase-current'}});
-assert.equal(apiCalls.length,2,'Authenticated write first resolves the selected primary and only then uses its transport');
-assert.equal(apiCalls[1].url,'https://loc.example.test/functions/v1/loc-kysely');
-assert.equal(apiCalls[1].init.headers.authorization,'Bearer user.jwt.token');
-assert.equal(JSON.parse(apiCalls[1].init.body).name,'save_database_target');
+assert.equal(apiCalls.length,1,'Only credential administration uses Kysely Edge; routing status uses managed Data API');
+assert.equal(apiCalls[0].url,'https://loc.example.test/functions/v1/loc-kysely');
+assert.equal(apiCalls[0].init.headers.authorization,'Bearer user.jwt.token');
+assert.equal(JSON.parse(apiCalls[0].init.body).name,'save_database_target');
 await adapter.configuredPublicClient.activeTarget();
-assert.equal(apiCalls.length,3,'One explicit provider status lookup follows the Admin RPC');
-assert.equal(JSON.parse(apiCalls[2].init.body).kind,'status');
-assert.equal(JSON.parse(apiCalls[2].init.body).name,'active_public_target');
-assert.equal(JSON.parse(apiCalls[2].init.body).target,'configured');
-assert.equal('authorization' in apiCalls[2].init.headers,false,'Provider flag must be readable without borrowing Admin credentials');
+assert.equal(apiCalls.length,1,'Provider status must never occupy a direct Kysely PostgreSQL connection');
+assert.ok(sdkRpcCalls.includes('loc_public_routing_state'),'Routing should read public metadata using managed Supabase Data API');
 assert.equal(selectedDatabaseProvider([{provider:'neon',selected:true},{provider:'supabase',selected:false}]),'neon');
 assert.equal(selectedDatabaseProvider([{provider:'neon',selected:false},{provider:'supabase',selected:true}]),'supabase');
 assert.throws(()=>selectedDatabaseProvider([{provider:'neon',selected:true},{provider:'supabase',selected:true}]),/More than one/);

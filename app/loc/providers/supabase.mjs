@@ -31,6 +31,9 @@ export function createSupabaseAdapter({
   });
   const edgeAdmin=createKyselyEdgeClient({url,publishableKey,auth:authenticatedSdk.auth,target,fetch:fetchImpl});
   const edgePublic=createKyselyEdgeClient({url,publishableKey,role:'anon',target,fetch:fetchImpl});
+  const publicRouting={...edgePublic,
+    activeTarget(){return publicSdk.schema('silver').rpc('loc_public_routing_state')}
+  };
   // Explicit non-primary targets retain the portable Kysely transport.
   if(target!=='configured'&&target!=='supabase'){
     return {publicClient:edgePublic,authClient:edgeAdmin,auth:authenticatedSdk.auth};
@@ -38,7 +41,7 @@ export function createSupabaseAdapter({
   function routedWrite(schema,table,method,args){
     const steps=[];
     const execute=async()=>{
-      const selection=await selectedDatabaseRouting(edgePublic);
+      const selection=await selectedDatabaseRouting(publicRouting);
       if(!selection.verified)throw new Error('Primary database cannot be confirmed; write cancelled');
       if(selection.provider==='neon')throw new Error('Selected primary database is read-only');
       const source=selection.primaryControl?authenticatedSdk.schema(schema):edgeAdmin.schema(schema);
@@ -75,7 +78,7 @@ export function createSupabaseAdapter({
         if(schema==='silver'&&EDGE_ONLY_ADMIN_RPCS.has(name))
           return edgeAdmin.schema(schema).rpc(name,args);
         if(name==='read_keyword_class'||name==='read_scope_page_copy')return db.rpc(name,args,options);
-        return selectedDatabaseRouting(edgePublic).then(selected=>{
+        return selectedDatabaseRouting(publicRouting).then(selected=>{
           if(!selected.verified)throw new Error('Primary database cannot be confirmed; write cancelled');
           if(selected.provider==='neon')throw new Error('Selected primary database is read-only');
           return selected.primaryControl?db.rpc(name,args,options):edgeAdmin.schema(schema).rpc(name,args);
@@ -91,5 +94,5 @@ export function createSupabaseAdapter({
     },
     auth:authenticatedSdk.auth
   };
-  return {publicClient:publicSdk,configuredPublicClient:edgePublic,authClient,auth:authenticatedSdk.auth};
+  return {publicClient:publicSdk,configuredPublicClient:publicRouting,authClient,auth:authenticatedSdk.auth};
 }
