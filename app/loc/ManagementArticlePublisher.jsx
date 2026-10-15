@@ -44,7 +44,6 @@ export default function ManagementArticlePublisher({scopeId}){
         uid,
         title:resolveGalaxyTitle(draft.title,content),
         content,
-        content_blocks:draft.bodyBlocks,
         source_id:draft.source_id.trim()||null,
         target_id:normalizeRelationIds(draft.target_id),
         ref_id:draft.ref_id.trim()||null,
