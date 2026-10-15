@@ -1,5 +1,5 @@
 'use client';
-import FieldText from '../i18n/FieldText';
+import UiText,{useUiText} from '../i18n/UiText';
 
 import {useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
@@ -12,6 +12,7 @@ const RELATION='silver.scope_group_source_sharing';
 // The checkbox applies to this member's *group* source categories, not to
 // personal custom sources and not to the member's own statistics.
 export default function ScopeGroupStatisticsSharing({scopeId}){
+  const t=useUiText();
   const account=useAccount(),client=useQueryClient(),groups=useSourceCategories();
   const [busy,setBusy]=useState(''),[notice,setNotice]=useState('');
   const enabled=Boolean(scopeId&&account.canManageScopeSync(scopeId));
@@ -43,24 +44,24 @@ export default function ScopeGroupStatisticsSharing({scopeId}){
         client.invalidateQueries({queryKey:['loc-member-cross']}),
         client.invalidateQueries({queryKey:['loc-source-categories']})
       ]);
-      setNotice('已更新群組來源分類的統計開放設定。');
+      setNotice(t('uiExtra.sharing.updated'));
     }catch(error){setNotice(String(error.message||error));}
     finally{setBusy('');}
   }
-  return <section className="scope-inline-card" aria-label="群組來源分類統計開放設定">
-    <h3><FieldText text="群組來源分類 · 對外統計"/></h3>
-    <p className="scope-status">各群組來源沿用既有對外統計狀態，預設納入 LOC 統計；本人可逐項取消勾選，立即排除該分類在 LOC 合併與成員交互統計的資料。自己的統計、搜尋與文化頁不受影響；個人自訂來源分類不另外設定。</p>
+  return <section className="scope-inline-card" aria-label={t('uiExtra.sharing.aria')}>
+    <h3><UiText id="uiExtra.sharing.title"/></h3>
+    <p className="scope-status"><UiText id="uiExtra.sharing.guide"/></p>
     <div className="scope-management-records">
       {(groups.data?.categories||[]).filter(row=>row.enabled!==false).map(row=>
         <label key={row.category_code} className="scope-inline-card scope-setting-toggle">
           <input type="checkbox" checked={permissions.get(row.category_code)!==false}
             disabled={Boolean(busy)||query.isPending||Boolean(query.error)}
             onChange={event=>update(row.category_code,event.target.checked)}/>
-          {row.display_name} · 允許納入其他人的統計
+          {row.display_name} · <UiText id="uiExtra.sharing.allow"/>
         </label>
       )}
     </div>
-    {query.isPending||groups.isPending?<p className="scope-status">讀取分類開放設定…</p>:null}
+    {query.isPending||groups.isPending?<p className="scope-status"><UiText id="uiExtra.sharing.loading"/></p>:null}
     {query.error||groups.error?<p className="scope-status scope-error">{String(query.error?.message||groups.error?.message)}</p>:null}
     {notice?<p className="scope-status" role="status">{notice}</p>:null}
   </section>;
