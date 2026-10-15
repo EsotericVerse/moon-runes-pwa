@@ -4,9 +4,9 @@ import {translateUiField} from '../../../i18n/ui-functional-copy.mjs';
 
 // Chart-side zoom only: no time-unit menu or date-picker. Range is read-only
 // via accessible button titles. The default is the latest year.
-export default function StatisticsZoomControls({
+export default function StatisticsZoomControls({level=0,onChange,range={},idPrefix='loc-stat'}){
   const {locale}=useUiLocale();
-  const t=x=>translateUiField(locale,x);level=0,onChange,range={},idPrefix='loc-stat'}){
+  const t=x=>translateUiField(locale,x);
   const period=range.startDate&&range.endDate
     ?range.startDate+' ～ '+range.endDate+(range.fullHistory?'（全部資料）':'')
     :'尚無可用日期';
