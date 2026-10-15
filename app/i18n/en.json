@@ -676,7 +676,13 @@
       "bodyManaged": "Managed by the full-text editor above",
       "memberSearch": "Member search",
       "articleDateInvalid": "Invalid article date format.",
-      "groupListInvalid": "group_lists must be valid JSON."
+      "groupListInvalid": "group_lists must be valid JSON.",
+      "attributeTitle": "Article properties",
+      "attrShown": "Full text is displayed above",
+      "memberSource": "Member",
+      "memberHomeLink": "Open member homepage",
+      "partialExtendedData": " (some related data could not be retrieved)",
+      "classIdInvalid": "class_id must be numeric."
     },
     "statisticsUI": {
       "dailyRune": "Daily runes",
