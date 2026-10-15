@@ -20,7 +20,7 @@ import {defaultMediaCrossAxes,mediaCrossIntersections,mediaCrossTagCatalog} from
 import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
 import {selectScopeRegistry,defaultScopeData} from '../../loc/scope-data';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation';
-import {FEATURE_EMPTY_MESSAGE,featureDataErrorMessage} from '../feature-data-state';
+import {featureDataErrorMessage} from '../feature-data-state';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {FeaturePage} from '../ui';
 import {useAccount} from '../../loc/use-account';
@@ -167,7 +167,7 @@ function SummaryChart({type='bar',rankingType,summary,height=380}){
   const data=rankingType==='total'
     ?[{term:UI_COPY.statistics.totalSource,value:summary.total}]
     :summary.sources.map(row=>({term:row.term,value:Number(row.item_count)||0}));
-  if(!data.length)return <p className="scope-status">{FEATURE_EMPTY_MESSAGE}</p>;
+  if(!data.length)return <p className="scope-status">{UI_COPY.uiExtra.dataErrors.empty}</p>;
   if(type==='pie')return <ResponsiveContainer width="100%" height={height}>
     <PieChart><Tooltip contentStyle={CHART_TOOLTIP}/><Pie data={data} dataKey="value" nameKey="term" cx="50%" cy="50%" outerRadius={Math.min(140,height/2-26)}>
       {data.map((row,index)=><Cell key={row.term} fill={PIE_COLORS[index%PIE_COLORS.length]}/>)}
@@ -187,7 +187,7 @@ function TotalTrendChart({rows=[],range={},height=420}){
   const UI_COPY=useUiCopy();
   const t=useUiText();
   const data=useMemo(()=>buildSourceTrend(rows,range),[rows,range]);
-  if(!data.length)return <p className="scope-status">{FEATURE_EMPTY_MESSAGE}</p>;
+  if(!data.length)return <p className="scope-status">{UI_COPY.uiExtra.dataErrors.empty}</p>;
   return <ResponsiveContainer width="100%" height={height}>
     <LineChart data={data} margin={{top:8,right:18,bottom:48,left:4}}>
       <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
@@ -199,8 +199,9 @@ function TotalTrendChart({rows=[],range={},height=420}){
   </ResponsiveContainer>;
 }
 function SourceTrendChart({rows=[],range={},height=420}){
+  const UI_COPY=useUiCopy();
   const data=useMemo(()=>buildSourceTrend(rows,range),[rows,range]);
-  if(!data.length)return <p className="scope-status">{FEATURE_EMPTY_MESSAGE}</p>;
+  if(!data.length)return <p className="scope-status">{UI_COPY.uiExtra.dataErrors.empty}</p>;
   return <ResponsiveContainer width="100%" height={height}>
     <LineChart data={data} margin={{top:8,right:18,bottom:48,left:4}}>
       <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
@@ -249,6 +250,7 @@ function facetTrend(rows=[],window={},selectedCategories=[]){
   });
 }
 function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeChange,range={},scopeId,foldBlank=false,zoomLevel=0,onZoomLevelChange}){
+  const UI_COPY=useUiCopy();
   const t=useUiText();
   const [selectedTag,setSelectedTag]=useState('all');
   const [rankingPage,setRankingPage]=useState(1);
@@ -284,7 +286,7 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeC
       </label>
     </div>
     {!totals.length?<StatisticsChartFrame level={zoomLevel} onChange={onZoomLevelChange} range={range} idPrefix="scope-stat">
-      <p className="scope-status">{FEATURE_EMPTY_MESSAGE}</p>
+      <p className="scope-status">{UI_COPY.uiExtra.dataErrors.empty}</p>
     </StatisticsChartFrame>:<>
       <div className="scope-ranking">
         {displayed.slice((currentPage-1)*pageSize,currentPage*pageSize).map(row=><div key={row.term}><strong>{row.term}</strong><span>{row.item_count.toLocaleString()}</span></div>)}
@@ -662,10 +664,10 @@ function ScopeGroupStatistics(){
       choices={memberChoices} onChoicesChange={setMemberChoices}
       graph={memberGraph} onGraphChange={setMemberGraph}
       zoomLevel={zoomLevel} onZoomLevelChange={setZoomLevel} zoomRange={zoomRange}/>
-    {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
-    {policy.error?<p className="scope-status scope-error">{featureDataErrorMessage(policy.error)}</p>:null}
-    {earliest.error?<p className="scope-status scope-error">{featureDataErrorMessage(earliest.error)}</p>:null}
-    {densityQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(densityQuery.error)}</p>:null}
+    {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error,UI_COPY)}</p>:null}
+    {policy.error?<p className="scope-status scope-error">{featureDataErrorMessage(policy.error,UI_COPY)}</p>:null}
+    {earliest.error?<p className="scope-status scope-error">{featureDataErrorMessage(earliest.error,UI_COPY)}</p>:null}
+    {densityQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(densityQuery.error,UI_COPY)}</p>:null}
   </section>;
 }
 
@@ -790,10 +792,10 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       </select></label>:null}
     </div>
     {isLrunesDaily?<LrunesDailyStatisticsPanel/>:<>
-    {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error)}</p>:null}
-    {earliest.error?<p className="scope-status scope-error">{featureDataErrorMessage(earliest.error)}</p>:null}
-    {!mediaDimension&&(trendQuery.error||sourceRows.error||sourceCatalog.error)?<p className="scope-status scope-error">{featureDataErrorMessage(trendQuery.error||sourceRows.error||sourceCatalog.error)}</p>:null}
-    {mediaDimension&&mediaQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(mediaQuery.error)}</p>:null}
+    {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error,UI_COPY)}</p>:null}
+    {earliest.error?<p className="scope-status scope-error">{featureDataErrorMessage(earliest.error,UI_COPY)}</p>:null}
+    {!mediaDimension&&(trendQuery.error||sourceRows.error||sourceCatalog.error)?<p className="scope-status scope-error">{featureDataErrorMessage(trendQuery.error||sourceRows.error||sourceCatalog.error,UI_COPY)}</p>:null}
+    {mediaDimension&&mediaQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(mediaQuery.error,UI_COPY)}</p>:null}
     {!mediaDimension&&!sourceRows.isPending&&!sourceCatalog.isPending&&!sourceRows.error&&!sourceCatalog.error?<>
       <p className="scope-status">{sourceSummary.startDate&&sourceSummary.endDate?sourceSummary.startDate+' ～ '+sourceSummary.endDate:''}</p>
       <SummaryList rankingType={rankingType} summary={sourceSummary}/>
