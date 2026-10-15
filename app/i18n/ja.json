@@ -952,6 +952,31 @@
       "chooseSource": "ソースとグループ分類を選択してください",
       "badSource": "ソース名が無効です",
       "chooseGroup": "有効なグループ分類を選択してください"
+    },
+    "sharing": {
+      "updated": "グループソース分類の共有設定を更新しました。",
+      "title": "グループソース分類・統計共有",
+      "guide": "各ソース分類の既存の共有設定が適用されます。共有を解除するとグループ合計とメンバー間の比較から除外されます。個人の統計・検索・文化表示には影響しません。",
+      "allow": "ほかのメンバーの統計に含める",
+      "loading": "分類の共有設定を読み込み中…",
+      "aria": "グループソース分類の共有設定"
+    },
+    "publisher": {
+      "scopeUnavailable": "Scope データを解決できません",
+      "addTitle": "タイトルを追加",
+      "articleTitle": "記事タイトル",
+      "publish": "公開",
+      "excludeSearch": "公開検索に表示しない",
+      "publishing": "公開中…",
+      "publishArticle": "記事を公開",
+      "source": "ソース",
+      "sourceHint": "例：threads / vocus / personal",
+      "relations": "詳細な関連付け"
+    },
+    "pagination": {
+      "loading": "読み込み中…",
+      "loadMore": "さらに読み込む",
+      "loadMoreAria": "さらにコンテンツを読み込む"
     }
   }
 }
