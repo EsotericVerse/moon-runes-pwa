@@ -684,6 +684,31 @@
       "loadingKeywordAttrs": "アンカー済みキーワード属性を読み込み中…",
       "refreshing": "統計を更新中…",
       "refresh": "最新の統計に更新"
+    },
+    "importUI": {
+      "importTitle": "データ取り込み",
+      "mediaHelp": "外部メディアへの参照とテキストのメタデータのみを保存します。画像・音声・動画ファイルは保存しません。media_id はDBが生成し、URL は任意です。",
+      "mediaUidHint": "8 文字の UID（任意）",
+      "placeHint": "場所・撮影地",
+      "externalUrlHint": "外部 URL／クラウドリンク（任意）",
+      "mediaTitle": "title／ファイル名",
+      "tagHint": "提供元のタグをカンマ区切りで入力",
+      "linkUidInvalid": "galaxy_link は 8 文字の UID または空欄にしてください。",
+      "mediaTypeRequired": "media_type は必須です。",
+      "mediaEncoding": "メディアのメタデータに修復できない文字化けがあります。",
+      "tagsRequired": "meta_tags は提供元による指定が必要です。LOC は自動分類しません。",
+      "scopeUnresolved": "Scope データを解決できません。",
+      "mediaSaved": "メディアの記録を Galaxy Media に保存しました。",
+      "mediaSaveFailed": "メディアの保存に失敗しました。",
+      "sunoImport": "Suno 楽曲を取り込む",
+      "sunoIdHint": "URL から自動判別",
+      "sunoStyleTagHint": "Suno Style の原文から抽出。LP15-3／LunaRunesMusic は追記可能",
+      "sunoRegenerate": "Suno Style から Meta Tags を再抽出",
+      "sunoEncoding": "Suno テキストに修復できない文字化けがあります。",
+      "sunoTitleRequired": "曲名を入力してください。",
+      "sunoTagsRequired": "Media Meta Tags は必須です。LOC は自動分類しません。",
+      "sunoSaved": "Suno 楽曲を保存しました。",
+      "sunoSaveFailed": "Suno 楽曲の保存に失敗しました。"
     }
   }
 }
