@@ -392,8 +392,12 @@ if(!failures.length){
   if(culture.includes('riverAction')||culture.includes('onBoundaryNavigate={riverAction'))failures.push('Culture river must not restore the browse/create mode toggle.');
   const timeline=read('app/modular/modules/culture-timeline/CultureTimeline.jsx');
   // Mobile Safari/WKWebView should not require keyboard modifiers or raw DOM dblclick.
-  for(const token of ["instance.on('doubleClick'","zoomKey:''","scope-timeline-controls","aria-label='放大時間長河'","aria-label='縮小時間長河'","data-anchor-gesture={onTimeClick?'double-tap':'none'}"]){
+  for(const token of ["instance.on('doubleClick'","zoomKey:''","scope-timeline-controls","data-anchor-gesture={onTimeClick?'double-tap':'none'}"]){
     if(!timeline.includes(token))failures.push('Culture timeline touch-accessibility contract missing: '+token);
+  }
+  for(const label of ['放大時間長河','縮小時間長河']){
+    if(!timeline.includes("aria-label='"+label+"'")&&!timeline.includes("aria-label={t('"+label+"')}"))
+      failures.push('Culture timeline touch-accessibility contract missing: '+label);
   }
   if(timeline.includes("addEventListener('dblclick'")||timeline.includes("zoomKey:'ctrlKey'")||timeline.includes("instance.on('click'")||
      !timeline.includes('hiddenDates=EMPTY_HIDDEN_DATES')||!timeline.includes('focus=EMPTY_FOCUS')||
