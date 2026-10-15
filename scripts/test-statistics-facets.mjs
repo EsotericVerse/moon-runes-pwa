@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {DEFAULT_MEDIA_STYLE_EXCLUSIONS,filterMediaStyleRows,mediaFacetDaily,mediaPlatform,mediaStyleExclusions,mediaStyleTags} from '../app/loc/statistics-facets.mjs';
+import {mediaFacetDaily,mediaPlatform,mediaStyleTags} from '../app/loc/statistics-facets.mjs';
 
 test('URL host and path distinguish IG Reels, posts, Vocus and Suno',()=>{
   assert.equal(mediaPlatform({url:'https://www.instagram.com/reel/ABC/?igsh=abc'}),'IG Reels');
@@ -64,15 +64,12 @@ test('timestamps aggregate by Taiwan local calendar day even when DB returns UTC
   ],'media_style'),[{day:'2026-10-08',category:'LunaRunesMusic',item_count:2}]);
 });
 
-test('no hard-coded exclusions; users can explicitly exclude any real tag',()=>{
+test('all valid source Meta Tags remain countable regardless of vocalist spelling',()=>{
   const rows=mediaFacetDaily([
-    {createtime:'2026-10-07T12:00:00+08:00',meta_tags:'LunaRunesMusic,Chinese Classical Hip-Hop,dark boom bap'},
-    {createtime:'2026-10-07T13:00:00+08:00',meta_tags:'LunaRunesMusic,dark boom bap'}
+    {createtime:'2026-10-07T12:00:00+08:00',meta_tags:'Male Voice, Dream Pop'},
+    {createtime:'2026-10-07T13:00:00+08:00',meta_tags:'Male Vocals, Dream Pop'}
   ],'media_style');
-  assert.deepEqual(DEFAULT_MEDIA_STYLE_EXCLUSIONS,[]);
-  assert.deepEqual(Object.fromEntries(filterMediaStyleRows(rows).map(row=>[row.category,row.item_count])),{
-    'Chinese Classical Hip-Hop':1,'LunaRunesMusic':2,'dark boom bap':2
+  assert.deepEqual(Object.fromEntries(rows.map(row=>[row.category,row.item_count])),{
+    'Dream Pop':2,'Male Voice':1,'Male Vocals':1
   });
-  assert.equal(filterMediaStyleRows(rows,['LunaRunesMusic']).some(row=>row.category==='LunaRunesMusic'),false);
-  assert.deepEqual(mediaStyleExclusions('LunaRunesMusic, LunaRunesMusic， dark boom bap'),['LunaRunesMusic','dark boom bap']);
 });
