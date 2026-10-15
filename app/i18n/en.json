@@ -650,6 +650,40 @@
       "saveFailed": "Failed to save settings.",
       "searchNameHint": "Search name or alias",
       "aliasesHint": "One per line, for example:\\nlo3rwang\\nLucas Oscar Wang\\n政德"
+    },
+    "searchUI": {
+      "stylePeriod": "Period:",
+      "unknownStyle": "Cultural style",
+      "openScope": "Open {scope}",
+      "timelineAnchors": "Timeline and official anchors",
+      "exploreMore": "Explore related personal styles",
+      "clickToExplore": " (click to search)",
+      "samePeriodStyles": "Parallel styles in this period",
+      "otherPeriodStyles": "Personal styles from other periods",
+      "countUnavailable": "Statistics unavailable",
+      "documentCount": "{count} works",
+      "uuidHint": "One UUID/ID per line",
+      "mediaUuidHint": "One media UUID per line",
+      "bodyManaged": "Managed by the full-text editor above",
+      "memberSearch": "Member search",
+      "articleDateInvalid": "Invalid article date format.",
+      "groupListInvalid": "group_lists must be valid JSON."
+    },
+    "statisticsUI": {
+      "dailyRune": "Daily runes",
+      "sourceGroup": "Group source categories",
+      "sourceCustom": "Custom source categories",
+      "mediaType": "Media types",
+      "mediaPlatform": "Media platform statistics",
+      "mediaStyle": "Media style statistics (Meta Tag)",
+      "notApplied": "No filter",
+      "keywordClass": "Keyword Class",
+      "loading": "Loading statistics…",
+      "noChart": "No chart data available for this period.",
+      "loadingMediaTags": "Loading media tag combinations…",
+      "loadingKeywordAttrs": "Loading anchored keyword attributes…",
+      "refreshing": "Refreshing statistics…",
+      "refresh": "Refresh live statistics"
     }
   }
 }
