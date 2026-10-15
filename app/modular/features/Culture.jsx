@@ -649,8 +649,8 @@ export default function Culture(){
           <option value='works'><FieldText text="文化作品與時期"/></option>
         </select>
       </label></div>:null}
-      {scopeId==='loc'?<div className='scope-stat-controls'><label><span><FieldText text="LOC 文化觀測模式"/></span>
-        <select className='scope-select' aria-label='LOC 文化觀測模式' value={locCultureView} onChange={event=>setLocCultureView(event.target.value)}>
+      {scopeId==='loc'?<div className='scope-stat-controls'><label><span>{UI_COPY.culture.viewMode}</span>
+        <select className='scope-select' aria-label={UI_COPY.culture.viewMode} value={locCultureView} onChange={event=>setLocCultureView(event.target.value)}>
           <option value='period'><FieldText text="時期交會 · 原有作品列表"/></option>
           <option value='item'><FieldText text="項目交會 · 指定兩條河道"/></option>
         </select>
