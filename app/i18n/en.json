@@ -586,7 +586,6 @@
     "目前沒有資料": "No data",
     "第一條河道依序為定錨點、事件、風格標籤、時期。點選紀錄直接編輯；未定錨的風格可從「新增 → 風格標籤」表單選取。": "The first river shows anchors, events, style tags, and periods. Select a record to edit it; assign unanchored styles from Add → Style tag.",
     "需要時再展開比對作品量變化（候選日期，非正式定錨點）": "Expand to compare work volume changes (candidate dates, not official anchors)",
-    "僅 LOC Admin 設定來源主分類；個別人員的來源命名及歸屬在各自的統計頁管理。": "Only system administrators can configure top-level source categories; each member manages their own source labels in Statistics.",
     "只管理目前人員的原始來源名稱及群組歸屬，不改動作品正文與其他 Scope。": "Manage this member's source names and group categories only; works and other scopes are unchanged.",
     "儲存失敗": "Save failed",
     "標題（不用標題＝文字泡泡，輸入標題＝文字框）": "Title (blank: text bubble; filled: text box)",
