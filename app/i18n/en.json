@@ -847,6 +847,31 @@
       "runeHits": "{count} hits · {ratio}%",
       "totalWithCount": "{count} items",
       "foldBlank": "Collapse empty periods"
+    },
+    "chartTypes": {
+      "line": "Line · Trend",
+      "bar": "Bar · Period comparison",
+      "pie": "Pie · Sources",
+      "area": "Area · Change",
+      "stacked": "Stacked area · Source breakdown",
+      "composed": "Composed · Total and average",
+      "scatter": "Scatter · Source relationship",
+      "radar": "Radar · Period share",
+      "radial": "Radial bar · Active periods",
+      "treemap": "Treemap · Source distribution"
+    },
+    "chartLabels": {
+      "dayUnit": "days",
+      "periodUnit": "periods",
+      "total": "Total",
+      "firstHalf": "First-half share",
+      "lastHalf": "Second-half share",
+      "periodTotal": "Period total",
+      "movingAverage": "3-period moving average",
+      "noComparable": "No comparable data for this period.",
+      "chartAria": "Statistics chart",
+      "gapLabel": "Time gap: ",
+      "gapSeparator": "; "
     }
   }
 }
