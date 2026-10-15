@@ -952,6 +952,31 @@
       "chooseSource": "Select a source and group category",
       "badSource": "Invalid source name",
       "chooseGroup": "Select a valid group source category"
+    },
+    "sharing": {
+      "updated": "Group source category sharing settings updated.",
+      "title": "Group source categories · Sharing",
+      "guide": "Existing sharing preferences apply to each group source category. You can opt out of combined group and member comparisons without changing your own statistics, search or culture views.",
+      "allow": "Include in other members' statistics",
+      "loading": "Loading category sharing settings…",
+      "aria": "Group source category sharing settings"
+    },
+    "publisher": {
+      "scopeUnavailable": "Unable to resolve Scope data",
+      "addTitle": "Add a title",
+      "articleTitle": "Article title",
+      "publish": "Publish",
+      "excludeSearch": "Hide from public search",
+      "publishing": "Publishing…",
+      "publishArticle": "Publish article",
+      "source": "Source",
+      "sourceHint": "e.g. threads / vocus / personal",
+      "relations": "Advanced relations"
+    },
+    "pagination": {
+      "loading": "Loading…",
+      "loadMore": "Load more",
+      "loadMoreAria": "Load more content"
     }
   }
 }
