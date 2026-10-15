@@ -3,6 +3,7 @@ import FieldText from '../../i18n/FieldText';
 
 import {UI_COPY} from '../../i18n/ui-copy';
 import {useUiCopy} from '../../i18n/ui-locale';
+import UiText,{useUiText} from '../../i18n/UiText';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
@@ -112,6 +113,7 @@ function GalaxyAttrSummary({row}){
 }
 
 function GalaxyAttrEditor({draft,setDraft}){
+  const t=useUiText();
   const attrs=draft?.attrs||{};
   const change=(key,value)=>setDraft(current=>({...current,attrs:{...(current?.attrs||{}),[key]:value}}));
   return <details className="scope-search-attr-panel" open>
@@ -128,11 +130,11 @@ function GalaxyAttrEditor({draft,setDraft}){
       <label><span>class_id</span><input type="number" value={attrs.class_id??''} onChange={event=>change('class_id',event.target.value)}/></label>
       <label className="scope-setting-toggle"><input type="checkbox" checked={attrs.searchable!==false} onChange={event=>change('searchable',event.target.checked)}/><span>searchable</span></label>
       <label className="scope-setting-toggle"><input type="checkbox" checked={attrs.statistics_able!==false} onChange={event=>change('statistics_able',event.target.checked)}/><span>statistics_able</span></label>
-      <label className="scope-management-wide-field"><span>target_id[]</span><textarea rows={3} value={attrs.target_id||''} onChange={event=>change('target_id',event.target.value)} placeholder="一行一個 UUID／ID"/></label>
-      <label className="scope-management-wide-field"><span>media_link[]</span><textarea rows={3} value={attrs.media_link||''} onChange={event=>change('media_link',event.target.value)} placeholder="一行一個 media UUID"/></label>
+      <label className="scope-management-wide-field"><span>target_id[]</span><textarea rows={3} value={attrs.target_id||''} onChange={event=>change('target_id',event.target.value)} placeholder={t('uiExtra.searchUI.uuidHint')}/></label>
+      <label className="scope-management-wide-field"><span>media_link[]</span><textarea rows={3} value={attrs.media_link||''} onChange={event=>change('media_link',event.target.value)} placeholder={t('uiExtra.searchUI.mediaUuidHint')}/></label>
       <label className="scope-management-wide-field"><span>group_lists (JSON)</span><textarea rows={5} value={attrs.group_lists||''} onChange={event=>change('group_lists',event.target.value)}/></label>
       <label><span>UpdateTime</span><input value={attrs.UpdateTime||''} readOnly/></label>
-      <label><span>content</span><input value="由上方全文編輯器管理" readOnly/></label>
+      <label><span>content</span><input value={t('uiExtra.searchUI.bodyManaged')} readOnly/></label>
     </div>
   </details>;
 }
@@ -167,7 +169,7 @@ function highlightSearchText(text='',query=''){
 
 
 function rowText(row){return Object.values(row||{}).filter(value=>typeof value==='string').join(' ')}
-function toResult(row,source,scopeId){
+function toResult(row,source,scopeId,copy=UI_COPY){
   const text=rowText(row);
   const isGalaxy=Boolean(row.uid);
   const isMedia=Boolean(row.media_id);
@@ -180,8 +182,8 @@ function toResult(row,source,scopeId){
   const displaySource=isGalaxy&&row.source_name?String(row.source_name):source;
   const mediaMetadata=[
     row.meta_tags,
-    row.media_type?(UI_COPY.search.typePrefix+row.media_type):'',
-    row.source_native_id?(UI_COPY.search.sourceIdPrefix+row.source_native_id):''
+    row.media_type?(copy.search.typePrefix+row.media_type):'',
+    row.source_native_id?(copy.search.sourceIdPrefix+row.source_native_id):''
   ].map(value=>workDisplayText(value||'').trim()).filter(Boolean).join(' · ');
   const body=isMedia
     ?(mediaMetadata||(bodyField?workDisplayText(row[bodyField]):text))
@@ -212,18 +214,18 @@ function toResult(row,source,scopeId){
     relationLinks:resourceType==='galaxy'
       ?galaxyRelationLinks(scope,row)
       :(resourceType==='galaxy_media'&&row.galaxy_link
-        ?[{id:'galaxy:'+row.galaxy_link,label:UI_COPY.search.parentText,href:galaxyIdentityHref(scope,row.galaxy_link)}].filter(link=>link.href)
+        ?[{id:'galaxy:'+row.galaxy_link,label:copy.search.parentText,href:galaxyIdentityHref(scope,row.galaxy_link)}].filter(link=>link.href)
         :[]),
     groupKey:resourceType==='galaxy'&&resourceId
       ?'galaxy:'+scope+':'+resourceId
       :(resourceType==='galaxy_media'&&row.galaxy_link?'galaxy:'+scope+':'+row.galaxy_link:'result:'+scope+':'+(identity||title)),
-    links:[...(href?[{id:resourceType||'primary',href,label:resourceType==='galaxy_media'?UI_COPY.search.mediaLink:UI_COPY.search.externalLink}]:[]),...(Array.isArray(row.resolved_links)?row.resolved_links:[])],
+    links:[...(href?[{id:resourceType||'primary',href,label:resourceType==='galaxy_media'?copy.search.mediaLink:copy.search.externalLink}]:[]),...(Array.isArray(row.resolved_links)?row.resolved_links:[])],
     destinations:[]
   };
 }
 
 
-function mergeSummaryResults(rows=[]){
+function mergeSummaryResults(rows=[],copy=UI_COPY){
   const groups=new Map();
   for(const row of rows){
     const key=row.groupKey||row.key;
@@ -235,7 +237,7 @@ function mergeSummaryResults(rows=[]){
     const preferRow=current.resourceType==='galaxy'?current:(row.resourceType==='galaxy'?row:current);
     const links=[...(current.links||[]),...(row.links||[])];
     const uniqueLinks=[...new Map(links.filter(link=>link?.href).map(link=>[link.href,link])).values()]
-      .map((link,index)=>({...link,label:(links.length>1&&link.label===UI_COPY.search.mediaLink)?UI_COPY.format.songLink(index+1):link.label}));
+      .map((link,index)=>({...link,label:(links.length>1&&link.label===copy.search.mediaLink)?copy.format.songLink(index+1):link.label}));
     groups.set(key,{
       ...preferRow,
       links:uniqueLinks,
@@ -248,6 +250,7 @@ function mergeSummaryResults(rows=[]){
 
 export default function Search(){
   const UI_COPY=useUiCopy();
+  const t=useUiText();
   const {scopeId,scope}=useScopeRuntime();
   const account=useAccount();
   const searchParams=useSearchParams();
@@ -391,12 +394,12 @@ export default function Search(){
       if(!append)matchedQueryRef.current=q;
       const converted=[];const seen=new Set();
       for(const {row,source} of [...styleIntroductions,...enrichedRows]){
-        const result=toResult(row,source,scopeId);
+        const result=toResult(row,source,scopeId,UI_COPY);
         if(!result||seen.has(result.key))continue;
         seen.add(result.key);converted.push(result);
       }
-      const pageResults=mergeSummaryResults(converted);
-      setResults(current=>append?mergeSummaryResults([...current,...pageResults]):pageResults);
+      const pageResults=mergeSummaryResults(converted,UI_COPY);
+      setResults(current=>append?mergeSummaryResults([...current,...pageResults],UI_COPY):pageResults);
             setHasMore(Boolean(search.hasMore));
       setNextCursor(search.nextCursor??null);
       const partial=search.failures?.length?'（部分延伸資料暫時無法查詢）':'';
@@ -582,7 +585,7 @@ export default function Search(){
     <ScopeGroupOverview
       scopeId={scopeId}
       featureId="search"
-      title="成員搜尋"
+      title={t('uiExtra.searchUI.memberSearch')}
       description=""
     />
   </FeaturePage>;
@@ -625,26 +628,26 @@ export default function Search(){
           showLinks
         >
           {row.styleIntro?<div className="scope-style-search-connections">
-            <p className="scope-status"><strong>所屬時期：</strong>{row.stylePeriod||'文化風格'}</p>
+            <p className="scope-status"><strong><UiText id="uiExtra.searchUI.stylePeriod"/></strong>{row.stylePeriod||t('uiExtra.searchUI.unknownStyle')}</p>
             <div className="scope-preview-links">
-              <a href={scopeHref(row.scopeId)}>前往 {row.scopeId}</a>
-              {(row.styleAnchorStart||row.styleAnchorEnd)?<a href={featureNavigationHref(row.scopeId,'culture',{...(row.styleAnchorStart?{from:row.styleAnchorStart}:{}),...(row.styleAnchorEnd?{to:row.styleAnchorEnd}:{})})}>時間長河與既有定錨點</a>:null}
+              <a href={scopeHref(row.scopeId)}><UiText id="uiExtra.searchUI.openScope" params={{scope:row.scopeId}}/></a>
+              {(row.styleAnchorStart||row.styleAnchorEnd)?<a href={featureNavigationHref(row.scopeId,'culture',{...(row.styleAnchorStart?{from:row.styleAnchorStart}:{}),...(row.styleAnchorEnd?{to:row.styleAnchorEnd}:{})})}><UiText id="uiExtra.searchUI.timelineAnchors"/></a>:null}
             </div>
             {row.relatedStyleTags.length?<div className="scope-style-search-related">
-              <p className="scope-status"><strong>延伸探索：其他個人風格</strong>（點擊可繼續搜尋）</p>
+              <p className="scope-status"><strong><UiText id="uiExtra.searchUI.exploreMore"/></strong><UiText id="uiExtra.searchUI.clickToExplore"/></p>
               {row.relatedStyleTags.some(style=>style.same_period)?<div className="scope-style-search-related-group">
-                <span><FieldText text="同時期平行風格"/></span>
+                <span><UiText id="uiExtra.searchUI.samePeriodStyles"/></span>
                 <div className="scope-style-search-related-links">
                   {row.relatedStyleTags.filter(style=>style.same_period).map(style=><a key={style.name} href={featureNavigationHref(row.scopeId,'search',{q:style.name})}>
-                    {style.name} · {style.document_total===null?'統計暫不可用':style.document_total.toLocaleString()+' 篇'}
+                    {style.name} · {style.document_total===null?t('uiExtra.searchUI.countUnavailable'):t('uiExtra.searchUI.documentCount',{count:style.document_total.toLocaleString()})}
                   </a>)}
                 </div>
               </div>:null}
               {row.relatedStyleTags.some(style=>!style.same_period)?<div className="scope-style-search-related-group">
-                <span><FieldText text="其他時期的個人風格"/></span>
+                <span><UiText id="uiExtra.searchUI.otherPeriodStyles"/></span>
                 <div className="scope-style-search-related-links">
                   {row.relatedStyleTags.filter(style=>!style.same_period).map(style=><a key={style.name} href={featureNavigationHref(row.scopeId,'search',{q:style.name})}>
-                    {style.name} · {style.document_total===null?'統計暫不可用':style.document_total.toLocaleString()+' 篇'}
+                    {style.name} · {style.document_total===null?t('uiExtra.searchUI.countUnavailable'):t('uiExtra.searchUI.documentCount',{count:style.document_total.toLocaleString()})}
                   </a>)}
                 </div>
               </div>:null}
