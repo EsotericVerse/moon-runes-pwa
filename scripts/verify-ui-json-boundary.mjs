@@ -29,6 +29,19 @@ for(const locale of locales){
       locale+' dictionary keys differ in '+section);
   }
 }
+// Locales must preserve named placeholders used by UI composition. A missing
+// placeholder can silently break counts, error details, and timeline tooltips.
+const atPath=(node,path)=>path.split('.').reduce((current,key)=>current?.[key],node);
+const placeholders=value=>[...String(value).matchAll(/\{([A-Za-z][A-Za-z0-9_]*)\}/gu)].map(match=>match[1]).sort();
+for(const locale of locales){
+  for(const key of keysOf(zh)){
+    const source=atPath(zh,key);
+    const target=atPath(dictionaries[locale],key);
+    assert.equal(typeof target,typeof source,locale+' changed UI leaf type: '+key);
+    if(typeof source==='string')assert.deepEqual(placeholders(target),placeholders(source),
+      locale+' changed UI interpolation placeholders: '+key);
+  }
+}
 const cleared=[
   'app/loc/ScopeGroupManagement.jsx',
   'app/loc/ScopeGroupOverview.jsx',
