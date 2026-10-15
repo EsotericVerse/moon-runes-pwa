@@ -816,7 +816,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         {mediaQuery.isFetching?t('uiExtra.statisticsUI.refreshing'):t('uiExtra.statisticsUI.refresh')}
       </button>
     </div>:null}
-    {rankingType==='media_style'&&crossTagQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(crossTagQuery.error)}</p>:null}
+    {rankingType==='media_style'&&crossTagQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(crossTagQuery.error,UI_COPY)}</p>:null}
     {rankingType==='media_style'&&crossTagQuery.isPending?<p className="scope-status"><UiText id="uiExtra.statisticsUI.loadingMediaTags"/></p>:null}
     {rankingType==='media_style'&&!crossTagQuery.isPending&&!crossTagQuery.error?<MediaCrossTagStatistics
       rows={crossTagQuery.data||[]}
