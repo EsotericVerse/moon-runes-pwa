@@ -932,6 +932,28 @@
       "body": "Body text (BlockNote)",
       "clickToCreate": "Click to create a text card.",
       "addBlock": "+ Add text card"
+    },
+    "sourceCategory": {
+      "groupTitle": "Group source categories",
+      "groupGuide": "LOC administrators set the group source categories. Each member manages their own source labels and assignments under Statistics.",
+      "code": "Category code",
+      "name": "Category name",
+      "createGroup": "Add group source category",
+      "saveName": "Save name",
+      "disable": "Disable",
+      "enable": "Enable",
+      "defaultMap": "Default group assignments",
+      "rawSource": "Original source",
+      "assign": "Assign category",
+      "personalTitle": "Custom personal source categories",
+      "personalGuide": "Only source names and group assignments for this member are managed here. Works and other Scopes are unchanged.",
+      "displayName": "Custom display name",
+      "savePersonal": "Save personal source category",
+      "customName": "Custom name",
+      "badCode": "Invalid category code or name",
+      "chooseSource": "Select a source and group category",
+      "badSource": "Invalid source name",
+      "chooseGroup": "Select a valid group source category"
     }
   }
 }
