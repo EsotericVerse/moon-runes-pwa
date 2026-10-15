@@ -374,7 +374,7 @@ if(!failures.length){
      culture.includes('尋找風格標籤')||culture.includes('尋找既有定錨點')||
      culture.includes('新增時期（選擇既有定錨點）')||culture.includes('新增事件（選擇既有定錨點）')||
      culture.includes('scope-culture-style-panel')||
-     !read('app/modular/modules/culture-timeline/CultureTimeline.jsx').includes("style_comment:'風格標籤',period:'時期'")){
+     !read('app/modular/modules/culture-timeline/CultureTimeline.jsx').includes('style_comment:labels.styleComment,period:labels.period')){
     failures.push('First Time river must show style as third type, period fourth, and use one compact add selector.');
   }
   const timeEditor=read('app/modular/features/CultureTimelineEditor.jsx');
@@ -388,7 +388,7 @@ if(!failures.length){
      timeEditor.includes('addIntermediateAnchor')){
     failures.push('Unified Time editor must select period 1–2 / event 2 / style 1 anchors and preserve legacy events.');
   }
-  for(const token of ['currentStructurePeriod','items={timelineItems}','windowStart={currentStructureStart}','windowEnd={currentStructureEnd}','labelOf={labelOf}'])if(!culture.includes(token))failures.push('Culture first river must retain all historic anchors and keep the camera focused on the selected period: '+token);
+  for(const token of ['currentStructurePeriod','items={timelineItems}','windowStart={currentStructureStart}','windowEnd={currentStructureEnd}','labelOf={localizedLabelOf}'])if(!culture.includes(token))failures.push('Culture first river must retain all historic anchors and keep the camera focused on the selected period: '+token);
   if(culture.includes('riverAction')||culture.includes('onBoundaryNavigate={riverAction'))failures.push('Culture river must not restore the browse/create mode toggle.');
   const timeline=read('app/modular/modules/culture-timeline/CultureTimeline.jsx');
   // Mobile Safari/WKWebView should not require keyboard modifiers or raw DOM dblclick.
