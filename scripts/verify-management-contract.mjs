@@ -196,7 +196,7 @@ must(personalGovernance.includes('ScopeEditableBlocks')&&personalGovernance.incl
 must(runesGovernance.includes('ScopeEditableBlocks')&&runesGovernance.includes('page="governance"'),'LunaRunes governance must use governance block rows');
 must(!publisher.includes('content_blocks')&&!sharedSearch.includes('content_blocks')&&!cultureUi.includes('content_blocks')&&!galaxy.includes('content_blocks')&&!featureUi.includes('blocks=null'),'Galaxy must read, write and display canonical content only');
 must(sharedSearch.includes('startEditing')&&sharedSearch.includes('BlockNoteEditor')&&sharedSearch.includes('GALAXY_EDITOR_COLUMNS')&&sharedSearch.includes('GalaxyAttrSummary')&&sharedSearch.includes('GalaxyAttrEditor')&&sharedSearch.includes("fullTextKey===row.key")&&sharedSearch.includes('updateRows'),'Search must open full Galaxy articles first, then expose permission-gated full Attr editing');
-must(editor.includes('風格標籤（新增／編輯）')&&editor.includes('風格專屬敘述（TEXT）')&&editor.includes("row.status==='needs_anchor'")&&!cultureUi.includes('尋找風格標籤')&&!cultureUi.includes('scope-culture-style-panel'),'Shared Time editor must let authors select existing or pending styles, without a top-level duplicate lookup');
+must(editor.includes('l.styleEditor')&&editor.includes('l.styleText')&&editor.includes("row.status==='needs_anchor'")&&!cultureUi.includes('尋找風格標籤')&&!cultureUi.includes('scope-culture-style-panel'),'Shared Time editor must let authors select existing or pending styles, without a top-level duplicate lookup');
 must(!cultureUi.includes('尋找既有定錨點')&&!cultureUi.includes('尋找風格標籤')&&
   cultureUi.includes('＋ 新增正式定錨點')&&cultureUi.includes("aria-label={translateUiField(locale,'新增時間長河紀錄')}")&&
   [['period','時期'],['event','事件'],['style_comment','風格標籤']].every(([value,label])=>functionalOption(cultureUi,value,label))&&
@@ -211,7 +211,7 @@ must(editor.includes("ids.length!==2||concrete.length!==2")&&
   'Canonical Time anchor counts are period 1–2, event 2, style 1; historic 1/3 point events are not silently changed');
 must(nativeTimeline.includes('hasTimeKinds')&&nativeTimeline.includes("style_comment:'風格標籤'")&&nativeTimeline.includes('standardTimeKinds.map'),'Time chart must create the fourth style group even when it is empty');
 must(cultureUi.includes('beginTimelineCreation')&&cultureUi.includes('items={timelineItems}')&&cultureUi.includes('...classificationBuckets,...virtualAnchorItems')&&!cultureUi.includes('anchorReviews.map')&&
-  editor.includes('時期：1 或 2 個定錨點')&&editor.includes('事件：固定選擇 2 個定錨點')&&editor.includes('anchorOptions.map(row=>')&&!editor.includes('CultureStyleTagsField'),
+  editor.includes('l.periodHint')&&editor.includes('l.eventHint')&&editor.includes('anchorOptions.map(row=>')&&!editor.includes('CultureStyleTagsField'),
   'Shared Time editor must use 1–2 anchors for periods, 2 for events, 1 for styles, without extra controls');
 must(nativeTimeline.includes('new Timeline(')&&['onAdd:','onMove:','onUpdate:','onRemove:','add:Boolean(onAddRef.current)','onTimeClickRef.current'].every(token=>nativeTimeline.includes(token)),'Time manipulation must retain vis-timeline edits and make add opt-in to avoid river gesture collisions');
 
