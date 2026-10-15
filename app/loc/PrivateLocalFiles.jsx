@@ -1,20 +1,22 @@
 'use client';
-import FieldText from '../i18n/FieldText';
+import {useUiCopy,useUiLocale} from '../i18n/ui-locale';
 
 import {useEffect,useRef,useState} from 'react';
 import {Capacitor} from '@capacitor/core';
 import {createPrivateLocalStore,isTextPrivateFile,privateFilePath,PRIVATE_FILE_MAX_BYTES} from './private-local-files.mjs';
 
-const byteLabel=size=>{
-  if(!Number.isFinite(size))return '未知大小';
+const byteLabel=(size,l)=>{
+  if(!Number.isFinite(size))return l.unknownSize;
   if(size<1024)return size+' B';
   if(size<1024*1024)return (size/1024).toFixed(1)+' KB';
   return (size/(1024*1024)).toFixed(1)+' MB';
 };
 const privateNative=()=>Capacitor.isNativePlatform()&&Capacitor.getPlatform()==='ios';
-const readableDate=value=>value?new Date(value).toLocaleString('zh-TW'):'未知日期';
+const readableDate=(value,locale,l)=>value?new Date(value).toLocaleString(locale):l.unknownDate;
 
 export default function PrivateLocalFiles(){
+  const l=useUiCopy().privateFiles;
+  const {locale}=useUiLocale();
   const picker=useRef(null);
   const [native,setNative]=useState(false);
   const [store,setStore]=useState(null);
@@ -35,14 +37,14 @@ export default function PrivateLocalFiles(){
     (async()=>{
       try{
         const {Filesystem,Directory}=await import('@capacitor/filesystem');
-        if(!Directory.LibraryNoCloud)throw new Error('此版本的原生 Filesystem 不支援無雲端備份目錄。');
+        if(!Directory.LibraryNoCloud)throw new Error(l.unsupportedStorage);
         const storage=createPrivateLocalStore(Filesystem,Directory.LibraryNoCloud);
         const files=await storage.list();
         if(active){setStore(storage);setEntries(files);}
-      }catch(e){if(active)setError('本機檔案庫啟動失敗：'+String(e?.message||e));}
+      }catch(e){if(active)setError(l.startupFailed+String(e?.message||e));}
     })();
     return()=>{active=false;};
-  },[]);
+  },[l]);
 
   if(!native)return null;
 
@@ -56,7 +58,7 @@ export default function PrivateLocalFiles(){
     try{
       for(const file of files){
         if(file.size>PRIVATE_FILE_MAX_BYTES){
-          failures.push(file.name+'：單檔超過 512 MB');continue;
+          failures.push(file.name+l.fileTooLarge);continue;
         }
         try{
           await store.importFile(file,(written,total)=>setProgress({
@@ -67,9 +69,9 @@ export default function PrivateLocalFiles(){
       }
       setEntries(await store.list());
       window.dispatchEvent(new CustomEvent('loc-private-file-changed'));
-      setStatus('已將 '+completed+'／'+files.length+' 份原始檔案保存於這支 iPhone；沒有上傳到 Supabase、Neon 或網站。');
-      if(failures.length)setError(failures.join('；'));
-    }catch(e){setError('檔案清單更新失敗：'+String(e?.message||e));}
+      setStatus(l.savedPrefix+completed+' / '+files.length+l.savedMiddle);
+      if(failures.length)setError(failures.join('; '));
+    }catch(e){setError(l.fileListFailed+String(e?.message||e));}
     finally{setProgress(null);setBusy(false);}
   }
 
@@ -80,7 +82,7 @@ export default function PrivateLocalFiles(){
       const text=await store.preview(entry.id,nextEncoding);
       setEncoding(nextEncoding);
       setPreview({id:entry.id,name:entry.name,text});
-    }catch(e){setPreview(null);setError('本機預覽失敗：'+String(e?.message||e));}
+    }catch(e){setPreview(null);setError(l.previewFailed+String(e?.message||e));}
     finally{setBusy(false);}
   }
 
@@ -103,10 +105,10 @@ export default function PrivateLocalFiles(){
         to:copyPath,toDirectory:Directory.Cache
       });
       const {uri}=await Filesystem.getUri({path:copyPath,directory:Directory.Cache});
-      if(!uri)throw new Error('無法取得本機分享檔案。');
-      await Share.share({title:entry.name,url:uri,dialogTitle:'開啟或另存私人檔案'});
-      setStatus('已交給 iOS 開啟／分享選單；只有你選擇的目標會收到檔案。');
-    }catch(e){setError('開啟／分享失敗：'+String(e?.message||e));}
+      if(!uri)throw new Error(l.shareUnavailable);
+      await Share.share({title:entry.name,url:uri,dialogTitle:l.shareTitle});
+      setStatus(l.shareSuccess);
+    }catch(e){setError(l.shareFailed+String(e?.message||e));}
     finally{
       if(copyPath){
         try{
@@ -128,59 +130,59 @@ export default function PrivateLocalFiles(){
       window.dispatchEvent(new CustomEvent('loc-private-file-changed'));
       setPendingDelete('');
       setPreview(null);
-      setStatus('已從這支裝置刪除「'+entry.name+'」，不影響原先在 iOS 檔案 App 的來源檔。');
-    }catch(e){setError('刪除失敗：'+String(e?.message||e));}
+      setStatus(l.deletePrefix+entry.name+l.deleteSuffix);
+    }catch(e){setError(l.deleteFailed+String(e?.message||e));}
     finally{setBusy(false);}
   }
 
   return <section className="loc-card" aria-labelledby="loc-private-files-heading">
-    <h2 id="loc-private-files-heading"><FieldText text="私人 Local File（僅此 iPhone）"/></h2>
-    <p className="scope-settings-note">檔案僅保存在此裝置。單檔上限 512 MB；卸載 App 可能遺失本機資料。</p>
+    <h2 id="loc-private-files-heading">{l.title}</h2>
+    <p className="scope-settings-note">{l.disclaimer}</p>
     <div className="scope-stat-controls">
-      <button type="button" className="loc-button primary" onClick={()=>picker.current?.click()} disabled={busy||!store}><FieldText text="選擇本機檔案匯入"/></button>
+      <button type="button" className="loc-button primary" onClick={()=>picker.current?.click()} disabled={busy||!store}>{l.import}</button>
       <button type="button" className="loc-button" onClick={async()=>{
         if(busy||!store)return;
         setBusy(true);setError('');
-        try{setEntries(await store.list());setStatus('已重新載入此 iPhone 的本機檔案清單。');}
-        catch(e){setError('更新清單失敗：'+String(e?.message||e));}
+        try{setEntries(await store.list());setStatus(l.refreshSuccess);}
+        catch(e){setError(l.refreshFailed+String(e?.message||e));}
         finally{setBusy(false);}
-      }} disabled={busy||!store}>重新整理清單</button>
-      <input ref={picker} hidden type="file" multiple onChange={chooseFiles} aria-label="選取要保存在 iPhone 的本機檔案"/>
+      }} disabled={busy||!store}>{l.refresh}</button>
+      <input ref={picker} hidden type="file" multiple onChange={chooseFiles} aria-label={l.fileInput}/>
     </div>
-    {!store&&!error?<p className="scope-settings-note" role="status">正在開啟本機檔案庫…</p>:null}
-    {progress?<p role="status" className="scope-settings-note">正在儲存 {progress.name}：{byteLabel(progress.written)}／{byteLabel(progress.total)}（已完成 {progress.completed}／{progress.count} 檔）</p>:null}
+    {!store&&!error?<p className="scope-settings-note" role="status">{l.opening}</p>:null}
+    {progress?<p role="status" className="scope-settings-note">{l.saving}{progress.name}: {byteLabel(progress.written,l)} / {byteLabel(progress.total,l)}{l.completed}{progress.completed} / {progress.count}{l.fileUnit}</p>:null}
     {status?<p role="status" className="scope-status">{status}</p>:null}
     {error?<p role="alert" className="scope-status scope-error">{error}</p>:null}
-    <h3>已保存在此裝置（{entries.length}）</h3>
-    {store&&!entries.length?<p className="scope-settings-note">目前沒有保存的本機檔案。</p>:null}
+    <h3>{l.savedCount}{entries.length}）</h3>
+    {store&&!entries.length?<p className="scope-settings-note">{l.empty}</p>:null}
     {entries.map(entry=><div key={entry.id} className="scope-inline-card">
       <strong style={{overflowWrap:'anywhere'}}>{entry.name}</strong>
-      <p className="scope-settings-note">{byteLabel(entry.size)} · 匯入 {readableDate(entry.importedAt)}{entry.lastModified?' · 原始修改 '+readableDate(entry.lastModified):''}</p>
-      {entry.detection?<p className="scope-settings-note">內容辨識：{entry.detection.label}（{entry.detection.certainty==='high'?'特徵明確':entry.detection.certainty==='medium'?'初步符合':'未確認'}）{entry.detection.encoding?' · 建議編碼 '+entry.detection.encoding:''}。{entry.detection.reason}</p>:<p className="scope-settings-note">舊版匯入資料：尚未進行內容辨識，原始檔保留不變。</p>}
+      <p className="scope-settings-note">{byteLabel(entry.size,l)}{l.importDate}{readableDate(entry.importedAt,locale,l)}{entry.lastModified?l.modifiedDate+readableDate(entry.lastModified,locale,l):''}</p>
+      {entry.detection?<p className="scope-settings-note">{l.recognition}{entry.detection.label} ({entry.detection.certainty==='high'?l.high:entry.detection.certainty==='medium'?l.medium:l.unconfirmed}){entry.detection.encoding?l.suggestedEncoding+entry.detection.encoding:''}. {entry.detection.reason}</p>:<p className="scope-settings-note">{l.legacy}</p>}
       <div className="scope-stat-controls">
-        {isTextPrivateFile(entry)?<button type="button" className="loc-button" onClick={()=>showText(entry)} disabled={busy}>文字預覽</button>:null}
-        <button type="button" className="loc-button" onClick={()=>openWithIOS(entry)} disabled={busy}>開啟／分享</button>
+        {isTextPrivateFile(entry)?<button type="button" className="loc-button" onClick={()=>showText(entry)} disabled={busy}>{l.preview}</button>:null}
+        <button type="button" className="loc-button" onClick={()=>openWithIOS(entry)} disabled={busy}>{l.openShare}</button>
         <button type="button" className="loc-button" disabled={busy} onClick={()=>remove(entry)}>
-          {pendingDelete===entry.id?'確認永久刪除':'刪除本機副本'}
+          {pendingDelete===entry.id?l.deleteConfirm:l.deleteCopy}
         </button>
-        {pendingDelete===entry.id?<button type="button" className="loc-button" onClick={()=>setPendingDelete('')} disabled={busy}><FieldText text="取消"/></button>:null}
+        {pendingDelete===entry.id?<button type="button" className="loc-button" onClick={()=>setPendingDelete('')} disabled={busy}>{l.cancel}</button>:null}
       </div>
       {preview?.id===entry.id?<div>
-        <label>文字編碼
+        <label>{l.encoding}
           <select className="scope-select" value={encoding} onChange={event=>{
             const value=event.target.value;
             setEncoding(value);
             showText(entry,value);
           }} disabled={busy}>
-            <option value="auto">自動（依內容辨識）</option>
+            <option value="auto">{l.autoEncoding}</option>
             <option value="utf-8">UTF-8</option>
-            <option value="big5">Big5（繁中舊資料）</option>
+            <option value="big5">{l.big5}</option>
             <option value="utf-16le">UTF-16 LE</option>
             <option value="utf-16be">UTF-16 BE</option>
           </select>
         </label>
         <pre style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere',maxHeight:'24rem',overflowY:'auto'}}>{preview.text}</pre>
-        <button type="button" className="loc-button" onClick={()=>setPreview(null)}>關閉預覽</button>
+        <button type="button" className="loc-button" onClick={()=>setPreview(null)}>{l.closePreview}</button>
       </div>:null}
     </div>)}
   </section>;
