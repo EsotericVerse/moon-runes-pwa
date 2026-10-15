@@ -650,6 +650,40 @@
       "saveFailed": "設定を保存できませんでした。",
       "searchNameHint": "名前または別名を検索",
       "aliasesHint": "1 行に 1 つずつ入力、例：\\nlo3rwang\\nLucas Oscar Wang\\n政德"
+    },
+    "searchUI": {
+      "stylePeriod": "所属期間：",
+      "unknownStyle": "文化スタイル",
+      "openScope": "{scope}を開く",
+      "timelineAnchors": "タイムラインと正式アンカー",
+      "exploreMore": "関連する個人スタイルを探す",
+      "clickToExplore": "（クリックで検索）",
+      "samePeriodStyles": "同じ期間の並行スタイル",
+      "otherPeriodStyles": "他の期間の個人スタイル",
+      "countUnavailable": "統計を利用できません",
+      "documentCount": "{count} 件",
+      "uuidHint": "1 行に 1 UUID／ID",
+      "mediaUuidHint": "1 行に 1 メディア UUID",
+      "bodyManaged": "上の全文エディターで管理",
+      "memberSearch": "メンバー検索",
+      "articleDateInvalid": "記事の日時形式が無効です。",
+      "groupListInvalid": "group_lists は有効な JSON である必要があります。"
+    },
+    "statisticsUI": {
+      "dailyRune": "毎日のルーン",
+      "sourceGroup": "グループのソース分類",
+      "sourceCustom": "個人のカスタムソース分類",
+      "mediaType": "メディアの種類",
+      "mediaPlatform": "メディアプラットフォーム統計",
+      "mediaStyle": "メディアスタイル統計（メタタグ）",
+      "notApplied": "適用しない",
+      "keywordClass": "キーワード Class",
+      "loading": "統計を読み込み中…",
+      "noChart": "選択した期間に表示できるグラフがありません。",
+      "loadingMediaTags": "メディアタグの組み合わせを読み込み中…",
+      "loadingKeywordAttrs": "アンカー済みキーワード属性を読み込み中…",
+      "refreshing": "統計を更新中…",
+      "refresh": "最新の統計に更新"
     }
   }
 }
