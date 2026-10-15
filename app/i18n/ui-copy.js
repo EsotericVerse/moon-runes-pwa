@@ -287,14 +287,145 @@ const en=Object.freeze({
   })
 });
 
+
+const ja=Object.freeze({
+  ...en,
+  common:Object.freeze({...en.common,
+    save:'保存',saving:'保存中…',add:'追加',edit:'編集',delete:'削除',cancel:'キャンセル',
+    retry:'再読み込み',refresh:'更新',loading:'読み込み中…',none:'データがありません。',
+    title:'タイトル',body:'全文',date:'日付',type:'種類',source:'ソース',result:'結果',
+    settings:'設定',management:'管理',hiddenFromSearch:'検索対象から除外',
+    theme:'テーマ',systemTheme:'システム既定',autoTheme:'自動（日中／夜間）',language:'言語'
+  }),
+  nav:Object.freeze({...en.nav,
+    aria:'サイト内ナビゲーション',author:'著者紹介',home:'LOCホーム',
+    search:'検索',searchAria:'テキスト検索',contact:'お問い合わせ'
+  }),
+  features:Object.freeze({
+    statics:Object.freeze({title:'統計',
+      subtitle:'作品数、ソースの比率、時間による変化をグラフで確認します。',
+      description:'統計項目、グラフ、期間を選び、分布と変化を比較します。'}),
+    culture:Object.freeze({title:'文化',
+      subtitle:'作品を時系列で表示し、各時期の蓄積と変化を確認します。',
+      description:'タイムラインに作品とソースを日付順に表示し、アンカーで時期を区切って比較します。'}),
+    governance:Object.freeze({title:'ガバナンス',
+      subtitle:'利用原則、権利の範囲、管理方法を案内します。',
+      description:'このスコープの基本原則、著作権、利用許諾を確認できます。'}),
+    search:Object.freeze({title:'検索',
+      subtitle:'キーワードからテキスト、作品、メディアを探します。',
+      description:'検索結果にはソースと関連情報を残し、元の内容を確認できます。'})
+  }),
+  scope:Object.freeze({
+    ...en.scope,
+    loc:Object.freeze({...en.scope.loc,label:'LOC',ranking:'総合ランキング',
+      statics:'作品数、ソースの比率、時間の変化をグラフで確認します。',
+      culture:'作品をタイムラインに並べ、時期ごとの違いを比較します。',
+      governance:'LOCの利用原則、権利の範囲、管理方法。',
+      search:'LOCのテキスト、作品、メディアなどを検索します。'}),
+    author:Object.freeze({...en.scope.author,label:'著者紹介',ranking:'著者ランキング',
+      search:'キーワード、作品、ソース、日付から関連する内容を探します。'}),
+    admin:Object.freeze({...en.scope.admin,label:'システム管理',ranking:'ランキング'})
+  }),
+  search:Object.freeze({...en.search,
+    start:'キーワードを入力して検索してください。',
+    allContent:'すべてのコンテンツ',mode:'検索モード',media:'メディア',
+    mediaSearch:'メディア検索',allSearch:'すべて検索',mediaPromptLabel:'メディアを探す',
+    textPromptLabel:'何を探しますか？',typePrefix:'種類：',sourceIdPrefix:'ソースID：',
+    songLink:'楽曲リンク',mediaPrompt:'メディアのキーワード、種類、ソースIDを入力してください。',
+    mediaPlaceholder:'画像・動画・URL・タグ・ソースIDを検索',
+    textPlaceholder:'キーワード・作品名・文章を入力',
+    mediaLink:'メディアリンク',externalLink:'外部リンク',parentText:'関連する文章',
+    searching:'検索中…',failed:'検索に失敗しました。',
+    readFailed:'データの読み込みに失敗しました',updateFailed:'データの更新に失敗しました',
+    loadingRelation:'関連テキストを読み込み中…',relationLoaded:'関連テキストを読み込みました。',
+    relationFailed:'テキストの読み込みに失敗しました。',
+    notFound:'このテキストは見つかりません。',displaySource:'テキスト表示',
+    fullTextNotFound:'全文データが見つかりません。',fullTextFailed:'全文を読み込めませんでした。',
+    editNotFound:'編集対象が見つかりません。',editLoadFailed:'編集内容を読み込めません。',
+    editDenied:'この内容を編集する権限がありません。',
+    saveFailed:'保存に失敗しました。',editing:'編集中',more:'さらに読み込む',
+    empty:'一致する結果はありません。'
+  }),
+  statistics:Object.freeze({...en.statistics,
+    line:'折れ線グラフ',bar:'棒グラフ',pie:'円グラフ',
+    totalSource:'ソース合計',workSource:'作品のソース',
+    year:'1年間',month:'1か月',week:'1週間',custom:'期間を指定',
+    noOptions:'統計項目がありません',item:'統計項目',result:'統計結果',
+    chart:'グラフ',range:'期間',start:'開始',end:'終了',
+    invalidRange:'有効な開始日と終了日を指定してください。',itemSuffix:'件'
+  }),
+  culture:Object.freeze({...en.culture,
+    distribution:'時間分布',river:'タイムライン',intersectionRiver:'交差タイムライン',
+    combinedSources:'ソースの合計',combinedRiver:'ソース全体のタイムライン',
+    classificationRiver:'作品分類の系列',structure:'時期・イベント・アンカー',
+    period:'時期',allTime:'全期間',allWorks:'すべての作品',
+    list:'一覧',virtualAnchor:'仮アンカー',
+    virtualAnchorHelp:'タイムライン上の◇または下の日付から分割点を選択できます。仮アンカーはデータベースに書き込みません。',
+    showAllWorks:'すべての作品を表示',editing:'編集中',
+    noPeriodClassification:'この時期の作品分類データはありません。',
+    selectedPrefix:'選択済み｜',creating:'作成中…'
+  }),
+  governance:Object.freeze({...en.governance,
+    rights:'権利とライセンス',systemManagement:'システム管理',
+    enterAdmin:'管理画面を開く',enterManagement:'管理を開く'
+  }),
+  work:Object.freeze({...en.work,
+    viewLinks:'リンクを見る',relatedText:'関連テキスト',untitled:'無題の作品',
+    hidden:'この項目は非公開です（管理者のみ表示）',link:'リンク',
+    noBody:'この作品にはまだ本文がありません。',
+    loadingBody:'全文を読み込み中…',collapseBody:'全文を閉じる',viewBody:'全文を見る'
+  }),
+  management:Object.freeze({...en.management,
+    article:'記事を公開',import:'データのインポート',keywords:'キーワード管理',
+    checking:'ログイン状態と管理権限を確認中…',signOut:'ログアウト',
+    item:'管理項目',noOptions:'管理項目がありません',
+    permissionDenied:'このアカウントにはこのスコープの管理権限がありません。',
+    eyebrow:'管理',locTitle:'LOCシステム管理',
+    locDescription:'LOCのシステム管理は専用の管理サイトに集約されています。',
+    locAdminLink:'admin.lo3rwang.ccへ',
+    dataType:'データ種別',galaxyText:'Galaxyテキスト',
+    searchStatus:'検索状態',allData:'すべてのデータ',
+    searchable:'検索可能',notSearchable:'検索不可',
+    notSearchableData:'検索対象外のデータ',
+    previous:'前のページ',next:'次のページ',
+    createdPrefix:'作成 ',updatedPrefix:'更新 ',
+    articleSource:'ソース',articleParent:'親／ソース',articleTarget:'子／対象',
+    articleReference:'参照',articleBody:'本文',articleUrl:'元のリンク',
+    articleTime:'公開日時',sourceRequired:'ソースを指定してください。',
+    articlePublished:'記事をGalaxyに公開しました。',
+    articlePublishFailed:'記事の公開に失敗しました。',
+    importJson:'JSONインポート',sourceChoice:'ソースを選択',
+    currentFile:'現在のファイル',startImport:'インポート開始',
+    importing:'インポート中…',addMedia:'メディアを追加',
+    addSuno:'Sunoデータを保存',songTitle:'曲名',lyrics:'歌詞'
+  }),
+  admin:Object.freeze({...en.admin,
+    eyebrow:'システム管理',loginTitle:'管理者ログイン',
+    loginIntro:'管理者サイト',signIn:'Googleでログイン',
+    checking:'管理者権限を確認中…',
+    denied:'このアカウントには管理者権限がありません。',
+    overview:'全体概要',theme:'既定のテーマ',item:'管理項目'
+  }),
+  format:Object.freeze({
+    searchScope:label=>`「${label}」を検索中…`,
+    searchResult:({label,query,hasMore,partial=''})=>`${label}で「${query}」を検索${hasMore?'・さらに結果があります':''}${partial}`,
+    relatedText:index=>`関連テキスト ${index}`,
+    link:index=>`リンク ${index}`,
+    songLink:index=>`楽曲リンク ${index}`,
+    period:index=>`時期 ${index}`,
+    selected:value=>`選択済み｜${value}`
+  })
+});
+
 export const UI_LOCALE='zh-Hant';
 export const UI_LOCALE_OPTIONS=Object.freeze([
   Object.freeze({value:'zh-Hant',label:'繁體中文'}),
   Object.freeze({value:'zh-Hans',label:'简体中文'}),
-  Object.freeze({value:'en',label:'English'})
+  Object.freeze({value:'en',label:'English'}),
+  Object.freeze({value:'ja',label:'日本語'})
 ]);
 export const UI_COPY=zhHant;
-export const UI_DICTIONARIES=Object.freeze({'zh-Hant':zhHant,'zh-Hans':zhHans,en});
+export const UI_DICTIONARIES=Object.freeze({'zh-Hant':zhHant,'zh-Hans':zhHans,en,ja});
 
 export function normalizeUiLocale(locale){
   const value=String(locale||'').trim();

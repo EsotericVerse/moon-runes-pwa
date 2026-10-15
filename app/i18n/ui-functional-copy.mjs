@@ -1,3 +1,4 @@
+import {JA_FIELDS} from './ui-functional-ja.mjs';
 // Short functional control labels only. Never translate DB records or authored copy.
 const EN={
   "主要資料庫": "Primary database",
@@ -196,5 +197,5 @@ Object.assign(ZH_HANS, {"導覽入口":"导航入口","常用空間":"常用空�
 Object.assign(ZH_HANS, {"第一條河道依序為定錨點、事件、風格標籤、時期。點選紀錄直接編輯；未定錨的風格可從「新增 → 風格標籤」表單選取。":"第一条河道依次为锚点、事件、风格标签、时期。点击记录直接编辑；未定锚的风格可从“新增 → 风格标签”表单选取。","需要時再展開比對作品量變化（候選日期，非正式定錨點）":"需要时展开比较作品量变化（候选日期，非正式锚点）","僅 LOC Admin 設定來源主分類；個別人員的來源命名及歸屬在各自的統計頁管理。":"仅 LOC Admin 设置来源主分类；各成员在统计页管理自己的来源名称与归属。","只管理目前人員的原始來源名稱及群組歸屬，不改動作品正文與其他 Scope。":"只管理当前成员的原始来源名称和群组归属，不改动作品正文和其他 Scope。","基本與雜項設定":"基本与杂项设置","標題（不用標題＝文字泡泡，輸入標題＝文字框）":"标题（空标题＝文字气泡，输入标题＝文字框）","不用標題（文字泡泡）":"不用标题（文字气泡）","私人 Local File（僅此 iPhone）":"私人本地文件（仅此 iPhone）","已保存在此裝置":"已保存在此设备","開啟或另存私人檔案":"打开或另存私人文件","選擇本機檔案匯入":"选择本地文件导入","名稱":"名称","新增人員":"新增人员","新增群組":"新增群组"});
 export function translateUiField(locale,text){
   const value=String(text??'');
-  return (locale==='en'?EN:locale==='zh-Hans'?ZH_HANS:null)?.[value]||value;
+  return (locale==='ja'?JA_FIELDS:locale==='en'?EN:locale==='zh-Hans'?ZH_HANS:null)?.[value]||(locale==='ja'?EN[value]:null)||value;
 }

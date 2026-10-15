@@ -1,11 +1,17 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {translateUiField} from '../app/i18n/ui-functional-copy.mjs';
+import {uiCopy,normalizeUiLocale,UI_LOCALE_OPTIONS} from '../app/i18n/ui-copy.js';
 for(const [source,expected] of [['主要資料庫','Primary database'],['次要資料庫','Backup database'],['運作模式','Routing mode'],['儲存設定','Save settings'],['全部項目','All items'],['檢視時期範圍','Period range']])assert.equal(translateUiField('en',source),expected);
 assert.equal(translateUiField('zh-Hant','主要資料庫'),'主要資料庫');
 assert.equal(translateUiField('zh-Hans','主要資料庫'),'主数据库');
 assert.equal(translateUiField('en','私人創作內容'),'私人創作內容');
 assert.equal(translateUiField('en','文章屬性'),'Article properties');
+assert.equal(translateUiField('ja','文章屬性'),'記事の属性');
+assert.equal(translateUiField('ja','主要資料庫'),'メインデータベース');
+assert.equal(translateUiField('ja','上一頁'),'前のページ');
+assert.equal(translateUiField('ja','文化'),'文化');
+assert.equal(translateUiField('ja','私人創作內容'),'私人創作內容');
 assert.equal(translateUiField('zh-Hans','文章屬性'),'文章属性');
 assert.equal(translateUiField('en','上一頁'),'Previous');
 for(const name of ['Search','Statistics','Culture']){
@@ -14,6 +20,11 @@ for(const name of ['Search','Statistics','Culture']){
   assert.ok(source.includes('FieldText')||source.includes('const UI_COPY=useUiCopy();'),
     'Functional controls must read the selected UI locale: '+name);
 }
+assert.equal(normalizeUiLocale('ja'),'ja');
+assert.equal(uiCopy('ja').common.save,'保存');
+assert.equal(uiCopy('ja').features.statics.title,'統計');
+assert.equal(uiCopy('ja').search.textPromptLabel,'何を探しますか？');
+assert.ok(UI_LOCALE_OPTIONS.some(option=>option.value==='ja'&&option.label==='日本語'));
 const pkg=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8'));
 const lock=JSON.parse(readFileSync(new URL('../package-lock.json',import.meta.url),'utf8'));
 assert.equal(pkg.version,'0.9.6-rc.1');
