@@ -1,4 +1,5 @@
 'use client';
+import FieldText from '../i18n/FieldText';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
@@ -107,10 +108,11 @@ export function ContentEditor({
   extraFields=null,
   showVisibility=true
 }){
+  const copy=useUiCopy();
   if(!draft)return null;
   const change=(key,value)=>setDraft(current=>({...current,[key]:value}));
   return <div className="scope-editor">
-    {showTitle?<label>{UI_COPY.common.title}<input value={draft.title||''} onChange={event=>change('title',event.target.value)}/></label>:null}
+    {showTitle?<label>{copy.common.title}<input value={draft.title||''} onChange={event=>change('title',event.target.value)}/></label>:null}
     {showBody?<div className="scope-editor-blocknote">
       <span>{bodyLabel}</span>
       <BlockNoteEditor
@@ -121,12 +123,12 @@ export function ContentEditor({
     </div>:null}
     {extraFields}
     {showVisibility?<div className="scope-editor-options">
-      <label><input type="checkbox" checked={draft.hidden===true} onChange={event=>change('hidden',event.target.checked)}/>{UI_COPY.common.hiddenFromSearch}</label>
+      <label><input type="checkbox" checked={draft.hidden===true} onChange={event=>change('hidden',event.target.checked)}/>{copy.common.hiddenFromSearch}</label>
     </div>:null}
     {error?<p role="alert" className="scope-error">{error}</p>:null}
     <div className="scope-tabs">
-      <button type="button" disabled={busy} onClick={onSave}>{busy?UI_COPY.common.saving:UI_COPY.common.save}</button>
-      {onCancel?<button type="button" disabled={busy} onClick={onCancel}>{UI_COPY.common.cancel}</button>:null}
+      <button type="button" disabled={busy} onClick={onSave}>{busy?copy.common.saving:copy.common.save}</button>
+      {onCancel?<button type="button" disabled={busy} onClick={onCancel}>{copy.common.cancel}</button>:null}
     </div>
   </div>;
 }
@@ -140,9 +142,10 @@ export function WorkFullText({
   onToggle,
   emptyText=UI_COPY.work.noBody
 }){
+  const copy=useUiCopy();
   return <div className="scope-work-fulltext">
     <button type="button" onClick={onToggle} disabled={loading}>
-      {open?(loading?UI_COPY.work.loadingBody:UI_COPY.work.collapseBody):UI_COPY.work.viewBody}
+      {open?(loading?copy.work.loadingBody:copy.work.collapseBody):copy.work.viewBody}
     </button>
     {open&&error?<p className="scope-status scope-error">{error}</p>:null}
     {open&&!loading&&!error?<div className="scope-inline-card">
@@ -187,6 +190,7 @@ export function WorkSummaryCard({
   className='',
   onClick=null
 }){
+  const copy=useUiCopy();
   const safeRelations=safeRelationLinksOf(relationLinks);
   const safeLinks=safeExternalLinksOf(links);
   return <article className={'scope-inline-card scope-work-summary '+className} onClick={onClick||undefined}>
@@ -197,13 +201,13 @@ export function WorkSummaryCard({
       </div>
       {date?<time>{date}</time>:null}
     </header>
-    {hidden?<p className="scope-status">{UI_COPY.work.hidden}</p>:null}
+    {hidden?<p className="scope-status">{copy.work.hidden}</p>:null}
     {body?<p className="scope-culture-work-meta-description">{body}</p>:null}
     {safeRelations.length?<div className="scope-result-links scope-work-relations">
-      {safeRelations.map((link,index)=><a key={link.id||link.href||index} href={String(link.href||'').trim()}>{link.label||UI_COPY.format.relatedText(index+1)}</a>)}
+      {safeRelations.map((link,index)=><a key={link.id||link.href||index} href={String(link.href||'').trim()}>{link.label||copy.format.relatedText(index+1)}</a>)}
     </div>:null}
     {showLinks&&safeLinks.length?<div className="scope-result-links">
-      {safeLinks.map((link,index)=><a key={link.id||link.href||index} href={externalLink(link)} target="_blank" rel="noreferrer">{link.label||UI_COPY.format.link(index+1)}</a>)}
+      {safeLinks.map((link,index)=><a key={link.id||link.href||index} href={externalLink(link)} target="_blank" rel="noreferrer">{link.label||copy.format.link(index+1)}</a>)}
     </div>:null}
     {destinations?.length?<div className="scope-result-links">
       {destinations.map(destination=><a key={destination.id||destination.href} href={destination.href}>{destination.label}</a>)}
@@ -242,7 +246,7 @@ function IncrementalLoad({
 
   if(!hasMore)return null;
   return <div ref={sentinelRef} className={'scope-load-sentinel'+(loading?' is-loading':'')} aria-live="polite">
-    <button type="button" className="loc-button" disabled={loading} onClick={()=>onLoadMore?.()} aria-label="載入更多內容">{loading?'載入中…':'載入更多'}</button>
+    <button type="button" className="loc-button" disabled={loading} onClick={()=>onLoadMore?.()} aria-label="載入更多內容"><FieldText text={loading?'載入中…':'載入更多'}/></button>
   </div>;
 }
 

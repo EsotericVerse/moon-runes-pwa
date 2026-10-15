@@ -1,4 +1,5 @@
 'use client';
+import FieldText from '../../i18n/FieldText';
 
 import {DB_QUERY_BATCH_SIZE} from '../../loc/query-contract.mjs';
 
@@ -354,7 +355,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       {draft.record_type==='anchor'?<p className="scope-status">此處保存定錨點的轉折觀察，不是風格標籤；新增風格請選「＋ 新增 → 風格標籤」。</p>:null}
 
       {draft.record_type==='anchor'?<div className="scope-stat-controls">
-        <label><span>日期</span><input className="scope-select" type="date" value={dateText(draft.time_date)} onChange={event=>change('time_date',event.target.value)}/></label>
+        <label><span><FieldText text="日期"/></span><input className="scope-select" type="date" value={dateText(draft.time_date)} onChange={event=>change('time_date',event.target.value)}/></label>
         <label><span>日期未知時的年份</span><input className="scope-search-input" type="number" value={draft.year_value??''} onChange={event=>change('year_value',event.target.value)}/></label>
       </div>:null}
 
@@ -388,8 +389,8 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       {message?<p className="scope-status" role="status">{message}</p>:null}
       <div className="scope-tabs">
         <button type="submit" disabled={busy}>{busy?'儲存中…':'儲存'}</button>
-        <button type="button" disabled={busy} onClick={cancelEdit}>取消</button>
-        {selectedId?<button type="button" disabled={busy} onClick={remove}>刪除</button>:null}
+        <button type="button" disabled={busy} onClick={cancelEdit}><FieldText text="取消"/></button>
+        {selectedId?<button type="button" disabled={busy} onClick={remove}><FieldText text="刪除"/></button>:null}
       </div>
     </form>
     </section>

@@ -1,6 +1,6 @@
 {
   "name": "loc-next-architecture",
-  "version": "0.9.6-rc",
+  "version": "0.9.6-rc.1",
   "private": true,
   "scripts": {
     "predev": "node scripts/prepare-effekseer-wasm.mjs && node scripts/prepare-rune-effekseer-assets.mjs && node scripts/prepare-rune-fog-hd.mjs && node scripts/prepare-rune-effekseer-hd256.mjs && node scripts/prepare-rune-effekseer-soft-matte.mjs && node scripts/prepare-rune-semantic-icons.mjs",
@@ -16,7 +16,7 @@
     "verify:rune-draw": "node scripts/verify-rune-draw-algorithm.mjs && node --test scripts/test-rune-draw-reads.mjs scripts/test-rune-moon-phase.mjs && npm run verify:3d-runes",
     "verify:statistics-facets": "node --test scripts/test-statistics-facets.mjs scripts/test-member-intersection.mjs scripts/test-administrative-sources.mjs scripts/test-statistics-zoom.mjs scripts/test-statistics-group-sharing.mjs scripts/test-media-style-intersection.mjs",
     "verify:semantics": "node scripts/verify-current-semantics.mjs",
-    "verify": "npm run verify:nav && npm run verify:management && npm run verify:rune-assets && npm run verify:block-presentation && npm run verify:blocknote && npm run verify:feature-hero && npm run verify:loc-home-text && npm run verify:db-adapters && npm run verify:kysely-edge && npm run verify:database-targets && npm run verify:sql-standard && npm run verify:sql-runtime && npm run verify:sql-import && npm run verify:database-contract && npm run verify:rune-draw && npm run verify:statistics-facets && npm run verify:lrunes-daily && npm run verify:lrunes-settings && npm run verify:local-files && npm run verify:private-x && npm run verify:private-archive && npm run verify:daily-transfer && npm run verify:loc-items && npm run verify:rune66-keywords && npm run verify:modules && npm run verify:semantics && npm run verify:scope-registry && npm run verify:authority && npm run verify:directories && npm run verify:auth && npm run verify:theme",
+    "verify": "npm run verify:nav && npm run verify:management && npm run verify:rune-assets && npm run verify:block-presentation && npm run verify:blocknote && npm run verify:feature-hero && npm run verify:loc-home-text && npm run verify:db-adapters && npm run verify:kysely-edge && npm run verify:database-targets && npm run verify:sql-standard && npm run verify:sql-runtime && npm run verify:sql-import && npm run verify:database-contract && npm run verify:ui-locale && npm run verify:rune-draw && npm run verify:statistics-facets && npm run verify:lrunes-daily && npm run verify:lrunes-settings && npm run verify:local-files && npm run verify:private-x && npm run verify:private-archive && npm run verify:daily-transfer && npm run verify:loc-items && npm run verify:rune66-keywords && npm run verify:modules && npm run verify:semantics && npm run verify:scope-registry && npm run verify:authority && npm run verify:directories && npm run verify:auth && npm run verify:theme",
     "build": "next build",
     "verify:theme": "node scripts/verify-theme-contract.mjs",
     "verify:authority": "node scripts/verify-runtime-authority.mjs",
@@ -44,7 +44,8 @@
     "verify:sql-runtime": "node scripts/verify-sql-runtime.mjs",
     "verify:sql-import": "node scripts/verify-sql-import.mjs",
     "verify:database-contract": "node scripts/verify-current-database-contract.mjs",
-    "verify:database-targets": "node scripts/test-database-targets.mjs && node scripts/test-database-link.mjs && node scripts/test-database-routing.mjs"
+    "verify:database-targets": "node scripts/test-database-targets.mjs && node scripts/test-database-link.mjs && node scripts/test-database-routing.mjs",
+    "verify:ui-locale": "node scripts/test-ui-functional-fields.mjs"
   },
   "dependencies": {
     "@streamparser/json": "0.0.26",

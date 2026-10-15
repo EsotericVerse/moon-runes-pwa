@@ -1,4 +1,5 @@
 'use client';
+import FieldText from '../i18n/FieldText';
 
 import {useEffect,useState} from 'react';
 import {UI_LOCALE_OPTIONS,normalizeUiLocale} from '../i18n/ui-copy';
@@ -87,18 +88,18 @@ export default function ScopeSettingsPanel({scopeId}){
     {!loading?<form onSubmit={save}>
       <div className="scope-management-fields">
         <label>
-          <span>顯示名稱</span>
+          <span><FieldText text="顯示名稱"/></span>
           <input className="scope-search-input" value={draft.display_name||''} onChange={event=>change('display_name',event.target.value)} required/>
         </label>
         <label>
-          <span>主題</span>
+          <span><FieldText text="主題"/></span>
           <select className="scope-select" value={draft.theme||'system-default'} onChange={event=>change('theme',event.target.value)}>
-            <option value="system-default">系統預設（日／夜自動）</option>
+            <option value="system-default"><FieldText text="系統預設（日／夜自動）"/></option>
             {THEME_SLOTS.map(theme=><option value={theme.id} key={theme.id}>{theme.label}</option>)}
           </select>
         </label>
         <label>
-          <span>預設語系</span>
+          <span><FieldText text="預設語系"/></span>
           <select className="scope-select" value={normalizeUiLocale(draft.locale)} onChange={event=>change('locale',normalizeUiLocale(event.target.value))}>
             {UI_LOCALE_OPTIONS.map(option=><option value={option.value} key={option.value}>{option.label}</option>)}
           </select>
@@ -106,12 +107,12 @@ export default function ScopeSettingsPanel({scopeId}){
       </div>
 
       <label className="scope-management-wide-field">
-        <span>搜尋頁介紹</span>
+        <span><FieldText text="搜尋頁介紹"/></span>
         <textarea className="scope-search-input" rows={4} value={draft.search_intro||''} onChange={event=>change('search_intro',event.target.value)} placeholder="搜尋名稱或別名"/>
       </label>
 
       <label className="scope-management-wide-field">
-        <span>搜尋別名</span>
+        <span><FieldText text="搜尋別名"/></span>
         <textarea className="scope-search-input" rows={5} value={aliases} onChange={event=>setAliases(event.target.value)} placeholder={'每行一個，例如：\nlo3rwang\nLucas Oscar Wang\n政德'}/>
       </label>
 
@@ -125,7 +126,7 @@ export default function ScopeSettingsPanel({scopeId}){
       </fieldset>
 
       {message?<p className="scope-status" role="status">{message}</p>:null}
-      <div className="scope-tabs"><button type="submit" disabled={busy}>{busy?'儲存中…':'更新設定'}</button></div>
+      <div className="scope-tabs"><button type="submit" disabled={busy}><FieldText text={busy?'儲存中…':'更新設定'}/></button></div>
     </form>:null}
   </section>;
 }

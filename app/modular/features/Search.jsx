@@ -1,6 +1,7 @@
 'use client';
 
 import {UI_COPY} from '../../i18n/ui-copy';
+import {useUiCopy} from '../../i18n/ui-locale';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
@@ -253,6 +254,7 @@ function mergeSummaryResults(rows=[]){
 }
 
 export default function Search(){
+  const UI_COPY=useUiCopy();
   const {scopeId,scope}=useScopeRuntime();
   const account=useAccount();
   const searchParams=useSearchParams();

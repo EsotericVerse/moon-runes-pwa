@@ -1,4 +1,5 @@
 'use client';
+import FieldText from '../i18n/FieldText';
 
 import {useEffect,useMemo,useState} from 'react';
 import Select from 'react-select';
@@ -168,7 +169,7 @@ export default function GlobalSettings(){
               {allowedHomes.map(item=><option key={item.id} value={item.id}>{item.label}</option>)}
             </select>
           </label>
-          {native||account.user?<button type="submit" className="loc-button primary" disabled={waiting}>儲存</button>:null}
+          {native||account.user?<button type="submit" className="loc-button primary" disabled={waiting}><FieldText text="儲存"/></button>:null}
         </form>
         <div className="scope-settings-favorite-preview">
           <strong>我的最愛</strong>
@@ -188,7 +189,7 @@ export default function GlobalSettings(){
             onChange={item=>setRequestedScope(item?.value||'')}/>:null}
           {selectedScope?<ManagementImportPanel key={selectedScope.id} scopeId={selectedScope.id}/>:null}
         </div>:<p>沒有可匯入的空間。</p>:
-        <button type="button" className="loc-button primary" onClick={login}>登入</button>}
+        <button type="button" className="loc-button primary" onClick={login}><FieldText text="登入"/></button>}
       </section>):null}
 
       {activeSection==='personal'&&selectedScope?<section className="loc-card">
@@ -224,8 +225,8 @@ export default function GlobalSettings(){
         <h2>帳號</h2>
         {waiting?<p>載入中…</p>:account.user?<div>
           <p>{account.user.email||'已登入'}</p>
-          <button type="button" className="loc-button" disabled={busy} onClick={logout}>登出</button>
-        </div>:<button type="button" className="loc-button primary" onClick={login}>登入</button>}
+          <button type="button" className="loc-button" disabled={busy} onClick={logout}><FieldText text="登出"/></button>
+        </div>:<button type="button" className="loc-button primary" onClick={login}><FieldText text="登入"/></button>}
         {account.error?<p role="alert" className="scope-status scope-error">{account.error}</p>:null}
       </section>:null}
       {status?<p role="status" className="scope-status">{status}</p>:null}

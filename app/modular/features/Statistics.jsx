@@ -1,6 +1,8 @@
 'use client';
+import FieldText from '../../i18n/FieldText';
 
 import {UI_COPY} from '../../i18n/ui-copy';
+import {useUiCopy} from '../../i18n/ui-locale';
 
 import {useMemo,useState} from 'react';
 import {useRouter,useSearchParams} from 'next/navigation';
@@ -152,6 +154,7 @@ function buildSummary(rows=[],range={}){
 }
 
 function SummaryList({rankingType,summary}){
+  const UI_COPY=useUiCopy();
   const rows=rankingType==='total'
     ?[{term:UI_COPY.statistics.totalSource,item_count:summary.total}]
     :summary.sources;
@@ -160,6 +163,7 @@ function SummaryList({rankingType,summary}){
   </div>;
 }
 function SummaryChart({type='bar',rankingType,summary,height=380}){
+  const UI_COPY=useUiCopy();
   const data=rankingType==='total'
     ?[{term:UI_COPY.statistics.totalSource,value:summary.total}]
     :summary.sources.map(row=>({term:row.term,value:Number(row.item_count)||0}));
@@ -180,6 +184,7 @@ function SummaryChart({type='bar',rankingType,summary,height=380}){
   </ResponsiveContainer>;
 }
 function TotalTrendChart({rows=[],range={},height=420}){
+  const UI_COPY=useUiCopy();
   const data=useMemo(()=>buildSourceTrend(rows,range),[rows,range]);
   if(!data.length)return <p className="scope-status">{FEATURE_EMPTY_MESSAGE}</p>;
   return <ResponsiveContainer width="100%" height={height}>
@@ -278,22 +283,22 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeC
   }
   return <>
     {rankingType==='media_style'?<div className="scope-stat-controls">
-      <label><span>統計排除詞（以逗號分隔）</span>
+      <label><span><FieldText text="統計排除詞（以逗號分隔）"/></span>
         <input className="scope-input" value={exclusionDraft} maxLength={240} onChange={event=>setExclusionDraft(event.target.value)} placeholder="例如：男聲" />
       </label>
-      <button type="button" className="loc-button" onClick={applyExclusions}>套用排除詞</button>
+      <button type="button" className="loc-button" onClick={applyExclusions}><FieldText text="套用排除詞"/></button>
       <button type="button" className="loc-button" onClick={()=>setExclusionDraft(DEFAULT_MEDIA_STYLE_EXCLUSIONS.join(', '))}>恢復預設</button>
     </div>:null}
     <div className="scope-stat-controls">
-      <label><span>{rankingType==='media_style'?'指定 Meta Tag':'指定統計細項'}</span>
+      <label><span><FieldText text={rankingType==='media_style'?'指定 Meta Tag':'指定統計細項'}/></span>
         <select className="scope-select" value={chosen} onChange={event=>{setSelectedTag(event.target.value);setRankingPage(1);}}>
-          <option value="all">全部項目</option>
+          <option value="all"><FieldText text="全部項目"/></option>
           {totals.map(row=><option key={row.term} value={row.term}>{row.term}（{row.item_count.toLocaleString()}）</option>)}
         </select>
       </label>
-      <label><span>圖形</span>
+      <label><span><FieldText text="圖形"/></span>
         <select className="scope-select" value={chosenChartType} onChange={event=>onChartTypeChange?.(event.target.value)}>
-          {supported.length?supported.map(([value,label])=><option key={value} value={value}>{label}</option>):<option value="line">尚無可用圖形</option>}
+          {supported.length?supported.map(([value,label])=><option key={value} value={value}><FieldText text={label}/></option>):<option value="line"><FieldText text="尚無可用圖形"/></option>}
         </select>
       </label>
     </div>
@@ -382,8 +387,8 @@ function MediaCrossTagStatistics({rows=[],range={},navigation={},zoomLevel=0,onZ
         }}>恢復預設搭配</button>
       </div>
       <div className="scope-stat-controls">
-        <label><span>圖表</span><select className="scope-select" value={mode} onChange={event=>setMode(event.target.value)}>
-          <option value="ranking">組合數量</option><option value="trend">組合時間趨勢</option>
+        <label><span><FieldText text="圖表"/></span><select className="scope-select" value={mode} onChange={event=>setMode(event.target.value)}>
+          <option value="ranking"><FieldText text="組合數量"/></option><option value="trend"><FieldText text="組合時間趨勢"/></option>
         </select></label>
         <span>符合的標籤組合：{pairs.length.toLocaleString()} 組</span>
       </div>
@@ -504,6 +509,7 @@ function Rune66Summary({analysis}){
 }
 
 function StatisticTypeSelect({scopeId,navigation,types}){
+  const UI_COPY=useUiCopy();
   const router=useRouter();
   const requested=String(navigation.rankingType||'');
   const active=types.includes(requested)?requested:(types[0]||'');
@@ -515,7 +521,7 @@ function StatisticTypeSelect({scopeId,navigation,types}){
       if(!value||value===active)return;
       router.push(featureNavigationHref(scopeId,'statics',{...navigation,rankingType:value}));
     }}>
-      {types.map(value=><option key={value} value={value}>{STAT_TYPE_LABELS[value]||value}</option>)}
+      {types.map(value=><option key={value} value={value}><FieldText text={STAT_TYPE_LABELS[value]||value}/></option>)}
     </select>
   </label>;
 }
@@ -527,6 +533,7 @@ async function selectPublicStatisticsMembers(){
 }
 
 function ScopeGroupStatistics(){
+  const UI_COPY=useUiCopy();
   const [aggregateType,setAggregateType]=useState('total');
   const [chartType,setChartType]=useState('line');
   const [zoomLevel,setZoomLevel]=useState(0);
@@ -643,7 +650,7 @@ function ScopeGroupStatistics(){
       <label>
         <span>{UI_COPY.statistics.chart}</span>
         <select className="scope-select" value={locChartType} onChange={event=>setChartType(event.target.value)}>
-          {locAllowed.length?locAllowed.map(([value,label])=><option key={value} value={value}>{label}</option>):<option value="line">尚無可用圖形</option>}
+          {locAllowed.length?locAllowed.map(([value,label])=><option key={value} value={value}><FieldText text={label}/></option>):<option value="line"><FieldText text="尚無可用圖形"/></option>}
         </select>
       </label>
     </div>
@@ -682,6 +689,7 @@ function ScopeGroupStatistics(){
 }
 
 function ScopeStatisticsResults({scopeId,navigation,types}){
+  const UI_COPY=useUiCopy();
   const requested=String(navigation.rankingType||'');
   const rankingType=types.includes(requested)?requested:(types[0]||'');
   const mediaDimension=MEDIA_STAT_TYPES.has(rankingType);
@@ -789,13 +797,13 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     <div className="scope-stat-controls">
       <StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/>
       {!isLrunesDaily?<>{!mediaDimension?<label><span>{UI_COPY.statistics.chart}</span><select className="scope-select" value={effectiveChartType} onChange={event=>setChartType(event.target.value)}>
-        {optionsForCurrent.length?optionsForCurrent.map(([value,label])=><option key={value} value={value}>{label}</option>):<option value="line">尚無可用圖形</option>}
+        {optionsForCurrent.length?optionsForCurrent.map(([value,label])=><option key={value} value={value}><FieldText text={label}/></option>):<option value="line"><FieldText text="尚無可用圖形"/></option>}
       </select></label>:null}
       {!['pie','radar','radial','treemap','scatter'].includes(effectiveChartType)?<label className="scope-setting-toggle">
         <input type="checkbox" checked={foldBlank} onChange={event=>setFoldBlank(event.target.checked)}/> 折疊空白時間
       </label>:null}
       </>:null}
-      {scopeId==='lo3rwang'?<label><span>表現風格</span><select className="scope-select" value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}>
+      {scopeId==='lo3rwang'?<label><span><FieldText text="表現風格"/></span><select className="scope-select" value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}>
         {STYLE_FILTERS.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
       </select></label>:null}
     </div>

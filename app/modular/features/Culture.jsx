@@ -1,6 +1,8 @@
 'use client';
+import FieldText from '../../i18n/FieldText';
 
 import {UI_COPY} from '../../i18n/ui-copy';
+import {useUiCopy} from '../../i18n/ui-locale';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
@@ -88,6 +90,7 @@ function periodPositionRatio(date,start,end){
   return Math.max(0,Math.min(1,(x-a)/(b-a)));
 }
 export default function Culture(){
+  const UI_COPY=useUiCopy();
   const {scopeId,scope}=useScopeRuntime();
   const account=useAccount();
   const [lrunesView,setLrunesView]=useState('daily');
@@ -641,16 +644,16 @@ export default function Culture(){
 
   return <FeaturePage featureId="culture">
     <section className='loc-card scope-feature-card scope-feature-card-wide'>
-      {scopeId==='lrunes'?<div className='scope-stat-controls'><label><span>時間長河項目</span>
+      {scopeId==='lrunes'?<div className='scope-stat-controls'><label><span><FieldText text="時間長河項目"/></span>
         <select className='scope-select' value={lrunesView} onChange={event=>setLrunesView(event.target.value)}>
-          <option value='daily'>每日符文</option>
-          <option value='works'>文化作品與時期</option>
+          <option value='daily'><FieldText text="每日符文"/></option>
+          <option value='works'><FieldText text="文化作品與時期"/></option>
         </select>
       </label></div>:null}
-      {scopeId==='loc'?<div className='scope-stat-controls'><label><span>LOC 文化觀測模式</span>
+      {scopeId==='loc'?<div className='scope-stat-controls'><label><span><FieldText text="LOC 文化觀測模式"/></span>
         <select className='scope-select' aria-label='LOC 文化觀測模式' value={locCultureView} onChange={event=>setLocCultureView(event.target.value)}>
-          <option value='period'>時期交會 · 原有作品列表</option>
-          <option value='item'>項目交會 · 指定兩條河道</option>
+          <option value='period'><FieldText text="時期交會 · 原有作品列表"/></option>
+          <option value='item'><FieldText text="項目交會 · 指定兩條河道"/></option>
         </select>
       </label></div>:null}
       {isLrunesDaily?<LrunesDailyCulturePanel/>:isLocItemView?<LocItemConfluence/>:<>
@@ -707,8 +710,8 @@ export default function Culture(){
                 <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
                 <h3>{UI_COPY.culture.structure}</h3>
                 <div className='scope-culture-timeline-tools'>
-                  <label><span>檢視時期範圍</span><select className='scope-select' value={selectedPeriodKey||periodKey(selectedWorkPeriod)} onChange={event=>setSelectedPeriodKey(event.target.value)}>
-                    <option value='all'>全部時期</option>
+                  <label><span><FieldText text="檢視時期範圍"/></span><select className='scope-select' value={selectedPeriodKey||periodKey(selectedWorkPeriod)} onChange={event=>setSelectedPeriodKey(event.target.value)}>
+                    <option value='all'><FieldText text="全部時期"/></option>
                     {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{labelOf(item,0)}</option>)}
                   </select></label>
                   {account.canManageScopeSync(scopeId)?<>
@@ -719,10 +722,10 @@ export default function Culture(){
                     event.currentTarget.value='';
                     beginTimelineCreation(recordType,'');
                   }}>
-                    <option value='' disabled>＋ 新增</option>
-                    <option value='period'>時期</option>
-                    <option value='event'>事件</option>
-                    <option value='style_comment'>風格標籤</option>
+                    <option value='' disabled><FieldText text="＋ 新增"/></option>
+                    <option value='period'><FieldText text="時期"/></option>
+                    <option value='event'><FieldText text="事件"/></option>
+                    <option value='style_comment'><FieldText text="風格標籤"/></option>
                   </select>
                   <span className='scope-status'>第一條河道依序為定錨點、事件、風格標籤、時期。點選紀錄直接編輯；未定錨的風格可從「新增 → 風格標籤」表單選取。</span>
                   </>:null}
@@ -774,10 +777,10 @@ export default function Culture(){
               {selectedWorkPeriod?<section className='scope-card scope-culture-classification-river'>
                 <div className='scope-stat-controls'>
                   {scopeId==='lo3rwang'?<label className='scope-culture-period-select'>
-                    <span>表現風格</span>
+                    <span><FieldText text="表現風格"/></span>
                     <select className='scope-select' value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}>
-                      <option value='none'>不套用</option>
-                      <option value='rune66'>關鍵詞 Class</option>
+                      <option value='none'><FieldText text="不套用"/></option>
+                      <option value='rune66'><FieldText text="關鍵詞 Class"/></option>
                     </select>
                   </label>:null}
                 </div>
