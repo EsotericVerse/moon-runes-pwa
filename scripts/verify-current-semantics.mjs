@@ -353,7 +353,7 @@ if(!failures.length){
   if(!keywordPanel.includes("key={selectedClassId||selectedClass}")||!keywordPanel.includes("next==='manual'||next==='network'")){
     failures.push('Keyword network must reset initial selection and origin when entering or changing its Class.');
   }
-  for(const token of ["onTimeClick={account.canManageScopeSync(scopeId)?date=>","onAdd={null}","items={timelineItems}","檢視時期範圍","safeDates=selectedVirtualAnchorDates.filter","selectedVirtualAnchorDates.includes(item.date)","全選待審候選","saveSelectedVirtualAnchors"]){
+  for(const token of ["onTimeClick={account.canManageScopeSync(scopeId)?date=>","onAdd={null}","items={timelineItems}","uiExtra.cultureView.periodRange","safeDates=selectedVirtualAnchorDates.filter","selectedVirtualAnchorDates.includes(item.date)","uiExtra.cultureView.selectAllCandidates","saveSelectedVirtualAnchors"]){
     if(!culture.includes(token))failures.push('Culture river must review reusable existing anchors, compare suggestions, and add only after review: '+token);
   }
   if(!culture.includes("()=>[...classificationBuckets,...virtualAnchorItems]")||
@@ -367,7 +367,7 @@ if(!failures.length){
     failures.push('Candidate density comparison must stay opt-in and collapsed by default.');
   }
   for(const token of ['表現風格','Class｜符文群組比例','culture-style-filter'])if(!culture.includes(token))failures.push('Culture style-filter presentation missing '+token);
-  if(!culture.includes('locIntersectionScopeIds.map')||!culture.includes('個人時間長河')||culture.includes('scope_id: {id} · 個人時間長河'))failures.push('LOC Culture must link to the member without technical IDs or explanation blocks.');
+  if(!culture.includes('locIntersectionScopeIds.map')||!culture.includes('l.personalTimelineSuffix')||culture.includes('scope_id: {id} · 個人時間長河'))failures.push('LOC Culture must link to the member without technical IDs or explanation blocks.');
   if(!cultureQuery.includes("style_comment:'風格標籤'")||!cultureQuery.includes('style_comment:2,period:3')||
      !culture.includes("beginTimelineCreation(recordType,'')")||
      !culture.includes("aria-label={translateUiField(locale,'新增時間長河紀錄')}")||
