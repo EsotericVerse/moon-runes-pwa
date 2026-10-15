@@ -408,7 +408,7 @@ if(!failures.length){
   const uiComponents=read('app/modular/ui.jsx');
   if(!culture.includes("<div className='scope-culture-timeline-tools'>")||culture.includes("{account.canManageScopeSync(scopeId)?<div className='scope-culture-timeline-tools'>")||
      !culture.includes("{account.canManageScopeSync(scopeId)?<>")||
-     !uiComponents.includes('aria-label="載入更多內容"')){
+     !uiComponents.includes("aria-label={t('uiExtra.pagination.loadMoreAria')}")){
     failures.push('Public period selection and manual pagination must work without an authenticated mouse user.');
   }
   const structureRiver=culture.slice(culture.indexOf("scope-culture-structure-river"),culture.indexOf("scope-culture-classification-river",culture.indexOf("scope-culture-structure-river")));
