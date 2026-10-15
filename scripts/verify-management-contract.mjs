@@ -195,7 +195,7 @@ must(runesGovernance.includes('ScopeEditableBlocks')&&runesGovernance.includes('
 must(sharedSearch.includes('startEditing')&&sharedSearch.includes('BlockNoteEditor')&&sharedSearch.includes('GALAXY_EDITOR_COLUMNS')&&sharedSearch.includes('GalaxyAttrSummary')&&sharedSearch.includes('GalaxyAttrEditor')&&sharedSearch.includes("fullTextKey===row.key")&&sharedSearch.includes('updateRows'),'Search must open full Galaxy articles first, then expose permission-gated full Attr editing');
 must(editor.includes('風格標籤（新增／編輯）')&&editor.includes('風格專屬敘述（TEXT）')&&editor.includes("row.status==='needs_anchor'")&&!cultureUi.includes('尋找風格標籤')&&!cultureUi.includes('scope-culture-style-panel'),'Shared Time editor must let authors select existing or pending styles, without a top-level duplicate lookup');
 must(!cultureUi.includes('尋找既有定錨點')&&!cultureUi.includes('尋找風格標籤')&&
-  cultureUi.includes('＋ 新增正式定錨點')&&cultureUi.includes("aria-label='新增時間長河紀錄'")&&
+  cultureUi.includes('＋ 新增正式定錨點')&&cultureUi.includes("aria-label={translateUiField(locale,'新增時間長河紀錄')}")&&
   [['period','時期'],['event','事件'],['style_comment','風格標籤']].every(([value,label])=>functionalOption(cultureUi,value,label))&&
   !cultureUi.includes('新增時期（選擇既有定錨點）')&&!cultureUi.includes('新增事件（選擇既有定錨點）'),
   'Time toolbar is one anchor button plus one three-option selector, with no redundant lookup dropdown');
