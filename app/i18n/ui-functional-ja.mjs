@@ -1,4 +1,5 @@
-// Functional UI labels only. Keys are fixed interface text, never data or authored work.\nexport const JA_FIELDS=Object.freeze({
+// Functional UI labels only. Keys are fixed interface text, never data or authored work.
+export const JA_FIELDS=Object.freeze({
   "主要資料庫": "メインデータベース",
   "次要資料庫": "バックアップデータベース",
   "運作模式": "動作モード",
