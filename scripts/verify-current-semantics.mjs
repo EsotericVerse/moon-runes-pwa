@@ -217,7 +217,8 @@ if(!failures.length){
     failures.push('Statistics +/- zoom must stay on the right of each chart, not among selection controls.');
   }
 
-  const chartChoices=statisticsMultiChart.match(/\['(?:line|bar|pie|area|stacked|composed|scatter|radar|radial|treemap)','/g)||[];
+  const chartChoices=statisticsMultiChart.match(/'uiExtra\.chartTypes\.'\+type/g)||[];
+  const chartIds=['line','bar','pie','area','stacked','composed','scatter','radar','radial','treemap'];
   // Real visual analytics must depend on valid dimensions; never manufacture
   // a 100% 'total' pie or render a time index as a second scatter metric.
   for(const token of [
@@ -240,7 +241,7 @@ if(!failures.length){
     failures.push('Statistics must not use an all-100% single total as a category chart.');
   }
 
-  if(chartChoices.length<10||!statisticsMultiChart.includes('foldEmptyTimeBuckets')||
+  if((chartChoices.length<1||chartIds.length<10)||!statisticsMultiChart.includes('foldEmptyTimeBuckets')||
      !statistics.includes('CHART_TYPES=STAT_VISUAL_TYPES')||
      !statistics.includes('<ScopeSelfIntersection')||
      !ownIntersection.includes("selectScopeSourceBreakdownRows")||
