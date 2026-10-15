@@ -1,0 +1,70 @@
+name: LOC 1.0 R Official Release (one-time)
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/loc-1.0-publish-once.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  official-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - name: Check 1.0.0 CI and publish tagged release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner=context.repo.owner, repo=context.repo.repo;
+            const target='b296740ee65f6ad7bbad8c88306a84336f25ede6';
+            const checks=[
+              {id:38768746959,name:'Next Architecture Build #2708'},
+              {id:38768747009,name:'Deploy Main Next to GitHub Pages #4731'}
+            ];
+            for(let attempt=0;attempt<48;attempt++){
+              const states=await Promise.all(checks.map(async check=>{
+                const {data}=await github.rest.actions.getWorkflowRun({owner,repo,run_id:check.id});
+                if(data.head_sha!==target)throw Error(check.name+' has unexpected commit '+data.head_sha);
+                return {name:check.name,status:data.status,conclusion:data.conclusion};
+              }));
+              core.info('Release gates: '+JSON.stringify(states));
+              if(states.some(s=>s.status==='completed'&&s.conclusion!=='success'))
+                throw Error('Release blocked by failed/cancelled workflow: '+JSON.stringify(states));
+              if(states.every(s=>s.conclusion==='success'))break;
+              if(attempt===47)throw Error('Release gate timeout; nothing published');
+              await new Promise(done=>setTimeout(done,10000));
+            }
+            const tag='v1.0.0';
+            try{
+              const existing=await github.rest.repos.getReleaseByTag({owner,repo,tag});
+              throw Error('Release '+tag+' already exists: '+existing.data.html_url+'; refusing to overwrite');
+            }catch(e){if(e.status!==404)throw e;}
+            const notes=[
+              '# LOC 1.0 R｜正式發布',
+              '',
+              '**發布日：2026-10-16｜Web / PWA 版本：1.0.0**',
+              '',
+              'LOC（月典）正式進入 1.0。以語言架構框架為核心，提供多 Scope 的文化時間長河、作品搜尋、統計與治理功能。',
+              '',
+              '## 本次正式版',
+              '- 完成繁體中文、簡體中文、英文與日文的共用介面語系架構；四份字典鍵名與插值變數一致。',
+              '- 文化／時間長河、搜尋、統計及共用介面提示完成主要語系接線。',
+              '- 保留原有資料庫與作品內容，不對符文或創作資料做任何翻譯與改寫。',
+              '- 核心驗收：Next Architecture Build（完整契約驗證、公開資料庫 API、靜態建置與瀏覽器可及性）與 GitHub Pages 部署。',
+              '',
+              '## 已知後續項目',
+              '- Admin 管理介面的剩餘語系文案列為 pending，安排後續 Patch。',
+              '- iOS 原生專案版本設定為 1.0.0（build 9）；**本 Release 不含原生 IPA**。未簽署 IPA 仍需個別手動建置與簽署。',
+              '- 符文相關內容不列入此次介面語系收尾。',
+              '',
+              '**正式網站：** https://loc.lo3rwang.cc/',
+              '**原始碼：** https://github.com/EsotericVerse/moon-runes-pwa',
+              '**發布提交：** '+target
+            ].join('\\n');
+            const {data}=await github.rest.repos.createRelease({
+              owner,repo,tag_name:tag,target_commitish:target,
+              name:'LOC 1.0 R — 正式發布',
+              body:notes,draft:false,prerelease:false,make_latest:'true'
+            });
+            core.notice('Published LOC 1.0 R: '+data.html_url);
