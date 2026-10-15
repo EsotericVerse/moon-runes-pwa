@@ -45,36 +45,34 @@ test('each style counts once per media record; missing tags are visible',()=>{
   ]);
 });
 
-test('meta_tags includes descriptive metadata terms, not only music genres',()=>{
+test('meta_tags counts literal source-language style phrases and explicit classification identifiers',()=>{
   const rows=[
-    {createtime:'2026-10-07T12:00:00+08:00',media_type:'suno',meta_tags:'Alternative Pop, 政德風, Male Voice, Hopeful'},
-    {createtime:'2026-10-07T15:00:00+08:00',media_type:'suno',meta_tags:'政德風, Hopeful'}
+    {createtime:'2026-10-07T12:00:00+08:00',media_type:'suno',meta_tags:'Chinese Classical Hip-Hop, dark boom bap, LunaRunesMusic'},
+    {createtime:'2026-10-07T15:00:00+08:00',media_type:'suno',meta_tags:'LunaRunesMusic, dark boom bap'}
   ];
   assert.deepEqual(Object.fromEntries(mediaFacetDaily(rows,'media_style').map(row=>[row.category,row.item_count])),{
-    'Alternative Pop':1,
-    '政德風':2,
-    'Male Voice':1,
-    'Hopeful':2
+    'Chinese Classical Hip-Hop':1,
+    'dark boom bap':2,
+    'LunaRunesMusic':2
   });
 });
 
 test('timestamps aggregate by Taiwan local calendar day even when DB returns UTC',()=>{
   assert.deepEqual(mediaFacetDaily([
-    {createtime:'2026-10-07T21:37:51.602041+00:00',media_type:'suno',meta_tags:'政德風'},
-    {createtime:'2026-10-08T02:00:00+08:00',media_type:'suno',meta_tags:'政德風'}
-  ],'media_style'),[{day:'2026-10-08',category:'政德風',item_count:2}]);
+    {createtime:'2026-10-07T21:37:51.602041+00:00',media_type:'suno',meta_tags:'LunaRunesMusic'},
+    {createtime:'2026-10-08T02:00:00+08:00',media_type:'suno',meta_tags:'LunaRunesMusic'}
+  ],'media_style'),[{day:'2026-10-08',category:'LunaRunesMusic',item_count:2}]);
 });
 
-test('male-voice stopword is excluded by default while meaningful high-frequency tags remain',()=>{
+test('no hard-coded exclusions; users can explicitly exclude any real tag',()=>{
   const rows=mediaFacetDaily([
-    {createtime:'2026-10-07T12:00:00+08:00',meta_tags:'Male Voice,政德風,Hopeful,Alternative Pop'},
-    {createtime:'2026-10-07T13:00:00+08:00',meta_tags:'Male Voice,政德風,Hopeful'}
+    {createtime:'2026-10-07T12:00:00+08:00',meta_tags:'LunaRunesMusic,Chinese Classical Hip-Hop,dark boom bap'},
+    {createtime:'2026-10-07T13:00:00+08:00',meta_tags:'LunaRunesMusic,dark boom bap'}
   ],'media_style');
-  assert.deepEqual(DEFAULT_MEDIA_STYLE_EXCLUSIONS,['Male Voice']);
+  assert.deepEqual(DEFAULT_MEDIA_STYLE_EXCLUSIONS,[]);
   assert.deepEqual(Object.fromEntries(filterMediaStyleRows(rows).map(row=>[row.category,row.item_count])),{
-    'Alternative Pop':1,'Hopeful':2,'政德風':2
+    'Chinese Classical Hip-Hop':1,'LunaRunesMusic':2,'dark boom bap':2
   });
-  assert.equal(filterMediaStyleRows(rows,[]).some(row=>row.category==='Male Voice'),true);
-  assert.equal(filterMediaStyleRows(rows,['Male Voice','Hopeful']).some(row=>row.category==='Hopeful'),false);
-  assert.deepEqual(mediaStyleExclusions('Male Voice, Male Voice， Hopeful'),['Male Voice','Hopeful']);
+  assert.equal(filterMediaStyleRows(rows,['LunaRunesMusic']).some(row=>row.category==='LunaRunesMusic'),false);
+  assert.deepEqual(mediaStyleExclusions('LunaRunesMusic, LunaRunesMusic， dark boom bap'),['LunaRunesMusic','dark boom bap']);
 });
