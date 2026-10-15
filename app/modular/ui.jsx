@@ -104,7 +104,7 @@ export function ContentEditor({
   error='',
   showTitle=true,
   showBody=true,
-  bodyLabel=UI_COPY.common.body,
+  bodyLabel=null,
   extraFields=null,
   showVisibility=true
 }){
@@ -114,7 +114,7 @@ export function ContentEditor({
   return <div className="scope-editor">
     {showTitle?<label>{copy.common.title}<input value={draft.title||''} onChange={event=>change('title',event.target.value)}/></label>:null}
     {showBody?<div className="scope-editor-blocknote">
-      <span>{bodyLabel}</span>
+      <span>{bodyLabel??copy.common.body}</span>
       <BlockNoteEditor
         key={'content-editor:'+(draft.editorKey||'body')}
         initialContent={Array.isArray(draft.bodyBlocks)&&draft.bodyBlocks.length?draft.bodyBlocks:plainTextToBlocks(draft.body||'')}
@@ -150,7 +150,7 @@ export function WorkFullText({
   error='',
   content='',
   onToggle,
-  emptyText=UI_COPY.work.noBody
+  emptyText=null
 }){
   const copy=useUiCopy();
   return <div className="scope-work-fulltext">
@@ -159,7 +159,7 @@ export function WorkFullText({
     </button>
     {open&&error?<p className="scope-status scope-error">{error}</p>:null}
     {open&&!loading&&!error?<div className="scope-inline-card">
-      <p className="scope-prewrap">{renderGalaxyContent(content||emptyText)}</p>
+      <p className="scope-prewrap">{renderGalaxyContent(content||(emptyText??copy.work.noBody))}</p>
     </div>:null}
   </div>;
 }
@@ -168,14 +168,14 @@ function externalLink(link){
   const href=String(link?.href||'').trim();
   return /^https?:\/\//i.test(href)?href:'';
 }
-function safeExternalLinksOf(items=[]){
+function safeExternalLinksOf(items=[],defaultLabel=''){
   return (Array.isArray(items)?items:[])
-    .map((link,index)=>typeof link==='string'?{id:String(index),href:link,label:UI_COPY.work.viewLinks}:link)
+    .map((link,index)=>typeof link==='string'?{id:String(index),href:link,label:defaultLabel}:link)
     .filter(link=>externalLink(link));
 }
-function safeRelationLinksOf(items=[]){
+function safeRelationLinksOf(items=[],defaultLabel=''){
   return (Array.isArray(items)?items:[])
-    .map((link,index)=>typeof link==='string'?{id:String(index),href:link,label:UI_COPY.work.relatedText}:link)
+    .map((link,index)=>typeof link==='string'?{id:String(index),href:link,label:defaultLabel}:link)
     .filter(link=>{
       const href=String(link?.href||'').trim();
       return Boolean(href)&&!/^javascript:/i.test(href);
@@ -183,7 +183,7 @@ function safeRelationLinksOf(items=[]){
 }
 
 export function WorkSummaryCard({
-  title=UI_COPY.work.untitled,
+  title=null,
   source='',
   scopeId='',
   date='',
@@ -199,13 +199,13 @@ export function WorkSummaryCard({
   onClick=null
 }){
   const copy=useUiCopy();
-  const safeRelations=safeRelationLinksOf(relationLinks);
-  const safeLinks=safeExternalLinksOf(links);
+  const safeRelations=safeRelationLinksOf(relationLinks,copy.work.relatedText);
+  const safeLinks=safeExternalLinksOf(links,copy.work.viewLinks);
   return <article className={'scope-inline-card scope-work-summary '+className} onClick={onClick||undefined}>
     <header className="scope-culture-work-heading">
       <div>
         {(scopeId||showSource&&source)?<p className="loc-eyebrow">{[scopeId,showSource?source:''].filter(Boolean).join(' · ')}</p>:null}
-        <strong>{title}</strong>
+        <strong>{title??copy.work.untitled}</strong>
       </div>
       {date?<time>{date}</time>:null}
     </header>
