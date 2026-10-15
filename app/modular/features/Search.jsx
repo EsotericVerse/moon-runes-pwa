@@ -26,12 +26,12 @@ import {blocksToPlainText,plainTextToBlocks} from '../../loc/blocknote-content.m
 import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
 
 
-const GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,source_native_id,source_place,searchable,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link,statistics_able,class_id,group_lists,content_blocks';
+const GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,source_native_id,source_place,searchable,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link,statistics_able,class_id,group_lists';
 
 const GALAXY_ATTR_ORDER=Object.freeze([
   'uid','title','content','createtime','source_native_id','source_place',
   'searchable','UpdateTime','url','source_id','target_id','ref_id','source_name',
-  'media_link','statistics_able','class_id','group_lists','content_blocks'
+  'media_link','statistics_able','class_id','group_lists'
 ]);
 
 function nullableText(value){
@@ -68,11 +68,6 @@ function parseJsonAttr(value){
 }
 function attrDisplayValue(key,value){
   if(key==='content')return '全文已顯示於上方';
-  if(key==='content_blocks'){
-    if(value===null||value===undefined)return 'null';
-    const raw=jsonText(value);
-    return 'WYSIWYG 結構 · '+raw.length+' chars';
-  }
   if(Array.isArray(value))return value.length?value.join(', '):'[]';
   if(value&&typeof value==='object')return jsonText(value);
   if(value===null||value===undefined||value==='')return 'null';
@@ -82,9 +77,7 @@ function attrDisplayValue(key,value){
 function galaxyDraftFromRow(row={},fallbackTitle=''){
   return {
     title:String(row.title??fallbackTitle??''),
-    bodyBlocks:Array.isArray(row.content_blocks)&&row.content_blocks.length
-      ?row.content_blocks
-      :plainTextToBlocks(String(row.content??'')),
+    bodyBlocks:plainTextToBlocks(String(row.content??'')),
     attrs:{
       uid:String(row.uid||'').trim(),
       createtime:datetimeLocalValue(row.createtime),
@@ -140,7 +133,6 @@ function GalaxyAttrEditor({draft,setDraft}){
       <label className="scope-management-wide-field"><span>group_lists (JSON)</span><textarea rows={5} value={attrs.group_lists||''} onChange={event=>change('group_lists',event.target.value)}/></label>
       <label><span>UpdateTime</span><input value={attrs.UpdateTime||''} readOnly/></label>
       <label><span>content</span><input value="由上方全文編輯器管理" readOnly/></label>
-      <label><span>content_blocks</span><input value="由上方 WYSIWYG 編輯器管理" readOnly/></label>
     </div>
   </details>;
 }
@@ -274,7 +266,6 @@ export default function Search(){
   const [editError,setEditError]=useState('');
   const [fullTextKey,setFullTextKey]=useState('');
   const [fullText,setFullText]=useState('');
-  const [fullTextBlocks,setFullTextBlocks]=useState(null);
   const [fullTextRow,setFullTextRow]=useState(null);
   const [fullTextError,setFullTextError]=useState('');
   const [fullTextLoading,setFullTextLoading]=useState(false);
@@ -446,7 +437,6 @@ export default function Search(){
       setFullTextKey(result.key);
       const fullRow=await loadGalaxyDetail(result);
       setFullText(workDisplayText(fullRow?.content||detail.content||''));
-      setFullTextBlocks(Array.isArray(fullRow?.content_blocks)?fullRow.content_blocks:(Array.isArray(detail.content_blocks)?detail.content_blocks:null));
       setFullTextRow(account.canManageScopeSync(detailScope)?fullRow:null);
       setStatus(UI_COPY.search.relationLoaded);
     }catch(exception){
@@ -470,7 +460,6 @@ export default function Search(){
     if(fullTextKey===result.key){
       setFullTextKey('');
       setFullText('');
-      setFullTextBlocks(null);
       setFullTextRow(null);
       setFullTextError('');
       return;
@@ -478,7 +467,6 @@ export default function Search(){
     if(result.resourceType!=='galaxy'||!result.editableTable)return;
     setFullTextKey(result.key);
     setFullText('');
-    setFullTextBlocks(null);
     setFullTextRow(null);
     setFullTextError('');
     setFullTextLoading(true);
@@ -486,7 +474,6 @@ export default function Search(){
       const fullRow=await loadGalaxyDetail(result);
       if(!fullRow)throw new Error(UI_COPY.search.fullTextNotFound);
       setFullText(workDisplayText(fullRow.content||''));
-      setFullTextBlocks(Array.isArray(fullRow.content_blocks)?fullRow.content_blocks:null);
       setFullTextRow(account.canManageScopeSync(result.scopeId)?fullRow:null);
     }catch(exception){
       setFullTextError(String(exception?.message||exception||UI_COPY.search.fullTextFailed));
@@ -501,7 +488,7 @@ export default function Search(){
     try{
       const contentColumns=result.resourceType==='galaxy'
         ?GALAXY_EDITOR_COLUMNS
-        :'media_id,title,meta_tags,content_blocks';
+        :'media_id,title,meta_tags';
       const cached=result.resourceType==='galaxy'&&fullTextKey===result.key&&fullTextRow?.uid
         ?fullTextRow
         :null;
@@ -516,9 +503,7 @@ export default function Search(){
         :{
           title:String(fullRow.title??result.title??''),
           body:String(fullRow[result.editableField]??''),
-          bodyBlocks:Array.isArray(fullRow.content_blocks)&&fullRow.content_blocks.length
-            ?fullRow.content_blocks
-            :plainTextToBlocks(String(fullRow[result.editableField]??'')),
+          bodyBlocks:plainTextToBlocks(String(fullRow[result.editableField]??'')),
           editorKey:String(fullRow.media_id||result.resourceId||'media'),
           hidden:false
         });
@@ -543,7 +528,6 @@ export default function Search(){
       const contentPatch=result.resourceType==='galaxy'?{
         title:nextTitle,
         content:body,
-        content_blocks:editDraft.bodyBlocks,
         createtime:isoOrNull(attrs.createtime),
         source_native_id:nullableText(attrs.source_native_id),
         source_place:nullableText(attrs.source_place),
@@ -561,7 +545,6 @@ export default function Search(){
       }:{
         title:nextTitle,
         [result.editableField]:body,
-        content_blocks:Array.isArray(editDraft.bodyBlocks)?editDraft.bodyBlocks:null
       };
       if(result.resourceType==='galaxy'&&classText!==''&&!Number.isFinite(contentPatch.class_id))throw new Error('class_id 必須是數字。');
       const contentFilters=[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId}];
@@ -569,7 +552,6 @@ export default function Search(){
       setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:nextTitle,snippet:result.resourceType==='galaxy'?'':body}));
       if(fullTextKey===result.key){
         setFullText(body);
-        setFullTextBlocks(result.resourceType==='galaxy'?editDraft.bodyBlocks:null);
         if(result.resourceType==='galaxy'){
           setFullTextRow(current=>({
             ...(current||{}),
@@ -673,7 +655,6 @@ export default function Search(){
             loading={fullTextLoading&&fullTextKey===row.key}
             error={fullTextKey===row.key?fullTextError:''}
             content={fullTextKey===row.key?fullText:''}
-            blocks={fullTextKey===row.key?fullTextBlocks:null}
             onToggle={()=>toggleFullText(row)}
           />:null}
           {row.resourceType==='galaxy'&&editable&&fullTextKey===row.key&&!fullTextLoading?<GalaxyAttrSummary row={fullTextRow}/>:null}
