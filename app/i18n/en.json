@@ -149,7 +149,8 @@
     "editing": "Editing",
     "noPeriodClassification": "目前沒有此時期的作品分類資料。",
     "selectedPrefix": "Selected | ",
-    "creating": "Creating…"
+    "creating": "Creating…",
+    "viewMode": "View mode"
   },
   "governance": {
     "rights": "Rights & Licensing",
@@ -319,7 +320,6 @@
     "時間長河項目": "Timeline content",
     "每日符文": "Daily runes",
     "文化作品與時期": "Works and periods",
-    "LOC 文化觀測模式": "LOC culture view",
     "時期交會 · 原有作品列表": "Period intersection · works",
     "項目交會 · 指定兩條河道": "Item intersection · two rivers",
     "檢視時期範圍": "Period range",
