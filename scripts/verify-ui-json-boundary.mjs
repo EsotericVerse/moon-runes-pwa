@@ -36,7 +36,10 @@ const cleared=[
   'app/loc/ScopeEditableBlocks.jsx',
   'app/loc/GlobalSettings.jsx',
   'app/loc/SourceCategoryEditor.jsx',
-  'app/modular/modules/statistics/StatisticsMultiChart.jsx'
+  'app/modular/modules/statistics/StatisticsMultiChart.jsx',
+  'app/loc/ScopeGroupStatisticsSharing.jsx',
+  'app/loc/ManagementArticlePublisher.jsx',
+  'app/modular/ui.jsx'
 ];
 for(const file of cleared){
   const text=read(file);
@@ -51,4 +54,4 @@ for(const file of cleared){
     }
   }
 }
-console.log('[ui-i18n] 4 locale JSON structures, static keys and 13 hardcode-free UI files passed');
+console.log('[ui-i18n] 4 locale JSON structures, static keys and 16 hardcode-free UI files passed');
