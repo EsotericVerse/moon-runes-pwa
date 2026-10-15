@@ -382,9 +382,9 @@ if(!failures.length){
      ![['period','時期'],['event','事件'],['style_comment','風格標籤']].every(([value,label])=>
        culture.includes("<option value='"+value+"'>"+label+"</option>")||
        culture.includes("<option value='"+value+"'><FieldText text=\""+label+"\"/></option>"))||
-     !timeEditor.includes('風格標籤（新增／編輯）')||
-     !timeEditor.includes('時期：1 或 2 個定錨點')||
-     !timeEditor.includes('事件：固定選擇 2 個定錨點')||
+     !timeEditor.includes('l.styleEditor')||
+     !timeEditor.includes('l.periodHint')||
+     !timeEditor.includes('l.eventHint')||
      !timeEditor.includes('legacyEventUnchanged')||
      timeEditor.includes('addIntermediateAnchor')){
     failures.push('Unified Time editor must select period 1–2 / event 2 / style 1 anchors and preserve legacy events.');
@@ -420,7 +420,7 @@ if(!failures.length){
   const timelineEditor=read('app/modular/features/CultureTimelineEditor.jsx');
   if(cultureQuery.includes('anchor_pair')||timelineEditor.includes('anchor_pair'))failures.push('Timeline code must not restore legacy anchor_pair storage.');
   if(!cultureQuery.includes('anchor_ids'))failures.push('Culture timeline ordered-anchor contract missing anchor_ids');
-  for(const token of ['anchor_ids','normalizeAnchorIds','chosenAnchorPair','anchorOptions.map(row=>','時期：1 或 2 個定錨點','事件：固定選擇 2 個定錨點'])if(!timelineEditor.includes(token))failures.push('Timeline editor must retain semantic references to existing anchor points: '+token);
+  for(const token of ['anchor_ids','normalizeAnchorIds','chosenAnchorPair','anchorOptions.map(row=>','l.periodHint','l.eventHint'])if(!timelineEditor.includes(token))failures.push('Timeline editor must retain semantic references to existing anchor points: '+token);
   if(timelineEditor.includes('里程碑'))failures.push('Timeline editor must not expose milestone as a separate concept.');
   if(statistics.includes('關鍵詞排行')||culture.includes('關鍵詞排行'))failures.push('Keyword-level ranking must remain hidden behind Class / Group presentation');
   const dbAudit=read('scripts/verify-db-public-read.mjs');
