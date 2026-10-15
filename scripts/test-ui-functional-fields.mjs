@@ -11,7 +11,7 @@ assert.equal(translateUiField('ja','文章屬性'),'記事の属性');
 assert.equal(translateUiField('ja','主要資料庫'),'メインデータベース');
 assert.equal(translateUiField('ja','上一頁'),'前のページ');
 assert.equal(translateUiField('ja','文化'),'文化');
-assert.equal(translateUiField('ja','顯示更多組合'),'ほかの組み合わせを表示');
+assert.equal(translateUiField('ja','顯示更多組合'),'組み合わせをさらに表示');
 assert.equal(translateUiField('ja','作品分類河道'),'作品分類レーン');
 assert.equal(translateUiField('ja','時間長河紀錄'),'タイムラインの記録');
 assert.equal(translateUiField('ja','每筆風格各自保存一段說明，不與其他風格共用文字欄位'),'各スタイルの説明は個別に保存し、他のスタイルとは共有しません');
