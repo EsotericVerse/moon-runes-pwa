@@ -1,6 +1,7 @@
 'use client';
 
 import {FeaturePage} from '../../modular/ui';
+import UiText,{useUiText} from '../../i18n/UiText';
 import {navigationHref} from '../../modular/nav-destinations.mjs';
 import useNativeNavigation from '../../modular/use-native-navigation';
 import {useScopeRuntime} from '../../modular/use-scope-runtime';
@@ -8,6 +9,7 @@ import ScopeGroupOverview from '../ScopeGroupOverview';
 import ScopeEditableBlocks from '../ScopeEditableBlocks';
 
 export default function GenericScopeHomeView(){
+  const t=useUiText();
   const native=useNativeNavigation();
   const {scopeId,scope,registryRow}=useScopeRuntime();
   if(scope?.aggregateChildren){
@@ -16,7 +18,7 @@ export default function GenericScopeHomeView(){
         scopeId={scopeId}
         featureId="governance"
         title={scope.label+' · Scope Group'}
-        description="此 Scope Group 只負責成員總覽與導引；實際內容與分析由各子 Scope 自己處理。"
+        description={t('uiExtra.genericScope.guide')}
       />
     </FeaturePage>;
   }
@@ -26,11 +28,11 @@ export default function GenericScopeHomeView(){
       <ScopeEditableBlocks scopeId={scopeId} page="index"/>
       <p className="scope-status">{registryRow?.domain||registryRow?.directory||''}</p>
       <div className="scope-result-links">
-        <a href={navigationHref(scopeId,'search',native)}>搜尋</a>
-        <a href={navigationHref(scopeId,'statics',native)}>統計</a>
-        <a href={navigationHref(scopeId,'culture',native)}>文化</a>
-        <a href={navigationHref(scopeId,'governance',native)}>治理</a>
-        <a href={'/settings/?section=manage&scope='+encodeURIComponent(scopeId)}>管理</a>
+        <a href={navigationHref(scopeId,'search',native)}><UiText id="nav.search"/></a>
+        <a href={navigationHref(scopeId,'statics',native)}><UiText id="features.statics.title"/></a>
+        <a href={navigationHref(scopeId,'culture',native)}><UiText id="features.culture.title"/></a>
+        <a href={navigationHref(scopeId,'governance',native)}><UiText id="features.governance.title"/></a>
+        <a href={'/settings/?section=manage&scope='+encodeURIComponent(scopeId)}><UiText id="common.management"/></a>
       </div>
     </section>
   </section></main>;
