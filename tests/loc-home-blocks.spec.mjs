@@ -4,6 +4,9 @@ test('LOC index home frames are rendered once, in database order, with authored 
   await page.goto('/',{waitUntil:'domcontentloaded'});
   const frames=page.locator('.loc-home > section.scope-editable-block');
   const hero=page.locator('.loc-home > section[data-page-name="index"][data-block-order="1"]');
+  // Wait for the database-backed home blocks before measuring the Hero. React
+  // replaces the SSR placeholder during hydration, invalidating its old box.
+  await expect(page.locator('.loc-home > section[data-block-order="5"]')).toBeVisible({timeout:20_000});
   await expect(hero).toBeVisible();
   await expect(hero.locator('picture img')).toHaveAttribute('src',/LOC-PicAll\.[^.]+\.png/);
   await expect(hero.locator('picture source')).toHaveAttribute('srcSet',/LOC-PicAll_s\.[^.]+\.png/);
@@ -11,6 +14,7 @@ test('LOC index home frames are rendered once, in database order, with authored 
   // The shared visual-card rule must not push the Hero image into text flow.
   const heroArtwork=hero.locator('.home-hero-visual');
   await expect(heroArtwork).toHaveCSS('position','absolute');
+  await expect(heroArtwork).toBeVisible();
   const [frame,artwork]=await Promise.all([hero.boundingBox(),heroArtwork.boundingBox()]);
   expect(frame).not.toBeNull();
   expect(artwork).not.toBeNull();
@@ -19,9 +23,7 @@ test('LOC index home frames are rendered once, in database order, with authored 
   expect(Math.abs(frame.width-artwork.width)).toBeLessThan(4);
   expect(Math.abs(frame.height-artwork.height)).toBeLessThan(4);
 
-  // Current public index has five blocks. Wait for DB hydration instead of
-  // mistaking the SSR Hero placeholder for a complete database render.
-  await expect(page.locator('.loc-home > section[data-block-order="5"]')).toBeVisible({timeout:20_000});
+  // Verify stable database order and all authored content after hydration.
   const orders=await frames.evaluateAll(items=>items.map(item=>Number(item.dataset.blockOrder)));
   expect(orders.length).toBeLessThanOrEqual(8);
   expect(orders).toEqual([...orders].sort((a,b)=>a-b));
