@@ -98,7 +98,7 @@ function periodPositionRatio(date,start,end){
 export default function Culture(){
   const UI_COPY=useUiCopy();
   const l=UI_COPY.uiExtra.cultureView;
-  const localizedLabelOf=(item,index)=>labelOf(item,index,UI_COPY.format.period(index+1));
+  const localizedLabelOf=useMemo(()=> (item,index)=>labelOf(item,index,UI_COPY.format.period(index+1)),[UI_COPY]);
   const {locale}=useUiLocale();
   const {scopeId,scope}=useScopeRuntime();
   const account=useAccount();
