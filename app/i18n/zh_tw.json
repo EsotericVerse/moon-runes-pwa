@@ -676,7 +676,13 @@
       "bodyManaged": "由上方全文編輯器管理",
       "memberSearch": "成員搜尋",
       "articleDateInvalid": "文章時間格式無效。",
-      "groupListInvalid": "group_lists 必須是有效 JSON。"
+      "groupListInvalid": "group_lists 必須是有效 JSON。",
+      "attributeTitle": "文章屬性",
+      "attrShown": "全文已顯示於上方",
+      "memberSource": "人員",
+      "memberHomeLink": "前往成員首頁",
+      "partialExtendedData": "（部分延伸資料暫時無法查詢）",
+      "classIdInvalid": "class_id 必須是數字。"
     },
     "statisticsUI": {
       "dailyRune": "每日符文",
