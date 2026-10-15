@@ -23,7 +23,7 @@ for(const name of ['management_write','provision_scope','manage_scope_registry',
 }
 const releaseProbe=readFileSync(new URL('./verify-db-public-read.mjs',import.meta.url),'utf8');
 for(const requirement of ['managedScopes(client)','verifyManagedScope(client,scope)','verifyGameContract(client)',
-  ".eq('searchable',false)","if((data||[]).length!==0)"]){
+  'probe(client,scope.galaxy,galaxyColumns)']){
   assert.ok(releaseProbe.includes(requirement),'Release data check is missing '+requirement);
 }
 const admin=readFileSync(new URL('../app/loc/views/AdminHomeView.jsx',import.meta.url),'utf8');
