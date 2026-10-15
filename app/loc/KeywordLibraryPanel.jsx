@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
+import {useUiCopy} from '../i18n/ui-locale';
 import Select from 'react-select';
 import dynamic from 'next/dynamic';
 import {useQueryClient} from '@tanstack/react-query';
@@ -56,6 +57,7 @@ function formatStaticTime(value){
 }
 
 export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
+  const l=useUiCopy().keywordPanel;
   const account=useAccount();
   const queryClient=useQueryClient();
   const scopeData=account.scopeDataFor(scopeId);
@@ -465,16 +467,16 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
 
   return <section className="loc-card scope-feature-card scope-management-workspace">
     <p className="loc-eyebrow">Keyword Library</p>
-    <h2>關鍵詞庫</h2>
-    <p>每套 Class 以 UUID 獨立識別，可複製與分享；文章只保存分析後的 class_id 與 group_lists。公開統計直接讀文章 Attr，不會重新跑關鍵詞。</p>
+    <h2>{l.title}</h2>
+    <p>{l.description}</p>
     <div className="scope-stat-controls">
       <button type="button" className="loc-button" disabled={busy||loading} onClick={copyRune66}>{busy?'處理中…':'複製符文66為新 Class'}</button>
-      <span className="scope-status">新增獨立 UUID 的 Class，不覆蓋既有關鍵詞，也不切換目前使用的 Class。</span>
+      <span className="scope-status">{l.copyHint}</span>
     </div>
     {workspace==='analysis'&&message?<p role="status" aria-live="polite" className={message.includes('失敗')?'scope-status scope-error':'scope-status'}>{message}</p>:null}
 
     <div className="scope-stat-controls scope-stat-workspace-switch">
-      <label htmlFor="keyword-workspace-picker">關鍵詞工作區</label>
+      <label htmlFor="keyword-workspace-picker">{l.workspace}</label>
       <Select
         inputId="keyword-workspace-picker"
         className="scope-workspace-select"
@@ -484,32 +486,32 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
         options={KEYWORD_WORKSPACE_OPTIONS}
         value={KEYWORD_WORKSPACE_OPTIONS.find(option=>option.value===workspace)}
         onChange={option=>{const next=option?.value||'analysis';setWorkspace(next);if(next==='manual'||next==='network')chooseGroup('');}}
-        aria-label="關鍵詞工作區"
+        aria-label={l.workspace}
       />
     </div>
 
     {workspace==='analysis'?<section className="scope-inline-card">
-      <h3>分析設定</h3>
+      <h3>{l.analysisSettings}</h3>
       <div className="scope-management-fields">
-        <label><span>目前使用 Class</span><select className="scope-select" value={currentClassId} onChange={event=>setCurrentClassId(event.target.value)}>
+        <label><span>{l.activeClass}</span><select className="scope-select" value={currentClassId} onChange={event=>setCurrentClassId(event.target.value)}>
           {classes.map(item=><option key={item.class_id} value={item.class_id}>{item.class_name}</option>)}
         </select></label>
-        <label><span>最小分析字數</span><input type="number" min="0" max="10000" step="1" value={minChars} onChange={event=>setMinChars(event.target.value)}/></label>
-        <label><span>最小統計文章數</span><input type="number" min="0" max="1000000" step="1" value={minDocuments} onChange={event=>setMinDocuments(event.target.value)}/></label>
-        <label><span>Class 分享授權</span><select className="scope-select" value={shareEnabled?'open':'closed'} onChange={event=>setShareEnabled(event.target.value==='open')}>
-          <option value="closed">關閉</option>
-          <option value="open">開放</option>
+        <label><span>{l.minChars}</span><input type="number" min="0" max="10000" step="1" value={minChars} onChange={event=>setMinChars(event.target.value)}/></label>
+        <label><span>{l.minDocuments}</span><input type="number" min="0" max="1000000" step="1" value={minDocuments} onChange={event=>setMinDocuments(event.target.value)}/></label>
+        <label><span>{l.sharePermission}</span><select className="scope-select" value={shareEnabled?'open':'closed'} onChange={event=>setShareEnabled(event.target.value==='open')}>
+          <option value="closed">{l.closed}</option>
+          <option value="open">{l.open}</option>
         </select></label>
       </div>
       <p className="scope-status">正文去除空白後必須大於 {minChars} 字才分析；符合資格文章必須大於 {minDocuments} 篇才啟用關鍵詞統計。</p>
       <p className="scope-status">目前定錨：{formatStaticTime(staticstime)} · 有效文章 {Number(keywordDocumentCount||0).toLocaleString()} 篇{staticstime?'':' · 需要重新分析'}</p>
       <div className="scope-preview-links">
-        <button type="button" className="loc-button" disabled={busy||!configDirty} onClick={saveAnalysisSettings}>儲存分析設定</button>
+        <button type="button" className="loc-button" disabled={busy||!configDirty} onClick={saveAnalysisSettings}>{l.saveSettings}</button>
         <button type="button" className="loc-button primary" disabled={busy||configDirty||!currentClassId} onClick={runBatch}>{busy?'處理中…':'重新分析並寫入文章 Attr'}</button>
       </div>
       {batchProgress?<div className="scope-keyword-batch-progress" role="status" aria-live="polite">
         <div className="scope-keyword-batch-progress-head"><strong>{batchProgress.phase==='failed'?'分析未完成':batchProgress.phase==='completed'?'分析完成':'文章 Attr 分析進度'}</strong><span>{batchProgress.percent}%</span></div>
-        <progress value={batchProgress.percent} max="100" aria-label="文章 Attr 分析進度" />
+        <progress value={batchProgress.percent} max="100" aria-label={l.attrProgress} />
         <p>{batchProgress.label}</p>
         {batchProgress.total>0?<p>目前階段：{Number(batchProgress.completed||0).toLocaleString()} / {Number(batchProgress.total).toLocaleString()} 篇</p>:null}
       </div>:null}
@@ -523,16 +525,16 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     </div>
     {selectedClassId?<div className="scope-stat-controls">
       <label><span>Class UUID</span><input value={selectedClassId} readOnly aria-readonly="true"/></label>
-      <button type="button" className="loc-button" onClick={copyClassUuid}>複製 UUID</button>
+      <button type="button" className="loc-button" onClick={copyClassUuid}>{l.copyUuid}</button>
       <span className="scope-status">scope_id: {scopeId}</span>
     </div>:null}
 
     <div className="scope-stat-controls">
-      <label><span>複製目前 Class</span><input value={copyName} placeholder="新 Class 名稱" onChange={event=>setCopyName(event.target.value)}/></label>
-      <button type="button" className="loc-button" disabled={busy||!selectedClass} onClick={copyClass}>複製整套 Class</button>
+      <label><span>{l.copyCurrentClass}</span><input value={copyName} placeholder={l.newClassName} onChange={event=>setCopyName(event.target.value)}/></label>
+      <button type="button" className="loc-button" disabled={busy||!selectedClass} onClick={copyClass}>{l.copyFullClass}</button>
     </div>
 
-    {loading?<p className="scope-status" role="status">正在載入關鍵詞資料…</p>:null}
+    {loading?<p className="scope-status" role="status">{l.loadingKeywords}</p>:null}
     {savingStage?<p className="scope-status scope-keyword-saving-progress" role="status" aria-live="polite" aria-busy="true"><span className="scope-keyword-saving-spinner" aria-hidden="true"/>{savingStage}</p>:null}
     {!loading&&workspace==='network'&&items.length?<div className="scope-keyword-network-layout">
       <KeywordNetworkEditor
@@ -554,63 +556,63 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
       <p className="scope-status">{workspace==='manual'?'依序選擇符文群組 → 符文 Item → 關鍵詞；變更先放入編輯稿，按儲存才寫入資料庫。':'可從圖譜選擇節點，右側編輯器會同步。'}</p>
       {workspace==='manual'?<>
         <div className="scope-stat-controls scope-keyword-manual-path">
-          <label><span>符文群組</span><select className="scope-select" aria-label="選擇符文群組" value={selectedGroup} onChange={event=>chooseGroup(event.target.value)}>
-            <option value="">請先選擇符文群組</option>
+          <label><span>{l.runeGroup}</span><select className="scope-select" aria-label={l.selectRuneGroup} value={selectedGroup} onChange={event=>chooseGroup(event.target.value)}>
+            <option value="">{l.chooseRuneGroup}</option>
             {groups.map(group=><option key={group} value={group}>{group}</option>)}
           </select></label>
-          <label><span>符文（Item）</span><select className="scope-select" aria-label="選擇符文" value={groupItems.some(row=>String(row.keyword_id)===selectedId)?selectedId:''} disabled={!selectedGroup} onChange={event=>{
+          <label><span>{l.runeItem}</span><select className="scope-select" aria-label={l.selectRune} value={groupItems.some(row=>String(row.keyword_id)===selectedId)?selectedId:''} disabled={!selectedGroup} onChange={event=>{
             const chosen=groupItems.find(row=>String(row.keyword_id)===event.target.value);
             if(chosen)selectItem(chosen);
             else {setSelectedId('');setDraft(null);setSelectedKeyword('');setKeywordEdit('');}
           }}>
-            <option value="">請選擇符文</option>
+            <option value="">{l.chooseRune}</option>
             {groupItems.map(item=><option key={item.keyword_id} value={item.keyword_id}>{item.item_name||item.item_no}</option>)}
           </select></label>
-          <label><span>關鍵詞</span><select className="scope-select" aria-label="選擇關鍵詞" value={draftKeywords.includes(selectedKeyword)?selectedKeyword:''} disabled={!draft} onChange={event=>{
+          <label><span>{l.keyword}</span><select className="scope-select" aria-label={l.selectKeyword} value={draftKeywords.includes(selectedKeyword)?selectedKeyword:''} disabled={!draft} onChange={event=>{
             const word=event.target.value;setSelectedKeyword(word);setKeywordEdit(word);
           }}>
-            <option value="">＋ 新增關鍵詞</option>
+            <option value="">{l.addKeyword}</option>
             {draftKeywords.map(word=><option key={word} value={word}>{word}</option>)}
           </select></label>
         </div>
         <div className="scope-stat-controls">
-          <button type="button" className="loc-button" disabled={!selectedGroup} onClick={()=>newItem(selectedGroup)}>＋ 新增符文 Item</button>
-          {draft?<><label><span>關鍵詞內容</span><input aria-label="關鍵詞內容" value={keywordEdit} onChange={event=>setKeywordEdit(event.target.value)} placeholder="輸入新關鍵詞或修改已選關鍵詞"/></label>
-            <button type="button" className="loc-button" onClick={applyDraftKeyword} disabled={busy||!keywordEdit.trim()}>套用至編輯稿</button>
-            {selectedKeyword?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={removeDraftKeyword}>從編輯稿移除</button>:null}
+          <button type="button" className="loc-button" disabled={!selectedGroup} onClick={()=>newItem(selectedGroup)}>{l.addRuneItem}</button>
+          {draft?<><label><span>{l.keywordContent}</span><input aria-label={l.keywordContent} value={keywordEdit} onChange={event=>setKeywordEdit(event.target.value)} placeholder={l.keywordPlaceholder}/></label>
+            <button type="button" className="loc-button" onClick={applyDraftKeyword} disabled={busy||!keywordEdit.trim()}>{l.applyDraft}</button>
+            {selectedKeyword?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={removeDraftKeyword}>{l.removeDraft}</button>:null}
           </>:null}
         </div>
       </>:items.length?<div className="scope-stat-controls">
-        <label><span>選擇 Item</span><select className="scope-select" value={selectedId} onChange={event=>{
+        <label><span>{l.selectItem}</span><select className="scope-select" value={selectedId} onChange={event=>{
           const chosen=items.find(row=>String(row.keyword_id)===event.target.value);
           if(chosen)selectItem(chosen);
         }}>
-          <option value="">新增／未選擇</option>
+          <option value="">{l.newOrNone}</option>
           {items.map(item=><option key={item.keyword_id} value={item.keyword_id}>{item.class_group} · {item.item_name||item.item_no}</option>)}
         </select></label>
-        <button type="button" className="loc-button" onClick={()=>newItem(items[0]?.class_group||'')}>＋ 新增 Item</button>
+        <button type="button" className="loc-button" onClick={()=>newItem(items[0]?.class_group||'')}>{l.addItem}</button>
       </div>:null}
         {!draft?<p className="scope-status">{workspace==='manual'?'請先選擇符文群組，再選符文與關鍵詞，或在群組下新增符文。':'從圖上選擇 Item／Keyword；使用 vis-network 工具列新增、編輯或刪除節點。'}</p>:<>
           <div className="scope-management-fields">
             <label><span>Class</span><input value={draft.class_name||''} readOnly aria-readonly="true"/></label>
             <label><span>Group</span><input value={draft.class_group||''} onChange={event=>setDraft(current=>({...current,class_group:event.target.value}))}/></label>
-            <label><span>參與 Class 判定</span><select className="scope-select" value={draft.class_enable===false?'false':'true'} onChange={event=>setDraft(current=>({...current,class_enable:event.target.value==='true'}))}><option value="true">是</option><option value="false">否</option></select></label>
-            <label><span>項目編號</span><input type="number" min="1" value={draft.item_no||''} onChange={event=>setDraft(current=>({...current,item_no:event.target.value}))}/></label>
-            <label><span>項目名稱</span><input value={draft.item_name||''} onChange={event=>setDraft(current=>({...current,item_name:event.target.value}))}/></label>
-            <label><span>排序</span><input type="number" value={draft.order_no??''} onChange={event=>setDraft(current=>({...current,order_no:event.target.value}))}/></label>
+            <label><span>{l.classEnabled}</span><select className="scope-select" value={draft.class_enable===false?'false':'true'} onChange={event=>setDraft(current=>({...current,class_enable:event.target.value==='true'}))}><option value="true">{l.yes}</option><option value="false">{l.no}</option></select></label>
+            <label><span>{l.itemNo}</span><input type="number" min="1" value={draft.item_no||''} onChange={event=>setDraft(current=>({...current,item_no:event.target.value}))}/></label>
+            <label><span>{l.itemName}</span><input value={draft.item_name||''} onChange={event=>setDraft(current=>({...current,item_name:event.target.value}))}/></label>
+            <label><span>{l.sort}</span><input type="number" value={draft.order_no??''} onChange={event=>setDraft(current=>({...current,order_no:event.target.value}))}/></label>
           </div>
-          <label><span>判別原理</span><textarea rows="4" value={draft.principle||''} onChange={event=>setDraft(current=>({...current,principle:event.target.value}))}/></label>
-          <label><span>關鍵詞（每行一筆）</span><textarea rows="12" value={draft.keywords_text||''} onChange={event=>setDraft(current=>({...current,keywords_text:event.target.value}))}/></label>
+          <label><span>{l.principle}</span><textarea rows="4" value={draft.principle||''} onChange={event=>setDraft(current=>({...current,principle:event.target.value}))}/></label>
+          <label><span>{l.keywordsPerLine}</span><textarea rows="12" value={draft.keywords_text||''} onChange={event=>setDraft(current=>({...current,keywords_text:event.target.value}))}/></label>
           <div className="scope-preview-links">
             <button type="button" className="loc-button primary" disabled={busy} onClick={save}>{busy?'儲存中…':'儲存'}</button>
-            {draft.keyword_id?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={remove}>刪除此 Item</button>:null}
+            {draft.keyword_id?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={remove}>{l.deleteItem}</button>:null}
           </div>
         </>}
         {message?<p role="status" aria-live="polite" className={message.includes('失敗')||message.includes('不可')||message.includes('0 rows')||message.includes('已經存在')?'scope-status scope-error':'scope-status'}>{message}</p>:null}
       </aside>:null}
     {!loading&&!items.length?<div className="scope-keyword-empty">
-      <p className="scope-status">這個 Class 目前沒有分類項目。</p>
-      <button type="button" className="loc-button" onClick={()=>newItem('')}>建立第一個分類項目</button>
+      <p className="scope-status">{l.noClassItems}</p>
+      <button type="button" className="loc-button" onClick={()=>newItem('')}>{l.createFirst}</button>
     </div>:null}
     </>:null}
   </section>;
