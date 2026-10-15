@@ -666,6 +666,31 @@
       "runeHits": "{count} 次 · {ratio}%",
       "totalWithCount": "{count} 项",
       "foldBlank": "折叠空白时间"
+    },
+    "chartTypes": {
+      "line": "折线图 · 时间趋势",
+      "bar": "柱状图 · 期间比较",
+      "pie": "饼图 · 来源分布",
+      "area": "面积图 · 数量变化",
+      "stacked": "堆叠面积图 · 来源构成",
+      "composed": "组合图 · 总量与均线",
+      "scatter": "散点图 · 双来源关系",
+      "radar": "雷达图 · 前后期占比",
+      "radial": "放射条形图 · 活跃期占比",
+      "treemap": "矩形树图 · 来源分布"
+    },
+    "chartLabels": {
+      "dayUnit": "天",
+      "periodUnit": "区间",
+      "total": "总量",
+      "firstHalf": "前半期占比",
+      "lastHalf": "后半期占比",
+      "periodTotal": "本期总量",
+      "movingAverage": "近三期移动平均",
+      "noComparable": "当前时间范围没有可比较的数据。",
+      "chartAria": "统计图形",
+      "gapLabel": "时间断层：",
+      "gapSeparator": "；"
     }
   }
 }
