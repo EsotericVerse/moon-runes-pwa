@@ -1,5 +1,7 @@
 'use client';
 import FieldText from '../../../i18n/FieldText';
+import {useUiLocale} from '../../../i18n/ui-locale';
+import {translateUiField} from '../../../i18n/ui-functional-copy.mjs';
 
 import {useMemo,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
@@ -30,6 +32,8 @@ function canonicalBucket(day,unit){
   return {key:day,from:day,to:day};
 }
 export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLevelChange}){
+  const {locale,copy}=useUiLocale();
+  const l=copy.uiExtra.selfIntersection;
   const [numberOfLanes,setNumberOfLanes]=useState(2);
   const [selected,setSelected]=useState([]);
   const [kindFilter,setKindFilter]=useState('all');
@@ -149,33 +153,33 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
   const availableCharts=availableStatisticChartTypes({rows:calculated.chart,series,distribution:calculated.totals});
   const shownChartType=availableCharts.some(([id])=>id===chartType)?chartType:(availableCharts[0]?.[0]||'line');
 
-  return <section className="scope-stat-section scope-self-intersection" aria-label="作品自交互統計">
+  return <section className="scope-stat-section scope-self-intersection" aria-label={translateUiField(locale,'作品自交互統計')}>
     <h3><FieldText text="作品自交互統計"/></h3>
-      {query.isPending?<p className="scope-status">讀取來源…</p>:null}
-      {query.error||catalog.error?<p className="scope-status scope-error">{String(query.error?.message||catalog.error?.message||'讀取失敗')}</p>:null}
+      {query.isPending?<p className="scope-status">{l.readingSources}</p>:null}
+      {query.error||catalog.error?<p className="scope-status scope-error">{String(query.error?.message||catalog.error?.message||l.readFailed)}</p>:null}
       {!query.isPending&&!catalog.isPending&&!query.error&&!catalog.error?<div className="scope-self-intersection-content">
         <div className="scope-stat-controls">
           <label><span><FieldText text="交互組數"/></span>
             <select className="scope-select" value={numberOfLanes} onChange={e=>{setNumberOfLanes(Number(e.target.value));setSelected([])}}>
-              {[2,3,4].map(n=><option key={n} value={n}>{n} 組</option>)}
+              {[2,3,4].map(n=><option key={n} value={n}>{n}{l.groupUnit}</option>)}
             </select>
           </label>
-          <label><span>比較維度</span>
+          <label><span>{l.comparisonDimensions}</span>
             <select className="scope-select" value={kindFilter} onChange={e=>{setKindFilter(e.target.value);setSelected([])}}>
-              <option value="all">全部分類</option>
-              {DIMENSIONS.map(item=><option key={item.kind} value={item.kind}>{item.label}</option>)}
+              <option value="all">{l.allCategories}</option>
+              {DIMENSIONS.map(item=><option key={item.kind} value={item.kind}{translateUiField(locale,item.label)}</option>)}
             </select>
           </label>
-          <label><span>圖表</span>
+          <label><span><FieldText text="圖表"/></span>
             <select className="scope-select" value={chartType} onChange={e=>setChartType(e.target.value)}>
-              {availableCharts.length?availableCharts.map(([value,label])=><option key={value} value={value}>{label}</option>):<option value="line">尚無可用圖形</option>}
+              {availableCharts.length?availableCharts.map(([value,label])=><option key={value} value={value}{translateUiField(locale,label)}</option>):<option value="line"><FieldText text="尚無可用圖形"/></option>}
             </select>
           </label>
-          <label className="scope-setting-toggle"><input type="checkbox" checked={foldBlank} onChange={e=>setFoldBlank(e.target.checked)}/> 折疊空白時間區間</label>
+          <label className="scope-setting-toggle"><input type="checkbox" checked={foldBlank} onChange={e=>setFoldBlank(e.target.checked)}/> {l.foldEmptyTime}</label>
         </div>
         <div className="scope-stat-controls">
           {Array.from({length:numberOfLanes},(_,index)=><label key={index}>
-            <span>比較項目 {index+1}</span>
+            <span>{l.comparisonItem} {index+1}</span>
             <select className="scope-select" value={selection[index]||''} onChange={e=>{
               setSelected(prev=>{
                 const next=Array.from({length:numberOfLanes},(_,i)=>selection[i]||'');
@@ -183,11 +187,11 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
                 return next;
               });
             }}>
-              {!selection[index]?<option value="">沒有可選的來源</option>:null}
+              {!selection[index]?<option value="">{l.noSelectableSource}</option>:null}
               {DIMENSIONS.map(dimension=>{
                 const options=categoryList.filter(category=>category.kind===dimension.kind&&
                   !selection.some((chosen,i)=>i!==index&&chosen===category.id));
-                return options.length?<optgroup key={dimension.kind} label={dimension.label}>
+                return options.length?<optgroup key={dimension.kind} label={translateUiField(locale,dimension.label)}>
                   {options.map(category=><option key={category.id} value={category.id}>
                     {category.name}（{category.total.toLocaleString()}）
                   </option>)}
@@ -198,14 +202,14 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
         </div>
         {enough?<div>
           <div className="scope-ranking">
-            <div><strong>共同活躍日</strong><span>{calculated.days.toLocaleString()} 天</span></div>
-            {calculated.totals.map(item=><div key={item.name}><strong>{item.name}</strong><span>{item.value.toLocaleString()} 筆</span></div>)}
+            <div><strong>{l.activeDays}</strong><span>{calculated.days.toLocaleString(locale)}{l.dayUnit}</span></div>
+            {calculated.totals.map(item=><div key={item.name}><strong>{item.name}</strong><span>{item.value.toLocaleString(locale)}{l.recordUnit}</span></div>)}
           </div>
           <StatisticsChartFrame level={zoomLevel} onChange={onZoomLevelChange} range={range} idPrefix="scope-self-stat">
             <StatisticsMultiChart type={shownChartType} rows={calculated.chart} series={series}
               distribution={calculated.totals} foldBlank={foldBlank} height={410}/>
           </StatisticsChartFrame>
-        </div>:<p className="scope-status">目前細分來源不足 {numberOfLanes} 組；請更換範圍或減少組數。</p>}
+        </div>:<p className="scope-status">{l.notEnoughSources.replace('{count}',numberOfLanes)}</p>}
       </div>:null}
   </section>;
 }
