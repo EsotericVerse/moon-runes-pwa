@@ -57,12 +57,19 @@ const sharedSearch=read('app/modular/features/Search.jsx');
 const runtimePorts=read('app/loc/providers/kysely-runtime.mjs');
 const edgeServer=read('supabase/functions/loc-kysely/index.ts');
 const liveProbe=read('scripts/verify-db-public-read.mjs');
+const zhUi=JSON.parse(read('app/i18n/zh_tw.json'));
+const uiTextIds=label=>Object.entries(zhUi.uiExtra).flatMap(([section,entries])=>
+  Object.entries(entries).filter(([,value])=>value===label).map(([key])=>'uiExtra.'+section+'.'+key));
+const uiTextInside=(source,tag,label)=>uiTextIds(label).some(id=>
+  source.includes('<'+tag+'><UiText id="'+JSON.stringify(id).slice(1,-1)+'"/></'+tag+'>'));
 const functionalLabel=(source,tag,label)=>source.includes('<'+tag+'>'+label+'</'+tag+'>')||
-  source.includes('<'+tag+'><FieldText text="'+label+'"/></'+tag+'>');
+  source.includes('<'+tag+'><FieldText text="'+label+'"/></'+tag+'>')||uiTextInside(source,tag,label);
 const functionalOption=(source,value,label)=>source.includes("<option value='"+value+"'>"+label+"</option>")||
-  source.includes("<option value='"+value+"'><FieldText text=\""+label+"\"/></option>");
+  source.includes("<option value='"+value+"'><FieldText text=\""+label+"\"/></option>")||
+  uiTextIds(label).some(id=>source.includes("<option value='"+value+"'><UiText id=\""+id+"\"/></option>"));
 const functionalButton=(source,onClick,label)=>source.includes('onClick={'+onClick+'}>'+label+'</button>')||
-  source.includes('onClick={'+onClick+'}><FieldText text="'+label+'"/></button>');
+  source.includes('onClick={'+onClick+'}><FieldText text="'+label+'"/></button>')||
+  uiTextIds(label).some(id=>source.includes('onClick={'+onClick+'}><UiText id="'+id+'"/></button>'));
 
 for(const name of ['provision_scope','manage_scope_registry','apply_keyword_classification','read_keyword_class']){
   must(runtimePorts.includes("'silver."+name+"'")&&dbContract.includes("rpc('"+name+"'"),
@@ -86,7 +93,7 @@ must(keywordAnalysis.includes('group_lists:result?.group_lists||{}')&&
 must(!galaxy.includes('include_in_time'),'generic search must not query nonexistent include_in_time');
 must(galaxy.includes("searchFields:['label','note','status','style_description']")&&!galaxy.includes("'style_tags'"),'Search uses dedicated TEXT style body and no comma tags');
 must(culture.includes("value:['anchor','period','event','style_comment']"),'Culture reads independent style comments');
-must(editor.includes("['style_comment','風格標籤']")&&!editor.includes('style_tags')&&!cultureUi.includes('CultureStyleTagsEditor'),'Fourth style comment must use the shared Time editor, not legacy tag fields or a separate editor');
+must(editor.includes("['style_comment','style']")&&!editor.includes('style_tags')&&!cultureUi.includes('CultureStyleTagsEditor'),'Fourth style comment must use the shared Time editor, not legacy tag fields or a separate editor');
 must(editor.includes('payload.style_description=styleDescription')&&editor.includes('payload.anchor_ids=[anchorId]')&&cultureUi.includes("beginTimelineCreation(recordType,'')")&&functionalOption(cultureUi,'style_comment','風格標籤'),'Style create/update must use shared Type selector and save one independent TEXT description and one formal anchor');
 must(cultureUi.includes('onClick={canEditWork')&&cultureUi.includes('isInteractiveTarget')&&!cultureUi.includes("UI_COPY.culture.editing:'編輯'"),'Culture existing works must enter editing by direct non-interactive card click without an Edit button');
 must(galaxy.includes('selectStyleKeywordIntroductions')&&!galaxy.includes('scopeCards('),'Search must prepend exact style-keyword introductions and must not use partial Scope-ID cards');
@@ -243,7 +250,7 @@ must(!admin.includes('Registry：')&&admin.includes('{!routeLocked?<div classNam
 must(admin.includes('shapeProperties:{borderRadius:12}')&&admin.includes('themeObserver?.disconnect()')&&admin.includes("token('--loc-text'"),'Admin graph nodes must use compact theme-aware shapes with observer cleanup');
 must(admin.includes("direction:'LR'")&&admin.includes("forceDirection:'horizontal'")&&!admin.includes("direction:'UD'"),'Scope graph must place LOC at left and its children at right');
 must(adminCss.includes('.admin-deployment-layout{display:grid;grid-template-columns:minmax(0,1fr)')&&admin.includes('className="admin-editor-section"'),'Scope management must show full-width graph with editor below');
-must(admin.includes("select('id,email,role,galaxy,time,birthday,Title_TW,Desc_TW')")&&admin.includes("updateRows('silver.manage'")&&admin.includes("Title_TW:String(currentCopy.Title_TW")&&admin.includes('NAV 中文名稱（Title_TW）'),'Admin must edit silver.manage Title_TW and Desc_TW, including true DB writes');
+must(admin.includes("select('id,email,role,galaxy,time,birthday,Title_TW,Desc_TW')")&&admin.includes("updateRows('silver.manage'")&&admin.includes("Title_TW:String(currentCopy.Title_TW")&&admin.includes('uiExtra.adminView.navigationTitle'),'Admin must edit silver.manage Title_TW and Desc_TW, including true DB writes');
 must(admin.includes("role=\"application\"")||admin.includes('manipulation:{'),'Scope graph must preserve direct vis-network edit/delete operations');
 must(admin.includes("const [editDraft,setEditDraft]=useState(null)")&&admin.includes('const editing=editDraft?.scopeId===selectedId;')&&admin.includes("const cancelEdit=()=>setEditDraft(null);"),'Scope node edits must remain local drafts until explicit Save or Cancel');
 must(admin.includes('admin-attribute-grid')&&admin.includes('aria-label="人員設定摘要"')&&admin.includes('onClick={beginEdit}')&&adminCss.includes('.admin-attribute>strong'),'Scope node shows attribute summary first and clicking any attribute enters edit mode');
@@ -258,7 +265,7 @@ must(read('app/AppShell.jsx').includes('function ScopePageCopy({scopeId,display_
   read('app/loc/scope-data.js').includes("rpc('read_scope_page_copy'")&&
   read('app/AppShell.jsx').includes('configRow?.display_name||registryRow?.display_name'),
   'browser page copy must derive from manage Title_TW/Desc_TW independently of display_name');
-must(!admin.includes('applyTheme(')&&admin.includes('admin-theme-local-preview')&&admin.includes('正在編輯的主題（只修改草稿，不影響網站配色）'),'Admin Theme draft and preview must never mutate the live document root theme on entry or edit');
+must(!admin.includes('applyTheme(')&&admin.includes('admin-theme-local-preview')&&admin.includes('uiExtra.adminView.editingTheme'),'Admin Theme draft and preview must never mutate the live document root theme on entry or edit');
 must(admin.includes('admin-registry-fallback')&&admin.includes('圖形樹載入失敗，已切換清單模式。')&&admin.includes('setTreeError'),'Scope Registry must provide a visible fallback instead of failing blank');
 must(admin.includes('syncManageScopeRow(')&&admin.includes("role:'scope'"),'Admin Scope node must edit Manage mapping atomically and keep role=scope fixed');
 must(admin.includes('部分人員設定讀取失敗')&&admin.includes('configFailures.push')&&admin.includes('readAdminScopeConfig(row.scope_id)')&&admin.includes("String(error?.code||'')==='PGRST205'"),'Admin must retry newly provisioned Scope config until PostgREST schema cache settles');
@@ -290,8 +297,8 @@ must(
 const scopeCreatePanel=admin.split("    {kind==='scope'?<>")[1]?.split("    </>:<>")[0]||'';
 must(
   functionalLabel(scopeCreatePanel,'span','人員代碼')&&
-  scopeCreatePanel.includes('管理者 Email（必填）')&&scopeCreatePanel.includes('type="email" required')&&
-  scopeCreatePanel.includes('預設語系')&&scopeCreatePanel.includes('UI_LOCALE_OPTIONS')&&
+  scopeCreatePanel.includes('uiExtra.adminView.administratorEmail')&&scopeCreatePanel.includes('type="email" required')&&
+  scopeCreatePanel.includes('uiExtra.adminView.defaultLanguage')&&scopeCreatePanel.includes('UI_LOCALE_OPTIONS')&&
   scopeCreatePanel.split('<input').length===5&&
   scopeCreatePanel.includes('type="radio" name="new-scope-route-mode" value="directory"')&&
   scopeCreatePanel.includes('type="radio" name="new-scope-route-mode" value="domain"')&&
