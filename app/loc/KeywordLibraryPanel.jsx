@@ -371,7 +371,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
 
   async function removeItemRow(row){
     if(!row?.keyword_id)return false;
-    if(!window.confirm(l.deletePrefix+String(row.item_name||l.thisItem)+'」？'))return false;
+    if(!window.confirm(l.deletePrefix+String(row.item_name||l.thisItem)+l.deleteSuffix))return false;
     const classId=String(row.class_id||'');
     setBusy(true);setMessage('');
     try{
@@ -413,7 +413,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
       await markCurrentClassificationStale(selectedClassId);
       setSelectedId('');setDraft(null);
       await load('',selectedClass);
-      setMessage('Group「'+group+l.groupDeletedSuffix);
+      setMessage(l.groupDeletedPrefix+group+l.groupDeletedSuffix);
       return true;
     }catch(error){
       setMessage(String(error?.message||error||l.groupDeleteError));
@@ -429,7 +429,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
       const createdName=String(result.class_name||'').trim();
       const reloaded=await load('',createdName,{preserveOnError:true});
       setMessage(reloaded
-        ?l.copyRunePrefix+createdName+'」（'+result.count+l.runeCountUnit+result.class_id+l.copyRuneSuffix
+        ?l.copyRunePrefix+createdName+l.copyRuneJoin+result.count+l.runeCountUnit+result.class_id+l.copyRuneSuffix
         :l.copyRuneReloadPrefix+result.class_id+l.copyRuneReloadSuffix);
     }catch(error){
       setMessage(l.copyRuneError+String(error?.message||error));
@@ -459,7 +459,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     if(!selectedClassId)return;
     try{
       await navigator.clipboard.writeText(selectedClassId);
-      setMessage(l.uuidCopied+scopeId+'。');
+      setMessage(l.uuidCopied+scopeId+l.uuidCopiedSuffix);
     }catch{
       setMessage(l.uuidCopyFailed);
     }
