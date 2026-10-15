@@ -156,7 +156,7 @@ export async function selectGalaxyContent(scope,uid){
   const current=scopeOf(scope);
   const id=String(uid||'').trim();
   if(!id)return null;
-  return selectRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content,content_blocks'});
+  return selectRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content'});
 }
 
 export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
@@ -170,11 +170,11 @@ export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
   });
   if(!row||(!includeHidden&&row.searchable===false))return null;
   const [contentRow,mediaRows]=await Promise.all([
-    selectRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content,content_blocks'}),
+    selectRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content'}),
     mediaRowsFor(current,mediaIdsOf(row.media_link))
   ]);
   const mediaById=new Map(mediaRows.map(item=>[String(item.media_id),item]));
-  return {...row,scope_id:current.id,__table:current.galaxy,content:contentRow?.content||'',content_blocks:contentRow?.content_blocks||null,links:resolvedLinks(row,mediaById)};
+  return {...row,scope_id:current.id,__table:current.galaxy,content:contentRow?.content||'',links:resolvedLinks(row,mediaById)};
 }
 
 function literalPattern(value){
@@ -251,7 +251,7 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false}={
   });
   const media=makeProvider({
     id:current.id+':media',table:current.galaxyMedia,source:current.id+' 多媒體',scope:current,idColumn:'media_id',
-    columns:['media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','content_blocks','createtime'],
+    columns:['media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','createtime'],
     searchFields:['title','meta_tags','media_type','url','source_native_id'],dateColumn:'createtime'
   });
   if(mediaOnly)return [media];
