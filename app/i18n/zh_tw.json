@@ -684,6 +684,31 @@
       "loadingKeywordAttrs": "正在讀取已定錨的關鍵詞 Attr…",
       "refreshing": "更新統計中…",
       "refresh": "重新整理即時統計"
+    },
+    "importUI": {
+      "importTitle": "資料匯入",
+      "mediaHelp": "只記錄外部媒體參照與文字 metadata：URL／雲端連結、檔名或標題、來源 ID、時間、地點與 Meta Tag；不接收、不暫存任何圖片／音訊／影片檔案。media_id 由資料庫自動產生，url 可留空。",
+      "mediaUidHint": "8 字 UID，可留空",
+      "placeHint": "打卡地點／拍攝位置",
+      "externalUrlHint": "外部 URL／雲端連結，可留空，之後再補",
+      "mediaTitle": "title／檔名",
+      "tagHint": "建立時由資料提供者設定，逗號分隔",
+      "linkUidInvalid": "galaxy_link 必須是 8 字 UID，或留空。",
+      "mediaTypeRequired": "media_type 為必填欄位。",
+      "mediaEncoding": "多媒體文字 metadata 含不可逆編碼錯誤。",
+      "tagsRequired": "meta_tags 必須在建立多媒體紀錄時由資料提供者設定；LOC 不會自動分類。",
+      "scopeUnresolved": "Scope data 未解析",
+      "mediaSaved": "多媒體資料已直接寫入 Galaxy Media。",
+      "mediaSaveFailed": "多媒體儲存失敗。",
+      "sunoImport": "Suno 單筆匯入",
+      "sunoIdHint": "可由 URL 自動辨識",
+      "sunoStyleTagHint": "從 Suno Style 逐字節錄，可補 LP15-3／LunaRunesMusic",
+      "sunoRegenerate": "從 Suno Style 重新擷取 Meta Tags",
+      "sunoEncoding": "Suno 文字資料含不可逆編碼錯誤。",
+      "sunoTitleRequired": "請填寫歌名。",
+      "sunoTagsRequired": "Media Meta Tags 必須在建立時提供；LOC 不會自動分類。",
+      "sunoSaved": "Suno 單筆資料已儲存。",
+      "sunoSaveFailed": "Suno 儲存失敗。"
     }
   }
 }
