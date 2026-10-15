@@ -22,6 +22,10 @@ for(const locale of locales){
     locale+' must keep the same core UI dictionary structure for '+section);
   assert.deepEqual(keysOf(dict.uiExtra).sort(),keysOf(zh.uiExtra).sort(),
     locale+' is missing a functional UI string. All four dictionaries share the same keys.');
+  for(const section of ['fields','formatMessages','dailyRune','privateFiles','itemConfluence','timelineEditor','keywordPanel']){
+    assert.deepEqual(keysOf(dict[section]).sort(),keysOf(zh[section]).sort(),
+      locale+' dictionary keys differ in '+section);
+  }
 }
 const cleared=[
   'app/loc/ScopeGroupManagement.jsx',
