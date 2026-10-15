@@ -52,23 +52,23 @@ function datetimeLocalValue(value){
   const local=new Date(date.getTime()-date.getTimezoneOffset()*60_000);
   return local.toISOString().slice(0,16);
 }
-function isoOrNull(value){
+function isoOrNull(value,t){
   const text=String(value||'').trim();
   if(!text)return null;
   const date=new Date(text);
-  if(Number.isNaN(date.getTime()))throw new Error('文章時間格式無效。');
+  if(Number.isNaN(date.getTime()))throw new Error(t('uiExtra.searchUI.articleDateInvalid'));
   return date.toISOString();
 }
 function jsonText(value){
   try{return JSON.stringify(value??false,null,2)}catch{return String(value??'')}
 }
-function parseJsonAttr(value){
+function parseJsonAttr(value,t){
   const text=String(value??'').trim();
   if(!text)return false;
-  try{return JSON.parse(text)}catch{throw new Error('group_lists 必須是有效 JSON。')}
+  try{return JSON.parse(text)}catch{throw new Error(t('uiExtra.searchUI.groupListInvalid'))}
 }
-function attrDisplayValue(key,value){
-  if(key==='content')return '全文已顯示於上方';
+function attrDisplayValue(key,value,t){
+  if(key==='content')return t('uiExtra.searchUI.attrShown');
   if(Array.isArray(value))return value.length?value.join(', '):'[]';
   if(value&&typeof value==='object')return jsonText(value);
   if(value===null||value===undefined||value==='')return 'null';
@@ -100,13 +100,14 @@ function galaxyDraftFromRow(row={},fallbackTitle=''){
 }
 
 function GalaxyAttrSummary({row}){
+  const t=useUiText();
   if(!row)return null;
   return <details className="scope-search-attr-panel">
-    <summary><FieldText text="文章屬性"/></summary>
+    <summary><UiText id="uiExtra.searchUI.attributeTitle"/></summary>
     <dl className="scope-search-attr-grid">
       {GALAXY_ATTR_ORDER.map(key=><div key={key}>
         <dt>{key}</dt>
-        <dd>{attrDisplayValue(key,row[key])}</dd>
+        <dd>{attrDisplayValue(key,row[key],t)}</dd>
       </div>)}
     </dl>
   </details>;
@@ -117,7 +118,7 @@ function GalaxyAttrEditor({draft,setDraft}){
   const attrs=draft?.attrs||{};
   const change=(key,value)=>setDraft(current=>({...current,attrs:{...(current?.attrs||{}),[key]:value}}));
   return <details className="scope-search-attr-panel" open>
-    <summary><FieldText text="文章屬性"/></summary>
+    <summary><UiText id="uiExtra.searchUI.attributeTitle"/></summary>
     <div className="scope-management-fields scope-search-attr-editor">
       <label><span>uid</span><input value={attrs.uid||''} readOnly/></label>
       <label><span>createtime</span><input type="datetime-local" value={attrs.createtime||''} onChange={event=>change('createtime',event.target.value)}/></label>
@@ -330,7 +331,7 @@ export default function Search(){
           matchedQueryRef.current=q;
           setResults([{
             key:'scope:'+scopeId,
-            source:'人員',
+            source:t('uiExtra.searchUI.memberSource'),
             title:scope.searchTitle||scope.label||scopeId,
             date:'',
             snippet:scope.searchIntro||'',
@@ -345,7 +346,7 @@ export default function Search(){
             href:scopeHref(scopeId),
             relationLinks:[],
             groupKey:'scope:'+scopeId,
-            links:[{id:'scope-home',href:scopeHref(scopeId),label:'前往成員首頁'}],
+            links:[{id:'scope-home',href:scopeHref(scopeId),label:t('uiExtra.searchUI.memberHomeLink')}],
             destinations:[]
           }]);
           setHasMore(false);
@@ -402,7 +403,7 @@ export default function Search(){
       setResults(current=>append?mergeSummaryResults([...current,...pageResults],UI_COPY):pageResults);
             setHasMore(Boolean(search.hasMore));
       setNextCursor(search.nextCursor??null);
-      const partial=search.failures?.length?'（部分延伸資料暫時無法查詢）':'';
+      const partial=search.failures?.length?t('uiExtra.searchUI.partialExtendedData'):'';
       if(!append)setStatus(UI_COPY.format.searchResult({label:searchMode==='media'?UI_COPY.search.media:'「'+collectionLabel+'」',query:q,hasMore:search.hasMore,partial}));
     }catch(exception){
       if(id!==searchId.current)return;
@@ -531,7 +532,7 @@ export default function Search(){
       const contentPatch=result.resourceType==='galaxy'?{
         title:nextTitle,
         content:body,
-        createtime:isoOrNull(attrs.createtime),
+        createtime:isoOrNull(attrs.createtime,t),
         source_native_id:nullableText(attrs.source_native_id),
         source_place:nullableText(attrs.source_place),
         searchable:attrs.searchable!==false,
@@ -544,12 +545,12 @@ export default function Search(){
         media_link:parseListText(attrs.media_link),
         statistics_able:attrs.statistics_able!==false,
         class_id:classText===''?null:Number(classText),
-        group_lists:parseJsonAttr(attrs.group_lists)
+        group_lists:parseJsonAttr(attrs.group_lists,t)
       }:{
         title:nextTitle,
         [result.editableField]:body,
       };
-      if(result.resourceType==='galaxy'&&classText!==''&&!Number.isFinite(contentPatch.class_id))throw new Error('class_id 必須是數字。');
+      if(result.resourceType==='galaxy'&&classText!==''&&!Number.isFinite(contentPatch.class_id))throw new Error(t('uiExtra.searchUI.classIdInvalid'));
       const contentFilters=[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId}];
       await updateRows(result.editableTable,contentPatch,{filters:contentFilters});
       setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:nextTitle,snippet:result.resourceType==='galaxy'?'':body}));
