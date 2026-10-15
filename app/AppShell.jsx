@@ -32,11 +32,11 @@ const NAV_SCOPES=Object.values(SCOPES)
   .sort((a,b)=>String(a.nav.position).localeCompare(String(b.nav.position))||Number(a.nav.order||0)-Number(b.nav.order||0));
 
 function DataSourceStatus(){
-  const {locale}=useUiLocale();
+  const {copy}=useUiLocale();
   const status=useSyncExternalStore(subscribeDbSourceStatus,getDbSourceStatus,getDbSourceStatus);
   const current=status.degraded
-    ?`備援資料（${status.backupLabel}）`
-    :`主要資料（${status.primaryLabel}）`;
+    ?`${copy.uiExtra.dataSourceStatus.backup}（${status.backupLabel}）`
+    :`${copy.uiExtra.dataSourceStatus.primary}（${status.primaryLabel}）`;
   return <div className={'scope-data-source-global'+(status.degraded?' is-backup':'')} role="status">
     <span><FieldText text="主要資料來源："/>{status.primaryLabel}</span>
     <span><FieldText text="備用資料來源："/>{status.backupLabel}</span>
@@ -308,7 +308,7 @@ export default function AppShell({children}){
   // LunaRunes is the immutable core native App workspace, not a removable cloud favorite.
   if(native){
     favoriteLinks.unshift({id:'lrunes',label:'月之符文'});
-    if(mobileFavorite)favoriteLinks.splice(1,0,{id:MOBILE_HOME_ID,label:'我的手機'});
+    if(mobileFavorite)favoriteLinks.splice(1,0,{id:MOBILE_HOME_ID,label:translateUiField(activeLocale,'我的手機')});
   }
   const navLabel=id=>{
     const builtIn=NAV_SCOPES.find(item=>item.id===id);
