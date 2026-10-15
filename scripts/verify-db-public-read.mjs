@@ -112,6 +112,15 @@ async function verifyGameContract(client){
 }
 
 const client=runtimeClient();
+const routingResult=await client.schema('silver').rpc('loc_public_routing_state');
+if(routingResult.error||!routingResult.data?.primary_id)
+  throw new Error('Public database route: HTTP '+routingResult.status+' '+(routingResult.error?.message||'missing primary'));
+const routing=routingResult.data;
+if(!['single','db-managed'].includes(routing.mode)||!['supabase','neon','custom'].includes(routing.provider)||
+   ['project_url','connection_alias','password','secret'].some(key=>key in routing))
+  throw new Error('Public route exposes invalid or private metadata');
+console.log(JSON.stringify({probe:'public-database-route',provider:routing.provider,
+  primary:routing.primary_id,backup:routing.backup_id||null,mode:routing.mode}));
 await probe(client,'manage','id,role,birthday,galaxy,time');
 await probe(client,'loc_theme','theme_id,theme_name,theme_order,scheme,style_key,identity_color,loc_bg,loc_panel,loc_text,loc_accent,loc_shadow_card');
 
