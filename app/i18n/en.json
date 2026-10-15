@@ -684,6 +684,31 @@
       "loadingKeywordAttrs": "Loading anchored keyword attributes…",
       "refreshing": "Refreshing statistics…",
       "refresh": "Refresh live statistics"
+    },
+    "importUI": {
+      "importTitle": "Data import",
+      "mediaHelp": "Only references and text metadata are stored (URL, title, source ID, date, place and Meta Tag). Media binaries are neither accepted nor stored. The database generates media_id automatically; URL is optional.",
+      "mediaUidHint": "8-character UID (optional)",
+      "placeHint": "Location or photo location",
+      "externalUrlHint": "External URL or cloud link (optional)",
+      "mediaTitle": "title / filename",
+      "tagHint": "Enter source-provided tags, separated by commas",
+      "linkUidInvalid": "galaxy_link must be an 8-character UID or empty.",
+      "mediaTypeRequired": "media_type is required.",
+      "mediaEncoding": "Media metadata contains irrecoverable encoding errors.",
+      "tagsRequired": "The data provider must supply meta_tags; LOC does not invent categories.",
+      "scopeUnresolved": "Scope data could not be resolved.",
+      "mediaSaved": "Media record saved to Galaxy Media.",
+      "mediaSaveFailed": "Failed to save media.",
+      "sunoImport": "Import Suno song",
+      "sunoIdHint": "Automatically detected from URL",
+      "sunoStyleTagHint": "Copy exact Suno Style phrases; add LP15-3 / LunaRunesMusic if needed",
+      "sunoRegenerate": "Regenerate Meta Tags from Suno Style",
+      "sunoEncoding": "Suno text has irrecoverable encoding errors.",
+      "sunoTitleRequired": "Song title is required.",
+      "sunoTagsRequired": "Media Meta Tags are required; LOC does not invent classifications.",
+      "sunoSaved": "Suno song saved.",
+      "sunoSaveFailed": "Failed to save Suno song."
     }
   }
 }
