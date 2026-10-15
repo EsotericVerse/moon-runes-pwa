@@ -185,6 +185,7 @@ function SummaryChart({type='bar',rankingType,summary,height=380}){
 }
 function TotalTrendChart({rows=[],range={},height=420}){
   const UI_COPY=useUiCopy();
+  const t=useUiText();
   const data=useMemo(()=>buildSourceTrend(rows,range),[rows,range]);
   if(!data.length)return <p className="scope-status">{FEATURE_EMPTY_MESSAGE}</p>;
   return <ResponsiveContainer width="100%" height={height}>
@@ -192,8 +193,8 @@ function TotalTrendChart({rows=[],range={},height=420}){
       <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
       <XAxis dataKey="period" angle={-24} textAnchor="end" interval="preserveStartEnd" height={72} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
       <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
-      <Tooltip contentStyle={CHART_TOOLTIP} formatter={value=>[Number(value).toLocaleString()+' 項',UI_COPY.statistics.totalSource]}/>
-      <Line type="monotone" dataKey="total" name="總來源" stroke={CHART_ACCENT} strokeWidth={3} dot={false}/>
+      <Tooltip contentStyle={CHART_TOOLTIP} formatter={value=>[Number(value).toLocaleString()+' '+t('uiExtra.statisticsView.unitItem'),UI_COPY.statistics.totalSource]}/>
+      <Line type="monotone" dataKey="total" name={t('uiExtra.statisticsView.totalSource')} stroke={CHART_ACCENT} strokeWidth={3} dot={false}/>
     </LineChart>
   </ResponsiveContainer>;
 }
@@ -248,6 +249,7 @@ function facetTrend(rows=[],window={},selectedCategories=[]){
   });
 }
 function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeChange,range={},scopeId,foldBlank=false,zoomLevel=0,onZoomLevelChange}){
+  const t=useUiText();
   const [selectedTag,setSelectedTag]=useState('all');
   const [rankingPage,setRankingPage]=useState(1);
   const window=useMemo(()=>rowsInWindow(rows,range),[rows,range]);
@@ -269,15 +271,15 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeC
   const chosenChartType=supported.some(([value])=>value===chartType)?chartType:(supported[0]?.[0]||'line');
   return <>
     <div className="scope-stat-controls">
-      <label><span><FieldText text={rankingType==='media_style'?'指定 Meta Tag':'指定統計細項'}/></span>
+      <label><span><UiText id={rankingType==='media_style'?'uiExtra.statisticsView.selectMeta':'uiExtra.statisticsView.selectItem'}/></span>
         <select className="scope-select" value={chosen} onChange={event=>{setSelectedTag(event.target.value);setRankingPage(1);}}>
-          <option value="all"><FieldText text="全部項目"/></option>
+          <option value="all"><UiText id="uiExtra.statisticsView.allItems"/></option>
           {totals.map(row=><option key={row.term} value={row.term}>{row.term}（{row.item_count.toLocaleString()}）</option>)}
         </select>
       </label>
-      <label><span><FieldText text="圖形"/></span>
+      <label><span><UiText id="statistics.chart"/></span>
         <select className="scope-select" value={chosenChartType} onChange={event=>onChartTypeChange?.(event.target.value)}>
-          {supported.length?supported.map(([value,label])=><option key={value} value={value}><FieldText text={label}/></option>):<option value="line"><FieldText text="尚無可用圖形"/></option>}
+          {supported.length?supported.map(([value,label])=><option key={value} value={value}><FieldText text={label}/></option>):<option value="line"><UiText id="uiExtra.statisticsView.noVisual"/></option>}
         </select>
       </label>
     </div>
@@ -287,10 +289,10 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeC
       <div className="scope-ranking">
         {displayed.slice((currentPage-1)*pageSize,currentPage*pageSize).map(row=><div key={row.term}><strong>{row.term}</strong><span>{row.item_count.toLocaleString()}</span></div>)}
       </div>
-      {pages>1?<nav className="scope-stat-controls" aria-label="統計分頁">
-        <button type="button" className="loc-button" disabled={currentPage===1} onClick={()=>setRankingPage(currentPage-1)}><FieldText text="上一頁"/></button>
+      {pages>1?<nav className="scope-stat-controls" aria-label={t('uiExtra.statisticsView.pageNav')}>
+        <button type="button" className="loc-button" disabled={currentPage===1} onClick={()=>setRankingPage(currentPage-1)}><UiText id="uiExtra.statisticsView.previous"/></button>
         <span>{currentPage} / {pages}</span>
-        <button type="button" className="loc-button" disabled={currentPage===pages} onClick={()=>setRankingPage(currentPage+1)}><FieldText text="下一頁"/></button>
+        <button type="button" className="loc-button" disabled={currentPage===pages} onClick={()=>setRankingPage(currentPage+1)}><UiText id="uiExtra.statisticsView.next"/></button>
       </nav>:null}
       <StatisticsChartFrame level={zoomLevel} onChange={onZoomLevelChange} range={range} idPrefix="scope-stat">
         <StatisticsMultiChart type={chosenChartType}
@@ -308,10 +310,10 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeC
 function MediaCrossTagPicker({title,options,selected,onChange}){
   const chosen=new Set(selected);
   return <details className="scope-stat-cross-picker">
-    <summary><FieldText text={title}/>（<FieldText text="已選"/> {chosen.size} <FieldText text="項"/>）</summary>
+    <summary><FieldText text={title}/>（<UiText id="uiExtra.statisticsView.selected"/> {chosen.size} <UiText id="uiExtra.statisticsView.unitItem"/>）</summary>
     <div style={{display:'flex',gap:8,flexWrap:'wrap',margin:'8px 0'}}>
-      <button className="loc-button" type="button" onClick={()=>onChange(options.map(x=>x.key))}><FieldText text="全選"/></button>
-      <button className="loc-button" type="button" onClick={()=>onChange([])}><FieldText text="清除"/></button>
+      <button className="loc-button" type="button" onClick={()=>onChange(options.map(x=>x.key))}><UiText id="uiExtra.statisticsView.selectAll"/></button>
+      <button className="loc-button" type="button" onClick={()=>onChange([])}><UiText id="uiExtra.statisticsView.clear"/></button>
     </div>
     <div style={{maxHeight:210,overflowY:'auto',display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(165px,1fr))',gap:6}}>
       {options.map(tag=><label key={tag.key} className="scope-setting-toggle" style={{display:'flex',alignItems:'center',gap:6}}>
@@ -324,6 +326,7 @@ function MediaCrossTagPicker({title,options,selected,onChange}){
   </details>;
 }
 function MediaCrossTagStatistics({rows=[],range={},zoomLevel=0,onZoomLevelChange}){
+  const t=useUiText();
   const [leftOverride,setLeftOverride]=useState(null);
   const [rightOverride,setRightOverride]=useState(null);
   const [mode,setMode]=useState('ranking');
@@ -348,24 +351,24 @@ function MediaCrossTagStatistics({rows=[],range={},zoomLevel=0,onZoomLevelChange
       startDate:range.startDate,endDate:range.endDate,bucket:range.bucket||'day'
     },trendPairs.map(pair=>pair.key));
   },[pairs,range.startDate,range.endDate,range.bucket]);
-  return <section className="scope-stat-cross" aria-label="多媒體標籤交互統計">
-    <h3><FieldText text="多媒體 Meta Tag 交互統計"/></h3>
-    <p className="scope-status"><FieldText text="兩側標籤皆從現有多媒體 metadata 產生；預選 Mandopop／J-Pop／K-Pop 對其他標籤，沒有的組合不列出。每組每筆媒體只算一次。"/></p>
-    {!catalog.options.length?<p className="scope-status"><FieldText text="目前區間沒有可交互比較的 Meta Tag。"/></p>:<>
+  return <section className="scope-stat-cross" aria-label={t('uiExtra.statisticsView.crossLabel')}>
+    <h3><UiText id="uiExtra.statisticsView.crossTitle"/></h3>
+    <p className="scope-status"><UiText id="uiExtra.statisticsView.crossHint"/></p>
+    {!catalog.options.length?<p className="scope-status"><UiText id="uiExtra.statisticsView.noPairsInRange"/></p>:<>
       <div className="scope-stat-controls" style={{alignItems:'start'}}>
-        <MediaCrossTagPicker title="第一組標籤" options={catalog.options} selected={left} onChange={setLeftOverride}/>
-        <MediaCrossTagPicker title="第二組標籤" options={catalog.options} selected={right} onChange={setRightOverride}/>
+        <MediaCrossTagPicker title={t('uiExtra.statisticsView.tagGroup1')} options={catalog.options} selected={left} onChange={setLeftOverride}/>
+        <MediaCrossTagPicker title={t('uiExtra.statisticsView.tagGroup2')} options={catalog.options} selected={right} onChange={setRightOverride}/>
         <button type="button" className="loc-button" onClick={()=>{
           setLeftOverride(null);setRightOverride(null);setSelectedPair('');setVisibleCount(15);
-        }}><FieldText text="恢復預設搭配"/></button>
+        }}><UiText id="uiExtra.statisticsView.resetPairs"/></button>
       </div>
       <div className="scope-stat-controls">
-        <label><span><FieldText text="圖表"/></span><select className="scope-select" value={mode} onChange={event=>setMode(event.target.value)}>
-          <option value="ranking"><FieldText text="組合數量"/></option><option value="trend"><FieldText text="組合時間趨勢"/></option>
+        <label><span><UiText id="uiExtra.statisticsView.chart"/></span><select className="scope-select" value={mode} onChange={event=>setMode(event.target.value)}>
+          <option value="ranking"><UiText id="uiExtra.statisticsView.pairCount"/></option><option value="trend"><UiText id="uiExtra.statisticsView.pairTrend"/></option>
         </select></label>
-        <span><FieldText text="符合的標籤組合"/>：{pairs.length.toLocaleString()} <FieldText text="組"/></span>
+        <span><UiText id="uiExtra.statisticsView.matchingPairs"/>：{pairs.length.toLocaleString()} <UiText id="uiExtra.statisticsView.unitPair"/></span>
       </div>
-      {!pairs.length?<p className="scope-status"><FieldText text="目前選擇沒有共同出現的標籤組合，請調整任一側標籤。"/></p>:<>
+      {!pairs.length?<p className="scope-status"><UiText id="uiExtra.statisticsView.noPairOverlap"/></p>:<>
         <StatisticsChartFrame level={zoomLevel} onChange={onZoomLevelChange} range={range} idPrefix="scope-stat-cross">
           {mode==='ranking'?<div style={{overflowX:'auto'}}>
             <div style={{minWidth:480}}>
@@ -375,7 +378,7 @@ function MediaCrossTagStatistics({rows=[],range={},zoomLevel=0,onZoomLevelChange
                   <XAxis type="number" allowDecimals={false} tick={{fill:CHART_TEXT}}/>
                   <YAxis dataKey="label" type="category" width={190} tick={{fill:CHART_TEXT,fontSize:11}}/>
                   <Tooltip contentStyle={CHART_TOOLTIP}/>
-                  <Bar dataKey="count" name="共同作品" fill={CHART_ACCENT} maxBarSize={28}/>
+                  <Bar dataKey="count" name={t('uiExtra.statisticsView.commonWorks')} fill={CHART_ACCENT} maxBarSize={28}/>
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -392,20 +395,20 @@ function MediaCrossTagStatistics({rows=[],range={},zoomLevel=0,onZoomLevelChange
         <div className="scope-ranking">
           {pairs.slice(0,visibleCount).map(pair=><div key={pair.key}>
             <strong>{pair.leftLabel} × {pair.rightLabel}</strong>
-            <span>{pair.count.toLocaleString()} 件
+            <span>{pair.count.toLocaleString()} {t('uiExtra.statisticsView.unitCase')}
               {' '}<button type="button" className="loc-button" onClick={()=>setSelectedPair(selectedPair===pair.key?'':pair.key)}>
-                <FieldText text={selectedPair===pair.key?'收起作品':'查看作品'}/>
+                <UiText id={selectedPair===pair.key?'uiExtra.statisticsView.hideWorks':'uiExtra.statisticsView.viewWorks'}/>
               </button>
             </span>
           </div>)}
         </div>
-        {visibleCount<pairs.length?<button type="button" className="loc-button" onClick={()=>setVisibleCount(n=>n+15)}><FieldText text="顯示更多組合"/></button>:null}
+        {visibleCount<pairs.length?<button type="button" className="loc-button" onClick={()=>setVisibleCount(n=>n+15)}><UiText id="uiExtra.statisticsView.showMorePairs"/></button>:null}
         {selected?<div className="scope-stat-cross-matches">
-          <h4>{selected.leftLabel} × {selected.rightLabel} · {selected.count} 件</h4>
+          <h4>{selected.leftLabel} × {selected.rightLabel} · {selected.count} {t('uiExtra.statisticsView.unitCase')}</h4>
           <div className="scope-ranking">
             {selected.media.map(media=><div key={media.id}>
               <strong>{media.title||media.id}</strong>
-              <span>{media.day||'未標記日期'} {/^https?:\/\//iu.test(media.url)?<a href={media.url} target="_blank" rel="noopener noreferrer"><FieldText text="查看媒體"/></a>:null}</span>
+              <span>{media.day||t('uiExtra.statisticsView.noDate')} {/^https?:\/\//iu.test(media.url)?<a href={media.url} target="_blank" rel="noopener noreferrer"><UiText id="uiExtra.statisticsView.viewMedia"/></a>:null}</span>
             </div>)}
           </div>
         </div>:null}
@@ -473,9 +476,9 @@ function Rune66Summary({analysis}){
         })}
       </div>
       {groupRows.length>RUNE_RANKING_PAGE_SIZE?<nav className="scope-stat-controls" aria-label="Group 統計分頁">
-        <button type="button" className="loc-button" disabled={activeGroupPage===1} onClick={()=>setGroupPage(activeGroupPage-1)}><FieldText text="上一頁"/></button>
+        <button type="button" className="loc-button" disabled={activeGroupPage===1} onClick={()=>setGroupPage(activeGroupPage-1)}><UiText id="uiExtra.statisticsView.previous"/></button>
         <span className="scope-status" aria-live="polite">第 {activeGroupPage} / {groupPageCount} 頁 · 共 {groupRows.length.toLocaleString()} 項</span>
-        <button type="button" className="loc-button" disabled={activeGroupPage===groupPageCount} onClick={()=>setGroupPage(activeGroupPage+1)}><FieldText text="下一頁"/></button>
+        <button type="button" className="loc-button" disabled={activeGroupPage===groupPageCount} onClick={()=>setGroupPage(activeGroupPage+1)}><UiText id="uiExtra.statisticsView.next"/></button>
       </nav>:null}
     </section>
   </div>;
@@ -624,7 +627,7 @@ function ScopeGroupStatistics(){
       <label>
         <span>{UI_COPY.statistics.chart}</span>
         <select className="scope-select" value={locChartType} onChange={event=>setChartType(event.target.value)}>
-          {locAllowed.length?locAllowed.map(([value,label])=><option key={value} value={value}><FieldText text={label}/></option>):<option value="line"><FieldText text="尚無可用圖形"/></option>}
+          {locAllowed.length?locAllowed.map(([value,label])=><option key={value} value={value}><FieldText text={label}/></option>):<option value="line"><UiText id="uiExtra.statisticsView.noVisual"/></option>}
         </select>
       </label>
     </div>
@@ -772,7 +775,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     <div className="scope-stat-controls">
       <StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/>
       {!isLrunesDaily?<>{!mediaDimension?<label><span>{UI_COPY.statistics.chart}</span><select className="scope-select" value={effectiveChartType} onChange={event=>setChartType(event.target.value)}>
-        {optionsForCurrent.length?optionsForCurrent.map(([value,label])=><option key={value} value={value}><FieldText text={label}/></option>):<option value="line"><FieldText text="尚無可用圖形"/></option>}
+        {optionsForCurrent.length?optionsForCurrent.map(([value,label])=><option key={value} value={value}><FieldText text={label}/></option>):<option value="line"><UiText id="uiExtra.statisticsView.noVisual"/></option>}
       </select></label>:null}
       {!['pie','radar','radial','treemap','scatter'].includes(effectiveChartType)?<label className="scope-setting-toggle">
         <input type="checkbox" checked={foldBlank} onChange={event=>setFoldBlank(event.target.checked)}/> <FieldText text="折疊空白時間"/>
