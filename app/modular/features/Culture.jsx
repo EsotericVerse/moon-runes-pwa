@@ -1,4 +1,5 @@
 'use client';
+import UiText from '../../i18n/UiText';
 import FieldText from '../../i18n/FieldText';
 
 import {UI_COPY} from '../../i18n/ui-copy';
@@ -643,16 +644,16 @@ export default function Culture(){
 
   return <FeaturePage featureId="culture">
     <section className='loc-card scope-feature-card scope-feature-card-wide'>
-      {scopeId==='lrunes'?<div className='scope-stat-controls'><label><span><FieldText text="時間長河項目"/></span>
+      {scopeId==='lrunes'?<div className='scope-stat-controls'><label><span><UiText id="uiExtra.cultureView.timelineContent"/></span>
         <select className='scope-select' value={lrunesView} onChange={event=>setLrunesView(event.target.value)}>
-          <option value='daily'><FieldText text="每日符文"/></option>
-          <option value='works'><FieldText text="文化作品與時期"/></option>
+          <option value='daily'><UiText id="uiExtra.cultureView.dailyRunes"/></option>
+          <option value='works'><UiText id="uiExtra.cultureView.worksAndPeriods"/></option>
         </select>
       </label></div>:null}
       {scopeId==='loc'?<div className='scope-stat-controls'><label><span>{UI_COPY.culture.viewMode}</span>
         <select className='scope-select' aria-label={UI_COPY.culture.viewMode} value={locCultureView} onChange={event=>setLocCultureView(event.target.value)}>
-          <option value='period'><FieldText text="時期交會 · 原有作品列表"/></option>
-          <option value='item'><FieldText text="項目交會 · 指定兩條河道"/></option>
+          <option value='period'><UiText id="uiExtra.cultureView.periodIntersectionWorks"/></option>
+          <option value='item'><UiText id="uiExtra.cultureView.itemIntersectionTwoRivers"/></option>
         </select>
       </label></div>:null}
       {isLrunesDaily?<LrunesDailyCulturePanel/>:isLocItemView?<LocItemConfluence/>:<>
@@ -709,24 +710,24 @@ export default function Culture(){
                 <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
                 <h3>{UI_COPY.culture.structure}</h3>
                 <div className='scope-culture-timeline-tools'>
-                  <label><span><FieldText text="檢視時期範圍"/></span><select className='scope-select' value={selectedPeriodKey||periodKey(selectedWorkPeriod)} onChange={event=>setSelectedPeriodKey(event.target.value)}>
-                    <option value='all'><FieldText text="全部時期"/></option>
+                  <label><span><UiText id="uiExtra.cultureView.periodRange"/></span><select className='scope-select' value={selectedPeriodKey||periodKey(selectedWorkPeriod)} onChange={event=>setSelectedPeriodKey(event.target.value)}>
+                    <option value='all'><UiText id="uiExtra.cultureView.allPeriods"/></option>
                     {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{labelOf(item,0)}</option>)}
                   </select></label>
                   {account.canManageScopeSync(scopeId)?<>
-                  <button type='button' className='loc-button' onClick={()=>beginTimelineCreation('anchor',currentStructureStart)}><FieldText text="＋ 新增正式定錨點"/></button>
+                  <button type='button' className='loc-button' onClick={()=>beginTimelineCreation('anchor',currentStructureStart)}><UiText id="uiExtra.cultureView.ddOfficialAnchor"/></button>
                   <select className='scope-select' aria-label={translateUiField(locale,'新增時間長河紀錄')} defaultValue='' onChange={event=>{
                     const recordType=event.currentTarget.value;
                     if(!['period','event','style_comment'].includes(recordType))return;
                     event.currentTarget.value='';
                     beginTimelineCreation(recordType,'');
                   }}>
-                    <option value='' disabled><FieldText text="＋ 新增"/></option>
-                    <option value='period'><FieldText text="時期"/></option>
-                    <option value='event'><FieldText text="事件"/></option>
-                    <option value='style_comment'><FieldText text="風格標籤"/></option>
+                    <option value='' disabled><UiText id="uiExtra.cultureView.dd"/></option>
+                    <option value='period'><UiText id="uiExtra.cultureView.period"/></option>
+                    <option value='event'><UiText id="uiExtra.cultureView.event"/></option>
+                    <option value='style_comment'><UiText id="uiExtra.cultureView.styleTag"/></option>
                   </select>
-                  <span className='scope-status'><FieldText text="第一條河道依序為定錨點、事件、風格標籤、時期。點選紀錄直接編輯；未定錨的風格可從「新增 → 風格標籤」表單選取。"/></span>
+                  <span className='scope-status'><UiText id="uiExtra.cultureView.theFirstRiverShowsAnchorsEventsStyleTagsAndPeriodsSelectARecordToEditItAssignUnanchoredStylesFromAddStyleTag"/></span>
                   </>:null}
                 </div>
                 {timelineItems.length?<CultureTimeline
@@ -776,22 +777,22 @@ export default function Culture(){
               {selectedWorkPeriod?<section className='scope-card scope-culture-classification-river'>
                 <div className='scope-stat-controls'>
                   {scopeId==='lo3rwang'?<label className='scope-culture-period-select'>
-                    <span><FieldText text="表現風格"/></span>
+                    <span><UiText id="uiExtra.cultureView.style"/></span>
                     <select className='scope-select' value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}>
-                      <option value='none'><FieldText text="不套用"/></option>
-                      <option value='rune66'><FieldText text="關鍵詞 Class"/></option>
+                      <option value='none'><UiText id="uiExtra.cultureView.noFilter"/></option>
+                      <option value='rune66'><UiText id="uiExtra.cultureView.keywordClass"/></option>
                     </select>
                   </label>:null}
                 </div>
                 <p className='loc-eyebrow'>{UI_COPY.culture.classificationRiver}</p>
-                <h3>{labelOf(selectedWorkPeriod,0)}｜<FieldText text="作品分類河道"/></h3>
+                <h3>{labelOf(selectedWorkPeriod,0)}｜<UiText id="uiExtra.cultureView.workClassificationLane"/></h3>
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error)}</p>:null}
                 {!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!classificationBuckets.length
                   ?<p className='scope-status'>{UI_COPY.culture.noPeriodClassification}</p>:null}
                 <div className='scope-culture-anchor-actions'>
                   <span>作品量候選日期 {riverAnalysis.suggestions.length} 個；正式定錨點請在第一條時間河道查看。候選僅供有需要時比對，不要求新增或反覆檢討。</span>
                   {riverAnalysis.suggestions.length?<details className='scope-culture-anchor-picker'>
-                    <summary><FieldText text="需要時再展開比對作品量變化（候選日期，非正式定錨點）"/></summary>
+                    <summary><UiText id="uiExtra.cultureView.expandToCompareWorkVolumeChanges"/></summary>
                     <div className='scope-culture-anchor-choices'>
                       {riverAnalysis.suggestions.map(item=><label key={item.date} title={(item.analysis||[]).join(' ')}>
                         <input type='checkbox' checked={selectedVirtualAnchorDates.includes(item.date)} disabled={anchorSaveBusy} onChange={()=>toggleVirtualAnchor(item.date)}/>
@@ -799,10 +800,10 @@ export default function Culture(){
                       </label>)}
                     </div>
                     <div className='scope-preview-links'>
-                      <button type='button' className='loc-button' disabled={anchorSaveBusy} onClick={()=>setSelectedVirtualAnchorDates(riverAnalysis.suggestions.map(item=>item.date))}><FieldText text="全選待審候選"/></button>
-                      <button type='button' className='loc-button' disabled={anchorSaveBusy||!selectedVirtualAnchorDates.length} onClick={()=>setSelectedVirtualAnchorDates([])}><FieldText text="清除選取"/></button>
+                      <button type='button' className='loc-button' disabled={anchorSaveBusy} onClick={()=>setSelectedVirtualAnchorDates(riverAnalysis.suggestions.map(item=>item.date))}><UiText id="uiExtra.cultureView.selectAllCandidates"/></button>
+                      <button type='button' className='loc-button' disabled={anchorSaveBusy||!selectedVirtualAnchorDates.length} onClick={()=>setSelectedVirtualAnchorDates([])}><UiText id="uiExtra.cultureView.clearSelection"/></button>
                       <button type='button' className='loc-button primary' disabled={anchorSaveBusy||!selectedVirtualAnchorDates.length||!account.canManageScopeSync(classificationScope)} onClick={saveSelectedVirtualAnchors}>
-                        {anchorSaveBusy?UI_COPY.culture.creating:<><FieldText text="審核後建立"/> {selectedVirtualAnchorDates.length} <FieldText text="個正式定錨點"/></>}
+                        {anchorSaveBusy?UI_COPY.culture.creating:<><UiText id="uiExtra.cultureView.createAfterReview"/> {selectedVirtualAnchorDates.length} <UiText id="uiExtra.cultureView.formalAnchors"/></>}
                       </button>
                     </div>
                   </details>:null}
@@ -871,7 +872,7 @@ export default function Culture(){
                     <h4>{selectedGroup?.display_label||UI_COPY.culture.allWorks} · {selectedCount.toLocaleString()} 項作品</h4>
                     {selectedGroup?<button type='button' className='scope-pagination-button' onClick={()=>setSelectedCategory('')}>{UI_COPY.culture.showAllWorks}</button>:null}
                   </header>
-                  {periodWorksPage.error?<p className='scope-status scope-error'>{featureDataErrorMessage(periodWorksPage.error)} <button type='button' className='loc-button' onClick={periodWorksPage.reload}><FieldText text="重新讀取作品"/></button></p>:null}
+                  {periodWorksPage.error?<p className='scope-status scope-error'>{featureDataErrorMessage(periodWorksPage.error)} <button type='button' className='loc-button' onClick={periodWorksPage.reload}><UiText id="uiExtra.cultureView.reloadWorks"/></button></p>:null}
                   {periodWorksPage.loading&&!visibleWorkRows.length?<p role='status' className='scope-status'>正在載入該時期作品…</p>:null}
                   <IncrementalList
                     items={visibleWorkRows}
