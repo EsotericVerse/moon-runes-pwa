@@ -345,18 +345,18 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       </label>:null}
       <label><span><FieldText text={draft.record_type==='style_comment'?'風格標籤名稱（搜尋關鍵詞）':'名稱'}/></span><input className="scope-search-input" value={draft.label||''} onChange={event=>change('label',event.target.value)} required/></label>
       <label><span><FieldText text="識別"/></span><input className="scope-search-input" value={draft.resource_id||''} disabled={Boolean(selectedId)} onChange={event=>change('resource_id',event.target.value)} placeholder={t('留空自動產生')}/></label>
-      {draft.record_type!=='style_comment'?<label><span>{draft.record_type==='anchor'?'定錨點說明（關鍵變化／持續檢討，非風格敘述）':'時期／事件說明（非風格敘述）'}</span><textarea className="scope-search-input" rows={5} value={draft.note||''} onChange={event=>change('note',event.target.value)}/></label>:null}
+      {draft.record_type!=='style_comment'?<label><span><FieldText text={draft.record_type==='anchor'?'定錨點說明（關鍵變化／持續檢討，非風格敘述）':'時期／事件說明（非風格敘述）'}/></span><textarea className="scope-search-input" rows={5} value={draft.note||''} onChange={event=>change('note',event.target.value)}/></label>:null}
       {draft.record_type==='style_comment'?<>
-        <label><span>風格專屬敘述（TEXT）</span><textarea className="scope-search-input" rows={7} value={draft.style_description||''} onChange={event=>change('style_description',event.target.value)} required placeholder="每筆風格各自保存一段說明，不與其他風格共用文字欄位"/></label>
+        <label><span><FieldText text="風格專屬敘述（TEXT）"/></span><textarea className="scope-search-input" rows={7} value={draft.style_description||''} onChange={event=>change('style_description',event.target.value)} required placeholder={t('每筆風格各自保存一段說明，不與其他風格共用文字欄位')}/></label>
         <label><span><FieldText text="唯一正式定錨點"/></span>
           <select className="scope-select" value={Array.isArray(draft.anchor_ids)?draft.anchor_ids[0]||'':''} onChange={event=>change('anchor_ids',event.target.value?[event.target.value]:[])} required>
             <option value=""><FieldText text="請選擇既有定錨點"/></option>
             {anchorOptions.map(row=><option key={row.resource_id} value={row.resource_id}>{dateText(row.time_date)||row.year_value||'年份未定'}｜{row.label}</option>)}
           </select>
         </label>
-        <p className="scope-status">一個風格、一段獨立敘述、一個既有正式定錨點。可跨時期，不自動推定日期。</p>
+        <p className="scope-status"><FieldText text="一個風格、一段獨立敘述、一個既有正式定錨點。可跨時期，不自動推定日期。"/></p>
       </>:null}
-      {draft.record_type==='anchor'?<p className="scope-status">此處保存定錨點的轉折觀察，不是風格標籤；新增風格請選「＋ 新增 → 風格標籤」。</p>:null}
+      {draft.record_type==='anchor'?<p className="scope-status"><FieldText text="此處保存定錨點的轉折觀察，不是風格標籤；新增風格請選「＋ 新增 → 風格標籤」。"/></p>:null}
 
       {draft.record_type==='anchor'?<div className="scope-stat-controls">
         <label><span><FieldText text="日期"/></span><input className="scope-select" type="date" value={dateText(draft.time_date)} onChange={event=>change('time_date',event.target.value)}/></label>
@@ -370,7 +370,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
         {legacyEventUnchanged?<p className="scope-status">此舊事件原有 {legacyEventIds.length} 個定錨點；只修改其他欄位會保留原有關聯。若重新選擇起點或終點，改用新的 2 點規格。</p>:null}
         <div className="scope-management-fields">
           {chosenAnchorPair.map((anchorId,index)=><label key={index}>
-            <span>{index===0?'起點定錨點':'終點定錨點'}{draft.record_type==='period'?'（選填）':''}</span>
+            <span>{t(index===0?'起點定錨點':'終點定錨點')}{draft.record_type==='period'?t('（選填）'):''}</span>
             <select className="scope-select"
               aria-label={t(index===0?'選擇起點定錨點':'選擇終點定錨點')}
               value={anchorId}
@@ -392,7 +392,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       </div>:null}
       {message?<p className="scope-status" role="status">{message}</p>:null}
       <div className="scope-tabs">
-        <button type="submit" disabled={busy}>{busy?'儲存中…':'儲存'}</button>
+        <button type="submit" disabled={busy}><FieldText text={busy?'儲存中…':'儲存'}/></button>
         <button type="button" disabled={busy} onClick={cancelEdit}><FieldText text="取消"/></button>
         {selectedId?<button type="button" disabled={busy} onClick={remove}><FieldText text="刪除"/></button>:null}
       </div>

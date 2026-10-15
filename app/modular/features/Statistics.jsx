@@ -329,7 +329,7 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeC
 function MediaCrossTagPicker({title,options,selected,onChange}){
   const chosen=new Set(selected);
   return <details className="scope-stat-cross-picker">
-    <summary>{title}（已選 {chosen.size} 項）</summary>
+    <summary><FieldText text={title}/>（<FieldText text="已選"/> {chosen.size} <FieldText text="項"/>）</summary>
     <div style={{display:'flex',gap:8,flexWrap:'wrap',margin:'8px 0'}}>
       <button className="loc-button" type="button" onClick={()=>onChange(options.map(x=>x.key))}><FieldText text="全選"/></button>
       <button className="loc-button" type="button" onClick={()=>onChange([])}><FieldText text="清除"/></button>
@@ -377,8 +377,8 @@ function MediaCrossTagStatistics({rows=[],range={},navigation={},zoomLevel=0,onZ
   },[pairs,range.startDate,range.endDate,range.bucket]);
   return <section className="scope-stat-cross" aria-label="多媒體標籤交互統計">
     <h3><FieldText text="多媒體 Meta Tag 交互統計"/></h3>
-    <p className="scope-status">兩側標籤皆從現有多媒體 metadata 產生；預選 Mandopop／J-Pop／K-Pop 對其他標籤，沒有的組合不列出。每組每筆媒體只算一次。</p>
-    {!catalog.options.length?<p className="scope-status">目前區間沒有可交互比較的 Meta Tag。</p>:<>
+    <p className="scope-status"><FieldText text="兩側標籤皆從現有多媒體 metadata 產生；預選 Mandopop／J-Pop／K-Pop 對其他標籤，沒有的組合不列出。每組每筆媒體只算一次。"/></p>
+    {!catalog.options.length?<p className="scope-status"><FieldText text="目前區間沒有可交互比較的 Meta Tag。"/></p>:<>
       <div className="scope-stat-controls" style={{alignItems:'start'}}>
         <MediaCrossTagPicker title="第一組標籤" options={catalog.options} selected={left} onChange={setLeftOverride}/>
         <MediaCrossTagPicker title="第二組標籤" options={catalog.options} selected={right} onChange={setRightOverride}/>
@@ -390,9 +390,9 @@ function MediaCrossTagStatistics({rows=[],range={},navigation={},zoomLevel=0,onZ
         <label><span><FieldText text="圖表"/></span><select className="scope-select" value={mode} onChange={event=>setMode(event.target.value)}>
           <option value="ranking"><FieldText text="組合數量"/></option><option value="trend"><FieldText text="組合時間趨勢"/></option>
         </select></label>
-        <span>符合的標籤組合：{pairs.length.toLocaleString()} 組</span>
+        <span><FieldText text="符合的標籤組合"/>：{pairs.length.toLocaleString()} <FieldText text="組"/></span>
       </div>
-      {!pairs.length?<p className="scope-status">目前選擇沒有共同出現的標籤組合，請調整任一側標籤。</p>:<>
+      {!pairs.length?<p className="scope-status"><FieldText text="目前選擇沒有共同出現的標籤組合，請調整任一側標籤。"/></p>:<>
         <StatisticsChartFrame level={zoomLevel} onChange={onZoomLevelChange} range={range} idPrefix="scope-stat-cross">
           {mode==='ranking'?<div style={{overflowX:'auto'}}>
             <div style={{minWidth:480}}>
@@ -426,13 +426,13 @@ function MediaCrossTagStatistics({rows=[],range={},navigation={},zoomLevel=0,onZ
             </span>
           </div>)}
         </div>
-        {visibleCount<pairs.length?<button type="button" className="loc-button" onClick={()=>setVisibleCount(n=>n+15)}>顯示更多組合</button>:null}
+        {visibleCount<pairs.length?<button type="button" className="loc-button" onClick={()=>setVisibleCount(n=>n+15)}><FieldText text="顯示更多組合"/></button>:null}
         {selected?<div className="scope-stat-cross-matches">
           <h4>{selected.leftLabel} × {selected.rightLabel} · {selected.count} 件</h4>
           <div className="scope-ranking">
             {selected.media.map(media=><div key={media.id}>
               <strong>{media.title||media.id}</strong>
-              <span>{media.day||'未標記日期'} {/^https?:\/\//iu.test(media.url)?<a href={media.url} target="_blank" rel="noopener noreferrer">查看媒體</a>:null}</span>
+              <span>{media.day||'未標記日期'} {/^https?:\/\//iu.test(media.url)?<a href={media.url} target="_blank" rel="noopener noreferrer"><FieldText text="查看媒體"/></a>:null}</span>
             </div>)}
           </div>
         </div>:null}

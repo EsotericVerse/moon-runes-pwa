@@ -2,7 +2,8 @@
 import FieldText from '../../i18n/FieldText';
 
 import {UI_COPY} from '../../i18n/ui-copy';
-import {useUiCopy} from '../../i18n/ui-locale';
+import {useUiCopy,useUiLocale} from '../../i18n/ui-locale';
+import {translateUiField} from '../../i18n/ui-functional-copy.mjs';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
@@ -91,6 +92,7 @@ function periodPositionRatio(date,start,end){
 }
 export default function Culture(){
   const UI_COPY=useUiCopy();
+  const {locale}=useUiLocale();
   const {scopeId,scope}=useScopeRuntime();
   const account=useAccount();
   const [lrunesView,setLrunesView]=useState('daily');
@@ -716,7 +718,7 @@ export default function Culture(){
                   </select></label>
                   {account.canManageScopeSync(scopeId)?<>
                   <button type='button' className='loc-button' onClick={()=>beginTimelineCreation('anchor',currentStructureStart)}><FieldText text="＋ 新增正式定錨點"/></button>
-                  <select className='scope-select' aria-label='新增時間長河紀錄' defaultValue='' onChange={event=>{
+                  <select className='scope-select' aria-label={translateUiField(locale,'新增時間長河紀錄')} defaultValue='' onChange={event=>{
                     const recordType=event.currentTarget.value;
                     if(!['period','event','style_comment'].includes(recordType))return;
                     event.currentTarget.value='';
@@ -760,7 +762,7 @@ export default function Culture(){
                   onRemove={account.canManageScopeSync(scopeId)?removeTimelineRecord:null}
                 />:<p className='scope-status'>{FEATURE_EMPTY_MESSAGE}</p>}
                 {selectedTimelineInfo?<div className='scope-card scope-culture-timeline-selection' role='status'>
-                  <strong>{selectedTimelineInfo.content||selectedTimelineInfo.raw?.display_label||selectedTimelineInfo.title||'時間長河紀錄'}</strong>
+                  <strong>{selectedTimelineInfo.content||selectedTimelineInfo.raw?.display_label||selectedTimelineInfo.title||translateUiField(locale,'時間長河紀錄')}</strong>
                   <p className='scope-status'>{String(selectedTimelineInfo.start||'').slice(0,10)}{selectedTimelineInfo.end?' ～ '+String(selectedTimelineInfo.end).slice(0,10):''}</p>
                   {selectedTimelineInfo.title?<p>{selectedTimelineInfo.title}</p>:null}
                 </div>:null}
@@ -785,7 +787,7 @@ export default function Culture(){
                   </label>:null}
                 </div>
                 <p className='loc-eyebrow'>{UI_COPY.culture.classificationRiver}</p>
-                <h3>{labelOf(selectedWorkPeriod,0)}｜作品分類河道</h3>
+                <h3>{labelOf(selectedWorkPeriod,0)}｜<FieldText text="作品分類河道"/></h3>
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error)}</p>:null}
                 {!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!classificationBuckets.length
                   ?<p className='scope-status'>{UI_COPY.culture.noPeriodClassification}</p>:null}
@@ -803,7 +805,7 @@ export default function Culture(){
                       <button type='button' className='loc-button' disabled={anchorSaveBusy} onClick={()=>setSelectedVirtualAnchorDates(riverAnalysis.suggestions.map(item=>item.date))}><FieldText text="全選待審候選"/></button>
                       <button type='button' className='loc-button' disabled={anchorSaveBusy||!selectedVirtualAnchorDates.length} onClick={()=>setSelectedVirtualAnchorDates([])}><FieldText text="清除選取"/></button>
                       <button type='button' className='loc-button primary' disabled={anchorSaveBusy||!selectedVirtualAnchorDates.length||!account.canManageScopeSync(classificationScope)} onClick={saveSelectedVirtualAnchors}>
-                        {anchorSaveBusy?UI_COPY.culture.creating:'審核後建立 '+selectedVirtualAnchorDates.length+' 個正式定錨點'}
+                        {anchorSaveBusy?UI_COPY.culture.creating:<><FieldText text="審核後建立"/> {selectedVirtualAnchorDates.length} <FieldText text="個正式定錨點"/></>}
                       </button>
                     </div>
                   </details>:null}
