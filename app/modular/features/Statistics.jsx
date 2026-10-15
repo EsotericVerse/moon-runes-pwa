@@ -3,6 +3,7 @@ import FieldText from '../../i18n/FieldText';
 
 import {UI_COPY} from '../../i18n/ui-copy';
 import {useUiCopy} from '../../i18n/ui-locale';
+import UiText,{useUiText} from '../../i18n/UiText';
 
 import {useMemo,useState} from 'react';
 import {useRouter,useSearchParams} from 'next/navigation';
@@ -45,17 +46,17 @@ const CHART_GRID='var(--loc-line)';
 const CHART_TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)',borderRadius:'8px'};
 const CHART_TYPES=STAT_VISUAL_TYPES;
 const STAT_TYPES=['total','source','source_custom','media_type','media_platform','media_style'];
-const STAT_TYPE_LABELS=Object.freeze({
-  daily_rune:'每日符文',
-  total:UI_COPY.statistics.totalSource,
-  source:'群組來源分類',
-  source_custom:'個人自訂來源分類',
-  media_type:'多媒體類型',
-  media_platform:'多媒體來源統計',
-  media_style:'多媒體風格統計（Meta Tag）'
+const STAT_TYPE_KEYS=Object.freeze({
+  daily_rune:'uiExtra.statisticsUI.dailyRune',
+  total:'statistics.totalSource',
+  source:'uiExtra.statisticsUI.sourceGroup',
+  source_custom:'uiExtra.statisticsUI.sourceCustom',
+  media_type:'uiExtra.statisticsUI.mediaType',
+  media_platform:'uiExtra.statisticsUI.mediaPlatform',
+  media_style:'uiExtra.statisticsUI.mediaStyle'
 });
 const MEDIA_STAT_TYPES=new Set(['media_type','media_platform','media_style']);
-const STYLE_FILTERS=Object.freeze([{value:'none',label:'不套用'},{value:'rune66',label:'關鍵詞 Class'}]);
+const STYLE_FILTERS=Object.freeze([{value:'none',textKey:'uiExtra.statisticsUI.notApplied'},{value:'rune66',textKey:'uiExtra.statisticsUI.keywordClass'}]);
 const SOURCE_TREND_ORDER=Object.freeze(['Facebook','Threads','IG','Others']);
 function dateKey(value){
   const key=String(value||'').slice(0,10);
@@ -482,6 +483,7 @@ function Rune66Summary({analysis}){
 
 function StatisticTypeSelect({scopeId,navigation,types}){
   const UI_COPY=useUiCopy();
+  const t=useUiText();
   const router=useRouter();
   const requested=String(navigation.rankingType||'');
   const active=types.includes(requested)?requested:(types[0]||'');
@@ -493,7 +495,7 @@ function StatisticTypeSelect({scopeId,navigation,types}){
       if(!value||value===active)return;
       router.push(featureNavigationHref(scopeId,'statics',{...navigation,rankingType:value}));
     }}>
-      {types.map(value=><option key={value} value={value}><FieldText text={STAT_TYPE_LABELS[value]||value}/></option>)}
+      {types.map(value=><option key={value} value={value}>{t(STAT_TYPE_KEYS[value]||value)}</option>)}
     </select>
   </label>;
 }
@@ -644,7 +646,7 @@ function ScopeGroupStatistics(){
       {!densityQuery.isPending&&!densityQuery.error&&trendData.length?<StatisticsMultiChart
         type={locChartType} rows={trendData} series={locSeries}
         distribution={locDistribution} totalKey={aggregateType==='total'?'total':''} height={420}
-      />:<p className="scope-status">{densityQuery.isPending?'統計讀取中…':'目前區間沒有可顯示的統計圖形。'}</p>}
+      />:<p className="scope-status">{densityQuery.isPending?t('uiExtra.statisticsUI.loading'):t('uiExtra.statisticsUI.noChart')}</p>}
     </StatisticsChartFrame>
     <LocMemberIntersection key={startDate+'|'+rangeEndDate}
       scopes={scopesQuery.data||[]} startDate={startDate} endDate={rangeEndDate}
@@ -662,6 +664,7 @@ function ScopeGroupStatistics(){
 
 function ScopeStatisticsResults({scopeId,navigation,types}){
   const UI_COPY=useUiCopy();
+  const t=useUiText();
   const requested=String(navigation.rankingType||'');
   const rankingType=types.includes(requested)?requested:(types[0]||'');
   const mediaDimension=MEDIA_STAT_TYPES.has(rankingType);
@@ -776,7 +779,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       </label>:null}
       </>:null}
       {scopeId==='lo3rwang'?<label><span><FieldText text="表現風格"/></span><select className="scope-select" value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}>
-        {STYLE_FILTERS.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
+        {STYLE_FILTERS.map(item=><option key={item.value} value={item.value}>{t(item.textKey)}</option>)}
       </select></label>:null}
     </div>
     {isLrunesDaily?<LrunesDailyStatisticsPanel/>:<>
@@ -801,11 +804,11 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     </>:null}
     {mediaDimension&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate)?<div className="scope-stat-controls">
       <button type="button" className="loc-button" onClick={()=>mediaQuery.refetch()} disabled={mediaQuery.isFetching}>
-        {mediaQuery.isFetching?'更新統計中…':'重新整理即時統計'}
+        {mediaQuery.isFetching?t('uiExtra.statisticsUI.refreshing'):t('uiExtra.statisticsUI.refresh')}
       </button>
     </div>:null}
     {rankingType==='media_style'&&crossTagQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(crossTagQuery.error)}</p>:null}
-    {rankingType==='media_style'&&crossTagQuery.isPending?<p className="scope-status">正在讀取多媒體標籤組合…</p>:null}
+    {rankingType==='media_style'&&crossTagQuery.isPending?<p className="scope-status"><UiText id="uiExtra.statisticsUI.loadingMediaTags"/></p>:null}
     {rankingType==='media_style'&&!crossTagQuery.isPending&&!crossTagQuery.error?<MediaCrossTagStatistics
       rows={crossTagQuery.data||[]}
       range={queryRange}
@@ -825,7 +828,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       scopeId={scopeId}
     />:null}
     {styleFilter==='rune66'?<>
-      {runeQuery.isPending?<p className="scope-status">正在讀取已定錨的關鍵詞 Attr…</p>:null}
+      {runeQuery.isPending?<p className="scope-status"><UiText id="uiExtra.statisticsUI.loadingKeywordAttrs"/></p>:null}
       {runeQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(runeQuery.error)}</p>:null}
       {!runeQuery.isPending&&!runeQuery.error&&runeQuery.data?<Rune66Summary analysis={runeQuery.data}/>:null}
     </>:null}
