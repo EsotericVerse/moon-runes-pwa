@@ -609,5 +609,47 @@
     "兩側標籤皆從現有多媒體 metadata 產生；預選 Mandopop／J-Pop／K-Pop 對其他標籤，沒有的組合不列出。每組每筆媒體只算一次。": "Both tag sets come from existing media metadata. Mandopop, J-Pop and K-Pop are initially compared with other tags. Missing combinations are hidden, and each media item is counted once per combination.",
     "目前區間沒有可交互比較的 Meta Tag。": "No comparable media tags in this date range.",
     "目前選擇沒有共同出現的標籤組合，請調整任一側標籤。": "No tag combinations overlap in the current selection. Adjust either tag set."
+  },
+  "uiExtra": {
+    "scopeGroup": {
+      "membersTitle": "Members",
+      "openHome": "View homepage",
+      "manageMember": "Manage member",
+      "noMembers": "No members available.",
+      "directoryTitle": "Member overview",
+      "memberHome": "Member homepage",
+      "openMemberFeature": "Open {feature} for this member",
+      "unknownFeature": "feature"
+    },
+    "genericScope": {
+      "guide": "This Scope Group only provides member navigation. Each child Scope manages its own content and analytics."
+    },
+    "feature": {
+      "moduleLoading": "Loading feature module…",
+      "settingsLoading": "Loading feature settings…",
+      "unpublished": "This feature is not public.",
+      "registryLoading": "Loading Scope Registry…",
+      "registryUnavailable": "Scope unavailable",
+      "registryNotFound": "No active Scope Registry entry was found.",
+      "pageLoading": "Loading page…",
+      "groupGuide": "This group provides member navigation only. Open a child Scope to view or manage its content."
+    },
+    "keywords": {
+      "settingsLoading": "Loading keyword settings…",
+      "settingsTitle": "Keyword settings",
+      "settingsGuide": "This page is separate from statistics. Manual editing does not load vis-network; the graph loads only when selected.",
+      "backToStatistics": "Back to statistics",
+      "verifyingAccess": "Checking management permissions…",
+      "accessDenied": "This page is available only to signed-in Scope managers."
+    },
+    "scopeSettings": {
+      "loadFailed": "Failed to load settings.",
+      "displayRequired": "Display name is required.",
+      "unavailable": "Settings data is unavailable.",
+      "saved": "Saved.",
+      "saveFailed": "Failed to save settings.",
+      "searchNameHint": "Search name or alias",
+      "aliasesHint": "One per line, for example:\\nlo3rwang\\nLucas Oscar Wang\\n政德"
+    }
   }
 }
