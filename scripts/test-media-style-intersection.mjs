@@ -3,7 +3,7 @@ import {test} from 'node:test';
 import {defaultMediaCrossAxes,mediaCrossIntersections,mediaCrossTagCatalog} from '../app/loc/media-style-intersection.mjs';
 
 const data=[
-  {media_id:'a',title:'作品甲',url:'https://example.com/a',createtime:'2026-06-08T22:00:00+00:00',meta_tags:'Mandopop, Dream Pop, Alternative Pop, Male Voice, dream pop'},
+  {media_id:'a',title:'作品甲',url:'https://example.com/a',createtime:'2026-06-08T22:00:00+00:00',meta_tags:'Mandopop, Dream Pop, Alternative Pop, Neo-Soul, dream pop'},
   {media_id:'b',title:'作品乙',createtime:'2026-06-09T09:00:00+08:00',meta_tags:'J-Pop, Indie Pop'},
   {media_id:'c',title:'作品丙',createtime:'2026-06-10T09:00:00+08:00',meta_tags:'K-Pop, Dream Pop'},
   {media_id:'d',title:'作品丁',createtime:'2026-06-11T09:00:00+08:00',meta_tags:'Alternative Pop, Art Pop'},
