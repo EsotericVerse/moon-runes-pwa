@@ -1106,6 +1106,10 @@
       "monthUnit": "",
       "secondUnit": "s",
       "record": "Record"
+    },
+    "dataSourceStatus": {
+      "primary": "Primary data",
+      "backup": "Backup data"
     }
   },
   "dailyRune": {
