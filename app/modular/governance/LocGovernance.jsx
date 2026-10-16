@@ -5,7 +5,7 @@ export const LOC_GOVERNANCE_SUBTITLE='說明月典的使用原則、權利邊界
 
 export default function LocGovernance(){
   const account=useAccount();
-  const canManage=account.canManageGlobalSync()||account.canManageScopeSync('loc');
+  const canManage=account.canManageGlobalSync()||account.canManageScopeSync('loc')||account.canManageScopeSync('lrunes');
   return <>
     {canManage?<nav className="loc-card" aria-label="治理管理入口">
       <a className="loc-button primary" href="/governance/manage/">管理選單</a>
