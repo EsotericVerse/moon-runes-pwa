@@ -26,14 +26,14 @@ const selectProps={
   className:'loc-settings-select',classNamePrefix:'loc-settings-select'
 };
 
-export default function GlobalSettings(){
+export default function GlobalSettings({initialSection='home'}={}){
   const uiT=useUiText();
   const prefs=useNavigationPreferences();
   const {account}=prefs;
   const [native,setNative]=useState(false);
   const [registry,setRegistry]=useState([]);
   const [home,setHome]=useState('loc');
-  const [section,setSection]=useState('home');
+  const [section,setSection]=useState(initialSection);
   const [requestedScope,setRequestedScope]=useState('');
   const [manageAction,setManageAction]=useState('publish');
   const [busy,setBusy]=useState(false);
