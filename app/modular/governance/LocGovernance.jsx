@@ -8,7 +8,7 @@ export default function LocGovernance(){
   const canManage=account.canManageGlobalSync()||account.canManageScopeSync('loc');
   return <>
     {canManage?<nav className="loc-card" aria-label="治理管理入口">
-      <a className="loc-button primary" href="/settings/?section=manage">管理選單</a>
+      <a className="loc-button primary" href="/governance/manage/">管理選單</a>
     </nav>:null}
     <ScopeEditableBlocks
       scopeId="loc"
