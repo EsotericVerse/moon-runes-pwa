@@ -203,7 +203,7 @@
     "sourceRequired": "Source is required.",
     "articlePublished": "Article published to Galaxy.",
     "articlePublishFailed": "Article publication failed.",
-    "importJson": "JSON import",
+    "importJson": "File Import",
     "sourceChoice": "Source",
     "currentFile": "File",
     "startImport": "Start import",
