@@ -306,9 +306,9 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
     filenames.add(path.split('/').at(-1).toLowerCase());
     inspectEvidence(path,'');
     const base=path.split('/').at(-1)||'';
-    const priority=/(?:conversations|tweets|threads|messages|posts|status_updates|myactivity|result|_chat)/i.test(base);
-    if(!/\.(?:json|js|txt|csv|html?|md)$/i.test(path)||
-       (!priority&&inspectedFiles>=ZIP_SNIFF_FILES))return;
+    const priority=/(?:conversations|tweets|threads|messages|posts|status_updates|myactivity|result|_chat|project|workspace|knowledge|attachment|upload)/i.test(base);
+    if(!/\.(?:jsonl?|js|txt|csv|tsv|html?|md|xml|log)$/i.test(path)||
+       (priority?inspectedFiles>=ZIP_SNIFF_FILES*2:inspectedFiles>=ZIP_SNIFF_FILES))return;
     inspectedFiles++;
     const samples=[];
     let length=0,sniffed=false,received=0;
