@@ -25,6 +25,7 @@ function loadProvider(records){
   const context={
     DEFAULT_LIST_BATCH_SIZE:10,
     unique:items=>[...new Set(items)],
+    dateSearchFilters:()=>[],
     applyFilters:q=>q,
     applyLiteralTerms:q=>q,
     applyOrders:q=>q,
