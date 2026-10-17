@@ -28,15 +28,25 @@ if(!failures.length){
   for(const token of ["z.enum(['admin','scope'])",'permissionRows','scopes.has(normalizeScopeId(scopeId))','canManageGlobalSync()?defaultScopeData'])if(!account.includes(token))failures.push('account authorization missing '+token);
   const storage=read(files.userStorage);
   for(const token of ["apiRelation('user_records')","apiRelation('user_settings')","onConflict:'owner_id,id'","onConflict:'owner_id,setting_key'"])if(!storage.includes(token))failures.push('user storage missing '+token);
-  // Old governance URLs redirect to Settings; authorization is enforced by the
-  // managed-Scope selector and each actual editing panel, not by the redirect.
+  // Governance retains a permission-filtered management selector; Settings
+  // and each editing panel enforce their own Scope gate. Do not require the
+  // retired redirect implementation, which is not an authorization boundary.
   const governance=read(files.scopeManagement);
   const settings=read('app/loc/GlobalSettings.jsx');
-  if(!governance.includes('window.location.replace(target)')
-    ||!settings.includes('account.canManageScopeSync(item.id)')
-    ||!settings.includes('<ScopeSettingsPanel')
-    ||!settings.includes('<ManagementArticlePublisher'))
-    failures.push('Scope management role gate missing');
+  const importer=read('app/loc/ManagementImportPanel.jsx');
+  for(const token of ["account.canManageGlobalSync()",
+    "account.canManageScopeSync('lrunes')",
+    "account.canManageScopeSync('loc')",
+    'account.canManageScopeSync(row.scope_id)',
+    'if(!account.user)',
+    '<ManagementArticlePublisher'])
+    if(!governance.includes(token))failures.push('Governance authorization missing '+token);
+  for(const token of ['account.canManageScopeSync(item.id)',
+    '<ScopeSettingsPanel','<ManagementArticlePublisher',
+    '<ManagementImportPanel'])
+    if(!settings.includes(token))failures.push('Settings management gate missing '+token);
+  if(!importer.includes('account.canManageScopeSync(scopeId)'))
+    failures.push('Import panel missing Scope authorization');
   if(!read(files.adminManagement).includes('account.canManageGlobalSync()'))failures.push('Admin management role gate missing');
   const scopeSettings=read(files.scopeSettings);
   for(const token of ['account.canManageScopeSync(scopeId)','display_name','search_intro','search_aliases','updateRows'])if(!scopeSettings.includes(token))failures.push('Scope settings authorization missing '+token);
