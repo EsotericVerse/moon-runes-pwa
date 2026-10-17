@@ -327,7 +327,7 @@ export async function selectScopeCultureData(scopeId){
         selectDailyCategoryCounts(bundle.galaxy,'source_name',{
           startDate:intersectionStart,
           endDate:today,
-          filters:publicContentFilters([]),
+          filters:publicContentFilters([{column:'statistics_able',operator:'eq',value:true}]),
           includeEmpty:true,
           includeUndated:false
         }),
@@ -514,6 +514,7 @@ export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=nul
     :baseOffset;
 
   const galaxyFilters=publicContentFilters([
+    {column:'statistics_able',operator:'eq',value:true},
     ...dateFilters(startDate,endDate),
     ...(rawSources.length?[{column:'source_name',operator:'in',value:rawSources}]:[])
   ]);
