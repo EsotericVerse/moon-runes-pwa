@@ -3,6 +3,7 @@ import {test} from 'node:test';
 import {zipSync,strToU8} from 'fflate';
 import {inspectPrivateArchive,detectZipArchiveSource} from '../app/loc/private-archive-universal.mjs';
 import {inspectArchiveEntryStructure} from '../app/loc/archive-structure-inspector.mjs';
+import {createArchiveCompletenessAudit} from '../app/loc/archive-completeness-audit.mjs';
 
 function file(bytes,name='without-extension'){
   const data=bytes instanceof Uint8Array?bytes:strToU8(bytes);
@@ -319,4 +320,74 @@ test('unknown-platform ZIP still exposes structure for safe review',async()=>{
   assert.equal(result.structure.layouts['message-list'],1);
   assert.equal(result.structure.fields.author,1);
   assert.equal(result.structure.fields.time,1);
+});
+
+
+test('generic project and workspace references are surfaced without knowing the platform',()=>{
+  const sample=JSON.stringify({
+    project_id:'project-A',project_uuid:'project-A',workspace_id:'org-1',
+    project_instructions:'Rules',chat_messages:[{sender:'human',text:'Hello'}]
+  });
+  const profile=inspectArchiveEntryStructure('opaque/random.json',sample);
+  assert.ok(profile.layouts.includes('project-linked'));
+  assert.ok(profile.layouts.includes('workspace-linked'));
+  assert.ok(profile.layouts.includes('message-list'));
+  assert.ok(profile.fields.project.includes('project_id'));
+  assert.ok(profile.fields.workspace.includes('workspace_id'));
+});
+
+test('ZIP inventory accounts for all files including projects, files, and unknown formats',async()=>{
+  const archive=zipSync({
+    'projects/project-a/project.json':strToU8(JSON.stringify({id:'project-a',name:'Project A',project_instructions:'keep this'})),
+    'conversations.json':strToU8(JSON.stringify([{
+      title:'Project chat',project_id:'project-a',mapping:{root:{message:{author:{role:'user'},content:{parts:['hi']}}}},create_time:1700000000
+    }])),
+    'projects/project-a/knowledge/notes.md':strToU8('# Project material'),
+    'assets/original.png':new Uint8Array([137,80,78,71]),
+    'opaque/extra.unknown':strToU8('undecoded payload')
+  });
+  const result=await detectZipArchiveSource(file(archive,'account.zip'));
+  assert.equal(result.kind,'chatgpt');
+  assert.equal(result.audit.files.allFiles,5);
+  assert.equal(result.audit.files.sampled,3);
+  assert.equal(result.audit.files.notInspected,2);
+  assert.equal(result.audit.files.assets,1);
+  assert.equal(result.audit.files.unknownFiles,1);
+  assert.ok(result.audit.projects.possibleProjectFiles>=2);
+  assert.ok(result.audit.projects.observedFields.includes('project_id'));
+  assert.ok(result.audit.projects.observedFields.includes('project_instructions'));
+  assert.ok(result.audit.projects.sampleReferences.some(item=>item.id==='project-a'));
+  assert.equal(result.audit.needsReview,true);
+  assert.ok(result.audit.attention.some(item=>item.path==='opaque/extra.unknown'));
+  assert.ok(result.audit.attention.some(item=>item.path==='assets/original.png'));
+});
+
+test('ZIP inventory exposes files beyond sampling budget, never marks them parsed',async()=>{
+  const entries={};
+  for(let i=0;i<170;i++)entries['opaque/items/item-'+String(i).padStart(3,'0')+'.json']=strToU8('{}');
+  const result=await detectZipArchiveSource(file(zipSync(entries),'large.zip'));
+  assert.equal(result.audit.files.allFiles,170);
+  assert.equal(result.audit.files.sampled,160);
+  assert.equal(result.audit.files.notInspected,10);
+  assert.equal(result.audit.needsReview,true);
+});
+
+test('ZIP inventory flags incomplete prefixes and project fields beyond visible sample as unresolved',async()=>{
+  const prefix=JSON.stringify({entries:[{text:'x'.repeat(65536),project_id:'late-project'}]});
+  const result=await detectZipArchiveSource(file(zipSync({'conversation-data.json':strToU8(prefix)}),'large-chat.zip'));
+  assert.equal(result.audit.files.sampled,1);
+  assert.equal(result.audit.files.partialSamples,1);
+  assert.equal(result.audit.needsReview,true);
+  assert.equal(result.audit.projects.sampleReferences.some(x=>x.id==='late-project'),false);
+});
+
+test('project inventory is a source audit and never asserts source export completeness',()=>{
+  const audit=createArchiveCompletenessAudit();
+  const a=audit.addFile('opaque/missing-project-file.txt');
+  audit.addSample(a,'Project A discussed in prose');
+  const report=audit.report();
+  assert.equal(report.files.allFiles,1);
+  assert.equal(report.projects.possibleProjectFiles,0);
+  assert.match(report.caveat,/not exhaustively parsed/);
+  assert.equal(report.needsReview,false);
 });
