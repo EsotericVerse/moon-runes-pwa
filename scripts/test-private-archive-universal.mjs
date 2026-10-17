@@ -175,10 +175,70 @@ test('ZIP detection reports mixed origins, and does not guess unknown archives',
   await assert.rejects(()=>detectZipArchiveSource(file('not a zip','fake.zip')),/ZIP/);
 });
 
-test('ZIP detection does not claim verified ChatGPT from a filename alone',async()=>{
+test('generic conversations.json is unknown, rather than misidentified as ChatGPT',async()=>{
   const archive=zipSync({'conversations.json':strToU8('[{"title":"not necessarily ChatGPT"}]')});
   const result=await detectZipArchiveSource(file(archive,'backup.zip'));
-  assert.equal(result.kind,'chatgpt');
+  assert.equal(result.kind,'unknown');
+  assert.equal(result.confidence,0);
+});
+
+
+test('Claude conversations.json does not masquerade as ChatGPT',async()=>{
+  const payload=JSON.stringify([{uuid:'abc',name:'Claude chat',chat_messages:[
+    {uuid:'msg',sender:'human',created_at:'2026-01-01T00:00:00Z',text:'hello'}
+  ]}]);
+  const result=await detectZipArchiveSource(file(zipSync({'conversations.json':strToU8(payload)}),'backup.zip'));
+  assert.equal(result.kind,'claude');
+  assert.equal(result.confidence,3);
+  assert.equal(result.evidence[0].verified,true);
+});
+
+test('major AI and social archives have isolated, read-only identification',async()=>{
+  const cases=[
+    ['gemini','Takeout/My Activity/Gemini Apps/MyActivity.json','[{"title":"Asked Gemini","time":"2026-01-01"}]',3],
+    ['grok','xai/grok/conversation.json','{"messages":[]}',1],
+    ['copilot','Microsoft/Copilot/activity.csv','Prompt,Response\nHello,Hi',3],
+    ['perplexity','perplexity/conversations.json','[{"id":"1"}]',1],
+    ['meta-ai','meta-ai/activity.json','{"items":[]}',1],
+    ['whatsapp','_chat.txt','[12/10/2026, 12:34] Alice: Hello\n[12/10/2026, 12:35] Bob: Hi',3],
+    ['telegram','Telegram/ChatExport/result.json',JSON.stringify({
+      personal_information:{user_id:1},chats:{list:[{type:'personal_chat',name:'A'}]}
+    }),3],
+    ['discord','Discord/messages/123/messages.json','[{"ID":"1","Timestamp":"2026-01-01","Contents":"hello"}]',3],
+    ['tiktok','TikTok/user_data.json','{"Activity":{}}',1],
+    ['reddit','reddit/comments.csv','subreddit,permalink,body\nexample,https://reddit.com/r/example,hello',3],
+    ['linkedin','linkedin/Connections.csv','First Name,Last Name,Company\nA,B,C',3],
+    ['youtube','Takeout/YouTube and YouTube Music/history/watch-history.json','[]',3],
+    ['google-takeout','Takeout/Contacts/All Contacts.vcf','BEGIN:VCARD\nEND:VCARD',1]
+  ];
+  for(const [source,path,payload,confidence] of cases){
+    const result=await detectZipArchiveSource(file(zipSync({[path]:strToU8(payload)}),'backup.zip'));
+    assert.equal(result.kind,source,'source: '+source);
+    assert.equal(result.confidence,confidence,'confidence: '+source);
+  }
+});
+
+test('Google Takeout containing Gemini and YouTube retains products, not a fake extra origin',async()=>{
+  const archive=zipSync({
+    'Takeout/My Activity/Gemini Apps/MyActivity.json':strToU8('[{"title":"Gemini"}]'),
+    'Takeout/YouTube and YouTube Music/history/watch-history.json':strToU8('[]')
+  });
+  const result=await detectZipArchiveSource(file(archive,'takeout.zip'));
+  assert.deepEqual(result.sources,['gemini','youtube']);
+  assert.equal(result.kind,'mixed');
+  assert.equal(result.confidence,3);
+});
+
+test('multi-vendor ZIP retains both identities with independent confidence',async()=>{
+  const archive=zipSync({
+    'claude/conversations.json':strToU8(JSON.stringify([{
+      uuid:'abc',name:'chat',chat_messages:[{sender:'human',created_at:'2026-01-01'}]
+    }])),
+    'perplexity/data.json':strToU8('[]')
+  });
+  const result=await detectZipArchiveSource(file(archive,'mixed.zip'));
+  assert.deepEqual(result.sources,['claude','perplexity']);
   assert.equal(result.confidence,1);
-  assert.equal(result.evidence[0].verified,false);
+  assert.equal(result.evidence.find(x=>x.source==='claude')?.verified,true);
+  assert.equal(result.evidence.find(x=>x.source==='perplexity')?.verified,false);
 });
