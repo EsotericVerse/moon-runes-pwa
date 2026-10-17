@@ -391,3 +391,20 @@ test('project inventory is a source audit and never asserts source export comple
   assert.match(report.caveat,/not exhaustively parsed/);
   assert.equal(report.needsReview,false);
 });
+
+
+test('shared project ID retains multiple source-file links without flattening membership',()=>{
+  const audit=createArchiveCompletenessAudit();
+  const project=audit.addFile('projects/project-a/project.json');
+  audit.addSample(project,'{"project_uuid":"project-a","project_instructions":"context"}');
+  const first=audit.addFile('chat-1.json');
+  audit.addSample(first,'{"project_uuid":"project-a","chat_messages":[{"text":"first"}]}');
+  const second=audit.addFile('chat-2.json');
+  audit.addSample(second,'{"project_uuid":"project-a","chat_messages":[{"text":"second"}]}');
+  const result=audit.report();
+  const member=result.projects.sampleReferences.find(item=>item.id==='project-a');
+  assert.deepEqual(member.paths,['projects/project-a/project.json','chat-1.json','chat-2.json']);
+  assert.equal(member.mentions,3);
+  assert.equal(result.sourceExportCompleteness,'unverifiable');
+  assert.equal(result.importRestorationStatus,'not-tested');
+});
