@@ -11,7 +11,7 @@ const client=createKyselyEdgeClient({url:'https://loc.example.test/',publishable
   return new Response(JSON.stringify({data:[{uid:'TEST0001'}],count:1}),{status:200,headers:{'content-type':'application/json','content-range':'0-0/1'}});
 }});
 const result=await client.schema('silver').from('lo3rwang_galaxy').select('uid,title',{count:'exact'})
-  .eq('searchable',true).ilike('title','MOON%').order('uid').range(0,9);
+  .eq('searchable',true).ilike('title','MOON%').range(0,9);
 assert.deepEqual(result.data,[{uid:'TEST0001'}]);
 assert.equal(result.count,1);
 assert.equal(calls[0].url,'https://loc.example.test/functions/v1/loc-kysely');
