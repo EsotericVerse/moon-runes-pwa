@@ -66,6 +66,7 @@
     "vis-network": "10.1.0",
     "vis-timeline": "8.5.4",
     "zod": "4.6.0",
+    "officeparser": "8.1.1",
     "boardgame.io": "0.50.2",
     "@mui/material": "^7.3.0",
     "@emotion/react": "^11.14.0",
