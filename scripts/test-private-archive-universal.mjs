@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {zipSync,strToU8} from 'fflate';
 import {inspectPrivateArchive,detectZipArchiveSource} from '../app/loc/private-archive-universal.mjs';
+import {inspectArchiveEntryStructure} from '../app/loc/archive-structure-inspector.mjs';
 
 function file(bytes,name='without-extension'){
   const data=bytes instanceof Uint8Array?bytes:strToU8(bytes);
@@ -277,4 +278,45 @@ test('LINE, Teams, Snapchat and other major export sources remain separate',asyn
     assert.equal(result.kind,name,name);
     assert.equal(result.confidence,confidence,name);
   }
+});
+
+
+test('vendor-neutral profiler recognizes equivalent conversations regardless of provider label',()=>{
+  const cases=[
+    [{messages:[{sender:'Alice',created_at:'2026-01-01',text:'hello'}]},'message-list'],
+    [{chat_messages:[{role:'human',timestamp:123,content:'hello'}]},'message-list'],
+    [{mapping:{a:{message:{author:{role:'user'},content:{parts:['hello']}},parent:null,children:[]}}},'conversation-tree'],
+    [{unbranded_items:[{sender:'a',message:'hello',createdAt:'2026-01-01'}]},'structured-records']
+  ];
+  for(const [payload,expected] of cases){
+    const info=inspectArchiveEntryStructure('unknown/source.json',JSON.stringify(payload));
+    assert.ok(info.layouts.includes(expected),JSON.stringify(info));
+  }
+});
+
+test('ZIP detection produces a shared structural summary without changing platform semantics',async()=>{
+  const archive=zipSync({
+    'opaque/conversations.json':strToU8(JSON.stringify([{title:'x',create_time:1700000000,mapping:{node:{message:{author:{role:'user'},content:{parts:['text']}}}}}])),
+    'opaque/misc.csv':strToU8('sender,text,created_at\nAlice,hello,2026-01-01'),
+    'opaque/novel.json':strToU8(JSON.stringify({entries:[{sender:'a',message:'hello'}]}))
+  });
+  const result=await detectZipArchiveSource(file(archive,'backup.zip'));
+  assert.equal(result.kind,'chatgpt');
+  assert.equal(result.structure.formats.json,2);
+  assert.equal(result.structure.formats.csv,1);
+  assert.equal(result.structure.layouts['conversation-tree'],1);
+  assert.equal(result.structure.layouts['table'],1);
+  assert.equal(result.structure.layouts['structured-records'],1);
+  assert.ok(result.structure.fields.text>=2);
+});
+
+test('unknown-platform ZIP still exposes structure for safe review',async()=>{
+  const archive=zipSync({'undocumented/export.json':strToU8(JSON.stringify({
+    messages:[{sender:'anonymous',time:1700000000,body:'text'}]
+  }))});
+  const result=await detectZipArchiveSource(file(archive,'unknown.zip'));
+  assert.equal(result.kind,'unknown');
+  assert.equal(result.structure.layouts['message-list'],1);
+  assert.equal(result.structure.fields.author,1);
+  assert.equal(result.structure.fields.time,1);
 });
