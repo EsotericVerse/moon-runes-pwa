@@ -150,13 +150,14 @@ export function WorkFullText({
   error='',
   content='',
   onToggle,
-  emptyText=null
+  emptyText=null,
+  showToggle=true
 }){
   const copy=useUiCopy();
   return <div className="scope-work-fulltext">
-    <button type="button" onClick={onToggle} disabled={loading}>
+    {showToggle?<button type="button" onClick={onToggle} disabled={loading}>
       {open?(loading?copy.work.loadingBody:copy.work.collapseBody):copy.work.viewBody}
-    </button>
+    </button>:null}
     {open&&error?<p className="scope-status scope-error">{error}</p>:null}
     {open&&!loading&&!error?<div className="scope-inline-card">
       <p className="scope-prewrap">{renderGalaxyContent(content||(emptyText??copy.work.noBody))}</p>
@@ -196,6 +197,7 @@ export function WorkSummaryCard({
   showLinks=true,
   children=null,
   className='',
+  actions=null,
   onClick=null
 }){
   const copy=useUiCopy();
@@ -207,7 +209,7 @@ export function WorkSummaryCard({
         {(scopeId||showSource&&source)?<p className="loc-eyebrow">{[scopeId,showSource?source:''].filter(Boolean).join(' · ')}</p>:null}
         <strong>{title??copy.work.untitled}</strong>
       </div>
-      {date?<time>{date}</time>:null}
+      {date||actions?<div className="scope-work-summary-actions">{date?<time>{date}</time>:null}{actions}</div>:null}
     </header>
     {hidden?<p className="scope-status">{copy.work.hidden}</p>:null}
     {body?<p className="scope-culture-work-meta-description">{body}</p>:null}
