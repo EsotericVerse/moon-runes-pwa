@@ -285,6 +285,7 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
     throw new Error('檔案內容不是有效的 ZIP 標頭。');
   const hits=new Map();
   let filesSeen=0,inspectedFiles=0,extractedBytes=0;
+  const filenames=new Set();
   function inspectEvidence(path,head){
     for(const hit of archiveEntrySignatures(path,head)){
       const prior=hits.get(hit.source);
@@ -297,6 +298,7 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
     if(++filesSeen>MAX_FILES)throw new Error('ZIP 項目超過 50,000 筆，已停止辨識。');
     const path=cleanPath(entry.name);
     if(!path||path.endsWith('/'))return;
+    filenames.add(path.split('/').at(-1).toLowerCase());
     inspectEvidence(path,'');
     const base=path.split('/').at(-1)||'';
     const priority=/(?:conversations|tweets|threads|messages|posts|status_updates|myactivity|result|_chat)/i.test(base);
@@ -333,6 +335,11 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
     onProgress?.({bytesRead:offset+chunk.length,totalBytes:file.size,filesSeen});
   }
   if(!filesSeen)throw new Error('ZIP 沒有可辨識的檔案項目。');
+  // Slack official workspace exports contain a characteristic combination of
+  // manifest files; no single generic channels.json is enough to identify it.
+  if(filenames.has('channels.json')&&filenames.has('users.json')&&
+     (filenames.has('integration_logs.json')||filenames.has('groups.json')||filenames.has('dms.json')))
+    hits.set('slack',{confidence:3,path:'channels.json + users.json + Slack workspace manifest'});
   return {...summarizeArchiveSources(hits),filesSeen,inspectedFiles};
 }
 
