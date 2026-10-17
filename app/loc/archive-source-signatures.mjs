@@ -47,8 +47,7 @@ export function archiveEntrySignatures(path,head=''){
     add('whatsapp',1);
 
   // Provider-specific structure checks (no full payload parsing or storage).
-  if(contains('mapping','create_time','title')&&/"mapping"\s*:\s*\{/.test(sample)&&
-      (contains('conversation_id')||contains('current_node')||contains('message')||contains('id')))
+  if(contains('mapping','create_time','title')&&/"mapping"\s*:\s*\{/.test(sample))
     add('chatgpt',3);
   if(contains('chat_messages','uuid')&&(contains('sender')||contains('created_at')))
     add('claude',3);
