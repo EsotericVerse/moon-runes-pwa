@@ -13,7 +13,7 @@ import {detectZipArchiveSource} from './private-archive-universal.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 import {refreshSunoStyleMetaTags} from './suno-style-meta-tags.mjs';
 
-const ZIP_SOURCE_NAMES=Object.freeze({chatgpt:'ChatGPT',facebook:'Facebook',instagram:'Instagram',threads:'Threads',x:'X / Twitter'});
+const ZIP_SOURCE_NAMES=Object.freeze({chatgpt:'ChatGPT',claude:'Claude',gemini:'Gemini',grok:'Grok',copilot:'Microsoft Copilot',perplexity:'Perplexity', 'meta-ai':'Meta AI',facebook:'Facebook',messenger:'Messenger',instagram:'Instagram',threads:'Threads',whatsapp:'WhatsApp',x:'X / Twitter',telegram:'Telegram',discord:'Discord',tiktok:'TikTok',reddit:'Reddit',linkedin:'LinkedIn',youtube:'YouTube','google-takeout':'Google Takeout'});
 function sourceSuggestion(name=''){
   const value=String(name).toLowerCase();
   for(const key of ['threads','facebook','pixnet','ptt','vocus','instagram']){
@@ -115,7 +115,8 @@ function UniversalImport({scopeId,format,onBusyChange}) {
 
   async function loadQueuedFile(file,index,total){
     setFileName(file.name);setRows([]);setArchiveDetection(null);setProgress(null);setStatus('');
-    const isZip=/\.zip$/i.test(file.name);
+    const firstBytes=new Uint8Array(await file.slice(0,4).arrayBuffer());
+    const isZip=/\.zip$/i.test(file.name)||(firstBytes[0]===80&&firstBytes[1]===75&&[3,5,7].includes(firstBytes[2]));
     if(isZip){setBusy(true);setStatus(t('uiExtra.importUI.zipInspecting'));}
     try{
       if(isZip){
