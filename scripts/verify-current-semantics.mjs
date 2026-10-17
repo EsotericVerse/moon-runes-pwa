@@ -60,7 +60,9 @@ if(!failures.length){
   const lunarunesSitemap=read('app/lunarunes-sitemap.xml/route.js');
   if(lunarunesSitemap.includes("'/daily/trend'"))failures.push('Retired Daily Trend route must not be advertised in sitemap.');
   const galaxy=read('app/loc/galaxy-query.js');
-  for(const token of ["count:'exact',head:true",'.or(','.range(','searchGalaxyRows','selectSourceTrendRows'])if(!galaxy.includes(token))failures.push('Shared Galaxy query pipeline missing '+token);
+  for(const token of ['.or(','dataQuery.range(offset,offset+pageSize)','searchGalaxyRows','selectSourceTrendRows'])if(!galaxy.includes(token))failures.push('Shared Galaxy query pipeline missing '+token);
+  const literalSearchProvider=galaxy.split('function makeProvider(')[1]?.split('function genericScopeProviders(')[0]||'';
+  if(/count:'exact'|head:true/.test(literalSearchProvider))failures.push('Search pagination must use bounded lookahead, not exact COUNT (known 57014 timeout)');
   if(/flexsearch|new Index\(/i.test(galaxy))failures.push('Global Search must remain Database-first.');
   if(/item_count:count\(\)|createtime::date/.test(galaxy))failures.push('Public feature queries must not depend on optional PostgREST grouped aggregate syntax.');
   const dbQuery=read('app/loc/db-query.mjs');
