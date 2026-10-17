@@ -203,7 +203,7 @@
     "sourceRequired": "ソースを指定してください。",
     "articlePublished": "記事をGalaxyに公開しました。",
     "articlePublishFailed": "記事の公開に失敗しました。",
-    "importJson": "JSONインポート",
+    "importJson": "ファイルインポート",
     "sourceChoice": "ソースを選択",
     "currentFile": "現在のファイル",
     "startImport": "インポート開始",
