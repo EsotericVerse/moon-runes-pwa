@@ -25,6 +25,7 @@ import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import {applyFilters,selectRows} from '../../loc/db-query.mjs';
 import {blocksToPlainText,plainTextToBlocks} from '../../loc/blocknote-content.mjs';
 import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
+import {formatGroupLists,parseGroupListsAttr} from '../../loc/group-lists.mjs';
 
 
 const GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,source_native_id,source_place,searchable,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link,statistics_able,class_id,group_lists';
@@ -59,16 +60,12 @@ function isoOrNull(value,t){
   if(Number.isNaN(date.getTime()))throw new Error(t('uiExtra.searchUI.articleDateInvalid'));
   return date.toISOString();
 }
-function jsonText(value){
-  try{return JSON.stringify(value??false,null,2)}catch{return String(value??'')}
-}
-function parseJsonAttr(value,t){
-  const text=String(value??'').trim();
-  if(!text)return false;
-  try{return JSON.parse(text)}catch{throw new Error(t('uiExtra.searchUI.groupListInvalid'))}
+function parseGroupListsText(value,t){
+  try{return parseGroupListsAttr(value)}catch{throw new Error(t('uiExtra.searchUI.groupListInvalid'))}
 }
 function attrDisplayValue(key,value,t){
   if(key==='content')return t('uiExtra.searchUI.attrShown');
+  if(key==='group_lists')return formatGroupLists(value);
   if(Array.isArray(value))return value.length?value.join(', '):'[]';
   if(value&&typeof value==='object')return jsonText(value);
   if(value===null||value===undefined||value==='')return 'null';
@@ -91,7 +88,7 @@ function galaxyDraftFromRow(row={},fallbackTitle=''){
     media_link:listText(row.media_link),
     statistics_able:row.statistics_able!==false,
     class_id:row.class_id===null||row.class_id===undefined?'':String(row.class_id),
-    group_lists:jsonText(row.group_lists)
+    group_lists:formatGroupLists(row.group_lists)
   };
   const body=String(row.content??'');
   return {
@@ -123,7 +120,7 @@ function changedGalaxyAttributes(draft,t){
     changed.class_id=value===''?null:Number(value);
     if(value!==''&&!Number.isFinite(changed.class_id))throw new Error(t('uiExtra.searchUI.classIdInvalid'));
   }
-  if(differs('group_lists'))changed.group_lists=parseJsonAttr(current.group_lists,t);
+  if(differs('group_lists'))changed.group_lists=parseGroupListsText(current.group_lists,t);
   return changed;
 }
 
@@ -159,7 +156,7 @@ function GalaxyAttrEditor({draft,setDraft}){
       <label><span>statistics_able</span><input type="checkbox" checked={attrs.statistics_able!==false} onChange={event=>change('statistics_able',event.target.checked)}/></label>
       <label className="scope-management-wide-field"><span>target_id[]</span><textarea rows={3} value={attrs.target_id||''} onChange={event=>change('target_id',event.target.value)} placeholder={t('uiExtra.searchUI.uuidHint')}/></label>
       <label className="scope-management-wide-field"><span>media_link[]</span><textarea rows={3} value={attrs.media_link||''} onChange={event=>change('media_link',event.target.value)} placeholder={t('uiExtra.searchUI.mediaUuidHint')}/></label>
-      <label className="scope-management-wide-field"><span>group_lists (JSON)</span><textarea rows={5} value={attrs.group_lists||''} onChange={event=>change('group_lists',event.target.value)}/></label>
+      <label className="scope-management-wide-field"><span>{t('uiExtra.searchUI.groupListField')}</span><textarea rows={2} value={attrs.group_lists??''} onChange={event=>change('group_lists',event.target.value)} placeholder="12:3,14:1"/></label>
     </div>
   </details>;
 }
