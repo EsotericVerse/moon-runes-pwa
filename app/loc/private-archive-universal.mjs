@@ -271,6 +271,88 @@ function textDocument(bytes,name,summary,onRecord){
   if(summary.sample.length<5)summary.sample.push({text:content.slice(0,260),nativeId:record.nativeId,platform:'document',kind:'document'});
   onRecord(record);
 }
+// Lightweight ZIP source identification, before any import or database operation.
+// Use archive paths only as hints; sample actual JSON/JS payloads for a verified match.
+const ZIP_SNIFF_BYTES=32768;
+const ZIP_SNIFF_FILES=160;
+const ZIP_SOURCE_ORDER=['chatgpt','facebook','instagram','threads','x'];
+export async function detectZipArchiveSource(file,{signal,onProgress}={}){
+  if(!file||typeof file.slice!=='function'||!Number.isSafeInteger(file.size)||file.size<=0)
+    throw new Error('請選擇有效的 ZIP 備份檔。');
+  if(file.size>ARCHIVE_MAX_BYTES)throw new Error('ZIP 超過 2 GiB 安全限制；未修改原檔。');
+  const magic=new Uint8Array(await file.slice(0,4).arrayBuffer());
+  if(magic[0]!==80||magic[1]!==75||![3,5,7].includes(magic[2]))
+    throw new Error('檔案內容不是有效的 ZIP 標頭。');
+  const hits=new Map();
+  let filesSeen=0,inspectedFiles=0;
+  function mark(kind,confidence,path){
+    const prior=hits.get(kind);
+    if(!prior||confidence>prior.confidence)hits.set(kind,{confidence,evidence:path});
+  }
+  const unzip=new Unzip(entry=>{
+    aborted(signal);
+    if(++filesSeen>MAX_FILES)throw new Error('ZIP 項目超過 50,000 筆，已停止辨識。');
+    const path=cleanPath(entry.name);
+    if(!path||path.endsWith('/'))return;
+    const lower=path.toLowerCase();
+    const base=lower.split('/').at(-1);
+    // A single familiar name is only a hint, not proof of the export source.
+    if(/^conversations(?:[-_]\d+)?\.json$/.test(base))mark('chatgpt',1,path);
+    if(/(?:^|\/)facebook\//.test(lower))mark('facebook',1,path);
+    if(/(?:^|\/)instagram\//.test(lower))mark('instagram',1,path);
+    if(/(?:^|\/)threads\//.test(lower)||/threads_and_replies/.test(lower))mark('threads',1,path);
+    if(/(?:^|\/)twitter\//.test(lower)||/\/tweets(?:[-_.]part\d+)?\.js$/.test(lower))mark('x',1,path);
+    if(!/\.(?:json|js)$/i.test(lower)||inspectedFiles>=ZIP_SNIFF_FILES)return;
+    inspectedFiles++;
+    let samples=[],length=0,sniffed=false;
+    function inspectSample(){
+      if(sniffed)return;
+      sniffed=true;
+      const bytes=new Uint8Array(length);
+      let pos=0;for(const part of samples){bytes.set(part,pos);pos+=part.length;}
+      const head=new TextDecoder('utf-8',{fatal:false}).decode(bytes);
+      if(/"mapping"\s*:\s*\{/.test(head)&&/"create_time"\s*:/.test(head)&&/"title"\s*:/.test(head))
+        mark('chatgpt',3,path);
+      if(/window\.YTD\.[\w-]+\.part\d+\s*=/.test(head)&&/(?:tweet|noteTweet|directMessage)/.test(head))
+        mark('x',3,path);
+      if(/"text_post_app_text_posts"\s*:/.test(head)||/"threads_posts"\s*:/.test(head))
+        mark('threads',3,path);
+      if(/"ig_posts"\s*:/.test(head)||/"ig_reels_media"\s*:/.test(head))
+        mark('instagram',3,path);
+      if(/"status_updates"\s*:/.test(head)&&/(?:facebook|your_posts)/.test(lower))
+        mark('facebook',3,path);
+      if(/"messages"\s*:\s*\[/.test(head)){
+        if(/(?:^|\/)facebook\//.test(lower))mark('facebook',3,path);
+        if(/(?:^|\/)instagram\//.test(lower))mark('instagram',3,path);
+      }
+    }
+    entry.ondata=(error,data,final)=>{
+      if(error)throw error;
+      if(length<ZIP_SNIFF_BYTES){
+        const part=data.subarray(0,ZIP_SNIFF_BYTES-length);
+        samples.push(part);length+=part.length;
+      }
+      if(final||length>=ZIP_SNIFF_BYTES)inspectSample();
+    };
+    entry.start();
+  });
+  unzip.register(UnzipInflate);
+  for(let offset=0;offset<file.size;offset+=ARCHIVE_CHUNK_BYTES){
+    aborted(signal);
+    const chunk=new Uint8Array(await file.slice(offset,Math.min(file.size,offset+ARCHIVE_CHUNK_BYTES)).arrayBuffer());
+    unzip.push(chunk,offset+chunk.length>=file.size);
+    onProgress?.({bytesRead:offset+chunk.length,totalBytes:file.size,filesSeen});
+  }
+  if(!filesSeen)throw new Error('ZIP 沒有可辨識的檔案項目。');
+  const sources=ZIP_SOURCE_ORDER.filter(kind=>hits.has(kind));
+  const confidence=sources.length?Math.min(...sources.map(kind=>hits.get(kind).confidence)):0;
+  return {
+    kind:sources.length>1?'mixed':sources[0]||'unknown',
+    sources,confidence,filesSeen,inspectedFiles,
+    evidence:sources.map(kind=>({source:kind,path:hits.get(kind).evidence,verified:hits.get(kind).confidence===3}))
+  };
+}
+
 export async function inspectPrivateArchive(file,{onRecord,onProgress,flush,signal}={}){
   if(!file||typeof file.slice!=='function'||!Number.isSafeInteger(file.size)||file.size<=0)
     throw new Error('請選擇有效的本機備份檔。');
