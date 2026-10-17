@@ -5,6 +5,7 @@ import {Unzip,UnzipInflate} from 'fflate';
 import {JSONParser} from '@streamparser/json';
 import {archiveEntrySignatures,summarizeArchiveSources} from './archive-source-signatures.mjs';
 import {inspectArchiveEntryStructure,summarizeArchiveStructures} from './archive-structure-inspector.mjs';
+import {createArchiveCompletenessAudit} from './archive-completeness-audit.mjs';
 
 export const ARCHIVE_CHUNK_BYTES=128*1024;
 export const ARCHIVE_MAX_BYTES=2*1024*1024*1024;
@@ -288,6 +289,7 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
   let filesSeen=0,inspectedFiles=0,extractedBytes=0;
   const filenames=new Set();
   const profiles=[];
+  const audit=createArchiveCompletenessAudit();
   function inspectEvidence(path,head){
     for(const hit of archiveEntrySignatures(path,head)){
       const prior=hits.get(hit.source);
@@ -300,6 +302,7 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
     if(++filesSeen>MAX_FILES)throw new Error('ZIP 項目超過 50,000 筆，已停止辨識。');
     const path=cleanPath(entry.name);
     if(!path||path.endsWith('/'))return;
+    const fileAudit=audit.addFile(path);
     filenames.add(path.split('/').at(-1).toLowerCase());
     inspectEvidence(path,'');
     const base=path.split('/').at(-1)||'';
@@ -308,7 +311,7 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
        (!priority&&inspectedFiles>=ZIP_SNIFF_FILES))return;
     inspectedFiles++;
     const samples=[];
-    let length=0,sniffed=false;
+    let length=0,sniffed=false,received=0;
     function inspectSample(){
       if(sniffed)return;
       sniffed=true;
@@ -318,16 +321,18 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
       const sample=new TextDecoder('utf-8',{fatal:false}).decode(bytes);
       inspectEvidence(path,sample);
       profiles.push(inspectArchiveEntryStructure(path,sample));
+      audit.addSample(fileAudit,sample,{truncated:received>ZIP_SNIFF_BYTES});
     }
     entry.ondata=(error,data,final)=>{
       if(error)throw error;
       extractedBytes+=data.length;
+      received+=data.length;
       if(extractedBytes>MAX_EXTRACTED)throw new Error('ZIP 解壓資料超過 3 GiB，已停止辨識。');
       if(length<ZIP_SNIFF_BYTES){
         const part=data.subarray(0,ZIP_SNIFF_BYTES-length);
         samples.push(part);length+=part.length;
       }
-      if(final||length>=ZIP_SNIFF_BYTES)inspectSample();
+      if(final)inspectSample();
     };
     entry.start();
   });
@@ -345,7 +350,7 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
      (filenames.has('integration_logs.json')||filenames.has('groups.json')||filenames.has('dms.json')))
     hits.set('slack',{confidence:3,path:'channels.json + users.json + Slack workspace manifest'});
   return {...summarizeArchiveSources(hits),filesSeen,inspectedFiles,
-    structure:summarizeArchiveStructures(profiles)};
+    structure:summarizeArchiveStructures(profiles),audit:audit.report()};
 }
 
 export async function inspectPrivateArchive(file,{onRecord,onProgress,flush,signal}={}){
