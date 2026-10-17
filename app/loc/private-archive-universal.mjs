@@ -284,7 +284,7 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
   if(magic[0]!==80||magic[1]!==75||![3,5,7].includes(magic[2]))
     throw new Error('檔案內容不是有效的 ZIP 標頭。');
   const hits=new Map();
-  let filesSeen=0,inspectedFiles=0;
+  let filesSeen=0,inspectedFiles=0,extractedBytes=0;
   function mark(kind,confidence,path){
     const prior=hits.get(kind);
     if(!prior||confidence>prior.confidence)hits.set(kind,{confidence,evidence:path});
@@ -302,7 +302,8 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
     if(/(?:^|\/)instagram\//.test(lower))mark('instagram',1,path);
     if(/(?:^|\/)threads\//.test(lower)||/threads_and_replies/.test(lower))mark('threads',1,path);
     if(/(?:^|\/)twitter\//.test(lower)||/\/tweets(?:[-_.]part\d+)?\.js$/.test(lower))mark('x',1,path);
-    if(!/\.(?:json|js)$/i.test(lower)||inspectedFiles>=ZIP_SNIFF_FILES)return;
+    const priority=/(?:conversations|tweets|threads|messages|posts|status_updates)/.test(base);
+    if(!/\.(?:json|js)$/i.test(lower)||(!priority&&inspectedFiles>=ZIP_SNIFF_FILES))return;
     inspectedFiles++;
     let samples=[],length=0,sniffed=false;
     function inspectSample(){
@@ -328,6 +329,8 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
     }
     entry.ondata=(error,data,final)=>{
       if(error)throw error;
+      extractedBytes+=data.length;
+      if(extractedBytes>MAX_EXTRACTED)throw new Error('ZIP 解壓資料超過 3 GiB，已停止辨識。');
       if(length<ZIP_SNIFF_BYTES){
         const part=data.subarray(0,ZIP_SNIFF_BYTES-length);
         samples.push(part);length+=part.length;
