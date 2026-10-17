@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {zipSync,strToU8} from 'fflate';
-import {inspectPrivateArchive} from '../app/loc/private-archive-universal.mjs';
+import {inspectPrivateArchive,detectZipArchiveSource} from '../app/loc/private-archive-universal.mjs';
 
 function file(bytes,name='without-extension'){
   const data=bytes instanceof Uint8Array?bytes:strToU8(bytes);
@@ -130,4 +130,55 @@ test('novel Meta metadata schema is marked unmapped and raw values are retained'
   assert.equal(records[0].kind,'unmapped');
   assert.equal(records[0].raw.omega.value,23);
   assert.equal(summary.unmappedRows,1);
+});
+
+
+test('ZIP source detection verifies ChatGPT conversation tree, without importing rows',async()=>{
+  const archive=zipSync({'export/conversations.json':strToU8(JSON.stringify([{
+    title:'對話測試',create_time:1720000000,
+    mapping:{'root':{id:'root',message:{author:{role:'user'},content:{parts:['你好']}}}}
+  }])),'export/user.json':strToU8('{"id":"user"}')});
+  const result=await detectZipArchiveSource(file(archive,'chatgpt-export.zip'));
+  assert.equal(result.kind,'chatgpt');
+  assert.deepEqual(result.sources,['chatgpt']);
+  assert.equal(result.confidence,3);
+  assert.equal(result.evidence[0].verified,true);
+});
+
+test('ZIP detection distinguishes Instagram, Threads, Facebook and X using payload signatures',async()=>{
+  const cases=[
+    ['instagram','instagram/your_instagram_activity/media/posts_1.json',JSON.stringify({ig_posts:[{title:'圖文'}]})],
+    ['threads','threads/threads_and_replies/text_posts.json',JSON.stringify({text_post_app_text_posts:[{text:'貼文'}]})],
+    ['facebook','facebook/posts/your_posts_1.json',JSON.stringify({status_updates:[{data:[{post:'文字'}]}]})],
+    ['x','twitter/data/tweets.js','window.YTD.tweet.part0 = '+JSON.stringify([{tweet:{id_str:'1',full_text:'hello'}}])+';']
+  ];
+  for(const [kind,path,payload] of cases){
+    const archive=zipSync({[path]:strToU8(payload)});
+    const result=await detectZipArchiveSource(file(archive,'export.zip'));
+    assert.equal(result.kind,kind);
+    assert.equal(result.confidence,3);
+  }
+});
+
+test('ZIP detection reports mixed origins, and does not guess unknown archives',async()=>{
+  const mixed=zipSync({
+    'export/conversations.json':strToU8(JSON.stringify([{title:'Chat',create_time:1700000000,mapping:{}}])),
+    'threads/posts.json':strToU8(JSON.stringify({text_post_app_text_posts:[{text:'Threads'}]}))
+  });
+  const mixedResult=await detectZipArchiveSource(file(mixed,'backup.zip'));
+  assert.equal(mixedResult.kind,'mixed');
+  assert.deepEqual(mixedResult.sources,['chatgpt','threads']);
+  assert.equal(mixedResult.confidence,3);
+  const unknown=await detectZipArchiveSource(file(zipSync({'notes/readme.txt':strToU8('hello')}),'unknown.zip'));
+  assert.equal(unknown.kind,'unknown');
+  assert.deepEqual(unknown.sources,[]);
+  await assert.rejects(()=>detectZipArchiveSource(file('not a zip','fake.zip')),/ZIP/);
+});
+
+test('ZIP detection does not claim verified ChatGPT from a filename alone',async()=>{
+  const archive=zipSync({'conversations.json':strToU8('[{"title":"not necessarily ChatGPT"}]')});
+  const result=await detectZipArchiveSource(file(archive,'backup.zip'));
+  assert.equal(result.kind,'chatgpt');
+  assert.equal(result.confidence,1);
+  assert.equal(result.evidence[0].verified,false);
 });
