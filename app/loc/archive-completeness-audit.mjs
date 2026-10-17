@@ -11,6 +11,7 @@ export function createArchiveCompletenessAudit(){
   const files=[];
   const projectFields=new Set();
   const projectIds=new Map();
+  let refsBeyondLimit=false;
   const projectFiles=new Set();
   const otherPotentialProjects=new Set();
   function addFile(path){
@@ -34,8 +35,13 @@ export function createArchiveCompletenessAudit(){
       // be definitions; association can only be verified during full import.
       const key=hit[1].replace(/([a-z])([A-Z])/g,'$1_$2').toLowerCase();
       const identity=key+'\u0000'+hit[2];
-      if(projectIds.has(identity))continue;
-      if(projectIds.size<LIMIT)projectIds.set(identity,{field:key,id:hit[2],path:entry.path});
+      const found=projectIds.get(identity);
+      if(found){
+        found.mentions++;
+        if(found.paths.length<16&&!found.paths.includes(entry.path))found.paths.push(entry.path);
+      }else if(projectIds.size<LIMIT){
+        projectIds.set(identity,{field:key,id:hit[2],path:entry.path,paths:[entry.path],mentions:1});
+      }else refsBeyondLimit=true;
     }
   }
   function report(){
@@ -61,10 +67,12 @@ export function createArchiveCompletenessAudit(){
         additionalFilesWithProjectFields:otherPotentialProjects.size,
         observedFields:[...projectFields].sort(),
         sampleReferences:[...projectIds.values()],
-        referencesCapped:projectIds.size===LIMIT,
+        referencesCapped:refsBeyondLimit,
         candidatePaths:[...projectFiles].slice(0,LIMIT)
       },
       needsReview:totals.notInspected>0||totals.partialSamples>0,
+      sourceExportCompleteness:'unverifiable',
+      importRestorationStatus:'not-tested',
       attention,
       caveat:'Archive content was inventoried, but not exhaustively parsed or compared with the source account. Binary assets, partial samples and missing platform exports are not validated.'
     };
