@@ -217,21 +217,21 @@ function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filte
       const activeFilters=[...frozenFilters,...dateSearchFilters(dateColumn,startDate,endDate)];
       const orders=dateColumn?[{column:dateColumn,ascending:true}]:[];
 
-      // A page and its exact count must share one database request.
-      // Separate count + page requests doubled the failure surface on pagination.
+      // The exact COUNT(*) query can time out on ILIKE against article content.
+      // Fetch one extra row instead; ordinary searching never needs a total count.
       const dataResult=await executePublicRead(activeTable,relation=>{
-        let dataQuery=relation.select(outputColumns.join(','),{count:'exact'});
+        let dataQuery=relation.select(outputColumns.join(','));
         dataQuery=applyFilters(dataQuery,activeFilters);
         dataQuery=applyLiteralTerms(dataQuery,frozenFields,query,and,nor);
         dataQuery=applyOrders(dataQuery,orders);
-        return dataQuery.range(offset,offset+pageSize-1);
+        return dataQuery.range(offset,offset+pageSize);
       },{source});
       const dataSource=dataResult.__dataSource||source||'auto';
-      const totalCount=Number(dataResult.count)||0;
-      const rows=(dataResult.data||[]).map(row=>recordFor(row,source,id,scope,activeTable));
+      const found=dataResult.data||[];
+      const hasMore=found.length>pageSize;
+      const rows=found.slice(0,pageSize).map(row=>recordFor(row,source,id,scope,activeTable));
       const nextOffset=offset+rows.length;
-      const hasMore=nextOffset<totalCount;
-      return {rows,hasMore,nextCursor:hasMore?nextOffset:null,totalCount,dataSource};
+      return {rows,hasMore,nextCursor:hasMore?nextOffset:null,totalCount:null,dataSource};
     }
   });
 }
