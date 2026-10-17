@@ -37,7 +37,7 @@ export function officeTableRows(ast){
     if(!headers.size)throw new Error('表格缺少標題列，無法安全映射欄位。');
     const used=new Set();
     for(const [index,value] of headers){
-      const name=value.trim();
+      const name=value.replace(/^\uFEFF/,'').trim();
       if(!name)throw new Error('表格標題列有空白欄位，請先修正來源檔案。');
       if(forbiddenHeaders.has(name)||used.has(name))throw new Error('表格標題列含重複或不安全欄名：'+name);
       used.add(name);
