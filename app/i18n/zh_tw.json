@@ -203,7 +203,7 @@
     "sourceRequired": "請指定來源。",
     "articlePublished": "文章已發表到 Galaxy。",
     "articlePublishFailed": "文章發表失敗。",
-    "importJson": "JSON 匯入",
+    "importJson": "檔案匯入",
     "sourceChoice": "來源選擇",
     "currentFile": "本次檔案",
     "startImport": "開始匯入",
