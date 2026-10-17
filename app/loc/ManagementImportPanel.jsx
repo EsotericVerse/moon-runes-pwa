@@ -13,6 +13,11 @@ import {detectZipArchiveSource} from './private-archive-universal.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 import {refreshSunoStyleMetaTags} from './suno-style-meta-tags.mjs';
 
+const ZIP_LAYOUT_KEYS=Object.freeze({
+  'conversation-tree':'conversationTree','message-list':'messageList','post-list':'postList',
+  activity:'activity',media:'media',table:'table','structured-records':'records',document:'document'
+});
+const ZIP_FIELD_KEYS=Object.freeze(['id','text','author','time','relation','attachment','collection']);
 const ZIP_SOURCE_NAMES=Object.freeze({chatgpt:'ChatGPT',claude:'Claude',gemini:'Gemini',grok:'Grok',copilot:'Microsoft Copilot',perplexity:'Perplexity', 'meta-ai':'Meta AI',facebook:'Facebook',messenger:'Messenger',instagram:'Instagram',threads:'Threads',whatsapp:'WhatsApp',x:'X / Twitter',telegram:'Telegram',discord:'Discord',line:'LINE',slack:'Slack',teams:'Microsoft Teams',snapchat:'Snapchat',wechat:'WeChat',tiktok:'TikTok',reddit:'Reddit',linkedin:'LinkedIn',pinterest:'Pinterest',youtube:'YouTube','google-takeout':'Google Takeout'});
 function sourceSuggestion(name=''){
   const value=String(name).toLowerCase();
@@ -216,6 +221,21 @@ function UniversalImport({scopeId,format,onBusyChange}) {
       <p><strong>{t('uiExtra.importUI.zipDetected')}：</strong>{archiveDetection.sources.map(kind=>ZIP_SOURCE_NAMES[kind]||kind).join(' / ')||t('uiExtra.importUI.zipUnknown')}</p>
       <p>{t('uiExtra.importUI.zipConfidence')}：{t(archiveDetection.confidence===3?'uiExtra.importUI.zipVerified':archiveDetection.confidence?'uiExtra.importUI.zipPossible':'uiExtra.importUI.zipUnknown')}</p>
       {archiveDetection.evidence.length?<p>{t('uiExtra.importUI.zipEvidence')}：{archiveDetection.evidence.map(item=>item.path).join('、')}</p>:null}
+      <p>{t('uiExtra.importUI.zipStructureCount',{count:archiveDetection.structure?.sampledFiles||0})}</p>
+      {Object.keys(archiveDetection.structure?.layouts||{}).length?<p>
+        {t('uiExtra.importUI.zipLayouts')}：
+        {Object.entries(archiveDetection.structure.layouts).map(([kind,count])=>
+          t('uiExtra.importUI.zipLayout.'+(ZIP_LAYOUT_KEYS[kind]||'records'))+' '+count).join('、')}
+      </p>:null}
+      {Object.keys(archiveDetection.structure?.formats||{}).length?<p>
+        {t('uiExtra.importUI.zipFormats')}：
+        {Object.entries(archiveDetection.structure.formats).map(([kind,count])=>kind.toUpperCase()+' '+count).join('、')}
+      </p>:null}
+      {ZIP_FIELD_KEYS.some(key=>archiveDetection.structure?.fields?.[key])?<p>
+        {t('uiExtra.importUI.zipFields')}：
+        {ZIP_FIELD_KEYS.filter(key=>archiveDetection.structure?.fields?.[key]).map(key=>
+          t('uiExtra.importUI.zipField.'+key)).join('、')}
+      </p>:null}
       <p>{t('uiExtra.importUI.zipReadOnly')}</p>
     </section>:null}
     {rows.length?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.preview')}>
