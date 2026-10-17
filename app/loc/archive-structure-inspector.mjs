@@ -7,7 +7,9 @@ const FIELD_GROUPS=Object.freeze({
   time:['timestamp','timestamp_ms','create_time','created_at','created_time','creation_timestamp','date','datetime','time','update_time','updated_at'],
   relation:['mapping','parent','children','parent_id','reply_to','in_reply_to_status_id','thread_id','conversation_id','current_node','replies','target_id'],
   attachment:['attachments','media','photos','videos','images','files','audio','asset_pointer','file_id','download_link'],
-  collection:['messages','chat_messages','conversations','posts','tweets','items','records','entries','data','chats','threads','history','events']
+  collection:['messages','chat_messages','conversations','posts','tweets','items','records','entries','data','chats','threads','history','events'],
+  project:['project','projects','project_id','project_uuid','project_name','project_title','project_instructions','custom_instructions','system_prompt','knowledge_base'],
+  workspace:['workspace','workspaces','workspace_id','workspace_name','folder_id','folder_name','space_id','organization_id']
 });
 const normKey=k=>String(k).replace(/([a-z\d])([A-Z])/g,'$1_$2').replace(/[-\s]+/g,'_').toLowerCase();
 const known=new Map(Object.entries(FIELD_GROUPS).flatMap(([kind,names])=>names.map(name=>[name,kind])));
@@ -57,6 +59,8 @@ export function inspectArchiveEntryStructure(path,header=''){
   if(has('chat_messages')||has('messages')||has('conversation')||has('conversations')||has('chats'))layouts.push('message-list');
   if(includes('post')||includes('tweet')||has('status_updates'))layouts.push('post-list');
   if(includes('activity')||has('events')||has('history'))layouts.push('activity');
+  if(fields.project.length||/\/(?:projects?|project_knowledge|project_files)\//i.test('/'+path)||/\/(?:projects|project)\.(?:json|jsonl|csv)$/i.test('/'+path))layouts.push('project-linked');
+  if(fields.workspace.length)layouts.push('workspace-linked');
   if(fields.attachment.length&&(!layouts.length||has('media')||has('photos')||has('videos')))layouts.push('media');
   if(format==='csv'||format==='tsv')layouts.push('table');
   if(!layouts.length&&format==='json'&&
