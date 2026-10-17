@@ -206,7 +206,7 @@ function recordFor(row,source,providerId,scope,table){
   return {row:{...row,scope_id:row?.scope_id||scope.id,__table:table,__galaxy_media_table:scope.galaxyMedia},source,providerId};
 }
 
-function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filters=[],dateColumn='',batchSize=DEFAULT_LIST_BATCH_SIZE}){
+function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filters=[],dateColumn='',batchSize=DEFAULT_LIST_BATCH_SIZE,excludeSunoStyle=false}){
   const outputColumns=Object.freeze(unique(columns));
   const frozenFields=Object.freeze(unique(searchFields));
   const frozenFilters=Object.freeze(filters.map(item=>Object.freeze({...item})));
@@ -224,6 +224,9 @@ function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filte
       const dataResult=await executePublicRead(activeTable,relation=>{
         let dataQuery=relation.select(outputColumns.join(','));
         dataQuery=applyFilters(dataQuery,activeFilters);
+        // Suno Style is reference-only: never return it in article search,
+        // including privileged searches that deliberately include other hidden works.
+        if(excludeSunoStyle)dataQuery=dataQuery.not('title','ilike','%Suno Style%');
         dataQuery=applyLiteralTerms(dataQuery,frozenFields,query,and,nor);
         dataQuery=applyOrders(dataQuery,orders);
         return dataQuery.range(offset,offset+pageSize);
@@ -242,6 +245,7 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false}={
   const current=scopeOf(scope);
   const text=makeProvider({
     id:current.id+':text',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
+    excludeSunoStyle:true,
     columns:['uid','title','content','createtime','source_native_id','source_place','searchable','UpdateTime','url','source_id','target_id','ref_id','source_name','media_link','statistics_able','class_id','group_lists'],
     searchFields:['title','content','source_name'],dateColumn:'createtime',
     filters:publicContentFilters(includeHiddenText?[]:[{column:'searchable',operator:'eq',value:true}])
