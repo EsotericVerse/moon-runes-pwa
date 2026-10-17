@@ -236,6 +236,30 @@ function UniversalImport({scopeId,format,onBusyChange}) {
         {ZIP_FIELD_KEYS.filter(key=>archiveDetection.structure?.fields?.[key]).map(key=>
           t('uiExtra.importUI.zipField.'+key)).join('、')}
       </p>:null}
+      {archiveDetection.audit?<div className="scope-import-audit">
+        <p><strong>{t('uiExtra.importUI.zipAuditTitle')}</strong></p>
+        <p>{t('uiExtra.importUI.zipAuditFiles',{
+          total:archiveDetection.audit.files.allFiles,
+          sampled:archiveDetection.audit.files.sampled,
+          remaining:archiveDetection.audit.files.notInspected,
+          partial:archiveDetection.audit.files.partialSamples
+        })}</p>
+        <p>{t('uiExtra.importUI.zipAuditAssets',{count:archiveDetection.audit.files.assets})}</p>
+        <p>{t('uiExtra.importUI.zipAuditProjects',{
+          files:archiveDetection.audit.projects.possibleProjectFiles,
+          linked:archiveDetection.audit.projects.additionalFilesWithProjectFields,
+          refs:archiveDetection.audit.projects.sampleReferences.length
+        })}</p>
+        {archiveDetection.audit.projects.observedFields.length?<p>
+          {t('uiExtra.importUI.zipProjectFields')}：{archiveDetection.audit.projects.observedFields.join('、')}
+        </p>:null}
+        {archiveDetection.audit.attention.length?<details>
+          <summary>{t('uiExtra.importUI.zipUninspected')}</summary>
+          <ul>{archiveDetection.audit.attention.slice(0,10).map((item,i)=>
+            <li key={i}>{item.path} — {t('uiExtra.importUI.zipAuditReason.'+item.reason)}</li>)}</ul>
+        </details>:null}
+        <p>{t('uiExtra.importUI.zipAuditCaveat')}</p>
+      </div>:null}
       <p>{t('uiExtra.importUI.zipReadOnly')}</p>
     </section>:null}
     {rows.length?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.preview')}>
