@@ -136,7 +136,11 @@ test('exact style-tag search returns its complete intro as a separate recommenda
   const selectStyleKeywordMatches=vm.runInNewContext(source.replace(/^export /,'')+'; selectStyleKeywordMatches',{
     normalizeSearch:value=>String(value||'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/\s/g,''),
     scopeOf:scope=>scope,
-    selectAllRows:async(table,query)=>{calls.push({table,query});return {rows:records};}
+    DEFAULT_LIST_BATCH_SIZE:20,
+    selectRows:async(table,query)=>{
+      calls.push({table,query});
+      return {rows:records.filter(row=>row.label===query.filters.find(filter=>filter.column==='label').value)};
+    }
   });
   const [match]=await selectStyleKeywordMatches([{id:'loc',time:'loc_time'}],' 月光敘事 ');
   assert.equal(match.row.style_keyword_tag,true);
@@ -144,8 +148,12 @@ test('exact style-tag search returns its complete intro as a separate recommenda
   assert.equal(match.row.style_description,'第一段完整介紹。\n第二段也保留。');
   assert.equal(match.source,'風格標籤');
   assert.equal(calls.length,1);
-  assert.equal(JSON.stringify(calls[0].query.filters),JSON.stringify([{column:'record_type',operator:'eq',value:'style_comment'}]));
+  assert.equal(JSON.stringify(calls[0].query.filters),JSON.stringify([
+    {column:'record_type',operator:'eq',value:'style_comment'},
+    {column:'label',operator:'eq',value:'月光敘事'}
+  ]));
   assert.equal(calls[0].query.columns,'record_id,record_type,label,style_description,status');
+  assert.equal(calls[0].query.limit,20);
 });
 
 test('style-tag recommendations stay above article results without reordering peers',()=>{

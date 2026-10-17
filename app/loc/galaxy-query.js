@@ -271,9 +271,13 @@ export async function selectStyleKeywordMatches(scopes,query){
   if(!key)return [];
   const found=await Promise.all((Array.isArray(scopes)?scopes:[]).filter(scope=>scope?.id&&scope?.time).map(async scope=>{
     const current=scopeOf(scope);
-    const {rows=[]}=await selectAllRows(current.time,{
+    const {rows=[]}=await selectRows(current.time,{
       columns:'record_id,record_type,label,style_description,status',
-      filters:[{column:'record_type',operator:'eq',value:'style_comment'}]
+      filters:[
+        {column:'record_type',operator:'eq',value:'style_comment'},
+        {column:'label',operator:'eq',value:String(query||'').normalize('NFKC').trim()}
+      ],
+      limit:DEFAULT_LIST_BATCH_SIZE
     });
     return rows
       .filter(row=>row.status!=='needs_anchor'&&String(row.label||'').trim()&&normalizeSearch(row.label)===key)
