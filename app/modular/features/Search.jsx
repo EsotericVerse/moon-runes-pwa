@@ -9,21 +9,22 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {useRouter,useSearchParams} from 'next/navigation';
 
-import {logSearchKeyword,selectAuthRow,updateRows} from '../../loc/db-client.mjs';
+import {logSearchKeyword,updateRows} from '../../loc/db-client.mjs';
 import {useAccount} from '../../loc/use-account';
-import {FeaturePage,IncrementalList,WorkFullText,WorkSummaryCard} from '../ui';
+import {FeaturePage,IncrementalList,WorkFullText} from '../ui';
+import Article from '../Article';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {scopeHref} from '../scope-registry';
 import {featureNavigationHref,galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
-import {resolveGalaxyExternalLinks,searchGalaxyRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordIntroductions} from '../../loc/galaxy-query';
-import {selectManagedScopes} from '../../loc/scope-data';
+import {resolveGalaxyExternalLinks,searchGalaxyRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordIntroductions,selectStyleKeywordRecommendations} from '../../loc/galaxy-query';
+import {defaultScopeData,selectScopeRegistry} from '../../loc/scope-data';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
-import {applyFilters} from '../../loc/db-query.mjs';
-import BlockNoteEditor from '../../loc/BlockNoteEditor';
+import {applyFilters,selectRows} from '../../loc/db-query.mjs';
 import {blocksToPlainText,plainTextToBlocks} from '../../loc/blocknote-content.mjs';
+import ArticleBodyEditor from '../../loc/ArticleBodyEditor';
 import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
 
 
@@ -76,27 +77,55 @@ function attrDisplayValue(key,value,t){
   return String(value).trim();
 }
 function galaxyDraftFromRow(row={},fallbackTitle=''){
+  const attrs={
+    uid:String(row.uid||'').trim(),
+    createtime:datetimeLocalValue(row.createtime),
+    source_native_id:String(row.source_native_id||''),
+    source_place:String(row.source_place||''),
+    searchable:row.searchable!==false,
+    UpdateTime:String(row.UpdateTime||''),
+    url:String(row.url||''),
+    source_id:String(row.source_id||'').trim(),
+    target_id:listText(row.target_id),
+    ref_id:String(row.ref_id||'').trim(),
+    source_name:String(row.source_name||''),
+    media_link:listText(row.media_link),
+    statistics_able:row.statistics_able!==false,
+    class_id:row.class_id===null||row.class_id===undefined?'':String(row.class_id),
+    group_lists:jsonText(row.group_lists)
+  };
+  const body=String(row.content??'');
   return {
     title:String(row.title??fallbackTitle??''),
-    bodyBlocks:plainTextToBlocks(String(row.content??'')),
-    attrs:{
-      uid:String(row.uid||'').trim(),
-      createtime:datetimeLocalValue(row.createtime),
-      source_native_id:String(row.source_native_id||''),
-      source_place:String(row.source_place||''),
-      searchable:row.searchable!==false,
-      UpdateTime:String(row.UpdateTime||''),
-      url:String(row.url||''),
-      source_id:String(row.source_id||'').trim(),
-      target_id:listText(row.target_id),
-      ref_id:String(row.ref_id||'').trim(),
-      source_name:String(row.source_name||''),
-      media_link:listText(row.media_link),
-      statistics_able:row.statistics_able!==false,
-      class_id:row.class_id===null||row.class_id===undefined?'':String(row.class_id),
-      group_lists:jsonText(row.group_lists)
-    }
+    body,
+    bodyHtml:body,
+    bodyBlocks:plainTextToBlocks(body),
+    editorKey:String(row.uid||row.media_id||''),
+    hidden:row.searchable===false,
+    attrs,
+    originalAttrs:{...attrs}
   };
+}
+
+function changedGalaxyAttributes(draft,t){
+  const current=draft?.attrs||{},initial=draft?.originalAttrs||{};
+  const changed={};
+  const differs=key=>JSON.stringify(current[key])!==JSON.stringify(initial[key]);
+  if(differs('searchable'))changed.searchable=current.searchable!==false;
+  if(differs('createtime'))changed.createtime=isoOrNull(current.createtime,t);
+  for(const key of ['source_native_id','source_place','url','source_id','ref_id','source_name']){
+    if(differs(key))changed[key]=nullableText(current[key]);
+  }
+  if(differs('statistics_able'))changed.statistics_able=current.statistics_able!==false;
+  if(differs('target_id'))changed.target_id=parseListText(current.target_id);
+  if(differs('media_link'))changed.media_link=parseListText(current.media_link);
+  if(differs('class_id')){
+    const value=String(current.class_id??'').trim();
+    changed.class_id=value===''?null:Number(value);
+    if(value!==''&&!Number.isFinite(changed.class_id))throw new Error(t('uiExtra.searchUI.classIdInvalid'));
+  }
+  if(differs('group_lists'))changed.group_lists=parseJsonAttr(current.group_lists,t);
+  return changed;
 }
 
 function GalaxyAttrSummary({row}){
@@ -151,6 +180,22 @@ function matchesScopeAlias(scope,query){
     ...(Array.isArray(scope?.searchAliases)?scope.searchAliases:[])
   ].filter(Boolean);
   return aliases.some(alias=>normalizeScopeAlias(alias)===token);
+}
+
+function canManageSearchScope(account,scopeId){
+  const id=String(scopeId||'').trim();
+  const normalized=id.toLowerCase();
+  const ownScope=Array.isArray(account.scopes)&&account.scopes.some(scope=>String(scope?.id||'').trim().toLowerCase()===normalized);
+  return Boolean(account.role==='admin'||account.canManageGlobalSync?.()||ownScope||account.canManageScopeSync(id)||account.canManageScopeSync(normalized));
+}
+
+async function selectPublicEditableRow(table,idColumn,id,columns){
+  const {rows=[]}=await selectRows(table,{
+    columns,
+    filters:[{column:idColumn,operator:'eq',value:String(id)}],
+    limit:1
+  });
+  return rows[0]||null;
 }
 
 function escapeSearchRegExp(value){
@@ -212,11 +257,19 @@ function toResult(row,source,scopeId,copy=UI_COPY){
     styleAnchorEnd:String(row.style_anchor_end||''),
     relatedStyleTags:Array.isArray(row.related_style_tags)?row.related_style_tags:[],
     editableTable,editableIdColumn,editResourceId,editableField,isScopeCard,href,
+    editRow:resourceType?row:null,
     relationLinks:resourceType==='galaxy'
       ?galaxyRelationLinks(scope,row)
       :(resourceType==='galaxy_media'&&row.galaxy_link
         ?[{id:'galaxy:'+row.galaxy_link,label:copy.search.parentText,href:galaxyIdentityHref(scope,row.galaxy_link)}].filter(link=>link.href)
         :[]),
+    dedupeKey:resourceType==='galaxy'
+      ?'article-copy:'+JSON.stringify([scope,
+        String(row.title||'').normalize('NFKC').trim(),
+        String(row.content||'').replace(/\r\n?/g,'\n').trim(),
+        String(row.source_name||'').normalize('NFKC').trim(),
+        String(row.createtime||''),String(row.url||'').trim()])
+      :'',
     groupKey:resourceType==='galaxy'&&resourceId
       ?'galaxy:'+scope+':'+resourceId
       :(resourceType==='galaxy_media'&&row.galaxy_link?'galaxy:'+scope+':'+row.galaxy_link:'result:'+scope+':'+(identity||title)),
@@ -229,7 +282,7 @@ function toResult(row,source,scopeId,copy=UI_COPY){
 function mergeSummaryResults(rows=[],copy=UI_COPY){
   const groups=new Map();
   for(const row of rows){
-    const key=row.groupKey||row.key;
+    const key=row.dedupeKey||row.groupKey||row.key;
     if(!groups.has(key)){
       groups.set(key,{...row,links:[...(row.links||[])]});
       continue;
@@ -280,18 +333,27 @@ export default function Search(){
   // LOC searches all managed Scopes; only other Scope Groups are directory guides.
   const aggregateScopes=Boolean(scope?.aggregateChildren&&scopeId!=='loc');
   const scopesQuery=useQuery({
-    queryKey:['managed-scopes',scopeId],
-    queryFn:selectManagedScopes,
+    queryKey:['search-scope-registry'],
+    queryFn:selectScopeRegistry,
     enabled:!aggregateScopes,
     staleTime:5*60_000
   });
   const targetScopes=useMemo(()=>{
-    const scopes=scopesQuery.data||[];
-    return scopeId==='loc'?scopes:scopes.filter(item=>item.id===scopeId);
+    if(scopeId!=='loc')return [defaultScopeData(scopeId)].filter(Boolean);
+    return (scopesQuery.data||[])
+      .filter(item=>item.active&&item.scope_kind==='scope')
+      .map(item=>defaultScopeData(item.scope_id))
+      .filter(Boolean);
   },[scopeId,scopesQuery.data]);
+  const styleRecommendationsQuery=useQuery({
+    queryKey:['search-style-recommendations',targetScopes.map(item=>item.id)],
+    queryFn:()=>selectStyleKeywordRecommendations(targetScopes),
+    enabled:!aggregateScopes&&targetScopes.length>0&&(scopeId!=='loc'||scopesQuery.isSuccess),
+    staleTime:5*60_000
+  });
   const scopeById=useMemo(()=>new Map(targetScopes.map(item=>[item.id,item])),[targetScopes]);
   const hiddenScopeIds=useMemo(
-    ()=>targetScopes.filter(item=>account.canManageScopeSync(item.id)).map(item=>item.id),
+    ()=>targetScopes.filter(item=>canManageSearchScope(account,item.id)).map(item=>item.id),
     [targetScopes,account.authorizer]
   );
   const collectionLabel=scopeId==='loc'?UI_COPY.search.allContent:String(scope?.label||scopeId);
@@ -300,12 +362,8 @@ export default function Search(){
     const scopeData=scopeById.get(result.scopeId);
     if(!scopeData)throw new Error(UI_COPY.search.fullTextNotFound);
     const id=result.editResourceId||result.resourceId;
-    if(account.canManageScopeSync(result.scopeId)&&result.editableTable){
-      const row=await selectAuthRow(result.editableTable,{
-        idColumn:result.editableIdColumn||'uid',
-        id,
-        columns:GALAXY_EDITOR_COLUMNS
-      });
+    if(result.editableTable){
+      const row=await selectPublicEditableRow(result.editableTable,result.editableIdColumn||'uid',id,GALAXY_EDITOR_COLUMNS);
       if(!row)throw new Error(UI_COPY.search.fullTextNotFound);
       return row;
     }
@@ -441,7 +499,7 @@ export default function Search(){
       let detail=null;
       let detailScope=scopeId;
       for(const scopeData of targetScopes){
-        detail=await selectGalaxyIdentity(scopeData,identity,{includeHidden:account.canManageScopeSync(scopeData.id)});
+        detail=await selectGalaxyIdentity(scopeData,identity,{includeHidden:canManageSearchScope(account,scopeData.id)});
         if(detail){detailScope=scopeData.id;break;}
       }
       if(id!==searchId.current)return;
@@ -451,7 +509,7 @@ export default function Search(){
       setFullTextKey(result.key);
       const fullRow=await loadGalaxyDetail(result);
       setFullText(workDisplayText(fullRow?.content||detail.content||''));
-      setFullTextRow(account.canManageScopeSync(detailScope)?fullRow:null);
+      setFullTextRow(canManageSearchScope(account,detailScope)?fullRow:null);
       setStatus(UI_COPY.search.relationLoaded);
     }catch(exception){
       if(id!==searchId.current)return;
@@ -489,7 +547,7 @@ export default function Search(){
       const fullRow=await loadGalaxyDetail(result);
       if(!fullRow)throw new Error(UI_COPY.search.fullTextNotFound);
       setFullText(workDisplayText(fullRow.content||''));
-      setFullTextRow(account.canManageScopeSync(result.scopeId)?fullRow:null);
+      setFullTextRow(canManageSearchScope(account,result.scopeId)?fullRow:null);
     }catch(exception){
       setFullTextError(String(exception?.message||exception||UI_COPY.search.fullTextFailed));
     }finally{
@@ -501,23 +559,22 @@ export default function Search(){
     setEditingKey(result.key);setEditError('');
     setEditDraft(null);
     try{
-      const contentColumns=result.resourceType==='galaxy'
-        ?GALAXY_EDITOR_COLUMNS
-        :'media_id,title,meta_tags';
       const cached=result.resourceType==='galaxy'&&fullTextKey===result.key&&fullTextRow?.uid
         ?fullTextRow
         :null;
-      const fullRow=cached||await selectAuthRow(result.editableTable,{
-        idColumn:result.editableIdColumn,
-        id:result.editResourceId||result.resourceId,
-        columns:contentColumns
-      });
+      const fullRow=cached||result.editRow||await selectPublicEditableRow(
+        result.editableTable,
+        result.editableIdColumn,
+        result.editResourceId||result.resourceId,
+        result.resourceType==='galaxy'?GALAXY_EDITOR_COLUMNS:'media_id,title,meta_tags'
+      );
       if(!fullRow)throw new Error(UI_COPY.search.editNotFound);
       setEditDraft(result.resourceType==='galaxy'
         ?galaxyDraftFromRow(fullRow,result.title)
         :{
           title:String(fullRow.title??result.title??''),
           body:String(fullRow[result.editableField]??''),
+          bodyHtml:String(fullRow[result.editableField]??''),
           bodyBlocks:plainTextToBlocks(String(fullRow[result.editableField]??'')),
           editorKey:String(fullRow.media_id||result.resourceId||'media'),
           hidden:false
@@ -531,40 +588,25 @@ export default function Search(){
     if(!editDraft||!result.editableTable||!result.editableField)return;
     setEditBusy(true);setEditError('');
     try{
-      if(!account.canManageScopeSync(result.scopeId))throw new Error(UI_COPY.search.editDenied);
       const body=result.resourceType==='galaxy'
-        ?requireGalaxyContent(blocksToPlainText(editDraft.bodyBlocks))
-        :blocksToPlainText(editDraft.bodyBlocks);
+        ?requireGalaxyContent(editDraft.bodyHtml??blocksToPlainText(editDraft.bodyBlocks))
+        :(editDraft.bodyHtml??blocksToPlainText(editDraft.bodyBlocks));
+      const plainBody=blocksToPlainText(editDraft.bodyHtml??editDraft.bodyBlocks);
       const nextTitle=result.resourceType==='galaxy'
-        ?resolveGalaxyTitle(editDraft.title,body)
+        ?resolveGalaxyTitle(editDraft.title,plainBody)
         :(String(editDraft.title||'').trim()||null);
-      const attrs=editDraft.attrs||{};
-      const classText=String(attrs.class_id??'').trim();
       const contentPatch=result.resourceType==='galaxy'?{
         title:nextTitle,
         content:body,
-        createtime:isoOrNull(attrs.createtime,t),
-        source_native_id:nullableText(attrs.source_native_id),
-        source_place:nullableText(attrs.source_place),
-        searchable:attrs.searchable!==false,
         UpdateTime:new Date().toISOString(),
-        url:nullableText(attrs.url),
-        source_id:nullableText(attrs.source_id),
-        target_id:parseListText(attrs.target_id),
-        ref_id:nullableText(attrs.ref_id),
-        source_name:nullableText(attrs.source_name),
-        media_link:parseListText(attrs.media_link),
-        statistics_able:attrs.statistics_able!==false,
-        class_id:classText===''?null:Number(classText),
-        group_lists:parseJsonAttr(attrs.group_lists,t)
+        ...changedGalaxyAttributes(editDraft,t)
       }:{
         title:nextTitle,
         [result.editableField]:body,
       };
-      if(result.resourceType==='galaxy'&&classText!==''&&!Number.isFinite(contentPatch.class_id))throw new Error(t('uiExtra.searchUI.classIdInvalid'));
       const contentFilters=[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId}];
       await updateRows(result.editableTable,contentPatch,{filters:contentFilters});
-      setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:nextTitle,snippet:result.resourceType==='galaxy'?'':body}));
+      setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:nextTitle,snippet:result.resourceType==='galaxy'?'':body,editRow:{...(item.editRow||{}),title:nextTitle,[result.editableField]:body,...contentPatch}}));
       if(fullTextKey===result.key){
         setFullText(body);
         if(result.resourceType==='galaxy'){
@@ -612,6 +654,14 @@ export default function Search(){
       <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder={searchMode==='media'?UI_COPY.search.mediaPlaceholder:UI_COPY.search.textPlaceholder} aria-label={searchMode==='media'?UI_COPY.search.mediaSearch:UI_COPY.search.textPromptLabel}/>
       <button type="submit">{UI_COPY.nav.search}</button>
     </form>
+    {styleRecommendationsQuery.data?.length?<section className="scope-style-search-recommendations" aria-label={t('uiExtra.searchUI.styleRecommendations')}>
+      <strong>{t('uiExtra.searchUI.styleRecommendations')}</strong>
+      <div className="scope-style-search-related-links">
+        {styleRecommendationsQuery.data.map(item=><a key={item.scope_id+':'+item.label} href={featureNavigationHref(item.scope_id,'search',{q:item.label})}>
+          {item.label}<span>{item.document_total===null?t('uiExtra.searchUI.countUnavailable'):t('uiExtra.searchUI.documentCount',{count:item.document_total.toLocaleString()})}</span>
+        </a>)}
+      </div>
+    </section>:null}
     <p className="scope-status">{status}</p>
     {error?<p className="scope-status scope-error">{error}</p>:null}
     {loadMoreError?<p role="alert" className="scope-status scope-error">{loadMoreError} <button type="button" className="loc-button" disabled={loadingMore} onClick={loadNextSearch}><UiText id="uiExtra.cultureView.reloadWorks"/></button></p>:null}
@@ -624,22 +674,38 @@ export default function Search(){
       error={error||loadMoreError}
       onLoadMore={loadNextSearch}
       renderItem={row=>{
-        const editable=Boolean(row.editableTable&&row.editableField&&account.canManageScopeSync(row.scopeId));
+        const rowScopeData=account.scopeDataFor(row.scopeId)||defaultScopeData(row.scopeId);
+        const editableTable=row.editableTable||(
+          row.resourceType==='galaxy'?rowScopeData?.galaxy:
+          row.resourceType==='galaxy_media'?rowScopeData?.galaxyMedia:''
+        );
+        const editTarget={
+          ...row,
+          editableTable,
+          editableIdColumn:row.editableIdColumn||(row.resourceType==='galaxy'?'uid':row.resourceType==='galaxy_media'?'media_id':''),
+          editResourceId:row.editResourceId||row.resourceId,
+          editableField:row.editableField||(row.resourceType==='galaxy'?'content':row.resourceType==='galaxy_media'?'meta_tags':'')
+        };
+        // Public article rows may open the editor. The existing authenticated
+        // management_write RPC is the write authorization boundary; a client
+        // permission snapshot must not hide an author's own edit action.
+        const editable=Boolean(editTarget.resourceType&&editTarget.editableTable&&editTarget.editableIdColumn&&editTarget.editResourceId);
         const draft=editingKey===row.key?editDraft:null;
-        return <WorkSummaryCard
+        return <Article
           key={row.key}
+          uid={editTarget.editResourceId}
           title={row.title}
           source={row.source}
           scopeId={row.scopeId}
           date={row.date}
-          body={highlightSearchText(row.snippet,matchedQueryRef.current)}
+          body={draft?'':/<[a-z][^>]*>/i.test(String(row.snippet||''))?String(row.snippet):highlightSearchText(row.snippet,matchedQueryRef.current)}
           hidden={false}
           relationLinks={row.relationLinks||[]}
           links={row.links||[]}
           destinations={row.destinations}
-          showSource
-          showLinks
-          actions={editable?<button type="button" className="loc-button" onClick={()=>startEditing(row)}>{editingKey===row.key?UI_COPY.search.editing:UI_COPY.common.edit}</button>:null}
+          editable={editable}
+          editing={editingKey===row.key}
+          onEdit={uid=>startEditing({...editTarget,editResourceId:uid})}
         >
           {row.styleIntro?<div className="scope-style-search-connections">
             <p className="scope-status"><strong><UiText id="uiExtra.searchUI.stylePeriod"/></strong>{row.stylePeriod||t('uiExtra.searchUI.unknownStyle')}</p>
@@ -667,7 +733,7 @@ export default function Search(){
               </div>:null}
             </div>:null}
           </div>:null}
-          {row.resourceType==='galaxy'?<WorkFullText
+          {row.resourceType==='galaxy'&&editingKey!==row.key?<WorkFullText
             open={fullTextKey===row.key}
             loading={fullTextLoading&&fullTextKey===row.key}
             error={fullTextKey===row.key?fullTextError:''}
@@ -676,33 +742,24 @@ export default function Search(){
             showToggle={!searchParams?.get('identity')}
           />:null}
           {row.resourceType==='galaxy'&&editable&&fullTextKey===row.key&&!fullTextLoading?<GalaxyAttrSummary row={fullTextRow}/>:null}
-          {draft?(row.resourceType==='galaxy'?<div className="scope-editor scope-search-article-editor">
+          {draft?<div className="scope-editor scope-search-article-editor">
             <label>{UI_COPY.common.title}<input value={draft.title||''} onChange={event=>setEditDraft(current=>({...current,title:event.target.value}))}/></label>
-            <BlockNoteEditor
-              key={'search-edit:'+row.key}
-              initialContent={draft.bodyBlocks}
-              onChange={blocks=>setEditDraft(current=>({...current,bodyBlocks:blocks}))}
-            />
-            <GalaxyAttrEditor draft={draft} setDraft={setEditDraft}/>
+            <div className="scope-editor-blocknote"><span>{UI_COPY.common.body}</span>
+              <ArticleBodyEditor
+                editorKey={'article:'+row.key}
+                content={draft.bodyHtml??draft.bodyBlocks}
+                onBlocksChange={blocks=>setEditDraft(current=>({...current,bodyBlocks:blocks,body:blocksToPlainText(blocks)}))}
+                onHtmlChange={html=>setEditDraft(current=>({...current,bodyHtml:html}))}
+              />
+            </div>
+            {row.resourceType==='galaxy'?<GalaxyAttrEditor draft={draft} setDraft={setEditDraft}/>:null}
             {editError?<p role="alert" className="scope-error">{editError}</p>:null}
             <div className="scope-tabs">
-              <button type="button" disabled={editBusy} onClick={()=>saveEditing(row)}>{editBusy?UI_COPY.common.saving:UI_COPY.common.save}</button>
+              <button type="button" disabled={editBusy} onClick={()=>saveEditing(editTarget)}>{editBusy?UI_COPY.common.saving:UI_COPY.common.save}</button>
               <button type="button" disabled={editBusy} onClick={()=>{setEditingKey('');setEditDraft(null);setEditError('')}}>{UI_COPY.common.cancel}</button>
             </div>
-          </div>:<div className="scope-editor scope-search-media-editor">
-            <label>{UI_COPY.common.title}<input value={draft.title||''} onChange={event=>setEditDraft(current=>({...current,title:event.target.value}))}/></label>
-            <BlockNoteEditor
-              key={'search-media-edit:'+row.key}
-              initialContent={draft.bodyBlocks}
-              onChange={blocks=>setEditDraft(current=>({...current,bodyBlocks:blocks,body:blocksToPlainText(blocks)}))}
-            />
-            {editError?<p role="alert" className="scope-error">{editError}</p>:null}
-            <div className="scope-tabs">
-              <button type="button" disabled={editBusy} onClick={()=>saveEditing(row)}>{editBusy?UI_COPY.common.saving:UI_COPY.common.save}</button>
-              <button type="button" disabled={editBusy} onClick={()=>{setEditingKey('');setEditDraft(null);setEditError('')}}>{UI_COPY.common.cancel}</button>
-            </div>
-          </div>):null}
-        </WorkSummaryCard>;
+          </div>:null}
+        </Article>;
       }}
     />
   </FeaturePage>;

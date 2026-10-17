@@ -22,11 +22,14 @@ import {formatCultureDateTime} from '../modules/culture-timeline/culture-timelin
 import {analyzeRiverDensity} from '../modules/culture-timeline/river-density-analysis.mjs';
 import {selectGalaxyContent} from '../../loc/galaxy-query';
 import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
-import {deleteRows,insertRows,dbAuthRelation,updateRows} from '../../loc/db-client.mjs';
+import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
+import {selectRows} from '../../loc/db-query.mjs';
 import {useAccount} from '../../loc/use-account';
 import {useScopeRuntime} from '../use-scope-runtime';
-import {ContentEditor,FeaturePage,IncrementalList,WorkFullText,WorkSummaryCard} from '../ui';
-import {plainTextToBlocks} from '../../loc/blocknote-content.mjs';
+import {FeaturePage,IncrementalList,WorkFullText} from '../ui';
+import Article from '../Article';
+import {blocksToPlainText,plainTextToBlocks} from '../../loc/blocknote-content.mjs';
+import ArticleBodyEditor from '../../loc/ArticleBodyEditor';
 import CultureTimelineEditor from './CultureTimelineEditor';
 import {workDisplayHeading,workDisplayText} from '../work-display-model';
 import {useOffsetPagination} from '../use-offset-pagination';
@@ -577,16 +580,17 @@ export default function Culture(){
     setEditingWorkKey(key);setEditDraft(null);setEditError('');
     try{
       if(!scopeData)throw new Error(l.sourceUnresolved);
-      const {data,error}=await dbAuthRelation(scopeData.galaxy)
-        .select('uid,title,content,searchable')
-        .eq('uid',uid)
-        .limit(1);
-      if(error)throw new Error(error.message||l.workReadFailed);
-      const row=data?.[0];
+      const {rows=[]}=await selectRows(scopeData.galaxy,{
+        columns:'uid,title,content,searchable',
+        filters:[{column:'uid',operator:'eq',value:uid}],
+        limit:1
+      });
+      const row=rows[0];
       if(!row)throw new Error(l.workNotFound);
       setEditDraft({
         title:String(row.title||work.title||''),
         body:String(row.content||''),
+        bodyHtml:String(row.content||''),
         bodyBlocks:plainTextToBlocks(String(row.content||'')),
         editorKey:uid,
         hidden:row.searchable===false
@@ -602,17 +606,17 @@ export default function Culture(){
     if(!uid||!editDraft)return;
     setEditBusy(true);setEditError('');
     try{
-      if(!account.canManageScopeSync(classificationScope))throw new Error(l.editDenied);
       if(!scopeData)throw new Error(l.sourceUnresolved);
-      const content=requireGalaxyContent(editDraft.body);
+      const content=requireGalaxyContent(editDraft.bodyHtml??blocksToPlainText(editDraft.bodyBlocks));
+      const plainBody=blocksToPlainText(editDraft.bodyHtml??editDraft.bodyBlocks);
       await updateRows(scopeData.galaxy,{
-        title:resolveGalaxyTitle(editDraft.title,content),
+        title:resolveGalaxyTitle(editDraft.title,plainBody),
         content,
         searchable:editDraft.hidden!==true,
         UpdateTime:new Date().toISOString()
       },{filters:[{column:'uid',operator:'eq',value:uid}]});
       const key=String(work?.key||('galaxy:'+uid));
-      if(fullTextKey===key)setFullText(String(editDraft.body||''));
+      if(fullTextKey===key)setFullText(content);
       setEditingWorkKey('');setEditDraft(null);
       periodWorksPage.reload();
     }catch(exception){
@@ -891,36 +895,49 @@ export default function Culture(){
                     onLoadMore={periodWorksPage.loadNext}
                     scrollRootRef={workScrollRef}
                     renderItem={(work,index)=>{
-                      const canEditWork=Boolean(work.uid&&account.canManageScopeSync(classificationScope));
+                      const canEditWork=Boolean(work.uid&&account.user);
                       const workKey=String(work.key||('galaxy:'+work.uid));
-                      return <WorkSummaryCard
+                      return <Article
                       key={work.key||work.uid||work.entry_id||String(work.createtime||work.created_at)+'-'+index}
+                      uid={work.uid}
                       title={workDisplayHeading(work,{media:false,limit:80})}
                       source={work.source_name||work.group_label||''}
                       scopeId={work.scope_id||classificationScope}
                       date={work.display_date||formatCultureDateTime(work.createtime||work.created_at)}
-                      body={work.description||work.media_metadata_text||''}
+                      body={editingWorkKey===workKey?'':work.description||work.media_metadata_text||''}
                       relationLinks={galaxyRelationLinks(classificationScope,work)}
                       links={work.links||[]}
-                      actions={canEditWork?<button type="button" className="loc-button" onClick={()=>startEditingWork(work)}>{editingWorkKey===workKey?UI_COPY.search.editing:UI_COPY.common.edit}</button>:null}
+                      editable={canEditWork}
+                      editing={editingWorkKey===workKey}
+                      onEdit={uid=>startEditingWork({...work,uid})}
                     >
-                      {work.uid?<WorkFullText
+                      {work.uid&&editingWorkKey!==workKey?<WorkFullText
                         open={fullTextKey===work.key}
                         loading={fullTextLoading&&fullTextKey===work.key}
                         error={fullTextKey===work.key?fullTextError:''}
                         content={fullTextKey===work.key?fullText:''}
                         onToggle={()=>toggleWorkContent(work)}
                       />:null}
-                      {editingWorkKey===workKey&&editDraft?<ContentEditor
-                        draft={editDraft}
-                        setDraft={setEditDraft}
-                        busy={editBusy}
-                        error={editError}
-                        showVisibility
-                        onSave={()=>saveEditingWork(work)}
-                        onCancel={()=>{setEditingWorkKey('');setEditDraft(null);setEditError('')}}
-                      />:null}
-                    </WorkSummaryCard>;
+                      {editingWorkKey===workKey&&editDraft?<div className="scope-editor scope-search-article-editor">
+                        <label>{UI_COPY.common.title}<input value={editDraft.title||''} onChange={event=>setEditDraft(current=>({...current,title:event.target.value}))}/></label>
+                        <div className="scope-editor-blocknote"><span>{UI_COPY.common.body}</span>
+                          <ArticleBodyEditor
+                            editorKey={'article:'+workKey}
+                            content={editDraft.bodyHtml??editDraft.bodyBlocks}
+                            onBlocksChange={blocks=>setEditDraft(current=>({...current,bodyBlocks:blocks,body:blocksToPlainText(blocks)}))}
+                            onHtmlChange={html=>setEditDraft(current=>({...current,bodyHtml:html}))}
+                          />
+                        </div>
+                        <div className="scope-editor-options">
+                          <label><input type="checkbox" checked={editDraft.hidden===true} onChange={event=>setEditDraft(current=>({...current,hidden:event.target.checked}))}/>{UI_COPY.common.hiddenFromSearch}</label>
+                        </div>
+                        {editError?<p role="alert" className="scope-error">{editError}</p>:null}
+                        <div className="scope-tabs">
+                          <button type="button" disabled={editBusy} onClick={()=>saveEditingWork(work)}>{editBusy?UI_COPY.common.saving:UI_COPY.common.save}</button>
+                          <button type="button" disabled={editBusy} onClick={()=>{setEditingWorkKey('');setEditDraft(null);setEditError('')}}>{UI_COPY.common.cancel}</button>
+                        </div>
+                      </div>:null}
+                    </Article>;
                     }}
                   />
                   {!periodWorksPage.loading&&!periodWorksPage.error&&!visibleWorkRows.length?<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>:null}

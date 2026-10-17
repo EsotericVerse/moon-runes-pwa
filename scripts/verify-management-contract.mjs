@@ -36,6 +36,8 @@ const importPanel=read('app/loc/ManagementImportPanel.jsx');
 const scopeSettings=read('app/loc/ScopeSettingsPanel.jsx');
 const publisher=read('app/loc/ManagementArticlePublisher.jsx');
 const blockNoteEntry=read('app/loc/BlockNoteEditor.jsx');
+const articleBodyEditor=read('app/loc/ArticleBodyEditor.jsx');
+const articleListItem=read('app/modular/Article.jsx');
 const blockNoteContent=read('app/loc/blocknote-content.mjs');
 const blockNoteEditor=read('app/loc/BlockNoteEditorClient.jsx');
 const editableBlocks=read('app/loc/ScopeEditableBlocks.jsx');
@@ -95,7 +97,7 @@ must(galaxy.includes("searchFields:['label','note','status','style_description']
 must(culture.includes("value:['anchor','period','event','style_comment']"),'Culture reads independent style comments');
 must(editor.includes("['style_comment','style']")&&!editor.includes('style_tags')&&!cultureUi.includes('CultureStyleTagsEditor'),'Fourth style comment must use the shared Time editor, not legacy tag fields or a separate editor');
 must(editor.includes('payload.style_description=styleDescription')&&editor.includes('payload.anchor_ids=[anchorId]')&&cultureUi.includes("beginTimelineCreation(recordType,'')")&&functionalOption(cultureUi,'style_comment','風格標籤'),'Style create/update must use shared Type selector and save one independent TEXT description and one formal anchor');
-must(cultureUi.includes('actions={canEditWork?')&&!cultureUi.includes('onClick={canEditWork')&&!cultureUi.includes("UI_COPY.culture.editing:'編輯'"),'Culture articles must have explicit permission-gated Edit actions, never entire-card click editing');
+must(cultureUi.includes('<Article')&&cultureUi.includes('editable={canEditWork}')&&!cultureUi.includes('actions={canEditWork?')&&!cultureUi.includes('onClick={canEditWork'),'Culture articles must use shared Article(uid) click editing without an Edit button');
 must(galaxy.includes('selectStyleKeywordIntroductions')&&!galaxy.includes('scopeCards('),'Search must prepend exact style-keyword introductions and must not use partial Scope-ID cards');
 must(globalSettings.includes('<ScopeGroupManagement scopeId="loc"/>')&&globalSettings.includes('canManageGlobal'),'Scope group membership management must be permission-gated in Settings');
 must(!governance.includes('governance-management-cta')&&!governance.includes('href={manageHref}')&&globalSettings.includes("option('manage',uiT('uiExtra.globalSettings.manageMenu'))"),'Governance must not show management CTA; Settings owns the management selector');
@@ -120,7 +122,7 @@ must(importRowsFromJson({payload:{entries:[{body:'字'}]}},'payload.entries').le
 must(mappedImportValue({data:{body:'甲'}},'content',{content:'data.body'})==='甲','Import mapping must read configured nested fields');
 
 must(scopeSettings.includes('display_name')&&scopeSettings.includes('search_intro')&&scopeSettings.includes('search_aliases')&&scopeSettings.includes('updateRows'),'misc settings must edit Scope-owned presentation config');
-must(publisher.includes('scope-publisher-main')&&publisher.includes('scope-publisher-sidebar')&&publisher.includes('BlockNoteEditor')&&!publisher.includes('content_blocks'),'article publisher must use shared BlockNote while preserving plain content');
+must(publisher.includes('scope-publisher-main')&&publisher.includes('scope-publisher-sidebar')&&publisher.includes('ArticleBodyEditor')&&publisher.includes('draft.bodyHtml')&&!publisher.includes('content_blocks'),'article publisher must use shared BlockNote and persist its HTML in the existing content field');
 must(importPanel.includes("import {refreshSunoStyleMetaTags}")&&importPanel.includes("refreshSunoStyleMetaTags(value,current.metaTags)")&&importPanel.includes("regenerateStyleTags"),'Suno Style must generate Meta Tags from exact source phrases, with author review');
 must(!statistics.includes('statExclude')&&!statistics.includes('applyExclusions')&&!statistics.includes('統計排除詞')&&!read('app/loc/statistics-facets.mjs').includes('filterMediaStyleRows')&&!read('app/modular/feature-navigation.js').includes('statExclude'),'Metadata statistics must not contain blacklist/NOT exclusion features');
 must(blockNoteEntry.includes("dynamic(()=>import('./BlockNoteEditorClient')")&&blockNoteEntry.includes("from './blocknote-content.mjs'")&&!blockNoteEntry.includes('contentEditable')&&!blockNoteEntry.includes('execCommand'),'BlockNote must be the only shared lazy-loaded editor entrypoint');
@@ -136,7 +138,9 @@ must(blockNoteEntry.includes('canInsertImage={canInsertImage}')&&editableBlocks.
 must(editableBlocks.includes('uiExtra.editBlocks.heroImageMode')&&editableBlocks.includes('image_mode')&&locHomeBlock.includes('heroImageMode(slot)')&&locHomeBlock.includes('authorHomeBlockClass'),'Hero background or side is a persisted exclusive choice shared by LOC and author homepages');
 must(locHomeBlock.includes('loc-home-block__media-bubble')&&locHomeBlock.includes('(media||customImage)?')&&locHomeBlock.includes("5:{src:{src:'/pics/lo3rwang-3.png'}"),'non-Hero preset images must be contained image bubbles and never duplicate custom images');
 
-must(editableBlocks.includes('<BlockNoteEditor')&&publisher.includes('<BlockNoteEditor')&&sharedSearch.includes('<BlockNoteEditor')&&cultureUi.includes('plainTextToBlocks'),'all inline, longform and media editors must use BlockNote');
+must(editableBlocks.includes('<ArticleBodyEditor')&&publisher.includes('<ArticleBodyEditor')&&sharedSearch.includes('<ArticleBodyEditor')&&cultureUi.includes('<ArticleBodyEditor')&&articleBodyEditor.includes('<BlockNoteEditor')&&sharedSearch.includes('onBlocksChange={blocks=>')&&cultureUi.includes('onBlocksChange={blocks=>')&&sharedSearch.includes('onHtmlChange={html=>')&&cultureUi.includes('onHtmlChange={html=>')&&sharedSearch.includes('bodyHtml??blocksToPlainText')&&cultureUi.includes('bodyHtml??blocksToPlainText'),'homepage, Culture, Search and publishing must share one BlockNote editor module with WYSIWYG HTML persistence');
+must(sharedSearch.includes('<Article')&&cultureUi.includes('<Article')&&articleListItem.includes('onClickCapture')&&articleListItem.includes('onEdit(uid)')&&articleListItem.includes('richBody')&&articleListItem.includes('<BlockNoteEditor editable={false}'),'Search and Culture lists must render the same Article(uid) component with BlockNote rich-body display');
+must(!editableBlocks.includes('<BlockNoteEditor')&&!publisher.includes('<BlockNoteEditor')&&!sharedSearch.includes('<BlockNoteEditor')&&!cultureUi.includes('<BlockNoteEditor'),'all editable article surfaces must mount the one shared ArticleBodyEditor module');
 for(const [file,body] of [['app/modular/ui.jsx',read('app/modular/ui.jsx')],['app/loc/ManagementArticlePublisher.jsx',publisher],['app/modular/features/Search.jsx',sharedSearch],['app/modular/features/Culture.jsx',cultureUi],['app/loc/ScopeEditableBlocks.jsx',editableBlocks]])must(!body.includes('RichBlockEditor'),file+' must not refer to retired RichBlockEditor');
 must(editableBlocks.includes('ENTITY_LIMIT=6')&&editableBlocks.includes("page='index'")&&editableBlocks.includes('page_name')&&editableBlocks.includes('block_entity')&&editableBlocks.includes("column:'uid'")&&editableBlocks.includes('isInteractiveTarget'),'Scope page editing must use stable block uid plus up to six child entities');
 must(['block_eyebrow','block_title','block_subtitle','block_text'].every(col=>editableBlocks.includes(col)&&scopeData.includes(col)),'Scope blocks must read and edit four canonical header/body columns');
@@ -202,7 +206,9 @@ must(
 must(personalGovernance.includes('ScopeEditableBlocks')&&personalGovernance.includes('page="governance"'),'personal governance must use governance block rows');
 must(runesGovernance.includes('ScopeEditableBlocks')&&runesGovernance.includes('page="governance"'),'LunaRunes governance must use governance block rows');
 must(!publisher.includes('content_blocks')&&!sharedSearch.includes('content_blocks')&&!cultureUi.includes('content_blocks')&&!galaxy.includes('content_blocks')&&!featureUi.includes('blocks=null'),'Galaxy must read, write and display canonical content only');
-must(sharedSearch.includes('startEditing')&&sharedSearch.includes('BlockNoteEditor')&&sharedSearch.includes('GALAXY_EDITOR_COLUMNS')&&sharedSearch.includes('GalaxyAttrSummary')&&sharedSearch.includes('GalaxyAttrEditor')&&sharedSearch.includes('actions={editable?')&&sharedSearch.includes('updateRows'),'Search must expose permission-gated Edit independent of whether full text is open');
+must(sharedSearch.includes('startEditing')&&sharedSearch.includes('<ArticleBodyEditor')&&featureUi.includes('<BlockNoteEditor')&&sharedSearch.includes('GALAXY_EDITOR_COLUMNS')&&sharedSearch.includes('GalaxyAttrSummary')&&sharedSearch.includes('GalaxyAttrEditor')&&sharedSearch.includes('<Article')&&!sharedSearch.includes('actions={editable?')&&sharedSearch.includes('rowScopeData?.galaxy')&&sharedSearch.includes('management_write RPC')&&sharedSearch.includes('updateRows'),'Search must use Article(uid) to open shared BlockNote editing and leave authorization to the existing management_write boundary');
+must(!sharedSearch.includes('selectAuthRow')&&sharedSearch.includes('selectPublicEditableRow')&&!cultureUi.includes('dbAuthRelation')&&cultureUi.includes('selectRows'),'Search and Culture article edit forms must use the same public read path as the homepage before permission-checked writes');
+must(sharedSearch.includes('selectScopeRegistry')&&sharedSearch.includes("item.scope_kind==='scope'")&&!sharedSearch.includes('selectManagedScopes')&&sharedSearch.includes("mediaOnly:searchMode==='media'"),'Public search and media search must enumerate active public Scopes, while management permissions only control hidden content and editing');
 must(editor.includes('l.styleEditor')&&editor.includes('l.styleText')&&editor.includes("row.status==='needs_anchor'")&&!cultureUi.includes('尋找風格標籤')&&!cultureUi.includes('scope-culture-style-panel'),'Shared Time editor must let authors select existing or pending styles, without a top-level duplicate lookup');
 must(!cultureUi.includes('尋找既有定錨點')&&!cultureUi.includes('尋找風格標籤')&&
   cultureUi.includes('uiExtra.cultureView.ddOfficialAnchor')&&cultureUi.includes("aria-label={translateUiField(locale,'新增時間長河紀錄')}")&&
@@ -427,7 +433,8 @@ must(galaxy.includes("value:['anchor','period','style_comment']")&&galaxy.includ
 must(galaxy.includes('selectStyleKeywordDocumentCount')&&galaxy.includes('related_style_tags:related')&&galaxy.includes('same_period:')&&sharedSearch.includes('scope-style-search-related-links')&&sharedSearch.includes('style.document_total')&&sharedSearch.includes("cursor:!append&&styleIntroductions.length&&scopeId!=='loc'?{stage:2"),'Search introductions must offer counted linked personal styles before work results without Time snapshot columns');
 must(sharedSearch.includes('selectStyleKeywordIntroductions')&&sharedSearch.includes('[...styleIntroductions,...enrichedRows]'),'style keyword descriptions must precede ordinary related results');
 must(sharedSearch.includes("scope?.aggregateChildren&&scopeId!=='loc'")&&
-  sharedSearch.includes("scopeId==='loc'?scopes:scopes.filter(item=>item.id===scopeId)")&&
+  sharedSearch.includes("scopeId!=='loc')return [defaultScopeData(scopeId)]")&&
+  sharedSearch.includes("item.scope_kind==='scope'")&&
   sharedSearch.includes("key:identity?[scope,source,identity].join(':')")&&
   sharedSearch.includes("'galaxy:'+scope+':'+resourceId"),
   'LOC must search all managed Scopes with scope-aware result identities; other groups remain overview-only');

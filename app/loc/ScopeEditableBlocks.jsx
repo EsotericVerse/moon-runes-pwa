@@ -6,7 +6,7 @@ import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {deleteRows,insertRows,moveScopeBlock,updateRows} from './db-client.mjs';
 import {selectScopeBlocks} from './scope-data';
 import {useAccount} from './use-account';
-import BlockNoteEditor from './BlockNoteEditor';
+import ArticleBodyEditor from './ArticleBodyEditor';
 import {stripLocHomeEditorPlaceholders} from './loc-home-text.mjs';
 import {childPresentation,removeDuplicatedLegacySubtitle} from './block-presentation.mjs';
 import {homeBlockRows} from './home-block-model.mjs';
@@ -301,9 +301,9 @@ export default function ScopeEditableBlocks({
               onChange={event=>updateEntity(index,{title:event.target.value})}
             />
           </label>
-          <BlockNoteEditor
-            key={entity.uid+':edit'}
-            initialContent={entity.text?{html:entity.text}:''}
+          <ArticleBodyEditor
+            editorKey={entity.uid+':edit'}
+            content={entity.text?{html:entity.text}:''}
             onHtmlChange={html=>updateEntity(index,{text:html})}
             canInsertImage={allowImages&&canInsertImageIn(entity.text)}
           />
@@ -371,18 +371,18 @@ export default function ScopeEditableBlocks({
           <div className="scope-management-wide-field">
             <span><UiText id="uiExtra.editBlocks.subtitle"/></span>
           </div>
-          <BlockNoteEditor
-            key={draft.uid+':subtitle:edit'}
-            initialContent={draft.subtitle?{html:draft.subtitle}:''}
+          <ArticleBodyEditor
+            editorKey={draft.uid+':subtitle:edit'}
+            content={draft.subtitle?{html:draft.subtitle}:''}
             onHtmlChange={html=>setDraft(current=>({...current,subtitle:html}))}
             canInsertImage={allowImages&&canInsertImageIn(draft.subtitle)}
           />
           <div className="scope-management-wide-field">
             <span><UiText id="uiExtra.editBlocks.body"/></span>
           </div>
-          <BlockNoteEditor
-            key={draft.uid+':body:edit'}
-            initialContent={draft.text?{html:draft.text}:''}
+          <ArticleBodyEditor
+            editorKey={draft.uid+':body:edit'}
+            content={draft.text?{html:draft.text}:''}
             onHtmlChange={html=>setDraft(current=>({...current,text:html}))}
             canInsertImage={allowImages&&canInsertImageIn(draft.text)}
           />

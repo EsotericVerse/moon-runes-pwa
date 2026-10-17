@@ -91,3 +91,36 @@ test('Galaxy result card does not receive a second copy of the complete body',()
   assert.equal(result.resourceType,'galaxy');
   assert.notEqual(toResult({...row,uid:'ANOTHER'},'personal','lo3rwang').key,result.key);
 });
+
+test('Search collapses exact duplicate article copies even when their uids differ',()=>{
+  const resultSource=extract('app/modular/features/Search.jsx','function toResult(', 'function mergeSummaryResults(');
+  const mergeSource=extract('app/modular/features/Search.jsx','function mergeSummaryResults(', 'export default function Search(');
+  const context={
+    UI_COPY:{search:{sourceIdPrefix:'',typePrefix:'',mediaLink:'media'},format:{songLink:n=>'Media '+n}},
+    MEDIA_FALLBACK_TITLE:'Media',WORK_FALLBACK_TITLE:'Work',
+    workDisplayText:s=>String(s??''),workDisplayHeading:r=>String(r.title||'Work'),
+    rowText:r=>Object.values(r).filter(v=>typeof v==='string').join(' '),
+    galaxyRelationLinks:()=>[],galaxyIdentityHref:()=>'',scopeHref:()=>'/'};
+  const {toResult,mergeSummaryResults}=vm.runInNewContext(resultSource+'\n'+mergeSource+'; ({toResult,mergeSummaryResults})',context);
+  const base={title:'重複文章',content:'相同正文',source_name:'來源',createtime:'2026-10-01',url:'https://example.test/article',__table:'silver.loc_galaxy'};
+  const first=toResult({...base,uid:'AAAA1111'},'loc 文字','loc');
+  const copy=toResult({...base,uid:'BBBB2222'},'loc 文字','loc');
+  assert.equal(mergeSummaryResults([first,copy]).length,1);
+  const distinct=toResult({...base,uid:'CCCC3333',content:'不同正文'},'loc 文字','loc');
+  assert.equal(mergeSummaryResults([first,distinct]).length,2);
+});
+
+test('editing an article does not rewrite untouched attributes',()=>{
+  const source=extract('app/modular/features/Search.jsx','function changedGalaxyAttributes(', 'function GalaxyAttrSummary(');
+  const context={
+    isoOrNull:()=>null,nullableText:value=>String(value||'').trim()||null,
+    parseListText:value=>String(value||'').split(/[\n,]+/g).map(item=>item.trim()).filter(Boolean),
+    parseJsonAttr:value=>JSON.parse(value)
+  };
+  const changedGalaxyAttributes=vm.runInNewContext(source+'; changedGalaxyAttributes',context);
+  const attrs={createtime:'',source_native_id:'',source_place:'',searchable:true,url:'',source_id:'',ref_id:'',source_name:'',target_id:'',media_link:'',statistics_able:true,class_id:'',group_lists:'false'};
+  const draft={attrs:{...attrs},originalAttrs:{...attrs},hidden:false};
+  assert.equal(JSON.stringify(changedGalaxyAttributes(draft,()=>'')),'{}');
+  draft.attrs.target_id='id-1\nid-2';
+  assert.equal(JSON.stringify(changedGalaxyAttributes(draft,()=>'')),JSON.stringify({target_id:['id-1','id-2']}));
+});

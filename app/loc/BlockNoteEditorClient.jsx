@@ -21,6 +21,7 @@ export default function BlockNoteEditorClient({
   });
   const hydratedLegacyHtml=useRef(false);
   const htmlEmitVersion=useRef(0);
+  const lastEmittedBlocks=useRef('');
 
   useEffect(()=>{
     if(hydratedLegacyHtml.current)return;
@@ -45,6 +46,9 @@ export default function BlockNoteEditorClient({
     // BlockNote JSON is the editing source of truth. Empty paragraphs must
     // remain empty blocks, never literal ProseMirror U+FFFC characters.
     const blocks=canonicalBlockNoteBlocks(editor.document);
+    const fingerprint=JSON.stringify(blocks);
+    if(fingerprint===lastEmittedBlocks.current)return;
+    lastEmittedBlocks.current=fingerprint;
     onChange?.(blocks);
     if(!onHtmlChange)return;
     const version=++htmlEmitVersion.current;

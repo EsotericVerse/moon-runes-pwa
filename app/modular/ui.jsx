@@ -7,11 +7,10 @@ import {UI_COPY} from '../i18n/ui-copy';
 import {useUiCopy} from '../i18n/ui-locale';
 import {DEFAULT_LIST_BATCH_SIZE,LIST_LOAD_COOLDOWN_MS} from '../loc/list-loading-contract.mjs';
 import {useScopeRuntime} from './use-scope-runtime';
-import BlockNoteEditor from '../loc/BlockNoteEditor';
-import {blocksToPlainText,plainTextToBlocks} from '../loc/blocknote-content.mjs';
 import {selectScopeBlocks} from '../loc/scope-data';
 import {FEATURE_HERO_PAGE,FEATURE_HERO_ORDER,sharedFeatureHeroFor,shouldUseSharedFeatureHero} from '../loc/feature-hero.mjs';
 import ScopeEditableBlocks from '../loc/ScopeEditableBlocks';
+import BlockNoteEditor from '../loc/BlockNoteEditor';
 import HeroCornerIdentity from '../loc/HeroCornerIdentity';
 
 // One visual header contract. On the LOC feature pages this same visible
@@ -95,55 +94,6 @@ export function FeaturePage({featureId,children,subtitle=null,description=null})
   </main>;
 }
 
-export function ContentEditor({
-  draft,
-  setDraft,
-  onSave,
-  onCancel=null,
-  busy=false,
-  error='',
-  showTitle=true,
-  showBody=true,
-  bodyLabel=null,
-  extraFields=null,
-  showVisibility=true
-}){
-  const copy=useUiCopy();
-  if(!draft)return null;
-  const change=(key,value)=>setDraft(current=>({...current,[key]:value}));
-  return <div className="scope-editor">
-    {showTitle?<label>{copy.common.title}<input value={draft.title||''} onChange={event=>change('title',event.target.value)}/></label>:null}
-    {showBody?<div className="scope-editor-blocknote">
-      <span>{bodyLabel??copy.common.body}</span>
-      <BlockNoteEditor
-        key={'content-editor:'+(draft.editorKey||'body')}
-        initialContent={Array.isArray(draft.bodyBlocks)&&draft.bodyBlocks.length?draft.bodyBlocks:plainTextToBlocks(draft.body||'')}
-        onChange={blocks=>setDraft(current=>({...current,bodyBlocks:blocks,body:blocksToPlainText(blocks)}))}
-      />
-    </div>:null}
-    {extraFields}
-    {showVisibility?<div className="scope-editor-options">
-      <label><input type="checkbox" checked={draft.hidden===true} onChange={event=>change('hidden',event.target.checked)}/>{copy.common.hiddenFromSearch}</label>
-    </div>:null}
-    {error?<p role="alert" className="scope-error">{error}</p>:null}
-    <div className="scope-tabs">
-      <button type="button" disabled={busy} onClick={onSave}>{busy?copy.common.saving:copy.common.save}</button>
-      {onCancel?<button type="button" disabled={busy} onClick={onCancel}>{copy.common.cancel}</button>:null}
-    </div>
-  </div>;
-}
-
-// Galaxy articles are stored once as plain content; turn explicit URLs into safe links.
-function renderGalaxyContent(value){
-  const parts=String(value||'').split(/(https?:\/\/[^\s<>]+)/gi);
-  return parts.map((part,index)=>{
-    if(!/^https?:\/\//i.test(part))return part;
-    const href=part.replace(/[.,;!?，。；！？)\]]+$/u,'');
-    const suffix=part.slice(href.length);
-    return <span key={'galaxy-url-'+index}><a href={href} target="_blank" rel="noopener noreferrer">{href}</a>{suffix}</span>;
-  });
-}
-
 export function WorkFullText({
   open=false,
   loading=false,
@@ -159,8 +109,8 @@ export function WorkFullText({
       {open?(loading?copy.work.loadingBody:copy.work.collapseBody):copy.work.viewBody}
     </button>:null}
     {open&&error?<p className="scope-status scope-error">{error}</p>:null}
-    {open&&!loading&&!error?<div className="scope-inline-card">
-      <p className="scope-prewrap">{renderGalaxyContent(content||(emptyText??copy.work.noBody))}</p>
+    {open&&!loading&&!error?<div className="scope-inline-card scope-article-block-display">
+      <BlockNoteEditor editable={false} initialContent={content||(emptyText??copy.work.noBody)}/>
     </div>:null}
   </div>;
 }
@@ -198,12 +148,13 @@ export function WorkSummaryCard({
   children=null,
   className='',
   actions=null,
-  onClick=null
+  onClick=null,
+  onClickCapture=null
 }){
   const copy=useUiCopy();
   const safeRelations=safeRelationLinksOf(relationLinks,copy.work.relatedText);
   const safeLinks=safeExternalLinksOf(links,copy.work.viewLinks);
-  return <article className={'scope-inline-card scope-work-summary '+className} onClick={onClick||undefined}>
+  return <article className={'scope-inline-card scope-work-summary '+className+(onClickCapture?' is-inline-editable':'')} onClick={onClick||undefined} onClickCapture={onClickCapture}>
     <header className="scope-culture-work-heading">
       <div>
         {(scopeId||showSource&&source)?<p className="loc-eyebrow">{[scopeId,showSource?source:''].filter(Boolean).join(' · ')}</p>:null}

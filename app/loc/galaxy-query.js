@@ -185,9 +185,11 @@ function orExpression(fields,term){
   return fields.map(field=>field+'.ilike."'+pattern+'"').join(',');
 }
 function applyLiteralTerms(query,fields,queryText,and=[],nor=[]){
-  const base=String(queryText||'').trim();
-  if(base)query=query.or(orExpression(fields,base));
-  for(const term of unique(and))query=query.or(orExpression(fields,term));
+  // Treat whitespace separated words as independent required terms. Each
+  // term may occur in any searchable column; chaining PostgREST OR groups
+  // makes the groups intersect instead of requiring one exact whole phrase.
+  const terms=unique([...String(queryText||'').trim().split(/[\s\u3000]+/g),...and]);
+  for(const term of terms)query=query.or(orExpression(fields,term));
   for(const term of unique(nor)){
     const pattern=literalPattern(term);
     for(const field of fields)query=query.not(field,'ilike',pattern);
@@ -240,7 +242,7 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false}={
   const current=scopeOf(scope);
   const text=makeProvider({
     id:current.id+':text',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
-    columns:['uid','title','source_name','source_id','target_id','ref_id','url','media_link','createtime'],
+    columns:['uid','title','content','createtime','source_native_id','source_place','searchable','UpdateTime','url','source_id','target_id','ref_id','source_name','media_link','statistics_able','class_id','group_lists'],
     searchFields:['title','content','source_name'],dateColumn:'createtime',
     filters:publicContentFilters(includeHiddenText?[]:[{column:'searchable',operator:'eq',value:true}])
   });
@@ -256,7 +258,9 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false}={
     searchFields:['label','note','status','style_description'],dateColumn:'time_date',
     filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}]
   });
-  return [timeline,text];
+  // Article and media records are the primary search targets. Keep timeline
+  // context available as the next page so it cannot hide the actual works.
+  return [text,timeline];
 }
 
 function normalizeSearch(value){
@@ -304,6 +308,26 @@ export async function selectStyleKeywordIntroductions(scopes,query){
     }));
   }));
   return found.flat(2);
+}
+
+export async function selectStyleKeywordRecommendations(scopes,{limit=8}={}){
+  const perScope=await Promise.all((Array.isArray(scopes)?scopes:[]).filter(s=>s?.id&&s?.time&&s?.galaxy).map(async scope=>{
+    const c=scopeOf(scope);
+    const {rows=[]}=await selectAllRows(c.time,{columns:'record_id,record_type,label,style_description,time_date,status',filters:[{column:'record_type',operator:'eq',value:'style_comment'}]});
+    return rows.filter(row=>row.status!=='needs_anchor'&&String(row.label||'').trim()&&String(row.style_description||'').trim())
+      .map(row=>({scope_id:c.id,table:c.galaxy,label:String(row.label).trim(),date:String(row.time_date||'')}));
+  }));
+  const uniqueStyles=new Map();
+  for(const style of perScope.flat()){
+    const key=normalizeSearch(style.label);
+    const prior=uniqueStyles.get(key);
+    if(!prior||style.date>prior.date)uniqueStyles.set(key,style);
+  }
+  const candidates=[...uniqueStyles.values()].sort((a,b)=>b.date.localeCompare(a.date)||a.label.localeCompare(b.label)).slice(0,Math.max(1,Math.floor(Number(limit)||8)));
+  return Promise.all(candidates.map(async style=>({
+    ...style,
+    document_total:await selectStyleKeywordDocumentCount(style.table,style.label).catch(()=>null)
+  })));
 }
 
 export async function searchGalaxyRows(scopes,query,{

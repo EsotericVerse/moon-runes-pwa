@@ -124,6 +124,9 @@
 .scope-preview-links{display:flex;flex-wrap:wrap;gap:.55rem;align-items:center}
 /* Optional recursive style navigation is compact and scannable; ordinary works stay below. */
 .scope-style-search-connections{display:grid;gap:.55rem;margin:.65rem 0 .35rem;padding:.8rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel)}
+.scope-style-search-recommendations{display:grid;gap:.5rem;margin:.65rem 0;padding:.8rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel)}
+.scope-style-search-recommendations .scope-style-search-related-links>a{display:grid;gap:.1rem}
+.scope-style-search-recommendations .scope-style-search-related-links>a span{color:var(--loc-muted);font-size:.78rem}
 .scope-style-search-related{display:grid;gap:.6rem}
 .scope-style-search-related-group{display:grid;gap:.35rem}
 .scope-style-search-related-group>span{font-weight:600;font-size:.88rem}
@@ -567,3 +570,4 @@
 .scope-period-timeline .vis-item.scope-lrunes-moon-phase-2{--lrunes-phase-color:var(--loc-gold)}
 .scope-period-timeline .vis-item.scope-lrunes-moon-phase-3{--lrunes-phase-color:var(--loc-accent)}
 .scope-period-timeline .vis-item.scope-lrunes-moon-phase-4{--lrunes-phase-color:var(--loc-line)}
+.scope-work-summary.is-inline-editable{cursor:pointer}

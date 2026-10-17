@@ -8,11 +8,11 @@ import {insertRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {createUid8} from './uid';
 import {normalizeRelationIds,requireGalaxyContent,resolveGalaxyTitle} from './content-policy';
-import BlockNoteEditor from './BlockNoteEditor';
+import ArticleBodyEditor from './ArticleBodyEditor';
 import {blocksToPlainText,plainTextToBlocks} from './blocknote-content.mjs';
 
 const blank=()=>({
-  title:'',bodyBlocks:plainTextToBlocks(''),source:'',url:'',source_id:'',target_id:'',ref_id:'',createtime:'',
+  title:'',bodyBlocks:plainTextToBlocks(''),bodyHtml:'',editorKey:createUid8(),source:'',url:'',source_id:'',target_id:'',ref_id:'',createtime:'',
   hidden:false
 });
 
@@ -31,7 +31,7 @@ export default function ManagementArticlePublisher({scopeId}){
     event?.preventDefault?.();
     setBusy(true);setStatus('');
     try{
-      const content=requireGalaxyContent(blocksToPlainText(draft.bodyBlocks));
+      const content=requireGalaxyContent(draft.bodyHtml||blocksToPlainText(draft.bodyBlocks));
       if(!draft.source.trim())throw new Error(UI_COPY.management.sourceRequired);
       const now=new Date().toISOString();
       const uid=createUid8();
@@ -72,10 +72,11 @@ export default function ManagementArticlePublisher({scopeId}){
           placeholder={t('uiExtra.publisher.addTitle')}
           aria-label={t('uiExtra.publisher.articleTitle')}
         />
-        <BlockNoteEditor
-          key={'publisher:'+scopeId}
-          initialContent={draft.bodyBlocks}
-          onChange={blocks=>change('bodyBlocks',blocks)}
+        <ArticleBodyEditor
+          editorKey={'publisher:'+scopeId+':'+draft.editorKey}
+          content={draft.bodyBlocks}
+          onBlocksChange={blocks=>change('bodyBlocks',blocks)}
+          onHtmlChange={html=>change('bodyHtml',html)}
         />
       </div>
 
