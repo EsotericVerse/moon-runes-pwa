@@ -4,6 +4,7 @@
 import {Unzip,UnzipInflate} from 'fflate';
 import {JSONParser} from '@streamparser/json';
 import {archiveEntrySignatures,summarizeArchiveSources} from './archive-source-signatures.mjs';
+import {inspectArchiveEntryStructure,summarizeArchiveStructures} from './archive-structure-inspector.mjs';
 
 export const ARCHIVE_CHUNK_BYTES=128*1024;
 export const ARCHIVE_MAX_BYTES=2*1024*1024*1024;
@@ -286,6 +287,7 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
   const hits=new Map();
   let filesSeen=0,inspectedFiles=0,extractedBytes=0;
   const filenames=new Set();
+  const profiles=[];
   function inspectEvidence(path,head){
     for(const hit of archiveEntrySignatures(path,head)){
       const prior=hits.get(hit.source);
@@ -313,7 +315,9 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
       const bytes=new Uint8Array(length);
       let offset=0;
       for(const part of samples){bytes.set(part,offset);offset+=part.length;}
-      inspectEvidence(path,new TextDecoder('utf-8',{fatal:false}).decode(bytes));
+      const sample=new TextDecoder('utf-8',{fatal:false}).decode(bytes);
+      inspectEvidence(path,sample);
+      profiles.push(inspectArchiveEntryStructure(path,sample));
     }
     entry.ondata=(error,data,final)=>{
       if(error)throw error;
@@ -340,7 +344,8 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
   if(filenames.has('channels.json')&&filenames.has('users.json')&&
      (filenames.has('integration_logs.json')||filenames.has('groups.json')||filenames.has('dms.json')))
     hits.set('slack',{confidence:3,path:'channels.json + users.json + Slack workspace manifest'});
-  return {...summarizeArchiveSources(hits),filesSeen,inspectedFiles};
+  return {...summarizeArchiveSources(hits),filesSeen,inspectedFiles,
+    structure:summarizeArchiveStructures(profiles)};
 }
 
 export async function inspectPrivateArchive(file,{onRecord,onProgress,flush,signal}={}){
