@@ -24,6 +24,8 @@ import {featureDataErrorMessage} from '../feature-data-state';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {FeaturePage} from '../ui';
 import {useAccount} from '../../loc/use-account';
+import {dbPublicClient} from '../../loc/db-client.mjs';
+import {mediaStyleTreeDaily,styleTreeClasses} from '../../loc/media-style-tree-statistics.mjs';
 import {scopeHref} from '../scope-registry';
 import {LrunesDailyStatisticsPanel} from '../../lrunes/DailyRuneAnalytics';
 import StatisticsMultiChart,{STAT_VISUAL_TYPES,availableStatisticChartTypes} from '../modules/statistics/StatisticsMultiChart';
@@ -249,12 +251,18 @@ function facetTrend(rows=[],window={},selectedCategories=[]){
     return output;
   });
 }
-function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeChange,range={},scopeId,foldBlank=false,zoomLevel=0,onZoomLevelChange}){
+function MediaFacetStatistics({rankingType,rows=[],mediaRows=[],treeRows=[],chartType='line',onChartTypeChange,range={},scopeId,foldBlank=false,zoomLevel=0,onZoomLevelChange}){
   const UI_COPY=useUiCopy();
   const t=useUiText();
   const [selectedTag,setSelectedTag]=useState('all');
   const [rankingPage,setRankingPage]=useState(1);
-  const window=useMemo(()=>rowsInWindow(rows,range),[rows,range]);
+  const [styleLevel,setStyleLevel]=useState('tags');
+  const [styleClass,setStyleClass]=useState('');
+  const classes=useMemo(()=>styleTreeClasses(treeRows),[treeRows]);
+  const effectiveRows=useMemo(()=>rankingType==='media_style'&&styleLevel!=='tags'
+    ?mediaStyleTreeDaily(mediaRows,treeRows,styleLevel,styleClass):rows,
+    [rankingType,styleLevel,styleClass,rows,mediaRows,treeRows]);
+  const window=useMemo(()=>rowsInWindow(effectiveRows,range),[effectiveRows,range]);
   // No NOT/exclusion list; count all existing Meta Tags.
   const facetRows=window.rows;
   const totals=useMemo(()=>facetTotals(facetRows),[facetRows]);
@@ -272,6 +280,18 @@ function MediaFacetStatistics({rankingType,rows=[],chartType='line',onChartTypeC
   });
   const chosenChartType=supported.some(([value])=>value===chartType)?chartType:(supported[0]?.[0]||'line');
   return <>
+    {rankingType==='media_style'&&scopeId==='lo3rwang'&&classes.length?<div className="scope-stat-controls">
+      <label><span><UiText id="uiExtra.statisticsUI.mediaStyle"/></span><select className="scope-select" value={styleLevel} onChange={event=>{setStyleLevel(event.target.value);setSelectedTag('all');setRankingPage(1);}}>
+        <option value="tags">Meta Tags</option>
+        <option value="class">Class</option>
+        <option value="group">Group</option>
+        <option value="item">Item</option>
+      </select></label>
+      {styleLevel!=='tags'?<label><span>Class</span><select className="scope-select" value={styleClass} onChange={event=>{setStyleClass(event.target.value);setSelectedTag('all');setRankingPage(1);}}>
+        <option value="">All Classes</option>
+        {classes.map(name=><option key={name} value={name}>{name}</option>)}
+      </select></label>:null}
+    </div>:null}
     <div className="scope-stat-controls">
       <label><span><UiText id={rankingType==='media_style'?'uiExtra.statisticsView.selectMeta':'uiExtra.statisticsView.selectItem'}/></span>
         <select className="scope-select" value={chosen} onChange={event=>{setSelectedTag(event.target.value);setRankingPage(1);}}>
@@ -723,6 +743,16 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     refetchOnMount:'always',
     refetchOnWindowFocus:true
   });
+  const styleTreeQuery=useQuery({
+    queryKey:['music-style-tree',scopeId],
+    queryFn:async()=>{
+      const {data,error}=await dbPublicClient.schema('silver').rpc('read_music_style_tree');
+      if(error)throw new Error(error.message||'Music Style Tree read failed');
+      return Array.isArray(data)?data:[];
+    },
+    enabled:scopeId==='lo3rwang'&&rankingType==='media_style',
+    staleTime:5*60_000
+  });
   const summary=useMemo(()=>buildSummary(trendQuery.data||[],queryRange),[trendQuery.data,queryRange]);
   const sourceCatalog=useQuery({
     queryKey:['statistics-source-taxonomy',scopeId],
@@ -816,6 +846,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         {mediaQuery.isFetching?t('uiExtra.statisticsUI.refreshing'):t('uiExtra.statisticsUI.refresh')}
       </button>
     </div>:null}
+    {rankingType==='media_style'&&styleTreeQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(styleTreeQuery.error,UI_COPY)}</p>:null}
     {rankingType==='media_style'&&crossTagQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(crossTagQuery.error,UI_COPY)}</p>:null}
     {rankingType==='media_style'&&crossTagQuery.isPending?<p className="scope-status"><UiText id="uiExtra.statisticsUI.loadingMediaTags"/></p>:null}
     {rankingType==='media_style'&&!crossTagQuery.isPending&&!crossTagQuery.error?<MediaCrossTagStatistics
@@ -828,6 +859,8 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       key={rankingType}
       rankingType={rankingType}
       rows={mediaQuery.data||[]}
+      mediaRows={crossTagQuery.data||[]}
+      treeRows={styleTreeQuery.data||[]}
       chartType={chartType}
       onChartTypeChange={setChartType}
       range={queryRange}
