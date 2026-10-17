@@ -1,29 +1,42 @@
 /**
- * Copy exact, comma-separated source phrases from the author-supplied Suno
- * Style prompt into Galaxy Media meta_tags. This is extraction, not translation,
- * invented vocabulary, voice classification, or a keyword blacklist.
- * The author may review or append explicit identifiers (LP15-3, LunaRunesMusic).
+ * Derive concise, style-bearing Meta Tags from the ENTIRE authored Suno Style.
+ * Exact genre names are preserved (including composite terms); order is not a
+ * three-phrase cutoff. Voice and a few explicit production/atmosphere terms are
+ * eligible as separate classification dimensions. Never infer from negations.
  */
-export function sunoStyleMetaTags(source,{limit=3}={}){
+const genreTail=/(?:^|[\s/-])(?:[a-z]-?pop|pop|rock|metal|punk|jazz|blues|folk|funk|soul|r\s*&\s*b|hip[\s-]?hop|trip[\s-]?hop|boom\s+bap|house|garage|techno|trance|breakbeat|breakcore|drum\s*(?:&|and|n)\s*bass|dnb|dubstep|dub|reggae|ska|dancehall|grime|trap|phonk|edm|idm|ambient|electronica|electronic\s+music|glitch|industrial|synthwave|retrowave|vaporwave|new\s+wave|darkwave|chillwave|chillout|downtempo|electro|disco|swing|cabaret|bossa\s+nova|lounge|lo[\s-]?fi|new\s+age|classical|orchestral|opera|operatic|requiem|ballad|lullaby|waltz|soundscape|atmosphere|turntablism|fusion|afrobeat|shibuya[\s-]?kei|character\s+song|anime\s+song)\s*$/iu;
+const productionTerm=/^(?:air compression|cinematic|hopeful|calm|dark|gentle|introspective|melancholic|romantic|high energy|lo-fi|acoustic|atmospheric|vocaloid)$/iu;
+const negative=/^(?:no|not|never|without|avoid|exclude|excluding|non)\b/iu;
+
+export function sunoStyleMetaTags(source,{limit=Infinity}={}){
   const original=String(source??'').trim().replace(/^(?:Suno Style|Style)\s*:\s*/iu,'');
   if(!original)return '';
-  const seen=new Set();
   const selected=[];
-  for(const raw of original.split(/[,，\r\n]+/u)){
-    const phrase=raw.trim();
-    if(!phrase||/[\u3400-\u9FFF]/u.test(phrase))continue;
-    const key=phrase.normalize('NFKC').toLocaleLowerCase();
-    if(seen.has(key))continue;
-    selected.push(phrase);
-    seen.add(key);
-    if(selected.length>=limit)break;
+  const seen=new Set();
+  const add=label=>{
+    const text=String(label||'').trim();
+    const key=text.normalize('NFKC').toLocaleLowerCase();
+    if(text&&!seen.has(key)){seen.add(key);selected.push(text);}
+  };
+  for(const part of original.split(/[,，;；\r\n×]+/u)){
+    const phrase=part.trim();
+    if(!phrase||negative.test(phrase))continue;
+    const candidate=phrase.replace(/^(?:genres?|styles?|music styles?|influences?)\s*:\s*/iu,'').trim();
+    if(candidate.length<=80&&!/[\u3400-\u9FFF]/u.test(candidate)&&
+       (genreTail.test(candidate)||productionTerm.test(candidate)))add(candidate);
+    // Vocal is a separate Style Class; positive vocal cues remain countable,
+    // but "no female vocals", "without male voice" never become tags.
+    if(/\bmale\s+baritone\b/iu.test(phrase)&&!negative.test(phrase))add('Male Baritone');
+    else if(/\bmale\s+(?:voice|vocals?|singer)\b/iu.test(phrase)&&!negative.test(phrase))add('Male Vocals');
+    if(/\bfemale\s+(?:voice|vocals?|singer)\b/iu.test(phrase)&&!negative.test(phrase))add('Female Vocals');
+    if(Number.isFinite(limit)&&selected.length>=Math.max(0,limit))break;
   }
-  return selected.join(', ');
+  return selected.slice(0,Number.isFinite(limit)?Math.max(0,limit):undefined).join(', ');
 }
 
 /**
- * Re-extracting a Style must not silently erase explicit album positions or
- * the author's Rune Music classification from an existing Media tag field.
+ * Re-extraction preserves explicit author assignments (LP and Rune Music).
+ * Existing non-ID tags can be reviewed and changed manually in the import form.
  */
 export function refreshSunoStyleMetaTags(source,current=''){
   const extracted=sunoStyleMetaTags(source);
