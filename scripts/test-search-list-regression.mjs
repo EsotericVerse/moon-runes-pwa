@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import {parseGroupLists,formatGroupLists,parseGroupListsAttr} from '../app/loc/group-lists.mjs';
 
 function extract(file,start,end){
   const source=fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
@@ -162,6 +163,13 @@ test('Search collapses exact duplicate article copies even when their uids diffe
   assert.equal(mergeSummaryResults([first,distinct]).length,2);
 });
 
+test('Galaxy TEXT hit pairs and excluded state roundtrip',()=>{
+  assert.equal(formatGroupLists({'14':1,'12':3}),'12:3,14:1');
+  assert.equal(parseGroupLists('12:3,14:1')['12'],3);
+  assert.equal(formatGroupLists(false),'false');
+  assert.equal(formatGroupLists({}),'');
+  assert.equal(parseGroupListsAttr('14:1, 12:3'),'12:3,14:1');
+});
 test('editing an article does not rewrite untouched attributes',()=>{
   const source=extract('app/modular/features/Search.jsx','function changedGalaxyAttributes(', 'function GalaxyAttrSummary(');
   const context={
