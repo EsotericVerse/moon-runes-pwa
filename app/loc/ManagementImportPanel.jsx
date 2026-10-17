@@ -8,6 +8,7 @@ import {insertRows,dbAuthRelation,updateRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {createUid8} from './uid';
 import {IMPORT_FIELD_ALIASES,importRowsFromJson,mappedImportValue,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
+import {UNIVERSAL_IMPORT_ACCEPT,parseUniversalImportFile} from './universal-file-import.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 import {refreshSunoStyleMetaTags} from './suno-style-meta-tags.mjs';
 
@@ -16,7 +17,7 @@ function sourceSuggestion(name=''){
   for(const key of ['threads','facebook','pixnet','ptt','vocus','instagram']){
     if(value.includes(key))return key;
   }
-  return String(name).replace(/\.json$/i,'').trim().toLowerCase().replace(/[^a-z0-9_-]+/g,'-')||'import';
+  return String(name).replace(/\.[a-z0-9]+$/i,'').trim().toLowerCase().replace(/[^a-z0-9_-]+/g,'-')||'import';
 }
 function iso(value){
   if(!value)return null;
@@ -85,7 +86,7 @@ function ImportFormatSettings({format,onChange,disabled=false}){
   </details>;
 }
 
-function JsonImport({scopeId,format,onBusyChange}) {
+function UniversalImport({scopeId,format,onBusyChange}) {
   const {locale}=useUiLocale();
   const UI_COPY=useUiCopy();
   const t=useUiText();
@@ -112,8 +113,7 @@ function JsonImport({scopeId,format,onBusyChange}) {
   async function loadQueuedFile(file,index,total){
     setFileName(file.name);setRows([]);setProgress(null);setStatus('');
     try{
-      const parsed=JSON.parse(await file.text());
-      const list=importRowsFromJson(parsed,format.recordPath);
+      const list=await parseUniversalImportFile(file,{recordPath:format.recordPath});
       const prepared=list.map(row=>({
         raw:row,
         import_uid:createUid8()
@@ -194,7 +194,7 @@ function JsonImport({scopeId,format,onBusyChange}) {
   const pending=queue.length>queueIndex+1;
   return <div className="scope-inline-card">
     <h4>{UI_COPY.management.importJson}</h4>
-    <label>{UI_COPY.management.currentFile}<input type="file" accept=".json,application/json" multiple disabled={busy} onChange={chooseFile}/></label>
+    <label>{UI_COPY.management.currentFile}<input type="file" accept={UNIVERSAL_IMPORT_ACCEPT} multiple disabled={busy} onChange={chooseFile}/></label>
     {fileName?<p><UiText id="uiExtra.importUI.fileLabel"/><strong>{fileName}</strong><UiText id="uiExtra.importUI.fileQueue" params={{index:queueIndex+1,total:queue.length}}/><strong>{suggested}</strong></p>:null}
     <label>{UI_COPY.management.sourceChoice}<input disabled={busy||!rows.length} value={source} onChange={event=>setSource(event.target.value)} placeholder={suggested}/></label>
     {rows.length?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.preview')}>
@@ -568,7 +568,7 @@ export default function ManagementImportPanel({scopeId}){
   return <section className="scope-inline-card scope-management-imports">
     <h2><UiText id="uiExtra.importUI.importTitle"/></h2>
     <ImportFormatSettings format={format} onChange={changeFormat} disabled={busyCount>0}/>
-    <JsonImport key={'json-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/>
+    <UniversalImport key={'file-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/>
     <SourceRefresh key={'refresh-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/>
     <MediaRecordInsert scopeId={scopeId}/>
     <SunoImport scopeId={scopeId}/>
