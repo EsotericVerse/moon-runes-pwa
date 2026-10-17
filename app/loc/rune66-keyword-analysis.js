@@ -263,7 +263,7 @@ export async function runRune66ClassificationBatch(scopeId='lo3rwang',{onProgres
     loadCurrentCatalog(normalizedScopeId,currentClassId),
     selectAllRows(scope.galaxy,{
       columns:'uid,title,content,createtime,searchable,statistics_able',
-      orders:[{column:'createtime',ascending:true},{column:'uid',ascending:true}],
+      orders:[{column:'createtime',ascending:true}],
       onProgress:({completed,total})=>reportBatchProgress(onProgress,'reading',completed,total,
         3+17*(total?completed/total:1),
         '讀取文章 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇')
@@ -427,7 +427,7 @@ export async function selectRune66Classification({scopeId='lo3rwang',startDate='
         ...(startDate?[{column:'createtime',operator:'gte',value:startDate+'T00:00:00+08:00'}]:[]),
         ...(endDate?[{column:'createtime',operator:'lte',value:endDate+'T23:59:59.999+08:00'}]:[])
       ],
-      orders:[{column:'createtime',ascending:true},{column:'uid',ascending:true}]
+      orders:[{column:'createtime',ascending:true}]
     });
     return storedSummary(rows.rows||[],config);
   })().catch(error=>{
