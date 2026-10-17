@@ -166,7 +166,7 @@ export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
   const row=await selectRowById(current.galaxy,{
     idColumn:'uid',
     id,
-    columns:'uid,title,source_name,createtime,url,source_id,target_id,media_link,searchable'
+    columns:'uid,title,source_name,createtime,url,source_id,target_id,ref_id,media_link,searchable'
   });
   if(!row||(!includeHidden&&row.searchable===false))return null;
   const [contentRow,mediaRows]=await Promise.all([
@@ -245,7 +245,7 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false}={
   const current=scopeOf(scope);
   const text=makeProvider({
     id:current.id+':text',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
-    columns:['uid','title','source_name','source_id','target_id','url','media_link','createtime'],
+    columns:['uid','title','source_name','source_id','target_id','ref_id','url','media_link','createtime'],
     searchFields:['title','content','source_name'],dateColumn:'createtime',
     filters:publicContentFilters(includeHiddenText?[]:[{column:'searchable',operator:'eq',value:true}])
   });
