@@ -25,8 +25,7 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Verify import parsing and existing import contracts
         run: |
-          node --test scripts/test-universal-file-import.mjs
-          npm run verify:management
+          node --test scripts/test-universal-file-import.mjs scripts/test-import-batch.mjs scripts/test-import-source-classification.mjs
       - name: Commit lockfile and remove one-time installer
         run: |
           git config user.name "github-actions[bot]"
