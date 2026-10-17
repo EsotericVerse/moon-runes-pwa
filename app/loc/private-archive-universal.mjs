@@ -3,6 +3,7 @@
 // Unsupported formats are explicitly accounted for; no speculative field coercion.
 import {Unzip,UnzipInflate} from 'fflate';
 import {JSONParser} from '@streamparser/json';
+import {archiveEntrySignatures,summarizeArchiveSources} from './archive-source-signatures.mjs';
 
 export const ARCHIVE_CHUNK_BYTES=128*1024;
 export const ARCHIVE_MAX_BYTES=2*1024*1024*1024;
@@ -271,11 +272,10 @@ function textDocument(bytes,name,summary,onRecord){
   if(summary.sample.length<5)summary.sample.push({text:content.slice(0,260),nativeId:record.nativeId,platform:'document',kind:'document'});
   onRecord(record);
 }
-// Lightweight ZIP source identification, before any import or database operation.
-// Use archive paths only as hints; sample actual JSON/JS payloads for a verified match.
-const ZIP_SNIFF_BYTES=32768;
+// Read-only ZIP source discovery. Every recognized vendor uses the same scanner;
+// vendor-specific rules live in archive-source-signatures.mjs.
+const ZIP_SNIFF_BYTES=65536;
 const ZIP_SNIFF_FILES=160;
-const ZIP_SOURCE_ORDER=['chatgpt','facebook','instagram','threads','x'];
 export async function detectZipArchiveSource(file,{signal,onProgress}={}){
   if(!file||typeof file.slice!=='function'||!Number.isSafeInteger(file.size)||file.size<=0)
     throw new Error('請選擇有效的 ZIP 備份檔。');
@@ -285,47 +285,33 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
     throw new Error('檔案內容不是有效的 ZIP 標頭。');
   const hits=new Map();
   let filesSeen=0,inspectedFiles=0,extractedBytes=0;
-  function mark(kind,confidence,path){
-    const prior=hits.get(kind);
-    if(!prior||confidence>prior.confidence)hits.set(kind,{confidence,evidence:path});
+  function inspectEvidence(path,head){
+    for(const hit of archiveEntrySignatures(path,head)){
+      const prior=hits.get(hit.source);
+      if(!prior||hit.confidence>prior.confidence)
+        hits.set(hit.source,{confidence:hit.confidence,path:hit.path});
+    }
   }
   const unzip=new Unzip(entry=>{
     aborted(signal);
     if(++filesSeen>MAX_FILES)throw new Error('ZIP 項目超過 50,000 筆，已停止辨識。');
     const path=cleanPath(entry.name);
     if(!path||path.endsWith('/'))return;
-    const lower=path.toLowerCase();
-    const base=lower.split('/').at(-1);
-    // A single familiar name is only a hint, not proof of the export source.
-    if(/^conversations(?:[-_]\d+)?\.json$/.test(base))mark('chatgpt',1,path);
-    if(/(?:^|\/)facebook\//.test(lower))mark('facebook',1,path);
-    if(/(?:^|\/)instagram\//.test(lower))mark('instagram',1,path);
-    if(/(?:^|\/)threads\//.test(lower)||/threads_and_replies/.test(lower))mark('threads',1,path);
-    if(/(?:^|\/)twitter\//.test(lower)||/\/tweets(?:[-_.]part\d+)?\.js$/.test(lower))mark('x',1,path);
-    const priority=/(?:conversations|tweets|threads|messages|posts|status_updates)/.test(base);
-    if(!/\.(?:json|js)$/i.test(lower)||(!priority&&inspectedFiles>=ZIP_SNIFF_FILES))return;
+    inspectEvidence(path,'');
+    const base=path.split('/').at(-1)||'';
+    const priority=/(?:conversations|tweets|threads|messages|posts|status_updates|myactivity|result|_chat)/i.test(base);
+    if(!/\.(?:json|js|txt|csv|html?|md)$/i.test(path)||
+       (!priority&&inspectedFiles>=ZIP_SNIFF_FILES))return;
     inspectedFiles++;
-    let samples=[],length=0,sniffed=false;
+    const samples=[];
+    let length=0,sniffed=false;
     function inspectSample(){
       if(sniffed)return;
       sniffed=true;
       const bytes=new Uint8Array(length);
-      let pos=0;for(const part of samples){bytes.set(part,pos);pos+=part.length;}
-      const head=new TextDecoder('utf-8',{fatal:false}).decode(bytes);
-      if(/"mapping"\s*:\s*\{/.test(head)&&/"create_time"\s*:/.test(head)&&/"title"\s*:/.test(head))
-        mark('chatgpt',3,path);
-      if(/window\.YTD\.[\w-]+\.part\d+\s*=/.test(head)&&/(?:tweet|noteTweet|directMessage)/.test(head))
-        mark('x',3,path);
-      if(/"text_post_app_text_posts"\s*:/.test(head)||/"threads_posts"\s*:/.test(head))
-        mark('threads',3,path);
-      if(/"ig_posts"\s*:/.test(head)||/"ig_reels_media"\s*:/.test(head))
-        mark('instagram',3,path);
-      if(/"status_updates"\s*:/.test(head)&&/(?:facebook|your_posts)/.test(lower))
-        mark('facebook',3,path);
-      if(/"messages"\s*:\s*\[/.test(head)){
-        if(/(?:^|\/)facebook\//.test(lower))mark('facebook',3,path);
-        if(/(?:^|\/)instagram\//.test(lower))mark('instagram',3,path);
-      }
+      let offset=0;
+      for(const part of samples){bytes.set(part,offset);offset+=part.length;}
+      inspectEvidence(path,new TextDecoder('utf-8',{fatal:false}).decode(bytes));
     }
     entry.ondata=(error,data,final)=>{
       if(error)throw error;
@@ -347,13 +333,7 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
     onProgress?.({bytesRead:offset+chunk.length,totalBytes:file.size,filesSeen});
   }
   if(!filesSeen)throw new Error('ZIP 沒有可辨識的檔案項目。');
-  const sources=ZIP_SOURCE_ORDER.filter(kind=>hits.has(kind));
-  const confidence=sources.length?Math.min(...sources.map(kind=>hits.get(kind).confidence)):0;
-  return {
-    kind:sources.length>1?'mixed':sources[0]||'unknown',
-    sources,confidence,filesSeen,inspectedFiles,
-    evidence:sources.map(kind=>({source:kind,path:hits.get(kind).evidence,verified:hits.get(kind).confidence===3}))
-  };
+  return {...summarizeArchiveSources(hits),filesSeen,inspectedFiles};
 }
 
 export async function inspectPrivateArchive(file,{onRecord,onProgress,flush,signal}={}){
