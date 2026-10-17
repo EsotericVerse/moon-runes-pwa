@@ -198,7 +198,10 @@ test('governance management delegates to permission-scoped Settings',()=>{
   const legacy=fs.readFileSync('app/loc/GovernanceManagement.jsx','utf8');
   const settings=fs.readFileSync('app/loc/GlobalSettings.jsx','utf8');
   assert.doesNotMatch(governance,/governance-management-cta/);
-  assert.match(legacy,/window.location.replace\(target\)/);
+  assert.match(legacy,/href="\/settings\/\?section=account"/);
+  assert.match(legacy,/if\(!account\.user\)/);
+  assert.match(legacy,/account\.canManageScopeSync\('loc'\)/);
+  assert.doesNotMatch(legacy,/account\.signIn\(/);
   assert.match(settings,/managedScopes/);
   assert.match(settings,/account.canManageScopeSync\(item.id\)/);
   assert.match(settings,/canManageGlobal/);
