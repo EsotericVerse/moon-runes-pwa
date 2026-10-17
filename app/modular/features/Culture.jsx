@@ -902,8 +902,7 @@ export default function Culture(){
                       body={work.description||work.media_metadata_text||''}
                       relationLinks={galaxyRelationLinks(classificationScope,work)}
                       links={work.links||[]}
-                      className={canEditWork&&editingWorkKey!==workKey?'is-editable-idle':''}
-                      onClick={canEditWork&&editingWorkKey!==workKey?event=>{if(!isInteractiveTarget(event.target))startEditingWork(work)}:null}
+                      actions={canEditWork?<button type="button" className="loc-button" onClick={()=>startEditingWork(work)}>{editingWorkKey===workKey?UI_COPY.search.editing:UI_COPY.common.edit}</button>:null}
                     >
                       {work.uid?<WorkFullText
                         open={fullTextKey===work.key}
