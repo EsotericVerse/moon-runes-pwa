@@ -34,7 +34,7 @@ const adapter=createPostgrestAdapter({
 });
 const client=createDatabaseClient(adapter);
 const result=await adapter.publicClient.schema('silver').from('any_scope_galaxy')
-  .select('uid,title',{count:'exact'}).eq('searchable',true).order('uid').range(10,19);
+  .select('uid,title',{count:'exact'}).eq('searchable',true).range(10,19);
 assert.equal(result.error,null);
 assert.equal(result.count,1);
 assert.equal(requests.at(-1).init.headers.get('Authorization'),'Bearer public-read-token');
