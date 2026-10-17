@@ -188,7 +188,7 @@ function toResult(row,source,scopeId,copy=UI_COPY){
   ].map(value=>workDisplayText(value||'').trim()).filter(Boolean).join(' · ');
   const body=isMedia
     ?(mediaMetadata||(bodyField?workDisplayText(row[bodyField]):text))
-    :(bodyField?workDisplayText(row[bodyField]):(isGalaxy?'':text));
+    :(isGalaxy?(row.summary?workDisplayText(row.summary):row.excerpt?workDisplayText(row.excerpt):''):(bodyField?workDisplayText(row[bodyField]):text));
   const identity=row.media_id||row.uid||row.song_id||row.rune_id||row.record_id||row.resource_id||row.id;
   const scope=String(row.scope_id||scopeId||'').trim();
   const resourceType=(row.uid)?'galaxy':row.media_id?'galaxy_media':'';
@@ -261,6 +261,7 @@ export default function Search(){
   const [results,setResults]=useState([]);
   const [status,setStatus]=useState(UI_COPY.search.start);
   const [error,setError]=useState('');
+  const [loadMoreError,setLoadMoreError]=useState('');
   const [hasMore,setHasMore]=useState(false);
   const [nextCursor,setNextCursor]=useState(null);
   const [loadingMore,setLoadingMore]=useState(false);
@@ -317,8 +318,12 @@ export default function Search(){
     const id=++searchId.current;
     setError('');
     if(append){
+      setLoadMoreError('');
       setLoadingMore(true);
     }else{
+      setLoadMoreError('');
+      setEditingKey('');setEditDraft(null);
+      setFullTextKey('');setFullText('');setFullTextRow(null);setFullTextError('');
       matchedQueryRef.current='';
       setHasMore(false);
       setNextCursor(null);
@@ -407,8 +412,12 @@ export default function Search(){
       if(!append)setStatus(UI_COPY.format.searchResult({label:searchMode==='media'?UI_COPY.search.media:'「'+collectionLabel+'」',query:q,hasMore:search.hasMore,partial}));
     }catch(exception){
       if(id!==searchId.current)return;
-      setError(featureDataErrorMessage(exception,UI_COPY));
-      setStatus(UI_COPY.search.failed);
+      if(append){
+        setLoadMoreError(featureDataErrorMessage(exception,UI_COPY));
+      }else{
+        setError(featureDataErrorMessage(exception,UI_COPY));
+        setStatus(UI_COPY.search.failed);
+      }
     }finally{
       if(append&&id===searchId.current)setLoadingMore(false);
     }
@@ -425,7 +434,7 @@ export default function Search(){
     if(!identity)return;
     const id=++searchId.current;
     matchedQueryRef.current='';
-    setError('');setHasMore(false);setNextCursor(null);setLoadingMore(false);
+    setError('');setLoadMoreError('');setHasMore(false);setNextCursor(null);setLoadingMore(false);
     setStatus(UI_COPY.search.loadingRelation);
     try{
       let detail=null;
@@ -456,7 +465,6 @@ export default function Search(){
     if(identity){setQuery('');executeIdentity(identity);return;}
     if(value){setQuery(value);executeSearch(value);}
   },[searchParams,scopeId,scopesQuery.isSuccess,scopesQuery.data]);
-  useEffect(()=>{if(scopesQuery.isSuccess&&query.trim()&&!searchParams?.get('identity'))executeSearch(query);},[scopeId,scopesQuery.isSuccess,scopesQuery.data]);
 
 
 
@@ -603,13 +611,14 @@ export default function Search(){
     </form>
     <p className="scope-status">{status}</p>
     {error?<p className="scope-status scope-error">{error}</p>:null}
+    {loadMoreError?<p role="alert" className="scope-status scope-error">{loadMoreError} <button type="button" className="loc-button" disabled={loadingMore} onClick={loadNextSearch}><UiText id="uiExtra.cultureView.reloadWorks"/></button></p>:null}
     <IncrementalList
       items={results}
       batchSize={pageSize}
       resetKey={searchMode+'|'+matchedQueryRef.current}
       externalHasMore={hasMore}
       loading={loadingMore}
-      error={error}
+      error={error||loadMoreError}
       onLoadMore={loadNextSearch}
       renderItem={row=>{
         const editable=Boolean(row.editableTable&&row.editableField&&account.canManageScopeSync(row.scopeId));
@@ -627,6 +636,7 @@ export default function Search(){
           destinations={row.destinations}
           showSource
           showLinks
+          actions={editable?<button type="button" className="loc-button" onClick={()=>startEditing(row)}>{editingKey===row.key?UI_COPY.search.editing:UI_COPY.common.edit}</button>:null}
         >
           {row.styleIntro?<div className="scope-style-search-connections">
             <p className="scope-status"><strong><UiText id="uiExtra.searchUI.stylePeriod"/></strong>{row.stylePeriod||t('uiExtra.searchUI.unknownStyle')}</p>
@@ -660,9 +670,9 @@ export default function Search(){
             error={fullTextKey===row.key?fullTextError:''}
             content={fullTextKey===row.key?fullText:''}
             onToggle={()=>toggleFullText(row)}
+            showToggle={!searchParams?.get('identity')}
           />:null}
           {row.resourceType==='galaxy'&&editable&&fullTextKey===row.key&&!fullTextLoading?<GalaxyAttrSummary row={fullTextRow}/>:null}
-          {editable&&(row.resourceType!=='galaxy'||fullTextKey===row.key)?<div className="scope-search-edit-action"><button type="button" className="loc-button" onClick={()=>startEditing(row)}>{editingKey===row.key?UI_COPY.search.editing:UI_COPY.common.edit}</button></div>:null}
           {draft?(row.resourceType==='galaxy'?<div className="scope-editor scope-search-article-editor">
             <label>{UI_COPY.common.title}<input value={draft.title||''} onChange={event=>setEditDraft(current=>({...current,title:event.target.value}))}/></label>
             <BlockNoteEditor
