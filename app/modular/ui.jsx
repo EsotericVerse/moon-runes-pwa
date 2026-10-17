@@ -135,6 +135,7 @@ function safeRelationLinksOf(items=[],defaultLabel=''){
 
 export function WorkSummaryCard({
   title=null,
+  titleEditor=null,
   kicker=null,
   source='',
   scopeId='',
@@ -160,7 +161,7 @@ export function WorkSummaryCard({
       <div>
         {kicker?<p className="loc-eyebrow scope-card-kicker">{kicker}</p>:null}
         {(scopeId||showSource&&source)?<p className="loc-eyebrow">{[scopeId,showSource?source:''].filter(Boolean).join(' · ')}</p>:null}
-        <strong>{title??copy.work.untitled}</strong>
+        {titleEditor||<strong>{title??copy.work.untitled}</strong>}
       </div>
       {date||actions?<div className="scope-work-summary-actions">{date?<time>{date}</time>:null}{actions}</div>:null}
     </header>

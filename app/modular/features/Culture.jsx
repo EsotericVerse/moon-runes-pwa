@@ -625,6 +625,22 @@ export default function Culture(){
     }
   }
 
+  async function deleteEditingWork(work){
+    const uid=String(work?.uid||'').trim();
+    if(!uid)return;
+    setEditBusy(true);setEditError('');
+    try{
+      if(!scopeData)throw new Error(l.sourceUnresolved);
+      await deleteRows(scopeData.galaxy,{filters:[{column:'uid',operator:'eq',value:uid}]});
+      const key=String(work?.key||('galaxy:'+uid));
+      if(fullTextKey===key){setFullTextKey('');setFullText('');}
+      setEditingWorkKey('');setEditDraft(null);
+      periodWorksPage.reload();
+    }catch(exception){
+      setEditError(String(exception?.message||exception||l.deleteFailed));
+    }finally{setEditBusy(false)}
+  }
+
   async function toggleWorkContent(work){
     const uid=String(work?.uid||'').trim();
     if(!uid)return;
@@ -912,6 +928,7 @@ export default function Culture(){
                       editorDraft={editingWorkKey===workKey?editDraft:null}
                       onDraftChange={setEditDraft}
                       onSave={()=>saveEditingWork(work)}
+                      onDelete={()=>deleteEditingWork(work)}
                       onCancel={()=>{setEditingWorkKey('');setEditDraft(null);setEditError('')}}
                       editBusy={editBusy}
                       editError={editError}

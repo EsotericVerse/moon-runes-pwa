@@ -125,7 +125,7 @@
 /* Exact style-tag hits reuse the article card's editorial layout. */
 .scope-article-style-tag-hit{border-inline-start:3px solid var(--loc-accent);background:linear-gradient(110deg,color-mix(in srgb,var(--loc-ui-accent-soft) 26%,var(--loc-surface)),var(--loc-surface) 58%)}
 .scope-article-style-tag-hit .scope-card-kicker{margin:0 0 .25rem;color:var(--loc-accent);font-size:.76rem;letter-spacing:.09em}
-.scope-article-style-tag-hit .scope-culture-work-heading strong{font-size:clamp(1.3rem,2vw,1.7rem);letter-spacing:.02em}
+.scope-article-style-tag-hit .scope-culture-work-heading strong,.scope-article-style-tag-hit .scope-article-edit-title{font-size:clamp(1.3rem,2vw,1.7rem);letter-spacing:.02em}
 .scope-style-tag-search-intro{max-width:72ch;margin:.8rem 0 0;color:var(--loc-text);font-size:1rem;line-height:1.9;white-space:pre-line}
 .scope-style-tag-add,.scope-style-tag-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem}
 .scope-style-tag-add label{flex:1;min-width:10rem}
@@ -299,8 +299,9 @@
   padding-top:.8rem;
   border-top:1px solid var(--loc-ui-hairline);
 }
-.scope-article-editor-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin:0 0 .8rem}
+.scope-article-editor-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:.5rem;margin:0}
 .scope-article-editor-actions .loc-button{min-height:2.25rem}
+.scope-article-edit-title{display:block;width:min(100%,48rem);min-width:12rem;padding:.42rem .6rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-sm);background:var(--loc-surface);color:var(--loc-text);font-size:1.05rem;font-weight:700;line-height:1.35}
 .scope-search-attr-editor textarea{width:100%}
 
 /* Admin: tree-first system management */

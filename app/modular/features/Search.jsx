@@ -9,7 +9,7 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {useRouter,useSearchParams} from 'next/navigation';
 
-import {logSearchKeyword,updateRows} from '../../loc/db-client.mjs';
+import {deleteRows,logSearchKeyword,updateRows} from '../../loc/db-client.mjs';
 import {useAccount} from '../../loc/use-account';
 import {FeaturePage,IncrementalList,WorkFullText} from '../ui';
 import Article from '../Article';
@@ -138,6 +138,29 @@ function GalaxyAttrSummary({row}){
         <dd>{attrDisplayValue(key,row[key],t)}</dd>
       </div>)}
     </dl>
+  </details>;
+}
+
+function GalaxyAttrEditor({draft,setDraft}){
+  const t=useUiText();
+  const attrs=draft?.attrs||{};
+  const change=(key,value)=>setDraft(current=>({...current,attrs:{...(current?.attrs||{}),[key]:value}}));
+  return <details className="scope-search-attr-panel">
+    <summary><UiText id="uiExtra.searchUI.attributeTitle"/></summary>
+    <div className="scope-management-fields scope-search-attr-editor">
+      <label><span>createtime</span><input type="datetime-local" value={attrs.createtime||''} onChange={event=>change('createtime',event.target.value)}/></label>
+      <label><span>source_native_id</span><input value={attrs.source_native_id||''} onChange={event=>change('source_native_id',event.target.value)}/></label>
+      <label><span>source_place</span><input value={attrs.source_place||''} onChange={event=>change('source_place',event.target.value)}/></label>
+      <label><span>url</span><input value={attrs.url||''} onChange={event=>change('url',event.target.value)}/></label>
+      <label><span>source_id</span><input value={attrs.source_id||''} onChange={event=>change('source_id',event.target.value)}/></label>
+      <label><span>ref_id</span><input value={attrs.ref_id||''} onChange={event=>change('ref_id',event.target.value)}/></label>
+      <label><span>source_name</span><input value={attrs.source_name||''} onChange={event=>change('source_name',event.target.value)}/></label>
+      <label><span>class_id</span><input type="number" value={attrs.class_id??''} onChange={event=>change('class_id',event.target.value)}/></label>
+      <label><span>statistics_able</span><input type="checkbox" checked={attrs.statistics_able!==false} onChange={event=>change('statistics_able',event.target.checked)}/></label>
+      <label className="scope-management-wide-field"><span>target_id[]</span><textarea rows={3} value={attrs.target_id||''} onChange={event=>change('target_id',event.target.value)} placeholder={t('uiExtra.searchUI.uuidHint')}/></label>
+      <label className="scope-management-wide-field"><span>media_link[]</span><textarea rows={3} value={attrs.media_link||''} onChange={event=>change('media_link',event.target.value)} placeholder={t('uiExtra.searchUI.mediaUuidHint')}/></label>
+      <label className="scope-management-wide-field"><span>group_lists (JSON)</span><textarea rows={5} value={attrs.group_lists||''} onChange={event=>change('group_lists',event.target.value)}/></label>
+    </div>
   </details>;
 }
 
@@ -590,6 +613,19 @@ export default function Search(){
     }catch(exception){setEditError(String(exception?.message||exception||UI_COPY.search.saveFailed))}
     finally{setEditBusy(false)}
   }
+  async function deleteEditing(result){
+    if(!result?.editableTable||!result?.editableIdColumn||!result?.editResourceId)return;
+    setEditBusy(true);setEditError('');
+    try{
+      await deleteRows(result.editableTable,{filters:[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId}]});
+      setResults(current=>current.filter(item=>item.key!==result.key));
+      if(fullTextKey===result.key){setFullTextKey('');setFullText('');setFullTextRow(null);}
+      setEditingKey('');setEditDraft(null);
+      setStatus(t('uiExtra.editBlocks.deleted'));
+    }catch(exception){
+      setEditError(String(exception?.message||exception||t('uiExtra.editBlocks.deleteFailed')));
+    }finally{setEditBusy(false)}
+  }
 
   async function runSearch(event){
     event.preventDefault();
@@ -670,9 +706,12 @@ export default function Search(){
           editorDraft={draft}
           onDraftChange={setEditDraft}
           onSave={()=>saveEditing(editTarget)}
+          onDelete={()=>deleteEditing(editTarget)}
           onCancel={()=>{setEditingKey('');setEditDraft(null);setEditError('')}}
           editBusy={editBusy}
           editError={editError}
+          showHidden={row.resourceType==='galaxy'}
+          editorExtra={row.resourceType==='galaxy'?<GalaxyAttrEditor draft={draft} setDraft={setEditDraft}/>:null}
           styleTag={row.styleTagMatch}
           styleTagKicker={row.styleTagMatch?<UiText id="uiExtra.searchUI.styleRecommendations"/>:null}
           styleIntroText={row.styleIntroText}

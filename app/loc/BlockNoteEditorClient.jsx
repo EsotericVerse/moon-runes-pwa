@@ -10,6 +10,7 @@ import {imageBlockForUrl,isEmptyImageTarget} from './blocknote-image-url.mjs';
 export default function BlockNoteEditorClient({
   initialBlocks=[],
   initialHtml='',
+  initialMarkdown='',
   editable=true,
   canInsertImage=true,
   onChange=null,
@@ -26,21 +27,23 @@ export default function BlockNoteEditorClient({
   useEffect(()=>{
     if(hydratedLegacyHtml.current)return;
     hydratedLegacyHtml.current=true;
-    if(!initialHtml)return;
+    if(!initialHtml&&!initialMarkdown)return;
     let mounted=true;
     // HTML imports can be asynchronous; never pass a Promise to replaceBlocks.
     const apply=blocks=>{
       if(mounted)editor.replaceBlocks(editor.document,canonicalBlockNoteBlocks(blocks));
     };
     try{
-      const parsed=editor.tryParseHTMLToBlocks(canonicalBlockNoteHtml(initialHtml));
+      const parsed=initialHtml
+        ?editor.tryParseHTMLToBlocks(canonicalBlockNoteHtml(initialHtml))
+        :editor.tryParseMarkdownToBlocks(initialMarkdown);
       if(typeof parsed?.then==='function')parsed.then(apply).catch(error=>console.error('BlockNote HTML import failed',error));
       else apply(parsed);
     }catch(error){
       console.error('BlockNote HTML import failed',error);
     }
     return ()=>{mounted=false;};
-  },[editor,initialHtml]);
+  },[editor,initialHtml,initialMarkdown]);
 
   const emit=()=>{
     // BlockNote JSON is the editing source of truth. Empty paragraphs must

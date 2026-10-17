@@ -16,6 +16,11 @@ export function plainTextToBlocks(value=''){
   return (lines.length?lines:['']).map(line=>({type:'paragraph',content:line}));
 }
 
+export function looksLikeMarkdown(value=''){
+  const text=String(value??'');
+  return /(?:^|\n)\s{0,3}(?:#{1,6}\s|[-*+]\s|\d+\.\s|>\s|```|(?:---|\*\*\*|___)\s*(?:\n|$))|(?:\*\*[^*\n]+\*\*|__[^_\n]+__|`[^`\n]+`|\[[^\]]+\]\([^)]+\))/m.test(text);
+}
+
 export function normalizeBlocks(value,fallback=''){
   if(Array.isArray(value))return value.length?value:plainTextToBlocks(fallback);
   if(value&&typeof value==='object'&&Array.isArray(value.blocks))return value.blocks.length?value.blocks:plainTextToBlocks(fallback);
