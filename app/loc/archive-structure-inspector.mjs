@@ -60,7 +60,8 @@ export function inspectArchiveEntryStructure(path,header=''){
   if(fields.attachment.length&&(!layouts.length||has('media')||has('photos')||has('videos')))layouts.push('media');
   if(format==='csv'||format==='tsv')layouts.push('table');
   if(!layouts.length&&format==='json'&&
-     (root==='array'||fields.text.length&&fields.id.length))layouts.push('structured-records');
+     (root==='array'||fields.text.length&&(fields.id.length||fields.author.length||fields.time.length)||
+      fields.collection.length))layouts.push('structured-records');
   if(!layouts.length&&['text','html','xml'].includes(format))layouts.push('document');
   return {
     format,root,layouts:[...new Set(layouts)],fields,
