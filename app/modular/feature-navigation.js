@@ -70,6 +70,8 @@ export function galaxyRelationLinks(scopeId,row={}){
   const links=[];
   const source=valueOf(row.source_id);
   if(source)links.push({id:'source:'+source,label:'上筆',href:galaxyIdentityHref(scopeId,source)});
+  const reference=valueOf(row.ref_id);
+  if(reference)links.push({id:'reference:'+reference,label:'原始大綱／參考資料',href:galaxyIdentityHref(scopeId,reference)});
   const targets=normalizeRelationIds(row.target_id)||[];
   targets.forEach((target,index)=>{
     links.push({
