@@ -55,3 +55,12 @@ test('JSON continues through the pre-existing mapper with recordPath',async()=>{
 test('unsupported inputs are rejected, never silently coerced to articles',async()=>{
   await assert.rejects(parseUniversalImportFile(f('music.mp3')),/不支援/);
 });
+
+test('installed universal parser reads a real UTF-8 CSV as separate records',async()=>{
+  const file=new File(['title,content,url\n測試作品,"第一行, 第二行",https://example.org/p/1\n'],'actual.csv',{type:'text/csv'});
+  const records=await parseUniversalImportFile(file);
+  assert.equal(records.length,1);
+  assert.equal(records[0].title,'測試作品');
+  assert.equal(records[0].content,'第一行, 第二行');
+  assert.equal(records[0].url,'https://example.org/p/1');
+});
