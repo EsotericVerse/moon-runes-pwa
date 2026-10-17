@@ -167,7 +167,7 @@ test('editing an article does not rewrite untouched attributes',()=>{
   const context={
     isoOrNull:()=>null,nullableText:value=>String(value||'').trim()||null,
     parseListText:value=>String(value||'').split(/[\n,]+/g).map(item=>item.trim()).filter(Boolean),
-    parseJsonAttr:value=>JSON.parse(value)
+    parseGroupListsText:value=>value
   };
   const changedGalaxyAttributes=vm.runInNewContext(source+'; changedGalaxyAttributes',context);
   const attrs={createtime:'',source_native_id:'',source_place:'',searchable:true,url:'',source_id:'',ref_id:'',source_name:'',target_id:'',media_link:'',statistics_able:true,class_id:'',group_lists:'false'};
