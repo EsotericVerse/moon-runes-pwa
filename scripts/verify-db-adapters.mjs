@@ -65,7 +65,7 @@ assert.equal(JSON.parse(requests.at(-1).init.body).p_scope_id,'lo3rwang');
 const batchEvents=[];
 affected=2;
 await client.applyKeywordClassification('lo3rwang',{
-  rows:[{uid:'TEST0001',class_id:1,group_lists:{'1':1}},{uid:'TEST0002',class_id:2,group_lists:{'2':1}}],
+  rows:[{uid:'TEST0001',class_id:1,group_lists:'1:1'},{uid:'TEST0002',class_id:2,group_lists:'2:1'}],
   meta:{class_id:'4c04471f-7cad-4309-9f15-0d1ddfcb5933'}
 },{onProgress:event=>batchEvents.push(event)});
 assert.deepEqual(batchEvents.map(event=>event.phase),['prepare','write','finalizing']);
