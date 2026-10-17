@@ -17,6 +17,7 @@ function loadProvider(records){
     const call={table,source:dataSource};
     const relation={
       select(columns,options){call.columns=columns;call.options=options;return this;},
+      ilike(column,value){call.exactMatch=[column,value];return this;},
       range(from,to){call.range=[from,to];return Promise.resolve({data:records.slice(from,to+1),__dataSource:'primary'});}
     };
     calls.push(call);
@@ -28,7 +29,8 @@ function loadProvider(records){
     dateSearchFilters:()=>[],
     applyFilters:q=>q,
     applyLiteralTerms:q=>q,
-    applyOrders:q=>q,
+    applyOrders:(q,orders)=>{calls.at(-1).orders=orders;return q;},
+    literalPattern:value=>'%'+String(value||'').trim().replace(/\\/g,'\\\\').replace(/%/g,'\\%').replace(/_/g,'\\_')+'%',
     executePublicRead,
     recordFor:(row,source,id,scope,table)=>({row,source,id,scope,table})
   };
@@ -58,6 +60,30 @@ test('literal search pagination fetches one bounded page, never an exact COUNT',
   assert.equal(calls.length,3,'Exactly one public read per page');
 });
 
+test('exact-match providers compare the whole query against the title',async()=>{
+  const {makeProvider,calls}=loadProvider([]);
+  const provider=makeProvider({
+    id:'scope:title-exact',table:'silver.scope_galaxy',source:'scope 文字',scope:{id:'scope'},
+    idColumn:'uid',columns:['uid','title'],searchFields:['title'],exactColumn:'title'
+  });
+  await provider.search('完整標題');
+  assert.deepEqual(Array.from(calls[0].exactMatch),['title','完整標題']);
+});
+
+test('equal timestamps use title and stable ID ordering',async()=>{
+  const {makeProvider,calls}=loadProvider([]);
+  const provider=makeProvider({
+    id:'scope:text',table:'silver.scope_galaxy',source:'scope 文字',scope:{id:'scope'},
+    idColumn:'uid',columns:['uid','title','createtime'],searchFields:['title'],dateColumn:'createtime'
+  });
+  await provider.search('關鍵字');
+  assert.equal(JSON.stringify(calls[0].orders),JSON.stringify([
+    {column:'createtime',ascending:true},
+    {column:'title',ascending:true},
+    {column:'uid',ascending:true}
+  ]));
+});
+
 test('search provider can be invoked again for a different term without reloading',async()=>{
   const {makeProvider,calls}=loadProvider([{uid:'A'},{uid:'B'}]);
   const provider=makeProvider({
@@ -72,6 +98,30 @@ test('search provider can be invoked again for a different term without reloadin
   assert.equal(calls.length,2);
   assert.equal(first.hasMore,false);
   assert.equal(second.hasMore,false);
+});
+
+test('all title matches are searched before any article body matches',async()=>{
+  const source=extract('app/loc/galaxy-query.js','export async function searchGalaxyRows(', '\n\n/**');
+  const calls=[];
+  const searchGalaxyRows=vm.runInNewContext(source.replace(/^export /,'')+'; searchGalaxyRows',{
+    DEFAULT_LIST_BATCH_SIZE:20,
+    genericScopeProviders:scope=>['title-exact','title','content-exact','content','timeline'].map(kind=>({
+      id:scope.id+':'+kind,
+      async search(){calls.push(this.id);return {rows:[{row:{uid:this.id}}],hasMore:false};}
+    }))
+  });
+  let cursor=null;
+  for(let index=0;index<10;index++){
+    const result=await searchGalaxyRows([{id:'loc'},{id:'culture'}],'月光',{cursor});
+    cursor=result.nextCursor;
+  }
+  assert.deepEqual(calls,[
+    'loc:title-exact','culture:title-exact',
+    'loc:title','culture:title',
+    'loc:content-exact','culture:content-exact',
+    'loc:content','culture:content',
+    'loc:timeline','culture:timeline'
+  ]);
 });
 
 test('Galaxy result card does not receive a second copy of the complete body',()=>{
@@ -106,6 +156,8 @@ test('Search collapses exact duplicate article copies even when their uids diffe
   const first=toResult({...base,uid:'AAAA1111'},'loc 文字','loc');
   const copy=toResult({...base,uid:'BBBB2222'},'loc 文字','loc');
   assert.equal(mergeSummaryResults([first,copy]).length,1);
+  const lineBreakCopy=toResult({...base,uid:'DDDD4444',content:'相同\n正文'},'loc 文字','loc');
+  assert.equal(mergeSummaryResults([first,lineBreakCopy]).length,1);
   const distinct=toResult({...base,uid:'CCCC3333',content:'不同正文'},'loc 文字','loc');
   assert.equal(mergeSummaryResults([first,distinct]).length,2);
 });

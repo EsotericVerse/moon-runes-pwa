@@ -206,7 +206,7 @@ function recordFor(row,source,providerId,scope,table){
   return {row:{...row,scope_id:row?.scope_id||scope.id,__table:table,__galaxy_media_table:scope.galaxyMedia},source,providerId};
 }
 
-function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filters=[],dateColumn='',batchSize=DEFAULT_LIST_BATCH_SIZE,excludeSunoStyle=false}){
+function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filters=[],dateColumn='',exactColumn='',batchSize=DEFAULT_LIST_BATCH_SIZE}){
   const outputColumns=Object.freeze(unique(columns));
   const frozenFields=Object.freeze(unique(searchFields));
   const frozenFilters=Object.freeze(filters.map(item=>Object.freeze({...item})));
@@ -217,17 +217,21 @@ function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filte
       const offset=Math.max(0,Math.floor(Number(cursor)||0));
       const activeTable=table;
       const activeFilters=[...frozenFilters,...dateSearchFilters(dateColumn,startDate,endDate)];
-      const orders=dateColumn?[{column:dateColumn,ascending:true}]:[];
+      const orders=[
+        ...(dateColumn?[{column:dateColumn,ascending:true}]:[]),
+        ...(outputColumns.includes('title')?[{column:'title',ascending:true}]:[]),
+        ...(idColumn?[{column:idColumn,ascending:true}]:[])
+      ];
 
       // The exact COUNT(*) query can time out on ILIKE against article content.
       // Fetch one extra row instead; ordinary searching never needs a total count.
       const dataResult=await executePublicRead(activeTable,relation=>{
         let dataQuery=relation.select(outputColumns.join(','));
         dataQuery=applyFilters(dataQuery,activeFilters);
-        // Suno Style is reference-only: never return it in article search,
-        // including privileged searches that deliberately include other hidden works.
-        if(excludeSunoStyle)dataQuery=dataQuery.not('title','ilike','%Suno Style%');
-        dataQuery=applyLiteralTerms(dataQuery,frozenFields,query,and,nor);
+        if(exactColumn){
+          const exact=literalPattern(query).slice(1,-1);
+          dataQuery=dataQuery.ilike(exactColumn,exact);
+        }else dataQuery=applyLiteralTerms(dataQuery,frozenFields,query,and,nor);
         dataQuery=applyOrders(dataQuery,orders);
         return dataQuery.range(offset,offset+pageSize);
       },{source});
@@ -243,12 +247,25 @@ function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filte
 
 function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false}={}){
   const current=scopeOf(scope);
-  const text=makeProvider({
-    id:current.id+':text',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
-    excludeSunoStyle:true,
-    columns:['uid','title','content','createtime','source_native_id','source_place','searchable','UpdateTime','url','source_id','target_id','ref_id','source_name','media_link','statistics_able','class_id','group_lists'],
-    searchFields:['title','content','source_name'],dateColumn:'createtime',
-    filters:publicContentFilters(includeHiddenText?[]:[{column:'searchable',operator:'eq',value:true}])
+  const textFilters=publicContentFilters(includeHiddenText?[]:[{column:'searchable',operator:'eq',value:true}]);
+  const textColumns=['uid','title','content','createtime','source_native_id','source_place','searchable','UpdateTime','url','source_id','target_id','ref_id','source_name','media_link','statistics_able','class_id','group_lists'];
+  const titleExact=makeProvider({
+    id:current.id+':text-title-exact',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
+    columns:textColumns,searchFields:['title'],dateColumn:'createtime',filters:textFilters,exactColumn:'title'
+  });
+  const title=makeProvider({
+    id:current.id+':text-title',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
+    columns:textColumns,
+    searchFields:['title'],dateColumn:'createtime',filters:textFilters
+  });
+  const contentExact=makeProvider({
+    id:current.id+':text-content-exact',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
+    columns:textColumns,searchFields:['content'],dateColumn:'createtime',filters:textFilters,exactColumn:'content'
+  });
+  const content=makeProvider({
+    id:current.id+':text-content',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
+    columns:textColumns,
+    searchFields:['content','source_name'],dateColumn:'createtime',filters:textFilters
   });
   const media=makeProvider({
     id:current.id+':media',table:current.galaxyMedia,source:current.id+' 多媒體',scope:current,idColumn:'media_id',
@@ -264,7 +281,7 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false}={
   });
   // Article and media records are the primary search targets. Keep timeline
   // context available as the next page so it cannot hide the actual works.
-  return [text,timeline];
+  return [titleExact,title,contentExact,content,timeline];
 }
 
 function normalizeSearch(value){
@@ -308,7 +325,11 @@ export async function searchGalaxyRows(scopes,query,{
   const safeLimit=Math.max(1,Math.min(DEFAULT_LIST_BATCH_SIZE,Math.floor(Number(limit)||DEFAULT_LIST_BATCH_SIZE)));
   const scopeList=(Array.isArray(scopes)?scopes:[]).filter(scope=>scope?.id);
   const hiddenScopes=new Set((Array.isArray(hiddenScopeIds)?hiddenScopeIds:[]).map(value=>String(value||'').trim()).filter(Boolean));
-  const providers=scopeList.flatMap(scope=>genericScopeProviders(scope,{mediaOnly,includeHiddenText:hiddenScopes.has(scope.id)}));
+  const scopeProviders=scopeList.map(scope=>genericScopeProviders(scope,{mediaOnly,includeHiddenText:hiddenScopes.has(scope.id)}));
+  // Every Scope's title hits are paged before any body matches.
+  const providers=mediaOnly
+    ?scopeProviders.flat()
+    :[0,1,2,3,4].flatMap(index=>scopeProviders.map(group=>group[index]).filter(Boolean));
   const failures=[];
 
   let stage=Number.isInteger(cursor?.stage)?cursor.stage:1;

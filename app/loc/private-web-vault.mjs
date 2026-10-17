@@ -1,5 +1,6 @@
 // Browser-only local record vault for private import rehearsal.
 // Never imports Supabase, Neon, fetch or cloud sync. No online encryption is claimed.
+import {sameArchiveText} from './archive-record-identity.mjs';
 const DATABASE_NAME='loc-private-x-archive-v1';
 const DATABASE_VERSION=1;
 const BATCH=200;
@@ -60,7 +61,7 @@ export async function stageWebRecords(db,id,records){
     lookup.onsuccess=()=>{
       const old=lookup.result;
       if(!old)target.put({...record,key,sessionId:id,recordKey:record.key});
-      else if(old.text!==record.text||old.originalTimestamp!==record.originalTimestamp||
+      else if(!sameArchiveText(old.text,record.text)||old.originalTimestamp!==record.originalTimestamp||
         String(old.replyTo||'')!==String(record.replyTo||'')){
         // Never silently replace an earlier value with the same platform ID.
         target.put({...old,archiveConflict:true});
@@ -132,7 +133,7 @@ export async function planWebImport(db,id){
       lookup.onsuccess=()=>{
         const old=lookup.result;
         if(!old)plan.newCount++;
-        else if(old.text===pending.text&&old.originalTimestamp===pending.originalTimestamp&&
+        else if(sameArchiveText(old.text,pending.text)&&old.originalTimestamp===pending.originalTimestamp&&
           String(old.replyTo||'')===String(pending.replyTo||''))plan.identical++;
         else plan.conflicts++;
         row.continue();
@@ -169,7 +170,7 @@ export async function confirmWebImport(db,id,onProgress,batchSize=BATCH){
         existing.onerror=()=>tx.abort();
         existing.onsuccess=()=>{
           if(existing.result){
-            if(existing.result.text===item.text&&
+            if(sameArchiveText(existing.result.text,item.text)&&
               existing.result.originalTimestamp===item.originalTimestamp&&
               String(existing.result.replyTo||'')===String(item.replyTo||''))already++;
             else changed++;

@@ -6,6 +6,7 @@ import {JSONParser} from '@streamparser/json';
 import {archiveEntrySignatures,summarizeArchiveSources} from './archive-source-signatures.mjs';
 import {inspectArchiveEntryStructure,summarizeArchiveStructures} from './archive-structure-inspector.mjs';
 import {createArchiveCompletenessAudit} from './archive-completeness-audit.mjs';
+import {canonicalArchiveText} from './archive-record-identity.mjs';
 
 export const ARCHIVE_CHUNK_BYTES=128*1024;
 export const ARCHIVE_MAX_BYTES=2*1024*1024*1024;
@@ -94,7 +95,7 @@ function normalize(row,{platform,kind,path,index,conversation}){
   const group=actualKind==='message'?conv:(sender||platform);
   // If no source-native ID exists, identity is based on conversation/author, time,
   // original content and attachments (never the index/order of the ZIP).
-  const stable=native||hash(JSON.stringify([group,originalTimestamp,sender,visibleText,attachments]));
+  const stable=native||hash(JSON.stringify([group,originalTimestamp,sender,canonicalArchiveText(visibleText),attachments]));
   return {
     key:platform+':'+finalKind+':'+encodeURIComponent(group)+':'+stable,
     platform,kind:finalKind,nativeId:stable,text:visibleText,

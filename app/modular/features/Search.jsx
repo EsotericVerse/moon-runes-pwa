@@ -258,7 +258,7 @@ function toResult(row,source,scopeId,copy=UI_COPY){
     dedupeKey:resourceType==='galaxy'
       ?'article-copy:'+JSON.stringify([scope,
         String(row.title||'').normalize('NFKC').trim(),
-        String(row.content||'').replace(/\r\n?/g,'\n').trim(),
+        String(row.content||'').replace(/[\r\n]/g,'').trim(),
         String(row.source_name||'').normalize('NFKC').trim(),
         String(row.createtime||''),String(row.url||'').trim()])
       :'',

@@ -122,6 +122,16 @@ test('Meta Threads and Instagram JSON shape variations preserve raw information'
   assert.equal(summary.unrecognizedFiles.length,0);
 });
 
+test('Threads records without native IDs share an identity when only line breaks differ',async()=>{
+  const {records}=await inspect(file(JSON.stringify({threads:[
+    {text:'同一篇\nThreads文章',timestamp:'2026-10-09T00:00:00Z'},
+    {text:'同一篇Threads文章',timestamp:'2026-10-09T00:00:00Z'}
+  ]}),'threads/threads_posts.json'));
+  assert.equal(records.length,2);
+  assert.equal(records[0].key,records[1].key);
+  assert.notEqual(records[0].text,records[1].text,'Original text stays intact');
+});
+
 test('novel Meta metadata schema is marked unmapped and raw values are retained',async()=>{
   const archive=zipSync({
     'facebook/other/unknown_section.json':strToU8(JSON.stringify({unseen_items:[
