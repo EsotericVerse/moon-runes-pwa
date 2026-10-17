@@ -88,7 +88,7 @@ must(editableBlocks.includes('block_eyebrow')&&editableBlocks.includes('block_su
   'future Scope blocks must retain four canonical header/body fields');
 must(importPanel.includes('source_native_id')&&importPanel.includes("offset+=200"),
   'source refresh must keep bounded indexed lookup fields');
-must(keywordAnalysis.includes('group_lists:result?.group_lists??''')&&
+must(keywordAnalysis.includes(`group_lists:result?.group_lists??''`)&&
   dbContract.includes("mode:'begin'")&&dbContract.includes("mode:'finalize'"),
   'keyword attr writes must preserve safe batch lifecycle');
 
