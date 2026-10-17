@@ -242,3 +242,39 @@ test('multi-vendor ZIP retains both identities with independent confidence',asyn
   assert.equal(result.evidence.find(x=>x.source==='claude')?.verified,true);
   assert.equal(result.evidence.find(x=>x.source==='perplexity')?.verified,false);
 });
+
+
+test('Slack official JSON archive is identified by combined manifest, not one generic file',async()=>{
+  const archive=zipSync({
+    'channels.json':strToU8('[]'),
+    'users.json':strToU8('[]'),
+    'integration_logs.json':strToU8('[]'),
+    'general/2026-10-01.json':strToU8('[{"type":"message","text":"hello"}]')
+  });
+  const result=await detectZipArchiveSource(file(archive,'workspace.zip'));
+  assert.equal(result.kind,'slack');
+  assert.equal(result.confidence,3);
+  const decoy=await detectZipArchiveSource(file(zipSync({
+    'channels.json':strToU8('[]'),'messages.json':strToU8('[]')
+  }),'decoy.zip'));
+  assert.equal(decoy.kind,'unknown');
+});
+
+test('LINE, Teams, Snapchat and other major export sources remain separate',async()=>{
+  const cases=[
+    ['line','Chat history in -Friend-.txt','2026.10.17 Saturday\n21:30 Alice Hello LINE',3],
+    ['teams','Microsoft-Teams/messages.json',JSON.stringify([{
+      createdDateTime:'2026-01-01T00:00:00Z',body:{content:'Hello'},chatId:'19:abc'
+    }]),3],
+    ['snapchat','json/memories_history.json',JSON.stringify([{
+      Date:'2026-01-01', 'Media Type':'Image', 'Download Link':''
+    }]),3],
+    ['wechat','WeChat/export/data.json','[]',1],
+    ['pinterest','Pinterest/data.json','[]',1]
+  ];
+  for(const [name,path,payload,confidence] of cases){
+    const result=await detectZipArchiveSource(file(zipSync({[path]:strToU8(payload)}),'data.zip'));
+    assert.equal(result.kind,name,name);
+    assert.equal(result.confidence,confidence,name);
+  }
+});
