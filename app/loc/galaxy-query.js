@@ -266,68 +266,30 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false}={
 function normalizeSearch(value){
   return String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
 }
-export async function selectStyleKeywordDocumentCount(table,keyword){
-  const q=String(keyword||'').trim();
-  if(!table||!q)return 0;
-  return selectCount(table,{idColumn:'uid',filters:[{column:'searchable',operator:'eq',value:true},{column:'statistics_able',operator:'eq',value:true},{column:'content',operator:'neq',value:''}],orFilter:orExpression(['title','content'],q)});
-}
-function anchorDate(a){
-  if(a?.time_date)return String(a.time_date).slice(0,10);
-  return a?.date_status==='year_only'&&Number(a.year_value)>0?String(a.year_value)+'-01-01':'';
-}
-function periodAt(date,periods,anchors){
-  if(!date)return null;
-  return periods.filter(p=>{
-    const ids=p.anchor_ids||[];
-    const start=ids[0]&&ids[0]!=='0'?anchorDate(anchors.get(ids[0])):'';
-    const end=ids.at(-1)&&ids.at(-1)!=='0'?anchorDate(anchors.get(ids.at(-1))):'';
-    return (!start||date>=start)&&(!end||date<end);
-  }).sort((a,b)=>anchorDate(anchors.get(b.anchor_ids?.[0])).localeCompare(anchorDate(anchors.get(a.anchor_ids?.[0]))))[0]||null;
-}
-export async function selectStyleKeywordIntroductions(scopes,query){
+export async function selectStyleKeywordMatches(scopes,query){
   const key=normalizeSearch(query);
   if(!key)return [];
-  const found=await Promise.all((Array.isArray(scopes)?scopes:[]).filter(s=>s?.id&&s?.time).map(async scope=>{
-    const c=scopeOf(scope);
-    const {rows=[]}=await selectAllRows(c.time,{columns:'record_id,record_type,resource_id,label,time_date,year_value,date_status,anchor_ids,style_description,status',filters:[{column:'record_type',operator:'in',value:['anchor','period','style_comment']}]});
-    const anchors=new Map(rows.filter(r=>r.record_type==='anchor'&&r.resource_id).map(r=>[String(r.resource_id),r]));
-    const periods=rows.filter(r=>r.record_type==='period');
-    const styles=rows.filter(r=>r.record_type==='style_comment'&&r.status!=='needs_anchor'&&r.label&&r.style_description);
-    const cache=new Map();
-    function count(tag){const k=normalizeSearch(tag);if(!cache.has(k))cache.set(k,selectStyleKeywordDocumentCount(c.galaxy,tag).catch(()=>null));return cache.get(k);}
-    return Promise.all(styles.filter(r=>normalizeSearch(r.label)===key).map(async r=>{
-      const date=anchorDate(anchors.get(r.anchor_ids?.[0]));
-      const period=periodAt(date,periods,anchors);
-      const related=await Promise.all(styles.filter(x=>x.record_id!==r.record_id).map(async x=>({
-        name:x.label,document_total:await count(x.label),
-        same_period:Boolean(period)&&period.record_id===periodAt(anchorDate(anchors.get(x.anchor_ids?.[0])),periods,anchors)?.record_id
-      })));
-      return {row:{id:'style-keyword:'+c.id+':'+r.record_id,scope_id:c.id,style_keyword_intro:true,title:r.label,
-        summary:r.style_description,period_label:period?.label||'',related_style_tags:related,style_anchor_start:date,style_anchor_end:''},
-        source:period?.label?'風格介紹 · '+period.label:'風格介紹',providerId:c.id+':style-keyword'};
-    }));
+  const found=await Promise.all((Array.isArray(scopes)?scopes:[]).filter(scope=>scope?.id&&scope?.time).map(async scope=>{
+    const current=scopeOf(scope);
+    const {rows=[]}=await selectAllRows(current.time,{
+      columns:'record_id,record_type,label,style_description,status',
+      filters:[{column:'record_type',operator:'eq',value:'style_comment'}]
+    });
+    return rows
+      .filter(row=>row.status!=='needs_anchor'&&String(row.label||'').trim()&&normalizeSearch(row.label)===key)
+      .map(row=>({
+        row:{
+          id:'style-keyword:'+current.id+':'+row.record_id,
+          scope_id:current.id,
+          style_keyword_tag:true,
+          title:String(row.label).trim(),
+          style_description:String(row.style_description||'')
+        },
+        source:'風格標籤',
+        providerId:current.id+':style-keyword'
+      }));
   }));
-  return found.flat(2);
-}
-
-export async function selectStyleKeywordRecommendations(scopes,{limit=8}={}){
-  const perScope=await Promise.all((Array.isArray(scopes)?scopes:[]).filter(s=>s?.id&&s?.time&&s?.galaxy).map(async scope=>{
-    const c=scopeOf(scope);
-    const {rows=[]}=await selectAllRows(c.time,{columns:'record_id,record_type,label,style_description,time_date,status',filters:[{column:'record_type',operator:'eq',value:'style_comment'}]});
-    return rows.filter(row=>row.status!=='needs_anchor'&&String(row.label||'').trim()&&String(row.style_description||'').trim())
-      .map(row=>({scope_id:c.id,table:c.galaxy,label:String(row.label).trim(),date:String(row.time_date||'')}));
-  }));
-  const uniqueStyles=new Map();
-  for(const style of perScope.flat()){
-    const key=normalizeSearch(style.label);
-    const prior=uniqueStyles.get(key);
-    if(!prior||style.date>prior.date)uniqueStyles.set(key,style);
-  }
-  const candidates=[...uniqueStyles.values()].sort((a,b)=>b.date.localeCompare(a.date)||a.label.localeCompare(b.label)).slice(0,Math.max(1,Math.floor(Number(limit)||8)));
-  return Promise.all(candidates.map(async style=>({
-    ...style,
-    document_total:await selectStyleKeywordDocumentCount(style.table,style.label).catch(()=>null)
-  })));
+  return found.flat();
 }
 
 export async function searchGalaxyRows(scopes,query,{

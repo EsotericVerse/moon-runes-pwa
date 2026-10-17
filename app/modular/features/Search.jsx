@@ -17,14 +17,13 @@ import {useScopeRuntime} from '../use-scope-runtime';
 import {scopeHref} from '../scope-registry';
 import {featureNavigationHref,galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
-import {resolveGalaxyExternalLinks,searchGalaxyRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordIntroductions,selectStyleKeywordRecommendations} from '../../loc/galaxy-query';
+import {resolveGalaxyExternalLinks,searchGalaxyRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordMatches} from '../../loc/galaxy-query';
 import {defaultScopeData,selectScopeRegistry} from '../../loc/scope-data';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import {applyFilters,selectRows} from '../../loc/db-query.mjs';
 import {blocksToPlainText,plainTextToBlocks} from '../../loc/blocknote-content.mjs';
-import ArticleBodyEditor from '../../loc/ArticleBodyEditor';
 import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
 
 
@@ -142,33 +141,6 @@ function GalaxyAttrSummary({row}){
   </details>;
 }
 
-function GalaxyAttrEditor({draft,setDraft}){
-  const t=useUiText();
-  const attrs=draft?.attrs||{};
-  const change=(key,value)=>setDraft(current=>({...current,attrs:{...(current?.attrs||{}),[key]:value}}));
-  return <details className="scope-search-attr-panel" open>
-    <summary><UiText id="uiExtra.searchUI.attributeTitle"/></summary>
-    <div className="scope-management-fields scope-search-attr-editor">
-      <label><span>uid</span><input value={attrs.uid||''} readOnly/></label>
-      <label><span>createtime</span><input type="datetime-local" value={attrs.createtime||''} onChange={event=>change('createtime',event.target.value)}/></label>
-      <label><span>source_native_id</span><input value={attrs.source_native_id||''} onChange={event=>change('source_native_id',event.target.value)}/></label>
-      <label><span>source_place</span><input value={attrs.source_place||''} onChange={event=>change('source_place',event.target.value)}/></label>
-      <label><span>url</span><input value={attrs.url||''} onChange={event=>change('url',event.target.value)}/></label>
-      <label><span>source_id</span><input value={attrs.source_id||''} onChange={event=>change('source_id',event.target.value)}/></label>
-      <label><span>ref_id</span><input value={attrs.ref_id||''} onChange={event=>change('ref_id',event.target.value)}/></label>
-      <label><span>source_name</span><input value={attrs.source_name||''} onChange={event=>change('source_name',event.target.value)}/></label>
-      <label><span>class_id</span><input type="number" value={attrs.class_id??''} onChange={event=>change('class_id',event.target.value)}/></label>
-      <label className="scope-setting-toggle"><input type="checkbox" checked={attrs.searchable!==false} onChange={event=>change('searchable',event.target.checked)}/><span>searchable</span></label>
-      <label className="scope-setting-toggle"><input type="checkbox" checked={attrs.statistics_able!==false} onChange={event=>change('statistics_able',event.target.checked)}/><span>statistics_able</span></label>
-      <label className="scope-management-wide-field"><span>target_id[]</span><textarea rows={3} value={attrs.target_id||''} onChange={event=>change('target_id',event.target.value)} placeholder={t('uiExtra.searchUI.uuidHint')}/></label>
-      <label className="scope-management-wide-field"><span>media_link[]</span><textarea rows={3} value={attrs.media_link||''} onChange={event=>change('media_link',event.target.value)} placeholder={t('uiExtra.searchUI.mediaUuidHint')}/></label>
-      <label className="scope-management-wide-field"><span>group_lists (JSON)</span><textarea rows={5} value={attrs.group_lists||''} onChange={event=>change('group_lists',event.target.value)}/></label>
-      <label><span>UpdateTime</span><input value={attrs.UpdateTime||''} readOnly/></label>
-      <label><span>content</span><input value={t('uiExtra.searchUI.bodyManaged')} readOnly/></label>
-    </div>
-  </details>;
-}
-
 function normalizeScopeAlias(value=''){
   return String(value||'').normalize('NFKC').trim().toLocaleLowerCase('zh-Hant');
 }
@@ -231,7 +203,7 @@ function toResult(row,source,scopeId,copy=UI_COPY){
     row.media_type?(copy.search.typePrefix+row.media_type):'',
     row.source_native_id?(copy.search.sourceIdPrefix+row.source_native_id):''
   ].map(value=>workDisplayText(value||'').trim()).filter(Boolean).join(' · ');
-  const body=isMedia
+  const body=row.style_keyword_tag?'':isMedia
     ?(mediaMetadata||(bodyField?workDisplayText(row[bodyField]):text))
     :(isGalaxy?(row.summary?workDisplayText(row.summary):row.excerpt?workDisplayText(row.excerpt):''):(bodyField?workDisplayText(row[bodyField]):text));
   const identity=row.media_id||row.uid||row.song_id||row.rune_id||row.record_id||row.resource_id||row.id;
@@ -251,11 +223,8 @@ function toResult(row,source,scopeId,copy=UI_COPY){
     source:displaySource,title:String(title),
     date:row.date||row.createtime||row.time_date||row.record_date||row.UpdateTime||row.updated_at||'',
     snippet:body,scopeId:scope,resourceType,resourceId,
-    styleIntro:Boolean(row.style_keyword_intro),
-    stylePeriod:String(row.period_label||''),
-    styleAnchorStart:String(row.style_anchor_start||''),
-    styleAnchorEnd:String(row.style_anchor_end||''),
-    relatedStyleTags:Array.isArray(row.related_style_tags)?row.related_style_tags:[],
+    styleTagMatch:Boolean(row.style_keyword_tag),
+    styleIntroText:row.style_keyword_tag?workDisplayText(row.style_description||''):'',
     editableTable,editableIdColumn,editResourceId,editableField,isScopeCard,href,
     editRow:resourceType?row:null,
     relationLinks:resourceType==='galaxy'
@@ -270,9 +239,11 @@ function toResult(row,source,scopeId,copy=UI_COPY){
         String(row.source_name||'').normalize('NFKC').trim(),
         String(row.createtime||''),String(row.url||'').trim()])
       :'',
-    groupKey:resourceType==='galaxy'&&resourceId
+    groupKey:row.style_keyword_tag
+      ?'style-tag:'+String(title).normalize('NFKC').trim().toLocaleLowerCase('zh-Hant')
+      :(resourceType==='galaxy'&&resourceId
       ?'galaxy:'+scope+':'+resourceId
-      :(resourceType==='galaxy_media'&&row.galaxy_link?'galaxy:'+scope+':'+row.galaxy_link:'result:'+scope+':'+(identity||title)),
+      :(resourceType==='galaxy_media'&&row.galaxy_link?'galaxy:'+scope+':'+row.galaxy_link:'result:'+scope+':'+(identity||title))),
     links:[...(href?[{id:resourceType||'primary',href,label:resourceType==='galaxy_media'?copy.search.mediaLink:copy.search.externalLink}]:[]),...(Array.isArray(row.resolved_links)?row.resolved_links:[])],
     destinations:[]
   };
@@ -300,6 +271,10 @@ function mergeSummaryResults(rows=[],copy=UI_COPY){
     });
   }
   return [...groups.values()];
+}
+
+function prioritizeStyleTagResults(rows=[]){
+  return [...rows].sort((left,right)=>Number(Boolean(right.styleTagMatch))-Number(Boolean(left.styleTagMatch)));
 }
 
 export default function Search(){
@@ -345,12 +320,6 @@ export default function Search(){
       .map(item=>defaultScopeData(item.scope_id))
       .filter(Boolean);
   },[scopeId,scopesQuery.data]);
-  const styleRecommendationsQuery=useQuery({
-    queryKey:['search-style-recommendations',targetScopes.map(item=>item.id)],
-    queryFn:()=>selectStyleKeywordRecommendations(targetScopes),
-    enabled:!aggregateScopes&&targetScopes.length>0&&(scopeId!=='loc'||scopesQuery.isSuccess),
-    staleTime:5*60_000
-  });
   const scopeById=useMemo(()=>new Map(targetScopes.map(item=>[item.id,item])),[targetScopes]);
   const hiddenScopeIds=useMemo(
     ()=>targetScopes.filter(item=>canManageSearchScope(account,item.id)).map(item=>item.id),
@@ -419,14 +388,14 @@ export default function Search(){
         }
         logSearchKeyword(scopeId,q).catch(()=>{});
       }
-      const styleIntroductions=(!append&&searchMode!=='media')
-        ?await selectStyleKeywordIntroductions(targetScopes,q)
+      const styleTagMatches=(!append&&searchMode!=='media')
+        ?await selectStyleKeywordMatches(targetScopes,q)
         :[];
       const search=await searchGalaxyRows(targetScopes,q,{
         limit:pageSize,
-        // Prioritize document results after a recognized Time style introduction.
-        // Time records remain available in normal searches without a style hit.
-        cursor:!append&&styleIntroductions.length&&scopeId!=='loc'?{stage:2,offset:0,source:'auto'}:cursor,
+        // Always search article providers, including when the same keyword
+        // exactly matches a style tag.
+        cursor,
         mediaOnly:searchMode==='media',hiddenScopeIds
       });
       if(id!==searchId.current)return;
@@ -457,12 +426,12 @@ export default function Search(){
 
       if(!append)matchedQueryRef.current=q;
       const converted=[];const seen=new Set();
-      for(const {row,source} of [...styleIntroductions,...enrichedRows]){
+      for(const {row,source} of [...styleTagMatches,...enrichedRows]){
         const result=toResult(row,source,scopeId,UI_COPY);
         if(!result||seen.has(result.key))continue;
         seen.add(result.key);converted.push(result);
       }
-      const pageResults=mergeSummaryResults(converted,UI_COPY);
+      const pageResults=prioritizeStyleTagResults(mergeSummaryResults(converted,UI_COPY));
       setResults(current=>append?mergeSummaryResults([...current,...pageResults],UI_COPY):pageResults);
             setHasMore(Boolean(search.hasMore));
       setNextCursor(search.nextCursor??null);
@@ -654,14 +623,6 @@ export default function Search(){
       <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder={searchMode==='media'?UI_COPY.search.mediaPlaceholder:UI_COPY.search.textPlaceholder} aria-label={searchMode==='media'?UI_COPY.search.mediaSearch:UI_COPY.search.textPromptLabel}/>
       <button type="submit">{UI_COPY.nav.search}</button>
     </form>
-    {styleRecommendationsQuery.data?.length?<section className="scope-style-search-recommendations" aria-label={t('uiExtra.searchUI.styleRecommendations')}>
-      <strong>{t('uiExtra.searchUI.styleRecommendations')}</strong>
-      <div className="scope-style-search-related-links">
-        {styleRecommendationsQuery.data.map(item=><a key={item.scope_id+':'+item.label} href={featureNavigationHref(item.scope_id,'search',{q:item.label})}>
-          {item.label}<span>{item.document_total===null?t('uiExtra.searchUI.countUnavailable'):t('uiExtra.searchUI.documentCount',{count:item.document_total.toLocaleString()})}</span>
-        </a>)}
-      </div>
-    </section>:null}
     <p className="scope-status">{status}</p>
     {error?<p className="scope-status scope-error">{error}</p>:null}
     {loadMoreError?<p role="alert" className="scope-status scope-error">{loadMoreError} <button type="button" className="loc-button" disabled={loadingMore} onClick={loadNextSearch}><UiText id="uiExtra.cultureView.reloadWorks"/></button></p>:null}
@@ -695,7 +656,7 @@ export default function Search(){
           key={row.key}
           uid={editTarget.editResourceId}
           title={row.title}
-          source={row.source}
+          source={row.styleTagMatch?'':row.source}
           scopeId={row.scopeId}
           date={row.date}
           body={draft?'':/<[a-z][^>]*>/i.test(String(row.snippet||''))?String(row.snippet):highlightSearchText(row.snippet,matchedQueryRef.current)}
@@ -706,33 +667,16 @@ export default function Search(){
           editable={editable}
           editing={editingKey===row.key}
           onEdit={uid=>startEditing({...editTarget,editResourceId:uid})}
+          editorDraft={draft}
+          onDraftChange={setEditDraft}
+          onSave={()=>saveEditing(editTarget)}
+          onCancel={()=>{setEditingKey('');setEditDraft(null);setEditError('')}}
+          editBusy={editBusy}
+          editError={editError}
+          styleTag={row.styleTagMatch}
+          styleTagKicker={row.styleTagMatch?<UiText id="uiExtra.searchUI.styleRecommendations"/>:null}
+          styleIntroText={row.styleIntroText}
         >
-          {row.styleIntro?<div className="scope-style-search-connections">
-            <p className="scope-status"><strong><UiText id="uiExtra.searchUI.stylePeriod"/></strong>{row.stylePeriod||t('uiExtra.searchUI.unknownStyle')}</p>
-            <div className="scope-preview-links">
-              <a href={scopeHref(row.scopeId)}><UiText id="uiExtra.searchUI.openScope" params={{scope:row.scopeId}}/></a>
-              {(row.styleAnchorStart||row.styleAnchorEnd)?<a href={featureNavigationHref(row.scopeId,'culture',{...(row.styleAnchorStart?{from:row.styleAnchorStart}:{}),...(row.styleAnchorEnd?{to:row.styleAnchorEnd}:{})})}><UiText id="uiExtra.searchUI.timelineAnchors"/></a>:null}
-            </div>
-            {row.relatedStyleTags.length?<div className="scope-style-search-related">
-              <p className="scope-status"><strong><UiText id="uiExtra.searchUI.exploreMore"/></strong><UiText id="uiExtra.searchUI.clickToExplore"/></p>
-              {row.relatedStyleTags.some(style=>style.same_period)?<div className="scope-style-search-related-group">
-                <span><UiText id="uiExtra.searchUI.samePeriodStyles"/></span>
-                <div className="scope-style-search-related-links">
-                  {row.relatedStyleTags.filter(style=>style.same_period).map(style=><a key={style.name} href={featureNavigationHref(row.scopeId,'search',{q:style.name})}>
-                    {style.name} · {style.document_total===null?t('uiExtra.searchUI.countUnavailable'):t('uiExtra.searchUI.documentCount',{count:style.document_total.toLocaleString()})}
-                  </a>)}
-                </div>
-              </div>:null}
-              {row.relatedStyleTags.some(style=>!style.same_period)?<div className="scope-style-search-related-group">
-                <span><UiText id="uiExtra.searchUI.otherPeriodStyles"/></span>
-                <div className="scope-style-search-related-links">
-                  {row.relatedStyleTags.filter(style=>!style.same_period).map(style=><a key={style.name} href={featureNavigationHref(row.scopeId,'search',{q:style.name})}>
-                    {style.name} · {style.document_total===null?t('uiExtra.searchUI.countUnavailable'):t('uiExtra.searchUI.documentCount',{count:style.document_total.toLocaleString()})}
-                  </a>)}
-                </div>
-              </div>:null}
-            </div>:null}
-          </div>:null}
           {row.resourceType==='galaxy'&&editingKey!==row.key?<WorkFullText
             open={fullTextKey===row.key}
             loading={fullTextLoading&&fullTextKey===row.key}
@@ -742,23 +686,6 @@ export default function Search(){
             showToggle={!searchParams?.get('identity')}
           />:null}
           {row.resourceType==='galaxy'&&editable&&fullTextKey===row.key&&!fullTextLoading?<GalaxyAttrSummary row={fullTextRow}/>:null}
-          {draft?<div className="scope-editor scope-search-article-editor">
-            <label>{UI_COPY.common.title}<input value={draft.title||''} onChange={event=>setEditDraft(current=>({...current,title:event.target.value}))}/></label>
-            <div className="scope-editor-blocknote"><span>{UI_COPY.common.body}</span>
-              <ArticleBodyEditor
-                editorKey={'article:'+row.key}
-                content={draft.bodyHtml??draft.bodyBlocks}
-                onBlocksChange={blocks=>setEditDraft(current=>({...current,bodyBlocks:blocks,body:blocksToPlainText(blocks)}))}
-                onHtmlChange={html=>setEditDraft(current=>({...current,bodyHtml:html}))}
-              />
-            </div>
-            {row.resourceType==='galaxy'?<GalaxyAttrEditor draft={draft} setDraft={setEditDraft}/>:null}
-            {editError?<p role="alert" className="scope-error">{editError}</p>:null}
-            <div className="scope-tabs">
-              <button type="button" disabled={editBusy} onClick={()=>saveEditing(editTarget)}>{editBusy?UI_COPY.common.saving:UI_COPY.common.save}</button>
-              <button type="button" disabled={editBusy} onClick={()=>{setEditingKey('');setEditDraft(null);setEditError('')}}>{UI_COPY.common.cancel}</button>
-            </div>
-          </div>:null}
         </Article>;
       }}
     />

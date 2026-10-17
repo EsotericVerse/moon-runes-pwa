@@ -124,3 +124,33 @@ test('editing an article does not rewrite untouched attributes',()=>{
   draft.attrs.target_id='id-1\nid-2';
   assert.equal(JSON.stringify(changedGalaxyAttributes(draft,()=>'')),JSON.stringify({target_id:['id-1','id-2']}));
 });
+
+test('exact style-tag search returns its complete intro as a separate recommendation row',async()=>{
+  const source=extract('app/loc/galaxy-query.js','export async function selectStyleKeywordMatches(', '\nexport async function searchGalaxyRows(');
+  const records=[
+    {record_id:'style-1',record_type:'style_comment',label:'月光敘事',style_description:'第一段完整介紹。\n第二段也保留。',status:'active'},
+    {record_id:'style-2',record_type:'style_comment',label:'其他風格',style_description:'不應命中',status:'active'},
+    {record_id:'style-pending',record_type:'style_comment',label:'月光敘事',style_description:'未完成',status:'needs_anchor'}
+  ];
+  const calls=[];
+  const selectStyleKeywordMatches=vm.runInNewContext(source.replace(/^export /,'')+'; selectStyleKeywordMatches',{
+    normalizeSearch:value=>String(value||'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/\s/g,''),
+    scopeOf:scope=>scope,
+    selectAllRows:async(table,query)=>{calls.push({table,query});return {rows:records};}
+  });
+  const [match]=await selectStyleKeywordMatches([{id:'loc',time:'loc_time'}],' 月光敘事 ');
+  assert.equal(match.row.style_keyword_tag,true);
+  assert.equal(match.row.title,'月光敘事');
+  assert.equal(match.row.style_description,'第一段完整介紹。\n第二段也保留。');
+  assert.equal(match.source,'風格標籤');
+  assert.equal(calls.length,1);
+  assert.equal(JSON.stringify(calls[0].query.filters),JSON.stringify([{column:'record_type',operator:'eq',value:'style_comment'}]));
+  assert.equal(calls[0].query.columns,'record_id,record_type,label,style_description,status');
+});
+
+test('style-tag recommendations stay above article results without reordering peers',()=>{
+  const source=extract('app/modular/features/Search.jsx','function prioritizeStyleTagResults(', '\n\nexport default function Search(');
+  const prioritizeStyleTagResults=vm.runInNewContext(source+'; prioritizeStyleTagResults');
+  const rows=[{id:'article-a'},{id:'style-a',styleTagMatch:true},{id:'article-b'},{id:'style-b',styleTagMatch:true}];
+  assert.deepEqual(Array.from(prioritizeStyleTagResults(rows),row=>row.id),['style-a','style-b','article-a','article-b']);
+});

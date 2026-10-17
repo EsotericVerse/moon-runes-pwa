@@ -29,7 +29,6 @@ import {useScopeRuntime} from '../use-scope-runtime';
 import {FeaturePage,IncrementalList,WorkFullText} from '../ui';
 import Article from '../Article';
 import {blocksToPlainText,plainTextToBlocks} from '../../loc/blocknote-content.mjs';
-import ArticleBodyEditor from '../../loc/ArticleBodyEditor';
 import CultureTimelineEditor from './CultureTimelineEditor';
 import {workDisplayHeading,workDisplayText} from '../work-display-model';
 import {useOffsetPagination} from '../use-offset-pagination';
@@ -904,12 +903,19 @@ export default function Culture(){
                       source={work.source_name||work.group_label||''}
                       scopeId={work.scope_id||classificationScope}
                       date={work.display_date||formatCultureDateTime(work.createtime||work.created_at)}
-                      body={editingWorkKey===workKey?'':work.description||work.media_metadata_text||''}
+                      body={editingWorkKey===workKey&&editDraft?'':work.description||work.media_metadata_text||''}
                       relationLinks={galaxyRelationLinks(classificationScope,work)}
                       links={work.links||[]}
                       editable={canEditWork}
                       editing={editingWorkKey===workKey}
                       onEdit={uid=>startEditingWork({...work,uid})}
+                      editorDraft={editingWorkKey===workKey?editDraft:null}
+                      onDraftChange={setEditDraft}
+                      onSave={()=>saveEditingWork(work)}
+                      onCancel={()=>{setEditingWorkKey('');setEditDraft(null);setEditError('')}}
+                      editBusy={editBusy}
+                      editError={editError}
+                      showHidden
                     >
                       {work.uid&&editingWorkKey!==workKey?<WorkFullText
                         open={fullTextKey===work.key}
@@ -918,25 +924,6 @@ export default function Culture(){
                         content={fullTextKey===work.key?fullText:''}
                         onToggle={()=>toggleWorkContent(work)}
                       />:null}
-                      {editingWorkKey===workKey&&editDraft?<div className="scope-editor scope-search-article-editor">
-                        <label>{UI_COPY.common.title}<input value={editDraft.title||''} onChange={event=>setEditDraft(current=>({...current,title:event.target.value}))}/></label>
-                        <div className="scope-editor-blocknote"><span>{UI_COPY.common.body}</span>
-                          <ArticleBodyEditor
-                            editorKey={'article:'+workKey}
-                            content={editDraft.bodyHtml??editDraft.bodyBlocks}
-                            onBlocksChange={blocks=>setEditDraft(current=>({...current,bodyBlocks:blocks,body:blocksToPlainText(blocks)}))}
-                            onHtmlChange={html=>setEditDraft(current=>({...current,bodyHtml:html}))}
-                          />
-                        </div>
-                        <div className="scope-editor-options">
-                          <label><input type="checkbox" checked={editDraft.hidden===true} onChange={event=>setEditDraft(current=>({...current,hidden:event.target.checked}))}/>{UI_COPY.common.hiddenFromSearch}</label>
-                        </div>
-                        {editError?<p role="alert" className="scope-error">{editError}</p>:null}
-                        <div className="scope-tabs">
-                          <button type="button" disabled={editBusy} onClick={()=>saveEditingWork(work)}>{editBusy?UI_COPY.common.saving:UI_COPY.common.save}</button>
-                          <button type="button" disabled={editBusy} onClick={()=>{setEditingWorkKey('');setEditDraft(null);setEditError('')}}>{UI_COPY.common.cancel}</button>
-                        </div>
-                      </div>:null}
                     </Article>;
                     }}
                   />
