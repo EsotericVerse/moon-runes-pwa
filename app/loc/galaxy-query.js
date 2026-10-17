@@ -215,7 +215,7 @@ function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filte
       const offset=Math.max(0,Math.floor(Number(cursor)||0));
       const activeTable=table;
       const activeFilters=[...frozenFilters,...dateSearchFilters(dateColumn,startDate,endDate)];
-      const orders=dateColumn?[{column:dateColumn,ascending:false},{column:idColumn,ascending:true}]:[{column:idColumn,ascending:true}];
+      const orders=dateColumn?[{column:dateColumn,ascending:false}]:[];
 
       const countResult=await executePublicRead(activeTable,relation=>{
         let countQuery=relation.select(idColumn,{count:'exact',head:true});
