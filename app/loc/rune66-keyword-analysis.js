@@ -4,6 +4,7 @@ import {applyKeywordClassification,dbAuthRelation} from './db-client.mjs';
 import {selectAllRows} from './db-query.mjs';
 import {selectManagedScope} from './scope-data';
 import {classifyRune66Documents} from './model/rune66-keyword-engine.mjs';
+import {parseGroupLists,formatGroupLists} from './group-lists.mjs';
 
 const DEFAULT_KEYWORD_MIN_CHARS=32;
 const DEFAULT_KEYWORD_MIN_DOCUMENTS=100;
@@ -28,16 +29,7 @@ export function analysisCharacterCount(value){
   return Array.from(String(value??'').replace(/\s/gu,'')).length;
 }
 function normalizedGroupLists(value){
-  if(value===false)return false;
-  if(value&&typeof value==='object'&&!Array.isArray(value))return value;
-  if(typeof value==='string'){
-    try{
-      const parsed=JSON.parse(value);
-      if(parsed===false)return false;
-      if(parsed&&typeof parsed==='object'&&!Array.isArray(parsed))return parsed;
-    }catch{}
-  }
-  return {};
+  return parseGroupLists(value);
 }
 function isEligibleRow(row,minChars){
   return Boolean(
@@ -152,7 +144,7 @@ function groupListsOf(classification){
     if(!Number.isInteger(runeId)||runeId<1||count<=0)continue;
     output[String(runeId)]=count;
   }
-  return output;
+  return formatGroupLists(output);
 }
 function metaOf(catalogRows,classMap,currentClassId){
   const className=String(catalogRows?.[0]?.class_name||'').trim();
@@ -282,7 +274,7 @@ export async function runRune66ClassificationBatch(scopeId='lo3rwang',{onProgres
     return {
       uid,
       class_id:result?.class_id||null,
-      group_lists:result?.group_lists||{}
+      group_lists:result?.group_lists??''
     };
   });
   const keywordMeta=metaOf(catalogRows,resolved.classMap,currentClassId);
