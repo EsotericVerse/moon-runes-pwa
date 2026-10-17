@@ -473,3 +473,6 @@
   .scope-rune-daynight-feature{gap:.75rem;}
   .scope-rune-daynight-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr));}
 }
+
+/* Reusable article actions live alongside the heading, not after the full article. */
+.scope-work-summary-actions{display:flex;align-items:center;justify-content:flex-end;gap:.6rem;flex-wrap:wrap}
