@@ -9,9 +9,11 @@ import {useAccount} from './use-account';
 import {createUid8} from './uid';
 import {IMPORT_FIELD_ALIASES,importRowsFromJson,mappedImportValue,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
 import {UNIVERSAL_IMPORT_ACCEPT,parseUniversalImportFile} from './universal-file-import.mjs';
+import {detectZipArchiveSource} from './private-archive-universal.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 import {refreshSunoStyleMetaTags} from './suno-style-meta-tags.mjs';
 
+const ZIP_SOURCE_NAMES=Object.freeze({chatgpt:'ChatGPT',facebook:'Facebook',instagram:'Instagram',threads:'Threads',x:'X / Twitter'});
 function sourceSuggestion(name=''){
   const value=String(name).toLowerCase();
   for(const key of ['threads','facebook','pixnet','ptt','vocus','instagram']){
@@ -92,6 +94,7 @@ function UniversalImport({scopeId,format,onBusyChange}) {
   const t=useUiText();
   const account=useAccount();
   const [fileName,setFileName]=useState('');
+  const [archiveDetection,setArchiveDetection]=useState(null);
   const [rows,setRows]=useState([]);
   const [queue,setQueue]=useState([]);
   const [queueIndex,setQueueIndex]=useState(0);
@@ -111,8 +114,17 @@ function UniversalImport({scopeId,format,onBusyChange}) {
   if(!account.canManageScopeSync(scopeId))return null;
 
   async function loadQueuedFile(file,index,total){
-    setFileName(file.name);setRows([]);setProgress(null);setStatus('');
+    setFileName(file.name);setRows([]);setArchiveDetection(null);setProgress(null);setStatus('');
+    const isZip=/\.zip$/i.test(file.name);
+    if(isZip){setBusy(true);setStatus(t('uiExtra.importUI.zipInspecting'));}
     try{
+      if(isZip){
+        const result=await detectZipArchiveSource(file);
+        setArchiveDetection(result);
+        setSource(result.sources.length===1?result.sources[0]:'');
+        setStatus(t('uiExtra.importUI.zipInspected',{count:result.filesSeen}));
+        return;
+      }
       const list=await parseUniversalImportFile(file,{recordPath:format.recordPath});
       const prepared=list.map(row=>({
         raw:row,
@@ -124,6 +136,8 @@ function UniversalImport({scopeId,format,onBusyChange}) {
     }catch(error){
       setRows([]);
       setStatus(t('uiExtra.importUI.parseFileFailed',{index:index+1,error:error?.message||error}));
+    }finally{
+      if(isZip)setBusy(false);
     }
   }
   async function chooseFile(event){
@@ -195,8 +209,14 @@ function UniversalImport({scopeId,format,onBusyChange}) {
   return <div className="scope-inline-card">
     <h4>{UI_COPY.management.importJson}</h4>
     <label>{UI_COPY.management.currentFile}<input type="file" accept={UNIVERSAL_IMPORT_ACCEPT} multiple disabled={busy} onChange={chooseFile}/></label>
-    {fileName?<p><UiText id="uiExtra.importUI.fileLabel"/><strong>{fileName}</strong><UiText id="uiExtra.importUI.fileQueue" params={{index:queueIndex+1,total:queue.length}}/><strong>{suggested}</strong></p>:null}
+    {fileName?<p><UiText id="uiExtra.importUI.fileLabel"/><strong>{fileName}</strong><UiText id="uiExtra.importUI.fileQueue" params={{index:queueIndex+1,total:queue.length}}/><strong>{archiveDetection?(archiveDetection.sources.map(kind=>ZIP_SOURCE_NAMES[kind]||kind).join(' / ')||t('uiExtra.importUI.zipUnknown')):suggested}</strong></p>:null}
     <label>{UI_COPY.management.sourceChoice}<input disabled={busy||!rows.length} value={source} onChange={event=>setSource(event.target.value)} placeholder={suggested}/></label>
+    {archiveDetection?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.zipDetected')}>
+      <p><strong>{t('uiExtra.importUI.zipDetected')}：</strong>{archiveDetection.sources.map(kind=>ZIP_SOURCE_NAMES[kind]||kind).join(' / ')||t('uiExtra.importUI.zipUnknown')}</p>
+      <p>{t('uiExtra.importUI.zipConfidence')}：{t(archiveDetection.confidence===3?'uiExtra.importUI.zipVerified':archiveDetection.confidence?'uiExtra.importUI.zipPossible':'uiExtra.importUI.zipUnknown')}</p>
+      {archiveDetection.evidence.length?<p>{t('uiExtra.importUI.zipEvidence')}：{archiveDetection.evidence.map(item=>item.path).join('、')}</p>:null}
+      <p>{t('uiExtra.importUI.zipReadOnly')}</p>
+    </section>:null}
     {rows.length?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.preview')}>
       <p className="scope-status"><UiText id="uiExtra.importUI.validSkipped" params={{valid:analyzed.valid.length.toLocaleString(),skipped:analyzed.invalid.length.toLocaleString()}}/></p>
       <div className="scope-management-records">
