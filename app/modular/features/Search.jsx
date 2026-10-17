@@ -435,6 +435,7 @@ export default function Search(){
     const id=++searchId.current;
     matchedQueryRef.current='';
     setError('');setLoadMoreError('');setHasMore(false);setNextCursor(null);setLoadingMore(false);
+    setFullText('');setFullTextRow(null);setFullTextError('');setFullTextLoading(true);
     setStatus(UI_COPY.search.loadingRelation);
     try{
       let detail=null;
@@ -455,6 +456,8 @@ export default function Search(){
     }catch(exception){
       if(id!==searchId.current)return;
       setResults([]);setError(featureDataErrorMessage(exception,UI_COPY));setStatus(UI_COPY.search.relationFailed);
+    }finally{
+      if(id===searchId.current)setFullTextLoading(false);
     }
   }
 
