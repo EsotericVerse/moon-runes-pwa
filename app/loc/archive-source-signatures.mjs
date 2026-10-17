@@ -4,7 +4,7 @@
 export const ARCHIVE_SOURCE_ORDER=Object.freeze([
   'chatgpt','claude','gemini','grok','copilot','perplexity','meta-ai',
   'facebook','messenger','instagram','threads','whatsapp','x',
-  'telegram','discord','tiktok','reddit','linkedin','youtube','google-takeout'
+  'telegram','discord','line','slack','teams','snapchat','wechat','tiktok','reddit','linkedin','pinterest','youtube','google-takeout'
 ]);
 
 const normalized=value=>String(value||'').replace(/\\/g,'/').replace(/^\/+/,'').toLowerCase();
@@ -36,6 +36,12 @@ export function archiveEntrySignatures(path,head=''){
   if(xPath)add('x',1);
   if(segmented(p,'telegram'))add('telegram',1);
   if(segmented(p,'discord'))add('discord',1);
+  if(segmented(p,'line')||/^chat history in -.+-\.txt$/.test(base))add('line',1);
+  if(segmented(p,'slack'))add('slack',1);
+  if(segmented(p,'teams')||segmented(p,'microsoft-teams'))add('teams',1);
+  if(segmented(p,'snapchat')||/^(?:memories_history|chat_history)\.(?:json|html)$/.test(base)&&/^(?:json|html)\//.test(p))add('snapchat',1);
+  if(segmented(p,'wechat')||segmented(p,'weixin'))add('wechat',1);
+  if(segmented(p,'pinterest'))add('pinterest',1);
   if(segmented(p,'tiktok')||named(base,'tiktok'))add('tiktok',1);
   if(segmented(p,'reddit')||named(base,'reddit'))add('reddit',1);
   if(segmented(p,'linkedin')||named(base,'linkedin'))add('linkedin',1);
@@ -73,6 +79,15 @@ export function archiveEntrySignatures(path,head=''){
      contains('ID','Timestamp','Contents'))add('discord',3);
   if(contains('video browsing history')&&contains('video list')&&/tiktok/.test(p))
     add('tiktok',3);
+  if(/\.txt$/.test(base)&&/^chat history in -.+-\.txt$/.test(base)&&
+     /(?:^|\n)\d{4}[./-]\d{1,2}[./-]\d{1,2}/.test(sample)&&
+     /(?:^|\n)\d\d:\d\d[\t ]+[^\n\t ]{1,60}[\t ]+.+/m.test(sample))add('line',3);
+  if(/^(?:json\/)?memories_history\.json$/.test(p)&&
+     contains('Date','Media Type')&&(contains('Download Link')||contains('Media Download Url')))
+    add('snapchat',3);
+  if((segmented(p,'teams')||segmented(p,'microsoft-teams'))&&
+     contains('createdDateTime','body')&&(contains('chatId')||contains('messageType')))
+    add('teams',3);
   if(/\.csv$/.test(base)&&/^(?:comments|posts)\.csv$/.test(base)&&
      segmented(p,'reddit')&&/(?:subreddit|permalink)/i.test(sample))add('reddit',3);
   if(/\.csv$/.test(base)&&/^(?:connections|messages|profile)\.csv$/.test(base)&&
