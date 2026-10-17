@@ -4,7 +4,7 @@
  * three-phrase cutoff. Voice and a few explicit production/atmosphere terms are
  * eligible as separate classification dimensions. Never infer from negations.
  */
-const genreTail=/(?:^|[\s/-])(?:[a-z]-?pop|pop|rock|metal|punk|jazz|blues|folk|funk|soul|r\s*&\s*b|hip[\s-]?hop|trip[\s-]?hop|boom\s+bap|house|garage|techno|trance|breakbeat|breakcore|drum\s*(?:&|and|n)\s*bass|dnb|dubstep|dub|reggae|ska|dancehall|grime|trap|phonk|edm|idm|ambient|electronica|electronic\s+music|glitch|industrial|synthwave|retrowave|vaporwave|new\s+wave|darkwave|chillwave|chillout|downtempo|electro|disco|swing|cabaret|bossa\s+nova|lounge|lo[\s-]?fi|new\s+age|classical|orchestral|opera|operatic|requiem|ballad|lullaby|waltz|soundscape|atmosphere|turntablism|fusion|afrobeat|shibuya[\s-]?kei|character\s+song|anime\s+song)\s*$/iu;
+const genreTail=/(?:^|[\s/-])(?:[a-z]-?pop|mandopop|pop|a\s+cappella|acappella|rock|metal|punk|jazz|blues|folk|funk|soul|r\s*&\s*b|hip[\s-]?hop|trip[\s-]?hop|boom\s+bap|house|garage|techno|trance|breakbeat|breakcore|drum\s*(?:&|and|n)\s*bass|dnb|dubstep|dub|reggae|ska|dancehall|grime|trap|phonk|edm|idm|ambient|electronica|electronic\s+music|glitch|industrial|synthwave|retrowave|vaporwave|new\s+wave|darkwave|chillwave|chillout|downtempo|electro|disco|swing|cabaret|bossa\s+nova|lounge|lo[\s-]?fi|new\s+age|classical|orchestral|opera|operatic|requiem|ballad|lullaby|waltz|soundscape|atmosphere|turntablism|fusion|afrobeat|shibuya[\s-]?kei|character\s+song|anime\s+song)\s*$/iu;
 const productionTerm=/^(?:air compression|cinematic|hopeful|calm|dark|gentle|introspective|melancholic|romantic|high energy|lo-fi|acoustic|atmospheric|vocaloid)$/iu;
 const negative=/^(?:no|not|never|without|avoid|exclude|excluding|non)\b/iu;
 
