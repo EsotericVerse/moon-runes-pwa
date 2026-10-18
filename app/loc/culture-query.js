@@ -531,7 +531,7 @@ export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=nul
     includeGalaxy?selectRows(scope.galaxy,{
       columns:'uid,createtime',
       filters:galaxyFilters,
-      orders:[{column:'createtime',ascending:true}],
+      orders:[{column:'createtime',ascending:true},{column:'uid',ascending:true}],
       limit:pageSize,
       offset:galaxyOffset,
       maxLimit:pageSize
@@ -568,7 +568,7 @@ export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=nul
     const galaxyRow=galaxyRows[galaxyIndex];
     const mediaRow=mediaRows[mediaIndex];
     if(!mediaRow||(galaxyRow&&(
-      String(galaxyRow.createtime||'')>String(mediaRow.createtime||'')||
+      String(galaxyRow.createtime||'')<String(mediaRow.createtime||'')||
       (String(galaxyRow.createtime||'')===String(mediaRow.createtime||'')&&String(galaxyRow.entry_id)<=String(mediaRow.entry_id))
     ))){
       rows.push(galaxyRow);
