@@ -7,7 +7,7 @@ import {useMemo,useState} from 'react';
 import {insertRows,dbAuthRelation,updateRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {createUid8} from './uid';
-import {IMPORT_FIELD_ALIASES,importRowsFromJson,mappedImportValue,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
+import {IMPORT_FIELD_ALIASES,importRowsFromJson,mappedImportValue,normalizeImportMedia,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
 import {UNIVERSAL_IMPORT_ACCEPT,parseUniversalImportFile} from './universal-file-import.mjs';
 import {ARCHIVE_MAX_BYTES,detectZipArchiveSource} from './private-archive-universal.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
@@ -41,7 +41,37 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
   const rawTitle=repairMojibakeText(value('title')).trim();
   const sourcePlace=repairMojibakeText(value('source_place')).trim();
   const uid=String(value('uid')||entry?.import_uid||createUid8()).trim().toUpperCase();
-  if(!content)return {record:null,error:t('uiExtra.importUI.invalidNoBody')};
+  const createdAt=iso(value('createtime'));
+  const mediaCandidates=[value('media'),value('media_link')].filter(item=>item!==''&&item!==undefined&&item!==null);
+  let mediaRecords=[],mediaRefs=[];
+  try{
+    for(const item of mediaCandidates){
+      const media=normalizeImportMedia(item,{title:rawTitle,createtime:createdAt,source_place:sourcePlace,galaxy_link:uid});
+      mediaRecords.push(...media.records);
+      mediaRefs.push(...media.references);
+    }
+    mediaRecords=[...new Map(mediaRecords.map(record=>[JSON.stringify([record.url,record.source_native_id,record.media_type,record.galaxy_link]),record])).values()];
+    mediaRefs=[...new Set(mediaRefs)];
+  }catch(error){return {record:null,error:String(error.message||error)}}
+  if(!content){
+    const type=String(value('media_type')||'').trim();
+    const url=String(value('url')||'').trim();
+    const native=String(value('source_native_id')||'').trim();
+    if(type&&(url||native)){
+      const rawId=String(row.media_id||'').trim();
+      if(rawId&&!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawId))return {record:null,error:'media_id 格式無效'};
+      return {record:null,error:'',mediaOnlyRecord:{
+        ...(rawId?{media_id:rawId}:{}),
+        galaxy_link:String(value('galaxy_link')||'').trim()||null,
+        source_native_id:native||null,source_place:sourcePlace||null,
+        media_type:type,title:rawTitle||null,url:url||null,
+        meta_tags:String(value('meta_tags')||'').trim()||null,
+        createtime:createdAt,
+        ...(value('rune_references')?{rune_references:value('rune_references')}:{} )
+      }};
+    }
+    return {record:null,error:t('uiExtra.importUI.invalidNoBody')};
+  }
   if([content,rawTitle,sourcePlace].some(hasIrrecoverableEncoding))return {record:null,error:t('uiExtra.importUI.invalidEncoding')};
   if(uid.length!==8)return {record:null,error:t('uiExtra.importUI.invalidUid')};
   const visibility=value('searchable');
@@ -59,14 +89,16 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     target_id:normalizeRelationIds(value('target_id')),
     ref_id:String(value('ref_id')||'').trim()||null,
     url:String(value('url')||'').trim()||null,
+    ...(mediaRefs.length?{media_link:mediaRefs}:{}),
     source_name:String(source||'').trim()
   };
-  return {record,error:''};
+  return {record,mediaRecords,mediaRefs,error:''};
 }
 
 const IMPORT_FORMAT_FIELDS=Object.freeze([
   'uid','content','title','createtime','source_native_id','source_place',
-  'url','source_id','target_id','ref_id','searchable','statistics_able'
+  'url','source_id','target_id','ref_id','searchable','statistics_able',
+  'media_link','media','media_type','galaxy_link','meta_tags','rune_references'
 ]);
 
 function ImportFormatSettings({format,onChange,disabled=false}){
@@ -115,7 +147,9 @@ function UniversalImport({scopeId,format,onBusyChange}) {
     const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,selected,format.fields,t));
     return {
       valid:normalized.filter(item=>item.record).map(item=>item.record),
-      invalid:normalized.filter(item=>!item.record)
+      normalized:normalized.filter(item=>item.record),
+      mediaOnly:normalized.filter(item=>item.mediaOnlyRecord).map(item=>item.mediaOnlyRecord),
+      invalid:normalized.filter(item=>item.error)
     };
   },[rows,source,format.fields,locale]);
   if(!account.canManageScopeSync(scopeId))return null;
@@ -169,53 +203,120 @@ function UniversalImport({scopeId,format,onBusyChange}) {
     if(busy||!rows.length)return;
     const selected=source.trim();
     if(!selected){setStatus(t('uiExtra.importUI.selectSource'));return;}
-    if(!analyzed.valid.length){setStatus(t('uiExtra.importUI.noValidItems'));return;}
+    if(!analyzed.valid.length&&!analyzed.mediaOnly.length){setStatus(t('uiExtra.importUI.noValidItems'));return;}
     setBusy(true);onBusyChange?.(true);setStatus(t('uiExtra.importUI.checkingUids'));
-    setProgress({completed:0,total:analyzed.valid.length,percent:0});
+    setProgress({completed:0,total:analyzed.valid.length+analyzed.mediaOnly.length,percent:0});
     try{
-      const galaxy=account.scopeDataFor(scopeId)?.galaxy;
-      if(!galaxy)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
+      const scope=account.scopeDataFor(scopeId);
+      const galaxy=scope?.galaxy,galaxyMedia=scope?.galaxyMedia;
+      if(!galaxy||!galaxyMedia)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
       const unique=[],seenUid=new Set(),seenNative=new Set();
       let duplicateCount=0;
       for(const record of analyzed.valid){
-        const nativeId=String(record.source_native_id||'').trim();
-        if(seenUid.has(record.uid)||(nativeId&&seenNative.has(nativeId))){duplicateCount++;continue;}
-        seenUid.add(record.uid);
-        if(nativeId)seenNative.add(nativeId);
+        const native=String(record.source_native_id||'').trim();
+        if(seenUid.has(record.uid)||(native&&seenNative.has(native))){duplicateCount++;continue;}
+        seenUid.add(record.uid);if(native)seenNative.add(native);
         unique.push(record);
       }
-      const existing=new Set();
-      const existingNative=new Set();
+      const existingUid=new Set(),existingByNative=new Map();
       for(let offset=0;offset<unique.length;offset+=200){
         const ids=unique.slice(offset,offset+200).map(record=>record.uid);
         const {data,error}=await dbAuthRelation(galaxy).select('uid').in('uid',ids);
         if(error)throw new Error(error.message||t('uiExtra.importUI.existingUidFailed'));
-        for(const row of data||[])existing.add(String(row.uid||'').toUpperCase());
+        for(const row of data||[])existingUid.add(String(row.uid||'').trim());
       }
-      const nativeIds=[...seenNative];
-      for(let offset=0;offset<nativeIds.length;offset+=200){
-        const ids=nativeIds.slice(offset,offset+200);
-        const {data,error}=await dbAuthRelation(galaxy)
-          .select('source_native_id')
-          .eq('source_name',selected)
-          .in('source_native_id',ids);
+      const natives=[...seenNative];
+      for(let offset=0;offset<natives.length;offset+=200){
+        const batch=natives.slice(offset,offset+200);
+        const {data,error}=await dbAuthRelation(galaxy).select('uid,source_native_id')
+          .eq('source_name',selected).in('source_native_id',batch);
         if(error)throw new Error(error.message||t('uiExtra.importUI.existingNativeFailed'));
-        for(const row of data||[])existingNative.add(String(row.source_native_id||'').trim());
+        for(const row of data||[])existingByNative.set(String(row.source_native_id||'').trim(),String(row.uid||'').trim());
       }
-      const payload=unique.filter(record=>!existing.has(record.uid)&&!(record.source_native_id&&existingNative.has(record.source_native_id)));
-      const existingCount=unique.length-payload.length;
-      setProgress({completed:0,total:payload.length,percent:payload.length?0:100});
+      const payload=unique.filter(record=>!existingUid.has(record.uid)&&!(record.source_native_id&&existingByNative.has(record.source_native_id)));
+      const knownArticleIds=new Map(unique.map(row=>[row.uid,
+        (row.source_native_id&&existingByNative.get(row.source_native_id))||row.uid]));
       await writeImportBatches(payload,{
         batchSize:validImportBatchSize(format.batchSize),
         writeBatch:batch=>insertRows(galaxy,batch),
-        onProgress:progress=>setProgress(progress)
+        onProgress:p=>setProgress({completed:p.completed,total:payload.length+analyzed.mediaOnly.length,percent:Math.round(100*p.completed/Math.max(1,payload.length+analyzed.mediaOnly.length))})
       });
-      const skipped=analyzed.invalid.length+duplicateCount+existingCount;
-      setStatus(t('uiExtra.importUI.importComplete',{index:queueIndex+1,total:queue.length,count:payload.length.toLocaleString(),skipped:skipped?t('uiExtra.importUI.skippedClause',{count:skipped.toLocaleString()}):'',next:t(queueIndex+1<queue.length?'uiExtra.importUI.nextFileGuide':'uiExtra.importUI.finishedAll')}));
+      // Media-only imports and embedded media use the same Galaxy Media table.
+      // Existing article UID/native matches are resolved before attaching assets.
+      const plans=analyzed.normalized.flatMap(item=>{
+        const sourceUid=item.record?.uid;
+        const owner=knownArticleIds.get(sourceUid);
+        return (owner?(item.mediaRecords||[]):[]).map(record=>({...record,galaxy_link:owner}));
+      }).concat(analyzed.mediaOnly);
+      const owners=[...new Set(plans.map(record=>String(record.galaxy_link||'').trim()).filter(Boolean))];
+      const existingMedia=[];
+      for(let offset=0;offset<owners.length;offset+=200){
+        const batch=owners.slice(offset,offset+200);
+        const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,source_native_id,media_type').in('galaxy_link',batch);
+        if(error)throw new Error(error.message||'無法檢查既有媒體');
+        existingMedia.push(...(data||[]));
+      }
+      const explicitIds=[...new Set(plans.map(record=>record.media_id).filter(Boolean))];
+      for(let offset=0;offset<explicitIds.length;offset+=200){
+        const batch=explicitIds.slice(offset,offset+200);
+        const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,source_native_id,media_type').in('media_id',batch);
+        if(error)throw new Error(error.message||'無法比對媒體 ID');
+        existingMedia.push(...(data||[]));
+      }
+      // No full-table scan; unlinked media is matched only by explicit imported URLs.
+      const unlinkedUrls=[...new Set(plans.filter(row=>!row.galaxy_link&&row.url).map(row=>row.url))];
+      for(let offset=0;offset<unlinkedUrls.length;offset+=200){
+        const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,source_native_id,media_type').in('url',unlinkedUrls.slice(offset,offset+200));
+        if(error)throw new Error(error.message||'無法比對媒體 URL');
+        existingMedia.push(...(data||[]));
+      }
+      const mediaKey=row=>JSON.stringify([String(row.galaxy_link||'').trim(),String(row.url||'').trim(),String(row.source_native_id||'').trim(),String(row.media_type||'').trim()]);
+      const byKey=new Map(existingMedia.map(row=>[mediaKey(row),row]));
+      const byId=new Map(existingMedia.map(row=>[String(row.media_id),row]));
+      const createMedia=[],related=new Map(),seenMedia=new Set();
+      function attach(uid,id){
+        if(!uid||!id)return;
+        if(!related.has(uid))related.set(uid,new Set());
+        related.get(uid).add(id);
+      }
+      for(const item of analyzed.normalized){
+        const uid=knownArticleIds.get(item.record?.uid);
+        for(const mediaId of item.mediaRefs||[])attach(uid,mediaId);
+      }
+      for(const raw of plans){
+        const record={...raw},key=mediaKey(record),owner=String(record.galaxy_link||'').trim();
+        const known=record.media_id?byId.get(String(record.media_id)):byKey.get(key);
+        if(known){attach(owner,known.media_id);continue;}
+        if(seenMedia.has(key))continue;
+        seenMedia.add(key);
+        const mediaId=record.media_id||globalThis.crypto?.randomUUID?.();
+        if(!mediaId)throw new Error('環境無法產生媒體 UUID，已停止寫入。');
+        record.media_id=mediaId;
+        createMedia.push(record);byKey.set(key,record);byId.set(mediaId,record);
+        attach(owner,mediaId);
+      }
+      await writeImportBatches(createMedia,{
+        batchSize:validImportBatchSize(format.batchSize),
+        writeBatch:batch=>insertRows(galaxyMedia,batch)
+      });
+      let connected=0;
+      const linkedUids=[...related.keys()];
+      for(let offset=0;offset<linkedUids.length;offset+=200){
+        const {data,error}=await dbAuthRelation(galaxy).select('uid,media_link').in('uid',linkedUids.slice(offset,offset+200));
+        if(error)throw new Error(error.message||'無法驗證文章與媒體關聯');
+        for(const row of data||[]){
+          const uid=String(row.uid||'').trim();
+          const prior=Array.isArray(row.media_link)?row.media_link.map(String):[];
+          const after=[...new Set([...prior,...(related.get(uid)||[])])];
+          if(after.length!==prior.length){await updateRows(galaxy,{media_link:after},{filters:[{column:'uid',operator:'eq',value:uid}]});connected++;}
+        }
+      }
+      const skipped=analyzed.invalid.length+duplicateCount+unique.length-payload.length;
+      setProgress({completed:payload.length+createMedia.length,total:payload.length+createMedia.length,percent:100});
+      setStatus('文章新增 '+payload.length+' 筆、媒體新增 '+createMedia.length+' 筆、文章媒體關聯更新 '+connected+' 筆；略過 '+skipped+' 筆。');
       setRows([]);
-    }catch(error){
-      setStatus(String(error?.message||error||t('uiExtra.importUI.importFailed'))+t('uiExtra.importUI.importRetry'));
-    }finally{setBusy(false);onBusyChange?.(false);}
+    }catch(error){setStatus(String(error?.message||error||t('uiExtra.importUI.importFailed'))+t('uiExtra.importUI.importRetry'))}
+    finally{setBusy(false);onBusyChange?.(false);}
   }
   const pending=queue.length>queueIndex+1;
   return <div className="scope-inline-card">
