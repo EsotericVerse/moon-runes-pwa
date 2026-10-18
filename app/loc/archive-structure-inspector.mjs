@@ -1,7 +1,7 @@
 // Vendor-neutral, read-only structure discovery for archive contents.
 // No platform switch, no database/network writes, no conversion of user content.
 const FIELD_GROUPS=Object.freeze({
-  id:['id','uuid','message_id','conversation_id','post_id','uid','id_str''],
+  id:['id','uuid','message_id','conversation_id','post_id','uid','id_str'],
   text:['text','content','body','parts','full_text','message','description','caption','prompt','response','answer','title'],
   author:['author','role','sender','sender_name','from','from_id','user','username','actor'],
   time:['timestamp','timestamp_ms','create_time','created_at','created_time','creation_timestamp','date','datetime','time','update_time','updated_at'],
