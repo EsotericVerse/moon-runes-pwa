@@ -607,8 +607,10 @@ function SunoImport({scopeId}){
       <label>{UI_COPY.management.songTitle}<input value={draft.title} onChange={e=>change('title',e.target.value)}/></label>
       <div className="scope-management-wide-field"><span>{UI_COPY.management.lyrics}</span>
         <ArticleBodyEditor editorKey={'suno-lyrics:'+draft.editorKey} content={draft.lyricsBlocks}
-          onBlocksChange={blocks=>change('lyricsBlocks',blocks)}
-          onHtmlChange={html=>change('lyrics',html)}/>
+          onBlocksChange={blocks=>setDraft(current=>current.editorKey===draft.editorKey
+            ?{...current,lyricsBlocks:blocks}:current)}
+          onHtmlChange={html=>setDraft(current=>current.editorKey===draft.editorKey
+            ?{...current,lyrics:html}:current)}/>
       </div>
       <div className="scope-stat-controls">
         <label>Suno URL<input value={draft.url} onChange={e=>change('url',e.target.value)}/></label>
@@ -618,12 +620,13 @@ function SunoImport({scopeId}){
       <div className="scope-stat-controls">
         <div className="scope-management-wide-field"><span>Suno Style</span>
           <ArticleBodyEditor editorKey={'suno-style:'+draft.editorKey} content={draft.stylePromptBlocks}
-            onBlocksChange={blocks=>setDraft(current=>({
+            onBlocksChange={blocks=>setDraft(current=>current.editorKey!==draft.editorKey?current:{
               ...current,stylePromptBlocks:blocks,
               stylePromptPlain:blocksToPlainText(blocks),
               ...(!current.metaTagsEdited?{metaTags:refreshSunoStyleMetaTags(blocksToPlainText(blocks),current.metaTags)}:{})
-            }))}
-            onHtmlChange={html=>change('stylePrompt',html)}/>
+            })}
+            onHtmlChange={html=>setDraft(current=>current.editorKey===draft.editorKey
+              ?{...current,stylePrompt:html}:current)}/>
         </div>
         <label>Meta Tags<input value={draft.metaTags} onChange={e=>change('metaTags',e.target.value)} placeholder={t('uiExtra.importUI.sunoStyleTagHint')} required/></label>
         <button type="button" className="loc-button" onClick={regenerateStyleTags}><UiText id="uiExtra.importUI.sunoRegenerate"/></button>
