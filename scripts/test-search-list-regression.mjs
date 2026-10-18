@@ -346,8 +346,11 @@ test('search reference section uses existing editable page=search BlockNote cont
   assert.ok(blocks.includes("['scope-blocks',scopeId,pageName]"),'Query caches must be isolated per Scope');
   assert.ok(source.includes('className="scope-search-reference-grid"'));
   assert.ok(source.includes('slotClassName="loc-card scope-search-reference-block"'));
-  assert.ok(!source.includes('orders={SEARCH_REFERENCE_ORDERS}'));
-  assert.ok(!source.includes('allowDelete={false}'),'Search cards must support homepage-style additions and reordering');
+  assert.ok(source.includes('orders={[1]}'),'Search suggestions must use exactly one outer block');
+  assert.ok(source.includes('allowDelete={false}'),'The search suggestion container is not an addable or deletable list');
+  assert.ok(source.includes('allowInlineChildAdd'),'New suggestions must be nested child cards');
+  assert.ok(blocks.includes('function beginWithChild('),'Nested cards must use the existing BlockNote editor');
+  assert.ok(blocks.includes('const displayed=rows.map(row=>normalizeRow(row,row.block_order));'),'Unbounded Add Block must render its new draft');
   assert.ok(!source.includes('selectSearchReferenceSuggestions('));
   assert.ok(!source.includes('setSearchMode('));
   assert.ok(blocks.includes('import ArticleBodyEditor'));
