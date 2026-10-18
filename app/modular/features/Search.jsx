@@ -606,9 +606,18 @@ export default function Search(){
         ?resolveGalaxyTitle(editDraft.title,plainBody)
         :(String(editDraft.title||'').trim()||null);
       const metadataTitleChanged=result.resourceType==='galaxy'&&editDraft.title!==editDraft.originalTitle;
+      // Validate the raw edits before converting arrays, dates and group lists:
+      // even malformed markup must be rejected with its field name, never
+      // normalized away or silently saved into the database.
+      if(result.resourceType==='galaxy'){
+        const rawEdits=Object.fromEntries(Object.entries(editDraft.attrs||{})
+          .filter(([key,value])=>JSON.stringify(value)!==JSON.stringify(editDraft.originalAttrs?.[key])));
+        assertPlainGalaxyAttributes({
+          ...rawEdits,
+          ...(metadataTitleChanged?{title:editDraft.title}:{})
+        });
+      }
       const attrChanges=result.resourceType==='galaxy'?changedGalaxyAttributes(editDraft,t):{};
-      // BlockNote HTML is valid ONLY in Galaxy content. All changed attributes
-      // (including a changed title) must be plain text before any DB update.
       if(result.resourceType==='galaxy'){
         assertPlainGalaxyAttributes({
           ...attrChanges,
