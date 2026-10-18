@@ -111,6 +111,58 @@ export function dailyTrend(rows=[],bucket='day'){
   }));
 }
 
+export const DAILY_DIRECTION_SCORE=Object.freeze({
+  '正位':1,
+  '半正位':0.5,
+  '半逆位':-0.5,
+  '逆位':-1
+});
+const DAILY_CARD_FACE_SCORE=Object.freeze({1:1,2:0,3:-1});
+
+// Weekly trend: card direction and card face are scored independently, then
+// combined. Unknown card face is centered at zero with a +/-0.2 uncertainty band.
+export function dailyDirectionTrend(rows=[],startDate='',endDate=''){
+  const first=String(startDate||rows[0]?.record_date||'').slice(0,10);
+  const last=String(endDate||rows.at(-1)?.record_date||'').slice(0,10);
+  if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(first)||!/^\\d{4}-\\d{2}-\\d{2}$/.test(last)||first>last)return [];
+  const buckets=new Map();
+  for(let day=new Date(first+'T00:00:00Z'),stop=new Date(last+'T00:00:00Z');day<=stop;day.setUTCDate(day.getUTCDate()+1)){
+    const date=day.toISOString().slice(0,10);
+    const week=statisticsWeekKey(date);
+    if(!buckets.has(week))buckets.set(week,{week,period:week.slice(5).replace('-','/'),count:0,directionTotal:0,combinedTotal:0,combinedLowTotal:0,combinedHighTotal:0,runes:new Set()});
+  }
+  for(const row of rows){
+    const directionScore=DAILY_DIRECTION_SCORE[String(row?.direction||'')];
+    if(!Number.isFinite(directionScore))continue;
+    const week=statisticsWeekKey(row.record_date);
+    const item=buckets.get(week);
+    if(!item)continue;
+    const faceScore=DAILY_CARD_FACE_SCORE[Number(row?.card_attr)];
+    const unknown=faceScore===undefined;
+    const combined=directionScore+(unknown?0:faceScore);
+    item.count+=1;
+    item.directionTotal+=directionScore;
+    item.combinedTotal+=combined;
+    item.combinedLowTotal+=combined-(unknown?0.2:0);
+    item.combinedHighTotal+=combined+(unknown?0.2:0);
+    const rune=String(row?.rune_name||row?.rune_number||'').trim();
+    if(rune)item.runes.add(rune);
+  }
+  return [...buckets.values()].map(item=>item.count?({
+    week:item.week,
+    period:item.period,
+    recordCount:item.count,
+    directionAverage:item.directionTotal/item.count,
+    combinedAverage:item.combinedTotal/item.count,
+    combinedLow:item.combinedLowTotal/item.count,
+    combinedHigh:item.combinedHighTotal/item.count,
+    runeLabels:[...item.runes].join(' · ')
+  }):{
+    week:item.week,period:item.period,recordCount:0,
+    directionAverage:null,combinedAverage:null,combinedLow:null,combinedHigh:null,runeLabels:''
+  });
+}
+
 export function dailyCategoryTrend(rows=[],mode='rune',selected=[],bucket='day',startDate='',endDate=''){
   const keys=new Set(selected.map(item=>String(item.key)));
   if(!keys.size)return [];
