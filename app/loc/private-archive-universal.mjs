@@ -382,7 +382,7 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
 export async function inspectPrivateArchive(file,{onRecord,onProgress,flush,signal}={}){
   if(!file||typeof file.slice!=='function'||!Number.isSafeInteger(file.size)||file.size<=0)
     throw new Error('請選擇有效的本機備份檔。');
-  if(file.size>ARCHIVE_MAX_BYTES)throw new Error('檔案超過 10 MB 安全限制；未讀取檔案內容。');
+  if(file.size>ARCHIVE_MAX_BYTES)throw new Error('檔案超過 512 MiB 安全限制；未讀取檔案內容。');
   if(typeof onRecord!=='function')throw new Error('缺少私人本機寫入管線。');
   const summary=fileSummary();
   const prefix=new Uint8Array(await file.slice(0,4).arrayBuffer());
