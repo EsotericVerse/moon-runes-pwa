@@ -70,7 +70,8 @@ for(const file of cleared){
     file+' contains hard-coded Chinese. Put interface strings into locale JSON and use ASCII keys.');
   for(const match of text.matchAll(/['"]((?:uiExtra|features|scope|common|nav|search|statistics|culture|management|dailyRune|privateFiles|itemConfluence|timelineEditor)\.[\w.]+)['"]/gu)){
     const key=match[1];
-    if(key.endsWith('.'))continue; // dynamic suffix, checked by the corresponding runtime module
+    const tail=text.slice(match.index+match[0].length).trimStart();
+    if(key.endsWith('.')||tail.startsWith('+'))continue; // dynamic UI key composed with a runtime suffix
     for(const locale of locales){
       const value=key.split('.').reduce((node,segment)=>node?.[segment],dictionaries[locale]);
       assert.ok(typeof value==='string'&&value.length>0,file+': '+locale+' missing UI key '+key);
