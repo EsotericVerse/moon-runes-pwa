@@ -121,7 +121,7 @@ export const DAILY_DIRECTION_SCORE=Object.freeze({
 export function dailyDirectionTrend(rows=[],bucket='week',startDate='',endDate=''){
   const first=String(startDate||rows[0]?.record_date||'').slice(0,10);
   const last=String(endDate||rows.at(-1)?.record_date||'').slice(0,10);
-  if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(first)||!/^\\d{4}-\\d{2}-\\d{2}$/.test(last)||first>last)return [];
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(first)||!/^\d{4}-\d{2}-\d{2}$/.test(last)||first>last)return [];
   const unit=['day','week','month'].includes(bucket)?bucket:'week';
   const periodKey=date=>unit==='month'?date.slice(0,7):unit==='week'?statisticsWeekKey(date):date;
   const labelFor=key=>unit==='month'?key.replace('-','/'):unit==='week'?key.slice(5).replace('-','/') :key.slice(5).replace('-','/');
