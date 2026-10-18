@@ -79,7 +79,7 @@
   padding:.45rem clamp(.4rem,1vw,.8rem);
   border:0;
   border-bottom:2px solid transparent;
-  border-radius:0;
+  border-radius:999px;
   background:transparent;
   color:var(--loc-muted);
   font:inherit;
@@ -122,7 +122,7 @@
   min-height:40px;
   padding:.2rem .3rem;
   border:0;
-  border-radius:0;
+  border-radius:999px;
   background:transparent;
   color:var(--loc-text);
   font:inherit;
