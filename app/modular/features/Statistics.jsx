@@ -720,17 +720,13 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     queryKey:['statistics-media-facet',scopeId,rankingType,queryRange.startDate,queryRange.endDate],
     queryFn:()=>selectMediaStatisticsFacetRows(targetScopes[0],rankingType,queryRange),
     enabled:mediaDimension&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate),
-    staleTime:0,
-    refetchOnMount:'always',
-    refetchOnWindowFocus:true
+    staleTime:5*60_000
   });
   const crossTagQuery=useQuery({
     queryKey:['statistics-media-cross-tags',scopeId,queryRange.startDate,queryRange.endDate],
     queryFn:()=>selectMediaCrossTagRows(targetScopes[0],queryRange),
     enabled:rankingType==='media_style'&&Boolean(targetScopes[0])&&Boolean(queryRange.startDate&&queryRange.endDate),
-    staleTime:0,
-    refetchOnMount:'always',
-    refetchOnWindowFocus:true
+    staleTime:5*60_000
   });
   const styleTreeQuery=useQuery({
     queryKey:['music-style-tree',scopeId],
@@ -831,8 +827,8 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       </StatisticsChartFrame>
     </>:null}
     {mediaDimension&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate)?<div className="scope-stat-controls">
-      <button type="button" className="loc-button" onClick={()=>mediaQuery.refetch()} disabled={mediaQuery.isFetching}>
-        {mediaQuery.isFetching?t('uiExtra.statisticsUI.refreshing'):t('uiExtra.statisticsUI.refresh')}
+      <button type="button" className="loc-button" onClick={()=>{mediaQuery.refetch();crossTagQuery.refetch();}} disabled={mediaQuery.isFetching||crossTagQuery.isFetching}>
+        {mediaQuery.isFetching||crossTagQuery.isFetching?t('uiExtra.statisticsUI.refreshing'):t('uiExtra.statisticsUI.refresh')}
       </button>
     </div>:null}
     {rankingType==='media_style'&&styleTreeQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(styleTreeQuery.error,UI_COPY)}</p>:null}
