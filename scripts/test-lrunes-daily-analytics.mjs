@@ -75,7 +75,7 @@ test('culture panel stays separate from the statistics-only earliest-date query'
   assert.ok(beginning>=0&&end>beginning);
   const culture=source.slice(beginning,end);
   const statistics=source.slice(end);
-  assert.doesNotMatch(culture,/\\bearliest\\b/);
-  assert.match(statistics,/dailyDirectionTrend\\(draws,zoomRange.bucket/);
-  assert.match(statistics,/<ComposedChart data=\\{directionTimeline\\}/);
+  assert.doesNotMatch(culture,/\bearliest\b/);
+  assert.match(statistics,/dailyDirectionTrend\(draws,zoomRange.bucket/);
+  assert.match(statistics,/<ComposedChart data=\{directionTimeline\}/);
 });
