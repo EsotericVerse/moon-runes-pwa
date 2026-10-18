@@ -29,7 +29,7 @@ function previousDay(value){
   date.setUTCDate(date.getUTCDate()-1);
   return date.toISOString().slice(0,10);
 }
-async function selectCultureTimeRows(scope,birthday=''){
+export async function selectCultureTimeRows(scope,birthday=''){
   const scopeId=scopeIdOf(scope?.id);
   const table=scope?.time;
   if(!scopeId||!table)throw new Error('Scope data 未解析');
