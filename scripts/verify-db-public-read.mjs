@@ -66,7 +66,7 @@ async function verifyManagedScope(client,scope){
   await probe(client,scope.metadata,metadataColumns);
   await probe(client,scope.time,'record_id,record_type,resource_id,label,display_order,status,note,time_date,anchor_ids,date_status,year_value,visibility,style_description');
   await probe(client,scope.galaxy,galaxyColumns);
-  await probe(client,scope.galaxyMedia,'media_id,galaxy_link,source_native_id,media_type,title,url,meta_tags,createtime');
+  await probe(client,scope.galaxyMedia,'media_id,galaxy_link,media_type,title,url,meta_tags,createtime');
 }
 
 // silver.game SSOT contract: query each segment precisely; do not fetch the table and slice in JS.

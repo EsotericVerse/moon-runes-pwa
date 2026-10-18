@@ -262,7 +262,7 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
 
   const current=scopeOf(scope);
   const textFilters=publicContentFilters([...(includeHiddenText?[]:[{column:'searchable',operator:'eq',value:true}]),...textKindFilters]);
-  const textColumns=['uid','title','content','createtime','source_native_id','source_place','searchable','UpdateTime','url','source_id','target_id','ref_id','source_name','media_link','statistics_able','class_id','group_lists'];
+  const textColumns=['uid','title','content','createtime','source_place','searchable','UpdateTime','url','source_id','target_id','ref_id','source_name','media_link','statistics_able','class_id','group_lists'];
   const titleExact=makeProvider({
     id:current.id+':text-title-exact',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
     columns:textColumns,searchFields:['title'],dateColumn:'createtime',filters:textFilters,authenticated:includeHiddenText,exactColumn:'title'
@@ -283,8 +283,8 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
   });
   const media=makeProvider({
     id:current.id+':media',table:current.galaxyMedia,source:current.id+' 多媒體',scope:current,idColumn:'media_id',
-    columns:['media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','createtime'],
-    searchFields:['title','meta_tags','media_type','url','source_native_id'],dateColumn:'createtime',sourceClause
+    columns:['media_id','galaxy_link','media_type','title','url','meta_tags','createtime'],
+    searchFields:['title','meta_tags','media_type','url'],dateColumn:'createtime',sourceClause
   });
   if(mediaOnly||contentType==='multimedia')return [media];
   const timeline=makeProvider({
@@ -383,7 +383,7 @@ export async function selectMediaStatisticsFacetRows(scope,dimension,{startDate=
     throw new Error('Unknown media statistics dimension');
   }
   const filters=timeFilters('createtime',startDate,endDate);
-  const columns='media_id,media_type,url,source_native_id,source_place,meta_tags,createtime';
+  const columns='media_id,media_type,url,source_place,meta_tags,createtime';
   const orders=[{column:'media_id',ascending:true}];
   const aggregates=new Map();
   let offset=0,total=null,source='auto';

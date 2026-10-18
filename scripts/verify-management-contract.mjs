@@ -93,8 +93,8 @@ must(liveProbe.includes('verifyManagedScope(client,scope)')&&liveProbe.includes(
 must(editableBlocks.includes('block_eyebrow')&&editableBlocks.includes('block_subtitle')&&
   scopeData.includes('block_eyebrow')&&scopeData.includes('block_subtitle'),
   'future Scope blocks must retain four canonical header/body fields');
-must(importPanel.includes('source_native_id')&&importPanel.includes("offset+=200"),
-  'source refresh must keep bounded indexed lookup fields');
+must(!importPanel.includes('source_native_id')&&importPanel.includes("offset+=200"),
+  'source refresh must avoid removed identity fields');
 must(keywordAnalysis.includes(`group_lists:result?.group_lists??''`)&&
   dbContract.includes("mode:'begin'")&&dbContract.includes("mode:'finalize'"),
   'keyword attr writes must preserve safe batch lifecycle');
@@ -441,7 +441,7 @@ must(admin.includes('CreateNodePanel')&&admin.includes("manageScopeRegistry('upd
 
 must(scopeRuntime.includes("pathname==='/scope'||pathname.startsWith('/scope/')")&&scopeRuntime.includes('selectScopeRegistryEntry'),'generic Scope runtime must resolve DB registry entries through the fixed static shell');
 must(scopeRegistry.includes("GENERIC_SCOPE_PATH='/scope'")&&scopeRegistry.includes("params.set('scope',id)"),'unknown DB Scope links must route through the generic static shell');
-must(importPanel.includes('function SourceRefresh')&&importPanel.includes("source_native_id")&&importPanel.includes(".eq('source_name',selected)")&&importPanel.includes("offset+=200"),'Source Refresh must use bounded source_name + source_native_id delta queries instead of full-table scans');
+must(importPanel.includes('function SourceRefresh')&&importPanel.includes(".in('uid',batch)")&&importPanel.includes(".eq('source_name',selected)")&&importPanel.includes("offset+=200"),'Source Refresh must use bounded source_name + UID lookups instead of full-table scans');
 
 must(importPanel.includes('record.createtime||current.createtime||null')&&importPanel.includes('record.source_place||current.source_place||null')&&importPanel.includes('record.url||current.url||null'),'Source Refresh must preserve optional existing metadata when the payload omits it');
 

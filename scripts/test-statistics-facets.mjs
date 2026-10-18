@@ -8,7 +8,7 @@ test('URL host and path distinguish IG Reels, posts, Vocus and Suno',()=>{
   assert.equal(mediaPlatform({url:'https://instagram.com/p/ABC/'}),'IG 貼文');
   assert.equal(mediaPlatform({url:'https://vocus.cc/article/ABC'}),'Vocus');
   assert.equal(mediaPlatform({url:'https://suno.com/song/31bf353a-1674-4f47-abca-c606cbd715b0'}),'Suno');
-  assert.equal(mediaPlatform({url:'',media_type:'suno',source_native_id:'31bf353a-1674-4f47-abca-c606cbd715b0'}),'Suno');
+  assert.equal(mediaPlatform({url:'',media_type:'suno'}),'Suno');
   assert.equal(mediaPlatform({url:'',media_type:'instagram',source_place:'Reels'}),'IG Reels');
   assert.equal(mediaPlatform({url:'https://youtube.com/shorts/abc'}),'YouTube Shorts');
   assert.equal(mediaPlatform({url:'https://my-videos.example.net/watch/123'}),'my-videos.example.net');
@@ -22,7 +22,7 @@ test('style tags are independent, deduplicated, and preserve multiword genres',(
 test('platform counts media rows rather than URL native IDs or linked Galaxy texts',()=>{
   const rows=[
     {createtime:'2026-10-07T12:00:00+08:00',media_type:'suno',url:'https://suno.com/song/one'},
-    {createtime:'2026-10-07T13:00:00+08:00',media_type:'suno',source_native_id:'two'},
+    {createtime:'2026-10-07T13:00:00+08:00',media_type:'suno'},
     {createtime:'2026-10-07T13:00:00+08:00',url:'https://www.instagram.com/reel/three'},
     {createtime:null,url:'https://vocus.cc/article/four'}
   ];

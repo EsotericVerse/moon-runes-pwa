@@ -50,20 +50,25 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
       mediaRecords.push(...media.records);
       mediaRefs.push(...media.references);
     }
-    mediaRecords=[...new Map(mediaRecords.map(record=>[JSON.stringify([record.url,record.source_native_id,record.media_type,record.galaxy_link]),record])).values()];
+    const seenMediaKeys=new Set();
+    mediaRecords=mediaRecords.filter(record=>{
+      const key=record.media_id?'id:'+record.media_id:(record.url?JSON.stringify([record.url,record.media_type,record.galaxy_link]):null);
+      if(!key)return true;
+      if(seenMediaKeys.has(key))return false;
+      seenMediaKeys.add(key);return true;
+    });
     mediaRefs=[...new Set(mediaRefs)];
   }catch(error){return {record:null,error:String(error.message||error)}}
   if(!content){
     const type=String(value('media_type')||'').trim();
     const url=String(value('url')||'').trim();
-    const native=String(value('source_native_id')||'').trim();
-    if(type&&(url||native)){
+    if(type){
       const rawId=String(row.media_id||'').trim();
       if(rawId&&!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawId))return {record:null,error:t('uiExtra.importUI.invalidMediaId')};
       return {record:null,error:'',mediaOnlyRecord:{
         ...(rawId?{media_id:rawId}:{}),
         galaxy_link:String(value('galaxy_link')||'').trim()||null,
-        source_native_id:native||null,source_place:sourcePlace||null,
+        source_place:sourcePlace||null,
         media_type:type,title:rawTitle||null,url:url||null,
         meta_tags:String(value('meta_tags')||'').trim()||null,
         createtime:createdAt,
@@ -81,7 +86,6 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     title:resolveGalaxyTitle(rawTitle,content),
     content,
     createtime:iso(value('createtime')),
-    source_native_id:String(value('source_native_id')||'').trim()||null,
     source_place:sourcePlace||null,
     searchable,
     statistics_able:value('statistics_able')===false||String(value('statistics_able')).toLowerCase()==='false'||!searchable?false:!isPureUrlContent(content),
@@ -96,7 +100,7 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
 }
 
 const IMPORT_FORMAT_FIELDS=Object.freeze([
-  'uid','content','title','createtime','source_native_id','source_place',
+  'uid','content','title','createtime','source_place',
   'url','source_id','target_id','ref_id','searchable','statistics_able',
   'media_link','media','media_type','galaxy_link','meta_tags','rune_references'
 ]);
@@ -131,7 +135,7 @@ function ImportFormatSettings({format,onChange,disabled=false}){
 // All records are bound by original article UID; no full-table scan or recursive discovery.
 async function syncImportedMedia({normalized=[],mediaOnly=[],knownArticleIds=new Map(),galaxy,galaxyMedia,batchSize=100,t}={}){
       // Media-only imports and embedded media use the same Galaxy Media table.
-      // Existing article UID/native matches are resolved before attaching assets.
+      // Attach only to article UIDs established by the import plan.
       const plans=normalized.flatMap(item=>{
         const sourceUid=item.record?.uid;
         const owner=knownArticleIds.get(sourceUid);
@@ -141,26 +145,30 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],knownArticleIds=new
       const existingMedia=[];
       for(let offset=0;offset<owners.length;offset+=200){
         const batch=owners.slice(offset,offset+200);
-        const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,source_native_id,media_type').in('galaxy_link',batch);
+        const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,media_type').in('galaxy_link',batch);
         if(error)throw new Error(error.message||t('uiExtra.importUI.existingMediaFailed'));
         existingMedia.push(...(data||[]));
       }
       const explicitIds=[...new Set([...plans.map(record=>record.media_id).filter(Boolean),...normalized.flatMap(item=>item.mediaRefs||[])])];
       for(let offset=0;offset<explicitIds.length;offset+=200){
         const batch=explicitIds.slice(offset,offset+200);
-        const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,source_native_id,media_type').in('media_id',batch);
+        const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,media_type').in('media_id',batch);
         if(error)throw new Error(error.message||t('uiExtra.importUI.mediaIdCompareFailed'));
         existingMedia.push(...(data||[]));
       }
       // No full-table scan; unlinked media is matched only by explicit imported URLs.
       const unlinkedUrls=[...new Set(plans.filter(row=>!row.galaxy_link&&row.url).map(row=>row.url))];
       for(let offset=0;offset<unlinkedUrls.length;offset+=200){
-        const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,source_native_id,media_type').in('url',unlinkedUrls.slice(offset,offset+200));
+        const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,media_type').in('url',unlinkedUrls.slice(offset,offset+200));
         if(error)throw new Error(error.message||t('uiExtra.importUI.mediaUrlCompareFailed'));
         existingMedia.push(...(data||[]));
       }
-      const mediaKey=row=>JSON.stringify([String(row.galaxy_link||'').trim(),String(row.url||'').trim(),String(row.source_native_id||'').trim(),String(row.media_type||'').trim()]);
-      const byKey=new Map(existingMedia.map(row=>[mediaKey(row),row]));
+      const mediaKey=row=>{
+        const url=String(row.url||'').trim();
+        return url?JSON.stringify([String(row.galaxy_link||'').trim(),url,String(row.media_type||'').trim()])
+          :(row.media_id?'id:'+row.media_id:null);
+      };
+      const byKey=new Map(existingMedia.map(row=>[mediaKey(row),row]).filter(([key])=>key));
       const byId=new Map(existingMedia.map(row=>[String(row.media_id),row]));
       const createMedia=[],related=new Map(),seenMedia=new Set();
       function attach(uid,id){
@@ -177,14 +185,14 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],knownArticleIds=new
       }
       for(const raw of plans){
         const record={...raw},key=mediaKey(record),owner=String(record.galaxy_link||'').trim();
-        const known=record.media_id?byId.get(String(record.media_id)):byKey.get(key);
+        const known=record.media_id?byId.get(String(record.media_id)):(key?byKey.get(key):null);
         if(known){attach(owner,known.media_id);continue;}
-        if(seenMedia.has(key))continue;
-        seenMedia.add(key);
+        if(key&&seenMedia.has(key))continue;
+        if(key)seenMedia.add(key);
         const mediaId=record.media_id||globalThis.crypto?.randomUUID?.();
         if(!mediaId)throw new Error(t('uiExtra.importUI.mediaUuidUnavailable'));
         record.media_id=mediaId;
-        createMedia.push(record);byKey.set(key,record);byId.set(mediaId,record);
+        createMedia.push(record);if(key)byKey.set(key,record);byId.set(mediaId,record);
         attach(owner,mediaId);
       }
       await writeImportBatches(createMedia,{
@@ -290,12 +298,11 @@ function UniversalImport({scopeId,format,onBusyChange}) {
       const scope=account.scopeDataFor(scopeId);
       const galaxy=scope?.galaxy,galaxyMedia=scope?.galaxyMedia;
       if(!galaxy||!galaxyMedia)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
-      const unique=[],seenUid=new Set(),seenNative=new Set();
+      const unique=[],seenUid=new Set();
       let duplicateCount=0;
       for(const record of analyzed.valid){
-        const native=String(record.source_native_id||'').trim();
-        if(seenUid.has(record.uid)||(native&&seenNative.has(native))){duplicateCount++;continue;}
-        seenUid.add(record.uid);if(native)seenNative.add(native);
+        if(seenUid.has(record.uid)){duplicateCount++;continue;}
+        seenUid.add(record.uid);
         unique.push(record);
       }
       const existingUid=new Set(),existingByNative=new Map();
@@ -305,17 +312,8 @@ function UniversalImport({scopeId,format,onBusyChange}) {
         if(error)throw new Error(error.message||t('uiExtra.importUI.existingUidFailed'));
         for(const row of data||[])existingUid.add(String(row.uid||'').trim());
       }
-      const natives=[...seenNative];
-      for(let offset=0;offset<natives.length;offset+=200){
-        const batch=natives.slice(offset,offset+200);
-        const {data,error}=await dbAuthRelation(galaxy).select('uid,source_native_id')
-          .eq('source_name',selected).in('source_native_id',batch);
-        if(error)throw new Error(error.message||t('uiExtra.importUI.existingNativeFailed'));
-        for(const row of data||[])existingByNative.set(String(row.source_native_id||'').trim(),String(row.uid||'').trim());
-      }
-      const payload=unique.filter(record=>!existingUid.has(record.uid)&&!(record.source_native_id&&existingByNative.has(record.source_native_id)));
-      const knownArticleIds=new Map(unique.map(row=>[row.uid,
-        (row.source_native_id&&existingByNative.get(row.source_native_id))||row.uid]));
+      const payload=unique.filter(record=>!existingUid.has(record.uid));
+      const knownArticleIds=new Map(unique.map(row=>[row.uid,row.uid]));
       await writeImportBatches(payload,{
         batchSize:validImportBatchSize(format.batchSize),
         writeBatch:batch=>insertRows(galaxy,batch),
@@ -451,45 +449,48 @@ function SourceRefresh({scopeId,format,onBusyChange}){
     const selected=source.trim();
     if(!selected){setStatus(t('uiExtra.importUI.selectSource'));return;}
     const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,selected,format.fields,t));
-    const valid=normalized.filter(item=>item.record&&item.record.source_native_id).map(item=>item.record);
+    // Refresh only targets records with an explicit article UID.
+    const valid=normalized.filter(item=>item.record&&String(mappedImportValue(item.raw,'uid',format.fields)||'').trim()).map(item=>item.record);
     const invalid=normalized.length-valid.length;
-    if(!valid.length){setPlan({creates:[],updates:[],unchanged:[],invalid});setStatus(t('uiExtra.importUI.noNativeId'));return;}
+    if(!valid.length){setPlan({creates:[],updates:[],unchanged:[],invalid});setStatus(t('uiExtra.importUI.noUid'));return;}
     setBusy(true);onBusyChange?.(true);setStatus(t('uiExtra.importUI.analyzing'));setProgress(null);
     try{
       const galaxy=account.scopeDataFor(scopeId)?.galaxy;
       if(!galaxy)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
       const existing=[];
-      const ids=[...new Set(valid.map(row=>String(row.source_native_id||'').trim()).filter(Boolean))];
+      const ids=[...new Set(valid.map(row=>row.uid))];
       for(let offset=0;offset<ids.length;offset+=200){
         const batch=ids.slice(offset,offset+200);
         const {data,error}=await dbAuthRelation(galaxy)
-          .select('uid,title,content,createtime,source_native_id,source_place,url,searchable,statistics_able,source_name')
+          .select('uid,title,content,createtime,source_place,url,searchable,statistics_able,source_name')
           .eq('source_name',selected)
-          .in('source_native_id',batch);
+          .in('uid',batch);
         if(error)throw new Error(error.message||t('uiExtra.importUI.refreshCompareFailed'));
         existing.push(...(data||[]));
       }
-      const byNative=new Map(existing.map(row=>[String(row.source_native_id||'').trim(),row]));
+      const byUid=new Map(existing.map(row=>[String(row.uid||'').trim(),row]));
       const hasExplicit=(item,field)=>{
         const value=mappedImportValue(item.raw,field,format.fields);
         return value!==undefined&&value!==null&&String(value).trim()!=='';
       };
-      const explicitNativeIds=field=>new Set(rows.filter(item=>hasExplicit(item,field))
-        .map(item=>String(mappedImportValue(item.raw,'source_native_id',format.fields)||'').trim()).filter(Boolean));
-      const explicitVisibilityIds=explicitNativeIds('searchable');
-      const explicitStatisticsIds=explicitNativeIds('statistics_able');
+      const explicitFlags=new Map(normalized.filter(item=>item.record).map(item=>[
+        item.record.uid,{
+          searchable:hasExplicit(item,'searchable'),
+          statistics_able:hasExplicit(item,'statistics_able')
+        }
+      ]));
       const creates=[],updates=[],unchanged=[],seen=new Set();
       for(const record of valid){
-        const nativeId=String(record.source_native_id||'').trim();
-        if(!nativeId||seen.has(nativeId))continue;
-        seen.add(nativeId);
-        const current=byNative.get(nativeId);
+        if(seen.has(record.uid))continue;
+        seen.add(record.uid);
+        const current=byUid.get(record.uid);
+        const explicit=explicitFlags.get(record.uid)||{};
         if(!current){creates.push(record);continue;}
         const next={
           ...record,
           uid:current.uid,
-          searchable:explicitVisibilityIds.has(nativeId)?record.searchable:current.searchable,
-          statistics_able:explicitStatisticsIds.has(nativeId)?record.statistics_able:current.statistics_able,
+          searchable:explicit.searchable?record.searchable:current.searchable,
+          statistics_able:explicit.statistics_able?record.statistics_able:current.statistics_able,
           source_name:selected,
           createtime:record.createtime||current.createtime||null,
           source_place:record.source_place||current.source_place||null,
@@ -541,12 +542,7 @@ function SourceRefresh({scopeId,format,onBusyChange}){
       if(!galaxyMedia)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
       const original=rows.map(entry=>normalizeJsonImportEntry(entry,selected,format.fields,t))
         .filter(item=>item.record);
-      const byNative=new Map([...plan.creates,...plan.updates,...plan.unchanged]
-        .filter(row=>row.source_native_id&&row.uid)
-        .map(row=>[String(row.source_native_id),String(row.uid)]));
-      const knownArticleIds=new Map(original
-        .filter(item=>item.record.source_native_id&&byNative.has(item.record.source_native_id))
-        .map(item=>[item.record.uid,byNative.get(item.record.source_native_id)]));
+      const knownArticleIds=new Map([...plan.creates,...plan.updates,...plan.unchanged].map(row=>[row.uid,row.uid]));
       const mediaSummary=await syncImportedMedia({
         normalized:original,knownArticleIds,galaxy,galaxyMedia,batchSize:format.batchSize,t
       });
@@ -588,7 +584,6 @@ function MediaRecordInsert({scopeId}){
   const account=useAccount();
   const [draft,setDraft]=useState({
     galaxy_link:'',
-    source_native_id:'',
     source_place:'',
     media_type:'',
     title:'',
@@ -617,7 +612,6 @@ function MediaRecordInsert({scopeId}){
       if(!metaTags)throw new Error(t('uiExtra.importUI.tagsRequired'));
       const record={
         galaxy_link:galaxyLink||null,
-        source_native_id:String(draft.source_native_id||'').trim()||null,
         source_place:sourcePlace||null,
         media_type:mediaType,
         title:mediaTitle||null,
@@ -631,8 +625,7 @@ function MediaRecordInsert({scopeId}){
       setStatus(t('uiExtra.importUI.mediaSaved'));
       setDraft({
         galaxy_link:'',
-        source_native_id:'',
-        source_place:'',
+            source_place:'',
         media_type:'',
         title:'',
         url:'',
@@ -653,7 +646,6 @@ function MediaRecordInsert({scopeId}){
         <label>createtime<input type="datetime-local" value={draft.createtime} onChange={e=>change('createtime',e.target.value)}/></label>
       </div>
       <div className="scope-stat-controls">
-        <label>source_native_id<input value={draft.source_native_id} onChange={e=>change('source_native_id',e.target.value)}/></label>
         <label>source_place<input value={draft.source_place} onChange={e=>change('source_place',e.target.value)} placeholder={t('uiExtra.importUI.placeHint')}/></label>
       </div>
       <label><UiText id="uiExtra.importUI.mediaTitle"/><input value={draft.title} onChange={e=>change('title',e.target.value)}/></label>
@@ -669,7 +661,7 @@ function SunoImport({scopeId}){
   const UI_COPY=useUiCopy();
   const t=useUiText();
   const account=useAccount();
-  const freshSunoDraft=()=>({title:'',lyrics:'',lyricsBlocks:plainTextToBlocks(''),stylePrompt:'',stylePromptBlocks:plainTextToBlocks(''),stylePromptPlain:'',editorKey:createUid8(),url:'',nativeId:'',createdDate:'',metaTags:'',metaTagsEdited:false,source_id:'',target_id:'',ref_id:''});
+  const freshSunoDraft=()=>({title:'',lyrics:'',lyricsBlocks:plainTextToBlocks(''),stylePrompt:'',stylePromptBlocks:plainTextToBlocks(''),stylePromptPlain:'',editorKey:createUid8(),url:'',createdDate:'',metaTags:'',metaTagsEdited:false,source_id:'',target_id:'',ref_id:''});
   const [draft,setDraft]=useState(freshSunoDraft);
   const [status,setStatus]=useState('');const [busy,setBusy]=useState(false);
   if(!account.canManageScopeSync(scopeId))return null;
@@ -680,9 +672,6 @@ function SunoImport({scopeId}){
   }));
   function regenerateStyleTags(){
     setDraft(current=>({...current,metaTags:refreshSunoStyleMetaTags(current.stylePromptPlain,current.metaTags),metaTagsEdited:false}));
-  }
-  function detectId(url){
-    const match=String(url||'').match(/\/song\/([0-9a-f-]{20,})/i);return match?.[1]||'';
   }
   async function save(event){
     event.preventDefault();setBusy(true);setStatus('');
@@ -718,7 +707,7 @@ function SunoImport({scopeId}){
       }
       await insertRows(galaxyMedia,[{
         galaxy_link:lyricsUid,
-        source_native_id:draft.nativeId.trim()||detectId(draft.url)||null,media_type:'suno',
+        media_type:'suno',
         title,url:draft.url.trim()||null,
         meta_tags:metaTags||null,createtime
       }]);
@@ -739,7 +728,6 @@ function SunoImport({scopeId}){
       </div>
       <div className="scope-stat-controls">
         <label>Suno URL<input value={draft.url} onChange={e=>change('url',e.target.value)}/></label>
-        <label>Suno ID<input value={draft.nativeId} onChange={e=>change('nativeId',e.target.value)} placeholder={t('uiExtra.importUI.sunoIdHint')}/></label>
         <label><UiText id="common.date"/><input type="date" value={draft.createdDate} onChange={e=>change('createdDate',e.target.value)}/></label>
       </div>
       <div className="scope-stat-controls">

@@ -235,7 +235,7 @@ test('editing an article does not rewrite untouched attributes',()=>{
     parseGroupListsText:value=>value
   };
   const changedGalaxyAttributes=vm.runInNewContext(source+'; changedGalaxyAttributes',context);
-  const attrs={createtime:'',source_native_id:'',source_place:'',searchable:true,url:'',source_id:'',ref_id:'',source_name:'',target_id:'',media_link:'',statistics_able:true,class_id:'',group_lists:'false'};
+  const attrs={createtime:'',source_place:'',searchable:true,url:'',source_id:'',ref_id:'',source_name:'',target_id:'',media_link:'',statistics_able:true,class_id:'',group_lists:'false'};
   const draft={attrs:{...attrs},originalAttrs:{...attrs},hidden:false};
   assert.equal(JSON.stringify(changedGalaxyAttributes(draft,()=>'')),'{}');
   draft.attrs.target_id='id-1\nid-2';

@@ -4,7 +4,6 @@ export const IMPORT_FIELD_ALIASES=Object.freeze({
   content:['content','body','text','message','description'],
   title:['title','name','subject'],
   createtime:['createtime','created_at','create_time','created_time','creation_timestamp','timestamp_ms','timestamp','taken_at','createdAt','published_at','publishedAt','date'],
-  source_native_id:['source_native_id','native_id'],
   source_place:['source_place','place'],
   url:['url','link','permalink'],
   media_link:['media_link'],
@@ -45,24 +44,22 @@ function parseMediaArray(value){
 // accessible URLs for archive-local attachment paths.
 export function normalizeImportMedia(value,{title='',createtime=null,source_place='',galaxy_link=''}={}){
   const references=[],records=[],seen=new Set();
-  for(const item of parseMediaArray(value)){
+  for(const [index,item] of parseMediaArray(value).entries()){
     const source=typeof item==='string'?{url:item}:item;
     if(!source||typeof source!=='object')continue;
     const explicitId=String(source.media_id||'').trim();
     const rawUrl=String(source.url||source.uri||source.href||source.link||'').trim();
     if(explicitId&&!IMPORT_UUID.test(explicitId))throw new Error('media_id 必須是 UUID。');
-    if((typeof item==='string'&&IMPORT_UUID.test(item))||(explicitId&&!rawUrl)){
+    if((typeof item==='string'&&IMPORT_UUID.test(item))||(explicitId&&!rawUrl&&!source.media_type&&!source.type&&!source.title&&!source.name&&!source.meta_tags&&!source.description)){
       references.push(typeof item==='string'?item:explicitId);
       continue;
     }
     const external=/^https?:\/\//i.test(rawUrl)?rawUrl:null;
-    const native=String(source.source_native_id||source.native_id||'').trim()||null;
-    if(!external&&!native)continue;
+    if(!external&&!rawUrl&&!source.media_type&&!source.type&&!source.mime_type&&!source.title&&!source.name&&!source.meta_tags&&!source.description)continue;
     const media_type=importMediaType(rawUrl,source.media_type||source.type||source.mime_type);
     const record={
       ...(explicitId?{media_id:explicitId}:{}),
       galaxy_link:galaxy_link||null,
-      source_native_id:native,
       source_place:String(source.source_place||'').trim()||null,
       media_type,
       title:String(source.title||source.name||title||'').trim()||null,
@@ -71,7 +68,7 @@ export function normalizeImportMedia(value,{title='',createtime=null,source_plac
       createtime:createtime||null
     };
     if(source.rune_references!==undefined)record.rune_references=source.rune_references;
-    const key=JSON.stringify([external,native,media_type,galaxy_link]);
+    const key=explicitId?'id:'+explicitId:(external?JSON.stringify([external,media_type,galaxy_link]):'item:'+index);
     if(!seen.has(key)){seen.add(key);records.push(record);}
   }
   return {references:[...new Set(references)],records};

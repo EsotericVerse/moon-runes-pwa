@@ -30,14 +30,14 @@ import ScopeEditableBlocks from '../../loc/ScopeEditableBlocks';
 import {formatGroupLists,parseGroupListsAttr} from '../../loc/group-lists.mjs';
 
 
-const MEDIA_EDITOR_COLUMNS='media_id,galaxy_link,source_native_id,source_place,media_type,title,url,meta_tags,createtime,rune_references';
-const MEDIA_ATTR_ORDER=['media_id','title','galaxy_link','source_native_id','source_place','media_type','url','meta_tags','createtime','rune_references'];
+const MEDIA_EDITOR_COLUMNS='media_id,galaxy_link,source_place,media_type,title,url,meta_tags,createtime,rune_references';
+const MEDIA_ATTR_ORDER=['media_id','title','galaxy_link','source_place','media_type','url','meta_tags','createtime','rune_references'];
 const MEDIA_ATTR_FIELDS=MEDIA_ATTR_ORDER.map(key=>({key,readOnly:['media_id','title'].includes(key),kind:key==='createtime'?'date':key==='rune_references'?'multiline':'text'}));
 
-const GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,source_native_id,source_place,searchable,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link,statistics_able,class_id,group_lists';
+const GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,source_place,searchable,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link,statistics_able,class_id,group_lists';
 
 const GALAXY_ATTR_ORDER=Object.freeze([
-  'uid','title','content','createtime','source_native_id','source_place',
+  'uid','title','content','createtime','source_place',
   'searchable','UpdateTime','url','source_id','target_id','ref_id','source_name',
   'media_link','statistics_able','class_id','group_lists'
 ]);
@@ -81,7 +81,6 @@ function galaxyDraftFromRow(row={},fallbackTitle=''){
   const attrs={
     uid:String(row.uid||'').trim(),
     createtime:datetimeLocalValue(row.createtime),
-    source_native_id:String(row.source_native_id||''),
     source_place:String(row.source_place||''),
     searchable:row.searchable!==false,
     UpdateTime:String(row.UpdateTime||''),
@@ -112,7 +111,7 @@ function galaxyDraftFromRow(row={},fallbackTitle=''){
 function mediaDraftFromRow(row={},fallbackTitle=''){
   const attrs={
     media_id:String(row.media_id||''), title:String(row.title||''),
-    galaxy_link:String(row.galaxy_link||'').trim(),source_native_id:String(row.source_native_id||''),
+    galaxy_link:String(row.galaxy_link||'').trim(),
     source_place:String(row.source_place||''),media_type:String(row.media_type||''),
     url:String(row.url||''),meta_tags:String(row.meta_tags||''),
     createtime:datetimeLocalValue(row.createtime),
@@ -124,7 +123,7 @@ function mediaDraftFromRow(row={},fallbackTitle=''){
 }
 function changedMediaAttributes(draft,t){
   const current=draft?.attrs||{},initial=draft?.originalAttrs||{},changed={};
-  for(const key of ['galaxy_link','source_native_id','source_place','media_type','url','meta_tags']){
+  for(const key of ['galaxy_link','source_place','media_type','url','meta_tags']){
     if(current[key]!==initial[key])changed[key]=nullableText(current[key]);
   }
   if(Object.hasOwn(changed,'media_type')&&!changed.media_type)throw new Error(t('uiExtra.searchUI.mediaTypeRequired'));
@@ -143,7 +142,7 @@ function changedGalaxyAttributes(draft,t){
   const differs=key=>JSON.stringify(current[key])!==JSON.stringify(initial[key]);
   if(differs('searchable'))changed.searchable=current.searchable!==false;
   if(differs('createtime'))changed.createtime=isoOrNull(current.createtime,t);
-  for(const key of ['source_native_id','source_place','url','source_id','ref_id','source_name']){
+  for(const key of ['source_place','url','source_id','ref_id','source_name']){
     if(differs(key))changed[key]=nullableText(current[key]);
   }
   if(differs('statistics_able'))changed.statistics_able=current.statistics_able!==false;
@@ -217,8 +216,7 @@ function toResult(row,source,scopeId,copy=UI_COPY){
   const displaySource=isGalaxy&&row.source_name?String(row.source_name):source;
   const mediaMetadata=[
     row.meta_tags,
-    row.media_type?(copy.search.typePrefix+row.media_type):'',
-    row.source_native_id?(copy.search.sourceIdPrefix+row.source_native_id):''
+    row.media_type?(copy.search.typePrefix+row.media_type):''
   ].map(value=>workDisplayText(value||'').trim()).filter(Boolean).join(' · ');
   const body=row.style_keyword_tag?'':isMedia
     ?(mediaMetadata||(bodyField?workDisplayText(row[bodyField]):text))
