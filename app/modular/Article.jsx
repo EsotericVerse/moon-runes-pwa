@@ -53,7 +53,7 @@ export function ArticleInlineEditor({draft,onChange,showHidden=false,attributeFi
   </div>;
 }
 
-export default function Article({uid,title,source='',scopeId='',date='',body='',hidden=false,relationLinks=[],links=[],destinations=[],editable=false,editing=false,onEdit,editorDraft=null,onDraftChange,onSave,onDelete,onCancel,editBusy=false,editError='',showHidden=false,attributeFields=null,styleTag=false,styleTagKicker=null,styleIntroText='',children=null,showBodyEditor=true,attributeTitle='文章屬性',mediaScopeId=''}){
+export default function Article({uid,title,source='',scopeId='',date='',body='',hidden=false,relationLinks=[],links=[],destinations=[],editable=false,editing=false,onEdit,editorDraft=null,onDraftChange,onSave,onDelete,onCancel,editBusy=false,editError='',showHidden=false,attributeFields=null,styleTag=false,styleTagKicker=null,styleIntroText='',children=null,showBodyEditor=true,attributeTitle='',mediaScopeId=''}){
   const t=useUiText();
   const richBody=typeof body==='string'&&/<[a-z][^>]*>/i.test(body);
   const onClickCapture=editable&&!editing&&typeof onEdit==='function'?event=>{
