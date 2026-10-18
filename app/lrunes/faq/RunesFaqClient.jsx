@@ -10,6 +10,7 @@ import ArticleBodyEditor from '../../loc/ArticleBodyEditor';
 import BlockNoteEditor from '../../loc/BlockNoteEditor';
 import {navigationHref} from '../../modular/nav-destinations.mjs';
 import useNativeNavigation from '../../modular/use-native-navigation';
+import {useScopeRuntime} from '../../modular/use-scope-runtime';
 
 const TABLE='silver.runes_faq';
 const COLUMNS='faq_id,source_parent_id,category,intent,question,answer,aliases,keywords,related_ids,source_refs,search_text,canon_version,status,sort_order';
@@ -37,6 +38,7 @@ export default function RunesFaqClient(){
   const account=useAccount();
   const queryClient=useQueryClient();
   const native=useNativeNavigation();
+  const runtime=useScopeRuntime();
   const canManage=account.canManageScopeSync('lrunes');
   const {data:rows=[],isPending,error}=useQuery({
     queryKey:['runes-faq','lrunes',canManage],
@@ -84,6 +86,9 @@ export default function RunesFaqClient(){
     }catch(failure){setSaveError(String(failure?.message||failure));}
     finally{setBusy(false);}
   }
+
+  if(!runtime.host)return null;
+  if(runtime.scopeId!=='lrunes')return <main className="loc-next-main"><section className="loc-view"><div className="loc-card"><h1>查無此頁面</h1></div></section></main>;
 
   return <main className="loc-next-main"><section className="loc-view runes-faq-view">
     <div className="loc-card">
