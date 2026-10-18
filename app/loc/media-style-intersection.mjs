@@ -48,13 +48,21 @@ export function mediaCrossIntersections(catalog,left=[],right=[]){
       const id=a+'\u0000'+b;
       let result=pairMap.get(id);
       if(!result){
-        result={key:id,left:a,right:b,leftLabel:labels.get(a),rightLabel:labels.get(b),count:0,days:new Map(),media:[]};
+        result={key:id,left:a,right:b,leftLabel:labels.get(a),rightLabel:labels.get(b),count:0,days:new Map()};
         pairMap.set(id,result);
       }
       result.count++;
       if(item.day)result.days.set(item.day,(result.days.get(item.day)||0)+1);
-      result.media.push({id:item.id,title:item.title,url:item.url,day:item.day});
     }
   }
   return [...pairMap.values()].sort((a,b)=>b.count-a.count||a.leftLabel.localeCompare(b.leftLabel)||a.rightLabel.localeCompare(b.rightLabel));
+}
+
+export function mediaCrossPairWorks(catalog,pair){
+  if(!pair)return [];
+  const [left,right]=String(pair.key||'').split('\u0000');
+  if(!left||!right)return [];
+  return (catalog?.media||[])
+    .filter(item=>item.tags.has(left)&&item.tags.has(right))
+    .map(item=>({id:item.id,title:item.title,url:item.url,day:item.day}));
 }
