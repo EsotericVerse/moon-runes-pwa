@@ -22,6 +22,7 @@ const governance=read('app/modular/features/Governance.jsx');
 const statistics=read('app/modular/features/Statistics.jsx');
 const admin=read('app/loc/views/AdminHomeView.jsx');
 const dbContract=read('app/loc/db-contract.mjs');
+const contentPolicy=read('app/loc/content-policy.js');
 const keywordLibrary=read('app/loc/KeywordLibraryPanel.jsx');
 const keywordNetwork=read('app/loc/KeywordNetworkEditor.jsx');
 const keywordAnalysis=read('app/loc/rune66-keyword-analysis.js');
@@ -79,6 +80,12 @@ for(const name of ['provision_scope','manage_scope_registry','apply_keyword_clas
 }
 must(dbContract.includes('copyKeywordLibraryClass')&&dbContract.includes("rpc('read_keyword_class'"),
   'private and shared Keyword Class operations must remain explicitly scoped');
+must(contentPolicy.includes('export function assertPlainGalaxyAttributes(')&&
+  dbContract.includes("import {assertPlainGalaxyAttributes} from './content-policy.js'")&&
+  dbContract.includes('for(const row of list)validateGalaxyWrite(table,row)')&&
+  dbContract.includes('validateGalaxyWrite(table,values)')&&
+  !fs.existsSync(path.join(root,'app/loc/galaxy-attr-plain-text.mjs')),
+  'Galaxy metadata validation must be consolidated in existing content-policy and shared DB writes, without an extra editor or validator module');
 must(edgeServer.includes('auth.getUser(token)')&&edgeServer.includes('set local role authenticated'),
   'trusted Edge writes must retain authenticated execution');
 must(liveProbe.includes('verifyManagedScope(client,scope)')&&liveProbe.includes('probe(client,scope.galaxy,galaxyColumns)'),
