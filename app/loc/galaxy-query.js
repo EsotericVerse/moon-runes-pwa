@@ -249,9 +249,9 @@ function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filte
 function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,contentType='',sourceFilter=''}={}){
   // These filters are applied by the existing Supabase provider, not to a
   // truncated page of client-side search results.
-  const textSource=contentType==='lyrics_work'?'suno':sourceFilter;
   const textKindFilters=[
-    ...(textSource?[{column:'source_name',operator:'ilike',value:textSource}]:[]),
+    ...(sourceFilter?[{column:'source_name',operator:'ilike',value:sourceFilter}]:[]),
+    ...(contentType==='lyrics_work'?[{column:'source_name',operator:'ilike',value:'suno'}]:[]),
     ...(contentType==='text_work'?[{column:'source_name',operator:'neq',value:'suno'}]:[])
   ];
   const mediaDomain={suno:'suno.com',threads:'threads.com',instagram:'instagram.com',facebook:'facebook.com',vocus:'vocus.cc',x:'x.com'};
