@@ -17,7 +17,7 @@ import {useScopeRuntime} from '../use-scope-runtime';
 import {scopeHref} from '../scope-registry';
 import {featureNavigationHref,galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
-import {resolveGalaxyExternalLinks,searchGalaxyRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordMatches,selectSearchReferenceSuggestions} from '../../loc/galaxy-query';
+import {resolveGalaxyExternalLinks,searchGalaxyRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordMatches} from '../../loc/galaxy-query';
 import {defaultScopeData,selectScopeRegistry} from '../../loc/scope-data';
 import {selectCultureTimeRows} from '../../loc/culture-query';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model';
@@ -26,6 +26,7 @@ import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import {applyFilters,selectRows} from '../../loc/db-query.mjs';
 import {blocksToPlainText,plainTextToBlocks} from '../../loc/blocknote-content.mjs';
 import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
+import ScopeEditableBlocks from '../../loc/ScopeEditableBlocks';
 import {formatGroupLists,parseGroupListsAttr} from '../../loc/group-lists.mjs';
 
 
@@ -311,6 +312,8 @@ function searchHref(scopeId,query,filters={}){
   return href+(params.size?(href.includes('?')?'&':'?')+params.toString():'');
 }
 
+const SEARCH_REFERENCE_ORDERS=Object.freeze([1]);
+
 export default function Search(){
   const UI_COPY=useUiCopy();
   const t=useUiText();
@@ -379,18 +382,6 @@ export default function Search(){
       return rows.filter(row=>row.entry_type==='period'&&row.start_date)
         .map(row=>({id:row.entry_key,title:row.title,startDate:row.start_date,endDate:row.end_date||''}));
     },
-    staleTime:5*60_000
-  });
-  const suggestionScopes=useMemo(()=>{
-    if(scopeId!=='loc')return targetScopes;
-    const author=targetScopes.find(item=>item.id==='lo3rwang');
-    const rune=targetScopes.find(item=>item.id==='lrunes');
-    return [author,rune].filter(Boolean);
-  },[scopeId,targetScopes]);
-  const suggestionsQuery=useQuery({
-    queryKey:['search-live-references',suggestionScopes.map(item=>item.id).join(','),contentType,sourceFilter],
-    enabled:!aggregateScopes&&suggestionScopes.length>0,
-    queryFn:()=>selectSearchReferenceSuggestions(suggestionScopes,{contentType,sourceFilter}),
     staleTime:5*60_000
   });
 
@@ -728,7 +719,6 @@ export default function Search(){
     endDate&&t('uiExtra.searchUI.endDate')+': '+endDate,
     selectedPeriod&&periodsQuery.data?.find(item=>item.id===selectedPeriod)?.title
   ].filter(Boolean);
-  const examples=suggestionsQuery.data||[];
   async function runSearch(event){
     event.preventDefault();
     const term=String(query||'').trim();
@@ -806,19 +796,21 @@ export default function Search(){
           </div>:null}
         </div>:null}
       </div>
-      <section className="scope-search-suggestions" aria-label={t('uiExtra.searchUI.quickExamples')}>
-        <div className="scope-search-suggestions-head">
-          <strong>{t('uiExtra.searchUI.quickExamples')}</strong>
-          <small>{t('uiExtra.searchUI.quickExamplesHelp')}</small>
-        </div>
-        <div className="scope-search-suggestion-grid">
-          {suggestionsQuery.isLoading?<span className="scope-status">{t('uiExtra.searchUI.loadingExamples')}</span>:null}
-          {examples.map(({query:example,description,date})=><button type="button" key={example} className="scope-search-suggestion" onClick={()=>{setQuery(example);resetSearchState();}}>
-            <strong>{example}</strong><small>{description}{date?' · '+date:''}</small>
-          </button>)}
-          {!suggestionsQuery.isLoading&&!examples.length?<small className="scope-status">{t('uiExtra.searchUI.noExamples')}</small>:null}
-        </div>
-      </section>
+      <div className="scope-search-reference-editor">
+        <ScopeEditableBlocks
+          scopeId="loc"
+          page="search"
+          orders={SEARCH_REFERENCE_ORDERS}
+          containerless
+          slotClassName="scope-search-reference-block"
+          editSlotClassName="scope-search-reference-block"
+          allowEditing
+          allowDelete={false}
+          allowEntities={false}
+          allowImages={false}
+          editEyebrow={false}
+        />
+      </div>
     </section>
     <p className="scope-status">{status}</p>
     {error?<p className="scope-status scope-error">{error}</p>:null}
