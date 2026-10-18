@@ -20,8 +20,8 @@ function timeFilters(column,startDate,endDate){
   if(endDate)filters.push({column,operator:'lte',value:String(endDate).slice(0,10)+'T23:59:59.999+08:00'});
   return filters;
 }
-async function selectRowById(table,{idColumn,id,columns}={}){
-  const page=await selectRows(table,{columns,filters:[{column:idColumn,operator:'eq',value:String(id)}],limit:1});
+async function selectRowById(table,{idColumn,id,columns,authenticated=false}={}){
+  const page=await selectRows(table,{columns,filters:[{column:idColumn,operator:'eq',value:String(id)}],limit:1,authenticated});
   return page.rows[0]||null;
 }
 function countBy(rows,keyOf,{includeEmpty=false}={}){
@@ -152,11 +152,11 @@ export async function resolveGalaxyExternalLinks(scope,rows=[]){
   return source.map(row=>({...row,resolved_links:resolvedLinks(row,mediaById)}));
 }
 
-export async function selectGalaxyContent(scope,uid){
+export async function selectGalaxyContent(scope,uid,{authenticated=false}={}){
   const current=scopeOf(scope);
   const id=String(uid||'').trim();
   if(!id)return null;
-  return selectRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content'});
+  return selectRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content',authenticated});
 }
 
 export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
@@ -166,11 +166,12 @@ export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
   const row=await selectRowById(current.galaxy,{
     idColumn:'uid',
     id,
-    columns:'uid,title,source_name,createtime,url,source_id,target_id,ref_id,media_link,searchable'
+    columns:'uid,title,source_name,createtime,url,source_id,target_id,ref_id,media_link,searchable',
+    authenticated:includeHidden
   });
   if(!row||(!includeHidden&&row.searchable===false))return null;
   const [contentRow,mediaRows]=await Promise.all([
-    selectRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content'}),
+    selectRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content',authenticated:includeHidden}),
     mediaRowsFor(current,mediaIdsOf(row.media_link))
   ]);
   const mediaById=new Map(mediaRows.map(item=>[String(item.media_id),item]));
@@ -206,7 +207,7 @@ function recordFor(row,source,providerId,scope,table){
   return {row:{...row,scope_id:row?.scope_id||scope.id,__table:table,__galaxy_media_table:scope.galaxyMedia},source,providerId};
 }
 
-function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filters=[],dateColumn='',exactColumn='',batchSize=DEFAULT_LIST_BATCH_SIZE,sourceClause=''}){
+function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filters=[],dateColumn='',exactColumn='',batchSize=DEFAULT_LIST_BATCH_SIZE,sourceClause='',authenticated=false}){
   const outputColumns=Object.freeze(unique(columns));
   const frozenFields=Object.freeze(unique(searchFields));
   const frozenFilters=Object.freeze(filters.map(item=>Object.freeze({...item})));
@@ -235,7 +236,7 @@ function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filte
         }else if(!browse)dataQuery=applyLiteralTerms(dataQuery,frozenFields,query,and,nor);
         dataQuery=applyOrders(dataQuery,orders);
         return dataQuery.range(offset,offset+pageSize);
-      },{source});
+      },{source,authenticated});
       const dataSource=dataResult.__dataSource||source||'auto';
       const found=dataResult.data||[];
       const hasMore=found.length>pageSize;
@@ -264,21 +265,21 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
   const textColumns=['uid','title','content','createtime','source_native_id','source_place','searchable','UpdateTime','url','source_id','target_id','ref_id','source_name','media_link','statistics_able','class_id','group_lists'];
   const titleExact=makeProvider({
     id:current.id+':text-title-exact',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
-    columns:textColumns,searchFields:['title'],dateColumn:'createtime',filters:textFilters,exactColumn:'title'
+    columns:textColumns,searchFields:['title'],dateColumn:'createtime',filters:textFilters,authenticated:includeHiddenText,exactColumn:'title'
   });
   const title=makeProvider({
     id:current.id+':text-title',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
     columns:textColumns,
-    searchFields:['title'],dateColumn:'createtime',filters:textFilters
+    searchFields:['title'],dateColumn:'createtime',filters:textFilters,authenticated:includeHiddenText
   });
   const contentExact=makeProvider({
     id:current.id+':text-content-exact',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
-    columns:textColumns,searchFields:['content'],dateColumn:'createtime',filters:textFilters,exactColumn:'content'
+    columns:textColumns,searchFields:['content'],dateColumn:'createtime',filters:textFilters,authenticated:includeHiddenText,exactColumn:'content'
   });
   const content=makeProvider({
     id:current.id+':text-content',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
     columns:textColumns,
-    searchFields:['content','source_name'],dateColumn:'createtime',filters:textFilters
+    searchFields:['content','source_name'],dateColumn:'createtime',filters:textFilters,authenticated:includeHiddenText
   });
   const media=makeProvider({
     id:current.id+':media',table:current.galaxyMedia,source:current.id+' 多媒體',scope:current,idColumn:'media_id',
