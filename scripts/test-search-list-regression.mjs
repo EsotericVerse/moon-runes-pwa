@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import {parseGroupLists,formatGroupLists,parseGroupListsAttr} from '../app/loc/group-lists.mjs';
 import {assertPlainGalaxyAttributes,hasHtmlTag} from '../app/loc/content-policy.js';
+import {normalizeImportMedia} from '../app/loc/import-batch.mjs';
 
 function extract(file,start,end){
   const source=fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
@@ -433,4 +434,55 @@ test('Homepage and article click-to-edit ignore existing links and visualization
     assert.equal(isInteractiveContentTarget(target),true);
   }
   assert.equal(isInteractiveContentTarget({closest:()=>null}),false);
+});
+
+test('Galaxy Media import normalizes nested URL assets and existing media references',()=>{
+  const linked=normalizeImportMedia([
+    {url:'https://suno.com/song/8f51d216-e993-4fee-a3de-5ee2e0467a60',title:'作品',media_type:'suno'},
+    '61981c4e-68ba-4b6a-8165-bb6cff4d37e4',
+    {url:'https://suno.com/song/8f51d216-e993-4fee-a3de-5ee2e0467a60',title:'作品',media_type:'suno'}
+  ],{title:'預設',galaxy_link:'AL132601',createtime:'2026-10-18T00:00:00Z'});
+  assert.equal(linked.records.length,1,'Identical source assets are not imported twice');
+  assert.equal(linked.records[0].galaxy_link,'AL132601');
+  assert.equal(linked.records[0].media_type,'suno');
+  assert.deepEqual(linked.references,['61981c4e-68ba-4b6a-8165-bb6cff4d37e4']);
+});
+
+test('Search Media Link viewing and editing use the same article and BlockNote attribute component',()=>{
+  const search=fs.readFileSync(new URL('../app/modular/features/Search.jsx',import.meta.url),'utf8');
+  const article=fs.readFileSync(new URL('../app/modular/Article.jsx',import.meta.url),'utf8');
+  const navigation=fs.readFileSync(new URL('../app/modular/feature-navigation.js',import.meta.url),'utf8');
+  const importUi=fs.readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  assert.ok(article.includes('galaxyMediaHref(mediaScopeId,id)'));
+  assert.ok(navigation.includes('media:NavigationValue.optional()'));
+  assert.ok(search.includes('executeMediaIdentity(media)'));
+  assert.ok(search.includes('MEDIA_EDITOR_COLUMNS'));
+  assert.ok(search.includes('changedMediaAttributes(editDraft,t)'));
+  assert.ok(search.includes("attributeTitle={row.resourceType==='galaxy_media'?'媒體屬性':'文章屬性'}"));
+  assert.ok(search.includes("showBodyEditor={row.resourceType==='galaxy'}"));
+  assert.ok(importUi.includes('writeImportBatches(createMedia'));
+  assert.ok(importUi.includes('await updateRows(galaxy,{media_link:after}'));
+});
+
+test('Search recommendations have explicit edit buttons and non-edit clicks navigate to suggestions',()=>{
+  const search=fs.readFileSync(new URL('../app/modular/features/Search.jsx',import.meta.url),'utf8');
+  const blocks=fs.readFileSync(new URL('../app/loc/ScopeEditableBlocks.jsx',import.meta.url),'utf8');
+  assert.ok(search.includes('explicitEditButton'));
+  assert.ok(search.includes('onSuggestionClick={term=>router.push(searchHref(scopeId,term))}'));
+  assert.ok(blocks.includes('canEdit&&explicitEditButton?<button'));
+  assert.ok(blocks.includes('canEdit&&!active&&!explicitEditButton?event=>'));
+  assert.ok(blocks.includes('selectSuggestion(entity.title||entity.text)'));
+});
+
+test('Same URL is shown exactly once and prefers a Galaxy Media title',()=>{
+  const snippet=extract('app/modular/features/Search.jsx','function uniqueExternalLinks(', 'function mergeSummaryResults(');
+  const uniqueExternalLinks=vm.runInNewContext(snippet+'; uniqueExternalLinks',{});
+  const href='https://suno.com/album/61981c4e-68ba-4b6a-8165-bb6cff4d37e4';
+  const output=uniqueExternalLinks([
+    {id:'primary',href,label:'外部連結'},
+    {id:'url',href,label:'外部連結'},
+    {id:'media',href,label:'混沌之月，共振之時'}
+  ]);
+  assert.equal(output.length,1);
+  assert.equal(output[0].label,'混沌之月，共振之時');
 });
