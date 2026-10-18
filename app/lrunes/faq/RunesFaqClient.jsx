@@ -61,13 +61,13 @@ export default function RunesFaqClient(){
     queryKey:['runes-faq-categories','lrunes',canManage],
     queryFn:()=>readCategories(canManage),
     staleTime:30_000,
-    enabled:!account.permissionLoading
+    enabled:!account.permissionLoading&&runtime.scopeId==='lrunes'
   });
   const {data:faqPage,isPending,error}=useQuery({
     queryKey:['runes-faq-page','lrunes',canManage,category,page],
     queryFn:()=>readFaqPage(category,page,canManage),
     staleTime:30_000,
-    enabled:Boolean(category)&&!account.permissionLoading
+    enabled:Boolean(category)&&!account.permissionLoading&&runtime.scopeId==='lrunes'
   });
   const [expanded,setExpanded]=useState('');
   const [draft,setDraft]=useState(null);
