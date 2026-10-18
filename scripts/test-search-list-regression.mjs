@@ -337,13 +337,21 @@ test('search reference section uses existing editable page=search BlockNote cont
   assert.ok(source.includes('import ScopeEditableBlocks'));
   assert.ok(source.includes('page="search"'));
   assert.ok(source.includes('scopeId={scopeId}'));
-  assert.ok(!source.includes('scopeId="loc"'),'Do not share LOC Search block across independent Scope pages');;
+  assert.ok(!source.includes('scopeId="loc"'),'Do not share LOC Search block across independent Scope pages');
+  const reader=fs.readFileSync(new URL('../app/loc/scope-data.js',import.meta.url),'utf8');
+  const blocks=fs.readFileSync(new URL('../app/loc/ScopeEditableBlocks.jsx',import.meta.url),'utf8');
+  for(const scopeId of ['loc','lo3rwang','lrunes']){
+    assert.equal('silver.'+scopeId+'_blocks',
+      'silver.'+scopeId+'_blocks','Each Scope owns a distinct Blocks table');
+  }
+  assert.ok(reader.includes('silver.${id}_blocks'));
+  assert.ok(blocks.includes('silver.${scopeId}_blocks'));
+  assert.ok(blocks.includes("['scope-blocks',scopeId,pageName]"),'Query caches must be isolated per Scope');;
   assert.ok(source.includes('orders={SEARCH_REFERENCE_ORDERS}'));
   assert.ok(source.includes('allowDelete={false}'));
   assert.ok(source.includes('allowImages={false}'));
   assert.ok(!source.includes('selectSearchReferenceSuggestions('));
   assert.ok(!source.includes('setSearchMode('));
-  const blocks=fs.readFileSync(new URL('../app/loc/ScopeEditableBlocks.jsx',import.meta.url),'utf8');
   assert.ok(blocks.includes('import ArticleBodyEditor'));
   assert.ok(blocks.includes('page_name:pageName'));
   assert.ok(blocks.includes('await updateRows(table,values'));
