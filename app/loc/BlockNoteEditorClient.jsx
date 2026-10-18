@@ -132,7 +132,7 @@ export default function BlockNoteEditorClient({
     {editable?<div className="scope-blocknote-linkbar">
       <button type="button" className="loc-button" onMouseDown={event=>event.preventDefault()} onClick={editLink}><FieldText text="連結"/></button>
       <button type="button" className="loc-button" onMouseDown={event=>event.preventDefault()} onClick={removeLink}><FieldText text="移除連結"/></button>
-      <button type="button" className="loc-button" onMouseDown={event=>event.preventDefault()} onClick={insertImageUrl}><FieldText text="圖片網址"/></button>
+      {canInsertImage?<button type="button" className="loc-button" onMouseDown={event=>event.preventDefault()} onClick={insertImageUrl}><FieldText text="圖片網址"/></button>:null}
     </div>:null}
     <BlockNoteView
       editor={editor}
