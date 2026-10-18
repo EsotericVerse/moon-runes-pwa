@@ -16,7 +16,7 @@ import {selectMediaStatisticsFacetRows,selectMediaCrossTagRows,selectScopeDensit
 import {selectRows} from '../../loc/db-query.mjs';
 import {selectFirstDailyRuneDate} from '../../loc/daily-runes';
 import {administrativeSourceTrend} from '../../loc/statistics-admin-source.mjs';
-import {defaultMediaCrossAxes,mediaCrossIntersections,mediaCrossTagCatalog} from '../../loc/media-style-intersection.mjs';
+import {defaultMediaCrossAxes,mediaCrossIntersections,mediaCrossPairWorks,mediaCrossTagCatalog} from '../../loc/media-style-intersection.mjs';
 import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
 import {selectScopeRegistry,defaultScopeData} from '../../loc/scope-data';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation';
@@ -362,6 +362,7 @@ function MediaCrossTagStatistics({rows=[],range={},zoomLevel=0,onZoomLevelChange
     :rightOverride.filter(x=>tagKeys.has(x));
   const pairs=useMemo(()=>mediaCrossIntersections(catalog,left,right),[catalog,left.join('\u0000'),right.join('\u0000')]);
   const selected=pairs.find(x=>x.key===selectedPair);
+  const selectedWorks=useMemo(()=>selected?mediaCrossPairWorks(catalog,selected):[],[catalog,selected?.key]);
   const leading=pairs.slice(0,12);
   const trendPairs=pairs.slice(0,6);
   const trendData=useMemo(()=>{
@@ -416,7 +417,7 @@ function MediaCrossTagStatistics({rows=[],range={},zoomLevel=0,onZoomLevelChange
         {selected?<div className="scope-stat-cross-matches">
           <h4>{selected.leftLabel} × {selected.rightLabel} · {selected.count} {t('uiExtra.statisticsView.unitCase')}</h4>
           <div className="scope-ranking" style={{maxHeight:360,overflowY:'auto'}}>
-            {selected.media.map(media=><div key={media.id}>
+            {selectedWorks.map(media=><div key={media.id}>
               <strong>{media.title||media.id}</strong>
               <span>{media.day||t('uiExtra.statisticsView.noDate')} {/^https?:\/\//iu.test(media.url)?<a href={media.url} target="_blank" rel="noopener noreferrer"><UiText id="uiExtra.statisticsView.viewMedia"/></a>:null}</span>
             </div>)}
