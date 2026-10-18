@@ -7,11 +7,73 @@ export const IMPORT_FIELD_ALIASES=Object.freeze({
   source_native_id:['source_native_id','native_id'],
   source_place:['source_place','place'],
   url:['url','link','permalink'],
+  media_link:['media_link'],
+  media:['galaxy_media','attachments','media','media_items'],
+  media_type:['media_type'],
+  galaxy_link:['galaxy_link'],
+  meta_tags:['meta_tags'],
+  rune_references:['rune_references'],
   source_id:['source_id'],
   target_id:['target_id'],
   ref_id:['ref_id'],
   searchable:['searchable','search']
 });
+
+
+const IMPORT_UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function importMediaType(url='',hint=''){
+  const type=String(hint||'').trim().toLowerCase();
+  if(type)return type;
+  const value=String(url||'').toLowerCase();
+  if(value.includes('suno.com/'))return 'suno';
+  if(/\.(?:png|jpe?g|gif|webp|heic|avif|svg)(?:[?#]|$)/.test(value))return 'image';
+  if(/\.(?:mp4|mov|avi|webm|mkv)(?:[?#]|$)/.test(value))return 'video';
+  if(/\.(?:mp3|wav|ogg|m4a|flac)(?:[?#]|$)/.test(value))return 'audio';
+  return 'url';
+}
+function parseMediaArray(value){
+  if(Array.isArray(value))return value;
+  if(value===undefined||value===null||value==='')return [];
+  if(typeof value==='object')return [value];
+  const text=String(value).trim();
+  if(text.startsWith('[')||text.startsWith('{')){
+    try{return parseMediaArray(JSON.parse(text))}catch{throw new Error('媒體欄位不是有效的 JSON。')}
+  }
+  return text.split(/[\n,]+/).map(item=>item.trim()).filter(Boolean);
+}
+// Preserve references to existing media IDs; prepare new media records without inventing
+// accessible URLs for archive-local attachment paths.
+export function normalizeImportMedia(value,{title='',createtime=null,source_place='',galaxy_link=''}={}){
+  const references=[],records=[],seen=new Set();
+  for(const item of parseMediaArray(value)){
+    const source=typeof item==='string'?{url:item}:item;
+    if(!source||typeof source!=='object')continue;
+    const explicitId=String(source.media_id||'').trim();
+    const rawUrl=String(source.url||source.uri||source.href||source.link||'').trim();
+    if((typeof item==='string'&&IMPORT_UUID.test(item))||(explicitId&&IMPORT_UUID.test(explicitId)&&!rawUrl)){
+      references.push(typeof item==='string'?item:explicitId);
+      continue;
+    }
+    const external=/^https?:\/\//i.test(rawUrl)?rawUrl:null;
+    const native=String(source.source_native_id||source.native_id||(!external?rawUrl:'')).trim()||null;
+    if(!external&&!native)continue;
+    const media_type=importMediaType(rawUrl,source.media_type||source.type||source.mime_type);
+    const record={
+      galaxy_link:galaxy_link||null,
+      source_native_id:native,
+      source_place:String(source.source_place||source_place||'').trim()||null,
+      media_type,
+      title:String(source.title||source.name||title||'').trim()||null,
+      url:external,
+      meta_tags:String(source.meta_tags||source.description||'').trim()||null,
+      createtime:createtime||null
+    };
+    if(source.rune_references!==undefined)record.rune_references=source.rune_references;
+    const key=JSON.stringify([external,native,media_type,galaxy_link]);
+    if(!seen.has(key)){seen.add(key);records.push(record);}
+  }
+  return {references:[...new Set(references)],records};
+}
 
 function pathValue(row,path){
   const segments=String(path||'').trim().split('.').filter(Boolean);
