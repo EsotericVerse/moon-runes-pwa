@@ -458,9 +458,11 @@ test('Search Media Link viewing and editing use the same article and BlockNote a
   assert.ok(search.includes('executeMediaIdentity(media)'));
   assert.ok(search.includes('MEDIA_EDITOR_COLUMNS'));
   assert.ok(search.includes('changedMediaAttributes(editDraft,t)'));
-  assert.ok(search.includes("attributeTitle={row.resourceType==='galaxy_media'?'媒體屬性':'文章屬性'}"));
+  assert.ok(search.includes("attributeTitle={row.resourceType==='galaxy_media'?t('uiExtra.searchUI.mediaAttributes'):t('uiExtra.searchUI.attributeTitle')}"));
   assert.ok(search.includes("showBodyEditor={row.resourceType==='galaxy'}"));
   assert.ok(importUi.includes('writeImportBatches(createMedia'));
+  assert.ok(importUi.includes('async function syncImportedMedia('));
+  assert.ok(importUi.includes('normalized:original,knownArticleIds,galaxy,galaxyMedia,batchSize:format.batchSize,t'));
   assert.ok(importUi.includes('await updateRows(galaxy,{media_link:after}'));
 });
 
@@ -476,7 +478,7 @@ test('Search recommendations have explicit edit buttons and non-edit clicks navi
 
 test('Same URL is shown exactly once and prefers a Galaxy Media title',()=>{
   const snippet=extract('app/modular/features/Search.jsx','function uniqueExternalLinks(', 'function mergeSummaryResults(');
-  const uniqueExternalLinks=vm.runInNewContext(snippet+'; uniqueExternalLinks',{});
+  const uniqueExternalLinks=vm.runInNewContext(snippet+'; uniqueExternalLinks',{UI_COPY:{search:{externalLink:'外部連結',mediaLink:'媒體連結'}}});
   const href='https://suno.com/album/61981c4e-68ba-4b6a-8165-bb6cff4d37e4';
   const output=uniqueExternalLinks([
     {id:'primary',href,label:'外部連結'},
