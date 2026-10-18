@@ -9,6 +9,7 @@ import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useAccount} from '../../loc/use-account';
 import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
 import {selectRows} from '../../loc/db-query.mjs';
+import ArticleBodyEditor from '../../loc/ArticleBodyEditor';
 
 
 const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_ids,date_status,year_value,visibility,style_description';
@@ -342,9 +343,16 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       </label>:null}
       <label><span>{draft.record_type==='style_comment'?l.styleName:l.name}</span><input className="scope-search-input" value={draft.label||''} onChange={event=>change('label',event.target.value)} required/></label>
       <label><span>{l.identity}</span><input className="scope-search-input" value={draft.resource_id||''} disabled={Boolean(selectedId)} onChange={event=>change('resource_id',event.target.value)} placeholder={l.autoIdentifier}/></label>
-      {draft.record_type!=='style_comment'?<label><span>{draft.record_type==='anchor'?l.anchorDescription:l.periodDescription}</span><textarea className="scope-search-input" rows={5} value={draft.note||''} onChange={event=>change('note',event.target.value)}/></label>:null}
+      {draft.record_type!=='style_comment'?<div className="scope-management-wide-field"><span>{draft.record_type==='anchor'?l.anchorDescription:l.periodDescription}</span>
+          <ArticleBodyEditor editorKey={'timeline-note:'+scopeId+':'+String(selectedId||draft.record_type)}
+            content={draft.note||''} canInsertImage={false} onPlainTextChange={value=>change('note',value)}/>
+        </div>:null}
       {draft.record_type==='style_comment'?<>
-        <label><span>{l.styleText}</span><textarea className="scope-search-input" rows={7} value={draft.style_description||''} onChange={event=>change('style_description',event.target.value)} required placeholder={l.styleHint}/></label>
+        <div className="scope-management-wide-field"><span>{l.styleText}</span>
+          <ArticleBodyEditor editorKey={'timeline-style:'+scopeId+':'+String(selectedId||'new')}
+            content={draft.style_description||''} canInsertImage={false}
+            onPlainTextChange={value=>change('style_description',value)}/>
+        </div>
         <label><span>{l.uniqueAnchor}</span>
           <select className="scope-select" value={Array.isArray(draft.anchor_ids)?draft.anchor_ids[0]||'':''} onChange={event=>change('anchor_ids',event.target.value?[event.target.value]:[])} required>
             <option value="">{l.chooseExisting}</option>
