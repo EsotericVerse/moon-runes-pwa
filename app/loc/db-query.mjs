@@ -3,7 +3,7 @@
 import {DB_QUERY_BATCH_SIZE} from './query-contract.mjs';
 
 
-import {dbBackupPublicClient,dbConfiguredPublicClient,dbPublicClient} from './db-client.mjs';
+import {dbAuthClient,dbBackupPublicClient,dbConfiguredPublicClient,dbPublicClient} from './db-client.mjs';
 import {markPrimaryReadFailed,markPrimaryReadSucceeded} from './db-source-status.mjs';
 
 import {selectedDatabaseRouting} from './providers/routing-state.mjs';
@@ -33,8 +33,17 @@ function resultError(result,table,source){
   error.cause=cause||undefined;
   return error;
 }
-export async function executePublicRead(table,buildQuery,{source='auto'}={}){
+export async function executePublicRead(table,buildQuery,{source='auto',authenticated=false}={}){
   const routing=await selectedDatabaseRouting(dbConfiguredPublicClient);
+  // Hidden Galaxy rows require the signed-in SDK and server-enforced Scope RLS.
+  // Never fall back to an anonymous or backup transport for authenticated reads.
+  if(authenticated){
+    if(!routing.primaryControl)throw new Error('Authenticated hidden search requires Supabase as the primary database');
+    const result=await buildQuery(publicRelation(dbAuthClient,table));
+    const failure=resultError(result,table,'authenticated');
+    if(failure)throw failure;
+    return {...result,__dataSource:'authenticated'};
+  }
   const primaryClient=routing.primaryControl?dbPublicClient:dbConfiguredPublicClient;
   if(!primaryClient)throw new Error('Selected primary database is unavailable');
   const run=async(client,label)=>{
@@ -109,7 +118,8 @@ export async function selectRows(table,{
   offset=0,
   count=null,
   maxLimit=DB_QUERY_BATCH_SIZE,
-  source='auto'
+  source='auto',
+  authenticated=false
 }={}){
   if(!String(columns||'').trim()||String(columns).trim()==='*')throw new Error('DB SELECT requires explicit columns');
   const safeMaximum=Math.max(1,Math.floor(Number(maxLimit)||DB_QUERY_BATCH_SIZE));
@@ -121,7 +131,7 @@ export async function selectRows(table,{
     if(orFilter)query=query.or(orFilter);
     query=applyOrders(query,orders);
     return query.range(safeOffset,safeOffset+safeLimit-1);
-  },{source});
+  },{source,authenticated});
   return {rows:data||[],count:total,dataSource:__dataSource};
 }
 
