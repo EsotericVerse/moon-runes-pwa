@@ -30,6 +30,10 @@ import ScopeEditableBlocks from '../../loc/ScopeEditableBlocks';
 import {formatGroupLists,parseGroupListsAttr} from '../../loc/group-lists.mjs';
 
 
+const MEDIA_EDITOR_COLUMNS='media_id,galaxy_link,source_native_id,source_place,media_type,title,url,meta_tags,createtime,rune_references';
+const MEDIA_ATTR_ORDER=['media_id','title','galaxy_link','source_native_id','source_place','media_type','url','meta_tags','createtime','rune_references'];
+const MEDIA_ATTR_FIELDS=MEDIA_ATTR_ORDER.map(key=>({key,readOnly:['media_id','title'].includes(key),kind:key==='createtime'?'date':key==='rune_references'?'multiline':'text'}));
+
 const GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,source_native_id,source_place,searchable,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link,statistics_able,class_id,group_lists';
 
 const GALAXY_ATTR_ORDER=Object.freeze([
@@ -105,6 +109,34 @@ function galaxyDraftFromRow(row={},fallbackTitle=''){
   };
 }
 
+function mediaDraftFromRow(row={},fallbackTitle=''){
+  const attrs={
+    media_id:String(row.media_id||''), title:String(row.title||''),
+    galaxy_link:String(row.galaxy_link||'').trim(),source_native_id:String(row.source_native_id||''),
+    source_place:String(row.source_place||''),media_type:String(row.media_type||''),
+    url:String(row.url||''),meta_tags:String(row.meta_tags||''),
+    createtime:datetimeLocalValue(row.createtime),
+    rune_references:row.rune_references==null?'':JSON.stringify(row.rune_references,null,2)
+  };
+  return {title:String(row.title??fallbackTitle??''),originalTitle:String(row.title??fallbackTitle??''),
+    body:'',bodyHtml:'',bodyBlocks:plainTextToBlocks(''),editorKey:String(row.media_id||''),
+    attrs,originalAttrs:{...attrs}};
+}
+function changedMediaAttributes(draft,t){
+  const current=draft?.attrs||{},initial=draft?.originalAttrs||{},changed={};
+  for(const key of ['galaxy_link','source_native_id','source_place','media_type','url','meta_tags']){
+    if(current[key]!==initial[key])changed[key]=nullableText(current[key]);
+  }
+  if(Object.hasOwn(changed,'media_type')&&!changed.media_type)throw new Error('media_type 不可為空。');
+  if(changed.galaxy_link&&!/^[a-z0-9]{8}$/i.test(changed.galaxy_link))throw new Error('galaxy_link 必須是八位文章 UID。');
+  if(current.createtime!==initial.createtime)changed.createtime=isoOrNull(current.createtime,t);
+  if(current.rune_references!==initial.rune_references){
+    const value=String(current.rune_references||'').trim();
+    if(!value)changed.rune_references=null;
+    else {try{changed.rune_references=JSON.parse(value)}catch{throw new Error('rune_references 必須是有效 JSON。')}}
+  }
+  return changed;
+}
 function changedGalaxyAttributes(draft,t){
   const current=draft?.attrs||{},initial=draft?.originalAttrs||{};
   const changed={};
@@ -229,12 +261,22 @@ function toResult(row,source,scopeId,copy=UI_COPY){
       :(resourceType==='galaxy'&&resourceId
       ?'galaxy:'+scope+':'+resourceId
       :(resourceType==='galaxy_media'&&row.galaxy_link?'galaxy:'+scope+':'+row.galaxy_link:'result:'+scope+':'+(identity||title))),
-    links:[...(href?[{id:resourceType||'primary',href,label:resourceType==='galaxy_media'?copy.search.mediaLink:copy.search.externalLink}]:[]),...(Array.isArray(row.resolved_links)?row.resolved_links:[])],
+    links:uniqueExternalLinks([...(href?[{id:resourceType||'primary',href,label:resourceType==='galaxy_media'?copy.search.mediaLink:copy.search.externalLink}]:[]),...(Array.isArray(row.resolved_links)?row.resolved_links:[])]),
     destinations:[]
   };
 }
 
 
+function uniqueExternalLinks(links=[]){
+  const byHref=new Map();
+  for(const link of links){
+    const href=String(link?.href||'').trim();
+    if(!/^https?:\/\//i.test(href))continue;
+    const prior=byHref.get(href);
+    if(!prior||(['外部連結','媒體連結'].includes(prior.label)&&!['外部連結','媒體連結'].includes(link.label)))byHref.set(href,link);
+  }
+  return [...byHref.values()];
+}
 function mergeSummaryResults(rows=[],copy=UI_COPY){
   const groups=new Map();
   for(const row of rows){
@@ -250,7 +292,7 @@ function mergeSummaryResults(rows=[],copy=UI_COPY){
       .map((link,index)=>({...link,label:(links.length>1&&link.label===copy.search.mediaLink)?copy.format.songLink(index+1):link.label}));
     groups.set(key,{
       ...preferRow,
-      links:uniqueLinks,
+      links:uniqueExternalLinks(uniqueLinks),
       destinations:[...(current.destinations||[]),...(row.destinations||[])].filter((item,index,all)=>all.findIndex(other=>other.href===item.href&&other.label===item.label)===index),
       relationLinks:[...(current.relationLinks||[]),...(row.relationLinks||[])].filter((item,index,all)=>all.findIndex(other=>other.href===item.href&&other.label===item.label)===index)
     });
@@ -518,9 +560,28 @@ export default function Search(){
     }
   }
 
+  async function executeMediaIdentity(rawMediaId){
+    const mediaId=String(rawMediaId||'').trim(),id=++searchId.current;
+    setError('');setStatus('');setResults([]);setEditDraft(null);setEditingKey('');
+    setHasMore(false);setNextCursor(null);setFullText('');setFullTextRow(null);
+    try{
+      if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(mediaId))throw new Error('媒體 ID 格式無效。');
+      if(!canManageSearchScope(account,scopeId))throw new Error(UI_COPY.search.editDenied);
+      const scopeData=defaultScopeData(scopeId);
+      if(!scopeData?.galaxyMedia)throw new Error(UI_COPY.search.notFound);
+      const row=await selectPublicEditableRow(scopeData.galaxyMedia,'media_id',mediaId,MEDIA_EDITOR_COLUMNS,{authenticated:true});
+      if(id!==searchId.current)return;
+      if(!row)throw new Error(UI_COPY.search.notFound);
+      const item=toResult({...row,scope_id:scopeId,__table:scopeData.galaxyMedia},'Galaxy Media',scopeId);
+      setResults([item]);setEditingKey(item.key);setEditDraft(mediaDraftFromRow(row,item.title));
+    }catch(exception){if(id===searchId.current)setError(String(exception?.message||exception||UI_COPY.search.editLoadFailed))}
+  }
+
   useEffect(()=>{
     if(!scopesQuery.isSuccess||account.permissionLoading)return;
     const identity=String(searchParams?.get('identity')||'').trim();
+    const media=String(searchParams?.get('media')||'').trim();
+    if(media){setQuery('');executeMediaIdentity(media);return;}
     const value=String(searchParams?.get('q')||'').trim();
     if(identity){setQuery('');executeIdentity(identity);return;}
     const filters={
@@ -574,20 +635,13 @@ export default function Search(){
         result.editableTable,
         result.editableIdColumn,
         result.editResourceId||result.resourceId,
-        result.resourceType==='galaxy'?GALAXY_EDITOR_COLUMNS:'media_id,title,meta_tags',
+        result.resourceType==='galaxy'?GALAXY_EDITOR_COLUMNS:MEDIA_EDITOR_COLUMNS,
         {authenticated:result.resourceType==='galaxy'&&canManageSearchScope(account,result.scopeId)}
       );
       if(!fullRow)throw new Error(UI_COPY.search.editNotFound);
       setEditDraft(result.resourceType==='galaxy'
         ?galaxyDraftFromRow(fullRow,result.title)
-        :{
-          title:String(fullRow.title??result.title??''),
-          body:String(fullRow[result.editableField]??''),
-          bodyHtml:String(fullRow[result.editableField]??''),
-          bodyBlocks:plainTextToBlocks(String(fullRow[result.editableField]??'')),
-          editorKey:String(fullRow.media_id||result.resourceId||'media'),
-          hidden:false
-        });
+        :mediaDraftFromRow(fullRow,result.title));
     }catch(exception){
       setEditingKey('');
       setEditError(String(exception?.message||exception||UI_COPY.search.editLoadFailed));
@@ -597,55 +651,38 @@ export default function Search(){
     if(!editDraft||!result.editableTable||!result.editableField)return;
     setEditBusy(true);setEditError('');
     try{
-      const body=result.resourceType==='galaxy'
-        ?requireGalaxyContent(editDraft.bodyHtml??blocksToPlainText(editDraft.bodyBlocks))
-        :(editDraft.bodyHtml??blocksToPlainText(editDraft.bodyBlocks));
-      const plainBody=blocksToPlainText(editDraft.bodyHtml??editDraft.bodyBlocks);
-      const nextTitle=result.resourceType==='galaxy'
-        ?resolveGalaxyTitle(editDraft.title,plainBody)
-        :(String(editDraft.title||'').trim()||null);
-      const metadataTitleChanged=result.resourceType==='galaxy'&&editDraft.title!==editDraft.originalTitle;
-      // Validate the raw edits before converting arrays, dates and group lists:
-      // even malformed markup must be rejected with its field name, never
-      // normalized away or silently saved into the database.
-      if(result.resourceType==='galaxy'){
+      const isGalaxy=result.resourceType==='galaxy';
+      const body=isGalaxy?requireGalaxyContent(editDraft.bodyHtml??blocksToPlainText(editDraft.bodyBlocks)):'';
+      const nextTitle=isGalaxy?resolveGalaxyTitle(editDraft.title,blocksToPlainText(editDraft.bodyHtml??editDraft.bodyBlocks)):nullableText(editDraft.title);
+      const titleChanged=editDraft.title!==editDraft.originalTitle;
+      let contentPatch;
+      if(isGalaxy){
         const rawEdits=Object.fromEntries(Object.entries(editDraft.attrs||{})
           .filter(([key,value])=>JSON.stringify(value)!==JSON.stringify(editDraft.originalAttrs?.[key])));
-        assertPlainGalaxyAttributes({
-          ...rawEdits,
-          ...(metadataTitleChanged?{title:editDraft.title}:{})
-        });
+        assertPlainGalaxyAttributes({...rawEdits,...(titleChanged?{title:editDraft.title}:{})});
+        const attrs=changedGalaxyAttributes(editDraft,t);
+        assertPlainGalaxyAttributes({...attrs,...(titleChanged?{title:nextTitle}:{})});
+        contentPatch={...(titleChanged?{title:nextTitle}:{}),content:body,UpdateTime:new Date().toISOString(),...attrs};
+      }else{
+        const attrs=changedMediaAttributes(editDraft,t);
+        const {rune_references,...plainAttrs}=attrs;
+        assertPlainGalaxyAttributes({...plainAttrs,...(titleChanged?{title:nextTitle}:{})});
+        contentPatch={...(titleChanged?{title:nextTitle}:{}),...attrs};
+        if(!Object.keys(contentPatch).length){setEditingKey('');setEditDraft(null);return;}
       }
-      const attrChanges=result.resourceType==='galaxy'?changedGalaxyAttributes(editDraft,t):{};
-      if(result.resourceType==='galaxy'){
-        assertPlainGalaxyAttributes({
-          ...attrChanges,
-          ...(metadataTitleChanged?{title:nextTitle}:{})
-        });
-      }
-      const contentPatch=result.resourceType==='galaxy'?{
-        ...(metadataTitleChanged?{title:nextTitle}:{}),
-        content:body,
-        UpdateTime:new Date().toISOString(),
-        ...attrChanges
-      }:{
-        title:nextTitle,
-        [result.editableField]:body,
-      };
-      const contentFilters=[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId}];
-      await updateRows(result.editableTable,contentPatch,{filters:contentFilters});
-      setResults(current=>current.map(item=>item.key!==result.key?item:{...item,title:nextTitle,snippet:result.resourceType==='galaxy'?'':body,editRow:{...(item.editRow||{}),title:nextTitle,[result.editableField]:body,...contentPatch}}));
-      if(fullTextKey===result.key){
+      await updateRows(result.editableTable,contentPatch,{filters:[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId}]});
+      setResults(current=>current.map(item=>{
+        if(item.key!==result.key)return item;
+        const updatedUrl=Object.hasOwn(contentPatch,'url')?contentPatch.url:item.editRow?.url;
+        const links=!isGalaxy&&Object.hasOwn(contentPatch,'url')?uniqueExternalLinks(updatedUrl?[{id:'media-url',href:updatedUrl,label:UI_COPY.search.mediaLink}]:[]):item.links;
+        return {...item,title:nextTitle||item.title,snippet:isGalaxy?'':item.snippet,links,
+          editRow:{...(item.editRow||{}),title:nextTitle,...contentPatch}};
+      }));
+      if(isGalaxy&&fullTextKey===result.key){
         setFullText(body);
-        if(result.resourceType==='galaxy'){
-          setFullTextRow(current=>({
-            ...(current||{}),
-            ...contentPatch,
-            uid:current?.uid||result.editResourceId||result.resourceId
-          }));
-        }
+        setFullTextRow(current=>({...current,...contentPatch,uid:current?.uid||result.editResourceId||result.resourceId}));
       }
-      setEditingKey('');setEditDraft(null);
+      setEditingKey('');setEditDraft(null);setStatus('');
     }catch(exception){setEditError(String(exception?.message||exception||UI_COPY.search.saveFailed))}
     finally{setEditBusy(false)}
   }
@@ -830,7 +867,7 @@ export default function Search(){
           source={row.styleTagMatch?'':row.source}
           scopeId={row.scopeId}
           date={row.date}
-          body={draft?'':/<[a-z][^>]*>/i.test(String(row.snippet||''))?String(row.snippet):highlightSearchText(row.snippet,matchedQueryRef.current)}
+          body={draft?'':row.resourceType==='galaxy_media'?'':/<[a-z][^>]*>/i.test(String(row.snippet||''))?String(row.snippet):highlightSearchText(row.snippet,matchedQueryRef.current)}
           hidden={false}
           relationLinks={row.relationLinks||[]}
           links={row.links||[]}
@@ -846,7 +883,10 @@ export default function Search(){
           editBusy={editBusy}
           editError={editError}
           showHidden={false}
-          attributeFields={editable&&row.resourceType==='galaxy'?GALAXY_ATTR_FIELDS:null}
+          attributeFields={editable?(row.resourceType==='galaxy'?GALAXY_ATTR_FIELDS:row.resourceType==='galaxy_media'?MEDIA_ATTR_FIELDS:null):null}
+          mediaScopeId={editable&&row.resourceType==='galaxy'?row.scopeId:''}
+          attributeTitle={row.resourceType==='galaxy_media'?'媒體屬性':'文章屬性'}
+          showBodyEditor={row.resourceType==='galaxy'}
           styleTag={row.styleTagMatch}
           styleTagKicker={row.styleTagMatch?<UiText id="uiExtra.searchUI.styleRecommendations"/>:null}
           styleIntroText={row.styleIntroText}
