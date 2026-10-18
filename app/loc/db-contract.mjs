@@ -1,3 +1,15 @@
+import {assertPlainGalaxyAttributes} from './content-policy.js';
+
+// The existing management-write boundary enforces Galaxy metadata rules
+// consistently for publisher, search, culture and import paths.
+// Galaxy Media and Blocks are different schemas and are not affected.
+function validateGalaxyWrite(table,values){
+  if(!/^silver\.[a-z][a-z0-9]{0,14}_galaxy$/.test(String(table||'')))return values;
+  const {content:body,...attributes}=values||{};
+  assertPlainGalaxyAttributes(attributes);
+  return values;
+}
+
 export function createDatabaseClient({publicClient,authClient,auth}){
     if(!publicClient?.schema||!authClient?.schema||!auth?.getSession||!auth?.signInWithOAuth||!auth?.signOut){
       throw new Error('Database adapter must implement public/authenticated clients and the account boundary');
@@ -21,6 +33,8 @@ export function createDatabaseClient({publicClient,authClient,auth}){
 
   async function insertRows(table,rows){
     const list=Array.isArray(rows)?rows:[];
+    // Check every row before starting batch writes; fail without partial import.
+    for(const row of list)validateGalaxyWrite(table,row);
     const batchSize=200;
     let count=0;
     for(let offset=0;offset<list.length;offset+=batchSize){
@@ -40,6 +54,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   }
 
   async function updateRows(table,values,{filters=[]}={}){
+    validateGalaxyWrite(table,values);
     const result=await managementWrite({
       p_table:table,
       p_operation:'update',
