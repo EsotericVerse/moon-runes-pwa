@@ -352,7 +352,6 @@ function MediaCrossTagStatistics({rows=[],range={},zoomLevel=0,onZoomLevelChange
   const [leftOverride,setLeftOverride]=useState(null);
   const [rightOverride,setRightOverride]=useState(null);
   const [mode,setMode]=useState('ranking');
-  const [visibleCount,setVisibleCount]=useState(15);
   const [selectedPair,setSelectedPair]=useState('');
   const catalog=useMemo(()=>mediaCrossTagCatalog(rows),[rows]);
   const tagKeys=new Set(catalog.options.map(x=>x.key));
@@ -381,7 +380,7 @@ function MediaCrossTagStatistics({rows=[],range={},zoomLevel=0,onZoomLevelChange
         <MediaCrossTagPicker title={t('uiExtra.statisticsView.tagGroup1')} options={catalog.options} selected={left} onChange={setLeftOverride}/>
         <MediaCrossTagPicker title={t('uiExtra.statisticsView.tagGroup2')} options={catalog.options} selected={right} onChange={setRightOverride}/>
         <button type="button" className="loc-button" onClick={()=>{
-          setLeftOverride(null);setRightOverride(null);setSelectedPair('');setVisibleCount(15);
+          setLeftOverride(null);setRightOverride(null);setSelectedPair('');
         }}><UiText id="uiExtra.statisticsView.resetPairs"/></button>
       </div>
       <div className="scope-stat-controls">
@@ -400,7 +399,7 @@ function MediaCrossTagStatistics({rows=[],range={},zoomLevel=0,onZoomLevelChange
                   <XAxis type="number" allowDecimals={false} tick={{fill:CHART_TEXT}}/>
                   <YAxis dataKey="label" type="category" width={190} tick={{fill:CHART_TEXT,fontSize:11}}/>
                   <Tooltip contentStyle={CHART_TOOLTIP}/>
-                  <Bar dataKey="count" name={t('uiExtra.statisticsView.commonWorks')} fill={CHART_ACCENT} maxBarSize={28}/>
+                  <Bar dataKey="count" name={t('uiExtra.statisticsView.commonWorks')} fill={CHART_ACCENT} maxBarSize={28} cursor="pointer" onClick={(_,index)=>{const pair=leading[index];if(pair)setSelectedPair(current=>current===pair.key?'':pair.key);}}/>
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -410,24 +409,13 @@ function MediaCrossTagStatistics({rows=[],range={},zoomLevel=0,onZoomLevelChange
               <XAxis dataKey="period" angle={-25} textAnchor="end" height={65} tick={{fill:CHART_TEXT,fontSize:11}}/>
               <YAxis allowDecimals={false} tick={{fill:CHART_TEXT}}/>
               <Tooltip contentStyle={CHART_TOOLTIP}/><Legend/>
-              {trendPairs.map((pair,i)=><Line key={pair.key} type="monotone" name={pair.leftLabel+' × '+pair.rightLabel} dataKey={pair.key} stroke={PIE_COLORS[i%PIE_COLORS.length]} strokeWidth={2} dot={trendData.length<20} connectNulls={false}/>)}
+              {trendPairs.map((pair,i)=><Line key={pair.key} type="monotone" name={pair.leftLabel+' × '+pair.rightLabel} dataKey={pair.key} stroke={PIE_COLORS[i%PIE_COLORS.length]} strokeWidth={2} dot={trendData.length<20} connectNulls={false} activeDot={{onClick:()=>setSelectedPair(current=>current===pair.key?'':pair.key)}}/>)}
             </LineChart>
           </ResponsiveContainer>}
         </StatisticsChartFrame>
-        <div className="scope-ranking">
-          {pairs.slice(0,visibleCount).map(pair=><div key={pair.key}>
-            <strong>{pair.leftLabel} × {pair.rightLabel}</strong>
-            <span>{pair.count.toLocaleString()} {t('uiExtra.statisticsView.unitCase')}
-              {' '}<button type="button" className="loc-button" onClick={()=>setSelectedPair(selectedPair===pair.key?'':pair.key)}>
-                <UiText id={selectedPair===pair.key?'uiExtra.statisticsView.hideWorks':'uiExtra.statisticsView.viewWorks'}/>
-              </button>
-            </span>
-          </div>)}
-        </div>
-        {visibleCount<pairs.length?<button type="button" className="loc-button" onClick={()=>setVisibleCount(n=>n+15)}><UiText id="uiExtra.statisticsView.showMorePairs"/></button>:null}
         {selected?<div className="scope-stat-cross-matches">
           <h4>{selected.leftLabel} × {selected.rightLabel} · {selected.count} {t('uiExtra.statisticsView.unitCase')}</h4>
-          <div className="scope-ranking">
+          <div className="scope-ranking" style={{maxHeight:360,overflowY:'auto'}}>
             {selected.media.map(media=><div key={media.id}>
               <strong>{media.title||media.id}</strong>
               <span>{media.day||t('uiExtra.statisticsView.noDate')} {/^https?:\/\//iu.test(media.url)?<a href={media.url} target="_blank" rel="noopener noreferrer"><UiText id="uiExtra.statisticsView.viewMedia"/></a>:null}</span>
