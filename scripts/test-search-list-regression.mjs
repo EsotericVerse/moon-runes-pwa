@@ -14,8 +14,8 @@ function extract(file,start,end){
 function loadProvider(records){
   const calls=[];
   const source=extract('app/loc/galaxy-query.js','function makeProvider(', 'function genericScopeProviders(');
-  const executePublicRead=async(table,buildQuery,{source:dataSource})=>{
-    const call={table,source:dataSource};
+  const executePublicRead=async(table,buildQuery,{source:dataSource,authenticated=false}={})=>{
+    const call={table,source:dataSource,authenticated};
     const relation={
       select(columns,options){call.columns=columns;call.options=options;return this;},
       ilike(column,value){call.exactMatch=[column,value];return this;},
@@ -59,6 +59,61 @@ test('literal search pagination fetches one bounded page, never an exact COUNT',
   assert.deepEqual(calls.map(x=>Array.from(x.range)),[[0,10],[10,20],[20,30]]);
   assert.ok(calls.every(x=>!x.options?.count),'No full-table count request is permitted');
   assert.equal(calls.length,3,'Exactly one public read per page');
+});
+
+test('admin hidden-article search routes Galaxy queries through authenticated RLS reads',async()=>{
+  const {makeProvider,calls}=loadProvider([{uid:'AL132601',title:'LP13',searchable:false}]);
+  const provider=makeProvider({
+    id:'lo3rwang:text',table:'silver.lo3rwang_galaxy',source:'lo3rwang 文字',
+    scope:{id:'lo3rwang'},idColumn:'uid',columns:['uid','title','searchable'],
+    searchFields:['title'],authenticated:true
+  });
+  const result=await provider.search('LP13');
+  assert.equal(calls.length,1);
+  assert.equal(calls[0].authenticated,true,'Manager search must not use anonymous Supabase client');
+  assert.equal(result.rows[0].row.uid,'AL132601');
+});
+
+test('hidden rows are included only in managed Scope providers',()=>{
+  const source=extract('app/loc/galaxy-query.js','function genericScopeProviders(', 'function normalizeSearch(');
+  const genericScopeProviders=vm.runInNewContext(source+'; genericScopeProviders',{
+    scopeOf:s=>s,
+    publicContentFilters:filters=>[...filters,{column:'content',operator:'neq',value:''}],
+    makeProvider:options=>options
+  });
+  const scope={id:'lo3rwang',galaxy:'silver.lo3rwang_galaxy',galaxyMedia:'silver.lo3rwang_galaxy_media',time:'silver.lo3rwang_time'};
+  const publicSources=genericScopeProviders(scope);
+  const managerSources=genericScopeProviders(scope,{includeHiddenText:true});
+  for(let index=0;index<4;index++){
+    assert.equal(publicSources[index].authenticated,false);
+    assert.equal(managerSources[index].authenticated,true);
+    assert.ok(publicSources[index].filters.some(filter=>filter.column==='searchable'&&filter.value===true));
+    assert.ok(!managerSources[index].filters.some(filter=>filter.column==='searchable'));
+  }
+  assert.equal(managerSources[4].authenticated,undefined,'Media search must remain on its normal public path');
+});
+
+test('admin direct UID lookup reads hidden body through authenticated RLS',async()=>{
+  const source=extract('app/loc/galaxy-query.js','export async function selectGalaxyIdentity(', 'function literalPattern(');
+  const calls=[];
+  const lookup=vm.runInNewContext(source.replace(/^export /,'')+'; selectGalaxyIdentity',{
+    scopeOf:s=>s,
+    selectRowById:async(table,opts)=>{
+      calls.push(opts);
+      if(!opts.authenticated)return null;
+      return opts.columns==='uid,content'
+        ?{uid:'AL132601',content:'LP13 13 首完整歌曲'}
+        :{uid:'AL132601',title:'LP13',searchable:false,media_link:[]};
+    },
+    mediaRowsFor:async()=>[],
+    mediaIdsOf:()=>[],
+    resolvedLinks:()=>[]
+  });
+  const scope={id:'lo3rwang',galaxy:'silver.lo3rwang_galaxy',galaxyMedia:'silver.lo3rwang_galaxy_media',time:'silver.lo3rwang_time'};
+  assert.equal(await lookup(scope,'AL132601'),null,'Anonymous direct link must not reveal hidden content');
+  const found=await lookup(scope,'AL132601',{includeHidden:true});
+  assert.equal(found.content,'LP13 13 首完整歌曲');
+  assert.ok(calls.slice(-2).every(call=>call.authenticated===true));
 });
 
 test('exact-match providers compare the whole query against the title',async()=>{
