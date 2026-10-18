@@ -44,7 +44,7 @@ test('CSV and TSV use the shared office parser and keep mapping for LOC',async()
 test('office document yields a source-faithful text record without invented tags',async()=>{
   const parser={async parseOffice(){return {metadata:{title:'真實標題',created:'2026-10-17'},async to(){return {value:'第一段\n第二段'};}};}};
   const parsed=await parseUniversalImportFile(f('memo.docx'),{officeParser:parser});
-  assert.deepEqual(parsed,[{title:'真實標題',content:'第一段\n第二段',source_native_id:'memo.docx',createtime:'2026-10-17'}]);
+  assert.deepEqual(parsed,[{title:'真實標題',content:'第一段\n第二段',createtime:'2026-10-17'}]);
 });
 
 test('JSON continues through the pre-existing mapper with recordPath',async()=>{
