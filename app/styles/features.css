@@ -569,7 +569,7 @@
 .scope-period-timeline .vis-item.scope-lrunes-moon-phase-4{--lrunes-phase-color:var(--loc-line)}
 .scope-work-summary.is-inline-editable{cursor:pointer}
 
-/* Search: restore the progressive filters and context-aware reference cards. */
+/* Search: progressive filters and editable BlockNote reference content. */
 .scope-search-workspace{display:grid;gap:1rem;margin:.85rem 0 1.2rem;padding:clamp(.8rem,2.6vw,1.45rem);border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-lg);background:var(--loc-panel)}
 .scope-search-workspace .scope-search-form{display:flex;flex-wrap:wrap;gap:.65rem;align-items:center}
 .scope-search-workspace .scope-search-form>label{flex-basis:100%;font-weight:750}
@@ -594,13 +594,11 @@
 .scope-search-date-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
 .scope-search-date-fields label{display:grid;gap:.4rem}
 .scope-search-date-fields .scope-search-period-field{grid-column:1/-1}
-.scope-search-suggestions{display:grid;gap:.7rem}
-.scope-search-suggestions-head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:.5rem}
-.scope-search-suggestions-head small{color:var(--loc-muted)}
-.scope-search-suggestion-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.6rem}
-.scope-search-suggestion{min-height:4.75rem;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:.3rem;text-align:left;padding:.8rem .9rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-md);background:var(--loc-surface-soft);color:var(--loc-text);font:inherit;cursor:pointer;transition:border-color .16s ease,transform .16s ease}
-.scope-search-suggestion:hover,.scope-search-suggestion:focus-visible{border-color:var(--loc-accent-border);transform:translateY(-1px);outline:none}
-.scope-search-suggestion strong{font-size:.9rem}
-.scope-search-suggestion small{font-size:.76rem;color:var(--loc-muted);line-height:1.5}
-@media(max-width:720px){.scope-search-suggestion-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:480px){.scope-search-suggestion-grid,.scope-search-date-fields{grid-template-columns:1fr}.scope-search-workspace .scope-search-form>button{flex:1 1 7rem}}
+
+.scope-search-reference-editor{min-width:0;margin:.35rem 0 0}
+.scope-search-reference-block{min-width:0;padding:1rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-md);background:var(--loc-surface-soft)}
+.scope-search-reference-block>h3{margin:0 0 .45rem;font-size:1rem}
+.scope-search-reference-block .scope-rich-surface{line-height:1.75}
+.scope-search-reference-block.is-editable-idle{cursor:text}
+.scope-search-reference-block .scope-inline-editbar{margin-bottom:.7rem}
+@media(max-width:480px){.scope-search-date-fields{grid-template-columns:1fr}.scope-search-workspace .scope-search-form>button{flex:1 1 7rem}}
