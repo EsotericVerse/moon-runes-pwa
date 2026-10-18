@@ -412,7 +412,7 @@ test('Search uses a single BlockNote edit draft, with Galaxy metadata below the 
   assert.ok(!source.includes('GalaxyAttrEditor'));
   assert.ok(!source.includes('GalaxyAttrSummary'));
   assert.ok(!source.includes('GalaxyAttrPanel'));
-  assert.ok(source.includes("attributeFields={editable&&row.resourceType==='galaxy'?GALAXY_ATTR_FIELDS:null}"));
+  assert.ok(source.includes("attributeFields={editable?(row.resourceType==='galaxy'?GALAXY_ATTR_FIELDS:row.resourceType==='galaxy_media'?MEDIA_ATTR_FIELDS:null):null}"));
   assert.ok(source.includes('canManageSearchScope(account,row.scopeId)'));
   assert.ok(source.includes('assertPlainGalaxyAttributes({'));
   assert.ok(source.indexOf('assertPlainGalaxyAttributes({')<source.indexOf('await updateRows(result.editableTable,contentPatch'));
