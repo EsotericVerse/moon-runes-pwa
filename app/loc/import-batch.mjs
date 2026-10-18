@@ -56,7 +56,7 @@ export function parseImportCreatedTime(value){
   const raw=typeof value==='string'?value.trim():value;
   if(raw==='')return null;
   const numeric=typeof raw==='number'?raw:
-    typeof raw==='string'&&/^\\d{10,13}$/.test(raw)?Number(raw):null;
+    typeof raw==='string'&&/^\d{10,13}$/.test(raw)?Number(raw):null;
   const timestamp=numeric===null?raw:
     Math.abs(numeric)<1e11?numeric*1000:numeric;
   const parsed=new Date(timestamp);
