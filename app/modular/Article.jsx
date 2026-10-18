@@ -31,9 +31,9 @@ export function ArticleInlineEditor({draft,onChange,showHidden=false,attributeFi
       <h3 className="scope-search-attr-heading">{resolvedAttributeTitle}</h3>
       <div className="scope-search-attr-grid">
         {attributeFields.map(({key,kind='text',readOnly=false})=>{
-          const current=draft.attrs?.[key];
-          const editValue=key==='title'?draft.title:key==='content'?t('uiExtra.searchUI.attrShown'):current;
-          const setValue=value=>onChange(previous=>({...previous,attrs:{...(previous.attrs||{}),[key]:value}}));
+          const current=key==='title'?draft.title:draft.attrs?.[key];
+          const editValue=key==='content'?t('uiExtra.searchUI.attrShown'):current;
+          const setValue=value=>onChange(previous=>key==='title'?{...previous,title:value}:{...previous,attrs:{...(previous.attrs||{}),[key]:value}});
           return <label className={'scope-search-attr-item'+(!readOnly?' is-editable':'')} key={key}>
             <span className="scope-search-attr-name">{key}</span>
             {readOnly?<span className="scope-search-attr-value">{String(editValue??'')}</span>
