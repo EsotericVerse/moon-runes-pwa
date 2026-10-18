@@ -799,7 +799,7 @@ export default function Search(){
       </div>
       <div className="scope-search-reference-editor">
         <ScopeEditableBlocks
-          scopeId="loc"
+          scopeId={scopeId}
           page="search"
           orders={SEARCH_REFERENCE_ORDERS}
           containerless
