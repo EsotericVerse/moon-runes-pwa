@@ -50,7 +50,8 @@ export function normalizeImportMedia(value,{title='',createtime=null,source_plac
     if(!source||typeof source!=='object')continue;
     const explicitId=String(source.media_id||'').trim();
     const rawUrl=String(source.url||source.uri||source.href||source.link||'').trim();
-    if((typeof item==='string'&&IMPORT_UUID.test(item))||(explicitId&&IMPORT_UUID.test(explicitId)&&!rawUrl)){
+    if(explicitId&&!IMPORT_UUID.test(explicitId))throw new Error('media_id 必須是 UUID。');
+    if((typeof item==='string'&&IMPORT_UUID.test(item))||(explicitId&&!rawUrl)){
       references.push(typeof item==='string'?item:explicitId);
       continue;
     }
@@ -59,6 +60,7 @@ export function normalizeImportMedia(value,{title='',createtime=null,source_plac
     if(!external&&!native)continue;
     const media_type=importMediaType(rawUrl,source.media_type||source.type||source.mime_type);
     const record={
+      ...(explicitId?{media_id:explicitId}:{}),
       galaxy_link:galaxy_link||null,
       source_native_id:native,
       source_place:String(source.source_place||source_place||'').trim()||null,
