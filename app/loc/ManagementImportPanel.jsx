@@ -127,6 +127,86 @@ function ImportFormatSettings({format,onChange,disabled=false}){
   </details>;
 }
 
+// Shared idempotent media attachment write for fresh imports and source refresh.
+// All records are bound by original article UID; no full-table scan or recursive discovery.
+async function syncImportedMedia({normalized=[],mediaOnly=[],knownArticleIds=new Map(),galaxy,galaxyMedia,batchSize=100}={}){
+      // Media-only imports and embedded media use the same Galaxy Media table.
+      // Existing article UID/native matches are resolved before attaching assets.
+      const plans=normalized.flatMap(item=>{
+        const sourceUid=item.record?.uid;
+        const owner=knownArticleIds.get(sourceUid);
+        return (owner?(item.mediaRecords||[]):[]).map(record=>({...record,galaxy_link:owner}));
+      }).concat(mediaOnly);
+      const owners=[...new Set(plans.map(record=>String(record.galaxy_link||'').trim()).filter(Boolean))];
+      const existingMedia=[];
+      for(let offset=0;offset<owners.length;offset+=200){
+        const batch=owners.slice(offset,offset+200);
+        const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,source_native_id,media_type').in('galaxy_link',batch);
+        if(error)throw new Error(error.message||'無法檢查既有媒體');
+        existingMedia.push(...(data||[]));
+      }
+      const explicitIds=[...new Set([...plans.map(record=>record.media_id).filter(Boolean),...normalized.flatMap(item=>item.mediaRefs||[])])];
+      for(let offset=0;offset<explicitIds.length;offset+=200){
+        const batch=explicitIds.slice(offset,offset+200);
+        const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,source_native_id,media_type').in('media_id',batch);
+        if(error)throw new Error(error.message||'無法比對媒體 ID');
+        existingMedia.push(...(data||[]));
+      }
+      // No full-table scan; unlinked media is matched only by explicit imported URLs.
+      const unlinkedUrls=[...new Set(plans.filter(row=>!row.galaxy_link&&row.url).map(row=>row.url))];
+      for(let offset=0;offset<unlinkedUrls.length;offset+=200){
+        const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,source_native_id,media_type').in('url',unlinkedUrls.slice(offset,offset+200));
+        if(error)throw new Error(error.message||'無法比對媒體 URL');
+        existingMedia.push(...(data||[]));
+      }
+      const mediaKey=row=>JSON.stringify([String(row.galaxy_link||'').trim(),String(row.url||'').trim(),String(row.source_native_id||'').trim(),String(row.media_type||'').trim()]);
+      const byKey=new Map(existingMedia.map(row=>[mediaKey(row),row]));
+      const byId=new Map(existingMedia.map(row=>[String(row.media_id),row]));
+      const createMedia=[],related=new Map(),seenMedia=new Set();
+      function attach(uid,id){
+        if(!uid||!id)return;
+        if(!related.has(uid))related.set(uid,new Set());
+        related.get(uid).add(id);
+      }
+      for(const item of normalized){
+        const uid=knownArticleIds.get(item.record?.uid);
+        for(const mediaId of item.mediaRefs||[]){
+          if(!byId.has(mediaId))throw new Error('匯入引用的媒體不存在：'+mediaId);
+          attach(uid,mediaId);
+        }
+      }
+      for(const raw of plans){
+        const record={...raw},key=mediaKey(record),owner=String(record.galaxy_link||'').trim();
+        const known=record.media_id?byId.get(String(record.media_id)):byKey.get(key);
+        if(known){attach(owner,known.media_id);continue;}
+        if(seenMedia.has(key))continue;
+        seenMedia.add(key);
+        const mediaId=record.media_id||globalThis.crypto?.randomUUID?.();
+        if(!mediaId)throw new Error('環境無法產生媒體 UUID，已停止寫入。');
+        record.media_id=mediaId;
+        createMedia.push(record);byKey.set(key,record);byId.set(mediaId,record);
+        attach(owner,mediaId);
+      }
+      await writeImportBatches(createMedia,{
+        batchSize:validImportBatchSize(batchSize),
+        writeBatch:batch=>insertRows(galaxyMedia,batch)
+      });
+      let connected=0;
+      const linkedUids=[...related.keys()];
+      for(let offset=0;offset<linkedUids.length;offset+=200){
+        const {data,error}=await dbAuthRelation(galaxy).select('uid,media_link').in('uid',linkedUids.slice(offset,offset+200));
+        if(error)throw new Error(error.message||'無法驗證文章與媒體關聯');
+        for(const row of data||[]){
+          const uid=String(row.uid||'').trim();
+          const prior=Array.isArray(row.media_link)?row.media_link.map(String):[];
+          const after=[...new Set([...prior,...(related.get(uid)||[])])];
+          if(after.length!==prior.length){await updateRows(galaxy,{media_link:after},{filters:[{column:'uid',operator:'eq',value:uid}]});connected++;}
+        }
+      }
+
+  return {created:createMedia.length,connected};
+}
+
 function UniversalImport({scopeId,format,onBusyChange}) {
   const {locale}=useUiLocale();
   const UI_COPY=useUiCopy();
@@ -241,79 +321,10 @@ function UniversalImport({scopeId,format,onBusyChange}) {
         writeBatch:batch=>insertRows(galaxy,batch),
         onProgress:p=>setProgress({completed:p.completed,total:payload.length+analyzed.mediaOnly.length,percent:Math.round(100*p.completed/Math.max(1,payload.length+analyzed.mediaOnly.length))})
       });
-      // Media-only imports and embedded media use the same Galaxy Media table.
-      // Existing article UID/native matches are resolved before attaching assets.
-      const plans=analyzed.normalized.flatMap(item=>{
-        const sourceUid=item.record?.uid;
-        const owner=knownArticleIds.get(sourceUid);
-        return (owner?(item.mediaRecords||[]):[]).map(record=>({...record,galaxy_link:owner}));
-      }).concat(analyzed.mediaOnly);
-      const owners=[...new Set(plans.map(record=>String(record.galaxy_link||'').trim()).filter(Boolean))];
-      const existingMedia=[];
-      for(let offset=0;offset<owners.length;offset+=200){
-        const batch=owners.slice(offset,offset+200);
-        const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,source_native_id,media_type').in('galaxy_link',batch);
-        if(error)throw new Error(error.message||'無法檢查既有媒體');
-        existingMedia.push(...(data||[]));
-      }
-      const explicitIds=[...new Set(plans.map(record=>record.media_id).filter(Boolean))];
-      for(let offset=0;offset<explicitIds.length;offset+=200){
-        const batch=explicitIds.slice(offset,offset+200);
-        const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,source_native_id,media_type').in('media_id',batch);
-        if(error)throw new Error(error.message||'無法比對媒體 ID');
-        existingMedia.push(...(data||[]));
-      }
-      // No full-table scan; unlinked media is matched only by explicit imported URLs.
-      const unlinkedUrls=[...new Set(plans.filter(row=>!row.galaxy_link&&row.url).map(row=>row.url))];
-      for(let offset=0;offset<unlinkedUrls.length;offset+=200){
-        const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,source_native_id,media_type').in('url',unlinkedUrls.slice(offset,offset+200));
-        if(error)throw new Error(error.message||'無法比對媒體 URL');
-        existingMedia.push(...(data||[]));
-      }
-      const mediaKey=row=>JSON.stringify([String(row.galaxy_link||'').trim(),String(row.url||'').trim(),String(row.source_native_id||'').trim(),String(row.media_type||'').trim()]);
-      const byKey=new Map(existingMedia.map(row=>[mediaKey(row),row]));
-      const byId=new Map(existingMedia.map(row=>[String(row.media_id),row]));
-      const createMedia=[],related=new Map(),seenMedia=new Set();
-      function attach(uid,id){
-        if(!uid||!id)return;
-        if(!related.has(uid))related.set(uid,new Set());
-        related.get(uid).add(id);
-      }
-      for(const item of analyzed.normalized){
-        const uid=knownArticleIds.get(item.record?.uid);
-        for(const mediaId of item.mediaRefs||[])attach(uid,mediaId);
-      }
-      for(const raw of plans){
-        const record={...raw},key=mediaKey(record),owner=String(record.galaxy_link||'').trim();
-        const known=record.media_id?byId.get(String(record.media_id)):byKey.get(key);
-        if(known){attach(owner,known.media_id);continue;}
-        if(seenMedia.has(key))continue;
-        seenMedia.add(key);
-        const mediaId=record.media_id||globalThis.crypto?.randomUUID?.();
-        if(!mediaId)throw new Error('環境無法產生媒體 UUID，已停止寫入。');
-        record.media_id=mediaId;
-        createMedia.push(record);byKey.set(key,record);byId.set(mediaId,record);
-        attach(owner,mediaId);
-      }
-      await writeImportBatches(createMedia,{
-        batchSize:validImportBatchSize(format.batchSize),
-        writeBatch:batch=>insertRows(galaxyMedia,batch)
-      });
-      let connected=0;
-      const linkedUids=[...related.keys()];
-      for(let offset=0;offset<linkedUids.length;offset+=200){
-        const {data,error}=await dbAuthRelation(galaxy).select('uid,media_link').in('uid',linkedUids.slice(offset,offset+200));
-        if(error)throw new Error(error.message||'無法驗證文章與媒體關聯');
-        for(const row of data||[]){
-          const uid=String(row.uid||'').trim();
-          const prior=Array.isArray(row.media_link)?row.media_link.map(String):[];
-          const after=[...new Set([...prior,...(related.get(uid)||[])])];
-          if(after.length!==prior.length){await updateRows(galaxy,{media_link:after},{filters:[{column:'uid',operator:'eq',value:uid}]});connected++;}
-        }
-      }
+      const mediaSummary=await syncImportedMedia({normalized:analyzed.normalized,mediaOnly:analyzed.mediaOnly,knownArticleIds,galaxy,galaxyMedia,batchSize:format.batchSize});
       const skipped=analyzed.invalid.length+duplicateCount+unique.length-payload.length;
-      setProgress({completed:payload.length+createMedia.length,total:payload.length+createMedia.length,percent:100});
-      setStatus('文章新增 '+payload.length+' 筆、媒體新增 '+createMedia.length+' 筆、文章媒體關聯更新 '+connected+' 筆；略過 '+skipped+' 筆。');
+      setProgress({completed:payload.length+mediaSummary.created,total:payload.length+mediaSummary.created,percent:100});
+      setStatus('文章新增 '+payload.length+' 筆、媒體新增 '+mediaSummary.created+' 筆、文章媒體關聯更新 '+mediaSummary.connected+' 筆；略過 '+skipped+' 筆。');
       setRows([]);
     }catch(error){setStatus(String(error?.message||error||t('uiExtra.importUI.importFailed'))+t('uiExtra.importUI.importRetry'))}
     finally{setBusy(false);onBusyChange?.(false);}
@@ -526,7 +537,20 @@ function SourceRefresh({scopeId,format,onBusyChange}){
         completed++;
         if(completed%10===0||completed===total)setProgress({completed,total,percent:Math.round(completed/Math.max(1,total)*100)});
       }
-      setStatus(t('uiExtra.importUI.refreshComplete',{created:plan.creates.length.toLocaleString(),updated:plan.updates.length.toLocaleString()}));
+      const galaxyMedia=account.scopeDataFor(scopeId)?.galaxyMedia;
+      if(!galaxyMedia)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
+      const original=rows.map(entry=>normalizeJsonImportEntry(entry,selected,format.fields,t))
+        .filter(item=>item.record);
+      const byNative=new Map([...plan.creates,...plan.updates,...plan.unchanged]
+        .filter(row=>row.source_native_id&&row.uid)
+        .map(row=>[String(row.source_native_id),String(row.uid)]));
+      const knownArticleIds=new Map(original
+        .filter(item=>item.record.source_native_id&&byNative.has(item.record.source_native_id))
+        .map(item=>[item.record.uid,byNative.get(item.record.source_native_id)]));
+      const mediaSummary=await syncImportedMedia({
+        normalized:original,knownArticleIds,galaxy,galaxyMedia,batchSize:format.batchSize
+      });
+      setStatus(t('uiExtra.importUI.refreshComplete',{created:plan.creates.length.toLocaleString(),updated:plan.updates.length.toLocaleString()}))+'；媒體新增 '+mediaSummary.created+' 筆；關聯更新 '+mediaSummary.connected+' 筆。');
       setPlan(null);setRows([]);setFileName('');
     }catch(error){
       setPlan(null);
