@@ -381,7 +381,7 @@ function MediaCrossTagStatistics({scope,rows=[],range={},zoomLevel=0,onZoomLevel
       setWorksOffset(page.nextOffset);
       setWorksHasMore(page.hasMore);
     }catch(error){
-      if(request===worksRequest.current)setWorksError(String(error?.message||error||'作品載入失敗'));
+      if(request===worksRequest.current)setWorksError(featureDataErrorMessage(error,UI_COPY));
     }finally{
       if(request===worksRequest.current)setWorksLoading(false);
     }
