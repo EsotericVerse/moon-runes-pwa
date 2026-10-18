@@ -10,7 +10,7 @@ import {canonicalArchiveText} from './archive-record-identity.mjs';
 
 export const ARCHIVE_CHUNK_BYTES=128*1024;
 // Reject oversized archives before reading any bytes. Only approved entries are inflated.
-export const ARCHIVE_MAX_BYTES=10_000_000;
+export const ARCHIVE_MAX_BYTES=512*1024*1024;
 const MAX_EXTRACTED=30*1024*1024;
 const MAX_FILES=20000,MAX_TEXT_DOCUMENT=8*1024*1024;
 const MAX_STRUCTURED_DOCUMENT=10_000_000;
@@ -302,7 +302,7 @@ const ZIP_SNIFF_FILES=160;
 export async function detectZipArchiveSource(file,{signal,onProgress}={}){
   if(!file||typeof file.slice!=='function'||!Number.isSafeInteger(file.size)||file.size<=0)
     throw new Error('請選擇有效的 ZIP 備份檔。');
-  if(file.size>ARCHIVE_MAX_BYTES)throw new Error('ZIP 超過 10 MB 安全限制；未讀取檔案內容。');
+  if(file.size>ARCHIVE_MAX_BYTES)throw new Error('ZIP 超過 512 MiB 安全限制；未讀取檔案內容。');
   const magic=new Uint8Array(await file.slice(0,4).arrayBuffer());
   if(magic[0]!==80||magic[1]!==75||![3,5,7].includes(magic[2]))
     throw new Error('檔案內容不是有效的 ZIP 標頭。');
