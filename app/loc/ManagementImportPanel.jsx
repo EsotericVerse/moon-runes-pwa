@@ -550,7 +550,7 @@ function SourceRefresh({scopeId,format,onBusyChange}){
       const mediaSummary=await syncImportedMedia({
         normalized:original,knownArticleIds,galaxy,galaxyMedia,batchSize:format.batchSize
       });
-      setStatus(t('uiExtra.importUI.refreshComplete',{created:plan.creates.length.toLocaleString(),updated:plan.updates.length.toLocaleString()}))+'；媒體新增 '+mediaSummary.created+' 筆；關聯更新 '+mediaSummary.connected+' 筆。');
+      setStatus(t('uiExtra.importUI.refreshComplete',{created:plan.creates.length.toLocaleString(),updated:plan.updates.length.toLocaleString()})+'；媒體新增 '+mediaSummary.created+' 筆；關聯更新 '+mediaSummary.connected+' 筆。');
       setPlan(null);setRows([]);setFileName('');
     }catch(error){
       setPlan(null);
