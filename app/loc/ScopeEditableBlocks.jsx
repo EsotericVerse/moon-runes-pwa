@@ -422,7 +422,7 @@ export default function ScopeEditableBlocks({
           />
           {allowEntities?renderEntities(draft.entities,true):null}
         </>:<>
-          {canEdit&&explicitEditButton?<button type="button" className="loc-button scope-search-block-edit" onClick={()=>begin(slot)} aria-label="編輯搜尋建議">編輯</button>:null}
+          {canEdit&&explicitEditButton?<button type="button" className="loc-button scope-search-block-edit" onClick={()=>begin(slot)} aria-label={t('uiExtra.editBlocks.editSuggestion')}><UiText id="uiExtra.editBlocks.edit"/></button>:null}
           {typeof renderDisplay==='function'
             ?renderDisplay(slot)
             :<>
