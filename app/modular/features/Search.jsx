@@ -297,6 +297,14 @@ function prioritizeStyleTagResults(rows=[]){
   return [...rows].sort((left,right)=>Number(Boolean(right.styleTagMatch))-Number(Boolean(left.styleTagMatch)));
 }
 
+
+function searchSuggestionItems(value){
+  return String(value||'').split('\n').map(item=>{
+    const [query,description='']=item.split('|');
+    return {query:String(query||'').trim(),description:String(description||'').trim()};
+  }).filter(item=>item.query);
+}
+
 export default function Search(){
   const UI_COPY=useUiCopy();
   const t=useUiText();
@@ -306,6 +314,14 @@ export default function Search(){
   const router=useRouter();
   const [query,setQuery]=useState('');
   const [searchMode,setSearchMode]=useState('all');
+  const [advancedOpen,setAdvancedOpen]=useState(false);
+  const [advancedTab,setAdvancedTab]=useState('type');
+  const [contentType,setContentType]=useState('');
+  const [sourceFilter,setSourceFilter]=useState('');
+  const [startDate,setStartDate]=useState('');
+  const [endDate,setEndDate]=useState('');
+  const [browseResults,setBrowseResults]=useState(false);
+  const activeSearchOptionsRef=useRef(null);
   const [results,setResults]=useState([]);
   const [status,setStatus]=useState(UI_COPY.search.start);
   const [error,setError]=useState('');
@@ -359,9 +375,18 @@ export default function Search(){
     return selectGalaxyContent(scopeData,id);
   }
 
-  async function executeSearch(rawQuery,cursor=null,{append=false}={}){
+  async function executeSearch(rawQuery,cursor=null,{append=false,browse=false}={}){
     const q=String(rawQuery||'').trim();
-    if(!q)return;
+    const options=append&&activeSearchOptionsRef.current
+      ?activeSearchOptionsRef.current
+      :{contentType:searchMode==='media'?'multimedia':contentType,sourceFilter,startDate,endDate,
+        mediaOnly:searchMode==='media'||contentType==='multimedia',browse};
+    if(!q&&!options.browse)return;
+    if(options.startDate&&options.endDate&&options.startDate>options.endDate){
+      setError(t('uiExtra.searchUI.invalidDateRange'));return;
+    }
+    if(!append){activeSearchOptionsRef.current=options;setBrowseResults(options.browse);}
+
     const id=++searchId.current;
     setError('');
     if(append){
@@ -375,11 +400,11 @@ export default function Search(){
       setHasMore(false);
       setNextCursor(null);
       setResults([]);
-      setStatus(searchMode==='media'?UI_COPY.search.searching:UI_COPY.format.searchScope(collectionLabel));
+      setStatus(options.mediaOnly?UI_COPY.search.searching:UI_COPY.format.searchScope(collectionLabel));
     }
     try{
       if(!append){
-        if(scopeId!=='loc'&&matchesScopeAlias(scope,q)){
+        if(!options.browse&&!options.sourceFilter&&!options.contentType&&!options.startDate&&!options.endDate&&scopeId!=='loc'&&matchesScopeAlias(scope,q)){
           matchedQueryRef.current=q;
           setResults([{
             key:'scope:'+scopeId,
@@ -406,9 +431,9 @@ export default function Search(){
           setStatus('');
           return;
         }
-        logSearchKeyword(scopeId,q).catch(()=>{});
+        if(q)logSearchKeyword(scopeId,q).catch(()=>{});
       }
-      const styleTagMatches=(!append&&searchMode!=='media')
+      const styleTagMatches=(!append&&!options.browse&&!options.mediaOnly&&!options.contentType&&!options.sourceFilter&&!options.startDate&&!options.endDate)
         ?await selectStyleKeywordMatches(targetScopes,q)
         :[];
       const search=await searchGalaxyRows(targetScopes,q,{
@@ -416,7 +441,9 @@ export default function Search(){
         // Always search article providers, including when the same keyword
         // exactly matches a style tag.
         cursor,
-        mediaOnly:searchMode==='media',hiddenScopeIds
+        mediaOnly:options.mediaOnly,hiddenScopeIds,
+        contentType:options.contentType,sourceFilter:options.sourceFilter,
+        startDate:options.startDate,endDate:options.endDate,browse:options.browse
       });
       if(id!==searchId.current)return;
 
@@ -456,7 +483,7 @@ export default function Search(){
             setHasMore(Boolean(search.hasMore));
       setNextCursor(search.nextCursor??null);
       const partial=search.failures?.length?t('uiExtra.searchUI.partialExtendedData'):'';
-      if(!append)setStatus(UI_COPY.format.searchResult({label:searchMode==='media'?UI_COPY.search.media:'「'+collectionLabel+'」',query:q,hasMore:search.hasMore,partial}));
+      if(!append)setStatus(options.browse?t('uiExtra.searchUI.browsingResults'):UI_COPY.format.searchResult({label:options.mediaOnly?UI_COPY.search.media:'「'+collectionLabel+'」',query:q,hasMore:search.hasMore,partial}));
     }catch(exception){
       if(id!==searchId.current)return;
       if(append){
@@ -472,8 +499,8 @@ export default function Search(){
 
   async function loadNextSearch(){
     const q=matchedQueryRef.current||query.trim();
-    if(!q||!hasMore||loadingMore||nextCursor===null)return;
-    await executeSearch(q,nextCursor,{append:true});
+    if((!q&&!activeSearchOptionsRef.current?.browse)||!hasMore||loadingMore||nextCursor===null)return;
+    await executeSearch(q,nextCursor,{append:true,browse:activeSearchOptionsRef.current?.browse});
   }
 
   async function executeIdentity(rawIdentity){
@@ -624,6 +651,47 @@ export default function Search(){
     }finally{setEditBusy(false)}
   }
 
+  function resetSearchState(){
+    ++searchId.current;
+    matchedQueryRef.current='';
+    activeSearchOptionsRef.current=null;
+    setResults([]);setHasMore(false);setNextCursor(null);setBrowseResults(false);
+    setLoadMoreError('');setError('');setStatus(UI_COPY.search.start);
+  }
+  function updateSearchFilter(setter,value){
+    setter(value);resetSearchState();
+  }
+  async function browseSelectedType(){
+    await executeSearch('',null,{browse:true});
+  }
+  function clearSearchFilters(){
+    setQuery('');setSearchMode('all');setContentType('');setSourceFilter('');
+    setStartDate('');setEndDate('');setAdvancedOpen(false);
+    resetSearchState();
+    router.replace(featureNavigationHref(scopeId,'search'));
+  }
+  const filterTypes=[
+    ['',t('uiExtra.searchUI.allTypes')],
+    ['lyrics_work',t('uiExtra.searchUI.lyricsType')],
+    ['text_work',t('uiExtra.searchUI.textType')],
+    ['multimedia',t('uiExtra.searchUI.mediaType')],
+    ['timeline',t('uiExtra.searchUI.timelineType')]
+  ];
+  const filterSources=[
+    ['',t('uiExtra.searchUI.allSources')],
+    ['suno','Suno'],['threads','Threads'],['instagram','Instagram'],
+    ['facebook','Facebook'],['vocus','Vocus'],['x','X']
+  ];
+  const chips=[
+    contentType&&filterTypes.find(([value])=>value===contentType)?.[1],
+    sourceFilter&&filterSources.find(([value])=>value===sourceFilter)?.[1],
+    startDate&&t('uiExtra.searchUI.startDate')+': '+startDate,
+    endDate&&t('uiExtra.searchUI.endDate')+': '+endDate
+  ].filter(Boolean);
+  const examples=searchSuggestionItems(t('uiExtra.searchUI.'+
+    ((searchMode==='media'||contentType==='multimedia')?'suggestionsMedia':
+      contentType==='lyrics_work'?'suggestionsLyrics':
+      contentType==='text_work'?'suggestionsText':'suggestionsAll')));
   async function runSearch(event){
     event.preventDefault();
     const term=String(query||'').trim();
@@ -648,21 +716,68 @@ export default function Search(){
 
   return <FeaturePage featureId="search">
     <div className="scope-tabs" role="group" aria-label={UI_COPY.search.mode}>
-      <button type="button" aria-pressed={searchMode==='all'} onClick={()=>{setSearchMode('all');setResults([]);setHasMore(false);setNextCursor(null);setStatus(UI_COPY.search.start);}}>{UI_COPY.search.allSearch}</button>
-      <button type="button" aria-pressed={searchMode==='media'} onClick={()=>{setSearchMode('media');setResults([]);setHasMore(false);setNextCursor(null);setStatus(UI_COPY.search.mediaPrompt);}}>{UI_COPY.search.mediaSearch}</button>
+      <button type="button" aria-pressed={searchMode==='all'} onClick={()=>{setSearchMode('all');resetSearchState();}}>{UI_COPY.search.allSearch}</button>
+      <button type="button" aria-pressed={searchMode==='media'} onClick={()=>{setSearchMode('media');resetSearchState();setStatus(UI_COPY.search.mediaPrompt);}}>{UI_COPY.search.mediaSearch}</button>
     </div>
-    <form className="scope-search-form" onSubmit={runSearch}>
-      <label htmlFor="scope-search-query">{searchMode==='media'?UI_COPY.search.mediaPromptLabel:UI_COPY.search.textPromptLabel}</label>
-      <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder={searchMode==='media'?UI_COPY.search.mediaPlaceholder:UI_COPY.search.textPlaceholder} aria-label={searchMode==='media'?UI_COPY.search.mediaSearch:UI_COPY.search.textPromptLabel}/>
-      <button type="submit">{UI_COPY.nav.search}</button>
-    </form>
+    <section className="scope-search-workspace" aria-label={t('uiExtra.searchUI.searchWorkspace')}>
+      <form className="scope-search-form" onSubmit={runSearch}>
+        <label htmlFor="scope-search-query">{searchMode==='media'?UI_COPY.search.mediaPromptLabel:UI_COPY.search.textPromptLabel}</label>
+        <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder={searchMode==='media'?UI_COPY.search.mediaPlaceholder:UI_COPY.search.textPlaceholder} aria-label={searchMode==='media'?UI_COPY.search.mediaSearch:UI_COPY.search.textPromptLabel}/>
+        <button type="submit">{UI_COPY.nav.search}</button>
+        <button type="button" className="loc-button" onClick={clearSearchFilters}>{t('uiExtra.searchUI.clearAll')}</button>
+      </form>
+      <div className="scope-search-advanced">
+        <button type="button" className="scope-search-advanced-toggle" aria-expanded={advancedOpen} aria-controls="scope-search-filter-panel" onClick={()=>setAdvancedOpen(value=>!value)}>
+          <span><strong>{t('uiExtra.searchUI.advancedFilters')}</strong><small>{t('uiExtra.searchUI.advancedHelp')}</small></span>
+          <span aria-hidden="true">{advancedOpen?'▴':'▾'}</span>
+        </button>
+        <div className="scope-search-active-filters" aria-live="polite">
+          {chips.length?chips.map((chip,index)=><span className="scope-search-chip" key={index}>{chip}</span>):<span className="scope-search-chip is-muted">{t('uiExtra.searchUI.noFilters')}</span>}
+        </div>
+        {advancedOpen?<div id="scope-search-filter-panel" className="scope-search-filter-panel">
+          <div role="tablist" className="scope-search-filter-tabs" aria-label={t('uiExtra.searchUI.advancedFilters')}>
+            {['type','source','time'].map(tab=><button type="button" role="tab" key={tab} aria-selected={advancedTab===tab} className={advancedTab===tab?'is-active':''} onClick={()=>setAdvancedTab(tab)}>{t('uiExtra.searchUI.filter'+tab[0].toUpperCase()+tab.slice(1))}</button>)}
+          </div>
+          {advancedTab==='type'?<div role="tabpanel" className="scope-search-filter-body">
+            <label htmlFor="scope-search-content-type">{t('uiExtra.searchUI.filterType')}</label>
+            <select id="scope-search-content-type" value={contentType} onChange={event=>updateSearchFilter(setContentType,event.target.value)}>
+              {filterTypes.map(([value,label])=><option key={value} value={value}>{label}</option>)}
+            </select>
+            <button type="button" className="loc-button" onClick={browseSelectedType}>{t('uiExtra.searchUI.browseType')}</button>
+          </div>:null}
+          {advancedTab==='source'?<div role="tabpanel" className="scope-search-filter-body">
+            <label htmlFor="scope-search-source">{t('uiExtra.searchUI.filterSource')}</label>
+            <select id="scope-search-source" value={sourceFilter} onChange={event=>updateSearchFilter(setSourceFilter,event.target.value)}>
+              {filterSources.map(([value,label])=><option key={value} value={value}>{label}</option>)}
+            </select>
+          </div>:null}
+          {advancedTab==='time'?<div role="tabpanel" className="scope-search-filter-body scope-search-date-fields">
+            <label htmlFor="scope-search-start-date">{t('uiExtra.searchUI.startDate')}
+              <input id="scope-search-start-date" type="date" value={startDate} onChange={event=>updateSearchFilter(setStartDate,event.target.value)}/></label>
+            <label htmlFor="scope-search-end-date">{t('uiExtra.searchUI.endDate')}
+              <input id="scope-search-end-date" type="date" min={startDate||undefined} value={endDate} onChange={event=>updateSearchFilter(setEndDate,event.target.value)}/></label>
+          </div>:null}
+        </div>:null}
+      </div>
+      <section className="scope-search-suggestions" aria-label={t('uiExtra.searchUI.quickExamples')}>
+        <div className="scope-search-suggestions-head">
+          <strong>{t('uiExtra.searchUI.quickExamples')}</strong>
+          <small>{t('uiExtra.searchUI.quickExamplesHelp')}</small>
+        </div>
+        <div className="scope-search-suggestion-grid">
+          {examples.map(({query:example,description})=><button type="button" key={example} className="scope-search-suggestion" onClick={()=>{setQuery(example);resetSearchState();}}>
+            <strong>{example}</strong><small>{description}</small>
+          </button>)}
+        </div>
+      </section>
+    </section>
     <p className="scope-status">{status}</p>
     {error?<p className="scope-status scope-error">{error}</p>:null}
     {loadMoreError?<p role="alert" className="scope-status scope-error">{loadMoreError} <button type="button" className="loc-button" disabled={loadingMore} onClick={loadNextSearch}><UiText id="uiExtra.cultureView.reloadWorks"/></button></p>:null}
     <IncrementalList
       items={results}
       batchSize={pageSize}
-      resetKey={searchMode+'|'+matchedQueryRef.current}
+      resetKey={searchMode+'|'+matchedQueryRef.current+'|'+String(browseResults)}
       externalHasMore={hasMore}
       loading={loadingMore}
       error={error||loadMoreError}
