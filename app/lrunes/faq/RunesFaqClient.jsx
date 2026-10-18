@@ -78,6 +78,7 @@ export default function RunesFaqClient(){
     label:row.category+'（'+row.question_count+'）'
   })),[categoryRows]);
   const visible=faqPage?.rows||[];
+  const questionChoices=visible.map(row=>({value:row.faq_id,label:row.question}));
   const total=faqPage?.total||0;
   const pageCount=Math.max(1,Math.ceil(total/PAGE_SIZE));
 
@@ -124,7 +125,7 @@ export default function RunesFaqClient(){
     <div className="loc-card">
       <a href={navigationHref('lrunes','',native)} className="loc-button">← 月之符文首頁</a>
       <h1>月之符文 · 常見問題</h1>
-      <p>請先選擇問題分類，再查看該分類的常見問題。</p>
+      <p>先選分類，再選問題；只顯示選取問題的答案。</p>
       <div className="runes-faq-filter">
         <label htmlFor="runes-faq-category">問題分類</label>
         <Select
@@ -142,6 +143,22 @@ export default function RunesFaqClient(){
           noOptionsMessage={()=>'沒有相關分類'}
         />
       </div>
+      {category&&!isPending&&!error&&visible.length?<div className="runes-faq-filter">
+        <label htmlFor="runes-faq-question">選擇問題</label>
+        <Select
+          inputId="runes-faq-question"
+          instanceId="runes-faq-question"
+          className="scope-workspace-select"
+          classNamePrefix="scope-workspace-select"
+          options={questionChoices}
+          value={questionChoices.find(option=>option.value===expanded)||null}
+          placeholder="請選擇問題"
+          onChange={item=>{setExpanded(item?.value||'');setDraft(null);}}
+          isSearchable
+          isClearable
+          noOptionsMessage={()=>'本頁沒有相關問題'}
+        />
+      </div>:null}
     </div>
 
     {categoriesError?<p className="scope-status scope-error" role="alert">無法讀取分類：{String(categoriesError.message||categoriesError)}</p>:null}
@@ -150,15 +167,12 @@ export default function RunesFaqClient(){
     {category&&!isPending&&!error&&!visible.length?<div className="loc-card"><p className="scope-status">這個分類目前沒有問題。</p></div>:null}
     {category&&!isPending&&!error&&total>0?<p className="scope-status">本分類共 {total} 題 · 第 {page+1} / {pageCount} 頁</p>:null}
     <div className="runes-faq-list">
-      {visible.map(row=><article className="loc-card runes-faq-item" key={row.faq_id}>
+      {visible.filter(row=>row.faq_id===expanded).map(row=><article className="loc-card runes-faq-item" key={row.faq_id}>
         <div className="runes-faq-question-row">
-          <button type="button" className="runes-faq-question" aria-expanded={expanded===row.faq_id}
-            onClick={()=>setExpanded(current=>current===row.faq_id?'':row.faq_id)}>
-            <span>{row.question}</span><span aria-hidden="true">{expanded===row.faq_id?'−':'+'}</span>
-          </button>
+          <h2 className="runes-faq-question">{row.question}</h2>
           {canManage?<button className="loc-button" type="button" disabled={busy} onClick={()=>begin(row)}>編輯</button>:null}
         </div>
-        {canManage&&row.status!=='published'?<small className="scope-status">草稿 · 尚未公開</small>:null}
+        {canManage&&row.status!=='published'?<small className="scope-status">{row.status==='review'?'待校正':'封存'} · 尚未公開</small>:null}
         {expanded===row.faq_id?<div className="runes-faq-answer">
           {draft?.faq_id===row.faq_id?<div className="scope-editor">
             <div className="scope-management-wide-field">
