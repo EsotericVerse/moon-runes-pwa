@@ -63,7 +63,7 @@ export function normalizeImportMedia(value,{title='',createtime=null,source_plac
       ...(explicitId?{media_id:explicitId}:{}),
       galaxy_link:galaxy_link||null,
       source_native_id:native,
-      source_place:String(source.source_place||source_place||'').trim()||null,
+      source_place:String(source.source_place||'').trim()||null,
       media_type,
       title:String(source.title||source.name||title||'').trim()||null,
       url:external,
