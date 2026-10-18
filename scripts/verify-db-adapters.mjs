@@ -50,6 +50,31 @@ assert.equal(requests.at(-1).init.headers.get('Content-Profile'),'silver');
 assert.equal(JSON.parse(requests.at(-1).init.body).p_operation,'insert');
 await client.updateRows('silver.any_scope_galaxy',{title:'changed'},{filters:[{column:'uid',operator:'eq',value:'TEST0001'}]});
 assert.equal(JSON.parse(requests.at(-1).init.body).p_operation,'update');
+
+const writeRequestsBeforeValidation=requests.length;
+await assert.rejects(
+  ()=>client.updateRows('silver.any_scope_galaxy',{source_name:'<b>Suno</b>'}),
+  /source_name.*HTML/
+);
+await assert.rejects(
+  ()=>client.updateRows('silver.any_scope_galaxy',{url:'&lt;a href="x"&gt;x&lt;\/a&gt;'}),
+  /url.*HTML/
+);
+await assert.rejects(
+  ()=>client.insertRows('silver.any_scope_galaxy',[
+    {uid:'TEST0002',title:'clean',content:'<p>Rich正文</p>',source_name:'plain'},
+    {uid:'TEST0003',title:'bad',source_name:'<img src="x"/>'}
+  ]),
+  /source_name.*HTML/
+);
+assert.equal(requests.length,writeRequestsBeforeValidation,
+  'Invalid Galaxy attributes must fail before any RPC, including multi-row inserts');
+await client.updateRows('silver.any_scope_galaxy',{
+  title:'純文字',group_lists:'false',content:'<p>Rich正文由 BlockNote 編輯</p>'
+},{filters:[{column:'uid',operator:'eq',value:'TEST0001'}]});
+assert.equal(JSON.parse(requests.at(-1).init.body).p_values.content,
+  '<p>Rich正文由 BlockNote 編輯</p>',
+  'Galaxy body HTML must remain supported');
 await client.deleteRows('silver.any_scope_galaxy',{filters:[{column:'uid',operator:'eq',value:'TEST0001'}]});
 assert.equal(JSON.parse(requests.at(-1).init.body).p_operation,'delete');
 affected=0;
