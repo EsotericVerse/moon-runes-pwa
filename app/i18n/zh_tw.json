@@ -662,6 +662,13 @@
       "update": "更新設定"
     },
     "searchUI": {
+      "mediaTypeRequired": "media_type 不可為空。",
+      "mediaLinkUidInvalid": "galaxy_link 必須是八位文章 UID。",
+      "runeReferencesInvalid": "rune_references 必須是有效的 JSON。",
+      "invalidMediaId": "媒體 ID 格式無效。",
+      "mediaManageDenied": "沒有編輯媒體的權限。",
+      "mediaAttributes": "媒體屬性",
+      "editMedia": "編輯媒體：{id}",
       "styleRecommendations": "風格標籤推薦",
       "stylePeriod": "所屬時期：",
       "unknownStyle": "文化風格",
@@ -734,6 +741,16 @@
       "refresh": "重新整理即時統計"
     },
     "importUI": {
+      "invalidMediaId": "media_id 格式無效。",
+      "existingMediaFailed": "無法檢查既有媒體。",
+      "mediaIdCompareFailed": "無法比對媒體 ID。",
+      "mediaUrlCompareFailed": "無法比對媒體 URL。",
+      "missingMediaReference": "匯入引用的媒體不存在：{id}",
+      "mediaUuidUnavailable": "環境無法產生媒體 UUID，已停止寫入。",
+      "mediaLinkReadFailed": "無法驗證文章與媒體關聯。",
+      "zipTooLarge": "檔案超過 512 MiB 安全上限，未讀取或解析。",
+      "importLinkedComplete": "文章新增 {articles} 筆、媒體新增 {media} 筆、文章媒體關聯更新 {linked} 筆；略過 {skipped} 筆。",
+      "refreshMediaSuffix": "；媒體新增 {media} 筆；關聯更新 {linked} 筆。",
       "importTitle": "資料匯入",
       "zipInspecting": "正在辨識 ZIP 內容…",
       "zipInspected": "ZIP 檢查完成，共 {count} 個項目；尚未匯入任何資料。",
@@ -959,6 +976,8 @@
       "save": "儲存"
     },
     "editBlocks": {
+      "edit": "編輯",
+      "editSuggestion": "編輯搜尋建議",
       "moving": "正在調整區塊順序…",
       "moved": "區塊順序已儲存。其他未儲存的文字修改仍留在草稿。",
       "moveFailed": "區塊移動失敗：{error}",
