@@ -827,6 +827,8 @@ export default function Search(){
           allowEditing
           allowDelete={false}
           allowInlineChildAdd
+          explicitEditButton
+          onSuggestionClick={term=>router.push(searchHref(scopeId,term))}
         />
       </div>
     </section>
