@@ -569,36 +569,142 @@
 .scope-period-timeline .vis-item.scope-lrunes-moon-phase-4{--lrunes-phase-color:var(--loc-line)}
 .scope-work-summary.is-inline-editable{cursor:pointer}
 
-/* Search: progressive filters and editable BlockNote reference content. */
-.scope-search-workspace{display:grid;gap:1rem;margin:.85rem 0 1.2rem;padding:clamp(.8rem,2.6vw,1.45rem);border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-lg);background:var(--loc-panel)}
-.scope-search-workspace .scope-search-form{display:flex;flex-wrap:wrap;gap:.65rem;align-items:center}
-.scope-search-workspace .scope-search-form>label{flex-basis:100%;font-weight:750}
-.scope-search-workspace .scope-search-form>input{flex:1 1 18rem;min-width:0}
-.scope-search-workspace .scope-search-form>button{flex:0 0 auto}
-.scope-search-advanced{display:grid;gap:.55rem}
-.scope-search-advanced-toggle{width:100%;display:flex;justify-content:space-between;gap:1rem;align-items:center;text-align:left;padding:.85rem 1rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-md);background:var(--loc-surface-soft);color:var(--loc-text);cursor:pointer}
-.scope-search-advanced-toggle>span:first-child{display:flex;flex-direction:column;gap:.2rem}
-.scope-search-advanced-toggle small{color:var(--loc-muted)}
-.scope-search-active-filters{display:flex;flex-wrap:wrap;gap:.35rem}
-.scope-search-chip{display:inline-flex;align-items:center;padding:.3rem .65rem;border:1px solid var(--loc-ui-hairline);border-radius:999px;background:var(--loc-surface-soft);font-size:.77rem}
-.scope-search-chip.is-muted{color:var(--loc-muted)}
-.scope-search-filter-panel{border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-md);overflow:hidden;background:var(--loc-surface-soft)}
+/* Search: one expressive, responsive workspace for each independent Scope. */
+.scope-search-workspace{
+  position:relative;isolation:isolate;display:grid;gap:clamp(.85rem,2vw,1.3rem);
+  min-width:0;margin:.9rem 0 1.25rem;
+  padding:clamp(1rem,3vw,2rem);
+  border:1px solid color-mix(in srgb,var(--loc-accent) 28%,var(--loc-line));
+  border-radius:var(--loc-ui-radius-xl);
+  background:
+    radial-gradient(ellipse at 100% 0%,color-mix(in srgb,var(--loc-accent) 15%,transparent),transparent 54%),
+    radial-gradient(ellipse at 0% 100%,color-mix(in srgb,var(--loc-gold) 9%,transparent),transparent 55%),
+    linear-gradient(155deg,var(--loc-ui-panel-strong),var(--loc-ui-panel));
+  box-shadow:var(--loc-ui-shadow);
+  overflow:hidden;
+}
+.scope-search-workspace:before{
+  content:"";position:absolute;inset:0 0 auto;height:2px;z-index:1;
+  background:linear-gradient(90deg,transparent,var(--loc-accent),var(--loc-gold),transparent);
+  pointer-events:none;
+}
+.scope-search-workspace .scope-search-form{
+  display:grid;grid-template-columns:minmax(0,1fr) auto auto;
+  grid-template-areas:"label label label" "input submit reset";
+  gap:.65rem;align-items:center;
+  padding:clamp(.8rem,2vw,1.3rem);
+  border:1px solid var(--loc-ui-hairline);
+  border-radius:var(--loc-ui-radius-lg);
+  background:color-mix(in srgb,var(--loc-panel) 68%,transparent);
+  box-shadow:inset 0 1px 0 color-mix(in srgb,var(--loc-text) 5%,transparent);
+}
+.scope-search-workspace .scope-search-form>label{grid-area:label;font-weight:800;letter-spacing:.02em;color:var(--loc-text);font-size:.9rem}
+.scope-search-workspace .scope-search-form>input{
+  grid-area:input;min-width:0;min-height:3.15rem;padding:.75rem 1.1rem;
+  border-radius:var(--loc-ui-radius-md)!important;
+  background:var(--loc-surface)!important;
+  color:var(--loc-text)!important;
+  font-size:1rem;
+}
+.scope-search-workspace .scope-search-form>input:focus{
+  border-color:var(--loc-accent-border)!important;
+  box-shadow:0 0 0 3px var(--loc-ui-accent-soft)!important;
+  outline:none;
+}
+.scope-search-workspace .scope-search-form>button{
+  min-height:3.15rem;padding:.7rem 1.1rem;white-space:nowrap;border-radius:var(--loc-ui-radius-md);
+}
+.scope-search-workspace .scope-search-form>button[type="submit"]{
+  grid-area:submit;font-weight:800;
+  border:1px solid color-mix(in srgb,var(--loc-accent) 40%,var(--loc-line));
+  background:linear-gradient(135deg,var(--loc-accent-surface-strong),var(--loc-ui-gold-soft));
+  color:var(--loc-text);cursor:pointer;
+}
+.scope-search-workspace .scope-search-form>button[type="button"]{grid-area:reset}
+.scope-search-advanced{display:grid;gap:.55rem;min-width:0}
+.scope-search-advanced-toggle{
+  display:flex;justify-content:space-between;gap:1rem;align-items:center;width:100%;
+  text-align:left;padding:.95rem 1.1rem;
+  border:1px solid var(--loc-ui-hairline);
+  border-radius:var(--loc-ui-radius-md);
+  background:linear-gradient(135deg,var(--loc-ui-panel-soft),var(--loc-ui-accent-soft));
+  color:var(--loc-text);font:inherit;cursor:pointer;
+  transition:border-color .16s ease,background .16s ease;
+}
+.scope-search-advanced-toggle:hover,.scope-search-advanced-toggle:focus-visible{
+  border-color:var(--loc-accent-border);outline-offset:2px;
+}
+.scope-search-advanced-toggle>span:first-child{display:flex;flex-direction:column;gap:.25rem}
+.scope-search-advanced-toggle strong{font-size:.95rem}
+.scope-search-advanced-toggle small{color:var(--loc-muted);font-size:.8rem}
+.scope-search-advanced-toggle[aria-expanded="true"]{
+  border-color:var(--loc-accent-border);background:var(--loc-ui-accent-soft);
+}
+.scope-search-active-filters{display:flex;flex-wrap:wrap;gap:.45rem;min-height:1.6rem}
+.scope-search-chip{
+  display:inline-flex;align-items:center;padding:.32rem .75rem;max-width:100%;overflow-wrap:anywhere;
+  border:1px solid color-mix(in srgb,var(--loc-accent) 32%,var(--loc-line));
+  border-radius:999px;background:var(--loc-ui-accent-soft);
+  color:var(--loc-text);font-size:.76rem;font-weight:650;
+}
+.scope-search-chip.is-muted{border-color:var(--loc-ui-hairline);background:var(--loc-surface-soft);color:var(--loc-muted);font-weight:500}
+.scope-search-filter-panel{
+  min-width:0;border:1px solid var(--loc-ui-hairline);
+  border-radius:var(--loc-ui-radius-md);overflow:hidden;
+  background:color-mix(in srgb,var(--loc-panel) 68%,transparent);
+}
 .scope-search-filter-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-bottom:1px solid var(--loc-ui-hairline)}
-.scope-search-filter-tabs button{padding:.75rem .4rem;border:0;border-right:1px solid var(--loc-ui-hairline);background:transparent;color:var(--loc-muted);font:inherit;font-weight:700;cursor:pointer}
+.scope-search-filter-tabs button{
+  min-width:0;padding:.8rem .45rem;border:0;border-right:1px solid var(--loc-ui-hairline);
+  background:transparent;color:var(--loc-muted);font:inherit;font-weight:750;cursor:pointer;
+}
 .scope-search-filter-tabs button:last-child{border-right:0}
-.scope-search-filter-tabs button.is-active{background:var(--loc-ui-accent-soft);color:var(--loc-text);box-shadow:inset 0 -2px 0 var(--loc-accent)}
-.scope-search-filter-body{display:grid;gap:.65rem;padding:1rem}
-.scope-search-filter-body>label{font-size:.87rem;font-weight:700}
-.scope-search-filter-body>select,.scope-search-filter-body input{width:100%;min-width:0;padding:.65rem .7rem;background:var(--loc-panel);color:var(--loc-text);border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-sm)}
+.scope-search-filter-tabs button.is-active{
+  color:var(--loc-text);background:var(--loc-ui-accent-soft);
+  box-shadow:inset 0 -3px 0 var(--loc-accent);
+}
+.scope-search-filter-body{display:grid;gap:.85rem;padding:clamp(.85rem,2vw,1.2rem)}
+.scope-search-filter-body>label{font-size:.9rem;font-weight:750}
+.scope-search-filter-body>select,.scope-search-filter-body input,
+.scope-search-filter-body select{
+  width:100%;min-width:0;min-height:2.9rem;padding:.65rem .8rem;
+  color:var(--loc-text);background:var(--loc-panel-2);
+  border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-sm);
+}
 .scope-search-filter-body>.loc-button{justify-self:start}
 .scope-search-date-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
-.scope-search-date-fields label{display:grid;gap:.4rem}
+.scope-search-date-fields label{display:grid;gap:.45rem}
 .scope-search-date-fields .scope-search-period-field{grid-column:1/-1}
-
-.scope-search-reference-editor{min-width:0;margin:.35rem 0 0}
-.scope-search-reference-block{min-width:0;padding:1rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-md);background:var(--loc-surface-soft)}
-.scope-search-reference-block>h3{margin:0 0 .45rem;font-size:1rem}
-.scope-search-reference-block .scope-rich-surface{line-height:1.75}
+.scope-search-reference-editor{min-width:0}
+.scope-search-reference-block{
+  position:relative;min-width:0;padding:clamp(1rem,2.5vw,1.5rem);
+  border:1px solid color-mix(in srgb,var(--loc-gold) 24%,var(--loc-line));
+  border-radius:var(--loc-ui-radius-lg);
+  background:
+    radial-gradient(ellipse at 100% 0%,var(--loc-ui-gold-soft),transparent 55%),
+    var(--loc-ui-panel-soft);
+}
+.scope-search-reference-block:before{
+  content:"";display:block;width:2.3rem;height:3px;margin:0 0 .85rem;
+  border-radius:999px;background:linear-gradient(90deg,var(--loc-gold),var(--loc-accent));
+}
+.scope-search-reference-block>h3{margin:0 0 .7rem;font-size:1.1rem;letter-spacing:.02em}
+.scope-search-reference-block .scope-rich-surface{line-height:1.8}
 .scope-search-reference-block.is-editable-idle{cursor:text}
-.scope-search-reference-block .scope-inline-editbar{margin-bottom:.7rem}
-@media(max-width:480px){.scope-search-date-fields{grid-template-columns:1fr}.scope-search-workspace .scope-search-form>button{flex:1 1 7rem}}
+.scope-search-reference-block.is-editable-idle:hover{border-color:var(--loc-accent-border)}
+.scope-search-reference-block .scope-inline-editbar{margin-bottom:.85rem}
+.scope-search-reference-block .scope-blocknote{max-width:100%}
+@media(max-width:760px){
+  .scope-search-workspace .scope-search-form{
+    grid-template-columns:minmax(0,1fr) auto;
+    grid-template-areas:"label label" "input input" "submit reset";
+  }
+  .scope-search-workspace .scope-search-form>button{width:100%}
+}
+@media(max-width:480px){
+  .scope-search-date-fields{grid-template-columns:1fr}
+  .scope-search-workspace{padding:.85rem;border-radius:var(--loc-ui-radius-lg)}
+  .scope-search-workspace .scope-search-form{grid-template-columns:1fr 1fr}
+  .scope-search-workspace .scope-search-form>button{min-width:0;padding:.7rem .35rem}
+  .scope-search-filter-tabs button{padding:.7rem .3rem;font-size:.82rem}
+}
