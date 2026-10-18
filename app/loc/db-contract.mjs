@@ -4,7 +4,7 @@ import {assertPlainGalaxyAttributes} from './content-policy.js';
 // consistently for publisher, search, culture and import paths.
 // Galaxy Media and Blocks are different schemas and are not affected.
 function validateGalaxyWrite(table,values){
-  if(!/^silver\.[a-z][a-z0-9]{0,14}_galaxy$/.test(String(table||'')))return values;
+  if(!/^silver\.[a-z][a-z0-9_]{0,40}_galaxy(?:_media)?$/.test(String(table||'')))return values;
   const {content:body,...attributes}=values||{};
   assertPlainGalaxyAttributes(attributes);
   return values;
