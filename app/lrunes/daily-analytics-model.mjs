@@ -3,10 +3,8 @@ import {statisticsWeekKey} from '../modular/modules/statistics/statistics-time-z
 // LunaRunes-only daily-draw analytics. No other Scope consumes this module.
 export const DAILY_RUNE_PAGE_SIZE=8;
 export const DAILY_RUNE_MODES=Object.freeze([
-  {value:'rune',label:'符文本體'},
-  {value:'rune_direction',label:'符文本體 × 位向'},
-  {value:'direction',label:'位向'},
-  {value:'triple',label:'符文本體 × 位向 × 真實月相'}
+  {value:'rune',label:'符文出現次數'},
+  {value:'direction',label:'位向趨勢'}
 ]);
 export const DAILY_MOON_PHASES=Object.freeze(['新月','上弦','滿月','下弦','空亡']);
 export const DAILY_DIRECTIONS=Object.freeze(['正位','半正位','半逆位','逆位']);
@@ -117,50 +115,41 @@ export const DAILY_DIRECTION_SCORE=Object.freeze({
   '半逆位':-0.5,
   '逆位':-1
 });
-const DAILY_CARD_FACE_SCORE=Object.freeze({1:1,2:0,3:-1});
 
-// Weekly trend: card direction and card face are scored independently, then
-// combined. Unknown card face is centered at zero with a +/-0.2 uncertainty band.
-export function dailyDirectionTrend(rows=[],startDate='',endDate=''){
+// Direction trend uses the average signed orientation score per time bucket.
+// Rune occurrence totals remain in dailyCategoryTrend and are summed per bucket.
+export function dailyDirectionTrend(rows=[],bucket='week',startDate='',endDate=''){
   const first=String(startDate||rows[0]?.record_date||'').slice(0,10);
   const last=String(endDate||rows.at(-1)?.record_date||'').slice(0,10);
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(first)||!/^\d{4}-\d{2}-\d{2}$/.test(last)||first>last)return [];
-  const buckets=new Map();
+  if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(first)||!/^\\d{4}-\\d{2}-\\d{2}$/.test(last)||first>last)return [];
+  const unit=['day','week','month'].includes(bucket)?bucket:'week';
+  const periodKey=date=>unit==='month'?date.slice(0,7):unit==='week'?statisticsWeekKey(date):date;
+  const labelFor=key=>unit==='month'?key.replace('-','/'):unit==='week'?key.slice(5).replace('-','/') :key.slice(5).replace('-','/');
+  const periods=new Map();
   for(let day=new Date(first+'T00:00:00Z'),stop=new Date(last+'T00:00:00Z');day<=stop;day.setUTCDate(day.getUTCDate()+1)){
-    const date=day.toISOString().slice(0,10);
-    const week=statisticsWeekKey(date);
-    if(!buckets.has(week))buckets.set(week,{week,period:week.slice(5).replace('-','/'),count:0,directionTotal:0,combinedTotal:0,combinedLowTotal:0,combinedHighTotal:0,runes:new Set()});
+    const date=day.toISOString().slice(0,10),key=periodKey(date);
+    if(!periods.has(key))periods.set(key,{key,period:labelFor(key),count:0,total:0,runes:new Set(),directions:new Set()});
   }
   for(const row of rows){
-    const directionScore=DAILY_DIRECTION_SCORE[String(row?.direction||'')];
-    if(!Number.isFinite(directionScore))continue;
-    const week=statisticsWeekKey(row.record_date);
-    const item=buckets.get(week);
+    const score=DAILY_DIRECTION_SCORE[String(row?.direction||'')];
+    if(!Number.isFinite(score))continue;
+    const key=periodKey(String(row.record_date||'').slice(0,10));
+    const item=periods.get(key);
     if(!item)continue;
-    const faceScore=DAILY_CARD_FACE_SCORE[Number(row?.card_attr)];
-    const unknown=faceScore===undefined;
-    const combined=directionScore+(unknown?0:faceScore);
     item.count+=1;
-    item.directionTotal+=directionScore;
-    item.combinedTotal+=combined;
-    item.combinedLowTotal+=combined-(unknown?0.2:0);
-    item.combinedHighTotal+=combined+(unknown?0.2:0);
+    item.total+=score;
+    item.directions.add(String(row.direction));
     const rune=String(row?.rune_name||row?.rune_number||'').trim();
     if(rune)item.runes.add(rune);
   }
-  return [...buckets.values()].map(item=>item.count?({
-    week:item.week,
+  return [...periods.values()].map(item=>({
     period:item.period,
+    periodKey:item.key,
     recordCount:item.count,
-    directionAverage:item.directionTotal/item.count,
-    combinedAverage:item.combinedTotal/item.count,
-    combinedLow:item.combinedLowTotal/item.count,
-    combinedHigh:item.combinedHighTotal/item.count,
+    directionAverage:item.count?item.total/item.count:null,
+    directionLabels:[...item.directions].join('、'),
     runeLabels:[...item.runes].join(' · ')
-  }):{
-    week:item.week,period:item.period,recordCount:0,
-    directionAverage:null,combinedAverage:null,combinedLow:null,combinedHigh:null,runeLabels:''
-  });
+  }));
 }
 
 export function dailyCategoryTrend(rows=[],mode='rune',selected=[],bucket='day',startDate='',endDate=''){
