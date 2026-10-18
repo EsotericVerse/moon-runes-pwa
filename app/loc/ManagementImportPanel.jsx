@@ -59,7 +59,7 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     const native=String(value('source_native_id')||'').trim();
     if(type&&(url||native)){
       const rawId=String(row.media_id||'').trim();
-      if(rawId&&!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawId))return {record:null,error:'media_id 格式無效'};
+      if(rawId&&!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawId))return {record:null,error:t('uiExtra.importUI.invalidMediaId')};
       return {record:null,error:'',mediaOnlyRecord:{
         ...(rawId?{media_id:rawId}:{}),
         galaxy_link:String(value('galaxy_link')||'').trim()||null,
@@ -129,7 +129,7 @@ function ImportFormatSettings({format,onChange,disabled=false}){
 
 // Shared idempotent media attachment write for fresh imports and source refresh.
 // All records are bound by original article UID; no full-table scan or recursive discovery.
-async function syncImportedMedia({normalized=[],mediaOnly=[],knownArticleIds=new Map(),galaxy,galaxyMedia,batchSize=100}={}){
+async function syncImportedMedia({normalized=[],mediaOnly=[],knownArticleIds=new Map(),galaxy,galaxyMedia,batchSize=100,t}={}){
       // Media-only imports and embedded media use the same Galaxy Media table.
       // Existing article UID/native matches are resolved before attaching assets.
       const plans=normalized.flatMap(item=>{
@@ -142,21 +142,21 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],knownArticleIds=new
       for(let offset=0;offset<owners.length;offset+=200){
         const batch=owners.slice(offset,offset+200);
         const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,source_native_id,media_type').in('galaxy_link',batch);
-        if(error)throw new Error(error.message||'無法檢查既有媒體');
+        if(error)throw new Error(error.message||t('uiExtra.importUI.existingMediaFailed'));
         existingMedia.push(...(data||[]));
       }
       const explicitIds=[...new Set([...plans.map(record=>record.media_id).filter(Boolean),...normalized.flatMap(item=>item.mediaRefs||[])])];
       for(let offset=0;offset<explicitIds.length;offset+=200){
         const batch=explicitIds.slice(offset,offset+200);
         const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,source_native_id,media_type').in('media_id',batch);
-        if(error)throw new Error(error.message||'無法比對媒體 ID');
+        if(error)throw new Error(error.message||t('uiExtra.importUI.mediaIdCompareFailed'));
         existingMedia.push(...(data||[]));
       }
       // No full-table scan; unlinked media is matched only by explicit imported URLs.
       const unlinkedUrls=[...new Set(plans.filter(row=>!row.galaxy_link&&row.url).map(row=>row.url))];
       for(let offset=0;offset<unlinkedUrls.length;offset+=200){
         const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,source_native_id,media_type').in('url',unlinkedUrls.slice(offset,offset+200));
-        if(error)throw new Error(error.message||'無法比對媒體 URL');
+        if(error)throw new Error(error.message||t('uiExtra.importUI.mediaUrlCompareFailed'));
         existingMedia.push(...(data||[]));
       }
       const mediaKey=row=>JSON.stringify([String(row.galaxy_link||'').trim(),String(row.url||'').trim(),String(row.source_native_id||'').trim(),String(row.media_type||'').trim()]);
@@ -171,7 +171,7 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],knownArticleIds=new
       for(const item of normalized){
         const uid=knownArticleIds.get(item.record?.uid);
         for(const mediaId of item.mediaRefs||[]){
-          if(!byId.has(mediaId))throw new Error('匯入引用的媒體不存在：'+mediaId);
+          if(!byId.has(mediaId))throw new Error(t('uiExtra.importUI.missingMediaReference',{id:mediaId}));
           attach(uid,mediaId);
         }
       }
@@ -182,7 +182,7 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],knownArticleIds=new
         if(seenMedia.has(key))continue;
         seenMedia.add(key);
         const mediaId=record.media_id||globalThis.crypto?.randomUUID?.();
-        if(!mediaId)throw new Error('環境無法產生媒體 UUID，已停止寫入。');
+        if(!mediaId)throw new Error(t('uiExtra.importUI.mediaUuidUnavailable'));
         record.media_id=mediaId;
         createMedia.push(record);byKey.set(key,record);byId.set(mediaId,record);
         attach(owner,mediaId);
@@ -195,7 +195,7 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],knownArticleIds=new
       const linkedUids=[...related.keys()];
       for(let offset=0;offset<linkedUids.length;offset+=200){
         const {data,error}=await dbAuthRelation(galaxy).select('uid,media_link').in('uid',linkedUids.slice(offset,offset+200));
-        if(error)throw new Error(error.message||'無法驗證文章與媒體關聯');
+        if(error)throw new Error(error.message||t('uiExtra.importUI.mediaLinkReadFailed'));
         for(const row of data||[]){
           const uid=String(row.uid||'').trim();
           const prior=Array.isArray(row.media_link)?row.media_link.map(String):[];
@@ -237,7 +237,7 @@ function UniversalImport({scopeId,format,onBusyChange}) {
   async function loadQueuedFile(file,index,total){
     setFileName(file.name);setRows([]);setArchiveDetection(null);setProgress(null);setStatus('');
     if(file.size>ARCHIVE_MAX_BYTES){
-      setStatus('檔案超過 512 MiB 安全上限，未讀取或解析。');
+      setStatus(t('uiExtra.importUI.zipTooLarge'));
       return;
     }
     const firstBytes=new Uint8Array(await file.slice(0,4).arrayBuffer());
@@ -321,10 +321,10 @@ function UniversalImport({scopeId,format,onBusyChange}) {
         writeBatch:batch=>insertRows(galaxy,batch),
         onProgress:p=>setProgress({completed:p.completed,total:payload.length+analyzed.mediaOnly.length,percent:Math.round(100*p.completed/Math.max(1,payload.length+analyzed.mediaOnly.length))})
       });
-      const mediaSummary=await syncImportedMedia({normalized:analyzed.normalized,mediaOnly:analyzed.mediaOnly,knownArticleIds,galaxy,galaxyMedia,batchSize:format.batchSize});
+      const mediaSummary=await syncImportedMedia({normalized:analyzed.normalized,mediaOnly:analyzed.mediaOnly,knownArticleIds,galaxy,galaxyMedia,batchSize:format.batchSize,t});
       const skipped=analyzed.invalid.length+duplicateCount+unique.length-payload.length;
       setProgress({completed:payload.length+mediaSummary.created,total:payload.length+mediaSummary.created,percent:100});
-      setStatus('文章新增 '+payload.length+' 筆、媒體新增 '+mediaSummary.created+' 筆、文章媒體關聯更新 '+mediaSummary.connected+' 筆；略過 '+skipped+' 筆。');
+      setStatus(t('uiExtra.importUI.importLinkedComplete',{articles:payload.length,media:mediaSummary.created,linked:mediaSummary.connected,skipped}));
       setRows([]);
     }catch(error){setStatus(String(error?.message||error||t('uiExtra.importUI.importFailed'))+t('uiExtra.importUI.importRetry'))}
     finally{setBusy(false);onBusyChange?.(false);}
@@ -548,9 +548,9 @@ function SourceRefresh({scopeId,format,onBusyChange}){
         .filter(item=>item.record.source_native_id&&byNative.has(item.record.source_native_id))
         .map(item=>[item.record.uid,byNative.get(item.record.source_native_id)]));
       const mediaSummary=await syncImportedMedia({
-        normalized:original,knownArticleIds,galaxy,galaxyMedia,batchSize:format.batchSize
+        normalized:original,knownArticleIds,galaxy,galaxyMedia,batchSize:format.batchSize,t
       });
-      setStatus(t('uiExtra.importUI.refreshComplete',{created:plan.creates.length.toLocaleString(),updated:plan.updates.length.toLocaleString()})+'；媒體新增 '+mediaSummary.created+' 筆；關聯更新 '+mediaSummary.connected+' 筆。');
+      setStatus(t('uiExtra.importUI.refreshComplete',{created:plan.creates.length.toLocaleString(),updated:plan.updates.length.toLocaleString()}) +t('uiExtra.importUI.refreshMediaSuffix',{media:mediaSummary.created,linked:mediaSummary.connected}));
       setPlan(null);setRows([]);setFileName('');
     }catch(error){
       setPlan(null);
