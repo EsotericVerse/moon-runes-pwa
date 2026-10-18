@@ -3,7 +3,7 @@ export const IMPORT_FIELD_ALIASES=Object.freeze({
   uid:['uid'],
   content:['content','body','text','message','description'],
   title:['title','name','subject'],
-  createtime:['createtime','created_at','create_time','created_time','date','published_at'],
+  createtime:['createtime','created_at','create_time','created_time','creation_timestamp','timestamp_ms','timestamp','taken_at','createdAt','published_at','publishedAt','date'],
   source_native_id:['source_native_id','native_id'],
   source_place:['source_place','place'],
   url:['url','link','permalink'],
@@ -46,6 +46,24 @@ export function importRowsFromJson(payload,recordPath=''){
     if(hasContent)return [container];
   }
   throw new Error('找不到可匯入的資料陣列；請在格式設定指定資料路徑。');
+}
+
+
+// Preserve the original timestamp when available. Unix seconds and milliseconds
+// must not be confused; a missing/unreadable source timestamp gets import time.
+export function parseImportCreatedTime(value){
+  if(value===undefined||value===null||value==='')return null;
+  const raw=typeof value==='string'?value.trim():value;
+  if(raw==='')return null;
+  const numeric=typeof raw==='number'?raw:
+    typeof raw==='string'&&/^\\d{10,13}$/.test(raw)?Number(raw):null;
+  const timestamp=numeric===null?raw:
+    Math.abs(numeric)<1e11?numeric*1000:numeric;
+  const parsed=new Date(timestamp);
+  return Number.isNaN(parsed.getTime())?null:parsed.toISOString();
+}
+export function withImportCreatedTime(record,importedAt=new Date().toISOString()){
+  return {...record,createtime:parseImportCreatedTime(record?.createtime)||importedAt};
 }
 
 export function validImportBatchSize(value){
