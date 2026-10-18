@@ -80,7 +80,7 @@ export async function parseUniversalImportFile(file,{recordPath='',officeParser}
   const content=String(result?.value||'').trim();
   if(!content)throw new Error('文件沒有可擷取的文字內容。');
   return [{
-    title:String(ast?.metadata?.title||file.name.replace(/\.[^.]+$/,'')).trim(),
+    title:String(ast?.metadata?.title||'').trim(),
     content,
     createtime:ast?.metadata?.created||null
   }];
