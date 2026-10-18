@@ -379,7 +379,24 @@ export async function selectSearchReferenceSuggestions(scopes,{contentType='',so
   const targets=(Array.isArray(scopes)?scopes:[]).filter(scope=>scope?.galaxy&&scope?.galaxyMedia).slice(0,2);
   const onlyMedia=contentType==='multimedia';
   const onlyTimeline=contentType==='timeline';
-  if(onlyTimeline||!targets.length)return [];
+  if(!targets.length)return [];
+  if(onlyTimeline){
+    const responses=await Promise.all(targets.map(scope=>selectRows(scope.time,{
+      columns:'record_id,record_type,label,time_date',
+      filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}],
+      orders:[{column:'time_date',ascending:false}],limit:16
+    }).then(result=>result.rows||[]).catch(()=>[])));
+    const seen=new Set(),found=[];
+    for(const row of responses.flat().sort((a,b)=>String(b.time_date||'').localeCompare(String(a.time_date||'')))){
+      const query=String(row.label||'').trim();
+      const key=query.normalize('NFKC').toLowerCase();
+      if(!query||seen.has(key))continue;
+      seen.add(key);
+      found.push({query,description:row.record_type||'時期',date:String(row.time_date||'').slice(0,10)});
+      if(found.length>=limit)break;
+    }
+    return found;
+  }
   const textFilters=[
     {column:'searchable',operator:'eq',value:true},
     ...(sourceFilter?[{column:'source_name',operator:'ilike',value:sourceFilter}]:[]),
