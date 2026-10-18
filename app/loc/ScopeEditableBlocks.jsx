@@ -73,6 +73,7 @@ export default function ScopeEditableBlocks({
   allowEditing=true,
   allowDelete=true,
   allowEntities=true,
+  allowInlineChildAdd=false,
   allowImages=true,
   editEyebrow=true,
   slotTag='section',
@@ -117,7 +118,13 @@ export default function ScopeEditableBlocks({
       displayed.sort((a,b)=>a.order-b.order);
       return displayed;
     }
-    return rows.map(row=>normalizeRow(row,row.block_order));
+    const displayed=rows.map(row=>normalizeRow(row,row.block_order));
+    // Unbounded pages must render the unsaved draft, or the Add Block button appears inert.
+    if(draft&&!draft.stored&&!displayed.some(slot=>slot.order===draft.order)){
+      displayed.push({...draft});
+      displayed.sort((a,b)=>a.order-b.order);
+    }
+    return displayed;
   },[query.data,normalizedOrders,maxBlocks,pageName,draft,placeholderFirstOrder]);
   const nextOrder=useMemo(()=>{
     const rows=Array.isArray(query.data)?query.data:[];
@@ -131,6 +138,18 @@ export default function ScopeEditableBlocks({
       ...slot,
       uid:slot.uid||makeUid(),
       entities:normalizeEntities(slot.entities)
+    });
+    setMessage('');
+  }
+
+  function beginWithChild(slot){
+    if(!canEdit||!allowEntities)return;
+    const entities=normalizeEntities(slot.entities);
+    if(entities.length>=ENTITY_LIMIT)return;
+    setDraft({
+      ...slot,
+      uid:slot.uid||makeUid(),
+      entities:[...entities,{uid:makeUid(),title:'',text:'',order:entities.length+1}]
     });
     setMessage('');
   }
@@ -395,6 +414,12 @@ export default function ScopeEditableBlocks({
               {slot.text?<div className="scope-rich-surface" dangerouslySetInnerHTML={{__html:slot.text}}/>:null}
               {renderEntities(slot.entities,false)}
             </>}
+          {canEdit&&allowEntities&&allowInlineChildAdd&&slot.entities.length<ENTITY_LIMIT?<button
+            type="button"
+            className="loc-button scope-search-add-child"
+            onClick={()=>beginWithChild(slot)}
+            disabled={busy}
+          ><UiText id="uiExtra.editBlocks.addChild"/></button>:null}
           {empty&&canEdit?<p className="scope-status"><UiText id="uiExtra.editBlocks.clickToCreate"/></p>:null}
         </>}
       </SlotTag>;
