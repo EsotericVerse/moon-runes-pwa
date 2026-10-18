@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import {parseGroupLists,formatGroupLists,parseGroupListsAttr} from '../app/loc/group-lists.mjs';
-import {assertPlainGalaxyAttributes,hasHtmlTag} from '../app/loc/galaxy-attr-plain-text.mjs';
+import {assertPlainGalaxyAttributes,hasHtmlTag} from '../app/loc/content-policy.js';
 
 function extract(file,start,end){
   const source=fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
