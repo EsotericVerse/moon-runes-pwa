@@ -222,3 +222,89 @@ test('style-tag recommendations stay above article results without reordering pe
   const rows=[{id:'article-a'},{id:'style-a',styleTagMatch:true},{id:'article-b'},{id:'style-b',styleTagMatch:true}];
   assert.deepEqual(Array.from(prioritizeStyleTagResults(rows),row=>row.id),['style-a','style-b','article-a','article-b']);
 });
+
+
+test('advanced filters select real providers without a duplicate media-only search mode',()=>{
+  const source=extract('app/loc/galaxy-query.js','function genericScopeProviders(', 'function normalizeSearch(');
+  const genericScopeProviders=vm.runInNewContext(source+'; genericScopeProviders',{
+    scopeOf:value=>value,
+    publicContentFilters:items=>items,
+    makeProvider:config=>config
+  });
+  const scope={id:'author',galaxy:'silver.author_galaxy',
+    galaxyMedia:'silver.author_galaxy_media',time:'silver.author_time'};
+  const all=genericScopeProviders(scope);
+  assert.equal(all.length,6,'Ordinary search should include the media provider');
+  assert.equal(all.filter(x=>x.table===scope.galaxyMedia).length,1);
+  const media=genericScopeProviders(scope,{contentType:'multimedia',sourceFilter:'suno'});
+  assert.equal(media.length,1,'Multimedia is an advanced category, not a separate search mode');
+  assert.equal(media[0].table,scope.galaxyMedia);
+  assert.match(media[0].sourceClause,/suno\.com/);
+  const lyrics=genericScopeProviders(scope,{contentType:'lyrics_work',sourceFilter:'threads'});
+  assert.equal(lyrics.length,4);
+  assert.ok(lyrics[0].filters.some(f=>f.column==='source_name'&&f.value==='suno'));
+  assert.ok(lyrics[0].filters.some(f=>f.column==='source_name'&&f.value==='threads'));
+  const timeline=genericScopeProviders(scope,{contentType:'timeline'});
+  assert.equal(timeline.length,1);
+  assert.equal(timeline[0].table,scope.time);
+});
+
+test('date range filters span full Taipei calendar days',()=>{
+  const source=extract('app/loc/galaxy-query.js','function dateSearchFilters(', 'function recordFor(');
+  const dateSearchFilters=vm.runInNewContext(source+'; dateSearchFilters');
+  assert.deepEqual(JSON.parse(JSON.stringify(dateSearchFilters('createtime','2026-10-01','2026-10-07'))),[
+    {column:'createtime',operator:'gte',value:'2026-10-01T00:00:00+08:00'},
+    {column:'createtime',operator:'lte',value:'2026-10-07T23:59:59.999+08:00'}
+  ]);
+});
+
+test('browsing without a keyword invokes the bounded search provider',async()=>{
+  const source=extract('app/loc/galaxy-query.js','export async function searchGalaxyRows(', '\n\n/**');
+  const calls=[];
+  const searchGalaxyRows=vm.runInNewContext(source.replace(/^export /,'')+'; searchGalaxyRows',{
+    DEFAULT_LIST_BATCH_SIZE:20,
+    genericScopeProviders:()=>[{
+      id:'author:media',
+      async search(query,options){calls.push({query,options});return {rows:[{row:{media_id:'one'}}],hasMore:false};}
+    }]
+  });
+  const result=await searchGalaxyRows([{id:'author'}],'',{browse:true,contentType:'multimedia',startDate:'2026-10-01'});
+  assert.equal(result.rows.length,1);
+  assert.equal(calls.length,1);
+  assert.equal(calls[0].options.browse,true);
+  assert.equal(calls[0].options.startDate,'2026-10-01');
+});
+
+test('recent search references use real records instead of frozen monthly example labels',async()=>{
+  const source=extract('app/loc/galaxy-query.js','export async function selectSearchReferenceSuggestions(', '\nexport async function selectMediaStatisticsFacetRows(');
+  const calls=[];
+  const selectRows=async(table,params)=>{
+    calls.push({table,params});
+    if(table.endsWith('_media'))return {rows:[
+      {media_id:'m1',title:'最新影片',createtime:'2026-10-18',media_type:'video',url:'https://example.test/video'},
+      {media_id:'m2',title:'既有歌曲',createtime:'2026-10-15',media_type:'suno',url:'https://suno.com/song/1'}
+    ]};
+    return {rows:[
+      {uid:'t1',title:'最新文章',createtime:'2026-10-17',source_name:'threads'},
+      {uid:'t2',title:'最新文章',createtime:'2026-10-10',source_name:'threads'}
+    ]};
+  };
+  const selectSearchReferenceSuggestions=vm.runInNewContext(source.replace(/^export /,'')+'; selectSearchReferenceSuggestions',{selectRows});
+  const scopes=[{id:'author',galaxy:'silver.author_galaxy',galaxyMedia:'silver.author_galaxy_media',time:'silver.author_time'}];
+  const suggestions=await selectSearchReferenceSuggestions(scopes,{limit:6});
+  assert.deepEqual(Array.from(suggestions.map(item=>item.query)),['最新影片','最新文章','既有歌曲']);
+  assert.equal(calls.length,2);
+  assert.equal(calls[0].params.limit,16,'References must use bounded read-only queries');
+  const filtered=await selectSearchReferenceSuggestions(scopes,{contentType:'multimedia',sourceFilter:'suno'});
+  assert.deepEqual(Array.from(filtered.map(item=>item.query)),['既有歌曲']);
+});
+
+test('ordinary Search exposes only one entry and a live advanced-filter suggestion surface',()=>{
+  const source=fs.readFileSync(new URL('../app/modular/features/Search.jsx',import.meta.url),'utf8');
+  assert.ok(source.includes('scope-search-filter-panel'));
+  assert.ok(source.includes('scope-search-suggestion-grid'));
+  assert.ok(source.includes('selectSearchReferenceSuggestions('));
+  assert.ok(source.includes('selectCultureTimeRows('));
+  assert.ok(!source.includes('setSearchMode('),'Redundant media mode must be removed');
+  assert.ok(!source.includes('searchSuggestionItems('),'No month-old hardcoded suggestion list');
+});
