@@ -198,22 +198,22 @@ function applyLiteralTerms(query,fields,queryText,and=[],nor=[]){
 }
 function dateSearchFilters(dateColumn,startDate,endDate){
   const filters=[];
-  if(dateColumn&&startDate)filters.push({column:dateColumn,operator:'gte',value:startDate});
-  if(dateColumn&&endDate)filters.push({column:dateColumn,operator:'lte',value:endDate});
+  if(dateColumn&&startDate)filters.push({column:dateColumn,operator:'gte',value:dateColumn==='createtime'?startDate+'T00:00:00+08:00':startDate});
+  if(dateColumn&&endDate)filters.push({column:dateColumn,operator:'lte',value:dateColumn==='createtime'?endDate+'T23:59:59.999+08:00':endDate});
   return filters;
 }
 function recordFor(row,source,providerId,scope,table){
   return {row:{...row,scope_id:row?.scope_id||scope.id,__table:table,__galaxy_media_table:scope.galaxyMedia},source,providerId};
 }
 
-function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filters=[],dateColumn='',exactColumn='',batchSize=DEFAULT_LIST_BATCH_SIZE}){
+function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filters=[],dateColumn='',exactColumn='',batchSize=DEFAULT_LIST_BATCH_SIZE,sourceClause=''}){
   const outputColumns=Object.freeze(unique(columns));
   const frozenFields=Object.freeze(unique(searchFields));
   const frozenFilters=Object.freeze(filters.map(item=>Object.freeze({...item})));
   const pageSize=Math.max(1,Math.floor(Number(batchSize)||DEFAULT_LIST_BATCH_SIZE));
   return Object.freeze({
     id,table,source,scope,idColumn,columns:outputColumns,searchFields:frozenFields,filters:frozenFilters,
-    async search(query,{cursor=0,startDate='',endDate='',and=[],nor=[],source='auto'}={}){
+    async search(query,{cursor=0,startDate='',endDate='',and=[],nor=[],source='auto',browse=false}={}){
       const offset=Math.max(0,Math.floor(Number(cursor)||0));
       const activeTable=table;
       const activeFilters=[...frozenFilters,...dateSearchFilters(dateColumn,startDate,endDate)];
@@ -228,10 +228,11 @@ function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filte
       const dataResult=await executePublicRead(activeTable,relation=>{
         let dataQuery=relation.select(outputColumns.join(','));
         dataQuery=applyFilters(dataQuery,activeFilters);
-        if(exactColumn){
+        if(sourceClause)dataQuery=dataQuery.or(sourceClause);
+        if(!browse&&exactColumn){
           const exact=literalPattern(query).slice(1,-1);
           dataQuery=dataQuery.ilike(exactColumn,exact);
-        }else dataQuery=applyLiteralTerms(dataQuery,frozenFields,query,and,nor);
+        }else if(!browse)dataQuery=applyLiteralTerms(dataQuery,frozenFields,query,and,nor);
         dataQuery=applyOrders(dataQuery,orders);
         return dataQuery.range(offset,offset+pageSize);
       },{source});
@@ -245,9 +246,21 @@ function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filte
   });
 }
 
-function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false}={}){
+function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,contentType='',sourceFilter=''}={}){
+  // These filters are applied by the existing Supabase provider, not to a
+  // truncated page of client-side search results.
+  const textSource=contentType==='lyrics_work'?'suno':sourceFilter;
+  const textKindFilters=[
+    ...(textSource?[{column:'source_name',operator:'ilike',value:textSource}]:[]),
+    ...(contentType==='text_work'?[{column:'source_name',operator:'neq',value:'suno'}]:[])
+  ];
+  const mediaDomain={suno:'suno.com',threads:'threads.com',instagram:'instagram.com',facebook:'facebook.com',vocus:'vocus.cc',x:'x.com'};
+  const sourceClause=sourceFilter&&mediaDomain[sourceFilter]
+    ?'media_type.ilike.*'+sourceFilter+'*,url.ilike.*'+mediaDomain[sourceFilter]+'*'
+    :'';
+
   const current=scopeOf(scope);
-  const textFilters=publicContentFilters(includeHiddenText?[]:[{column:'searchable',operator:'eq',value:true}]);
+  const textFilters=publicContentFilters([...(includeHiddenText?[]:[{column:'searchable',operator:'eq',value:true}]),...textKindFilters]);
   const textColumns=['uid','title','content','createtime','source_native_id','source_place','searchable','UpdateTime','url','source_id','target_id','ref_id','source_name','media_link','statistics_able','class_id','group_lists'];
   const titleExact=makeProvider({
     id:current.id+':text-title-exact',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
@@ -270,9 +283,9 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false}={
   const media=makeProvider({
     id:current.id+':media',table:current.galaxyMedia,source:current.id+' 多媒體',scope:current,idColumn:'media_id',
     columns:['media_id','galaxy_link','source_native_id','media_type','title','url','meta_tags','createtime'],
-    searchFields:['title','meta_tags','media_type','url','source_native_id'],dateColumn:'createtime'
+    searchFields:['title','meta_tags','media_type','url','source_native_id'],dateColumn:'createtime',sourceClause
   });
-  if(mediaOnly)return [media];
+  if(mediaOnly||contentType==='multimedia')return [media];
   const timeline=makeProvider({
     id:current.id+':timeline',table:current.time,source:current.id+' 時期',scope:current,idColumn:'record_id',
     columns:['record_id','record_type','label','resource_id','note','time_date','anchor_ids','status','date_status','year_value','visibility','style_description'],
@@ -281,6 +294,8 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false}={
   });
   // Article and media records are the primary search targets. Keep timeline
   // context available as the next page so it cannot hide the actual works.
+  if(contentType==='timeline')return sourceFilter?[]:[timeline];
+  if(contentType==='lyrics_work'||contentType==='text_work'||sourceFilter)return [titleExact,title,contentExact,content];
   return [titleExact,title,contentExact,content,timeline];
 }
 
@@ -318,14 +333,14 @@ export async function selectStyleKeywordMatches(scopes,query){
 }
 
 export async function searchGalaxyRows(scopes,query,{
-  limit=DEFAULT_LIST_BATCH_SIZE,cursor=null,startDate='',endDate='',and=[],nor=[],mediaOnly=false,hiddenScopeIds=[]
+  limit=DEFAULT_LIST_BATCH_SIZE,cursor=null,startDate='',endDate='',and=[],nor=[],mediaOnly=false,hiddenScopeIds=[],contentType='',sourceFilter='',browse=false
 }={}){
   const q=String(query||'').trim();
-  if(!q)return {rows:[],failures:[],hasMore:false,nextCursor:null};
+  if(!q&&!browse)return {rows:[],failures:[],hasMore:false,nextCursor:null};
   const safeLimit=Math.max(1,Math.min(DEFAULT_LIST_BATCH_SIZE,Math.floor(Number(limit)||DEFAULT_LIST_BATCH_SIZE)));
   const scopeList=(Array.isArray(scopes)?scopes:[]).filter(scope=>scope?.id);
   const hiddenScopes=new Set((Array.isArray(hiddenScopeIds)?hiddenScopeIds:[]).map(value=>String(value||'').trim()).filter(Boolean));
-  const scopeProviders=scopeList.map(scope=>genericScopeProviders(scope,{mediaOnly,includeHiddenText:hiddenScopes.has(scope.id)}));
+  const scopeProviders=scopeList.map(scope=>genericScopeProviders(scope,{mediaOnly,includeHiddenText:hiddenScopes.has(scope.id),contentType,sourceFilter}));
   // Every Scope's title hits are paged before any body matches.
   const providers=mediaOnly
     ?scopeProviders.flat()
@@ -337,7 +352,7 @@ export async function searchGalaxyRows(scopes,query,{
   const provider=providers[stage-1];
   if(!provider)return {rows:[],failures,hasMore:false,nextCursor:null};
   try{
-    const result=await provider.search(q,{cursor:sourceOffset,startDate,endDate,and,nor,limit:safeLimit,source:cursor?.source||'auto'});
+    const result=await provider.search(q,{cursor:sourceOffset,startDate,endDate,and,nor,limit:safeLimit,source:cursor?.source||'auto',browse});
     if(result.hasMore)return {rows:result.rows||[],failures,hasMore:true,nextCursor:{stage,offset:result.nextCursor,source:result.dataSource||cursor?.source||'auto'}};
     const hasMore=stage<providers.length;
     return {rows:result.rows||[],failures,hasMore,nextCursor:hasMore?{stage:stage+1,offset:0,source:'auto'}:null};
