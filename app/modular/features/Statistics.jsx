@@ -5,18 +5,18 @@ import {UI_COPY} from '../../i18n/ui-copy';
 import {useUiCopy} from '../../i18n/ui-locale';
 import UiText,{useUiText} from '../../i18n/UiText';
 
-import {useMemo,useState} from 'react';
+import {useMemo,useRef,useState} from 'react';
 import {useRouter,useSearchParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
 import {
   Bar,BarChart,CartesianGrid,Cell,Legend,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectMediaStatisticsFacetRows,selectMediaCrossTagRows,selectScopeDensityRows,selectSourceTrendRows,selectScopeSourceBreakdownRows,selectFirstScopeStatisticsDate} from '../../loc/galaxy-query';
+import {selectMediaStatisticsFacetRows,selectMediaCrossTagRows,selectMediaCrossPairWorks,selectScopeDensityRows,selectSourceTrendRows,selectScopeSourceBreakdownRows,selectFirstScopeStatisticsDate} from '../../loc/galaxy-query';
 import {selectRows} from '../../loc/db-query.mjs';
 import {selectFirstDailyRuneDate} from '../../loc/daily-runes';
 import {administrativeSourceTrend} from '../../loc/statistics-admin-source.mjs';
-import {defaultMediaCrossAxes,mediaCrossIntersections,mediaCrossPairWorks,mediaCrossTagCatalog} from '../../loc/media-style-intersection.mjs';
+import {defaultMediaCrossAxes,mediaCrossIntersections,mediaCrossTagCatalog} from '../../loc/media-style-intersection.mjs';
 import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
 import {selectScopeRegistry,defaultScopeData} from '../../loc/scope-data';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation';
@@ -347,12 +347,18 @@ function MediaCrossTagPicker({title,options,selected,onChange}){
     </div>
   </details>;
 }
-function MediaCrossTagStatistics({rows=[],range={},zoomLevel=0,onZoomLevelChange}){
+function MediaCrossTagStatistics({scope,rows=[],range={},zoomLevel=0,onZoomLevelChange}){
   const t=useUiText();
   const [leftOverride,setLeftOverride]=useState(null);
   const [rightOverride,setRightOverride]=useState(null);
   const [mode,setMode]=useState('ranking');
   const [selectedPair,setSelectedPair]=useState('');
+  const [works,setWorks]=useState([]);
+  const [worksOffset,setWorksOffset]=useState(0);
+  const [worksHasMore,setWorksHasMore]=useState(false);
+  const [worksLoading,setWorksLoading]=useState(false);
+  const [worksError,setWorksError]=useState('');
+  const worksRequest=useRef(0);
   const catalog=useMemo(()=>mediaCrossTagCatalog(rows),[rows]);
   const tagKeys=new Set(catalog.options.map(x=>x.key));
   const defaults=defaultMediaCrossAxes(catalog);
@@ -362,7 +368,32 @@ function MediaCrossTagStatistics({rows=[],range={},zoomLevel=0,onZoomLevelChange
     :rightOverride.filter(x=>tagKeys.has(x));
   const pairs=useMemo(()=>mediaCrossIntersections(catalog,left,right),[catalog,left.join('\u0000'),right.join('\u0000')]);
   const selected=pairs.find(x=>x.key===selectedPair);
-  const selectedWorks=useMemo(()=>selected?mediaCrossPairWorks(catalog,selected):[],[catalog,selected?.key]);
+  async function loadPairWorks(pair,offset=0,append=false){
+    const request=++worksRequest.current;
+    setWorksLoading(true);setWorksError('');
+    if(!append)setWorks([]);
+    try{
+      const page=await selectMediaCrossPairWorks(scope,pair,{
+        startDate:range.startDate,endDate:range.endDate,offset,limit:10
+      });
+      if(request!==worksRequest.current)return;
+      setWorks(current=>append?[...current,...page.rows]:page.rows);
+      setWorksOffset(page.nextOffset);
+      setWorksHasMore(page.hasMore);
+    }catch(error){
+      if(request===worksRequest.current)setWorksError(String(error?.message||error||'作品載入失敗'));
+    }finally{
+      if(request===worksRequest.current)setWorksLoading(false);
+    }
+  }
+  function togglePairWorks(pair){
+    if(selectedPair===pair.key){
+      worksRequest.current++;setSelectedPair('');setWorks([]);setWorksHasMore(false);setWorksError('');
+      return;
+    }
+    setSelectedPair(pair.key);setWorksOffset(0);setWorksHasMore(false);
+    loadPairWorks(pair,0,false);
+  }
   const leading=pairs.slice(0,12);
   const trendPairs=pairs.slice(0,6);
   const trendData=useMemo(()=>{
@@ -381,7 +412,7 @@ function MediaCrossTagStatistics({rows=[],range={},zoomLevel=0,onZoomLevelChange
         <MediaCrossTagPicker title={t('uiExtra.statisticsView.tagGroup1')} options={catalog.options} selected={left} onChange={setLeftOverride}/>
         <MediaCrossTagPicker title={t('uiExtra.statisticsView.tagGroup2')} options={catalog.options} selected={right} onChange={setRightOverride}/>
         <button type="button" className="loc-button" onClick={()=>{
-          setLeftOverride(null);setRightOverride(null);setSelectedPair('');
+          setLeftOverride(null);setRightOverride(null);worksRequest.current++;setSelectedPair('');setWorks([]);setWorksHasMore(false);
         }}><UiText id="uiExtra.statisticsView.resetPairs"/></button>
       </div>
       <div className="scope-stat-controls">
@@ -400,7 +431,7 @@ function MediaCrossTagStatistics({rows=[],range={},zoomLevel=0,onZoomLevelChange
                   <XAxis type="number" allowDecimals={false} tick={{fill:CHART_TEXT}}/>
                   <YAxis dataKey="label" type="category" width={190} tick={{fill:CHART_TEXT,fontSize:11}}/>
                   <Tooltip contentStyle={CHART_TOOLTIP}/>
-                  <Bar dataKey="count" name={t('uiExtra.statisticsView.commonWorks')} fill={CHART_ACCENT} maxBarSize={28} cursor="pointer" onClick={(_,index)=>{const pair=leading[index];if(pair)setSelectedPair(current=>current===pair.key?'':pair.key);}}/>
+                  <Bar dataKey="count" name={t('uiExtra.statisticsView.commonWorks')} fill={CHART_ACCENT} maxBarSize={28} cursor="pointer" onClick={(_,index)=>{const pair=leading[index];if(pair)togglePairWorks(pair);}}/>
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -410,18 +441,21 @@ function MediaCrossTagStatistics({rows=[],range={},zoomLevel=0,onZoomLevelChange
               <XAxis dataKey="period" angle={-25} textAnchor="end" height={65} tick={{fill:CHART_TEXT,fontSize:11}}/>
               <YAxis allowDecimals={false} tick={{fill:CHART_TEXT}}/>
               <Tooltip contentStyle={CHART_TOOLTIP}/><Legend/>
-              {trendPairs.map((pair,i)=><Line key={pair.key} type="monotone" name={pair.leftLabel+' × '+pair.rightLabel} dataKey={pair.key} stroke={PIE_COLORS[i%PIE_COLORS.length]} strokeWidth={2} dot={trendData.length<20} connectNulls={false} activeDot={{onClick:()=>setSelectedPair(current=>current===pair.key?'':pair.key)}}/>)}
+              {trendPairs.map((pair,i)=><Line key={pair.key} type="monotone" name={pair.leftLabel+' × '+pair.rightLabel} dataKey={pair.key} stroke={PIE_COLORS[i%PIE_COLORS.length]} strokeWidth={2} dot={trendData.length<20} connectNulls={false} activeDot={{onClick:()=>togglePairWorks(pair)}}/>)}
             </LineChart>
           </ResponsiveContainer>}
         </StatisticsChartFrame>
         {selected?<div className="scope-stat-cross-matches">
           <h4>{selected.leftLabel} × {selected.rightLabel} · {selected.count} {t('uiExtra.statisticsView.unitCase')}</h4>
           <div className="scope-ranking" style={{maxHeight:360,overflowY:'auto'}}>
-            {selectedWorks.map(media=><div key={media.id}>
+            {works.map(media=><div key={media.id}>
               <strong>{media.title||media.id}</strong>
               <span>{media.day||t('uiExtra.statisticsView.noDate')} {/^https?:\/\//iu.test(media.url)?<a href={media.url} target="_blank" rel="noopener noreferrer"><UiText id="uiExtra.statisticsView.viewMedia"/></a>:null}</span>
             </div>)}
           </div>
+          {worksLoading?<p className="scope-status"><UiText id="uiExtra.pagination.loading"/></p>:null}
+          {worksError?<p className="scope-status scope-error">{worksError}</p>:null}
+          {worksHasMore?<button type="button" className="loc-button" disabled={worksLoading} onClick={()=>loadPairWorks(selected,worksOffset,true)}><UiText id="uiExtra.pagination.loadMore"/></button>:null}
         </div>:null}
       </>}
     </>}
@@ -835,6 +869,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     {rankingType==='media_style'&&crossTagQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(crossTagQuery.error,UI_COPY)}</p>:null}
     {rankingType==='media_style'&&crossTagQuery.isPending?<p className="scope-status"><UiText id="uiExtra.statisticsUI.loadingMediaTags"/></p>:null}
     {rankingType==='media_style'&&!crossTagQuery.isPending&&!crossTagQuery.error?<MediaCrossTagStatistics
+      scope={targetScopes[0]}
       rows={crossTagQuery.data||[]}
       range={queryRange}
       zoomLevel={zoomLevel}
