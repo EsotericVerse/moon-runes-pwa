@@ -827,8 +827,8 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       </StatisticsChartFrame>
     </>:null}
     {mediaDimension&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate)?<div className="scope-stat-controls">
-      <button type="button" className="loc-button" onClick={()=>{mediaQuery.refetch();crossTagQuery.refetch();}} disabled={mediaQuery.isFetching||crossTagQuery.isFetching}>
-        {mediaQuery.isFetching||crossTagQuery.isFetching?t('uiExtra.statisticsUI.refreshing'):t('uiExtra.statisticsUI.refresh')}
+      <button type="button" className="loc-button" onClick={()=>{mediaQuery.refetch();if(rankingType==='media_style')crossTagQuery.refetch();}} disabled={mediaQuery.isFetching||(rankingType==='media_style'&&crossTagQuery.isFetching)}>
+        {mediaQuery.isFetching||(rankingType==='media_style'&&crossTagQuery.isFetching)?t('uiExtra.statisticsUI.refreshing'):t('uiExtra.statisticsUI.refresh')}
       </button>
     </div>:null}
     {rankingType==='media_style'&&styleTreeQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(styleTreeQuery.error,UI_COPY)}</p>:null}
