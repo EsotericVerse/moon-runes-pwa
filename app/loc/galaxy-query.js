@@ -397,7 +397,7 @@ export async function selectMediaCrossTagRows(scope,{startDate='',endDate=''}={}
   let offset=0,total=null,source='auto';
   while(total===null||offset<total){
     const page=await selectRows(current.galaxyMedia,{
-      columns:'media_id,title,url,meta_tags,createtime',
+      columns:'media_id,meta_tags,createtime',
       filters,orders,limit:DB_QUERY_BATCH_SIZE,offset,
       count:offset===0?'exact':null,source
     });
