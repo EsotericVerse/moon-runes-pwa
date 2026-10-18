@@ -82,7 +82,6 @@ export async function parseUniversalImportFile(file,{recordPath='',officeParser}
   return [{
     title:String(ast?.metadata?.title||file.name.replace(/\.[^.]+$/,'')).trim(),
     content,
-    source_native_id:String(file.name),
     createtime:ast?.metadata?.created||null
   }];
 }
