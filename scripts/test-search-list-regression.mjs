@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import {parseGroupLists,formatGroupLists,parseGroupListsAttr} from '../app/loc/group-lists.mjs';
+import {assertPlainGalaxyAttributes,hasHtmlTag} from '../app/loc/galaxy-attr-plain-text.mjs';
 
 function extract(file,start,end){
   const source=fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
@@ -226,7 +227,7 @@ test('Galaxy TEXT hit pairs and excluded state roundtrip',()=>{
   assert.equal(parseGroupListsAttr('14:1, 12:3'),'12:3,14:1');
 });
 test('editing an article does not rewrite untouched attributes',()=>{
-  const source=extract('app/modular/features/Search.jsx','function changedGalaxyAttributes(', 'function GalaxyAttrSummary(');
+  const source=extract('app/modular/features/Search.jsx','function changedGalaxyAttributes(', 'function normalizeScopeAlias(');
   const context={
     isoOrNull:()=>null,nullableText:value=>String(value||'').trim()||null,
     parseListText:value=>String(value||'').split(/[\n,]+/g).map(item=>item.trim()).filter(Boolean),
@@ -343,9 +344,10 @@ test('search reference section uses existing editable page=search BlockNote cont
   assert.ok(reader.includes('silver.${id}_blocks'));
   assert.ok(blocks.includes('silver.${scopeId}_blocks'));
   assert.ok(blocks.includes("['scope-blocks',scopeId,pageName]"),'Query caches must be isolated per Scope');
-  assert.ok(source.includes('orders={SEARCH_REFERENCE_ORDERS}'));
-  assert.ok(source.includes('allowDelete={false}'));
-  assert.ok(source.includes('allowImages={false}'));
+  assert.ok(source.includes('className="scope-search-reference-grid"'));
+  assert.ok(source.includes('slotClassName="loc-card scope-search-reference-block"'));
+  assert.ok(!source.includes('orders={SEARCH_REFERENCE_ORDERS}'));
+  assert.ok(!source.includes('allowDelete={false}'),'Search cards must support homepage-style additions and reordering');
   assert.ok(!source.includes('selectSearchReferenceSuggestions('));
   assert.ok(!source.includes('setSearchMode('));
   assert.ok(blocks.includes('import ArticleBodyEditor'));
@@ -384,4 +386,48 @@ test('LOC, author and runes Search routes keep separate Scope identities',()=>{
   assert.ok(!loc.includes('forcedScope='));
   assert.ok(author.includes('forcedView="search" forcedScope="lo3rwang"'));
   assert.ok(runes.includes('forcedView="search" forcedScope="lrunes"'));
+});
+
+test('Galaxy attributes accept plain text and reject literal or encoded HTML',()=>{
+  for(const value of ['普通文字','A < B 且 B > C','https://suno.com/song/id','12:3,14:1','']){
+    assert.equal(hasHtmlTag(value),false);
+  }
+  for(const value of ['<p>內容</p>','<a href="https://example.com">網址</a>','<br/>','<!-- note -->','&lt;strong&gt;加粗&lt;/strong&gt;','&#60;script&#62;x&#60;/script&#62;']){
+    assert.equal(hasHtmlTag(value),true,'HTML must be rejected: '+value);
+    assert.throws(()=>assertPlainGalaxyAttributes({source_name:value}),/source_name.*HTML/);
+  }
+  assert.deepEqual(assertPlainGalaxyAttributes({source_name:'suno',target_id:['A1','A2'],searchable:false}),{
+    source_name:'suno',target_id:['A1','A2'],searchable:false
+  });
+  assert.throws(()=>assertPlainGalaxyAttributes({target_id:['A1','<img src=x>']}),/target_id.*HTML/);
+});
+
+test('Search uses a single BlockNote edit draft, with Galaxy metadata below the body only for managers',()=>{
+  const source=fs.readFileSync(new URL('../app/modular/features/Search.jsx',import.meta.url),'utf8');
+  const shared=fs.readFileSync(new URL('../app/modular/Article.jsx',import.meta.url),'utf8');
+  assert.ok(!source.includes('GalaxyAttrEditor'));
+  assert.ok(!source.includes('GalaxyAttrSummary'));
+  assert.ok(!source.includes('GalaxyAttrPanel'));
+  assert.ok(source.includes("attributeFields={editable&&row.resourceType==='galaxy'?GALAXY_ATTR_FIELDS:null}"));
+  assert.ok(source.includes('canManageSearchScope(account,row.scopeId)'));
+  assert.ok(source.includes('assertPlainGalaxyAttributes({'));
+  assert.ok(source.indexOf('assertPlainGalaxyAttributes({')<source.indexOf('await updateRows(result.editableTable,contentPatch'));
+  assert.ok(!source.includes('editorExtra='));
+  assert.ok(shared.includes('<ArticleBodyEditor'));
+  assert.ok(shared.includes('attributeFields={attributeFields}'));
+  assert.ok(shared.indexOf('<ArticleBodyEditor')<shared.indexOf('attributeFields.map('));
+  assert.ok(shared.includes("const setValue=value=>onChange(previous=>"));
+  assert.ok(shared.includes("kind==='boolean'"));
+  assert.ok(shared.includes("kind==='array'||kind==='multiline'"));
+  assert.ok(shared.includes('onClickCapture={onClickCapture}'));
+  assert.ok(shared.includes('onSave}>{editBusy?'));
+});
+
+test('Homepage and article click-to-edit ignore existing links and visualization targets',async()=>{
+  const {isInteractiveContentTarget}=await import('../app/loc/inline-edit-interaction.mjs');
+  for(const selector of ['a','button','svg','canvas','video','.vis-timeline','.recharts-wrapper','[data-no-inline-edit]']){
+    const target={closest:value=>value.includes(selector)?{}:null};
+    assert.equal(isInteractiveContentTarget(target),true);
+  }
+  assert.equal(isInteractiveContentTarget({closest:()=>null}),false);
 });
