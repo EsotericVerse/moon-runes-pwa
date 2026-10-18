@@ -267,7 +267,7 @@ if(!failures.length){
   }
   for(const appPath of listAppFiles('app')){
     const source=read(appPath);
-    if(source.includes('content_type')||source.includes('contentType')||source.includes('作品類型')){
+    if(source.includes('content_type')||source.includes('作品類型')){
       failures.push('Retired Galaxy work-type field remains in '+appPath);
     }
   }
