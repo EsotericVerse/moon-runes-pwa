@@ -551,7 +551,7 @@ export default function Search(){
       const fullRow=await loadGalaxyDetail(result);
       setFullText(workDisplayText(fullRow?.content||detail.content||''));
       setFullTextRow(canManageSearchScope(account,detailScope)?fullRow:null);
-      setStatus(UI_COPY.search.relationLoaded);
+      setStatus('');
     }catch(exception){
       if(id!==searchId.current)return;
       setResults([]);setError(featureDataErrorMessage(exception,UI_COPY));setStatus(UI_COPY.search.relationFailed);
