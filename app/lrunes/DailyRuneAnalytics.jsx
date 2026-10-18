@@ -4,7 +4,7 @@ import {useMemo,useState} from 'react';
 import {useUiCopy} from '../i18n/ui-locale';
 import {useQuery} from '@tanstack/react-query';
 import {
-  Bar,BarChart,CartesianGrid,Line,LineChart,
+  Bar,BarChart,CartesianGrid,ComposedChart,LabelList,Line,LineChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
 import {selectDailyRuneRange,selectFirstDailyRuneDate} from '../loc/daily-runes';
@@ -15,8 +15,8 @@ import StatisticsMultiChart,{availableStatisticChartTypes} from '../modular/modu
 import StatisticsChartFrame from '../modular/modules/statistics/StatisticsChartFrame';
 import {statisticsZoomWindow} from '../modular/modules/statistics/statistics-time-zoom.mjs';
 import {
-  DAILY_RUNE_MODES,DAILY_DIRECTIONS,normalizeDailyDraws,rankDailyDraws,pageDailyRanking,
-  summarizeDailyDraws,dailyCategoryTrend
+  DAILY_RUNE_MODES,normalizeDailyDraws,rankDailyDraws,pageDailyRanking,
+  summarizeDailyDraws,dailyCategoryTrend,dailyDirectionTrend
 } from './daily-analytics-model.mjs';
 
 const PHASE_DATE_TIME='T12:00:00+08:00';
@@ -24,7 +24,7 @@ const FOCUS=Object.freeze({});
 const COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const DRAW_ORDER=Object.freeze({main:0,supplement:1,history_1:2,history_2:3});
 const TIME_OPTION_KEYS=Object.freeze({ '1y':'lastYear','1m':'lastMonth','1w':'lastWeek',custom:'customRange'});
-const MODE_KEYS=Object.freeze({rune:'rune',rune_direction:'runeDirection',direction:'direction',triple:'triple'});
+const MODE_KEYS=Object.freeze({rune:'rune',direction:'direction'});
 
 function todayInTaipei(){
   try{
@@ -153,11 +153,13 @@ export function LrunesDailyStatisticsPanel(){
   const [page,setPage]=useState(1);
   const [chart,setChart]=useState('bar');
   const {range,query,draws}=useDailyRuneWindow('custom',zoomRange.startDate,zoomRange.endDate);
-  const ranking=useMemo(()=>rankDailyDraws(draws,analysisMode),[draws,analysisMode]);
+  const isDirection=analysisMode==='direction';
+  const ranking=useMemo(()=>rankDailyDraws(draws,'rune'),[draws]);
   const pagination=useMemo(()=>pageDailyRanking(ranking,page),[ranking,page]);
   const summary=useMemo(()=>summarizeDailyDraws(draws),[draws]);
   const featured=useMemo(()=>pagination.rows.slice(0,5),[pagination.rows]);
-  const timeline=useMemo(()=>dailyCategoryTrend(draws,analysisMode,featured,zoomRange.bucket,range?.startDate,range?.endDate),[draws,analysisMode,featured,zoomRange.bucket,range?.startDate,range?.endDate]);
+  const timeline=useMemo(()=>dailyCategoryTrend(draws,'rune',featured,zoomRange.bucket,range?.startDate,range?.endDate),[draws,featured,zoomRange.bucket,range?.startDate,range?.endDate]);
+  const directionTimeline=useMemo(()=>dailyDirectionTrend(draws,zoomRange.bucket,range?.startDate,range?.endDate),[draws,zoomRange.bucket,range?.startDate,range?.endDate]);
   const bars=useMemo(()=>pagination.rows.map(row=>({label:row.label,value:row.count})),[pagination.rows]);
   const runeSeries=featured.map(row=>({key:row.key,label:row.label}));
   const runeCategories=pagination.rows.map(row=>({name:row.label,value:row.count}));
@@ -172,19 +174,32 @@ export function LrunesDailyStatisticsPanel(){
           {DAILY_RUNE_MODES.map(option=><option key={option.value} value={option.value}>{text[MODE_KEYS[option.value]]||option.label}</option>)}
         </select>
       </label>
-      <label><span>{text.chart}</span>
+      {!isDirection?<label><span>{text.chart}</span>
         <select className="scope-select" value={selectedChart} onChange={event=>setChart(event.target.value)}>
           {availableCharts.map(item=><option value={item.value} key={item.value}>{item.label}</option>)}
         </select>
-      </label>
+      </label>:null}
     </div>
     {message?<p className="scope-status">{message}</p>:null}
     {!message?<>
-      <p className="scope-status">{range.startDate} ～ {range.endDate} · {summary.dayCount}{text.days}{summary.recordCount}{text.drawCount}{analysisMode==='direction'?text.allDirections:ranking.length+text.actualCombinations}</p>
-      {!ranking.length?<StatisticsChartFrame level={zoomLevel} onChange={value=>{setZoomLevel(value);setPage(1);}} range={zoomRange} idPrefix="daily-rune-stat">
+      <p className="scope-status">{range.startDate} ～ {range.endDate} · {summary.dayCount}{text.days}{summary.recordCount}{text.drawCount}</p>
+      {isDirection?<StatisticsChartFrame level={zoomLevel} onChange={setZoomLevel} range={zoomRange} idPrefix="daily-rune-stat">
+        {!summary.recordCount?<p className="scope-status">{text.empty}</p>:<ResponsiveContainer width="100%" height={360}>
+          <ComposedChart data={directionTimeline} margin={{top:30,right:24,bottom:8,left:4}}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--loc-line)"/>
+            <XAxis dataKey="period" tick={{fill:'var(--loc-text)'}}/>
+            <YAxis yAxisId="count" allowDecimals={false} width={42} tick={{fill:'var(--loc-text)'}}/>
+            <YAxis yAxisId="direction" orientation="right" domain={[-1,1]} ticks={[-1,-0.5,0,0.5,1]} width={52} tick={{fill:'var(--loc-text)'}} tickFormatter={value=>value>0?'+'+value:value}/>
+            <Tooltip contentStyle={{background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)'}} formatter={(value,name,row)=>name===text.direction?[Number(value).toFixed(2)+' · '+(row?.payload?.directionLabels||''),name]:[value,name]}/>
+            <Bar yAxisId="count" dataKey="recordCount" name={text.extractions} fill="var(--loc-accent)" radius={[4,4,0,0]}/>
+            <Line yAxisId="direction" type="monotone" dataKey="directionAverage" name={text.direction} stroke="#e1a64b" strokeWidth={3} connectNulls={false} dot={{r:4}}>
+              <LabelList dataKey="runeLabels" position="top" content={({x,y,value})=>value?<text x={x} y={y-9} textAnchor="middle" fill="var(--loc-text)" fontSize={11}>{String(value).length>12?String(value).slice(0,12)+'…':value}</text>:null}/>
+            </Line>
+          </ComposedChart>
+        </ResponsiveContainer>}
+      </StatisticsChartFrame>:!ranking.length?<StatisticsChartFrame level={zoomLevel} onChange={value=>{setZoomLevel(value);setPage(1);}} range={zoomRange} idPrefix="daily-rune-stat">
         <p className="scope-status">{text.empty}</p>
-      </StatisticsChartFrame>:null}
-      {ranking.length?<><div className="scope-ranking">
+      </StatisticsChartFrame>:<><div className="scope-ranking">
         {pagination.rows.map((row,index)=><div key={row.key}>
           <strong>{(pagination.currentPage-1)*pagination.pageSize+index+1}. {row.label}</strong>
           <span>{row.count.toLocaleString()}{text.times}{row.ratio.toFixed(1)}%</span>
@@ -200,14 +215,14 @@ export function LrunesDailyStatisticsPanel(){
         <BarChart data={bars} layout="vertical" margin={{top:8,right:16,bottom:8,left:4}}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--loc-line)"/>
           <XAxis type="number" allowDecimals={false} tick={{fill:'var(--loc-text)'}}/>
-          <YAxis type="category" dataKey="label" width={analysisMode==='triple'?195:analysisMode==='rune_direction'?135:82} tick={{fill:'var(--loc-text)',fontSize:12}}/>
+          <YAxis type="category" dataKey="label" width={82} tick={{fill:'var(--loc-text)',fontSize:12}}/>
           <Tooltip contentStyle={{background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)'}}/>
           <Bar dataKey="value" name={text.extractions} fill="var(--loc-accent)" radius={[0,4,4,0]}/>
         </BarChart>
       </ResponsiveContainer>:<StatisticsMultiChart
         type={selectedChart} rows={timeline} series={runeSeries} distribution={runeCategories} height={360}
       />}
-      </StatisticsChartFrame></>:null}
+      </StatisticsChartFrame></>}
     </>:null}
   </>;
 }
