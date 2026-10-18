@@ -662,6 +662,13 @@
       "update": "Update settings"
     },
     "searchUI": {
+      "mediaTypeRequired": "media_type cannot be empty.",
+      "mediaLinkUidInvalid": "galaxy_link must be an eight-character article UID.",
+      "runeReferencesInvalid": "rune_references must contain valid JSON.",
+      "invalidMediaId": "Invalid media ID format.",
+      "mediaManageDenied": "You do not have permission to edit this media.",
+      "mediaAttributes": "Media attributes",
+      "editMedia": "Edit media: {id}",
       "styleRecommendations": "Recommended style tags",
       "stylePeriod": "Period:",
       "unknownStyle": "Cultural style",
@@ -734,6 +741,16 @@
       "refresh": "Refresh live statistics"
     },
     "importUI": {
+      "invalidMediaId": "Invalid media_id format.",
+      "existingMediaFailed": "Unable to check existing media.",
+      "mediaIdCompareFailed": "Unable to match media IDs.",
+      "mediaUrlCompareFailed": "Unable to match media URLs.",
+      "missingMediaReference": "Imported media reference not found: {id}",
+      "mediaUuidUnavailable": "Unable to generate a media UUID. The write was stopped.",
+      "mediaLinkReadFailed": "Unable to verify article-media links.",
+      "zipTooLarge": "File exceeds the 512 MiB safety limit and was not read or parsed.",
+      "importLinkedComplete": "Added {articles} articles and {media} media records; updated {linked} article-media links; skipped {skipped}.",
+      "refreshMediaSuffix": "; added {media} media records; updated {linked} links.",
       "importTitle": "Data import",
       "zipInspecting": "Identifying ZIP archive contents…",
       "zipInspected": "ZIP inspection complete ({count} entries). No records imported.",
@@ -959,6 +976,8 @@
       "save": "Save"
     },
     "editBlocks": {
+      "edit": "Edit",
+      "editSuggestion": "Edit search suggestions",
       "moving": "Reordering blocks…",
       "moved": "Block order saved. Unsaved edits remain in the draft.",
       "moveFailed": "Failed to move block: {error}",
