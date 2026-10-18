@@ -682,8 +682,14 @@
 .scope-search-date-fields .scope-search-period-field{grid-column:1/-1}
 .scope-search-reference-editor{min-width:0}
 .scope-editable-block-grid.scope-search-reference-grid{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,24rem),1fr));
+  display:grid;grid-template-columns:minmax(0,1fr);
   gap:clamp(.75rem,1.5vw,1.15rem);align-items:start;
+}
+.scope-search-reference-block .scope-block-entity-grid{
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,19rem),1fr));
+}
+.scope-search-reference-block .scope-search-add-child{
+  display:block;margin-top:1rem;
 }
 .scope-search-reference-grid>.scope-search-reference-block{
   height:100%;min-height:8rem;
