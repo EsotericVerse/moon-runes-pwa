@@ -1,7 +1,7 @@
 'use client';
 
 import {DB_QUERY_BATCH_SIZE} from './query-contract.mjs';
-import {mediaFacetDaily} from './statistics-facets.mjs';
+import {mediaFacetDaily,mediaStyleTags} from './statistics-facets.mjs';
 import {aggregateOwnScopeStatistics} from './statistics-source-intersection.mjs';
 import {DEFAULT_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
 import {publicContentFilters} from './content-policy';
@@ -408,6 +408,47 @@ export async function selectMediaCrossTagRows(scope,{startDate='',endDate=''}={}
     offset+=page.rows.length;
   }
   return rows;
+}
+
+
+export async function selectMediaCrossPairWorks(scope,pair,{
+  startDate='',endDate='',offset=0,limit=10
+}={}){
+  const current=scopeOf(scope);
+  if(!pair?.leftLabel||!pair?.rightLabel)return {rows:[],nextOffset:0,hasMore:false};
+  const safeLimit=Math.max(1,Math.min(50,Math.floor(Number(limit)||10)));
+  const batchSize=Math.max(20,safeLimit*2);
+  const escapeLike=value=>String(value).replace(/[\\\\%_]/g,'\\\\
+const SOURCE_BUCKET_ORDER=['Facebook','Threads','IG','Others'];');
+  const filters=[
+    ...timeFilters('createtime',startDate,endDate),
+    {column:'meta_tags',operator:'ilike',value:'%'+escapeLike(pair.leftLabel)+'%'},
+    {column:'meta_tags',operator:'ilike',value:'%'+escapeLike(pair.rightLabel)+'%'}
+  ];
+  const left=String(pair.left||'').normalize('NFKC').toLocaleLowerCase();
+  const right=String(pair.right||'').normalize('NFKC').toLocaleLowerCase();
+  const rows=[];
+  let cursor=Math.max(0,Math.floor(Number(offset)||0));
+  let source='auto';
+  while(true){
+    const page=await selectRows(current.galaxyMedia,{
+      columns:'media_id,title,url,meta_tags,createtime',
+      filters,orders:[{column:'media_id',ascending:true}],
+      limit:batchSize,offset:cursor,source
+    });
+    source=page.dataSource||source;
+    if(!page.rows.length)return {rows,nextOffset:cursor,hasMore:false};
+    for(const row of page.rows){
+      const rowOffset=cursor++;
+      const tags=new Set(mediaStyleTags(row.meta_tags).map(tag=>tag.normalize('NFKC').toLocaleLowerCase()));
+      if(!tags.has(left)||!tags.has(right))continue;
+      rows.push({id:String(row.media_id),title:String(row.title||''),url:String(row.url||''),day:mediaDay(row.createtime)});
+      if(rows.length>safeLimit){
+        return {rows:rows.slice(0,safeLimit),nextOffset:rowOffset,hasMore:true};
+      }
+    }
+    if(page.rows.length<batchSize)return {rows,nextOffset:cursor,hasMore:false};
+  }
 }
 
 const SOURCE_BUCKET_ORDER=['Facebook','Threads','IG','Others'];
