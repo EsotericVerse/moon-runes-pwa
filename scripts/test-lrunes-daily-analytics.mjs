@@ -117,21 +117,28 @@ test('both new statistical dimensions use exactly the same keys for ranking and 
   assert.equal(monthly[0][reverse],1);
 });
 
-test('weekly direction trend scores card direction, combines card face, and exposes unknown uncertainty',()=>{
+test('weekly direction trend averages signed orientations and labels observed runes',()=>{
   const trend=dailyDirectionTrend([
-    {record_date:'2026-10-05',direction:'正位',card_attr:1,rune_name:'向'},
-    {record_date:'2026-10-07',direction:'半正位',card_attr:2,rune_name:'韻'},
-    {record_date:'2026-10-12',direction:'逆位',card_attr:4,rune_name:'界'}
-  ],'2026-10-05','2026-10-18');
+    {record_date:'2026-10-05',direction:'正位',rune_name:'向'},
+    {record_date:'2026-10-07',direction:'半正位',rune_name:'韻'},
+    {record_date:'2026-10-12',direction:'逆位',rune_name:'界'}
+  ],'week','2026-10-05','2026-10-18');
   assert.equal(trend.length,2);
   assert.equal(trend[0].period,'10/05');
   assert.equal(trend[0].directionAverage,0.75);
-  assert.equal(trend[0].combinedAverage,1.25);
+  assert.equal(trend[0].directionLabels,'正位、半正位');
   assert.equal(trend[0].runeLabels,'向 · 韻');
   assert.equal(trend[1].directionAverage,-1);
-  assert.equal(trend[1].combinedAverage,-1);
-  assert.equal(trend[1].combinedLow,-1.2);
-  assert.equal(trend[1].combinedHigh,-0.8);
+  assert.equal(trend[1].runeLabels,'界');
+});
+
+test('rune occurrence trend sums daily draws inside a week',()=>{
+  const ranked=rankDailyDraws(draws,'rune');
+  const rune=ranked.find(row=>row.label==='向');
+  const weekly=dailyCategoryTrend(draws,'rune',[rune],'week','2026-10-01','2026-10-11');
+  assert.equal(weekly.length,2);
+  assert.equal(weekly[0][rune.key],3);
+  assert.equal(weekly[1][rune.key],0);
 });
 
 test('Culture Daily Rune river must not reference the statistics-only earliest query',()=>{
