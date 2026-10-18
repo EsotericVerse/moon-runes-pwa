@@ -292,11 +292,10 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
     searchFields:['label','note','status','style_description'],dateColumn:'time_date',
     filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}]
   });
-  // Article and media records are the primary search targets. Keep timeline
-  // context available as the next page so it cannot hide the actual works.
+  // A single ordinary search includes multimedia: no duplicate search mode.
   if(contentType==='timeline')return sourceFilter?[]:[timeline];
-  if(contentType==='lyrics_work'||contentType==='text_work'||sourceFilter)return [titleExact,title,contentExact,content];
-  return [titleExact,title,contentExact,content,timeline];
+  if(contentType==='lyrics_work'||contentType==='text_work')return [titleExact,title,contentExact,content];
+  return [titleExact,title,contentExact,content,media,timeline];
 }
 
 function normalizeSearch(value){
@@ -342,9 +341,9 @@ export async function searchGalaxyRows(scopes,query,{
   const hiddenScopes=new Set((Array.isArray(hiddenScopeIds)?hiddenScopeIds:[]).map(value=>String(value||'').trim()).filter(Boolean));
   const scopeProviders=scopeList.map(scope=>genericScopeProviders(scope,{mediaOnly,includeHiddenText:hiddenScopes.has(scope.id),contentType,sourceFilter}));
   // Every Scope's title hits are paged before any body matches.
-  const providers=mediaOnly
+  const providers=mediaOnly||contentType==='multimedia'||contentType==='timeline'
     ?scopeProviders.flat()
-    :[0,1,2,3,4].flatMap(index=>scopeProviders.map(group=>group[index]).filter(Boolean));
+    :Array.from({length:6},(_,index)=>scopeProviders.map(group=>group[index]).filter(Boolean)).flat();
   const failures=[];
 
   let stage=Number.isInteger(cursor?.stage)?cursor.stage:1;
@@ -371,6 +370,54 @@ export async function searchGalaxyRows(scopes,query,{
  * For large installations, a DB-side GROUP BY/RPC can replace this adapter
  * without changing the facet response contract.
  */
+
+/**
+ * Suggested search terms are taken from currently searchable Galaxy and Media
+ * rows instead of a month-old handwritten example list. Purely read-only.
+ */
+export async function selectSearchReferenceSuggestions(scopes,{contentType='',sourceFilter='',limit=6}={}){
+  const targets=(Array.isArray(scopes)?scopes:[]).filter(scope=>scope?.galaxy&&scope?.galaxyMedia).slice(0,2);
+  const onlyMedia=contentType==='multimedia';
+  const onlyTimeline=contentType==='timeline';
+  if(onlyTimeline||!targets.length)return [];
+  const textFilters=[
+    {column:'searchable',operator:'eq',value:true},
+    ...(sourceFilter?[{column:'source_name',operator:'ilike',value:sourceFilter}]:[]),
+    ...(contentType==='lyrics_work'?[{column:'source_name',operator:'ilike',value:'suno'}]:[]),
+    ...(contentType==='text_work'?[{column:'source_name',operator:'neq',value:'suno'}]:[])
+  ];
+  const mediaDomain={suno:'suno.com',threads:'threads.com',instagram:'instagram.com',facebook:'facebook.com',vocus:'vocus.cc',x:'x.com'};
+  const tasks=targets.flatMap(scope=>[
+    ...(onlyMedia?[]:[selectRows(scope.galaxy,{
+      columns:'uid,title,createtime,source_name',filters:textFilters,
+      orders:[{column:'createtime',ascending:false}],limit:16
+    }).then(result=>(result.rows||[]).map(row=>({...row,kind:'text'}))).catch(()=>[])]),
+    ...(contentType==='lyrics_work'||contentType==='text_work'?[]:[selectRows(scope.galaxyMedia,{
+      columns:'media_id,title,createtime,media_type,url,meta_tags',
+      orders:[{column:'createtime',ascending:false}],limit:16
+    }).then(result=>(result.rows||[]).filter(row=>{
+      if(!sourceFilter)return true;
+      const src=String(row.media_type||'').toLowerCase();
+      const url=String(row.url||'').toLowerCase();
+      return src.includes(sourceFilter)||url.includes(mediaDomain[sourceFilter]||sourceFilter);
+    }).map(row=>({...row,kind:'media'}))).catch(()=>[])])
+  ]);
+  const rows=(await Promise.all(tasks)).flat().sort((a,b)=>
+    String(b.createtime||'').localeCompare(String(a.createtime||'')));
+  const seen=new Set(),result=[];
+  for(const row of rows){
+    const title=String(row.title||'').trim();
+    if(!title||title.length>70||/｜Suno Style|[|]Suno Style/iu.test(title))continue;
+    const key=title.normalize('NFKC').toLowerCase();
+    if(seen.has(key))continue;
+    seen.add(key);
+    result.push({query:title,description:row.kind==='media'
+      ?(row.media_type||'多媒體'):(row.source_name||'文字作品'),date:String(row.createtime||'').slice(0,10)});
+    if(result.length>=limit)break;
+  }
+  return result;
+}
+
 export async function selectMediaStatisticsFacetRows(scope,dimension,{startDate='',endDate=''}={}){
   const current=scopeOf(scope);
   if(!['media_type','media_platform','media_style'].includes(dimension)){
