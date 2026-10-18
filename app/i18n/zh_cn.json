@@ -705,12 +705,17 @@
       "invalidDateRange": "结束日期不能早于开始日期。",
       "browseType": "按资料类型浏览",
       "browsingResults": "正在按所选条件浏览资料；可继续加载后续结果。",
-      "quickExamples": "快速示例",
-      "quickExamplesHelp": "点击示例填入搜索框，再按搜索。",
+      "quickExamples": "近期作品参考",
+      "quickExamplesHelp": "根据现有资料自动更新；点击后填入搜索框。",
       "suggestionsAll": "已讀不回|歌曲 · 关系 · 文章\n人生月台|作品 · 时期 · 状态\n自我治理|治理 · 风格 · 时期\n界線|作品 · 治理 · 多媒体\n月之符文|符文 · 知识 · 系统\n自由的風|歌曲 · 时期 · 状态",
       "suggestionsMedia": "月之符文|多媒体 · 图片／视频\n自由的風|多媒体 · Instagram／视觉\n界線|多媒体表达\n微月光|影像／声音\n宣傳|公开影音\n月光|视觉意象",
       "suggestionsLyrics": "已讀不回|歌曲／歌词\n人生月台|时期作品\n自由的風|主题／歌曲\n微月光|歌曲／主题\n界線|歌词主题\n自我治理|歌曲创作",
-      "suggestionsText": "自由|长期语境\n工作|生活记录\n整理|生活与治理\n希望|时间演变\n系統|技术与架构\n感情|历史语境"
+      "suggestionsText": "自由|长期语境\n工作|生活记录\n整理|生活与治理\n希望|时间演变\n系統|技术与架构\n感情|历史语境",
+      "loadingExamples": "正在读取近期作品参考…",
+      "noExamples": "目前没有符合条件的近期作品参考。",
+      "periodLabel": "时期",
+      "allPeriods": "全部时期",
+      "periodUnavailable": "暂时无法读取时期数据。"
     },
     "statisticsUI": {
       "dailyRune": "每日符文",
