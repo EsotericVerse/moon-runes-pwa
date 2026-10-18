@@ -328,7 +328,7 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
     inspectEvidence(path,'');
     const base=path.split('/').at(-1)||'';
     const priority=/(?:conversations|tweets|threads|messages|posts|status_updates|myactivity|result|_chat|project|workspace|knowledge|attachment|upload)/i.test(base);
-    if(skippedZipEntry(path)||
+    if(skippedZipEntry(path)||![0,8].includes(entry.compression)||
        (priority?inspectedFiles>=ZIP_SNIFF_FILES*2:inspectedFiles>=ZIP_SNIFF_FILES)||
        (entry.originalSize!==undefined&&entry.originalSize>MAX_SNIFF_INFLATE)){
       discardZipEntry(unzip,entry);
@@ -405,7 +405,13 @@ export async function inspectPrivateArchive(file,{onRecord,onProgress,flush,sign
         discardZipEntry(unzip,entry);
         return;
       }
-      const sizeLimit=/\.(?:json|js|jsonl)$/i.test(path)?MAX_STRUCTURED_DOCUMENT:MAX_TEXT_DOCUMENT;
+      if(![0,8].includes(entry.compression)){
+        summary.otherFiles++;
+        report(summary,path+'：ZIP 壓縮格式不支援，已略過。');
+        discardZipEntry(unzip,entry);
+        return;
+      }
+      const sizeLimit=/\.(?:json|js)$/i.test(path)?MAX_STRUCTURED_DOCUMENT:MAX_TEXT_DOCUMENT;
       if(entry.originalSize!==undefined&&entry.originalSize>sizeLimit){
         summary.otherFiles++;
         report(summary,path+'：解壓後單檔超過安全上限，已略過。');
