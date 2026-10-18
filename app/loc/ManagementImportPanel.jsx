@@ -12,6 +12,8 @@ import {UNIVERSAL_IMPORT_ACCEPT,parseUniversalImportFile} from './universal-file
 import {ARCHIVE_MAX_BYTES,detectZipArchiveSource} from './private-archive-universal.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 import {refreshSunoStyleMetaTags} from './suno-style-meta-tags.mjs';
+import ArticleBodyEditor from './ArticleBodyEditor';
+import {blocksToPlainText,plainTextToBlocks} from './blocknote-content.mjs';
 
 const ZIP_LAYOUT_KEYS=Object.freeze({
   'conversation-tree':'conversationTree','message-list':'messageList','post-list':'postList',
@@ -542,16 +544,17 @@ function SunoImport({scopeId}){
   const UI_COPY=useUiCopy();
   const t=useUiText();
   const account=useAccount();
-  const [draft,setDraft]=useState({title:'',lyrics:'',url:'',nativeId:'',createdDate:'',stylePrompt:'',metaTags:'',metaTagsEdited:false,source_id:'',target_id:'',ref_id:''});
+  const freshSunoDraft=()=>({title:'',lyrics:'',lyricsBlocks:plainTextToBlocks(''),stylePrompt:'',stylePromptBlocks:plainTextToBlocks(''),stylePromptPlain:'',editorKey:createUid8(),url:'',nativeId:'',createdDate:'',metaTags:'',metaTagsEdited:false,source_id:'',target_id:'',ref_id:''});
+  const [draft,setDraft]=useState(freshSunoDraft);
   const [status,setStatus]=useState('');const [busy,setBusy]=useState(false);
   if(!account.canManageScopeSync(scopeId))return null;
   const change=(key,value)=>setDraft(current=>({
     ...current,[key]:value,
-    ...(key==='stylePrompt'&&!current.metaTagsEdited?{metaTags:refreshSunoStyleMetaTags(value,current.metaTags)}:{}),
+    ...(key==='stylePromptPlain'&&!current.metaTagsEdited?{metaTags:refreshSunoStyleMetaTags(value,current.metaTags)}:{}),
     ...(key==='metaTags'?{metaTagsEdited:true}:{})
   }));
   function regenerateStyleTags(){
-    setDraft(current=>({...current,metaTags:refreshSunoStyleMetaTags(current.stylePrompt,current.metaTags),metaTagsEdited:false}));
+    setDraft(current=>({...current,metaTags:refreshSunoStyleMetaTags(current.stylePromptPlain,current.metaTags),metaTagsEdited:false}));
   }
   function detectId(url){
     const match=String(url||'').match(/\/song\/([0-9a-f-]{20,})/i);return match?.[1]||'';
@@ -560,8 +563,8 @@ function SunoImport({scopeId}){
     event.preventDefault();setBusy(true);setStatus('');
     try{
       const title=repairMojibakeText(draft.title).trim();
-      const lyrics=normalizeGalaxyContent(draft.lyrics);
-      const stylePrompt=normalizeGalaxyContent(draft.stylePrompt);
+      const lyrics=normalizeGalaxyContent(draft.lyrics||blocksToPlainText(draft.lyricsBlocks));
+      const stylePrompt=normalizeGalaxyContent(draft.stylePrompt||blocksToPlainText(draft.stylePromptBlocks));
       const metaTags=repairMojibakeText(draft.metaTags).trim();
       if([title,lyrics,stylePrompt,metaTags].some(hasIrrecoverableEncoding))throw new Error(t('uiExtra.importUI.sunoEncoding'));
       if(!title)throw new Error(t('uiExtra.importUI.sunoTitleRequired'));
@@ -594,7 +597,7 @@ function SunoImport({scopeId}){
         title,url:draft.url.trim()||null,
         meta_tags:metaTags||null,createtime
       }]);
-      setStatus(t('uiExtra.importUI.sunoSaved'));setDraft({title:'',lyrics:'',url:'',nativeId:'',createdDate:'',stylePrompt:'',metaTags:'',metaTagsEdited:false,source_id:'',target_id:'',ref_id:''});
+      setStatus(t('uiExtra.importUI.sunoSaved'));setDraft(freshSunoDraft());
     }catch(error){setStatus(error?.message||t('uiExtra.importUI.sunoSaveFailed'));}
     finally{setBusy(false);}
   }
@@ -602,14 +605,26 @@ function SunoImport({scopeId}){
     <h4><UiText id="uiExtra.importUI.sunoImport"/></h4>
     <form onSubmit={save} className="scope-editor">
       <label>{UI_COPY.management.songTitle}<input value={draft.title} onChange={e=>change('title',e.target.value)}/></label>
-      <label>{UI_COPY.management.lyrics}<textarea rows={8} value={draft.lyrics} onChange={e=>change('lyrics',e.target.value)}/></label>
+      <div className="scope-management-wide-field"><span>{UI_COPY.management.lyrics}</span>
+        <ArticleBodyEditor editorKey={'suno-lyrics:'+draft.editorKey} content={draft.lyricsBlocks}
+          onBlocksChange={blocks=>change('lyricsBlocks',blocks)}
+          onHtmlChange={html=>change('lyrics',html)}/>
+      </div>
       <div className="scope-stat-controls">
         <label>Suno URL<input value={draft.url} onChange={e=>change('url',e.target.value)}/></label>
         <label>Suno ID<input value={draft.nativeId} onChange={e=>change('nativeId',e.target.value)} placeholder={t('uiExtra.importUI.sunoIdHint')}/></label>
         <label><UiText id="common.date"/><input type="date" value={draft.createdDate} onChange={e=>change('createdDate',e.target.value)}/></label>
       </div>
       <div className="scope-stat-controls">
-        <label>Suno Style<textarea rows={3} value={draft.stylePrompt} onChange={e=>change('stylePrompt',e.target.value)}/></label>
+        <div className="scope-management-wide-field"><span>Suno Style</span>
+          <ArticleBodyEditor editorKey={'suno-style:'+draft.editorKey} content={draft.stylePromptBlocks}
+            onBlocksChange={blocks=>setDraft(current=>({
+              ...current,stylePromptBlocks:blocks,
+              stylePromptPlain:blocksToPlainText(blocks),
+              ...(!current.metaTagsEdited?{metaTags:refreshSunoStyleMetaTags(blocksToPlainText(blocks),current.metaTags)}:{})
+            }))}
+            onHtmlChange={html=>change('stylePrompt',html)}/>
+        </div>
         <label>Meta Tags<input value={draft.metaTags} onChange={e=>change('metaTags',e.target.value)} placeholder={t('uiExtra.importUI.sunoStyleTagHint')} required/></label>
         <button type="button" className="loc-button" onClick={regenerateStyleTags}><UiText id="uiExtra.importUI.sunoRegenerate"/></button>
       </div>
