@@ -56,7 +56,7 @@ export function normalizeImportMedia(value,{title='',createtime=null,source_plac
       continue;
     }
     const external=/^https?:\/\//i.test(rawUrl)?rawUrl:null;
-    const native=String(source.source_native_id||source.native_id||(!external?rawUrl:'')).trim()||null;
+    const native=String(source.source_native_id||source.native_id||'').trim()||null;
     if(!external&&!native)continue;
     const media_type=importMediaType(rawUrl,source.media_type||source.type||source.mime_type);
     const record={
