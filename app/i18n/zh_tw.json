@@ -705,12 +705,17 @@
       "invalidDateRange": "結束日期不能早於開始日期。",
       "browseType": "依這個種類瀏覽",
       "browsingResults": "依指定條件瀏覽搜尋資料；可繼續載入後續項目。",
-      "quickExamples": "快速範例",
-      "quickExamplesHelp": "點選範例填入搜尋框，再按搜尋。",
+      "quickExamples": "近期作品參考",
+      "quickExamplesHelp": "依現有資料自動更新；點選後填入搜尋框。",
       "suggestionsAll": "已讀不回|歌曲 · 關係 · 文章\n人生月台|作品 · 時期 · 狀態\n自我治理|治理 · 政德風 · 時期\n界線|作品 · 治理 · 多媒體\n月之符文|符文 · 知識 · 系統\n自由的風|歌曲 · 時期 · 狀態",
       "suggestionsMedia": "月之符文|多媒體創作 · 圖像／影音\n自由的風|多媒體創作 · Instagram／視覺\n界線|多媒體創作 · 多媒體表達\n微月光|多媒體創作 · 影像／聲音\n宣傳|多媒體創作 · 公開影音\n月光|多媒體創作 · 視覺意象",
       "suggestionsLyrics": "已讀不回|歌曲／歌詞\n人生月台|時期作品\n自由的風|主題／歌曲\n微月光|歌曲／主題\n界線|歌詞命題\n自我治理|歌曲創作",
-      "suggestionsText": "自由|長期語境\n工作|生活記錄\n整理|生活與治理\n希望|時間演變\n系統|技術與架構\n感情|歷史語境"
+      "suggestionsText": "自由|長期語境\n工作|生活記錄\n整理|生活與治理\n希望|時間演變\n系統|技術與架構\n感情|歷史語境",
+      "loadingExamples": "讀取近期作品參考中…",
+      "noExamples": "目前沒有符合條件的近期作品參考。",
+      "periodLabel": "時期",
+      "allPeriods": "全部時期",
+      "periodUnavailable": "目前無法讀取時期資料。"
     },
     "statisticsUI": {
       "dailyRune": "每日符文",
