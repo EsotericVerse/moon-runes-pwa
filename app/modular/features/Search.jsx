@@ -32,7 +32,7 @@ import {formatGroupLists,parseGroupListsAttr} from '../../loc/group-lists.mjs';
 
 const MEDIA_EDITOR_COLUMNS='media_id,galaxy_link,source_place,media_type,title,url,meta_tags,createtime,rune_references';
 const MEDIA_ATTR_ORDER=['media_id','title','galaxy_link','source_place','media_type','url','meta_tags','createtime','rune_references'];
-const MEDIA_ATTR_FIELDS=MEDIA_ATTR_ORDER.map(key=>({key,readOnly:['media_id','title'].includes(key),kind:key==='createtime'?'date':key==='rune_references'?'multiline':'text'}));
+const MEDIA_ATTR_FIELDS=MEDIA_ATTR_ORDER.map(key=>({key,readOnly:key==='media_id',kind:key==='createtime'?'date':key==='rune_references'?'multiline':'text'}));
 
 const GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,source_place,searchable,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link,statistics_able,class_id,group_lists';
 
