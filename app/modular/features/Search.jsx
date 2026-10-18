@@ -21,14 +21,13 @@ import {resolveGalaxyExternalLinks,searchGalaxyRows,selectGalaxyContent,selectGa
 import {defaultScopeData,selectScopeRegistry} from '../../loc/scope-data';
 import {selectCultureTimeRows} from '../../loc/culture-query';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model';
-import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
+import {requireGalaxyContent,resolveGalaxyTitle,assertPlainGalaxyAttributes} from '../../loc/content-policy';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import {applyFilters,selectRows} from '../../loc/db-query.mjs';
 import {blocksToPlainText,plainTextToBlocks} from '../../loc/blocknote-content.mjs';
 import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
 import ScopeEditableBlocks from '../../loc/ScopeEditableBlocks';
 import {formatGroupLists,parseGroupListsAttr} from '../../loc/group-lists.mjs';
-import {assertPlainGalaxyAttributes} from '../../loc/galaxy-attr-plain-text.mjs';
 
 
 const GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,source_native_id,source_place,searchable,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link,statistics_able,class_id,group_lists';
