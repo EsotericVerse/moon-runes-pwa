@@ -341,9 +341,14 @@ export async function searchGalaxyRows(scopes,query,{
   const hiddenScopes=new Set((Array.isArray(hiddenScopeIds)?hiddenScopeIds:[]).map(value=>String(value||'').trim()).filter(Boolean));
   const scopeProviders=scopeList.map(scope=>genericScopeProviders(scope,{mediaOnly,includeHiddenText:hiddenScopes.has(scope.id),contentType,sourceFilter}));
   // Every Scope's title hits are paged before any body matches.
-  const providers=mediaOnly||contentType==='multimedia'||contentType==='timeline'
-    ?scopeProviders.flat()
-    :Array.from({length:6},(_,index)=>scopeProviders.map(group=>group[index]).filter(Boolean)).flat();
+  const providers=browse
+    ?scopeProviders.flatMap(group=>
+      mediaOnly||contentType==='multimedia'||contentType==='timeline'
+        ?group
+        :[group[1],group[4],group[5]].filter(Boolean))
+    :mediaOnly||contentType==='multimedia'||contentType==='timeline'
+      ?scopeProviders.flat()
+      :Array.from({length:6},(_,index)=>scopeProviders.map(group=>group[index]).filter(Boolean)).flat();
   const failures=[];
 
   let stage=Number.isInteger(cursor?.stage)?cursor.stage:1;
