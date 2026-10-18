@@ -3,7 +3,7 @@ import {featureHref} from './scope-registry';
 import {normalizeRelationIds} from '../loc/content-policy';
 
 const NAVIGATION_FIELDS=Object.freeze([
-  'q','identity','source','period','anchor','from','to','rankingType','statTab'
+  'q','identity','media','source','period','anchor','from','to','rankingType','statTab'
 ]);
 
 const NavigationValue=z.string().trim().min(1).max(240);
@@ -12,6 +12,7 @@ const StatisticsTab=z.enum(['ranking','keywords','styles','media','charts']);
 const FeatureNavigationSchema=z.object({
   q:NavigationValue.optional(),
   identity:NavigationValue.optional(),
+  media:NavigationValue.optional(),
   source:NavigationValue.optional(),
   period:NavigationValue.optional(),
   anchor:NavigationValue.optional(),
@@ -64,6 +65,12 @@ export function galaxyIdentityHref(scopeId,uid){
   if(!id)return '';
   const targetScope=String(scopeId||'').trim();
   return featureNavigationHref(targetScope,'search',{identity:id});
+}
+
+export function galaxyMediaHref(scopeId,mediaId){
+  const id=valueOf(mediaId);
+  if(!id)return '';
+  return featureNavigationHref(String(scopeId||'').trim(),'search',{media:id});
 }
 
 export function galaxyRelationLinks(scopeId,row={}){
