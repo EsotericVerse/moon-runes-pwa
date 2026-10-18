@@ -17,8 +17,9 @@ import {useScopeRuntime} from '../use-scope-runtime';
 import {scopeHref} from '../scope-registry';
 import {featureNavigationHref,galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
-import {resolveGalaxyExternalLinks,searchGalaxyRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordMatches} from '../../loc/galaxy-query';
+import {resolveGalaxyExternalLinks,searchGalaxyRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordMatches,selectSearchReferenceSuggestions} from '../../loc/galaxy-query';
 import {defaultScopeData,selectScopeRegistry} from '../../loc/scope-data';
+import {selectCultureTimeRows} from '../../loc/culture-query';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
@@ -298,11 +299,16 @@ function prioritizeStyleTagResults(rows=[]){
 }
 
 
-function searchSuggestionItems(value){
-  return String(value||'').split('\n').map(item=>{
-    const [query,description='']=item.split('|');
-    return {query:String(query||'').trim(),description:String(description||'').trim()};
-  }).filter(item=>item.query);
+function searchHref(scopeId,query,filters={}){
+  const href=featureNavigationHref(scopeId,'search',{q:query});
+  const params=new URLSearchParams();
+  for(const [key,value] of Object.entries({
+    type:filters.contentType,source:filters.sourceFilter,
+    from:filters.startDate,to:filters.endDate,period:filters.selectedPeriod
+  })){
+    if(value)params.set(key,value);
+  }
+  return href+(params.size?(href.includes('?')?'&':'?')+params.toString():'');
 }
 
 export default function Search(){
@@ -313,13 +319,13 @@ export default function Search(){
   const searchParams=useSearchParams();
   const router=useRouter();
   const [query,setQuery]=useState('');
-  const [searchMode,setSearchMode]=useState('all');
   const [advancedOpen,setAdvancedOpen]=useState(false);
   const [advancedTab,setAdvancedTab]=useState('type');
   const [contentType,setContentType]=useState('');
   const [sourceFilter,setSourceFilter]=useState('');
   const [startDate,setStartDate]=useState('');
   const [endDate,setEndDate]=useState('');
+  const [selectedPeriod,setSelectedPeriod]=useState('');
   const [browseResults,setBrowseResults]=useState(false);
   const activeSearchOptionsRef=useRef(null);
   const [results,setResults]=useState([]);
@@ -362,6 +368,31 @@ export default function Search(){
     [targetScopes,account.authorizer]
   );
   const collectionLabel=scopeId==='loc'?UI_COPY.search.allContent:String(scope?.label||scopeId);
+  const periodScope=scopeId==='loc'
+    ?targetScopes.find(item=>item.id==='lo3rwang')||targetScopes[0]
+    :targetScopes[0];
+  const periodsQuery=useQuery({
+    queryKey:['search-period-options',periodScope?.id],
+    enabled:advancedOpen&&advancedTab==='time'&&!aggregateScopes&&Boolean(periodScope?.time),
+    queryFn:async()=>{
+      const rows=await selectCultureTimeRows(periodScope,periodScope?.birthday);
+      return rows.filter(row=>row.entry_type==='period'&&row.start_date)
+        .map(row=>({id:row.entry_key,title:row.title,startDate:row.start_date,endDate:row.end_date||''}));
+    },
+    staleTime:5*60_000
+  });
+  const suggestionScopes=useMemo(()=>{
+    if(scopeId!=='loc')return targetScopes;
+    const author=targetScopes.find(item=>item.id==='lo3rwang');
+    const rune=targetScopes.find(item=>item.id==='lrunes');
+    return [author,rune].filter(Boolean);
+  },[scopeId,targetScopes]);
+  const suggestionsQuery=useQuery({
+    queryKey:['search-live-references',suggestionScopes.map(item=>item.id).join(','),contentType,sourceFilter],
+    enabled:!aggregateScopes&&suggestionScopes.length>0,
+    queryFn:()=>selectSearchReferenceSuggestions(suggestionScopes,{contentType,sourceFilter}),
+    staleTime:5*60_000
+  });
 
   async function loadGalaxyDetail(result){
     const scopeData=scopeById.get(result.scopeId);
@@ -375,12 +406,11 @@ export default function Search(){
     return selectGalaxyContent(scopeData,id);
   }
 
-  async function executeSearch(rawQuery,cursor=null,{append=false,browse=false}={}){
+  async function executeSearch(rawQuery,cursor=null,{append=false,browse=false,overrideOptions=null}={}){
     const q=String(rawQuery||'').trim();
     const options=append&&activeSearchOptionsRef.current
       ?activeSearchOptionsRef.current
-      :{contentType:searchMode==='media'?'multimedia':contentType,sourceFilter,startDate,endDate,
-        mediaOnly:searchMode==='media'||contentType==='multimedia',browse};
+      :(overrideOptions||{contentType,sourceFilter,startDate,endDate,mediaOnly:false,browse});
     if(!q&&!options.browse)return;
     if(options.startDate&&options.endDate&&options.startDate>options.endDate){
       setError(t('uiExtra.searchUI.invalidDateRange'));return;
@@ -400,7 +430,7 @@ export default function Search(){
       setHasMore(false);
       setNextCursor(null);
       setResults([]);
-      setStatus(options.mediaOnly?UI_COPY.search.searching:UI_COPY.format.searchScope(collectionLabel));
+      setStatus(UI_COPY.format.searchScope(collectionLabel));
     }
     try{
       if(!append){
@@ -483,7 +513,7 @@ export default function Search(){
             setHasMore(Boolean(search.hasMore));
       setNextCursor(search.nextCursor??null);
       const partial=search.failures?.length?t('uiExtra.searchUI.partialExtendedData'):'';
-      if(!append)setStatus(options.browse?t('uiExtra.searchUI.browsingResults'):UI_COPY.format.searchResult({label:options.mediaOnly?UI_COPY.search.media:'「'+collectionLabel+'」',query:q,hasMore:search.hasMore,partial}));
+      if(!append)setStatus(options.browse?t('uiExtra.searchUI.browsingResults'):UI_COPY.format.searchResult({label:'「'+collectionLabel+'」',query:q,hasMore:search.hasMore,partial}));
     }catch(exception){
       if(id!==searchId.current)return;
       if(append){
@@ -540,7 +570,16 @@ export default function Search(){
     const identity=String(searchParams?.get('identity')||'').trim();
     const value=String(searchParams?.get('q')||'').trim();
     if(identity){setQuery('');executeIdentity(identity);return;}
-    if(value){setQuery(value);executeSearch(value);}
+    const filters={
+      contentType:String(searchParams?.get('type')||''),
+      sourceFilter:String(searchParams?.get('source')||''),
+      startDate:String(searchParams?.get('from')||''),
+      endDate:String(searchParams?.get('to')||''),
+      selectedPeriod:String(searchParams?.get('period')||'')
+    };
+    setContentType(filters.contentType);setSourceFilter(filters.sourceFilter);
+    setStartDate(filters.startDate);setEndDate(filters.endDate);setSelectedPeriod(filters.selectedPeriod);
+    if(value){setQuery(value);executeSearch(value,null,{overrideOptions:{...filters,mediaOnly:false,browse:false}});}
   },[searchParams,scopeId,scopesQuery.isSuccess,scopesQuery.data]);
 
 
@@ -665,8 +704,8 @@ export default function Search(){
     await executeSearch('',null,{browse:true});
   }
   function clearSearchFilters(){
-    setQuery('');setSearchMode('all');setContentType('');setSourceFilter('');
-    setStartDate('');setEndDate('');setAdvancedOpen(false);
+    setQuery('');setContentType('');setSourceFilter('');
+    setStartDate('');setEndDate('');setSelectedPeriod('');setAdvancedOpen(false);
     resetSearchState();
     router.replace(featureNavigationHref(scopeId,'search'));
   }
@@ -686,22 +725,22 @@ export default function Search(){
     contentType&&filterTypes.find(([value])=>value===contentType)?.[1],
     sourceFilter&&filterSources.find(([value])=>value===sourceFilter)?.[1],
     startDate&&t('uiExtra.searchUI.startDate')+': '+startDate,
-    endDate&&t('uiExtra.searchUI.endDate')+': '+endDate
+    endDate&&t('uiExtra.searchUI.endDate')+': '+endDate,
+    selectedPeriod&&periodsQuery.data?.find(item=>item.id===selectedPeriod)?.title
   ].filter(Boolean);
-  const examples=searchSuggestionItems(t('uiExtra.searchUI.'+
-    ((searchMode==='media'||contentType==='multimedia')?'suggestionsMedia':
-      contentType==='lyrics_work'?'suggestionsLyrics':
-      contentType==='text_work'?'suggestionsText':'suggestionsAll')));
+  const examples=suggestionsQuery.data||[];
   async function runSearch(event){
     event.preventDefault();
     const term=String(query||'').trim();
     if(!term)return;
     // Keep the keyword in the URL and input so a style-to-style link is a
     // reproducible next search, not a transient single-page interaction.
-    if(String(searchParams?.get('q')||'').trim()!==term||searchParams?.get('identity')){
-      router.push(featureNavigationHref(scopeId,'search',{q:term}));
-      return;
-    }
+    const url=searchHref(scopeId,term,{contentType,sourceFilter,startDate,endDate,selectedPeriod});
+    const current=searchHref(scopeId,String(searchParams?.get('q')||'').trim(),{
+      contentType:searchParams?.get('type'),sourceFilter:searchParams?.get('source'),
+      startDate:searchParams?.get('from'),endDate:searchParams?.get('to'),selectedPeriod:searchParams?.get('period')
+    });
+    if(url!==current||searchParams?.get('identity')){router.push(url);return;}
     await executeSearch(term);
   }
 
@@ -715,14 +754,10 @@ export default function Search(){
   </FeaturePage>;
 
   return <FeaturePage featureId="search">
-    <div className="scope-tabs" role="group" aria-label={UI_COPY.search.mode}>
-      <button type="button" aria-pressed={searchMode==='all'} onClick={()=>{setSearchMode('all');resetSearchState();}}>{UI_COPY.search.allSearch}</button>
-      <button type="button" aria-pressed={searchMode==='media'} onClick={()=>{setSearchMode('media');resetSearchState();setStatus(UI_COPY.search.mediaPrompt);}}>{UI_COPY.search.mediaSearch}</button>
-    </div>
     <section className="scope-search-workspace" aria-label={t('uiExtra.searchUI.searchWorkspace')}>
       <form className="scope-search-form" onSubmit={runSearch}>
-        <label htmlFor="scope-search-query">{searchMode==='media'?UI_COPY.search.mediaPromptLabel:UI_COPY.search.textPromptLabel}</label>
-        <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder={searchMode==='media'?UI_COPY.search.mediaPlaceholder:UI_COPY.search.textPlaceholder} aria-label={searchMode==='media'?UI_COPY.search.mediaSearch:UI_COPY.search.textPromptLabel}/>
+        <label htmlFor="scope-search-query">{UI_COPY.search.textPromptLabel}</label>
+        <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder={UI_COPY.search.textPlaceholder} aria-label={UI_COPY.search.textPromptLabel}/>
         <button type="submit">{UI_COPY.nav.search}</button>
         <button type="button" className="loc-button" onClick={clearSearchFilters}>{t('uiExtra.searchUI.clearAll')}</button>
       </form>
@@ -765,9 +800,11 @@ export default function Search(){
           <small>{t('uiExtra.searchUI.quickExamplesHelp')}</small>
         </div>
         <div className="scope-search-suggestion-grid">
-          {examples.map(({query:example,description})=><button type="button" key={example} className="scope-search-suggestion" onClick={()=>{setQuery(example);resetSearchState();}}>
-            <strong>{example}</strong><small>{description}</small>
+          {suggestionsQuery.isLoading?<span className="scope-status">{t('uiExtra.searchUI.loadingExamples')}</span>:null}
+          {examples.map(({query:example,description,date})=><button type="button" key={example} className="scope-search-suggestion" onClick={()=>{setQuery(example);resetSearchState();}}>
+            <strong>{example}</strong><small>{description}{date?' · '+date:''}</small>
           </button>)}
+          {!suggestionsQuery.isLoading&&!examples.length?<small className="scope-status">{t('uiExtra.searchUI.noExamples')}</small>:null}
         </div>
       </section>
     </section>
@@ -777,7 +814,7 @@ export default function Search(){
     <IncrementalList
       items={results}
       batchSize={pageSize}
-      resetKey={searchMode+'|'+matchedQueryRef.current+'|'+String(browseResults)}
+      resetKey={matchedQueryRef.current+'|'+String(browseResults)}
       externalHasMore={hasMore}
       loading={loadingMore}
       error={error||loadMoreError}
