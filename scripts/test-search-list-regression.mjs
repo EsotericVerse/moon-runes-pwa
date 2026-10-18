@@ -374,3 +374,14 @@ test('LOC, author and runes read distinct page=search Blocks records',async()=>{
   ]);
   assert.ok(queries.every(q=>q.options.filters[0].value==='search'));
 });
+
+test('LOC, author and runes Search routes keep separate Scope identities',()=>{
+  const read=path=>fs.readFileSync(new URL('../'+path,import.meta.url),'utf8');
+  const loc=read('app/search/page.jsx');
+  const author=read('app/lo3rwang/search/page.jsx');
+  const runes=read('app/lrunes/search/page.jsx');
+  assert.ok(loc.includes('forcedView="search"'));
+  assert.ok(!loc.includes('forcedScope='));
+  assert.ok(author.includes('forcedView="search" forcedScope="lo3rwang"'));
+  assert.ok(runes.includes('forcedView="search" forcedScope="lrunes"'));
+});
