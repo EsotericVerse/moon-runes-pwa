@@ -15,7 +15,7 @@ export function mediaCrossTagCatalog(rows=[]){
     if(!tags.length)continue;
     let entry=media.get(id);
     if(!entry){
-      entry={id,day:mediaDay(row.createtime),title:String(row.title||''),url:String(row.url||''),tags:new Set()};
+      entry={id,day:mediaDay(row.createtime),tags:new Set()};
       media.set(id,entry);
     }
     for(const label of tags){
@@ -58,11 +58,3 @@ export function mediaCrossIntersections(catalog,left=[],right=[]){
   return [...pairMap.values()].sort((a,b)=>b.count-a.count||a.leftLabel.localeCompare(b.leftLabel)||a.rightLabel.localeCompare(b.rightLabel));
 }
 
-export function mediaCrossPairWorks(catalog,pair){
-  if(!pair)return [];
-  const [left,right]=String(pair.key||'').split('\u0000');
-  if(!left||!right)return [];
-  return (catalog?.media||[])
-    .filter(item=>item.tags.has(left)&&item.tags.has(right))
-    .map(item=>({id:item.id,title:item.title,url:item.url,day:item.day}));
-}
