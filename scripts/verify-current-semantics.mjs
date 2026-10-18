@@ -271,8 +271,8 @@ if(!failures.length){
       failures.push('Retired Galaxy work-type field remains in '+appPath);
     }
   }
-  if(!importPanel.includes("searchable:explicitVisibilityIds.has(nativeId)?record.searchable:current.searchable")||
-     !importPanel.includes("statistics_able:explicitStatisticsIds.has(nativeId)?record.statistics_able:current.statistics_able")){
+  if(!importPanel.includes("searchable:explicit.searchable?record.searchable:current.searchable")||
+     !importPanel.includes("statistics_able:explicit.statistics_able?record.statistics_able:current.statistics_able")){
     failures.push('Source Refresh must not overwrite visibility flags when the incoming file omits them.');
   }
 
