@@ -782,11 +782,14 @@ export default function Search(){
         <ScopeEditableBlocks
           scopeId={scopeId}
           page="search"
+          orders={[1]}
           className="scope-search-reference-grid"
           slotClassName="loc-card scope-search-reference-block"
           editSlotClassName="loc-card scope-search-reference-block"
           headingLevel={2}
           allowEditing
+          allowDelete={false}
+          allowInlineChildAdd
         />
       </div>
     </section>
