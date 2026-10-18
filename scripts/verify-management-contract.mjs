@@ -129,8 +129,17 @@ must(importRowsFromJson({payload:{entries:[{body:'字'}]}},'payload.entries').le
 must(mappedImportValue({data:{body:'甲'}},'content',{content:'data.body'})==='甲','Import mapping must read configured nested fields');
 
 must(scopeSettings.includes('display_name')&&scopeSettings.includes('search_intro')&&scopeSettings.includes('search_aliases')&&scopeSettings.includes('updateRows'),'misc settings must edit Scope-owned presentation config');
+must(admin.includes('admin-page-description:')&&admin.includes('admin-search-intro:')&&admin.includes('admin-search-aliases:')&&
+  scopeSettings.includes('scope-intro:')&&scopeSettings.includes('scope-aliases:')&&
+  keywordLibrary.includes('keyword-principle:')&&keywordLibrary.includes('keyword-lines:')&&
+  editor.includes('timeline-note:')&&editor.includes('timeline-style:')&&
+  importPanel.includes('suno-lyrics:')&&importPanel.includes('suno-style:')&&
+  articleBodyEditor.includes('onPlainTextChange')&&
+  [admin,scopeSettings,keywordLibrary,editor,importPanel].every(source=>!source.includes('<textarea')),
+  'All Admin and management narrative text must reuse ArticleBodyEditor/BlockNote; structured data retains native typed fields');
+
 must(publisher.includes('scope-publisher-main')&&publisher.includes('scope-publisher-sidebar')&&publisher.includes('ArticleBodyEditor')&&publisher.includes('draft.bodyHtml')&&!publisher.includes('content_blocks'),'article publisher must use shared BlockNote and persist its HTML in the existing content field');
-must(importPanel.includes("import {refreshSunoStyleMetaTags}")&&importPanel.includes("refreshSunoStyleMetaTags(value,current.metaTags)")&&importPanel.includes("regenerateStyleTags"),'Suno Style must generate Meta Tags from exact source phrases, with author review');
+must(importPanel.includes("import {refreshSunoStyleMetaTags}")&&importPanel.includes("refreshSunoStyleMetaTags(blocksToPlainText(blocks),current.metaTags)")&&importPanel.includes("regenerateStyleTags"),'Suno Style must generate Meta Tags from exact source phrases, with author review');
 must(!statistics.includes('statExclude')&&!statistics.includes('applyExclusions')&&!statistics.includes('統計排除詞')&&!read('app/loc/statistics-facets.mjs').includes('filterMediaStyleRows')&&!read('app/modular/feature-navigation.js').includes('statExclude'),'Metadata statistics must not contain blacklist/NOT exclusion features');
 must(blockNoteEntry.includes("dynamic(()=>import('./BlockNoteEditorClient')")&&blockNoteEntry.includes("from './blocknote-content.mjs'")&&!blockNoteEntry.includes('contentEditable')&&!blockNoteEntry.includes('execCommand'),'BlockNote must be the only shared lazy-loaded editor entrypoint');
 must(blockNoteContent.includes('plainTextToBlocks')&&blockNoteContent.includes('blocksToPlainText')&&blockNoteContent.includes('normalizeBlocks'),'BlockNote converters must remain independent of React');
