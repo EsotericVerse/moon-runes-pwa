@@ -69,7 +69,7 @@ function attrDisplayValue(key,value,t){
   if(key==='content')return t('uiExtra.searchUI.attrShown');
   if(key==='group_lists')return formatGroupLists(value);
   if(Array.isArray(value))return value.length?value.join(', '):'[]';
-  if(value&&typeof value==='object')return jsonText(value);
+  if(value&&typeof value==='object')return JSON.stringify(value);
   if(value===null||value===undefined||value==='')return 'null';
   if(typeof value==='boolean')return value?'true':'false';
   return String(value).trim();
@@ -126,41 +126,41 @@ function changedGalaxyAttributes(draft,t){
   return changed;
 }
 
-function GalaxyAttrSummary({row}){
+// One admin-only metadata surface. Read mode shows every DB attribute in
+// compact blocks; edit mode uses the existing Article/BlockNote draft and
+// preserves typed DB fields rather than serializing them into the article body.
+function GalaxyAttrPanel({row=null,draft=null,setDraft=null,onEdit=null}){
   const t=useUiText();
-  if(!row)return null;
-  return <details className="scope-search-attr-panel">
-    <summary><UiText id="uiExtra.searchUI.attributeTitle"/></summary>
-    <dl className="scope-search-attr-grid">
-      {GALAXY_ATTR_ORDER.map(key=><div key={key}>
-        <dt>{key}</dt>
-        <dd>{attrDisplayValue(key,row[key],t)}</dd>
-      </div>)}
-    </dl>
-  </details>;
-}
-
-function GalaxyAttrEditor({draft,setDraft}){
-  const t=useUiText();
+  if(!row&&!draft)return null;
+  const editing=Boolean(draft&&setDraft);
   const attrs=draft?.attrs||{};
   const change=(key,value)=>setDraft(current=>({...current,attrs:{...(current?.attrs||{}),[key]:value}}));
-  return <details className="scope-search-attr-panel">
-    <summary><UiText id="uiExtra.searchUI.attributeTitle"/></summary>
-    <div className="scope-management-fields scope-search-attr-editor">
-      <label><span>createtime</span><input type="datetime-local" value={attrs.createtime||''} onChange={event=>change('createtime',event.target.value)}/></label>
-      <label><span>source_native_id</span><input value={attrs.source_native_id||''} onChange={event=>change('source_native_id',event.target.value)}/></label>
-      <label><span>source_place</span><input value={attrs.source_place||''} onChange={event=>change('source_place',event.target.value)}/></label>
-      <label><span>url</span><input value={attrs.url||''} onChange={event=>change('url',event.target.value)}/></label>
-      <label><span>source_id</span><input value={attrs.source_id||''} onChange={event=>change('source_id',event.target.value)}/></label>
-      <label><span>ref_id</span><input value={attrs.ref_id||''} onChange={event=>change('ref_id',event.target.value)}/></label>
-      <label><span>source_name</span><input value={attrs.source_name||''} onChange={event=>change('source_name',event.target.value)}/></label>
-      <label><span>class_id</span><input type="number" value={attrs.class_id??''} onChange={event=>change('class_id',event.target.value)}/></label>
-      <label><span>statistics_able</span><input type="checkbox" checked={attrs.statistics_able!==false} onChange={event=>change('statistics_able',event.target.checked)}/></label>
-      <label className="scope-management-wide-field"><span>target_id[]</span><textarea rows={3} value={attrs.target_id||''} onChange={event=>change('target_id',event.target.value)} placeholder={t('uiExtra.searchUI.uuidHint')}/></label>
-      <label className="scope-management-wide-field"><span>media_link[]</span><textarea rows={3} value={attrs.media_link||''} onChange={event=>change('media_link',event.target.value)} placeholder={t('uiExtra.searchUI.mediaUuidHint')}/></label>
-      <label className="scope-management-wide-field"><span>{t('uiExtra.searchUI.groupListField')}</span><textarea rows={2} value={attrs.group_lists??''} onChange={event=>change('group_lists',event.target.value)} placeholder="12:3,14:1"/></label>
+  const readonly=new Set(['uid','title','content','UpdateTime']);
+  const booleanFields=new Set(['searchable','statistics_able']);
+  const arrayFields=new Set(['target_id','media_link']);
+  const editableValue=key=>key==='group_lists'
+    ?String(attrs.group_lists||''):String(attrs[key]??'');
+  return <section className="scope-search-attr-panel" aria-label={t('uiExtra.searchUI.attributeTitle')}>
+    <h3 className="scope-search-attr-heading"><UiText id="uiExtra.searchUI.attributeTitle"/></h3>
+    <div className="scope-search-attr-grid">
+      {GALAXY_ATTR_ORDER.map(key=>{
+        const value=editing?(key==='title'?draft.title:key==='content'?draft.bodyHtml:key==='UpdateTime'?row?.UpdateTime:attrs[key]):row?.[key];
+        const summary=attrDisplayValue(key,value,t);
+        const itemEdit=editing&&!readonly.has(key);
+        return <div className={'scope-search-attr-item'+(itemEdit?' is-editable':'')} key={key}>
+          <span className="scope-search-attr-name">{key}</span>
+          {itemEdit?(booleanFields.has(key)
+            ?<label className="scope-search-attr-boolean"><input type="checkbox" checked={attrs[key]!==false} onChange={event=>change(key,event.target.checked)}/><span>{attrs[key]!==false?'true':'false'}</span></label>
+            :arrayFields.has(key)||key==='group_lists'
+              ?<textarea rows={2} aria-label={key} value={editableValue(key)} onChange={event=>change(key,event.target.value)}/>
+              :<input type={key==='createtime'?'datetime-local':key==='class_id'?'number':'text'} aria-label={key} value={editableValue(key)} onChange={event=>change(key,event.target.value)}/>)
+            :onEdit&&!editing
+              ?<button className="scope-search-attr-value scope-search-attr-open" type="button" onClick={onEdit} title={t('uiExtra.searchUI.attributeTitle')}>{summary}</button>
+              :<span className="scope-search-attr-value">{summary}</span>}
+        </div>;
+      })}
     </div>
-  </details>;
+  </section>;
 }
 
 function normalizeScopeAlias(value=''){
@@ -312,7 +312,6 @@ function searchHref(scopeId,query,filters={}){
   return href+(params.size?(href.includes('?')?'&':'?')+params.toString():'');
 }
 
-const SEARCH_REFERENCE_ORDERS=Object.freeze([1]);
 
 export default function Search(){
   const UI_COPY=useUiCopy();
@@ -801,15 +800,11 @@ export default function Search(){
         <ScopeEditableBlocks
           scopeId={scopeId}
           page="search"
-          orders={SEARCH_REFERENCE_ORDERS}
-          containerless
-          slotClassName="scope-search-reference-block"
-          editSlotClassName="scope-search-reference-block"
+          className="scope-search-reference-grid"
+          slotClassName="loc-card scope-search-reference-block"
+          editSlotClassName="loc-card scope-search-reference-block"
+          headingLevel={2}
           allowEditing
-          allowDelete={false}
-          allowEntities={false}
-          allowImages={false}
-          editEyebrow={false}
         />
       </div>
     </section>
@@ -840,7 +835,10 @@ export default function Search(){
         // Public article rows may open the editor. The existing authenticated
         // management_write RPC is the write authorization boundary; a client
         // permission snapshot must not hide an author's own edit action.
-        const editable=Boolean(editTarget.resourceType&&editTarget.editableTable&&editTarget.editableIdColumn&&editTarget.editResourceId);
+        // Gate ALL metadata and editing by the existing Scope management
+        // authorizer. Guest accounts never receive metadata controls.
+        const editable=Boolean(canManageSearchScope(account,row.scopeId)&&
+          editTarget.resourceType&&editTarget.editableTable&&editTarget.editableIdColumn&&editTarget.editResourceId);
         const draft=editingKey===row.key?editDraft:null;
         return <Article
           key={row.key}
@@ -864,8 +862,7 @@ export default function Search(){
           onCancel={()=>{setEditingKey('');setEditDraft(null);setEditError('')}}
           editBusy={editBusy}
           editError={editError}
-          showHidden={row.resourceType==='galaxy'}
-          editorExtra={row.resourceType==='galaxy'?<GalaxyAttrEditor draft={draft} setDraft={setEditDraft}/>:null}
+          showHidden={false}
           styleTag={row.styleTagMatch}
           styleTagKicker={row.styleTagMatch?<UiText id="uiExtra.searchUI.styleRecommendations"/>:null}
           styleIntroText={row.styleIntroText}
@@ -878,7 +875,13 @@ export default function Search(){
             onToggle={()=>toggleFullText(row)}
             showToggle={!searchParams?.get('identity')}
           />:null}
-          {row.resourceType==='galaxy'&&editable&&fullTextKey===row.key&&!fullTextLoading?<GalaxyAttrSummary row={fullTextRow}/>:null}
+          {row.resourceType==='galaxy'&&editable&&(draft||fullTextKey===row.key&&!fullTextLoading)&&
+            <GalaxyAttrPanel
+              row={fullTextRow||editTarget.editRow||null}
+              draft={draft}
+              setDraft={setEditDraft}
+              onEdit={()=>startEditing(editTarget)}
+            />}
         </Article>;
       }}
     />
