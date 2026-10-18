@@ -28,6 +28,7 @@ import {blocksToPlainText,plainTextToBlocks} from '../../loc/blocknote-content.m
 import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
 import ScopeEditableBlocks from '../../loc/ScopeEditableBlocks';
 import {formatGroupLists,parseGroupListsAttr} from '../../loc/group-lists.mjs';
+import {assertPlainGalaxyAttributes} from '../../loc/galaxy-attr-plain-text.mjs';
 
 
 const GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,source_native_id,source_place,searchable,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link,statistics_able,class_id,group_lists';
@@ -37,6 +38,14 @@ const GALAXY_ATTR_ORDER=Object.freeze([
   'searchable','UpdateTime','url','source_id','target_id','ref_id','source_name',
   'media_link','statistics_able','class_id','group_lists'
 ]);
+const GALAXY_ATTR_FIELDS=Object.freeze(GALAXY_ATTR_ORDER.map(key=>({
+  key,
+  readOnly:['uid','title','content','UpdateTime'].includes(key),
+  kind:['searchable','statistics_able'].includes(key)?'boolean':
+    ['target_id','media_link'].includes(key)?'array':
+    key==='group_lists'?'multiline':
+    key==='createtime'?'date':key==='class_id'?'number':'text'
+})));
 
 function nullableText(value){
   const text=String(value??'').trim();
@@ -65,15 +74,6 @@ function isoOrNull(value,t){
 function parseGroupListsText(value,t){
   try{return parseGroupListsAttr(value)}catch{throw new Error(t('uiExtra.searchUI.groupListInvalid'))}
 }
-function attrDisplayValue(key,value,t){
-  if(key==='content')return t('uiExtra.searchUI.attrShown');
-  if(key==='group_lists')return formatGroupLists(value);
-  if(Array.isArray(value))return value.length?value.join(', '):'[]';
-  if(value&&typeof value==='object')return JSON.stringify(value);
-  if(value===null||value===undefined||value==='')return 'null';
-  if(typeof value==='boolean')return value?'true':'false';
-  return String(value).trim();
-}
 function galaxyDraftFromRow(row={},fallbackTitle=''){
   const attrs={
     uid:String(row.uid||'').trim(),
@@ -95,6 +95,7 @@ function galaxyDraftFromRow(row={},fallbackTitle=''){
   const body=String(row.content??'');
   return {
     title:String(row.title??fallbackTitle??''),
+    originalTitle:String(row.title??fallbackTitle??''),
     body,
     bodyHtml:body,
     bodyBlocks:plainTextToBlocks(body),
@@ -124,43 +125,6 @@ function changedGalaxyAttributes(draft,t){
   }
   if(differs('group_lists'))changed.group_lists=parseGroupListsText(current.group_lists,t);
   return changed;
-}
-
-// One admin-only metadata surface. Read mode shows every DB attribute in
-// compact blocks; edit mode uses the existing Article/BlockNote draft and
-// preserves typed DB fields rather than serializing them into the article body.
-function GalaxyAttrPanel({row=null,draft=null,setDraft=null,onEdit=null}){
-  const t=useUiText();
-  if(!row&&!draft)return null;
-  const editing=Boolean(draft&&setDraft);
-  const attrs=draft?.attrs||{};
-  const change=(key,value)=>setDraft(current=>({...current,attrs:{...(current?.attrs||{}),[key]:value}}));
-  const readonly=new Set(['uid','title','content','UpdateTime']);
-  const booleanFields=new Set(['searchable','statistics_able']);
-  const arrayFields=new Set(['target_id','media_link']);
-  const editableValue=key=>key==='group_lists'
-    ?String(attrs.group_lists||''):String(attrs[key]??'');
-  return <section className="scope-search-attr-panel" aria-label={t('uiExtra.searchUI.attributeTitle')}>
-    <h3 className="scope-search-attr-heading"><UiText id="uiExtra.searchUI.attributeTitle"/></h3>
-    <div className="scope-search-attr-grid">
-      {GALAXY_ATTR_ORDER.map(key=>{
-        const value=editing?(key==='title'?draft.title:key==='content'?draft.bodyHtml:key==='UpdateTime'?row?.UpdateTime:attrs[key]):row?.[key];
-        const summary=attrDisplayValue(key,value,t);
-        const itemEdit=editing&&!readonly.has(key);
-        return <div className={'scope-search-attr-item'+(itemEdit?' is-editable':'')} key={key}>
-          <span className="scope-search-attr-name">{key}</span>
-          {itemEdit?(booleanFields.has(key)
-            ?<label className="scope-search-attr-boolean"><input type="checkbox" checked={attrs[key]!==false} onChange={event=>change(key,event.target.checked)}/><span>{attrs[key]!==false?'true':'false'}</span></label>
-            :arrayFields.has(key)||key==='group_lists'
-              ?<textarea rows={2} aria-label={key} value={editableValue(key)} onChange={event=>change(key,event.target.value)}/>
-              :<input type={key==='createtime'?'datetime-local':key==='class_id'?'number':'text'} aria-label={key} value={editableValue(key)} onChange={event=>change(key,event.target.value)}/>)
-            :onEdit&&!editing
-              ?<button className="scope-search-attr-value scope-search-attr-open" type="button" onClick={onEdit} title={t('uiExtra.searchUI.attributeTitle')}>{summary}</button>
-              :<span className="scope-search-attr-value">{summary}</span>}
-        </div>;
-      })}
-    </div>
-  </section>;
 }
 
 function normalizeScopeAlias(value=''){
@@ -607,7 +571,7 @@ export default function Search(){
       const cached=result.resourceType==='galaxy'&&fullTextKey===result.key&&fullTextRow?.uid
         ?fullTextRow
         :null;
-      const fullRow=cached||result.editRow||await selectPublicEditableRow(
+      const fullRow=cached||await selectPublicEditableRow(
         result.editableTable,
         result.editableIdColumn,
         result.editResourceId||result.resourceId,
@@ -641,11 +605,21 @@ export default function Search(){
       const nextTitle=result.resourceType==='galaxy'
         ?resolveGalaxyTitle(editDraft.title,plainBody)
         :(String(editDraft.title||'').trim()||null);
+      const metadataTitleChanged=result.resourceType==='galaxy'&&editDraft.title!==editDraft.originalTitle;
+      const attrChanges=result.resourceType==='galaxy'?changedGalaxyAttributes(editDraft,t):{};
+      // BlockNote HTML is valid ONLY in Galaxy content. All changed attributes
+      // (including a changed title) must be plain text before any DB update.
+      if(result.resourceType==='galaxy'){
+        assertPlainGalaxyAttributes({
+          ...attrChanges,
+          ...(metadataTitleChanged?{title:nextTitle}:{})
+        });
+      }
       const contentPatch=result.resourceType==='galaxy'?{
-        title:nextTitle,
+        ...(metadataTitleChanged?{title:nextTitle}:{}),
         content:body,
         UpdateTime:new Date().toISOString(),
-        ...changedGalaxyAttributes(editDraft,t)
+        ...attrChanges
       }:{
         title:nextTitle,
         [result.editableField]:body,
@@ -832,11 +806,9 @@ export default function Search(){
           editResourceId:row.editResourceId||row.resourceId,
           editableField:row.editableField||(row.resourceType==='galaxy'?'content':row.resourceType==='galaxy_media'?'meta_tags':'')
         };
-        // Public article rows may open the editor. The existing authenticated
-        // management_write RPC is the write authorization boundary; a client
-        // permission snapshot must not hide an author's own edit action.
-        // Gate ALL metadata and editing by the existing Scope management
-        // authorizer. Guest accounts never receive metadata controls.
+        // Page blocks have no Galaxy attributes. Article editing and typed
+        // metadata are available only to authorized Scope managers; guest
+        // search and article reading cannot reveal metadata controls.
         const editable=Boolean(canManageSearchScope(account,row.scopeId)&&
           editTarget.resourceType&&editTarget.editableTable&&editTarget.editableIdColumn&&editTarget.editResourceId);
         const draft=editingKey===row.key?editDraft:null;
@@ -863,6 +835,7 @@ export default function Search(){
           editBusy={editBusy}
           editError={editError}
           showHidden={false}
+          attributeFields={editable&&row.resourceType==='galaxy'?GALAXY_ATTR_FIELDS:null}
           styleTag={row.styleTagMatch}
           styleTagKicker={row.styleTagMatch?<UiText id="uiExtra.searchUI.styleRecommendations"/>:null}
           styleIntroText={row.styleIntroText}
@@ -875,13 +848,7 @@ export default function Search(){
             onToggle={()=>toggleFullText(row)}
             showToggle={!searchParams?.get('identity')}
           />:null}
-          {row.resourceType==='galaxy'&&editable&&(draft||fullTextKey===row.key&&!fullTextLoading)&&
-            <GalaxyAttrPanel
-              row={fullTextRow||editTarget.editRow||null}
-              draft={draft}
-              setDraft={setEditDraft}
-              onEdit={()=>startEditing(editTarget)}
-            />}
+
         </Article>;
       }}
     />
