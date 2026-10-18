@@ -9,7 +9,7 @@ import {useAccount} from './use-account';
 import {createUid8} from './uid';
 import {IMPORT_FIELD_ALIASES,importRowsFromJson,mappedImportValue,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
 import {UNIVERSAL_IMPORT_ACCEPT,parseUniversalImportFile} from './universal-file-import.mjs';
-import {detectZipArchiveSource} from './private-archive-universal.mjs';
+import {ARCHIVE_MAX_BYTES,detectZipArchiveSource} from './private-archive-universal.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 import {refreshSunoStyleMetaTags} from './suno-style-meta-tags.mjs';
 
@@ -120,6 +120,10 @@ function UniversalImport({scopeId,format,onBusyChange}) {
 
   async function loadQueuedFile(file,index,total){
     setFileName(file.name);setRows([]);setArchiveDetection(null);setProgress(null);setStatus('');
+    if(file.size>ARCHIVE_MAX_BYTES){
+      setStatus('檔案超過 512 MiB 安全上限，未讀取或解析。');
+      return;
+    }
     const firstBytes=new Uint8Array(await file.slice(0,4).arrayBuffer());
     const isZip=/\.zip$/i.test(file.name)||(firstBytes[0]===80&&firstBytes[1]===75&&[3,5,7].includes(firstBytes[2]));
     if(isZip){setBusy(true);setStatus(t('uiExtra.importUI.zipInspecting'));}
