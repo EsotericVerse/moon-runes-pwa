@@ -6,10 +6,8 @@ import ArticleBodyEditor from '../loc/ArticleBodyEditor';
 import {UI_COPY} from '../i18n/ui-copy';
 import {blocksToPlainText} from '../loc/blocknote-content.mjs';
 import UiText from '../i18n/UiText';
+import {isInteractiveContentTarget} from '../loc/inline-edit-interaction.mjs';
 
-function isInteractiveTarget(target){
-  return Boolean(target?.closest?.('a,button,input,select,textarea,summary,[role="button"],[contenteditable="true"]'));
-}
 
 // Shared article(uid) list module for Search and Culture.
 export function ArticleInlineEditor({draft,onChange,showHidden=false,editorExtra=null}){
@@ -33,7 +31,7 @@ export function ArticleInlineEditor({draft,onChange,showHidden=false,editorExtra
 export default function Article({uid,title,source='',scopeId='',date='',body='',hidden=false,relationLinks=[],links=[],destinations=[],editable=false,editing=false,onEdit,editorDraft=null,onDraftChange,onSave,onDelete,onCancel,editBusy=false,editError='',showHidden=false,editorExtra=null,styleTag=false,styleTagKicker=null,styleIntroText='',children=null}){
   const richBody=typeof body==='string'&&/<[a-z][^>]*>/i.test(body);
   const onClickCapture=editable&&!editing&&typeof onEdit==='function'?event=>{
-    if(!isInteractiveTarget(event.target))onEdit(uid);
+    if(!isInteractiveContentTarget(event.target))onEdit(uid);
   }:undefined;
   const editingReady=editing&&Boolean(editorDraft);
   const editorActions=editingReady?<div className="scope-article-editor-actions">
