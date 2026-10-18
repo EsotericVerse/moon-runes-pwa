@@ -7,6 +7,7 @@ import {deleteRows,insertRows,moveScopeBlock,updateRows} from './db-client.mjs';
 import {selectScopeBlocks} from './scope-data';
 import {useAccount} from './use-account';
 import ArticleBodyEditor from './ArticleBodyEditor';
+import {isInteractiveContentTarget} from './inline-edit-interaction.mjs';
 import {stripLocHomeEditorPlaceholders} from './loc-home-text.mjs';
 import {childPresentation,removeDuplicatedLegacySubtitle} from './block-presentation.mjs';
 import {homeBlockRows} from './home-block-model.mjs';
@@ -55,9 +56,6 @@ function normalizeRow(row,order){
   };
 }
 
-function isInteractiveTarget(target){
-  return Boolean(target?.closest?.('a,button,input,select,textarea,summary,[role="button"],[contenteditable="true"]'));
-}
 
 export default function ScopeEditableBlocks({
   scopeId,
@@ -334,7 +332,7 @@ export default function ScopeEditableBlocks({
         key={slot.uid||'order:'+slot.order}
         data-page-name={pageName}
         data-block-order={slot.order}
-        onClickCapture={canEdit&&!active?event=>{if(!isInteractiveTarget(event.target))begin(slot)}:undefined}
+        onClickCapture={canEdit&&!active?event=>{if(!isInteractiveContentTarget(event.target))begin(slot)}:undefined}
       >
         {active?<>
           <div className="scope-inline-editbar">
