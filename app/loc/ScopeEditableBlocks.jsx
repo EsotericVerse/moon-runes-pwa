@@ -317,8 +317,8 @@ export default function ScopeEditableBlocks({
       {entities.map((entity,index)=><article className={childPresentation(entity.title)==='card'?'scope-block-entity':'loc-bubble scope-block-text-bubble'} key={entity.uid}
         role={!editable&&onSuggestionClick?'link':undefined}
         tabIndex={!editable&&onSuggestionClick?0:undefined}
-        onKeyDown={!editable&&onSuggestionClick?event=>{if(event.key==='Enter'&&!isInteractiveContentTarget(event.target)){event.stopPropagation();selectSuggestion(entity.title||entity.text);}}:undefined}
-        onClick={!editable&&onSuggestionClick?event=>{if(!isInteractiveContentTarget(event.target)){event.stopPropagation();selectSuggestion(entity.title||entity.text);}}:undefined}>
+        onKeyDown={!editable&&onSuggestionClick?event=>{if(event.key==='Enter'&&!isInteractiveContentTarget(event.target,event.currentTarget)){event.stopPropagation();selectSuggestion(entity.text||entity.title);}}:undefined}
+        onClick={!editable&&onSuggestionClick?event=>{if(!isInteractiveContentTarget(event.target,event.currentTarget)){event.stopPropagation();selectSuggestion(entity.text||entity.title);}}:undefined}>
         {editable?<>
           <div className="scope-block-entity-actions">
             <button type="button" className="loc-button" disabled={index===0||busy} onClick={()=>moveEntity(index,-1)}>←</button>
