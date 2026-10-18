@@ -593,6 +593,7 @@
 .scope-search-filter-body>.loc-button{justify-self:start}
 .scope-search-date-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
 .scope-search-date-fields label{display:grid;gap:.4rem}
+.scope-search-date-fields .scope-search-period-field{grid-column:1/-1}
 .scope-search-suggestions{display:grid;gap:.7rem}
 .scope-search-suggestions-head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:.5rem}
 .scope-search-suggestions-head small{color:var(--loc-muted)}
