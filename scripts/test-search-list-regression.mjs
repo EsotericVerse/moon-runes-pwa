@@ -275,36 +275,21 @@ test('browsing without a keyword invokes the bounded search provider',async()=>{
   assert.equal(calls[0].options.startDate,'2026-10-01');
 });
 
-test('recent search references use real records instead of frozen monthly example labels',async()=>{
-  const source=extract('app/loc/galaxy-query.js','export async function selectSearchReferenceSuggestions(', '\nexport async function selectMediaStatisticsFacetRows(');
-  const calls=[];
-  const selectRows=async(table,params)=>{
-    calls.push({table,params});
-    if(table.endsWith('_media'))return {rows:[
-      {media_id:'m1',title:'最新影片',createtime:'2026-10-18',media_type:'video',url:'https://example.test/video'},
-      {media_id:'m2',title:'既有歌曲',createtime:'2026-10-15',media_type:'suno',url:'https://suno.com/song/1'}
-    ]};
-    return {rows:[
-      {uid:'t1',title:'最新文章',createtime:'2026-10-17',source_name:'threads'},
-      {uid:'t2',title:'最新文章',createtime:'2026-10-10',source_name:'threads'}
-    ]};
-  };
-  const selectSearchReferenceSuggestions=vm.runInNewContext(source.replace(/^export /,'')+'; selectSearchReferenceSuggestions',{selectRows});
-  const scopes=[{id:'author',galaxy:'silver.author_galaxy',galaxyMedia:'silver.author_galaxy_media',time:'silver.author_time'}];
-  const suggestions=await selectSearchReferenceSuggestions(scopes,{limit:6});
-  assert.deepEqual(Array.from(suggestions.map(item=>item.query)),['最新影片','最新文章','既有歌曲']);
-  assert.equal(calls.length,2);
-  assert.equal(calls[0].params.limit,16,'References must use bounded read-only queries');
-  const filtered=await selectSearchReferenceSuggestions(scopes,{contentType:'multimedia',sourceFilter:'suno'});
-  assert.deepEqual(Array.from(filtered.map(item=>item.query)),['既有歌曲']);
-});
-
-test('ordinary Search exposes only one entry and a live advanced-filter suggestion surface',()=>{
+test('search reference section uses existing editable page=search BlockNote content',()=>{
   const source=fs.readFileSync(new URL('../app/modular/features/Search.jsx',import.meta.url),'utf8');
   assert.ok(source.includes('scope-search-filter-panel'));
-  assert.ok(source.includes('scope-search-suggestion-grid'));
-  assert.ok(source.includes('selectSearchReferenceSuggestions('));
   assert.ok(source.includes('selectCultureTimeRows('));
-  assert.ok(!source.includes('setSearchMode('),'Redundant media mode must be removed');
-  assert.ok(!source.includes('searchSuggestionItems('),'No month-old hardcoded suggestion list');
+  assert.ok(source.includes('import ScopeEditableBlocks'));
+  assert.ok(source.includes('page="search"'));
+  assert.ok(source.includes('scopeId="loc"'));
+  assert.ok(source.includes('orders={SEARCH_REFERENCE_ORDERS}'));
+  assert.ok(source.includes('allowDelete={false}'));
+  assert.ok(source.includes('allowImages={false}'));
+  assert.ok(!source.includes('selectSearchReferenceSuggestions('));
+  assert.ok(!source.includes('setSearchMode('));
+  const blocks=fs.readFileSync(new URL('../app/loc/ScopeEditableBlocks.jsx',import.meta.url),'utf8');
+  assert.ok(blocks.includes('import ArticleBodyEditor'));
+  assert.ok(blocks.includes('page_name:pageName'));
+  assert.ok(blocks.includes('await updateRows(table,values'));
+  assert.ok(blocks.includes('await insertRows(table,'));
 });
