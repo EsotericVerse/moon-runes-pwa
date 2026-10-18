@@ -11,6 +11,7 @@ const INTERACTIVE_CONTENT_SELECTOR=[
   'svg','canvas','iframe','video','audio'
 ].join(',');
 
-export function isInteractiveContentTarget(target){
-  return Boolean(target?.closest?.(INTERACTIVE_CONTENT_SELECTOR));
+export function isInteractiveContentTarget(target,boundary=null){
+  const interactive=target?.closest?.(INTERACTIVE_CONTENT_SELECTOR);
+  return Boolean(interactive&&(!boundary||(interactive!==boundary&&boundary.contains(interactive))));
 }
