@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {zipSync,strToU8} from 'fflate';
-import {inspectPrivateArchive,detectZipArchiveSource} from '../app/loc/private-archive-universal.mjs';
+import {ARCHIVE_MAX_BYTES,inspectPrivateArchive,detectZipArchiveSource} from '../app/loc/private-archive-universal.mjs';
 import {inspectArchiveEntryStructure} from '../app/loc/archive-structure-inspector.mjs';
 import {createArchiveCompletenessAudit} from '../app/loc/archive-completeness-audit.mjs';
 
@@ -417,4 +417,34 @@ test('shared project ID retains multiple source-file links without flattening me
   assert.equal(member.mentions,3);
   assert.equal(result.sourceExportCompleteness,'unverifiable');
   assert.equal(result.importRestorationStatus,'not-tested');
+});
+
+test('ZIP binary assets, nested archives, and unknown extensions are inventoried without parsing',async()=>{
+  const archive=zipSync({
+    'social/posts.json':strToU8(JSON.stringify([{text:'正文保留',created_at:'2026-10-18'}])),
+    'media/photo.png':new Uint8Array([137,80,78,71]),
+    'media/movie.mp4':new Uint8Array([0,0,0,24,102,116,121,112]),
+    'media/track.wav':new Uint8Array([82,73,70,70]),
+    'archives/nested.zip':new Uint8Array([80,75,3,4]),
+    'unknown/binarypayload':new Uint8Array([0,255,0,128])
+  });
+  const input=file(archive,'mixed.zip');
+  const detection=await detectZipArchiveSource(input);
+  assert.equal(detection.filesSeen,6);
+  assert.equal(detection.inspectedFiles,1);
+  assert.equal(detection.audit.files.sampled,1);
+  const {records,summary}=await inspect(input);
+  assert.equal(records.length,1);
+  assert.equal(records[0].text,'正文保留');
+  assert.equal(summary.mediaFiles,4);
+  assert.equal(summary.otherFiles,5);
+});
+
+test('ZIP and private archive size limits reject before any data is read',async()=>{
+  const oversized={
+    size:ARCHIVE_MAX_BYTES+1,name:'too-large.zip',
+    slice(){throw new Error('SAFETY: oversized archive must never be read');}
+  };
+  await assert.rejects(()=>detectZipArchiveSource(oversized),/512 MiB/);
+  await assert.rejects(()=>inspectPrivateArchive(oversized,{onRecord:()=>{}}),/512 MiB/);
 });
