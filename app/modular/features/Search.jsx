@@ -788,9 +788,21 @@ export default function Search(){
           </div>:null}
           {advancedTab==='time'?<div role="tabpanel" className="scope-search-filter-body scope-search-date-fields">
             <label htmlFor="scope-search-start-date">{t('uiExtra.searchUI.startDate')}
-              <input id="scope-search-start-date" type="date" value={startDate} onChange={event=>updateSearchFilter(setStartDate,event.target.value)}/></label>
+              <input id="scope-search-start-date" type="date" value={startDate} onChange={event=>{setSelectedPeriod('');updateSearchFilter(setStartDate,event.target.value);}}/></label>
             <label htmlFor="scope-search-end-date">{t('uiExtra.searchUI.endDate')}
-              <input id="scope-search-end-date" type="date" min={startDate||undefined} value={endDate} onChange={event=>updateSearchFilter(setEndDate,event.target.value)}/></label>
+              <input id="scope-search-end-date" type="date" min={startDate||undefined} value={endDate} onChange={event=>{setSelectedPeriod('');updateSearchFilter(setEndDate,event.target.value);}}/></label>
+            <label className="scope-search-period-field" htmlFor="scope-search-period">{t('uiExtra.searchUI.periodLabel')}
+              <select id="scope-search-period" value={selectedPeriod} onChange={event=>{
+                const id=event.target.value;
+                const period=periodsQuery.data?.find(row=>row.id===id);
+                setSelectedPeriod(id);setStartDate(period?.startDate||'');
+                setEndDate(period?.endDate||'');resetSearchState();
+              }}>
+                <option value="">{t('uiExtra.searchUI.allPeriods')}</option>
+                {(periodsQuery.data||[]).map(period=><option key={period.id} value={period.id}>{period.title}</option>)}
+              </select>
+            </label>
+            {periodsQuery.isError?<span className="scope-status">{t('uiExtra.searchUI.periodUnavailable')}</span>:null}
           </div>:null}
         </div>:null}
       </div>
