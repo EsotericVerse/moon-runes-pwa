@@ -183,11 +183,11 @@ function canManageSearchScope(account,scopeId){
   return Boolean(account.role==='admin'||account.canManageGlobalSync?.()||ownScope||account.canManageScopeSync(id)||account.canManageScopeSync(normalized));
 }
 
-async function selectPublicEditableRow(table,idColumn,id,columns){
+async function selectPublicEditableRow(table,idColumn,id,columns,{authenticated=false}={}){
   const {rows=[]}=await selectRows(table,{
     columns,
     filters:[{column:idColumn,operator:'eq',value:String(id)}],
-    limit:1
+    limit:1,authenticated
   });
   return rows[0]||null;
 }
@@ -390,11 +390,11 @@ export default function Search(){
     if(!scopeData)throw new Error(UI_COPY.search.fullTextNotFound);
     const id=result.editResourceId||result.resourceId;
     if(result.editableTable){
-      const row=await selectPublicEditableRow(result.editableTable,result.editableIdColumn||'uid',id,GALAXY_EDITOR_COLUMNS);
+      const row=await selectPublicEditableRow(result.editableTable,result.editableIdColumn||'uid',id,GALAXY_EDITOR_COLUMNS,{authenticated:canManageSearchScope(account,result.scopeId)});
       if(!row)throw new Error(UI_COPY.search.fullTextNotFound);
       return row;
     }
-    return selectGalaxyContent(scopeData,id);
+    return selectGalaxyContent(scopeData,id,{authenticated:canManageSearchScope(account,result.scopeId)});
   }
 
   async function executeSearch(rawQuery,cursor=null,{append=false,browse=false,overrideOptions=null}={}){
@@ -557,7 +557,7 @@ export default function Search(){
   }
 
   useEffect(()=>{
-    if(!scopesQuery.isSuccess)return;
+    if(!scopesQuery.isSuccess||account.permissionLoading)return;
     const identity=String(searchParams?.get('identity')||'').trim();
     const value=String(searchParams?.get('q')||'').trim();
     if(identity){setQuery('');executeIdentity(identity);return;}
@@ -571,7 +571,7 @@ export default function Search(){
     setContentType(filters.contentType);setSourceFilter(filters.sourceFilter);
     setStartDate(filters.startDate);setEndDate(filters.endDate);setSelectedPeriod(filters.selectedPeriod);
     if(value){setQuery(value);executeSearch(value,null,{overrideOptions:{...filters,mediaOnly:false,browse:false}});}
-  },[searchParams,scopeId,scopesQuery.isSuccess,scopesQuery.data]);
+  },[searchParams,scopeId,scopesQuery.isSuccess,scopesQuery.data,account.permissionLoading,account.authorizer]);
 
 
 
@@ -612,7 +612,8 @@ export default function Search(){
         result.editableTable,
         result.editableIdColumn,
         result.editResourceId||result.resourceId,
-        result.resourceType==='galaxy'?GALAXY_EDITOR_COLUMNS:'media_id,title,meta_tags'
+        result.resourceType==='galaxy'?GALAXY_EDITOR_COLUMNS:'media_id,title,meta_tags',
+        {authenticated:result.resourceType==='galaxy'&&canManageSearchScope(account,result.scopeId)}
       );
       if(!fullRow)throw new Error(UI_COPY.search.editNotFound);
       setEditDraft(result.resourceType==='galaxy'
