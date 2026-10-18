@@ -418,8 +418,7 @@ export async function selectMediaCrossPairWorks(scope,pair,{
   if(!pair?.leftLabel||!pair?.rightLabel)return {rows:[],nextOffset:0,hasMore:false};
   const safeLimit=Math.max(1,Math.min(50,Math.floor(Number(limit)||10)));
   const batchSize=Math.max(20,safeLimit*2);
-  const escapeLike=value=>String(value).replace(/[\\\\%_]/g,'\\\\
-const SOURCE_BUCKET_ORDER=['Facebook','Threads','IG','Others'];');
+  const escapeLike=value=>String(value).replace(/[\\%_]/g,'\\$&');
   const filters=[
     ...timeFilters('createtime',startDate,endDate),
     {column:'meta_tags',operator:'ilike',value:'%'+escapeLike(pair.leftLabel)+'%'},
