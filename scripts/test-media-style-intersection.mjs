@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {defaultMediaCrossAxes,mediaCrossIntersections,mediaCrossTagCatalog} from '../app/loc/media-style-intersection.mjs';
+import {defaultMediaCrossAxes,mediaCrossIntersections,mediaCrossPairWorks,mediaCrossTagCatalog} from '../app/loc/media-style-intersection.mjs';
 
 const data=[
   {media_id:'a',title:'作品甲',url:'https://example.com/a',createtime:'2026-06-08T22:00:00+00:00',meta_tags:'Mandopop, Dream Pop, Alternative Pop, Neo-Soul, dream pop'},
@@ -38,8 +38,10 @@ test('intersections require both tags on the same media record and exclude self 
   assert.equal(pairs['J-Pop × Indie Pop'],1);
   assert.equal(pairs['K-Pop × Dream Pop'],1);
   assert.equal(pairs['Mandopop × Indie Pop'],undefined);
-  assert.equal(results.find(x=>x.leftLabel==='Mandopop'&&x.rightLabel==='Dream Pop').media.length,1);
-  assert.equal(results.find(x=>x.leftLabel==='Mandopop'&&x.rightLabel==='Dream Pop').days.get('2026-06-09'),1);
+  const dreamPopPair=results.find(x=>x.leftLabel==='Mandopop'&&x.rightLabel==='Dream Pop');
+  assert.equal('media' in dreamPopPair,false);
+  assert.deepEqual(mediaCrossPairWorks(catalog,dreamPopPair).map(item=>item.id),['a']);
+  assert.equal(dreamPopPair.days.get('2026-06-09'),1);
 });
 test('user may compare any metadata tags and not only pop families',()=>{
   const catalog=mediaCrossTagCatalog(data);
