@@ -662,6 +662,13 @@
       "update": "更新设置"
     },
     "searchUI": {
+      "mediaTypeRequired": "media_type 不可为空。",
+      "mediaLinkUidInvalid": "galaxy_link 必须是八位文章 UID。",
+      "runeReferencesInvalid": "rune_references 必须是有效的 JSON。",
+      "invalidMediaId": "媒体 ID 格式无效。",
+      "mediaManageDenied": "没有编辑媒体的权限。",
+      "mediaAttributes": "媒体属性",
+      "editMedia": "编辑媒体：{id}",
       "styleRecommendations": "风格标签推荐",
       "stylePeriod": "所属时期：",
       "unknownStyle": "文化风格",
@@ -734,6 +741,16 @@
       "refresh": "刷新实时统计"
     },
     "importUI": {
+      "invalidMediaId": "media_id 格式无效。",
+      "existingMediaFailed": "无法检查已有媒体。",
+      "mediaIdCompareFailed": "无法比对媒体 ID。",
+      "mediaUrlCompareFailed": "无法比对媒体 URL。",
+      "missingMediaReference": "导入引用的媒体不存在：{id}",
+      "mediaUuidUnavailable": "无法生成媒体 UUID，已停止写入。",
+      "mediaLinkReadFailed": "无法验证文章与媒体关联。",
+      "zipTooLarge": "文件超过 512 MiB 安全上限，未读取或解析。",
+      "importLinkedComplete": "文章新增 {articles} 条、媒体新增 {media} 条、文章媒体关联更新 {linked} 条；跳过 {skipped} 条。",
+      "refreshMediaSuffix": "；媒体新增 {media} 条；关联更新 {linked} 条。",
       "importTitle": "数据导入",
       "zipInspecting": "正在识别 ZIP 内容…",
       "zipInspected": "ZIP 检查完成，共 {count} 个项目；尚未导入任何数据。",
@@ -959,6 +976,8 @@
       "save": "保存"
     },
     "editBlocks": {
+      "edit": "编辑",
+      "editSuggestion": "编辑搜索建议",
       "moving": "正在调整区块顺序…",
       "moved": "区块顺序已保存。其他未保存的文字修改仍保留在草稿中。",
       "moveFailed": "区块移动失败：{error}",
