@@ -272,7 +272,7 @@ test('exact style-tag search returns its complete intro as a separate recommenda
 });
 
 test('style-tag recommendations stay above article results without reordering peers',()=>{
-  const source=extract('app/modular/features/Search.jsx','function prioritizeStyleTagResults(', '\n\nexport default function Search(');
+  const source=extract('app/modular/features/Search.jsx','function prioritizeStyleTagResults(', '\n\nfunction searchHref(');
   const prioritizeStyleTagResults=vm.runInNewContext(source+'; prioritizeStyleTagResults');
   const rows=[{id:'article-a'},{id:'style-a',styleTagMatch:true},{id:'article-b'},{id:'style-b',styleTagMatch:true}];
   assert.deepEqual(Array.from(prioritizeStyleTagResults(rows),row=>row.id),['style-a','style-b','article-a','article-b']);
@@ -336,7 +336,8 @@ test('search reference section uses existing editable page=search BlockNote cont
   assert.ok(source.includes('selectCultureTimeRows('));
   assert.ok(source.includes('import ScopeEditableBlocks'));
   assert.ok(source.includes('page="search"'));
-  assert.ok(source.includes('scopeId="loc"'));
+  assert.ok(source.includes('scopeId={scopeId}'));
+  assert.ok(!source.includes('scopeId="loc"'),'Do not share LOC Search block across independent Scope pages');;
   assert.ok(source.includes('orders={SEARCH_REFERENCE_ORDERS}'));
   assert.ok(source.includes('allowDelete={false}'));
   assert.ok(source.includes('allowImages={false}'));
