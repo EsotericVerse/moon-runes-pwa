@@ -10,11 +10,11 @@ import {canonicalArchiveText} from './archive-record-identity.mjs';
 
 export const ARCHIVE_CHUNK_BYTES=128*1024;
 // Reject oversized archives before reading any bytes. Only approved entries are inflated.
-export const ARCHIVE_MAX_BYTES=512*1024*1024;
-const MAX_EXTRACTED=1024*1024*1024;
+export const ARCHIVE_MAX_BYTES=10_000_000;
+const MAX_EXTRACTED=30*1024*1024;
 const MAX_FILES=20000,MAX_TEXT_DOCUMENT=8*1024*1024;
-const MAX_STRUCTURED_DOCUMENT=128*1024*1024;
-const MAX_SNIFF_INFLATE=16*1024*1024;
+const MAX_STRUCTURED_DOCUMENT=10_000_000;
+const MAX_SNIFF_INFLATE=2*1024*1024;
 const YTD=/^\s*(?:\/\*[\s\S]*?\*\/\s*)?window\.YTD\.[\w-]+\.part\d+\s*=\s*/;
 const textExtension=/\.(?:json|js|txt|md|csv|tsv|html?|xml|log|jsonl)$/i;
 const mediaExtension=/\.(?:jpe?g|png|gif|webp|heic|bmp|avif|tiff?|mp4|mov|avi|mkv|webm|m4v|pdf|mp3|ogg|wav|flac|m4a|aac|zip|7z|rar|tar|gz|woff2?|svg|ico|exe|dll|bin|sqlite|db)$/i;
@@ -302,7 +302,7 @@ const ZIP_SNIFF_FILES=160;
 export async function detectZipArchiveSource(file,{signal,onProgress}={}){
   if(!file||typeof file.slice!=='function'||!Number.isSafeInteger(file.size)||file.size<=0)
     throw new Error('請選擇有效的 ZIP 備份檔。');
-  if(file.size>ARCHIVE_MAX_BYTES)throw new Error('ZIP 超過 512 MiB 安全限制；未讀取檔案內容。');
+  if(file.size>ARCHIVE_MAX_BYTES)throw new Error('ZIP 超過 10 MB 安全限制；未讀取檔案內容。');
   const magic=new Uint8Array(await file.slice(0,4).arrayBuffer());
   if(magic[0]!==80||magic[1]!==75||![3,5,7].includes(magic[2]))
     throw new Error('檔案內容不是有效的 ZIP 標頭。');
@@ -352,8 +352,8 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
       if(error)throw error;
       extractedBytes+=data.length;
       received+=data.length;
-      if(received>MAX_SNIFF_INFLATE)throw new Error('ZIP 取樣檔案解壓超過 16 MiB，已停止辨識。');
-      if(extractedBytes>MAX_EXTRACTED)throw new Error('ZIP 解壓資料超過 1 GiB，已停止辨識。');
+      if(received>MAX_SNIFF_INFLATE)throw new Error('ZIP 取樣檔案解壓超過 2 MiB，已停止辨識。');
+      if(extractedBytes>MAX_EXTRACTED)throw new Error('ZIP 解壓資料超過 30 MiB，已停止辨識。');
       if(length<ZIP_SNIFF_BYTES){
         const part=data.subarray(0,ZIP_SNIFF_BYTES-length);
         samples.push(part);length+=part.length;
@@ -382,7 +382,7 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
 export async function inspectPrivateArchive(file,{onRecord,onProgress,flush,signal}={}){
   if(!file||typeof file.slice!=='function'||!Number.isSafeInteger(file.size)||file.size<=0)
     throw new Error('請選擇有效的本機備份檔。');
-  if(file.size>ARCHIVE_MAX_BYTES)throw new Error('檔案超過 512 MiB 安全限制；未讀取檔案內容。');
+  if(file.size>ARCHIVE_MAX_BYTES)throw new Error('檔案超過 10 MB 安全限制；未讀取檔案內容。');
   if(typeof onRecord!=='function')throw new Error('缺少私人本機寫入管線。');
   const summary=fileSummary();
   const prefix=new Uint8Array(await file.slice(0,4).arrayBuffer());
@@ -426,7 +426,7 @@ export async function inspectPrivateArchive(file,{onRecord,onProgress,flush,sign
       entry.ondata=(error,data,final)=>{
         if(error)throw error;
         extracted+=data.length;
-        if(extracted>MAX_EXTRACTED)throw new Error('解壓超過 1 GiB，拒絕繼續展開。');
+        if(extracted>MAX_EXTRACTED)throw new Error('解壓超過 30 MiB，拒絕繼續展開。');
         textSize+=data.length;
         if(textSize>sizeLimit)throw new Error(path+'：解壓後單檔超過安全上限。');
         if(isStructured)sink.push(data,Boolean(final));
@@ -466,7 +466,7 @@ export async function inspectPrivateArchive(file,{onRecord,onProgress,flush,sign
       textDocument(buffer,path,summary,onRecord);
       summary.bytesRead=file.size;
     }else{
-      if(file.size>MAX_STRUCTURED_DOCUMENT)throw new Error('結構化檔案超過 128 MiB 上限，未嘗試解析。');
+      if(file.size>MAX_STRUCTURED_DOCUMENT)throw new Error('結構化檔案超過 10 MB 上限，未嘗試解析。');
       const sink=createSink(path,summary,onRecord,signal);
       for(let offset=0;offset<file.size;offset+=ARCHIVE_CHUNK_BYTES){
         const chunk=await read(offset);
