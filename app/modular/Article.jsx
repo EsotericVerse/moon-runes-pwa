@@ -5,14 +5,16 @@ import BlockNoteEditor from '../loc/BlockNoteEditor';
 import ArticleBodyEditor from '../loc/ArticleBodyEditor';
 import {UI_COPY} from '../i18n/ui-copy';
 import {blocksToPlainText} from '../loc/blocknote-content.mjs';
-import UiText from '../i18n/UiText';
+import UiText,{useUiText} from '../i18n/UiText';
 import {isInteractiveContentTarget} from '../loc/inline-edit-interaction.mjs';
 import {galaxyMediaHref} from './feature-navigation';
 
 
 // Shared article(uid) list module for Search and Culture.
-export function ArticleInlineEditor({draft,onChange,showHidden=false,attributeFields=null,showBodyEditor=true,attributeTitle='文章屬性',mediaScopeId=''}){
+export function ArticleInlineEditor({draft,onChange,showHidden=false,attributeFields=null,showBodyEditor=true,attributeTitle='',mediaScopeId=''}){
+  const t=useUiText();
   if(!draft)return null;
+  const resolvedAttributeTitle=attributeTitle||t('uiExtra.searchUI.attributeTitle');
   return <div className="scope-editor scope-search-article-editor">
     {showBodyEditor?<div className="scope-editor-blocknote"><span>{UI_COPY.common.body}</span>
       <ArticleBodyEditor
@@ -25,12 +27,12 @@ export function ArticleInlineEditor({draft,onChange,showHidden=false,attributeFi
     {showHidden?<div className="scope-editor-options">
       <label><input type="checkbox" checked={draft.hidden===true} onChange={event=>onChange(current=>({...current,hidden:event.target.checked,attrs:current.attrs?{...current.attrs,searchable:!event.target.checked}:current.attrs}))}/>{UI_COPY.common.hiddenFromSearch}</label>
     </div>:null}
-    {Array.isArray(attributeFields)&&attributeFields.length?<section className="scope-search-attr-panel" aria-label={attributeTitle}>
-      <h3 className="scope-search-attr-heading">{attributeTitle}</h3>
+    {Array.isArray(attributeFields)&&attributeFields.length?<section className="scope-search-attr-panel" aria-label={resolvedAttributeTitle}>
+      <h3 className="scope-search-attr-heading">{resolvedAttributeTitle}</h3>
       <div className="scope-search-attr-grid">
         {attributeFields.map(({key,kind='text',readOnly=false})=>{
           const current=draft.attrs?.[key];
-          const editValue=key==='title'?draft.title:key==='content'?'由上方 BlockNote 編輯':current;
+          const editValue=key==='title'?draft.title:key==='content'?t('uiExtra.searchUI.attrShown'):current;
           const setValue=value=>onChange(previous=>({...previous,attrs:{...(previous.attrs||{}),[key]:value}}));
           return <label className={'scope-search-attr-item'+(!readOnly?' is-editable':'')} key={key}>
             <span className="scope-search-attr-name">{key}</span>
@@ -43,7 +45,7 @@ export function ArticleInlineEditor({draft,onChange,showHidden=false,attributeFi
                 value={String(current??'')} onChange={event=>setValue(event.target.value)}/>
               :<input aria-label={key} type={kind==='date'?'datetime-local':kind==='number'?'number':'text'}
                 value={String(current??'')} onChange={event=>setValue(event.target.value)}/>} 
-            {key==='media_link'&&mediaScopeId?String(current||'').split(/[\n,]+/).map(id=>id.trim()).filter(Boolean).map(id=><a key={id} href={galaxyMediaHref(mediaScopeId,id)} className="scope-search-media-edit-link">編輯媒體：{id}</a>):null}
+            {key==='media_link'&&mediaScopeId?String(current||'').split(/[\n,]+/).map(id=>id.trim()).filter(Boolean).map(id=><a key={id} href={galaxyMediaHref(mediaScopeId,id)} className="scope-search-media-edit-link">{t('uiExtra.searchUI.editMedia',{id})}</a>):null}
           </label>;
         })}
       </div>
@@ -52,6 +54,7 @@ export function ArticleInlineEditor({draft,onChange,showHidden=false,attributeFi
 }
 
 export default function Article({uid,title,source='',scopeId='',date='',body='',hidden=false,relationLinks=[],links=[],destinations=[],editable=false,editing=false,onEdit,editorDraft=null,onDraftChange,onSave,onDelete,onCancel,editBusy=false,editError='',showHidden=false,attributeFields=null,styleTag=false,styleTagKicker=null,styleIntroText='',children=null,showBodyEditor=true,attributeTitle='文章屬性',mediaScopeId=''}){
+  const t=useUiText();
   const richBody=typeof body==='string'&&/<[a-z][^>]*>/i.test(body);
   const onClickCapture=editable&&!editing&&typeof onEdit==='function'?event=>{
     if(!isInteractiveContentTarget(event.target))onEdit(uid);
@@ -68,7 +71,7 @@ export default function Article({uid,title,source='',scopeId='',date='',body='',
   // the existing scoped Galaxy Media attribute editor while an article is edited.
   const mediaEditLinks=editingReady&&mediaScopeId?links
     .filter(link=>String(link?.id||'').startsWith('media:'))
-    .map(link=>({id:'edit:'+link.id,label:link.label||'媒體連結',href:galaxyMediaHref(mediaScopeId,String(link.id).slice(6))}))
+    .map(link=>({id:'edit:'+link.id,label:link.label||t('uiExtra.searchUI.mediaAttributes'),href:galaxyMediaHref(mediaScopeId,String(link.id).slice(6))}))
     .filter(link=>link.href):[];
   const visibleLinks=mediaEditLinks.length?links.filter(link=>!String(link?.id||'').startsWith('media:')):links;
   const visibleRelations=mediaEditLinks.length?[...relationLinks,...mediaEditLinks]:relationLinks;
