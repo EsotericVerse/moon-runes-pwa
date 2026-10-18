@@ -10,7 +10,7 @@ import {isInteractiveContentTarget} from '../loc/inline-edit-interaction.mjs';
 
 
 // Shared article(uid) list module for Search and Culture.
-export function ArticleInlineEditor({draft,onChange,showHidden=false,editorExtra=null}){
+export function ArticleInlineEditor({draft,onChange,showHidden=false,attributeFields=null}){
   if(!draft)return null;
   return <div className="scope-editor scope-search-article-editor">
     <div className="scope-editor-blocknote"><span>{UI_COPY.common.body}</span>
@@ -24,11 +24,32 @@ export function ArticleInlineEditor({draft,onChange,showHidden=false,editorExtra
     {showHidden?<div className="scope-editor-options">
       <label><input type="checkbox" checked={draft.hidden===true} onChange={event=>onChange(current=>({...current,hidden:event.target.checked,attrs:current.attrs?{...current.attrs,searchable:!event.target.checked}:current.attrs}))}/>{UI_COPY.common.hiddenFromSearch}</label>
     </div>:null}
-    {editorExtra}
+    {Array.isArray(attributeFields)&&attributeFields.length?<section className="scope-search-attr-panel" aria-label="文章屬性">
+      <h3 className="scope-search-attr-heading">文章屬性</h3>
+      <div className="scope-search-attr-grid">
+        {attributeFields.map(({key,kind='text',readOnly=false})=>{
+          const current=draft.attrs?.[key];
+          const editValue=key==='title'?draft.title:key==='content'?'由上方 BlockNote 編輯':current;
+          const setValue=value=>onChange(previous=>({...previous,attrs:{...(previous.attrs||{}),[key]:value}}));
+          return <label className={'scope-search-attr-item'+(!readOnly?' is-editable':'')} key={key}>
+            <span className="scope-search-attr-name">{key}</span>
+            {readOnly?<span className="scope-search-attr-value">{String(editValue??'')}</span>
+              :kind==='boolean'?<span className="scope-search-attr-boolean">
+                <input type="checkbox" checked={current===true} onChange={event=>setValue(event.target.checked)}/>
+                <span>{current===true?'true':'false'}</span>
+              </span>
+              :kind==='array'||kind==='multiline'?<textarea rows={2} aria-label={key}
+                value={String(current??'')} onChange={event=>setValue(event.target.value)}/>
+              :<input aria-label={key} type={kind==='date'?'datetime-local':kind==='number'?'number':'text'}
+                value={String(current??'')} onChange={event=>setValue(event.target.value)}/>}
+          </label>;
+        })}
+      </div>
+    </section>:null}
   </div>;
 }
 
-export default function Article({uid,title,source='',scopeId='',date='',body='',hidden=false,relationLinks=[],links=[],destinations=[],editable=false,editing=false,onEdit,editorDraft=null,onDraftChange,onSave,onDelete,onCancel,editBusy=false,editError='',showHidden=false,editorExtra=null,styleTag=false,styleTagKicker=null,styleIntroText='',children=null}){
+export default function Article({uid,title,source='',scopeId='',date='',body='',hidden=false,relationLinks=[],links=[],destinations=[],editable=false,editing=false,onEdit,editorDraft=null,onDraftChange,onSave,onDelete,onCancel,editBusy=false,editError='',showHidden=false,attributeFields=null,styleTag=false,styleTagKicker=null,styleIntroText='',children=null}){
   const richBody=typeof body==='string'&&/<[a-z][^>]*>/i.test(body);
   const onClickCapture=editable&&!editing&&typeof onEdit==='function'?event=>{
     if(!isInteractiveContentTarget(event.target))onEdit(uid);
@@ -46,7 +67,7 @@ export default function Article({uid,title,source='',scopeId='',date='',body='',
     destinations={destinations} className={styleTag?'scope-article-style-tag-hit':''} onClickCapture={onClickCapture}>
     {styleTag&&!editingReady&&styleIntroText?<div className="scope-style-tag-search-intro">{styleIntroText}</div>:null}
     {richBody&&!editingReady?<div className="scope-article-block-display"><BlockNoteEditor editable={false} initialContent={body}/></div>:null}
-    {editingReady?<ArticleInlineEditor draft={editorDraft} onChange={onDraftChange} showHidden={showHidden} editorExtra={editorExtra}/>:null}
+    {editingReady?<ArticleInlineEditor draft={editorDraft} onChange={onDraftChange} showHidden={showHidden} attributeFields={attributeFields}/>:null}
     {children}
   </WorkSummaryCard>;
 }
