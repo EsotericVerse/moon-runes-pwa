@@ -74,6 +74,8 @@ export default function ScopeEditableBlocks({
   allowDelete=true,
   allowEntities=true,
   allowInlineChildAdd=false,
+  explicitEditButton=false,
+  onSuggestionClick=null,
   allowImages=true,
   editEyebrow=true,
   slotTag='section',
@@ -299,10 +301,24 @@ export default function ScopeEditableBlocks({
     }
   }
 
+  function recommendationTerm(raw){
+    return String(raw||'').replace(/<[^>]*>/g,' ').replace(/&nbsp;/gi,' ').replace(/\s+/g,' ').trim();
+  }
+  function selectSuggestion(text){
+    if(typeof onSuggestionClick==='function'){
+      const term=recommendationTerm(text);
+      if(term)onSuggestionClick(term);
+    }
+  }
+
   function renderEntities(entities,editable=false){
     if(!entities.length&&!editable)return null;
     return <div className="scope-block-entity-grid">
-      {entities.map((entity,index)=><article className={childPresentation(entity.title)==='card'?'scope-block-entity':'loc-bubble scope-block-text-bubble'} key={entity.uid}>
+      {entities.map((entity,index)=><article className={childPresentation(entity.title)==='card'?'scope-block-entity':'loc-bubble scope-block-text-bubble'} key={entity.uid}
+        role={!editable&&onSuggestionClick?'link':undefined}
+        tabIndex={!editable&&onSuggestionClick?0:undefined}
+        onKeyDown={!editable&&onSuggestionClick?event=>{if(event.key==='Enter'&&!isInteractiveContentTarget(event.target)){event.stopPropagation();selectSuggestion(entity.title||entity.text);}}:undefined}
+        onClick={!editable&&onSuggestionClick?event=>{if(!isInteractiveContentTarget(event.target)){event.stopPropagation();selectSuggestion(entity.title||entity.text);}}:undefined}>
         {editable?<>
           <div className="scope-block-entity-actions">
             <button type="button" className="loc-button" disabled={index===0||busy} onClick={()=>moveEntity(index,-1)}>←</button>
@@ -351,7 +367,8 @@ export default function ScopeEditableBlocks({
         key={slot.uid||'order:'+slot.order}
         data-page-name={pageName}
         data-block-order={slot.order}
-        onClickCapture={canEdit&&!active?event=>{if(!isInteractiveContentTarget(event.target))begin(slot)}:undefined}
+        onClickCapture={canEdit&&!active&&!explicitEditButton?event=>{if(!isInteractiveContentTarget(event.target))begin(slot)}:undefined}
+        onClick={!active&&onSuggestionClick?event=>{if(!isInteractiveContentTarget(event.target))selectSuggestion(slot.text||slot.subtitle||slot.title)}:undefined}
       >
         {active?<>
           <div className="scope-inline-editbar">
@@ -405,6 +422,7 @@ export default function ScopeEditableBlocks({
           />
           {allowEntities?renderEntities(draft.entities,true):null}
         </>:<>
+          {canEdit&&explicitEditButton?<button type="button" className="loc-button scope-search-block-edit" onClick={()=>begin(slot)} aria-label="編輯搜尋建議">編輯</button>:null}
           {typeof renderDisplay==='function'
             ?renderDisplay(slot)
             :<>
@@ -420,7 +438,7 @@ export default function ScopeEditableBlocks({
             onClick={()=>beginWithChild(slot)}
             disabled={busy}
           ><UiText id="uiExtra.editBlocks.addChild"/></button>:null}
-          {empty&&canEdit?<p className="scope-status"><UiText id="uiExtra.editBlocks.clickToCreate"/></p>:null}
+          {empty&&canEdit&&!explicitEditButton?<p className="scope-status"><UiText id="uiExtra.editBlocks.clickToCreate"/></p>:null}
         </>}
       </SlotTag>;
     })}
