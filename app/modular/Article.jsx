@@ -64,8 +64,16 @@ export default function Article({uid,title,source='',scopeId='',date='',body='',
     {editError?<span className="scope-inline-save-status scope-error" role="alert">{editError}</span>:null}
   </div>:null;
   const titleEditor=editingReady?<input className="scope-article-edit-title" aria-label={UI_COPY.common.title} value={editorDraft.title||''} onChange={event=>onDraftChange(current=>({...current,title:event.target.value}))}/>:null;
+  // The same saved media relationship links externally in view mode, but opens
+  // the existing scoped Galaxy Media attribute editor while an article is edited.
+  const mediaEditLinks=editingReady&&mediaScopeId?links
+    .filter(link=>String(link?.id||'').startsWith('media:'))
+    .map(link=>({id:'edit:'+link.id,label:link.label||'媒體連結',href:galaxyMediaHref(mediaScopeId,String(link.id).slice(6))}))
+    .filter(link=>link.href):[];
+  const visibleLinks=mediaEditLinks.length?links.filter(link=>!String(link?.id||'').startsWith('media:')):links;
+  const visibleRelations=mediaEditLinks.length?[...relationLinks,...mediaEditLinks]:relationLinks;
   return <WorkSummaryCard title={title} titleEditor={titleEditor} kicker={styleTag?styleTagKicker:null} source={source} scopeId={scopeId} date={editingReady?'':date} actions={editorActions}
-    body={editingReady||richBody||styleTag?'':body} hidden={hidden} relationLinks={relationLinks} links={links}
+    body={editingReady||richBody||styleTag?'':body} hidden={hidden} relationLinks={visibleRelations} links={visibleLinks}
     destinations={destinations} className={styleTag?'scope-article-style-tag-hit':''} onClickCapture={onClickCapture}>
     {styleTag&&!editingReady&&styleIntroText?<div className="scope-style-tag-search-intro">{styleIntroText}</div>:null}
     {richBody&&!editingReady?<div className="scope-article-block-display"><BlockNoteEditor editable={false} initialContent={body}/></div>:null}
