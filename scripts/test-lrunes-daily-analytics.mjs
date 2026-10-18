@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {readFileSync} from 'node:fs';
 import {
-  normalizeDailyDraws,rankDailyDraws,pageDailyRanking,summarizeDailyDraws,dailyCategoryTrend,
+  normalizeDailyDraws,rankDailyDraws,pageDailyRanking,summarizeDailyDraws,dailyCategoryTrend,dailyDirectionTrend,
   DAILY_RUNE_PAGE_SIZE,DAILY_RUNE_MODES,DAILY_DIRECTIONS,dailyCategoryKey
 } from '../app/lrunes/daily-analytics-model.mjs';
 
@@ -115,6 +115,23 @@ test('both new statistical dimensions use exactly the same keys for ranking and 
   assert.equal(monthly.length,1);
   assert.equal(monthly[0][positive],3);
   assert.equal(monthly[0][reverse],1);
+});
+
+test('weekly direction trend scores card direction, combines card face, and exposes unknown uncertainty',()=>{
+  const trend=dailyDirectionTrend([
+    {record_date:'2026-10-05',direction:'正位',card_attr:1,rune_name:'向'},
+    {record_date:'2026-10-07',direction:'半正位',card_attr:2,rune_name:'韻'},
+    {record_date:'2026-10-12',direction:'逆位',card_attr:4,rune_name:'界'}
+  ],'2026-10-05','2026-10-18');
+  assert.equal(trend.length,2);
+  assert.equal(trend[0].period,'10/05');
+  assert.equal(trend[0].directionAverage,0.75);
+  assert.equal(trend[0].combinedAverage,1.25);
+  assert.equal(trend[0].runeLabels,'向 · 韻');
+  assert.equal(trend[1].directionAverage,-1);
+  assert.equal(trend[1].combinedAverage,-1);
+  assert.equal(trend[1].combinedLow,-1.2);
+  assert.equal(trend[1].combinedHigh,-0.8);
 });
 
 test('Culture Daily Rune river must not reference the statistics-only earliest query',()=>{
