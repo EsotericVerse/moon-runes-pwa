@@ -127,13 +127,13 @@ function changedMediaAttributes(draft,t){
   for(const key of ['galaxy_link','source_native_id','source_place','media_type','url','meta_tags']){
     if(current[key]!==initial[key])changed[key]=nullableText(current[key]);
   }
-  if(Object.hasOwn(changed,'media_type')&&!changed.media_type)throw new Error('media_type 不可為空。');
-  if(changed.galaxy_link&&!/^[a-z0-9]{8}$/i.test(changed.galaxy_link))throw new Error('galaxy_link 必須是八位文章 UID。');
+  if(Object.hasOwn(changed,'media_type')&&!changed.media_type)throw new Error(t('uiExtra.searchUI.mediaTypeRequired'));
+  if(changed.galaxy_link&&!/^[a-z0-9]{8}$/i.test(changed.galaxy_link))throw new Error(t('uiExtra.searchUI.mediaLinkUidInvalid'));
   if(current.createtime!==initial.createtime)changed.createtime=isoOrNull(current.createtime,t);
   if(current.rune_references!==initial.rune_references){
     const value=String(current.rune_references||'').trim();
     if(!value)changed.rune_references=null;
-    else {try{changed.rune_references=JSON.parse(value)}catch{throw new Error('rune_references 必須是有效 JSON。')}}
+    else {try{changed.rune_references=JSON.parse(value)}catch{throw new Error(t('uiExtra.searchUI.runeReferencesInvalid'))}}
   }
   return changed;
 }
@@ -273,7 +273,7 @@ function uniqueExternalLinks(links=[]){
     const href=String(link?.href||'').trim();
     if(!/^https?:\/\//i.test(href))continue;
     const prior=byHref.get(href);
-    if(!prior||(['外部連結','媒體連結'].includes(prior.label)&&!['外部連結','媒體連結'].includes(link.label)))byHref.set(href,link);
+    if(!prior||([UI_COPY.search.externalLink,UI_COPY.search.mediaLink].includes(prior.label)&&![UI_COPY.search.externalLink,UI_COPY.search.mediaLink].includes(link.label)))byHref.set(href,link);
   }
   return [...byHref.values()];
 }
@@ -565,8 +565,8 @@ export default function Search(){
     setError('');setStatus('');setResults([]);setEditDraft(null);setEditingKey('');
     setHasMore(false);setNextCursor(null);setFullText('');setFullTextRow(null);
     try{
-      if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(mediaId))throw new Error('媒體 ID 格式無效。');
-      if(!canManageSearchScope(account,scopeId))throw new Error(UI_COPY.search.editDenied);
+      if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(mediaId))throw new Error(t('uiExtra.searchUI.invalidMediaId'));
+      if(!canManageSearchScope(account,scopeId))throw new Error(t('uiExtra.searchUI.mediaManageDenied'));
       const scopeData=defaultScopeData(scopeId);
       if(!scopeData?.galaxyMedia)throw new Error(UI_COPY.search.notFound);
       const row=await selectPublicEditableRow(scopeData.galaxyMedia,'media_id',mediaId,MEDIA_EDITOR_COLUMNS,{authenticated:true});
@@ -887,7 +887,7 @@ export default function Search(){
           showHidden={false}
           attributeFields={editable?(row.resourceType==='galaxy'?GALAXY_ATTR_FIELDS:row.resourceType==='galaxy_media'?MEDIA_ATTR_FIELDS:null):null}
           mediaScopeId={editable&&row.resourceType==='galaxy'?row.scopeId:''}
-          attributeTitle={row.resourceType==='galaxy_media'?'媒體屬性':'文章屬性'}
+          attributeTitle={row.resourceType==='galaxy_media'?t('uiExtra.searchUI.mediaAttributes'):t('uiExtra.searchUI.attributeTitle')}
           showBodyEditor={row.resourceType==='galaxy'}
           styleTag={row.styleTagMatch}
           styleTagKicker={row.styleTagMatch?<UiText id="uiExtra.searchUI.styleRecommendations"/>:null}
