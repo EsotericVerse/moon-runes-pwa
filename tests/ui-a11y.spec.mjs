@@ -19,7 +19,7 @@ for(const route of ROUTES){
     const overflow=await page.evaluate(()=>Math.max(0,document.documentElement.scrollWidth-document.documentElement.clientWidth));
     expect(overflow).toBeLessThanOrEqual(2);
 
-    const main=page.locator('.loc-next-main,.scope-main').first();
+    const main=page.locator('main,.loc-next-main,.scope-main').first();
     await expect(main).toBeVisible();
 
     await page.screenshot({
