@@ -20,7 +20,8 @@
 }
 .loc-home-block__header{
   display:grid;
-  grid-template-columns:max-content minmax(0,1fr);
+  /* Both tracks must be bounded: unbroken author text cannot expand max-content. */
+  grid-template-columns:minmax(0,2fr) minmax(0,3fr);
   column-gap:1.5rem;
   align-items:start;
   margin-bottom:1rem;
