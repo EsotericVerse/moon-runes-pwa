@@ -4,8 +4,8 @@
 
 import {CultureTimelineModel} from '../modular/modules/culture-timeline/culture-timeline-model';
 import {workDisplayText} from '../modular/work-display-model';
-import {resolveGalaxyExternalLinks,selectCategoryCounts,selectDailyCategoryCounts,selectSourceCatalog,selectSourceDaily} from './galaxy-query';
-import {DB_QUERY_BATCH_SIZE,selectCount,selectRows} from './db-query.mjs';
+import {resolveGalaxyExternalLinks,selectDailyCategoryCounts} from './galaxy-query';
+import {DB_QUERY_BATCH_SIZE,selectAllRows,selectCount,selectRows} from './db-query.mjs';
 import {publicContentFilters} from './content-policy';
 import {selectManagedScope,selectManagedScopes} from './scope-data';
 
@@ -388,12 +388,43 @@ export async function selectScopeCultureData(scopeId){
 export async function selectScopePeriodSourceSnapshot(scope,{startDate='',endDate=null}={}){
   const scopeId=scopeIdOf(scope?.id);
   if(!scopeId)throw new Error('scopeId is required');
-  const [catalog,daily,mediaCatalog,mediaDaily]=await Promise.all([
-    selectSourceCatalog(scope,{startDate,endDate:endDate||'',limit:DB_QUERY_BATCH_SIZE}),
-    selectSourceDaily(scope,{startDate,endDate:endDate||''}),
-    selectCategoryCounts(scope.galaxyMedia,'media_type',{startDate,endDate,limit:DB_QUERY_BATCH_SIZE}),
-    selectDailyCategoryCounts(scope.galaxyMedia,'media_type',{startDate,endDate})
+  // Read each corpus only once. Category totals and daily density are two
+  // projections of the same metadata, not four separate database scans.
+  const [textResult,mediaResult]=await Promise.all([
+    selectAllRows(scope.galaxy,{
+      columns:'source_name,createtime',
+      filters:publicContentFilters([
+        ...dateFilters(startDate,endDate),
+        {column:'statistics_able',operator:'eq',value:true}
+      ])
+    }),
+    selectAllRows(scope.galaxyMedia,{
+      columns:'media_type,createtime',
+      filters:dateFilters(startDate,endDate)
+    })
   ]);
+  const summarize=(rows,column,includeEmpty)=>{
+    const catalog=new Map(),daily=new Map();
+    for(const row of rows){
+      const category=String(row?.[column]||'').trim();
+      if(!includeEmpty&&!category)continue;
+      catalog.set(category,(catalog.get(category)||0)+1);
+      const day=String(row?.createtime||'').slice(0,10);
+      if(!day)continue;
+      const key=day+'\u0000'+category;
+      daily.set(key,(daily.get(key)||0)+1);
+    }
+    return {
+      catalog:[...catalog].map(([term,item_count])=>({term,item_count}))
+        .sort((a,b)=>b.item_count-a.item_count||a.term.localeCompare(b.term)),
+      daily:[...daily].map(([key,item_count])=>{
+        const split=key.indexOf('\u0000');
+        return {day:key.slice(0,split),category:key.slice(split+1),item_count};
+      }).sort((a,b)=>a.day.localeCompare(b.day)||a.category.localeCompare(b.category))
+    };
+  };
+  const text=summarize(textResult.rows,'source_name',true);
+  const media=summarize(mediaResult.rows,'media_type',false);
 
   const groupMap=new Map(LOC_SOURCE_ORDER.map(category=>[category,{
     category_key:'source:'+category,
@@ -404,13 +435,13 @@ export async function selectScopePeriodSourceSnapshot(scope,{startDate='',endDat
     source_names:[],
     media_types:[]
   }]));
-  for(const row of catalog.rows){
-    const category=locSourceCategory(row.source_name);
+  for(const row of text.catalog){
+    const category=locSourceCategory(row.term);
     const group=groupMap.get(category);
     group.item_count+=(Number(row.item_count)||0);
-    group.source_names.push(String(row.source_name||'').trim());
+    group.source_names.push(String(row.term||'').trim());
   }
-  for(const row of mediaCatalog){
+  for(const row of media.catalog){
     const category=locSourceCategory(row.term);
     const group=groupMap.get(category);
     group.item_count+=(Number(row.item_count)||0);
@@ -418,14 +449,14 @@ export async function selectScopePeriodSourceSnapshot(scope,{startDate='',endDat
   }
 
   const combined=new Map();
-  for(const row of daily){
-    const category=locSourceCategory(row.source_name);
+  for(const row of text.daily){
+    const category=locSourceCategory(row.category);
     const day=String(row.day||'').slice(0,10);
     if(!day)continue;
     const key=category+'|'+day;
     combined.set(key,(combined.get(key)||0)+(Number(row.item_count)||0));
   }
-  for(const row of mediaDaily){
+  for(const row of media.daily){
     const category=locSourceCategory(row.category);
     const day=String(row.day||'').slice(0,10);
     if(!day)continue;
