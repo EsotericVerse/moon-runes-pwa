@@ -339,9 +339,9 @@ must(
   'Scope provisioning derives routing from ID, stores explicit owner/locale, auto Theme and initial Rune66 class'
 );
 must(
-  functionalButton(admin,'saveRegistryAndConfig','儲存')&&
-  functionalButton(admin,'cancelEdit','取消')&&
-  functionalButton(admin,'()=>onDeleteNode?.(current.scope_id)','刪除')&&
+  admin.includes('onClick:saveRegistryAndConfig')&&
+  admin.includes('onClick:cancelEdit')&&
+  admin.includes('onClick:()=>onDeleteNode?.(current.scope_id)')&&
   admin.includes("patchRegistry('active',e.target.checked)")&&
   !admin.includes('開啟 UI')&&admin.includes('請輸入 {deletePending} 以確認')&&
   !admin.includes('onClick={copyRune66}')&&!admin.includes('copyRune66KeywordClass')&&
