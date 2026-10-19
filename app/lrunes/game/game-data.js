@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {selectCount,selectRows} from '../../loc/db-query.mjs';
+import {selectAllRows} from '../../loc/db-query.mjs';
 
 const RuneRow=z.object({
   rune_id:z.coerce.number().int().min(0).max(66),
@@ -118,14 +118,10 @@ async function selectGameRunes(){
     {column:'rune_id',operator:'gte',value:0},
     {column:'rune_id',operator:'lte',value:66}
   ];
-  const total=await selectCount('silver.runes',{idColumn:'rune_id',filters});
-  if(!total)return [];
-  const {rows}=await selectRows('silver.runes',{
+  const {rows}=await selectAllRows('silver.runes',{
     columns:GAME_RUNE_COLUMNS,
     filters,
-    orders:[{column:'rune_id',ascending:true}],
-    limit:total,
-    offset:0
+    orders:[{column:'rune_id',ascending:true}]
   });
   return z.array(RuneRow).parse(rows);
 }
@@ -137,14 +133,10 @@ async function selectGameType(recordType){
     {column:'is_current',operator:'eq',value:true},
     {column:'record_type',operator:'eq',value:recordType}
   ];
-  const total=await selectCount('silver.game',{idColumn:'game_key',filters});
-  if(!total)return [];
-  const {rows}=await selectRows('silver.game',{
+  const {rows}=await selectAllRows('silver.game',{
     columns,
     filters,
-    orders:[{column:'sort_order',ascending:true}],
-    limit:total,
-    offset:0
+    orders:[{column:'sort_order',ascending:true}]
   });
   return z.array(GameRow).parse(rows);
 }
