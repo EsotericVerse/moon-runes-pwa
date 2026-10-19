@@ -894,6 +894,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       range={queryRange}
       zoomLevel={zoomLevel}
       onZoomLevelChange={setZoomLevel}
+      sharedCatalog={mediaDimension?null:sourceCatalog}
     />:null}
     </>}
   </section>;
