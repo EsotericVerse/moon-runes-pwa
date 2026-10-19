@@ -20,9 +20,8 @@
 }
 .loc-home-block__header{
   display:grid;
-  /* Both tracks must be bounded: unbroken author text cannot expand max-content. */
-  grid-template-columns:minmax(0,2fr) minmax(0,3fr);
-  column-gap:1.5rem;
+  /* Text headings span the full block; images begin below this line. */
+  grid-template-columns:minmax(0,1fr);
   align-items:start;
   margin-bottom:1rem;
 }
@@ -53,10 +52,11 @@
   text-wrap:initial;
 }
 .loc-home-block__header>.loc-home-block__subtitle{
-  grid-column:2;
-  grid-row:1 / span 2;
-  justify-self:start;
-  max-width:38ch;
+  grid-column:1;
+  grid-row:3;
+  justify-self:stretch;
+  max-width:100%;
+  min-width:0;
   margin:.1rem 0 0;
   padding:0;
   border:0;
@@ -124,7 +124,7 @@
 .loc-home-block--with-image{
   display:grid;
   grid-template-columns:minmax(0,1.38fr) minmax(0,1fr);
-  grid-template-areas:"header media" "body media" "children children";
+  grid-template-areas:"header header" "body media" "children children";
   gap:0 1.35rem;
   align-items:start;
 }
@@ -137,8 +137,9 @@
   justify-self:center;
 }
 .loc-home-block--image-left{
-  grid-template-columns:minmax(0,1fr) minmax(0,1.38fr);
-  grid-template-areas:"media header" "media body" "children children";
+  /* Legacy left-position flags cannot move artwork above the body or into the title row. */
+  grid-template-columns:minmax(0,1.38fr) minmax(0,1fr);
+  grid-template-areas:"header header" "body media" "children children";
 }
 /* Hero keeps the already approved full-bleed background and reading contrast. */
 .loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]) .loc-home>.loc-home-block--hero{
