@@ -684,6 +684,7 @@ export default function Culture(){
       {isLrunesDaily?<LrunesDailyCulturePanel/>:isLocItemView?<LocItemConfluence/>:<>
       <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
       <h2>{UI_COPY.culture.river}</h2>
+      {query.isPending?<p className="scope-status" role="status" aria-live="polite">{UI_COPY.common.loading}</p>:null}
       {query.error?<p className='scope-status scope-error'>{featureDataErrorMessage(query.error,UI_COPY)}</p>:null}
       {!query.isPending&&!query.error&&!hasTimelineSurface?<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>:null}
       {!query.isPending&&!query.error&&hasTimelineSurface?<>
