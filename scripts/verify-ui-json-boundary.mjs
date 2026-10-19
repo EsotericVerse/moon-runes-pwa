@@ -52,6 +52,7 @@ const cleared=[
   'app/modular/features/Search.jsx',
   'app/modular/features/Statistics.jsx',
   'app/modular/modules/statistics/ScopeGroupStatistics.jsx',
+  'app/modular/modules/statistics/MediaCrossTagStatistics.jsx',
   'app/loc/ManagementImportPanel.jsx',
   'app/loc/SunoImportPanel.jsx',
   'app/loc/ScopeEditableBlocks.jsx',

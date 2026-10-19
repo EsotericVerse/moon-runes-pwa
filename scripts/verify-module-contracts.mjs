@@ -73,6 +73,7 @@ console.log('[module-contracts] audited '+mjsTotal+' .mjs (app '+
 
 // Non-source Statistics views must not load the source classification engine.
 const statisticsSource=readFileSync(resolve(root,'app/modular/features/Statistics.jsx'),'utf8');
+const mediaCrossSource=readFileSync(resolve(root,'app/modular/modules/statistics/MediaCrossTagStatistics.jsx'),'utf8');
 if(statisticsSource.includes("from '../../loc/statistics-admin-source.mjs'"))
   failures.push('Statistics eagerly imports source-classification model');
 if(!statisticsSource.includes("await import('../../loc/statistics-admin-source.mjs')")||
@@ -83,11 +84,20 @@ if(!statisticsSource.includes("await import('../../loc/statistics-admin-source.m
 // unrelated rankings; it is downloaded by the active query / chart interaction.
 if(statisticsSource.includes("from '../../loc/galaxy-query'")||
    !statisticsSource.includes("const loadGalaxyStatistics=()=>import('../../loc/galaxy-query')")||
-   !statisticsSource.includes("const {selectMediaCrossPairWorks}=await loadGalaxyStatistics()")||
+   !mediaCrossSource.includes("const {selectMediaCrossPairWorks}=await loadGalaxyStatistics()")||
    !statisticsSource.includes("const {selectMediaCrossTagRows}=await loadGalaxyStatistics()")||
    !statisticsSource.includes("const {selectScopeSourceBreakdownRows}=await loadGalaxyStatistics()")||
    !readFileSync(resolve(root,'app/modular/modules/statistics/ScopeGroupStatistics.jsx'),'utf8').includes("await import('../../../loc/statistics-group-sharing-query.mjs')"))
   failures.push('Statistics Galaxy and group-sharing engines must be loaded on the active query or interaction');
+
+// Media pair visualization and its on-click work lookup are one optional
+// capability; unrelated statistics must never instantiate its React tree.
+if(!statisticsSource.includes("dynamic(()=>import('../modules/statistics/MediaCrossTagStatistics')")||
+   statisticsSource.includes('function MediaCrossTagStatistics(')||
+   statisticsSource.includes('function MediaCrossTagPicker(')||
+   !mediaCrossSource.includes('export default function MediaCrossTagStatistics(')||
+   !mediaCrossSource.includes("const {selectMediaCrossPairWorks}=await loadGalaxyStatistics()"))
+  failures.push('Media cross-tag capability must be deferred to the active media-style view');
 
 // Suno's authoring and style classification depend on BlockNote but file/ZIP
 // import must not download them until the user opens Suno Import.
