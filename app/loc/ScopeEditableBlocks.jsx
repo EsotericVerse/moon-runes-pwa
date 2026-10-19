@@ -27,6 +27,7 @@ function normalizeRow(row,order){
     title:String(row?.block_title||''),
     subtitle:String(row?.block_subtitle||''),
     text:HomeBlock.removeDuplicatedLegacySubtitle(row?.block_text,row?.block_subtitle),
+    image:row?.block_image&&typeof row.block_image==='object'?row.block_image:null,
     entities:HomeBlock.normalizeEntities(row?.block_entity)
   };
 }
