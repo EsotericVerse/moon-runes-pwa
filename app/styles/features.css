@@ -752,3 +752,12 @@
 .runes-faq-answer .scope-management-wide-field input,.runes-faq-answer .scope-management-wide-field textarea,.runes-faq-answer .scope-management-wide-field select{width:100%;min-width:0}
 
 .runes-faq-pages{display:flex;align-items:center;justify-content:center;gap:.9rem;flex-wrap:wrap;padding:.5rem 0}
+
+/* Statistic detail rows remain invisible until explicitly expanded. */
+.scope-stat-details{margin-top:1rem;border:1px solid var(--loc-line);border-radius:var(--loc-ui-radius-md);background:var(--loc-panel);overflow:hidden}
+.scope-stat-details>summary{min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.85rem 1rem;cursor:pointer;font-weight:700;color:var(--loc-text);list-style:none}
+.scope-stat-details>summary::-webkit-details-marker{display:none}
+.scope-stat-details>summary::after{content:'＋';color:var(--loc-accent);font-size:1.3rem}
+.scope-stat-details[open]>summary::after{content:'－'}
+.scope-stat-details>summary:focus-visible{outline:2px solid var(--loc-accent);outline-offset:-2px}
+.scope-stat-details[open]>.scope-ranking,.scope-stat-details[open]>.scope-stat-controls,.scope-stat-details[open]>.scope-result-links{margin:.5rem 1rem 1rem}
