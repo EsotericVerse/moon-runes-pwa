@@ -158,12 +158,12 @@ export function LrunesDailyStatisticsPanel(){
   const ranking=useMemo(()=>rankDailyDraws(draws,'rune'),[draws]);
   const pagination=useMemo(()=>pageDailyRanking(ranking,page),[ranking,page]);
   const summary=useMemo(()=>summarizeDailyDraws(draws),[draws]);
-  const featured=useMemo(()=>pagination.rows.slice(0,5),[pagination.rows]);
+  const featured=useMemo(()=>ranking.slice(0,5),[ranking]);
   const timeline=useMemo(()=>dailyCategoryTrend(draws,'rune',featured,zoomRange.bucket,range?.startDate,range?.endDate),[draws,featured,zoomRange.bucket,range?.startDate,range?.endDate]);
   const directionTimeline=useMemo(()=>dailyDirectionTrend(draws,zoomRange.bucket,range?.startDate,range?.endDate),[draws,zoomRange.bucket,range?.startDate,range?.endDate]);
-  const bars=useMemo(()=>pagination.rows.map(row=>({label:row.label,value:row.count})),[pagination.rows]);
+  const bars=useMemo(()=>ranking.slice(0,15).map(row=>({label:row.label,value:row.count})),[ranking]);
   const runeSeries=featured.map(row=>({key:row.key,label:row.label}));
-  const runeCategories=pagination.rows.map(row=>({name:row.label,value:row.count}));
+  const runeCategories=ranking.slice(0,15).map(row=>({name:row.label,value:row.count}));
   const chartOptions=availableStatisticChartTypes({rows:timeline,series:runeSeries,distribution:runeCategories});
   const availableCharts=[{value:'bar',label:text.rankingBar},...chartOptions.filter(([id])=>id!=='bar').map(([value,label])=>({value,label}))];
   const selectedChart=availableCharts.some(item=>item.value===chart)?chart:'bar';
@@ -200,7 +200,8 @@ export function LrunesDailyStatisticsPanel(){
         </ResponsiveContainer>}
       </StatisticsChartFrame>:!ranking.length?<StatisticsChartFrame level={zoomLevel} onChange={value=>{setZoomLevel(value);setPage(1);}} range={zoomRange} idPrefix="daily-rune-stat">
         <p className="scope-status">{text.empty}</p>
-      </StatisticsChartFrame>:<>      <StatisticsChartFrame level={zoomLevel} onChange={value=>{setZoomLevel(value);setPage(1);}} range={zoomRange} idPrefix="daily-rune-stat">
+      </StatisticsChartFrame>:<>
+      <StatisticsChartFrame level={zoomLevel} onChange={value=>{setZoomLevel(value);setPage(1);}} range={zoomRange} idPrefix="daily-rune-stat">
       {selectedChart==='bar'?<ResponsiveContainer width="100%" height={Math.max(220,bars.length*29+50)}>
         <BarChart data={bars} layout="vertical" margin={{top:8,right:16,bottom:8,left:4}}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--loc-line)"/>
