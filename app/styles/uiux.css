@@ -1052,3 +1052,25 @@ body{
   .scope-nav{scroll-behavior:auto}
 }
 
+
+
+/* Preserve the shared feature hero and a meaningful content frame while
+   per-Scope visibility settings are being resolved. */
+.scope-feature-loading{display:grid;gap:1.2rem;min-height:23rem;align-content:start}
+.scope-feature-loading__controls{display:flex;flex-wrap:wrap;gap:.7rem}
+.scope-feature-loading__controls span{display:block;width:clamp(6rem,18%,13rem);height:2.8rem}
+.scope-feature-loading__body{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:end;gap:clamp(.5rem,2vw,1.5rem);min-height:12rem;padding:1.3rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-md)}
+.scope-feature-loading__body span{display:block;min-height:3rem;height:45%}
+.scope-feature-loading__body span:nth-child(2){height:76%}
+.scope-feature-loading__body span:nth-child(3){height:62%}
+.scope-feature-loading__body span:nth-child(4){height:90%}
+.scope-feature-loading__controls span,.scope-feature-loading__body span{
+  border-radius:var(--loc-ui-radius-sm);
+  background:linear-gradient(110deg,var(--loc-ui-panel-soft),var(--loc-ui-accent-soft),var(--loc-ui-panel-soft));
+  background-size:200% 100%;
+  animation:scope-feature-loading-pulse 2.4s ease-in-out infinite;
+}
+@keyframes scope-feature-loading-pulse{0%,100%{background-position:100% 50%}50%{background-position:0 50%}}
+.scope-feature-loading>.scope-status{border:0;padding:0;color:var(--loc-muted)}
+@media(prefers-reduced-motion:reduce){.scope-feature-loading__controls span,.scope-feature-loading__body span{animation:none}}
+@media(max-width:560px){.scope-feature-loading{min-height:18rem}.scope-feature-loading__body{min-height:9rem;padding:.8rem}}
