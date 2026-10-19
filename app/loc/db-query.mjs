@@ -140,7 +140,7 @@ export async function selectAllRows(table,{
   filters=[],
   orFilter='',
   orders=[],
-  pageSize=500,
+  pageSize=DB_QUERY_BATCH_SIZE,
   onProgress=null
 }={}){
   const size=Math.max(1,Math.min(queryBatchSize(columns),Math.floor(Number(pageSize)||DB_QUERY_BATCH_SIZE)));
