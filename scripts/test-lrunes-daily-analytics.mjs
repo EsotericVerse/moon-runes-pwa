@@ -79,3 +79,15 @@ test('culture panel stays separate from the statistics-only earliest-date query'
   assert.match(statistics,/dailyDirectionTrend\(draws,zoomRange.bucket/);
   assert.match(statistics,/<ComposedChart data=\{directionTimeline\}/);
 });
+
+test('daily rune chart totals stay independent of expanded ranking pages',()=>{
+  const source=readFileSync(new URL('../app/lrunes/DailyRuneAnalytics.jsx',import.meta.url),'utf8');
+  const start=source.indexOf('export function LrunesDailyStatisticsPanel()');
+  assert.ok(start>=0);
+  const statistics=source.slice(start);
+  assert.match(statistics,/const featured=useMemo\(\(\)=>ranking\.slice\(0,5\),\[ranking\]\)/);
+  assert.match(statistics,/const bars=useMemo\(\(\)=>ranking\.slice\(0,15\)/);
+  assert.match(statistics,/const runeCategories=ranking\.slice\(0,15\)/);
+  assert.match(statistics,/pagination\.rows\.map\(\(row,index\)=>/);
+  assert.doesNotMatch(statistics,/const (featured|bars|runeCategories)=.*pagination\.rows/);
+});
