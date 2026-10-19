@@ -123,6 +123,7 @@ export default function Culture(){
 
   const [selectedPeriodKey,setSelectedPeriodKey]=useState('');
   const [selectedCategory,setSelectedCategory]=useState('');
+  const [worksOpen,setWorksOpen]=useState(false);
   const [styleFilter,setStyleFilter]=useState(scopeId==='lo3rwang'?'rune66':'none');
   const [selectedVirtualAnchorDates,setSelectedVirtualAnchorDates]=useState([]);
   const [anchorSaveBusy,setAnchorSaveBusy]=useState(false);
@@ -269,7 +270,7 @@ export default function Culture(){
       effectiveCategoryKey||'all'
     ].join('|'),
     pageSize:DEFAULT_LIST_BATCH_SIZE,
-    enabled:!isLrunesDaily&&!isAggregateScope&&Boolean(scopeData)&&Boolean(selectedWorkPeriod),
+    enabled:worksOpen&&!isLrunesDaily&&!isAggregateScope&&Boolean(scopeData)&&Boolean(selectedWorkPeriod),
     loadPage:async(cursor,limit)=>{
       const indexPage=await selectScopePeriodWorkIndex(scopeData,{
         startDate:selectedWorkPeriod?.start_date||'',
@@ -295,10 +296,12 @@ export default function Culture(){
 
   useEffect(()=>{
     setSelectedCategory('');
+    setWorksOpen(false);
   },[scopeId]);
 
   useEffect(()=>{
     setSelectedCategory('');
+    setWorksOpen(false);
     setFullTextKey('');
     setFullText('');
     setFullTextError('');
@@ -912,15 +915,15 @@ export default function Culture(){
                   renderItem={group=><button type='button' key={group.category_key}
                     className='scope-culture-source-button'
                     aria-pressed={selectedCategory===group.category_key}
-                    onClick={()=>{setSelectedCategory(selectedCategory===group.category_key?'':group.category_key);}}>
+                    onClick={()=>{setSelectedCategory(selectedCategory===group.category_key?'':group.category_key);setWorksOpen(true);}}>
                     <strong>{group.display_label}</strong>
                     <span>{Number(group.item_count||0).toLocaleString(locale)}{l.itemUnit} · {group.first_date||'—'} → {group.last_date||'—'}</span>
                   </button>}
                 />:null}
 
-                <section className='scope-culture-source-detail' aria-label={(selectedGroup?.display_label||UI_COPY.culture.allWorks)+l.listSuffix}>
-                  <header>
-                    <h4>{selectedGroup?.display_label||UI_COPY.culture.allWorks} · {selectedCount.toLocaleString(locale)}{l.workItemUnit}</h4>
+                <details className='scope-culture-source-detail' open={worksOpen} onToggle={event=>setWorksOpen(event.currentTarget.open)}>
+                  <summary>{selectedGroup?.display_label||UI_COPY.culture.allWorks} · {selectedCount.toLocaleString(locale)}{l.workItemUnit}</summary>
+                  {worksOpen?<><header>
                     {selectedGroup?<button type='button' className='scope-pagination-button' onClick={()=>setSelectedCategory('')}>{UI_COPY.culture.showAllWorks}</button>:null}
                   </header>
                   {periodWorksPage.error?<p className='scope-status scope-error'>{featureDataErrorMessage(periodWorksPage.error,UI_COPY)} <button type='button' className='loc-button' onClick={periodWorksPage.reload}><UiText id="uiExtra.cultureView.reloadWorks"/></button></p>:null}
@@ -971,7 +974,8 @@ export default function Culture(){
                     }}
                   />
                   {!periodWorksPage.loading&&!periodWorksPage.error&&!visibleWorkRows.length?<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>:null}
-                </section>
+                  </>:null}
+                </details>
               </section>:null}
             </>}
       </>:null}
