@@ -338,6 +338,21 @@ if(!failures.length){
     failures.push('Culture source snapshots must read Galaxy and Media just once each');
   if(!culture.includes('enabled:worksOpen')||!culture.includes("onToggle={event=>setWorksOpen(event.currentTarget.open)}"))
     failures.push('Culture work detail SELECTs must wait for explicit list expansion');
+  if(!culture.includes("const [styleFilter,setStyleFilter]=useState('none');")||
+     !culture.includes("setStyleFilter('none');"))
+    failures.push('Culture keyword Class corpus scans must wait for an explicit user selection');
+  const cultureWorkIndex=cultureQuery.split('export async function selectScopePeriodWorkIndex(')[1]?.split('export async function selectScopePeriodWorkDetails(')[0]||'';
+  if(!cultureWorkIndex.includes('const hasCursorCounts=')||
+     (cultureWorkIndex.match(/count:hasCursorCounts\?null:'exact'/g)||[]).length!==2||
+     !cultureWorkIndex.includes('galaxyCount:Number(galaxyCount)||0')||
+     !cultureWorkIndex.includes('mediaCount:Number(mediaCount)||0'))
+    failures.push('Culture bounded work-list queries must reuse their first-page exact counts in the cursor');
+  const ownStatistics=statistics.split('function ScopeStatisticsResults(')[1]?.split('function ScopeStatisticsPanel(')[0]||'';
+  if(!ownStatistics.includes('enabled:!isLrunesDaily,'))
+    failures.push('LunaRunes daily statistics must not fetch unrelated managed Scope registry data');
+  if(!search.includes("enabled:scopeId==='loc'&&!aggregateScopes,")||
+     !search.includes("if((scopeId==='loc'&&!scopesQuery.isSuccess)||account.permissionLoading)return;"))
+    failures.push('Single-Scope Search must neither fetch nor await the LOC Scope registry');
   if(!statistics.includes('summary={<FieldText text="作品自交互統計"/>}')||
      !statistics.includes('summary={<UiText id="uiExtra.statisticsView.memberCrossTitle"/>}'))
     failures.push('Intersection chart bundles must remain unopened until requested');
