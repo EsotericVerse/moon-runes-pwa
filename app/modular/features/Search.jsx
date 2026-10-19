@@ -249,7 +249,7 @@ function toResult(row,source,scopeId,copy=UI_COPY){
       :(resourceType==='galaxy_media'&&row.galaxy_link
         ?[{id:'galaxy:'+row.galaxy_link,label:copy.search.parentText,href:galaxyIdentityHref(scope,row.galaxy_link)}].filter(link=>link.href)
         :[]),
-    dedupeKey:resourceType==='galaxy'
+    dedupeKey:resourceType==='galaxy'&&typeof row.content==='string'
       ?'article-copy:'+JSON.stringify([scope,
         String(row.title||'').normalize('NFKC').trim(),
         String(row.content||'').replace(/[\r\n]/g,'').trim(),
