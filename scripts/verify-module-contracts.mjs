@@ -41,6 +41,35 @@ walk(resolve(root,'app'),path=>{
 });
 
 
+// Cover every .mjs dependency in the repository, not only the browser app.
+// Node tooling and test entrypoints are included but are not browser bundles.
+const mjsInventory={app:[],scripts:[],tests:[],root:[]};
+let staticMjsEdges=0,dynamicMjsEdges=0;
+function auditMjs(path,group){
+  if(!path.endsWith('.mjs'))return;
+  mjsInventory[group].push(rel(path));
+  const content=readFileSync(path,'utf8');
+  for(const match of content.matchAll(/(?:from\s+|import\s*\(\s*)['"]([.]{1,2}\/[^'"]+)['"]/g)){
+    if(!resolves(path,match[1]))failures.push(rel(path)+': unresolved relative import '+match[1]);
+    if(!match[1].endsWith('.mjs'))continue;
+    if(match[0].startsWith('import'))dynamicMjsEdges+=1;
+    else staticMjsEdges+=1;
+  }
+}
+for(const group of ['app','scripts','tests']){
+  walk(resolve(root,group),path=>auditMjs(path,group));
+}
+for(const name of readdirSync(root)){
+  if(name.endsWith('.mjs')&&statSync(resolve(root,name)).isFile())
+    auditMjs(resolve(root,name),'root');
+}
+const mjsTotal=Object.values(mjsInventory).reduce((sum,files)=>sum+files.length,0);
+if(mjsTotal===0)failures.push('No .mjs modules found; inventory cannot be verified');
+console.log('[module-contracts] audited '+mjsTotal+' .mjs (app '+
+  mjsInventory.app.length+', scripts '+mjsInventory.scripts.length+
+  ', tests '+mjsInventory.tests.length+', root '+mjsInventory.root.length+
+  '), linked .mjs edges: static '+staticMjsEdges+', dynamic '+dynamicMjsEdges);
+
 // Non-source Statistics views must not load the source classification engine.
 const statisticsSource=readFileSync(resolve(root,'app/modular/features/Statistics.jsx'),'utf8');
 if(statisticsSource.includes("from '../../loc/statistics-admin-source.mjs'"))
