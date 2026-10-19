@@ -11,7 +11,7 @@ const files={
   layout:read('app/layout.jsx'),
   css:read('app/globals.css'),
   extraCss:read('app/styles/extra.css'),
-  extra:read('app/loc/hero-extra.mjs'),
+  extra:read('app/loc/home-block-model.js'),
   identity:read('app/loc/HeroCornerIdentity.jsx')
 };
 const checks=[

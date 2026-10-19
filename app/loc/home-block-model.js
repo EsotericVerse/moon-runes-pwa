@@ -1,4 +1,13 @@
-import {stripLocHomeEditorPlaceholders} from './loc-home-text.mjs';
+// U+FFFC is ProseMirror's representation of a leaf/embedded object.
+// Convert only orphan placeholder-only paragraphs into actual HTML line breaks from LOC's legacy HTML.
+// Never remove the marker inside meaningful text or media markup: it may
+// represent an actual inline attachment that needs separate migration.
+const placeholderParagraph=/<p\b[^>]*>\s*(?:(?:\uFFFC|&#0*65532;|&#x0*fffc;)\s*)+<\/p>/gi;
+
+export function stripLocHomeEditorPlaceholders(html=''){
+  return String(html??'').replace(placeholderParagraph,'<p><br></p>');
+}
+
 
 export const HOME_BLOCK_LIMIT=8;
 
@@ -88,11 +97,29 @@ export function shouldUseSharedFeatureHero(scopeId,featureId){
     Boolean(scopeId)&&scopeId!=='lrunes'&&scopeId!=='admin';
 }
 
+// The Registry stores the one-time assigned Extra Sign key.
+// These copyrighted personal-IP presentations are intentionally not generic
+// Scope defaults. No email or session is checked during page rendering.
+const SIGN_DEFINITIONS=Object.freeze({
+  codex:Object.freeze({scopeId:'loc',scopeKind:'group',label:'LOC 圓環中心實心點標誌',text:''}),
+  anchor:Object.freeze({scopeId:'lo3rwang',scopeKind:'scope',label:'光之定錨點',text:'光之定錨點'}),
+  moon:Object.freeze({scopeId:'lrunes',scopeKind:'scope',label:'玄韻家黃色圓點標誌',text:''})
+});
+
+export function heroExtraFor({scopeId='',scopeKind='',extraSign=''}={}){
+  const key=String(extraSign||'').trim();
+  const definition=SIGN_DEFINITIONS[key];
+  if(!definition||definition.scopeId!==scopeId||definition.scopeKind!==scopeKind)return null;
+  return {key,...definition};
+}
+
 /** Composable home frames, children and feature-page headers share one object. */
 export const HomeBlock=Object.freeze({
   limit:HOME_BLOCK_LIMIT,
   rows:homeBlockRows,
   visibleEntities:visibleHomeEntities,
+  stripLocHomeEditorPlaceholders,
+  heroExtraFor,
   childPresentation,
   removeDuplicatedLegacySubtitle,
   FEATURE_HERO_PAGE,

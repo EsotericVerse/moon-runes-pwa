@@ -4,7 +4,7 @@ import {SITE_IMAGES} from '../site-images';
 import HeroCornerIdentity from './HeroCornerIdentity';
 import authorHeroAsset from '../../pics/lo3rwang-hero.jpg';
 import {HomeBlock} from './home-block-model';
-import {stripLocHomeEditorPlaceholders} from './loc-home-text.mjs';
+
 import {firstFrameImageUrl,heroImageMode,stripHeroImageTag} from './blocknote-image-url.mjs';
 
 // Existing, approved site images only. New text frames have no image by default;
@@ -39,7 +39,7 @@ export function locHomeBlockClass(slot,scopeId='loc'){
 }
 
 function RichHtml({html,className='',stripImage=false}){
-  const content=stripLocHomeEditorPlaceholders(stripImage?stripHeroImageTag(html):html||'');
+  const content=HomeBlock.stripLocHomeEditorPlaceholders(stripImage?stripHeroImageTag(html):html||'');
   return content.trim()?<div className={className} dangerouslySetInnerHTML={{__html:content}}/>:null;
 }
 

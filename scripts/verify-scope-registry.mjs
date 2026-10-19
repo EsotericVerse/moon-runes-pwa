@@ -1,5 +1,5 @@
 import {FEATURES,SCOPES,featureHref,resolveScope,scopeHref,duplicateDomainLabelError,setScopeRegistryRouteRows} from '../app/modular/scope-registry.js';
-import {heroExtraFor} from '../app/loc/hero-extra.mjs';
+import {HomeBlock} from '../app/loc/home-block-model.js';
 
 const failures=[];
 const expectedExtra=[
@@ -8,7 +8,7 @@ const expectedExtra=[
   {scopeId:'lrunes',scopeKind:'scope',extraSign:'moon',key:'moon',label:'玄韻家黃色圓點標誌',text:''}
 ];
 for(const {scopeId,scopeKind,extraSign,key,label,text} of expectedExtra){
-  const sign=heroExtraFor({scopeId,scopeKind,extraSign});
+  const sign=HomeBlock.heroExtraFor({scopeId,scopeKind,extraSign});
   if(!sign||sign.key!==key||sign.label!==label||sign.text!==text)
     failures.push('Public Extra Sign contract mismatch: '+scopeId);
 }
@@ -19,7 +19,7 @@ for(const candidate of [
   {scopeId:'anotherscope',scopeKind:'scope',extraSign:'anchor'},
   {scopeId:'lo3rwang',scopeKind:'scope',extraSign:''}
 ]){
-  if(heroExtraFor(candidate)!==null)failures.push('Unregistered/mismatched Scope must not receive protected Extra Sign');
+  if(HomeBlock.heroExtraFor(candidate)!==null)failures.push('Unregistered/mismatched Scope must not receive protected Extra Sign');
 }
 
 if(resolveScope('unknown.example','/')!=='loc')failures.push('default Scope must remain loc');

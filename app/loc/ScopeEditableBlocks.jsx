@@ -8,7 +8,7 @@ import {selectScopeBlocks} from './scope-data';
 import {useAccount} from './use-account';
 import BlockNoteEditor,{ObjectEditor} from './BlockNoteEditor';
 import {isInteractiveContentTarget} from './inline-edit-interaction.mjs';
-import {stripLocHomeEditorPlaceholders} from './loc-home-text.mjs';
+
 import {HomeBlock} from './home-block-model';
 import {countHtmlImages,frameImageCount,firstFrameImageUrl,heroImageMode} from './blocknote-image-url.mjs';
 
@@ -249,7 +249,7 @@ export default function ScopeEditableBlocks({
       if(embeddedImages>1)throw new Error(t('uiExtra.editBlocks.oneImage'));
       if(embeddedImages===1&&!firstFrameImageUrl(draft))throw new Error(t('uiExtra.editBlocks.invalidImage'));
       const normalizeSavedHtml=value=>scopeId==='loc'&&pageName==='index'
-        ?stripLocHomeEditorPlaceholders(value)
+        ?HomeBlock.stripLocHomeEditorPlaceholders(value)
         :String(value??'');
       const values={
         page_name:pageName,
