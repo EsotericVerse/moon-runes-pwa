@@ -24,7 +24,7 @@ function GovernanceBlocks({scopeId,account}){
   );
   return <>
     {canManage?<nav className="loc-card" aria-label="治理管理入口">
-      <a className="loc-button primary" href="/governance/manage/">管理選單</a>
+      <a className="loc-button primary" href="/settings/?section=manage&scope=loc">管理選單</a>
     </nav>:null}
     <ScopeEditableBlocks
       scopeId={scopeId}
