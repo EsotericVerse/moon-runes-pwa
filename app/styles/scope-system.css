@@ -329,7 +329,7 @@
 @media(max-width:700px){
   .daily-log-calendar{padding:.625rem}
   .daily-log-calendar .scope-daily-calendar-nav{margin-bottom:.375rem}
-  .daily-log-calendar .scope-daily-calendar-cell{min-height:36px;padding:.125rem .0625rem}
+  .daily-log-calendar .scope-daily-calendar-cell{min-height:44px;padding:.125rem .0625rem}
   .daily-log-calendar .scope-daily-calendar-day{font-size:.72rem}
   .daily-log-calendar .scope-daily-calendar-flags{font-size:.52rem}
 }
