@@ -12,6 +12,7 @@ import {realMoonPhase} from '../../../loc/model/moon-phase';
 import {availableMemberMeasures,calculateMemberCross} from '../../../loc/member-intersection-model.mjs';
 import StatisticsMultiChart,{availableStatisticChartTypes} from './StatisticsMultiChart';
 import StatisticsChartFrame from './StatisticsChartFrame';
+import StatisticsDetails from './StatisticsDetails';
 import {sharedGroupCodes,sharedSourceBreakdown,canParticipateInCrossStatistics,allowedMemberMetric} from '../../../loc/statistics-group-sharing.mjs';
 
 async function readCatalog(table,columns){
@@ -140,6 +141,11 @@ export default function LocMemberIntersection({
     {fetched.error||catalog.error?<p className="scope-status scope-error">{String(fetched.error?.message||catalog.error?.message||'讀取失敗')}</p>:null}
     {fetched.isPending||fetched.isFetching?<p className="scope-status" role="status">正在更新交會統計…</p>:null}
     {!fetched.isPending&&!fetched.isFetching&&hasCurrentData?<>
+      <StatisticsChartFrame level={zoomLevel} onChange={onZoomLevelChange} range={zoomRange} idPrefix="loc-member-stat">
+        <StatisticsMultiChart type={chosenChart} rows={calculated.rows} series={calculated.series}
+          distribution={distribution} height={420} foldBlank/>
+      </StatisticsChartFrame>
+      <StatisticsDetails>{()=><>
       <div className="scope-ranking">
         <div><strong>共同活躍日</strong><span>{calculated.commonDays.toLocaleString()} 天</span></div>
         <div><strong>活躍日總數</strong><span>{calculated.unionDays.toLocaleString()} 天</span></div>
@@ -148,10 +154,7 @@ export default function LocMemberIntersection({
           <strong>{row.name}</strong><span>{row.value.toLocaleString()} 筆 · {row.activeDays} 天</span>
         </div>)}
       </div>
-      <StatisticsChartFrame level={zoomLevel} onChange={onZoomLevelChange} range={zoomRange} idPrefix="loc-member-stat">
-        <StatisticsMultiChart type={chosenChart} rows={calculated.rows} series={calculated.series}
-          distribution={distribution} height={420} foldBlank/>
-      </StatisticsChartFrame>
+      </>}</StatisticsDetails>
     </>:null}
   </section>;
 }
