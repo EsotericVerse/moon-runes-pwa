@@ -354,7 +354,7 @@ test('search reference section uses existing editable page=search BlockNote cont
   assert.ok(blocks.includes('const displayed=rows.map(row=>normalizeRow(row,row.block_order));'),'Unbounded Add Block must render its new draft');
   assert.ok(!source.includes('selectSearchReferenceSuggestions('));
   assert.ok(!source.includes('setSearchMode('));
-  assert.ok(blocks.includes('import ArticleBodyEditor'));
+  assert.ok(blocks.includes('import BlockNoteEditor'));
   assert.ok(blocks.includes('page_name:pageName'));
   assert.ok(blocks.includes('await updateRows(table,values'));
   assert.ok(blocks.includes('await insertRows(table,'));
@@ -417,9 +417,9 @@ test('Search uses a single BlockNote edit draft, with Galaxy metadata below the 
   assert.ok(source.includes('assertPlainGalaxyAttributes({'));
   assert.ok(source.indexOf('assertPlainGalaxyAttributes({')<source.indexOf('await updateRows(result.editableTable,contentPatch'));
   assert.ok(!source.includes('editorExtra='));
-  assert.ok(shared.includes('<ArticleBodyEditor'));
+  assert.ok(shared.includes('<BlockNoteEditor'));
   assert.ok(shared.includes('attributeFields={attributeFields}'));
-  assert.ok(shared.indexOf('<ArticleBodyEditor')<shared.indexOf('attributeFields.map('));
+  assert.ok(shared.indexOf('<BlockNoteEditor')<shared.indexOf('attributeFields.map('));
   assert.ok(shared.includes("const setValue=value=>onChange(previous=>"));
   assert.ok(shared.includes("kind==='boolean'"));
   assert.ok(shared.includes("kind==='array'||kind==='multiline'"));
