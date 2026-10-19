@@ -428,25 +428,19 @@ function MediaCrossTagStatistics({scope,rows=[],range={},zoomLevel=0,onZoomLevel
         <StatisticsChartFrame level={zoomLevel} onChange={onZoomLevelChange} range={range} idPrefix="scope-stat-cross">
           {mode==='ranking'?<div style={{overflowX:'auto'}}>
             <div style={{minWidth:480}}>
-              <ResponsiveContainer width="100%" height={Math.max(250,leading.length*38+70)}>
-                <BarChart data={leading.map(pair=>({key:pair.key,label:pair.leftLabel+' × '+pair.rightLabel,count:pair.count}))} layout="vertical" margin={{top:10,right:20,bottom:14,left:6}}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
-                  <XAxis type="number" allowDecimals={false} tick={{fill:CHART_TEXT}}/>
-                  <YAxis dataKey="label" type="category" width={190} tick={{fill:CHART_TEXT,fontSize:11}}/>
-                  <Tooltip contentStyle={CHART_TOOLTIP}/>
-                  <Bar dataKey="count" name={t('uiExtra.statisticsView.commonWorks')} fill={CHART_ACCENT} maxBarSize={28} cursor="pointer" onClick={(_,index)=>{const pair=leading[index];if(pair)togglePairWorks(pair);}}/>
-                </BarChart>
-              </ResponsiveContainer>
+              <StatisticsMultiChart type="bar" barLayout="vertical" rows={[]}
+                distribution={leading.map(pair=>({
+                  key:pair.key,name:pair.leftLabel+' × '+pair.rightLabel,value:pair.count
+                }))}
+                height={Math.max(250,leading.length*38+70)}
+                onCategoryClick={key=>{const pair=leading.find(item=>item.key===key);if(pair)togglePairWorks(pair);}}/>
             </div>
-          </div>:<ResponsiveContainer width="100%" height={420}>
-            <LineChart data={trendData} margin={{top:16,right:12,bottom:55,left:0}}>
-              <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
-              <XAxis dataKey="period" angle={-25} textAnchor="end" height={65} tick={{fill:CHART_TEXT,fontSize:11}}/>
-              <YAxis allowDecimals={false} tick={{fill:CHART_TEXT}}/>
-              <Tooltip contentStyle={CHART_TOOLTIP}/><Legend/>
-              {trendPairs.map((pair,i)=><Line key={pair.key} type="monotone" name={pair.leftLabel+' × '+pair.rightLabel} dataKey={pair.key} stroke={PIE_COLORS[i%PIE_COLORS.length]} strokeWidth={2} dot={trendData.length<20} connectNulls={false} activeDot={{onClick:()=>togglePairWorks(pair)}}/>)}
-            </LineChart>
-          </ResponsiveContainer>}
+          </div>:<StatisticsMultiChart type="line"
+            rows={trendData}
+            series={trendPairs.map(pair=>({key:pair.key,label:pair.leftLabel+' × '+pair.rightLabel}))}
+            onSeriesClick={key=>{const pair=trendPairs.find(item=>item.key===key);if(pair)togglePairWorks(pair);}}
+            height={420}/>}
+
         </StatisticsChartFrame>
         {selected?<div className="scope-stat-cross-matches">
           <h4>{selected.leftLabel} × {selected.rightLabel} · {selected.count} {t('uiExtra.statisticsView.unitCase')}</h4>

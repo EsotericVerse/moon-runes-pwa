@@ -26,7 +26,7 @@ function nonemptySeries(rows=[],series=[]){
 }
 function normalizeDistribution(distribution=[],rows=[],series=[]){
   const supplied=(Array.isArray(distribution)?distribution:[])
-    .map(item=>({name:String(item.name||item.term||''),value:number(item.value??item.item_count)}))
+    .map(item=>({name:String(item.name||item.term||''),key:item.key??item.name??item.term,value:number(item.value??item.item_count)}))
     .filter(item=>item.name&&item.value>0);
   if(supplied.length)return supplied;
   return series.map(s=>({name:s.label||s.key,value:rows.reduce((n,row)=>n+number(row[s.key]),0)}))
@@ -120,7 +120,8 @@ export function foldEmptyTimeBuckets(rows=[],series=[],units={}){
   return {rows:out,gaps};
 }
 export default function StatisticsMultiChart({
-  type='line',rows=[],series=[],distribution=[],totalKey='',height=380,foldBlank=false
+  type='line',rows=[],series=[],distribution=[],totalKey='',height=380,foldBlank=false,
+  barLayout='horizontal',onCategoryClick=null,onSeriesClick=null
 }){
   const {locale}=useUiLocale();
   const t=useUiText();
@@ -200,12 +201,24 @@ export default function StatisticsMultiChart({
     {axes}{timeFields.map((f,i)=><Area key={f.key} type="linear" dataKey={f.key} name={f.label}
       stroke={color(i)} fill={color(i)} fillOpacity={.25} connectNulls={false} isAnimationActive={false}/>)}
   </AreaChart>;
+  else if(actual==='bar'&&barLayout==='vertical'&&categories.length)chart=<BarChart data={colored}
+    layout="vertical" margin={{top:10,right:20,bottom:14,left:6}}>
+    <CartesianGrid strokeDasharray="3 3" stroke={GRID}/>
+    <XAxis type="number" allowDecimals={false} tick={{fill:TEXT}}/>
+    <YAxis dataKey="name" type="category" width={190} tick={{fill:TEXT,fontSize:11}}/>
+    <Tooltip contentStyle={TOOLTIP}/>
+    <Bar dataKey="value" fill="var(--loc-accent)" maxBarSize={28}
+      cursor={onCategoryClick?'pointer':undefined}
+      onClick={onCategoryClick?(_,index)=>onCategoryClick(colored[index]?.key):undefined}/>
+  </BarChart>;
   else if(actual==='bar')chart=<BarChart data={display} margin={margin}>
     {axes}{timeFields.map((f,i)=><Bar key={f.key} dataKey={f.key} name={f.label} fill={color(i)} maxBarSize={32}/>)}
   </BarChart>;
   else chart=<LineChart data={display} margin={margin}>
     {axes}{timeFields.map((f,i)=><Line key={f.key} type="linear" dataKey={f.key} name={f.label}
-      stroke={color(i)} strokeWidth={2.5} dot={display.length<25} connectNulls={false} isAnimationActive={false}/>)}
+      stroke={color(i)} strokeWidth={2.5} dot={display.length<25} connectNulls={false}
+      activeDot={onSeriesClick?{onClick:()=>onSeriesClick(f.key)}:undefined}
+      isAnimationActive={false}/>)}
   </LineChart>;
   if(!usable.length)return <p className="scope-status">{t('uiExtra.chartLabels.noComparable')}</p>;
   return <div className="scope-multichart" role="group" aria-label={t('uiExtra.chartLabels.chartAria')}>
