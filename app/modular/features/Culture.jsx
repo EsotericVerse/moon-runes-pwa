@@ -10,12 +10,6 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useSearchParams} from 'next/navigation';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
-import {
-  selectScopePeriodSourceSnapshot,
-  selectScopePeriodWorkIndex,
-  selectScopePeriodWorkDetails,
-  selectScopeCultureData
-} from '../../loc/culture-query';
 import {featureNavigationHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
 const CultureTimeline=dynamic(()=>import('../modules/culture-timeline/CultureTimeline'),{loading:()=>null});
@@ -115,7 +109,10 @@ export default function Culture(){
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
   const query=useQuery({
     queryKey:['culture-timeline',scopeId],
-    queryFn:()=>selectScopeCultureData(scopeId),
+    queryFn:async()=>{
+      const {selectScopeCultureData}=await import('../../loc/culture-query');
+      return selectScopeCultureData(scopeId);
+    },
     enabled:!isLrunesDaily&&!isLocItemView,
     staleTime:5*60_000
   });
@@ -196,10 +193,13 @@ export default function Culture(){
 
   const sourceSnapshotQuery=useQuery({
     queryKey:['culture-period-source-snapshot',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
-    queryFn:()=>selectScopePeriodSourceSnapshot(scopeData,{
+    queryFn:async()=>{
+      const {selectScopePeriodSourceSnapshot}=await import('../../loc/culture-query');
+      return selectScopePeriodSourceSnapshot(scopeData,{
       startDate:selectedWorkPeriod?.start_date,
       endDate:selectedWorkPeriod?.end_date
-    }),
+      });
+    },
     enabled:!isLrunesDaily&&!isLocItemView&&!isAggregateScope&&Boolean(scopeData),
     staleTime:5*60_000
   });
@@ -274,6 +274,7 @@ export default function Culture(){
     pageSize:DEFAULT_LIST_BATCH_SIZE,
     enabled:worksOpen&&!isLrunesDaily&&!isAggregateScope&&Boolean(scopeData)&&Boolean(selectedWorkPeriod),
     loadPage:async(cursor,limit)=>{
+      const {selectScopePeriodWorkIndex,selectScopePeriodWorkDetails}=await import('../../loc/culture-query');
       const indexPage=await selectScopePeriodWorkIndex(scopeData,{
         startDate:selectedWorkPeriod?.start_date||'',
         endDate:selectedWorkPeriod?.end_date,
