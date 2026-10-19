@@ -382,9 +382,11 @@ if(!failures.length){
       !crossMember.includes('queryClient.fetchQuery({')||!crossMember.includes('new Map(scopes.map(row=>[row.id,row.label||row.id]))')||
      !ownIntersection.includes('sharedCatalog||localCatalog'))
     failures.push('Statistics intersection must reuse already fetched source rows and taxonomy');
-  if(!searchProviders.includes("const textColumns=['uid','title','createtime'")||
-     searchProviders.includes("const textColumns=['uid','title','content'"))
-    failures.push('Search provider result pages must not SELECT complete article bodies');
+  if(!searchProviders.includes("const textColumns=['uid'];")||
+     !searchProviders.includes('export async function hydrateGalaxySearchRows(')||
+     !searchProviders.includes("filters:[{column:'uid',operator:'in',value:keys}]")||
+     !search.includes('await hydrateGalaxySearchRows(search.rows||[],targetScopes,hiddenScopeIds)'))
+    failures.push('Search must return bounded UID pages, then hydrate narrow display metadata only');
   const queryContract=read('app/loc/db-contract.mjs');
   for(const token of ['DB_QUERY_BATCH_SIZE=65535','DB_QUERY_TEXT_BATCH_SIZE=1000','queryBatchSize(columns'])if(!queryContract.includes(token))failures.push('Shared metadata/text query limit contract missing '+token);
   for(const token of ['ScopeGroupStatistics','ScopeStatisticsPanel','statisticsZoomWindow','selectPublicStatisticsMembers'])if(!statistics.includes(token))failures.push('Statistics aggregate/query-window contract missing '+token);

@@ -19,7 +19,7 @@ import {useScopeRuntime} from '../use-scope-runtime';
 import {scopeHref} from '../scope-registry';
 import {featureNavigationHref,galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
-import {resolveGalaxyExternalLinks,searchGalaxyRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordMatches} from '../../loc/galaxy-query';
+import {resolveGalaxyExternalLinks,searchGalaxyRows,hydrateGalaxySearchRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordMatches} from '../../loc/galaxy-query';
 import {defaultScopeData,selectScopeRegistry} from '../../loc/scope-data';
 
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model';
@@ -477,7 +477,8 @@ export default function Search(){
       });
       if(id!==searchId.current)return;
 
-      const searchRows=[...(search.rows||[])];
+      const searchRows=await hydrateGalaxySearchRows(search.rows||[],targetScopes,hiddenScopeIds);
+      if(id!==searchId.current)return;
       const textByScope=new Map();
       for(const entry of searchRows){
         const row=entry?.row;

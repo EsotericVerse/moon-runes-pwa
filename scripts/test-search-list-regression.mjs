@@ -569,3 +569,23 @@ test('Culture and Admin leave inactive editor/query capabilities unmounted',()=>
   assert.ok(admin.includes("const ObjectEditor=dynamic(()=>import('../BlockNoteEditor')"));
   assert.ok(!/^import \{AdminSourceCategories\}/m.test(admin));
 });
+
+test('Galaxy search hydrates one bounded page of UIDs without fetching full content',async()=>{
+  const source=extract('app/loc/galaxy-query.js','export async function hydrateGalaxySearchRows(', '\n\n/**');
+  const calls=[];
+  const selectRows=async(table,options)=>{
+    calls.push({table,options});
+    return {rows:options.filters[0].value.map(uid=>({uid,title:'Entry '+uid}))};
+  };
+  const hydrate=vm.runInNewContext(source.replace(/^export /,'')+'; hydrateGalaxySearchRows',{
+    Map,Set,DEFAULT_LIST_BATCH_SIZE:10,selectRows
+  });
+  const entries=[{row:{uid:'A',scope_id:'s'}},{row:{uid:'B',scope_id:'s'}}];
+  const result=await hydrate(entries,[{id:'s',galaxy:'silver.s_galaxy'}],['s']);
+  assert.equal(calls.length,1);
+  assert.equal(calls[0].options.limit,2);
+  assert.equal(calls[0].options.authenticated,true);
+  assert.equal(calls[0].options.columns.includes('content'),false);
+  assert.deepEqual(result.map(e=>e.row.title),['Entry A','Entry B']);
+  await assert.rejects(hydrate(Array.from({length:11},(_,i)=>({row:{uid:String(i),scope_id:'s'}})),[{id:'s',galaxy:'silver.s_galaxy'}]),/bounded UID limit/);
+});
