@@ -292,3 +292,17 @@ export function IncrementalList({
     {!scrollRootRef?loader:null}
   </>;
 }
+
+/** One feature-availability control shared by Scope settings and Admin drafts. */
+export function ScopeFeatureToggles({value={},onChange,className='scope-editor-options'}){
+  return <div className={className}>
+    {[
+      ['search_able','features.search.title'],
+      ['statistics_able','features.statics.title'],
+      ['culture_able','features.culture.title']
+    ].map(([key,label])=><label key={key}>
+      <input type="checkbox" checked={value[key]!==false}
+        onChange={event=>onChange?.(key,event.target.checked)}/><UiText id={label}/>
+    </label>)}
+  </div>;
+}

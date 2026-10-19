@@ -14,6 +14,7 @@ import {SQL_ENGINE_OPTIONS} from '../providers/sql-engine-ports.mjs';
 import {databaseProviderChoices,normalizeDatabaseLocation} from '../providers/database-link.mjs';
 import {AdminSourceCategories} from '../SourceCategoryEditor';
 import BlockNoteEditor,{ObjectEditor} from '../BlockNoteEditor';
+import {ScopeFeatureToggles} from '../../modular/ui';
 import {
   deleteScope,deleteRows,insertRows,dbAuthClient,dbAuthRelation,manageScopeRegistry,provisionScope,syncManageScopeRow,updateRows
 } from '../db-client.mjs';
@@ -463,11 +464,7 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
         </div>
         <label><span><UiText id="uiExtra.adminView.theme"/></span><select className="admin-native-select" value={currentConfig.theme||'system-default'} onChange={e=>patchConfig('theme',e.target.value)}>{themeOptions.map(option=><option value={option.value} key={option.value}><FieldText text={option.label}/></option>)}</select></label>
         <label><span><UiText id="uiExtra.adminView.defaultLanguage"/></span><select className="admin-native-select" value={normalizeUiLocale(currentConfig.locale)} onChange={e=>patchConfig('locale',normalizeUiLocale(e.target.value))}>{UI_LOCALE_OPTIONS.map(option=><option value={option.value} key={option.value}><FieldText text={option.label}/></option>)}</select></label>
-        <div className="admin-inline-flags">
-          <label><input type="checkbox" checked={currentConfig.search_able!==false} onChange={e=>patchConfig('search_able',e.target.checked)}/> Search</label>
-          <label><input type="checkbox" checked={currentConfig.statistics_able!==false} onChange={e=>patchConfig('statistics_able',e.target.checked)}/> Statistics</label>
-          <label><input type="checkbox" checked={currentConfig.culture_able!==false} onChange={e=>patchConfig('culture_able',e.target.checked)}/> Culture</label>
-        </div>
+        <ScopeFeatureToggles className="admin-inline-flags" value={currentConfig} onChange={patchConfig}/>
       </>:null}
 
       <div className="admin-route-summary" aria-label="目前路由">

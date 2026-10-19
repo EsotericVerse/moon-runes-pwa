@@ -5,6 +5,7 @@ import UiText,{useUiText} from '../i18n/UiText';
 import {useEffect,useState} from 'react';
 import {UI_LOCALE_OPTIONS,normalizeUiLocale} from '../i18n/ui-copy';
 import {THEME_SLOTS} from '../modular/theme-registry';
+import {ScopeFeatureToggles} from '../modular/ui';
 import {selectScopeConfig} from './scope-data';
 import {updateRows} from './db-client.mjs';
 import {useAccount} from './use-account';
@@ -124,11 +125,7 @@ export default function ScopeSettingsPanel({scopeId}){
 
       <fieldset className="scope-management-wide-field">
         <legend><UiText id="uiExtra.scopeSettings.publicFeatures"/></legend>
-        <div className="scope-editor-options">
-          <label><input type="checkbox" checked={draft.search_able!==false} onChange={event=>change('search_able',event.target.checked)}/><UiText id="features.search.title"/></label>
-          <label><input type="checkbox" checked={draft.statistics_able!==false} onChange={event=>change('statistics_able',event.target.checked)}/><UiText id="features.statics.title"/></label>
-          <label><input type="checkbox" checked={draft.culture_able!==false} onChange={event=>change('culture_able',event.target.checked)}/><UiText id="features.culture.title"/></label>
-        </div>
+        <ScopeFeatureToggles value={draft} onChange={change}/>
       </fieldset>
 
       {message?<p className="scope-status" role="status">{message}</p>:null}
